@@ -44,10 +44,9 @@ private:
 		while (true) {
 
 			while (m_count == 0) {
-				if (m_exit.load(memory_order_relaxed)) {
-					m_exit = false;
+				if (m_exit.load(memory_order_relaxed))
 					return;
-				}
+
 				m_notempty.wait(l);
 			}
 
@@ -87,10 +86,11 @@ public:
 
 	~GSJobQueue()
 	{
-		m_exit = true;
-		do {
-			m_notempty.notify_one();
-		} while (m_exit);
+		{
+			std::lock_guard<std::mutex> l(m_lock);
+			m_exit = true;
+		}
+		m_notempty.notify_one();
 
 		m_thread.join();
 	}
