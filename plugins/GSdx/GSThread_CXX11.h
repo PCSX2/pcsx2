@@ -29,7 +29,6 @@ template<class T, int CAPACITY> class GSJobQueue final
 private:
 	std::thread m_thread;
 	std::function<void(T&)> m_func;
-	std::atomic<int32_t> m_count;
 	std::atomic<bool> m_exit;
 	ringbuffer_base<T, CAPACITY> m_queue;
 
@@ -43,42 +42,30 @@ private:
 
 		while (true) {
 
-			while (m_count == 0) {
+			while (m_queue.empty()) {
 				if (m_exit.load(memory_order_relaxed))
 					return;
 
 				m_notempty.wait(l);
 			}
 
-			int32_t nb = m_count;
-
 			l.unlock();
 
-			int32_t consumed = 0;
-			for (; nb >= 0; nb--) {
-				if (m_queue.consume_one(*this))
-					consumed++;
+			while (m_queue.consume_one(*this))
+				;
+
+			{
+				std::lock_guard<std::mutex> wait_guard(m_wait_lock);
 			}
+			m_empty.notify_one();
 
 			l.lock();
-
-			int32_t old_count = m_count.fetch_sub(consumed);
-
-			if (old_count == consumed) {
-
-				{
-					std::lock_guard<std::mutex> wait_guard(m_wait_lock);
-				}
-				m_empty.notify_one();
-			}
-
 		}
 	}
 
 public:
 	GSJobQueue(std::function<void(T&)> func) :
 		m_func(func),
-		m_count(0),
 		m_exit(false)
 	{
 		m_thread = std::thread(&GSJobQueue::ThreadProc, this);
@@ -95,34 +82,31 @@ public:
 		m_thread.join();
 	}
 
-	bool IsEmpty() const {
-		ASSERT(m_count >= 0);
-
-		return m_count == 0;
+	bool IsEmpty()
+	{
+		return m_queue.empty();
 	}
 
 	void Push(const T& item) {
 		while(!m_queue.push(item))
 			std::this_thread::yield();
 
-		std::unique_lock<std::mutex> l(m_lock);
-
-		m_count++;
-
-		l.unlock();
-
+		{
+			std::lock_guard<std::mutex> l(m_lock);
+		}
 		m_notempty.notify_one();
 	}
 
-	void Wait() {
-		if (m_count > 0) {
-			std::unique_lock<std::mutex> l(m_wait_lock);
-			while (m_count > 0) {
-				m_empty.wait(l);
-			}
-		}
+	void Wait()
+	{
+		if (IsEmpty())
+			return;
 
-		ASSERT(m_count == 0);
+		std::unique_lock<std::mutex> l(m_wait_lock);
+		while (!IsEmpty())
+			m_empty.wait(l);
+
+		assert(IsEmpty());
 	}
 
 	void operator() (T& item) {
