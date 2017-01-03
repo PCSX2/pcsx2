@@ -587,14 +587,24 @@ GSPanel* GSFrame::GetViewport()
 
 void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 {
+	double fps = wxGetApp().FpsManager.GetFramerate();
+
+	OSDmonitor(Color_StrongGreen, "EE:", std::to_string(m_CpuUsage.GetEEcorePct()).c_str());
+	OSDmonitor(Color_StrongGreen, "GS:", std::to_string(m_CpuUsage.GetGsPct()).c_str());
+	OSDmonitor(Color_StrongGreen, "UI:", std::to_string(m_CpuUsage.GetGuiPct()).c_str());
+
+	std::ostringstream out;
+	out << std::fixed << std::setprecision(2) << fps;
+	OSDmonitor(Color_StrongGreen, "FPS:", out.str());
+
 #ifdef __linux__
 	// Important Linux note: When the title is set in fullscreen the window is redrawn. Unfortunately
 	// an intermediate white screen appears too which leads to a very annoying flickering.
 	if (IsFullScreen()) return;
 #endif
+
 	AppConfig::UiTemplateOptions& templates = g_Conf->Templates;
 
-	double fps = wxGetApp().FpsManager.GetFramerate();
 	float percentage = (fps * 100) / GetVerticalFrequency().ToFloat();
 
 	char gsDest[128];
@@ -618,15 +628,12 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 		m_CpuUsage.UpdateStats();
 
 		cpuUsage.Write(L"EE: %3d%%", m_CpuUsage.GetEEcorePct());
-		OSDmonitor(Color_StrongRed, "EE", std::to_string(m_CpuUsage.GetEEcorePct()).c_str());
 		cpuUsage.Write(L" | GS: %3d%%", m_CpuUsage.GetGsPct());
-		OSDmonitor(Color_StrongGreen, "GS", std::to_string(m_CpuUsage.GetGsPct()).c_str());
 
 		if (THREAD_VU1)
 			cpuUsage.Write(L" | VU: %3d%%", m_CpuUsage.GetVUPct());
 
 		pxNonReleaseCode(cpuUsage.Write(L" | UI: %3d%%", m_CpuUsage.GetGuiPct()));
-		OSDmonitor(Color_StrongYellow, "UI", std::to_string(m_CpuUsage.GetGuiPct()).c_str());
 	}
 
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
@@ -638,9 +645,6 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	title.Replace(L"${limiter}",	limiterStr);
 	title.Replace(L"${speed}",		pxsFmt(L"%3d%%", lround(percentage)));
 	title.Replace(L"${vfps}",		pxsFmt(L"%.02f", fps));
-	std::ostringstream out;
-	out << std::fixed << std::setprecision(2) << fps;
-	OSDmonitor(Color_StrongBlue, "FPS", out.str());
 	title.Replace(L"${cpuusage}",	cpuUsage);
 	title.Replace(L"${omodef}",		omodef);
 	title.Replace(L"${omodei}",		omodei);
