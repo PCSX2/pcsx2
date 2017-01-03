@@ -426,7 +426,7 @@ static const LegacyApi_ReqMethod s_MethMessReq_GS[] =
 static const LegacyApi_OptMethod s_MethMessOpt_GS[] =
 {
 	{	"GSosdLog",			(vMeth**)&GSosdLog			},
-	{	"GSosdMonitor",		(vMeth**)&GSosdMonitor			},
+	{	"GSosdMonitor",		(vMeth**)&GSosdMonitor		},
 	{	"GSopen2",			(vMeth**)&GSopen2			},
 	{	"GSreset",			(vMeth**)&GSreset			},
 	{	"GSsetupRecording",	(vMeth**)&GSsetupRecording	},
