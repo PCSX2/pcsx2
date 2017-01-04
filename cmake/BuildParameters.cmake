@@ -295,7 +295,7 @@ endif()
 #-------------------------------------------------------------------------------
 # Set some default compiler flags
 #-------------------------------------------------------------------------------
-option(USE_LTO "Enable LTO optimization (will likely break the build)")
+option(USE_LTO "Enable LTO optimization")
 option(USE_PGO_GENERATE "Enable PGO optimization (generate profile)")
 option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 
@@ -337,18 +337,12 @@ elseif (USE_GCC)
 endif()
 
 if (USE_LTO)
-    message(WARNING "LTO has not been thoroughly tested. It should work fine, but a bug is not impossible.")
-    #gcc --print-file-name=liblto_plugin.so
-    #set(LTO_FLAGS "-fuse-linker-plugin -flto=4 --plugin=/usr/lib/gcc/x86_64-linux-gnu/4.9/liblto_plugin.so")
-    #set(LTO_FLAGS "-fuse-linker-plugin  -fuse-ld=gold -flto=4 --plugin=/usr/lib/gcc/x86_64-linux-gnu/4.9/liblto_plugin.so")
-    set(LTO_FLAGS "-fuse-linker-plugin -flto=4")
-    #set(LINK_FLAGS "--plugin=/usr/lib/gcc/x86_64-linux-gnu/4.9/liblto_plugin.so")
+    include(ProcessorCount)
+    ProcessorCount(ncpu)
+    set(LTO_FLAGS "-fuse-linker-plugin -flto=${ncpu}")
     set(DBG "") # not supported with LTO
-    message(STATUS "Using \"gcc-ar\" instead of \"ar\"")
     set(CMAKE_AR /usr/bin/gcc-ar CACHE STRING "Archiver" FORCE)
-    message(STATUS "Using \"gcc-ranlib\" instead of \"ranlib\"")
     set(CMAKE_RANLIB /usr/bin/gcc-ranlib CACHE STRING "ranlib" FORCE)
-    message(STATUS "Using \"gcc-nm\" instead of \"nm\"")
     set(CMAKE_NM /usr/bin/gcc-nm CACHE STRING "nm" FORCE)
 else()
     set(LTO_FLAGS "")
@@ -359,12 +353,10 @@ if (USE_PGO_GENERATE OR USE_PGO_OPTIMIZE)
 endif()
 
 if (USE_PGO_GENERATE)
-    message(WARNING "PGO has not been thoroughly tested. A bug is not impossible.")
     set(PGO_FLAGS "${PGO_FLAGS} -fprofile-generate")
 endif()
 
 if(USE_PGO_OPTIMIZE)
-    message(WARNING "PGO has not been thoroughly tested. A bug is not impossible.")
     set(PGO_FLAGS "${PGO_FLAGS} -fprofile-use")
 endif()
 
