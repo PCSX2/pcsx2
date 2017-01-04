@@ -405,7 +405,7 @@ GSVideoMode GSState::GetVideoMode()
 	return videomode;
 }
 
-GSVector4i GSState::GetDisplayRect(int i)
+GSVector4i GSState::GetDisplayRect(int i, bool merged_rect)
 {
 	if(i < 0) i = IsEnabled(1) ? 1 : 0;
 
@@ -433,8 +433,16 @@ GSVector4i GSState::GetDisplayRect(int i)
 	rectangle.right = rectangle.left + width;
 	rectangle.bottom = rectangle.top + height;
 
-	// Useful for debugging games:
-	//printf("DW: %d , DH: %d , left: %d , right: %d , top: %d , down: %d , MAGH: %d , MAGV: %d\n", m_regs->DISP[i].DISPLAY.DW, m_regs->DISP[i].DISPLAY.DH, r.left, r.right, r.top, r.bottom , m_regs->DISP[i].DISPLAY.MAGH,m_regs->DISP[i].DISPLAY.MAGV);
+	if ((m_regs->PMODE.EN1 & m_regs->PMODE.EN2) && merged_rect)
+	{
+		GSVector4i opposite_output = GetDisplayRect(!i);
+		GSVector4i r_intersect = opposite_output.rintersect(rectangle);
+		GSVector4i r_union = opposite_output.runion_ordered(rectangle);
+
+		if(!(r_intersect.width() && r_intersect.height()) ||
+			r_intersect.xyxy().eq(r_union.xyxy()))
+			return r_union;
+	}
 
 	return rectangle;
 }
