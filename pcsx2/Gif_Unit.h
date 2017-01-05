@@ -17,6 +17,11 @@
 #include <deque>
 #include "System/SysThreads.h"
 #include "Gif.h"
+#include "GS.h"
+
+// FIXME common path ?
+#include "../plugins/GSdx/boost_spsc_queue.hpp"
+
 struct GS_Packet;
 extern void Gif_MTGS_Wait(bool isMTVU);
 extern void Gif_FinishIRQ();
@@ -147,10 +152,13 @@ static __fi void incTag(u32& offset, u32& size, u32 incAmount) {
 struct Gif_Path_MTVU {
 	u32   fakePackets; // Fake packets pending to be sent to MTGS
 	GS_Packet fakePacket;
-	Mutex gsPackMutex; // Used for atomic access to gsPackQueue
-	std::deque<GS_Packet> gsPackQueue; // VU1 programs' XGkick(s)
+	// Set a size based on MTGS but keep a factor 2 to avoid too waste to much
+	// memory overhead. Note the struct is instantied 3 times (for each gif
+	// path)
+	ringbuffer_base<GS_Packet, RingBufferSize / 2> gsPackQueue;
 	Gif_Path_MTVU() { Reset(); }
-	void Reset()    { fakePackets = 0; gsPackQueue.clear();
+	void Reset()    { fakePackets = 0;
+		gsPackQueue.reset();
 		fakePacket.Reset();
 		fakePacket.done =  1; // Fake packets don't get processed by pcsx2
 		fakePacket.size =~0u; // Used to indicate that its a fake packet
@@ -380,22 +388,21 @@ struct Gif_Path {
 
 	// MTVU: Gets called after VU1 execution on MTVU thread
 	void FinishGSPacketMTVU() {
-		if (1) {
-			ScopedLock lock(mtvu.gsPackMutex);
-			readAmount.fetch_add(gsPack.size + gsPack.readAmount);
-			mtvu.gsPackQueue.push_back(gsPack);
-		}
+		readAmount.fetch_add(gsPack.size + gsPack.readAmount);
+		while (!mtvu.gsPackQueue.push(gsPack))
+			;
+
 		gsPack.Reset();
 		gsPack.offset = curOffset;
 	}
 
 	// MTVU: Gets called by MTGS thread
 	GS_Packet GetGSPacketMTVU() {
-		ScopedLock lock(mtvu.gsPackMutex);
-		if (mtvu.gsPackQueue.size()) {
-			GS_Packet t = mtvu.gsPackQueue[0];
-			return t; // XGkick GS packet(s)
+		// FIXME is the error path useful ?
+		if (!mtvu.gsPackQueue.empty()) {
+			return mtvu.gsPackQueue.front();
 		}
+
 		Console.Error("MTVU: Expected gsPackQueue to have elements!");
 		pxAssert(0);
 		return GS_Packet(); // gsPack.size will be 0
@@ -403,18 +410,13 @@ struct Gif_Path {
 
 	// MTVU: Gets called by MTGS thread
 	void PopGSPacketMTVU() {
-		ScopedLock lock(mtvu.gsPackMutex);
-		if (mtvu.gsPackQueue.size()) {
-			mtvu.gsPackQueue.pop_front();
-		}
+		mtvu.gsPackQueue.pop();
 	}
 
 	// MTVU: Returns the amount of pending
 	// GS Packets that MTGS hasn't yet processed
 	u32 GetPendingGSPackets() {
-		ScopedLock lock(mtvu.gsPackMutex);
-		u32 t = mtvu.gsPackQueue.size();
-		return t;
+		return mtvu.gsPackQueue.size();
 	}
 };
 
