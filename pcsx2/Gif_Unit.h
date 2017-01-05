@@ -123,11 +123,13 @@ struct Gif_Tag {
 };
 
 struct GS_Packet {
+	// PERF note: this struct is copied various time in hot path. Don't add
+	// new field
+
 	u32  offset;     // Path buffer offset for start of packet
 	u32  size;	     // Full size of GS-Packet
 	s32  cycles;     // EE Cycles taken to process this GS packet
 	s32  readAmount; // Dummy read-amount data needed for proper buffer calculations
-	bool done;	     // 0 = Incomplete, 1 = Complete
 	GS_Packet()  { Reset(); }
 	void Reset() { memzero(*this); }
 };
@@ -160,7 +162,6 @@ struct Gif_Path_MTVU {
 	void Reset()    { fakePackets = 0;
 		gsPackQueue.reset();
 		fakePacket.Reset();
-		fakePacket.done =  1; // Fake packets don't get processed by pcsx2
 		fakePacket.size =~0u; // Used to indicate that its a fake packet
 	}
 };
@@ -264,11 +265,12 @@ struct Gif_Path {
 		curSize     += size;
 	}
 
-	// If completed a GS packet (with EOP) then returned GS_Packet.done = 1
+	// If completed a GS packet (with EOP) then set done to true
 	// MTVU: This function only should be called called on EE thread
-	GS_Packet ExecuteGSPacket() {
+	GS_Packet ExecuteGSPacket(bool &done) {
 		if (mtvu.fakePackets) { // For MTVU mode...
 			mtvu.fakePackets--;
+			done = true;
 			return mtvu.fakePacket;
 		}
 		pxAssert(!isMTVU());
@@ -317,9 +319,8 @@ struct Gif_Path {
 
 			if (gifTag.tag.EOP) {
 				GS_Packet t = gsPack;
-				t.done = 1;
+				done = true;
 
-				
 				dmaRewind = 0;
 				
 				gsPack.Reset();
@@ -568,8 +569,9 @@ struct Gif_Unit {
 		for(;;) {
 			if (stat.APATH) { // Some Transfer is happening
 				Gif_Path& path   = gifPath[stat.APATH-1];
-				GS_Packet gsPack = path.ExecuteGSPacket();
-				if(!gsPack.done) {
+				bool done = false;
+				GS_Packet gsPack = path.ExecuteGSPacket(done);
+				if(!done) {
 					if (stat.APATH == 3 && CanDoP3Slice() && !gsSIGNAL.queued) {
 						if(!didPath3 && /*!Path3Masked() &&*/ checkPaths(1,1,0)) { // Path3 slicing
 							didPath3 = true;
