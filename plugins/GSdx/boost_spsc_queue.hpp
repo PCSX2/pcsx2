@@ -57,6 +57,7 @@ class ringbuffer_base
     atomic<size_t> write_index_;
     char padding1[padding_size]; /* force read_index and write_index to different cache lines */
     atomic<size_t> read_index_;
+    char padding2[padding_size]; /* force read_index and pending_pop_read_index to different cache lines */
 
     size_t pending_pop_read_index;
 
