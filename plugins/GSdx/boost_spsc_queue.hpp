@@ -91,11 +91,12 @@ public:
     {
         size_t ret = arg + 1;
 #if 0
+        // Initial boost code
         while (unlikely(ret >= max_size))
-#else
-        while (ret >= max_size)
-#endif
             ret -= max_size;
+#else
+        ret %= max_size;
+#endif
         return ret;
     }
 
