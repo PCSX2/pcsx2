@@ -44,6 +44,10 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include <atomic>
+
+// I don't like it
+using namespace std;
 
 template <typename T, size_t max_size>
 class ringbuffer_base
@@ -53,6 +57,8 @@ class ringbuffer_base
     atomic<size_t> write_index_;
     char padding1[padding_size]; /* force read_index and write_index to different cache lines */
     atomic<size_t> read_index_;
+
+    size_t pending_pop_read_index;
 
     T *buffer;
 
@@ -123,6 +129,21 @@ public:
         return true;
     }
 
+    T& front()
+    {
+        pending_pop_read_index = read_index_.load(memory_order_relaxed); // only written from pop thread
+
+        return buffer[pending_pop_read_index];
+    }
+
+    void pop()
+    {
+        buffer[pending_pop_read_index].~T();
+
+        size_t next = next_index(pending_pop_read_index);
+        read_index_.store(next, memory_order_release);
+    }
+
     template <typename Functor>
     bool consume_one(Functor & f)
     {
@@ -167,6 +188,17 @@ public:
     bool is_lock_free(void) const
     {
         return write_index_.is_lock_free() && read_index_.is_lock_free();
+    }
+
+    size_t size() const
+    {
+        const size_t write_index =  write_index_.load(memory_order_relaxed);
+        const size_t read_index = read_index_.load(memory_order_relaxed);
+        if (read_index > write_index) {
+            return (write_index + max_size) - read_index;
+        } else {
+            return write_index - read_index;
+        }
     }
 
 private:
