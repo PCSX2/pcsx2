@@ -142,14 +142,14 @@ static void cdvdCreateNewNVM(const wxString& filename)
 	if (!fp.IsOpened())
 		throw Exception::CannotCreateStream(filename);
 
-	u8 zero[1024] = { 0 };
+	u8 zero[1024] = {0};
 	fp.Write(zero, sizeof(zero));
 
 	// Write NVM ILink area with dummy data (Age of Empires 2)
 	// Also write language data defaulting to English (Guitar Hero 2)
 
 	NVMLayout* nvmLayout = getNvmLayout();
-	u8 ILinkID_Data[8] = { 0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86 };
+	u8 ILinkID_Data[8] = {0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86};
 
 	fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)));
 	fp.Write(ILinkID_Data, sizeof(ILinkID_Data));
@@ -185,7 +185,7 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 	else
 	{
 		u8 LanguageParams[16];
-		u8 zero[16] = { 0 };
+		u8 zero[16] = {0};
 		NVMLayout* nvmLayout = getNvmLayout();
 
 		wxFFile fp(fname, L"r+b");
@@ -219,7 +219,7 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 
 	if (ret != bytes)
 		Console.Error(L"Failed to %s %s. Did only %zu/%zu bytes",
-					  read ? L"read from" : L"write to", WX_STR(fname), ret, bytes);
+			read ? L"read from" : L"write to", WX_STR(fname), ret, bytes);
 }
 
 static void cdvdReadNVM(u8* dst, int offset, int bytes)
@@ -507,8 +507,8 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 
 	// calculate magic numbers
 	key_0_3 = ((numbers & 0x1FC00) >> 10) | ((0x01FFFFFF & letters) << 7); // numbers = 7F  letters = FFFFFF80
-	key_4 = ((numbers & 0x0001F) << 3) | ((0x0E000000 & letters) >> 25);   // numbers = F8  letters = 07
-	key_14 = ((numbers & 0x003E0) >> 2) | 0x04;                            // numbers = F8  extra   = 04  unused = 03
+	key_4 = ((numbers & 0x0001F) << 3) | ((0x0E000000 & letters) >> 25); // numbers = F8  letters = 07
+	key_14 = ((numbers & 0x003E0) >> 2) | 0x04; // numbers = F8  extra   = 04  unused = 03
 
 	// store key values
 	key[0] = (key_0_3 & 0x000000FF) >> 0;
@@ -544,7 +544,7 @@ void cdvdReadKey(u8, u16, u32 arg2, u8* key)
 	}
 
 	DevCon.WriteLn("CDVD.KEY = %02X,%02X,%02X,%02X,%02X,%02X,%02X",
-				   cdvd.Key[0], cdvd.Key[1], cdvd.Key[2], cdvd.Key[3], cdvd.Key[4], cdvd.Key[14], cdvd.Key[15]);
+		cdvd.Key[0], cdvd.Key[1], cdvd.Key[2], cdvd.Key[3], cdvd.Key[4], cdvd.Key[14], cdvd.Key[15]);
 }
 
 s32 cdvdGetToc(void* toc)
@@ -659,7 +659,7 @@ static uint cdvdBlockReadTime(CDVD_MODE_TYPE mode)
 	// Read speed is roughly 37% at lowest and full speed on outer edge. I imagine it's more logarithmic than this
 	// Required for Shadowman to work
 	// Use SeekToSector as Sector hasn't been updated yet
-	const float sectorSpeed = (((float)(cdvd.SeekToSector-offset) / numSectors) * 0.63f) + 0.37f; 
+	const float sectorSpeed = (((float)(cdvd.SeekToSector - offset) / numSectors) * 0.63f) + 0.37f;
 	//DevCon.Warning("Read speed %f sector %d\n", sectorSpeed, cdvd.Sector);
 	return ((PSXCLK * cdvd.BlockSize) / ((float)(((mode == MODE_CDROM) ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.Speed) * sectorSpeed));
 }
@@ -857,7 +857,7 @@ __fi void cdvdActionInterrupt()
 
 		case cdvdAction_Standby:
 			DevCon.Warning("CDVD Standby Call");
-			cdvd.Spinning = true;     //check (rama)
+			cdvd.Spinning = true; //check (rama)
 			cdvd.Ready = CDVD_READY1; //check (rama)
 			cdvd.Sector = cdvd.SeekToSector;
 			cdvd.Status = CDVD_STATUS_PAUSE;
@@ -875,7 +875,7 @@ __fi void cdvdActionInterrupt()
 			DevCon.WriteLn("CDVD Break Call");
 			cdvd.Reading = 0;
 			cdvd.Readed = 0;
-			cdvd.Ready = CDVD_READY2;        // should be CDVD_READY1 or something else?
+			cdvd.Ready = CDVD_READY2; // should be CDVD_READY1 or something else?
 			cdvd.Status = CDVD_STATUS_PAUSE; //Break stops the command in progress it doesn't stop the drive. Formula 2001
 			cdvd.RErr = 0;
 			cdvd.nCommand = 0;
@@ -883,8 +883,7 @@ __fi void cdvdActionInterrupt()
 	}
 	cdvd.Action = cdvdAction_None;
 
-	cdvd.PwOff |= 1 << Irq_CommandComplete;
-	psxHu32(0x1070) |= 0x4;
+	cdvdSetIrq();
 }
 
 // inlined due to being referenced in only one place.
@@ -911,7 +910,7 @@ __fi void cdvdReadInterrupt()
 		cdvd.Sector = cdvd.SeekToSector;
 
 		CDVD_LOG("Cdvd Seek Complete > Scheduling block read interrupt at iopcycle=%8.8x.",
-				 psxRegs.cycle + cdvd.ReadTime);
+			psxRegs.cycle + cdvd.ReadTime);
 
 		CDVDREAD_INT(cdvd.ReadTime);
 		return;
@@ -973,8 +972,7 @@ __fi void cdvdReadInterrupt()
 	{
 		// Setting the data ready flag fixes a black screen loading issue in
 		// Street Fighter Ex3 (NTSC-J version).
-		cdvd.PwOff |= (1 << Irq_DataReady) | (1 << Irq_CommandComplete);
-		psxHu32(0x1070) |= 0x4;
+		cdvdSetIrq((1 << Irq_DataReady) | (1 << Irq_CommandComplete));
 
 		HW_DMA3_CHCR &= ~0x01000000;
 		psxDmaInterrupt(3);
@@ -1040,7 +1038,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 		{
 			//cdvd.Status = CDVD_STATUS_PAUSE;
 			cdvd.Status = CDVD_STATUS_READ | CDVD_STATUS_SPIN; // Time Crisis 2
-			cdvd.Readed = 1;                                   // Note: 1, not 0, as implied by the next comment. Need to look into this. --arcum42
+			cdvd.Readed = 1; // Note: 1, not 0, as implied by the next comment. Need to look into this. --arcum42
 			cdvd.RetryCntP = 0;
 
 			// setting Readed to 0 skips the seek logic, which means the next call to
@@ -1258,12 +1256,12 @@ static void cdvdWrite04(u8 rt)
 	cdvd.nCommand = rt;
 	// Why fiddle with Status and PwOff here at all? (rama)
 	cdvd.Status = cdvd.Spinning ? CDVD_STATUS_SPIN : CDVD_STATUS_STOP; // checkme
-	cdvd.PwOff = Irq_None;                                             // good or bad?
+	cdvd.PwOff = Irq_None; // good or bad?
 
 	switch (rt)
 	{
 		case N_CD_SYNC: // CdSync
-		case N_CD_NOP:  // CdNop_
+		case N_CD_NOP: // CdNop_
 			cdvdSetIrq();
 			break;
 
@@ -1320,11 +1318,11 @@ static void cdvdWrite04(u8 rt)
 			}
 
 			CDVD_LOG("CdRead > startSector=%d, seekTo=%d, nSectors=%d, RetryCnt=%x, Speed=%x(%x), ReadMode=%x(%x) (1074=%x)",
-					 cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
+				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
 
 			if (EmuConfig.CdvdVerboseReads)
 				Console.WriteLn(Color_Gray, L"CdRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx",
-								cdvd.SeekToSector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed);
+					cdvd.SeekToSector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed);
 
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_CDROM);
 			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, MODE_CDROM));
@@ -1339,7 +1337,7 @@ static void cdvdWrite04(u8 rt)
 			// this'll skip the seek delay.
 			cdvd.Reading = 1;
 			break;
-		
+
 		case N_DVD_READ: // DvdRead
 			// Assign the seek to sector based on cdvd.Param[0]-[3], and the number of  sectors based on cdvd.Param[4]-[7].
 			cdvd.SeekToSector = *(u32*)(cdvd.Param + 0);
@@ -1356,11 +1354,11 @@ static void cdvdWrite04(u8 rt)
 			cdvd.BlockSize = 2064; // Why oh why was it 2064
 
 			CDVD_LOG("DvdRead > startSector=%d, seekTo=%d nSectors=%d, RetryCnt=%x, Speed=%x(%x), ReadMode=%x(%x) (1074=%x)",
-					 cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
+				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
 
 			if (EmuConfig.CdvdVerboseReads)
 				Console.WriteLn(Color_Gray, L"DvdRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx",
-								cdvd.SeekToSector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed);
+					cdvd.SeekToSector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed);
 
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_DVDROM);
 			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, MODE_DVDROM));
@@ -1598,11 +1596,11 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				cdvd.Result[0] = 0;
 				cdvd.Result[1] = itob(cdvd.RTC.second); //Seconds
 				cdvd.Result[2] = itob(cdvd.RTC.minute); //Minutes
-				cdvd.Result[3] = itob(cdvd.RTC.hour);   //Hours
-				cdvd.Result[4] = 0;                     //Nothing
-				cdvd.Result[5] = itob(cdvd.RTC.day);    //Day
-				cdvd.Result[6] = itob(cdvd.RTC.month);  //Month
-				cdvd.Result[7] = itob(cdvd.RTC.year);   //Year
+				cdvd.Result[3] = itob(cdvd.RTC.hour); //Hours
+				cdvd.Result[4] = 0; //Nothing
+				cdvd.Result[5] = itob(cdvd.RTC.day); //Day
+				cdvd.Result[6] = itob(cdvd.RTC.month); //Month
+				cdvd.Result[7] = itob(cdvd.RTC.year); //Year
 				/*Console.WriteLn("RTC Read Sec %x Min %x Hr %x Day %x Month %x Year %x", cdvd.Result[1], cdvd.Result[2],
 				  cdvd.Result[3], cdvd.Result[5], cdvd.Result[6], cdvd.Result[7]);
 				  Console.WriteLn("RTC Read Real Sec %d Min %d Hr %d Day %d Month %d Year %d", cdvd.RTC.second, cdvd.RTC.minute,
@@ -1725,8 +1723,8 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				//		case 0x19: // sceCdForbidRead (0:1) - from xcdvdman
 				//			break;
 
-			case 0x1A:              // sceCdBootCertify (4:1)//(4:16 in psx?)
-				SetResultSize(1);   //on input there are 4 bytes: 1;?10;J;C for 18000; 1;60;E;C for 39002 from ROMVER
+			case 0x1A: // sceCdBootCertify (4:1)//(4:16 in psx?)
+				SetResultSize(1); //on input there are 4 bytes: 1;?10;J;C for 18000; 1;60;E;C for 39002 from ROMVER
 				cdvd.Result[0] = 1; //i guess that means okay
 				break;
 
@@ -1898,29 +1896,29 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				cdvd.Result[0] = 0;
 				break;
 
-			case 0x80:                // secrman: __mechacon_auth_0x80
-				SetResultSize(1);     //in:1
+			case 0x80: // secrman: __mechacon_auth_0x80
+				SetResultSize(1); //in:1
 				cdvd.mg_datatype = 0; //data
 				cdvd.Result[0] = 0;
 				break;
 
-			case 0x81:                // secrman: __mechacon_auth_0x81
-				SetResultSize(1);     //in:1
+			case 0x81: // secrman: __mechacon_auth_0x81
+				SetResultSize(1); //in:1
 				cdvd.mg_datatype = 0; //data
 				cdvd.Result[0] = 0;
 				break;
 
-			case 0x82:            // secrman: __mechacon_auth_0x82
+			case 0x82: // secrman: __mechacon_auth_0x82
 				SetResultSize(1); //in:16
 				cdvd.Result[0] = 0;
 				break;
 
-			case 0x83:            // secrman: __mechacon_auth_0x83
+			case 0x83: // secrman: __mechacon_auth_0x83
 				SetResultSize(1); //in:8
 				cdvd.Result[0] = 0;
 				break;
 
-			case 0x84:                    // secrman: __mechacon_auth_0x84
+			case 0x84: // secrman: __mechacon_auth_0x84
 				SetResultSize(1 + 8 + 4); //in:0
 				cdvd.Result[0] = 0;
 
@@ -1939,7 +1937,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				cdvd.Result[12] = 0x9b;
 				break;
 
-			case 0x85:                    // secrman: __mechacon_auth_0x85
+			case 0x85: // secrman: __mechacon_auth_0x85
 				SetResultSize(1 + 4 + 8); //in:0
 				cdvd.Result[0] = 0;
 
@@ -1958,17 +1956,17 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				cdvd.Result[12] = 0xa3;
 				break;
 
-			case 0x86:            // secrman: __mechacon_auth_0x86
+			case 0x86: // secrman: __mechacon_auth_0x86
 				SetResultSize(1); //in:16
 				cdvd.Result[0] = 0;
 				break;
 
-			case 0x87:            // secrman: __mechacon_auth_0x87
+			case 0x87: // secrman: __mechacon_auth_0x87
 				SetResultSize(1); //in:8
 				cdvd.Result[0] = 0;
 				break;
 
-			case 0x8D:            // sceMgWriteData
+			case 0x8D: // sceMgWriteData
 				SetResultSize(1); //in:length<=16
 				if (cdvd.mg_size + cdvd.ParamC > cdvd.mg_maxsize)
 				{
@@ -1989,9 +1987,9 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				memcpy(cdvd.mg_buffer, cdvd.mg_buffer + cdvd.ResultC, cdvd.mg_size);
 				break;
 
-			case 0x88:                     // secrman: __mechacon_auth_0x88	//for now it is the same; so, fall;)
-			case 0x8F:                     // secrman: __mechacon_auth_0x8F
-				SetResultSize(1);          //in:0
+			case 0x88: // secrman: __mechacon_auth_0x88	//for now it is the same; so, fall;)
+			case 0x8F: // secrman: __mechacon_auth_0x8F
+				SetResultSize(1); //in:0
 				if (cdvd.mg_datatype == 1) // header data
 				{
 					u64 *psrc, *pdst;
@@ -2011,9 +2009,9 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 					}
 
 					Console.WriteLn("[MG] ELF_size=0x%X Hdr_size=0x%X unk=0x%X flags=0x%X count=%d zones=%s",
-									*(u32*)&cdvd.mg_buffer[0x10], *(u16*)&cdvd.mg_buffer[0x14], *(u16*)&cdvd.mg_buffer[0x16],
-									*(u16*)&cdvd.mg_buffer[0x18], *(u16*)&cdvd.mg_buffer[0x1A],
-									zoneStr.c_str());
+						*(u32*)&cdvd.mg_buffer[0x10], *(u16*)&cdvd.mg_buffer[0x14], *(u16*)&cdvd.mg_buffer[0x16],
+						*(u16*)&cdvd.mg_buffer[0x18], *(u16*)&cdvd.mg_buffer[0x1A],
+						zoneStr.c_str());
 
 					bit_ofs = mg_BIToffset(cdvd.mg_buffer);
 
@@ -2039,12 +2037,12 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				cdvd.Result[0] = 0; // 0 complete ; 1 busy ; 0x80 error
 				break;
 
-			case 0x90:            // sceMgWriteHeaderStart
+			case 0x90: // sceMgWriteHeaderStart
 				SetResultSize(1); //in:5
 				cdvd.mg_size = 0;
 				cdvd.mg_datatype = 1; //header data
 				Console.WriteLn("[MG] hcode=%d cnum=%d a2=%d length=0x%X",
-								cdvd.Param[0], cdvd.Param[3], cdvd.Param[4], cdvd.mg_maxsize = cdvd.Param[1] | (((int)cdvd.Param[2]) << 8));
+					cdvd.Param[0], cdvd.Param[3], cdvd.Param[4], cdvd.mg_maxsize = cdvd.Param[1] | (((int)cdvd.Param[2]) << 8));
 
 				cdvd.Result[0] = 0; // 0 complete ; 1 busy ; 0x80 error
 				break;
@@ -2055,7 +2053,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				int bit_ofs = mg_BIToffset(cdvd.mg_buffer);
 				memcpy(cdvd.mg_buffer, &cdvd.mg_buffer[bit_ofs], 8 + 16 * cdvd.mg_buffer[bit_ofs + 4]);
 
-				cdvd.mg_maxsize = 0;                       // don't allow any write
+				cdvd.mg_maxsize = 0; // don't allow any write
 				cdvd.mg_size = 8 + 16 * cdvd.mg_buffer[4]; //new offset, i just moved the data
 				Console.WriteLn("[MG] BIT count=%d", cdvd.mg_buffer[4]);
 
@@ -2064,7 +2062,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				cdvd.Result[2] = (cdvd.mg_size >> 8) & 0xFF;
 				break;
 			}
-			case 0x92:            // sceMgWriteDatainLength
+			case 0x92: // sceMgWriteDatainLength
 				SetResultSize(1); //in:2
 				cdvd.mg_size = 0;
 				cdvd.mg_datatype = 0; //data (encrypted)
@@ -2072,12 +2070,12 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				cdvd.Result[0] = 0; // 0 complete ; 1 busy ; 0x80 error
 				break;
 
-			case 0x93:            // sceMgWriteDataoutLength
+			case 0x93: // sceMgWriteDataoutLength
 				SetResultSize(1); //in:2
 				if (((cdvd.Param[0] | (((int)cdvd.Param[1]) << 8)) == cdvd.mg_size) && (cdvd.mg_datatype == 0))
 				{
 					cdvd.mg_maxsize = 0; // don't allow any write
-					cdvd.Result[0] = 0;  // 0 complete ; 1 busy ; 0x80 error
+					cdvd.Result[0] = 0; // 0 complete ; 1 busy ; 0x80 error
 				}
 				else
 				{
@@ -2085,7 +2083,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				}
 				break;
 
-			case 0x94:                // sceMgReadKbit - read first half of BIT key
+			case 0x94: // sceMgReadKbit - read first half of BIT key
 				SetResultSize(1 + 8); //in:0
 				cdvd.Result[0] = 0;
 
@@ -2094,7 +2092,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				//memcpy(cdvd.Result+1, cdvd.mg_kbit, 8);
 				break;
 
-			case 0x95:                // sceMgReadKbit2 - read second half of BIT key
+			case 0x95: // sceMgReadKbit2 - read second half of BIT key
 				SetResultSize(1 + 8); //in:0
 				cdvd.Result[0] = 0;
 				((int*)(cdvd.Result + 1))[0] = ((int*)(cdvd.mg_kbit + 8))[0];
@@ -2102,7 +2100,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				//memcpy(cdvd.Result+1, cdvd.mg_kbit+8, 8);
 				break;
 
-			case 0x96:                // sceMgReadKcon - read first half of content key
+			case 0x96: // sceMgReadKcon - read first half of content key
 				SetResultSize(1 + 8); //in:0
 				cdvd.Result[0] = 0;
 				((int*)(cdvd.Result + 1))[0] = ((int*)cdvd.mg_kcon)[0];
@@ -2110,7 +2108,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				//memcpy(cdvd.Result+1, cdvd.mg_kcon, 8);
 				break;
 
-			case 0x97:                // sceMgReadKcon2 - read second half of content key
+			case 0x97: // sceMgReadKcon2 - read second half of content key
 				SetResultSize(1 + 8); //in:0
 				cdvd.Result[0] = 0;
 				((int*)(cdvd.Result + 1))[0] = ((int*)(cdvd.mg_kcon + 8))[0];
@@ -2120,7 +2118,7 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 			default:
 				// fake a 'correct' command
-				SetResultSize(1);   //in:0
+				SetResultSize(1); //in:0
 				cdvd.Result[0] = 0; // 0 complete ; 1 busy ; 0x80 error
 				Console.WriteLn("SCMD Unknown %x", rt);
 				break;
