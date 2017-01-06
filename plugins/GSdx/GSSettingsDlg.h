@@ -26,9 +26,9 @@
 
 class GSShaderDlg : public GSDialog
 {
-	int saturation;
-	int brightness;
-	int contrast;
+	int m_saturation;
+	int m_brightness;
+	int m_contrast;
 
 	void UpdateControls();
 
