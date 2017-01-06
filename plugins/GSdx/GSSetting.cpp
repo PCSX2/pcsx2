@@ -90,6 +90,10 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too.\n\n"
 				"  0500 0500, fixes Persona 3 minimap, helps Haunting Ground.\n"
 				"  0000 1000, fixes Xenosaga hair edges (DX10+ Issue)";
+		case IDC_OSD_LOG:
+			return "Prints log messages from the Function keys onscreen.";
+		case IDC_OSD_MONITOR:
+			return "Continuously prints the FPS and the EE, GS and VU(if the MTVU speedhack is enabled) percentages onscreen.";
 		case IDC_PALTEX:
 			return "When checked 4/8 bits texture will be send to the GPU with a palette. GPU will be in charge of the conversion.\n\n"
 				"When unchecked the CPU will convert directly the texture to 32 bits.\n\n"
@@ -135,6 +139,10 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Makes textures partially or fully transparent as required by emulation. May cause unusual slowdowns for some games.";
 		case IDC_LOGZ:
 			return "Treat depth as logarithmic instead of linear. Recommended setting is on unless it causes graphical glitches.";
+		case IDC_OSD_MAX_LOG_EDIT:
+		case IDC_OSD_MAX_LOG:
+			return "Sets the maximum number of log messages on the screen or in the buffer at the same time.\n\n"
+				"The maximum number of messages visible on the screen at the same time also depends on the character size.";
 #endif
 #ifdef __linux__
 		case IDC_LINEAR_PRESENT:

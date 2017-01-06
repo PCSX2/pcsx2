@@ -64,6 +64,20 @@ public:
 	}
 };
 
+class GSOSDDlg : public GSDialog
+{
+	int m_transparency;
+
+	void UpdateControls();
+
+protected:
+	void OnInit();
+	bool OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
+
+public:
+	GSOSDDlg();
+};
+
 class GSSettingsDlg : public GSDialog
 {
 
@@ -91,6 +105,7 @@ protected:
 	// Shade Boost
 	GSShaderDlg ShaderDlg;
 	GSHacksDlg HacksDlg;
+	GSOSDDlg OSDDlg;
 
 public:
 	GSSettingsDlg();

@@ -54,8 +54,7 @@ class GSOsdManager {
 	uint32 m_atlas_h;
 	uint32 m_atlas_w;
 	int32 m_max_width;
-
-	void compute_glyph_size();
+	int32 m_onscreen_messages;
 
 	struct log_info {
 		uint32 color;
@@ -84,6 +83,7 @@ class GSOsdManager {
 	bool m_monitor_enabled;
 	bool m_indicator_enabled;
 	int m_osd_transparency;
+	int m_max_onscreen_messages;
 
 	public:
 

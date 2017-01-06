@@ -463,6 +463,9 @@ void populate_osd_table(GtkWidget* osd_table)
 	GtkWidget* monitor_check = CreateCheckBox("Enable Monitor", "osd_monitor_enabled");
 	GtkWidget* indicator_check = CreateCheckBox("Enable Indicator", "osd_indicator_enabled");
 
+	AddTooltip(log_check, IDC_OSD_LOG);
+	AddTooltip(monitor_check, IDC_OSD_MONITOR);
+
 	InsertWidgetInTable(osd_table , fontname_label , fontname_file);
 	InsertWidgetInTable(osd_table , fontsize_label , fontsize_text);
 	InsertWidgetInTable(osd_table , transparency_label , transparency_slide);
