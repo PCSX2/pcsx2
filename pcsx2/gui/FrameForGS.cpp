@@ -589,19 +589,35 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 {
 	double fps = wxGetApp().FpsManager.GetFramerate();
 
-	OSDmonitor(Color_StrongGreen, "EE:", std::to_string(m_CpuUsage.GetEEcorePct()).c_str());
-	OSDmonitor(Color_StrongGreen, "GS:", std::to_string(m_CpuUsage.GetGsPct()).c_str());
-	OSDmonitor(Color_StrongGreen, "UI:", std::to_string(m_CpuUsage.GetGuiPct()).c_str());
+	FastFormatUnicode cpuUsage;
+	if (m_CpuUsage.IsImplemented()) {
+		m_CpuUsage.UpdateStats();
+
+		if (!IsFullScreen()) {
+			cpuUsage.Write(L"EE: %3d%%", m_CpuUsage.GetEEcorePct());
+			cpuUsage.Write(L" | GS: %3d%%", m_CpuUsage.GetGsPct());
+
+			if (THREAD_VU1)
+				cpuUsage.Write(L" | VU: %3d%%", m_CpuUsage.GetVUPct());
+
+			pxNonReleaseCode(cpuUsage.Write(L" | UI: %3d%%", m_CpuUsage.GetGuiPct()));
+		}
+
+		if (THREAD_VU1)
+			OSDmonitor(Color_StrongGreen, "VU:", std::to_string(m_CpuUsage.GetVUPct()).c_str());
+
+		OSDmonitor(Color_StrongGreen, "EE:", std::to_string(m_CpuUsage.GetEEcorePct()).c_str());
+		OSDmonitor(Color_StrongGreen, "GS:", std::to_string(m_CpuUsage.GetGsPct()).c_str());
+		pxNonReleaseCode(OSDmonitor(Color_StrongGreen, "UI:", std::to_string(m_CpuUsage.GetGuiPct()).c_str()));
+	}
 
 	std::ostringstream out;
 	out << std::fixed << std::setprecision(2) << fps;
 	OSDmonitor(Color_StrongGreen, "FPS:", out.str());
 
-#ifdef __linux__
 	// Important Linux note: When the title is set in fullscreen the window is redrawn. Unfortunately
 	// an intermediate white screen appears too which leads to a very annoying flickering.
 	if (IsFullScreen()) return;
-#endif
 
 	AppConfig::UiTemplateOptions& templates = g_Conf->Templates;
 
@@ -621,19 +637,6 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 			case Limit_Turbo:	limiterStr = templates.LimiterTurbo; break;
 			case Limit_Slomo:	limiterStr = templates.LimiterSlowmo; break;
 		}
-	}
-
-	FastFormatUnicode cpuUsage;
-	if (m_CpuUsage.IsImplemented()) {
-		m_CpuUsage.UpdateStats();
-
-		cpuUsage.Write(L"EE: %3d%%", m_CpuUsage.GetEEcorePct());
-		cpuUsage.Write(L" | GS: %3d%%", m_CpuUsage.GetGsPct());
-
-		if (THREAD_VU1)
-			cpuUsage.Write(L" | VU: %3d%%", m_CpuUsage.GetVUPct());
-
-		pxNonReleaseCode(cpuUsage.Write(L" | UI: %3d%%", m_CpuUsage.GetGuiPct()));
 	}
 
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);

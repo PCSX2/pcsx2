@@ -55,15 +55,15 @@ void GSOsdManager::LoadSize() {
 GSOsdManager::GSOsdManager() : m_atlas_h(0)
                              , m_atlas_w(0)
                              , m_max_width(0)
+                             , m_onscreen_messages(0)
                              , m_texture_dirty(true)
 {
 	m_log_enabled = theApp.GetConfigB("osd_log_enabled");
-	m_log_speed  = theApp.GetConfigI("osd_log_speed");
-	m_log_speed = m_log_speed < 2 ? 2 : m_log_speed > 10 ? 10 : m_log_speed;
+	m_log_speed  = std::max(2, std::min(theApp.GetConfigI("osd_log_speed"), 10));
 	m_monitor_enabled = theApp.GetConfigB("osd_monitor_enabled");
 	m_indicator_enabled = theApp.GetConfigB("osd_indicator_enabled");
-	m_osd_transparency = theApp.GetConfigI("osd_transparency");
-	m_osd_transparency = m_osd_transparency < 0 ? 0 : m_osd_transparency > 200 ? 200 : m_osd_transparency;
+	m_osd_transparency = std::max(0, std::min(theApp.GetConfigI("osd_transparency"), 100));
+	m_max_onscreen_messages = theApp.GetConfigI("osd_max_log_messages");
 
 	if (FT_Init_FreeType(&m_library)) {
 		fprintf(stderr, "Failed to init the freetype library\n");
@@ -183,6 +183,7 @@ void GSOsdManager::Log(const char *utf8, uint32 color) {
 	std::u32string buffer = conv.from_bytes(utf8);
 	for(auto const &c : buffer) AddGlyph(c);
 #endif
+	m_onscreen_messages++;
 	m_log.push_back(log_info{color, buffer, std::chrono::system_clock::time_point()});
 
 }
@@ -299,7 +300,7 @@ size_t GSOsdManager::Size() {
 				elapsed = std::chrono::seconds(0);
 			} else {
 				elapsed = std::chrono::system_clock::now() - it->OnScreen;
-				if(elapsed > std::chrono::seconds(m_log_speed)) {
+				if(elapsed > std::chrono::seconds(m_log_speed) || m_onscreen_messages > m_max_onscreen_messages) {
 					continue;
 				}
 			}
@@ -346,7 +347,7 @@ float GSOsdManager::StringSize(const std::u32string msg) {
 
 size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 	size_t drawn = 0;
-	float transparency = 1.0f - m_osd_transparency / 200.0f;
+	float transparency = 1.0f - m_osd_transparency / 100.0f;
 
 	if(m_log_enabled) {
 		float offset = 0;
@@ -361,7 +362,8 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 				it->OnScreen = std::chrono::system_clock::now();
 
 			std::chrono::duration<float> elapsed = std::chrono::system_clock::now() - it->OnScreen;
-			if(elapsed > std::chrono::seconds(m_log_speed)) {
+			if(elapsed > std::chrono::seconds(m_log_speed) || m_onscreen_messages > m_max_onscreen_messages) {
+				m_onscreen_messages--;
 				it = m_log.erase(it);
 				continue;
 			}
