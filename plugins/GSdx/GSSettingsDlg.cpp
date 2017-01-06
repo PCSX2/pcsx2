@@ -486,9 +486,9 @@ void GSShaderDlg::OnInit()
 
 	//Shade Boost
 	CheckDlgButton(m_hWnd, IDC_SHADEBOOST, theApp.GetConfigB("ShadeBoost"));
-	contrast = theApp.GetConfigI("ShadeBoost_Contrast");
-	brightness = theApp.GetConfigI("ShadeBoost_Brightness");
-	saturation = theApp.GetConfigI("ShadeBoost_Saturation");
+	m_contrast = theApp.GetConfigI("ShadeBoost_Contrast");
+	m_brightness = theApp.GetConfigI("ShadeBoost_Brightness");
+	m_saturation = theApp.GetConfigI("ShadeBoost_Saturation");
 
 	// External FX shader
 	CheckDlgButton(m_hWnd, IDC_SHADER_FX, theApp.GetConfigB("shaderfx"));
@@ -511,17 +511,17 @@ void GSShaderDlg::UpdateControls()
 	SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 100));
 	SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 100));
 
-	SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER), TBM_SETPOS, TRUE, saturation);
-	SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER), TBM_SETPOS, TRUE, brightness);
-	SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER), TBM_SETPOS, TRUE, contrast);
+	SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER), TBM_SETPOS, TRUE, m_saturation);
+	SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER), TBM_SETPOS, TRUE, m_brightness);
+	SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER), TBM_SETPOS, TRUE, m_contrast);
 
 	char text[8] = {0};
 
-	sprintf(text, "%d", saturation);
+	sprintf(text, "%d", m_saturation);
 	SetDlgItemText(m_hWnd, IDC_SATURATION_TEXT, text);
-	sprintf(text, "%d", brightness);
+	sprintf(text, "%d", m_brightness);
 	SetDlgItemText(m_hWnd, IDC_BRIGHTNESS_TEXT, text);
-	sprintf(text, "%d", contrast);
+	sprintf(text, "%d", m_contrast);
 	SetDlgItemText(m_hWnd, IDC_CONTRAST_TEXT, text);
 
 	// Shader Settings
@@ -551,27 +551,27 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			char text[8] = {0};
 
-			saturation = SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER),TBM_GETPOS,0,0);
+			m_saturation = SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER),TBM_GETPOS,0,0);
 
-			sprintf(text, "%d", saturation);
+			sprintf(text, "%d", m_saturation);
 			SetDlgItemText(m_hWnd, IDC_SATURATION_TEXT, text);
 		}
 		else if((HWND)lParam == GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER)) 
 		{
 			char text[8] = {0};
 
-			brightness = SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER),TBM_GETPOS,0,0);
+			m_brightness = SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER),TBM_GETPOS,0,0);
 
-			sprintf(text, "%d", brightness);
+			sprintf(text, "%d", m_brightness);
 			SetDlgItemText(m_hWnd, IDC_BRIGHTNESS_TEXT, text);
 		}
 		else if((HWND)lParam == GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER)) 
 		{
 			char text[8] = {0};
 
-			contrast = SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER),TBM_GETPOS,0,0);
+			m_contrast = SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER),TBM_GETPOS,0,0);
 
-			sprintf(text, "%d", contrast);
+			sprintf(text, "%d", m_contrast);
 			SetDlgItemText(m_hWnd, IDC_CONTRAST_TEXT, text);
 		}
 	} break;
@@ -592,9 +592,9 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			// Shade Boost
 			theApp.SetConfig("ShadeBoost", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST));
-			theApp.SetConfig("ShadeBoost_Contrast", contrast);
-			theApp.SetConfig("ShadeBoost_Brightness", brightness);
-			theApp.SetConfig("ShadeBoost_Saturation", saturation);
+			theApp.SetConfig("ShadeBoost_Contrast", m_contrast);
+			theApp.SetConfig("ShadeBoost_Brightness", m_brightness);
+			theApp.SetConfig("ShadeBoost_Saturation", m_saturation);
 
 			// FXAA shader
 			theApp.SetConfig("Fxaa", (int)IsDlgButtonChecked(m_hWnd, IDC_FXAA));
@@ -606,14 +606,12 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			int shader_fx_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXTLENGTH, 0, 0);
 			int shader_fx_conf_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXTLENGTH, 0, 0);
 			int length = std::max(shader_fx_length, shader_fx_conf_length) + 1;
-			char *buffer = new char[length];
+			std::unique_ptr<char[]> buffer(new char[length]);
 
-
-			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer);
-			theApp.SetConfig("shaderfx_glsl", buffer); // Not really glsl only ;)
-			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer);
-			theApp.SetConfig("shaderfx_conf", buffer);
-			delete[] buffer;
+			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer.get());
+			theApp.SetConfig("shaderfx_glsl", buffer.get()); // Not really glsl only ;)
+			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer.get());
+			theApp.SetConfig("shaderfx_conf", buffer.get());
 
 			EndDialog(m_hWnd, id);
 		} break;
