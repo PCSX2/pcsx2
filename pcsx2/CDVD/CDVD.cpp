@@ -890,7 +890,9 @@ __fi void cdvdReadInterrupt()
 
 	if (--cdvd.nSectors <= 0)
 	{
-		cdvd.PwOff |= 1<<Irq_CommandComplete;
+		// Setting the data ready flag fixes a black screen loading issue in
+		// Street Fighter Ex3 (NTSC-J version).
+		cdvd.PwOff |= (1 << Irq_DataReady) | (1 << Irq_CommandComplete);
 		psxHu32(0x1070)|= 0x4;
 
 		HW_DMA3_CHCR &= ~0x01000000;
@@ -1048,9 +1050,9 @@ u8 cdvdRead(u8 key)
 			CDVD_LOG("cdvdRead07(Break) %x", 0);
 			return 0;
 
-		case 0x08:  // STATUS
-			CDVD_LOG("cdvdRead08(Status) %x", cdvd.Status);
-			return cdvd.Status;
+		case 0x08:  // INTR_STAT
+			CDVD_LOG("cdvdRead08(IntrReason) %x", cdvd.PwOff);
+			return cdvd.PwOff;
 
 		case 0x0A:  // STATUS
 			CDVD_LOG("cdvdRead0A(Status) %x", cdvd.Status);
