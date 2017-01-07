@@ -440,7 +440,7 @@ void VifUnpackSSE_Init()
 		L"x86 code generated : %u bytes\n",
 		(uint)nVifUpkExec->GetCommittedBytes(),
 		pxsPtr(nVifUpkExec->GetPtr()),
-		(uint)(nVifUpkExec->GetPtr() - xGetPtr())
+		(uint)(xGetPtr() - nVifUpkExec->GetPtr())
 	);
 }
 
