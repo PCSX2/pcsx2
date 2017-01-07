@@ -209,7 +209,7 @@ struct Gif_Path {
 	}
 
 	bool isMTVU() const           { return !idx && THREAD_VU1; }
-	s32 getReadAmount()           { return readAmount.load() + gsPack.readAmount; }
+	s32 getReadAmount()           { return readAmount.load(std::memory_order_acquire) + gsPack.readAmount; }
 	bool hasDataRemaining() const { return curOffset < curSize; }
 	bool isDone() const           { return isMTVU() ? !mtvu.fakePackets : (!hasDataRemaining() && (state == GIF_PATH_IDLE || state == GIF_PATH_WAIT)); }
 
@@ -389,7 +389,9 @@ struct Gif_Path {
 
 	// MTVU: Gets called after VU1 execution on MTVU thread
 	void FinishGSPacketMTVU() {
-		readAmount.fetch_add(gsPack.size + gsPack.readAmount);
+		// Performance note: fetch_add atomic operation might create some stall for atomic
+		// operation in gsPack.push
+		readAmount.fetch_add(gsPack.size + gsPack.readAmount, std::memory_order_acq_rel);
 		while (!mtvu.gsPackQueue.push(gsPack))
 			;
 
