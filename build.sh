@@ -147,6 +147,13 @@ fi
 if [ "$useCross" -eq 2 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
     sudo update-alternatives --set wx-config /usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0
 fi
+# Workaround for Debian. Cmake failed to find freetype include path
+if [ "$useCross" -eq 0 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/include/x86_64-linux-gnu/freetype2/ft2build.h" ]; then
+    export GTKMM_BASEPATH=/usr/include/x86_64-linux-gnu/freetype2
+fi
+if [ "$useCross" -eq 2 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/include/i386-linux-gnu/freetype2/ft2build.h" ]; then
+    export GTKMM_BASEPATH=/usr/include/i386-linux-gnu/freetype2
+fi
 
 echo "Building pcsx2 with $flags" | tee "$log"
 
