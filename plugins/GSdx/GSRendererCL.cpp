@@ -169,7 +169,7 @@ GSTexture* GSRendererCL::GetOutput(int i, int& y_offset)
 	const GSRegDISPFB& DISPFB = m_regs->DISP[i].DISPFB;
 
 	int w = DISPFB.FBW * 64;
-	int h = GetFrameRect(i).height();
+	int h = GetFramebufferHeight();
 
 	// TODO: round up bottom
 
