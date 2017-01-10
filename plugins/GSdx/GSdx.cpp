@@ -214,6 +214,11 @@ void GSdxApp::Init()
 	m_gs_hack.push_back(GSSetting(1,  "Half", ""));
 	m_gs_hack.push_back(GSSetting(2,  "Full", ""));
 
+	m_gs_offset_hack.push_back(GSSetting(0,  "Off", ""));
+	m_gs_offset_hack.push_back(GSSetting(1,  "Normal", "Vertex"));
+	m_gs_offset_hack.push_back(GSSetting(2,  "Special", "Texture"));
+	m_gs_offset_hack.push_back(GSSetting(3,  "Special", "Texture - aggressive"));
+
 	m_gs_hw_mipmapping.push_back(GSSetting(0, "Off", ""));
 	m_gs_hw_mipmapping.push_back(GSSetting(1, "Basic", "Fast"));
 	m_gs_hw_mipmapping.push_back(GSSetting(2, "Full", "Slow"));
@@ -322,7 +327,8 @@ void GSdxApp::Init()
 	m_default_configuration["osd_log_enabled"]                            = "1";
 	m_default_configuration["osd_log_speed"]                              = "6";
 	m_default_configuration["osd_monitor_enabled"]                        = "0";
-	m_default_configuration["osd_transparency"]                           = "50";
+	m_default_configuration["osd_transparency"]                           = "25";
+	m_default_configuration["osd_max_log_messages"]                       = "3";
 	m_default_configuration["override_geometry_shader"]                   = "-1";
 	m_default_configuration["override_GL_ARB_clear_texture"]              = "-1";
 	m_default_configuration["override_GL_ARB_draw_buffers_blend"]         = "-1";

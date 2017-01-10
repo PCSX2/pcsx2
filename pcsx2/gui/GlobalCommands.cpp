@@ -180,13 +180,13 @@ namespace Implementations
 			art = AspectRatio_4_3;
 		switch( art )
 		{
-			case AspectRatio_Stretch:	art = AspectRatio_4_3; arts = "AspectRatio_4_3"; break;
-			case AspectRatio_4_3:		art = AspectRatio_16_9; arts = "AspectRatio_16:9"; break;
-			case AspectRatio_16_9:		art = AspectRatio_Stretch; arts = "AspectRatio_Stretch";break;
+			case AspectRatio_Stretch:	art = AspectRatio_4_3; arts = "4:3"; break;
+			case AspectRatio_4_3:		art = AspectRatio_16_9; arts = "16:9"; break;
+			case AspectRatio_16_9:		art = AspectRatio_Stretch; arts = "Stretch"; break;
 			default: break;
 		}
 
-		OSDlog( Color_StrongBlue, true, "(GSwindow) Aspect ratio: %s.", arts );
+		OSDlog(Color_StrongBlue, true, "(GSwindow) Aspect ratio: %s", arts);
 		UpdateImagePosition();
 	}
 

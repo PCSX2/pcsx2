@@ -71,6 +71,7 @@ public:
 	vector<GSSetting> m_gs_filter;
 	vector<GSSetting> m_gs_gl_ext;
 	vector<GSSetting> m_gs_hack;
+	vector<GSSetting> m_gs_offset_hack;
 	vector<GSSetting> m_gs_hw_mipmapping;
 	vector<GSSetting> m_gs_crc_level;
 	vector<GSSetting> m_gs_acc_blend_level;
