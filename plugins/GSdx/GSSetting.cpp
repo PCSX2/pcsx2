@@ -139,12 +139,12 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Makes textures partially or fully transparent as required by emulation. May cause unusual slowdowns for some games.";
 		case IDC_LOGZ:
 			return "Treat depth as logarithmic instead of linear. Recommended setting is on unless it causes graphical glitches.";
+#endif
 		case IDC_OSD_MAX_LOG_EDIT:
 		case IDC_OSD_MAX_LOG:
 			return "Sets the maximum number of log messages on the screen or in the buffer at the same time.\n\n"
 				"The maximum number of messages visible on the screen at the same time also depends on the character size.";
-#endif
-#ifdef __linux__
+#ifdef __unix__
 		case IDC_LINEAR_PRESENT:
 			return "Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.";
 #endif

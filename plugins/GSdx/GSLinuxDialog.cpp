@@ -157,9 +157,9 @@ void CB_RangeChanged(GtkRange* range, gpointer user_data)
 GtkWidget* CreateScale(const char* opt_name)
 {
 #if GTK_MAJOR_VERSION < 3
-	GtkWidget* scale = gtk_hscale_new_with_range(0, 200, 10);
+	GtkWidget* scale = gtk_hscale_new_with_range(0, 100, 10);
 #else
-	GtkWidget* scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 200, 10);
+	GtkWidget* scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 100, 10);
 #endif
 
 	gtk_scale_set_value_pos(GTK_SCALE(scale), GTK_POS_RIGHT);
@@ -460,17 +460,21 @@ void populate_osd_table(GtkWidget* osd_table)
 	GtkWidget* log_check = CreateCheckBox("Enable Log", "osd_log_enabled");
 	GtkWidget* log_speed_label  = left_label("Speed:");
 	GtkWidget* log_speed_text = CreateSpinButton(2, 10, "osd_log_speed");
+	GtkWidget* max_messages_label = left_label("Maximum Onscreen Log Messages:");
+	GtkWidget* max_messages_spin = CreateSpinButton(1, 20, "osd_max_log_messages");
 	GtkWidget* monitor_check = CreateCheckBox("Enable Monitor", "osd_monitor_enabled");
 	GtkWidget* indicator_check = CreateCheckBox("Enable Indicator", "osd_indicator_enabled");
 
 	AddTooltip(log_check, IDC_OSD_LOG);
 	AddTooltip(monitor_check, IDC_OSD_MONITOR);
+	AddTooltip(max_messages_label, max_messages_spin, IDC_OSD_MAX_LOG);
 
 	InsertWidgetInTable(osd_table , fontname_label , fontname_file);
 	InsertWidgetInTable(osd_table , fontsize_label , fontsize_text);
 	InsertWidgetInTable(osd_table , transparency_label , transparency_slide);
 	InsertWidgetInTable(osd_table , log_check);
 	InsertWidgetInTable(osd_table , log_speed_label, log_speed_text);
+	InsertWidgetInTable(osd_table , max_messages_label, max_messages_spin);
 	InsertWidgetInTable(osd_table , monitor_check);
 	InsertWidgetInTable(osd_table , indicator_check);
 }
