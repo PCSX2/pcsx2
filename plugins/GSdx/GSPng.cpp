@@ -59,7 +59,7 @@ namespace GSPng {
         png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
         png_infop info_ptr = nullptr;
 
-        bool success = false;
+        bool success;
         try {
             if (png_ptr == nullptr)
                 throw GSDXRecoverableError();
@@ -93,6 +93,8 @@ namespace GSPng {
             success = true;
         } catch (GSDXRecoverableError&) {
             fprintf(stderr, "Failed to write image %s\n", file.c_str());
+
+			success = false;
         }
 
         if (png_ptr)
