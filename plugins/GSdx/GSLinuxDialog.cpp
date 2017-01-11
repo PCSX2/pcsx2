@@ -475,8 +475,7 @@ void populate_osd_table(GtkWidget* osd_table)
 	InsertWidgetInTable(osd_table , log_check);
 	InsertWidgetInTable(osd_table , log_speed_label, log_speed_text);
 	InsertWidgetInTable(osd_table , max_messages_label, max_messages_spin);
-	InsertWidgetInTable(osd_table , monitor_check);
-	InsertWidgetInTable(osd_table , indicator_check);
+	InsertWidgetInTable(osd_table , monitor_check, indicator_check);
 }
 
 bool RunLinuxDialog()
@@ -507,7 +506,6 @@ bool RunLinuxDialog()
 
 	GtkWidget* main_table   = CreateTableInBox(main_box    , NULL                                   , 2  , 2);
 
-	GtkWidget* shader_table = CreateTableInBox(central_box , "Custom Shader Settings"               , 9  , 2);
 	GtkWidget* hw_table     = CreateTableInBox(central_box , "Hardware Mode Settings"               , 7  , 2);
 	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 2  , 2);
 
@@ -517,7 +515,8 @@ bool RunLinuxDialog()
 	GtkWidget* record_table = CreateTableInBox(debug_box   , "Recording Settings"                   , 4  , 3);
 	GtkWidget* debug_table  = CreateTableInBox(debug_box   , "OpenGL / GSdx Debug Settings"         , 6  , 3);
 
-	GtkWidget* osd_table    = CreateTableInBox(osd_box     , NULL                                   , 6  , 2);
+	GtkWidget* shader_table = CreateTableInBox(osd_box     , "Custom Shader Settings"               , 9  , 2);
+	GtkWidget* osd_table    = CreateTableInBox(osd_box     , "OSD"                                  , 6  , 2);
 
 	// Populate all the tables
 	populate_main_table(main_table);
@@ -536,10 +535,10 @@ bool RunLinuxDialog()
 
 	// Handle some nice tab
 	GtkWidget* notebook = gtk_notebook_new();
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box , gtk_label_new("Global Settings"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box , gtk_label_new("Renderer Settings"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), advanced_box, gtk_label_new("Advanced Settings"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box   , gtk_label_new("Debug/Recording Settings"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), osd_box     , gtk_label_new("On Screen Display"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box   , gtk_label_new("Debug/Recording"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), osd_box     , gtk_label_new("Post-Processing/OSD"));
 
 	// Put everything in the big box.
 	gtk_container_add(GTK_CONTAINER(main_box), notebook);
