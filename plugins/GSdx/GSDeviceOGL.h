@@ -416,6 +416,8 @@ public:
 	static bool m_debug_gl_call;
 	static FILE* m_debug_gl_file;
 
+	bool m_disable_hw_gl_draw;
+
 	GSWnd* m_window;
 
 	GLuint m_fbo;				// frame buffer container

@@ -296,6 +296,7 @@ void GSdxApp::Init()
 	m_default_configuration["CrcHacksExclusions"]                         = "";
 	m_default_configuration["debug_glsl_shader"]                          = "0";
 	m_default_configuration["debug_opengl"]                               = "0";
+	m_default_configuration["disable_hw_gl_draw"]                         = "0";
 	m_default_configuration["dump"]                                       = "0";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";

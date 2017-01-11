@@ -88,6 +88,8 @@ GSDeviceOGL::GSDeviceOGL()
 	#endif
 
 	m_debug_gl_call =  theApp.GetConfigB("debug_opengl");
+
+	m_disable_hw_gl_draw = theApp.GetConfigB("disable_hw_gl_draw");
 }
 
 GSDeviceOGL::~GSDeviceOGL()
@@ -653,7 +655,8 @@ void GSDeviceOGL::DrawPrimitive(int offset, int count)
 void GSDeviceOGL::DrawIndexedPrimitive()
 {
 	BeforeDraw();
-	m_va->DrawIndexedPrimitive();
+	if (!m_disable_hw_gl_draw)
+		m_va->DrawIndexedPrimitive();
 	AfterDraw();
 }
 
@@ -662,7 +665,8 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 	//ASSERT(offset + count <= (int)m_index.count);
 
 	BeforeDraw();
-	m_va->DrawIndexedPrimitive(offset, count);
+	if (!m_disable_hw_gl_draw)
+		m_va->DrawIndexedPrimitive(offset, count);
 	AfterDraw();
 }
 
