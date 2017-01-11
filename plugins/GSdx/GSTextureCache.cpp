@@ -1989,6 +1989,9 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 
 			while(_BitScanForward(&j, p))
 			{
+				// FIXME: this statement could be optimized to a single ASM instruction (instead of 4)
+				// Either BTR (AKA bit test and reset). Depends on the previous instruction.
+				// Or BLSR (AKA Reset Lowest Set Bit). No dependency but require BMI1 (basically a recent CPU)
 				p ^= 1 << j;
 
 				m[j].push_front(s);
