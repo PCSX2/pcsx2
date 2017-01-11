@@ -99,11 +99,17 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	uint32 psm = TEX0.PSM;
 
 	for(auto t : m_dst[DepthStencil]) {
-		if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+		if(t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 		{
 			ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
-			dst = t;
-			break;
+			if (t->m_age == 0) {
+				// Perfect Match
+				dst = t;
+				break;
+			} else if (t->m_age == 1) {
+				// Better than nothing (Full Spectrum Warrior)
+				dst = t;
+			}
 		}
 	}
 
@@ -121,6 +127,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	if (!dst) {
 		// Retry on the render target (Silent Hill 4)
 		for(auto t : m_dst[RenderTarget]) {
+			// FIXME: do I need to allow m_age == 1 as a potential match (as DepthStencil) ???
 			if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 			{
 				ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
