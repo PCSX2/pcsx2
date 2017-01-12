@@ -72,6 +72,8 @@ public:
 		// so it can be used to access un-converted data for the current draw call.
 		GSTexture* m_from_target;
 		GIFRegTEX0 m_layer_TEX0[7]; // Detect already loaded value
+		// Keep an GSTextureCache::m_map iterator to allow fast erase
+		std::array<std::list<Source*>::iterator, MAX_PAGES> m_erase_it;
 
 	public:
 		Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp, bool dummy_container = false);
@@ -106,7 +108,7 @@ public:
 	public:
 		hash_set<Source*> m_surfaces;
 		hash_map<uint64, uint32*> m_pages_coverage;
-		list<Source*> m_map[MAX_PAGES];
+		std::list<Source*> m_map[MAX_PAGES];
 		uint32 m_pages[16]; // bitmap of all pages
 		bool m_used;
 
@@ -123,7 +125,7 @@ public:
 protected:
 	GSRenderer* m_renderer;
 	SourceMap m_src;
-	list<Target*> m_dst[2];
+	std::list<Target*> m_dst[2];
 	bool m_paltex;
 	int m_spritehack;
 	bool m_preload_frame;

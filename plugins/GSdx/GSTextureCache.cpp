@@ -1597,6 +1597,9 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 		{
 			m_p2t = r->m_mem.GetPage2TileMap(m_TEX0);
 		}
+
+		// will be useless with texture page coverage
+		m_erase_it.fill(list<Source*>::iterator(0));
 	}
 }
 
@@ -1969,8 +1972,10 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 		// TODO
 
 		// GH: I don't know why but it seems we only consider the first page for a render target
+		size_t page = TEX0.TBP0 >> 5;
 
-		m_map[TEX0.TBP0 >> 5].push_front(s);
+		m_map[page].push_front(s);
+		s->m_erase_it[page] = m_map[page].begin();
 
 		return;
 	}
@@ -1984,6 +1989,7 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 		if(uint32 p = pages[i])
 		{
 			list<Source*>* m = &m_map[i << 5];
+			auto* e = &s->m_erase_it[i << 5];
 
 			unsigned long j;
 
@@ -1995,6 +2001,7 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 				p ^= 1 << j;
 
 				m[j].push_front(s);
+				e[j] = m[j].begin();
 			}
 		}
 	}
@@ -2070,16 +2077,22 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 				s->m_texture ? s->m_texture->GetID() : 0,
 				s->m_TEX0.TBP0);
 
-	// Source (except render target) is duplicated for each page they use.
-	for(size_t start = s->m_TEX0.TBP0 >> 5, end = s->m_target ? start : countof(m_map) - 1; start <= end; start++)
+	if (s->m_target)
 	{
-		list<Source*>& m = m_map[start];
+		size_t page = s->m_TEX0.TBP0 >> 5;
+		ASSERT(*s->m_erase_it[page] == s);
+		m_map[page].erase(s->m_erase_it[page]);
 
-		for(list<Source*>::iterator i = m.begin(); i != m.end(); )
+	}
+	else
+	{
+		// Source is duplicated for each page they use.
+		for(size_t page = s->m_TEX0.TBP0 >> 5, end = countof(m_map) - 1; page <= end; page++)
 		{
-			list<Source*>::iterator j = i++;
-
-			if(*j == s) {m.erase(j); break;}
+			if (s->m_erase_it[page] != list<Source*>::iterator(0)) {
+				ASSERT(*s->m_erase_it[page] == s);
+				m_map[page].erase(s->m_erase_it[page]);
+			}
 		}
 	}
 
