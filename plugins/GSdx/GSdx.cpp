@@ -221,7 +221,7 @@ void GSdxApp::Init()
 	m_gs_crc_level.push_back(GSSetting(0 , "None", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(1 , "Minimum", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(2 , "Partial", "OpenGL Recommended"));
-	m_gs_crc_level.push_back(GSSetting(3 , "Full", "Safest"));
+	m_gs_crc_level.push_back(GSSetting(3 , "Full", "Direct3D Recommended"));
 	m_gs_crc_level.push_back(GSSetting(4 , "Aggressive", ""));
 
 	m_gs_acc_blend_level.push_back(GSSetting(0, "None", "Fastest"));

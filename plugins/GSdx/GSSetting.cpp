@@ -103,7 +103,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"It could be slower when the effects are used.";
 		case IDC_ACCURATE_BLEND_UNIT:
 			return "Control the accuracy level of the GS blending unit emulation.\n\n"
-				"None:\nFast but introduce various rendering issues. It is intended for slow computer.\n\n"
+				"None:\nFast but introduce various rendering issues. It is intended for slow computer.\nNot recommended for AMD cards due to buggy driver as it will cause a BSOD and crash the system.\n\n"
 				"Basic:\nEmulate correctly most of the effects with a limited speed penalty. It is the recommended setting.\n\n"
 				"Medium:\nExtend it to all sprites. Performance impact remains reasonable in 3D game.\n\n"
 				"High:\nExtend it to destination alpha blending and color wrapping. (help shadow and fog effect). A good CPU is required.\n\n"
