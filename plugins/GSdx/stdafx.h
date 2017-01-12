@@ -102,6 +102,7 @@ typedef int64 sint64;
 
 #include <complex>
 #include <string>
+#include <array>
 #include <vector>
 #include <list>
 #include <map>
