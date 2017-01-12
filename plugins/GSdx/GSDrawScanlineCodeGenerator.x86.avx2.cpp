@@ -2916,6 +2916,7 @@ void GSDrawScanlineCodeGenerator::ReadTexel(int pixels, int mip_offset)
 			}
 			else
 			{
+#if 0
 				vextracti128(Xmm(t1.getIdx()), src, 1);
 
 				for(uint8 j = 0; j < 4; j++)
@@ -2925,14 +2926,14 @@ void GSDrawScanlineCodeGenerator::ReadTexel(int pixels, int mip_offset)
 				}
 
 				vinserti128(dst, dst, Xmm(t2.getIdx()), 1);
-				/*
+#else
 				vpcmpeqd(t1, t1);
 				vpgatherdd(t2, ptr[ebx + src * 1], t1); // either this 1x scale, or the latency of two dependendent gathers are too slow
 				vpslld(t2, 24);
 				vpsrld(t2, 24);
 				vpcmpeqd(t1, t1);
 				vpgatherdd(dst, ptr[edx + t2 * 4], t1);
-				*/
+#endif
 			}
 		}
 	}
