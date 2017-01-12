@@ -28,7 +28,6 @@ public:
 	{
 		NoTitle,
 		AceCombat4,
-		AlpineRacer3,
 		ArTonelico2,
 		BigMuthaTruckers,
 		Black,
