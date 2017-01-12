@@ -29,12 +29,7 @@
 //
 // GSSource
 //
-
-#ifdef __INTEL_COMPILER
 interface __declspec(uuid("59C193BB-C520-41F3-BC1D-E245B80A86FA"))
-#else
-[uuid("59C193BB-C520-41F3-BC1D-E245B80A86FA")] interface
-#endif
 IGSSource : public IUnknown
 {
 	STDMETHOD(DeliverNewSegment)() PURE;
@@ -42,11 +37,7 @@ IGSSource : public IUnknown
 	STDMETHOD(DeliverEOS)() PURE;
 };
 
-#ifdef __INTEL_COMPILER
 class __declspec(uuid("F8BB6F4F-0965-4ED4-BA74-C6A01E6E6C77"))
-#else
-[uuid("F8BB6F4F-0965-4ED4-BA74-C6A01E6E6C77")] class
-#endif
 GSSource : public CBaseFilter, private CCritSec, public IGSSource
 {
 	GSVector2i m_size;
