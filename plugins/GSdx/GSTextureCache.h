@@ -74,6 +74,7 @@ public:
 		GIFRegTEX0 m_layer_TEX0[7]; // Detect already loaded value
 		// Keep an GSTextureCache::m_map iterator to allow fast erase
 		std::array<std::list<Source*>::iterator, MAX_PAGES> m_erase_it;
+		uint32* m_pages_ptr;
 
 	public:
 		Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp, bool dummy_container = false);

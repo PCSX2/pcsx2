@@ -1610,9 +1610,6 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 		{
 			m_p2t = r->m_mem.GetPage2TileMap(m_TEX0);
 		}
-
-		// will be useless with texture page coverage
-		m_erase_it.fill(list<Source*>::iterator(0));
 	}
 }
 
@@ -1996,10 +1993,10 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 	// Remaining code will compute a list of pages that are dirty (in a similar fashion as GSOffset::GetPages)
 	// (Maybe GetPages could be used instead, perf opt?)
 	// The source pointer will be stored/duplicated in all m_map[array of pages]
-	uint32* pages = GetPagesCoverage(TEX0, off);
+	s->m_pages_ptr = GetPagesCoverage(TEX0, off);
 	for(size_t i = 0; i < countof(m_pages); i++)
 	{
-		if(uint32 p = pages[i])
+		if(uint32 p = s->m_pages_ptr[i])
 		{
 			list<Source*>* m = &m_map[i << 5];
 			auto* e = &s->m_erase_it[i << 5];
@@ -2093,18 +2090,30 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 	if (s->m_target)
 	{
 		size_t page = s->m_TEX0.TBP0 >> 5;
-		ASSERT(*s->m_erase_it[page] == s);
 		m_map[page].erase(s->m_erase_it[page]);
 
 	}
 	else
 	{
-		// Source is duplicated for each page they use.
-		for(size_t page = s->m_TEX0.TBP0 >> 5, end = countof(m_map) - 1; page <= end; page++)
+		// Mirror of GetPagesCoverage
+		for(size_t i = 0; i < countof(m_pages); i++)
 		{
-			if (s->m_erase_it[page] != list<Source*>::iterator(0)) {
-				ASSERT(*s->m_erase_it[page] == s);
-				m_map[page].erase(s->m_erase_it[page]);
+			if(uint32 p = s->m_pages_ptr[i])
+			{
+				list<Source*>* m = &m_map[i << 5];
+				auto* e = &s->m_erase_it[i << 5];
+
+				unsigned long j;
+
+				while(_BitScanForward(&j, p))
+				{
+					// FIXME: this statement could be optimized to a single ASM instruction (instead of 4)
+					// Either BTR (AKA bit test and reset). Depends on the previous instruction.
+					// Or BLSR (AKA Reset Lowest Set Bit). No dependency but require BMI1 (basically a recent CPU)
+					p ^= 1 << j;
+
+					m[j].erase(e[j]);
+				}
 			}
 		}
 	}
