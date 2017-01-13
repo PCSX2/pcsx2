@@ -174,6 +174,12 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		// Note: might worth to check previous frame
 		// Note: otherwise return NULL and skip the draw
 
+		// Full Spectrum Warrior: first draw call of cut-scene rendering
+		// The game tries to emulate a texture shuffle with an old depth buffer
+		// (don't exists yet for us due to the cache)
+		// Rendering is nicer (less garbage) if we skip the draw call.
+		throw GSDXRecoverableError();
+
 		//ASSERT(0);
 		return LookupSource(TEX0, TEXA, r);
 	}
