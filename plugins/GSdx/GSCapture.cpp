@@ -392,9 +392,9 @@ GSCapture::~GSCapture()
 	EndCapture();
 }
 
-bool GSCapture::BeginCapture(float fps, GSVector2i recomendedResolution, float aspect)
+bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float aspect)
 {
-	printf("Recomended resolution: %d x %d, DAR for muxing: %.4f\n", recomendedResolution.x, recomendedResolution.y, aspect);
+	printf("Recommended resolution: %d x %d, DAR for muxing: %.4f\n", recommendedResolution.x, recommendedResolution.y, aspect);
 	std::lock_guard<std::recursive_mutex> lock(m_lock);
 
 	ASSERT(fps != 0);
