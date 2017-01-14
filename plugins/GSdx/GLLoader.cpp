@@ -367,7 +367,11 @@ namespace GLLoader {
 #ifdef _WIN32
 		if (status) {
 			if (fglrx_buggy_driver) {
-				fprintf(stderr, "OpenGL renderer is slow on AMD GPU due to inefficient driver. Please check the links below.\nhttps://community.amd.com/thread/205702\nhttps://community.amd.com/message/2756964\n");
+				fprintf(stderr, "OpenGL renderer is slow on AMD GPU due to inefficient driver.Please check the links below.\n"
+					"https://community.amd.com/message/2756964\n"
+					"https://community.amd.com/thread/205702\n"
+					"Note: When running OpenGL on AMD cards make sure Blending Unit Accuracy is set to at least Basic.\n"
+					"Having it set to None will cause a BSOD and crash the system.\n");
 			}
 		}
 #endif
