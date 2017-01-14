@@ -1,6 +1,6 @@
 /*
- *	Copyright (C) 2014-2016 Gregory hainaut
- *	Copyright (C) 2016-2016 Jason Brown
+ *	Copyright (C) 2014-2017 Gregory Hainaut
+ *	Copyright (C) 2016-2017 Jason Brown
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
