@@ -292,7 +292,6 @@ endif()
 set(CDVDisoEFP FALSE)
 set(CDVDpeops FALSE)
 set(CDVDlinuz FALSE) # used to be compiled on linux
-set(CDVDiso FALSE) # used to be compiled on linux
 
 # [TODO] Write CMakeLists.txt for these plugins. (or not ;) )
 set(PeopsSPU2 FALSE)

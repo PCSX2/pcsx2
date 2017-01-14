@@ -10,10 +10,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/cdvdGigaherz" AND cdvdGigaherz)
 	add_subdirectory(cdvdGigaherz/src)
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDiso" AND CDVDiso)
-	add_subdirectory(CDVDiso/src)
-endif()
-
 # if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDisoEFP" AND CDVDisoEFP)
 # 	add_subdirectory(CDVDisoEFP)
 # endif()
