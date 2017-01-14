@@ -10,10 +10,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/cdvdGigaherz" AND cdvdGigaherz)
 	add_subdirectory(cdvdGigaherz/src)
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDlinuz" AND CDVDlinuz)
-	add_subdirectory(CDVDlinuz/Src)
-endif()
-
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDnull" AND CDVDnull)
 	add_subdirectory(CDVDnull)
 endif()

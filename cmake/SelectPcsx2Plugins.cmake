@@ -290,7 +290,6 @@ endif()
 #-------------------------------------------------------------------------------
 # Super-seeded by cdvdGigaherz
 set(CDVDpeops FALSE)
-set(CDVDlinuz FALSE) # used to be compiled on linux
 
 # [TODO] Write CMakeLists.txt for these plugins. (or not ;) )
 set(PeopsSPU2 FALSE)
