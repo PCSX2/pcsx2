@@ -26,10 +26,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDnull" AND CDVDnull)
 	add_subdirectory(CDVDnull)
 endif()
 
-# if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDolio" AND CDVDolio)
-# 	add_subdirectory(CDVDolio)
-# endif()
-
 #if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDpeops" AND CDVDpeops)
 #	add_subdirectory(CDVDpeops)
 #endif()

@@ -290,7 +290,6 @@ endif()
 #-------------------------------------------------------------------------------
 # Super-seeded by cdvdGigaherz
 set(CDVDisoEFP FALSE)
-set(CDVDolio FALSE)
 set(CDVDpeops FALSE)
 set(CDVDlinuz FALSE) # used to be compiled on linux
 set(CDVDiso FALSE) # used to be compiled on linux
