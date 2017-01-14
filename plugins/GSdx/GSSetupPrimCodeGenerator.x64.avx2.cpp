@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2016-2016 Gregory
+ *	Copyright (C) 2016-2017 Gregory
  *	Copyright (C) 2007-2009 Gabest
  *	http://www.gabest.org
  *
