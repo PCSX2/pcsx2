@@ -1995,7 +1995,7 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 				// FIXME: this statement could be optimized to a single ASM instruction (instead of 4)
 				// Either BTR (AKA bit test and reset). Depends on the previous instruction.
 				// Or BLSR (AKA Reset Lowest Set Bit). No dependency but require BMI1 (basically a recent CPU)
-				p ^= 1 << j;
+				p ^= 1U << j;
 
 				m[j].push_front(s);
 				e[j] = m[j].begin();
@@ -2097,7 +2097,7 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 					// FIXME: this statement could be optimized to a single ASM instruction (instead of 4)
 					// Either BTR (AKA bit test and reset). Depends on the previous instruction.
 					// Or BLSR (AKA Reset Lowest Set Bit). No dependency but require BMI1 (basically a recent CPU)
-					p ^= 1 << j;
+					p ^= 1U << j;
 
 					m[j].erase(e[j]);
 				}
