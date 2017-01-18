@@ -170,7 +170,11 @@ __ri void VU_Thread::WaitOnSize(s32 size)
 		{ // Let MTVU run to free up buffer space
 			KickStart();
 			if (IsDevBuild) DevCon.WriteLn("WaitOnSize()");
-			ScopedLock lock(mtxBusy);
+			// Locking might trigger a full flush of the ring buffer. Yield
+			// will be more aggressive, and only flush the minimal size.
+			// Performance will be smoother but it will consume extra CPU cycle
+			// on the EE thread (not an issue on 4 cores).
+			std::this_thread::yield();
 		}
 	}
 }
@@ -292,7 +296,7 @@ void VU_Thread::KickStart(bool forceKick)
 
 bool VU_Thread::IsDone()
 {
-	return !isBusy.load(std::memory_order_acquire) && GetReadPos() == GetWritePos();
+	return GetReadPos() == GetWritePos();
 }
 
 void VU_Thread::WaitVU()
@@ -303,6 +307,7 @@ void VU_Thread::WaitVU()
 		//DevCon.WriteLn("WaitVU()");
 		pxAssert(THREAD_VU1);
 		KickStart();
+		std::this_thread::yield(); // Give a chance to the MTVU thread to actually start
 		ScopedLock lock(mtxBusy);
 	}
 }
