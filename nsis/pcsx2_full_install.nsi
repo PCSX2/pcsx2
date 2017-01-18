@@ -2,9 +2,8 @@
 ; PCSX2 Full/Complete Install Package!
 ; (a NSIS installer script)
 ;
-; Copyright 2009-2016  PCSX2 Dev Team
+; Copyright 2009-2017  PCSX2 Dev Team
 ;
-
 
 !ifndef INC_CRT_2015
   ; Set to 0 to disable inclusion of Visual Studio 2013 SP1 CRT Redists
@@ -44,12 +43,10 @@ ShowUninstDetails nevershow
 !insertmacro MUI_LANGUAGE "English"
 
 !include "ApplyExeProps.nsh"
-
+!include "StrContains.nsh"
 ; =======================================================================
 ;                            Installer Sections
 ; =======================================================================
-
-; -----------------------------------------------------------------------
 
 ; The "" makes the section hidden.
 Section "" SecUninstallPrevious
@@ -59,56 +56,139 @@ Section "" SecUninstallPrevious
 SectionEnd
 
 Function UninstallPrevious
- ;Check for uninstaller.
-    ReadRegStr $R0 HKLM "${INSTDIR_REG_KEY}" "UninstallString"
-${If} $R0 == ""
-        Goto Done
+
+; Here's how StrContains works:
+; $result_var: This will store our result if the "needle" is found. Otherwise it will return null ("")
+; $needle: String to search for
+; $Haystack: String to look in
+
+; Used for the InstalledVersion string to prevent conflicts with 1.0.0 RegString
+ReadRegStr $R7 HKLM "${INSTDIR_REG_KEY}" "Uninst-pcsx2Directory"
+${If} $R7 == ""
 ${EndIf}
 
- ;Check if any other version is installed
-    ReadRegStr $R1 HKLM "${INSTDIR_REG_KEY}" "InstalledVersion"
-
- ;This check for older versions (pre 1.6.0) without InstalledVersion string will bypass this section
+; This will become the primary version check once more stable builds
+ReadRegStr $R1 HKLM "${INSTDIR_REG_KEY}" "InstalledVersion"
 ${If} $R1 == ""
-    DetailPrint "InstalledVersion string not found, skipping version check"
-    Goto Done
 ${EndIf}
 
- ;Installing same version
-${If} $R1 S== ${APP_VERSION}
-    MessageBox MB_ICONEXCLAMATION|MB_OKCANCEL "This version of PCSX2 is already installed. Do you want to continue?" IDCANCEL false
-        DetailPrint "Overwriting current install"
-        Goto Done
+; Search for 1.0.0
+ReadRegStr $R4 HKLM "${INSTDIR_REG_KEY}" "Uninst-pcsx2Directory"
+${StrContains} "$4" "1.0.0" "$R4"
+    StrCmp $4 "" +1
+${If} $R4 == ""
+${EndIf}
+
+; Search for 1.4.0
+ReadRegStr $R2 HKLM "${INSTDIR_REG_KEY}" "Uninst-pcsx2 1.4.0Directory"
+${StrContains} "$2" "1.4.0" "$R2"
+    StrCmp $2 "" +1
+${If} $R2 == ""
+${EndIf}
+
+; Search for 1.2.1
+ReadRegStr $R3 HKLM "${INSTDIR_REG_KEY}-r5875" "Uninst-pcsx2-r5875Directory"
+${StrContains} "$3" "1.2.1" "$R3"
+    StrCmp $3 "" +1
+${If} $R3 == ""
+${EndIf}
+
+; Search for 0.9.8
+ReadRegStr $R5 HKLM "${INSTDIR_REG_KEY}-r4600" "Uninst-pcsx2-r4600Directory"
+${StrContains} "$5" "0.9.8" "$R5"
+    StrCmp $5 "" +1
+${If} $R5 == ""
+${EndIf}
+
+; If all cases return null, our work here is done.
+${If} $R1 == ""
+${AndIf} $R2 == ""
+${AndIf} $R3 == ""
+${AndIf} $R4 == ""
+${AndIf} $R5 == ""
+${AndIf} $R7 == ""
+Goto Done
+${EndIf}
+
+; Installing another version
+    MessageBox MB_ICONEXCLAMATION|MB_OKCANCEL "Another version of PCSX2 is already installed. Please back up your files and click OK to uninstall PCSX2; or Cancel to abort the setup." IDOK true IDCANCEL false
+true:
+Goto SetUninstPath
     false:
         Quit
+
+SetUninstPath:
+${If} $R7 != ""
+    ${AndIf} $R1 != ""
+    Goto ExecNormal
 ${Else}
-        DetailPrint "Not the same version"
+        Goto +1
 ${EndIf}
 
- ;Installing newer version (and old version is detected)
-${If} $R1 S< ${APP_VERSION}
-        MessageBox MB_ICONEXCLAMATION|MB_OKCANCEL "An older version of PCSX2 is installed. Do you want to uninstall it?" IDOK true2 IDCANCEL false2
-        true2: 
-        DetailPrint "Uninstalling old PCSX2 version"
-        Goto Next
-            false2:
-            Quit
+${If} $R4 != ""
+    ${AndIf} $4 == "1.0.0"
+    Goto Exec1.0.0
 ${Else}
-            DetailPrint "Not installing a new version"
+        Goto +1
+${EndIf}
+
+${If} $R2 != ""
+    ${AndIf} $2 == "1.4.0"
+    Goto Exec1.4.0
+${Else}
+        Goto +1
+${EndIf}
+
+${If} $R3 != ""
+    ${AndIf} $3 == "1.2.1"
+    Goto Exec1.2.1
+${Else}
+        Goto +1
+${EndIf}
+
+${If} $R5 != ""
+    ${AndIf} $5 == "0.9.8"
+    Goto Exec0.9.8
+${Else}
+        Goto +1
 ${EndIf}
 
  ;Run the uninstaller silently.
-    Next:
-        DetailPrint "Running silent uninstall"
+Exec1.4.0: 
+    SetOutPath "$TEMP"
+    CopyFiles /SILENT /FILESONLY "$R2\Uninst-pcsx2 1.4.0.exe" "$TEMP"
+        ExecWait '"$TEMP\Uninst-pcsx2 1.4.0.exe" /S _?=$R2'
+        Delete "$TEMP\Uninst-pcsx2 1.4.0.exe"
+        Goto Done
 
- ;Copy files to a temp dir to prevent conflicts when removing $INSTDIR/uninstaller
-    ReadRegStr $R2 HKLM Software\PCSX2 "Install_Dir"
-    CreateDirectory "$TEMP\pcsx2_uninst_temp"
-    CopyFiles /SILENT /FILESONLY "$R2\uninst-pcsx2.exe" "$TEMP\pcsx2_uninst_temp"
+Exec1.2.1: ;GOOD
+    SetOutPath "$TEMP"
+    CopyFiles /SILENT /FILESONLY "$R3\Uninst-pcsx2-r5875.exe" "$TEMP"
+        ExecWait '"$TEMP\Uninst-pcsx2-r5875.exe" /S _?=$R3'
+        Delete "$TEMP\Uninst-pcsx2-r5875.exe"
+        Goto Done
 
-    ExecWait '"$TEMP\pcsx2_uninst_temp\uninst-pcsx2.exe" /S _?=$R2'
-    RMDir /r $TEMP\pcsx2_uninst_temp
-    Done:
+Exec1.0.0:
+    SetOutPath "$TEMP"
+    CopyFiles /SILENT /FILESONLY "$R4\Uninst-pcsx2.exe" "$TEMP"
+        ExecWait '"$TEMP\Uninst-pcsx2.exe" /S _?=$R4'
+        Delete "$TEMP\Uninst-pcsx2.exe"
+        Goto Done
+
+Exec0.9.8:
+    SetOutPath "$TEMP"
+    CopyFiles /SILENT /FILESONLY "$R5\Uninst-pcsx2-r4600.exe" "$TEMP"
+        ExecWait '"$TEMP\Uninst-pcsx2-r4600.exe" /S _?=$R5'
+        Delete "$TEMP\Uninst-pcsx2-r4600.exe"
+        Goto Done
+
+ExecNormal:
+    SetOutPath "$TEMP"
+    CopyFiles /SILENT /FILESONLY "$R7\Uninst-pcsx2.exe" "$TEMP"
+            ExecWait '"$TEMP\Uninst-pcsx2.exe" /S _?=$R7'
+            Delete "$TEMP\Uninst-pcsx2.exe"
+
+Done:
 
 FunctionEnd
 
@@ -138,6 +218,9 @@ Section "!${APP_NAME} (required)" SEC_CORE
     File /nonfatal ..\bin\Plugins\lilypad.dll
     File /nonfatal ..\bin\Plugins\padPokopom.dll
 
+    File /nonfatal ..\bin\Plugins\USBnull.dll
+    File /nonfatal ..\bin\Plugins\DEV9null.dll
+    File /nonfatal ..\bin\Plugins\FWnull.dll
   !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
 
 !endif
@@ -223,9 +306,7 @@ LangString DESC_STARTMENU  ${LANG_ENGLISH} "Adds shortcuts for PCSX2 to the star
 LangString DESC_DESKTOP    ${LANG_ENGLISH} "Adds a shortcut for PCSX2 to the desktop (all users)."
 LangString DESC_LANGS      ${LANG_ENGLISH} "Adds additional languages other than the system default to PCSX2."
 
-LangString DESC_DXPACKS    ${LANG_ENGLISH} "Installs the Visual C++ Redistributable and DirectX SDK"
-LangString DESC_CRT2015    ${LANG_ENGLISH} "Required by the PCSX2 binaries packaged in this installer."
-LangString DESC_DIRECTX    ${LANG_ENGLISH} "Only uncheck this if you are quite certain your Direct3D runtimes are up to date."
+LangString DESC_DXPACKS    ${LANG_ENGLISH} "Installs the Visual C++ Redistributable and DirectX SDK (required for PCSX2)"
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CORE}        $(DESC_CORE)
@@ -233,12 +314,7 @@ LangString DESC_DIRECTX    ${LANG_ENGLISH} "Only uncheck this if you are quite c
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DESKTOP}     $(DESC_DESKTOP)
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANGS}       $(DESC_LANGS)
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DXPACKS}     $(DESC_DXPACKS)
-  
-!if ${INC_CRT_2015} > 0
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CRT2015}     $(DESC_CRT2015)
-!endif
 
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DIRECTX}     $(DESC_DIRECTX)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Section "" SID_PCSX2
