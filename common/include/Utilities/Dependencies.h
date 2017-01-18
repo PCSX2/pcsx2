@@ -225,6 +225,7 @@ public:
 #include <algorithm>
 #include <memory>
 #include <atomic>
+#include <thread>
 
 #include "Pcsx2Defs.h"
 

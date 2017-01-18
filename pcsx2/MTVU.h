@@ -28,16 +28,18 @@
 // - ring-buffer has no complete pending packets when read_pos==write_pos
 class VU_Thread : public pxThread {
 	static const s32 buffer_size = (_1mb * 16) / sizeof(s32);
-	static const u32 buffer_mask = buffer_size - 1;
-	__aligned(4) u32 buffer[buffer_size];
-	std::atomic<int> read_pos; // Only modified by VU thread
-	std::atomic<bool> isBusy;   // Is thread processing data?
-	std::atomic<int> write_pos;    // Only modified by EE thread
-	__aligned(4) s32  write_offset; // Only modified by EE thread
-	__aligned(4) Mutex     mtxBusy;
-	__aligned(4) Semaphore semaEvent;
-	__aligned(4) BaseVUmicroCPU*& vuCPU;
-	__aligned(4) VURegs&          vuRegs;
+
+	u32 buffer[buffer_size];
+	// Note: keep atomic on separate cache line to avoid CPU conflict
+	__aligned(64) std::atomic<bool> isBusy;   // Is thread processing data?
+	__aligned(64) std::atomic<int> m_ato_read_pos; // Only modified by VU thread
+	__aligned(64) std::atomic<int> m_ato_write_pos;    // Only modified by EE thread
+	__aligned(64) int  m_read_pos; // temporary read pos (local to the VU thread)
+	int  m_write_pos; // temporary write pos (local to the EE thread)
+	Mutex     mtxBusy;
+	Semaphore semaEvent;
+	BaseVUmicroCPU*& vuCPU;
+	VURegs&          vuRegs;
 
 public:
 	__aligned16  vifStruct        vif;
@@ -85,10 +87,11 @@ private:
 
 	s32 GetReadPos();
 	s32 GetWritePos();
+
 	u32* GetWritePtr();
 
-	void incReadPos(s32 offset);
-	void incWritePos();
+	void CommitWritePos();
+	void CommitReadPos();
 
 	u32 Read();
 	void Read(void* dest, u32 size);

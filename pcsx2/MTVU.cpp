@@ -79,11 +79,12 @@ void VU_Thread::Reset()
 {
 	ScopedLock lock(mtxBusy);
 
-	write_offset = 0;
 	vuCycleIdx   = 0;
-	read_pos     = 0;
 	isBusy       = false;
-	write_pos    = 0;
+	m_ato_write_pos = 0;
+	m_write_pos     = 0;
+	m_ato_read_pos  = 0;
+	m_read_pos      = 0;
 	memzero(vif);
 	memzero(vifRegs);
 	for (size_t i = 0; i < 4; ++i)
@@ -102,7 +103,7 @@ void VU_Thread::ExecuteRingBuffer()
 	for(;;) {
 		semaEvent.WaitWithoutYield();
 		ScopedLockBool lock(mtxBusy, isBusy);
-		while (read_pos.load(std::memory_order_relaxed) != GetWritePos()) {
+		while (m_ato_read_pos.load(std::memory_order_relaxed) != GetWritePos()) {
 			u32 tag = Read();
 			switch (tag) {
 				case MTVU_VU_EXECUTE: {
@@ -110,11 +111,12 @@ void VU_Thread::ExecuteRingBuffer()
 					s32 addr     = Read();
 					vifRegs.top  = Read();
 					vifRegs.itop = Read();
+
 					if (addr != -1) vuRegs.VI[REG_TPC].UL = addr;
 					vuCPU->Execute(vu1RunCycles);
 					gifUnit.gifPath[GIF_PATH_1].FinishGSPacketMTVU();
 					semaXGkick.Post(); // Tell MTGS a path1 packet is complete
-					vuCycles[vuCycleIdx].store(vuRegs.cycle, std::memory_order_relaxed);
+					vuCycles[vuCycleIdx].store(vuRegs.cycle, std::memory_order_release);
 					vuCycleIdx  = (vuCycleIdx + 1) & 3;
 					break;
 				}
@@ -142,15 +144,17 @@ void VU_Thread::ExecuteRingBuffer()
 					Read(&vif.tag, vif_copy_size);
 					ReadRegs(&vifRegs);
 					u32 size = Read();
-					MTVU_Unpack(&buffer[read_pos.load(std::memory_order_relaxed)], vifRegs);
-					incReadPos(size_u32(size));
+					MTVU_Unpack(&buffer[m_read_pos], vifRegs);
+					m_read_pos += size_u32(size);
 					break;
 				}
 				case MTVU_NULL_PACKET:
-					read_pos.store(0, std::memory_order_release);
+					m_read_pos = 0;
 					break;
 				jNO_DEFAULT;
 			}
+
+			CommitReadPos();
 		}
 	}
 }
@@ -161,12 +165,16 @@ __ri void VU_Thread::WaitOnSize(s32 size)
 {
 	for(;;) {
 		s32 readPos  = GetReadPos();
-		if (readPos <= write_pos.load(std::memory_order_relaxed)) break; // MTVU is reading in back of write_pos
-		if (readPos >  write_pos.load(std::memory_order_relaxed) + size) break; // Enough free front space
-		if (1) { // Let MTVU run to free up buffer space
+		if (readPos <= m_write_pos) break; // MTVU is reading in back of write_pos
+		if (readPos >  m_write_pos + size) break; // Enough free front space
+		{ // Let MTVU run to free up buffer space
 			KickStart();
 			if (IsDevBuild) DevCon.WriteLn("WaitOnSize()");
-			ScopedLock lock(mtxBusy);
+			// Locking might trigger a full flush of the ring buffer. Yield
+			// will be more aggressive, and only flush the minimal size.
+			// Performance will be smoother but it will consume extra CPU cycle
+			// on the EE thread (not an issue on 4 cores).
+			std::this_thread::yield();
 		}
 	}
 }
@@ -175,83 +183,87 @@ __ri void VU_Thread::WaitOnSize(s32 size)
 // to write a continuous 'size * sizeof(u32)' bytes
 void VU_Thread::ReserveSpace(s32 size)
 {
-	pxAssert(write_pos < buffer_size);
+	pxAssert(m_write_pos < buffer_size);
 	pxAssert(size      < buffer_size);
 	pxAssert(size > 0);
-	pxAssert(write_offset == 0);
-	if (write_pos.load(std::memory_order_relaxed) + size > buffer_size) {
-		pxAssert(write_pos > 0);
+
+	if (m_write_pos + size > (buffer_size - 1)) {
 		WaitOnSize(1); // Size of MTVU_NULL_PACKET
 		Write(MTVU_NULL_PACKET);
-		write_offset = 0;
-		write_pos.store(0, std::memory_order_release);
+		// Reset local write pointer/position
+		m_write_pos = 0;
+		CommitWritePos();
 	}
+
 	WaitOnSize(size);
 }
 
 // Use this when reading read_pos from ee thread
 __fi s32 VU_Thread::GetReadPos()
 {
-	return read_pos.load(std::memory_order_acquire);
+	return m_ato_read_pos.load(std::memory_order_acquire);
 }
+
 // Use this when reading write_pos from vu thread
 __fi s32 VU_Thread::GetWritePos()
 {
-	return write_pos.load(std::memory_order_acquire);
-}
-// Gets the effective write pointer after adding write_offset
-__fi u32* VU_Thread::GetWritePtr()
-{
-	return &buffer[(write_pos.load(std::memory_order_relaxed) + write_offset) & buffer_mask];
+	return m_ato_write_pos.load(std::memory_order_acquire);
 }
 
-__fi void VU_Thread::incReadPos(s32 offset)
-{ // Offset in u32 sizes
-	read_pos.store((read_pos.load(std::memory_order_relaxed) + offset) & buffer_mask, std::memory_order_release);
+// Gets the effective write pointer after
+__fi u32* VU_Thread::GetWritePtr()
+{
+	pxAssert(m_write_pos < buffer_size);
+	return &buffer[m_write_pos];
 }
-__fi void VU_Thread::incWritePos()
-{ // Adds write_offset
-	s32 temp = (write_pos.load(std::memory_order_relaxed) + write_offset) & buffer_mask;
-	write_offset = 0;
-	write_pos.store(temp, std::memory_order_release);
+
+__fi void VU_Thread::CommitWritePos()
+{
+	m_ato_write_pos.store(m_write_pos, std::memory_order_release);
+
 	if (MTVU_ALWAYS_KICK) KickStart();
 	if (MTVU_SYNC_MODE)   WaitVU();
 }
 
+__fi void VU_Thread::CommitReadPos()
+{
+	m_ato_read_pos.store(m_read_pos, std::memory_order_release);
+}
+
 __fi u32 VU_Thread::Read()
 {
-	u32 ret = buffer[read_pos.load(std::memory_order_relaxed)];
-	incReadPos(1);
+	u32 ret = buffer[m_read_pos];
+	m_read_pos++;
 	return ret;
 }
 
 __fi void VU_Thread::Read(void* dest, u32 size)
 {
-	memcpy(dest, &buffer[read_pos.load(std::memory_order_relaxed)], size);
-	incReadPos(size_u32(size));
+	memcpy(dest, &buffer[m_read_pos], size);
+	m_read_pos += size_u32(size);
 }
 
 __fi void VU_Thread::ReadRegs(VIFregisters* dest)
 {
-	VIFregistersMTVU* src = (VIFregistersMTVU*)&buffer[read_pos.load(std::memory_order_relaxed)];
+	VIFregistersMTVU* src = (VIFregistersMTVU*)&buffer[m_read_pos];
 	dest->cycle = src->cycle;
 	dest->mode = src->mode;
 	dest->num = src->num;
 	dest->mask = src->mask;
 	dest->itop = src->itop;
 	dest->top = src->top;
-	incReadPos(size_u32(sizeof(VIFregistersMTVU)));
+	m_read_pos += size_u32(sizeof(VIFregistersMTVU));
 }
 
 __fi void VU_Thread::Write(u32 val)
 {
 	GetWritePtr()[0] = val;
-	write_offset += 1;
+	m_write_pos += 1;
 }
 __fi void VU_Thread::Write(void* src, u32 size)
 {
 	memcpy(GetWritePtr(), src, size);
-	write_offset += size_u32(size);
+	m_write_pos += size_u32(size);
 }
 
 __fi void VU_Thread::WriteRegs(VIFregisters* src)
@@ -263,28 +275,28 @@ __fi void VU_Thread::WriteRegs(VIFregisters* src)
 	dest->mask = src->mask;
 	dest->top = src->top;
 	dest->itop = src->itop;
-	write_offset += size_u32(sizeof(VIFregistersMTVU));
+	m_write_pos += size_u32(sizeof(VIFregistersMTVU));
 }
 
 // Returns Average number of vu Cycles from last 4 runs
 // Used for vu cycle stealing hack
 u32 VU_Thread::Get_vuCycles()
 {
-	return (vuCycles[0].load(std::memory_order_relaxed) +
-			vuCycles[1].load(std::memory_order_relaxed) +
-			vuCycles[2].load(std::memory_order_relaxed) +
-			vuCycles[3].load(std::memory_order_relaxed)) >> 2;
+	return (vuCycles[0].load(std::memory_order_acquire) +
+			vuCycles[1].load(std::memory_order_acquire) +
+			vuCycles[2].load(std::memory_order_acquire) +
+			vuCycles[3].load(std::memory_order_acquire)) >> 2;
 }
 
 void VU_Thread::KickStart(bool forceKick)
 {
 	if ((forceKick && !semaEvent.Count())
-	|| (!isBusy.load(std::memory_order_relaxed) && GetReadPos() != write_pos.load(std::memory_order_relaxed))) semaEvent.Post();
+	|| (!isBusy.load(std::memory_order_acquire) && GetReadPos() != m_ato_write_pos.load(std::memory_order_relaxed))) semaEvent.Post();
 }
 
 bool VU_Thread::IsDone()
 {
-	return !isBusy.load(std::memory_order_relaxed) && GetReadPos() == GetWritePos();
+	return GetReadPos() == GetWritePos();
 }
 
 void VU_Thread::WaitVU()
@@ -295,6 +307,7 @@ void VU_Thread::WaitVU()
 		//DevCon.WriteLn("WaitVU()");
 		pxAssert(THREAD_VU1);
 		KickStart();
+		std::this_thread::yield(); // Give a chance to the MTVU thread to actually start
 		ScopedLock lock(mtxBusy);
 	}
 }
@@ -307,7 +320,7 @@ void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop)
 	Write(vu_addr);
 	Write(vif_top);
 	Write(vif_itop);
-	incWritePos();
+	CommitWritePos();
 	gifUnit.TransferGSPacketData(GIF_TRANS_MTVU, NULL, 0);
 	KickStart();
 	u32 cycles = std::min(Get_vuCycles(), 3000u);
@@ -324,7 +337,7 @@ void VU_Thread::VifUnpack(vifStruct& _vif, VIFregisters& _vifRegs, u8* data, u32
 	WriteRegs(&_vifRegs);
 	Write(size);
 	Write(data, size);
-	incWritePos();
+	CommitWritePos();
 	KickStart();
 }
 
@@ -336,7 +349,7 @@ void VU_Thread::WriteMicroMem(u32 vu_micro_addr, void* data, u32 size)
 	Write(vu_micro_addr);
 	Write(size);
 	Write(data, size);
-	incWritePos();
+	CommitWritePos();
 }
 
 void VU_Thread::WriteDataMem(u32 vu_data_addr, void* data, u32 size)
@@ -347,7 +360,7 @@ void VU_Thread::WriteDataMem(u32 vu_data_addr, void* data, u32 size)
 	Write(vu_data_addr);
 	Write(size);
 	Write(data, size);
-	incWritePos();
+	CommitWritePos();
 }
 
 void VU_Thread::WriteCol(vifStruct& _vif)
@@ -356,7 +369,7 @@ void VU_Thread::WriteCol(vifStruct& _vif)
 	ReserveSpace(1 + size_u32(sizeof(_vif.MaskCol)));
 	Write(MTVU_VIF_WRITE_COL);
 	Write(&_vif.MaskCol, sizeof(_vif.MaskCol));
-	incWritePos();
+	CommitWritePos();
 }
 
 void VU_Thread::WriteRow(vifStruct& _vif)
@@ -365,5 +378,5 @@ void VU_Thread::WriteRow(vifStruct& _vif)
 	ReserveSpace(1 + size_u32(sizeof(_vif.MaskRow)));
 	Write(MTVU_VIF_WRITE_ROW);
 	Write(&_vif.MaskRow, sizeof(_vif.MaskRow));
-	incWritePos();
+	CommitWritePos();
 }
