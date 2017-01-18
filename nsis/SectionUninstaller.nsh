@@ -25,23 +25,6 @@ FunctionEnd
 ;                         Shared Uninstall Functions
 ; =======================================================================
 
-Function un.removeShorties
-
-  ; Remove shortcuts, if any
-
-  Delete "$DESKTOP\${APP_NAME}.lnk"
-
-  Delete "$SMPROGRAMS\PCSX2\Uninstall ${APP_NAME}.lnk"
-  Delete "$SMPROGRAMS\PCSX2\${APP_NAME}.lnk"
-  ;Delete "$SMPROGRAMS\PCSX2\pcsx2-dev.lnk"
-
-  Delete "$SMPROGRAMS\PCSX2\Readme.lnk"
-  Delete "$SMPROGRAMS\PCSX2\Frequently Asked Questions.lnk"
-
-  RMDir "$SMPROGRAMS\PCSX2"
-
-FunctionEnd
-
 ; begin uninstall, could be added on top of uninstall section instead
 Function un.onInit
   !insertmacro UNINSTALL.LOG_BEGIN_UNINSTALL
@@ -53,8 +36,13 @@ Function un.onUninstSuccess
 
   RMDir "$DOCUMENTS\PCSX2"
   RMDir "$INSTDIR\langs"
-  RMDir "$INSTDIR\plugins"
   RMDir "$INSTDIR\docs"
+
+  ; Force remove plugins folder due to Windows 10's wonderful UAC 
+  ; Uninstaller has Admin rights, so I guess MS still can't get UAC to behave consistently?
+  ; I've been able to duplicate the bug in older PCSX2 installers - so it's not an NSIS 3.0 issue
+  ; When this behavior occurs; DEV9null and USBnull left in the folder
+  RMDir /r "$INSTDIR\plugins"
   RMDir "$INSTDIR"
   FunctionEnd
 
@@ -62,8 +50,6 @@ Function un.onUninstSuccess
 ;                           Un.Installer Sections
 ; =======================================================================
 
-
-; -----------------------------------------------------------------------
 Section "Un.Program and Plugins ${APP_NAME}"
 
   SetShellVarContext all
@@ -81,7 +67,9 @@ Section "Un.Program and Plugins ${APP_NAME}"
   ; Remove uninstaller info reg key ( Wow6432Node on 64bit Windows! )
   DeleteRegKey HKLM "${INSTDIR_REG_KEY}"
 
-  Call un.removeShorties
+  ; Remove shortcuts, if any
+  Delete "$DESKTOP\${APP_NAME}.lnk"
+  RMDir /r "$SMPROGRAMS\PCSX2"
 
   !insertmacro UNINSTALL.LOG_UNINSTALL "$INSTDIR\Langs"
   !insertmacro UNINSTALL.LOG_UNINSTALL "$INSTDIR\Plugins"

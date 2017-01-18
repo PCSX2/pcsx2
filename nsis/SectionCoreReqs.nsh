@@ -39,18 +39,9 @@
 
     SetOutPath "$INSTDIR\Shaders"
     !insertmacro UNINSTALL.LOG_OPEN_INSTALL
-    File ..\bin\shaders\*
+    File ..\bin\shaders\GSdx.fx
+    File ..\bin\shaders\GSdx_FX_Settings.ini
     !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
-
-    SetOutPath "$INSTDIR\Plugins"
-    !insertmacro UNINSTALL.LOG_OPEN_INSTALL
-    ; NULL plugins are required, because the PCSX2 plugin selector needs a dummy plugin in every slot
-    ; in order to run (including CDVD!)
-
-    File ..\bin\Plugins\USBnull.dll
-    File ..\bin\Plugins\DEV9null.dll
-    File ..\bin\Plugins\FWnull.dll
-  !insertmacro UNINSTALL.LOG_CLOSE_INSTALL
 
 
   ; ------------------------------------------
