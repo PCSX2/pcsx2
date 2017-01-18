@@ -13764,6 +13764,7 @@ Serial = SLES-53350
 Name   = Sonic Gems Collection
 Region = PAL-M5
 Compat = 5
+vuRoundMode = 0 //Prevents only backgrounds from appearing in Sonic R's multiplayer modes.
 // Vectorman unlocks by having a Mega Collection or Heroes save
 MemCardFilter = SLES-53350/SLES-52998/SLES-51950
 ---------------------------------------------
@@ -25102,6 +25103,7 @@ Serial = SLPM-66074
 Name   = Sonic Gems Collection
 Region = NTSC-J
 Compat = 5
+vuRoundMode = 0 //Prevents only backgrounds from appearing in Sonic R's multiplayer modes.
 MemCardFilter = SLPM-66074/SLPM-65758/SLAJ-25027/SLPM-65431
 ---------------------------------------------
 Serial = SLPM-66076
