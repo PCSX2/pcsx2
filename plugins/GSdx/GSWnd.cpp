@@ -95,9 +95,6 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD_OPT(glGetInteger64v);
 	GL_EXT_LOAD_OPT(glCreateQueries);
 	GL_EXT_LOAD_OPT(glDeleteQueries);
-	// GL4.0
-	GL_EXT_LOAD_OPT(glBlendEquationSeparateiARB);
-	GL_EXT_LOAD_OPT(glBlendFuncSeparateiARB);
 	// GL4.1
 	GL_EXT_LOAD(glCreateShaderProgramv);
 	GL_EXT_LOAD(glBindProgramPipeline);

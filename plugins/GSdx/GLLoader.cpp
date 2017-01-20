@@ -169,16 +169,6 @@ PFNGLTEXTUREBARRIERPROC                glTextureBarrier                    = NUL
 PFNGLGETTEXTURESUBIMAGEPROC            glGetTextureSubImage                = NULL;
 
 namespace ReplaceGL {
-	void APIENTRY BlendEquationSeparateiARB(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
-	{
-		glBlendEquationSeparate(modeRGB, modeAlpha);
-	}
-
-	void APIENTRY BlendFuncSeparateiARB(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
-	{
-		glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
-	}
-
 	void APIENTRY ScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
 	{
 		glScissor(left, bottom, width, height);
@@ -206,7 +196,6 @@ namespace GLLoader {
 	bool found_GL_ARB_clear_texture = false; // Miss AMD Mesa (otherwise seems SW)
 	bool found_GL_ARB_get_texture_sub_image = false; // Not yet used
 	// DX11 GPU
-	bool found_GL_ARB_draw_buffers_blend = false; // Not supported on AMD R600 (80 nm class chip, HD2900). Nvidia requires FERMI. Intel SB
 	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
 	bool found_GL_ARB_shader_image_load_store = false; // Intel IB. Nvidia/AMD miss Mesa implementation.
 	bool found_GL_ARB_viewport_array = false; // Intel IB. AMD/NVIDIA DX10
@@ -313,7 +302,6 @@ namespace GLLoader {
 				if (ext.compare("GL_NVX_gpu_memory_info") == 0) found_GL_NVX_gpu_memory_info = true;
 				// GL4.0
 				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
-				if (ext.compare("GL_ARB_draw_buffers_blend") == 0) found_GL_ARB_draw_buffers_blend = true;
 				// GL4.1
 				if (ext.compare("GL_ARB_viewport_array") == 0) found_GL_ARB_viewport_array = true;
 				if (ext.compare("GL_ARB_separate_shader_objects") == 0) found_GL_ARB_separate_shader_objects = true;
@@ -344,7 +332,6 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic");
 		// GL4.0
 		status &= status_and_override(found_GL_ARB_gpu_shader5, "GL_ARB_gpu_shader5");
-		status &= status_and_override(found_GL_ARB_draw_buffers_blend, "GL_ARB_draw_buffers_blend");
 		// GL4.1
 		status &= status_and_override(found_GL_ARB_viewport_array, "GL_ARB_viewport_array");
 		status &= status_and_override(found_GL_ARB_separate_shader_objects, "GL_ARB_separate_shader_objects", true);
@@ -376,12 +363,6 @@ namespace GLLoader {
 			fprintf(stderr, "GL_ARB_viewport_array: not supported ! function pointer will be replaced\n");
 			glScissorIndexed   = ReplaceGL::ScissorIndexed;
 			glViewportIndexedf = ReplaceGL::ViewportIndexedf;
-		}
-
-		if (!found_GL_ARB_draw_buffers_blend) {
-			fprintf(stderr, "GL_ARB_draw_buffers_blend: not supported ! function pointer will be replaced\n");
-			glBlendFuncSeparateiARB     = ReplaceGL::BlendFuncSeparateiARB;
-			glBlendEquationSeparateiARB = ReplaceGL::BlendEquationSeparateiARB;
 		}
 
 		fprintf(stdout, "\n");

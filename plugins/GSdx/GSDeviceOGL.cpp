@@ -1767,13 +1767,13 @@ void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is
 
 		if (GLState::eq_RGB != b.op) {
 			GLState::eq_RGB = b.op;
-			glBlendEquationSeparateiARB(0, b.op, GL_FUNC_ADD);
+			glBlendEquationSeparate(b.op, GL_FUNC_ADD);
 		}
 
 		if (GLState::f_sRGB != b.src || GLState::f_dRGB != b.dst) {
 			GLState::f_sRGB = b.src;
 			GLState::f_dRGB = b.dst;
-			glBlendFuncSeparateiARB(0, b.src, b.dst, GL_ONE, GL_ZERO);
+			glBlendFuncSeparate(b.src, b.dst, GL_ONE, GL_ZERO);
 		}
 
 	} else {
