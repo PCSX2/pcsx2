@@ -166,10 +166,14 @@ __ri void VU_Thread::WaitOnSize(s32 size)
 	for(;;) {
 		s32 readPos  = GetReadPos();
 		if (readPos <= m_write_pos) break; // MTVU is reading in back of write_pos
-		if (readPos >  m_write_pos + size) break; // Enough free front space
+		// FIXME greg: there is a bug somewhere in the queue pointer
+		// management. It creates a deadlock/corruption in SotC intro (before
+		// the first menu). I added a 4KB safety net which seem to avoid to
+		// trigger the bug.
+		// Note: a wait lock instead of a yield also helps to avoid the bug.
+		if (readPos >  m_write_pos + size + _4kb) break; // Enough free front space
 		{ // Let MTVU run to free up buffer space
 			KickStart();
-			if (IsDevBuild) DevCon.WriteLn("WaitOnSize()");
 			// Locking might trigger a full flush of the ring buffer. Yield
 			// will be more aggressive, and only flush the minimal size.
 			// Performance will be smoother but it will consume extra CPU cycle
@@ -260,6 +264,7 @@ __fi void VU_Thread::Write(u32 val)
 	GetWritePtr()[0] = val;
 	m_write_pos += 1;
 }
+
 __fi void VU_Thread::Write(void* src, u32 size)
 {
 	memcpy(GetWritePtr(), src, size);
