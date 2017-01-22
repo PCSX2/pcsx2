@@ -70,10 +70,9 @@ struct nVifStruct {
 
 	HashBucket				vifBlocks;		// Vif Blocks
 
-	nVifStruct();
+	nVifStruct() = default;
 };
 
-extern void reserveNewVif(int idx);
 extern void closeNewVif(int idx);
 extern void resetNewVif(int idx);
 extern void releaseNewVif(int idx);
