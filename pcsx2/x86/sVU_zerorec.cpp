@@ -141,7 +141,7 @@ struct VuFunctionHeader
 {
 	struct RANGE
 	{
-		RANGE() : pmem(NULL) {}
+		RANGE() : start(0), size(0), pmem(NULL) {}
 
 		u16 start, size;
 		void* pmem; // all the mem
