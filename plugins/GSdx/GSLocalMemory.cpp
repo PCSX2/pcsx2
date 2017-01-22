@@ -2053,19 +2053,13 @@ GSOffset::GSOffset(uint32 _bp, uint32 _bw, uint32 _psm)
 		pixel.col[i] = GSLocalMemory::m_psm[_psm].rowOffset[i];
 	}
 
-	for(int i = 0; i < 256; i++)
-	{
-		coverages[i] = nullptr;
-	}
+	pages_as_bit.fill(nullptr);
 }
 
 GSOffset::~GSOffset()
 {
-	for(int i = 0; i < 256; i++)
-	{
-		_aligned_free(coverages[i]);
-	}
-
+	for(auto buffer: pages_as_bit)
+		_aligned_free(buffer);
 }
 
 uint32* GSOffset::GetPages(const GSVector4i& rect, uint32* pages, GSVector4i* bbox)
@@ -2132,23 +2126,41 @@ uint32* GSOffset::GetPages(const GSVector4i& rect, uint32* pages, GSVector4i* bb
 	return pages;
 }
 
-GSVector4i* GSOffset::GetPagesAsBits(const GSVector4i& rect, GSVector4i* pages, GSVector4i* bbox)
+uint32* GSOffset::GetPagesAsBits(const GIFRegTEX0& TEX0)
 {
-	if(pages == NULL)
-	{
-		pages = (GSVector4i*)_aligned_malloc(sizeof(GSVector4i) * 4, 16);
-	}
+	// Performance note:
+	// GSOffset is per bp/bw/psm
+	// Pages coverage depends also on TW and Th (8bits). Therefore we will save them as a small array.
+	// It is faster than a hash cache and it reduces the GetPagesAsBits overhead.
 
-	pages[0] = GSVector4i::zero();
-	pages[1] = GSVector4i::zero();
-	pages[2] = GSVector4i::zero();
-	pages[3] = GSVector4i::zero();
+	int hash_key = (TEX0.u64 >> 26) & 0xFF;
+	uint32* pages = pages_as_bit[hash_key];
+
+	if (pages)
+		return pages;
+
+	// Aligned on 64 bytes to store the full bitmap in a single cache line
+	pages = (uint32*)_aligned_malloc(MAX_PAGES/8, 64);
+	pages_as_bit[hash_key] = pages;
+
+	GetPagesAsBits(GSVector4i(0, 0, 1 << TEX0.TW, 1 << TEX0.TH), pages);
+
+	return pages;
+}
+
+
+void* GSOffset::GetPagesAsBits(const GSVector4i& rect, void* pages)
+{
+	ASSERT(pages != nullptr);
+
+	((GSVector4i*)pages)[0] = GSVector4i::zero();
+	((GSVector4i*)pages)[1] = GSVector4i::zero();
+	((GSVector4i*)pages)[2] = GSVector4i::zero();
+	((GSVector4i*)pages)[3] = GSVector4i::zero();
 
 	GSVector2i bs = (bp & 31) == 0 ? GSLocalMemory::m_psm[psm].pgs : GSLocalMemory::m_psm[psm].bs;
 
 	GSVector4i r = rect.ralign<Align_Outside>(bs);
-
-	if(bbox != NULL) *bbox = r;
 
 	r = r.sra32(3);
 
@@ -2168,5 +2180,4 @@ GSVector4i* GSOffset::GetPagesAsBits(const GSVector4i& rect, GSVector4i* pages, 
 	}
 
 	return pages;
-
 }

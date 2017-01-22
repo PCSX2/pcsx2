@@ -179,20 +179,13 @@ GSTextureCacheSW::Texture::Texture(GSState* state, uint32 tw0, const GIFRegTEX0&
 	}
 
 	memset(m_valid, 0, sizeof(m_valid));
-	memset(m_pages.bm, 0, sizeof(m_pages.bm));
 
 	m_sharedbits = GSUtil::HasSharedBitsPtr(m_TEX0.PSM);
 
 	m_offset = m_state->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
 	m_pages.n = m_offset->GetPages(GSVector4i(0, 0, 1 << TEX0.TW, 1 << TEX0.TH));
-
-	for(const uint32* p = m_pages.n; *p != GSOffset::EOP; p++)
-	{
-		uint32 page = *p;
-
-		m_pages.bm[page >> 5] |= 1 << (page & 31);
-	}
+	memcpy(m_pages.bm, m_offset->GetPagesAsBits(TEX0), sizeof(m_pages.bm));
 
 	m_repeating = m_TEX0.IsRepeating(); // repeating mode always works, it is just slightly slower
 
