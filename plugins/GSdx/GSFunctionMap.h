@@ -177,7 +177,9 @@ public:
 
 	~GSCodeGeneratorFunctionMap()
 	{
+#ifdef _DEBUG
 		fprintf(stderr, "%s generated %zu bytes of instruction\n", m_name.c_str(), m_total_code_size);
+#endif
 	}
 
 	VALUE GetDefaultFunction(KEY key)
