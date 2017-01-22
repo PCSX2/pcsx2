@@ -463,19 +463,19 @@ extern void fifo_free(void* ptr, size_t size, size_t repeat);
 #if defined(_DEBUG)
 #define GL_CACHE(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xFEAD, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
-#define GL_CACHE(...) (0);
+#define GL_CACHE(...) (void)(0);
 #endif
 
 #if defined(ENABLE_TRACE_REG) && defined(_DEBUG)
 #define GL_REG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xB0B0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
-#define GL_REG(...) (0);
+#define GL_REG(...) (void)(0);
 #endif
 
 #if defined(ENABLE_EXTRA_LOG) && defined(_DEBUG)
 #define GL_DBG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xD0D0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
-#define GL_DBG(...) (0);
+#define GL_DBG(...) (void)(0);
 #endif
 
 #if defined(ENABLE_OGL_DEBUG)
@@ -492,11 +492,11 @@ struct GLAutoPop {
 #define GL_INS(...)		GL_INSERT(GL_DEBUG_TYPE_ERROR, 0xDEAD, GL_DEBUG_SEVERITY_MEDIUM, __VA_ARGS__)
 #define GL_PERF(...)	GL_INSERT(GL_DEBUG_TYPE_PERFORMANCE, 0xFEE1, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
-#define GL_PUSH_(...) (0);
-#define GL_PUSH(...) (0);
-#define GL_POP()     (0);
-#define GL_INS(...)  (0);
-#define GL_PERF(...) (0);
+#define GL_PUSH_(...) (void)(0);
+#define GL_PUSH(...) (void)(0);
+#define GL_POP()     (void)(0);
+#define GL_INS(...)  (void)(0);
+#define GL_PERF(...) (void)(0);
 #endif
 
 // Helper path to dump texture
