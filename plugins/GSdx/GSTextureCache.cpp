@@ -1652,23 +1652,18 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 
 			for(int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
 			{
-				uint32 block = base + off->block.col[x >> 3];
+				uint32 addr = (i >> 3) % MAX_BLOCKS;
 
-				if(block < MAX_BLOCKS)
+				uint32 row = addr >> 5;
+				uint32 col = 1 << (addr & 31);
+
+				if((m_valid[row] & col) == 0)
 				{
-					uint32 addr = i >> 3;
+					m_valid[row] |= col;
 
-					uint32 row = addr >> 5;
-					uint32 col = 1 << (addr & 31);
+					Write(GSVector4i(x, y, x + bs.x, y + bs.y), layer);
 
-					if((m_valid[row] & col) == 0)
-					{
-						m_valid[row] |= col;
-
-						Write(GSVector4i(x, y, x + bs.x, y + bs.y), layer);
-
-						blocks++;
-					}
+					blocks++;
 				}
 			}
 		}
@@ -1681,21 +1676,18 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 
 			for(int x = r.left; x < r.right; x += bs.x)
 			{
-				uint32 block = base + off->block.col[x >> 3];
+				uint32 block = (base + off->block.col[x >> 3]) % MAX_BLOCKS;
 
-				if(block < MAX_BLOCKS)
+				uint32 row = block >> 5;
+				uint32 col = 1 << (block & 31);
+
+				if((m_valid[row] & col) == 0)
 				{
-					uint32 row = block >> 5;
-					uint32 col = 1 << (block & 31);
+					m_valid[row] |= col;
 
-					if((m_valid[row] & col) == 0)
-					{
-						m_valid[row] |= col;
+					Write(GSVector4i(x, y, x + bs.x, y + bs.y), layer);
 
-						Write(GSVector4i(x, y, x + bs.x, y + bs.y), layer);
-
-						blocks++;
-					}
+					blocks++;
 				}
 			}
 		}
@@ -2052,12 +2044,8 @@ uint32* GSTextureCache::SourceMap::GetPagesCoverage(const GIFRegTEX0& TEX0, GSOf
 
 		for(int x = 0; x < tw; x += bs.x)
 		{
-			uint32 page = (base + off->block.col[x >> 3]) >> 5;
-
-			if(page < MAX_PAGES)
-			{
-				pages[page >> 5] |= 1 << (page & 31);
-			}
+			uint32 page = ((base + off->block.col[x >> 3]) >> 5) % MAX_PAGES;
+			pages[page >> 5] |= 1 << (page & 31);
 		}
 	}
 

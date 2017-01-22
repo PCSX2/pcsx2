@@ -188,46 +188,46 @@ public:
 
 	static uint32 BlockNumber32(int x, int y, uint32 bp, uint32 bw)
 	{
-		return bp + (y & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable32[(y >> 3) & 3][(x >> 3) & 7];
+		return (bp + (y & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable32[(y >> 3) & 3][(x >> 3) & 7]) % MAX_BLOCKS;
 	}
 
 	static uint32 BlockNumber16(int x, int y, uint32 bp, uint32 bw)
 	{
-		return bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16[(y >> 3) & 7][(x >> 4) & 3];
+		return (bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16[(y >> 3) & 7][(x >> 4) & 3]) % MAX_BLOCKS;
 	}
 
 	static uint32 BlockNumber16S(int x, int y, uint32 bp, uint32 bw)
 	{
-		return bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16S[(y >> 3) & 7][(x >> 4) & 3];
+		return (bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16S[(y >> 3) & 7][(x >> 4) & 3]) % MAX_BLOCKS;
 	}
 
 	static uint32 BlockNumber8(int x, int y, uint32 bp, uint32 bw)
 	{
 		// ASSERT((bw & 1) == 0); // allowed for mipmap levels
 
-		return bp + ((y >> 1) & ~0x1f) * (bw >> 1) + ((x >> 2) & ~0x1f) + blockTable8[(y >> 4) & 3][(x >> 4) & 7];
+		return (bp + ((y >> 1) & ~0x1f) * (bw >> 1) + ((x >> 2) & ~0x1f) + blockTable8[(y >> 4) & 3][(x >> 4) & 7]) % MAX_BLOCKS;
 	}
 
 	static uint32 BlockNumber4(int x, int y, uint32 bp, uint32 bw)
 	{
 		// ASSERT((bw & 1) == 0); // allowed for mipmap levels
 
-		return bp + ((y >> 2) & ~0x1f) * (bw >> 1) + ((x >> 2) & ~0x1f) + blockTable4[(y >> 4) & 7][(x >> 5) & 3];
+		return (bp + ((y >> 2) & ~0x1f) * (bw >> 1) + ((x >> 2) & ~0x1f) + blockTable4[(y >> 4) & 7][(x >> 5) & 3]) % MAX_BLOCKS;
 	}
 
 	static uint32 BlockNumber32Z(int x, int y, uint32 bp, uint32 bw)
 	{
-		return bp + (y & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable32Z[(y >> 3) & 3][(x >> 3) & 7];
+		return (bp + (y & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable32Z[(y >> 3) & 3][(x >> 3) & 7]) % MAX_BLOCKS;
 	}
 
 	static uint32 BlockNumber16Z(int x, int y, uint32 bp, uint32 bw)
 	{
-		return bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16Z[(y >> 3) & 7][(x >> 4) & 3];
+		return (bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16Z[(y >> 3) & 7][(x >> 4) & 3]) % MAX_BLOCKS;
 	}
 
 	static uint32 BlockNumber16SZ(int x, int y, uint32 bp, uint32 bw)
 	{
-		return bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16SZ[(y >> 3) & 7][(x >> 4) & 3];
+		return (bp + ((y >> 1) & ~0x1f) * bw + ((x >> 1) & ~0x1f) + blockTable16SZ[(y >> 3) & 7][(x >> 4) & 3]) % MAX_BLOCKS;
 	}
 
 	uint8* BlockPtr(uint32 bp) const
