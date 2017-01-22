@@ -175,7 +175,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		throw GSDXRecoverableError();
 
 		//ASSERT(0);
-		return LookupSource(TEX0, TEXA, r);
+		//return LookupSource(TEX0, TEXA, r);
 	}
 
 	return src;
