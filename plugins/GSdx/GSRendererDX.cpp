@@ -356,7 +356,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		}
 		else if ((fbmask & 0xFF) != 0xFF) {
 #ifdef _DEBUG
-			fprintf(stderr, "Please fix me! wb %d wr %d\n", om_bsel.wb, om_bsel.wr);
+			fprintf(stderr, "Please fix me! wb %u wr %u\n", om_bsel.wb, om_bsel.wr);
 #endif
 			//ASSERT(0);
 		}
@@ -370,7 +370,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		}
 		else if ((fbmask & 0xFF) != 0xFF) {
 #ifdef _DEBUG
-			fprintf(stderr, "Please fix me! wa %d wg %d\n", om_bsel.wa, om_bsel.wg);
+			fprintf(stderr, "Please fix me! wa %u wg %u\n", om_bsel.wa, om_bsel.wg);
 #endif
 			//ASSERT(0);
 		}

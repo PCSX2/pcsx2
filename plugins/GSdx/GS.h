@@ -1282,7 +1282,7 @@ struct GSPrivRegSet
 			if(i == 0 && !PMODE.EN1) continue;
 			if(i == 1 && !PMODE.EN2) continue;
 
-			fprintf(fp, "DISPFB[%d] BP=%05x BW=%d PSM=%d DBX=%d DBY=%d\n",
+			fprintf(fp, "DISPFB[%d] BP=%05x BW=%u PSM=%u DBX=%u DBY=%u\n",
 					i,
 					DISP[i].DISPFB.Block(),
 					DISP[i].DISPFB.FBW,
@@ -1291,7 +1291,7 @@ struct GSPrivRegSet
 					DISP[i].DISPFB.DBY
 				   );
 
-			fprintf(fp, "DISPLAY[%d] DX=%d DY=%d DW=%d DH=%d MAGH=%d MAGV=%d\n",
+			fprintf(fp, "DISPLAY[%d] DX=%u DY=%u DW=%u DH=%u MAGH=%u MAGV=%u\n",
 					i,
 					DISP[i].DISPLAY.DX,
 					DISP[i].DISPLAY.DY,
