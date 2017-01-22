@@ -69,7 +69,7 @@ class ringbuffer_base
 
 public:
     ringbuffer_base(void):
-        write_index_(0), read_index_(0)
+        write_index_(0), read_index_(0), pending_pop_read_index(0)
     {
         // Use dynamically allocation here with no T object dependency
         // Otherwise the ringbuffer_base destructor will call the destructor
