@@ -24,6 +24,7 @@
 
 bool s_IS_OPENGL = false;
 bool GSTextureCache::m_disable_partial_invalidation = false;
+bool GSTextureCache::m_wrap_gs_mem = false;
 
 GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
@@ -45,6 +46,8 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 		m_can_convert_depth            = true;
 		m_texture_inside_rt            = false;
 	}
+
+	m_wrap_gs_mem = theApp.GetConfigB("wrap_gs_mem");
 
 	m_paltex = theApp.GetConfigB("paltex");
 	m_can_convert_depth &= s_IS_OPENGL; // only supported by openGL so far
@@ -1657,9 +1660,9 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 			{
 				uint32 block = base + off->block.col[x >> 3];
 
-				if(block < MAX_BLOCKS)
+				if(block < MAX_BLOCKS || m_wrap_gs_mem)
 				{
-					uint32 addr = i >> 3;
+					uint32 addr = (i >> 3) % MAX_BLOCKS;
 
 					uint32 row = addr >> 5;
 					uint32 col = 1 << (addr & 31);
@@ -1686,8 +1689,10 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 			{
 				uint32 block = base + off->block.col[x >> 3];
 
-				if(block < MAX_BLOCKS)
+				if(block < MAX_BLOCKS || m_wrap_gs_mem)
 				{
+					block %= MAX_BLOCKS;
+
 					uint32 row = block >> 5;
 					uint32 col = 1 << (block & 31);
 
