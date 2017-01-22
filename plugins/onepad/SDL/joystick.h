@@ -36,11 +36,13 @@ class JoystickInfo : GamePad
 public:
     JoystickInfo()
         : GamePad()
-        , joy(NULL)
+        , joy(nullptr)
     {
 #if SDL_MAJOR_VERSION >= 2
-        haptic = NULL;
+        haptic = nullptr;
         first = true;
+        memset(effects, 0, sizeof(effects));
+        memset(effects_id, 0, sizeof(effects_id));
 #endif
     }
 

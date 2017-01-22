@@ -33,6 +33,12 @@ JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow *paren
               wxCLOSE_BOX |
               wxCLIP_CHILDREN)
 {
+    m_init_reverse_Lx = false;
+    m_init_reverse_Ly = false;
+    m_init_reverse_Rx = false;
+    m_init_reverse_Ry = false;
+    m_init_mouse_Ljoy = false;
+    m_init_mouse_Rjoy = false;
 
     m_pad_id = pad;
     m_isForLeftJoystick = left;
@@ -64,6 +70,10 @@ JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow *paren
             _T("Use mouse for left analog joystick"), // Label
             wxPoint(20, 60)                           // Position
             );
+
+        m_cb_reverse_Rx = nullptr;
+        m_cb_reverse_Ry = nullptr;
+        m_cb_mouse_Rjoy = nullptr;
     } else {
         m_cb_reverse_Rx = new wxCheckBox(
             m_pan_joystick_config, // Parent
@@ -85,6 +95,10 @@ JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow *paren
             _T("Use mouse for right analog joystick"), // Label
             wxPoint(20, 60)                            // Position
             );
+
+        m_cb_reverse_Lx = nullptr;
+        m_cb_reverse_Ly = nullptr;
+        m_cb_mouse_Ljoy = nullptr;
     }
 
     m_bt_ok = new wxButton(
