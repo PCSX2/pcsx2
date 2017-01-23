@@ -1,4 +1,4 @@
-//Copyright (C) 2017 PCSX2 Dev Team
+//Copyright (C) 2016 PCSX2 Dev Team
 //Copyright (c) David Quintana <DavidQuintana@canal21.com>
 //
 //This library is free software; you can redistribute it and/or
