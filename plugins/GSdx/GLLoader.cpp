@@ -370,8 +370,8 @@ namespace GLLoader {
 				fprintf(stderr, "OpenGL renderer is slow on AMD GPU due to inefficient driver.Please check the links below.\n"
 					"https://community.amd.com/message/2756964\n"
 					"https://community.amd.com/thread/205702\n"
-					"Note: Due to an AMD GPU OpenGL driver issue, setting Blending Unit Accuracy to "None" can cause a application or system crash.\n"
-					"Keep Blending Unit Accuracy set to at least the default "Basic".\n"
+					"Note: Due to an AMD GPU OpenGL driver issue, setting Blending Unit Accuracy to \"None\" can cause a application or system crash.\n"
+					"Keep Blending Unit Accuracy set to at least the default \"Basic\".\n"
 					"AMD have a fix for the issue that will be released in the coming months. The issue does not affect AMD GPU's on legacy drivers.\n");
 			}
 		}
