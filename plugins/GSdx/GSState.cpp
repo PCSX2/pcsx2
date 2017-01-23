@@ -405,9 +405,27 @@ GSVideoMode GSState::GetVideoMode()
 	return videomode;
 }
 
-GSVector4i GSState::GetDisplayRect(int i, bool merged_rect)
+GSVector4i GSState::GetDisplayRect(int i)
 {
-	if(i < 0) i = IsEnabled(1) ? 1 : 0;
+	if (!IsEnabled(0) && !IsEnabled(1))
+		return GSVector4i(0);
+
+	// If no specific context is requested then pass the merged rectangle as return value
+	if (i == -1)
+	{
+		if (m_regs->PMODE.EN1 & m_regs->PMODE.EN2)
+		{
+			GSVector4i r[2] = { GetDisplayRect(0), GetDisplayRect(1) };
+			GSVector4i r_intersect = r[0].rintersect(r[1]);
+			GSVector4i r_union = r[0].runion_ordered(r[1]);
+
+			// If the conditions for passing the merged rectangle is unsatisfied, then
+			// pass the rectangle with the bigger size.
+			bool can_be_merged = !r_intersect.width() || !r_intersect.height() || r_intersect.xyxy().eq(r_union.xyxy());
+			return (can_be_merged) ? r_union : r[r[1].rarea() > r[0].rarea()];
+		}
+		i = m_regs->PMODE.EN2;
+	}
 
 	GSVideoMode videomode = GetVideoMode();
 	GSVector2i magnification (m_regs->DISP[i].DISPLAY.MAGH + 1, m_regs->DISP[i].DISPLAY.MAGV + 1);
@@ -432,17 +450,6 @@ GSVector4i GSState::GetDisplayRect(int i, bool merged_rect)
 	rectangle.top = m_regs->DISP[i].DISPLAY.DY / magnification.y;
 	rectangle.right = rectangle.left + width;
 	rectangle.bottom = rectangle.top + height;
-
-	if ((m_regs->PMODE.EN1 & m_regs->PMODE.EN2) && merged_rect)
-	{
-		GSVector4i opposite_output = GetDisplayRect(!i);
-		GSVector4i r_intersect = opposite_output.rintersect(rectangle);
-		GSVector4i r_union = opposite_output.runion_ordered(rectangle);
-
-		if(!(r_intersect.width() && r_intersect.height()) ||
-			r_intersect.xyxy().eq(r_union.xyxy()))
-			return r_union;
-	}
 
 	return rectangle;
 }
@@ -491,13 +498,9 @@ bool GSState::IsEnabled(int i)
 {
 	ASSERT(i >= 0 && i < 2);
 
-	if(i == 0 && m_regs->PMODE.EN1)
+	if ((i == 0 && m_regs->PMODE.EN1) || (i == 1 && m_regs->PMODE.EN2))
 	{
-		return m_regs->DISP[0].DISPLAY.DW || m_regs->DISP[0].DISPLAY.DH;
-	}
-	else if(i == 1 && m_regs->PMODE.EN2)
-	{
-		return m_regs->DISP[1].DISPLAY.DW || m_regs->DISP[1].DISPLAY.DH;
+		return m_regs->DISP[i].DISPLAY.DW && m_regs->DISP[i].DISPLAY.DH;
 	}
 
 	return false;
