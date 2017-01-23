@@ -236,6 +236,11 @@ public:
 		return *this - xyxy(); // same as GSVector4i(0, 0, width(), height());
 	}
 
+	__forceinline unsigned int rarea() const
+	{
+		return width() * height();
+	}
+
 	__forceinline bool rempty() const
 	{
 		return (*this < zwzw()).mask() != 0x00ff;

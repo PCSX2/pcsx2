@@ -421,8 +421,8 @@ void GSTextureCache::ScaleTexture(GSTexture* texture)
 
 	if (custom_resolution)
 	{
-		int width = m_renderer->GetDisplayRect(-1, true).width();
-		int height = m_renderer->GetDisplayRect(-1, true).height();
+		int width = m_renderer->GetDisplayRect().width();
+		int height = m_renderer->GetDisplayRect().height();
 
 		GSVector2i requested_resolution = m_renderer->GetCustomResolution();
 		scale_factor.x = static_cast<float>(requested_resolution.x) / width;
