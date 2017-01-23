@@ -456,8 +456,6 @@ GSVector4i GSState::GetDisplayRect(int i)
 
 GSVector4i GSState::GetFrameRect(int i)
 {
-	if (i < 0) i = IsEnabled(1) ? 1 : 0;
-
 	GSVector4i rectangle = GetDisplayRect(i);
 
 	int w = rectangle.width();
@@ -471,11 +469,13 @@ GSVector4i GSState::GetFrameRect(int i)
 	rectangle.right = rectangle.left + w;
 	rectangle.bottom = rectangle.top + h;
 
-	/*static GSVector4i old_r = (GSVector4i) 0;
-	if ((old_r.left != r.left) || (old_r.right != r.right) || (old_r.top != r.top) || (old_r.right != r.right)){
-	printf("w %d  h %d  left %d  top %d  right %d  bottom %d\n",w,h,r.left,r.top,r.right,r.bottom);
-	}
-	old_r = r;*/
+#ifdef ENABLE_PCRTC_DEBUG
+	static GSVector4i old_r[2] = { GSVector4i(0), GSVector4i(0) };
+	if (!old_r[i].eq(rectangle))
+		printf("Frame rectangle [%d] update!\nwidth: %d  height: %d  left: %d  top: %d  right: %d  bottom: %d\n",
+			i,w,h, rectangle.left, rectangle.top, rectangle.right, rectangle.bottom);
+	old_r[i] = rectangle;
+#endif
 
 	return rectangle;
 }
