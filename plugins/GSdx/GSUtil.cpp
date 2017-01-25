@@ -48,7 +48,7 @@ const char* GSUtil::GetLibName()
 	snprintf(name, sizeof(name), "GSdx "
 
 #ifdef _WIN32
-		"%lld "
+		""
 #endif
 #ifdef _M_AMD64
 		"64-bit "
@@ -63,9 +63,6 @@ const char* GSUtil::GetLibName()
 		"(GCC %d.%d.%d %s/%s)",
 #else
 		"(%s/%s)",
-#endif
-#ifdef _WIN32
-		SVN_REV,
 #endif
 #ifdef __INTEL_COMPILER
 		__INTEL_COMPILER / 100, __INTEL_COMPILER % 100,
