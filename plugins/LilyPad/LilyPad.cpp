@@ -736,8 +736,8 @@ char *CALLBACK PSEgetLibName()
     return version;
 #else
     static char version[50];
-	sprintf(version, "LilyPad");
-	return version;
+    sprintf(version, "LilyPad (%lld)", SVN_REV);
+    return version;
 #endif
 }
 

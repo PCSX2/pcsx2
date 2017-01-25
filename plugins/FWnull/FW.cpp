@@ -69,7 +69,7 @@ PS2EgetLibType()
 EXPORT_C_(char *)
 PS2EgetLibName()
 {
-    snprintf(libraryName, 255, "FWnull Driver");
+    snprintf(libraryName, 255, "FWnull Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");
     return libraryName;
 }
 
