@@ -15,7 +15,6 @@
 #define IDD_CONFIG_POPN                 112
 #define IDD_CONFIG_PS1_MOUSE            113
 #define IDD_CONFIG_NEGCON               114
-#define IDC_CLOSE_HACK1                 1099
 #define IDC_KB_DISABLE                  1100
 #define IDC_KB_DI                       1101
 #define IDC_KB_WM                       1102
@@ -28,7 +27,7 @@
 #define IDC_G_XI                        1109
 #define IDC_G_DI                        1110
 #define IDC_G_DS3                       1111
-#define IDC_CLOSE_HACK2                 1112
+#define IDC_CLOSE_HACK                  1112
 #define IDC_DEBUG_FILE                  1113
 #define IDC_GUITAR1                     1114
 #define IDC_ANALOG_START1               1115
@@ -98,7 +97,6 @@
 #define ID_RSTICK_LEFT                  0x1117
 #define ID_ANALOG                       0x1118
 #define ID_EXCLUDE                      0x1119
-#define ID_IGNORE                       0x111A
 #define IDC_FORCEFEEDBACK               0x111B
 #define IDC_FORCEFEEDBACK_FUNCTION      0x111C
 #define ID_BIG_MOTOR                    0x111D

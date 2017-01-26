@@ -88,9 +88,6 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"This option is useful when analog mode is enabled in a game that does not support it, as this causes the game to not recognise any input or to not even detect a controller.\n\n"
                    L"This option can also be used to enable analog mode in games that support, but do not automatically enable analog mode.\n\n"
                    L"Note: Analog mode enables the analog sticks to function on a DualShock controller, while in digital mode it behaves as an original PlayStation controller.\n\n";
-        case ID_IGNORE:
-            return L"Blocks the assigned keyboard button and does not pass it on to PCSX2. It currently cannot block the windows key (for unknown reasons).\n\n"
-                   L"Ignored keys are listed with pad 1's bindings. You do not have to configure ignored keys again when you change the keyboard input mode.";
         case ID_LOCK_ALL_INPUT:
             return L"Locks the current state of the pad. Any further input is handled normally, but the initial pad state is the locked state instead of a state with no buttons pressed. "
                    L"Pressing it again releases the old pad state, if the old pad state had any keys pressed. Otherwise, it's released automatically.";

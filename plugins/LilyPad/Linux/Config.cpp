@@ -229,7 +229,7 @@ int SaveSettings(wchar_t *file = 0)
     for (size_t i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++) {
         cfg.WriteBool(L"General Settings", BoolOptionsInfo[i].name, config.bools[i]);
     }
-    cfg.WriteInt(L"General Settings", L"Close Hacks", config.closeHacks);
+    cfg.WriteInt(L"General Settings", L"Close Hack", config.closeHack);
 
     cfg.WriteInt(L"General Settings", L"Keyboard Mode", config.keyboardApi);
     cfg.WriteInt(L"General Settings", L"Mouse Mode", config.mouseApi);
@@ -319,10 +319,7 @@ int LoadSettings(int force, wchar_t *file)
         config.bools[i] = cfg.ReadBool(L"General Settings", BoolOptionsInfo[i].name, BoolOptionsInfo[i].defaultValue);
     }
 
-
-    config.closeHacks = (u8)cfg.ReadInt(L"General Settings", L"Close Hacks");
-    if (config.closeHacks & 1)
-        config.closeHacks &= ~2;
+    config.closeHack = (u8)cfg.ReadInt(L"General Settings", L"Close Hack");
 
     config.keyboardApi = (DeviceAPI)cfg.ReadInt(L"General Settings", L"Keyboard Mode", LNX_KEYBOARD);
     if (!config.keyboardApi)

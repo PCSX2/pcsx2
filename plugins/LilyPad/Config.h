@@ -35,13 +35,12 @@ public:
 
     int deviceSelect[2][4];
 
-    u8 closeHacks;
+    u8 closeHack;
 
     DeviceAPI keyboardApi;
     DeviceAPI mouseApi;
 
     // Derived value, calculated by GetInput().
-    u8 ignoreKeys;
     u8 configureOnBind;
     bool bind;
 

@@ -970,10 +970,7 @@ ExtraWndProcResult StatusWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             PrepareActivityState(LOWORD(wParam) != WA_INACTIVE);
             break;
         case WM_CLOSE:
-            if (config.closeHacks & 1) {
-                QueueKeyEvent(VK_ESCAPE, KEYPRESS);
-                return NO_WND_PROC;
-            } else if (config.closeHacks & 2) {
+            if (config.closeHack) {
                 ExitProcess(0);
                 return NO_WND_PROC;
             }

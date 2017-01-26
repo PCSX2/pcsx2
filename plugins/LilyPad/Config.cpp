@@ -48,7 +48,7 @@ void PCSX2_overrideConfig(GeneralConfig &config_in_out)
     config_in_out.disableScreenSaver = 0;   // Not required - handled internally by PCSX2
     config_in_out.escapeFullscreenHack = 0; // Not required - handled internally by PCSX2
     config_in_out.saveStateTitle = 0;       // Not required - handled internally by PCSX2
-    config_in_out.closeHacks = 0;           // Cannot function when used by PCSX2
+    config_in_out.closeHack = 0;            // Cannot function when used by PCSX2
 }
 
 // Dialog widgets which should be disabled - mostly matching PCSX2_overrideConfig
@@ -59,8 +59,7 @@ const UINT *PCSX2_disabledWidgets()
         IDC_ESCAPE_FULLSCREEN_HACK,
         IDC_SAVE_STATE_TITLE,
         IDC_ANALOG_START1, // start in analog mode - only useful for PS1
-        IDC_CLOSE_HACK1,
-        IDC_CLOSE_HACK2,
+        IDC_CLOSE_HACK,
         0};
     return disabledWidgets;
 }
@@ -328,8 +327,6 @@ wchar_t *GetCommandStringW(u8 command, int port, int slot)
         int res = GetWindowTextW(hWnd, temp, 20);
         if ((unsigned int)res - 1 <= 18)
             return temp;
-    } else if (command == 0x7F) {
-        return L"Ignore Key";
     }
     return L"";
 }
@@ -450,26 +447,22 @@ void SelChanged(int port, int slot)
                     if (b) {
                         bFound++;
                         VirtualControl *control = &dev->virtualControls[b->controlIndex];
-                        // Ignore
-                        if (b->command != 0x7F) {
-                            // Only relative axes can't have negative sensitivity.
-                            if (((control->uid >> 16) & 0xFF) == RELAXIS) {
-                                disableFlip = 1;
-                            }
-                            turbo += b->turbo;
-                            if (b->sensitivity < 0) {
-                                flipped++;
-                                sensitivity -= b->sensitivity;
-                            } else {
-                                sensitivity += b->sensitivity;
-                            }
-                            if (((control->uid >> 16) & 0xFF) != PSHBTN && ((control->uid >> 16) & 0xFF) != TGLBTN) {
-                                deadZone += b->deadZone;
-                                skipDeadZone += b->skipDeadZone;
-                                nonButtons++;
-                            }
-                        } else
+                        // Only relative axes can't have negative sensitivity.
+                        if (((control->uid >> 16) & 0xFF) == RELAXIS) {
                             disableFlip = 1;
+                        }
+                        turbo += b->turbo;
+                        if (b->sensitivity < 0) {
+                            flipped++;
+                            sensitivity -= b->sensitivity;
+                        } else {
+                            sensitivity += b->sensitivity;
+                        }
+                        if (((control->uid >> 16) & 0xFF) != PSHBTN && ((control->uid >> 16) & 0xFF) != TGLBTN) {
+                            deadZone += b->deadZone;
+                            skipDeadZone += b->skipDeadZone;
+                            nonButtons++;
+                        }
                     } else
                         ffbFound++;
                 }
@@ -873,7 +866,7 @@ int SaveSettings(wchar_t *file = 0)
     for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++) {
         noError &= WritePrivateProfileInt(L"General Settings", BoolOptionsInfo[i].name, config.bools[i], file);
     }
-    WritePrivateProfileInt(L"General Settings", L"Close Hacks", config.closeHacks, file);
+    WritePrivateProfileInt(L"General Settings", L"Close Hack", config.closeHack, file);
 
     WritePrivateProfileInt(L"General Settings", L"Keyboard Mode", config.keyboardApi, file);
     WritePrivateProfileInt(L"General Settings", L"Mouse Mode", config.mouseApi, file);
@@ -983,9 +976,7 @@ int LoadSettings(int force, wchar_t *file)
     for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++) {
         config.bools[i] = GetPrivateProfileBool(L"General Settings", BoolOptionsInfo[i].name, BoolOptionsInfo[i].defaultValue, file);
     }
-    config.closeHacks = (u8)GetPrivateProfileIntW(L"General Settings", L"Close Hacks", 0, file);
-    if (config.closeHacks & 1)
-        config.closeHacks &= ~2;
+    config.closeHack = (u8)GetPrivateProfileIntW(L"General Settings", L"Close Hack", 0, file);
 
     config.keyboardApi = (DeviceAPI)GetPrivateProfileIntW(L"General Settings", L"Keyboard Mode", WM, file);
     if (!config.keyboardApi)
@@ -1546,8 +1537,6 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             SetupLogSlider(GetDlgItem(hWnd, IDC_SLIDER_SENSITIVITY));
             SetupLogSlider(GetDlgItem(hWnd, IDC_SLIDER_DEADZONE));
             SetupLogSlider(GetDlgItem(hWnd, IDC_SLIDER_SKIP_DEADZONE));
-            if (port || slot)
-                EnableWindow(GetDlgItem(hWnd, ID_IGNORE), 0);
             CheckDlgButton(hWnd, IDC_CONFIGURE_ON_BIND, BST_CHECKED * config.configureOnBind);
 
             AddTooltip(IDC_BINDINGS_LIST, hWnd);
@@ -1555,7 +1544,6 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             AddTooltip(IDC_CONFIGURE_ON_BIND, hWnd);
             AddTooltip(ID_MOUSE, hWnd);
             AddTooltip(ID_ANALOG, hWnd);
-            AddTooltip(ID_IGNORE, hWnd);
             AddTooltip(ID_LOCK_ALL_INPUT, hWnd);
             AddTooltip(ID_LOCK_DIRECTION, hWnd);
             AddTooltip(ID_LOCK_BUTTONS, hWnd);
@@ -1863,24 +1851,13 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                             SetTimer(hWnd, 1, 3000, 0);
                         }
                     }
-                } else if ((cmd >= ID_LOCK_BUTTONS && cmd <= ID_EXCLUDE) || cmd == ID_IGNORE) { // || cmd == ID_FORCE_FEEDBACK) {
+                } else if (cmd >= ID_LOCK_BUTTONS && cmd <= ID_EXCLUDE) { // || cmd == ID_FORCE_FEEDBACK) {
                     // Messes up things, unfortunately.
                     // End binding on a bunch of notification messages, and
                     // this will send a bunch.
                     // UnselectAll(hWndList);
                     EndBinding(hWnd);
-                    if (cmd != ID_IGNORE) {
-                        selected = cmd - (ID_SELECT - 0x10);
-                    } else {
-                        selected = 0x7F;
-                        for (int i = 0; i < dm->numDevices; i++) {
-                            if (dm->devices[i]->api != IGNORE_KEYBOARD) {
-                                dm->DisableDevice(i);
-                            } else {
-                                dm->EnableDevice(i);
-                            }
-                        }
-                    }
+                    selected = cmd - (ID_SELECT - 0x10);
 
                     hWndButtonProc.SetWndHandle(GetDlgItem(hWnd, cmd));
                     hWndButtonProc.Eat(DoNothingWndProc, 0);
@@ -2193,8 +2170,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             for (int j = 0; j < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); j++) {
                 CheckDlgButton(hWnd, BoolOptionsInfo[j].ControlId, BST_CHECKED * config.bools[j]);
             }
-            CheckDlgButton(hWnd, IDC_CLOSE_HACK1, BST_CHECKED * (config.closeHacks & 1));
-            CheckDlgButton(hWnd, IDC_CLOSE_HACK2, BST_CHECKED * ((config.closeHacks & 2) >> 1));
+            CheckDlgButton(hWnd, IDC_CLOSE_HACK, BST_CHECKED * config.closeHack);
 
             AddTooltip(IDC_M_WM, hWnd);
             AddTooltip(IDC_M_RAW, hWnd);
@@ -2278,21 +2254,13 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                 config.padConfigs[port][slot].autoAnalog = (IsDlgButtonChecked(hWnd, IDC_ANALOG_START1) == BST_CHECKED);
                 PropSheet_Changed(hWndProp, hWnd);
             } else {
-                int t = IDC_CLOSE_HACK1;
-                int test = LOWORD(wParam);
-                if (test == IDC_CLOSE_HACK1) {
-                    CheckDlgButton(hWnd, IDC_CLOSE_HACK2, BST_UNCHECKED);
-                } else if (test == IDC_CLOSE_HACK2) {
-                    CheckDlgButton(hWnd, IDC_CLOSE_HACK1, BST_UNCHECKED);
-                }
 
                 int mtap = config.multitap[0] + 2 * config.multitap[1];
 
                 for (int j = 0; j < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); j++) {
                     config.bools[j] = (IsDlgButtonChecked(hWnd, BoolOptionsInfo[j].ControlId) == BST_CHECKED);
                 }
-                config.closeHacks = (IsDlgButtonChecked(hWnd, IDC_CLOSE_HACK1) == BST_CHECKED) |
-                                    ((IsDlgButtonChecked(hWnd, IDC_CLOSE_HACK2) == BST_CHECKED) << 1);
+                config.closeHack = IsDlgButtonChecked(hWnd, IDC_CLOSE_HACK) == BST_CHECKED;
 
                 for (i = 0; i < 4; i++) {
                     if (i && IsDlgButtonChecked(hWnd, IDC_KB_DISABLE + i) == BST_CHECKED) {
