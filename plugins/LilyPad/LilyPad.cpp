@@ -1,5 +1,5 @@
 /*  LilyPad - Pad plugin for PS2 Emulator
- *  Copyright (C) 2002-2014  PCSX2 Dev Team/ChickenLiver
+ *  Copyright (C) 2002-2017  PCSX2 Dev Team/ChickenLiver
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
@@ -629,7 +629,7 @@ void Update(unsigned int port, unsigned int slot)
                     }
                 }
 
-                if (pads[port][slot].mode == 0x41) {
+                if (pads[port][slot].mode == MODE_DIGITAL) {
                     for (int i = 0; i <= 1; i++) {
                         if (s[port][slot].sticks[i].horiz >= 100)
                             s[port][slot].buttons[13] += s[port][slot].sticks[i].horiz;
@@ -1301,10 +1301,10 @@ u8 CALLBACK PADpoll(u8 value)
 
                     query.numBytes = 5;
                     if (pad->mode != MODE_DIGITAL) {
-                        query.response[5] = Cap((sum->sticks[0].horiz + 255) / 2);
-                        query.response[6] = Cap((sum->sticks[0].vert + 255) / 2);
-                        query.response[7] = Cap((sum->sticks[1].horiz + 255) / 2);
-                        query.response[8] = Cap((sum->sticks[1].vert + 255) / 2);
+                        query.response[5] = Cap((sum->sticks[0].horiz + 255) / 2); // Right stick: left & right
+                        query.response[6] = Cap((sum->sticks[0].vert + 255) / 2);  // Right stick: up & down
+                        query.response[7] = Cap((sum->sticks[1].horiz + 255) / 2); // Left stick: left & right
+                        query.response[8] = Cap((sum->sticks[1].vert + 255) / 2);  // Left stick: up & down
 
                         query.numBytes = 9;
                         if (pad->mode != MODE_ANALOG) {
@@ -1318,14 +1318,15 @@ u8 CALLBACK PADpoll(u8 value)
                             query.response[11] = (unsigned char)sum->buttons[12]; //D-pad up
                             query.response[12] = (unsigned char)sum->buttons[14]; //D-pad down
 
-                            query.response[13] = (unsigned char)sum->buttons[8];
-                            query.response[14] = (unsigned char)sum->buttons[9];
-                            query.response[15] = (unsigned char)sum->buttons[10];
-                            query.response[16] = (unsigned char)sum->buttons[11];
-                            query.response[17] = (unsigned char)sum->buttons[6];
-                            query.response[18] = (unsigned char)sum->buttons[7];
-                            query.response[19] = (unsigned char)sum->buttons[4];
-                            query.response[20] = (unsigned char)sum->buttons[5];
+                            query.response[13] = (unsigned char)sum->buttons[8];  // Triangle
+                            query.response[14] = (unsigned char)sum->buttons[9];  // Circle
+                            query.response[15] = (unsigned char)sum->buttons[10]; // Cross
+                            query.response[16] = (unsigned char)sum->buttons[11]; // Square
+
+                            query.response[17] = (unsigned char)sum->buttons[6]; // L1
+                            query.response[18] = (unsigned char)sum->buttons[7]; // R1
+                            query.response[19] = (unsigned char)sum->buttons[4]; // L2
+                            query.response[20] = (unsigned char)sum->buttons[5]; // R2
                             query.numBytes = 21;
                         }
                     }

@@ -1,5 +1,5 @@
 /*  LilyPad - Pad plugin for PS2 Emulator
- *  Copyright (C) 2002-2014  PCSX2 Dev Team/ChickenLiver
+ *  Copyright (C) 2002-2017  PCSX2 Dev Team/ChickenLiver
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
@@ -290,37 +290,37 @@ wchar_t *GetCommandStringW(u8 command, int port, int slot)
         HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], 0x10F0 + command);
         if (!hWnd) {
             wchar_t *strings[] = {
-                L"Lock Buttons",
-                L"Lock Input",
-                L"Lock Direction",
-                L"Mouse",
-                L"Select",
-                L"L3",
-                L"R3",
-                L"Start",
-                L"Up",
-                L"Right",
-                L"Down",
-                L"Left",
-                L"L2",
-                L"R2",
-                L"L1",
-                L"R1",
-                L"Triangle",
-                L"Circle",
-                L"Square",
-                L"Cross",
-                L"L-Stick Up",
-                L"L-Stick Right",
-                L"L-Stick Down",
-                L"L-Stick Left",
-                L"R-Stick Up",
-                L"R-Stick Right",
-                L"R-Stick Down",
-                L"R-Stick Left",
-                L"Analog",
-                L"Excluded Input",
-                L"Turbo",
+                L"Lock Buttons",   // 0x0C (12)
+                L"Lock Input",     // 0x0D (13)
+                L"Lock Direction", // 0x0E (14)
+                L"Mouse",          // 0x0F (15)
+                L"Select",         // 0x10 (16)
+                L"L3",             // 0x11 (17)
+                L"R3",             // 0x12 (18)
+                L"Start",          // 0x13 (19)
+                L"Up",             // 0x14 (20)
+                L"Right",          // 0x15 (21)
+                L"Down",           // 0x16 (22)
+                L"Left",           // 0x17 (23)
+                L"L2",             // 0x18 (24)
+                L"R2",             // 0x19 (25)
+                L"L1",             // 0x1A (26)
+                L"R1",             // 0x1B (27)
+                L"Triangle",       // 0x1C (28)
+                L"Circle",         // 0x1D (29)
+                L"Square",         // 0x1E (30)
+                L"Cross",          // 0x1F (31)
+                L"L-Stick Up",     // 0x20 (32)
+                L"L-Stick Right",  // 0x21 (33)
+                L"L-Stick Down",   // 0x22 (34)
+                L"L-Stick Left",   // 0x23 (35)
+                L"R-Stick Up",     // 0x24 (36)
+                L"R-Stick Right",  // 0x25 (37)
+                L"R-Stick Down",   // 0x26 (38)
+                L"R-Stick Left",   // 0x27 (39)
+                L"Analog",         // 0x28 (40)
+                L"Excluded Input", // 0x29 (41)
+                L"Turbo",          // 0x2A (42)
             };
             return strings[command - 0xC];
         }
@@ -816,19 +816,24 @@ void Populate(int port, int slot, int padtype)
     hWnd = GetDlgItem(hWnds[port][slot][padtype], IDC_FORCEFEEDBACK);
     SendMessage(hWnd, CB_RESETCONTENT, 0, 0);
     int added = 0;
+    bool enable = false;
     for (int i = 0; i < dm->numDevices; i++) {
         Device *dev = dm->devices[i];
         if (dev->enabled && dev->numFFAxes && dev->numFFEffectTypes) {
             SendMessage(hWnd, CB_INSERTSTRING, added, (LPARAM)dev->displayName);
             SendMessage(hWnd, CB_SETITEMDATA, added, i);
             added++;
+
+            int selectedDevice = config.deviceSelect[port][slot];
+            if (selectedDevice == -1 || dm->devices[selectedDevice] == dev) {
+                enable = true;
+            }
         }
     }
     SendMessage(hWnd, CB_SETCURSEL, 0, 0);
-    EnableWindow(hWnd, added != 0);
-    EnableWindow(GetDlgItem(hWnds[port][slot][padtype], ID_BIG_MOTOR), added != 0);
-    EnableWindow(GetDlgItem(hWnds[port][slot][padtype], ID_SMALL_MOTOR), added != 0);
-
+    EnableWindow(hWnd, added != 0 && enable);
+    EnableWindow(GetDlgItem(hWnds[port][slot][padtype], ID_BIG_MOTOR), added != 0 && enable);
+    EnableWindow(GetDlgItem(hWnds[port][slot][padtype], ID_SMALL_MOTOR), added != 0 && enable);
     SelChanged(port, slot);
 }
 
@@ -948,7 +953,7 @@ int LoadSettings(int force, wchar_t *file)
         return 0;
 
     if (createIniDir) {
-        CreateDirectory(L"inis", 0);
+        PADsetSettingsDir("inis");
         createIniDir = false;
     }
 
@@ -1091,7 +1096,7 @@ int LoadSettings(int force, wchar_t *file)
             string[w] = 0;
             // wcstok not in ntdll.  More effore than its worth to shave off
             // whitespace without it.
-            if (sscanf(string, " %20s %i , %i , %i , %i", effect, &port, &motor, &slot, &padtype) == 5) {
+            if (sscanf(string, " %100s %i , %i , %i , %i", effect, &port, &motor, &slot, &padtype) == 5) {
                 char *s;
                 if (oldIni) { // Make sure bindings aren't applied to "Unplugged" padtype and FF settings are read from old location.
                     if (config.padConfigs[port][slot].type != 0) {
@@ -1289,7 +1294,7 @@ void DeleteBinding(int port, int slot, int padtype, Device *dev, Binding *b)
     dev->pads[port][slot][padtype].numBindings--;
 }
 
-void DeleteBinding(int port, int slot, Device *dev, ForceFeedbackBinding *b)
+void DeleteFFBinding(int port, int slot, Device *dev, ForceFeedbackBinding *b)
 {
     int padtype = config.padConfigs[port][slot].type;
     if (dev->enabled && hWnds[port][slot][padtype]) {
@@ -1317,7 +1322,7 @@ int DeleteByIndex(int port, int slot, int index)
         if (b) {
             DeleteBinding(port, slot, padtype, dev, b);
         } else {
-            DeleteBinding(port, slot, dev, ffb);
+            DeleteFFBinding(port, slot, dev, ffb);
         }
         return 1;
     }
@@ -1519,13 +1524,12 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             ListView_SetExtendedListViewStyleEx(hWndList, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
             LVCOLUMN c;
             c.mask = LVCF_TEXT | LVCF_WIDTH;
-            c.cx = 100;
+            c.cx = 90;
             c.pszText = L"Device";
             ListView_InsertColumn(hWndList, 0, &c);
             c.cx = 70;
             c.pszText = L"PC Control";
             ListView_InsertColumn(hWndList, 1, &c);
-            c.cx = 84;
             c.pszText = L"PS2 Control";
             ListView_InsertColumn(hWndList, 2, &c);
             selected = 0;
@@ -1574,6 +1578,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             EnableWindow(hWndDS, added != 0);
 
             Populate(port, slot, padtype);
+            ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
         } break;
         case WM_DEVICECHANGE:
             if (wParam == DBT_DEVNODES_CHANGED) {
@@ -1668,8 +1673,10 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                     if (key->wVKey == VK_DELETE ||
                         key->wVKey == VK_BACK) {
 
-                        if (DeleteSelected(port, slot))
+                        if (DeleteSelected(port, slot)) {
                             PropSheet_Changed(hWndProp, hWnds[0]);
+                            ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
+                        }
                     }
                 }
                 // Update sensitivity and motor/binding display on redraw
@@ -1751,6 +1758,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                 int selectedDev = SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETCURSEL, 0, 0);
                 config.deviceSelect[port][slot] = SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETITEMDATA, selectedDev, 0);
                 RefreshEnabledDevicesAndDisplay(1, hWndGeneral, 1);
+                ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
             } else if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_FF_EFFECT) {
                 int typeIndex = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
                 if (typeIndex >= 0)
@@ -1985,7 +1993,6 @@ void UpdatePadPages()
     HPROPSHEETPAGE pages[10];
     int count = 0;
     memset(hWnds, 0, sizeof(hWnds));
-    int slot = 0;
     for (int port = 0; port < 2; port++) {
         for (int slot = 0; slot < 4; slot++) {
             if (config.padConfigs[port][slot].type == DisabledPad)
@@ -2112,7 +2119,7 @@ void UpdatePadList(HWND hWnd)
         CheckDlgButton(hWnd, IDC_ANALOG_START1, BST_CHECKED * config.padConfigs[port][slot].autoAnalog);
     }
     EnableWindow(hWndCombo, enable);
-    EnableWindow(hWndAnalog, enable);
+    EnableWindow(hWndAnalog, config.padConfigs[port][slot].type == Dualshock2Pad ? enable : 0);
     //ListView_SetExtendedListViewStyleEx(hWndList, LVS_EX_DOUBLEBUFFER|LVS_EX_ONECLICKACTIVATE, LVS_EX_DOUBLEBUFFER|LVS_EX_ONECLICKACTIVATE);
     recurse = 0;
 }
@@ -2133,19 +2140,14 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                 c.cx = 120;
                 c.pszText = L"Type";
                 ListView_InsertColumn(hWndList, 1, &c);
-                if (config.multitap[0] || config.multitap[1]) {
-                    c.cx = 84;
-                } else {
-                    c.cx = 101;
-                }
                 c.pszText = L"Bindings";
                 ListView_InsertColumn(hWndList, 2, &c);
+                ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
                 selected = 0;
                 ListView_SetExtendedListViewStyleEx(hWndList, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
                 SendMessage(hWndList, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT);
                 for (int i = 0; i < numPadTypes; i++)
                     SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM)padTypes[i]);
-
 
                 if (ps2e) {
                     // This disabled some widgets which are not required for PCSX2.
@@ -2181,6 +2183,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             AddTooltip(IDC_PAD_LIST, hWnd);
             AddTooltip(IDC_PAD_TYPE, hWnd);
             AddTooltip(IDC_DIAG_LIST, hWnd);
+            AddTooltip(IDC_G_XI, hWnd);
             AddTooltip(IDC_ANALOG_START1, hWnd);
 
             if (config.keyboardApi < 0 || config.keyboardApi > 3)
@@ -2274,16 +2277,15 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 
                 if (mtap != config.multitap[0] + 2 * config.multitap[1]) {
                     UpdatePadPages();
-                    if (config.multitap[0] || config.multitap[1]) {
-                        ListView_SetColumnWidth(hWndList, 2, 84);
-                    } else {
-                        ListView_SetColumnWidth(hWndList, 2, 101);
-                    }
                 }
                 RefreshEnabledDevicesAndDisplay(0, hWnd, 1);
                 UpdatePadList(hWnd);
 
                 PropSheet_Changed(hWndProp, hWnd);
+
+                if (mtap != config.multitap[0] + 2 * config.multitap[1]) {
+                    ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
+                }
             }
             break;
         case WM_NOTIFY: {

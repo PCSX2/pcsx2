@@ -1,5 +1,5 @@
 /*  LilyPad - Pad plugin for PS2 Emulator
- *  Copyright (C) 2016  PCSX2 Dev Team/ChickenLiver
+ *  Copyright (C) 2016-2017  PCSX2 Dev Team/ChickenLiver
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
@@ -63,6 +63,8 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Double-click a device in the list or right-click it and select \"Test Device\" to display a continuously updated list of the state of all inputs on the selected device.\n"
                    L"Use this option to check if all the inputs on a controller function properly.\n\n"
                    L"Right-click and select \"Refresh\" to update the list of devices in case a recently connected device has not shown up yet.";
+        case IDC_G_XI:
+            return L"Xbox 360 controllers(and devices imitating it) only";
         // Pad tabs
         case IDC_BINDINGS_LIST:
             return L"Shows a list of currently bound inputs of the selected Pad.\n\n"
