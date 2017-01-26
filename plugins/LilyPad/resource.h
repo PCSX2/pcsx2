@@ -40,7 +40,6 @@
 #define IDC_MULTIPLE_BINDING            1122
 #define IDC_FORCE_HIDE                  1124
 #define IDC_GH2_HACK                    1125
-#define IDC_TURBO_KEY_HACK              1128
 #define IDC_SAVE_STATE_TITLE            1129
 #define IDC_PAD_LIST                    1130
 #define IDC_COMBO1                      1131
@@ -51,7 +50,7 @@
 #define IDC_AXIS_DIRECTION              0x1002
 #define IDC_AXIS_CONTROL                0x1003
 #define IDC_AXIS_SENSITIVITY            0x1004
-#define IDC_TURBO                       0x1005
+#define IDC_RAPID_FIRE                  0x1005
 #define IDC_AXIS_DEVICE                 0x1006
 #define ID_SENSITIVITY                  0x1007
 #define IDC_SLIDER_DEADZONE             0x1008
@@ -105,6 +104,7 @@
 #define IDC_CONFIGURE_ON_BIND           0x1120
 #define IDC_DEVICE_SELECT               0x1121
 #define IDC_FACE_ANALOG                 0x1122
+#define ID_TURBO_KEY                    0x111A
 #define IDC_BINDINGS_LIST               0x1200
 #define ID_SAVE                         0x1201
 #define ID_LOAD                         0x1202

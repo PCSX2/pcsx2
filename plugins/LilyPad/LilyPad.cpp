@@ -392,16 +392,13 @@ void ProcessButtonBinding(Binding *b, ButtonSum *sum, int value)
         value = std::min((int)(((__int64)value * (FULLY_DOWN - (__int64)b->skipDeadZone)) / FULLY_DOWN) + b->skipDeadZone, FULLY_DOWN);
     }
 
-    if (config.turboKeyHack == 1) { // send a tabulator keypress to emulator
-        //printf("%x\n", b->command);
-        if (b->command == 0x11) { // L3 button
-            static unsigned int LastCheck = 0;
-            unsigned int t = timeGetTime();
-            if (t - LastCheck < 300)
-                return;
-            QueueKeyEvent(VK_TAB, KEYPRESS);
-            LastCheck = t;
-        }
+    if (b->command == 0x2A) { // Turbo key
+        static unsigned int LastCheck = 0;
+        unsigned int t = timeGetTime();
+        if (t - LastCheck < 300)
+            return;
+        QueueKeyEvent(VK_TAB, KEYPRESS);
+        LastCheck = t;
     }
 
     int sensitivity = b->sensitivity;
@@ -530,8 +527,8 @@ void Update(unsigned int port, unsigned int slot)
         0, 0, hWndTop, &hWndGSProc};
 #endif
     dm->Update(&info);
-    static int turbo = 0;
-    turbo++;
+    static int rapidFire = 0;
+    rapidFire++;
     for (i = 0; i < dm->numDevices; i++) {
         Device *dev = dm->devices[i];
         // Skip both disabled devices and inactive enabled devices.
@@ -547,7 +544,7 @@ void Update(unsigned int port, unsigned int slot)
                     Binding *b = dev->pads[port][slot][padtype].bindings + j;
                     int cmd = b->command;
                     int state = dev->virtualControlState[b->controlIndex];
-                    if (!(turbo & b->turbo)) {
+                    if (!(rapidFire & b->rapidFire)) {
                         if (cmd > 0x0F && cmd != 0x28) {
                             ProcessButtonBinding(b, &s[port][slot], state);
                         } else if ((state >> 15) && !(dev->oldVirtualControlState[b->controlIndex] >> 15)) {

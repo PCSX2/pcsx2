@@ -112,7 +112,6 @@ const GeneralSettingsBool BoolOptionsInfo[] = {
 
     {L"Save State in Title", IDC_SAVE_STATE_TITLE, 0}, // Not required for PCSX2
     {L"GH2", IDC_GH2_HACK, 0},
-    {L"Turbo Key Hack", IDC_TURBO_KEY_HACK, 0},
 };
 
 void Populate(int port, int slot, int padtype);
@@ -287,7 +286,7 @@ wchar_t *GetCommandStringW(u8 command, int port, int slot)
         return temp;
     }
     /* Get text from the buttons. */
-    if (command >= 0x0C && command <= 0x29) {
+    if (command >= 0x0C && command <= 0x2A) {
         HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], 0x10F0 + command);
         if (!hWnd) {
             wchar_t *strings[] = {
@@ -321,6 +320,7 @@ wchar_t *GetCommandStringW(u8 command, int port, int slot)
                 L"R-Stick Left",
                 L"Analog",
                 L"Excluded Input",
+                L"Turbo",
             };
             return strings[command - 0xC];
         }
@@ -365,7 +365,7 @@ void CALLBACK PADsetSettingsDir(const char *dir)
 }
 
 int GetBinding(int port, int slot, int index, Device *&dev, Binding *&b, ForceFeedbackBinding *&ffb);
-int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int turbo, int deadZone, int skipDeadZone);
+int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int rapidFire, int deadZone, int skipDeadZone);
 
 int CreateEffectBinding(Device *dev, wchar_t *effectName, unsigned int port, unsigned int slot, unsigned int padtype, unsigned int motor, ForceFeedbackBinding **binding);
 
@@ -380,8 +380,8 @@ void SelChanged(int port, int slot)
     wchar_t *devName = L"N/A";
     wchar_t *key = L"N/A";
     wchar_t *command = L"N/A";
-    // Second value is now turbo.
-    int turbo = -1;
+    // Second value is now rapidFire.
+    int rapidFire = -1;
     int sensitivity = 0;
     int deadZone = 0;
     int skipDeadZone = 0;
@@ -451,7 +451,7 @@ void SelChanged(int port, int slot)
                         if (((control->uid >> 16) & 0xFF) == RELAXIS) {
                             disableFlip = 1;
                         }
-                        turbo += b->turbo;
+                        rapidFire += b->rapidFire;
                         if (b->sensitivity < 0) {
                             flipped++;
                             sensitivity -= b->sensitivity;
@@ -470,14 +470,14 @@ void SelChanged(int port, int slot)
         }
         if ((bFound && ffbFound) || ffbFound > 1) {
             ffb = 0;
-            turbo = -1;
+            rapidFire = -1;
             deadZone = 0;
             skipDeadZone = 0;
             sensitivity = 0;
             disableFlip = 1;
             bFound = ffbFound = 0;
         } else if (bFound) {
-            turbo++;
+            rapidFire++;
             sensitivity /= bFound;
             if (nonButtons) {
                 deadZone /= nonButtons;
@@ -551,13 +551,13 @@ void SelChanged(int port, int slot)
         if (disableFlip)
             EnableWindow(GetDlgItem(hWnd, IDC_FLIP), 0);
 
-        EnableWindow(GetDlgItem(hWnd, IDC_TURBO), turbo >= 0);
-        if (turbo > 0 && turbo < bFound) {
-            SendMessage(GetDlgItem(hWnd, IDC_TURBO), BM_SETSTYLE, BS_AUTO3STATE, 0);
-            CheckDlgButton(hWnd, IDC_TURBO, BST_INDETERMINATE);
+        EnableWindow(GetDlgItem(hWnd, IDC_RAPID_FIRE), rapidFire >= 0);
+        if (rapidFire > 0 && rapidFire < bFound) {
+            SendMessage(GetDlgItem(hWnd, IDC_RAPID_FIRE), BM_SETSTYLE, BS_AUTO3STATE, 0);
+            CheckDlgButton(hWnd, IDC_RAPID_FIRE, BST_INDETERMINATE);
         } else {
-            SendMessage(GetDlgItem(hWnd, IDC_TURBO), BM_SETSTYLE, BS_AUTOCHECKBOX, 0);
-            CheckDlgButton(hWnd, IDC_TURBO, BST_CHECKED * (bFound && turbo == bFound));
+            SendMessage(GetDlgItem(hWnd, IDC_RAPID_FIRE), BM_SETSTYLE, BS_AUTOCHECKBOX, 0);
+            CheckDlgButton(hWnd, IDC_RAPID_FIRE, BST_CHECKED * (bFound && rapidFire == bFound));
         }
         HWND hWndCombo = GetDlgItem(hWnd, IDC_AXIS_DIRECTION);
         int enableCombo = 0;
@@ -712,7 +712,7 @@ int ListBoundEffect(int port, int slot, Device *dev, ForceFeedbackBinding *b)
 }
 
 // Only for use with control bindings.  Affects all highlighted bindings.
-void ChangeValue(int port, int slot, int *newSensitivity, int *newTurbo, int *newDeadZone, int *newSkipDeadZone)
+void ChangeValue(int port, int slot, int *newSensitivity, int *newRapidFire, int *newDeadZone, int *newSkipDeadZone)
 {
     int padtype = config.padConfigs[port][slot].type;
     if (!hWnds[port][slot][padtype])
@@ -748,8 +748,8 @@ void ChangeValue(int port, int slot, int *newSensitivity, int *newTurbo, int *ne
                 b->skipDeadZone = *newSkipDeadZone;
             }
         }
-        if (newTurbo) {
-            b->turbo = *newTurbo;
+        if (newRapidFire) {
+            b->rapidFire = *newRapidFire;
         }
     }
     PropSheet_Changed(hWndProp, hWnds[port][slot][padtype]);
@@ -912,7 +912,7 @@ int SaveSettings(wchar_t *file = 0)
                         Binding *b = dev->pads[port][slot][padtype].bindings + j;
                         VirtualControl *c = &dev->virtualControls[b->controlIndex];
                         wsprintfW(temp, L"Binding %i", bindingCount++);
-                        wsprintfW(temp2, L"0x%08X, %i, %i, %i, %i, %i, %i, %i, %i", c->uid, port, b->command, b->sensitivity, b->turbo, slot, b->deadZone, b->skipDeadZone, padtype);
+                        wsprintfW(temp2, L"0x%08X, %i, %i, %i, %i, %i, %i, %i, %i", c->uid, port, b->command, b->sensitivity, b->rapidFire, slot, b->deadZone, b->skipDeadZone, padtype);
                         noError &= WritePrivateProfileStringW(id, temp, temp2, file);
                     }
                     for (int j = 0; j < dev->pads[port][slot][padtype].numFFBindings; j++) {
@@ -1039,7 +1039,7 @@ int LoadSettings(int force, wchar_t *file)
             }
             last = 1;
             unsigned int uid;
-            int port, command, sensitivity, turbo, slot = 0, deadZone = 0, skipDeadZone = 0, padtype = 0;
+            int port, command, sensitivity, rapidFire, slot = 0, deadZone = 0, skipDeadZone = 0, padtype = 0;
             int w = 0;
             char string[1000];
             while (temp2[w]) {
@@ -1047,7 +1047,7 @@ int LoadSettings(int force, wchar_t *file)
                 w++;
             }
             string[w] = 0;
-            int len = sscanf(string, " %i , %i , %i , %i , %i , %i , %i , %i , %i", &uid, &port, &command, &sensitivity, &turbo, &slot, &deadZone, &skipDeadZone, &padtype);
+            int len = sscanf(string, " %i , %i , %i , %i , %i , %i , %i , %i , %i", &uid, &port, &command, &sensitivity, &rapidFire, &slot, &deadZone, &skipDeadZone, &padtype);
             if (len >= 5 && type) {
                 VirtualControl *c = dev->GetVirtualControl(uid);
                 if (!c)
@@ -1064,7 +1064,7 @@ int LoadSettings(int force, wchar_t *file)
                         padtype = skipDeadZone;
                         skipDeadZone = 0;
                     }
-                    BindCommand(dev, uid, port, slot, padtype, command, sensitivity, turbo, deadZone, skipDeadZone);
+                    BindCommand(dev, uid, port, slot, padtype, command, sensitivity, rapidFire, deadZone, skipDeadZone);
                 }
             }
         }
@@ -1376,7 +1376,7 @@ int CreateEffectBinding(Device *dev, wchar_t *effectID, unsigned int port, unsig
     return ListBoundEffect(port, slot, dev, b);
 }
 
-int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int turbo, int deadZone, int skipDeadZone)
+int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int rapidFire, int deadZone, int skipDeadZone)
 {
     // Checks needed because I use this directly when loading bindings.
     if (port > 1 || slot > 3 || padtype >= numPadTypes)
@@ -1418,7 +1418,7 @@ int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int s
     p->numBindings++;
     b->command = command;
     b->controlIndex = controlIndex;
-    b->turbo = turbo;
+    b->rapidFire = rapidFire;
     b->sensitivity = sensitivity;
     b->deadZone = deadZone;
     b->skipDeadZone = skipDeadZone;
@@ -1547,7 +1547,8 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             AddTooltip(ID_LOCK_ALL_INPUT, hWnd);
             AddTooltip(ID_LOCK_DIRECTION, hWnd);
             AddTooltip(ID_LOCK_BUTTONS, hWnd);
-            AddTooltip(IDC_TURBO, hWnd);
+            AddTooltip(ID_TURBO_KEY, hWnd);
+            AddTooltip(IDC_RAPID_FIRE, hWnd);
             AddTooltip(IDC_FLIP, hWnd);
             AddTooltip(IDC_SLIDER_DEADZONE, hWnd);
             AddTooltip(IDC_SLIDER_SKIP_DEADZONE, hWnd);
@@ -1740,7 +1741,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                             uid = (uid & 0x00FFFFFF) | axisUIDs[cbsel];
                             Binding backup = *b;
                             DeleteSelected(port, slot);
-                            int index = BindCommand(dev, uid, port, slot, padtype, backup.command, backup.sensitivity, backup.turbo, backup.deadZone, backup.skipDeadZone);
+                            int index = BindCommand(dev, uid, port, slot, padtype, backup.command, backup.sensitivity, backup.rapidFire, backup.deadZone, backup.skipDeadZone);
                             ListView_SetItemState(hWndList, index, LVIS_SELECTED, LVIS_SELECTED);
                             PropSheet_Changed(hWndProp, hWnd);
                         }
@@ -1851,7 +1852,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                             SetTimer(hWnd, 1, 3000, 0);
                         }
                     }
-                } else if (cmd >= ID_LOCK_BUTTONS && cmd <= ID_EXCLUDE) { // || cmd == ID_FORCE_FEEDBACK) {
+                } else if (cmd >= ID_LOCK_BUTTONS && cmd <= ID_TURBO_KEY) { // || cmd == ID_FORCE_FEEDBACK) {
                     // Messes up things, unfortunately.
                     // End binding on a bunch of notification messages, and
                     // this will send a bunch.
@@ -1873,11 +1874,11 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                 } else if (cmd == IDC_CONFIGURE_ON_BIND) {
                     config.configureOnBind = IsDlgButtonChecked(hWnd, IDC_CONFIGURE_ON_BIND);
                 }
-                if (cmd == IDC_TURBO) {
+                if (cmd == IDC_RAPID_FIRE) {
                     // Don't allow setting it back to indeterminate.
-                    SendMessage(GetDlgItem(hWnd, IDC_TURBO), BM_SETSTYLE, BS_AUTOCHECKBOX, 0);
-                    int turbo = (IsDlgButtonChecked(hWnd, IDC_TURBO) == BST_CHECKED);
-                    ChangeValue(port, slot, 0, &turbo, 0, 0);
+                    SendMessage(GetDlgItem(hWnd, IDC_RAPID_FIRE), BM_SETSTYLE, BS_AUTOCHECKBOX, 0);
+                    int rapidFire = (IsDlgButtonChecked(hWnd, IDC_RAPID_FIRE) == BST_CHECKED);
+                    ChangeValue(port, slot, 0, &rapidFire, 0, 0);
                 } else if (cmd == IDC_FLIP) {
                     int val = GetLogSliderVal(hWnd, IDC_SLIDER_SENSITIVITY);
                     ChangeValue(port, slot, &val, 0, 0, 0);

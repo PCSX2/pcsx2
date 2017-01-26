@@ -88,6 +88,8 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"This option is useful when analog mode is enabled in a game that does not support it, as this causes the game to not recognise any input or to not even detect a controller.\n\n"
                    L"This option can also be used to enable analog mode in games that support, but do not automatically enable analog mode.\n\n"
                    L"Note: Analog mode enables the analog sticks to function on a DualShock controller, while in digital mode it behaves as an original PlayStation controller.\n\n";
+        case ID_TURBO_KEY:
+            return L"Sets a key to send a TAB press to the emulator, which toggles Turbo mode(200% speed) in PCSX2.";
         case ID_LOCK_ALL_INPUT:
             return L"Locks the current state of the pad. Any further input is handled normally, but the initial pad state is the locked state instead of a state with no buttons pressed. "
                    L"Pressing it again releases the old pad state, if the old pad state had any keys pressed. Otherwise, it's released automatically.";
@@ -97,7 +99,7 @@ LPWSTR dialog_message(int ID, bool *updateText)
         case ID_LOCK_BUTTONS:
             return L"Locks the current state of the buttons. Pressing this when all input is locked unlocks only the buttons. "
                    L"Pressing it again will lock them again, keeping the d-pad and analog sticks locked.";
-        case IDC_TURBO:
+        case IDC_RAPID_FIRE:
             return L"Automatically presses/releases the input every other time the button is polled.";
         case IDC_FLIP:
             return L"Inverts a button or axis, making down up and up down.";
