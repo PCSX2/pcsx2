@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2016-2016 Gregory Hainaut
+ *	Copyright (C) 2016-2016 PCSX2 Dev Team
  *	Copyright (C) 2007-2009 Gabest
  *	http://www.gabest.org
  *
