@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2014-2016 Gregory Hainaut
+ *	Copyright (C) 2014-2016 PCSX2 Dev Team
  *	Copyright (C) 2016-2016 Jason Brown
  *
  *  This Program is free software; you can redistribute it and/or modify
