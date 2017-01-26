@@ -372,7 +372,7 @@ namespace GLLoader {
 					"https://community.amd.com/thread/205702\n"
 					"Note: Due to an AMD GPU OpenGL driver issue, setting Blending Unit Accuracy to \"None\" can cause an application or system crash.\n"
 					"Keep Blending Unit Accuracy set to at least the default \"Basic\".\n"
-					"AMD has a fix for the issue that will be released in the coming months. The issue does not affect AMD GPU's on legacy drivers.\n");
+					"AMD has a fix for the issue that will be released in the coming months. The issue does not affect AMD GPUs on legacy drivers.\n");
 			}
 		}
 #endif
