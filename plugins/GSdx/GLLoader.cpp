@@ -367,11 +367,11 @@ namespace GLLoader {
 #ifdef _WIN32
 		if (status) {
 			if (fglrx_buggy_driver) {
-				fprintf(stderr, "The \"OpenGL Hardware\" renderer is slow on AMD GPUs due to an inefficient driver. Check out the links below for further information.\n"
+				fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver. Check out the links below for further information.\n"
 					"https://community.amd.com/message/2756964\n"
 					"https://community.amd.com/thread/205702\n"
-					"Note: Due to an AMD GPU OpenGL driver issue, setting Blending Unit Accuracy to \"None\" can cause an application or system crash.\n"
-					"Keep Blending Unit Accuracy set to at least the default \"Basic\".\n"
+					"Note: Due to an AMD OpenGL driver issue, setting Blending Unit Accuracy to \"None\" can cause an application or system crash.\n"
+					"Keep Blending Unit Accuracy set to at least the default \"Basic\" level.\n"
 					"AMD has a fix for the issue that will be released in the coming months. The issue does not affect AMD GPUs on legacy drivers.\n");
 			}
 		}
