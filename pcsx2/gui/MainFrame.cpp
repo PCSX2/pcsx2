@@ -211,6 +211,7 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Iso);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Plugin);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_NoDisc);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Debug_CreateBlockdump_Click, this, MenuId_Debug_CreateBlockdump);
 
 	// Config
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SysSettings_Click, this, MenuId_Config_SysSettings);
@@ -528,6 +529,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 #ifdef PCSX2_DEVBUILD
 	m_menuDebug.Append(MenuId_Debug_Logging,	_("&Logging..."),			wxEmptyString);
 #endif
+	m_menuDebug.AppendCheckItem(MenuId_Debug_CreateBlockdump, _("Create &Blockdump"), _("Creates a block dump for debugging purposes."));
 
 	m_MenuItem_Console.Check( g_Conf->ProgLogBox.Visible );
 
@@ -722,6 +724,7 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 		menubar.Check( MenuId_EnableCheats,  configToApply.EmuOptions.EnableCheats );
 		menubar.Check( MenuId_EnableWideScreenPatches,  configToApply.EmuOptions.EnableWideScreenPatches );
 		menubar.Check( MenuId_EnableHostFs,  configToApply.EmuOptions.HostFs );
+		menubar.Check( MenuId_Debug_CreateBlockdump, configToApply.EmuOptions.CdvdDumpBlocks );
 #if defined(__unix__)
 		menubar.Check( MenuId_Console_Stdio, configToApply.EmuOptions.ConsoleToStdio );
 #endif
