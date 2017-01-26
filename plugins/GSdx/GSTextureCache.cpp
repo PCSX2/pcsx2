@@ -1654,18 +1654,18 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 	{
 		for(int y = r.top; y < r.bottom; y += bs.y)
 		{
-			uint32 base = off->block.row[y >> 3];
+			uint32 base = off->block.row[y >> 3u];
 
 			for(int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
 			{
-				uint32 block = base + off->block.col[x >> 3];
+				uint32 block = base + off->block.col[x >> 3u];
 
 				if(block < MAX_BLOCKS || m_wrap_gs_mem)
 				{
-					uint32 addr = (i >> 3) % MAX_BLOCKS;
+					uint32 addr = (i >> 3u) % MAX_BLOCKS;
 
-					uint32 row = addr >> 5;
-					uint32 col = 1 << (addr & 31);
+					uint32 row = addr >> 5u;
+					uint32 col = 1 << (addr & 31u);
 
 					if((m_valid[row] & col) == 0)
 					{
@@ -1683,18 +1683,18 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 	{
 		for(int y = r.top; y < r.bottom; y += bs.y)
 		{
-			uint32 base = off->block.row[y >> 3];
+			uint32 base = off->block.row[y >> 3u];
 
 			for(int x = r.left; x < r.right; x += bs.x)
 			{
-				uint32 block = base + off->block.col[x >> 3];
+				uint32 block = base + off->block.col[x >> 3u];
 
 				if(block < MAX_BLOCKS || m_wrap_gs_mem)
 				{
 					block %= MAX_BLOCKS;
 
-					uint32 row = block >> 5;
-					uint32 col = 1 << (block & 31);
+					uint32 row = block >> 5u;
+					uint32 col = 1 << (block & 31u);
 
 					if((m_valid[row] & col) == 0)
 					{

@@ -23,11 +23,11 @@
 
 #define PLUGIN_VERSION 0
 
-#define VM_SIZE 4194304
-#define HALF_VM_SIZE (VM_SIZE / 2)
-#define PAGE_SIZE 8192
-#define BLOCK_SIZE 256
-#define COLUMN_SIZE 64
+#define VM_SIZE 4194304u
+#define HALF_VM_SIZE (VM_SIZE / 2u)
+#define PAGE_SIZE 8192u
+#define BLOCK_SIZE 256u
+#define COLUMN_SIZE 64u
 
 #define MAX_PAGES (VM_SIZE / PAGE_SIZE)
 #define MAX_BLOCKS (VM_SIZE / BLOCK_SIZE)

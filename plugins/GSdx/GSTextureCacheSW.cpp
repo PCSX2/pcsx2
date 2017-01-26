@@ -125,9 +125,9 @@ void GSTextureCacheSW::RemoveAll()
 
 	m_textures.clear();
 
-	for(int i = 0; i < MAX_PAGES; i++)
+	for(auto& l : m_map)
 	{
-		m_map[i].clear();
+		l.clear();
 	}
 }
 
