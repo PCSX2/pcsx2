@@ -39,9 +39,7 @@
  
  * Load the PCSX2 Suite solution and rebuild all in the following targets:
     * Release SSE2
-    * Release SSSE3 (only needed if packaging plugins)
     * Release SSE4 (only needed if packaging plugins)
-    * Release AVX (only needed if packaging plugins)
 	* Release AVX2 (only needed if packaging plugins)
     * Devel (optional) /* not enabled in the installer either, so need to do that as well */
     
