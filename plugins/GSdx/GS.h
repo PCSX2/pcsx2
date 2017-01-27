@@ -231,13 +231,11 @@ enum class GS_MIN_FILTER : uint8_t
 enum class GSRendererType : int8_t
 {
 	Undefined = -1,
-	DX9_HW,
-	DX9_SW,
-	DX1011_HW = 3,
-	DX1011_SW,
+	DX9,
+	DX1011 = 3,
 	Null = 11,
-	OGL_HW,
-	OGL_SW,
+	OGL,
+	Software,
 	DX9_OpenCL,
 	DX1011_OpenCL,
 	OGL_OpenCL = 17,
@@ -247,7 +245,7 @@ enum class GSRendererType : int8_t
 #else
 	// Use ogl renderer as default otherwise it crash at startup
 	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
-	Default = OGL_HW
+	Default = OGL
 #endif
 
 };

@@ -198,8 +198,8 @@ void GSSettingsDlg::UpdateFilteringCombobox()
 {
 	INT_PTR i;
 	ComboBoxGetSelData(IDC_RENDERER, i);
-	bool opengl = static_cast<GSRendererType>(i) == GSRendererType::OGL_HW;
-	bool hw_mode = opengl || static_cast<GSRendererType>(i) == GSRendererType::DX1011_HW || static_cast<GSRendererType>(i) == GSRendererType::DX9_HW;
+	bool opengl = static_cast<GSRendererType>(i) == GSRendererType::OGL;
+	bool hw_mode = opengl || static_cast<GSRendererType>(i) == GSRendererType::DX1011 || static_cast<GSRendererType>(i) == GSRendererType::DX9;
 	if (!hw_mode)
 		return;
 
@@ -371,7 +371,7 @@ void GSSettingsDlg::UpdateRenderers()
 
 		GSRendererType renderer = static_cast<GSRendererType>(r.value);
 
-		if(renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL)
+		if(renderer == GSRendererType::DX1011 || renderer == GSRendererType::DX1011_OpenCL)
 		{
 			if(level < D3D_FEATURE_LEVEL_10_0) continue;
 			r.name += (level >= D3D_FEATURE_LEVEL_11_0 ? "11" : "10");
@@ -404,12 +404,12 @@ void GSSettingsDlg::UpdateControls()
 		GSRendererType renderer = static_cast<GSRendererType>(i);
 		D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level();
 
-		bool dx9 = renderer == GSRendererType::DX9_HW || renderer == GSRendererType::DX9_SW || renderer == GSRendererType::DX9_OpenCL;
-		bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL;
-		bool ogl = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::OGL_SW || renderer == GSRendererType::OGL_OpenCL;
+		bool dx9 = renderer == GSRendererType::DX9 || renderer == GSRendererType::DX9_OpenCL;
+		bool dx11 = renderer == GSRendererType::DX1011 || renderer == GSRendererType::DX1011_OpenCL;
+		bool ogl = renderer == GSRendererType::OGL || renderer == GSRendererType::OGL_OpenCL;
 
-		bool hw = renderer == GSRendererType::DX9_HW || renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::OGL_HW;
-		bool sw = renderer == GSRendererType::DX9_SW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::OGL_SW;
+		bool hw = renderer == GSRendererType::DX9 || renderer == GSRendererType::DX1011 || renderer == GSRendererType::OGL;
+		bool sw = renderer == GSRendererType::Software;
 		bool ocl = renderer == GSRendererType::DX9_OpenCL || renderer == GSRendererType::DX1011_OpenCL || renderer == GSRendererType::OGL_OpenCL;
 		bool null = renderer == GSRendererType::Null;
 
@@ -666,8 +666,8 @@ void GSHacksDlg::OnInit()
 	unsigned short cb = 0;
 
 	// It can only be accessed with a HW renderer, so this is sufficient.
-	bool dx9 = renderer == GSRendererType::DX9_HW;
-	bool ogl = renderer == GSRendererType::OGL_HW;
+	bool dx9 = renderer == GSRendererType::DX9;
+	bool ogl = renderer == GSRendererType::OGL;
 	bool native = upscaling_multiplier == 1;
 
 	if(dx9) for(unsigned short i = 0; i < 17; i++)

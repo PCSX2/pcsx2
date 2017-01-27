@@ -428,13 +428,13 @@ GSRendererType GSUtil::GetBestRenderer()
 				D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level();
 				// Check for Nvidia VendorID. Latest OpenGL features need at least DX11 level GPU
 				if (desc.VendorId == 0x10DE && level >= D3D_FEATURE_LEVEL_11_0)
-					return GSRendererType::OGL_HW;
+					return GSRendererType::OGL;
 				if (level >= D3D_FEATURE_LEVEL_10_0)
-					return GSRendererType::DX1011_HW;
+					return GSRendererType::DX1011;
 			}
 		}
 	}
-	return GSRendererType::DX9_HW;
+	return GSRendererType::DX9;
 }
 
 #else
