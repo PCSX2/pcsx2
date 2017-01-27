@@ -121,7 +121,7 @@ void GSTextureCacheSW::InvalidatePages(const uint32* pages, uint32 psm)
 
 void GSTextureCacheSW::RemoveAll()
 {
-	for_each(m_textures.begin(), m_textures.end(), delete_object());
+	for(auto &i : m_textures) delete i;
 
 	m_textures.clear();
 

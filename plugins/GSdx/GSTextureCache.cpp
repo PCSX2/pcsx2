@@ -72,7 +72,7 @@ void GSTextureCache::RemovePartial()
 
 	for (int type = 0; type < 2; type++)
 	{
-		for_each(m_dst[type].begin(), m_dst[type].end(), delete_object());
+		for (auto &t : m_dst[type]) delete t;
 
 		m_dst[type].clear();
 	}
@@ -84,7 +84,7 @@ void GSTextureCache::RemoveAll()
 
 	for(int type = 0; type < 2; type++)
 	{
-		for_each(m_dst[type].begin(), m_dst[type].end(), delete_object());
+		for (auto &t : m_dst[type]) delete t;
 
 		m_dst[type].clear();
 	}
@@ -2021,7 +2021,7 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 
 void GSTextureCache::SourceMap::RemoveAll()
 {
-	for_each(m_surfaces.begin(), m_surfaces.end(), delete_object());
+	for (auto &t : m_surfaces) delete t;
 
 	m_surfaces.clear();
 

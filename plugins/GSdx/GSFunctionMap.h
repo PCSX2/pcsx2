@@ -53,7 +53,7 @@ public:
 
 	virtual ~GSFunctionMap()
 	{
-		for_each(m_map_active.begin(), m_map_active.end(), delete_second());
+		for(auto &i : m_map_active) delete i.second;
 	}
 
 	VALUE operator [] (KEY key)

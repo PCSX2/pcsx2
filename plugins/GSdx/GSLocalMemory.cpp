@@ -477,9 +477,9 @@ GSLocalMemory::~GSLocalMemory()
 	else
 		vmfree(m_vm8, m_vmsize * 4);
 
-	for_each(m_omap.begin(), m_omap.end(), aligned_free_second());
-	for_each(m_pomap.begin(), m_pomap.end(), aligned_free_second());
-	for_each(m_po4map.begin(), m_po4map.end(), aligned_free_second());
+	for(auto &i : m_omap) _aligned_free(i.second);
+	for(auto &i : m_pomap) _aligned_free(i.second);
+	for(auto &i : m_po4map) _aligned_free(i.second);
 
 	for(hash_map<uint64, vector<GSVector2i>*>::iterator i = m_p2tmap.begin(); i != m_p2tmap.end(); ++i)
 	{
