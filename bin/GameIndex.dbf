@@ -55,19 +55,20 @@
 ---------------------------------------------
 -- Game Fixes (gameFixName = 1)
 ---------------------------------------------
--- VuAddSubHack 	= 1 // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
--- VuClipFlagHack	= 1 // Persona games, maybe others. It's to do with the VU clip flag (sVU-only).
--- FpuCompareHack	= 1 // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
--- FpuMulHack		= 1 // Tales of Destiny hangs.
--- FpuNegDivHack	= 1 // Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
--- XgKickHack		= 1 // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
--- IPUWaitHack		= 1 // FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
--- EETimingHack		= 1 // General purpose timing hack.
--- SkipMPEGHack		= 1 // Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
--- OPHFLagHack 		= 1 // Bleach Bankais and others
--- DMABusyHack 		= 1 // Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
--- VIFFIFOHack 		= 1 // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
--- VIF1StallHack 	= 1 // SOCOM II HUD and Spy Hunter loading hang.
+-- VuAddSubHack      = 1 // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
+-- VuClipFlagHack    = 1 // Persona games, maybe others. It's to do with the VU clip flag (sVU-only).
+-- FpuCompareHack    = 1 // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
+-- FpuMulHack        = 1 // Tales of Destiny hangs.
+-- FpuNegDivHack     = 1 // Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
+-- XgKickHack        = 1 // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
+-- IPUWaitHack       = 1 // FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
+-- EETimingHack      = 1 // General purpose timing hack.
+-- SkipMPEGHack      = 1 // Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
+-- OPHFLagHack       = 1 // Bleach Bankais and others
+-- DMABusyHack       = 1 // Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
+-- VIFFIFOHack       = 1 // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
+-- VIF1StallHack     = 1 // SOCOM II HUD and Spy Hunter loading hang.
+-- FMVinSoftwareHack = 1 // Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering while an FMV plays.
 
 ---------------------------------------------
 -- Speed Hacks (SpeedHackName = <value>)
@@ -7368,6 +7369,7 @@ Serial = SLES-50382
 Name   = Silent Hill 2
 Region = PAL-M6
 Compat = 5
+FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines
 ---------------------------------------------
 Serial = SLES-50383
 Name   = Metal Gear Solid 2 - Sons of Liberty
@@ -9049,6 +9051,7 @@ Serial = SLES-51156
 Name   = Silent Hill 2 - Director's Cut
 Region = PAL-M5
 Compat = 5
+FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines
 ---------------------------------------------
 Serial = SLES-51157
 Name   = Silent Scope 3
@@ -9620,6 +9623,7 @@ Name   = Silent Hill 3
 Region = PAL-M5
 Compat = 5
 MemCardFilter = SLES-51434/SLES-50382/SLES-51156
+FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLES-51435
 Name   = International Superstar Soccer 3
@@ -21467,6 +21471,7 @@ Serial = SLPM-65051
 Name   = Silent Hill 2
 Region = NTSC-J
 Compat = 5
+FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines
 ---------------------------------------------
 Serial = SLPM-65052
 Name   = Guitar Freaks 4th Mix & Drummania 3rd Mix
@@ -21622,6 +21627,7 @@ Serial = SLPM-65098
 Name   = Silent Hill 2 - Saigo no Uta
 Region = NTSC-J
 Compat = 5
+FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines
 ---------------------------------------------
 Serial = SLPM-65100
 Name   = Onimusha 2
@@ -22104,6 +22110,7 @@ Name   = Silent Hill 3
 Region = NTSC-J
 Compat = 5
 MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
+FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLPM-65260
 Name   = Air Land Force
@@ -22413,6 +22420,7 @@ Region = NTSC-J
 Serial = SLPM-65341
 Name   = Silent Hill 2 - Saigo No Uta [Konami The Best]
 Region = NTSC-J
+FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines
 ---------------------------------------------
 Serial = SLPM-65342
 Name   = Kyoufu Shinbun (Heisei) Kaiki! Shinrei File
@@ -23428,6 +23436,7 @@ Serial = SLPM-65622
 Name   = Silent Hill 3 [Konami The Best]
 Region = NTSC-J
 MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
+FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLPM-65623
 Name   = Tantei Gakuen Q: Kiokan no Satsui [Konami The Best]
@@ -23464,6 +23473,7 @@ Region = NTSC-J
 Serial = SLPM-65631
 Name   = Silent Hill 2 [Konami The Best]
 Region = NTSC-J
+FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines
 ---------------------------------------------
 Serial = SLPM-65632
 Name   = Virtua Fighter Cyber Generation - Ambition of the Judgement Six
@@ -24891,6 +24901,7 @@ Serial = SLPM-66018
 Name   = Silent Hill 3 [Konami Dendou Collection]
 Region = NTSC-J
 MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
+FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLPM-66019
 Name   = Stuntman
@@ -34844,6 +34855,7 @@ Serial = SLUS-20228
 Name   = Silent Hill 2
 Region = NTSC-U
 Compat = 5
+FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines
 ---------------------------------------------
 Serial = SLUS-20229
 Name   = Jonny Moseley - Mad Trix
@@ -36608,6 +36620,7 @@ Region = NTSC-U
 Compat = 5
 // reads Silent Hill 2 for easter egg
 MemCardFilter = SLUS-20622/SLUS-20228
+FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLUS-20623
 Name   = Winning Eleven 6
