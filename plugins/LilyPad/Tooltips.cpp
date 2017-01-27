@@ -1,5 +1,5 @@
 /*  LilyPad - Pad plugin for PS2 Emulator
- *  Copyright (C) 2016  PCSX2 Dev Team/ChickenLiver
+ *  Copyright (C) 2016-2017  PCSX2 Dev Team/ChickenLiver
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
@@ -51,7 +51,8 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"\"Dualshock 2\" emulates the default PS2 controller for use in both PS1 and PS2 games.\n\n"
                    L"\"Guitar\" emulates a PS2 controller used in the Guitar Hero and Rock Band series of games.\n\n"
                    L"\"Pop'n Music controller\" emulates a PS2 controller used exclusively in the Japanese Pop'n Music series of games.\n\n"
-                   L"\"PS1 Mouse\" emulates the Playstation Mouse. This controller can only be used in a number of PS1 games like \"Command & Conquer: Red Alert\" and \"Myst\".";
+                   L"\"PS1 Mouse\" emulates the Playstation Mouse. This controller can only be used in a number of PS1 games like \"Command & Conquer: Red Alert\" and \"Myst\".\n\n"
+                   L"\"neGcon\" emulates a controller that can be used in a number of PS1 games and PS2 games like the \"Ridge Racer\" and \"Ace Combat\" series.";
         case IDC_ANALOG_START1:
             return L"Automatically switch a pad from digital mode to analog mode whenever a pad is set to digital mode, if the pad's mode is not locked."
                    L"This removes the need for manually enabling analog mode with a press of the analog button for games that support, but do not automatically enable analog mode.\n\n"
@@ -62,6 +63,8 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Double-click a device in the list or right-click it and select \"Test Device\" to display a continuously updated list of the state of all inputs on the selected device.\n"
                    L"Use this option to check if all the inputs on a controller function properly.\n\n"
                    L"Right-click and select \"Refresh\" to update the list of devices in case a recently connected device has not shown up yet.";
+        case IDC_G_XI:
+            return L"Xbox 360 controllers(and devices imitating it) only";
         // Pad tabs
         case IDC_BINDINGS_LIST:
             return L"Shows a list of currently bound inputs of the selected Pad.\n\n"
@@ -87,9 +90,8 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"This option is useful when analog mode is enabled in a game that does not support it, as this causes the game to not recognise any input or to not even detect a controller.\n\n"
                    L"This option can also be used to enable analog mode in games that support, but do not automatically enable analog mode.\n\n"
                    L"Note: Analog mode enables the analog sticks to function on a DualShock controller, while in digital mode it behaves as an original PlayStation controller.\n\n";
-        case ID_IGNORE:
-            return L"Blocks the assigned keyboard button and does not pass it on to PCSX2. It currently cannot block the windows key (for unknown reasons).\n\n"
-                   L"Ignored keys are listed with pad 1's bindings. You do not have to configure ignored keys again when you change the keyboard input mode.";
+        case ID_TURBO_KEY:
+            return L"Sets a key to send a TAB press to the emulator, which toggles Turbo mode(200% speed) in PCSX2.";
         case ID_LOCK_ALL_INPUT:
             return L"Locks the current state of the pad. Any further input is handled normally, but the initial pad state is the locked state instead of a state with no buttons pressed. "
                    L"Pressing it again releases the old pad state, if the old pad state had any keys pressed. Otherwise, it's released automatically.";
@@ -99,7 +101,7 @@ LPWSTR dialog_message(int ID, bool *updateText)
         case ID_LOCK_BUTTONS:
             return L"Locks the current state of the buttons. Pressing this when all input is locked unlocks only the buttons. "
                    L"Pressing it again will lock them again, keeping the d-pad and analog sticks locked.";
-        case IDC_TURBO:
+        case IDC_RAPID_FIRE:
             return L"Automatically presses/releases the input every other time the button is polled.";
         case IDC_FLIP:
             return L"Inverts a button or axis, making down up and up down.";

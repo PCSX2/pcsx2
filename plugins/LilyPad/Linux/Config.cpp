@@ -1,5 +1,5 @@
 /*  LilyPad - Pad plugin for PS2 Emulator
- *  Copyright (C) 2002-2014  PCSX2 Dev Team/ChickenLiver
+ *  Copyright (C) 2002-2017  PCSX2 Dev Team/ChickenLiver
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
@@ -99,7 +99,7 @@ void DeleteBinding(int port, int slot, Device *dev, ForceFeedbackBinding *b)
     dev->pads[port][slot][padtype].numFFBindings--;
 }
 
-int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int turbo, int deadZone)
+int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int slot, unsigned int padtype, int command, int sensitivity, int rapidFire, int deadZone)
 {
     // Checks needed because I use this directly when loading bindings.
     if (port > 1 || slot > 3 || padtype >= numPadTypes)
@@ -136,7 +136,7 @@ int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int s
     p->numBindings++;
     b->command = command;
     b->controlIndex = controlIndex;
-    b->turbo = turbo;
+    b->rapidFire = rapidFire;
     b->sensitivity = sensitivity;
     b->deadZone = deadZone;
     // Where it appears in listview.
@@ -214,7 +214,6 @@ const GeneralSettingsBool BoolOptionsInfo[] = {
 
     {L"Save State in Title", 0 /*IDC_SAVE_STATE_TITLE*/, 0}, //No longer required, PCSX2 now handles it - avih 2011-05-17
     {L"GH2", 0 /*IDC_GH2_HACK*/, 0},
-    {L"Turbo Key Hack", 0 /*IDC_TURBO_KEY_HACK*/, 0},
 };
 
 void CALLBACK PADsetSettingsDir(const char *dir)
@@ -229,7 +228,7 @@ int SaveSettings(wchar_t *file = 0)
     for (size_t i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++) {
         cfg.WriteBool(L"General Settings", BoolOptionsInfo[i].name, config.bools[i]);
     }
-    cfg.WriteInt(L"General Settings", L"Close Hacks", config.closeHacks);
+    cfg.WriteInt(L"General Settings", L"Close Hack", config.closeHack);
 
     cfg.WriteInt(L"General Settings", L"Keyboard Mode", config.keyboardApi);
     cfg.WriteInt(L"General Settings", L"Mouse Mode", config.mouseApi);
@@ -277,7 +276,7 @@ int SaveSettings(wchar_t *file = 0)
                         Binding *b = dev->pads[port][slot][padtype].bindings + j;
                         VirtualControl *c = &dev->virtualControls[b->controlIndex];
                         wsprintfW(temp, L"Binding %i", bindingCount++);
-                        wsprintfW(temp2, L"0x%08X, %i, %i, %i, %i, %i, %i, %i", c->uid, port, b->command, b->sensitivity, b->turbo, slot, b->deadZone, padtype);
+                        wsprintfW(temp2, L"0x%08X, %i, %i, %i, %i, %i, %i, %i", c->uid, port, b->command, b->sensitivity, b->rapidFire, slot, b->deadZone, padtype);
                         cfg.WriteStr(id, temp, temp2);
                     }
 
@@ -319,10 +318,7 @@ int LoadSettings(int force, wchar_t *file)
         config.bools[i] = cfg.ReadBool(L"General Settings", BoolOptionsInfo[i].name, BoolOptionsInfo[i].defaultValue);
     }
 
-
-    config.closeHacks = (u8)cfg.ReadInt(L"General Settings", L"Close Hacks");
-    if (config.closeHacks & 1)
-        config.closeHacks &= ~2;
+    config.closeHack = (u8)cfg.ReadInt(L"General Settings", L"Close Hack");
 
     config.keyboardApi = (DeviceAPI)cfg.ReadInt(L"General Settings", L"Keyboard Mode", LNX_KEYBOARD);
     if (!config.keyboardApi)
@@ -379,7 +375,7 @@ int LoadSettings(int force, wchar_t *file)
             }
             last = 1;
             unsigned int uid;
-            int port, command, sensitivity, turbo, slot = 0, deadZone = 0, padtype = 0;
+            int port, command, sensitivity, rapidFire, slot = 0, deadZone = 0, padtype = 0;
             int w = 0;
             char string[1000];
             while (temp2[w]) {
@@ -387,7 +383,7 @@ int LoadSettings(int force, wchar_t *file)
                 w++;
             }
             string[w] = 0;
-            int len = sscanf(string, " %u , %i , %i , %i , %i , %i , %i , %i", &uid, &port, &command, &sensitivity, &turbo, &slot, &deadZone, &padtype);
+            int len = sscanf(string, " %u , %i , %i , %i , %i , %i , %i , %i", &uid, &port, &command, &sensitivity, &rapidFire, &slot, &deadZone, &padtype);
             if (len >= 5 && type) {
                 VirtualControl *c = dev->GetVirtualControl(uid);
                 if (!c)
@@ -401,7 +397,7 @@ int LoadSettings(int force, wchar_t *file)
                             padtype = 1;
                         }
                     }
-                    BindCommand(dev, uid, port, slot, padtype, command, sensitivity, turbo, deadZone);
+                    BindCommand(dev, uid, port, slot, padtype, command, sensitivity, rapidFire, deadZone);
                 }
             }
         }
