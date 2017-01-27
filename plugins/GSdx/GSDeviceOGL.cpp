@@ -81,7 +81,7 @@ GSDeviceOGL::GSDeviceOGL()
 
 	// Reset the debug file
 	#ifdef ENABLE_OGL_DEBUG
-	if (static_cast<GSRendererType>(theApp.GetConfigI("Renderer")) == GSRendererType::OGL_SW)
+	if (theApp.GetConfigT<GSRendererType>("Renderer") == GSRendererType::OGL_SW)
 		m_debug_gl_file = fopen("GSdx_opengl_debug_sw.txt","w");
 	else
 		m_debug_gl_file = fopen("GSdx_opengl_debug_hw.txt","w");

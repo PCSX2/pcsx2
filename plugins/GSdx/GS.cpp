@@ -212,7 +212,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 	if(renderer == GSRendererType::Undefined)
 	{
-		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
+		renderer = theApp.GetTempConfig<GSRendererType>();
 	}
 
 	if(threads == -1)
@@ -516,15 +516,13 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	static bool stored_toggle_state = false;
 	bool toggle_state = !!(flags & 4);
 
+	theApp.ClearTempConfig();
+
 	GSRendererType renderer = s_renderer;
 	// Fresh start up or config file changed
 	if (renderer == GSRendererType::Undefined)
 	{
-		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
-#ifdef _WIN32
-		if (renderer == GSRendererType::Default)
-			renderer = GSUtil::GetBestRenderer();
-#endif
+		renderer = theApp.GetTempConfig<GSRendererType>();
 	}
 	else if (stored_toggle_state != toggle_state)
 	{
@@ -553,6 +551,7 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 		default: renderer = GSRendererType::OGL_SW; break; // fallback to OGL SW
 		}
 #endif
+		theApp.SetTempConfig<GSRendererType>(renderer);
 	}
 	stored_toggle_state = toggle_state;
 
@@ -598,7 +597,7 @@ EXPORT_C_(int) GSopen(void** dsp, const char* title, int mt)
 	{
 		// normal init
 
-		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
+		renderer = theApp.GetTempConfig<GSRendererType>();
 	}
 
 	*dsp = NULL;
@@ -1574,7 +1573,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 	GSRendererType m_renderer;
 	// Allow to easyly switch between SW/HW renderer -> this effectively removes the ability to select the renderer by function args
-	m_renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
+	m_renderer = theApp.GetTempConfig<GSRendererType>();
 
 	if (m_renderer != GSRendererType::OGL_HW && m_renderer != GSRendererType::OGL_SW)
 	{

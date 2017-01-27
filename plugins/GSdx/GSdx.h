@@ -22,15 +22,21 @@
 #pragma once
 
 #include "GSSetting.h"
+#include "GSUtil.h"
 
 class GSdxApp
 {
 	std::string m_ini;
 	std::string m_section;
 	std::map< std::string, std::string > m_default_configuration;
-#if defined(__unix__)
 	std::map< std::string, std::string > m_configuration_map;
-#endif
+	GSRendererType m_cached_GSRendererType = GSRendererType::Undefined;
+	CRCHackLevel m_cached_CRCHackLevel = CRCHackLevel::Automatic;
+
+	void BuildConfigurationMap(const char* lpFileName);
+	size_t GetIniEntryString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName);
+	bool WriteIniEntryString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName);
+	int GetIniEntryInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
 
 public:
 	GSdxApp();
@@ -42,26 +48,22 @@ public:
  	HMODULE GetModuleHandle() {return (HMODULE)GetModuleHandlePtr();}
 #endif
 
-#if defined(__unix__)
-	void BuildConfigurationMap(const char* lpFileName);
-	void ReloadConfig();
-
-	size_t GetPrivateProfileString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName);
-	bool WritePrivateProfileString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName);
-	int GetPrivateProfileInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
-#endif
-
 	bool LoadResource(int id, vector<unsigned char>& buff, const char* type = NULL);
 
 	void SetConfig(const char* entry, const char* value);
 	void SetConfig(const char* entry, int value);
 	// Avoid issue with overloading
+	template<typename T>
+	T      GetConfigT(const char* entry) { return static_cast<T>(GetConfigI(entry)); }
 	int    GetConfigI(const char* entry);
 	bool   GetConfigB(const char* entry);
 	string GetConfigS(const char* entry);
 
-
+	template<typename T> T GetTempConfig();
+	template<typename T> void SetTempConfig(T value);
+	void ClearTempConfig();
 	void SetConfigDir(const char* dir);
+	void ReloadConfig();
 
 	vector<GSSetting> m_gs_renderers;
 	vector<GSSetting> m_gs_interlace;
@@ -82,6 +84,14 @@ public:
 	vector<GSSetting> m_gpu_aspectratio;
 	vector<GSSetting> m_gpu_scale;
 };
+
+template<> CRCHackLevel GSdxApp::GetTempConfig<CRCHackLevel>();
+template<> GSRendererType GSdxApp::GetTempConfig<GSRendererType>();
+template<> void GSdxApp::SetTempConfig<CRCHackLevel>(CRCHackLevel value);
+template<> void GSdxApp::SetTempConfig<GSRendererType>(GSRendererType value);
+
+
+
 
 struct GSDXError {};
 struct GSDXRecoverableError : GSDXError {};

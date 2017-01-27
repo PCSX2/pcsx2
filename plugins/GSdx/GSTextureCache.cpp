@@ -28,7 +28,7 @@ bool GSTextureCache::m_disable_partial_invalidation = false;
 GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
 {
-	s_IS_OPENGL = (static_cast<GSRendererType>(theApp.GetConfigI("Renderer")) == GSRendererType::OGL_HW);
+	s_IS_OPENGL = (theApp.GetConfigT<GSRendererType>("Renderer") == GSRendererType::OGL_HW);
 
 	if (theApp.GetConfigB("UserHacks")) {
 		m_spritehack                   = theApp.GetConfigI("UserHacks_SpriteHack");
@@ -48,7 +48,7 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 
 	m_paltex = theApp.GetConfigB("paltex");
 	m_can_convert_depth &= s_IS_OPENGL; // only supported by openGL so far
-	m_crc_hack_level = theApp.GetConfigI("crc_hack_level");
+	m_crc_hack_level = theApp.GetTempConfig<CRCHackLevel>();
 
 	// In theory 4MB is enough but 9MB is safer for overflow (8MB
 	// isn't enough in custom resolution)
@@ -278,7 +278,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 						// Gregory: to avoid a massive slow down for nothing, let's only enable
 						// this code when CRC is below the FULL level
-						if (m_crc_hack_level < 3)
+						if (m_crc_hack_level < CRCHackLevel::Full)
 							Read(t, t->m_valid);
 						else
 							dst = t;

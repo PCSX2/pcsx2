@@ -66,7 +66,9 @@ bool GSdxApp::LoadResource(int id, vector<unsigned char>& buff, const char* type
 	return false;
 }
 
-size_t GSdxApp::GetPrivateProfileString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName)
+#endif
+
+size_t GSdxApp::GetIniEntryString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName)
 {
 	BuildConfigurationMap(lpFileName);
 
@@ -82,7 +84,7 @@ size_t GSdxApp::GetPrivateProfileString(const char* lpAppName, const char* lpKey
     return 0;
 }
 
-bool GSdxApp::WritePrivateProfileString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName)
+bool GSdxApp::WriteIniEntryString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName)
 {
 	BuildConfigurationMap(lpFileName);
 
@@ -109,7 +111,7 @@ bool GSdxApp::WritePrivateProfileString(const char* lpAppName, const char* lpKey
 	return false;
 }
 
-int GSdxApp::GetPrivateProfileInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName)
+int GSdxApp::GetIniEntryInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName)
 {
 	BuildConfigurationMap(lpFileName);
 
@@ -121,7 +123,7 @@ int GSdxApp::GetPrivateProfileInt(const char* lpAppName, const char* lpKeyName, 
 	} else
 		return atoi(value.c_str());
 }
-#endif
+
 
 GSdxApp theApp;
 
@@ -218,11 +220,12 @@ void GSdxApp::Init()
 	m_gs_hw_mipmapping.push_back(GSSetting(1, "Basic", "Fast"));
 	m_gs_hw_mipmapping.push_back(GSSetting(2, "Full", "Slow"));
 
-	m_gs_crc_level.push_back(GSSetting(0 , "None", "Debug"));
-	m_gs_crc_level.push_back(GSSetting(1 , "Minimum", "Debug"));
-	m_gs_crc_level.push_back(GSSetting(2 , "Partial", "OpenGL Recommended"));
-	m_gs_crc_level.push_back(GSSetting(3 , "Full", "Safest"));
-	m_gs_crc_level.push_back(GSSetting(4 , "Aggressive", ""));
+	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::Automatic, "Automatic", "Default"));
+	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::None , "None", "Debug"));
+	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::Minimum, "Minimum", "Debug"));
+	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::Partial, "Partial", "OpenGL Recommended"));
+	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::Full, "Full", "Safest"));
+	m_gs_crc_level.push_back(GSSetting(CRCHackLevel::Aggressive, "Aggressive", ""));
 
 	m_gs_acc_blend_level.push_back(GSSetting(0, "None", "Fastest"));
 	m_gs_acc_blend_level.push_back(GSSetting(1, "Basic", "Recommended low-end PC"));
@@ -292,7 +295,7 @@ void GSdxApp::Init()
 	m_default_configuration["CaptureHeight"]                              = "480";
 	m_default_configuration["CaptureWidth"]                               = "640";
 	m_default_configuration["clut_load_before_draw"]                      = "0";
-	m_default_configuration["crc_hack_level"]                             = "3";
+	m_default_configuration["crc_hack_level"]                             = to_string(static_cast<int8>(CRCHackLevel::Automatic));
 	m_default_configuration["CrcHacksExclusions"]                         = "";
 	m_default_configuration["debug_glsl_shader"]                          = "0";
 	m_default_configuration["debug_opengl"]                               = "0";
@@ -378,7 +381,6 @@ void GSdxApp::Init()
 	m_default_configuration["vsync"]                                      = "0";
 }
 
-#if defined(__unix__)
 void GSdxApp::ReloadConfig()
 {
 	if (m_configuration_map.empty()) return;
@@ -416,11 +418,16 @@ void GSdxApp::BuildConfigurationMap(const char* lpFileName)
 
 	fclose(f);
 }
-#endif
 
 void* GSdxApp::GetModuleHandlePtr()
 {
 	return s_hModule;
+}
+
+void GSdxApp::ClearTempConfig()
+{
+	m_cached_CRCHackLevel = CRCHackLevel::Automatic;
+	m_cached_GSRendererType = GSRendererType::Undefined;
 }
 
 void GSdxApp::SetConfigDir(const char* dir)
@@ -448,10 +455,10 @@ string GSdxApp::GetConfigS(const char* entry)
 	auto def = m_default_configuration.find(entry);
 
 	if (def != m_default_configuration.end()) {
-		GetPrivateProfileString(m_section.c_str(), entry, def->second.c_str(), buff, countof(buff), m_ini.c_str());
+		GetIniEntryString(m_section.c_str(), entry, def->second.c_str(), buff, countof(buff), m_ini.c_str());
 	} else {
 		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
-		GetPrivateProfileString(m_section.c_str(), entry, "", buff, countof(buff), m_ini.c_str());
+		GetIniEntryString(m_section.c_str(), entry, "", buff, countof(buff), m_ini.c_str());
 	}
 
 	return string(buff);
@@ -459,7 +466,7 @@ string GSdxApp::GetConfigS(const char* entry)
 
 void GSdxApp::SetConfig(const char* entry, const char* value)
 {
-	WritePrivateProfileString(m_section.c_str(), entry, value, m_ini.c_str());
+	WriteIniEntryString(m_section.c_str(), entry, value, m_ini.c_str());
 }
 
 int GSdxApp::GetConfigI(const char* entry)
@@ -467,10 +474,10 @@ int GSdxApp::GetConfigI(const char* entry)
 	auto def = m_default_configuration.find(entry);
 
 	if (def != m_default_configuration.end()) {
-		return GetPrivateProfileInt(m_section.c_str(), entry, std::stoi(def->second), m_ini.c_str());
+		return GetIniEntryInt(m_section.c_str(), entry, std::stoi(def->second), m_ini.c_str());
 	} else {
 		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
-		return GetPrivateProfileInt(m_section.c_str(), entry, 0, m_ini.c_str());
+		return GetIniEntryInt(m_section.c_str(), entry, 0, m_ini.c_str());
 	}
 }
 
@@ -487,3 +494,48 @@ void GSdxApp::SetConfig(const char* entry, int value)
 
 	SetConfig(entry, buff);
 }
+
+template<> void GSdxApp::SetTempConfig<CRCHackLevel>(CRCHackLevel value)
+{
+	m_cached_CRCHackLevel = value;
+}
+
+template<> void GSdxApp::SetTempConfig<GSRendererType>(GSRendererType value)
+{
+	m_cached_GSRendererType = value;
+}
+
+template<> CRCHackLevel GSdxApp::GetTempConfig<CRCHackLevel>()
+{
+	if (m_cached_CRCHackLevel != CRCHackLevel::Automatic)
+		return m_cached_CRCHackLevel;
+	CRCHackLevel iniValue = GetConfigT<CRCHackLevel>("crc_hack_level");
+	if (iniValue == CRCHackLevel::Automatic)
+	{
+		GSRendererType currentType = GetTempConfig<GSRendererType>();
+		if (currentType == GSRendererType::OGL_HW)
+			iniValue = CRCHackLevel::Partial;
+		else
+			iniValue = CRCHackLevel::Full;
+	}
+	SetTempConfig<CRCHackLevel>(iniValue);
+	return iniValue;
+}
+
+template<> GSRendererType GSdxApp::GetTempConfig<GSRendererType>()
+{
+	if (m_cached_GSRendererType != GSRendererType::Undefined)
+		return m_cached_GSRendererType;
+	GSRendererType iniValue = GetConfigT<GSRendererType>("Renderer");
+
+#ifdef _WIN32 // Unix autoselects OGL in GS.h
+	if (iniValue == GSRendererType::Default)
+		iniValue = GSUtil::GetBestRenderer();
+#endif
+	SetTempConfig<GSRendererType>(iniValue);
+	return iniValue;
+}
+
+// throw if somebody wants to access a settings that is not cached
+template<typename T> T GSdxApp::GetTempConfig() {throw GSDXError();}
+template<typename T> void GSdxApp::SetTempConfig(T value) {throw GSDXError();}

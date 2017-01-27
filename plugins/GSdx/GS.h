@@ -1425,3 +1425,14 @@ enum class Filtering : uint8
 	Trilinear_Bilinear_Forced,
 	Trilinear_Always
 };
+
+//Enum order matters! Don't change it!
+enum class CRCHackLevel : int8
+{
+	Automatic = -1,
+	None,
+	Minimum,
+	Partial,
+	Full,
+	Aggressive
+};
