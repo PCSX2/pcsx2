@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #include "GS.h"
 #include "GSdx.h"
-#include "GSLinuxLogo.h"
+#include "GSdxResources.h"
 #include "GSSetting.h"
 
 static GtkWidget* s_hack_frame;
@@ -500,8 +500,11 @@ bool RunLinuxDialog()
 	GtkWidget* osd_box      = gtk_vbox_new(false, 5);
 
 	// Grab a logo, to make things look nice.
-	GdkPixbuf* logo_pixmap = gdk_pixbuf_from_pixdata(&gsdx_ogl_logo, false, NULL);
-	GtkWidget* logo_image  = gtk_image_new_from_pixbuf(logo_pixmap);
+	GResource * resources = GSdx_res_get_resource();
+	GInputStream * ogl_stream=g_resource_open_stream(resources,"/GSdx/res/logo-ogl.bmp",G_RESOURCE_LOOKUP_FLAGS_NONE,NULL);
+	GdkPixbuf * ogl_logo = gdk_pixbuf_new_from_stream(ogl_stream,NULL,NULL);
+	g_object_unref(ogl_stream);
+	GtkWidget* logo_image  = gtk_image_new_from_pixbuf(ogl_logo);
 	gtk_box_pack_start(GTK_BOX(main_box), logo_image, true, true, 0);
 
 	GtkWidget* main_table   = CreateTableInBox(main_box    , NULL                                   , 2  , 2);
