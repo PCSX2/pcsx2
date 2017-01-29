@@ -91,7 +91,7 @@ PS2EgetLibType()
     return PS2E_LT_PAD;
 }
 
-EXPORT_C_(char *)
+EXPORT_C_(const char *)
 PS2EgetLibName()
 {
     InitLibraryName();

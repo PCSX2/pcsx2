@@ -23,7 +23,7 @@ using namespace std;
 
 const u8 version = PS2E_PAD_VERSION;
 const u8 revision = 0;
-const u8 build = 1;  // increase that with each version
+const u8 build = 1; // increase that with each version
 
 #ifdef _MSC_VER
 #define snprintf sprintf_s
@@ -43,7 +43,7 @@ PS2EgetLibType()
     return PS2E_LT_PAD;
 }
 
-EXPORT_C_(char *)
+EXPORT_C_(const char *)
 PS2EgetLibName()
 {
     snprintf(libraryName, 255, "Padnull Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");

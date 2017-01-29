@@ -36,9 +36,9 @@ const u32 minor = 0; // increase that with each version
 #define RELEASE_MS 437L
 
 #ifdef PCSX2_DEBUG
-char *libraryName = "SPU2null (Debug)";
+const char *libraryName = "SPU2null (Debug)";
 #else
-char *libraryName = "SPU2null ";
+const char *libraryName = "SPU2null ";
 #endif
 string s_strIniPath = "inis/";
 string s_strLogPath = "logs/";
@@ -89,7 +89,7 @@ PS2EgetLibType()
     return PS2E_LT_SPU2;
 }
 
-EXPORT_C_(char *)
+EXPORT_C_(const char *)
 PS2EgetLibName()
 {
     return libraryName;
@@ -101,7 +101,7 @@ PS2EgetLibVersion2(u32 type)
     return (version << 16) | (revision << 8) | build | (minor << 24);
 }
 
-void __Log(char *fmt, ...)
+void __Log(const char *fmt, ...)
 {
     va_list list;
 

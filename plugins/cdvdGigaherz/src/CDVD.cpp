@@ -60,7 +60,7 @@ const unsigned char version = PS2E_CDVD_VERSION;
 const unsigned char revision = 0;
 const unsigned char build = 11;
 
-EXPORT char *CALLBACK PS2EgetLibName()
+EXPORT const char *CALLBACK PS2EgetLibName()
 {
     return LibName;
 }

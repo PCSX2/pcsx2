@@ -126,7 +126,7 @@ extern "C" {
 
 u32 CALLBACK PS2EgetLibType(void);
 u32 CALLBACK PS2EgetLibVersion2(u32 type);
-char *CALLBACK PS2EgetLibName(void);
+const char *CALLBACK PS2EgetLibName(void);
 
 #ifdef __cplusplus
 }
