@@ -425,8 +425,9 @@ __inline s32 FNC_OVERFLOW4(s64 x) {
 }
 
 #define _LIMX(negv, posv, flagb) { \
-	if (x < (negv)) { x = (negv); gteFLAG |= (1<<(flagb)); } else \
-	if (x > (posv)) { x = (posv); gteFLAG |= (1<<(flagb)); } return (x); \
+	if (x < (negv)) { x = (negv); gteFLAG |= (1<<(flagb)); } \
+	else if (x > (posv)) { x = (posv); gteFLAG |= (1<<(flagb)); } \
+	return (x); \
 }
 
 __inline double limA1S(double x) { _LIMX(-32768.0, 32767.0, 24); }
@@ -450,7 +451,9 @@ __inline double limG1(double x) {
 
 	if (x >       1023.0) { x = 1023.0; gteFLAG |= (1 << 14); }
 	else
-		if (x <      -1024.0) { x = -1024.0; gteFLAG |= (1 << 14); } return (x);
+		if (x <      -1024.0) { x = -1024.0; gteFLAG |= (1 << 14); }
+	
+	return (x);
 }
 
 __inline double limG2(double x) {
@@ -460,7 +463,9 @@ __inline double limG2(double x) {
 
 	if (x >       1023.0) { x = 1023.0; gteFLAG |= (1 << 13); }
 	else
-		if (x < -1024.0) { x = -1024.0; gteFLAG |= (1 << 13); } return (x);
+		if (x < -1024.0) { x = -1024.0; gteFLAG |= (1 << 13); }
+
+	return (x);
 }
 
 __inline s32 F12limA1S(s64 x) { _LIMX(-32768 << 12, 32767 << 12, 24); }
@@ -487,12 +492,12 @@ __inline s32 FlimE(s32 x) { _LIMX(0, 65535, 12); }
 
 __inline s32 FlimG1(s64 x) {
 	if (x > 2147483647) { gteFLAG |= (1 << 16); }
-	else
-		if (x < (s64)0xffffffff80000000) { gteFLAG |= (1 << 15); }
-
+	else if (x < (s64)0xffffffff80000000) { gteFLAG |= (1 << 15); }
+	
 	if (x >       1023) { x = 1023; gteFLAG |= (1 << 14); }
-	else
-		if (x <      -1024) { x = -1024; gteFLAG |= (1 << 14); } return (x);
+	else if (x <      -1024) { x = -1024; gteFLAG |= (1 << 14); } 
+	
+	return (x);
 }
 
 __inline s32 FlimG2(s64 x) {
@@ -502,7 +507,9 @@ __inline s32 FlimG2(s64 x) {
 
 	if (x >       1023) { x = 1023; gteFLAG |= (1 << 13); }
 	else
-		if (x < -1024) { x = -1024; gteFLAG |= (1 << 13); } return (x);
+		if (x < -1024) { x = -1024; gteFLAG |= (1 << 13); } 
+	
+	return (x);
 }
 
 #define MAC2IR() { \
