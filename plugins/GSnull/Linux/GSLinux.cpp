@@ -35,7 +35,6 @@ int GSOpenWindow(void *pDsp, const char *Title)
 
 int GSOpenWindow2(void *pDsp, u32 flags)
 {
-    GtkWidget *widget;
     if (pDsp != NULL)
         win = *(GtkScrolledWindow **)pDsp;
     else

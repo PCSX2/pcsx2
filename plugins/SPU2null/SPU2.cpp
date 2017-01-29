@@ -855,7 +855,7 @@ SPU2write(u32 mem, u16 value)
     u32 r = mem & 0xffff;
 
     // channel info
-    if ((r >= 0x0000 && r < 0x0180) || (r >= 0x0400 && r < 0x0580)) { // some channel info?
+    if (r < 0x0180 || (r >= 0x0400 && r < 0x0580)) { // some channel info?
         int ch = 0;
         if (r >= 0x400)
             ch = ((r - 0x400) >> 4) + 24;
@@ -1059,7 +1059,7 @@ SPU2read(u32 mem)
     u16 ret;
     u32 r = mem & 0xffff;
 
-    if ((r >= 0x0000 && r <= 0x0180) || (r >= 0x0400 && r <= 0x0580)) { // some channel info?
+    if (r <= 0x0180 || (r >= 0x0400 && r <= 0x0580)) { // some channel info?
         s32 ch = 0;
 
         if (r >= 0x400)
