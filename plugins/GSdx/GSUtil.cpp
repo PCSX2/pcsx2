@@ -225,6 +225,8 @@ bool GSUtil::CheckSSE()
 #endif
 #if _M_SSE >= 0x501
 		{Xbyak::util::Cpu::tAVX2, "AVX2"},
+		{Xbyak::util::Cpu::tBMI1, "BMI1"},
+		{Xbyak::util::Cpu::tBMI2, "BMI2"},
 #endif
 	};
 
