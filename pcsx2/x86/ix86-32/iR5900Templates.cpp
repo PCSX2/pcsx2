@@ -426,8 +426,8 @@ void eeRecompileCodeConst0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R59
 // rt = rs op imm16
 void eeRecompileCodeConst1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 {
-    if ( ! _Rt_ )
-        return;
+	if ( ! _Rt_ )
+		return;
 
 	// for now, don't support xmm
 

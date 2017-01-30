@@ -112,6 +112,7 @@ set(GSdxSources
     GSWndOGL.cpp
     GSWndEGL.cpp
     GSdx.cpp
+    GSdxResources.cpp
     stdafx.cpp
     )
 
@@ -144,7 +145,6 @@ set(GSdxHeaders
     GSDrawingEnvironment.h
     GSDump.h
     GSFunctionMap.h
-    GSLinuxLogo.h
     GSLocalMemory.h
     GSPerfMon.h
     GSRasterizer.h
@@ -176,6 +176,7 @@ set(GSdxHeaders
     GSWndOGL.h
     GSWndEGL.h
     GSdx.h
+    GSdxResources.h
     res/glsl_source.h
     stdafx.h
     xbyak/xbyak.h
@@ -213,6 +214,10 @@ endif()
 if (REBUILD_SHADER)
     add_custom_command(OUTPUT res/glsl_source.h COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/glsl2h.pl)
 endif()
+
+# Note: trying to combine --generate-source and --generate-header doesn't work. It outputs whichever one comes last into the file named by the first
+execute_process(COMMAND glib-compile-resources --sourcedir res --generate-header --c-name GSdx_res res/gsdx-res.xml --target=GSdxResources.h WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+execute_process(COMMAND glib-compile-resources --sourcedir res --generate-source --c-name GSdx_res res/gsdx-res.xml --target=GSdxResources.cpp WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(BUILTIN_GS)
     add_pcsx2_lib(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
