@@ -24,6 +24,16 @@
 #include "GS.h"
 #include "xbyak/xbyak_util.h"
 
+#define _AMD_VENDOR_ID		0x1002
+#define _INTEL_VENDOR_ID	0x8086
+#define _NVIDIA_VENDOR_ID	0x10DE
+
+enum class RenderingMode : uint8
+{
+	Hardware,
+	Software
+};
+
 struct OCLDeviceDesc
 {
 #ifdef ENABLE_OPENCL
@@ -61,7 +71,7 @@ public:
 	static bool CheckDirectX();
 	static bool CheckDXGI();
 	static bool CheckD3D11();
-	static GSRendererType GetBestRenderer();
+	static GSRendererType GetBestRenderer(RenderingMode);
 	static D3D_FEATURE_LEVEL CheckDirect3D11Level(IDXGIAdapter *adapter = NULL, D3D_DRIVER_TYPE type = D3D_DRIVER_TYPE_HARDWARE);
 
 #endif

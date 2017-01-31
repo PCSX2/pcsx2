@@ -267,12 +267,26 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			break;
 		case GSRendererType::Software:
 #ifdef _WIN32
-			dev = new GSDevice9();
+			switch (GSUtil::GetBestRenderer(RenderingMode::Software))
+			{
+			case GSRendererType::OGL:
+				dev = new GSDeviceOGL();
+				renderer_fullname = "Software mode (OpenGL API)";
+				break;
+			case GSRendererType::DX1011:
+				dev = new GSDevice11();
+				renderer_fullname = "Software mode (D3D11 API)";
+				break;
+			case GSRendererType::DX9:
+				dev = new GSDevice9();
+				renderer_fullname = "Software mode (D3D9 API)";
+				break;
+			}
 #else
 			dev = new GSDeviceOGL();
+			renderer_fullname = "Software mode";
 #endif
 			s_renderer_name = " SW";
-			renderer_fullname = "Software mode";
 			break;
 		}
 
@@ -335,6 +349,10 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			case GSRendererType::OGL:
 			case GSRendererType::OGL_OpenCL:
 				s_gs->m_wnd = new GSWndWGL();
+				break;
+			case GSRendererType::Software:
+				if(GSUtil::GetBestRenderer(RenderingMode::Software) == GSRendererType::OGL)
+					s_gs->m_wnd = new GSWndWGL();
 				break;
 			default:
 				s_gs->m_wnd = new GSWndDX();
@@ -509,13 +527,13 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
 #ifdef _WIN32
 		if (renderer == GSRendererType::Default)
-			renderer = GSUtil::GetBestRenderer();
+			renderer = GSUtil::GetBestRenderer(RenderingMode::Hardware);
 #endif
 	}
 	else if (stored_toggle_state != toggle_state)
 	{
 #ifdef _WIN32
-		GSRendererType best_renderer = GSUtil::GetBestRenderer();
+		GSRendererType best_renderer = GSUtil::GetBestRenderer(RenderingMode::Hardware);
 
 		switch (renderer)
 		{
