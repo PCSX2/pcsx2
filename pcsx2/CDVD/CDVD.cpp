@@ -2050,10 +2050,10 @@ static void cdvdWrite16(u8 rt)		 // SCOMMAND
 		//Console.WriteLn("SCMD - 0x%x\n", rt);
 		cdvd.ParamP = 0;
 		cdvd.ParamC = 0;
-	} catch (Exception::CannotCreateStream& ex) {
+	} catch (Exception::CannotCreateStream&) {
 		Cpu->ThrowException(Exception::RuntimeError()
-				.SetDiagMsg(L"Failed to read/write NMV/MEC file.")
-				.SetUserMsg(pxE( L"Failed to read/write NMV/MEC file. Check your bios setup/permission settings"))
+				.SetDiagMsg(L"Failed to read/write NVM/MEC file.")
+				.SetUserMsg(pxE( L"Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings."))
 				);
 	}
 }
