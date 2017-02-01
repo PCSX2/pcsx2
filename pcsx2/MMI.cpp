@@ -1307,7 +1307,7 @@ static __fi void _PHMSBH_LO(int dd, int n)
 	s32 temp = firsttemp - (s32)cpuRegs.GPR.r[_Rs_].SS[n]   * (s32)cpuRegs.GPR.r[_Rt_].SS[n];
 
 	cpuRegs.LO.UL[dd] = temp;
-	cpuRegs.LO.UL[dd+1] = ~firsttemp;
+	cpuRegs.LO.UL[dd+1] = ~firsttemp;  // undocumented behaviour
 }
 static __fi void _PHMSBH_HI(int dd, int n)
 {
@@ -1315,7 +1315,7 @@ static __fi void _PHMSBH_HI(int dd, int n)
 	s32 temp = firsttemp - (s32)cpuRegs.GPR.r[_Rs_].SS[n]   * (s32)cpuRegs.GPR.r[_Rt_].SS[n];
 
 	cpuRegs.HI.UL[dd] = temp;
-	cpuRegs.HI.UL[dd+1] = ~firsttemp;
+	cpuRegs.HI.UL[dd+1] = ~firsttemp;  // undocumented behaviour
 }
 
 void PHMSBH() {		// JayteeMaster: changed a bit to avoid screw up
