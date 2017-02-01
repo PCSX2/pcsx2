@@ -59,9 +59,6 @@
     <ClCompile Include="..\..\src\Utilities\StringHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Utilities\vssprintf.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utilities\wxAppWithHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

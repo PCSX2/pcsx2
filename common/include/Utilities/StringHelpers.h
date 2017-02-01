@@ -233,12 +233,3 @@ extern wxString operator+(const wxString &str1, const FastFormatUnicode &str2);
 extern wxString operator+(const wxChar *str1, const FastFormatUnicode &str2);
 extern wxString operator+(const FastFormatUnicode &str1, const wxString &str2);
 extern wxString operator+(const FastFormatUnicode &str1, const wxChar *str2);
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Custom internal sprintf functions, which are ASCII only (even in UNICODE builds)
-//
-// These functions are useful since they are ASCII always, even under Unicode.  Typically
-// even in a unicode app.
-
-extern void ssappendf(std::string &dest, const char *format, ...);

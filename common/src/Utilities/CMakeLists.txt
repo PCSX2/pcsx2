@@ -42,7 +42,6 @@ set(UtilitiesSources
 	StringHelpers.cpp
 	ThreadingDialogs.cpp
 	ThreadTools.cpp
-	vssprintf.cpp
 	wxAppWithHelpers.cpp
 	wxGuiTools.cpp
 	wxHelpers.cpp
