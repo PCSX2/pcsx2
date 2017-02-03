@@ -39,6 +39,10 @@ if(NOT USE_CLANG)
     set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
 endif()
 
+if(OPENCL_API)
+    set(GSdxFinalFlags ${GSdxFinalFlags} -DENABLE_OPENCL)
+endif()
+
 set(GSdxSources
     GLLoader.cpp
     GLState.cpp
@@ -208,6 +212,10 @@ endif()
 
 if(USE_VTUNE)
     set(GSdxFinalLibs ${GSdxFinalLibs} ${VTUNE_LIBRARIES})
+endif()
+
+if(OPENCL_FOUND)
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${OPENCL_LIBRARIES})
 endif()
 
 # Generate Glsl header file. Protect with REBUILD_SHADER to avoid build-dependency on PERL
