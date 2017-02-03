@@ -722,41 +722,6 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 	ClearRenderTarget(t, color);
 }
 
-void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
-{
-	// Hopefully AMD mesa will support this extension soon
-	ASSERT(!GLLoader::found_GL_ARB_clear_texture);
-
-	if (!t) return;
-
-	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
-
-	GL_PUSH("Clear RTi %d", T->GetID());
-
-	uint32 old_color_mask = GLState::wrgba;
-	OMSetColorMaskState();
-
-	// Keep SCISSOR_TEST enabled on purpose to reduce the size
-	// of clean in DATE (impact big upscaling)
-	int32 col[4] = {c, c, c, c};
-
-	OMSetFBO(m_fbo);
-	OMAttachRt(T);
-
-	// Blending is not supported when you render to an Integer texture
-	if (GLState::blend) {
-		glDisable(GL_BLEND);
-	}
-
-	glClearBufferiv(GL_COLOR, 0, col);
-
-	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
-
-	if (GLState::blend) {
-		glEnable(GL_BLEND);
-	}
-}
-
 void GSDeviceOGL::ClearDepth(GSTexture* t)
 {
 	if (!t) return;
@@ -917,11 +882,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area)
 
 	// Clean with the max signed value
 	int max_int = 0x7FFFFFFF;
-	if (GLLoader::found_GL_ARB_clear_texture) {
-		static_cast<GSTextureOGL*>(m_date.t)->Clear(&max_int, area);
-	} else {
-		ClearRenderTarget_i(m_date.t, max_int);
-	}
+	static_cast<GSTextureOGL*>(m_date.t)->Clear(&max_int, area);
 
 	glBindImageTexture(2, static_cast<GSTextureOGL*>(m_date.t)->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
 #ifdef ENABLE_OGL_DEBUG

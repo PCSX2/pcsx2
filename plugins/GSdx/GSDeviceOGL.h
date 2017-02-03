@@ -532,7 +532,6 @@ public:
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) final;
 	void ClearRenderTarget(GSTexture* t, uint32 c) final;
-	void ClearRenderTarget_i(GSTexture* t, int32 c);
 	void ClearDepth(GSTexture* t) final;
 	void ClearStencil(GSTexture* t, uint8 c) final;
 

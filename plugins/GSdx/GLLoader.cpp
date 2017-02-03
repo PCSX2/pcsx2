@@ -198,7 +198,7 @@ namespace GLLoader {
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_EXT_texture_filter_anisotropic = false;
-	bool found_GL_ARB_clear_texture = false; // Miss AMD Mesa (otherwise seems SW)
+	bool found_GL_ARB_clear_texture = false;
 	bool found_GL_ARB_get_texture_sub_image = false; // Not yet used
 	// DX11 GPU
 	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge

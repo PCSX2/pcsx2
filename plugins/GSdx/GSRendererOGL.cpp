@@ -1331,7 +1331,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			} else if (m_accurate_date) {
 				GL_PERF("Slow DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 
-				if (GLLoader::found_GL_ARB_shader_image_load_store) {
+				if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture) {
 					DATE_GL42 = true;
 				} else {
 					m_require_full_barrier = true;
