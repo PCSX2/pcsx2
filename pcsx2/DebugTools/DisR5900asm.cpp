@@ -47,8 +47,7 @@ static void vssappendf(std::string &dest, const char *format, va_list args)
         return;
     }
 
-    std::vector<char> output;
-    output.resize(size + 1);
+    std::vector<char> output(size + 1);
     std::vsnprintf(output.data(), size, format, args);
 
     dest += output.data();
