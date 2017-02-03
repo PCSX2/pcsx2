@@ -575,7 +575,7 @@ void GSRendererCL::Sync(int reason)
 	}
 
 #ifndef NDEBUG
-	for(auto page_ref : m_rw_pages_rendering)
+	for(const auto& page_ref : m_rw_pages_rendering)
 		ASSERT(page_ref == 0);
 #endif
 
@@ -1776,7 +1776,7 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 	if(zwrite || ztest)
 	{
 		sel.zpsm = RemapPSM(context->ZBUF.PSM);
-		sel.ztst = ztest ? context->TEST.ZTST : ZTST_ALWAYS;
+		sel.ztst = ztest ? context->TEST.ZTST : (int)ZTST_ALWAYS;
 
 		if(ztest)
 		{
@@ -2058,7 +2058,7 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 
 		for(auto b : binaries)
 		{
-			delete [] b.first;
+			delete [] (char*)b.first;
 		}
 	}
 
