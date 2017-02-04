@@ -39,6 +39,7 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 		m_disable_partial_invalidation = theApp.GetConfigB("UserHacks_DisablePartialInvalidation");
 		m_can_convert_depth            = !theApp.GetConfigB("UserHacks_DisableDepthSupport");
 		m_texture_inside_rt            = theApp.GetConfigB("UserHacks_TextureInsideRt");
+		m_wrap_gs_mem                  = theApp.GetConfigB("wrap_gs_mem");
 	} else {
 		m_spritehack                   = 0;
 		UserHacks_HalfPixelOffset      = false;
@@ -46,9 +47,8 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 		m_disable_partial_invalidation = false;
 		m_can_convert_depth            = true;
 		m_texture_inside_rt            = false;
+		m_wrap_gs_mem                  = false;
 	}
-
-	m_wrap_gs_mem = theApp.GetConfigB("wrap_gs_mem");
 
 	m_paltex = theApp.GetConfigB("paltex");
 	m_can_convert_depth &= s_IS_OPENGL; // only supported by openGL so far

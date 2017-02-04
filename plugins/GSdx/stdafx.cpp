@@ -72,16 +72,71 @@ void vmfree(void* ptr, size_t size)
 	VirtualFree(ptr, 0, MEM_RELEASE);
 }
 
+static HANDLE s_fh = NULL;
+static uint8* s_Next[8];
+
 void* fifo_alloc(size_t size, size_t repeat)
 {
-	// FIXME check linux code
-	return vmalloc(size * repeat, false);
+	ASSERT(s_fh == NULL);
+
+	if (repeat >= countof(s_Next)) {
+		fprintf(stderr, "Memory mapping overflow (%zu >= %u)\n", repeat, countof(s_Next));
+		return vmalloc(size * repeat, false); // Fallback to default vmalloc
+	}
+
+	s_fh = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, nullptr);
+	DWORD errorID = ::GetLastError();
+	if (s_fh == NULL) {
+		fprintf(stderr, "Failed to reserve memory. WIN API ERROR:%u\n", errorID);
+		return vmalloc(size * repeat, false); // Fallback to default vmalloc
+	}
+
+	int mmap_segment_failed = 0;
+	void* fifo = MapViewOfFile(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size);
+	for (size_t i = 1; i < repeat; i++) {
+		void* base = (uint8*)fifo + size * i;
+		s_Next[i] = (uint8*)MapViewOfFileEx(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size, base);
+		errorID = ::GetLastError();
+		if (s_Next[i] != base) {
+			mmap_segment_failed++;
+			if (mmap_segment_failed > 4) {
+				fprintf(stderr, "Memory mapping failed after %d attempts, aborting. WIN API ERROR:%u\n", mmap_segment_failed, errorID);
+				fifo_free(fifo, size, repeat);
+				return vmalloc(size * repeat, false); // Fallback to default vmalloc
+			}
+			do {
+				UnmapViewOfFile(s_Next[i]);
+				s_Next[i] = 0;
+			} while (--i > 0);
+
+			fifo = MapViewOfFile(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size);
+		}
+	}
+
+	return fifo;
 }
 
 void fifo_free(void* ptr, size_t size, size_t repeat)
 {
-	// FIXME check linux code
-	return vmfree(ptr, size * repeat);
+	ASSERT(s_fh != NULL);
+
+	if (s_fh == NULL) {
+		if (ptr != NULL)
+			vmfree(ptr, size);
+		return;
+	}
+
+	UnmapViewOfFile(ptr);
+
+	for (size_t i = 1; i < countof(s_Next); i++) {
+		if (s_Next[i] != 0) {
+			UnmapViewOfFile(s_Next[i]);
+			s_Next[i] = 0;
+		}
+	}
+
+	CloseHandle(s_fh);
+	s_fh = NULL;
 }
 
 #else
@@ -125,10 +180,12 @@ void* fifo_alloc(size_t size, size_t repeat)
 
 	const char* file_name = "/GSDX.mem";
 	s_shm_fd = shm_open(file_name, O_RDWR | O_CREAT | O_EXCL, 0600);
-	if (s_shm_fd != -1)
+	if (s_shm_fd != -1) {
 		shm_unlink(file_name); // file is deleted but descriptor is still open
-	else
+	} else {
 		fprintf(stderr, "Failed to open %s due to %s\n", file_name, strerror(errno));
+		return nullptr;
+	}
 
 	if (ftruncate(s_shm_fd, repeat * size) < 0)
 		fprintf(stderr, "Failed to reserve memory due to %s\n", strerror(errno));

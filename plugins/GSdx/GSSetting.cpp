@@ -146,6 +146,9 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_UNSCALE_POINT_LINE:
 			return "Increases the width of lines at higher than native resolutions. This ensures that the lines will keep the correct proportions and prevents aliasing. "
 				"Avoids empty lines on the screen in games such as Ridge Racer V, and clears FMVs obscured by a grid in games like the Silent Hill series and Dirge of Cerberus.";
+		case IDC_MEMORY_WRAPPING:
+			return "Emulates GS memory wrapping accurately. This fixes issues where part of the image is cut-off by block shaped sections such as the FMVs in Wallace & Gromit: The Curse of the Were-Rabbit and Thrillville.\n"
+				"Note: This hack can have a small impact on performance.";
 #ifdef _WIN32
 		// DX9 only
 		case IDC_FBA:

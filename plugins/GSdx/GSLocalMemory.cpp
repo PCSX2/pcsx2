@@ -84,7 +84,7 @@ GSLocalMemory::psm_t GSLocalMemory::m_psm[64];
 GSLocalMemory::GSLocalMemory()
 	: m_clut(this)
 {
-	if (theApp.GetConfigB("wrap_gs_mem"))
+	if (theApp.GetConfigB("UserHacks") && theApp.GetConfigB("wrap_gs_mem"))
 		m_vm8 = (uint8*)fifo_alloc(m_vmsize, 4);
 	else
 		m_vm8 = (uint8*)vmalloc(m_vmsize * 4, false);
@@ -472,7 +472,7 @@ GSLocalMemory::GSLocalMemory()
 
 GSLocalMemory::~GSLocalMemory()
 {
-	if (theApp.GetConfigB("wrap_gs_mem"))
+	if (theApp.GetConfigB("UserHacks") && theApp.GetConfigB("wrap_gs_mem"))
 		fifo_free(m_vm8, m_vmsize, 4);
 	else
 		vmfree(m_vm8, m_vmsize * 4);
