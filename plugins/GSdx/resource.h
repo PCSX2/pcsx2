@@ -122,6 +122,7 @@
 #define IDC_OSDBUTTON                   2118
 #define IDC_OSD_MAX_LOG                 2119
 #define IDC_OSD_MAX_LOG_EDIT            2120
+#define IDC_MEMORY_WRAPPING             2121
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
 #define IDR_MERGE_FX                    10002
@@ -141,7 +142,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10013
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2121
+#define _APS_NEXT_CONTROL_VALUE         2122
 #define _APS_NEXT_SYMED_VALUE           5000
 #endif
 #endif
