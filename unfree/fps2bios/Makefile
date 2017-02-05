@@ -1,54 +1,44 @@
-#
-#
-
-all: ps2romgen_exe romdir_exe romver_exe fps2bios
 
 VERSION = 0
-BUILD   = 1
+BUILD = 1
 
 CC = gcc
-RM = rm -f
-STRIP = strip
 
-OPTIMIZE = -O2 -fomit-frame-pointer -finline-functions -ffast-math
-CFLAGS = -Wall ${OPTIMIZE} -I.
+CFLAGS = -Wall -O2 -I.
 DIRS = kernel intro loader
 FILES = RESET ROMDIR ROMVER IOPBOOT EELOAD \
 		SYSMEM LOADCORE EXCEPMAN INTRMAN SSBUSC DMACMAN \
 		TIMRMAN SYSCLIB HEAPLIB THREADMAN VBLANK STDIO \
 		SIFMAN SIFCMD SIO2MAN LOADER INTRO IOPBTCONF FP2BLOGO 
 
-ps2romgen_exe: ps2romgen.o
-	${CC} ${CFLAGS} ps2romgen.o -o build/ps2romgen_exe
+.PHONY: clean
 
-romdir_exe: romdir.o
-	${CC} ${CFLAGS} romdir.o -o build/romdir_exe
-
-romver_exe: romver.o
-	${CC} ${CFLAGS} romver.o -o build/romver_exe
-
-fps2bios:
+build/fps2bios: build/ps2romgen_exe build/romdir_exe build/romver_exe | build 
 	for i in $(DIRS); do \
-		(cd $$i; make; cd ..) \
+		make -C $$i; \
 	done;
 	cp -f FP2BLOGO build
-	cp -f IOPBTCONF build/
+	cp -f IOPBTCONF build
 	(cd build; \
 	./romver_exe $(VERSION) $(BUILD); \
 	./romdir_exe $(FILES); \
 	./ps2romgen_exe fps2bios; \
 	cd ..)
-	cp build/fps2bios ../bin/bios
 
-.PHONY: clean ps2romgen_exe romdir_exe fps2bios
+build/ps2romgen_exe: ps2romgen.c | build 
+	$(CC) $(CFLAGS) $< -o $@
+
+build/romdir_exe: romdir.c | build 
+	$(CC) $(CFLAGS) $< -o $@
+
+build/romver_exe: romver.c | build 
+	$(CC) $(CFLAGS) $< -o $@
+
+build:
+	mkdir -p $@
 
 clean:
-	${RM} *.o build/*
+	rm -f -r *.o build
 	for i in $(DIRS); do \
-		(cd $$i; make clean; cd ..) \
+		make -C $$i clean; \
 	done; 
-
-%.o: %.c
-	${CC} ${CFLAGS} -c -o $@ $<
-
-
