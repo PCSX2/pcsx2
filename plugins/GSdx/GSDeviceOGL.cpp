@@ -1202,6 +1202,10 @@ GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, in
 
 	GSVector4 dRect(0, 0, w, h);
 
+	// StretchRect will read an old target. However, the memory cache might contains
+	// invalid data (for example due to SW blending).
+	glTextureBarrier();
+
 	StretchRect(src, sRect, dst, dRect, m_convert.ps[ps_shader]);
 
 	return dst;
