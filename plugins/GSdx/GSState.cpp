@@ -404,6 +404,30 @@ GSVideoMode GSState::GetVideoMode()
 	return videomode;
 }
 
+// There are some cases where the PS2 seems to saturate the output circuit size when the developer requests for a higher
+// unsupported value with respect to the current video mode via the DISP registers, the following function handles such cases.
+// NOTE: This function is totally hacky as there are no documents related to saturation of output dimensions, function is
+// generally just based on technical and intellectual guesses.
+void GSState::SaturateOutputSize(GSVector4i& r)
+{
+	const GSVideoMode videomode = GetVideoMode();
+
+	//Some games (such as Pool Paradise) use alternate line reading and provide a massive height which is really half.
+	if (r.height() > 640 && (videomode == GSVideoMode::NTSC || videomode == GSVideoMode::PAL))
+	{
+		r.bottom = r.top + (r.height() / 2);
+		return;
+	}
+
+	//  Limit games to standard NTSC resolutions. games with 512X512 (PAL resolution) on NTSC video mode produces black border on the bottom.
+	//  512 X 448 is the resolution generally used by NTSC, saturating the height value seems to get rid of the black borders.
+	//  Though it's quite a bad hack as it affects binaries which are patched to run on a non-native video mode.
+	if (m_NTSC_Saturation && isinterlaced() && videomode == GSVideoMode::NTSC && r.height() > 448 && r.width() < 640)
+	{
+		r.bottom = r.top + 448;
+	}
+}
+
 GSVector4i GSState::GetDisplayRect(int i)
 {
 	if (!IsEnabled(0) && !IsEnabled(1))
@@ -426,22 +450,9 @@ GSVector4i GSState::GetDisplayRect(int i)
 		i = m_regs->PMODE.EN2;
 	}
 
-	GSVideoMode videomode = GetVideoMode();
 	GSVector2i magnification (m_regs->DISP[i].DISPLAY.MAGH + 1, m_regs->DISP[i].DISPLAY.MAGV + 1);
 	int width = (m_regs->DISP[i].DISPLAY.DW + 1) / magnification.x;
 	int height = (m_regs->DISP[i].DISPLAY.DH + 1) / magnification.y;
-	
-	//Some games (such as Pool Paradise) use alternate line reading and provide a massive height which is really half.
-	if (height > 640 && videomode < GSVideoMode::VESA)
-	{
-		height /= 2;
-	}
-
-	//  Limit games to standard NTSC resolutions. games with 512X512 (PAL resolution) on NTSC video mode produces black border on the bottom.
-	//  512 X 448 is the resolution generally used by NTSC, saturating the height value seems to get rid of the black borders.
-	//  Though it's quite a bad hack as it affects binaries which are patched to run on a non-native video mode.
-	if (m_NTSC_Saturation && isinterlaced() && videomode == GSVideoMode::NTSC && height > 448 && width < 640)
-		height = 448;
 
 	// Set up the display rectangle based on the values obtained from DISPLAY registers
 	GSVector4i rectangle;
@@ -450,6 +461,7 @@ GSVector4i GSState::GetDisplayRect(int i)
 	rectangle.right = rectangle.left + width;
 	rectangle.bottom = rectangle.top + height;
 
+	SaturateOutputSize(rectangle);
 	return rectangle;
 }
 
