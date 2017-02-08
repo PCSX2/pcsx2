@@ -243,6 +243,7 @@ public:
 	void ResetHandlers();
 
 	int GetFramebufferHeight();
+	void SaturateOutputSize(GSVector4i& r);
 	GSVector4i GetDisplayRect(int i = -1);
 	GSVector4i GetFrameRect(int i = -1);
 	GSVideoMode GetVideoMode();
