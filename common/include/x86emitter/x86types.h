@@ -53,18 +53,18 @@ enum XMMSSEType {
 
 #ifndef __tls_emit
 
-#	if x86EMIT_MULTITHREADED
-#		if _MSC_VER == 1800
-#			define __tls_emit	__threadlocal
-#		else 
-#			define __tls_emit	thread_local
-#		endif
-#	else
-		// Using TlsVariable is sub-optimal and could result in huge executables, so we
-		// force-disable TLS entirely, and disallow running multithreaded recompilation
-		// components within PCSX2 manually.
-#		define __tls_emit
-#	endif
+#if x86EMIT_MULTITHREADED
+#if _MSC_VER == 1800
+#define __tls_emit __threadlocal
+#else
+#define __tls_emit thread_local
+#endif
+#else
+// Using TlsVariable is sub-optimal and could result in huge executables, so we
+// force-disable TLS entirely, and disallow running multithreaded recompilation
+// components within PCSX2 manually.
+#define __tls_emit
+#endif
 #endif
 
 extern __tls_emit u8 *x86Ptr;
