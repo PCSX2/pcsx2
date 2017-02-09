@@ -394,7 +394,7 @@ void ProcessButtonBinding(Binding *b, ButtonSum *sum, int value)
         value = std::min((int)(((__int64)value * (FULLY_DOWN - (__int64)b->skipDeadZone)) / FULLY_DOWN) + b->skipDeadZone, FULLY_DOWN);
     }
 
-    if (b->command == 0x2A) { // Turbo key
+    if (b->command == 0x2D) { // Turbo key
         static unsigned int LastCheck = 0;
         unsigned int t = timeGetTime();
         if (t - LastCheck < 300)
@@ -550,16 +550,16 @@ void Update(unsigned int port, unsigned int slot)
                         if (cmd > 0x0F && cmd != 0x28) {
                             ProcessButtonBinding(b, &s[port][slot], state);
                         } else if ((state >> 15) && !(dev->oldVirtualControlState[b->controlIndex] >> 15)) {
-                            if (cmd == 0x0F) {
+                            if (cmd == 0x0F) { // Mouse
                                 miceEnabled = !miceEnabled;
                                 UpdateEnabledDevices();
-                            } else if (cmd == 0x0C) {
+                            } else if (cmd == 0x2A) { // Lock Buttons
                                 lockStateChanged[port][slot] |= LOCK_BUTTONS;
-                            } else if (cmd == 0x0E) {
-                                lockStateChanged[port][slot] |= LOCK_DIRECTION;
-                            } else if (cmd == 0x0D) {
+                            } else if (cmd == 0x2B) { // Lock Input
                                 lockStateChanged[port][slot] |= LOCK_BOTH;
-                            } else if (cmd == 0x28 && !pads[port][slot].modeLock && padtype == Dualshock2Pad) {
+                            } else if (cmd == 0x2C) { // Lock Direction
+                                lockStateChanged[port][slot] |= LOCK_DIRECTION;
+                            } else if (cmd == 0x28 && !pads[port][slot].modeLock && padtype == Dualshock2Pad) { // Analog
                                 if (pads[port][slot].mode == MODE_ANALOG)
                                     pads[port][slot].mode = MODE_DIGITAL;
                                 else if (pads[port][slot].mode == MODE_DIGITAL)
@@ -602,25 +602,25 @@ void Update(unsigned int port, unsigned int slot)
                         int values[5];
                         int i;
                         for (i = 0; i < 5; i++) {
-                            int id = oldIdList[i] - 0x1104;
+                            int id = oldIdList[i] - ID_DPAD_UP;
                             values[i] = s[port][slot].buttons[id];
                             s[port][slot].buttons[id] = 0;
                         }
-                        s[port][slot].buttons[ID_TRIANGLE - 0x1104] = values[1];
+                        s[port][slot].buttons[ID_TRIANGLE - ID_DPAD_UP] = values[1];
                         for (i = 0; i < 5; i++) {
-                            int id = idList[i] - 0x1104;
+                            int id = idList[i] - ID_DPAD_UP;
                             s[port][slot].buttons[id] = values[i];
                         }
                         if (s[port][slot].buttons[14] <= 48 && s[port][slot].buttons[12] <= 48) {
                             for (int i = 0; i < 5; i++) {
-                                unsigned int id = idList[i] - 0x1104;
+                                unsigned int id = idList[i] - ID_DPAD_UP;
                                 if (pads[port][slot].sum.buttons[id] < s[port][slot].buttons[id]) {
                                     s[port][slot].buttons[id] = pads[port][slot].sum.buttons[id];
                                 }
                             }
                         } else if (pads[port][slot].sum.buttons[14] <= 48 && pads[port][slot].sum.buttons[12] <= 48) {
                             for (int i = 0; i < 5; i++) {
-                                unsigned int id = idList[i] - 0x1104;
+                                unsigned int id = idList[i] - ID_DPAD_UP;
                                 if (pads[port][slot].sum.buttons[id]) {
                                     s[port][slot].buttons[id] = 0;
                                 }
