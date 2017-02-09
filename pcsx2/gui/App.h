@@ -84,7 +84,6 @@ enum MenuIdentifiers
 	MenuId_Src_Plugin,
 	MenuId_Src_NoDisc,
 	MenuId_Boot_Iso,			// Opens submenu with Iso browser, and recent isos.
-	MenuId_IsoSelector,			// Contains a submenu of selectable "favorite" isos
 	MenuId_RecentIsos_reservedStart,
 	MenuId_IsoBrowse = MenuId_RecentIsos_reservedStart + 100,			// Open dialog, runs selected iso.
 	MenuId_Boot_CDVD,
@@ -158,6 +157,7 @@ enum MenuIdentifiers
 	MenuId_Debug_Open,			// opens the debugger window / starts a debug session
 	MenuId_Debug_MemoryDump,
 	MenuId_Debug_Logging,		// dialog for selection additional log options
+	MenuId_Debug_CreateBlockdump,
 	MenuId_Config_ResetAll,
 };
 
@@ -305,7 +305,7 @@ public:
 		SysAutoRun				= false;
 		SysAutoRunElf			= false;
 		SysAutoRunIrx			= false;
-		CdvdSource				= CDVDsrc_NoDisc;
+		CdvdSource				= CDVD_SourceType::NoDisc;
 	}
 };
 
@@ -324,6 +324,7 @@ public:
 	wxFileName		VmSettingsFile;
 
 	bool			DisableSpeedhacks;
+	bool			ProfilingMode;
 
 	// Note that gamefixes in this array should only be honored if the
 	// "HasCustomGamefixes" boolean is also enabled.
@@ -338,6 +339,7 @@ public:
 		DisableSpeedhacks		= false;
 		ApplyCustomGamefixes	= false;
 		GsWindowMode			= GsWinMode_Unspecified;
+		ProfilingMode			= false;
 	}
 	
 	// Returns TRUE if either speedhacks or gamefixes are being overridden.

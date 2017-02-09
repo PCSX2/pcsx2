@@ -196,14 +196,10 @@ void drawU32Text(wxDC& dc, u32 value, int x, int y)
 
 void CtrlRegisterList::OnDraw(wxDC& dc)
 {
-	#ifdef _WIN32
-	wxFont font = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
-	#else
-	wxFont font = wxFont(8,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
+	wxFont font = pxGetFixedFont(8);
 	font.SetPixelSize(wxSize(charWidth,rowHeight-2));
-	#endif
 	dc.SetFont(font);
-	
+
 	refreshChangedRegs();
 
 	wxColor colorChanged = wxColor(0xFF0000FF);
@@ -484,6 +480,8 @@ void CtrlRegisterList::setCurrentRow(int row)
 	{
 	case DebugInterface::NORMAL:
 		value = cpu->getRegister(category,row);
+		postEvent(debEVT_REFERENCEMEMORYVIEW, value._u32[0]);
+
 		switch (cpu->getRegisterSize(category))
 		{
 		case 128:

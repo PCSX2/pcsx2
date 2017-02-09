@@ -180,7 +180,9 @@ void LoadConfig()
     conf->set_sensibility(value);
     if (fscanf(f, "joy_pad_map = %u\n", &value) == 0)
         goto error;
-    conf->joyid_map = value;
+    // Value is now hardcoded in controller.h avoid to reload a bad
+    // value from an old ini file.
+    //conf->joyid_map = value;
     if (fscanf(f, "ff_intensity = %u\n", &value) == 0)
         goto error;
     conf->set_ff_intensity(value);

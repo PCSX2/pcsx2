@@ -15,16 +15,26 @@
 
 #pragma once
 
-#if defined(__POSIX__)
-#	include "lnx_memzero.h"
-#else
-#	include "win_memzero.h"
-#endif
-
 // For 32-bit MSVC compiles, memcmp performs much worse than memcmp_mmx and
 // other implementations. So for this combination only, prefer memcmp_mmx
 #if defined(_MSC_VER) && !defined(_M_X86_64)
-extern u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize);
+extern u8 memcmp_mmx(const void *src1, const void *src2, int cmpsize);
 #else
 #define memcmp_mmx memcmp
 #endif
+
+// This method can clear any object-like entity -- which is anything that is not a pointer.
+// Structures, static arrays, etc.  No need to include sizeof() crap, this does it automatically
+// for you!
+template <typename T>
+static __fi void memzero(T &object)
+{
+    memset(&object, 0, sizeof(T));
+}
+
+// This method clears an object with the given 8 bit value.
+template <u8 data, typename T>
+static __fi void memset8(T &object)
+{
+    memset(&object, data, sizeof(T));
+}

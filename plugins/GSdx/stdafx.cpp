@@ -94,14 +94,17 @@ void* vmalloc(size_t size, bool code)
 
 	size = (size + mask) & ~mask;
 
-	int flags = PROT_READ | PROT_WRITE;
+	int prot = PROT_READ | PROT_WRITE;
+	int flags = MAP_PRIVATE | MAP_ANONYMOUS;
 
-	if(code)
-	{
-		flags |= PROT_EXEC;
+	if(code) {
+		prot |= PROT_EXEC;
+#ifdef _M_AMD64
+		flags |= MAP_32BIT;
+#endif
 	}
 
-	return mmap(NULL, size, flags, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	return mmap(NULL, size, prot, flags, -1, 0);
 }
 
 void vmfree(void* ptr, size_t size)
@@ -117,7 +120,6 @@ static int s_shm_fd = -1;
 
 void* fifo_alloc(size_t size, size_t repeat)
 {
-	fprintf(stderr, "FIFO ALLOC\n");
 	ASSERT(s_shm_fd == -1);
 
 	const char* file_name = "/GSDX.mem";
@@ -137,8 +139,6 @@ void* fifo_alloc(size_t size, size_t repeat)
 		uint8* next = (uint8*)mmap(base, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, s_shm_fd, 0);
 		if (next != base)
 			fprintf(stderr, "Fail to mmap contiguous segment\n");
-		else
-			fprintf(stderr, "MMAP next %x\n", (uintptr_t)base);
 	}
 
 	return fifo;
@@ -146,8 +146,6 @@ void* fifo_alloc(size_t size, size_t repeat)
 
 void fifo_free(void* ptr, size_t size, size_t repeat)
 {
-	fprintf(stderr, "FIFO FREE\n");
-
 	ASSERT(s_shm_fd >= 0);
 
 	if (s_shm_fd < 0)

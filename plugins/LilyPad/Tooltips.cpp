@@ -1,5 +1,5 @@
 /*  LilyPad - Pad plugin for PS2 Emulator
- *  Copyright (C) 2016  PCSX2 Dev Team/ChickenLiver
+ *  Copyright (C) 2016-2017  PCSX2 Dev Team/ChickenLiver
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
@@ -46,15 +46,37 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Right-click to show a pop-up menu that allows for swapping all the settings and bindings, or just the bindings of individual pad types,"
                    L"between the selected pad and one of other active pads, and clearing all the settings and bindings from the selected pad or just the bindings from a selected pad type.\n\n"
                    L"Note: To allow swapping different kinds of pad types(like DS2 to Guitar), the \"Allow binding multiple PS2 Controls...\" option needs to be enabled as well.";
+        case IDC_PAD_TYPE:
+            return L"\"Unplugged\" disables the controller and removes the corresponding pad tab.\n\n"
+                   L"\"Dualshock 2\" emulates the default PS2 controller for use in both PS1 and PS2 games.\n\n"
+                   L"\"Guitar\" emulates a PS2 controller used in the Guitar Hero and Rock Band series of games.\n\n"
+                   L"\"Pop'n Music controller\" emulates a PS2 controller used exclusively in the Japanese Pop'n Music series of games.\n\n"
+                   L"\"PS1 Mouse\" emulates the Playstation Mouse. This controller can only be used in a number of PS1 games like \"Command & Conquer: Red Alert\" and \"Myst\".\n\n"
+                   L"\"neGcon\" emulates a controller that can be used in a number of PS1 games and PS2 games like the \"Ridge Racer\" and \"Ace Combat\" series.";
         case IDC_ANALOG_START1:
             return L"Automatically switch a pad from digital mode to analog mode whenever a pad is set to digital mode, if the pad's mode is not locked."
                    L"This removes the need for manually enabling analog mode with a press of the analog button for games that support, but do not automatically enable analog mode.\n\n"
                    L"Note 1: Analog mode enables the analog sticks to function on a DualShock controller, while in digital mode it behaves as an original PlayStation controller.\n\n"
                    L"Note 2: If analog mode is enabled in a game that does not support it, a game might not recognise a controller is connected.";
-        case ID_TEST:
-            return L"Displays a continuously updated list of the state of all objects on the selected device.\n\n"
-                   L"Use this option to check if all the inputs on a controller function properly.";
+        case IDC_DIAG_LIST:
+            return L"Shows a list of currently available input devices.\n\n"
+                   L"Double-click a device in the list or right-click it and select \"Test Device\" to display a continuously updated list of the state of all inputs on the selected device.\n"
+                   L"Use this option to check if all the inputs on a controller function properly.\n\n"
+                   L"Right-click and select \"Refresh\" to update the list of devices in case a recently connected device has not shown up yet.";
+        case IDC_G_XI:
+            return L"Xbox 360 controllers(and devices imitating it) only";
         // Pad tabs
+        case IDC_BINDINGS_LIST:
+            return L"Shows a list of currently bound inputs of the selected Pad.\n\n"
+                   L"Left-click on one of the bindings in the list to configure it.\n\n"
+                   L"Right-click and select \"Delete Selected\" to remove the selected input from the list.\n\n"
+                   L"Right-click and select \"Clear All\" to remove all the inputs from the list.\n\n"
+                   L"Note: Use Shift/Ctrl + Left-click to select multiple bindings. Changing the displayed configuration will now copy it to all selected bindings.";
+        case IDC_DEVICE_SELECT:
+            return L"Select a single device to hide the bindings from other devices in the bindings list, and to only be able to add new bindings for the selected device.\n\n"
+                   L"This can also avoid input conflict issues when one controller is recognized as several devices through different APIs.";
+        case IDC_CONFIGURE_ON_BIND:
+            return L"Immediately go to the configuration setup when you create a new binding.";
         case ID_MOUSE:
             return L"Bind a key that releases or captures the mouse.\n\n"
                    L"Pressing the assigned button when the mouse is in focus, it releases the mouse from use in-game and makes the cursor visible so it can move/resize the emulator window.\n\n"
@@ -68,9 +90,8 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"This option is useful when analog mode is enabled in a game that does not support it, as this causes the game to not recognise any input or to not even detect a controller.\n\n"
                    L"This option can also be used to enable analog mode in games that support, but do not automatically enable analog mode.\n\n"
                    L"Note: Analog mode enables the analog sticks to function on a DualShock controller, while in digital mode it behaves as an original PlayStation controller.\n\n";
-        case ID_IGNORE:
-            return L"Blocks the assigned keyboard button and does not pass it on to PCSX2. It currently cannot block the windows key (for unknown reasons).\n\n"
-                   L"Ignored keys are listed with pad 1's bindings. You do not have to configure ignored keys again when you change the keyboard input mode.";
+        case ID_TURBO_KEY:
+            return L"Sets a key to send a TAB press to the emulator, which toggles Turbo mode(200% speed) in PCSX2.";
         case ID_LOCK_ALL_INPUT:
             return L"Locks the current state of the pad. Any further input is handled normally, but the initial pad state is the locked state instead of a state with no buttons pressed. "
                    L"Pressing it again releases the old pad state, if the old pad state had any keys pressed. Otherwise, it's released automatically.";
@@ -80,13 +101,16 @@ LPWSTR dialog_message(int ID, bool *updateText)
         case ID_LOCK_BUTTONS:
             return L"Locks the current state of the buttons. Pressing this when all input is locked unlocks only the buttons. "
                    L"Pressing it again will lock them again, keeping the d-pad and analog sticks locked.";
-        case IDC_TURBO:
+        case IDC_RAPID_FIRE:
             return L"Automatically presses/releases the input every other time the button is polled.";
         case IDC_FLIP:
             return L"Inverts a button or axis, making down up and up down.";
         case IDC_SLIDER_DEADZONE:
             return L"Decreases or increases the range of an input where no input is recognised.\n\n"
                    L"Increasing the dead zone requires the input to be pressed harder or moved more before it is applied, decreasing it makes it recognise a softer press or a shorter movement.";
+        case IDC_SLIDER_SKIP_DEADZONE:
+            return L"Skips and avoids the dead zone to detect input earlier.\n\n"
+                   L"Note: This is useful when a controller input requires too much movement/pressure before there's a corresponding action in-game.";
         case IDC_SLIDER_SENSITIVITY:
             return L"Sets how hard an axis or button is pressed.\n\n"
                    L"Note 1: What the default sensitivity value of \"1.00\" means depends on the device itself. The default is high enough that relative axes (which are primarily used by mice) are generally either considered fully up or down."

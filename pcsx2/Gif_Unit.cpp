@@ -63,7 +63,7 @@ bool Gif_HandlerAD(u8* pMem) {
 		else {
 			GUNIT_WARN("GIF Handler - SIGNAL");
 			GSSIGLBLID.SIGID = (GSSIGLBLID.SIGID&~data[1])|(data[0]&data[1]);
-			if (!(GSIMR&0x100)) gsIrq();
+			if (!GSIMR.SIGMSK) gsIrq();
 			CSRreg.SIGNAL = true;
 		}
 	}
@@ -97,7 +97,7 @@ bool Gif_HandlerAD_Debug(u8* pMem) {
 }
 
 void Gif_FinishIRQ() {
-	if (CSRreg.FINISH && !(GSIMR & 0x200) && !gifUnit.gsFINISH.gsFINISHFired) {
+	if (CSRreg.FINISH && !GSIMR.FINISHMSK && !gifUnit.gsFINISH.gsFINISHFired) {
 		gsIrq();
 		gifUnit.gsFINISH.gsFINISHFired = true;
 	}

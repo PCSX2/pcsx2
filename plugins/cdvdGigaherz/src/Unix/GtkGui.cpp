@@ -31,8 +31,8 @@ void configure()
     GtkDialogFlags flags = static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT);
     GtkWidget *dialog = gtk_dialog_new_with_buttons("Config", nullptr,
                                                     flags,
-                                                    "Ok", GTK_RESPONSE_ACCEPT,
                                                     "Cancel", GTK_RESPONSE_REJECT,
+                                                    "Ok", GTK_RESPONSE_ACCEPT,
                                                     nullptr);
 
     GtkWidget *label = gtk_label_new("Device:");

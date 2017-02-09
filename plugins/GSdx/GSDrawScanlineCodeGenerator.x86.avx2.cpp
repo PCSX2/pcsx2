@@ -31,7 +31,7 @@ static const int _v = _args + 8;
 
 void GSDrawScanlineCodeGenerator::Generate()
 {
-//ret(8);
+	//ret(8);
 
 	push(ebx);
 	push(esi);
@@ -268,13 +268,13 @@ void GSDrawScanlineCodeGenerator::Init()
 		sub(ebx, edx);
 
 		// GSVector4i test = m_test[skip] | m_test[15 + (steps & (steps >> 31))];
-		
+
 		mov(eax, ecx);
 		sar(eax, 31);
 		and(eax, ecx);
 
-		vpmovsxbd(ymm7, ptr[edx * 8 + (size_t)&m_test[0]]);
-		vpmovsxbd(ymm0, ptr[eax * 8 + (size_t)&m_test[15]]);
+		vpmovsxbd(ymm7, ptr[edx * 8 + (size_t)g_const->m_test_256b[0]]);
+		vpmovsxbd(ymm0, ptr[eax * 8 + (size_t)g_const->m_test_256b[15]]);
 		vpor(ymm7, ymm0);
 
 		shl(edx, 5);
@@ -593,7 +593,7 @@ void GSDrawScanlineCodeGenerator::Step()
 		sar(edx, 31);
 		and(edx, ecx);
 
-		vpmovsxbd(ymm7, ptr[edx * 8 + (size_t)&m_test[15]]);
+		vpmovsxbd(ymm7, ptr[edx * 8 + (size_t)g_const->m_test_256b[15]]);
 	}
 }
 
@@ -691,7 +691,7 @@ void GSDrawScanlineCodeGenerator::TestZ(const Ymm& temp1, const Ymm& temp2)
 			break;
 		}
 
-		alltrue();
+		alltrue(ymm7);
 	}
 }
 
@@ -1157,31 +1157,31 @@ void GSDrawScanlineCodeGenerator::SampleTextureLOD()
 		vpslld(ymm0, ymm4, 1);
 		vpsrld(ymm0, ymm0, 24);
 		vpsubd(ymm0, ymm1);
-		vcvtdq2ps(ymm0, ymm0); 
+		vcvtdq2ps(ymm0, ymm0);
 
 		// ymm0 = (float)(exp(q) - 127)
 
 		vpslld(ymm4, ymm4, 9);
 		vpsrld(ymm4, ymm4, 9);
-		vorps(ymm4, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[3]]); 
-			
+		vorps(ymm4, ptr[g_const->m_log2_coef_256b[3]]);
+
 		// ymm4 = mant(q) | 1.0f
 
 		if(m_cpu.has(util::Cpu::tFMA))
 		{
-			vmovaps(ymm5, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[0]]); // c0
-			vfmadd213ps(ymm5, ymm4, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[1]]); // c0 * ymm4 + c1
-			vfmadd213ps(ymm5, ymm4, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[2]]); // (c0 * ymm4 + c1) * ymm4 + c2
-			vsubps(ymm4, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[3]]); // ymm4 - 1.0f
+			vmovaps(ymm5, ptr[g_const->m_log2_coef_256b[0]]); // c0
+			vfmadd213ps(ymm5, ymm4, ptr[g_const->m_log2_coef_256b[1]]); // c0 * ymm4 + c1
+			vfmadd213ps(ymm5, ymm4, ptr[g_const->m_log2_coef_256b[2]]); // (c0 * ymm4 + c1) * ymm4 + c2
+			vsubps(ymm4, ptr[g_const->m_log2_coef_256b[3]]); // ymm4 - 1.0f
 			vfmadd213ps(ymm4, ymm5, ymm0); // ((c0 * ymm4 + c1) * ymm4 + c2) * (ymm4 - 1.0f) + ymm0
 		}
 		else
 		{
-			vmulps(ymm5, ymm4, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[0]]);
-			vaddps(ymm5, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[1]]);
+			vmulps(ymm5, ymm4, ptr[g_const->m_log2_coef_256b[0]]);
+			vaddps(ymm5, ptr[g_const->m_log2_coef_256b[1]]);
 			vmulps(ymm5, ymm4);
-			vsubps(ymm4, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[3]]); 
-			vaddps(ymm5, ptr[&GSDrawScanlineCodeGenerator::m_log2_coef[2]]);
+			vsubps(ymm4, ptr[g_const->m_log2_coef_256b[3]]);
+			vaddps(ymm5, ptr[g_const->m_log2_coef_256b[2]]);
 			vmulps(ymm4, ymm5);
 			vaddps(ymm4, ymm0);
 		}
@@ -1191,7 +1191,7 @@ void GSDrawScanlineCodeGenerator::SampleTextureLOD()
 		if(m_cpu.has(util::Cpu::tFMA))
 		{
 			vmovaps(ymm5, ptr[&m_local.gd->l]);
-			vfmadd213ps(ymm4, ymm5, ptr[&m_local.gd->k]); 
+			vfmadd213ps(ymm4, ymm5, ptr[&m_local.gd->k]);
 		}
 		else
 		{
@@ -2118,7 +2118,7 @@ void GSDrawScanlineCodeGenerator::TestAlpha()
 	case AFAIL_KEEP:
 		// test |= t;
 		vpor(ymm7, ymm1);
-		alltrue();
+		alltrue(ymm7);
 		break;
 
 	case AFAIL_FB_ONLY:
@@ -2309,7 +2309,7 @@ void GSDrawScanlineCodeGenerator::TestDestAlpha()
 
 	vpor(ymm7, ymm1);
 
-	alltrue();
+	alltrue(ymm7);
 }
 
 void GSDrawScanlineCodeGenerator::WriteMask()
@@ -2698,10 +2698,10 @@ void GSDrawScanlineCodeGenerator::WriteFrame()
 void GSDrawScanlineCodeGenerator::ReadPixel(const Ymm& dst, const Ymm& temp, const Reg32& addr)
 {
 	vmovq(Xmm(dst.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm]);
-	vmovhps(Xmm(dst.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm + 8 * 2]);	
+	vmovhps(Xmm(dst.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm + 8 * 2]);
 	vmovq(Xmm(temp.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm + 16 * 2]);
-	vmovhps(Xmm(temp.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm + 24 * 2]);	
-	vinserti128(dst, dst, temp, 1);	
+	vmovhps(Xmm(temp.getIdx()), qword[addr * 2 + (size_t)m_local.gd->vm + 24 * 2]);
+	vinserti128(dst, dst, Xmm(temp.getIdx()), 1);
 /*
 	vmovdqu(dst, ptr[addr * 2 + (size_t)m_local.gd->vm]);
 	vmovdqu(temp, ptr[addr * 2 + (size_t)m_local.gd->vm + 16 * 2]);
@@ -2888,14 +2888,14 @@ void GSDrawScanlineCodeGenerator::ReadTexel(int pixels, int mip_offset)
 				ReadTexel(t2, t1, j);
 			}
 
-			vinserti128(dst, dst, t2, 1);
+			vinserti128(dst, dst, Xmm(t2.getIdx()), 1);
 		}
 	}
-	else 
+	else
 	{
 		const int r[] = {5, 6, 2, 4, 0, 1, 3, 5};
 		const int t[] = {1, 4, 5, 1, 2, 5, 0, 2};
-		
+
 		if(m_sel.mmin && m_sel.lcm)
 		{
 			mov(ebx, ptr[&lod_i->u32[0]]);
@@ -2924,7 +2924,7 @@ void GSDrawScanlineCodeGenerator::ReadTexel(int pixels, int mip_offset)
 					ReadTexel(t2, t1, j);
 				}
 
-				vinserti128(dst, dst, t2, 1);
+				vinserti128(dst, dst, Xmm(t2.getIdx()), 1);
 				/*
 				vpcmpeqd(t1, t1);
 				vpgatherdd(t2, ptr[ebx + src * 1], t1); // either this 1x scale, or the latency of two dependendent gathers are too slow

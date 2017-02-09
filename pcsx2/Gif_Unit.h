@@ -17,6 +17,11 @@
 #include <deque>
 #include "System/SysThreads.h"
 #include "Gif.h"
+#include "GS.h"
+
+// FIXME common path ?
+#include "../plugins/GSdx/boost_spsc_queue.hpp"
+
 struct GS_Packet;
 extern void Gif_MTGS_Wait(bool isMTVU);
 extern void Gif_FinishIRQ();
@@ -118,11 +123,13 @@ struct Gif_Tag {
 };
 
 struct GS_Packet {
+	// PERF note: this struct is copied various time in hot path. Don't add
+	// new field
+
 	u32  offset;     // Path buffer offset for start of packet
 	u32  size;	     // Full size of GS-Packet
 	s32  cycles;     // EE Cycles taken to process this GS packet
 	s32  readAmount; // Dummy read-amount data needed for proper buffer calculations
-	bool done;	     // 0 = Incomplete, 1 = Complete
 	GS_Packet()  { Reset(); }
 	void Reset() { memzero(*this); }
 };
@@ -146,10 +153,17 @@ static __fi void incTag(u32& offset, u32& size, u32 incAmount) {
 
 struct Gif_Path_MTVU {
 	u32   fakePackets; // Fake packets pending to be sent to MTGS
-	Mutex gsPackMutex; // Used for atomic access to gsPackQueue
-	std::deque<GS_Packet> gsPackQueue; // VU1 programs' XGkick(s)
+	GS_Packet fakePacket;
+	// Set a size based on MTGS but keep a factor 2 to avoid too waste to much
+	// memory overhead. Note the struct is instantied 3 times (for each gif
+	// path)
+	ringbuffer_base<GS_Packet, RingBufferSize / 2> gsPackQueue;
 	Gif_Path_MTVU() { Reset(); }
-	void Reset()    { fakePackets = 0; gsPackQueue.clear(); }
+	void Reset()    { fakePackets = 0;
+		gsPackQueue.reset();
+		fakePacket.Reset();
+		fakePacket.size =~0u; // Used to indicate that its a fake packet
+	}
 };
 
 struct Gif_Path {
@@ -195,7 +209,7 @@ struct Gif_Path {
 	}
 
 	bool isMTVU() const           { return !idx && THREAD_VU1; }
-	s32 getReadAmount()           { return readAmount.load() + gsPack.readAmount; }
+	s32 getReadAmount()           { return readAmount.load(std::memory_order_acquire) + gsPack.readAmount; }
 	bool hasDataRemaining() const { return curOffset < curSize; }
 	bool isDone() const           { return isMTVU() ? !mtvu.fakePackets : (!hasDataRemaining() && (state == GIF_PATH_IDLE || state == GIF_PATH_WAIT)); }
 
@@ -251,15 +265,13 @@ struct Gif_Path {
 		curSize     += size;
 	}
 
-	// If completed a GS packet (with EOP) then returned GS_Packet.done = 1
+	// If completed a GS packet (with EOP) then set done to true
 	// MTVU: This function only should be called called on EE thread
-	GS_Packet ExecuteGSPacket() {
+	GS_Packet ExecuteGSPacket(bool &done) {
 		if (mtvu.fakePackets) { // For MTVU mode...
 			mtvu.fakePackets--;
-			GS_Packet fakePack;
-			fakePack.done =  1; // Fake packets don't get processed by pcsx2
-			fakePack.size =~0u; // Used to indicate that its a fake packet
-			return fakePack;
+			done = true;
+			return mtvu.fakePacket;
 		}
 		pxAssert(!isMTVU());
 		for(;;) {
@@ -307,9 +319,8 @@ struct Gif_Path {
 
 			if (gifTag.tag.EOP) {
 				GS_Packet t = gsPack;
-				t.done = 1;
+				done = true;
 
-				
 				dmaRewind = 0;
 				
 				gsPack.Reset();
@@ -378,22 +389,23 @@ struct Gif_Path {
 
 	// MTVU: Gets called after VU1 execution on MTVU thread
 	void FinishGSPacketMTVU() {
-		if (1) {
-			ScopedLock lock(mtvu.gsPackMutex);
-			readAmount.fetch_add(gsPack.size + gsPack.readAmount);
-			mtvu.gsPackQueue.push_back(gsPack);
-		}
+		// Performance note: fetch_add atomic operation might create some stall for atomic
+		// operation in gsPack.push
+		readAmount.fetch_add(gsPack.size + gsPack.readAmount, std::memory_order_acq_rel);
+		while (!mtvu.gsPackQueue.push(gsPack))
+			;
+
 		gsPack.Reset();
 		gsPack.offset = curOffset;
 	}
 
 	// MTVU: Gets called by MTGS thread
 	GS_Packet GetGSPacketMTVU() {
-		ScopedLock lock(mtvu.gsPackMutex);
-		if (mtvu.gsPackQueue.size()) {
-			GS_Packet t = mtvu.gsPackQueue[0];
-			return t; // XGkick GS packet(s)
+		// FIXME is the error path useful ?
+		if (!mtvu.gsPackQueue.empty()) {
+			return mtvu.gsPackQueue.front();
 		}
+
 		Console.Error("MTVU: Expected gsPackQueue to have elements!");
 		pxAssert(0);
 		return GS_Packet(); // gsPack.size will be 0
@@ -401,18 +413,13 @@ struct Gif_Path {
 
 	// MTVU: Gets called by MTGS thread
 	void PopGSPacketMTVU() {
-		ScopedLock lock(mtvu.gsPackMutex);
-		if (mtvu.gsPackQueue.size()) {
-			mtvu.gsPackQueue.pop_front();
-		}
+		mtvu.gsPackQueue.pop();
 	}
 
 	// MTVU: Returns the amount of pending
 	// GS Packets that MTGS hasn't yet processed
 	u32 GetPendingGSPackets() {
-		ScopedLock lock(mtvu.gsPackMutex);
-		u32 t = mtvu.gsPackQueue.size();
-		return t;
+		return mtvu.gsPackQueue.size();
 	}
 };
 
@@ -564,8 +571,9 @@ struct Gif_Unit {
 		for(;;) {
 			if (stat.APATH) { // Some Transfer is happening
 				Gif_Path& path   = gifPath[stat.APATH-1];
-				GS_Packet gsPack = path.ExecuteGSPacket();
-				if(!gsPack.done) {
+				bool done = false;
+				GS_Packet gsPack = path.ExecuteGSPacket(done);
+				if(!done) {
 					if (stat.APATH == 3 && CanDoP3Slice() && !gsSIGNAL.queued) {
 						if(!didPath3 && /*!Path3Masked() &&*/ checkPaths(1,1,0)) { // Path3 slicing
 							didPath3 = true;

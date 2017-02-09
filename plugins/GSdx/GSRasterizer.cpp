@@ -52,11 +52,12 @@ GSRasterizer::GSRasterizer(IDrawScanline* ds, int id, int threads, GSPerfMon* pe
 	m_edge.buff = (GSVertexSW*)vmalloc(sizeof(GSVertexSW) * 2048, false);
 	m_edge.count = 0;
 
-	m_scanline = (uint8*)_aligned_malloc((2048 >> m_thread_height) + 16, 64);
+	int rows = (2048 >> m_thread_height) + 16;
+	m_scanline = (uint8*)_aligned_malloc(rows, 64);
 
 	int row = 0;
 
-	while(row < (2048 >> m_thread_height))
+	while(row < rows)
 	{
 		for(int i = 0; i < threads; i++, row++)
 		{
@@ -1143,11 +1144,12 @@ GSRasterizerList::GSRasterizerList(int threads, GSPerfMon* perfmon)
 {
 	m_thread_height = compute_best_thread_height(threads);
 
-	m_scanline = (uint8*)_aligned_malloc((2048 >> m_thread_height) + 16, 64);
+	int rows = (2048 >> m_thread_height) + 16;
+	m_scanline = (uint8*)_aligned_malloc(rows, 64);
 
 	int row = 0;
 
-	while(row < (2048 >> m_thread_height))
+	while(row < rows)
 	{
 		for(int i = 0; i < threads; i++, row++)
 		{
@@ -1158,11 +1160,6 @@ GSRasterizerList::GSRasterizerList(int threads, GSPerfMon* perfmon)
 
 GSRasterizerList::~GSRasterizerList()
 {
-	for(auto i = m_workers.begin(); i != m_workers.end(); i++)
-	{
-		delete *i;
-	}
-
 	_aligned_free(m_scanline);
 }
 
@@ -1213,33 +1210,8 @@ int GSRasterizerList::GetPixels(bool reset)
 
 	for(size_t i = 0; i < m_workers.size(); i++)
 	{
-		pixels += m_workers[i]->GetPixels(reset);
+		pixels += m_r[i]->GetPixels(reset);
 	}
 
 	return pixels;
-}
-
-// GSRasterizerList::GSWorker
-
-GSRasterizerList::GSWorker::GSWorker(GSRasterizer* r)
-	: GSJobQueue<shared_ptr<GSRasterizerData>, 65536>()
-	, m_r(r)
-{
-}
-
-GSRasterizerList::GSWorker::~GSWorker()
-{
-	Wait();
-
-	delete m_r;
-}
-
-int GSRasterizerList::GSWorker::GetPixels(bool reset)
-{
-	return m_r->GetPixels(reset);
-}
-
-void GSRasterizerList::GSWorker::Process(shared_ptr<GSRasterizerData>& item)
-{
-	m_r->Draw(item.get());
 }

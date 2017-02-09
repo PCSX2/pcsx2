@@ -249,6 +249,8 @@ void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 	parser.AddSwitch( wxEmptyString,L"forcewiz",	AddAppName(_("forces %s to start the First-time Wizard")) );
 	parser.AddSwitch( wxEmptyString,L"portable",	_("enables portable mode operation (requires admin/root access)") );
 
+	parser.AddSwitch( wxEmptyString,L"profiling",	_("update options to ease profiling (debug)") );
+
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		parser.AddOption( wxEmptyString, pi->GetShortname().Lower(),
 			pxsFmt( _("specify the file to use as the %s plugin"), WX_STR(pi->GetShortname()) )
@@ -281,6 +283,8 @@ bool Pcsx2App::ParseOverrides( wxCmdLineParser& parser )
 	}
 
 	Overrides.DisableSpeedhacks = parser.Found(L"nohacks");
+
+	Overrides.ProfilingMode = parser.Found(L"profiling");
 
 	if (parser.Found(L"gamefixes", &dest))
 	{
@@ -362,7 +366,7 @@ bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
 
 	if( parser.Found(L"usecd") )
 	{
-		Startup.CdvdSource	= CDVDsrc_Plugin;
+		Startup.CdvdSource	= CDVD_SourceType::Plugin;
 		Startup.SysAutoRun	= true;
 	}
 
@@ -477,6 +481,7 @@ bool Pcsx2App::OnInit()
 
 		//   Start GUI and/or Direct Emulation
 		// -------------------------------------
+		pxSizerFlags::SetBestPadding();
 		if( Startup.ForceConsole ) g_Conf->ProgLogBox.Visible = true;
 		OpenProgramLog();
 		AllocateCoreStuffs();

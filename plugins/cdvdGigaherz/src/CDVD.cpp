@@ -58,9 +58,9 @@ char LibName[] = "cdvdGigaherz "
 
 const unsigned char version = PS2E_CDVD_VERSION;
 const unsigned char revision = 0;
-const unsigned char build = 10;
+const unsigned char build = 11;
 
-EXPORT char *CALLBACK PS2EgetLibName()
+EXPORT const char *CALLBACK PS2EgetLibName()
 {
     return LibName;
 }
@@ -113,15 +113,15 @@ bool weAreInNewDiskCB = false;
 
 std::unique_ptr<IOCtlSrc> src;
 
-char throwaway[2352];
-extern s32 prefetch_last_lba;
-extern s32 prefetch_last_mode;
+extern CacheRequest g_last_sector_block;
 
 ///////////////////////////////////////////////////////////////////////////////
 // keepAliveThread throws a read event regularly to prevent drive spin down  //
 
 void keepAliveThread()
 {
+    u8 throwaway[2352];
+
     printf(" * CDVD: KeepAlive thread started...\n");
     std::unique_lock<std::mutex> guard(s_keepalive_lock);
 
@@ -129,10 +129,10 @@ void keepAliveThread()
                                     []() { return !s_keepalive_is_open; })) {
 
         //printf(" * keepAliveThread: polling drive.\n");
-        //if (prefetch_last_mode == CDVD_MODE_2048)
-        src->ReadSectors2048(prefetch_last_lba, 1, throwaway);
-        //else
-        //	src->ReadSectors2352(prefetch_last_lba, 1, throwaway);
+        if (g_last_sector_block.mode == CDVD_MODE_2048)
+            src->ReadSectors2048(g_last_sector_block.lsn, 1, throwaway);
+        else
+            src->ReadSectors2352(g_last_sector_block.lsn, 1, throwaway);
     }
 
     printf(" * CDVD: KeepAlive thread finished.\n");
@@ -236,11 +236,11 @@ EXPORT s32 CALLBACK CDVDgetDualInfo(s32 *dualType, u32 *_layer1start)
 }
 
 int lastReadInNewDiskCB = 0;
-char directReadSectorBuffer[2448];
+u8 directReadSectorBuffer[2448];
 
-EXPORT s32 CALLBACK CDVDreadSector(u8 *buffer, s32 lsn, int mode)
+EXPORT s32 CALLBACK CDVDreadSector(u8 *buffer, u32 lsn, int mode)
 {
-    return cdvdDirectReadSector(lsn, mode, (char *)buffer);
+    return cdvdDirectReadSector(lsn, mode, buffer);
 }
 
 EXPORT s32 CALLBACK CDVDreadTrack(u32 lsn, int mode)
@@ -263,12 +263,10 @@ EXPORT u8 *CALLBACK CDVDgetBuffer()
 {
     if (lastReadInNewDiskCB) {
         lastReadInNewDiskCB = 0;
-        return (u8 *)directReadSectorBuffer;
+        return directReadSectorBuffer;
     }
 
-    u8 *s = (u8 *)cdvdGetSector(csector, cmode);
-
-    return s;
+    return cdvdGetSector(csector, cmode);
 }
 
 // return can be NULL (for async modes)

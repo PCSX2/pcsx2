@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #include "GS.h"
 #include "GSdx.h"
-#include "GSLinuxLogo.h"
+#include "GSdxResources.h"
 #include "GSSetting.h"
 
 static GtkWidget* s_hack_frame;
@@ -157,9 +157,9 @@ void CB_RangeChanged(GtkRange* range, gpointer user_data)
 GtkWidget* CreateScale(const char* opt_name)
 {
 #if GTK_MAJOR_VERSION < 3
-	GtkWidget* scale = gtk_hscale_new_with_range(0, 200, 10);
+	GtkWidget* scale = gtk_hscale_new_with_range(0, 100, 10);
 #else
-	GtkWidget* scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 200, 10);
+	GtkWidget* scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 100, 10);
 #endif
 
 	gtk_scale_set_value_pos(GTK_SCALE(scale), GTK_POS_RIGHT);
@@ -342,6 +342,7 @@ void populate_shader_table(GtkWidget* shader_table)
 void populate_hack_table(GtkWidget* hack_table)
 {
 	GtkWidget* hack_offset_check   = CreateCheckBox("Half-pixel Offset Hack", "UserHacks_HalfPixelOffset");
+	GtkWidget* hack_offset_check_2 = CreateCheckBox("Half-pixel Offset Hack (v2)", "UserHacks_HalfPixelOffset_New");
 	GtkWidget* hack_skipdraw_label = left_label("Skipdraw:");
 	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 1000, "UserHacks_SkipDraw");
 	GtkWidget* hack_wild_check     = CreateCheckBox("Wild Arms Hack", "UserHacks_WildHack");
@@ -361,6 +362,7 @@ void populate_hack_table(GtkWidget* hack_table)
 
 	// Reuse windows helper string :)
 	AddTooltip(hack_offset_check, IDC_OFFSETHACK);
+	AddTooltip(hack_offset_check_2, IDC_OFFSETHACK);
 	AddTooltip(hack_skipdraw_label, IDC_SKIPDRAWHACK);
 	AddTooltip(hack_skipdraw_spin, IDC_SKIPDRAWHACK);
 	AddTooltip(hack_wild_check, IDC_WILDHACK);
@@ -377,10 +379,13 @@ void populate_hack_table(GtkWidget* hack_table)
 
 
 	s_table_line = 0;
+	// Hack
+	InsertWidgetInTable(hack_table , hack_fast_inv       , hack_auto_flush);
+	InsertWidgetInTable(hack_table , hack_depth_check    , preload_gs_check);
+	// Upscaling hack
+	InsertWidgetInTable(hack_table , hack_offset_check   , hack_offset_check_2);
 	InsertWidgetInTable(hack_table , hack_wild_check     , align_sprite_check);
-	InsertWidgetInTable(hack_table , hack_offset_check   , preload_gs_check);
-	InsertWidgetInTable(hack_table , hack_unscale_prim   , hack_fast_inv);
-	InsertWidgetInTable(hack_table , hack_depth_check    , hack_auto_flush);
+	InsertWidgetInTable(hack_table , hack_unscale_prim);
 	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
 	InsertWidgetInTable(hack_table , hack_skipdraw_label , hack_skipdraw_spin);
@@ -444,6 +449,35 @@ void populate_record_table(GtkWidget* record_table)
 	InsertWidgetInTable(record_table , out_dir_label , out_dir);
 }
 
+void populate_osd_table(GtkWidget* osd_table)
+{
+	GtkWidget* fontname_label  = left_label("Font:");
+	GtkWidget* fontname_file = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_OPEN, "Select a font", "osd_fontname");
+	GtkWidget* fontsize_label  = left_label("Size:");
+	GtkWidget* fontsize_text = CreateSpinButton(1, 100, "osd_fontsize");
+	GtkWidget* transparency_label = left_label("Transparency:");
+	GtkWidget* transparency_slide = CreateScale("osd_transparency");
+	GtkWidget* log_check = CreateCheckBox("Enable Log", "osd_log_enabled");
+	GtkWidget* log_speed_label  = left_label("Speed:");
+	GtkWidget* log_speed_text = CreateSpinButton(2, 10, "osd_log_speed");
+	GtkWidget* max_messages_label = left_label("Maximum Onscreen Log Messages:");
+	GtkWidget* max_messages_spin = CreateSpinButton(1, 20, "osd_max_log_messages");
+	GtkWidget* monitor_check = CreateCheckBox("Enable Monitor", "osd_monitor_enabled");
+	GtkWidget* indicator_check = CreateCheckBox("Enable Indicator", "osd_indicator_enabled");
+
+	AddTooltip(log_check, IDC_OSD_LOG);
+	AddTooltip(monitor_check, IDC_OSD_MONITOR);
+	AddTooltip(max_messages_label, max_messages_spin, IDC_OSD_MAX_LOG);
+
+	InsertWidgetInTable(osd_table , fontname_label , fontname_file);
+	InsertWidgetInTable(osd_table , fontsize_label , fontsize_text);
+	InsertWidgetInTable(osd_table , transparency_label , transparency_slide);
+	InsertWidgetInTable(osd_table , log_check);
+	InsertWidgetInTable(osd_table , log_speed_label, log_speed_text);
+	InsertWidgetInTable(osd_table , max_messages_label, max_messages_spin);
+	InsertWidgetInTable(osd_table , monitor_check, indicator_check);
+}
+
 bool RunLinuxDialog()
 {
 	GtkWidget *dialog;
@@ -463,15 +497,18 @@ bool RunLinuxDialog()
 	GtkWidget* central_box  = gtk_vbox_new(false, 5);
 	GtkWidget* advanced_box = gtk_vbox_new(false, 5);
 	GtkWidget* debug_box    = gtk_vbox_new(false, 5);
+	GtkWidget* osd_box      = gtk_vbox_new(false, 5);
 
 	// Grab a logo, to make things look nice.
-	GdkPixbuf* logo_pixmap = gdk_pixbuf_from_pixdata(&gsdx_ogl_logo, false, NULL);
-	GtkWidget* logo_image  = gtk_image_new_from_pixbuf(logo_pixmap);
+	GResource * resources = GSdx_res_get_resource();
+	GInputStream * ogl_stream=g_resource_open_stream(resources,"/GSdx/res/logo-ogl.bmp",G_RESOURCE_LOOKUP_FLAGS_NONE,NULL);
+	GdkPixbuf * ogl_logo = gdk_pixbuf_new_from_stream(ogl_stream,NULL,NULL);
+	g_object_unref(ogl_stream);
+	GtkWidget* logo_image  = gtk_image_new_from_pixbuf(ogl_logo);
 	gtk_box_pack_start(GTK_BOX(main_box), logo_image, true, true, 0);
 
 	GtkWidget* main_table   = CreateTableInBox(main_box    , NULL                                   , 2  , 2);
 
-	GtkWidget* shader_table = CreateTableInBox(central_box , "Custom Shader Settings"               , 9  , 2);
 	GtkWidget* hw_table     = CreateTableInBox(central_box , "Hardware Mode Settings"               , 7  , 2);
 	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 2  , 2);
 
@@ -480,6 +517,9 @@ bool RunLinuxDialog()
 
 	GtkWidget* record_table = CreateTableInBox(debug_box   , "Recording Settings"                   , 4  , 3);
 	GtkWidget* debug_table  = CreateTableInBox(debug_box   , "OpenGL / GSdx Debug Settings"         , 6  , 3);
+
+	GtkWidget* shader_table = CreateTableInBox(osd_box     , "Custom Shader Settings"               , 9  , 2);
+	GtkWidget* osd_table    = CreateTableInBox(osd_box     , "OSD"                                  , 6  , 2);
 
 	// Populate all the tables
 	populate_main_table(main_table);
@@ -494,11 +534,14 @@ bool RunLinuxDialog()
 	populate_debug_table(debug_table);
 	populate_record_table(record_table);
 
+	populate_osd_table(osd_table);
+
 	// Handle some nice tab
 	GtkWidget* notebook = gtk_notebook_new();
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box , gtk_label_new("Global Settings"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box , gtk_label_new("Renderer Settings"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), advanced_box, gtk_label_new("Advanced Settings"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box   , gtk_label_new("Debug/Recording Settings"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box   , gtk_label_new("Debug/Recording"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), osd_box     , gtk_label_new("Post-Processing/OSD"));
 
 	// Put everything in the big box.
 	gtk_container_add(GTK_CONTAINER(main_box), notebook);

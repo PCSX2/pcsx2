@@ -76,13 +76,18 @@ for ARG in "$@"; do
         --extra             ) flags="$flags -DEXTRA_PLUGINS=TRUE" ;;
         --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
         --gtk3              ) flags="$flags -DGTK3_API=TRUE" ;;
+        --lto               ) flags="$flags -DUSE_LTO=TRUE" ;;
+        --pgo-optimize      ) flags="$flags -DUSE_PGO_OPTIMIZE=TRUE" ;;
+        --pgo-generate      ) flags="$flags -DUSE_PGO_GENERATE=TRUE" ;;
         --no-simd           ) flags="$flags -DDISABLE_ADVANCE_SIMD=TRUE" ;;
         --cross-multilib    ) flags="$flags -DCMAKE_TOOLCHAIN_FILE=$toolfile"; useCross=1; ;;
         --no-cross-multilib ) useCross=0; ;;
         --coverity          ) CoverityBuild=1; cleanBuild=1; ;;
+        --vtune             ) flags="$flags -DUSE_VTUNE=TRUE" ;;
         -D*                 ) flags="$flags $ARG" ;;
 
         *)
+        echo $ARG
             # Unknown option
             echo "** User options **"
             echo "--dev / --devel : Build PCSX2 as a Development build."
@@ -107,12 +112,16 @@ for ARG in "$@"; do
             echo "--no-cross-multilib: Build a native PCSX2"
             echo "--clang         : Build with Clang/llvm"
             echo "--intel         : Build with ICC (Intel compiler)"
+            echo "--lto           : Use Link Time Optimization"
+            echo "--pgo-generate  : Executable will generate profiling information when run"
+            echo "--pgo-optimize  : Use previously generated profiling information"
             echo
             echo "** Quality & Assurance (Please install the external tool) **"
             echo "--asan          : Enable Address sanitizer"
             echo "--clang-tidy    : Do a clang-tidy analysis. Results can be found in build directory"
             echo "--cppcheck      : Do a cppcheck analysis. Results can be found in build directory"
             echo "--coverity      : Do a build for coverity"
+            echo "--vtune         : Plug GSdx with VTUNE"
 
             exit 1
     esac
@@ -137,6 +146,13 @@ if [ "$useCross" -eq 0 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/lib/i386-
 fi
 if [ "$useCross" -eq 2 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/lib/x86_64-linux-gnu/wx/config/gtk2-unicode-3.0" ]; then
     sudo update-alternatives --set wx-config /usr/lib/i386-linux-gnu/wx/config/gtk2-unicode-3.0
+fi
+# Workaround for Debian. Cmake failed to find freetype include path
+if [ "$useCross" -eq 0 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/include/x86_64-linux-gnu/freetype2/ft2build.h" ]; then
+    export GTKMM_BASEPATH=/usr/include/x86_64-linux-gnu/freetype2
+fi
+if [ "$useCross" -eq 2 ] && [ "$(uname -m)" = "x86_64" ] && [ -e "/usr/include/i386-linux-gnu/freetype2/ft2build.h" ]; then
+    export GTKMM_BASEPATH=/usr/include/i386-linux-gnu/freetype2
 fi
 
 echo "Building pcsx2 with $flags" | tee "$log"
@@ -182,12 +198,13 @@ if [ "$cppcheck" -eq 1 ] && command -v cppcheck >/dev/null ; then
 
     define=""
     for undef in _WINDOWS _M_AMD64 _MSC_VER WIN32 __INTEL_COMPILER __x86_64__ \
-        __SSE4_1__ __SSSE3__ __SSE__ __AVX2__ __USE_ISOC11 ASAN_WORKAROUND ENABLE_OPENCL ENABLE_OGL_DEBUG
+        __SSE4_1__ __SSSE3__ __SSE__ __AVX2__ __USE_ISOC11 ASAN_WORKAROUND ENABLE_OPENCL ENABLE_OGL_DEBUG \
+        XBYAK_USE_MMAP_ALLOCATOR MAP_ANONYMOUS MAP_ANON XBYAK_DISABLE_AVX512
     do
         define="$define -U$undef"
     done
     check="--enable=warning,style,missingInclude"
-    for d in pcsx2 common plugins/GSdx plugins/spu2\-x plugins/onepad
+    for d in pcsx2 common plugins/GSdx plugins/spu2\-x plugins/onepad plugins/cdvdGigaherz
     do
         flat_d=$(echo $d | sed -e 's@/@_@')
         log=cpp_check__${flat_d}.log

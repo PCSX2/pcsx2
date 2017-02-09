@@ -198,7 +198,7 @@ bool JoystickInfo::Init(int id)
     // are digital (select, start, l3, r3). To avoid conflict just forget the others.
     // Keep the 4 hat buttons too (usb driver). (left pressure does not work with recent kernel). Moreover the pressure
     // work sometime on half axis neg others time in fulll axis. So better keep them as button for the moment
-    u32 found_hack = devname.find(string("PLAYSTATION(R)3"));
+    auto found_hack = devname.find("PLAYSTATION(R)3");
     // FIXME: people need to restart the plugin to take the option into account.
     bool hack_enabled = (conf->pad_options[0].sixaxis_pressure) || (conf->pad_options[1].sixaxis_pressure);
     if (found_hack != string::npos && numaxes > 4 && hack_enabled) {
@@ -276,7 +276,7 @@ bool JoystickInfo::PollButtons(u32 &pkey)
 
 bool JoystickInfo::PollAxes(u32 &pkey)
 {
-    u32 found_hack = devname.find(string("PLAYSTATION(R)3"));
+    auto found_hack = devname.find("PLAYSTATION(R)3");
 
     for (int i = 0; i < GetNumAxes(); ++i) {
         // Sixaxis, dualshock3 hack

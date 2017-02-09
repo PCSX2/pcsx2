@@ -393,7 +393,11 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	u8* retval = xGetAlignedCallTarget();
 
 	{ // Properly scope the frame prologue/epilogue
+#ifdef ENABLE_VTUNE
+		xScopedStackFrame frame(true);
+#else
 		xScopedStackFrame frame(IsDevBuild);
+#endif
 
 		xJMP((void*)DispatcherReg);
 
@@ -428,7 +432,7 @@ static void _DynGen_Dispatchers()
 	HostSys::MemProtectStatic( eeRecDispatchers, PageAccess_ReadWrite() );
 
 	// clear the buffer to 0xcc (easier debugging).
-	memset_8<0xcc,__pagesize>( eeRecDispatchers );
+	memset( eeRecDispatchers, 0xcc, __pagesize);
 
 	xSetPtr( eeRecDispatchers );
 

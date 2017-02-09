@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
- // This file is just for backwards compatibility.
+// This file is just for backwards compatibility.
 
 #ifndef __PS2ETYPES_H__
 #define __PS2ETYPES_H__

@@ -19,139 +19,133 @@
 
 #include <winnt.h>
 
-static int DoSysPageFaultExceptionFilter( EXCEPTION_POINTERS* eps )
+static int DoSysPageFaultExceptionFilter(EXCEPTION_POINTERS *eps)
 {
-	if( eps->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION )
-		return EXCEPTION_CONTINUE_SEARCH;
+    if (eps->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
+        return EXCEPTION_CONTINUE_SEARCH;
 
-	// Note: This exception can be accessed by the EE or MTVU thread
-	// Source_PageFault is a global variable with its own state information
-	// so for now we lock this exception code unless someone can fix this better...
-	Threading::ScopedLock lock(PageFault_Mutex);
-	Source_PageFault->Dispatch( PageFaultInfo( (uptr)eps->ExceptionRecord->ExceptionInformation[1] ) );
-	return Source_PageFault->WasHandled() ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
+    // Note: This exception can be accessed by the EE or MTVU thread
+    // Source_PageFault is a global variable with its own state information
+    // so for now we lock this exception code unless someone can fix this better...
+    Threading::ScopedLock lock(PageFault_Mutex);
+    Source_PageFault->Dispatch(PageFaultInfo((uptr)eps->ExceptionRecord->ExceptionInformation[1]));
+    return Source_PageFault->WasHandled() ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
 }
 
-int SysPageFaultExceptionFilter( EXCEPTION_POINTERS* eps )
+int SysPageFaultExceptionFilter(EXCEPTION_POINTERS *eps)
 {
-	// Prevent recursive exception filtering by catching the exception from the filter here.
-	// In the event that the filter causes an access violation (happened during shutdown
-	// because Source_PageFault was deallocated), this will allow the debugger to catch the
-	// exception.
-	// TODO: find a reliable way to debug the filter itself, I've come up with a few ways that
-	// work but I don't fully understand why some do and some don't.
-	__try {
-		return DoSysPageFaultExceptionFilter(eps);
-	} __except (GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
-		return EXCEPTION_CONTINUE_SEARCH;
-	}
+    // Prevent recursive exception filtering by catching the exception from the filter here.
+    // In the event that the filter causes an access violation (happened during shutdown
+    // because Source_PageFault was deallocated), this will allow the debugger to catch the
+    // exception.
+    // TODO: find a reliable way to debug the filter itself, I've come up with a few ways that
+    // work but I don't fully understand why some do and some don't.
+    __try {
+        return DoSysPageFaultExceptionFilter(eps);
+    } __except (GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
 }
 
 void _platform_InstallSignalHandler()
 {
-	// NOP on Win32 systems -- we use __try{} __except{} instead.
+    // NOP on Win32 systems -- we use __try{} __except{} instead.
 }
 
 
-static DWORD ConvertToWinApi( const PageProtectionMode& mode )
+static DWORD ConvertToWinApi(const PageProtectionMode &mode)
 {
-	DWORD winmode = PAGE_NOACCESS;
+    DWORD winmode = PAGE_NOACCESS;
 
-	// Windows has some really bizarre memory protection enumeration that uses bitwise
-	// numbering (like flags) but is in fact not a flag value.  *Someone* from the early
-	// microsoft days wasn't a very good coder, me thinks.  --air
+    // Windows has some really bizarre memory protection enumeration that uses bitwise
+    // numbering (like flags) but is in fact not a flag value.  *Someone* from the early
+    // microsoft days wasn't a very good coder, me thinks.  --air
 
-	if (mode.CanExecute())
-	{
-		winmode = mode.CanWrite() ? PAGE_EXECUTE_READWRITE : PAGE_EXECUTE_READ;
-	}
-	else if (mode.CanRead())
-	{
-		winmode = mode.CanWrite() ? PAGE_READWRITE : PAGE_READONLY;
-	}
+    if (mode.CanExecute()) {
+        winmode = mode.CanWrite() ? PAGE_EXECUTE_READWRITE : PAGE_EXECUTE_READ;
+    } else if (mode.CanRead()) {
+        winmode = mode.CanWrite() ? PAGE_READWRITE : PAGE_READONLY;
+    }
 
-	return winmode;
+    return winmode;
 }
 
-void* HostSys::MmapReservePtr(void* base, size_t size)
+void *HostSys::MmapReservePtr(void *base, size_t size)
 {
-	return VirtualAlloc(base, size, MEM_RESERVE, PAGE_NOACCESS);
+    return VirtualAlloc(base, size, MEM_RESERVE, PAGE_NOACCESS);
 }
 
-bool HostSys::MmapCommitPtr(void* base, size_t size, const PageProtectionMode& mode)
+bool HostSys::MmapCommitPtr(void *base, size_t size, const PageProtectionMode &mode)
 {
-	void* result = VirtualAlloc(base, size, MEM_COMMIT, ConvertToWinApi(mode));
-	if (result) return true;
+    void *result = VirtualAlloc(base, size, MEM_COMMIT, ConvertToWinApi(mode));
+    if (result)
+        return true;
 
-	const DWORD errcode = GetLastError();
-	if (errcode == ERROR_COMMITMENT_MINIMUM)
-	{
-		Console.Warning("(MmapCommit) Received windows error %u {Virtual Memory Minimum Too Low}.", ERROR_COMMITMENT_MINIMUM);
-		Sleep(1000);	// Cut windows some time to rework its memory...
-	}
-	else if (errcode != ERROR_NOT_ENOUGH_MEMORY && errcode != ERROR_OUTOFMEMORY)
-	{
-		pxFailDev(L"VirtualAlloc COMMIT failed: " + Exception::WinApiError().GetMsgFromWindows());
-		return false;
-	}
+    const DWORD errcode = GetLastError();
+    if (errcode == ERROR_COMMITMENT_MINIMUM) {
+        Console.Warning("(MmapCommit) Received windows error %u {Virtual Memory Minimum Too Low}.", ERROR_COMMITMENT_MINIMUM);
+        Sleep(1000); // Cut windows some time to rework its memory...
+    } else if (errcode != ERROR_NOT_ENOUGH_MEMORY && errcode != ERROR_OUTOFMEMORY) {
+        pxFailDev(L"VirtualAlloc COMMIT failed: " + Exception::WinApiError().GetMsgFromWindows());
+        return false;
+    }
 
-	if (!pxDoOutOfMemory) return false;
-	pxDoOutOfMemory(size);
-	return VirtualAlloc(base, size, MEM_COMMIT, ConvertToWinApi(mode)) != NULL;
+    if (!pxDoOutOfMemory)
+        return false;
+    pxDoOutOfMemory(size);
+    return VirtualAlloc(base, size, MEM_COMMIT, ConvertToWinApi(mode)) != NULL;
 }
 
-void HostSys::MmapResetPtr(void* base, size_t size)
+void HostSys::MmapResetPtr(void *base, size_t size)
 {
-	VirtualFree(base, size, MEM_DECOMMIT);
+    VirtualFree(base, size, MEM_DECOMMIT);
 }
 
 
-void* HostSys::MmapReserve(uptr base, size_t size)
+void *HostSys::MmapReserve(uptr base, size_t size)
 {
-	return MmapReservePtr((void*)base, size);
+    return MmapReservePtr((void *)base, size);
 }
 
-bool HostSys::MmapCommit(uptr base, size_t size, const PageProtectionMode& mode)
+bool HostSys::MmapCommit(uptr base, size_t size, const PageProtectionMode &mode)
 {
-	return MmapCommitPtr( (void*)base, size, mode );
+    return MmapCommitPtr((void *)base, size, mode);
 }
 
 void HostSys::MmapReset(uptr base, size_t size)
 {
-	MmapResetPtr((void*)base, size);
+    MmapResetPtr((void *)base, size);
 }
 
 
-void* HostSys::Mmap(uptr base, size_t size)
+void *HostSys::Mmap(uptr base, size_t size)
 {
-	return VirtualAlloc((void*)base, size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    return VirtualAlloc((void *)base, size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 }
 
 void HostSys::Munmap(uptr base, size_t size)
 {
-	if (!base) return;
-	//VirtualFree((void*)base, size, MEM_DECOMMIT);
-	VirtualFree((void*)base, 0, MEM_RELEASE);
+    if (!base)
+        return;
+    //VirtualFree((void*)base, size, MEM_DECOMMIT);
+    VirtualFree((void *)base, 0, MEM_RELEASE);
 }
 
-void HostSys::MemProtect( void* baseaddr, size_t size, const PageProtectionMode& mode )
+void HostSys::MemProtect(void *baseaddr, size_t size, const PageProtectionMode &mode)
 {
-	pxAssertDev( ((size & (__pagesize-1)) == 0), pxsFmt(
-		L"Memory block size must be a multiple of the target platform's page size.\n"
-		L"\tPage Size: 0x%04x (%d), Block Size: 0x%04x (%d)",
-		__pagesize, __pagesize, size, size )
-	);
-	
-	DWORD OldProtect;	// enjoy my uselessness, yo!
-	if (!VirtualProtect( baseaddr, size, ConvertToWinApi(mode), &OldProtect ))
-	{
-		Exception::WinApiError apiError;
-		
-		apiError.SetDiagMsg(
-			pxsFmt(L"VirtualProtect failed @ 0x%08X -> 0x%08X  (mode=%s)",
-			baseaddr, (uptr)baseaddr + size, mode.ToString().c_str()
-		));
+    pxAssertDev(((size & (__pagesize - 1)) == 0), pxsFmt(
+                                                      L"Memory block size must be a multiple of the target platform's page size.\n"
+                                                      L"\tPage Size: 0x%04x (%d), Block Size: 0x%04x (%d)",
+                                                      __pagesize, __pagesize, size, size));
 
-		pxFailDev( apiError.FormatDiagnosticMessage() );
-	}
+    DWORD OldProtect; // enjoy my uselessness, yo!
+    if (!VirtualProtect(baseaddr, size, ConvertToWinApi(mode), &OldProtect)) {
+        Exception::WinApiError apiError;
+
+        apiError.SetDiagMsg(
+            pxsFmt(L"VirtualProtect failed @ 0x%08X -> 0x%08X  (mode=%s)",
+                   baseaddr, (uptr)baseaddr + size, mode.ToString().c_str()));
+
+        pxFailDev(apiError.FormatDiagnosticMessage());
+    }
 }

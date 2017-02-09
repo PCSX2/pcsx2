@@ -57,6 +57,10 @@
 #ifdef __WIN32__
     #include "wx/dynlib.h"
     #include "wx/msw/private.h"
+
+    #ifndef LOCALE_SNAME
+    #define LOCALE_SNAME 0x5c
+    #endif
 #endif
 
 #include "wx/file.h"
@@ -155,6 +159,19 @@ wxString wxLanguageInfo::GetLocaleName() const
 
     wxChar buffer[256];
     buffer[0] = wxT('\0');
+    if ( wxGetWinVersion() >= wxWinVersion_Vista )
+    {
+        if ( ::GetLocaleInfo(lcid, LOCALE_SNAME, buffer, WXSIZEOF(buffer)) )
+        {
+            locale << buffer;
+        }
+        else
+        {
+            wxLogLastError(wxT("GetLocaleInfo(LOCALE_SNAME)"));
+        }
+        return locale;
+    }
+
     if ( !::GetLocaleInfo(lcid, LOCALE_SENGLANGUAGE, buffer, WXSIZEOF(buffer)) )
     {
         wxLogLastError(wxT("GetLocaleInfo(LOCALE_SENGLANGUAGE)"));

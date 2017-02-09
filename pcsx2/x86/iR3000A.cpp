@@ -170,7 +170,11 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	u8* retval = xGetPtr();
 
 	{ // Properly scope the frame prologue/epilogue
+#ifdef ENABLE_VTUNE
+		xScopedStackFrame frame(true);
+#else
 		xScopedStackFrame frame(IsDevBuild);
+#endif
 
 		xJMP((void*)iopDispatcherReg);
 
@@ -189,7 +193,7 @@ static void _DynGen_Dispatchers()
 	HostSys::MemProtectStatic( iopRecDispatchers, PageAccess_ReadWrite() );
 
 	// clear the buffer to 0xcc (easier debugging).
-	memset_8<0xcc,__pagesize>( iopRecDispatchers );
+	memset( iopRecDispatchers, 0xcc, __pagesize);
 
 	xSetPtr( iopRecDispatchers );
 

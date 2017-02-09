@@ -24,6 +24,7 @@
 
 bool s_IS_OPENGL = false;
 bool GSTextureCache::m_disable_partial_invalidation = false;
+bool GSTextureCache::m_wrap_gs_mem = false;
 
 GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
@@ -45,6 +46,8 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 		m_can_convert_depth            = true;
 		m_texture_inside_rt            = false;
 	}
+
+	m_wrap_gs_mem = theApp.GetConfigB("wrap_gs_mem");
 
 	m_paltex = theApp.GetConfigB("paltex");
 	m_can_convert_depth &= s_IS_OPENGL; // only supported by openGL so far
@@ -69,7 +72,7 @@ void GSTextureCache::RemovePartial()
 
 	for (int type = 0; type < 2; type++)
 	{
-		for_each(m_dst[type].begin(), m_dst[type].end(), delete_object());
+		for (auto &t : m_dst[type]) delete t;
 
 		m_dst[type].clear();
 	}
@@ -81,7 +84,7 @@ void GSTextureCache::RemoveAll()
 
 	for(int type = 0; type < 2; type++)
 	{
-		for_each(m_dst[type].begin(), m_dst[type].end(), delete_object());
+		for (auto &t : m_dst[type]) delete t;
 
 		m_dst[type].clear();
 	}
@@ -89,6 +92,11 @@ void GSTextureCache::RemoveAll()
 
 GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette)
 {
+	if (!CanConvertDepth()) {
+		GL_CACHE("LookupDepthSource not supported (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
+		throw GSDXRecoverableError();
+	}
+
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 
 	Source* src = NULL;
@@ -99,28 +107,24 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	uint32 psm = TEX0.PSM;
 
 	for(auto t : m_dst[DepthStencil]) {
-		if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+		if(t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 		{
 			ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
-			dst = t;
-			break;
-		}
-	}
-
-	if (!CanConvertDepth()) {
-		if (dst) {
-			GL_CACHE("LookupDepthSource not supported (0x%x, %s)", TEX0.TBP0, psm_str(TEX0.PSM));
-			throw GSDXRecoverableError();
-		} else {
-			// LookupSource call LookupDepthSource, I'm sure it is nice testcase for formal tools ;)
-			GL_CACHE("LookupDepthSource not supported let's try standard LookupSource");
-			return LookupSource(TEX0, TEXA, r);
+			if (t->m_age == 0) {
+				// Perfect Match
+				dst = t;
+				break;
+			} else if (t->m_age == 1) {
+				// Better than nothing (Full Spectrum Warrior)
+				dst = t;
+			}
 		}
 	}
 
 	if (!dst) {
 		// Retry on the render target (Silent Hill 4)
 		for(auto t : m_dst[RenderTarget]) {
+			// FIXME: do I need to allow m_age == 1 as a potential match (as DepthStencil) ???
 			if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 			{
 				ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
@@ -167,8 +171,14 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		// Note: might worth to check previous frame
 		// Note: otherwise return NULL and skip the draw
 
+		// Full Spectrum Warrior: first draw call of cut-scene rendering
+		// The game tries to emulate a texture shuffle with an old depth buffer
+		// (don't exists yet for us due to the cache)
+		// Rendering is nicer (less garbage) if we skip the draw call.
+		throw GSDXRecoverableError();
+
 		//ASSERT(0);
-		return LookupSource(TEX0, TEXA, r);
+		//return LookupSource(TEX0, TEXA, r);
 	}
 
 	return src;
@@ -416,11 +426,6 @@ void GSTextureCache::ScaleTexture(GSTexture* texture)
 	{
 		int width = m_renderer->GetDisplayRect().width();
 		int height = m_renderer->GetDisplayRect().height();
-		int real_height = static_cast<int>(round(m_renderer->GetInternalResolution().y / texture->GetScale().y));
-
-		// Fixes offset issues on Persona 3 (512x511) where real value of height is 512
-		if (real_height % height == 1)
-			height = real_height;
 
 		GSVector2i requested_resolution = m_renderer->GetCustomResolution();
 		scale_factor.x = static_cast<float>(requested_resolution.x) / width;
@@ -519,12 +524,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		// From a performance point of view, it might cost a little on big upscaling
 		// but normally few RT are miss so it must remain reasonable.
 		if (s_IS_OPENGL) {
-			if (type == DepthStencil) {
-				// It is safer to always clear a new depth buffer. Core optimization might create some shortcut
-				// on the rendering. Texture cache only search old depth data in RT of current frame. Which
-				// can cause flickering (Jak2 cutscene)
-				m_renderer->m_dev->ClearDepth(dst->m_texture);
-			} else if (m_preload_frame && TEX0.TBW > 0) {
+			if (m_preload_frame && TEX0.TBW > 0) {
 				GL_INS("Preloading the RT DATA");
 				// RT doesn't have height but if we use a too big value, we will read outside of the GS memory.
 				int page0 = TEX0.TBP0 >> 5;
@@ -537,7 +537,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 				dst->Update();
 			} else {
 #ifdef ENABLE_OGL_DEBUG
-				m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0);
+				switch (type) {
+					case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
+					case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture); break;
+					default:break;
+				}
 #endif
 			}
 		}
@@ -664,6 +668,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 // must invalidate the Target/Depth respectively
 void GSTextureCache::InvalidateVideoMemType(int type, uint32 bp)
 {
+	if (!CanConvertDepth())
+		return;
+
 	for(list<Target*>::iterator i = m_dst[type].begin(); i != m_dst[type].end(); ++i)
 	{
 		Target* t = *i;
@@ -1603,6 +1610,9 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 		{
 			m_p2t = r->m_mem.GetPage2TileMap(m_TEX0);
 		}
+
+		GSOffset* off = m_renderer->m_context->offset.tex;
+		m_pages_as_bit = off->GetPagesAsBits(m_TEX0);
 	}
 }
 
@@ -1644,18 +1654,18 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 	{
 		for(int y = r.top; y < r.bottom; y += bs.y)
 		{
-			uint32 base = off->block.row[y >> 3];
+			uint32 base = off->block.row[y >> 3u];
 
 			for(int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
 			{
-				uint32 block = base + off->block.col[x >> 3];
+				uint32 block = base + off->block.col[x >> 3u];
 
-				if(block < MAX_BLOCKS)
+				if(block < MAX_BLOCKS || m_wrap_gs_mem)
 				{
-					uint32 addr = i >> 3;
+					uint32 addr = (i >> 3u) % MAX_BLOCKS;
 
-					uint32 row = addr >> 5;
-					uint32 col = 1 << (addr & 31);
+					uint32 row = addr >> 5u;
+					uint32 col = 1 << (addr & 31u);
 
 					if((m_valid[row] & col) == 0)
 					{
@@ -1673,16 +1683,18 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 	{
 		for(int y = r.top; y < r.bottom; y += bs.y)
 		{
-			uint32 base = off->block.row[y >> 3];
+			uint32 base = off->block.row[y >> 3u];
 
 			for(int x = r.left; x < r.right; x += bs.x)
 			{
-				uint32 block = base + off->block.col[x >> 3];
+				uint32 block = base + off->block.col[x >> 3u];
 
-				if(block < MAX_BLOCKS)
+				if(block < MAX_BLOCKS || m_wrap_gs_mem)
 				{
-					uint32 row = block >> 5;
-					uint32 col = 1 << (block & 31);
+					block %= MAX_BLOCKS;
+
+					uint32 row = block >> 5u;
+					uint32 col = 1 << (block & 31u);
 
 					if((m_valid[row] & col) == 0)
 					{
@@ -1975,87 +1987,41 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 		// TODO
 
 		// GH: I don't know why but it seems we only consider the first page for a render target
+		size_t page = TEX0.TBP0 >> 5;
 
-		m_map[TEX0.TBP0 >> 5].push_front(s);
+		m_map[page].push_front(s);
+		s->m_erase_it[page] = m_map[page].begin();
 
 		return;
 	}
 
-	// Remaining code will compute a list of pages that are dirty (in a similar fashion as GSOffset::GetPages)
-	// (Maybe GetPages could be used instead, perf opt?)
 	// The source pointer will be stored/duplicated in all m_map[array of pages]
-	uint32* pages = GetPagesCoverage(TEX0, off);
 	for(size_t i = 0; i < countof(m_pages); i++)
 	{
-		if(uint32 p = pages[i])
+		if(uint32 p = s->m_pages_as_bit[i])
 		{
 			list<Source*>* m = &m_map[i << 5];
+			auto* e = &s->m_erase_it[i << 5];
 
 			unsigned long j;
 
 			while(_BitScanForward(&j, p))
 			{
-				p ^= 1 << j;
+				// FIXME: this statement could be optimized to a single ASM instruction (instead of 4)
+				// Either BTR (AKA bit test and reset). Depends on the previous instruction.
+				// Or BLSR (AKA Reset Lowest Set Bit). No dependency but require BMI1 (basically a recent CPU)
+				p ^= 1U << j;
 
 				m[j].push_front(s);
+				e[j] = m[j].begin();
 			}
 		}
 	}
-}
-
-uint32* GSTextureCache::SourceMap::GetPagesCoverage(const GIFRegTEX0& TEX0, GSOffset* off)
-{
-	// Performance note:
-	// GSOffset is a hash lookup of the following parameter TB0, TBW, PSM
-	// Coverage adds TW and Th (8bits). Therefore GSOffset was extended with a small array.
-	// Avoid the hash map overhead (memory and lookup)
-
-	int index = (TEX0.u64 >> 26) & 0xFF;
-
-	if (off->coverages[index])
-		return off->coverages[index];
-
-	// Aligned on 64 bytes to store the full bitmap in a single cache line
-	uint32* pages = (uint32*)_aligned_malloc(MAX_PAGES/8, 64);
-
-	off->coverages[index] = pages;
-
-	((GSVector4i*)pages)[0] = GSVector4i::zero();
-	((GSVector4i*)pages)[1] = GSVector4i::zero();
-	((GSVector4i*)pages)[2] = GSVector4i::zero();
-	((GSVector4i*)pages)[3] = GSVector4i::zero();
-
-	// Remaining code will compute a list of pages that are dirty (in a similar fashion as GSOffset::GetPages)
-	// (Maybe GetPages could be used instead, perf opt?)
-	// The source pointer will be stored/duplicated in all m_map[array of pages]
-	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
-
-	GSVector2i bs = (TEX0.TBP0 & 31) == 0 ? psm.pgs : psm.bs;
-
-	int tw = 1 << TEX0.TW;
-	int th = 1 << TEX0.TH;
-
-	for(int y = 0; y < th; y += bs.y)
-	{
-		uint32 base = off->block.row[y >> 3];
-
-		for(int x = 0; x < tw; x += bs.x)
-		{
-			uint32 page = (base + off->block.col[x >> 3]) >> 5;
-
-			if(page < MAX_PAGES)
-			{
-				pages[page >> 5] |= 1 << (page & 31);
-			}
-		}
-	}
-
-	return pages;
 }
 
 void GSTextureCache::SourceMap::RemoveAll()
 {
-	for_each(m_surfaces.begin(), m_surfaces.end(), delete_object());
+	for (auto &t : m_surfaces) delete t;
 
 	m_surfaces.clear();
 
@@ -2073,16 +2039,33 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 				s->m_texture ? s->m_texture->GetID() : 0,
 				s->m_TEX0.TBP0);
 
-	// Source (except render target) is duplicated for each page they use.
-	for(size_t start = s->m_TEX0.TBP0 >> 5, end = s->m_target ? start : countof(m_map) - 1; start <= end; start++)
+	if (s->m_target)
 	{
-		list<Source*>& m = m_map[start];
+		size_t page = s->m_TEX0.TBP0 >> 5;
+		m_map[page].erase(s->m_erase_it[page]);
 
-		for(list<Source*>::iterator i = m.begin(); i != m.end(); )
+	}
+	else
+	{
+		for(size_t i = 0; i < countof(m_pages); i++)
 		{
-			list<Source*>::iterator j = i++;
+			if(uint32 p = s->m_pages_as_bit[i])
+			{
+				list<Source*>* m = &m_map[i << 5];
+				auto* e = &s->m_erase_it[i << 5];
 
-			if(*j == s) {m.erase(j); break;}
+				unsigned long j;
+
+				while(_BitScanForward(&j, p))
+				{
+					// FIXME: this statement could be optimized to a single ASM instruction (instead of 4)
+					// Either BTR (AKA bit test and reset). Depends on the previous instruction.
+					// Or BLSR (AKA Reset Lowest Set Bit). No dependency but require BMI1 (basically a recent CPU)
+					p ^= 1U << j;
+
+					m[j].erase(e[j]);
+				}
+			}
 		}
 	}
 

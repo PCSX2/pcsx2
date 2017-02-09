@@ -104,6 +104,8 @@ extern Window GSwin;
 
 #ifdef _MSC_VER
 #define _WIN32_WINNT 0x0600
+#define NOMINMAX
+#include <algorithm>
 #include <windows.h>
 
 #ifdef PCSX2_DEBUG

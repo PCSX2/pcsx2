@@ -1,5 +1,5 @@
 /*  LilyPad - Pad plugin for PS2 Emulator
- *  Copyright (C) 2002-2014  PCSX2 Dev Team/ChickenLiver
+ *  Copyright (C) 2002-2017  PCSX2 Dev Team/ChickenLiver
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
@@ -37,6 +37,8 @@ enum PadType {
     Dualshock2Pad,
     GuitarPad,
     PopnPad,
+    MousePad,
+    neGconPad,
     numPadTypes // total number of PadTypes. Add new PadType above this line.
 };
 
@@ -79,7 +81,8 @@ struct Binding
     int command;
     int sensitivity;
     int deadZone;
-    unsigned char turbo;
+    int skipDeadZone;
+    unsigned char rapidFire;
 };
 
 #define UID_AXIS (1U << 31)

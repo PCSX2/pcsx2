@@ -28,11 +28,14 @@ if(DISABLE_BUILD_DATE OR openSUSE)
     add_definitions(-DDISABLE_BUILD_DATE)
 endif()
 
+option(USE_VTUNE "Plug VTUNE to profile GSdx JIT.")
+
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
 option(GLSL_API "Replace ZZogl CG backend by GLSL (experimental option)")
 option(EGL_API "Use EGL on ZZogl/GSdx (experimental/developer option)")
+option(OPENCL_API "Add OpenCL suppport on GSdx")
 option(REBUILD_SHADER "Rebuild GLSL/CG shader (developer option)")
 option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
 option(GSDX_LEGACY "Build a GSdx legacy plugin compatible with GL3.3")
@@ -293,13 +296,18 @@ endif()
 #-------------------------------------------------------------------------------
 # Set some default compiler flags
 #-------------------------------------------------------------------------------
-option(USE_LTO "Enable LTO optimization (will likely break the build)")
+option(USE_LTO "Enable LTO optimization")
+option(USE_PGO_GENERATE "Enable PGO optimization (generate profile)")
+option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 
 # Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
 # Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
 set(COMMON_FLAG "-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse")
 if (DISABLE_SVU)
     set(COMMON_FLAG "${COMMON_FLAG} -DDISABLE_SVU")
+endif()
+if(USE_VTUNE)
+    set(COMMON_FLAG "${COMMON_FLAG} -DENABLE_VTUNE")
 endif()
 set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
 # -Wno-attributes: "always_inline function might not be inlinable" <= real spam (thousand of warnings!!!)
@@ -330,15 +338,27 @@ elseif (USE_GCC)
 endif()
 
 if (USE_LTO)
-    #gcc --print-file-name=liblto_plugin.so
-    #set(LTO_FLAGS "-fuse-linker-plugin -flto=4 --plugin=/usr/lib/gcc/x86_64-linux-gnu/4.9/liblto_plugin.so")
-    #set(LTO_FLAGS "-fuse-linker-plugin  -fuse-ld=gold -flto=4 --plugin=/usr/lib/gcc/x86_64-linux-gnu/4.9/liblto_plugin.so")
-    set(LTO_FLAGS "-fuse-linker-plugin  -fuse-ld=gold -flto=4")
-    #set(LINK_FLAGS "--plugin=/usr/lib/gcc/x86_64-linux-gnu/4.9/liblto_plugin.so")
-    set(USER_CMAKE_LD_FLAGS "--plugin /usr/lib/gcc/x86_64-linux-gnu/4.9/liblto_plugin.so")
+    include(ProcessorCount)
+    ProcessorCount(ncpu)
+    set(LTO_FLAGS "-fuse-linker-plugin -flto=${ncpu}")
     set(DBG "") # not supported with LTO
+    set(CMAKE_AR /usr/bin/gcc-ar CACHE STRING "Archiver" FORCE)
+    set(CMAKE_RANLIB /usr/bin/gcc-ranlib CACHE STRING "ranlib" FORCE)
+    set(CMAKE_NM /usr/bin/gcc-nm CACHE STRING "nm" FORCE)
 else()
     set(LTO_FLAGS "")
+endif()
+
+if (USE_PGO_GENERATE OR USE_PGO_OPTIMIZE)
+    set(PGO_FLAGS "-fprofile-dir=${CMAKE_SOURCE_DIR}/profile")
+endif()
+
+if (USE_PGO_GENERATE)
+    set(PGO_FLAGS "${PGO_FLAGS} -fprofile-generate")
+endif()
+
+if(USE_PGO_OPTIMIZE)
+    set(PGO_FLAGS "${PGO_FLAGS} -fprofile-use")
 endif()
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -378,7 +398,7 @@ else()
 endif()
 
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
-set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG} ${LTO_FLAGS} ${PLUGIN_SUPPORT}")
+set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG} ${LTO_FLAGS} ${PGO_FLAGS} ${PLUGIN_SUPPORT}")
 # c++ only flags
 set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -std=c++11 -Wno-invalid-offsetof")
 

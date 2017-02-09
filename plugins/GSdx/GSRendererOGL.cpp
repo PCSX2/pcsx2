@@ -39,6 +39,7 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
 	UserHacks_merge_sprite   = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 	UserHacks_unscale_pt_ln  = theApp.GetConfigB("UserHacks_unscale_point_line");
+	UserHacks_HPO            = theApp.GetConfigI("UserHacks_HalfPixelOffset_New");
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	ResetStates();
@@ -49,6 +50,7 @@ GSRendererOGL::GSRendererOGL()
 		UserHacks_TCO_y          = 0;
 		UserHacks_merge_sprite   = false;
 		UserHacks_unscale_pt_ln  = false;
+		UserHacks_HPO            = 0;
 	}
 }
 
@@ -271,7 +273,7 @@ void GSRendererOGL::EmulateZbuffer()
 			ASSERT(m_vt.m_min.p.z > max_z); // sfex capcom logo
 			// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
 			if (m_vt.m_min.p.z > max_z) {
-				GL_DBG("Bad Z size on %s buffers", psm_str(m_context->ZBUF.PSM));
+				GL_DBG("Bad Z size (%f %f) on %s buffers", m_vt.m_min.p.z, m_vt.m_max.p.z, psm_str(m_context->ZBUF.PSM));
 				vs_cb.DepthMask = GSVector2i(max_z, max_z);
 				m_om_dssel.ztst = ZTST_ALWAYS;
 			}
@@ -736,6 +738,65 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 	}
 }
 
+void GSRendererOGL::RealignTargetTextureCoordinate(const GSTextureCache::Source* tex)
+{
+	if (!UserHacks_HPO || GetUpscaleMultiplier() == 1) return;
+
+	GSVertex* v             = &m_vertex.buff[0];
+	const GSVector2& scale  = tex->m_texture->GetScale();
+	bool  linear            = m_vt.IsLinear();
+	int t_position          = v[0].U;
+	GSVector4 half_offset(0.0f);
+
+	// FIXME Let's start with something wrong same mess on X and Y
+	// FIXME Maybe it will be enough to check linear
+
+	if (PRIM->FST) {
+
+		if (UserHacks_HPO > 1) {
+			if (!linear && t_position == 8) {
+				half_offset.x = 8;
+				half_offset.y = 8;
+			} else if (linear && t_position == 16) {
+				half_offset.x = 16;
+				half_offset.y = 16;
+			} else if (m_vt.m_min.p.x == -0.5f) {
+				half_offset.x = 8;
+				half_offset.y = 8;
+			}
+		} else {
+			if (!linear && t_position == 8) {
+				half_offset.x = 8 - 8 / scale.x;
+				half_offset.y = 8 - 8 / scale.y;
+			} else if (linear && t_position == 16) {
+				half_offset.x = 16 - 16 / scale.x;
+				half_offset.y = 16 - 16 / scale.y;
+			} else if (m_vt.m_min.p.x == -0.5f) {
+				half_offset.x = 8;
+				half_offset.y = 8;
+			}
+		}
+
+		GL_INS("offset detected %f,%f t_pos %d (linear %d, scale %f)",
+				half_offset.x, half_offset.y, t_position, linear, scale.x);
+
+	} else if (m_vt.m_eq.q) {
+		float tw = (float)(1 << m_context->TEX0.TW);
+		float th = (float)(1 << m_context->TEX0.TH);
+		float q  = v[0].RGBAQ.Q;
+
+		// Tales of Abyss
+		half_offset.x = 0.5f * q / tw;
+		half_offset.y = 0.5f * q / th;
+
+		GL_INS("ST offset detected %f,%f (linear %d, scale %f)",
+				half_offset.x, half_offset.y, linear, scale.x);
+
+	}
+
+	vs_cb.TextureOffset = GSVector4(half_offset);
+}
+
 void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 {
 	GSDeviceOGL* dev         = (GSDeviceOGL*)m_dev;
@@ -829,6 +890,8 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		// The purpose of texture shuffle is to move color channel. Extra interpolation is likely a bad idea.
 		bilinear &= m_vt.IsLinear();
 
+		RealignTargetTextureCoordinate(tex);
+
 	} else if (tex->m_target) {
 		// Use an old target. AEM and index aren't resolved it must be done
 		// on the GPU
@@ -876,6 +939,8 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 			// Don't force interpolation on depth format
 			bilinear &= m_vt.IsLinear();
 		}
+
+		RealignTargetTextureCoordinate(tex);
 
 	} else if (tex->m_palette) {
 		// Use a standard 8 bits texture. AEM is already done on the CLUT
@@ -1158,6 +1223,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	bool ate_second_pass = m_context->TEST.DoSecondPass();
 
 	ResetStates();
+	vs_cb.TextureOffset = GSVector4(0.0f);
 
 	ASSERT(m_dev != NULL);
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
@@ -1265,7 +1331,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			} else if (m_accurate_date) {
 				GL_PERF("Slow DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 
-				if (GLLoader::found_GL_ARB_shader_image_load_store) {
+				if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture) {
 					DATE_GL42 = true;
 				} else {
 					m_require_full_barrier = true;
@@ -1354,7 +1420,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	//The resulting shifted output aligns better with common blending / corona / blurring effects,
 	//but introduces a few bad pixels on the edges.
 
-	if (rt && rt->LikelyOffset)
+	if (rt && rt->LikelyOffset && !UserHacks_HPO)
 	{
 		ox2 *= rt->OffsetHack_modx;
 		oy2 *= rt->OffsetHack_mody;

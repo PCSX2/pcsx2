@@ -24,6 +24,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <algorithm>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -46,6 +47,12 @@ extern track tracks[100];
 extern int curDiskType;
 extern int curTrayStatus;
 
+struct CacheRequest
+{
+    u32 lsn;
+    s32 mode;
+};
+
 struct toc_entry
 {
     u32 lba;
@@ -62,6 +69,7 @@ class IOCtlSrc
 #if defined(_WIN32)
     HANDLE m_device = INVALID_HANDLE_VALUE;
     std::wstring m_filename;
+    mutable std::mutex m_lock;
 #else
     int m_device = -1;
     std::string m_filename;
@@ -71,7 +79,6 @@ class IOCtlSrc
     u32 m_sectors = 0;
     u32 m_layer_break = 0;
     std::vector<toc_entry> m_toc;
-    mutable std::mutex m_lock;
 
     bool ReadDVDInfo();
     bool ReadCDInfo();
@@ -83,8 +90,8 @@ public:
 
     u32 GetSectorCount() const;
     const std::vector<toc_entry> &ReadTOC() const;
-    bool ReadSectors2048(u32 sector, u32 count, char *buffer) const;
-    bool ReadSectors2352(u32 sector, u32 count, char *buffer) const;
+    bool ReadSectors2048(u32 sector, u32 count, u8 *buffer) const;
+    bool ReadSectors2352(u32 sector, u32 count, u8 *buffer) const;
     u32 GetLayerBreakAddress() const;
     s32 GetMediaType() const;
     void SetSpindleSpeed(bool restore_defaults) const;
@@ -113,9 +120,8 @@ extern void (*newDiscCB)();
 bool cdvdStartThread();
 void cdvdStopThread();
 s32 cdvdRequestSector(u32 sector, s32 mode);
-s32 cdvdRequestComplete();
-char *cdvdGetSector(s32 sector, s32 mode);
-s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer);
+u8 *cdvdGetSector(u32 sector, s32 mode);
+s32 cdvdDirectReadSector(u32 sector, s32 mode, u8 *buffer);
 s32 cdvdGetMediaType();
 s32 cdvdRefreshData();
 void cdvdParseTOC();

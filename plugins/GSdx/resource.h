@@ -107,6 +107,20 @@
 #define IDC_LARGE_FB                    2103
 #define IDC_AUTO_FLUSH                  2104
 #define IDC_UNSCALE_POINT_LINE          2105
+#define IDC_OSD_FONT_EDIT               2106
+#define IDC_OSD_FONT_BUTTON             2107
+#define IDC_OSD_SPEED                   2108
+#define IDC_OSD_SPEED_EDIT              2109
+#define IDC_OSD_SIZE                    2110
+#define IDC_OSD_SIZE_EDIT               2111
+#define IDC_OSD_TRANSPARENCY_SLIDER     2112
+#define IDC_OSD_TRANSPARENCY_TEXT       2113
+#define IDC_OSD_LOG                     2114
+#define IDC_OSD_MONITOR                 2115
+#define IDC_OSD_INDICATOR               2116
+#define IDC_OSDBUTTON                   2117
+#define IDC_OSD_MAX_LOG                 2118
+#define IDC_OSD_MAX_LOG_EDIT            2119
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
 #define IDR_MERGE_FX                    10002
@@ -117,6 +131,7 @@
 #define IDR_SHADEBOOST_FX               10007
 #define IDR_TFX_CL                      10008
 #define IDD_HACKS                       10009
+#define IDD_OSD                         10010
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

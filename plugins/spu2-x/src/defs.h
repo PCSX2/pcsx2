@@ -40,7 +40,7 @@ struct V_VolumeLR
     s32 Left;
     s32 Right;
 
-    V_VolumeLR() {}
+    V_VolumeLR() = default;
     V_VolumeLR(s32 both)
         : Left(both)
         , Right(both)
@@ -61,7 +61,7 @@ struct V_VolumeSlide
     s8 Mode;
 
 public:
-    V_VolumeSlide() {}
+    V_VolumeSlide() = default;
     V_VolumeSlide(s16 regval, s32 fullvol)
         : Reg_VOL(regval)
         , Value(fullvol)
@@ -83,8 +83,7 @@ struct V_VolumeSlideLR
     V_VolumeSlide Right;
 
 public:
-    V_VolumeSlideLR() {}
-
+    V_VolumeSlideLR() = default;
     V_VolumeSlideLR(s16 regval, s32 bothval)
         : Left(regval, bothval)
         , Right(regval, bothval)

@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2011-2016 Gregory hainaut
+ *	Copyright (C) 2011-2016 PCSX2 Dev Team
  *	Copyright (C) 2007-2009 Gabest
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include "GSDeviceOGL.h"
 #include "GLState.h"
 #include "GSUtil.h"
+#include "GSOsdManager.h"
 #include <fstream>
 
 #include "res/glsl_source.h"
@@ -61,6 +62,7 @@ GSDeviceOGL::GSDeviceOGL()
 	, m_palette_ss(0)
 	, m_vs_cb(NULL)
 	, m_ps_cb(NULL)
+	, m_font(NULL)
 	, m_shader(NULL)
 {
 	memset(&m_merge_obj, 0, sizeof(m_merge_obj));
@@ -86,6 +88,8 @@ GSDeviceOGL::GSDeviceOGL()
 	#endif
 
 	m_debug_gl_call =  theApp.GetConfigB("debug_opengl");
+
+	m_disable_hw_gl_draw = theApp.GetConfigB("disable_hw_gl_draw");
 }
 
 GSDeviceOGL::~GSDeviceOGL()
@@ -538,6 +542,12 @@ bool GSDeviceOGL::Create(GSWnd* wnd)
 	fprintf(stdout, "Available VRAM/RAM:%lldMB for textures\n", GLState::available_vram >> 20u);
 
 	// ****************************************************************
+	// Texture Font (OSD)
+	// ****************************************************************
+	GSVector2i tex_font = m_osd.get_texture_font_size();
+	m_font = new GSTextureOGL(GSTextureOGL::Texture, tex_font.x, tex_font.y, GL_R8, m_fbo_read, false);
+
+	// ****************************************************************
 	// Finish window setup and backbuffer
 	// ****************************************************************
 	if(!GSDevice::Create(wnd))
@@ -645,7 +655,8 @@ void GSDeviceOGL::DrawPrimitive(int offset, int count)
 void GSDeviceOGL::DrawIndexedPrimitive()
 {
 	BeforeDraw();
-	m_va->DrawIndexedPrimitive();
+	if (!m_disable_hw_gl_draw)
+		m_va->DrawIndexedPrimitive();
 	AfterDraw();
 }
 
@@ -654,7 +665,8 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 	//ASSERT(offset + count <= (int)m_index.count);
 
 	BeforeDraw();
-	m_va->DrawIndexedPrimitive(offset, count);
+	if (!m_disable_hw_gl_draw)
+		m_va->DrawIndexedPrimitive(offset, count);
 	AfterDraw();
 }
 
@@ -708,41 +720,6 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 
 	GSVector4 color = GSVector4::rgba32(c) * (1.0f / 255);
 	ClearRenderTarget(t, color);
-}
-
-void GSDeviceOGL::ClearRenderTarget_i(GSTexture* t, int32 c)
-{
-	// Hopefully AMD mesa will support this extension soon
-	ASSERT(!GLLoader::found_GL_ARB_clear_texture);
-
-	if (!t) return;
-
-	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
-
-	GL_PUSH("Clear RTi %d", T->GetID());
-
-	uint32 old_color_mask = GLState::wrgba;
-	OMSetColorMaskState();
-
-	// Keep SCISSOR_TEST enabled on purpose to reduce the size
-	// of clean in DATE (impact big upscaling)
-	int32 col[4] = {c, c, c, c};
-
-	OMSetFBO(m_fbo);
-	OMAttachRt(T);
-
-	// Blending is not supported when you render to an Integer texture
-	if (GLState::blend) {
-		glDisable(GL_BLEND);
-	}
-
-	glClearBufferiv(GL_COLOR, 0, col);
-
-	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
-
-	if (GLState::blend) {
-		glEnable(GL_BLEND);
-	}
 }
 
 void GSDeviceOGL::ClearDepth(GSTexture* t)
@@ -905,11 +882,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area)
 
 	// Clean with the max signed value
 	int max_int = 0x7FFFFFFF;
-	if (GLLoader::found_GL_ARB_clear_texture) {
-		static_cast<GSTextureOGL*>(m_date.t)->Clear(&max_int, area);
-	} else {
-		ClearRenderTarget_i(m_date.t, max_int);
-	}
+	static_cast<GSTextureOGL*>(m_date.t)->Clear(&max_int, area);
 
 	glBindImageTexture(2, static_cast<GSTextureOGL*>(m_date.t)->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
 #ifdef ENABLE_OGL_DEBUG
@@ -1229,6 +1202,10 @@ GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, in
 
 	GSVector4 dRect(0, 0, w, h);
 
+	// StretchRect will read an old target. However, the memory cache might contains
+	// invalid data (for example due to SW blending).
+	glTextureBarrier();
+
 	StretchRect(src, sRect, dst, dRect, m_convert.ps[ps_shader]);
 
 	return dst;
@@ -1389,6 +1366,36 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// ************************************
 	// End
 	// ************************************
+
+	EndScene();
+}
+
+void GSDeviceOGL::RenderOsd(GSTexture* dt)
+{
+	BeginScene();
+
+	m_shader->BindPipeline(m_convert.ps[ShaderConvert_OSD]);
+
+	OMSetDepthStencilState(m_convert.dss);
+	OMSetBlendState((uint8)GSDeviceOGL::m_MERGE_BLEND);
+	OMSetRenderTargets(dt, NULL);
+
+	if(m_osd.m_texture_dirty) {
+		m_osd.upload_texture_atlas(m_font);
+	}
+
+	PSSetShaderResource(0, m_font);
+	PSSetSamplerState(m_convert.pt);
+
+	IASetPrimitiveTopology(GL_TRIANGLES);
+
+	// Note scaling could also be done in shader (require gl3/dx10)
+	size_t count = m_osd.Size();
+	GSVertexPT1* dst = (GSVertexPT1*)m_va->MapVB(count);
+	count = m_osd.GeneratePrimitives(dst, count);
+	m_va->UnmapVB();
+
+	DrawPrimitive();
 
 	EndScene();
 }
@@ -1725,13 +1732,13 @@ void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is
 
 		if (GLState::eq_RGB != b.op) {
 			GLState::eq_RGB = b.op;
-			glBlendEquationSeparateiARB(0, b.op, GL_FUNC_ADD);
+			glBlendEquationSeparate(b.op, GL_FUNC_ADD);
 		}
 
 		if (GLState::f_sRGB != b.src || GLState::f_dRGB != b.dst) {
 			GLState::f_sRGB = b.src;
 			GLState::f_dRGB = b.dst;
-			glBlendFuncSeparateiARB(0, b.src, b.dst, GL_ONE, GL_ZERO);
+			glBlendFuncSeparate(b.src, b.dst, GL_ONE, GL_ZERO);
 		}
 
 	} else {

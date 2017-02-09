@@ -133,7 +133,7 @@ void SysMtgsThread::PostVsyncStart()
 
 	u32* remainder = (u32*)GetDataPacketPtr();
 	remainder[0] = GSCSRr;
-	remainder[1] = GSIMR;
+	remainder[1] = GSIMR._u32;
 	(GSRegSIGBLID&)remainder[2] = GSSIGLBLID;
 	m_packet_writepos = (m_packet_writepos + 1) & RingBufferMask;
 
@@ -407,7 +407,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 					u32       offset = tag.data[0];
 					u32       size   = tag.data[1];
 					if (offset != ~0u) GSgifTransfer((u32*)&path.buffer[offset], size/16);
-					path.readAmount.fetch_sub(size);
+					path.readAmount.fetch_sub(size, std::memory_order_acq_rel);
 					break;
 				}
 
@@ -421,7 +421,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 					Gif_Path& path   = gifUnit.gifPath[GIF_PATH_1];
 					GS_Packet gsPack = path.GetGSPacketMTVU(); // Get vu1 program's xgkick packet(s)
 					if (gsPack.size) GSgifTransfer((u32*)&path.buffer[gsPack.offset], gsPack.size/16);
-					path.readAmount.fetch_sub(gsPack.size + gsPack.readAmount);
+					path.readAmount.fetch_sub(gsPack.size + gsPack.readAmount, std::memory_order_acq_rel);
 					path.PopGSPacketMTVU(); // Should be done last, for proper Gif_MTGS_Wait()
 					break;
 				}

@@ -169,16 +169,6 @@ PFNGLTEXTUREBARRIERPROC                glTextureBarrier                    = NUL
 PFNGLGETTEXTURESUBIMAGEPROC            glGetTextureSubImage                = NULL;
 
 namespace ReplaceGL {
-	void APIENTRY BlendEquationSeparateiARB(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
-	{
-		glBlendEquationSeparate(modeRGB, modeAlpha);
-	}
-
-	void APIENTRY BlendFuncSeparateiARB(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
-	{
-		glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
-	}
-
 	void APIENTRY ScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
 	{
 		glScissor(left, bottom, width, height);
@@ -188,6 +178,11 @@ namespace ReplaceGL {
 	{
 		glViewport(GLint(x), GLint(y), GLsizei(w), GLsizei(h));
 	}
+
+	void APIENTRY TextureBarrier()
+	{
+	}
+
 }
 
 namespace GLLoader {
@@ -203,10 +198,9 @@ namespace GLLoader {
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_EXT_texture_filter_anisotropic = false;
-	bool found_GL_ARB_clear_texture = false; // Miss AMD Mesa (otherwise seems SW)
+	bool found_GL_ARB_clear_texture = false;
 	bool found_GL_ARB_get_texture_sub_image = false; // Not yet used
 	// DX11 GPU
-	bool found_GL_ARB_draw_buffers_blend = false; // Not supported on AMD R600 (80 nm class chip, HD2900). Nvidia requires FERMI. Intel SB
 	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
 	bool found_GL_ARB_shader_image_load_store = false; // Intel IB. Nvidia/AMD miss Mesa implementation.
 	bool found_GL_ARB_viewport_array = false; // Intel IB. AMD/NVIDIA DX10
@@ -313,7 +307,6 @@ namespace GLLoader {
 				if (ext.compare("GL_NVX_gpu_memory_info") == 0) found_GL_NVX_gpu_memory_info = true;
 				// GL4.0
 				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
-				if (ext.compare("GL_ARB_draw_buffers_blend") == 0) found_GL_ARB_draw_buffers_blend = true;
 				// GL4.1
 				if (ext.compare("GL_ARB_viewport_array") == 0) found_GL_ARB_viewport_array = true;
 				if (ext.compare("GL_ARB_separate_shader_objects") == 0) found_GL_ARB_separate_shader_objects = true;
@@ -338,13 +331,11 @@ namespace GLLoader {
 		}
 
 		bool status = true;
-		bool mandatory_hw = static_cast<GSRendererType>(theApp.GetConfigI("Renderer")) == GSRendererType::OGL_HW;
 
 		// Bonus
 		status &= status_and_override(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic");
 		// GL4.0
 		status &= status_and_override(found_GL_ARB_gpu_shader5, "GL_ARB_gpu_shader5");
-		status &= status_and_override(found_GL_ARB_draw_buffers_blend, "GL_ARB_draw_buffers_blend");
 		// GL4.1
 		status &= status_and_override(found_GL_ARB_viewport_array, "GL_ARB_viewport_array");
 		status &= status_and_override(found_GL_ARB_separate_shader_objects, "GL_ARB_separate_shader_objects", true);
@@ -361,13 +352,20 @@ namespace GLLoader {
 		// GL4.5
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control", true);
 		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access", true);
-		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier", mandatory_hw);
+		// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
+		// Rendering might be corrupted but it could be good enough for test/virtual machine.
+		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier");
 		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 
 #ifdef _WIN32
 		if (status) {
 			if (fglrx_buggy_driver) {
-				fprintf(stderr, "OpenGL renderer is slow on AMD GPU due to inefficient driver. Sorry.\n");
+				fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver. Check out the links below for further information.\n"
+					"https://community.amd.com/message/2756964\n"
+					"https://community.amd.com/thread/205702\n"
+					"Note: Due to an AMD OpenGL driver issue, setting Blending Unit Accuracy to \"None\" can cause an application or system crash.\n"
+					"Keep Blending Unit Accuracy set to at least the default \"Basic\" level.\n"
+					"AMD has a fix for the issue that will be released in the coming months. The issue does not affect AMD GPUs on legacy drivers.\n");
 			}
 		}
 #endif
@@ -378,10 +376,9 @@ namespace GLLoader {
 			glViewportIndexedf = ReplaceGL::ViewportIndexedf;
 		}
 
-		if (!found_GL_ARB_draw_buffers_blend) {
-			fprintf(stderr, "GL_ARB_draw_buffers_blend: not supported ! function pointer will be replaced\n");
-			glBlendFuncSeparateiARB     = ReplaceGL::BlendFuncSeparateiARB;
-			glBlendEquationSeparateiARB = ReplaceGL::BlendEquationSeparateiARB;
+		if (!found_GL_ARB_texture_barrier) {
+			fprintf(stderr, "GL_ARB_texture_barrier: not supported ! Rendering will be corrupted\n");
+			glTextureBarrier = ReplaceGL::TextureBarrier;
 		}
 
 		fprintf(stdout, "\n");

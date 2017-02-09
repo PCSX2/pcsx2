@@ -45,7 +45,6 @@ fi
 # get updates and blacklist directories that don't use yet the clang-format syntax
 files=`git diff --name-only --diff-filter=ACMRT $diff_range  -- $PWD | \
     grep "\.\(c\|h\|inl\|cpp\|hpp\)$" | \
-    grep -v "${1}common/" | \
     grep -v "${1}pcsx2/" | \
     grep -v "${1}plugins/CDVDisoEFP/" | \
     grep -v "${1}plugins/CDVDlinuz/" | \

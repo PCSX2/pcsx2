@@ -23,6 +23,7 @@
 
 #include "GSScanlineEnvironment.h"
 #include "GSFunctionMap.h"
+#include "GSUtil.h"
 
 class GSSetupPrimCodeGenerator : public GSCodeGenerator
 {
@@ -30,23 +31,27 @@ class GSSetupPrimCodeGenerator : public GSCodeGenerator
 
 	GSScanlineSelector m_sel;
 	GSScanlineLocalData& m_local;
+	bool m_rip;
 
 	struct {uint32 z:1, f:1, t:1, c:1;} m_en;
 
-	void Generate();
+#if _M_SSE < 0x501
+	void Generate_SSE();
+	void Depth_SSE();
+	void Texture_SSE();
+	void Color_SSE();
 
-	void Depth();
-	void Texture();
-	void Color();
+	void Generate_AVX();
+	void Depth_AVX();
+	void Texture_AVX();
+	void Color_AVX();
+#else
+	void Generate_AVX2();
+	void Depth_AVX2();
+	void Texture_AVX2();
+	void Color_AVX2();
+#endif
 
 public:
 	GSSetupPrimCodeGenerator(void* param, uint64 key, void* code, size_t maxsize);
-
-	#if _M_SSE >= 0x501
-	static GSVector8 m_shift[9];
-	#else
-	static GSVector4 m_shift[5];
-	#endif
-
-	static void InitVectors();
 };

@@ -23,11 +23,11 @@
 
 #define PLUGIN_VERSION 0
 
-#define VM_SIZE 4194304
-#define HALF_VM_SIZE (VM_SIZE / 2)
-#define PAGE_SIZE 8192
-#define BLOCK_SIZE 256
-#define COLUMN_SIZE 64
+#define VM_SIZE 4194304u
+#define HALF_VM_SIZE (VM_SIZE / 2u)
+#define PAGE_SIZE 8192u
+#define BLOCK_SIZE 256u
+#define COLUMN_SIZE 64u
 
 #define MAX_PAGES (VM_SIZE / PAGE_SIZE)
 #define MAX_BLOCKS (VM_SIZE / BLOCK_SIZE)
@@ -1282,7 +1282,7 @@ struct GSPrivRegSet
 			if(i == 0 && !PMODE.EN1) continue;
 			if(i == 1 && !PMODE.EN2) continue;
 
-			fprintf(fp, "DISPFB[%d] BP=%05x BW=%d PSM=%d DBX=%d DBY=%d\n",
+			fprintf(fp, "DISPFB[%d] BP=%05x BW=%u PSM=%u DBX=%u DBY=%u\n",
 					i,
 					DISP[i].DISPFB.Block(),
 					DISP[i].DISPFB.FBW,
@@ -1291,7 +1291,7 @@ struct GSPrivRegSet
 					DISP[i].DISPFB.DBY
 				   );
 
-			fprintf(fp, "DISPLAY[%d] DX=%d DY=%d DW=%d DH=%d MAGH=%d MAGV=%d\n",
+			fprintf(fp, "DISPLAY[%d] DX=%u DY=%u DW=%u DH=%u MAGH=%u MAGV=%u\n",
 					i,
 					DISP[i].DISPLAY.DX,
 					DISP[i].DISPLAY.DY,

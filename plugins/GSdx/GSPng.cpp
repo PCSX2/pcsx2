@@ -41,18 +41,16 @@ struct {
 
 namespace GSPng {
 
-    bool SaveFile(const string& file, Format fmt, uint8* image, uint8* row,
-        int width, int height, int pitch, int _compression,
-        bool rb_swapped = false, bool first_image = false)
+    bool SaveFile(const string& file, const Format fmt, const uint8* const image,
+        uint8* const row, const int width, const int height, const int pitch,
+        const int compression, const bool rb_swapped = false, const bool first_image = false)
     {
-        int channel_bit_depth = pixel[fmt].channel_bit_depth;
-        int bytes_per_pixel_in = pixel[fmt].bytes_per_pixel_in;
+        const int channel_bit_depth = pixel[fmt].channel_bit_depth;
+        const int bytes_per_pixel_in = pixel[fmt].bytes_per_pixel_in;
 
         const int type = first_image ? pixel[fmt].type : PNG_COLOR_TYPE_GRAY;
         const int offset = first_image ? 0 : pixel[fmt].bytes_per_pixel_out;
         const int bytes_per_pixel_out = first_image ? pixel[fmt].bytes_per_pixel_out : bytes_per_pixel_in - offset;
-
-        const int compression = (_compression < 0 || _compression > Z_BEST_COMPRESSION) ? Z_BEST_SPEED : _compression;
 
         FILE *fp = fopen(file.c_str(), "wb");
         if (fp == nullptr)
@@ -61,7 +59,7 @@ namespace GSPng {
         png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
         png_infop info_ptr = nullptr;
 
-        bool success = false;
+        bool success;
         try {
             if (png_ptr == nullptr)
                 throw GSDXRecoverableError();
@@ -84,10 +82,10 @@ namespace GSPng {
             if (rb_swapped && type != PNG_COLOR_TYPE_GRAY)
                 png_set_bgr(png_ptr);
 
-            for (int y = 0; y < height; ++y, image += pitch) {
+            for (int y = 0; y < height; ++y) {
                 for (int x = 0; x < width; ++x)
                     for (int i = 0; i < bytes_per_pixel_out; ++i)
-                        row[bytes_per_pixel_out * x + i] = image[bytes_per_pixel_in * x + i + offset];
+                        row[bytes_per_pixel_out * x + i] = image[y * pitch + bytes_per_pixel_in * x + i + offset];
                 png_write_row(png_ptr, row);
             }
             png_write_end(png_ptr, nullptr);
@@ -95,6 +93,8 @@ namespace GSPng {
             success = true;
         } catch (GSDXRecoverableError&) {
             fprintf(stderr, "Failed to write image %s\n", file.c_str());
+
+			success = false;
         }
 
         if (png_ptr)
@@ -110,6 +110,9 @@ namespace GSPng {
         root.replace(file.length() - 4, 4, "");
 
         ASSERT(fmt >= Format::START && fmt < Format::COUNT);
+
+        if (compression < 0 || compression > Z_BEST_COMPRESSION)
+            compression = Z_BEST_SPEED;
 
         std::unique_ptr<uint8[]> row(new uint8[pixel[fmt].bytes_per_pixel_out * w]);
 
@@ -140,7 +143,7 @@ namespace GSPng {
             _aligned_free(m_image);
     }
 
-    void Worker::Process(shared_ptr<Transaction>& item)
+    void Process(std::shared_ptr<Transaction>& item)
     {
         Save(item->m_fmt, item->m_file, item->m_image, item->m_w, item->m_h, item->m_pitch, item->m_compression);
     }

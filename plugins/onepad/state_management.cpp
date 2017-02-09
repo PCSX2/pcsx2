@@ -80,6 +80,7 @@ void Pad::set_mode(int _mode)
 {
     mode = _mode;
 
+#if 0
     fprintf(stdout, "OnePad: set new pad mode=");
     if (mode == MODE_DIGITAL)
         fprintf(stdout, "DIGITAL\n");
@@ -89,6 +90,7 @@ void Pad::set_mode(int _mode)
         fprintf(stdout, "DS2 NATIVE\n");
     else
         fprintf(stdout, "??? 0x%x\n", mode);
+#endif
 }
 
 void Pad::set_vibrate(int motor, u8 val)

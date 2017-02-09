@@ -15,7 +15,8 @@
 
 #pragma once
 
-namespace x86Emitter {
+namespace x86Emitter
+{
 
 // helpermess is currently broken >_<
 
@@ -88,4 +89,4 @@ void _DoI_helpermess( const xImpl& helpme, const xDirectOrIndirect<T>& to, const
 }
 #endif
 
-}	// End namespace x86Emitter
+} // End namespace x86Emitter

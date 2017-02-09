@@ -1024,7 +1024,7 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 				// empty files need to be explicitly created, as there will be no data cluster referencing it later
 				char cleanName[sizeof( entry->entry.data.name )];
 				memcpy( cleanName, (const char*)entry->entry.data.name, sizeof( cleanName ) );
-				bool filenameCleaned = FileAccessHelper::CleanMemcardFilename( cleanName );
+				FileAccessHelper::CleanMemcardFilename( cleanName );
 				const wxString filePath = dirPath + L"/" + wxString::FromAscii( (const char*)cleanName );
 
 				if ( m_performFileWrites ) {

@@ -532,12 +532,8 @@ void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
 	}
 
 	if (z == v[0].XYZ.Z) {
-		m_min.p.z = z;
-		m_max.p.z = z;
 		m_eq.z = 1;
 	} else {
-		m_min.p.z = z & ~1;
-		m_max.p.z = z |  1;
 		m_eq.z = 0;
 	}
 }

@@ -22,6 +22,7 @@
 #pragma once
 
 #include "GS.h"
+#include "xbyak/xbyak_util.h"
 
 struct OCLDeviceDesc
 {
@@ -71,3 +72,5 @@ void GSmkdir(const char* dir);
 #endif
 
 const char* psm_str(int psm);
+
+extern Xbyak::util::Cpu g_cpu;

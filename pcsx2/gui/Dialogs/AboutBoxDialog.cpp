@@ -69,8 +69,8 @@ Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 	wxStaticBoxSizer& developsBox = *new wxStaticBoxSizer(wxVERTICAL, this);
 	wxStaticBoxSizer& contribsBox = *new wxStaticBoxSizer(wxVERTICAL, this);
 
-	pxStaticText& developsText = Text(developsString).SetMinWidth(240);
-	pxStaticText& contribsText = Text(contribsString).SetMinWidth(240);
+	pxStaticText& developsText = Text(developsString).SetMinWidth(350);
+	pxStaticText& contribsText = Text(contribsString).SetMinWidth(350);
 
 	developsBox += Heading(_("Developers")).Bold() | StdExpand();
 	developsBox += developsText | StdExpand();

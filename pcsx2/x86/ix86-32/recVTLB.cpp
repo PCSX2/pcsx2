@@ -21,6 +21,7 @@
 
 #include "iCore.h"
 #include "iR5900.h"
+#include "Utilities/Perf.h"
 
 using namespace vtlb_private;
 using namespace x86Emitter;
@@ -317,7 +318,7 @@ void vtlb_dynarec_init()
 	HostSys::MemProtectStatic( m_IndirectDispatchers, PageAccess_ReadWrite() );
 
 	// clear the buffer to 0xcc (easier debugging).
-	memset_8<0xcc,0x1000>( m_IndirectDispatchers );
+	memset( m_IndirectDispatchers, 0xcc, __pagesize);
 
 	for( int mode=0; mode<2; ++mode )
 	{
@@ -333,6 +334,8 @@ void vtlb_dynarec_init()
 	}
 
 	HostSys::MemProtectStatic( m_IndirectDispatchers, PageAccess_ExecOnly() );
+
+	Perf::any.map((uptr)m_IndirectDispatchers, __pagesize, "TLB Dispatcher");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

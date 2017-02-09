@@ -157,6 +157,10 @@ void Panels::FramelimiterPanel::Apply()
 	}
 
 	appfps.SanityCheck();
+
+	// If the user has a command line override specified, we need to disable it
+	// so that their changes take effect
+	wxGetApp().Overrides.ProfilingMode = false;
 }
 
 // --------------------------------------------------------------------------------------

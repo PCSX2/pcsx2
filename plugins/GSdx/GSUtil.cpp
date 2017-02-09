@@ -20,9 +20,7 @@
  */
 
 #include "stdafx.h"
-#include "GS.h"
 #include "GSUtil.h"
-#include "xbyak/xbyak_util.h"
 
 #ifdef _WIN32
 #include "GSDeviceDX.h"
@@ -33,11 +31,19 @@
 #define SVN_MODS 0
 #endif
 
+Xbyak::util::Cpu g_cpu;
+
 const char* GSUtil::GetLibName()
 {
 	// The following ifdef mess is courtesy of "static string str;"
 	// being optimised by GCC to be unusable by older CPUs. Enjoy!
 	static char name[255];
+
+#if _M_SSE < 0x501
+	const char* sw_sse = g_cpu.has(Xbyak::util::Cpu::tAVX) ? "AVX" :
+		g_cpu.has(Xbyak::util::Cpu::tSSE41) ? "SSE41" :
+		g_cpu.has(Xbyak::util::Cpu::tSSSE3) ? "SSSE3" : "SSE2";
+#endif
 
 	snprintf(name, sizeof(name), "GSdx "
 
@@ -48,15 +54,15 @@ const char* GSUtil::GetLibName()
 		"64-bit "
 #endif
 #ifdef __INTEL_COMPILER
-		"(Intel C++ %d.%02d %s)",
+		"(Intel C++ %d.%02d %s/%s)",
 #elif _MSC_VER
-		"(MSVC %d.%02d %s)",
+		"(MSVC %d.%02d %s/%s)",
 #elif __clang__
-		"(clang %d.%d.%d %s)",
+		"(clang %d.%d.%d %s/%s)",
 #elif __GNUC__
-		"(GCC %d.%d.%d %s)",
+		"(GCC %d.%d.%d %s/%s)",
 #else
-		"(%s)",
+		"(%s/%s)",
 #endif
 #ifdef _WIN32
 		SVN_REV,
@@ -72,19 +78,15 @@ const char* GSUtil::GetLibName()
 #endif
 
 #if _M_SSE >= 0x501
-		"AVX2"
+		"AVX2", "AVX2"
 #elif _M_SSE >= 0x500
-		"AVX"
-#elif _M_SSE >= 0x402
-		"SSE4.2"
+		"AVX", sw_sse
 #elif _M_SSE >= 0x401
-		"SSE4.1"
+		"SSE4.1", sw_sse
 #elif _M_SSE >= 0x301
-		"SSSE3"
+		"SSSE3", sw_sse
 #elif _M_SSE >= 0x200
-		"SSE2"
-#elif _M_SSE >= 0x100
-		"SSE"
+		"SSE2", sw_sse
 #endif
 	);
 
@@ -203,38 +205,40 @@ bool GSUtil::HasCompatibleBits(uint32 spsm, uint32 dpsm)
 
 bool GSUtil::CheckSSE()
 {
-	Xbyak::util::Cpu cpu;
-	Xbyak::util::Cpu::Type type;
-	const char* instruction_set = "";
+	bool status = true;
 
-	#if _M_SSE >= 0x501
-	type = Xbyak::util::Cpu::tAVX2;
-	instruction_set = "AVX2";
-	#elif _M_SSE >= 0x500
-	type = Xbyak::util::Cpu::tAVX;
-	instruction_set = "AVX";
-	#elif _M_SSE >= 0x402
-	type = Xbyak::util::Cpu::tSSE42;
-	instruction_set = "SSE4.2";
-	#elif _M_SSE >= 0x401
-	type = Xbyak::util::Cpu::tSSE41;
-	instruction_set = "SSE4.1";
-	#elif _M_SSE >= 0x301
-	type = Xbyak::util::Cpu::tSSSE3;
-	instruction_set = "SSSE3";
-	#elif _M_SSE >= 0x200
-	type = Xbyak::util::Cpu::tSSE2;
-	instruction_set = "SSE2";
-	#endif
+	struct ISA {
+		Xbyak::util::Cpu::Type type;
+		const char* name;
+	};
 
-	if(!cpu.has(type))
-	{
-		fprintf(stderr, "This CPU does not support %s\n", instruction_set);
+	ISA checks[] = {
+		{Xbyak::util::Cpu::tSSE2, "SSE2"},
+#if _M_SSE >= 0x301
+		{Xbyak::util::Cpu::tSSSE3, "SSSE3"},
+#endif
+#if _M_SSE >= 0x401
+		{Xbyak::util::Cpu::tSSE41, "SSE41"},
+#endif
+#if _M_SSE >= 0x500
+		{Xbyak::util::Cpu::tAVX, "AVX1"},
+#endif
+#if _M_SSE >= 0x501
+		{Xbyak::util::Cpu::tAVX2, "AVX2"},
+		{Xbyak::util::Cpu::tBMI1, "BMI1"},
+		{Xbyak::util::Cpu::tBMI2, "BMI2"},
+#endif
+	};
 
-		return false;
+	for (size_t i = 0; i < countof(checks); i++) {
+		if(!g_cpu.has(checks[i].type)) {
+			fprintf(stderr, "This CPU does not support %s\n", checks[i].name);
+
+			status = false;
+		}
 	}
 
-	return true;
+	return status;
 }
 
 #define OCL_PROGRAM_VERSION 3
@@ -283,8 +287,7 @@ void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
 					desc.name = GetDeviceUniqueName(device);
 					desc.version = major * 100 + minor * 10;
 
-					// TODO: linux
-
+#ifdef _WIN32
 					char* buff = new char[MAX_PATH + 1];
 					GetTempPath(MAX_PATH, buff);
 					desc.tmppath = string(buff) + "/" + desc.name;
@@ -301,6 +304,10 @@ void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
 					hFind = FindFirstFile(desc.tmppath.c_str(), &FindFileData);
 					if(hFind != INVALID_HANDLE_VALUE) FindClose(hFind);
 					else CreateDirectory(desc.tmppath.c_str(), NULL);
+#else
+					// TODO: linux
+					ASSERT(0);
+#endif
 
 					dl.push_back(desc);
 				}

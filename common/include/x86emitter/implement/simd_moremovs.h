@@ -15,7 +15,8 @@
 
 #pragma once
 
-namespace x86Emitter {
+namespace x86Emitter
+{
 
 // --------------------------------------------------------------------------------------
 //  xImplSimd_MovHL
@@ -25,13 +26,13 @@ namespace x86Emitter {
 //
 struct xImplSimd_MovHL
 {
-	u16	Opcode;
+    u16 Opcode;
 
-	void PS( const xRegisterSSE& to, const xIndirectVoid& from ) const;
-	void PS( const xIndirectVoid& to, const xRegisterSSE& from ) const;
+    void PS(const xRegisterSSE &to, const xIndirectVoid &from) const;
+    void PS(const xIndirectVoid &to, const xRegisterSSE &from) const;
 
-	void PD( const xRegisterSSE& to, const xIndirectVoid& from ) const;
-	void PD( const xIndirectVoid& to, const xRegisterSSE& from ) const;
+    void PD(const xRegisterSSE &to, const xIndirectVoid &from) const;
+    void PD(const xIndirectVoid &to, const xRegisterSSE &from) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -42,10 +43,10 @@ struct xImplSimd_MovHL
 //
 struct xImplSimd_MovHL_RtoR
 {
-	u16	Opcode;
+    u16 Opcode;
 
-	void PS( const xRegisterSSE& to, const xRegisterSSE& from ) const;
-	void PD( const xRegisterSSE& to, const xRegisterSSE& from ) const;
+    void PS(const xRegisterSSE &to, const xRegisterSSE &from) const;
+    void PD(const xRegisterSSE &to, const xRegisterSSE &from) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -59,12 +60,12 @@ struct xImplSimd_MovHL_RtoR
 //
 struct xImplSimd_MoveSSE
 {
-	u8		Prefix;
-	bool	isAligned;
+    u8 Prefix;
+    bool isAligned;
 
-	void operator()( const xRegisterSSE& to, const xRegisterSSE& from ) const;
-	void operator()( const xRegisterSSE& to, const xIndirectVoid& from ) const;
-	void operator()( const xIndirectVoid& to, const xRegisterSSE& from ) const;
+    void operator()(const xRegisterSSE &to, const xRegisterSSE &from) const;
+    void operator()(const xRegisterSSE &to, const xIndirectVoid &from) const;
+    void operator()(const xIndirectVoid &to, const xRegisterSSE &from) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -78,12 +79,12 @@ struct xImplSimd_MoveSSE
 
 struct xImplSimd_MoveDQ
 {
-	u8		Prefix;
-	bool	isAligned;
+    u8 Prefix;
+    bool isAligned;
 
-	void operator()( const xRegisterSSE& to, const xRegisterSSE& from ) const;
-	void operator()( const xRegisterSSE& to, const xIndirectVoid& from ) const;
-	void operator()( const xIndirectVoid& to, const xRegisterSSE& from ) const;
+    void operator()(const xRegisterSSE &to, const xRegisterSSE &from) const;
+    void operator()(const xRegisterSSE &to, const xIndirectVoid &from) const;
+    void operator()(const xIndirectVoid &to, const xRegisterSSE &from) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -93,41 +94,41 @@ struct xImplSimd_MoveDQ
 //
 struct xImplSimd_Blend
 {
-	// [SSE-4.1] Conditionally copies dword values from src to dest, depending on the
-	// mask bits in the immediate operand (bits [3:0]).  Each mask bit corresponds to a
-	// dword element in a 128-bit operand.
-	//
-	// If a mask bit is 1, then the corresponding dword in the source operand is copied
-	// to dest, else the dword element in dest is left unchanged.
-	//
-	xImplSimd_DestRegImmSSE	PS;
+    // [SSE-4.1] Conditionally copies dword values from src to dest, depending on the
+    // mask bits in the immediate operand (bits [3:0]).  Each mask bit corresponds to a
+    // dword element in a 128-bit operand.
+    //
+    // If a mask bit is 1, then the corresponding dword in the source operand is copied
+    // to dest, else the dword element in dest is left unchanged.
+    //
+    xImplSimd_DestRegImmSSE PS;
 
-	// [SSE-4.1] Conditionally copies quadword values from src to dest, depending on the
-	// mask bits in the immediate operand (bits [1:0]).  Each mask bit corresponds to a
-	// quadword element in a 128-bit operand.
-	//
-	// If a mask bit is 1, then the corresponding dword in the source operand is copied
-	// to dest, else the dword element in dest is left unchanged.
-	//
-	xImplSimd_DestRegImmSSE	PD;
+    // [SSE-4.1] Conditionally copies quadword values from src to dest, depending on the
+    // mask bits in the immediate operand (bits [1:0]).  Each mask bit corresponds to a
+    // quadword element in a 128-bit operand.
+    //
+    // If a mask bit is 1, then the corresponding dword in the source operand is copied
+    // to dest, else the dword element in dest is left unchanged.
+    //
+    xImplSimd_DestRegImmSSE PD;
 
-	// [SSE-4.1] Conditionally copies dword values from src to dest, depending on the
-	// mask (bits [3:0]) in XMM0 (yes, the fixed register).  Each mask bit corresponds
-	// to a dword element in the 128-bit operand.
-	//
-	// If a mask bit is 1, then the corresponding dword in the source operand is copied
-	// to dest, else the dword element in dest is left unchanged.
-	//
-	xImplSimd_DestRegSSE	VPS;
+    // [SSE-4.1] Conditionally copies dword values from src to dest, depending on the
+    // mask (bits [3:0]) in XMM0 (yes, the fixed register).  Each mask bit corresponds
+    // to a dword element in the 128-bit operand.
+    //
+    // If a mask bit is 1, then the corresponding dword in the source operand is copied
+    // to dest, else the dword element in dest is left unchanged.
+    //
+    xImplSimd_DestRegSSE VPS;
 
-	// [SSE-4.1] Conditionally copies quadword values from src to dest, depending on the
-	// mask (bits [1:0]) in XMM0 (yes, the fixed register).  Each mask bit corresponds
-	// to a quadword element in the 128-bit operand.
-	//
-	// If a mask bit is 1, then the corresponding dword in the source operand is copied
-	// to dest, else the dword element in dest is left unchanged.
-	//
-	xImplSimd_DestRegSSE	VPD;
+    // [SSE-4.1] Conditionally copies quadword values from src to dest, depending on the
+    // mask (bits [1:0]) in XMM0 (yes, the fixed register).  Each mask bit corresponds
+    // to a quadword element in the 128-bit operand.
+    //
+    // If a mask bit is 1, then the corresponding dword in the source operand is copied
+    // to dest, else the dword element in dest is left unchanged.
+    //
+    xImplSimd_DestRegSSE VPD;
 };
 
 // --------------------------------------------------------------------------------------
@@ -137,38 +138,36 @@ struct xImplSimd_Blend
 //
 struct xImplSimd_PMove
 {
-	u16		OpcodeBase;
+    u16 OpcodeBase;
 
-	// [SSE-4.1] Zero/Sign-extend the low byte values in src into word integers
-	// and store them in dest.
-	void BW( const xRegisterSSE& to, const xRegisterSSE& from ) const;
-	void BW( const xRegisterSSE& to, const xIndirect64& from ) const;
+    // [SSE-4.1] Zero/Sign-extend the low byte values in src into word integers
+    // and store them in dest.
+    void BW(const xRegisterSSE &to, const xRegisterSSE &from) const;
+    void BW(const xRegisterSSE &to, const xIndirect64 &from) const;
 
-	// [SSE-4.1] Zero/Sign-extend the low byte values in src into dword integers
-	// and store them in dest.
-	void BD( const xRegisterSSE& to, const xRegisterSSE& from ) const;
-	void BD( const xRegisterSSE& to, const xIndirect32& from ) const;
+    // [SSE-4.1] Zero/Sign-extend the low byte values in src into dword integers
+    // and store them in dest.
+    void BD(const xRegisterSSE &to, const xRegisterSSE &from) const;
+    void BD(const xRegisterSSE &to, const xIndirect32 &from) const;
 
-	// [SSE-4.1] Zero/Sign-extend the low byte values in src into qword integers
-	// and store them in dest.
-	void BQ( const xRegisterSSE& to, const xRegisterSSE& from ) const;
-	void BQ( const xRegisterSSE& to, const xIndirect16& from ) const;
+    // [SSE-4.1] Zero/Sign-extend the low byte values in src into qword integers
+    // and store them in dest.
+    void BQ(const xRegisterSSE &to, const xRegisterSSE &from) const;
+    void BQ(const xRegisterSSE &to, const xIndirect16 &from) const;
 
-	// [SSE-4.1] Zero/Sign-extend the low word values in src into dword integers
-	// and store them in dest.
-	void WD( const xRegisterSSE& to, const xRegisterSSE& from ) const;
-	void WD( const xRegisterSSE& to, const xIndirect64& from ) const;
+    // [SSE-4.1] Zero/Sign-extend the low word values in src into dword integers
+    // and store them in dest.
+    void WD(const xRegisterSSE &to, const xRegisterSSE &from) const;
+    void WD(const xRegisterSSE &to, const xIndirect64 &from) const;
 
-	// [SSE-4.1] Zero/Sign-extend the low word values in src into qword integers
-	// and store them in dest.
-	void WQ( const xRegisterSSE& to, const xRegisterSSE& from ) const;
-	void WQ( const xRegisterSSE& to, const xIndirect32& from ) const;
+    // [SSE-4.1] Zero/Sign-extend the low word values in src into qword integers
+    // and store them in dest.
+    void WQ(const xRegisterSSE &to, const xRegisterSSE &from) const;
+    void WQ(const xRegisterSSE &to, const xIndirect32 &from) const;
 
-	// [SSE-4.1] Zero/Sign-extend the low dword values in src into qword integers
-	// and store them in dest.
-	void DQ( const xRegisterSSE& to, const xRegisterSSE& from ) const;
-	void DQ( const xRegisterSSE& to, const xIndirect64& from ) const;
+    // [SSE-4.1] Zero/Sign-extend the low dword values in src into qword integers
+    // and store them in dest.
+    void DQ(const xRegisterSSE &to, const xRegisterSSE &from) const;
+    void DQ(const xRegisterSSE &to, const xIndirect64 &from) const;
 };
-
 }
-

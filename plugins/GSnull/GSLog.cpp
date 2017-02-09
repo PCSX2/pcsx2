@@ -63,7 +63,7 @@ void Close()
     }
 }
 
-void Log(char *fmt, ...)
+void Log(const char *fmt, ...)
 {
     va_list list;
 
@@ -75,7 +75,7 @@ void Log(char *fmt, ...)
     va_end(list);
 }
 
-void Message(char *fmt, ...)
+void Message(const char *fmt, ...)
 {
     va_list list;
     char msg[512];

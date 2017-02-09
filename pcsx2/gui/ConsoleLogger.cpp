@@ -158,9 +158,6 @@ void ConsoleLogFrame::ColorArray::SetFont( int fontsize )
 	const wxFont fixed( pxGetFixedFont( fontsize ) );
 	const wxFont fixedB( pxGetFixedFont( fontsize+1, wxFONTWEIGHT_BOLD ) );
 
-	//const wxFont fixed( fontsize, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL );
-	//const wxFont fixedB( fontsize, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD );
-
 	// Standard R, G, B format:
 	for (size_t i = 0; i < Color_StrongBlack; ++i)
 		m_table[i].SetFont(fixed);
@@ -232,6 +229,11 @@ void ConsoleLogFrame::ColorArray::SetFont( const wxFont& font )
 {
 	//for( int i=0; i<ConsoleColors_Count; ++i )
 	//	m_table[i].SetFont( font );
+}
+
+u32 ConsoleLogFrame::ColorArray::GetRGBA( const ConsoleColors color )
+{
+	return m_table[color].GetTextColour().GetRGBA();
 }
 
 enum MenuIDs_t
@@ -1211,3 +1213,19 @@ void Pcsx2App::DisableWindowLogging() const
 	AffinityAssert_AllowFrom_MainUI();
 	Console_SetActiveHandler( (emuLog!=NULL) ? (IConsoleWriter&)ConsoleWriter_File : (IConsoleWriter&)ConsoleWriter_Stdout );
 }
+
+void OSDlog(ConsoleColors color, bool console, const std::string& str)
+{
+	if (GSosdLog)
+		GSosdLog(str.c_str(), wxGetApp().GetProgramLog()->GetRGBA(color));
+
+	if (console)
+		Console.WriteLn(color, str.c_str());
+}
+
+void OSDmonitor(ConsoleColors color, const std::string key, const std::string value) {
+	if(!GSosdMonitor) return;
+
+	GSosdMonitor(wxString(key).utf8_str(), wxString(value).utf8_str(), wxGetApp().GetProgramLog()->GetRGBA(color));
+}
+

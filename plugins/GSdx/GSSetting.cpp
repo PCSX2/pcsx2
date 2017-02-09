@@ -90,6 +90,10 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too.\n\n"
 				"  0500 0500, fixes Persona 3 minimap, helps Haunting Ground.\n"
 				"  0000 1000, fixes Xenosaga hair edges (DX10+ Issue)";
+		case IDC_OSD_LOG:
+			return "Prints log messages from the Function keys onscreen.";
+		case IDC_OSD_MONITOR:
+			return "Continuously prints the FPS and the EE, GS and VU(if the MTVU speedhack is enabled) percentages onscreen.";
 		case IDC_PALTEX:
 			return "When checked 4/8 bits texture will be send to the GPU with a palette. GPU will be in charge of the conversion.\n\n"
 				"When unchecked the CPU will convert directly the texture to 32 bits.\n\n"
@@ -128,7 +132,8 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Warning: it's very costly on the performance.\n\n"
 				"Note: OpenGL HW renderer is able to handle Jak shadows at full speed without this option.";
 		case IDC_UNSCALE_POINT_LINE:
-			return "Increases the width of lines at higher than native resolutions. This ensures that the lines will keep the correct proportions and prevents aliasing. Avoids empty lines on the screen in games such as Ridge Racer V, and clears FMV's obscured by a grid like Silent Hill series and Dirge of Cerberus.";
+			return "Increases the width of lines at higher than native resolutions. This ensures that the lines will keep the correct proportions and prevents aliasing. "
+				"Avoids empty lines on the screen in games such as Ridge Racer V, and clears FMVs obscured by a grid in games like the Silent Hill series and Dirge of Cerberus.";
 #ifdef _WIN32
 		// DX9 only
 		case IDC_FBA:
@@ -136,7 +141,11 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_LOGZ:
 			return "Treat depth as logarithmic instead of linear. Recommended setting is on unless it causes graphical glitches.";
 #endif
-#ifdef __linux__
+		case IDC_OSD_MAX_LOG_EDIT:
+		case IDC_OSD_MAX_LOG:
+			return "Sets the maximum number of log messages on the screen or in the buffer at the same time.\n\n"
+				"The maximum number of messages visible on the screen at the same time also depends on the character size.";
+#ifdef __unix__
 		case IDC_LINEAR_PRESENT:
 			return "Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.";
 #endif
@@ -146,11 +155,11 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_MIPMAP_HW:
 			return	"Control the accuracy level of the mipmapping emulation\n\n"
 				"Off:\nMipmapping emulation is disabled.\n\n"
-				"Basic (Fast):\nPartially emulates mipmapping, performance impact is negligent at most cases.\n\n"
+				"Basic (Fast):\nPartially emulates mipmapping, performance impact is negligible in most cases.\n\n"
 				"Full (Slow):\nCompletely emulates the mipmapping function of the GS, might significantly impact performance.";
 		case IDC_FAST_TC_INV:
 			return "By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise."
-				"\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine game.";
+				"\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine games.";
 		case IDC_LARGE_FB:
 			return "Allocate a large framebuffer to be compliant with GS memory (Prevents FMV flickering).\n"
 				"It increases GPU/memory requirements.";

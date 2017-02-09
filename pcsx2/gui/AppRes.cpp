@@ -63,7 +63,7 @@ const wxImage& LoadImageAny(
 RecentIsoList::RecentIsoList(int firstIdForMenuItems_or_wxID_ANY)
 {
 	Menu = std::unique_ptr<wxMenu>(new wxMenu());
-	Menu->Append( MenuId_IsoBrowse, _("Browse..."), _("Browse for an Iso that is not in your recent history.") );
+	Menu->Append( MenuId_IsoBrowse, _("Browse..."), _("Browse for an ISO that is not in your recent history.") );
 	Manager = std::unique_ptr<RecentIsoManager>(new RecentIsoManager( Menu.get(), firstIdForMenuItems_or_wxID_ANY ));
 }
 

@@ -35,19 +35,27 @@
 /* So obsolete that everyone uses it. */
 
 // Basic functions.
-EXPORT_C_(s32) PADinit(u32 flags);
+EXPORT_C_(s32)
+PADinit(u32 flags);
 // pDisplay normally is passed a handle to the GS plugins window.
-EXPORT_C_(s32) PADopen(void *pDisplay);
-EXPORT_C_(void) PADclose();
-EXPORT_C_(void) PADshutdown();
+EXPORT_C_(s32)
+PADopen(void *pDisplay);
+EXPORT_C_(void)
+PADclose();
+EXPORT_C_(void)
+PADshutdown();
 // PADkeyEvent is called every vsync (return NULL if no event)
-EXPORT_C_(keyEvent*) PADkeyEvent();
-EXPORT_C_(u8) PADstartPoll(u8 pad);
-EXPORT_C_(u8) PADpoll(u8 value);
+EXPORT_C_(keyEvent *)
+PADkeyEvent();
+EXPORT_C_(u8)
+PADstartPoll(u8 pad);
+EXPORT_C_(u8)
+PADpoll(u8 value);
 // returns: 1 if supported pad1
 //			2 if supported pad2
 //			3 if both are supported
-EXPORT_C_(u8) PADquery();
+EXPORT_C_(u8)
+PADquery();
 
 // call to give a hint to the PAD plugin to query for the keyboard state. A
 // good plugin will query the OS for keyboard state ONLY in this function.
@@ -56,25 +64,33 @@ EXPORT_C_(u8) PADquery();
 // the window (and input). Note that PADupdate can be called from a different
 // thread than the other functions, so mutex or other multithreading primitives
 // have to be added to maintain data integrity.
-EXPORT_C_(void) PADupdate(u8 pad);
+EXPORT_C_(void)
+PADupdate(u8 pad);
 
 // Extended functions
-EXPORT_C_(void) PADgsDriverInfo(GSdriverInfo *info);
-EXPORT_C_(s32)  PADfreeze(u8 mode, freezeData *data);
+EXPORT_C_(void)
+PADgsDriverInfo(GSdriverInfo *info);
+EXPORT_C_(s32)
+PADfreeze(u8 mode, freezeData *data);
 
 // Returns 1 if the pad plugin wants a multitap on the specified port.
 // 0 otherwise.
-EXPORT_C_(s32)  PADqueryMtap(u8 port);
+EXPORT_C_(s32)
+PADqueryMtap(u8 port);
 
 // Sets the active pad slot for the specified port.
 // Both numbers are 1-based indices.  Should return 0 if there's no
 // pad on the specified slot.  Even if PADqueryMtap(port) returns 0,
 // should handle this properly for slot != 1, so emulator can allow
 // Multitap to be enabled/disabled elsewhere.
-EXPORT_C_(s32)  PADsetSlot(u8 port, u8 slot);
+EXPORT_C_(s32)
+PADsetSlot(u8 port, u8 slot);
 
-EXPORT_C_(void) PADconfigure();
-EXPORT_C_(void) PADabout();
-EXPORT_C_(s32)  PADtest();
+EXPORT_C_(void)
+PADconfigure();
+EXPORT_C_(void)
+PADabout();
+EXPORT_C_(s32)
+PADtest();
 
 #endif // __PADAPI_H__

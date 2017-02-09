@@ -355,6 +355,7 @@ namespace Panels
 		const wxChar* GetVUcycleSliderMsg( int val );
 		void SetEEcycleSliderMsg();
 		void SetVUcycleSliderMsg();
+		void TrigLayout();
 
 		void OnEnable_Toggled( wxCommandEvent& evt );
 		void Defaults_Click( wxCommandEvent& evt );
@@ -562,7 +563,7 @@ namespace Panels
 		class EnumThread : public Threading::pxThread
 		{
 		public:
-			SafeList<EnumeratedPluginInfo> Results;		// array of plugin results.
+			std::vector<EnumeratedPluginInfo> Results;		// array of plugin results.
 
 		protected:
 			PluginSelectorPanel&	m_master;

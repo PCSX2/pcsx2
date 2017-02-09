@@ -24,86 +24,16 @@
 #include "GSdx.h"
 #include "boost_spsc_queue.hpp"
 
-class IGSThread
+template<class T, int CAPACITY> class GSJobQueue final
 {
-protected:
-	virtual void ThreadProc() = 0;
-};
-
-// let us use std::thread for now, comment out the definition to go back to pthread
-// There are currently some bugs/limitations to std::thread (see various comment)
-// For the moment let's keep pthread but uses new std object (mutex, cond_var)
-//#define _STD_THREAD_
-
-#ifdef _WIN32
-
-class GSThread : public IGSThread
-{
-    DWORD m_ThreadId;
-    HANDLE m_hThread;
-
-	static DWORD WINAPI StaticThreadProc(void* lpParam);
-
-protected:
-	void CreateThread();
-	void CloseThread();
-
-public:
-	GSThread();
-	virtual ~GSThread();
-};
-
-#else
-
-#ifdef _STD_THREAD_
-#include <thread>
-#else
-#include <pthread.h>
-#endif
-
-class GSThread : public IGSThread
-{
-    #ifdef _STD_THREAD_
-    std::thread *t;
-    #else
-    pthread_attr_t m_thread_attr;
-    pthread_t m_thread;
-    #endif
-    static void* StaticThreadProc(void* param);
-
-protected:
-	void CreateThread();
-	void CloseThread();
-
-public:
-	GSThread();
-	virtual ~GSThread();
-};
-
-#endif
-
-template<class T> class IGSJobQueue : public GSThread
-{
-public:
-	IGSJobQueue() {}
-	virtual ~IGSJobQueue() {}
-
-	virtual bool IsEmpty() const = 0;
-	virtual void Push(const T& item) = 0;
-	virtual void Wait() = 0;
-
-	virtual void Process(T& item) = 0;
-	virtual int GetPixels(bool reset) = 0;
-};
-
-template<class T, int CAPACITY> class GSJobQueue : public IGSJobQueue<T>
-{
-protected:
-	std::atomic<int16_t> m_count;
-	std::atomic<bool> m_exit;
+private:
+	std::thread m_thread;
+	std::function<void(T&)> m_func;
+	bool m_exit;
 	ringbuffer_base<T, CAPACITY> m_queue;
 
 	std::mutex m_lock;
+	std::mutex m_wait_lock;
 	std::condition_variable m_empty;
 	std::condition_variable m_notempty;
 
@@ -112,79 +42,74 @@ protected:
 
 		while (true) {
 
-			while (m_count == 0) {
-				if (m_exit.load(memory_order_relaxed)) {
-					m_exit = false;
+			while (m_queue.empty()) {
+				if (m_exit)
 					return;
-				}
+
 				m_notempty.wait(l);
 			}
 
 			l.unlock();
 
-			int16_t consumed = 0;
-			for (int16_t nb = m_count; nb >= 0; nb--) {
-				if (m_queue.consume_one(*this))
-					consumed++;
+			while (m_queue.consume_one(*this))
+				;
+
+			{
+				std::lock_guard<std::mutex> wait_guard(m_wait_lock);
 			}
+			m_empty.notify_one();
 
 			l.lock();
-
-			m_count -= consumed;
-
-			if (m_count <= 0)
-				m_empty.notify_one();
-
 		}
 	}
 
 public:
-	GSJobQueue() :
-		m_count(0),
+	GSJobQueue(std::function<void(T&)> func) :
+		m_func(func),
 		m_exit(false)
 	{
-		this->CreateThread();
+		m_thread = std::thread(&GSJobQueue::ThreadProc, this);
 	}
 
-	virtual ~GSJobQueue() {
-		m_exit = true;
-		do {
-			m_notempty.notify_one();
-		} while (m_exit);
-		this->CloseThread();
+	~GSJobQueue()
+	{
+		{
+			std::lock_guard<std::mutex> l(m_lock);
+			m_exit = true;
+		}
+		m_notempty.notify_one();
+
+		m_thread.join();
 	}
 
-	bool IsEmpty() const {
-		ASSERT(m_count >= 0);
-
-		return m_count == 0;
+	bool IsEmpty()
+	{
+		return m_queue.empty();
 	}
 
 	void Push(const T& item) {
 		while(!m_queue.push(item))
 			std::this_thread::yield();
 
-		std::unique_lock<std::mutex> l(m_lock);
-
-		m_count++;
-
-		l.unlock();
-
+		{
+			std::lock_guard<std::mutex> l(m_lock);
+		}
 		m_notempty.notify_one();
 	}
 
-	void Wait() {
-		if (m_count > 0) {
-			std::unique_lock<std::mutex> l(m_lock);
-			while (m_count > 0) {
-				m_empty.wait(l);
-			}
-		}
+	void Wait()
+	{
+		if (IsEmpty())
+			return;
 
-		ASSERT(m_count == 0);
+		std::unique_lock<std::mutex> l(m_wait_lock);
+		while (!IsEmpty())
+			m_empty.wait(l);
+
+		assert(IsEmpty());
 	}
 
 	void operator() (T& item) {
-		this->Process(item);
+		m_func(item);
 	}
 };

@@ -65,8 +65,8 @@ GSState::GSState()
 	m_dump_root = "";
 #if defined(__unix__)
 	if (s_dump) {
-		GSmkdir("/tmp/GS_HW_dump");
-		GSmkdir("/tmp/GS_SW_dump");
+		GSmkdir(root_hw.c_str());
+		GSmkdir(root_sw.c_str());
 	}
 #endif
 
@@ -407,7 +407,25 @@ GSVideoMode GSState::GetVideoMode()
 
 GSVector4i GSState::GetDisplayRect(int i)
 {
-	if(i < 0) i = IsEnabled(1) ? 1 : 0;
+	if (!IsEnabled(0) && !IsEnabled(1))
+		return GSVector4i(0);
+
+	// If no specific context is requested then pass the merged rectangle as return value
+	if (i == -1)
+	{
+		if (m_regs->PMODE.EN1 & m_regs->PMODE.EN2)
+		{
+			GSVector4i r[2] = { GetDisplayRect(0), GetDisplayRect(1) };
+			GSVector4i r_intersect = r[0].rintersect(r[1]);
+			GSVector4i r_union = r[0].runion_ordered(r[1]);
+
+			// If the conditions for passing the merged rectangle is unsatisfied, then
+			// pass the rectangle with the bigger size.
+			bool can_be_merged = !r_intersect.width() || !r_intersect.height() || r_intersect.xyxy().eq(r_union.xyxy());
+			return (can_be_merged) ? r_union : r[r[1].rarea() > r[0].rarea()];
+		}
+		i = m_regs->PMODE.EN2;
+	}
 
 	GSVideoMode videomode = GetVideoMode();
 	GSVector2i magnification (m_regs->DISP[i].DISPLAY.MAGH + 1, m_regs->DISP[i].DISPLAY.MAGV + 1);
@@ -423,7 +441,7 @@ GSVector4i GSState::GetDisplayRect(int i)
 	//  Limit games to standard NTSC resolutions. games with 512X512 (PAL resolution) on NTSC video mode produces black border on the bottom.
 	//  512 X 448 is the resolution generally used by NTSC, saturating the height value seems to get rid of the black borders.
 	//  Though it's quite a bad hack as it affects binaries which are patched to run on a non-native video mode.
-	if (videomode == GSVideoMode::NTSC && height > 448 && width < 640 && m_NTSC_Saturation)
+	if (m_NTSC_Saturation && isinterlaced() && videomode == GSVideoMode::NTSC && height > 448 && width < 640)
 		height = 448;
 
 	// Set up the display rectangle based on the values obtained from DISPLAY registers
@@ -433,16 +451,11 @@ GSVector4i GSState::GetDisplayRect(int i)
 	rectangle.right = rectangle.left + width;
 	rectangle.bottom = rectangle.top + height;
 
-	// Useful for debugging games:
-	//printf("DW: %d , DH: %d , left: %d , right: %d , top: %d , down: %d , MAGH: %d , MAGV: %d\n", m_regs->DISP[i].DISPLAY.DW, m_regs->DISP[i].DISPLAY.DH, r.left, r.right, r.top, r.bottom , m_regs->DISP[i].DISPLAY.MAGH,m_regs->DISP[i].DISPLAY.MAGV);
-
 	return rectangle;
 }
 
 GSVector4i GSState::GetFrameRect(int i)
 {
-	if (i < 0) i = IsEnabled(1) ? 1 : 0;
-
 	GSVector4i rectangle = GetDisplayRect(i);
 
 	int w = rectangle.width();
@@ -456,26 +469,38 @@ GSVector4i GSState::GetFrameRect(int i)
 	rectangle.right = rectangle.left + w;
 	rectangle.bottom = rectangle.top + h;
 
-	/*static GSVector4i old_r = (GSVector4i) 0;
-	if ((old_r.left != r.left) || (old_r.right != r.right) || (old_r.top != r.top) || (old_r.right != r.right)){
-	printf("w %d  h %d  left %d  top %d  right %d  bottom %d\n",w,h,r.left,r.top,r.right,r.bottom);
-	}
-	old_r = r;*/
+#ifdef ENABLE_PCRTC_DEBUG
+	static GSVector4i old_r[2] = { GSVector4i(0), GSVector4i(0) };
+	if (!old_r[i].eq(rectangle))
+		printf("Frame rectangle [%d] update!\nwidth: %d  height: %d  left: %d  top: %d  right: %d  bottom: %d\n",
+			i,w,h, rectangle.left, rectangle.top, rectangle.right, rectangle.bottom);
+	old_r[i] = rectangle;
+#endif
 
 	return rectangle;
+}
+
+int GSState::GetFramebufferHeight()
+{
+	const GSVector4i output[2] = { GetFrameRect(0), GetFrameRect(1) };
+	// Framebuffer height is 11 bits max according to GS user manual
+	const int height_limit = (1 << 11);
+	int max_height = std::max(output[0].height(), output[1].height());
+	int frame_memory_height = std::max(max_height, output[0].runion_ordered(output[1]).height() % height_limit);
+
+	if (frame_memory_height > 1024)
+		GL_PERF("Massive framebuffer height detected! (height:%d)", frame_memory_height);
+
+	return frame_memory_height;
 }
 
 bool GSState::IsEnabled(int i)
 {
 	ASSERT(i >= 0 && i < 2);
 
-	if(i == 0 && m_regs->PMODE.EN1)
+	if ((i == 0 && m_regs->PMODE.EN1) || (i == 1 && m_regs->PMODE.EN2))
 	{
-		return m_regs->DISP[0].DISPLAY.DW || m_regs->DISP[0].DISPLAY.DH;
-	}
-	else if(i == 1 && m_regs->PMODE.EN2)
-	{
-		return m_regs->DISP[1].DISPLAY.DW || m_regs->DISP[1].DISPLAY.DH;
+		return m_regs->DISP[i].DISPLAY.DW && m_regs->DISP[i].DISPLAY.DH;
 	}
 
 	return false;

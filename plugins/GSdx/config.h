@@ -22,7 +22,7 @@
 #pragma once
 
 //#define ENABLE_VTUNE
-
+//#define ENABLE_PCRTC_DEBUG
 #define ENABLE_JIT_RASTERIZER
 
 #define EXTERNAL_SHADER_LOADING 1

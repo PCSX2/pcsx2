@@ -23,6 +23,8 @@
 //------------------------------------------------------------------
 // Micro VU - Main Functions
 //------------------------------------------------------------------
+static u8 __pagealigned vu0_RecDispatchers[mVUdispCacheSize];
+static u8 __pagealigned vu1_RecDispatchers[mVUdispCacheSize];
 
 static __fi void mVUthrowHardwareDeficiency(const wxChar* extFail, int vuIndex) {
 	throw Exception::HardwareDeficiency()
@@ -63,9 +65,8 @@ void mVUinit(microVU& mVU, uint vuIndex) {
 
 	mVUreserveCache(mVU);
 
-	mVU.dispCache = SysMmapEx(0, mVUdispCacheSize, 0,(mVU.index ?  "Micro VU1 Dispatcher" :  "Micro VU0 Dispatcher"));
-	if (!mVU.dispCache) throw Exception::OutOfMemory (mVU.index ? L"Micro VU1 Dispatcher" : L"Micro VU0 Dispatcher");
-	memset(mVU.dispCache, 0xcc, mVUdispCacheSize);
+	if (vuIndex) mVU.dispCache = vu1_RecDispatchers;
+	else mVU.dispCache = vu0_RecDispatchers;
 
 	mVU.regAlloc.reset(new microRegAlloc(mVU.index));
 }
@@ -76,9 +77,9 @@ void mVUreset(microVU& mVU, bool resetReserve) {
 	// Restore reserve to uncommitted state
 	if (resetReserve) mVU.cache_reserve->Reset();
 
-	if (mVU.index) Perf::any.map((uptr)&mVU.dispCache, mVUdispCacheSize, "mVU1 Dispatcher");
-	else           Perf::any.map((uptr)&mVU.dispCache, mVUdispCacheSize, "mVU0 Dispatcher");
-	
+	HostSys::MemProtect(mVU.dispCache, mVUdispCacheSize, PageAccess_ReadWrite());
+	memset(mVU.dispCache, 0xcc, mVUdispCacheSize);
+
 	x86SetPtr(mVU.dispCache);
 	mVUdispatcherAB(mVU);
 	mVUdispatcherCD(mVU);
@@ -116,13 +117,17 @@ void mVUreset(microVU& mVU, bool resetReserve) {
 		mVU.prog.quick[i].block = NULL;
 		mVU.prog.quick[i].prog  = NULL;
 	}
+
+	HostSys::MemProtect(mVU.dispCache, mVUdispCacheSize, PageAccess_ExecOnly());
+
+	if (mVU.index) Perf::any.map((uptr)&mVU.dispCache, mVUdispCacheSize, "mVU1 Dispatcher");
+	else           Perf::any.map((uptr)&mVU.dispCache, mVUdispCacheSize, "mVU0 Dispatcher");
 }
 
 // Free Allocated Resources
 void mVUclose(microVU& mVU) {
 
 	safe_delete  (mVU.cache_reserve);
-	SafeSysMunmap(mVU.dispCache, mVUdispCacheSize);
 
 	// Delete Programs and Block Managers
 	for (u32 i = 0; i < (mVU.progSize / 2); i++) {

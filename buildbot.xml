@@ -53,7 +53,7 @@
     </PropertyGroup>
     <ItemGroup>
       <ConfigCPU Include="Debug"/>
-      <!--ConfigCPU Include="Debug AVX;Debug AVX2;Debug SSE4;Debug SSSE3"/-->
+      <!--ConfigCPU Include="Debug AVX2;Debug SSE4"/-->
     </ItemGroup>
   </Target>
   <Target Name="DevelAll">
@@ -62,7 +62,7 @@
     </PropertyGroup>
     <ItemGroup>
       <ConfigCPU Include="Devel"/>
-      <!--ConfigCPU Include="Devel AVX;Devel AVX2;Devel SSE4;Devel SSSE3"/-->
+      <!--ConfigCPU Include="Devel AVX2;Devel SSE4"/-->
     </ItemGroup>
   </Target>
   <Target Name="ReleaseAll">
@@ -70,7 +70,7 @@
       <BaseConfiguration>Release</BaseConfiguration>
     </PropertyGroup>
     <ItemGroup>
-      <ConfigCPU Include="Release AVX;Release AVX2;Release SSE4;Release SSSE3"/>
+      <ConfigCPU Include="Release AVX2;Release SSE4"/>
     </ItemGroup>
   </Target>
   <Target Name="AppVeyor">

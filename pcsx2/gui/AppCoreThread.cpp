@@ -191,12 +191,12 @@ void Pcsx2App::SysApplySettings()
 	CoreThread.ApplySettings( g_Conf->EmuOptions );
 
 	CDVD_SourceType cdvdsrc( g_Conf->CdvdSource );
-	if( cdvdsrc != CDVDsys_GetSourceType() || (cdvdsrc==CDVDsrc_Iso && (CDVDsys_GetFile(cdvdsrc) != g_Conf->CurrentIso)) )
+	if( cdvdsrc != CDVDsys_GetSourceType() || (cdvdsrc == CDVD_SourceType::Iso && (CDVDsys_GetFile(cdvdsrc) != g_Conf->CurrentIso)) )
 	{
 		CoreThread.ResetCdvd();
 	}
 
-	CDVDsys_SetFile( CDVDsrc_Iso, g_Conf->CurrentIso );
+	CDVDsys_SetFile(CDVD_SourceType::Iso, g_Conf->CurrentIso );
 }
 
 void AppCoreThread::OnResumeReady()
@@ -352,6 +352,12 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 	}
 	else if( !g_Conf->EnableGameFixes )
 		fixup.Gamefixes.DisableAll();
+
+	if( overrides.ProfilingMode )
+	{
+		fixup.GS.FrameLimitEnable = false;
+		fixup.GS.VsyncEnable = false;
+	}
 
 	wxString gameCRC;
 	wxString gameSerial;

@@ -331,9 +331,11 @@ namespace ioman {
 
 	bool is_host(const std::string path)
 	{
-		if ((!g_GameStarted || EmuConfig.HostFs) && 0 == path.compare(0, 4, "host") && path[path.find_first_not_of("0123456789", 4)] == ':')
-			return true;
-		return false;
+		auto not_number_pos = path.find_first_not_of("0123456789", 4);
+		if (not_number_pos == std::string::npos)
+			return false;
+
+		return ((!g_GameStarted || EmuConfig.HostFs) && 0 == path.compare(0, 4, "host") && path[not_number_pos] == ':');
 	}
 
 	int open_HLE()

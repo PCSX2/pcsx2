@@ -139,42 +139,31 @@ bool GSRenderer::Merge(int field)
 		m_regs->DISP[0].DISPFB.FBW == m_regs->DISP[1].DISPFB.FBW &&
 		m_regs->DISP[0].DISPFB.PSM == m_regs->DISP[1].DISPFB.PSM;
 
-	// bool blurdetected = false;
-
 	if(samesrc /*&& m_regs->PMODE.SLBG == 0 && m_regs->PMODE.MMOD == 1 && m_regs->PMODE.ALP == 0x80*/)
 	{
-		if(fr[0].eq(fr[1] + GSVector4i(0, -1, 0, 0)) && dr[0].eq(dr[1] + GSVector4i(0, 0, 0, 1))
-		|| fr[1].eq(fr[0] + GSVector4i(0, -1, 0, 0)) && dr[1].eq(dr[0] + GSVector4i(0, 0, 0, 1)))
-		{
-			// persona 4:
-			//
-			// fr[0] = 0 0 640 448
-			// fr[1] = 0 1 640 448
-			// dr[0] = 159 50 779 498
-			// dr[1] = 159 50 779 497
-			//
-			// second image shifted up by 1 pixel and blended over itself
-			//
-			// god of war:
-			//
-			// fr[0] = 0 1 512 448
-			// fr[1] = 0 0 512 448
-			// dr[0] = 127 50 639 497
-			// dr[1] = 127 50 639 498
-			//
-			// same just the first image shifted
+		// persona 4:
+		//
+		// fr[0] = 0 0 640 448
+		// fr[1] = 0 1 640 448
+		// dr[0] = 159 50 779 498
+		// dr[1] = 159 50 779 497
+		//
+		// second image shifted up by 1 pixel and blended over itself
+		//
+		// god of war:
+		//
+		// fr[0] = 0 1 512 448
+		// fr[1] = 0 0 512 448
+		// dr[0] = 127 50 639 497
+		// dr[1] = 127 50 639 498
+		//
+		// same just the first image shifted
+		//
+		// These kinds of cases are now fixed by the more generic frame_diff code below, as the code here was too specific and has become obsolete.
+		// NOTE: Persona 4 and God Of War are not rare exceptions, many games have the same(or very similar) offsets.
 
-			int top = min(fr[0].top, fr[1].top);
-			int bottom = max(dr[0].bottom, dr[1].bottom);
-
-			fr[0].top = top;
-			fr[1].top = top;
-			dr[0].bottom = bottom;
-			dr[1].bottom = bottom;
-
-			// blurdetected = true;
-		}
-		else if(dr[0].eq(dr[1]) && (fr[0].eq(fr[1] + GSVector4i(0, 1, 0, 1)) || fr[1].eq(fr[0] + GSVector4i(0, 1, 0, 1))))
+		int topDiff = fr[0].top - fr[1].top;
+		if (dr[0].eq(dr[1]) && (fr[0].eq(fr[1] + GSVector4i(0, topDiff, 0, topDiff)) || fr[1].eq(fr[0] + GSVector4i(0, topDiff, 0, topDiff))))
 		{
 			// dq5:
 			//
@@ -188,10 +177,7 @@ bool GSRenderer::Merge(int field)
 
 			fr[0].top = fr[1].top = top;
 			fr[0].bottom = fr[1].bottom = bottom;
-
-			// blurdetected = true;
 		}
-		//printf("samesrc = %d blurdetected = %d\n",samesrc,blurdetected);
 	}
 
 	GSVector2i fs(0, 0);
@@ -242,12 +228,12 @@ bool GSRenderer::Merge(int field)
 			off.x = tex[i]->GetScale().x * display_diff.x;
 		}
 		// If the DX offset is too small then consider the status of frame memory offsets, prevents blurring on Tenchu: Fatal Shadows, Worms 3D
-		else if(display_diff.x || frame_diff.x)
+		else if(display_diff.x != frame_diff.x)
 		{
 			off.x = tex[i]->GetScale().x * frame_diff.x;
 		}
 
-		if(display_diff.y >= 4) // Shouldn't this be 2?
+		if(display_diff.y >= 4) // Shouldn't this be >= 2?
 		{
 			off.y = tex[i]->GetScale().y * display_diff.y;
 
@@ -256,7 +242,7 @@ bool GSRenderer::Merge(int field)
 				off.y /= 2;
 			}
 		}
-		else if(display_diff.y || frame_diff.y)
+		else if(display_diff.y != frame_diff.y)
 		{
 			off.y = tex[i]->GetScale().y * frame_diff.y;
 		}
@@ -465,6 +451,23 @@ void GSRenderer::VSync(int field)
 
 	// present
 
+#if 0
+	// This will scale the OSD to the PS2's output resolution.
+	// Will be affected by 2x, 4x, etc scaling.
+	m_dev->m_osd.m_real_size = m_real_size
+#elif 0
+	// This will scale the OSD to the window's size.
+	// Will maintiain the font size no matter what size the window is.
+	GSVector4i window_size = m_wnd->GetClientRect();
+	m_dev->m_osd.m_real_size.x = window_size.v[2];
+	m_dev->m_osd.m_real_size.y = window_size.v[3];
+#else
+	// This will scale the OSD to the native resolution.
+	// Will size font relative to the window's size.
+  // TODO this should probably be done with native calls
+	m_dev->m_osd.m_real_size.x = 1024;
+	m_dev->m_osd.m_real_size.y = 768;
+#endif
 	m_dev->Present(m_wnd->GetClientRect().fit(m_aspectratio), m_shader);
 
 	// snapshot
@@ -553,13 +556,27 @@ bool GSRenderer::MakeSnapshot(const string& path)
 {
 	if(m_snapshot.empty())
 	{
-		time_t t = time(NULL);
+		time_t cur_time = time(nullptr);
+		static time_t prev_snap;
+		// The variable 'n' is used for labelling the screenshots when multiple screenshots are taken in
+		// a single second, we'll start using this variable for naming when a second screenshot request is detected
+		// at the same time as the first one. Hence, we're initially setting this counter to 2 to imply that
+		// the captured image is the 2nd image captured at this specific time.
+		static int n = 2;
+		char local_time[16];
 
-		char buff[16];
-
-		if(strftime(buff, sizeof(buff), "%Y%m%d%H%M%S", localtime(&t)))
+		if (strftime(local_time, sizeof(local_time), "%Y%m%d%H%M%S", localtime(&cur_time)))
 		{
-			m_snapshot = format("%s_%s", path.c_str(), buff);
+			if (cur_time == prev_snap)
+			{
+				m_snapshot = format("%s_%s_(%d)", path.c_str(), local_time, n++);
+			}
+			else
+			{
+				n = 2;
+				m_snapshot = format("%s_%s", path.c_str(), local_time);
+			}
+			prev_snap = cur_time;
 		}
 	}
 

@@ -24,6 +24,8 @@
 #include "ZipTools/ThreadedZipTools.h"
 #include "Utilities/pxStreams.h"
 
+#include "ConsoleLogger.h"
+
 #include <wx/wfstream.h>
 #include <memory>
 
@@ -286,7 +288,7 @@ static void CheckVersion( pxInputStream& thr )
 	if( savever > g_SaveVersion )
 		throw Exception::SaveStateLoadError( thr.GetStreamName() )
 			.SetDiagMsg(pxsFmt( L"Savestate uses an unsupported or unknown savestate version.\n(PCSX2 ver=%x, state ver=%x)", g_SaveVersion, savever ))
-			.SetUserMsg(_("Cannot load this savestate.  The state is an unsupported version."));
+			.SetUserMsg(_("Cannot load this savestate. The state is an unsupported version."));
 
 	// check for a "minor" version incompatibility; which happens if the savestate being loaded is a newer version
 	// than the emulator recognizes.  99% chance that trying to load it will just corrupt emulation or crash.
@@ -672,7 +674,7 @@ void StateCopy_SaveToSlot( uint num )
 		wxRenameFile( file, copy );
 	}
 
-	Console.WriteLn( Color_StrongGreen, "Saving savestate to slot %d...", num );
+	OSDlog( Color_StrongGreen, true, "Saving savestate to slot %d...", num );
 	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", WX_STR(file) );
 
 	StateCopy_SaveToFile( file );
@@ -684,11 +686,11 @@ void StateCopy_LoadFromSlot( uint slot, bool isFromBackup )
 
 	if( !wxFileExists( file ) )
 	{
-		Console.Warning( L"Savestate slot %d%s is empty.", slot, isFromBackup?L" (backup)":L"" );
+		OSDlog(Color_StrongGreen, true, "Savestate slot %d%s is empty.", slot, isFromBackup ? " (backup)" : "");
 		return;
 	}
 
-	Console.WriteLn( Color_StrongGreen, L"Loading savestate from slot %d...%s", slot, WX_STR(wxString( isFromBackup?L" (backup)":L"" )) );
+	OSDlog( Color_StrongGreen, true, "Loading savestate from slot %d...%s", slot, isFromBackup?" (backup)":"" );
 	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", WX_STR(file) );
 
 	StateCopy_LoadFromFile( file );

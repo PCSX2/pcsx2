@@ -69,6 +69,8 @@ union GSScanlineSelector
 		uint32 mmin:2; // 53
 		uint32 notest:1; // 54 (no ztest, no atest, no date, no scissor test, and horizontally aligned to 4 pixels)
 		// TODO: 1D texture flag? could save 2 texture reads and 4 lerps with bilinear, and also the texture coordinate clamp/wrap code in one direction
+
+		uint32 breakpoint:1; // Insert a trap to stop the program, helpful to stop debugger on a program
 	};
 
 	struct
@@ -76,6 +78,7 @@ union GSScanlineSelector
 		uint32 _pad1:22;
 		uint32 ababcd:8;
 		uint32 _pad2:2;
+
 		uint32 fb:2;
 		uint32 _pad3:1;
 		uint32 zb:2;
@@ -88,6 +91,9 @@ union GSScanlineSelector
 	};
 
 	uint64 key;
+
+	GSScanlineSelector() = default;
+	GSScanlineSelector(uint64 k) : key(k) {}
 
 	operator uint32() const {return lo;}
 	operator uint64() const {return key;}
@@ -102,6 +108,18 @@ union GSScanlineSelector
 			&& atst <= 1
 			&& date == 0
 			&& fge == 0;
+	}
+
+	void Print() const
+	{
+		fprintf(stderr, "fpsm:%d zpsm:%d ztst:%d ztest:%d atst:%d afail:%d iip:%d rfb:%d fb:%d zb:%d zw:%d "
+				"tfx:%d tcc:%d fst:%d ltf:%d tlu:%d wms:%d wmt:%d mmin:%d lcm:%d tw:%d "
+				"fba:%d cclamp:%d date:%d datm:%d "
+				"prim:%d abe:%d %d%d%d%d fge:%d dthe:%d notest:%d\n",
+				fpsm, zpsm, ztst, ztest, atst, afail, iip, rfb, fb, zb, zwrite,
+				tfx, tcc, fst, ltf, tlu, wms, wmt, mmin, lcm, tw,
+				fba, colclamp, date, datm,
+				prim, abe, aba, abb, abc, abd , fge, dthe, notest);
 	}
 };
 
@@ -161,7 +179,7 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 
 	// these should be stored on stack as normal local variables (no free regs to use, esp cannot be saved to anywhere, and we need an aligned stack)
 
-	struct 
+	struct
 	{
 		GSVector8 z, zo;
 		GSVector8i f;
@@ -178,7 +196,7 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 		GSVector8i uv_minmax[2];
 		GSVector8i trb, tga;
 		GSVector8i test;
-	} temp; 
+	} temp;
 
 	#else
 
@@ -189,7 +207,7 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 
 	// these should be stored on stack as normal local variables (no free regs to use, esp cannot be saved to anywhere, and we need an aligned stack)
 
-	struct 
+	struct
 	{
 		GSVector4 z, zo;
 		GSVector4i f;
@@ -206,7 +224,7 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 		GSVector4i uv_minmax[2];
 		GSVector4i trb, tga;
 		GSVector4i test;
-	} temp; 
+	} temp;
 
 	#endif
 
@@ -214,3 +232,101 @@ struct alignas(32) GSScanlineLocalData // per prim variables, each thread has it
 
 	const GSScanlineGlobalData* gd;
 };
+
+// Constant shared by all threads (to reduce cache miss)
+//
+// Note: Avoid GSVector* to support all ISA at once
+//
+// WARNING: Don't use static storage. Static variables are relocated to random
+// location (above 2GB). Small allocation on the heap could be below 2GB, this way we can use
+// absolute addressing. Otherwise we need to store a base address in a register.
+struct GSScanlineConstantData : public GSAlignedClass<32>
+{
+	alignas(32) uint8 m_test_256b[16][8];
+	alignas(32) float m_shift_256b[9][8];
+	alignas(32) float m_log2_coef_256b[4][8];
+
+	alignas(16) uint32 m_test_128b[8][4];
+	alignas(16) float m_shift_128b[5][4];
+	alignas(16) float m_log2_coef_128b[4][4];
+
+	GSScanlineConstantData() {}
+
+	// GCC will be clever enough to stick some AVX instruction here
+	// So it must be defered to post global constructor
+	void Init()
+	{
+		uint8 I_hate_vs2013_m_test_256b[16][8] = {
+			{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00},
+			{0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00},
+			{0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00},
+			{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00},
+			{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00},
+			{0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+			{0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+			{0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff},
+			{0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff},
+			{0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff},
+			{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff},
+			{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff},
+			{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+		};
+
+		uint32 I_hate_vs2013_m_test_128b[8][4] = {
+			{ 0x00000000, 0x00000000, 0x00000000, 0x00000000},
+			{ 0xffffffff, 0x00000000, 0x00000000, 0x00000000},
+			{ 0xffffffff, 0xffffffff, 0x00000000, 0x00000000},
+			{ 0xffffffff, 0xffffffff, 0xffffffff, 0x00000000},
+			{ 0x00000000, 0xffffffff, 0xffffffff, 0xffffffff},
+			{ 0x00000000, 0x00000000, 0xffffffff, 0xffffffff},
+			{ 0x00000000, 0x00000000, 0x00000000, 0xffffffff},
+			{ 0x00000000, 0x00000000, 0x00000000, 0x00000000}
+		};
+
+		float I_hate_vs2013_m_shift_256b[9][8] = {
+			{ 8.0f  , 8.0f  , 8.0f  , 8.0f  , 8.0f  , 8.0f  , 8.0f  , 8.0f},
+			{ 0.0f  , 1.0f  , 2.0f  , 3.0f  , 4.0f  , 5.0f  , 6.0f  , 7.0f},
+			{ -1.0f , 0.0f  , 1.0f  , 2.0f  , 3.0f  , 4.0f  , 5.0f  , 6.0f},
+			{ -2.0f , -1.0f , 0.0f  , 1.0f  , 2.0f  , 3.0f  , 4.0f  , 5.0f},
+			{ -3.0f , -2.0f , -1.0f , 0.0f  , 1.0f  , 2.0f  , 3.0f  , 4.0f},
+			{ -4.0f , -3.0f , -2.0f , -1.0f , 0.0f  , 1.0f  , 2.0f  , 3.0f},
+			{ -5.0f , -4.0f , -3.0f , -2.0f , -1.0f , 0.0f  , 1.0f  , 2.0f},
+			{ -6.0f , -5.0f , -4.0f , -3.0f , -2.0f , -1.0f , 0.0f  , 1.0f},
+			{ -7.0f , -6.0f , -5.0f , -4.0f , -3.0f , -2.0f , -1.0f , 0.0f}
+		};
+
+		float I_hate_vs2013_m_shift_128b[5][4] = {
+			{ 4.0f  , 4.0f  , 4.0f  , 4.0f},
+			{ 0.0f  , 1.0f  , 2.0f  , 3.0f},
+			{ -1.0f , 0.0f  , 1.0f  , 2.0f},
+			{ -2.0f , -1.0f , 0.0f  , 1.0f},
+			{ -3.0f , -2.0f , -1.0f , 0.0f}
+		};
+
+		memcpy(m_test_256b, I_hate_vs2013_m_test_256b, sizeof(I_hate_vs2013_m_test_256b));
+		memcpy(m_test_128b, I_hate_vs2013_m_test_128b, sizeof(I_hate_vs2013_m_test_128b));
+		memcpy(m_shift_256b, I_hate_vs2013_m_shift_256b, sizeof(I_hate_vs2013_m_shift_256b));
+		memcpy(m_shift_128b, I_hate_vs2013_m_shift_128b, sizeof(I_hate_vs2013_m_shift_128b));
+
+		float log2_coef[] = {
+			0.204446009836232697516f,
+			-1.04913055217340124191f,
+			2.28330284476918490682f,
+			1.0f
+		};
+
+		for (size_t n = 0; n < countof(log2_coef); ++n) {
+			for (size_t i = 0; i < 4; ++i) {
+				m_log2_coef_128b[n][i] = log2_coef[n];
+				m_log2_coef_256b[n][i] = log2_coef[n];
+				m_log2_coef_256b[n][i+4] = log2_coef[n];
+			}
+		}
+
+	}
+};
+
+extern std::unique_ptr<GSScanlineConstantData> g_const;

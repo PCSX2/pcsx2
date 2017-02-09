@@ -23,6 +23,9 @@
 #include "GSDrawScanline.h"
 #include "GSTextureCacheSW.h"
 
+// Lack of a better home
+std::unique_ptr<GSScanlineConstantData> g_const(new GSScanlineConstantData());
+
 GSDrawScanline::GSDrawScanline()
 	: m_sp_map("GSSetupPrim", &m_local)
 	, m_ds_map("GSDrawScanline", &m_local)
@@ -114,7 +117,7 @@ void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const uint32* index, co
 
 	#if _M_SSE >= 0x501
 
-	const GSVector8* shift = GSSetupPrimCodeGenerator::m_shift;
+	const GSVector8* shift = (GSVector8*)g_const->m_shift_256b;
 
 	if(has_z || has_f)
 	{
@@ -268,7 +271,7 @@ void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const uint32* index, co
 
 	#else
 
-	const GSVector4* shift = GSSetupPrimCodeGenerator::m_shift;
+	const GSVector4* shift = (GSVector4*)g_const->m_shift_128b;
 
 	if(has_z || has_f)
 	{
@@ -438,7 +441,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 		skip = left & 7;
 		steps = pixels + skip - 8;
 		left -= skip;
-		test = GSVector8i::i8to32c(GSDrawScanlineCodeGenerator::m_test[skip]) | GSVector8i::i8to32c(GSDrawScanlineCodeGenerator::m_test[15 + (steps & (steps >> 31))]);
+		test = GSVector8i::i8to32c(g_const->m_test_256b[skip]) | GSVector8i::i8to32c(g_const->m_test_256b[15 + (steps & (steps >> 31))]);
 	}
 	else
 	{
@@ -1529,12 +1532,13 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 
 		if(!sel.notest)
 		{
-			test = GSVector8i::i8to32c(GSDrawScanlineCodeGenerator::m_test[15 + (steps & (steps >> 31))]);
+			test = GSVector8i::i8to32c(g_const->m_test_256b[15 + (steps & (steps >> 31))]);
 		}
 	}
 
 	#else
 
+	const GSVector4i* const_test = (GSVector4i*)g_const->m_test_128b;
 	GSVector4i test;
 	GSVector4 zo;
 	GSVector4i f;
@@ -1552,7 +1556,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 		skip = left & 3;
 		steps = pixels + skip - 4;
 		left -= skip;
-		test = GSDrawScanlineCodeGenerator::m_test[skip] | GSDrawScanlineCodeGenerator::m_test[7 + (steps & (steps >> 31))];
+		test = const_test[skip] | const_test[7 + (steps & (steps >> 31))];
 	}
 	else
 	{
@@ -2622,7 +2626,7 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 
 		if(!sel.notest)
 		{
-			test = GSDrawScanlineCodeGenerator::m_test[7 + (steps & (steps >> 31))];
+			test = const_test[7 + (steps & (steps >> 31))];
 		}
 	}
 

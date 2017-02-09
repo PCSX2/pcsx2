@@ -45,7 +45,7 @@ GSDevice::GSDevice()
 
 GSDevice::~GSDevice()
 {
-	for_each(m_pool.begin(), m_pool.end(), delete_object());
+	for(auto &t : m_pool) delete t;
 
 	delete m_backbuffer;
 	delete m_merge;
@@ -66,7 +66,7 @@ bool GSDevice::Create(GSWnd* wnd)
 
 bool GSDevice::Reset(int w, int h)
 {
-	for_each(m_pool.begin(), m_pool.end(), delete_object());
+	for(auto &t : m_pool) delete t;
 
 	m_pool.clear();
 
@@ -120,6 +120,7 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 			ShaderConvert_COMPLEX_FILTER}; // FIXME
 
 		Present(m_current, m_backbuffer, GSVector4(r), s_shader[shader]);
+		RenderOsd(m_backbuffer);
 	}
 
 	Flip();

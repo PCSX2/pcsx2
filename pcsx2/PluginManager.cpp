@@ -27,6 +27,7 @@
 #include "Utilities/pxStreams.h"
 
 #include "svnrev.h"
+#include "ConsoleLogger.h"
 
 SysPluginBindings SysPlugins;
 
@@ -155,6 +156,8 @@ static s32  CALLBACK fallback_test() { return 0; }
 
 #ifndef BUILTIN_GS_PLUGIN
 _GSvsync           GSvsync;
+_GSosdLog          GSosdLog;
+_GSosdMonitor      GSosdMonitor;
 _GSopen            GSopen;
 _GSopen2           GSopen2;
 _GSgifTransfer     GSgifTransfer;
@@ -422,6 +425,8 @@ static const LegacyApi_ReqMethod s_MethMessReq_GS[] =
 
 static const LegacyApi_OptMethod s_MethMessOpt_GS[] =
 {
+	{	"GSosdLog",			(vMeth**)&GSosdLog			},
+	{	"GSosdMonitor",		(vMeth**)&GSosdMonitor		},
 	{	"GSopen2",			(vMeth**)&GSopen2			},
 	{	"GSreset",			(vMeth**)&GSreset			},
 	{	"GSsetupRecording",	(vMeth**)&GSsetupRecording	},
@@ -838,7 +843,7 @@ static char* PS2E_CALLBACK pcsx2_GetStringAlloc( const char* name, void* (PS2E_C
 
 static void PS2E_CALLBACK pcsx2_OSD_WriteLn( int icon, const char* msg )
 {
-	return;		// not implemented...
+	OSDlog( Color_StrongYellow, false, msg );
 }
 
 // ---------------------------------------------------------------------------------

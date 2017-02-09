@@ -19,6 +19,8 @@
 #include <wx/dir.h>
 #include <wx/stopwatch.h>
 
+#include <chrono>
+
 // IMPORTANT!  If this gets a macro redefinition error it means PluginCallbacks.h is included
 // in a global-scope header, and that's a BAD THING.  Include it only into modules that need
 // it, because some need to be able to alter its behavior using defines.  Like this:
@@ -33,6 +35,8 @@ struct Component_FileMcd;
 #include "AppConfig.h"
 
 #include "svnrev.h"
+
+#include "ConsoleLogger.h"
 
 #include <wx/ffile.h>
 #include <map>
@@ -359,7 +363,23 @@ s32 FileMemoryCard::Save( uint slot, const u8 *src, u32 adr, int size )
 	}
 
 	if( !Seek(mcfp, adr) ) return 0;
-	return mcfp.Write( m_currentdata.GetPtr(), size ) != 0;
+
+	int status = mcfp.Write( m_currentdata.GetPtr(), size );
+
+	if( status ) {
+		static auto last = std::chrono::time_point<std::chrono::system_clock>();
+
+		std::chrono::duration<float> elapsed = std::chrono::system_clock::now() - last;
+		if(elapsed > std::chrono::seconds(5)) {
+			wxString name, ext;
+			wxFileName::SplitPath(m_file[slot].GetName(), NULL, NULL, &name, &ext);
+			OSDlog( Color_StrongYellow, false, "Memory Card %s written.", (const char *)(name + "." + ext).c_str() );
+			last = std::chrono::system_clock::now();
+		}
+		return 1;
+	}
+
+	return 0;
 }
 
 s32 FileMemoryCard::EraseBlock( uint slot, u32 adr )

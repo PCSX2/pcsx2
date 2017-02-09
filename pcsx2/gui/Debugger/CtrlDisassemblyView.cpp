@@ -472,18 +472,13 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	if (!cpu->isAlive())
 		return;
 
-	#ifdef _WIN32
-	wxFont font = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
-	wxFont boldFont = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD,false,L"Lucida Console");
-	#else
-	wxFont font = wxFont(8,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
+	wxFont font = pxGetFixedFont(8);
+	wxFont boldFont = pxGetFixedFont(8, wxFONTWEIGHT_BOLD);
 	font.SetPixelSize(wxSize(charWidth,rowHeight-2));
-	wxFont boldFont = wxFont(8,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD,false,L"Lucida Console");
 	boldFont.SetPixelSize(wxSize(charWidth,rowHeight-2));
-	#endif
 
 	bool hasFocus = wxWindow::FindFocus() == this;
-	
+
 	std::map<u32,int> addressPositions;
 
 	unsigned int address = windowStart;

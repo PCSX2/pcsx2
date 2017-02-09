@@ -115,8 +115,11 @@ protected:
 	wxMenu&			m_LoadStatesSubmenu;
 	wxMenu&			m_SaveStatesSubmenu;
 
+	wxMenuItem*		m_menuItem_RecentIsoMenu;
 	wxMenuItem&		m_MenuItem_Console;
+#if defined(__unix__)
 	wxMenuItem&		m_MenuItem_Console_Stdio;
+#endif
 
 	PerPluginMenuInfo	m_PluginMenuPacks[PluginId_Count];
 
@@ -193,6 +196,7 @@ protected:
 	void Menu_Debug_Open_Click(wxCommandEvent &event);
 	void Menu_Debug_MemoryDump_Click(wxCommandEvent &event);
 	void Menu_Debug_Logging_Click(wxCommandEvent &event);
+	void Menu_Debug_CreateBlockdump_Click(wxCommandEvent &event);
 
 	void Menu_ShowConsole(wxCommandEvent &event);
 	void Menu_ChangeLang(wxCommandEvent &event);

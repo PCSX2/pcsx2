@@ -1301,28 +1301,28 @@ void PMSUBH() {			// JayteeMaster: changed a bit to avoid screw up
 }
 
 // JayteeMaster: changed a bit to avoid screw up
-static __fi void _PHMSBH_LO(int dd, int n, int rdd)
+static __fi void _PHMSBH_LO(int dd, int n)
 {
 	s32 firsttemp =        (s32)cpuRegs.GPR.r[_Rs_].SS[n+1] * (s32)cpuRegs.GPR.r[_Rt_].SS[n+1];
 	s32 temp = firsttemp - (s32)cpuRegs.GPR.r[_Rs_].SS[n]   * (s32)cpuRegs.GPR.r[_Rt_].SS[n];
 
 	cpuRegs.LO.UL[dd] = temp;
-	cpuRegs.LO.UL[dd+1] = ~firsttemp;
+	cpuRegs.LO.UL[dd+1] = ~firsttemp;  // undocumented behaviour
 }
-static __fi void _PHMSBH_HI(int dd, int n, int rdd)
+static __fi void _PHMSBH_HI(int dd, int n)
 {
 	s32 firsttemp =        (s32)cpuRegs.GPR.r[_Rs_].SS[n+1] * (s32)cpuRegs.GPR.r[_Rt_].SS[n+1];
 	s32 temp = firsttemp - (s32)cpuRegs.GPR.r[_Rs_].SS[n]   * (s32)cpuRegs.GPR.r[_Rt_].SS[n];
 
 	cpuRegs.HI.UL[dd] = temp;
-	cpuRegs.HI.UL[dd+1] = ~firsttemp;
+	cpuRegs.HI.UL[dd+1] = ~firsttemp;  // undocumented behaviour
 }
 
 void PHMSBH() {		// JayteeMaster: changed a bit to avoid screw up
-	_PHMSBH_LO(0, 0, 0);
-	_PHMSBH_HI(0, 2, 1);
-	_PHMSBH_LO(2, 4, 2);
-	_PHMSBH_HI(2, 6, 3);
+	_PHMSBH_LO(0, 0);
+	_PHMSBH_HI(0, 2);
+	_PHMSBH_LO(2, 4);
+	_PHMSBH_HI(2, 6);
 	if (_Rd_) {
 		cpuRegs.GPR.r[_Rd_].UL[0] = cpuRegs.LO.UL[0];
 		cpuRegs.GPR.r[_Rd_].UL[1] = cpuRegs.HI.UL[0];

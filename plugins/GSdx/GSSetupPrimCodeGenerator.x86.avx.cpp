@@ -23,7 +23,7 @@
 #include "GSSetupPrimCodeGenerator.h"
 #include "GSVertexSW.h"
 
-#if _M_SSE == 0x500 && !(defined(_M_AMD64) || defined(_WIN64))
+#if _M_SSE < 0x501 && !(defined(_M_AMD64) || defined(_WIN64))
 
 using namespace Xbyak;
 
@@ -32,7 +32,7 @@ static const int _vertex = _args + 4;
 static const int _index = _args + 8;
 static const int _dscan = _args + 12;
 
-void GSSetupPrimCodeGenerator::Generate()
+void GSSetupPrimCodeGenerator::Generate_AVX()
 {
 	if((m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS || m_en.t || m_en.c && m_sel.iip)
 	{
@@ -40,20 +40,20 @@ void GSSetupPrimCodeGenerator::Generate()
 
 		for(int i = 0; i < (m_sel.notest ? 2 : 5); i++)
 		{
-			vmovaps(Xmm(3 + i), ptr[&m_shift[i]]);
+			vmovaps(Xmm(3 + i), ptr[g_const->m_shift_128b[i]]);
 		}
 	}
 
-	Depth();
+	Depth_AVX();
 
-	Texture();
+	Texture_AVX();
 
-	Color();
+	Color_AVX();
 
 	ret();
 }
 
-void GSSetupPrimCodeGenerator::Depth()
+void GSSetupPrimCodeGenerator::Depth_AVX()
 {
 	if(!m_en.z && !m_en.f)
 	{
@@ -144,7 +144,7 @@ void GSSetupPrimCodeGenerator::Depth()
 	}
 }
 
-void GSSetupPrimCodeGenerator::Texture()
+void GSSetupPrimCodeGenerator::Texture_AVX()
 {
 	if(!m_en.t)
 	{
@@ -213,7 +213,7 @@ void GSSetupPrimCodeGenerator::Texture()
 	}
 }
 
-void GSSetupPrimCodeGenerator::Color()
+void GSSetupPrimCodeGenerator::Color_AVX()
 {
 	if(!m_en.c)
 	{

@@ -28,6 +28,7 @@
 #include "GSUniformBufferOGL.h"
 #include "GSShaderOGL.h"
 #include "GLState.h"
+#include "GSOsdManager.h"
 
 // A couple of flag to determine the blending behavior
 #define BLEND_A_MAX		(0x100) // Impossible blending uses coeff bigger than 1
@@ -120,12 +121,16 @@ public:
 	struct alignas(32) VSConstantBuffer
 	{
 		GSVector4 Vertex_Scale_Offset;
+
+		GSVector4 TextureOffset;
+
 		GSVector2i DepthMask;
 		GSVector2 PointSize;
 
 		VSConstantBuffer()
 		{
 			Vertex_Scale_Offset = GSVector4::zero();
+			TextureOffset       = GSVector4::zero();
 			DepthMask           = GSVector2i(0);
 			PointSize           = GSVector2(0);
 		}
@@ -135,7 +140,7 @@ public:
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			if(!((a[0] == b[0]) & (a[1] == b[1])).alltrue())
+			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2])).alltrue())
 			{
 				a[0] = b[0];
 				a[1] = b[1];
@@ -411,6 +416,8 @@ public:
 	static bool m_debug_gl_call;
 	static FILE* m_debug_gl_file;
 
+	bool m_disable_hw_gl_draw;
+
 	GSWnd* m_window;
 
 	GLuint m_fbo;				// frame buffer container
@@ -480,6 +487,8 @@ public:
 	PSConstantBuffer m_ps_cb_cache;
 	MiscConstantBuffer m_misc_cb_cache;
 
+	GSTextureOGL* m_font;
+
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
 	GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);
 
@@ -488,6 +497,7 @@ public:
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex) final;
 	void DoExternalFX(GSTexture* sTex, GSTexture* dTex) final;
+	void RenderOsd(GSTexture* dt);
 
 	void OMAttachRt(GSTextureOGL* rt = NULL);
 	void OMAttachDs(GSTextureOGL* ds = NULL);
@@ -522,7 +532,6 @@ public:
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) final;
 	void ClearRenderTarget(GSTexture* t, uint32 c) final;
-	void ClearRenderTarget_i(GSTexture* t, int32 c);
 	void ClearDepth(GSTexture* t) final;
 	void ClearStencil(GSTexture* t, uint8 c) final;
 

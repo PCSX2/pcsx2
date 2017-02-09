@@ -38,7 +38,7 @@
 
 const wxChar* CDVD_SourceLabels[] =
 {
-	L"Iso",
+	L"ISO",
 	L"Plugin",
 	L"NoDisc",
 	NULL
@@ -285,11 +285,11 @@ static void DetectDiskType()
 }
 
 static wxString			m_SourceFilename[3];
-static CDVD_SourceType	m_CurrentSourceType = CDVDsrc_NoDisc;
+static CDVD_SourceType	m_CurrentSourceType = CDVD_SourceType::NoDisc;
 
 void CDVDsys_SetFile( CDVD_SourceType srctype, const wxString& newfile )
 {
-	m_SourceFilename[srctype] = newfile;
+	m_SourceFilename[enum_cast(srctype)] = newfile;
 
 	// look for symbol file
 	if (symbolMap.IsEmpty())
@@ -309,7 +309,7 @@ void CDVDsys_SetFile( CDVD_SourceType srctype, const wxString& newfile )
 
 const wxString& CDVDsys_GetFile( CDVD_SourceType srctype )
 {
-	return m_SourceFilename[srctype];
+	return m_SourceFilename[enum_cast(srctype)];
 }
 
 CDVD_SourceType CDVDsys_GetSourceType()
@@ -323,15 +323,15 @@ void CDVDsys_ChangeSource( CDVD_SourceType type )
 	
 	switch( m_CurrentSourceType = type )
 	{
-		case CDVDsrc_Iso:
+		case CDVD_SourceType::Iso:
 			CDVD = &CDVDapi_Iso;
 		break;
 
-		case CDVDsrc_NoDisc:
+		case CDVD_SourceType::NoDisc:
 			CDVD = &CDVDapi_NoDisc;
 		break;
 
-		case CDVDsrc_Plugin:
+		case CDVD_SourceType::Plugin:
 			CDVD = &CDVDapi_Plugin;
 		break;
 
@@ -354,8 +354,9 @@ bool DoCDVDopen()
 	// question marks if the filename is another language.
 	// Likely Fix: Force new versions of CDVD plugins to expect UTF8 instead.
 
-	int ret = CDVD->open( !m_SourceFilename[m_CurrentSourceType].IsEmpty() ?
-		static_cast<const char*>(m_SourceFilename[m_CurrentSourceType].ToUTF8()) : (char*)NULL
+	auto CurrentSourceType = enum_cast(m_CurrentSourceType);
+	int ret = CDVD->open( !m_SourceFilename[CurrentSourceType].IsEmpty() ?
+		static_cast<const char*>(m_SourceFilename[CurrentSourceType].ToUTF8()) : (char*)NULL
 	);
 
 	if( ret == -1 ) return false;	// error! (handled by caller)
@@ -374,7 +375,7 @@ bool DoCDVDopen()
 	// TODO: "Untitled" should use pnach/slus name resolution, slus if no patch,
 	// and finally an "Untitled-[ElfCRC]" if no slus.
 
-	wxString somepick( Path::GetFilenameWithoutExt( m_SourceFilename[m_CurrentSourceType] ) );
+	wxString somepick( Path::GetFilenameWithoutExt( m_SourceFilename[CurrentSourceType] ) );
 	if( somepick.IsEmpty() )
 		somepick = L"Untitled";
 

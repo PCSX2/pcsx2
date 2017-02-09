@@ -31,55 +31,86 @@
 
 #include "Pcsx2Api.h"
 
-typedef struct _GSdriverInfo {
-	char name[8];
-	void *common;
+typedef struct _GSdriverInfo
+{
+    char name[8];
+    void *common;
 } GSdriverInfo;
 
 // Basic functions.
-EXPORT_C_(s32)   GSinit();
+EXPORT_C_(s32)
+GSinit();
 // pDisplay normally is passed a handle to the GS plugins window.
-EXPORT_C_(s32)   GSopen(void *pDisplay, char *Title, bool multithread);
-EXPORT_C_(void)  GSclose();
-EXPORT_C_(void)  GSshutdown();
-EXPORT_C_(void)  GSvsync(int field);
-EXPORT_C_(void)  GSgifTransfer1(u32 *pMem, u32 addr);
-EXPORT_C_(void)  GSgifTransfer2(u32 *pMem, u32 size);
-EXPORT_C_(void)  GSgifTransfer3(u32 *pMem, u32 size);
-EXPORT_C_(void)  GSgetLastTag(u64* ptag); // returns the last tag processed (64 bits)
-EXPORT_C_(void)  GSgifSoftReset(u32 mask);
-EXPORT_C_(void)  GSreadFIFO(u64 *mem);
-EXPORT_C_(void)  GSreadFIFO2(u64 *mem, int qwc);
+EXPORT_C_(s32)
+GSopen(void *pDisplay, char *Title, bool multithread);
+EXPORT_C_(void)
+GSclose();
+EXPORT_C_(void)
+GSshutdown();
+EXPORT_C_(void)
+GSvsync(int field);
+EXPORT_C_(void)
+GSgifTransfer1(u32 *pMem, u32 addr);
+EXPORT_C_(void)
+GSgifTransfer2(u32 *pMem, u32 size);
+EXPORT_C_(void)
+GSgifTransfer3(u32 *pMem, u32 size);
+EXPORT_C_(void)
+GSgetLastTag(u64 *ptag); // returns the last tag processed (64 bits)
+EXPORT_C_(void)
+GSgifSoftReset(u32 mask);
+EXPORT_C_(void)
+GSreadFIFO(u64 *mem);
+EXPORT_C_(void)
+GSreadFIFO2(u64 *mem, int qwc);
 
 // Extended functions
 
 // GSkeyEvent gets called when there is a keyEvent from the PAD plugin
-EXPORT_C_(void)  GSkeyEvent(keyEvent *ev);
-EXPORT_C_(void)  GSchangeSaveState(s32 state, const char* filename);
-EXPORT_C_(void)  GSmakeSnapshot(char *path);
-EXPORT_C_(void)  GSmakeSnapshot2(char *pathname, int* snapdone, int savejpg);
-EXPORT_C_(void)  GSirqCallback(void (*callback)());
-EXPORT_C_(void) CALLBACK GSprintf(s32 timeout, char *fmt, ...);
-EXPORT_C_(void)  GSsetBaseMem(void*);
-EXPORT_C_(void)  GSsetGameCRC(s32 crc, s32 gameoptions);
+EXPORT_C_(void)
+GSkeyEvent(keyEvent *ev);
+EXPORT_C_(void)
+GSchangeSaveState(s32 state, const char *filename);
+EXPORT_C_(void)
+GSmakeSnapshot(char *path);
+EXPORT_C_(void)
+GSmakeSnapshot2(char *pathname, int *snapdone, int savejpg);
+EXPORT_C_(void)
+GSirqCallback(void (*callback)());
+EXPORT_C_(void)
+CALLBACK GSprintf(s32 timeout, char *fmt, ...);
+EXPORT_C_(void)
+GSsetBaseMem(void *);
+EXPORT_C_(void)
+GSsetGameCRC(s32 crc, s32 gameoptions);
 
 // controls frame skipping in the GS, if this routine isn't present, frame skipping won't be done
-EXPORT_C_(void)  GSsetFrameSkip(int frameskip);
+EXPORT_C_(void)
+GSsetFrameSkip(int frameskip);
 
 // if start is true, starts recording spu2 data, else stops
 // returns true if successful
 // for now, pData is not used
-EXPORT_C_(bool)  GSsetupRecording(bool start);
+EXPORT_C_(bool)
+GSsetupRecording(bool start);
 
-EXPORT_C_(void)  GSreset();
-EXPORT_C_(void)  GSwriteCSR(u32 value);
-EXPORT_C_(void ) GSgetDriverInfo(GSdriverInfo *info);
+EXPORT_C_(void)
+GSreset();
+EXPORT_C_(void)
+GSwriteCSR(u32 value);
+EXPORT_C_(void)
+GSgetDriverInfo(GSdriverInfo *info);
 #ifdef _WIN32
-EXPORT_C_(s32)  CALLBACK GSsetWindowInfo(winInfo *info);
+EXPORT_C_(s32)
+CALLBACK GSsetWindowInfo(winInfo *info);
 #endif
-EXPORT_C_(s32)   GSfreeze(u8 mode, freezeData *data);
-EXPORT_C_(void)  GSconfigure();
-EXPORT_C_(void)  GSabout();
-EXPORT_C_(s32)   GStest();
+EXPORT_C_(s32)
+GSfreeze(u8 mode, freezeData *data);
+EXPORT_C_(void)
+GSconfigure();
+EXPORT_C_(void)
+GSabout();
+EXPORT_C_(s32)
+GStest();
 
 #endif // __GSAPI_H__

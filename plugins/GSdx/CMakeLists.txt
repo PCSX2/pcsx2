@@ -39,6 +39,10 @@ if(NOT USE_CLANG)
     set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
 endif()
 
+if(OPENCL_API)
+    set(GSdxFinalFlags ${GSdxFinalFlags} -DENABLE_OPENCL)
+endif()
+
 set(GSdxSources
     GLLoader.cpp
     GLState.cpp
@@ -65,11 +69,12 @@ set(GSdxSources
     GSDrawingContext.cpp
     GSDrawScanline.cpp
     GSDrawScanlineCodeGenerator.cpp
+    GSDrawScanlineCodeGenerator.x64.cpp
+    GSDrawScanlineCodeGenerator.x64.avx.cpp
+    GSDrawScanlineCodeGenerator.x64.avx2.cpp
+    GSDrawScanlineCodeGenerator.x86.cpp
     GSDrawScanlineCodeGenerator.x86.avx.cpp
     GSDrawScanlineCodeGenerator.x86.avx2.cpp
-    GSDrawScanlineCodeGenerator.x64.cpp
-    GSDrawScanlineCodeGenerator.x86.cpp
-    GSDrawScanlineCodeGenerator.x64.avx.cpp
     GSDump.cpp
     GSFunctionMap.cpp
     GSHwHack.cpp
@@ -85,13 +90,15 @@ set(GSdxSources
     GSRendererNull.cpp
     GSRendererOGL.cpp
     GSRendererSW.cpp
+    GSOsdManager.cpp
     GSSetting.cpp
     GSSetupPrimCodeGenerator.cpp
+    GSSetupPrimCodeGenerator.x64.cpp
+    GSSetupPrimCodeGenerator.x64.avx.cpp
+    GSSetupPrimCodeGenerator.x64.avx2.cpp
+    GSSetupPrimCodeGenerator.x86.cpp
     GSSetupPrimCodeGenerator.x86.avx.cpp
     GSSetupPrimCodeGenerator.x86.avx2.cpp
-    GSSetupPrimCodeGenerator.x64.avx.cpp
-    GSSetupPrimCodeGenerator.x86.cpp
-    GSSetupPrimCodeGenerator.x64.cpp
     GSShaderOGL.cpp
     GSState.cpp
     GSTables.cpp
@@ -102,7 +109,6 @@ set(GSdxSources
     GSTextureOGL.cpp
     GSTextureNull.cpp
     GSTextureSW.cpp
-    GSThread.cpp
     GSUtil.cpp
     GSVector.cpp
     GSVertexTrace.cpp
@@ -110,6 +116,7 @@ set(GSdxSources
     GSWndOGL.cpp
     GSWndEGL.cpp
     GSdx.cpp
+    GSdxResources.cpp
     stdafx.cpp
     )
 
@@ -142,7 +149,6 @@ set(GSdxHeaders
     GSDrawingEnvironment.h
     GSDump.h
     GSFunctionMap.h
-    GSLinuxLogo.h
     GSLocalMemory.h
     GSPerfMon.h
     GSRasterizer.h
@@ -162,6 +168,7 @@ set(GSdxHeaders
     GSTextureCacheOGL.h
     GSTextureNull.h
     GSThread.h
+    GSThread_CXX11.h
     GSUtil.h
     GSVector.h
     GSVertex.h
@@ -173,10 +180,10 @@ set(GSdxHeaders
     GSWndOGL.h
     GSWndEGL.h
     GSdx.h
+    GSdxResources.h
     res/glsl_source.h
     stdafx.h
     xbyak/xbyak.h
-    xbyak/xbyak_bin2hex.h
     xbyak/xbyak_mnemonic.h
     xbyak/xbyak_util.h
     )
@@ -192,18 +199,23 @@ set(GSdxFinalLibs
     ${GTK2_LIBRARIES}
     ${LIBC_LIBRARIES}
     ${PNG_LIBRARIES}
+    ${FREETYPE_LIBRARIES}
 )
 
 if(EGL_API AND EGL_FOUND)
-    set(GSdxFinalLibs ${GSdxFinalLibs}
-        ${EGL_LIBRARIES}
-        )
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${EGL_LIBRARIES})
 endif()
 
 if(LIBLZMA_FOUND)
-    set(GSdxFinalLibs ${GSdxFinalLibs}
-		${LIBLZMA_LIBRARIES}
-		)
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${LIBLZMA_LIBRARIES})
+endif()
+
+if(USE_VTUNE)
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${VTUNE_LIBRARIES})
+endif()
+
+if(OPENCL_FOUND)
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${OPENCL_LIBRARIES})
 endif()
 
 # Generate Glsl header file. Protect with REBUILD_SHADER to avoid build-dependency on PERL
@@ -211,18 +223,28 @@ if (REBUILD_SHADER)
     add_custom_command(OUTPUT res/glsl_source.h COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/glsl2h.pl)
 endif()
 
+# Note: trying to combine --generate-source and --generate-header doesn't work. It outputs whichever one comes last into the file named by the first
+execute_process(COMMAND glib-compile-resources --sourcedir res --generate-header --c-name GSdx_res res/gsdx-res.xml --target=GSdxResources.h WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+execute_process(COMMAND glib-compile-resources --sourcedir res --generate-source --c-name GSdx_res res/gsdx-res.xml --target=GSdxResources.cpp WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
 if(BUILTIN_GS)
     add_pcsx2_lib(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
 else()
-    add_pcsx2_plugin(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
+    if (DISABLE_ADVANCE_SIMD)
+        # Don't append -SSE2 on the first build to keep same name as SIMD build
+        add_pcsx2_plugin("${Output}" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
+        add_pcsx2_plugin("${Output}-SSE4" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags} -mssse3 -msse4 -msse4.1")
+        add_pcsx2_plugin("${Output}-AVX2" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags} -mavx -mavx2 -mbmi -mbmi2")
+    else()
+        add_pcsx2_plugin(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
+    endif()
 endif()
 
 ################################### Replay Loader
 if(BUILD_REPLAY_LOADERS)
     set(Replay pcsx2_GSReplayLoader)
     set(GSdxReplayLoaderFinalSources
-        ${GSdxFinalSources}
         linux_replay.cpp
     )
-    add_pcsx2_executable(${Replay} "${GSdxReplayLoaderFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
+    add_pcsx2_executable(${Replay} "${GSdxReplayLoaderFinalSources}" "${LIBC_LIBRARIES}" "${GSdxFinalFlags}")
 endif(BUILD_REPLAY_LOADERS)

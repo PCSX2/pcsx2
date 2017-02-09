@@ -249,6 +249,10 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			if (code == BN_CLICKED)
 				ShaderDlg.DoModal();
 			break;
+		case IDC_OSDBUTTON:
+			if (code == BN_CLICKED)
+				OSDDlg.DoModal();
+			break;
 		case IDC_HACKSBUTTON:
 			if (code == BN_CLICKED)
 				HacksDlg.DoModal();
@@ -482,9 +486,9 @@ void GSShaderDlg::OnInit()
 
 	//Shade Boost
 	CheckDlgButton(m_hWnd, IDC_SHADEBOOST, theApp.GetConfigB("ShadeBoost"));
-	contrast = theApp.GetConfigI("ShadeBoost_Contrast");
-	brightness = theApp.GetConfigI("ShadeBoost_Brightness");
-	saturation = theApp.GetConfigI("ShadeBoost_Saturation");
+	m_contrast = theApp.GetConfigI("ShadeBoost_Contrast");
+	m_brightness = theApp.GetConfigI("ShadeBoost_Brightness");
+	m_saturation = theApp.GetConfigI("ShadeBoost_Saturation");
 
 	// External FX shader
 	CheckDlgButton(m_hWnd, IDC_SHADER_FX, theApp.GetConfigB("shaderfx"));
@@ -507,17 +511,17 @@ void GSShaderDlg::UpdateControls()
 	SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 100));
 	SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 100));
 
-	SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER), TBM_SETPOS, TRUE, saturation);
-	SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER), TBM_SETPOS, TRUE, brightness);
-	SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER), TBM_SETPOS, TRUE, contrast);
+	SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER), TBM_SETPOS, TRUE, m_saturation);
+	SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER), TBM_SETPOS, TRUE, m_brightness);
+	SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER), TBM_SETPOS, TRUE, m_contrast);
 
 	char text[8] = {0};
 
-	sprintf(text, "%d", saturation);
+	sprintf(text, "%d", m_saturation);
 	SetDlgItemText(m_hWnd, IDC_SATURATION_TEXT, text);
-	sprintf(text, "%d", brightness);
+	sprintf(text, "%d", m_brightness);
 	SetDlgItemText(m_hWnd, IDC_BRIGHTNESS_TEXT, text);
-	sprintf(text, "%d", contrast);
+	sprintf(text, "%d", m_contrast);
 	SetDlgItemText(m_hWnd, IDC_CONTRAST_TEXT, text);
 
 	// Shader Settings
@@ -547,27 +551,27 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			char text[8] = {0};
 
-			saturation = SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER),TBM_GETPOS,0,0);
+			m_saturation = SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER),TBM_GETPOS,0,0);
 
-			sprintf(text, "%d", saturation);
+			sprintf(text, "%d", m_saturation);
 			SetDlgItemText(m_hWnd, IDC_SATURATION_TEXT, text);
 		}
 		else if((HWND)lParam == GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER)) 
 		{
 			char text[8] = {0};
 
-			brightness = SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER),TBM_GETPOS,0,0);
+			m_brightness = SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER),TBM_GETPOS,0,0);
 
-			sprintf(text, "%d", brightness);
+			sprintf(text, "%d", m_brightness);
 			SetDlgItemText(m_hWnd, IDC_BRIGHTNESS_TEXT, text);
 		}
 		else if((HWND)lParam == GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER)) 
 		{
 			char text[8] = {0};
 
-			contrast = SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER),TBM_GETPOS,0,0);
+			m_contrast = SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER),TBM_GETPOS,0,0);
 
-			sprintf(text, "%d", contrast);
+			sprintf(text, "%d", m_contrast);
 			SetDlgItemText(m_hWnd, IDC_CONTRAST_TEXT, text);
 		}
 	} break;
@@ -588,9 +592,9 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			// Shade Boost
 			theApp.SetConfig("ShadeBoost", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST));
-			theApp.SetConfig("ShadeBoost_Contrast", contrast);
-			theApp.SetConfig("ShadeBoost_Brightness", brightness);
-			theApp.SetConfig("ShadeBoost_Saturation", saturation);
+			theApp.SetConfig("ShadeBoost_Contrast", m_contrast);
+			theApp.SetConfig("ShadeBoost_Brightness", m_brightness);
+			theApp.SetConfig("ShadeBoost_Saturation", m_saturation);
 
 			// FXAA shader
 			theApp.SetConfig("Fxaa", (int)IsDlgButtonChecked(m_hWnd, IDC_FXAA));
@@ -602,14 +606,12 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			int shader_fx_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXTLENGTH, 0, 0);
 			int shader_fx_conf_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXTLENGTH, 0, 0);
 			int length = std::max(shader_fx_length, shader_fx_conf_length) + 1;
-			char *buffer = new char[length];
+			std::unique_ptr<char[]> buffer(new char[length]);
 
-
-			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer);
-			theApp.SetConfig("shaderfx_glsl", buffer); // Not really glsl only ;)
-			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer);
-			theApp.SetConfig("shaderfx_conf", buffer);
-			delete[] buffer;
+			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer.get());
+			theApp.SetConfig("shaderfx_glsl", buffer.get()); // Not really glsl only ;)
+			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer.get());
+			theApp.SetConfig("shaderfx_conf", buffer.get());
 
 			EndDialog(m_hWnd, id);
 		} break;
@@ -815,6 +817,118 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 	default: return false;
 	}
+
+	return true;
+}
+
+// OSD Configuration Dialog
+
+GSOSDDlg::GSOSDDlg() :
+	GSDialog(IDD_OSD)
+{}
+
+void GSOSDDlg::OnInit()
+{
+	// OSD Indicator is greyed out because it's currently an empty shell.
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_INDICATOR), false);
+
+	CheckDlgButton(m_hWnd, IDC_OSD_LOG, theApp.GetConfigB("osd_log_enabled"));
+	CheckDlgButton(m_hWnd, IDC_OSD_MONITOR, theApp.GetConfigB("osd_monitor_enabled"));
+	CheckDlgButton(m_hWnd, IDC_OSD_INDICATOR, theApp.GetConfigB("osd_indicator_enabled"));
+	m_transparency = theApp.GetConfigI("osd_transparency");
+
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TRANSPARENCY_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 100));
+
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SIZE), UDM_SETRANGE, 0, MAKELPARAM(100, 1));
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SIZE), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("osd_fontsize"), 0));
+
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SPEED), UDM_SETRANGE, 0, MAKELPARAM(10, 2));
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SPEED), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("osd_log_speed"), 0));
+
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_SETRANGE, 0, MAKELPARAM(20, 1));
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("osd_max_log_messages"), 0));
+
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_FONT_EDIT), WM_SETTEXT, 0, (LPARAM)theApp.GetConfigS("osd_fontname").c_str());
+
+	AddTooltip(IDC_OSD_MAX_LOG);
+	AddTooltip(IDC_OSD_MAX_LOG_EDIT);
+	AddTooltip(IDC_OSD_MONITOR);
+
+	UpdateControls();
+}
+
+void GSOSDDlg::UpdateControls()
+{
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TRANSPARENCY_SLIDER), TBM_SETPOS, TRUE, m_transparency);
+
+	char text[8] = { 0 };
+	sprintf(text, "%d", m_transparency);
+	SetDlgItemText(m_hWnd, IDC_OSD_TRANSPARENCY_TEXT, text);
+}
+
+bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_HSCROLL:
+	{
+		if ((HWND)lParam == GetDlgItem(m_hWnd, IDC_OSD_TRANSPARENCY_SLIDER))
+		{
+			char text[8] = { 0 };
+
+			m_transparency = SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TRANSPARENCY_SLIDER), TBM_GETPOS, 0, 0);
+
+			sprintf(text, "%d", m_transparency);
+			SetDlgItemText(m_hWnd, IDC_OSD_TRANSPARENCY_TEXT, text);
+		}
+	} break;
+
+	case WM_COMMAND:
+	{
+		int id = LOWORD(wParam);
+
+		switch (id)
+		{
+		case IDOK:
+		{
+			INT_PTR data;
+
+			theApp.SetConfig("osd_fontsize", (int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SIZE), UDM_GETPOS, 0, 0));
+			theApp.SetConfig("osd_log_speed", (int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SPEED), UDM_GETPOS, 0, 0));
+			theApp.SetConfig("osd_max_log_messages", (int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_GETPOS, 0, 0));
+
+			theApp.SetConfig("osd_log_enabled", (int)IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
+			theApp.SetConfig("osd_monitor_enabled", (int)IsDlgButtonChecked(m_hWnd, IDC_OSD_MONITOR));
+			theApp.SetConfig("osd_indicator_enabled", (int)IsDlgButtonChecked(m_hWnd, IDC_OSD_INDICATOR));
+
+			theApp.SetConfig("osd_transparency", m_transparency);
+
+			// OSD Font
+			int length = ((int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_FONT_EDIT), WM_GETTEXTLENGTH, 0, 0)) + 1;
+			std::unique_ptr<char[]> buffer(new char[length]);
+			SendMessage(GetDlgItem(m_hWnd, IDC_OSD_FONT_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer.get());
+			theApp.SetConfig("osd_fontname", buffer.get());
+
+			EndDialog(m_hWnd, id);
+		} break;
+		case IDC_OSD_FONT_BUTTON:
+			if (HIWORD(wParam) == BN_CLICKED)
+				OpenFileDialog(IDC_OSD_FONT_EDIT, "Select External Font");
+			break;
+
+		case IDCANCEL:
+		{
+			EndDialog(m_hWnd, IDCANCEL);
+		} break;
+		}
+
+	} break;
+
+	case WM_CLOSE:EndDialog(m_hWnd, IDCANCEL); break;
+
+	default: return false;
+	}
+
 
 	return true;
 }

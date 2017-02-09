@@ -468,10 +468,12 @@ static u16 QWCinGIFMFIFO(u32 DrainADDR)
 {
 	u32 ret;
 
+	
+	
 	GIF_LOG("GIF MFIFO Requesting %x QWC from the MFIFO Base %x, SPR MADR %x Drain %x", gifch.qwc, dmacRegs.rbor.ADDR, spr0ch.madr, DrainADDR);
 	//Calculate what we have in the fifo.
 	if(DrainADDR <= spr0ch.madr) {
-		//Drain is below the tadr, calculate the difference between them
+		//Drain is below the write position, calculate the difference between them
 		ret = (spr0ch.madr - DrainADDR) >> 4;
 	}
 	else {
@@ -480,56 +482,62 @@ static u16 QWCinGIFMFIFO(u32 DrainADDR)
 		//calculate from base to the SPR tag addr and what is left in the top of the ring
 		ret = ((spr0ch.madr - dmacRegs.rbor.ADDR) + (limit - DrainADDR)) >> 4;
 	}
+	if(ret == 0) 
+		gifstate |= GIF_STATE_EMPTY;
+
 	GIF_LOG("%x Available of the %x requested", ret, gifch.qwc);
-	if((s32)ret < 0) DevCon.Warning("GIF Returning %x!", ret);
 	return ret;
 }
 
 static __fi bool mfifoGIFrbTransfer()
 {
-	u16 mfifoqwc = std::min(QWCinGIFMFIFO(gifch.madr), gifch.qwc);
-	if (mfifoqwc == 0) return true; //Lets skip all this, we don't have the data
+	u16 qwc = std::min(QWCinGIFMFIFO(gifch.madr), gifch.qwc);
+	if (qwc == 0) return true; //Lets skip all this, we don't have any data
 
-	/*if(!gifUnit.CanDoPath3()) {
-		DevCon.Warning("mfifoGIFrbTransfer() - Can't do path3");
-		GifDMAInt(16);
-		return true; // Skip if can't do path3
-	}*/
-
-	bool needWrap = (gifch.madr + (mfifoqwc * 16u)) > (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u);
-	uint s1 = ((dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16) - gifch.madr) >> 4;
-	uint s2 = mfifoqwc - s1;
-	uint s3 = needWrap ? s1 : mfifoqwc;
-	u32 t1, t2;
-	gifch.madr = dmacRegs.rbor.ADDR + (gifch.madr & dmacRegs.rbsr.RMSK);
 	u8* src = (u8*)PSM(gifch.madr);
 	if (src == NULL) return false;
+	
+	u32 MFIFOUntilEnd = ((dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16) - gifch.madr) >> 4;
+	bool needWrap = MFIFOUntilEnd < qwc;
+	u32 firstTransQWC = needWrap ? MFIFOUntilEnd : qwc;
+	u32 transferred;	
 
-	if (CHECK_GIFFIFOHACK) {
-		t1 = gif_fifo.write((u32*)src, s3);
+	if (!CHECK_GIFFIFOHACK) {
+		transferred = gifUnit.TransferGSPacketData(GIF_TRANS_DMA, src, firstTransQWC * 16) / 16; // First part
 	}
 	else {
-		t1 = gifUnit.TransferGSPacketData(GIF_TRANS_DMA, src, s3 * 16) / 16; // First part
+		transferred = gif_fifo.write((u32*)src, firstTransQWC);
 	}
 
-	incGifChAddr(t1);
-	mfifocycles += t1 * 2; // guessing
+	incGifChAddr(transferred);
+	
 
-	if (needWrap && t1 == s1) { // Need to do second transfer to wrap around
-		GUNIT_WARN("mfifoGIFrbTransfer() - Wrap");
+	if (needWrap && transferred == MFIFOUntilEnd) { // Need to do second transfer to wrap around
+		//DevCon.Warning("mfifoGIFrbTransfer() - Wrap");
+		u32 transferred2;		
+		uint secondTransQWC = qwc - MFIFOUntilEnd;
+
 		src = (u8*)PSM(dmacRegs.rbor.ADDR);
-		gifch.madr = dmacRegs.rbor.ADDR;
 		if (src == NULL) return false;
-		if (CHECK_GIFFIFOHACK) {
-			t2 = gif_fifo.write((u32*)src, s2);
+
+		if (!CHECK_GIFFIFOHACK) {
+			transferred2 = gifUnit.TransferGSPacketData(GIF_TRANS_DMA, src, secondTransQWC * 16) / 16; // Second part
 		}
 		else {
-			t2 = gifUnit.TransferGSPacketData(GIF_TRANS_DMA, src, s2 * 16) / 16; // First part
+			transferred2 = gif_fifo.write((u32*)src, secondTransQWC);
 		}
 
-		incGifChAddr(t2);
-		mfifocycles += t2 * 2; // guessing
+		incGifChAddr(transferred2);
+		mfifocycles += (transferred2 + transferred) * 2; // guessing
 	}
+	else {		
+		mfifocycles += transferred * 2; // guessing
+
+	
+		
+	}
+	
+	QWCinGIFMFIFO(gifch.madr);
 	return true;
 }
 
@@ -537,18 +545,17 @@ static __fi bool mfifoGIFchain()
 {
 	/* Is QWC = 0? if so there is nothing to transfer */
 	if (gifch.qwc == 0) return true;
-	if (gifch.madr == (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u)) DevCon.Warning("Edge Case?");
-	if (gifch.madr >= dmacRegs.rbor.ADDR &&
-		gifch.madr < (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u))
+	//if (gifch.madr == (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u)) DevCon.Warning("Edge Case?");
+	
+	if ((gifch.madr & ~dmacRegs.rbsr.RMSK) == dmacRegs.rbor.ADDR)
 	{
 		bool ret = true;
-	//	if(gifch.madr == (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16)) DevCon.Warning("Edge GIF");
 		if (!mfifoGIFrbTransfer()) ret = false;
-		if(QWCinGIFMFIFO(gifch.madr) == 0) gifstate |= GIF_STATE_EMPTY;
 
+		//This ends up being done more often but it's safer :P
 		//Make sure we wrap the addresses, dont want it being stuck outside the ring when reading from the ring!
 		gifch.madr = dmacRegs.rbor.ADDR + (gifch.madr & dmacRegs.rbsr.RMSK);
-		gifch.tadr = dmacRegs.rbor.ADDR + (gifch.tadr & dmacRegs.rbsr.RMSK); //Check this too, tadr can suffer the same issue.
+		gifch.tadr = dmacRegs.rbor.ADDR + (gifch.tadr & dmacRegs.rbsr.RMSK); //Front Mission 4 tag increments to end of ring
 
 		return ret;
 	}
@@ -582,7 +589,7 @@ void mfifoGifMaskMem(int id)
 			{
 				//DevCon.Warning("GIF MFIFO MADR below bottom of ring buffer, wrapping GIF MADR = %x Ring Bottom %x", gifch.madr, dmacRegs.rbor.ADDR);
 				gifch.madr = qwctag(gifch.madr);
-			}
+			} else
 			if(gifch.madr > (dmacRegs.rbor.ADDR + (u32)dmacRegs.rbsr.RMSK)) //Usual scenario is the tag is near the end (Front Mission 4)
 			{
 				//DevCon.Warning("GIF MFIFO MADR outside top of ring buffer, wrapping GIF MADR = %x Ring Top %x", gifch.madr, (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK)+16);
@@ -621,6 +628,9 @@ void mfifoGIFtransfer(int qwc)
 	}
 
 	if (gifch.qwc == 0) {
+		gifch.madr = dmacRegs.rbor.ADDR + (gifch.madr & dmacRegs.rbsr.RMSK);
+		gifch.tadr = dmacRegs.rbor.ADDR + (gifch.tadr & dmacRegs.rbsr.RMSK); //Front Mission 4 tag increments to end of ring
+
 		gifch.tadr = qwctag(gifch.tadr);
 
 		ptag = dmaGetAddr(gifch.tadr, false);
@@ -633,6 +643,9 @@ void mfifoGIFtransfer(int qwc)
 				ptag[1]._u32, ptag[0]._u32, gifch.qwc, ptag->ID, gifch.madr, gifch.tadr, gifqwc, spr0ch.madr);
 
 		gspath3done = hwDmacSrcChainWithStack(gifch, ptag->ID);
+
+		
+
 		if (dmacRegs.ctrl.STD == STD_GIF && (ptag->ID == TAG_REFS))
 		{
 			Console.WriteLn("GIF MFIFO DMA Stall not implemented - Report which game to PCSX2 Team");
@@ -647,7 +660,7 @@ void mfifoGIFtransfer(int qwc)
 			gifstate = GIF_STATE_DONE;
 			gifmfifoirq = true;
 		}
-		if (QWCinGIFMFIFO(gifch.tadr) == 0) gifstate |= GIF_STATE_EMPTY;
+		QWCinGIFMFIFO(gifch.tadr);
 	 }	
 
 	if (!mfifoGIFchain()) {
@@ -759,7 +772,6 @@ void gifMFIFOInterrupt()
 		if (!(gifstate & GIF_STATE_STALL)) {
 
 			if (QWCinGIFMFIFO(gifch.tadr) == 0) {
-				gifstate |= GIF_STATE_EMPTY;
 				GifDMAInt(4);
 				if (CHECK_GIFFIFOHACK)
 					GifDMAInt(128);

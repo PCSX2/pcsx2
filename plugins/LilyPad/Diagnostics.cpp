@@ -28,7 +28,7 @@ Device *dev;
 INT_PTR CALLBACK DiagDialog(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
     int i;
-    HWND hWndList = GetDlgItem(hWnd, IDC_LIST);
+    HWND hWndList = GetDlgItem(hWnd, IDC_DIAG_LIST);
     static int fullRefresh;
     if (dev) {
         switch (uMsg) {
@@ -108,7 +108,7 @@ INT_PTR CALLBACK DiagDialog(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM 
                 NMLVKEYDOWN *n = (NMLVKEYDOWN *)lParam;
                 // Don't always get the notification when testing DirectInput non-keyboard devices.
                 // Don't get it (Or want it) when testing keyboards.
-                if (n->hdr.idFrom != IDC_LIST || n->hdr.code != LVN_KEYDOWN || n->wVKey != VK_ESCAPE)
+                if (n->hdr.idFrom != IDC_DIAG_LIST || n->hdr.code != LVN_KEYDOWN || n->wVKey != VK_ESCAPE)
                     break;
             }
             case WM_ACTIVATE:

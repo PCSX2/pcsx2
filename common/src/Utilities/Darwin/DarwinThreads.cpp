@@ -19,7 +19,7 @@
 #include <unistd.h>
 
 #if !defined(__APPLE__)
-#	error "DarwinThreads.cpp should only be compiled by projects or makefiles targeted at OSX."
+#error "DarwinThreads.cpp should only be compiled by projects or makefiles targeted at OSX."
 #else
 
 #include <mach/mach_init.h>
@@ -30,7 +30,7 @@
 // the LOCK prefix.  The prefix works on single core CPUs fine (but is slow), but not
 // having the LOCK prefix is very bad indeed.
 
-__forceinline void Threading::Sleep( int ms )
+__forceinline void Threading::Sleep(int ms)
 {
     usleep(1000 * ms);
 }
@@ -41,7 +41,7 @@ __forceinline void Threading::SpinWait()
 {
     // If this doesn't compile you can just comment it out (it only serves as a
     // performance hint and isn't required).
-    __asm__ ( "pause" );
+    __asm__("pause");
 }
 
 __forceinline void Threading::EnableHiresScheduler()
@@ -66,21 +66,22 @@ u64 Threading::GetThreadTicksPerSecond()
 
 // gets the CPU time used by the current thread (both system and user), in
 // microseconds, returns 0 on failure
-static u64 getthreadtime(thread_port_t thread) {
+static u64 getthreadtime(thread_port_t thread)
+{
     mach_msg_type_number_t count = THREAD_BASIC_INFO_COUNT;
     thread_basic_info_data_t info;
 
     kern_return_t kr = thread_info(thread, THREAD_BASIC_INFO,
-            (thread_info_t) &info, &count);
+                                   (thread_info_t)&info, &count);
     if (kr != KERN_SUCCESS) {
         return 0;
     }
 
     // add system and user time
-    return (u64) info.user_time.seconds * (u64) 1e6 +
-        (u64) info.user_time.microseconds +
-        (u64) info.system_time.seconds * (u64) 1e6 +
-        (u64) info.system_time.microseconds;
+    return (u64)info.user_time.seconds * (u64)1e6 +
+           (u64)info.user_time.microseconds +
+           (u64)info.system_time.seconds * (u64)1e6 +
+           (u64)info.system_time.microseconds;
 }
 
 // Returns the current timestamp (not relative to a real world clock) in
@@ -109,19 +110,19 @@ u64 Threading::pxThread::GetCpuTime() const
         return 0;
     }
 
-    return getthreadtime((thread_port_t) m_native_id) * 10ULL;
+    return getthreadtime((thread_port_t)m_native_id) * 10ULL;
 }
 
 void Threading::pxThread::_platform_specific_OnStartInThread()
 {
-    m_native_id = (uptr) mach_thread_self();
+    m_native_id = (uptr)mach_thread_self();
 }
 
 void Threading::pxThread::_platform_specific_OnCleanupInThread()
 {
     // cleanup of handles that were upened in
     // _platform_specific_OnStartInThread
-    mach_port_deallocate(mach_task_self(), (thread_port_t) m_native_id);
+    mach_port_deallocate(mach_task_self(), (thread_port_t)m_native_id);
 }
 
 // name can be up to 16 bytes

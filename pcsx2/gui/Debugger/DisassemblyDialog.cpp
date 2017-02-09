@@ -31,6 +31,7 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_SETSTATUSBARTEXT, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_UPDATELAYOUT, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINMEMORYVIEW, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_REFERENCEMEMORYVIEW, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_RUNTOPOS, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINDISASM, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_STEPOVER, DisassemblyDialog::onDebuggerEvent )
@@ -504,6 +505,12 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 
 			currentCpu->getMemoryView()->gotoAddress(evt.GetInt(), true);
 			currentCpu->getDisassembly()->SetFocus();
+		}
+	} else if (type == debEVT_REFERENCEMEMORYVIEW)
+	{
+		if (currentCpu != NULL)
+		{
+			currentCpu->getMemoryView()->updateReference(evt.GetInt());
 		}
 	} else if (type == debEVT_RUNTOPOS)
 	{

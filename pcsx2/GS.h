@@ -19,6 +19,7 @@
 #include "System/SysThreads.h"
 #include "Gif.h"
 
+extern Fixed100 GetVerticalFrequency();
 extern __aligned16 u8 g_RealGSMem[Ps2MemSize::GSregs];
 
 enum CSR_FifoState
@@ -173,12 +174,12 @@ union tGS_IMR
     struct
     {
         u32 _reserved1	: 8;
-        u32 SIGMSK		: 1;
-        u32 FINISHMSK	: 1;
-        u32 HSMSK		: 1;
-        u32 VSMSK		: 1;
-        u32 EDWMSK		: 1;
-        u32 _undefined	: 2; // Should both be set to 1.
+        u32 SIGMSK		: 1; // Signal evevnt interrupt mask
+        u32 FINISHMSK	: 1; // Finish event interrupt mask
+        u32 HSMSK		: 1; // HSync interrupt mask
+        u32 VSMSK		: 1; // VSync interrupt mask
+        u32 EDWMSK		: 1; // Rectangle write termination interrupt mask
+        u32 _undefined	: 2; // undefined bits should be set to 1.
         u32 _reserved2	: 17;
     };
     u32 _u32;
@@ -246,10 +247,9 @@ struct GSRegSIGBLID
 #define PS2GS_BASE(mem) (PS2MEM_GS+(mem&0x13ff))
 
 #define CSRreg		((tGS_CSR&)*(PS2MEM_GS+0x1000))
-#define GSIMRregs	((tGS_IMR&)*(PS2MEM_GS+0x1010))
 
 #define GSCSRr		((u32&)*(PS2MEM_GS+0x1000))
-#define GSIMR		((u32&)*(PS2MEM_GS+0x1010))
+#define GSIMR		((tGS_IMR&)*(PS2MEM_GS+0x1010))
 #define GSSIGLBLID	((GSRegSIGBLID&)*(PS2MEM_GS+0x1080))
 
 enum class GS_VideoMode : int

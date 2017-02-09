@@ -18,8 +18,10 @@
  *
  */
 
-#include "stdafx.h"
 #include <dlfcn.h>
+#include <cstdlib>
+#include <cstdio>
+#include <string>
 
 static void* handle;
 
@@ -67,8 +69,8 @@ int main ( int argc, char *argv[] )
 	__attribute__((stdcall)) void (*GSsetSettingsDir_ptr)(const char*);
 	__attribute__((stdcall)) void (*GSReplay_ptr)(char*, int);
 
-	*(void**)(&GSsetSettingsDir_ptr) = dlsym(handle, "GSsetSettingsDir");
-	*(void**)(&GSReplay_ptr) = dlsym(handle, "GSReplay");
+	GSsetSettingsDir_ptr = reinterpret_cast<decltype(GSsetSettingsDir_ptr)>(dlsym(handle, "GSsetSettingsDir"));
+	GSReplay_ptr = reinterpret_cast<decltype(GSReplay_ptr)>(dlsym(handle, "GSReplay"));
 
 	if (argc == 2) {
 		char *ini = read_env("GSDUMP_CONF");
@@ -76,7 +78,7 @@ int main ( int argc, char *argv[] )
 		GSsetSettingsDir_ptr(ini);
 
 	} else if (argc == 4) {
-		(void)GSsetSettingsDir_ptr(argv[3]);
+		GSsetSettingsDir_ptr(argv[3]);
 
 	} else if ( argc == 3) {
 #ifdef XDG_STD
