@@ -531,6 +531,8 @@ void Update(unsigned int port, unsigned int slot)
     dm->Update(&info);
     static int rapidFire = 0;
     rapidFire++;
+    static bool anyDeviceActiveAndBound = true;
+    bool currentDeviceActiveAndBound = false;
     for (i = 0; i < dm->numDevices; i++) {
         Device *dev = dm->devices[i];
         // Skip both disabled devices and inactive enabled devices.
@@ -570,6 +572,18 @@ void Update(unsigned int port, unsigned int slot)
                 }
             }
         }
+        if (dev->attached && dev->pads[0][0][config.padConfigs[0][0].type].numBindings > 0) {
+            if (!anyDeviceActiveAndBound) {
+                fprintf(stderr, "LilyPad: A device(%ws) has been attached with bound controls.\n", dev->displayName);
+                anyDeviceActiveAndBound = true;
+            }
+            currentDeviceActiveAndBound = true;
+        }
+    }
+    if (!currentDeviceActiveAndBound && activeWindow) {
+        if (anyDeviceActiveAndBound)
+            fprintf(stderr, "LilyPad: Warning! No controls are bound to a currently attached device!\nPlease attach a controller that has been setup for use with LilyPad or go to the Plugin settings and setup new controls.\n");
+        anyDeviceActiveAndBound = false;
     }
     dm->PostRead();
 
