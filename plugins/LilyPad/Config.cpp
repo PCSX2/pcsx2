@@ -75,6 +75,7 @@ u8 ps2e = 0;
 HWND hWndProp = 0;
 
 int selected = 0;
+bool quickSetup = false;
 
 // Older versions of PCSX2 don't always create the ini dir on startup, so LilyPad does it
 // for it.  But if PCSX2 sets the ini path with a call to setSettingsDir, then it means
@@ -286,13 +287,10 @@ wchar_t *GetCommandStringW(u8 command, int port, int slot)
         return temp;
     }
     /* Get text from the buttons. */
-    if (command >= 0x0C && command <= 0x2A) {
+    if (command >= 0x0F && command <= 0x2D) {
         HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], 0x10F0 + command);
         if (!hWnd) {
             wchar_t *strings[] = {
-                L"Lock Buttons",   // 0x0C (12)
-                L"Lock Input",     // 0x0D (13)
-                L"Lock Direction", // 0x0E (14)
                 L"Mouse",          // 0x0F (15)
                 L"Select",         // 0x10 (16)
                 L"L3",             // 0x11 (17)
@@ -320,9 +318,12 @@ wchar_t *GetCommandStringW(u8 command, int port, int slot)
                 L"R-Stick Left",   // 0x27 (39)
                 L"Analog",         // 0x28 (40)
                 L"Excluded Input", // 0x29 (41)
-                L"Turbo",          // 0x2A (42)
+                L"Lock Buttons",   // 0x2A (42)
+                L"Lock Input",     // 0x2B (43)
+                L"Lock Direction", // 0x2C (44)
+                L"Turbo",          // 0x2D (45)
             };
-            return strings[command - 0xC];
+            return strings[command - 0xF];
         }
         int res = GetWindowTextW(hWnd, temp, 20);
         if ((unsigned int)res - 1 <= 18)
@@ -395,15 +396,12 @@ void SelChanged(int port, int slot)
     int ffbFound = 0;
     ForceFeedbackBinding *ffb = 0;
     Binding *b = 0;
-    if (config.bind && !config.configureOnBind) {
-        i = 0;
-        config.bind = false;
-    }
     if (i >= 1) {
         int index = -1;
         int flipped = 0;
         while (1) {
-            index = ListView_GetNextItem(hWndList, index, LVNI_SELECTED);
+            if (!(config.bind && (!config.configureOnBind || quickSetup)))
+                index = ListView_GetNextItem(hWndList, index, LVNI_SELECTED);
             if (index < 0)
                 break;
             LVITEMW item;
@@ -490,12 +488,19 @@ void SelChanged(int port, int slot)
             }
         }
     }
+    config.bind = false;
 
-    for (i = IDC_DPAD; i <= IDC_FACE_ANALOG; i++) {
+    // Input & Special Bindings:
+    for (i = IDC_DPAD; i <= ID_SPECIAL_INPUTS; i++) {
         hWndTemp = GetDlgItem(hWnd, i);
-        if (hWndTemp)
-            ShowWindow(hWndTemp, !ffb && !b);
+        if (hWndTemp) {
+            if (i >= ID_EXCLUDE && i <= ID_TURBO_KEY)
+                ShowWindow(hWndTemp, !ffb && !b && config.specialInputs[port][slot]);
+            else
+                ShowWindow(hWndTemp, !ffb && !b);
+        }
     }
+    // Input configuration:
     for (i = IDC_SLIDER_SENSITIVITY; i <= IDC_AXIS_SKIP_DEADZONE; i++) {
         hWndTemp = GetDlgItem(hWnd, i);
         if (hWndTemp)
@@ -505,6 +510,7 @@ void SelChanged(int port, int slot)
         if (i == IDC_AXIS_SKIP_DEADZONE && skipDeadZone <= deadZone)
             ShowWindow(hWndTemp, 0);
     }
+    // Pad Force Feedback configuration:
     for (i = ID_TEST; i <= IDC_FF_AXIS8_SCALE; i++) {
         hWndTemp = GetDlgItem(hWnd, i);
         if (hWndTemp) {
@@ -1500,6 +1506,10 @@ void EndBinding(HWND hWnd)
         }
         selected = 0;
 
+        quickSetup = false;
+        SetWindowTextW(GetDlgItem(hWnd, ID_QUICK_SETUP), L"Quick Setup");
+        SetWindowTextW(GetDlgItem(hWnd, IDC_QUICK_SETUP_TEXT), L"");
+
         dm->ReleaseInput();
         ClearKeyQueue();
         hWndButtonProc.Release();
@@ -1608,9 +1618,9 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 
                 InitInfo info = {selected == 0x7F, 1, hWndProp, &hWndButtonProc};
                 Device *dev = dm->GetActiveDevice(&info, &uid, &index, &value);
-                int selectedDevice = config.deviceSelect[port][slot];
+                static unsigned int prev_uid = !uid;
 
-                if (dev == nullptr || (selectedDevice != -1 && dm->devices[selectedDevice] != dev))
+                if (dev == nullptr || (quickSetup && (uid == prev_uid || uid & UID_AXIS)))
                     return 0;
 
                 //Check the bindings for an excluded input, and ignore it if found.
@@ -1626,7 +1636,8 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                 int command = selected;
                 // Good idea to do this first, as BindCommand modifies the ListView, which will
                 // call it anyways, which is a bit funky.
-                EndBinding(hWnd);
+                if (!quickSetup)
+                    EndBinding(hWnd);
                 UnselectAll(hWndList);
                 int index = -1;
                 if (command < 0x30) {
@@ -1638,6 +1649,33 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                     ListView_EnsureVisible(hWndList, index, 0);
                     config.bind = true;
                     ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
+
+                    if (quickSetup) {
+                        HWND hWndS = GetDlgItem(hWnds[port][slot][padtype], selected + 0x10F0);
+                        for (selected++; selected <= (ID_ANALOG - (ID_SELECT - 0x10)); selected++) {
+                            HWND hWndS = GetDlgItem(hWnds[port][slot][padtype], selected + 0x10F0);
+                            if (hWndS) {
+                                break;
+                            }
+                        }
+                        if (!hWndS || selected > (ID_ANALOG - (ID_SELECT - 0x10))) {
+                            prev_uid = !uid;
+                            EndBinding(hWnd);
+                            SetWindowTextW(GetDlgItem(hWnd, IDC_QUICK_SETUP_TEXT), L"Finished");
+                        } else {
+                            wchar_t temp[60];
+                            wsprintfW(temp, L"Please enter an input for %ws", GetCommandStringW(selected, port, slot));
+                            SetWindowTextW(GetDlgItem(hWnd, IDC_QUICK_SETUP_TEXT), temp);
+                            Sleep(80);
+                            for (int i = 0; i < dm->numDevices; i++) {
+                                if (dm->devices[i]->active && (dm->devices[i]->api != WM || dm->devices[i]->api != RAW))
+                                    dm->devices[i]->Deactivate();
+                            }
+                            prev_uid = uid;
+                        }
+                    } else {
+                        SetWindowTextW(GetDlgItem(hWnd, IDC_QUICK_SETUP_TEXT), L"Succeeded");
+                    }
                 }
             }
             break;
@@ -1660,6 +1698,8 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                         EndBinding(hWnd);
                         return 0;
                     case PSN_SETACTIVE:
+                        SetWindowTextW(GetDlgItem(hWnd, IDC_QUICK_SETUP_TEXT), L"");
+                        ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
                         return 0;
                     case PSN_APPLY:
                         SetWindowLongPtr(hWnd, DWLP_MSGRESULT, PSNRET_NOERROR);
@@ -1758,14 +1798,29 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                 int selectedDev = SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETCURSEL, 0, 0);
                 config.deviceSelect[port][slot] = SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETITEMDATA, selectedDev, 0);
                 RefreshEnabledDevicesAndDisplay(1, hWndGeneral, 1);
+                if (selectedDev > 0) {
+                    for (int i = 0; i < dm->numDevices; i++) {
+                        Device *dev = dm->devices[config.deviceSelect[port][slot]];
+                        if (dm->devices[i] != dev) {
+                            dm->DisableDevice(i);
+                        } else {
+                            dm->EnableDevice(i);
+                        }
+                    }
+                }
                 ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
             } else if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_FF_EFFECT) {
                 int typeIndex = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
                 if (typeIndex >= 0)
                     ChangeEffect(port, slot, 0, 0, (unsigned int *)&typeIndex);
             } else if (HIWORD(wParam) == BN_CLICKED) {
-                EndBinding(hWnd);
                 int cmd = LOWORD(wParam);
+                if (quickSetup && cmd == ID_QUICK_SETUP) {
+                    SetWindowTextW(GetDlgItem(hWnd, IDC_QUICK_SETUP_TEXT), L"Stopped");
+                    EndBinding(hWnd);
+                    return 0;
+                }
+                EndBinding(hWnd);
                 if (cmd == ID_BIG_MOTOR || cmd == ID_SMALL_MOTOR) {
                     int i = (int)SendMessage(GetDlgItem(hWnd, IDC_FORCEFEEDBACK), CB_GETCURSEL, 0, 0);
                     if (i >= 0) {
@@ -1834,6 +1889,8 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                     }
                 } else if (cmd == ID_CONTROLS) {
                     UnselectAll(hWndList);
+                    SetWindowTextW(GetDlgItem(hWnd, IDC_QUICK_SETUP_TEXT), L"");
+                    ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
                 } else if (cmd == ID_TEST) {
                     // Just in case...
                     if (selected)
@@ -1860,13 +1917,48 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                             SetTimer(hWnd, 1, 3000, 0);
                         }
                     }
-                } else if (cmd >= ID_LOCK_BUTTONS && cmd <= ID_TURBO_KEY) { // || cmd == ID_FORCE_FEEDBACK) {
+                } else if (cmd >= IDC_DPAD && cmd <= ID_QUICK_SETUP) { // || cmd == ID_FORCE_FEEDBACK) {
                     // Messes up things, unfortunately.
                     // End binding on a bunch of notification messages, and
                     // this will send a bunch.
                     // UnselectAll(hWndList);
                     EndBinding(hWnd);
-                    selected = cmd - (ID_SELECT - 0x10);
+                    SetWindowTextW(GetDlgItem(hWnd, IDC_QUICK_SETUP_TEXT), L"");
+
+                    RefreshEnabledDevices(0);
+                    int selectedDev = SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETCURSEL, 0, 0);
+                    if (selectedDev > 0) {
+                        for (int i = 0; i < dm->numDevices; i++) {
+                            Device *dev = dm->devices[config.deviceSelect[port][slot]];
+                            if (dm->devices[i] != dev) {
+                                dm->DisableDevice(i);
+                            } else {
+                                dm->EnableDevice(i);
+                            }
+                        }
+                    }
+
+                    if (cmd != ID_QUICK_SETUP) {
+                        selected = cmd - (ID_SELECT - 0x10);
+                    } else {
+                        quickSetup = true;
+                        HWND hWndS;
+                        for (selected = 0x10; selected <= (ID_ANALOG - (ID_SELECT - 0x10)); selected++) {
+                            hWndS = GetDlgItem(hWnds[port][slot][padtype], selected + 0x10F0);
+                            if (hWndS) {
+                                break;
+                            }
+                        }
+                        if (hWndS) {
+                            SetWindowTextW(GetDlgItem(hWnd, ID_QUICK_SETUP), L"Stop");
+                        } else {
+                            EndBinding(hWnd);
+                            return 0;
+                        }
+                    }
+                    wchar_t temp[60];
+                    wsprintfW(temp, L"Please enter an input for %ws", GetCommandStringW(selected, port, slot));
+                    SetWindowTextW(GetDlgItem(hWnd, IDC_QUICK_SETUP_TEXT), temp);
 
                     hWndButtonProc.SetWndHandle(GetDlgItem(hWnd, cmd));
                     hWndButtonProc.Eat(DoNothingWndProc, 0);
@@ -1881,6 +1973,13 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                     SetTimer(hWnd, 1, 30, 0);
                 } else if (cmd == IDC_CONFIGURE_ON_BIND) {
                     config.configureOnBind = IsDlgButtonChecked(hWnd, IDC_CONFIGURE_ON_BIND);
+                } else if (cmd == ID_SPECIAL_INPUTS) {
+                    config.specialInputs[port][slot] = !config.specialInputs[port][slot];
+                    SetWindowTextW(GetDlgItem(hWnd, ID_SPECIAL_INPUTS), config.specialInputs[port][slot] ? L"Hide Special Inputs" : L"Show Special Inputs");
+                    SetWindowPos(hWndList, NULL, 0, 0, 275, config.specialInputs[port][slot] ? 324 : 440, SWP_NOZORDER | SWP_NOMOVE);
+                    ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
+                    UnselectAll(hWndList);
+                    SelChanged(port, slot);
                 }
                 if (cmd == IDC_RAPID_FIRE) {
                     // Don't allow setting it back to indeterminate.

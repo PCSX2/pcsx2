@@ -44,6 +44,8 @@ public:
     u8 configureOnBind;
     bool bind;
 
+    bool specialInputs[2][4];
+
     union
     {
         struct
