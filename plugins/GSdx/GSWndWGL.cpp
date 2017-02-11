@@ -45,7 +45,7 @@ LRESULT CALLBACK GSWndWGL::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARA
 }
 
 
-bool GSWndWGL::CreateContext(int major, int minor)
+void GSWndWGL::CreateContext(int major, int minor)
 {
 	if ( !m_NativeDisplay || !m_NativeWindow )
 	{
@@ -57,7 +57,7 @@ bool GSWndWGL::CreateContext(int major, int minor)
 	m_context = wglCreateContext(m_NativeDisplay);
 	if (!m_context) {
 		fprintf(stderr, "Failed to create a 2.0 context\n");
-		return false;
+		throw GSDXRecoverableError();
 	}
 
 	// FIXME test it
@@ -88,13 +88,20 @@ bool GSWndWGL::CreateContext(int major, int minor)
 		PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
 		if (!wglCreateContextAttribsARB) {
 			fprintf(stderr, "Failed to init wglCreateContextAttribsARB function pointer\n");
-			return false;
+			throw GSDXRecoverableError();
 		}
 
 		HGLRC context30 = wglCreateContextAttribsARB(m_NativeDisplay, NULL, context_attribs);
 		if (!context30) {
-			fprintf(stderr, "Failed to create a 3.x context\n");
-			return false;
+			fprintf(stderr, "Failed to create a 3.x context with standard flags\n");
+			// retry with more compatible option for (Mesa on Windows, OpenGL on WINE)
+			context_attribs[2*2+1] = 0;
+
+			context30 = wglCreateContextAttribsARB(m_NativeDisplay, NULL, context_attribs);
+			if (!context30) {
+				fprintf(stderr, "Failed to create a 3.x context with compatible flags\n");
+				throw GSDXRecoverableError();
+			}
 		}
 
 		DetachContext();
@@ -103,8 +110,6 @@ bool GSWndWGL::CreateContext(int major, int minor)
 		m_context = context30;
 		fprintf(stderr, "3.x GL context successfully created\n");
 	}
-
-	return true;
 }
 
 void GSWndWGL::AttachContext()
@@ -141,9 +146,9 @@ bool GSWndWGL::Attach(void* handle, bool managed)
 	m_NativeWindow = (HWND)handle;
 	m_managed = managed;
 
-	if (!OpenWGLDisplay()) return false;
+	OpenWGLDisplay();
 
-	if (!CreateContext(3, 3)) return false;
+	CreateContext(3, 3);
 
 	AttachContext();
 
@@ -178,7 +183,7 @@ void GSWndWGL::Detach()
 
 }
 
-bool GSWndWGL::OpenWGLDisplay()
+void GSWndWGL::OpenWGLDisplay()
 {
 	GLuint	  PixelFormat;			// Holds The Results After Searching For A Match
 	PIXELFORMATDESCRIPTOR pfd =			 // pfd Tells Windows How We Want Things To Be
@@ -208,22 +213,20 @@ bool GSWndWGL::OpenWGLDisplay()
 	if (!m_NativeDisplay)
 	{
 		MessageBox(NULL, "(1) Can't Create A GL Device Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		return false;
+		throw GSDXRecoverableError();
 	}
 	PixelFormat = ChoosePixelFormat(m_NativeDisplay, &pfd);
 	if (!PixelFormat)
 	{
 		MessageBox(NULL, "(2) Can't Find A Suitable PixelFormat.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		return false;
+		throw GSDXRecoverableError();
 	}
 
 	if (!SetPixelFormat(m_NativeDisplay, PixelFormat, &pfd))
 	{
 		MessageBox(NULL, "(3) Can't Set The PixelFormat.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		return false;
+		throw GSDXRecoverableError();
 	}
-
-	return true;
 }
 
 void GSWndWGL::CloseWGLDisplay()
@@ -296,9 +299,9 @@ bool GSWndWGL::Create(const string& title, int w, int h)
 
 	if (m_NativeWindow == NULL) return false;
 
-	if (!OpenWGLDisplay()) return false;
+	OpenWGLDisplay();
 
-	if (!CreateContext(3, 3)) return false;
+	CreateContext(3, 3);
 
 	AttachContext();
 

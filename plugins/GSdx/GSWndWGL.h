@@ -31,11 +31,11 @@ class GSWndWGL : public GSWndGL
 
 	PFNWGLSWAPINTERVALEXTPROC m_swapinterval;
 
-	bool CreateContext(int major, int minor);
+	void CreateContext(int major, int minor);
 	void CheckContext();
 
 	void CloseWGLDisplay();
-	bool OpenWGLDisplay();
+	void OpenWGLDisplay();
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
