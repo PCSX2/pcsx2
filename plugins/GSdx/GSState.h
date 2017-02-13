@@ -160,7 +160,7 @@ protected:
 
 	int UserHacks_WildHack;
 	bool isPackedUV_HackFlag;
-	int m_crc_hack_level;
+	CRCHackLevel m_crc_hack_level;
 	GetSkipCount m_gsc;
 	int m_skip;
 	int m_userhacks_skipdraw;
