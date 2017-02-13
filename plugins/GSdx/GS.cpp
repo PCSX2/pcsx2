@@ -523,7 +523,11 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
 #ifdef _WIN32
 		if (renderer == GSRendererType::Default)
+		{
 			renderer = GSUtil::GetBestRenderer();
+			if (renderer == GSRendererType::OGL_HW)
+				theApp.SetConfig("crc_hack_level", static_cast<int>(CRCHackLevel::Partial));
+		}
 #endif
 	}
 	else if (stored_toggle_state != toggle_state)
