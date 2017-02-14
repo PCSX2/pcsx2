@@ -12,11 +12,6 @@ Installers and binaries for both Windows and Linux are available from [our websi
 
 Development builds are also available from [our website](http://pcsx2.net/download/development/git.html).
 
-![Okami](http://pcsx2.net/images/stories/gitsnaps/okami_n1s.jpg "Okami")
-![Final Fantasy XII](http://pcsx2.net/images/stories/gitsnaps/finalfantasy12izjs_s2.jpg "Final Fantasy XII")
-![Shadow of the Colossus](http://pcsx2.net/images/stories/gitsnaps/sotc6s2.jpg "Shadow of the Colossus")
-![DragonBall Z Budokai Tenkaichi 3](http://pcsx2.net/images/stories/gitsnaps/DBZ-BT-3s.jpg "DragonBall Z Budokai Tenkaichi 3")
-
 # System Requirements
 
 ## Minimum
@@ -43,10 +38,17 @@ Development builds are also available from [our website](http://pcsx2.net/downlo
 
 - PCSX2 mainly takes advantage of 2 CPU cores. As of [this commit](https://github.com/PCSX2/pcsx2/commit/ac9bf45) PCSX2 can now take advantage of more than 2 cores using the MTVU speedhack. This can be a significant speedup on CPUs with 3+ cores, however on GS-limited games (or on CPUs with less than 2 cores) it may be a slowdown.
 
+# Screenshots
+
+![Okami](http://pcsx2.net/images/stories/gitsnaps/okami_n1s.jpg "Okami")
+![Final Fantasy XII](http://pcsx2.net/images/stories/gitsnaps/finalfantasy12izjs_s2.jpg "Final Fantasy XII")
+![Shadow of the Colossus](http://pcsx2.net/images/stories/gitsnaps/sotc6s2.jpg "Shadow of the Colossus")
+![DragonBall Z Budokai Tenkaichi 3](http://pcsx2.net/images/stories/gitsnaps/DBZ-BT-3s.jpg "DragonBall Z Budokai Tenkaichi 3")
 ![Kingdom Hearts 2: Final Mix](http://pcsx2.net/images/stories/gitsnaps/kh2_fm_n1s2.jpg "Kingdom Hearts 2: Final Mix")
 ![God of War 2](http://pcsx2.net/images/stories/gitsnaps/gow2_s2.jpg "God of War 2")
 ![Metal Gear Solid 3: Snake Eater](http://pcsx2.net/images/stories/gitsnaps/mgs3-1_s2.jpg "Metal Gear Solid 3: Snake Eater")
 ![Rogue Galaxy](http://pcsx2.net/images/stories/gitsnaps/rogue_galaxy_n1s2.jpg "Rogue Galaxy")
+
 # Quality Assurance
 
 **Build** | **Status**
