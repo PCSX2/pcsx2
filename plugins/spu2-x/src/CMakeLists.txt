@@ -67,30 +67,49 @@ set(spu2xHeaders
     WavFile.h
 )
 
+if(Windows)
+    LIST(APPEND spu2xSources
+        Windows/SndOut_waveOut.cpp
+        Windows/SndOut_DSound.cpp
+        Windows/SndOut_XAudio2_27.cpp
+        Windows/UIHelpers.cpp
+        Windows/RealtimeDebugger.cpp
+        Windows/dsp.cpp
+        Windows/SndOut_XAudio2.cpp
+        Windows/ConfigSoundtouch.cpp
+        )
 
-# spu2x Linux sources
-set(spu2xLinuxSources
-    Linux/AboutBox.cpp
-    Linux/Alsa.cpp
-    Linux/CfgHelpers.cpp
-    Linux/Config.cpp
-    Linux/ConfigDebug.cpp
-    Linux/ConfigSoundTouch.cpp
-    Linux/Dialogs.cpp)
+    LIST(APPEND spu2xHeaders
+        Windows/resource.h
+        Windows/WinConfig.h
+        Windows/dsp.h
+        )
 
-# spu2x Linux headers
-set(spu2xLinuxHeaders
-    Linux/Alsa.h
-    Linux/Config.h
-    Linux/Dialogs.h)
+    include_directories("Windows")
+else()
+    LIST(APPEND spu2xSources
+        Linux/AboutBox.cpp
+        Linux/Alsa.cpp
+        Linux/CfgHelpers.cpp
+        Linux/Config.cpp
+        Linux/ConfigDebug.cpp
+        Linux/ConfigSoundTouch.cpp
+        Linux/Dialogs.cpp
+        )
 
-# add additional include directories
-include_directories(Linux)
+    LIST(APPEND spu2xHeaders
+        Linux/Alsa.h
+        Linux/Config.h
+        Linux/Dialogs.h
+        )
+
+    include_directories(Linux)
+endif()
+
 
 set(spu2xFinalSources
     ${spu2xSources}
     ${spu2xHeaders}
-    ${spu2xLinuxSources}
     ${spu2xLinuxHeaders}
 )
 

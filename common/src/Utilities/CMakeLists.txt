@@ -39,6 +39,7 @@ set(UtilitiesSources
 	pxStreams.cpp
 	pxTranslate.cpp
 	pxWindowTextWriter.cpp
+	RwMutex.cpp
 	StringHelpers.cpp
 	ThreadingDialogs.cpp
 	ThreadTools.cpp
@@ -68,6 +69,7 @@ set(UtilitiesHeaders
 	../../include/Utilities/pxStaticText.h
 	../../include/Utilities/pxStreams.h
 	../../include/Utilities/RedtapeWindows.h
+	../../include/Utilities/RwMutex.h
 	../../include/Utilities/SafeArray.h
 	../../include/Utilities/ScopedAlloc.h
 	../../include/Utilities/ScopedPtrMT.h
@@ -79,6 +81,7 @@ set(UtilitiesHeaders
 	../../include/Utilities/wxBaseTools.h
 	../../include/Utilities/wxGuiTools.h
 	PrecompiledHeader.h
+	ThreadingInternal.h
 )
 
 if(APPLE)
@@ -86,6 +89,13 @@ if(APPLE)
 		Darwin/DarwinThreads.cpp
 		Darwin/DarwinMisc.cpp
 		Darwin/DarwinSemaphore.cpp
+	)
+elseif(Windows)
+	LIST(APPEND UtilitiesSources
+		x86/MemcpyFast.cpp
+		Windows/WinThreads.cpp
+		Windows/WinHostSys.cpp
+		Windows/WinMisc.cpp
 	)
 else()
 	LIST(APPEND UtilitiesSources

@@ -13,50 +13,87 @@ set(lilypadFinalFlags "")
 
 # lilypad sources
 set(lilypadSources
-	DeviceEnumerator.cpp
-	InputManager.cpp
-	KeyboardQueue.cpp
-	LilyPad.cpp
-	Linux/Config.cpp
-	Linux/ConfigHelper.cpp
-	Linux/JoyEvdev.cpp
-	Linux/KeyboardMouse.cpp
-	Linux/KeyboardQueue.cpp
-	)
+    DeviceEnumerator.cpp
+    InputManager.cpp
+    KeyboardQueue.cpp
+    LilyPad.cpp
+    )
 
-# lilypad headers
+# lilypad headers (I will let people split it between windows/linux, not sure it is useful)
 set(lilypadHeaders
-	)
+    Config.h
+    DeviceEnumerator.h
+    Diagnostics.h
+    DirectInput.h
+    DualShock3.h
+    Global.h
+    HidDevice.h
+    InputManager.h
+    KeyboardQueue.h
+    Linux/bitmaskros.h
+    Linux/ConfigHelper.h
+    Linux/JoyEvdev.h
+    Linux/KeyboardMouse.h
+    RawInput.h
+    resource.h
+    Tooltips.h
+    usb.h
+    VKey.h
+    WindowsKeyboard.h
+    WindowsMessaging.h
+    WindowsMouse.h
+    WndProcEater.h
+    XInputEnum.h
+)
 
-# lilypad Linux sources
-set(lilypadLinuxSources
-	)
+if(Windows)
+    LIST(APPEND lilypadSources
+        Diagnostics.cpp
+        DirectInput.cpp
+        DualShock3.cpp
+        Global.cpp
+        HidDevice.cpp
+        RawInput.cpp
+        Tooltips.cpp
+        VKey.cpp
+        WindowsKeyboard.cpp
+        WindowsMessaging.cpp
+        WindowsMouse.cpp
+        WndProcEater.cpp
+        XInputEnum.cpp
+        )
 
-# lilypad Linux headers
-set(lilypadLinuxHeaders
-	)
+else()
+    LIST(APPEND lilypadSources
+        Linux/Config.cpp
+        Linux/ConfigHelper.cpp
+        Linux/JoyEvdev.cpp
+        Linux/KeyboardMouse.cpp
+        Linux/KeyboardQueue.cpp
+        )
+endif()
 
 if (SDL2_API)
-	set(lilypadFinalLibs
-		${SDL2_LIBRARIES}
-	)
+    set(lilypadFinalLibs
+        ${SDL2_LIBRARIES}
+        )
 else()
-	set(lilypadFinalLibs
-		${SDL_LIBRARY}
-	)
+    set(lilypadFinalLibs
+        ${SDL_LIBRARY}
+        )
 endif()
 
 set(lilypadFinalLibs
-	#${lilypadFinalLibs}
-	#${GTK2_LIBRARIES}
-	#${X11_LIBRARIES}
-)
+    #${lilypadFinalLibs}
+    #${GTK2_LIBRARIES}
+    #${X11_LIBRARIES}
+    )
 
 set(lilypadFinalSources
-	${lilypadSources}
-	${lilypadHeaders}
-	${lilypadLinuxSources}
-	${lilypadLinuxHeaders}
-)
+    ${lilypadSources}
+    ${lilypadHeaders}
+    ${lilypadLinuxSources}
+    ${lilypadLinuxHeaders}
+    )
 
 add_pcsx2_plugin(${Output} "${lilypadFinalSources}" "${lilypadFinalLibs}" "${lilypadFinalFlags}")
