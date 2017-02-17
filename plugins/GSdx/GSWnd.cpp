@@ -136,33 +136,33 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glBufferStorage);
 
 	// GL4.5
-	GL_EXT_LOAD(glCreateTextures);
-	GL_EXT_LOAD(glTextureStorage2D);
-	GL_EXT_LOAD(glTextureSubImage2D);
-	GL_EXT_LOAD(glCopyTextureSubImage2D);
-	GL_EXT_LOAD(glBindTextureUnit);
-	GL_EXT_LOAD(glGetTextureImage);
-	GL_EXT_LOAD(glTextureParameteri);
-	GL_EXT_LOAD(glGenerateTextureMipmap);
+	GL_EXT_LOAD_OPT(glCreateTextures);
+	GL_EXT_LOAD_OPT(glTextureStorage2D);
+	GL_EXT_LOAD_OPT(glTextureSubImage2D);
+	GL_EXT_LOAD_OPT(glCopyTextureSubImage2D);
+	GL_EXT_LOAD_OPT(glBindTextureUnit);
+	GL_EXT_LOAD_OPT(glGetTextureImage);
+	GL_EXT_LOAD_OPT(glTextureParameteri);
+	GL_EXT_LOAD_OPT(glGenerateTextureMipmap);
 
-	GL_EXT_LOAD(glCreateFramebuffers);
-	GL_EXT_LOAD(glClearNamedFramebufferfv);
-	GL_EXT_LOAD(glClearNamedFramebufferuiv);
-	GL_EXT_LOAD(glClearNamedFramebufferiv);
-	GL_EXT_LOAD(glNamedFramebufferTexture);
-	GL_EXT_LOAD(glNamedFramebufferDrawBuffers);
-	GL_EXT_LOAD(glNamedFramebufferReadBuffer);
+	GL_EXT_LOAD_OPT(glCreateFramebuffers);
+	GL_EXT_LOAD_OPT(glClearNamedFramebufferfv);
+	GL_EXT_LOAD_OPT(glClearNamedFramebufferuiv);
+	GL_EXT_LOAD_OPT(glClearNamedFramebufferiv);
+	GL_EXT_LOAD_OPT(glNamedFramebufferTexture);
+	GL_EXT_LOAD_OPT(glNamedFramebufferDrawBuffers);
+	GL_EXT_LOAD_OPT(glNamedFramebufferReadBuffer);
 	GL_EXT_LOAD_OPT(glNamedFramebufferParameteri);
-	GL_EXT_LOAD(glCheckNamedFramebufferStatus);
+	GL_EXT_LOAD_OPT(glCheckNamedFramebufferStatus);
 
-	GL_EXT_LOAD(glCreateBuffers);
-	GL_EXT_LOAD(glNamedBufferStorage);
-	GL_EXT_LOAD(glNamedBufferData);
-	GL_EXT_LOAD(glNamedBufferSubData);
-	GL_EXT_LOAD(glMapNamedBuffer);
-	GL_EXT_LOAD(glMapNamedBufferRange);
-	GL_EXT_LOAD(glUnmapNamedBuffer);
-	GL_EXT_LOAD(glFlushMappedNamedBufferRange);
+	GL_EXT_LOAD_OPT(glCreateBuffers);
+	GL_EXT_LOAD_OPT(glNamedBufferStorage);
+	GL_EXT_LOAD_OPT(glNamedBufferData);
+	GL_EXT_LOAD_OPT(glNamedBufferSubData);
+	GL_EXT_LOAD_OPT(glMapNamedBuffer);
+	GL_EXT_LOAD_OPT(glMapNamedBufferRange);
+	GL_EXT_LOAD_OPT(glUnmapNamedBuffer);
+	GL_EXT_LOAD_OPT(glFlushMappedNamedBufferRange);
 
 	GL_EXT_LOAD(glCreateSamplers);
 	GL_EXT_LOAD(glCreateProgramPipelines);
@@ -170,4 +170,12 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glClipControl);
 	GL_EXT_LOAD(glTextureBarrier);
 	GL_EXT_LOAD_OPT(glGetTextureSubImage);
+
+#ifdef _WIN32
+	*(void**)&(gl_ActiveTexture) = GetProcAddress("glActiveTexture");
+	GL_EXT_LOAD(glTexStorage2D);
+	GL_EXT_LOAD(glGenSamplers);
+	GL_EXT_LOAD(glGenProgramPipelines);
+	GL_EXT_LOAD(glGenerateMipmap);
+#endif
 }

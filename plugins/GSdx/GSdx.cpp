@@ -329,6 +329,7 @@ void GSdxApp::Init()
 	m_default_configuration["osd_max_log_messages"]                       = "3";
 	m_default_configuration["override_geometry_shader"]                   = "-1";
 	m_default_configuration["override_GL_ARB_clear_texture"]              = "-1";
+	m_default_configuration["override_GL_ARB_direct_state_access"]        = "-1";
 	m_default_configuration["override_GL_ARB_draw_buffers_blend"]         = "-1";
 	m_default_configuration["override_GL_ARB_get_texture_sub_image"]      = "-1";
 	m_default_configuration["override_GL_ARB_gpu_shader5"]                = "-1";

@@ -168,6 +168,14 @@ PFNGLCLIPCONTROLPROC                   glClipControl                       = NUL
 PFNGLTEXTUREBARRIERPROC                glTextureBarrier                    = NULL;
 PFNGLGETTEXTURESUBIMAGEPROC            glGetTextureSubImage                = NULL;
 
+#ifdef _WIN32
+PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture                    = NULL;
+PFNGLTEXSTORAGE2DPROC                  glTexStorage2D                      = NULL;
+PFNGLGENPROGRAMPIPELINESPROC           glGenProgramPipelines               = NULL;
+PFNGLGENSAMPLERSPROC                   glGenSamplers                       = NULL;
+PFNGLGENERATEMIPMAPPROC                glGenerateMipmap                    = NULL;
+#endif
+
 namespace ReplaceGL {
 	void APIENTRY ScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
 	{
@@ -184,6 +192,75 @@ namespace ReplaceGL {
 	}
 
 }
+
+#ifdef _WIN32
+namespace Emulate_DSA {
+	// Texture entry point
+	void APIENTRY BindTextureUnit(GLuint unit, GLuint texture) {
+		gl_ActiveTexture(GL_TEXTURE0 + unit);
+		glBindTexture(GL_TEXTURE_2D, texture);
+	}
+
+	void APIENTRY CreateTexture(GLenum target, GLsizei n, GLuint *textures) {
+		glGenTextures(1, textures);
+	}
+
+	void APIENTRY TextureStorage(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
+		BindTextureUnit(7, texture);
+		glTexStorage2D(GL_TEXTURE_2D, levels, internalformat, width, height);
+	}
+
+	void APIENTRY TextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels) {
+		BindTextureUnit(7, texture);
+		glTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
+	}
+
+	void APIENTRY CopyTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height) {
+		BindTextureUnit(7, texture);
+		glCopyTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, x, y, width, height);
+	}
+
+	void APIENTRY GetTexureImage(GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels) {
+		BindTextureUnit(7, texture);
+		glGetTexImage(GL_TEXTURE_2D, level, format, type, pixels);
+	}
+
+	void APIENTRY TextureParameteri (GLuint texture, GLenum pname, GLint param) {
+		BindTextureUnit(7, texture);
+		glTexParameteri(GL_TEXTURE_2D, pname, param);
+	}
+
+	void APIENTRY GenerateTextureMipmap(GLuint texture) {
+		BindTextureUnit(7, texture);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+
+	// Misc entry point
+	// (only purpose is to have a consistent API otherwise it is useless)
+	void APIENTRY CreateProgramPipelines(GLsizei n, GLuint *pipelines) {
+		glGenProgramPipelines(n, pipelines);
+	}
+
+	void APIENTRY CreateSamplers(GLsizei n, GLuint *samplers) {
+		glGenSamplers(n, samplers);
+	}
+
+	// Replace function pointer to emulate DSA behavior
+	void Init() {
+		fprintf(stderr, "DSA is not supported. Expect slower performance\n");
+		glBindTextureUnit             = BindTextureUnit;
+		glCreateTextures              = CreateTexture;
+		glTextureStorage2D            = TextureStorage;
+		glTextureSubImage2D           = TextureSubImage;
+		glCopyTextureSubImage2D       = CopyTextureSubImage;
+		glGetTextureImage             = GetTexureImage;
+		glTextureParameteri           = TextureParameteri;
+
+		glCreateProgramPipelines      = CreateProgramPipelines;
+		glCreateSamplers              = CreateSamplers;
+	}
+}
+#endif
 
 namespace GLLoader {
 
@@ -353,7 +430,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
 		// GL4.5
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control", true);
-		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access", true);
+		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
 		// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
 		// Rendering might be corrupted but it could be good enough for test/virtual machine.
 		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier");
@@ -378,6 +455,13 @@ namespace GLLoader {
 			fprintf(stderr, "GL_ARB_texture_barrier: not supported ! Rendering will be corrupted\n");
 			glTextureBarrier = ReplaceGL::TextureBarrier;
 		}
+
+#ifdef _WIN32
+		// Thanks you Intel to not provide support of basic feature on your iGPU
+		if (!found_GL_ARB_direct_state_access) {
+			Emulate_DSA::Init();
+		}
+#endif
 
 		fprintf(stdout, "\n");
 

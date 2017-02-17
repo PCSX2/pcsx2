@@ -346,6 +346,15 @@ extern PFNGLCLIPCONTROLPROC                     glClipControl;
 extern PFNGLTEXTUREBARRIERPROC                  glTextureBarrier;
 extern PFNGLGETTEXTURESUBIMAGEPROC              glGetTextureSubImage;
 
+#ifdef _WIN32
+extern PFNGLACTIVETEXTUREPROC                   gl_ActiveTexture;
+extern PFNGLTEXSTORAGE2DPROC                    glTexStorage2D;
+extern PFNGLGENPROGRAMPIPELINESPROC             glGenProgramPipelines;
+extern PFNGLGENSAMPLERSPROC                     glGenSamplers;
+extern PFNGLGENERATEMIPMAPPROC                  glGenerateMipmap;
+#endif
+
+
 namespace GLLoader {
 	bool check_gl_version(int major, int minor);
 	void init_gl_function();
