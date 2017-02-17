@@ -77,7 +77,6 @@ class GSRendererOGL final : public GSRendererHW
 		inline void ResetStates();
 		inline void Lines2Sprites();
 		inline void SetupIA(const float& sx, const float& sy);
-		inline void RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 		inline void EmulateTextureShuffleAndFbmask();
 		inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
 		inline void EmulateBlending(bool DATE_GL42);

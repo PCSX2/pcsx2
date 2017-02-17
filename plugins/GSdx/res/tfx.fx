@@ -2,7 +2,6 @@
 #define FMT_32 0
 #define FMT_24 1
 #define FMT_16 2
-#define FMT_PAL 4 /* flag bit */
 
 // And I say this as an ATI user.
 #define ATI_SUCKS 1
@@ -41,6 +40,7 @@
 #define PS_POINT_SAMPLER 0
 #define PS_SHUFFLE 0
 #define PS_READ_BA 0
+#define PS_PAL_FMT 0
 #endif
 
 struct VS_INPUT
@@ -91,7 +91,7 @@ cbuffer cb0
 {
 	float4 VertexScale;
 	float4 VertexOffset;
-	float2 TextureScale;
+	float4 Texture_Scale_Offset;
 };
 
 cbuffer cb1
@@ -155,6 +155,7 @@ float4 sample_rt(float2 uv)
 #define PS_LTF 0
 #define PS_COLCLIP 0
 #define PS_DATE 0
+#define PS_PAL_FMT 0
 #endif
 
 struct VS_INPUT
@@ -194,7 +195,7 @@ float4 vs_params[3];
 
 #define VertexScale vs_params[0]
 #define VertexOffset vs_params[1]
-#define TextureScale vs_params[2].xy
+#define Texture_Scale_Offset vs_params[2]
 
 float4 ps_params[7];
 
@@ -225,7 +226,9 @@ float4 sample_rt(float2 uv)
 
 #endif
 
-float4 wrapuv(float4 uv)
+#define PS_AEM_FMT (PS_FMT & 3)
+
+float4 clamp_wrap_uv(float4 uv)
 {
 	if(PS_WMS == PS_WMT)
 	{
@@ -311,24 +314,6 @@ float4 wrapuv(float4 uv)
 	return uv;
 }
 
-float2 clampuv(float2 uv)
-{
-	if(PS_WMS == 2 && PS_WMT == 2) 
-	{
-		uv = clamp(uv, MinF, MinMax.zw);
-	}
-	else if(PS_WMS == 2)
-	{
-		uv.x = clamp(uv.x, MinF.x, MinMax.z);
-	}
-	else if(PS_WMT == 2)
-	{
-		uv.y = clamp(uv.y, MinF.y, MinMax.w);
-	}
-	
-	return uv;
-}
-
 float4x4 sample_4c(float4 uv)
 {
 	float4x4 c;
@@ -381,15 +366,9 @@ float4 sample(float2 st, float q)
 	float4x4 c;
 	float2 dd;
 
-/*	
-	if(!PS_LTF && PS_FMT <= FMT_16 && PS_WMS < 2 && PS_WMT < 2)
+	if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_WMS < 2 && PS_WMT < 2)
 	{
 		c[0] = sample_c(st);
-	}
-*/
-	if (!PS_LTF && PS_FMT <= FMT_16 && PS_WMS < 3 && PS_WMT < 3)
-	{
-		c[0] = sample_c(clampuv(st));
 	}
 	else
 	{
@@ -405,32 +384,29 @@ float4 sample(float2 st, float q)
 			uv = st.xyxy;
 		}
 
-		uv = wrapuv(uv);
+		uv = clamp_wrap_uv(uv);
 
-		if(PS_FMT & FMT_PAL)
-		{
+#if PS_PAL_FMT != 0
 			c = sample_4p(sample_4a(uv));
-		}
-		else
-		{
+#else
 			c = sample_4c(uv);
-		}
+#endif
 	}
 
 	[unroll]
 	for (uint i = 0; i < 4; i++)
 	{
-		if((PS_FMT & ~FMT_PAL) == FMT_32)
+		if(PS_AEM_FMT == FMT_32)
 		{
 			#if SHADER_MODEL <= 0x300
 			if(PS_RT) c[i].a *= 128.0f / 255;
 			#endif
 		}
-		else if((PS_FMT & ~FMT_PAL) == FMT_24)
+		else if(PS_AEM_FMT == FMT_24)
 		{
 			c[i].a = !PS_AEM || any(c[i].rgb) ? TA.x : 0;
 		}
-		else if((PS_FMT & ~FMT_PAL) == FMT_16)
+		else if(PS_AEM_FMT == FMT_16)
 		{
 			c[i].a = c[i].a >= 0.5 ? TA.y : !PS_AEM || any(c[i].rgb) ? TA.x : 0; 
 		}
@@ -631,12 +607,14 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	{
 		if(VS_FST)
 		{
-			output.t.xy = input.uv * TextureScale;
-			output.t.w = 1.0f;
+			float2 uv = input.uv - Texture_Scale_Offset.zw;
+
+			output.t.xy = uv * Texture_Scale_Offset.xy;
+			output.t.zw = uv;
 		}
 		else
 		{
-			output.t.xy = input.st;
+			output.t.xy = input.st - Texture_Scale_Offset.zw;
 			output.t.w = input.q;
 		}
 	}
@@ -808,14 +786,16 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	
 	if(VS_TME)
 	{
+		float2 t = input.t - Texture_Scale_Offset.zw;
 		if(VS_FST)
 		{
-            output.t.xy = input.t * TextureScale;
-			output.t.w = 1.0f;
+
+			output.t.xy = t * Texture_Scale_Offset.xy;
+			output.t.zw = t;
 		}
 		else
 		{
-			output.t.xy = input.t;
+			output.t.xy = t;
 			output.t.w = input.p.w;
 		}
 	}

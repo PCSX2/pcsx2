@@ -111,7 +111,7 @@ class GSRendererCS : public GSRenderer
 	CComPtr<ID3D11Buffer> m_vs_cb;
 	hash_map<uint32, CComPtr<ID3D11GeometryShader> > m_gs;
 	CComPtr<ID3D11PixelShader> m_ps0;
-	hash_map<uint32, CComPtr<ID3D11PixelShader> > m_ps1;
+	hash_map<uint64, CComPtr<ID3D11PixelShader> > m_ps1;
 	CComPtr<ID3D11Buffer> m_ps_cb;
 
 	void Write(GSOffset* off, const GSVector4i& r);

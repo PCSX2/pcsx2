@@ -40,10 +40,12 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userhacks_align_sprite_X       = theApp.GetConfigB("UserHacks_align_sprite_X");
 		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
 		m_userhacks_disable_gs_mem_clear = theApp.GetConfigB("UserHacks_DisableGsMemClear");
+		m_userHacks_HPO                  = theApp.GetConfigI("UserHacks_HalfPixelOffset");
 	} else {
 		m_userhacks_align_sprite_X       = false;
 		m_userhacks_round_sprite_offset  = 0;
 		m_userhacks_disable_gs_mem_clear = false;
+		m_userHacks_HPO                  = 0;
 	}
 
 	if (!m_upscale_multiplier) { //Custom Resolution
@@ -263,6 +265,65 @@ GSTexture* GSRendererHW::GetFeedbackOutput()
 #endif
 
 	return t;
+}
+
+GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Source* tex)
+{
+	if (m_userHacks_HPO <= 1 || GetUpscaleMultiplier() == 1) return GSVector4(0.0f);
+
+	GSVertex* v             = &m_vertex.buff[0];
+	const GSVector2& scale  = tex->m_texture->GetScale();
+	bool  linear            = m_vt.IsRealLinear();
+	int t_position          = v[0].U;
+	GSVector4 half_offset(0.0f);
+
+	// FIXME Let's start with something wrong same mess on X and Y
+	// FIXME Maybe it will be enough to check linear
+
+	if (PRIM->FST) {
+
+		if (m_userHacks_HPO == 3) {
+			if (!linear && t_position == 8) {
+				half_offset.x = 8;
+				half_offset.y = 8;
+			} else if (linear && t_position == 16) {
+				half_offset.x = 16;
+				half_offset.y = 16;
+			} else if (m_vt.m_min.p.x == -0.5f) {
+				half_offset.x = 8;
+				half_offset.y = 8;
+			}
+		} else {
+			if (!linear && t_position == 8) {
+				half_offset.x = 8 - 8 / scale.x;
+				half_offset.y = 8 - 8 / scale.y;
+			} else if (linear && t_position == 16) {
+				half_offset.x = 16 - 16 / scale.x;
+				half_offset.y = 16 - 16 / scale.y;
+			} else if (m_vt.m_min.p.x == -0.5f) {
+				half_offset.x = 8;
+				half_offset.y = 8;
+			}
+		}
+
+		GL_INS("offset detected %f,%f t_pos %d (linear %d, scale %f)",
+				half_offset.x, half_offset.y, t_position, linear, scale.x);
+
+	} else if (m_vt.m_eq.q) {
+		float tw = (float)(1 << m_context->TEX0.TW);
+		float th = (float)(1 << m_context->TEX0.TH);
+		float q  = v[0].RGBAQ.Q;
+
+		// Tales of Abyss
+		half_offset.x = 0.5f * q / tw;
+		half_offset.y = 0.5f * q / th;
+
+		GL_INS("ST offset detected %f,%f (linear %d, scale %f)",
+				half_offset.x, half_offset.y, linear, scale.x);
+
+	}
+
+	return half_offset;
 }
 
 void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)

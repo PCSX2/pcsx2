@@ -133,11 +133,11 @@ void GSDevice9::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSel
 		}
 	}
 
-	hash_map<uint32, CComPtr<IDirect3DPixelShader9> >::const_iterator i = m_ps.find(sel);
+	hash_map<uint64, CComPtr<IDirect3DPixelShader9> >::const_iterator i = m_ps.find(sel);
 
 	if(i == m_ps.end())
 	{
-		string str[17];
+		string str[18];
 
 		str[0] = format("%d", sel.fst);
 		str[1] = format("%d", sel.wms);
@@ -156,6 +156,7 @@ void GSDevice9::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSel
 		str[14] = format("%d", sel.spritehack);
 		str[15] = format("%d", sel.tcoffsethack);
 		str[16] = format("%d", sel.point_sampler);
+		str[17] = format("%d", sel.fmt >> 2);
 
 		D3D_SHADER_MACRO macro[] =
 		{
@@ -176,6 +177,7 @@ void GSDevice9::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSel
 			{"PS_SPRITEHACK", str[14].c_str()},
 			{"PS_TCOFFSETHACK", str[15].c_str()},
 			{"PS_POINT_SAMPLER", str[16].c_str()},
+			{"PS_PAL_FMT", str[17].c_str()},
 			{NULL, NULL},
 		};
 

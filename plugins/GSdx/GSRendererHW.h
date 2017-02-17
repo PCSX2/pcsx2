@@ -151,6 +151,7 @@ protected:
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) = 0;
 
 	int m_userhacks_round_sprite_offset;
+	int m_userHacks_HPO;
 
 	bool m_channel_shuffle;
 
@@ -165,6 +166,7 @@ public:
 	int GetUpscaleMultiplier();
 	GSVector2i GetCustomResolution();
 	void SetScaling();
+	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 
 	void Reset();
 	void VSync(int field);

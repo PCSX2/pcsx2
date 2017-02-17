@@ -34,13 +34,13 @@ public:
 	{
 		GSVector4 VertexScale;
 		GSVector4 VertexOffset;
-		GSVector4 TextureScale;
+		GSVector4 Texture_Scale_Offset;
 
 		struct VSConstantBuffer()
 		{
 			VertexScale = GSVector4::zero();
 			VertexOffset = GSVector4::zero();
-			TextureScale = GSVector4::zero();
+			Texture_Scale_Offset = GSVector4::zero();
 		}
 
 		__forceinline bool Update(const VSConstantBuffer* cb)
@@ -48,15 +48,12 @@ public:
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			GSVector4i b0 = b[0];
-			GSVector4i b1 = b[1];
-			GSVector4i b2 = b[2];
-
-			if(!((a[0] == b0) & (a[1] == b1) & (a[2] == b2)).alltrue())
+			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3])).alltrue())
 			{
-				a[0] = b0;
-				a[1] = b1;
-				a[2] = b2;
+				a[0] = b[0];
+				a[1] = b[1];
+				a[2] = b[2];
+				a[3] = b[3];
 
 				return true;
 			}
@@ -112,21 +109,14 @@ public:
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			GSVector4i b0 = b[0];
-			GSVector4i b1 = b[1];
-			GSVector4i b2 = b[2];
-			GSVector4i b3 = b[3];
-			GSVector4i b4 = b[4];
-			GSVector4i b5 = b[5];
-
-			if(!((a[0] == b0) /*& (a[1] == b1)*/ & (a[2] == b2) & (a[3] == b3) & (a[4] == b4) & (a[5] == b5)).alltrue()) // if WH matches HalfTexel does too
+			if(!((a[0] == b[0]) /*& (a[1] == b1)*/ & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5])).alltrue()) // if WH matches HalfTexel does too
 			{
-				a[0] = b0;
-				a[1] = b1;
-				a[2] = b2;
-				a[3] = b3;
-				a[4] = b4;
-				a[5] = b5;
+				a[0] = b[0];
+				a[1] = b[1];
+				a[2] = b[2];
+				a[3] = b[3];
+				a[4] = b[4];
+				a[5] = b[5];
 
 				return true;
 			}
@@ -162,7 +152,7 @@ public:
 				uint32 fst:1;
 				uint32 wms:2;
 				uint32 wmt:2;
-				uint32 fmt:3;
+				uint32 fmt:4;
 				uint32 aem:1;
 				uint32 tfx:3;
 				uint32 tcc:1;
@@ -180,12 +170,14 @@ public:
 				uint32 point_sampler:1;
 				uint32 shuffle:1;
 				uint32 read_ba:1;
+
+				uint32 _free:32;
 			};
 
-			uint32 key;
+			uint64 key;
 		};
 
-		operator uint32() {return key & 0xfffffff;}
+		operator uint64() {return key;}
 
 		PSSelector() : key(0) {}
 	};

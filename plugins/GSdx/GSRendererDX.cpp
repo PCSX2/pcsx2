@@ -34,10 +34,12 @@ GSRendererDX::GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter)
 		UserHacks_AlphaHack    = theApp.GetConfigB("UserHacks_AlphaHack");
 		UserHacks_AlphaStencil = theApp.GetConfigB("UserHacks_AlphaStencil");
 		UserHacks_TCOffset     = theApp.GetConfigI("UserHacks_TCOffset");
+		UserHacks_HPO          = theApp.GetConfigI("UserHacks_HalfPixelOffset");
 	} else {
 		UserHacks_AlphaHack    = false;
 		UserHacks_AlphaStencil = false;
 		UserHacks_TCOffset     = 0;
+		UserHacks_HPO          = 0;
 	}
 
 	UserHacks_TCO_x = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
@@ -58,39 +60,39 @@ void GSRendererDX::EmulateAtst(const int pass, const GSTextureCache::Source* tex
 	switch (atst) {
 	case ATST_LESS:
 		if (tex && tex->m_spritehack_t) {
-			ps_sel.atst = 0;
+			m_ps_sel.atst = 0;
 		}
 		else {
 			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
-			ps_sel.atst = 1;
+			m_ps_sel.atst = 1;
 		}
 		break;
 	case ATST_LEQUAL:
 		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
-		ps_sel.atst = 1;
+		m_ps_sel.atst = 1;
 		break;
 	case ATST_GEQUAL:
 		// Maybe a -1 trick multiplication factor could be used to merge with ATST_LEQUAL case
 		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
-		ps_sel.atst = 2;
+		m_ps_sel.atst = 2;
 		break;
 	case ATST_GREATER:
 		// Maybe a -1 trick multiplication factor could be used to merge with ATST_LESS case
 		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
-		ps_sel.atst = 2;
+		m_ps_sel.atst = 2;
 		break;
 	case ATST_EQUAL:
 		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
-		ps_sel.atst = 3;
+		m_ps_sel.atst = 3;
 		break;
 	case ATST_NOTEQUAL:
 		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
-		ps_sel.atst = 4;
+		m_ps_sel.atst = 4;
 		break;
 	case ATST_NEVER:
 	case ATST_ALWAYS:
 	default:
-		ps_sel.atst = 0;
+		m_ps_sel.atst = 0;
 		break;
 	}
 }
@@ -145,6 +147,141 @@ void GSRendererDX::EmulateZbuffer()
 	}
 }
 
+void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
+{
+	const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+	const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
+
+	const uint8 wms = m_context->CLAMP.WMS;
+	const uint8 wmt = m_context->CLAMP.WMT;
+	bool complex_wms_wmt = !!((wms | wmt) & 2);
+
+	bool bilinear = m_vt.IsLinear();
+	bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt;
+
+	// 1 and 0 are equivalent
+	m_ps_sel.wms = (wms & 2) ? wms : 0;
+	m_ps_sel.wmt = (wmt & 2) ? wmt : 0;
+
+	int w = tex->m_texture->GetWidth();
+	int h = tex->m_texture->GetHeight();
+
+	int tw = (int)(1 << m_context->TEX0.TW);
+	int th = (int)(1 << m_context->TEX0.TH);
+
+	GSVector4 WH(tw, th, w, h);
+
+	// Performance note:
+	// 1/ Don't set 0 as it is the default value
+	// 2/ Only keep aem when it is useful (avoid useless shader permutation)
+	if (m_ps_sel.shuffle) {
+		// Force a 32 bits access (normally shuffle is done on 16 bits)
+		// m_ps_sel.tex_fmt = 0; // removed as an optimization
+		m_ps_sel.aem = m_env.TEXA.AEM;
+		ASSERT(tex->m_target);
+
+		// Shuffle is a 16 bits format, so aem is always required
+		GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
+		ps_cb.MinF_TA = (GSVector4(ps_cb.MskFix) + 0.5f).xyxy(ta) / WH.xyxy(GSVector4(255, 255));
+
+		bilinear &= m_vt.IsLinear();
+
+		GSVector4 half_offset = RealignTargetTextureCoordinate(tex);
+		vs_cb.Texture_Scale_Offset.z = half_offset.x;
+		vs_cb.Texture_Scale_Offset.w = half_offset.y;
+
+	} else if (tex->m_target) {
+		// Use an old target. AEM and index aren't resolved it must be done
+		// on the GPU
+
+		// Select the 32/24/16 bits color (AEM)
+		m_ps_sel.fmt = cpsm.fmt;
+		m_ps_sel.aem = m_env.TEXA.AEM;
+
+		// Don't upload AEM if format is 32 bits
+		if (cpsm.fmt) {
+			GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
+			ps_cb.MinF_TA = (GSVector4(ps_cb.MskFix) + 0.5f).xyxy(ta) / WH.xyxy(GSVector4(255, 255));
+		}
+
+		// Select the index format
+		if (tex->m_palette) {
+			// FIXME Potentially improve fmt field in GSLocalMemory
+			if (m_context->TEX0.PSM == PSM_PSMT4HL)
+				m_ps_sel.fmt |= 1 << 2;
+			else if (m_context->TEX0.PSM == PSM_PSMT4HH)
+				m_ps_sel.fmt |= 2 << 2;
+			else
+				m_ps_sel.fmt |= 3 << 2;
+
+			// Alpha channel of the RT is reinterpreted as an index. Star
+			// Ocean 3 uses it to emulate a stencil buffer.  It is a very
+			// bad idea to force bilinear filtering on it.
+			bilinear &= m_vt.IsLinear();
+		}
+
+		GSVector4 half_offset = RealignTargetTextureCoordinate(tex);
+		vs_cb.Texture_Scale_Offset.z = half_offset.x;
+		vs_cb.Texture_Scale_Offset.w = half_offset.y;
+	}
+	else if (tex->m_palette) {
+		// Use a standard 8 bits texture. AEM is already done on the CLUT
+		// Therefore you only need to set the index
+		// m_ps_sel.aem     = 0; // removed as an optimization
+
+		// Note 4 bits indexes are converted to 8 bits
+		m_ps_sel.fmt = 3 << 2;
+
+	}
+	else {
+		// Standard texture. Both index and AEM expansion were already done by the CPU.
+		// m_ps_sel.tex_fmt = 0; // removed as an optimization
+		// m_ps_sel.aem     = 0; // removed as an optimization
+	}
+
+
+	if (m_context->TEX0.TFX == TFX_MODULATE && m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(128))) {
+		// Micro optimization that reduces GPU load (removes 5 instructions on the FS program)
+		m_ps_sel.tfx = TFX_DECAL;
+	}
+	else {
+		m_ps_sel.tfx = m_context->TEX0.TFX;
+	}
+
+	m_ps_sel.tcc = m_context->TEX0.TCC;
+
+	m_ps_sel.ltf = bilinear && shader_emulated_sampler;
+
+	m_ps_sel.rt = tex->m_target;
+	m_ps_sel.spritehack = tex->m_spritehack_t;
+	m_ps_sel.point_sampler = !(bilinear && !shader_emulated_sampler);
+
+	if (PRIM->FST)
+	{
+		GSVector4 TextureScale = GSVector4(0.0625f) / WH.xyxy();
+		vs_cb.Texture_Scale_Offset.x = TextureScale.x;
+		vs_cb.Texture_Scale_Offset.y = TextureScale.y;
+		//Maybe better?
+		//vs_cb.TextureScale = GSVector4(1.0f / 16) * GSVector4(tex->m_texture->GetScale()).xyxy() / WH.zwzw();
+		m_ps_sel.fst = 1;
+	}
+
+	ps_cb.WH = WH;
+	ps_cb.HalfTexel = GSVector4(-0.5f, 0.5f).xxyy() / WH.zwzw();
+	if (complex_wms_wmt) {
+		ps_cb.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
+		ps_cb.MinMax = GSVector4(ps_cb.MskFix) / WH.xyxy();
+	}
+
+	// TC Offset Hack
+	m_ps_sel.tcoffsethack = !!UserHacks_TCOffset;
+	ps_cb.TC_OffsetHack = GSVector4(UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
+
+	m_ps_ssel.tau = (m_context->CLAMP.WMS + 3) >> 1;
+	m_ps_ssel.tav = (m_context->CLAMP.WMT + 3) >> 1;
+	m_ps_ssel.ltf = bilinear && !shader_emulated_sampler;
+}
+
 void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
 	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
@@ -154,6 +291,10 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	bool ate_first_pass = m_context->TEST.DoFirstPass();
 	bool ate_second_pass = m_context->TEST.DoSecondPass();
+
+	m_gs_sel.key = 0;
+
+	vs_cb.Texture_Scale_Offset = GSVector4(0.0f);
 
 	GSTexture* rtcopy = NULL;
 
@@ -257,8 +398,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	vs_sel.logz = dev->HasDepth32() ? 0 : m_logz ? 1 : 0;
 	vs_sel.rtcopy = !!rtcopy;
 
-	GSDeviceDX::VSConstantBuffer vs_cb;
-
 	float sx = 2.0f * rtscale.x / (rtsize.x << 4);
 	float sy = 2.0f * rtscale.y / (rtsize.y << 4);
 	float ox = (float)(int)m_context->XYOFFSET.OFX;
@@ -272,7 +411,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	//The resulting shifted output aligns better with common blending / corona / blurring effects,
 	//but introduces a few bad pixels on the edges.
 
-	if(rt && rt->LikelyOffset)
+	if(rt && rt->LikelyOffset && UserHacks_HPO == 1)
 	{
 		// DX9 has pixelcenter set to 0.0, so give it some value here
 
@@ -294,14 +433,14 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	// ps
 
-	ps_sel.key = 0;
-	ps_ssel.key = 0;
+	m_ps_sel.key = 0;
+	m_ps_ssel.key = 0;
 
 	// Gregory: code is not yet ready so let's only enable it when
 	// CRC is below the FULL level
 	if (m_texture_shuffle && (m_crc_hack_level < CRCHackLevel::Full)) {
-		ps_sel.shuffle = 1;
-		ps_sel.fmt = 0;
+		m_ps_sel.shuffle = 1;
+		m_ps_sel.fmt = 0;
 
 		const GIFRegXYOFFSET& o = m_context->XYOFFSET;
 		GSVertex* v = &m_vertex.buff[0];
@@ -312,9 +451,9 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		bool write_ba = (pos > 112 && pos < 136);
 		// Read texture is 8 to 16 pixels (same as above)
 		int tex_pos = v[0].U & 0xFF;
-		ps_sel.read_ba = (tex_pos > 112 && tex_pos < 144);
+		m_ps_sel.read_ba = (tex_pos > 112 && tex_pos < 144);
 
-		GL_INS("Color shuffle %s => %s", ps_sel.read_ba ? "BA" : "RG", write_ba ? "BA" : "RG");
+		GL_INS("Color shuffle %s => %s", m_ps_sel.read_ba ? "BA" : "RG", write_ba ? "BA" : "RG");
 
 		// Convert the vertex info to a 32 bits color format equivalent
 		for (size_t i = 0; i < count; i += 2) {
@@ -323,7 +462,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			else
 				v[i + 1].XYZ.X += 128u;
 
-			if (ps_sel.read_ba)
+			if (m_ps_sel.read_ba)
 				v[i].U -= 128u;
 			else
 				v[i + 1].U += 128u;
@@ -390,24 +529,24 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		}
 		else
 		{
-			ps_sel.date = 1 + m_context->TEST.DATM;
+			m_ps_sel.date = 1 + m_context->TEST.DATM;
 		}
 	}
 
 	if(m_env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
 	{
-		ps_sel.colclip = 1;
+		m_ps_sel.colclip = 1;
 	}
 
-	ps_sel.clr1 = om_bsel.IsCLR1();
-	ps_sel.fba = m_context->FBA.FBA;
-	ps_sel.aout = m_context->FRAME.PSM == PSM_PSMCT16 || m_context->FRAME.PSM == PSM_PSMCT16S || (m_context->FRAME.FBMSK & 0xff000000) == 0x7f000000 ? 1 : 0;
-	ps_sel.aout &= !ps_sel.shuffle;
-	if(UserHacks_AlphaHack) ps_sel.aout = 1;
+	m_ps_sel.clr1 = om_bsel.IsCLR1();
+	m_ps_sel.fba = m_context->FBA.FBA;
+	m_ps_sel.aout = m_context->FRAME.PSM == PSM_PSMCT16 || m_context->FRAME.PSM == PSM_PSMCT16S || (m_context->FRAME.FBMSK & 0xff000000) == 0x7f000000 ? 1 : 0;
+	m_ps_sel.aout &= !m_ps_sel.shuffle;
+	if(UserHacks_AlphaHack) m_ps_sel.aout = 1;
 
 	if(PRIM->FGE)
 	{
-		ps_sel.fog = 1;
+		m_ps_sel.fog = 1;
 
 		ps_cb.FogColor_AREF = GSVector4::rgba32(m_env.FOGCOL.u32[0]) / 255;
 	}
@@ -457,12 +596,12 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		if (!m_context->FBA.FBA)
 		{
 			if (m_context->TEST.DATM == 0)
-				ps_sel.atst = 2; // >=
+				m_ps_sel.atst = 2; // >=
 			else {
 				if (tex && tex->m_spritehack_t)
-					ps_sel.atst = 0; // <
+					m_ps_sel.atst = 0; // <
 				else
-					ps_sel.atst = 1; // <
+					m_ps_sel.atst = 1; // <
 			}
 			ps_cb.FogColor_AREF.a = (float)0x80;
 		}
@@ -472,67 +611,11 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	if(tex)
 	{
-		const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
-		const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
-		// The texture cache will handle various format conversion internally for non-target texture
-		// After the conversion the texture will be RGBA8 (aka 32 bits) hence the 0 below
-		int gpu_tex_fmt = (tex->m_target) ? cpsm.fmt : 0;
-
-		bool bilinear = m_vt.IsLinear();
-		bool simple_sample = !tex->m_palette && gpu_tex_fmt == 0 && m_context->CLAMP.WMS < 2 && m_context->CLAMP.WMT < 2;
-
-		ps_sel.wms = m_context->CLAMP.WMS;
-		ps_sel.wmt = m_context->CLAMP.WMT;
-		if (ps_sel.shuffle) {
-			ps_sel.fmt = 0;
-		} else {
-			ps_sel.fmt = tex->m_palette ? gpu_tex_fmt | 4 : gpu_tex_fmt;
-		}
-		ps_sel.aem = m_env.TEXA.AEM;
-		ps_sel.tfx = m_context->TEX0.TFX;
-		ps_sel.tcc = m_context->TEX0.TCC;
-		ps_sel.ltf = bilinear && !simple_sample;
-		ps_sel.rt = tex->m_target;
-		ps_sel.spritehack = tex->m_spritehack_t;
-		ps_sel.point_sampler = !(bilinear && simple_sample);
-
-		int w = tex->m_texture->GetWidth();
-		int h = tex->m_texture->GetHeight();
-
-		int tw = (int)(1 << m_context->TEX0.TW);
-		int th = (int)(1 << m_context->TEX0.TH);
-
-		GSVector4 WH(tw, th, w, h);
-
-		if(PRIM->FST)
-		{
-			vs_cb.TextureScale = GSVector4(1.0f / 16) / WH.xyxy();
-			//Maybe better?
-			//vs_cb.TextureScale = GSVector4(1.0f / 16) * GSVector4(tex->m_texture->GetScale()).xyxy() / WH.zwzw();
-			ps_sel.fst = 1;
-		}
-
-		ps_cb.WH = WH;
-		ps_cb.HalfTexel = GSVector4(-0.5f, 0.5f).xxyy() / WH.zwzw();
-		ps_cb.MskFix = GSVector4i(m_context->CLAMP.MINU, m_context->CLAMP.MINV, m_context->CLAMP.MAXU, m_context->CLAMP.MAXV);
-
-		// TC Offset Hack
-		ps_sel.tcoffsethack = !!UserHacks_TCOffset;
-		ps_cb.TC_OffsetHack = GSVector4(UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
-
-		GSVector4 clamp(ps_cb.MskFix);
-		GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
-
-		ps_cb.MinMax = clamp / WH.xyxy();
-		ps_cb.MinF_TA = (clamp + 0.5f).xyxy(ta) / WH.xyxy(GSVector4(255, 255));
-
-		ps_ssel.tau = (m_context->CLAMP.WMS + 3) >> 1;
-		ps_ssel.tav = (m_context->CLAMP.WMT + 3) >> 1;
-		ps_ssel.ltf = bilinear && simple_sample;
+		EmulateTextureSampler(tex);
 	}
 	else
 	{
-		ps_sel.tfx = 4;
+		m_ps_sel.tfx = 4;
 	}
 
 	// rs
@@ -551,7 +634,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	dev->SetupOM(om_dssel, om_bsel, afix);
 	dev->SetupVS(vs_sel, &vs_cb);
 	dev->SetupGS(gs_sel);
-	dev->SetupPS(ps_sel, &ps_cb, ps_ssel);
+	dev->SetupPS(m_ps_sel, &ps_cb, m_ps_ssel);
 
 	// draw
 
@@ -562,13 +645,13 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		if (m_env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
 		{
 			GSDeviceDX::OMBlendSelector om_bselneg(om_bsel);
-			GSDeviceDX::PSSelector ps_selneg(ps_sel);
+			GSDeviceDX::PSSelector ps_selneg(m_ps_sel);
 
 			om_bselneg.negative = 1;
 			ps_selneg.colclip = 2;
 
 			dev->SetupOM(om_dssel, om_bselneg, afix);
-			dev->SetupPS(ps_selneg, &ps_cb, ps_ssel);
+			dev->SetupPS(ps_selneg, &ps_cb, m_ps_ssel);
 
 			dev->DrawIndexedPrimitive();
 			dev->SetupOM(om_dssel, om_bsel, afix);
@@ -590,7 +673,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			EmulateAtst(2, tex);
 		}
 
-		dev->SetupPS(ps_sel, &ps_cb, ps_ssel);
+		dev->SetupPS(m_ps_sel, &ps_cb, m_ps_ssel);
 
 		bool z = om_dssel.zwe;
 		bool r = om_bsel.wr;
@@ -633,13 +716,13 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			if (m_env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
 			{
 				GSDeviceDX::OMBlendSelector om_bselneg(om_bsel);
-				GSDeviceDX::PSSelector ps_selneg(ps_sel);
+				GSDeviceDX::PSSelector ps_selneg(m_ps_sel);
 
 				om_bselneg.negative = 1;
 				ps_selneg.colclip = 2;
 
 				dev->SetupOM(om_dssel, om_bselneg, afix);
-				dev->SetupPS(ps_selneg, &ps_cb, ps_ssel);
+				dev->SetupPS(ps_selneg, &ps_cb, m_ps_ssel);
 
 				dev->DrawIndexedPrimitive();
 			}
