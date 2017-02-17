@@ -47,11 +47,13 @@ LRESULT CALLBACK GSWndWGL::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARA
 
 void GSWndWGL::CreateContext(int major, int minor)
 {
-	if ( !m_NativeDisplay || !m_NativeWindow )
+	if (!m_NativeDisplay || !m_NativeWindow)
 	{
 		fprintf( stderr, "Wrong display/window\n" );
 		exit(1);
 	}
+
+	ASSERT(major >= 3);
 
 	// GL2 context are quite easy but we need GL3 which is another painful story...
 	m_context = wglCreateContext(m_NativeDisplay);
@@ -63,53 +65,52 @@ void GSWndWGL::CreateContext(int major, int minor)
 	// FIXME test it
 	// Note: albeit every tutorial said that we need an opengl context to use the GL function wglCreateContextAttribsARB
 	// On linux it works without the extra temporary context, not sure the limitation still applied
-	if (major >= 3) {
-		AttachContext();
+	AttachContext();
 
-		// Create a context
-		int context_attribs[] =
-		{
-			WGL_CONTEXT_MAJOR_VERSION_ARB, major,
-			WGL_CONTEXT_MINOR_VERSION_ARB, minor,
-			// FIXME : Request a debug context to ease opengl development
-			// Note: don't support deprecated feature (pre openg 3.1)
-			//GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_DEBUG_BIT_ARB | GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB
+	// Create a context
+	int context_attribs[] =
+	{
+		WGL_CONTEXT_MAJOR_VERSION_ARB, major,
+		WGL_CONTEXT_MINOR_VERSION_ARB, minor,
+		// FIXME : Request a debug context to ease opengl development
+		// Note: don't support deprecated feature (pre openg 3.1)
+		//GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_DEBUG_BIT_ARB | GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB
 #ifdef ENABLE_OGL_DEBUG
 			| WGL_CONTEXT_DEBUG_BIT_ARB
 #else
 			| GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR
 #endif
 			,
-			WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-			0
-		};
+		WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+		0
+	};
 
-		PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
-		if (!wglCreateContextAttribsARB) {
-			fprintf(stderr, "Failed to init wglCreateContextAttribsARB function pointer\n");
-			throw GSDXRecoverableError();
-		}
-
-		HGLRC context30 = wglCreateContextAttribsARB(m_NativeDisplay, NULL, context_attribs);
-		if (!context30) {
-			fprintf(stderr, "Failed to create a 3.x context with standard flags\n");
-			// retry with more compatible option for (Mesa on Windows, OpenGL on WINE)
-			context_attribs[2*2+1] = 0;
-
-			context30 = wglCreateContextAttribsARB(m_NativeDisplay, NULL, context_attribs);
-			if (!context30) {
-				fprintf(stderr, "Failed to create a 3.x context with compatible flags\n");
-				throw GSDXRecoverableError();
-			}
-		}
-
-		DetachContext();
-		wglDeleteContext(m_context);
-
-		m_context = context30;
-		fprintf(stderr, "3.x GL context successfully created\n");
+	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+	if (!wglCreateContextAttribsARB) {
+		fprintf(stderr, "Failed to init wglCreateContextAttribsARB function pointer\n");
+		throw GSDXRecoverableError();
 	}
+
+	HGLRC context30 = wglCreateContextAttribsARB(m_NativeDisplay, NULL, context_attribs);
+	if (!context30) {
+		fprintf(stderr, "Failed to create a 3.x context with standard flags\n");
+		// retry with more compatible option for (Mesa on Windows, OpenGL on WINE)
+		context_attribs[2*2+1] = 0;
+
+		context30 = wglCreateContextAttribsARB(m_NativeDisplay, NULL, context_attribs);
+	}
+
+	DetachContext();
+	wglDeleteContext(m_context);
+
+	if (!context30) {
+		fprintf(stderr, "Failed to create a 3.x context with compatible flags\n");
+		throw GSDXRecoverableError();
+	}
+
+	m_context = context30;
+	fprintf(stderr, "3.x GL context successfully created\n");
 }
 
 void GSWndWGL::AttachContext()
