@@ -261,8 +261,10 @@ namespace GLLoader {
 		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
 			fglrx_buggy_driver = true;
 		if (fglrx_buggy_driver && (
-					strstr((const char*)&s[v], " 15.") // blacklist all 2015 drivers
-					|| strstr((const char*)&s[v], " 16.1"))) // And start of 2016
+					strstr((const char*)&s[v], " 15.") || // blacklist all 2015 drivers
+					strstr((const char*)&s[v], " 16.") || // And all 2016 drivers. Good jobs AMD !
+					strstr((const char*)&s[v], " 17.1")   // In doubt take also first 2017 driver
+					))
 			legacy_fglrx_buggy_driver = true;
 
 		if (strstr(vendor, "NVIDIA Corporation"))
@@ -357,18 +359,14 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier");
 		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 
-#ifdef _WIN32
-		if (status) {
-			if (fglrx_buggy_driver) {
-				fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver. Check out the links below for further information.\n"
+		if (fglrx_buggy_driver) {
+			fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver. Check out the links below for further information.\n"
 					"https://community.amd.com/message/2756964\n"
 					"https://community.amd.com/thread/205702\n"
 					"Note: Due to an AMD OpenGL driver issue, setting Blending Unit Accuracy to \"None\" can cause an application or system crash.\n"
 					"Keep Blending Unit Accuracy set to at least the default \"Basic\" level.\n"
 					"AMD has a fix for the issue that will be released in the coming months. The issue does not affect AMD GPUs on legacy drivers.\n");
-			}
 		}
-#endif
 
 		if (!found_GL_ARB_viewport_array) {
 			fprintf(stderr, "GL_ARB_viewport_array: not supported ! function pointer will be replaced\n");
