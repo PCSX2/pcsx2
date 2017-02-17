@@ -36,12 +36,14 @@ class GSRendererDX : public GSRendererHW
 protected:
 	void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
 	void EmulateZbuffer();
+	void EmulateTextureSampler(const GSTextureCache::Source* tex);
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
 	virtual void SetupIA() = 0;
 	virtual void UpdateFBA(GSTexture* rt) {}
 
 	unsigned int UserHacks_TCOffset;
 	float UserHacks_TCO_x, UserHacks_TCO_y;
+	int UserHacks_HPO;
 
 	bool DATE;
 
@@ -53,9 +55,11 @@ protected:
 	GSDeviceDX::OMDepthStencilSelector om_dssel;
 	GSDeviceDX::OMBlendSelector om_bsel;
 
-	GSDeviceDX::PSSelector ps_sel;
-	GSDeviceDX::PSSamplerSelector ps_ssel;
+	GSDeviceDX::PSSelector m_ps_sel;
+	GSDeviceDX::PSSamplerSelector m_ps_ssel;
+
 	GSDeviceDX::PSConstantBuffer ps_cb;
+	GSDeviceDX::VSConstantBuffer vs_cb;
 
 public:
 	GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter = GSVector2(0));

@@ -753,65 +753,6 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 	}
 }
 
-void GSRendererOGL::RealignTargetTextureCoordinate(const GSTextureCache::Source* tex)
-{
-	if (UserHacks_HPO <= 1 || GetUpscaleMultiplier() == 1) return;
-
-	GSVertex* v             = &m_vertex.buff[0];
-	const GSVector2& scale  = tex->m_texture->GetScale();
-	bool  linear            = m_vt.IsRealLinear();
-	int t_position          = v[0].U;
-	GSVector4 half_offset(0.0f);
-
-	// FIXME Let's start with something wrong same mess on X and Y
-	// FIXME Maybe it will be enough to check linear
-
-	if (PRIM->FST) {
-
-		if (UserHacks_HPO == 3) {
-			if (!linear && t_position == 8) {
-				half_offset.x = 8;
-				half_offset.y = 8;
-			} else if (linear && t_position == 16) {
-				half_offset.x = 16;
-				half_offset.y = 16;
-			} else if (m_vt.m_min.p.x == -0.5f) {
-				half_offset.x = 8;
-				half_offset.y = 8;
-			}
-		} else {
-			if (!linear && t_position == 8) {
-				half_offset.x = 8 - 8 / scale.x;
-				half_offset.y = 8 - 8 / scale.y;
-			} else if (linear && t_position == 16) {
-				half_offset.x = 16 - 16 / scale.x;
-				half_offset.y = 16 - 16 / scale.y;
-			} else if (m_vt.m_min.p.x == -0.5f) {
-				half_offset.x = 8;
-				half_offset.y = 8;
-			}
-		}
-
-		GL_INS("offset detected %f,%f t_pos %d (linear %d, scale %f)",
-				half_offset.x, half_offset.y, t_position, linear, scale.x);
-
-	} else if (m_vt.m_eq.q) {
-		float tw = (float)(1 << m_context->TEX0.TW);
-		float th = (float)(1 << m_context->TEX0.TH);
-		float q  = v[0].RGBAQ.Q;
-
-		// Tales of Abyss
-		half_offset.x = 0.5f * q / tw;
-		half_offset.y = 0.5f * q / th;
-
-		GL_INS("ST offset detected %f,%f (linear %d, scale %f)",
-				half_offset.x, half_offset.y, linear, scale.x);
-
-	}
-
-	vs_cb.TextureOffset = GSVector4(half_offset);
-}
-
 void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 {
 	GSDeviceOGL* dev         = (GSDeviceOGL*)m_dev;
@@ -883,7 +824,7 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		// The purpose of texture shuffle is to move color channel. Extra interpolation is likely a bad idea.
 		bilinear &= m_vt.IsLinear();
 
-		RealignTargetTextureCoordinate(tex);
+		vs_cb.TextureOffset = RealignTargetTextureCoordinate(tex);
 
 	} else if (tex->m_target) {
 		// Use an old target. AEM and index aren't resolved it must be done
@@ -933,7 +874,7 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 			bilinear &= m_vt.IsLinear();
 		}
 
-		RealignTargetTextureCoordinate(tex);
+		vs_cb.TextureOffset = RealignTargetTextureCoordinate(tex);
 
 	} else if (tex->m_palette) {
 		// Use a standard 8 bits texture. AEM is already done on the CLUT

@@ -145,7 +145,7 @@ public: // TODO
 	hash_map<uint32, GSVertexShader11 > m_vs;
 	CComPtr<ID3D11Buffer> m_vs_cb;
 	hash_map<uint32, CComPtr<ID3D11GeometryShader> > m_gs;
-	hash_map<uint32, CComPtr<ID3D11PixelShader> > m_ps;
+	hash_map<uint64, CComPtr<ID3D11PixelShader> > m_ps;
 	CComPtr<ID3D11Buffer> m_ps_cb;
 	hash_map<uint32, CComPtr<ID3D11SamplerState> > m_ps_ss;
 	CComPtr<ID3D11SamplerState> m_palette_ss;

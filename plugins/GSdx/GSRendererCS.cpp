@@ -597,7 +597,7 @@ void GSRendererCS::Draw()
 
 	CComPtr<ID3D11PixelShader> ps[2] = {m_ps0, NULL};
 
-	hash_map<uint32, CComPtr<ID3D11PixelShader> >::const_iterator i = m_ps1.find(ps_sel);
+	hash_map<uint64, CComPtr<ID3D11PixelShader> >::const_iterator i = m_ps1.find(ps_sel);
 
 	if(i != m_ps1.end())
 	{
