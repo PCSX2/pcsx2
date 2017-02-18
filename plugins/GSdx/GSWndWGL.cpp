@@ -23,6 +23,40 @@
 #include "GSWndWGL.h"
 
 #ifdef _WIN32
+
+//Returns the last Win32 error, in string format. Returns an empty string if there is no error.
+static std::string GetLastErrorAsString()
+{
+    //Get the error message, if any.
+    DWORD errorMessageID = ::GetLastError();
+    if(errorMessageID == 0)
+        return std::string(); //No error message has been recorded
+
+    LPSTR messageBuffer = nullptr;
+    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+    std::string message(messageBuffer, size);
+
+    //Free the buffer.
+    LocalFree(messageBuffer);
+
+    return message;
+}
+
+static void fatal_error(const char* msg)
+{
+	std::string dev_msg = GetLastErrorAsString();
+
+	if (!dev_msg.empty())
+		fprintf(stderr, "WIN API ERROR:%s", dev_msg.c_str());
+
+	MessageBox(NULL, msg, "ERROR", MB_OK | MB_ICONEXCLAMATION);
+
+	throw GSDXRecoverableError();
+}
+
+
 GSWndWGL::GSWndWGL()
 	: m_NativeWindow(NULL), m_NativeDisplay(NULL), m_context(NULL)
 {
@@ -87,10 +121,8 @@ void GSWndWGL::CreateContext(int major, int minor)
 	};
 
 	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
-	if (!wglCreateContextAttribsARB) {
-		fprintf(stderr, "Failed to init wglCreateContextAttribsARB function pointer\n");
-		throw GSDXRecoverableError();
-	}
+	if (!wglCreateContextAttribsARB)
+		fatal_error("Failed to init wglCreateContextAttribsARB function pointer");
 
 	HGLRC context30 = wglCreateContextAttribsARB(m_NativeDisplay, NULL, context_attribs);
 	if (!context30) {
@@ -104,10 +136,8 @@ void GSWndWGL::CreateContext(int major, int minor)
 	DetachContext();
 	wglDeleteContext(m_context);
 
-	if (!context30) {
-		fprintf(stderr, "Failed to create a 3.x context with compatible flags\n");
-		throw GSDXRecoverableError();
-	}
+	if (!context30)
+		fatal_error("Failed to create a 3.x context with compatible flags");
 
 	m_context = context30;
 	fprintf(stderr, "3.x GL context successfully created\n");
@@ -212,22 +242,14 @@ void GSWndWGL::OpenWGLDisplay()
 
 	m_NativeDisplay = GetDC(m_NativeWindow);
 	if (!m_NativeDisplay)
-	{
-		MessageBox(NULL, "(1) Can't Create A GL Device Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		throw GSDXRecoverableError();
-	}
+		fatal_error("(1) Can't Create A GL Device Context.");
+
 	PixelFormat = ChoosePixelFormat(m_NativeDisplay, &pfd);
 	if (!PixelFormat)
-	{
-		MessageBox(NULL, "(2) Can't Find A Suitable PixelFormat.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		throw GSDXRecoverableError();
-	}
+		fatal_error("(2) Can't Find A Suitable PixelFormat.");
 
 	if (!SetPixelFormat(m_NativeDisplay, PixelFormat, &pfd))
-	{
-		MessageBox(NULL, "(3) Can't Set The PixelFormat.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		throw GSDXRecoverableError();
-	}
+		fatal_error("(3) Can't Set The PixelFormat.");
 }
 
 void GSWndWGL::CloseWGLDisplay()
