@@ -23,6 +23,22 @@
 #include "GSWndWGL.h"
 
 #ifdef _WIN32
+
+static void win_error(const char* msg, bool fatal = true)
+{
+    DWORD errorID = ::GetLastError();
+	if (errorID)
+		fprintf(stderr, "WIN API ERROR:%ld", errorID);
+
+	if (fatal) {
+		MessageBox(NULL, msg, "ERROR", MB_OK | MB_ICONEXCLAMATION);
+		throw GSDXRecoverableError();
+	} else {
+		fprintf(stderr, "ERROR:%s\n", msg);
+	}
+}
+
+
 GSWndWGL::GSWndWGL()
 	: m_NativeWindow(NULL), m_NativeDisplay(NULL), m_context(NULL)
 {
@@ -49,7 +65,7 @@ void GSWndWGL::CreateContext(int major, int minor)
 {
 	if (!m_NativeDisplay || !m_NativeWindow)
 	{
-		fprintf( stderr, "Wrong display/window\n" );
+		win_error("Wrong display/window", false);
 		exit(1);
 	}
 
@@ -57,10 +73,8 @@ void GSWndWGL::CreateContext(int major, int minor)
 
 	// GL2 context are quite easy but we need GL3 which is another painful story...
 	m_context = wglCreateContext(m_NativeDisplay);
-	if (!m_context) {
-		fprintf(stderr, "Failed to create a 2.0 context\n");
-		throw GSDXRecoverableError();
-	}
+	if (!m_context)
+		win_error("Failed to create a 2.0 context");
 
 	// FIXME test it
 	// Note: albeit every tutorial said that we need an opengl context to use the GL function wglCreateContextAttribsARB
@@ -87,14 +101,12 @@ void GSWndWGL::CreateContext(int major, int minor)
 	};
 
 	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
-	if (!wglCreateContextAttribsARB) {
-		fprintf(stderr, "Failed to init wglCreateContextAttribsARB function pointer\n");
-		throw GSDXRecoverableError();
-	}
+	if (!wglCreateContextAttribsARB)
+		win_error("Failed to init wglCreateContextAttribsARB function pointer");
 
 	HGLRC context30 = wglCreateContextAttribsARB(m_NativeDisplay, NULL, context_attribs);
 	if (!context30) {
-		fprintf(stderr, "Failed to create a 3.x context with standard flags\n");
+		win_error("Failed to create a 3.x context with standard flags", false);
 		// retry with more compatible option for (Mesa on Windows, OpenGL on WINE)
 		context_attribs[2*2+1] = 0;
 
@@ -104,10 +116,8 @@ void GSWndWGL::CreateContext(int major, int minor)
 	DetachContext();
 	wglDeleteContext(m_context);
 
-	if (!context30) {
-		fprintf(stderr, "Failed to create a 3.x context with compatible flags\n");
-		throw GSDXRecoverableError();
-	}
+	if (!context30)
+		win_error("Failed to create a 3.x context with compatible flags");
 
 	m_context = context30;
 	fprintf(stderr, "3.x GL context successfully created\n");
@@ -129,19 +139,6 @@ void GSWndWGL::DetachContext()
 	}
 }
 
-//TODO: DROP ???
-void GSWndWGL::CheckContext()
-{
-#if 0
-	int glxMajorVersion, glxMinorVersion;
-	glXQueryVersion(m_NativeDisplay, &glxMajorVersion, &glxMinorVersion);
-	if (glXIsDirect(m_NativeDisplay, m_context))
-		fprintf(stderr, "glX-Version %d.%d with Direct Rendering\n", glxMajorVersion, glxMinorVersion);
-	else
-		fprintf(stderr, "glX-Version %d.%d with Indirect Rendering !!! It won't support properly opengl\n", glxMajorVersion, glxMinorVersion);
-#endif
-}
-
 bool GSWndWGL::Attach(void* handle, bool managed)
 {
 	m_NativeWindow = (HWND)handle;
@@ -152,8 +149,6 @@ bool GSWndWGL::Attach(void* handle, bool managed)
 	CreateContext(3, 3);
 
 	AttachContext();
-
-	CheckContext();
 
 	m_swapinterval = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
 
@@ -212,31 +207,22 @@ void GSWndWGL::OpenWGLDisplay()
 
 	m_NativeDisplay = GetDC(m_NativeWindow);
 	if (!m_NativeDisplay)
-	{
-		MessageBox(NULL, "(1) Can't Create A GL Device Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		throw GSDXRecoverableError();
-	}
+		win_error("(1) Can't Create A GL Device Context.");
+
 	PixelFormat = ChoosePixelFormat(m_NativeDisplay, &pfd);
 	if (!PixelFormat)
-	{
-		MessageBox(NULL, "(2) Can't Find A Suitable PixelFormat.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		throw GSDXRecoverableError();
-	}
+		win_error("(2) Can't Find A Suitable PixelFormat.");
 
 	if (!SetPixelFormat(m_NativeDisplay, PixelFormat, &pfd))
-	{
-		MessageBox(NULL, "(3) Can't Set The PixelFormat.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		throw GSDXRecoverableError();
-	}
+		win_error("(3) Can't Set The PixelFormat.", false);
 }
 
 void GSWndWGL::CloseWGLDisplay()
 {
-	if (m_NativeDisplay && !ReleaseDC(m_NativeWindow, m_NativeDisplay))				 // Are We Able To Release The DC
-	{
-		MessageBox(NULL, "Release Device Context Failed.", "SHUTDOWN ERROR", MB_OK | MB_ICONINFORMATION);
-	}
-	m_NativeDisplay = NULL;									 // Set DC To NULL
+	if (m_NativeDisplay && !ReleaseDC(m_NativeWindow, m_NativeDisplay))
+		win_error("Release Device Context Failed.");
+
+	m_NativeDisplay = NULL;
 }
 
 //TODO: GSopen 1 => Drop?
