@@ -164,8 +164,8 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD_OPT(glUnmapNamedBuffer);
 	GL_EXT_LOAD_OPT(glFlushMappedNamedBufferRange);
 
-	GL_EXT_LOAD(glCreateSamplers);
-	GL_EXT_LOAD(glCreateProgramPipelines);
+	GL_EXT_LOAD_OPT(glCreateSamplers);
+	GL_EXT_LOAD_OPT(glCreateProgramPipelines);
 
 	GL_EXT_LOAD(glClipControl);
 	GL_EXT_LOAD(glTextureBarrier);
