@@ -360,7 +360,18 @@ void GSSettingsDlg::UpdateRenderers()
 	else
 	{
 		GSRendererType ini_renderer = GSRendererType(theApp.GetConfigI("Renderer"));
-		renderer_setting = (ini_renderer == GSRendererType::Undefined) ? GSUtil::GetBestRenderer() : ini_renderer;
+
+		if (ini_renderer == GSRendererType::Undefined)
+		{
+			renderer_setting = GSUtil::GetBestRenderer();
+
+			if(renderer_setting == GSRendererType::OGL_HW)
+				theApp.SetConfig("crc_hack_level", static_cast<int>(CRCHackLevel::Partial));
+		}
+		else
+		{
+			renderer_setting = ini_renderer;
+		}
 	}
 
 	GSRendererType renderer_sel = GSRendererType::Default;
@@ -716,7 +727,7 @@ void GSHacksDlg::OnInit()
 	{
 		hpo_combobox.erase(hpo_combobox.begin() + 2, hpo_combobox.begin() + 4); //TODO: Enums would be more nicer than magic numbers.
 	}
-	ComboBoxInit(IDC_OFFSETHACK, hpo_combobox, std::min(static_cast<int>(theApp.m_gs_offset_hack.size()-1),static_cast<int>(theApp.GetConfigI("UserHacks_HalfPixelOffset"))));
+	ComboBoxInit(IDC_OFFSETHACK, hpo_combobox, theApp.GetConfigI("UserHacks_HalfPixelOffset"));
 	ComboBoxInit(IDC_ROUND_SPRITE, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_round_sprite_offset"));
 	ComboBoxInit(IDC_SPRITEHACK, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_SpriteHack"));
 
@@ -737,7 +748,6 @@ void GSHacksDlg::OnInit()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_WILDHACK), !native);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALIGN_SPRITE), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_SPRITE), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK_TEXT), !native);
