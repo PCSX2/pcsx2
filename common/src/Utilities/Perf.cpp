@@ -192,7 +192,10 @@ void dump_and_reset()
 // Dummy implementation
 ////////////////////////////////////////////////////////////////////////////////
 
-InfoVector::InfoVector(const char *prefix) {}
+InfoVector::InfoVector(const char *prefix)
+    : m_vtune_id(0)
+{
+}
 void InfoVector::map(uptr x86, u32 size, const char *symbol) {}
 void InfoVector::map(uptr x86, u32 size, u32 pc) {}
 void InfoVector::reset() {}

@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #include "GS.h"
 #include "GSdx.h"
-#include "GSLinuxLogo.h"
+#include "GSdxResources.h"
 #include "GSSetting.h"
 
 static GtkWidget* s_hack_frame;
@@ -475,8 +475,7 @@ void populate_osd_table(GtkWidget* osd_table)
 	InsertWidgetInTable(osd_table , log_check);
 	InsertWidgetInTable(osd_table , log_speed_label, log_speed_text);
 	InsertWidgetInTable(osd_table , max_messages_label, max_messages_spin);
-	InsertWidgetInTable(osd_table , monitor_check);
-	InsertWidgetInTable(osd_table , indicator_check);
+	InsertWidgetInTable(osd_table , monitor_check, indicator_check);
 }
 
 bool RunLinuxDialog()
@@ -501,13 +500,15 @@ bool RunLinuxDialog()
 	GtkWidget* osd_box      = gtk_vbox_new(false, 5);
 
 	// Grab a logo, to make things look nice.
-	GdkPixbuf* logo_pixmap = gdk_pixbuf_from_pixdata(&gsdx_ogl_logo, false, NULL);
-	GtkWidget* logo_image  = gtk_image_new_from_pixbuf(logo_pixmap);
+	GResource * resources = GSdx_res_get_resource();
+	GInputStream * ogl_stream=g_resource_open_stream(resources,"/GSdx/res/logo-ogl.bmp",G_RESOURCE_LOOKUP_FLAGS_NONE,NULL);
+	GdkPixbuf * ogl_logo = gdk_pixbuf_new_from_stream(ogl_stream,NULL,NULL);
+	g_object_unref(ogl_stream);
+	GtkWidget* logo_image  = gtk_image_new_from_pixbuf(ogl_logo);
 	gtk_box_pack_start(GTK_BOX(main_box), logo_image, true, true, 0);
 
 	GtkWidget* main_table   = CreateTableInBox(main_box    , NULL                                   , 2  , 2);
 
-	GtkWidget* shader_table = CreateTableInBox(central_box , "Custom Shader Settings"               , 9  , 2);
 	GtkWidget* hw_table     = CreateTableInBox(central_box , "Hardware Mode Settings"               , 7  , 2);
 	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 2  , 2);
 
@@ -517,7 +518,8 @@ bool RunLinuxDialog()
 	GtkWidget* record_table = CreateTableInBox(debug_box   , "Recording Settings"                   , 4  , 3);
 	GtkWidget* debug_table  = CreateTableInBox(debug_box   , "OpenGL / GSdx Debug Settings"         , 6  , 3);
 
-	GtkWidget* osd_table    = CreateTableInBox(osd_box     , NULL                                   , 6  , 2);
+	GtkWidget* shader_table = CreateTableInBox(osd_box     , "Custom Shader Settings"               , 9  , 2);
+	GtkWidget* osd_table    = CreateTableInBox(osd_box     , "OSD"                                  , 6  , 2);
 
 	// Populate all the tables
 	populate_main_table(main_table);
@@ -536,10 +538,10 @@ bool RunLinuxDialog()
 
 	// Handle some nice tab
 	GtkWidget* notebook = gtk_notebook_new();
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box , gtk_label_new("Global Settings"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box , gtk_label_new("Renderer Settings"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), advanced_box, gtk_label_new("Advanced Settings"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box   , gtk_label_new("Debug/Recording Settings"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), osd_box     , gtk_label_new("On Screen Display"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box   , gtk_label_new("Debug/Recording"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), osd_box     , gtk_label_new("Post-Processing/OSD"));
 
 	// Put everything in the big box.
 	gtk_container_add(GTK_CONTAINER(main_box), notebook);

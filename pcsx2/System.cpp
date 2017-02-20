@@ -380,9 +380,6 @@ void SysMainMemory::ReserveAll()
 	m_ee.Reserve();
 	m_iop.Reserve();
 	m_vu.Reserve();
-
-	reserveNewVif(0);
-	reserveNewVif(1);
 }
 
 void SysMainMemory::CommitAll()

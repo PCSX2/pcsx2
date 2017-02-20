@@ -168,17 +168,15 @@ PFNGLCLIPCONTROLPROC                   glClipControl                       = NUL
 PFNGLTEXTUREBARRIERPROC                glTextureBarrier                    = NULL;
 PFNGLGETTEXTURESUBIMAGEPROC            glGetTextureSubImage                = NULL;
 
+#ifdef _WIN32
+PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture                    = NULL;
+PFNGLTEXSTORAGE2DPROC                  glTexStorage2D                      = NULL;
+PFNGLGENPROGRAMPIPELINESPROC           glGenProgramPipelines               = NULL;
+PFNGLGENSAMPLERSPROC                   glGenSamplers                       = NULL;
+PFNGLGENERATEMIPMAPPROC                glGenerateMipmap                    = NULL;
+#endif
+
 namespace ReplaceGL {
-	void APIENTRY BlendEquationSeparateiARB(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
-	{
-		glBlendEquationSeparate(modeRGB, modeAlpha);
-	}
-
-	void APIENTRY BlendFuncSeparateiARB(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
-	{
-		glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
-	}
-
 	void APIENTRY ScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
 	{
 		glScissor(left, bottom, width, height);
@@ -188,7 +186,81 @@ namespace ReplaceGL {
 	{
 		glViewport(GLint(x), GLint(y), GLsizei(w), GLsizei(h));
 	}
+
+	void APIENTRY TextureBarrier()
+	{
+	}
+
 }
+
+#ifdef _WIN32
+namespace Emulate_DSA {
+	// Texture entry point
+	void APIENTRY BindTextureUnit(GLuint unit, GLuint texture) {
+		gl_ActiveTexture(GL_TEXTURE0 + unit);
+		glBindTexture(GL_TEXTURE_2D, texture);
+	}
+
+	void APIENTRY CreateTexture(GLenum target, GLsizei n, GLuint *textures) {
+		glGenTextures(1, textures);
+	}
+
+	void APIENTRY TextureStorage(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
+		BindTextureUnit(7, texture);
+		glTexStorage2D(GL_TEXTURE_2D, levels, internalformat, width, height);
+	}
+
+	void APIENTRY TextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels) {
+		BindTextureUnit(7, texture);
+		glTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
+	}
+
+	void APIENTRY CopyTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height) {
+		BindTextureUnit(7, texture);
+		glCopyTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, x, y, width, height);
+	}
+
+	void APIENTRY GetTexureImage(GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels) {
+		BindTextureUnit(7, texture);
+		glGetTexImage(GL_TEXTURE_2D, level, format, type, pixels);
+	}
+
+	void APIENTRY TextureParameteri (GLuint texture, GLenum pname, GLint param) {
+		BindTextureUnit(7, texture);
+		glTexParameteri(GL_TEXTURE_2D, pname, param);
+	}
+
+	void APIENTRY GenerateTextureMipmap(GLuint texture) {
+		BindTextureUnit(7, texture);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+
+	// Misc entry point
+	// (only purpose is to have a consistent API otherwise it is useless)
+	void APIENTRY CreateProgramPipelines(GLsizei n, GLuint *pipelines) {
+		glGenProgramPipelines(n, pipelines);
+	}
+
+	void APIENTRY CreateSamplers(GLsizei n, GLuint *samplers) {
+		glGenSamplers(n, samplers);
+	}
+
+	// Replace function pointer to emulate DSA behavior
+	void Init() {
+		fprintf(stderr, "DSA is not supported. Expect slower performance\n");
+		glBindTextureUnit             = BindTextureUnit;
+		glCreateTextures              = CreateTexture;
+		glTextureStorage2D            = TextureStorage;
+		glTextureSubImage2D           = TextureSubImage;
+		glCopyTextureSubImage2D       = CopyTextureSubImage;
+		glGetTextureImage             = GetTexureImage;
+		glTextureParameteri           = TextureParameteri;
+
+		glCreateProgramPipelines      = CreateProgramPipelines;
+		glCreateSamplers              = CreateSamplers;
+	}
+}
+#endif
 
 namespace GLLoader {
 
@@ -203,10 +275,9 @@ namespace GLLoader {
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_EXT_texture_filter_anisotropic = false;
-	bool found_GL_ARB_clear_texture = false; // Miss AMD Mesa (otherwise seems SW)
+	bool found_GL_ARB_clear_texture = false;
 	bool found_GL_ARB_get_texture_sub_image = false; // Not yet used
 	// DX11 GPU
-	bool found_GL_ARB_draw_buffers_blend = false; // Not supported on AMD R600 (80 nm class chip, HD2900). Nvidia requires FERMI. Intel SB
 	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
 	bool found_GL_ARB_shader_image_load_store = false; // Intel IB. Nvidia/AMD miss Mesa implementation.
 	bool found_GL_ARB_viewport_array = false; // Intel IB. AMD/NVIDIA DX10
@@ -267,8 +338,10 @@ namespace GLLoader {
 		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
 			fglrx_buggy_driver = true;
 		if (fglrx_buggy_driver && (
-					strstr((const char*)&s[v], " 15.") // blacklist all 2015 drivers
-					|| strstr((const char*)&s[v], " 16.1"))) // And start of 2016
+					strstr((const char*)&s[v], " 15.") || // blacklist all 2015 drivers
+					strstr((const char*)&s[v], " 16.") || // And all 2016 drivers. Good jobs AMD !
+					strstr((const char*)&s[v], " 17.1")   // In doubt take also first 2017 driver
+					))
 			legacy_fglrx_buggy_driver = true;
 
 		if (strstr(vendor, "NVIDIA Corporation"))
@@ -313,7 +386,6 @@ namespace GLLoader {
 				if (ext.compare("GL_NVX_gpu_memory_info") == 0) found_GL_NVX_gpu_memory_info = true;
 				// GL4.0
 				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
-				if (ext.compare("GL_ARB_draw_buffers_blend") == 0) found_GL_ARB_draw_buffers_blend = true;
 				// GL4.1
 				if (ext.compare("GL_ARB_viewport_array") == 0) found_GL_ARB_viewport_array = true;
 				if (ext.compare("GL_ARB_separate_shader_objects") == 0) found_GL_ARB_separate_shader_objects = true;
@@ -338,13 +410,11 @@ namespace GLLoader {
 		}
 
 		bool status = true;
-		bool mandatory_hw = static_cast<GSRendererType>(theApp.GetConfigI("Renderer")) == GSRendererType::OGL_HW;
 
 		// Bonus
 		status &= status_and_override(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic");
 		// GL4.0
 		status &= status_and_override(found_GL_ARB_gpu_shader5, "GL_ARB_gpu_shader5");
-		status &= status_and_override(found_GL_ARB_draw_buffers_blend, "GL_ARB_draw_buffers_blend");
 		// GL4.1
 		status &= status_and_override(found_GL_ARB_viewport_array, "GL_ARB_viewport_array");
 		status &= status_and_override(found_GL_ARB_separate_shader_objects, "GL_ARB_separate_shader_objects", true);
@@ -360,17 +430,20 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
 		// GL4.5
 		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control", true);
-		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access", true);
-		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier", mandatory_hw);
+		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
+		// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
+		// Rendering might be corrupted but it could be good enough for test/virtual machine.
+		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier");
 		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 
-#ifdef _WIN32
-		if (status) {
-			if (fglrx_buggy_driver) {
-				fprintf(stderr, "OpenGL renderer is slow on AMD GPU due to inefficient driver. Sorry.\n");
-			}
+		if (fglrx_buggy_driver) {
+			fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver. Check out the links below for further information.\n"
+					"https://community.amd.com/message/2756964\n"
+					"https://community.amd.com/thread/205702\n"
+					"Note: Due to an AMD OpenGL driver issue, setting Blending Unit Accuracy to \"None\" can cause an application or system crash.\n"
+					"Keep Blending Unit Accuracy set to at least the default \"Basic\" level.\n"
+					"AMD has a fix for the issue that will be released in the coming months. The issue does not affect AMD GPUs on legacy drivers.\n");
 		}
-#endif
 
 		if (!found_GL_ARB_viewport_array) {
 			fprintf(stderr, "GL_ARB_viewport_array: not supported ! function pointer will be replaced\n");
@@ -378,11 +451,17 @@ namespace GLLoader {
 			glViewportIndexedf = ReplaceGL::ViewportIndexedf;
 		}
 
-		if (!found_GL_ARB_draw_buffers_blend) {
-			fprintf(stderr, "GL_ARB_draw_buffers_blend: not supported ! function pointer will be replaced\n");
-			glBlendFuncSeparateiARB     = ReplaceGL::BlendFuncSeparateiARB;
-			glBlendEquationSeparateiARB = ReplaceGL::BlendEquationSeparateiARB;
+		if (!found_GL_ARB_texture_barrier) {
+			fprintf(stderr, "GL_ARB_texture_barrier: not supported ! Rendering will be corrupted\n");
+			glTextureBarrier = ReplaceGL::TextureBarrier;
 		}
+
+#ifdef _WIN32
+		// Thanks you Intel to not provide support of basic feature on your iGPU
+		if (!found_GL_ARB_direct_state_access) {
+			Emulate_DSA::Init();
+		}
+#endif
 
 		fprintf(stdout, "\n");
 

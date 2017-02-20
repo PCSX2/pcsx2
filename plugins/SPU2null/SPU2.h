@@ -48,7 +48,7 @@ extern const u8 version;
 extern const u8 revision;
 extern const u8 build;
 extern const u32 minor;
-extern char *libraryName;
+extern const char *libraryName;
 
 typedef struct
 {
@@ -57,7 +57,7 @@ typedef struct
 
 extern Config conf;
 
-void __Log(char *fmt, ...);
+void __Log(const char *fmt, ...);
 void SaveConfig();
 void LoadConfig();
 void SysMessage(char *fmt, ...);

@@ -120,7 +120,6 @@ static int s_shm_fd = -1;
 
 void* fifo_alloc(size_t size, size_t repeat)
 {
-	fprintf(stderr, "FIFO ALLOC\n");
 	ASSERT(s_shm_fd == -1);
 
 	const char* file_name = "/GSDX.mem";
@@ -140,8 +139,6 @@ void* fifo_alloc(size_t size, size_t repeat)
 		uint8* next = (uint8*)mmap(base, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, s_shm_fd, 0);
 		if (next != base)
 			fprintf(stderr, "Fail to mmap contiguous segment\n");
-		else
-			fprintf(stderr, "MMAP next %p\n", base);
 	}
 
 	return fifo;
@@ -149,8 +146,6 @@ void* fifo_alloc(size_t size, size_t repeat)
 
 void fifo_free(void* ptr, size_t size, size_t repeat)
 {
-	fprintf(stderr, "FIFO FREE\n");
-
 	ASSERT(s_shm_fd >= 0);
 
 	if (s_shm_fd < 0)

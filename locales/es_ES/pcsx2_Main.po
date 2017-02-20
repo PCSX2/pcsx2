@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2016-08-16 13:38+0200\n"
+"PO-Revision-Date: 2017-01-16 22:02+0100\n"
 "Last-Translator: Víctor González Fraile <victor.gonfraile@hotmail.es>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: _;pxL\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.8.4\n"
+"X-Generator: Poedit 1.8.11\n"
 
 #: common/include/Utilities/Exceptions.h:216
 msgid "No reason given."
@@ -370,9 +370,8 @@ msgid "Detailed logging of CDVD hardware."
 msgstr "Registro detallado del hardware CDVD."
 
 #: pcsx2/SourceLog.cpp:336
-#, fuzzy
 msgid "Detailed logging of the Motion (FMV) Decoder hardware unit."
-msgstr "Registro detallado del hardware CDVD."
+msgstr "Registro detallado del hardware Motion Decoder (FMVs)."
 
 #: pcsx2/System.h:224 pcsx2/System.h:225 pcsx2/System.h:226
 msgid "PCSX2 Message"
@@ -516,7 +515,7 @@ msgstr "Permite actuar en modo portátil (necesita acceso de admin/raíz)"
 
 #: pcsx2/gui/AppInit.cpp:252
 msgid "update options to ease profiling (debug)"
-msgstr ""
+msgstr "Actualiza las opciones para facilitar la indización (depuración)."
 
 #: pcsx2/gui/AppInit.cpp:256
 #, c-format
@@ -676,9 +675,8 @@ msgid "Executing PS2 Virtual Machine..."
 msgstr "Ejecutando máquina virtual de PS2..."
 
 #: pcsx2/gui/AppRes.cpp:66
-#, fuzzy
 msgid "Browse for an ISO that is not in your recent history."
-msgstr "Buscar una Iso que no esté en tu historial reciente."
+msgstr "Buscar una ISO que no esté en tu historial reciente."
 
 #: pcsx2/gui/AppRes.cpp:66
 msgid "Browse..."
@@ -802,16 +800,15 @@ msgstr "Elimina los contenidos de la ventana de registro"
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "Auto&dock"
-msgstr ""
+msgstr "Autoaco&ple"
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "Dock log window to main PCSX2 window"
-msgstr ""
+msgstr "Acopla la ventana de registro a la ventana principal de PCSX2."
 
 #: pcsx2/gui/ConsoleLogger.cpp:411
-#, fuzzy
 msgid "&Appearance"
-msgstr "Aspecto"
+msgstr "&Aspecto"
 
 #: pcsx2/gui/ConsoleLogger.cpp:413
 msgid "&Close"
@@ -830,9 +827,8 @@ msgid "Shows PCSX2 developer logs"
 msgstr "Muestra los registros para desarrolladores de PCSX2"
 
 #: pcsx2/gui/ConsoleLogger.cpp:418
-#, fuzzy
 msgid "&CDVD reads"
-msgstr "Lecturas del CDVD"
+msgstr "Lecturas del &CDVD"
 
 #: pcsx2/gui/ConsoleLogger.cpp:418
 msgid "Shows disk read activity"
@@ -1328,7 +1324,6 @@ msgid "Appearance"
 msgstr "Aspecto"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:278
-#, fuzzy
 msgid "Language Selector"
 msgstr "Selector de idioma"
 
@@ -1358,18 +1353,16 @@ msgid "Exit PCSX2?"
 msgstr "¿Abandonar PCSX2?"
 
 #: pcsx2/gui/GlobalCommands.cpp:474
-#, fuzzy
 msgid "Save state"
-msgstr "&Guardado rápido"
+msgstr "Guardado rápido"
 
 #: pcsx2/gui/GlobalCommands.cpp:475
 msgid "Saves the virtual machine state to the current slot."
 msgstr "Guarda el estado de la máquina virtual en el hueco actual."
 
 #: pcsx2/gui/GlobalCommands.cpp:481
-#, fuzzy
 msgid "Load state"
-msgstr "&Carga rápida"
+msgstr "Carga rápida"
 
 #: pcsx2/gui/GlobalCommands.cpp:482
 msgid "Loads a virtual machine state from the current slot."
@@ -1532,18 +1525,16 @@ msgid "Closing %s may be hazardous to your health"
 msgstr "Cerrar %s podría ser peligroso para tu salud"
 
 #: pcsx2/gui/MainFrame.cpp:460
-#, fuzzy
 msgid "ISO &Selector"
 msgstr "&Selector de ISO"
 
 #: pcsx2/gui/MainFrame.cpp:461
-#, fuzzy
 msgid "Plugin &Menu"
 msgstr "&Menú de plugins"
 
 #: pcsx2/gui/MainFrame.cpp:464
 msgid "&ISO"
-msgstr ""
+msgstr "&ISO"
 
 #: pcsx2/gui/MainFrame.cpp:464
 msgid "Makes the specified ISO image the CDVD source."
@@ -1678,7 +1669,6 @@ msgid "Use fast boot to skip PS2 startup and splash screens"
 msgstr "Utiliza el inicio rápido para saltarte las pantallas de inicio de PS2."
 
 #: pcsx2/gui/MainFrame.cpp:660
-#, fuzzy
 msgid "Boot ISO (&fast)"
 msgstr "Ejecutar CDVD (&rápido)"
 
@@ -1687,39 +1677,28 @@ msgid "Boot CDVD (&fast)"
 msgstr "Ejecutar CDVD (&rápido)"
 
 #: pcsx2/gui/MainFrame.cpp:687
-#, fuzzy
 msgid "Boo&t ISO (full)"
 msgstr "Ejecutar CDVD (co&mpleto)"
 
 #: pcsx2/gui/MainFrame.cpp:688
-#, fuzzy
 msgid "Boot the VM using the current ISO source media"
-msgstr ""
-"Ejecuta la MV utilizando como el DVD actual o la imagen ISO como fuente "
-"actual"
+msgstr "Ejecuta la MV utilizando la imagen ISO seleccionada"
 
 #: pcsx2/gui/MainFrame.cpp:691
-#, fuzzy
 msgid "Boo&t CDVD (full)"
 msgstr "Ejecutar CDVD (co&mpleto)"
 
 #: pcsx2/gui/MainFrame.cpp:692
-#, fuzzy
 msgid "Boot the VM using the current CD/DVD source media"
-msgstr ""
-"Ejecuta la MV utilizando como el DVD actual o la imagen ISO como fuente "
-"actual"
+msgstr "Ejecuta la MV utilizando como el CD/DVD actual"
 
 #: pcsx2/gui/MainFrame.cpp:695
 msgid "Boo&t BIOS"
-msgstr ""
+msgstr "Arrancar &BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:696
-#, fuzzy
 msgid "Boot the VM without any source media"
-msgstr ""
-"Ejecuta la MV utilizando como el DVD actual o la imagen ISO como fuente "
-"actual"
+msgstr "Ejecuta la MV sin un disco"
 
 #: pcsx2/gui/MainFrame.cpp:777 pcsx2/gui/MainFrame.cpp:812
 msgid "No plugin loaded"
@@ -2107,10 +2086,8 @@ msgid "Double-click toggles fullscreen mode"
 msgstr "Doble clic activa el modo de pantalla completa"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:52
-#, fuzzy
 msgid "Switch to 4:3 aspect ratio when an FMV plays"
-msgstr ""
-"Cambiar al renderizado por software de GSdx cuando se reproduzca una FMV"
+msgstr "Cambiar a una proporción 4:3 cuando se reproduzca una FMV"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:86
 msgid "Aspect Ratio:"
@@ -2137,29 +2114,28 @@ msgid "Search"
 msgstr "Buscar"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:334
-#, fuzzy
 msgid "Game Database Editor"
 msgstr "Editor de &base de datos de juegos"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:348
 msgid "Name: "
-msgstr ""
+msgstr "Nombre:"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:349
 msgid "Region: "
-msgstr ""
+msgstr "Región:"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:350
 msgid "Compatibility: "
-msgstr ""
+msgstr "Compatibilidad:"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:351
 msgid "Comments: "
-msgstr ""
+msgstr "Comentarios:"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:352
 msgid "Patches: "
-msgstr ""
+msgstr "Parches:"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:356
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
@@ -2234,7 +2210,6 @@ msgstr ""
 "carguen muy lentamente."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:92
-#, fuzzy
 msgid ""
 "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD and Spy Hunter loading hang."
 msgstr ""
@@ -2246,6 +2221,8 @@ msgid ""
 "Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ "
 "Hero)"
 msgstr ""
+"Activar el FIFO GIF (más lento, pero lo necesitan Hot Wheels, Wallace and "
+"Gromit, DJ Hero)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:100
 msgid "Switch to GSdx software rendering when an FMV plays"

@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2016-08-16 13:38+0200\n"
+"PO-Revision-Date: 2017-01-16 21:56+0100\n"
 "Last-Translator: Víctor González Fraile <victor.gonfraile@hotmail.es>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.8.4\n"
+"X-Generator: Poedit 1.8.11\n"
 
 #: common/src/Utilities/Exceptions.cpp:268
 msgid ""
@@ -42,6 +42,8 @@ msgstr ""
 msgid ""
 "Failed to read/write NMV/MEC file. Check your bios setup/permission settings"
 msgstr ""
+"Error al leer o escribir el archivo NMV/MEC. Comprueba la configuración y "
+"los permisos de tu BIOS."
 
 #: pcsx2/System.cpp:112
 msgid ""
@@ -628,67 +630,60 @@ msgstr ""
 "%s esté incompleta, pulsa en Cancelar para cerrar el panel de configuración."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
 msgid ""
 "-3 - Reduces the EE's cyclerate to about 50%.  Big speedup, but *will* cause "
 "stuttering audio on many FMVs."
 msgstr ""
-"-2 - Reduce la tasa de ciclos del EE un 50%.  Subida de velocidad moderada, "
-"pero causará sonido entrecortado en FMVs."
+"-3 - Reduce la tasa de ciclos del EE un 50%.  Gran subida de velocidad, pero "
+"causará sonido entrecortado en FMVs."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
 msgid ""
 "-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"-2 - Reduce la tasa de ciclos del EE un 50%.  Subida de velocidad moderada, "
+"-2 - Reduce la tasa de ciclos del EE un 60%.  Subida de velocidad moderada, "
 "pero causará sonido entrecortado en FMVs."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
 msgid ""
 "-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
-"-1 - Reduce la tasa de ciclos del EE un 33%.  Ligera subida de velocidad "
+"-1 - Reduce la tasa de ciclos del EE un 75%.  Ligera subida de velocidad "
 "para la mayoría de los juegos y alta compatibilidad."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:45
-#, fuzzy
 msgid ""
 "0 - Default cyclerate (100%). This closely matches the actual speed of a "
 "real PS2 EmotionEngine."
 msgstr ""
-"1 - Tasa de ciclos predeterminada. Es casi la misma velocidad de un "
+"0 - Tasa de ciclos predeterminada. Es casi la misma velocidad de un "
 "EmotionEngine real de PS2."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
-#, fuzzy
 msgid ""
 "1 - Increases the EE's cyclerate to about 130%. Mildly increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
-"1 - Aumenta la tasa de ciclos del EE un 33%. Aumenta los requisitos de "
-"hardware, podría aumentar los FPS del juego."
+"1 - Aumenta la tasa de ciclos del EE un 130%. Aumenta ligeramente los "
+"requisitos de hardware, podría aumentar los FPS del juego."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:55
-#, fuzzy
 msgid ""
 "2 - Increases the EE's cyclerate to about 180%. Increases hardware "
 "requirements, may noticeably increase in-game FPS."
 msgstr ""
-"1 - Aumenta la tasa de ciclos del EE un 33%. Aumenta los requisitos de "
+"1 - Aumenta la tasa de ciclos del EE un 180%. Aumenta los requisitos de "
 "hardware, podría aumentar los FPS del juego."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:60
-#, fuzzy
 msgid ""
 "3 - Increases the EE's cyclerate to about 300%. Greatly increases hardware "
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
-"2 - Aumenta la tasa de ciclos del EE un 50%. Aumenta considerablemente los "
+"3 - Aumenta la tasa de ciclos del EE un 300%. Aumenta considerablemente los "
 "requisitos de hardware, podría aumentar los FPS del juego.\n"
 "Este ajuste puede provocar que los juegos NO ARRANQUEN."
 

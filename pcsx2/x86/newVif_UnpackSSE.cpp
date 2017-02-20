@@ -58,12 +58,16 @@ void mergeVectors(xRegisterSSE dest, xRegisterSSE src, xRegisterSSE temp, int xy
 //  VifUnpackSSE_Base Section
 // =====================================================================================================
 VifUnpackSSE_Base::VifUnpackSSE_Base()
-	: dstIndirect(ecx)		// parameter 1 of __fastcall
+	: usn(false)
+	, doMask(false)
+	, UnpkLoopIteration(0)
+	, UnpkNoOfIterations(0)
+	, IsAligned(0)
+	, dstIndirect(ecx)		// parameter 1 of __fastcall
 	, srcIndirect(edx)		// parameter 2 of __fastcall
 	, workReg( xmm1 )
 	, destReg( xmm0 )
 {
-	 UnpkLoopIteration = 0;
 }
 
 void VifUnpackSSE_Base::xMovDest() const {

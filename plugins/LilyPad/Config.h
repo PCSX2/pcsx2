@@ -1,5 +1,5 @@
 /*  LilyPad - Pad plugin for PS2 Emulator
- *  Copyright (C) 2002-2014  PCSX2 Dev Team/ChickenLiver
+ *  Copyright (C) 2002-2017  PCSX2 Dev Team/ChickenLiver
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
@@ -35,13 +35,12 @@ public:
 
     int deviceSelect[2][4];
 
-    u8 closeHacks;
+    u8 closeHack;
 
     DeviceAPI keyboardApi;
     DeviceAPI mouseApi;
 
     // Derived value, calculated by GetInput().
-    u8 ignoreKeys;
     u8 configureOnBind;
     bool bind;
 
@@ -69,7 +68,6 @@ public:
 
             u8 saveStateTitle;
             u8 GH2;
-            u8 turboKeyHack;
         };
         u8 bools[15];
     };

@@ -29,12 +29,7 @@
 //
 // GSSource
 //
-
-#ifdef __INTEL_COMPILER
 interface __declspec(uuid("59C193BB-C520-41F3-BC1D-E245B80A86FA"))
-#else
-[uuid("59C193BB-C520-41F3-BC1D-E245B80A86FA")] interface
-#endif
 IGSSource : public IUnknown
 {
 	STDMETHOD(DeliverNewSegment)() PURE;
@@ -42,11 +37,7 @@ IGSSource : public IUnknown
 	STDMETHOD(DeliverEOS)() PURE;
 };
 
-#ifdef __INTEL_COMPILER
 class __declspec(uuid("F8BB6F4F-0965-4ED4-BA74-C6A01E6E6C77"))
-#else
-[uuid("F8BB6F4F-0965-4ED4-BA74-C6A01E6E6C77")] class
-#endif
 GSSource : public CBaseFilter, private CCritSec, public IGSSource
 {
 	GSVector2i m_size;
@@ -392,9 +383,9 @@ GSCapture::~GSCapture()
 	EndCapture();
 }
 
-bool GSCapture::BeginCapture(float fps, GSVector2i recomendedResolution, float aspect)
+bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float aspect)
 {
-	printf("Recomended resolution: %d x %d, DAR for muxing: %.4f\n", recomendedResolution.x, recomendedResolution.y, aspect);
+	printf("Recommended resolution: %d x %d, DAR for muxing: %.4f\n", recommendedResolution.x, recommendedResolution.y, aspect);
 	std::lock_guard<std::recursive_mutex> lock(m_lock);
 
 	ASSERT(fps != 0);

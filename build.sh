@@ -198,12 +198,13 @@ if [ "$cppcheck" -eq 1 ] && command -v cppcheck >/dev/null ; then
 
     define=""
     for undef in _WINDOWS _M_AMD64 _MSC_VER WIN32 __INTEL_COMPILER __x86_64__ \
-        __SSE4_1__ __SSSE3__ __SSE__ __AVX2__ __USE_ISOC11 ASAN_WORKAROUND ENABLE_OPENCL ENABLE_OGL_DEBUG
+        __SSE4_1__ __SSSE3__ __SSE__ __AVX2__ __USE_ISOC11 ASAN_WORKAROUND ENABLE_OPENCL ENABLE_OGL_DEBUG \
+        XBYAK_USE_MMAP_ALLOCATOR MAP_ANONYMOUS MAP_ANON XBYAK_DISABLE_AVX512
     do
         define="$define -U$undef"
     done
     check="--enable=warning,style,missingInclude"
-    for d in pcsx2 common plugins/GSdx plugins/spu2\-x plugins/onepad
+    for d in pcsx2 common plugins/GSdx plugins/spu2\-x plugins/onepad plugins/cdvdGigaherz
     do
         flat_d=$(echo $d | sed -e 's@/@_@')
         log=cpp_check__${flat_d}.log

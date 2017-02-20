@@ -556,13 +556,27 @@ bool GSRenderer::MakeSnapshot(const string& path)
 {
 	if(m_snapshot.empty())
 	{
-		time_t t = time(NULL);
+		time_t cur_time = time(nullptr);
+		static time_t prev_snap;
+		// The variable 'n' is used for labelling the screenshots when multiple screenshots are taken in
+		// a single second, we'll start using this variable for naming when a second screenshot request is detected
+		// at the same time as the first one. Hence, we're initially setting this counter to 2 to imply that
+		// the captured image is the 2nd image captured at this specific time.
+		static int n = 2;
+		char local_time[16];
 
-		char buff[16];
-
-		if(strftime(buff, sizeof(buff), "%Y%m%d%H%M%S", localtime(&t)))
+		if (strftime(local_time, sizeof(local_time), "%Y%m%d%H%M%S", localtime(&cur_time)))
 		{
-			m_snapshot = format("%s_%s", path.c_str(), buff);
+			if (cur_time == prev_snap)
+			{
+				m_snapshot = format("%s_%s_(%d)", path.c_str(), local_time, n++);
+			}
+			else
+			{
+				n = 2;
+				m_snapshot = format("%s_%s", path.c_str(), local_time);
+			}
+			prev_snap = cur_time;
 		}
 	}
 

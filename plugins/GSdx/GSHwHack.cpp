@@ -765,13 +765,29 @@ bool GSC_MidnightClub3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_NanoBreaker(const GSFrameInfo& fi, int& skip)
+bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP == 0x0 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x03800 || fi.TBP0 == 0x03900) && fi.TPSM == PSM_PSMCT16S)
+		if(fi.TME && (fi.FBP == 0x3f80 || fi.FBP == 0x03fa0) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8)
+		{
+			skip = 3; //3, 9
+		}
+		if(fi.TME && fi.FBP == 0x3800 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMZ32)
 		{
 			skip = 2;
+		}
+		if(fi.TME && fi.FBP && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x3d80)
+		{
+			skip = 1;
+		}
+		if(fi.TME && fi.FBP ==0x1c00 && (fi.TBP0==0x2e80 ||fi.TBP0==0x2d80) && fi.TPSM ==0  && fi.FBMSK == 0xff000000)
+		{
+			skip = 1;
+		}
+		if(!fi.TME && fi.FBP ==0x2a00 && (fi.TBP0==0x1C00 ) && fi.TPSM ==0  && fi.FBMSK == 0x00FFFFFF)
+		{
+			skip = 1;
 		}
 	}
 
@@ -1050,19 +1066,6 @@ bool GSC_UltramanFightingEvolution(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_AlpineRacer3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(!fi.TME && fi.FBP == 0 && (fi.FBMSK ==0x0001 ||fi.FBMSK == 0x00FFFFFF))
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_HummerBadlands(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1248,29 +1251,13 @@ bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
+bool GSC_NanoBreaker(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && (fi.FBP == 0x3f80 || fi.FBP == 0x03fa0) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 3; //3, 9
-		}
-		if(fi.TME && fi.FBP == 0x3800 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMZ32)
+		if(fi.TME && fi.FBP == 0x0 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x03800 || fi.TBP0 == 0x03900) && fi.TPSM == PSM_PSMCT16S)
 		{
 			skip = 2;
-		}
-		if(fi.TME && fi.FBP && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x3d80)
-		{
-			skip = 1;
-		}
-		if(fi.TME && fi.FBP ==0x1c00 && (fi.TBP0==0x2e80 ||fi.TBP0==0x2d80) && fi.TPSM ==0  && fi.FBMSK == 0xff000000)
-		{
-			skip = 1;
-		}
-		if(!fi.TME && fi.FBP ==0x2a00 && (fi.TBP0==0x1C00 ) && fi.TPSM ==0  && fi.FBMSK == 0x00FFFFFF)
-		{
-			skip = 1;
 		}
 	}
 
@@ -2438,7 +2425,6 @@ void GSState::SetupCrcHack()
 
 	if (s_crc_hack_level > 1) {
 		lut[CRC::AceCombat4] = GSC_AceCombat4;
-		lut[CRC::AlpineRacer3] = GSC_AlpineRacer3;
 		lut[CRC::BlackHawkDown] = GSC_BlackHawkDown;
 		lut[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
 		lut[CRC::BurnoutDominator] = GSC_Burnout;
@@ -2468,7 +2454,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;
 		lut[CRC::Manhunt2] = GSC_Manhunt2;
 		lut[CRC::MidnightClub3] = GSC_MidnightClub3;
-		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
 		lut[CRC::NarutimateAccel] = GSC_NarutimateAccel;
 		lut[CRC::Naruto] = GSC_Naruto;
 		lut[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
@@ -2486,6 +2471,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::Spartan] = GSC_Spartan;
 		lut[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
 		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
+		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
 		lut[CRC::TimeSplitters2] = GSC_TimeSplitters2;
 		lut[CRC::TombRaiderAnniversary] = GSC_TombRaider;
@@ -2498,6 +2484,10 @@ void GSState::SetupCrcHack()
 		lut[CRC::Yakuza2] = GSC_Yakuza2;
 		lut[CRC::Yakuza] = GSC_Yakuza;
 		lut[CRC::ZettaiZetsumeiToshi2] = GSC_ZettaiZetsumeiToshi2;
+		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to DX only)
+		lut[CRC::RadiataStories] = GSC_RadiataStories;
+		lut[CRC::StarOcean3] = GSC_StarOcean3;
+		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
 		// Only Aggresive
 		lut[CRC::FFX2] = GSC_FFX2;
 		lut[CRC::FFX] = GSC_FFX;
@@ -2521,7 +2511,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
 		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
-		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::XE3] = GSC_XE3;
 
 		// Depth + Texture cache issue + Date (AKA a real mess)
@@ -2550,11 +2539,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::CastlevaniaLoI] = GSC_Castlevania;
 		lut[CRC::GodOfWar] = GSC_GodOfWar;
 
-		// Those games emulate a stencil buffer with the alpha channel of the RT (Slow)
-		lut[CRC::RadiataStories] = GSC_RadiataStories;
-		lut[CRC::StarOcean3] = GSC_StarOcean3;
-		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
-
 		// Deprecated hack could be removed (Cutie)
 		lut[CRC::Grandia3] = GSC_Grandia3;
 
@@ -2579,6 +2563,9 @@ void GSState::SetupCrcHack()
 
 		// RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly
 		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas;
+
+		// Accumulation blend
+		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
 	}
 
 	m_gsc = lut[m_game.title];

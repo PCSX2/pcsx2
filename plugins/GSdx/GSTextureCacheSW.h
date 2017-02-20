@@ -57,7 +57,7 @@ public:
 protected:
 	GSState* m_state;
 	hash_set<Texture*> m_textures;
-	list<Texture*> m_map[MAX_PAGES];
+	std::array<std::list<Texture*>, MAX_PAGES> m_map;
 
 public:
 	GSTextureCacheSW(GSState* state);

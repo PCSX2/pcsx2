@@ -114,6 +114,7 @@ set(pcsx2Sources
 
 # Main pcsx2 header
 set(pcsx2Headers
+	AsyncFileReader.h
 	Cache.h
 	cheatscpp.h
 	Common.h
@@ -132,7 +133,7 @@ set(pcsx2Headers
 	IopBios.h
 	IopCommon.h
 	IopCounters.h
-	IopDma.h	
+	IopDma.h
 	IopGte.h
 	IopHw.h
 	IopMem.h
@@ -191,14 +192,20 @@ set(pcsx2CDVDHeaders
 	CDVD/CDVD.h
 	CDVD/CDVD_internal.h
 	CDVD/CDVDisoReader.h
-	CDVD/zlib_indexed.h
+	CDVD/ChunksCache.h
+	CDVD/CompressedFileReader.h
+	CDVD/CompressedFileReaderUtils.h
+	CDVD/CsoFileReader.h
+	CDVD/GzippedFileReader.h
 	CDVD/IsoFileFormats.h
 	CDVD/IsoFS/IsoDirectory.h
 	CDVD/IsoFS/IsoFileDescriptor.h
 	CDVD/IsoFS/IsoFile.h
 	CDVD/IsoFS/IsoFSCDVD.h
 	CDVD/IsoFS/IsoFS.h
-	CDVD/IsoFS/SectorSource.h)
+	CDVD/IsoFS/SectorSource.h
+	CDVD/zlib_indexed.h
+	)
 
 # DebugTools sources
 set(pcsx2DebugToolsSources
@@ -229,7 +236,7 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/Breakpoints.h
 	DebugTools/SymbolMap.h
 	DebugTools/Debug.h
-	DebugTools/DisASm.h
+	DebugTools/DisASM.h
 	DebugTools/DisVUmicro.h
 	DebugTools/DisVUops.h
 	DebugTools/BiosDebugData.h)
@@ -248,7 +255,6 @@ set(pcsx2GuiSources
 	gui/AppRes.cpp
 	gui/ConsoleLogger.cpp
 	gui/CpuUsageProvider.cpp
-	gui/CpuUsageProviderLnx.cpp
 	gui/Dialogs/AboutBoxDialog.cpp
 	gui/Dialogs/AppConfigDialog.cpp
 	gui/Dialogs/AssertionDialog.cpp
@@ -308,28 +314,31 @@ set(pcsx2GuiSources
 
 # gui headers
 set(pcsx2GuiHeaders
-	gui/App.h
-	gui/ApplyState.h
 	gui/AppAccelerators.h
 	gui/AppCommon.h
 	gui/AppConfig.h
 	gui/AppCorePlugins.h
+	gui/AppCoreThread.h
 	gui/AppEventListeners.h
 	gui/AppForwardDefs.h
 	gui/AppGameDatabase.h
+	gui/App.h
+	gui/ApplyState.h
+	gui/AppSaveStates.h
 	gui/ConsoleLogger.h
 	gui/CpuUsageProvider.h
+	gui/Debugger/BreakpointWindow.h
+	gui/Debugger/CtrlDisassemblyView.h
+	gui/Debugger/CtrlMemView.h
+	gui/Debugger/CtrlRegisterList.h
+	gui/Debugger/DebugEvents.h
+	gui/Debugger/DebuggerLists.h
+	gui/Debugger/DisassemblyDialog.h
 	gui/Dialogs/BaseConfigurationDialog.inl
 	gui/Dialogs/ConfigurationDialog.h
 	gui/Dialogs/LogOptionsDialog.h
 	gui/Dialogs/ModalPopups.h
-	gui/Debugger/BreakpointWindow.h
-	gui/Debugger/CtrlDisassemblyView.h
-	gui/Debugger/CtrlRegisterList.h
-	gui/Debugger/CtrlMemView.h
-	gui/Debugger/DebuggerLists.h
-	gui/Debugger/DisassemblyDialog.h
-	gui/Debugger/DebugEvents.h
+	gui/GSFrame.h
 	gui/i18n.h
 	gui/IsoDropTarget.h
 	gui/MainFrame.h
@@ -339,6 +348,7 @@ set(pcsx2GuiHeaders
 	gui/Panels/ConfigurationPanels.h
 	gui/Panels/LogOptionsPanels.h
 	gui/Panels/MemoryCardPanels.h
+	gui/pxEventThread.h
 	gui/RecentIsoList.h
 	)
 
@@ -377,25 +387,31 @@ set(pcsx2IPUSources
 
 # IPU headers
 set(pcsx2IPUHeaders
-	IPU/IPU.h
-	IPU/IPU_Fifo.h
 	IPU/IPUdma.h
-	IPU/yuv2rgb.h)
+	IPU/IPU_Fifo.h
+	IPU/IPU.h
+	IPU/mpeg2lib/Mpeg.h
+	IPU/mpeg2lib/Vlc.h
+	IPU/yuv2rgb.h
+	)
 
 # Linux sources
 set(pcsx2LinuxSources
+	gui/CpuUsageProviderLnx.cpp
 	Linux/LnxConsolePipe.cpp
 	Linux/LnxKeyCodes.cpp
-    Linux/LnxFlatFileReader.cpp
+	Linux/LnxFlatFileReader.cpp
     )
 
 set(pcsx2OSXSources
+	gui/CpuUsageProviderLnx.cpp
 #	Linux/LnxConsolePipe.cpp
 #	Linux/LnxKeyCodes.cpp
 	Darwin/DarwinFlatFileReader.cpp
 	)
 
 set(pcsx2FreeBSDSources
+	gui/CpuUsageProviderLnx.cpp
 	Linux/LnxConsolePipe.cpp
 	Linux/LnxKeyCodes.cpp
 	Darwin/DarwinFlatFileReader.cpp
@@ -472,14 +488,20 @@ set(pcsx2ZipToolsHeaders
 
 # Windows sources
 set(pcsx2WindowsSources
+	gui/CpuUsageProviderMSW.cpp
 	windows/cheats/browser.cpp
 	windows/cheats/cheats.cpp
 	windows/DwmSetup.cpp
+	windows/FlatFileReaderWindows.cpp
 	windows/ini.cpp
+	windows/Optimus.cpp
 	windows/PatchBrowser.cpp
+	windows/VCprojects/IopSif.cpp
 	windows/WinCompressNTFS.cpp
 	windows/WinConsolePipe.cpp
-	windows/WinSysExec.cpp)
+	windows/WinKeyCodes.cpp
+	windows/WinSysExec.cpp
+	)
 
 # Windows headers
 set(pcsx2WindowsHeaders
@@ -543,9 +565,6 @@ set(pcsx2x86Headers
 	x86/iR5900Move.h
 	x86/iR5900MultDiv.h
 	x86/iR5900Shift.h
-	x86/microVU.h
-	x86/microVU_IR.h
-	x86/microVU_Misc.h
 	x86/microVU_Alloc.inl
 	x86/microVU_Analyze.inl
 	x86/microVU_Branch.inl
@@ -554,15 +573,24 @@ set(pcsx2x86Headers
 	x86/microVU.cpp
 	x86/microVU_Execute.inl
 	x86/microVU_Flags.inl
+	x86/microVU.h
+	x86/microVU_IR.h
 	x86/microVU_Log.inl
 	x86/microVU_Lower.inl
 	x86/microVU_Macro.inl
+	x86/microVU_Misc.h
 	x86/microVU_Misc.inl
+	x86/microVU_Profiler.h
 	x86/microVU_Tables.inl
 	x86/microVU_Upper.inl
 	x86/newVif.h
 	x86/newVif_HashBucket.h
 	x86/newVif_UnpackSSE.h
+	x86/R5900_Profiler.h
+	x86/sVU_Compare.h
+	x86/sVU_Debug.h
+	x86/sVU_Micro.h
+	x86/sVU_zerorec.h
 	)
 
 # collect .S files

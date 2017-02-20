@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2014-2016 Gregory hainaut
+ *	Copyright (C) 2014-2016 PCSX2 Dev Team
  *	Copyright (C) 2016-2016 Jason Brown
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -27,11 +27,12 @@ void GSOsdManager::LoadFont() {
 	FT_Error error = FT_New_Face(m_library, theApp.GetConfigS("osd_fontname").c_str(), 0, &m_face);
 	if (error) {
 		m_face = NULL;
-    fprintf(stderr, "Failed to init the freetype face\n");
-    if(error == FT_Err_Unknown_File_Format)
-      fprintf(stderr, "\tFreetype unknown file format\n");
+		fprintf(stderr, "Failed to init the freetype face\n");
+		if(error == FT_Err_Unknown_File_Format)
+			fprintf(stderr, "\tFreetype unknown file format\n");
+
 		return;
-  }
+	}
 
 	LoadSize();
 }
@@ -39,7 +40,6 @@ void GSOsdManager::LoadFont() {
 void GSOsdManager::LoadSize() {
 	if (!m_face) return;
 
-	m_size = theApp.GetConfigI("osd_fontsize");
 	FT_Error error = FT_Set_Pixel_Sizes(m_face, 0, m_size);;
 	if (error) {
 		fprintf(stderr, "Failed to init the face size\n");
@@ -64,8 +64,10 @@ GSOsdManager::GSOsdManager() : m_atlas_h(0)
 	m_indicator_enabled = theApp.GetConfigB("osd_indicator_enabled");
 	m_osd_transparency = std::max(0, std::min(theApp.GetConfigI("osd_transparency"), 100));
 	m_max_onscreen_messages = theApp.GetConfigI("osd_max_log_messages");
+	m_size = theApp.GetConfigI("osd_fontsize");
 
 	if (FT_Init_FreeType(&m_library)) {
+		m_face = NULL;
 		fprintf(stderr, "Failed to init the freetype library\n");
 		return;
 	}

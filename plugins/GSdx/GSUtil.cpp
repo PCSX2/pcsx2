@@ -225,6 +225,8 @@ bool GSUtil::CheckSSE()
 #endif
 #if _M_SSE >= 0x501
 		{Xbyak::util::Cpu::tAVX2, "AVX2"},
+		{Xbyak::util::Cpu::tBMI1, "BMI1"},
+		{Xbyak::util::Cpu::tBMI2, "BMI2"},
 #endif
 	};
 
@@ -285,8 +287,7 @@ void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
 					desc.name = GetDeviceUniqueName(device);
 					desc.version = major * 100 + minor * 10;
 
-					// TODO: linux
-
+#ifdef _WIN32
 					char* buff = new char[MAX_PATH + 1];
 					GetTempPath(MAX_PATH, buff);
 					desc.tmppath = string(buff) + "/" + desc.name;
@@ -303,6 +304,10 @@ void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
 					hFind = FindFirstFile(desc.tmppath.c_str(), &FindFileData);
 					if(hFind != INVALID_HANDLE_VALUE) FindClose(hFind);
 					else CreateDirectory(desc.tmppath.c_str(), NULL);
+#else
+					// TODO: linux
+					ASSERT(0);
+#endif
 
 					dl.push_back(desc);
 				}

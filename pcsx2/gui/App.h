@@ -157,6 +157,7 @@ enum MenuIdentifiers
 	MenuId_Debug_Open,			// opens the debugger window / starts a debug session
 	MenuId_Debug_MemoryDump,
 	MenuId_Debug_Logging,		// dialog for selection additional log options
+	MenuId_Debug_CreateBlockdump,
 	MenuId_Config_ResetAll,
 };
 

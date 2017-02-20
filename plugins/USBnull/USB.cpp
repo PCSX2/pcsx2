@@ -60,7 +60,7 @@ PS2EgetLibType()
     return PS2E_LT_USB;
 }
 
-EXPORT_C_(char *)
+EXPORT_C_(const char *)
 PS2EgetLibName()
 {
     snprintf(libraryName, 255, "USBnull Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");

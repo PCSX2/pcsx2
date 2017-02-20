@@ -164,8 +164,10 @@ void GSdxApp::Init()
 #ifdef ENABLE_OPENCL
 	// OpenCL stuff goes last
 	// FIXME openCL isn't attached to a device (could be impacted by the window management stuff however)
+#ifdef _WIN32
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX9_OpenCL),		"Direct3D9",	"OpenCL"));
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_OpenCL),	"Direct3D11",	"OpenCL"));
+#endif
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_OpenCL),		"OpenGL",		"OpenCL"));
 #endif
 
@@ -226,7 +228,7 @@ void GSdxApp::Init()
 	m_gs_crc_level.push_back(GSSetting(0 , "None", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(1 , "Minimum", "Debug"));
 	m_gs_crc_level.push_back(GSSetting(2 , "Partial", "OpenGL Recommended"));
-	m_gs_crc_level.push_back(GSSetting(3 , "Full", "Safest"));
+	m_gs_crc_level.push_back(GSSetting(3 , "Full", "Direct3D Recommended"));
 	m_gs_crc_level.push_back(GSSetting(4 , "Aggressive", ""));
 
 	m_gs_acc_blend_level.push_back(GSSetting(0, "None", "Fastest"));
@@ -301,6 +303,7 @@ void GSdxApp::Init()
 	m_default_configuration["CrcHacksExclusions"]                         = "";
 	m_default_configuration["debug_glsl_shader"]                          = "0";
 	m_default_configuration["debug_opengl"]                               = "0";
+	m_default_configuration["disable_hw_gl_draw"]                         = "0";
 	m_default_configuration["dump"]                                       = "0";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";
@@ -331,6 +334,7 @@ void GSdxApp::Init()
 	m_default_configuration["osd_max_log_messages"]                       = "3";
 	m_default_configuration["override_geometry_shader"]                   = "-1";
 	m_default_configuration["override_GL_ARB_clear_texture"]              = "-1";
+	m_default_configuration["override_GL_ARB_direct_state_access"]        = "-1";
 	m_default_configuration["override_GL_ARB_draw_buffers_blend"]         = "-1";
 	m_default_configuration["override_GL_ARB_get_texture_sub_image"]      = "-1";
 	m_default_configuration["override_GL_ARB_gpu_shader5"]                = "-1";

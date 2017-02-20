@@ -486,7 +486,6 @@ static u16 QWCinGIFMFIFO(u32 DrainADDR)
 		gifstate |= GIF_STATE_EMPTY;
 
 	GIF_LOG("%x Available of the %x requested", ret, gifch.qwc);
-	pxAssert(ret >= 0);
 	return ret;
 }
 

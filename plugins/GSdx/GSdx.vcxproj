@@ -9,14 +9,6 @@
       <Configuration>Debug AVX2</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug AVX|Win32">
-      <Configuration>Debug AVX</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug AVX|x64">
-      <Configuration>Debug AVX</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
@@ -33,28 +25,12 @@
       <Configuration>Debug SSE4</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug SSSE3|Win32">
-      <Configuration>Debug SSSE3</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug SSSE3|x64">
-      <Configuration>Debug SSSE3</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release AVX2|Win32">
       <Configuration>Release AVX2</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release AVX2|x64">
       <Configuration>Release AVX2</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release AVX|Win32">
-      <Configuration>Release AVX</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release AVX|x64">
-      <Configuration>Release AVX</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
@@ -71,14 +47,6 @@
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release SSE4|x64">
       <Configuration>Release SSE4</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release SSSE3|Win32">
-      <Configuration>Release SSSE3</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release SSSE3|x64">
-      <Configuration>Release SSSE3</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -99,9 +67,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="vsprops\ProjectRootDir.props" />
     <Import Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='Debug'" Project="vsprops\sse2.props" />
-    <Import Condition="'$(Configuration)'=='Release SSSE3' Or '$(Configuration)'=='Debug SSSE3'" Project="vsprops\ssse3.props" />
     <Import Condition="'$(Configuration)'=='Release SSE4' Or '$(Configuration)'=='Debug SSE4'" Project="vsprops\sse4.props" />
-    <Import Condition="'$(Configuration)'=='Release AVX' Or '$(Configuration)'=='Debug AVX'" Project="vsprops\avx_vs2013.props" />
     <Import Condition="'$(Configuration)'=='Release AVX2' Or '$(Configuration)'=='Debug AVX2'" Project="vsprops\avx2.props" />
     <Import Project="vsprops\common.props" />
     <Import Condition="$(Configuration.Contains(Debug))" Project="vsprops\debug.props" />

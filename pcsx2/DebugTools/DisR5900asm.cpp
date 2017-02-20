@@ -29,6 +29,39 @@
 // Note only a subset of the opcodes are supported. It is intended as a cheap debugger
 //#define PRINT_REG_CONTENT
 
+// Note: Perf is not important
+static void vssappendf(std::string &dest, const char *format, va_list args)
+{
+    char first_try[128]; // this function is called 99% (100%?) of the times for small string
+    va_list args_copy;
+    va_copy(args_copy, args);
+
+    s32 size = std::vsnprintf(first_try, 128, format, args_copy) + 1;
+
+    va_end(args_copy);
+
+    if (size < 0)
+        return;
+    if (size < 128) {
+        dest += first_try;
+        return;
+    }
+
+    std::vector<char> output(size + 1);
+    std::vsnprintf(output.data(), size, format, args);
+
+    dest += output.data();
+}
+
+void ssappendf(std::string &dest, const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vssappendf(dest, format, args);
+    va_end(args);
+}
+
+
 unsigned long opcode_addr;
 u32 disasmOpcode;
 bool disSimplify;

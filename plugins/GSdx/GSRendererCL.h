@@ -248,7 +248,7 @@ protected:
 	GSVector4i m_tc_pages[4]; // invalidated texture cache pages (split this into 8:24?) // TODO: this should be block level, too many overlaps inside pages with render targets
 	GSVector4i m_tmp_pages[4];
 	uint32 m_tmp_pages2[MAX_PAGES + 1];
-	uint32 m_rw_pages_rendering[512]; // pages that are currently in-use
+	std::array<std::atomic<uint32>, 512> m_rw_pages_rendering; // pages that are currently in-use
 
 	void Reset();
 	void VSync(int field);

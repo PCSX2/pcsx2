@@ -35,7 +35,6 @@ const unsigned char version = PS2E_GS_VERSION;
 const unsigned char revision = 0;
 const unsigned char build = 1; // increase that with each version
 
-static char libraryName[256];
 Config conf;
 u32 GSKeyEvent = 0;
 bool GSShift = false, GSAlt = false;
@@ -62,7 +61,11 @@ PS2EgetLibType()
     return PS2E_LT_GS;
 }
 
-EXPORT_C_(char *)
+#ifdef _MSC_VER
+static char libraryName[256];
+#endif
+
+EXPORT_C_(const char *)
 PS2EgetLibName()
 {
 #ifdef _MSC_VER

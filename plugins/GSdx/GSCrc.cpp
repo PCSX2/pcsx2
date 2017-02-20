@@ -27,6 +27,8 @@ CRC::Game CRC::m_games[] =
 {
 	{0x00000000, NoTitle, NoRegion, 0},
 	{0xF46142D3, ArTonelico2, NoRegion, 0},
+	{0xF95F37EE, ArTonelico2, US, 0},
+	{0xCE2C1DBF, ArTonelico2, EU, 0},
 	{0x2113EA2E, MetalSlug6, JP, 0},
 	{0x42E05BAF, TomoyoAfter, JP, PointListPalette},
 	{0x7800DC84, Clannad, JP, PointListPalette},
@@ -474,8 +476,6 @@ CRC::Game CRC::m_games[] =
 	{0xF7F181C3, DeathByDegreesTekkenNinaWilliams, CH, 0}, // cutie comment
 	{0xF088FA5B, DeathByDegreesTekkenNinaWilliams, KO, 0},
 	{0x59683BB0, DeathByDegreesTekkenNinaWilliams, EU, 0},
-	{0x771C3B47, AlpineRacer3, JP, 0}, // cutie comment
-	{0x7367D841, AlpineRacer3, EU, 0},
 	{0x449E1F6B, HummerBadlands, US, 0}, 
 	{0xAEA1B3AD, SengokuBasara, JP, 0},
 	{0x5B659BED, Grandia3, JP, 0},

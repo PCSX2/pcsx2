@@ -86,7 +86,6 @@
     <ClCompile Include="..\..\src\Utilities\pxRadioPanel.cpp" />
     <ClCompile Include="..\..\src\Utilities\pxStaticText.cpp" />
     <ClCompile Include="..\..\src\Utilities\StringHelpers.cpp" />
-    <ClCompile Include="..\..\src\Utilities\vssprintf.cpp" />
     <ClCompile Include="..\..\src\Utilities\wxAppWithHelpers.cpp" />
     <ClCompile Include="..\..\src\Utilities\wxGuiTools.cpp" />
     <ClCompile Include="..\..\src\Utilities\wxHelpers.cpp" />

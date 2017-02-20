@@ -107,7 +107,6 @@
 #define IDC_LARGE_FB                    2103
 #define IDC_AUTO_FLUSH                  2104
 #define IDC_UNSCALE_POINT_LINE          2105
-#define IDC_OFFSETHACK_NEW              2120
 #define IDC_OSD_FONT_EDIT               2106
 #define IDC_OSD_FONT_BUTTON             2107
 #define IDC_OSD_SPEED                   2108
@@ -123,6 +122,7 @@
 #define IDC_OSD_MAX_LOG                 2118
 #define IDC_OSD_MAX_LOG_EDIT            2119
 #define IDC_OFFSETHACK_TEXT             2120
+#define IDC_OFFSETHACK_NEW              2121
 #define IDC_OFFSETHACK_TEXT             2044
 #define IDC_FILENAME                    2045
 #define IDC_SKIPDRAWHACK                2046

@@ -39,6 +39,10 @@ if(NOT USE_CLANG)
     set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
 endif()
 
+if(OPENCL_API)
+    set(GSdxFinalFlags ${GSdxFinalFlags} -DENABLE_OPENCL)
+endif()
+
 set(GSdxSources
     GLLoader.cpp
     GLState.cpp
@@ -74,7 +78,6 @@ set(GSdxSources
     GSDump.cpp
     GSFunctionMap.cpp
     GSHwHack.cpp
-    GSLinuxDialog.cpp
     GSLocalMemory.cpp
     GSLzma.cpp
     GSPerfMon.cpp
@@ -109,17 +112,80 @@ set(GSdxSources
     GSVector.cpp
     GSVertexTrace.cpp
     GSWnd.cpp
-    GSWndOGL.cpp
-    GSWndEGL.cpp
     GSdx.cpp
+    GSdxResources.cpp
     stdafx.cpp
     )
 
 set(GSdxHeaders
-    PSX/GPU.h
-    PSX/GPUDrawScanline.h
-    PSX/GPUDrawScanlineCodeGenerator.h
+    config.h
+    GLLoader.h
+    GLState.h
+    GSAlignedClass.h
+    GSBlock.h
+    GSCaptureDlg.h
+    GSCapture.h
+    GSClut.h
+    GSCodeBuffer.h
+    GSCrc.h
+    GSDevice.h
+    GSDeviceNull.h
+    GSDeviceOGL.h
+    GSDeviceSW.h
+    GSDialog.h
+    GSDirtyRect.h
+    GSDrawingContext.h
+    GSDrawingEnvironment.h
+    GSDrawScanlineCodeGenerator.h
+    GSDrawScanline.h
+    GSDump.h
+    GSdx.h
+    GSdxResources.h
+    GSFunctionMap.h
+    GS.h
+    GSLocalMemory.h
+    GSLzma.h
+    GSOsdManager.h
+    GSPerfMon.h
+    GSPng.h
+    GSRasterizer.h
+    GSRendererCL.h
+    GSRendererCS.h
+    GSRenderer.h
+    GSRendererHW.h
+    GSRendererNull.h
+    GSRendererOGL.h
+    GSRendererSW.h
+    GSScanlineEnvironment.h
+    GSSetting.h
+    GSSettingsDlg.h
+    GSSetupPrimCodeGenerator.h
+    GSShaderOGL.h
+    GSState.h
+    GSTables.h
+    GSTextureCache.h
+    GSTextureCacheOGL.h
+    GSTextureCacheSW.h
+    GSTexture.h
+    GSTextureNull.h
+    GSTextureOGL.h
+    GSTextureSW.h
+    GSThread_CXX11.h
+    GSThread.h
+    GSUniformBufferOGL.h
+    GSUtil.h
+    GSVector.h
+    GSVertexArrayOGL.h
+    GSVertex.h
+    GSVertexHW.h
+    GSVertexList.h
+    GSVertexSW.h
+    GSVertexTrace.h
+    GSWnd.h
     PSX/GPUDrawingEnvironment.h
+    PSX/GPUDrawScanlineCodeGenerator.h
+    PSX/GPUDrawScanline.h
+    PSX/GPU.h
     PSX/GPULocalMemory.h
     PSX/GPURenderer.h
     PSX/GPURendererSW.h
@@ -127,61 +193,69 @@ set(GSdxHeaders
     PSX/GPUSetupPrimCodeGenerator.h
     PSX/GPUState.h
     PSX/GPUVertex.h
-    GS.h
-    GSAlignedClass.h
-    GSBlock.h
-    GSCapture.h
-    GSClut.h
-    GSCodeBuffer.h
-    GSCrc.h
-    GSDevice.h
-    GSDeviceOGL.h
-    GSDeviceNull.h
-    GSDirtyRect.h
-    GSDrawScanline.h
-    GSDrawScanlineCodeGenerator.h
-    GSDrawingContext.h
-    GSDrawingEnvironment.h
-    GSDump.h
-    GSFunctionMap.h
-    GSLinuxLogo.h
-    GSLocalMemory.h
-    GSPerfMon.h
-    GSRasterizer.h
-    GSRenderer.h
-    GSRendererNull.h
-    GSRendererSW.h
-    GSRendererHW.h
-    GSRendererOGL.h
-    GSScanlineEnvironment.h
-    GSSetting.h
-    GSSetupPrimCodeGenerator.h
-    GSState.h
-    GSTables.h
-    GSTexture.h
-    GSTextureCache.h
-    GSTextureCacheSW.h
-    GSTextureCacheOGL.h
-    GSTextureNull.h
-    GSThread.h
-    GSThread_CXX11.h
-    GSUtil.h
-    GSVector.h
-    GSVertex.h
-    GSVertexHW.h
-    GSVertexList.h
-    GSVertexSW.h
-    GSVertexTrace.h
-    GSWnd.h
-    GSWndOGL.h
-    GSWndEGL.h
-    GSdx.h
     res/glsl_source.h
     stdafx.h
     xbyak/xbyak.h
     xbyak/xbyak_mnemonic.h
     xbyak/xbyak_util.h
     )
+
+if(Windows)
+    LIST(APPEND GSdxSources
+        GSCaptureDlg.cpp
+        GSDevice11.cpp
+        GSDevice9.cpp
+        GSDeviceDX.cpp
+        GSDialog.cpp
+        GSRendererCS.cpp
+        GSRendererDX11.cpp
+        GSRendererDX9.cpp
+        GSRendererDX.cpp
+        GSSettingsDlg.cpp
+        GSTexture11.cpp
+        GSTexture9.cpp
+        GSTextureCache11.cpp
+        GSTextureCache9.cpp
+        GSTextureFX11.cpp
+        GSTextureFX9.cpp
+        GSTextureFX.cpp
+        GSVertexList.cpp
+        GSVertexSW.cpp
+        GSWndDX.cpp
+        GSWndWGL.cpp
+        PSX/GPUSettingsDlg.cpp
+        )
+
+    LIST(APPEND GSdxHeaders
+        GSDevice11.h
+        GSDevice9.h
+        GSDeviceDX.h
+        GSRendererDX11.h
+        GSRendererDX9.h
+        GSRendererDX.h
+        GSTexture11.h
+        GSTexture9.h
+        GSTextureCache11.h
+        GSTextureCache9.h
+        GSWndDX.h
+        GSWndWGL.h
+        PSX/GPUSettingsDlg.h
+        resource.h
+        targetver.h
+        )
+else()
+    LIST(APPEND GSdxSources
+        GSLinuxDialog.cpp
+        GSWndOGL.cpp
+        GSWndEGL.cpp
+        )
+
+    LIST(APPEND GSdxHeaders
+        GSWndEGL.h
+        GSWndOGL.h
+        )
+endif()
+
 
 set(GSdxFinalSources
     ${GSdxSources}
@@ -209,10 +283,18 @@ if(USE_VTUNE)
     set(GSdxFinalLibs ${GSdxFinalLibs} ${VTUNE_LIBRARIES})
 endif()
 
+if(OPENCL_FOUND)
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${OPENCL_LIBRARIES})
+endif()
+
 # Generate Glsl header file. Protect with REBUILD_SHADER to avoid build-dependency on PERL
 if (REBUILD_SHADER)
     add_custom_command(OUTPUT res/glsl_source.h COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/glsl2h.pl)
 endif()
+
+# Note: trying to combine --generate-source and --generate-header doesn't work. It outputs whichever one comes last into the file named by the first
+execute_process(COMMAND glib-compile-resources --sourcedir res --generate-header --c-name GSdx_res res/gsdx-res.xml --target=GSdxResources.h WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+execute_process(COMMAND glib-compile-resources --sourcedir res --generate-source --c-name GSdx_res res/gsdx-res.xml --target=GSdxResources.cpp WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(BUILTIN_GS)
     add_pcsx2_lib(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
@@ -221,7 +303,7 @@ else()
         # Don't append -SSE2 on the first build to keep same name as SIMD build
         add_pcsx2_plugin("${Output}" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
         add_pcsx2_plugin("${Output}-SSE4" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags} -mssse3 -msse4 -msse4.1")
-        add_pcsx2_plugin("${Output}-AVX2" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags} -mavx -mavx2")
+        add_pcsx2_plugin("${Output}-AVX2" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags} -mavx -mavx2 -mbmi -mbmi2")
     else()
         add_pcsx2_plugin(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
     endif()

@@ -416,6 +416,8 @@ public:
 	static bool m_debug_gl_call;
 	static FILE* m_debug_gl_file;
 
+	bool m_disable_hw_gl_draw;
+
 	GSWnd* m_window;
 
 	GLuint m_fbo;				// frame buffer container
@@ -530,7 +532,6 @@ public:
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) final;
 	void ClearRenderTarget(GSTexture* t, uint32 c) final;
-	void ClearRenderTarget_i(GSTexture* t, int32 c);
 	void ClearDepth(GSTexture* t) final;
 	void ClearStencil(GSTexture* t, uint8 c) final;
 
