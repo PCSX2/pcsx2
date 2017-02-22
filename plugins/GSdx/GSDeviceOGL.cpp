@@ -286,7 +286,7 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, bool msaa, int form
 	return t;
 }
 
-bool GSDeviceOGL::Create(GSWnd* wnd)
+bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 {
 	// ****************************************************************
 	// Debug helper

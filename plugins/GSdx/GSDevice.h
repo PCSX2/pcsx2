@@ -106,7 +106,7 @@ class GSDevice : public GSAlignedClass<32>
 	list<GSTexture*> m_pool;
 
 protected:
-	GSWnd* m_wnd;
+	std::shared_ptr<GSWnd> m_wnd;
 	bool m_vsync;
 	bool m_rbswapped;
 	GSTexture* m_backbuffer;
@@ -142,7 +142,7 @@ public:
 
 	enum {Windowed, Fullscreen, DontCare};
 
-	virtual bool Create(GSWnd* wnd);
+	virtual bool Create(const std::shared_ptr<GSWnd> &wnd);
 	virtual bool Reset(int w, int h);
 	virtual bool IsLost(bool update = false) {return false;}
 	virtual void Present(const GSVector4i& r, int shader);

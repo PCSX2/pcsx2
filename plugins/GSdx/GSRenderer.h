@@ -55,7 +55,7 @@ protected:
 	virtual GSTexture* GetFeedbackOutput() { return nullptr; }
 
 public:
-	GSWnd* m_wnd;
+	std::shared_ptr<GSWnd> m_wnd;
 	GSDevice* m_dev;
 
 public:

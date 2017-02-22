@@ -36,7 +36,7 @@ class GSDeviceSW : public GSDevice
 public:
 	GSDeviceSW();
 
-	bool Create(GSWnd* wnd);
+	bool Create(const std::shared_ptr<GSWnd> &wnd);
 	bool Reset(int w, int h);
 
 	// drawing may be routed through here, the software renderers use the rasterizer directly now

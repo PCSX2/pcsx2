@@ -220,7 +220,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		threads = theApp.GetConfigI("extrathreads");
 	}
 
-	GSWnd* wnd[2] = { NULL, NULL };
+	std::shared_ptr<GSWnd> wnd[2];
 
 	try
 	{
@@ -352,18 +352,18 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			case GSRendererType::OGL_HW:
 			case GSRendererType::OGL_SW:
 			case GSRendererType::OGL_OpenCL:
-				s_gs->m_wnd = new GSWndWGL();
+				s_gs->m_wnd = std::make_shared<GSWndWGL>();
 				break;
 			default:
-				s_gs->m_wnd = new GSWndDX();
+				s_gs->m_wnd = std::make_shared<GSWndDX>();
 				break;
 			}
 #else
 #ifdef EGL_SUPPORTED
-			wnd[0] = new GSWndEGL();
-			wnd[1] = new GSWndOGL();
+			wnd[0] = std::make_shared<GSWndEGL>();
+			wnd[1] = std::make_shared<GSWndOGL>();
 #else
-			wnd[0] = new GSWndOGL();
+			wnd[0] = std::make_shared<GSWndOGL>();
 #endif
 #endif
 		}
@@ -400,14 +400,11 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				wnd[i]->Create(title, w, h);
 				s_gs->m_wnd = wnd[i];
 
-				if (i == 0) delete wnd[1];
-
 				break;
 			}
 			catch (GSDXRecoverableError)
 			{
 				wnd[i]->Detach();
-				delete wnd[i];
 			}
 		}
 		if (s_gs->m_wnd == NULL)
@@ -450,14 +447,11 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 					wnd[i]->Attach((void*)((uptr*)(dsp)+1), false);
 					s_gs->m_wnd = wnd[i];
 
-					if (i == 0) delete wnd[1];
-
 					break;
 				}
 				catch (GSDXRecoverableError)
 				{
 					wnd[i]->Detach();
-					delete wnd[i];
 				}
 			}
 		}
@@ -470,8 +464,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		catch (GSDXRecoverableError)
 		{
 			s_gs->m_wnd->Detach();
-			delete s_gs->m_wnd;
-			s_gs->m_wnd = NULL;
+			s_gs->m_wnd.reset();
 		}
 #endif
 		if (s_gs->m_wnd == NULL)

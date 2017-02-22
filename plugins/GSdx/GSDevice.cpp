@@ -24,7 +24,7 @@
 #include "GSDevice.h"
 
 GSDevice::GSDevice()
-	: m_wnd(NULL)
+	: m_wnd()
 	, m_vsync(false)
 	, m_rbswapped(false)
 	, m_backbuffer(NULL)
@@ -57,7 +57,7 @@ GSDevice::~GSDevice()
 	delete m_1x1;
 }
 
-bool GSDevice::Create(GSWnd* wnd)
+bool GSDevice::Create(const std::shared_ptr<GSWnd>& wnd)
 {
 	m_wnd = wnd;
 
