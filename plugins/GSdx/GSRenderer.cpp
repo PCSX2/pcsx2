@@ -63,11 +63,6 @@ GSRenderer::~GSRenderer()
 	delete m_dev;
 }
 
-bool GSRenderer::CreateWnd(const string& title, int w, int h)
-{
-	return m_wnd->Create(title, w, h);
-}
-
 bool GSRenderer::CreateDevice(GSDevice* dev)
 {
 	ASSERT(dev);
