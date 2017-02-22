@@ -26,7 +26,7 @@ GSDeviceSW::GSDeviceSW()
 {
 }
 
-bool GSDeviceSW::Create(GSWnd* wnd)
+bool GSDeviceSW::Create(const std::shared_ptr<GSWnd> &wnd)
 {
 	if(!GSDevice::Create(wnd))
 		return false;

@@ -162,7 +162,7 @@ public:
 	GSDevice11();
 	virtual ~GSDevice11();
 
-	bool Create(GSWnd* wnd);
+	bool Create(const std::shared_ptr<GSWnd> &wnd);
 	bool Reset(int w, int h);
 	void Flip();
 

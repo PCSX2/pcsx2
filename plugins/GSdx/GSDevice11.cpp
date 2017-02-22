@@ -43,7 +43,7 @@ GSDevice11::~GSDevice11()
 {
 }
 
-bool GSDevice11::Create(GSWnd* wnd)
+bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 {
 	if(!__super::Create(wnd))
 	{

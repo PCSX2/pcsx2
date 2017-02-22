@@ -516,7 +516,7 @@ public:
 	bool HasStencil() { return true; }
 	bool HasDepth32() { return true; }
 
-	bool Create(GSWnd* wnd);
+	bool Create(const std::shared_ptr<GSWnd> &wnd);
 	bool Reset(int w, int h);
 	void Flip();
 	void SetVSync(bool enable);

@@ -37,7 +37,7 @@ GSRenderer::GSRenderer()
 	, m_framelimit(false)
 	, m_texture_shuffle(false)
 	, m_real_size(0,0)
-	, m_wnd(NULL)
+	, m_wnd()
 	, m_dev(NULL)
 {
 	m_GStitleInfoBuffer[0] = 0;
@@ -61,11 +61,6 @@ GSRenderer::~GSRenderer()
 	}*/
 
 	delete m_dev;
-
-	if(m_wnd)
-	{
-		delete m_wnd;
-	}
 }
 
 bool GSRenderer::CreateWnd(const string& title, int w, int h)

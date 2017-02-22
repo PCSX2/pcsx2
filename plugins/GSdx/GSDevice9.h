@@ -185,7 +185,7 @@ public:
 	GSDevice9();
 	virtual ~GSDevice9();
 
-	bool Create(GSWnd* wnd);
+	bool Create(const std::shared_ptr<GSWnd> &wnd);
 	bool Reset(int w, int h);
 	bool IsLost(bool update);
 	void Flip();
