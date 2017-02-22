@@ -178,4 +178,12 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD(glGenProgramPipelines);
 	GL_EXT_LOAD(glGenerateMipmap);
 #endif
+
+	// Check openGL requirement as soon as possible so we can switch to another
+	// renderer/device
+	if (!GLLoader::check_gl_version(3, 3))
+		throw GSDXRecoverableError();
+
+	if (!GLLoader::check_gl_supported_extension())
+		throw GSDXRecoverableError();
 }

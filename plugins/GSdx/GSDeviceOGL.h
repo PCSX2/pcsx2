@@ -418,8 +418,6 @@ public:
 
 	bool m_disable_hw_gl_draw;
 
-	GSWnd* m_window;
-
 	GLuint m_fbo;				// frame buffer container
 	GLuint m_fbo_read;			// frame buffer container only for reading
 
