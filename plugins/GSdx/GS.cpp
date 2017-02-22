@@ -220,10 +220,35 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		threads = theApp.GetConfigI("extrathreads");
 	}
 
-	std::shared_ptr<GSWnd> wnd[2];
+	std::vector<std::shared_ptr<GSWnd>> wnds;
 
 	try
 	{
+		// Only a dummy shell is built. Therefore you can create all objects now.
+		switch (renderer)
+		{
+			case GSRendererType::OGL_HW:
+			case GSRendererType::OGL_SW:
+			case GSRendererType::OGL_OpenCL:
+#if defined(EGL_SUPPORTED) && defined(__unix__)
+				// Note: EGL code use GLX otherwise maybe it could be also compatible with Windows
+				// Yes OpenGL code isn't complicated enough !
+				wnds.push_back(std::make_shared<GSWndEGL>());
+#endif
+#if defined(__unix__)
+				wnds.push_back(std::make_shared<GSWndOGL>());
+#else
+				wnds.push_back(std::make_shared<GSWndWGL>());
+#endif
+				break;
+			default:
+#ifdef _WIN32
+				wnds.push_back(std::make_shared<GSWndDX>());
+#endif
+				break;
+		}
+
+
 		if (s_renderer != renderer)
 		{
 			// Emulator has made a render change request, which requires a completely
@@ -343,30 +368,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 			s_renderer = renderer;
 		}
-
-		if (s_gs->m_wnd == NULL)
-		{
-#ifdef _WIN32
-			switch (renderer)
-			{
-			case GSRendererType::OGL_HW:
-			case GSRendererType::OGL_SW:
-			case GSRendererType::OGL_OpenCL:
-				s_gs->m_wnd = std::make_shared<GSWndWGL>();
-				break;
-			default:
-				s_gs->m_wnd = std::make_shared<GSWndDX>();
-				break;
-			}
-#else
-#ifdef EGL_SUPPORTED
-			wnd[0] = std::make_shared<GSWndEGL>();
-			wnd[1] = std::make_shared<GSWndOGL>();
-#else
-			wnd[0] = std::make_shared<GSWndOGL>();
-#endif
-#endif
-		}
 	}
 	catch (std::exception& ex)
 	{
@@ -391,89 +392,63 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		int w = theApp.GetConfigI("ModeWidth");
 		int h = theApp.GetConfigI("ModeHeight");
 
-#if defined(__unix__)
-		for(uint32 i = 0; i < 2; i++) {
+		for(auto& wnd : wnds)
+		{
 			try
 			{
-				if (wnd[i] == NULL) continue;
+				wnd->Create(title, w, h);
+				// Create didn't throw so wnd is fine
+				s_gs->m_wnd = wnd;
 
-				wnd[i]->Create(title, w, h);
-				s_gs->m_wnd = wnd[i];
+				s_gs->m_wnd->Show();
+
+				*dsp = s_gs->m_wnd->GetDisplay();
 
 				break;
 			}
 			catch (GSDXRecoverableError)
 			{
-				wnd[i]->Detach();
+				wnd->Detach();
 			}
 		}
-		if (s_gs->m_wnd == NULL)
-		{
-			GSclose();
 
-			return -1;
-		}
-#endif
-#ifdef _WIN32
-		if(!s_gs->CreateWnd(title, w, h))
-		{
-			GSclose();
 
-			return -1;
-		}
-#endif
-
-		s_gs->m_wnd->Show();
-
-		*dsp = s_gs->m_wnd->GetDisplay();
 	}
 	else
 	{
 		s_gs->SetMultithreaded(true);
 
 #if defined(__unix__)
+		void *win_handle = (void*)((uptr*)(dsp)+1);
+#else
+		void *win_handle = *dsp;
+#endif
+
 		if (s_gs->m_wnd) {
 			// A window was already attached to s_gs so we also
 			// need to restore the window state (Attach)
-			s_gs->m_wnd->Attach((void*)((uptr*)(dsp)+1), false);
+			s_gs->m_wnd->Attach(win_handle, false);
 		} else {
-			// No window found, try to attach a GLX win and retry 
-			// with EGL win if failed.
-			for(uint32 i = 0; i < 2; i++) {
+			// No window found, try to attach a window
+			for(auto& wnd : wnds)
+			{
 				try
 				{
-					if (wnd[i] == NULL) continue;
-
-					wnd[i]->Attach((void*)((uptr*)(dsp)+1), false);
-					s_gs->m_wnd = wnd[i];
+					wnd->Attach(win_handle, false);
+					// Attach didn't throw so wnd is fine
+					s_gs->m_wnd = wnd;
 
 					break;
 				}
 				catch (GSDXRecoverableError)
 				{
-					wnd[i]->Detach();
+					wnd->Detach();
 				}
 			}
 		}
-#endif
-#ifdef _WIN32
-		try
-		{
-			s_gs->m_wnd->Attach(*dsp, false);
-		}
-		catch (GSDXRecoverableError)
-		{
-			s_gs->m_wnd->Detach();
-			s_gs->m_wnd.reset();
-		}
-#endif
-		if (s_gs->m_wnd == NULL)
-		{
-			return -1;
-		}
 	}
 
-	if(!s_gs->CreateDevice(dev))
+	if(!s_gs->m_wnd || !s_gs->CreateDevice(dev))
 	{
 		// This probably means the user has DX11 configured with a video card that is only DX9
 		// compliant.  Cound mean drivr issues of some sort also, but to be sure, that's the most

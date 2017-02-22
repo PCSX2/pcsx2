@@ -62,7 +62,6 @@ public:
 	GSRenderer();
 	virtual ~GSRenderer();
 
-	virtual bool CreateWnd(const string& title, int w, int h);
 	virtual bool CreateDevice(GSDevice* dev);
 	virtual void ResetDevice();
 	virtual void VSync(int field);
