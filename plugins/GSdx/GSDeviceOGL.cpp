@@ -54,7 +54,6 @@ FILE* GSDeviceOGL::m_debug_gl_file = NULL;
 GSDeviceOGL::GSDeviceOGL()
 	: m_msaa(0)
 	, m_force_texture_clear(0)
-	, m_window(NULL)
 	, m_fbo(0)
 	, m_fbo_read(0)
 	, m_va(NULL)
@@ -289,14 +288,6 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, bool msaa, int form
 
 bool GSDeviceOGL::Create(GSWnd* wnd)
 {
-	if (m_window == NULL) {
-		if (!GLLoader::check_gl_version(3, 3)) return false;
-
-		if (!GLLoader::check_gl_supported_extension()) return false;
-	}
-
-	m_window = wnd;
-
 	// ****************************************************************
 	// Debug helper
 	// ****************************************************************
