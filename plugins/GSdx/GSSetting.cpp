@@ -162,10 +162,8 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_OSD_MAX_LOG:
 			return "Sets the maximum number of log messages on the screen or in the buffer at the same time.\n\n"
 				"The maximum number of messages visible on the screen at the same time also depends on the character size.";
-#ifdef __unix__
 		case IDC_LINEAR_PRESENT:
 			return "Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.";
-#endif
 		// Exclusive for Hardware Renderer
 		case IDC_PRELOAD_GS:
 			return "Uploads GS data when rendering a new frame to reproduce some effects accurately. Fixes black screen issues in games like Armored Core: Last Raven.";

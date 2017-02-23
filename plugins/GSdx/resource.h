@@ -116,6 +116,7 @@
 #define IDC_SHADER_FX_TEXT              2153
 #define IDC_SHADER_FX_CONF_TEXT         2154
 #define IDC_TVSHADER                    2155
+#define IDC_LINEAR_PRESENT              2156
 // OSD:
 #define IDC_OSD_LOG                     2170
 #define IDC_OSD_MONITOR                 2171
