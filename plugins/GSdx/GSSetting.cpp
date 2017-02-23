@@ -149,6 +149,12 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_MEMORY_WRAPPING:
 			return "Emulates GS memory wrapping accurately. This fixes issues where part of the image is cut-off by block shaped sections such as the FMVs in Wallace & Gromit: The Curse of the Were-Rabbit and Thrillville.\n"
 				"Note: This hack can have a small impact on performance.";
+		case IDC_GEOMETRY_SHADER_OVERRIDE:
+			return "Allows the GPU instead of just the CPU to transform lines into sprites. This reduces CPU load and bandwidth requirement, but it is heavier on the GPU.\n"
+				"Automatic detection is recommended.\nNote: This option is only supported by GPUs which support at least Direct3D 10.";
+		case IDC_IMAGE_LOAD_STORE:
+			return "Allows advanced atomic operations to speed up Accurate Date. Only disable this if using Accurate Date causes (GPU driver) issues.\n"
+				"Note: This option is only supported by GPUs which support at least Direct3D 11.";
 #ifdef _WIN32
 		// DX9 only
 		case IDC_FBA:
