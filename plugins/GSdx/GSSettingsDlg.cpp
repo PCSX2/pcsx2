@@ -474,9 +474,13 @@ void GSShaderDlg::OnInit()
 	// FXAA shader
 	CheckDlgButton(m_hWnd, IDC_FXAA, theApp.GetConfigB("fxaa"));
 
+	// Texture Filtering Of Display
+	CheckDlgButton(m_hWnd, IDC_LINEAR_PRESENT, theApp.GetConfigB("linear_present"));
+
 	AddTooltip(IDC_SHADEBOOST);
 	AddTooltip(IDC_SHADER_FX);
 	AddTooltip(IDC_FXAA);
+	AddTooltip(IDC_LINEAR_PRESENT);
 
 	UpdateControls();
 }
@@ -574,6 +578,9 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 			// FXAA shader
 			theApp.SetConfig("Fxaa", (int)IsDlgButtonChecked(m_hWnd, IDC_FXAA));
+
+			// Texture Filtering Of Display
+			theApp.SetConfig("linear_present", (int)IsDlgButtonChecked(m_hWnd, IDC_LINEAR_PRESENT));
 
 			// External FX Shader
 			theApp.SetConfig("shaderfx", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX));
