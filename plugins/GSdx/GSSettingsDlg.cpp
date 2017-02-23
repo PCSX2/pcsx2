@@ -702,6 +702,8 @@ void GSHacksDlg::OnInit()
 	ComboBoxInit(IDC_OFFSETHACK, theApp.m_gs_offset_hack, theApp.GetConfigI("UserHacks_HalfPixelOffset"));
 	ComboBoxInit(IDC_ROUND_SPRITE, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_round_sprite_offset"));
 	ComboBoxInit(IDC_SPRITEHACK, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_SpriteHack"));
+	ComboBoxInit(IDC_GEOMETRY_SHADER_OVERRIDE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_geometry_shader"));
+	ComboBoxInit(IDC_IMAGE_LOAD_STORE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_GL_ARB_shader_image_load_store"));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETRANGE, 0, MAKELPARAM(1000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_SkipDraw"), 0));
@@ -712,22 +714,31 @@ void GSHacksDlg::OnInit()
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_SETPOS, 0, MAKELPARAM((theApp.GetConfigI("UserHacks_TCOffset") >> 16) & 0xFFFF, 0));
 
-	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), ogl ? SW_HIDE : SW_SHOW);
-	ShowWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), ogl ? SW_HIDE : SW_SHOW);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_UNSCALE_POINT_LINE), ogl && !native);
+	// Direct3D-only hacks:
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), !ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAACB), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !ogl);
+
+	// OpenGL-only hacks:
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_UNSCALE_POINT_LINE), ogl && !native);
+
+	// Upscaling hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_WILDHACK), !native);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK), !native);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK_TEXT), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALIGN_SPRITE), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_SPRITE), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK_TEXT), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_SPRITE_TEXT), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK_TEXT), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK), !native);
+
+	// OpenGL Very Advanced Custom Settings:
+	EnableWindow(GetDlgItem(m_hWnd, IDC_GEOMETRY_SHADER_OVERRIDE), ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_GEOMETRY_SHADER_TEXT), ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_IMAGE_LOAD_STORE), ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_IMAGE_LOAD_STORE_TEXT), ogl);
 
 	AddTooltip(IDC_SKIPDRAWHACKEDIT);
 	AddTooltip(IDC_SKIPDRAWHACK);
@@ -749,6 +760,8 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_AUTO_FLUSH);
 	AddTooltip(IDC_UNSCALE_POINT_LINE);
 	AddTooltip(IDC_MEMORY_WRAPPING);
+	AddTooltip(IDC_GEOMETRY_SHADER_OVERRIDE);
+	AddTooltip(IDC_IMAGE_LOAD_STORE);
 }
 
 void GSHacksDlg::UpdateControls()
@@ -778,6 +791,14 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			if (ComboBoxGetSelData(IDC_OFFSETHACK, data))
 			{
 				theApp.SetConfig("UserHacks_HalfPixelOffset", (int)data);
+			}
+			if (ComboBoxGetSelData(IDC_GEOMETRY_SHADER_OVERRIDE, data))
+			{
+				theApp.SetConfig("override_geometry_shader", (int)data);
+			}
+			if (ComboBoxGetSelData(IDC_IMAGE_LOAD_STORE, data))
+			{
+				theApp.SetConfig("override_GL_ARB_shader_image_load_store", (int)data);
 			}
 			theApp.SetConfig("UserHacks_MSAA", cb2msaa[(int)SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_GETCURSEL, 0, 0)]);
 			theApp.SetConfig("UserHacks_AlphaHack", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHAHACK));

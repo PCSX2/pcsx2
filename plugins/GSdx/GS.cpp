@@ -313,10 +313,10 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		case GSRendererType::DX9_SW:
 		case GSRendererType::DX1011_SW:
 		case GSRendererType::OGL_SW:
-			renderer_mode = "(Software mode)";
+			renderer_mode = "(Software renderer)";
 			break;
 		case GSRendererType::Null:
-			renderer_mode = "(Null mode)";
+			renderer_mode = "(Null renderer)";
 			break;
 		case GSRendererType::DX9_OpenCL:
 		case GSRendererType::DX1011_OpenCL:
@@ -324,7 +324,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			renderer_mode = "(OpenCL)";
 			break;
 		default:
-			renderer_mode = "(Hardware mode)";
+			renderer_mode = "(Hardware renderer)";
 			break;
 		}
 
@@ -337,14 +337,14 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		case GSRendererType::DX9_OpenCL:
 			dev = new GSDevice9();
 			s_renderer_name = " D3D9";
-			renderer_fullname = "Direct3D9";
+			renderer_fullname = "Direct3D 9";
 			break;
 		case GSRendererType::DX1011_HW:
 		case GSRendererType::DX1011_SW:
 		case GSRendererType::DX1011_OpenCL:
 			dev = new GSDevice11();
 			s_renderer_name = " D3D11";
-			renderer_fullname = "Direct3D11";
+			renderer_fullname = "Direct3D 11";
 			break;
 #endif
 		case GSRendererType::Null:
