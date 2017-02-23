@@ -209,6 +209,7 @@ EXPORT_C GSclose()
 static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads = -1)
 {
 	GSDevice* dev = NULL;
+	bool old_api = *dsp == NULL;
 
 	if(renderer == GSRendererType::Undefined)
 	{
@@ -220,35 +221,8 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		threads = theApp.GetConfigI("extrathreads");
 	}
 
-	std::vector<std::shared_ptr<GSWnd>> wnds;
-
 	try
 	{
-		// Only a dummy shell is built. Therefore you can create all objects now.
-		switch (renderer)
-		{
-			case GSRendererType::OGL_HW:
-			case GSRendererType::OGL_SW:
-			case GSRendererType::OGL_OpenCL:
-#if defined(EGL_SUPPORTED) && defined(__unix__)
-				// Note: EGL code use GLX otherwise maybe it could be also compatible with Windows
-				// Yes OpenGL code isn't complicated enough !
-				wnds.push_back(std::make_shared<GSWndEGL>());
-#endif
-#if defined(__unix__)
-				wnds.push_back(std::make_shared<GSWndOGL>());
-#else
-				wnds.push_back(std::make_shared<GSWndWGL>());
-#endif
-				break;
-			default:
-#ifdef _WIN32
-				wnds.push_back(std::make_shared<GSWndDX>());
-#endif
-				break;
-		}
-
-
 		if (s_renderer != renderer)
 		{
 			// Emulator has made a render change request, which requires a completely
@@ -260,11 +234,82 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			s_gs = NULL;
 		}
 
+		std::shared_ptr<GSWnd> window;
+		{
+			// Select the window first to detect the GL requirement
+			std::vector<std::shared_ptr<GSWnd>> wnds;
+			switch (renderer)
+			{
+				case GSRendererType::OGL_HW:
+				case GSRendererType::OGL_SW:
+				case GSRendererType::OGL_OpenCL:
+#if defined(EGL_SUPPORTED) && defined(__unix__)
+					// Note: EGL code use GLX otherwise maybe it could be also compatible with Windows
+					// Yes OpenGL code isn't complicated enough !
+					wnds.push_back(std::make_shared<GSWndEGL>());
+#endif
+#if defined(__unix__)
+					wnds.push_back(std::make_shared<GSWndOGL>());
+#else
+					wnds.push_back(std::make_shared<GSWndWGL>());
+#endif
+					break;
+				default:
+#ifdef _WIN32
+					wnds.push_back(std::make_shared<GSWndDX>());
+#endif
+					break;
+			}
+
+			int w = theApp.GetConfigI("ModeWidth");
+			int h = theApp.GetConfigI("ModeHeight");
+#if defined(__unix__)
+			void *win_handle = (void*)((uptr*)(dsp)+1);
+#else
+			void *win_handle = *dsp;
+#endif
+
+			for(auto& wnd : wnds)
+			{
+				try
+				{
+					if (old_api)
+					{
+						// old-style API expects us to create and manage our own window:
+						wnd->Create(title, w, h);
+
+						wnd->Show();
+
+						*dsp = wnd->GetDisplay();
+					}
+					else
+					{
+						wnd->Attach(win_handle, false);
+					}
+
+					window = wnd; // Previous code will throw if window isn't supported
+
+					break;
+				}
+				catch (GSDXRecoverableError)
+				{
+					wnd->Detach();
+				}
+			}
+
+			if(!window)
+			{
+				GSclose();
+
+				return -1;
+			}
+		}
+
 		const char* renderer_fullname = "";
 		const char* renderer_mode = "";
 
 		switch (renderer)
-		{		
+		{
 		case GSRendererType::DX9_SW:
 		case GSRendererType::DX1011_SW:
 		case GSRendererType::OGL_SW:
@@ -368,6 +413,8 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 			s_renderer = renderer;
 		}
+
+		s_gs->m_wnd = window;
 	}
 	catch (std::exception& ex)
 	{
@@ -385,70 +432,10 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 	s_gs->SetVSync(s_vsync);
 	s_gs->SetFrameLimit(s_framelimit);
 
-	if(*dsp == NULL)
-	{
-		// old-style API expects us to create and manage our own window:
-
-		int w = theApp.GetConfigI("ModeWidth");
-		int h = theApp.GetConfigI("ModeHeight");
-
-		for(auto& wnd : wnds)
-		{
-			try
-			{
-				wnd->Create(title, w, h);
-				// Create didn't throw so wnd is fine
-				s_gs->m_wnd = wnd;
-
-				s_gs->m_wnd->Show();
-
-				*dsp = s_gs->m_wnd->GetDisplay();
-
-				break;
-			}
-			catch (GSDXRecoverableError)
-			{
-				wnd->Detach();
-			}
-		}
-
-
-	}
-	else
-	{
+	if(!old_api)
 		s_gs->SetMultithreaded(true);
 
-#if defined(__unix__)
-		void *win_handle = (void*)((uptr*)(dsp)+1);
-#else
-		void *win_handle = *dsp;
-#endif
-
-		if (s_gs->m_wnd) {
-			// A window was already attached to s_gs so we also
-			// need to restore the window state (Attach)
-			s_gs->m_wnd->Attach(win_handle, false);
-		} else {
-			// No window found, try to attach a window
-			for(auto& wnd : wnds)
-			{
-				try
-				{
-					wnd->Attach(win_handle, false);
-					// Attach didn't throw so wnd is fine
-					s_gs->m_wnd = wnd;
-
-					break;
-				}
-				catch (GSDXRecoverableError)
-				{
-					wnd->Detach();
-				}
-			}
-		}
-	}
-
-	if(!s_gs->m_wnd || !s_gs->CreateDevice(dev))
+	if(!s_gs->CreateDevice(dev))
 	{
 		// This probably means the user has DX11 configured with a video card that is only DX9
 		// compliant.  Cound mean drivr issues of some sort also, but to be sure, that's the most
