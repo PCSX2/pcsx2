@@ -1416,14 +1416,19 @@ enum class GSVideoMode : uint8
 	DTV_1080I
 };
 
-enum class Filtering : uint8
+enum class BiFiltering : uint8
 {
 	Nearest,
-	Bilinear_Forced,
-	Bilinear_PS2,
-	Trilinear,
-	Trilinear_Bilinear_Forced,
-	Trilinear_Always
+	PS2,
+	Forced_But_Sprite,
+	Forced,
+};
+
+enum class TriFiltering : uint8
+{
+	None,
+	PS2,
+	Forced,
 };
 
 enum class CRCHackLevel : uint8

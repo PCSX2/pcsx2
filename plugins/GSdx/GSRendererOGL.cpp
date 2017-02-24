@@ -40,6 +40,7 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_merge_sprite   = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 	UserHacks_unscale_pt_ln  = theApp.GetConfigB("UserHacks_unscale_point_line");
 	UserHacks_HPO            = theApp.GetConfigI("UserHacks_HalfPixelOffset");
+	UserHacks_tri_filter     = static_cast<TriFiltering>(theApp.GetConfigI("UserHacks_TriFilter"));
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	ResetStates();
@@ -51,6 +52,7 @@ GSRendererOGL::GSRendererOGL()
 		UserHacks_merge_sprite   = false;
 		UserHacks_unscale_pt_ln  = false;
 		UserHacks_HPO            = 0;
+		UserHacks_tri_filter     = TriFiltering::None;
 	}
 }
 
@@ -744,7 +746,7 @@ void GSRendererOGL::RealignTargetTextureCoordinate(const GSTextureCache::Source*
 
 	GSVertex* v             = &m_vertex.buff[0];
 	const GSVector2& scale  = tex->m_texture->GetScale();
-	bool  linear            = m_vt.IsLinear();
+	bool  linear            = m_vt.IsRealLinear();
 	int t_position          = v[0].U;
 	GSVector4 half_offset(0.0f);
 
@@ -814,49 +816,27 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt || psm.depth;
 	bool trilinear_manual = need_mipmap && m_mipmap == 2;
 
-	bool bilinear = false;
+	bool bilinear = m_vt.IsLinear();
 	int trilinear = 0;
 	bool trilinear_auto = false;
-	switch (m_filter)
+	switch (UserHacks_tri_filter)
 	{
-		case Filtering::Nearest:
-			bilinear = false;
-			break;
-
-		case Filtering::Bilinear_Forced:
-			bilinear = true;
-			break;
-
-		case Filtering::Bilinear_PS2:
-			bilinear = m_vt.IsLinear();
-			break;
-
-		case Filtering::Trilinear_Always:
-			bilinear = true;
+		case TriFiltering::Forced:
 			trilinear = static_cast<uint8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
 			trilinear_auto = m_mipmap != 2;
 			break;
 
-		case Filtering::Trilinear:
-			bilinear = m_vt.IsLinear();
+		case TriFiltering::PS2:
 			if (need_mipmap && m_mipmap != 2) {
 				trilinear = m_context->TEX1.MMIN;
 				trilinear_auto = true;
 			}
 			break;
 
-		case Filtering::Trilinear_Bilinear_Forced:
-			bilinear = true;
-			if (need_mipmap && m_mipmap != 2) {
-				trilinear = (m_context->TEX1.MMIN | 4) & 0x5;
-				trilinear_auto = true;
-			}
+		case TriFiltering::None:
 		default:
 			break;
 	}
-
-	// Don't force extra filtering on sprite (it creates various upscaling issue)
-	bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
 	// 1 and 0 are equivalent
 	m_ps_sel.wms = (wms & 2) ? wms : 0;
