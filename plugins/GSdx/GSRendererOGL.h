@@ -55,6 +55,7 @@ class GSRendererOGL final : public GSRendererHW
 		bool UserHacks_merge_sprite;
 		bool UserHacks_unscale_pt_ln;
 		int UserHacks_HPO;
+		TriFiltering UserHacks_tri_filter;
 
 		GSDeviceOGL::VSConstantBuffer vs_cb;
 		GSDeviceOGL::PSConstantBuffer ps_cb;

@@ -201,12 +201,14 @@ void GSdxApp::Init()
 	m_gs_max_anisotropy.push_back(GSSetting(8, "8x", ""));
 	m_gs_max_anisotropy.push_back(GSSetting(16, "16x", ""));
 
-	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Nearest), "Nearest", ""));
-	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Bilinear_Forced), "Bilinear", "Forced"));
-	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Bilinear_PS2), "Bilinear", "PS2"));
-	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Trilinear), "Trilinear", ""));
-	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Trilinear_Bilinear_Forced), "Trilinear", "Forced Bilinear"));
-	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Trilinear_Always), "Trilinear", "Ultra/Slow"));
+	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Nearest), "Nearest", ""));
+	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced_But_Sprite), "Bilinear", "Forced excluding sprite"));
+	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced), "Bilinear", "Forced"));
+	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::PS2), "Bilinear", "PS2"));
+
+	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::None), "None", ""));
+	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::PS2), "Trilinear", ""));
+	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::Forced), "Trilinear", "Ultra/Slow"));
 
 	m_gs_gl_ext.push_back(GSSetting(-1, "Auto", ""));
 	m_gs_gl_ext.push_back(GSSetting(0,  "Force-Disabled", ""));
@@ -307,7 +309,7 @@ void GSdxApp::Init()
 	m_default_configuration["dump"]                                       = "0";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";
-	m_default_configuration["filter"]                                     = "2";
+	m_default_configuration["filter"]                                     = to_string(static_cast<int8>(BiFiltering::PS2));
 	m_default_configuration["force_texture_clear"]                        = "0";
 	m_default_configuration["fxaa"]                                       = "0";
 	m_default_configuration["interlace"]                                  = "7";
@@ -380,6 +382,7 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_SpriteHack"]                       = "0";
 	m_default_configuration["UserHacks_TCOffset"]                         = "0";
 	m_default_configuration["UserHacks_TextureInsideRt"]                  = "0";
+	m_default_configuration["UserHacks_TriFilter"]                        = to_string(static_cast<int8>(TriFiltering::None));
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
 	m_default_configuration["wrap_gs_mem"]                                = "0";
 	m_default_configuration["vsync"]                                      = "0";

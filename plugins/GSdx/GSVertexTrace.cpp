@@ -32,9 +32,9 @@ void GSVertexTrace::InitVectors()
 }
 
 GSVertexTrace::GSVertexTrace(const GSState* state)
-	: m_state(state)
+	: m_state(state), m_primclass(GS_INVALID_CLASS)
 {
-	m_primclass = GS_INVALID_CLASS;
+	m_force_filter = static_cast<BiFiltering>(theApp.GetConfigI("filter"));
 	memset(&m_alpha, 0, sizeof(m_alpha));
 
 	#define InitUpdate3(P, IIP, TME, FST, COLOR) \
@@ -88,37 +88,58 @@ void GSVertexTrace::Update(const void* vertex, const uint32* index, int v_count,
 		if(TEX1.MXL == 0) // MXL == 0 => MMIN ignored, tested it on ps2
 		{
 			m_filter.linear = m_filter.mmag;
-
-			return;
-		}
-
-		float K = (float)TEX1.K / 16;
-
-		if(TEX1.LCM == 0 && m_state->PRIM->FST == 0) // FST == 1 => Q is not interpolated
-		{
-			// LOD = log2(1/|Q|) * (1 << L) + K
-
-			GSVector4::storel(&m_lod, m_max.t.uph(m_min.t).log2(3).neg() * (float)(1 << TEX1.L) + K);
-
-			if(m_lod.x > m_lod.y) {float tmp = m_lod.x; m_lod.x = m_lod.y; m_lod.y = tmp;}
 		}
 		else
 		{
-			m_lod.x = K;
-			m_lod.y = K;
+			float K = (float)TEX1.K / 16;
+
+			if(TEX1.LCM == 0 && m_state->PRIM->FST == 0) // FST == 1 => Q is not interpolated
+			{
+				// LOD = log2(1/|Q|) * (1 << L) + K
+
+				GSVector4::storel(&m_lod, m_max.t.uph(m_min.t).log2(3).neg() * (float)(1 << TEX1.L) + K);
+
+				if(m_lod.x > m_lod.y) {float tmp = m_lod.x; m_lod.x = m_lod.y; m_lod.y = tmp;}
+			}
+			else
+			{
+				m_lod.x = K;
+				m_lod.y = K;
+			}
+
+			if(m_lod.y <= 0)
+			{
+				m_filter.linear = m_filter.mmag;
+			}
+			else if(m_lod.x > 0)
+			{
+				m_filter.linear = m_filter.mmin;
+			}
+			else
+			{
+				m_filter.linear = m_filter.mmag | m_filter.mmin;
+			}
 		}
 
-		if(m_lod.y <= 0)
+		switch (m_force_filter)
 		{
-			m_filter.linear = m_filter.mmag;
-		}
-		else if(m_lod.x > 0)
-		{
-			m_filter.linear = m_filter.mmin;
-		}
-		else
-		{
-			m_filter.linear = m_filter.mmag | m_filter.mmin;
+			case BiFiltering::Nearest:
+				m_filter.opt_linear = 0;
+				break;
+
+			case BiFiltering::Forced_But_Sprite:
+				// Special case to reduce the number of glitch when upscaling is enabled
+				m_filter.opt_linear = (m_primclass == GS_SPRITE_CLASS) ? m_filter.linear : 1;
+				break;
+
+			case BiFiltering::Forced:
+				m_filter.opt_linear = 1;
+				break;
+
+			case BiFiltering::PS2:
+			default:
+				m_filter.opt_linear = m_filter.linear;
+				break;
 		}
 	}
 }

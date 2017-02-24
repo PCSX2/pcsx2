@@ -88,7 +88,7 @@ class GSSettingsDlg : public GSDialog
 		D3D_FEATURE_LEVEL level;
 		Adapter(const std::string &n, const std::string &i, const D3D_FEATURE_LEVEL &l) : name(n), id(i), level(l) {}
 	};
-	
+
 	std::vector<Adapter> adapters;
 
 	vector<GSSetting> m_ocl_devs;
@@ -96,7 +96,6 @@ class GSSettingsDlg : public GSDialog
 
 	void UpdateRenderers();
 	void UpdateControls();
-	void UpdateFilteringCombobox();
 
 protected:
 	void OnInit();

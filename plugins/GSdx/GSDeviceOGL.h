@@ -411,7 +411,7 @@ public:
 	uint32 m_msaa;				// Level of Msaa
 	int m_force_texture_clear;
 	int m_mipmap;
-	Filtering m_filter;
+	TriFiltering m_filter;
 
 	static bool m_debug_gl_call;
 	static FILE* m_debug_gl_file;

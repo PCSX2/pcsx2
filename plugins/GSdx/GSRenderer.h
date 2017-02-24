@@ -48,7 +48,6 @@ protected:
 	bool m_fxaa;
 	bool m_shadeboost;
 	bool m_texture_shuffle;
-	Filtering m_filter;
 	GSVector2i m_real_size;
 
 	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;
