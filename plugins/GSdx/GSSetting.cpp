@@ -55,7 +55,10 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_ALPHAHACK:
 			return "Different alpha handling. Can work around some shadow problems.";
 		case IDC_OFFSETHACK:
-			return "Might fix some misaligned fog, bloom, or blend effect.";
+			return "Might fix some misaligned fog, bloom, or blend effect.\n"
+				"The preferred option is Normal (Vertex) as it is most likely to resolve misalignment issues.\n"
+				"The special cases are only useful in couple of games like Captain Tsubasa.\n"
+				"\n Special cases are disabled from code side for now.";
 		case IDC_SPRITEHACK:
 			return "Helps getting rid of black inner lines in some filtered sprites."
 				" Half option is the preferred one. Use it for Mana Khemia or Ar tonelico for example."
