@@ -1425,3 +1425,12 @@ enum class Filtering : uint8
 	Trilinear_Bilinear_Forced,
 	Trilinear_Always
 };
+
+enum class CRCHackLevel : uint8
+{
+	None,
+	Minimum,
+	Partial,
+	Full,
+	Aggressive
+};

@@ -5,7 +5,7 @@ ENTRY(_start);
 SECTIONS {
 
 	.text 0xbfc00000 : {
-		start.o
+		start.iop.o
 		*(.text)
 		*(.rodata)
 	}

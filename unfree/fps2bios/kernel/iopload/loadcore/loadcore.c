@@ -926,7 +926,7 @@ void loadcore_start(BOOT_PARAMS *pInitParams)
 	if (params.pos)
 		params.pos = (u32)AllocSysMemory(2, params.size, (void*)params.pos);
 
-	sp=(u32)alloca(0x10);
+	sp=(u32)__builtin_alloca(0x10);
 	s0 = (void**)((sp - 0xDF0) & 0x1FFFFF00);//=0x001ff100
 	recursive_set_a2((int*)s0, (void*)(sp+0x10), 0x11111111);
 	if ((u32)s0 < QueryMemSize())
@@ -934,7 +934,7 @@ void loadcore_start(BOOT_PARAMS *pInitParams)
 
 	if (params.udnlString){
         int v0 = lc_strlen(params.udnlString);
-		int* v1 = (int*)alloca((v0 + 8 + 8) >> 3 << 3);
+		int* v1 = (int*)__builtin_alloca((v0 + 8 + 8) >> 3 << 3);
 		lc_memcpy_overlapping((char*)&v1[6], params.udnlString, v0+1);
 		params.udnlString = (char*)&v1[6];
 		v1[4] = 0x01050000;
@@ -943,12 +943,12 @@ void loadcore_start(BOOT_PARAMS *pInitParams)
 	}
 
 	a2 = (params.numConfLines+1) * 4;
-	s0 = alloca((a2 + 7) >> 3 << 3) + 0x10;
+	s0 = __builtin_alloca((a2 + 7) >> 3 << 3) + 0x10;
 	lc_memcpy_overlapping((char*)s0, (char*)params.moduleAddrs, a2);	//0x30020
 
 	s1 = 0;
 	params.moduleAddrs = (u32**)s0;
-	s2 = (u32)alloca(params.numConfLines << 3) + 0x10;
+	s2 = (u32)__builtin_alloca(params.numConfLines << 3) + 0x10;
     place = (u32*)s2;
 	*place = 0;
 	i = -1;

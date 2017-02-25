@@ -299,7 +299,7 @@ char *rindex(const char *s, int c) {
 	return strrchr(s, c);
 }
 
-size_t strlen(const char *s) {
+int strlen (const char *s) {
 	const char *start = s;
 
 	while (*s) s++;
