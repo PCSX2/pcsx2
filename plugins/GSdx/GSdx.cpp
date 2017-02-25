@@ -216,6 +216,11 @@ void GSdxApp::Init()
 	m_gs_hack.push_back(GSSetting(1,  "Half", ""));
 	m_gs_hack.push_back(GSSetting(2,  "Full", ""));
 
+	m_gs_offset_hack.push_back(GSSetting(0,  "Off", ""));
+	m_gs_offset_hack.push_back(GSSetting(1,  "Normal", "Vertex"));
+	m_gs_offset_hack.push_back(GSSetting(2,  "Special", "Texture"));
+	m_gs_offset_hack.push_back(GSSetting(3,  "Special", "Texture - aggressive"));
+
 	m_gs_hw_mipmapping.push_back(GSSetting(0, "Off", ""));
 	m_gs_hw_mipmapping.push_back(GSSetting(1, "Basic", "Fast"));
 	m_gs_hw_mipmapping.push_back(GSSetting(2, "Full", "Slow"));
