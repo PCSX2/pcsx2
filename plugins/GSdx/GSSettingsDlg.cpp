@@ -716,7 +716,7 @@ void GSHacksDlg::OnInit()
 	{
 		hpo_combobox.erase(hpo_combobox.begin() + 2, hpo_combobox.begin() + 4); //TODO: Enums would be more nicer than magic numbers.
 	}
-	ComboBoxInit(IDC_OFFSETHACK, hpo_combobox, std::min(static_cast<int>(theApp.m_gs_offset_hack.size()-1),static_cast<int>(theApp.GetConfigI("UserHacks_HalfPixelOffset"))));
+	ComboBoxInit(IDC_OFFSETHACK, hpo_combobox,theApp.GetConfigI("UserHacks_HalfPixelOffset");
 	ComboBoxInit(IDC_ROUND_SPRITE, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_round_sprite_offset"));
 	ComboBoxInit(IDC_SPRITEHACK, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_SpriteHack"));
 
