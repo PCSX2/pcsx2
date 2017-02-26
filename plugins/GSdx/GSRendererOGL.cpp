@@ -39,7 +39,7 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
 	UserHacks_merge_sprite   = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 	UserHacks_unscale_pt_ln  = theApp.GetConfigB("UserHacks_unscale_point_line");
-	UserHacks_HPO            = theApp.GetConfigI("UserHacks_HalfPixelOffset_New");
+	UserHacks_HPO            = theApp.GetConfigI("UserHacks_HalfPixelOffset");
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	ResetStates();
@@ -740,7 +740,7 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 
 void GSRendererOGL::RealignTargetTextureCoordinate(const GSTextureCache::Source* tex)
 {
-	if (!UserHacks_HPO || GetUpscaleMultiplier() == 1) return;
+	if (UserHacks_HPO <= 1 || GetUpscaleMultiplier() == 1) return;
 
 	GSVertex* v             = &m_vertex.buff[0];
 	const GSVector2& scale  = tex->m_texture->GetScale();
@@ -753,7 +753,7 @@ void GSRendererOGL::RealignTargetTextureCoordinate(const GSTextureCache::Source*
 
 	if (PRIM->FST) {
 
-		if (UserHacks_HPO > 1) {
+		if (UserHacks_HPO == 3) {
 			if (!linear && t_position == 8) {
 				half_offset.x = 8;
 				half_offset.y = 8;
@@ -1420,7 +1420,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	//The resulting shifted output aligns better with common blending / corona / blurring effects,
 	//but introduces a few bad pixels on the edges.
 
-	if (rt && rt->LikelyOffset && !UserHacks_HPO)
+	if (rt && rt->LikelyOffset && UserHacks_HPO == 1)
 	{
 		ox2 *= rt->OffsetHack_modx;
 		oy2 *= rt->OffsetHack_mody;
