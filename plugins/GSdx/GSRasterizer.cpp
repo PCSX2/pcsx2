@@ -451,8 +451,6 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const uint32* index)
 
 	m2 &= 1;
 
-	cross = cross.rcpnr();
-
 	GSVector4 dxy01 = dv[0].p.xyxy(dv[1].p);
 
 	GSVector4 dx = dxy01.xzxy(dv[2].p);
@@ -464,7 +462,8 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const uint32* index)
 	ddx[1] = ddx[0].yxzw();
 	ddx[2] = ddx[0].xzyw();
 
-	GSVector8 _dxy01c(dxy01 * cross);
+	// Precision is important here. Don't use reciprocal, it will break Jak3/Xenosaga1
+	GSVector8 _dxy01c(dxy01 / cross);
 
 	/*
 	dscan = dv[1] * dxy01c.yyyy() - dv[0] * dxy01c.wwww();
@@ -639,8 +638,6 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const uint32* index)
 
 	m2 &= 1;
 
-	cross = cross.rcpnr();
-
 	GSVector4 dxy01 = dv[0].p.xyxy(dv[1].p);
 
 	GSVector4 dx = dxy01.xzxy(dv[2].p);
@@ -652,7 +649,8 @@ void GSRasterizer::DrawTriangle(const GSVertexSW* vertex, const uint32* index)
 	ddx[1] = ddx[0].yxzw();
 	ddx[2] = ddx[0].xzyw();
 
-	GSVector4 dxy01c = dxy01 * cross;
+	// Precision is important here. Don't use reciprocal, it will break Jak3/Xenosaga1
+	GSVector4 dxy01c = dxy01 / cross;
 
 	/*
 	dscan = dv[1] * dxy01c.yyyy() - dv[0] * dxy01c.wwww();
