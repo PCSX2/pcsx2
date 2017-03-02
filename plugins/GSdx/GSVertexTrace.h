@@ -42,11 +42,13 @@ protected:
 
 	static GSVector4 s_minmax;
 
+	bool m_accurate_stq;
+
 	typedef void (GSVertexTrace::*FindMinMaxPtr)(const void* vertex, const uint32* index, int count);
 
-	FindMinMaxPtr m_fmm[2][2][2][2][4];
+	FindMinMaxPtr m_fmm[2][2][2][2][2][4];
 
-	template<GS_PRIM_CLASS primclass, uint32 iip, uint32 tme, uint32 fst, uint32 color>
+	template<GS_PRIM_CLASS primclass, uint32 iip, uint32 tme, uint32 fst, uint32 color, uint32 accurate_stq>
 	void FindMinMax(const void* vertex, const uint32* index, int count);
 
 public:
