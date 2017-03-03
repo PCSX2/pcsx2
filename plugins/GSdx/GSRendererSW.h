@@ -63,9 +63,9 @@ class GSRendererSW : public GSRenderer
 
 	typedef void (GSRendererSW::*ConvertVertexBufferPtr)(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
 
-	ConvertVertexBufferPtr m_cvb[4][2][2];
+	ConvertVertexBufferPtr m_cvb[4][2][2][2];
 
-	template<uint32 primclass, uint32 tme, uint32 fst>
+	template<uint32 primclass, uint32 tme, uint32 fst, uint32 q_div>
 	void ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
 
 protected:
