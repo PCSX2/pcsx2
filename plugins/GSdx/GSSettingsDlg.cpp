@@ -429,7 +429,6 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CUSTOM_TEXT), hw && !integer_scaling);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER_TEXT), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_LOGZ), dx9 && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FBA), dx9 && hw);
@@ -440,7 +439,6 @@ void GSSettingsDlg::UpdateControls()
 			EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO), hw && filter && !IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
 		}
 		EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO_TEXT), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl && hw);
@@ -706,6 +704,7 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_UNSCALE_POINT_LINE, theApp.GetConfigB("UserHacks_unscale_point_line"));
 	CheckDlgButton(m_hWnd, IDC_MEMORY_WRAPPING, theApp.GetConfigB("wrap_gs_mem"));
 
+	ComboBoxInit(IDC_TRI_FILTER, theApp.m_gs_trifilter, theApp.GetConfigI("UserHacks_TriFilter"));
 	ComboBoxInit(IDC_OFFSETHACK, theApp.m_gs_offset_hack, theApp.GetConfigI("UserHacks_HalfPixelOffset"));
 	ComboBoxInit(IDC_ROUND_SPRITE, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_round_sprite_offset"));
 	ComboBoxInit(IDC_SPRITEHACK, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_SpriteHack"));
@@ -729,6 +728,8 @@ void GSHacksDlg::OnInit()
 
 	// OpenGL-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER), ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER_TEXT), ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_UNSCALE_POINT_LINE), ogl && !native);
 
 	// Upscaling hacks:
@@ -767,6 +768,7 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_AUTO_FLUSH);
 	AddTooltip(IDC_UNSCALE_POINT_LINE);
 	AddTooltip(IDC_MEMORY_WRAPPING);
+	AddTooltip(IDC_TRI_FILTER);
 	AddTooltip(IDC_GEOMETRY_SHADER_OVERRIDE);
 	AddTooltip(IDC_IMAGE_LOAD_STORE);
 }
@@ -787,6 +789,10 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 		case IDOK: 
 		{
 			INT_PTR data;
+			if (ComboBoxGetSelData(IDC_TRI_FILTER, data))
+			{
+				theApp.SetConfig("UserHacks_TriFilter", (int)data);
+			}
 			if (ComboBoxGetSelData(IDC_ROUND_SPRITE, data))
 			{
 				theApp.SetConfig("UserHacks_round_sprite_offset", (int)data);
