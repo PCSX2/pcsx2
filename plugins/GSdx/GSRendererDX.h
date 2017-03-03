@@ -38,7 +38,7 @@ protected:
 	void EmulateZbuffer();
 	void EmulateTextureSampler(const GSTextureCache::Source* tex);
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
-	virtual void SetupIA() = 0;
+	virtual void SetupIA(const float& sx, const float& sy) = 0;
 	virtual void UpdateFBA(GSTexture* rt) {}
 
 	unsigned int UserHacks_TCOffset;
@@ -57,9 +57,11 @@ protected:
 
 	GSDeviceDX::PSSelector m_ps_sel;
 	GSDeviceDX::PSSamplerSelector m_ps_ssel;
+	GSDeviceDX::GSSelector m_gs_sel;
 
 	GSDeviceDX::PSConstantBuffer ps_cb;
 	GSDeviceDX::VSConstantBuffer vs_cb;
+	GSDeviceDX::GSConstantBuffer gs_cb;
 
 public:
 	GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter = GSVector2(0));

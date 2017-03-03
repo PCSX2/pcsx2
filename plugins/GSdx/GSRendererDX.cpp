@@ -52,48 +52,48 @@ GSRendererDX::~GSRendererDX()
 
 void GSRendererDX::EmulateAtst(const int pass, const GSTextureCache::Source* tex)
 {
-	static const uint32 inverted_atst[] = { ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL };
+	static const uint32 inverted_atst[] = {ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL};
 	int atst = (pass == 2) ? inverted_atst[m_context->TEST.ATST] : m_context->TEST.ATST;
 
 	if (!m_context->TEST.ATE) return;
 
 	switch (atst) {
-	case ATST_LESS:
-		if (tex && tex->m_spritehack_t) {
-			m_ps_sel.atst = 0;
-		}
-		else {
-			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+		case ATST_LESS:
+			if (tex && tex->m_spritehack_t) {
+				m_ps_sel.atst = 0;
+			} else {
+				ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+				m_ps_sel.atst = 1;
+			}
+			break;
+		case ATST_LEQUAL:
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
 			m_ps_sel.atst = 1;
-		}
-		break;
-	case ATST_LEQUAL:
-		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
-		m_ps_sel.atst = 1;
-		break;
-	case ATST_GEQUAL:
-		// Maybe a -1 trick multiplication factor could be used to merge with ATST_LEQUAL case
-		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
-		m_ps_sel.atst = 2;
-		break;
-	case ATST_GREATER:
-		// Maybe a -1 trick multiplication factor could be used to merge with ATST_LESS case
-		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
-		m_ps_sel.atst = 2;
-		break;
-	case ATST_EQUAL:
-		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
-		m_ps_sel.atst = 3;
-		break;
-	case ATST_NOTEQUAL:
-		ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
-		m_ps_sel.atst = 4;
-		break;
-	case ATST_NEVER:
-	case ATST_ALWAYS:
-	default:
-		m_ps_sel.atst = 0;
-		break;
+			break;
+		case ATST_GEQUAL:
+			// Maybe a -1 trick multiplication factor could be used to merge with ATST_LEQUAL case
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+			m_ps_sel.atst = 2;
+			break;
+		case ATST_GREATER:
+			// Maybe a -1 trick multiplication factor could be used to merge with ATST_LESS case
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+			m_ps_sel.atst = 2;
+			break;
+		case ATST_EQUAL:
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
+			m_ps_sel.atst = 3;
+			break;
+		case ATST_NOTEQUAL:
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
+			m_ps_sel.atst = 4;
+			break;
+
+		case ATST_NEVER: // Draw won't be done so no need to implement it in shader
+		case ATST_ALWAYS:
+		default:
+			m_ps_sel.atst = 0;
+			break;
 	}
 }
 
@@ -426,10 +426,8 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	// gs
 
-	GSDeviceDX::GSSelector gs_sel;
-
-	gs_sel.iip = PRIM->IIP;
-	gs_sel.prim = m_vt.m_primclass;
+	m_gs_sel.iip = PRIM->IIP;
+	m_gs_sel.prim = m_vt.m_primclass;
 
 	// ps
 
@@ -629,11 +627,11 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	uint8 afix = m_context->ALPHA.FIX;
 
-	SetupIA();
+	SetupIA(sx, sy);
 
 	dev->SetupOM(om_dssel, om_bsel, afix);
 	dev->SetupVS(vs_sel, &vs_cb);
-	dev->SetupGS(gs_sel);
+	dev->SetupGS(m_gs_sel, &gs_cb);
 	dev->SetupPS(m_ps_sel, &ps_cb, m_ps_ssel);
 
 	// draw

@@ -17,6 +17,8 @@
 #ifndef GS_IIP
 #define GS_IIP 0
 #define GS_PRIM 3
+#define GS_POINT 0
+#define GS_LINE 0
 #endif
 
 #ifndef PS_FST
@@ -105,6 +107,11 @@ cbuffer cb1
 	float2 TA;
 	uint4 MskFix;
 	float4 TC_OffsetHack;
+};
+
+cbuffer cb2
+{
+	float2 PointSize;
 };
 
 float4 sample_c(float2 uv)
@@ -630,7 +637,7 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	return output;
 }
 
-#if GS_PRIM == 0
+#if GS_PRIM == 0 && GS_POINT == 0
 
 [maxvertexcount(1)]
 void gs_main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> stream)
@@ -638,17 +645,102 @@ void gs_main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> stream)
 	stream.Append(input[0]);
 }
 
-#elif GS_PRIM == 1
+#elif GS_PRIM == 0 && GS_POINT == 1
+
+[maxvertexcount(6)]
+void gs_main(point VS_OUTPUT input[1], inout TriangleStream<VS_OUTPUT> stream)
+{
+	// Transform a point to a NxN sprite
+	VS_OUTPUT Point = input[0];
+
+	// Get new position
+	float4 lt_p = input[0].p;
+	float4 rb_p = input[0].p + float4(PointSize.x, PointSize.y, 0.0f, 0.0f);
+	float4 lb_p = rb_p;
+	float4 rt_p = rb_p;
+	lb_p.x = lt_p.x;
+	rt_p.y = lt_p.y;
+
+	// Triangle 1
+	Point.p = lt_p;
+	stream.Append(Point);
+
+	Point.p = lb_p;
+	stream.Append(Point);
+
+	Point.p = rt_p;
+	stream.Append(Point);
+
+	// Triangle 2
+	Point.p = lb_p;
+	stream.Append(Point);
+
+	Point.p = rt_p;
+	stream.Append(Point);
+
+	Point.p = rb_p;
+	stream.Append(Point);
+}
+
+#elif GS_PRIM == 1 && GS_LINE == 0
 
 [maxvertexcount(2)]
 void gs_main(line VS_OUTPUT input[2], inout LineStream<VS_OUTPUT> stream)
 {
-	#if GS_IIP == 0
+#if GS_IIP == 0
 	input[0].c = input[1].c;
-	#endif
+#endif
 
 	stream.Append(input[0]);
 	stream.Append(input[1]);
+}
+
+#elif GS_PRIM == 1 && GS_LINE == 1
+
+[maxvertexcount(6)]
+void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
+{
+	// Transform a line to a thick line-sprite
+	VS_OUTPUT left = input[0];
+	VS_OUTPUT right = input[1];
+	float2 lt_p = input[0].p.xy;
+	float2 rt_p = input[1].p.xy;
+
+	// Potentially there is faster math
+	float2 line_vector = normalize(rt_p.xy - lt_p.xy);
+	float2 line_normal = float2(line_vector.y, -line_vector.x);
+	float2 line_width = (line_normal * PointSize) / 2;
+
+	lt_p -= line_width;
+	rt_p -= line_width;
+	float2 lb_p = input[0].p.xy + line_width;
+	float2 rb_p = input[1].p.xy + line_width;
+
+	#if GS_IIP == 0
+	left.c = right.c;
+	#endif
+
+	// Triangle 1
+	left.p.xy = lt_p;
+	stream.Append(left);
+
+	left.p.xy = lb_p;
+	stream.Append(left);
+
+	right.p.xy = rt_p;
+	stream.Append(right);
+	stream.RestartStrip();
+
+	// Triangle 2
+	left.p.xy = lb_p;
+	stream.Append(left);
+
+	right.p.xy = rt_p;
+	stream.Append(right);
+
+	right.p.xy = rb_p;
+	stream.Append(right);
+	stream.RestartStrip();
 }
 
 #elif GS_PRIM == 2
@@ -671,27 +763,32 @@ void gs_main(triangle VS_OUTPUT input[3], inout TriangleStream<VS_OUTPUT> stream
 [maxvertexcount(4)]
 void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
 {
-	input[0].p.z = input[1].p.z;
-	input[0].t.zw = input[1].t.zw;
+	VS_OUTPUT lt = input[0];
+	VS_OUTPUT rb = input[1];
 
+	// flat depth
+	lt.p.z = rb.p.z;
+	// flat fog and texture perspective
+	lt.t.zw = rb.t.zw;
+
+	// flat color
 	#if GS_IIP == 0
-	input[0].c = input[1].c;
+	lt.c = rb.c;
 	#endif
 
-	VS_OUTPUT lb = input[1];
+	// Swap texture and position coordinate
+	VS_OUTPUT lb = rb;
+	lb.p.x = lt.p.x;
+	lb.t.x = lt.t.x;
 
-	lb.p.x = input[0].p.x;
-	lb.t.x = input[0].t.x;
+	VS_OUTPUT rt = rb;
+	rt.p.y = lt.p.y;
+	rt.t.y = lt.t.y;
 
-	VS_OUTPUT rt = input[1];
-
-	rt.p.y = input[0].p.y;
-	rt.t.y = input[0].t.y;
-
-	stream.Append(input[0]);
+	stream.Append(lt);
 	stream.Append(lb);
 	stream.Append(rt);
-	stream.Append(input[1]);
+	stream.Append(rb);
 }
 
 #endif

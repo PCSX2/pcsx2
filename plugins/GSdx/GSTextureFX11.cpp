@@ -42,6 +42,16 @@ bool GSDevice11::CreateTextureFX()
 
 	memset(&bd, 0, sizeof(bd));
 
+	bd.ByteWidth = sizeof(GSConstantBuffer);
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	hr = m_dev->CreateBuffer(&bd, NULL, &m_gs_cb);
+
+	if (FAILED(hr)) return false;
+
+	memset(&bd, 0, sizeof(bd));
+
 	bd.ByteWidth = sizeof(PSConstantBuffer);
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -77,6 +87,10 @@ bool GSDevice11::CreateTextureFX()
 	VSConstantBuffer cb;
 
 	SetupVS(sel, &cb);
+
+	GSConstantBuffer gcb;
+
+	SetupGS(GSSelector(1), &gcb);
 
 	//
 
@@ -139,11 +153,12 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 	IASetInputLayout(i->second.il);
 }
 
-void GSDevice11::SetupGS(GSSelector sel)
+void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 {
 	CComPtr<ID3D11GeometryShader> gs;
 
-	if(sel.prim > 0 && (sel.iip == 0 || sel.prim == 3)) // geometry shader works in every case, but not needed
+	bool Unscale_GSShader = (sel.point == 1 || sel.line == 1) && UserHacks_unscale_pt_ln;
+	if((sel.prim > 0 && (sel.iip == 0 || sel.prim == 3)) || Unscale_GSShader) // geometry shader works in every case, but not needed
 	{
 		hash_map<uint32, CComPtr<ID3D11GeometryShader> >::const_iterator i = m_gs.find(sel);
 
@@ -153,15 +168,19 @@ void GSDevice11::SetupGS(GSSelector sel)
 		}
 		else
 		{
-			string str[2];
+			string str[4];
 
 			str[0] = format("%d", sel.iip);
 			str[1] = format("%d", sel.prim);
+			str[2] = format("%d", sel.point);
+			str[3] = format("%d", sel.line);
 
 			D3D_SHADER_MACRO macro[] =
 			{
 				{"GS_IIP", str[0].c_str()},
 				{"GS_PRIM", str[1].c_str()},
+				{"GS_POINT", str[2].c_str()},
+				{"GS_LINE", str[3].c_str()},
 				{NULL, NULL},
 			};
 
@@ -173,7 +192,15 @@ void GSDevice11::SetupGS(GSSelector sel)
 		}
 	}
 
-	GSSetShader(gs);
+
+	if (m_gs_cb_cache.Update(cb))
+	{
+		ID3D11DeviceContext* ctx = m_ctx;
+
+		ctx->UpdateSubresource(m_gs_cb, 0, NULL, cb, 0, 0);
+	}
+
+	GSSetShader(gs, m_gs_cb);
 }
 
 void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel)

@@ -27,8 +27,10 @@
 
 class GSRendererDX11 : public GSRendererDX
 {
+	bool UserHacks_unscale_pt_ln;
+
 protected:
-	void SetupIA();
+	void SetupIA(const float& sx, const float& sy);
 
 public:
 	GSRendererDX11();

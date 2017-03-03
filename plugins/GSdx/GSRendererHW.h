@@ -167,6 +167,7 @@ public:
 	GSVector2i GetCustomResolution();
 	void SetScaling();
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
+	void Lines2Sprites();
 
 	void Reset();
 	void VSync(int field);

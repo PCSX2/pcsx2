@@ -125,6 +125,21 @@ public:
 		}
 	};
 
+	struct alignas(32) GSConstantBuffer
+	{
+		GSVector2 PointSize;
+
+		struct GSConstantBuffer()
+		{
+			PointSize = GSVector2(0);
+		}
+
+		__forceinline bool Update(const GSConstantBuffer* cb)
+		{
+			return true;
+		}
+	};
+
 	struct GSSelector
 	{
 		union
@@ -133,14 +148,19 @@ public:
 			{
 				uint32 iip:1;
 				uint32 prim:2;
+				uint32 point:1;
+				uint32 line:1;
+
+				uint32 _free:27;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x7;}
+		operator uint32() {return key;}
 
 		GSSelector() : key(0) {}
+		GSSelector(uint32 k) : key(k) {}
 	};
 
 	struct PSSelector
@@ -286,7 +306,7 @@ public:
 	void GetFeatureLevel(D3D_FEATURE_LEVEL& level) const {level = m_shader.level;}
 
 	virtual void SetupVS(VSSelector sel, const VSConstantBuffer* cb) = 0;
-	virtual void SetupGS(GSSelector sel) = 0;
+	virtual void SetupGS(GSSelector sel, const GSConstantBuffer* cb) = 0;
 	virtual void SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel) = 0;
 	virtual void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix) = 0;
 
