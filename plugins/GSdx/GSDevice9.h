@@ -241,7 +241,7 @@ public:
 	void CompileShader(const char *source, size_t size, const char *filename, const string& entry, const D3D_SHADER_MACRO* macro, IDirect3DPixelShader9** ps);
 
 	void SetupVS(VSSelector sel, const VSConstantBuffer* cb);
-	void SetupGS(GSSelector sel) {}
+	void SetupGS(GSSelector sel, const GSConstantBuffer* cb) {}
 	void SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix);
 

@@ -30,13 +30,20 @@ GSDevice11::GSDevice11()
 {
 	memset(&m_state, 0, sizeof(m_state));
 	memset(&m_vs_cb_cache, 0, sizeof(m_vs_cb_cache));
+	memset(&m_gs_cb_cache, 0, sizeof(m_gs_cb_cache));
 	memset(&m_ps_cb_cache, 0, sizeof(m_ps_cb_cache));
 
 	FXAA_Compiled = false;
 	ExShader_Compiled = false;
-	
+
 	m_state.topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	m_state.bf = -1;
+
+	if (theApp.GetConfigB("UserHacks")) {
+		UserHacks_unscale_pt_ln = theApp.GetConfigB("UserHacks_unscale_point_line");
+	} else {
+		UserHacks_unscale_pt_ln = false;
+	}
 }
 
 GSDevice11::~GSDevice11()
@@ -699,7 +706,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	//sel.prim = 2; //Triangle Strip
 	//SetupGS(sel);
 
-	GSSetShader(NULL);
+	GSSetShader(NULL, NULL);
 
 	/*END OF HACK*/
 	
@@ -895,7 +902,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 
 	// gs
 
-	GSSetShader(NULL);
+	GSSetShader(NULL, NULL);
 
 	// ps
 
@@ -1105,13 +1112,20 @@ void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 	}
 }
 
-void GSDevice11::GSSetShader(ID3D11GeometryShader* gs)
+void GSDevice11::GSSetShader(ID3D11GeometryShader* gs, ID3D11Buffer* gs_cb)
 {
 	if(m_state.gs != gs)
 	{
 		m_state.gs = gs;
 
 		m_ctx->GSSetShader(gs, NULL, 0);
+	}
+
+	if (m_state.gs_cb != gs_cb)
+	{
+		m_state.gs_cb = gs_cb;
+
+		m_ctx->GSSetConstantBuffers(0, 1, &gs_cb);
 	}
 }
 

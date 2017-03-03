@@ -720,9 +720,9 @@ void GSHacksDlg::OnInit()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER), ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER_TEXT), ogl);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_UNSCALE_POINT_LINE), ogl && !native);
 
 	// Upscaling hacks:
+	EnableWindow(GetDlgItem(m_hWnd, IDC_UNSCALE_POINT_LINE), !dx9 && !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_WILDHACK), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALIGN_SPRITE), !native);

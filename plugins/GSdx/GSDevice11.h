@@ -57,6 +57,8 @@ class GSDevice11 : public GSDeviceDX
 	int spritehack;
 	bool isNative;
 
+	bool UserHacks_unscale_pt_ln;
+
 	struct
 	{
 		ID3D11Buffer* vb;
@@ -67,6 +69,7 @@ class GSDevice11 : public GSDeviceDX
 		ID3D11VertexShader* vs;
 		ID3D11Buffer* vs_cb;
 		ID3D11GeometryShader* gs;
+		ID3D11Buffer* gs_cb;
 		ID3D11ShaderResourceView* ps_srv[16];
 		ID3D11PixelShader* ps;
 		ID3D11Buffer* ps_cb;
@@ -145,6 +148,7 @@ public: // TODO
 	hash_map<uint32, GSVertexShader11 > m_vs;
 	CComPtr<ID3D11Buffer> m_vs_cb;
 	hash_map<uint32, CComPtr<ID3D11GeometryShader> > m_gs;
+	CComPtr<ID3D11Buffer> m_gs_cb;
 	hash_map<uint64, CComPtr<ID3D11PixelShader> > m_ps;
 	CComPtr<ID3D11Buffer> m_ps_cb;
 	hash_map<uint32, CComPtr<ID3D11SamplerState> > m_ps_ss;
@@ -154,6 +158,7 @@ public: // TODO
 	hash_map<uint32, CComPtr<ID3D11BlendState> > m_om_bs;
 
 	VSConstantBuffer m_vs_cb_cache;
+	GSConstantBuffer m_gs_cb_cache;
 	PSConstantBuffer m_ps_cb_cache;
 
 	bool CreateTextureFX();
@@ -202,7 +207,7 @@ public:
 	void IASetInputLayout(ID3D11InputLayout* layout);
 	void IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology);
 	void VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb);
-	void GSSetShader(ID3D11GeometryShader* gs);
+	void GSSetShader(ID3D11GeometryShader* gs, ID3D11Buffer* gs_cb = NULL);
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv);
@@ -217,7 +222,7 @@ public:
 	void OMSetRenderTargets(const GSVector2i& rtsize, int count, ID3D11UnorderedAccessView** uav, uint32* counters, const GSVector4i* scissor = NULL);
 
 	void SetupVS(VSSelector sel, const VSConstantBuffer* cb);
-	void SetupGS(GSSelector sel);
+	void SetupGS(GSSelector sel, const GSConstantBuffer* cb);
 	void SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix);
 

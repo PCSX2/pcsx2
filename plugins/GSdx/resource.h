@@ -101,6 +101,7 @@
 #define IDC_MEMORY_WRAPPING             2122
 #define IDC_TRI_FILTER                  2123
 #define IDC_TRI_FILTER_TEXT             2124
+#define IDC_UNSCALE_POINT_LINE          2125
 // Shader:
 #define IDC_SHADEBOOST                  2140
 #define IDC_FXAA                        2141
