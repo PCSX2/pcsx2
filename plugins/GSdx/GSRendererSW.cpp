@@ -1163,7 +1163,9 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 					{
 						gd.sel.fst = 1;
 
-						const GSVector4& t = v[data->index[0]].t;
+						// Q is flat on sprite (at least GSdx is based on this Hypothesis). So it means
+						// that Q0 could be invalid for example ATV Quad Power Racing 2.
+						const GSVector4& t = v[data->index[primclass == GS_SPRITE_CLASS ? 1 : 0]].t;
 
 						if(t.z != 1.0f)
 						{
