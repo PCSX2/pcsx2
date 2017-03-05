@@ -1078,6 +1078,7 @@ template<int i> void GSState::GIFRegHandlerTEX2(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::GIFRegHandlerXYOFFSET(const GIFReg* RESTRICT r)
 {
+	GL_REG("XYOFFSET_%d = 0x%x_%x", i, r->u32[1], r->u32[0]);
 	GSVector4i o = (GSVector4i)r->XYOFFSET & GSVector4i::x0000ffff();
 
 	if(!o.eq(m_env.CTXT[i].XYOFFSET))
