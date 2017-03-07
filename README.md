@@ -12,9 +12,9 @@ Installers and binaries for both Windows and Linux are available from [our websi
 
 Development builds are also available from [our website](http://pcsx2.net/download/development/git.html).
 
-![KOF 2002](https://dl.dropboxusercontent.com/u/743491/PCSX2/KoF2002.jpg "KOF 2002")
-![Final Fantasy XII](https://dl.dropboxusercontent.com/u/743491/PCSX2/FinalFantasyXII.jpg "Final Fantasy XII")
-![Odin Sphere](https://dl.dropboxusercontent.com/u/743491/PCSX2/OdinSphere.jpg "Odin Sphere")
+![KOF 2002](https://i.imgur.com/xKjtv7q.png "KOF 2002")
+![Final Fantasy XII](https://i.imgur.com/ZQqm3Po.png "Final Fantasy XII")
+![Odin Sphere](https://i.imgur.com/k5psfPi.png "Odin Sphere")
 
 # System Requirements
 
@@ -42,8 +42,9 @@ Development builds are also available from [our website](http://pcsx2.net/downlo
 
 - PCSX2 mainly takes advantage of 2 CPU cores. As of [this commit](https://github.com/PCSX2/pcsx2/commit/ac9bf45) PCSX2 can now take advantage of more than 2 cores using the MTVU speedhack. This can be a significant speedup on CPUs with 3+ cores, however on GS-limited games (or on CPUs with less than 2 cores) it may be a slowdown.
 
-![Pro Evo 2009](https://dl.dropboxusercontent.com/u/743491/PCSX2/ProEvo2009.jpg "Pro Evo 2009")
-![Megaman X8](https://dl.dropboxusercontent.com/u/743491/PCSX2/MegamanX8.jpg "Megaman X8") ![TOTA](https://dl.dropboxusercontent.com/u/743491/PCSX2/TOTA.jpg "TOTA")
+![Pro Evo 2009](https://i.imgur.com/SbdaWBk.png "Pro Evo 2009")
+![Megaman X8](https://i.imgur.com/XNQiplq.png "Megaman X8") 
+![TOTA](https://i.imgur.com/tKE3g8D.png "TOTA")
 
 # Quality Assurance
 
