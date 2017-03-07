@@ -51,7 +51,6 @@
       <Message>Creating ..\..\$(PlatformName)\wx\msw\rcdefs.h</Message>
       <Command>cl /EP /nologo "%(Identity)" &gt; "..\..\$(PlatformName)\wx\msw\rcdefs.h"</Command>
       <Outputs>..\..\$(PlatformName)\wx\msw\rcdefs.h;%(Outputs)</Outputs>
-      <AdditionalInputs>..\..\$(PlatformName)\wx\msw;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
