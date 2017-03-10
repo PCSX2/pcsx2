@@ -123,10 +123,9 @@
 #define ID_CLEAR                        0x1232
 #define ID_SPECIAL_INPUTS               0x1233
 // Pad Force Feedback configuration:
-#define ID_CONTROLS                     0x1300
-#define ID_TEST                         0x1301
-#define ID_FF                           0x1302
-#define IDC_FF_EFFECT                   0x1303
+#define ID_TEST                         0x1300
+#define ID_FF                           0x1301
+#define IDC_FF_EFFECT                   0x1302
 #define IDC_FF_AXIS1_ENABLED            0x1310
 #define IDC_FF_AXIS1                    0x1311
 #define IDC_FF_AXIS1_FLIP               0x1312
@@ -161,6 +160,7 @@
 #define IDC_FF_AXIS8_SCALE              0x1383
 // Force Feedback & Input configurations:
 #define ID_CONTROLS                     0x1390
+#define ID_RESET_CONFIG                 0x1391
 
 // Next default values for new objects
 // 
@@ -168,7 +168,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        116
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         5009
+#define _APS_NEXT_CONTROL_VALUE         5010
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

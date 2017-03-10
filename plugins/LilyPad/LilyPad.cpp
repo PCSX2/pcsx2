@@ -361,25 +361,25 @@ void AddForce(ButtonSum *sum, u8 cmd, int delta = 255)
     }
     // Left stick.
     else if (cmd < 0x24) {
-        if (cmd == 32) {
+        if (cmd == 0x20) { // Up
             sum->sticks[1].vert -= delta;
-        } else if (cmd == 33) {
+        } else if (cmd == 0x21) { // Right
             sum->sticks[1].horiz += delta;
-        } else if (cmd == 34) {
+        } else if (cmd == 0x22) { // Down
             sum->sticks[1].vert += delta;
-        } else if (cmd == 35) {
+        } else if (cmd == 0x23) { // Left
             sum->sticks[1].horiz -= delta;
         }
     }
     // Right stick.
     else if (cmd < 0x28) {
-        if (cmd == 36) {
+        if (cmd == 0x24) { // Up
             sum->sticks[0].vert -= delta;
-        } else if (cmd == 37) {
+        } else if (cmd == 0x25) { // Right
             sum->sticks[0].horiz += delta;
-        } else if (cmd == 38) {
+        } else if (cmd == 0x26) { // Down
             sum->sticks[0].vert += delta;
-        } else if (cmd == 39) {
+        } else if (cmd == 0x27) { // Left
             sum->sticks[0].horiz -= delta;
         }
     }
@@ -1336,10 +1336,10 @@ u8 CALLBACK PADpoll(u8 value)
                             //query.response[4] &= pad->mask[1];
 
                             // No need to cap these, already done int CapSum().
-                            query.response[9] = (unsigned char)sum->buttons[13];  //D-pad right
-                            query.response[10] = (unsigned char)sum->buttons[15]; //D-pad left
-                            query.response[11] = (unsigned char)sum->buttons[12]; //D-pad up
-                            query.response[12] = (unsigned char)sum->buttons[14]; //D-pad down
+                            query.response[9] = (unsigned char)sum->buttons[13];  // D-pad right
+                            query.response[10] = (unsigned char)sum->buttons[15]; // D-pad left
+                            query.response[11] = (unsigned char)sum->buttons[12]; // D-pad up
+                            query.response[12] = (unsigned char)sum->buttons[14]; // D-pad down
 
                             query.response[13] = (unsigned char)sum->buttons[8];  // Triangle
                             query.response[14] = (unsigned char)sum->buttons[9];  // Circle

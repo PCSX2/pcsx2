@@ -279,27 +279,27 @@ wchar_t *GetCommandStringW(u8 command, int port, int slot)
             if ((unsigned int)res - 1 <= 18)
                 return temp;
         }
-        static wchar_t stick[2] = {'L', 'R'};
+        static wchar_t *stick[2] = {L"L-Stick", L"R-Stick"};
         static wchar_t *dir[] = {
             L"Up", L"Right",
             L"Down", L"Left"};
-        wsprintfW(temp, L"%c-Stick %s", stick[(command - 0x20) / 4], dir[command & 3]);
+        wsprintfW(temp, L"%s %s", padtype == neGconPad ? L"Rotate" : stick[(command - 0x20) / 4], dir[command & 3]);
         return temp;
     }
     /* Get text from the buttons. */
     if (command >= 0x0F && command <= 0x2D) {
         HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], 0x10F0 + command);
-        if (!hWnd) {
+        if (!hWnd || ((padtype == Dualshock2Pad || padtype == neGconPad) && command >= 0x14 && command <= 0x17)) {
             wchar_t *strings[] = {
                 L"Mouse",          // 0x0F (15)
                 L"Select",         // 0x10 (16)
                 L"L3",             // 0x11 (17)
                 L"R3",             // 0x12 (18)
                 L"Start",          // 0x13 (19)
-                L"Up",             // 0x14 (20)
-                L"Right",          // 0x15 (21)
-                L"Down",           // 0x16 (22)
-                L"Left",           // 0x17 (23)
+                L"D-Pad Up",       // 0x14 (20)
+                L"D-Pad Right",    // 0x15 (21)
+                L"D-Pad Down",     // 0x16 (22)
+                L"D-Pad Left",     // 0x17 (23)
                 L"L2",             // 0x18 (24)
                 L"R2",             // 0x19 (25)
                 L"L1",             // 0x1A (26)
@@ -548,6 +548,7 @@ void SelChanged(int port, int slot)
         }
     }
     ShowWindow(GetDlgItem(hWnd, ID_CONTROLS), ffb || b);
+    ShowWindow(GetDlgItem(hWnd, ID_RESET_CONFIG), ffb || b);
 
     if (!ffb) {
         SetLogSliderVal(hWnd, IDC_SLIDER_SENSITIVITY, GetDlgItem(hWnd, IDC_AXIS_SENSITIVITY), sensitivity);
@@ -1393,8 +1394,13 @@ int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int s
     if (port > 1 || slot > 3 || padtype >= numPadTypes)
         return -1;
 
-    if (!sensitivity)
-        sensitivity = BASE_SENSITIVITY;
+    if (!sensitivity) {
+        if (((uid >> 16) & 0xFF) == ABSAXIS) {
+            sensitivity = BASE_ANALOG_SENSITIVITY;
+        } else {
+            sensitivity = BASE_SENSITIVITY;
+        }
+    }
     if ((uid >> 16) & (PSHBTN | TGLBTN)) {
         deadZone = 0;
         skipDeadZone = 0;
@@ -1562,6 +1568,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             AddTooltip(ID_LOCK_DIRECTION, hWnd);
             AddTooltip(ID_LOCK_BUTTONS, hWnd);
             AddTooltip(ID_TURBO_KEY, hWnd);
+            AddTooltip(ID_EXCLUDE, hWnd);
             AddTooltip(IDC_RAPID_FIRE, hWnd);
             AddTooltip(IDC_FLIP, hWnd);
             AddTooltip(IDC_SLIDER_DEADZONE, hWnd);
@@ -1895,11 +1902,11 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                     // Just in case...
                     if (selected)
                         break;
-                    Device *dev;
-                    Binding *b;
-                    ForceFeedbackBinding *ffb = 0;
                     int selIndex = ListView_GetNextItem(hWndList, -1, LVNI_SELECTED);
                     if (selIndex >= 0) {
+                        Device *dev;
+                        Binding *b;
+                        ForceFeedbackBinding *ffb = 0;
                         if (GetBinding(port, slot, selIndex, dev, b, ffb)) {
                             selected = 0xFF;
                             hWndButtonProc.SetWndHandle(GetDlgItem(hWnd, cmd));
@@ -1989,6 +1996,56 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                 } else if (cmd == IDC_FLIP) {
                     int val = GetLogSliderVal(hWnd, IDC_SLIDER_SENSITIVITY);
                     ChangeValue(port, slot, &val, 0, 0, 0);
+                } else if (cmd == ID_RESET_CONFIG) {
+                    // Just in case...
+                    if (selected)
+                        break;
+                    int selIndex = ListView_GetNextItem(hWndList, -1, LVNI_SELECTED);
+                    if (selIndex >= 0) {
+                        Device *dev;
+                        Binding *b;
+                        ForceFeedbackBinding *ffb = 0;
+                        if (GetBinding(port, slot, selIndex, dev, b, ffb)) {
+                            selected = 0xFF;
+                            if (b) {
+                                VirtualControl *control = &dev->virtualControls[b->controlIndex];
+                                for (int i = IDC_SLIDER_SENSITIVITY; i <= IDC_SLIDER_SKIP_DEADZONE; i++) {
+                                    if (i == IDC_SLIDER_SENSITIVITY) {
+                                        int val = BASE_SENSITIVITY;
+                                        if (((control->uid >> 16) & 0xFF) == ABSAXIS) {
+                                            val = BASE_ANALOG_SENSITIVITY;
+                                        }
+                                        ChangeValue(port, slot, &val, 0, 0, 0);
+                                    } else if (i == IDC_SLIDER_DEADZONE) {
+                                        int val = DEFAULT_DEADZONE;
+                                        if ((control->uid >> 16) & (PSHBTN | TGLBTN)) {
+                                            val = 0;
+                                        } else if ((control->uid >> 16) & PRESSURE_BTN) {
+                                            val = 1;
+                                        }
+                                        ChangeValue(port, slot, 0, 0, &val, 0);
+                                    } else if (i == IDC_SLIDER_SKIP_DEADZONE) {
+                                        int val = 1;
+                                        if ((control->uid >> 16) & (PSHBTN | TGLBTN)) {
+                                            val = 0;
+                                        }
+                                        ChangeValue(port, slot, 0, 0, 0, &val);
+                                    } else if (i == IDC_RAPID_FIRE) {
+                                        int val = 0;
+                                        ChangeValue(port, slot, 0, &val, 0, 0);
+                                    }
+                                }
+                            } else if (ffb) {
+                                for (int i = IDC_FF_AXIS1; i <= IDC_FF_AXIS8; i += 0x10) {
+                                    int val = BASE_SENSITIVITY;
+                                    if (ffb->motor != ((i - IDC_FF_AXIS1) / 0x10) || IsDlgButtonChecked(hWnd, i - 1) != BST_CHECKED) {
+                                        val = 0;
+                                    }
+                                    ChangeEffect(port, slot, i, &val, 0);
+                                }
+                            }
+                        }
+                    }
                 } else if (cmd >= IDC_FF_AXIS1_ENABLED && cmd < IDC_FF_AXIS8_ENABLED + 16) {
                     int index = (cmd - IDC_FF_AXIS1_ENABLED) / 16;
                     int val = GetLogSliderVal(hWnd, 16 * index + IDC_FF_AXIS1);
@@ -2225,7 +2282,6 @@ void UpdatePadList(HWND hWnd)
 
 INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM lParam)
 {
-    int i;
     HWND hWndList = GetDlgItem(hWnd, IDC_PAD_LIST);
     switch (msg) {
         case WM_INITDIALOG: {
@@ -2284,6 +2340,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             AddTooltip(IDC_DIAG_LIST, hWnd);
             AddTooltip(IDC_G_XI, hWnd);
             AddTooltip(IDC_ANALOG_START1, hWnd);
+            AddTooltip(ID_RESTORE_DEFAULTS, hWnd);
 
             if (config.keyboardApi < 0 || config.keyboardApi > 3)
                 config.keyboardApi = NO_API;
@@ -2356,6 +2413,21 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                     break;
                 config.padConfigs[port][slot].autoAnalog = (IsDlgButtonChecked(hWnd, IDC_ANALOG_START1) == BST_CHECKED);
                 PropSheet_Changed(hWndProp, hWnd);
+            } else if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == ID_RESTORE_DEFAULTS) {
+                int msgboxID = MessageBoxA(hWndProp, "This will delete all current settings and revert back to the default settings of LilyPad. Continue?",
+                                           "Restore Defaults Confirmation", MB_YESNO | MB_DEFBUTTON2 | MB_ICONEXCLAMATION);
+                switch (msgboxID) {
+                    case IDNO:
+                        break;
+                    case IDYES:
+                        char iniLocation[MAX_PATH * 2] = "inis/LilyPad.ini";
+                        remove(iniLocation);
+                        createIniDir = true;
+                        LoadSettings(1);
+                        GeneralDialogProc(hWnd, WM_INITDIALOG, 0, 0);
+                        PropSheet_Changed(hWndProp, hWnd);
+                        break;
+                }
             } else {
 
                 int mtap = config.multitap[0] + 2 * config.multitap[1];
@@ -2365,7 +2437,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                 }
                 config.closeHack = IsDlgButtonChecked(hWnd, IDC_CLOSE_HACK) == BST_CHECKED;
 
-                for (i = 0; i < 4; i++) {
+                for (int i = 0; i < 4; i++) {
                     if (i && IsDlgButtonChecked(hWnd, IDC_KB_DISABLE + i) == BST_CHECKED) {
                         config.keyboardApi = (DeviceAPI)i;
                     }
@@ -2444,7 +2516,11 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                 if (n->hdr.code == LVN_ITEMCHANGED) {
                     UpdatePadList(hWnd);
                 }
-                if (n->hdr.code == NM_RCLICK) {
+                if (n->hdr.code == NM_DBLCLK) {
+                    UpdatePadList(hWnd);
+                    int index = ListView_GetNextItem(hWndList, -1, LVNI_SELECTED);
+                    PropSheet_SetCurSel(hWndProp, 0, index + 1);
+                } else if (n->hdr.code == NM_RCLICK) {
                     UpdatePadList(hWnd);
                     int index = ListView_GetNextItem(hWndList, -1, LVNI_SELECTED);
                     int port1, slot1, port2, slot2, padtype1, padtype2;
