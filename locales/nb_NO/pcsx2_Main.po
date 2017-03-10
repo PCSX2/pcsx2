@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2017-03-09 03:15+0100\n"
-"PO-Revision-Date: 2017-03-10 11:14+0100\n"
+"PO-Revision-Date: 2017-03-10 12:17+0100\n"
 "Last-Translator: Imre Kristoffer Eilertsen <imreeil42@gmail.com>\n"
 "Language-Team: \n"
 "Language: no\n"
@@ -27,7 +27,7 @@ msgstr "Parsingsfeil"
 
 #: common/include/Utilities/Exceptions.h:279
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
-msgstr "Din maskinsmaskinvare har ikke mulighet til å kjøre PCSX2. Beklager."
+msgstr "Din maskins maskinvare har ikke mulighet til å kjøre PCSX2. Beklager."
 
 #: common/src/Utilities/Exceptions.cpp:233
 msgid "Oh noes! Out of memory!"
