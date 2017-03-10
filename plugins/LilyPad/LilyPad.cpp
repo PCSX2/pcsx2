@@ -1579,6 +1579,9 @@ keyEvent *CALLBACK PADkeyEvent()
 #ifdef _MSC_VER
     static char shiftDown = 0;
     static char altDown = 0;
+    if (!activeWindow)
+        altDown = shiftDown = 0;
+
     if (miceEnabled && (ev.key == VK_ESCAPE || (int)ev.key == -2) && ev.evt == KEYPRESS) {
         // Disable mouse/KB hooks on escape (before going into paused mode).
         // This is a hack, since PADclose (which is called on pause) should enevtually also deactivate the
