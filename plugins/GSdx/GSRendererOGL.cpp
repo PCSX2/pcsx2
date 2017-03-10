@@ -92,6 +92,19 @@ void GSRendererOGL::Lines2Sprites()
 			v0.XYZ.Z = v1.XYZ.Z;
 			v0.FOG = v1.FOG;
 
+			if (PRIM->TME && !PRIM->FST) {
+				GSVector4 st0 = GSVector4::loadl(&v0.ST.u64);
+				GSVector4 st1 = GSVector4::loadl(&v1.ST.u64);
+				GSVector4 Q = GSVector4(v1.RGBAQ.Q, v1.RGBAQ.Q, v1.RGBAQ.Q, v1.RGBAQ.Q);
+				GSVector4 st = st0.upld(st1) / Q;
+
+				GSVector4::storel(&v0.ST.u64, st);
+				GSVector4::storeh(&v1.ST.u64, st);
+
+				v0.RGBAQ.Q = 1.0f;
+				v1.RGBAQ.Q = 1.0f;
+			}
+
 			q[0] = v0;
 			q[3] = v1;
 
@@ -176,7 +189,7 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 			// the extra validation cost of the extra stage.
 			//
 			// Note: keep Geometry Shader in the replayer to ease debug.
-			if (GLLoader::found_geometry_shader && (m_vertex.next > 32 || GLLoader::in_replayer)) { // <=> 16 sprites (based on Shadow Hearts)
+			if (GLLoader::found_geometry_shader && !m_vt.m_accurate_stq && (m_vertex.next > 32 || GLLoader::in_replayer)) { // <=> 16 sprites (based on Shadow Hearts)
 				m_gs_sel.sprite = 1;
 
 				t = GL_LINES;

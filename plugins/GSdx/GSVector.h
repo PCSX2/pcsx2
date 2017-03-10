@@ -2900,6 +2900,16 @@ public:
 		return GSVector4(_mm_unpackhi_ps(m, a));
 	}
 
+	__forceinline GSVector4 upld(const GSVector4& a) const
+	{
+		return GSVector4(_mm_castpd_ps(_mm_unpacklo_pd(_mm_castps_pd(m), _mm_castps_pd(a.m))));
+	}
+
+	__forceinline GSVector4 uphd(const GSVector4& a) const
+	{
+		return GSVector4(_mm_castpd_ps(_mm_unpackhi_pd(_mm_castps_pd(m), _mm_castps_pd(a.m))));
+	}
+
 	__forceinline GSVector4 l2h(const GSVector4& a) const
 	{
 		return GSVector4(_mm_movelh_ps(m, a));
@@ -3103,6 +3113,11 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 	__forceinline static void storel(void* p, const GSVector4& v)
 	{
 		_mm_store_sd((double*)p, _mm_castps_pd(v.m));
+	}
+
+	__forceinline static void storeh(void* p, const GSVector4& v)
+	{
+		_mm_storeh_pd((double*)p, _mm_castps_pd(v.m));
 	}
 
 	template<bool aligned> __forceinline static void store(void* p, const GSVector4& v)

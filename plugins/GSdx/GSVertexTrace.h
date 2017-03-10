@@ -36,13 +36,12 @@ class alignas(32) GSVertexTrace : public GSAlignedClass<32>
 public:
 	struct Vertex {GSVector4i c; GSVector4 p, t;};
 	struct VertexAlpha {int min, max; bool valid;};
+	bool m_accurate_stq;
 
 protected:
 	const GSState* m_state;
 
 	static GSVector4 s_minmax;
-
-	bool m_accurate_stq;
 
 	typedef void (GSVertexTrace::*FindMinMaxPtr)(const void* vertex, const uint32* index, int count);
 
