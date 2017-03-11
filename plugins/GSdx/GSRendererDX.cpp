@@ -607,12 +607,14 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			default: __assume(0);
 		}
 
+		// Depth test should be disabled when depth writes are masked and similarly, Alpha test must be disabled
+		// when writes to all of the alpha bits in the Framebuffer are masked.
 		if (ate_RGBA_then_Z) {
 			z = !m_context->ZBUF.ZMSK;
 			r = g = b = a = false;
 		} else if (ate_RGB_then_ZA) {
 			z = !m_context->ZBUF.ZMSK;
-			a = !!(m_context->FRAME.FBMSK & 0xFF000000);
+			a = (m_context->FRAME.FBMSK & 0xFF000000) != 0xFF000000;
 			r = g = b = false;
 		}
 
