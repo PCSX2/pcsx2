@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2017-03-09 03:15+0100\n"
-"PO-Revision-Date: 2017-03-10 12:17+0100\n"
+"PO-Revision-Date: 2017-03-11 17:01+0100\n"
 "Last-Translator: Imre Kristoffer Eilertsen <imreeil42@gmail.com>\n"
 "Language-Team: \n"
 "Language: no\n"
@@ -57,7 +57,7 @@ msgstr "En fil kunne ikke skapes."
 
 #: common/src/Utilities/Exceptions.cpp:363
 msgid "File not found."
-msgstr "Fil ikke funnet."
+msgstr "Filen ble ikke funnet."
 
 #: common/src/Utilities/Exceptions.cpp:383
 msgid ""
@@ -189,7 +189,7 @@ msgstr ""
 
 #: pcsx2/PluginManager.cpp:1518
 msgid "Internal Memorycard Plugin failed to initialize."
-msgstr "Det interne minnekortet nektet å starte."
+msgstr "Det interne minnekorttillegget nektet å starte opp."
 
 #: pcsx2/PluginManager.cpp:1915
 msgid "Unloaded Plugin"
@@ -210,8 +210,8 @@ msgid ""
 "Logs manual protection, split blocks, and other things that might impact "
 "performance."
 msgstr ""
-"Loggfører manuel beskyttelse, deler blokker og andre ting som kan påvirke "
-"ytelse.."
+"Loggfører manuell beskyttelse, deler blokker, og andre ting som kan påvirke "
+"ytelse."
 
 #: pcsx2/SourceLog.cpp:106
 msgid "Shows the game developer's logging text (EE processor)"
@@ -219,7 +219,7 @@ msgstr "Viser spillets utviklerloggtekst (EE-prosessor)"
 
 #: pcsx2/SourceLog.cpp:111
 msgid "Shows the game developer's logging text (IOP processor)"
-msgstr "Viser spillets utviklerloggtekst (IOP prosessor)"
+msgstr "Viser spillets utviklerloggtekst (IOP-prosessor)"
 
 #: pcsx2/SourceLog.cpp:116
 msgid "Shows DECI2 debugging logs (EE processor)"
@@ -250,7 +250,7 @@ msgstr "Disasm av kun EE sin flyttallsenhet (FPU)."
 
 #: pcsx2/SourceLog.cpp:175
 msgid "Disasm of the EE's VU0macro co-processor instructions."
-msgstr "Disasm av EE sin VU0macro co-prosessorinstruksjoner."
+msgstr "Disasm av EE sine VU0macro-samprosessorinstruksjoner."
 
 #: pcsx2/SourceLog.cpp:181
 msgid "Execution of EE cache instructions."
@@ -393,7 +393,7 @@ msgstr "Stort sett skadelig"
 #: pcsx2/gui/AppConfig.cpp:1143 pcsx2/gui/AppConfig.cpp:1149
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr ""
-"Feilet i forsøket å overskrive innstillingsfilen; tilgangen ble nektet."
+"Feilet i forsøket på å overskrive innstillingsfilen; tilgangen ble nektet."
 
 #: pcsx2/gui/AppCorePlugins.cpp:404
 msgid "Loading PS2 system plugins..."
@@ -478,16 +478,16 @@ msgstr "deaktiverer hurtig oppstart"
 
 #: pcsx2/gui/AppInit.cpp:247
 msgid "changes the configuration file path"
-msgstr "skifter konfigurasjonsfil filbanen"
+msgstr "endrer konfigurasjonsfilens filbane"
 
 #: pcsx2/gui/AppInit.cpp:248
 msgid "specifies the PCSX2 configuration file to use"
-msgstr "spesifiser PCSX2-oppsettet som skal brukes"
+msgstr "spesifiserer PCSX2-oppsettsfilen som skal brukes"
 
 #: pcsx2/gui/AppInit.cpp:249
 #, c-format
 msgid "forces %s to start the First-time Wizard"
-msgstr "tvinger %stil å starte Førstegangsveiviseren"
+msgstr "tvinger %s til å starte Førstegangsveiviseren"
 
 #: pcsx2/gui/AppInit.cpp:250
 msgid "enables portable mode operation (requires admin/root access)"
@@ -643,7 +643,7 @@ msgstr ""
 #: pcsx2/gui/AppMain.cpp:375
 #, c-format
 msgid "%s Commandline Options"
-msgstr "%s Kommandolinjeinnstillinger"
+msgstr "%s kommandolinjeinnstillinger"
 
 #: pcsx2/gui/AppMain.cpp:686
 msgid "PCSX2 Unresponsive Thread"
@@ -1065,7 +1065,7 @@ msgid ""
 "Always use this option if you want the safest and surest memory card "
 "behavior."
 msgstr ""
-"Altid bruk dette valget hvis du ønsker den tryggeste minnekort oppførselen."
+"Altid bruk dette valget hvis du ønsker den tryggeste minnekortoppførselen."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:214
 msgid "16 MB"
@@ -1077,7 +1077,7 @@ msgid ""
 "A typical size for 3rd-party memory cards which should work with most games."
 msgstr ""
 "En typisk størrelse for tredjepartsleverandører som burde fungere med de "
-"fleste-spill."
+"fleste spill."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:215
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:219
@@ -1189,7 +1189,7 @@ msgstr "Sporingslogg"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:38
 msgid "Auto-eject memory cards when loading savestates"
-msgstr "Koble automatisk fra minnekortene ved innlasting av lagrestaser"
+msgstr "Koble automatisk fra minnekortene ved innlasting av lagretilstander"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
@@ -1357,7 +1357,7 @@ msgstr "Gå til neste blokk"
 
 #: pcsx2/gui/GlobalCommands.cpp:496
 msgid "Cycles the current save slot in +1 fashion!"
-msgstr "Gå til neste lagringsblokk i en +1 type syklus"
+msgstr "Sirkulerer den nåværende lagreplassen i en +1-stil!"
 
 #: pcsx2/gui/GlobalCommands.cpp:502
 msgid "Cycle to prev slot"
@@ -1365,7 +1365,7 @@ msgstr "Gå til forrige blokk"
 
 #: pcsx2/gui/GlobalCommands.cpp:503
 msgid "Cycles the current save slot in -1 fashion!"
-msgstr "Gå til neste lagringsblokk i en -1 type syklus"
+msgstr "Sirkulerer den nåværende lagreplassen i en -1-stil!"
 
 #: pcsx2/gui/IsoDropTarget.cpp:55
 msgid "Drag and Drop Error"
@@ -1376,7 +1376,8 @@ msgstr "Dra-og-slipp-feil"
 msgid ""
 "It is an error to drop multiple files onto a %s window.  One at a time "
 "please, thank you."
-msgstr "Det er feil å slippe flere filer i et %svindu. En av gangen, Takk."
+msgstr ""
+"Det er feil å slippe flere filer inn i et %s-vindu. Én om gangen, takk."
 
 #: pcsx2/gui/IsoDropTarget.cpp:87 pcsx2/gui/MainMenuClicks.cpp:355
 msgid "Confirm PS2 Reset"
@@ -1388,13 +1389,13 @@ msgid ""
 "You have dropped the following ELF binary into %s:\n"
 "\n"
 msgstr ""
-"Du har sluppet den følgende ELF-filen i %s:\n"
+"Du har sluppet den følgende ELF-filen inn i %s:\n"
 "\n"
 
 #: pcsx2/gui/IsoDropTarget.cpp:133
 #, c-format
 msgid "You have dropped the following ISO image into %s:"
-msgstr "Du har sluppet den følgende ISO-filen i %s:"
+msgstr "Du har sluppet den følgende ISO-filen inn i %s:"
 
 #: pcsx2/gui/MainFrame.cpp:39
 #, c-format
@@ -1484,7 +1485,7 @@ msgstr "Skru av &emulatoren"
 
 #: pcsx2/gui/MainFrame.cpp:449
 msgid "Wipes all internal VM states and shuts down plugins."
-msgstr "Tømmer den interne VM-statusen og stenger ned tilleggene."
+msgstr "Tømmer alle de interne VM-statusene og stenger ned tilleggene."
 
 #: pcsx2/gui/MainFrame.cpp:452
 msgid "E&xit"
@@ -1603,7 +1604,7 @@ msgstr "Paus&e"
 
 #: pcsx2/gui/MainFrame.cpp:610
 msgid "Safely pauses emulation and preserves the PS2 state."
-msgstr "Trygt pause emuleringen og tar vare på PS2 sin status."
+msgstr "Setter emuleringen trygt på pause og beholder PS2-tilstanden."
 
 #: pcsx2/gui/MainFrame.cpp:617
 msgid "R&esume"
@@ -1631,11 +1632,11 @@ msgstr "Simulerer maskinvareomstart av PS2s virtuelle maskin."
 
 #: pcsx2/gui/MainFrame.cpp:638
 msgid "No emulation state is active; boot something first."
-msgstr "Ingen emulering er aktiv; start noe først."
+msgstr "Ingen emulering er aktiv; start opp noe først."
 
 #: pcsx2/gui/MainFrame.cpp:655
 msgid "Use fast boot to skip PS2 startup and splash screens"
-msgstr "Bruk hurtigstart for å hoppe over PS2 sin oppstart økt."
+msgstr "Bruk hurtigstart for å hoppe over PS2 sine grafiske oppstartsrutiner."
 
 #: pcsx2/gui/MainFrame.cpp:660
 msgid "Boot ISO (&fast)"
@@ -1774,7 +1775,7 @@ msgstr "ISO-filen ble ikke funnet!"
 
 #: pcsx2/gui/MainMenuClicks.cpp:331
 msgid "An error occurred while trying to open the file:"
-msgstr "En feil oppstod imensman forsøkte å åpne filen:"
+msgstr "En feil oppstod under et forsøk på å åpne en fil:"
 
 #: pcsx2/gui/MainMenuClicks.cpp:332
 msgid ""
@@ -1910,7 +1911,7 @@ msgstr "Full"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:100
 msgid "VU0 / VU1 Advanced Recompiler Options"
-msgstr "VU0 / VU1 Avanserte rekompileringsvalg"
+msgstr "VU0/VU1 Avanserte rekompileringsvalg"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:102
 msgid "Extra"
@@ -2325,7 +2326,7 @@ msgstr ""
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
 #, c-format
 msgid "Failed: %s"
-msgstr "feilet: %s"
+msgstr "Mislyktes: %s"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:770
 msgid "Copy failed!"
@@ -2334,7 +2335,7 @@ msgstr "Kopieringen feilet!"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:777
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
-msgstr "Minnekort '%s' duplisert til '%s'."
+msgstr "Minnekortet '%s' er duplisert til '%s'."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
 msgid "Success"
@@ -2347,7 +2348,7 @@ msgid ""
 "( '.ps2' will be added automatically)"
 msgstr ""
 "Velg et nytt navn for minnekortet '%s'\n"
-"( '.ps2' vil bli lagt till automatisk)"
+"( '.ps2' vil bli lagt til automatisk)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:804
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:816
@@ -2369,7 +2370,7 @@ msgstr "Port-%u / Multitap-%u—Port-1"
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:135
 #, c-format
 msgid "             Multitap-%u--Port-%u"
-msgstr "       Multitap-%u--port-%u"
+msgstr "             Multitap-%u--port-%u"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:956
 msgid "Empty"
@@ -2597,7 +2598,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:138
 msgid "EE Cyclerate [Not Recommended]"
-msgstr "EE syklusfrekvens [Ikke anbefalt]"
+msgstr "EE-syklusfrekvens [Ikke anbefalt]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:154
 msgid "VU Cycle Stealing [Not Recommended]"
@@ -2723,8 +2724,8 @@ msgid ""
 "Error while parsing either NTSC or PAL framerate settings.  Settings must be "
 "valid floating point numerics."
 msgstr ""
-"Feil under parsing av enten NTSC eller PAL bildefrekvensinnstillingene. "
-"Innstillingene må være ekte flyttallsverdier (1.0, 0.002, 3.532 ol. ikke "
+"Feil under parsing av enten NTSC- eller PAL-bildefrekvensinnstillingene. "
+"Innstillingene må være ekte flyttallsverdier (1.0, 0.002, 3.532 ol., ikke "
 "1,2,3)."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:176
@@ -2744,8 +2745,8 @@ msgid ""
 "Normal and Turbo limit rates skip frames.  Slow motion mode will still "
 "disable frameskipping."
 msgstr ""
-"Normal og Turbo begrensrammer som hoppesover. Tregmodusvil enda deaktivere "
-"ramme hopping."
+"Normal- og Turbo-begrensningsfrekvenser hopper over rammer. Sakte filmmodus "
+"vil fortsatt deaktivere all rammehopping."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:209
 msgid "Frames to Draw"
