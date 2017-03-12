@@ -40,7 +40,6 @@ extern BOOL CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 
 extern int SendDialogMsg(HWND hwnd, int dlgId, UINT code, WPARAM wParam, LPARAM lParam);
-extern HRESULT GUIDFromString(const wchar_t *str, LPGUID guid);
 
 extern void AssignSliderValue(HWND idcwnd, HWND hwndDisplay, int value);
 extern void AssignSliderValue(HWND hWnd, int idc, int editbox, int value);
