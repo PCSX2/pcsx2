@@ -8,10 +8,6 @@ environment:
   - platform: Win32
     target: AppVeyor
     visualstudio_string: vs2015
-  - platform: Win32
-    VisualStudioVersion: 12.0
-    target: AppVeyor
-    visualstudio_string: vs2013
 
 matrix:
   fast_finish: true
