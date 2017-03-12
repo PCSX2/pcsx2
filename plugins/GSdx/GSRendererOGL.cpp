@@ -1494,6 +1494,40 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Always bind the RT. This way special effect can use it.
 	dev->PSSetShaderResource(3, rt);
 
+	if (m_game.title == CRC::ICO) {
+		GSVertex* v = &m_vertex.buff[0];
+		if (tex && m_vt.m_primclass == GS_SPRITE_CLASS && m_vertex.next == 2 && PRIM->ABE && // Blend texture
+				v[1].U == 8200 && v[1].V == 7176 && // at display resolution 512x448
+				tex->m_TEX0.PSM == PSM_PSMT8H) {  // i.e. read the alpha channel of a 32 bits texture
+			// Note potentially we can limit to TBP0:0x2800
+
+			// Depth buffer was moved so GSdx will invalide it which means a
+			// downscale. ICO uses the MSB depth bits as the texture alpha
+			// channel.  However this depth of field effect requires
+			// texel:pixel mapping accuraccy.
+			//
+			// Use an HLE shader to sample depth directly as the alpha channel
+			GL_INS("ICO sample depth as alpha");
+			m_require_full_barrier = true;
+			// Extract the depth as palette index
+			m_ps_sel.depth_fmt = 1;
+			m_ps_sel.channel = 3;
+			dev->PSSetShaderResource(4, ds);
+
+			// We need the palette to convert the depth to the correct alpha value.
+			if (!tex->m_palette) {
+				tex->m_palette = m_dev->CreateTexture(256, 1);
+
+				const uint32* clut = m_mem.m_clut;
+				int pal = GSLocalMemory::m_psm[tex->m_TEX0.PSM].pal;
+				tex->m_palette->Update(GSVector4i(0, 0, pal, 1), clut, pal * sizeof(clut[0]));
+				tex->m_initpalette = false;
+
+				dev->PSSetShaderResource(1, tex->m_palette);
+			}
+		}
+	}
+
 	// rs
 	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
 	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
