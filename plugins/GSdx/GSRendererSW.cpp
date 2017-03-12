@@ -756,7 +756,7 @@ void GSRendererSW::ReleasePages(const uint32* pages, const int type)
 bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pages, const GSVector4i& r)
 {
 	bool synced = m_rl->IsSynced();
-	
+
 	bool fb = fb_pages != NULL;
 	bool zb = zb_pages != NULL;
 
@@ -782,22 +782,24 @@ bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pag
 
 			uint32 row = i >> 5;
 			uint32 col = 1 << (i & 31);
-			
+
 			m_fzb_cur_pages[row] |= col;
 
 			used |= m_fzb_pages[i];
+			used |= m_tex_pages[i];
 		}
 
 		for(const uint32* p = zb_pages; *p != GSOffset::EOP; p++)
 		{
 			uint32 i = *p;
-			
+
 			uint32 row = i >> 5;
 			uint32 col = 1 << (i & 31);
-			
+
 			m_fzb_cur_pages[row] |= col;
 
 			used |= m_fzb_pages[i];
+			used |= m_tex_pages[i];
 		}
 
 		if(!synced)
@@ -921,7 +923,7 @@ bool GSRendererSW::CheckSourcePages(SharedData* sd)
 	{
 		for(size_t i = 0; sd->m_tex[i].t != NULL; i++)
 		{
-			sd->m_tex[i].t->m_offset->GetPages(sd->m_tex[i].r, m_tmp_pages); 
+			sd->m_tex[i].t->m_offset->GetPages(sd->m_tex[i].r, m_tmp_pages);
 
 			uint32* pages = m_tmp_pages; // sd->m_tex[i].t->m_pages.n;
 
