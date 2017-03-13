@@ -1416,12 +1416,13 @@ enum class GSVideoMode : uint8
 	DTV_1080I
 };
 
+// Ordering was done to keep compatibility with older ini file.
 enum class BiFiltering : uint8
 {
 	Nearest,
+	Forced,
 	PS2,
 	Forced_But_Sprite,
-	Forced,
 };
 
 enum class TriFiltering : uint8
