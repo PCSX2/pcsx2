@@ -335,12 +335,12 @@ namespace GLLoader {
 		fprintf(stdout, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[v]);
 
 		// Name changed but driver is still bad!
-		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
+		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI Technologies Inc."))
 			fglrx_buggy_driver = true;
 		if (fglrx_buggy_driver && (
-					strstr((const char*)&s[v], " 15.") || // blacklist all 2015 drivers
-					strstr((const char*)&s[v], " 16.") || // And all 2016 drivers. Good jobs AMD !
-					strstr((const char*)&s[v], " 17.1")   // In doubt take also first 2017 driver
+					strstr((const char*)&s[v], " 15.") || // Blacklist all 2015 AMD drivers.
+					strstr((const char*)&s[v], " 16.") || // Blacklist all 2016 AMD drivers.
+					strstr((const char*)&s[v], " 17.")   // Blacklist all 2017 AMD drivers for now.
 					))
 			legacy_fglrx_buggy_driver = true;
 
@@ -355,7 +355,7 @@ namespace GLLoader {
 		mesa_buggy_driver = !nvidia_buggy_driver && !fglrx_buggy_driver;
 #endif
 
-		buggy_sso_dual_src = intel_buggy_driver || legacy_fglrx_buggy_driver;
+		buggy_sso_dual_src = intel_buggy_driver || fglrx_buggy_driver || legacy_fglrx_buggy_driver;
 
 		if (theApp.GetConfigI("override_geometry_shader") != -1) {
 			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");
