@@ -335,12 +335,12 @@ namespace GLLoader {
 		fprintf(stdout, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[v]);
 
 		// Name changed but driver is still bad!
-		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI Technologies Inc."))
+		if (strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI Technologies Inc.") || strstr(vendor, "ATI"))
 			fglrx_buggy_driver = true;
 		if (fglrx_buggy_driver && (
 					strstr((const char*)&s[v], " 15.") || // Blacklist all 2015 AMD drivers.
 					strstr((const char*)&s[v], " 16.") || // Blacklist all 2016 AMD drivers.
-					strstr((const char*)&s[v], " 17.")   // Blacklist all 2017 AMD drivers for now.
+					strstr((const char*)&s[v], " 17.") // Blacklist all 2017 AMD drivers for now.
 					))
 			legacy_fglrx_buggy_driver = true;
 
