@@ -49,26 +49,12 @@ SectionEnd
 
 !include "SharedShortcuts.nsh"
 
-SectionGroup "Tools & Utilities" SEC_UTILS
-
-Section "SCP Toolkit" SEC_SCPTK
-inetc::get "https://github.com/nefarius/ScpToolkit/releases/download/v1.7.277.16103-BETA/ScpToolkit_Setup.exe" "$TEMP\ScpToolkit_Setup.exe" /END
-ExecWait "$TEMP\ScpToolkit_Setup.exe"
-Delete "$TEMP\ScpToolkit_Setup.exe"
-SectionEnd
-
-SectionGroupEnd
-
 LangString DESC_CORE       ${LANG_ENGLISH} "Core components (binaries, plugins, documentation, etc)."
 LangString DESC_STARTMENU  ${LANG_ENGLISH} "Adds shortcuts for PCSX2 to the start menu (all users)."
 LangString DESC_DESKTOP    ${LANG_ENGLISH} "Adds a shortcut for PCSX2 to the desktop (all users)."
 LangString DESC_LANGS      ${LANG_ENGLISH} "Adds additional languages other than the system default to PCSX2."
-LangString DESC_SCPTK      ${LANG_ENGLISH} "Download and install nefarius's SCPToolkit that allows Dualshock Controllers to be used with Windows."
-LangString DESC_UTILS      ${LANG_ENGLISH} "Additional utilities that are available for PCSX2 such as legacy plugins and debugging tools."
 
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_UTILS}       $(DESC_UTILS)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SCPTK}       $(DESC_SCPTK)
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CORE}        $(DESC_CORE)
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_STARTMENU}   $(DESC_STARTMENU)
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DESKTOP}     $(DESC_DESKTOP)

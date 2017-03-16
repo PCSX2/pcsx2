@@ -4,7 +4,7 @@
 ; This reduces duplicate code throughout both installers.
 
 ManifestDPIAware true
-ShowInstDetails show
+ShowInstDetails nevershow
 ShowUninstDetails nevershow
 
 SetCompressor /SOLID lzma
