@@ -424,7 +424,10 @@ void GSState::SaturateOutputSize(GSVector4i& r)
 	//  Limit games to standard NTSC resolutions. games with 512X512 (PAL resolution) on NTSC video mode produces black border on the bottom.
 	//  512 X 448 is the resolution generally used by NTSC, saturating the height value seems to get rid of the black borders.
 	//  Though it's quite a bad hack as it affects binaries which are patched to run on a non-native video mode.
-	if (m_NTSC_Saturation && (m_regs->SMODE2.INT & !m_regs->SMODE2.FFMD) && videomode == GSVideoMode::NTSC && r.height() > 448 && r.width() < 640)
+	const bool interlaced_field = m_regs->SMODE2.INT && !m_regs->SMODE2.FFMD;
+	const bool single_frame_output = m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && (m_regs->PMODE.EN1 ^ m_regs->PMODE.EN2);
+	const bool unsupported_output_size = r.height() > 448 && r.width() < 640;
+	if (m_NTSC_Saturation && videomode == GSVideoMode::NTSC && (interlaced_field || single_frame_output) && unsupported_output_size)
 	{
 		r.bottom = r.top + 448;
 	}
