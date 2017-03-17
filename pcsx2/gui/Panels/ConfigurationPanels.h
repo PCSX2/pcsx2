@@ -440,21 +440,6 @@ namespace Panels
 	};
 
 	// --------------------------------------------------------------------------------------
-	//  AppearanceThemesPanel
-	// --------------------------------------------------------------------------------------
-	class AppearanceThemesPanel : public BaseApplicableConfigPanel
-	{
-		typedef BaseApplicableConfigPanel _parent;
-
-	public:
-		virtual ~AppearanceThemesPanel() throw();
-		AppearanceThemesPanel( wxWindow* parent );
-
-		void Apply();
-		void AppStatusEvent_OnSettingsApplied();
-	};
-
-	// --------------------------------------------------------------------------------------
 	//  BaseSelectorPanel
 	// --------------------------------------------------------------------------------------
 	class BaseSelectorPanel: public BaseApplicableConfigPanel

@@ -67,12 +67,6 @@ void MainEmuFrame::Menu_SelectPluginsBios_Click(wxCommandEvent &event)
 	AppOpenDialog<ComponentsConfigDialog>( this );
 }
 
-void MainEmuFrame::Menu_Language_Click(wxCommandEvent &event)
-{
-	//AppOpenDialog<InterfaceConfigDialog>( this );
-	InterfaceConfigDialog(this).ShowModal();
-}
-
 void MainEmuFrame::Menu_ChangeLang(wxCommandEvent &event) // Always in English
 {
 	AppOpenDialog<InterfaceLanguageDialog>(this);

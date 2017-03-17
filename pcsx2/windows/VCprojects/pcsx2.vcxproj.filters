@@ -680,9 +680,6 @@
     <ClCompile Include="..\..\gui\Dialogs\SysConfigDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\Panels\AudioPanel.cpp">
-      <Filter>AppHost\Panels</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\Panels\BaseApplicableConfigPanel.cpp">
       <Filter>AppHost\Panels</Filter>
     </ClCompile>

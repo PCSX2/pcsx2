@@ -382,7 +382,6 @@
     <ClCompile Include="..\..\gui\Dialogs\LogOptionsDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\PickUserModeDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\SysConfigDialog.cpp" />
-    <ClCompile Include="..\..\gui\Panels\AudioPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\BaseApplicableConfigPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\BiosSelectorPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\CpuPanel.cpp" />

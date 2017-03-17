@@ -258,9 +258,6 @@ set(pcsx2GuiSources
 	gui/Dialogs/AboutBoxDialog.cpp
 	gui/Dialogs/AppConfigDialog.cpp
 	gui/Dialogs/AssertionDialog.cpp
-	gui/Panels/BaseApplicableConfigPanel.cpp
-	gui/Panels/MemoryCardListView.cpp
-	gui/Panels/ThemeSelectorPanel.cpp
 	gui/Dialogs/BaseConfigurationDialog.cpp
 	gui/Dialogs/ConfirmationDialogs.cpp
 	gui/Dialogs/ConvertMemoryCardDialog.cpp
@@ -288,11 +285,9 @@ set(pcsx2GuiSources
 	gui/MainMenuClicks.cpp
 	gui/MemoryCardFile.cpp
 	gui/MemoryCardFolder.cpp
-	gui/Panels/BaseApplicableConfigPanel.cpp
-	gui/Panels/MemoryCardListPanel.cpp
 	gui/MessageBoxes.cpp
 	gui/MSWstuff.cpp
-	gui/Panels/AudioPanel.cpp
+	gui/Panels/BaseApplicableConfigPanel.cpp
 	gui/Panels/BiosSelectorPanel.cpp
 	gui/Panels/CpuPanel.cpp
 	gui/Panels/DirPickerPanel.cpp
@@ -300,6 +295,8 @@ set(pcsx2GuiSources
 	gui/Panels/GameFixesPanel.cpp
 	gui/Panels/GSWindowPanel.cpp
 	gui/Panels/LogOptionsPanels.cpp
+	gui/Panels/MemoryCardListPanel.cpp
+	gui/Panels/MemoryCardListView.cpp
 	gui/Panels/MiscPanelStuff.cpp
 	gui/Panels/PathsPanel.cpp
 	gui/Panels/PluginSelectorPanel.cpp
