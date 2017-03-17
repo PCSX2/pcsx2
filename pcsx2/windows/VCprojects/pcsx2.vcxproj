@@ -381,7 +381,6 @@
     <ClCompile Include="..\..\gui\Dialogs\ImportSettingsDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\LogOptionsDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\PickUserModeDialog.cpp" />
-    <ClCompile Include="..\..\gui\Dialogs\StuckThreadDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\SysConfigDialog.cpp" />
     <ClCompile Include="..\..\gui\Panels\AudioPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\BaseApplicableConfigPanel.cpp" />

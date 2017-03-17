@@ -677,9 +677,6 @@
     <ClCompile Include="..\..\gui\Dialogs\PickUserModeDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\Dialogs\StuckThreadDialog.cpp">
-      <Filter>AppHost\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\Dialogs\SysConfigDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>

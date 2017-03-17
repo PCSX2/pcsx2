@@ -271,7 +271,6 @@ set(pcsx2GuiSources
 	gui/Dialogs/LogOptionsDialog.cpp
 	gui/Dialogs/McdConfigDialog.cpp
 	gui/Dialogs/PickUserModeDialog.cpp
-	gui/Dialogs/StuckThreadDialog.cpp
 	gui/Dialogs/SysConfigDialog.cpp
 	gui/Debugger/BreakpointWindow.cpp
 	gui/Debugger/CtrlDisassemblyView.cpp
