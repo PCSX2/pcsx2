@@ -41,11 +41,13 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
 		m_userhacks_disable_gs_mem_clear = theApp.GetConfigB("UserHacks_DisableGsMemClear");
 		m_userHacks_HPO                  = theApp.GetConfigI("UserHacks_HalfPixelOffset");
+		m_userHacks_merge_sprite         = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 	} else {
 		m_userhacks_align_sprite_X       = false;
 		m_userhacks_round_sprite_offset  = 0;
 		m_userhacks_disable_gs_mem_clear = false;
 		m_userHacks_HPO                  = 0;
+		m_userHacks_merge_sprite         = false;
 	}
 
 	if (!m_upscale_multiplier) { //Custom Resolution
@@ -401,6 +403,58 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 	}
 
 	return half_offset;
+}
+
+void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
+{
+	// Upscaling hack to avoid various line/grid issues
+	if (m_userHacks_merge_sprite && tex && tex->m_target && (m_vt.m_primclass == GS_SPRITE_CLASS)) {
+		if (PRIM->FST && GSLocalMemory::m_psm[tex->m_TEX0.PSM].fmt < 2 && ((m_vt.m_eq.value & 0xCFFFF) == 0xCFFFF)) {
+
+			// Ideally the hack ought to be enabled in a true paving mode only. I don't know how to do it accurately
+			// neither in a fast way. So instead let's just take the hypothesis that all sprites must have the same
+			// size.
+			// Tested on Tekken 5.
+			GSVertex* v = &m_vertex.buff[0];
+			bool is_paving = true;
+			// SSE optimization: shuffle m[1] to have (4*32 bits) X, Y, U, V
+			int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
+			int first_dpU = v[1].U - v[0].U;
+			for (size_t i = 0; i < m_vertex.next; i += 2) {
+				int dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
+				int dpU = v[i + 1].U - v[i].U;
+				if (dpX != first_dpX || dpU != first_dpU) {
+					is_paving = false;
+					break;
+				}
+			}
+
+#if 0
+			GSVector4 delta_p = m_vt.m_max.p - m_vt.m_min.p;
+			GSVector4 delta_t = m_vt.m_max.t - m_vt.m_min.t;
+			bool is_blit = PrimitiveOverlap() == PRIM_OVERLAP_NO;
+			GL_INS("PP SAMPLER: Dp %f %f Dt %f %f. Is blit %d, is paving %d, count %d", delta_p.x, delta_p.y, delta_t.x, delta_t.y, is_blit, is_paving, m_vertex.tail);
+#endif
+
+			if (is_paving) {
+				// Replace all sprite with a single fullscreen sprite.
+				GSVertex* s = &m_vertex.buff[0];
+
+				s[0].XYZ.X = static_cast<uint16>((16.0f * m_vt.m_min.p.x) + m_context->XYOFFSET.OFX);
+				s[1].XYZ.X = static_cast<uint16>((16.0f * m_vt.m_max.p.x) + m_context->XYOFFSET.OFX);
+				s[0].XYZ.Y = static_cast<uint16>((16.0f * m_vt.m_min.p.y) + m_context->XYOFFSET.OFY);
+				s[1].XYZ.Y = static_cast<uint16>((16.0f * m_vt.m_max.p.y) + m_context->XYOFFSET.OFY);
+
+				s[0].U = static_cast<uint16>(16.0f * m_vt.m_min.t.x);
+				s[0].V = static_cast<uint16>(16.0f * m_vt.m_min.t.y);
+				s[1].U = static_cast<uint16>(16.0f * m_vt.m_max.t.x);
+				s[1].V = static_cast<uint16>(16.0f * m_vt.m_max.t.y);
+
+				m_vertex.head = m_vertex.tail = m_vertex.next = 2;
+				m_index.tail = 2;
+			}
+		}
+	}
 }
 
 void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)

@@ -314,6 +314,9 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		}
 	}
 
+	// Upscaling hack to avoid various line/grid issues
+	MergeSprite(tex);
+
 	if(DATE)
 	{
 		if(dev->HasStencil())
