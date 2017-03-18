@@ -250,6 +250,10 @@
     <ClInclude Include="GSUniformBufferOGL.h" />
     <ClInclude Include="GSUtil.h" />
     <ClInclude Include="GSVector.h" />
+    <ClInclude Include="GSVector4i.h" />
+    <ClInclude Include="GSVector4.h" />
+    <ClInclude Include="GSVector8i.h" />
+    <ClInclude Include="GSVector8.h" />
     <ClInclude Include="GSVertex.h" />
     <ClInclude Include="GSVertexArrayOGL.h" />
     <ClInclude Include="GSVertexHW.h" />

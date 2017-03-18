@@ -467,6 +467,18 @@
     <ClInclude Include="GSVector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GSVector4i.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GSVector4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GSVector8i.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GSVector8.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="GSVertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
