@@ -175,6 +175,10 @@ set(GSdxHeaders
     GSUniformBufferOGL.h
     GSUtil.h
     GSVector.h
+    GSVector4.h
+    GSVector4i.h
+    GSVector8.h
+    GSVector8i.h
     GSVertexArrayOGL.h
     GSVertex.h
     GSVertexHW.h
