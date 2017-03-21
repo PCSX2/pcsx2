@@ -185,7 +185,6 @@ protected:
 	void Menu_Exit_Click(wxCommandEvent &event);
 
 	void Menu_SuspendResume_Click(wxCommandEvent &event);
-	void Menu_SysReset_Click(wxCommandEvent &event);
 	void Menu_SysShutdown_Click(wxCommandEvent &event);
 
 	void Menu_ConfigPlugin_Click(wxCommandEvent &event);

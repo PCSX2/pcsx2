@@ -544,12 +544,6 @@ void MainEmuFrame::Menu_SuspendResume_Click(wxCommandEvent &event)
 	GetSysExecutorThread().PostEvent( new SysExecEvent_ToggleSuspend() );
 }
 
-void MainEmuFrame::Menu_SysReset_Click(wxCommandEvent &event)
-{
-	UI_DisableSysReset();
-	sApp.SysExecute();
-}
-
 void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent &event)
 {
 	//if( !SysHasValidState() && !CorePlugins.AreAnyInitialized() ) return;

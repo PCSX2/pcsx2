@@ -203,8 +203,6 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableHostFs_Click, this, MenuId_EnableHostFs);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SysShutdown_Click, this, MenuId_Sys_Shutdown);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Exit_Click, this, MenuId_Exit);
-	// No actual menu item for this.
-	//Bind(wxEVT_MENU, &MainEmuFrame::Menu_SysReset_Click, this, MenuId_Sys_Restart);
 
 	// CDVD
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_IsoBrowse_Click, this, MenuId_IsoBrowse);
@@ -593,15 +591,10 @@ void MainEmuFrame::ApplyCoreStatus()
 {
 	wxMenuBar& menubar( *GetMenuBar() );
 
-	wxMenuItem* susres	= menubar.FindItem( MenuId_Sys_SuspendResume );
-	wxMenuItem* restart	= menubar.FindItem( MenuId_Sys_Restart );
-
 	// [TODO] : Ideally each of these items would bind a listener instance to the AppCoreThread
 	// dispatcher, and modify their states accordingly.  This is just a hack (for now) -- air
 
-	bool ActiveVM = SysHasValidState();
-
-	if( susres )
+	if (wxMenuItem* susres = menubar.FindItem(MenuId_Sys_SuspendResume))
 	{
 		if( !CoreThread.IsClosing() )
 		{
@@ -611,6 +604,7 @@ void MainEmuFrame::ApplyCoreStatus()
 		}
 		else
 		{
+			bool ActiveVM = SysHasValidState();
 			susres->Enable(ActiveVM);
 			if( ActiveVM )
 			{
@@ -622,20 +616,6 @@ void MainEmuFrame::ApplyCoreStatus()
 				susres->SetItemLabel(_("Pause/Resume"));
 				susres->SetHelp(_("No emulation state is active; cannot suspend or resume."));
 			}
-		}
-	}
-
-	if( restart )
-	{
-		if( ActiveVM )
-		{
-			restart->SetItemLabel(_("Res&tart"));
-			restart->SetHelp(_("Simulates hardware reset of the PS2 virtual machine."));
-		}
-		else
-		{
-			restart->Enable( false );
-			restart->SetHelp(_("No emulation state is active; boot something first."));
 		}
 	}
 
@@ -680,7 +660,6 @@ void MainEmuFrame::ApplyCoreStatus()
 
 	if (wxMenuItem *cdvd_full = menubar.FindItem(fullboot_id))
 	{
-
 		switch (Source)
 		{
 		case CDVD_SourceType::Iso:
