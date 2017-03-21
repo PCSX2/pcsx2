@@ -63,7 +63,6 @@ set(GSdxSources
     GSCrc.cpp
     GSDevice.cpp
     GSDeviceOGL.cpp
-    GSDeviceSW.cpp
     GSDeviceNull.cpp
     GSDirtyRect.cpp
     GSDrawingContext.cpp
@@ -131,7 +130,6 @@ set(GSdxHeaders
     GSDevice.h
     GSDeviceNull.h
     GSDeviceOGL.h
-    GSDeviceSW.h
     GSDialog.h
     GSDirtyRect.h
     GSDrawingContext.h

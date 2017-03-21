@@ -106,7 +106,6 @@
     <ClCompile Include="GSDeviceDX.cpp" />
     <ClCompile Include="GSDeviceNull.cpp" />
     <ClCompile Include="GSDeviceOGL.cpp" />
-    <ClCompile Include="GSDeviceSW.cpp" />
     <ClCompile Include="GSDialog.cpp" />
     <ClCompile Include="GSDirtyRect.cpp" />
     <ClCompile Include="GSDrawingContext.cpp" />
@@ -202,7 +201,6 @@
     <ClInclude Include="GSDeviceDX.h" />
     <ClInclude Include="GSDeviceNull.h" />
     <ClInclude Include="GSDeviceOGL.h" />
-    <ClInclude Include="GSDeviceSW.h" />
     <ClInclude Include="GSDialog.h" />
     <ClInclude Include="GSDirtyRect.h" />
     <ClInclude Include="GSDrawingContext.h" />
