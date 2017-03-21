@@ -146,8 +146,6 @@ enum MenuIdentifiers
 	MenuId_Video_WindowSettings,
 
 	// Miscellaneous Menu!  (Misc)
-	MenuId_Website,				// Visit our awesome website!
-	MenuId_Profiler,			// Enable profiler
 	MenuId_Console,				// Enable console
 	MenuId_ChangeLang,			// Change language (resets first time wizard to show on next start)
 	MenuId_Console_Stdio,		// Enable Stdio

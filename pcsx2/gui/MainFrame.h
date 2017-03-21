@@ -141,7 +141,7 @@ public:
 	
 	bool Destroy();
 
-	void ApplyConfigToGui( AppConfig& configToApply, int flags=0 ); //flags are: AppConfig::APPLY_CONFIG_FROM_PRESET and (currently unused) AppConfig::APPLY_CONFIG_MANUALLY PROPAGATE
+	void ApplyConfigToGui(AppConfig& configToApply, int flags = 0);
 	void CommitPreset_noTrigger();
 	void AppendKeycodeNamesToMenuOptions();
 
@@ -210,8 +210,6 @@ protected:
 // ------------------------------------------------------------------------
 
 	wxMenu* MakeStatesSubMenu( int baseid, int loadBackupId=-1 ) const;
-	wxMenu* MakeStatesMenu();
-	wxMenu* MakeLanguagesMenu() const;
 
 	void ConnectMenus();
 

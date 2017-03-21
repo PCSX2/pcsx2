@@ -336,7 +336,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	// Initial menubar setup.  This needs to be done first so that the menu bar's visible size
 	// can be factored into the window size (which ends up being background+status+menus)
 
-	//m_menubar.Append( &m_menuBoot,		_("&Boot") );
 	m_menubar.Append( &m_menuSys,		_("&System") );
 	m_menubar.Append( &m_menuCDVD,		_("CD&VD") );
 	m_menubar.Append( &m_menuConfig,	_("&Config") );
@@ -472,8 +471,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuConfig.Append(MenuId_Config_McdSettings,	_("&Memory cards") );
 	m_menuConfig.Append(MenuId_Config_BIOS,			_("&Plugin/BIOS Selector") );
 	if (IsDebugBuild) m_menuConfig.Append(MenuId_Config_GameDatabase,	_("&Game Database Editor") );
-	// Empty menu
-	// m_menuConfig.Append(MenuId_Config_Language,		_("Appearance...") );
 
 	m_menuConfig.AppendSeparator();
 
@@ -501,9 +498,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 #if defined(__unix__)
 	m_menuMisc.Append( &m_MenuItem_Console_Stdio );
 #endif
-	//Todo: Though not many people need this one :p
-	//m_menuMisc.Append(MenuId_Profiler,			_("Show Profiler"),	wxEmptyString, wxITEM_CHECK);
-	//m_menuMisc.AppendSeparator();
 
 	// No dialogs implemented for these yet...
 	//m_menuMisc.Append(41, "Patch Browser...", wxEmptyString, wxITEM_NORMAL);
@@ -511,10 +505,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	m_menuMisc.AppendSeparator();
 
-	//Todo:
-	//There's a great working "open website" in the about panel. Less clutter by just using that.
-	//m_menuMisc.Append(MenuId_Website,			_("Visit Website..."),
-	//	_("Opens your web-browser to our favorite website."));
 	m_menuMisc.Append(MenuId_About,				_("&About...") );
 
 	m_menuMisc.AppendSeparator();
