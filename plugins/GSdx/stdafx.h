@@ -365,7 +365,7 @@ using namespace std;
 
 #endif
 
-extern string format(const char* fmt, ...);
+extern std::string format(const char* fmt, ...);
 
 extern void* vmalloc(size_t size, bool code);
 extern void vmfree(void* ptr, size_t size);

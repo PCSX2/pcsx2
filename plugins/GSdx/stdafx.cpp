@@ -28,35 +28,22 @@
 // TODO: reference any additional headers you need in STDAFX.H
 // and not in this file
 
-string format(const char* fmt, ...)
+std::string format(const char* fmt, ...)
 {
 	va_list args;
+
 	va_start(args, fmt);
-
-	int result = -1, length = 256;
-
-	char* buffer = NULL;
-
-	while(result == -1)
-	{
-		if(buffer) delete [] buffer;
-
-		buffer = new char[length + 1];
-
-		memset(buffer, 0, length + 1);
-
-		result = vsnprintf(buffer, length, fmt, args);
-
-		length *= 2;
-	}
-
+	int size = vsnprintf(nullptr, 0, fmt, args) + 1;
 	va_end(args);
 
-	string s(buffer);
+	assert(size > 0);
+	std::vector<char> buffer(std::max(1, size));
 
-	delete [] buffer;
+	va_start(args, fmt);
+	vsnprintf(buffer.data(), size, fmt, args);
+	va_end(args);
 
-	return s;
+	return {buffer.data()};
 }
 
 #ifdef _WIN32
