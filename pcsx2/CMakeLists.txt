@@ -489,14 +489,12 @@ set(pcsx2WindowsSources
 	windows/cheats/cheats.cpp
 	windows/DwmSetup.cpp
 	windows/FlatFileReaderWindows.cpp
-	windows/ini.cpp
 	windows/Optimus.cpp
 	windows/PatchBrowser.cpp
 	windows/VCprojects/IopSif.cpp
 	windows/WinCompressNTFS.cpp
 	windows/WinConsolePipe.cpp
 	windows/WinKeyCodes.cpp
-	windows/WinSysExec.cpp
 	)
 
 # Windows headers

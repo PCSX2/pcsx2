@@ -118,9 +118,6 @@
     <Filter Include="System\Ps2\iCore">
       <UniqueIdentifier>{5e741f2d-9e0b-4e43-b2a2-44a8370e1546}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Windows">
-      <UniqueIdentifier>{3c918e82-4f67-4058-9818-4aff906dfa4a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\IsoFS">
       <UniqueIdentifier>{c5237754-2509-4291-b869-c5dacc1a8aba}</UniqueIdentifier>
     </Filter>
@@ -565,9 +562,6 @@
     </ClCompile>
     <ClCompile Include="..\..\x86\iCore.cpp">
       <Filter>System\Ps2\iCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\WinSysExec.cpp">
-      <Filter>System\Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFile.cpp">
       <Filter>System\IsoFS</Filter>

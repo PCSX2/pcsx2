@@ -340,7 +340,6 @@
     </ClCompile>
     <ClCompile Include="..\..\x86\ix86-32\iCore-32.cpp" />
     <ClCompile Include="..\..\x86\iCore.cpp" />
-    <ClCompile Include="..\WinSysExec.cpp" />
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFile.cpp" />
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFS.cpp" />
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFSCDVD.cpp" />
