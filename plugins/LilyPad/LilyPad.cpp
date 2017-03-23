@@ -574,7 +574,7 @@ void Update(unsigned int port, unsigned int slot)
         }
         if (dev->attached && dev->pads[0][0][config.padConfigs[0][0].type].numBindings > 0) {
             if (!anyDeviceActiveAndBound) {
-                fprintf(stderr, "LilyPad: A device(%ws) has been attached with bound controls.\n", dev->displayName);
+                fprintf(stderr, "LilyPad: A device(%ls) has been attached with bound controls.\n", dev->displayName);
                 anyDeviceActiveAndBound = true;
             }
             currentDeviceActiveAndBound = true;
