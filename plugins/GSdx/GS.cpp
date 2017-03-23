@@ -1043,9 +1043,11 @@ public:
 
 			SetConsoleWindowInfo(m_console, TRUE, &rect);
 
-			*stdout = *_fdopen(_open_osfhandle((long)m_console, _O_TEXT), "w");
+			freopen("CONOUT$", "w", stdout);
+			freopen("CONOUT$", "w", stderr);
 
-			setvbuf(stdout, NULL, _IONBF, 0);
+			setvbuf(stdout, nullptr, _IONBF, 0);
+			setvbuf(stderr, nullptr, _IONBF, 0);
 		}
 	}
 
