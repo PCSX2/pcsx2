@@ -437,12 +437,8 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 
 		if (fglrx_buggy_driver) {
-			fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver. Check out the links below for further information.\n"
-					"https://community.amd.com/message/2756964\n"
-					"https://community.amd.com/thread/205702\n"
-					"Note: Due to an AMD OpenGL driver issue, setting Blending Unit Accuracy to \"None\" can cause an application or system crash.\n"
-					"Keep Blending Unit Accuracy set to at least the default \"Basic\" level.\n"
-					"AMD has a fix for the issue that will be released in the coming months. The issue does not affect AMD GPUs on legacy drivers.\n");
+			fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver. Check out the link below for further information.\n"
+					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
 		}
 
 		if (!found_GL_ARB_viewport_array) {
