@@ -29,7 +29,7 @@ bool GSTextureCache::m_wrap_gs_mem = false;
 GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
 {
-	s_IS_OPENGL = (static_cast<GSRendererType>(theApp.GetConfigI("Renderer")) == GSRendererType::OGL_HW);
+	s_IS_OPENGL = theApp.GetCurrentRendererType() == GSRendererType::OGL_HW;
 
 	if (theApp.GetConfigB("UserHacks")) {
 		m_spritehack                   = theApp.GetConfigI("UserHacks_SpriteHack");

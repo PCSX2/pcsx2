@@ -851,7 +851,7 @@ GSRendererHW::Hacks::Hacks()
 	, m_oo(NULL)
 	, m_cu(NULL)
 {
-	bool is_opengl = (static_cast<GSRendererType>(theApp.GetConfigI("Renderer")) == GSRendererType::OGL_HW);
+	bool is_opengl = theApp.GetCurrentRendererType() == GSRendererType::OGL_HW;
 	bool can_handle_depth = (!theApp.GetConfigB("UserHacks") || !theApp.GetConfigB("UserHacks_DisableDepthSupport")) && is_opengl;
 
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFXII, CRC::EU, &GSRendererHW::OI_FFXII));
