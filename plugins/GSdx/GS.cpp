@@ -211,9 +211,18 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 	GSDevice* dev = NULL;
 	bool old_api = *dsp == NULL;
 
+	// Fresh start up or config file changed
 	if(renderer == GSRendererType::Undefined)
 	{
 		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
+#ifdef _WIN32
+		if (renderer == GSRendererType::Default)
+		{
+			renderer = GSUtil::GetBestRenderer();
+			if (renderer == GSRendererType::OGL_HW)
+				theApp.SetConfig("crc_hack_level", static_cast<int>(CRCHackLevel::Partial));
+		}
+#endif
 	}
 
 	if(threads == -1)
@@ -472,24 +481,11 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	bool toggle_state = !!(flags & 4);
 
 	GSRendererType renderer = s_renderer;
-	// Fresh start up or config file changed
-	if (renderer == GSRendererType::Undefined)
-	{
-		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
-#ifdef _WIN32
-		if (renderer == GSRendererType::Default)
-		{
-			renderer = GSUtil::GetBestRenderer();
-			if (renderer == GSRendererType::OGL_HW)
-				theApp.SetConfig("crc_hack_level", static_cast<int>(CRCHackLevel::Partial));
-		}
-#endif
-	}
-	else if (stored_toggle_state != toggle_state)
+
+	if (renderer != GSRendererType::Undefined && stored_toggle_state != toggle_state)
 	{
 #ifdef _WIN32
 		GSRendererType best_sw_renderer = GSUtil::CheckDirect3D11Level() >= D3D_FEATURE_LEVEL_10_0 ? GSRendererType::DX1011_SW : GSRendererType::DX9_SW;
-
 
 		switch (renderer) {
 			// Use alternative renderer (SW if currently using HW renderer, and vice versa, keeping the same API and API version)
