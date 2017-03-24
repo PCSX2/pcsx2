@@ -20,7 +20,9 @@
 #include "ThreadedZipTools.h"
 #include "Utilities/SafeArray.inl"
 #include "wx/wfstream.h"
-
+#include <pthread.h>
+#include <sched.h>
+#include <stdio.h>
 
 BaseCompressThread::~BaseCompressThread() throw()
 {
@@ -45,6 +47,17 @@ void BaseCompressThread::ExecuteTaskInThread()
 {
 	// TODO : Add an API to PersistentThread for this! :)  --air
 	//SetThreadPriority( THREAD_PRIORITY_BELOW_NORMAL );
+        //made by Axlffx2forever
+ struct sched_param param;
+    param.sched_priority = 1;
+    pthread_setschedparam(pthread_self(), 1,&param); //this gonna make priority below normal
+   if (pthread_setschedparam(pthread_self(), 1, &param)) 
+	{
+		
+		Console.WriteLn("(gzipThread) Priority set to 1 succesfully ");
+	        return;
+	
+	}
 
 	// Notes:
 	//  * Safeguard against corruption by writing to a temp file, and then copying the final
