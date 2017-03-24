@@ -62,7 +62,6 @@ extern bool RunLinuxDialog();
 static GSRenderer* s_gs = NULL;
 static void (*s_irq)() = NULL;
 static uint8* s_basemem = NULL;
-static GSRendererType s_renderer = GSRendererType::Undefined;
 static bool s_framelimit = true;
 static bool s_vsync = false;
 static bool s_exclusive = true;
@@ -170,7 +169,7 @@ EXPORT_C GSshutdown()
 	delete s_gs;
 	s_gs = nullptr;
 
-	s_renderer = GSRendererType::Undefined;
+	theApp.SetCurrentRendererType(GSRendererType::Undefined);
 
 #ifdef _WIN32
 
@@ -232,7 +231,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 	try
 	{
-		if (s_renderer != renderer)
+		if (theApp.GetCurrentRendererType() != renderer)
 		{
 			// Emulator has made a render change request, which requires a completely
 			// new s_gs -- if the emu doesn't save/restore the GS state across this
@@ -241,6 +240,8 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			delete s_gs;
 
 			s_gs = NULL;
+
+			theApp.SetCurrentRendererType(renderer);
 		}
 
 		std::shared_ptr<GSWnd> window;
@@ -419,8 +420,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			}
 			if (s_gs == NULL)
 				return -1;
-
-			s_renderer = renderer;
 		}
 
 		s_gs->m_wnd = window;
@@ -480,7 +479,7 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	static bool stored_toggle_state = false;
 	bool toggle_state = !!(flags & 4);
 
-	GSRendererType renderer = s_renderer;
+	GSRendererType renderer = theApp.GetCurrentRendererType();
 
 	if (renderer != GSRendererType::Undefined && stored_toggle_state != toggle_state)
 	{
@@ -811,7 +810,7 @@ EXPORT_C GSconfigure()
 		if(GSSettingsDlg().DoModal() == IDOK)
 		{
 			// Force a reload of the gs state
-			s_renderer = GSRendererType::Undefined;
+			theApp.SetCurrentRendererType(GSRendererType::Undefined);
 		}
 
 #else
@@ -819,7 +818,7 @@ EXPORT_C GSconfigure()
 		if (RunLinuxDialog()) {
 			theApp.ReloadConfig();
 			// Force a reload of the gs state
-			s_renderer = GSRendererType::Undefined;
+			theApp.SetCurrentRendererType(GSRendererType::Undefined);
 		}
 
 #endif

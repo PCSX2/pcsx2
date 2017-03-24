@@ -22,6 +22,7 @@
 #pragma once
 
 #include "GSSetting.h"
+#include "GS.h"
 
 class GSdxApp
 {
@@ -31,6 +32,7 @@ class GSdxApp
 #if defined(__unix__)
 	std::map< std::string, std::string > m_configuration_map;
 #endif
+	GSRendererType m_current_renderer_type;
 
 public:
 	GSdxApp();
@@ -60,6 +62,8 @@ public:
 	bool   GetConfigB(const char* entry);
 	string GetConfigS(const char* entry);
 
+	void SetCurrentRendererType(GSRendererType type);
+	GSRendererType GetCurrentRendererType();
 
 	void SetConfigDir(const char* dir);
 
