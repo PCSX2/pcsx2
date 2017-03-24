@@ -1126,8 +1126,11 @@ void SysCorePlugins::Load( PluginsEnum_t pid, const wxString& srcfile )
 {
 	ScopedLock lock( m_mtx_PluginStatus );
 	pxAssert( (uint)pid < PluginId_Count );
-	Console.Indent().WriteLn( L"Binding %4s: %s ", WX_STR(tbl_PluginInfo[pid].GetShortname()), WX_STR(srcfile) );
+
 	m_info[pid] = std::unique_ptr<PluginStatus_t>(new PluginStatus_t(pid, srcfile));
+
+	Console.Indent().WriteLn(L"Bound %4s: %s [%s %s]", WX_STR(tbl_PluginInfo[pid].GetShortname()), 
+		WX_STR(wxFileName(srcfile).GetFullName()), WX_STR(m_info[pid]->Name), WX_STR(m_info[pid]->Version));
 }
 
 void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
@@ -1135,8 +1138,8 @@ void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
 	if( !NeedsLoad() ) return;
 
 	wxDoNotLogInThisScope please;
-	
-	Console.WriteLn( Color_StrongBlue, "\nLoading plugins..." );
+
+	Console.WriteLn(Color_StrongBlue, L"\nLoading plugins from %s...", WX_STR(g_Conf->Folders[FolderId_Plugins].ToString()));
 
 	ConsoleIndentScope indent;
 	const PluginInfo* pi = tbl_PluginInfo; do
@@ -1510,7 +1513,7 @@ bool SysCorePlugins::Init()
 {
 	if( !NeedsInit() ) return false;
 
-	Console.WriteLn( Color_StrongBlue, "\nInitializing plugins..." );
+	Console.WriteLn( Color_StrongBlue, "Initializing plugins..." );
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		Init( pi->id );
 	} while( ++pi, pi->shortname != NULL );
