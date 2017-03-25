@@ -1688,8 +1688,9 @@ Compat = 5
 MemCardFilter = SCES-51607/SCES-50916
 ---------------------------------------------
 Serial = SCES-51608
-Name   = Jak & Daxter 2 - Renegade
+Name   = Jak II: Renegade
 Region = PAL-M7
+Compat = 5
 ---------------------------------------------
 Serial = SCES-51610
 Name   = This is Football 2004 (Red Devils 2004)
@@ -7972,6 +7973,7 @@ Compat = 5
 Serial = SLES-50683
 Name   = Sled Storm
 Region = PAL-M3
+vuClampMode = 2 // Missing polygons at the bottom of the screen.
 ---------------------------------------------
 Serial = SLES-50684
 Name   = Medal of Honor - Frontline
@@ -8442,6 +8444,7 @@ Region = PAL-I
 Serial = SLES-50876
 Name   = Driv3r
 Region = PAL-M5
+Compat = 4
 ---------------------------------------------
 Serial = SLES-50877
 Name   = TimeSplitters 2
@@ -14993,7 +14996,7 @@ Name   = Pro Evolution Soccer Management
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-53900
-Name   = Kaido Racer
+Name   = Kaido Racer 2
 Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-53901
@@ -35454,6 +35457,7 @@ Serial = SLUS-20363
 Name   = Sled Storm
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // Missing polygons at the bottom of the screen.
 ---------------------------------------------
 Serial = SLUS-20364
 Name   = Tiger Woods PGA Tour 2002
@@ -40380,7 +40384,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21394
-Name   = TXR Drift 2
+Name   = Tokyo Xtreme Racer Drift 2
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
