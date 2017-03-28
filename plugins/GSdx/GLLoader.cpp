@@ -335,12 +335,12 @@ namespace GLLoader {
 		fprintf(stdout, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[v]);
 
 		// Name changed but driver is still bad!
-		if (strstr(vendor, "ATI") || strstr(vendor, "Advanced Micro Devices"))
+		if (strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI Technologies Inc.") || strstr(vendor, "ATI"))
 			fglrx_buggy_driver = true;
 		if (fglrx_buggy_driver && (
-					strstr((const char*)&s[v], " 15.") || // blacklist all 2015 drivers
-					strstr((const char*)&s[v], " 16.") || // And all 2016 drivers. Good jobs AMD !
-					strstr((const char*)&s[v], " 17.1")   // In doubt take also first 2017 driver
+					strstr((const char*)&s[v], " 15.") || // Blacklist all 2015 AMD drivers.
+					strstr((const char*)&s[v], " 16.") || // Blacklist all 2016 AMD drivers.
+					strstr((const char*)&s[v], " 17.") // Blacklist all 2017 AMD drivers for now.
 					))
 			legacy_fglrx_buggy_driver = true;
 
@@ -355,7 +355,7 @@ namespace GLLoader {
 		mesa_buggy_driver = !nvidia_buggy_driver && !fglrx_buggy_driver;
 #endif
 
-		buggy_sso_dual_src = intel_buggy_driver || legacy_fglrx_buggy_driver;
+		buggy_sso_dual_src = intel_buggy_driver || fglrx_buggy_driver || legacy_fglrx_buggy_driver;
 
 		if (theApp.GetConfigI("override_geometry_shader") != -1) {
 			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");
@@ -437,12 +437,9 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 
 		if (fglrx_buggy_driver) {
-			fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver. Check out the links below for further information.\n"
-					"https://community.amd.com/message/2756964\n"
-					"https://community.amd.com/thread/205702\n"
-					"Note: Due to an AMD OpenGL driver issue, setting Blending Unit Accuracy to \"None\" can cause an application or system crash.\n"
-					"Keep Blending Unit Accuracy set to at least the default \"Basic\" level.\n"
-					"AMD has a fix for the issue that will be released in the coming months. The issue does not affect AMD GPUs on legacy drivers.\n");
+			fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver.\n"
+			"Check out the link below for further information.\n"
+			"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
 		}
 
 		if (!found_GL_ARB_viewport_array) {
