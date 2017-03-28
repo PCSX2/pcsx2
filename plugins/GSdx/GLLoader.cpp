@@ -437,8 +437,9 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 
 		if (fglrx_buggy_driver) {
-			fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver. Check out the link below for further information.\n"
-					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
+			fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver.\n"
+			"Check out the link below for further information.\n"
+			"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
 		}
 
 		if (!found_GL_ARB_viewport_array) {
