@@ -26,7 +26,7 @@
 static CRCHackLevel s_crc_hack_level = CRCHackLevel::Full;
 
 // hacks
-#define Aggresive (s_crc_hack_level >= CRCHackLevel::Aggressive)
+#define Aggressive (s_crc_hack_level >= CRCHackLevel::Aggressive)
 #define Dx_only (s_crc_hack_level >= CRCHackLevel::Full)
 #define Dx_and_OGL (s_crc_hack_level >= CRCHackLevel::Partial)
 
@@ -256,23 +256,6 @@ bool GSC_Spartan(const GSFrameInfo& fi, int& skip)
 						skip = 1;
 					}
 				}
-		}
-	}
-
-	return true;
-}
-
-bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x02a00 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01600 && fi.TPSM == PSM_PSMZ24)
-		{
-			skip = 71; // clouds (z, 16-bit)
-		}
-		else if(fi.TME && fi.FBP == 0x02900 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 28; // blur
 		}
 	}
 
@@ -1198,15 +1181,15 @@ bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 		{
 			if(fi.FBP == 0x1180)
 			{
-				skip=1;//1 deletes some of the glitched effects
+				skip=1; // 1 deletes some of the glitched effects
 			}
 			else if(fi.FBP == 0)
 			{
-				skip=100;//deletes most others(too high deletes the buggy sea completely;c, too low causes glitches to be visible)
+				skip=100; // deletes most others(too high deletes the buggy sea completely;c, too low causes glitches to be visible)
 			}
-			else if(Aggresive && fi.FBP != 0)//Agressive CRC
+			else if(Aggressive && fi.FBP != 0) // Aggressive CRC
 			{
-				skip=19;//"speedhack", makes the game very light, vaporized water can disappear when not looked at directly, possibly some interface still, other value to try: 6 breaks menu background, possibly nothing(?) during gameplay, but it's slower, hence not much of a speedhack anymore
+				skip=19; // "speedhack", makes the game very light, vaporized water can disappear when not looked at directly, possibly some interface still, other value to try: 6 breaks menu background, possibly nothing(?) during gameplay, but it's slower, hence not much of a speedhack anymore
 			}
 		}
 	}
@@ -1366,7 +1349,7 @@ bool GSC_ICO(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1;
 		}
-		else if( Aggresive && fi.TME && fi.FBP == 0x0800 && (fi.TBP0 == 0x2800 || fi.TBP0 ==0x2c00) && fi.TPSM ==0  && fi.FBMSK == 0)
+		else if(Aggressive && fi.TME && fi.FBP == 0x0800 && (fi.TBP0 == 0x2800 || fi.TBP0 ==0x2c00) && fi.TPSM ==0  && fi.FBMSK == 0)
 		{
 			skip = 1;
 		}
@@ -1697,11 +1680,11 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 			{
 					skip = 1; // wall of fog
 			}
-			else if(Aggresive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x1300 ) && (fi.TBP0 ==0x0F00 || fi.TBP0 ==0x1300 || fi.TBP0==0x2b00)) // || fi.FBP == 0x0100
+			else if(Aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x1300 ) && (fi.TBP0 ==0x0F00 || fi.TBP0 ==0x1300 || fi.TBP0==0x2b00)) // || fi.FBP == 0x0100
 			{
 				skip = 1; // global haze/halo
 			}
-			else if(Aggresive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x0100 ) && (fi.TBP0==0x2b00 || fi.TBP0==0x2e80)) //480P 2e80
+			else if(Aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x0100 ) && (fi.TBP0==0x2b00 || fi.TBP0==0x2e80)) // 480P 2e80
 			{
 				skip = 1; // water effect and water vertical lines
 			}
@@ -2136,8 +2119,30 @@ bool GSC_GTASanAndreas(const GSFrameInfo& fi, int& skip)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Aggresive only hack
+// Aggressive only hack
 ////////////////////////////////////////////////////////////////////////////////
+
+bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
+{
+	// Removes clouds for a good speed boost, removes both 3D clouds(invisible with Hardware renderers, but cause slowdown) and 2D background clouds.
+	// Removes blur from player airplane.
+	// This hack also removes rockets, shows explosions(invisible without CRC hack) as garbage data,
+	// causes flickering issues with the HUD, and in some (night) missions removes the HUD altogether.
+
+	if (Aggressive && skip == 0)
+	{
+		if (fi.TME && fi.FBP == 0x02a00 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01600 && fi.TPSM == PSM_PSMZ24)
+		{
+			skip = 71; // clouds (z, 16-bit)
+		}
+		/*else if (fi.TME && fi.FBP == 0x02900 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT24)
+		{
+		skip = 28; // blur, (seems applied by to above hack)
+		}*/
+	}
+
+	return true;
+}
 
 template<uptr state_addr>
 bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
@@ -2146,10 +2151,10 @@ bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 	// smudge filter from being drawn on USA versions of
 	// Nocturne, Digital Devil Saga 1 and Digital Devil Saga 2
 
-	if(Aggresive && g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME)
+	if(Aggressive && g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME)
 	{
 		// Note: it will crash if the core doesn't allocate the EE mem in 0x2000_0000 (unlikely but possible)
-		// Aggresive hacks are evil anyway
+		// Aggressive hacks are evil anyway
 
 		// Nocturne:
 		// -0x5900($gp), ref at 0x100740
@@ -2162,7 +2167,7 @@ bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 
 bool GSC_LegoBatman(const GSFrameInfo& fi, int& skip)
 {
-	if(Aggresive && skip == 0)
+	if(Aggressive && skip == 0)
 	{
 		if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x00000)
 		{
@@ -2177,7 +2182,7 @@ bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
             // Not needed anymore? What did it fix anyway? (rama)
     if(skip == 0)
     {
-            if(Aggresive && fi.TME /*&& fi.FBP == 0x03d80*/ && fi.FPSM == 0 && fi.TBP0 == 0x03fc0 && fi.TPSM == 1)
+            if(Aggressive && fi.TME /*&& fi.FBP == 0x03d80*/ && fi.FPSM == 0 && fi.TBP0 == 0x03fc0 && fi.TPSM == 1)
             {
                     skip = 48;	//removes sky bloom
             }
@@ -2205,7 +2210,7 @@ bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
 
 bool GSC_FFXII(const GSFrameInfo& fi, int& skip)
 {
-	if(Aggresive && skip == 0)
+	if(Aggressive && skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -2223,7 +2228,7 @@ bool GSC_FFXII(const GSFrameInfo& fi, int& skip)
 
 bool GSC_FFX2(const GSFrameInfo& fi, int& skip)
 {
-	if(Aggresive && skip == 0)
+	if(Aggressive && skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -2241,7 +2246,7 @@ bool GSC_FFX2(const GSFrameInfo& fi, int& skip)
 
 bool GSC_FFX(const GSFrameInfo& fi, int& skip)
 {
-	if(Aggresive && skip == 0)
+	if(Aggressive && skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -2259,7 +2264,7 @@ bool GSC_FFX(const GSFrameInfo& fi, int& skip)
 
 bool GSC_SSX3(const GSFrameInfo& fi, int& skip)
 {
-	if(Aggresive && skip == 0)
+	if(Aggressive && skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -2278,7 +2283,7 @@ bool GSC_SSX3(const GSFrameInfo& fi, int& skip)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#undef Agressive
+#undef Aggressive
 
 #ifdef ENABLE_DYNAMIC_CRC_HACK
 
@@ -2489,7 +2494,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::RadiataStories] = GSC_RadiataStories;
 		lut[CRC::StarOcean3] = GSC_StarOcean3;
 		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
-		// Only Aggresive
+		// Only Aggressive
 		lut[CRC::FFX2] = GSC_FFX2;
 		lut[CRC::FFX] = GSC_FFX;
 		lut[CRC::FFXII] = GSC_FFXII;
