@@ -124,6 +124,7 @@ Region = PAL-Unk
 Serial = PBPX-95503
 Name   = Gran Turismo 3 - A-Spec [PS2 Bundle]
 Region = NTSC-U
+MemCardFilter = PBPX-95503/SCUS-97102
 ---------------------------------------------
 Serial = PBPX-95517
 Name   = Network Adapter Start-Up Disc
@@ -4873,6 +4874,7 @@ Region = NTSC-U
 Serial = SCUS-97219
 Name   = Gran Turismo 3 - A-Spec - Nissan 350Z Edition
 Region = NTSC-U
+MemCardFilter = SCUS-97219/SCUS-97102
 ---------------------------------------------
 Serial = SCUS-97220
 Name   = NHL FaceOff 2003
@@ -5800,6 +5802,7 @@ VIF1StallHack = 1		//HUD
 Serial = SCUS-97512
 Name   = Gran Turismo 3 - A-Spec [Greatest Hits]
 Region = NTSC-U
+MemCardFilter = SCUS-97512/SCUS-97102
 ---------------------------------------------
 Serial = SCUS-97513
 Name   = Ratchet & Clank - Going Commando [Greatest Hits]
