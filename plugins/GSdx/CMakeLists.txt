@@ -294,9 +294,20 @@ if (REBUILD_SHADER)
     add_custom_command(OUTPUT res/glsl_source.h COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/glsl2h.pl)
 endif()
 
+set(RESOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/res")
 # Note: trying to combine --generate-source and --generate-header doesn't work. It outputs whichever one comes last into the file named by the first
-execute_process(COMMAND glib-compile-resources --sourcedir res --generate-header --c-name GSdx_res res/gsdx-res.xml --target=GSdxResources.h WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-execute_process(COMMAND glib-compile-resources --sourcedir res --generate-source --c-name GSdx_res res/gsdx-res.xml --target=GSdxResources.cpp WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_custom_command(
+    OUTPUT GSdxResources.h
+    COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-header
+        --c-name GSdx_res "${RESOURCE_DIR}/gsdx-res.xml" --target=GSdxResources.h
+    DEPENDS res/gsdx-res.xml res/logo-ogl.bmp)
+add_custom_command(
+    OUTPUT GSdxResources.cpp
+    COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-source
+        --c-name GSdx_res "${RESOURCE_DIR}/gsdx-res.xml" --target=GSdxResources.cpp
+    DEPENDS res/gsdx-res.xml res/logo-ogl.bmp)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(BUILTIN_GS)
     add_pcsx2_lib(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
