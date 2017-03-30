@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
 	<gresource prefix="/GSdx/res/">
-		<file preprocess="to-pixdata">logo-ogl.bmp</file>
+		<file>logo-ogl.bmp</file>
 	</gresource>
 </gresources>
