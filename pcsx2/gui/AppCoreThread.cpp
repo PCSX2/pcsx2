@@ -446,7 +446,7 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(gameCRC, GetCheatsWsFolder(), L"Widescreen hacks"))
 		{
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberLoadedWideScreenPatches);
-			Console.WriteLn(Color_Gray, "Found ws patches at cheats_ws --> skipping cheats_ws.zip");
+			Console.WriteLn(Color_Gray, "Found widescreen patches in the cheats_ws folder --> skipping cheats_ws.zip");
 		}
 		else
 		{
