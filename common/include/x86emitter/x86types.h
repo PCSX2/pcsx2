@@ -52,7 +52,6 @@ enum XMMSSEType {
 #endif
 
 #ifndef __tls_emit
-
 #if x86EMIT_MULTITHREADED
 #define __tls_emit thread_local
 #else
