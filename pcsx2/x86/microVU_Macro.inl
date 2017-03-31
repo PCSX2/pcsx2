@@ -276,6 +276,39 @@ static void recCFC2() {
 	}
 	else xMOV(eax, ptr32[&vu0Regs.VI[_Rd_].UL]);
 
+	if (_Rd_ == REG_TPC) { // Divide TPC register value by 8 during copying
+		// Ok, this deserves an explanation.
+		// Accoring to the official PS2 VU0 coding manual there are 3 ways to execute a micro subroutine on VU0
+		// one of which is using the VCALLMSR intruction.
+		// The manual requires putting the address of the micro subroutine
+		// into the CMSAR0 register divided by 8 using the CTC2 command before executing VCALLMSR.
+		// Many games (for instance, 24: The Game, GTA LCS, GTA VCS and FFXII) do in fact use this way, 
+		// they diligently put the address of the micro subroutine into a separate register (v0, v1 etc), divide it by 8
+		// and move it to CMSAR0 by calling the CTC2 command.
+	
+		// However, there are also at least 2 confirmed games (R Racing Evolution, Street Fighter EX3) 
+		// that execute a piece of code to run a micro subroutine on VU0 like this:
+		// 
+		// ...
+		// cfc2	t4, TPC
+		// ctc2	t4, CMSAR0
+		// callmsr
+		// ...
+		//
+		// Interestingly enough there is no division by 8 but it works fine in these 2 mentioned games.
+		// It means the division operation is implicit.
+		// Homebrew tests for the real PS2 have shown that in fact the instruction "cfc2 t4, TPC" ends up with values that are not always divisible by 8.
+
+		// There are 2 possibilities: either the CFC2 instruction divides the value of the TPC (which is the Program Counter register
+		// for micro subroutines) by 8 itself during copying or the TPC register always works with addresses already divided by 8.
+		// The latter seems less possible because the Program Counter register by definition holds the memory address of the instruction.
+		// In addition, PCSX2 already implements TPC as an instruction pointer so we'll assume that division by 8 
+		// is done by CFC2 while working with the TPC register.
+		// (fixes R Racing Evolution and Street Fighter EX3)
+		
+		xSHR(eax, 3);
+	}
+
 	// FixMe: Should R-Reg have upper 9 bits 0?
 	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
 

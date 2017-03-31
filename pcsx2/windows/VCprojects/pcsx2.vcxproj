@@ -340,7 +340,6 @@
     </ClCompile>
     <ClCompile Include="..\..\x86\ix86-32\iCore-32.cpp" />
     <ClCompile Include="..\..\x86\iCore.cpp" />
-    <ClCompile Include="..\WinSysExec.cpp" />
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFile.cpp" />
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFS.cpp" />
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFSCDVD.cpp" />
@@ -381,9 +380,7 @@
     <ClCompile Include="..\..\gui\Dialogs\ImportSettingsDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\LogOptionsDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\PickUserModeDialog.cpp" />
-    <ClCompile Include="..\..\gui\Dialogs\StuckThreadDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\SysConfigDialog.cpp" />
-    <ClCompile Include="..\..\gui\Panels\AudioPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\BaseApplicableConfigPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\BiosSelectorPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\CpuPanel.cpp" />

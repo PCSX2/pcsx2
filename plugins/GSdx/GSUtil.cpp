@@ -241,6 +241,11 @@ bool GSUtil::CheckSSE()
 	return status;
 }
 
+CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
+{
+	return type == GSRendererType::OGL_HW ? CRCHackLevel::Partial : CRCHackLevel::Full;
+}
+
 #define OCL_PROGRAM_VERSION 3
 
 #ifdef ENABLE_OPENCL

@@ -601,10 +601,8 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				{
 					if(!sel.fst)
 					{
-						GSVector8 qrcp = q.rcp();
-
-						u = GSVector8i(s * qrcp);
-						v = GSVector8i(t * qrcp);
+						u = GSVector8i(s / q);
+						v = GSVector8i(t / q);
 					}
 					else
 					{
@@ -905,11 +903,9 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				{
 					if(!sel.fst)
 					{
-						GSVector8 qrcp = q.rcp();
+						u = GSVector8i(s / q);
+						v = GSVector8i(t / q);
 
-						u = GSVector8i(s * qrcp);
-						v = GSVector8i(t * qrcp);
-					
 						if(sel.ltf)
 						{
 							u -= 0x8000;
@@ -1714,10 +1710,8 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				{
 					if(!sel.fst)
 					{
-						GSVector4 qrcp = q.rcp();
-
-						u = GSVector4i(s * qrcp);
-						v = GSVector4i(t * qrcp);
+						u = GSVector4i(s / q);
+						v = GSVector4i(t / q);
 					}
 					else
 					{
@@ -2031,11 +2025,9 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				{
 					if(!sel.fst)
 					{
-						GSVector4 qrcp = q.rcp();
+						u = GSVector4i(s / q);
+						v = GSVector4i(t / q);
 
-						u = GSVector4i(s * qrcp);
-						v = GSVector4i(t * qrcp);
-					
 						if(sel.ltf)
 						{
 							u -= 0x8000;

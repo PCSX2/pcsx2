@@ -67,12 +67,6 @@ void MainEmuFrame::Menu_SelectPluginsBios_Click(wxCommandEvent &event)
 	AppOpenDialog<ComponentsConfigDialog>( this );
 }
 
-void MainEmuFrame::Menu_Language_Click(wxCommandEvent &event)
-{
-	//AppOpenDialog<InterfaceConfigDialog>( this );
-	InterfaceConfigDialog(this).ShowModal();
-}
-
 void MainEmuFrame::Menu_ChangeLang(wxCommandEvent &event) // Always in English
 {
 	AppOpenDialog<InterfaceLanguageDialog>(this);
@@ -548,12 +542,6 @@ void MainEmuFrame::Menu_SuspendResume_Click(wxCommandEvent &event)
 
 	EnableMenuItem( MenuId_Sys_SuspendResume, false );
 	GetSysExecutorThread().PostEvent( new SysExecEvent_ToggleSuspend() );
-}
-
-void MainEmuFrame::Menu_SysReset_Click(wxCommandEvent &event)
-{
-	UI_DisableSysReset();
-	sApp.SysExecute();
 }
 
 void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent &event)

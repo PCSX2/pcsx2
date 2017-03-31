@@ -344,33 +344,29 @@ static inline PX_off_t getInOffset(zstate *state) {
    was generated.  extract() may also return Z_ERRNO if there is an error on
    reading or seeking the input file. */
 local int extract(FILE *in, struct access *index, PX_off_t offset,
-                  unsigned char *buf, int len, zstate *state = 0)
+                  unsigned char *buf, int len, zstate *state)
 {
     int ret, skip;
-    z_stream strm;
     struct point *here;
     unsigned char input[CHUNK];
     unsigned char discard[WINSIZE];
     int isEnd = 0;
 
     /* proceed only if something reasonable to do */
-    if (len < 0)
+    if (len < 0 || state == nullptr)
         return 0;
 
-    if (state) {
-        if (state->isValid && offset != state->out_offset) {
-            // state doesn't match offset, free allocations before strm is overwritten
-            (void)inflateEnd(&state->strm);
-            state->isValid = 0;
-        }
-        state->out_offset = offset;
+    if (state->isValid && offset != state->out_offset) {
+        // state doesn't match offset, free allocations before strm is overwritten
+        inflateEnd(&state->strm);
+        state->isValid = 0;
     }
+    state->out_offset = offset;
 
-    if (state && state->isValid) {
-        strm = state->strm;
+    if (state->isValid) {
         state->isValid = 0; // we took control over strm. revalidate when/if we give it back
         PX_fseeko(in, state->in_offset, SEEK_SET);
-        strm.avail_in = 0;
+        state->strm.avail_in = 0;
         offset = 0;
         skip = 1;
     } else {
@@ -381,12 +377,12 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
             here++;
 
         /* initialize file and inflate state to start there */
-        strm.zalloc = Z_NULL;
-        strm.zfree = Z_NULL;
-        strm.opaque = Z_NULL;
-        strm.avail_in = 0;
-        strm.next_in = Z_NULL;
-        ret = inflateInit2(&strm, -15);         /* raw inflate */
+        state->strm.zalloc = Z_NULL;
+        state->strm.zfree = Z_NULL;
+        state->strm.opaque = Z_NULL;
+        state->strm.avail_in = 0;
+        state->strm.next_in = Z_NULL;
+        ret = inflateInit2(&state->strm, -15);         /* raw inflate */
         if (ret != Z_OK)
             return ret;
         ret = PX_fseeko(in, here->in - (here->bits ? 1 : 0), SEEK_SET);
@@ -398,59 +394,59 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
                 ret = ferror(in) ? Z_ERRNO : Z_DATA_ERROR;
                 goto extract_ret;
             }
-            (void)inflatePrime(&strm, here->bits, ret >> (8 - here->bits));
+            inflatePrime(&state->strm, here->bits, ret >> (8 - here->bits));
         }
-        (void)inflateSetDictionary(&strm, here->window, WINSIZE);
+        inflateSetDictionary(&state->strm, here->window, WINSIZE);
 
         /* skip uncompressed bytes until offset reached, then satisfy request */
         offset -= here->out;
-        strm.avail_in = 0;
+        state->strm.avail_in = 0;
         skip = 1;                               /* while skipping to offset */
     }
 
     do {
         /* define where to put uncompressed data, and how much */
         if (offset == 0 && skip) {          /* at offset now */
-            strm.avail_out = len;
-            strm.next_out = buf;
+            state->strm.avail_out = len;
+            state->strm.next_out = buf;
             skip = 0;                       /* only do this once */
         }
         if (offset > WINSIZE) {             /* skip WINSIZE bytes */
-            strm.avail_out = WINSIZE;
-            strm.next_out = discard;
+            state->strm.avail_out = WINSIZE;
+            state->strm.next_out = discard;
             offset -= WINSIZE;
         }
         else if (offset != 0) {             /* last skip */
-            strm.avail_out = (unsigned)offset;
-            strm.next_out = discard;
+            state->strm.avail_out = (unsigned)offset;
+            state->strm.next_out = discard;
             offset = 0;
         }
 
         /* uncompress until avail_out filled, or end of stream */
         do {
-            if (strm.avail_in == 0) {
-                state && (state->in_offset = PX_ftello(in));
-                strm.avail_in = fread(input, 1, CHUNK, in);
+            if (state->strm.avail_in == 0) {
+                state->in_offset = PX_ftello(in);
+                state->strm.avail_in = fread(input, 1, CHUNK, in);
                 if (ferror(in)) {
                     ret = Z_ERRNO;
                     goto extract_ret;
                 }
-                if (strm.avail_in == 0) {
+                if (state->strm.avail_in == 0) {
                     ret = Z_DATA_ERROR;
                     goto extract_ret;
                 }
-                strm.next_in = input;
+                state->strm.next_in = input;
             }
-            uint prev_in = strm.avail_in;
-            ret = inflate(&strm, Z_NO_FLUSH);       /* normal inflate */
-            state && (state->in_offset += (prev_in - strm.avail_in));
+            uint prev_in = state->strm.avail_in;
+            ret = inflate(&state->strm, Z_NO_FLUSH);       /* normal inflate */
+            state->in_offset += (prev_in - state->strm.avail_in);
             if (ret == Z_NEED_DICT)
                 ret = Z_DATA_ERROR;
             if (ret == Z_MEM_ERROR || ret == Z_DATA_ERROR)
                 goto extract_ret;
             if (ret == Z_STREAM_END)
                 break;
-        } while (strm.avail_out != 0);
+        } while (state->strm.avail_out != 0);
 
         /* if reach end of stream, then don't keep trying to get more */
         if (ret == Z_STREAM_END)
@@ -461,16 +457,15 @@ local int extract(FILE *in, struct access *index, PX_off_t offset,
 
     isEnd = ret == Z_STREAM_END;
     /* compute number of uncompressed bytes read after offset */
-    ret = skip ? 0 : len - strm.avail_out;
+    ret = skip ? 0 : len - state->strm.avail_out;
 
     /* clean up and return bytes read or error */
 extract_ret:
-    if (state && ret == len && !isEnd) {
+    if (ret == len && !isEnd) {
         state->out_offset += len;
-        state->strm = strm;
         state->isValid = 1;
     } else
-        (void)inflateEnd(&strm);
+        inflateEnd(&state->strm);
 
     return ret;
 }

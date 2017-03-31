@@ -60,11 +60,15 @@ GSRendererSW::GSRendererSW(int threads)
 		m_tex_pages[i] = 0;
 	}
 
+	#define InitCVB2(P, Q) \
+		m_cvb[P][0][0][Q] = &GSRendererSW::ConvertVertexBuffer<P, 0, 0, Q>; \
+		m_cvb[P][0][1][Q] = &GSRendererSW::ConvertVertexBuffer<P, 0, 1, Q>; \
+		m_cvb[P][1][0][Q] = &GSRendererSW::ConvertVertexBuffer<P, 1, 0, Q>; \
+		m_cvb[P][1][1][Q] = &GSRendererSW::ConvertVertexBuffer<P, 1, 1, Q>;
+
 	#define InitCVB(P) \
-		m_cvb[P][0][0] = &GSRendererSW::ConvertVertexBuffer<P, 0, 0>; \
-		m_cvb[P][0][1] = &GSRendererSW::ConvertVertexBuffer<P, 0, 1>; \
-		m_cvb[P][1][0] = &GSRendererSW::ConvertVertexBuffer<P, 1, 0>; \
-		m_cvb[P][1][1] = &GSRendererSW::ConvertVertexBuffer<P, 1, 1>; \
+		InitCVB2(P, 0) \
+		InitCVB2(P, 1)
 
 	InitCVB(GS_POINT_CLASS);
 	InitCVB(GS_LINE_CLASS);
@@ -207,9 +211,11 @@ GSTexture* GSRendererSW::GetFeedbackOutput()
 }
 
 
-template<uint32 primclass, uint32 tme, uint32 fst>
+template<uint32 primclass, uint32 tme, uint32 fst, uint32 q_div>
 void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count)
 {
+	// FIXME q_div wasn't added to AVX2 code path.
+
 	#if 0//_M_SSE >= 0x501
 
 	// TODO: something isn't right here, this makes other functions slower (split load/store? old sse code in 3rd party lib?)
@@ -313,12 +319,27 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 				#if _M_SSE >= 0x401
 
 				t = GSVector4(xyzuvf.uph16() << (16 - 4));
-					
+
 				#else
 
 				t = GSVector4(GSVector4i::load(src->UV).upl16() << (16 - 4));
 
 				#endif
+			}
+			else if(q_div)
+			{
+				// Division is required if number are huge (Pro Soccer Club)
+				if(primclass == GS_SPRITE_CLASS && (i & 1) == 0)
+				{
+					// q(n) isn't valid, you need to take q(n+1)
+					const GSVertex* next = src + 1;
+					GSVector4 stcq1 = GSVector4::load<true>(&next->m[0]); // s t rgba q
+					t = (stcq / stcq1.wwww()) * tsize;
+				}
+				else
+				{
+					t = (stcq / stcq.wwww()) * tsize;
+				}
 			}
 			else
 			{
@@ -366,7 +387,12 @@ void GSRendererSW::Draw()
 	sd->index = (uint32*)(sd->buff + sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1));
 	sd->index_count = m_index.tail;
 
-	(this->*m_cvb[m_vt.m_primclass][PRIM->TME][PRIM->FST])(sd->vertex, m_vertex.buff, m_vertex.next);
+	// skip per pixel division if q is constant.
+	// Optimize the division by 1 with a nop. It also means that GS_SPRITE_CLASS must be processed when !m_vt.m_eq.q.
+	// If you have both GS_SPRITE_CLASS && m_vt.m_eq.q, it will depends on the first part of the 'OR'
+	uint32 q_div = !IsMipMapActive() && ((m_vt.m_eq.q && m_vt.m_min.t.z != 1.0f) || (!m_vt.m_eq.q && m_vt.m_primclass == GS_SPRITE_CLASS));
+
+	(this->*m_cvb[m_vt.m_primclass][PRIM->TME][PRIM->FST][q_div])(sd->vertex, m_vertex.buff, m_vertex.next);
 
 	memcpy(sd->index, m_index.buff, sizeof(uint32) * m_index.tail);
 
@@ -730,7 +756,7 @@ void GSRendererSW::ReleasePages(const uint32* pages, const int type)
 bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pages, const GSVector4i& r)
 {
 	bool synced = m_rl->IsSynced();
-	
+
 	bool fb = fb_pages != NULL;
 	bool zb = zb_pages != NULL;
 
@@ -756,22 +782,24 @@ bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pag
 
 			uint32 row = i >> 5;
 			uint32 col = 1 << (i & 31);
-			
+
 			m_fzb_cur_pages[row] |= col;
 
 			used |= m_fzb_pages[i];
+			used |= m_tex_pages[i];
 		}
 
 		for(const uint32* p = zb_pages; *p != GSOffset::EOP; p++)
 		{
 			uint32 i = *p;
-			
+
 			uint32 row = i >> 5;
 			uint32 col = 1 << (i & 31);
-			
+
 			m_fzb_cur_pages[row] |= col;
 
 			used |= m_fzb_pages[i];
+			used |= m_tex_pages[i];
 		}
 
 		if(!synced)
@@ -895,7 +923,7 @@ bool GSRendererSW::CheckSourcePages(SharedData* sd)
 	{
 		for(size_t i = 0; sd->m_tex[i].t != NULL; i++)
 		{
-			sd->m_tex[i].t->m_offset->GetPages(sd->m_tex[i].r, m_tmp_pages); 
+			sd->m_tex[i].t->m_offset->GetPages(sd->m_tex[i].r, m_tmp_pages);
 
 			uint32* pages = m_tmp_pages; // sd->m_tex[i].t->m_pages.n;
 
@@ -1153,46 +1181,10 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 			}
 			else
 			{
-				if(gd.sel.fst == 0)
-				{
-					// skip per pixel division if q is constant
-
-					GSVertexSW* RESTRICT v = data->vertex;
-
-					if(m_vt.m_eq.q)
-					{
-						gd.sel.fst = 1;
-
-						const GSVector4& t = v[data->index[0]].t;
-
-						if(t.z != 1.0f)
-						{
-							GSVector4 w = t.zzzz().rcpnr();
-
-							for(int i = 0, j = data->vertex_count; i < j; i++)
-							{
-								GSVector4 t = v[i].t;
-
-								v[i].t = (t * w).xyzw(t);
-							}
-						}
-					}
-					else if(primclass == GS_SPRITE_CLASS)
-					{
-						gd.sel.fst = 1;
-
-						for(int i = 0, j = data->vertex_count; i < j; i += 2)
-						{
-							GSVector4 t0 = v[i + 0].t;
-							GSVector4 t1 = v[i + 1].t;
-
-							GSVector4 w = t1.zzzz().rcpnr();
-
-							v[i + 0].t = (t0 * w).xyzw(t0);
-							v[i + 1].t = (t1 * w).xyzw(t1);
-						}
-					}
-				}
+				// skip per pixel division if q is constant. Sprite uses flat
+				// q, so it's always constant by primitive.
+				// Note: the 'q' division was done in GSRendererSW::ConvertVertexBuffer
+				gd.sel.fst |= (m_vt.m_eq.q || primclass == GS_SPRITE_CLASS);
 
 				if(gd.sel.ltf && gd.sel.fst)
 				{

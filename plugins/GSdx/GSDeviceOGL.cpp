@@ -54,7 +54,6 @@ FILE* GSDeviceOGL::m_debug_gl_file = NULL;
 GSDeviceOGL::GSDeviceOGL()
 	: m_msaa(0)
 	, m_force_texture_clear(0)
-	, m_window(NULL)
 	, m_fbo(0)
 	, m_fbo_read(0)
 	, m_va(NULL)
@@ -77,11 +76,13 @@ GSDeviceOGL::GSDeviceOGL()
 	GLState::Clear();
 
 	m_mipmap = theApp.GetConfigI("mipmap");
-	m_filter = static_cast<Filtering>(theApp.GetConfigI("filter"));
+	m_filter = static_cast<TriFiltering>(theApp.GetConfigI("UserHacks_TriFilter"));
+	if (!theApp.GetConfigB("UserHacks"))
+		m_filter = TriFiltering::None;
 
 	// Reset the debug file
 	#ifdef ENABLE_OGL_DEBUG
-	if (static_cast<GSRendererType>(theApp.GetConfigI("Renderer")) == GSRendererType::OGL_SW)
+	if (theApp.GetCurrentRendererType() == GSRendererType::OGL_SW)
 		m_debug_gl_file = fopen("GSdx_opengl_debug_sw.txt","w");
 	else
 		m_debug_gl_file = fopen("GSdx_opengl_debug_hw.txt","w");
@@ -235,9 +236,8 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt
 {
 	GL_PUSH("Create surface");
 
-	bool trilinear = m_filter == Filtering::Trilinear || m_filter == Filtering::Trilinear_Bilinear_Forced || m_filter == Filtering::Trilinear_Always;
 	// A wrapper to call GSTextureOGL, with the different kind of parameter
-	GSTextureOGL* t = new GSTextureOGL(type, w, h, fmt, m_fbo_read, m_mipmap > 1 || trilinear);
+	GSTextureOGL* t = new GSTextureOGL(type, w, h, fmt, m_fbo_read, m_mipmap > 1 || m_filter != TriFiltering::None);
 
 	// NOTE: I'm not sure RenderTarget always need to be cleared. It could be costly for big upscale.
 	// FIXME: it will be more logical to do it in FetchSurface. This code is only called at first creation
@@ -287,16 +287,8 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, bool msaa, int form
 	return t;
 }
 
-bool GSDeviceOGL::Create(GSWnd* wnd)
+bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 {
-	if (m_window == NULL) {
-		if (!GLLoader::check_gl_version(3, 3)) return false;
-
-		if (!GLLoader::check_gl_supported_extension()) return false;
-	}
-
-	m_window = wnd;
-
 	// ****************************************************************
 	// Debug helper
 	// ****************************************************************

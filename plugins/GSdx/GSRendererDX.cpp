@@ -299,7 +299,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	// Gregory: code is not yet ready so let's only enable it when
 	// CRC is below the FULL level
-	if (m_texture_shuffle && (m_crc_hack_level < 3)) {
+	if (m_texture_shuffle && (m_crc_hack_level < CRCHackLevel::Full)) {
 		ps_sel.shuffle = 1;
 		ps_sel.fmt = 0;
 
@@ -478,10 +478,8 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		// After the conversion the texture will be RGBA8 (aka 32 bits) hence the 0 below
 		int gpu_tex_fmt = (tex->m_target) ? cpsm.fmt : 0;
 
-		bool bilinear = m_filter == Filtering::Bilinear_PS2 || m_filter == Filtering::Trilinear ? m_vt.IsLinear() : m_filter != Filtering::Nearest;
+		bool bilinear = m_vt.IsLinear();
 		bool simple_sample = !tex->m_palette && gpu_tex_fmt == 0 && m_context->CLAMP.WMS < 2 && m_context->CLAMP.WMT < 2;
-		// Don't force extra filtering on sprite (it creates various upscaling issue)
-		bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
 		ps_sel.wms = m_context->CLAMP.WMS;
 		ps_sel.wmt = m_context->CLAMP.WMT;
@@ -609,12 +607,14 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			default: __assume(0);
 		}
 
+		// Depth test should be disabled when depth writes are masked and similarly, Alpha test must be disabled
+		// when writes to all of the alpha bits in the Framebuffer are masked.
 		if (ate_RGBA_then_Z) {
 			z = !m_context->ZBUF.ZMSK;
 			r = g = b = a = false;
 		} else if (ate_RGB_then_ZA) {
 			z = !m_context->ZBUF.ZMSK;
-			a = !!(m_context->FRAME.FBMSK & 0xFF000000);
+			a = (m_context->FRAME.FBMSK & 0xFF000000) != 0xFF000000;
 			r = g = b = false;
 		}
 

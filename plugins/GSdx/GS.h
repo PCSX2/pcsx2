@@ -1416,12 +1416,28 @@ enum class GSVideoMode : uint8
 	DTV_1080I
 };
 
-enum class Filtering : uint8
+// Ordering was done to keep compatibility with older ini file.
+enum class BiFiltering : uint8
 {
 	Nearest,
-	Bilinear_Forced,
-	Bilinear_PS2,
-	Trilinear,
-	Trilinear_Bilinear_Forced,
-	Trilinear_Always
+	Forced,
+	PS2,
+	Forced_But_Sprite,
+};
+
+enum class TriFiltering : uint8
+{
+	None,
+	PS2,
+	Forced,
+};
+
+enum class CRCHackLevel : int8
+{
+	Automatic = -1,
+	None,
+	Minimum,
+	Partial,
+	Full,
+	Aggressive
 };

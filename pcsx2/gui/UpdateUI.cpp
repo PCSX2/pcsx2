@@ -50,19 +50,10 @@ void UI_UpdateSysControls()
 	_SaveLoadStuff( SysHasValidState() );
 }
 
-void UI_DisableSysReset()
-{
-	if( wxGetApp().Rpc_TryInvokeAsync( UI_DisableSysReset ) ) return;
-	sMainFrame.EnableMenuItem( MenuId_Sys_Restart, false );
-
-	_SaveLoadStuff( false );
-}
-
 void UI_DisableSysShutdown()
 {
 	if( wxGetApp().Rpc_TryInvokeAsync( &UI_DisableSysShutdown ) ) return;
 
-	sMainFrame.EnableMenuItem( MenuId_Sys_Restart, false );
 	sMainFrame.EnableMenuItem( MenuId_Sys_Shutdown, false );
 }
 
@@ -70,7 +61,6 @@ void UI_EnableSysShutdown()
 {
 	if( wxGetApp().Rpc_TryInvokeAsync( &UI_EnableSysShutdown ) ) return;
 
-	sMainFrame.EnableMenuItem( MenuId_Sys_Restart, true );
 	sMainFrame.EnableMenuItem( MenuId_Sys_Shutdown, true );
 }
 
@@ -79,7 +69,6 @@ void UI_DisableSysActions()
 {
 	if( wxGetApp().Rpc_TryInvokeAsync( &UI_DisableSysActions ) ) return;
 
-	sMainFrame.EnableMenuItem( MenuId_Sys_Restart, false );
 	sMainFrame.EnableMenuItem( MenuId_Sys_Shutdown, false );
 	
 	_SaveLoadStuff( false );
@@ -89,7 +78,6 @@ void UI_EnableSysActions()
 {
 	if( wxGetApp().Rpc_TryInvokeAsync( &UI_EnableSysActions ) ) return;
 
-	sMainFrame.EnableMenuItem( MenuId_Sys_Restart, true );
 	sMainFrame.EnableMenuItem( MenuId_Sys_Shutdown, true );
 	
 	_SaveLoadStuff( true );

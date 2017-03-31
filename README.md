@@ -1,4 +1,5 @@
 # PCSX2
+[![Travis Build Status](https://travis-ci.org/PCSX2/pcsx2.svg?branch=master)](https://travis-ci.org/PCSX2/pcsx2) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/b67odm0dd506co78/branch/master?svg=true)](https://ci.appveyor.com/project/gregory38/pcsx2/branch/master) [![Coverity Scan Build Status](https://scan.coverity.com/projects/6310/badge.svg)](https://scan.coverity.com/projects/6310)
 
 PCSX2 is an open-source PlayStation 2 (AKA PS2) emulator. Its purpose is to emulate the PS2 hardware, using a combination of MIPS CPU [Interpreters](http://en.wikipedia.org/wiki/Interpreter_\(computing\)), [Recompilers](http://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](http://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.
 
@@ -11,10 +12,6 @@ The latest officially released stable version is version 1.4.0.
 Installers and binaries for both Windows and Linux are available from [our website](http://pcsx2.net/download.html).
 
 Development builds are also available from [our website](http://pcsx2.net/download/development/git.html).
-
-![KOF 2002](https://dl.dropboxusercontent.com/u/743491/PCSX2/KoF2002.jpg "KOF 2002")
-![Final Fantasy XII](https://dl.dropboxusercontent.com/u/743491/PCSX2/FinalFantasyXII.jpg "Final Fantasy XII")
-![Odin Sphere](https://dl.dropboxusercontent.com/u/743491/PCSX2/OdinSphere.jpg "Odin Sphere")
 
 # System Requirements
 
@@ -42,13 +39,13 @@ Development builds are also available from [our website](http://pcsx2.net/downlo
 
 - PCSX2 mainly takes advantage of 2 CPU cores. As of [this commit](https://github.com/PCSX2/pcsx2/commit/ac9bf45) PCSX2 can now take advantage of more than 2 cores using the MTVU speedhack. This can be a significant speedup on CPUs with 3+ cores, however on GS-limited games (or on CPUs with less than 2 cores) it may be a slowdown.
 
-![Pro Evo 2009](https://dl.dropboxusercontent.com/u/743491/PCSX2/ProEvo2009.jpg "Pro Evo 2009")
-![Megaman X8](https://dl.dropboxusercontent.com/u/743491/PCSX2/MegamanX8.jpg "Megaman X8") ![TOTA](https://dl.dropboxusercontent.com/u/743491/PCSX2/TOTA.jpg "TOTA")
+# Screenshots
 
-# Quality Assurance
-
-**Build** | **Status**
---------|--------
-Linux   | [![Travis Build Status](https://travis-ci.org/PCSX2/pcsx2.svg?branch=master)](https://travis-ci.org/PCSX2/pcsx2)
-Windows  | [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/b67odm0dd506co78/branch/master?svg=true)](https://ci.appveyor.com/project/gregory38/pcsx2/branch/master)
-Coverity| [![Coverity Scan Build Status](https://scan.coverity.com/projects/6310/badge.svg)](https://scan.coverity.com/projects/6310)
+![Okami](http://pcsx2.net/images/stories/gitsnaps/okami_n1s.jpg "Okami")
+![Final Fantasy XII](http://pcsx2.net/images/stories/gitsnaps/finalfantasy12izjs_s2.jpg "Final Fantasy XII")
+![Shadow of the Colossus](http://pcsx2.net/images/stories/gitsnaps/sotc6s2.jpg "Shadow of the Colossus")
+![DragonBall Z Budokai Tenkaichi 3](http://pcsx2.net/images/stories/gitsnaps/DBZ-BT-3s.jpg "DragonBall Z Budokai Tenkaichi 3")
+![Kingdom Hearts 2: Final Mix](http://pcsx2.net/images/stories/gitsnaps/kh2_fm_n1s2.jpg "Kingdom Hearts 2: Final Mix")
+![God of War 2](http://pcsx2.net/images/stories/gitsnaps/gow2_s2.jpg "God of War 2")
+![Metal Gear Solid 3: Snake Eater](http://pcsx2.net/images/stories/gitsnaps/mgs3-1_s2.jpg "Metal Gear Solid 3: Snake Eater")
+![Rogue Galaxy](http://pcsx2.net/images/stories/gitsnaps/rogue_galaxy_n1s2.jpg "Rogue Galaxy")

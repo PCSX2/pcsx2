@@ -411,14 +411,12 @@ public:
 	uint32 m_msaa;				// Level of Msaa
 	int m_force_texture_clear;
 	int m_mipmap;
-	Filtering m_filter;
+	TriFiltering m_filter;
 
 	static bool m_debug_gl_call;
 	static FILE* m_debug_gl_file;
 
 	bool m_disable_hw_gl_draw;
-
-	GSWnd* m_window;
 
 	GLuint m_fbo;				// frame buffer container
 	GLuint m_fbo_read;			// frame buffer container only for reading
@@ -518,7 +516,7 @@ public:
 	bool HasStencil() { return true; }
 	bool HasDepth32() { return true; }
 
-	bool Create(GSWnd* wnd);
+	bool Create(const std::shared_ptr<GSWnd> &wnd);
 	bool Reset(int w, int h);
 	void Flip();
 	void SetVSync(bool enable);

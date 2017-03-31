@@ -39,7 +39,8 @@ GSRendererOGL::GSRendererOGL()
 	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
 	UserHacks_merge_sprite   = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 	UserHacks_unscale_pt_ln  = theApp.GetConfigB("UserHacks_unscale_point_line");
-	UserHacks_HPO            = theApp.GetConfigI("UserHacks_HalfPixelOffset_New");
+	UserHacks_HPO            = theApp.GetConfigI("UserHacks_HalfPixelOffset");
+	UserHacks_tri_filter     = static_cast<TriFiltering>(theApp.GetConfigI("UserHacks_TriFilter"));
 
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	ResetStates();
@@ -51,6 +52,7 @@ GSRendererOGL::GSRendererOGL()
 		UserHacks_merge_sprite   = false;
 		UserHacks_unscale_pt_ln  = false;
 		UserHacks_HPO            = 0;
+		UserHacks_tri_filter     = TriFiltering::None;
 	}
 }
 
@@ -89,6 +91,19 @@ void GSRendererOGL::Lines2Sprites()
 			v0.RGBAQ = v1.RGBAQ;
 			v0.XYZ.Z = v1.XYZ.Z;
 			v0.FOG = v1.FOG;
+
+			if (PRIM->TME && !PRIM->FST) {
+				GSVector4 st0 = GSVector4::loadl(&v0.ST.u64);
+				GSVector4 st1 = GSVector4::loadl(&v1.ST.u64);
+				GSVector4 Q = GSVector4(v1.RGBAQ.Q, v1.RGBAQ.Q, v1.RGBAQ.Q, v1.RGBAQ.Q);
+				GSVector4 st = st0.upld(st1) / Q;
+
+				GSVector4::storel(&v0.ST.u64, st);
+				GSVector4::storeh(&v1.ST.u64, st);
+
+				v0.RGBAQ.Q = 1.0f;
+				v1.RGBAQ.Q = 1.0f;
+			}
 
 			q[0] = v0;
 			q[3] = v1;
@@ -174,7 +189,7 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 			// the extra validation cost of the extra stage.
 			//
 			// Note: keep Geometry Shader in the replayer to ease debug.
-			if (GLLoader::found_geometry_shader && (m_vertex.next > 32 || GLLoader::in_replayer)) { // <=> 16 sprites (based on Shadow Hearts)
+			if (GLLoader::found_geometry_shader && !m_vt.m_accurate_stq && (m_vertex.next > 32 || GLLoader::in_replayer)) { // <=> 16 sprites (based on Shadow Hearts)
 				m_gs_sel.sprite = 1;
 
 				t = GL_LINES;
@@ -740,11 +755,11 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 
 void GSRendererOGL::RealignTargetTextureCoordinate(const GSTextureCache::Source* tex)
 {
-	if (!UserHacks_HPO || GetUpscaleMultiplier() == 1) return;
+	if (UserHacks_HPO <= 1 || GetUpscaleMultiplier() == 1) return;
 
 	GSVertex* v             = &m_vertex.buff[0];
 	const GSVector2& scale  = tex->m_texture->GetScale();
-	bool  linear            = m_vt.IsLinear();
+	bool  linear            = m_vt.IsRealLinear();
 	int t_position          = v[0].U;
 	GSVector4 half_offset(0.0f);
 
@@ -753,7 +768,7 @@ void GSRendererOGL::RealignTargetTextureCoordinate(const GSTextureCache::Source*
 
 	if (PRIM->FST) {
 
-		if (UserHacks_HPO > 1) {
+		if (UserHacks_HPO == 3) {
 			if (!linear && t_position == 8) {
 				half_offset.x = 8;
 				half_offset.y = 8;
@@ -814,49 +829,27 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt || psm.depth;
 	bool trilinear_manual = need_mipmap && m_mipmap == 2;
 
-	bool bilinear = false;
+	bool bilinear = m_vt.IsLinear();
 	int trilinear = 0;
 	bool trilinear_auto = false;
-	switch (m_filter)
+	switch (UserHacks_tri_filter)
 	{
-		case Filtering::Nearest:
-			bilinear = false;
-			break;
-
-		case Filtering::Bilinear_Forced:
-			bilinear = true;
-			break;
-
-		case Filtering::Bilinear_PS2:
-			bilinear = m_vt.IsLinear();
-			break;
-
-		case Filtering::Trilinear_Always:
-			bilinear = true;
+		case TriFiltering::Forced:
 			trilinear = static_cast<uint8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
 			trilinear_auto = m_mipmap != 2;
 			break;
 
-		case Filtering::Trilinear:
-			bilinear = m_vt.IsLinear();
+		case TriFiltering::PS2:
 			if (need_mipmap && m_mipmap != 2) {
 				trilinear = m_context->TEX1.MMIN;
 				trilinear_auto = true;
 			}
 			break;
 
-		case Filtering::Trilinear_Bilinear_Forced:
-			bilinear = true;
-			if (need_mipmap && m_mipmap != 2) {
-				trilinear = (m_context->TEX1.MMIN | 4) & 0x5;
-				trilinear_auto = true;
-			}
+		case TriFiltering::None:
 		default:
 			break;
 	}
-
-	// Don't force extra filtering on sprite (it creates various upscaling issue)
-	bilinear &= !((m_vt.m_primclass == GS_SPRITE_CLASS) && m_userhacks_round_sprite_offset && !m_vt.IsLinear());
 
 	// 1 and 0 are equivalent
 	m_ps_sel.wms = (wms & 2) ? wms : 0;
@@ -1420,7 +1413,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	//The resulting shifted output aligns better with common blending / corona / blurring effects,
 	//but introduces a few bad pixels on the edges.
 
-	if (rt && rt->LikelyOffset && !UserHacks_HPO)
+	if (rt && rt->LikelyOffset && UserHacks_HPO == 1)
 	{
 		ox2 *= rt->OffsetHack_modx;
 		oy2 *= rt->OffsetHack_mody;
@@ -1500,6 +1493,40 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// Always bind the RT. This way special effect can use it.
 	dev->PSSetShaderResource(3, rt);
+
+	if (m_game.title == CRC::ICO) {
+		GSVertex* v = &m_vertex.buff[0];
+		if (tex && m_vt.m_primclass == GS_SPRITE_CLASS && m_vertex.next == 2 && PRIM->ABE && // Blend texture
+				v[1].U == 8200 && v[1].V == 7176 && // at display resolution 512x448
+				tex->m_TEX0.PSM == PSM_PSMT8H) {  // i.e. read the alpha channel of a 32 bits texture
+			// Note potentially we can limit to TBP0:0x2800
+
+			// Depth buffer was moved so GSdx will invalide it which means a
+			// downscale. ICO uses the MSB depth bits as the texture alpha
+			// channel.  However this depth of field effect requires
+			// texel:pixel mapping accuraccy.
+			//
+			// Use an HLE shader to sample depth directly as the alpha channel
+			GL_INS("ICO sample depth as alpha");
+			m_require_full_barrier = true;
+			// Extract the depth as palette index
+			m_ps_sel.depth_fmt = 1;
+			m_ps_sel.channel = 3;
+			dev->PSSetShaderResource(4, ds);
+
+			// We need the palette to convert the depth to the correct alpha value.
+			if (!tex->m_palette) {
+				tex->m_palette = m_dev->CreateTexture(256, 1);
+
+				const uint32* clut = m_mem.m_clut;
+				int pal = GSLocalMemory::m_psm[tex->m_TEX0.PSM].pal;
+				tex->m_palette->Update(GSVector4i(0, 0, pal, 1), clut, pal * sizeof(clut[0]));
+				tex->m_initpalette = false;
+
+				dev->PSSetShaderResource(1, tex->m_palette);
+			}
+		}
+	}
 
 	// rs
 	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
@@ -1592,12 +1619,14 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			default: __assume(0);
 		}
 
+		// Depth test should be disabled when depth writes are masked and similarly, Alpha test must be disabled
+		// when writes to all of the alpha bits in the Framebuffer are masked.
 		if (ate_RGBA_then_Z) {
 			z = !m_context->ZBUF.ZMSK;
 			r = g = b = a = false;
 		} else if (ate_RGB_then_ZA) {
 			z = !m_context->ZBUF.ZMSK;
-			a = !!(m_context->FRAME.FBMSK & 0xFF000000);
+			a = (m_context->FRAME.FBMSK & 0xFF000000) != 0xFF000000;
 			r = g = b = false;
 		}
 

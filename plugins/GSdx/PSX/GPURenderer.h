@@ -57,7 +57,7 @@ protected:
 
 	#endif
 
-	GSWnd* m_wnd;
+	std::shared_ptr<GSWnd> m_wnd;
 
 public:
 	GPURenderer(GSDevice* dev);

@@ -20,18 +20,24 @@ set(Headers
     Settings.h
 )
 
-set(LinuxSources
-    Unix/GtkGui.cpp
-    Unix/LinuxConfig.cpp
-    Unix/LinuxIOCtlSrc.cpp
-)
+if(Windows)
+    LIST(APPEND Sources
+        Windows/config.cpp
+        Windows/resource.h
+        )
+else()
+    LIST(APPEND Sources
+        Unix/GtkGui.cpp
+        Unix/LinuxConfig.cpp
+        Unix/LinuxIOCtlSrc.cpp
+        )
+endif()
 
 set(FinalSources
     ${Sources}
     ${Headers}
 )
 
-set(FinalSources ${FinalSources} ${LinuxSources})
 set(FinalLibs
     ${GTK2_LIBRARIES}
     ${LIBC_LIBRARIES}

@@ -141,7 +141,7 @@ public:
 	
 	bool Destroy();
 
-	void ApplyConfigToGui( AppConfig& configToApply, int flags=0 ); //flags are: AppConfig::APPLY_CONFIG_FROM_PRESET and (currently unused) AppConfig::APPLY_CONFIG_MANUALLY PROPAGATE
+	void ApplyConfigToGui(AppConfig& configToApply, int flags = 0);
 	void CommitPreset_noTrigger();
 	void AppendKeycodeNamesToMenuOptions();
 
@@ -165,7 +165,6 @@ protected:
 	void Menu_WindowSettings_Click(wxCommandEvent &event);
 	void Menu_GSSettings_Click(wxCommandEvent &event);
 	void Menu_SelectPluginsBios_Click(wxCommandEvent &event);
-	void Menu_Language_Click(wxCommandEvent &event);
 	void Menu_ResetAllSettings_Click(wxCommandEvent &event);
 
 	void Menu_IsoBrowse_Click(wxCommandEvent &event);
@@ -186,7 +185,6 @@ protected:
 	void Menu_Exit_Click(wxCommandEvent &event);
 
 	void Menu_SuspendResume_Click(wxCommandEvent &event);
-	void Menu_SysReset_Click(wxCommandEvent &event);
 	void Menu_SysShutdown_Click(wxCommandEvent &event);
 
 	void Menu_ConfigPlugin_Click(wxCommandEvent &event);
@@ -212,8 +210,6 @@ protected:
 // ------------------------------------------------------------------------
 
 	wxMenu* MakeStatesSubMenu( int baseid, int loadBackupId=-1 ) const;
-	wxMenu* MakeStatesMenu();
-	wxMenu* MakeLanguagesMenu() const;
 
 	void ConnectMenus();
 

@@ -160,7 +160,7 @@ protected:
 
 	int UserHacks_WildHack;
 	bool isPackedUV_HackFlag;
-	int m_crc_hack_level;
+	CRCHackLevel m_crc_hack_level;
 	GetSkipCount m_gsc;
 	int m_skip;
 	int m_userhacks_skipdraw;
@@ -243,6 +243,7 @@ public:
 	void ResetHandlers();
 
 	int GetFramebufferHeight();
+	void SaturateOutputSize(GSVector4i& r);
 	GSVector4i GetDisplayRect(int i = -1);
 	GSVector4i GetFrameRect(int i = -1);
 	GSVideoMode GetVideoMode();

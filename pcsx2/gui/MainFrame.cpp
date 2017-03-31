@@ -203,8 +203,6 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableHostFs_Click, this, MenuId_EnableHostFs);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SysShutdown_Click, this, MenuId_Sys_Shutdown);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Exit_Click, this, MenuId_Exit);
-	// No actual menu item for this.
-	//Bind(wxEVT_MENU, &MainEmuFrame::Menu_SysReset_Click, this, MenuId_Sys_Restart);
 
 	// CDVD
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_IsoBrowse_Click, this, MenuId_IsoBrowse);
@@ -227,8 +225,6 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_MultitapToggle_Click, this, MenuId_Config_Multitap0Toggle);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_MultitapToggle_Click, this, MenuId_Config_Multitap1Toggle);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ResetAllSettings_Click, this, MenuId_Config_ResetAll);
-	// For "appearance" even though it's hinting at language. No menu item exists either.
-	//Bind(wxEVT_MENU, &MainEmuFrame::Menu_Language_Click, this, MenuId_Config_Language);
 
 	// Misc
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowConsole, this, MenuId_Console);
@@ -340,7 +336,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	// Initial menubar setup.  This needs to be done first so that the menu bar's visible size
 	// can be factored into the window size (which ends up being background+status+menus)
 
-	//m_menubar.Append( &m_menuBoot,		_("&Boot") );
 	m_menubar.Append( &m_menuSys,		_("&System") );
 	m_menubar.Append( &m_menuCDVD,		_("CD&VD") );
 	m_menubar.Append( &m_menuConfig,	_("&Config") );
@@ -476,8 +471,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuConfig.Append(MenuId_Config_McdSettings,	_("&Memory cards") );
 	m_menuConfig.Append(MenuId_Config_BIOS,			_("&Plugin/BIOS Selector") );
 	if (IsDebugBuild) m_menuConfig.Append(MenuId_Config_GameDatabase,	_("&Game Database Editor") );
-	// Empty menu
-	// m_menuConfig.Append(MenuId_Config_Language,		_("Appearance...") );
 
 	m_menuConfig.AppendSeparator();
 
@@ -505,9 +498,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 #if defined(__unix__)
 	m_menuMisc.Append( &m_MenuItem_Console_Stdio );
 #endif
-	//Todo: Though not many people need this one :p
-	//m_menuMisc.Append(MenuId_Profiler,			_("Show Profiler"),	wxEmptyString, wxITEM_CHECK);
-	//m_menuMisc.AppendSeparator();
 
 	// No dialogs implemented for these yet...
 	//m_menuMisc.Append(41, "Patch Browser...", wxEmptyString, wxITEM_NORMAL);
@@ -515,10 +505,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	m_menuMisc.AppendSeparator();
 
-	//Todo:
-	//There's a great working "open website" in the about panel. Less clutter by just using that.
-	//m_menuMisc.Append(MenuId_Website,			_("Visit Website..."),
-	//	_("Opens your web-browser to our favorite website."));
 	m_menuMisc.Append(MenuId_About,				_("&About...") );
 
 	m_menuMisc.AppendSeparator();
@@ -595,15 +581,10 @@ void MainEmuFrame::ApplyCoreStatus()
 {
 	wxMenuBar& menubar( *GetMenuBar() );
 
-	wxMenuItem* susres	= menubar.FindItem( MenuId_Sys_SuspendResume );
-	wxMenuItem* restart	= menubar.FindItem( MenuId_Sys_Restart );
-
 	// [TODO] : Ideally each of these items would bind a listener instance to the AppCoreThread
 	// dispatcher, and modify their states accordingly.  This is just a hack (for now) -- air
 
-	bool ActiveVM = SysHasValidState();
-
-	if( susres )
+	if (wxMenuItem* susres = menubar.FindItem(MenuId_Sys_SuspendResume))
 	{
 		if( !CoreThread.IsClosing() )
 		{
@@ -613,6 +594,7 @@ void MainEmuFrame::ApplyCoreStatus()
 		}
 		else
 		{
+			bool ActiveVM = SysHasValidState();
 			susres->Enable(ActiveVM);
 			if( ActiveVM )
 			{
@@ -624,20 +606,6 @@ void MainEmuFrame::ApplyCoreStatus()
 				susres->SetItemLabel(_("Pause/Resume"));
 				susres->SetHelp(_("No emulation state is active; cannot suspend or resume."));
 			}
-		}
-	}
-
-	if( restart )
-	{
-		if( ActiveVM )
-		{
-			restart->SetItemLabel(_("Res&tart"));
-			restart->SetHelp(_("Simulates hardware reset of the PS2 virtual machine."));
-		}
-		else
-		{
-			restart->Enable( false );
-			restart->SetHelp(_("No emulation state is active; boot something first."));
 		}
 	}
 
@@ -682,7 +650,6 @@ void MainEmuFrame::ApplyCoreStatus()
 
 	if (wxMenuItem *cdvd_full = menubar.FindItem(fullboot_id))
 	{
-
 		switch (Source)
 		{
 		case CDVD_SourceType::Iso:

@@ -114,7 +114,7 @@ public:
             if (m_Device.empty())
                 throw std::runtime_error("screw it");
 
-            if ((FAILED(GUIDFromString(m_Device, &cGuid))) ||
+            if ((FAILED(IIDFromString(m_Device, &cGuid))) ||
                 FAILED(DirectSoundCreate8(&cGuid, &dsound, NULL)))
                 throw std::runtime_error("try again?");
         } catch (std::runtime_error &) {
@@ -267,7 +267,7 @@ private:
             case WM_INITDIALOG: {
                 wchar_t temp[128];
 
-                haveGuid = !FAILED(GUIDFromString(m_Device, &DevGuid));
+                haveGuid = !FAILED(IIDFromString(m_Device, &DevGuid));
                 SendMessage(GetDlgItem(hWnd, IDC_DS_DEVICE), CB_RESETCONTENT, 0, 0);
 
                 ndevs = 0;

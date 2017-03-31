@@ -230,19 +230,9 @@ template<typename ... Args>
 void OSDlog(ConsoleColors color, bool console, const std::string& format, Args ... args) {
 	if (!GSosdLog && !console) return;
 
-#if defined(_MSC_VER) && _MSC_VER < 1900
-	size_t size = _snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
-#else
 	size_t size = snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
-#endif
-
 	std::vector<char> buf(size);
-
-#if defined(_MSC_VER) && _MSC_VER < 1900
-	_snprintf( buf.data(), size, format.c_str(), args ... );
-#else
 	snprintf( buf.data(), size, format.c_str(), args ... );
-#endif
 
 	OSDlog(color, console, buf.data());
 }

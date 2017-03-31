@@ -42,7 +42,7 @@
 #define FORCE_UPDATE_LPARAM ((LPARAM)0x89437437)
 
 // LilyPad version.
-#define VERSION ((0 << 8) | 12 | (0 << 24))
+#define VERSION ((0 << 8) | 12 | (1 << 24))
 
 #ifdef __linux__
 Display *GSdsp;
@@ -178,7 +178,7 @@ struct ButtonSum
     Stick sticks[2];
 };
 
-#define PAD_SAVE_STATE_VERSION 4
+#define PAD_SAVE_STATE_VERSION 5
 
 // Freeze data, for a single pad.  Basically has all pad state that
 // a PS2 can set.
@@ -186,6 +186,8 @@ struct PadFreezeData
 {
     // Digital / Analog / DS2 Native
     u8 mode;
+
+    u8 previousType;
 
     u8 modeLock;
 
@@ -359,25 +361,25 @@ void AddForce(ButtonSum *sum, u8 cmd, int delta = 255)
     }
     // Left stick.
     else if (cmd < 0x24) {
-        if (cmd == 32) {
+        if (cmd == 0x20) { // Up
             sum->sticks[1].vert -= delta;
-        } else if (cmd == 33) {
+        } else if (cmd == 0x21) { // Right
             sum->sticks[1].horiz += delta;
-        } else if (cmd == 34) {
+        } else if (cmd == 0x22) { // Down
             sum->sticks[1].vert += delta;
-        } else if (cmd == 35) {
+        } else if (cmd == 0x23) { // Left
             sum->sticks[1].horiz -= delta;
         }
     }
     // Right stick.
     else if (cmd < 0x28) {
-        if (cmd == 36) {
+        if (cmd == 0x24) { // Up
             sum->sticks[0].vert -= delta;
-        } else if (cmd == 37) {
+        } else if (cmd == 0x25) { // Right
             sum->sticks[0].horiz += delta;
-        } else if (cmd == 38) {
+        } else if (cmd == 0x26) { // Down
             sum->sticks[0].vert += delta;
-        } else if (cmd == 39) {
+        } else if (cmd == 0x27) { // Left
             sum->sticks[0].horiz -= delta;
         }
     }
@@ -392,7 +394,7 @@ void ProcessButtonBinding(Binding *b, ButtonSum *sum, int value)
         value = std::min((int)(((__int64)value * (FULLY_DOWN - (__int64)b->skipDeadZone)) / FULLY_DOWN) + b->skipDeadZone, FULLY_DOWN);
     }
 
-    if (b->command == 0x2A) { // Turbo key
+    if (b->command == 0x2D) { // Turbo key
         static unsigned int LastCheck = 0;
         unsigned int t = timeGetTime();
         if (t - LastCheck < 300)
@@ -529,6 +531,8 @@ void Update(unsigned int port, unsigned int slot)
     dm->Update(&info);
     static int rapidFire = 0;
     rapidFire++;
+    static bool anyDeviceActiveAndBound = true;
+    bool currentDeviceActiveAndBound = false;
     for (i = 0; i < dm->numDevices; i++) {
         Device *dev = dm->devices[i];
         // Skip both disabled devices and inactive enabled devices.
@@ -548,28 +552,38 @@ void Update(unsigned int port, unsigned int slot)
                         if (cmd > 0x0F && cmd != 0x28) {
                             ProcessButtonBinding(b, &s[port][slot], state);
                         } else if ((state >> 15) && !(dev->oldVirtualControlState[b->controlIndex] >> 15)) {
-                            if (cmd == 0x0F) {
+                            if (cmd == 0x0F) { // Mouse
                                 miceEnabled = !miceEnabled;
                                 UpdateEnabledDevices();
-                            } else if (cmd == 0x0C) {
+                            } else if (cmd == 0x2A) { // Lock Buttons
                                 lockStateChanged[port][slot] |= LOCK_BUTTONS;
-                            } else if (cmd == 0x0E) {
-                                lockStateChanged[port][slot] |= LOCK_DIRECTION;
-                            } else if (cmd == 0x0D) {
+                            } else if (cmd == 0x2B) { // Lock Input
                                 lockStateChanged[port][slot] |= LOCK_BOTH;
-                            } else if (cmd == 0x28) {
-                                if (!pads[port][slot].modeLock) {
-                                    if (pads[port][slot].mode != MODE_DIGITAL)
-                                        pads[port][slot].mode = MODE_DIGITAL;
-                                    else
-                                        pads[port][slot].mode = MODE_ANALOG;
-                                }
+                            } else if (cmd == 0x2C) { // Lock Direction
+                                lockStateChanged[port][slot] |= LOCK_DIRECTION;
+                            } else if (cmd == 0x28 && !pads[port][slot].modeLock && padtype == Dualshock2Pad) { // Analog
+                                if (pads[port][slot].mode == MODE_ANALOG)
+                                    pads[port][slot].mode = MODE_DIGITAL;
+                                else if (pads[port][slot].mode == MODE_DIGITAL)
+                                    pads[port][slot].mode = MODE_ANALOG;
                             }
                         }
                     }
                 }
             }
         }
+        if (dev->attached && dev->pads[0][0][config.padConfigs[0][0].type].numBindings > 0) {
+            if (!anyDeviceActiveAndBound) {
+                fprintf(stderr, "LilyPad: A device(%ls) has been attached with bound controls.\n", dev->displayName);
+                anyDeviceActiveAndBound = true;
+            }
+            currentDeviceActiveAndBound = true;
+        }
+    }
+    if (!currentDeviceActiveAndBound && activeWindow) {
+        if (anyDeviceActiveAndBound)
+            fprintf(stderr, "LilyPad: Warning! No controls are bound to a currently attached device!\nPlease attach a controller that has been setup for use with LilyPad or go to the Plugin settings and setup new controls.\n");
+        anyDeviceActiveAndBound = false;
     }
     dm->PostRead();
 
@@ -602,25 +616,25 @@ void Update(unsigned int port, unsigned int slot)
                         int values[5];
                         int i;
                         for (i = 0; i < 5; i++) {
-                            int id = oldIdList[i] - 0x1104;
+                            int id = oldIdList[i] - ID_DPAD_UP;
                             values[i] = s[port][slot].buttons[id];
                             s[port][slot].buttons[id] = 0;
                         }
-                        s[port][slot].buttons[ID_TRIANGLE - 0x1104] = values[1];
+                        s[port][slot].buttons[ID_TRIANGLE - ID_DPAD_UP] = values[1];
                         for (i = 0; i < 5; i++) {
-                            int id = idList[i] - 0x1104;
+                            int id = idList[i] - ID_DPAD_UP;
                             s[port][slot].buttons[id] = values[i];
                         }
                         if (s[port][slot].buttons[14] <= 48 && s[port][slot].buttons[12] <= 48) {
                             for (int i = 0; i < 5; i++) {
-                                unsigned int id = idList[i] - 0x1104;
+                                unsigned int id = idList[i] - ID_DPAD_UP;
                                 if (pads[port][slot].sum.buttons[id] < s[port][slot].buttons[id]) {
                                     s[port][slot].buttons[id] = pads[port][slot].sum.buttons[id];
                                 }
                             }
                         } else if (pads[port][slot].sum.buttons[14] <= 48 && pads[port][slot].sum.buttons[12] <= 48) {
                             for (int i = 0; i < 5; i++) {
-                                unsigned int id = idList[i] - 0x1104;
+                                unsigned int id = idList[i] - ID_DPAD_UP;
                                 if (pads[port][slot].sum.buttons[id]) {
                                     s[port][slot].buttons[id] = 0;
                                 }
@@ -794,12 +808,17 @@ void ResetPad(int port, int slot)
         pads[port][slot].mode = MODE_NEGCON;
     else
         pads[port][slot].mode = MODE_DIGITAL;
+
     pads[port][slot].umask[0] = pads[port][slot].umask[1] = 0xFF;
     // Sets up vibrate variable.
     ResetVibrate(port, slot);
     pads[port][slot].initialized = 1;
 
     pads[port][slot].enabled = enabled;
+
+    pads[port][slot].previousType = config.padConfigs[port][slot].type;
+
+    pads[port][slot].config = 0;
 }
 
 
@@ -1116,6 +1135,10 @@ s32 CALLBACK PADopen(void *pDsp)
             memset(&pads[port][slot].sum, 0, sizeof(pads[port][slot].sum));
             memset(&pads[port][slot].lockedSum, 0, sizeof(pads[port][slot].lockedSum));
             pads[port][slot].lockedState = 0;
+
+            if (config.padConfigs[port][slot].type != pads[port][slot].previousType) {
+                ResetPad(port, slot);
+            }
         }
     }
 
@@ -1201,14 +1224,15 @@ u8 CALLBACK PADpoll(u8 value)
         return query.response[++query.lastByte];
     }
 
-    int i;
     Pad *pad = &pads[query.port][query.slot];
+    int padtype = config.padConfigs[query.port][query.slot].type;
+
     if (query.lastByte == 0) {
         query.lastByte++;
         query.currentCommand = value;
 
         // Only the 0x42(read input and vibration) and 0x43(enter or exit config mode) command cases work outside of config mode, the other cases will be avoided.
-        if (!pad->config && value != 0x42 && value != 0x43) {
+        if ((!pad->config && value != 0x42 && value != 0x43) || (padtype == neGconPad && (value < 0x40 || value > 0x45))) {
             query.numBytes = 0;
             query.queryDone = 1;
             DEBUG_OUT(0xF3);
@@ -1217,8 +1241,8 @@ u8 CALLBACK PADpoll(u8 value)
         switch (value) {
             // CONFIG_MODE
             case 0x43:
-                if (pad->config) {
-                    if (pad->mode == MODE_DIGITAL && config.padConfigs[query.port][query.slot].autoAnalog && !ps2e) {
+                if (pad->config && padtype != neGconPad) {
+                    if (pad->mode == MODE_DIGITAL && padtype == Dualshock2Pad && config.padConfigs[query.port][query.slot].autoAnalog) {
                         pad->mode = MODE_ANALOG;
                     }
                     // In config mode.  Might not actually be leaving it.
@@ -1233,7 +1257,6 @@ u8 CALLBACK PADpoll(u8 value)
                     Update(query.port, query.slot);
                     ButtonSum *sum = &pad->sum;
 
-                    int padtype = config.padConfigs[query.port][query.slot].type;
                     if (padtype == MousePad) {
                         u8 b1 = 0xFC;
                         if (sum->buttons[9] > 0) // Left button
@@ -1275,10 +1298,10 @@ u8 CALLBACK PADpoll(u8 value)
                     }
 
                     u8 b1 = 0xFF, b2 = 0xFF;
-                    for (i = 0; i < 4; i++) {
+                    for (int i = 0; i < 4; i++) {
                         b1 -= (sum->buttons[i] > 0) << i;
                     }
-                    for (i = 0; i < 8; i++) {
+                    for (int i = 0; i < 8; i++) {
                         b2 -= (sum->buttons[i + 4] > 0) << i;
                     }
 
@@ -1288,7 +1311,7 @@ u8 CALLBACK PADpoll(u8 value)
                         // if (sum->sticks[2].vert > 0) sum->sticks[2].vert = 0;
                     }
 
-                    for (i = 4; i < 8; i++) {
+                    for (int i = 4; i < 8; i++) {
                         b1 -= (sum->buttons[i + 8] > 0) << i;
                     }
 
@@ -1307,16 +1330,16 @@ u8 CALLBACK PADpoll(u8 value)
                         query.response[8] = Cap((sum->sticks[1].vert + 255) / 2);  // Left stick: up & down
 
                         query.numBytes = 9;
-                        if (pad->mode != MODE_ANALOG) {
+                        if (pad->mode != MODE_ANALOG && !pad->config) {
                             // Good idea?  No clue.
                             //query.response[3] &= pad->mask[0];
                             //query.response[4] &= pad->mask[1];
 
                             // No need to cap these, already done int CapSum().
-                            query.response[9] = (unsigned char)sum->buttons[13];  //D-pad right
-                            query.response[10] = (unsigned char)sum->buttons[15]; //D-pad left
-                            query.response[11] = (unsigned char)sum->buttons[12]; //D-pad up
-                            query.response[12] = (unsigned char)sum->buttons[14]; //D-pad down
+                            query.response[9] = (unsigned char)sum->buttons[13];  // D-pad right
+                            query.response[10] = (unsigned char)sum->buttons[15]; // D-pad left
+                            query.response[11] = (unsigned char)sum->buttons[12]; // D-pad up
+                            query.response[12] = (unsigned char)sum->buttons[14]; // D-pad down
 
                             query.response[13] = (unsigned char)sum->buttons[8];  // Triangle
                             query.response[14] = (unsigned char)sum->buttons[9];  // Circle
@@ -1331,7 +1354,6 @@ u8 CALLBACK PADpoll(u8 value)
                         }
                     }
                 }
-
                 query.lastByte = 1;
                 DEBUG_OUT(pad->mode);
                 return pad->mode;
@@ -1342,7 +1364,7 @@ u8 CALLBACK PADpoll(u8 value)
             // QUERY_DS2_ANALOG_MODE
             case 0x41:
                 // Right?  Wrong?  No clue.
-                if (pad->mode == MODE_DIGITAL || pad->mode == MODE_PS1_MOUSE) {
+                if (pad->mode == MODE_PS1_MOUSE || pad->mode == MODE_NEGCON) {
                     queryMaskMode[1] = queryMaskMode[2] = queryMaskMode[3] = 0;
                     queryMaskMode[6] = 0x00;
                 } else {
@@ -1363,7 +1385,7 @@ u8 CALLBACK PADpoll(u8 value)
             // QUERY_MODEL_AND_MODE
             case 0x45:
                 if (IsDualshock2(query.port, query.slot)) {
-                    SET_FINAL_RESULT(queryModelDS2)
+                    SET_FINAL_RESULT(queryModelDS2);
                 } else {
                     SET_FINAL_RESULT(queryModelDS1);
                 }
@@ -1407,7 +1429,7 @@ u8 CALLBACK PADpoll(u8 value)
         query.lastByte++;
 
         // Only the 0x42(read input and vibration) and 0x43(enter or exit config mode) command cases work outside of config mode, the other cases will be avoided.
-        if (!pad->config && query.currentCommand != 0x42 && query.currentCommand != 0x43) {
+        if ((!pad->config && query.currentCommand != 0x42 && query.currentCommand != 0x43) || (padtype == neGconPad && (query.currentCommand < 0x40 || query.currentCommand > 0x45))) {
             DEBUG_OUT(query.response[query.lastByte]);
             return query.response[query.lastByte];
         }
@@ -1424,18 +1446,12 @@ u8 CALLBACK PADpoll(u8 value)
             case 0x43:
                 if (query.lastByte == 3) {
                     query.queryDone = 1;
-                    int padtype = config.padConfigs[query.port][query.slot].type;
-                    if (padtype != neGconPad && padtype != MousePad) {
-                        pad->config = value;
-                    } else if (pad->config != 0) {
-                        pad->config = 0;
-                    }
+                    pad->config = value;
                 }
                 break;
             // SET_MODE_AND_LOCK
             case 0x44:
                 if (query.lastByte == 3 && value < 2) {
-                    int padtype = config.padConfigs[query.port][query.slot].type;
                     if (padtype == MousePad) {
                         pad->mode = MODE_PS1_MOUSE;
                     } else if (padtype == neGconPad) {
@@ -1449,7 +1465,7 @@ u8 CALLBACK PADpoll(u8 value)
                         pad->modeLock = 3;
                     } else {
                         pad->modeLock = 0;
-                        if (pad->mode == MODE_DIGITAL && config.padConfigs[query.port][query.slot].autoAnalog && !ps2e) {
+                        if (pad->mode == MODE_DIGITAL && padtype == Dualshock2Pad && config.padConfigs[query.port][query.slot].autoAnalog) {
                             pad->mode = MODE_ANALOG;
                         }
                     }
@@ -1563,6 +1579,9 @@ keyEvent *CALLBACK PADkeyEvent()
 #ifdef _MSC_VER
     static char shiftDown = 0;
     static char altDown = 0;
+    if (!activeWindow)
+        altDown = shiftDown = 0;
+
     if (miceEnabled && (ev.key == VK_ESCAPE || (int)ev.key == -2) && ev.evt == KEYPRESS) {
         // Disable mouse/KB hooks on escape (before going into paused mode).
         // This is a hack, since PADclose (which is called on pause) should enevtually also deactivate the

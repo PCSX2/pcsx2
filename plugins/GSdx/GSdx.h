@@ -22,6 +22,7 @@
 #pragma once
 
 #include "GSSetting.h"
+#include "GS.h"
 
 class GSdxApp
 {
@@ -31,6 +32,7 @@ class GSdxApp
 #if defined(__unix__)
 	std::map< std::string, std::string > m_configuration_map;
 #endif
+	GSRendererType m_current_renderer_type;
 
 public:
 	GSdxApp();
@@ -56,10 +58,14 @@ public:
 	void SetConfig(const char* entry, const char* value);
 	void SetConfig(const char* entry, int value);
 	// Avoid issue with overloading
+	template<typename T>
+	T      GetConfigT(const char* entry) { return static_cast<T>(GetConfigI(entry)); }
 	int    GetConfigI(const char* entry);
 	bool   GetConfigB(const char* entry);
 	string GetConfigS(const char* entry);
 
+	void SetCurrentRendererType(GSRendererType type);
+	GSRendererType GetCurrentRendererType();
 
 	void SetConfigDir(const char* dir);
 
@@ -68,9 +74,11 @@ public:
 	vector<GSSetting> m_gs_aspectratio;
 	vector<GSSetting> m_gs_upscale_multiplier;
 	vector<GSSetting> m_gs_max_anisotropy;
-	vector<GSSetting> m_gs_filter;
+	vector<GSSetting> m_gs_bifilter;
+	vector<GSSetting> m_gs_trifilter;
 	vector<GSSetting> m_gs_gl_ext;
 	vector<GSSetting> m_gs_hack;
+	vector<GSSetting> m_gs_offset_hack;
 	vector<GSSetting> m_gs_hw_mipmapping;
 	vector<GSSetting> m_gs_crc_level;
 	vector<GSSetting> m_gs_acc_blend_level;

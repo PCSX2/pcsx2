@@ -151,7 +151,7 @@ void GSSettingsDlg::OnInit()
 	ComboBoxInit(IDC_INTERLACE, theApp.m_gs_interlace, theApp.GetConfigI("interlace"));
 	ComboBoxInit(IDC_UPSCALE_MULTIPLIER, theApp.m_gs_upscale_multiplier, theApp.GetConfigI("upscale_multiplier"));
 	ComboBoxInit(IDC_AFCOMBO, theApp.m_gs_max_anisotropy, theApp.GetConfigI("MaxAnisotropy"));
-	ComboBoxInit(IDC_FILTER, theApp.m_gs_filter, theApp.GetConfigI("filter"));
+	ComboBoxInit(IDC_FILTER, theApp.m_gs_bifilter, theApp.GetConfigI("filter"));
 	ComboBoxInit(IDC_ACCURATE_BLEND_UNIT, theApp.m_gs_acc_blend_level, theApp.GetConfigI("accurate_blending_unit"));
 	ComboBoxInit(IDC_CRC_LEVEL, theApp.m_gs_crc_level, theApp.GetConfigI("crc_hack_level"));
 
@@ -190,31 +190,7 @@ void GSSettingsDlg::OnInit()
 	AddTooltip(IDC_LOGZ);
 	AddTooltip(IDC_LARGE_FB);
 
-	UpdateFilteringCombobox();
 	UpdateControls();
-}
-
-void GSSettingsDlg::UpdateFilteringCombobox()
-{
-	INT_PTR i;
-	ComboBoxGetSelData(IDC_RENDERER, i);
-	bool opengl = static_cast<GSRendererType>(i) == GSRendererType::OGL_HW;
-	bool hw_mode = opengl || static_cast<GSRendererType>(i) == GSRendererType::DX1011_HW || static_cast<GSRendererType>(i) == GSRendererType::DX9_HW;
-	if (!hw_mode)
-		return;
-
-	uint8 filter = (ComboBoxGetSelData(IDC_FILTER, i)) ? static_cast<uint8>(i) : static_cast<uint8>(theApp.GetConfigI("filter"));
-	if (!opengl) //Currently Trilinear is only exclusive to OpenGL, remove those combobox items when any other renderer is used
-	{
-		auto head = theApp.m_gs_filter.begin();
-		auto tail = head + static_cast<uint8>(Filtering::Trilinear);
-		vector<GSSetting> list(head, tail);
-		ComboBoxInit(IDC_FILTER, list, std::max(uint8(Filtering::Nearest), std::min(filter, uint8(Filtering::Bilinear_PS2))));
-	}
-	else
-	{
-		ComboBoxInit(IDC_FILTER, theApp.m_gs_filter, filter);
-	}
 }
 
 bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
@@ -231,7 +207,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 		case IDC_RENDERER:
 			if (code == CBN_SELCHANGE)
 			{
-				UpdateFilteringCombobox();
 				UpdateControls();
 			}
 			break;
@@ -359,8 +334,9 @@ void GSSettingsDlg::UpdateRenderers()
 	}
 	else
 	{
-		GSRendererType ini_renderer = GSRendererType(theApp.GetConfigI("Renderer"));
-		renderer_setting = (ini_renderer == GSRendererType::Undefined) ? GSUtil::GetBestRenderer() : ini_renderer;
+		renderer_setting = GSRendererType(theApp.GetConfigI("Renderer"));
+		if (renderer_setting == GSRendererType::Undefined)
+			renderer_setting = GSUtil::GetBestRenderer();
 	}
 
 	GSRendererType renderer_sel = GSRendererType::Default;
@@ -703,7 +679,6 @@ void GSHacksDlg::OnInit()
 	SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_SETCURSEL, msaa2cb[min(theApp.GetConfigI("UserHacks_MSAA"), 16)], 0);
 
 	CheckDlgButton(m_hWnd, IDC_ALPHAHACK, theApp.GetConfigB("UserHacks_AlphaHack"));
-	CheckDlgButton(m_hWnd, IDC_OFFSETHACK, theApp.GetConfigB("UserHacks_HalfPixelOffset"));
 	CheckDlgButton(m_hWnd, IDC_WILDHACK, theApp.GetConfigI("UserHacks_WildHack"));
 	CheckDlgButton(m_hWnd, IDC_ALPHASTENCIL, theApp.GetConfigB("UserHacks_AlphaStencil"));
 	CheckDlgButton(m_hWnd, IDC_PRELOAD_GS, theApp.GetConfigB("preload_frame_with_gs_data"));
@@ -712,7 +687,12 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_FAST_TC_INV, theApp.GetConfigB("UserHacks_DisablePartialInvalidation"));
 	CheckDlgButton(m_hWnd, IDC_AUTO_FLUSH, theApp.GetConfigB("UserHacks_AutoFlush"));
 	CheckDlgButton(m_hWnd, IDC_UNSCALE_POINT_LINE, theApp.GetConfigB("UserHacks_unscale_point_line"));
-
+	std::vector<GSSetting> hpo_combobox = theApp.m_gs_offset_hack;
+	if (!ogl)
+	{
+		hpo_combobox.erase(hpo_combobox.begin() + 2, hpo_combobox.begin() + 4);
+	}
+	ComboBoxInit(IDC_OFFSETHACK, hpo_combobox,theApp.GetConfigI("UserHacks_HalfPixelOffset"));
 	ComboBoxInit(IDC_ROUND_SPRITE, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_round_sprite_offset"));
 	ComboBoxInit(IDC_SPRITEHACK, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_SpriteHack"));
 
@@ -734,6 +714,7 @@ void GSHacksDlg::OnInit()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_WILDHACK), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK), !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK_TEXT), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALIGN_SPRITE), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_SPRITE), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK_TEXT), !native);
@@ -784,9 +765,12 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				theApp.SetConfig("UserHacks_SpriteHack", (int)data);
 			}
+			if (ComboBoxGetSelData(IDC_OFFSETHACK, data))
+			{
+				theApp.SetConfig("UserHacks_HalfPixelOffset", (int)data);
+			}
 			theApp.SetConfig("UserHacks_MSAA", cb2msaa[(int)SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_GETCURSEL, 0, 0)]);
 			theApp.SetConfig("UserHacks_AlphaHack", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHAHACK));
-			theApp.SetConfig("UserHacks_HalfPixelOffset", (int)IsDlgButtonChecked(m_hWnd, IDC_OFFSETHACK));
 			theApp.SetConfig("UserHacks_SkipDraw", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("UserHacks_WildHack", (int)IsDlgButtonChecked(m_hWnd, IDC_WILDHACK));
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));

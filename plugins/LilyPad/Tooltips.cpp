@@ -65,6 +65,8 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Right-click and select \"Refresh\" to update the list of devices in case a recently connected device has not shown up yet.";
         case IDC_G_XI:
             return L"Xbox 360 controllers(and devices imitating it) only";
+        case ID_RESTORE_DEFAULTS:
+            return L"Restores the default contents of LilyPad.ini, undoing all settings changes and bindings that have been set up.";
         // Pad tabs
         case IDC_BINDINGS_LIST:
             return L"Shows a list of currently bound inputs of the selected Pad.\n\n"
@@ -92,6 +94,9 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Note: Analog mode enables the analog sticks to function on a DualShock controller, while in digital mode it behaves as an original PlayStation controller.\n\n";
         case ID_TURBO_KEY:
             return L"Sets a key to send a TAB press to the emulator, which toggles Turbo mode(200% speed) in PCSX2.";
+        case ID_EXCLUDE:
+            return L"Disables an input so it will be ignored when trying to bind another input.\n\n"
+                   L"This is helpful when binding controls for a device with an input that's difficult to center like an accelerator, or just always active like a faulty button or analog stick.";
         case ID_LOCK_ALL_INPUT:
             return L"Locks the current state of the pad. Any further input is handled normally, but the initial pad state is the locked state instead of a state with no buttons pressed. "
                    L"Pressing it again releases the old pad state, if the old pad state had any keys pressed. Otherwise, it's released automatically.";

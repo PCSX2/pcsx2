@@ -149,13 +149,13 @@
 #define SRInitVal 0x70030C13
 #define ConfigInitVal 0x73003
 
-enum {
-	THS_RUN     = 0x01,
-	THS_READY   = 0x02,
-	THS_WAIT    = 0x04,
-	THS_SUSPEND = 0x08,
-	THS_DORMANT = 0x10,
-};
+//enum {
+#define THS_RUN 0x01
+#define THS_READY 0x02
+#define THS_WAIT 0x04
+#define THS_SUSPEND 0x08
+#define THS_DORMANT 0x10
+//};
 
 typedef struct {
 	u128 gpr[24]; // v0-t9 (skip r0,at,k0-ra)

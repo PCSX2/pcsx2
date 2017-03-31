@@ -46,7 +46,7 @@ GPURenderer::GPURenderer(GSDevice* dev)
 	m_hWnd = NULL;
 	m_wndproc = NULL;
 
-	m_wnd = new GSWndDX();
+	m_wnd = std::make_shared<GSWndDX>();
 
 	#endif
 }

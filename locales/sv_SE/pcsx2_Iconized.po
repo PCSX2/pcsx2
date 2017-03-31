@@ -1,10 +1,11 @@
+# Copyright (C) 2011 PCSX2 Team
 # This file is distributed under the same license as the PCSX2 package.
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 - 160226\n"
+"Project-Id-Version: PCSX2 - 170319\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2016-02-26 22:48+0100\n"
+"POT-Creation-Date: 2017-03-19 15:01+0100\n"
+"PO-Revision-Date: 2017-03-19 17:53+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
 "PCSX2-Svenskt-anv%C3%A4ndargr%C3%A4nssnitt-f%C3%B6r-PCSX2\n"
@@ -14,7 +15,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.8.3\n"
+"X-Poedit-Basepath: C:/Arkiv/PCSX2/SVN - GitHub\n"
+"X-Generator: Poedit 1.8.12\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
@@ -41,6 +43,8 @@ msgstr ""
 msgid ""
 "Failed to read/write NMV/MEC file. Check your bios setup/permission settings"
 msgstr ""
+"Misslyckades att läsa/skriva NMV/MEC-fil. Undersök Er BIOS körstarts/"
+"tillstånds-inställningar."
 
 #: pcsx2/System.cpp:112
 msgid ""
@@ -231,8 +235,9 @@ msgid ""
 "Hero)."
 msgstr ""
 "Undviker förstörelse av Minneskort genom att tvinga spel att återindexera "
-"kortinnehåll efter att ha laddat Sparpunkt. Måhända inte förenligt med alla "
-"spel (''Guitar Hero'')."
+"kortinnehåll\n"
+" efter att ha laddat Sparpunkt. Måhända inte förenligt med alla spel "
+"(''Guitar Hero'')."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
 msgid ""
@@ -240,9 +245,9 @@ msgid ""
 "software changes. This prevents the memory card from running out of space "
 "for saves."
 msgstr ""
-"(Endast Mapp-typ) Återindexera MineskortsInnehåll var gång den körandes "
-"mjukvaran ändras. Detta förhindrar Minneskortet att få slut på plats för "
-"sparningar."
+"(Endast Mapp-typ) Återindexera MineskortsInnehåll var gång den körande "
+"mjukvaran ändras.\n"
+"Detta förhindrar Minneskortet att få slut på plats för sparningar."
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
@@ -324,7 +329,7 @@ msgstr ""
 " framsteg kommer att gå förlorade. \n"
 "Är Ni säker?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:118
+#: pcsx2/gui/MainMenuClicks.cpp:115
 #, c-format
 msgid ""
 "This command clears %s settings and allows you to re-run the First-Time "
@@ -356,12 +361,6 @@ msgstr ""
 "PS2-sockeln %d har blivit automatiskt spärrad. Ni kan åtgärda problemet \n"
 " och återmöjliggöra sockeln när som helst genom ''Konfig > Minneskort'' i "
 "Huvudmenyn."
-
-#: pcsx2/gui/MemoryCardFolder.h:539
-#, c-format
-msgid "(FolderMcd) Memory Card is full, could not add: %s"
-msgstr ""
-"(MappMcd) Minneskortet är fullt - Följaktligen kunde inte denna tilläggas: %s"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:139
 msgid ""
@@ -641,74 +640,63 @@ msgstr ""
 "KonfigurationsDialogen."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
 msgid ""
 "-3 - Reduces the EE's cyclerate to about 50%.  Big speedup, but *will* cause "
 "stuttering audio on many FMVs."
 msgstr ""
-"-2 - Minskar EE'ns cykelgrad med ungefär 50%. \n"
-"Måttfull uppsnabbning, men *kommer* att \n"
-" vålla stamningsljud för många FMV'er."
+"-3 - Minskar EE'ns cykelgrad till ungefär 50%.\n"
+"Hög uppsnabbning, men *kommer att* vålla ljud-stamning för många FMV'er."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
 msgid ""
 "-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"-2 - Minskar EE'ns cykelgrad med ungefär 50%. \n"
-"Måttfull uppsnabbning, men *kommer* att \n"
-" vålla stamningsljud för många FMV'er."
+"-2 - Minskar EE'ns cykelgrad till ungefär 60%.\n"
+"Måttfull uppsnabbning, men kan vålla ljud-stamning för många FMV'er."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
 msgid ""
 "-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
-"-1 - Minskar EE'ns cykelgrad med ungefär 33%. \n"
-"Mild uppsnabbning och hög förenlighet \n"
-" för de flesta spel."
+"-1 - Minskar EE'ns cykelgrad till ungefär 75%. Mild uppsnabbning för de "
+"flesta spel, dock med hög förenlighet."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:45
-#, fuzzy
 msgid ""
 "0 - Default cyclerate (100%). This closely matches the actual speed of a "
 "real PS2 EmotionEngine."
 msgstr ""
-"0 - Förvalscykelgrad. \n"
-"Detta överensstämmer nästan med den \n"
-" faktiska hastigheten för en PS2 EE."
+"0 - Förvals-cykelgrad (100%). Detta motsvarar nästan hastigheten hos en "
+"faktisk PS2 EE."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
-#, fuzzy
 msgid ""
 "1 - Increases the EE's cyclerate to about 130%. Mildly increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
-"1 - Ökar EE'ns cykelgrad med ungefär 33%. \n"
-"Ökar hårdvarukrav, men kan likaså öka FPS i spel."
+"1 - Ökar EE'ns cykelgrad till ungefär 130%. Ökar mättfullt hårdvarukraven, "
+"men kan öka FPS'en i spel."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:55
-#, fuzzy
 msgid ""
 "2 - Increases the EE's cyclerate to about 180%. Increases hardware "
 "requirements, may noticeably increase in-game FPS."
 msgstr ""
-"1 - Ökar EE'ns cykelgrad med ungefär 33%. \n"
-"Ökar hårdvarukrav, men kan likaså öka FPS i spel."
+"2 - Ökar EE'ns cykelgrad till ungefär 180%. Ökar hårdvarukraven, men kan "
+"markant öka FPS'en i spel."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:60
-#, fuzzy
 msgid ""
 "3 - Increases the EE's cyclerate to about 300%. Greatly increases hardware "
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
-"2 - Ökar EE'ns cykelgrad med ungefär 50%. \n"
-"Ökar markant hårdvarukrav, men kan likaså öka \n"
-"FPS i spel. Denna inställning kan orsaka \n"
-"att spel INTE LYCKAS KÖRA IGÅNG. "
+"3 - Ökar EE'ns cykelgrad till ungefär 300%.\n"
+"Ökar hårdvarukraven rejält, men kan markant\n"
+" öka FPS'en i spel. Denna inställning kan orsaka\n"
+" att spel misslyckas att köra igång."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:77
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
@@ -767,7 +755,7 @@ msgstr ""
 " verkningsfullt klockhastigheten hos EE'ns R5900 kärn-CPU, \n"
 " och ger oftast en hög hastghetsökning åt spel som är oförmögna \n"
 " att nyttja möjligheterna med PS2's verkliga hårdvara fullt ut. \n"
-"Omvänt ökar ett höre värde klockhastigheten vilket kan öka FPS i spel, \n"
+"Omvänt ökar ett höre värde klockhastigheten vilket kan öka FPS'en i spel, \n"
 " men även göra spel mer hårdvarukrävande och vålla trassel."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
@@ -801,7 +789,7 @@ msgstr ""
 "Kör VU1 i en egen tråd (endast microVU1), vilket i allmänhet \n"
 " ger en uppsnabbning för CPU'er med 3 eller fler kärnor. \n"
 "Detta är säkert för de flesta spel, men en del är oförenliga och kan "
-"hänga. \n"
+"strula. \n"
 "Vidare kan en nedbromsning ske för GS-begränsade spel \n"
 " (i synnerhet med dubbelkärniga CPU'er)."
 
@@ -825,23 +813,22 @@ msgid ""
 "advance to the time of the next event or the end of the processor's "
 "timeslice, whichever comes first."
 msgstr ""
-"Främst inriktat på EE-tomgångsloop hos adress 0x81FC0 i kärnan, försöker "
-"denna fix \n"
-" att upptäcka loopar vars kroppar garanterat medför samma maskintillstånd \n"
-" vid varje upprepning tills en schemalagd händelse utlöser emulering av en "
-"annan enhet. \n"
-"Efter en enskild upprepning av en sådan loop, avancerar Vi till tiden för "
-"nästa händelse \n"
-" eller till slutet av processorns tidskvantum, vilket som än kommer först."
+"Främst inriktat på EE-tomgångsloop hos adress 0x81FC0 i kärnan,\n"
+" försöker denna fix att upptäcka loopar vars kroppar\n"
+" garanterat medför samma maskintillstånd vid varje upprepning\n"
+" tills en schemalagd händelse utlöser emulering av en annan enhet.\n"
+"Efter en enskild upprepning av en sådan loop, avancerar Vi till tiden\n"
+" för nästa händelse eller till slutet av processorns tidskvantum,\n"
+" vilket som än kommer först."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:205
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this. (Often marked as needing 'mode 1' or 'slow DVD'"
 msgstr ""
-"Undersök HDLoader's förenlighetslista för spel som till vetskap kommer till "
-"fråga \n"
-" med det här (ofta markerat som behövande ''läge 1'' eller ''långsam DVD'')."
+"Undersök HDLoader's förenlighetslista för spel\n"
+" som till vetskap kommer till fråga med det här\n"
+" (ofta markerat som behövande ''läge 1'' eller ''långsam DVD'')."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:35
 msgid ""
@@ -909,6 +896,53 @@ msgstr ""
 "bruk. \n"
 "Detta är inte ett kritiskt fel eftersom sVU är föråldrat, \n"
 " och följaktligen borde Ni hur som helst använda Er av microVU istället."
+
+#: pcsx2/gui/MemoryCardFolder.h:539
+#, c-format
+msgid "(FolderMcd) Memory Card is full, could not add: %s"
+msgstr ""
+"(MappMcd) Minneskortet är fullt - Följaktligen kunde inte denna tilläggas: %s"
+
+#~ msgid ""
+#~ "-2 - Reduces the EE's cyclerate by about 50%.  Moderate speedup, but "
+#~ "*will* cause stuttering audio on many FMVs."
+#~ msgstr ""
+#~ "-2 - Minskar EE'ns cykelgrad med ungefär 50%. \n"
+#~ "Måttfull uppsnabbning, men *kommer* att \n"
+#~ " vålla stamningsljud för många FMV'er."
+
+#~ msgid ""
+#~ "-1 - Reduces the EE's cyclerate by about 33%.  Mild speedup for most "
+#~ "games with high compatibility."
+#~ msgstr ""
+#~ "-1 - Minskar EE'ns cykelgrad med ungefär 33%. \n"
+#~ "Mild uppsnabbning och hög förenlighet \n"
+#~ " för de flesta spel."
+
+#~ msgid ""
+#~ "0 - Default cyclerate. This closely matches the actual speed of a real "
+#~ "PS2 EmotionEngine."
+#~ msgstr ""
+#~ "0 - Förvalscykelgrad. \n"
+#~ "Detta överensstämmer nästan med den \n"
+#~ " faktiska hastigheten för en PS2 EE."
+
+#~ msgid ""
+#~ "1 - Increases the EE's cyclerate by about 33%. Increases hardware "
+#~ "requirements, may increase in-game FPS."
+#~ msgstr ""
+#~ "1 - Ökar EE'ns cykelgrad med ungefär 33%. \n"
+#~ "Ökar hårdvarukrav, men kan likaså öka FPS i spel."
+
+#~ msgid ""
+#~ "2 - Increases the EE's cyclerate by about 50%. Greatly increases hardware "
+#~ "requirements, may noticeably increase in-game FPS.\n"
+#~ "This setting can cause games to FAIL TO BOOT."
+#~ msgstr ""
+#~ "2 - Ökar EE'ns cykelgrad med ungefär 50%. \n"
+#~ "Ökar markant hårdvarukrav, men kan likaså öka \n"
+#~ "FPS i spel. Denna inställning kan orsaka \n"
+#~ "att spel INTE LYCKAS KÖRA IGÅNG. "
 
 #~ msgid ""
 #~ "Warning: Your computer does not support SSE2, which is required by many "

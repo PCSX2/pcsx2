@@ -15,13 +15,11 @@ REM If not, see <http://www.gnu.org/licenses/>.
 
 CLS
 ECHO Select your Visual Studio version:
-ECHO 1. Microsoft Visual Studio 2013 (default)
-ECHO 2. Microsoft Visual Studio 2015
+ECHO 1. Microsoft Visual Studio 2015
 ECHO Q. Exit the script.
-CHOICE /C 12Q /T 10 /D 1 /M "Visual Studio version: "
-IF ERRORLEVEL 3 GOTO END
-IF ERRORLEVEL 2 SET "VCVARPATH=%VS140COMNTOOLS%..\..\VC\vcvarsall.bat"
-IF ERRORLEVEL 1 SET "VCVARPATH=%VS120COMNTOOLS%..\..\VC\vcvarsall.bat"
+CHOICE /C 1Q /T 10 /D 1 /M "Visual Studio version: "
+IF ERRORLEVEL 2 GOTO END
+IF ERRORLEVEL 1 SET "VCVARPATH=%VS140COMNTOOLS%..\..\VC\vcvarsall.bat"
 
 ECHO.
 ECHO Select the desired configuration:

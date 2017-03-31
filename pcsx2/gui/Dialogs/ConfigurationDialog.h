@@ -113,21 +113,6 @@ namespace Dialogs
 	};
 
 	// --------------------------------------------------------------------------------------
-	//  InterfaceConfigDialog
-	// --------------------------------------------------------------------------------------
-	class InterfaceConfigDialog : public BaseConfigurationDialog
-	{
-	public:
-		virtual ~InterfaceConfigDialog() throw() {}
-		InterfaceConfigDialog(wxWindow* parent=NULL);
-		static wxString GetNameStatic() { return L"InterfaceConfig"; }
-		wxString GetDialogName() const { return GetNameStatic(); }
-
-	protected:
-		virtual wxString& GetConfSettingsTabName() const { return g_Conf->AppSettingsTabName; }
-	};
-
-	// --------------------------------------------------------------------------------------
 	//  InterfaceLanguageDialog
 	// --------------------------------------------------------------------------------------
 	class InterfaceLanguageDialog : public BaseConfigurationDialog

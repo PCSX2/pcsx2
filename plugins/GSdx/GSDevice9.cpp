@@ -184,7 +184,7 @@ void GSDevice9::ForceValidMsaaConfig()
 	}
 };
 
-bool GSDevice9::Create(GSWnd* wnd)
+bool GSDevice9::Create(const std::shared_ptr<GSWnd> &wnd)
 {
 	if(!__super::Create(wnd))
 	{

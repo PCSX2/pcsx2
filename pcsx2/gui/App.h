@@ -93,7 +93,6 @@ enum MenuIdentifiers
 
 
 	MenuId_Sys_SuspendResume,	// suspends/resumes active emulation, retains plugin states
-	MenuId_Sys_Restart,			// Issues a complete VM reset (wipes preserved states)
 	MenuId_Sys_Shutdown,		// Closes virtual machine, shuts down plugins, wipes states.
 	MenuId_Sys_LoadStates,		// Opens load states submenu
 	MenuId_Sys_SaveStates,		// Opens save states submenu
@@ -147,8 +146,6 @@ enum MenuIdentifiers
 	MenuId_Video_WindowSettings,
 
 	// Miscellaneous Menu!  (Misc)
-	MenuId_Website,				// Visit our awesome website!
-	MenuId_Profiler,			// Enable profiler
 	MenuId_Console,				// Enable console
 	MenuId_ChangeLang,			// Change language (resets first time wizard to show on next start)
 	MenuId_Console_Stdio,		// Enable Stdio
@@ -763,7 +760,6 @@ extern void UI_EnableStateActions();
 extern void UI_DisableSysActions();
 extern void UI_EnableSysActions();
 
-extern void UI_DisableSysReset();
 extern void UI_DisableSysShutdown();
 
 

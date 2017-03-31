@@ -219,9 +219,6 @@ GtkWidget* CreateTableInBox(GtkWidget* parent_box, const char* frame_title, int 
 
 void populate_hw_table(GtkWidget* hw_table)
 {
-	GtkWidget* filter_label     = left_label("Texture Filtering:");
-	GtkWidget* filter_combo_box = CreateComboBoxFromVector(theApp.m_gs_filter, "filter");
-
 	GtkWidget* fsaa_label     = left_label("Internal Resolution:");
 	GtkWidget* fsaa_combo_box = CreateComboBoxFromVector(theApp.m_gs_upscale_multiplier, "upscale_multiplier");
 
@@ -249,7 +246,6 @@ void populate_hw_table(GtkWidget* hw_table)
 	AddTooltip(large_fb_check, IDC_LARGE_FB);
 	AddTooltip(crc_label, crc_combo_box, IDC_CRC_LEVEL);
 	AddTooltip(acc_bld_label, acc_bld_combo_box, IDC_ACCURATE_BLEND_UNIT);
-	AddTooltip(filter_label, filter_combo_box, IDC_FILTER);
 	AddTooltip(af_label, af_combo_box, IDC_AFCOMBO);
 	gtk_widget_set_tooltip_text(hack_enable_check, "Enable the HW hack option panel");
 	AddTooltip(mipmap_label, IDC_MIPMAP_HW);
@@ -259,7 +255,6 @@ void populate_hw_table(GtkWidget* hw_table)
 	InsertWidgetInTable(hw_table , paltex_check  , acc_date_check);
 	InsertWidgetInTable(hw_table , large_fb_check, hack_enable_check);
 	InsertWidgetInTable(hw_table , fsaa_label    , fsaa_combo_box);
-	InsertWidgetInTable(hw_table , filter_label  , filter_combo_box);
 	InsertWidgetInTable(hw_table , af_label      , af_combo_box);
 	InsertWidgetInTable(hw_table , acc_bld_label , acc_bld_combo_box);
 	InsertWidgetInTable(hw_table , crc_label     , crc_combo_box);
@@ -341,8 +336,8 @@ void populate_shader_table(GtkWidget* shader_table)
 
 void populate_hack_table(GtkWidget* hack_table)
 {
-	GtkWidget* hack_offset_check   = CreateCheckBox("Half-pixel Offset Hack", "UserHacks_HalfPixelOffset");
-	GtkWidget* hack_offset_check_2 = CreateCheckBox("Half-pixel Offset Hack (v2)", "UserHacks_HalfPixelOffset_New");
+	GtkWidget* hack_offset_label   = left_label("Half-pixel Offset Hack:");
+	GtkWidget* hack_offset_box     = CreateComboBoxFromVector(theApp.m_gs_offset_hack, "UserHacks_HalfPixelOffset");
 	GtkWidget* hack_skipdraw_label = left_label("Skipdraw:");
 	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 1000, "UserHacks_SkipDraw");
 	GtkWidget* hack_wild_check     = CreateCheckBox("Wild Arms Hack", "UserHacks_WildHack");
@@ -359,10 +354,12 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_sprite_label   = left_label("Alpha-Sprite Hack:");
 	GtkWidget* stretch_hack_box    = CreateComboBoxFromVector(theApp.m_gs_hack, "UserHacks_round_sprite_offset");
 	GtkWidget* stretch_hack_label  = left_label("Align Sprite Texture:");
+	GtkWidget* trilinear_box       = CreateComboBoxFromVector(theApp.m_gs_trifilter, "UserHacks_TriFilter");
+	GtkWidget* trilinear_label     = left_label("Trilinear Filtering:");
 
 	// Reuse windows helper string :)
-	AddTooltip(hack_offset_check, IDC_OFFSETHACK);
-	AddTooltip(hack_offset_check_2, IDC_OFFSETHACK);
+	AddTooltip(hack_offset_label, IDC_OFFSETHACK);
+	AddTooltip(hack_offset_box, IDC_OFFSETHACK);
 	AddTooltip(hack_skipdraw_label, IDC_SKIPDRAWHACK);
 	AddTooltip(hack_skipdraw_spin, IDC_SKIPDRAWHACK);
 	AddTooltip(hack_wild_check, IDC_WILDHACK);
@@ -376,6 +373,8 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_depth_check, IDC_TC_DEPTH);
 	AddTooltip(hack_auto_flush, IDC_AUTO_FLUSH);
 	AddTooltip(hack_unscale_prim, IDC_UNSCALE_POINT_LINE);
+	AddTooltip(trilinear_box, IDC_TRI_FILTER);
+	AddTooltip(trilinear_label, IDC_TRI_FILTER);
 
 
 	s_table_line = 0;
@@ -383,13 +382,14 @@ void populate_hack_table(GtkWidget* hack_table)
 	InsertWidgetInTable(hack_table , hack_fast_inv       , hack_auto_flush);
 	InsertWidgetInTable(hack_table , hack_depth_check    , preload_gs_check);
 	// Upscaling hack
-	InsertWidgetInTable(hack_table , hack_offset_check   , hack_offset_check_2);
 	InsertWidgetInTable(hack_table , hack_wild_check     , align_sprite_check);
 	InsertWidgetInTable(hack_table , hack_unscale_prim);
+	InsertWidgetInTable(hack_table , hack_offset_label   , hack_offset_box);
 	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
 	InsertWidgetInTable(hack_table , hack_skipdraw_label , hack_skipdraw_spin);
 	InsertWidgetInTable(hack_table , hack_tco_label      , hack_tco_entry);
+	InsertWidgetInTable(hack_table , trilinear_label     , trilinear_box);
 }
 
 void populate_main_table(GtkWidget* main_table)
@@ -398,11 +398,15 @@ void populate_main_table(GtkWidget* main_table)
 	GtkWidget* render_combo_box = CreateComboBoxFromVector(theApp.m_gs_renderers, "Renderer");
 	GtkWidget* interlace_label     = left_label("Interlacing (F5):");
 	GtkWidget* interlace_combo_box = CreateComboBoxFromVector(theApp.m_gs_interlace, "interlace");
+	GtkWidget* filter_label     = left_label("Texture Filtering:");
+	GtkWidget* filter_combo_box = CreateComboBoxFromVector(theApp.m_gs_bifilter, "filter");
 
+	AddTooltip(filter_label, filter_combo_box, IDC_FILTER);
 
 	s_table_line = 0;
 	InsertWidgetInTable(main_table, render_label, render_combo_box);
 	InsertWidgetInTable(main_table, interlace_label, interlace_combo_box);
+	InsertWidgetInTable(main_table, filter_label  , filter_combo_box);
 }
 
 void populate_debug_table(GtkWidget* debug_table)

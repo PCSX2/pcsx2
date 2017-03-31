@@ -24,6 +24,7 @@
 // a value of 128 or more corresponds to that button being pressed, for binary
 // values.
 #define BASE_SENSITIVITY (1 << 16)
+#define BASE_ANALOG_SENSITIVITY (87183)
 #define FULLY_DOWN (1 << 16)
 
 #define DEFAULT_DEADZONE (BASE_SENSITIVITY * 201 / 1000)

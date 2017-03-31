@@ -14015,7 +14015,6 @@ Serial = SLES-53458
 Name   = Shin Megami Tensei: Digital Devil Saga
 Region = PAL-E
 Compat = 5
-EETimingHack = 1
 ---------------------------------------------
 Serial = SLES-53459
 Name   = Marc Ecko's Getting Up - Contents Under Pressure
@@ -16357,7 +16356,6 @@ Compat = 5
 Serial = SLES-54555
 Name   = Shin Megami Tensei: Digital Devil Saga 2
 Region = PAL-E
-EETimingHack = 1
 // reads data from DDS1
 MemCardFilter = SLES-54555/SLES-53458
 ---------------------------------------------
@@ -18910,7 +18908,7 @@ Name   = Choukousoku Reversi
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62040
-Name   = J League Winning Eleven 8 - Asia Championship
+Name   = Jikkyou World Soccer 2000: Final Edition
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62041
@@ -38303,7 +38301,6 @@ Serial = SLUS-20974
 Name   = Shin Megami Tensei: Digital Devil Saga
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1
 ---------------------------------------------
 Serial = SLUS-20975
 Name   = One Piece - Grand Battle
@@ -39166,7 +39163,6 @@ Serial = SLUS-21152
 Name   = Shin Megami Tensei: Digital Devil Saga 2
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1
 MemCardFilter = SLUS-21152/SLUS-20974
 ---------------------------------------------
 Serial = SLUS-21153
@@ -42875,7 +42871,6 @@ Region = NTSC-U
 Serial = SLUS-28049
 Name   = Shin Megami Tensei: Digital Devil Saga [Trade Demo]
 Region = NTSC-U
-EETimingHack = 1
 ---------------------------------------------
 Serial = SLUS-28050
 Name   = Stella Deus: The Gate of Eternity [Trade Demo]
@@ -42904,7 +42899,6 @@ Region = NTSC-U
 Serial = SLUS-28062
 Name   = Shin Megami Tensei: Digital Devil Saga 2 [Trade Demo]
 Region = NTSC-U
-EETimingHack = 1
 ---------------------------------------------
 Serial = SLUS-28063
 Name   = Rule of Rose [Trade Demo]

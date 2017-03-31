@@ -33,17 +33,27 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_FILTER:
 			return "Control the texture filtering of the emulation.\n\n"
 				"Nearest:\nAlways disable interpolation, rendering will be blocky.\n\n"
+				"Bilinear Forced (excluding sprite):\nAlways enable interpolation except for sprites (FMV/Text/2D elements)."
+				" Rendering is smoother but it could generate a few glitches. If upscaling is enabled, this setting is recommended over 'Bilinear Forced'\n\n"
 				"Bilinear Forced:\nAlways enable interpolation. Rendering is smoother but it could generate some glitches.\n\n"
-				"Bilinear PS2:\nUse same mode as the PS2. It is the more accurate option.\n\n"
+				"Bilinear PS2:\nUse same mode as the PS2. It is the more accurate option.\n\n";
+#ifdef __unix__
+		case IDC_TRI_FILTER:
+			return "Control the texture tri-filtering of the emulation.\n\n"
+				"None:\nNo extra trilinear filtering.\n\n"
 				"Trilinear:\nUse OpenGL trilinear interpolation when PS2 uses mipmaps.\n\n"
-				"Trilinear Forced Bilinear:\nSame as above but always enable bilinear interpolation.\n\n"
-				"Trilinear Ultra:\nAlways enable full trilinear interpolation. Warning Slow!\n\n";
+				"Trilinear Forced:\nAlways enable full trilinear interpolation. Warning Slow!\n\n";
+#endif
 		case IDC_CRC_LEVEL:
 			return "Control the number of Auto-CRC hacks applied to games.\n\n"
+				"Automatic:\nAutomatically sets the recommended CRC hack level based on the selected renderer.\n"
+				"This is the recommended setting.\n"
+				"Partial will be selected for OpenGL.\nFull will be selected for Direct3D.\n\n"
 				"None:\nRemove nearly all CRC hacks (debug only).\n\n"
 				"Minimum:\nEnable a couple of CRC hacks (23).\n\n"
-				"Partial:\nEnable most of the CRC hacks.\nRecommended OpenGL setting (Accurate/depth options may be required).\n\n"
-				"Full:\nEnable all CRC hacks.\nRecommended Direct3D setting.\n\n"
+				"Partial:\nEnable most of the CRC hacks.\n"
+				"For an optimal experience with OpenGL, Blending Unit Accuracy/Depth Emulation may need to be enabled.\n\n"
+				"Full:\nEnable all CRC hacks.\n\n"
 				"Aggressive:\nUse more aggressive CRC hacks. Only affects a few games, removing some effects which might make the image sharper/clearer.\n"
 				"Affected games: FFX, FFX2, FFXII, GOW2, ICO, SoTC, SSX3, SMT3, SMTDDS1, SMTDDS2.\n"
 				"Works as a speedhack for: Steambot Chronicles.";
@@ -55,7 +65,9 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_ALPHAHACK:
 			return "Different alpha handling. Can work around some shadow problems.";
 		case IDC_OFFSETHACK:
-			return "Might fix some misaligned fog, bloom, or blend effect.";
+			return "Might fix some misaligned fog, bloom, or blend effect.\n"
+				"The preferred option is Normal (Vertex) as it is most likely to resolve misalignment issues.\n"
+				"The special cases are only useful in a couple of games like Captain Tsubasa.";
 		case IDC_SPRITEHACK:
 			return "Helps getting rid of black inner lines in some filtered sprites."
 				" Half option is the preferred one. Use it for Mana Khemia or Ar tonelico for example."

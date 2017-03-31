@@ -48,21 +48,19 @@ protected:
 	bool m_fxaa;
 	bool m_shadeboost;
 	bool m_texture_shuffle;
-	Filtering m_filter;
 	GSVector2i m_real_size;
 
 	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;
 	virtual GSTexture* GetFeedbackOutput() { return nullptr; }
 
 public:
-	GSWnd* m_wnd;
+	std::shared_ptr<GSWnd> m_wnd;
 	GSDevice* m_dev;
 
 public:
 	GSRenderer();
 	virtual ~GSRenderer();
 
-	virtual bool CreateWnd(const string& title, int w, int h);
 	virtual bool CreateDevice(GSDevice* dev);
 	virtual void ResetDevice();
 	virtual void VSync(int field);

@@ -142,6 +142,8 @@ void GSdxApp::Init()
 		return;
 	is_initialised = true;
 
+	m_current_renderer_type = GSRendererType::Undefined;
+
 	if (m_ini.empty())
 		m_ini = "inis/GSdx.ini";
 	m_section = "Settings";
@@ -201,12 +203,14 @@ void GSdxApp::Init()
 	m_gs_max_anisotropy.push_back(GSSetting(8, "8x", ""));
 	m_gs_max_anisotropy.push_back(GSSetting(16, "16x", ""));
 
-	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Nearest), "Nearest", ""));
-	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Bilinear_Forced), "Bilinear", "Forced"));
-	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Bilinear_PS2), "Bilinear", "PS2"));
-	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Trilinear), "Trilinear", ""));
-	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Trilinear_Bilinear_Forced), "Trilinear", "Forced Bilinear"));
-	m_gs_filter.push_back(GSSetting(static_cast<uint32>(Filtering::Trilinear_Always), "Trilinear", "Ultra/Slow"));
+	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Nearest), "Nearest", ""));
+	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced_But_Sprite), "Bilinear", "Forced excluding sprite"));
+	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced), "Bilinear", "Forced"));
+	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::PS2), "Bilinear", "PS2"));
+
+	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::None), "None", ""));
+	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::PS2), "Trilinear", ""));
+	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::Forced), "Trilinear", "Ultra/Slow"));
 
 	m_gs_gl_ext.push_back(GSSetting(-1, "Auto", ""));
 	m_gs_gl_ext.push_back(GSSetting(0,  "Force-Disabled", ""));
@@ -216,15 +220,23 @@ void GSdxApp::Init()
 	m_gs_hack.push_back(GSSetting(1,  "Half", ""));
 	m_gs_hack.push_back(GSSetting(2,  "Full", ""));
 
+	m_gs_offset_hack.push_back(GSSetting(0,  "Off", ""));
+	m_gs_offset_hack.push_back(GSSetting(1,  "Normal", "Vertex"));
+	m_gs_offset_hack.push_back(GSSetting(2,  "Special", "Texture"));
+	m_gs_offset_hack.push_back(GSSetting(3,  "Special", "Texture - aggressive"));
+
 	m_gs_hw_mipmapping.push_back(GSSetting(0, "Off", ""));
 	m_gs_hw_mipmapping.push_back(GSSetting(1, "Basic", "Fast"));
 	m_gs_hw_mipmapping.push_back(GSSetting(2, "Full", "Slow"));
 
-	m_gs_crc_level.push_back(GSSetting(0 , "None", "Debug"));
-	m_gs_crc_level.push_back(GSSetting(1 , "Minimum", "Debug"));
-	m_gs_crc_level.push_back(GSSetting(2 , "Partial", "OpenGL Recommended"));
-	m_gs_crc_level.push_back(GSSetting(3 , "Full", "Direct3D Recommended"));
-	m_gs_crc_level.push_back(GSSetting(4 , "Aggressive", ""));
+	m_gs_crc_level = {
+		GSSetting(CRCHackLevel::Automatic, "Automatic", "Default"),
+		GSSetting(CRCHackLevel::None , "None", "Debug"),
+		GSSetting(CRCHackLevel::Minimum, "Minimum", "Debug"),
+		GSSetting(CRCHackLevel::Partial, "Partial", "OpenGL Recommended"),
+		GSSetting(CRCHackLevel::Full, "Full", "Direct3D Recommended"),
+		GSSetting(CRCHackLevel::Aggressive, "Aggressive", ""),
+	};
 
 	m_gs_acc_blend_level.push_back(GSSetting(0, "None", "Fastest"));
 	m_gs_acc_blend_level.push_back(GSSetting(1, "Basic", "Recommended low-end PC"));
@@ -294,7 +306,7 @@ void GSdxApp::Init()
 	m_default_configuration["CaptureHeight"]                              = "480";
 	m_default_configuration["CaptureWidth"]                               = "640";
 	m_default_configuration["clut_load_before_draw"]                      = "0";
-	m_default_configuration["crc_hack_level"]                             = "3";
+	m_default_configuration["crc_hack_level"]                             = std::to_string(static_cast<int8>(CRCHackLevel::Automatic));
 	m_default_configuration["CrcHacksExclusions"]                         = "";
 	m_default_configuration["debug_glsl_shader"]                          = "0";
 	m_default_configuration["debug_opengl"]                               = "0";
@@ -302,7 +314,7 @@ void GSdxApp::Init()
 	m_default_configuration["dump"]                                       = "0";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";
-	m_default_configuration["filter"]                                     = "2";
+	m_default_configuration["filter"]                                     = to_string(static_cast<int8>(BiFiltering::PS2));
 	m_default_configuration["force_texture_clear"]                        = "0";
 	m_default_configuration["fxaa"]                                       = "0";
 	m_default_configuration["interlace"]                                  = "7";
@@ -329,6 +341,7 @@ void GSdxApp::Init()
 	m_default_configuration["osd_max_log_messages"]                       = "3";
 	m_default_configuration["override_geometry_shader"]                   = "-1";
 	m_default_configuration["override_GL_ARB_clear_texture"]              = "-1";
+	m_default_configuration["override_GL_ARB_direct_state_access"]        = "-1";
 	m_default_configuration["override_GL_ARB_draw_buffers_blend"]         = "-1";
 	m_default_configuration["override_GL_ARB_get_texture_sub_image"]      = "-1";
 	m_default_configuration["override_GL_ARB_gpu_shader5"]                = "-1";
@@ -366,7 +379,6 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_DisableGsMemClear"]                = "0";
 	m_default_configuration["UserHacks_DisablePartialInvalidation"]       = "0";
 	m_default_configuration["UserHacks_HalfPixelOffset"]                  = "0";
-	m_default_configuration["UserHacks_HalfPixelOffset_New"]              = "0";
 	m_default_configuration["UserHacks_merge_pp_sprite"]                  = "0";
 	m_default_configuration["UserHacks_MSAA"]                             = "0";
 	m_default_configuration["UserHacks_unscale_point_line"]               = "0";
@@ -375,6 +387,7 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_SpriteHack"]                       = "0";
 	m_default_configuration["UserHacks_TCOffset"]                         = "0";
 	m_default_configuration["UserHacks_TextureInsideRt"]                  = "0";
+	m_default_configuration["UserHacks_TriFilter"]                        = to_string(static_cast<int8>(TriFiltering::None));
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
 	m_default_configuration["wrap_gs_mem"]                                = "0";
 	m_default_configuration["vsync"]                                      = "0";
@@ -488,4 +501,14 @@ void GSdxApp::SetConfig(const char* entry, int value)
 	sprintf(buff, "%d", value);
 
 	SetConfig(entry, buff);
+}
+
+void GSdxApp::SetCurrentRendererType(GSRendererType type)
+{
+	m_current_renderer_type = type;
+}
+
+GSRendererType GSdxApp::GetCurrentRendererType()
+{
+	return m_current_renderer_type;
 }

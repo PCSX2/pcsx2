@@ -121,16 +121,10 @@ using namespace std;
 
 #include <zlib.h>
 
-#if _MSC_VER >= 1800 || !defined(_WIN32)
 #include <unordered_map>
 #include <unordered_set>
 #define hash_map unordered_map
 #define hash_set unordered_set
-#else
-#include <hash_map>
-#include <hash_set>
-using namespace stdext;
-#endif
 
 #ifdef _WIN32
 
@@ -139,60 +133,6 @@ using namespace stdext;
 	#include <GL/glext.h>
 	#include <GL/wglext.h>
 	#include "GLLoader.h"
-
-	// hashing algoritms at: http://www.cris.com/~Ttwang/tech/inthash.htm
-	// default hash_compare does ldiv and other crazy stuff to reduce speed
-
-	template<> class hash_compare<uint32>
-	{
-	public:
-		enum {bucket_size = 1};
-
-		size_t operator()(uint32 key) const
-		{
-			key += ~(key << 15);
-			key ^= (key >> 10);
-			key += (key << 3);
-			key ^= (key >> 6);
-			key += ~(key << 11);
-			key ^= (key >> 16);
-
-			return (size_t)key;
-		}
-
-		bool operator()(uint32 a, uint32 b) const
-		{
-			return a < b;
-		}
-	};
-
-	template<> class hash_compare<uint64>
-	{
-	public:
-		enum {bucket_size = 1};
-
-		size_t operator()(uint64 key) const
-		{
-			key += ~(key << 32);
-			key ^= (key >> 22);
-			key += ~(key << 13);
-			key ^= (key >> 8);
-			key += (key << 3);
-			key ^= (key >> 15);
-			key += ~(key << 27);
-			key ^= (key >> 31);
-
-			return (size_t)key;
-		}
-
-		bool operator()(uint64 a, uint64 b) const
-		{
-			return a < b;
-		}
-	};
-
-	#define vsnprintf _vsnprintf
-	#define snprintf _snprintf
 
 	#define DIRECTORY_SEPARATOR '\\'
 
@@ -210,9 +150,6 @@ using namespace stdext;
 #endif
 
 #ifdef _MSC_VER
-#if _MSC_VER < 1900
-    #define alignas(n) __declspec(align(n))
-#endif
 
     #define EXPORT_C_(type) extern "C" type __stdcall
     #define EXPORT_C EXPORT_C_(void)
@@ -428,7 +365,7 @@ using namespace stdext;
 
 #endif
 
-extern string format(const char* fmt, ...);
+extern std::string format(const char* fmt, ...);
 
 extern void* vmalloc(size_t size, bool code);
 extern void vmfree(void* ptr, size_t size);
@@ -493,15 +430,5 @@ struct GLAutoPop {
 #endif
 
 // Helper path to dump texture
-#ifdef _WIN32
-const std::string root_sw("c:\\temp1\\_");
-const std::string root_hw("c:\\temp2\\_");
-#else
-#ifdef _M_AMD64
-const std::string root_sw("/tmp/GS_SW_dump64/");
-const std::string root_hw("/tmp/GS_HW_dump64/");
-#else
-const std::string root_sw("/tmp/GS_SW_dump32/");
-const std::string root_hw("/tmp/GS_HW_dump32/");
-#endif
-#endif
+extern const std::string root_sw;
+extern const std::string root_hw;

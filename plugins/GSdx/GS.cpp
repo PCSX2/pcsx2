@@ -62,7 +62,6 @@ extern bool RunLinuxDialog();
 static GSRenderer* s_gs = NULL;
 static void (*s_irq)() = NULL;
 static uint8* s_basemem = NULL;
-static GSRendererType s_renderer = GSRendererType::Undefined;
 static bool s_framelimit = true;
 static bool s_vsync = false;
 static bool s_exclusive = true;
@@ -170,7 +169,7 @@ EXPORT_C GSshutdown()
 	delete s_gs;
 	s_gs = nullptr;
 
-	s_renderer = GSRendererType::Undefined;
+	theApp.SetCurrentRendererType(GSRendererType::Undefined);
 
 #ifdef _WIN32
 
@@ -209,10 +208,16 @@ EXPORT_C GSclose()
 static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads = -1)
 {
 	GSDevice* dev = NULL;
+	bool old_api = *dsp == NULL;
 
+	// Fresh start up or config file changed
 	if(renderer == GSRendererType::Undefined)
 	{
 		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
+#ifdef _WIN32
+		if (renderer == GSRendererType::Default)
+			renderer = GSUtil::GetBestRenderer();
+#endif
 	}
 
 	if(threads == -1)
@@ -220,11 +225,9 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		threads = theApp.GetConfigI("extrathreads");
 	}
 
-	GSWnd* wnd[2] = { NULL, NULL };
-
 	try
 	{
-		if (s_renderer != renderer)
+		if (theApp.GetCurrentRendererType() != renderer)
 		{
 			// Emulator has made a render change request, which requires a completely
 			// new s_gs -- if the emu doesn't save/restore the GS state across this
@@ -233,13 +236,86 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			delete s_gs;
 
 			s_gs = NULL;
+
+			theApp.SetCurrentRendererType(renderer);
+		}
+
+		std::shared_ptr<GSWnd> window;
+		{
+			// Select the window first to detect the GL requirement
+			std::vector<std::shared_ptr<GSWnd>> wnds;
+			switch (renderer)
+			{
+				case GSRendererType::OGL_HW:
+				case GSRendererType::OGL_SW:
+				case GSRendererType::OGL_OpenCL:
+#if defined(EGL_SUPPORTED) && defined(__unix__)
+					// Note: EGL code use GLX otherwise maybe it could be also compatible with Windows
+					// Yes OpenGL code isn't complicated enough !
+					wnds.push_back(std::make_shared<GSWndEGL>());
+#endif
+#if defined(__unix__)
+					wnds.push_back(std::make_shared<GSWndOGL>());
+#else
+					wnds.push_back(std::make_shared<GSWndWGL>());
+#endif
+					break;
+				default:
+#ifdef _WIN32
+					wnds.push_back(std::make_shared<GSWndDX>());
+#endif
+					break;
+			}
+
+			int w = theApp.GetConfigI("ModeWidth");
+			int h = theApp.GetConfigI("ModeHeight");
+#if defined(__unix__)
+			void *win_handle = (void*)((uptr*)(dsp)+1);
+#else
+			void *win_handle = *dsp;
+#endif
+
+			for(auto& wnd : wnds)
+			{
+				try
+				{
+					if (old_api)
+					{
+						// old-style API expects us to create and manage our own window:
+						wnd->Create(title, w, h);
+
+						wnd->Show();
+
+						*dsp = wnd->GetDisplay();
+					}
+					else
+					{
+						wnd->Attach(win_handle, false);
+					}
+
+					window = wnd; // Previous code will throw if window isn't supported
+
+					break;
+				}
+				catch (GSDXRecoverableError)
+				{
+					wnd->Detach();
+				}
+			}
+
+			if(!window)
+			{
+				GSclose();
+
+				return -1;
+			}
 		}
 
 		const char* renderer_fullname = "";
 		const char* renderer_mode = "";
 
 		switch (renderer)
-		{		
+		{
 		case GSRendererType::DX9_SW:
 		case GSRendererType::DX1011_SW:
 		case GSRendererType::OGL_SW:
@@ -340,33 +416,9 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			}
 			if (s_gs == NULL)
 				return -1;
-
-			s_renderer = renderer;
 		}
 
-		if (s_gs->m_wnd == NULL)
-		{
-#ifdef _WIN32
-			switch (renderer)
-			{
-			case GSRendererType::OGL_HW:
-			case GSRendererType::OGL_SW:
-			case GSRendererType::OGL_OpenCL:
-				s_gs->m_wnd = new GSWndWGL();
-				break;
-			default:
-				s_gs->m_wnd = new GSWndDX();
-				break;
-			}
-#else
-#ifdef EGL_SUPPORTED
-			wnd[0] = new GSWndEGL();
-			wnd[1] = new GSWndOGL();
-#else
-			wnd[0] = new GSWndOGL();
-#endif
-#endif
-		}
+		s_gs->m_wnd = window;
 	}
 	catch (std::exception& ex)
 	{
@@ -384,101 +436,8 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 	s_gs->SetVSync(s_vsync);
 	s_gs->SetFrameLimit(s_framelimit);
 
-	if(*dsp == NULL)
-	{
-		// old-style API expects us to create and manage our own window:
-
-		int w = theApp.GetConfigI("ModeWidth");
-		int h = theApp.GetConfigI("ModeHeight");
-
-#if defined(__unix__)
-		for(uint32 i = 0; i < 2; i++) {
-			try
-			{
-				if (wnd[i] == NULL) continue;
-
-				wnd[i]->Create(title, w, h);
-				s_gs->m_wnd = wnd[i];
-
-				if (i == 0) delete wnd[1];
-
-				break;
-			}
-			catch (GSDXRecoverableError)
-			{
-				wnd[i]->Detach();
-				delete wnd[i];
-			}
-		}
-		if (s_gs->m_wnd == NULL)
-		{
-			GSclose();
-
-			return -1;
-		}
-#endif
-#ifdef _WIN32
-		if(!s_gs->CreateWnd(title, w, h))
-		{
-			GSclose();
-
-			return -1;
-		}
-#endif
-
-		s_gs->m_wnd->Show();
-
-		*dsp = s_gs->m_wnd->GetDisplay();
-	}
-	else
-	{
+	if(!old_api)
 		s_gs->SetMultithreaded(true);
-
-#if defined(__unix__)
-		if (s_gs->m_wnd) {
-			// A window was already attached to s_gs so we also
-			// need to restore the window state (Attach)
-			s_gs->m_wnd->Attach((void*)((uptr*)(dsp)+1), false);
-		} else {
-			// No window found, try to attach a GLX win and retry 
-			// with EGL win if failed.
-			for(uint32 i = 0; i < 2; i++) {
-				try
-				{
-					if (wnd[i] == NULL) continue;
-
-					wnd[i]->Attach((void*)((uptr*)(dsp)+1), false);
-					s_gs->m_wnd = wnd[i];
-
-					if (i == 0) delete wnd[1];
-
-					break;
-				}
-				catch (GSDXRecoverableError)
-				{
-					wnd[i]->Detach();
-					delete wnd[i];
-				}
-			}
-		}
-#endif
-#ifdef _WIN32
-		try
-		{
-			s_gs->m_wnd->Attach(*dsp, false);
-		}
-		catch (GSDXRecoverableError)
-		{
-			s_gs->m_wnd->Detach();
-			delete s_gs->m_wnd;
-			s_gs->m_wnd = NULL;
-		}
-#endif
-		if (s_gs->m_wnd == NULL)
-		{
-			return -1;
-		}
-	}
 
 	if(!s_gs->CreateDevice(dev))
 	{
@@ -516,21 +475,12 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	static bool stored_toggle_state = false;
 	bool toggle_state = !!(flags & 4);
 
-	GSRendererType renderer = s_renderer;
-	// Fresh start up or config file changed
-	if (renderer == GSRendererType::Undefined)
-	{
-		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
-#ifdef _WIN32
-		if (renderer == GSRendererType::Default)
-			renderer = GSUtil::GetBestRenderer();
-#endif
-	}
-	else if (stored_toggle_state != toggle_state)
+	GSRendererType renderer = theApp.GetCurrentRendererType();
+
+	if (renderer != GSRendererType::Undefined && stored_toggle_state != toggle_state)
 	{
 #ifdef _WIN32
 		GSRendererType best_sw_renderer = GSUtil::CheckDirect3D11Level() >= D3D_FEATURE_LEVEL_10_0 ? GSRendererType::DX1011_SW : GSRendererType::DX9_SW;
-
 
 		switch (renderer) {
 			// Use alternative renderer (SW if currently using HW renderer, and vice versa, keeping the same API and API version)
@@ -856,7 +806,7 @@ EXPORT_C GSconfigure()
 		if(GSSettingsDlg().DoModal() == IDOK)
 		{
 			// Force a reload of the gs state
-			s_renderer = GSRendererType::Undefined;
+			theApp.SetCurrentRendererType(GSRendererType::Undefined);
 		}
 
 #else
@@ -864,7 +814,7 @@ EXPORT_C GSconfigure()
 		if (RunLinuxDialog()) {
 			theApp.ReloadConfig();
 			// Force a reload of the gs state
-			s_renderer = GSRendererType::Undefined;
+			theApp.SetCurrentRendererType(GSRendererType::Undefined);
 		}
 
 #endif
@@ -1084,9 +1034,11 @@ public:
 
 			SetConsoleWindowInfo(m_console, TRUE, &rect);
 
-			*stdout = *_fdopen(_open_osfhandle((long)m_console, _O_TEXT), "w");
+			freopen("CONOUT$", "w", stdout);
+			freopen("CONOUT$", "w", stderr);
 
-			setvbuf(stdout, NULL, _IONBF, 0);
+			setvbuf(stdout, nullptr, _IONBF, 0);
+			setvbuf(stderr, nullptr, _IONBF, 0);
 		}
 	}
 

@@ -122,7 +122,15 @@ void CFC2() {
 		_vu0WaitMicro();
 	}
 	if (_Rt_ == 0) return;
-	cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL;
+	
+	if (_Fs_ == REG_TPC) {
+		// For explanation why this is needed here please refer to 
+		// recCFC2() definded in microVU_Macro.inl
+		cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL >> 3;
+	} else {
+		cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL;
+	}
+
 	if(VU0.VI[_Fs_].UL & 0x80000000)
 		cpuRegs.GPR.r[_Rt_].UL[1] = 0xffffffff;
 	else

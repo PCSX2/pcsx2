@@ -31,9 +31,12 @@ class GSState;
 
 class alignas(32) GSVertexTrace : public GSAlignedClass<32>
 {
+	BiFiltering m_force_filter;
+
 public:
 	struct Vertex {GSVector4i c; GSVector4 p, t;};
 	struct VertexAlpha {int min, max; bool valid;};
+	bool m_accurate_stq;
 
 protected:
 	const GSState* m_state;
@@ -42,9 +45,9 @@ protected:
 
 	typedef void (GSVertexTrace::*FindMinMaxPtr)(const void* vertex, const uint32* index, int count);
 
-	FindMinMaxPtr m_fmm[2][2][2][2][4];
+	FindMinMaxPtr m_fmm[2][2][2][2][2][4];
 
-	template<GS_PRIM_CLASS primclass, uint32 iip, uint32 tme, uint32 fst, uint32 color>
+	template<GS_PRIM_CLASS primclass, uint32 iip, uint32 tme, uint32 fst, uint32 color, uint32 accurate_stq>
 	void FindMinMax(const void* vertex, const uint32* index, int count);
 
 public:
@@ -61,9 +64,9 @@ public:
 		struct {uint32 rgba:16, xyzf:4, stq:4;};
 	} m_eq;
 
-	union 
+	union
 	{
-		struct {uint32 mmag:1, mmin:1, linear:1;};
+		struct {uint32 mmag:1, mmin:1, linear:1, opt_linear:1;};
 	} m_filter;
 
 	GSVector2 m_lod; // x = min, y = max
@@ -76,7 +79,8 @@ public:
 
 	void Update(const void* vertex, const uint32* index, int v_count, int i_count, GS_PRIM_CLASS primclass);
 
-	bool IsLinear() const {return m_filter.linear;}
+	bool IsLinear() const {return m_filter.opt_linear;}
+	bool IsRealLinear() const {return m_filter.linear;}
 
 	void CorrectDepthTrace(const void* vertex, int count);
 };
