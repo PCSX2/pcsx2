@@ -28,6 +28,11 @@
 
 static GtkWidget* s_hack_frame;
 
+bool BigEnough()
+{
+	return (gdk_screen_get_height(gdk_screen_get_default()) > 1000);
+}
+
 void AddTooltip(GtkWidget* w, int idc)
 {
 	gtk_widget_set_tooltip_text(w, dialog_message(idc));
@@ -482,6 +487,21 @@ void populate_osd_table(GtkWidget* osd_table)
 	InsertWidgetInTable(osd_table , monitor_check, indicator_check);
 }
 
+GtkWidget* ScrollMe(GtkWidget* w)
+{
+	// the scrolled window add an ugly outline/border even when the scroll bar is off.
+	if (BigEnough())
+		return w;
+
+	GtkWidget* scrollbar = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrollbar), GTK_SHADOW_NONE);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollbar), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrollbar), w);
+
+	return scrollbar;
+}
+
 bool RunLinuxDialog()
 {
 	GtkWidget *dialog;
@@ -504,12 +524,14 @@ bool RunLinuxDialog()
 	GtkWidget* osd_box      = gtk_vbox_new(false, 5);
 
 	// Grab a logo, to make things look nice.
-	GResource * resources = GSdx_res_get_resource();
-	GInputStream * ogl_stream=g_resource_open_stream(resources,"/GSdx/res/logo-ogl.bmp",G_RESOURCE_LOOKUP_FLAGS_NONE,NULL);
-	GdkPixbuf * ogl_logo = gdk_pixbuf_new_from_stream(ogl_stream,NULL,NULL);
-	g_object_unref(ogl_stream);
-	GtkWidget* logo_image  = gtk_image_new_from_pixbuf(ogl_logo);
-	gtk_box_pack_start(GTK_BOX(main_box), logo_image, true, true, 0);
+	if (BigEnough()) {
+		GResource * resources = GSdx_res_get_resource();
+		GInputStream * ogl_stream=g_resource_open_stream(resources,"/GSdx/res/logo-ogl.bmp",G_RESOURCE_LOOKUP_FLAGS_NONE,NULL);
+		GdkPixbuf * ogl_logo = gdk_pixbuf_new_from_stream(ogl_stream,NULL,NULL);
+		g_object_unref(ogl_stream);
+		GtkWidget* logo_image  = gtk_image_new_from_pixbuf(ogl_logo);
+		gtk_box_pack_start(GTK_BOX(main_box), logo_image, true, true, 0);
+	}
 
 	GtkWidget* main_table   = CreateTableInBox(main_box    , NULL                                   , 2  , 2);
 
@@ -545,7 +567,7 @@ bool RunLinuxDialog()
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box , gtk_label_new("Renderer Settings"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), advanced_box, gtk_label_new("Advanced Settings"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box   , gtk_label_new("Debug/Recording"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), osd_box     , gtk_label_new("Post-Processing/OSD"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(osd_box), gtk_label_new("Post-Processing/OSD"));
 
 	// Put everything in the big box.
 	gtk_container_add(GTK_CONTAINER(main_box), notebook);
