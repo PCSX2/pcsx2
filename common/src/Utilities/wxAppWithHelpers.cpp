@@ -678,7 +678,7 @@ wxAppWithHelpers::wxAppWithHelpers()
     // FS segment register won't have been initialized by the main exe, due to tls_insurance
     // being optimized away >_<  --air
 
-    static local_thread int tls_insurance = 0;
+    static thread_local int tls_insurance = 0;
     tls_insurance = 1;
 #endif
 }
