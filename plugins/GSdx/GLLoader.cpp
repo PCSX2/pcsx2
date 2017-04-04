@@ -410,6 +410,7 @@ namespace GLLoader {
 		}
 
 		bool status = true;
+		bool required_for_hw = (theApp.GetCurrentRendererType() == GSRendererType::OGL_HW);
 
 		// Bonus
 		status &= status_and_override(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic");
@@ -429,7 +430,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage", true);
 		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
 		// GL4.5
-		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control", true);
+		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control", required_for_hw);
 		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
 		// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
 		// Rendering might be corrupted but it could be good enough for test/virtual machine.

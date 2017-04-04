@@ -489,7 +489,8 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	// This extension allow FS depth to range from -1 to 1. So
 	// gl_position.z could range from [0, 1]
 	// Change depth convention
-	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+	if (GLLoader::found_GL_ARB_clip_control && glClipControl)
+		glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
 	// ****************************************************************
 	// HW renderer shader

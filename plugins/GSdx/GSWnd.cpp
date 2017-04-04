@@ -167,7 +167,7 @@ void GSWndGL::PopulateGlFunction()
 	GL_EXT_LOAD_OPT(glCreateSamplers);
 	GL_EXT_LOAD_OPT(glCreateProgramPipelines);
 
-	GL_EXT_LOAD(glClipControl);
+	GL_EXT_LOAD_OPT(glClipControl);
 	GL_EXT_LOAD_OPT(glTextureBarrier);
 	GL_EXT_LOAD_OPT(glGetTextureSubImage);
 

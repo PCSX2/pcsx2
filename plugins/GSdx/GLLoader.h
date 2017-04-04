@@ -370,6 +370,7 @@ namespace GLLoader {
 
 	// GL
 	extern bool found_geometry_shader;
+	extern bool found_GL_ARB_clip_control;
 	extern bool found_GL_ARB_gpu_shader5;
 	extern bool found_GL_ARB_shader_image_load_store;
 	extern bool found_GL_ARB_clear_texture;
