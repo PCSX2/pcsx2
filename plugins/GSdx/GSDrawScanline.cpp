@@ -46,7 +46,9 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 	if(m_global.sel.mmin && m_global.sel.lcm)
 	{
 #if defined(__GNUC__) && _M_SSE >= 0x501
-		// GCC 4.9/5/6 doesn't generate correct AVX2 code for extract32<0>. GCC7 and upward are unknown.
+		// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80286
+		//
+		// GCC 4.9/5/6 doesn't generate correct AVX2 code for extract32<0>. It is fixed in GCC7
 		// Intrinsic code is _mm_cvtsi128_si32(_mm256_castsi256_si128(m))
 		// It seems recent Clang got _mm256_cvtsi256_si32(m) instead. I don't know about GCC.
 		//
