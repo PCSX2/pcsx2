@@ -424,7 +424,7 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_shading_language_420pack, "GL_ARB_shading_language_420pack", true);
 		status &= status_and_override(found_GL_ARB_texture_storage, "GL_ARB_texture_storage", true);
 		// GL4.3
-		status &= status_and_override(found_GL_ARB_copy_image, "GL_ARB_copy_image", true);
+		status &= status_and_override(found_GL_ARB_copy_image, "GL_ARB_copy_image", required_for_hw);
 		status &= status_and_override(found_GL_KHR_debug, "GL_KHR_debug", true);
 		// GL4.4
 		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage", true);
