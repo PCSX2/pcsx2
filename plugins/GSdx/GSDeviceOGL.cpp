@@ -1243,6 +1243,7 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	PSSetShaderResource(6, sTex);
 #endif
 
+	ASSERT(GLLoader::found_GL_ARB_copy_image && glCopyImageSubData);
 	glCopyImageSubData( sid, GL_TEXTURE_2D,
 			0, r.x, r.y, 0,
 			did, GL_TEXTURE_2D,
