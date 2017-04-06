@@ -716,9 +716,6 @@
     <ClCompile Include="..\..\gui\Panels\VideoPanel.cpp">
       <Filter>AppHost\Panels</Filter>
     </ClCompile>
-    <ClCompile Include="..\DwmSetup.cpp">
-      <Filter>AppHost\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="..\WinCompressNTFS.cpp">
       <Filter>AppHost\Win32</Filter>
     </ClCompile>

@@ -517,7 +517,6 @@ set(pcsx2WindowsSources
 	gui/CpuUsageProviderMSW.cpp
 	windows/cheats/browser.cpp
 	windows/cheats/cheats.cpp
-	windows/DwmSetup.cpp
 	windows/FlatFileReaderWindows.cpp
 	windows/Optimus.cpp
 	windows/PatchBrowser.cpp
