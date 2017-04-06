@@ -388,7 +388,8 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 
 	ForgetLoadedPatches();
 
-	if (!curGameKey.IsEmpty())
+	bool loadFromDisc = g_Conf->CdvdSource != CDVD_SourceType::NoDisc;
+	if (!curGameKey.IsEmpty() && loadFromDisc)
 	{
 		if (IGameDatabase* GameDB = AppHost_GetGameDatabase() )
 		{
@@ -430,18 +431,20 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 	}
 
 	//Till the end of this function, entry CRC will be 00000000
-	if (!gameCRC.Length())
+	if (gameCRC.IsEmpty() && loadFromDisc)
 	{
 		Console.WriteLn(Color_Gray, "Patches: No CRC found, using 00000000 instead.");
 		gameCRC = L"00000000";
 	}
 
 	// regular cheat patches
-	if (fixup.EnableCheats)
+	if (fixup.EnableCheats && loadFromDisc)
+	{
 		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(gameCRC, GetCheatsFolder(), L"Cheats"));
+	}
 
 	// wide screen patches
-	if (fixup.EnableWideScreenPatches)
+	if (fixup.EnableWideScreenPatches && loadFromDisc)
 	{
 		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(gameCRC, GetCheatsWsFolder(), L"Widescreen hacks"))
 		{
