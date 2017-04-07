@@ -98,11 +98,6 @@ namespace PboPool {
 		m_map    = NULL;
 		m_offset = 0;
 
-		// Don't know if we must do it
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_buffer);
-		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-
 		for (size_t i = 0; i < countof(m_fence); i++) {
 			glDeleteSync(m_fence[i]);
 		}

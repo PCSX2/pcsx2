@@ -160,8 +160,6 @@ public:
 	}
 
 	~GSUniformBufferStorageOGL() {
-		bind();
-		glUnmapBuffer(GL_UNIFORM_BUFFER);
 		glDeleteBuffers(1, &m_buffer);
 	}
 };
