@@ -59,11 +59,34 @@ bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 
 #else
 
+#include "GSdxResources.h"
+
 bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 {
+	std::string path;
+	switch (id) {
+		default:
+			printf("LoadResource not implemented for id %d\n", id);
+			return false;
+	}
+
+	GBytes *bytes = g_resource_lookup_data(GSdx_res_get_resource(), path.c_str(), G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
+
+	size_t size = 0;
+	const void* data = g_bytes_get_data(bytes, &size);
+
+	if (data == nullptr || size == 0) {
+		printf("Failed to get data for resource: %d\n", id);
+		return false;
+	}
+
 	buff.clear();
-	printf("LoadResource not implemented\n");
-	return false;
+	buff.resize(size + 1);
+	memcpy(buff.data(), data, size + 1);
+
+	g_bytes_unref(bytes);
+
+	return true;
 }
 
 size_t GSdxApp::GetPrivateProfileString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName)
