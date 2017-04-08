@@ -40,6 +40,7 @@ pcsx2.snapshot_*
 svnrev.h
 
 /build
+/.vs
 /obj-*
 
 .DS_Store
