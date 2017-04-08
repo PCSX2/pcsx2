@@ -1929,12 +1929,12 @@ GSRendererCL::CL::CL()
 	queue[1] = cl::CommandQueue(context);
 	queue[2] = cl::CommandQueue(context);
 
-	vector<unsigned char> buff;
+	std::vector<char> buff;
 
 #ifdef _WIN32
 	if(theApp.LoadResource(IDR_TFX_CL, buff))
 	{
-		kernel_str = std::string((const char*)buff.data(), buff.size());
+		kernel_str = std::string(buff.data(), buff.size());
 	}
 #else
 	ASSERT(0);

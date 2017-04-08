@@ -53,7 +53,7 @@ public:
 	int GetPrivateProfileInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
 #endif
 
-	bool LoadResource(int id, vector<unsigned char>& buff, const char* type = NULL);
+	bool LoadResource(int id, std::vector<char>& buff, const char* type = nullptr);
 
 	void SetConfig(const char* entry, const char* value);
 	void SetConfig(const char* entry, int value);

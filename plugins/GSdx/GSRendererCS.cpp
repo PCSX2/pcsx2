@@ -295,9 +295,9 @@ bool GSRendererCS::CreateDevice(GSDevice* dev_unk)
 
 	try
 	{
-		vector<unsigned char> shader;
+		std::vector<char> shader;
 		theApp.LoadResource(IDR_CS_FX, shader);
-		dev->CompileShader((const char *)shader.data(), shader.size(), "cs.fx", nullptr, "ps_main0", macro, &m_ps0);
+		dev->CompileShader(shader.data(), shader.size(), "cs.fx", nullptr, "ps_main0", macro, &m_ps0);
 	}
 	catch (GSDXRecoverableError)
 	{
@@ -532,9 +532,9 @@ void GSRendererCS::Draw()
 				{"COLOR", 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0},
 			};
 
-			vector<unsigned char> shader;
+			std::vector<char> shader;
 			theApp.LoadResource(IDR_CS_FX, shader);
-			dev->CompileShader((const char *)shader.data(), shader.size(), "cs.fx", nullptr, "vs_main", macro, &vs.vs, layout, countof(layout), &vs.il);
+			dev->CompileShader(shader.data(), shader.size(), "cs.fx", nullptr, "vs_main", macro, &vs.vs, layout, countof(layout), &vs.il);
 
 			m_vs[vs_sel] = vs;
 		}
@@ -578,9 +578,9 @@ void GSRendererCS::Draw()
 				{NULL, NULL},
 			};
 
-			vector<unsigned char> shader;
+			std::vector<char> shader;
 			theApp.LoadResource(IDR_CS_FX, shader);
-			dev->CompileShader((const char *)shader.data(), shader.size(), "cs.fx", nullptr, "gs_main", macro, &gs[j]);
+			dev->CompileShader(shader.data(), shader.size(), "cs.fx", nullptr, "gs_main", macro, &gs[j]);
 
 			m_gs[gs_sel] = gs[j];
 		}
@@ -619,9 +619,9 @@ void GSRendererCS::Draw()
 			{NULL, NULL},
 		};
 
-		vector<unsigned char> shader;
+		std::vector<char> shader;
 		theApp.LoadResource(IDR_CS_FX, shader);
-		dev->CompileShader((const char *)shader.data(), shader.size(), "cs.fx", nullptr, "ps_main1", macro, &ps[1]);
+		dev->CompileShader(shader.data(), shader.size(), "cs.fx", nullptr, "ps_main1", macro, &ps[1]);
 
 		m_ps1[ps_sel] = ps[1];
 	}

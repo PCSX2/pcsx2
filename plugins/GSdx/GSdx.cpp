@@ -43,7 +43,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 	return TRUE;
 }
 
-bool GSdxApp::LoadResource(int id, vector<unsigned char>& buff, const char* type)
+bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 {
 	buff.clear();
 	HRSRC hRsrc = FindResource((HMODULE)s_hModule, MAKEINTRESOURCE(id), type != NULL ? type : RT_RCDATA);
@@ -59,7 +59,7 @@ bool GSdxApp::LoadResource(int id, vector<unsigned char>& buff, const char* type
 
 #else
 
-bool GSdxApp::LoadResource(int id, vector<unsigned char>& buff, const char* type)
+bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 {
 	buff.clear();
 	printf("LoadResource not implemented\n");
