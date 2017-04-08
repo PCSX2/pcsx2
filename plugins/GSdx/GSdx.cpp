@@ -52,7 +52,9 @@ bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 	if(!hGlobal) return false;
 	DWORD size = SizeofResource((HMODULE)s_hModule, hRsrc);
 	if(!size) return false;
-	buff.resize(size);
+	// On Linux resources are always NULL terminated
+	// Add + 1 on size to do the same for compatibility sake (required by GSDeviceOGL)
+	buff.resize(size + 1);
 	memcpy(buff.data(), LockResource(hGlobal), size);
 	return true;
 }
