@@ -35,6 +35,7 @@ class GSShaderOGL {
 	bool ValidatePipeline(GLuint p);
 
 	std::string GenGlslHeader(const std::string& entry, GLenum type, const std::string& macro);
+	std::vector<char> m_common_header;
 
 	public:
 	GSShaderOGL(bool debug);

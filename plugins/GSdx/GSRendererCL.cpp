@@ -1931,14 +1931,10 @@ GSRendererCL::CL::CL()
 
 	std::vector<char> buff;
 
-#ifdef _WIN32
 	if(theApp.LoadResource(IDR_TFX_CL, buff))
 	{
 		kernel_str = std::string(buff.data(), buff.size());
 	}
-#else
-	ASSERT(0);
-#endif
 
 	vb.head = vb.tail = vb.size = 0;
 	ib.head = ib.tail = ib.size = 0;
