@@ -52,8 +52,6 @@ wxDEFINE_EVENT(pxEVT_ShowStatusBar, wxCommandEvent);
 typedef s32		(CALLBACK* TestFnptr)();
 typedef void	(CALLBACK* ConfigureFnptr)();
 
-static const wxString failed_separator( L"--------   Unsupported Plugins  --------" );
-
 namespace Exception
 {
 	class NotEnumerablePlugin : public BadStream

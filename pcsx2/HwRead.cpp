@@ -33,10 +33,6 @@ static __fi void IntCHackCheck()
 	if( diff > 0 ) cpuRegs.cycle = g_nextEventCycle;
 }
 
-int shift = 0;
-static const uint HwF_VerboseConLog	= 1<<0;
-static const uint HwF_IntcStatHack	= 1<<1;	// used for Reads only.
-
 template< uint page > void __fastcall _hwRead128(u32 mem, mem128_t* result );
 
 template< uint page, bool intcstathack >
