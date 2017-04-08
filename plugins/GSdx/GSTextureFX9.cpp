@@ -96,9 +96,9 @@ void GSDevice9::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 
 		GSVertexShader9 vs;
 
-		vector<unsigned char> shader;
+		std::vector<char> shader;
 		theApp.LoadResource(IDR_TFX_FX, shader);
-		CompileShader((const char *)shader.data(), shader.size(), "tfx.fx", "vs_main", macro, &vs.vs, layout, countof(layout), &vs.il);
+		CompileShader(shader.data(), shader.size(), "tfx.fx", "vs_main", macro, &vs.vs, layout, countof(layout), &vs.il);
 
 		m_vs[sel] = vs;
 
@@ -183,9 +183,9 @@ void GSDevice9::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSel
 
 		CComPtr<IDirect3DPixelShader9> ps;
 
-		vector<unsigned char> shader;
+		std::vector<char> shader;
 		theApp.LoadResource(IDR_TFX_FX, shader);
-		CompileShader((const char *)shader.data(), shader.size(), "tfx.fx", "ps_main", macro, &ps);
+		CompileShader(shader.data(), shader.size(), "tfx.fx", "ps_main", macro, &ps);
 
 		m_ps[sel] = ps;
 

@@ -183,13 +183,13 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
-	vector<unsigned char> shader;
+	std::vector<char> shader;
 	theApp.LoadResource(IDR_CONVERT_FX, shader);
-	CompileShader((const char *)shader.data(), shader.size(), "convert.fx", nullptr, "vs_main", nullptr, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
+	CompileShader(shader.data(), shader.size(), "convert.fx", nullptr, "vs_main", nullptr, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
 
 	for(size_t i = 0; i < countof(m_convert.ps); i++)
 	{
-		CompileShader((const char *)shader.data(), shader.size(), "convert.fx", nullptr, format("ps_main%d", i).c_str(), nullptr, &m_convert.ps[i]);
+		CompileShader(shader.data(), shader.size(), "convert.fx", nullptr, format("ps_main%d", i).c_str(), nullptr, &m_convert.ps[i]);
 	}
 
 	memset(&dsd, 0, sizeof(dsd));
@@ -218,7 +218,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	theApp.LoadResource(IDR_MERGE_FX, shader);
 	for(size_t i = 0; i < countof(m_merge.ps); i++)
 	{
-		CompileShader((const char *)shader.data(), shader.size(), "merge.fx", nullptr, format("ps_main%d", i).c_str(), nullptr, &m_merge.ps[i]);
+		CompileShader(shader.data(), shader.size(), "merge.fx", nullptr, format("ps_main%d", i).c_str(), nullptr, &m_merge.ps[i]);
 	}
 
 	memset(&bsd, 0, sizeof(bsd));
@@ -247,7 +247,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	theApp.LoadResource(IDR_INTERLACE_FX, shader);
 	for(size_t i = 0; i < countof(m_interlace.ps); i++)
 	{
-		CompileShader((const char *)shader.data(), shader.size(), "interlace.fx", nullptr, format("ps_main%d", i).c_str(), nullptr, &m_interlace.ps[i]);
+		CompileShader(shader.data(), shader.size(), "interlace.fx", nullptr, format("ps_main%d", i).c_str(), nullptr, &m_interlace.ps[i]);
 	}
 
 	// Shade Boos
@@ -279,7 +279,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	hr = m_dev->CreateBuffer(&bd, NULL, &m_shadeboost.cb);
 
 	theApp.LoadResource(IDR_SHADEBOOST_FX, shader);
-	CompileShader((const char *)shader.data(), shader.size(), "shadeboost.fx", nullptr, "ps_main", macro, &m_shadeboost.ps);
+	CompileShader(shader.data(), shader.size(), "shadeboost.fx", nullptr, "ps_main", macro, &m_shadeboost.ps);
 
 	// External fx shader
 
@@ -826,9 +826,9 @@ void GSDevice11::InitFXAA()
 	if (!FXAA_Compiled)
 	{
 		try {
-			vector<unsigned char> shader;
+			std::vector<char> shader;
 			theApp.LoadResource(IDR_FXAA_FX, shader);
-			CompileShader((const char *)shader.data(), shader.size(), "fxaa.fx", nullptr, "ps_main", nullptr, &m_fxaa.ps);
+			CompileShader(shader.data(), shader.size(), "fxaa.fx", nullptr, "ps_main", nullptr, &m_fxaa.ps);
 		}
 		catch (GSDXRecoverableError) {
 			printf("GSdx: failed to compile fxaa shader.\n");
