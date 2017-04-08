@@ -195,7 +195,6 @@ set(GSdxHeaders
     PSX/GPUSetupPrimCodeGenerator.h
     PSX/GPUState.h
     PSX/GPUVertex.h
-    res/glsl_source.h
     stdafx.h
     xbyak/xbyak.h
     xbyak/xbyak_mnemonic.h
@@ -289,23 +288,30 @@ if(OPENCL_FOUND)
     set(GSdxFinalLibs ${GSdxFinalLibs} ${OPENCL_LIBRARIES})
 endif()
 
-# Generate Glsl header file. Protect with REBUILD_SHADER to avoid build-dependency on PERL
-if (REBUILD_SHADER)
-    add_custom_command(OUTPUT res/glsl_source.h COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/glsl2h.pl)
-endif()
-
 set(RESOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/res")
+set(RESOURCE_FILES
+    res/logo-ogl.bmp
+    res/fxaa.fx
+    res/tfx.cl
+    res/glsl/common_header.glsl
+    res/glsl/convert.glsl
+    res/glsl/interlace.glsl
+    res/glsl/merge.glsl
+    res/glsl/shadeboost.glsl
+    res/glsl/tfx_fs.glsl
+    res/glsl/tfx_vgs.glsl)
+
 # Note: trying to combine --generate-source and --generate-header doesn't work. It outputs whichever one comes last into the file named by the first
 add_custom_command(
     OUTPUT GSdxResources.h
     COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-header
         --c-name GSdx_res "${RESOURCE_DIR}/gsdx-res.xml" --target=GSdxResources.h
-    DEPENDS res/gsdx-res.xml res/logo-ogl.bmp)
+    DEPENDS res/gsdx-res.xml ${RESOURCE_FILES})
 add_custom_command(
     OUTPUT GSdxResources.cpp
     COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-source
         --c-name GSdx_res "${RESOURCE_DIR}/gsdx-res.xml" --target=GSdxResources.cpp
-    DEPENDS res/gsdx-res.xml res/logo-ogl.bmp)
+    DEPENDS res/gsdx-res.xml ${RESOURCE_FILES})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 

@@ -83,6 +83,19 @@ IDR_SHADEBOOST_FX       RCDATA                  "res\\shadeboost.fx"
 
 IDR_TFX_CL              RCDATA                  "res\\tfx.cl"
 
+IDR_CONVERT_GLSL        RCDATA                  "res\\glsl\\convert.glsl";
+
+IDR_INTERLACE_GLSL      RCDATA                  "res\\glsl\\interlace.glsl";
+
+IDR_MERGE_GLSL          RCDATA                  "res\\glsl\\merge.glsl";
+
+IDR_SHADEBOOST_GLSL     RCDATA                  "res\\glsl\\shadeboost.glsl";
+
+IDR_COMMON_GLSL         RCDATA                  "res\\glsl\\common_header.glsl";
+
+IDR_TFX_VGS_GLSL        RCDATA                  "res\\glsl\\tfx_vgs.glsl";
+
+IDR_TFX_FS_GLSL         RCDATA                  "res\\glsl\\tfx_fs.glsl";
 
 /////////////////////////////////////////////////////////////////////////////
 //

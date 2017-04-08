@@ -67,6 +67,33 @@ bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 {
 	std::string path;
 	switch (id) {
+		case IDR_COMMON_GLSL:
+			path = "/GSdx/res/glsl/common_header.glsl";
+			break;
+		case IDR_CONVERT_GLSL:
+			path = "/GSdx/res/glsl/convert.glsl";
+			break;
+		case IDR_FXAA_FX:
+			path = "/GSdx/res/fxaa.fx";
+			break;
+		case IDR_INTERLACE_GLSL:
+			path = "/GSdx/res/glsl/interlace.glsl";
+			break;
+		case IDR_MERGE_GLSL:
+			path = "/GSdx/res/glsl/merge.glsl";
+			break;
+		case IDR_SHADEBOOST_GLSL:
+			path = "/GSdx/res/glsl/shadeboost.glsl";
+			break;
+		case IDR_TFX_VGS_GLSL:
+			path = "/GSdx/res/glsl/tfx_vgs.glsl";
+			break;
+		case IDR_TFX_FS_GLSL:
+			path = "/GSdx/res/glsl/tfx_fs.glsl";
+			break;
+		case IDR_TFX_CL:
+			path = "/GSdx/res/tfx.cl";
+			break;
 		default:
 			printf("LoadResource not implemented for id %d\n", id);
 			return false;

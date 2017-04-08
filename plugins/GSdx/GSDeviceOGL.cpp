@@ -27,9 +27,13 @@
 #include "GSOsdManager.h"
 #include <fstream>
 
-#include "res/glsl_source.h"
-
 //#define ONLY_LINES
+
+#ifdef _WIN32
+#include "resource.h"
+#else
+#include "GSdxResources.h"
+#endif
 
 // TODO port those value into PerfMon API
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
@@ -289,6 +293,7 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, bool msaa, int form
 
 bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 {
+	std::vector<char> shader;
 	// ****************************************************************
 	// Debug helper
 	// ****************************************************************
@@ -381,11 +386,13 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 		m_misc_cb_cache.ScalingFactor = GSVector4i(theApp.GetConfigI("upscale_multiplier"));
 		m_convert.cb->cache_upload(&m_misc_cb_cache);
 
-		vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, convert_glsl);
+		theApp.LoadResource(IDR_CONVERT_GLSL, shader);
+
+		vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, shader.data());
 
 		m_convert.vs = vs;
 		for(size_t i = 0; i < countof(m_convert.ps); i++) {
-			ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, convert_glsl);
+			ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
 			string pretty_name = "Convert pipe " + to_string(i);
 			m_convert.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
@@ -411,8 +418,10 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		m_merge_obj.cb = new GSUniformBufferOGL("Merge UBO", g_merge_cb_index, sizeof(MergeConstantBuffer));
 
+		theApp.LoadResource(IDR_MERGE_GLSL, shader);
+
 		for(size_t i = 0; i < countof(m_merge_obj.ps); i++) {
-			ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, merge_glsl);
+			ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
 			string pretty_name = "Merge pipe " + to_string(i);
 			m_merge_obj.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
@@ -426,8 +435,10 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		m_interlace.cb = new GSUniformBufferOGL("Interlace UBO", g_interlace_cb_index, sizeof(InterlaceConstantBuffer));
 
+		theApp.LoadResource(IDR_INTERLACE_GLSL, shader);
+
 		for(size_t i = 0; i < countof(m_interlace.ps); i++) {
-			ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, interlace_glsl);
+			ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
 			string pretty_name = "Interlace pipe " + to_string(i);
 			m_interlace.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
@@ -446,7 +457,9 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 			+ format("#define SB_BRIGHTNESS %d.0\n", ShadeBoost_Brightness)
 			+ format("#define SB_CONTRAST %d.0\n", ShadeBoost_Contrast);
 
-		ps = m_shader->Compile("shadeboost.glsl", "ps_main", GL_FRAGMENT_SHADER, shadeboost_glsl, shade_macro);
+		theApp.LoadResource(IDR_SHADEBOOST_GLSL, shader);
+
+		ps = m_shader->Compile("shadeboost.glsl", "ps_main", GL_FRAGMENT_SHADER, shader.data(), shade_macro);
 		m_shadeboost.ps = m_shader->LinkPipeline("ShadeBoost pipe", vs, 0, ps);
 	}
 
@@ -565,6 +578,9 @@ void GSDeviceOGL::CreateTextureFX()
 
 	m_vs_cb = new GSUniformBufferOGL("HW VS UBO", g_vs_cb_index, sizeof(VSConstantBuffer));
 	m_ps_cb = new GSUniformBufferOGL("HW PS UBO", g_ps_cb_index, sizeof(PSConstantBuffer));
+
+	theApp.LoadResource(IDR_TFX_VGS_GLSL, m_shader_tfx_vgs);
+	theApp.LoadResource(IDR_TFX_FS_GLSL, m_shader_tfx_fs);
 
 	// warning 1 sampler by image unit. So you cannot reuse m_ps_ss...
 	m_palette_ss = CreateSampler(PSSamplerSelector(0));
@@ -899,28 +915,25 @@ void GSDeviceOGL::Barrier(GLbitfield b)
 	glMemoryBarrier(b);
 }
 
-/* Note: must be here because tfx_glsl is static */
 GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 {
 	if (GLLoader::buggy_sso_dual_src)
-		return m_shader->CompileShader("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, tfx_vgs_glsl, "");
+		return m_shader->CompileShader("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), "");
 	else
-		return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, tfx_vgs_glsl, "");
+		return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), "");
 }
 
-/* Note: must be here because tfx_glsl is static */
 GLuint GSDeviceOGL::CompileGS(GSSelector sel)
 {
 	std::string macro = format("#define GS_POINT %d\n", sel.point)
 		+ format("#define GS_LINE %d\n", sel.line);
 
 	if (GLLoader::buggy_sso_dual_src)
-		return m_shader->CompileShader("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, macro);
+		return m_shader->CompileShader("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, m_shader_tfx_vgs.data(), macro);
 	else
-		return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, tfx_vgs_glsl, macro);
+		return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, m_shader_tfx_vgs.data(), macro);
 }
 
-/* Note: must be here because tfx_glsl is static */
 GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 {
 	std::string macro = format("#define PS_FST %d\n", sel.fst)
@@ -961,9 +974,9 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 	;
 
 	if (GLLoader::buggy_sso_dual_src)
-		return m_shader->CompileShader("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
+		return m_shader->CompileShader("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, m_shader_tfx_fs.data(), macro);
 	else
-		return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, tfx_fs_all_glsl, macro);
+		return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, m_shader_tfx_fs.data(), macro);
 }
 
 void GSDeviceOGL::SelfShaderTestRun(const string& dir, const string& file, const PSSelector& sel, int& nb_shader)
@@ -1481,7 +1494,11 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 
 		std::string fxaa_macro = "#define FXAA_GLSL_130 1\n";
 		fxaa_macro += "#extension GL_ARB_gpu_shader5 : enable\n";
-		GLuint ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, fxaa_fx, fxaa_macro);
+
+		std::vector<char> shader;
+		theApp.LoadResource(IDR_FXAA_FX, shader);
+
+		GLuint ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, shader.data(), fxaa_macro);
 		m_fxaa.ps = m_shader->LinkPipeline("FXAA pipe", m_convert.vs, 0, ps);
 	}
 

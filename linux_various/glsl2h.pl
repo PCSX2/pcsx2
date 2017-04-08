@@ -35,46 +35,12 @@ eval {
 };
 
 ########################
-# GSdx
-########################
-my $gsdx_path = File::Spec->catdir(dirname(abs_path($0)), "..", "plugins", "GSdx", "res");
-my $gsdx_out = File::Spec->catdir($gsdx_path, "glsl_source.h");
-
-# Just a hack to reuse glsl2h function easily
-$gsdx_path = File::Spec->catdir(dirname(abs_path($0)), "..", "plugins", "GSdx", "res", "glsl");
-my @tfx_res = qw/tfx_fs.glsl/;
-my $tfx_all = File::Spec->catdir($gsdx_path, "tfx_fs_all.glsl");
-
-my @gsdx_res = qw/common_header.glsl convert.glsl interlace.glsl merge.glsl shadeboost.glsl tfx_vgs.glsl tfx_fs_all.glsl fxaa.fx/;
-concat($gsdx_path, $tfx_all, \@tfx_res);
-
-glsl2h($gsdx_path, $gsdx_out, \@gsdx_res);
-
-unlink $tfx_all;
-
-########################
 # ZZOGL
 ########################
 my @zz_res  = qw/ps2hw_gl4.glsl/;
 my $zz_path = File::Spec->catdir(dirname(abs_path($0)), "..", "plugins", "zzogl-pg", "opengl");
 my $zz_out = File::Spec->catdir($zz_path, "ps2hw_gl4.h");
 glsl2h($zz_path, $zz_out, \@zz_res);
-
-sub concat {
-    my $in_dir = shift;
-    my $out_file = shift;
-    my $glsl_files = shift;
-
-    my $line;
-    open(my $TMP, ">$out_file");
-    foreach my $file (@{$glsl_files}) {
-        open(my $GLSL, File::Spec->catfile($in_dir, $file)) or die "$! : $file";
-        while(defined($line = <$GLSL>)) {
-            print $TMP $line;
-        }
-    }
-
-}
 
 sub glsl2h {
     my $in_dir = shift;

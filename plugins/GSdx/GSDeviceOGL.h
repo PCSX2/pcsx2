@@ -418,6 +418,10 @@ public:
 
 	bool m_disable_hw_gl_draw;
 
+	// Place holder for the GLSL shader code (to avoid useless reload)
+	std::vector<char> m_shader_tfx_vgs;
+	std::vector<char> m_shader_tfx_fs;
+
 	GLuint m_fbo;				// frame buffer container
 	GLuint m_fbo_read;			// frame buffer container only for reading
 
