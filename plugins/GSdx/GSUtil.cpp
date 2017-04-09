@@ -297,18 +297,13 @@ void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
 					GetTempPath(MAX_PATH, buff);
 					desc.tmppath = string(buff) + "/" + desc.name;
 
-					WIN32_FIND_DATA FindFileData;
-					HANDLE hFind = FindFirstFile(desc.tmppath.c_str(), &FindFileData);
-					if(hFind != INVALID_HANDLE_VALUE) FindClose(hFind);
-					else CreateDirectory(desc.tmppath.c_str(), NULL);
+					GSmkdir(desc.tmppath.c_str());
 
 					sprintf(buff, "/%d", OCL_PROGRAM_VERSION);
 					desc.tmppath += buff;
 					delete[] buff;
 
-					hFind = FindFirstFile(desc.tmppath.c_str(), &FindFileData);
-					if(hFind != INVALID_HANDLE_VALUE) FindClose(hFind);
-					else CreateDirectory(desc.tmppath.c_str(), NULL);
+					GSmkdir(desc.tmppath.c_str());
 #else
 					// TODO: linux
 					ASSERT(0);
@@ -442,16 +437,23 @@ GSRendererType GSUtil::GetBestRenderer()
 	return GSRendererType::DX9_HW;
 }
 
-#else
+#endif
 
 void GSmkdir(const char* dir)
 {
+#ifdef _WIN32
+	if (!CreateDirectory(dir, nullptr)) {
+		DWORD errorID = ::GetLastError();
+		if (errorID != ERROR_ALREADY_EXISTS) {
+			fprintf(stderr, "Failed to create directory: %s error %u\n", dir, errorID);
+		}
+	}
+#else
 	int err = mkdir(dir, 0777);
 	if (!err && errno != EEXIST)
 		fprintf(stderr, "Failed to create directory: %s\n", dir);
-}
-
 #endif
+}
 
 const char* psm_str(int psm)
 {
