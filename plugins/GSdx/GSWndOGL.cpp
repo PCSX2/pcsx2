@@ -122,18 +122,6 @@ void GSWndOGL::DetachContext()
 	}
 }
 
-void GSWndOGL::CheckContext()
-{
-	int glxMajorVersion, glxMinorVersion;
-	glXQueryVersion(m_NativeDisplay, &glxMajorVersion, &glxMinorVersion);
-	if (glXIsDirect(m_NativeDisplay, m_context))
-		fprintf(stdout, "glX-Version %d.%d with Direct Rendering\n", glxMajorVersion, glxMinorVersion);
-	else {
-		fprintf(stderr, "glX-Version %d.%d with Indirect Rendering !!! It won't support properly opengl\n", glxMajorVersion, glxMinorVersion);
-		throw GSDXRecoverableError();
-	}
-}
-
 bool GSWndOGL::Attach(void* handle, bool managed)
 {
 	m_NativeWindow = *(Window*)handle;
@@ -144,8 +132,6 @@ bool GSWndOGL::Attach(void* handle, bool managed)
 	CreateContext(3, 3);
 
 	AttachContext();
-
-	CheckContext();
 
 	m_swapinterval_ext  = (PFNGLXSWAPINTERVALEXTPROC) glXGetProcAddress((const GLubyte*) "glXSwapIntervalEXT");
 	m_swapinterval_mesa = (PFNGLXSWAPINTERVALMESAPROC)glXGetProcAddress((const GLubyte*) "glXSwapIntervalMESA");
@@ -192,8 +178,6 @@ bool GSWndOGL::Create(const string& title, int w, int h)
 	CreateContext(3, 3);
 
 	AttachContext();
-
-	CheckContext();
 
 	m_swapinterval_ext  = (PFNGLXSWAPINTERVALEXTPROC) glXGetProcAddress((const GLubyte*) "glXSwapIntervalEXT");
 	m_swapinterval_mesa = (PFNGLXSWAPINTERVALMESAPROC)glXGetProcAddress((const GLubyte*) "glXSwapIntervalMESA");

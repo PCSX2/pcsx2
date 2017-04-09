@@ -36,7 +36,6 @@ class GSWndEGL : public GSWndGL
 	EGLContext m_eglContext;
 
 	void CreateContext(int major, int minor);
-	void CheckContext();
 	void BindAPI();
 
 	void OpenEGLDisplay();

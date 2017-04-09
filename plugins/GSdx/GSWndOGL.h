@@ -35,7 +35,6 @@ class GSWndOGL final : public GSWndGL
 	PFNGLXSWAPINTERVALMESAPROC m_swapinterval_mesa;
 
 	void CreateContext(int major, int minor);
-	void CheckContext();
 
 public:
 	GSWndOGL();

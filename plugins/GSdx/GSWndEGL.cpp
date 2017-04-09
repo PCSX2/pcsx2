@@ -116,12 +116,6 @@ void GSWndEGL::DetachContext()
 	}
 }
 
-void GSWndEGL::CheckContext()
-{
-	fprintf(stderr,"EGL: %s : %s\n", eglQueryString(m_eglDisplay, EGL_VENDOR) , eglQueryString(m_eglDisplay, EGL_VERSION) );
-	fprintf(stderr,"EGL: extensions supported: %s\n", eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
-}
-
 void GSWndEGL::BindAPI()
 {
 	eglBindAPI(EGL_OPENGL_API);
@@ -143,8 +137,6 @@ bool GSWndEGL::Attach(void* handle, bool managed)
 	CreateContext(3, 3);
 
 	AttachContext();
-
-	CheckContext();
 
 	PopulateGlFunction();
 
