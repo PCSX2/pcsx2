@@ -292,22 +292,13 @@ void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
 					desc.name = GetDeviceUniqueName(device);
 					desc.version = major * 100 + minor * 10;
 
-#ifdef _WIN32
-					char* buff = new char[MAX_PATH + 1];
-					GetTempPath(MAX_PATH, buff);
-					desc.tmppath = string(buff) + "/" + desc.name;
+					desc.tmppath = GStempdir() + "/" + desc.name;
 
 					GSmkdir(desc.tmppath.c_str());
 
-					sprintf(buff, "/%d", OCL_PROGRAM_VERSION);
-					desc.tmppath += buff;
-					delete[] buff;
+					desc.tmppath += "/" + std::to_string(OCL_PROGRAM_VERSION);
 
 					GSmkdir(desc.tmppath.c_str());
-#else
-					// TODO: linux
-					ASSERT(0);
-#endif
 
 					dl.push_back(desc);
 				}
@@ -452,6 +443,17 @@ void GSmkdir(const char* dir)
 	int err = mkdir(dir, 0777);
 	if (!err && errno != EEXIST)
 		fprintf(stderr, "Failed to create directory: %s\n", dir);
+#endif
+}
+
+std::string GStempdir()
+{
+#ifdef _WIN32
+	char path[MAX_PATH + 1];
+	GetTempPath(MAX_PATH, path);
+	return {path};
+#else
+	return "/tmp";
 #endif
 }
 
