@@ -215,7 +215,6 @@ static const int __pagesize = PCSX2_PAGESIZE;
 #ifndef __noinline
 #define __noinline __attribute__((noinline))
 #endif
-#define thread_local __thread
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 #endif
