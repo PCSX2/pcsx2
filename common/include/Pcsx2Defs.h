@@ -168,7 +168,6 @@ static const int __pagesize = PCSX2_PAGESIZE;
 #define PCSX2_ALIGNED16_EXTERN(x) extern __declspec(align(16)) x
 
 #define __noinline __declspec(noinline)
-#define thread_local __declspec(thread)
 
 // Don't know if there are Visual C++ equivalents of these.
 #define likely(x) (!!(x))
