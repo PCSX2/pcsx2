@@ -78,14 +78,6 @@ void _PADclose()
 {
     SetAutoRepeat(true);
 
-    vector<GamePad *>::iterator it = s_vgamePad.begin();
-
-    // Delete everything in the vector vjoysticks.
-    while (it != s_vgamePad.end()) {
-        delete *it;
-        ++it;
-    }
-
     s_vgamePad.clear();
 }
 
@@ -97,7 +89,7 @@ void PollForJoystickInput(int cpad)
 
     GamePad::UpdateGamePadState();
     for (int i = 0; i < MAX_KEYS; i++) {
-        GamePad *gamePad = s_vgamePad[joyid];
+        auto &gamePad = s_vgamePad[joyid];
 
         switch (type_of_joykey(cpad, i)) {
             case PAD_JOYBUTTONS: {

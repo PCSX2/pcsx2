@@ -44,6 +44,7 @@
 #include <map>
 #include <string>
 #include <pthread.h>
+#include <memory>
 using namespace std;
 
 #define PADdefs

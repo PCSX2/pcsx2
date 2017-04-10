@@ -32,7 +32,7 @@
 class JoystickInfo : GamePad
 {
 public:
-    JoystickInfo()
+    JoystickInfo(int id)
         : GamePad()
         , joy(nullptr)
     {
@@ -40,6 +40,7 @@ public:
         first = true;
         memset(effects, 0, sizeof(effects));
         memset(effects_id, 0, sizeof(effects_id));
+        Init(id);
     }
 
     ~JoystickInfo()
@@ -47,12 +48,13 @@ public:
         Destroy();
     }
 
-    JoystickInfo(const JoystickInfo &);            // copy constructor
-    JoystickInfo &operator=(const JoystickInfo &); // assignment
+    JoystickInfo(const JoystickInfo &) = delete;            // copy constructor
+    JoystickInfo &operator=(const JoystickInfo &) = delete; // assignment
+
 
     void Destroy();
     // opens handles to all possible joysticks
-    static void EnumerateJoysticks(vector<GamePad *> &vjoysticks);
+    static void EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjoysticks);
 
     void Rumble(int type, int pad);
 

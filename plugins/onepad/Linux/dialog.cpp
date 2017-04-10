@@ -534,7 +534,6 @@ void Dialog::config_key(int pad, int key)
     // I don't have any guarantee that not-yet-pressed state is egual to released state
     GamePad::UpdateReleaseState();
     while (!captured) {
-        vector<GamePad *>::iterator itjoy;
         if (PollX11KeyboardMouseEvent(key_pressed)) {
             // special case for keyboard/mouse to handle multiple keys
             // Note: key_pressed == 0 when ESC is hit to abort the capture
@@ -548,25 +547,25 @@ void Dialog::config_key(int pad, int key)
         } else {
             GamePad::UpdateGamePadState();
 
-            itjoy = s_vgamePad.begin();
-            while ((itjoy != s_vgamePad.end()) && (!captured)) {
-                if ((*itjoy)->PollButtons(key_pressed)) {
+            for (auto &j : s_vgamePad) {
+                if (j->PollButtons(key_pressed)) {
                     clear_key(pad, key);
                     set_key(pad, key, key_pressed);
                     m_map_images[pad][key_pressed] = key;
                     captured = true;
-                } else if ((*itjoy)->PollAxes(key_pressed)) {
+                } else if (j->PollAxes(key_pressed)) {
                     clear_key(pad, key);
                     set_key(pad, key, key_pressed);
                     m_map_images[pad][key_pressed] = key;
                     captured = true;
-                } else if ((*itjoy)->PollHats(key_pressed)) {
+                } else if (j->PollHats(key_pressed)) {
                     clear_key(pad, key);
                     set_key(pad, key, key_pressed);
                     m_map_images[pad][key_pressed] = key;
                     captured = true;
                 }
-                ++itjoy;
+                if (captured)
+                    break;
             }
         }
     }

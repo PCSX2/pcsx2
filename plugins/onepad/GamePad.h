@@ -38,7 +38,7 @@ public:
     /**
 		 * Find every interesting devices and create right structure for them(depend on backend)
 		 **/
-    static void EnumerateGamePads(vector<GamePad *> &vgamePad);
+    static void EnumerateGamePads(std::vector<std::unique_ptr<GamePad>> &vgamePad);
     static void UpdateReleaseState();
     /**
 		 * Update state of every attached devices
@@ -148,8 +148,8 @@ protected:
     int numbuttons, numaxes, numhats;
     int deadzone;
     int pad;
-    vector<int> vbuttonstate, vaxisstate, vhatstate;
+    std::vector<int> vbuttonstate, vaxisstate, vhatstate;
 };
 
-extern vector<GamePad *> s_vgamePad;
+extern std::vector<std::unique_ptr<GamePad>> s_vgamePad;
 extern bool GamePadIdWithinBounds(int joyid);
