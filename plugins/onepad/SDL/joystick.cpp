@@ -30,21 +30,16 @@ static u32 s_bSDLInit = false;
 
 void JoystickInfo::UpdateReleaseState()
 {
-    vector<GamePad *>::iterator itjoy = s_vgamePad.begin();
-
     SDL_JoystickUpdate();
 
     // Save everything in the vector s_vjoysticks.
-    while (itjoy != s_vgamePad.end()) {
-        (*itjoy)->SaveState();
-        ++itjoy;
-    }
+    for (auto &j : s_vgamePad)
+        j->SaveState();
 }
 
 // opens handles to all possible joysticks
-void JoystickInfo::EnumerateJoysticks(vector<GamePad *> &vjoysticks)
+void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjoysticks)
 {
-
     if (!s_bSDLInit) {
         // Tell SDL to catch event even if the windows isn't focussed
         SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
@@ -61,19 +56,10 @@ void JoystickInfo::EnumerateJoysticks(vector<GamePad *> &vjoysticks)
         s_bSDLInit = true;
     }
 
-    vector<GamePad *>::iterator it = vjoysticks.begin();
+    vjoysticks.clear();
 
-    // Delete everything in the vector vjoysticks.
-    while (it != vjoysticks.end()) {
-        delete *it;
-        ++it;
-    }
-
-    vjoysticks.resize(SDL_NumJoysticks());
-
-    for (int i = 0; i < (int)vjoysticks.size(); ++i) {
-        vjoysticks[i] = new JoystickInfo();
-        vjoysticks[i]->Init(i);
+    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+        vjoysticks.push_back(std::unique_ptr<GamePad>(new JoystickInfo(i)));
     }
 }
 
