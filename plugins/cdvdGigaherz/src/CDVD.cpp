@@ -29,9 +29,6 @@ static std::mutex s_keepalive_lock;
 static std::condition_variable s_keepalive_cv;
 static std::thread s_keepalive_thread;
 
-#define STRFY(x) #x
-#define TOSTR(x) STRFY(x)
-
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 // State Information                                                         //
@@ -50,11 +47,11 @@ int cmode;
 ///////////////////////////////////////////////////////////////////////////////
 // Plugin Interface                                                          //
 
-char LibName[] = "cdvdGigaherz "
-#ifdef PCSX2_DEBUG
-                 " Debug "
+#ifndef PCSX2_DEBUG
+static std::string s_libname("cdvdGigaherz " + std::to_string(SVN_REV));
+#else
+static std::string s_libname("cdvdGigaherz Debug " + std::to_string(SVN_REV));
 #endif
-                 "(" TOSTR(SVN_REV) ")";
 
 const unsigned char version = PS2E_CDVD_VERSION;
 const unsigned char revision = 0;
@@ -62,7 +59,7 @@ const unsigned char build = 11;
 
 EXPORT const char *CALLBACK PS2EgetLibName()
 {
-    return LibName;
+    return s_libname.c_str();
 }
 
 EXPORT u32 CALLBACK PS2EgetLibType()
