@@ -48,20 +48,6 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
         wxPoint(20, 20)       // Position
         );
 
-    m_cb_hack_sixaxis_usb = new wxCheckBox(
-        m_pan_gamepad_config,                    // Parent
-        wxID_ANY,                                // ID
-        _T("&Hack: Sixaxis/DS3 plugged in USB"), // Label
-        wxPoint(20, 40)                          // Position
-        );
-
-    m_cb_hack_sixaxis_pressure = new wxCheckBox(
-        m_pan_gamepad_config,              // Parent
-        wxID_ANY,                          // ID
-        _T("&Hack: Sixaxis/DS3 pressure"), // Label
-        wxPoint(20, 60)                    // Position
-        );
-
     wxString txt_rumble = wxT("Rumble intensity");
     m_lbl_rumble_intensity = new wxStaticText(
         m_pan_gamepad_config, // Parent
@@ -225,10 +211,6 @@ void GamepadConfiguration::OnCheckboxChange(wxCommandEvent &event)
         } else {
             m_sl_rumble_intensity->Disable();
         }
-    } else if (cb_id == m_cb_hack_sixaxis_usb->GetId()) {
-        conf->pad_options[m_pad_id].sixaxis_usb = (m_cb_hack_sixaxis_usb->GetValue()) ? (u32)1 : (u32)0;
-    } else if (cb_id == m_cb_hack_sixaxis_pressure->GetId()) {
-        conf->pad_options[m_pad_id].sixaxis_pressure = (m_cb_hack_sixaxis_pressure->GetValue()) ? (u32)1 : (u32)0;
     }
 }
 
@@ -240,8 +222,6 @@ void GamepadConfiguration::OnCheckboxChange(wxCommandEvent &event)
 void GamepadConfiguration::reset()
 {
     m_cb_rumble->SetValue(m_init_rumble);
-    m_cb_hack_sixaxis_usb->SetValue(m_init_hack_sixaxis);
-    m_cb_hack_sixaxis_pressure->SetValue(m_init_hack_sixaxis_pressure);
     m_sl_rumble_intensity->SetValue(m_init_rumble_intensity);
     m_sl_joystick_sensibility->SetValue(m_init_joystick_sensibility);
 }
@@ -252,15 +232,11 @@ void GamepadConfiguration::repopulate()
     bool val = conf->pad_options[m_pad_id].forcefeedback;
     m_init_rumble = val;
     m_cb_rumble->SetValue(val);
-    val = conf->pad_options[m_pad_id].sixaxis_usb;
-    m_init_hack_sixaxis = val;
-    m_cb_hack_sixaxis_usb->SetValue(val);
-    val = conf->pad_options[m_pad_id].sixaxis_pressure;
-    m_init_hack_sixaxis_pressure = val;
-    m_cb_hack_sixaxis_pressure->SetValue(val);
+
     int tmp = conf->get_ff_intensity();
     m_sl_rumble_intensity->SetValue(tmp);
     m_init_rumble_intensity = tmp;
+
     tmp = conf->get_sensibility();
     m_sl_joystick_sensibility->SetValue(tmp);
     m_init_joystick_sensibility = tmp;

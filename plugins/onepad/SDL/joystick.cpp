@@ -161,20 +161,6 @@ bool JoystickInfo::Init(int id)
     vbuttonstate.resize(numbuttons);
     vhatstate.resize(numhats);
 
-    // Sixaxis, dualshock3 hack
-    // Most buttons are actually axes due to analog pressure support. Only the first 4 buttons
-    // are digital (select, start, l3, r3). To avoid conflict just forget the others.
-    // Keep the 4 hat buttons too (usb driver). (left pressure does not work with recent kernel). Moreover the pressure
-    // work sometime on half axis neg others time in fulll axis. So better keep them as button for the moment
-    auto found_hack = devname.find("PLAYSTATION(R)3");
-    // FIXME: people need to restart the plugin to take the option into account.
-    bool hack_enabled = (conf->pad_options[0].sixaxis_pressure) || (conf->pad_options[1].sixaxis_pressure);
-    if (found_hack != string::npos && numaxes > 4 && hack_enabled) {
-        numbuttons = 4; // (select, start, l3, r3)
-        // Enable this hack in bluetooth too. It avoid to restart the onepad gui
-        numbuttons += 4; // the 4 hat buttons
-    }
-
     if (haptic == NULL) {
         if (!SDL_JoystickIsHaptic(joy)) {
             PAD_LOG("Haptic devices not supported!\n");
@@ -239,20 +225,7 @@ bool JoystickInfo::PollButtons(u32 &pkey)
 
 bool JoystickInfo::PollAxes(u32 &pkey)
 {
-    auto found_hack = devname.find("PLAYSTATION(R)3");
-
-    for (int i = 0; i < GetNumAxes(); ++i) {
-        // Sixaxis, dualshock3 hack
-        if (found_hack != string::npos) {
-            // The analog mode of the hat button is quite erratic. Values can be in half- axis
-            // or full axis... So better keep them as button for the moment -- gregory
-            if (i >= 8 && i <= 11 && (conf->pad_options[pad].sixaxis_usb))
-                continue;
-            // Disable accelerometer
-            if ((i >= 4 && i <= 6))
-                continue;
-        }
-
+    for (int i = 0; i < numaxes; ++i) {
         s32 value = SDL_JoystickGetAxis(GetJoy(), i);
         s32 old_value = GetAxisState(i);
 

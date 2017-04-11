@@ -47,8 +47,6 @@ extern int button_to_key(int button_id);
 extern int axis_to_key(int full_axis, int sign, int axis_id);
 extern int hat_to_key(int dir, int axis_id);
 
-//extern int PadEnum[2][2]; // never used
-
 class PADconf
 {
     u32 ff_intensity;
@@ -66,9 +64,7 @@ public:
             u16 reverse_ry : 1;
             u16 mouse_l : 1;
             u16 mouse_r : 1;
-            u16 sixaxis_usb : 1;
-            u16 sixaxis_pressure : 1;
-            u16 _free : 7;             // The 8 remaining bits are unused, do what you wish with them ;)
+            u16 _free : 9;             // The 9 remaining bits are unused, do what you wish with them ;)
         } pad_options[GAMEPAD_NUMBER]; // One for each pads
         u32 packed_options;            // Only first 8 bits of each 16 bits series are really used, rest is padding
     };
