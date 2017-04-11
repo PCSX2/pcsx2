@@ -96,13 +96,13 @@ void JoystickInfo::Rumble(int type, int pad)
     if (first) { // If done multiple times, device memory will be filled
         first = 0;
         GenerateDefaultEffect();
-        /** Sine and triangle are quite probably the best, don't change that lightly and if you do
-		 *	keep effects ordered by type
-		 **/
-        /** Effect for small motor **/
-        /** Sine seems to be the only effect making little motor from DS3/4 react
-		 *	Intensity has pretty much no effect either(which is coherent with what is explain in hid_sony driver
-		 **/
+        /* Sine and triangle are quite probably the best, don't change that lightly and if you do
+         * keep effects ordered by type
+         */
+        /* Effect for small motor */
+        /* Sine seems to be the only effect making little motor from DS3/4 react
+         * Intensity has pretty much no effect either(which is coherent with what is explain in hid_sony driver
+         */
         effects[0].type = SDL_HAPTIC_SINE;
         effects_id[0] = SDL_HapticNewEffect(haptic, &effects[0]);
         if (effects_id[0] < 0) {
