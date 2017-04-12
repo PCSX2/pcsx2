@@ -66,6 +66,7 @@
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets">
     <Import Project="vsprops\ProjectRootDir.props" />
+    <Import Project="..\..\common\vsprops\pthreads.props" />
     <Import Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='Debug'" Project="vsprops\sse2.props" />
     <Import Condition="'$(Configuration)'=='Release SSE4' Or '$(Configuration)'=='Debug SSE4'" Project="vsprops\sse4.props" />
     <Import Condition="'$(Configuration)'=='Release AVX2' Or '$(Configuration)'=='Debug AVX2'" Project="vsprops\avx2.props" />
@@ -316,6 +317,9 @@
     <ProjectReference Include="..\..\3rdparty\opencl\opencl.vcxproj">
       <Project>{d80d4a75-c385-41bd-ae62-83d2e2b595a7}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">
+      <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\unfree\baseclasses\baseclasses.vcxproj">
       <Project>{27f17499-a372-4408-8afa-4f9f4584fbd3}</Project>

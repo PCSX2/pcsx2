@@ -24,6 +24,109 @@
 #include "GSdx.h"
 #include "boost_spsc_queue.hpp"
 
+#define QUEUE_SEM
+
+#ifdef QUEUE_SEM
+
+#include <semaphore.h>
+#include <errno.h> // EBUSY
+#include <pthread.h>
+
+template<class T, int CAPACITY> class GSJobQueue final
+{
+private:
+	std::thread m_thread;
+	std::function<void(T&)> m_func;
+	std::atomic<bool> m_exit;
+	std::atomic<int32_t> m_count;
+	ringbuffer_base<T, CAPACITY> m_queue;
+
+	std::mutex m_busy_lock;
+	sem_t m_sem_work;
+
+	void ThreadProc() {
+		while (true) {
+			sem_wait(&m_sem_work);
+
+			std::unique_lock<std::mutex> l(m_busy_lock);
+
+			if (m_exit.load(memory_order_relaxed)) {
+				return;
+			}
+
+			do {
+				m_queue.consume_one(*this);
+
+				m_count.fetch_sub(1);
+
+				// If there is a pending job, ack the semaphore (won't block in most case)
+				// It avoids to lock/unlock & check m_exit for each job.
+			} while (sem_trywait(&m_sem_work) == 0);
+		}
+	}
+
+public:
+	GSJobQueue(std::function<void(T&)> func) :
+		m_func(func),
+		m_exit(false),
+		m_count(0),
+		m_queue()
+	{
+		// It must be done before thread creation. Otherwise the
+		// semaphore WAIT (inside the thread) won't work
+		sem_init(&m_sem_work, false, 0);
+		m_thread = std::thread(&GSJobQueue::ThreadProc, this);
+	}
+
+	~GSJobQueue()
+	{
+		m_exit = true;
+		m_count = -1; // Stop the thread inner-loop
+		sem_post(&m_sem_work); // Awake the thread to check m_exit condition
+
+		m_thread.join();
+
+		sem_destroy(&m_sem_work);
+
+	}
+
+	bool IsEmpty() {
+		// Warning: You can't check the value of the semaphore (it could be busy processing last element)
+		return m_count <= 0;
+	}
+
+	void Push(const T& item) {
+		while(!m_queue.push(item))
+			std::this_thread::yield();
+
+		m_count++;
+
+		sem_post(&m_sem_work);
+	}
+
+	void Wait() {
+		while(!IsEmpty()) {
+			// Avoid any issue if ThreadProc didn't take the lock yet
+			std::this_thread::yield();
+#if 1
+			std::unique_lock<std::mutex> l(m_busy_lock);
+#else
+			// Spin wait if a single job remain on the queue.
+			if (m_count > 1)
+				std::unique_lock<std::mutex> l(m_busy_lock);
+#endif
+		}
+
+		ASSERT(IsEmpty());
+	}
+
+	void operator() (T& item) {
+		m_func(item);
+	}
+};
+
+#else
+
 template<class T, int CAPACITY> class GSJobQueue final
 {
 private:
@@ -113,3 +216,5 @@ public:
 		m_func(item);
 	}
 };
+
+#endif

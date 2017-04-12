@@ -197,7 +197,14 @@ static const int __pagesize = PCSX2_PAGESIZE;
 #define PCSX2_ALIGNED_EXTERN(alig, x) extern x __attribute((aligned(alig)))
 #define PCSX2_ALIGNED16_EXTERN(x) extern x __attribute((aligned(16)))
 
-#define __assume(cond) ((void)0) // GCC has no equivalent for __assume
+#ifndef __assume
+#define __assume(c)                  \
+    do {                             \
+        if (!(c))                    \
+            __builtin_unreachable(); \
+    } while (0)
+#endif
+
 #define CALLBACK __attribute__((stdcall))
 
 // Inlining note: GCC needs ((unused)) attributes defined on inlined functions to suppress
@@ -207,15 +214,21 @@ static const int __pagesize = PCSX2_PAGESIZE;
 #ifndef __fastcall
 #define __fastcall __attribute__((fastcall))
 #endif
+
 #define _inline __inline__ __attribute__((unused))
+
+#ifndef __forceinline
 #ifdef NDEBUG
 #define __forceinline __attribute__((always_inline, unused))
 #else
 #define __forceinline __attribute__((unused))
 #endif
+#endif
+
 #ifndef __noinline
 #define __noinline __attribute__((noinline))
 #endif
+
 #define __threadlocal __thread
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)

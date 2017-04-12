@@ -37,7 +37,10 @@
 
 #else
 
+// Seriously the header isn't protected but you can't include it twice
+#ifndef bit_CMPXCHG16B
 #include <cpuid.h>
+#endif
 
 static __inline__ __attribute__((always_inline)) void cpuidex(int CPUInfo[], const int InfoType, const int count)
 {

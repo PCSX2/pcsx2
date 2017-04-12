@@ -18,7 +18,7 @@
 
 #include "PrecompiledHeader.h"
 
-void *__fastcall _aligned_malloc(size_t size, size_t align)
+void *_aligned_malloc(size_t size, size_t align)
 {
     pxAssert(align < 0x10000);
 #if defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
@@ -30,7 +30,7 @@ void *__fastcall _aligned_malloc(size_t size, size_t align)
 #endif
 }
 
-void *__fastcall pcsx2_aligned_realloc(void *handle, size_t new_size, size_t align, size_t old_size)
+void *pcsx2_aligned_realloc(void *handle, size_t new_size, size_t align, size_t old_size)
 {
     pxAssert(align < 0x10000);
 

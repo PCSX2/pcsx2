@@ -167,7 +167,6 @@ using namespace std;
 
     #ifdef __GNUC__
         #define __forceinline __inline__ __attribute__((always_inline,unused))
-        // #define __forceinline __inline__ __attribute__((__always_inline__,__gnu_inline__))
         #define __assume(c) do { if (!(c)) __builtin_unreachable(); } while(0)
 
         // GCC removes the variable as dead code and generates some warnings.
