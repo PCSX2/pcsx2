@@ -341,6 +341,21 @@ PADpoll(u8 value)
 EXPORT_C_(keyEvent *)
 PADkeyEvent()
 {
+#ifdef SDL_BUILD
+    // Take the opportunity to handle hot plugging here
+    SDL_Event events;
+    while (SDL_PollEvent(&events)) {
+        switch (events.type) {
+            case SDL_CONTROLLERDEVICEADDED:
+            case SDL_CONTROLLERDEVICEREMOVED:
+                GamePad::EnumerateGamePads(s_vgamePad);
+                break;
+            default:
+                break;
+        }
+    }
+#endif
+
     s_event = event;
     event.evt = 0;
     event.key = 0;
