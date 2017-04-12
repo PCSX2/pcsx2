@@ -20,6 +20,7 @@
  */
 
 #include "joystick.h"
+#include "resources.h"
 #include <signal.h> // sigaction
 
 //////////////////////////
@@ -46,6 +47,20 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjo
 
         SDL_JoystickEventState(SDL_QUERY);
         SDL_GameControllerEventState(SDL_QUERY);
+
+        { // Support as much Joystick as possible
+            GBytes *bytes = g_resource_lookup_data(onepad_res_get_resource(), "/onepad/res/game_controller_db.txt", G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
+
+            size_t size = 0;
+            // SDL forget to add const for SDL_RWFromMem API...
+            void *data = const_cast<void *>(g_bytes_get_data(bytes, &size));
+
+            int map = SDL_GameControllerAddMappingsFromRW(SDL_RWFromMem(data, size), 1);
+
+            fprintf(stdout, "onepad: load %d extra joystick map\n", map);
+
+            g_bytes_unref(bytes);
+        }
     }
 
     vjoysticks.clear();
