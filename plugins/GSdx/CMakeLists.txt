@@ -288,7 +288,6 @@ if(OPENCL_FOUND)
     set(GSdxFinalLibs ${GSdxFinalLibs} ${OPENCL_LIBRARIES})
 endif()
 
-set(RESOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/res")
 set(RESOURCE_FILES
     res/logo-ogl.bmp
     res/fxaa.fx
@@ -301,17 +300,7 @@ set(RESOURCE_FILES
     res/glsl/tfx_fs.glsl
     res/glsl/tfx_vgs.glsl)
 
-# Note: trying to combine --generate-source and --generate-header doesn't work. It outputs whichever one comes last into the file named by the first
-add_custom_command(
-    OUTPUT GSdxResources.h
-    COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-header
-        --c-name GSdx_res "${RESOURCE_DIR}/gsdx-res.xml" --target=GSdxResources.h
-    DEPENDS res/gsdx-res.xml ${RESOURCE_FILES})
-add_custom_command(
-    OUTPUT GSdxResources.cpp
-    COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-source
-        --c-name GSdx_res "${RESOURCE_DIR}/gsdx-res.xml" --target=GSdxResources.cpp
-    DEPENDS res/gsdx-res.xml ${RESOURCE_FILES})
+add_custom_glib_res("GSdxResources" "gsdx-res.xml" "GSdx_res" ${RESOURCE_FILES})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
