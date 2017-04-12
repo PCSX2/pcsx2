@@ -47,6 +47,8 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjo
 
         SDL_JoystickEventState(SDL_QUERY);
         SDL_GameControllerEventState(SDL_QUERY);
+        SDL_EventState(SDL_CONTROLLERDEVICEADDED, SDL_ENABLE);
+        SDL_EventState(SDL_CONTROLLERDEVICEREMOVED, SDL_ENABLE);
 
         { // Support as much Joystick as possible
             GBytes *bytes = g_resource_lookup_data(onepad_res_get_resource(), "/onepad/res/game_controller_db.txt", G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
