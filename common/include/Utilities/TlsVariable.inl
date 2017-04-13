@@ -18,7 +18,7 @@
 #include "Threading.h"
 
 #if PCSX2_THREAD_LOCAL
-#define DeclareTls(x) __threadlocal x
+#define DeclareTls(x) thread_local x
 #else
 #define DeclareTls(x) Threading::TlsVariable<x>
 #endif

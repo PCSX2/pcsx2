@@ -112,3 +112,4 @@ oprofile_data/
 /tools/bin
 /tools/GSDumpGUI/bin
 /tools/GSDumpGUI/obj
+/.vs
