@@ -117,9 +117,9 @@ void Pad::reset()
     reset_vibrate();
 }
 
-void Pad::rumble(int port)
+void Pad::rumble(unsigned port)
 {
-    for (int motor = 0; motor < 2; motor++) {
+    for (unsigned motor = 0; motor < 2; motor++) {
         // TODO:  Probably be better to send all of these at once.
         if (nextVibrate[motor] | currentVibrate[motor]) {
             currentVibrate[motor] = nextVibrate[motor];
@@ -152,8 +152,8 @@ void Pad::reset_all()
 
 void Pad::rumble_all()
 {
-    for (int port = 0; port < 2; port++)
-        for (int slot = 0; slot < 4; slot++)
+    for (unsigned port = 0; port < 2; port++)
+        for (unsigned slot = 0; slot < 4; slot++)
             pads[port][slot].rumble(port);
 }
 

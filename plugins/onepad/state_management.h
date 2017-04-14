@@ -88,7 +88,7 @@ class Pad : public PadFreezeData
 public:
     // Lilypad store here the state of PC pad
 
-    void rumble(int port);
+    void rumble(unsigned port);
     void set_vibrate(int motor, u8 val);
     void reset_vibrate();
     void reset();
