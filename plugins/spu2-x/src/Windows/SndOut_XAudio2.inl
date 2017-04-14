@@ -86,14 +86,18 @@ private:
 
         virtual ~BaseStreamingVoice()
         {
+            DeleteCriticalSection(&cs);
         }
 
         BaseStreamingVoice(uint numChannels)
-            : m_nBuffers(Config_XAudio2.NumBuffers)
+            : pSourceVoice(nullptr)
+            , qbuffer(nullptr)
+            , m_nBuffers(Config_XAudio2.NumBuffers)
             , m_nChannels(numChannels)
             , m_BufferSize(SndOutPacketSize * m_nChannels * PacketsPerBuffer)
             , m_BufferSizeBytes(m_BufferSize * sizeof(s16))
         {
+            InitializeCriticalSection(&cs);
         }
 
         virtual void Init(IXAudio2 *pXAudio2) = 0;
@@ -123,7 +127,6 @@ private:
                 throw Exception::XAudio2Error(hr, "XAudio2 CreateSourceVoice failure: ");
             }
 
-            InitializeCriticalSection(&cs);
             EnterCriticalSection(&cs);
 
             pSourceVoice->FlushSourceBuffers();
@@ -173,13 +176,14 @@ private:
         {
             IXAudio2SourceVoice *killMe = pSourceVoice;
             pSourceVoice = nullptr;
-            killMe->FlushSourceBuffers();
-            killMe->DestroyVoice();
+            if (killMe != nullptr) {
+                killMe->FlushSourceBuffers();
+                killMe->DestroyVoice();
+            }
 
             EnterCriticalSection(&cs);
             safe_delete_array(qbuffer);
             LeaveCriticalSection(&cs);
-            DeleteCriticalSection(&cs);
         }
 
         void Init(IXAudio2 *pXAudio2)
@@ -238,49 +242,40 @@ private:
         }
     };
 
-    HMODULE xAudio2DLL;
+    HMODULE xAudio2DLL = nullptr;
 #if _WIN32_WINNT >= 0x602
-    decltype(&XAudio2Create) pXAudio2Create;
+    decltype(&XAudio2Create) pXAudio2Create = nullptr;
 #endif
     CComPtr<IXAudio2> pXAudio2;
-    IXAudio2MasteringVoice *pMasteringVoice;
-    BaseStreamingVoice *voiceContext;
+    IXAudio2MasteringVoice *pMasteringVoice = nullptr;
+    BaseStreamingVoice *voiceContext = nullptr;
 
 public:
     s32 Init()
     {
-        HRESULT hr;
-
-#if _WIN32_WINNT >= 0x602
-        xAudio2DLL = LoadLibraryEx(XAUDIO2_DLL, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
-        if (xAudio2DLL == nullptr)
-            throw std::runtime_error("Could not load " XAUDIO2_DLL_A ". Error code:" + std::to_string(GetLastError()));
-
-        pXAudio2Create = reinterpret_cast<decltype(&XAudio2Create)>(GetProcAddress(xAudio2DLL, "XAudio2Create"));
-        if (pXAudio2Create == nullptr)
-            throw std::runtime_error("XAudio2Create not found. Error code: " + std::to_string(GetLastError()));
-#else
-// On some systems XAudio2.7 can unload itself and cause PCSX2 to crash.
-// Maintain an extra library reference so it can't do so. Does not
-// affect XAudio 2.8+, but that's Win8+. See
-// http://blogs.msdn.com/b/chuckw/archive/2015/10/09/known-issues-xaudio-2-7.aspx
-#ifdef _DEBUG
-        xAudio2DLL = LoadLibrary(L"XAudioD2_7.dll");
-#else
-        xAudio2DLL = LoadLibrary(L"XAudio2_7.dll");
-#endif
-#endif
-
         CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
         try {
+            HRESULT hr;
+
 #if _WIN32_WINNT >= 0x602
+            xAudio2DLL = LoadLibraryEx(XAUDIO2_DLL, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+            if (xAudio2DLL == nullptr)
+                throw std::runtime_error("Could not load " XAUDIO2_DLL_A ". Error code:" + std::to_string(GetLastError()));
+
+            pXAudio2Create = reinterpret_cast<decltype(&XAudio2Create)>(GetProcAddress(xAudio2DLL, "XAudio2Create"));
+            if (pXAudio2Create == nullptr)
+                throw std::runtime_error("XAudio2Create not found. Error code: " + std::to_string(GetLastError()));
+
             if (FAILED(hr = pXAudio2Create(&pXAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
                 throw Exception::XAudio2Error(hr, "Failed to init XAudio2 engine. Error Details:");
 #else
-            UINT32 flags = 0;
-            if (IsDebugBuild)
-                flags |= XAUDIO2_DEBUG_ENGINE;
+            // On some systems XAudio2.7 can unload itself and cause PCSX2 to crash.
+            // Maintain an extra library reference so it can't do so. Does not
+            // affect XAudio 2.8+, but that's Win8+. See
+            // http://blogs.msdn.com/b/chuckw/archive/2015/10/09/known-issues-xaudio-2-7.aspx
+            xAudio2DLL = LoadLibrary(IsDebugBuild ? L"XAudioD2_7.dll" : L"XAudio2_7.dll");
+            const UINT32 flags = IsDebugBuild ? XAUDIO2_DEBUG_ENGINE : 0;
             if (FAILED(hr = XAudio2Create(&pXAudio2, flags)))
                 throw Exception::XAudio2Error(hr,
                                               "Failed to init XAudio2 engine. XA2 may not be available on your system.\n"
@@ -316,11 +311,8 @@ public:
                     speakers = 2;
             }
 
-            if (FAILED(hr = pXAudio2->CreateMasteringVoice(&pMasteringVoice, speakers, SampleRate))) {
-                SysMessage("Failed creating mastering voice: %#X\n", hr);
-                CoUninitialize();
-                return -1;
-            }
+            if (FAILED(hr = pXAudio2->CreateMasteringVoice(&pMasteringVoice, speakers, SampleRate)))
+                throw Exception::XAudio2Error(hr, "Failed creating mastering voice: ");
 
             switch (speakers) {
                 case 2:
@@ -365,8 +357,7 @@ public:
             voiceContext->Init(pXAudio2);
         } catch (std::runtime_error &ex) {
             SysMessage(ex.what());
-            pXAudio2.Release();
-            CoUninitialize();
+            Close();
             return -1;
         }
 
