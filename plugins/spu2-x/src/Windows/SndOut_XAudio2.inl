@@ -16,6 +16,7 @@
  */
 
 #include <atlcomcli.h>
+#include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -67,7 +68,7 @@ private:
     {
     protected:
         IXAudio2SourceVoice *pSourceVoice;
-        s16 *qbuffer;
+        std::unique_ptr<s16[]> m_buffer;
 
         const uint m_nBuffers;
         const uint m_nChannels;
@@ -91,7 +92,6 @@ private:
 
         BaseStreamingVoice(uint numChannels)
             : pSourceVoice(nullptr)
-            , qbuffer(nullptr)
             , m_nBuffers(Config_XAudio2.NumBuffers)
             , m_nChannels(numChannels)
             , m_BufferSize(SndOutPacketSize * m_nChannels * PacketsPerBuffer)
@@ -132,14 +132,13 @@ private:
             pSourceVoice->FlushSourceBuffers();
             pSourceVoice->Start(0, 0);
 
-            qbuffer = new s16[m_nBuffers * m_BufferSize];
-            ZeroMemory(qbuffer, m_BufferSizeBytes * m_nBuffers);
+            m_buffer = std::make_unique<s16[]>(m_nBuffers * m_BufferSize);
 
             // Start some buffers.
             for (uint i = 0; i < m_nBuffers; i++) {
                 XAUDIO2_BUFFER buf = {0};
                 buf.AudioBytes = m_BufferSizeBytes;
-                buf.pContext = &qbuffer[i * m_BufferSize];
+                buf.pContext = &m_buffer[i * m_BufferSize];
                 buf.pAudioData = (BYTE *)buf.pContext;
                 pSourceVoice->SubmitSourceBuffer(&buf);
             }
@@ -167,7 +166,7 @@ private:
     class StreamingVoice : public BaseStreamingVoice
     {
     public:
-        StreamingVoice(IXAudio2 *pXAudio2)
+        StreamingVoice()
             : BaseStreamingVoice(sizeof(T) / sizeof(s16))
         {
         }
@@ -182,7 +181,7 @@ private:
             }
 
             EnterCriticalSection(&cs);
-            safe_delete_array(qbuffer);
+            m_buffer = nullptr;
             LeaveCriticalSection(&cs);
         }
 
@@ -248,7 +247,7 @@ private:
 #endif
     CComPtr<IXAudio2> pXAudio2;
     IXAudio2MasteringVoice *pMasteringVoice = nullptr;
-    BaseStreamingVoice *voiceContext = nullptr;
+    std::unique_ptr<BaseStreamingVoice> m_voiceContext;
 
 public:
     s32 Init()
@@ -317,44 +316,44 @@ public:
             switch (speakers) {
                 case 2:
                     ConLog("* SPU2 > Using normal 2 speaker stereo output.\n");
-                    voiceContext = new StreamingVoice<StereoOut16>(pXAudio2);
+                    m_voiceContext = std::make_unique<StreamingVoice<StereoOut16>>();
                     break;
                 case 3:
                     ConLog("* SPU2 > 2.1 speaker expansion enabled.\n");
-                    voiceContext = new StreamingVoice<Stereo21Out16>(pXAudio2);
+                    m_voiceContext = std::make_unique<StreamingVoice<Stereo21Out16>>();
                     break;
                 case 4:
                     ConLog("* SPU2 > 4 speaker expansion enabled [quadraphenia]\n");
-                    voiceContext = new StreamingVoice<Stereo40Out16>(pXAudio2);
+                    m_voiceContext = std::make_unique<StreamingVoice<Stereo40Out16>>();
                     break;
                 case 5:
                     ConLog("* SPU2 > 4.1 speaker expansion enabled.\n");
-                    voiceContext = new StreamingVoice<Stereo41Out16>(pXAudio2);
+                    m_voiceContext = std::make_unique<StreamingVoice<Stereo41Out16>>();
                     break;
                 case 6:
                 case 7:
                     switch (dplLevel) {
                         case 0: // "normal" stereo upmix
                             ConLog("* SPU2 > 5.1 speaker expansion enabled.\n");
-                            voiceContext = new StreamingVoice<Stereo51Out16>(pXAudio2);
+                            m_voiceContext = std::make_unique<StreamingVoice<Stereo51Out16>>();
                             break;
                         case 1: // basic Dpl decoder without rear stereo balancing
                             ConLog("* SPU2 > 5.1 speaker expansion with basic ProLogic dematrixing enabled.\n");
-                            voiceContext = new StreamingVoice<Stereo51Out16Dpl>(pXAudio2);
+                            m_voiceContext = std::make_unique<StreamingVoice<Stereo51Out16Dpl>>();
                             break;
                         case 2: // gigas PLII
                             ConLog("* SPU2 > 5.1 speaker expansion with experimental ProLogicII dematrixing enabled.\n");
-                            voiceContext = new StreamingVoice<Stereo51Out16DplII>(pXAudio2);
+                            m_voiceContext = std::make_unique<StreamingVoice<Stereo51Out16DplII>>();
                             break;
                     }
                     break;
                 default: // anything 8 or more gets the 7.1 treatment!
                     ConLog("* SPU2 > 7.1 speaker expansion enabled.\n");
-                    voiceContext = new StreamingVoice<Stereo51Out16>(pXAudio2);
+                    m_voiceContext = std::make_unique<StreamingVoice<Stereo51Out16>>();
                     break;
             }
 
-            voiceContext->Init(pXAudio2);
+            m_voiceContext->Init(pXAudio2);
         } catch (std::runtime_error &ex) {
             SysMessage(ex.what());
             Close();
@@ -375,7 +374,7 @@ public:
         // But doing no cleanup at all causes XA2 under XP to crash.  So after much trial
         // and error we found a happy compromise as follows:
 
-        safe_delete(voiceContext);
+        m_voiceContext = nullptr;
 
         if (pMasteringVoice != nullptr)
             pMasteringVoice->DestroyVoice();
@@ -405,9 +404,9 @@ public:
 
     int GetEmptySampleCount()
     {
-        if (voiceContext == nullptr)
+        if (m_voiceContext == nullptr)
             return 0;
-        return voiceContext->GetEmptySampleCount();
+        return m_voiceContext->GetEmptySampleCount();
     }
 
     const wchar_t *GetIdent() const
