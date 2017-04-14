@@ -11,6 +11,7 @@ class GamePad
 public:
     GamePad()
         : m_deadzone(1500)
+        , m_no_error(false)
     {
     }
 
@@ -56,8 +57,14 @@ public:
         return m_deadzone;
     }
 
+    bool IsProperlyInitialized()
+    {
+        return m_no_error;
+    }
+
 protected:
     int m_deadzone;
+    bool m_no_error;
 };
 
 extern std::vector<std::unique_ptr<GamePad>> s_vgamePad;
