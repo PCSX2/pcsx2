@@ -174,12 +174,18 @@ private:
         virtual ~StreamingVoice()
         {
             IXAudio2SourceVoice *killMe = pSourceVoice;
+            // XXX: Potentially leads to a race condition that causes a nullptr
+            // dereference when SubmitSourceBuffer is called in OnBufferEnd?
             pSourceVoice = nullptr;
             if (killMe != nullptr) {
                 killMe->FlushSourceBuffers();
                 killMe->DestroyVoice();
             }
 
+            // XXX: Not sure we even need a critical section - DestroyVoice is
+            // blocking, and the documentation states no callbacks are called
+            // or audio data is read after it returns, so it's safe to free up
+            // resources.
             EnterCriticalSection(&cs);
             m_buffer = nullptr;
             LeaveCriticalSection(&cs);
@@ -221,6 +227,8 @@ private:
             EnterCriticalSection(&cs);
 
             // All of these checks are necessary because XAudio2 is wonky shizat.
+            // XXX: The pSourceVoice nullptr check seems a bit self-inflicted
+            // due to the destructor logic.
             if (pSourceVoice == nullptr || context == nullptr) {
                 LeaveCriticalSection(&cs);
                 return;
