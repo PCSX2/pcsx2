@@ -32,33 +32,17 @@
 class JoystickInfo : GamePad
 {
 public:
-    JoystickInfo(int id)
-        : GamePad()
-        , m_controller(nullptr)
-    {
-        haptic = nullptr;
-        first = true;
-        memset(effects, 0, sizeof(effects));
-        memset(effects_id, 0, sizeof(effects_id));
-        Init(id);
-    }
-
-    ~JoystickInfo()
-    {
-        Destroy();
-    }
+    JoystickInfo(int id);
+    ~JoystickInfo();
 
     JoystickInfo(const JoystickInfo &) = delete;            // copy constructor
     JoystickInfo &operator=(const JoystickInfo &) = delete; // assignment
 
 
-    void Destroy();
     // opens handles to all possible joysticks
     static void EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjoysticks);
 
-    void Rumble(int type, int pad);
-
-    bool Init(int id); // opens a handle and gets information
+    void Rumble(unsigned type, unsigned pad);
 
     bool TestForce(float);
 
@@ -69,11 +53,7 @@ public:
     virtual void UpdateGamePadState();
 
 private:
-    void GenerateDefaultEffect();
-
     SDL_GameController *m_controller;
-    SDL_Haptic *haptic;
-    bool first;
-    SDL_HapticEffect effects[NB_EFFECT];
-    int effects_id[NB_EFFECT];
+    SDL_Haptic *m_haptic;
+    std::array<int, NB_EFFECT> m_effects_id;
 };

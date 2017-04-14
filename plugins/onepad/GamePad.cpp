@@ -28,7 +28,7 @@ void GamePad::EnumerateGamePads(std::vector<std::unique_ptr<GamePad>> &vgamePad)
 /**
  * Safely dispatch to the Rumble method above
  **/
-void GamePad::DoRumble(int type, int pad)
+void GamePad::DoRumble(unsigned type, unsigned pad)
 {
     u32 id = conf->get_joyid(pad);
     if (GamePadIdWithinBounds(id)) {

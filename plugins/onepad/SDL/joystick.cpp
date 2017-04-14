@@ -70,8 +70,84 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjo
     }
 }
 
-void JoystickInfo::GenerateDefaultEffect()
+void JoystickInfo::Rumble(unsigned type, unsigned pad)
 {
+    if (type >= m_effects_id.size())
+        return;
+
+    if (!(conf->pad_options[pad].forcefeedback))
+        return;
+
+    if (m_haptic == nullptr)
+        return;
+
+    int id = m_effects_id[type];
+    if (SDL_HapticRunEffect(m_haptic, id, 1) != 0) {
+        fprintf(stderr, "ERROR: Effect is not working! %s, id is %d\n", SDL_GetError(), id);
+    }
+}
+
+JoystickInfo::~JoystickInfo()
+{
+    // Haptic must be closed before the joystick
+    if (m_haptic != nullptr) {
+        for (const auto &eid : m_effects_id) {
+            if (eid >= 0)
+                SDL_HapticDestroyEffect(m_haptic, eid);
+        }
+
+        SDL_HapticClose(m_haptic);
+    }
+
+    if (m_controller != nullptr) {
+#if SDL_MINOR_VERSION >= 4
+        // Version before 2.0.4 are bugged, JoystickClose crashes randomly
+        // Note: GameControllerClose calls JoystickClose)
+        SDL_GameControllerClose(m_controller);
+#endif
+    }
+}
+
+JoystickInfo::JoystickInfo(int id)
+    : GamePad()
+    , m_controller(nullptr)
+    , m_haptic(nullptr)
+{
+    SDL_Joystick *joy = nullptr;
+    m_effects_id.fill(-1);
+
+    if (SDL_IsGameController(id)) {
+        m_controller = SDL_GameControllerOpen(id);
+        joy = SDL_GameControllerGetJoystick(m_controller);
+    } else {
+        joy = SDL_JoystickOpen(id);
+    }
+
+    if (joy == nullptr) {
+        fprintf(stderr, "onepad:failed to open joystick %d\n", id);
+        return;
+    }
+
+    // Collect Device Information
+    char guid[64];
+    SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joy), guid, 64);
+    const char *devname = SDL_JoystickNameForIndex(id);
+
+    if (m_controller == nullptr) {
+        fprintf(stderr, "onepad: Joystick (%s,GUID:%s) isn't yet supported by the SDL2 game controller API\n"
+                        "Fortunately you can use AntiMicro (https://github.com/AntiMicro/antimicro) or Steam to configure your joystick\n"
+                        "Please report it to us (https://github.com/PCSX2/pcsx2/issues) so we can add your joystick to our internal database.",
+                devname, guid);
+
+#if SDL_MINOR_VERSION >= 4 // Version before 2.0.4 are bugged, JoystickClose crashes randomly
+        SDL_JoystickClose(joy);
+#endif
+
+        return;
+    }
+
+    // Default haptic effect
+    SDL_HapticEffect effects[NB_EFFECT];
     for (int i = 0; i < NB_EFFECT; i++) {
         SDL_HapticEffect effect;
         memset(&effect, 0, sizeof(SDL_HapticEffect)); // 0 is safe default
@@ -86,110 +162,37 @@ void JoystickInfo::GenerateDefaultEffect()
         effect.periodic.length = 125; // 125ms feels quite near to original
         effect.periodic.delay = 0;
         effect.periodic.attack_length = 0;
-        effects[i] = effect;
-    }
-}
-
-void JoystickInfo::Rumble(int type, int pad)
-{
-    if (type > 1)
-        return;
-    if (!(conf->pad_options[pad].forcefeedback))
-        return;
-
-    if (haptic == nullptr)
-        return;
-
-    if (first) { // If done multiple times, device memory will be filled
-        first = 0;
-        GenerateDefaultEffect();
         /* Sine and triangle are quite probably the best, don't change that lightly and if you do
          * keep effects ordered by type
          */
-        /* Effect for small motor */
-        /* Sine seems to be the only effect making little motor from DS3/4 react
-         * Intensity has pretty much no effect either(which is coherent with what is explain in hid_sony driver
-         */
-        effects[0].type = SDL_HAPTIC_SINE;
-        effects_id[0] = SDL_HapticNewEffect(haptic, &effects[0]);
-        if (effects_id[0] < 0) {
-            fprintf(stderr, "ERROR: Effect is not uploaded! %s, id is %d\n", SDL_GetError(), effects_id[0]);
+        if (i == 0) {
+            /* Effect for small motor */
+            /* Sine seems to be the only effect making little motor from DS3/4 react
+             * Intensity has pretty much no effect either(which is coherent with what is explain in hid_sony driver
+             */
+            effect.type = SDL_HAPTIC_SINE;
+        } else {
+            /** Effect for big motor **/
+            effect.type = SDL_HAPTIC_TRIANGLE;
         }
 
-        /** Effect for big motor **/
-        effects[1].type = SDL_HAPTIC_TRIANGLE;
-        effects_id[1] = SDL_HapticNewEffect(haptic, &effects[1]);
-        if (effects_id[1] < 0) {
-            fprintf(stderr, "ERROR: Effect is not uploaded! %s, id is %d\n", SDL_GetError(), effects_id[1]);
+        effects[i] = effect;
+    }
+
+    if (SDL_JoystickIsHaptic(joy)) {
+        m_haptic = SDL_HapticOpenFromJoystick(joy);
+
+        for (auto &eid : m_effects_id) {
+            eid = SDL_HapticNewEffect(m_haptic, &effects[0]);
+            if (eid < 0) {
+                fprintf(stderr, "ERROR: Effect is not uploaded! %s\n", SDL_GetError());
+                return;
+            }
         }
-    }
-
-    int id;
-    id = effects_id[type];
-    if (SDL_HapticRunEffect(haptic, id, 1) != 0) {
-        fprintf(stderr, "ERROR: Effect is not working! %s, id is %d\n", SDL_GetError(), id);
-    }
-}
-
-void JoystickInfo::Destroy()
-{
-    // Haptic must be closed before the joystick
-    if (haptic != nullptr) {
-        SDL_HapticClose(haptic);
-        haptic = nullptr;
-    }
-
-    if (m_controller != nullptr) {
-#if SDL_MINOR_VERSION >= 4
-        // Version before 2.0.4 are bugged, JoystickClose crashes randomly
-        // Note: GameControllerClose calls JoystickClose)
-        SDL_GameControllerClose(m_controller);
-#endif
-        m_controller = nullptr;
-    }
-}
-
-bool JoystickInfo::Init(int id)
-{
-    Destroy();
-
-    SDL_Joystick *joy = nullptr;
-
-    if (SDL_IsGameController(id)) {
-        m_controller = SDL_GameControllerOpen(id);
-        joy = SDL_GameControllerGetJoystick(m_controller);
-    } else {
-        m_controller = nullptr;
-        joy = SDL_JoystickOpen(id);
-    }
-
-    if (joy == nullptr) {
-        fprintf(stderr, "onepad:failed to open joystick %d\n", id);
-        return false;
-    }
-
-    // Collect Device Information
-    char guid[64];
-    SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joy), guid, 64);
-    const char *devname = SDL_JoystickNameForIndex(id);
-
-    if (m_controller == nullptr) {
-        fprintf(stderr, "onepad: Joystick (%s,GUID:%s) isn't yet supported by the SDL2 game controller API\n"
-                        "Fortunately you can use AntiMicro (https://github.com/AntiMicro/antimicro) or Steam to configure your joystick\n"
-                        "Please report it to us (https://github.com/PCSX2/pcsx2/issues) so we can add your joystick to our internal database.",
-                devname, guid);
-        return false;
-    }
-
-    if (haptic == nullptr && SDL_JoystickIsHaptic(joy)) {
-        haptic = SDL_HapticOpenFromJoystick(joy);
-        first = true;
     }
 
     fprintf(stdout, "onepad: controller (%s) detected%s, GUID:%s\n",
-            devname, haptic ? " with rumble support" : "", guid);
-
-    return true;
+            devname, m_haptic ? " with rumble support" : "", guid);
 }
 
 const char *JoystickInfo::GetName()
@@ -200,11 +203,13 @@ const char *JoystickInfo::GetName()
 bool JoystickInfo::TestForce(float strength = 0.60)
 {
     // This code just use standard rumble to check that SDL handles the pad correctly! --3kinox
-    if (haptic == nullptr)
+    if (m_haptic == nullptr)
         return false; // Otherwise, core dump!
-    SDL_HapticRumbleInit(haptic);
+
+    SDL_HapticRumbleInit(m_haptic);
+
     // Make the haptic pad rumble 60% strength for half a second, shoudld be enough for user to see if it works or not
-    if (SDL_HapticRumblePlay(haptic, strength, 400) != 0) {
+    if (SDL_HapticRumblePlay(m_haptic, strength, 400) != 0) {
         fprintf(stderr, "ERROR: Rumble is not working! %s\n", SDL_GetError());
         return false;
     }
