@@ -1336,13 +1336,18 @@ bool GSC_GT4(const GSFrameInfo& fi, int& skip)
 	// Game requires to extract source from RT (block boundary) (texture cache limitation)
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP >= 0x02f00 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01180 /*|| fi.TBP0 == 0x01a40*/) && fi.TPSM == PSM_PSMT8) //TBP0 0x1a40 progressive
+		if(Aggressive)
 		{
-			skip = 770;	//ntsc, progressive 1540
-		}
-		if(g_crc_region == CRC::EU && fi.TME && fi.FBP >= 0x03400 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01400 ) && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 880;	//pal
+			// Removes layer obscuring the screen when the in-game brightness or contrast setting is set to any value but 0.
+			// The hack can cause VRAM/RAM spikes when both brightness and contrast settings are set to 0.
+			if(fi.TME && fi.FBP >= 0x02f00 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01180 /*|| fi.TBP0 == 0x01a40*/) && fi.TPSM == PSM_PSMT8) //TBP0 0x1a40 progressive
+			{
+			skip = 770;	// ntsc, progressive 1540
+			}
+			if(g_crc_region == CRC::EU && fi.TME && fi.FBP >= 0x03400 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01400 ) && fi.TPSM == PSM_PSMT8)
+			{
+			skip = 880;	// pal
+			}
 		}
 		else if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01400) && fi.FPSM == PSM_PSMCT24 && fi.TBP0 >= 0x03420 && fi.TPSM == PSM_PSMT8)
 		{
@@ -2541,8 +2546,8 @@ void GSState::SetupCrcHack()
 		lut[CRC::StarWarsBattlefront] = GSC_StarWarsBattlefront;
 		// Dedicated shader for channel effect
 		lut[CRC::TouristTrophy] = GSC_TouristTrophy;
-		lut[CRC::GT3] = GSC_GT3;
 		lut[CRC::GT4] = GSC_GT4;
+		lut[CRC::GT3] = GSC_GT3;
 		lut[CRC::GTConcept] = GSC_GTConcept;
 		lut[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
 		lut[CRC::Tekken5] = GSC_Tekken5;

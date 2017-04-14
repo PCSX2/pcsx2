@@ -137,6 +137,7 @@ CRC::Game CRC::m_games[] =
 	{0x29C28734, ICO, CH, 0},
 	{0xAEAD1CA3, GT4, JP, 0},
 	{0x30E41D93, GT4, KO, 0},
+	{0x715CF2EC, GT4, EU, 0},
 	{0x44A61C8F, GT4, EU, 0},
 	{0x0086E35B, GT4, EU, 0},
 	{0x77E61C8A, GT4, US, 0},
