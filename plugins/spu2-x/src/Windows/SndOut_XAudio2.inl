@@ -16,42 +16,37 @@
  */
 
 #include <atlcomcli.h>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 
 namespace Exception
 {
 class XAudio2Error : public std::runtime_error
 {
-protected:
-    static const char *SomeKindaErrorString(HRESULT hr)
+private:
+    static std::string CreateErrorMessage(const HRESULT result, const std::string &msg)
     {
-        switch (hr) {
+        std::stringstream ss;
+        ss << " (code 0x" << std::hex << result << ")\n\n";
+        switch (result) {
             case XAUDIO2_E_INVALID_CALL:
-                return "Invalid call for the XA2 object state.";
-
+                ss << "Invalid call for the XA2 object state.";
+                break;
             case XAUDIO2_E_DEVICE_INVALIDATED:
-                return "Device is unavailable, unplugged, unsupported, or has been consumed by The Nothing.";
+                ss << "Device is unavailable, unplugged, unsupported, or has been consumed by The Nothing.";
+                break;
+            default:
+                ss << "Unknown error code!";
+                break;
         }
-        return "Unknown error code!";
+        return msg + ss.str();
     }
 
 public:
-    const HRESULT ErrorCode;
-    std::string m_Message;
-
-    const char *CMessage() const
+    explicit XAudio2Error(const HRESULT result, const std::string &msg)
+        : std::runtime_error(CreateErrorMessage(result, msg))
     {
-        return m_Message.c_str();
-    }
-
-    virtual ~XAudio2Error() throw() {}
-    XAudio2Error(const HRESULT result, const std::string &msg)
-        : runtime_error(msg)
-        , ErrorCode(result)
-        , m_Message()
-    {
-        char omg[1024];
-        sprintf_s(omg, "%s (code 0x%x)\n\n%s", what(), ErrorCode, SomeKindaErrorString(ErrorCode));
-        m_Message = omg;
     }
 };
 }
@@ -368,8 +363,8 @@ public:
             }
 
             voiceContext->Init(pXAudio2);
-        } catch (Exception::XAudio2Error &ex) {
-            SysMessage(ex.CMessage());
+        } catch (std::runtime_error &ex) {
+            SysMessage(ex.what());
             pXAudio2.Release();
             CoUninitialize();
             return -1;
