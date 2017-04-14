@@ -20,7 +20,6 @@ set(UtilitiesSources
 	../../include/Utilities/FixedPointTypes.inl
 	../../include/Utilities/EventSource.inl
 	../../include/Utilities/SafeArray.inl
-	../../include/Utilities/TlsVariable.inl
 	CheckedStaticBox.cpp
 	Console.cpp
 	EventSource.cpp

@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "App.h"
-#include "Utilities/TlsVariable.inl"
+#include "Utilities/Threading.h"
 
 #include <wx/stackwalk.h>
 

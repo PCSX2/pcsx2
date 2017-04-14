@@ -16,7 +16,6 @@
 #include "PrecompiledHeader.h"
 #include "Threading.h"
 #include "TraceLog.h"
-#include "TlsVariable.inl"
 
 #include "RedtapeWindows.h" // nneded for OutputDebugString
 
