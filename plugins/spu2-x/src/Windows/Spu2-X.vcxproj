@@ -151,6 +151,7 @@
     <None Include="..\..\Website.txt" />
     <None Include="..\..\spu2-x-sm.bmp" />
     <None Include="..\..\spu2-x.bmp" />
+    <None Include="SndOut_XAudio2.inl" />
     <None Include="Spu2-X.def" />
   </ItemGroup>
   <ItemGroup>
