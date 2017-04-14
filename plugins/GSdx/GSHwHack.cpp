@@ -78,21 +78,15 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP == 0x01c00 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x00e00 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMT8H)
+		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
 		{
-			//not needed anymore?
-			//skip = 24; // blur
-		}
-		else if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
-		{
-			if (Dx_only) { // Ought to be fine with blending accuracy (fbmask?)
+			if (Aggressive) { // Partially works on D3D. OpenGL has no such issues.
 				if(fi.FBMSK == 0x00000)
 				{
-					skip = 28; // outline
-				}
-				if(fi.FBMSK == 0x00FFFFFF)
-				{
-					skip = 1;
+					// Hack removes character outlines as well as black borders on the sides of the screen.
+					// Without the hack one of the borders at the bottom of the screen can start shaking when using the Direct3D 9 renderer. This is caused by resolution upscale.
+					// This can be fixed by using the TC Offsets x and y hardware hacks or using Native resolution.
+					skip = 28;
 				}
 			}
 		}
@@ -100,17 +94,18 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 		{
 			// Texture shuffling must work on openGL
 			if (Dx_only)
-				skip = 5;
+				skip = 5; // Sky texture (depth related). On Direct3D the blue sky texture is shown on the whole screen in front of the player if hack is disabled.
 		}
 		else if(fi.TME && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
 		{
+			// Ghosting (glow) effect. Ghosting appears when resolution is upscaled. Doesn't appear on native resolution.
 			if (fi.FBP == 0x03400)
 			{
-				skip = 1;	//PAL
+				skip = 1; // PAL
 			}
 			if(fi.FBP == 0x02e00)
 			{
-				skip = 3;	//NTSC
+				skip = 3; // NTSC
 			}
 		}
 	}
