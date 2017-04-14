@@ -95,10 +95,9 @@ void SaveConfig()
     fprintf(f, "joy_pad_map = %d\n", conf->joyid_map);
     fprintf(f, "ff_intensity = %d\n", conf->get_ff_intensity());
 
-    map<u32, u32>::iterator it;
     for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
-        for (it = conf->keysym_map[pad].begin(); it != conf->keysym_map[pad].end(); ++it)
-            fprintf(f, "PAD %d:KEYSYM 0x%x = %d\n", pad, it->first, it->second);
+        for (auto const &it : conf->keysym_map[pad])
+            fprintf(f, "PAD %d:KEYSYM 0x%x = %d\n", pad, it.first, it.second);
 
     fclose(f);
 }

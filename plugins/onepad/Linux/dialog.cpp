@@ -441,11 +441,9 @@ void Dialog::repopulate()
 {
     for (int gamepad_id = 0; gamepad_id < GAMEPAD_NUMBER; ++gamepad_id) {
         // keyboard/mouse key
-        map<u32, u32>::iterator it;
-        for (it = conf->keysym_map[gamepad_id].begin();
-             it != conf->keysym_map[gamepad_id].end(); ++it) {
-            int keysym = it->first;
-            int key = it->second;
+        for (const auto &it : conf->keysym_map[gamepad_id]) {
+            int keysym = it.first;
+            int key = it.second;
 
             m_bt_gamepad[gamepad_id][key]->SetLabel(
                 KeyName(gamepad_id, key, keysym).c_str());
