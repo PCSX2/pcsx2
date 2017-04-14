@@ -67,6 +67,9 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjo
 
     for (int i = 0; i < SDL_NumJoysticks(); ++i) {
         vjoysticks.push_back(std::unique_ptr<GamePad>(new JoystickInfo(i)));
+        // Something goes wrong in the init, let's drop it
+        if (!vjoysticks.back()->IsProperlyInitialized())
+            vjoysticks.pop_back();
     }
 }
 
@@ -193,6 +196,8 @@ JoystickInfo::JoystickInfo(int id)
 
     fprintf(stdout, "onepad: controller (%s) detected%s, GUID:%s\n",
             devname, m_haptic ? " with rumble support" : "", guid);
+
+    m_no_error = true;
 }
 
 const char *JoystickInfo::GetName()
