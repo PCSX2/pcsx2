@@ -51,7 +51,6 @@ private:
 	int rowHeight;
 	int charWidth;
 	u32 windowStart;
-	bool alignWindowStart;
 	u32 curAddress; // current selected address
 	u32 referencedAddress; // refrenced by register
 	u32 byteGroupSize;
