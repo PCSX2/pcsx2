@@ -22,7 +22,9 @@
 #pragma once
 
 #include <SDL.h>
+#if SDL_MAJOR_VERSION >= 2
 #include <SDL_haptic.h>
+#endif
 
 #include "GamePad.h"
 #include "onepad.h"
@@ -36,10 +38,12 @@ public:
         : GamePad()
         , joy(nullptr)
     {
+#if SDL_MAJOR_VERSION >= 2
         haptic = nullptr;
         first = true;
         memset(effects, 0, sizeof(effects));
         memset(effects_id, 0, sizeof(effects_id));
+#endif
     }
 
     ~JoystickInfo()
@@ -83,8 +87,10 @@ private:
     void GenerateDefaultEffect();
 
     SDL_Joystick *joy;
+#if SDL_MAJOR_VERSION >= 2
     SDL_Haptic *haptic;
     bool first;
     SDL_HapticEffect effects[NB_EFFECT];
     int effects_id[NB_EFFECT];
+#endif
 };

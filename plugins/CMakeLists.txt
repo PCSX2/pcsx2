@@ -46,6 +46,10 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad" AND onepad)
 	add_subdirectory(onepad)
 endif()
 
+if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad_legacy" AND onepad_legacy)
+	add_subdirectory(onepad_legacy)
+endif()
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/PadNull" AND PadNull)
 	add_subdirectory(PadNull)
 endif()

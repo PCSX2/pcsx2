@@ -47,8 +47,8 @@ std::string s_strLogPath("logs/");
 bool toggleAutoRepeat = false;
 
 const u32 version = PS2E_PAD_VERSION;
-const u32 revision = 2;
-const u32 build = 0; // increase that with each version
+const u32 revision = 1;
+const u32 build = 3; // increase that with each version
 #define PAD_SAVE_STATE_VERSION ((revision << 8) | (build << 0))
 
 FILE *padLog = NULL;

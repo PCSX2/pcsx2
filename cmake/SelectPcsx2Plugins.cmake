@@ -216,16 +216,26 @@ endif()
 #---------------------------------------
 #			onepad
 #---------------------------------------
-# requires: -SDL
+# requires: -SDL2
 #			-X11
 #---------------------------------------
-if(wxWidgets_FOUND AND GTKn_FOUND AND SDLn_FOUND AND X11_FOUND)
+if(wxWidgets_FOUND AND GTKn_FOUND AND SDL2_FOUND AND X11_FOUND)
 	set(onepad TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad")
 	set(onepad FALSE)
 else()
 	set(onepad FALSE)
     print_dep("Skip build of onepad: miss some dependencies" "${msg_dep_onepad}")
+endif()
+
+# old version of the plugin that still support SDL1
+if(wxWidgets_FOUND AND GTKn_FOUND AND SDLn_FOUND AND X11_FOUND)
+	set(onepad_legacy TRUE)
+elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad_legacy")
+	set(onepad_legacy FALSE)
+else()
+	set(onepad_legacy FALSE)
+    print_dep("Skip build of onepad_legacy: miss some dependencies" "${msg_dep_onepad}")
 endif()
 #---------------------------------------
 
