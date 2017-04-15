@@ -74,9 +74,8 @@ CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
 	selectedNibble = 0;
 	addressStart = charWidth;
 	hexStart = addressStart + 9*charWidth;
-	alignWindowStart = true;
 
-	setRowSize(32);
+	setRowSize(g_Conf->EmuOptions.Debugger.MemoryViewBytesPerRow);
 
 	font = pxGetFixedFont(8);
 	underlineFont = pxGetFixedFont(8, wxFONTWEIGHT_NORMAL, true);
@@ -103,7 +102,7 @@ CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
 	menu.Enable(ID_MEMVIEW_DUMP,false);
 	menu.AppendSeparator();
 	menu.AppendCheckItem(ID_MEMVIEW_ALIGNWINDOW, L"Align window to row size");
-	menu.Check(ID_MEMVIEW_ALIGNWINDOW, alignWindowStart);
+	menu.Check(ID_MEMVIEW_ALIGNWINDOW, g_Conf->EmuOptions.Debugger.AlignMemoryWindowStart);
 	menu.Bind(wxEVT_MENU, &CtrlMemView::onPopupClick, this);
 
 	SetScrollbar(wxVERTICAL,100,1,201,true);
@@ -397,7 +396,8 @@ void CtrlMemView::onPopupClick(wxCommandEvent& evt)
 		}
 		break;
 	case ID_MEMVIEW_ALIGNWINDOW:
-		if (alignWindowStart = evt.IsChecked()) {
+		g_Conf->EmuOptions.Debugger.AlignMemoryWindowStart = evt.IsChecked();
+		if (g_Conf->EmuOptions.Debugger.AlignMemoryWindowStart) {
 			windowStart -= windowStart % rowSize;
 			redraw();
 		}
@@ -431,7 +431,7 @@ void CtrlMemView::mouseEvent(wxMouseEvent& evt)
 		menu.Enable(ID_MEMVIEW_COPYVALUE_32,(curAddress & 3) == 0);
 		menu.Enable(ID_MEMVIEW_COPYVALUE_16,(curAddress & 1) == 0);
 
-		menu.Check(ID_MEMVIEW_ALIGNWINDOW, alignWindowStart);
+		menu.Check(ID_MEMVIEW_ALIGNWINDOW, g_Conf->EmuOptions.Debugger.AlignMemoryWindowStart);
 
 		PopupMenu(&menu);
 		return;
@@ -659,7 +659,7 @@ void CtrlMemView::gotoAddress(u32 addr, bool pushInHistory)
 	curAddress = addr;
 	selectedNibble = 0;
 
-	if (alignWindowStart) {
+	if (g_Conf->EmuOptions.Debugger.AlignMemoryWindowStart) {
 		int visibleRows = GetClientSize().y / rowHeight;
 		u32 windowEnd = windowStart + visibleRows*rowSize;
 

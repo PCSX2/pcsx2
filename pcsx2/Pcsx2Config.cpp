@@ -374,10 +374,12 @@ void Pcsx2Config::GamefixOptions::LoadSave( IniInterface& ini )
 Pcsx2Config::DebugOptions::DebugOptions()
 {
 	ShowDebuggerOnStart = false;
+	AlignMemoryWindowStart = true;
 	FontWidth = 8;
 	FontHeight = 12;
 	WindowWidth = 0;
 	WindowHeight = 0;
+	MemoryViewBytesPerRow = 16;
 }
 
 void Pcsx2Config::DebugOptions::LoadSave( IniInterface& ini )
@@ -385,10 +387,12 @@ void Pcsx2Config::DebugOptions::LoadSave( IniInterface& ini )
 	ScopedIniGroup path( ini, L"Debugger" );
 
 	IniBitBool( ShowDebuggerOnStart );
-	IniBitfield(FontWidth);
-	IniBitfield(FontHeight);
-	IniBitfield(WindowWidth);
-	IniBitfield(WindowHeight);
+	IniBitBool( AlignMemoryWindowStart );
+	IniBitfield( FontWidth );
+	IniBitfield( FontHeight );
+	IniBitfield( WindowWidth );
+	IniBitfield( WindowHeight );
+	IniBitfield( MemoryViewBytesPerRow );
 }
 
 
