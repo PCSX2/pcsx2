@@ -47,6 +47,10 @@ if(common_libs)
     add_subdirectory(common/src/x86emitter)
 endif()
 
+# make armips. don't build the executable
+option(ARMIPS_LIBRARY_ONLY "" ON)
+add_subdirectory(3rdparty/armips)
+
 # make pcsx2
 if(EXISTS "${CMAKE_SOURCE_DIR}/pcsx2" AND pcsx2_core)
     add_subdirectory(pcsx2)

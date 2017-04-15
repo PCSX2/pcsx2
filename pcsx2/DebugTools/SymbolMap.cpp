@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "SymbolMap.h"
+#include "Util/Util.h"
 #include <algorithm>
 
 SymbolMap symbolMap;
@@ -24,7 +25,9 @@ SymbolMap symbolMap;
 #define strcasecmp stricmp
 #endif
 
+#ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof(*(x)))
+#endif
 
 void SymbolMap::SortSymbols() {
 	std::lock_guard<std::recursive_mutex> guard(m_lock);
@@ -618,6 +621,20 @@ bool SymbolMap::GetLabelValue(const char* name, u32& dest) {
 	}
 
 	return false;
+}
+
+void SymbolMap::GetLabels(std::vector<LabelDefinition>& dest) const
+{
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
+	for (auto it = activeLabels.begin(); it != activeLabels.end(); it++)
+	{
+		LabelDefinition entry;
+		entry.value = it->first;
+		entry.name = convertUtf8ToWString(it->second.name);
+		entry.originalName = entry.name;
+		std::transform(entry.name.begin(), entry.name.end(), entry.name.begin(), ::towlower);
+		dest.push_back(entry);
+	}
 }
 
 void SymbolMap::AddData(u32 address, u32 size, DataType type, int moduleIndex) {

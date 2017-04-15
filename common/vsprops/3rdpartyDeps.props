@@ -6,7 +6,8 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\;$(SolutionDir)3rdparty\soundtouch\;$(SolutionDir)3rdparty\yaml-cpp\yaml-cpp\include\;$(SolutionDir)3rdparty\fmt\fmt\include\;$(SolutionDir)3rdparty\libchdr\libchdr\include;$(SolutionDir)3rdparty\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\;$(SolutionDir)3rdparty\soundtouch\;$(SolutionDir)3rdparty\yaml-cpp\yaml-cpp\include\;$(SolutionDir)3rdparty\fmt\fmt\include\;$(SolutionDir)3rdparty\libchdr\libchdr\include;$(SolutionDir)3rdparty\include\;$(SolutionDir)3rdparty\armips;$(SolutionDir)3rdparty\armips\ext\tinyformat;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ARMIPS_USE_STD_FILESYSTEM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)deps\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

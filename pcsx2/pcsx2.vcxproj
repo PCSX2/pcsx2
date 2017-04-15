@@ -297,7 +297,6 @@
     <ClCompile Include="DebugTools\ExpressionParser.cpp" />
     <ClCompile Include="DebugTools\MIPSAnalyst.cpp" />
     <ClCompile Include="DebugTools\MipsAssembler.cpp" />
-    <ClCompile Include="DebugTools\MipsAssemblerTables.cpp" />
     <ClCompile Include="DebugTools\MipsStackWalk.cpp" />
     <ClCompile Include="DebugTools\SymbolMap.cpp" />
     <ClCompile Include="DEV9\ATA\Commands\ATA_Command.cpp" />
@@ -745,7 +744,6 @@
     <ClInclude Include="DebugTools\ExpressionParser.h" />
     <ClInclude Include="DebugTools\MIPSAnalyst.h" />
     <ClInclude Include="DebugTools\MipsAssembler.h" />
-    <ClInclude Include="DebugTools\MipsAssemblerTables.h" />
     <ClInclude Include="DebugTools\MipsStackWalk.h" />
     <ClInclude Include="DebugTools\SymbolMap.h" />
     <ClInclude Include="DEV9\ATA\ATA.h" />
@@ -1118,6 +1116,9 @@
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\freetype\builds\windows\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\libarmips.vcxproj">
+      <Project>{129e5e2b-39c1-4d84-96fe-dfd22dbb4a25}</Project>
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\libjpeg\libjpeg.vcxproj">
       <Project>{bc236261-77e8-4567-8d09-45cd02965eb6}</Project>

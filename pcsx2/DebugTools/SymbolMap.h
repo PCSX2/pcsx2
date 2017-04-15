@@ -22,6 +22,7 @@
 #include <mutex>
 
 #include "Pcsx2Types.h"
+#include "Core/Assembler.h"
 
 enum SymbolType {
 	ST_NONE     = 0,
@@ -86,6 +87,7 @@ public:
 	std::string GetLabelString(u32 address) const;
 	void SetLabelName(const char* name, u32 address, bool updateImmediately = true);
 	bool GetLabelValue(const char* name, u32& dest);
+	void GetLabels(std::vector<LabelDefinition>& dest) const;
 
 	void AddData(u32 address, u32 size, DataType type, int moduleIndex = -1);
 	u32 GetDataStart(u32 address) const;
