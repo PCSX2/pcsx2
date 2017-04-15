@@ -829,9 +829,6 @@
     <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\DebugTools\MipsAssemblerTables.cpp">
-      <Filter>System\Ps2\Debug</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\DebugTools\MipsAssembler.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
@@ -1271,9 +1268,6 @@
     </ClInclude>
     <ClInclude Include="..\..\CDVD\zlib_indexed.h">
       <Filter>System\ISO</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\DebugTools\MipsAssemblerTables.h">
-      <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
     <ClInclude Include="..\..\DebugTools\MipsAssembler.h">
       <Filter>System\Ps2\Debug</Filter>

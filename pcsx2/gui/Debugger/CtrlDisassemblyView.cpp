@@ -620,8 +620,6 @@ void CtrlDisassemblyView::followBranch()
 
 void CtrlDisassemblyView::assembleOpcode(u32 address, std::string defaultText)
 {
-	u32 encoded;
-
 	if (!cpu->isCpuPaused())
 	{
 		wxMessageBox( L"Cannot change code while the core is running",  L"Error.", wxICON_ERROR);
@@ -636,12 +634,9 @@ void CtrlDisassemblyView::assembleOpcode(u32 address, std::string defaultText)
 
 	wxString op = entry.getText();
 	std::string errorText;
-	bool result = MipsAssembleOpcode(op.To8BitData(),cpu,address,encoded,errorText);
+	bool result = MipsAssembleOpcode(op.To8BitData(), cpu, address, errorText);
 	if (result)
 	{
-		SysClearExecutionCache();
-		cpu->write32(address,encoded);
-
 		if (address == curAddress)
 			gotoAddress(manager.getNthNextAddress(curAddress,1));
 
