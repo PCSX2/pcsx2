@@ -48,6 +48,17 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
         wxPoint(20, 20)       // Position
         );
 
+    wxArrayString choices;
+    for (const auto &j : s_vgamePad) {
+        choices.Add(j->GetName());
+    }
+    m_joy_map = new wxChoice(
+        m_pan_gamepad_config, // Parent
+        wxID_ANY,             // ID
+        wxPoint(20, 50),      // Position
+        wxDefaultSize,        // Size
+        choices);
+
     wxString txt_rumble = wxT("Rumble intensity");
     m_lbl_rumble_intensity = new wxStaticText(
         m_pan_gamepad_config, // Parent
@@ -94,17 +105,10 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
         wxSize(60, 25)        // Size
         );
 
-    m_bt_cancel = new wxButton(
-        m_pan_gamepad_config, // Parent
-        wxID_ANY,             // ID
-        _T("&Cancel"),        // Label
-        wxPoint(320, 160),    // Position
-        wxSize(60, 25)        // Size
-        );
-
     Bind(wxEVT_BUTTON, &GamepadConfiguration::OnButtonClicked, this);
     Bind(wxEVT_SCROLL_THUMBRELEASE, &GamepadConfiguration::OnSliderReleased, this);
     Bind(wxEVT_CHECKBOX, &GamepadConfiguration::OnCheckboxChange, this);
+    Bind(wxEVT_CHOICE, &GamepadConfiguration::OnChoiceChange, this);
 
     repopulate();
 }
@@ -157,9 +161,6 @@ void GamepadConfiguration::OnButtonClicked(wxCommandEvent &event)
     wxButton *bt_tmp = (wxButton *)event.GetEventObject(); // get the button object
     int bt_id = bt_tmp->GetId();                           // get the real ID
     if (bt_id == m_bt_ok->GetId()) {                       // If the button ID is equals to the Ok button ID
-        Close();                                           // Close the window
-    } else if (bt_id == m_bt_cancel->GetId()) {            // If the button ID is equals to the cancel button ID
-        reset();                                           // reinitialize the value of each parameters
         Close();                                           // Close the window
     }
 }
@@ -214,32 +215,38 @@ void GamepadConfiguration::OnCheckboxChange(wxCommandEvent &event)
     }
 }
 
+/*
+ * Checkbox event, called when the value of the choice box change
+ */
+void GamepadConfiguration::OnChoiceChange(wxCommandEvent &event)
+{
+    wxChoice *choice_tmp = (wxChoice *)event.GetEventObject();
+    int id = choice_tmp->GetSelection();
+    if (id != wxNOT_FOUND) {
+        size_t uid = GamePad::index_to_uid(id);
+        conf->set_joy_uid(m_pad_id, uid);
+    }
+}
+
 /****************************************/
 /*********** Methods functions **********/
 /****************************************/
-
-// Reset checkbox and slider values
-void GamepadConfiguration::reset()
-{
-    m_cb_rumble->SetValue(m_init_rumble);
-    m_sl_rumble_intensity->SetValue(m_init_rumble_intensity);
-    m_sl_joystick_sensibility->SetValue(m_init_joystick_sensibility);
-}
 
 // Set button values
 void GamepadConfiguration::repopulate()
 {
     bool val = conf->pad_options[m_pad_id].forcefeedback;
-    m_init_rumble = val;
     m_cb_rumble->SetValue(val);
 
     int tmp = conf->get_ff_intensity();
     m_sl_rumble_intensity->SetValue(tmp);
-    m_init_rumble_intensity = tmp;
 
     tmp = conf->get_sensibility();
     m_sl_joystick_sensibility->SetValue(tmp);
-    m_init_joystick_sensibility = tmp;
+
+    u32 joyid = GamePad::uid_to_index(conf->get_joy_uid(m_pad_id));
+    if (joyid < m_joy_map->GetCount() && !m_joy_map->IsEmpty())
+        m_joy_map->SetSelection(joyid);
 
     // enable rumble intensity slider if the checkbox is checked
     if (m_cb_rumble->GetValue())
