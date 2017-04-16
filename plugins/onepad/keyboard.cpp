@@ -267,10 +267,13 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad) {
                 for (int i = 0; i < MAX_KEYS; i++) {
+                    assert(0);
+#if 0
                     if (wParam == get_key(pad, i)) {
                         key_status->press(pad, i);
                         break;
                     }
+#endif
                 }
             }
 
@@ -281,10 +284,13 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_KEYUP:
             for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad) {
                 for (int i = 0; i < MAX_KEYS; i++) {
+                    assert(0);
+#if 0
                     if (wParam == get_key(pad, i)) {
                         key_status->release(pad, i);
                         break;
                     }
+#endif
                 }
             }
 

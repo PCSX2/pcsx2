@@ -23,29 +23,9 @@
 #include <string.h> // for memset
 #define MAX_KEYS 24
 
-enum KeyType {
-    PAD_JOYBUTTONS = 0,
-    PAD_AXIS,
-    PAD_HAT,
-    PAD_NULL = -1
-};
-
 extern void set_keyboad_key(int pad, int keysym, int index);
 extern int get_keyboard_key(int pad, int keysym);
-extern void set_key(int pad, int index, int value);
-extern int get_key(int pad, int index);
 extern bool IsAnalogKey(int index);
-
-extern KeyType type_of_joykey(int pad, int index);
-extern int key_to_button(int pad, int index);
-extern int key_to_axis(int pad, int index);
-extern bool key_to_axis_sign(int pad, int index);
-extern bool key_to_axis_type(int pad, int index);
-extern int key_to_hat_dir(int pad, int index);
-
-extern int button_to_key(int button_id);
-extern int axis_to_key(int full_axis, int sign, int axis_id);
-extern int hat_to_key(int dir, int axis_id);
 
 class PADconf
 {
@@ -69,7 +49,6 @@ public:
         u32 packed_options;            // Only first 8 bits of each 16 bits series are really used, rest is padding
     };
 
-    u32 keys[GAMEPAD_NUMBER][MAX_KEYS];
     u32 log;
     u32 joyid_map;
     map<u32, u32> keysym_map[GAMEPAD_NUMBER];
@@ -78,7 +57,6 @@ public:
 
     void init()
     {
-        memset(&keys, 0, sizeof(keys));
         log = packed_options = joyid_map = 0;
         ff_intensity = 0x7FFF; // set it at max value by default
         sensibility = 500;

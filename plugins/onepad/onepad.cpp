@@ -158,8 +158,6 @@ void CloseLogging()
 void clearPAD(int pad)
 {
     conf->keysym_map[pad].clear();
-    for (int key = 0; key < MAX_KEYS; ++key)
-        set_key(pad, key, 0);
 }
 
 EXPORT_C_(s32)

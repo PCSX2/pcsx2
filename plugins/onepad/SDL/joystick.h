@@ -62,21 +62,6 @@ public:
 
     bool TestForce(float);
 
-    bool PollButtons(u32 &pkey);
-    bool PollAxes(u32 &pkey);
-    bool PollHats(u32 &pkey);
-
-    int GetHat(int key_to_axis);
-
-    int GetButton(int key_to_button);
-
-
-    void SaveState();
-
-    int GetAxisFromKey(int pad, int index);
-
-    static void UpdateReleaseState();
-
 private:
     SDL_Joystick *GetJoy()
     {
