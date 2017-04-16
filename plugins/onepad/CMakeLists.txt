@@ -43,65 +43,63 @@ set(onepadFinalFlags "")
 
 # onepad sources
 set(onepadSources
-	controller.cpp
-	GamePad.cpp
-	SDL/joystick.cpp
-	keyboard.cpp
-	KeyStatus.cpp
-	onepad.cpp
-	state_management.cpp)
+    controller.cpp
+    GamePad.cpp
+    SDL/joystick.cpp
+    keyboard.cpp
+    KeyStatus.cpp
+    onepad.cpp
+    state_management.cpp)
 
 # onepad headers
 set(onepadHeaders
-	bitwise.h
-	controller.h
-	GamePad.h
-	SDL/joystick.h
-	keyboard.h
-	KeyStatus.h
-	onepad.h
-	state_management.h)
+    bitwise.h
+    controller.h
+    GamePad.h
+    SDL/joystick.h
+    keyboard.h
+    KeyStatus.h
+    onepad.h
+    state_management.h)
 
 # onepad Linux sources
 set(onepadLinuxSources
-	${linux_sources}/ini.cpp
-	${linux_sources}/dialog.cpp
-	${linux_sources}/linux.cpp
-	${linux_sources}/opPanel.cpp
-	${linux_sources}/GamepadConfiguration.cpp
-	${linux_headers}/JoystickConfiguration.cpp)
+    ${linux_sources}/ini.cpp
+    ${linux_sources}/dialog.cpp
+    ${linux_sources}/linux.cpp
+    ${linux_sources}/opPanel.cpp
+    ${linux_sources}/GamepadConfiguration.cpp
+    ${linux_headers}/JoystickConfiguration.cpp)
 
 # onepad Linux headers
 set(onepadLinuxHeaders
-	${linux_headers}/linux.h
-	${linux_headers}/opPanel.h
-	${linux_headers}/GamepadConfiguration.h
-	${linux_headers}/JoystickConfiguration.h)
+    ${linux_headers}/linux.h
+    ${linux_headers}/opPanel.h
+    ${linux_headers}/GamepadConfiguration.h
+    ${linux_headers}/JoystickConfiguration.h)
 
 # onepad Windows sources
-set(onepadWindowsSources
-	)
+set(onepadWindowsSources)
 
 # onepad Windows headers
-set(onepadWindowsHeaders
-	)
+set(onepadWindowsHeaders)
 
 set(onepadFinalLibs ${SDL2_LIBRARIES})
 add_definitions(-DSDL_BUILD)
 
 set(onepadFinalLibs
-	${onepadFinalLibs}
-	${wxWidgets_LIBRARIES}
-	${GTK2_LIBRARIES}
-	${X11_LIBRARIES}
+    ${onepadFinalLibs}
+    ${wxWidgets_LIBRARIES}
+    ${GTK2_LIBRARIES}
+    ${X11_LIBRARIES}
 )
 
 set(onepadFinalSources
-	${onepadSources}
-	${onepadHeaders}
-	${onepadLinuxSources}
-	${onepadLinuxHeaders}
-	${onepadGuiResources}
+    ${onepadSources}
+    ${onepadHeaders}
+    ${onepadLinuxSources}
+    ${onepadLinuxHeaders}
+    ${onepadGuiResources}
 )
 
 include_directories(
