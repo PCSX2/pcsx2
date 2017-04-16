@@ -50,19 +50,6 @@ using namespace std;
 #define PADdefs
 #include "PS2Edefs.h"
 
-#if defined(__unix__)
-#include "GamePad.h"
-#endif
-#include "bitwise.h"
-#include "controller.h"
-#include "KeyStatus.h"
-
-#ifdef _MSC_VER
-#define EXPORT_C_(type) extern "C" __declspec(dllexport) type CALLBACK
-#else
-#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
-#endif
-
 enum PadOptions {
     PADOPTION_FORCEFEEDBACK = 0x1,
     PADOPTION_REVERSELX = 0x2,
@@ -72,13 +59,6 @@ enum PadOptions {
     PADOPTION_MOUSE_L = 0x20,
     PADOPTION_MOUSE_R = 0x40,
 };
-
-extern FILE *padLog;
-extern void initLogging();
-extern bool toggleAutoRepeat;
-
-#define PAD_LOG __Log
-//#define PAD_LOG __LogToConsole
 
 enum PadCommands {
     CMD_SET_VREF_PARAM = 0x40,
@@ -120,6 +100,26 @@ enum gamePadValues {
     PAD_R_DOWN,   // Right joystick (Down) ↓
     PAD_R_LEFT    // Right joystick (Left) ←
 };
+
+#if defined(__unix__)
+#include "GamePad.h"
+#endif
+#include "bitwise.h"
+#include "controller.h"
+#include "KeyStatus.h"
+
+#ifdef _MSC_VER
+#define EXPORT_C_(type) extern "C" __declspec(dllexport) type CALLBACK
+#else
+#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
+#endif
+
+extern FILE *padLog;
+extern void initLogging();
+extern bool toggleAutoRepeat;
+
+#define PAD_LOG __Log
+//#define PAD_LOG __LogToConsole
 
 extern keyEvent event;
 extern queue<keyEvent> ev_fifo;
