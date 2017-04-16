@@ -5,11 +5,6 @@
 
 std::vector<std::unique_ptr<GamePad>> s_vgamePad;
 
-bool GamePadIdWithinBounds(int GamePadId)
-{
-    return ((GamePadId >= 0) && (GamePadId < (int)s_vgamePad.size()));
-}
-
 /**
  * Following static methods are just forwarders to their backend
  * This is where link between agnostic and specific code is done
@@ -30,10 +25,9 @@ void GamePad::EnumerateGamePads(std::vector<std::unique_ptr<GamePad>> &vgamePad)
  **/
 void GamePad::DoRumble(unsigned type, unsigned pad)
 {
-    u32 id = conf->get_joyid(pad);
-    if (GamePadIdWithinBounds(id)) {
-        s_vgamePad[id]->Rumble(type, pad);
-    }
+    int index = uid_to_index(conf->get_joy_uid(pad));
+    if (index >= 0)
+        s_vgamePad[index]->Rumble(type, pad);
 }
 
 size_t GamePad::index_to_uid(int index)

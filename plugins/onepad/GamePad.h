@@ -73,4 +73,3 @@ protected:
 };
 
 extern std::vector<std::unique_ptr<GamePad>> s_vgamePad;
-extern bool GamePadIdWithinBounds(int joyid);

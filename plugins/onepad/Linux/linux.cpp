@@ -83,11 +83,11 @@ void _PADclose()
 
 void PollForJoystickInput(int cpad)
 {
-    int joyid = conf->get_joyid(cpad);
-    if (!GamePadIdWithinBounds(joyid))
+    int index = GamePad::uid_to_index(conf->get_joy_uid(cpad));
+    if (index < 0)
         return;
 
-    auto &gamePad = s_vgamePad[joyid];
+    auto &gamePad = s_vgamePad[index];
 
     gamePad->UpdateGamePadState();
 
