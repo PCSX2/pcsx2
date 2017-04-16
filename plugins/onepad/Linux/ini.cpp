@@ -92,8 +92,9 @@ void SaveConfig()
     fprintf(f, "log = %d\n", conf->log);
     fprintf(f, "options = %d\n", conf->packed_options);
     fprintf(f, "mouse_sensibility = %d\n", conf->get_sensibility());
-    fprintf(f, "joy_pad_map = %d\n", conf->joyid_map);
     fprintf(f, "ff_intensity = %d\n", conf->get_ff_intensity());
+    fprintf(f, "uid[0] = %zu\n", conf->get_joy_uid(0));
+    fprintf(f, "uid[1] = %zu\n", conf->get_joy_uid(1));
 
     for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
         for (auto const &it : conf->keysym_map[pad])
@@ -130,15 +131,15 @@ void LoadConfig()
     if (fscanf(f, "mouse_sensibility = %u\n", &value) == 0)
         goto error;
     conf->set_sensibility(value);
-    if (fscanf(f, "joy_pad_map = %u\n", &value) == 0)
-        goto error;
-    // Value is now hardcoded in controller.h avoid to reload a bad
-    // value from an old ini file.
-    //conf->joyid_map = value;
     if (fscanf(f, "ff_intensity = %u\n", &value) == 0)
         goto error;
     conf->set_ff_intensity(value);
 
+    size_t uid;
+    if (fscanf(f, "uid[0] = %zu\n", &uid) == 1)
+        conf->set_joy_uid(0, uid);
+    if (fscanf(f, "uid[1] = %zu\n", &uid) == 1)
+        conf->set_joy_uid(1, uid);
 
     u32 pad;
     u32 keysym;

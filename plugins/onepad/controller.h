@@ -50,33 +50,34 @@ public:
     };
 
     u32 log;
-    u32 joyid_map;
     map<u32, u32> keysym_map[GAMEPAD_NUMBER];
+    std::array<size_t, GAMEPAD_NUMBER> unique_id;
 
     PADconf() { init(); }
 
     void init()
     {
-        log = packed_options = joyid_map = 0;
+        log = packed_options = 0;
         ff_intensity = 0x7FFF; // set it at max value by default
         sensibility = 500;
         for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
             keysym_map[pad].clear();
-            set_joyid((u32)pad, (u32)pad); // define id mapping for each gamepad
         }
+        unique_id.fill(0);
     }
 
-    void set_joyid(u32 pad, u32 joy_id)
+    void set_joy_uid(u32 pad, size_t uid)
     {
-        int shift = 8 * pad;
-        joyid_map &= ~(0xFF << shift);         // clear
-        joyid_map |= (joy_id & 0xFF) << shift; // set
+        if (pad < GAMEPAD_NUMBER)
+            unique_id[pad] = uid;
     }
 
-    u32 get_joyid(u32 pad)
+    size_t get_joy_uid(u32 pad)
     {
-        int shift = 8 * pad;
-        return ((joyid_map >> shift) & 0xFF);
+        if (pad < GAMEPAD_NUMBER)
+            return unique_id[pad];
+        else
+            return 0;
     }
 
     /**
