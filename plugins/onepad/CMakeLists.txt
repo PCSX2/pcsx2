@@ -49,6 +49,7 @@ set(onepadSources
     keyboard.cpp
     KeyStatus.cpp
     onepad.cpp
+    resources.cpp
     state_management.cpp)
 
 # onepad headers
@@ -60,6 +61,7 @@ set(onepadHeaders
     keyboard.h
     KeyStatus.h
     onepad.h
+    resources.h
     state_management.h)
 
 # onepad Linux sources
@@ -117,6 +119,11 @@ foreach(result_file IN ITEMS
         OUTPUT  "${compiled_images}/${result_file}.h"
         COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${image_sources}/${result_file}.png" "${compiled_images}/${result_file}" )
 endforeach()
+
+set(RESOURCE_FILES res/game_controller_db.txt)
+
+add_custom_glib_res("resources" "onepad-res.xml" "onepad_res" ${RESOURCE_FILES})
+
 
 if(BUILTIN_PAD)
     add_pcsx2_lib(${Output} "${onepadFinalSources}" "${onepadFinalLibs}" "${onepadFinalFlags}")
