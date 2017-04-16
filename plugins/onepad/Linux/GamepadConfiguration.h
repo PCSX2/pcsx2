@@ -37,20 +37,19 @@ class GamepadConfiguration : public wxDialog
     wxPanel *m_pan_gamepad_config;
     wxCheckBox *m_cb_rumble;
     wxSlider *m_sl_rumble_intensity, *m_sl_joystick_sensibility;
-    wxButton *m_bt_ok, *m_bt_cancel;
+    wxButton *m_bt_ok;
     wxStaticText *m_lbl_rumble_intensity;
+    wxChoice *m_joy_map;
 
     u32 m_pad_id;
-    u32 m_init_rumble_intensity, m_init_joystick_sensibility;
-    bool m_init_rumble;
 
     // methods
     void repopulate();
-    void reset();
     // Events
     void OnButtonClicked(wxCommandEvent &);
     void OnSliderReleased(wxCommandEvent &);
     void OnCheckboxChange(wxCommandEvent &);
+    void OnChoiceChange(wxCommandEvent &);
 
 public:
     GamepadConfiguration(int, wxWindow *);
