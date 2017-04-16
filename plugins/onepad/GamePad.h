@@ -10,8 +10,7 @@ class GamePad
 {
 public:
     GamePad()
-        : devname("")
-        , deadzone(1500)
+        : m_deadzone(1500)
     {
     }
 
@@ -31,7 +30,7 @@ public:
     /*
      * Update state of every attached devices
      */
-    static void UpdateGamePadState();
+    virtual void UpdateGamePadState() = 0;
 
     /*
      * Causes devices to rumble
@@ -50,19 +49,17 @@ public:
      */
     virtual bool TestForce(float strength = 0.6) { return false; }
 
-    const string &GetName()
-    {
-        return devname;
-    }
+    virtual const char *GetName() = 0;
+
+    virtual int GetInput(gamePadValues input) = 0;
 
     virtual int GetDeadzone()
     {
-        return deadzone;
+        return m_deadzone;
     }
 
 protected:
-    string devname; // pretty device name
-    int deadzone;
+    int m_deadzone;
 };
 
 extern std::vector<std::unique_ptr<GamePad>> s_vgamePad;

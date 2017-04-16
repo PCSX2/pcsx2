@@ -35,13 +35,3 @@ void GamePad::DoRumble(int type, int pad)
         s_vgamePad[id]->Rumble(type, pad);
     }
 }
-
-/**
- * Update state of every attached devices
- **/
-void GamePad::UpdateGamePadState()
-{
-#ifdef SDL_BUILD
-    SDL_JoystickUpdate(); // No need to make yet another function call for that
-#endif
-}

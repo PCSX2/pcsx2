@@ -34,7 +34,7 @@ class JoystickInfo : GamePad
 public:
     JoystickInfo(int id)
         : GamePad()
-        , joy(nullptr)
+        , m_controller(nullptr)
     {
         haptic = nullptr;
         first = true;
@@ -62,14 +62,16 @@ public:
 
     bool TestForce(float);
 
+    virtual const char *GetName();
+
+    virtual int GetInput(gamePadValues input);
+
+    virtual void UpdateGamePadState();
+
 private:
-    SDL_Joystick *GetJoy()
-    {
-        return joy;
-    }
     void GenerateDefaultEffect();
 
-    SDL_Joystick *joy;
+    SDL_GameController *m_controller;
     SDL_Haptic *haptic;
     bool first;
     SDL_HapticEffect effects[NB_EFFECT];
