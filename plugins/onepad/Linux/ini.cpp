@@ -55,46 +55,6 @@ string KeyName(int pad, int key, int keysym)
             if (pstr != NULL)
                 tmp = pstr;
         }
-    } else {
-        // joystick
-        KeyType k = type_of_joykey(pad, key);
-        switch (k) {
-            case PAD_JOYBUTTONS: {
-                int button = key_to_button(pad, key);
-                sprintf(&tmp[0], "JBut %d", button);
-                break;
-            }
-            case PAD_AXIS: {
-                if (key_to_axis_type(pad, key))
-                    sprintf(&tmp[0], "JAxis %d Full", key_to_axis(pad, key));
-                else
-                    sprintf(&tmp[0], "JAxis %d Half%s", key_to_axis(pad, key), key_to_axis_sign(pad, key) ? "-" : "+");
-                break;
-            }
-            case PAD_HAT: {
-                int axis = key_to_axis(pad, key);
-                switch (key_to_hat_dir(pad, key)) {
-                    case HAT_UP:
-                        sprintf(&tmp[0], "JPOVU-%d", axis);
-                        break;
-
-                    case HAT_RIGHT:
-                        sprintf(&tmp[0], "JPOVR-%d", axis);
-                        break;
-
-                    case HAT_DOWN:
-                        sprintf(&tmp[0], "JPOVD-%d", axis);
-                        break;
-
-                    case HAT_LEFT:
-                        sprintf(&tmp[0], "JPOVL-%d", axis);
-                        break;
-                }
-                break;
-            }
-            default:
-                break;
-        }
     }
 
     return tmp;
@@ -135,12 +95,6 @@ void SaveConfig()
     fprintf(f, "joy_pad_map = %d\n", conf->joyid_map);
     fprintf(f, "ff_intensity = %d\n", conf->get_ff_intensity());
 
-    for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
-        for (int key = 0; key < MAX_KEYS; key++) {
-            fprintf(f, "[%d][%d] = 0x%x\n", pad, key, get_key(pad, key));
-        }
-    }
-
     map<u32, u32>::iterator it;
     for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
         for (it = conf->keysym_map[pad].begin(); it != conf->keysym_map[pad].end(); ++it)
@@ -152,7 +106,6 @@ void SaveConfig()
 void LoadConfig()
 {
     FILE *f;
-    char str[256];
     bool have_user_setting = false;
 
     if (!conf)
@@ -187,23 +140,11 @@ void LoadConfig()
         goto error;
     conf->set_ff_intensity(value);
 
-    for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
-        for (int key = 0; key < MAX_KEYS; key++) {
-            sprintf(str, "[%d][%d] = 0x%%x\n", pad, key);
-            u32 temp = 0;
-
-            if (fscanf(f, str, &temp) == 0)
-                temp = 0;
-            set_key(pad, key, temp);
-            if (temp && pad == 0)
-                have_user_setting = true;
-        }
-    }
 
     u32 pad;
     u32 keysym;
     u32 index;
-    while (fscanf(f, "PAD %u:KEYSYM 0x%x = %u\n", &pad, &keysym, &index) != EOF) {
+    while (fscanf(f, "PAD %u:KEYSYM 0x%x = %u\n", &pad, &keysym, &index) == 3) {
         set_keyboad_key(pad & 1, keysym, index);
         if (pad == 0)
             have_user_setting = true;

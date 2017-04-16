@@ -77,8 +77,6 @@ class Dialog : public wxDialog
     wxTimer m_time_update_gui;
     // Check if the gui must display feddback image
     bool m_pressed[GAMEPAD_NUMBER][NB_IMG];
-    // Map the key pressed with the feedback image id
-    std::map<u32, int> m_map_images[GAMEPAD_NUMBER];
 
     // methods
     void config_key(int, int);

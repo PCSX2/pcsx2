@@ -25,13 +25,6 @@ void GamePad::EnumerateGamePads(std::vector<std::unique_ptr<GamePad>> &vgamePad)
 #endif
 }
 
-void GamePad::UpdateReleaseState()
-{
-#ifdef SDL_BUILD
-    JoystickInfo::UpdateReleaseState();
-#endif
-}
-
 /**
  * Safely dispatch to the Rumble method above
  **/

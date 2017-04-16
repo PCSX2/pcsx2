@@ -279,10 +279,6 @@ Dialog::Dialog()
 
     Bind(wxEVT_BUTTON, &Dialog::OnButtonClicked, this);
 
-    m_time_update_gui.SetOwner(this);
-    Bind(wxEVT_TIMER, &Dialog::JoystickEvent, this);
-    m_time_update_gui.Start(UPDATE_TIME, wxTIMER_CONTINUOUS);
-
     for (int i = 0; i < GAMEPAD_NUMBER; ++i) {
         for (int j = 0; j < NB_IMG; ++j) {
             m_pressed[i][j] = false;
@@ -404,124 +400,6 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
     }
 }
 
-void Dialog::JoystickEvent(wxTimerEvent &event)
-{
-#ifdef SDL_BUILD
-    u32 key;
-    int map;
-    std::map<u32, int>::iterator it;
-    std::map<u32, int>::iterator it2;
-    SDL_JoystickEventState(SDL_ENABLE);
-    SDL_Event events;
-    while (SDL_PollEvent(&events)) {
-        switch (events.type) {
-            case SDL_KEYDOWN:
-            case SDL_KEYUP:
-                break;
-            case SDL_JOYAXISMOTION:
-                if (events.jaxis.which < GAMEPAD_NUMBER) {
-                    key = axis_to_key(false, (events.jaxis.value < 0), events.jaxis.axis);
-                    it = m_map_images[events.jaxis.which].find(key);
-                    if (it != m_map_images[events.jaxis.which].end()) {
-                        map = m_map_images[events.jaxis.which][key];
-                        if (events.jaxis.value == 0) {
-                            if (map >= PAD_L_UP && map <= PAD_L_LEFT)
-                                m_pan_tabs[events.jaxis.which]->HideImg(img_left_cursor);
-                            else if (map >= PAD_R_UP && map <= PAD_R_LEFT)
-                                m_pan_tabs[events.jaxis.which]->HideImg(img_right_cursor);
-                            else if (map < PAD_L_UP)
-                                m_pan_tabs[events.jaxis.which]->HideImg(map);
-                        } else {
-                            if (map >= PAD_L_UP && map <= PAD_L_LEFT) {
-                                m_pan_tabs[events.jaxis.which]->MoveJoystick(events.jaxis.axis, events.jaxis.value);
-                                m_pan_tabs[events.jaxis.which]->ShowImg(img_left_cursor);
-                            } else if (map >= PAD_R_UP && map <= PAD_R_LEFT) {
-                                m_pan_tabs[events.jaxis.which]->MoveJoystick(events.jaxis.axis, events.jaxis.value);
-                                m_pan_tabs[events.jaxis.which]->ShowImg(img_right_cursor);
-                            } else if (map < PAD_L_UP) { // if this is not a joystick
-                                m_pan_tabs[events.jaxis.which]->ShowImg(map);
-                            }
-                        }
-                        break;
-                    }
-                    // Hack Dualshock 4 (L2, R2)
-                    key = axis_to_key(false, (events.jaxis.value > 0), events.jaxis.axis);
-                    it2 = m_map_images[events.jaxis.which].find(key);
-                    if (it2 != m_map_images[events.jaxis.which].end()) {
-                        map = m_map_images[events.jaxis.which][key];
-                        if (map < PAD_L_UP) { // if this is not a joystick
-                            m_pan_tabs[events.jaxis.which]->HideImg(map);
-                        }
-                        break;
-                    }
-                }
-                break;
-            case SDL_JOYBUTTONDOWN:
-                if (events.jbutton.which < GAMEPAD_NUMBER) {
-                    key = button_to_key(events.jbutton.button);
-                    it = m_map_images[events.jbutton.which].find(key);
-                    if (it != m_map_images[events.jbutton.which].end()) {
-                        map = m_map_images[events.jbutton.which][key];
-                        m_pan_tabs[events.jbutton.which]->ShowImg(map);
-                    }
-                }
-                break;
-            case SDL_JOYBUTTONUP:
-                if (events.jbutton.which < GAMEPAD_NUMBER) {
-                    key = button_to_key(events.jbutton.button);
-                    it = m_map_images[events.jbutton.which].find(key);
-                    if (it != m_map_images[events.jbutton.which].end()) {
-                        map = m_map_images[events.jbutton.which][key];
-                        m_pan_tabs[events.jbutton.which]->HideImg(map);
-                    }
-                }
-                break;
-            case SDL_JOYHATMOTION:
-                if (events.jhat.which < GAMEPAD_NUMBER) {
-                    switch (events.jhat.value) {
-                        case SDL_HAT_UP:
-                            key = hat_to_key(events.jhat.value, events.jhat.hat);
-                            it = m_map_images[events.jhat.which].find(key);
-                            if (it != m_map_images[events.jhat.which].end()) {
-                                m_pan_tabs[events.jhat.which]->ShowImg(img_dp_up);
-                            }
-                            break;
-                        case SDL_HAT_DOWN:
-                            key = hat_to_key(events.jhat.value, events.jhat.hat);
-                            it = m_map_images[events.jhat.which].find(key);
-                            if (it != m_map_images[events.jhat.which].end()) {
-                                m_pan_tabs[events.jhat.which]->ShowImg(img_dp_bottom);
-                            }
-                            break;
-                        case SDL_HAT_RIGHT:
-                            key = hat_to_key(events.jhat.value, events.jhat.hat);
-                            it = m_map_images[events.jhat.which].find(key);
-                            if (it != m_map_images[events.jhat.which].end()) {
-                                m_pan_tabs[events.jhat.which]->ShowImg(img_dp_right);
-                            }
-                            break;
-                        case SDL_HAT_LEFT:
-                            key = hat_to_key(events.jhat.value, events.jhat.hat);
-                            it = m_map_images[events.jhat.which].find(key);
-                            if (it != m_map_images[events.jhat.which].end()) {
-                                m_pan_tabs[events.jhat.which]->ShowImg(img_dp_left);
-                            }
-                            break;
-                        case SDL_HAT_CENTERED:
-                            m_pan_tabs[events.jhat.which]->HideImg(img_dp_up);
-                            m_pan_tabs[events.jhat.which]->HideImg(img_dp_bottom);
-                            m_pan_tabs[events.jhat.which]->HideImg(img_dp_right);
-                            m_pan_tabs[events.jhat.which]->HideImg(img_dp_left);
-                    }
-                }
-                break;
-            default:
-                break;
-        }
-    }
-#endif // SDL_BUILD
-}
-
 /****************************************/
 /*********** Methods functions **********/
 /****************************************/
@@ -531,8 +409,6 @@ void Dialog::config_key(int pad, int key)
     bool captured = false;
     u32 key_pressed = 0;
 
-    // I don't have any guarantee that not-yet-pressed state is egual to released state
-    GamePad::UpdateReleaseState();
     while (!captured) {
         if (PollX11KeyboardMouseEvent(key_pressed)) {
             // special case for keyboard/mouse to handle multiple keys
@@ -541,32 +417,8 @@ void Dialog::config_key(int pad, int key)
                 clear_key(pad, key);
                 set_keyboad_key(pad, key_pressed, key);
                 m_simulatedKeys[pad][key] = key_pressed;
-                m_map_images[pad][key_pressed] = key;
             }
             captured = true;
-        } else {
-            GamePad::UpdateGamePadState();
-
-            for (auto &j : s_vgamePad) {
-                if (j->PollButtons(key_pressed)) {
-                    clear_key(pad, key);
-                    set_key(pad, key, key_pressed);
-                    m_map_images[pad][key_pressed] = key;
-                    captured = true;
-                } else if (j->PollAxes(key_pressed)) {
-                    clear_key(pad, key);
-                    set_key(pad, key, key_pressed);
-                    m_map_images[pad][key_pressed] = key;
-                    captured = true;
-                } else if (j->PollHats(key_pressed)) {
-                    clear_key(pad, key);
-                    set_key(pad, key, key_pressed);
-                    m_map_images[pad][key_pressed] = key;
-                    captured = true;
-                }
-                if (captured)
-                    break;
-            }
         }
     }
     m_bt_gamepad[pad][key]->SetLabel(
@@ -580,23 +432,7 @@ void Dialog::clear_key(int pad, int key)
     m_simulatedKeys[pad][key] = 0;
 
     // erase gamepad entry (keysim map)
-    std::map<u32, u32>::iterator it1;
-    it1 = conf->keysym_map[pad].find(keysim);
-    if (it1 != conf->keysym_map[pad].end())
-        conf->keysym_map[pad].erase(it1);
-
-    // erase gamepad entry (image map)
-    int val = get_key(pad, key);
-    std::map<u32, int>::iterator it2;
-    it2 = m_map_images[pad].find(val);
-    if (it2 != m_map_images[pad].end()) {
-        m_map_images[pad].erase(it2);
-    }
-
-    // Erase the keyboard image map
-    //m_map_images[pad].erase(keysim);
-    // Erase the Gamepad binded key
-    set_key(pad, key, 0);
+    conf->keysym_map[pad].erase(keysim);
 }
 
 
@@ -604,15 +440,6 @@ void Dialog::clear_key(int pad, int key)
 void Dialog::repopulate()
 {
     for (int gamepad_id = 0; gamepad_id < GAMEPAD_NUMBER; ++gamepad_id) {
-        for (int key = 0; key < MAX_KEYS; key++) {
-            if (get_key(gamepad_id, key) != 0) {
-                m_bt_gamepad[gamepad_id][key]->SetLabel(
-                    KeyName(gamepad_id, key).c_str());
-
-                m_map_images[gamepad_id][get_key(gamepad_id, key)] = key;
-            }
-        }
-
         // keyboard/mouse key
         map<u32, u32>::iterator it;
         for (it = conf->keysym_map[gamepad_id].begin();
@@ -624,7 +451,6 @@ void Dialog::repopulate()
                 KeyName(gamepad_id, key, keysym).c_str());
 
             m_simulatedKeys[gamepad_id][key] = keysym;
-            m_map_images[gamepad_id][keysym] = key;
         }
     }
 }

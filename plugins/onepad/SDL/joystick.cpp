@@ -26,17 +26,6 @@
 // Joystick definitions //
 //////////////////////////
 
-static u32 s_bSDLInit = false;
-
-void JoystickInfo::UpdateReleaseState()
-{
-    SDL_JoystickUpdate();
-
-    // Save everything in the vector s_vjoysticks.
-    for (auto &j : s_vgamePad)
-        j->SaveState();
-}
-
 // opens handles to all possible joysticks
 void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjoysticks)
 {
@@ -144,7 +133,6 @@ void JoystickInfo::Destroy()
 bool JoystickInfo::Init(int id)
 {
     Destroy();
-    _id = id;
 
     joy = SDL_JoystickOpen(id);
     if (joy == NULL) {
@@ -152,14 +140,7 @@ bool JoystickInfo::Init(int id)
         return false;
     }
 
-    numaxes = SDL_JoystickNumAxes(joy);
-    numbuttons = SDL_JoystickNumButtons(joy);
-    numhats = SDL_JoystickNumHats(joy);
     devname = SDL_JoystickName(joy);
-
-    vaxisstate.resize(numaxes);
-    vbuttonstate.resize(numbuttons);
-    vhatstate.resize(numhats);
 
     if (haptic == NULL) {
         if (!SDL_JoystickIsHaptic(joy)) {
@@ -172,16 +153,6 @@ bool JoystickInfo::Init(int id)
 
     //PAD_LOG("There are %d buttons, %d axises, and %d hats.\n", numbuttons, numaxes, numhats);
     return true;
-}
-
-void JoystickInfo::SaveState()
-{
-    for (int i = 0; i < numbuttons; ++i)
-        SetButtonState(i, SDL_JoystickGetButton(joy, i));
-    for (int i = 0; i < numaxes; ++i)
-        SetAxisState(i, SDL_JoystickGetAxis(joy, i));
-    for (int i = 0; i < numhats; ++i)
-        SetHatState(i, SDL_JoystickGetHat(joy, i));
 }
 
 bool JoystickInfo::TestForce(float strength = 0.60)
@@ -197,103 +168,4 @@ bool JoystickInfo::TestForce(float strength = 0.60)
     }
 
     return true;
-}
-
-bool JoystickInfo::PollButtons(u32 &pkey)
-{
-    // MAKE sure to look for changes in the state!!
-    for (int i = 0; i < GetNumButtons(); ++i) {
-        int but = SDL_JoystickGetButton(GetJoy(), i);
-        if (but != GetButtonState(i)) {
-            // Pressure sensitive button are detected as both button (digital) and axes (analog). So better
-            // drop the button to emulate the pressure sensiblity of the ds2 :)
-            // Trick: detect the release of the button. It avoid all races condition between axes and buttons :)
-            // If the button support pressure it will be detected as an axis when it is pressed.
-            if (but) {
-                SetButtonState(i, but);
-                return false;
-            }
-
-
-            pkey = button_to_key(i);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool JoystickInfo::PollAxes(u32 &pkey)
-{
-    for (int i = 0; i < numaxes; ++i) {
-        s32 value = SDL_JoystickGetAxis(GetJoy(), i);
-        s32 old_value = GetAxisState(i);
-
-        if (abs(value - old_value) < 0x1000)
-            continue;
-
-        if (value != old_value) {
-            PAD_LOG("Change in joystick %d: %d.\n", i, value);
-            // There are several kinds of axes
-            // Half+: 0 (release) -> 32768
-            // Half-: 0 (release) -> -32768
-            // Full (like dualshock 3): -32768 (release) ->32768
-            const s32 full_axis_ceil = -0x6FFF;
-            const s32 half_axis_ceil = 0x1FFF;
-
-            // Normally, old_value contains the release state so it can be used to detect the types of axis.
-            bool is_full_axis = (old_value < full_axis_ceil);
-
-            if ((!is_full_axis && abs(value) <= half_axis_ceil) || (is_full_axis && value <= full_axis_ceil)) // we don't want this
-            {
-                continue;
-            }
-
-            if ((!is_full_axis && abs(value) > half_axis_ceil) || (is_full_axis && value > full_axis_ceil)) {
-                bool sign = (value < 0);
-                pkey = axis_to_key(is_full_axis, sign, i);
-
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-bool JoystickInfo::PollHats(u32 &pkey)
-{
-    for (int i = 0; i < GetNumHats(); ++i) {
-        int value = SDL_JoystickGetHat(GetJoy(), i);
-
-        if ((value != GetHatState(i)) && (value != SDL_HAT_CENTERED)) {
-            switch (value) {
-                case SDL_HAT_UP:
-                case SDL_HAT_RIGHT:
-                case SDL_HAT_DOWN:
-                case SDL_HAT_LEFT:
-                    pkey = hat_to_key(value, i);
-                    PAD_LOG("Hat Pressed!");
-                    return true;
-                default:
-                    break;
-            }
-        }
-    }
-    return false;
-}
-
-int JoystickInfo::GetHat(int key_to_axis)
-{
-    return SDL_JoystickGetHat(GetJoy(), key_to_axis);
-}
-
-int JoystickInfo::GetButton(int key_to_button)
-{
-    return SDL_JoystickGetButton(GetJoy(), key_to_button);
-}
-
-int JoystickInfo::GetAxisFromKey(int pad, int index)
-{
-    return SDL_JoystickGetAxis(GetJoy(), key_to_axis(pad, index));
 }
