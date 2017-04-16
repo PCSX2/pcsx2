@@ -294,7 +294,7 @@ namespace MIPSAnalyst
 			if (end) {
 				// most functions are aligned to 8 or 16 bytes
 				// add the padding to this one
-				if (((addr+8) % 8)  && r5900Debug.read32(addr+8) == 0)
+				while (((addr+8) % 16)  && r5900Debug.read32(addr+8) == 0)
 					addr += 4;
 
 				currentFunction.end = addr + 4;
