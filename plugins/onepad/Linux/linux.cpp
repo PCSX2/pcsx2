@@ -86,6 +86,18 @@ void PollForJoystickInput(int cpad)
     int joyid = conf->get_joyid(cpad);
     if (!GamePadIdWithinBounds(joyid))
         return;
+
+    auto &gamePad = s_vgamePad[joyid];
+
+    gamePad->UpdateGamePadState();
+
+    for (int i = 0; i < MAX_KEYS; i++) {
+        s32 value = gamePad->GetInput((gamePadValues)i);
+        if (value != 0)
+            key_status->press(cpad, i, value);
+        else
+            key_status->release(cpad, i);
+    }
 }
 
 EXPORT_C_(void)
