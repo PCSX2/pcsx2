@@ -57,6 +57,11 @@ public:
         return m_deadzone;
     }
 
+    virtual size_t GetUniqueIdentifier() = 0;
+
+    static size_t index_to_uid(int index);
+    static int uid_to_index(size_t uid);
+
     bool IsProperlyInitialized()
     {
         return m_no_error;

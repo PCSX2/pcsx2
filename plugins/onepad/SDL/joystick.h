@@ -52,8 +52,11 @@ public:
 
     virtual void UpdateGamePadState();
 
+    virtual size_t GetUniqueIdentifier();
+
 private:
     SDL_GameController *m_controller;
     SDL_Haptic *m_haptic;
     std::array<int, NB_EFFECT> m_effects_id;
+    size_t m_unique_id;
 };

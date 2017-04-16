@@ -35,3 +35,26 @@ void GamePad::DoRumble(unsigned type, unsigned pad)
         s_vgamePad[id]->Rumble(type, pad);
     }
 }
+
+size_t GamePad::index_to_uid(int index)
+{
+    if ((index >= 0) && (index < (int)s_vgamePad.size()))
+        return s_vgamePad[index]->GetUniqueIdentifier();
+    else
+        return 0;
+}
+
+int GamePad::uid_to_index(size_t uid)
+{
+    for (int i = 0; i < (int)s_vgamePad.size(); ++i) {
+        if (s_vgamePad[i]->GetUniqueIdentifier() == uid)
+            return i;
+    }
+
+    // Current uid wasn't found maybe the pad was unplugged
+    // Fallback to the first pad which more friendly than nothing
+    if (!s_vgamePad.empty())
+        return 0;
+
+    return -1;
+}

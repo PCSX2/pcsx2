@@ -151,6 +151,9 @@ JoystickInfo::JoystickInfo(int id)
         return;
     }
 
+    std::hash<std::string> hash_me;
+    m_unique_id = hash_me(std::string(guid));
+
     // Default haptic effect
     SDL_HapticEffect effects[NB_EFFECT];
     for (int i = 0; i < NB_EFFECT; i++) {
@@ -205,6 +208,11 @@ JoystickInfo::JoystickInfo(int id)
 const char *JoystickInfo::GetName()
 {
     return SDL_JoystickName(SDL_GameControllerGetJoystick(m_controller));
+}
+
+size_t JoystickInfo::GetUniqueIdentifier()
+{
+    return m_unique_id;
 }
 
 bool JoystickInfo::TestForce(float strength = 0.60)
