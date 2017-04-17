@@ -1426,12 +1426,15 @@ WXDLLIMPEXP_BASE const wxChar* wxSysErrorMsg(unsigned long nErrCode = 0);
 // change even much sooner)
 #define wxLOG_KEY_SYS_ERROR_CODE "wx.sys_error"
 
-#define wxLogSysError                                                         \
-    if ( !wxLog::IsLevelEnabled(wxLOG_Error, wxLOG_COMPONENT) )               \
-    {}                                                                        \
-    else                                                                      \
-        wxMAKE_LOGGER(Error).MaybeStore(wxLOG_KEY_SYS_ERROR_CODE,             \
-                                        wxSysErrorCode()).Log
+// PCSX2 - The call to wxLogIsLevelEnabled seems to change the error code, so
+// store it first
+#define wxLogSysError(...)                                                    \
+    {                                                                         \
+        unsigned long errorCode = wxSysErrorCode();                           \
+        if (wxLog::IsLevelEnabled(wxLOG_Error, wxLOG_COMPONENT))              \
+            wxMAKE_LOGGER(Error).MaybeStore(wxLOG_KEY_SYS_ERROR_CODE,         \
+                                            errorCode).Log(__VA_ARGS__);      \
+    }
 
 // unfortunately we can't have overloaded macros so we can't define versions
 // both with and without error code argument and have to rely on LogV()
