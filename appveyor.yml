@@ -16,6 +16,9 @@ init:
 # Use CRLF line endings on Windows so users can just use Notepad.
   - git config --global core.autocrlf true
 
+install:
+  - git submodule update --init --recursive
+
 build_script:
   - msbuild buildbot.xml /m /t:%target% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
