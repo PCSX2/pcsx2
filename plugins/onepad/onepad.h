@@ -26,7 +26,6 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include <queue>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -44,8 +43,9 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <pthread.h>
 #include <memory>
+#include <mutex>
+#include <queue>
 using namespace std;
 
 #define PADdefs
@@ -108,6 +108,7 @@ enum gamePadValues {
 #include "bitwise.h"
 #include "controller.h"
 #include "KeyStatus.h"
+#include "mt_queue.h"
 
 #ifdef _MSC_VER
 #define EXPORT_C_(type) extern "C" __declspec(dllexport) type CALLBACK
@@ -123,8 +124,7 @@ extern bool toggleAutoRepeat;
 //#define PAD_LOG __LogToConsole
 
 extern keyEvent event;
-extern queue<keyEvent> ev_fifo;
-extern pthread_spinlock_t mutex_KeyEvent;
+extern MtQueue<keyEvent> g_ev_fifo;
 
 void clearPAD(int pad);
 s32 _PADopen(void *pDsp);

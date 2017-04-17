@@ -53,11 +53,9 @@ const u32 build = 0; // increase that with each version
 
 FILE *padLog = NULL;
 
-pthread_spinlock_t mutex_KeyEvent;
-bool mutex_WasInit = false;
 KeyStatus *key_status = NULL;
 
-queue<keyEvent> ev_fifo;
+MtQueue<keyEvent> g_ev_fifo;
 
 static void InitLibraryName()
 {
@@ -197,10 +195,7 @@ PADopen(void *pDsp)
     memset(&event, 0, sizeof(event));
     key_status->Init();
 
-    while (!ev_fifo.empty())
-        ev_fifo.pop();
-    pthread_spin_init(&mutex_KeyEvent, PTHREAD_PROCESS_PRIVATE);
-    mutex_WasInit = true;
+    g_ev_fifo.reset();
 
 #if defined(__unix__)
     GamePad::EnumerateGamePads(s_vgamePad);
@@ -229,10 +224,6 @@ PADsetLogDir(const char *dir)
 EXPORT_C_(void)
 PADclose()
 {
-    while (!ev_fifo.empty())
-        ev_fifo.pop();
-    mutex_WasInit = false;
-    pthread_spin_destroy(&mutex_KeyEvent);
     _PADclose();
 }
 
@@ -366,12 +357,6 @@ PADkeyEvent()
 EXPORT_C_(void)
 PADWriteEvent(keyEvent &evt)
 {
-    // This function call be called before PADopen. Therefore we cann't
-    // guarantee that the spin lock was initialized
-    if (mutex_WasInit) {
-        pthread_spin_lock(&mutex_KeyEvent);
-        ev_fifo.push(evt);
-        pthread_spin_unlock(&mutex_KeyEvent);
-    }
+    g_ev_fifo.push(evt);
 }
 #endif
