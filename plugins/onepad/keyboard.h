@@ -41,6 +41,4 @@ extern HWND GShwnd;
 
 #endif
 
-extern void SetAutoRepeat(bool autorep);
-
 #endif

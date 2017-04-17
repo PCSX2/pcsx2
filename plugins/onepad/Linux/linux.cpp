@@ -70,14 +70,11 @@ s32 _PADopen(void *pDsp)
     GSdsp = *(Display **)pDsp;
     GSwin = (Window) * (((u32 *)pDsp) + 1);
 
-    SetAutoRepeat(false);
     return 0;
 }
 
 void _PADclose()
 {
-    SetAutoRepeat(true);
-
     s_vgamePad.clear();
 }
 

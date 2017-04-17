@@ -118,7 +118,6 @@ enum gamePadValues {
 
 extern FILE *padLog;
 extern void initLogging();
-extern bool toggleAutoRepeat;
 
 #define PAD_LOG __Log
 //#define PAD_LOG __LogToConsole

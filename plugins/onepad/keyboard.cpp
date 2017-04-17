@@ -38,18 +38,6 @@ char *KeysymToChar(int keysym)
 }
 #endif
 
-void SetAutoRepeat(bool autorep)
-{
-#if defined(__unix__)
-    if (toggleAutoRepeat) {
-        if (autorep)
-            XAutoRepeatOn(GSdsp);
-        else
-            XAutoRepeatOff(GSdsp);
-    }
-#endif
-}
-
 #if defined(__unix__)
 static bool s_grab_input = false;
 static bool s_Shift = false;
@@ -128,11 +116,9 @@ static void AnalyzeKeyEvent(keyEvent &evt)
             break;
 
         case FocusIn:
-            //XAutoRepeatOff(GSdsp);
             break;
 
         case FocusOut:
-            //XAutoRepeatOn(GSdsp);
             s_Shift = false;
             break;
 
