@@ -44,7 +44,6 @@ keyEvent event;
 static keyEvent s_event;
 std::string s_strIniPath("inis/");
 std::string s_strLogPath("logs/");
-bool toggleAutoRepeat = false;
 
 const u32 version = PS2E_PAD_VERSION;
 const u32 revision = 2;
