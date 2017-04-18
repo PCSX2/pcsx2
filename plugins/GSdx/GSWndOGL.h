@@ -23,6 +23,7 @@
 
 #if defined(__unix__)
 #include <X11/Xlib.h>
+#include <X11/Xlib-xcb.h>
 #include <GL/glx.h>
 
 class GSWndOGL final : public GSWndGL

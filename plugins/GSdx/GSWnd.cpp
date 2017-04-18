@@ -23,6 +23,11 @@
 #include "stdafx.h"
 #include "GSWnd.h"
 
+#if defined(__unix__)
+#include <X11/Xlib-xcb.h>
+#include <X11/Xlib.h>
+#endif
+
 void GSWndGL::PopulateGlFunction()
 {
 	*(void**)&(gl_BlendColor) = GetProcAddress("glBlendColor");
@@ -187,3 +192,17 @@ void GSWndGL::PopulateGlFunction()
 	if (!GLLoader::check_gl_supported_extension())
 		throw GSDXRecoverableError();
 }
+
+#if defined(__unix__)
+
+xcb_connection_t *GSWndGL::GetConnection_XCB()
+{
+	return m_xcb_connection;
+}
+
+void GSWndGL::SetConnection_XCB(void* display)
+{
+	m_xcb_connection = XGetXCBConnection((Display *)display);
+}
+
+#endif
