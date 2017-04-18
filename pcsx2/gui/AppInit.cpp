@@ -495,11 +495,8 @@ bool Pcsx2App::OnInit()
 
 		if( Startup.SysAutoRun )
 		{
-			// Notes: Saving/remembering the Iso file is probably fine and desired, so using
-			// SysUpdateIsoSrcFile is good(ish).
-			// Saving the cdvd plugin override isn't desirable, so we don't assign it into g_Conf.
-
 			g_Conf->EmuOptions.UseBOOT2Injection = !Startup.NoFastBoot;
+			g_Conf->CdvdSource = Startup.CdvdSource;
 			SysUpdateIsoSrcFile( Startup.IsoFile );
 			sApp.SysExecute( Startup.CdvdSource );
 		}
