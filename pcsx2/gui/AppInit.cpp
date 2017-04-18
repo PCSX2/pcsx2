@@ -503,7 +503,8 @@ bool Pcsx2App::OnInit()
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = !Startup.NoFastBoot;
 			g_Conf->CdvdSource = Startup.CdvdSource;
-			SysUpdateIsoSrcFile( Startup.IsoFile );
+			if (Startup.CdvdSource == CDVD_SourceType::Iso)
+				SysUpdateIsoSrcFile( Startup.IsoFile );
 			sApp.SysExecute( Startup.CdvdSource );
 		}
 		else if ( Startup.SysAutoRunElf )
