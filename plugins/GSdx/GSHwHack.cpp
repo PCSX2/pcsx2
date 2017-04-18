@@ -943,19 +943,6 @@ bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GetaWay(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if((fi.FBP ==0 || fi.FBP ==0x1180)&& fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1235,30 +1222,26 @@ bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_NanoBreaker(const GSFrameInfo& fi, int& skip)
+bool GSC_GetaWay(const GSFrameInfo& fi, int& skip)
 {
-	if(skip == 0)
+	if (skip == 0)
 	{
-		if(fi.TME && fi.FBP == 0x0 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x03800 || fi.TBP0 == 0x03900) && fi.TPSM == PSM_PSMCT16S)
+		if ((fi.FBP == 0 || fi.FBP == 0x1180) && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
 		{
-			skip = 2;
+			skip = 1; // US version only. Removes fog wall.
 		}
 	}
 
 	return true;
 }
 
-bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
+bool GSC_NanoBreaker(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP == 0x03100 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ24)
+		if(fi.TME && fi.FBP == 0x0 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x03800 || fi.TBP0 == 0x03900) && fi.TPSM == PSM_PSMCT16S)
 		{
-			skip = 176;
-		}
-		else if(fi.TME && fi.FBP ==0x03100 && (fi.TBP0==0x2a00 ||fi.TBP0==0x3480) && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0)
-		{
-			skip = 1;
+			skip = 2; // Removes shadows
 		}
 	}
 
@@ -2137,7 +2120,7 @@ bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
 		}
 		/*else if (fi.TME && fi.FBP == 0x02900 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT24)
 		{
-		skip = 28; // blur, (seems applied by to above hack)
+		skip = 28; // blur (seems applied by the above hack)
 		}*/
 	}
 
@@ -2259,6 +2242,23 @@ bool GSC_FFX(const GSFrameInfo& fi, int& skip)
 			}
 		}
 	}
+	return true;
+}
+
+bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
+{
+	if (Aggressive && skip == 0)
+	{
+		if (fi.TME && fi.FBP == 0x03100 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ24)
+		{
+			skip = 176; // Removes fog, but no longer required, does offer a decent speed boost.
+		}
+		else if (fi.TME && fi.FBP == 0x03100 && (fi.TBP0 == 0x2a00 || fi.TBP0 == 0x3480) && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0)
+		{
+			//skip = 1; // Disabled as it doesn't seem to fix any issue, doesn't offer a further speed boost, and it creates an offset regression in fire effects.
+		}
+	}
+
 	return true;
 }
 
@@ -2448,8 +2448,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise;
 		lut[CRC::FrontMission5] = GSC_FrontMission5;
 		lut[CRC::Genji] = GSC_Genji;
-		lut[CRC::GetaWayBlackMonday] = GSC_GetaWay;
-		lut[CRC::GetaWay] = GSC_GetaWay;
 		lut[CRC::GiTS] = GSC_GiTS;
 		lut[CRC::GodHand] = GSC_GodHand;
 		lut[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
@@ -2495,6 +2493,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::StarOcean3] = GSC_StarOcean3;
 		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
 		// Only Aggressive
+		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
 		lut[CRC::FFX2] = GSC_FFX2;
 		lut[CRC::FFX] = GSC_FFX;
 		lut[CRC::FFXII] = GSC_FFXII;
@@ -2514,7 +2513,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::ICO] = GSC_ICO;
 		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 		lut[CRC::Okami] = GSC_Okami;
-		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
 		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
 		lut[CRC::XE3] = GSC_XE3;
@@ -2569,6 +2567,10 @@ void GSState::SetupCrcHack()
 
 		// RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly
 		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas;
+
+		// Can be fixed by setting Blending Unit Accuracy to at least High.
+		lut[CRC::GetaWayBlackMonday] = GSC_GetaWay;
+		lut[CRC::GetaWay] = GSC_GetaWay;
 
 		// Accumulation blend
 		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
