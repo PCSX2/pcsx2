@@ -370,6 +370,12 @@ bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
 		Startup.SysAutoRun	= true;
 	}
 
+	if (parser.Found(L"nodisc"))
+	{
+		Startup.CdvdSource = CDVD_SourceType::NoDisc;
+		Startup.SysAutoRun = true;
+	}
+
 	return true;
 }
 
