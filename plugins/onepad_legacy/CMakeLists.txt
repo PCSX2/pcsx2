@@ -5,7 +5,7 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif()
 
-set(compiled_images "${CMAKE_BINARY_DIR}/plugins/onepad/ImgHeader")
+set(compiled_images "${CMAKE_BINARY_DIR}/plugins/onepad_legacy/ImgHeader")
 set(image_sources "${CMAKE_SOURCE_DIR}/plugins/onepad/Img")
 set(linux_sources "Linux")
 set(linux_headers "Linux")
@@ -38,7 +38,7 @@ set(onepadGuiResources
     )
 
 # plugin name
-set(Output onepad)
+set(Output onepad-legacy)
 set(onepadFinalFlags "")
 
 # onepad sources
@@ -86,8 +86,13 @@ set(onepadWindowsSources
 set(onepadWindowsHeaders
 	)
 
-set(onepadFinalLibs ${SDL2_LIBRARIES})
-add_definitions(-DSDL_BUILD)
+if (SDL2_API)
+	set(onepadFinalLibs ${SDL2_LIBRARIES})
+	add_definitions(-DSDL_BUILD)
+else()
+	set(onepadFinalLibs ${SDL_LIBRARY})
+	add_definitions(-DSDL_BUILD)
+endif()
 
 set(onepadFinalLibs
 	${onepadFinalLibs}
@@ -105,7 +110,7 @@ set(onepadFinalSources
 )
 
 include_directories(
-    ${CMAKE_BINARY_DIR}/plugins/onepad/
+    ${CMAKE_BINARY_DIR}/plugins/onepad_legacy
 )
 
 ### Generate the resources files

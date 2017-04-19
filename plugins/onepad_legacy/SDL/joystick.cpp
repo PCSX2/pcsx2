@@ -46,17 +46,20 @@ void JoystickInfo::EnumerateJoysticks(vector<GamePad *> &vjoysticks)
 {
 
     if (!s_bSDLInit) {
+#if SDL_MAJOR_VERSION >= 2
         // Tell SDL to catch event even if the windows isn't focussed
         SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
         if (SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_EVENTS) < 0)
             return;
-
         // WTF! Give me back the control of my system
         struct sigaction action = {0};
         action.sa_handler = SIG_DFL;
         sigaction(SIGINT, &action, NULL);
         sigaction(SIGTERM, &action, NULL);
-
+#else
+        if (SDL_Init(SDL_INIT_JOYSTICK) < 0)
+            return;
+#endif
         SDL_JoystickEventState(SDL_QUERY);
         s_bSDLInit = true;
     }
@@ -79,6 +82,7 @@ void JoystickInfo::EnumerateJoysticks(vector<GamePad *> &vjoysticks)
 
 void JoystickInfo::GenerateDefaultEffect()
 {
+#if SDL_MAJOR_VERSION >= 2
     for (int i = 0; i < NB_EFFECT; i++) {
         SDL_HapticEffect effect;
         memset(&effect, 0, sizeof(SDL_HapticEffect)); // 0 is safe default
@@ -95,6 +99,7 @@ void JoystickInfo::GenerateDefaultEffect()
         effect.periodic.attack_length = 0;
         effects[i] = effect;
     }
+#endif
 }
 
 void JoystickInfo::Rumble(int type, int pad)
@@ -104,6 +109,7 @@ void JoystickInfo::Rumble(int type, int pad)
     if (!(conf->pad_options[pad].forcefeedback))
         return;
 
+#if SDL_MAJOR_VERSION >= 2
     if (haptic == NULL)
         return;
 
@@ -136,19 +142,27 @@ void JoystickInfo::Rumble(int type, int pad)
     if (SDL_HapticRunEffect(haptic, id, 1) != 0) {
         fprintf(stderr, "ERROR: Effect is not working! %s, id is %d\n", SDL_GetError(), id);
     }
+#endif
 }
 
 void JoystickInfo::Destroy()
 {
     if (joy != NULL) {
+#if SDL_MAJOR_VERSION >= 2
         // Haptic must be closed before the joystick
         if (haptic != NULL) {
             SDL_HapticClose(haptic);
             haptic = NULL;
         }
+#endif
 
+#if SDL_MAJOR_VERSION >= 2
 #if SDL_MINOR_VERSION >= 4 // Version before 2.0.4 are bugged, JoystickClose crashes randomly
         if (joy)
+            SDL_JoystickClose(joy);
+#endif
+#else
+        if (SDL_JoystickOpened(_id))
             SDL_JoystickClose(joy);
 #endif
         joy = NULL;
@@ -169,7 +183,11 @@ bool JoystickInfo::Init(int id)
     numaxes = SDL_JoystickNumAxes(joy);
     numbuttons = SDL_JoystickNumButtons(joy);
     numhats = SDL_JoystickNumHats(joy);
+#if SDL_MAJOR_VERSION >= 2
     devname = SDL_JoystickName(joy);
+#else
+    devname = SDL_JoystickName(id);
+#endif
 
     vaxisstate.resize(numaxes);
     vbuttonstate.resize(numbuttons);
@@ -189,6 +207,7 @@ bool JoystickInfo::Init(int id)
         numbuttons += 4; // the 4 hat buttons
     }
 
+#if SDL_MAJOR_VERSION >= 2
     if (haptic == NULL) {
         if (!SDL_JoystickIsHaptic(joy)) {
             PAD_LOG("Haptic devices not supported!\n");
@@ -197,6 +216,7 @@ bool JoystickInfo::Init(int id)
             first = true;
         }
     }
+#endif
 
     //PAD_LOG("There are %d buttons, %d axises, and %d hats.\n", numbuttons, numaxes, numhats);
     return true;
@@ -214,6 +234,7 @@ void JoystickInfo::SaveState()
 
 bool JoystickInfo::TestForce(float strength = 0.60)
 {
+#if SDL_MAJOR_VERSION >= 2
     // This code just use standard rumble to check that SDL handles the pad correctly! --3kinox
     if (haptic == NULL)
         return false; // Otherwise, core dump!
@@ -223,6 +244,8 @@ bool JoystickInfo::TestForce(float strength = 0.60)
         fprintf(stderr, "ERROR: Rumble is not working! %s\n", SDL_GetError());
         return false;
     }
+
+#endif
 
     return true;
 }
