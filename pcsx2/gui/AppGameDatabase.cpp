@@ -229,7 +229,7 @@ AppGameDatabase* Pcsx2App::GetGameDatabase()
 	ScopedLock lock( m_mtx_LoadingGameDB );
 	if( !res.GameDB )
 	{
-		res.GameDB = std::unique_ptr<AppGameDatabase>(new AppGameDatabase());
+		res.GameDB = std::make_unique<AppGameDatabase>();
 		res.GameDB->LoadFromFile();
 	}
 	return res.GameDB.get();

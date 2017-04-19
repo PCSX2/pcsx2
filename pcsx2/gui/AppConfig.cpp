@@ -1248,7 +1248,7 @@ static void LoadUiSettings()
 	ConLog_LoadSaveSettings( loader );
 	SysTraceLog_LoadSaveSettings( loader );
 
-	g_Conf = std::unique_ptr<AppConfig>(new AppConfig());
+	g_Conf = std::make_unique<AppConfig>();
 	g_Conf->LoadSave( loader );
 
 	if( !wxFile::Exists( g_Conf->CurrentIso ) )

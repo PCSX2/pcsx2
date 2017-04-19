@@ -1127,7 +1127,7 @@ void SysCorePlugins::Load( PluginsEnum_t pid, const wxString& srcfile )
 	ScopedLock lock( m_mtx_PluginStatus );
 	pxAssert( (uint)pid < PluginId_Count );
 
-	m_info[pid] = std::unique_ptr<PluginStatus_t>(new PluginStatus_t(pid, srcfile));
+	m_info[pid] = std::make_unique<PluginStatus_t>(pid, srcfile);
 
 	Console.Indent().WriteLn(L"Bound %4s: %s [%s %s]", WX_STR(tbl_PluginInfo[pid].GetShortname()), 
 		WX_STR(wxFileName(srcfile).GetFullName()), WX_STR(m_info[pid]->Name), WX_STR(m_info[pid]->Version));

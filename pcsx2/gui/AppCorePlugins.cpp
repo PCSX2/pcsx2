@@ -424,7 +424,7 @@ int EnumeratePluginsInFolder(const wxDirName& searchpath, wxArrayString* dest)
 	wxArrayString* realdest = dest;
 	if (realdest == NULL)
 	{
-		placebo = std::unique_ptr<wxArrayString>(new wxArrayString());
+		placebo = std::make_unique<wxArrayString>();
 		realdest = placebo.get();
 	}
 
@@ -562,7 +562,7 @@ void SysExecEvent_SaveSinglePlugin::InvokeEvent()
 		if( CoreThread.HasActiveMachine() )
 		{
 			Console.WriteLn( Color_Green, L"Suspending single plugin: " + tbl_PluginInfo[m_pid].GetShortname() );
-			plugstore = std::unique_ptr<VmStateBuffer>(new VmStateBuffer(L"StateCopy_SinglePlugin"));
+			plugstore = std::make_unique<VmStateBuffer>(L"StateCopy_SinglePlugin");
 			memSavingState save( plugstore.get() );
 			GetCorePlugins().Freeze( m_pid, save );
 		}
