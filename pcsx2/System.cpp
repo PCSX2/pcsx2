@@ -297,7 +297,7 @@ template< typename CpuType >
 CpuInitializer< CpuType >::CpuInitializer()
 {
 	try {
-		MyCpu = std::unique_ptr<CpuType>(new CpuType());
+		MyCpu = std::make_unique<CpuType>();
 		MyCpu->Reserve();
 	}
 	catch( Exception::RuntimeError& ex )
@@ -461,7 +461,7 @@ SysCpuProviderPack::SysCpuProviderPack()
 	Console.WriteLn( Color_StrongBlue, "Reserving memory for recompilers..." );
 	ConsoleIndentScope indent(1);
 
-	CpuProviders = std::unique_ptr<CpuInitializerSet>(new CpuInitializerSet());
+	CpuProviders = std::make_unique<CpuInitializerSet>();
 
 	try {
 		recCpu.Reserve();
