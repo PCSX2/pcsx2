@@ -84,10 +84,27 @@ GSLocalMemory::psm_t GSLocalMemory::m_psm[64];
 GSLocalMemory::GSLocalMemory()
 	: m_clut(this)
 {
-	if (theApp.GetConfigB("UserHacks") && theApp.GetConfigB("wrap_gs_mem"))
+	m_use_fifo_alloc = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("wrap_gs_mem");
+	switch (theApp.GetCurrentRendererType()) {
+		case GSRendererType::OGL_SW:
+		case GSRendererType::DX9_SW:
+		case GSRendererType::DX1011_SW:
+			m_use_fifo_alloc = true;
+			break;
+		default: break;
+	}
+
+	if (m_use_fifo_alloc)
 		m_vm8 = (uint8*)fifo_alloc(m_vmsize, 4);
 	else
+		m_vm8 = nullptr;
+
+	// Either we don't use fifo alloc or we get an error.
+	if (m_vm8 == nullptr)
+	{
 		m_vm8 = (uint8*)vmalloc(m_vmsize * 4, false);
+		m_use_fifo_alloc = false;
+	}
 
 	m_vm16 = (uint16*)m_vm8;
 	m_vm32 = (uint32*)m_vm8;
@@ -472,7 +489,7 @@ GSLocalMemory::GSLocalMemory()
 
 GSLocalMemory::~GSLocalMemory()
 {
-	if (theApp.GetConfigB("UserHacks") && theApp.GetConfigB("wrap_gs_mem"))
+	if (m_use_fifo_alloc)
 		fifo_free(m_vm8, m_vmsize, 4);
 	else
 		vmfree(m_vm8, m_vmsize * 4);
