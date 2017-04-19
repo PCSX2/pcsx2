@@ -123,6 +123,7 @@
     <ClInclude Include="..\..\include\Utilities\General.h" />
     <ClInclude Include="..\..\include\Utilities\HashMap.h" />
     <ClInclude Include="..\..\include\Utilities\MathUtils.h" />
+    <ClInclude Include="..\..\include\Utilities\MakeUnique.h" />
     <ClInclude Include="..\..\include\Utilities\MemcpyFast.h" />
     <ClInclude Include="..\..\include\Utilities\Path.h" />
     <ClInclude Include="..\..\src\Utilities\PrecompiledHeader.h" />

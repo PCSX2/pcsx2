@@ -224,6 +224,7 @@ public:
 #include <list>
 #include <algorithm>
 #include <memory>
+#include "MakeUnique.h" // make_unique for C++11
 #include <atomic>
 #include <thread>
 
