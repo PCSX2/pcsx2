@@ -253,16 +253,17 @@ static const char* ReportVideoMode()
 {
 	switch (gsVideoMode)
 	{
-	case GS_VideoMode::PAL:        return "PAL";
-	case GS_VideoMode::NTSC:       return "NTSC";
-	case GS_VideoMode::VESA:       return "VESA";
-	case GS_VideoMode::BIOS:       return "BIOS";
-	case GS_VideoMode::HDTV_480P:  return "HDTV 480p";
-	case GS_VideoMode::HDTV_576P:  return "HDTV 576p";
-	case GS_VideoMode::HDTV_720P:  return "HDTV 720p";
-	case GS_VideoMode::HDTV_1080I: return "HDTV 1080i";
-	case GS_VideoMode::HDTV_1080P: return "HDTV 1080p";
-	default:                       return "Unknown";
+	case GS_VideoMode::PAL:          return "PAL";
+	case GS_VideoMode::NTSC:         return "NTSC";
+	case GS_VideoMode::DVD_NTSC:     return "DVD NTSC";
+	case GS_VideoMode::DVD_PAL:      return "DVD PAL";
+	case GS_VideoMode::VESA:         return "VESA";
+	case GS_VideoMode::HDTV_480P:    return "HDTV 480p";
+	case GS_VideoMode::HDTV_576P:    return "HDTV 576p";
+	case GS_VideoMode::HDTV_720P:    return "HDTV 720p";
+	case GS_VideoMode::HDTV_1080I:   return "HDTV 1080i";
+	case GS_VideoMode::HDTV_1080P:   return "HDTV 1080p";
+	default:                         return "Unknown";
 	}
 }
 
@@ -273,8 +274,10 @@ Fixed100 GetVerticalFrequency()
 	case GS_VideoMode::Uninitialized: // SYSCALL instruction hasn't executed yet, give some temporary values.
 		return 60;
 	case GS_VideoMode::PAL:
+	case GS_VideoMode::DVD_PAL:
 		return EmuConfig.GS.FrameratePAL;
 	case GS_VideoMode::NTSC:
+	case GS_VideoMode::DVD_NTSC:
 		return EmuConfig.GS.FramerateNTSC;
 	case GS_VideoMode::HDTV_480P:
 		return 59.94;
@@ -283,7 +286,6 @@ Fixed100 GetVerticalFrequency()
 	case GS_VideoMode::HDTV_576P:
 	case GS_VideoMode::HDTV_720P:
 	case GS_VideoMode::VESA:
-	case GS_VideoMode::BIOS:
 		return 60;
 	default:
 		// Pass NTSC vertical frequency value when unknown video mode is detected.
@@ -311,12 +313,14 @@ u32 UpdateVSyncRate()
 		break;
 
 	case GS_VideoMode::PAL:
+	case GS_VideoMode::DVD_PAL:
 		isCustom = (EmuConfig.GS.FrameratePAL != 50.0);
 		scanlines = SCANLINES_TOTAL_PAL;
 		if (!gsIsInterlaced) scanlines += 3;
 		break;
 
 	case GS_VideoMode::NTSC:
+	case GS_VideoMode::DVD_NTSC:
 		isCustom = (EmuConfig.GS.FramerateNTSC != 59.94);
 		scanlines = SCANLINES_TOTAL_NTSC;
 		if (!gsIsInterlaced) scanlines += 1;
@@ -328,7 +332,6 @@ u32 UpdateVSyncRate()
 	case GS_VideoMode::HDTV_576P:
 	case GS_VideoMode::HDTV_720P:
 	case GS_VideoMode::VESA:
-	case GS_VideoMode::BIOS:
 		scanlines = SCANLINES_TOTAL_NTSC;
 		break;
 
