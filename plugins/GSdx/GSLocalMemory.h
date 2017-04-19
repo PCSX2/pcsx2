@@ -128,6 +128,8 @@ public:
 	GSClut m_clut;
 
 protected:
+	bool m_use_fifo_alloc;
+
 	static uint32 pageOffset32[32][32][64];
 	static uint32 pageOffset32Z[32][32][64];
 	static uint32 pageOffset16[32][64][64];
