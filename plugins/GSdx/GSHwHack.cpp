@@ -629,23 +629,6 @@ bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_FFVIIDoC(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01c00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x02c00 && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 1;
-		}
-		if(!fi.TME && fi.FBP == 0x01c00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMCT24)
-		{
-			//skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_DevilMayCry3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2443,7 +2426,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::DevilMayCry3] = GSC_DevilMayCry3;
 		lut[CRC::EternalPoison] = GSC_EternalPoison;
 		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
-		lut[CRC::FFVIIDoC] = GSC_FFVIIDoC;
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
 		lut[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise;
 		lut[CRC::FrontMission5] = GSC_FrontMission5;

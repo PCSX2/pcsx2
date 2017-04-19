@@ -331,7 +331,6 @@ CRC::Game CRC::m_games[] =
 	{0x306CDADA, CastlevaniaLoI, EU, 0},
 	{0xA36CFF6C, CastlevaniaLoI, JP, 0},
 	{0x9A93FE5D, CastlevaniaLoI, KO, 0},
-	{0xA79B0491, NanoBreaker, JP, 0},
 	{0x7985D894, FinalFightStreetwise, US, 0}, 
 	{0xED4BF0D3, FinalFightStreetwise, US, 0}, // cutie comment
 	{0x73C560BA, FinalFightStreetwise, EU, 0},
@@ -370,9 +369,6 @@ CRC::Game CRC::m_games[] =
 	{0xB3A9F9ED, Black, JP, 0},
 	{0x7838882F, VF4, JP, 0},
 	{0xEA131B57, VF4, US, 0},
-	{0x44A5FA15, FFVIIDoC, US, 0},
-	{0x33F7D21A, FFVIIDoC, EU, 0},
-	{0xAFAC88EF, FFVIIDoC, JP, 0},
 	{0x879CDA5E, StarWarsForceUnleashed, US, 0},
 	{0x137C792E, StarWarsForceUnleashed, US, 0},
 	{0x503BF9E1, StarWarsBattlefront, NoRegion, 0},  // EU and US versions have the same CRC
@@ -409,6 +405,7 @@ CRC::Game CRC::m_games[] =
 	{0x43AB7214, TalesOfLegendia, US, 0},
 	{0x1F8640E0, TalesOfLegendia, JP, 0},
 	{0xE4F5DA2B, TalesOfLegendia, KO, 0},
+	{0xA79B0491, NanoBreaker, JP, 0},
 	{0x98C7B76D, NanoBreaker, US, 0},
 	{0x7098BE76, NanoBreaker, KO, 0},
 	{0x9B89F425, NanoBreaker, EU, 0},

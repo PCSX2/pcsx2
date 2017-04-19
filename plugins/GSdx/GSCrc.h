@@ -53,7 +53,6 @@ public:
 		DuelSaviorDestiny,
 		EternalPoison,
 		EvangelionJo,
-		FFVIIDoC,
 		FFX,
 		FFX2,
 		FFXII,
