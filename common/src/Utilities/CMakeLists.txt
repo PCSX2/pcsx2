@@ -58,6 +58,7 @@ set(UtilitiesHeaders
 	../../include/Utilities/FixedPointTypes.h
 	../../include/Utilities/General.h
 	../../include/Utilities/HashMap.h
+	../../include/Utilities/MakeUnique.h
 	../../include/Utilities/MemcpyFast.h
 	../../include/Utilities/MemsetFast.inl
 	../../include/Utilities/Path.h
