@@ -1,5 +1,5 @@
 /*
- * $Id: pa_win_ds.c 1945 2015-01-21 06:24:32Z rbencina $
+ * $Id$
  * Portable Audio I/O Library DirectSound implementation
  *
  * Authors: Phil Burk, Robert Marsanyi & Ross Bencina

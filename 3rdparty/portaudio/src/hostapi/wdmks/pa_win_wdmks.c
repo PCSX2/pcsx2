@@ -1,5 +1,5 @@
 /*
-* $Id: pa_win_wdmks.c 1945 2015-01-21 06:24:32Z rbencina $
+* $Id$
 * PortAudio Windows WDM-KS interface
 *
 * Author: Andrew Baldwin, Robert Bielik (WaveRT)
@@ -94,7 +94,9 @@ of a device for the duration of active stream using those devices
 #endif
 
 #include <windows.h>
+#ifndef __GNUC__ /* Fix for ticket #257: MinGW-w64: Inclusion of <winioctl.h> triggers multiple redefinition errors. */
 #include <winioctl.h>
+#endif
 #include <process.h>
 
 #include <math.h>
@@ -157,7 +159,7 @@ Default is to use the pin category.
 #endif
 
 #ifdef _MSC_VER
-//#define NOMMIDS
+#define NOMMIDS
 #define DYNAMIC_GUID(data) {data}
 //#define _NTRTL_ /* Turn off default definition of DEFINE_GUIDEX */
 //#undef DEFINE_GUID

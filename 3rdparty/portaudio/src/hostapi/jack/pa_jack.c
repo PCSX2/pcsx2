@@ -1,5 +1,5 @@
 /*
- * $Id: pa_jack.c 1912 2013-11-15 12:27:07Z gineera $
+ * $Id$
  * PortAudio Portable Real-Time Audio Library
  * Latest Version at: http://www.portaudio.com
  * JACK Implementation by Joshua Haberman
