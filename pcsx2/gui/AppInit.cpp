@@ -424,8 +424,20 @@ protected:
 	}
 };
 
+#ifdef __unix__
+#include <X11/Xlib.h>
+#endif
+
 bool Pcsx2App::OnInit()
 {
+#ifdef __unix__
+	// By default X11 isn't thread safe
+	// Typically it avoid a crash on Mesa when glthread is enabled on DRI2
+	//
+	// I guess it could be removed once we migrate to Wayland (post 2020)
+	XInitThreads();
+#endif
+
 	EnableAllLogging();
 	Console.WriteLn("Interface is initializing.  Entering Pcsx2App::OnInit!");
 
