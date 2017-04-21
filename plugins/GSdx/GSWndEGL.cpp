@@ -183,8 +183,6 @@ bool GSWndEGL::Create(const string& title, int w, int h)
 
 	AttachContext();
 
-	CheckContext();
-
 	PopulateGlFunction();
 
 	if (m_NativeWindow == 0)
