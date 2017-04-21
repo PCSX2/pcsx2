@@ -932,8 +932,8 @@ void SYSCALL()
 						case 0x53: mode = "HDTV   768x576 @ ??.???"; gsSetVideoMode(GS_VideoMode::HDTV_576P); break;
 						case 0x54: mode = "HDTV 1920x1080 @ ??.???"; gsSetVideoMode(GS_VideoMode::HDTV_1080P); break;
 
-						case 0x72: mode = "DVD NTSC 640x448 @ ??.???"; gsSetVideoMode(GS_VideoMode::BIOS); break;
-						case 0x73: mode = "DVD PAL 720x480 @ ??.???"; gsSetVideoMode(GS_VideoMode::BIOS); break;
+						case 0x72: mode = "DVD NTSC 640x448 @ ??.???"; gsSetVideoMode(GS_VideoMode::DVD_NTSC); break;
+						case 0x73: mode = "DVD PAL 720x480 @ ??.???"; gsSetVideoMode(GS_VideoMode::DVD_PAL); break;
 
 						default:
 							DevCon.Error("Mode %x is not supported. Report me upstream", cpuRegs.GPR.n.a1.UC[0]);
