@@ -350,6 +350,7 @@ bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
 	if( parser.GetParamCount() >= 1 )
 	{
 		Startup.IsoFile		= parser.GetParam( 0 );
+		Startup.CdvdSource	= CDVD_SourceType::Iso;
 		Startup.SysAutoRun	= true;
 	}
 	else
