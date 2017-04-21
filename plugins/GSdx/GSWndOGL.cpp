@@ -128,6 +128,7 @@ bool GSWndOGL::Attach(void* handle, bool managed)
 	m_managed = managed;
 
 	m_NativeDisplay = XOpenDisplay(NULL);
+	SetConnection_XCB(m_NativeDisplay);
 
 	CreateContext(3, 3);
 
@@ -159,18 +160,31 @@ bool GSWndOGL::Create(const string& title, int w, int h)
 	if(m_NativeWindow)
 		throw GSDXRecoverableError();
 
+	const int depth = 0, x = 0, y = 0, border_width = 1;
+	m_managed = true;
+
 	if(w <= 0 || h <= 0) {
 		w = theApp.GetConfigI("ModeWidth");
 		h = theApp.GetConfigI("ModeHeight");
 	}
 
-	m_managed = true;
-
-	// note this part must be only executed when replaying .gs debug file
 	m_NativeDisplay = XOpenDisplay(NULL);
+	SetConnection_XCB(m_NativeDisplay);
 
-	m_NativeWindow = XCreateSimpleWindow(m_NativeDisplay, DefaultRootWindow(m_NativeDisplay), 0, 0, w, h, 0, 0, 0);
-	XMapWindow (m_NativeDisplay, m_NativeWindow);
+	auto c = GetConnection_XCB();
+
+	const xcb_setup_t *setup = xcb_get_setup(c);
+
+	xcb_screen_t *screen = (xcb_setup_roots_iterator (setup)).data;
+
+	m_NativeWindow = xcb_generate_id(c);
+
+	xcb_create_window (c, depth, m_NativeWindow, screen->root, x, y, w, h,
+			border_width, InputOutput, screen->root_visual, 0, nullptr);
+
+	xcb_map_window (c, m_NativeWindow);
+
+	xcb_flush(c);
 
 	if (m_NativeWindow == 0)
 		throw GSDXRecoverableError();
@@ -206,17 +220,14 @@ void* GSWndOGL::GetDisplay()
 
 GSVector4i GSWndOGL::GetClientRect()
 {
-	unsigned int h = 480;
-	unsigned int w = 640;
+	auto c = GetConnection_XCB();
 
-	unsigned int borderDummy;
-	unsigned int depthDummy;
-	Window winDummy;
-    int xDummy;
-    int yDummy;
+	xcb_get_geometry_reply_t *g = xcb_get_geometry_reply(c, xcb_get_geometry(c, m_NativeWindow), nullptr);
 
-	if (!m_NativeDisplay) m_NativeDisplay = XOpenDisplay(NULL);
-	XGetGeometry(m_NativeDisplay, m_NativeWindow, &winDummy, &xDummy, &yDummy, &w, &h, &borderDummy, &depthDummy);
+	uint16_t h = g->height;
+	uint16_t w = g->width;
+
+	free(g);
 
 	return GSVector4i(0, 0, (int)w, (int)h);
 }
@@ -228,17 +239,13 @@ bool GSWndOGL::SetWindowText(const char* title)
 {
 	if (!m_managed) return true;
 
-	XTextProperty prop;
+	auto c = GetConnection_XCB();
 
-	memset(&prop, 0, sizeof(prop));
+	xcb_change_property(c, XCB_PROP_MODE_REPLACE, m_NativeWindow,
+                       XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+                       strlen (title), title);
 
-	char* ptitle = (char*)title;
-	if (XStringListToTextProperty(&ptitle, 1, &prop)) {
-		XSetWMName(m_NativeDisplay, m_NativeWindow, &prop);
-	}
-
-	XFree(prop.value);
-	XFlush(m_NativeDisplay);
+	xcb_flush(c);
 
 	return true;
 }
@@ -260,14 +267,10 @@ void GSWndOGL::Flip()
 
 void GSWndOGL::Show()
 {
-	XMapRaised(m_NativeDisplay, m_NativeWindow);
-	XFlush(m_NativeDisplay);
 }
 
 void GSWndOGL::Hide()
 {
-	XUnmapWindow(m_NativeDisplay, m_NativeWindow);
-	XFlush(m_NativeDisplay);
 }
 
 void GSWndOGL::HideFrame()

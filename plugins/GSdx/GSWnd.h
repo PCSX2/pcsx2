@@ -25,6 +25,10 @@
 #include "GSdx.h"
 #include "GSVector.h"
 
+#if defined(__unix__)
+#include <xcb/xcb.h>
+#endif
+
 class GSWnd
 {
 protected:
@@ -63,8 +67,19 @@ protected:
 
 	bool IsContextAttached() const { return m_ctx_attached; }
 
+#if defined(__unix__)
+	xcb_connection_t *m_xcb_connection;
+
+	xcb_connection_t *GetConnection_XCB();
+	void SetConnection_XCB(void* display);
+#endif
+
 public:
-	GSWndGL() : m_ctx_attached(false) {};
+	GSWndGL() : m_ctx_attached(false) {
+#if defined(__unix__)
+		m_xcb_connection = nullptr;
+#endif
+	}
 	virtual ~GSWndGL() {};
 
 	virtual bool Create(const string& title, int w, int h) = 0;
