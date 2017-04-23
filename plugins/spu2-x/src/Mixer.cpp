@@ -453,7 +453,7 @@ static __forceinline s32 GetVoiceValues(V_Core &thiscore, uint voiceidx)
 // generator is accurate in its own right.. but eh, ah well :)
 static __forceinline s32 GetNoiseValues(V_Core &thiscore, uint voiceidx)
 {
-    V_Voice &vc(thiscore.Voices[voiceidx]);
+    // V_Voice &vc(thiscore.Voices[voiceidx]);
 
     s32 retval = GetNoiseValues();
 
@@ -465,7 +465,7 @@ static __forceinline s32 GetNoiseValues(V_Core &thiscore, uint voiceidx)
 
     // GetNoiseValues can't set the phase zero on us unexpectedly
     // like GetVoiceValues can.  Better assert just in case though..
-    pxAssume(vc.ADSR.Phase != 0);
+    // pxAssume(vc.ADSR.Phase != 0);
 
     return retval;
 }
