@@ -3650,7 +3650,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 				{
 					break;
 				}
-				if ((itinst2->type & INST_Q_WRITE) && itinst2->nParentPc == pc - 8)
+				if ((itinst2->type & INST_Q_WRITE) && itinst2->nParentPc == (int)pc - 8)
 				{
 					break;
 				}
