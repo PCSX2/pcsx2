@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 0.9.9\n"
+"Project-Id-Version: PCSX2 1.4.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2014-12-13 23:54+0800\n"
+"PO-Revision-Date: 2017-04-23 21:11+0800\n"
 "Last-Translator: Wei Mingzhi <whistler_wmz@users.sf.net>\n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -16,9 +16,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE;pxExpandMsg\n"
-"X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: pcsx2\\\n"
-"X-Generator: Poedit 1.7.1\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-Basepath: pcsx2\n"
+"X-Generator: Poedit 2.0.1\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -41,7 +41,7 @@ msgstr ""
 #: pcsx2/CDVD/CDVD.cpp:2054
 msgid ""
 "Failed to read/write NMV/MEC file. Check your bios setup/permission settings"
-msgstr ""
+msgstr "读写 NMV/MEC 文件失败，请检查你的 BIOS 与权限设置"
 
 #: pcsx2/System.cpp:112
 msgid ""
@@ -64,7 +64,7 @@ msgstr ""
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
-msgstr "警告: 部分已配置的 PS2 重编译器初始化失败且已被禁用。"
+msgstr "警告: 部分已配置的 PS2 重编译器初始化失败且已被禁用："
 
 #: pcsx2/gui/AppInit.cpp:206
 msgid ""
@@ -112,6 +112,7 @@ msgid ""
 "Please note that the resulting file may not actually contain all saves, "
 "depending on how many are in the source memory card."
 msgstr ""
+"请注意，生成的文件可能不包含所有存档，具体取决于在源记忆卡中存储的存档。"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
 msgid ""
@@ -119,22 +120,24 @@ msgid ""
 "emulator during the conversion process, even if the emulator is no longer "
 "responding to input."
 msgstr ""
+"警告: 转换记忆卡可能需要一些时间! 在转换过程中请勿关闭模拟器，即使模拟器停止"
+"响应。"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
-msgstr ""
+msgstr "将这个记忆卡转换成一个标准的 8 MB .ps2 记忆卡文件。"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
-msgstr ""
+msgstr "将这个记忆卡转换成一个 16 MB .ps2 记忆卡文件。"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
-msgstr ""
+msgstr "将这个记忆卡转换成一个 32 MB .ps2 记忆卡文件。"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
-msgstr ""
+msgstr "将这个记忆卡转换成一个 64 MB .ps2 记忆卡文件。"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
 msgid ""
@@ -214,6 +217,8 @@ msgid ""
 "software changes. This prevents the memory card from running out of space "
 "for saves."
 msgstr ""
+"(仅限文件夹) 每次执行软件更改时重新索引记忆卡内容。这可以防止记忆卡耗尽存档空"
+"间。"
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
 #, c-format
@@ -314,7 +319,7 @@ msgstr ""
 #: pcsx2/gui/MemoryCardFolder.h:539
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
-msgstr ""
+msgstr "(FolderMcd) 记忆卡已满，无法加入: %s"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:139
 msgid ""
@@ -437,28 +442,26 @@ msgstr ""
 " * Transformers (变形金刚)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:120
-#, fuzzy
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty. ('Automatic' means: selectively use specific tested "
 "fixes for specific games). Manual game fixes will NOT increase your "
 "performance. In fact they may decrease it."
 msgstr ""
-"建议在主菜单启用 '自动应用游戏特殊修正'，不建议在此手动设置 ('自动' 即针对特"
-"定游戏自动应用对应修正)。"
+"建议在主菜单启用 '自动应用游戏特殊修正'，而不建议在此手动设置 ('自动' 即针对"
+"特定游戏自动应用对应修正)。事实上，手动设置并不能提升性能，反而会降低性能。"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:124
-#, fuzzy
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
 "\n"
 "The safest way is to make sure that all game fixes are completely disabled."
 msgstr ""
-"游戏特殊修正可以修正一些游戏中的模拟错误。\n"
-"但它也可能在其它游戏中导致兼容或性能问题。\n"
+"游戏特殊修正可以修复一些游戏中的模拟错误。\n"
+"但它也可能导致兼容或性能问题。\n"
 "\n"
-"最安全的方式是不启用任何游戏特殊修正。"
+"最安全的方式是禁用任何游戏特殊修正。"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:683
 #, c-format
@@ -547,48 +550,47 @@ msgstr ""
 "出合法选择，请单击取消关闭配置面板。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
 msgid ""
 "-3 - Reduces the EE's cyclerate to about 50%.  Big speedup, but *will* cause "
 "stuttering audio on many FMVs."
 msgstr ""
-"3 - 将 EE 周期频率减少约 50%。中等提速效果，但将导致很多 CG 动画中的音频出现"
+"-3 - 将 EE 周期频率减少约 50%。较大提速效果，但将导致很多 CG 动画中的音频出现"
 "间断。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
 msgid ""
 "-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"3 - 将 EE 周期频率减少约 50%。中等提速效果，但将导致很多 CG 动画中的音频出现"
-"间断。"
+"-2 - 将 EE 周期频率减少约 40%。中等提速效果，但可能导致很多 CG 动画中的音频出"
+"现间断。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
 msgid ""
 "-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games "
 "with high compatibility."
-msgstr "2 - 将 EE 周期频率减少约 33%。对大多数游戏有轻微提速效果，兼容性较高。"
+msgstr ""
+"-1 - 将 EE 周期频率减少约 25%。对大多数游戏有轻微提速效果，兼容性较高。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:45
-#, fuzzy
 msgid ""
 "0 - Default cyclerate (100%). This closely matches the actual speed of a "
 "real PS2 EmotionEngine."
-msgstr "1 - 默认周期频率。完全重现 PS2 实机情感引擎的实际速度。"
+msgstr "0 - 默认周期频率 (100%)。完全重现 PS2 实机情感引擎的实际速度。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
 msgid ""
 "1 - Increases the EE's cyclerate to about 130%. Mildly increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
+"1 - 将 EE 周期频率提升约 30%。略微提升硬件需求，可能会提高游戏内部帧率。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:55
 msgid ""
 "2 - Increases the EE's cyclerate to about 180%. Increases hardware "
 "requirements, may noticeably increase in-game FPS."
 msgstr ""
+"2 - 将 EE 周期频率提升约 80%。中等提升硬件需求，可能会显著提高游戏内部帧率。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:60
 msgid ""
@@ -596,6 +598,9 @@ msgid ""
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
+"3 - 将 EE 周期频率提升约 200%。大幅度提升硬件需求，可能会显著提高游戏内部帧"
+"率。\n"
+"此设置可能导致游戏无法启动。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:77
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
@@ -630,7 +635,6 @@ msgstr ""
 "题请先尝试禁用此面板。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:145
-#, fuzzy
 msgid ""
 "Setting lower values on this slider effectively reduces the clock speed of "
 "the EmotionEngine's R5900 core cpu, and typically brings big speedups to "
@@ -639,8 +643,9 @@ msgid ""
 "bring about an increase in in-game FPS while also making games more "
 "demanding and possibly causing glitches."
 msgstr ""
-"提高此数值可减少情感引擎的 R5900 CPU 的时钟速度，通常对于未完全使用 PS2 实机"
-"硬件全部潜能的游戏有较大提速效果。"
+"降低此数值可减少情感引擎的 R5900 CPU 的时钟速度，通常对于未完全使用 PS2 实机"
+"硬件全部潜能的游戏有较大提速效果。相反，提高此数值可有效提升时钟速度，这可能"
+"使游戏内部帧率提升，同时也提高了性能需求，并可能导致错误。"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
 msgid ""
