@@ -26,11 +26,24 @@
 #include "GSdxResources.h"
 #include "GSSetting.h"
 
+// Port of deprecated GTK2 API to recent GTK3. Those defines
+// could prove handy for testing
+#define GTK3_MONITOR_API (0 && GTK_CHECK_VERSION(3, 22, 0))
+#define GTK3_GRID_API (0 && GTK_CHECK_VERSION(3, 10, 0))
+
 static GtkWidget* s_hack_frame;
 
 bool BigEnough()
 {
+#if GTK3_MONITOR_API
+	GdkMonitor *monitor = gdk_display_get_primary_monitor(gdk_display_get_default());
+	// int scale = gdk_monitor_get_scale_factor(monitor);
+	GdkRectangle my_geometry;
+	gdk_monitor_get_geometry(monitor, &my_geometry);
+	return my_geometry.height > 1000;
+#else
 	return (gdk_screen_get_height(gdk_screen_get_default()) > 1000);
+#endif
 }
 
 void AddTooltip(GtkWidget* w, int idc)
@@ -42,6 +55,16 @@ void AddTooltip(GtkWidget* w1, GtkWidget* w2, int idc)
 {
 	AddTooltip(w1, idc);
 	AddTooltip(w2, idc);
+}
+
+GtkWidget* CreateVbox()
+{
+#if GTK_CHECK_VERSION(3, 0, 0)
+	return gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+#else
+	return gtk_vbox_new(false, 5);
+#endif
+
 }
 
 GtkWidget* left_label(const char* lbl)
@@ -192,30 +215,48 @@ GtkWidget* CreateFileChooser(GtkFileChooserAction action, const char* label, con
 }
 
 static int s_table_line = 0;
-static void InsertWidgetInTable(GtkWidget* table, GtkWidget *left, GtkWidget *right = NULL, GtkWidget *third = NULL) {
+
+void AttachInTable(GtkWidget* table, GtkWidget *w, int pos, int pad = 0, int size = 1)
+{
+#if GTK3_GRID_API
+	g_object_set(w, "margin-left", pad, NULL);
+	g_object_set(w, "expand", true, nullptr);
+	gtk_grid_attach(GTK_GRID(table), w, pos, s_table_line, size, 1);
+#else
 	GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
+	gtk_table_attach(GTK_TABLE(table), w, pos, pos + size, s_table_line, s_table_line+1, opt, opt, pad, 0);
+#endif
+}
+
+void InsertWidgetInTable(GtkWidget* table, GtkWidget *left, GtkWidget *right = NULL, GtkWidget *third = NULL)
+{
 	guint l_xpad = GTK_IS_CHECK_BUTTON(left) ? 0 : 22;
-	guint r_xpad = 0;
-	guint ypad = 0;
+
 	if (!left) {
-		gtk_table_attach(GTK_TABLE(table), right, 1, 2, s_table_line, s_table_line+1, opt, opt, r_xpad, ypad);
+		AttachInTable(table, right, 1);
 	} else if (!right) {
-		gtk_table_attach(GTK_TABLE(table), left, 0, 1, s_table_line, s_table_line+1, opt, opt, l_xpad, ypad);
+		AttachInTable(table, left, 0, l_xpad);
 	} else if (right == left) {
-		gtk_table_attach(GTK_TABLE(table), left, 0, 2, s_table_line, s_table_line+1, opt, opt, r_xpad, ypad);
+		AttachInTable(table, right, 0, 0, 2);
 	} else {
-		gtk_table_attach(GTK_TABLE(table), left, 0, 1, s_table_line, s_table_line+1, opt, opt, l_xpad, ypad);
-		gtk_table_attach(GTK_TABLE(table), right, 1, 2, s_table_line, s_table_line+1, opt, opt, r_xpad, ypad);
+		AttachInTable(table, left, 0, l_xpad);
+		AttachInTable(table, right, 1);
 	}
 	if (third) {
-		gtk_table_attach(GTK_TABLE(table), third, 2, 3, s_table_line, s_table_line+1, opt, opt, r_xpad, ypad);
+		AttachInTable(table, third, 2);
 	}
+
 	s_table_line++;
 }
 
 GtkWidget* CreateTableInBox(GtkWidget* parent_box, const char* frame_title, int row, int col) {
+#if GTK3_GRID_API
+	GtkWidget* table = gtk_grid_new();
+	g_object_set(table, "expand", true, nullptr);
+#else
 	GtkWidget* table = gtk_table_new(row, col, false);
-	GtkWidget* container = (frame_title) ? gtk_frame_new (frame_title) : gtk_vbox_new(false, 5);
+#endif
+	GtkWidget* container = (frame_title) ? gtk_frame_new (frame_title) : CreateVbox();
 	gtk_container_add(GTK_CONTAINER(container), table);
 	gtk_container_add(GTK_CONTAINER(parent_box), container);
 
@@ -508,7 +549,11 @@ GtkWidget* ScrollMe(GtkWidget* w)
 	gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(scrollbar), true);
 #endif
 
+#if GTK_CHECK_VERSION(3, 8, 0)
+	gtk_container_add(GTK_CONTAINER(scrollbar), w);
+#else
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrollbar), w);
+#endif
 
 	return scrollbar;
 }
@@ -528,11 +573,11 @@ bool RunLinuxDialog()
 		NULL);
 
 	// The main area for the whole dialog box.
-	GtkWidget* main_box     = gtk_vbox_new(false, 5);
-	GtkWidget* central_box  = gtk_vbox_new(false, 5);
-	GtkWidget* advanced_box = gtk_vbox_new(false, 5);
-	GtkWidget* debug_box    = gtk_vbox_new(false, 5);
-	GtkWidget* osd_box      = gtk_vbox_new(false, 5);
+	GtkWidget* main_box     = CreateVbox();
+	GtkWidget* central_box  = CreateVbox();
+	GtkWidget* advanced_box = CreateVbox();
+	GtkWidget* debug_box    = CreateVbox();
+	GtkWidget* osd_box      = CreateVbox();
 
 	// Grab a logo, to make things look nice.
 	if (BigEnough()) {
