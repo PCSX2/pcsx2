@@ -79,6 +79,7 @@ struct Gif_Tag {
 		hasAD = false;
 		nRegIdx = 0;
 		isValid = 1;
+		len = 0; // avoid uninitialized compiler warning
 		switch(tag.FLG) {
 			case GIF_FLG_PACKED:
 				nRegs  = ((tag.NREG-1)&0xf) + 1;
