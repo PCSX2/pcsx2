@@ -25,7 +25,6 @@
 using namespace Threading;
 using namespace R5900;
 
-static GS_VideoMode s_ColorBurst = GS_VideoMode::Uninitialized;
 __aligned16 u8 g_RealGSMem[Ps2MemSize::GSregs];
 
 void gsOnModeChanged( Fixed100 framerate, u32 newTickrate )
