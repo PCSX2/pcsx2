@@ -53,7 +53,8 @@ static __forceinline s32 MulShr32(s32 srcval, s32 mulval)
 
 __forceinline s32 clamp_mix(s32 x, u8 bitshift)
 {
-    return GetClamped(x, -0x8000 << bitshift, 0x7fff << bitshift);
+    assert(bitshift <= 15);
+    return GetClamped(x, -(0x8000 << bitshift), 0x7fff << bitshift);
 }
 
 #if _MSC_VER
@@ -72,8 +73,8 @@ __forceinline
     // modules or sound drivers could (will :p) overshoot with that. So giving it a small safety.
 
     return StereoOut32(
-        GetClamped(sample.Left, -0x7f00 << bitshift, 0x7f00 << bitshift),
-        GetClamped(sample.Right, -0x7f00 << bitshift, 0x7f00 << bitshift));
+        GetClamped(sample.Left, -(0x7f00 << bitshift), 0x7f00 << bitshift),
+        GetClamped(sample.Right, -(0x7f00 << bitshift), 0x7f00 << bitshift));
 }
 
 static void __forceinline XA_decode_block(s16 *buffer, const s16 *block, s32 &prev1, s32 &prev2)

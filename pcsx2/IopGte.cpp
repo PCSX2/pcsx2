@@ -468,9 +468,9 @@ __inline double limG2(double x) {
 	return (x);
 }
 
-__inline s32 F12limA1S(s64 x) { _LIMX(-32768 << 12, 32767 << 12, 24); }
-__inline s32 F12limA2S(s64 x) { _LIMX(-32768 << 12, 32767 << 12, 23); }
-__inline s32 F12limA3S(s64 x) { _LIMX(-32768 << 12, 32767 << 12, 22); }
+__inline s32 F12limA1S(s64 x) { _LIMX(-(32768 << 12), 32767 << 12, 24); }
+__inline s32 F12limA2S(s64 x) { _LIMX(-(32768 << 12), 32767 << 12, 23); }
+__inline s32 F12limA3S(s64 x) { _LIMX(-(32768 << 12), 32767 << 12, 22); }
 __inline s32 F12limA1U(s64 x) { _LIMX(0, 32767 << 12, 24); }
 __inline s32 F12limA2U(s64 x) { _LIMX(0, 32767 << 12, 23); }
 __inline s32 F12limA3U(s64 x) { _LIMX(0, 32767 << 12, 22); }
