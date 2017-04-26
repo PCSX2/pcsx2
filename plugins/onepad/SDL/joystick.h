@@ -29,7 +29,7 @@
 #include "controller.h"
 #define NB_EFFECT 2 // Don't use more than two, ps2 only has one for big motor and one for small(like most systems)
 // holds all joystick info
-class JoystickInfo : GamePad
+class JoystickInfo : public GamePad
 {
 public:
     JoystickInfo(int id);
@@ -42,17 +42,17 @@ public:
     // opens handles to all possible joysticks
     static void EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjoysticks);
 
-    void Rumble(unsigned type, unsigned pad);
+    void Rumble(unsigned type, unsigned pad) override;
 
-    bool TestForce(float);
+    bool TestForce(float) override;
 
-    virtual const char *GetName();
+    const char *GetName() final;
 
-    virtual int GetInput(gamePadValues input);
+    int GetInput(gamePadValues input) final;
 
-    virtual void UpdateGamePadState();
+    void UpdateGamePadState() final;
 
-    virtual size_t GetUniqueIdentifier();
+    size_t GetUniqueIdentifier() final;
 
 private:
     SDL_GameController *m_controller;
