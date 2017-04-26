@@ -17,7 +17,6 @@ public:
 
     virtual ~GamePad()
     {
-        return;
     }
 
     GamePad(const GamePad &);            // copy constructor
@@ -37,7 +36,7 @@ public:
      * Causes devices to rumble
      * Rumble will differ according to type which is either 0(small motor) or 1(big motor)
      */
-    virtual void Rumble(unsigned type, unsigned pad) { return; }
+    virtual void Rumble(unsigned type, unsigned pad) {}
     /*
      * Safely dispatch to the Rumble method above
      */
@@ -52,7 +51,7 @@ public:
 
     virtual int GetInput(gamePadValues input) = 0;
 
-    virtual int GetDeadzone()
+    int GetDeadzone()
     {
         return m_deadzone;
     }
