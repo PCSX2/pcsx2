@@ -101,7 +101,7 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
         m_pan_gamepad_config, // Parent
         wxID_ANY,             // ID
         _T("&OK"),            // Label
-        wxPoint(250, 160),    // Position
+        wxPoint(320, 160),    // Position
         wxSize(60, 25)        // Size
         );
 
