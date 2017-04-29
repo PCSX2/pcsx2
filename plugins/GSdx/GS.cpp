@@ -1521,6 +1521,8 @@ inline unsigned long timeGetTime()
 EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 {
 	GLLoader::in_replayer = true;
+	// Required by multithread driver
+	XInitThreads();
 
 	GSinit();
 
