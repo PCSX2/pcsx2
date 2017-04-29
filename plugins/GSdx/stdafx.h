@@ -60,6 +60,10 @@
 
 #endif
 
+#ifdef __x86_64__
+#define _M_AMD64
+#endif
+
 // put these into vc9/common7/ide/usertype.dat to have them highlighted
 
 typedef unsigned char uint8;
@@ -70,7 +74,7 @@ typedef unsigned int uint32;
 typedef signed int int32;
 typedef unsigned long long uint64;
 typedef signed long long int64;
-#ifdef __x86_64__
+#ifdef _M_AMD64
 typedef uint64 uptr;
 #else
 typedef uint32 uptr;
@@ -209,10 +213,6 @@ using namespace std;
 #endif
 
 #define ASSERT assert
-
-#ifdef __x86_64__
-	#define _M_AMD64
-#endif
 
 #ifdef _M_AMD64
 	// Yeah let use mips naming ;)
