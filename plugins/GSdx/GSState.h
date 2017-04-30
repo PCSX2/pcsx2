@@ -218,7 +218,7 @@ public:
 	GSPerfMon m_perfmon;
 	uint32 m_crc;
 	CRC::Game m_game;
-	GSDump m_dump;
+	std::unique_ptr<GSDumpBase> m_dump;
 	int m_options;
 	int m_frameskip;
 	bool m_framelimit;

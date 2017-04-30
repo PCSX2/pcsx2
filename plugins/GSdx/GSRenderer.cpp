@@ -463,28 +463,21 @@ void GSRenderer::VSync(int field)
 
 	if(!m_snapshot.empty())
 	{
-		bool shift = false;
-
-		#ifdef _WIN32
-
-		shift = !!(::GetAsyncKeyState(VK_SHIFT) & 0x8000);
-
-		#else
-
-		shift = m_shift_key;
-
-		#endif
-
-		if(!m_dump && shift)
+		if(!m_dump && m_shift_key)
 		{
-			GSFreezeData fd;
-			fd.size = 0;
-			fd.data = NULL;
+			GSFreezeData fd = {0, nullptr};
 			Freeze(&fd, true);
 			fd.data = new uint8[fd.size];
 			Freeze(&fd, false);
 
-			m_dump.Open(m_snapshot, m_crc, fd, m_regs);
+#ifdef LZMA_SUPPORTED
+			if (m_control_key)
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDump(m_snapshot, m_crc, fd, m_regs));
+			else
+				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, m_crc, fd, m_regs));
+#else
+			m_dump = std::unique_ptr<GSDumpBase>(new GSDump(m_snapshot, m_crc, fd, m_regs));
+#endif
 
 			delete [] fd.data;
 		}
@@ -496,24 +489,10 @@ void GSRenderer::VSync(int field)
 
 		m_snapshot.clear();
 	}
-	else
+	else if(m_dump)
 	{
-		if(m_dump)
-		{
-            bool control = false;
-
-            #ifdef _WIN32
-
-            control = !!(::GetAsyncKeyState(VK_CONTROL) & 0x8000);
-
-			#else
-
-			control = m_control_key;
-
-            #endif
-
-	    	m_dump.VSync(field, !control, m_regs);
-		}
+		if(m_dump->VSync(field, !m_control_key, m_regs))
+			m_dump.reset();
 	}
 
 	// capture
@@ -587,14 +566,29 @@ void GSRenderer::EndCapture()
 
 void GSRenderer::KeyEvent(GSKeyEventData* e)
 {
+#ifdef _WIN32
+	m_shift_key = !!(::GetAsyncKeyState(VK_SHIFT) & 0x8000);
+	m_control_key = !!(::GetAsyncKeyState(VK_CONTROL) & 0x8000);
+#else
+	switch(e->key)
+	{
+		case XK_Shift_L:
+		case XK_Shift_R:
+			m_shift_key = (e->type == KEYPRESS);
+			return;
+		case XK_Control_L:
+		case XK_Control_R:
+			m_control_key = (e->type == KEYPRESS);
+			return;
+	}
+#endif
+
 	if(e->type == KEYPRESS)
 	{
 
-#ifdef _WIN32
-		int step = (::GetAsyncKeyState(VK_SHIFT) & 0x8000) ? -1 : 1;
-#elif defined(__unix__)
 		int step = m_shift_key ? -1 : 1;
 
+#if defined(__unix__)
 #define VK_F5 XK_F5
 #define VK_F6 XK_F6
 #define VK_F7 XK_F7
@@ -637,20 +631,6 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		}
 
 	}
-
-#if defined(__unix__)
-	switch(e->key)
-	{
-		case XK_Shift_L:
-		case XK_Shift_R:
-			m_shift_key = (e->type == KEYPRESS);
-			return;
-		case XK_Control_L:
-		case XK_Control_R:
-			m_control_key = (e->type == KEYPRESS);
-			return;
-	}
-#endif
 }
 
 void GSRenderer::PurgePool()
