@@ -662,7 +662,6 @@ set(pcsx2FinalLibs
     ${ZLIB_LIBRARIES}
     ${AIO_LIBRARIES}
     ${GCOV_LIBRARIES}
-    ${X11_LIBRARIES}
 )
 
 if(BUILTIN_GS)
