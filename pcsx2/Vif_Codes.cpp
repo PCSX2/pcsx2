@@ -143,7 +143,7 @@ template<int idx> __fi int _vifCode_Direct(int pass, const u8* data, bool isDire
 	pass2 {
 		const char* name = isDirectHL ? "DirectHL" : "Direct";
 		GIF_TRANSFER_TYPE tranType = isDirectHL ? GIF_TRANS_DIRECTHL : GIF_TRANS_DIRECT;
-		uint size = aMin(vif1.vifpacketsize, vif1.tag.size) * 4; // Get size in bytes
+		uint size = std::min(vif1.vifpacketsize, vif1.tag.size) * 4; // Get size in bytes
 		uint ret  = gifUnit.TransferGSPacketData(tranType, (u8*)data, size);
 
 		vif1.tag.size    -= ret/4; // Convert to u32's

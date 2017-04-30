@@ -23,9 +23,6 @@
 
 using namespace x86Emitter;
 
-#define aMax(x, y) std::max(x,y)
-#define aMin(x, y) std::min(x,y)
-
 // newVif_HashBucket.h uses this typedef, so it has to be declared first.
 typedef u32  (__fastcall *nVifCall)(void*, const void*);
 typedef void (__fastcall *nVifrecCall)(uptr dest, uptr src);

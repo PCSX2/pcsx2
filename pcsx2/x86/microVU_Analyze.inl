@@ -454,7 +454,7 @@ static void analyzeBranchVI(mV, int xReg, bool& infoVar) {
 __fi void analyzeBranchVI(mV, int xReg, bool& infoVar) {
 	if (!xReg) return;
 	int i;
-	int iEnd = aMin(5, (mVUcount+1));
+	int iEnd = std::min(5, mVUcount + 1);
 	int bPC = iPC;
 	incPC2(-2);
 	for (i = 0; i < iEnd; i++) {
