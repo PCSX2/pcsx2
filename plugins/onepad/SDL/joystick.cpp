@@ -141,6 +141,7 @@ JoystickInfo::JoystickInfo(int id)
     if (m_controller == nullptr) {
         fprintf(stderr, "onepad: Joystick (%s,GUID:%s) isn't yet supported by the SDL2 game controller API\n"
                         "Fortunately you can use AntiMicro (https://github.com/AntiMicro/antimicro) or Steam to configure your joystick\n"
+                        "You can add a new mapping with the environment variable SDL_GAMECONTROLLERCONFIG\n"
                         "Please report it to us (https://github.com/PCSX2/pcsx2/issues) so we can add your joystick to our internal database.",
                 devname, guid);
 
