@@ -23,7 +23,7 @@
 #include <string.h> // for memset
 #define MAX_KEYS 24
 
-extern void set_keyboad_key(int pad, int keysym, int index);
+extern void set_keyboard_key(int pad, int keysym, int index);
 extern int get_keyboard_key(int pad, int keysym);
 extern bool IsAnalogKey(int index);
 

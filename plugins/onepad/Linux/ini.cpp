@@ -62,20 +62,20 @@ string KeyName(int pad, int key, int keysym)
 
 void DefaultKeyboardValues()
 {
-    set_keyboad_key(0, XK_a, PAD_L2);
-    set_keyboad_key(0, XK_semicolon, PAD_R2);
-    set_keyboad_key(0, XK_w, PAD_L1);
-    set_keyboad_key(0, XK_p, PAD_R1);
-    set_keyboad_key(0, XK_i, PAD_TRIANGLE);
-    set_keyboad_key(0, XK_l, PAD_CIRCLE);
-    set_keyboad_key(0, XK_k, PAD_CROSS);
-    set_keyboad_key(0, XK_j, PAD_SQUARE);
-    set_keyboad_key(0, XK_v, PAD_SELECT);
-    set_keyboad_key(0, XK_n, PAD_START);
-    set_keyboad_key(0, XK_e, PAD_UP);
-    set_keyboad_key(0, XK_f, PAD_RIGHT);
-    set_keyboad_key(0, XK_d, PAD_DOWN);
-    set_keyboad_key(0, XK_s, PAD_LEFT);
+    set_keyboard_key(0, XK_a, PAD_L2);
+    set_keyboard_key(0, XK_semicolon, PAD_R2);
+    set_keyboard_key(0, XK_w, PAD_L1);
+    set_keyboard_key(0, XK_p, PAD_R1);
+    set_keyboard_key(0, XK_i, PAD_TRIANGLE);
+    set_keyboard_key(0, XK_l, PAD_CIRCLE);
+    set_keyboard_key(0, XK_k, PAD_CROSS);
+    set_keyboard_key(0, XK_j, PAD_SQUARE);
+    set_keyboard_key(0, XK_v, PAD_SELECT);
+    set_keyboard_key(0, XK_n, PAD_START);
+    set_keyboard_key(0, XK_e, PAD_UP);
+    set_keyboard_key(0, XK_f, PAD_RIGHT);
+    set_keyboard_key(0, XK_d, PAD_DOWN);
+    set_keyboard_key(0, XK_s, PAD_LEFT);
 }
 
 void SaveConfig()
@@ -145,7 +145,7 @@ void LoadConfig()
     u32 keysym;
     u32 index;
     while (fscanf(f, "PAD %u:KEYSYM 0x%x = %u\n", &pad, &keysym, &index) == 3) {
-        set_keyboad_key(pad & 1, keysym, index);
+        set_keyboard_key(pad & 1, keysym, index);
         if (pad == 0)
             have_user_setting = true;
     }
