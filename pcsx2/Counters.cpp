@@ -258,8 +258,8 @@ static const char* ReportVideoMode()
 	case GS_VideoMode::DVD_NTSC:     return "DVD NTSC";
 	case GS_VideoMode::DVD_PAL:      return "DVD PAL";
 	case GS_VideoMode::VESA:         return "VESA";
-	case GS_VideoMode::HDTV_480P:    return "HDTV 480p";
-	case GS_VideoMode::HDTV_576P:    return "HDTV 576p";
+	case GS_VideoMode::SDTV_480P:    return "SDTV 480p";
+	case GS_VideoMode::SDTV_576P:    return "SDTV 576p";
 	case GS_VideoMode::HDTV_720P:    return "HDTV 720p";
 	case GS_VideoMode::HDTV_1080I:   return "HDTV 1080i";
 	case GS_VideoMode::HDTV_1080P:   return "HDTV 1080p";
@@ -271,7 +271,7 @@ Fixed100 GetVerticalFrequency()
 {
 	switch (gsVideoMode)
 	{
-	case GS_VideoMode::Uninitialized: // SYSCALL instruction hasn't executed yet, give some temporary values.
+	case GS_VideoMode::Uninitialized: // SetGsCrt hasn't executed yet, give some temporary values.
 		return 60;
 	case GS_VideoMode::PAL:
 	case GS_VideoMode::DVD_PAL:
@@ -279,12 +279,12 @@ Fixed100 GetVerticalFrequency()
 	case GS_VideoMode::NTSC:
 	case GS_VideoMode::DVD_NTSC:
 		return EmuConfig.GS.FramerateNTSC;
-	case GS_VideoMode::HDTV_480P:
+	case GS_VideoMode::SDTV_480P:
 		return 59.94;
 	case GS_VideoMode::HDTV_1080P:
 	case GS_VideoMode::HDTV_1080I:
-	case GS_VideoMode::HDTV_576P:
 	case GS_VideoMode::HDTV_720P:
+	case GS_VideoMode::SDTV_576P:
 	case GS_VideoMode::VESA:
 		return 60;
 	default:
@@ -326,10 +326,10 @@ u32 UpdateVSyncRate()
 		if (!gsIsInterlaced) scanlines += 1;
 		break;
 
-	case GS_VideoMode::HDTV_480P:
+	case GS_VideoMode::SDTV_480P:
+	case GS_VideoMode::SDTV_576P:
 	case GS_VideoMode::HDTV_1080P:
 	case GS_VideoMode::HDTV_1080I:
-	case GS_VideoMode::HDTV_576P:
 	case GS_VideoMode::HDTV_720P:
 	case GS_VideoMode::VESA:
 		scanlines = SCANLINES_TOTAL_NTSC;
