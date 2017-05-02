@@ -375,6 +375,8 @@ bool GSState::isinterlaced()
 GSVideoMode GSState::GetVideoMode()
 {
 	// TODO: Get confirmation of videomode from SYSCALL ? not necessary but would be nice.
+	// Other videomodes can't be detected on the plugin side without the help of the data from core
+	// You can only identify a limited number of video modes based on the info from CRTC registers.
 
 	GSVideoMode videomode = GSVideoMode::Unknown;
 	uint8 Colorburst = m_regs->SMODE1.CMOD; // Subcarrier frequency
@@ -384,13 +386,13 @@ GSVideoMode GSState::GetVideoMode()
 	{
 	case 0:
 		if (isinterlaced() && PLL_Divider == 22)
-			videomode = GSVideoMode::DTV_1080I;
+			videomode = GSVideoMode::HDTV_1080I;
 
 		else if (!isinterlaced() && PLL_Divider == 22)
-			videomode = GSVideoMode::DTV_720P;
+			videomode = GSVideoMode::HDTV_720P;
 
 		else if (!isinterlaced() && PLL_Divider == 32)
-			videomode = GSVideoMode::DTV_480P; // TODO: 576P will also be reported as 480P, find some way to differeniate.
+			videomode = GSVideoMode::SDTV_480P; // TODO: 576P will also be reported as 480P, find some way to differeniate.
 
 		else
 			videomode = GSVideoMode::VESA;
@@ -531,13 +533,13 @@ float GSState::GetTvRefreshRate()
 
 	switch (videomode)
 	{
-	case GSVideoMode::NTSC: case GSVideoMode::DTV_480P:
+	case GSVideoMode::NTSC: case GSVideoMode::SDTV_480P:
 		vertical_frequency = (60 / 1.001f); break;
 
 	case GSVideoMode::PAL:
 		vertical_frequency = 50; break;
 
-	case GSVideoMode::DTV_720P: case GSVideoMode::DTV_1080I:
+	case GSVideoMode::HDTV_720P: case GSVideoMode::HDTV_1080I:
 		vertical_frequency = 60; break;
 
 	default:

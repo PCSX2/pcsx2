@@ -1411,9 +1411,9 @@ enum class GSVideoMode : uint8
 	NTSC,
 	PAL,
 	VESA,
-	DTV_480P,
-	DTV_720P,
-	DTV_1080I
+	SDTV_480P,
+	HDTV_720P,
+	HDTV_1080I
 };
 
 // Ordering was done to keep compatibility with older ini file.

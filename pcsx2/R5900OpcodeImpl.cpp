@@ -926,10 +926,10 @@ void SYSCALL()
 						case 0x4A: mode = "VESA 1280x1024 @ 63.981"; gsSetVideoMode(GS_VideoMode::VESA); break;
 						case 0x4B: mode = "VESA 1280x1024 @ 79.976"; gsSetVideoMode(GS_VideoMode::VESA); break;
 
-						case 0x50: mode = "HDTV   720x480 @ 59.94"; gsSetVideoMode(GS_VideoMode::HDTV_480P); break;
+						case 0x50: mode = "SDTV   720x480 @ 59.94"; gsSetVideoMode(GS_VideoMode::SDTV_480P); break;
 						case 0x51: mode = "HDTV 1920x1080 @ 60.00"; gsSetVideoMode(GS_VideoMode::HDTV_1080I); break;
 						case 0x52: mode = "HDTV  1280x720 @ ??.???"; gsSetVideoMode(GS_VideoMode::HDTV_720P); break;
-						case 0x53: mode = "HDTV   768x576 @ ??.???"; gsSetVideoMode(GS_VideoMode::HDTV_576P); break;
+						case 0x53: mode = "SDTV   768x576 @ ??.???"; gsSetVideoMode(GS_VideoMode::SDTV_576P); break;
 						case 0x54: mode = "HDTV 1920x1080 @ ??.???"; gsSetVideoMode(GS_VideoMode::HDTV_1080P); break;
 
 						case 0x72: mode = "DVD NTSC 640x448 @ ??.???"; gsSetVideoMode(GS_VideoMode::DVD_NTSC); break;
