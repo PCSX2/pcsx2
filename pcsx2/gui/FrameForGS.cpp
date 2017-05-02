@@ -587,6 +587,13 @@ GSPanel* GSFrame::GetViewport()
 
 void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 {
+	// Update the title only after the completion of at least a single Vsync, it's pointless to display the fps
+	// when there are have been no frames rendered and SMODE2 register seems to fresh start with 0 on all the bitfields which
+	// leads to the value of INT bit as 0 initially and the games are mentioned as progressive which is a bit misleading,
+	// to prevent such issues, let's update the title after the actual frame rendering starts.
+	if (g_FrameCount == 0)
+		return;
+
 	double fps = wxGetApp().FpsManager.GetFramerate();
 
 	FastFormatUnicode cpuUsage;
