@@ -52,7 +52,7 @@ const u32 build = 0; // increase that with each version
 
 FILE *padLog = NULL;
 
-KeyStatus *key_status = NULL;
+KeyStatus g_key_status;
 
 MtQueue<keyEvent> g_ev_fifo;
 
@@ -159,8 +159,6 @@ PADinit(u32 flags)
 
     LoadConfig();
 
-    key_status = new KeyStatus();
-
     Pad::reset_all();
 
     query.reset();
@@ -178,16 +176,13 @@ PADshutdown()
 
     delete conf;
     conf = nullptr;
-
-    delete key_status;
-    key_status = nullptr;
 }
 
 EXPORT_C_(s32)
 PADopen(void *pDsp)
 {
     memset(&event, 0, sizeof(event));
-    key_status->Init();
+    g_key_status.Init();
 
     g_ev_fifo.reset();
 

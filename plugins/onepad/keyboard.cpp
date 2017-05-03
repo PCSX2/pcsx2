@@ -86,17 +86,17 @@ static void AnalyzeKeyEvent(keyEvent &evt)
                     case PAD_R_UP:
                     case PAD_L_LEFT:
                     case PAD_L_UP:
-                        key_status->press(pad, index, -MAX_ANALOG_VALUE);
+                        g_key_status.press(pad, index, -MAX_ANALOG_VALUE);
                         break;
                     case PAD_R_RIGHT:
                     case PAD_R_DOWN:
                     case PAD_L_RIGHT:
                     case PAD_L_DOWN:
-                        key_status->press(pad, index, MAX_ANALOG_VALUE);
+                        g_key_status.press(pad, index, MAX_ANALOG_VALUE);
                         break;
                 }
             } else if (index != -1)
-                key_status->press(pad, index);
+                g_key_status.press(pad, index);
 
             //PAD_LOG("Key pressed:%d\n", index);
 
@@ -109,7 +109,7 @@ static void AnalyzeKeyEvent(keyEvent &evt)
                 s_Shift = false;
 
             if (index != -1)
-                key_status->release(pad, index);
+                g_key_status.release(pad, index);
 
             event.evt = KEYRELEASE;
             event.key = key;
@@ -124,12 +124,12 @@ static void AnalyzeKeyEvent(keyEvent &evt)
 
         case ButtonPress:
             if (index != -1)
-                key_status->press(pad, index);
+                g_key_status.press(pad, index);
             break;
 
         case ButtonRelease:
             if (index != -1)
-                key_status->release(pad, index);
+                g_key_status.release(pad, index);
             break;
 
         case MotionNotify:
@@ -154,15 +154,15 @@ static void AnalyzeKeyEvent(keyEvent &evt)
                 value *= conf->get_sensibility();
 
                 if (x == 0)
-                    key_status->press(pad, pad_x, -MAX_ANALOG_VALUE);
+                    g_key_status.press(pad, pad_x, -MAX_ANALOG_VALUE);
                 else if (x == 0xFFFF)
-                    key_status->press(pad, pad_x, MAX_ANALOG_VALUE);
+                    g_key_status.press(pad, pad_x, MAX_ANALOG_VALUE);
                 else if (x < (s_previous_mouse_x - 2))
-                    key_status->press(pad, pad_x, -value);
+                    g_key_status.press(pad, pad_x, -value);
                 else if (x > (s_previous_mouse_x + 2))
-                    key_status->press(pad, pad_x, value);
+                    g_key_status.press(pad, pad_x, value);
                 else
-                    key_status->release(pad, pad_x);
+                    g_key_status.release(pad, pad_x);
 
 
                 unsigned y = evt.key >> 16;
@@ -170,15 +170,15 @@ static void AnalyzeKeyEvent(keyEvent &evt)
                 value *= conf->get_sensibility();
 
                 if (y == 0)
-                    key_status->press(pad, pad_y, -MAX_ANALOG_VALUE);
+                    g_key_status.press(pad, pad_y, -MAX_ANALOG_VALUE);
                 else if (y == 0xFFFF)
-                    key_status->press(pad, pad_y, MAX_ANALOG_VALUE);
+                    g_key_status.press(pad, pad_y, MAX_ANALOG_VALUE);
                 else if (y < (s_previous_mouse_y - 2))
-                    key_status->press(pad, pad_y, -value);
+                    g_key_status.press(pad, pad_y, -value);
                 else if (y > (s_previous_mouse_y + 2))
-                    key_status->press(pad, pad_y, value);
+                    g_key_status.press(pad, pad_y, value);
                 else
-                    key_status->release(pad, pad_y);
+                    g_key_status.release(pad, pad_y);
 
                 s_previous_mouse_x = x;
                 s_previous_mouse_y = y;
@@ -240,7 +240,7 @@ bool PollX11KeyboardMouseEvent(u32 &pkey)
 LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     static bool lbutton = false, rbutton = false;
-    key_status->keyboard_state_acces(cpad);
+    g_key_status.keyboard_state_acces(cpad);
 
     switch (msg) {
         case WM_KEYDOWN:
@@ -252,7 +252,7 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     assert(0);
 #if 0
                     if (wParam == get_key(pad, i)) {
-                        key_status->press(pad, i);
+                        g_key_status.press(pad, i);
                         break;
                     }
 #endif
@@ -269,7 +269,7 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     assert(0);
 #if 0
                     if (wParam == get_key(pad, i)) {
-                        key_status->release(pad, i);
+                        g_key_status.release(pad, i);
                         break;
                     }
 #endif
@@ -292,7 +292,7 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 
     for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-        key_status->commit_status(pad);
+        g_key_status.commit_status(pad);
 
     return TRUE;
 }

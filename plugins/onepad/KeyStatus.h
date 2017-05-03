@@ -75,6 +75,6 @@ public:
     void commit_status(u32 pad);
 };
 
-extern KeyStatus *key_status;
+extern KeyStatus g_key_status;
 
 #endif

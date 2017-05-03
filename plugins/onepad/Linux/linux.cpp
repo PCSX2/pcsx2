@@ -91,9 +91,9 @@ void PollForJoystickInput(int cpad)
     for (int i = 0; i < MAX_KEYS; i++) {
         s32 value = gamePad->GetInput((gamePadValues)i);
         if (value != 0)
-            key_status->press(cpad, i, value);
+            g_key_status.press(cpad, i, value);
         else
-            key_status->release(cpad, i);
+            g_key_status.release(cpad, i);
     }
 }
 
@@ -116,17 +116,17 @@ PADupdate(int pad)
     // Poll keyboard/mouse event. There is currently no way to separate pad0 from pad1 event.
     // So we will populate both pad in the same time
     for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
-        key_status->keyboard_state_acces(cpad);
+        g_key_status.keyboard_state_acces(cpad);
     }
     PollForX11KeyboardInput();
 
     // Get joystick state + Commit
     for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
-        key_status->joystick_state_acces(cpad);
+        g_key_status.joystick_state_acces(cpad);
 
         PollForJoystickInput(cpad);
 
-        key_status->commit_status(cpad);
+        g_key_status.commit_status(cpad);
     }
 
     Pad::rumble_all();
