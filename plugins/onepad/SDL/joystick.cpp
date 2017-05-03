@@ -62,7 +62,7 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjo
             g_bytes_unref(bytes);
 
             // Add user mapping too
-            for (auto const &map : conf->sdl2_mapping)
+            for (auto const &map : g_conf.sdl2_mapping)
                 SDL_GameControllerAddMapping(map.c_str());
         }
     }
@@ -82,7 +82,7 @@ void JoystickInfo::Rumble(unsigned type, unsigned pad)
     if (type >= m_effects_id.size())
         return;
 
-    if (!(conf->pad_options[pad].forcefeedback))
+    if (!(g_conf.pad_options[pad].forcefeedback))
         return;
 
     if (m_haptic == nullptr)
@@ -167,7 +167,7 @@ JoystickInfo::JoystickInfo(int id)
         direction.dir[0] = 18000;
         effect.periodic.direction = direction;
         effect.periodic.period = 10;
-        effect.periodic.magnitude = (Sint16)(conf->get_ff_intensity()); // Effect at maximum instensity
+        effect.periodic.magnitude = (Sint16)(g_conf.get_ff_intensity()); // Effect at maximum instensity
         effect.periodic.offset = 0;
         effect.periodic.phase = 18000;
         effect.periodic.length = 125; // 125ms feels quite near to original

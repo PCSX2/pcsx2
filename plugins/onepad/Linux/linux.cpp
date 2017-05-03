@@ -80,7 +80,7 @@ void _PADclose()
 
 void PollForJoystickInput(int cpad)
 {
-    int index = GamePad::uid_to_index(conf->get_joy_uid(cpad));
+    int index = GamePad::uid_to_index(g_conf.get_joy_uid(cpad));
     if (index < 0)
         return;
 

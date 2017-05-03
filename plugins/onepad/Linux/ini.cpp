@@ -89,18 +89,18 @@ void SaveConfig()
         return;
     }
 
-    fprintf(f, "log = %d\n", conf->log);
-    fprintf(f, "options = %d\n", conf->packed_options);
-    fprintf(f, "mouse_sensibility = %d\n", conf->get_sensibility());
-    fprintf(f, "ff_intensity = %d\n", conf->get_ff_intensity());
-    fprintf(f, "uid[0] = %zu\n", conf->get_joy_uid(0));
-    fprintf(f, "uid[1] = %zu\n", conf->get_joy_uid(1));
+    fprintf(f, "log = %d\n", g_conf.log);
+    fprintf(f, "options = %d\n", g_conf.packed_options);
+    fprintf(f, "mouse_sensibility = %d\n", g_conf.get_sensibility());
+    fprintf(f, "ff_intensity = %d\n", g_conf.get_ff_intensity());
+    fprintf(f, "uid[0] = %zu\n", g_conf.get_joy_uid(0));
+    fprintf(f, "uid[1] = %zu\n", g_conf.get_joy_uid(1));
 
     for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
-        for (auto const &it : conf->keysym_map[pad])
+        for (auto const &it : g_conf.keysym_map[pad])
             fprintf(f, "PAD %d:KEYSYM 0x%x = %d\n", pad, it.first, it.second);
 
-    for (auto const &it : conf->sdl2_mapping)
+    for (auto const &it : g_conf.sdl2_mapping)
         fprintf(f, "SDL2 = %s\n", it.c_str());
 
     fclose(f);
@@ -111,10 +111,7 @@ void LoadConfig()
     FILE *f;
     bool have_user_setting = false;
 
-    if (!conf)
-        conf = new PADconf;
-
-    conf->init();
+    g_conf.init();
 
     const std::string iniFile(s_strIniPath + "OnePAD2.ini");
     f = fopen(iniFile.c_str(), "r");
@@ -126,22 +123,22 @@ void LoadConfig()
 
     u32 value;
     if (fscanf(f, "log = %u\n", &value) == 1)
-        conf->log = value;
+        g_conf.log = value;
 
     if (fscanf(f, "options = %u\n", &value) == 1)
-        conf->packed_options = value;
+        g_conf.packed_options = value;
 
     if (fscanf(f, "mouse_sensibility = %u\n", &value) == 1)
-        conf->set_sensibility(value);
+        g_conf.set_sensibility(value);
 
     if (fscanf(f, "ff_intensity = %u\n", &value) == 1)
-        conf->set_ff_intensity(value);
+        g_conf.set_ff_intensity(value);
 
     size_t uid;
     if (fscanf(f, "uid[0] = %zu\n", &uid) == 1)
-        conf->set_joy_uid(0, uid);
+        g_conf.set_joy_uid(0, uid);
     if (fscanf(f, "uid[1] = %zu\n", &uid) == 1)
-        conf->set_joy_uid(1, uid);
+        g_conf.set_joy_uid(1, uid);
 
     u32 pad;
     u32 keysym;
@@ -154,7 +151,7 @@ void LoadConfig()
 
     char sdl2[512];
     while (fscanf(f, "SDL2 = %511[^\n]\n", sdl2) == 1)
-        conf->sdl2_mapping.push_back(std::string(sdl2));
+        g_conf.sdl2_mapping.push_back(std::string(sdl2));
 
     if (!have_user_setting)
         DefaultKeyboardValues();

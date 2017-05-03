@@ -118,4 +118,4 @@ public:
         return sensibility;
     }
 };
-extern PADconf *conf;
+extern PADconf g_conf;

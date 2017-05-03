@@ -133,19 +133,19 @@ bool KeyStatus::analog_is_reversed(u32 pad, u32 index)
     switch (index) {
         case PAD_L_RIGHT:
         case PAD_L_LEFT:
-            return (conf->pad_options[pad].reverse_lx);
+            return (g_conf.pad_options[pad].reverse_lx);
 
         case PAD_R_LEFT:
         case PAD_R_RIGHT:
-            return (conf->pad_options[pad].reverse_rx);
+            return (g_conf.pad_options[pad].reverse_rx);
 
         case PAD_L_UP:
         case PAD_L_DOWN:
-            return (conf->pad_options[pad].reverse_ly);
+            return (g_conf.pad_options[pad].reverse_ly);
 
         case PAD_R_DOWN:
         case PAD_R_UP:
-            return (conf->pad_options[pad].reverse_ry);
+            return (g_conf.pad_options[pad].reverse_ry);
 
         default:
             return false;

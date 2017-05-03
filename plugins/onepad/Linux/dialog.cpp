@@ -432,7 +432,7 @@ void Dialog::clear_key(int pad, int key)
     m_simulatedKeys[pad][key] = 0;
 
     // erase gamepad entry (keysim map)
-    conf->keysym_map[pad].erase(keysim);
+    g_conf.keysym_map[pad].erase(keysim);
 }
 
 
@@ -441,7 +441,7 @@ void Dialog::repopulate()
 {
     for (int gamepad_id = 0; gamepad_id < GAMEPAD_NUMBER; ++gamepad_id) {
         // keyboard/mouse key
-        for (const auto &it : conf->keysym_map[gamepad_id]) {
+        for (const auto &it : g_conf.keysym_map[gamepad_id]) {
             int keysym = it.first;
             int key = it.second;
 

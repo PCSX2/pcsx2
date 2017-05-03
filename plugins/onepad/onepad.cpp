@@ -36,7 +36,7 @@
 #define snprintf sprintf_s
 #endif
 
-PADconf *conf;
+PADconf g_conf;
 static char libraryName[256];
 
 keyEvent event;
@@ -173,9 +173,6 @@ EXPORT_C_(void)
 PADshutdown()
 {
     CloseLogging();
-
-    delete conf;
-    conf = nullptr;
 }
 
 EXPORT_C_(s32)

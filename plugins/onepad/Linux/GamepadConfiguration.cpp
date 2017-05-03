@@ -176,7 +176,7 @@ void GamepadConfiguration::OnSliderReleased(wxCommandEvent &event)
     int sl_id = sl_tmp->GetId();                           // slider id
     if (sl_id == m_sl_rumble_intensity->GetId()) {         // if this is the rumble intensity slider
         u32 intensity = m_sl_rumble_intensity->GetValue(); // get the new value
-        conf->set_ff_intensity(intensity);                 // and set the force feedback intensity value with it
+        g_conf.set_ff_intensity(intensity);                // and set the force feedback intensity value with it
                                                            // get the rumble intensity
         float strength = m_sl_rumble_intensity->GetValue();
         /*
@@ -193,7 +193,7 @@ void GamepadConfiguration::OnSliderReleased(wxCommandEvent &event)
         s_vgamePad[m_pad_id]->TestForce(strength / 0x7FFF);
     } else if (sl_id == m_sl_joystick_sensibility->GetId()) {
         u32 sensibility = m_sl_joystick_sensibility->GetValue(); // get the new value
-        conf->set_sensibility(sensibility);                      // and set the joystick sensibility
+        g_conf.set_sensibility(sensibility);                     // and set the joystick sensibility
     }
 }
 
@@ -205,7 +205,7 @@ void GamepadConfiguration::OnCheckboxChange(wxCommandEvent &event)
     wxCheckBox *cb_tmp = (wxCheckBox *)event.GetEventObject(); // get the slider object
     int cb_id = cb_tmp->GetId();
     if (cb_id == m_cb_rumble->GetId()) {
-        conf->pad_options[m_pad_id].forcefeedback = (m_cb_rumble->GetValue()) ? (u32)1 : (u32)0;
+        g_conf.pad_options[m_pad_id].forcefeedback = (m_cb_rumble->GetValue()) ? (u32)1 : (u32)0;
         if (m_cb_rumble->GetValue()) {
             s_vgamePad[m_pad_id]->TestForce();
             m_sl_rumble_intensity->Enable();
@@ -224,7 +224,7 @@ void GamepadConfiguration::OnChoiceChange(wxCommandEvent &event)
     int id = choice_tmp->GetSelection();
     if (id != wxNOT_FOUND) {
         size_t uid = GamePad::index_to_uid(id);
-        conf->set_joy_uid(m_pad_id, uid);
+        g_conf.set_joy_uid(m_pad_id, uid);
     }
 }
 
@@ -235,16 +235,16 @@ void GamepadConfiguration::OnChoiceChange(wxCommandEvent &event)
 // Set button values
 void GamepadConfiguration::repopulate()
 {
-    bool val = conf->pad_options[m_pad_id].forcefeedback;
+    bool val = g_conf.pad_options[m_pad_id].forcefeedback;
     m_cb_rumble->SetValue(val);
 
-    int tmp = conf->get_ff_intensity();
+    int tmp = g_conf.get_ff_intensity();
     m_sl_rumble_intensity->SetValue(tmp);
 
-    tmp = conf->get_sensibility();
+    tmp = g_conf.get_sensibility();
     m_sl_joystick_sensibility->SetValue(tmp);
 
-    u32 joyid = GamePad::uid_to_index(conf->get_joy_uid(m_pad_id));
+    u32 joyid = GamePad::uid_to_index(g_conf.get_joy_uid(m_pad_id));
     if (joyid < m_joy_map->GetCount() && !m_joy_map->IsEmpty())
         m_joy_map->SetSelection(joyid);
 
