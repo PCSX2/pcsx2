@@ -122,6 +122,31 @@ JoystickInfo::JoystickInfo(int id)
 {
     SDL_Joystick *joy = nullptr;
     m_effects_id.fill(-1);
+    // Values are hardcoded currently but it could be later extended to allow remapping of the buttons
+    m_pad_to_sdl[PAD_L2] = SDL_CONTROLLER_AXIS_TRIGGERLEFT;
+    m_pad_to_sdl[PAD_R2] = SDL_CONTROLLER_AXIS_TRIGGERRIGHT;
+    m_pad_to_sdl[PAD_L1] = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
+    m_pad_to_sdl[PAD_R1] = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
+    m_pad_to_sdl[PAD_TRIANGLE] = SDL_CONTROLLER_BUTTON_Y;
+    m_pad_to_sdl[PAD_CIRCLE] = SDL_CONTROLLER_BUTTON_B;
+    m_pad_to_sdl[PAD_CROSS] = SDL_CONTROLLER_BUTTON_A;
+    m_pad_to_sdl[PAD_SQUARE] = SDL_CONTROLLER_BUTTON_X;
+    m_pad_to_sdl[PAD_SELECT] = SDL_CONTROLLER_BUTTON_BACK;
+    m_pad_to_sdl[PAD_L3] = SDL_CONTROLLER_BUTTON_LEFTSTICK;
+    m_pad_to_sdl[PAD_R3] = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
+    m_pad_to_sdl[PAD_START] = SDL_CONTROLLER_BUTTON_START;
+    m_pad_to_sdl[PAD_UP] = SDL_CONTROLLER_BUTTON_DPAD_UP;
+    m_pad_to_sdl[PAD_RIGHT] = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+    m_pad_to_sdl[PAD_DOWN] = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+    m_pad_to_sdl[PAD_LEFT] = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+    m_pad_to_sdl[PAD_L_UP] = SDL_CONTROLLER_AXIS_LEFTY;
+    m_pad_to_sdl[PAD_L_RIGHT] = SDL_CONTROLLER_AXIS_LEFTX;
+    m_pad_to_sdl[PAD_L_DOWN] = SDL_CONTROLLER_AXIS_LEFTY;
+    m_pad_to_sdl[PAD_L_LEFT] = SDL_CONTROLLER_AXIS_LEFTX;
+    m_pad_to_sdl[PAD_R_UP] = SDL_CONTROLLER_AXIS_RIGHTY;
+    m_pad_to_sdl[PAD_R_RIGHT] = SDL_CONTROLLER_AXIS_RIGHTX;
+    m_pad_to_sdl[PAD_R_DOWN] = SDL_CONTROLLER_AXIS_RIGHTY;
+    m_pad_to_sdl[PAD_R_LEFT] = SDL_CONTROLLER_AXIS_RIGHTX;
 
     if (SDL_IsGameController(id)) {
         m_controller = SDL_GameControllerOpen(id);
@@ -237,110 +262,21 @@ bool JoystickInfo::TestForce(float strength = 0.60)
 
 int JoystickInfo::GetInput(gamePadValues input)
 {
-    int value = 0;
-
-    // Handle standard button
-    switch (input) {
-        case PAD_L1:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_LEFTSHOULDER);
-            break;
-        case PAD_R1:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
-            break;
-        case PAD_TRIANGLE:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_Y);
-            break;
-        case PAD_CIRCLE:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_B);
-            break;
-        case PAD_CROSS:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_A);
-            break;
-        case PAD_SQUARE:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_X);
-            break;
-        case PAD_SELECT:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_BACK);
-            break;
-        case PAD_L3:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_LEFTSTICK);
-            break;
-        case PAD_R3:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_RIGHTSTICK);
-            break;
-        case PAD_START:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_START);
-            break;
-        case PAD_UP:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_DPAD_UP);
-            break;
-        case PAD_RIGHT:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
-            break;
-        case PAD_DOWN:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_DPAD_DOWN);
-            break;
-        case PAD_LEFT:
-            value = SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_DPAD_LEFT);
-            break;
-        default:
-            break;
+    // Handle analog inputs which range from -32k to +32k. Range conversion is handled later in the controller
+    if (IsAnalogKey(input)) {
+        int value = SDL_GameControllerGetAxis(m_controller, (SDL_GameControllerAxis)m_pad_to_sdl[input]);
+        return (abs(value) > m_deadzone) ? value : 0;
     }
 
-    // Return max pressure for button
-    if (value)
-        return 0xFF;
-
-    // Handle trigger
-    switch (input) {
-        case PAD_L2:
-            value = SDL_GameControllerGetAxis(m_controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
-            break;
-        case PAD_R2:
-            value = SDL_GameControllerGetAxis(m_controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
-            break;
-        default:
-            break;
+    // Handle triggers which range from 0 to +32k. They must be converted to 0-255 range
+    if (input == PAD_L2 || input == PAD_R2) {
+        int value = SDL_GameControllerGetAxis(m_controller, (SDL_GameControllerAxis)m_pad_to_sdl[input]);
+        return (value > m_deadzone) ? value / 128 : 0;
     }
 
-    // Note SDL values range from 0 to 32768 for trigger
-    if (value > m_deadzone) {
-        return value / 128;
-    } else {
-        value = 0;
-    }
-
-    // Handle analog input
-    switch (input) {
-        case PAD_L_UP:
-            value = SDL_GameControllerGetAxis(m_controller, SDL_CONTROLLER_AXIS_LEFTY);
-            break;
-        case PAD_L_RIGHT:
-            value = SDL_GameControllerGetAxis(m_controller, SDL_CONTROLLER_AXIS_LEFTX);
-            break;
-        case PAD_L_DOWN:
-            value = SDL_GameControllerGetAxis(m_controller, SDL_CONTROLLER_AXIS_LEFTY);
-            break;
-        case PAD_L_LEFT:
-            value = SDL_GameControllerGetAxis(m_controller, SDL_CONTROLLER_AXIS_LEFTX);
-            break;
-        case PAD_R_UP:
-            value = SDL_GameControllerGetAxis(m_controller, SDL_CONTROLLER_AXIS_RIGHTY);
-            break;
-        case PAD_R_RIGHT:
-            value = SDL_GameControllerGetAxis(m_controller, SDL_CONTROLLER_AXIS_RIGHTX);
-            break;
-        case PAD_R_DOWN:
-            value = SDL_GameControllerGetAxis(m_controller, SDL_CONTROLLER_AXIS_RIGHTY);
-            break;
-        case PAD_R_LEFT:
-            value = SDL_GameControllerGetAxis(m_controller, SDL_CONTROLLER_AXIS_RIGHTX);
-            break;
-        default:
-            break;
-    }
-
-    return (abs(value) > m_deadzone) ? value : 0;
+    // Remain buttons
+    int value = SDL_GameControllerGetButton(m_controller, (SDL_GameControllerButton)m_pad_to_sdl[input]);
+    return value ? 0xFF : 0; // Max pressure
 }
 
 void JoystickInfo::UpdateGamePadState()
