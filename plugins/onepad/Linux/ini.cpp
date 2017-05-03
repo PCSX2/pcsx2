@@ -122,18 +122,17 @@ void LoadConfig()
     }
 
     u32 value;
-    if (fscanf(f, "log = %u\n", &value) == 0)
-        goto error;
-    conf->log = value;
-    if (fscanf(f, "options = %u\n", &value) == 0)
-        goto error;
-    conf->packed_options = value;
-    if (fscanf(f, "mouse_sensibility = %u\n", &value) == 0)
-        goto error;
-    conf->set_sensibility(value);
-    if (fscanf(f, "ff_intensity = %u\n", &value) == 0)
-        goto error;
-    conf->set_ff_intensity(value);
+    if (fscanf(f, "log = %u\n", &value) == 1)
+        conf->log = value;
+
+    if (fscanf(f, "options = %u\n", &value) == 1)
+        conf->packed_options = value;
+
+    if (fscanf(f, "mouse_sensibility = %u\n", &value) == 1)
+        conf->set_sensibility(value);
+
+    if (fscanf(f, "ff_intensity = %u\n", &value) == 1)
+        conf->set_ff_intensity(value);
 
     size_t uid;
     if (fscanf(f, "uid[0] = %zu\n", &uid) == 1)
@@ -153,6 +152,5 @@ void LoadConfig()
     if (!have_user_setting)
         DefaultKeyboardValues();
 
-error:
     fclose(f);
 }
