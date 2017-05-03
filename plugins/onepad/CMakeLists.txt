@@ -75,7 +75,6 @@ set(onepadLinuxSources
 
 # onepad Linux headers
 set(onepadLinuxHeaders
-    ${linux_headers}/linux.h
     ${linux_headers}/opPanel.h
     ${linux_headers}/GamepadConfiguration.h
     ${linux_headers}/JoystickConfiguration.h)

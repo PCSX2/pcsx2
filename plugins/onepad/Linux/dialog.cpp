@@ -19,6 +19,30 @@
 
 #include "dialog.h"
 
+static std::string KeyName(int pad, int key, int keysym)
+{
+    if (!keysym)
+        return "";
+
+    // Mouse
+    if (keysym < 10) {
+        switch (keysym) {
+            case 0:
+                return "";
+            case 1:
+                return "Mouse Left";
+            case 2:
+                return "Mouse Middle";
+            case 3:
+                return "Mouse Right";
+            default: // Use only number for extra button
+                return "Mouse " + std::to_string(keysym);
+        }
+    }
+
+    return std::string(XKeysymToString(keysym));
+}
+
 // Construtor of Dialog
 Dialog::Dialog()
     : wxDialog(NULL,                                  // Parent

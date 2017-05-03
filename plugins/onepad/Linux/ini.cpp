@@ -24,41 +24,8 @@
 #include "GamePad.h"
 #include "keyboard.h"
 #include "onepad.h"
-#include "linux.h"
 
 extern std::string s_strIniPath;
-
-string KeyName(int pad, int key, int keysym)
-{
-    string tmp;
-    tmp.resize(28);
-
-    if (keysym) {
-        if (keysym < 10) {
-            // mouse
-            switch (keysym) {
-                case 1:
-                    sprintf(&tmp[0], "Mouse Left");
-                    break;
-                case 2:
-                    sprintf(&tmp[0], "Mouse Middle");
-                    break;
-                case 3:
-                    sprintf(&tmp[0], "Mouse Right");
-                    break;
-                default: // Use only number for extra button
-                    sprintf(&tmp[0], "Mouse %d", keysym);
-            }
-        } else {
-            // keyboard
-            char *pstr = XKeysymToString(keysym);
-            if (pstr != NULL)
-                tmp = pstr;
-        }
-    }
-
-    return tmp;
-}
 
 void DefaultKeyboardValues()
 {
