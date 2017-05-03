@@ -125,7 +125,6 @@ extern void initLogging();
 extern keyEvent event;
 extern MtQueue<keyEvent> g_ev_fifo;
 
-void clearPAD(int pad);
 s32 _PADopen(void *pDsp);
 void _PADclose();
 void PADsetMode(int pad, int mode);

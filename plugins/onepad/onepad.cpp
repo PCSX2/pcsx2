@@ -152,11 +152,6 @@ void CloseLogging()
 #endif
 }
 
-void clearPAD(int pad)
-{
-    conf->keysym_map[pad].clear();
-}
-
 EXPORT_C_(s32)
 PADinit(u32 flags)
 {
