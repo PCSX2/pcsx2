@@ -52,6 +52,7 @@ public:
     u32 log;
     map<u32, u32> keysym_map[GAMEPAD_NUMBER];
     std::array<size_t, GAMEPAD_NUMBER> unique_id;
+    std::vector<std::string> sdl2_mapping;
 
     PADconf() { init(); }
 
@@ -64,6 +65,7 @@ public:
             keysym_map[pad].clear();
         }
         unique_id.fill(0);
+        sdl2_mapping.clear();
     }
 
     void set_joy_uid(u32 pad, size_t uid)

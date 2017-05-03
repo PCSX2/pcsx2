@@ -57,11 +57,13 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjo
             // SDL forget to add const for SDL_RWFromMem API...
             void *data = const_cast<void *>(g_bytes_get_data(bytes, &size));
 
-            int map = SDL_GameControllerAddMappingsFromRW(SDL_RWFromMem(data, size), 1);
-
-            fprintf(stdout, "onepad: load %d extra joystick map\n", map);
+            SDL_GameControllerAddMappingsFromRW(SDL_RWFromMem(data, size), 1);
 
             g_bytes_unref(bytes);
+
+            // Add user mapping too
+            for (auto const &map : conf->sdl2_mapping)
+                SDL_GameControllerAddMapping(map.c_str());
         }
     }
 
@@ -141,7 +143,7 @@ JoystickInfo::JoystickInfo(int id)
     if (m_controller == nullptr) {
         fprintf(stderr, "onepad: Joystick (%s,GUID:%s) isn't yet supported by the SDL2 game controller API\n"
                         "Fortunately you can use AntiMicro (https://github.com/AntiMicro/antimicro) or Steam to configure your joystick\n"
-                        "You can add a new mapping with the environment variable SDL_GAMECONTROLLERCONFIG\n"
+                        "The mapping can be stored in OnePAD2.ini as 'SDL2 = <...mapping description...>'\n"
                         "Please report it to us (https://github.com/PCSX2/pcsx2/issues) so we can add your joystick to our internal database.",
                 devname, guid);
 

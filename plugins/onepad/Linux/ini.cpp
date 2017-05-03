@@ -100,6 +100,9 @@ void SaveConfig()
         for (auto const &it : conf->keysym_map[pad])
             fprintf(f, "PAD %d:KEYSYM 0x%x = %d\n", pad, it.first, it.second);
 
+    for (auto const &it : conf->sdl2_mapping)
+        fprintf(f, "SDL2 = %s\n", it.c_str());
+
     fclose(f);
 }
 
@@ -148,6 +151,10 @@ void LoadConfig()
         if (pad == 0)
             have_user_setting = true;
     }
+
+    char sdl2[512];
+    while (fscanf(f, "SDL2 = %511[^\n]\n", sdl2) == 1)
+        conf->sdl2_mapping.push_back(std::string(sdl2));
 
     if (!have_user_setting)
         DefaultKeyboardValues();
