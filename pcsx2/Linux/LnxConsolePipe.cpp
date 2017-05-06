@@ -137,7 +137,7 @@ protected:
 
 public:
 	LinuxPipeRedirection(FILE* stdstream);
-	virtual ~LinuxPipeRedirection() noexcept;
+	virtual ~LinuxPipeRedirection() = default;
 };
 
 LinuxPipeRedirection::LinuxPipeRedirection(FILE* stdstream)
@@ -152,10 +152,6 @@ LinuxPipeRedirection::LinuxPipeRedirection(FILE* stdstream)
 		// the constructor, so re-pack a new exception:
 		throw Exception::RuntimeError().SetDiagMsg(ex.FormatDiagnosticMessage());
 	}
-}
-
-LinuxPipeRedirection::~LinuxPipeRedirection() noexcept
-{
 }
 
 PipeRedirectionBase* NewPipeRedir(FILE* stdstream)

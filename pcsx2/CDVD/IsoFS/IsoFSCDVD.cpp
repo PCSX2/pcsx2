@@ -35,7 +35,3 @@ int IsoFSCDVD::getNumSectors()
 
 	return td.lsn;
 }
-
-IsoFSCDVD::~IsoFSCDVD() throw()
-{
-}

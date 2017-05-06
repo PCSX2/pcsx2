@@ -29,10 +29,6 @@ SysThreadBase::SysThreadBase() :
 {
 }
 
-SysThreadBase::~SysThreadBase() throw()
-{
-}
-
 void SysThreadBase::Start()
 {
 	_parent::Start();

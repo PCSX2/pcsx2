@@ -38,7 +38,7 @@ public:
 	IsoFile(const IsoDirectory& dir, const wxString& filename);
 	IsoFile(SectorSource& reader, const wxString& filename);
 	IsoFile(SectorSource& reader, const IsoFileDescriptor& fileEntry);
-	virtual ~IsoFile() throw();
+	virtual ~IsoFile() = default;
 
 	u32 seek(u32 absoffset);
 	u32 seek(s64 offset, wxSeekMode ref_position);

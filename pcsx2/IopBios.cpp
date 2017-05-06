@@ -143,7 +143,7 @@ public:
 		fd = hostfd;
 	}
 
-	virtual ~HostFile() {}
+	virtual ~HostFile() = default;
 
 	static __fi int translate_error(int err)
 	{

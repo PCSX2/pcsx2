@@ -344,7 +344,7 @@ public:
 
 public:
 	CpuInitializerSet() {}
-	virtual ~CpuInitializerSet() throw() {}
+	virtual ~CpuInitializerSet() = default;
 };
 
 
