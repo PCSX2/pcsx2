@@ -122,7 +122,7 @@ public:
 	virtual ~SysAllocVM();
 
 protected:
-	void CleanupMess() throw();
+	void CleanupMess() noexcept;
 };
 
 // --------------------------------------------------------------------------------------
@@ -164,7 +164,7 @@ public:
 	BaseException* GetException_SuperVU1() const;
 
 protected:
-	void CleanupMess() throw();
+	void CleanupMess() noexcept;
 };
 
 // GetCpuProviders - this function is not implemented by PCSX2 core -- it must be

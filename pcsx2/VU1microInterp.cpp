@@ -198,7 +198,7 @@ void InterpVU1::Reset() {
 	vu1Thread.WaitVU();
 }
 
-void InterpVU1::Shutdown() throw() {
+void InterpVU1::Shutdown() noexcept {
 	vu1Thread.WaitVU();
 }
 

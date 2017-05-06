@@ -213,7 +213,7 @@ public:
     NonblockingMutex() { val.clear(); }
     virtual ~NonblockingMutex() = default;
 
-    bool TryAcquire() throw()
+    bool TryAcquire() noexcept
     {
         return !val.test_and_set();
     }

@@ -4592,7 +4592,7 @@ void recSuperVU0::Reserve()
 	SuperVUAlloc(0);
 }
 
-void recSuperVU0::Shutdown() throw()
+void recSuperVU0::Shutdown() noexcept
 {
 	SuperVUDestroy( 0 );
 }
@@ -4639,7 +4639,7 @@ void recSuperVU1::Reserve()
 	SuperVUAlloc(1);
 }
 
-void recSuperVU1::Shutdown() throw()
+void recSuperVU1::Shutdown() noexcept
 {
 	vu1Thread.WaitVU();
 	SuperVUDestroy( 1 );

@@ -139,7 +139,7 @@ public:
 	//   Called from the EEcore thread.  No locking is performed, so any necessary locks must
 	//   be implemented by the CPU provider manually.
 	//
-	virtual void Vsync() throw() { }
+	virtual void Vsync() noexcept { }
 
 	virtual void Step() {
 		// Ideally this would fall back on interpretation for executing single instructions
@@ -176,7 +176,7 @@ public:
 	wxString GetLongName() const		{ return L"VU0 Interpreter"; }
 
 	void Reserve() { }
-	void Shutdown() throw() { }
+	void Shutdown() noexcept { }
 	void Reset() { }
 
 	void Step();
@@ -197,7 +197,7 @@ public:
 	wxString GetLongName() const		{ return L"VU1 Interpreter"; }
 
 	void Reserve() { }
-	void Shutdown() throw();
+	void Shutdown() noexcept;
 	void Reset();
 
 	void Step();
@@ -222,12 +222,12 @@ public:
 	wxString GetLongName() const		{ return L"microVU0 Recompiler"; }
 
 	void Reserve();
-	void Shutdown() throw();
+	void Shutdown() noexcept;
 
 	void Reset();
 	void Execute(u32 cycles);
 	void Clear(u32 addr, u32 size);
-	void Vsync() throw();
+	void Vsync() noexcept;
 
 	uint GetCacheReserve() const;
 	void SetCacheReserve( uint reserveInMegs ) const;
@@ -243,11 +243,11 @@ public:
 	wxString GetLongName() const		{ return L"microVU1 Recompiler"; }
 
 	void Reserve();
-	void Shutdown() throw();
+	void Shutdown() noexcept;
 	void Reset();
 	void Execute(u32 cycles);
 	void Clear(u32 addr, u32 size);
-	void Vsync() throw();
+	void Vsync() noexcept;
 	void ResumeXGkick();
 
 	uint GetCacheReserve() const;
@@ -267,7 +267,7 @@ public:
 	wxString GetLongName() const		{ return L"SuperVU0 Recompiler"; }
 
 	void Reserve();
-	void Shutdown() throw();
+	void Shutdown() noexcept;
 	void Reset();
 	void Execute(u32 cycles);
 	void Clear(u32 Addr, u32 Size);
@@ -285,7 +285,7 @@ public:
 	wxString GetLongName() const		{ return L"SuperVU1 Recompiler"; }
 
 	void Reserve();
-	void Shutdown() throw();
+	void Shutdown() noexcept;
 	void Reset();
 	void Execute(u32 cycles);
 	void Clear(u32 Addr, u32 Size);
