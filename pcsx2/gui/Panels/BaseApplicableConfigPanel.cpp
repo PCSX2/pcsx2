@@ -28,7 +28,7 @@ using namespace Dialogs;
 // on dialog destruction.  It asserts if the ApplyList hasn't been cleaned up
 // and then cleans it up forcefully.
 //
-void ApplyStateStruct::DoCleanup() throw()
+void ApplyStateStruct::DoCleanup() noexcept
 {
 	pxAssertMsg( !PanelList.empty(), L"PanelList list hasn't been cleaned up." );
 	PanelList.clear();

@@ -302,8 +302,8 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState) {
 //------------------------------------------------------------------
 recMicroVU0::recMicroVU0()		  { m_Idx = 0; IsInterpreter = false; }
 recMicroVU1::recMicroVU1()		  { m_Idx = 1; IsInterpreter = false; }
-void recMicroVU0::Vsync() throw() { mVUvsyncUpdate(microVU0); }
-void recMicroVU1::Vsync() throw() { mVUvsyncUpdate(microVU1); }
+void recMicroVU0::Vsync() noexcept { mVUvsyncUpdate(microVU0); }
+void recMicroVU1::Vsync() noexcept { mVUvsyncUpdate(microVU1); }
 
 void recMicroVU0::Reserve() {
 	if (m_Reserved.exchange(1) == 0)
@@ -316,11 +316,11 @@ void recMicroVU1::Reserve() {
 	}
 }
 
-void recMicroVU0::Shutdown() throw() {
+void recMicroVU0::Shutdown() noexcept {
 	if (m_Reserved.exchange(0) == 1)
 		mVUclose(microVU0);
 }
-void recMicroVU1::Shutdown() throw() {
+void recMicroVU1::Shutdown() noexcept {
 	if (m_Reserved.exchange(0) == 1) {
 		vu1Thread.WaitVU();
 		mVUclose(microVU1);
