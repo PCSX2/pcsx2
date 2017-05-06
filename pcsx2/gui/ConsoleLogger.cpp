@@ -33,7 +33,7 @@ wxDEFINE_EVENT(pxEvt_SetTitleText, wxCommandEvent);
 wxDEFINE_EVENT(pxEvt_FlushQueue, wxCommandEvent);
 
 // C++ requires abstract destructors to exist, even though they're abstract.
-PipeRedirectionBase::~PipeRedirectionBase() throw() = default;
+PipeRedirectionBase::~PipeRedirectionBase() = default;
 
 // ----------------------------------------------------------------------------
 //

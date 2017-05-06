@@ -98,7 +98,7 @@ class EventListener_CoreThread : public IEventListener_CoreThread
 {
 public:
 	EventListener_CoreThread();
-	virtual ~EventListener_CoreThread() throw();
+	virtual ~EventListener_CoreThread();
 };
 
 // --------------------------------------------------------------------------------------
@@ -129,7 +129,7 @@ class EventListener_Plugins : public IEventListener_Plugins
 {
 public:
 	EventListener_Plugins();
-	virtual ~EventListener_Plugins() throw();
+	virtual ~EventListener_Plugins();
 };
 
 // --------------------------------------------------------------------------------------
@@ -157,7 +157,7 @@ class EventListener_AppStatus : public IEventListener_AppStatus
 {
 public:
 	EventListener_AppStatus();
-	virtual ~EventListener_AppStatus() throw();
+	virtual ~EventListener_AppStatus();
 };
 
 // --------------------------------------------------------------------------------------

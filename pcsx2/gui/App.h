@@ -242,7 +242,7 @@ public:
 	std::unique_ptr<AppGameDatabase>	GameDB;
 
 	pxAppResources();
-	virtual ~pxAppResources() throw();
+	virtual ~pxAppResources();
 };
 
 // --------------------------------------------------------------------------------------

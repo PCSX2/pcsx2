@@ -80,7 +80,7 @@ void SysMtgsThread::OnStart()
 	_parent::OnStart();
 }
 
-SysMtgsThread::~SysMtgsThread() throw()
+SysMtgsThread::~SysMtgsThread()
 {
 	try {
 		_parent::Cancel();
@@ -250,7 +250,7 @@ class RingBufferLock {
 		  m_mtgs(mtgs) {
 		m_mtgs.m_RingBufferIsBusy.store(true, std::memory_order_relaxed);
 	}
-	virtual ~RingBufferLock() throw() {
+	virtual ~RingBufferLock() {
 		m_mtgs.m_RingBufferIsBusy.store(false, std::memory_order_relaxed);
 	}
 	void Acquire() {

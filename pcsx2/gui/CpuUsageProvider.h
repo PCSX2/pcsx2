@@ -40,7 +40,7 @@ protected:
 
 public:
 	CpuUsageProvider();
-	virtual ~CpuUsageProvider() throw();
+	virtual ~CpuUsageProvider();
 
 	virtual bool IsImplemented() const	{ return m_Implementation->IsImplemented(); }
 	virtual void UpdateStats()			{ m_Implementation->UpdateStats(); }

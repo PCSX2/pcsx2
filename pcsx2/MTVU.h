@@ -49,7 +49,7 @@ public:
 	__aligned(4) u32 vuCycleIdx;  // Used for VU cycle stealing hack
 
 	VU_Thread(BaseVUmicroCPU*& _vuCPU, VURegs& _vuRegs);
-	virtual ~VU_Thread() throw();
+	virtual ~VU_Thread();
 
 	void Reset();
 

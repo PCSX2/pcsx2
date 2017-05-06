@@ -490,7 +490,7 @@ namespace Panels
 		DirPickerPanel* m_FolderPicker;
 
 	public:
-		virtual ~ThemeSelectorPanel() throw();
+		virtual ~ThemeSelectorPanel();
 		ThemeSelectorPanel( wxWindow* parent );
 
 	protected:
@@ -554,7 +554,7 @@ namespace Panels
 			PluginSelectorPanel&	m_master;
 			ScopedBusyCursor		m_hourglass;
 		public:
-			virtual ~EnumThread() throw()
+			virtual ~EnumThread()
 			{
 				try {
 					pxThread::Cancel();
@@ -617,7 +617,7 @@ namespace Panels
 		std::unique_ptr<EnumThread>		m_EnumeratorThread;
 
 	public:
-		virtual ~PluginSelectorPanel() throw();
+		virtual ~PluginSelectorPanel();
 		PluginSelectorPanel( wxWindow* parent );
 
 		void CancelRefresh();		// used from destructor, stays non-virtual

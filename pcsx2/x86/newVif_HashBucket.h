@@ -63,7 +63,7 @@ public:
 		m_bucket.fill(nullptr);
 	}
 
-	~HashBucket() throw() { clear(); }
+	~HashBucket() { clear(); }
 
 	__fi nVifBlock* find(const nVifBlock& dataPtr) {
 		nVifBlock* chainpos = m_bucket[dataPtr.hash_key];

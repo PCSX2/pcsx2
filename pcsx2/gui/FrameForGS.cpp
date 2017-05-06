@@ -131,7 +131,7 @@ GSPanel::GSPanel( wxWindow* parent )
 	Bind(wxEVT_LEFT_DCLICK, &GSPanel::OnLeftDclick, this);
 }
 
-GSPanel::~GSPanel() throw()
+GSPanel::~GSPanel()
 {
 	//CoreThread.Suspend( false );		// Just in case...!
 }

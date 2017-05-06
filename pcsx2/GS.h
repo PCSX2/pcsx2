@@ -354,7 +354,7 @@ public:
 
 public:
 	SysMtgsThread();
-	virtual ~SysMtgsThread() throw();
+	virtual ~SysMtgsThread();
 
 	// Waits for the GS to empty out the entire ring buffer contents.
 	void WaitGS(bool syncRegs=true, bool weakWait=false, bool isMTVU=false);

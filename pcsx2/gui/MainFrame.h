@@ -129,7 +129,7 @@ protected:
 
 public:
 	MainEmuFrame(wxWindow* parent, const wxString& title);
-	virtual ~MainEmuFrame() throw();
+	virtual ~MainEmuFrame();
 
 	void OnLogBoxHidden();
 

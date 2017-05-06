@@ -155,7 +155,7 @@ protected:
 	wxString						m_final_filename;
 
 public:
-	virtual ~BaseCompressThread() throw();
+	virtual ~BaseCompressThread();
 
 	BaseCompressThread& SetSource( ArchiveEntryList* srcdata )
 	{

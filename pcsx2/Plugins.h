@@ -324,7 +324,7 @@ protected:
 		}
 
 		PluginStatus_t( PluginsEnum_t _pid, const wxString& srcfile );
-		virtual ~PluginStatus_t() throw() { delete Lib; }
+		virtual ~PluginStatus_t() { delete Lib; }
 
 	protected:
 		void BindCommon( PluginsEnum_t pid );
@@ -345,7 +345,7 @@ public:		// hack until we unsuck plugins...
 
 public:
 	SysCorePlugins();
-	virtual ~SysCorePlugins() throw();
+	virtual ~SysCorePlugins();
 
 	virtual void Load( PluginsEnum_t pid, const wxString& srcfile );
 	virtual void Load( const wxString (&folders)[PluginId_Count] );

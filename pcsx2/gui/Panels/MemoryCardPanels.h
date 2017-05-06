@@ -222,7 +222,7 @@ namespace Panels
 
 
 	public:
-		virtual ~MemoryCardListPanel_Simple() throw();
+		virtual ~MemoryCardListPanel_Simple();
 		MemoryCardListPanel_Simple( wxWindow* parent );
 
 		void UpdateUI();

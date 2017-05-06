@@ -1111,7 +1111,7 @@ void SysCorePlugins::PluginStatus_t::BindOptional( PluginsEnum_t pid )
 //  SysCorePlugins Implementations
 // =====================================================================================
 
-SysCorePlugins::~SysCorePlugins() throw()
+SysCorePlugins::~SysCorePlugins()
 {
 	try
 	{

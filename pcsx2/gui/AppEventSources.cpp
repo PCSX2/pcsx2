@@ -33,7 +33,7 @@ EventListener_CoreThread::EventListener_CoreThread()
 	wxGetApp().AddListener( this );
 }
 
-EventListener_CoreThread::~EventListener_CoreThread() throw()
+EventListener_CoreThread::~EventListener_CoreThread()
 {
 	wxGetApp().RemoveListener( this );
 }
@@ -59,7 +59,7 @@ EventListener_Plugins::EventListener_Plugins()
 	wxGetApp().AddListener( this );
 }
 
-EventListener_Plugins::~EventListener_Plugins() throw()
+EventListener_Plugins::~EventListener_Plugins()
 {
 	wxGetApp().RemoveListener( this );
 }
@@ -86,7 +86,7 @@ EventListener_AppStatus::EventListener_AppStatus()
 	wxGetApp().AddListener( this );
 }
 
-EventListener_AppStatus::~EventListener_AppStatus() throw()
+EventListener_AppStatus::~EventListener_AppStatus()
 {
 	wxGetApp().RemoveListener( this );
 }

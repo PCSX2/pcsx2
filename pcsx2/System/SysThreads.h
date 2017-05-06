@@ -180,7 +180,7 @@ protected:
 
 public:
 	explicit SysCoreThread();
-	virtual ~SysCoreThread() throw();
+	virtual ~SysCoreThread();
 
 	bool HasPendingStateChangeRequest() const;
 

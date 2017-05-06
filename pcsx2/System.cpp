@@ -41,7 +41,7 @@ RecompiledCodeReserve::RecompiledCodeReserve( const wxString& name, uint defComm
 	m_prot_mode		= PageAccess_Any();
 }
 
-RecompiledCodeReserve::~RecompiledCodeReserve() throw()
+RecompiledCodeReserve::~RecompiledCodeReserve()
 {
 	_termProfiler();
 }
@@ -274,7 +274,7 @@ public:
 	ScopedExcept ExThrown;
 
 	CpuInitializer();
-	virtual ~CpuInitializer() throw();
+	virtual ~CpuInitializer();
 
 	bool IsAvailable() const
 	{
@@ -315,7 +315,7 @@ CpuInitializer< CpuType >::CpuInitializer()
 }
 
 template< typename CpuType >
-CpuInitializer< CpuType >::~CpuInitializer() throw()
+CpuInitializer< CpuType >::~CpuInitializer()
 {
 	try {
 		if (MyCpu)
@@ -362,7 +362,7 @@ SysMainMemory::SysMainMemory()
 {
 }
 
-SysMainMemory::~SysMainMemory() throw()
+SysMainMemory::~SysMainMemory()
 {
 	try {
 		ReleaseAll();
@@ -521,7 +521,7 @@ void SysCpuProviderPack::CleanupMess() throw()
 	DESTRUCTOR_CATCHALL
 }
 
-SysCpuProviderPack::~SysCpuProviderPack() throw()
+SysCpuProviderPack::~SysCpuProviderPack()
 {
 	CleanupMess();
 }

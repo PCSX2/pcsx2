@@ -162,7 +162,7 @@ InputIsoFile::InputIsoFile()
 	_init();
 }
 
-InputIsoFile::~InputIsoFile() throw()
+InputIsoFile::~InputIsoFile()
 {
 	Close();
 }

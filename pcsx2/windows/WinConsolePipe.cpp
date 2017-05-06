@@ -45,7 +45,7 @@ public:
 		m_name = (m_color == Color_Red) ? L"Redirect_Stderr" : L"Redirect_Stdout";
 	}
 
-	virtual ~WinPipeThread() throw()
+	virtual ~WinPipeThread()
 	{
 		_parent::Cancel();
 	}
@@ -138,7 +138,7 @@ protected:
 
 public:
 	WinPipeRedirection( FILE* stdstream );
-	virtual ~WinPipeRedirection() throw();
+	virtual ~WinPipeRedirection();
 
 	void Cleanup() throw();
 };

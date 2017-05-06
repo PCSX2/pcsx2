@@ -42,7 +42,7 @@ RecentIsoManager::RecentIsoManager( wxMenu* menu, int firstIdForMenuItems_or_wxI
 	Bind(wxEVT_MENU, &RecentIsoManager::OnChangedSelection, this);
 }
 
-RecentIsoManager::~RecentIsoManager() throw()
+RecentIsoManager::~RecentIsoManager()
 {
 	Unbind(wxEVT_MENU, &RecentIsoManager::OnChangedSelection, this);
 }

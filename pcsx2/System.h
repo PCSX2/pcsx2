@@ -103,7 +103,7 @@ protected:
 
 public:
 	SysMainMemory();
-	virtual ~SysMainMemory() throw();
+	virtual ~SysMainMemory();
 
 	virtual void ReserveAll();
 	virtual void CommitAll();
@@ -119,7 +119,7 @@ class SysAllocVM
 {
 public:
 	SysAllocVM();
-	virtual ~SysAllocVM() throw();
+	virtual ~SysAllocVM();
 
 protected:
 	void CleanupMess() throw();
@@ -138,7 +138,7 @@ public:
 	std::unique_ptr<CpuInitializerSet> CpuProviders;
 
 	SysCpuProviderPack();
-	virtual ~SysCpuProviderPack() throw();
+	virtual ~SysCpuProviderPack();
 
 	void ApplyConfig() const;
 #ifndef DISABLE_SVU

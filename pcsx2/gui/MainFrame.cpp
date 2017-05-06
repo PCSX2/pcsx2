@@ -533,7 +533,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	AppendKeycodeNamesToMenuOptions();
 }
 
-MainEmuFrame::~MainEmuFrame() throw()
+MainEmuFrame::~MainEmuFrame()
 {
 	try {
 		if( m_RestartEmuOnDelete )

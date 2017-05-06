@@ -64,7 +64,7 @@ public:
 		IsInterpreter = false;
 	}
 
-	virtual ~BaseCpuProvider() throw()
+	virtual ~BaseCpuProvider()
 	{
 		try {
 			if( m_Reserved != 0 )
@@ -170,7 +170,7 @@ class InterpVU0 : public BaseVUmicroCPU
 {
 public:
 	InterpVU0();
-	virtual ~InterpVU0() throw() { Shutdown(); }
+	virtual ~InterpVU0() { Shutdown(); }
 
 	const char* GetShortName() const	{ return "intVU0"; }
 	wxString GetLongName() const		{ return L"VU0 Interpreter"; }
@@ -191,7 +191,7 @@ class InterpVU1 : public BaseVUmicroCPU
 {
 public:
 	InterpVU1();
-	virtual ~InterpVU1() throw() { Shutdown(); }
+	virtual ~InterpVU1() { Shutdown(); }
 
 	const char* GetShortName() const	{ return "intVU1"; }
 	wxString GetLongName() const		{ return L"VU1 Interpreter"; }
@@ -216,7 +216,7 @@ class recMicroVU0 : public BaseVUmicroCPU
 {
 public:
 	recMicroVU0();
-	virtual ~recMicroVU0() throw()  { Shutdown(); }
+	virtual ~recMicroVU0() { Shutdown(); }
 
 	const char* GetShortName() const	{ return "mVU0"; }
 	wxString GetLongName() const		{ return L"microVU0 Recompiler"; }
@@ -237,7 +237,7 @@ class recMicroVU1 : public BaseVUmicroCPU
 {
 public:
 	recMicroVU1();
-	virtual ~recMicroVU1() throw() { Shutdown(); }
+	virtual ~recMicroVU1() { Shutdown(); }
 
 	const char* GetShortName() const	{ return "mVU1"; }
 	wxString GetLongName() const		{ return L"microVU1 Recompiler"; }

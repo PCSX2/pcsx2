@@ -370,7 +370,7 @@ enum McdMenuId
 Panels::MemoryCardListPanel_Simple* g_uglyPanel=NULL;
 void g_uglyFunc(){if (g_uglyPanel) g_uglyPanel->OnChangedListSelection();}
 
-Panels::MemoryCardListPanel_Simple::~MemoryCardListPanel_Simple() throw(){g_uglyPanel=NULL;}
+Panels::MemoryCardListPanel_Simple::~MemoryCardListPanel_Simple() {g_uglyPanel=NULL;}
 
 Panels::MemoryCardListPanel_Simple::MemoryCardListPanel_Simple( wxWindow* parent )
 	: _parent( parent )

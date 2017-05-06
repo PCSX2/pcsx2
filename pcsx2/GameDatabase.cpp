@@ -30,7 +30,7 @@ BaseGameDatabaseImpl::BaseGameDatabaseImpl()
 	m_BlockTable.push_back(NULL);
 }
 
-BaseGameDatabaseImpl::~BaseGameDatabaseImpl() throw()
+BaseGameDatabaseImpl::~BaseGameDatabaseImpl()
 {
 	for(uint blockidx=0; blockidx<=m_BlockTableWritePos; ++blockidx)
 	{

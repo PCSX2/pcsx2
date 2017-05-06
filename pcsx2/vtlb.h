@@ -100,7 +100,7 @@ protected:
 
 public:
 	VtlbMemoryReserve( const wxString& name, size_t size );
-	virtual ~VtlbMemoryReserve() throw()
+	virtual ~VtlbMemoryReserve()
 	{
 		m_reserve.Release();
 	}
@@ -124,7 +124,7 @@ class eeMemoryReserve : public VtlbMemoryReserve
 
 public:
 	eeMemoryReserve();
-	virtual ~eeMemoryReserve() throw()
+	virtual ~eeMemoryReserve()
 	{
 		Release();
 	}
@@ -145,7 +145,7 @@ class iopMemoryReserve : public VtlbMemoryReserve
 
 public:
 	iopMemoryReserve();
-	virtual ~iopMemoryReserve() throw()
+	virtual ~iopMemoryReserve()
 	{
 		Release();
 	}
@@ -166,7 +166,7 @@ class vuMemoryReserve : public VtlbMemoryReserve
 
 public:
 	vuMemoryReserve();
-	virtual ~vuMemoryReserve() throw()
+	virtual ~vuMemoryReserve()
 	{
 		Release();
 	}

@@ -147,7 +147,7 @@ IApplyState* BaseApplicableConfigPanel::FindApplyStateManager() const
 	return NULL;
 }
 
-BaseApplicableConfigPanel::~BaseApplicableConfigPanel() throw()
+BaseApplicableConfigPanel::~BaseApplicableConfigPanel()
 {
 	if( IApplyState* iapp = FindApplyStateManager() )
 		iapp->GetApplyState().PanelList.remove( this );

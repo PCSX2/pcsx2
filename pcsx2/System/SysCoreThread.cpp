@@ -53,7 +53,7 @@ SysCoreThread::SysCoreThread()
 	m_hasActiveMachine		= false;
 }
 
-SysCoreThread::~SysCoreThread() throw()
+SysCoreThread::~SysCoreThread()
 {
 	try {
 		SysCoreThread::Cancel();

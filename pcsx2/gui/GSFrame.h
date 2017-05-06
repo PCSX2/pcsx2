@@ -49,7 +49,7 @@ protected:
 
 public:
 	GSPanel( wxWindow* parent );
-	virtual ~GSPanel() throw();
+	virtual ~GSPanel();
 
 	void DoResize();
 	void DoShowMouse();

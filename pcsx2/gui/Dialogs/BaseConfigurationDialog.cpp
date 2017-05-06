@@ -73,7 +73,7 @@ public:
 		m_apply = m_ok = m_cancel = NULL;
 	}
 
-	virtual ~ScopedOkButtonDisabler() throw()
+	virtual ~ScopedOkButtonDisabler()
 	{
 		if (m_apply)	m_apply	->Enable();
 		if (m_ok)		m_ok	->Enable();
@@ -94,7 +94,7 @@ BaseApplicableDialog::BaseApplicableDialog( wxWindow* parent, const wxString& ti
 	Init();
 }
 
-BaseApplicableDialog::~BaseApplicableDialog() throw()
+BaseApplicableDialog::~BaseApplicableDialog()
 {
 	m_ApplyState.DoCleanup();
 }

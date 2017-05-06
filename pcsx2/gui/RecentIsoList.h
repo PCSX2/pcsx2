@@ -50,7 +50,7 @@ protected:
 
 public:
 	RecentIsoManager( wxMenu* menu , int firstIdForMenuItems_or_wxID_ANY );
-	virtual ~RecentIsoManager() throw();
+	virtual ~RecentIsoManager();
 
 	void RemoveAllFromMenu();
 	void Repopulate();

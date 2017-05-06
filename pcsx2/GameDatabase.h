@@ -206,7 +206,7 @@ protected:
 
 public:
 	BaseGameDatabaseImpl();
-	virtual ~BaseGameDatabaseImpl() throw();
+	virtual ~BaseGameDatabaseImpl();
 
 	wxString getBaseKey() const { return m_baseKey; }
 	void setBaseKey( const wxString& key ) { m_baseKey = key; }

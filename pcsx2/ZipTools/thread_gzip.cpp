@@ -22,7 +22,7 @@
 #include "wx/wfstream.h"
 
 
-BaseCompressThread::~BaseCompressThread() throw()
+BaseCompressThread::~BaseCompressThread()
 {
 	try {
 		_parent::Cancel();

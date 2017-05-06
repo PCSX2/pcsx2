@@ -67,7 +67,7 @@ protected:
 	
 public:	
 	InputIsoFile();
-	virtual ~InputIsoFile() throw();
+	virtual ~InputIsoFile();
 
 	bool IsOpened() const;
 	
@@ -121,7 +121,7 @@ protected:
 		
 public:	
 	OutputIsoFile();
-	virtual ~OutputIsoFile() throw();
+	virtual ~OutputIsoFile();
 
 	bool IsOpened() const;
 	

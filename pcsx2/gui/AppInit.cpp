@@ -397,7 +397,7 @@ public:
 	{
 	}
 
-	virtual ~GameDatabaseLoaderThread() throw()
+	virtual ~GameDatabaseLoaderThread()
 	{
 		try {
 			_parent::Cancel();
