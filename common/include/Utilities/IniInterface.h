@@ -110,7 +110,7 @@ public:
 class IniLoader : public IniInterface
 {
 public:
-    virtual ~IniLoader() throw();
+    virtual ~IniLoader() = default;
     explicit IniLoader();
     explicit IniLoader(wxConfigBase &config);
     explicit IniLoader(wxConfigBase *config);
@@ -148,7 +148,7 @@ protected:
 class IniSaver : public IniInterface
 {
 public:
-    virtual ~IniSaver();
+    virtual ~IniSaver() = default;
     explicit IniSaver();
     explicit IniSaver(wxConfigBase &config);
     explicit IniSaver(wxConfigBase *config);

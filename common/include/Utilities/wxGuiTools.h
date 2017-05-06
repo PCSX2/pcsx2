@@ -511,7 +511,7 @@ protected:
 public:
     wxDialogWithHelpers();
     wxDialogWithHelpers(wxWindow *parent, const wxString &title, const pxDialogCreationFlags &cflags = pxDialogCreationFlags());
-    virtual ~wxDialogWithHelpers() throw();
+    virtual ~wxDialogWithHelpers() = default;
 
     void Init(const pxDialogCreationFlags &cflags);
     void AddOkCancel(wxSizer &sizer, bool hasApply = false);

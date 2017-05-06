@@ -144,7 +144,7 @@ protected:
 
 public:
     FastFormatAscii();
-    ~FastFormatAscii() throw();
+    ~FastFormatAscii() = default;
     FastFormatAscii &Write(const char *fmt, ...);
     FastFormatAscii &WriteV(const char *fmt, va_list argptr);
 
@@ -187,7 +187,7 @@ protected:
 
 public:
     FastFormatUnicode();
-    ~FastFormatUnicode() throw();
+    ~FastFormatUnicode() = default;
 
     FastFormatUnicode &Write(const char *fmt, ...);
     FastFormatUnicode &Write(const wxChar *fmt, ...);

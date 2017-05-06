@@ -380,7 +380,7 @@ protected:
     MsgButtons m_Buttons;
 
 public:
-    virtual ~pxMessageBoxEvent() throw() {}
+    virtual ~pxMessageBoxEvent() = default;
     virtual pxMessageBoxEvent *Clone() const { return new pxMessageBoxEvent(*this); }
 
     pxMessageBoxEvent() {}
@@ -404,7 +404,7 @@ protected:
     wxString m_Stacktrace;
 
 public:
-    virtual ~pxAssertionEvent() throw() {}
+    virtual ~pxAssertionEvent() = default;
     virtual pxAssertionEvent *Clone() const { return new pxAssertionEvent(*this); }
 
     pxAssertionEvent(const wxString &content = wxEmptyString, const wxString &trace = wxEmptyString, SynchronousActionState *instdata = NULL);

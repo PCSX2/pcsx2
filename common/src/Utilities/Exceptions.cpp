@@ -143,8 +143,6 @@ __fi void pxOnAssert(const DiagnosticOrigin &origin, const FastFormatUnicode &ms
 //  BaseException  (implementations)
 // --------------------------------------------------------------------------------------
 
-BaseException::~BaseException() throw() {}
-
 BaseException &BaseException::SetBothMsgs(const wxChar *msg_diag)
 {
     m_message_user = msg_diag ? wxString(wxGetTranslation(msg_diag)) : wxString("");

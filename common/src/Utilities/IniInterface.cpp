@@ -98,6 +98,7 @@ IniLoader::IniLoader(wxConfigBase &config)
     : IniInterface(config)
 {
 }
+
 IniLoader::IniLoader(wxConfigBase *config)
     : IniInterface(config)
 {
@@ -107,8 +108,6 @@ IniLoader::IniLoader()
     : IniInterface()
 {
 }
-IniLoader::~IniLoader() throw() {}
-
 
 void IniLoader::Entry(const wxString &var, wxString &value, const wxString defvalue)
 {
@@ -117,7 +116,6 @@ void IniLoader::Entry(const wxString &var, wxString &value, const wxString defva
     else
         value = defvalue;
 }
-
 
 void IniLoader::Entry(const wxString &var, wxDirName &value, const wxDirName defvalue, bool isAllowRelative)
 {
@@ -271,17 +269,16 @@ IniSaver::IniSaver(wxConfigBase &config)
     : IniInterface(config)
 {
 }
+
 IniSaver::IniSaver(wxConfigBase *config)
     : IniInterface(config)
 {
 }
 
-
 IniSaver::IniSaver()
     : IniInterface()
 {
 }
-IniSaver::~IniSaver() {}
 
 void IniSaver::Entry(const wxString &var, wxString &value, const wxString defvalue)
 {

@@ -229,7 +229,7 @@ protected:
     void (*m_Method)();
 
 public:
-    virtual ~pxRpcEvent() throw() {}
+    virtual ~pxRpcEvent() = default;
     virtual pxRpcEvent *Clone() const { return new pxRpcEvent(*this); }
 
     explicit pxRpcEvent(void (*method)() = NULL, SynchronousActionState *sema = NULL)
