@@ -49,7 +49,7 @@ protected:
 
 public:
 	wxString GetEventName() const { return L"CoreThreadMethod"; }
-	virtual ~SysExecEvent_InvokeCoreThreadMethod() throw() {}
+	virtual ~SysExecEvent_InvokeCoreThreadMethod() = default;
 	SysExecEvent_InvokeCoreThreadMethod* Clone() const { return new SysExecEvent_InvokeCoreThreadMethod(*this); }
 
 	bool AllowCancelOnExit() const { return false; }
@@ -708,9 +708,7 @@ BaseScopedCoreThread::BaseScopedCoreThread()
 	m_alreadyScoped		= false;
 }
 
-BaseScopedCoreThread::~BaseScopedCoreThread() throw()
-{
-}
+BaseScopedCoreThread::~BaseScopedCoreThread() throw() = default;
 
 // Allows the object to resume execution upon object destruction.  Typically called as the last thing
 // in the object's scope.  Any code prior to this call that causes exceptions will not resume the emulator,

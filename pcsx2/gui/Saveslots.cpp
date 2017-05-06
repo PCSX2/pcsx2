@@ -48,13 +48,13 @@ class SysExecEvent_ClearSavingLoadingFlag : public SysExecEvent
 public:
 	wxString GetEventName() const { return L"ClearSavingLoadingFlag"; }
 
-	virtual ~SysExecEvent_ClearSavingLoadingFlag() throw() { }
+	virtual ~SysExecEvent_ClearSavingLoadingFlag() = default;
 	SysExecEvent_ClearSavingLoadingFlag()
 	{
 	}
-	
+
 	SysExecEvent_ClearSavingLoadingFlag* Clone() const { return new SysExecEvent_ClearSavingLoadingFlag(); }
-	
+
 protected:
 	void InvokeEvent()
 	{

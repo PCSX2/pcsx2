@@ -60,7 +60,7 @@ namespace Panels
 	{
 	public:
 		FirstTimeIntroPanel( wxWindow* parent );
-		virtual ~FirstTimeIntroPanel() throw() {}
+		virtual ~FirstTimeIntroPanel() = default;
 	};
 }
 
@@ -161,11 +161,6 @@ FirstTimeWizard::FirstTimeWizard( wxWindow* parent )
 	Bind(wxEVT_LISTBOX_DCLICK, &FirstTimeWizard::OnDoubleClicked, this);
 
 	Bind(wxEVT_BUTTON, &FirstTimeWizard::OnRestartWizard, this, pxID_RestartWizard);
-}
-
-FirstTimeWizard::~FirstTimeWizard() throw()
-{
-
 }
 
 void FirstTimeWizard::OnRestartWizard( wxCommandEvent& evt )

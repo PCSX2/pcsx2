@@ -734,10 +734,6 @@ void MainEmuFrame::AppendKeycodeNamesToMenuOptions() {
 //   "Extensible" Plugin Menus
 // ------------------------------------------------------------------------
 
-PerPluginMenuInfo::~PerPluginMenuInfo() throw()
-{
-}
-
 void PerPluginMenuInfo::Populate( PluginsEnum_t pid )
 {
 	if( !pxAssert(pid < PluginId_Count) ) return;

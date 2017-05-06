@@ -55,7 +55,7 @@ protected:
 	wxArrayString	m_GamesInView;
 
 public:
-	virtual ~GameDatabaseListView() throw() { }
+	virtual ~GameDatabaseListView() = default;
 	GameDatabaseListView( wxWindow* parent );
 
 	void CreateColumns();
@@ -141,7 +141,7 @@ public:
 		m_descending = descend;
 	}
 
-	virtual ~BaseGameListSort() throw() {}
+	virtual ~BaseGameListSort() = default;
 
 	// Note: Return TRUE if the first value is less than the second value.
 	bool operator()(const wxString& i1, const wxString& i2)

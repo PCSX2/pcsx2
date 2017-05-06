@@ -159,7 +159,7 @@ protected:
 
 public:
 	ApplyPluginsDialog( BaseApplicableConfigPanel* panel=NULL );
-	virtual ~ApplyPluginsDialog() throw() {}
+	virtual ~ApplyPluginsDialog() = default;
 
 	BaseApplicableConfigPanel* GetApplicableConfigPanel() const { return m_panel; }
 };
@@ -182,7 +182,7 @@ public:
 		m_owner = owner;
 	}
 
-	virtual ~ApplyOverValidStateEvent() throw() { }
+	virtual ~ApplyOverValidStateEvent() = default;
 	virtual ApplyOverValidStateEvent *Clone() const { return new ApplyOverValidStateEvent(*this); }
 
 protected:
@@ -203,7 +203,7 @@ protected:
 public:
 	wxString GetEventName() const { return L"PluginSelectorPanel::ApplyPlugins"; }
 
-	virtual ~SysExecEvent_ApplyPlugins() throw() {}
+	virtual ~SysExecEvent_ApplyPlugins() = default;
 	SysExecEvent_ApplyPlugins* Clone() const { return new SysExecEvent_ApplyPlugins( *this ); }
 
 	SysExecEvent_ApplyPlugins( ApplyPluginsDialog* parent, SynchronousActionState& sync )

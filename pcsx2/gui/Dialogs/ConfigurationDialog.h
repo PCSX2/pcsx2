@@ -46,7 +46,7 @@ namespace Dialogs
 		bool				m_allowApplyActivation;
 
 	public:
-		virtual ~BaseConfigurationDialog() throw();
+		virtual ~BaseConfigurationDialog() = default;
 		BaseConfigurationDialog(wxWindow* parent, const wxString& title, int idealWidth);
 
 	public:

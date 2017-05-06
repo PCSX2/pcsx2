@@ -71,7 +71,7 @@ pxAppResources::pxAppResources()
 {
 }
 
-pxAppResources::~pxAppResources() throw() {}
+pxAppResources::~pxAppResources() throw() = default;
 
 wxMenu& Pcsx2App::GetRecentIsoMenu()
 {

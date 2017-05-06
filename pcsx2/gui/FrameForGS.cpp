@@ -468,10 +468,6 @@ GSFrame::GSFrame( const wxString& title)
 	Bind(wxEVT_TIMER, &GSFrame::OnUpdateTitle, this, m_timer_UpdateTitle.GetId());
 }
 
-GSFrame::~GSFrame() throw()
-{
-}
-
 void GSFrame::OnCloseWindow(wxCloseEvent& evt)
 {
 	sApp.OnGsFrameClosed( GetId() );

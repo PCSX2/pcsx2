@@ -113,7 +113,7 @@ protected:
 
 public:
 	using _parent::operator[];
-	virtual ~CommandDictionary() throw();
+	virtual ~CommandDictionary() = default;
 };
 
 // --------------------------------------------------------------------------------------
@@ -128,6 +128,6 @@ protected:
 public:
 	using _parent::operator[];
 
-	virtual ~AcceleratorDictionary() throw();
+	virtual ~AcceleratorDictionary() = default;
 	void Map( const KeyAcceleratorCode& acode, const char *searchfor );
 };

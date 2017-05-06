@@ -97,7 +97,7 @@ protected:
 
 public:
 	GSFrame( const wxString& title);
-	virtual ~GSFrame() throw();
+	virtual ~GSFrame() = default;
 
 	GSPanel* GetViewport();
 	void SetFocus();

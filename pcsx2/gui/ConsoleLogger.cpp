@@ -33,7 +33,7 @@ wxDEFINE_EVENT(pxEvt_SetTitleText, wxCommandEvent);
 wxDEFINE_EVENT(pxEvt_FlushQueue, wxCommandEvent);
 
 // C++ requires abstract destructors to exist, even though they're abstract.
-PipeRedirectionBase::~PipeRedirectionBase() throw() {}
+PipeRedirectionBase::~PipeRedirectionBase() throw() = default;
 
 // ----------------------------------------------------------------------------
 //
@@ -147,10 +147,6 @@ static bool OpenLogFile(wxFile& file, wxString& filename, wxWindow *parent)
 ConsoleLogFrame::ColorArray::ColorArray( int fontsize )
 {
 	SetFont( fontsize );
-}
-
-ConsoleLogFrame::ColorArray::~ColorArray() throw()
-{
 }
 
 void ConsoleLogFrame::ColorArray::SetFont( int fontsize )
@@ -274,7 +270,7 @@ public:
 		WindowPtr = pxTheApp.m_ptr_ProgramLog;
 	}
 
-	virtual ~ScopedLogLock() throw() {}
+	virtual ~ScopedLogLock() = default;
 
 	bool HasWindow() const
 	{

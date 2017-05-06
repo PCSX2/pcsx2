@@ -45,10 +45,10 @@ static const wxChar* EntryFilename_InternalStructures	= L"PCSX2 Internal Structu
 class BaseSavestateEntry
 {
 protected:
-	BaseSavestateEntry() {}
+	BaseSavestateEntry() = default;
 
 public:
-	virtual ~BaseSavestateEntry() throw() {}
+	virtual ~BaseSavestateEntry() = default;
 
 	virtual wxString GetFilename() const=0;
 	virtual void FreezeIn( pxInputStream& reader ) const=0;
@@ -60,7 +60,7 @@ class MemorySavestateEntry : public BaseSavestateEntry
 {
 protected:
 	MemorySavestateEntry() {}
-	virtual ~MemorySavestateEntry() throw() {}
+	virtual ~MemorySavestateEntry() = default;
 
 public:
 	virtual void FreezeIn( pxInputStream& reader ) const;
@@ -83,7 +83,7 @@ public:
 		m_pid = pid;
 	}
 
-	virtual ~PluginSavestateEntry() throw() {}
+	virtual ~PluginSavestateEntry() = default;
 
 	virtual wxString GetFilename() const;
 	virtual void FreezeIn( pxInputStream& reader ) const;
@@ -147,7 +147,7 @@ void PluginSavestateEntry::FreezeOut( SaveStateBase& writer ) const
 class SavestateEntry_EmotionMemory : public MemorySavestateEntry
 {
 public:
-	virtual ~SavestateEntry_EmotionMemory() throw() {}
+	virtual ~SavestateEntry_EmotionMemory() = default;
 
 	wxString GetFilename() const		{ return L"eeMemory.bin"; }
 	u8* GetDataPtr() const				{ return eeMem->Main; }
@@ -163,7 +163,7 @@ public:
 class SavestateEntry_IopMemory : public MemorySavestateEntry
 {
 public:
-	virtual ~SavestateEntry_IopMemory() throw() {}
+	virtual ~SavestateEntry_IopMemory() = default;
 
 	wxString GetFilename() const		{ return L"iopMemory.bin"; }
 	u8* GetDataPtr() const				{ return iopMem->Main; }
@@ -173,7 +173,7 @@ public:
 class SavestateEntry_HwRegs : public MemorySavestateEntry
 {
 public:
-	virtual ~SavestateEntry_HwRegs() throw() {}
+	virtual ~SavestateEntry_HwRegs() = default;
 
 	wxString GetFilename() const		{ return L"eeHwRegs.bin"; }
 	u8* GetDataPtr() const				{ return eeHw; }
@@ -183,7 +183,7 @@ public:
 class SavestateEntry_IopHwRegs : public MemorySavestateEntry
 {
 public:
-	virtual ~SavestateEntry_IopHwRegs() throw() {}
+	virtual ~SavestateEntry_IopHwRegs() = default;
 
 	wxString GetFilename() const		{ return L"iopHwRegs.bin"; }
 	u8* GetDataPtr() const				{ return iopHw; }
@@ -193,7 +193,7 @@ public:
 class SavestateEntry_Scratchpad : public MemorySavestateEntry
 {
 public:
-	virtual ~SavestateEntry_Scratchpad() throw() {}
+	virtual ~SavestateEntry_Scratchpad() = default;
 
 	wxString GetFilename() const		{ return L"Scratchpad.bin"; }
 	u8* GetDataPtr() const				{ return eeMem->Scratch; }
@@ -203,7 +203,7 @@ public:
 class SavestateEntry_VU0mem : public MemorySavestateEntry
 {
 public:
-	virtual ~SavestateEntry_VU0mem() throw() {}
+	virtual ~SavestateEntry_VU0mem() = default;
 
 	wxString GetFilename() const		{ return L"vu0Memory.bin"; }
 	u8* GetDataPtr() const				{ return vuRegs[0].Mem; }
@@ -213,7 +213,7 @@ public:
 class SavestateEntry_VU1mem : public MemorySavestateEntry
 {
 public:
-	virtual ~SavestateEntry_VU1mem() throw() {}
+	virtual ~SavestateEntry_VU1mem() = default;
 
 	wxString GetFilename() const		{ return L"vu1Memory.bin"; }
 	u8* GetDataPtr() const				{ return vuRegs[1].Mem; }
@@ -223,7 +223,7 @@ public:
 class SavestateEntry_VU0prog : public MemorySavestateEntry
 {
 public:
-	virtual ~SavestateEntry_VU0prog() throw() {}
+	virtual ~SavestateEntry_VU0prog() = default;
 
 	wxString GetFilename() const		{ return L"vu0MicroMem.bin"; }
 	u8* GetDataPtr() const				{ return vuRegs[0].Micro; }
@@ -233,7 +233,7 @@ public:
 class SavestateEntry_VU1prog : public MemorySavestateEntry
 {
 public:
-	virtual ~SavestateEntry_VU1prog() throw() {}
+	virtual ~SavestateEntry_VU1prog() = default;
 
 	wxString GetFilename() const		{ return L"vu1MicroMem.bin"; }
 	u8* GetDataPtr() const				{ return vuRegs[1].Micro; }
@@ -313,7 +313,7 @@ protected:
 public:
 	wxString GetEventName() const { return L"VM_Download"; }
 
-	virtual ~SysExecEvent_DownloadState() throw() {}
+	virtual ~SysExecEvent_DownloadState() = default;
 	SysExecEvent_DownloadState* Clone() const { return new SysExecEvent_DownloadState( *this ); }
 	SysExecEvent_DownloadState( ArchiveEntryList* dest_list=NULL )
 	{
@@ -375,9 +375,7 @@ public:
 		m_lock_Compress.Assign(mtx_CompressToDisk);
 	}
 
-	virtual ~VmStateCompressThread() throw()
-	{
-	}
+	virtual ~VmStateCompressThread() = default;
 
 protected:
 	void OnStartInThread()
@@ -405,9 +403,7 @@ protected:
 public:
 	wxString GetEventName() const { return L"VM_ZipToDisk"; }
 
-	virtual ~SysExecEvent_ZipToDisk() throw()
-	{
-	}
+	virtual ~SysExecEvent_ZipToDisk() = default;
 
 	SysExecEvent_ZipToDisk* Clone() const { return new SysExecEvent_ZipToDisk( *this ); }
 
@@ -498,7 +494,7 @@ protected:
 public:
 	wxString GetEventName() const { return L"VM_UnzipFromDisk"; }
 
-	virtual ~SysExecEvent_UnzipFromDisk() throw() {}
+	virtual ~SysExecEvent_UnzipFromDisk() = default;
 	SysExecEvent_UnzipFromDisk* Clone() const { return new SysExecEvent_UnzipFromDisk( *this ); }
 	SysExecEvent_UnzipFromDisk( const wxString& filename )
 		: m_filename( filename )

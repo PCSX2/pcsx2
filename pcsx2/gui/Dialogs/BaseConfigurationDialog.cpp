@@ -187,10 +187,6 @@ void Dialogs::BaseConfigurationDialog::AddOkCancel( wxSizer* sizer )
 	*m_extraButtonSizer += screenshotButton|pxMiddle;
 }
 
-Dialogs::BaseConfigurationDialog::~BaseConfigurationDialog() throw()
-{
-}
-
 void Dialogs::BaseConfigurationDialog::OnSetSettingsPage( wxCommandEvent& evt )
 {
 	if( !m_listbook ) return;

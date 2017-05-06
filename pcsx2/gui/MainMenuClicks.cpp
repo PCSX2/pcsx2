@@ -518,7 +518,7 @@ void MainEmuFrame::Menu_Exit_Click(wxCommandEvent &event)
 class SysExecEvent_ToggleSuspend : public SysExecEvent
 {
 public:
-	virtual ~SysExecEvent_ToggleSuspend() throw() {}
+	virtual ~SysExecEvent_ToggleSuspend() = default;
 
 	wxString GetEventName() const { return L"ToggleSuspendResume"; }
 
