@@ -22,7 +22,7 @@ class BaseCpuUsageProvider
 {
 public:
 	BaseCpuUsageProvider() {}
-	virtual ~BaseCpuUsageProvider() throw() {}
+	virtual ~BaseCpuUsageProvider() = default;
 
 	virtual bool IsImplemented() const=0;
 	virtual void UpdateStats()=0;
@@ -77,7 +77,7 @@ protected:
 
 public:
 	DefaultCpuUsageProvider();
-	virtual ~DefaultCpuUsageProvider() throw() {}
+	virtual ~DefaultCpuUsageProvider() = default;
 
 	bool IsImplemented() const;
 	void Reset();

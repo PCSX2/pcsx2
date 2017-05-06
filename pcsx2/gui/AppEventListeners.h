@@ -82,7 +82,7 @@ public:
 	typedef CoreThreadStatus EvtParams;
 
 public:
-	virtual ~IEventListener_CoreThread() throw() {}
+	virtual ~IEventListener_CoreThread() = default;
 
 	virtual void DispatchEvent( const CoreThreadStatus& status );
 
@@ -110,7 +110,7 @@ public:
 	typedef PluginEventType EvtParams;
 
 public:
-	virtual ~IEventListener_Plugins() throw() {}
+	virtual ~IEventListener_Plugins() = default;
 
 	virtual void DispatchEvent( const PluginEventType& pevt );
 
@@ -141,7 +141,7 @@ public:
 	typedef AppEventInfo EvtParams;
 
 public:
-	virtual ~IEventListener_AppStatus() throw() {}
+	virtual ~IEventListener_AppStatus() = default;
 
 	virtual void DispatchEvent( const AppEventInfo& evtinfo );
 
@@ -191,7 +191,7 @@ public:
 		pxAssert(dispatchTo != NULL);
 	}
 
-	virtual ~EventListenerHelper_CoreThread() throw() {}
+	virtual ~EventListenerHelper_CoreThread() = default;
 
 protected:
 	void CoreThread_OnIndeterminate()	{ Owner.OnCoreThread_Indeterminate(); }
@@ -218,7 +218,7 @@ public:
 		pxAssert(dispatchTo != NULL);
 	}
 
-	virtual ~EventListenerHelper_Plugins() throw() {}
+	virtual ~EventListenerHelper_Plugins() = default;
 
 protected:
 	void CorePlugins_OnLoaded()		{ Owner.OnCorePlugins_Loaded(); }
@@ -247,7 +247,7 @@ public:
 		pxAssert(dispatchTo != NULL);
 	}
 
-	virtual ~EventListenerHelper_AppStatus() throw() {}
+	virtual ~EventListenerHelper_AppStatus() = default;
 
 protected:
 	virtual void AppStatusEvent_OnUiSettingsLoadSave( const AppSettingsEventInfo& evtinfo ) { Owner.AppStatusEvent_OnUiSettingsLoadSave( evtinfo ); }
@@ -268,7 +268,7 @@ protected:
 	CoreThreadStatus		m_evt;
 
 public:
-	virtual ~CoreThreadStatusEvent() throw() {}
+	virtual ~CoreThreadStatusEvent() = default;
 	CoreThreadStatusEvent* Clone() const { return new CoreThreadStatusEvent( *this ); }
 
 	explicit CoreThreadStatusEvent( CoreThreadStatus evt, SynchronousActionState* sema=NULL );

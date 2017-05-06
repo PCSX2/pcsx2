@@ -107,7 +107,7 @@ public:
 	void setExternHandler(void (*f)(void)){m_externHandler=f;};
 	void OnChanged(wxEvent& evt){if (m_externHandler) m_externHandler(); evt.Skip();}
 
-	virtual ~BaseMcdListView() throw() { }
+	virtual ~BaseMcdListView() = default;
 	BaseMcdListView( wxWindow* parent )
 		: _parent( parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL | wxLC_VIRTUAL )
 	{
@@ -134,7 +134,7 @@ class MemoryCardListView_Simple : public BaseMcdListView
 	typedef BaseMcdListView _parent;
 
 public:
-	virtual ~MemoryCardListView_Simple() throw() { }
+	virtual ~MemoryCardListView_Simple() = default;
 	MemoryCardListView_Simple( wxWindow* parent );
 
 	void CreateColumns();
@@ -182,7 +182,7 @@ namespace Panels
 		}
 
 	public:
-		virtual ~BaseMcdListPanel() throw() {}
+		virtual ~BaseMcdListPanel() = default;
 		BaseMcdListPanel( wxWindow* parent );
 
 		void CreateLayout();
@@ -295,7 +295,7 @@ namespace Panels
 
 	public:
 		McdConfigPanel_Toggles( wxWindow* parent );
-		virtual ~McdConfigPanel_Toggles() throw() { }
+		virtual ~McdConfigPanel_Toggles() = default;
 		void Apply();
 
 	protected:

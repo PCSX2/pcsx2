@@ -80,7 +80,7 @@ class DisassemblyDialog : public wxFrame
 {
 public:
 	DisassemblyDialog( wxWindow* parent=NULL );
-	virtual ~DisassemblyDialog() throw() {}
+	virtual ~DisassemblyDialog() = default;
 
 	static wxString GetNameStatic() { return L"DisassemblyDialog"; }
 	wxString GetDialogName() const { return GetNameStatic(); }

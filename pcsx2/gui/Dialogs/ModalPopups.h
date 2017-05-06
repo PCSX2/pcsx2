@@ -65,7 +65,7 @@ namespace Dialogs
 
 	public:
 		AboutBoxDialog( wxWindow* parent=NULL );
-		virtual ~AboutBoxDialog() throw() {}
+		virtual ~AboutBoxDialog() = default;
 
 		static wxString GetNameStatic() { return L"AboutBox"; }
 		wxString GetDialogName() const { return GetNameStatic(); }
@@ -80,7 +80,7 @@ namespace Dialogs
 
 	public:
 		PickUserModeDialog( wxWindow* parent );
-		virtual ~PickUserModeDialog() throw() {}
+		virtual ~PickUserModeDialog() = default;
 
 	protected:
 		void OnOk_Click( wxCommandEvent& evt );
@@ -91,7 +91,7 @@ namespace Dialogs
 	{
 	public:
 		ImportSettingsDialog( wxWindow* parent );
-		virtual ~ImportSettingsDialog() throw() {}
+		virtual ~ImportSettingsDialog() = default;
 
 	protected:
 		void OnImport_Click( wxCommandEvent& evt );
@@ -102,7 +102,7 @@ namespace Dialogs
 	{
 	public:
 		AssertionDialog( const wxString& text, const wxString& stacktrace );
-		virtual ~AssertionDialog() throw() {}
+		virtual ~AssertionDialog() = default;
 	};
 }
 

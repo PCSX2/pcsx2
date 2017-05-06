@@ -36,7 +36,7 @@ protected:
 public:
 	wxString GetEventName() const { return L"SaveSinglePlugin"; }
 
-	virtual ~SysExecEvent_SaveSinglePlugin() throw() {}
+	virtual ~SysExecEvent_SaveSinglePlugin() = default;
 	SysExecEvent_SaveSinglePlugin* Clone() const { return new SysExecEvent_SaveSinglePlugin( *this ); }
 
 	SysExecEvent_SaveSinglePlugin( PluginsEnum_t pid=PluginId_GS )

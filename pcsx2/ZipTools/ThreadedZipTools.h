@@ -39,7 +39,7 @@ public:
 		m_datasize	= 0;
 	}
 
-	virtual ~ArchiveEntry() throw() {}
+	virtual ~ArchiveEntry() = default;
 
 	ArchiveEntry& SetDataIndex( uptr idx )
 	{
@@ -83,7 +83,7 @@ protected:
 	std::unique_ptr<ArchiveDataBuffer> m_data;
 
 public:
-	virtual ~ArchiveEntryList() throw() {}
+	virtual ~ArchiveEntryList() = default;
 
 	ArchiveEntryList() {}
 

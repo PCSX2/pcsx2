@@ -234,7 +234,7 @@ public:
 
 public:
 	IEventListener_SysState() {}
-	virtual ~IEventListener_SysState() throw() {}
+	virtual ~IEventListener_SysState() = default;
 
 	virtual void DispatchEvent( const SysStateUnlockedParams& status )
 	{

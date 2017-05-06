@@ -333,7 +333,7 @@ protected:
 
 public:
 	FolderMemoryCard();
-	virtual ~FolderMemoryCard() throw() {}
+	virtual ~FolderMemoryCard() = default;
 
 	void Lock();
 	void Unlock();
@@ -556,7 +556,7 @@ protected:
 
 public:
 	FolderMemoryCardAggregator();
-	virtual ~FolderMemoryCardAggregator() throw( ) {}
+	virtual ~FolderMemoryCardAggregator() = default;
 
 	void Open();
 	void Close();

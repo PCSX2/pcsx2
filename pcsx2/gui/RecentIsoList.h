@@ -76,6 +76,6 @@ struct RecentIsoList
 	std::unique_ptr<wxMenu>				Menu;
 
 	RecentIsoList(int firstIdForMenuItems_or_wxID_ANY);
-	virtual ~RecentIsoList() throw() { }
+	virtual ~RecentIsoList() = default;
 };
 

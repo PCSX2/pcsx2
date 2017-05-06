@@ -79,7 +79,7 @@ protected:
 	SynchronousActionState*		m_sync;
 
 public:
-	virtual ~SysExecEvent() throw() {}
+	virtual ~SysExecEvent() = default;
 	SysExecEvent* Clone() const { return new SysExecEvent( *this ); }
 
 	SysExecEvent( SynchronousActionState* sync=NULL )
@@ -145,7 +145,7 @@ protected:
 public:
 	wxString GetEventName() const { return m_TraceName; }
 
-	virtual ~SysExecEvent_MethodVoid() throw() {}
+	virtual ~SysExecEvent_MethodVoid() = default;
 	SysExecEvent_MethodVoid* Clone() const { return new SysExecEvent_MethodVoid( *this ); }
 
 	bool AllowCancelOnExit() const { return !m_IsCritical; }
@@ -214,7 +214,7 @@ protected:
 
 public:
 	pxEvtQueue();
-	virtual ~pxEvtQueue() throw() {}
+	virtual ~pxEvtQueue() = default;
 
 	virtual wxString GetEventHandlerName() const { return L"pxEvtQueue"; }
 
@@ -273,7 +273,7 @@ protected:
 
 public:
 	ExecutorThread( pxEvtQueue* evtandler = NULL );
-	virtual ~ExecutorThread() throw() { }
+	virtual ~ExecutorThread() = default;
 
 	virtual void ShutdownQueue();
 	bool IsRunning() const;

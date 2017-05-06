@@ -46,7 +46,7 @@ protected:
 
 public:
 	VifUnpackSSE_Base();
-	virtual ~VifUnpackSSE_Base() throw() {}
+	virtual ~VifUnpackSSE_Base() = default;
 
 	virtual void xUnpack( int upktype ) const;
 	virtual bool IsUnmaskedOp() const=0;
@@ -90,7 +90,7 @@ public:
 
 public:
 	VifUnpackSSE_Simple(bool usn_, bool domask_, int curCycle_);
-	virtual ~VifUnpackSSE_Simple() throw() {}
+	virtual ~VifUnpackSSE_Simple() = default;
 
 	virtual bool IsUnmaskedOp() const{ return !doMask; }
 
@@ -125,7 +125,7 @@ public:
 		vCL		= src.vCL;
 	}
 
-	virtual ~VifUnpackSSE_Dynarec() throw() {}
+	virtual ~VifUnpackSSE_Dynarec() = default;
 
 	virtual bool IsUnmaskedOp() const{ return !doMode && !doMask; }
 
