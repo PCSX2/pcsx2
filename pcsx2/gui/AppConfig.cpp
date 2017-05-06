@@ -1175,7 +1175,7 @@ protected:
 	wxString	m_empty;
 
 public:
-	virtual ~pxDudConfig() {}
+	virtual ~pxDudConfig() = default;
 
 	virtual void SetPath(const wxString& ) {}
 	virtual const wxString& GetPath() const { return m_empty; }
@@ -1222,14 +1222,14 @@ class AppIniSaver : public IniSaver
 {
 public:
 	AppIniSaver();
-	virtual ~AppIniSaver() throw() {}
+	virtual ~AppIniSaver() = default;
 };
 
 class AppIniLoader : public IniLoader
 {
 public:
 	AppIniLoader();
-	virtual ~AppIniLoader() throw() {}
+	virtual ~AppIniLoader() = default;
 };
 
 AppIniSaver::AppIniSaver()

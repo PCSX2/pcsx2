@@ -54,7 +54,7 @@ public:
 public:
 	PerPluginMenuInfo() : MyMenu(*new wxMenu()), PluginId (PluginId_Count) {}
 
-	virtual ~PerPluginMenuInfo() throw();
+	virtual ~PerPluginMenuInfo() = default;
 
 	void Populate( PluginsEnum_t pid );
 	void OnUnloaded();

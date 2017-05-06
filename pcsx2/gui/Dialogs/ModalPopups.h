@@ -36,7 +36,7 @@ protected:
 
 public:
 	FirstTimeWizard( wxWindow* parent );
-	virtual ~FirstTimeWizard() throw();
+	virtual ~FirstTimeWizard() = default;
 
 	wxWizardPage *GetFirstPage() const { return &m_page_intro; }
 

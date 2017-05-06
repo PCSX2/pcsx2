@@ -625,10 +625,6 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 	{ NULL }
 };
 
-CommandDictionary::~CommandDictionary() throw() {}
-
-AcceleratorDictionary::~AcceleratorDictionary() throw() {}
-
 void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *searchfor )
 {
 	// Search override mapping at ini file

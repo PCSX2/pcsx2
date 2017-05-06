@@ -95,7 +95,7 @@ public:
 	PluginErrorEvent( BaseException* ex=NULL ) : _parent( ex ) {}
 	PluginErrorEvent( const BaseException& ex ) : _parent( ex ) {}
 
-	virtual ~PluginErrorEvent() throw() { }
+	virtual ~PluginErrorEvent() = default;
 	virtual PluginErrorEvent *Clone() const { return new PluginErrorEvent(*this); }
 
 protected:
@@ -110,7 +110,7 @@ public:
 	PluginInitErrorEvent( BaseException* ex=NULL ) : _parent( ex ) {}
 	PluginInitErrorEvent( const BaseException& ex ) : _parent( ex ) {}
 
-	virtual ~PluginInitErrorEvent() throw() { }
+	virtual ~PluginInitErrorEvent() = default;
 	virtual PluginInitErrorEvent *Clone() const { return new PluginInitErrorEvent(*this); }
 
 protected:
@@ -163,7 +163,7 @@ public:
 	BIOSLoadErrorEvent(BaseException* ex = NULL) : _parent(ex) {}
 	BIOSLoadErrorEvent(const BaseException& ex) : _parent(ex) {}
 
-	virtual ~BIOSLoadErrorEvent() throw() { }
+	virtual ~BIOSLoadErrorEvent() = default;
 	virtual BIOSLoadErrorEvent *Clone() const { return new BIOSLoadErrorEvent(*this); }
 
 protected:
@@ -233,7 +233,7 @@ protected:
 	FnPtr_Pcsx2App	m_Method;
 
 public:
-	virtual ~Pcsx2AppMethodEvent() throw() { }
+	virtual ~Pcsx2AppMethodEvent() = default;
 	virtual Pcsx2AppMethodEvent *Clone() const { return new Pcsx2AppMethodEvent(*this); }
 
 	explicit Pcsx2AppMethodEvent( FnPtr_Pcsx2App method=NULL, SynchronousActionState* sema=NULL )
@@ -1048,7 +1048,7 @@ protected:
 	wxString			m_elf_override;
 
 public:
-	virtual ~SysExecEvent_Execute() throw() {}
+	virtual ~SysExecEvent_Execute() = default;
 	SysExecEvent_Execute* Clone() const { return new SysExecEvent_Execute(*this); }
 
 	wxString GetEventName() const

@@ -48,10 +48,6 @@ Panels::BaseSelectorPanel::BaseSelectorPanel( wxWindow* parent )
 	Bind(wxEVT_SHOW, &BaseSelectorPanel::OnShow, this);
 }
 
-Panels::BaseSelectorPanel::~BaseSelectorPanel() throw()
-{
-}
-
 void Panels::BaseSelectorPanel::OnShow(wxShowEvent& evt)
 {
 	evt.Skip();
@@ -120,10 +116,6 @@ Panels::BiosSelectorPanel::BiosSelectorPanel( wxWindow* parent )
 	*this	+= m_FolderPicker	| StdExpand();
 
 	Bind(wxEVT_BUTTON, &BiosSelectorPanel::OnRefreshSelections, this, refreshButton->GetId());
-}
-
-Panels::BiosSelectorPanel::~BiosSelectorPanel() throw ()
-{
 }
 
 void Panels::BiosSelectorPanel::Apply()

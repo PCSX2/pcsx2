@@ -104,7 +104,7 @@ protected:
 		std::array<wxTextAttr, ConsoleColors_Count> m_table;
 
 	public:
-		virtual ~ColorArray() throw();
+		virtual ~ColorArray() = default;
 		ColorArray( int fontsize=8 );
 
 		void SetFont( const wxFont& font );

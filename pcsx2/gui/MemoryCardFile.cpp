@@ -63,7 +63,7 @@ protected:
 
 public:
 	FileMemoryCard();
-	virtual ~FileMemoryCard() throw() {}
+	virtual ~FileMemoryCard() = default;
 
 	void Lock();
 	void Unlock();

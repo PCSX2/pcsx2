@@ -447,7 +447,7 @@ namespace Panels
 		typedef BaseApplicableConfigPanel _parent;
 
 	public:
-		virtual ~BaseSelectorPanel() throw();
+		virtual ~BaseSelectorPanel() = default;
 		BaseSelectorPanel( wxWindow* parent );
 
 		virtual void RefreshSelections();
@@ -512,7 +512,7 @@ namespace Panels
 
 	public:
 		BiosSelectorPanel( wxWindow* parent );
-		virtual ~BiosSelectorPanel() throw();
+		virtual ~BiosSelectorPanel() = default;
 
 	protected:
 		virtual void Apply();
