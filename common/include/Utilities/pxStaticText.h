@@ -60,7 +60,7 @@ protected:
 public:
     pxStaticText(wxWindow *parent, const wxString &label, wxAlignment align = wxALIGN_CENTRE_HORIZONTAL);
     pxStaticText(wxWindow *parent, int heightInLines, const wxString &label, wxAlignment align = wxALIGN_CENTRE_HORIZONTAL);
-    virtual ~pxStaticText() throw() {}
+    virtual ~pxStaticText() = default;
 
     wxFont GetFontOk() const;
     bool Enable(bool enabled = true);
@@ -109,7 +109,7 @@ class pxStaticHeading : public pxStaticText
 public:
     pxStaticHeading(wxWindow *parent = NULL, const wxString &label = wxEmptyString);
     pxStaticHeading(wxWindow *parent, int heightInLines, const wxString &label = wxEmptyString);
-    virtual ~pxStaticHeading() throw() {}
+    virtual ~pxStaticHeading() = default;
 
 protected:
     void SetPaddingDefaults();

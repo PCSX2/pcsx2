@@ -128,7 +128,7 @@ protected:
     wxString m_message; // a "detailed" message of what disastrous thing has occurred!
 
 public:
-    virtual ~Ps2Generic() throw() {}
+    virtual ~Ps2Generic() = default;
 
     virtual u32 GetPc() const = 0;
     virtual bool IsDelaySlot() const = 0;
@@ -157,7 +157,7 @@ private:                                             \
     typedef parent _parent;                          \
                                                      \
 public:                                              \
-    virtual ~classname() throw() {}                  \
+    virtual ~classname() = default;                  \
     virtual void Rethrow() const { throw * this; }   \
     virtual classname *Clone() const { return new classname(*this); }
 

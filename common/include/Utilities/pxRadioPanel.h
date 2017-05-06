@@ -117,7 +117,7 @@ public:
         Init();
     }
 
-    virtual ~pxRadioPanel() throw() {}
+    virtual ~pxRadioPanel() = default;
 
     void Reset();
     void Realize();

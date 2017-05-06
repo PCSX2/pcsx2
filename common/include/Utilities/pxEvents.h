@@ -42,7 +42,7 @@ public:
         return_value = 0;
     }
 
-    virtual ~SynchronousActionState() throw() {}
+    virtual ~SynchronousActionState() = default;
 
     void SetException(const BaseException &ex);
     void SetException(BaseException *ex);
@@ -99,7 +99,7 @@ protected:
     SynchronousActionState *m_state;
 
 public:
-    virtual ~pxActionEvent() throw() {}
+    virtual ~pxActionEvent() = default;
     virtual pxActionEvent *Clone() const { return new pxActionEvent(*this); }
 
     explicit pxActionEvent(SynchronousActionState *sema = NULL, int msgtype = pxEvt_InvokeAction);
@@ -172,7 +172,7 @@ protected:
     wxEventType m_realEvent;
 
 public:
-    virtual ~pxSynchronousCommandEvent() throw() {}
+    virtual ~pxSynchronousCommandEvent() = default;
     virtual pxSynchronousCommandEvent *Clone() const { return new pxSynchronousCommandEvent(*this); }
 
     pxSynchronousCommandEvent(SynchronousActionState *sema = NULL, wxEventType commandType = wxEVT_NULL, int winid = 0);
@@ -204,7 +204,7 @@ protected:
     wxString m_Content;
 
 public:
-    virtual ~BaseMessageBoxEvent() throw() {}
+    virtual ~BaseMessageBoxEvent() = default;
     virtual BaseMessageBoxEvent *Clone() const { return new BaseMessageBoxEvent(*this); }
 
     explicit BaseMessageBoxEvent(const wxString &content = wxEmptyString, SynchronousActionState *instdata = NULL);

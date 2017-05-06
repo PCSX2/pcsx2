@@ -50,7 +50,7 @@ class ModalButtonPanel : public wxPanelWithHelpers
 {
 public:
     ModalButtonPanel(wxWindow *window, const MsgButtons &buttons);
-    virtual ~ModalButtonPanel() throw() {}
+    virtual ~ModalButtonPanel() = default;
 
     virtual void AddActionButton(wxWindowID id);
     virtual void AddCustomButton(wxWindowID id, const wxString &label);

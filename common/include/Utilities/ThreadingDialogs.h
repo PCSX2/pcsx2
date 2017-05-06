@@ -42,7 +42,7 @@ protected:
 
 public:
     WaitForTaskDialog(const wxString &title = wxEmptyString, const wxString &heading = wxEmptyString);
-    virtual ~WaitForTaskDialog() throw() {}
+    virtual ~WaitForTaskDialog() = default;
     virtual int ShowModal();
 
 protected:

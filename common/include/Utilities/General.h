@@ -70,7 +70,7 @@ public:
 class IActionInvocation
 {
 public:
-    virtual ~IActionInvocation() throw() {}
+    virtual ~IActionInvocation() = default;
     virtual void InvokeAction() = 0;
 };
 
@@ -83,7 +83,7 @@ public:
 class IDeletableObject
 {
 public:
-    virtual ~IDeletableObject() throw() {}
+    virtual ~IDeletableObject() = default;
 
     virtual void DeleteSelf() = 0;
     virtual bool IsBeingDeleted() = 0;

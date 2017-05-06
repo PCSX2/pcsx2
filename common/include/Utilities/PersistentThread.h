@@ -39,7 +39,7 @@ public:
         m_thread = NULL;
     }
 
-    virtual ~EventListener_Thread() throw() {}
+    virtual ~EventListener_Thread() = default;
 
     void SetThread(pxThread &thr) { m_thread = &thr; }
     void SetThread(pxThread *thr) { m_thread = thr; }
@@ -250,7 +250,7 @@ protected:
     Mutex m_lock_TaskComplete;
 
 public:
-    virtual ~BaseTaskThread() throw() {}
+    virtual ~BaseTaskThread() = default;
     BaseTaskThread()
         : m_Done(false)
         , m_TaskPending(false)

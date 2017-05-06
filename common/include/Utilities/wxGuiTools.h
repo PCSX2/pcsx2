@@ -292,7 +292,7 @@ public:
     bool hasCloseBox;
 
 public:
-    virtual ~pxDialogCreationFlags() throw() {}
+    virtual ~pxDialogCreationFlags() = default;
 
     pxDialogCreationFlags()
     {
@@ -605,7 +605,7 @@ protected:
     wxString m_indent;
 
 public:
-    virtual ~pxTextWrapperBase() throw() {}
+    virtual ~pxTextWrapperBase() = default;
 
     pxTextWrapperBase(const wxString &indent = wxEmptyString)
         : m_indent(indent)
@@ -653,7 +653,7 @@ public:
     {
     }
 
-    virtual ~pxTextWrapper() throw() {}
+    virtual ~pxTextWrapper() = default;
 
     const wxString &GetResult() const
     {
@@ -686,7 +686,7 @@ protected:
 
 public:
     pxWindowTextWriter(wxDC &dc);
-    virtual ~pxWindowTextWriter() throw() {}
+    virtual ~pxWindowTextWriter() = default;
 
     virtual void OnFontChanged();
 
@@ -746,7 +746,7 @@ protected:
 
 public:
     MoreStockCursors() {}
-    virtual ~MoreStockCursors() throw() {}
+    virtual ~MoreStockCursors() = default;
     const wxCursor &GetArrowWait();
 };
 

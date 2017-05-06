@@ -45,7 +45,7 @@ public:
     typedef PageFaultInfo EvtParams;
 
 public:
-    virtual ~IEventListener_PageFault() throw() {}
+    virtual ~IEventListener_PageFault() = default;
 
     virtual void DispatchEvent(const PageFaultInfo &evtinfo, bool &handled)
     {
@@ -87,7 +87,7 @@ public:
         Owner = dispatchTo;
     }
 
-    virtual ~EventListenerHelper_PageFault() throw() {}
+    virtual ~EventListenerHelper_PageFault() = default;
 
 protected:
     virtual void OnPageFaultEvent(const PageFaultInfo &info, bool &handled)
@@ -112,7 +112,7 @@ public:
         : m_handled(false)
     {
     }
-    virtual ~SrcType_PageFault() throw() {}
+    virtual ~SrcType_PageFault() = default;
 
     bool WasHandled() const { return m_handled; }
     virtual void Dispatch(const PageFaultInfo &params);
