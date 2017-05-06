@@ -82,7 +82,7 @@ protected:
 
 public:
 	explicit SysThreadBase();
-	virtual ~SysThreadBase() throw();
+	virtual ~SysThreadBase() = default;
 
 	// Thread safety for IsOpen / IsClosed: The execution mode can change at any time on
 	// any thread, so the actual status may have already changed by the time this function

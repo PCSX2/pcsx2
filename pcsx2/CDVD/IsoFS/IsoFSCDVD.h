@@ -23,7 +23,7 @@ class IsoFSCDVD: public SectorSource
 {
 public:
 	IsoFSCDVD();
-	virtual ~IsoFSCDVD() throw();
+	virtual ~IsoFSCDVD() = default;
 
 	virtual bool readSector(unsigned char* buffer, int lba);
 

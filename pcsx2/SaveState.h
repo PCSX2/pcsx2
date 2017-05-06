@@ -247,7 +247,7 @@ public:
 class memLoadingState : public SaveStateBase
 {
 public:
-	virtual ~memLoadingState() throw();
+	virtual ~memLoadingState() = default;
 
 	memLoadingState( const VmStateBuffer& load_from );
 	memLoadingState( const VmStateBuffer* load_from );

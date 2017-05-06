@@ -53,10 +53,6 @@ void IsoFile::Init()
 		internalReader.readSector(currentSector, currentSectorNumber);
 }
 
-IsoFile::~IsoFile() throw()
-{
-}
-
 u32 IsoFile::seek(u32 absoffset)
 {
 	u32 endOffset = absoffset;

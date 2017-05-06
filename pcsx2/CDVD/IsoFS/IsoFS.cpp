@@ -110,10 +110,6 @@ IsoDirectory::IsoDirectory(SectorSource& r, IsoFileDescriptor directoryEntry)
 	Init(directoryEntry);
 }
 
-IsoDirectory::~IsoDirectory() throw()
-{
-}
-
 void IsoDirectory::Init(const IsoFileDescriptor& directoryEntry)
 {
 	// parse directory sector
