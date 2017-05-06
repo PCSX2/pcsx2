@@ -496,11 +496,11 @@ void GSShaderDlg::UpdateControls()
 	char text[8] = {0};
 
 	sprintf(text, "%d", m_saturation);
-	SetDlgItemText(m_hWnd, IDC_SATURATION_TEXT, text);
+	SetDlgItemText(m_hWnd, IDC_SATURATION_VALUE, text);
 	sprintf(text, "%d", m_brightness);
-	SetDlgItemText(m_hWnd, IDC_BRIGHTNESS_TEXT, text);
+	SetDlgItemText(m_hWnd, IDC_BRIGHTNESS_VALUE, text);
 	sprintf(text, "%d", m_contrast);
-	SetDlgItemText(m_hWnd, IDC_CONTRAST_TEXT, text);
+	SetDlgItemText(m_hWnd, IDC_CONTRAST_VALUE, text);
 
 	// Shader Settings
 	bool external_shader_selected = IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX) == BST_CHECKED;
@@ -511,6 +511,9 @@ void GSShaderDlg::UpdateControls()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SATURATION_TEXT), shadeboost_selected);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_TEXT), shadeboost_selected);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_CONTRAST_TEXT), shadeboost_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SATURATION_VALUE), shadeboost_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_VALUE), shadeboost_selected);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_CONTRAST_VALUE), shadeboost_selected);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_TEXT), external_shader_selected);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), external_shader_selected);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SHADER_FX_BUTTON), external_shader_selected);

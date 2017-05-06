@@ -112,15 +112,18 @@
 #define IDC_SATURATION_TEXT             2145
 #define IDC_BRIGHTNESS_TEXT             2146
 #define IDC_CONTRAST_TEXT               2147
-#define IDC_SHADER_FX                   2148
-#define IDC_SHADER_FX_EDIT              2149
-#define IDC_SHADER_FX_CONF_EDIT         2150
-#define IDC_SHADER_FX_BUTTON            2151
-#define IDC_SHADER_FX_CONF_BUTTON       2152
-#define IDC_SHADER_FX_TEXT              2153
-#define IDC_SHADER_FX_CONF_TEXT         2154
-#define IDC_TVSHADER                    2155
-#define IDC_LINEAR_PRESENT              2156
+#define IDC_SATURATION_VALUE            2148
+#define IDC_CONTRAST_VALUE              2149
+#define IDC_BRIGHTNESS_VALUE            2150
+#define IDC_SHADER_FX                   2151
+#define IDC_SHADER_FX_EDIT              2152
+#define IDC_SHADER_FX_CONF_EDIT         2153
+#define IDC_SHADER_FX_BUTTON            2154
+#define IDC_SHADER_FX_CONF_BUTTON       2155
+#define IDC_SHADER_FX_TEXT              2156
+#define IDC_SHADER_FX_CONF_TEXT         2157
+#define IDC_TVSHADER                    2158
+#define IDC_LINEAR_PRESENT              2159
 // OSD:
 #define IDC_OSD_LOG                     2170
 #define IDC_OSD_MONITOR                 2171
@@ -164,7 +167,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        10013
+#define _APS_NEXT_RESOURCE_VALUE        10018
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         2194
 #define _APS_NEXT_SYMED_VALUE           5000
