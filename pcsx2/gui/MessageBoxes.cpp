@@ -97,13 +97,6 @@ pxMessageBoxEvent::pxMessageBoxEvent( const wxString& title, const wxString& con
 {
 }
 
-pxMessageBoxEvent::pxMessageBoxEvent( const pxMessageBoxEvent& event )
-	: BaseMessageBoxEvent( event )
-	, m_Title( event.m_Title )
-	, m_Buttons( event.m_Buttons )
-{
-}
-
 int pxMessageBoxEvent::_DoDialog() const
 {
 	return pxMessageDialog( m_Title, m_Content, m_Buttons );
@@ -123,12 +116,6 @@ pxAssertionEvent::pxAssertionEvent( const wxString& content, const wxString& tra
 pxAssertionEvent::pxAssertionEvent( const wxString& content, const wxString& trace, SynchronousActionState* instdata )
 	: BaseMessageBoxEvent( content, instdata )
 	, m_Stacktrace( trace )
-{
-}
-
-pxAssertionEvent::pxAssertionEvent( const pxAssertionEvent& event )
-	: BaseMessageBoxEvent( event )
-	, m_Stacktrace( event.m_Stacktrace )
 {
 }
 
