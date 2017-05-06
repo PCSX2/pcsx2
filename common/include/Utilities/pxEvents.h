@@ -386,7 +386,7 @@ public:
     pxMessageBoxEvent() {}
     pxMessageBoxEvent(const wxString &title, const wxString &content, const MsgButtons &buttons, SynchronousActionState &instdata);
     pxMessageBoxEvent(const wxString &title, const wxString &content, const MsgButtons &buttons, SynchronousActionState *instdata = NULL);
-    pxMessageBoxEvent(const pxMessageBoxEvent &event);
+    pxMessageBoxEvent(const pxMessageBoxEvent &event) = default;
 
 protected:
     int _DoDialog() const;
@@ -409,7 +409,7 @@ public:
 
     pxAssertionEvent(const wxString &content = wxEmptyString, const wxString &trace = wxEmptyString, SynchronousActionState *instdata = NULL);
     pxAssertionEvent(const wxString &content, const wxString &trace, SynchronousActionState &instdata);
-    pxAssertionEvent(const pxAssertionEvent &event);
+    pxAssertionEvent(const pxAssertionEvent &event) = default;
 
     pxAssertionEvent &SetStacktrace(const wxString &trace);
 
