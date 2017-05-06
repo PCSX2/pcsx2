@@ -40,7 +40,7 @@ protected:
 public:
     pxCheckBox(wxWindow *parent, const wxString &label, const wxString &subtext = wxEmptyString, int flags = wxCHK_2STATE);
     pxCheckBox(wxWindow *parent, const wxString &label, int flags);
-    virtual ~pxCheckBox() throw() {}
+    virtual ~pxCheckBox() = default;
 
     bool HasSubText() const { return m_subtext != NULL; }
     const pxStaticText *GetSubText() const { return m_subtext; }

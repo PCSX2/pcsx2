@@ -71,7 +71,7 @@ class ScopedReadLock : public BaseScopedReadWriteLock
 {
 public:
     ScopedReadLock(RwMutex &locker);
-    virtual ~ScopedReadLock() throw() {}
+    virtual ~ScopedReadLock() = default;
 
     void Acquire();
 };
@@ -80,7 +80,7 @@ class ScopedWriteLock : public BaseScopedReadWriteLock
 {
 public:
     ScopedWriteLock(RwMutex &locker);
-    virtual ~ScopedWriteLock() throw() {}
+    virtual ~ScopedWriteLock() = default;
 
     void Acquire();
 

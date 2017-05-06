@@ -211,7 +211,7 @@ protected:
 
 public:
     NonblockingMutex() { val.clear(); }
-    virtual ~NonblockingMutex() throw() {}
+    virtual ~NonblockingMutex() = default;
 
     bool TryAcquire() throw()
     {
@@ -353,7 +353,7 @@ public:
         : ScopedLock(locker, true)
     {
     }
-    virtual ~ScopedTryLock() throw() {}
+    virtual ~ScopedTryLock() = default;
     bool Failed() const { return !m_IsLocked; }
 };
 

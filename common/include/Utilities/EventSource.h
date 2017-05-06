@@ -49,7 +49,7 @@ public:
         m_cache_valid = false;
     }
 
-    virtual ~EventSource() throw() {}
+    virtual ~EventSource() = default;
 
     virtual ListenerIterator Add(ListenerType &listener);
     virtual void Remove(ListenerType &listener);
@@ -89,6 +89,6 @@ protected:
     IEventDispatcher() {}
 
 public:
-    virtual ~IEventDispatcher() throw() {}
+    virtual ~IEventDispatcher() = default;
     virtual void DispatchEvent(const EvtParams &params) = 0;
 };

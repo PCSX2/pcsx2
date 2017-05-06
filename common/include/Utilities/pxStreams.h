@@ -33,7 +33,7 @@ protected:
 
 public:
     pxStreamBase(const wxString &filename);
-    virtual ~pxStreamBase() throw() {}
+    virtual ~pxStreamBase() = default;
 
     // Implementing classes should return the base wxStream object (usually either a wxInputStream
     // or wxOputStream derivative).
@@ -62,7 +62,7 @@ public:
     pxOutputStream(const wxString &filename, std::unique_ptr<wxOutputStream> &output);
     pxOutputStream(const wxString &filename, wxOutputStream *output);
 
-    virtual ~pxOutputStream() throw() {}
+    virtual ~pxOutputStream() = default;
     virtual void Write(const void *data, size_t size);
 
     void SetStream(const wxString &filename, std::unique_ptr<wxOutputStream> &stream);
@@ -96,7 +96,7 @@ public:
     pxInputStream(const wxString &filename, std::unique_ptr<wxInputStream> &input);
     pxInputStream(const wxString &filename, wxInputStream *input);
 
-    virtual ~pxInputStream() throw() {}
+    virtual ~pxInputStream() = default;
     virtual void Read(void *dest, size_t size);
 
     void SetStream(const wxString &filename, std::unique_ptr<wxInputStream> &stream);
