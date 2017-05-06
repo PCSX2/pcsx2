@@ -114,7 +114,7 @@ void Threading::Mutex::Detach()
         Console.Error("(Thread Log) Mutex cleanup failed due to possible deadlock.");
 }
 
-Threading::Mutex::~Mutex() throw()
+Threading::Mutex::~Mutex()
 {
     try {
         Mutex::Detach();
@@ -136,7 +136,7 @@ Threading::MutexRecursive::MutexRecursive()
         Console.Error("(Thread Log) Failed to initialize mutex.");
 }
 
-Threading::MutexRecursive::~MutexRecursive() throw()
+Threading::MutexRecursive::~MutexRecursive()
 {
     if (--_attr_refcount == 0)
         pthread_mutexattr_destroy(&_attr_recursive);
@@ -288,7 +288,7 @@ bool Threading::Mutex::WaitWithoutYield(const wxTimeSpan &timeout)
 //  ScopedLock Implementations
 // --------------------------------------------------------------------------------------
 
-Threading::ScopedLock::~ScopedLock() throw()
+Threading::ScopedLock::~ScopedLock()
 {
     if (m_IsLocked && m_lock)
         m_lock->Release();

@@ -64,7 +64,7 @@ Threading::Semaphore::Semaphore()
     __atomic_store_n(&m_counter, 0, __ATOMIC_SEQ_CST);
 }
 
-Threading::Semaphore::~Semaphore() throw()
+Threading::Semaphore::~Semaphore()
 {
     MACH_CHECK(semaphore_destroy(mach_task_self(), (semaphore_t)m_sema));
     __atomic_store_n(&m_counter, 0, __ATOMIC_SEQ_CST);

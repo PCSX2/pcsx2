@@ -30,4 +30,4 @@ void x86capabilities::CountLogicalCores()
 
 // Not implemented yet for linux (see cpudetect_internal.h for details)
 SingleCoreAffinity::SingleCoreAffinity() = default;
-SingleCoreAffinity::~SingleCoreAffinity() throw() = default;
+SingleCoreAffinity::~SingleCoreAffinity() = default;

@@ -186,7 +186,7 @@ extern void Sleep(int ms);
 		pthread_mutex_t mutex;
 
 		WaitEvent();
-		~WaitEvent() throw();
+		~WaitEvent();
 
 		void Set();
 		void Wait();
@@ -243,7 +243,7 @@ protected:
 
 public:
     Semaphore();
-    virtual ~Semaphore() throw();
+    virtual ~Semaphore();
 
     void Reset();
     void Post();
@@ -266,7 +266,7 @@ protected:
 
 public:
     Mutex();
-    virtual ~Mutex() throw();
+    virtual ~Mutex();
     virtual bool IsRecursive() const { return false; }
 
     void Recreate();
@@ -295,7 +295,7 @@ class MutexRecursive : public Mutex
 {
 public:
     MutexRecursive();
-    virtual ~MutexRecursive() throw();
+    virtual ~MutexRecursive();
     virtual bool IsRecursive() const { return true; }
 };
 
@@ -327,7 +327,7 @@ protected:
     bool m_IsLocked;
 
 public:
-    virtual ~ScopedLock() throw();
+    virtual ~ScopedLock();
     explicit ScopedLock(const Mutex *locker = NULL);
     explicit ScopedLock(const Mutex &locker);
     void AssignAndLock(const Mutex &locker);
@@ -377,7 +377,7 @@ public:
     {
     }
 
-    virtual ~ScopedNonblockingLock() throw()
+    virtual ~ScopedNonblockingLock()
     {
         if (m_IsLocked)
             m_lock.Release();
@@ -404,7 +404,7 @@ struct ScopedLockBool
     {
         m_bool.store(m_lock.IsLocked(), std::memory_order_relaxed);
     }
-    virtual ~ScopedLockBool() throw()
+    virtual ~ScopedLockBool()
     {
         m_bool.store(false, std::memory_order_relaxed);
     }

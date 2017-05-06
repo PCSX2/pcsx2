@@ -48,7 +48,7 @@ EventListener_PageFault::EventListener_PageFault()
     Source_PageFault->Add(*this);
 }
 
-EventListener_PageFault::~EventListener_PageFault() throw()
+EventListener_PageFault::~EventListener_PageFault()
 {
     if (Source_PageFault)
         Source_PageFault->Remove(*this);

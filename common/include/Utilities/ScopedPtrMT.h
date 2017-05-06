@@ -39,7 +39,7 @@ public:
         m_ptr = ptr;
     }
 
-    ~ScopedPtrMT() throw() { _Delete_unlocked(); }
+    ~ScopedPtrMT() { _Delete_unlocked(); }
 
     ScopedPtrMT &Reassign(T *ptr = nullptr)
     {

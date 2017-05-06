@@ -24,7 +24,7 @@ Threading::RwMutex::RwMutex()
     pthread_rwlock_init(&m_rwlock, NULL);
 }
 
-Threading::RwMutex::~RwMutex() throw()
+Threading::RwMutex::~RwMutex()
 {
     pthread_rwlock_destroy(&m_rwlock);
 }
@@ -57,7 +57,7 @@ void Threading::RwMutex::Release()
 // --------------------------------------------------------------------------------------
 //
 // --------------------------------------------------------------------------------------
-Threading::BaseScopedReadWriteLock::~BaseScopedReadWriteLock() throw()
+Threading::BaseScopedReadWriteLock::~BaseScopedReadWriteLock()
 {
     if (m_IsLocked)
         m_lock.Release();

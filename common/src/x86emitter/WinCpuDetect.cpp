@@ -75,7 +75,7 @@ SingleCoreAffinity::SingleCoreAffinity()
     // the thread during the cpuSpeed test instead, causing totally wacky results.
 };
 
-SingleCoreAffinity::~SingleCoreAffinity() throw()
+SingleCoreAffinity::~SingleCoreAffinity()
 {
     if (s_oldmask != ERROR_INVALID_PARAMETER)
         SetThreadAffinityMask(s_threadId, s_oldmask);

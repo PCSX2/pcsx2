@@ -529,7 +529,7 @@ ScopedBusyCursor::ScopedBusyCursor(BusyCursorType busytype)
     m_cursorStack.push(curtype);
 }
 
-ScopedBusyCursor::~ScopedBusyCursor() throw()
+ScopedBusyCursor::~ScopedBusyCursor()
 {
     if (!pxAssert(wxTheApp != NULL))
         return;

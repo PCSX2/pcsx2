@@ -772,7 +772,7 @@ protected:
 
 public:
     ScopedBusyCursor(BusyCursorType busytype);
-    virtual ~ScopedBusyCursor() throw();
+    virtual ~ScopedBusyCursor();
 
     static void SetDefault(BusyCursorType busytype);
     static void SetManualBusyCursor(BusyCursorType busytype);

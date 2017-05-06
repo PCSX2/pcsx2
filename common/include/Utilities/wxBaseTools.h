@@ -55,7 +55,7 @@ public:
         m_prev = wxLog::EnableLogging(false);
     }
 
-    virtual ~wxDoNotLogInThisScope() throw()
+    virtual ~wxDoNotLogInThisScope()
     {
         wxLog::EnableLogging(m_prev);
     }

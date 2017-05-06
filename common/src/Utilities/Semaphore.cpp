@@ -30,7 +30,7 @@ Threading::Semaphore::Semaphore()
     sem_init(&m_sema, false, 0);
 }
 
-Threading::Semaphore::~Semaphore() throw()
+Threading::Semaphore::~Semaphore()
 {
     sem_destroy(&m_sema);
 }

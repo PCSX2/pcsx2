@@ -103,7 +103,7 @@ public:
         m_size = 0;
     }
 
-    virtual ~BaseScopedAlloc() throw()
+    virtual ~BaseScopedAlloc()
     {
         //pxAssert(m_buffer==NULL);
     }
@@ -184,7 +184,7 @@ public:
         Alloc(size);
     }
 
-    virtual ~ScopedAlloc() throw()
+    virtual ~ScopedAlloc()
     {
         safe_free(this->m_buffer);
     }
@@ -234,7 +234,7 @@ public:
         Alloc(size);
     }
 
-    virtual ~ScopedAlignedAlloc() throw()
+    virtual ~ScopedAlignedAlloc()
     {
         safe_aligned_free(this->m_buffer);
     }
