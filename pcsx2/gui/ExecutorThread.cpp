@@ -182,7 +182,7 @@ struct ScopedThreadCancelDisable
 		pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &oldstate );
 	}
 	
-	~ScopedThreadCancelDisable() throw()
+	~ScopedThreadCancelDisable()
 	{
 		int oldstate;
 		pthread_setcancelstate( PTHREAD_CANCEL_ENABLE, &oldstate );

@@ -35,7 +35,7 @@ class PipeRedirectionBase
 	DeclareNoncopyableObject( PipeRedirectionBase );
 
 public:
-	virtual ~PipeRedirectionBase() throw()=0;	// abstract destructor, forces abstract class behavior
+	virtual ~PipeRedirectionBase() =0;	// abstract destructor, forces abstract class behavior
 
 protected:
 	PipeRedirectionBase() {}
@@ -79,7 +79,7 @@ public:
 	{
 	}
 
-	~ConsoleTestThread() throw()
+	~ConsoleTestThread()
 	{
 		m_done = true;
 	}

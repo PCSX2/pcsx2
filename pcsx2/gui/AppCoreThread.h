@@ -127,7 +127,7 @@ protected:
 
 public:
 	AppCoreThread();
-	virtual ~AppCoreThread() throw();
+	virtual ~AppCoreThread();
 
 	void ResetCdvd() { m_resetCdvd = true; }
 
@@ -185,7 +185,7 @@ protected:
 	BaseScopedCoreThread();
 
 public:
-	virtual ~BaseScopedCoreThread() throw()=0;
+	virtual ~BaseScopedCoreThread() =0;
 	virtual void AllowResume();
 	virtual void DisallowResume();
 
@@ -220,7 +220,7 @@ class ScopedCoreThreadClose : public BaseScopedCoreThread
 
 public:
 	ScopedCoreThreadClose();
-	virtual ~ScopedCoreThreadClose() throw();
+	virtual ~ScopedCoreThreadClose();
 
 	void LoadPlugins();
 };
@@ -231,7 +231,7 @@ struct ScopedCoreThreadPause : public BaseScopedCoreThread
 
 public:
 	ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse_me=NULL );
-	virtual ~ScopedCoreThreadPause() throw();
+	virtual ~ScopedCoreThreadPause();
 };
 
 struct ScopedCoreThreadPopup : public IScopedCoreThread

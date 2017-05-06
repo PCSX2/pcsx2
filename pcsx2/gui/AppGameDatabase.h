@@ -47,7 +47,7 @@ protected:
 
 public:
 	AppGameDatabase() {}
-	virtual ~AppGameDatabase() throw() {
+	virtual ~AppGameDatabase() {
 		try {
 			Console.WriteLn( "(GameDB) Unloading..." );
 		}

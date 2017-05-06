@@ -32,7 +32,7 @@ protected:
 
 public:
 	RecompiledCodeReserve( const wxString& name=wxEmptyString, uint defCommit = 0 );
-	virtual ~RecompiledCodeReserve() throw();
+	virtual ~RecompiledCodeReserve();
 
 	virtual void* Reserve( size_t size, uptr base=0, uptr upper_bounds=0 );
 	virtual void Reset();

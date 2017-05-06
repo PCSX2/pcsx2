@@ -28,4 +28,4 @@ CpuUsageProvider::CpuUsageProvider() :
 {
 }
 
-CpuUsageProvider::~CpuUsageProvider() throw() = default;
+CpuUsageProvider::~CpuUsageProvider() = default;

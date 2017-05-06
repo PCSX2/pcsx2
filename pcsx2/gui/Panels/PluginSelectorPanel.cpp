@@ -437,7 +437,7 @@ Panels::PluginSelectorPanel::PluginSelectorPanel( wxWindow* parent )
 	Bind(wxEVT_BUTTON, &PluginSelectorPanel::OnConfigure_Clicked, this, ButtonId_Configure);
 }
 
-Panels::PluginSelectorPanel::~PluginSelectorPanel() throw()
+Panels::PluginSelectorPanel::~PluginSelectorPanel()
 {
 	CancelRefresh();		// in case the enumeration thread is currently refreshing...
 }

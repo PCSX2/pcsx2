@@ -35,7 +35,7 @@ OutputIsoFile::OutputIsoFile()
 	_init();
 }
 
-OutputIsoFile::~OutputIsoFile() throw()
+OutputIsoFile::~OutputIsoFile()
 {
 	Close();
 }

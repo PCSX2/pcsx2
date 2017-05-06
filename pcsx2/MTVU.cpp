@@ -67,7 +67,7 @@ VU_Thread::VU_Thread(BaseVUmicroCPU*& _vuCPU, VURegs& _vuRegs) :
 	Reset();
 }
 
-VU_Thread::~VU_Thread() throw()
+VU_Thread::~VU_Thread()
 {
 	try {
 		pxThread::Cancel();

@@ -87,7 +87,7 @@ AppCoreThread::AppCoreThread() : SysCoreThread()
 	m_resetCdvd = false;
 }
 
-AppCoreThread::~AppCoreThread() throw()
+AppCoreThread::~AppCoreThread()
 {
 	try {
 		_parent::Cancel();		// use parent's, skips thread affinity check.
@@ -708,7 +708,7 @@ BaseScopedCoreThread::BaseScopedCoreThread()
 	m_alreadyScoped		= false;
 }
 
-BaseScopedCoreThread::~BaseScopedCoreThread() throw() = default;
+BaseScopedCoreThread::~BaseScopedCoreThread() = default;
 
 // Allows the object to resume execution upon object destruction.  Typically called as the last thing
 // in the object's scope.  Any code prior to this call that causes exceptions will not resume the emulator,
@@ -773,7 +773,7 @@ ScopedCoreThreadClose::ScopedCoreThreadClose()
 	ScopedCore_IsFullyClosed = true;
 }
 
-ScopedCoreThreadClose::~ScopedCoreThreadClose() throw()
+ScopedCoreThreadClose::~ScopedCoreThreadClose()
 {
 	if( m_alreadyScoped ) return;
 	try {
@@ -803,7 +803,7 @@ ScopedCoreThreadPause::ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse
 	ScopedCore_IsPaused = true;
 }
 
-ScopedCoreThreadPause::~ScopedCoreThreadPause() throw()
+ScopedCoreThreadPause::~ScopedCoreThreadPause()
 {
 	if( m_alreadyScoped ) return;
 	try {
