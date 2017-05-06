@@ -63,7 +63,7 @@ protected:
 
 public:
 	GSDrawScanline();
-	virtual ~GSDrawScanline();
+	virtual ~GSDrawScanline() = default;
 
 	// IDrawScanline
 
