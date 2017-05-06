@@ -260,7 +260,7 @@ protected:
 
 public:
 	FramerateManager() { Reset(); }
-	virtual ~FramerateManager() throw() {}
+	virtual ~FramerateManager() = default;
 
 	void Reset();
 	void Resume();

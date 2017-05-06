@@ -51,7 +51,7 @@ namespace Panels
 	public:
 		DirPickerPanel( wxWindow* parent, FoldersEnum_t folderid, const wxString& label, const wxString& dialogLabel );
 		DirPickerPanel( wxWindow* parent, FoldersEnum_t folderid, const wxString& dialogLabel );
-		virtual ~DirPickerPanel() throw() { }
+		virtual ~DirPickerPanel() = default;
 
 		void Reset();
 		wxDirName GetPath() const;
@@ -89,7 +89,7 @@ namespace Panels
 		DirPickerPanel*	m_dirpicker_custom;
 
 	public:
-		virtual ~DocsFolderPickerPanel() throw() { }
+		virtual ~DocsFolderPickerPanel() = default;
 		DocsFolderPickerPanel( wxWindow* parent, bool isFirstTime = true );
 
 		void Apply();
@@ -109,7 +109,7 @@ namespace Panels
 		wxComboBox*		m_picker;
 
 	public:
-		virtual ~LanguageSelectionPanel() throw() { }
+		virtual ~LanguageSelectionPanel() = default;
 		LanguageSelectionPanel( wxWindow* parent, bool showApply = true );
 
 		void Apply();
@@ -135,7 +135,7 @@ namespace Panels
 
 	public:
 		BaseAdvancedCpuOptions( wxWindow* parent );
-		virtual ~BaseAdvancedCpuOptions() throw() { }
+		virtual ~BaseAdvancedCpuOptions() = default;
 
 		void RestoreDefaults();
 
@@ -151,7 +151,7 @@ namespace Panels
 	{
 	public:
 		AdvancedOptionsFPU( wxWindow* parent );
-		virtual ~AdvancedOptionsFPU() throw() { }
+		virtual ~AdvancedOptionsFPU() = default;
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();
 		void ApplyConfigToGui( AppConfig& configToApply, int flags=0 );
@@ -161,7 +161,7 @@ namespace Panels
 	{
 	public:
 		AdvancedOptionsVU( wxWindow* parent );
-		virtual ~AdvancedOptionsVU() throw() { }
+		virtual ~AdvancedOptionsVU() = default;
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();
 		void ApplyConfigToGui( AppConfig& configToApply, int flags=0 );
@@ -182,7 +182,7 @@ namespace Panels
 
 	public:
 		CpuPanelEE( wxWindow* parent );
-		virtual ~CpuPanelEE() throw() {}
+		virtual ~CpuPanelEE() = default;
 
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();
@@ -203,7 +203,7 @@ namespace Panels
 
 	public:
 		CpuPanelVU( wxWindow* parent );
-		virtual ~CpuPanelVU() throw() {}
+		virtual ~CpuPanelVU() = default;
 
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();
@@ -226,7 +226,7 @@ namespace Panels
 
 	public:
 		FrameSkipPanel( wxWindow* parent );
-		virtual	~FrameSkipPanel() throw() {}
+		virtual	~FrameSkipPanel() = default;
 
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();
@@ -253,7 +253,7 @@ namespace Panels
 
 	public:
 		FramelimiterPanel( wxWindow* parent );
-		virtual ~FramelimiterPanel() throw() {}
+		virtual ~FramelimiterPanel() = default;
 
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();
@@ -293,7 +293,7 @@ namespace Panels
 
 	public:
 		GSWindowSettingsPanel( wxWindow* parent );
-		virtual ~GSWindowSettingsPanel() throw() {}
+		virtual ~GSWindowSettingsPanel() = default;
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();
 		void ApplyConfigToGui( AppConfig& configToApply, int flags=0 );
@@ -309,7 +309,7 @@ namespace Panels
 
 	public:
 		VideoPanel( wxWindow* parent );
-		virtual ~VideoPanel() throw() {}
+		virtual ~VideoPanel() = default;
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();
 		void ApplyConfigToGui( AppConfig& configToApply, int flags=0 );
@@ -343,7 +343,7 @@ namespace Panels
 		pxCheckBox*		m_check_vuThread;
 
 	public:
-		virtual ~SpeedHacksPanel() throw() {}
+		virtual ~SpeedHacksPanel() = default;
 		SpeedHacksPanel( wxWindow* parent );
 		void Apply();
 		void EnableStuff( AppConfig* configToUse=NULL );
@@ -374,7 +374,7 @@ namespace Panels
 
 	public:
 		GameFixesPanel( wxWindow* parent );
-		virtual ~GameFixesPanel() throw() { }
+		virtual ~GameFixesPanel() = default;
 		void EnableStuff( AppConfig* configToUse=NULL );
 		void OnEnable_Toggled( wxCommandEvent& evt );
 		void Apply();
@@ -402,7 +402,7 @@ namespace Panels
 
 	public:
 		GameDatabasePanel( wxWindow* parent );
-		virtual ~GameDatabasePanel() throw() { }
+		virtual ~GameDatabasePanel() = default;
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();
 

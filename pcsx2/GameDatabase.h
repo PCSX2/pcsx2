@@ -178,7 +178,7 @@ struct Game_Data
 class IGameDatabase
 {
 public:
-	virtual ~IGameDatabase() throw() {}
+	virtual ~IGameDatabase() = default;
 
 	virtual wxString getBaseKey() const=0;
 	virtual bool findGame(Game_Data& dest, const wxString& id)=0;

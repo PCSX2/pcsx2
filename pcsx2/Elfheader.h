@@ -142,7 +142,7 @@ class ElfObject
 
 		// Destructor!
 		// C++ does all the cleanup automagically for us.
-		virtual ~ElfObject() throw() { }
+		virtual ~ElfObject() = default;
 
 		ElfObject(const wxString& srcfile, IsoFile& isofile);
 		ElfObject( const wxString& srcfile, uint hdrsize );

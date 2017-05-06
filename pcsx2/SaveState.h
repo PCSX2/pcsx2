@@ -232,7 +232,7 @@ protected:
 	static const int MemoryBaseAllocSize	= _8mb;			// 8 meg base alloc when PS2 main memory is excluded
 
 public:
-	virtual ~memSavingState() throw() { }
+	virtual ~memSavingState() = default;
 	memSavingState( VmStateBuffer& save_to );
 	memSavingState( VmStateBuffer* save_to );
 

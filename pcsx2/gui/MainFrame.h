@@ -80,7 +80,7 @@ public:
 		m_menu_cmd = menu_command;
 	}
 	
-	virtual ~InvokeMenuCommand_OnSysStateUnlocked() throw() {}
+	virtual ~InvokeMenuCommand_OnSysStateUnlocked() = default;
 
 	virtual void SaveStateAction_OnCreateFinished()
 	{

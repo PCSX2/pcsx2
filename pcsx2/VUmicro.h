@@ -126,7 +126,7 @@ public:
 		m_Idx		   = 0;
 		m_lastEEcycles = 0;
 	}
-	virtual ~BaseVUmicroCPU() throw() {}
+	virtual ~BaseVUmicroCPU() = default;
 
 	// Called by the PS2 VM's event manager for every internal vertical sync (occurs at either
 	// 50hz (pal) or 59.94hz (NTSC).
