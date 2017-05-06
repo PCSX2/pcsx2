@@ -55,10 +55,6 @@ GPUState::GPUState()
 	Reset();
 }
 
-GPUState::~GPUState()
-{
-}
-
 void GPUState::Reset()
 {
 	m_env.Reset();

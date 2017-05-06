@@ -158,9 +158,6 @@ GSDumpRaw::GSDumpRaw(char* filename, const char* repack_filename) : GSDumpFile(f
 	m_start     = 0;
 }
 
-GSDumpRaw::~GSDumpRaw() {
-}
-
 bool GSDumpRaw::IsEof() {
 	return feof(m_fp);
 }

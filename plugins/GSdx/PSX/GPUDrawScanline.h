@@ -56,7 +56,7 @@ protected:
 
 public:
 	GPUDrawScanline();
-	virtual ~GPUDrawScanline();
+	virtual ~GPUDrawScanline() = default;
 
 	// IDrawScanline
 

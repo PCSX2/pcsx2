@@ -78,7 +78,7 @@ class GSDumpRaw : public GSDumpFile {
 	public:
 
 	GSDumpRaw(char* filename, const char* repack_filename);
-	virtual ~GSDumpRaw();
+	virtual ~GSDumpRaw() = default;
 
 	bool IsEof();
 	void Read(void* ptr, size_t size);

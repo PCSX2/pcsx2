@@ -124,7 +124,7 @@ public:
 
 public:
 	GPUState();
-	virtual ~GPUState();
+	virtual ~GPUState() = default;
 
 	virtual void Reset();
 	virtual void Flush();

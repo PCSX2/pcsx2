@@ -35,10 +35,6 @@ GSDrawScanline::GSDrawScanline()
 	m_local.gd = &m_global;
 }
 
-GSDrawScanline::~GSDrawScanline()
-{
-}
-
 void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 {
 	memcpy(&m_global, &((const SharedData*)data)->global, sizeof(m_global));
