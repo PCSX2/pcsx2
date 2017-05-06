@@ -59,7 +59,7 @@ BaseDeletableObject::BaseDeletableObject()
     m_IsBeingDeleted.store(false, std::memory_order_relaxed);
 }
 
-BaseDeletableObject::~BaseDeletableObject() throw()
+BaseDeletableObject::~BaseDeletableObject()
 {
     AffinityAssert_AllowFrom_MainUI();
 }

@@ -34,5 +34,5 @@ protected:
 
 public:
     SingleCoreAffinity();
-    virtual ~SingleCoreAffinity() throw();
+    virtual ~SingleCoreAffinity();
 };

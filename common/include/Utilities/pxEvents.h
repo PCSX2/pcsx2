@@ -149,7 +149,7 @@ public:
 
     pxExceptionEvent(const BaseException &ex);
 
-    virtual ~pxExceptionEvent() throw()
+    virtual ~pxExceptionEvent()
     {
     }
 

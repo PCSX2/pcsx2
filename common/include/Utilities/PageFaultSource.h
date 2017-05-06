@@ -67,7 +67,7 @@ class EventListener_PageFault : public IEventListener_PageFault
 {
 public:
     EventListener_PageFault();
-    virtual ~EventListener_PageFault() throw();
+    virtual ~EventListener_PageFault();
 };
 
 template <typename TypeToDispatchTo>
@@ -157,7 +157,7 @@ protected:
 
 public:
     VirtualMemoryReserve(const wxString &name = wxEmptyString, size_t size = 0);
-    virtual ~VirtualMemoryReserve() throw()
+    virtual ~VirtualMemoryReserve()
     {
         Release();
     }

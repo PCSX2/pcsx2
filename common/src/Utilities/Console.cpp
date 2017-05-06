@@ -465,7 +465,7 @@ ConsoleColorScope::ConsoleColorScope(ConsoleColors newcolor)
     EnterScope();
 }
 
-ConsoleColorScope::~ConsoleColorScope() throw()
+ConsoleColorScope::~ConsoleColorScope()
 {
     LeaveScope();
 }
@@ -491,7 +491,7 @@ ConsoleIndentScope::ConsoleIndentScope(int tabs)
     EnterScope();
 }
 
-ConsoleIndentScope::~ConsoleIndentScope() throw()
+ConsoleIndentScope::~ConsoleIndentScope()
 {
     try {
         LeaveScope();
@@ -517,7 +517,7 @@ ConsoleAttrScope::ConsoleAttrScope(ConsoleColors newcolor, int indent)
     Console.SetColor(newcolor);
 }
 
-ConsoleAttrScope::~ConsoleAttrScope() throw()
+ConsoleAttrScope::~ConsoleAttrScope()
 {
     try {
         Console.SetColor(m_old_color);

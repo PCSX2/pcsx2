@@ -55,7 +55,7 @@ T *SafeArray<T>::_virtual_realloc(int newsize)
 }
 
 template <typename T>
-SafeArray<T>::~SafeArray() throw()
+SafeArray<T>::~SafeArray()
 {
     safe_free(m_ptr);
 }
@@ -138,7 +138,7 @@ T *SafeAlignedArray<T, Alignment>::_virtual_realloc(int newsize)
 // Maybe useful,maybe not... no harm in attaching it. :D
 
 template <typename T, uint Alignment>
-SafeAlignedArray<T, Alignment>::~SafeAlignedArray() throw()
+SafeAlignedArray<T, Alignment>::~SafeAlignedArray()
 {
     safe_aligned_free(this->m_ptr);
     // mptr is set to null, so the parent class's destructor won't re-free it.
@@ -172,7 +172,7 @@ T *SafeList<T>::_virtual_realloc(int newsize)
 }
 
 template <typename T>
-SafeList<T>::~SafeList() throw()
+SafeList<T>::~SafeList()
 {
     safe_free(m_ptr);
 }

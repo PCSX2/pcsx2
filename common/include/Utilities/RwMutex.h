@@ -31,7 +31,7 @@ protected:
 
 public:
     RwMutex();
-    virtual ~RwMutex() throw();
+    virtual ~RwMutex();
 
     virtual void AcquireRead();
     virtual void AcquireWrite();
@@ -58,7 +58,7 @@ public:
     {
     }
 
-    virtual ~BaseScopedReadWriteLock() throw();
+    virtual ~BaseScopedReadWriteLock();
 
     void Release();
     bool IsLocked() const { return m_IsLocked; }

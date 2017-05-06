@@ -153,7 +153,7 @@ public:
         m_boolme = &boolme;
     }
 
-    ~ScopedBool() throw()
+    ~ScopedBool()
     {
         *m_boolme = false;
     }

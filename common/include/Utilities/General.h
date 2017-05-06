@@ -56,7 +56,7 @@ public:
         ++Counter;
     }
 
-    virtual ~RecursionGuard() throw()
+    virtual ~RecursionGuard()
     {
         --Counter;
     }
@@ -126,7 +126,7 @@ protected:
 
 public:
     BaseDeletableObject();
-    virtual ~BaseDeletableObject() throw();
+    virtual ~BaseDeletableObject();
 
     void DeleteSelf();
     bool IsBeingDeleted() { return !!m_IsBeingDeleted; }

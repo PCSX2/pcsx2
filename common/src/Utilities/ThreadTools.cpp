@@ -57,7 +57,7 @@ public:
     {
     }
 
-    virtual ~StaticMutex() throw()
+    virtual ~StaticMutex()
     {
         m_DeletedFlag = true;
     }
@@ -184,7 +184,7 @@ Threading::pxThread::pxThread(const wxString &name)
 //
 // Thread safety: This class must not be deleted from its own thread.  That would be
 // like marrying your sister, and then cheating on her with your daughter.
-Threading::pxThread::~pxThread() throw()
+Threading::pxThread::~pxThread()
 {
     try {
         pxThreadLog.Write(GetName(), L"Executing default destructor!");
@@ -758,7 +758,7 @@ Threading::WaitEvent::WaitEvent()
 	err = pthread_mutex_init(&mutex, NULL);
 }
 
-Threading::WaitEvent::~WaitEvent() throw()
+Threading::WaitEvent::~WaitEvent()
 {
 	pthread_cond_destroy( &cond );
 	pthread_mutex_destroy( &mutex );

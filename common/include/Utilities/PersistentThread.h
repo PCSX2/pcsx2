@@ -114,7 +114,7 @@ protected:
 
 
 public:
-    virtual ~pxThread() throw();
+    virtual ~pxThread();
     pxThread(const wxString &name = L"pxThread");
 
     pthread_t GetId() const { return m_thread; }

@@ -189,7 +189,7 @@ public:
     // Constructor: The specified number of tabs will be appended to the current indentation
     // setting.  The tabs will be unrolled when the object leaves scope or is destroyed.
     ConsoleIndentScope(int tabs = 1);
-    virtual ~ConsoleIndentScope() throw();
+    virtual ~ConsoleIndentScope();
     void EnterScope();
     void LeaveScope();
 };
@@ -208,7 +208,7 @@ protected:
 
 public:
     ConsoleColorScope(ConsoleColors newcolor);
-    virtual ~ConsoleColorScope() throw();
+    virtual ~ConsoleColorScope();
     void EnterScope();
     void LeaveScope();
 };
@@ -228,7 +228,7 @@ protected:
 
 public:
     ConsoleAttrScope(ConsoleColors newcolor, int indent = 0);
-    virtual ~ConsoleAttrScope() throw();
+    virtual ~ConsoleAttrScope();
 };
 
 extern IConsoleWriter Console;

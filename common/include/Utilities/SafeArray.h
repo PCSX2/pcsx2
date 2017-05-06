@@ -57,7 +57,7 @@ protected:
     T *_getPtr(uint i) const;
 
 public:
-    virtual ~SafeArray() throw();
+    virtual ~SafeArray();
 
     explicit SafeArray(const wxChar *name = L"Unnamed");
     explicit SafeArray(int initialSize, const wxChar *name = L"Unnamed");
@@ -137,7 +137,7 @@ protected:
     T *_getPtr(uint i) const;
 
 public:
-    virtual ~SafeList() throw();
+    virtual ~SafeList();
     explicit SafeList(const wxChar *name = L"Unnamed");
     explicit SafeList(int initialSize, const wxChar *name = L"Unnamed");
     virtual SafeList<T> *Clone() const;
@@ -203,7 +203,7 @@ protected:
 public:
     using _parent::operator[];
 
-    virtual ~SafeAlignedArray() throw();
+    virtual ~SafeAlignedArray();
 
     explicit SafeAlignedArray(const wxChar *name = L"Unnamed")
         : SafeArray<T>::SafeArray(name)
