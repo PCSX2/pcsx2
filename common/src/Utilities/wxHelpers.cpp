@@ -132,10 +132,6 @@ wxDialogWithHelpers::wxDialogWithHelpers(wxWindow *parent, const wxString &title
     SetMinSize(cflags.MinimumSize);
 }
 
-wxDialogWithHelpers::~wxDialogWithHelpers() throw()
-{
-}
-
 void wxDialogWithHelpers::Init(const pxDialogCreationFlags &cflags)
 {
 // Note to self: if any comments indicate platform specific behaviour then

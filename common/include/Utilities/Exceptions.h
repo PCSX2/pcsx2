@@ -85,7 +85,7 @@ protected:
     wxString m_message_user; // (translated) a "detailed" message of what disastrous thing has occurred!
 
 public:
-    virtual ~BaseException() throw() = 0; // the =0; syntax forces this class into "abstract" mode.
+    virtual ~BaseException() = default;
 
     const wxString &DiagMsg() const { return m_message_diag; }
     const wxString &UserMsg() const { return m_message_user; }

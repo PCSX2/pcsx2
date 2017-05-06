@@ -132,10 +132,6 @@ FastFormatUnicode::FastFormatUnicode()
     Clear();
 }
 
-FastFormatUnicode::~FastFormatUnicode() throw()
-{
-}
-
 void FastFormatUnicode::Clear()
 {
     m_Length = 0;
@@ -259,10 +255,6 @@ FastFormatAscii::FastFormatAscii()
     : m_dest(2048)
 {
     Clear();
-}
-
-FastFormatAscii::~FastFormatAscii() throw()
-{
 }
 
 void FastFormatAscii::Clear()
