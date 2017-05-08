@@ -14,10 +14,11 @@ set(CommonFlags
     -Wno-unknown-pragmas
     -Wno-parentheses
     -Wunused-variable # __dummy variable need to be investigated
+    -DLZMA_SUPPORTED  # must be always supported on linux
     )
 
 if(USE_ICC)
-	set(CommonFlags "${CommonFlags} -restrict")
+    set(CommonFlags "${CommonFlags} -restrict")
 endif()
 
 set(GSdxFinalFlags ${CommonFlags})
@@ -41,9 +42,6 @@ if(EGL_API AND EGL_FOUND)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DEGL_SUPPORTED)
 endif()
 
-if(LIBLZMA_FOUND)
-	set(GSdxFinalFlags ${GSdxFinalFlags} -DLZMA_SUPPORTED)
-endif()
 
 if(OPENCL_API)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DENABLE_OPENCL)
@@ -276,14 +274,11 @@ set(GSdxFinalLibs
     ${LIBC_LIBRARIES}
     ${PNG_LIBRARIES}
     ${FREETYPE_LIBRARIES}
+    ${LIBLZMA_LIBRARIES}
 )
 
 if(EGL_API AND EGL_FOUND)
     set(GSdxFinalLibs ${GSdxFinalLibs} ${EGL_LIBRARIES})
-endif()
-
-if(LIBLZMA_FOUND)
-    set(GSdxFinalLibs ${GSdxFinalLibs} ${LIBLZMA_LIBRARIES})
 endif()
 
 if(USE_VTUNE)
