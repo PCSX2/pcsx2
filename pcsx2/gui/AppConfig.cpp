@@ -535,7 +535,7 @@ AppConfig::AppConfig()
 {
 	LanguageId			= wxLANGUAGE_DEFAULT;
 	LanguageCode		= L"default";
-	RecentIsoCount		= 12;
+	RecentIsoCount		= 20;
 	Listbook_ImageSize	= 32;
 	Toolbar_ImageSize	= 24;
 	Toolbar_ShowLabels	= true;
