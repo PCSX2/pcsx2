@@ -218,11 +218,11 @@ else()
 endif()
 
 ################################### Replay Loader
-if(BUILD_REPLAY_LOADERS)
+if(BUILD_REPLAY_LOADERS AND NOT GSdx)
     set(Replay pcsx2_GSReplayLoader)
     set(GSdxReplayLoaderFinalSources
         ${GSdxFinalSources}
         linux_replay.cpp
     )
     add_pcsx2_executable(${Replay} "${GSdxReplayLoaderFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
-endif(BUILD_REPLAY_LOADERS)
+endif()
