@@ -20,7 +20,22 @@ if(USE_ICC)
 	set(CommonFlags "${CommonFlags} -restrict")
 endif()
 
+if(CMAKE_COMPILER_IS_GNUCXX)
+	# Newer version default to a correct ABI
+	if (${GCC_VERSION} VERSION_LESS "5.1")
+		set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
+	endif()
+	# github issue 1937
+	if (${GCC_VERSION} VERSION_GREATER "7.0")
+		set(GSdxFinalFlags ${GSdxFinalFlags} -fno-gcse-lm -fno-tree-pre)
+	endif()
+endif()
+
 set(GSdxFinalFlags ${CommonFlags})
+
+if(CMAKE_COMPILER_IS_GNUCXX AND (${GCC_VERSION} VERSION_LESS "5.0"))
+    set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
+endif()
 
 if(XDG_STD)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DXDG_STD)
@@ -32,11 +47,6 @@ endif()
 
 if(LIBLZMA_FOUND)
 	set(GSdxFinalFlags ${GSdxFinalFlags} -DLZMA_SUPPORTED)
-endif()
-
-#Clang doesn't support a few common flags that GCC does.
-if(NOT USE_CLANG)
-    set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
 endif()
 
 if(OPENCL_API)

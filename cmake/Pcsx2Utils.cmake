@@ -69,6 +69,8 @@ function(check_compiler_version version_warn version_err)
                 message(WARNING "PCSX2 will stop supporting GCC ${GCC_VERSION} in the near future. Please upgrade to at least GCC ${version_warn}.")
             endif()
         endif()
+
+        set(GCC_VERSION "${GCC_VERSION}" PARENT_SCOPE)
     endif()
 endfunction()
 
