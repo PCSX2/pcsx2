@@ -21,9 +21,6 @@
 
 static std::string KeyName(int pad, int key, int keysym)
 {
-    if (!keysym)
-        return "";
-
     // Mouse
     if (keysym < 10) {
         switch (keysym) {
