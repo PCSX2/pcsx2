@@ -119,6 +119,7 @@ JoystickInfo::JoystickInfo(int id)
     : GamePad()
     , m_controller(nullptr)
     , m_haptic(nullptr)
+    , m_unique_id(0)
 {
     SDL_Joystick *joy = nullptr;
     m_effects_id.fill(-1);
