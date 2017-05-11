@@ -264,6 +264,8 @@ namespace Emulate_DSA {
 
 namespace GLLoader {
 
+	bool s_first_load = true;
+
 	bool legacy_fglrx_buggy_driver = false;
 	bool fglrx_buggy_driver    = false;
 	bool mesa_buggy_driver     = false;
@@ -304,10 +306,12 @@ namespace GLLoader {
 			return found;
 		}
 
-		if (!found) {
-			fprintf(stdout, "INFO: %s is NOT SUPPORTED\n", name.c_str());
-		} else {
-			fprintf(stdout, "INFO: %s is available\n", name.c_str());
+		if (s_first_load) {
+			if (!found) {
+				fprintf(stdout, "INFO: %s is NOT SUPPORTED\n", name.c_str());
+			} else {
+				fprintf(stdout, "INFO: %s is available\n", name.c_str());
+			}
 		}
 
 		std::string opt("override_");
@@ -332,7 +336,8 @@ namespace GLLoader {
 		while (s[v] != '\0' && s[v-1] != ' ') v++;
 
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
-		fprintf(stdout, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[v]);
+		if (s_first_load)
+			fprintf(stdout, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[v]);
 
 		// Name changed but driver is still bad!
 		if (strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI Technologies Inc.") || strstr(vendor, "ATI"))
@@ -461,8 +466,20 @@ namespace GLLoader {
 		}
 #endif
 
-		fprintf(stdout, "\n");
+		if (s_first_load)
+			fprintf(stdout, "\n");
 
 		return status;
+	}
+
+	void check_gl_requirements()
+	{
+		if (!GLLoader::check_gl_version(3, 3))
+			throw GSDXRecoverableError();
+
+		if (!GLLoader::check_gl_supported_extension())
+			throw GSDXRecoverableError();
+
+		s_first_load = false;
 	}
 }

@@ -356,9 +356,7 @@ extern PFNGLGENERATEMIPMAPPROC                  glGenerateMipmap;
 
 
 namespace GLLoader {
-	bool check_gl_version(int major, int minor);
-	void init_gl_function();
-	bool check_gl_supported_extension();
+	void check_gl_requirements();
 
 	extern bool fglrx_buggy_driver;
 	extern bool legacy_fglrx_buggy_driver;

@@ -181,9 +181,5 @@ void GSWndGL::PopulateGlFunction()
 
 	// Check openGL requirement as soon as possible so we can switch to another
 	// renderer/device
-	if (!GLLoader::check_gl_version(3, 3))
-		throw GSDXRecoverableError();
-
-	if (!GLLoader::check_gl_supported_extension())
-		throw GSDXRecoverableError();
+	GLLoader::check_gl_requirements();
 }
