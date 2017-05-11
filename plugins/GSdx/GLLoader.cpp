@@ -306,8 +306,6 @@ namespace GLLoader {
 
 		if (!found) {
 			fprintf(stdout, "INFO: %s is NOT SUPPORTED\n", name.c_str());
-		} else {
-			fprintf(stdout, "INFO: %s is available\n", name.c_str());
 		}
 
 		std::string opt("override_");
