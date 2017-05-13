@@ -256,12 +256,23 @@ void Threading::pxThread::Start()
     if (pthread_create(&m_thread, NULL, _internal_callback, this) != 0)
         throw Exception::ThreadCreationError(this).SetDiagMsg(L"Thread creation error: " + wxString(std::strerror(errno)));
 
+#ifdef ASAN_WORKAROUND
+    // Recent Asan + libc6 do pretty bad stuff on the thread init => https://gcc.gnu.org/bugzilla/show_bug.cgi?id=77982
+    //
+    // In our case, the semaphore was posted (counter is 1) but thread is still
+    // waiting...  So waits 100ms and checks the counter value manually
+    if (!m_sem_startup.WaitWithoutYield(wxTimeSpan(0, 0, 0, 100))) {
+        if (m_sem_startup.Count() == 0)
+            throw Exception::ThreadCreationError(this).SetDiagMsg(L"Thread creation error: %s thread never posted startup semaphore.");
+    }
+#else
     if (!m_sem_startup.WaitWithoutYield(wxTimeSpan(0, 0, 3, 0))) {
         RethrowException();
 
         // And if the thread threw nothing of its own:
         throw Exception::ThreadCreationError(this).SetDiagMsg(L"Thread creation error: %s thread never posted startup semaphore.");
     }
+#endif
 
     // Event Rationale (above): Performing this semaphore wait on the created thread is "slow" in the
     // sense that it stalls the calling thread completely until the new thread is created
