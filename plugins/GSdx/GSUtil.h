@@ -37,6 +37,8 @@ struct OCLDeviceDesc
 class GSUtil
 {
 public:
+	static void Init();
+
 	static const char* GetLibName();
 
 	static GS_PRIM_CLASS GetPrimClass(uint32 prim);

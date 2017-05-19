@@ -128,6 +128,7 @@ EXPORT_C_(int) GSinit()
 	// const type qualifier from all the affected variables.
 	theApp.Init();
 
+	GSUtil::Init();
 	GSBlock::InitVectors();
 	GSClut::InitVectors();
 #ifdef ENABLE_OPENCL
