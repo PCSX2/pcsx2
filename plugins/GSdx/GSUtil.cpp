@@ -102,7 +102,8 @@ public:
 	uint32 CompatibleBitsField[64][2];
 	uint32 SharedBitsField[64][2];
 
-	GSUtilMaps()
+	// Defer init to avoid AVX2 illegal instructions
+	void Init()
 	{
 		PrimClassField[GS_POINTLIST] = GS_POINT_CLASS;
 		PrimClassField[GS_LINELIST] = GS_LINE_CLASS;
@@ -162,6 +163,11 @@ public:
 	}
 
 } s_maps;
+
+void GSUtil::Init()
+{
+	s_maps.Init();
+}
 
 GS_PRIM_CLASS GSUtil::GetPrimClass(uint32 prim)
 {
