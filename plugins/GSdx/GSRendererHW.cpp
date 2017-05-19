@@ -65,6 +65,12 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 
 void GSRendererHW::SetScaling()
 {
+	if (!m_upscale_multiplier)
+	{
+		CustomResolutionScaling();
+		return;
+	}
+
 	GSVector2i crtc_size(GetDisplayRect().width(), GetDisplayRect().height());
 
 	// Details of (potential) perf impact of a big framebuffer
@@ -111,52 +117,6 @@ void GSRendererHW::SetScaling()
 	int upscaled_fb_w = fb_width * m_upscale_multiplier;
 	int upscaled_fb_h = fb_height * m_upscale_multiplier;
 	bool good_rt_size = m_width >= upscaled_fb_w && m_height >= upscaled_fb_h;
-	bool initialized_register_state = (m_context->FRAME.FBW > 1) && (crtc_size.y > 1);
-
-	if (!m_upscale_multiplier && initialized_register_state)
-	{
-		if (m_height == m_custom_height)
-		{
-			const float scaling_ratio = ceil(static_cast<float>(m_custom_height) / crtc_size.y);
-			// Avoid using a scissor value which is too high, developers can even leave the scissor to max (2047)
-			// at some cases when they don't want to limit the rendering size. Our assumption is that developers
-			// set the scissor to the actual data in the buffer. Let's use the scissoring value only at such cases
-			const int scissor_height = std::min(640u, (m_context->SCISSOR.SCAY1 - m_context->SCISSOR.SCAY0) + 1);
-			const int single_buffer_size = std::max(GetDisplayRect().height(), scissor_height);
-
-			// We have two contexts of framebuffer height -
-			// One for lower memory consumption and low accuracy
-			// Another one for higher memory consumption at necessary scenarios for higher accuracy
-			std::array<int, 2> framebuffer_height;
-			// When Large Framebuffer is disabled - Let's only consider the height of the display rectangle
-			// as the base (This is wrong implementation when we consider it theoretically as CRTC has no relation
-			// to the Framebuffer size)
-			framebuffer_height[0] = static_cast<int>(round((crtc_size.y * scaling_ratio)));
-			// When Large Framebuffer is enabled - We also consider for potential scissor sizes which are around
-			// the size of the actual image data stored. (Helps ICO to properly scale to right size by help of the
-			// scissoring values) Display rectangle has a height of 256 but scissor has a height of 512 which seems to
-			// be the real buffer size.
-			framebuffer_height[1] = static_cast<int>(round(single_buffer_size * scaling_ratio));
-
-			m_tc->RemovePartial();
-			m_width = std::max(m_width, native_buffer.x);
-			m_height = std::max(framebuffer_height[m_large_framebuffer], native_buffer.y);
-
-			std::string overhead = to_string(framebuffer_height[1] - framebuffer_height[0]);
-			std::string message = "(Custom resolution) Framebuffer size set to " + to_string(crtc_size.x) + "x" + to_string(crtc_size.y);
-			message += " (" + to_string(m_width) + "x" + to_string(m_height) + ")\n";
-
-			if (m_large_framebuffer)
-			{
-				message += "Additional " + overhead + " pixels overhead by enabling Large Framebuffer\n";
-			}
-			else
-			{
-				message += "Saved " + overhead + " pixels overhead by disabling Large Framebuffer\n";
-			}
-			printf("%s", message);
-		}
-	}
 
 	// No need to resize for native/custom resolutions as default size will be enough for native and we manually get RT Buffer size for custom.
 	// don't resize until the display rectangle and register states are stabilized.
@@ -167,6 +127,53 @@ void GSRendererHW::SetScaling()
 	m_width = upscaled_fb_w;
 	m_height = upscaled_fb_h;
 	printf("Frame buffer size set to  %dx%d (%dx%d)\n", fb_width, fb_height , m_width, m_height);
+}
+
+void GSRendererHW::CustomResolutionScaling()
+{
+	const int crtc_width = GetDisplayRect().width();
+	const int crtc_height = GetDisplayRect().height();
+	const float scaling_ratio = std::ceil(static_cast<float>(m_custom_height) / crtc_height);
+	// Avoid using a scissor value which is too high, developers can even leave the scissor to max (2047)
+	// at some cases when they don't want to limit the rendering size. Our assumption is that developers
+	// set the scissor to the actual data in the buffer. Let's use the scissoring value only at such cases
+	const int scissor_height = std::min(640, static_cast<int>(m_context->SCISSOR.SCAY1 - m_context->SCISSOR.SCAY0) + 1);
+	const int single_buffer_size = std::max(GetDisplayRect().height(), scissor_height);
+
+	// We have two contexts of framebuffer height -
+	// One for lower memory consumption and low accuracy
+	// Another one for higher memory consumption at necessary scenarios for higher accuracy
+	std::array<int, 2> framebuffer_height;
+	// When Large Framebuffer is disabled - Let's only consider the height of the display rectangle
+	// as the base (This is wrong implementation when we consider it theoretically as CRTC has no relation
+	// to the Framebuffer size)
+	framebuffer_height[0] = static_cast<int>(std::round((crtc_height * scaling_ratio)));
+	// When Large Framebuffer is enabled - We also consider for potential scissor sizes which are around
+	// the size of the actual image data stored. (Helps ICO to properly scale to right size by help of the
+	// scissoring values) Display rectangle has a height of 256 but scissor has a height of 512 which seems to
+	// be the real buffer size.
+	framebuffer_height[1] = static_cast<int>(std::round(single_buffer_size * scaling_ratio));
+
+	if (m_width >= m_custom_width && m_height >= framebuffer_height[m_large_framebuffer])
+		return;
+
+	m_tc->RemovePartial();
+	m_width = std::max(m_width, native_buffer.x);
+	m_height = std::max(framebuffer_height[m_large_framebuffer], native_buffer.y);
+
+	std::string overhead = std::to_string(framebuffer_height[1] - framebuffer_height[0]);
+	std::string message = "(Custom resolution) Framebuffer size set to " + std::to_string(crtc_width) + "x" + std::to_string(crtc_height);
+	message += " (" + std::to_string(m_width) + "x" + std::to_string(m_height) + ")\n";
+
+	if (m_large_framebuffer)
+	{
+		message += "Additional " + overhead + " pixels overhead by enabling Large Framebuffer\n";
+	}
+	else
+	{
+		message += "Saved " + overhead + " pixels overhead by disabling Large Framebuffer\n";
+	}
+	printf("%s", message.c_str());
 }
 
 GSRendererHW::~GSRendererHW()
