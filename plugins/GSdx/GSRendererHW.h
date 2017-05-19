@@ -156,6 +156,7 @@ protected:
 
 	GSVector2i m_lod; // Min & Max level of detail
 	const GSVector2i native_buffer = GSVector2i(1280, 1024);
+	void CustomResolutionScaling();
 
 public:
 	GSRendererHW(GSTextureCache* tc);
