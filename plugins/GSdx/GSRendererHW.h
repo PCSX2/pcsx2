@@ -155,6 +155,7 @@ protected:
 	bool m_channel_shuffle;
 
 	GSVector2i m_lod; // Min & Max level of detail
+	const GSVector2i native_buffer = GSVector2i(1280, 1024);
 
 public:
 	GSRendererHW(GSTextureCache* tc);
