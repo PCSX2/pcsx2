@@ -23,9 +23,9 @@
 #include "GSRendererHW.h"
 
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
-	: m_width(1280)
-	, m_height(1024)
-	, m_custom_width(1280)
+	: m_width(native_buffer.x)
+	, m_height(native_buffer.y)
+	, m_custom_width(1024)
 	, m_custom_height(1024)
 	, m_reset(false)
 	, m_upscale_multiplier(1)
@@ -117,13 +117,44 @@ void GSRendererHW::SetScaling()
 	{
 		if (m_height == m_custom_height)
 		{
-			float ratio = ceil(static_cast<float>(m_height) / crtc_size.y);
-			float buffer_scale_offset = (m_large_framebuffer) ? ratio : 0.5f;
-			ratio = round(ratio + buffer_scale_offset);
+			const float scaling_ratio = ceil(static_cast<float>(m_custom_height) / crtc_size.y);
+			// Avoid using a scissor value which is too high, developers can even leave the scissor to max (2047)
+			// at some cases when they don't want to limit the rendering size. Our assumption is that developers
+			// set the scissor to the actual data in the buffer. Let's use the scissoring value only at such cases
+			const int scissor_height = std::min(640u, (m_context->SCISSOR.SCAY1 - m_context->SCISSOR.SCAY0) + 1);
+			const int single_buffer_size = std::max(GetDisplayRect().height(), scissor_height);
+
+			// We have two contexts of framebuffer height -
+			// One for lower memory consumption and low accuracy
+			// Another one for higher memory consumption at necessary scenarios for higher accuracy
+			std::array<int, 2> framebuffer_height;
+			// When Large Framebuffer is disabled - Let's only consider the height of the display rectangle
+			// as the base (This is wrong implementation when we consider it theoretically as CRTC has no relation
+			// to the Framebuffer size)
+			framebuffer_height[0] = static_cast<int>(round((crtc_size.y * scaling_ratio)));
+			// When Large Framebuffer is enabled - We also consider for potential scissor sizes which are around
+			// the size of the actual image data stored. (Helps ICO to properly scale to right size by help of the
+			// scissoring values) Display rectangle has a height of 256 but scissor has a height of 512 which seems to
+			// be the real buffer size.
+			framebuffer_height[1] = static_cast<int>(round(single_buffer_size * scaling_ratio));
 
 			m_tc->RemovePartial();
-			m_width = max(m_width, 1280);
-			m_height = max(static_cast<int>(crtc_size.y * ratio) , 1024);
+			m_width = std::max(m_width, native_buffer.x);
+			m_height = std::max(framebuffer_height[m_large_framebuffer], native_buffer.y);
+
+			std::string overhead = to_string(framebuffer_height[1] - framebuffer_height[0]);
+			std::string message = "(Custom resolution) Framebuffer size set to " + to_string(crtc_size.x) + "x" + to_string(crtc_size.y);
+			message += " (" + to_string(m_width) + "x" + to_string(m_height) + ")\n";
+
+			if (m_large_framebuffer)
+			{
+				message += "Additional " + overhead + " pixels overhead by enabling Large Framebuffer\n";
+			}
+			else
+			{
+				message += "Saved " + overhead + " pixels overhead by disabling Large Framebuffer\n";
+			}
+			printf("%s", message);
 		}
 	}
 
