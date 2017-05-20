@@ -511,8 +511,12 @@ REG64_(GSReg, SYNCH2)
 REG_END
 
 REG64_(GSReg, SYNCV)
-	uint64 _DUMMY;
-	// TODO
+	uint32 VFP:10; // Vertical Front Porchinterval (?s)
+	uint32 VFPE:10; // Vertical Front Porchinterval End (?s)
+	uint32 VBP:12; // Vertical Back Porchinterval (?s)
+	uint32 VBPE:10; // Vertical Back Porchinterval End (?s)
+	uint32 VDP:11; // Vertical Differential Phase
+	uint32 VS:11; // Vertical Synchronization Timing
 REG_END
 
 REG64_SET(GSReg)
@@ -1357,9 +1361,13 @@ struct GSPrivRegSet
 				SYNCH2.u32[1]
 			   );
 
-		fprintf(fp, "SYNCV %08x_%08x\n",
-				SYNCV.u32[0],
-				SYNCV.u32[1]
+		fprintf(fp, "SYNCV VBP=%u VBPE=%u VDP=%u VFP=%u VFPE=%u VS=%u\n",
+				SYNCV.VBP,
+				SYNCV.VBPE,
+				SYNCV.VDP,
+				SYNCV.VFP,
+				SYNCV.VFPE,
+				SYNCV.VS
 			   );
 
 		fprintf(fp, "CSR %08x_%08x\n",
