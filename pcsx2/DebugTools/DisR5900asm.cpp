@@ -20,7 +20,10 @@
 #include <cstdarg>
 #endif
 
+#define PCSX2_DEBUG_INTERNAL
 #include "Debug.h"
+#undef PCSX2_DEBUG_INTERNAL
+
 #include "R5900.h"
 #include "DisASM.h"
 #include "R5900OpcodeTables.h"
