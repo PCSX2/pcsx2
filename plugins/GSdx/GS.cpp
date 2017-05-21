@@ -63,7 +63,6 @@ extern bool RunLinuxDialog();
 static GSRenderer* s_gs = NULL;
 static void (*s_irq)() = NULL;
 static uint8* s_basemem = NULL;
-static bool s_framelimit = true;
 static bool s_vsync = false;
 static bool s_exclusive = true;
 static const char *s_renderer_name = "";
@@ -449,7 +448,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 	s_gs->SetRegsMem(s_basemem);
 	s_gs->SetIrqCallback(s_irq);
 	s_gs->SetVSync(s_vsync);
-	s_gs->SetFrameLimit(s_framelimit);
 
 	if(!old_api)
 		s_gs->SetMultithreaded(true);
@@ -984,16 +982,6 @@ EXPORT_C GSsetExclusive(int enabled)
 	if(s_gs)
 	{
 		s_gs->SetVSync(s_vsync);
-	}
-}
-
-EXPORT_C GSsetFrameLimit(int limit)
-{
-	s_framelimit = !!limit;
-
-	if(s_gs)
-	{
-		s_gs->SetFrameLimit(s_framelimit);
 	}
 }
 

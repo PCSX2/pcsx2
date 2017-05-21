@@ -221,7 +221,6 @@ public:
 	std::unique_ptr<GSDumpBase> m_dump;
 	int m_options;
 	int m_frameskip;
-	bool m_framelimit;
 	bool m_NTSC_Saturation;
 	bool m_nativeres;
 	int m_mipmap;
