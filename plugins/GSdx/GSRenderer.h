@@ -40,7 +40,7 @@ class GSRenderer : public GSState
 protected:
 	int m_interlace;
 	int m_aspectratio;
-	bool m_vsync;
+	int m_vsync;
 	bool m_aa1;
 	bool m_shaderfx;
 	bool m_fxaa;
@@ -69,7 +69,7 @@ public:
 	virtual GSVector2i GetCustomResolution() {return GSVector2i(0,0);}
 	GSVector2i GetInternalResolution();
 	void SetAspectRatio(int aspect) {m_aspectratio = aspect;}
-	void SetVSync(bool enabled);
+	void SetVSync(int vsync);
 	virtual void SetExclusive(bool isExcl) {}
 
 	virtual bool BeginCapture();

@@ -620,9 +620,9 @@ bool GSDeviceOGL::Reset(int w, int h)
 	return true;
 }
 
-void GSDeviceOGL::SetVSync(bool enable)
+void GSDeviceOGL::SetVSync(int vsync)
 {
-	m_wnd->SetVSync(enable);
+	m_wnd->SetVSync(vsync);
 }
 
 void GSDeviceOGL::Flip()

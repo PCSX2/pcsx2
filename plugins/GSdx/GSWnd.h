@@ -52,7 +52,7 @@ public:
 	virtual void HideFrame() = 0;
 
 	virtual void Flip() {};
-	virtual void SetVSync(bool enable) {};
+	virtual void SetVSync(int vsync) {};
 
 };
 
@@ -84,7 +84,7 @@ public:
 	virtual void Hide() = 0;
 	virtual void HideFrame() = 0;
 	virtual void Flip() = 0;
-	virtual void SetVSync(bool enable) = 0;
+	virtual void SetVSync(int vsync) = 0;
 
 	void PopulateGlFunction();
 };

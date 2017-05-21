@@ -37,7 +37,7 @@ protected:
 	int m_filter;
 	int m_dither;
 	int m_aspectratio;
-	bool m_vsync;
+	int m_vsync;
 	bool m_shaderfx;
 	bool m_fxaa;
 	bool m_shadeboost;

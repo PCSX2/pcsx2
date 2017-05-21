@@ -323,12 +323,12 @@ void* GSWndWGL::GetProcAddress(const char* name, bool opt)
 
 //TODO: check extensions supported or not
 //FIXME : extension allocation
-void GSWndWGL::SetVSync(bool enable)
+void GSWndWGL::SetVSync(int vsync)
 {
 	// m_swapinterval uses an integer as parameter
 	// 0 -> disable vsync
 	// n -> wait n frame
-	if (m_swapinterval) m_swapinterval((int)enable);
+	if (m_swapinterval) m_swapinterval(vsync);
 }
 
 void GSWndWGL::Flip()

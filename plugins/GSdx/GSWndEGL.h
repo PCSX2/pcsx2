@@ -65,7 +65,7 @@ public:
 	void* GetProcAddress(const char* name, bool opt = false) final;
 
 	void Flip() final;
-	void SetVSync(bool enable) final;
+	void SetVSync(int vsync) final;
 
 	// Deprecated API
 	void Show() final {};

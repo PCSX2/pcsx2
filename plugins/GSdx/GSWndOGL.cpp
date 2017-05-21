@@ -243,13 +243,13 @@ bool GSWndOGL::SetWindowText(const char* title)
 	return true;
 }
 
-void GSWndOGL::SetVSync(bool enable)
+void GSWndOGL::SetVSync(int vsync)
 {
 	// m_swapinterval uses an integer as parameter
 	// 0 -> disable vsync
 	// n -> wait n frame
-	if      (m_swapinterval_ext)  m_swapinterval_ext(m_NativeDisplay, m_NativeWindow, (int)enable);
-	else if (m_swapinterval_mesa) m_swapinterval_mesa((int)enable);
+	if      (m_swapinterval_ext)  m_swapinterval_ext(m_NativeDisplay, m_NativeWindow, vsync);
+	else if (m_swapinterval_mesa) m_swapinterval_mesa(vsync);
 	else						 fprintf(stderr, "Failed to set VSync\n");
 }
 

@@ -35,7 +35,7 @@ GPURenderer::GPURenderer(GSDevice* dev)
 	m_filter      = theApp.GetConfigI("filter");
 	m_dither      = theApp.GetConfigI("dithering");
 	m_aspectratio = theApp.GetConfigI("AspectRatio");
-	m_vsync       = theApp.GetConfigB("vsync");
+	m_vsync       = theApp.GetConfigI("vsync");
 	m_fxaa        = theApp.GetConfigB("fxaa");
 	m_shaderfx    = theApp.GetConfigB("shaderfx");
 	m_scale       = m_mem.GetScale();

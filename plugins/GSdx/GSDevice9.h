@@ -190,7 +190,7 @@ public:
 	bool IsLost(bool update);
 	void Flip();
 
-	void SetVSync(bool enable);
+	void SetVSync(int vsync);
 
 	void BeginScene();
 	void DrawPrimitive();

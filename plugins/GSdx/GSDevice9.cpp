@@ -571,11 +571,11 @@ void GSDevice9::Flip()
 	}
 }
 
-void GSDevice9::SetVSync(bool enable)
+void GSDevice9::SetVSync(int vsync)
 {
-	if(m_vsync == enable) return;
+	if(m_vsync == vsync) return;
 
-	__super::SetVSync(enable);
+	__super::SetVSync(vsync);
 
 	// Clever trick:  Delete the backbuffer, so that the next Present will fail and
 	// cause a DXDevice9::Reset call, which re-creates the backbuffer with current

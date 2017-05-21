@@ -57,7 +57,7 @@ public:
 	void Hide();
 	void HideFrame();
 	void Flip();
-	void SetVSync(bool enable);
+	void SetVSync(int vsync);
 };
 
 #endif

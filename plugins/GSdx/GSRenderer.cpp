@@ -44,7 +44,7 @@ GSRenderer::GSRenderer()
 	m_interlace   = theApp.GetConfigI("interlace") % s_interlace_nb;
 	m_aspectratio = theApp.GetConfigI("AspectRatio") % s_aspect_ratio_nb;
 	m_shader      = theApp.GetConfigI("TVShader") % s_post_shader_nb;
-	m_vsync       = theApp.GetConfigB("vsync");
+	m_vsync       = theApp.GetConfigI("vsync");
 	m_aa1         = theApp.GetConfigB("aa1");
 	m_fxaa        = theApp.GetConfigB("fxaa");
 	m_shaderfx    = theApp.GetConfigB("shaderfx");
@@ -304,9 +304,9 @@ GSVector2i GSRenderer::GetInternalResolution()
 	return m_real_size;
 }
 
-void GSRenderer::SetVSync(bool enabled)
+void GSRenderer::SetVSync(int vsync)
 {
-	m_vsync = enabled;
+	m_vsync = vsync;
 
 	if(m_dev) m_dev->SetVSync(m_vsync);
 }

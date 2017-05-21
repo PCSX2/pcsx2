@@ -107,7 +107,7 @@ class GSDevice : public GSAlignedClass<32>
 
 protected:
 	std::shared_ptr<GSWnd> m_wnd;
-	bool m_vsync;
+	int m_vsync;
 	bool m_rbswapped;
 	GSTexture* m_backbuffer;
 	GSTexture* m_merge;
@@ -149,7 +149,7 @@ public:
 	virtual void Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader = 0);
 	virtual void Flip() {}
 
-	virtual void SetVSync(bool enable) {m_vsync = enable;}
+	virtual void SetVSync(int vsync) {m_vsync = vsync;}
 
 	virtual void BeginScene() {}
 	virtual void DrawPrimitive() {};
