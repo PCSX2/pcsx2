@@ -43,6 +43,8 @@
 #include <comutil.h>
 #include <atlcomcli.h>
 
+#include <Dwmapi.h> // compositor
+
 #define D3DCOLORWRITEENABLE_RGBA (D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA)
 
 #else

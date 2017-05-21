@@ -40,7 +40,7 @@ static void win_error(const char* msg, bool fatal = true)
 
 
 GSWndWGL::GSWndWGL()
-	: m_NativeWindow(NULL), m_NativeDisplay(NULL), m_context(NULL)
+	: m_NativeWindow(NULL), m_NativeDisplay(NULL), m_context(NULL), m_vsync()
 {
 }
 
@@ -325,14 +325,18 @@ void* GSWndWGL::GetProcAddress(const char* name, bool opt)
 //FIXME : extension allocation
 void GSWndWGL::SetVSync(int vsync)
 {
+	m_vsync = vsync;
 	// m_swapinterval uses an integer as parameter
 	// 0 -> disable vsync
 	// n -> wait n frame
-	if (m_swapinterval) m_swapinterval(vsync);
+	if (m_swapinterval && vsync != 0x10000) m_swapinterval(vsync);
 }
 
 void GSWndWGL::Flip()
 {
+	if (m_vsync == 0x10000)
+		DwmFlush();
+
 	SwapBuffers(m_NativeDisplay);
 }
 

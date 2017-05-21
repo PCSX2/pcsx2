@@ -28,6 +28,7 @@ class GSWndWGL : public GSWndGL
 	HWND	 m_NativeWindow;
 	HDC		 m_NativeDisplay;
 	HGLRC	 m_context;
+	int		 m_vsync;
 
 	PFNWGLSWAPINTERVALEXTPROC m_swapinterval;
 
