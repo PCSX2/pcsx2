@@ -27,10 +27,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	if (${GCC_VERSION} VERSION_LESS "5.1")
 		set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
 	endif()
-	# github issue 1937
-	if (${GCC_VERSION} VERSION_GREATER "7.0")
-		set(GSdxFinalFlags ${GSdxFinalFlags} -fno-gcse-lm -fno-tree-pre)
-	endif()
 endif()
 
 if(XDG_STD)
