@@ -50,7 +50,7 @@ public:
     };
 
     u32 log;
-    map<u32, u32> keysym_map[GAMEPAD_NUMBER];
+    std::map<u32, u32> keysym_map[GAMEPAD_NUMBER];
     std::array<size_t, GAMEPAD_NUMBER> unique_id;
     std::vector<std::string> sdl2_mapping;
 

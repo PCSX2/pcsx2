@@ -46,7 +46,6 @@
 #include <memory>
 #include <mutex>
 #include <queue>
-using namespace std;
 
 #define PADdefs
 #include "PS2Edefs.h"
