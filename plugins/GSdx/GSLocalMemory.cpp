@@ -699,6 +699,9 @@ vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 			}
 		}
 
+		// Allocate vector with initial size
+		p2t[page].reserve(m.size());
+
 		// sort by x and flip the mask (it will be used to erase a lot of bits in a loop, [x] &= ~y)
 
 		for(hash_map<uint32, uint32>::iterator j = m.begin(); j != m.end(); ++j)
