@@ -1,0 +1,3 @@
+[submodule "3rdparty/armips"]
+	path = 3rdparty/armips
+	url = https://github.com/Kingcom/armips.git

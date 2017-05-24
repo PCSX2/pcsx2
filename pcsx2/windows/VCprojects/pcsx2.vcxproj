@@ -164,7 +164,6 @@
     <ClCompile Include="..\..\DebugTools\ExpressionParser.cpp" />
     <ClCompile Include="..\..\DebugTools\MIPSAnalyst.cpp" />
     <ClCompile Include="..\..\DebugTools\MipsAssembler.cpp" />
-    <ClCompile Include="..\..\DebugTools\MipsAssemblerTables.cpp" />
     <ClCompile Include="..\..\DebugTools\MipsStackWalk.cpp" />
     <ClCompile Include="..\..\DebugTools\SymbolMap.cpp" />
     <ClCompile Include="..\..\GameDatabase.cpp" />
@@ -427,7 +426,6 @@
     <ClInclude Include="..\..\DebugTools\ExpressionParser.h" />
     <ClInclude Include="..\..\DebugTools\MIPSAnalyst.h" />
     <ClInclude Include="..\..\DebugTools\MipsAssembler.h" />
-    <ClInclude Include="..\..\DebugTools\MipsAssemblerTables.h" />
     <ClInclude Include="..\..\DebugTools\MipsStackWalk.h" />
     <ClInclude Include="..\..\DebugTools\SymbolMap.h" />
     <ClInclude Include="..\..\GameDatabase.h" />
@@ -592,6 +590,9 @@
     <ResourceCompile Include="..\wxResources.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\3rdparty\armips\libarmips.vcxproj">
+      <Project>{129e5e2b-39c1-4d84-96fe-dfd22dbb4a25}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">
       <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

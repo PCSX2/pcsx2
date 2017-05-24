@@ -13,6 +13,7 @@ matrix:
   fast_finish: true
 
 init:
+  - cmd: git submodule update --init --recursive
 # Use CRLF line endings on Windows so users can just use Notepad.
   - git config --global core.autocrlf true
 

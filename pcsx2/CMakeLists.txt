@@ -214,7 +214,6 @@ set(pcsx2DebugToolsSources
 	DebugTools/ExpressionParser.cpp
 	DebugTools/MIPSAnalyst.cpp
 	DebugTools/MipsAssembler.cpp
-	DebugTools/MipsAssemblerTables.cpp
 	DebugTools/MipsStackWalk.cpp
 	DebugTools/Breakpoints.cpp
 	DebugTools/SymbolMap.cpp
@@ -231,7 +230,6 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/ExpressionParser.h
 	DebugTools/MIPSAnalyst.h
 	DebugTools/MipsAssembler.h
-	DebugTools/MipsAssemblerTables.h
 	DebugTools/MipsStackWalk.h
 	DebugTools/Breakpoints.h
 	DebugTools/SymbolMap.h
@@ -657,6 +655,7 @@ set(pcsx2FinalSources
 set(pcsx2FinalLibs
     Utilities
     x86emitter
+    armips
     ${wxWidgets_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${ZLIB_LIBRARIES}

@@ -9,6 +9,8 @@ clang_syntax_check() {
 }
 
 linux_32_before_install() {
+	git submodule update --init --recursive
+
 	# Build worker is 64-bit only by default it seems.
 	sudo dpkg --add-architecture i386
 
@@ -87,6 +89,8 @@ linux_32_script() {
 
 
 linux_64_before_install() {
+	git submodule update --init --recursive
+
 	# Compilers
 	if [ "${CXX}" = "clang++" ]; then
 		sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
