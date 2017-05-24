@@ -470,14 +470,10 @@ void GSRenderer::VSync(int field)
 			fd.data = new uint8[fd.size];
 			Freeze(&fd, false);
 
-#ifdef LZMA_SUPPORTED
 			if (m_control_key)
 				m_dump = std::unique_ptr<GSDumpBase>(new GSDump(m_snapshot, m_crc, fd, m_regs));
 			else
 				m_dump = std::unique_ptr<GSDumpBase>(new GSDumpXz(m_snapshot, m_crc, fd, m_regs));
-#else
-			m_dump = std::unique_ptr<GSDumpBase>(new GSDump(m_snapshot, m_crc, fd, m_regs));
-#endif
 
 			delete [] fd.data;
 		}

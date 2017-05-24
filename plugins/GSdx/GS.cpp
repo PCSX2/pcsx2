@@ -1585,13 +1585,9 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		else
 			f.replace(f.end()-3, f.end(), "_repack.gs");
 
-#ifdef LZMA_SUPPORTED
 		GSDumpFile* file = is_xz
 			? (GSDumpFile*) new GSDumpLzma(lpszCmdLine, repack_dump ? f.c_str() : nullptr)
 			: (GSDumpFile*) new GSDumpRaw(lpszCmdLine, repack_dump ? f.c_str() : nullptr);
-#else
-		GSDumpFile* file = new GSDumpRaw(lpszCmdLine, repack_dump ? f.c_str() : nullptr);
-#endif
 
 		uint32 crc;
 		file->Read(&crc, 4);

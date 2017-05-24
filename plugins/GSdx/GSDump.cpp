@@ -117,8 +117,6 @@ void GSDump::AppendRawData(uint8 c)
 // GSDumpXz implementation
 //////////////////////////////////////////////////////////////////////
 
-#ifdef LZMA_SUPPORTED
-
 GSDumpXz::GSDumpXz(const std::string& fn, uint32 crc, const GSFreezeData& fd, const GSPrivRegSet* regs)
 	: GSDumpBase(fn + ".gs.xz")
 {
@@ -194,5 +192,3 @@ void GSDumpXz::Compress(lzma_action action, lzma_ret expected_status)
 
 	} while (m_strm.avail_out == 0);
 }
-
-#endif

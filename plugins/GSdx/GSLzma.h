@@ -18,11 +18,7 @@
  *
  */
 
-#if defined(__unix__)
-
-#ifdef LZMA_SUPPORTED
 #include <lzma.h>
-#endif
 
 class GSDumpFile {
 	FILE*		m_repack_fp;
@@ -40,7 +36,6 @@ class GSDumpFile {
 	virtual ~GSDumpFile();
 };
 
-#ifdef LZMA_SUPPORTED
 class GSDumpLzma : public GSDumpFile {
 
 	lzma_stream m_strm;
@@ -62,7 +57,6 @@ class GSDumpLzma : public GSDumpFile {
 	bool IsEof();
 	void Read(void* ptr, size_t size);
 };
-#endif
 
 class GSDumpRaw : public GSDumpFile {
 
@@ -83,5 +77,3 @@ class GSDumpRaw : public GSDumpFile {
 	bool IsEof();
 	void Read(void* ptr, size_t size);
 };
-
-#endif
