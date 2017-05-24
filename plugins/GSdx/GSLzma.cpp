@@ -21,8 +21,6 @@
 #include "stdafx.h"
 #include "GSLzma.h"
 
-#if defined(__unix__)
-
 GSDumpFile::GSDumpFile(char* filename, const char* repack_filename) {
 	m_fp = fopen(filename, "rb");
 	if (m_fp == nullptr) {
@@ -56,8 +54,6 @@ GSDumpFile::~GSDumpFile() {
 }
 
 /******************************************************************/
-#ifdef LZMA_SUPPORTED
-
 GSDumpLzma::GSDumpLzma(char* filename, const char* repack_filename) : GSDumpFile(filename, repack_filename) {
 
 	memset(&m_strm, 0, sizeof(lzma_stream));
@@ -146,8 +142,6 @@ GSDumpLzma::~GSDumpLzma() {
 		_aligned_free(m_area);
 }
 
-#endif
-
 /******************************************************************/
 
 GSDumpRaw::GSDumpRaw(char* filename, const char* repack_filename) : GSDumpFile(filename, repack_filename) {
@@ -176,5 +170,3 @@ void GSDumpRaw::Read(void* ptr, size_t size) {
 	}
 	Repack(ptr, size);
 }
-
-#endif

@@ -14,7 +14,6 @@ set(CommonFlags
     -Wno-unknown-pragmas
     -Wno-parentheses
     -Wunused-variable # __dummy variable need to be investigated
-    -DLZMA_SUPPORTED  # must be always supported on linux
     )
 
 if(USE_ICC)
