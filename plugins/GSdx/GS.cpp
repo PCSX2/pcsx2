@@ -28,6 +28,7 @@
 #include "GSDeviceOGL.h"
 #include "GSRendererOGL.h"
 #include "GSRendererCL.h"
+#include "GSLzma.h"
 
 #ifdef _WIN32
 
@@ -1086,233 +1087,123 @@ EXPORT_C GSReplay(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 
 	::SetPriorityClass(::GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
-	if(FILE* fp = fopen(lpszCmdLine, "rb"))
+	Console console{"GSdx", true};
+
+	const std::string f{lpszCmdLine};
+	const bool is_xz = f.size() >= 4 && f.compare(f.size() - 3, 3, ".xz") == 0;
+
+	auto file = is_xz
+		? std::unique_ptr<GSDumpFile>{std::make_unique<GSDumpLzma>(lpszCmdLine, nullptr)}
+		: std::unique_ptr<GSDumpFile>{std::make_unique<GSDumpRaw>(lpszCmdLine, nullptr)};
+
+	GSinit();
+
+	std::array<uint8, 0x2000> regs;
+	GSsetBaseMem(regs.data());
+
+	s_vsync = theApp.GetConfigB("vsync");
+
+	HWND hWnd = nullptr;
+
+	_GSopen((void**)&hWnd, "", renderer);
+
+	uint32 crc;
+	file->Read(&crc, 4);
+	GSsetGameCRC(crc, 0);
+
 	{
-		Console console("GSdx", true);
-
-		GSinit();
-
-		uint8 regs[0x2000];
-		GSsetBaseMem(regs);
-
-		s_vsync = theApp.GetConfigB("vsync");
-
-		HWND hWnd = NULL;
-
-		_GSopen((void**)&hWnd, "", renderer);
-
-		uint32 crc;
-		fread(&crc, 4, 1, fp);
-		GSsetGameCRC(crc, 0);
-
 		GSFreezeData fd;
-		fread(&fd.size, 4, 1, fp);
-		fd.data = new uint8[fd.size];
-		fread(fd.data, fd.size, 1, fp);
+		file->Read(&fd.size, 4);
+		std::vector<uint8> freeze_data(fd.size);
+		fd.data = freeze_data.data();
+		file->Read(fd.data, fd.size);
 		GSfreeze(FREEZE_LOAD, &fd);
-		delete [] fd.data;
-
-		fread(regs, 0x2000, 1, fp);
-
-		long start = ftell(fp);
-
-		GSvsync(1);
-
-		struct Packet {uint8 type, param; uint32 size, addr; vector<uint8> buff;};
-
-		list<Packet*> packets;
-		vector<uint8> buff;
-		int type;
-
-		while((type = fgetc(fp)) != EOF)
-		{
-			Packet* p = new Packet();
-
-			p->type = (uint8)type;
-
-			switch(type)
-			{
-			case 0:
-				
-				p->param = (uint8)fgetc(fp);
-
-				fread(&p->size, 4, 1, fp);
-
-				switch(p->param)
-				{
-				case 0:
-					p->buff.resize(0x4000);
-					p->addr = 0x4000 - p->size;
-					fread(&p->buff[p->addr], p->size, 1, fp);
-					break;
-				case 1:
-				case 2:
-				case 3:
-					p->buff.resize(p->size);
-					fread(&p->buff[0], p->size, 1, fp);
-					break;
-				}
-
-				break;
-
-			case 1:
-
-				p->param = (uint8)fgetc(fp);
-
-				break;
-
-			case 2:
-
-				fread(&p->size, 4, 1, fp);
-
-				break;
-
-			case 3:
-
-				p->buff.resize(0x2000);
-
-				fread(&p->buff[0], 0x2000, 1, fp);
-
-				break;
-			}
-
-			packets.push_back(p);
-		}
-
-		Sleep(100);
-
-		while(IsWindowVisible(hWnd))
-		{
-			for(list<Packet*>::iterator i = packets.begin(); i != packets.end(); i++)
-			{
-				Packet* p = *i;
-
-				switch(p->type)
-				{
-				case 0:
-
-					switch(p->param)
-					{
-					case 0: GSgifTransfer1(&p->buff[0], p->addr); break;
-					case 1: GSgifTransfer2(&p->buff[0], p->size / 16); break;
-					case 2: GSgifTransfer3(&p->buff[0], p->size / 16); break;
-					case 3: GSgifTransfer(&p->buff[0], p->size / 16); break;
-					}
-
-					break;
-
-				case 1:
-
-					GSvsync(p->param);
-
-					break;
-
-				case 2:
-
-					if(buff.size() < p->size) buff.resize(p->size);
-
-					GSreadFIFO2(&buff[0], p->size / 16);
-
-					break;
-
-				case 3:
-
-					memcpy(regs, &p->buff[0], 0x2000);
-
-					break;
-				}
-			}
-		}
-
-		for(list<Packet*>::iterator i = packets.begin(); i != packets.end(); i++)
-		{
-			delete *i;
-		}
-
-		packets.clear();
-
-		Sleep(100);
-
-
-		/*
-		vector<uint8> buff;
-		bool exit = false;
-
-		int round = 0;
-
-		while(!exit)
-		{
-			uint32 index;
-			uint32 size;
-			uint32 addr;
-
-			int pos;
-
-			switch(fgetc(fp))
-			{
-			case EOF:
-				fseek(fp, start, 0);
-				exit = !IsWindowVisible(hWnd);
-				//exit = ++round == 60;
-				break;
-
-			case 0:
-				index = fgetc(fp);
-				fread(&size, 4, 1, fp);
-
-				switch(index)
-				{
-				case 0:
-					if(buff.size() < 0x4000) buff.resize(0x4000);
-					addr = 0x4000 - size;
-					fread(&buff[addr], size, 1, fp);
-					GSgifTransfer1(&buff[0], addr);
-					break;
-
-				case 1:
-					if(buff.size() < size) buff.resize(size);
-					fread(&buff[0], size, 1, fp);
-					GSgifTransfer2(&buff[0], size / 16);
-					break;
-
-				case 2:
-					if(buff.size() < size) buff.resize(size);
-					fread(&buff[0], size, 1, fp);
-					GSgifTransfer3(&buff[0], size / 16);
-					break;
-
-				case 3:
-					if(buff.size() < size) buff.resize(size);
-					fread(&buff[0], size, 1, fp);
-					GSgifTransfer(&buff[0], size / 16);
-					break;
-				}
-
-				break;
-
-			case 1:
-				GSvsync(fgetc(fp));
-				exit = !IsWindowVisible(hWnd);
-				break;
-
-			case 2:
-				fread(&size, 4, 1, fp);
-				if(buff.size() < size) buff.resize(size);
-				GSreadFIFO2(&buff[0], size / 16);
-				break;
-
-			case 3:
-				fread(regs, 0x2000, 1, fp);
-				break;
-			}
-		}
-		*/
-
-		GSclose();
-		GSshutdown();
-
-		fclose(fp);
 	}
+
+	file->Read(regs.data(), 0x2000);
+
+	GSvsync(1);
+
+	struct Packet {uint8 type, param; uint32 size, addr; std::vector<uint8> buff;};
+
+	auto read_packet = [&file](uint8 type) {
+		Packet p;
+		p.type = type;
+
+		switch(p.type) {
+		case 0:
+			file->Read(&p.param, 1);
+			file->Read(&p.size, 4);
+			switch(p.param) {
+			case 0:
+				p.buff.resize(0x4000);
+				p.addr = 0x4000 - p.size;
+				file->Read(&p.buff[p.addr], p.size);
+				break;
+			case 1:
+			case 2:
+			case 3:
+				p.buff.resize(p.size);
+				file->Read(p.buff.data(), p.size);
+				break;
+			}
+			break;
+		case 1:
+			file->Read(&p.param, 1);
+			break;
+		case 2:
+			file->Read(&p.size, 4);
+			break;
+		case 3:
+			p.buff.resize(0x2000);
+			file->Read(p.buff.data(), 0x2000);
+			break;
+		}
+
+		return p;
+	};
+
+	std::list<Packet> packets;
+	uint8 type;
+	while(file->Read(&type, 1))
+		packets.push_back(read_packet(type));
+
+	Sleep(100);
+
+	std::vector<uint8> buff;
+	while(IsWindowVisible(hWnd))
+	{
+		for(auto &p : packets)
+		{
+			switch(p.type)
+			{
+			case 0:
+				switch(p.param)
+				{
+				case 0: GSgifTransfer1(p.buff.data(), p.addr); break;
+				case 1: GSgifTransfer2(p.buff.data(), p.size / 16); break;
+				case 2: GSgifTransfer3(p.buff.data(), p.size / 16); break;
+				case 3: GSgifTransfer(p.buff.data(), p.size / 16); break;
+				}
+				break;
+			case 1:
+				GSvsync(p.param);
+				break;
+			case 2:
+				if(buff.size() < p.size) buff.resize(p.size);
+				GSreadFIFO2(p.buff.data(), p.size / 16);
+				break;
+			case 3:
+				memcpy(regs.data(), p.buff.data(), 0x2000);
+				break;
+			}
+		}
+	}
+
+	Sleep(100);
+
+	GSclose();
+	GSshutdown();
 }
 
 EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
@@ -1521,8 +1412,6 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 #endif
 
 #if defined(__unix__)
-
-#include "GSLzma.h"
 
 inline unsigned long timeGetTime()
 {
