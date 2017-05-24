@@ -177,7 +177,7 @@ void GSDumpXz::Flush()
 
 void GSDumpXz::Compress(lzma_action action, lzma_ret expected_status)
 {
-	std::array<uint8, 1024*1024> out_buff;
+	std::vector<uint8> out_buff(1024*1024);
 	do {
 		m_strm.next_out = out_buff.data();
 		m_strm.avail_out = out_buff.size();
