@@ -255,7 +255,7 @@ CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
 #define OCL_PROGRAM_VERSION 3
 
 #ifdef ENABLE_OPENCL
-void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
+void GSUtil::GetDeviceDescs(std::list<OCLDeviceDesc>& dl)
 {
 	dl.clear();
 

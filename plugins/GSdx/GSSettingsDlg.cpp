@@ -34,7 +34,7 @@ GSSettingsDlg::GSSettingsDlg()
 
 {
 #ifdef ENABLE_OPENCL
-	list<OCLDeviceDesc> ocldevs;
+	std::list<OCLDeviceDesc> ocldevs;
 
 	GSUtil::GetDeviceDescs(ocldevs);
 

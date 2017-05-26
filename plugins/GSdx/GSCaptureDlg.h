@@ -35,7 +35,7 @@ class GSCaptureDlg : public GSDialog
 		_bstr_t DisplayName;
 	};
 
-	list<Codec> m_codecs;
+	std::list<Codec> m_codecs;
 
 	int GetSelCodec(Codec& c);
 

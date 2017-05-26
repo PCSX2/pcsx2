@@ -26,7 +26,7 @@
 
 class GPUSettingsDlg : public GSDialog
 {
-	list<D3DDISPLAYMODE> m_modes;
+	std::list<D3DDISPLAYMODE> m_modes;
 
 	void UpdateControls();
 
