@@ -318,7 +318,7 @@ public:
 	static bool LoadD3DCompiler();
 	static void FreeD3DCompiler();
 
-	template<class T> void PrepareShaderMacro(vector<T>& dst, const T* src)
+	template<class T> void PrepareShaderMacro(std::vector<T>& dst, const T* src)
 	{
 		dst.clear();
 

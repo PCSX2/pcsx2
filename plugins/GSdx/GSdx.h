@@ -69,26 +69,26 @@ public:
 
 	void SetConfigDir(const char* dir);
 
-	vector<GSSetting> m_gs_renderers;
-	vector<GSSetting> m_gs_interlace;
-	vector<GSSetting> m_gs_aspectratio;
-	vector<GSSetting> m_gs_upscale_multiplier;
-	vector<GSSetting> m_gs_max_anisotropy;
-	vector<GSSetting> m_gs_bifilter;
-	vector<GSSetting> m_gs_trifilter;
-	vector<GSSetting> m_gs_gl_ext;
-	vector<GSSetting> m_gs_hack;
-	vector<GSSetting> m_gs_offset_hack;
-	vector<GSSetting> m_gs_hw_mipmapping;
-	vector<GSSetting> m_gs_crc_level;
-	vector<GSSetting> m_gs_acc_blend_level;
-	vector<GSSetting> m_gs_tv_shaders;
+	std::vector<GSSetting> m_gs_renderers;
+	std::vector<GSSetting> m_gs_interlace;
+	std::vector<GSSetting> m_gs_aspectratio;
+	std::vector<GSSetting> m_gs_upscale_multiplier;
+	std::vector<GSSetting> m_gs_max_anisotropy;
+	std::vector<GSSetting> m_gs_bifilter;
+	std::vector<GSSetting> m_gs_trifilter;
+	std::vector<GSSetting> m_gs_gl_ext;
+	std::vector<GSSetting> m_gs_hack;
+	std::vector<GSSetting> m_gs_offset_hack;
+	std::vector<GSSetting> m_gs_hw_mipmapping;
+	std::vector<GSSetting> m_gs_crc_level;
+	std::vector<GSSetting> m_gs_acc_blend_level;
+	std::vector<GSSetting> m_gs_tv_shaders;
 
-	vector<GSSetting> m_gpu_renderers;
-	vector<GSSetting> m_gpu_filter;
-	vector<GSSetting> m_gpu_dithering;
-	vector<GSSetting> m_gpu_aspectratio;
-	vector<GSSetting> m_gpu_scale;
+	std::vector<GSSetting> m_gpu_renderers;
+	std::vector<GSSetting> m_gpu_filter;
+	std::vector<GSSetting> m_gpu_dithering;
+	std::vector<GSSetting> m_gpu_aspectratio;
+	std::vector<GSSetting> m_gpu_scale;
 };
 
 struct GSDXError {};

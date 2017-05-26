@@ -1355,7 +1355,7 @@ void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, 
 {
 	HRESULT hr;
 
-	vector<D3D_SHADER_MACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 
@@ -1392,7 +1392,7 @@ void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, 
 {
 	HRESULT hr;
 
-	vector<D3D_SHADER_MACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 
@@ -1422,7 +1422,7 @@ void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, 
 {
 	HRESULT hr;
 
-	vector<D3D_SHADER_MACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 
@@ -1452,7 +1452,7 @@ void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, 
 {
 	HRESULT hr;
 
-	vector<D3D_SHADER_MACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 
@@ -1482,7 +1482,7 @@ void GSDevice11::CompileShader(const char* source, size_t size, const char *fn, 
 {
 	HRESULT hr;
 
-	vector<D3D_SHADER_MACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 

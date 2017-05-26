@@ -116,7 +116,7 @@ void GSSettingsDlg::OnInit()
 	}
 
 	std::string adapter_setting = theApp.GetConfigS("Adapter");
-	vector<GSSetting> adapter_settings;
+	std::vector<GSSetting> adapter_settings;
 	unsigned int adapter_sel = 0;
 
 	for(unsigned int i = 0; i < adapters.size(); i++)
@@ -324,7 +324,7 @@ void GSSettingsDlg::UpdateRenderers()
 
 	D3D_FEATURE_LEVEL level = adapters[(int)i].level;
 
-	vector<GSSetting> renderers;
+	std::vector<GSSetting> renderers;
 
 	GSRendererType renderer_setting;
 

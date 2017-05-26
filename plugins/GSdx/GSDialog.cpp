@@ -164,7 +164,7 @@ void GSDialog::SetTextAsInt(UINT id, int i)
 	SetText(id, buff);
 }
 
-void GSDialog::ComboBoxInit(UINT id, const vector<GSSetting>& settings, int32_t selectionValue, int32_t maxValue)
+void GSDialog::ComboBoxInit(UINT id, const std::vector<GSSetting>& settings, int32_t selectionValue, int32_t maxValue)
 {
 	if (settings.empty())
 		return;

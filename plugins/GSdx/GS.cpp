@@ -1427,10 +1427,10 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		return;
 	}
 
-	struct Packet {uint8 type, param; uint32 size, addr; vector<uint8> buff;};
+	struct Packet {uint8 type, param; uint32 size, addr; std::vector<uint8> buff;};
 
 	list<Packet*> packets;
-	vector<uint8> buff;
+	std::vector<uint8> buff;
 	uint8 regs[0x2000];
 
 	GSsetBaseMem(regs);

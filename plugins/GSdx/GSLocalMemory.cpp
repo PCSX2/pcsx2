@@ -636,7 +636,7 @@ GSPixelOffset4* GSLocalMemory::GetPixelOffset4(const GIFRegFRAME& FRAME, const G
 
 static bool cmp_vec2x(const GSVector2i& a, const GSVector2i& b) {return a.x < b.x;}
 
-vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
+std::vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 {
 	uint64 hash = TEX0.u64 & 0x3ffffffffull; // TBP0 TBW PSM TW TH
 
@@ -670,7 +670,7 @@ vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 
 	// combine the lower 5 bits of the address into a 9:5 pointer:mask form, so the "valid bits" can be tested against an uint32 array
 
-	vector<GSVector2i>* p2t = new vector<GSVector2i>[MAX_PAGES];
+	auto p2t = new std::vector<GSVector2i>[MAX_PAGES];
 
 	for(const auto &i : tmp)
 	{

@@ -81,7 +81,7 @@ GtkWidget* left_label(const char* lbl)
 void CB_ChangedComboBox(GtkComboBox *combo, gpointer user_data)
 {
 	int p = gtk_combo_box_get_active(combo);
-	vector<GSSetting>* s = (vector<GSSetting>*)g_object_get_data(G_OBJECT(combo), "Settings");
+	auto s = reinterpret_cast<std::vector<GSSetting>*>(g_object_get_data(G_OBJECT(combo), "Settings"));
 
 	try {
 		theApp.SetConfig((char*)user_data, s->at(p).value);
@@ -89,7 +89,7 @@ void CB_ChangedComboBox(GtkComboBox *combo, gpointer user_data)
 	}
 }
 
-GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_name)
+GtkWidget* CreateComboBoxFromVector(const std::vector<GSSetting>& s, const char* opt_name)
 {
 	GtkWidget* combo_box = gtk_combo_box_text_new();
 	int32_t opt_value    = theApp.GetConfigI(opt_name);

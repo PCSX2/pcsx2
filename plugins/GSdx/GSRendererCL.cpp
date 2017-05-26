@@ -1919,7 +1919,7 @@ GSRendererCL::CL::CL()
 		throw new std::runtime_error("OpenCL device not found");
 	}
 
-	vector<cl::Device> tmp;
+	std::vector<cl::Device> tmp;
 
 	for(auto d : devs) tmp.push_back(d.device);
 
@@ -2032,7 +2032,7 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 
 			if(binaries.size() == devs.size())
 			{
-				vector<cl::Device> tmp;
+				std::vector<cl::Device> tmp;
 
 				for(auto d : devs) tmp.push_back(d.device);
 
@@ -2087,8 +2087,8 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 	{
 		try
 		{
-			vector<size_t> sizes = program.getInfo<CL_PROGRAM_BINARY_SIZES>();
-			vector<char*> binaries = program.getInfo<CL_PROGRAM_BINARIES>();
+			std::vector<size_t> sizes = program.getInfo<CL_PROGRAM_BINARY_SIZES>();
+			std::vector<char*> binaries = program.getInfo<CL_PROGRAM_BINARIES>();
 
 			for(size_t i = 0; i < binaries.size(); i++)
 			{
