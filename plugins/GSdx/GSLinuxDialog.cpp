@@ -97,7 +97,7 @@ GtkWidget* CreateComboBoxFromVector(const vector<GSSetting>& s, const char* opt_
 
 	for(size_t i = 0; i < s.size(); i++)
 	{
-		string label = s[i].name;
+		std::string label = s[i].name;
 
 		if(!s[i].note.empty()) label += format(" (%s)", s[i].note.c_str());
 

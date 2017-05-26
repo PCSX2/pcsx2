@@ -401,7 +401,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	m_size.x = (dlg.m_width + 7) & ~7;
 	m_size.y = (dlg.m_height + 7) & ~7;
 
-	wstring fn(dlg.m_filename.begin(), dlg.m_filename.end());
+	std::wstring fn{dlg.m_filename.begin(), dlg.m_filename.end()};
 
 	//
 
@@ -446,8 +446,8 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	{
 		CFilterInfo fi;
 		pBF->QueryFilterInfo(&fi);
-		wstring s(fi.achName);
-		printf("Filter [%p]: %s\n", pBF.p, string(s.begin(), s.end()).c_str());
+		std::wstring s{fi.achName};
+		printf("Filter [%p]: %s\n", pBF.p, std::string{s.begin(), s.end()}.c_str());
 
 		BeginEnumPins(pBF, pEP, pPin)
 		{
@@ -456,8 +456,8 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 			CPinInfo pi;
 			pPin->QueryPinInfo(&pi);
-			wstring s(pi.achName);
-			printf("- Pin [%p - %p]: %s (%s)\n", pPin.p, pPinTo.p, string(s.begin(), s.end()).c_str(), pi.dir ? "out" : "in");
+			std::wstring s{pi.achName};
+			printf("- Pin [%p - %p]: %s (%s)\n", pPin.p, pPinTo.p, std::string{s.begin(), s.end()}.c_str(), pi.dir ? "out" : "in");
 
 			BeginEnumMediaTypes(pPin, pEMT, pmt)
 			{

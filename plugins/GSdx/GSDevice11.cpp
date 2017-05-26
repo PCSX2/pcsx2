@@ -256,7 +256,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	int ShadeBoost_Brightness = theApp.GetConfigI("ShadeBoost_Brightness");
 	int ShadeBoost_Saturation = theApp.GetConfigI("ShadeBoost_Saturation");
 
-	string str[3];
+	std::string str[3];
 
 	str[0] = format("%d", ShadeBoost_Saturation);
 	str[1] = format("%d", ShadeBoost_Brightness);

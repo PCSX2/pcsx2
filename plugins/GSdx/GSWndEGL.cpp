@@ -196,7 +196,7 @@ void GSWndEGL::Detach()
 	DestroyNativeResources();
 }
 
-bool GSWndEGL::Create(const string& title, int w, int h)
+bool GSWndEGL::Create(const std::string& title, int w, int h)
 {
 	if(w <= 0 || h <= 0) {
 		w = theApp.GetConfigI("ModeWidth");

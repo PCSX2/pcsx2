@@ -65,7 +65,7 @@ public:
 
 	virtual bool Create(void* hWnd);
 	virtual void VSync();
-	virtual bool MakeSnapshot(const string& path);
+	virtual bool MakeSnapshot(const std::string& path);
 };
 
 template<class Vertex>

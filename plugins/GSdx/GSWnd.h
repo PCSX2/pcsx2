@@ -34,7 +34,7 @@ public:
 	GSWnd() : m_managed(false) {};
 	virtual ~GSWnd() {};
 
-	virtual bool Create(const string& title, int w, int h) = 0;
+	virtual bool Create(const std::string& title, int w, int h) = 0;
 	virtual bool Attach(void* handle, bool managed = true) = 0;
 	virtual void Detach() = 0;
 	bool IsManaged() const {return m_managed;}
@@ -76,7 +76,7 @@ public:
 	GSWndGL() : m_ctx_attached(false), m_vsync_change_requested(false), m_vsync(0) {};
 	virtual ~GSWndGL() {};
 
-	virtual bool Create(const string& title, int w, int h) = 0;
+	virtual bool Create(const std::string& title, int w, int h) = 0;
 	virtual bool Attach(void* handle, bool managed = true) = 0;
 	virtual void Detach() = 0;
 

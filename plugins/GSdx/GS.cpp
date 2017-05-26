@@ -753,7 +753,7 @@ EXPORT_C_(uint32) GSmakeSnapshot(char* path)
 {
 	try
 	{
-		string s(path);
+		std::string s{path};
 
 		if(!s.empty() && s[s.length() - 1] != DIRECTORY_SEPARATOR)
 		{
@@ -941,7 +941,7 @@ EXPORT_C GSgetLastTag(uint32* tag)
 
 EXPORT_C GSgetTitleInfo2(char* dest, size_t length)
 {
-	string s = "GSdx";
+	std::string s{"GSdx"};
 	s.append(s_renderer_name).append(s_renderer_type);
 
 	// TODO: this gets called from a different thread concurrently with GSOpen (on linux)
@@ -993,7 +993,7 @@ EXPORT_C GSsetExclusive(int enabled)
 class Console
 {
 	HANDLE m_console;
-	string m_title;
+	std::string m_title;
 
 public:
 	Console::Console(LPCSTR title, bool open)

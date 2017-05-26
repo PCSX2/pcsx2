@@ -509,7 +509,7 @@ void GSRendererCS::Draw()
 		}
 		else
 		{
-			string str[2];
+			std::string str[2];
 
 			str[0] = format("%d", vs_sel.tme);
 			str[1] = format("%d", vs_sel.fst);
@@ -566,7 +566,7 @@ void GSRendererCS::Draw()
 		}
 		else
 		{
-			string str[2];
+			std::string str[2];
 
 			str[0] = format("%d", gs_sel.iip);
 			str[1] = format("%d", j == 0 ? gs_sel.prim : GS_SPRITE_CLASS);
@@ -605,7 +605,7 @@ void GSRendererCS::Draw()
 	}
 	else
 	{
-		string str[15];
+		std::string str[15];
 
 		str[0] = format("%d", PS_BATCH_SIZE);
 		str[1] = format("%d", context->FRAME.PSM);

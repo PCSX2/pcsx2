@@ -125,9 +125,9 @@ bool GSDialog::OnCommand(HWND hWnd, UINT id, UINT code)
 	return false;
 }
 
-string GSDialog::GetText(UINT id)
+std::string GSDialog::GetText(UINT id)
 {
-	string s;
+	std::string s;
 
 	char* buff = NULL;
 
@@ -183,7 +183,7 @@ void GSDialog::ComboBoxInit(UINT id, const vector<GSSetting>& settings, int32_t 
 
 		if(s.value <= maxValue)
 		{
-			string str(s.name);
+			std::string str(s.name);
 
 			if(!s.note.empty())
 			{

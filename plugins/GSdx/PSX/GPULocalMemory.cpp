@@ -583,7 +583,7 @@ void GPULocalMemory::Expand24(const uint16* RESTRICT src, uint32* RESTRICT dst, 
 
 #include "GSTextureSW.h"
 
-void GPULocalMemory::SaveBMP(const string& fn, const GSVector4i& r2, int tp, int cx, int cy)
+void GPULocalMemory::SaveBMP(const std::string& fn, const GSVector4i& r2, int tp, int cx, int cy)
 {
 	GSVector4i r;
 

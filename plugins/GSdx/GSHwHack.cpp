@@ -2274,15 +2274,15 @@ bool GSC_SSX3(const GSFrameInfo& fi, int& skip)
 class AutoReloadLibrary
 {
 private:
-	string	m_dllPath, m_loadedDllPath;
+	std::string	m_dllPath, m_loadedDllPath;
 	DWORD	m_minMsBetweenProbes;
 	time_t	m_lastFileModification;
 	DWORD	m_lastProbe;
 	HMODULE	m_library;
 
-	string	GetTempName()
+	std::string	GetTempName()
 	{
-		string result = m_loadedDllPath + ".tmp"; //default name
+		std::string result = m_loadedDllPath + ".tmp"; //default name
 		TCHAR tmpPath[MAX_PATH], tmpName[MAX_PATH];
 		DWORD ret = GetTempPath(MAX_PATH, tmpPath);
 		if(ret && ret <= MAX_PATH && GetTempFileName(tmpPath, TEXT("GSdx"), 0, tmpName))
@@ -2305,7 +2305,7 @@ private:
 	}
 
 public:
-	AutoReloadLibrary( const string dllPath, const int minMsBetweenProbes=100 )
+	AutoReloadLibrary( const std::string dllPath, const int minMsBetweenProbes=100 )
 		: m_minMsBetweenProbes( minMsBetweenProbes )
 		, m_dllPath( dllPath )
 		, m_lastFileModification( 0 )

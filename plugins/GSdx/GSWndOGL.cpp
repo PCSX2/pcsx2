@@ -156,7 +156,7 @@ void GSWndOGL::Detach()
 	}
 }
 
-bool GSWndOGL::Create(const string& title, int w, int h)
+bool GSWndOGL::Create(const std::string& title, int w, int h)
 {
 	if(m_NativeWindow)
 		throw GSDXRecoverableError();

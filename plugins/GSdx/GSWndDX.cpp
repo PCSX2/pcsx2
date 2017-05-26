@@ -79,7 +79,7 @@ LRESULT GSWndDX::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc((HWND)m_hWnd, message, wParam, lParam);
 }
 
-bool GSWndDX::Create(const string& title, int w, int h)
+bool GSWndDX::Create(const std::string& title, int w, int h)
 {
 	if(m_hWnd)
 		throw GSDXRecoverableError();

@@ -346,7 +346,7 @@ void GSRenderer::VSync(int field)
 
 		double fps = 1000.0f / m_perfmon.Get(GSPerfMon::Frame);
 
-		string s;
+		std::string s;
 
 #ifdef GSTITLEINFO_API_FORCE_VERBOSE
 		if(1)//force verbose reply
@@ -356,7 +356,7 @@ void GSRenderer::VSync(int field)
 		{
 			//GSdx owns the window's title, be verbose.
 
-			string s2 = m_regs->SMODE2.INT ? (string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
+			std::string s2 = m_regs->SMODE2.INT ? (std::string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
 
 			s = format(
 				"%lld | %d x %d | %.2f fps (%d%%) | %s - %s | %s | %d S/%d P/%d D | %d%% CPU | %.2f | %.2f",
@@ -508,7 +508,7 @@ void GSRenderer::VSync(int field)
 	}
 }
 
-bool GSRenderer::MakeSnapshot(const string& path)
+bool GSRenderer::MakeSnapshot(const std::string& path)
 {
 	if(m_snapshot.empty())
 	{

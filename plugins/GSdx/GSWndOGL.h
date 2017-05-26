@@ -45,7 +45,7 @@ public:
 	GSWndOGL();
 	virtual ~GSWndOGL() {};
 
-	bool Create(const string& title, int w, int h);
+	bool Create(const std::string& title, int w, int h);
 	bool Attach(void* handle, bool managed = true);
 	void Detach();
 

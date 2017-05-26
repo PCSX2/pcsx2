@@ -237,7 +237,7 @@ void GSWndWGL::CloseWGLDisplay()
 // Used by GSReplay. At least for now.
 // More or less copy pasted from GSWndDX::Create and GSWndWGL::Attach with a few
 // modifications
-bool GSWndWGL::Create(const string& title, int w, int h)
+bool GSWndWGL::Create(const std::string& title, int w, int h)
 {
 	if(m_NativeWindow) return false;
 

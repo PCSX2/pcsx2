@@ -159,7 +159,7 @@ public:
 template<class CG, class KEY, class VALUE>
 class GSCodeGeneratorFunctionMap : public GSFunctionMap<KEY, VALUE>
 {
-	string m_name;
+	std::string m_name;
 	void* m_param;
 	hash_map<uint64, VALUE> m_cgmap;
 	GSCodeBuffer m_cb;
@@ -219,7 +219,7 @@ public:
 
 			// if(iJIT_IsProfilingActive()) // always > 0
 			{
-				string name = format("%s<%016llx>()", m_name.c_str(), (uint64)key);
+				std::string name = format("%s<%016llx>()", m_name.c_str(), (uint64)key);
 
 				iJIT_Method_Load ml;
 

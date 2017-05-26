@@ -869,7 +869,7 @@ void GSRendererHW::Draw()
 	{
 		uint64 frame = m_perfmon.GetFrame();
 
-		string s;
+		std::string s;
 
 		if (s_n >= s_saven) {
 			// Dump Register state
@@ -1039,7 +1039,7 @@ void GSRendererHW::Draw()
 	{
 		uint64 frame = m_perfmon.GetFrame();
 
-		string s;
+		std::string s;
 
 		if(s_save && s_n >= s_saven)
 		{

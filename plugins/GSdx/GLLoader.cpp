@@ -385,7 +385,7 @@ namespace GLLoader {
 
 		if (glGetStringi && max_ext) {
 			for (GLint i = 0; i < max_ext; i++) {
-				string ext((const char*)glGetStringi(GL_EXTENSIONS, i));
+				std::string ext{(const char*)glGetStringi(GL_EXTENSIONS, i)};
 				// Bonus
 				if (ext.compare("GL_EXT_texture_filter_anisotropic") == 0) found_GL_EXT_texture_filter_anisotropic = true;
 				if (ext.compare("GL_NVX_gpu_memory_info") == 0) found_GL_NVX_gpu_memory_info = true;

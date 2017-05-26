@@ -183,7 +183,7 @@ void GPURenderer::VSync()
 		int w = r.width() << m_scale.x;
 		int h = r.height() << m_scale.y;
 
-		string s = format(
+		std::string s = format(
 			"%lld | %d x %d | %.2f fps (%d%%) | %d/%d | %d%% CPU | %.2f | %.2f",
 			m_perfmon.GetFrame(), w, h, fps, (int)(100.0 * fps / m_env.GetFPS()),
 			(int)m_perfmon.Get(GSPerfMon::Prim),
@@ -208,7 +208,7 @@ void GPURenderer::VSync()
 	m_dev->Present(r.fit(m_aspectratio), 0);
 }
 
-bool GPURenderer::MakeSnapshot(const string& path)
+bool GPURenderer::MakeSnapshot(const std::string& path)
 {
 	time_t t = time(NULL);
 

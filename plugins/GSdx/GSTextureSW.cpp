@@ -85,7 +85,7 @@ void GSTextureSW::Unmap()
 	m_mapped.clear(std::memory_order_release);
 }
 
-bool GSTextureSW::Save(const string& fn, bool dds)
+bool GSTextureSW::Save(const std::string& fn, bool dds)
 {
 	if(dds) return false; // not implemented
 

@@ -52,7 +52,7 @@ public:
 	GSWndEGL(int platform);
 	virtual ~GSWndEGL() {};
 
-	bool Create(const string& title, int w, int h) final;
+	bool Create(const std::string& title, int w, int h) final;
 	bool Attach(void* handle, bool managed = true) final;
 	void Detach() final;
 

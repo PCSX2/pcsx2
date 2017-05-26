@@ -79,7 +79,7 @@ void GSCaptureDlg::OnInit()
 
 		c.moniker = moniker;
 
-		wstring prefix;
+		std::wstring prefix;
 
 		LPOLESTR str = NULL;
 
@@ -108,7 +108,7 @@ void GSCaptureDlg::OnInit()
 
 		m_codecs.push_back(c);
 
-		string s(c.FriendlyName.begin(), c.FriendlyName.end());
+		std::string s{c.FriendlyName.begin(), c.FriendlyName.end()};
 
 		ComboBoxAppend(IDC_CODECS, s.c_str(), (LPARAM)&m_codecs.back(), c.DisplayName == selected);
 	}

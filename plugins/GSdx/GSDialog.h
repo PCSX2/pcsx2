@@ -45,7 +45,7 @@ public:
 
 	INT_PTR DoModal();
 
-	string GetText(UINT id);
+	std::string GetText(UINT id);
 	int GetTextAsInt(UINT id);
 
 	void SetText(UINT id, const char* str);

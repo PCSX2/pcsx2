@@ -518,7 +518,7 @@ CRC::Game CRC::m_games[] =
 
 map<uint32, CRC::Game*> CRC::m_map;
 
-string ToLower( string str )
+std::string ToLower( std::string str )
 {
 	transform( str.begin(), str.end(), str.begin(), ::tolower);
 	return str;
@@ -528,11 +528,11 @@ string ToLower( string str )
 // The list is case insensitive and order insensitive.
 // E.g. Disable all CRC hacks:          CrcHacksExclusions=all
 // E.g. Disable hacks for these CRCs:   CrcHacksExclusions=0x0F0C4A9C, 0x0EE5646B, 0x7ACF7E03
-bool IsCrcExcluded(string exclusionList, uint32 crc)
+bool IsCrcExcluded(std::string exclusionList, uint32 crc)
 {
-	string target = format( "0x%08x", crc );
-	exclusionList = ToLower( exclusionList );
-	return ( exclusionList.find( target ) != string::npos || exclusionList.find( "all" ) != string::npos );
+	std::string target = format("0x%08x", crc);
+	exclusionList = ToLower(exclusionList);
+	return exclusionList.find(target) != std::string::npos || exclusionList.find("all") != std::string::npos;
 }
 
 CRC::Game CRC::Lookup(uint32 crc)
@@ -540,7 +540,7 @@ CRC::Game CRC::Lookup(uint32 crc)
 	printf("GSdx Lookup CRC:%X\n", crc);
 	if(m_map.empty())
 	{
-		string exclusions = theApp.GetConfigS("CrcHacksExclusions");
+		std::string exclusions = theApp.GetConfigS("CrcHacksExclusions");
 		if (exclusions.length() != 0)
 			printf( "GSdx: CrcHacksExclusions: %s\n", exclusions.c_str() );
 
