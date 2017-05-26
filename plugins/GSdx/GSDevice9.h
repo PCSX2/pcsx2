@@ -172,12 +172,12 @@ public: // TODO
 
 	// Shaders...
 
-	hash_map<uint32, GSVertexShader9 > m_vs;
-	hash_map<uint64, CComPtr<IDirect3DPixelShader9> > m_ps;
-	hash_map<uint32, Direct3DSamplerState9* > m_ps_ss;
-	hash_map<uint32, Direct3DDepthStencilState9* > m_om_dss;
-	hash_map<uint32, Direct3DBlendState9* > m_om_bs;
-	hash_map<uint32, GSTexture*> m_mskfix;
+	std::unordered_map<uint32, GSVertexShader9> m_vs;
+	std::unordered_map<uint64, CComPtr<IDirect3DPixelShader9>> m_ps;
+	std::unordered_map<uint32, Direct3DSamplerState9*> m_ps_ss;
+	std::unordered_map<uint32, Direct3DDepthStencilState9*> m_om_dss;
+	std::unordered_map<uint32, Direct3DBlendState9*> m_om_bs;
+	std::unordered_map<uint32, GSTexture*> m_mskfix;
 
 	GSTexture* CreateMskFix(uint32 size, uint32 msk, uint32 fix);
 
