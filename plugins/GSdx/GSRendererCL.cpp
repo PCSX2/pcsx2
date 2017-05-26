@@ -405,7 +405,7 @@ void GSRendererCL::Draw()
 			}
 		}
 
-		shared_ptr<TFXJob> job(new TFXJob());
+		std::shared_ptr<TFXJob> job(new TFXJob());
 
 		if(!SetupParameter(job.get(), pb, vb, m_vertex.next, m_index.buff, m_index.tail))
 		{
@@ -891,7 +891,7 @@ void GSRendererCL::Enqueue()
 						}
 					}
 
-					std::list<shared_ptr<TFXJob>> jobs(head, next);
+					std::list<std::shared_ptr<TFXJob>> jobs(head, next);
 
 					JoinTFX(jobs);
 
@@ -945,7 +945,7 @@ void GSRendererCL::Enqueue()
 	m_cl.Map();
 }
 
-void GSRendererCL::EnqueueTFX(std::list<shared_ptr<TFXJob>>& jobs, uint32 bin_count, const cl_uchar4& bin_dim)
+void GSRendererCL::EnqueueTFX(std::list<std::shared_ptr<TFXJob>>& jobs, uint32 bin_count, const cl_uchar4& bin_dim)
 {
 	cl_kernel tfx_prev = NULL;
 
@@ -995,7 +995,7 @@ void GSRendererCL::EnqueueTFX(std::list<shared_ptr<TFXJob>>& jobs, uint32 bin_co
 	}
 }
 
-void GSRendererCL::JoinTFX(std::list<shared_ptr<TFXJob>>& jobs)
+void GSRendererCL::JoinTFX(std::list<std::shared_ptr<TFXJob>>& jobs)
 {
 	// join tfx kernel calls where the selector and fbp/zbp/bw/fpsm/zpsm are the same and src_pages != prev dst_pages
 
