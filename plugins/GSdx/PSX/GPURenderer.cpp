@@ -25,7 +25,7 @@
 
 #ifdef _WIN32
 
-map<HWND, GPURenderer*> GPURenderer::m_wnd2gpu;
+std::map<HWND, GPURenderer*> GPURenderer::m_wnd2gpu;
 
 #endif
 
@@ -231,7 +231,7 @@ bool GPURenderer::MakeSnapshot(const std::string& path)
 
 LRESULT CALLBACK GPURenderer::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	map<HWND, GPURenderer*>::iterator i = m_wnd2gpu.find(hWnd);
+	auto i = m_wnd2gpu.find(hWnd);
 
 	if(i != m_wnd2gpu.end())
 	{

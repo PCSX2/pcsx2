@@ -516,7 +516,7 @@ CRC::Game CRC::m_games[] =
 	{0x4653CA3E, HarleyDavidson, NoRegion, 0},
 };
 
-map<uint32, CRC::Game*> CRC::m_map;
+std::map<uint32, CRC::Game*> CRC::m_map;
 
 std::string ToLower( std::string str )
 {

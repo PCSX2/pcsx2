@@ -147,14 +147,13 @@ bool GSdxApp::WritePrivateProfileString(const char* lpAppName, const char* lpKey
 
 	if (f == NULL) return false; // FIXME print a nice message
 
-	map<std::string,std::string>::iterator it;
-	for (it = m_configuration_map.begin(); it != m_configuration_map.end(); ++it) {
+	for (const auto& entry : m_configuration_map) {
 		// Do not save the inifile key which is not an option
-		if (it->first.compare("inifile") == 0) continue;
+		if (entry.first.compare("inifile") == 0) continue;
 
 		// Only keep option that have a default value (allow to purge old option of the GSdx.ini)
-		if (!it->second.empty() && m_default_configuration.find(it->first) != m_default_configuration.end())
-			fprintf(f, "%s = %s\n", it->first.c_str(), it->second.c_str());
+		if (!entry.second.empty() && m_default_configuration.find(entry.first) != m_default_configuration.end())
+			fprintf(f, "%s = %s\n", entry.first.c_str(), entry.second.c_str());
 	}
 	fclose(f);
 
