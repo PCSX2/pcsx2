@@ -71,7 +71,7 @@ void GPURendererSW::Draw()
 {
 	GPUDrawScanline::SharedData* sd = new GPUDrawScanline::SharedData();
 
-	shared_ptr<GSRasterizerData> data(sd);
+	std::shared_ptr<GSRasterizerData> data(sd);
 
 	GPUScanlineGlobalData& gd = sd->global;
 

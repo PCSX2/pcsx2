@@ -378,7 +378,7 @@ void GSRendererSW::Draw()
 
 	SharedData* sd = new SharedData(this);
 
-	shared_ptr<GSRasterizerData> data(sd);
+	std::shared_ptr<GSRasterizerData> data(sd);
 
 	sd->primclass = m_vt.m_primclass;
 	sd->buff = (uint8*)_aligned_malloc(sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1) + sizeof(uint32) * m_index.tail, 64);
@@ -576,7 +576,7 @@ void GSRendererSW::Draw()
 	*/
 }
 
-void GSRendererSW::Queue(shared_ptr<GSRasterizerData>& item)
+void GSRendererSW::Queue(std::shared_ptr<GSRasterizerData>& item)
 {
 	SharedData* sd = (SharedData*)item.get();
 
