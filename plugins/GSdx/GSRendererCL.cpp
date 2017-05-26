@@ -1997,7 +1997,7 @@ void GSRendererCL::CL::Unmap()
 	pb.mapped_ptr = pb.ptr = NULL;
 }
 
-cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
+cl::Kernel GSRendererCL::CL::Build(const char* entry, std::ostringstream& opt)
 {
 	cl::Program program;
 
@@ -2017,7 +2017,7 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 				{
 					fseek(f, 0, SEEK_END);
 					long size = ftell(f);
-					pair<void*, size_t> b(new char[size], size);
+					std::pair<void*, size_t> b(new char[size], size);
 					fseek(f, 0, SEEK_SET);
 					fread(b.first, b.second, 1, f);
 					fclose(f);
@@ -2114,7 +2114,7 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 	return cl::Kernel(program, entry);
 }
 
-void GSRendererCL::CL::AddDefs(ostringstream& opt)
+void GSRendererCL::CL::AddDefs(std::ostringstream& opt)
 {
 	if(version == 110) opt << "-cl-std=CL1.1 ";
 	else opt << "-cl-std=CL1.2 ";
@@ -2146,7 +2146,7 @@ cl::Kernel& GSRendererCL::CL::GetPrimKernel(const PrimSelector& sel)
 
 	sprintf(entry, "prim_%02x", sel.key);
 
-	ostringstream opt;
+	std::ostringstream opt;
 
 	opt << "-D KERNEL_PRIM=" << entry << " ";
 	opt << "-D PRIM=" << sel.prim << " ";
@@ -2173,7 +2173,7 @@ cl::Kernel& GSRendererCL::CL::GetTileKernel(const TileSelector& sel)
 
 	sprintf(entry, "tile_%02x", sel.key);
 
-	ostringstream opt;
+	std::ostringstream opt;
 
 	opt << "-D KERNEL_TILE=" << entry << " ";
 	opt << "-D PRIM=" << sel.prim << " ";
@@ -2202,7 +2202,7 @@ cl::Kernel& GSRendererCL::CL::GetTFXKernel(const TFXSelector& sel)
 
 	sprintf(entry, "tfx_%016llx", sel.key);
 
-	ostringstream opt;
+	std::ostringstream opt;
 
 	opt << "-D KERNEL_TFX=" << entry << " ";
 	opt << "-D FPSM=" << sel.fpsm << " ";

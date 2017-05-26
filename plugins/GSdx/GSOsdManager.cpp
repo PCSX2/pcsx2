@@ -178,9 +178,9 @@ void GSOsdManager::Log(const char *utf8, uint32 color) {
 	for(char32_t* c = buffer; *c; ++c) AddGlyph(*c);
 #else
 #if _MSC_VER == 1900
-	std::wstring_convert<codecvt_utf8<unsigned int>, unsigned int> conv;
+	std::wstring_convert<std::codecvt_utf8<unsigned int>, unsigned int> conv;
 #else
-	std::wstring_convert<codecvt_utf8<char32_t>, char32_t> conv;
+	std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
 #endif
 	std::u32string buffer = conv.from_bytes(utf8);
 	for(auto const &c : buffer) AddGlyph(c);
@@ -203,9 +203,9 @@ void GSOsdManager::Monitor(const char *key, const char *value, uint32 color) {
 		for(char32_t* c = vbuffer; *c; ++c) AddGlyph(*c);
 #else
 #if _MSC_VER == 1900
-		std::wstring_convert<codecvt_utf8<unsigned int>, unsigned int> conv;
+		std::wstring_convert<std::codecvt_utf8<unsigned int>, unsigned int> conv;
 #else
-		std::wstring_convert<codecvt_utf8<char32_t>, char32_t> conv;
+		std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
 #endif
 		std::u32string buffer = conv.from_bytes(key);
 		std::u32string vbuffer = conv.from_bytes(value);
@@ -219,9 +219,9 @@ void GSOsdManager::Monitor(const char *key, const char *value, uint32 color) {
 		dumb_utf8_to_utf32(key, buffer, countof(buffer));
 #else
 #if _MSC_VER == 1900
-		std::wstring_convert<codecvt_utf8<unsigned int>, unsigned int> conv;
+		std::wstring_convert<std::codecvt_utf8<unsigned int>, unsigned int> conv;
 #else
-		std::wstring_convert<codecvt_utf8<char32_t>, char32_t> conv;
+		std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
 #endif
 		std::u32string buffer = conv.from_bytes(key);
 #endif
