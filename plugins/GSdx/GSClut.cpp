@@ -140,8 +140,8 @@ void GSClut::Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 	{
 		int size = TEX0.CPSM < PSM_PSMCT16 ? 512 : 256;
 
-		memcpy(m_clut + 512 + offset, m_clut + offset, sizeof(*m_clut) * min(size, 512 - offset));
-		memcpy(m_clut, m_clut + 512, sizeof(*m_clut) * max(0, size + offset - 512));
+		memcpy(m_clut + 512 + offset, m_clut + offset, sizeof(*m_clut) * std::min(size, 512 - offset));
+		memcpy(m_clut, m_clut + 512, sizeof(*m_clut) * std::max(0, size + offset - 512));
 	}
 	else
 	{

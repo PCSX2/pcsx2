@@ -151,8 +151,8 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, 
 	: m_pbo_size(0), m_clean(false), m_generate_mipmap(true), m_local_buffer(NULL), m_r_x(0), m_r_y(0), m_r_w(0), m_r_h(0), m_layer(0)
 {
 	// OpenGL didn't like dimensions of size 0
-	m_size.x = max(1,w);
-	m_size.y = max(1,h);
+	m_size.x = std::max(1,w);
+	m_size.y = std::max(1,h);
 	m_format = format;
 	m_type   = type;
 	m_fbo_read = fbo_read;
@@ -245,7 +245,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, 
 	}
 
 	// Only 32 bits input texture will be supported for mipmap
-	m_max_layer = mipmap && (m_type == GSTexture::Texture) && m_format == GL_RGBA8 ? (int)log2(max(w,h)) : 1;
+	m_max_layer = mipmap && (m_type == GSTexture::Texture) && m_format == GL_RGBA8 ? (int)log2(std::max(w,h)) : 1;
 
 	// Generate & Allocate the buffer
 	switch (m_type) {

@@ -816,7 +816,7 @@ void GSLocalMemory::WriteImageTopBottom(int l, int r, int y, int h, const uint8*
 
 	if(y2 > 0)
 	{
-		int h2 = min(h, csy - y2);
+		int h2 = std::min(h, csy - y2);
 
 		for(int x = l; x < r; x += bsx)
 		{
@@ -969,7 +969,7 @@ void GSLocalMemory::WriteImage(int& tx, int& ty, const uint8* src, int len, GIFR
 
 	if(tx != l)
 	{
-		int n = min(len, (r - tx) * trbpp >> 3);
+		int n = std::min(len, (r - tx) * trbpp >> 3);
 		WriteImageX(tx, ty, src, n, BITBLTBUF, TRXPOS, TRXREG);
 		src += n;
 		len -= n;
@@ -1008,7 +1008,7 @@ void GSLocalMemory::WriteImage(int& tx, int& ty, const uint8* src, int len, GIFR
 			// top part
 
 			{
-				int h2 = min(h, bsy - (ty & (bsy - 1)));
+				int h2 = std::min(h, bsy - (ty & (bsy - 1)));
 
 				if(h2 < bsy)
 				{

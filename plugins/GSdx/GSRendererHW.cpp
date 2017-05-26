@@ -94,7 +94,7 @@ void GSRendererHW::SetScaling()
 	// Framebuffer width is always a multiple of 64 so at certain cases it can't cover some weird width values.
 	// 480P , 576P use width as 720 which is not referencable by FBW * 64. so it produces 704 ( the closest value multiple by 64).
 	// In such cases, let's just use the CRTC width.
-	int fb_width = max({ (int)m_context->FRAME.FBW * 64, crtc_size.x , 512 });
+	int fb_width = std::max({ (int)m_context->FRAME.FBW * 64, crtc_size.x , 512 });
 	// GS doesn't have a specific register for the FrameBuffer height. so we get the height
 	// from physical units of the display rectangle in case the game uses a heigher value of height.
 	//
@@ -112,7 +112,7 @@ void GSRendererHW::SetScaling()
 	//
 	// Until performance issue is properly fixed, let's keep an option to reduce the framebuffer size.
 	int fb_height = m_large_framebuffer ? 1280 :
-		(fb_width < 1024) ? max(512, crtc_size.y) : 1024;
+		(fb_width < 1024) ? std::max(512, crtc_size.y) : 1024;
 
 	int upscaled_fb_w = fb_width * m_upscale_multiplier;
 	int upscaled_fb_h = fb_height * m_upscale_multiplier;
