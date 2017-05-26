@@ -1767,7 +1767,7 @@ void GSTextureCache::Source::Flush(uint32 count, int layer)
 
 	GSVector4i tr(0, 0, tw, th);
 
-	int pitch = max(tw, psm.bs.x) * sizeof(uint32);
+	int pitch = std::max(tw, psm.bs.x) * sizeof(uint32);
 
 	GSLocalMemory& mem = m_renderer->m_mem;
 
@@ -1852,12 +1852,12 @@ void GSTextureCache::Target::Update()
 	GSVector2 t_scale = m_texture->GetScale();
 
 	//Avoids division by zero when calculating texture size.
-	t_scale = GSVector2(max(1.0f, t_scale.x), max(1.0f, t_scale.y));
+	t_scale = GSVector2(std::max(1.0f, t_scale.x), std::max(1.0f, t_scale.y));
 	t_size.x = lround(static_cast<float>(t_size.x) / t_scale.x);
 	t_size.y = lround(static_cast<float>(t_size.y) / t_scale.y);
 
 	// Don't load above the GS memory
-	int max_y_blocks = (MAX_BLOCKS - m_TEX0.TBP0) / max(1u, m_TEX0.TBW);
+	int max_y_blocks = (MAX_BLOCKS - m_TEX0.TBP0) / std::max(1u, m_TEX0.TBW);
 	int max_y = (max_y_blocks >> 5) * GSLocalMemory::m_psm[m_TEX0.PSM].pgs.y;
 	t_size.y = std::min(t_size.y, max_y);
 

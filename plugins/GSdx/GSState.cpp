@@ -2250,7 +2250,7 @@ template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 			case GIF_FLG_IMAGE:
 
 				{
-					int len = (int)min(size, path.nloop);
+					int len = (int)std::min(size, path.nloop);
 
 					//ASSERT(!(len&3));
 
@@ -2964,8 +2964,8 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 			// This commented code cannot be used directly because it needs uv before the intersection
 			/*if (uv_.x >> tw == uv_.z >> tw)
 			{
-				vr.x = max(vr.x, (uv_.x & ((1 << tw) - 1)));
-				vr.z = min(vr.z, (uv_.z & ((1 << tw) - 1)) + 1);
+				vr.x = std::max(vr.x, (uv_.x & ((1 << tw) - 1)));
+				vr.z = std::min(vr.z, (uv_.z & ((1 << tw) - 1)) + 1);
 			}*/
 			if(mask & 0x000f) {if(vr.x < u.x) vr.x = u.x; if(vr.z > u.z + 1) vr.z = u.z + 1;}
 			break;
@@ -3057,8 +3057,8 @@ void GSState::GetAlphaMinMax()
 			a.w = env.TEXA.TA0;
 			break;
 		case 2:
-			a.y = env.TEXA.AEM ? 0 : min(env.TEXA.TA0, env.TEXA.TA1);
-			a.w = max(env.TEXA.TA0, env.TEXA.TA1);
+			a.y = env.TEXA.AEM ? 0 : std::min(env.TEXA.TA0, env.TEXA.TA1);
+			a.w = std::max(env.TEXA.TA0, env.TEXA.TA1);
 			break;
 		case 3:
 			m_mem.m_clut.GetAlphaMinMax32(a.y, a.w);

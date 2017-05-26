@@ -199,7 +199,7 @@ public:
 
 		#else
 
-		return GSVector4i(min(x, a.x), min(y, a.y), max(z, a.z), max(w, a.w));
+		return GSVector4i(std::min(x, a.x), std::min(y, a.y), std::max(z, a.z), std::max(w, a.w));
 
 		#endif
 	}
@@ -301,10 +301,10 @@ public:
 	{
 		GSVector4i v;
 
-		v.x = min(max(x, a.x), b.x);
-		v.y = min(max(y, a.y), b.y);
-		v.z = min(max(z, a.z), b.z);
-		v.w = min(max(w, a.w), b.w);
+		v.x = std::min(std::max(x, a.x), b.x);
+		v.y = std::min(std::max(y, a.y), b.y);
+		v.z = std::min(std::max(z, a.z), b.z);
+		v.w = std::min(std::max(w, a.w), b.w);
 
 		return v;
 	}
@@ -313,10 +313,10 @@ public:
 	{
 		GSVector4i v;
 
-		v.x = min(max(x, a.x), a.z);
-		v.y = min(max(y, a.y), a.w);
-		v.z = min(max(z, a.x), a.z);
-		v.w = min(max(w, a.y), a.w);
+		v.x = std::min(std::max(x, a.x), a.z);
+		v.y = std::min(std::max(y, a.y), a.w);
+		v.z = std::min(std::max(z, a.x), a.z);
+		v.w = std::min(std::max(w, a.y), a.w);
 
 		return v;
 	}

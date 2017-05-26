@@ -101,10 +101,10 @@ bool GSRenderer::Merge(int field)
 			fr[i] = GetFrameRect(i);
 			dr[i] = GetDisplayRect(i);
 
-			display_baseline.x = min(dr[i].left, display_baseline.x);
-			display_baseline.y = min(dr[i].top, display_baseline.y);
-			frame_baseline.x = min(fr[i].left, frame_baseline.x);
-			frame_baseline.y = min(fr[i].top, frame_baseline.y);
+			display_baseline.x = std::min(dr[i].left, display_baseline.x);
+			display_baseline.y = std::min(dr[i].top, display_baseline.y);
+			frame_baseline.x = std::min(fr[i].left, frame_baseline.x);
+			frame_baseline.y = std::min(fr[i].top, frame_baseline.y);
 
 			//printf("[%d]: %d %d %d %d, %d %d %d %d\n", i, fr[i].x,fr[i].y,fr[i].z,fr[i].w , dr[i].x,dr[i].y,dr[i].z,dr[i].w);
 		}
@@ -160,8 +160,8 @@ bool GSRenderer::Merge(int field)
 			// dr[0] = 127 50 639 494
 			// dr[1] = 127 50 639 494
 
-			int top = min(fr[0].top, fr[1].top);
-			int bottom = min(fr[0].bottom, fr[1].bottom);
+			int top = std::min(fr[0].top, fr[1].top);
+			int bottom = std::min(fr[0].bottom, fr[1].bottom);
 
 			fr[0].top = fr[1].top = top;
 			fr[0].bottom = fr[1].bottom = bottom;
@@ -237,8 +237,8 @@ bool GSRenderer::Merge(int field)
 
 		dst[i] = GSVector4(off).xyxy() + scale * GSVector4(r.rsize());
 
-		fs.x = max(fs.x, (int)(dst[i].z + 0.5f));
-		fs.y = max(fs.y, (int)(dst[i].w + 0.5f));
+		fs.x = std::max(fs.x, (int)(dst[i].z + 0.5f));
+		fs.y = std::max(fs.y, (int)(dst[i].w + 0.5f));
 	}
 
 	ds = fs;
@@ -542,7 +542,7 @@ bool GSRenderer::MakeSnapshot(const std::string& path)
 bool GSRenderer::BeginCapture()
 {
 	GSVector4i disp = m_wnd->GetClientRect().fit(m_aspectratio);
-	float aspect = (float)disp.width() / max(1, disp.height());
+	float aspect = (float)disp.width() / std::max(1, disp.height());
 
 	return m_capture.BeginCapture(GetTvRefreshRate(), GetInternalResolution(), aspect);
 }
