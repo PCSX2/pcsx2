@@ -194,8 +194,8 @@ class GSRendererCL : public GSRenderer
 		std::map<uint32, cl::Kernel> tile_map;
 		std::map<uint64, cl::Kernel> tfx_map;
 
-		cl::Kernel Build(const char* entry, ostringstream& opt);
-		void AddDefs(ostringstream& opt);
+		cl::Kernel Build(const char* entry, std::ostringstream& opt);
+		void AddDefs(std::ostringstream& opt);
 
 	public:
 		std::vector<OCLDeviceDesc> devs;
