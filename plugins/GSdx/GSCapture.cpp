@@ -54,7 +54,7 @@ GSSource : public CBaseFilter, private CCritSec, public IGSSource
 	class GSSourceOutputPin : public CBaseOutputPin
 	{
 		GSVector2i m_size;
-		vector<CMediaType> m_mts;
+		std::vector<CMediaType> m_mts;
 
 	public:
 		GSSourceOutputPin(const GSVector2i& size, REFERENCE_TIME atpf, CBaseFilter* pFilter, CCritSec* pLock, HRESULT& hr, int colorspace)
@@ -128,9 +128,9 @@ GSSource : public CBaseFilter, private CCritSec, public IGSSource
 
 	    HRESULT CheckMediaType(const CMediaType* pmt)
 		{
-			for(vector<CMediaType>::iterator i = m_mts.begin(); i != m_mts.end(); i++)
+			for(const auto &mt : m_mts)
 			{
-				if(i->majortype == pmt->majortype && i->subtype == pmt->subtype)
+				if(mt.majortype == pmt->majortype && mt.subtype == pmt->subtype)
 				{
 					return S_OK;
 				}

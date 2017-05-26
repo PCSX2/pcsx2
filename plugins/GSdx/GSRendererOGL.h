@@ -48,7 +48,7 @@ class GSRendererOGL final : public GSRendererHW
 		bool m_accurate_date;
 		int m_sw_blending;
 		PRIM_OVERLAP m_prim_overlap;
-		vector<size_t> m_drawlist;
+		std::vector<size_t> m_drawlist;
 
 		unsigned int UserHacks_TCOffset;
 		float UserHacks_TCO_x, UserHacks_TCO_y;

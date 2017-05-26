@@ -1456,7 +1456,7 @@ void GSDevice9::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4
 
 void GSDevice9::CompileShader(const char *source, size_t size, const char *filename, const std::string& entry, const D3D_SHADER_MACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il)
 {
-	vector<D3D_SHADER_MACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 
@@ -1503,7 +1503,7 @@ void GSDevice9::CompileShader(const char *source, size_t size, const char *filen
 		flags |= D3DCOMPILE_SKIP_VALIDATION;
 	}
 
-	vector<D3D_SHADER_MACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 
