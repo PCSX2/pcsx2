@@ -108,7 +108,7 @@ public:
 	class SourceMap
 	{
 	public:
-		hash_set<Source*> m_surfaces;
+		std::unordered_set<Source*> m_surfaces;
 		std::array<FastList<Source*>, MAX_PAGES> m_map;
 		uint32 m_pages[16]; // bitmap of all pages
 		bool m_used;

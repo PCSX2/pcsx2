@@ -478,7 +478,7 @@ public:
 	GLuint m_gs[1<<3];
 	GLuint m_ps_ss[1<<7];
 	GSDepthStencilOGL* m_om_dss[1<<5];
-	hash_map<uint64, GLuint > m_ps;
+	std::unordered_map<uint64, GLuint> m_ps;
 	GLuint m_apitrace;
 
 	GLuint m_palette_ss;

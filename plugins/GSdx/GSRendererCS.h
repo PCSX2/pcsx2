@@ -107,11 +107,11 @@ class GSRendererCS : public GSRenderer
 	uint32 m_vm_valid[16];
 	CComPtr<ID3D11Buffer> m_pb;
 	//CComPtr<ID3D11Texture2D> m_pb;
-	hash_map<uint32, GSVertexShader11 > m_vs;
+	std::unordered_map<uint32, GSVertexShader11> m_vs;
 	CComPtr<ID3D11Buffer> m_vs_cb;
-	hash_map<uint32, CComPtr<ID3D11GeometryShader> > m_gs;
+	std::unordered_map<uint32, CComPtr<ID3D11GeometryShader>> m_gs;
 	CComPtr<ID3D11PixelShader> m_ps0;
-	hash_map<uint64, CComPtr<ID3D11PixelShader> > m_ps1;
+	std::unordered_map<uint64, CComPtr<ID3D11PixelShader>> m_ps1;
 	CComPtr<ID3D11Buffer> m_ps_cb;
 
 	void Write(GSOffset* off, const GSVector4i& r);
@@ -123,7 +123,7 @@ class GSRendererCS : public GSRenderer
 		CComPtr<ID3D11ShaderResourceView> row_srv, col_srv;
 	};
 
-	hash_map<uint32, OffsetBuffer> m_offset;
+	std::unordered_map<uint32, OffsetBuffer> m_offset;
 
 	bool GetOffsetBuffer(OffsetBuffer** fzbo);
 

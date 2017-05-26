@@ -58,7 +58,7 @@ public:
 
 protected:
 	GSState* m_state;
-	hash_set<Texture*> m_textures;
+	std::unordered_set<Texture*> m_textures;
 	std::array<FastList<Texture*>, MAX_PAGES> m_map;
 
 public:

@@ -173,10 +173,10 @@ protected:
 
 	//
 
-	hash_map<uint32, GSOffset*> m_omap;
-	hash_map<uint32, GSPixelOffset*> m_pomap;
-	hash_map<uint32, GSPixelOffset4*> m_po4map;
-	hash_map<uint64, vector<GSVector2i>*> m_p2tmap;
+	std::unordered_map<uint32, GSOffset*> m_omap;
+	std::unordered_map<uint32, GSPixelOffset*> m_pomap;
+	std::unordered_map<uint32, GSPixelOffset4*> m_po4map;
+	std::unordered_map<uint64, std::vector<GSVector2i>*> m_p2tmap;
 
 public:
 	GSLocalMemory();
