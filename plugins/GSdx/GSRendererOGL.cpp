@@ -1006,7 +1006,7 @@ void GSRendererOGL::SendDraw()
 
 #if defined(_DEBUG)
 		// Check how draw call is split.
-		map<size_t, size_t> frequency;
+		std::map<size_t, size_t> frequency;
 		for (const auto& it: m_drawlist)
 			++frequency[it];
 

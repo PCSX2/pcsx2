@@ -50,7 +50,7 @@ protected:
 
 	HWND m_hWnd;
 	WNDPROC m_wndproc;
-	static map<HWND, GPURenderer*> m_wnd2gpu;
+	static std::map<HWND, GPURenderer*> m_wnd2gpu;
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
