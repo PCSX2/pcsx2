@@ -2009,7 +2009,7 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 		{
 			for(auto d : devs)
 			{
-				string path = d.tmppath + "/" + entry;
+				std::string path = d.tmppath + "/" + entry;
 
 				FILE* f = fopen(path.c_str(), "rb");
 
@@ -2092,7 +2092,7 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 
 			for(size_t i = 0; i < binaries.size(); i++)
 			{
-				string path = devs[i].tmppath + "/" + entry;
+				std::string path = devs[i].tmppath + "/" + entry;
 
 				FILE* f = fopen(path.c_str(), "wb");
 

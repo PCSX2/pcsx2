@@ -488,7 +488,7 @@ void GSRendererSW::Draw()
 		// It will breaks the few games that really uses 16 bits RT
 		bool texture_shuffle = ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS));
 
-		string s;
+		std::string s;
 
 		if(s_n >= s_saven)
 		{
@@ -1539,7 +1539,7 @@ void GSRendererSW::SharedData::UpdateSource()
 	{
 		uint64 frame = m_parent->m_perfmon.GetFrame();
 
-		string s;
+		std::string s;
 
 		if(m_parent->s_savet && m_parent->s_n >= m_parent->s_saven)
 		{

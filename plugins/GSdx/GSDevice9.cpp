@@ -265,7 +265,7 @@ bool GSDevice9::Create(const std::shared_ptr<GSWnd> &wnd)
 	}
 	else
 	{
-		string s = format(
+		std::string s = format(
 			"Supported pixel shader version is too low!\n\nSupported: %d.%d\nNeeded: 2.0 or higher",
 			D3DSHADER_VERSION_MAJOR(m_d3dcaps.PixelShaderVersion), D3DSHADER_VERSION_MINOR(m_d3dcaps.PixelShaderVersion));
 
@@ -354,7 +354,7 @@ bool GSDevice9::Create(const std::shared_ptr<GSWnd> &wnd)
 	int ShadeBoost_Brightness = theApp.GetConfigI("ShadeBoost_Brightness");
 	int ShadeBoost_Saturation = theApp.GetConfigI("ShadeBoost_Saturation");
 
-	string str[3];
+	std::string str[3];
 
 	str[0] = format("%d", ShadeBoost_Saturation);
 	str[1] = format("%d", ShadeBoost_Brightness);
@@ -1454,7 +1454,7 @@ void GSDevice9::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4
 	}
 }
 
-void GSDevice9::CompileShader(const char *source, size_t size, const char *filename, const string& entry, const D3D_SHADER_MACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il)
+void GSDevice9::CompileShader(const char *source, size_t size, const char *filename, const std::string& entry, const D3D_SHADER_MACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il)
 {
 	vector<D3D_SHADER_MACRO> m;
 
@@ -1490,7 +1490,7 @@ void GSDevice9::CompileShader(const char *source, size_t size, const char *filen
 	}
 }
 
-void GSDevice9::CompileShader(const char *source, size_t size, const char *filename, const string& entry, const D3D_SHADER_MACRO* macro, IDirect3DPixelShader9** ps)
+void GSDevice9::CompileShader(const char *source, size_t size, const char *filename, const std::string& entry, const D3D_SHADER_MACRO* macro, IDirect3DPixelShader9** ps)
 {
 	uint32 flags = 0;
 

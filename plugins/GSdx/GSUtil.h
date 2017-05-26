@@ -29,9 +29,9 @@ struct OCLDeviceDesc
 #ifdef ENABLE_OPENCL
 	cl::Device device;
 #endif
-	string name;
+	std::string name;
 	int version;
-	string tmppath;
+	std::string tmppath;
 };
 
 class GSUtil
@@ -56,7 +56,7 @@ public:
 
 #ifdef ENABLE_OPENCL
 	static void GetDeviceDescs(list<OCLDeviceDesc>& dl);
-	static string GetDeviceUniqueName(cl::Device& device);
+	static std::string GetDeviceUniqueName(cl::Device& device);
 #endif
 
 #ifdef _WIN32

@@ -31,7 +31,7 @@ class GSCaptureDlg : public GSDialog
 	{
 		CComPtr<IMoniker> moniker;
 		CComPtr<IBaseFilter> filter;
-		wstring FriendlyName;
+		std::wstring FriendlyName;
 		_bstr_t DisplayName;
 	};
 
@@ -48,7 +48,7 @@ public:
 
 	int m_width;
 	int m_height;
-	string m_filename;
+	std::string m_filename;
 	INT_PTR m_colorspace;
 	CComPtr<IBaseFilter> m_enc;
 };

@@ -67,7 +67,7 @@ void GSDevice9::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 
 	if(i == m_vs.end())
 	{
-		string str[5];
+		std::string str[5];
 
 		str[0] = format("%d", sel.bppz);
 		str[1] = format("%d", sel.tme);
@@ -137,7 +137,7 @@ void GSDevice9::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSel
 
 	if(i == m_ps.end())
 	{
-		string str[18];
+		std::string str[18];
 
 		str[0] = format("%d", sel.fst);
 		str[1] = format("%d", sel.wms);
@@ -323,7 +323,7 @@ void GSDevice9::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint
 			{
 				(bsel.a == 0 ? bs->SrcBlend : bs->DestBlend) = D3DBLEND_ONE;
 
-				const string afixstr = format("%d >> 7", afix);
+				const std::string afixstr = format("%d >> 7", afix);
 				const char *col[3] = {"Cs", "Cd", "0"};
 				const char *alpha[3] = {"As", "Ad", afixstr.c_str()};
 

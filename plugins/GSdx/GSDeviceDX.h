@@ -286,7 +286,7 @@ public:
 	#pragma pack(pop)
 
 protected:
-	struct {D3D_FEATURE_LEVEL level; string model, vs, gs, ps, cs;} m_shader;
+	struct {D3D_FEATURE_LEVEL level; std::string model, vs, gs, ps, cs;} m_shader;
 	uint32 m_msaa;
 	DXGI_SAMPLE_DESC m_msaa_desc;
 

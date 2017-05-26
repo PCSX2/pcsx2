@@ -917,6 +917,6 @@ public:
 
 	//
 
-	void SaveBMP(const string& fn, uint32 bp, uint32 bw, uint32 psm, int w, int h);
+	void SaveBMP(const std::string& fn, uint32 bp, uint32 bw, uint32 psm, int w, int h);
 };
 

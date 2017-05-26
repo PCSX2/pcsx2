@@ -41,7 +41,7 @@ struct {
 
 namespace GSPng {
 
-    bool SaveFile(const string& file, const Format fmt, const uint8* const image,
+    bool SaveFile(const std::string& file, const Format fmt, const uint8* const image,
         uint8* const row, const int width, const int height, const int pitch,
         const int compression, const bool rb_swapped = false, const bool first_image = false)
     {
@@ -104,7 +104,7 @@ namespace GSPng {
         return success;
     }
 
-    bool Save(GSPng::Format fmt, const string& file, uint8* image, int w, int h, int pitch, int compression, bool rb_swapped)
+    bool Save(GSPng::Format fmt, const std::string& file, uint8* image, int w, int h, int pitch, int compression, bool rb_swapped)
     {
         std::string root = file;
         root.replace(file.length() - 4, 4, "");
@@ -128,7 +128,7 @@ namespace GSPng {
         return SaveFile(filename, fmt, image, row.get(), w, h, pitch, compression);
     }
 
-    Transaction::Transaction(GSPng::Format fmt, const string& file, const uint8* image, int w, int h, int pitch, int compression)
+    Transaction::Transaction(GSPng::Format fmt, const std::string& file, const uint8* image, int w, int h, int pitch, int compression)
         : m_fmt(fmt), m_file(file), m_w(w), m_h(h), m_pitch(pitch), m_compression(compression)
     {
         // Note: yes it would be better to use shared pointer

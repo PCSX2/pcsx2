@@ -89,7 +89,7 @@ protected:
 	int s_n;
 	bool dump_enable = false;
 
-	void Dump(const string& s, uint32 TP, const GSVector4i& r, int inc = true)
+	void Dump(const std::string& s, uint32 TP, const GSVector4i& r, int inc = true)
 	{
 		//if(m_perfmon.GetFrame() < 1000)
 		//if((m_env.TWIN.u32 & 0xfffff) == 0)
@@ -105,12 +105,12 @@ protected:
 #ifdef DEBUG
 		dir = 2;
 #endif
-        string path = format("c:\\temp%d\\%04d_%s.bmp", dir, s_n, s.c_str());
+		std::string path = format("c:\\temp%d\\%04d_%s.bmp", dir, s_n, s.c_str());
 
 		m_mem.SaveBMP(path, r, TP, m_env.CLUT.X, m_env.CLUT.Y);
 	}
 
-	void Dump(const string& s, int inc = true)
+	void Dump(const std::string& s, int inc = true)
 	{
 		Dump(s, 2, GSVector4i(0, 0, 1024, 512), inc);
 	}

@@ -53,7 +53,7 @@ public:
 		virtual ~Texture();
 
 		bool Update(const GSVector4i& r);
-		bool Save(const string& fn, bool dds = false) const;
+		bool Save(const std::string& fn, bool dds = false) const;
 	};
 
 protected:

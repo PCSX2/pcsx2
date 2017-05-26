@@ -366,7 +366,7 @@ void GSdxApp::Init()
 	m_default_configuration["dump"]                                       = "0";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";
-	m_default_configuration["filter"]                                     = to_string(static_cast<int8>(BiFiltering::PS2));
+	m_default_configuration["filter"]                                     = std::to_string(static_cast<int8>(BiFiltering::PS2));
 	m_default_configuration["force_texture_clear"]                        = "0";
 	m_default_configuration["fxaa"]                                       = "0";
 	m_default_configuration["interlace"]                                  = "7";
@@ -404,9 +404,9 @@ void GSdxApp::Init()
 	m_default_configuration["override_GL_ARB_texture_barrier"]            = "-1";
 	m_default_configuration["override_GL_EXT_texture_filter_anisotropic"] = "-1";
 	m_default_configuration["paltex"]                                     = "0";
-	m_default_configuration["png_compression_level"]                      = to_string(Z_BEST_SPEED);
+	m_default_configuration["png_compression_level"]                      = std::to_string(Z_BEST_SPEED);
 	m_default_configuration["preload_frame_with_gs_data"]                 = "0";
-	m_default_configuration["Renderer"]                                   = to_string(static_cast<int>(GSRendererType::Default));
+	m_default_configuration["Renderer"]                                   = std::to_string(static_cast<int>(GSRendererType::Default));
 	m_default_configuration["resx"]                                       = "1024";
 	m_default_configuration["resy"]                                       = "1024";
 	m_default_configuration["save"]                                       = "0";
@@ -441,7 +441,7 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_SpriteHack"]                       = "0";
 	m_default_configuration["UserHacks_TCOffset"]                         = "0";
 	m_default_configuration["UserHacks_TextureInsideRt"]                  = "0";
-	m_default_configuration["UserHacks_TriFilter"]                        = to_string(static_cast<int8>(TriFiltering::None));
+	m_default_configuration["UserHacks_TriFilter"]                        = std::to_string(static_cast<int8>(TriFiltering::None));
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
 	m_default_configuration["wrap_gs_mem"]                                = "0";
 	m_default_configuration["vsync"]                                      = "0";
@@ -511,7 +511,7 @@ void GSdxApp::SetConfigDir(const char* dir)
 	}
 }
 
-string GSdxApp::GetConfigS(const char* entry)
+std::string GSdxApp::GetConfigS(const char* entry)
 {
 	char buff[4096] = {0};
 	auto def = m_default_configuration.find(entry);
@@ -523,7 +523,7 @@ string GSdxApp::GetConfigS(const char* entry)
 		GetPrivateProfileString(m_section.c_str(), entry, "", buff, countof(buff), m_ini.c_str());
 	}
 
-	return string(buff);
+	return {buff};
 }
 
 void GSdxApp::SetConfig(const char* entry, const char* value)

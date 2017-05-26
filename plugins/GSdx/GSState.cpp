@@ -1553,7 +1553,7 @@ void GSState::FlushWrite()
 	*/
 /*
 	static int n = 0;
-	string s;
+	std::string s;
 	s = format("c:\\temp1\\[%04d]_%05x_%d_%d_%d_%d_%d_%d.bmp",
 		n++, (int)m_env.BITBLTBUF.DBP, (int)m_env.BITBLTBUF.DBW, (int)m_env.BITBLTBUF.DPSM,
 		r.left, r.top, r.right, r.bottom);
@@ -1750,7 +1750,7 @@ void GSState::Write(const uint8* mem, int len)
 
 		/*
 		static int n = 0;
-		string s;
+		std::string s;
 		s = format("c:\\temp1\\[%04d]_%05x_%d_%d_%d_%d_%d_%d.bmp",
 			n++, (int)blit.DBP, (int)blit.DBW, (int)blit.DPSM,
 			r.left, r.top, r.right, r.bottom);
@@ -1831,7 +1831,7 @@ void GSState::Read(uint8* mem, int len)
 	m_mem.ReadImageX(m_tr.x, m_tr.y, mem, len, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
 
 	if(s_dump && s_save && s_n >= s_saven) {
-		string s= m_dump_root + format("%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
+		std::string s = m_dump_root + format("%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
 				s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM,
 				r.left, r.top, r.right, r.bottom);
 		m_mem.SaveBMP(s, m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM, r.right, r.bottom);

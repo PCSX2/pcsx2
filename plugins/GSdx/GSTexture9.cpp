@@ -142,7 +142,7 @@ void GSTexture9::Unmap()
 	}
 }
 
-bool GSTexture9::Save(const string& fn, bool dds)
+bool GSTexture9::Save(const std::string& fn, bool dds)
 {
 	bool rb_swapped = true;
 	CComPtr<IDirect3DSurface9> surface;

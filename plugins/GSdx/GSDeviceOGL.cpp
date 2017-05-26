@@ -393,7 +393,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 		m_convert.vs = vs;
 		for(size_t i = 0; i < countof(m_convert.ps); i++) {
 			ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
-			string pretty_name = "Convert pipe " + to_string(i);
+			std::string pretty_name = "Convert pipe " + std::to_string(i);
 			m_convert.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
 
@@ -422,7 +422,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		for(size_t i = 0; i < countof(m_merge_obj.ps); i++) {
 			ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
-			string pretty_name = "Merge pipe " + to_string(i);
+			std::string pretty_name = "Merge pipe " + std::to_string(i);
 			m_merge_obj.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
 	}
@@ -439,7 +439,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		for(size_t i = 0; i < countof(m_interlace.ps); i++) {
 			ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
-			string pretty_name = "Interlace pipe " + to_string(i);
+			std::string pretty_name = "Interlace pipe " + std::to_string(i);
 			m_interlace.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
 	}
@@ -982,10 +982,10 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, m_shader_tfx_fs.data(), macro);
 }
 
-void GSDeviceOGL::SelfShaderTestRun(const string& dir, const string& file, const PSSelector& sel, int& nb_shader)
+void GSDeviceOGL::SelfShaderTestRun(const std::string& dir, const std::string& file, const PSSelector& sel, int& nb_shader)
 {
 #ifdef __unix__
-	string out = "/tmp/GSdx_Shader/";
+	std::string out = "/tmp/GSdx_Shader/";
 	GSmkdir(out.c_str());
 
 	out += dir + "/";
@@ -993,7 +993,7 @@ void GSDeviceOGL::SelfShaderTestRun(const string& dir, const string& file, const
 
 	out += file;
 #else
-	string out = file;
+	std::string out = file;
 #endif
 
 #ifdef __linux__
@@ -1017,7 +1017,7 @@ void GSDeviceOGL::SelfShaderTestRun(const string& dir, const string& file, const
 #endif
 }
 
-void GSDeviceOGL::SelfShaderTestPrint(const string& test, int& nb_shader)
+void GSDeviceOGL::SelfShaderTestPrint(const std::string& test, int& nb_shader)
 {
 	fprintf(stderr, "%-25s\t\t%d shaders:\t%d instructions (M %4.2f)\t%d registers (M %4.2f)\n",
 			test.c_str(), nb_shader,
@@ -1031,13 +1031,13 @@ void GSDeviceOGL::SelfShaderTestPrint(const string& test, int& nb_shader)
 
 void GSDeviceOGL::SelfShaderTest()
 {
-	string out = "";
+	std::string out;
 
 #ifdef __unix__
 	setenv("NV50_PROG_DEBUG", "1", 1);
 #endif
 
-	string test;
+	std::string test;
 	m_shader_inst = 0;
 	m_shader_reg  = 0;
 	int nb_shader = 0;

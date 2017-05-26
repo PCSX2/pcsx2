@@ -29,7 +29,7 @@
 class GSRenderer : public GSState
 {
 	GSCapture m_capture;
-	string m_snapshot;
+	std::string m_snapshot;
 	int m_shader;
 
 	bool Merge(int field);
@@ -62,7 +62,7 @@ public:
 	virtual bool CreateDevice(GSDevice* dev);
 	virtual void ResetDevice();
 	virtual void VSync(int field);
-	virtual bool MakeSnapshot(const string& path);
+	virtual bool MakeSnapshot(const std::string& path);
 	virtual void KeyEvent(GSKeyEventData* e);
 	virtual bool CanUpscale() {return false;}
 	virtual int GetUpscaleMultiplier() {return 1;}

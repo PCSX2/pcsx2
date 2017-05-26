@@ -306,7 +306,7 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 
 #include "GSTextureSW.h"
 
-bool GSTextureCacheSW::Texture::Save(const string& fn, bool dds) const
+bool GSTextureCacheSW::Texture::Save(const std::string& fn, bool dds) const
 {
 	const uint32* RESTRICT clut = m_state->m_mem.m_clut;
 

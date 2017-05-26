@@ -1010,9 +1010,9 @@ void GSRendererOGL::SendDraw()
 		for (const auto& it: m_drawlist)
 			++frequency[it];
 
-		string message;
+		std::string message;
 		for (const auto& it: frequency)
-			message += " " + to_string(it.first) + "(" + to_string(it.second) + ")";
+			message += " " + std::to_string(it.first) + "(" + std::to_string(it.second) + ")";
 
 		GL_PERF("Split single draw (%d sprites) into %zu draws: consecutive draws(frequency):%s",
 			m_index.tail / nb_vertex, m_drawlist.size(), message.c_str());

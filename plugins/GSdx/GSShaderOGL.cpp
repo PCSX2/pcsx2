@@ -50,7 +50,7 @@ GSShaderOGL::~GSShaderOGL()
 	glDeleteProgramPipelines(m_pipe_to_delete.size(), &m_pipe_to_delete[0]);
 }
 
-GLuint GSShaderOGL::LinkPipeline(const string& pretty_print, GLuint vs, GLuint gs, GLuint ps)
+GLuint GSShaderOGL::LinkPipeline(const std::string& pretty_print, GLuint vs, GLuint gs, GLuint ps)
 {
 	GLuint p;
 	glCreateProgramPipelines(1, &p);

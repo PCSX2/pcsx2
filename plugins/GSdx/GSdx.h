@@ -62,7 +62,7 @@ public:
 	T      GetConfigT(const char* entry) { return static_cast<T>(GetConfigI(entry)); }
 	int    GetConfigI(const char* entry);
 	bool   GetConfigB(const char* entry);
-	string GetConfigS(const char* entry);
+	std::string GetConfigS(const char* entry);
 
 	void SetCurrentRendererType(GSRendererType type);
 	GSRendererType GetCurrentRendererType();
