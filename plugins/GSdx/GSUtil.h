@@ -55,7 +55,7 @@ public:
 	static CRCHackLevel GetRecommendedCRCHackLevel(GSRendererType type);
 
 #ifdef ENABLE_OPENCL
-	static void GetDeviceDescs(list<OCLDeviceDesc>& dl);
+	static void GetDeviceDescs(std::list<OCLDeviceDesc>& dl);
 	static std::string GetDeviceUniqueName(cl::Device& device);
 #endif
 

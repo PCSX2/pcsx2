@@ -96,18 +96,18 @@ private:
 
 		template<class T> class FunctionMap : public GSFunctionMap<uint32, T>
 		{
-			list<HackEntry<T> >& m_tbl;
+			std::list<HackEntry<T> >& m_tbl;
 
 			T GetDefaultFunction(uint32 key)
 			{
 				CRC::Title title = (CRC::Title)(key & 0xffffff);
 				CRC::Region region = (CRC::Region)(key >> 24);
 
-				for(typename list<HackEntry<T> >::iterator i = m_tbl.begin(); i != m_tbl.end(); i++)
+				for(const auto &entry : m_tbl)
 				{
-					if(i->title == title && (i->region == CRC::RegionCount || i->region == region))
+					if(entry.title == title && (entry.region == CRC::RegionCount || entry.region == region))
 					{
-						return i->func;
+						return entry.func;
 					}
 				}
 
@@ -115,12 +115,12 @@ private:
 			}
 
 		public:
-			FunctionMap(list<HackEntry<T> >& tbl) : m_tbl(tbl) {}
+			FunctionMap(std::list<HackEntry<T> >& tbl) : m_tbl(tbl) {}
 		};
 
-		list<HackEntry<OI_Ptr> > m_oi_list;
-		list<HackEntry<OO_Ptr> > m_oo_list;
-		list<HackEntry<CU_Ptr> > m_cu_list;
+		std::list<HackEntry<OI_Ptr> > m_oi_list;
+		std::list<HackEntry<OO_Ptr> > m_oo_list;
+		std::list<HackEntry<CU_Ptr> > m_cu_list;
 
 		FunctionMap<OI_Ptr> m_oi_map;
 		FunctionMap<OO_Ptr> m_oo_map;

@@ -976,9 +976,9 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 
 	//GSTextureCache::Target* rt2 = NULL;
 	//int ymin = INT_MAX;
-	//for(list<Target*>::iterator i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); )
+	//for(auto i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); )
 	//{
-	//	list<Target*>::iterator j = i++;
+	//	auto j = i++;
 
 	//	Target* t = *j;
 

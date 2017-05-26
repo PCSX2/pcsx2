@@ -1887,7 +1887,7 @@ GSRendererCL::CL::CL()
 	ocldev = "Intel(R) Corporation Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz OpenCL C 1.2 CPU";
 #endif
 
-	list<OCLDeviceDesc> dl;
+	std::list<OCLDeviceDesc> dl;
 
 	GSUtil::GetDeviceDescs(dl);
 
