@@ -30,7 +30,7 @@ class GSDumpFile {
 
 	public:
 	virtual bool IsEof() = 0;
-	virtual void Read(void* ptr, size_t size) = 0;
+	virtual bool Read(void* ptr, size_t size) = 0;
 
 	GSDumpFile(char* filename, const char* repack_filename);
 	virtual ~GSDumpFile();
@@ -54,8 +54,8 @@ class GSDumpLzma : public GSDumpFile {
 	GSDumpLzma(char* filename, const char* repack_filename);
 	virtual ~GSDumpLzma();
 
-	bool IsEof();
-	void Read(void* ptr, size_t size);
+	bool IsEof() final;
+	bool Read(void* ptr, size_t size) final;
 };
 
 class GSDumpRaw : public GSDumpFile {
@@ -67,13 +67,11 @@ class GSDumpRaw : public GSDumpFile {
 	size_t		m_avail;
 	size_t		m_start;
 
-	void Decompress();
-
 	public:
 
 	GSDumpRaw(char* filename, const char* repack_filename);
 	virtual ~GSDumpRaw() = default;
 
-	bool IsEof();
-	void Read(void* ptr, size_t size);
+	bool IsEof() final;
+	bool Read(void* ptr, size_t size) final;
 };

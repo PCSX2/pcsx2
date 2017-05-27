@@ -1603,11 +1603,9 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 		file->Read(regs, 0x2000);
 
-		while(!file->IsEof())
+		uint8 type;
+		while(file->Read(&type, 1))
 		{
-			uint8 type;
-			file->Read(&type, 1);
-
 			Packet* p = new Packet();
 
 			p->type = type;
