@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="UserMacros">
+    <wxShortVersionString>31</wxShortVersionString>
+    <wxToolkitPrefix>msw</wxToolkitPrefix>
+    <wxCompilerPrefix>vc</wxCompilerPrefix>
+    <wxCfg>
+    </wxCfg>
+    <wxVendor>custom</wxVendor>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Platform)'=='Win32'">
+    <wxArchSuffix>
+    </wxArchSuffix>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Platform)'=='x64'">
+    <wxArchSuffix>_x64</wxArchSuffix>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Platform)'=='Itanium'">
+    <wxArchSuffix>_ia64</wxArchSuffix>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="('$(Configuration)'=='Debug' or '$(Configuration)'=='DLL Debug') and '$(CharacterSet)'=='Unicode'">
+    <wxSuffix>ud</wxSuffix>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="('$(Configuration)'=='Debug' or '$(Configuration)'=='DLL Debug') and '$(CharacterSet)'!='Unicode'">
+    <wxSuffix>d</wxSuffix>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="('$(Configuration)'=='Release' or '$(Configuration)'=='DLL Release') and '$(CharacterSet)'=='Unicode'">
+    <wxSuffix>u</wxSuffix>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="('$(Configuration)'=='Release' or '$(Configuration)'=='DLL Release') and '$(CharacterSet)'!='Unicode'">
+    <wxSuffix>
+    </wxSuffix>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Configuration)'=='Debug' or '$(Configuration)'=='DLL Debug'">
+    <wxSuffixDebug>d</wxSuffixDebug>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Configuration)'!='Debug' and '$(Configuration)'!='DLL Debug'">
+    <wxSuffixDebug>
+    </wxSuffixDebug>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Configuration)'=='DLL Debug'">
+    <wxOutDir>..\..\lib\$(wxCompilerPrefix)$(wxArchSuffix)_dll$(wxCfg)\</wxOutDir>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Configuration)'=='DLL Release'">
+    <wxOutDir>..\..\lib\$(wxCompilerPrefix)$(wxArchSuffix)_dll$(wxCfg)\</wxOutDir>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Configuration)'=='Debug'">
+    <wxOutDir>..\..\lib\$(wxCompilerPrefix)$(wxArchSuffix)_lib$(wxCfg)\</wxOutDir>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Configuration)'=='Release'">
+    <wxOutDir>..\..\lib\$(wxCompilerPrefix)$(wxArchSuffix)_lib$(wxCfg)\</wxOutDir>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Configuration)'=='DLL Debug'">
+    <wxIntRootDir>$(wxCompilerPrefix)$(wxArchSuffix)_$(wxToolkitPrefix)$(wxSuffix)dll\</wxIntRootDir>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Configuration)'=='DLL Release'">
+    <wxIntRootDir>$(wxCompilerPrefix)$(wxArchSuffix)_$(wxToolkitPrefix)$(wxSuffix)dll\</wxIntRootDir>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Configuration)'=='Debug'">
+    <wxIntRootDir>$(wxCompilerPrefix)$(wxArchSuffix)_$(wxToolkitPrefix)$(wxSuffix)\</wxIntRootDir>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition="'$(Configuration)'=='Release'">
+    <wxIntRootDir>$(wxCompilerPrefix)$(wxArchSuffix)_$(wxToolkitPrefix)$(wxSuffix)\</wxIntRootDir>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros">
+    <wxIncSubDir>$(wxToolkitPrefix)$(wxSuffix)</wxIncSubDir>
+    <wxToolkitDllNamePrefix>wx$(wxToolkitPrefix)$(wxShortVersionString)$(wxSuffix)_</wxToolkitDllNamePrefix>
+    <wxToolkitDllNameSuffix>_$(wxCompilerPrefix)$(wxArchSuffix)_$(wxVendor)</wxToolkitDllNameSuffix>
+    <wxToolkitLibNamePrefix>wx$(wxToolkitPrefix)$(wxShortVersionString)$(wxSuffix)_</wxToolkitLibNamePrefix>
+    <wxBaseLibNamePrefix>wxbase$(wxShortVersionString)$(wxSuffix)</wxBaseLibNamePrefix>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;advapi32.lib;comctl32.lib;rpcrt4.lib;wsock32.lib;wininet.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="wxShortVersionString">
+      <Value>$(wxShortVersionString)</Value>
+    </BuildMacro>
+    <BuildMacro Include="wxArchSuffix">
+      <Value>$(wxArchSuffix)</Value>
+    </BuildMacro>
+    <BuildMacro Include="wxToolkitPrefix">
+      <Value>$(wxToolkitPrefix)</Value>
+    </BuildMacro>
+    <BuildMacro Include="wxCompilerPrefix">
+      <Value>$(wxCompilerPrefix)</Value>
+    </BuildMacro>
+    <BuildMacro Include="wxCfg">
+      <Value>$(wxCfg)</Value>
+    </BuildMacro>
+    <BuildMacro Include="wxVendor">
+      <Value>$(wxVendor)</Value>
+    </BuildMacro>
+    <BuildMacro Include="wxOutDir">
+      <Value>$(wxOutDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="wxIntRootDir">
+      <Value>$(wxIntRootDir)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
