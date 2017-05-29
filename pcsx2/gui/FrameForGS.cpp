@@ -491,8 +491,13 @@ bool GSFrame::ShowFullScreen(bool show, bool updateConfig)
 	// also happens on Linux.
 
 	if( !IsShown() ) Show();
-	bool retval = _parent::ShowFullScreen( show );
-	
+
+	uint flags = wxFULLSCREEN_ALL;
+#ifdef _WIN32
+	flags |= g_Conf->GSWindow.EnableVsyncWindowFlag ? WS_POPUP : 0;
+#endif
+	bool retval = _parent::ShowFullScreen( show, flags );
+
 	return retval;
 }
 

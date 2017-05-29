@@ -1111,7 +1111,8 @@ bool wxTopLevelWindowMSW::ShowFullScreen(bool show, long style)
         // affects stretch mode, but most people have 16:9 monitors, so in
         // general the widescreen 16:9 mode is also affected). Let's remove the
         // window style.
-        // newStyle |= WS_POPUP;
+        if (style & WS_POPUP)
+            newStyle |= WS_POPUP;
 
         // change our window style to be compatible with full-screen mode
         ::SetWindowLong(GetHwnd(), GWL_STYLE, newStyle);

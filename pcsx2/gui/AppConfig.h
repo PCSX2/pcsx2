@@ -218,6 +218,7 @@ public:
 		wxPoint		WindowPos;
 		bool		IsMaximized;
 		bool		IsFullscreen;
+		bool		EnableVsyncWindowFlag;
 
 		bool		IsToggleFullscreenOnDoubleClick;
 		bool		IsToggleAspectRatioSwitch;
