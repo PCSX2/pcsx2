@@ -7340,6 +7340,7 @@ Compat = 5
 Serial = SLES-50362
 Name   = Jonny Moseley Mad Trix
 Region = PAL-E
+Compat = 5
 ---------------------------------------------
 Serial = SLES-50364
 Name   = City Crisis
@@ -7854,6 +7855,7 @@ Compat = 5
 Serial = SLES-50619
 Name   = Jonny Moseley Mad Trix
 Region = PAL-F-G
+Compat = 5
 ---------------------------------------------
 Serial = SLES-50620
 Name   = Micro Machines
@@ -10660,6 +10662,7 @@ Region = PAL-M3
 Serial = SLES-51927
 Name   = Midway Arcade Treasures
 Region = PAL-E
+Compat = 5
 ---------------------------------------------
 Serial = SLES-51930
 Name   = Road Rage 3
@@ -11459,6 +11462,7 @@ Compat = 5
 Serial = SLES-52343
 Name   = Midway Arcade Treasures
 Region = PAL-E
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52348
 Name   = Seven Samurai 20XX
@@ -12655,6 +12659,7 @@ Region = PAL-M6
 Serial = SLES-52844
 Name   = Midway Arcade Treasures 2
 Region = PAL-E
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52845
 Name   = Gadget and the Gadgetinis
@@ -14505,6 +14510,7 @@ Region = PAL-E
 Serial = SLES-53666
 Name   = Midway Arcade Treasures 3
 Region = PAL-E
+Compat = 5
 ---------------------------------------------
 Serial = SLES-53667
 Name   = Gauntlet - Seven Sorrows
@@ -17606,6 +17612,7 @@ GIFFIFOHack = 1
 Serial = SLES-55578
 Name   = Band Hero
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-55579
 Name   = Bakugan: Battle Brawlers
@@ -34778,7 +34785,7 @@ Compat = 5
 Serial = SLUS-20213
 Name   = Test Drive
 Region = NTSC-U
-Compat = 5
+Compat = 2
 ---------------------------------------------
 Serial = SLUS-20214
 Name   = State of Emergency
@@ -37453,6 +37460,11 @@ Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-20801
 Name   = Midway Arcade Treasures
+Region = NTSC-U
+Compat = 5
+---------------------------------------------
+Serial = SLUS-20801P
+Name   = Midway Arcade Treasures (Promotional Copy)
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
