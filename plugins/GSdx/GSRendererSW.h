@@ -99,6 +99,7 @@ protected:
 	bool CheckSourcePages(SharedData* sd);
 
 	bool GetScanlineGlobalData(SharedData* data);
+	bool DisableZTest();
 
 public:
 	static void InitVectors();
