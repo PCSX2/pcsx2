@@ -202,8 +202,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 	list<Source*>& m = m_src.m_map[TEX0.TBP0 >> 5];
 
-
-	for(list<Source*>::iterator i = m.begin(); i != m.end(); ++i)
+	list<Source*>::iterator i_begin = m.begin();
+	
+	for(list<Source*>::iterator i = i_begin; i != m.end(); ++i)
 	{
 		Source* s = *i;
 
@@ -225,7 +226,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				continue;
 		}
 
-		m.splice(m.begin(), m, i);
+		// Move pointer in front of the list if not already first
+		if (i_begin != i) {
+			m.splice(i_begin, m, i);
+		}
 
 		src = s;
 
@@ -445,13 +449,18 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	Target* dst = NULL;
 
-	for(list<Target*>::iterator i = m_dst[type].begin(); i != m_dst[type].end(); ++i)
+	list<Target*>::iterator i_begin = m_dst[type].begin();
+	
+	for(list<Target*>::iterator i = i_begin; i != m_dst[type].end(); ++i)
 	{
 		Target* t = *i;
 
 		if(bp == t->m_TEX0.TBP0)
 		{
-			m_dst[type].splice(m_dst[type].begin(), m_dst[type], i);
+			// Move pointer in front of the list if not already first
+			if (i_begin != i) {
+				m_dst[type].splice(i_begin, m_dst[type], i);
+			}
 
 			dst = t;
 
