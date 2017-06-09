@@ -83,6 +83,28 @@ void GSRenderer::ResetDevice()
     if(m_dev) m_dev->Reset(1, 1);
 }
 
+// Mizuiro constantly alters it's DH value on the DISP register from 464 to 480
+// This causes the screen to shake vertically due to the frequent change in DISP register value
+// This doesn't happen in the PS2, the assumption is that the GS has a delay before applying
+// a new DH value to the output circuit. The following function handles such delay.
+GSVector4i DelayDisplayRectangleChange(const GSVector4i& current, int context)
+{
+	static std::array<GSVector4i, 2> cached_rectangle = { GSVector4i(0), GSVector4i(0) };
+	static std::array<bool, 2> initialized_delay = { false, false };
+	const GSVector4i previous = cached_rectangle[context];
+
+	if (!initialized_delay[context] && current.x == previous.x && current.y == previous.y && current.w != previous.w && current.z == previous.z)
+	{
+		GL_INS("Delay on display rectangle height transistion (Requesting change from %d to %d) ", previous.w, current.w);
+		initialized_delay[context] = true;
+		return previous;
+	}
+
+	cached_rectangle[context] = current;
+	initialized_delay[context] = false;
+	return current;
+}
+
 bool GSRenderer::Merge(int field)
 {
 	bool en[2];
@@ -200,7 +222,7 @@ bool GSRenderer::Merge(int field)
 	{
 		if(!en[i] || !tex[i]) continue;
 
-		GSVector4i r = fr[i];
+		GSVector4i r = DelayDisplayRectangleChange(fr[i], i);
 		GSVector4 scale = GSVector4(tex[i]->GetScale()).xyxy();
 
 		src[i] = GSVector4(r) * scale / GSVector4(tex[i]->GetSize()).xyxy();
