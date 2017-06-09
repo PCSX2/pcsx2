@@ -51,7 +51,7 @@ void GSDumpBase::Transfer(int index, const uint8* mem, size_t size)
 		return;
 
 	AppendRawData(0);
-	AppendRawData(index);
+	AppendRawData(static_cast<uint8>(index));
 	AppendRawData(&size, 4);
 	AppendRawData(mem, size);
 }
@@ -75,7 +75,7 @@ bool GSDumpBase::VSync(int field, bool last, const GSPrivRegSet* regs)
 	AppendRawData(regs, sizeof(*regs));
 
 	AppendRawData(1);
-	AppendRawData(field);
+	AppendRawData(static_cast<uint8>(field));
 
 	if (last)
 		m_extra_frames--;
