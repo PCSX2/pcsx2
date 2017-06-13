@@ -62,7 +62,7 @@ BEGIN
     LTEXT           "Module:",IDC_STATIC,161,16,50,9,NOT WS_GROUP
     LTEXT           "(speedup!) Skips reverb effects processing, but won't sound as good in most games.",IDC_STATIC,26,60,104,36
     LTEXT           "(currently requires manual configuration via the ini file)",IDC_STATIC,162,236,146,20
-    CTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,224,86,58,9
+    CTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,224,84,58,9
     CONTROL         116,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,213,119,55,WS_EX_CLIENTEDGE
     PUSHBUTTON      "Advanced...",IDC_OPEN_CONFIG_SOUNDTOUCH,219,149,84,12
     PUSHBUTTON      "Configure Debug Options...",IDC_OPEN_CONFIG_DEBUG,14,167,108,14
@@ -122,6 +122,7 @@ BEGIN
     CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL,70,37,95,11
 END
 
+// fixme: This dialog doesn't work (was it ever used in the first place?)
 IDD_XAUDIO2 DIALOGEX 0, 0, 202, 116
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "XAudio2 Output Module Settings"

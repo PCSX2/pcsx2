@@ -205,6 +205,22 @@ void WriteSettings()
     DebugConfig::WriteSettings();
 }
 
+void CheckOutputModule(HWND window)
+{
+    OutputModule = SendMessage(GetDlgItem(window, IDC_OUTPUT), CB_GETCURSEL, 0, 0);
+    const bool IsConfigurable =
+        mods[OutputModule] == PortaudioOut ||
+        mods[OutputModule] == WaveOut ||
+        mods[OutputModule] == DSoundOut;
+
+    const bool AudioExpansion =
+        mods[OutputModule] == XAudio2Out ||
+        mods[OutputModule] == PortaudioOut;
+
+    EnableWindow(GetDlgItem(window, IDC_OUTCONF), IsConfigurable);
+    EnableWindow(GetDlgItem(window, IDC_SPEAKERS), AudioExpansion);
+}
+
 BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     int wmId, wmEvent;
@@ -262,6 +278,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             swprintf_s(temp, L"%d%%", configvol);
             SetWindowText(GetDlgItem(hWnd, IDC_VOLUME_LABEL), temp);
 
+            CheckOutputModule(hWnd);
+
             EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_SOUNDTOUCH), (SynchMode == 0));
             EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_DEBUG), DebugEnabled);
 
@@ -292,6 +310,12 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 case IDCANCEL:
                     EndDialog(hWnd, 0);
+                    break;
+
+                case IDC_OUTPUT:
+                    if (wmEvent == CBN_SELCHANGE) {
+                        CheckOutputModule(hWnd);
+                    }
                     break;
 
                 case IDC_OUTCONF: {
