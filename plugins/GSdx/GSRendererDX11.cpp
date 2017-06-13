@@ -70,14 +70,7 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 
 		break;
 	case GS_SPRITE_CLASS:
-		if (!m_vt.m_accurate_stq && m_vertex.next > 32) { // <=> 16 sprites (based on Shadow Hearts)
-
-			t = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-		} else {
-			Lines2Sprites();
-
-			t = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		}
+		t = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
 		break;
 	case GS_TRIANGLE_CLASS:
 
