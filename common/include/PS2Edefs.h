@@ -392,7 +392,6 @@ void CALLBACK SPU2setTimeStretcher(short int enable);
 void CALLBACK SPU2async(u32 cycles);
 s32 CALLBACK SPU2freeze(int mode, freezeData *data);
 void CALLBACK SPU2configure();
-void CALLBACK SPU2about();
 s32 CALLBACK SPU2test();
 
 #endif

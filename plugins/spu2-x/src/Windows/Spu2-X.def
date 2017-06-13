@@ -31,7 +31,6 @@ EXPORTS
 
 	SPU2configure		@9
 	SPU2test			@10
-	SPU2about			@11
 	SPU2freeze			@12
 
     SPU2setSettingsDir	@13

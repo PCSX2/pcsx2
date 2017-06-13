@@ -100,4 +100,3 @@ extern void ApplySettings(soundtouch::SoundTouch &sndtouch);
 extern void ReadSettings();
 extern void WriteSettings();
 extern void configure();
-extern void AboutBox();
