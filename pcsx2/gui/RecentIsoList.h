@@ -53,6 +53,7 @@ public:
 	virtual ~RecentIsoManager();
 
 	void RemoveAllFromMenu();
+	void EnableItems(bool display);
 	void Repopulate();
 	void Clear();
 	void Add( const wxString& src );

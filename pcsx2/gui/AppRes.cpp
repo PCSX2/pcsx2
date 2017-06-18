@@ -63,7 +63,10 @@ const wxImage& LoadImageAny(
 RecentIsoList::RecentIsoList(int firstIdForMenuItems_or_wxID_ANY)
 {
 	Menu = std::unique_ptr<wxMenu>(new wxMenu());
-	Menu->Append( MenuId_IsoBrowse, _("Browse..."), _("Browse for an ISO that is not in your recent history.") );
+	Menu->AppendCheckItem( MenuId_Ask_On_Booting, _("Always ask when booting"), _("Manually select an ISO upon boot ignoring the selection from recent ISO list.") );
+	Menu->AppendSeparator();
+	Menu->Append( MenuId_IsoBrowse, _("Browse..."), _("Browse for an ISO that is not in your recent history."))->Enable(!g_Conf->AskOnBoot);
+	Menu->Check( MenuId_Ask_On_Booting, g_Conf->AskOnBoot );
 	Manager = std::unique_ptr<RecentIsoManager>(new RecentIsoManager( Menu.get(), firstIdForMenuItems_or_wxID_ANY ));
 }
 

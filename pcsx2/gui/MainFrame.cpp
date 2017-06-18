@@ -209,6 +209,7 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Iso);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_Plugin);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_CdvdSource_Click, this, MenuId_Src_NoDisc);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Ask_On_Boot_Click, this, MenuId_Ask_On_Booting);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Debug_CreateBlockdump_Click, this, MenuId_Debug_CreateBlockdump);
 
 	// Config

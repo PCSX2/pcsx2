@@ -670,6 +670,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 
 	IniEntry( EnablePresets );
 	IniEntry( PresetIndex );
+	IniEntry( AskOnBoot );
 	
 	#ifdef __WXMSW__
 	IniEntry( McdCompressNTFS );
