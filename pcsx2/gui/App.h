@@ -86,6 +86,7 @@ enum MenuIdentifiers
 	MenuId_Boot_Iso,			// Opens submenu with Iso browser, and recent isos.
 	MenuId_RecentIsos_reservedStart,
 	MenuId_IsoBrowse = MenuId_RecentIsos_reservedStart + 100,			// Open dialog, runs selected iso.
+	MenuId_Ask_On_Booting,
 	MenuId_Boot_CDVD,
 	MenuId_Boot_CDVD2,
 	MenuId_Boot_ELF,

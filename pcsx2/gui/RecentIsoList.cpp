@@ -171,13 +171,16 @@ void RecentIsoManager::InsertIntoMenu( int id )
 		wxid = this->m_firstIdForMenuItems_or_wxID_ANY + id;
 
 	curitem.ItemPtr = m_Menu->AppendRadioItem( wxid, Path::GetFilename(curitem.Filename), curitem.Filename );
-	bool exists = wxFileExists( curitem.Filename );
+	curitem.ItemPtr->Enable(wxFileExists(curitem.Filename) && !g_Conf->AskOnBoot);
+}
 
-	if( m_cursel == id && exists )
-		curitem.ItemPtr->Check();
-
-	if ( !exists )
-		curitem.ItemPtr->Enable( false );
+void RecentIsoManager::EnableItems(bool display)
+{
+	for (const auto& list : m_Items)
+	{
+		// Files which don't exist still need to be grayed out.
+		list.ItemPtr->Enable(display && wxFileExists(list.Filename));
+	}
 }
 
 void RecentIsoManager::LoadListFrom( IniInterface& ini )
