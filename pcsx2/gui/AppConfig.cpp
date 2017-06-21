@@ -1056,8 +1056,8 @@ bool AppConfig::IsOkApplyPreset(int n)
 		case 5 :	//Set VU cycle steal to 2 clicks (maximum-1)
 					vuUsed?0:(vuUsed=true, EmuOptions.Speedhacks.VUCycleSteal = 2);
 		
-		case 4 :	//set EE cyclerate to 2 clicks (maximum)
-					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = -2);
+		case 4 :
+					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = 60);
 
 		case 3 :	//Set VU cycle steal to 1 click, set VU clamp mode to 'none'
 					vuUsed?0:(vuUsed=true, EmuOptions.Speedhacks.VUCycleSteal = 1);
@@ -1066,8 +1066,8 @@ bool AppConfig::IsOkApplyPreset(int n)
 					EmuOptions.Cpu.Recompiler.vuSignOverflow = false; //VU Clamp mode to 'none'
 
 		//best balanced hacks combo?
-		case 2 :	//set EE cyclerate to 1 click.
-					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = -1);
+		case 2 :
+					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = 80);
 					// EE timing hack appears to break the BIOS text and cause slowdowns in a few titles.
 					//EnableGameFixes = true;
 					//EmuOptions.Gamefixes.EETimingHack = true;

@@ -47,7 +47,7 @@ Pcsx2Config::SpeedhackOptions::SpeedhackOptions()
 Pcsx2Config::SpeedhackOptions& Pcsx2Config::SpeedhackOptions::DisableAll()
 {
 	bitset			= 0;
-	EECycleRate		= 0;
+	EECycleRate		= 100;
 	VUCycleSteal	= 0;
 	
 	return *this;

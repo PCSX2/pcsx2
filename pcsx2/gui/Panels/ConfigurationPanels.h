@@ -351,7 +351,7 @@ namespace Panels
 		void ApplyConfigToGui( AppConfig& configToApply, int flags=0 );
 
 	protected:
-		const wxChar* GetEEcycleSliderMsg( int val );
+		std::string GetEEcycleSliderMsg( int val );
 		const wxChar* GetVUcycleSliderMsg( int val );
 		void SetEEcycleSliderMsg();
 		void SetVUcycleSliderMsg();
@@ -359,7 +359,7 @@ namespace Panels
 
 		void OnEnable_Toggled( wxCommandEvent& evt );
 		void Defaults_Click( wxCommandEvent& evt );
-		void EECycleRate_Scroll(wxScrollEvent &event);
+		void EECycleRate_Scroll(wxCommandEvent &event);
 		void VUCycleRate_Scroll(wxScrollEvent &event);
 	};
 
