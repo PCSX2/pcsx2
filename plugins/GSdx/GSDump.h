@@ -23,6 +23,7 @@
 
 #include "GS.h"
 #include "GSVertexSW.h"
+#include <lzma.h>
 
 /*
 
@@ -75,10 +76,6 @@ public:
 	virtual ~GSDump() = default;
 };
 
-#ifdef LZMA_SUPPORTED
-
-#include <lzma.h>
-
 class GSDumpXz final : public GSDumpBase
 {
 	lzma_stream m_strm;
@@ -94,5 +91,3 @@ public:
 	GSDumpXz(const std::string& fn, uint32 crc, const GSFreezeData& fd, const GSPrivRegSet* regs);
 	virtual ~GSDumpXz();
 };
-
-#endif

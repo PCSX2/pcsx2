@@ -21,8 +21,6 @@
 #include "stdafx.h"
 #include "GSLzma.h"
 
-#if defined(__unix__)
-
 GSDumpFile::GSDumpFile(char* filename, const char* repack_filename) {
 	m_fp = fopen(filename, "rb");
 	if (m_fp == nullptr) {
@@ -56,8 +54,6 @@ GSDumpFile::~GSDumpFile() {
 }
 
 /******************************************************************/
-#ifdef LZMA_SUPPORTED
-
 GSDumpLzma::GSDumpLzma(char* filename, const char* repack_filename) : GSDumpFile(filename, repack_filename) {
 
 	memset(&m_strm, 0, sizeof(lzma_stream));
@@ -115,14 +111,14 @@ void GSDumpLzma::Decompress() {
 }
 
 bool GSDumpLzma::IsEof() {
-	return feof(m_fp) && (m_avail == 0);
+	return feof(m_fp) && m_avail == 0 && m_strm.avail_in == 0;
 }
 
-void GSDumpLzma::Read(void* ptr, size_t size) {
+bool GSDumpLzma::Read(void* ptr, size_t size) {
 	size_t off = 0;
 	uint8_t* dst = (uint8_t*)ptr;
 	size_t full_size = size;
-	while (size) {
+	while (size && !IsEof()) {
 		if (m_avail == 0) {
 			Decompress();
 		}
@@ -134,7 +130,13 @@ void GSDumpLzma::Read(void* ptr, size_t size) {
 		m_start += l;
 		off     += l;
 	}
-	Repack(ptr, full_size);
+
+	if (size == 0) {
+		Repack(ptr, full_size);
+		return true;
+	}
+
+	return false;
 }
 
 GSDumpLzma::~GSDumpLzma() {
@@ -145,8 +147,6 @@ GSDumpLzma::~GSDumpLzma() {
 	if (m_area)
 		_aligned_free(m_area);
 }
-
-#endif
 
 /******************************************************************/
 
@@ -162,19 +162,17 @@ bool GSDumpRaw::IsEof() {
 	return feof(m_fp);
 }
 
-void GSDumpRaw::Read(void* ptr, size_t size) {
-	if (size == 1) {
-		// I don't know why but read of size 1 is not happy
-		int v = fgetc(m_fp);
-		memcpy(ptr, &v, 1);
-	} else {
-		size_t ret = fread(ptr, 1, size, m_fp);
-		if (ret != size) {
-			fprintf(stderr, "GSDumpRaw:: Read error (%zu/%zu)\n", ret, size);
-			throw "BAD"; // Just exit the program
-		}
+bool GSDumpRaw::Read(void* ptr, size_t size) {
+	size_t ret = fread(ptr, 1, size, m_fp);
+	if (ret != size && ferror(m_fp)) {
+		fprintf(stderr, "GSDumpRaw:: Read error (%zu/%zu)\n", ret, size);
+		throw "BAD"; // Just exit the program
 	}
-	Repack(ptr, size);
-}
 
-#endif
+	if (ret == size) {
+		Repack(ptr, size);
+		return true;
+	}
+
+	return false;
+}

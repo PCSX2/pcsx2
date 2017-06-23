@@ -535,7 +535,7 @@ AppConfig::AppConfig()
 {
 	LanguageId			= wxLANGUAGE_DEFAULT;
 	LanguageCode		= L"default";
-	RecentIsoCount		= 12;
+	RecentIsoCount		= 20;
 	Listbook_ImageSize	= 32;
 	Toolbar_ImageSize	= 24;
 	Toolbar_ShowLabels	= true;
@@ -670,6 +670,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 
 	IniEntry( EnablePresets );
 	IniEntry( PresetIndex );
+	IniEntry( AskOnBoot );
 	
 	#ifdef __WXMSW__
 	IniEntry( McdCompressNTFS );

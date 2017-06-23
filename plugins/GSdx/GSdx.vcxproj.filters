@@ -288,6 +288,9 @@
     <ClCompile Include="PSX\GPUState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GSLzma.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLLoader.h">
@@ -579,6 +582,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSThread_CXX11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GSLzma.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

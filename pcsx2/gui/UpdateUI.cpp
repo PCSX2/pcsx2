@@ -55,6 +55,8 @@ void UI_DisableSysShutdown()
 	if( wxGetApp().Rpc_TryInvokeAsync( &UI_DisableSysShutdown ) ) return;
 
 	sMainFrame.EnableMenuItem( MenuId_Sys_Shutdown, false );
+	sMainFrame.EnableMenuItem(MenuId_IsoBrowse, !g_Conf->AskOnBoot);
+	wxGetApp().GetRecentIsoManager().EnableItems(!g_Conf->AskOnBoot);
 }
 
 void UI_EnableSysShutdown()
@@ -79,6 +81,8 @@ void UI_EnableSysActions()
 	if( wxGetApp().Rpc_TryInvokeAsync( &UI_EnableSysActions ) ) return;
 
 	sMainFrame.EnableMenuItem( MenuId_Sys_Shutdown, true );
+	sMainFrame.EnableMenuItem(MenuId_IsoBrowse, true);
+	wxGetApp().GetRecentIsoManager().EnableItems(true);
 	
 	_SaveLoadStuff( true );
 }

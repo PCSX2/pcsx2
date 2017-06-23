@@ -315,6 +315,8 @@ public:
 	bool		EnablePresets;
 	int			PresetIndex;
 
+	bool		AskOnBoot;
+
 	wxString				CurrentIso;
 	wxString				CurrentELF;
 	wxString				CurrentIRX;

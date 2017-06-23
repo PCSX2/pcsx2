@@ -122,6 +122,7 @@
     <ClCompile Include="GSFunctionMap.cpp" />
     <ClCompile Include="GSHwHack.cpp" />
     <ClCompile Include="GSLocalMemory.cpp" />
+    <ClCompile Include="GSLzma.cpp" />
     <ClCompile Include="GSPerfMon.cpp" />
     <ClCompile Include="GSOsdManager.cpp" />
     <ClCompile Include="GSPng.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="GSdx.h" />
     <ClInclude Include="GSFunctionMap.h" />
     <ClInclude Include="GSLocalMemory.h" />
+    <ClInclude Include="GSLzma.h" />
     <ClInclude Include="GSPerfMon.h" />
     <ClInclude Include="GSOsdManager.h" />
     <ClInclude Include="GSPng.h" />
@@ -316,6 +318,9 @@
     <ProjectReference Include="..\..\3rdparty\opencl\opencl.vcxproj">
       <Project>{d80d4a75-c385-41bd-ae62-83d2e2b595a7}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\3rdparty\xz\liblzma.vcxproj">
+      <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\unfree\baseclasses\baseclasses.vcxproj">
       <Project>{27f17499-a372-4408-8afa-4f9f4584fbd3}</Project>
