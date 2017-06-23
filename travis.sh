@@ -47,13 +47,16 @@ linux_32_before_install() {
 		libaio-dev:i386 \
 		libasound2-dev:i386 \
 		libgl1-mesa-dev:i386 \
+		libglu1-mesa-dev:i386 \
 		libgtk2.0-dev:i386 \
 		liblzma-dev:i386 \
+		libpango1.0-dev:i386 \
 		libpng12-dev:i386 \
 		libsdl2-dev:i386 \
 		libsoundtouch-dev:i386 \
 		libwxgtk3.0-dev:i386 \
 		libxext-dev:i386 \
+		libxft-dev:i386 \
 		portaudio19-dev:i386 \
 		zlib1g-dev:i386 \
 		${COMPILER_PACKAGE}
