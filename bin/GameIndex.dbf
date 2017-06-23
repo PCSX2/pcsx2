@@ -69,6 +69,7 @@
 -- VIFFIFOHack       = 1 // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
 -- VIF1StallHack     = 1 // SOCOM II HUD and Spy Hunter loading hang.
 -- FMVinSoftwareHack = 1 // Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering while an FMV plays.
+-- ScarfaceIbitHack  = 1 // VU I bit Hack avoid constant recompilation. ( Scarface The World Is Yours)
 
 ---------------------------------------------
 -- Speed Hacks (SpeedHackName = <value>)
@@ -1616,6 +1617,9 @@ Region = PAL-M5
 Serial = SCES-51176
 Name   = Disney's Treasure Planet
 Region = PAL-M4
+EETimingHack = 1 // Fixes hang before going ingame
+eeRoundMode = 0 // Fixes characters flying into sky
+eeClampMode = 3 // Required to load areas correctly
 ---------------------------------------------
 Serial = SCES-51177
 Name   = Disney's Treasure Planet
@@ -1685,6 +1689,7 @@ Serial = SCES-51607
 Name   = Ratchet & Clank 2 - Locked & Loaded
 Region = PAL-M5
 Compat = 5
+EETimingHack = 1 // Fixes crash & cinematic after Jammer Array level
 // reads Ratchet 1 data
 MemCardFilter = SCES-51607/SCES-50916
 ---------------------------------------------
@@ -7281,10 +7286,22 @@ Serial = SLES-50325
 Name   = Max Payne
 Region = PAL-E
 Compat = 5
+// Apparently using these specific Game Fixes fixes the game from crashing and freezing.
+eeRoundMode = 0
+eeClampMode = 3
+vuRoundMode = 0
+vuClampMode = 3
+EETimingHack = 1 // Fixes crashes
 ---------------------------------------------
 Serial = SLES-50326
 Name   = Max Payne
 Region = PAL-M4
+// Apparently using these specific Game Fixes fixes the game from crashing and freezing.
+eeRoundMode = 0
+eeClampMode = 3
+vuRoundMode = 0
+vuClampMode = 3
+EETimingHack = 1 // Fixes crashes
 ---------------------------------------------
 Serial = SLES-50330
 Name   = Grand Theft Auto III
@@ -15601,14 +15618,17 @@ Compat = 5
 Serial = SLES-54182
 Name   = Scarface - The World is Yours
 Region = PAL-F
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLES-54183
 Name   = Scarface - The World is Yours
 Region = PAL-G
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLES-54184
 Name   = Scarface - The World is Yours
 Region = PAL-R
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLES-54185
 Name   = Dirge of Cerberus - Final Fantasy VII
@@ -15822,6 +15842,7 @@ Region = PAL-E
 Serial = SLES-54271
 Name   = Scarface - The World is Yours
 Region = PAL-E
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLES-54305
 Name   = Demon Chaos
@@ -16630,6 +16651,10 @@ Serial = SLES-54733
 Name   = Disney-Pixar Ratatouille
 Region = PAL-E
 ---------------------------------------------
+Serial = SLES-54734
+Name   = Disney-Pixar Ratatouille
+Region = PAL-F
+---------------------------------------------
 Serial = SLES-54735
 Name   = Disney-Pixar Ratatouille
 Region = PAL-G
@@ -16848,6 +16873,11 @@ Name   = The Simpsons Game
 Region = PAL-M4
 Compat = 5
 ---------------------------------------------
+Serial = SLES-54905
+Name   = The Simpsons Game
+Region = PAL-F
+Compat = 5
+---------------------------------------------
 Serial = SLES-54906
 Name   = The Simpsons Game
 Region = PAL-I-S
@@ -16985,8 +17015,9 @@ Compat = 5
 EETimingHack = 1	//flickery textures
 ---------------------------------------------
 Serial = SLES-54998
-Name   = Bratz - The Movie
+Name   = Mercenaries 2 - World in Flames
 Region = PAL-M5
+EETimingHack = 1	//flickery textures
 ---------------------------------------------
 Serial = SLES-55000
 Name   = Mercenaries 2 - World in Flames
@@ -17048,6 +17079,10 @@ Region = PAL-F-G
 Serial = SLES-55024
 Name   = Nickelodeon SpongeBob's Atlantis SquarePantis
 Region = PAL-M4
+---------------------------------------------
+Serial = SLES-55031
+Name   = Kung Fu Panda
+Region = PAL-F
 ---------------------------------------------
 Serial = SLES-55032
 Name   = Off Road
@@ -17866,11 +17901,13 @@ MemCardFilter = SLES-82038
 Serial = SLES-82042
 Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
 Region = PAL-E-F
+vuClampMode = 3 // Fixes screen artifacts
 ---------------------------------------------
 Serial = SLES-82043
 Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
 Region = PAL-E-F
 MemCardFilter = SLES-82042
+vuClampMode = 3 // Fixes screen artifacts
 ---------------------------------------------
 Serial = SLES-82044
 Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
@@ -17903,6 +17940,7 @@ Serial = SLES-82050
 Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
 Region = PAL-E-F
 MemCardFilter = SLES-82042
+vuClampMode = 3 // Fixes screen artifacts
 ---------------------------------------------
 Serial = SLES-82051
 Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
@@ -31045,6 +31083,12 @@ Compat = 5
 Serial = SLPS-25244
 Name   = Max Payne
 Region = NTSC-J
+// Apparently using these specific Game Fixes fixes the game from crashing and freezing.
+eeRoundMode = 0
+eeClampMode = 3
+vuRoundMode = 0
+vuClampMode = 3
+EETimingHack = 1 // Fixes crashes
 ---------------------------------------------
 Serial = SLPS-25245
 Name   = True Love Story - Summer Days and Yet
@@ -34870,6 +34914,12 @@ Serial = SLUS-20230
 Name   = Max Payne
 Region = NTSC-U
 Compat = 5
+// Apparently using these specific Game Fixes fixes the game from crashing and freezing.
+eeRoundMode = 0
+eeClampMode = 3
+vuRoundMode = 0
+vuClampMode = 3
+EETimingHack = 1 // Fixes crashes
 ---------------------------------------------
 Serial = SLUS-20231
 Name   = Herdy Gerdy
