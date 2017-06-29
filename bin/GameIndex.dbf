@@ -17016,7 +17016,7 @@ EETimingHack = 1	//flickery textures
 ---------------------------------------------
 Serial = SLES-54998
 Name   = Mercenaries 2 - World in Flames
-Region = PAL-M5
+Region = PAL-F
 EETimingHack = 1	//flickery textures
 ---------------------------------------------
 Serial = SLES-55000
