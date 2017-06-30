@@ -474,6 +474,10 @@ GSVector4i GSState::GetDisplayRect(int i)
 
 GSVector4i GSState::GetFrameRect(int i)
 {
+	// If no specific context is requested then pass the merged rectangle as return value
+	if (i == -1)
+		return GetFrameRect(0).runion(GetFrameRect(1));
+
 	GSVector4i rectangle = GetDisplayRect(i);
 
 	int w = rectangle.width();
@@ -500,11 +504,17 @@ GSVector4i GSState::GetFrameRect(int i)
 
 int GSState::GetFramebufferHeight()
 {
-	const GSVector4i output[2] = { GetFrameRect(0), GetFrameRect(1) };
 	// Framebuffer height is 11 bits max according to GS user manual
 	const int height_limit = (1 << 11);
+	const GSVector4i output[2] = { GetFrameRect(0), GetFrameRect(1) };
+	const GSVector4i merged_output = output[0].runion(output[1]);
+
 	int max_height = std::max(output[0].height(), output[1].height());
-	int frame_memory_height = std::max(max_height, output[0].runion_ordered(output[1]).height() % height_limit);
+	// DBY isn't an offset to the frame memory but rather an offset to read output circuit inside
+	// the frame memory, hence the top offset should also be calculated for the total height of the
+	// frame memory. Also we need to wrap the value only when we're dealing with values with range of the
+	// frame memory (offset + read output circuit height, IOW bottom of merged_output)
+	int frame_memory_height = std::max(max_height, merged_output.bottom % height_limit);
 
 	if (frame_memory_height > 1024)
 		GL_PERF("Massive framebuffer height detected! (height:%d)", frame_memory_height);
