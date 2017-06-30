@@ -445,14 +445,14 @@ namespace GLLoader {
 		if (s_first_load) {
 			if (fglrx_buggy_driver) {
 				fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver.\n"
-				"Check out the link below for further information.\n"
-				"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
+					"Check out the link below for further information.\n"
+					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
 			}
 
 			if (intel_buggy_driver) {
 				fprintf(stderr, "The OpenGL renderer is inefficient on Intel GPUs due to an inefficient driver.\n"
-				"Check out the link below for further information.\n"
-				"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know\n");
+					"Check out the link below for further information.\n"
+					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know\n");
 			}
 
 			if (!found_GL_ARB_viewport_array) {
