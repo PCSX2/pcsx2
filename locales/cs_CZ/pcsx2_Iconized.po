@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2015-12-31 01:13+0100\n"
+"PO-Revision-Date: 2017-06-30 19:49+0200\n"
 "Last-Translator: Zbyněk Schwarz <zbynek.schwarz@gmail.com>\n"
 "Language-Team: Zbyněk Schwarz\n"
 "Language: cs\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Poedit 1.8.5\n"
+"X-Generator: Poedit 2.0.2\n"
 "X-Poedit-KeywordsList: pxE\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
@@ -42,6 +42,7 @@ msgstr ""
 msgid ""
 "Failed to read/write NMV/MEC file. Check your bios setup/permission settings"
 msgstr ""
+"Chyba při čtení/zápisu souboru NMV/MEC. Zkontrolujte své nastavení biosu/práv"
 
 #: pcsx2/System.cpp:112
 msgid ""
@@ -365,7 +366,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:112
 msgid "Notice: Most games are fine with the default options. "
-msgstr "Upozornění: Většina her bude v pořádku s výchozím nastavením."
+msgstr "Upozornění: Většina her bude v pořádku s výchozím nastavením. "
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:180
 msgid "Notice: Most games are fine with the default options."
@@ -382,7 +383,7 @@ msgid ""
 "with PCSX2's current usermode setting. "
 msgstr ""
 "Je-li zaškrtnuto, tento adresář bude automaticky odrážet výchozí asociaci se "
-"současným nastavením uživatelského režimu PCSX2."
+"současným nastavením uživatelského režimu PCSX2. "
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:55
 msgid ""
@@ -404,7 +405,7 @@ msgstr ""
 "nebudou odstraněny.\n"
 "\n"
 "Klávesnice: CTRL + PLUS: Přiblížení, CTRL + MÍNUS: Oddálení, CTRL + "
-"HVĚZDIČKA: Přepínání 100/0."
+"HVĚZDIČKA: Přepínání 100/0"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:58
 msgid ""
@@ -608,30 +609,27 @@ msgstr ""
 "%s, pak stiskněte Zrušit pro uzavření panelu Nastavení."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
 msgid ""
 "-3 - Reduces the EE's cyclerate to about 50%.  Big speedup, but *will* cause "
 "stuttering audio on many FMVs."
 msgstr ""
-"-2 - Sníží množství cyklů EE asi o 50%. Průměrné zrychlení, ale *způsobí* "
+"-2 - Sníží množství cyklů EE asi o 50%.  Průměrné zrychlení, ale *způsobí* "
 "zadrhávání zvuku ve spoustě FMV."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
 msgid ""
 "-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"-2 - Sníží množství cyklů EE asi o 50%. Průměrné zrychlení, ale *způsobí* "
+"-2 - Sníží množství cyklů EE asi o 50%.  Průměrné zrychlení, ale *způsobí* "
 "zadrhávání zvuku ve spoustě FMV."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
 msgid ""
 "-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
-"-1 - Sníží množství cyklů EE asi o 33%. Mírné zrychlení ve většině her s "
+"-1 - Sníží množství cyklů EE asi o 33%.  Mírné zrychlení ve většině her s "
 "vysokou kompatibilitou."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:45
@@ -674,7 +672,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:77
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
-msgstr "Zakáže krádež cyklů VJ. Nejkompatibilnější nastavení"
+msgstr "Zakáže krádež cyklů VJ.  Nejkompatibilnější nastavení"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:82
 msgid ""
@@ -697,7 +695,7 @@ msgid ""
 "3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause "
 "flickering visuals or slowdown in most games."
 msgstr ""
-"Maximální krádež cyklů VJ. Užitečnost je omezená protože toto způsobuje "
+"Maximální krádež cyklů VJ.  Užitečnost je omezená protože toto způsobuje "
 "blikání grafiky nebo zpomalení ve většině her. "
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
@@ -823,13 +821,13 @@ msgid ""
 "Warning: This option can be enabled on-the-fly but typically cannot be "
 "disabled on-the-fly (video will typically be garbage)."
 msgstr ""
-"Odstraní jakýkoli šum výkonnostního testu způsobený vláknem VVGS nebo časem "
+"Odstraní jakýkoli šum výkonnostního testu způsobený vláknem MTGS nebo časem "
 "zpracování grafického procesoru. Tato volba se nejlépe používá spolu s "
 "uloženými stavy: uložte stav v ideální scéně, zapněte tuto volbu, a znovu "
 "načtěte uložený stav.\n"
 "\n"
 "Varování: Tato volba může být zapnuta za běhu ale typicky nemůže být takto "
-"vypnuta (obraz bude většinou poškozený)"
+"vypnuta (obraz bude většinou poškozený)."
 
 #: pcsx2/vtlb.cpp:835
 msgid ""
@@ -849,9 +847,9 @@ msgid ""
 "microVU instead anyway. :)"
 msgstr ""
 "Došla Paměť (tak trochu): Rekompilátor SuperVJ nemohl vyhradit určitý "
-"vyžadovaný rozsah paměti a nebude dostupný k použití. To není kritická "
+"vyžadovaný rozsah paměti a nebude dostupný k použití.  To není kritická "
 "chyba, protože rek sVU je zastaralý a stejně byste místo něj měli používat "
-"mVU :)."
+"mVU :)"
 
 #~ msgid ""
 #~ "Warning: Your computer does not support SSE2, which is required by many "
