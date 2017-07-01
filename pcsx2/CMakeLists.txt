@@ -643,7 +643,7 @@ if(APPLE)
 		${pcsx2LinuxHeaders})
 endif()
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
 	set(Platform
 		${pcsx2FreeBSDSources}
 		${pcsx2LinuxHeaders})
