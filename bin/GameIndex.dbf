@@ -17901,13 +17901,11 @@ MemCardFilter = SLES-82038
 Serial = SLES-82042
 Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
 Region = PAL-E-F
-vuClampMode = 3 // Fixes screen artifacts
 ---------------------------------------------
 Serial = SLES-82043
 Name   = Metal Gear Solid 3 - Subsistence [Disc2of3]
 Region = PAL-E-F
 MemCardFilter = SLES-82042
-vuClampMode = 3 // Fixes screen artifacts
 ---------------------------------------------
 Serial = SLES-82044
 Name   = Metal Gear Solid 3 - Subsistence [Disc1of3]
@@ -17940,7 +17938,6 @@ Serial = SLES-82050
 Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
 Region = PAL-E-F
 MemCardFilter = SLES-82042
-vuClampMode = 3 // Fixes screen artifacts
 ---------------------------------------------
 Serial = SLES-82051
 Name   = Metal Gear Solid 3 - Subsistence [Disc3of3]
