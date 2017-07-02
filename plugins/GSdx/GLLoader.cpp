@@ -442,25 +442,33 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier");
 		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 
-		if (fglrx_buggy_driver) {
-			fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver.\n"
-			"Check out the link below for further information.\n"
-			"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
-		}
+		if (s_first_load) {
+			if (fglrx_buggy_driver) {
+				fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver.\n"
+					"Check out the link below for further information.\n"
+					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
+			}
 
-		if (!found_GL_ARB_viewport_array) {
-			fprintf(stderr, "GL_ARB_viewport_array: not supported ! function pointer will be replaced\n");
-			glScissorIndexed   = ReplaceGL::ScissorIndexed;
-			glViewportIndexedf = ReplaceGL::ViewportIndexedf;
-		}
+			if (intel_buggy_driver) {
+				fprintf(stderr, "The OpenGL renderer is inefficient on Intel GPUs due to an inefficient driver.\n"
+					"Check out the link below for further information.\n"
+					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know\n");
+			}
 
-		if (!found_GL_ARB_texture_barrier) {
-			fprintf(stderr, "GL_ARB_texture_barrier: not supported ! Rendering will be corrupted\n");
-			glTextureBarrier = ReplaceGL::TextureBarrier;
+			if (!found_GL_ARB_viewport_array) {
+				fprintf(stderr, "GL_ARB_viewport_array is not supported! Function pointer will be replaced\n");
+				glScissorIndexed   = ReplaceGL::ScissorIndexed;
+				glViewportIndexedf = ReplaceGL::ViewportIndexedf;
+			}
+
+			if (!found_GL_ARB_texture_barrier) {
+				fprintf(stderr, "GL_ARB_texture_barrier is not supported! Blending emulation will not be supported\n");
+				glTextureBarrier = ReplaceGL::TextureBarrier;
+			}
 		}
 
 #ifdef _WIN32
-		// Thanks you Intel to not provide support of basic feature on your iGPU
+		// Thank you Intel for not providing support of basic features on your IGPUs.
 		if (!found_GL_ARB_direct_state_access) {
 			Emulate_DSA::Init();
 		}
