@@ -557,9 +557,11 @@ vec4 ps_color()
     //FIXME: maybe we can set gl_Position.w = q in VS
 #if (PS_FST == 0)
     vec2 st = PSin.t_float.xy / vec2(PSin.t_float.w);
+    vec2 st_int = PSin.t_int.zw / vec2(PSin.t_float.w);
 #else
     // Note xy are normalized coordinate
     vec2 st = PSin.t_int.xy;
+    vec2 st_int = PSin.t_int.zw;
 #endif
 
 #if PS_CHANNEL_FETCH == 1
@@ -576,7 +578,7 @@ vec4 ps_color()
     vec4 T = fetch_rgb();
 #elif PS_DEPTH_FMT > 0
     // Integral coordinate
-    vec4 T = sample_depth(PSin.t_int.zw);
+    vec4 T = sample_depth(st_int);
 #else
     vec4 T = sample_color(st);
 #endif
