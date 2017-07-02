@@ -593,7 +593,8 @@ void GSDeviceOGL::CreateTextureFX()
 	m_gs[2] = CompileGS(GSSelector(2));
 	m_gs[4] = CompileGS(GSSelector(4));
 
-	m_vs[0] = CompileVS(VSSelector(0));
+	for (uint32 key = 0; key < countof(m_vs); key++)
+		m_vs[key] = CompileVS(VSSelector(key));
 
 	// Enable all bits for stencil operations. Technically 1 bit is
 	// enough but buffer is polluted with noise. Clear will be limited
@@ -917,10 +918,12 @@ void GSDeviceOGL::Barrier(GLbitfield b)
 
 GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 {
+	std::string macro = format("#define VS_INT_FST %d\n", sel.int_fst);
+
 	if (GLLoader::buggy_sso_dual_src)
-		return m_shader->CompileShader("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), "");
+		return m_shader->CompileShader("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), macro);
 	else
-		return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), "");
+		return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), macro);
 }
 
 GLuint GSDeviceOGL::CompileGS(GSSelector sel)

@@ -25,15 +25,21 @@ const float exp_min32 = exp2(-32.0f);
 void texture_coord()
 {
     vec2 uv = vec2(i_uv) - TextureOffset.xy;
+    vec2 st = i_st - TextureOffset.xy;
 
     // Float coordinate
-    VSout.t_float.xy = i_st - TextureOffset.xy;
+    VSout.t_float.xy = st;
     VSout.t_float.w  = i_q;
 
     // Integer coordinate => normalized
     VSout.t_int.xy = uv * TextureScale;
+#if VS_INT_FST == 1
+    // Some games uses float coordinate for post-processing effect
+    VSout.t_int.zw = st / TextureScale;
+#else
     // Integer coordinate => integral
     VSout.t_int.zw = uv;
+#endif
 }
 
 void vs_main()
