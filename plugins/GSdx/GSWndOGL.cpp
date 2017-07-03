@@ -24,7 +24,7 @@
 
 #if defined(__unix__)
 GSWndOGL::GSWndOGL()
-	: m_NativeWindow(0), m_NativeDisplay(NULL), m_context(0), m_swapinterval_ext(NULL), m_swapinterval_mesa(NULL)
+	: m_NativeWindow(0), m_NativeDisplay(nullptr), m_context(0), m_has_late_vsync(false), m_swapinterval_ext(nullptr), m_swapinterval_mesa(nullptr)
 {
 }
 
@@ -126,6 +126,9 @@ void GSWndOGL::PopulateWndGlFunction()
 {
 	m_swapinterval_ext  = (PFNGLXSWAPINTERVALEXTPROC) glXGetProcAddress((const GLubyte*) "glXSwapIntervalEXT");
 	m_swapinterval_mesa = (PFNGLXSWAPINTERVALMESAPROC)glXGetProcAddress((const GLubyte*) "glXSwapIntervalMESA");
+
+	const char* ext = glXQueryExtensionsString(m_NativeDisplay, DefaultScreen(m_NativeDisplay));
+	m_has_late_vsync = m_swapinterval_ext && ext && strstr(ext, "GLX_EXT_swap_control");
 }
 
 bool GSWndOGL::Attach(void* handle, bool managed)

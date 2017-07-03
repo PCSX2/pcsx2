@@ -40,7 +40,7 @@ static void win_error(const char* msg, bool fatal = true)
 
 
 GSWndWGL::GSWndWGL()
-	: m_NativeWindow(NULL), m_NativeDisplay(NULL), m_context(NULL)
+	: m_NativeWindow(nullptr), m_NativeDisplay(nullptr), m_context(nullptr), m_has_late_vsync(false)
 {
 }
 
@@ -142,6 +142,15 @@ void GSWndWGL::DetachContext()
 void GSWndWGL::PopulateWndGlFunction()
 {
 	m_swapinterval = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+
+	// To ease the process, extension management is itself an extension. Clever isn't it!
+	PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)wglGetProcAddress("wglGetExtensionsStringARB");
+	if (wglGetExtensionsStringARB) {
+		const char* ext = wglGetExtensionsStringARB(m_NativeDisplay);
+		m_has_late_vsync = m_swapinterval && ext && strstr(ext, "WGL_EXT_swap_control_tear");
+	} else {
+		m_has_late_vsync = false;
+	}
 }
 
 bool GSWndWGL::Attach(void* handle, bool managed)

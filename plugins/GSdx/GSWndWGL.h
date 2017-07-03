@@ -28,6 +28,7 @@ class GSWndWGL : public GSWndGL
 	HWND	 m_NativeWindow;
 	HDC		 m_NativeDisplay;
 	HGLRC	 m_context;
+	bool	 m_has_late_vsync;
 
 	PFNWGLSWAPINTERVALEXTPROC m_swapinterval;
 
@@ -38,7 +39,7 @@ class GSWndWGL : public GSWndGL
 	void OpenWGLDisplay();
 
 	void SetSwapInterval(int vsync);
-	bool HasLateVsyncSupport() { return false; }
+	bool HasLateVsyncSupport() { return m_has_late_vsync; }
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

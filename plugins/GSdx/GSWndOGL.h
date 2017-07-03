@@ -30,6 +30,7 @@ class GSWndOGL final : public GSWndGL
 	Window     m_NativeWindow;
 	Display*   m_NativeDisplay;
 	GLXContext m_context;
+	bool       m_has_late_vsync;
 
 	PFNGLXSWAPINTERVALEXTPROC  m_swapinterval_ext;
 	PFNGLXSWAPINTERVALMESAPROC m_swapinterval_mesa;
@@ -38,7 +39,7 @@ class GSWndOGL final : public GSWndGL
 	void CreateContext(int major, int minor);
 
 	void SetSwapInterval(int vsync);
-	bool HasLateVsyncSupport() { return false; }
+	bool HasLateVsyncSupport() { return m_has_late_vsync; }
 
 public:
 	GSWndOGL();
