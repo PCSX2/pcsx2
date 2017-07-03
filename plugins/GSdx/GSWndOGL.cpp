@@ -235,7 +235,7 @@ bool GSWndOGL::SetWindowText(const char* title)
 	return true;
 }
 
-void GSWndOGL::SetVSync(int vsync)
+void GSWndOGL::SetSwapInterval(int vsync)
 {
 	// m_swapinterval uses an integer as parameter
 	// 0 -> disable vsync

@@ -315,7 +315,7 @@ void* GSWndWGL::GetProcAddress(const char* name, bool opt)
 
 //TODO: check extensions supported or not
 //FIXME : extension allocation
-void GSWndWGL::SetVSync(int vsync)
+void GSWndWGL::SetSwapInterval(int vsync)
 {
 	// m_swapinterval uses an integer as parameter
 	// 0 -> disable vsync

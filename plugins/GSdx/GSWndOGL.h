@@ -37,6 +37,9 @@ class GSWndOGL final : public GSWndGL
 	void PopulateWndGlFunction();
 	void CreateContext(int major, int minor);
 
+	void SetSwapInterval(int vsync);
+	bool HasLateVsyncSupport() { return false; }
+
 public:
 	GSWndOGL();
 	virtual ~GSWndOGL() {};
@@ -58,7 +61,6 @@ public:
 	void Hide();
 	void HideFrame();
 	void Flip();
-	void SetVSync(int vsync);
 };
 
 #endif

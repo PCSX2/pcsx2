@@ -37,6 +37,9 @@ class GSWndWGL : public GSWndGL
 	void CloseWGLDisplay();
 	void OpenWGLDisplay();
 
+	void SetSwapInterval(int vsync);
+	bool HasLateVsyncSupport() { return false; }
+
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 public:
@@ -60,7 +63,6 @@ public:
 	void Hide();
 	void HideFrame();
 	void Flip();
-	void SetVSync(int vsync);
 };
 
 #endif

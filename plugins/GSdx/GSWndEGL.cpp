@@ -235,7 +235,7 @@ GSVector4i GSWndEGL::GetClientRect()
 	return GSVector4i(0, 0, w, h);
 }
 
-void GSWndEGL::SetVSync(int vsync)
+void GSWndEGL::SetSwapInterval(int vsync)
 {
 	// 0 -> disable vsync
 	// n -> wait n frame
