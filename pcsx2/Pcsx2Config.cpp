@@ -20,6 +20,7 @@
 #include "Utilities/IniInterface.h"
 #include "Config.h"
 #include "GS.h"
+#include "gui/GSFrame.h"
 
 void TraceLogFilters::LoadSave( IniInterface& ini )
 {
@@ -200,7 +201,7 @@ Pcsx2Config::GSOptions::GSOptions()
 {
 	FrameLimitEnable		= true;
 	FrameSkipEnable			= false;
-	VsyncEnable				= false;
+	VsyncEnable				= VSYNC_NO;
 
 	SynchronousMTGS			= false;
 	DisableOutput			= false;
@@ -232,6 +233,25 @@ void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
 
 	IniEntry( FramesToDraw );
 	IniEntry( FramesToSkip );
+}
+
+int Pcsx2Config::GSOptions::GetVsync() const
+{
+	// If we have a compositor (AKA not exclusive fullscreen), we need to
+	// wait the compositor signal. 0x10000 is a flag for the GS plugin
+	if (VsyncEnable == VSYNC_COMPOSITOR)
+		return 0x10000;
+
+	if (!FrameLimitEnable || g_LimiterMode == Limit_Turbo)
+		return 0;
+
+	switch (VsyncEnable) {
+		case VSYNC_DYNAMIC: return -1;
+		case VSYNC_ON: return 1;
+		default: return 0;
+	}
+
+	return 0;
 }
 
 const wxChar *const tbl_GamefixNames[] =
