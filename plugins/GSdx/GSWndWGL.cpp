@@ -139,6 +139,11 @@ void GSWndWGL::DetachContext()
 	}
 }
 
+void GSWndWGL::PopulateWndGlFunction()
+{
+	m_swapinterval = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+}
+
 bool GSWndWGL::Attach(void* handle, bool managed)
 {
 	m_NativeWindow = (HWND)handle;
@@ -146,13 +151,7 @@ bool GSWndWGL::Attach(void* handle, bool managed)
 
 	OpenWGLDisplay();
 
-	CreateContext(3, 3);
-
-	AttachContext();
-
-	m_swapinterval = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	UpdateWindow(m_NativeWindow);
 
@@ -288,16 +287,9 @@ bool GSWndWGL::Create(const string& title, int w, int h)
 
 	OpenWGLDisplay();
 
-	CreateContext(3, 3);
-
-	AttachContext();
-
-	m_swapinterval = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	return true;
-
 }
 
 //Same as DX

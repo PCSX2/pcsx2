@@ -153,6 +153,10 @@ void GSWndEGL::DetachContext()
 	}
 }
 
+void GSWndEGL::PopulateWndGlFunction()
+{
+}
+
 void GSWndEGL::BindAPI()
 {
 	eglBindAPI(EGL_OPENGL_API);
@@ -171,11 +175,7 @@ bool GSWndEGL::Attach(void* handle, bool managed)
 
 	OpenEGLDisplay();
 
-	CreateContext(3, 3);
-
-	AttachContext();
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	return true;
 }
@@ -209,11 +209,7 @@ bool GSWndEGL::Create(const string& title, int w, int h)
 
 	m_native_window = CreateNativeWindow(w, h);
 
-	CreateContext(3, 3);
-
-	AttachContext();
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	return true;
 }

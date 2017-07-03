@@ -62,6 +62,10 @@ protected:
 	bool m_ctx_attached;
 
 	bool IsContextAttached() const { return m_ctx_attached; }
+	void PopulateGlFunction();
+	virtual void PopulateWndGlFunction() = 0;
+	void FullContextInit();
+	virtual void CreateContext(int major, int minor) = 0;
 
 public:
 	GSWndGL() : m_ctx_attached(false) {};
@@ -85,6 +89,4 @@ public:
 	virtual void HideFrame() = 0;
 	virtual void Flip() = 0;
 	virtual void SetVSync(int vsync) = 0;
-
-	void PopulateGlFunction();
 };

@@ -122,6 +122,12 @@ void GSWndOGL::DetachContext()
 	}
 }
 
+void GSWndOGL::PopulateWndGlFunction()
+{
+	m_swapinterval_ext  = (PFNGLXSWAPINTERVALEXTPROC) glXGetProcAddress((const GLubyte*) "glXSwapIntervalEXT");
+	m_swapinterval_mesa = (PFNGLXSWAPINTERVALMESAPROC)glXGetProcAddress((const GLubyte*) "glXSwapIntervalMESA");
+}
+
 bool GSWndOGL::Attach(void* handle, bool managed)
 {
 	m_NativeWindow = *(Window*)handle;
@@ -129,14 +135,7 @@ bool GSWndOGL::Attach(void* handle, bool managed)
 
 	m_NativeDisplay = XOpenDisplay(NULL);
 
-	CreateContext(3, 3);
-
-	AttachContext();
-
-	m_swapinterval_ext  = (PFNGLXSWAPINTERVALEXTPROC) glXGetProcAddress((const GLubyte*) "glXSwapIntervalEXT");
-	m_swapinterval_mesa = (PFNGLXSWAPINTERVALMESAPROC)glXGetProcAddress((const GLubyte*) "glXSwapIntervalMESA");
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	return true;
 }
@@ -175,14 +174,7 @@ bool GSWndOGL::Create(const string& title, int w, int h)
 	if (m_NativeWindow == 0)
 		throw GSDXRecoverableError();
 
-	CreateContext(3, 3);
-
-	AttachContext();
-
-	m_swapinterval_ext  = (PFNGLXSWAPINTERVALEXTPROC) glXGetProcAddress((const GLubyte*) "glXSwapIntervalEXT");
-	m_swapinterval_mesa = (PFNGLXSWAPINTERVALMESAPROC)glXGetProcAddress((const GLubyte*) "glXSwapIntervalMESA");
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	return true;
 }

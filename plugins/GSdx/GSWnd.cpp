@@ -183,3 +183,11 @@ void GSWndGL::PopulateGlFunction()
 	// renderer/device
 	GLLoader::check_gl_requirements();
 }
+
+void GSWndGL::FullContextInit()
+{
+	CreateContext(3, 3);
+	AttachContext();
+	PopulateGlFunction();
+	PopulateWndGlFunction();
+}

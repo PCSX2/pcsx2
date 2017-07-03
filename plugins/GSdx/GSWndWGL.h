@@ -31,6 +31,7 @@ class GSWndWGL : public GSWndGL
 
 	PFNWGLSWAPINTERVALEXTPROC m_swapinterval;
 
+	void PopulateWndGlFunction();
 	void CreateContext(int major, int minor);
 
 	void CloseWGLDisplay();

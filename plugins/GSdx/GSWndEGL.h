@@ -38,6 +38,7 @@ class GSWndEGL : public GSWndGL
 
 	int m_platform;
 
+	void PopulateWndGlFunction();
 	void CreateContext(int major, int minor);
 	void BindAPI();
 
