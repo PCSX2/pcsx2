@@ -623,9 +623,11 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	out << std::fixed << std::setprecision(2) << fps;
 	OSDmonitor(Color_StrongGreen, "FPS:", out.str());
 
+#ifdef __linux__
 	// Important Linux note: When the title is set in fullscreen the window is redrawn. Unfortunately
 	// an intermediate white screen appears too which leads to a very annoying flickering.
 	if (IsFullScreen()) return;
+#endif
 
 	AppConfig::UiTemplateOptions& templates = g_Conf->Templates;
 
