@@ -303,6 +303,7 @@ namespace Panels
 	{
 	protected:
 		pxCheckBox*			m_check_SynchronousGS;
+		wxButton*			m_restore_defaults;
 		pxCheckBox*			m_check_DisableOutput;
 		FrameSkipPanel*		m_span;
 		FramelimiterPanel*	m_fpan;
@@ -312,6 +313,7 @@ namespace Panels
 		virtual ~VideoPanel() = default;
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();
+		void Defaults_Click(wxCommandEvent& evt);
 		void ApplyConfigToGui( AppConfig& configToApply, int flags=0 );
 
 	protected:
