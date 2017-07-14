@@ -63,6 +63,13 @@ enum GamefixId
 	GamefixId_COUNT
 };
 
+enum class VsyncMode
+{
+	Off,
+	On,
+	Adaptive,
+};
+
 // Template function for casting enumerations to their underlying type
 template <typename Enumeration>
 typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
@@ -291,9 +298,9 @@ struct Pcsx2Config
 		bool	DisableOutput;
 		int		VsyncQueueSize;
 
-		bool	FrameLimitEnable;
-		bool	FrameSkipEnable;
-		bool	VsyncEnable;
+		bool		FrameLimitEnable;
+		bool		FrameSkipEnable;
+		VsyncMode	VsyncEnable;
 
 		int		FramesToDraw;	// number of consecutive frames (fields) to render
 		int		FramesToSkip;	// number of consecutive frames (fields) to skip
