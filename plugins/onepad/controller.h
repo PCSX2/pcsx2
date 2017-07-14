@@ -50,6 +50,7 @@ public:
     };
 
     u32 log;
+    u32 ftw;
     std::map<u32, u32> keysym_map[GAMEPAD_NUMBER];
     std::array<size_t, GAMEPAD_NUMBER> unique_id;
     std::vector<std::string> sdl2_mapping;
@@ -58,7 +59,9 @@ public:
 
     void init()
     {
-        log = packed_options = 0;
+        log = 0;
+        ftw = 1;
+        packed_options = 0;
         ff_intensity = 0x7FFF; // set it at max value by default
         sensibility = 500;
         for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
