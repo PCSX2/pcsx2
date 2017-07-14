@@ -20,6 +20,7 @@
 #include "Utilities/IniInterface.h"
 #include "Config.h"
 #include "GS.h"
+#include "gui/GSFrame.h"
 
 void TraceLogFilters::LoadSave( IniInterface& ini )
 {
@@ -232,6 +233,14 @@ void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
 
 	IniEntry( FramesToDraw );
 	IniEntry( FramesToSkip );
+}
+
+int Pcsx2Config::GSOptions::GetVsync() const
+{
+	if (g_LimiterMode == Limit_Turbo)
+		return 0;
+
+	return VsyncEnable;
 }
 
 const wxChar *const tbl_GamefixNames[] =
