@@ -56,6 +56,7 @@ void SaveConfig()
         return;
     }
 
+    fprintf(f, "first_time_wizard = %d\n", g_conf.ftw);
     fprintf(f, "log = %d\n", g_conf.log);
     fprintf(f, "options = %d\n", g_conf.packed_options);
     fprintf(f, "mouse_sensibility = %d\n", g_conf.get_sensibility());
@@ -89,6 +90,10 @@ void LoadConfig()
     }
 
     u32 value;
+
+    if (fscanf(f, "first_time_wizard = %u\n", &value) == 1)
+        g_conf.ftw = value;
+
     if (fscanf(f, "log = %u\n", &value) == 1)
         g_conf.log = value;
 
