@@ -21,6 +21,7 @@
 #include "GS.h"
 #include "Gif_Unit.h"
 #include "Counters.h"
+#include "GSFrame.h"
 
 using namespace Threading;
 using namespace R5900;
@@ -53,6 +54,25 @@ void gsReset()
 
 	CSRreg.Reset();
 	GSIMR.reset();
+}
+
+void gsUpdateFrequency(Pcsx2Config& config)
+{
+	switch (g_LimiterMode)
+	{
+	case LimiterModeType::Limit_Nominal:
+		config.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
+		break;
+	case LimiterModeType::Limit_Slomo:
+		config.GS.LimitScalar = g_Conf->Framerate.SlomoScalar;
+		break;
+	case LimiterModeType::Limit_Turbo:
+		config.GS.LimitScalar = g_Conf->Framerate.TurboScalar;
+		break;
+	default:
+		pxAssert("Unknown framelimiter mode!");
+	}
+	UpdateVSyncRate();
 }
 
 static __fi void gsCSRwrite( const tGS_CSR& csr )

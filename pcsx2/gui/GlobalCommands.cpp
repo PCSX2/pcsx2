@@ -86,7 +86,6 @@ namespace Implementations
 		{
 			g_Conf->EmuOptions.GS.FrameLimitEnable = true;
 			g_LimiterMode = Limit_Turbo;
-			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.TurboScalar;
 			OSDlog( Color_StrongRed, true, "(FrameLimiter) Turbo + FrameLimit ENABLED." );
 			g_Conf->EmuOptions.GS.FrameSkipEnable = !!g_Conf->Framerate.SkipOnTurbo;
 		}
@@ -94,7 +93,6 @@ namespace Implementations
 		{
 			GSsetVsync( g_Conf->EmuOptions.GS.VsyncEnable );
 			g_LimiterMode = Limit_Nominal;
-			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
 
 			if ( g_Conf->Framerate.SkipOnLimit)
 			{
@@ -111,7 +109,6 @@ namespace Implementations
 		{
 			GSsetVsync( false );
 			g_LimiterMode = Limit_Turbo;
-			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.TurboScalar;
 
 			if ( g_Conf->Framerate.SkipOnTurbo)
 			{
@@ -124,6 +121,7 @@ namespace Implementations
 				g_Conf->EmuOptions.GS.FrameSkipEnable = false;
 			}
 		}
+		gsUpdateFrequency(g_Conf->EmuOptions);
 		pauser.AllowResume();
 	}
 
@@ -140,16 +138,15 @@ namespace Implementations
 		if( g_LimiterMode == Limit_Slomo )
 		{
 			g_LimiterMode = Limit_Nominal;
-			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
 			OSDlog( Color_StrongRed, true, "(FrameLimiter) SlowMotion DISABLED." );
 		}
 		else
 		{
 			g_LimiterMode = Limit_Slomo;
-			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.SlomoScalar;
 			OSDlog( Color_StrongRed, true, "(FrameLimiter) SlowMotion ENABLED." );
 			g_Conf->EmuOptions.GS.FrameLimitEnable = true;
 		}
+		gsUpdateFrequency(g_Conf->EmuOptions);
 		pauser.AllowResume();
 	}
 
