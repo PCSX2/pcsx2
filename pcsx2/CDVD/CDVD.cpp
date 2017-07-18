@@ -49,10 +49,7 @@ static void CDVDREAD_INT(u32 eCycle)
 {
 	// Give it an arbitary FAST value. Good for ~5000kb/s in ULE when copying a file from CDVD to HDD
 	// Keep long seeks out though, as games may try to push dmas while seeking. (Tales of the Abyss)
-	if (EmuConfig.Speedhacks.fastCDVD) {
-		if(eCycle < Cdvd_FullSeek_Cycles)
-			eCycle = 3000;
-	}
+	if (EmuConfig.Speedhacks.fastCDVD) eCycle = 3000;
 	
 	PSX_INT(IopEvt_CdvdRead, eCycle);
 }
