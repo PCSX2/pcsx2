@@ -18632,6 +18632,11 @@ Region = NTSC-K
 Compat = 5
 OPHFLagHack = 1
 ---------------------------------------------
+Serial = SLKA-25368
+Name   = Full Spectrum Warrior: Ten Hammers
+Region = NTSC-K
+EETimingHack = 1 //flickery textures
+---------------------------------------------
 Serial = SLKA-25375
 Name   = Transformers - The Game
 Region = NTSC-K
@@ -23429,6 +23434,13 @@ Compat = 5
 Serial = SLPM-65603
 Name   = Run Like Hell
 Region = NTSC-J
+[patches = F42DD317]
+	comment=swapping a COP2 op into place to make the flags work without delays
+	patch=0,EE,001e2734,word,4A0002FF
+	patch=0,EE,001e2744,word,4B07FA0B
+	patch=0,EE,001e2924,word,4A0002FF
+	patch=0,EE,001e2934,word,4B07FA0B
+[/patches]
 ---------------------------------------------
 Serial = SLPM-65604
 Name   = Animation Battle - Recca no Honou
@@ -28830,8 +28842,20 @@ Name   = Kessen III [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74232
-Name   = Shin Onimusha - Dawn of Dreams [PlayStation 2 The Best]
+Name   = Shin Onimusha - Dawn of Dreams [PlayStation 2 The Best] [Disc1of2]
 Region = NTSC-J
+[patches = C1C77637]
+	comment= patch by Shadow Lady
+	patch=0,EE,00104170,word,00000000
+[/patches]
+---------------------------------------------
+Serial = SLPM-74233
+Name   = Shin Onimusha - Dawn of Dreams [PlayStation 2 The Best] [Disc2of2]
+Region = NTSC-J
+[patches = 5C1E5BEF]
+	comment= patch by Shadow Lady
+	patch=0,EE,00104170,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLPM-74234
 Name   = Ryu Ga Gotoku [PlayStation 2 The Best]
@@ -29487,6 +29511,12 @@ Region = NTSC-J
 Serial = SLPS-20199
 Name   = F1 2002
 Region = NTSC-J
+[patches = A0ED2D23]
+	// Patched by Prafull
+	// Fixes controller issue but skips videos
+	patch=0,EE,002d8568,word,03e00008
+	patch=0,EE,002d856c,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLPS-20202
 Name   = Coloball 2002
@@ -35071,6 +35101,11 @@ vuClampMode = 3 // missing geometry with microVU
 Serial = SLUS-20264
 Name   = F1 2001
 Region = NTSC-U
+[patches = 2870C248]
+	comment=Patch by Shadow Lady.
+	// IPU dma fix
+	patch=0,EE,003b8580,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20265
 Name   = James Bond 007 - Agent Under Fire
