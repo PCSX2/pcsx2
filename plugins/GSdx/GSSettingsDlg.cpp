@@ -535,7 +535,7 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			m_saturation = SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER),TBM_GETPOS,0,0);
 
 			sprintf(text, "%d", m_saturation);
-			SetDlgItemText(m_hWnd, IDC_SATURATION_TEXT, text);
+			SetDlgItemText(m_hWnd, IDC_SATURATION_VALUE, text);
 		}
 		else if((HWND)lParam == GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER)) 
 		{
@@ -544,7 +544,7 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			m_brightness = SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER),TBM_GETPOS,0,0);
 
 			sprintf(text, "%d", m_brightness);
-			SetDlgItemText(m_hWnd, IDC_BRIGHTNESS_TEXT, text);
+			SetDlgItemText(m_hWnd, IDC_BRIGHTNESS_VALUE, text);
 		}
 		else if((HWND)lParam == GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER)) 
 		{
@@ -553,7 +553,7 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			m_contrast = SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER),TBM_GETPOS,0,0);
 
 			sprintf(text, "%d", m_contrast);
-			SetDlgItemText(m_hWnd, IDC_CONTRAST_TEXT, text);
+			SetDlgItemText(m_hWnd, IDC_CONTRAST_VALUE, text);
 		}
 	} break;
 
