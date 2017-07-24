@@ -9056,6 +9056,10 @@ Compat = 5
 Serial = SLES-51145
 Name   = Monopoly Party
 Region = PAL-M5
+[patches]
+	comment= The board will be black if the VU1 is set to MicroVU Recompiler.
+	comment= Go to Config > Emulation Settings > VUs tab, and set VU1 to "SuperVU Recompiler [Legacy]".
+[/patches]
 ---------------------------------------------
 Serial = SLES-51150
 Name   = Scrabble Interactive - 2003 Edition
@@ -29623,6 +29627,14 @@ Serial = SLPS-20280
 Name   = Mahou no Pumpkin
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPS-20281
+Name   = Monopoly Party
+Region = NTSC-J
+[patches]
+	comment= The board will be black if the VU1 is set to MicroVU Recompiler.
+	comment= Go to Config > Emulation Settings > VUs tab, and set VU1 to "SuperVU Recompiler [Legacy]".
+[/patches]
+---------------------------------------------
 Serial = SLPS-20282
 Name   = Taiko no Tatsujin
 Region = NTSC-J
@@ -35496,6 +35508,10 @@ Serial = SLUS-20348
 Name   = Monopoly Party
 Region = NTSC-U
 Compat = 4
+[patches]
+	comment= The board will be black if the VU1 is set to MicroVU Recompiler.
+	comment= Go to Config > Emulation Settings > VUs tab, and set VU1 to "SuperVU Recompiler [Legacy]".
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20349
 Name   = Scooby Doo! Night of 100 Frights
