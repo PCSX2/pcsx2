@@ -1364,7 +1364,7 @@ u8 CALLBACK PADpoll(u8 value)
             // QUERY_DS2_ANALOG_MODE
             case 0x41:
                 // Right?  Wrong?  No clue.
-                if (pad->mode == MODE_PS1_MOUSE || pad->mode == MODE_NEGCON) {
+                if (pad->mode == MODE_DIGITAL || pad->mode == MODE_PS1_MOUSE || pad->mode == MODE_NEGCON) {
                     queryMaskMode[1] = queryMaskMode[2] = queryMaskMode[3] = 0;
                     queryMaskMode[6] = 0x00;
                 } else {
