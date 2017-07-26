@@ -78,35 +78,28 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
+		if(Aggressive && fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0x00000)
 		{
-			if (Aggressive) { // Partially works on D3D. OpenGL has no such issues.
-				if(fi.FBMSK == 0x00000)
-				{
-					// Hack removes character outlines as well as black borders on the sides of the screen.
-					// Without the hack one of the borders at the bottom of the screen can start shaking when using the Direct3D 9 renderer. This is caused by resolution upscale.
-					// This can be fixed by using the TC Offsets x and y hardware hacks or using Native resolution.
-					skip = 28;
-				}
-			}
+			// Partially works on D3D. OpenGL has no such issues.
+			// Hack removes character outlines as well as black borders on the sides of the screen.
+			// Without the hack one of the borders at the bottom of the screen can start shaking when using the Direct3D 9 renderer. This is caused by resolution upscale.
+			// This can also be fixed by using the TC Offsets x and y hardware hacks or using Native resolution.
+			skip = 28;
 		}
 		else if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMZ16)
 		{
-			// Texture shuffling must work on openGL
-			if (Dx_only)
-				skip = 5; // Sky texture (depth related). On Direct3D the blue sky texture is shown on the whole screen in front of the player if hack is disabled.
+			// Texture shuffling works on OpenGL only for the NTSC version. The PAL version still has some issues.
+			// Sky texture (depth related). On Direct3D the blue sky texture is shown on the whole screen in front of the player if hack is disabled.
+			if(g_crc_region == CRC::EU || Dx_only)
+			{
+				skip = 5;
+			}
 		}
-		else if(fi.TME && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
+		else if(fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
 		{
 			// Ghosting (glow) effect. Ghosting appears when resolution is upscaled. Doesn't appear on native resolution.
-			if (fi.FBP == 0x03400)
-			{
-				skip = 1; // PAL
-			}
-			if(fi.FBP == 0x02e00)
-			{
-				skip = 3; // NTSC
-			}
+			// This can also be fixed by using the TC Offsets x and y hardware hacks or using Native resolution.
+			skip = 3;
 		}
 	}
 
