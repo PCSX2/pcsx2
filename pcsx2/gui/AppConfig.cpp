@@ -1047,7 +1047,7 @@ bool AppConfig::IsOkApplyPreset(int n)
 	EmuOptions.Gamefixes			= default_Pcsx2Config.Gamefixes;
 	EmuOptions.Speedhacks			= default_Pcsx2Config.Speedhacks;
 	EmuOptions.Speedhacks.bitset	= 0; //Turn off individual hacks to make it visually clear they're not used.
-	EmuOptions.Speedhacks.vuThread	= original_SpeedHacks.vuThread; // MTVU is not modified by presets
+	EmuOptions.Speedhacks.vuThread	= original_SpeedHacks.vuThread;
 	EnableSpeedHacks = true;
 
 	//Actual application of current preset over the base settings which all presets use (mostly pcsx2's default values).
@@ -1079,11 +1079,13 @@ bool AppConfig::IsOkApplyPreset(int n)
 					EmuOptions.Speedhacks.IntcStat = true;
 					EmuOptions.Speedhacks.WaitLoop = true;
 					EmuOptions.Speedhacks.vuFlagHack = true;
+					break;
 
 		case 0 :	//Base preset: Mostly pcsx2's defaults.
-					
-		
+					//Force disable MTVU hack on safest preset as it has lots of issues (Crashes/Slow downs) on various games.
+					EmuOptions.Speedhacks.vuThread = false;
 					break;
+
 		default:	Console.WriteLn("Developer Warning: Preset #%d is not implemented. (--> Using application default).", n);
 	}
 
