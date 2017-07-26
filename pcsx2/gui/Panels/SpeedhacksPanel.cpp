@@ -281,7 +281,8 @@ void Panels::SpeedHacksPanel::EnableStuff( AppConfig* configToUse )
 	m_check_waitloop->Enable(HacksEnabledAndNoPreset);
 	m_check_fastCDVD->Enable(HacksEnabledAndNoPreset);
 
-	m_check_vuThread->Enable(hacksEnabled); // MTVU is unaffected by presets
+	// Grayout MTVU on safest preset
+	m_check_vuThread->Enable(hacksEnabled && (!hasPreset || configToUse->PresetIndex != 0));
 
 	// Layout necessary to ensure changed slider text gets re-aligned properly
 	// and to properly gray/ungray pxStaticText stuff (I suspect it causes a
@@ -309,11 +310,13 @@ void Panels::SpeedHacksPanel::ApplyConfigToGui( AppConfig& configToApply, int fl
 	SetVUcycleSliderMsg();
 
 	m_check_vuFlagHack->SetValue(opts.vuFlagHack);
-	if( !(flags & AppConfig::APPLY_FLAG_FROM_PRESET) )
-		m_check_vuThread	->SetValue(opts.vuThread);
 	m_check_intc->SetValue(opts.IntcStat);
 	m_check_waitloop->SetValue(opts.WaitLoop);
 	m_check_fastCDVD->SetValue(opts.fastCDVD);
+
+	const bool preset_request = flags & AppConfig::APPLY_FLAG_FROM_PRESET;
+	if (!preset_request || configToApply.PresetIndex == 0)
+		m_check_vuThread->SetValue(opts.vuThread);
 
 	// Then, lock(gray out)/unlock the widgets as necessary.
 	EnableStuff( &configToApply );
