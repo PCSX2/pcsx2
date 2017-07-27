@@ -2007,13 +2007,9 @@ Name   = Network Access Disc & Hardware - Online Arena
 Region = PAL-M7
 Compat = 5
 [patches]
-	comment=- This gamedisc supports multiple languages and widescreen.
-	comment=- Language & widescreen selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-	comment=-  *  *  *  *  *  *
-	comment=- Using GSdx, this gamedisc crashes in gamemenu with SW-mode, 
-	comment=-  and has no 3D display with HW-mode.
-	comment=- Playable by toggling between HW-mode (in menu) and SW-mode (in game).
+    comment=- This gamedisc supports multiple languages and widescreen.
+    comment=- Language & widescreen selection is done through the BIOS configuration.
+    comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
 ---------------------------------------------
 Serial = SCES-52748
@@ -18010,10 +18006,18 @@ Region = NTSC-K
 Compat = 5
 OPHFLagHack = 1
 ---------------------------------------------
+Serial = SLKA-15023
+Name   = Assault Suits Valken
+Region = NTSC-K
+---------------------------------------------
 Serial = SLKA-15032
 Name   = Gradius V
 Region = NTSC-K
 Compat = 5
+---------------------------------------------
+Serial = SLKA-25010
+Name   = Chou Battle Houshin
+Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25012
 Name   = Devil May Cry 2 Dante
@@ -18132,6 +18136,10 @@ Serial = SLKA-25077
 Name   = Culdicept II - Expansion
 Region = NTSC-K
 ---------------------------------------------
+Serial = SLKA-25080
+Name   = .hack//Kansen Kakudai Vol. 1
+Region = NTSC-K
+---------------------------------------------
 Serial = SLKA-25081
 Name   = SD Gundam G Generation Neo
 Region = NTSC-K
@@ -18208,6 +18216,10 @@ Name   = Kunoichi
 Region = NTSC-K
 Compat = 5
 ---------------------------------------------
+Serial = SLKA-25138
+Name   = .hack//Akushou Heni Vol. 2
+Region = NTSC-K
+---------------------------------------------
 Serial = SLKA-25139
 Name   = Fu-un Shinsengumi
 Region = NTSC-K
@@ -18216,6 +18228,10 @@ Serial = SLKA-25144
 Name   = Final Fantasy X-2
 Region = NTSC-K
 Compat = 5
+---------------------------------------------
+Serial = SLKA-25145
+Name   = .hack//Shinshoku Osen Vol. 3
+Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25149
 Name   = Silent Hill 4 The Room
@@ -18265,6 +18281,10 @@ Serial = SLKA-25171
 Name   = Guon
 Region = NTSC-K
 Compat = 5
+---------------------------------------------
+Serial = SLKA-25174
+Name   = .hack//Zettai Houi Vol. 4
+Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25175
 Name   = Transformers
