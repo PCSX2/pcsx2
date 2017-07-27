@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2016-08-15 15:30+0300\n"
+"PO-Revision-Date: 2017-07-22 14:02+0300\n"
 "Last-Translator: Ceyhun Özgöç <atiamar@hotmail.com>\n"
 "Language-Team: Ceyhun Özgöç (PyramidHead) <atiamar@hotmail.com>\n"
 "Language: tr_TR\n"
@@ -13,7 +13,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: trunk\n"
-"X-Generator: Poedit 1.8.8\n"
+"X-Generator: Poedit 2.0.2\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -45,7 +45,7 @@ msgstr ""
 
 #: common/src/Utilities/Exceptions.cpp:319
 msgid "Path: "
-msgstr "Yol:"
+msgstr "Yol: "
 
 #: common/src/Utilities/Exceptions.cpp:323
 msgid "[Unnamed or unknown]"
@@ -142,7 +142,7 @@ msgstr ""
 #: pcsx2/PluginManager.cpp:982
 #, c-format
 msgid "The configured %s plugin file was not found"
-msgstr "Yapılandırılmış %s eklentisi bulunamıyor."
+msgstr "Yapılandırılmış %s eklentisi bulunamıyor"
 
 #: pcsx2/PluginManager.cpp:986
 #, c-format
@@ -206,7 +206,7 @@ msgid ""
 "Logs manual protection, split blocks, and other things that might impact "
 "performance."
 msgstr ""
-"El ile koruma, ayrık öbekler ve performansı etkileyecek diğer tüm öğelerin "
+"Manuel koruma, ayrık öbekler ve performansı etkileyecek diğer tüm öğelerin "
 "günlüğünü tutar."
 
 #: pcsx2/SourceLog.cpp:106
@@ -283,11 +283,11 @@ msgstr "Tüm VIFcode işlemleri; komutlar, etiket şekli ve işkesmeler."
 
 #: pcsx2/SourceLog.cpp:223
 msgid "All processing involved in Path3 Masking"
-msgstr "Path3 Masking'de yer alan tüm işlemler."
+msgstr "Path3 Masking'de yer alan tüm işlemler"
 
 #: pcsx2/SourceLog.cpp:229
 msgid "Scratchpad's MFIFO activity."
-msgstr "Scratchpad'in MFIFO etkinliği"
+msgstr "Scratchpad'in MFIFO etkinliği."
 
 #: pcsx2/SourceLog.cpp:235
 msgid "Actual data transfer logs, bus right arbitration, stalls, etc."
@@ -344,12 +344,13 @@ msgstr ""
 
 #: pcsx2/SourceLog.cpp:330
 msgid "Detailed logging of CDVD hardware."
-msgstr "CDVD donanımının ayrıntılı günlüklemesi."
+msgstr "CDVD donanımının ayrıntılı olarak günlüğe yazılması."
 
 #: pcsx2/SourceLog.cpp:336
-#, fuzzy
 msgid "Detailed logging of the Motion (FMV) Decoder hardware unit."
-msgstr "CDVD donanımının ayrıntılı günlüklemesi."
+msgstr ""
+"Hareket (FMV) Kod Çözücü donanım biriminin ayrıntılı olarak günlüğe "
+"yazılması."
 
 #: pcsx2/System.h:224 pcsx2/System.h:225 pcsx2/System.h:226
 msgid "PCSX2 Message"
@@ -385,7 +386,7 @@ msgstr "Daha Agresif"
 
 #: pcsx2/gui/AppConfig.cpp:983
 msgid "Mostly Harmful"
-msgstr "Çoğu Zaman Zararlı"
+msgstr "Çoğunlukla Zararlı"
 
 #: pcsx2/gui/AppConfig.cpp:1143 pcsx2/gui/AppConfig.cpp:1149
 msgid "Failed to overwrite existing settings file; permission was denied."
@@ -413,7 +414,7 @@ msgstr "Tüm seçenekler şimdiki oturum için geçerlidir ve kaydedilmeyecektir
 
 #: pcsx2/gui/AppInit.cpp:229 pcsx2/gui/AppMain.cpp:363
 msgid "IsoFile"
-msgstr "Iso Dosyası"
+msgstr "ISO Dosyası"
 
 #: pcsx2/gui/AppInit.cpp:230
 msgid "displays this list of command line options"
@@ -488,6 +489,8 @@ msgstr "taşınabilir sürüm işlemini başlatır (yönetici/kök izni gerektir
 #: pcsx2/gui/AppInit.cpp:252
 msgid "update options to ease profiling (debug)"
 msgstr ""
+"seçenekleri profil oluşturmayı kolaylaştırmak için güncelleştir (hata "
+"ayıklama)"
 
 #: pcsx2/gui/AppInit.cpp:256
 #, c-format
@@ -514,7 +517,7 @@ msgstr ""
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
 "Varsayılan eklentiyi kullanmak için Tamam'a basın veya %s'yi kapatmak için "
-"İptal'e basın. "
+"İptal'e basın."
 
 #: pcsx2/gui/AppInit.cpp:531
 msgid "PCSX2 Error: Hardware Deficiency"
@@ -632,7 +635,7 @@ msgstr "%s Komut Dizini Seçenekleri"
 
 #: pcsx2/gui/AppMain.cpp:686
 msgid "PCSX2 Unresponsive Thread"
-msgstr "PCSX2 Yanıt Vermeyen İşlem"
+msgstr "PCSX2 Yanıt Vermeyen İşlem Zinciri"
 
 #: pcsx2/gui/AppMain.cpp:693
 msgid "Terminate"
@@ -643,9 +646,8 @@ msgid "Executing PS2 Virtual Machine..."
 msgstr "Sanal PS2 çalıştırılıyor..."
 
 #: pcsx2/gui/AppRes.cpp:66
-#, fuzzy
 msgid "Browse for an ISO that is not in your recent history."
-msgstr "Son kullanılan ISO listesinde olmayan bir dosyayı seç."
+msgstr "Yakın geçmişinizde olmayan bir ISO dosyası seçin."
 
 #: pcsx2/gui/AppRes.cpp:66
 msgid "Browse..."
@@ -662,14 +664,14 @@ msgstr "Şu klasörler eksik ve oluşturulamıyor:"
 #: pcsx2/gui/AppUserMode.cpp:140
 #, c-format
 msgid "Portable mode error - %s"
-msgstr "Taşınabilir sürüm hatası - %s"
+msgstr "Taşınabilir mod hatası - %s"
 
 #: pcsx2/gui/AppUserMode.cpp:153
 msgid ""
 "PCSX2 has been installed as a portable application but cannot run due to the "
 "following errors:"
 msgstr ""
-"PCSX2 taşınabilir bir uygulama olarak yüklendi ancak şu hatalar nedeniyle "
+"PCSX2 taşınabilir bir uygulama olarak yüklendi, ancak şu hatalar nedeniyle "
 "çalıştırılamıyor:"
 
 #: pcsx2/gui/AppUserMode.cpp:161
@@ -685,7 +687,9 @@ msgstr "%s yerel yükleme moduna geçiyor."
 msgid ""
 "Try to remove the file called \"portable.ini\" from your installation "
 "directory manually."
-msgstr "\"portable.ini\" dosyasını el ile yükleme klasörünüzden silin."
+msgstr ""
+"\"portable.ini\" dosyasını yükleme klasörünüzden manuel olarak silmeyi "
+"deneyin."
 
 #: pcsx2/gui/ApplyState.h:53
 msgid "Cannot apply new settings, one of the settings is invalid."
@@ -693,7 +697,7 @@ msgstr "Yeni ayarlar uygulanamıyor; ayarlardan biri yanlış yapılmış."
 
 #: pcsx2/gui/ConsoleLogger.cpp:115
 msgid "Save log question"
-msgstr "Günlük sorgulamasını kaydet"
+msgstr "Günlük sorusunu kaydet"
 
 #: pcsx2/gui/ConsoleLogger.cpp:389
 msgid "&Small"
@@ -709,7 +713,7 @@ msgstr "&Normal yazı tipi"
 
 #: pcsx2/gui/ConsoleLogger.cpp:391
 msgid "It's what I use (the programmer guy)."
-msgstr "Benim kullandığım (programcı)"
+msgstr "Benim kullandığım (programcı)."
 
 #: pcsx2/gui/ConsoleLogger.cpp:393
 msgid "&Large"
@@ -729,11 +733,11 @@ msgstr "Çok yüksek bir çözünürlüğe sahip monitörünüz varsa."
 
 #: pcsx2/gui/ConsoleLogger.cpp:399
 msgid "&Light theme"
-msgstr "Aydınlık Tema"
+msgstr "&Aydınlık Tema"
 
 #: pcsx2/gui/ConsoleLogger.cpp:399
 msgid "Default soft-tone color scheme."
-msgstr "Varsayılan yumuşak tonlu renk şeması."
+msgstr "Varsayılan yumuşak tonlu renk düzeni."
 
 #: pcsx2/gui/ConsoleLogger.cpp:400
 msgid "&Dark theme"
@@ -765,16 +769,15 @@ msgstr "Günlük penceresinin içeriğini temizle"
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "Auto&dock"
-msgstr ""
+msgstr "Otomatik&yerleştirme"
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "Dock log window to main PCSX2 window"
-msgstr ""
+msgstr "Günlük penceresini ana PCSX2 penceresine tuttur"
 
 #: pcsx2/gui/ConsoleLogger.cpp:411
-#, fuzzy
 msgid "&Appearance"
-msgstr "Görünüm"
+msgstr "&Görünüm"
 
 #: pcsx2/gui/ConsoleLogger.cpp:413
 msgid "&Close"
@@ -793,9 +796,8 @@ msgid "Shows PCSX2 developer logs"
 msgstr "PCSX2 geliştirici günlüklerini gösterir"
 
 #: pcsx2/gui/ConsoleLogger.cpp:418
-#, fuzzy
 msgid "&CDVD reads"
-msgstr "CDVD okumaları"
+msgstr "&CDVD okumaları"
 
 #: pcsx2/gui/ConsoleLogger.cpp:418
 msgid "Shows disk read activity"
@@ -803,7 +805,7 @@ msgstr "Disk okuma etkinliğini göster"
 
 #: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "&Enable all"
-msgstr "Tümünü etkinleştir"
+msgstr "Tümünü &etkinleştir"
 
 #: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "Enables all log source filters."
@@ -811,7 +813,7 @@ msgstr "Tüm günlük kaynak filtrelerini etkinleştirir."
 
 #: pcsx2/gui/ConsoleLogger.cpp:436
 msgid "&Disable all"
-msgstr "Tümünü devre dışı bırak"
+msgstr "Tümünü &devre dışı bırak"
 
 #: pcsx2/gui/ConsoleLogger.cpp:436
 msgid "Disables all log source filters."
@@ -840,7 +842,7 @@ msgstr "panel"
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:35
 #, c-format
 msgid "About %s"
-msgstr "%s Hakkında"
+msgstr "%s hakkında"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Previous versions"
@@ -856,7 +858,7 @@ msgstr "Eklenti Uzmanları"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
 msgid "Special thanks to"
-msgstr "Özel teşekkür"
+msgstr "Özel teşekkür:"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:75
 msgid "Developers"
@@ -884,7 +886,7 @@ msgstr "Peki..."
 
 #: pcsx2/gui/Dialogs/AssertionDialog.cpp:23
 msgid "Assertion Failure - "
-msgstr "Onaylama İşlemi Hatası -"
+msgstr "Onaylama İşlemi Hatası - "
 
 #: pcsx2/gui/Dialogs/BaseConfigurationDialog.cpp:185
 msgid "Saves a snapshot of this settings panel to a PNG file."
@@ -943,11 +945,11 @@ msgstr "Dönüştür"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:53
 msgid "Convert: "
-msgstr "Dönüştür:"
+msgstr "Dönüştür: "
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:56
 msgid "To: "
-msgstr "Hedef:"
+msgstr "Hedef: "
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "8MB File"
@@ -967,7 +969,8 @@ msgstr "64 MB Dosya"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Convert this memory card to a folder of individual saves."
-msgstr "Bu hafıza kartını ayrı kayıtların bulunduğu bir klasöre dönüştürün."
+msgstr ""
+"Bu hafıza kartını ayrı ayrı kayıtların bulunduğu bir klasöre dönüştürün."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Folder"
@@ -1010,11 +1013,11 @@ msgstr "Yeni hafıza kartı:"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:72
 msgid "At folder:    "
-msgstr "Klasör:"
+msgstr "Klasör:    "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:75
 msgid "Select file name: "
-msgstr "Dosya adı seçiniz:"
+msgstr "Dosya adı seçin: "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:152
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:164
@@ -1032,7 +1035,7 @@ msgstr "Hata: Hafıza kartı oluşturulamadı."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:193
 msgid "Use NTFS compression when creating this card."
-msgstr "Kartı oluştururken NTFS sıkıştırması kullan"
+msgstr "Kartı oluştururken NTFS sıkıştırması kullanın."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:210
 msgid "8 MB [most compatible]"
@@ -1162,7 +1165,7 @@ msgstr "Oyun veritabanı - %s"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:24
 msgid "Import Existing Settings?"
-msgstr "Varolan ayarları içe aktarmak istiyor musunuz?"
+msgstr "Mevcut ayarlar içe aktarılsın mı?"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:36
 msgid "Import"
@@ -1178,7 +1181,7 @@ msgstr "İz Günlükleme"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:38
 msgid "Auto-eject memory cards when loading savestates"
-msgstr "Kayıt dosyalarını yüklerken hafıza kartlarını otomatik olarak çıkart."
+msgstr "Kayıt dosyalarını yüklerken hafıza kartlarını otomatik olarak çıkart"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
@@ -1198,8 +1201,8 @@ msgid ""
 "Note: Duplicate/Rename/Create/Delete will NOT be reverted with 'Cancel'."
 msgstr ""
 "\n"
-" Not: Kopyala/Yeniden Adlandır/Oluştur/Sil işlemleri 'İptal' seçeneğini "
-"tıklamakla iptal edilemez."
+" Not: Kopyala/Yeniden Adlandır/Oluştur/Sil işlemleri, 'İptal' seçeneğine "
+"tıklanarak iptal edilemez."
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:24
 msgid "PCSX2 First Time configuration"
@@ -1284,9 +1287,8 @@ msgid "Appearance"
 msgstr "Görünüm"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:278
-#, fuzzy
 msgid "Language Selector"
-msgstr "Dil seçici"
+msgstr "Dil Seçici"
 
 #: pcsx2/gui/ExecutorThread.cpp:41
 msgid "Logs events as they are passed to the PS2 virtual machine."
@@ -1314,18 +1316,16 @@ msgid "Exit PCSX2?"
 msgstr "PCSX2'den çıkılsın mı?"
 
 #: pcsx2/gui/GlobalCommands.cpp:474
-#, fuzzy
 msgid "Save state"
-msgstr "Konumu &kaydet"
+msgstr "Konumu kaydet"
 
 #: pcsx2/gui/GlobalCommands.cpp:475
 msgid "Saves the virtual machine state to the current slot."
 msgstr "Oyun konumunu şimdiki slota kaydeder."
 
 #: pcsx2/gui/GlobalCommands.cpp:481
-#, fuzzy
 msgid "Load state"
-msgstr "Konum &yükle"
+msgstr "Konum yükle"
 
 #: pcsx2/gui/GlobalCommands.cpp:482
 msgid "Loads a virtual machine state from the current slot."
@@ -1345,7 +1345,7 @@ msgstr "Bir sonraki slota geç"
 
 #: pcsx2/gui/GlobalCommands.cpp:496
 msgid "Cycles the current save slot in +1 fashion!"
-msgstr "Kayıt işlemini sürekli bir sonraki slota kaydederek yapar."
+msgstr "Kayıt işlemini sürekli bir sonraki slota kaydederek yapar!"
 
 #: pcsx2/gui/GlobalCommands.cpp:502
 msgid "Cycle to prev slot"
@@ -1353,7 +1353,7 @@ msgstr "Önceki slota geç"
 
 #: pcsx2/gui/GlobalCommands.cpp:503
 msgid "Cycles the current save slot in -1 fashion!"
-msgstr "Kayıt işlemini sürekli bir önceki slota kaydederek yapar."
+msgstr "Kayıt işlemini sürekli bir önceki slota kaydederek yapar!"
 
 #: pcsx2/gui/IsoDropTarget.cpp:55
 msgid "Drag and Drop Error"
@@ -1397,11 +1397,11 @@ msgstr "Yedek"
 
 #: pcsx2/gui/MainFrame.cpp:327
 msgid "&Show Console"
-msgstr "Konsolu Göster"
+msgstr "Konsolu &Göster"
 
 #: pcsx2/gui/MainFrame.cpp:329
 msgid "&Console to Stdio"
-msgstr "Konsoldan Stdio'ya"
+msgstr "Konsoldan &Stdio'ya"
 
 #: pcsx2/gui/MainFrame.cpp:343
 msgid "&System"
@@ -1430,7 +1430,7 @@ msgstr "Başlatılıyor..."
 
 #: pcsx2/gui/MainFrame.cpp:415
 msgid "&Run ELF..."
-msgstr "ELF Dosyası Aç"
+msgstr "&ELF Dosyası Aç..."
 
 #: pcsx2/gui/MainFrame.cpp:416
 msgid "For running raw PS2 binaries directly"
@@ -1446,11 +1446,11 @@ msgstr "Konumu &kaydet"
 
 #: pcsx2/gui/MainFrame.cpp:428
 msgid "&Backup before save"
-msgstr "Kaydetmeden önce yedeğini al"
+msgstr "Kaydet&meden önce yedeğini al"
 
 #: pcsx2/gui/MainFrame.cpp:433
 msgid "Automatic &Gamefixes"
-msgstr "Otomatik Oyun Düzeltmeleri"
+msgstr "Otomatik &Oyun Düzeltmeleri"
 
 #: pcsx2/gui/MainFrame.cpp:434
 msgid "Automatically applies needed Gamefixes to known problematic games"
@@ -1458,19 +1458,19 @@ msgstr "Sorunlu olduğu bilinen oyunlara düzeltmeleri otomatik olarak uygular"
 
 #: pcsx2/gui/MainFrame.cpp:436
 msgid "Enable &Cheats"
-msgstr "Hileleri Etkinleştir"
+msgstr "&Hileleri Etkinleştir"
 
 #: pcsx2/gui/MainFrame.cpp:439
 msgid "Enable &Widescreen Patches"
-msgstr "Geniş Ekran Yamalarını Etkinleştir"
+msgstr "&Geniş Ekran Yamalarını Etkinleştir"
 
 #: pcsx2/gui/MainFrame.cpp:443
 msgid "Enable &Host Filesystem"
-msgstr "Sunucu Dosya Sistemi Etkinleştir"
+msgstr "Sunucu Dos&ya Sistemi Etkinleştir"
 
 #: pcsx2/gui/MainFrame.cpp:448
 msgid "Shut&down"
-msgstr "Kapat"
+msgstr "&Kapat"
 
 #: pcsx2/gui/MainFrame.cpp:449
 msgid "Wipes all internal VM states and shuts down plugins."
@@ -1483,21 +1483,19 @@ msgstr "Çı&kış"
 #: pcsx2/gui/MainFrame.cpp:453
 #, c-format
 msgid "Closing %s may be hazardous to your health"
-msgstr "%s 'yi kapatmak sağlığınız için zararlı olabilir"
+msgstr "%s'yi kapatmak sağlığınız için zararlı olabilir"
 
 #: pcsx2/gui/MainFrame.cpp:460
-#, fuzzy
 msgid "ISO &Selector"
-msgstr "Iso &Seçici"
+msgstr "ISO &Seçici"
 
 #: pcsx2/gui/MainFrame.cpp:461
-#, fuzzy
 msgid "Plugin &Menu"
-msgstr "Eklenti Menüsü"
+msgstr "Eklenti &Menüsü"
 
 #: pcsx2/gui/MainFrame.cpp:464
 msgid "&ISO"
-msgstr ""
+msgstr "&ISO"
 
 #: pcsx2/gui/MainFrame.cpp:464
 msgid "Makes the specified ISO image the CDVD source."
@@ -1505,7 +1503,7 @@ msgstr "Seçili ISO dosyasını CDVD kaynağı olarak kullanır."
 
 #: pcsx2/gui/MainFrame.cpp:465
 msgid "&Plugin"
-msgstr "Eklenti"
+msgstr "E&klenti"
 
 #: pcsx2/gui/MainFrame.cpp:465
 msgid "Uses an external plugin as the CDVD source."
@@ -1553,23 +1551,23 @@ msgstr "&Dev9"
 
 #: pcsx2/gui/MainFrame.cpp:487
 msgid "&USB"
-msgstr "USB"
+msgstr "&USB"
 
 #: pcsx2/gui/MainFrame.cpp:488
 msgid "&Firewire"
-msgstr "Firewire"
+msgstr "&Firewire"
 
 #: pcsx2/gui/MainFrame.cpp:494
 msgid "Multitap &1"
-msgstr "Multitap 1"
+msgstr "Multitap &1"
 
 #: pcsx2/gui/MainFrame.cpp:495
 msgid "Multitap &2"
-msgstr "Multitap 2"
+msgstr "Multitap &2"
 
 #: pcsx2/gui/MainFrame.cpp:498
 msgid "C&lear all settings..."
-msgstr "Tüm ayarları sil..."
+msgstr "Tüm ayarları &sil..."
 
 #: pcsx2/gui/MainFrame.cpp:499
 #, c-format
@@ -1578,19 +1576,19 @@ msgstr "Tüm %s ayarlarını siler ve başlangıç sihirbazını yeniden çalı�
 
 #: pcsx2/gui/MainFrame.cpp:521
 msgid "&About..."
-msgstr "Hakkında..."
+msgstr "&Hakkında..."
 
 #: pcsx2/gui/MainFrame.cpp:526
 msgid "&Open Debug Window..."
-msgstr "Geliştirici Ekranı Açılıyor..."
+msgstr "&Geliştirici Ekranı Açılıyor..."
 
 #: pcsx2/gui/MainFrame.cpp:529
 msgid "&Logging..."
-msgstr "Günlükleniyor..."
+msgstr "Gü&nlüğe yazılıyor..."
 
 #: pcsx2/gui/MainFrame.cpp:609
 msgid "Paus&e"
-msgstr "Duraklat"
+msgstr "&Duraklat"
 
 #: pcsx2/gui/MainFrame.cpp:610
 msgid "Safely pauses emulation and preserves the PS2 state."
@@ -1615,7 +1613,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:632
 msgid "Res&tart"
-msgstr "Yeniden Başlat"
+msgstr "&Yeniden Başlat"
 
 #: pcsx2/gui/MainFrame.cpp:633
 msgid "Simulates hardware reset of the PS2 virtual machine."
@@ -1630,42 +1628,36 @@ msgid "Use fast boot to skip PS2 startup and splash screens"
 msgstr "PS2 başlangıc ekranlarını ve BIOS'u atlar"
 
 #: pcsx2/gui/MainFrame.cpp:660
-#, fuzzy
 msgid "Boot ISO (&fast)"
-msgstr "CDVD'yi çalıştır (&Hızlı)"
+msgstr "ISO'yu başlat (&hızlı)"
 
 #: pcsx2/gui/MainFrame.cpp:663
 msgid "Boot CDVD (&fast)"
-msgstr "CDVD'yi çalıştır (&Hızlı)"
+msgstr "CDVD'yi çalıştır (&hızlı)"
 
 #: pcsx2/gui/MainFrame.cpp:687
-#, fuzzy
 msgid "Boo&t ISO (full)"
-msgstr "CDVD'yi çalıştır (Tam)"
+msgstr "ISO'yu &başlat (tam)"
 
 #: pcsx2/gui/MainFrame.cpp:688
-#, fuzzy
 msgid "Boot the VM using the current ISO source media"
-msgstr "Seçili DVD ya da Iso ortamı kaynağını kullanarak SM'yi başlat"
+msgstr "Sanal makineyi geçerli ISO kaynak ortamını kullanarak başlat"
 
 #: pcsx2/gui/MainFrame.cpp:691
-#, fuzzy
 msgid "Boo&t CDVD (full)"
-msgstr "CDVD'yi çalıştır (Tam)"
+msgstr "CDVD'yi &başlat (tam)"
 
 #: pcsx2/gui/MainFrame.cpp:692
-#, fuzzy
 msgid "Boot the VM using the current CD/DVD source media"
-msgstr "Seçili DVD ya da Iso ortamı kaynağını kullanarak SM'yi başlat"
+msgstr "Sanal makineyi geçerli CD/DVD kaynak ortamını kullanarak başlat"
 
 #: pcsx2/gui/MainFrame.cpp:695
 msgid "Boo&t BIOS"
-msgstr ""
+msgstr "BIOS'u &başlat"
 
 #: pcsx2/gui/MainFrame.cpp:696
-#, fuzzy
 msgid "Boot the VM without any source media"
-msgstr "Seçili DVD ya da Iso ortamı kaynağını kullanarak SM'yi başlat"
+msgstr "Sanal makineyi kaynak ortamı olmadan başlat"
 
 #: pcsx2/gui/MainFrame.cpp:777 pcsx2/gui/MainFrame.cpp:812
 msgid "No plugin loaded"
@@ -1673,7 +1665,7 @@ msgstr "Yüklü eklenti yok"
 
 #: pcsx2/gui/MainFrame.cpp:782
 msgid "&Core GS Settings..."
-msgstr "Temel GS Ayarları..."
+msgstr "&Temel GS Ayarları..."
 
 #: pcsx2/gui/MainFrame.cpp:783
 msgid ""
@@ -1685,15 +1677,15 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:785
 msgid "&Window Settings..."
-msgstr "Pencere Ayarları..."
+msgstr "&Pencere Ayarları..."
 
 #: pcsx2/gui/MainFrame.cpp:786
 msgid "Modify window and appearance options, including aspect ratio."
-msgstr "En-boy oranı gibi pencere ve görünüm seçeneklerini değiştirin."
+msgstr "En/boy oranı gibi pencere ve görünüm seçeneklerini değiştirin."
 
 #: pcsx2/gui/MainFrame.cpp:793
 msgid "&Plugin Settings..."
-msgstr "Eklenti Ayarları..."
+msgstr "&Eklenti Ayarları..."
 
 #: pcsx2/gui/MainFrame.cpp:794
 #, c-format
@@ -1702,11 +1694,11 @@ msgstr "%s eklentisinin gelişmiş ayarlar iletisini açar."
 
 #: pcsx2/gui/MainMenuClicks.cpp:120
 msgid "Reset all settings?"
-msgstr "Tüm ayarları silmek istediğinden emin misin?"
+msgstr "Tüm ayarlar sıfırlansın mı?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:148
 msgid "Confirm ISO image change"
-msgstr "ISO kalıpı değiştirmeyi onayla"
+msgstr "ISO kalıbını değiştirmeyi onayla"
 
 #: pcsx2/gui/MainMenuClicks.cpp:154
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
@@ -1725,13 +1717,13 @@ msgstr "CDVD kaynak değişimini onayla"
 #: pcsx2/gui/MainMenuClicks.cpp:195
 #, c-format
 msgid "You've selected to switch the CDVD source from %s to %s."
-msgstr "CDVD kaynağını %s 'dan %s 'a değiştirdiniz."
+msgstr "%s CDVD kaynağı, %s olarak değiştirildi."
 
 #: pcsx2/gui/MainMenuClicks.cpp:199
 msgid "Do you want to swap discs or boot the new image (system reset)?"
 msgstr ""
-"CD mi değiştirmek istiyorsunuz yoksa yeni bir kalıp dosyası açmak mı "
-"(yeniden başlatır)?"
+"CD mi değiştirmek, yoksa yeni bir kalıp dosyası açmak istiyorsunuz (sistemi "
+"yeniden başlatır)?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:271
 #, c-format
@@ -1905,7 +1897,7 @@ msgstr "Tam"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:100
 msgid "VU0 / VU1 Advanced Recompiler Options"
-msgstr "VUo / VU1 Gelişmiş Derleyici Seçenekleri"
+msgstr "VU0 / VU1 Gelişmiş Derleyici Seçenekleri"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:102
 msgid "Extra"
@@ -1932,7 +1924,7 @@ msgstr "x86 işlemler için doğru zamanlı 64 bit MIPS-IV kodu dönüşümü sa
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:127
 msgid "Pretty slow; provided for diagnostic purposes only."
-msgstr "Pretty slow; provided for diagnostic purposes only."
+msgstr "Çok yavaş; yalnızca tanılama amaçlıdır."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:130
 msgid ""
@@ -1946,7 +1938,7 @@ msgstr "EE Cache'yi aktifleştir (Daha yavaş)"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:154
 msgid "Interpreter only; provided for diagnostic"
-msgstr "Yalnızca yorumlayıcı; test amaçlıdır."
+msgstr "Yalnızca yorumlayıcı; test amaçlıdır"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:226
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:129
@@ -1971,7 +1963,7 @@ msgstr "Daha uyumlu olan yeni VU derleyicisi. Önerilir."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:192
 msgid "superVU Recompiler [legacy]"
-msgstr "superVU Derleyicisi [Eski]"
+msgstr "superVU Derleyicisi [eski]"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:193
 msgid ""
@@ -2041,9 +2033,8 @@ msgid "Double-click toggles fullscreen mode"
 msgstr "Çift tıklama tam ekrana geçer"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:52
-#, fuzzy
 msgid "Switch to 4:3 aspect ratio when an FMV plays"
-msgstr "FMV oynatılırken GSdx software rendering moduna geç"
+msgstr "Bir FMV oynatıldığında 4:3 en/boy oranına geç"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:86
 msgid "Aspect Ratio:"
@@ -2062,36 +2053,35 @@ msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
 msgstr ""
-"Yanlış pencere boyutu: Pencere boyutu denen şeyde yalnızca rakamlar olur -_-"
+"Yanlış pencere boyutu: Pencere boyutu denen şeyde yalnızca rakamlar olur! >_<"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:322
 msgid "Search"
 msgstr "Ara"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:334
-#, fuzzy
 msgid "Game Database Editor"
 msgstr "Oyun Veritabanı Düzenleyici"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:348
 msgid "Name: "
-msgstr ""
+msgstr "Ad: "
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:349
 msgid "Region: "
-msgstr ""
+msgstr "Bölge: "
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:350
 msgid "Compatibility: "
-msgstr ""
+msgstr "Uyumluluk: "
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:351
 msgid "Comments: "
-msgstr ""
+msgstr "Açıklamalar: "
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:352
 msgid "Patches: "
-msgstr ""
+msgstr "Düzeltmeler: "
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:356
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
@@ -2159,14 +2149,13 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:82
 msgid "Ignore DMAC writes when it is busy."
-msgstr "Meşgulken DMAC yazmalarını yoksay."
+msgstr "Meşgulken DMAC yazma işlemlerini yoksay."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:87
 msgid "Simulate VIF1 FIFO read ahead. Fixes slow loading games."
 msgstr "VIF1 FIFO ön okumasını etkinleştir. Yavaş yüklenen oyunlar içindir."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:92
-#, fuzzy
 msgid ""
 "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD and Spy Hunter loading hang."
 msgstr ""
@@ -2178,6 +2167,8 @@ msgid ""
 "Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ "
 "Hero)"
 msgstr ""
+"GIF FIFO'Yu etkinleştir (daha yavaştır, ancak Hot Wheels, Wallace and Gromit "
+"ve DJ Hero için gereklidir)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:100
 msgid "Switch to GSdx software rendering when an FMV plays"
@@ -2195,7 +2186,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:119
 msgid "Enable manual game fixes [Not recommended]"
-msgstr "Elle yapılan oyun düzeltmelerini etkinleştir [Önerilmez]"
+msgstr "Manuel oyun düzeltmelerini etkinleştir [Önerilmez]"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:250
 msgid "Enable Trace Logging"
@@ -2248,7 +2239,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:405
 msgid "Card: "
-msgstr "Kart:"
+msgstr "Kart: "
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:463
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:499
@@ -2322,7 +2313,7 @@ msgstr "Kopyalama başarısız!"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:777
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
-msgstr "'%s' hafıza kartı '%s' 'a kopyalandı."
+msgstr "'%s' hafıza kartı '%s' hedefine kopyalandı."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
 msgid "Success"
@@ -2366,7 +2357,7 @@ msgstr "Boş"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:962
 #, c-format
 msgid "Select a target port for '%s'"
-msgstr "%s için hedef portu seçin"
+msgstr "'%s' için hedef portu seçin"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:963
 msgid "Insert card"
@@ -2382,7 +2373,7 @@ msgstr "Kart tak ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1025
 msgid "Duplicate card ..."
-msgstr "Kartı kopyala"
+msgstr "Kartı kopyala ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1026
 msgid "Rename card ..."
@@ -2467,7 +2458,7 @@ msgstr "Belgelerim (önerilen)"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:46
 msgid "Location: "
-msgstr "Konum:"
+msgstr "Konum: "
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:50
 msgid "Custom folder:"
@@ -2609,7 +2600,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:175
 msgid "MTVU (Multi-Threaded microVU1)"
-msgstr "MTVU (Çok-İşlemli microVU1)"
+msgstr "MTVU (Çok İşlemli microVU1)"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid ""
@@ -2617,7 +2608,7 @@ msgid ""
 "cores]"
 msgstr ""
 "Hızı oldukça artırır ve uyumluluğu yüksektir; donmalara neden olabilir [3+ "
-"çekirdek için Önerilir]"
+"çekirdek için önerilir]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:187
 msgid "Other Hacks"
@@ -2625,7 +2616,7 @@ msgstr "Diğer Hackler"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:189
 msgid "Enable INTC Spin Detection"
-msgstr "INTC Spin Tanımlamasını Etkinleştir"
+msgstr "INTC Dönüş Algılamasını Etkinleştir"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
 msgid ""
@@ -2719,7 +2710,7 @@ msgstr "Devre dışı [varsayılan]"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:180
 msgid "Skip when on Turbo only (TAB to enable)"
-msgstr "Yalnızca Turbo açıkken kare atla (Etkinleştirmek için TAB'ı tıklayın)"
+msgstr "Yalnızca Turbo açıkken kare atla (Etkinleştirmek için TAB'a basın)"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:184
 msgid "Constant skipping"
@@ -2808,7 +2799,7 @@ msgstr ""
 
 #: pcsx2/gui/i18n.cpp:63
 msgid " (default)"
-msgstr "(varsayılan)"
+msgstr " (varsayılan)"
 
 #: pcsx2/ps2/BiosTools.cpp:89 pcsx2/ps2/BiosTools.cpp:157
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
