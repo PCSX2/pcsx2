@@ -37,15 +37,15 @@ GSDirtyRect::GSDirtyRect(const GSVector4i& r, uint32 psm)
 	bottom = r.bottom;
 }
 
-GSVector4i GSDirtyRect::GetDirtyRect(const GIFRegTEX0& TEX0)
+const GSVector4i GSDirtyRect::GetDirtyRect(const GIFRegTEX0& TEX0) const
 {
 	GSVector4i r;
 
-	GSVector2i src = GSLocalMemory::m_psm[psm].bs;
+	const GSVector2i src = GSLocalMemory::m_psm[psm].bs;
 
 	if(psm != TEX0.PSM)
 	{
-		GSVector2i dst = GSLocalMemory::m_psm[TEX0.PSM].bs;
+		const GSVector2i dst = GSLocalMemory::m_psm[TEX0.PSM].bs;
 
 		r.left = left * dst.x / src.x;
 		r.top = top * dst.y / src.y;
@@ -62,20 +62,20 @@ GSVector4i GSDirtyRect::GetDirtyRect(const GIFRegTEX0& TEX0)
 
 //
 
-GSVector4i GSDirtyRectList::GetDirtyRectAndClear(const GIFRegTEX0& TEX0, const GSVector2i& size)
+const GSVector4i GSDirtyRectList::GetDirtyRectAndClear(const GIFRegTEX0& TEX0, const GSVector2i& size)
 {
 	if(!empty())
 	{
 		GSVector4i r(INT_MAX, INT_MAX, 0, 0);
 
-		for(list<GSDirtyRect>::iterator i = begin(); i != end(); ++i)
+		for(const auto& dirty_rect : *this)
 		{
-			r = r.runion(i->GetDirtyRect(TEX0));
+			r = r.runion(dirty_rect.GetDirtyRect(TEX0));
 		}
 
 		clear();
 
-		GSVector2i bs = GSLocalMemory::m_psm[TEX0.PSM].bs;
+		const GSVector2i bs = GSLocalMemory::m_psm[TEX0.PSM].bs;
 
 		return r.ralign<Align_Outside>(bs).rintersect(GSVector4i(0, 0, size.x, size.y));
 	}
