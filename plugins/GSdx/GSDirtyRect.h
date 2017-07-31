@@ -35,12 +35,12 @@ class GSDirtyRect
 public:
 	GSDirtyRect();
 	GSDirtyRect(const GSVector4i& r, uint32 psm);
-	GSVector4i GetDirtyRect(const GIFRegTEX0& TEX0);
+	const GSVector4i GetDirtyRect(const GIFRegTEX0& TEX0) const;
 };
 
-class GSDirtyRectList : public list<GSDirtyRect>
+class GSDirtyRectList : public std::vector<GSDirtyRect>
 {
 public:
 	GSDirtyRectList() {}
-	GSVector4i GetDirtyRectAndClear(const GIFRegTEX0& TEX0, const GSVector2i& size);
+	const GSVector4i GetDirtyRectAndClear(const GIFRegTEX0& TEX0, const GSVector2i& size);
 };
