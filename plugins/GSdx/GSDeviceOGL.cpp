@@ -528,7 +528,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	// Get Available Memory
 	// ****************************************************************
 	GLint vram[4] = {0};
-	if (GLLoader::fglrx_buggy_driver) {
+	if (GLLoader::vendor_id_amd) {
 		// Full vram, remove a small margin for others buffer
 		glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, vram);
 	} else if (GLLoader::found_GL_NVX_gpu_memory_info) {
@@ -998,7 +998,7 @@ void GSDeviceOGL::SelfShaderTestRun(const string& dir, const string& file, const
 
 #ifdef __linux__
 	// Nouveau actually
-	if (GLLoader::mesa_buggy_driver) {
+	if (GLLoader::mesa_driver) {
 		if (freopen(out.c_str(), "w", stderr) == NULL)
 			fprintf(stderr, "Failed to redirect stderr\n");
 	}
@@ -1010,7 +1010,7 @@ void GSDeviceOGL::SelfShaderTestRun(const string& dir, const string& file, const
 
 #ifdef __linux__
 	// Nouveau actually
-	if (GLLoader::mesa_buggy_driver) {
+	if (GLLoader::mesa_driver) {
 		if (freopen("/dev/tty", "w", stderr) == NULL)
 			fprintf(stderr, "Failed to restore stderr\n");
 	}

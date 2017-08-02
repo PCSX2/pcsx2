@@ -266,13 +266,13 @@ namespace GLLoader {
 
 	bool s_first_load = true;
 
-	bool legacy_fglrx_buggy_driver = false;
-	bool fglrx_buggy_driver    = false;
-	bool mesa_buggy_driver     = false;
-	bool nvidia_buggy_driver   = false;
-	bool intel_buggy_driver    = false;
-	bool in_replayer           = false;
-	bool buggy_sso_dual_src    = false;
+	bool amd_legacy_buggy_driver = false;
+	bool vendor_id_amd      = false;
+	bool vendor_id_nvidia   = false;
+	bool vendor_id_intel    = false;
+	bool mesa_driver        = false;
+	bool in_replayer        = false;
+	bool buggy_sso_dual_src = false;
 
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
@@ -341,26 +341,31 @@ namespace GLLoader {
 
 		// Name changed but driver is still bad!
 		if (strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI Technologies Inc.") || strstr(vendor, "ATI"))
-			fglrx_buggy_driver = true;
-		if (fglrx_buggy_driver && (
-					strstr((const char*)&s[v], " 15.") || // Blacklist all 2015 AMD drivers.
-					strstr((const char*)&s[v], " 16.") || // Blacklist all 2016 AMD drivers.
-					strstr((const char*)&s[v], " 17.") // Blacklist all 2017 AMD drivers for now.
-					))
-			legacy_fglrx_buggy_driver = true;
-
+			vendor_id_amd = true;
+		/*if (vendor_id_amd && (
+				strstr((const char*)&s[v], " 10.") || // Blacklist all 2010 AMD drivers.
+				strstr((const char*)&s[v], " 11.") || // Blacklist all 2011 AMD drivers.
+				strstr((const char*)&s[v], " 12.") || // Blacklist all 2012 AMD drivers.
+				strstr((const char*)&s[v], " 13.") || // Blacklist all 2013 AMD drivers.
+				strstr((const char*)&s[v], " 14.") || // Blacklist all 2014 AMD drivers.
+				strstr((const char*)&s[v], " 15.") || // Blacklist all 2015 AMD drivers.
+				strstr((const char*)&s[v], " 16.") || // Blacklist all 2016 AMD drivers.
+				strstr((const char*)&s[v], " 17.") // Blacklist all 2017 AMD drivers for now.
+				))
+			amd_legacy_buggy_driver = true;
+		*/
 		if (strstr(vendor, "NVIDIA Corporation"))
-			nvidia_buggy_driver = true;
+			vendor_id_nvidia = true;
 
 #ifdef _WIN32
 		if (strstr(vendor, "Intel"))
-			intel_buggy_driver = true;
+			vendor_id_intel = true;
 #else
 		// On linux assumes the free driver if it isn't nvidia or amd pro driver
-		mesa_buggy_driver = !nvidia_buggy_driver && !fglrx_buggy_driver;
+		mesa_driver = !vendor_id_nvidia && !vendor_id_amd;
 #endif
 
-		buggy_sso_dual_src = intel_buggy_driver || fglrx_buggy_driver || legacy_fglrx_buggy_driver;
+		buggy_sso_dual_src = vendor_id_intel || vendor_id_amd /*|| amd_legacy_buggy_driver*/;
 
 		if (theApp.GetConfigI("override_geometry_shader") != -1) {
 			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");
@@ -443,13 +448,13 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 
 		if (s_first_load) {
-			if (fglrx_buggy_driver) {
+			if (vendor_id_amd) {
 				fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver.\n"
 					"Check out the link below for further information.\n"
 					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
 			}
 
-			if (intel_buggy_driver) {
+			if (vendor_id_intel) {
 				fprintf(stderr, "The OpenGL renderer is inefficient on Intel GPUs due to an inefficient driver.\n"
 					"Check out the link below for further information.\n"
 					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know\n");
