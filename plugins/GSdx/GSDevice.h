@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include "GSFastList.h"
 #include "GSWnd.h"
 #include "GSTexture.h"
 #include "GSVertex.h"
@@ -103,7 +104,7 @@ public:
 
 class GSDevice : public GSAlignedClass<32>
 {
-	list<GSTexture*> m_pool;
+	FastList<GSTexture*> m_pool;
 
 protected:
 	std::shared_ptr<GSWnd> m_wnd;
