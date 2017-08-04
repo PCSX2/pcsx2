@@ -22,6 +22,7 @@
 #pragma once
 
 #include "GSRenderer.h"
+#include "GSFastList.h"
 
 class GSTextureCacheSW
 {
@@ -38,8 +39,9 @@ public:
 		uint32 m_age;
 		bool m_complete;
 		bool m_repeating;
-		vector<GSVector2i>* m_p2t;
+		std::vector<GSVector2i>* m_p2t;
 		uint32 m_valid[MAX_PAGES];
+		std::array<uint16, MAX_PAGES> m_erase_it;
 		struct {uint32 bm[16]; const uint32* n;} m_pages;
 		const uint32* RESTRICT m_sharedbits;
 
@@ -57,7 +59,7 @@ public:
 protected:
 	GSState* m_state;
 	hash_set<Texture*> m_textures;
-	std::array<std::list<Texture*>, MAX_PAGES> m_map;
+	std::array<FastList<Texture*>, MAX_PAGES> m_map;
 
 public:
 	GSTextureCacheSW(GSState* state);
