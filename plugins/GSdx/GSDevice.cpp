@@ -45,7 +45,7 @@ GSDevice::GSDevice()
 
 GSDevice::~GSDevice()
 {
-	for(auto &t : m_pool) delete t;
+	for(auto t : m_pool) delete t;
 
 	delete m_backbuffer;
 	delete m_merge;
@@ -66,7 +66,7 @@ bool GSDevice::Create(const std::shared_ptr<GSWnd>& wnd)
 
 bool GSDevice::Reset(int w, int h)
 {
-	for(auto &t : m_pool) delete t;
+	for(auto t : m_pool) delete t;
 
 	m_pool.clear();
 
@@ -133,9 +133,9 @@ void GSDevice::Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect,
 
 GSTexture* GSDevice::FetchSurface(int type, int w, int h, bool msaa, int format)
 {
-	GSVector2i size(w, h);
+	const GSVector2i size(w, h);
 
-	for(list<GSTexture*>::iterator i = m_pool.begin(); i != m_pool.end(); ++i)
+	for(auto i = m_pool.begin(); i != m_pool.end(); ++i)
 	{
 		GSTexture* t = *i;
 
@@ -154,9 +154,8 @@ void GSDevice::PrintMemoryUsage()
 {
 #ifdef ENABLE_OGL_DEBUG
 	uint32 pool = 0;
-	for(list<GSTexture*>::iterator i = m_pool.begin(); i != m_pool.end(); i++)
+	for(auto t : m_pool)
 	{
-		GSTexture* t = *i;
 		if (t)
 			pool += t->GetMemUsage();
 	}
