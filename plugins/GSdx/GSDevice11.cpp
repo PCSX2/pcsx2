@@ -449,7 +449,7 @@ void GSDevice11::DrawIndexedPrimitive()
 
 void GSDevice11::DrawIndexedPrimitive(int offset, int count)
 {
-	ASSERT(offset + count <= m_index.count);
+	ASSERT(offset + count <= (int)m_index.count);
 
 	m_ctx->DrawIndexed(count, m_index.start + offset, m_vertex.start);
 }
