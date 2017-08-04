@@ -142,6 +142,7 @@ set(GSdxHeaders
     GSDump.h
     GSdx.h
     GSdxResources.h
+    GSFastList.h
     GSFunctionMap.h
     GS.h
     GSLocalMemory.h
