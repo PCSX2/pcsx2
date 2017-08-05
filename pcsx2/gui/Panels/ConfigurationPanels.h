@@ -267,6 +267,7 @@ namespace Panels
 	{
 	protected:
 		wxComboBox*		m_combo_AspectRatio;
+		wxComboBox*		m_combo_vsync;
 
 		wxTextCtrl*		m_text_Zoom;
 

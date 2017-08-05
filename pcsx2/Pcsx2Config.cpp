@@ -20,6 +20,7 @@
 #include "Utilities/IniInterface.h"
 #include "Config.h"
 #include "GS.h"
+#include "gui/GSFrame.h"
 
 void TraceLogFilters::LoadSave( IniInterface& ini )
 {
@@ -200,7 +201,7 @@ Pcsx2Config::GSOptions::GSOptions()
 {
 	FrameLimitEnable		= true;
 	FrameSkipEnable			= false;
-	VsyncEnable				= false;
+	VsyncEnable				= VsyncMode::Off;
 
 	SynchronousMTGS			= false;
 	DisableOutput			= false;
@@ -224,7 +225,7 @@ void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
 
 	IniEntry( FrameLimitEnable );
 	IniEntry( FrameSkipEnable );
-	IniEntry( VsyncEnable );
+	ini.EnumEntry( L"VsyncEnable", VsyncEnable, NULL, VsyncEnable );
 
 	IniEntry( LimitScalar );
 	IniEntry( FramerateNTSC );
@@ -232,6 +233,22 @@ void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
 
 	IniEntry( FramesToDraw );
 	IniEntry( FramesToSkip );
+}
+
+int Pcsx2Config::GSOptions::GetVsync() const
+{
+	if (g_LimiterMode == Limit_Turbo)
+		return 0;
+
+	// D3D only support a boolean state. OpenGL waits a number of vsync
+	// interrupt (negative value for late vsync).
+	switch (VsyncEnable) {
+		case VsyncMode::Adaptive: return -1;
+		case VsyncMode::Off: return 0;
+		case VsyncMode::On: return 1;
+
+		default: return 0;
+	}
 }
 
 const wxChar *const tbl_GamefixNames[] =

@@ -359,9 +359,8 @@ bool AppCorePlugins::OpenPlugin_GS()
 
 	bool retval = _parent::OpenPlugin_GS();
 
-	if( g_LimiterMode == Limit_Turbo )
-		GSsetVsync( false );
-		
+	GSsetVsync(EmuConfig.GS.GetVsync());
+
 	return retval;
 }
 

@@ -356,7 +356,7 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 	if( overrides.ProfilingMode )
 	{
 		fixup.GS.FrameLimitEnable = false;
-		fixup.GS.VsyncEnable = false;
+		fixup.GS.VsyncEnable = VsyncMode::Off;
 	}
 
 	wxString gameCRC;

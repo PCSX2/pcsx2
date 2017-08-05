@@ -91,7 +91,6 @@ namespace Implementations
 		}
 		else if( g_LimiterMode == Limit_Turbo )
 		{
-			GSsetVsync( g_Conf->EmuOptions.GS.VsyncEnable );
 			g_LimiterMode = Limit_Nominal;
 
 			if ( g_Conf->Framerate.SkipOnLimit)
@@ -107,7 +106,6 @@ namespace Implementations
 		}
 		else
 		{
-			GSsetVsync( false );
 			g_LimiterMode = Limit_Turbo;
 
 			if ( g_Conf->Framerate.SkipOnTurbo)
@@ -121,7 +119,11 @@ namespace Implementations
 				g_Conf->EmuOptions.GS.FrameSkipEnable = false;
 			}
 		}
+
 		gsUpdateFrequency(g_Conf->EmuOptions);
+
+		GSsetVsync(g_Conf->EmuOptions.GS.GetVsync());
+
 		pauser.AllowResume();
 	}
 
@@ -134,7 +136,6 @@ namespace Implementations
 		// out a better consistency approach... -air
 
 		ScopedCoreThreadPause pauser;
-		GSsetVsync( g_Conf->EmuOptions.GS.VsyncEnable );
 		if( g_LimiterMode == Limit_Slomo )
 		{
 			g_LimiterMode = Limit_Nominal;
@@ -146,7 +147,11 @@ namespace Implementations
 			OSDlog( Color_StrongRed, true, "(FrameLimiter) SlowMotion ENABLED." );
 			g_Conf->EmuOptions.GS.FrameLimitEnable = true;
 		}
+
 		gsUpdateFrequency(g_Conf->EmuOptions);
+
+		GSsetVsync(g_Conf->EmuOptions.GS.GetVsync());
+
 		pauser.AllowResume();
 	}
 
@@ -154,8 +159,17 @@ namespace Implementations
 	{
 		ScopedCoreThreadPause pauser;
 		g_Conf->EmuOptions.GS.FrameLimitEnable = !g_Conf->EmuOptions.GS.FrameLimitEnable;
-		GSsetVsync( g_Conf->EmuOptions.GS.FrameLimitEnable && g_Conf->EmuOptions.GS.VsyncEnable );
 		OSDlog( Color_StrongRed, true, "(FrameLimiter) %s.", g_Conf->EmuOptions.GS.FrameLimitEnable ? "ENABLED" : "DISABLED" );
+
+		// Turbo/Slowmo don't make sense when framelimiter is toggled
+		g_LimiterMode = Limit_Nominal;
+
+		// Disable Vsync when frame limited is disabled
+		if( g_Conf->EmuOptions.GS.FrameLimitEnable )
+			GSsetVsync(g_Conf->EmuOptions.GS.GetVsync());
+		else
+			GSsetVsync(0);
+
 		pauser.AllowResume();
 	}
 
