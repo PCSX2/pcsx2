@@ -39,6 +39,7 @@ add_library(lzma STATIC
     xz/src/liblzma/common/easy_encoder.c
     xz/src/liblzma/common/easy_encoder_memusage.c
     xz/src/liblzma/common/easy_preset.c
+    xz/src/liblzma/common/file_info.c
     xz/src/liblzma/common/filter_buffer_decoder.c
     xz/src/liblzma/common/filter_buffer_encoder.c
     xz/src/liblzma/common/filter_common.c
