@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: pcsx2\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2017-08-09 04:06+0200\n"
+"PO-Revision-Date: 2017-08-09 21:25+0200\n"
 "Last-Translator: \n"
 "Language-Team: PCSX2\n"
 "Language: de_DE\n"
@@ -142,12 +142,12 @@ msgstr ""
 #: pcsx2/PluginManager.cpp:982
 #, c-format
 msgid "The configured %s plugin file was not found"
-msgstr "Das konfigurierte %s Plugin konnte nicht gefunden werden"
+msgstr "Das konfigurierte %s Plugin konnte nicht gefunden werden."
 
 #: pcsx2/PluginManager.cpp:986
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
-msgstr "Das konfigurierte %s Plugin ist keine korrekte DLL Datei"
+msgstr "Das konfigurierte %s Plugin ist keine korrekte DLL Datei."
 
 #: pcsx2/PluginManager.cpp:1003
 #, c-format
@@ -1498,7 +1498,7 @@ msgstr "&Keine Disk"
 
 #: pcsx2/gui/MainFrame.cpp:466
 msgid "Use this to boot into your virtual PS2's BIOS configuration."
-msgstr "Benutze dies, um in deine virtuelle PS2 BIOS Konfiguration zu Booten."
+msgstr "Benutze dies, um in Deine virtuelle PS2 BIOS Konfiguration zu booten."
 
 #: pcsx2/gui/MainFrame.cpp:474
 msgid "Emulation &Settings"
@@ -1639,7 +1639,7 @@ msgstr "Boo&te Bios"
 
 #: pcsx2/gui/MainFrame.cpp:696
 msgid "Boot the VM without any source media"
-msgstr "Starte die VM ohne irgendein Medienquelle."
+msgstr "Starte die VM ohne irgendeine Medienquelle."
 
 #: pcsx2/gui/MainFrame.cpp:777 pcsx2/gui/MainFrame.cpp:812
 msgid "No plugin loaded"
@@ -2447,7 +2447,7 @@ msgid ""
 "system, depending on how your system is configured."
 msgstr ""
 "Diese Einstellung könnte Administratorberechtigungen benötigen, je nachdem "
-"wie dein System konfiguriert  ist."
+"wie Dein System konfiguriert ist."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:61
 #, c-format
@@ -2573,8 +2573,8 @@ msgstr "mVU Flag Hack"
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
-"Guter FPS Anstieg, gute Kompatibilität. Kann schlechte Grafiken verursachen "
-"[empfohlen]"
+"Guter FPS Anstieg, gute Kompatibilität. Kann fehlerhafte Grafiken "
+"verursachen. [empfohlen]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:175
 msgid "MTVU (Multi-Threaded microVU1)"
