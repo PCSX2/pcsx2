@@ -25,7 +25,7 @@ void GamePad::EnumerateGamePads(std::vector<std::unique_ptr<GamePad>> &vgamePad)
  **/
 void GamePad::DoRumble(unsigned type, unsigned pad)
 {
-    int index = uid_to_index(g_conf.get_joy_uid(pad));
+    int index = uid_to_index(pad);
     if (index >= 0)
         s_vgamePad[index]->Rumble(type, pad);
 }
@@ -38,17 +38,20 @@ size_t GamePad::index_to_uid(int index)
         return 0;
 }
 
-int GamePad::uid_to_index(size_t uid)
+int GamePad::uid_to_index(int pad)
 {
+    size_t uid = g_conf.get_joy_uid(pad);
+
     for (int i = 0; i < (int)s_vgamePad.size(); ++i) {
         if (s_vgamePad[i]->GetUniqueIdentifier() == uid)
             return i;
     }
 
-    // Current uid wasn't found maybe the pad was unplugged
-    // Fallback to the first pad which more friendly than nothing
-    if (!s_vgamePad.empty())
-        return 0;
+    // Current uid wasn't found maybe the pad was unplugged. Or
+    // user didn't select it. Fallback to 1st pad for
+    // 1st player. And 2nd pad for 2nd player.
+    if ((int)s_vgamePad.size() > pad)
+        return pad;
 
     return -1;
 }
