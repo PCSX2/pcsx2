@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2017-08-09 21:34+0200\n"
+"PO-Revision-Date: 2017-08-10 00:23+0200\n"
 "Last-Translator: \n"
 "Language-Team: PCSX2\n"
 "Language: de_DE\n"
@@ -50,7 +50,7 @@ msgid ""
 "a lot of memory."
 msgstr ""
 "Der Recompiler konnte nicht genug virtuellen Speicher allozieren. Versuche "
-"PCSX2 etwas mehr Speicher zu gewähren, indem Du nicht benötigte Programme "
+"PCSX2 etwas mehr Speicher zu gewähren, indem du nicht benötigte Programme "
 "beendest."
 
 #: pcsx2/System.cpp:354
@@ -75,7 +75,7 @@ msgid ""
 "the recompilers listed above, if you resolve the errors."
 msgstr ""
 "Recompiler werden zwar nicht unbedingt von PCSX2 benötigt, sie erhöhen aber "
-"die Emulationsgeschwindigkeit. Eventuell musst Du die Recompiler über die "
+"die Emulationsgeschwindigkeit. Eventuell musst du die Recompiler über die "
 "Konfigurationseinstellungen reaktivieren."
 
 #: pcsx2/gui/AppMain.cpp:154
@@ -85,8 +85,8 @@ msgid ""
 "count).  Please consult the FAQs and Guides for further instructions."
 msgstr ""
 "PCSX2 benötigt ein PS2 BIOS Abbild. Da Sony den BIOS Code lizenziert hat, "
-"dürfen wir dieses nicht mit PCSX2 vertreiben. Du musst daher das BIOS Abbild "
-"Deiner eigenen PS2 benutzen! Näheres dazu in den FAQ."
+"dürfen wir dieses nicht mit PCSX2 vertreiben. du musst daher das BIOS Abbild "
+"deiner eigenen PS2 benutzen! Näheres dazu in den FAQ."
 
 #: pcsx2/gui/AppMain.cpp:689
 msgid ""
@@ -106,10 +106,10 @@ msgid ""
 "computer, then you will need to switch to User Documents mode (click button "
 "below)."
 msgstr ""
-"Stelle bitte sicher, dass diese Ordner erstellt wurden und dass Dein "
-"Benutzeraccount Schreibrechte hat. Alternativ kannst Du versuchen, PCSX2 mit "
+"Stelle bitte sicher, dass diese Ordner erstellt wurden und dass dein "
+"Benutzeraccount Schreibrechte hat. Alternativ kannst du versuchen, PCSX2 mit "
 "Administratorrechten zu starten. Das sollte es ermöglichen, die benötigten "
-"Ordner zu erstellen. Falls Du keine dieser Möglichkeiten hast, solltest Du "
+"Ordner zu erstellen. Falls du keine dieser Möglichkeiten hast, solltest du "
 "in den normalen Installationsmodus wechseln (klicke den folgenden Button)."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:66
@@ -171,7 +171,7 @@ msgid ""
 msgstr ""
 "Du kannst hier optional ein Verzeichnis angeben, in dem PCSX2 seine "
 "Konfiguration speichern wird. Sind dort bereits Einstellungen vorhanden, "
-"wird PCSX2 Dir anbieten, diese zu importieren oder zu überschreiben."
+"wird PCSX2 dir anbieten, diese zu importieren oder zu überschreiben."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:96
 #, c-format
@@ -191,7 +191,7 @@ msgid ""
 msgstr ""
 "PCSX2 benötigt ein PS2 BIOS Abbild. Da Sony den BIOS Code lizenziert hat, "
 "dürfen wir dieses nicht mit PCSX2 vertreiben. Du musst daher das BIOS Abbild "
-"Deiner eigenen PS2 benutzen! Näheres dazu in den FAQ."
+"deiner eigenen PS2 benutzen! Näheres dazu in den FAQ."
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:31
 #, c-format
@@ -203,7 +203,7 @@ msgid ""
 "(or press Cancel to select a different settings folder)"
 msgstr ""
 "Existierende %s Einstellungen wurden in dem gewählten Ordner gefunden. \n"
-"Möchtest Du diese %s Einstellungen übernehmen?"
+"Möchtest du diese %s Einstellungen übernehmen?"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:30
 msgid ""
@@ -246,7 +246,7 @@ msgid ""
 "the Settings dialog, and will be disabled if you apply any changes here."
 msgstr ""
 "Achtung! PCSX2 läuft mit Kommandozeilenparametern, welche die hier zu "
-"tätigenden Einstellungen übergehen. Solltest Du hier Änderungen vornehmen, "
+"tätigenden Einstellungen übergehen. Solltest du hier Änderungen vornehmen, "
 "werden diese Kommandozeilenparameter ignoriert."
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:55
@@ -257,7 +257,7 @@ msgid ""
 "settings changes here."
 msgstr ""
 "Achtung! PCSX2 läuft mit Kommandozeilenparametern, welche die hier "
-"einzustellenden Plugins und Ordner übergehen. Solltest Du hier Änderungen "
+"einzustellenden Plugins und Ordner übergehen. Solltest du hier Änderungen "
 "vornehmen, werden diese Kommandozeilenparameter ignoriert."
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:129
@@ -286,7 +286,7 @@ msgid ""
 "\n"
 "--> Uncheck to modify settings manually (with current preset as base)"
 msgstr ""
-"Presets erleichtern Dir die Konfiguration, indem sie passende Einstellungen "
+"Presets erleichtern dir die Konfiguration, indem sie passende Einstellungen "
 "zur gewünschten Geschwindigkeitsstufe wählen. Höhere Stufen aktivieren mehr "
 "Hacks und sind daher nicht mit allen Spielen kompatibel."
 
@@ -294,7 +294,7 @@ msgstr ""
 msgid ""
 "This action will reset the existing PS2 virtual machine state; all current "
 "progress will be lost.  Are you sure?"
-msgstr "Diese Option wird die virtuelle PS2 resetten. Bist Du Dir sicher?"
+msgstr "Diese Option wird die virtuelle PS2 resetten. Bist du dir sicher?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:118
 #, c-format
@@ -309,7 +309,7 @@ msgid ""
 msgstr ""
 "Diese Option löscht alle %s Einstellungen und ermöglicht das erneute "
 "Ausführen des Konfigurationshelfers. %s muss dazu neu gestartet werden. Alle "
-"%s Einstellungen gehen verloren. Bist Du Dir sicher?"
+"%s Einstellungen gehen verloren. Bist du dir sicher?"
 
 #: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:534
 #, c-format
@@ -334,7 +334,7 @@ msgid ""
 "then press Cancel to close the Configuration panel."
 msgstr ""
 "Bitte wähle ein korrektes BIOS Abbild aus. \n"
-"Falls Du dies nicht tun kannst, wähle Abbrechen."
+"Falls du dies nicht tun kannst, wähle Abbrechen."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:112
 msgid "Notice: Most games are fine with the default options. "
@@ -348,7 +348,7 @@ msgstr "Normalerweise müssen diese Einstellungen nicht angepasst werden."
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:69
 msgid ""
 "The specified path/directory does not exist.  Would you like to create it?"
-msgstr "Das angegebene Verzeichnis existiert nicht. Möchtest Du es erstellen?"
+msgstr "Das angegebene Verzeichnis existiert nicht. Möchtest du es erstellen?"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:157
 msgid ""
@@ -479,7 +479,7 @@ msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
 "card will be lost!  Are you absolutely and quite positively sure?"
 msgstr ""
-"Hiermit wird die komplette Memory Card in Slot %s gelöscht. Bist Du Dir "
+"Hiermit wird die komplette Memory Card in Slot %s gelöscht. Bist du dir "
 "absolut sicher?"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:722
@@ -556,7 +556,7 @@ msgstr ""
 "korrekt wiederherzustellen. Tritt dabei ein Problem auf, kann der aktuelle "
 "Fortschritt allerdings verloren gehen. \n"
 "\n"
-"Bist Du Dir sicher, dass Du die Änderung jetzt anwenden möchtest?"
+"Bist du dir sicher, dass du die Änderung jetzt anwenden möchtest?"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:454
 #, c-format
@@ -566,7 +566,7 @@ msgid ""
 "%s, then press Cancel to close the Configuration panel."
 msgstr ""
 "Alle Plugins müssen korrekt eingestellt sein, ansonsten kann %s nicht "
-"funktionieren. Falls Du wegen fehlender Plugins oder einer unvollständigen "
+"funktionieren. Falls du wegen fehlender Plugins oder einer unvollständigen "
 "%s Installation keine gültige Konfiguration erstellen kannst, wähle "
 "Abbrechen."
 
@@ -662,7 +662,7 @@ msgid ""
 "audio, and false FPS readings.  When having emulation problems, disable this "
 "panel first."
 msgstr ""
-"Speedhacks verbessern die FPS Leistung der Emulation auf Deinem PC, indem "
+"Speedhacks verbessern die FPS Leistung der Emulation auf deinem PC, indem "
 "sie Abkürzungen nehmen oder die PS2 Hardware untertakten. Sie können "
 "Emulationsprobleme auslösen. Daher empfehlen wir, bei Fehlern zuerst die "
 "Speedhacks zu deaktivieren!"
@@ -757,7 +757,7 @@ msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
 msgstr ""
-"Aktivieren, wenn Du denkst, dass die MTGS Threadsynchronisation Crashes oder "
+"Aktivieren, wenn du denkst, dass die MTGS Threadsynchronisation Crashes oder "
 "grafische Fehler verursacht."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:301

@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: pcsx2\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2017-08-09 21:25+0200\n"
+"PO-Revision-Date: 2017-08-10 00:28+0200\n"
 "Last-Translator: \n"
 "Language-Team: PCSX2\n"
 "Language: de_DE\n"
@@ -162,7 +162,7 @@ msgstr ""
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr ""
-"Das Plugin meldet, dass Deine Hardware oder Software nicht unterstützt wird."
+"Das Plugin meldet, dass deine Hardware oder Software nicht unterstützt wird."
 
 #: pcsx2/PluginManager.cpp:1058
 msgid ""
@@ -1115,7 +1115,7 @@ msgstr "Einstellungen"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:83
 msgid "Language selector"
-msgstr "Sprachauswahl: "
+msgstr "Sprachauswahl"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:86
 msgid ""
@@ -1170,7 +1170,7 @@ msgstr "Werfe Memory Card automatisch nach einem Savestate-Ladevorgang aus"
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
 msgstr ""
-"Verwaltet Speicherstände basierend auf dem laufendem Spiel automatisch. "
+"Verwaltet Speicherstände basierend auf dem laufendem Spiel automatisch."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:101
 msgid "MemoryCard Manager"
@@ -1178,7 +1178,7 @@ msgstr "Memory Card Manager"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:116
 msgid "Drag cards to or from PS2-ports"
-msgstr "Drag und Drop zu / aus PS2 Ports. "
+msgstr "Drag und Drop in / aus PS2 Ports."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:117
 msgid ""
@@ -1273,7 +1273,7 @@ msgstr "Ansicht"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:278
 msgid "Language Selector"
-msgstr "Sprachauswahl: "
+msgstr "Sprachauswahl:"
 
 #: pcsx2/gui/ExecutorThread.cpp:41
 msgid "Logs events as they are passed to the PS2 virtual machine."
@@ -1306,7 +1306,7 @@ msgstr "Speichere Savestate"
 
 #: pcsx2/gui/GlobalCommands.cpp:475
 msgid "Saves the virtual machine state to the current slot."
-msgstr "Speichert den Status der virtuellen Maschine im aktuellen Slot "
+msgstr "Speichert den Status der virtuellen Maschine im aktuellen Slot."
 
 #: pcsx2/gui/GlobalCommands.cpp:481
 msgid "Load state"
@@ -1417,7 +1417,7 @@ msgstr "Lade ELF..."
 
 #: pcsx2/gui/MainFrame.cpp:416
 msgid "For running raw PS2 binaries directly"
-msgstr "Um PS2-Binärdateien direkt zu laden. "
+msgstr "Um PS2-Binärdateien direkt zu laden"
 
 #: pcsx2/gui/MainFrame.cpp:425
 msgid "&Load state"
@@ -1457,7 +1457,7 @@ msgstr "Herunterfahren"
 
 #: pcsx2/gui/MainFrame.cpp:449
 msgid "Wipes all internal VM states and shuts down plugins."
-msgstr "Löscht alle internen VM-Zustände und beendet Plugins. "
+msgstr "Löscht alle internen VM-Zustände und beendet Plugins."
 
 #: pcsx2/gui/MainFrame.cpp:452
 msgid "E&xit"
@@ -1466,7 +1466,7 @@ msgstr "Beenden"
 #: pcsx2/gui/MainFrame.cpp:453
 #, c-format
 msgid "Closing %s may be hazardous to your health"
-msgstr "%s zu verlassen kann gesundheitsschädlich sein. "
+msgstr "%s zu verlassen kann gesundheitsschädlich sein."
 
 #: pcsx2/gui/MainFrame.cpp:460
 msgid "ISO &Selector"
@@ -1498,7 +1498,7 @@ msgstr "&Keine Disk"
 
 #: pcsx2/gui/MainFrame.cpp:466
 msgid "Use this to boot into your virtual PS2's BIOS configuration."
-msgstr "Benutze dies, um in Deine virtuelle PS2 BIOS Konfiguration zu booten."
+msgstr "Benutze dies, um in deine virtuelle PS2 BIOS Konfiguration zu booten."
 
 #: pcsx2/gui/MainFrame.cpp:474
 msgid "Emulation &Settings"
@@ -1563,7 +1563,7 @@ msgstr "&Über..."
 
 #: pcsx2/gui/MainFrame.cpp:526
 msgid "&Open Debug Window..."
-msgstr "&Debug-Fenster öffnen "
+msgstr "&Debug-Fenster öffnen"
 
 #: pcsx2/gui/MainFrame.cpp:529
 msgid "&Logging..."
@@ -1607,7 +1607,7 @@ msgstr "Kein aktiver Emulationsstatus; Boote zuerst etwas."
 
 #: pcsx2/gui/MainFrame.cpp:655
 msgid "Use fast boot to skip PS2 startup and splash screens"
-msgstr "Fast Boot: Umgeht PS2 Start / Splashscreens. "
+msgstr "Fast Boot: Umgeht PS2 Start / Splashscreens"
 
 #: pcsx2/gui/MainFrame.cpp:660
 msgid "Boot ISO (&fast)"
@@ -1623,7 +1623,7 @@ msgstr "Boo&te ISO (Vollständig)"
 
 #: pcsx2/gui/MainFrame.cpp:688
 msgid "Boot the VM using the current ISO source media"
-msgstr "Starte die VM mit der aktuellen ISO-Quelle."
+msgstr "Starte die VM mit der aktuellen ISO-Quelle"
 
 #: pcsx2/gui/MainFrame.cpp:691
 msgid "Boo&t CDVD (full)"
@@ -1631,7 +1631,7 @@ msgstr "Boo&te CDVD (Vollständig)"
 
 #: pcsx2/gui/MainFrame.cpp:692
 msgid "Boot the VM using the current CD/DVD source media"
-msgstr "Starte die VM mit der aktuellen CD/DVD-Quelle."
+msgstr "Starte die VM mit der aktuellen CD/DVD-Quelle"
 
 #: pcsx2/gui/MainFrame.cpp:695
 msgid "Boo&t BIOS"
@@ -1683,7 +1683,7 @@ msgstr "Bestätige ISO-Abbild Wechsel"
 #: pcsx2/gui/MainMenuClicks.cpp:154
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
 msgstr ""
-"Möchtest Du die Disk wechseln oder das neue Abbild booten (via System Reset)?"
+"Möchtest du die Disk wechseln oder das neue Abbild booten (via System Reset)?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:156 pcsx2/gui/MainMenuClicks.cpp:202
 msgid "Swap Disc"
@@ -1701,7 +1701,7 @@ msgstr "Du hast gewählt, die CDVD Quelle von %s nach %s zu ändern."
 #: pcsx2/gui/MainMenuClicks.cpp:199
 msgid "Do you want to swap discs or boot the new image (system reset)?"
 msgstr ""
-"Möchtest Du die Disk wechseln oder die neue Abbild booten (System Reset)?"
+"Möchtest du die Disk wechseln oder die neue Abbild booten (System Reset)?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:271
 #, c-format
@@ -1730,7 +1730,7 @@ msgstr "Alle Dateien (*.*)"
 #: pcsx2/gui/MainMenuClicks.cpp:286
 msgid "Select disc image, compressed disc image, or block-dump..."
 msgstr ""
-"Wähle ein Disk-Abbild, ein komprimiertes Disk-Abbild oder einer Block-Dump"
+"Wähle ein Disk-Abbild, ein komprimiertes Disk-Abbild oder einen Block-Dump"
 
 #: pcsx2/gui/MainMenuClicks.cpp:303
 msgid "Select ELF file..."
@@ -1925,7 +1925,7 @@ msgstr "Ziemlich langsam, nur für Diagnosezwecke"
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:226
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:129
 msgid "Restore Defaults"
-msgstr "Standarteinstellung"
+msgstr "Standardeinstellung"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:186
 msgid ""
@@ -1959,7 +1959,7 @@ msgstr "Pfad existiert nicht"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:155
 msgid "Use default setting"
-msgstr "Benutze Standarteinstellung"
+msgstr "Benutze Standardeinstellung"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:174
 msgid "Open in Explorer"
@@ -2447,7 +2447,7 @@ msgid ""
 "system, depending on how your system is configured."
 msgstr ""
 "Diese Einstellung könnte Administratorberechtigungen benötigen, je nachdem "
-"wie Dein System konfiguriert ist."
+"wie dein System konfiguriert ist."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:61
 #, c-format
