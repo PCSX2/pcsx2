@@ -124,6 +124,16 @@ if(UNIX)
 endif()
 
 #----------------------------------------
+#		    3rdparty
+#----------------------------------------
+if (EXPERIMENTAL_ISO_LZMA_READER AND LIBLZMA_VERSION_STRING VERSION_LESS "5.3.0")
+    # Need API: lzma_file_info_decoder
+    add_subdirectory(3rdparty/xz)
+    set(LIBLZMA_LIBRARIES "${CMAKE_BINARY_DIR}/3rdparty/xz/liblzma.a")
+    include_directories(3rdparty/xz/xz/src/liblzma/api)
+endif()
+
+#----------------------------------------
 #		    Use system include
 #----------------------------------------
 if(UNIX)
