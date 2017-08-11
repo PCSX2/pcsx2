@@ -22,6 +22,10 @@ set(CommonFlags
     -DWX_PRECOMP
 	)
 
+if (EXPERIMENTAL_ISO_LZMA_READER)
+	set(CommonFlags "${CommonFlags} -DISO_LZMA_READER")
+endif()
+
 if ("${PGO}" STREQUAL "generate")
     set(pcsx2FinalFlags -fprofile-generate)
 elseif("${PGO}" STREQUAL "use")
@@ -180,6 +184,7 @@ set(pcsx2CDVDSources
 	CDVD/CompressedFileReader.cpp
 	CDVD/CsoFileReader.cpp
 	CDVD/GzippedFileReader.cpp
+	CDVD/LzmaFileReader.cpp
 	CDVD/IsoFS/IsoFile.cpp
 	CDVD/IsoFS/IsoFSCDVD.cpp
 	CDVD/IsoFS/IsoFS.cpp
@@ -197,6 +202,7 @@ set(pcsx2CDVDHeaders
 	CDVD/CompressedFileReaderUtils.h
 	CDVD/CsoFileReader.h
 	CDVD/GzippedFileReader.h
+	CDVD/LzmaFileReader.h
 	CDVD/IsoFileFormats.h
 	CDVD/IsoFS/IsoDirectory.h
 	CDVD/IsoFS/IsoFileDescriptor.h
@@ -661,6 +667,7 @@ set(pcsx2FinalLibs
     ${ZLIB_LIBRARIES}
     ${AIO_LIBRARIES}
     ${GCOV_LIBRARIES}
+    ${LIBLZMA_LIBRARIES}
 )
 
 if(BUILTIN_GS)
