@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: pcsx2\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2017-08-10 00:28+0200\n"
+"PO-Revision-Date: 2017-08-12 18:44+0200\n"
 "Last-Translator: \n"
 "Language-Team: PCSX2\n"
 "Language: de_DE\n"
@@ -1103,6 +1103,10 @@ msgid ""
 "files in and out of the memory card with your standard file explorer. This "
 "is still experimental, so use at your own risk!"
 msgstr ""
+"Verwaltet den Inhalt der Memory Card automatisch, sodass die Konsole nur die "
+"relevanten Speicherstände sieht. Erlaubt dir Drag and Drop der Dateien auf "
+"den Memory Cards mit dem Standarddateibrowser. Experimentell, daher Nutzung "
+"auf eigenes Risiko!"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
 #, c-format
@@ -2162,6 +2166,8 @@ msgstr ""
 msgid ""
 "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
 msgstr ""
+"VU I bit Hack - Vermeidet ständiges Rekompilieren (Scarface The World Is "
+"Yours)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:119
 msgid "Enable manual game fixes [Not recommended]"
