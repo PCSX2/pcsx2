@@ -1528,6 +1528,7 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 		std::string   config_name(theApp.GetConfigS("shaderfx_conf"));
 		std::ifstream fconfig(config_name);
 		std::stringstream config;
+		config << "#extension GL_ARB_gpu_shader5 : require\n";
 		if (fconfig.good())
 			config << fconfig.rdbuf();
 		else

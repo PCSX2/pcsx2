@@ -17,7 +17,6 @@
 
 #ifndef SHADER_MODEL
 #define GLSL 1
-#extension GL_ARB_gpu_shader5 : enable
 #else
 #define GLSL 0
 #endif
