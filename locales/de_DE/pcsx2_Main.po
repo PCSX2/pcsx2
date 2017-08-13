@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: pcsx2\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2017-08-12 18:44+0200\n"
+"PO-Revision-Date: 2017-08-13 17:50+0200\n"
 "Last-Translator: \n"
 "Language-Team: PCSX2\n"
 "Language: de_DE\n"
@@ -612,12 +612,12 @@ msgstr "PS2 BIOS Fehler"
 
 #: pcsx2/gui/AppMain.cpp:179
 msgid "Press Ok to go to the BIOS Configuration Panel."
-msgstr "Wähle OK um in das BIOS Konfigurationsmenü zu gelangen."
+msgstr "Wähle OK, um in das BIOS Konfigurationsmenü zu gelangen."
 
 #: pcsx2/gui/AppMain.cpp:202
 msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
 msgstr ""
-"Warnung! Kein gültiges Bios wurde ausgewählt. PCSX2 kann inoperabel sein."
+"Warnung! Kein gültiges BIOS wurde ausgewählt. PCSX2 kann inoperabel sein."
 
 #: pcsx2/gui/AppMain.cpp:375
 #, c-format
@@ -1514,7 +1514,7 @@ msgstr "&Memory Cards"
 
 #: pcsx2/gui/MainFrame.cpp:476
 msgid "&Plugin/BIOS Selector"
-msgstr "&Plugin/BIOS Selektor"
+msgstr "&Plugin/BIOS Auswahl"
 
 #: pcsx2/gui/MainFrame.cpp:477
 msgid "&Game Database Editor"
@@ -1639,7 +1639,7 @@ msgstr "Starte die VM mit der aktuellen CD/DVD-Quelle"
 
 #: pcsx2/gui/MainFrame.cpp:695
 msgid "Boo&t BIOS"
-msgstr "Boo&te Bios"
+msgstr "Boo&te BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:696
 msgid "Boot the VM without any source media"
@@ -1824,7 +1824,7 @@ msgid ""
 "Click the Browse button to select a different folder where PCSX2 will look "
 "for PS2 BIOS roms."
 msgstr ""
-"Drücke den Suchen Button, um einen anderen Ordner zu wählen in dem PCSX2 "
+"Drücke den Suchen Button, um einen anderen Ordner zu wählen, in dem PCSX2 "
 "nach BIOS Roms sucht."
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:114
@@ -1835,7 +1835,7 @@ msgstr "Aktualisiere Liste"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:116
 msgid "Select a BIOS rom:"
-msgstr "Wähle ein BIOS rom:"
+msgstr "Wähle ein BIOS Rom:"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:24
 msgid "Round Mode"
