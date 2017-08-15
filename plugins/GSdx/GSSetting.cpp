@@ -159,7 +159,7 @@ const char* dialog_message(int ID, bool* updateText) {
 #ifdef _WIN32
 		// DX9 only
 		case IDC_FBA:
-			return "Makes textures partially or fully transparent as required by emulation. May cause unusual slowdowns for some games.";
+			return "Makes textures partially or fully transparent as required by emulation. May cause unusual slowdowns or graphical glitches for some games.";
 		case IDC_LOGZ:
 			return "Treat depth as logarithmic instead of linear. Recommended setting is on unless it causes graphical glitches.";
 #endif
