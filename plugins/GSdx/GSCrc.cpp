@@ -147,6 +147,7 @@ CRC::Game CRC::m_games[] =
 	{0xAD66643C, GT3, CH, 0}, // cutie comment
 	{0x6810C3BC, GT3, CH, 0}, //GRAN TURISMO Concept 2002 Tokyo-Geneva
 	{0x85AE91B3, GT3, US, 0},
+	{0x8AA991B0, GT3, US, 0},
 	{0xC220951A, GT3, JP, 0},
 	{0x9DE5CF65, GT3, JP, 0}, //Gran Turismo 3: A-spec
 	{0x60013EBD, GTConcept, EU, 0},
