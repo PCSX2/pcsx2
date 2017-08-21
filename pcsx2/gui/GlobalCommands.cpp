@@ -122,8 +122,6 @@ namespace Implementations
 
 		gsUpdateFrequency(g_Conf->EmuOptions);
 
-		GSsetVsync(g_Conf->EmuOptions.GS.GetVsync());
-
 		pauser.AllowResume();
 	}
 
@@ -150,8 +148,6 @@ namespace Implementations
 
 		gsUpdateFrequency(g_Conf->EmuOptions);
 
-		GSsetVsync(g_Conf->EmuOptions.GS.GetVsync());
-
 		pauser.AllowResume();
 	}
 
@@ -163,12 +159,6 @@ namespace Implementations
 
 		// Turbo/Slowmo don't make sense when framelimiter is toggled
 		g_LimiterMode = Limit_Nominal;
-
-		// Disable Vsync when frame limited is disabled
-		if( g_Conf->EmuOptions.GS.FrameLimitEnable )
-			GSsetVsync(g_Conf->EmuOptions.GS.GetVsync());
-		else
-			GSsetVsync(0);
 
 		pauser.AllowResume();
 	}
