@@ -235,15 +235,18 @@ GSVector4i GSWndEGL::GetClientRect()
 	return GSVector4i(0, 0, w, h);
 }
 
-void GSWndEGL::SetSwapInterval(int vsync)
+void GSWndEGL::SetSwapInterval()
 {
 	// 0 -> disable vsync
 	// n -> wait n frame
-	eglSwapInterval(m_eglDisplay, vsync);
+	eglSwapInterval(m_eglDisplay, m_vsync);
 }
 
 void GSWndEGL::Flip()
 {
+	if (m_vsync_change_requested.exchange(false))
+		SetSwapInterval();
+
 	eglSwapBuffers(m_eglDisplay, m_eglSurface);
 }
 

@@ -238,18 +238,21 @@ bool GSWndOGL::SetWindowText(const char* title)
 	return true;
 }
 
-void GSWndOGL::SetSwapInterval(int vsync)
+void GSWndOGL::SetSwapInterval()
 {
 	// m_swapinterval uses an integer as parameter
 	// 0 -> disable vsync
 	// n -> wait n frame
-	if      (m_swapinterval_ext)  m_swapinterval_ext(m_NativeDisplay, m_NativeWindow, vsync);
-	else if (m_swapinterval_mesa) m_swapinterval_mesa(vsync);
+	if      (m_swapinterval_ext)  m_swapinterval_ext(m_NativeDisplay, m_NativeWindow, m_vsync);
+	else if (m_swapinterval_mesa) m_swapinterval_mesa(m_vsync);
 	else						 fprintf(stderr, "Failed to set VSync\n");
 }
 
 void GSWndOGL::Flip()
 {
+	if (m_vsync_change_requested.exchange(false))
+		SetSwapInterval();
+
 	glXSwapBuffers(m_NativeDisplay, m_NativeWindow);
 }
 

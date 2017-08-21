@@ -38,7 +38,7 @@ class GSWndOGL final : public GSWndGL
 	void PopulateWndGlFunction();
 	void CreateContext(int major, int minor);
 
-	void SetSwapInterval(int vsync);
+	void SetSwapInterval();
 	bool HasLateVsyncSupport() { return m_has_late_vsync; }
 
 public:
