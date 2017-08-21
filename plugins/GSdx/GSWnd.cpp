@@ -199,5 +199,7 @@ void GSWndGL::SetVSync(int vsync)
 	else
 		m_vsync = vsync;
 
-	SetSwapInterval(m_vsync);
+	// The WGL/GLX/EGL swap interval function must be called on the rendering
+	// thread or else the change won't be properly applied.
+	m_vsync_change_requested = true;
 }

@@ -42,7 +42,7 @@ class GSWndEGL : public GSWndGL
 	void CreateContext(int major, int minor);
 	void BindAPI();
 
-	void SetSwapInterval(int vsync) final;
+	void SetSwapInterval() final;
 	bool HasLateVsyncSupport() final { return false; }
 
 	void OpenEGLDisplay();

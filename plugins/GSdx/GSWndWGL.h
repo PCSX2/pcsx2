@@ -38,7 +38,7 @@ class GSWndWGL : public GSWndGL
 	void CloseWGLDisplay();
 	void OpenWGLDisplay();
 
-	void SetSwapInterval(int vsync);
+	void SetSwapInterval();
 	bool HasLateVsyncSupport() { return m_has_late_vsync; }
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

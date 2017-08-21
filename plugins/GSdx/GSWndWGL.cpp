@@ -324,16 +324,19 @@ void* GSWndWGL::GetProcAddress(const char* name, bool opt)
 
 //TODO: check extensions supported or not
 //FIXME : extension allocation
-void GSWndWGL::SetSwapInterval(int vsync)
+void GSWndWGL::SetSwapInterval()
 {
 	// m_swapinterval uses an integer as parameter
 	// 0 -> disable vsync
 	// n -> wait n frame
-	if (m_swapinterval) m_swapinterval(vsync);
+	if (m_swapinterval) m_swapinterval(m_vsync);
 }
 
 void GSWndWGL::Flip()
 {
+	if (m_vsync_change_requested.exchange(false))
+		SetSwapInterval();
+
 	SwapBuffers(m_NativeDisplay);
 }
 
