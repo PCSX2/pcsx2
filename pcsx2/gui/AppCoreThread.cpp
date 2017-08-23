@@ -512,7 +512,7 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 	}
 
 	if (m_ExecMode >= ExecMode_Paused)
-		GSsetVsync(EmuConfig.GS.FrameLimitEnable ? EmuConfig.GS.GetVsync() : 0);
+		GSsetVsync(EmuConfig.GS.GetVsync());
 }
 
 // --------------------------------------------------------------------------------------
