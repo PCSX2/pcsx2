@@ -170,6 +170,7 @@ public:
 	bool Create(const std::shared_ptr<GSWnd> &wnd);
 	bool Reset(int w, int h);
 	void Flip();
+	void SetVSync(int vsync) final;
 
 	void SetExclusive(bool isExcl);
 
