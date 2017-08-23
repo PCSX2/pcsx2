@@ -432,6 +432,11 @@ void GSDevice11::SetExclusive(bool isExcl)
 	}
 }
 
+void GSDevice11::SetVSync(int vsync)
+{
+	m_vsync = vsync ? 1 : 0;
+}
+
 void GSDevice11::Flip()
 {
 	m_swapchain->Present(m_vsync, 0);
