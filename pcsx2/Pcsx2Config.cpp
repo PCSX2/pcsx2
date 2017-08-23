@@ -237,7 +237,7 @@ void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
 
 int Pcsx2Config::GSOptions::GetVsync() const
 {
-	if (g_LimiterMode == Limit_Turbo)
+	if (g_LimiterMode == Limit_Turbo || !FrameLimitEnable)
 		return 0;
 
 	// D3D only support a boolean state. OpenGL waits a number of vsync
