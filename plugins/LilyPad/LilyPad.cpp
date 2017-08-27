@@ -549,7 +549,7 @@ void Update(unsigned int port, unsigned int slot)
                     int cmd = b->command;
                     int state = dev->virtualControlState[b->controlIndex];
                     if (!(rapidFire & b->rapidFire)) {
-                        if (cmd > 0x0F && cmd != 0x28) {
+                        if ((cmd > 0x0F && cmd < 0x2A && cmd != 0x28) || cmd > 0x2C) {
                             ProcessButtonBinding(b, &s[port][slot], state);
                         } else if ((state >> 15) && !(dev->oldVirtualControlState[b->controlIndex] >> 15)) {
                             if (cmd == 0x0F) { // Mouse
