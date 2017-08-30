@@ -399,7 +399,7 @@ void GSSettingsDlg::UpdateControls()
 		ShowWindow(GetDlgItem(m_hWnd, IDC_OPENCL_TEXT), SW_HIDE);
 #endif
 
-		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGZ), dx9? SW_SHOW: SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGZ), dx9 ? SW_SHOW: SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_FBA), dx9 ? SW_SHOW : SW_HIDE);
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl ? SW_SHOW : SW_HIDE);
@@ -443,6 +443,12 @@ void GSSettingsDlg::UpdateControls()
 		// Hacks
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKS_ENABLED), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw && IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
+
+		// OSD Configuration
+		EnableWindow(GetDlgItem(m_hWnd, IDC_OSDBUTTON), ogl);
+
+		// Shader Configuration
+		EnableWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON), !null);
 	}
 
 }
