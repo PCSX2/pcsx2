@@ -41,6 +41,7 @@ linux_32_before_install() {
 		gir1.2-gdkpixbuf-2.0:i386 \
 		gir1.2-glib-2.0:i386 \
 		libcairo2-dev:i386 \
+		libegl1-mesa-dev:i386 \
 		libgdk-pixbuf2.0-dev:i386 \
 		libgirepository-1.0-1:i386 \
 		libglib2.0-dev:i386 \
@@ -108,6 +109,7 @@ linux_64_before_install() {
 	sudo apt-get -y install \
 		libaio-dev \
 		libasound2-dev \
+		libegl1-mesa-dev \
 		libgtk2.0-dev \
 		libpng12-dev \
 		libsdl2-dev \
