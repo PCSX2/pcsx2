@@ -198,13 +198,14 @@ namespace Dialogs
 	#ifdef __WXMSW__
 		pxCheckBox*			m_check_CompressNTFS;
 	#endif
+		pxCheckBox*			m_check_psx;
 
 	public:
 		virtual ~CreateMemoryCardDialog()  = default;
 		CreateMemoryCardDialog( wxWindow* parent, const wxDirName& mcdpath, const wxString& suggested_mcdfileName);
 	
 		//duplicate of MemoryCardFile::Create. Don't know why the existing method isn't used. - avih
-		static bool CreateIt( const wxString& mcdFile, uint sizeInMB );
+		static bool CreateIt( const wxString& mcdFile, uint sizeInMB, bool isPSX );
 		wxString result_createdMcdFilename;
 		//wxDirName GetPathToMcds() const;
 

@@ -551,7 +551,7 @@ void Panels::MemoryCardListPanel_Simple::AppStatusEvent_OnSettingsApplied()
 			wxString errMsg;
 			if (isValidNewFilename(m_Cards[slot].Filename.GetFullName(), GetMcdPath(), errMsg, 5))
 			{
-				if ( !Dialogs::CreateMemoryCardDialog::CreateIt(targetFile, 8) )
+				if ( !Dialogs::CreateMemoryCardDialog::CreateIt(targetFile, 8, false) )
 					Console.Error( L"Automatic createion of MCD '%s' failed. Hope for the best...", WX_STR(targetFile) );
 				else
 					Console.WriteLn( L"memcard created: '%s'.", WX_STR(targetFile) );
