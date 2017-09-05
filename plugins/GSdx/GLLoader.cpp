@@ -454,17 +454,19 @@ namespace GLLoader {
 					"Check out the link below for further information.\n"
 					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know\n");
 			}
+		}
 
-			if (!found_GL_ARB_viewport_array) {
+		if (!found_GL_ARB_viewport_array) {
+			glScissorIndexed   = ReplaceGL::ScissorIndexed;
+			glViewportIndexedf = ReplaceGL::ViewportIndexedf;
+			if (s_first_load)
 				fprintf(stderr, "GL_ARB_viewport_array is not supported! Function pointer will be replaced\n");
-				glScissorIndexed   = ReplaceGL::ScissorIndexed;
-				glViewportIndexedf = ReplaceGL::ViewportIndexedf;
-			}
+		}
 
-			if (!found_GL_ARB_texture_barrier) {
+		if (!found_GL_ARB_texture_barrier) {
+			glTextureBarrier = ReplaceGL::TextureBarrier;
+			if (s_first_load)
 				fprintf(stderr, "GL_ARB_texture_barrier is not supported! Blending emulation will not be supported\n");
-				glTextureBarrier = ReplaceGL::TextureBarrier;
-			}
 		}
 
 #ifdef _WIN32
