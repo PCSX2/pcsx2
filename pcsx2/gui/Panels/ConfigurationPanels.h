@@ -23,11 +23,11 @@
 
 #include <wx/statline.h>
 #include <wx/dnd.h>
+#include <wx/checklst.h>
 #include <memory>
 
 #include "AppCommon.h"
 #include "ApplyState.h"
-
 
 namespace Panels
 {
@@ -372,8 +372,8 @@ namespace Panels
 	class GameFixesPanel : public BaseApplicableConfigPanel_SpecificConfig
 	{
 	protected:
-		pxCheckBox*			m_checkbox[GamefixId_COUNT];
 		pxCheckBox*			m_check_Enable;
+		wxCheckListBox*		m_listbox;
 
 	public:
 		GameFixesPanel( wxWindow* parent );
