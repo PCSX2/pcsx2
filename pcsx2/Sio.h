@@ -15,10 +15,6 @@
 
 #pragma once
 
-// Let's enable this to free the IOP event handler of some considerable load.
-// Games are highly unlikely to need timed IRQ's for PAD and MemoryCard handling anyway (rama).
-#define SIO_INLINE_IRQS
-
 #include "MemoryCardFile.h"
 
 struct _mcd
@@ -125,6 +121,7 @@ extern u8 sioRead8();
 extern void sioWrite8(u8 value);
 extern void sioWriteCtrl16(u16 value);
 extern void sioInterrupt();
+extern void sioInterruptR();
 extern void InitializeSIO(u8 value);
 extern void SetForceMcdEjectTimeoutNow();
 extern void ClearMcdEjectTimeoutNow();

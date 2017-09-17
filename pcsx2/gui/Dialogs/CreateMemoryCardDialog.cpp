@@ -87,6 +87,8 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 		s_padding += m_check_CompressNTFS	| StdExpand();
 	#endif
 
+	s_padding += m_check_psx;
+
 	s_padding += 12;
 	s_padding += s_buttons	| StdCenter();
 
@@ -110,24 +112,44 @@ wxDirName Dialogs::CreateMemoryCardDialog::GetPathToMcds() const
 // When this GUI is moved into the FileMemoryCard plugin (where it eventually belongs),
 // this function will be removed and the MemoryCardFile::Create() function will be used
 // instead.
-bool Dialogs::CreateMemoryCardDialog::CreateIt( const wxString& mcdFile, uint sizeInMB )
+bool Dialogs::CreateMemoryCardDialog::CreateIt( const wxString& mcdFile, uint sizeInMB, bool isPSX )
 {
 	//int enc[16] = {0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0,0,0,0};
 
-	u8	m_effeffs[528*16];
-	memset8<0xff>( m_effeffs );
+	// PS2 Memory Card
+	u8	m_effeffs[528 * 16];
+	memset8<0xff>(m_effeffs);
 
-	Console.WriteLn( L"(FileMcd) Creating new %uMB memory card: '%s'", sizeInMB, WX_STR(mcdFile) );
+	// PSX Memory Card; 8192 is the size in bytes of a single block of a PSX memory card (8 KiB).
+	u8 m_effeffs_psx[8192];
+	memset8<0xff>(m_effeffs_psx);
+
+	// Since isPSX will have a default false state, it makes more sense to check "not PSX" first
+	if (!isPSX) {
+		Console.WriteLn(L"(FileMcd) Creating new PS2 %uMB memory card: '%s'", sizeInMB, WX_STR(mcdFile));
+	}
+	else {
+		Console.WriteLn(L"(FileMcd) Creating new PSX 128 KiB memory card: '%s'", WX_STR(mcdFile));
+	}
 
 	wxFFile fp( mcdFile, L"wb" );
 	if( !fp.IsOpened() ) return false;
 
 	static const int MC2_MBSIZE	= 1024 * 528 * 2;		// Size of a single megabyte of card data
 
-	for( uint i=0; i<(MC2_MBSIZE*sizeInMB)/sizeof(m_effeffs); i++ )
-	{
-		if( fp.Write( m_effeffs, sizeof(m_effeffs) ) == 0 )
-			return false;
+	if (!isPSX) {
+		for (uint i = 0; i<(MC2_MBSIZE*sizeInMB) / sizeof(m_effeffs); i++) {
+			if (fp.Write(m_effeffs, sizeof(m_effeffs)) == 0) {
+				return false;
+			}
+		}
+	} else {
+		// PSX cards consist of 16 blocks, each 8 KiB in size.
+		for (uint i = 0; i < 16; i++) {
+			if (fp.Write(m_effeffs_psx, sizeof(m_effeffs_psx)) == 0) {
+				return false;
+			}
+		}
 	}
 
 	return true;
@@ -170,9 +192,10 @@ void Dialogs::CreateMemoryCardDialog::OnOk_Click( wxCommandEvent& evt )
 		}
 	} else {
 		// otherwise create a file
-		if ( !CreateIt(
+		if (!CreateIt(
 			fullPath,
-			m_radio_CardSize ? m_radio_CardSize->SelectedItem().SomeInt : 8
+			m_radio_CardSize ? m_radio_CardSize->SelectedItem().SomeInt : 8,
+			m_check_psx->GetValue()
 			) ) {
 			Msgbox::Alert(
 				_( "Error: The memory card could not be created." ),
@@ -230,5 +253,7 @@ void Dialogs::CreateMemoryCardDialog::CreateControls()
 
 	m_radio_CardSize = new pxRadioPanel( this, tbl_CardSizes );
 	m_radio_CardSize->SetDefaultItem(0);
+
+	m_check_psx = new pxCheckBox(this, "Make this a PSX card (128 KiB only, no folders!)");
 }
 
