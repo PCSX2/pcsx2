@@ -124,7 +124,7 @@ __fi void COP0_UpdatePCCR()
 	// TODO : Implement memory mode checks here (kernel/super/user)
 	// For now we just assume kernel mode.
 
-	if( cpuRegs.PERF.n.pccr.val & 0xf )
+	if( cpuRegs.PERF.n.pccr.b.U0 )
 	{
 		// ----------------------------------
 		//    Update Performance Counter 0
