@@ -14,10 +14,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2015-07-26 17:45:48 +0300 (Sun, 26 Jul 2015) $
+// Last changed  : $Date: 2016-10-15 22:34:59 +0300 (la, 15 loka 2016) $
 // File revision : $Revision: 4 $
 //
-// $Id: RateTransposer.h 225 2015-07-26 14:45:48Z oparviai $
+// $Id: RateTransposer.h 243 2016-10-15 19:34:59Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -172,6 +172,9 @@ public:
 
     /// Returns nonzero if there aren't any samples available for outputting.
     int isEmpty() const;
+
+    /// Return approximate initial input-output latency
+    int getLatency() const;
 };
 
 }
