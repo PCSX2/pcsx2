@@ -47,6 +47,8 @@ protected:
 	int m_firstIdForMenuItems_or_wxID_ANY;
 
 	wxMenuItem* m_Separator;
+	wxMenuItem* m_ClearSeparator;
+	wxMenuItem* m_Clear;
 
 public:
 	RecentIsoManager( wxMenu* menu , int firstIdForMenuItems_or_wxID_ANY );
