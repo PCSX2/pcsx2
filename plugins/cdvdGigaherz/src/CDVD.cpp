@@ -126,7 +126,7 @@ void keepAliveThread()
                                     []() { return !s_keepalive_is_open; })) {
 
         //printf(" * keepAliveThread: polling drive.\n");
-        if (g_last_sector_block.mode == CDVD_MODE_2048)
+        if (src->GetMediaType() >= 0)
             src->ReadSectors2048(g_last_sector_block.lsn, 1, throwaway);
         else
             src->ReadSectors2352(g_last_sector_block.lsn, 1, throwaway);
