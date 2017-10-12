@@ -306,7 +306,7 @@ EXPORT s32 CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ *subq)
     lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
 
     u8 i = strack;
-    while (i < etrack && lsn < tracks[i + 1].start_lba)
+    while (i < etrack && lsn >= tracks[i + 1].start_lba)
         ++i;
 
     lsn -= tracks[i].start_lba;
