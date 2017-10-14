@@ -186,6 +186,37 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 	GSRenderer::SetGameCRC(crc, options);
 
 	m_hacks.SetGameCRC(m_game);
+
+	// Code for Automatic Mipmapping. Relies on game CRCs.
+	if (theApp.GetConfigT<HWMipmapLevel>("mipmap_hw") == HWMipmapLevel::Automatic) {
+		switch (CRC::Lookup(crc).title) {
+		case CRC::AceCombatZero:
+		case CRC::AceCombat4:
+		case CRC::AceCombat5:
+		case CRC::BrianLaraInternationalCricket:
+		case CRC::DestroyAllHumans:
+		case CRC::DestroyAllHumans2:
+		case CRC::FIFA03:
+		case CRC::FIFA04:
+		case CRC::FIFA05:
+		case CRC::SoulReaver2:
+		case CRC::LegacyOfKainDefiance:
+		case CRC::RatchetAndClank:
+		case CRC::RatchetAndClank2:
+		case CRC::RatchetAndClank3:
+		case CRC::RatchetAndClank4:
+		case CRC::RatchetAndClank5:
+		case CRC::RickyPontingInternationalCricket:
+		case CRC::TombRaiderAnniversary:
+		case CRC::TribesAerialAssault:
+		case CRC::Whiplash:
+			m_mipmap = static_cast<int>(HWMipmapLevel::Basic);
+			break;
+		default:
+			m_mipmap = static_cast<int>(HWMipmapLevel::Off);
+			break;
+		}
+	}
 }
 
 bool GSRendererHW::CanUpscale()
