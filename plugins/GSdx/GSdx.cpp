@@ -276,9 +276,12 @@ void GSdxApp::Init()
 	m_gs_offset_hack.push_back(GSSetting(2,  "Special", "Texture"));
 	m_gs_offset_hack.push_back(GSSetting(3,  "Special", "Texture - aggressive"));
 
-	m_gs_hw_mipmapping.push_back(GSSetting(0, "Off", ""));
-	m_gs_hw_mipmapping.push_back(GSSetting(1, "Basic", "Fast"));
-	m_gs_hw_mipmapping.push_back(GSSetting(2, "Full", "Very Slow - Not Recommended"));
+	m_gs_hw_mipmapping = {
+		GSSetting(HWMipmapLevel::Automatic, "Automatic", "Default"),
+		GSSetting(HWMipmapLevel::Off, "Off", ""),
+		GSSetting(HWMipmapLevel::Basic, "Basic", "Fast"),
+		GSSetting(HWMipmapLevel::Full, "Full", "Slow"),
+	};
 
 	m_gs_crc_level = {
 		GSSetting(CRCHackLevel::Automatic, "Automatic", "Default"),
@@ -373,7 +376,7 @@ void GSdxApp::Init()
 	m_default_configuration["linear_present"]                             = "1";
 	m_default_configuration["MaxAnisotropy"]                              = "0";
 	m_default_configuration["mipmap"]                                     = "1";
-	m_default_configuration["mipmap_hw"]                                  = "0";
+	m_default_configuration["mipmap_hw"]                                  = std::to_string(static_cast<int>(HWMipmapLevel::Automatic));
 	m_default_configuration["ModeHeight"]                                 = "480";
 	m_default_configuration["ModeWidth"]                                  = "640";
 	m_default_configuration["NTSC_Saturation"]                            = "1";
