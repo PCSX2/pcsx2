@@ -372,7 +372,7 @@ namespace Implementations
 		// FIXME: Some of the trace logs will require recompiler resets to be activated properly.
 #ifdef PCSX2_DEVBUILD		
 		SetTraceConfig().Enabled = !EmuConfig.Trace.Enabled;
-		GSprintf(10, const_cast<char*>(EmuConfig.Trace.Enabled ? "Logging Enabled." : "Logging Disabled."));
+		Console.WriteLn(EmuConfig.Trace.Enabled ? "Logging Enabled." : "Logging Disabled.");
 #endif
 	}
 
