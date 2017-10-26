@@ -19,6 +19,9 @@
 #include "Sio.h"
 #include "sio_internal.h"
 
+#include "TAS/KeyMovie.h"
+#include "TAS/TASInputManager.h"
+
 _sio sio;
 _mcd mcds[2][4];
 _mcd *mcd;
@@ -205,6 +208,38 @@ SIO_WRITE sioWriteController(u8 data)
 
 	default:
 		sio.buf[sio.bufCount] = PADpoll(data);
+
+		// -- TAS Debugging Helpful -- //
+		// TODO TAS - make a TAS console filter, and have an option to display things like this or something
+		// Prints controlller data every frame //
+		/*
+		std::string converted = std::to_string(sio.buf[sio.bufCount]);
+		if (sio.port == 0 && sio.bufCount > 2) { // skip first two bytes because they dont seem to matter
+			if (sio.bufCount == 3) {
+				std::cout << "\n\nController Output - Port 1";
+				std::cout << "\nPressed Flags: ";
+			}
+			if (sio.bufCount == 5) { // analog sticks
+				std::cout << "\nAnalog Sticks: ";
+			}
+			if (sio.bufCount == 9) { // pressure sensitive bytes
+				std::cout << "\nPressure Bytes: ";
+			}
+			std::cout << converted << " ";
+		}
+		*/
+
+
+		//--TAS--//
+		g_KeyMovie.ControllerInterrupt(data, sio.port, sio.bufCount, sio.buf);
+
+		//--LuaEngine--//
+		if (g_KeyMovie.isInterruptFrame()) {
+			// TODO TAS - have not checked if this method skips bytes as well or not
+			g_TASInput.ControllerInterrupt(data, sio.port, sio.bufCount, sio.buf);
+		}
+		//------------//
+
 		break;
 	}
 	//Console.WriteLn( "SIO: sent = %02X  From pad data =  %02X  bufCnt %08X ", data, sio.buf[sio.bufCount], sio.bufCount);
