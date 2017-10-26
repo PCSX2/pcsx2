@@ -1,5 +1,9 @@
 # PCSX2-RR Ignores
-
+*.p2s
+*.p2m2
+*.p2m2_backup
+*.p2m
+*.p2m_backup
 
 # PCSX2 Ignores
 .*.swp
