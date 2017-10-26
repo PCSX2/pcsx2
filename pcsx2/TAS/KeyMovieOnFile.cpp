@@ -56,7 +56,8 @@ bool KeyMovieOnFile::Open(const wxString fn, bool fNewOpen, VmStateBuffer *ss)
 			}
 		}
 		else {
-			UI_DisableSysReset();
+			// TODO TAS - this option no longer exists
+			// UI_DisableSysReset();
 			sApp.SysExecute();
 		}
 	}
@@ -221,7 +222,8 @@ bool KeyMovieOnFile::readHeaderAndCheck()
 	}
 	else {
 		// We restart the game
-		UI_DisableSysReset();
+		// TODO TAS - this option no longer exists
+		// UI_DisableSysReset();
 		sApp.SysExecute();
 	}
 
