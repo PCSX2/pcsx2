@@ -1,3 +1,7 @@
+# PCSX2-RR Ignores
+
+
+# PCSX2 Ignores
 .*.swp
 .*.swn
 .*.swo
@@ -68,7 +72,6 @@ oprofile_data/
 /bin/bios
 /bin/dumps
 /bin/help
-/bin/inis
 /bin/logs
 /bin/memcards
 /bin/plugins
