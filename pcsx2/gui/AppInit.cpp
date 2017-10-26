@@ -26,6 +26,9 @@
 
 #include "Debugger/DisassemblyDialog.h"
 
+#include "lua/LuaFrame.h"
+#include "TAS/VirtualPad.h"
+
 #include <wx/cmdline.h>
 #include <wx/intl.h>
 #include <wx/stdpaths.h>
@@ -71,6 +74,24 @@ void Pcsx2App::OpenMainFrame()
 
 	DisassemblyDialog* disassembly = new DisassemblyDialog( mainFrame );
 	m_id_Disassembler = disassembly->GetId();
+
+	// LuaEngine
+	LuaFrame *luaFrame = new LuaFrame(mainFrame);
+	m_id_LuaFrame = luaFrame->GetId();
+
+	// TAS
+	KeyEditor* keyEditor = new KeyEditor(mainFrame);
+	m_id_KeyEditor = keyEditor->GetId();
+
+	// VirtualPad
+	VirtualPad* virtualPad0 = new VirtualPad(mainFrame, 0);
+	m_id_VirtualPad[0] = virtualPad0->GetId();
+	VirtualPad *virtualPad1 = new VirtualPad(mainFrame, 1);
+	m_id_VirtualPad[1] = virtualPad1->GetId();
+
+	// Movie Frame
+	KeyMovieFrame *keyMovieFrame = new KeyMovieFrame(mainFrame);
+	m_id_KeyMovieFrame = keyMovieFrame->GetId();
 
 	if (g_Conf->EmuOptions.Debugger.ShowDebuggerOnStart)
 		disassembly->Show();
@@ -746,9 +767,12 @@ Pcsx2App::Pcsx2App()
 	m_id_GsFrame		= wxID_ANY;
 	m_id_ProgramLogBox	= wxID_ANY;
 	m_id_Disassembler	= wxID_ANY;
+	m_id_KeyEditor		= wxID_ANY;
 	m_ptr_ProgramLog	= NULL;
 
-	SetAppName( L"PCSX2" );
+	// Original App Name
+	// SetAppName( L"PCSX2" );
+	SetAppName(L"PCSX2-rr");
 	BuildCommandHash();
 }
 

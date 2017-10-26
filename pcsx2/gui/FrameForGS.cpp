@@ -1,4 +1,4 @@
-/*  PCSX2 - PS2 Emulator for PCs
+﻿/*  PCSX2 - PS2 Emulator for PCs
  *  Copyright (C) 2002-2010  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
@@ -24,7 +24,11 @@
 
 #include "ConsoleLogger.h"
 
+#include "Counters.h"
+#include "TAS/KeyMovie.h"
+
 #include <wx/utils.h>
+#include <wx/graphics.h>
 #include <memory>
 #include <sstream>
 #include <iomanip>
@@ -80,6 +84,36 @@ void GSPanel::InitDefaultAccelerators()
 	m_Accels->Map( AAC( WXK_F12 ),				"Sys_RecordingToggle" );
 
 	m_Accels->Map( FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL,		"FullscreenToggle" );
+
+	//--TAS--//
+	m_Accels->Map(AAC(WXK_SPACE), "FrameAdvance");
+	m_Accels->Map(AAC(wxKeyCode('p')), "TogglePause");
+	m_Accels->Map(AAC(wxKeyCode('r')), "KeyMovieModeToggle");
+
+	// TODO TAS - Translate
+	// 使わないコマンドを設定
+	// WXK_NONE is error
+	m_Accels->Map(AAC(WXK_COMMAND), "States_SaveSlot0");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_SaveSlot1");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_SaveSlot2");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_SaveSlot3");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_SaveSlot4");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_SaveSlot5");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_SaveSlot6");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_SaveSlot7");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_SaveSlot8");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_SaveSlot9");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_LoadSlot0");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_LoadSlot1");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_LoadSlot2");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_LoadSlot3");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_LoadSlot4");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_LoadSlot5");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_LoadSlot6");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_LoadSlot7");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_LoadSlot8");
+	m_Accels->Map(AAC(WXK_COMMAND), "States_LoadSlot9");
+	//-------//
 }
 
 GSPanel::GSPanel( wxWindow* parent )
@@ -96,6 +130,14 @@ GSPanel::GSPanel( wxWindow* parent )
 	SetName( L"GSPanel" );
 
 	InitDefaultAccelerators();
+
+	// Retrieving FrameAdvance Key
+	for (auto itr = m_Accels->begin(); itr != m_Accels->end(); ++itr) {
+		if (itr->second->Id == "FrameAdvance") {
+			m_frameAdvanceKey = itr->first;
+			break;
+		}
+	}
 
 	SetBackgroundColour(wxColour((unsigned long)0));
 	if( g_Conf->GSWindow.AlwaysHideMouse )
@@ -325,7 +367,8 @@ void GSPanel::OnKeyDownOrUp( wxKeyEvent& evt )
 		evt.m_keyCode += (int)'a' - 'A';
 #endif
 
-	if( (PADopen != NULL) && CoreThread.IsOpen() ) return;
+	if ( (PADopen != NULL) && CoreThread.IsOpen() && evt.GetKeyCode() != m_frameAdvanceKey ) return;
+	if (evt.GetKeyCode() == m_frameAdvanceKey && evt.GetEventType() == wxEVT_KEY_UP) return;
 	DirectKeyCommand( evt );
 }
 
@@ -432,10 +475,131 @@ void GSPanel::OnLeftDclick(wxMouseEvent& evt)
 }
 
 // --------------------------------------------------------------------------------------
+//  GSGUIPanel Implementation
+// --------------------------------------------------------------------------------------
+static wxMutex s_guiMutex;
+GSGUIPanel::GSGUIPanel(wxFrame *parent)
+	: GSPanel(parent)
+{
+	s_guiMutex.Lock();
+	Create();
+
+	Connect(wxEVT_ERASE_BACKGROUND, wxEraseEventHandler(GSGUIPanel::OnEraseBackground));
+	Connect(wxEVT_PAINT, wxPaintEventHandler(GSGUIPanel::OnPaint));
+
+	s_guiMutex.Unlock();
+}
+
+GSGUIPanel::~GSGUIPanel()
+{
+}
+
+void GSGUIPanel::DoResize()
+{
+	s_guiMutex.Lock();
+	if (m_gc)
+		delete m_gc;
+	if (m_dc)
+		delete m_dc;
+	GSPanel::DoResize();
+	Create();
+	s_guiMutex.Unlock();
+}
+
+void GSGUIPanel::DirectKeyCommand(const KeyAcceleratorCode & kac)
+{
+	_parent::DirectKeyCommand(kac);
+
+	int pad = PADquery(0);
+	Console.WriteLn(wxString::Format("%d", pad));
+}
+
+void GSGUIPanel::BeginFrame()
+{
+	s_guiMutex.Lock();
+	Clear();
+}
+
+void GSGUIPanel::EndFrame()
+{
+	s_guiMutex.Unlock();
+}
+
+void GSGUIPanel::Clear()
+{
+	m_dc->SetBackground(*wxTRANSPARENT_BRUSH);
+	m_dc->Clear();
+}
+
+void GSGUIPanel::DrawLine(int x1, int y1, int x2, int y2, wxColor color)
+{
+	m_dc->SetPen(wxPen(color));
+	m_dc->DrawLine(x1, y1, x2, y2);
+	m_dc->SetPen(wxNullPen);
+}
+
+void GSGUIPanel::DrawText(int x, int y, wxString text, wxColor foreground, wxColor background,
+	int fontSize, int family, int style, int weight)
+{
+	m_dc->SetTextForeground(foreground);
+	m_dc->SetTextBackground(background);
+	wxFont font(fontSize, family, style, weight);
+	m_dc->SetFont(font);
+	m_dc->DrawText(text, x, y);
+}
+
+void GSGUIPanel::DrawBox(int x1, int y1, int x2, int y2, wxColor line, wxColor background)
+{
+	DrawRectangle(x1, y1, x2 - x1, y2 - y1, line, background);
+}
+
+void GSGUIPanel::DrawRectangle(int x, int y, int width, int height, wxColor line, wxColor background)
+{
+	m_dc->SetPen(wxPen(line));
+	m_dc->SetBrush(wxBrush(background));
+	m_dc->DrawRectangle(x, y, width, height);
+}
+
+void GSGUIPanel::DrawPixel(int x, int y, wxColor color)
+{
+	m_dc->SetPen(wxPen(color));
+	m_dc->DrawPoint(x, y);
+}
+
+void GSGUIPanel::DrawEllipse(int x, int y, int width, int height, wxColor line, wxColor background)
+{
+	m_dc->SetPen(wxPen(line));
+	m_dc->SetBrush(wxBrush(background));
+	m_dc->DrawEllipse(x, y, width, height);
+}
+
+void GSGUIPanel::DrawCircle(int x, int y, int radius, wxColor line, wxColor background)
+{
+	m_dc->SetPen(wxPen(line));
+	m_dc->SetBrush(wxBrush(background));
+	m_dc->DrawCircle(x, y, radius);
+}
+
+void GSGUIPanel::OnPaint(wxPaintEvent &event)
+{
+	s_guiMutex.Lock();
+	wxPaintDC dc(this);
+	dc.Blit(0, 0, GetSize().GetWidth(), GetSize().GetHeight(), m_dc, 0, 0);
+	s_guiMutex.Unlock();
+}
+
+void GSGUIPanel::Create()
+{
+	m_gc = wxGraphicsContext::Create(this);
+	m_dc = new wxGCDC(m_gc);
+	m_dc->SetBackgroundMode(wxSOLID);
+}
+
+// --------------------------------------------------------------------------------------
 //  GSFrame Implementation
 // --------------------------------------------------------------------------------------
 
-static const uint TitleBarUpdateMs = 333;
+static const uint TitleBarUpdateMs = 50;
 
 
 GSFrame::GSFrame( const wxString& title)
@@ -455,6 +619,10 @@ GSFrame::GSFrame( const wxString& title)
 	GSPanel* gsPanel = new GSPanel( this );
 	gsPanel->Show( !EmuConfig.GS.DisableOutput );
 	m_id_gspanel = gsPanel->GetId();
+
+	GSGUIPanel *gsguiPanel = new GSGUIPanel(this);
+	gsguiPanel->Show(!EmuConfig.GS.DisableOutput);
+	m_id_gsguipanel = gsguiPanel->GetId();
 
 	// TODO -- Implement this GS window status window!  Whee.
 	// (main concern is retaining proper client window sizes when closing/re-opening the window).
@@ -546,6 +714,17 @@ bool GSFrame::Show( bool shown )
 		gsPanel->DoResize();
 		gsPanel->SetFocus();
 
+		GSGUIPanel *gsguiPanel = GetGui();
+
+		if (!gsguiPanel || gsguiPanel->IsBeingDeleted())
+		{
+			gsguiPanel = new GSGUIPanel(this);
+			m_id_gsguipanel = gsguiPanel->GetId();
+		}
+
+		gsguiPanel->Show(!EmuConfig.GS.DisableOutput);
+		gsguiPanel->DoResize();
+
 		if( wxStaticText* label = GetLabel_OutputDisabled() )
 			label->Show( EmuConfig.GS.DisableOutput );
 
@@ -585,6 +764,10 @@ GSPanel* GSFrame::GetViewport()
 	return (GSPanel*)FindWindowById( m_id_gspanel );
 }
 
+GSGUIPanel* GSFrame::GetGui()
+{
+	return (GSGUIPanel*)FindWindowById(m_id_gsguipanel);
+}
 
 void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 {
@@ -652,8 +835,23 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	const u64& smode2 = *(u64*)PS2GS_BASE(GS_SMODE2);
 	wxString omodef = (smode2 & 2) ? templates.OutputFrame : templates.OutputField;
 	wxString omodei = (smode2 & 1) ? templates.OutputInterlaced : templates.OutputProgressive;
+	wxString movieMode;
+	switch (g_KeyMovie.getModeState()) {
+	case KeyMovie::KEY_MOVIE_MODE::RECORD:
+			movieMode = "Recording";
+			break;
+	case KeyMovie::KEY_MOVIE_MODE::REPLAY:
+			movieMode = "Replaying";
+			break;
+	case KeyMovie::KEY_MOVIE_MODE::NONE:
+			movieMode = "No movie";
+			break;
+	}
 
 	wxString title = templates.TitleTemplate;
+	title.Replace(L"${frame}", pxsFmt(L"%d", g_FrameCount));	//--TAS--//
+	title.Replace(L"${maxFrame}", pxsFmt(L"%d", g_KeyMovie.getKeyMovieData().getMaxFrame()));
+	title.Replace(L"${mode}", movieMode);
 	title.Replace(L"${slot}",		pxsFmt(L"%d", States_GetCurrentSlot()));
 	title.Replace(L"${limiter}",	limiterStr);
 	title.Replace(L"${speed}",		pxsFmt(L"%3d%%", lround(percentage)));
@@ -722,6 +920,11 @@ void GSFrame::OnResize( wxSizeEvent& evt )
 		gsPanel->SetFocus();
 	}
 
+
+	if (GSGUIPanel *gui = GetGui())
+	{
+		gui->DoResize();
+	}
 	//wxPoint hudpos = wxPoint(-10,-10) + (GetClientSize() - m_hud->GetSize());
 	//m_hud->SetPosition( hudpos ); //+ GetScreenPosition() + GetClientAreaOrigin() );
 
