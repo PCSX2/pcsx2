@@ -27,9 +27,13 @@ protected:
 
 	void OnClick(wxCommandEvent &event);
 	void OnResetButton(wxCommandEvent &event);
+	void OnPressureCtrlChange(wxSpinEvent &event);
 	void OnTextCtrlChange(wxSpinEvent &event);
 	void OnSliderMove(wxCommandEvent &event);
 
+	int getButtonIdFromPressure(int pressureCtrlId);
+
+	bool isPressureSensitive(int buttonId);
+
 	wxDECLARE_EVENT_TABLE();
 };
-

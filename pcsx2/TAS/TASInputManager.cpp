@@ -21,25 +21,31 @@ void TASInputManager::ControllerInterrupt(u8 & data, u8 & port, u16 & BufCount, 
 	if (virtualPad[port])
 	{
 		int bufIndex = BufCount - 3;
-		if (bufIndex < 0 || 6 < bufIndex)
+		// first two bytes have nothing of interest in the buffer
+		// already handled by KeyMovie.cpp
+		if (BufCount < 3)
 			return;
+
 		// Normal keys
 		// We want to perform an OR, but, since 255 means that no button is pressed and 0 that every button is pressed (and by De Morgan's Laws), we execute an AND.
-		if (bufIndex <= 1)
-			buf[BufCount] = buf[BufCount] & pad.buf[port][bufIndex];
+		if (BufCount <= 4)
+			buf[BufCount] = buf[BufCount] & pad.buf[port][BufCount - 3];
 		// Analog keys (! overrides !)
-		else if (pad.buf[port][bufIndex] != 127)
-			buf[BufCount] = pad.buf[port][bufIndex];
+		else if ((BufCount > 4 && BufCount <= 6) && pad.buf[port][BufCount - 3] != 127)
+			buf[BufCount] = pad.buf[port][BufCount - 3];
+		// Pressure sensitivity bytes
+		else if (BufCount > 6)
+			buf[BufCount] = pad.buf[port][BufCount - 3];
 
 		// Updating movie file
 		g_KeyMovie.ControllerInterrupt(data, port, BufCount, buf);
 	}
 }
 
-void TASInputManager::SetButtonState(int port, wxString button, bool state)
+void TASInputManager::SetButtonState(int port, wxString button, int pressure)
 {
 	auto normalKeys = pad.getNormalKeys(port);
-	normalKeys.at(button) = state;
+	normalKeys.at(button) = pressure;
 	pad.setNormalKeys(port, normalKeys);
 }
 
@@ -54,4 +60,3 @@ void TASInputManager::SetVirtualPadReading(int port, bool read)
 {
 	virtualPad[port] = read;
 }
-
