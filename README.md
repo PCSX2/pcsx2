@@ -6,7 +6,7 @@ This is a fork of https://github.com/DocSkellington/pcsx2-1.4.0-rr which itself 
 This work tries to bring TAS tools to the latest version of the PCSX2 emulator.
 If you have other ideas (or if you find bugs), don't hesitate to open an issue (or write a post in TASVideos' forum).  
 
-If you would like to make an improvement to the project, don't hesitate to follow the dev-build steps mentioned later on in this readme, and submit a pull request.
+If you would like to make an improvement to the project, don't hesitate to follow the [steps to build from source](https://github.com/xTVaser/pcsx2-rr/wiki/Building-from-Source) and submit a pull request.
 
 Have fun while creating TAS! :D
 
