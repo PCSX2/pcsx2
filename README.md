@@ -49,17 +49,10 @@ If you wish to activate the keyboard shortcuts for saving to (or loading from) a
 3. In LilyPad settings, switch the Keyboard API to Raw input
 
 ## Desync  (move wikipages to live here)
-See this [wiki page](https://github.com/pocokhc/pcsx2-1.4.0-rr/wiki#%E3%82%AD%E3%83%BC%E3%83%A0%E3%83%BC%E3%83%93%E3%83%BC%E4%BD%9C%E6%88%90%E6%83%B3%E5%AE%9A%E6%89%8B%E9%A0%86201749%E6%9B%B4%E6%96%B0) (in Japanese).
+See this [wiki page](https://github.com/xTVaser/pcsx2-rr/wiki#key-movie-creation-assumption-procedure-updated-april-9-2017)
   
 ## How to build for development (Windows 10) full details to come
-You can build this version as you would build the original PCSX2. It is easier with Visual Studio 2015 (works with 2017 version as well).
-  
-You will need:
-1. Visual Studio Community 2015(<https://www.visualstudio.com/vs/community/>)  
-2. DirectX Software Development Kit (June 2010)(<https://www.microsoft.com/en-us/download/details.aspx?id=6812>)  
-3. Open the file "PCSX2_suite.sln" in Visual Studio and build.
-
-Majority of the source can be found in "./pcsx2/TAS"
+See this [wiki article](https://github.com/xTVaser/pcsx2-rr/wiki/Building-from-Source)
 
 ## Current Issues (probably should just move to an issue page  
 ### Titlebar during FrameAdvance  
