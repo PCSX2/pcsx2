@@ -17,6 +17,14 @@
       <Configuration>Devel</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release - No Optimization|Win32">
+      <Configuration>Release - No Optimization</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release - No Optimization|x64">
+      <Configuration>Release - No Optimization</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -56,15 +64,20 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\lua\include;$(ProjectRootDir)/gui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">DISABLE_SVU;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release - No Optimization|Win32'">Disabled</Optimization>
     </ClCompile>
     <Link>
       <LargeAddressAware>Yes</LargeAddressAware>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)3rdparty\lua\;$(SvnRootDir)\deps\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">lua53.lib;comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Release - No Optimization|Win32'">$(SolutionDir)3rdparty\lua\;$(SvnRootDir)\deps\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release - No Optimization|Win32'">lua53.lib;comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -188,6 +201,10 @@
     <ClCompile Include="..\..\Linux\LnxConsolePipe.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\lua\LuaEngine.cpp" />
+    <ClCompile Include="..\..\lua\LuaFrame.cpp" />
+    <ClCompile Include="..\..\lua\LuaFunctions.cpp" />
+    <ClCompile Include="..\..\lua\LuaManager.cpp" />
     <ClCompile Include="..\..\Mdec.cpp" />
     <ClCompile Include="..\..\MultipartFileReader.cpp" />
     <ClCompile Include="..\..\Patch.cpp" />
@@ -200,6 +217,14 @@
     <ClCompile Include="..\..\ps2\pgif.cpp" />
     <ClCompile Include="..\..\ShiftJisToUnicode.cpp" />
     <ClCompile Include="..\..\sif2.cpp" />
+    <ClCompile Include="..\..\TAS\KeyEditor.cpp" />
+    <ClCompile Include="..\..\TAS\KeyMovie.cpp" />
+    <ClCompile Include="..\..\TAS\KeyMovieFrame.cpp" />
+    <ClCompile Include="..\..\TAS\KeyMovieOnFile.cpp" />
+    <ClCompile Include="..\..\TAS\MovieControle.cpp" />
+    <ClCompile Include="..\..\TAS\PadData.cpp" />
+    <ClCompile Include="..\..\TAS\TASInputManager.cpp" />
+    <ClCompile Include="..\..\TAS\VirtualPad.cpp" />
     <ClCompile Include="..\..\Utilities\FileUtils.cpp" />
     <ClCompile Include="..\..\Dump.cpp" />
     <ClCompile Include="..\..\x86\iMisc.cpp" />
@@ -443,10 +468,22 @@
     <ClInclude Include="..\..\gui\Panels\MemoryCardPanels.h" />
     <ClInclude Include="..\..\IopGte.h" />
     <ClInclude Include="..\..\IPU\IPUdma.h" />
+    <ClInclude Include="..\..\lua\LuaEngine.h" />
+    <ClInclude Include="..\..\lua\LuaFrame.h" />
+    <ClInclude Include="..\..\lua\LuaFunctions.h" />
+    <ClInclude Include="..\..\lua\LuaManager.h" />
     <ClInclude Include="..\..\Mdec.h" />
     <ClInclude Include="..\..\Patch.h" />
     <ClInclude Include="..\..\PrecompiledHeader.h" />
     <ClInclude Include="..\..\ps2\pgif.h" />
+    <ClInclude Include="..\..\TAS\KeyEditor.h" />
+    <ClInclude Include="..\..\TAS\KeyMovie.h" />
+    <ClInclude Include="..\..\TAS\KeyMovieFrame.h" />
+    <ClInclude Include="..\..\TAS\KeyMovieOnFile.h" />
+    <ClInclude Include="..\..\TAS\MovieControle.h" />
+    <ClInclude Include="..\..\TAS\PadData.h" />
+    <ClInclude Include="..\..\TAS\TASInputManager.h" />
+    <ClInclude Include="..\..\TAS\VirtualPad.h" />
     <ClInclude Include="..\..\Utilities\AsciiFile.h" />
     <ClInclude Include="..\..\Elfheader.h" />
     <ClInclude Include="..\..\CDVD\IsoFileFormats.h" />

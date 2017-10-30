@@ -1,4 +1,4 @@
-/*  PCSX2 - PS2 Emulator for PCs
+﻿/*  PCSX2 - PS2 Emulator for PCs
  *  Copyright (C) 2002-2010  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
@@ -30,6 +30,10 @@
 #include "Dialogs/LogOptionsDialog.h"
 
 #include "Debugger/DisassemblyDialog.h"
+
+#include "lua/LuaManager.h"
+#include "TAS/MovieControle.h"
+#include "TAS/KeyMovie.h"
 
 #include "Utilities/IniInterface.h"
 #include "Utilities/AppTrait.h"
@@ -608,6 +612,21 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event)
 {
 	try {
+		// TAS
+		if (g_MovieControle.isStop()) {
+			// TODO TAS - translate these
+			//ストップ中はGSFrameのキーイベントも停止するのでここからキー入力を取得
+			//それに伴ってGSFrameで設定してあるショートカットキーも使えない
+			if (PADkeyEvent != NULL) {
+				// キー情報を取得、多分1frameに1回だけ呼び出す系
+				const keyEvent* ev = PADkeyEvent();
+				if (ev != NULL) {
+					sApp.TAS_PadKeyDispatch(*ev);
+				}
+			}
+		}
+		g_MovieControle.StartCheck();
+		
 		(handler->*func)(event);
 	}
 	// ----------------------------------------------------------------------------
@@ -1030,6 +1049,11 @@ void Pcsx2App::OnProgramLogClosed( wxWindowID id )
 
 void Pcsx2App::OnMainFrameClosed( wxWindowID id )
 {
+	// TAS
+	g_KeyMovie.Stop();
+	// LuaEngine
+	g_Lua.Stop();
+
 	// Nothing threaded depends on the mainframe (yet) -- it all passes through the main wxApp
 	// message handler.  But that might change in the future.
 	if( m_id_MainFrame != id ) return;

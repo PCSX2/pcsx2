@@ -9,6 +9,14 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release - No Optimization|Win32">
+      <Configuration>Release - No Optimization</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release - No Optimization|x64">
+      <Configuration>Release - No Optimization</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -33,7 +41,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
-    <ImportGroup Label="PropertySheets">
+  <ImportGroup Label="PropertySheets">
     <Import Project="..\DefaultProjectRootDir.props" />
     <Import Project="..\3rdparty.props" />
     <Import Condition="$(Configuration.Contains(Debug))" Project="..\..\common\vsprops\CodeGen_Debug.props" />
