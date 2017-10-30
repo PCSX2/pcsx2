@@ -48,7 +48,7 @@ If you wish to activate the keyboard shortcuts for saving to (or loading from) a
 2. Change the 10 into a 0 (zero)
 3. In LilyPad settings, switch the Keyboard API to Raw input
 
-## Desync  (move wikipages to live here)
+## Desync
 See this [wiki page](https://github.com/xTVaser/pcsx2-rr/wiki#key-movie-creation-assumption-procedure-updated-april-9-2017)
   
 ## How to build for development (Windows 10) full details to come
