@@ -3,15 +3,17 @@
 This is a fork of https://github.com/DocSkellington/pcsx2-1.4.0-rr which itself is a fork of https://github.com/pocokhc/pcsx2-1.4.0-rr, which itself is based off the original [pcsx2-rr](<https://code.google.com/archive/p/pcsx2-rr/>). However, since the content has changed a lot and simple merging can not be done, the source code has changed considerably from this original version.
 
 ## About  
-Some of this README may be inaccurate as it is based of a japanese translation.  
-Having the code-base for the TAS emulator here is ideal, as it is now very easy to bring in any bugfixes upstream from the main pcsx2 repo.  
-If you have other ideas (or if find bugs), don't hesitate to open an issue (or write a post in TASVideos' forum).  
+This work tries to bring TAS tools to the latest version of the PCSX2 emulator.
+If you have other ideas (or if you find bugs), don't hesitate to open an issue (or write a post in TASVideos' forum).  
+
+If you would like to make an improvement to the project, don't hesitate to follow the dev-build steps mentioned later on in this readme, and submit a pull request.
 
 Have fun while creating TAS! :D
 
 ## Video Examples  
 Here is a simple tutorial on getting started with PCSX2-rr, note that keybindings may have changed!  
 * [Video Tutorial](https://www.youtube.com/watch?v=1rgJ3jowxIo)  
+
 Here are some TAS examples (made with the original pcsx2-rr v.1):  
 * [TAS of Chulip part0 (WIP) pcsx2-1.4.0-rr (nicovideo)](http://www.nicovideo.jp/watch/sm30385451)  
 * [TAS of Chulip part0 (WIP) pcsx2-1.4.0-rr (youtube)](https://youtu.be/Ib2MnRfCCzc)  
@@ -19,7 +21,7 @@ Here are some TAS examples (made with the original pcsx2-rr v.1):
 ## Getting the Emulator  
 Check the [release page](https://github.com/xTVaser/pcsx2-rr/releases) for the latest build, there is also a build for the old 1.4.0 release of pcsx2 that may be better suited for some games.  
 You will need:  
-* The [Visual C++ 2015 x86 Redistributables](https://www.microsoft.com/en-us/download/details.aspx?id=48145) for this version to work.
+* The [Visual C++ 2015 x86 Redistributables](https://www.microsoft.com/en-us/download/details.aspx?id=48145)
 
 This was tested only on Windows 10, but the application should work on the other OS supported by PCSX2.  
 
