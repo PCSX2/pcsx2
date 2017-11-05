@@ -28,13 +28,11 @@ msgstr "Erreur critique."
 
 #: common/include/Utilities/Exceptions.h:255
 msgid "Parse error"
-msgstr "Parse error"
+msgstr "erreur d'analyse"
 
 #: common/include/Utilities/Exceptions.h:279
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
-msgstr ""
-"Le matériel de votre ordinateur rend impossible le fonctionnement de PCSX2. "
-"Bien essayé !"
+msgstr "Le matériel de votre ordinateur rend impossible le fonctionnement de PCSX2.  Désolé."
 
 #: common/src/Utilities/Exceptions.cpp:233
 msgid "Oh noes! Out of memory!"
@@ -1671,17 +1669,17 @@ msgstr "Démarre le système en sautant les logos PS2/Sony."
 
 #: pcsx2/gui/MainFrame.cpp:660
 #, fuzzy
-msgid "Boot ISO (&fast)"
-msgstr "Démarrer le CDVD (rapide)"
+msgid "Boot ISO (fast)"
+msgstr "Démarrer l'ISO (rapide)"
 
 #: pcsx2/gui/MainFrame.cpp:663
-msgid "Boot CDVD (&fast)"
+msgid "Boot CDVD (fast)"
 msgstr "Démarrer le CDVD (rapide)"
 
 #: pcsx2/gui/MainFrame.cpp:687
 #, fuzzy
-msgid "Boo&t ISO (full)"
-msgstr "Démarrer le CDVD (complet)"
+msgid "Boot ISO (full)"
+msgstr "Démarrer l'ISO (complet)"
 
 #: pcsx2/gui/MainFrame.cpp:688
 #, fuzzy
@@ -1690,7 +1688,7 @@ msgstr "Démarre le système à partir du DVD ou de l'ISO source."
 
 #: pcsx2/gui/MainFrame.cpp:691
 #, fuzzy
-msgid "Boo&t CDVD (full)"
+msgid "Boot CDVD (full)"
 msgstr "Démarrer le CDVD (complet)"
 
 #: pcsx2/gui/MainFrame.cpp:692
@@ -1699,8 +1697,8 @@ msgid "Boot the VM using the current CD/DVD source media"
 msgstr "Démarre le système à partir du DVD ou de l'ISO source."
 
 #: pcsx2/gui/MainFrame.cpp:695
-msgid "Boo&t BIOS"
-msgstr ""
+msgid "Boot BIOS"
+msgstr "Démarrer le BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:696
 #, fuzzy
@@ -1712,7 +1710,7 @@ msgid "No plugin loaded"
 msgstr "Aucun plugin chargé"
 
 #: pcsx2/gui/MainFrame.cpp:782
-msgid "&Core GS Settings..."
+msgid "Core GS Settings..."
 msgstr "Paramètres du Core GS..."
 
 #: pcsx2/gui/MainFrame.cpp:783
@@ -1722,7 +1720,7 @@ msgid ""
 msgstr "Modifie les paramètres d'émulation hardware gérés par PCSX2."
 
 #: pcsx2/gui/MainFrame.cpp:785
-msgid "&Window Settings..."
+msgid "Window Settings..."
 msgstr "Paramètres du mode fenêtré..."
 
 #: pcsx2/gui/MainFrame.cpp:786
@@ -2091,7 +2089,7 @@ msgstr "Un double-clic pemet de basculer vers le mode plein-écran"
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:52
 #, fuzzy
 msgid "Switch to 4:3 aspect ratio when an FMV plays"
-msgstr "Passer au rendu logiciel de GSdx quand une vidéo est lue"
+msgstr "Basculer l'écran virtuel en 4:3 quand une cinématique est lue"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:86
 msgid "Aspect Ratio:"
@@ -2124,28 +2122,28 @@ msgstr "Éditeur de base de données"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:348
 msgid "Name: "
-msgstr ""
+msgstr "Nom"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:349
 msgid "Region: "
-msgstr ""
+msgstr "Region"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:350
 msgid "Compatibility: "
-msgstr ""
+msgstr "Compatibilité"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:351
 msgid "Comments: "
-msgstr ""
+msgstr "Commentaires"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:352
 msgid "Patches: "
-msgstr ""
+msgstr "Patches"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:356
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
 msgid "Gamefixes"
-msgstr "Patchs"
+msgstr "Correctifs personnalisés"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:40
 msgid "VU Add Hack - Fixes Tri-Ace games boot crash."
@@ -2224,10 +2222,8 @@ msgid ""
 msgstr "Retarder VIF1 FIFO - Pour le HUD de SOCOM2."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
-msgid ""
-"Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ "
-"Hero)"
-msgstr ""
+msgid "Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ Hero)"
+msgstr "Active le GIF FIFO (Plus lent mais obligatoire pour Hotwheels, Wallace and Gromit, DJ Hero)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:100
 msgid "Switch to GSdx software rendering when an FMV plays"
@@ -2239,11 +2235,8 @@ msgstr "Précharger le hack TLB pour éviter un manque de TLB dans Goemon"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:108
 #, fuzzy
-msgid ""
-"VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
-msgstr ""
-"Hack bit VU I: éviter une recompilation constante (Scarface The World is "
-"Yours)"
+msgid "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
+msgstr "Hack bit VU I: éviter une recompilation permanente (Scarface The World is Yours)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:119
 msgid "Enable manual game fixes [Not recommended]"
