@@ -42,11 +42,15 @@ For more detail, see the wikis:
 * [PCSX2-rr v3](https://github.com/pocokhc/pcsx2-1.4.0-rr/wiki) (in Japanese)
 * [PCSX2-rr v4](https://github.com/DocSkellington/pcsx2-1.4.0-rr/wiki) (only explains changes)
 
-## Activate Shortcuts for save/load  
+## New shortcuts
+### Activate Shortcuts for save/load  
 If you wish to activate the keyboard shortcuts for saving to (or loading from) a specific slot without having to manually switch the current slot to this one (so, if you don't want to use only F1, F2 and F3), here are the steps:
 1. In the `PCSX2-rr_keys.ini` remove the `#` before States_SaveSlot0, States_SaveSlot1 (and so on)
 2. Change the 10 into a 0 (zero)
 3. In LilyPad settings, switch the Keyboard API to Raw input
+
+### Fast Frame Advance
+If you set Lilypad's Keyboard API to Raw Input (in the Plugin Settings), you will be able to hold space to "frame advance" multiple times in a row (the number of times per second should depend on your operating system's settings).
 
 ## Desync
 See this [wiki page](https://github.com/xTVaser/pcsx2-rr/wiki#key-movie-creation-assumption-procedure-updated-april-9-2017)
