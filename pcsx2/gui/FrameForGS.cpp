@@ -497,11 +497,12 @@ GSGUIPanel::~GSGUIPanel()
 void GSGUIPanel::DoResize()
 {
 	s_guiMutex.Lock();
-	if (m_gc)
-		delete m_gc;
-	if (m_dc)
-		delete m_dc;
-	GSPanel::DoResize();
+	// TODO TAS - this is crashing the emulator when opening ISO
+	//if (m_gc)
+	//	delete m_gc;
+	//if (m_dc)
+		//delete m_dc;
+	GSPanel::DoResize(); 
 	Create();
 	s_guiMutex.Unlock();
 }

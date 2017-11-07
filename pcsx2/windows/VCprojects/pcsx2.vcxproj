@@ -71,6 +71,7 @@
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release - No Optimization|Win32'">Disabled</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <LargeAddressAware>Yes</LargeAddressAware>
