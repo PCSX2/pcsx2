@@ -54,6 +54,30 @@ int GSCaptureDlg::GetSelCodec(Codec& c)
 	return 0;
 }
 
+void GSCaptureDlg::UpdateConfigureButton()
+{
+	Codec c;
+	bool enable = false;
+
+	if (GetSelCodec(c) != 1)
+	{
+		EnableWindow(GetDlgItem(m_hWnd, IDC_CONFIGURE), false);
+		return;
+	}
+
+	if (CComQIPtr<ISpecifyPropertyPages> pSPP = c.filter)
+	{
+		CAUUID caGUID;
+		memset(&caGUID, 0, sizeof(caGUID));
+		enable = SUCCEEDED(pSPP->GetPages(&caGUID));
+	}
+	else if (CComQIPtr<IAMVfwCompressDialogs> pAMVfWCD = c.filter)
+	{
+		enable = pAMVfWCD->ShowDialog(VfwCompressDialog_QueryConfig, nullptr) == S_OK;
+	}
+	EnableWindow(GetDlgItem(m_hWnd, IDC_CONFIGURE), enable);
+}
+
 void GSCaptureDlg::OnInit()
 {
 	__super::OnInit();
@@ -112,6 +136,7 @@ void GSCaptureDlg::OnInit()
 		ComboBoxAppend(IDC_CODECS, s.c_str(), (LPARAM)&m_codecs.back(), c.DisplayName == selected);
 	}
 	EndEnumSysDev
+	UpdateConfigureButton();
 }
 
 bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
@@ -180,6 +205,7 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 	}
 	case IDC_CODECS:
 	{
+		UpdateConfigureButton();
 		break;
 	}
 	case IDOK:
