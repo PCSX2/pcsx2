@@ -38,6 +38,7 @@ class GSCaptureDlg : public GSDialog
 	list<Codec> m_codecs;
 
 	int GetSelCodec(Codec& c);
+	void UpdateConfigureButton();
 
 protected:
 	void OnInit();
