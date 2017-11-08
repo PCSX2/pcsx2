@@ -123,7 +123,7 @@ TLD_tasConsole = {
 
 TLD_controlInfo = {
 	L"Controller Info",			L"Controller Info",
-	pxDt("Shows detailed info on controller input values every frame")
+	pxDt("Shows detailed info on controller input values every frame on controller port 1")
 };
 
 SysConsoleLogPack::SysConsoleLogPack()

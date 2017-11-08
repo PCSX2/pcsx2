@@ -312,7 +312,7 @@ static const bool ConLogDefaults[] =
 	false,
 	false,
 	true,
-	true
+	false
 };
 
 // Typically on startup (or during first time wizard when choosing "import"), the
@@ -341,6 +341,15 @@ void ConLog_LoadSaveSettings( IniInterface& ini )
 	}
 
 	ConLogInitialized = true;
+}
+
+bool isSourceEnabled(int index) {
+
+	if (ConsoleLogSource* log = ConLogSources[index])
+	{
+		return log->Enabled;
+	}
+	return false;
 }
 
 
