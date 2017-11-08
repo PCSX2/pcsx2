@@ -112,3 +112,5 @@ oprofile_data/
 /tools/GSDumpGUI/bin
 /tools/GSDumpGUI/obj
 /.vs
+
+bin/inis/PCSX2-rr_ui\.ini

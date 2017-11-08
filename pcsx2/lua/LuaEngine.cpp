@@ -135,6 +135,7 @@ void LuaEngine::unRegistryExit()
 void LuaEngine::CallbackError(wxString cat,lua_State *L)
 {
 	wxString error = lua_tostring(L, -1);
+	// TODO - add a LUA console filter!
 	Console.WriteLn(Color_StrongBlue, L"[lua]Lua Error(%s):%s", WX_STR(cat), WX_STR(error));
 }
 

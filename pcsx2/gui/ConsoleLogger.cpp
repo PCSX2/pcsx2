@@ -294,19 +294,25 @@ static ConsoleLogSource* const ConLogSources[] =
 	NULL,
 	(ConsoleLogSource*)&pxConLog_Event,
 	(ConsoleLogSource*)&pxConLog_Thread,
+	NULL,
+	(ConsoleLogSource*)&SysConsole.tasConsole,
+	(ConsoleLogSource*)&SysConsole.controlInfo,
 };
 
 // WARNING ConsoleLogSources & ConLogDefaults must have the same size
 static const bool ConLogDefaults[] =
 {
-	true,
-	true,
+	false,
+	false,
+	false,
+	false,
+	false,
+	false,
+	false,
+	false,
 	false,
 	true,
-	false,
-	false,
-	false,
-	false
+	true
 };
 
 // Typically on startup (or during first time wizard when choosing "import"), the
