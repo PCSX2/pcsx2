@@ -471,6 +471,19 @@ bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
+{
+	if (skip == 0)
+	{
+		if (fi.TME && fi.FBP == 0x00500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00f00 && fi.TPSM == PSM_PSMCT16)
+		{
+			skip = 2; // blur
+		}
+	}
+
+	return true;
+}
+
 bool GSC_TimeSplitters2(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1506,19 +1519,6 @@ bool GSC_MetalGearSolid3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x00500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00f00 && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 2; // blur
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Bully(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2450,6 +2450,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::Spartan] = GSC_Spartan;
 		lut[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
 		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
+		lut[CRC::SFEX3] = GSC_SFEX3;
 		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
 		lut[CRC::TimeSplitters2] = GSC_TimeSplitters2;
@@ -2502,7 +2503,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::LegoBatman] = GSC_LegoBatman;
 		lut[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
 		lut[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
-		lut[CRC::SFEX3] = GSC_SFEX3;
 		lut[CRC::SpyroEternalNight] = GSC_SpyroEternalNight;
 		lut[CRC::SpyroNewBeginning] = GSC_SpyroNewBeginning;
 		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed;
