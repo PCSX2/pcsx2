@@ -109,6 +109,8 @@ CRC::Game CRC::m_games[] =
 	{0x9B0E119F, DBZBT3, KO, 0}, //DragonBall Z Sparking Meteo
 	{0x72B3802A, SFEX3, US, 0},
 	{0x71521863, SFEX3, US, 0},
+	{0x63642E9F, SFEX3, JP, 0},
+	{0xCA1F6E53, SFEX3, JP, 0}, // Taikenban Disc (Demo/Trial)
 	{0x28703748, Bully, US, 0},
 	{0x019CFA48, Bully, JP, 0},
 	{0xC78A495D, BullyCC, US, 0},
