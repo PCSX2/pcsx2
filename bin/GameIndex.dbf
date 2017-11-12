@@ -6248,6 +6248,7 @@ Region = NTSC-Unk
 Serial = SLAJ-25053
 Name   = Burnout 3 - Takedown
 Region = NTSC-Unk
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLAJ-25055
 Name   = Def Jam - Fight for N.Y.
@@ -6284,6 +6285,7 @@ Region = NTSC-Unk
 Serial = SLAJ-25066
 Name   = Burnout Revenge - Battle Racing Ignited
 Region = NTSC-Unk
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 MemCardFilter = SLAJ-25066/SLPM-66108/SLPM-66652/SLPM-65719/SLPM-65958/SLPM-66962/SLAJ-25053/SLPM-66204
 ---------------------------------------------
 Serial = SLAJ-25068
@@ -6356,6 +6358,7 @@ Region = NTSC-Unk
 Serial = SLAJ-25094
 Name   = Burnout Dominator
 Region = NTSC-Unk
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLAJ-25095
 Name   = Medal of Honor - Vanguard
@@ -12015,10 +12018,12 @@ Serial = SLES-52584
 Name   = Burnout 3 - Takedown
 Region = PAL-M4
 Compat = 5
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLES-52585
 Name   = Burnout 3 - Takedown
 Region = PAL-F-G-I
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLES-52587
 Name   = Army Men - Sarge's War
@@ -14154,12 +14159,14 @@ Serial = SLES-53506
 Name   = Burnout Revenge
 Region = PAL-M5
 Compat = 5
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 MemCardFilter = SLES-53506/SLES-53507/SLES-52584/SLES-52585/SLES-53510
 ---------------------------------------------
 Serial = SLES-53507
 Name   = Burnout Revenge
 Region = PAL-M3
 Compat = 5
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 MemCardFilter = SLES-53506/SLES-53507/SLES-52584/SLES-52585/SLES-53510
 ---------------------------------------------
 Serial = SLES-53508
@@ -16486,6 +16493,7 @@ Serial = SLES-54627
 Name   = Burnout Dominator
 Region = PAL-M5
 Compat = 5
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLES-54629
 Name   = Shin Megami Tensei - Devil Summoner - Raidou Kuzunoha vs. the Soulless Army
@@ -16587,6 +16595,7 @@ Compat = 5
 Serial = SLES-54681
 Name   = Burnout Dominator
 Region = PAL-E
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLES-54683
 Name   = Medal of Honor - Vanguard
@@ -23816,6 +23825,7 @@ Region = NTSC-J
 Serial = SLPM-65719
 Name   = Burnout 3 - Takedown
 Region = NTSC-J
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLPM-65720
 Name   = Shin Sangoku Musou 2 Mushouden [Koei the Best]
@@ -24725,6 +24735,7 @@ Region = NTSC-J
 Serial = SLPM-65958
 Name   = Burnout 3 - Takedown [EA Best Hits]
 Region = NTSC-J
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLPM-65959
 Name   = Standard Daisenryoku - Shiwareta Shouri
@@ -25271,6 +25282,7 @@ Region = NTSC-J
 Serial = SLPM-66108
 Name   = Burnout Revenge
 Region = NTSC-J
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 MemCardFilter = SLAJ-25066/SLPM-66108/SLPM-66652/SLPM-65719/SLPM-65958/SLPM-66962/SLAJ-25053/SLPM-66204
 ---------------------------------------------
 Serial = SLPM-66109
@@ -27229,6 +27241,7 @@ Region = NTSC-J
 Serial = SLPM-66652
 Name   = Burnout Revenge [EA Best Hits]
 Region = NTSC-J
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 MemCardFilter = SLAJ-25066/SLPM-66108/SLPM-66652/SLPM-65719/SLPM-65958/SLPM-66962/SLAJ-25053/SLPM-66204
 ---------------------------------------------
 Serial = SLPM-66653
@@ -27566,6 +27579,7 @@ Region = NTSC-J
 Serial = SLPM-66739
 Name   = Burnout Dominator
 Region = NTSC-J
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLPM-66740
 Name   = Sentou Kokka Kai - Legend [DX Pack]
@@ -28391,6 +28405,7 @@ vuClampMode = 0
 Serial = SLPM-66962
 Name   = Burnout 3 - Takedown [EA-SY! 1980]
 Region = NTSC-J
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLPM-66963
 Name   = Medal of Honor - Frontline [EA-SY! 1980]
@@ -38751,6 +38766,7 @@ Serial = SLUS-21050
 Name   = Burnout 3 - Takedown
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLUS-21051
 Name   = FIFA 2005
@@ -39675,6 +39691,7 @@ Serial = SLUS-21242
 Name   = Burnout Revenge
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 // reads Burnout 3 and NFL 06 saves for unlockables
 MemCardFilter = SLUS-21242/SLUS-21050/SLUS-21213
 ---------------------------------------------
@@ -43286,6 +43303,7 @@ Region = NTSC-U
 Serial = SLUS-29113
 Name   = Burnout 3 [Demo]
 Region = NTSC-U
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLUS-29116
 Name   = WWE SmackDown! vs. RAW [Public Beta Vol.1.0]
@@ -43379,6 +43397,7 @@ Region = NTSC-U
 Serial = SLUS-29153
 Name   = Burnout Revenge [Demo]
 Region = NTSC-U
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLUS-29154
 Name   = NHL '06 [Demo]
