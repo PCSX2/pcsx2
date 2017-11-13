@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.2.1\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2017-01-16 22:02+0100\n"
+"PO-Revision-Date: 2017-11-13 23:27+0100\n"
 "Last-Translator: Víctor González Fraile <victor.gonfraile@hotmail.es>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: _;pxL\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 1.8.11\n"
+"X-Generator: Poedit 2.0.4\n"
 
 #: common/include/Utilities/Exceptions.h:216
 msgid "No reason given."
@@ -768,7 +768,7 @@ msgstr "Tema &claro"
 
 #: pcsx2/gui/ConsoleLogger.cpp:399
 msgid "Default soft-tone color scheme."
-msgstr "Paleta de colores predeterminada, con tonos suaves."
+msgstr "Paleta de colores predeterminada con tonos suaves."
 
 #: pcsx2/gui/ConsoleLogger.cpp:400
 msgid "&Dark theme"
@@ -779,7 +779,7 @@ msgid ""
 "Classic black color scheme for people who enjoy having text seared into "
 "their optic nerves."
 msgstr ""
-"Esquema clásico de blanco y negro para a los que les encante que les "
+"Paleta clásica en blanco y negro para aquellos a los que les encanta que les "
 "taladren los nervios ópticos con texto."
 
 #: pcsx2/gui/ConsoleLogger.cpp:407
@@ -800,7 +800,7 @@ msgstr "Elimina los contenidos de la ventana de registro"
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "Auto&dock"
-msgstr "Autoaco&ple"
+msgstr "Aco&plado automático"
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "Dock log window to main PCSX2 window"
@@ -1151,7 +1151,7 @@ msgid ""
 "is still experimental, so use at your own risk!"
 msgstr ""
 "Gestiona de forma automática los contenidos de las tarjetas de memoria para "
-"que la consola sólo vea archivos relacionados con el software que se esté "
+"que la consola solo vea archivos relacionados con el software que se esté "
 "ejecutando. Permite arrastrar archivos desde la tarjeta de memoria y hacia "
 "ella a través de tu explorador de archivos estándar. ¡Aún es experimental, "
 "así que utilízalo bajo tu responsabilidad!"
@@ -1174,7 +1174,7 @@ msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
 msgstr ""
-"Cambia el idioma sólo si es necesario. El idioma predeterminado del sistema "
+"Cambia el idioma solo si es necesario. El idioma predeterminado del sistema "
 "debería bastar para la mayoría de sistemas operativos."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:92
@@ -1217,7 +1217,8 @@ msgstr "Rastrear registros"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:38
 msgid "Auto-eject memory cards when loading savestates"
-msgstr "Autoexpulsar tarjetas de memoria al cargar guardados rápidos"
+msgstr ""
+"Expulsar automáticamente las tarjetas de memoria al cargar guardados rápidos"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
@@ -1492,8 +1493,8 @@ msgstr "Arreglos para &juegos automáticos"
 #: pcsx2/gui/MainFrame.cpp:434
 msgid "Automatically applies needed Gamefixes to known problematic games"
 msgstr ""
-"Aplica automáticamente los arreglos para juegos necesarios en juegos "
-"problemáticos conocidos"
+"Aplica automáticamente los arreglos necesarios en los juegos conocidos por "
+"ser problemáticos"
 
 #: pcsx2/gui/MainFrame.cpp:436
 msgid "Enable &Cheats"
@@ -1971,7 +1972,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:127
 msgid "Pretty slow; provided for diagnostic purposes only."
-msgstr "Muy lento; sólo útil para realizar diagnósticos."
+msgstr "Muy lento; solo útil para realizar diagnósticos."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:130
 msgid ""
@@ -2804,7 +2805,7 @@ msgid ""
 "For troubleshooting potential bugs in the MTGS only, as it is potentially "
 "very slow."
 msgstr ""
-"Usar sólo para evitar posibles fallos en el MTGS ya que puede ser muy lento."
+"Usar solo para evitar posibles fallos en el MTGS ya que puede ser muy lento."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:294
 msgid "Disable all GS output"
