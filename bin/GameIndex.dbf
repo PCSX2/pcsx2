@@ -69,7 +69,9 @@
 -- VIFFIFOHack       = 1 // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
 -- VIF1StallHack     = 1 // SOCOM II HUD and Spy Hunter loading hang.
 -- FMVinSoftwareHack = 1 // Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering while an FMV plays.
-
+-- GoemonTlbHack     = 1 // Preload TLB hack to avoid tlb miss on Goemon.
+-- ScarfaceIbitHack  = 1 // VU I bit Hack avoid constant recompilation. (Scarface The World Is Yours)
+-- GIFFIFOHack       = 1 // Enabled the GIF FIFO (more correct but slower)
 ---------------------------------------------
 -- Speed Hacks (SpeedHackName = <value>)
 ---------------------------------------------
@@ -167,6 +169,10 @@ vuClampMode = 2 // Text in GT mode works
 //	patch=0,EE,002F1F40,word,00000000
 //	
 //[/patches]
+---------------------------------------------
+Serial = PCPX-96660 
+Name   = Tourist Trophy [Trial] 
+Region = NTSC-J 
 ---------------------------------------------
 Serial = SCAJ-10001
 Name   = Makai Senki Disgaea
@@ -1263,7 +1269,8 @@ Serial = SCES-50354
 Name   = Klonoa 2 - Lunatea's Veil
 Region = PAL-M5
 Compat = 5
-eeClampMode = 3		//Objects needed appear in wrong places without it
+eeClampMode = 3	//Objects needed appear in wrong places without it
+vuClampMode = 2 // Fixes water reflection 
 ---------------------------------------------
 Serial = SCES-50360
 Name   = Twisted Metal - Black
@@ -1292,7 +1299,6 @@ Serial = SCES-50411
 Name   = Vampire Night
 Region = PAL-M5
 Compat = 5
-EETimingHack = 1
 ---------------------------------------------
 Serial = SCES-50459
 Name   = Dropship - United Peace Force
@@ -1590,7 +1596,7 @@ Region = PAL-S
 Serial = SCES-51135
 Name   = Primal
 Region = PAL-M5
-Compat = 5	// With GSdx, SW-mode only (issue 1212).
+Compat = 5
 // [patches]
 //	comment=- Widescreen enforcement lazy-hack by pgert.
 //	patch=1,EE,204886FC,extended,00000001 // 00000000
@@ -1616,6 +1622,9 @@ Region = PAL-M5
 Serial = SCES-51176
 Name   = Disney's Treasure Planet
 Region = PAL-M4
+EETimingHack = 1 // Fixes hang before going ingame
+eeRoundMode = 0 // Fixes characters flying into sky
+eeClampMode = 3 // Required to load areas correctly
 ---------------------------------------------
 Serial = SCES-51177
 Name   = Disney's Treasure Planet
@@ -2236,6 +2245,10 @@ Name   = Tourist Trophy - The Real Riding Simulator
 Region = PAL-M5
 Compat = 5
 ---------------------------------------------
+Serial = SCES-53372/P 
+Name   = Tourist Trophy [Platinum] 
+Region = PAL-M5 
+---------------------------------------------
 Serial = SCES-53397
 Name   = SingStar Pop - World Events Code
 Region = PAL-Unk
@@ -2244,6 +2257,8 @@ Serial = SCES-53409
 Name   = Sly 3
 Region = PAL-M11
 Compat = 5
+vuClampMode = 2
+vuRoundMode = 0 // fix blow up issue with bombs and bugged camera.
 ---------------------------------------------
 Serial = SCES-53422
 Name   = Stuart Little 3 - Big Photo Adventure
@@ -3054,6 +3069,7 @@ Compat = 5
 Serial = SCKA-20092
 Name   = K-1 World Grand Prix 2006
 Region = NTSC-K
+XgKickHack = 1 // fix grey fighters.
 ---------------------------------------------
 Serial = SCKA-20096
 Name   = Barnyard
@@ -4155,7 +4171,7 @@ Region = NTSC-J
 Serial = SCPS-55003
 Name   = Vampire Night
 Region = NTSC-J
-EETimingHack = 1
+Compat = 5
 ---------------------------------------------
 Serial = SCPS-55004
 Name   = Jack & Dexter - The Precursor Legacy
@@ -4395,6 +4411,7 @@ Serial = SCUS-21494
 Name   = Need for Speed Carbon Collector's Edition
 Region = NTSC-U
 Compat = 5
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SCUS-90174
 Name   = Toy Story 3 (PlayStation 2 Bundle)
@@ -5628,6 +5645,8 @@ Serial = SCUS-97464
 Name   = Sly 3 - Honor Amongst Thieves
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2
+vuRoundMode = 0 // fix blow up issue with bombs and bugged camera.
 ---------------------------------------------
 Serial = SCUS-97465
 Name   = Ratchet - Deadlocked
@@ -5697,6 +5716,8 @@ Region = NTSC-U
 Serial = SCUS-97484
 Name   = Sly 3 - Honor Among Thieves [E3 Demo]
 Region = NTSC-U
+vuClampMode = 2
+vuRoundMode = 0 // fix blow up issue with bombs and bugged camera.
 ---------------------------------------------
 Serial = SCUS-97485
 Name   = Ratchet - Deadlocked [Regular Demo]
@@ -5844,6 +5865,8 @@ Region = NTSC-U
 Serial = SCUS-97527
 Name   = Sly 3 - Honor Among Thieves [Regular Demo]
 Region = NTSC-U
+vuClampMode = 2
+vuRoundMode = 0 // fix blow up issue with bombs and bugged camera.
 ---------------------------------------------
 Serial = SCUS-97528
 Name   = PlayStation Underground Demo Disc - Holiday 2005 [T-Rated]
@@ -6339,6 +6362,7 @@ Region = NTSC-Unk
 Serial = SLAJ-25091
 Name   = Need for Speed - Carbon
 Region = NTSC-Unk
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLAJ-25092
 Name   = Shin Sangoku Musou 4 [PlayStation 2 The Best]
@@ -6468,6 +6492,7 @@ Region = PAL-E
 Serial = SLED-53937
 Name   = Black [Demo]
 Region = PAL-M5
+vuClampMode = 0
 ---------------------------------------------
 Serial = SLED-53951
 Name   = Honda Demo [Demo]
@@ -6476,6 +6501,7 @@ Region = PAL-E
 Serial = SLED-53953
 Name   = FIFA Street 2 [Demo]
 Region = PAL-E
+EETimingHack = 1 // Fix corrupted flag on the main menu and In-game.
 ---------------------------------------------
 Serial = SLED-54035
 Name   = Play the Best Demos from Atari [Demo]
@@ -6484,6 +6510,7 @@ Region = PAL-M5
 Serial = SLED-54312
 Name   = Need for Speed - Carbon [Demo]
 Region = PAL-Unk
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLES-50003
 Name   = Swap Magic DVD Disc v2.0
@@ -7041,7 +7068,7 @@ Serial = SLES-50212
 Name   = Paris-Dakar Rally
 Region = PAL-E
 Compat = 5
-SkipMPEGPatch = 1
+SkipMPEGHack = 1
 ---------------------------------------------
 Serial = SLES-50213
 Name   = NFL Quarterback Club 2002
@@ -8162,6 +8189,7 @@ Compat = 5
 Serial = SLES-50777
 Name   = Battle Engine Aquila
 Region = PAL-M5
+vuClampMode = 2 // fixes main menu display 
 ---------------------------------------------
 Serial = SLES-50778
 Name   = TD Overdrive - The Brotherhood of Speed
@@ -14804,10 +14832,12 @@ Serial = SLES-53796
 Name   = FIFA Street 2
 Region = PAL-E
 Compat = 5
+EETimingHack = 1 // Fix corrupted flag on the main menu and In-game.
 ---------------------------------------------
 Serial = SLES-53797
 Name   = FIFA Street 2
 Region = PAL-M6
+EETimingHack = 1 // Fix corrupted flag on the main menu and In-game.
 ---------------------------------------------
 Serial = SLES-53799
 Name   = Matrix, The - Path of Neo
@@ -15492,6 +15522,7 @@ Serial = SLES-54151
 Name   = Let's Make a Soccer Team!
 Region = PAL-M5
 Compat = 5
+eeClampMode = 3 // fix right and left Dpad buttons in menus.
 ---------------------------------------------
 Serial = SLES-54152
 Name   = Ant Bully, The
@@ -15876,18 +15907,28 @@ Serial = SLES-54321
 Name   = Need for Speed - Carbon
 Region = PAL-E
 Compat = 5
+eeClampMode = 3 // Fixes crash after opening cutscene. 
+---------------------------------------------
+Serial = SLES-54321/P 
+Name   = Need for Speed - Carbon [Platinum: The Best of PlayStation 2] 
+Region = PAL-E 
+Compat = 5 
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLES-54322
 Name   = Need for Speed - Carbon
 Region = PAL-M8
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLES-54323
 Name   = Need for Speed - Carbon
 Region = PAL-I-S
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLES-54324
 Name   = Need for Speed - Carbon
 Region = PAL-R
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLES-54331
 Name   = Street Dance
@@ -16081,6 +16122,7 @@ Region = PAL-M7
 Serial = SLES-54402
 Name   = Need for Speed - Carbon [Collector's Edition]
 Region = PAL-F
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLES-54418
 Name   = Powerdrome
@@ -16279,10 +16321,17 @@ Compat = 5
 Serial = SLES-54492
 Name   = Need for Speed - Carbon [Collector's Edition]
 Region = PAL-E
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLES-54493
 Name   = Need for Speed - Carbon [Collector's Edition]
 Region = PAL-F-G
+eeClampMode = 3 // Fixes crash after opening cutscene. 
+---------------------------------------------
+Serial = SLES-54493/P 
+Name   = Need for Speed - Carbon [Platinum: The Best of PlayStation 2] 
+Region = PAL-F-G 
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLES-54494
 Name   = Little Britain - The Video Game
@@ -16809,6 +16858,7 @@ Serial = SLES-54884
 Name   = Alone in the Dark
 Region = PAL-E
 Compat = 5
+EETimingHack = 1 // fixes boot hanging 
 ---------------------------------------------
 Serial = SLES-54885
 Name   = Moto X Maniac
@@ -16821,6 +16871,7 @@ Region = PAL-M6
 Serial = SLES-54892
 Name   = Phantasy Star Universe - Ambition of the Illuminus
 Region = PAL-M3
+eeRoundMode = 0 // fixes enemies not moving
 ---------------------------------------------
 Serial = SLES-54895
 Name   = NBA Live 08
@@ -17194,6 +17245,7 @@ Region = PAL-M6
 Serial = SLES-55207
 Name   = Alone in the Dark
 Region = PAL-M4
+EETimingHack = 1 // fixes boot hanging 
 ---------------------------------------------
 Serial = SLES-55208
 Name   = The Incredible Hulk
@@ -18573,6 +18625,11 @@ Region = NTSC-K
 Compat = 5
 OPHFLagHack = 1
 ---------------------------------------------
+Serial = SLKA-25368 
+Name   = Full Spectrum Warrior: Ten Hammers 
+Region = NTSC-K 
+EETimingHack = 1 //flickery textures 
+--------------------------------------------- 
 Serial = SLKA-25375
 Name   = Transformers - The Game
 Region = NTSC-K
@@ -18686,6 +18743,11 @@ Serial = SLPM-55033
 Name   = J. League Winning Eleven 2008 - Club Championship
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPM-55060 
+Name   = Need for Speed - Carbon [EA:SY! 1980] 
+Region = NTSC-J 
+eeClampMode = 3 // Fixes crash after opening cutscene. 
+--------------------------------------------- 
 Serial = SLPM-55096
 Name   = ThunderForce VI
 Region = NTSC-J
@@ -18786,6 +18848,12 @@ Region = NTSC-J
 Serial = SLPM-60107
 Name   = Golf Paradise
 Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-60138 
+Name   = Klonoa 2 - Lunatea's Veil [Trial] 
+Region = NTSC-J 
+eeClampMode = 3 // Objects needed appear in wrong places without it 
+vuClampMode = 2 // Fixes water reflection 
 ---------------------------------------------
 Serial = SLPM-60172
 Name   = Itadaki Street 3 - Okuman Chouja ni Shiteageru
@@ -21575,6 +21643,7 @@ Region = NTSC-J
 Serial = SLPM-65085
 Name   = Alone in the Dark
 Region = NTSC-J
+EETimingHack = 1 // fixes boot hanging 
 ---------------------------------------------
 Serial = SLPM-65086
 Name   = Ayumi Hamasaki Dome Tour 2001 - A Visual Mix [Disc1of2]
@@ -25984,6 +26053,7 @@ Region = NTSC-J
 Serial = SLPM-66316
 Name   = Pro Soccer Club o Tsukurou! Europe Championship
 Region = NTSC-J
+eeClampMode = 3 // fix right and left Dpad buttons in menus.
 ---------------------------------------------
 Serial = SLPM-66317
 Name   = Capcom Classics Collection Vol.1
@@ -26407,6 +26477,7 @@ Region = NTSC-J
 Serial = SLPM-66443
 Name   = FIFA Street 2
 Region = NTSC-J
+EETimingHack = 1 // Fix corrupted flag on the main menu and In-game.
 ---------------------------------------------
 Serial = SLPM-66444
 Name   = Spartan - Total Warrior
@@ -26947,6 +27018,10 @@ Serial = SLPM-66585
 Name   = Elvandia Story
 Region = NTSC-J
 Compat = 5
+eeRoundMode = 0
+vuRoundMode = 0
+eeClampMode = 3
+vuClampMode = 3 // fix missing graphics
 ---------------------------------------------
 Serial = SLPM-66586
 Name   = Karutagura - Tamashii no Kunou [2800 Collection]
@@ -27064,6 +27139,7 @@ Region = NTSC-J
 Serial = SLPM-66617
 Name   = Need for Speed - Carbon
 Region = NTSC-J
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLPM-66618
 Name   = Yumemishi [First Print Limited Edition]
@@ -28012,6 +28088,7 @@ Region = NTSC-J
 Serial = SLPM-66869
 Name   = Need for Speed - Carbon [EA Best Hits]
 Region = NTSC-J
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLPM-66870
 Name   = Kuri no Okurimono [First Print Special Edition]
@@ -30372,7 +30449,8 @@ Serial = SLPS-25033
 Name   = Kaze no Klonoa 2 - Sekai ga Nozonda Wasuremono
 Region = NTSC-J
 Compat = 5
-eeClampMode = 3		//Objects needed appear in wrong places without it
+eeClampMode = 3	//Objects needed appear in wrong places without it
+vuClampMode = 2 // Fixes water reflection 
 ---------------------------------------------
 Serial = SLPS-25034
 Name   = Flower, Sun and Rain
@@ -30515,7 +30593,6 @@ Serial = SLPS-25077
 Name   = Vampire Night
 Region = NTSC-J
 Compat = 5
-EETimingHack = 1
 ---------------------------------------------
 Serial = SLPS-25078
 Name   = SSX Tricky
@@ -32819,6 +32896,7 @@ Serial = SLPS-25710
 Name   = K-1 World Grand Prix 2006
 Region = NTSC-J
 Compat = 4
+XgKickHack = 1 // fix grey fighters.
 ---------------------------------------------
 Serial = SLPS-25711
 Name   = Kashimashi! Girl Meets Girl [Best Collection]
@@ -33868,7 +33946,8 @@ Region = NTSC-J
 Serial = SLPS-73404
 Name   = Klonoa 2 [PlayStation 2 The Best]
 Region = NTSC-J
-eeClampMode = 3		//Objects needed appear in wrong places without it
+eeClampMode = 3	//Objects needed appear in wrong places without it
+vuClampMode = 2 // Fixes water reflection 
 ---------------------------------------------
 Serial = SLPS-73405
 Name   = Zero [PlayStation 2 The Best]
@@ -33894,7 +33973,7 @@ MemCardFilter = SCPS-55024/SLPS-25007/SLPS-25040/SLPS-73403/SLPS-73411
 Serial = SLPS-73412
 Name   = Vampire Night [PlayStation 2 The Best]
 Region = NTSC-J
-EETimingHack = 1
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-73415
 Name   = Gallop Racer 6 - Revolution [PlayStation 2 The Best]
@@ -34503,7 +34582,8 @@ Serial = SLUS-20151
 Name   = Klonoa 2 - Lunatea's Veil
 Region = NTSC-U
 Compat = 5
-eeClampMode = 3		//Objects needed appear in wrong places without it
+eeClampMode = 3	//Objects needed appear in wrong places without it
+vuClampMode = 2 // Fixes water reflection 
 ---------------------------------------------
 Serial = SLUS-20152
 Name   = Ace Combat 4 - Shattered Skies
@@ -34814,7 +34894,6 @@ Serial = SLUS-20221
 Name   = Vampire Night
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1
 ---------------------------------------------
 Serial = SLUS-20222
 Name   = MTV - Music Generator 2
@@ -35280,6 +35359,7 @@ Serial = SLUS-20324
 Name   = Paris Dakar Rally
 Region = NTSC-U
 Compat = 5
+SkipMPEGHack = 1
 ---------------------------------------------
 Serial = SLUS-20325
 Name   = Bass Strike
@@ -36067,6 +36147,7 @@ Serial = SLUS-20495
 Name   = Battle Engine Aquila
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // fixes main menu display 
 ---------------------------------------------
 Serial = SLUS-20496
 Name   = V-Rally 3
@@ -38721,6 +38802,9 @@ Region = NTSC-U
 Serial = SLUS-21054
 Name   = Disney's Classics - Treasure Planet
 Region = NTSC-U
+EETimingHack = 1 // Fixes hang before going ingame
+eeRoundMode = 0 // Fixes characters flying into sky
+eeClampMode = 3 // Required to load areas correctly
 ---------------------------------------------
 Serial = SLUS-21056
 Name   = Cabal, The ~~CANCELLED~~
@@ -40266,6 +40350,7 @@ Serial = SLUS-21369
 Name   = FIFA Street 2
 Region = NTSC-U
 Compat = 5
+EETimingHack = 1 // Fix corrupted flag on the main menu and In-game.
 ---------------------------------------------
 Serial = SLUS-21370
 Name   = MegaMan X Collection
@@ -40885,10 +40970,18 @@ Serial = SLUS-21493
 Name   = Need for Speed - Carbon
 Region = NTSC-U
 Compat = 5
+eeClampMode = 3 // Fixes crash after opening cutscene. 
+---------------------------------------------
+Serial = SLUS-21493GH 
+Name   = Need for Speed - Carbon [Greatest Hits] 
+Region = NTSC-U 
+Compat = 5 
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLUS-21494
 Name   = Need for Speed - Carbon [Collector's Edition]
 Region = NTSC-U
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLUS-21495
 Name   = Sudoku, Carol Vorderman's
@@ -41659,7 +41752,7 @@ Serial = SLUS-21690
 Name   = Alone in the Dark
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1
+EETimingHack = 1 // fixes boot hanging 
 ---------------------------------------------
 Serial = SLUS-21691
 Name   = Swashbucklers - Blue vs. Grey
@@ -42094,6 +42187,12 @@ Name   = Ar tonelico II: Melody Of Metafalica
 Region = NTSC-U
 Compat = 5
 eeRoundMode = 0 // Fixes "Fall through floor" bug when aproaching chests
+---------------------------------------------
+Serial = SLUS-21788P 
+Name   = Ar tonelico II: Melody Of Metafalica 
+Region = NTSC-U 
+Compat = 5 
+eeRoundMode = 0 // Fixes "Fall through floor" bug when aproaching chests 
 ---------------------------------------------
 Serial = SLUS-21789
 Name   = Cabela's Legendary Adventures
@@ -42764,7 +42863,8 @@ Region = NTSC-U
 Serial = SLUS-28004
 Name   = Klonoa 2 - Lunatea's Veil [Trade Demo]
 Region = NTSC-U
-eeClampMode = 3		//Objects needed appear in wrong places without it
+eeClampMode = 3	//Objects needed appear in wrong places without it
+vuClampMode = 2 // Fixes water reflection 
 ---------------------------------------------
 Serial = SLUS-28006
 Name   = Burnout [Trade Demo]
@@ -43441,6 +43541,7 @@ Region = NTSC-U
 Serial = SLUS-29193
 Name   = Need for Speed - Carbon [Demo]
 Region = NTSC-U
+eeClampMode = 3 // Fixes crash after opening cutscene. 
 ---------------------------------------------
 Serial = SLUS-29194
 Name   = FIFA '07 [Demo]
