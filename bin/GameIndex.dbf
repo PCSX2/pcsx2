@@ -174,6 +174,11 @@ Serial = PCPX-96660
 Name   = Tourist Trophy [Trial] 
 Region = NTSC-J 
 ---------------------------------------------
+Serial = PCPX-98042
+Name   = Hot Shots Tennis |Demo, Taikenban]
+Region = NTSC-J
+eeRoundMode = 0 // fix some missing 2d elements
+---------------------------------------------
 Serial = SCAJ-10001
 Name   = Makai Senki Disgaea
 Region = NTSC-Unk
@@ -929,6 +934,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20181
 Name   = Minna no Tennis
 Region = NTSC-Unk
+eeRoundMode = 0 // fix some missing 2d elements
 ---------------------------------------------
 Serial = SCAJ-20182
 Name   = Tales of Destiny
@@ -990,6 +996,7 @@ VuAddSubHack = 1
 Serial = SCAJ-20198
 Name   = Everybody's Tennis [PlayStation 2 The Best]
 Region = NTSC-Unk
+eeRoundMode = 0 // fix some missing 2d elements
 ---------------------------------------------
 Serial = SCAJ-20199
 Name   = Tekken 5 [PlayStation 2 The Best]
@@ -1115,6 +1122,7 @@ Serial = SCED-50642
 Name   = Final Fantasy X [Demo] [Final Fantasy VI PS1 - Bonus Disc]
 Region = PAL-E
 IPUWaitHack = 1
+eeRoundMode = 1 // fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCED-50748
 Name   = Official PlayStation 2 Magazine Demo 26
@@ -1124,6 +1132,7 @@ Serial = SCED-50907
 Name   = Final Fantasy X [Bonus Disc - Beyond Final Fantasy]
 Region = PAL-Unk
 IPUWaitHack = 1
+eeRoundMode = 1 // fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCED-51531
 Name   = Official PlayStation 2 Magazine Demo 33
@@ -1310,27 +1319,32 @@ Name   = Final Fantasy X
 Region = PAL-E
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50491
 Name   = Final Fantasy X
 Region = PAL-F
 IPUWaitHack = 1
+eeRoundMode = 1 // fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50492
 Name   = Final Fantasy X
 Region = PAL-G
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50493
 Name   = Final Fantasy X
 Region = PAL-I
 IPUWaitHack = 1
+eeRoundMode = 1 // fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50494
 Name   = Final Fantasy X
 Region = PAL-S
 IPUWaitHack = 1
+eeRoundMode = 1 // fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50499
 Name   = Ecco the Dolphin - Defender of the Future
@@ -2600,6 +2614,8 @@ Region = PAL-Unk
 Serial = SCES-54535
 Name   = Everybody's Tennis
 Region = PAL-M11
+Compat = 5
+eeRoundMode = 0 // fix some missing 2d elements
 ---------------------------------------------
 Serial = SCES-54538
 Name   = Eyetoy - Play Astro Zoo
@@ -3798,6 +3814,7 @@ Compat = 5
 Serial = SCPS-15113
 Name   = Minna no Tennis
 Region = NTSC-J
+eeRoundMode = 0 // fix some missing 2d elements
 ---------------------------------------------
 Serial = SCPS-15114
 Name   = Soukou Kihei Armodyne
@@ -4103,6 +4120,7 @@ Region = NTSC-J
 Serial = SCPS-19332
 Name   = Minna no Tennis [PlayStation 2 The Best]
 Region = NTSC-J
+eeRoundMode = 0 // fix some missing 2d elements
 ---------------------------------------------
 Serial = SCPS-51001
 Name   = Moto GP 2
@@ -5091,10 +5109,12 @@ Region = NTSC-U
 Serial = SCUS-97271
 Name   = Final Fantasy XI - Online [Beta Version] [Disc1of2]
 Region = NTSC-U
+Compat = 3
 ---------------------------------------------
 Serial = SCUS-97272
 Name   = Final Fantasy XI - Online [Beta Version] [Disc2of2]
 Region = NTSC-U
+Compat = 3
 ---------------------------------------------
 Serial = SCUS-97273
 Name   = Jak II [Demo]
@@ -6038,6 +6058,7 @@ Serial = SCUS-97610
 Name   = Hot Shots Tennis
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 0 // fix some missing 2d elements
 ---------------------------------------------
 Serial = SCUS-97611
 Name   = SingStar Amped [with Microphone]
@@ -6060,6 +6081,11 @@ Compat = 3
 Serial = SCUS-97618
 Name   = SingStar 80's [Game Only]
 Region = NTSC-U
+---------------------------------------------
+Serial = SCUS-97619
+Name   = Hot Shots Tennis [Demo]
+Region = NTSC-U
+eeRoundMode = 0 // fix some missing 2d elements
 ---------------------------------------------
 Serial = SCUS-97620
 Name   = Syphon Filter - Dark Mirror [Demo]
@@ -8228,10 +8254,12 @@ Region = PAL-M5
 Serial = SLES-50796
 Name   = FIFA World Cup 2002
 Region = PAL-E-SE
+EETimingHack = 1
 ---------------------------------------------
 Serial = SLES-50797
 Name   = FIFA World Cup 2002
 Region = PAL-F
+EETimingHack = 1
 ---------------------------------------------
 Serial = SLES-50798
 Name   = FIFA World Cup 2002
@@ -8242,14 +8270,17 @@ EETimingHack = 1
 Serial = SLES-50799
 Name   = FIFA World Cup 2002
 Region = PAL-I
+EETimingHack = 1
 ---------------------------------------------
 Serial = SLES-50800
 Name   = FIFA World Cup 2002
 Region = PAL-S
+EETimingHack = 1
 ---------------------------------------------
 Serial = SLES-50801
 Name   = FIFA World Cup 2002
 Region = PAL-Unk
+EETimingHack = 1
 ---------------------------------------------
 Serial = SLES-50802
 Name   = Knockout Kings 2002
@@ -11355,14 +11386,16 @@ EETimingHack = 1
 Serial = SLES-52282
 Name   = Mafia
 Region = PAL-S
+EETimingHack = 1
 ---------------------------------------------
 Serial = SLES-52283
 Name   = Terminator 3 - The Redemption
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-52284
-Name   = Deadly Skies II
+Name   = Deadly Skies III
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52286
 Name   = Tak and The Poer of JuJu
@@ -19246,6 +19279,7 @@ Region = NTSC-J
 Serial = SLPM-62134
 Name   = Final Fantasy XI [Beta Edition]
 Region = NTSC-J
+Compat = 3
 ---------------------------------------------
 Serial = SLPM-62137
 Name   = Psyvariar Complete Edition [Special Sound Box]
@@ -22287,14 +22321,17 @@ Region = NTSC-J
 Serial = SLPM-65287
 Name   = Final Fantasy XI - Girade no Genei
 Region = NTSC-J
+Compat = 3
 ---------------------------------------------
 Serial = SLPM-65288
 Name   = Final Fantasy XI - Girade no Genei [All-in-One Pack]
 Region = NTSC-J
+Compat = 3
 ---------------------------------------------
 Serial = SLPM-65289
 Name   = Final Fantasy XI [Entry Disc]
 Region = NTSC-J
+Compat = 3
 ---------------------------------------------
 Serial = SLPM-65290
 Name   = Merge Marginal [Limited Edition]
@@ -23814,10 +23851,12 @@ Region = NTSC-J
 Serial = SLPM-65705
 Name   = Final Fantasy XI - Chains of Promathia [Expansion Disc]
 Region = NTSC-J
+Compat = 3
 ---------------------------------------------
 Serial = SLPM-65706
 Name   = Final Fantasy XI - Chains of Promathia [All-in-One Pack]
 Region = NTSC-J
+Compat = 3
 ---------------------------------------------
 Serial = SLPM-65708
 Name   = Hagane no Renkinjutsushi - Akaki Elixir no Akuma
@@ -24743,6 +24782,7 @@ Region = NTSC-J
 Serial = SLPM-65953
 Name   = Final Fantasy XI [Entry Disc 2005]
 Region = NTSC-J
+Compat = 3
 ---------------------------------------------
 Serial = SLPM-65954
 Name   = Tom Clancy's Ghost Recon [Ubisoft Best]
@@ -25351,6 +25391,7 @@ Serial = SLPM-66124
 Name   = Final Fantasy X [Ultimate Hits]
 Region = NTSC-J
 IPUWaitHack = 1
+eeRoundMode = 1 // fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SLPM-66125
 Name   = Final Fantasy X-2 [Ultimate Hits]
@@ -26304,10 +26345,12 @@ Region = NTSC-J
 Serial = SLPM-66393
 Name   = Final Fantasy XI - Aht Urghan no Hihou [All-in-One Pack]
 Region = NTSC-J
+Compat = 3
 ---------------------------------------------
 Serial = SLPM-66394
 Name   = Final Fantasy XI - Aht Urghan no Hihou
 Region = NTSC-J
+Compat = 3
 ---------------------------------------------
 Serial = SLPM-66395
 Name   = Honoo no Takkyubin
@@ -28186,10 +28229,12 @@ Region = NTSC-J
 Serial = SLPM-66893
 Name   = Final Fantasy XI - Vana'diel Collection
 Region = NTSC-J
+Compat = 3
 ---------------------------------------------
 Serial = SLPM-66894
 Name   = Final Fantasy XI - Wings of the Goddess
 Region = NTSC-J
+Compat = 3
 ---------------------------------------------
 Serial = SLPM-66895
 Name   = Manea Sugoroku - Kabukuro
@@ -28611,6 +28656,11 @@ Region = NTSC-K
 Compat = 5
 eeRoundMode = 1
 vuRoundMode = 3
+---------------------------------------------
+Serial = SLPM-67512
+Name   = Fifa World Cup 2002
+Region = NTSC-J
+EETimingHack = 1
 ---------------------------------------------
 Serial = SLPM-67513
 Name   = Final Fantasy X International
@@ -30516,6 +30566,7 @@ Name   = Final Fantasy X
 Region = NTSC-J
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SLPS-25051
 Name   = Missing Blue
@@ -30722,8 +30773,9 @@ Name   = Sankyo Fever 6
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25118
-Name   = FIFA 2002
+Name   = FIFA World Cup 2002
 Region = NTSC-J
+EETimingHack = 1
 ---------------------------------------------
 Serial = SLPS-25119
 Name   = Galerians 2
@@ -30848,6 +30900,7 @@ Region = NTSC-J
 Serial = SLPS-25160
 Name   = Final Fantasy XI 2002 [Special Art Box]
 Region = NTSC-J
+Compat = 3
 ---------------------------------------------
 Serial = SLPS-25161
 Name   = Uchuu Senkan Yamato - Ankoku Seidan Teikoku no Gyakushuu [Special Edition]
@@ -33622,6 +33675,7 @@ Serial = SLPS-72501
 Name   = Final Fantasy X [Mega Hits]
 Region = NTSC-J
 IPUWaitHack = 1
+eeRoundMode = 1 // fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SLPS-72502
 Name   = Tales of Destiny 2 [Mega Hits]
@@ -35302,6 +35356,7 @@ Name   = Final Fantasy X
 Region = NTSC-U
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SLUS-20313
 Name   = Wave Rally
@@ -35733,6 +35788,7 @@ Compat = 5
 Serial = SLUS-20404
 Name   = FIFA World Cup 2002
 Region = NTSC-U
+EETimingHack = 1
 ---------------------------------------------
 Serial = SLUS-20405
 Name   = Downforce
@@ -38872,6 +38928,7 @@ Region = NTSC-U
 Serial = SLUS-21070
 Name   = Final Fantasy XI - Chains of Promathia
 Region = NTSC-U
+Compat = 3
 ---------------------------------------------
 Serial = SLUS-21071
 Name   = Nightmare of Druaga
@@ -40522,6 +40579,7 @@ Region = NTSC-U
 Serial = SLUS-21404
 Name   = Final Fantasy XI - Treasures of Aht Urhgan
 Region = NTSC-U
+Compat = 3
 ---------------------------------------------
 Serial = SLUS-21405
 Name   = Xiaolin Showdown
