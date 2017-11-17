@@ -1278,8 +1278,8 @@ Serial = SCES-50354
 Name   = Klonoa 2 - Lunatea's Veil
 Region = PAL-M5
 Compat = 5
-eeClampMode = 3	//Objects needed appear in wrong places without it
-vuClampMode = 2 // Fixes water reflection 
+eeClampMode = 3 //Objects needed appear in wrong places without it
+vuClampMode = 2 //Fixes water reflection 
 ---------------------------------------------
 Serial = SCES-50360
 Name   = Twisted Metal - Black
@@ -11236,7 +11236,7 @@ Compat = 5
 Serial = SLES-52188
 Name   = Baldur's Gate: Dark Alliance II
 Region = PAL-M3
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52190
 Name   = RPM Tuning
@@ -18885,8 +18885,8 @@ Region = NTSC-J
 Serial = SLPM-60138 
 Name   = Klonoa 2 - Lunatea's Veil [Trial] 
 Region = NTSC-J 
-eeClampMode = 3 // Objects needed appear in wrong places without it 
-vuClampMode = 2 // Fixes water reflection 
+eeClampMode = 3 //Objects needed appear in wrong places without it
+vuClampMode = 2 //Fixes water reflection 
 ---------------------------------------------
 Serial = SLPM-60172
 Name   = Itadaki Street 3 - Okuman Chouja ni Shiteageru
@@ -30499,8 +30499,8 @@ Serial = SLPS-25033
 Name   = Kaze no Klonoa 2 - Sekai ga Nozonda Wasuremono
 Region = NTSC-J
 Compat = 5
-eeClampMode = 3	//Objects needed appear in wrong places without it
-vuClampMode = 2 // Fixes water reflection 
+eeClampMode = 3 //Objects needed appear in wrong places without it
+vuClampMode = 2 //Fixes water reflection 
 ---------------------------------------------
 Serial = SLPS-25034
 Name   = Flower, Sun and Rain
@@ -34000,8 +34000,8 @@ Region = NTSC-J
 Serial = SLPS-73404
 Name   = Klonoa 2 [PlayStation 2 The Best]
 Region = NTSC-J
-eeClampMode = 3	//Objects needed appear in wrong places without it
-vuClampMode = 2 // Fixes water reflection 
+eeClampMode = 3 //Objects needed appear in wrong places without it
+vuClampMode = 2 //Fixes water reflection 
 ---------------------------------------------
 Serial = SLPS-73405
 Name   = Zero [PlayStation 2 The Best]
@@ -34636,8 +34636,8 @@ Serial = SLUS-20151
 Name   = Klonoa 2 - Lunatea's Veil
 Region = NTSC-U
 Compat = 5
-eeClampMode = 3	//Objects needed appear in wrong places without it
-vuClampMode = 2 // Fixes water reflection 
+eeClampMode = 3 //Objects needed appear in wrong places without it
+vuClampMode = 2 //Fixes water reflection 
 ---------------------------------------------
 Serial = SLUS-20152
 Name   = Ace Combat 4 - Shattered Skies
@@ -42921,8 +42921,8 @@ Region = NTSC-U
 Serial = SLUS-28004
 Name   = Klonoa 2 - Lunatea's Veil [Trade Demo]
 Region = NTSC-U
-eeClampMode = 3	//Objects needed appear in wrong places without it
-vuClampMode = 2 // Fixes water reflection 
+eeClampMode = 3 //Objects needed appear in wrong places without it
+vuClampMode = 2 //Fixes water reflection 
 ---------------------------------------------
 Serial = SLUS-28006
 Name   = Burnout [Trade Demo]
