@@ -434,6 +434,7 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_DisableDepthSupport"]              = "0";
 	m_default_configuration["UserHacks_CPU_FB_Conversion"]                = "0";
 	m_default_configuration["UserHacks_DisableGsMemClear"]                = "0";
+	m_default_configuration["UserHacks_DisableNVhack"]                    = "0";
 	m_default_configuration["UserHacks_DisablePartialInvalidation"]       = "0";
 	m_default_configuration["UserHacks_HalfPixelOffset"]                  = "0";
 	m_default_configuration["UserHacks_merge_pp_sprite"]                  = "0";

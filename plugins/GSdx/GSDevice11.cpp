@@ -41,8 +41,10 @@ GSDevice11::GSDevice11()
 
 	if (theApp.GetConfigB("UserHacks")) {
 		UserHacks_unscale_pt_ln = theApp.GetConfigB("UserHacks_unscale_point_line");
+		UserHacks_disable_NV_hack = theApp.GetConfigB("UserHacks_DisableNVhack");
 	} else {
 		UserHacks_unscale_pt_ln = false;
+		UserHacks_disable_NV_hack = false;
 	}
 }
 
@@ -1296,8 +1298,8 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		D3D11_VIEWPORT vp;
 		memset(&vp, 0, sizeof(vp));
 
-		vp.TopLeftX = (spritehack > 0 || isNative) ? 0.0f : -0.01f;
-		vp.TopLeftY = (spritehack > 0 || isNative) ? 0.0f : -0.01f;
+		vp.TopLeftX = (UserHacks_disable_NV_hack || spritehack > 0 || isNative) ? 0.0f : -0.01f;
+		vp.TopLeftY = (UserHacks_disable_NV_hack || spritehack > 0 || isNative) ? 0.0f : -0.01f;
 		vp.Width = (float)size.x;
 		vp.Height = (float)size.y;
 		vp.MinDepth = 0.0f;
