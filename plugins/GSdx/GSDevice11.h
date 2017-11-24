@@ -58,6 +58,7 @@ class GSDevice11 : public GSDeviceDX
 	bool isNative;
 
 	bool UserHacks_unscale_pt_ln;
+	bool UserHacks_disable_NV_hack;
 
 	struct
 	{
