@@ -21,8 +21,8 @@
 
 #ifndef __PAD_H__
 #define __PAD_H__
-
-#define GAMEPAD_NUMBER 2 // numbers of gamepad
+//this is where GAMEPAD_NUMBER max is assigned, possibly rewrite later for dynamic based on sdlgamepads detected
+#define GAMEPAD_NUMBER 4 // numbers of gamepad
 
 #include <stdio.h>
 #include <assert.h>
