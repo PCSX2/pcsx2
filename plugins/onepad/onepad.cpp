@@ -162,8 +162,8 @@ PADinit(u32 flags)
     Pad::reset_all();
 
     query.reset();
-
-    for (int port = 0; port < 2; port++)
+//change port < 2; to GAMEPAD_NUMBER
+    for (int port = 0; port < GAMEPAD_NUMBER; port++)
     slots[port] = 0;
 
     return 0;
@@ -224,7 +224,8 @@ PADsetSlot(u8 port, u8 slot)
 {
     port--;
     slot--;
-    if (port > 1 || slot > 3) {
+	//change port > 1 to GAMEPAD_NUMBER, change slot > 3 to 5?
+    if (port > GAMEPAD_NUMBER || slot > 5) {
         return 0;
     }
     // Even if no pad there, record the slot, as it is the active slot regardless.
@@ -258,8 +259,9 @@ PADfreeze(int mode, freezeData *data)
 
         // Tales of the Abyss - pad fix
         // - restore data for both ports
-        for (int port = 0; port < 2; port++) {
-            for (int slot = 0; slot < 4; slot++) {
+		//more port < 2; to GAMEPAD_NUMBER, change slot for < 4 to < 6?
+        for (int port = 0; port < GAMEPAD_NUMBER; port++) {
+            for (int slot = 0; slot < 6; slot++) {
                 u8 mode = pdata->padData[port][slot].mode;
 
                 if (mode != MODE_DIGITAL && mode != MODE_ANALOG && mode != MODE_DS2_NATIVE) {
@@ -268,8 +270,8 @@ PADfreeze(int mode, freezeData *data)
 
                 memcpy(&pads[port][slot], &pdata->padData[port][slot], sizeof(PadFreezeData));
             }
-
-            if (pdata->slot[port] < 4)
+//change < 4 to < 6?
+            if (pdata->slot[port] < 6)
             slots[port] = pdata->slot[port];
         }
 
@@ -286,9 +288,9 @@ PADfreeze(int mode, freezeData *data)
         strncpy(pdata->format, "OnePad", sizeof(pdata->format));
         pdata->version = PAD_SAVE_STATE_VERSION;
         pdata->query = query;
-
-        for (int port = 0; port < 2; port++) {
-            for (int slot = 0; slot < 4; slot++) {
+//more port < 2 to GAMEPAD_NUMBER, and slot < 4 to < 6?
+        for (int port = 0; port < GAMEPAD_NUMBER; port++) {
+            for (int slot = 0; slot < 6; slot++) {
                 pdata->padData[port][slot] = pads[port][slot];
             }
 
