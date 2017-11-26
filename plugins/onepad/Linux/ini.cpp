@@ -121,9 +121,9 @@ void LoadConfig()
 	//add uid for up to GAMEPAD_NUMBER controllers
 	size_t uid;
 	for (int uidpadload = 0; uidpadload < GAMEPAD_NUMBER; uidpadload++)
-		if (fscanf(f, "uid(%d) = %zu\n", uidpadload, &uid) == 1)
+		if (fscanf(f, "uid(%d) = %zu\n", uidpadload, &uid) == 1) {
 			g_conf.set_joy_uid(uidpadload, uid);
-	
+		}
 	
     u32 pad;
     u32 keysym;
