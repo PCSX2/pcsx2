@@ -1672,26 +1672,6 @@ bool GSC_SonicUnleashed(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03000 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 100;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_StarOcean3(const GSFrameInfo& fi, int& skip)
 {
 	// The game emulate a stencil buffer with the alpha channel of the RT
@@ -2146,10 +2126,6 @@ bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
             }*/
     }
 
-
-
-
-
 	return true;
 }
 
@@ -2218,6 +2194,22 @@ bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
 		else if (fi.TME && fi.FBP == 0x03100 && (fi.TBP0 == 0x2a00 || fi.TBP0 == 0x3480) && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0)
 		{
 			//skip = 1; // Disabled as it doesn't seem to fix any issue, doesn't offer a further speed boost, and it creates an offset regression in fire effects.
+		}
+	}
+
+	return true;
+}
+
+bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
+{
+	if(Aggressive && skip == 0)
+	{
+		if(fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
+		{
+			// Removes character outlines, similar to DBZ BT3.
+			// Upscaling causes the outlines to be out of place but can be fixed with TC Offsets.
+			// The hack can be used to increase slight performance.
+			skip = 2;
 		}
 	}
 
@@ -2459,6 +2451,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFX2] = GSC_FFX2;
 		lut[CRC::FFX] = GSC_FFX;
 		lut[CRC::FFXII] = GSC_FFXII;
+		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
 		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
 		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
@@ -2475,7 +2468,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::ICO] = GSC_ICO;
 		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 		lut[CRC::Okami] = GSC_Okami;
-		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
 		lut[CRC::XE3] = GSC_XE3;
 
