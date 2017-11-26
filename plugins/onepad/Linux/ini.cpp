@@ -67,7 +67,7 @@ void SaveConfig()
 	//add uid for up to GAMEPAD_NUMBER of controllers
 	for (int uidpad = 0; uidpad < GAMEPAD_NUMBER; uidpad++)
 		if (g_conf.get_joy_uid(uidpad) != NULL) {
-			fprintf(f, "uid[uidpad] = %zu\n", g_conf.get_joy_uid(uidpad));
+			fprintf(f, "uid(uidpad) = %zu\n", g_conf.get_joy_uid(uidpad));
 		}
 	
     for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
@@ -121,7 +121,7 @@ void LoadConfig()
 	//add uid for up to GAMEPAD_NUMBER controllers
 	size_t uid;
 	for (int uidpadload = 0; uidpadload < GAMEPAD_NUMBER; uidpadload++)
-		if (fscanf(f, "uid[uidpadload] = %zu\n", &uid) == 1)
+		if (fscanf(f, "uid(uidpadload) = %zu\n", &uid) == 1)
 			g_conf.set_joy_uid(uidpadload, uid);
 	
 	
