@@ -69,9 +69,9 @@ void SaveConfig()
 		if (g_conf.get_joy_uid(uidpad) != NULL) {
 			fprintf(f, "uid(%d) = %zu\n", uidpad, g_conf.get_joy_uid(uidpad));
 		}
-	//believe : should be ; to fix multipads keymap write to file after auto const
+	//something here isn't working, placeholder while investigating
     for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
-        for (auto const &it; g_conf.keysym_map[pad]) {
+        for (auto const &it : g_conf.keysym_map[pad]) {
             fprintf(f, "PAD %d:KEYSYM 0x%x = %d\n", pad, it.first, it.second);
 		}
 	}
