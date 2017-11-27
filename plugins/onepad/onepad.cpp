@@ -259,9 +259,8 @@ PADfreeze(int mode, freezeData *data)
 
         // Tales of the Abyss - pad fix
         // - restore data for both ports
-		//more port < 2; to GAMEPAD_NUMBER, change slot for < 4 to < 6?
-        for (int port = 0; port < GAMEPAD_NUMBER; port++) {
-            for (int slot = 0; slot < 6; slot++) {
+        for (int port = 0; port < 2; port++) {
+            for (int slot = 0; slot < 4; slot++) {
                 u8 mode = pdata->padData[port][slot].mode;
 
                 if (mode != MODE_DIGITAL && mode != MODE_ANALOG && mode != MODE_DS2_NATIVE) {
