@@ -39,7 +39,8 @@ static const u8 queryAct[2][7] = {
 
 QueryInfo query;
 Pad pads[2][4];
-int slots[2] = {0, 0};
+//2 ports 4 slots with multitap
+int slots[4] = {0, 0};
 
 //////////////////////////////////////////////////////////////////////
 // QueryInfo implementation
@@ -58,8 +59,7 @@ void QueryInfo::reset()
 
 u8 QueryInfo::start_poll(int _port)
 {
-	//test port > 1 to port > 3
-    if (port > 3) {
+    if (port > 1) {
         reset();
         return 0;
     }
@@ -139,24 +139,21 @@ void Pad::stop_vibrate_all()
 	}
 #endif
     // FIXME equivalent ?
-	//port < 2 to GAMEPAD_NUMBER
-    for (int port = 0; port < GAMEPAD_NUMBER; port++)
+    for (int port = 0; port < 2; port++)
         for (int slot = 0; slot < 4; slot++)
             pads[port][slot].reset_vibrate();
 }
 
 void Pad::reset_all()
 {
-	//port < 2 to GAMEPAD_NUMBER
-    for (int port = 0; port < GAMEPAD_NUMBER; port++)
+    for (int port = 0; port < 2; port++)
         for (int slot = 0; slot < 4; slot++)
             pads[port][slot].reset();
 }
 
 void Pad::rumble_all()
 {
-	//port < 2 to GAMEPAD_NUMBER
-    for (unsigned port = 0; port < GAMEPAD_NUMBER; port++)
+    for (unsigned port = 0; port < 2; port++)
         for (unsigned slot = 0; slot < 4; slot++)
             pads[port][slot].rumble(port);
 }
