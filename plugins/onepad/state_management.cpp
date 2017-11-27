@@ -38,9 +38,7 @@ static const u8 queryAct[2][7] = {
     {0x5A, 0x00, 0x00, 0x01, 0x01, 0x01, 0x14}};
 
 QueryInfo query;
-//test [2][4] to [4][8]
-Pad pads[4][8];
-//test slots[4] from [2]
+Pad pads[2][4];
 int slots[4] = {0, 0};
 
 //////////////////////////////////////////////////////////////////////
@@ -60,8 +58,7 @@ void QueryInfo::reset()
 
 u8 QueryInfo::start_poll(int _port)
 {
-	//test port > 1 to port > 3
-    if (port > 3) {
+    if (port > 1) {
         reset();
         return 0;
     }
@@ -141,25 +138,22 @@ void Pad::stop_vibrate_all()
 	}
 #endif
     // FIXME equivalent ?
-	//port < 2 to GAMEPAD_NUMBER, slot < 4 to < 8?
-    for (int port = 0; port < GAMEPAD_NUMBER; port++)
-        for (int slot = 0; slot < 8; slot++)
+    for (int port = 0; port < 2; port++)
+        for (int slot = 0; slot < 4; slot++)
             pads[port][slot].reset_vibrate();
 }
 
 void Pad::reset_all()
 {
-	//port < 2 to GAMEPAD_NUMBER, slot < 4 to < 8?
-    for (int port = 0; port < GAMEPAD_NUMBER; port++)
-        for (int slot = 0; slot < 8; slot++)
+    for (int port = 0; port < 2; port++)
+        for (int slot = 0; slot < 4; slot++)
             pads[port][slot].reset();
 }
 
 void Pad::rumble_all()
 {
-	//port < 2 to GAMEPAD_NUMBER, slot < 4 to < 8?
-    for (unsigned port = 0; port < GAMEPAD_NUMBER; port++)
-        for (unsigned slot = 0; slot < 8; slot++)
+    for (unsigned port = 0; port < 2; port++)
+        for (unsigned slot = 0; slot < 4; slot++)
             pads[port][slot].rumble(port);
 }
 
