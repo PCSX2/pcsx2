@@ -106,18 +106,14 @@ struct PadPluginFreezeData
     char format[8];
     u32 version;
     // active slot for port
-	//test slot[2] to [4]
-    u8 slot[4];
-	//test [2][4] to [4][8]
-    PadFreezeData padData[4][8];
+    u8 slot[2];
+    PadFreezeData padData[2][4];
     QueryInfo query;
 };
 
 extern QueryInfo query;
-//test [2][4] to [4][8]
-extern Pad pads[4][8];
-//test slots[2] to [4]
-extern int slots[4];
+extern Pad pads[2][4];
+extern int slots[2];
 
 extern u8 pad_start_poll(u8 pad);
 extern u8 pad_poll(u8 value);
