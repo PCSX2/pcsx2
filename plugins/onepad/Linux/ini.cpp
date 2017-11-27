@@ -69,13 +69,11 @@ void SaveConfig()
 		if (g_conf.get_joy_uid(uidpad) != NULL) {
 			fprintf(f, "uid(%d) = %zu\n", uidpad, g_conf.get_joy_uid(uidpad));
 		}
-	//something here isn't working, placeholder while investigating
-    for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
-        for (auto const &it : g_conf.keysym_map[pad]) {
+	//something here isn't working, placeholder while investigating, possibly works with non-identical controllers
+    for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
+        for (auto const &it : g_conf.keysym_map[pad])
             fprintf(f, "PAD %d:KEYSYM 0x%x = %d\n", pad, it.first, it.second);
-		}
-	}
-	
+		
     for (auto const &it : g_conf.sdl2_mapping)
         fprintf(f, "SDL2 = %s\n", it.c_str());
 
