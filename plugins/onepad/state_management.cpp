@@ -39,6 +39,10 @@ static const u8 queryAct[2][7] = {
 
 QueryInfo query;
 Pad pads[2][4];
+<<<<<<< HEAD
+=======
+//2 ports 4 slots with multitap
+>>>>>>> aef01a335... Onepad: 4 controller updates
 int slots[4] = {0, 0};
 
 //////////////////////////////////////////////////////////////////////
