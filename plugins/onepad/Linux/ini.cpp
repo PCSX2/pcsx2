@@ -61,10 +61,7 @@ void SaveConfig()
     fprintf(f, "options = %d\n", g_conf.packed_options);
     fprintf(f, "mouse_sensibility = %d\n", g_conf.get_sensibility());
     fprintf(f, "ff_intensity = %d\n", g_conf.get_ff_intensity());
-//    fprintf(f, "uid[0] = %zu\n", g_conf.get_joy_uid(0));
-//    fprintf(f, "uid[1] = %zu\n", g_conf.get_joy_uid(1));
 
-	//add uid for up to GAMEPAD_NUMBER of controllers
 	for (int uidpad = 0; uidpad < GAMEPAD_NUMBER; uidpad++)
 		if (g_conf.get_joy_uid(uidpad) != NULL) {
 			fprintf(f, "uid(%d) = %zu\n", uidpad, g_conf.get_joy_uid(uidpad));
@@ -112,13 +109,6 @@ void LoadConfig()
     if (fscanf(f, "ff_intensity = %u\n", &value) == 1)
         g_conf.set_ff_intensity(value);
 
-    //size_t uid;
-    //if (fscanf(f, "uid[0] = %zu\n", &uid) == 1)
-    //    g_conf.set_joy_uid(0, uid);
-    //if (fscanf(f, "uid[1] = %zu\n", &uid) == 1)
-    //    g_conf.set_joy_uid(1, uid);
-
-	//add uid for up to GAMEPAD_NUMBER controllers
 	size_t uid;
 	for (int uidpadload = 0; uidpadload < GAMEPAD_NUMBER; uidpadload++)
 		if (fscanf(f, "uid(%d) = %zu\n", uidpadload, &uid) == 1) {
