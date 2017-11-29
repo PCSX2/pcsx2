@@ -114,9 +114,12 @@ struct PadPluginFreezeData
 extern QueryInfo query;
 extern Pad pads[2][4];
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 //fix for cpp and h mismatch
 >>>>>>> aef01a335... Onepad: 4 controller updates
+=======
+>>>>>>> 504ea236f3efe4c01e05f2121fac858ab8ddb1ab
 extern int slots[4];
 
 extern u8 pad_start_poll(u8 pad);
