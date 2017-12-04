@@ -304,8 +304,23 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	// Channel shuffle effect not supported on DX. Let's keep the logic because it help to
 	// reduce memory requirement (and why not a partial port)
+
+	// Uncomment to disable (allow to trace the draw call)
+	// m_channel_shuffle = false;
+
 	if (m_channel_shuffle) {
-		if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
+		if (m_game.title == CRC::Tekken5) {
+			if (m_context->FRAME.FBW == 1) {
+				// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
+				// Skip channel effect, it misses a shader for proper screen effect but at least the top left screen issue isn't appearing anymore 
+				// 12 pages: 2 calls by channel, 3 channels, 1 blit
+				// Minus current draw call
+				m_skip = 12 * (3 + 3 + 1) - 1;
+			} else {
+				// Could skip model drawing if wrongly detected
+				m_channel_shuffle = false;
+			}
+		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
 			;
 		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0)) {
 			;

@@ -422,6 +422,7 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 			*rt = tex->m_from_target;
 		} else if (m_game.title == CRC::Tekken5) {
 			if (m_context->FRAME.FBW == 1) {
+				// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
 				GL_INS("Tekken5 RGB Channel");
 				m_ps_sel.channel = 7;
 				m_context->FRAME.FBMSK = 0xFF000000;

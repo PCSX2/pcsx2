@@ -578,6 +578,37 @@ bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(Aggressive && fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x02d80 || fi.FBP == 0x02ea0 || fi.FBP == 0x03620) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
+		{
+			// Fixes/removes ghosting/blur effect and white lines appearing in stages: Moonfit Wilderness, Acid Rain - caused by upscaling.
+			// Downside is it also removes the channel effect which is fixed on OpenGL.
+			// Let's enable this hack for Aggressive only since it's an upscaling issue for both renders.
+			skip = 95;
+		}
+		else if(fi.TME && (fi.FBP == 0x02bc0 || fi.FBP == 0x02be0 || fi.FBP == 0x02d00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
+		{
+			// The moving display effect(flames) is not emulated properly in the entire screen so let's remove the effect in the stage: Burning Temple. Related to half screen bottom issue.
+			// Fixes black lines in the stage: Burning Temple - caused by upscaling. Note the black lines can also be fixed with Merge Sprite hack.
+			skip = 2;
+		}
+		// It's unknown what this hack does so let's comment it out since it doesn't cause any issues when disabled it seems.
+		/*else if(fi.TME)
+		{
+			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
+				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
+			{
+				skip = 24;
+			}
+		}*/
+	}
+
+	return true;
+}
+
 bool GSC_TombRaider(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1250,31 +1281,6 @@ bool GSC_TalesOfAbyss(const GSFrameInfo& fi, int& skip)
 		if(fi.TME && fi.TPSM != PSM_PSMT8)
 		{
 			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x02d80 || fi.FBP == 0x02ea0 || fi.FBP == 0x03620) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 95;
-		}
-		else if(fi.TME && (fi.FBP == 0x02bc0 || fi.FBP == 0x02be0 || fi.FBP == 0x02d00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 2;
-		}
-		else if(fi.TME)
-		{
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-				{
-					skip = 24;
-				}
 		}
 	}
 
@@ -2431,6 +2437,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::SFEX3] = GSC_SFEX3;
 		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
+		lut[CRC::Tekken5] = GSC_Tekken5;
 		lut[CRC::TimeSplitters2] = GSC_TimeSplitters2;
 		lut[CRC::TombRaiderAnniversary] = GSC_TombRaider;
 		lut[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
@@ -2515,7 +2522,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::GT3] = GSC_GT3;
 		lut[CRC::GTConcept] = GSC_GTConcept;
 		lut[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
-		lut[CRC::Tekken5] = GSC_Tekken5;
 
 		// RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly
 		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas;
