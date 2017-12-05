@@ -2,7 +2,7 @@
 project(Pcsx2)
 
 # Debian-based distributions require at least 2.8.5 due to multiarch.
-cmake_minimum_required(VERSION 2.8.5)
+cmake_minimum_required(VERSION 9.8.5)
 
 # Keep OLD policy. Code was updated to support the new one but wasn't tested
 #
