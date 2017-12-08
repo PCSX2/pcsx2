@@ -249,7 +249,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	// is thus not worth the effort at this time.
 }
 
-static const char* ReportVideoMode()
+const char* ReportVideoMode()
 {
 	switch (gsVideoMode)
 	{
