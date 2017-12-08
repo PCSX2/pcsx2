@@ -962,28 +962,19 @@ void iFlushCall(int flushtype)
 
 static u32 scaleblockcycles_calculation()
 {
-	bool lowcycles = (s_nBlockCycles <= 40);
-	s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
-	u32 scale_cycles = 0;
+	int cyclerate = EESliderValueCheck(EmuConfig.Speedhacks.EECycleRate);
+	// Disable scaling on lowcycles only for underclocked/default value, block scaling is necessary to produce
+	// proper and consistent scaling of blocks in overclock values (100+)
+	bool lowcycles = (s_nBlockCycles <= 40) && cyclerate <= 100;
+	int scale_cycles = 0;
 
-	if (cyclerate == 0 || lowcycles || cyclerate < -99 || cyclerate > 3)
+	if (cyclerate == 100 || lowcycles)
 		scale_cycles = DEFAULT_SCALED_BLOCKS();
-
-	else if (cyclerate > 1)
-		scale_cycles = s_nBlockCycles >> (2 + cyclerate);
-
-	else if (cyclerate == 1)
-		scale_cycles = DEFAULT_SCALED_BLOCKS() / 1.3f; // Adds a mild 30% increase in clockspeed for value 1.
-
-	else if (cyclerate == -1)  // the mildest value which is also used by the "balanced" preset.
-		// These values were manually tuned to yield mild speedup with high compatibility
-		scale_cycles = (s_nBlockCycles <= 80 || s_nBlockCycles > 168 ? 5 : 7) * s_nBlockCycles / 32;
-
 	else
-		scale_cycles = ((5 + (-2 * (cyclerate + 1))) * s_nBlockCycles) >> 5;
+		scale_cycles = lround(DEFAULT_SCALED_BLOCKS() / static_cast<float>(cyclerate / 100.0f));
 
 	// Ensure block cycle count is never less than 1.
-	return (scale_cycles < 1) ? 1 : scale_cycles;
+	return std::max(1, scale_cycles);
 }
 
 static u32 scaleblockcycles()

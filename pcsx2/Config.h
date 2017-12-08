@@ -63,13 +63,6 @@ enum GamefixId
 	GamefixId_COUNT
 };
 
-enum class VsyncMode
-{
-	Off,
-	On,
-	Adaptive,
-};
-
 // Template function for casting enumerations to their underlying type
 template <typename Enumeration>
 typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
@@ -298,9 +291,9 @@ struct Pcsx2Config
 		bool	DisableOutput;
 		int		VsyncQueueSize;
 
-		bool		FrameLimitEnable;
-		bool		FrameSkipEnable;
-		VsyncMode	VsyncEnable;
+		bool	FrameLimitEnable;
+		bool	FrameSkipEnable;
+		bool	VsyncEnable;
 
 		int		FramesToDraw;	// number of consecutive frames (fields) to render
 		int		FramesToSkip;	// number of consecutive frames (fields) to skip
@@ -311,8 +304,6 @@ struct Pcsx2Config
 
 		GSOptions();
 		void LoadSave( IniInterface& conf );
-
-		int GetVsync() const;
 
 		bool operator ==( const GSOptions& right ) const
 		{
@@ -399,7 +390,7 @@ struct Pcsx2Config
 				vuThread        :1;		// Enable Threaded VU1
 		BITFIELD_END
 
-		s8	EECycleRate;		// EE cycle rate selector (1.0, 1.5, 2.0)
+		u16	EECycleRate;
 		u8	VUCycleSteal;		// VU Cycle Stealer factor (0, 1, 2, or 3)
 
 		SpeedhackOptions();
@@ -518,7 +509,7 @@ TraceLogFilters&				SetTraceConfig();
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Helper Macros for Reading Emu Configurations.
+// Helper Macros/Functions for Reading Emu Configurations.
 //
 
 // ------------ CPU / Recompiler Options ---------------
@@ -529,6 +520,12 @@ TraceLogFilters&				SetTraceConfig();
 #define CHECK_EEREC					(EmuConfig.Cpu.Recompiler.EnableEE && GetCpuProviders().IsRecAvailable_EE())
 #define CHECK_CACHE					(EmuConfig.Cpu.Recompiler.EnableEECache)
 #define CHECK_IOPREC				(EmuConfig.Cpu.Recompiler.EnableIOP && GetCpuProviders().IsRecAvailable_IOP())
+
+// ------------ Speed Hacks!!! ---------------
+#define EESlider_MaxValue (300)
+#define EESlider_MinValue (50)
+#define EESlider_DefaultValue (100)
+const auto EESliderValueCheck = [](int x) { if (x > EESlider_MaxValue || x < EESlider_MinValue) return EESlider_DefaultValue; else return x; };
 
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK			(EmuConfig.Gamefixes.VuAddSubHack)	 // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.

@@ -19,51 +19,43 @@
 
 using namespace pxSizerFlags;
 
-const wxChar* Panels::SpeedHacksPanel::GetEEcycleSliderMsg( int val )
+std::string Panels::SpeedHacksPanel::GetEEcycleSliderMsg( int val )
 {
-	switch( val )
+	int clockspeed = static_cast<float>(294) * val / 100;
+	wxColour color = wxColour(0, 0, 0);
+
+	switch (val / 10)
 	{
-		case -3:
-		{
-			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"-3 - Reduces the EE's cyclerate to about 50%.  Big speedup, but *will* cause stuttering audio on many FMVs.");
-		}
-		case -2:
-		{
-			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may cause stuttering audio on many FMVs.");
-		}
-		case -1:
-		{
-			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games with high compatibility.");
-		}
-		case 0:
-		{
-			const wxColour DarkSeaGreen = wxColour(14, 158, 19);
-			m_msg_eecycle->SetForegroundColour(DarkSeaGreen);
-			return pxEt(L"0 - Default cyclerate (100%). This closely matches the actual speed of a real PS2 EmotionEngine.");
-		}
-		case 1:
-		{
-			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"1 - Increases the EE's cyclerate to about 130%. Mildly increases hardware requirements, may increase in-game FPS.");
-		}
-		case 2:
-		{
-			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"2 - Increases the EE's cyclerate to about 180%. Increases hardware requirements, may noticeably increase in-game FPS.");
-		}
-		case 3:
-		{
-			m_msg_eecycle->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"3 - Increases the EE's cyclerate to about 300%. Greatly increases hardware requirements, may noticeably increase in-game FPS.\nThis setting can cause games to FAIL TO BOOT.");
-		}
-		default:
-			break;
+	case 5: case 6:
+		color = wxColour(L"Red");
+		break;
+	case 7:
+		color = wxColour(255, 69, 0); // Orange Red
+		break;
+	case 8:
+		color = wxColour(0, 100, 0); // Forest Green
+		break;
+	case 9: case 10: case 11:
+		if (val == 100)
+			color = wxColour(14, 158, 19); // Dark Sea Green
+		else
+			color = wxColour(0, 128, 0); // Just Green
+		break;
+	case 12: case 13: case 14: case 15: case 16:
+		color = wxColour(0, 100, 0); // Forest Green
+		break;
+	case 17: case 18: case 19: case 20: case 21: case 22: case 23: case 24:
+		color = wxColour(255, 69, 0); // Orange Red
+		break;
+	case 25: case 26: case 27: case 28: case 29: case 30:
+		color = wxColour(L"Red");
+		break;
+	default:
+		pxAssert(false);
 	}
 
-	return L"Unreachable Warning Suppressor!!";
+	m_msg_eecycle->SetForegroundColour(color);
+	return std::to_string(val) + "% (" + std::to_string(clockspeed) + (" MHz)");
 }
 
 const wxChar* Panels::SpeedHacksPanel::GetVUcycleSliderMsg( int val )
@@ -137,9 +129,11 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 
 	m_eeSliderPanel = new wxPanelWithHelpers( left, wxVERTICAL, _("EE Cyclerate [Not Recommended]") );
 
-	m_slider_eecycle = new wxSlider( m_eeSliderPanel, wxID_ANY, 0, -3, 3,
-		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
+	m_slider_eecycle = new wxSlider( m_eeSliderPanel, wxID_ANY, EESlider_DefaultValue, EESlider_MinValue, EESlider_MaxValue,
+		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS);
 
+	m_slider_eecycle->ClearTicks();
+	m_slider_eecycle->SetTick(100);
 	m_msg_eecycle = new pxStaticHeading( m_eeSliderPanel );
 
 	const wxChar* ee_tooltip = pxEt( L"Setting lower values on this slider effectively reduces the clock speed of the EmotionEngine's R5900 core cpu, and typically brings big speedups to games that fail to utilize the full potential of the real PS2 hardware. Conversely, higher values effectively increase the clock speed which may bring about an increase in in-game FPS while also making games more demanding and possibly causing glitches."
@@ -251,7 +245,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 
 	// ------------------------------------------------------------------------
 
-	Bind(wxEVT_SCROLL_CHANGED, &SpeedHacksPanel::EECycleRate_Scroll, this, m_slider_eecycle->GetId());
+	Bind(wxEVT_SLIDER, &SpeedHacksPanel::EECycleRate_Scroll, this, m_slider_eecycle->GetId());
 	Bind(wxEVT_SCROLL_CHANGED, &SpeedHacksPanel::VUCycleRate_Scroll, this, m_slider_vustealer->GetId());
 	Bind(wxEVT_CHECKBOX, &SpeedHacksPanel::OnEnable_Toggled, this, m_check_Enable->GetId());
 	Bind(wxEVT_BUTTON, &SpeedHacksPanel::Defaults_Click, this, wxID_DEFAULT);
@@ -281,8 +275,7 @@ void Panels::SpeedHacksPanel::EnableStuff( AppConfig* configToUse )
 	m_check_waitloop->Enable(HacksEnabledAndNoPreset);
 	m_check_fastCDVD->Enable(HacksEnabledAndNoPreset);
 
-	// Grayout MTVU on safest preset
-	m_check_vuThread->Enable(hacksEnabled && (!hasPreset || configToUse->PresetIndex != 0));
+	m_check_vuThread->Enable(hacksEnabled); // MTVU is unaffected by presets
 
 	// Layout necessary to ensure changed slider text gets re-aligned properly
 	// and to properly gray/ungray pxStaticText stuff (I suspect it causes a
@@ -303,20 +296,18 @@ void Panels::SpeedHacksPanel::ApplyConfigToGui( AppConfig& configToApply, int fl
 	// First, set the values of the widgets (checked/unchecked etc).
 	m_check_Enable->SetValue(configToApply.EnableSpeedHacks);
 
-	m_slider_eecycle	->SetValue( opts.EECycleRate );
+	m_slider_eecycle	->SetValue( EESliderValueCheck(opts.EECycleRate) );
 	m_slider_vustealer	->SetValue( opts.VUCycleSteal );
 
 	SetEEcycleSliderMsg();
 	SetVUcycleSliderMsg();
 
 	m_check_vuFlagHack->SetValue(opts.vuFlagHack);
+	if( !(flags & AppConfig::APPLY_FLAG_FROM_PRESET) )
+		m_check_vuThread	->SetValue(opts.vuThread);
 	m_check_intc->SetValue(opts.IntcStat);
 	m_check_waitloop->SetValue(opts.WaitLoop);
 	m_check_fastCDVD->SetValue(opts.fastCDVD);
-
-	const bool preset_request = flags & AppConfig::APPLY_FLAG_FROM_PRESET;
-	if (!preset_request || configToApply.PresetIndex == 0)
-		m_check_vuThread->SetValue(opts.vuThread);
 
 	// Then, lock(gray out)/unlock the widgets as necessary.
 	EnableStuff( &configToApply );
@@ -366,12 +357,9 @@ void Panels::SpeedHacksPanel::Defaults_Click( wxCommandEvent& evt )
 	evt.Skip();
 }
 
-void Panels::SpeedHacksPanel::EECycleRate_Scroll(wxScrollEvent &event)
+void Panels::SpeedHacksPanel::EECycleRate_Scroll(wxCommandEvent &event)
 {
 	SetEEcycleSliderMsg();
-
-	TrigLayout();
-
 	event.Skip();
 }
 
