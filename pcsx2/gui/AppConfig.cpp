@@ -535,7 +535,7 @@ AppConfig::AppConfig()
 {
 	LanguageId			= wxLANGUAGE_DEFAULT;
 	LanguageCode		= L"default";
-	RecentIsoCount		= 20;
+	RecentIsoCount		= 12;
 	Listbook_ImageSize	= 32;
 	Toolbar_ImageSize	= 24;
 	Toolbar_ShowLabels	= true;
@@ -670,7 +670,6 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 
 	IniEntry( EnablePresets );
 	IniEntry( PresetIndex );
-	IniEntry( AskOnBoot );
 	
 	#ifdef __WXMSW__
 	IniEntry( McdCompressNTFS );
@@ -848,7 +847,6 @@ AppConfig::GSWindowOptions::GSWindowOptions()
 	WindowPos				= wxDefaultPosition;
 	IsMaximized				= false;
 	IsFullscreen			= false;
-	EnableVsyncWindowFlag	= false;
 
 	IsToggleFullscreenOnDoubleClick = true;
 	IsToggleAspectRatioSwitch = false;
@@ -887,7 +885,6 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 	IniEntry( WindowPos );
 	IniEntry( IsMaximized );
 	IniEntry( IsFullscreen );
-	IniEntry( EnableVsyncWindowFlag );
 
 	IniEntry( IsToggleFullscreenOnDoubleClick );
 	IniEntry( IsToggleAspectRatioSwitch );
@@ -1047,7 +1044,7 @@ bool AppConfig::IsOkApplyPreset(int n)
 	EmuOptions.Gamefixes			= default_Pcsx2Config.Gamefixes;
 	EmuOptions.Speedhacks			= default_Pcsx2Config.Speedhacks;
 	EmuOptions.Speedhacks.bitset	= 0; //Turn off individual hacks to make it visually clear they're not used.
-	EmuOptions.Speedhacks.vuThread	= original_SpeedHacks.vuThread;
+	EmuOptions.Speedhacks.vuThread	= original_SpeedHacks.vuThread; // MTVU is not modified by presets
 	EnableSpeedHacks = true;
 
 	//Actual application of current preset over the base settings which all presets use (mostly pcsx2's default values).
@@ -1059,8 +1056,8 @@ bool AppConfig::IsOkApplyPreset(int n)
 		case 5 :	//Set VU cycle steal to 2 clicks (maximum-1)
 					vuUsed?0:(vuUsed=true, EmuOptions.Speedhacks.VUCycleSteal = 2);
 		
-		case 4 :	//set EE cyclerate to 2 clicks (maximum)
-					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = -2);
+		case 4 :
+					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = 60);
 
 		case 3 :	//Set VU cycle steal to 1 click, set VU clamp mode to 'none'
 					vuUsed?0:(vuUsed=true, EmuOptions.Speedhacks.VUCycleSteal = 1);
@@ -1069,8 +1066,8 @@ bool AppConfig::IsOkApplyPreset(int n)
 					EmuOptions.Cpu.Recompiler.vuSignOverflow = false; //VU Clamp mode to 'none'
 
 		//best balanced hacks combo?
-		case 2 :	//set EE cyclerate to 1 click.
-					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = -1);
+		case 2 :
+					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = 80);
 					// EE timing hack appears to break the BIOS text and cause slowdowns in a few titles.
 					//EnableGameFixes = true;
 					//EmuOptions.Gamefixes.EETimingHack = true;
@@ -1079,13 +1076,11 @@ bool AppConfig::IsOkApplyPreset(int n)
 					EmuOptions.Speedhacks.IntcStat = true;
 					EmuOptions.Speedhacks.WaitLoop = true;
 					EmuOptions.Speedhacks.vuFlagHack = true;
-					break;
 
 		case 0 :	//Base preset: Mostly pcsx2's defaults.
-					//Force disable MTVU hack on safest preset as it has lots of issues (Crashes/Slow downs) on various games.
-					EmuOptions.Speedhacks.vuThread = false;
+					
+		
 					break;
-
 		default:	Console.WriteLn("Developer Warning: Preset #%d is not implemented. (--> Using application default).", n);
 	}
 
