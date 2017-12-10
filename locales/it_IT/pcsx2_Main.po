@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2017-11-30 20:19+0100\n"
-"PO-Revision-Date: 2017-11-30 22:22+0100\n"
+"PO-Revision-Date: 2017-12-10 11:17+0100\n"
 "Last-Translator: Leucos\n"
 "Language-Team: Leucos <http://forums.pcsx2.net/User-Leucos>\n"
 "Language: it_IT\n"
@@ -15,7 +15,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: ../..\n"
-"X-Generator: Poedit 2.0.1\n"
+"X-Generator: Poedit 2.0.5\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
@@ -35,7 +35,7 @@ msgstr ""
 
 #: common/src/Utilities/Exceptions.cpp:219
 msgid "Oh noes! Out of memory!"
-msgstr "Accidenti! Memoria esaurita!"
+msgstr "O no! Memoria esaurita!"
 
 #: common/src/Utilities/Exceptions.cpp:234
 msgid ""
@@ -217,20 +217,18 @@ msgid ""
 "Logs manual protection, split blocks, and other things that might impact "
 "performance."
 msgstr ""
-"Mostra il registro relativo a protezioni manuali, blocchi divisi ed altre "
-"cose che possono avere un impatto sulle prestazioni."
+"Mostra il registro relativo a protezioni manuali, blocchi separati ed altre "
+"cose che potrebbero avere un impatto sulle prestazioni."
 
 #: pcsx2/SourceLog.cpp:106
 msgid "Shows the game developer's logging text (EE processor)"
 msgstr ""
-"Mostra le informazioni di registro dello sviluppatore del gioco (processore "
-"EE)"
+"Mostra i messaggi di registro dello sviluppatore del gioco (processore EE)"
 
 #: pcsx2/SourceLog.cpp:111
 msgid "Shows the game developer's logging text (IOP processor)"
 msgstr ""
-"Mostra le informazioni di registro dello sviluppatore del gioco (processore "
-"IOP)"
+"Mostra i messaggi di registro dello sviluppatore del gioco (processore IOP)"
 
 #: pcsx2/SourceLog.cpp:116
 msgid "Shows DECI2 debugging logs (EE processor)"
@@ -252,7 +250,7 @@ msgstr "Disasm delle istruzioni core in esecuzione (escluse COP e CACHE)."
 
 #: pcsx2/SourceLog.cpp:163
 msgid "Disasm of COP0 instructions (MMU, cpu and dma status, etc)."
-msgstr "Disasm delle istruzioni COP0 (MMU, CPU e stati DMA, ecc.)."
+msgstr "Disasm delle istruzioni COP0 (MMU, CPU e stato DMA, ecc.)."
 
 #: pcsx2/SourceLog.cpp:169
 msgid "Disasm of the EE's floating point unit (FPU) only."
@@ -271,7 +269,7 @@ msgid ""
 "All known hardware register accesses (very slow!); not including sub filter "
 "options below."
 msgstr ""
-"Tutti gli accessi conosciuti ai registri hardware (molto lento!) ad "
+"Tutti gli accessi conosciuti ai registri hardware (molto lento!); ad "
 "esclusione delle opzioni di filtro sotto indicate."
 
 #: pcsx2/SourceLog.cpp:193 pcsx2/SourceLog.cpp:294
@@ -282,7 +280,7 @@ msgstr ""
 
 #: pcsx2/SourceLog.cpp:199 pcsx2/SourceLog.cpp:300
 msgid "Logs only DMA-related registers."
-msgstr "Mostra nel registro solo i registri relativi ai DMA."
+msgstr "Mostra nel registro solo i registri relativi al DMA."
 
 #: pcsx2/SourceLog.cpp:205
 msgid "IPU activity: hardware registers, decoding operations, DMA status, etc."
@@ -308,7 +306,7 @@ msgstr "Attività MFIFO di Scratchpad."
 #: pcsx2/SourceLog.cpp:235
 msgid "Actual data transfer logs, bus right arbitration, stalls, etc."
 msgstr ""
-"Registri effettivi del trasferimento dati, negoziazione diritti del bus, "
+"Registri correnti del trasferimento dati, negoziazione privilegi del bus, "
 "stalli, ecc."
 
 #: pcsx2/SourceLog.cpp:241
@@ -342,7 +340,7 @@ msgstr "Disasm delle istruzioni del co-processore GPU dell'IOP."
 msgid ""
 "All known hardware register accesses, not including the sub-filters below."
 msgstr ""
-"Tutti gli accessi conosciuti al registro hardware ad esclusione dei filtri "
+"Tutti gli accessi conosciuti al registro hardware, ad esclusione dei filtri "
 "sotto indicati."
 
 #: pcsx2/SourceLog.cpp:306
@@ -358,7 +356,7 @@ msgstr "Attività del Gamepad nel SIO."
 #: pcsx2/SourceLog.cpp:318
 msgid "Actual DMA event processing and data transfer logs."
 msgstr ""
-"Registri effettivi del trasferimento dati e del processing degli eventi DMA."
+"Registri correnti del trasferimento dati e del processing degli eventi DMA."
 
 #: pcsx2/SourceLog.cpp:324
 msgid "Tracks all IOP counters events and some counter register activity."
@@ -368,11 +366,11 @@ msgstr ""
 
 #: pcsx2/SourceLog.cpp:330
 msgid "Detailed logging of CDVD hardware."
-msgstr "Registrazione dettagliata dell'hardware CDVD."
+msgstr "Registro dettagliato dell'hardware CDVD."
 
 #: pcsx2/SourceLog.cpp:336
 msgid "Detailed logging of the Motion (FMV) Decoder hardware unit."
-msgstr "Registrazione dettagliata dell'unità hardware Motion Decoder (FMV)."
+msgstr "Registro dettagliato dell'unità hardware Motion Decoder (FMV)."
 
 #: pcsx2/System.h:224 pcsx2/System.h:225 pcsx2/System.h:226
 msgid "PCSX2 Message"
@@ -414,7 +412,7 @@ msgstr "Per lo più dannosa"
 #: pcsx2/gui/AppConfig.cpp:1148 pcsx2/gui/AppConfig.cpp:1154
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr ""
-"Sovrascrittura del file impostazioni esistente fallita: permesso negato."
+"Impossibile sovrascrivere il file impostazioni esistente: permesso negato."
 
 #: pcsx2/gui/AppCorePlugins.cpp:396
 msgid "Loading PS2 system plugins..."
@@ -507,7 +505,7 @@ msgstr "specifica il file di configurazione di PCSX2 da usare"
 #: pcsx2/gui/AppInit.cpp:249
 #, c-format
 msgid "forces %s to start the First-time Wizard"
-msgstr "forza %s ad avviare la Procedura Guidata del primo avvio"
+msgstr "forza %s ad avviare la procedura guidata del primo avvio"
 
 #: pcsx2/gui/AppInit.cpp:250
 msgid "enables portable mode operation (requires admin/root access)"
@@ -526,7 +524,7 @@ msgstr "specifica il file da usare come plugin %s"
 #: pcsx2/gui/AppInit.cpp:306
 #, c-format
 msgid "Plugin Override Error - %s"
-msgstr "Errore sovrascrittura dell'impostazione del plugin - %s"
+msgstr "Impossibile sovrascrivere l'impostazione del plugin - %s"
 
 #: pcsx2/gui/AppInit.cpp:309
 #, c-format
@@ -535,8 +533,8 @@ msgid ""
 "valid %s plugin:\n"
 "\n"
 msgstr ""
-"%s - Errore nella sovrascrittura dell'impostazione del plugin! Il seguente "
-"file non esiste o non è un plugin di %s valido:\n"
+"Impossibile sovrascrivere l'impostazione del plugin %s! Il file seguente non "
+"esiste o non è un plugin %s valido:\n"
 "\n"
 
 #: pcsx2/gui/AppInit.cpp:316
@@ -684,7 +682,7 @@ msgstr "Chiedi sempre all'avvio"
 msgid ""
 "Manually select an ISO upon boot ignoring the selection from recent ISO list."
 msgstr ""
-"Seleziona manualmente una ISO all'avvio ignorando la selezione dalla lista "
+"Seleziona manualmente una ISO all'avvio, ignorando la selezione dalla lista "
 "ISO recenti."
 
 #: pcsx2/gui/AppRes.cpp:68
@@ -818,7 +816,7 @@ msgstr "Finestra a&gganciata"
 
 #: pcsx2/gui/ConsoleLogger.cpp:411
 msgid "Dock log window to main PCSX2 window"
-msgstr "Aggancia la finestra del registro alla finestra principale di PCS2"
+msgstr "Aggancia la finestra del registro alla finestra principale di PCSX2"
 
 #: pcsx2/gui/ConsoleLogger.cpp:412
 msgid "&Appearance"
@@ -830,7 +828,7 @@ msgstr "&Chiudi"
 
 #: pcsx2/gui/ConsoleLogger.cpp:414
 msgid "Close this log window; contents are preserved"
-msgstr "Chiude questa finestra di registro, il contenuto viene mantenuto"
+msgstr "Chiude questa finestra di registro; il contenuto viene mantenuto"
 
 #: pcsx2/gui/ConsoleLogger.cpp:418
 msgid "Dev/&Verbose"
@@ -838,7 +836,7 @@ msgstr "Dev/&Verbose"
 
 #: pcsx2/gui/ConsoleLogger.cpp:418
 msgid "Shows PCSX2 developer logs"
-msgstr "Mostra i registro degli sviluppatori di PCSX2"
+msgstr "Mostra il registro degli sviluppatori di PCSX2"
 
 #: pcsx2/gui/ConsoleLogger.cpp:419
 msgid "&CDVD reads"
@@ -866,7 +864,7 @@ msgstr "Disabilita tutti i filtri delle fonti del registro."
 
 #: pcsx2/gui/ConsoleLogger.cpp:438
 msgid "&Restore Default"
-msgstr "Riprisitna predefinite"
+msgstr "Ripristina predefinite"
 
 #: pcsx2/gui/ConsoleLogger.cpp:438
 msgid "Restore default source filters."
@@ -1244,7 +1242,8 @@ msgstr "Gestore Memory Card"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:116
 msgid "Drag cards to or from PS2-ports"
-msgstr "Trascina le memory card da o sulle porte PS2 per inserirle/espellerle"
+msgstr ""
+"Trascina le memory card dalle o sulle porte PS2 per inserirle/espellerle"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:117
 msgid ""
@@ -1374,7 +1373,7 @@ msgstr "Seleziona slot successivo"
 
 #: pcsx2/gui/GlobalCommands.cpp:499
 msgid "Cycles the current save slot in +1 fashion!"
-msgstr "Aggiunge +1 al numero di slot di salvataggio corrente!"
+msgstr "Scorre di +1 il numero di slot di salvataggio selezionato!"
 
 #: pcsx2/gui/GlobalCommands.cpp:505
 msgid "Cycle to prev slot"
@@ -1382,7 +1381,7 @@ msgstr "Seleziona slot precedente"
 
 #: pcsx2/gui/GlobalCommands.cpp:506
 msgid "Cycles the current save slot in -1 fashion!"
-msgstr "Aggiunge -1 al numero di slot di salvataggio corrente!"
+msgstr "Scorre di -1 il numero di slot di salvataggio corrente!"
 
 #: pcsx2/gui/IsoDropTarget.cpp:55
 msgid "Drag and Drop Error"
@@ -1438,7 +1437,7 @@ msgstr "&Sistema"
 
 #: pcsx2/gui/MainFrame.cpp:342
 msgid "CD&VD"
-msgstr "C&DVD"
+msgstr "CD&VD"
 
 #: pcsx2/gui/MainFrame.cpp:343
 msgid "&Config"
@@ -1604,7 +1603,7 @@ msgstr "Cance&lla tutte le impostazioni..."
 #, c-format
 msgid "Clears all %s settings and re-runs the startup wizard."
 msgstr ""
-"Cancella tutte le impostazioni di %s e riesegue la Procedura Guidata del "
+"Cancella tutte le impostazioni di %s e riesegue la procedura guidata del "
 "primo avvio."
 
 #: pcsx2/gui/MainFrame.cpp:510
@@ -1613,7 +1612,7 @@ msgstr "&Informazioni su..."
 
 #: pcsx2/gui/MainFrame.cpp:515
 msgid "&Open Debug Window..."
-msgstr "&Apri Finestra di Debug..."
+msgstr "&Apri finestra di Debug..."
 
 #: pcsx2/gui/MainFrame.cpp:518
 msgid "&Logging..."
@@ -1625,7 +1624,7 @@ msgstr "Crea &Blockdump"
 
 #: pcsx2/gui/MainFrame.cpp:520
 msgid "Creates a block dump for debugging purposes."
-msgstr "Crea un blockdump ai fini del debug."
+msgstr "Crea un blockdump per il debug."
 
 #: pcsx2/gui/MainFrame.cpp:594
 msgid "Paus&e"
@@ -1666,7 +1665,7 @@ msgstr "Avvia da CDVD (&veloce)"
 
 #: pcsx2/gui/MainFrame.cpp:658
 msgid "Boo&t ISO (full)"
-msgstr "Avvi&o da ISO (completo)"
+msgstr "Avv&io da ISO (completo)"
 
 #: pcsx2/gui/MainFrame.cpp:659
 msgid "Boot the VM using the current ISO source media"
@@ -1686,7 +1685,7 @@ msgstr "Avv&ia BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:667
 msgid "Boot the VM without any source media"
-msgstr "Avvia la MV senza alcun il supporto inserito"
+msgstr "Avvia la MV senza alcun supporto inserito"
 
 #: pcsx2/gui/MainFrame.cpp:745 pcsx2/gui/MainFrame.cpp:780
 msgid "No plugin loaded"
@@ -1706,11 +1705,11 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:753
 msgid "&Window Settings..."
-msgstr "Impostazioni Finestra..."
+msgstr "Impostazioni &Finestra..."
 
 #: pcsx2/gui/MainFrame.cpp:754
 msgid "Modify window and appearance options, including aspect ratio."
-msgstr "Modifica le opzioni della finestra GS, inclusa il rapporto d'aspetto."
+msgstr "Modifica le opzioni della finestra GS, incluso il rapporto d'aspetto."
 
 #: pcsx2/gui/MainFrame.cpp:761
 msgid "&Plugin Settings..."
@@ -1792,7 +1791,7 @@ msgstr "File ISO non trovato!"
 
 #: pcsx2/gui/MainMenuClicks.cpp:325
 msgid "An error occurred while trying to open the file:"
-msgstr "Un errore si è verificato al tentativo di aprire il file:"
+msgstr "Si è verificato un errore al tentativo di aprire il file:"
 
 #: pcsx2/gui/MainMenuClicks.cpp:326
 msgid ""
@@ -1927,7 +1926,7 @@ msgstr "Normale"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:86
 msgid "EE/FPU Advanced Recompiler Options"
-msgstr "Opzioni avanzate ricompilatori EE/FPU"
+msgstr "Opzioni avanzate del ricompilatore EE/FPU"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:88 pcsx2/gui/Panels/CpuPanel.cpp:103
 msgid "Extra + Preserve Sign"
@@ -2030,7 +2029,7 @@ msgstr "Usa l'impostazione predefinita"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:174
 msgid "Open in Explorer"
-msgstr "Apri in File Explorer "
+msgstr "Apri in File Explorer"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:175
 msgid "Open an explorer window to this folder."
@@ -2213,11 +2212,12 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:82
 msgid "Ignore DMAC writes when it is busy."
-msgstr "Ignora le scritture DMAC quando è occupata."
+msgstr "Ignora le scritture DMAC quando è occupato."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:87
 msgid "Simulate VIF1 FIFO read ahead. Fixes slow loading games."
-msgstr "Simula read ahead FIFO VIF. Corregge i giochi con caricamenti lenti."
+msgstr ""
+"Simula il read ahead FIFO di VIF1. Corregge i giochi con caricamenti lenti."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:92
 msgid ""
@@ -2255,24 +2255,24 @@ msgstr "Abilita GameFix manuali [non consigliato]"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:250
 msgid "Enable Trace Logging"
-msgstr "Abilita le registrazioni di traccia"
+msgstr "Abilita i registri di traccia"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:251
 msgid ""
 "Trace logs are all written to emulog.txt.  Toggle trace logging at any time "
 "using F10."
 msgstr ""
-"Le registrazioni di traccia sono tutte salvate in emulog.txt. Attiva/"
-"Disattiva i registri di traccia utilizzando F10."
+"I registri di traccia sono tutti salvati in emulog.txt. Attiva/Disattiva i "
+"registri di traccia utilizzando F10."
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:252
 msgid ""
 "Warning: Enabling trace logs is typically very slow, and is a leading cause "
 "of 'What happened to my FPS?' problems. :)"
 msgstr ""
-"Attenzione: abilitare le registrazioni di traccia porta ad una forte perdita "
-"di prestazioni ed è una delle principali cause della domanda 'Cos'è successo "
-"ai miei FPS?' :)"
+"Attenzione: abilitare i registri di traccia porta ad una forte perdita di "
+"prestazioni ed è una delle principali cause della domanda 'Cos'è successo ai "
+"miei FPS?' :)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:188
 msgid "Select folder with PS2 memory cards"
