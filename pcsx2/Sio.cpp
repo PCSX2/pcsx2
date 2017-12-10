@@ -685,6 +685,7 @@ SIO_WRITE sioWriteMemcard(u8 data)
 		case 0x52: // PSX 'R'ead
 		case 0x53: // PSX 'S'tate
 		case 0x57: // PSX 'W'rite
+		case 0x58: // PSX Pocketstation
 			siomode = SIO_DUMMY;
 			break;
 
@@ -746,16 +747,18 @@ SIO_WRITE sioWriteMemcardPSX(u8 data)
 
 		case 0x52: // PSX 'R'ead / Probe
 		case 0x57: // PSX 'W'rite
+		case 0x58: // POCKETSTATION!! Grrrr // Lots of love to the PS2DEV/ps2sdk
 			sio.buf[1] = 0x00; //mcd->FLAG;
 			sio.buf[2] = 0x5A; // probe end, success "0x5A"
 			sio.buf[3] = 0x5D;
 			sio.buf[4] = 0x00;
 			break;
-
-		case 0x58: // POCKETSTATION!! Grrrr // Lots of love to the PS2DEV/ps2sdk
-			DEVICE_UNPLUGGED(); // Check is for 0x01000 on stat
-			siomode = SIO_DUMMY;
-			break;
+		// Old handing for Pocketstation, effectively discarded the calls.
+		// Keeping it around for reference.
+		//case 0x58: // POCKETSTATION!! Grrrr // Lots of love to the PS2DEV/ps2sdk
+		//	DEVICE_UNPLUGGED(); // Check is for 0x01000 on stat
+		//	siomode = SIO_DUMMY;
+		//	break;
 
 		default:
 			//printf("%s cmd: %02X??\n", __FUNCTION__, data);
