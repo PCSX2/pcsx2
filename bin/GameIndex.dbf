@@ -2899,7 +2899,7 @@ Name   = Hot Shots Golf 3 [PlayStation 2 Big Hit Series]
 Region = NTSC-K
 ---------------------------------------------
 Serial = SCKA-20037
-Name   = Ratchet & Clank 3
+Name   = Ratchet & Clank 3: Up Your Arsenal
 Region = NTSC-K
 MemCardFilter = SCKA-20037/SCKA-20011/SCKA-20120
 ---------------------------------------------
@@ -4375,7 +4375,7 @@ Compat = 5
 ---------------------------------------------
 Serial = SCPS-56011
 Name   = U - Underwater Unit
-Region = NTSC-J
+Region = NTSC-K
 ---------------------------------------------
 Serial = SCPS-56012
 Name   = Raw Danger
@@ -4388,7 +4388,7 @@ Compat = 5
 ---------------------------------------------
 Serial = SCPS-56015
 Name   = Ninja Assault
-Region = NTSC-J
+Region = NTSC-K
 ---------------------------------------------
 Serial = SCUS-21295
 Name   = Tony Hawk's American Wasteland Collector's Edition
@@ -18076,7 +18076,7 @@ Name   = Air Ranger 2 - Rescue Helicopter
 Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25060
-Name   = I.Q. Remix+ - Intelligent Qube
+Name   = I.Q. Remix+: Intelligent Qube
 Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25062
@@ -43672,4 +43672,1124 @@ Region = NTSC-J
 Serial = TCPS-10172
 Name   = Homura [Taito the Best]
 Region = NTSC-J
+---------------------------------------------
+Serial = SLKA-25080
+Name   = .hack//Kansen Kakudai Vol. 1
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25138
+Name   = .hack//Akushou Heni Vol. 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25145
+Name   = .hack//Shinshoku Osen Vol. 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25174
+Name   = .hack//Zettai Houi Vol. 4
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15023
+Name   = Assault Suits Valken
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25010
+Name   = Chou Battle Houshin
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64551
+Name   = Shin Contra
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64513
+Name   = Crash Bandicoot: Return of The Demon King
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25155
+Name   = Crimson Sea 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64532
+Name   = Digital Holmes
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20068
+Name   = Cars
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56010
+Name   = Downhill Racer
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25196
+Name   = DRIV3R
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67526
+Name   = Ghost Vibration
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15013
+Name   = Grand Slam 2003 Tennis
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-10001
+Name   = Hardware Online Arena
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25349
+Name   = Jacked
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67505
+Name   = 007: Agent Under Fire
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25129
+Name   = 007: Everything or Nothing
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25004
+Name   = 007: NightFire
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25146
+Name   = Kaido Battle 2: Chain Reaction
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25009
+Name   = Kengo 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25211
+Name   = King of Fighters: Maximum Impact
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25045
+Name   = King of Fighters 2000, The
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15006
+Name   = Knight Rider
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67516
+Name   = Soul Reaver 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20005
+Name   = Let's Bravo Music
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25303
+Name   = Matrix, The: Path of Neo
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25072
+Name   = Maximo vs. Army of Zin
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25140
+Name   = Medal of Honor: Rising Sun
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67533
+Name   = Men in Black II: Alien Escape
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67515
+Name   = Metal Gear Solid 2: Sons of Liberty
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25355
+Name   = Metal Gear Solid 3: Subsistence (Limited Edition) [Disc3of3]
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56007
+Name   = Minna no Golf 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20057
+Name   = Minna no Golf 4
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25028
+Name   = Mission Impossible: Operation Surma
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64534
+Name   = Psyvariar: Complete Edition
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64521
+Name   = Raging Bless
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20093
+Name   = Ratatouille
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25078
+Name   = Rayman 3: Hoodlum Havoc
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67519
+Name   = Rayman Revolution
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25034
+Name   = Top Angler: Real Bass Fishing
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25011
+Name   = Reign of Fire
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25044
+Name   = Robotech: Battlecry
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25128
+Name   = San Goku Shi IX
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67522
+Name   = San Goku Shi Senki
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25088
+Name   = San Goku Shi Senki 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25047
+Name   = Shin Combat Choro Q
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25076
+Name   = Shin Megami Tensei III: Nocturne
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67550
+Name   = Shin Sangoku Musou 2 Mushouden
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25050
+Name   = Shin Sangoku Musou 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25187
+Name   = Shin Sangoku Musou 3 Empires
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25126
+Name   = Shin Sangoku Musou 3 Mushouden
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25109
+Name   = Shirachuu Tankenbu
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25065
+Name   = Silent Hill 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64552
+Name   = Silent Scope 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15028
+Name   = THE Love * Upper
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15030
+Name   = THE Block Hyper
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15029
+Name   = THE Shooting: Double Shienryu
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25399
+Name   = Sims 2, The: Pets
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64540
+Name   = Sims, The
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25099
+Name   = Urbz, The: Sims in the City
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25137
+Name   = Sims, The: Bustin' Out
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56009
+Name   = Smash Court Tennis Pro Tournament
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20007
+Name   = SOCOM: U.S. Navy SEALs
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25122
+Name   = Sonic Heroes
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15002
+Name   = Space Raiders
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25018
+Name   = Sphinx and the Cursed Mummy
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20098
+Name   = SpongeBob SquarePants: Creature from the Krusty Krab
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25319
+Name   = SpongeBob SquarePants: Lights, Camera, Pants!
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25007
+Name   = Spy Fiction
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25325
+Name   = SSX On Tour
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25090
+Name   = Starsky & Hutch
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20067
+Name   = Stuart Little 3: Big Photo Adventure
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25123
+Name   = Mononoke Ibunroku
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64544
+Name   = Tetsu 1: Densha de Battle!
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25343
+Name   = Thrillville: Off the Rails
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20003
+Name   = War of the Monsters
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64519
+Name   = Woody Woodpecker: Escape from Buzz Buzzard Park
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25105
+Name   = XIII
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25161
+Name   = Aqua Kids
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56016
+Name   = Axel Impact
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15001
+Name   = Barbarian
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25102
+Name   = Batman: Rise of Sin Tzu
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20089
+Name   = BioHazard 4
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25277
+Name   = Brothers in Arms: Road to Hill 30
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25206
+Name   = Burnout 3: Takedown
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25039
+Name   = Burnout 2: Point of Impact
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25304
+Name   = Burnout Revenge
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25107
+Name   = Crouching Tiger, Hidden Dragon
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67520
+Name   = Tarzan: Untamed
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25032
+Name   = Enter the Matrix
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25108
+Name   = EVE Burst Error Plus
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67521
+Name   = EOE: Eve of Extinction
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67537
+Name   = FIFA 2003
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25378
+Name   = 2006 FIFA World Cup
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67512
+Name   = 2002 FIFA World Cup
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25056
+Name   = Finding Nemo
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25264
+Name   = Full Spectrum Warrior
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15016
+Name   = Harry Potter: Quidditch World Cup
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64528
+Name   = Harry Potter and the Chamber of Secrets
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25327
+Name   = Harry Potter and the Goblet of Fire
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25172
+Name   = Harry Potter and the Prisoner of Azkaban
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25003
+Name   = Herdy Gerdy
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64535
+Name   = High Heat Major League Baseball 2003
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15009
+Name   = Takahashi Meijin no Adventure Island
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15015
+Name   = Ichigeki Sacchuu!! HoiHoi-San
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25316
+Name   = Incredibles, The: Rise of the Underminer
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25309
+Name   = Indigo Prophecy
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20006
+Name   = Argus no Senshi
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25098
+Name   = Lord of the Rings, The: The Return of the King
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25237
+Name   = Lord of the Rings, The: The Third Age
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25404
+Name   = NBA Live 08
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67541
+Name   = NBA Live 2003
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25086
+Name   = NBA Live 2004
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25110
+Name   = NBA Live 2005
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25315
+Name   = NBA Live 06
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25027
+Name   = NBA Street Vol. 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25334
+Name   = Need for Speed Most Wanted
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25136
+Name   = Need for Speed Underground
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25241
+Name   = Need for Speed Underground 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56004
+Name   = Otostaz
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25120
+Name   = Prince of Persia: The Sands of Time
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25346
+Name   = Prince of Persia: The Two Thrones
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25247
+Name   = Prince of Persia: Warrior Within
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15031
+Name   = Princess Maker
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15033
+Name   = Princess Maker 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25274
+Name   = Princess Maker 4
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67545
+Name   = Project Minerva
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25176
+Name   = Pump It Up: Exceed
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15035
+Name   = Saiyuki Reload: Gunlock
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25154
+Name   = Seven Samurai 20XX
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25118
+Name   = SSX 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25097
+Name   = Tiger Woods PGA Tour 2004
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20002
+Name   = Time Crisis 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25020
+Name   = TimeSplitters 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25031
+Name   = Tom Clancy's Ghost Recon
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25173
+Name   = Tom Clancy's Rainbow Six 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25061
+Name   = Tom Clancy's Splinter Cell
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25180
+Name   = Tom Clancy's Splinter Cell Pandora Tomorrow
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25073
+Name   = Tomb Raider: The Angel of Darkness
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25006
+Name   = Twin Caliber
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25169
+Name   = UEFA Euro 2004: Portugal
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20065
+Name   = Urban Reign
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25121
+Name   = Vexx
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25117
+Name   = World Soccer Winning Eleven 7 International
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25262
+Name   = World Soccer Winning Eleven 8 International
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25318
+Name   = WWE SmackDown! vs. Raw 2006
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25168
+Name   = WWE SmackDown vs. Raw 2007
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25116
+Name   = WWE SmackDown! Here Comes the Pain
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20001
+Name   = XI 5
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15011
+Name   = XII Stag
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64539
+Name   = Ultimate Fighting Championship: Tapout 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20024
+Name   = EyeToy: Groove
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20017
+Name   = EyeToy: Play
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20041
+Name   = EyeToy: Play 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20036
+Name   = Pipo Saru Get You 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-10007
+Name   = EyeToy: Tales
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-10005
+Name   = EyeToy: EduKids
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15018
+Name   = Kidou Senshi Gundam SEED
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64537
+Name   = Dark Angel: Vampire Apocalypse
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25223
+Name   = K-League Winning Eleven 8 Asia Championship
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20031
+Name   = Athens 2004
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67503
+Name   = FIFA 2002
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25235
+Name   = FIFA Street
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56003
+Name   = Jak and Daxter: The Precursor Legacy
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25029
+Name   = MVP Baseball 2003
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67530
+Name   = NHL 2003
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25234
+Name   = Rumble Roses
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15045
+Name   = THE Chanbara
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15058
+Name   = THE Chikyuu Boueigun 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25210
+Name   = Summer Heat Beach Volleyball
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56013
+Name   = This is Football 2003
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64507
+Name   = Wave Rally
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25025
+Name   = World Soccer Winning Eleven 6 International
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25203
+Name   = World Soccer Winning Eleven 8
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25030
+Name   = WWE SmackDown! Shut Your Mouth
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67525
+Name   = Medal of Honor: Frontline
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25095
+Name   = Madden NFL 2004
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25292
+Name   = Batman Begins
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25148
+Name   = MVP Baseball 2004
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64517
+Name   = Freekstyle
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64514
+Name   = Legends of Wrestling
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25230
+Name   = Def Jam: Fight for NY
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25054
+Name   = Grand Prix Challenge
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64524
+Name   = Shox
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67538
+Name   = SideWinder F
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25142
+Name   = Tak and the Power of Juju
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67543
+Name   = Star Wars: Jedi Starfighter
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15022
+Name   = Speed Kings
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67506
+Name   = Thunder Strike: Operation Phoenix
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25002
+Name   = Energy Airforce
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25014
+Name   = Evolution Snowboarding
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25059
+Name   = Pride FC: Fighting Championships
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25209
+Name   = FIFA 2005
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25242
+Name   = Fight Night Round 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25330
+Name   = Battlefield 2: Modern Combat
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64550
+Name   = Supper Puzzle Bobble 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64512
+Name   = Supper Puzzle Bobble
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25449
+Name   = Call of Duty: World at War - Final Fronts
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25345
+Name   = Chicken Little
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25382
+Name   = Chronicles of Narnia, The: The Lion, The Witch and The Wardrobe
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25374
+Name   = FIFA Street 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25368
+Name   = Full Spectrum Warrior: Ten Hammers
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25371
+Name   = Garouden Breakblow
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25338
+Name   = Godfather, The
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-64510
+Name   = International Superstar Soccer 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25283
+Name   = Juiced
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25436
+Name   = Kung Fu Panda
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20091
+Name   = MLB 07: The Show
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20140
+Name   = MLB 10: The Show
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20142
+Name   = MLB 11: The Show
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25314
+Name   = Kidou Senshi Gundam SEED: Rengou vs. Z.A.F.T.
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20084
+Name   = Monster House
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25282
+Name   = MX vs. ATV Unleashed
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25395
+Name   = NBA Live 07
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25185
+Name   = Need for Speed Carbon (Collector's Edition)
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25411
+Name   = Need for Speed ProStreet
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25446
+Name   = Need for Speed Undercover
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15055
+Name   = Raiden III
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15054
+Name   = THE Demolition Girl
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15042
+Name   = THE Suieitaikai
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25358
+Name   = Sonic Riders
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25385
+Name   = Spider-Man 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25245
+Name   = SpongeBob SquarePants: Movin' with Friends
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25272
+Name   = Tak 2: The Staff of Dreams
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25220
+Name   = Viewtiful Joe
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25448
+Name   = WWE SmackDown vs. Raw 2009
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25463
+Name   = WWE SmackDown vs. Raw 2010
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64510
+Name   = International Superstar Soccer 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25394
+Name   = King of Fighters: Maximum Impact 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25306
+Name   = Evil Dead: Regeneration
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25360
+Name   = Samurai Champloo
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-30005
+Name   = Rogue Galaxy
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25332
+Name   = Guilty Gear XX Slash
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25362
+Name   = Sega Rally 2006
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25335
+Name   = Shadow the Hedgehog
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25465
+Name   = Silent Hill: Shattered Memories
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15056
+Name   = Taito Legends
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25401
+Name   = FlatOut 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25305
+Name   = Taito Memories Gekan
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25379
+Name   = Sengoku Musou 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25459
+Name   = Transformers: Revenge of the Fallen
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25156
+Name   = Medal of Honor: Vanguard
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25337
+Name   = Peter Jackson's King Kong: The Official Game of the Movie
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25344
+Name   = Tom Clancy's Ghost Recon Advanced Warfighter
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25372
+Name   = Black
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25380
+Name   = WinBack 2: Project Poseidon
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25434
+Name   = Guitar Hero: Aerosmith
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20094
+Name   = Ookami
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67504
+Name   = SSX Tricky
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20066
+Name   = EyeToy: Play 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15041
+Name   = THE Catfight
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15020
+Name   = Aliens Versus Predator: Extinction
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64533
+Name   = F1 2002
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15019
+Name   = F1 Career Challenge
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25278
+Name   = MVP Baseball 2005
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25250
+Name   = GoldenEye: Rogue Agent
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-15007
+Name   = Growlanser II: The Sense of Justice
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-15021
+Name   = Growlanser III: The Dual Darkness
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15034
+Name   = Kinnikuman Generations
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67527
+Name   = Need for Speed Hot Pursuit 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25053
+Name   = Def Jam Vendetta
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-64504
+Name   = Maximo
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25288
+Name   = Metal Slug 5 (Metal Slug 4 & 5) [Disc2of2]
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25226
+Name   = Incredibles, The
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25276
+Name   = King of Fighters 2002 & 2003, The [Disc2of2]
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64502
+Name   = WinBack: Covert Operations
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25442
+Name   = 007: Quantum of Solace
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25408
+Name   = FIFA 08
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25447
+Name   = FIFA 09
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25363
+Name   = Guitar Hero III: Legends of Rock
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25271
+Name   = Harry Potter and the Order of the Phoenix
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25393
+Name   = Metal Slug 6
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25377
+Name   = OutRun 2006: Coast 2 Coast
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25367
+Name   = Superman Returns
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15059
+Name   = Sega Rally Championship 1995
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25373
+Name   = Fight Night Round 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25464
+Name   = FIFA 10
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25475
+Name   = FIFA 11
+Region = NTSC-K
 ---------------------------------------------
