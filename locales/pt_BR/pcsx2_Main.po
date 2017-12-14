@@ -1068,7 +1068,8 @@ msgid "Create a new memory card"
 msgstr "Criar um novo cartão de memória"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:59
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:73 pcsx2/gui/Panels/DirPickerPanel.cpp:271
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:73
+#: pcsx2/gui/Panels/DirPickerPanel.cpp:271
 msgid "Create"
 msgstr "Criar"
 
