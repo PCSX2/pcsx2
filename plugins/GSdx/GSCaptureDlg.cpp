@@ -54,6 +54,30 @@ int GSCaptureDlg::GetSelCodec(Codec& c)
 	return 0;
 }
 
+void GSCaptureDlg::UpdateConfigureButton()
+{
+	Codec c;
+	bool enable = false;
+
+	if (GetSelCodec(c) != 1)
+	{
+		EnableWindow(GetDlgItem(m_hWnd, IDC_CONFIGURE), false);
+		return;
+	}
+
+	if (CComQIPtr<ISpecifyPropertyPages> pSPP = c.filter)
+	{
+		CAUUID caGUID;
+		memset(&caGUID, 0, sizeof(caGUID));
+		enable = SUCCEEDED(pSPP->GetPages(&caGUID));
+	}
+	else if (CComQIPtr<IAMVfwCompressDialogs> pAMVfWCD = c.filter)
+	{
+		enable = pAMVfWCD->ShowDialog(VfwCompressDialog_QueryConfig, nullptr) == S_OK;
+	}
+	EnableWindow(GetDlgItem(m_hWnd, IDC_CONFIGURE), enable);
+}
+
 void GSCaptureDlg::OnInit()
 {
 	__super::OnInit();
@@ -67,7 +91,6 @@ void GSCaptureDlg::OnInit()
 	_bstr_t selected = theApp.GetConfigS("CaptureVideoCodecDisplayName").c_str();
 
 	ComboBoxAppend(IDC_CODECS, "Uncompressed", 0, true);
-
 	ComboBoxAppend(IDC_COLORSPACE, "YUY2", 0, true);
 	ComboBoxAppend(IDC_COLORSPACE, "RGB32", 1, false);
 
@@ -113,70 +136,79 @@ void GSCaptureDlg::OnInit()
 		ComboBoxAppend(IDC_CODECS, s.c_str(), (LPARAM)&m_codecs.back(), c.DisplayName == selected);
 	}
 	EndEnumSysDev
+	UpdateConfigureButton();
 }
 
 bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 {
-	if(id == IDC_BROWSE && code == BN_CLICKED)
+	switch (id)
 	{
-		char buff[MAX_PATH] = {0};
-
-		OPENFILENAME ofn;
-
-		memset(&ofn, 0, sizeof(ofn));
-
-		ofn.lStructSize = sizeof(ofn);
-		ofn.hwndOwner = m_hWnd;
-		ofn.lpstrFile = buff;
-		ofn.nMaxFile = countof(buff);
-		ofn.lpstrFilter = "Avi files (*.avi)\0*.avi\0";
-		ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
-
-		strcpy(ofn.lpstrFile, m_filename.c_str());
-
-		if(GetSaveFileName(&ofn))
-		{
-			m_filename = ofn.lpstrFile;
-
-			SetText(IDC_FILENAME, m_filename.c_str());
-		}
-
-		return true;
-	}
-	else if(id == IDC_CONFIGURE && code == BN_CLICKED)
+	case IDC_BROWSE:
 	{
-		Codec c;
-
-		if(GetSelCodec(c) == 1)
+		if (code == BN_CLICKED)
 		{
-			if(CComQIPtr<ISpecifyPropertyPages> pSPP = c.filter)
+			char buff[MAX_PATH] = { 0 };
+
+			OPENFILENAME ofn;
+			memset(&ofn, 0, sizeof(ofn));
+
+			ofn.lStructSize = sizeof(ofn);
+			ofn.hwndOwner = m_hWnd;
+			ofn.lpstrFile = buff;
+			ofn.nMaxFile = countof(buff);
+			ofn.lpstrFilter = "Avi files (*.avi)\0*.avi\0";
+			ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
+
+			strcpy(ofn.lpstrFile, m_filename.c_str());
+			if (GetSaveFileName(&ofn))
 			{
-				CAUUID caGUID;
+				m_filename = ofn.lpstrFile;
+				SetText(IDC_FILENAME, m_filename.c_str());
+			}
 
-				memset(&caGUID, 0, sizeof(caGUID));
-
-				if(SUCCEEDED(pSPP->GetPages(&caGUID)))
+			return true;
+		}
+		break;
+	}
+	case IDC_CONFIGURE:
+	{
+		if (code == BN_CLICKED)
+		{
+			Codec c;
+			if (GetSelCodec(c) == 1)
+			{
+				if (CComQIPtr<ISpecifyPropertyPages> pSPP = c.filter)
 				{
-					IUnknown* lpUnk = NULL;
-					pSPP.QueryInterface(&lpUnk);
-					OleCreatePropertyFrame(m_hWnd, 0, 0, c.FriendlyName.c_str(), 1, (IUnknown**)&lpUnk, caGUID.cElems, caGUID.pElems, 0, 0, NULL);
-					lpUnk->Release();
+					CAUUID caGUID;
+					memset(&caGUID, 0, sizeof(caGUID));
 
-					if(caGUID.pElems) CoTaskMemFree(caGUID.pElems);
+					if (SUCCEEDED(pSPP->GetPages(&caGUID)))
+					{
+						IUnknown* lpUnk = NULL;
+						pSPP.QueryInterface(&lpUnk);
+						OleCreatePropertyFrame(m_hWnd, 0, 0, c.FriendlyName.c_str(), 1, (IUnknown**)&lpUnk, caGUID.cElems, caGUID.pElems, 0, 0, NULL);
+						lpUnk->Release();
+
+						if (caGUID.pElems)
+							CoTaskMemFree(caGUID.pElems);
+					}
+				}
+				else if (CComQIPtr<IAMVfwCompressDialogs> pAMVfWCD = c.filter)
+				{
+					if (pAMVfWCD->ShowDialog(VfwCompressDialog_QueryConfig, NULL) == S_OK)
+						pAMVfWCD->ShowDialog(VfwCompressDialog_Config, m_hWnd);
 				}
 			}
-			else if(CComQIPtr<IAMVfwCompressDialogs> pAMVfWCD = c.filter)
-			{
-				if(pAMVfWCD->ShowDialog(VfwCompressDialog_QueryConfig, NULL) == S_OK)
-				{
-					pAMVfWCD->ShowDialog(VfwCompressDialog_Config, m_hWnd);
-				}
-			}
+			return true;
 		}
-
-		return true;
+		break;
 	}
-	else if(id == IDOK)
+	case IDC_CODECS:
+	{
+		UpdateConfigureButton();
+		break;
+	}
+	case IDOK:
 	{
 		m_width = GetTextAsInt(IDC_WIDTH);
 		m_height = GetTextAsInt(IDC_HEIGHT);
@@ -184,12 +216,9 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 		ComboBoxGetSelData(IDC_COLORSPACE, m_colorspace);
 
 		Codec c;
-
 		int ris = GetSelCodec(c);
-		if(ris == 0)
-		{
+		if (ris == 0)
 			return false;
-		}
 
 		m_enc = c.filter;
 
@@ -198,14 +227,13 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 		theApp.SetConfig("CaptureFileName", m_filename.c_str());
 
 		if (ris != 2)
-		{
 			theApp.SetConfig("CaptureVideoCodecDisplayName", c.DisplayName);
-		}
 		else
-		{
 			theApp.SetConfig("CaptureVideoCodecDisplayName", "");
-		}
+		break;
 	}
-
+	default:
+		break;
+	}
 	return __super::OnCommand(hWnd, id, code);
 }

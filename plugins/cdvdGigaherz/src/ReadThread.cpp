@@ -111,11 +111,12 @@ void cdvdCacheReset()
 bool cdvdReadBlockOfSectors(u32 sector, s32 mode, u8 *data)
 {
     u32 count = std::min(sectors_per_read, src->GetSectorCount() - sector);
+    const s32 media = src->GetMediaType();
 
     // TODO: Is it really necessary to retry if it fails? I'm not sure the
     // second time is really going to be any better.
     for (int tries = 0; tries < 2; ++tries) {
-        if (mode == CDVD_MODE_2048) {
+        if (media >= 0) {
             if (src->ReadSectors2048(sector, count, data))
                 return true;
         } else {
@@ -292,7 +293,7 @@ u8 *cdvdGetSector(u32 sector, s32 mode)
         if (cdvdReadBlockOfSectors(sector_block, mode, buffer))
             cdvdCacheUpdate(sector_block, mode, buffer);
 
-    if (mode == CDVD_MODE_2048) {
+    if (src->GetMediaType() >= 0) {
         u32 offset = 2048 * (sector - sector_block);
         return buffer + offset;
     }
@@ -301,6 +302,9 @@ u8 *cdvdGetSector(u32 sector, s32 mode)
     u8 *data = buffer + offset;
 
     switch (mode) {
+        case CDVD_MODE_2048:
+            // Data location depends on CD mode
+            return (data[15] & 3) == 2 ? data + 24 : data + 16;
         case CDVD_MODE_2328:
             return data + 24;
         case CDVD_MODE_2340:
@@ -324,7 +328,7 @@ s32 cdvdDirectReadSector(u32 sector, s32 mode, u8 *buffer)
             cdvdCacheUpdate(sector_block, mode, data);
     }
 
-    if (mode == CDVD_MODE_2048) {
+    if (src->GetMediaType() >= 0) {
         u32 offset = 2048 * (sector - sector_block);
         memcpy(buffer, data + offset, 2048);
         return 0;
@@ -334,6 +338,10 @@ s32 cdvdDirectReadSector(u32 sector, s32 mode, u8 *buffer)
     u8 *bfr = data + offset;
 
     switch (mode) {
+        case CDVD_MODE_2048:
+            // Data location depends on CD mode
+            std::memcpy(buffer, (bfr[15] & 3) == 2 ? bfr + 24 : bfr + 16, 2048);
+            return 0;
         case CDVD_MODE_2328:
             memcpy(buffer, bfr + 24, 2328);
             return 0;

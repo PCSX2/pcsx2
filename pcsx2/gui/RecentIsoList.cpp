@@ -188,7 +188,12 @@ void RecentIsoManager::InsertIntoMenu( int id )
 	if (this->m_firstIdForMenuItems_or_wxID_ANY != wxID_ANY)
 		wxid = this->m_firstIdForMenuItems_or_wxID_ANY + id;
 
-	curitem.ItemPtr = m_Menu->AppendRadioItem( wxid, Path::GetFilename(curitem.Filename), curitem.Filename );
+	wxString filename = Path::GetFilename(curitem.Filename);
+	// & is used to specify the keyboard shortcut key in menu labels. && must
+	// be used to display an &.
+	filename.Replace("&", "&&", true);
+
+	curitem.ItemPtr = m_Menu->AppendRadioItem( wxid, filename, curitem.Filename );
 	curitem.ItemPtr->Enable(wxFileExists(curitem.Filename) && !g_Conf->AskOnBoot);
 }
 

@@ -109,6 +109,8 @@ CRC::Game CRC::m_games[] =
 	{0x9B0E119F, DBZBT3, KO, 0}, //DragonBall Z Sparking Meteo
 	{0x72B3802A, SFEX3, US, 0},
 	{0x71521863, SFEX3, US, 0},
+	{0x63642E9F, SFEX3, JP, 0},
+	{0xCA1F6E53, SFEX3, JP, 0}, // Taikenban Disc (Demo/Trial)
 	{0x28703748, Bully, US, 0},
 	{0x019CFA48, Bully, JP, 0},
 	{0xC78A495D, BullyCC, US, 0},
@@ -176,9 +178,10 @@ CRC::Game CRC::m_games[] =
 	{0x72E1E60E, Spartan, EU, 0},
 	{0x26689C87, Spartan, JP, 0},
 	{0x08277A9E, Spartan, US, 0},
-	{0xA32F7CD0, AceCombat4, US, 0},
+	{0xA32F7CD0, AceCombat4, US, 0}, // Also needed for automatic mipmapping
 	{0x5ED8FB53, AceCombat4, JP, 0},
 	{0x1B9B7563, AceCombat4, EU, 0},
+	{0x39B574F0, AceCombat5, US, 0},
 	{0xFC46EA61, Tekken5, JP, 0},
 	{0x1F88EE37, Tekken5, EU, 0},
 	{0x1F88BECD, Tekken5, EU, 0},	//language selector...
@@ -251,7 +254,7 @@ CRC::Game CRC::m_games[] =
 	{0x774DE8E2, ValkyrieProfile2, JP, 0},
 	{0x04CCB600, ValkyrieProfile2, EU, 0},
 	{0xB65E141B, ValkyrieProfile2, DE, 0}, // PAL German
-	{0xC70FC973, ValkyrieProfile2, IT, 0}, 
+	{0xC70FC973, ValkyrieProfile2, IT, 0},
 	{0x47B9B2FD, RadiataStories, US, 0},
 	{0xAC73005E, RadiataStories, JP, 0},
 	{0xE8FCF8EC, SMTNocturne, US, ZWriteMustNotClear},	// saves/reloads z buffer around shadow drawing, same issue with all the SMT games following
@@ -359,7 +362,7 @@ CRC::Game CRC::m_games[] =
 	{0x694A998E, TombRaiderUnderworld, JP, 0}, // cutie comment
 	{0x8E214549, TombRaiderUnderworld, EU, 0},
 	{0x618769D6, TombRaiderUnderworld, US, 0},
-	{0xB639EB17, TombRaiderAnniversary, US, 0},
+	{0xB639EB17, TombRaiderAnniversary, US, 0}, // Also needed for automatic mipmapping
 	{0xB05805B6, TombRaiderAnniversary, JP, 0}, // cutie comment
 	{0xA629A376, TombRaiderAnniversary, EU, 0},
 	{0xBC8B3F50, TombRaiderLegend, US, 0}, // cutie comment
@@ -514,6 +517,33 @@ CRC::Game CRC::m_games[] =
 	{0xDF659E77, JakX, EU, 0},
 	{0x3091E6FB, JakX, US, 0},
 	{0x4653CA3E, HarleyDavidson, NoRegion, 0},
+	// Games list for Automatic Mipmapping
+	// Basic mipmapping
+	{0x65729657, AceCombatZero, US, 0},
+	{0x0940508D, BrianLaraInternationalCricket, EU, 0},
+	{0x67A29886, DestroyAllHumans, US, 0},
+	{0xE3E8E893, DestroyAllHumans, EU, 0},
+	{0x42DF8C8C, DestroyAllHumans2, US, 0},
+	{0x722BBD62, FIFA03, EU, 0},
+	{0x2BCCF704, FIFA03, EU, 0},
+	{0xCC6AA742, FIFA04, KO, 0},
+	{0x2C6A4E2E, FIFA04, US, 0},
+	{0x972611BB, FIFA05, US, 0},
+	{0x230CB71D, SoulReaver2, US, 0},
+	{0x6D8B4CD1, SoulReaver2, EU, 0},
+	{0x728AB07C, LegacyOfKainDefiance, US, 0},
+	{0xCE4933D0, RatchetAndClank, US, 0},
+	{0x76F724A3, RatchetAndClank, EU, 0},
+	{0xB3A71D10, RatchetAndClank2, US, 0}, // Going Commando
+	{0x38996035, RatchetAndClank2, US, 0},
+	{0x2F486E6F, RatchetAndClank2, EU, 0},
+	{0x45FE0CC4, RatchetAndClank3, US, 0}, //  Up Your Arsenal
+	{0x9BFBCD42, RatchetAndClank4, US, 0}, // Deadlocked
+	{0x8661F7BA, RatchetAndClank5, US, 0}, // Size Matters
+	{0x8634861F, RickyPontingInternationalCricket, EU, 0},
+	{0x2B58234D, TribesAerialAssault, US, 0},
+	{0x4D22DB95, Whiplash, US, 0},
+	{0xB1BE3E51, Whiplash, EU, 0},
 };
 
 std::map<uint32, CRC::Game*> CRC::m_map;

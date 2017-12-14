@@ -181,6 +181,8 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Uploads GS data when rendering a new frame to reproduce some effects accurately. Fixes black screen issues in games like Armored Core: Last Raven.";
 		case IDC_MIPMAP_HW:
 			return	"Control the accuracy level of the mipmapping emulation\n\n"
+				"Automatic:\nAutomatically sets the mipmapping level based on the game.\n"
+				"This is the recommended setting.\n\n"
 				"Off:\nMipmapping emulation is disabled.\n\n"
 				"Basic (Fast):\nPartially emulates mipmapping, performance impact is negligible in most cases.\n\n"
 				"Full (Slow):\nCompletely emulates the mipmapping function of the GS, might significantly impact performance.";

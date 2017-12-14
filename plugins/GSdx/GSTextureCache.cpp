@@ -517,27 +517,26 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		//
 		// From a performance point of view, it might cost a little on big upscaling
 		// but normally few RT are miss so it must remain reasonable.
-		if (s_IS_OPENGL) {
-			if (m_preload_frame && TEX0.TBW > 0) {
-				GL_INS("Preloading the RT DATA");
-				// RT doesn't have height but if we use a too big value, we will read outside of the GS memory.
-				int page0 = TEX0.TBP0 >> 5;
-				int max_page = (MAX_PAGES - page0);
-				int max_h = 32 * max_page / TEX0.TBW;
-				// h is likely smaller than w (true most of the time). Reduce the upload size (speed)
-				max_h = std::min<int>(max_h, TEX0.TBW * 64);
+		bool supported_fmt = m_can_convert_depth || psm_s.depth == 0;
+		if (m_preload_frame && TEX0.TBW > 0 && supported_fmt) {
+			GL_INS("Preloading the RT DATA");
+			// RT doesn't have height but if we use a too big value, we will read outside of the GS memory.
+			int page0 = TEX0.TBP0 >> 5;
+			int max_page = (MAX_PAGES - page0);
+			int max_h = 32 * max_page / TEX0.TBW;
+			// h is likely smaller than w (true most of the time). Reduce the upload size (speed)
+			max_h = std::min<int>(max_h, TEX0.TBW * 64);
 
-				dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, max_h), TEX0.PSM));
-				dst->Update();
-			} else {
+			dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, max_h), TEX0.PSM));
+			dst->Update();
+		} else {
 #ifdef ENABLE_OGL_DEBUG
-				switch (type) {
-					case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
-					case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture); break;
-					default:break;
-				}
-#endif
+			switch (type) {
+			case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
+			case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture); break;
+			default: break;
 			}
+#endif
 		}
 	}
 	ScaleTexture(dst->m_texture);

@@ -1492,11 +1492,11 @@ msgstr "&Configuração"
 
 #: pcsx2/gui/MainFrame.cpp:346
 msgid "&Misc"
-msgstr "&Misc"
+msgstr "&Diversos"
 
 #: pcsx2/gui/MainFrame.cpp:347
 msgid "&Debug"
-msgstr "&Debug"
+msgstr "&Depuração"
 
 #: pcsx2/gui/MainFrame.cpp:411 pcsx2/gui/MainFrame.cpp:413
 #: pcsx2/gui/MainFrame.cpp:419

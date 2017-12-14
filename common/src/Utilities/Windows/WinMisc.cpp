@@ -108,7 +108,7 @@ wxString GetOSVersionString()
     else
         GetSystemInfo(&si);
 
-    if (VER_PLATFORM_WIN32_NT != osvi.dwPlatformId || osvi.dwMajorVersion <= 4)
+    if (VER_PLATFORM_WIN32_NT != osvi.dwPlatformId || osvi.dwMajorVersion <= 5)
         return L"Unsupported Operating System!";
 
     retval += L"Microsoft ";
@@ -262,64 +262,6 @@ wxString GetOSVersionString()
             case PRODUCT_WEB_SERVER:
                 retval += L"Web Server Edition";
                 break;
-        }
-    }
-
-    if (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 2) {
-        if (GetSystemMetrics(SM_SERVERR2))
-            retval += L"Windows Server 2003 R2, ";
-        else if (osvi.wSuiteMask == VER_SUITE_STORAGE_SERVER)
-            retval += L"Windows Storage Server 2003";
-        else if (osvi.wSuiteMask == VER_SUITE_WH_SERVER)
-            retval += L"Windows Home Server";
-        else if (osvi.wProductType == VER_NT_WORKSTATION && si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
-            retval += L"Windows XP Professional x64 Edition";
-        else
-            retval += L"Windows Server 2003, ";
-
-        // Test for the server type.
-        if (osvi.wProductType != VER_NT_WORKSTATION) {
-            if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64) {
-                if (osvi.wSuiteMask & VER_SUITE_DATACENTER)
-                    retval += L"Datacenter x64 Edition";
-                else if (osvi.wSuiteMask & VER_SUITE_ENTERPRISE)
-                    retval += L"Enterprise x64 Edition";
-                else
-                    retval += L"Standard x64 Edition";
-            }
-
-            else {
-                if (osvi.wSuiteMask & VER_SUITE_COMPUTE_SERVER)
-                    retval += L"Compute Cluster Edition";
-                else if (osvi.wSuiteMask & VER_SUITE_DATACENTER)
-                    retval += L"Datacenter Edition";
-                else if (osvi.wSuiteMask & VER_SUITE_ENTERPRISE)
-                    retval += L"Enterprise Edition";
-                else if (osvi.wSuiteMask & VER_SUITE_BLADE)
-                    retval += L"Web Edition";
-                else
-                    retval += L"Standard Edition";
-            }
-        }
-    }
-
-    if (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 1) {
-        retval += L"Windows XP ";
-        retval += (osvi.wSuiteMask & VER_SUITE_PERSONAL) ? L"Home Edition" : L"Professional";
-    }
-
-    if (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 0) {
-        retval += L"Windows 2000 ";
-
-        if (osvi.wProductType == VER_NT_WORKSTATION) {
-            retval += L"Professional";
-        } else {
-            if (osvi.wSuiteMask & VER_SUITE_DATACENTER)
-                retval += L"Datacenter Server";
-            else if (osvi.wSuiteMask & VER_SUITE_ENTERPRISE)
-                retval += L"Advanced Server";
-            else
-                retval += L"Server";
         }
     }
 
