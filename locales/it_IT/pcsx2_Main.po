@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2017-11-30 20:19+0100\n"
-"PO-Revision-Date: 2017-12-10 11:17+0100\n"
+"PO-Revision-Date: 2017-12-17 17:12+0100\n"
 "Last-Translator: Leucos\n"
 "Language-Team: Leucos <http://forums.pcsx2.net/User-Leucos>\n"
 "Language: it_IT\n"
@@ -748,7 +748,7 @@ msgstr "Piccolo"
 
 #: pcsx2/gui/ConsoleLogger.cpp:390
 msgid "Fits a lot of log in a microcosmically small area."
-msgstr "Infila un mucchio di registro in un'area microcosmicamente piccola."
+msgstr "Infila un sacco di registro in un'area microcosmicamente piccola."
 
 #: pcsx2/gui/ConsoleLogger.cpp:392
 msgid "&Normal font"
@@ -1482,7 +1482,8 @@ msgstr "&GameFix automatici"
 
 #: pcsx2/gui/MainFrame.cpp:432
 msgid "Automatically applies needed Gamefixes to known problematic games"
-msgstr "Applica automaticamente i GameFix necessari a giochi problematici noti"
+msgstr ""
+"Applica automaticamente i GameFix necessari ai giochi problematici già noti"
 
 #: pcsx2/gui/MainFrame.cpp:434
 msgid "Enable &Cheats"
