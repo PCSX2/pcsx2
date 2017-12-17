@@ -46,7 +46,7 @@ public:
             u16 mouse_r : 1;
             u16 _free : 9;             // The 9 remaining bits are unused, do what you wish with them ;)
         } pad_options[GAMEPAD_NUMBER]; // One for each pads
-        u32 packed_options;            // Only first 8 bits of each 16 bits series are really used, rest is padding
+        u64 packed_options;            // Only first 8 bits of each 16 bits series are really used, rest is padding, test u64
     };
 
     u32 log;
