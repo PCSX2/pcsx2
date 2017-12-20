@@ -10658,7 +10658,7 @@ Region = PAL-M5
 Serial = SLES-51917
 Name   = Beyond Good and Evil
 Region = PAL-M6
-eeRoundMode = 2 // fix SPS with water in some places
+eeRoundMode = 0 // fix SPS with water in some places
 ---------------------------------------------
 Serial = SLES-51918
 Name   = Prince of Persia - The Sands of Time
@@ -37354,7 +37354,7 @@ Serial = SLUS-20763
 Name   = Beyond Good and Evil
 Region = NTSC-U
 Compat = 5
-eeRoundMode = 2 // fix SPS with water in some places
+eeRoundMode = 0 // fix SPS with water in some places
 ---------------------------------------------
 Serial = SLUS-20764
 Name   = Bombastic
@@ -43226,7 +43226,7 @@ Region = NTSC-U
 Serial = SLUS-29082
 Name   = Beyond Good and Evil [Demo]
 Region = NTSC-U
-eeRoundMode = 2 // fix SPS with water in some places
+eeRoundMode = 0 // fix SPS with water in some places
 ---------------------------------------------
 Serial = SLUS-29083
 Name   = Maximo vs. The Army of Zin [Demo]
