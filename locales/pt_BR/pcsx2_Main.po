@@ -2154,7 +2154,7 @@ msgstr "Sempre usar o modo tela cheia ao iniciar"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:50
 msgid "Wait for Vsync on refresh"
-msgstr "Aguardar pelo Vsync na atualização"
+msgstr "Aguardar pela Sincronia Vertical na atualização"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:51
 msgid "Double-click toggles fullscreen mode"
@@ -2809,7 +2809,7 @@ msgstr "Selecione o tema visual:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:32
 msgid "Disable Framelimiting"
-msgstr "Desabilitar limitação de frames"
+msgstr "Desabilitar limitação de quadros"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:33
 msgid "Useful for running benchmarks. Toggle this option in-game by pressing F4."
@@ -2819,7 +2819,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:57
 msgid "Base Framerate Adjust:"
-msgstr "Ajuste da taxa de frames base:"
+msgstr "Ajuste da taxa de quadros base:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:63
 msgid "Slow Motion Adjust:"
@@ -2831,7 +2831,7 @@ msgstr "Ajuste do turbo:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:78
 msgid "NTSC Framerate:"
-msgstr "Taxas de frame NTSC:"
+msgstr "Taxa de quadro NTSC:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:81 pcsx2/gui/Panels/VideoPanel.cpp:87
 msgid "FPS"
@@ -2839,14 +2839,14 @@ msgstr "FPS"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:84
 msgid "PAL Framerate:"
-msgstr "Taxas de frame PAL:"
+msgstr "Taxa de quadro PAL:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:156
 msgid ""
 "Error while parsing either NTSC or PAL framerate settings.  Settings must be "
 "valid floating point numerics."
 msgstr ""
-"Erro enquanto analisava as configurações de taxas de frame de NTSC ou PAL. As "
+"Erro enquanto analisava as configurações de taxa de quadro de NTSC ou PAL. As "
 "configurações devem ser pontos flutuantes numéricos válidos."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:176
@@ -2867,15 +2867,15 @@ msgid ""
 "frameskipping."
 msgstr ""
 "Taxas de pulo de frames no modo Normal e Turbo. O modo câmera lenta vai manter "
-"o pulo de frames desabilitado."
+"o pulo de quadro desabilitado."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:209
 msgid "Frames to Draw"
-msgstr "Frames a serem desenhados"
+msgstr "Quadros a serem desenhados"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:214
 msgid "Frames to Skip"
-msgstr "Frames a serem pulados"
+msgstr "Quadros a serem pulados"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:290
 msgid "Use Synchronized MTGS"
@@ -2903,11 +2903,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:310
 msgid "Frame Skipping"
-msgstr "Pular Frame"
+msgstr "Pulo de Quadro"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:313
 msgid "Framelimiter"
-msgstr "Limitador de frames"
+msgstr "Limitador de quadros"
 
 #: pcsx2/gui/RecentIsoList.cpp:139
 msgid "Clear ISO list"
@@ -3039,7 +3039,7 @@ msgstr ""
 
 #~ msgid "Dynamically toggle Vsync depending on frame rate (read tooltip!)"
 #~ msgstr ""
-#~ "Ativar/Desativar dinamicamente o Vsync dependendo da taxa de frames (leia a "
+#~ "Ativar/Desativar dinamicamente a Sincronia Vertical dependendo da taxa de quadros (leia a "
 #~ "dica da opção!)"
 
 #~ msgid "%s  %d.%d.%d"
