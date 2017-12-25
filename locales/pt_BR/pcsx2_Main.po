@@ -1675,7 +1675,7 @@ msgstr "Registro de &logs..."
 
 #: pcsx2/gui/MainFrame.cpp:520
 msgid "Create &Blockdump"
-msgstr "Criar &Blockdump"
+msgstr "Criar &despejo de bloco"
 
 #: pcsx2/gui/MainFrame.cpp:520
 msgid "Creates a block dump for debugging purposes."
@@ -1695,11 +1695,11 @@ msgstr "R&esumir"
 
 #: pcsx2/gui/MainFrame.cpp:618
 msgid "Resumes the suspended emulation state."
-msgstr "Resume o estado da emulação suspensa."
+msgstr "Continua o estado da emulação suspensa."
 
 #: pcsx2/gui/MainFrame.cpp:622
 msgid "Pause/Resume"
-msgstr "Pausar/Resumir"
+msgstr "Pausar/Continuar"
 
 #: pcsx2/gui/MainFrame.cpp:623
 msgid "No emulation state is active; cannot suspend or resume."

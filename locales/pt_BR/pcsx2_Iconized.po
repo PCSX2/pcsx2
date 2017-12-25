@@ -42,7 +42,7 @@ msgstr ""
 msgid ""
 "Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings."
 msgstr ""
-"Falha ao ler/escrever o arquivo NMV/MEC. Verifique suas configurações BIOS e "
+"Falha ao ler/escrever o arquivo NVM/MEC. Verifique suas configurações BIOS e "
 "de permissões."
 
 #: pcsx2/System.cpp:112
@@ -136,7 +136,7 @@ msgid ""
 "emulator during the conversion process, even if the emulator is no longer "
 "responding to input."
 msgstr ""
-"AVISO: Conversão de cartão de memória pode levar um tempo! Por favor, não "
+"AVISO: A conversão do cartão de memória pode levar um tempo! Por favor, não "
 "feche o emulador durante o processo de conversão, mesmo se o emulador não "
 "estiver mais respondendo aos comandos do teclado, mouse, etc."
 
