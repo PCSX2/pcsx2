@@ -128,7 +128,7 @@ msgstr "A thread MTGS não está respondendo enquanto espera o plug-in GS abrir.
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
 msgstr ""
-"O savestate não pôde ser carregado, pois parece estar corrompido ou incompleto."
+"O estado de jogo salvo não pôde ser carregado, pois parece estar corrompido ou incompleto."
 
 #: pcsx2/PluginManager.cpp:747
 #, c-format
@@ -202,7 +202,7 @@ msgstr "Plug-in descarregado"
 #: pcsx2/SaveState.cpp:343
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
 msgstr ""
-"Não foi possível carregar o savestate. Ele é de uma versão desconhecida ou sem "
+"Não foi possível carregar o estado de jogo salvo. Ele é de uma versão desconhecida ou sem "
 "suporte."
 
 #: pcsx2/SourceLog.cpp:96
@@ -393,7 +393,7 @@ msgid ""
 "The savestate was not properly saved. The temporary file was created "
 "successfully but could not be moved to its final resting place."
 msgstr ""
-"O savestate não foi armazenado corretamente. O arquivo temporário foi criado "
+"O estado de jogo salvo não foi armazenado corretamente. O arquivo temporário foi criado "
 "com sucesso, mas não pôde ser movido para seu destino de armazenamento."
 
 #: pcsx2/gui/AppConfig.cpp:978
@@ -710,11 +710,23 @@ msgstr "Terminar"
 msgid "Executing PS2 Virtual Machine..."
 msgstr "Executando máquina virtual do PS2..."
 
+#: pcsx2/gui/AppRes.cpp:65
+msgid "Always ask when booting"
+msgstr "Sempre pergunte ao iniciar"
+
+#: pcsx2/gui/AppRes.cpp:67
+msgid ""
+"Manually select an ISO upon boot ignoring the selection from recent ISO list."
+msgstr ""
+"Selecione manualmente uma ISO ao inicializar ignorando a seleção da lista de "
+"ISO recente."
+
+
 #: pcsx2/gui/AppRes.cpp:66
 msgid "Browse for an ISO that is not in your recent history."
 msgstr "Procurar por uma ISO que não está no seu histórico recente."
 
-#: pcsx2/gui/AppRes.cpp:66
+#: pcsx2/gui/AppRes.cpp:68
 msgid "Browse..."
 msgstr "Procurar..."
 
@@ -1249,7 +1261,7 @@ msgstr "Log de rastreamento"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:38
 msgid "Auto-eject memory cards when loading savestates"
-msgstr "Autoejetar cartões de memória quando estiver carregando savestates"
+msgstr "Autoejetar cartões de memória quando estiver carregando estados de jogos salvos"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
@@ -1390,7 +1402,7 @@ msgstr "Salvar estado"
 
 #: pcsx2/gui/GlobalCommands.cpp:475
 msgid "Saves the virtual machine state to the current slot."
-msgstr "Salva o estado da máquina virtual para o slot atual."
+msgstr "Salva o estado da máquina virtual para o compartimento atual."
 
 #: pcsx2/gui/GlobalCommands.cpp:481
 msgid "Load state"
@@ -1398,7 +1410,7 @@ msgstr "Carregar estado"
 
 #: pcsx2/gui/GlobalCommands.cpp:482
 msgid "Loads a virtual machine state from the current slot."
-msgstr "Carrega um estado de máquina virtual do slot atual."
+msgstr "Carrega um estado de máquina virtual do compartimento atual."
 
 #: pcsx2/gui/GlobalCommands.cpp:488
 msgid "Load State Backup"
@@ -1406,23 +1418,23 @@ msgstr "Carregar estado backup"
 
 #: pcsx2/gui/GlobalCommands.cpp:489
 msgid "Loads virtual machine state backup for current slot."
-msgstr "Carrega o estado backup da máquina virtual no slot atual."
+msgstr "Carrega o estado backup da máquina virtual no compartimento atual."
 
 #: pcsx2/gui/GlobalCommands.cpp:495
 msgid "Cycle to next slot"
-msgstr "Mudar para o slot seguinte"
+msgstr "Mudar para o compartimento seguinte"
 
 #: pcsx2/gui/GlobalCommands.cpp:496
 msgid "Cycles the current save slot in +1 fashion!"
-msgstr "Altera o slot de save atual num estilo +1!"
+msgstr "Altera o compartimento de save atual num estilo +1!"
 
 #: pcsx2/gui/GlobalCommands.cpp:502
 msgid "Cycle to prev slot"
-msgstr "Mudar para o slot anterior"
+msgstr "Mudar para o compartimento anterior"
 
 #: pcsx2/gui/GlobalCommands.cpp:503
 msgid "Cycles the current save slot in -1 fashion!"
-msgstr "Altera o slot de save atual num estilo -1!"
+msgstr "Altera o compartimento de save atual num estilo -1!"
 
 #: pcsx2/gui/IsoDropTarget.cpp:55
 msgid "Drag and Drop Error"
@@ -1458,7 +1470,7 @@ msgstr "Você arrastou a seguinte imagem ISO para %s:"
 #: pcsx2/gui/MainFrame.cpp:39
 #, c-format
 msgid "Slot %d"
-msgstr "Slot %d"
+msgstr "Compartimento %d"
 
 #: pcsx2/gui/MainFrame.cpp:45 pcsx2/gui/Saveslots.cpp:150
 msgid "Backup"
@@ -1661,6 +1673,14 @@ msgstr "&Abrir janela de depuração..."
 msgid "&Logging..."
 msgstr "Registro de &logs..."
 
+#: pcsx2/gui/MainFrame.cpp:520
+msgid "Create &Blockdump"
+msgstr "Criar &Blockdump"
+
+#: pcsx2/gui/MainFrame.cpp:520
+msgid "Creates a block dump for debugging purposes."
+msgstr "Cria um despejo de bloco para fins de depuração."
+
 #: pcsx2/gui/MainFrame.cpp:609
 msgid "Paus&e"
 msgstr "&Pausar"
@@ -1858,6 +1878,18 @@ msgid ""
 msgstr ""
 "Você selecionou a seguinte imagem ISO para o PCSX2:\n"
 "\n"
+
+#: pcsx2/gui/MainMenuClicks.cpp:417
+msgid "Confirm clearing ISO list"
+msgstr "Confirmar limpeza da lista de ISO"
+
+#: pcsx2/gui/MainMenuClicks.cpp:418
+msgid ""
+"This will clear the ISO list. If an ISO is running it will remain in the "
+"list. Continue?"
+msgstr ""
+"Isso limpará a lista de ISO. Se uma ISO estiver em execução, ela permanecerá "
+"na lista. Deseja continuar?"
 
 #: pcsx2/gui/MemoryCardFile.cpp:193
 #, c-format
@@ -2092,6 +2124,18 @@ msgstr "Padrão (4:3)"
 msgid "Widescreen (16:9)"
 msgstr "Widescreen (16:9)"
 
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:38
+msgid "Disabled"
+msgstr "Desativado"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:39
+msgid "Standard"
+msgstr "Padrão"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:40
+msgid "Adaptive"
+msgstr "Adaptativo"
+
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:46
 msgid "Disable window resize border"
 msgstr "Desabilitar a borda de redimensionamento da janela"
@@ -2131,6 +2175,10 @@ msgstr "Tamanho de janela personalizado:"
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:91
 msgid "Zoom:"
 msgstr "Zoom:"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:107
+msgid "Wait for Vsync on refresh:"
+msgstr "Aguardar Sincronia Vertical na atualização:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:170
 msgid ""
@@ -2487,7 +2535,7 @@ msgstr "Criar um novo cartão..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1041
 msgid "Refresh List"
-msgstr "Atualizar lista"
+msgstr "Atualizar Lista"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:99
 msgid "PS2 Port"
@@ -2580,7 +2628,7 @@ msgstr "Faça esse idioma ser meu padrão agora mesmo!"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:38
 msgid "Savestates:"
-msgstr "Savestates:"
+msgstr "Estados de jogos salvos:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:39
 msgid "Select folder for Savestates"
@@ -2861,13 +2909,17 @@ msgstr "Pular Frame"
 msgid "Framelimiter"
 msgstr "Limitador de frames"
 
+#: pcsx2/gui/RecentIsoList.cpp:139
+msgid "Clear ISO list"
+msgstr "Limpar lista de ISO"
+
 #: pcsx2/gui/SysState.cpp:289
 msgid "Cannot load this savestate.  The state is an unsupported version."
-msgstr "Não foi possível carregar o savestate. Ele é de uma versão sem suporte."
+msgstr "Não foi possível carregar o estado de jogo salvo. Ele é de uma versão sem suporte."
 
 #: pcsx2/gui/SysState.cpp:296
 msgid "Cannot load this savestate. The state is an unsupported version."
-msgstr "Não foi possível carregar o savestate. Ele é de uma versão sem suporte."
+msgstr "Não foi possível carregar o estado de jogo salvo. Ele é de uma versão sem suporte."
 
 #: pcsx2/gui/SysState.cpp:332
 msgid "There is no active virtual machine state to download or save."
@@ -2879,7 +2931,7 @@ msgid ""
 "may have been created by an older unsupported version of PCSX2, or it may be "
 "corrupted."
 msgstr ""
-"O savestate não pode ser carregado porque não é um arquivo gzip válido. Ele "
+"O estado de jogo salvo não pode ser carregado porque não é um arquivo gzip válido. Ele "
 "pode ter sido criado por uma versão mais antiga e sem suporte do PCSX2, ou "
 "pode estar corrompido."
 
@@ -2894,7 +2946,7 @@ msgid ""
 "This savestate cannot be loaded due to missing critical components.  See the "
 "log file for details."
 msgstr ""
-"O savestate não pôde ser carregado por estar faltando componentes críticos. "
+"O estado de jogo salvo não pôde ser carregado por estar faltando componentes críticos. "
 "Veja o arquivo de log para mais detalhes."
 
 #: pcsx2/gui/i18n.cpp:63
@@ -3009,7 +3061,7 @@ msgstr ""
 #~ "Cannot load this savestate.  The state is from an incompatible edition of "
 #~ "PCSX2 that is either newer than this version, or is no longer supported."
 #~ msgstr ""
-#~ "Não foi possível carregar o savestate. O estado é de uma edição "
+#~ "Não foi possível carregar o estado de jogo salvo. O estado é de uma edição "
 #~ "incompatível do PCSX2 que é ou mais nova que essa versão ou não mais "
 #~ "suportado."
 
@@ -3017,7 +3069,7 @@ msgstr ""
 #~ "Cannot load this savestate. The state is an unsupported version, likely "
 #~ "created by a newer edition of PCSX2."
 #~ msgstr ""
-#~ "Não foi possível carregar o savestate. O estado é uma versão não suportada, "
+#~ "Não foi possível carregar o estado de jogo salvo. O estado é uma versão não suportada, "
 #~ "provavelmente criado por uma edição mais nova do PCSX2."
 
 #~ msgid ""
