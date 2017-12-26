@@ -43673,6 +43673,22 @@ Serial = TCPS-10172
 Name   = Homura [Taito the Best]
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLKA-15023
+Name   = Assault Suits Valken
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20068
+Name   = Cars
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25010
+Name   = Chou Battle Houshin
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25155
+Name   = Crimson Sea 2
+Region = NTSC-K
+---------------------------------------------
 Serial = SLKA-25080
 Name   = .hack//Kansen Kakudai Vol. 1
 Region = NTSC-K
@@ -43689,14 +43705,6 @@ Serial = SLKA-25174
 Name   = .hack//Zettai Houi Vol. 4
 Region = NTSC-K
 ---------------------------------------------
-Serial = SLKA-15023
-Name   = Assault Suits Valken
-Region = NTSC-K
----------------------------------------------
-Serial = SLKA-25010
-Name   = Chou Battle Houshin
-Region = NTSC-K
----------------------------------------------
 Serial = SLPM-64551
 Name   = Shin Contra
 Region = NTSC-K
@@ -43705,16 +43713,8 @@ Serial = SLPM-64513
 Name   = Crash Bandicoot: Return of The Demon King
 Region = NTSC-K
 ---------------------------------------------
-Serial = SLKA-25155
-Name   = Crimson Sea 2
-Region = NTSC-K
----------------------------------------------
 Serial = SLPM-64532
 Name   = Digital Holmes
-Region = NTSC-K
----------------------------------------------
-Serial = SCKA-20068
-Name   = Cars
 Region = NTSC-K
 ---------------------------------------------
 Serial = SCPS-56010
