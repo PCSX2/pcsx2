@@ -73,8 +73,8 @@
 ---------------------------------------------
 -- Speed Hacks (SpeedHackName = <value>)
 ---------------------------------------------
--- mvuFlagSpeedHack = 1 or 0 // Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
-
+-- mvuFlagSpeedHack = 1 or 0 // Katamari games have weird speed bug when this speed hack is enabled (and it is by default)
+-- MTVUSpeedHack = 1 or 0 // Causes black screen / crashing on select games when this speed hack is enabled
 ---------------------------------------------
 -- Memory Card Filter Override (MemCardFilter = s)
 ---------------------------------------------
