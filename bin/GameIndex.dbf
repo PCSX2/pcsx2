@@ -1170,7 +1170,7 @@ Region = PAL-M5
 Serial = SCES-50003
 Name   = Dead or Alive 2 - Hardcore
 Region = PAL-M5
-Compat = 1
+Compat = 5
 [patches = 7A51F86E]
 //Patched by Prafull
 //Some missing sounds
@@ -6923,6 +6923,7 @@ Region = PAL-E
 Serial = SLES-50176
 Name   = Oni
 Region = PAL-F
+Compat = 5
 [patches = F77639F1]
 
 		comment=patches by Nachbrenner
@@ -7967,7 +7968,7 @@ Region = PAL-M3
 Serial = SLES-50662
 Name   = Shadow of Zorro, The
 Region = PAL-M5
-Compat = 4
+Compat = 4 // Need the VU1 in interpreter mode.
 ---------------------------------------------
 Serial = SLES-50670
 Name   = ESPN Winter X-Games Snowboarding 2
@@ -7976,7 +7977,7 @@ Region = PAL-M3
 Serial = SLES-50672
 Name   = Baldur's Gate: Dark Alliance
 Region = PAL-M5
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLES-50677
 Name   = Shadow Hearts
@@ -8328,22 +8329,42 @@ Region = PAL-Unk
 Serial = SLES-50831
 Name   = Star Wars - Bounty Hunter
 Region = PAL-E
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLES-50832
 Name   = Star Wars - Bounty Hunter
 Region = PAL-F
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLES-50833
 Name   = Star Wars - Bounty Hunter
 Region = PAL-G
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLES-50834
 Name   = Star Wars - Bounty Hunter
 Region = PAL-I
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLES-50835
 Name   = Star Wars - Bounty Hunter
 Region = PAL-S
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLES-50836
 Name   = Indiana Jones and The Emperor's Tomb
@@ -11198,7 +11219,7 @@ Compat = 5
 Serial = SLES-52188
 Name   = Baldur's Gate: Dark Alliance II
 Region = PAL-M3
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52190
 Name   = RPM Tuning
@@ -11410,7 +11431,7 @@ Region = PAL-M5
 Serial = SLES-52309
 Name   = R - Racing
 Region = PAL-M5
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52312
 Name   = World Championship Rugby
@@ -13223,7 +13244,7 @@ eeRoundMode = 0
 Serial = SLES-53039
 Name   = Champions - Return to Arms	// aka "Champions of Norrath 2"
 Region = PAL-M4
-Compat = 4
+Compat = 5
 // allows import of characters from first game
 MemCardFilter = SLES-53039/SLES-52325
 ---------------------------------------------
@@ -16660,6 +16681,7 @@ Region = PAL-M5
 Serial = SLES-54733
 Name   = Disney-Pixar Ratatouille
 Region = PAL-E
+Comapt = 5
 ---------------------------------------------
 Serial = SLES-54734
 Name   = Disney-Pixar Ratatouille
@@ -16668,10 +16690,12 @@ Region = PAL-F
 Serial = SLES-54735
 Name   = Disney-Pixar Ratatouille
 Region = PAL-G
+Comapt = 5
 ---------------------------------------------
 Serial = SLES-54747
 Name   = Disney-Pixar Ratatouille
 Region = PAL-P-S
+Comapt = 5
 ---------------------------------------------
 Serial = SLES-54755
 Name   = Transformers - The Game
@@ -17008,6 +17032,8 @@ Region = PAL-M6
 Serial = SLES-54994
 Name   = Pippa Funnell - Ranch Rescue
 Region = PAL-M11
+Compat = 5
+VIFFIFOHack = 1 // fix hang at loading screen
 ---------------------------------------------
 Serial = SLES-54995
 Name   = Puzzle Quest - Challenge of the Warlords
@@ -17226,6 +17252,11 @@ Serial = SLES-55198
 Name   = Iron Man
 Region = PAL-M5
 Compat = 5
+---------------------------------------------
+Serial = SLES-55199
+Name   = Nascar 09
+Region = PAL-M5
+Compat = 5 // The game only load with the EE set to interpreter + cache enable.
 ---------------------------------------------
 Serial = SLES-55200
 Name   = Guitar Hero - Aerosmith
@@ -23853,8 +23884,12 @@ Name   = James Bond 007 - Everything or Nothing [EA Best Hits]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65726
-Name   = Star Wars - Jango Fett [EA Best Hits]
+Name   = Star Wars - Bounty Hunter [EA Best Hits]
 Region = NTSC-J
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLPM-65727
 Name   = Lord of the Rings, The - The Return of the King [EA Best Hits]
@@ -24315,7 +24350,7 @@ Region = NTSC-J
 Serial = SLPM-65845
 Name   = Baldur's Gate: Dark Alliance II
 Region = NTSC-J
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-65846
 Name   = Lord of the Rings, The - Uchitsu Kuni Daisanki
@@ -27832,6 +27867,7 @@ Region = NTSC-J
 Serial = SLPM-66807
 Name   = Disney-Pixar's Remy no Oishii Restaurant (Ratatouille)
 Region = NTSC-J
+Comapt = 5
 ---------------------------------------------
 Serial = SLPM-66808
 Name   = Tom Clancy's Ghost Recon - Advanced Warfighter [Ubisoft the Best]
@@ -30405,7 +30441,7 @@ EETimingHack = 1		//Correct graphics after changing scene.
 Serial = SLPS-25026
 Name   = Dead or Alive 2 - Hardcore
 Region = NTSC-J
-Compat = 1
+Compat = 5 // The game only load with the EE set to interpreter + cache enable.
 ---------------------------------------------
 Serial = SLPS-25028
 Name   = Shutokou Battle 0
@@ -30763,7 +30799,7 @@ Region = NTSC-J
 Serial = SLPS-25139
 Name   = Baldur's Gate: Dark Alliance
 Region = NTSC-J
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-25142
 Name   = Tiger Woods PGA Tour 2002
@@ -31130,6 +31166,14 @@ Serial = SLPS-25251
 Name   = MVP Baseball 2003
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPS-25252
+Name   = Star wars - Bounty Hunter
+Region = NTSC-J
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
+---------------------------------------------
 Serial = SLPS-25254
 Name   = Enter the Matrix
 Region = NTSC-J
@@ -31240,7 +31284,7 @@ Region = NTSC-J
 Serial = SLPS-25291
 Name   = Baldur's Gate: Dark Alliance [PCCW The Best]
 Region = NTSC-J
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-25292
 Name   = D-A - Black
@@ -33934,6 +33978,7 @@ Region = NTSC-J
 Serial = SLPS-73406
 Name   = Dead or Alive 2 - Hardcore [PlayStation 2 The Best]
 Region = NTSC-J
+Compat = 5 // The game only load with the EE set to interpreter + cache enable.
 ---------------------------------------------
 Serial = SLPS-73407
 Name   = Sidewinder MAX [PlayStation 2 The Best]
@@ -35785,6 +35830,9 @@ Serial = SLUS-20420
 Name   = Star Wars - Bounty Hunter
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLUS-20421
 Name   = Battlestar Galactica
@@ -37132,7 +37180,7 @@ Compat = 5
 Serial = SLUS-20721
 Name   = R Racing Evolution
 Region = NTSC-U
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20722
 Name   = Maximo vs. Army of Zin
@@ -41719,7 +41767,8 @@ Compat = 5
 Serial = SLUS-21689
 Name   = Petz - Horsez 2
 Region = NTSC-U
-Compat = 4
+Compat = 5
+VIFFIFOHack = 1 // fix hang at loading screen
 ---------------------------------------------
 Serial = SLUS-21690
 Name   = Alone in the Dark
@@ -41962,7 +42011,7 @@ Compat = 5
 Serial = SLUS-21744
 Name   = NASCAR '09
 Region = NTSC-U
-Compat = 1
+Compat = 5 // The game only load with the EE set to interpreter + cache enable.
 ---------------------------------------------
 Serial = SLUS-21746
 Name   = Call Of Duty - World At War - Final Fronts
