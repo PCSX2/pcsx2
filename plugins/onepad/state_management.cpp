@@ -239,7 +239,7 @@ u8 pad_poll(u8 value)
 					b1=b1 & 0x1f;
 #endif
 
-                uint16_t buttons = g_key_status.get[query.port][query.slot];
+                uint16_t buttons = g_key_status.get(query.port);
 
                 query.numBytes = 5;
 
