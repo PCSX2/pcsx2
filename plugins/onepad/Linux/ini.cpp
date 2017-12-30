@@ -114,7 +114,7 @@ void LoadConfig()
 		if (fscanf(f, "uid(%d) = %zu\n", uidpadload, &uid) == 1) {
 			g_conf.set_joy_uid(uidpadload, uid);
 		}
-	
+
     u32 pad;
     u32 keysym;
     u32 index;

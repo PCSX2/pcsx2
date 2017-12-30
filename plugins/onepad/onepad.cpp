@@ -286,7 +286,7 @@ PADfreeze(int mode, freezeData *data)
         strncpy(pdata->format, "OnePad", sizeof(pdata->format));
         pdata->version = PAD_SAVE_STATE_VERSION;
         pdata->query = query;
-        
+
         for (int port = 0; port < 2; port++) {
             for (int slot = 0; slot < 4; slot++) {
                 pdata->padData[port][slot] = pads[port][slot];
