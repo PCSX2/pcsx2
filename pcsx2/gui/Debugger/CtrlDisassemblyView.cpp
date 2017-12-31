@@ -779,7 +779,7 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 			break;
 		}
 	case ID_DISASM_ASSEMBLE:
-		assembleOpcode(curAddress,"");
+		assembleOpcode(curAddress, disassembleCurAddress());
 		break;
 	default:
 		wxMessageBox( L"Unimplemented.",  L"Unimplemented.", wxICON_INFORMATION);
@@ -1204,6 +1204,13 @@ std::string CtrlDisassemblyView::disassembleRange(u32 start, u32 size)
 	}
 
 	return result;
+}
+
+std::string CtrlDisassemblyView::disassembleCurAddress()
+{
+	DisassemblyLineInfo line = DisassemblyLineInfo();
+	manager.getLine(curAddress, displaySymbols, line);
+	return line.name + (line.params.length() > 0 ? " " + line.params : "");
 }
 
 void CtrlDisassemblyView::copyInstructions(u32 startAddr, u32 endAddr, bool withDisasm)
