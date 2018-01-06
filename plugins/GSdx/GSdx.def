@@ -43,6 +43,7 @@ EXPORTS
 	GSReplay
 	GSBenchmark
 	GSgetTitleInfo2
+	GSgetImageSize
 	PSEgetLibType
 	PSEgetLibName
 	PSEgetLibVersion

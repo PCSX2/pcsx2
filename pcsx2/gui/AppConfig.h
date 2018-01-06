@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2018  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -96,7 +96,16 @@ enum AspectRatioType
 	AspectRatio_Stretch,
 	AspectRatio_4_3,
 	AspectRatio_16_9,
+	AspectRatio_Frame,
 	AspectRatio_MaxCount
+};
+
+enum ScalingTypes
+{
+	ScalingType_Fit,
+	ScalingType_Integer,
+	ScalingType_Centered,
+	ScalingType_MaxCount
 };
 
 enum MemoryCardType
@@ -201,7 +210,7 @@ public:
 	{
 		// Closes the GS/Video port on escape (good for fullscreen activity)
 		bool		CloseOnEsc;
-		
+
 		bool		DefaultToFullscreen;
 		bool		AlwaysHideMouse;
 		bool		DisableResizeBorders;
@@ -213,6 +222,7 @@ public:
 		Fixed100	OffsetX;
 		Fixed100	OffsetY;
 
+		ScalingTypes	ScalingType;
 
 		wxSize		WindowSize;
 		wxPoint		WindowPos;

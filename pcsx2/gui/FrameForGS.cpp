@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2018  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -29,6 +29,9 @@
 #include <sstream>
 #include <iomanip>
 
+static int s_image_width;
+static int s_image_height;
+
 static const KeyAcceleratorCode FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL=KeyAcceleratorCode( WXK_RETURN ).Alt();
 
 //#define GSWindowScaleDebug
@@ -56,6 +59,7 @@ void GSPanel::InitDefaultAccelerators()
 	m_Accels->Map( AAC( WXK_TAB ).Shift(),		"Framelimiter_SlomoToggle" );
 
 	m_Accels->Map( AAC( WXK_F6 ),				"GSwindow_CycleAspectRatio" );
+	m_Accels->Map( AAC( WXK_F6 ).Shift(),		"GSwindow_CycleScalingType" );
 
 	m_Accels->Map( AAC( WXK_NUMPAD_ADD ).Cmd(),			"GSwindow_ZoomIn" );	//CTRL on Windows/linux, CMD on OSX
 	m_Accels->Map( AAC( WXK_NUMPAD_SUBTRACT ).Cmd(),	"GSwindow_ZoomOut" );
@@ -162,37 +166,48 @@ void GSPanel::DoResize()
 	extern AspectRatioType iniAR;
 	extern bool switchAR;
 	double targetAr = clientAr;
+	bool acceptedImageSize = s_image_width > 0 && s_image_width <= client.GetWidth() && s_image_height > 0 && s_image_height <= client.GetHeight();
+	AspectRatioType Aspect_Ratio = g_Conf->GSWindow.AspectRatio;
 
 	if (g_Conf->GSWindow.AspectRatio != iniAR) {
 		switchAR = false;
 	}
 
-	if (!switchAR) {
-		if (g_Conf->GSWindow.AspectRatio == AspectRatio_4_3)
+	if (!switchAR && Aspect_Ratio != AspectRatio_Stretch) {
+		if (Aspect_Ratio == AspectRatio_4_3)
 			targetAr = 4.0 / 3.0;
-		else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9)
+		else if (Aspect_Ratio == AspectRatio_16_9)
 			targetAr = 16.0 / 9.0;
+		else if (Aspect_Ratio == AspectRatio_Frame)
+			targetAr = acceptedImageSize ? (double)s_image_width / s_image_height : 4.0 / 3.0;
 	} else {
 		targetAr = 4.0 / 3.0;
 	}
 
 	double arr = targetAr / clientAr;
 
-	if( arr < 1 )
+	if (arr < 1)
 		viewport.x = (int)( (double)viewport.x*arr + 0.5);
-	else if( arr > 1 )
+	else if (arr > 1)
 		viewport.y = (int)( (double)viewport.y/arr + 0.5);
 
+	if (Aspect_Ratio != AspectRatio_Stretch && g_Conf->GSWindow.ScalingType != ScalingType_Fit && acceptedImageSize) {
+		int image_width_AR = s_image_height * targetAr;
+		int scaling = g_Conf->GSWindow.ScalingType == ScalingType_Integer ? std::min(client.GetWidth() / image_width_AR, client.GetHeight() / s_image_height) : 1;
+		viewport.x = image_width_AR * scaling;
+		viewport.y = s_image_height * scaling;
+	}
+
 	float zoom = g_Conf->GSWindow.Zoom.ToFloat()/100.0;
-	if( zoom == 0 )//auto zoom in untill black-bars are gone (while keeping the aspect ratio).
+	if (zoom == 0) // auto zoom in untill black-bars are gone (while keeping the aspect ratio).
 		zoom = std::max( (float)arr, (float)(1.0/arr) );
 
 	viewport.Scale(zoom, zoom*g_Conf->GSWindow.StretchY.ToFloat()/100.0 );
 	if (viewport == client && EmuConfig.Gamefixes.FMVinSoftwareHack && g_Conf->GSWindow.IsFullscreen)
 		viewport.x += 1; //avoids crash on some systems switching HW><SW in fullscreen aspect ratio's with FMV Software switch.
-	SetSize( viewport );
+	SetSize(viewport);
 	CenterOnParent();
-	
+
 	int cx, cy;
 	GetPosition(&cx, &cy);
 	float unit = .01*(float)std::min(viewport.x, viewport.y);
@@ -585,7 +600,6 @@ GSPanel* GSFrame::GetViewport()
 	return (GSPanel*)FindWindowById( m_id_gspanel );
 }
 
-
 void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 {
 	// Update the title only after the completion of at least a single Vsync, it's pointless to display the fps
@@ -622,6 +636,27 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	std::ostringstream out;
 	out << std::fixed << std::setprecision(2) << fps;
 	OSDmonitor(Color_StrongGreen, "FPS:", out.str());
+
+	AspectRatioType Aspect_Ratio = g_Conf->GSWindow.AspectRatio;
+
+	bool supported_GSWindow_Settings = (Aspect_Ratio == AspectRatio_Frame || (Aspect_Ratio != AspectRatio_Stretch &&
+																				g_Conf->GSWindow.ScalingType != ScalingType_Fit));
+
+	if ( GSgetImageSize != nullptr && supported_GSWindow_Settings )
+	{
+		int new_width = 0, new_height = 0;
+		GSgetImageSize(&new_width, &new_height);
+		if ( new_width > 1 && new_height > 1 && (s_image_width != new_width || s_image_height != new_height) )
+		{
+			if ( GSPanel* gsPanel = GetViewport() )
+			{
+				s_image_width = new_width;
+				s_image_height = new_height;
+
+				gsPanel->DoResize();
+			}
+		}
+	}
 
 #ifdef __linux__
 	// Important Linux note: When the title is set in fullscreen the window is redrawn. Unfortunately

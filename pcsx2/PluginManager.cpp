@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2018  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -171,6 +171,7 @@ _GSinitReadFIFO    GSinitReadFIFO;
 _GSinitReadFIFO2   GSinitReadFIFO2;
 _GSchangeSaveState GSchangeSaveState;
 _GSgetTitleInfo2   GSgetTitleInfo2;
+_GSgetImageSize    GSgetImageSize;
 _GSmakeSnapshot	   GSmakeSnapshot;
 _GSmakeSnapshot2   GSmakeSnapshot2;
 _GSirqCallback 	   GSirqCallback;
@@ -423,6 +424,7 @@ static const LegacyApi_OptMethod s_MethMessOpt_GS[] =
 	{	"GSinitReadFIFO",	(vMeth**)&GSinitReadFIFO	},
 	{	"GSinitReadFIFO2",	(vMeth**)&GSinitReadFIFO2	},
 	{	"GSgifTransfer1",	(vMeth**)&GSgifTransfer1	},
+	{	"GSgetImageSize",	(vMeth**)&GSgetImageSize	},
 	{ NULL }
 };
 

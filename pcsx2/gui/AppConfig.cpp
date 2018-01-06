@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2018  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -843,6 +843,7 @@ AppConfig::GSWindowOptions::GSWindowOptions()
 	StretchY				= 100;
 	OffsetX					= 0;
 	OffsetY					= 0;
+	ScalingType				= ScalingType_Fit;
 
 	WindowSize				= wxSize( 640, 480 );
 	WindowPos				= wxDefaultPosition;
@@ -897,12 +898,26 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 		L"Stretch",
 		L"4:3",
 		L"16:9",
+		L"Frame",
 		// WARNING: array must be NULL terminated to compute it size
 		NULL
 	};
 
 	ini.EnumEntry( L"AspectRatio", AspectRatio, AspectRatioNames, AspectRatio );
-	IniEntry( Zoom );
+
+	static const wxChar* ScalingTypeNames[] =
+	{
+		L"Fill",
+		L"Fit",
+		L"Integer",
+		L"Centered",
+		// WARNING: array must be NULL terminated to compute its size
+		NULL
+	};
+
+	ini.EnumEntry(L"ScalingType", ScalingType, ScalingTypeNames, ScalingType);
+
+	IniEntry(Zoom);
 
 	if( ini.IsLoading() ) SanityCheck();
 }
