@@ -180,8 +180,12 @@ void GSPanel::DoResize()
 			targetAr = 16.0 / 9.0;
 		else if (Aspect_Ratio == AspectRatio_Frame)
 			targetAr = acceptedImageSize ? (double)s_image_width / s_image_height : 4.0 / 3.0;
-	} else {
-		targetAr = 4.0 / 3.0;
+	} else if (switchAR) {
+		if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_16_9 && Aspect_Ratio != AspectRatio_4_3) {
+			targetAr = 16.0 / 9.0;
+		} else {
+			targetAr = 4.0 / 3.0;
+		}
 	}
 
 	double arr = targetAr / clientAr;

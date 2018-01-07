@@ -33,6 +33,13 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 		_("Frame")
 	};
 
+	const wxString fmv_aspect_ratio_switch_labels[] =
+	{
+		_("Standard (4:3)"),
+		_("Widescreen (16:9)"),
+		_("Off")
+	};
+
 	const wxString scaling_type_labels[] =
 	{
 		_("Fit to Window/Screen"),
@@ -56,6 +63,9 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	m_combo_ScalingType = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
 		ArraySize(scaling_type_labels), scaling_type_labels, wxCB_READONLY);
 
+	m_combo_FMVAspectRatioSwitch = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+		ArraySize(fmv_aspect_ratio_switch_labels), fmv_aspect_ratio_switch_labels, wxCB_READONLY);
+
 	m_combo_vsync = new wxComboBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
 		ArraySize(vsync_label), vsync_label, wxCB_READONLY );
 
@@ -70,7 +80,6 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	m_check_CloseGS		= new pxCheckBox( this, _("Hide window when paused") );
 	m_check_Fullscreen	= new pxCheckBox( this, _("Default to fullscreen mode on open") );
 	m_check_DclickFullscreen = new pxCheckBox( this, _("Double-click toggles fullscreen mode") );
-	m_check_AspectRatioSwitch = new pxCheckBox(this, _("Switch to 4:3 aspect ratio when an FMV plays"));
 	//m_check_ExclusiveFS = new pxCheckBox( this, _("Use exclusive fullscreen mode (if available)") );
 
 	m_combo_AspectRatio->SetToolTip(pxEt(L"Stretch: Stretches the image to the window/screen size.\n\n"
@@ -81,6 +90,11 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 										L"NOTE: Using the widescreen 16:9 aspect ratio will result in a stretched image unless "
 										L"widescreen is enabled in-game or through a widescreen patch. "
 										L"Widescreen is not available for all games."));
+
+	m_combo_FMVAspectRatioSwitch->SetToolTip(pxEt(L"4:3: Temporarily switch back to 4:3 aspect ratio while an FMV plays to correctly display an 4:3 FMV. "
+												L"This option works when the normal aspect ratio is set to anything but 4:3.\n\n"
+												L"16:9: Temporarily switch back to a 16:9 aspect ratio while an FMV plays to correctly display a widescreen 16:9 FMV. "
+												L"This option only works when the normal aspect ratio is set to Frame or Stretch."));
 
 	m_combo_ScalingType->SetToolTip(pxEt(L"Fit: Scales the image width and/or height to the window/screen size depending on the selected aspect ratio.\n\n"
 										L"Integer Scaling: Scales the image to the highest integer magnification of the selected aspect ratio that "
@@ -124,6 +138,8 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	s_AspectRatio += m_combo_ScalingType					| pxExpand;
 	s_AspectRatio += Label(_("Aspect Ratio:"))				| pxMiddle;
 	s_AspectRatio += m_combo_AspectRatio					| pxExpand;
+	s_AspectRatio += Label(_("FMV Aspect Ratio switch:"))	| pxMiddle;
+	s_AspectRatio += m_combo_FMVAspectRatioSwitch			| pxExpand;
 	s_AspectRatio += Label(_("Custom Window Size:"))		| pxMiddle;
 	s_AspectRatio += s_customsize							| pxAlignRight;
 
@@ -145,7 +161,6 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 
 	*this += m_check_Fullscreen;
 	*this += m_check_DclickFullscreen;
-	*this += m_check_AspectRatioSwitch;
 
 	//*this += m_check_ExclusiveFS;
 	*this += new wxStaticLine( this )	| StdExpand();
@@ -171,21 +186,21 @@ void Panels::GSWindowSettingsPanel::ApplyConfigToGui( AppConfig& configToApply, 
 	const AppConfig::GSWindowOptions &conf(configToApply.GSWindow);
 
 	if (!(flags & AppConfig::APPLY_FLAG_FROM_PRESET)) { // Presets don't control these values
-		m_check_CloseGS->SetValue(conf.CloseOnEsc);
-		m_check_Fullscreen->SetValue(conf.DefaultToFullscreen);
-		m_check_HideMouse->SetValue(conf.AlwaysHideMouse);
-		m_check_SizeLock->SetValue(conf.DisableResizeBorders);
-
-		m_combo_AspectRatio->SetSelection(enum_cast(conf.AspectRatio));
-		m_text_Zoom->ChangeValue(conf.Zoom.ToString());
 		m_combo_ScalingType->SetSelection(enum_cast(conf.ScalingType));
 		m_combo_ScalingType->Enable(conf.AspectRatio != AspectRatio_Stretch);
-
-		m_check_AspectRatioSwitch->SetValue(conf.IsToggleAspectRatioSwitch);
-		m_check_DclickFullscreen->SetValue(conf.IsToggleFullscreenOnDoubleClick);
-
+		m_combo_AspectRatio->SetSelection(enum_cast(conf.AspectRatio));
+		m_combo_FMVAspectRatioSwitch->SetSelection(enum_cast(conf.FMVAspectRatioSwitch));
+		m_combo_FMVAspectRatioSwitch->Enable(conf.AspectRatio != AspectRatio_4_3);
 		m_text_WindowWidth->ChangeValue(wxsFormat(L"%d", conf.WindowSize.GetWidth()));
 		m_text_WindowHeight->ChangeValue(wxsFormat(L"%d", conf.WindowSize.GetHeight()));
+		m_text_Zoom->ChangeValue(conf.Zoom.ToString());
+
+		m_check_SizeLock->SetValue(conf.DisableResizeBorders);
+		m_check_HideMouse->SetValue(conf.AlwaysHideMouse);
+		m_check_CloseGS->SetValue(conf.CloseOnEsc);
+
+		m_check_Fullscreen->SetValue(conf.DefaultToFullscreen);
+		m_check_DclickFullscreen->SetValue(conf.IsToggleFullscreenOnDoubleClick);
 	}
 
 	m_combo_vsync->SetSelection(enum_cast(configToApply.EmuOptions.GS.VsyncEnable));
@@ -195,6 +210,7 @@ void Panels::GSWindowSettingsPanel::ApplyConfigToGui( AppConfig& configToApply, 
 void Panels::GSWindowSettingsPanel::ScalingTypeChanged(wxCommandEvent &event)
 {
 	m_combo_ScalingType->Enable(m_combo_AspectRatio->GetSelection() != 0);
+	m_combo_FMVAspectRatioSwitch->Enable(m_combo_AspectRatio->GetSelection() != 1);
 
 	event.Skip();
 }
@@ -204,20 +220,19 @@ void Panels::GSWindowSettingsPanel::Apply()
 	AppConfig::GSWindowOptions& appconf( g_Conf->GSWindow );
 	Pcsx2Config::GSOptions& gsconf( g_Conf->EmuOptions.GS );
 
-	appconf.CloseOnEsc = m_check_CloseGS->GetValue();
-	appconf.DefaultToFullscreen = m_check_Fullscreen->GetValue();
-	appconf.AlwaysHideMouse = m_check_HideMouse->GetValue();
-	appconf.DisableResizeBorders = m_check_SizeLock->GetValue();
-
-	appconf.AspectRatio = (AspectRatioType)m_combo_AspectRatio->GetSelection();
 	appconf.ScalingType = (ScalingTypes)m_combo_ScalingType->GetSelection();
-
+	appconf.AspectRatio = (AspectRatioType)m_combo_AspectRatio->GetSelection();
+	appconf.FMVAspectRatioSwitch = (FMVAspectRatioSwitchType)m_combo_FMVAspectRatioSwitch->GetSelection();
 	appconf.Zoom = Fixed100::FromString(m_text_Zoom->GetValue());
 
-	gsconf.VsyncEnable = static_cast<VsyncMode>(m_combo_vsync->GetSelection());
+	appconf.DisableResizeBorders = m_check_SizeLock->GetValue();
+	appconf.AlwaysHideMouse = m_check_HideMouse->GetValue();
+	appconf.CloseOnEsc = m_check_CloseGS->GetValue();
 
+	appconf.DefaultToFullscreen = m_check_Fullscreen->GetValue();
 	appconf.IsToggleFullscreenOnDoubleClick = m_check_DclickFullscreen->GetValue();
-	appconf.IsToggleAspectRatioSwitch = m_check_AspectRatioSwitch->GetValue();
+
+	gsconf.VsyncEnable = static_cast<VsyncMode>(m_combo_vsync->GetSelection());
 
 	long xr, yr = 1;
 
