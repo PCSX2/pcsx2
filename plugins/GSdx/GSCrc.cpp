@@ -491,13 +491,17 @@ CRC::Game CRC::m_games[] =
 	{0xC4D0FACC, SDGundamGGeneration, JP, 0}, // cutie comment
 	{0xBBDE6926, SDGundamGGeneration, JP, 0}, // cutie comment
 	{0x49D60A00, SDGundamGGeneration, JP, 0}, //NEO
+	{0x86C57952, SoulCalibur2, JP, 0},
 	{0x83AFB38A, SoulCalibur2, KO, 0},
 	{0xE1B01308, SoulCalibur2, US, 0},
+	{0x632A5116, SoulCalibur2, EU, 0},
 	{0xFB8554A0, SoulCalibur3, JP, 0},
+	{0x7C7B9E71, SoulCalibur3, JP, 0},
 	{0x027C604C, SoulCalibur3, US, 0},
 	{0x24090A12, SoulCalibur3, EU, 0},
-	{0x37B99B14, SoulCalibur3, KO, 0},
+	{0x3BA95B70, SoulCalibur3, EU, 0},
 	{0xBC5480A3, SoulCalibur3, EU, 0},
+	{0x37B99B14, SoulCalibur3, KO, 0},
 	{0xFC0F8A5B, Simple2000Vol114, JP, 0},
 	{0x0098F740, SeintoSeiya, NoRegion, 0}, // cutie comment
 	{0xBDD9BAAD, UrbanReign, US, 0}, // cutie comment

@@ -47,9 +47,6 @@ bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
 			skip = 1315;
 		}
 	}
-	else
-	{
-	}
 
 	return true;
 }
@@ -1108,44 +1105,6 @@ bool GSC_TalesofSymphonia(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SoulCalibur2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 2;
-			}
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SoulCalibur3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 2;
-			}
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Simple2000Vol114(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1760,6 +1719,25 @@ bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
 		if(!(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH))
 		{
 			skip = 0;
+		}
+	}
+
+	return true;
+}
+
+bool GSC_SoulCalibur2and3(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME)
+		{
+			// depth textures (bully, mgs3s1 intro, Front Mission 5)
+			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
+				// General, often problematic post processing
+				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
+			{
+				skip = 2;
+			}
 		}
 	}
 
@@ -2429,8 +2407,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::ShadowofRome] = GSC_ShadowofRome;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
 		lut[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
-		lut[CRC::SoulCalibur2] = GSC_SoulCalibur2;
-		lut[CRC::SoulCalibur3] = GSC_SoulCalibur3;
 		lut[CRC::Spartan] = GSC_Spartan;
 		lut[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
 		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
@@ -2475,6 +2451,8 @@ void GSState::SetupCrcHack()
 		lut[CRC::ICO] = GSC_ICO;
 		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 		lut[CRC::Okami] = GSC_Okami;
+		lut[CRC::SoulCalibur2] = GSC_SoulCalibur2and3;
+		lut[CRC::SoulCalibur3] = GSC_SoulCalibur2and3;
 		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
 		lut[CRC::XE3] = GSC_XE3;
 
