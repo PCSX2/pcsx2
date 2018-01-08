@@ -77,6 +77,7 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 
 	m_check_SizeLock	= new pxCheckBox( this, _("Disable window resize border") );
 	m_check_HideMouse	= new pxCheckBox( this, _("Always hide mouse cursor") );
+	m_check_ScalingCompensation = new pxCheckBox(this, _("Disable Scaling Type height compensation"));
 	m_check_CloseGS		= new pxCheckBox( this, _("Hide window when paused") );
 	m_check_Fullscreen	= new pxCheckBox( this, _("Default to fullscreen mode on open") );
 	m_check_DclickFullscreen = new pxCheckBox( this, _("Double-click toggles fullscreen mode") );
@@ -112,6 +113,10 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	m_check_HideMouse->SetToolTip(pxEt(L"Check this to force the mouse cursor invisible inside the GS window; "
 										L"useful if using the mouse as a primary control device for gaming. "
 										L"By default the mouse auto-hides after 2 seconds of inactivity."));
+
+	m_check_ScalingCompensation->SetToolTip(pxEt(L"Don't let Scaling Types compensate(double) the height for games that put out an image "
+												L"that is half as high as displayed. This will half the height for some games. Only for purists.\n\n"
+												L"NOTE: Only available when \"Frame\" Aspect Ratio or \"Integer\" or \"Centered\" Scaling Type is selected."));
 
 	m_check_Fullscreen->SetToolTip(pxEt(L"Enables automatic mode switch to fullscreen when starting or resuming emulation. "
 										L"You can still toggle fullscreen display at any time using alt-enter."));
@@ -157,6 +162,7 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	*this += m_check_SizeLock;
 	*this += m_check_HideMouse;
 	*this += m_check_CloseGS;
+	*this += m_check_ScalingCompensation;
 	*this += new wxStaticLine( this )	| StdExpand();
 
 	*this += m_check_Fullscreen;
@@ -198,6 +204,10 @@ void Panels::GSWindowSettingsPanel::ApplyConfigToGui( AppConfig& configToApply, 
 		m_check_SizeLock->SetValue(conf.DisableResizeBorders);
 		m_check_HideMouse->SetValue(conf.AlwaysHideMouse);
 		m_check_CloseGS->SetValue(conf.CloseOnEsc);
+		m_check_ScalingCompensation->SetValue(conf.DisableScalingCompensation);
+		m_check_ScalingCompensation->Enable((conf.AspectRatio != AspectRatio_Stretch &&
+											conf.ScalingType != ScalingType_Fit) ||
+											conf.AspectRatio == AspectRatio_Frame);
 
 		m_check_Fullscreen->SetValue(conf.DefaultToFullscreen);
 		m_check_DclickFullscreen->SetValue(conf.IsToggleFullscreenOnDoubleClick);
@@ -210,6 +220,8 @@ void Panels::GSWindowSettingsPanel::ApplyConfigToGui( AppConfig& configToApply, 
 void Panels::GSWindowSettingsPanel::ScalingTypeChanged(wxCommandEvent &event)
 {
 	m_combo_ScalingType->Enable(m_combo_AspectRatio->GetSelection() != 0);
+	m_check_ScalingCompensation->Enable((m_combo_AspectRatio->GetSelection() != 0 &&
+		m_combo_ScalingType->GetSelection() != 0) || m_combo_AspectRatio->GetSelection() == 3);
 	m_combo_FMVAspectRatioSwitch->Enable(m_combo_AspectRatio->GetSelection() != 1);
 
 	event.Skip();
@@ -228,6 +240,7 @@ void Panels::GSWindowSettingsPanel::Apply()
 	appconf.DisableResizeBorders = m_check_SizeLock->GetValue();
 	appconf.AlwaysHideMouse = m_check_HideMouse->GetValue();
 	appconf.CloseOnEsc = m_check_CloseGS->GetValue();
+	appconf.DisableScalingCompensation = m_check_ScalingCompensation->GetValue();
 
 	appconf.DefaultToFullscreen = m_check_Fullscreen->GetValue();
 	appconf.IsToggleFullscreenOnDoubleClick = m_check_DclickFullscreen->GetValue();

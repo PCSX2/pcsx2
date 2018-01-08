@@ -288,6 +288,7 @@ namespace Panels
 		//pxCheckBox*		m_check_ExclusiveFS;
 
 		pxCheckBox*		m_check_HideMouse;
+		pxCheckBox*		m_check_ScalingCompensation;
 		pxCheckBox*		m_check_DclickFullscreen;
 
 		wxTextCtrl*		m_text_WindowWidth;
