@@ -318,6 +318,7 @@ bool GSC_EvangelionJo(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.TBP0 == 0x2BC0 || (fi.FBP == 0 || fi.FBP == 0x1180) && (fi.FPSM | fi.TPSM) == 0)
 		{
+			// Removes blur/glow. Fixes ghosting when resolution is upscaled.
 			skip = 1;
 		}
 	}
@@ -554,19 +555,6 @@ bool GSC_HeavyMetalThunder(const GSFrameInfo& fi, int& skip)
 	else
 	{
 		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x02a00 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01180 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03fc0 && fi.TPSM == PSM_PSMCT32)
 		{
 			skip = 1;
 		}
@@ -2053,6 +2041,20 @@ bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
+{
+	if(Aggressive && skip == 0)
+	{
+		if(fi.TME && fi.FBP == 0x01180 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03fc0 && fi.TPSM == PSM_PSMCT32)
+		{
+			// Removes body shading. Not needed but offers a very decent speed boost.
+			skip = 1;
+		}
+	}
+
+	return true;
+}
+
 template<uptr state_addr>
 bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 {
@@ -2113,43 +2115,7 @@ bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_FFXII(const GSFrameInfo& fi, int& skip)
-{
-	if(Aggressive && skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-	return true;
-}
-
-bool GSC_FFX2(const GSFrameInfo& fi, int& skip)
-{
-	if(Aggressive && skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-	return true;
-}
-
-bool GSC_FFX(const GSFrameInfo& fi, int& skip)
+bool GSC_FFXGames(const GSFrameInfo& fi, int& skip)
 {
 	if(Aggressive && skip == 0)
 	{
@@ -2194,25 +2160,6 @@ bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
 			// Upscaling causes the outlines to be out of place but can be fixed with TC Offsets.
 			// The hack can be used to increase slight performance.
 			skip = 2;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SSX3(const GSFrameInfo& fi, int& skip)
-{
-	if(Aggressive && skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
 		}
 	}
 
@@ -2370,7 +2317,6 @@ void GSState::SetupCrcHack()
 	if (Dx_and_OGL) {
 		lut[CRC::AceCombat4] = GSC_AceCombat4;
 		lut[CRC::BlackHawkDown] = GSC_BlackHawkDown;
-		lut[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
 		lut[CRC::BurnoutDominator] = GSC_Burnout;
 		lut[CRC::BurnoutRevenge] = GSC_Burnout;
 		lut[CRC::BurnoutTakedown] = GSC_Burnout;
@@ -2430,16 +2376,16 @@ void GSState::SetupCrcHack()
 		lut[CRC::StarOcean3] = GSC_StarOcean3;
 		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
 		// Only Aggressive
+		lut[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
+		lut[CRC::FFX2] = GSC_FFXGames;
+		lut[CRC::FFX] = GSC_FFXGames;
+		lut[CRC::FFXII] = GSC_FFXGames;
 		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
-		lut[CRC::FFX2] = GSC_FFX2;
-		lut[CRC::FFX] = GSC_FFX;
-		lut[CRC::FFXII] = GSC_FFXII;
 		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
 		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
 		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
 		lut[CRC::SoTC] = GSC_SoTC;
-		lut[CRC::SSX3] = GSC_SSX3;
 	}
 
 	// Hack that were fixed on openGL
