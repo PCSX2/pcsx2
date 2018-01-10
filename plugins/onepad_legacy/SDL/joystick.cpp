@@ -162,7 +162,7 @@ void JoystickInfo::Destroy()
             SDL_JoystickClose(joy);
 #endif
 #else
-        if (SDL_JoystickOpened(_id))
+        if (joy)
             SDL_JoystickClose(joy);
 #endif
         joy = NULL;
@@ -180,14 +180,21 @@ bool JoystickInfo::Init(int id)
         return false;
     }
 
+#if SDL_MAJOR_VERSION >= 2
+    const char* sdl_devname = SDL_JoystickName(joy);
+#else
+    const char* sdl_devname = SDL_JoystickName(id);
+#endif
+    if (sdl_devname) {
+        devname = sdl_devname;
+    } else {
+        fprintf(stderr, "ERROR: failed to get joystick (%d) devname\n", id);
+        devname = "";
+    }
+
     numaxes = SDL_JoystickNumAxes(joy);
     numbuttons = SDL_JoystickNumButtons(joy);
     numhats = SDL_JoystickNumHats(joy);
-#if SDL_MAJOR_VERSION >= 2
-    devname = SDL_JoystickName(joy);
-#else
-    devname = SDL_JoystickName(id);
-#endif
 
     vaxisstate.resize(numaxes);
     vbuttonstate.resize(numbuttons);
