@@ -53,7 +53,7 @@ CRC::Game CRC::m_games[] =
 	{0x658597E2, FFX, JP, 0}, // int.
 	{0x9AAC5309, FFX2, EU, 0},
 	{0x9AAC530C, FFX2, FR, 0},
-	{0x9AAC530A, FFX2, ES, 0}, 
+	{0x9AAC530A, FFX2, ES, 0},
 	{0x9AAC530D, FFX2, DE, 0},
 	{0x9AAC530B, FFX2, IT, 0},
 	{0x48FE0C71, FFX2, US, 0},
@@ -242,7 +242,7 @@ CRC::Game CRC::m_games[] =
 	{0xFADEBC45, Genji, EU, 0},
 	{0xB4776FC1, Genji, JP, 0},
 	{0x56242EC9, Genji, KO, 0},
-	{0xCDAF243D, Genji, CH, 0}, 
+	{0xCDAF243D, Genji, CH, 0},
 	{0x2A5E0B61, Genji, CH, 0},
 	{0x7D4EA48F, Genji, EU, 0}, // same CRC as {HauntingGround, EU}
 	{0xE04EA200, StarOcean3, EU, 0},
@@ -336,7 +336,7 @@ CRC::Game CRC::m_games[] =
 	{0x306CDADA, CastlevaniaLoI, EU, 0},
 	{0xA36CFF6C, CastlevaniaLoI, JP, 0},
 	{0x9A93FE5D, CastlevaniaLoI, KO, 0},
-	{0x7985D894, FinalFightStreetwise, US, 0}, 
+	{0x7985D894, FinalFightStreetwise, US, 0},
 	{0xED4BF0D3, FinalFightStreetwise, US, 0}, // cutie comment
 	{0x73C560BA, FinalFightStreetwise, EU, 0},
 	{0xCBB87BF9, EvangelionJo, JP, 0}, // cutie comment
@@ -357,7 +357,7 @@ CRC::Game CRC::m_games[] =
 	// {0x1A85E924, DevilMayCry3, CH, 0}, // same CRC as {GodOfWar, NoRegion}
 	{0xB1995E29, ShadowofRome, EU, 0}, // cutie comment
 	{0x958DCA28, ShadowofRome, EU, 0},
-	{0x57818AF6, ShadowofRome, US, 0}, 
+	{0x57818AF6, ShadowofRome, US, 0},
 	{0xF21EE6E0, CrashNburn, US, 0},
 	{0x694A998E, TombRaiderUnderworld, JP, 0}, // cutie comment
 	{0x8E214549, TombRaiderUnderworld, EU, 0},
@@ -466,14 +466,14 @@ CRC::Game CRC::m_games[] =
 	{0xCA9AA903, TouristTrophy, EU, 0}, //crc hack not fully working on PAL, still needs brightness =0
 	{0xA1B3F232, GTASanAndreas, EU, 0}, // cutie comment
 	{0xB440A8FE, GTASanAndreas, EU, 0},
-	{0x399A49CA, GTASanAndreas, US, 0}, 
+	{0x399A49CA, GTASanAndreas, US, 0},
 	{0x2C6BE434, GTASanAndreas, US, 0},
-	{0x60FE139C, GTASanAndreas, JP, 0}, 
-	{0x2615F542, FrontMission5, JP, 0}, 
+	{0x60FE139C, GTASanAndreas, JP, 0},
+	{0x2615F542, FrontMission5, JP, 0},
 	{0xF60255AC, FrontMission5, JP, 0},
 	{0xCB783836, FrontMission5, JP, 0},
 	{0xB7532DF6, FrontMission5, JP, 0},
-	{0xAEDAEE99, GodHand, JP, 0}, 
+	{0xAEDAEE99, GodHand, JP, 0},
 	{0x6FB69282, GodHand, US, 0},
 	{0x924C4AA6, GodHand, KO, 0},
 	{0x9637D496, KnightsOfTheTemple2, JP, 0}, // cutie comment
@@ -481,7 +481,7 @@ CRC::Game CRC::m_games[] =
 	{0xF7F181C3, DeathByDegreesTekkenNinaWilliams, CH, 0}, // cutie comment
 	{0xF088FA5B, DeathByDegreesTekkenNinaWilliams, KO, 0},
 	{0x59683BB0, DeathByDegreesTekkenNinaWilliams, EU, 0},
-	{0x449E1F6B, HummerBadlands, US, 0}, 
+	{0x449E1F6B, HummerBadlands, US, 0},
 	{0xAEA1B3AD, SengokuBasara, JP, 0},
 	{0x5B659BED, Grandia3, JP, 0},
 	{0x5B657DAD, Grandia3, US, 0},
@@ -525,6 +525,11 @@ CRC::Game CRC::m_games[] =
 	// Basic mipmapping
 	{0x65729657, AceCombatZero, US, 0},
 	{0x0940508D, BrianLaraInternationalCricket, EU, 0},
+	{0x0BAA8DD8, DarkCloud, EU, 0},
+	{0x1DF41F33, DarkCloud, US, 0},
+	{0xA5C05C78, DarkCloud, US, 0},
+	{0x60AA5049, DarkCloud, KO, 0},
+	{0xECD8E386, DarkCloud, JP, 0},
 	{0x67A29886, DestroyAllHumans, US, 0},
 	{0xE3E8E893, DestroyAllHumans, EU, 0},
 	{0x42DF8C8C, DestroyAllHumans2, US, 0},

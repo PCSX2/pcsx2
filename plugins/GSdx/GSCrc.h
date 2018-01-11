@@ -47,6 +47,7 @@ public:
 		Clannad,
 		CrashBandicootWoC,
 		CrashNburn,
+		DarkCloud,
 		DBZBT2,
 		DBZBT3,
 		DeathByDegreesTekkenNinaWilliams,
