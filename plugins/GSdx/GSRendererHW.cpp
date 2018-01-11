@@ -194,6 +194,7 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 		case CRC::AceCombat4:
 		case CRC::AceCombat5:
 		case CRC::BrianLaraInternationalCricket:
+		case CRC::DarkCloud:
 		case CRC::DestroyAllHumans:
 		case CRC::DestroyAllHumans2:
 		case CRC::FIFA03:
