@@ -103,27 +103,7 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
     return true;
 }
 
-bool GSC_WildArms4(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x03100 && fi.FPSM == PSM_PSMZ32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ32)
-		{
-			skip = 100;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x02a00 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_WildArms5(const GSFrameInfo& fi, int& skip)
+bool GSC_WildArmsGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
@@ -970,6 +950,7 @@ bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.TBP0 ==0x0700 || fi.TBP0 ==0x0a80) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
 		{
+			// removes glow/blur which cause ghosting and other sprite issues similar to Tekken 5 
 			skip = 1;
 		}
 	}
@@ -1713,7 +1694,7 @@ bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SoulCalibur2and3(const GSFrameInfo& fi, int& skip)
+bool GSC_SoulCaliburGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
@@ -2366,8 +2347,8 @@ void GSState::SetupCrcHack()
 		lut[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
 		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
 		lut[CRC::UrbanReign] = GSC_UrbanReign;
-		lut[CRC::WildArms4] = GSC_WildArms4;
-		lut[CRC::WildArms5] = GSC_WildArms5;
+		lut[CRC::WildArms4] = GSC_WildArmsGames;
+		lut[CRC::WildArms5] = GSC_WildArmsGames;
 		lut[CRC::Yakuza2] = GSC_Yakuza2;
 		lut[CRC::Yakuza] = GSC_Yakuza;
 		lut[CRC::ZettaiZetsumeiToshi2] = GSC_ZettaiZetsumeiToshi2;
@@ -2397,8 +2378,8 @@ void GSState::SetupCrcHack()
 		lut[CRC::ICO] = GSC_ICO;
 		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 		lut[CRC::Okami] = GSC_Okami;
-		lut[CRC::SoulCalibur2] = GSC_SoulCalibur2and3;
-		lut[CRC::SoulCalibur3] = GSC_SoulCalibur2and3;
+		lut[CRC::SoulCalibur2] = GSC_SoulCaliburGames;
+		lut[CRC::SoulCalibur3] = GSC_SoulCaliburGames;
 		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
 		lut[CRC::XE3] = GSC_XE3;
 
