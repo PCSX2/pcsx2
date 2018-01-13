@@ -4,6 +4,8 @@
 *.p2m2_backup
 *.p2m
 *.p2m_backup
+bin/inis/PCSX2-rr_ui\.ini
+*.tmp
 
 # PCSX2 Ignores
 .*.swp
@@ -112,5 +114,3 @@ oprofile_data/
 /tools/GSDumpGUI/bin
 /tools/GSDumpGUI/obj
 /.vs
-
-bin/inis/PCSX2-rr_ui\.ini
