@@ -1016,29 +1016,27 @@ void Panels::MemoryCardListPanel_Simple::OnOpenItemContextMenu(wxListEvent& evt)
 
 	wxMenu* junk = new wxMenu();
 
-	if( idx != wxNOT_FOUND )
-	{
+	if (idx != wxNOT_FOUND) {
 		const McdSlotItem& card( GetCardForViewIndex(idx) );
 
-		if (card.IsPresent){
-			junk->Append( McdMenuId_AssignUnassign,	card.Slot>=0?_("Eject card"):_("Insert card ...") );
-			junk->Append( McdMenuId_Duplicate,	_("Duplicate card ...") );
-			junk->Append( McdMenuId_Rename,		_("Rename card ...") );
-			junk->Append( McdMenuId_Create,		_("Delete card") );
+		if (card.IsPresent) {
+			junk->Append(McdMenuId_AssignUnassign,	card.Slot>=0?_("&Eject card"):_("&Insert card ..."));
+			junk->Append(McdMenuId_Duplicate,	_("D&uplicate card ..."));
+			junk->Append(McdMenuId_Rename,		_("&Rename card ..."));
+			junk->Append(McdMenuId_Create,		_("&Delete card"));
 			if (card.IsFormatted && !card.IsPSX) {
-				junk->Append( McdMenuId_Convert, _("Convert card") );
+				junk->Append(McdMenuId_Convert, _("&Convert card"));
 			}
+		} else {
+			junk->Append(McdMenuId_Create, _("&Create a new card ..."));
 		}
-		else
-			junk->Append( McdMenuId_Create, _("Create a new card ...") );
-
+	} else {
+		junk->Append(McdMenuId_Create, _("&Create a new card ..."));
 	}
-	else
-		junk->Append( McdMenuId_Create, _("Create a new card ...") );
 
 	junk->AppendSeparator();
 
-	junk->Append( McdMenuId_RefreshList, _("Refresh List") );
+	junk->Append(McdMenuId_RefreshList, _("Re&fresh List"));
 
 	PopupMenu( junk );
 	m_listview->RefreshItem( idx );
