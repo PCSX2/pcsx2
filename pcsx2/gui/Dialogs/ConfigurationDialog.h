@@ -191,6 +191,7 @@ namespace Dialogs
 		wxDirName	m_mcdpath;
 		wxString	m_mcdfile;
 		wxTextCtrl*	m_text_filenameInput;
+		wxStaticText *m_mcd_Extension;
 
 		//wxFilePickerCtrl*	m_filepicker;
 		pxRadioPanel *m_radio_CardType;
@@ -208,10 +209,10 @@ namespace Dialogs
 		wxString result_createdMcdFilename;
 		//wxDirName GetPathToMcds() const;
 
-
 	protected:
 		void CreateControls();
-		void OnOk_Click( wxCommandEvent& evt );
+		void OnRadioChanged(wxCommandEvent &evt);
+		void OnOk_Click(wxCommandEvent &evt);
 	};
 
 	// --------------------------------------------------------------------------------------
