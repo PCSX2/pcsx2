@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2018  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -196,9 +196,9 @@ namespace Dialogs
 		//wxFilePickerCtrl*	m_filepicker;
 		pxRadioPanel *m_radio_CardType;
 
-	#ifdef __WXMSW__
-		pxCheckBox*			m_check_CompressNTFS;
-	#endif
+#ifdef __WXMSW__
+		pxCheckBox *m_check_CompressNTFS;
+#endif
 
 	public:
 		virtual ~CreateMemoryCardDialog()  = default;
