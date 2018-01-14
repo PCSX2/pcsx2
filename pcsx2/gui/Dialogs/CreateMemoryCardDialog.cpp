@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2018  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -80,11 +80,11 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 		s_padding += s_filename | StdExpand();
 	}
 
-	#ifdef __WXMSW__
-	if( m_check_CompressNTFS )
-		s_padding += m_check_CompressNTFS	| StdExpand();
-	#endif
 	s_padding += m_radio_CardType | StdExpand();
+#ifdef __WXMSW__
+	if (m_check_CompressNTFS)
+		s_padding += m_check_CompressNTFS | StdExpand();
+#endif
 
 
 	s_padding += s_buttons | StdCenter();
@@ -216,7 +216,7 @@ void Dialogs::CreateMemoryCardDialog::OnOk_Click( wxCommandEvent& evt )
 
 void Dialogs::CreateMemoryCardDialog::CreateControls()
 {
-	#ifdef __WXMSW__
+#ifdef __WXMSW__
 	m_check_CompressNTFS = new pxCheckBox( this,
 		_("Use NTFS compression when creating this card."),
 		GetMsg_McdNtfsCompress()
@@ -229,7 +229,7 @@ void Dialogs::CreateMemoryCardDialog::CreateControls()
 	// Initial value of the checkbox is saved between calls to the dialog box.  If the user checks
 	// the option, it remains checked for future dialog.  If the user unchecks it, ditto.
 	m_check_CompressNTFS->SetValue( g_Conf->McdCompressNTFS );
-	#endif
+#endif
 
 	m_text_filenameInput = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 	m_mcd_Extension = new wxStaticText(this, wxID_ANY, L".ps2");
