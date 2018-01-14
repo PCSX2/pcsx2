@@ -193,12 +193,11 @@ namespace Dialogs
 		wxTextCtrl*	m_text_filenameInput;
 
 		//wxFilePickerCtrl*	m_filepicker;
-		pxRadioPanel*		m_radio_CardSize;
+		pxRadioPanel *m_radio_CardType;
 
 	#ifdef __WXMSW__
 		pxCheckBox*			m_check_CompressNTFS;
 	#endif
-		pxCheckBox*			m_check_psx;
 
 	public:
 		virtual ~CreateMemoryCardDialog()  = default;
@@ -223,8 +222,8 @@ namespace Dialogs
 	protected:
 		wxDirName     m_mcdPath;
 		wxString      m_mcdSourceFilename;
-		wxTextCtrl*   m_text_filenameInput;
-		pxRadioPanel* m_radio_CardType;
+		wxTextCtrl   *m_text_filenameInput;
+		pxRadioPanel *m_radio_CardType;
 
 	public:
 		virtual ~ConvertMemoryCardDialog()  = default;
