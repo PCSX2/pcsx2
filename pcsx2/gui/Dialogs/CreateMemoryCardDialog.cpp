@@ -76,10 +76,8 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 		s_filename += Heading( _("Select file name: ")).Unwrapped().Align(wxALIGN_RIGHT) | pxProportion(1);
 		m_text_filenameInput->SetValue ((m_mcdpath + m_mcdfile).GetName());
 		s_filename += m_text_filenameInput | pxProportion(2);
-		s_filename += Heading( L".ps2" ).Align(wxALIGN_LEFT) | pxProportion(1);
-
+		s_filename += m_mcd_Extension | pxProportion(1);
 		s_padding += s_filename | StdExpand();
-
 	}
 
 	#ifdef __WXMSW__
@@ -95,6 +93,7 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 
 	Bind(wxEVT_BUTTON, &CreateMemoryCardDialog::OnOk_Click, this, wxID_OK);
 	Bind(wxEVT_TEXT_ENTER, &CreateMemoryCardDialog::OnOk_Click, this, m_text_filenameInput->GetId());
+	Bind(wxEVT_RADIOBUTTON, &CreateMemoryCardDialog::OnRadioChanged, this);
 
 	// ...Typical solution to everything? Or are we doing something weird?
 	SetSizerAndFit(GetSizer());
@@ -154,6 +153,13 @@ bool Dialogs::CreateMemoryCardDialog::CreateIt( const wxString& mcdFile, uint si
 	return true;
 }
 
+void Dialogs::CreateMemoryCardDialog::OnRadioChanged(wxCommandEvent& evt)
+{
+	evt.Skip();
+
+	m_mcd_Extension->SetLabel(m_radio_CardType->SelectedItem().SomeInt == 1 ? L".mcr" : L".ps2");
+}
+
 void Dialogs::CreateMemoryCardDialog::OnOk_Click( wxCommandEvent& evt )
 {
 	// Save status of the NTFS compress checkbox for future reference.
@@ -163,7 +169,8 @@ void Dialogs::CreateMemoryCardDialog::OnOk_Click( wxCommandEvent& evt )
 	g_Conf->McdCompressNTFS = m_check_CompressNTFS->GetValue();
 #endif
 	result_createdMcdFilename=L"_INVALID_FILE_NAME_";
-	wxString composedName = m_text_filenameInput->GetValue().Trim() + L".ps2";
+
+	wxString composedName = m_text_filenameInput->GetValue().Trim() + (m_radio_CardType->SelectedItem().SomeInt == 1 ? L".mcr" : L".ps2");
 
 	wxString errMsg;
 	if( !isValidNewFilename(composedName, m_mcdpath, errMsg, 5) )
@@ -224,7 +231,8 @@ void Dialogs::CreateMemoryCardDialog::CreateControls()
 	m_check_CompressNTFS->SetValue( g_Conf->McdCompressNTFS );
 	#endif
 
-	m_text_filenameInput = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	m_text_filenameInput = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	m_mcd_Extension = new wxStaticText(this, wxID_ANY, L".ps2");
 
 	const RadioPanelItem tbl_CardTypes[] =
 	{
