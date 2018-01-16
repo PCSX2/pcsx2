@@ -53,7 +53,7 @@ CRC::Game CRC::m_games[] =
 	{0x658597E2, FFX, JP, 0}, // int.
 	{0x9AAC5309, FFX2, EU, 0},
 	{0x9AAC530C, FFX2, FR, 0},
-	{0x9AAC530A, FFX2, ES, 0}, 
+	{0x9AAC530A, FFX2, ES, 0},
 	{0x9AAC530D, FFX2, DE, 0},
 	{0x9AAC530B, FFX2, IT, 0},
 	{0x48FE0C71, FFX2, US, 0},
@@ -109,6 +109,8 @@ CRC::Game CRC::m_games[] =
 	{0x9B0E119F, DBZBT3, KO, 0}, //DragonBall Z Sparking Meteo
 	{0x72B3802A, SFEX3, US, 0},
 	{0x71521863, SFEX3, US, 0},
+	{0x63642E9F, SFEX3, JP, 0},
+	{0xCA1F6E53, SFEX3, JP, 0}, // Taikenban Disc (Demo/Trial)
 	{0x28703748, Bully, US, 0},
 	{0x019CFA48, Bully, JP, 0},
 	{0xC78A495D, BullyCC, US, 0},
@@ -176,9 +178,10 @@ CRC::Game CRC::m_games[] =
 	{0x72E1E60E, Spartan, EU, 0},
 	{0x26689C87, Spartan, JP, 0},
 	{0x08277A9E, Spartan, US, 0},
-	{0xA32F7CD0, AceCombat4, US, 0},
+	{0xA32F7CD0, AceCombat4, US, 0}, // Also needed for automatic mipmapping
 	{0x5ED8FB53, AceCombat4, JP, 0},
 	{0x1B9B7563, AceCombat4, EU, 0},
+	{0x39B574F0, AceCombat5, US, 0},
 	{0xFC46EA61, Tekken5, JP, 0},
 	{0x1F88EE37, Tekken5, EU, 0},
 	{0x1F88BECD, Tekken5, EU, 0},	//language selector...
@@ -239,7 +242,7 @@ CRC::Game CRC::m_games[] =
 	{0xFADEBC45, Genji, EU, 0},
 	{0xB4776FC1, Genji, JP, 0},
 	{0x56242EC9, Genji, KO, 0},
-	{0xCDAF243D, Genji, CH, 0}, 
+	{0xCDAF243D, Genji, CH, 0},
 	{0x2A5E0B61, Genji, CH, 0},
 	{0x7D4EA48F, Genji, EU, 0}, // same CRC as {HauntingGround, EU}
 	{0xE04EA200, StarOcean3, EU, 0},
@@ -251,7 +254,7 @@ CRC::Game CRC::m_games[] =
 	{0x774DE8E2, ValkyrieProfile2, JP, 0},
 	{0x04CCB600, ValkyrieProfile2, EU, 0},
 	{0xB65E141B, ValkyrieProfile2, DE, 0}, // PAL German
-	{0xC70FC973, ValkyrieProfile2, IT, 0}, 
+	{0xC70FC973, ValkyrieProfile2, IT, 0},
 	{0x47B9B2FD, RadiataStories, US, 0},
 	{0xAC73005E, RadiataStories, JP, 0},
 	{0xE8FCF8EC, SMTNocturne, US, ZWriteMustNotClear},	// saves/reloads z buffer around shadow drawing, same issue with all the SMT games following
@@ -333,7 +336,7 @@ CRC::Game CRC::m_games[] =
 	{0x306CDADA, CastlevaniaLoI, EU, 0},
 	{0xA36CFF6C, CastlevaniaLoI, JP, 0},
 	{0x9A93FE5D, CastlevaniaLoI, KO, 0},
-	{0x7985D894, FinalFightStreetwise, US, 0}, 
+	{0x7985D894, FinalFightStreetwise, US, 0},
 	{0xED4BF0D3, FinalFightStreetwise, US, 0}, // cutie comment
 	{0x73C560BA, FinalFightStreetwise, EU, 0},
 	{0xCBB87BF9, EvangelionJo, JP, 0}, // cutie comment
@@ -354,12 +357,12 @@ CRC::Game CRC::m_games[] =
 	// {0x1A85E924, DevilMayCry3, CH, 0}, // same CRC as {GodOfWar, NoRegion}
 	{0xB1995E29, ShadowofRome, EU, 0}, // cutie comment
 	{0x958DCA28, ShadowofRome, EU, 0},
-	{0x57818AF6, ShadowofRome, US, 0}, 
+	{0x57818AF6, ShadowofRome, US, 0},
 	{0xF21EE6E0, CrashNburn, US, 0},
 	{0x694A998E, TombRaiderUnderworld, JP, 0}, // cutie comment
 	{0x8E214549, TombRaiderUnderworld, EU, 0},
 	{0x618769D6, TombRaiderUnderworld, US, 0},
-	{0xB639EB17, TombRaiderAnniversary, US, 0},
+	{0xB639EB17, TombRaiderAnniversary, US, 0}, // Also needed for automatic mipmapping
 	{0xB05805B6, TombRaiderAnniversary, JP, 0}, // cutie comment
 	{0xA629A376, TombRaiderAnniversary, EU, 0},
 	{0xBC8B3F50, TombRaiderLegend, US, 0}, // cutie comment
@@ -463,14 +466,14 @@ CRC::Game CRC::m_games[] =
 	{0xCA9AA903, TouristTrophy, EU, 0}, //crc hack not fully working on PAL, still needs brightness =0
 	{0xA1B3F232, GTASanAndreas, EU, 0}, // cutie comment
 	{0xB440A8FE, GTASanAndreas, EU, 0},
-	{0x399A49CA, GTASanAndreas, US, 0}, 
+	{0x399A49CA, GTASanAndreas, US, 0},
 	{0x2C6BE434, GTASanAndreas, US, 0},
-	{0x60FE139C, GTASanAndreas, JP, 0}, 
-	{0x2615F542, FrontMission5, JP, 0}, 
+	{0x60FE139C, GTASanAndreas, JP, 0},
+	{0x2615F542, FrontMission5, JP, 0},
 	{0xF60255AC, FrontMission5, JP, 0},
 	{0xCB783836, FrontMission5, JP, 0},
 	{0xB7532DF6, FrontMission5, JP, 0},
-	{0xAEDAEE99, GodHand, JP, 0}, 
+	{0xAEDAEE99, GodHand, JP, 0},
 	{0x6FB69282, GodHand, US, 0},
 	{0x924C4AA6, GodHand, KO, 0},
 	{0x9637D496, KnightsOfTheTemple2, JP, 0}, // cutie comment
@@ -478,7 +481,7 @@ CRC::Game CRC::m_games[] =
 	{0xF7F181C3, DeathByDegreesTekkenNinaWilliams, CH, 0}, // cutie comment
 	{0xF088FA5B, DeathByDegreesTekkenNinaWilliams, KO, 0},
 	{0x59683BB0, DeathByDegreesTekkenNinaWilliams, EU, 0},
-	{0x449E1F6B, HummerBadlands, US, 0}, 
+	{0x449E1F6B, HummerBadlands, US, 0},
 	{0xAEA1B3AD, SengokuBasara, JP, 0},
 	{0x5B659BED, Grandia3, JP, 0},
 	{0x5B657DAD, Grandia3, US, 0},
@@ -488,13 +491,17 @@ CRC::Game CRC::m_games[] =
 	{0xC4D0FACC, SDGundamGGeneration, JP, 0}, // cutie comment
 	{0xBBDE6926, SDGundamGGeneration, JP, 0}, // cutie comment
 	{0x49D60A00, SDGundamGGeneration, JP, 0}, //NEO
+	{0x86C57952, SoulCalibur2, JP, 0},
 	{0x83AFB38A, SoulCalibur2, KO, 0},
 	{0xE1B01308, SoulCalibur2, US, 0},
+	{0x632A5116, SoulCalibur2, EU, 0},
 	{0xFB8554A0, SoulCalibur3, JP, 0},
+	{0x7C7B9E71, SoulCalibur3, JP, 0},
 	{0x027C604C, SoulCalibur3, US, 0},
 	{0x24090A12, SoulCalibur3, EU, 0},
-	{0x37B99B14, SoulCalibur3, KO, 0},
+	{0x3BA95B70, SoulCalibur3, EU, 0},
 	{0xBC5480A3, SoulCalibur3, EU, 0},
+	{0x37B99B14, SoulCalibur3, KO, 0},
 	{0xFC0F8A5B, Simple2000Vol114, JP, 0},
 	{0x0098F740, SeintoSeiya, NoRegion, 0}, // cutie comment
 	{0xBDD9BAAD, UrbanReign, US, 0}, // cutie comment
@@ -514,6 +521,38 @@ CRC::Game CRC::m_games[] =
 	{0xDF659E77, JakX, EU, 0},
 	{0x3091E6FB, JakX, US, 0},
 	{0x4653CA3E, HarleyDavidson, NoRegion, 0},
+	// Games list for Automatic Mipmapping
+	// Basic mipmapping
+	{0x65729657, AceCombatZero, US, 0},
+	{0x0940508D, BrianLaraInternationalCricket, EU, 0},
+	{0x0BAA8DD8, DarkCloud, EU, 0},
+	{0x1DF41F33, DarkCloud, US, 0},
+	{0xA5C05C78, DarkCloud, US, 0},
+	{0x60AA5049, DarkCloud, KO, 0},
+	{0xECD8E386, DarkCloud, JP, 0},
+	{0x67A29886, DestroyAllHumans, US, 0},
+	{0xE3E8E893, DestroyAllHumans, EU, 0},
+	{0x42DF8C8C, DestroyAllHumans2, US, 0},
+	{0x722BBD62, FIFA03, EU, 0},
+	{0x2BCCF704, FIFA03, EU, 0},
+	{0xCC6AA742, FIFA04, KO, 0},
+	{0x2C6A4E2E, FIFA04, US, 0},
+	{0x972611BB, FIFA05, US, 0},
+	{0x230CB71D, SoulReaver2, US, 0},
+	{0x6D8B4CD1, SoulReaver2, EU, 0},
+	{0x728AB07C, LegacyOfKainDefiance, US, 0},
+	{0xCE4933D0, RatchetAndClank, US, 0},
+	{0x76F724A3, RatchetAndClank, EU, 0},
+	{0xB3A71D10, RatchetAndClank2, US, 0}, // Going Commando
+	{0x38996035, RatchetAndClank2, US, 0},
+	{0x2F486E6F, RatchetAndClank2, EU, 0},
+	{0x45FE0CC4, RatchetAndClank3, US, 0}, //  Up Your Arsenal
+	{0x9BFBCD42, RatchetAndClank4, US, 0}, // Deadlocked
+	{0x8661F7BA, RatchetAndClank5, US, 0}, // Size Matters
+	{0x8634861F, RickyPontingInternationalCricket, EU, 0},
+	{0x2B58234D, TribesAerialAssault, US, 0},
+	{0x4D22DB95, Whiplash, US, 0},
+	{0xB1BE3E51, Whiplash, EU, 0},
 };
 
 std::map<uint32, CRC::Game*> CRC::m_map;

@@ -1440,6 +1440,14 @@ enum class TriFiltering : uint8
 	Forced,
 };
 
+enum class HWMipmapLevel : int
+{
+	Automatic = -1,
+	Off,
+	Basic,
+	Full
+};
+
 enum class CRCHackLevel : int8
 {
 	Automatic = -1,

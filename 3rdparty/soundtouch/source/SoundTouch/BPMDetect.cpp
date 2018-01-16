@@ -26,10 +26,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2015-02-21 23:24:29 +0200 (Sat, 21 Feb 2015) $
+// Last changed  : $Date: 2016-01-05 22:59:57 +0200 (ti, 05 tammi 2016) $
 // File revision : $Revision: 4 $
 //
-// $Id: BPMDetect.cpp 202 2015-02-21 21:24:29Z oparviai $
+// $Id: BPMDetect.cpp 237 2016-01-05 20:59:57Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -67,13 +67,18 @@ using namespace soundtouch;
 #define INPUT_BLOCK_SAMPLES       2048
 #define DECIMATED_BLOCK_SAMPLES   256
 
-/// decay constant for calculating RMS volume sliding average approximation 
-/// (time constant is about 10 sec)
-const float avgdecay = 0.99986f;
+/// Target sample rate after decimation
+const int target_srate = 1000;
 
-/// Normalization coefficient for calculating RMS sliding average approximation.
-const float avgnorm = (1 - avgdecay);
+/// XCorr update sequence size, update in about 200msec chunks
+const int xcorr_update_sequence = 200;
 
+/// XCorr decay time constant, decay to half in 30 seconds
+/// If it's desired to have the system adapt quicker to beat rate 
+/// changes within a continuing music stream, then the 
+/// 'xcorr_decay_time_constant' value can be reduced, yet that
+/// can increase possibility of glitches in bpm detection.
+const double xcorr_decay_time_constant = 30.0;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -115,21 +120,8 @@ BPMDetect::BPMDetect(int numChannels, int aSampleRate)
     decimateSum = 0;
     decimateCount = 0;
 
-    envelopeAccu = 0;
-
-    // Initialize RMS volume accumulator to RMS level of 1500 (out of 32768) that's
-    // safe initial RMS signal level value for song data. This value is then adapted
-    // to the actual level during processing.
-#ifdef SOUNDTOUCH_INTEGER_SAMPLES
-    // integer samples
-    RMSVolumeAccu = (1500 * 1500) / avgnorm;
-#else
-    // float samples, scaled to range [-1..+1[
-    RMSVolumeAccu = (0.045f * 0.045f) / avgnorm;
-#endif
-
     // choose decimation factor so that result is approx. 1000 Hz
-    decimateBy = sampleRate / 1000;
+    decimateBy = sampleRate / target_srate;
     assert(decimateBy > 0);
     assert(INPUT_BLOCK_SAMPLES < decimateBy * DECIMATED_BLOCK_SAMPLES);
 
@@ -226,6 +218,10 @@ void BPMDetect::updateXCorr(int process_samples)
     assert(buffer->numSamples() >= (uint)(process_samples + windowLen));
 
     pBuffer = buffer->ptrBegin();
+
+    // calculate decay factor for xcorr filtering
+    float xcorr_decay = (float)pow(0.5, 1.0 / (xcorr_decay_time_constant * target_srate / process_samples));
+
     #pragma omp parallel for
     for (offs = windowStart; offs < windowLen; offs ++) 
     {
@@ -237,51 +233,9 @@ void BPMDetect::updateXCorr(int process_samples)
         {
             sum += pBuffer[i] * pBuffer[i + offs];    // scaling the sub-result shouldn't be necessary
         }
-//        xcorr[offs] *= xcorr_decay;   // decay 'xcorr' here with suitable coefficients 
-                                        // if it's desired that the system adapts automatically to
-                                        // various bpms, e.g. in processing continouos music stream.
-                                        // The 'xcorr_decay' should be a value that's smaller than but 
-                                        // close to one, and should also depend on 'process_samples' value.
+        xcorr[offs] *= xcorr_decay;   // decay 'xcorr' here with suitable time constant.
 
-        xcorr[offs] += (float)sum;
-    }
-}
-
-
-// Calculates envelope of the sample data
-void BPMDetect::calcEnvelope(SAMPLETYPE *samples, int numsamples) 
-{
-    const static double decay = 0.7f;               // decay constant for smoothing the envelope
-    const static double norm = (1 - decay);
-
-    int i;
-    LONG_SAMPLETYPE out;
-    double val;
-
-    for (i = 0; i < numsamples; i ++) 
-    {
-        // calc average RMS volume
-        RMSVolumeAccu *= avgdecay;
-        val = (float)fabs((float)samples[i]);
-        RMSVolumeAccu += val * val;
-
-        // cut amplitudes that are below cutoff ~2 times RMS volume
-        // (we're interested in peak values, not the silent moments)
-        if (val < 0.5 * sqrt(RMSVolumeAccu * avgnorm))
-        {
-            val = 0;
-        }
-
-        // smooth amplitude envelope
-        envelopeAccu *= decay;
-        envelopeAccu += val;
-        out = (LONG_SAMPLETYPE)(envelopeAccu * norm);
-
-#ifdef SOUNDTOUCH_INTEGER_SAMPLES
-        // cut peaks (shouldn't be necessary though)
-        if (out > 32767) out = 32767;
-#endif // SOUNDTOUCH_INTEGER_SAMPLES
-        samples[i] = (SAMPLETYPE)out;
+        xcorr[offs] += (float)fabs(sum);
     }
 }
 
@@ -304,23 +258,16 @@ void BPMDetect::inputSamples(const SAMPLETYPE *samples, int numSamples)
         samples += block * channels;
         numSamples -= block;
 
-        // envelope new samples and add them to buffer
-        calcEnvelope(decimated, decSamples);
         buffer->putSamples(decimated, decSamples);
     }
 
     // when the buffer has enought samples for processing...
-    if ((int)buffer->numSamples() > windowLen) 
+    while ((int)buffer->numSamples() >= windowLen + xcorr_update_sequence) 
     {
-        int processLength;
-
-        // how many samples are processed
-        processLength = (int)buffer->numSamples() - windowLen;
-
         // ... calculate autocorrelations for oldest samples...
-        updateXCorr(processLength);
-        // ... and remove them from the buffer
-        buffer->receiveSamples(processLength);
+        updateXCorr(xcorr_update_sequence);
+        // ... and remove these from the buffer
+        buffer->receiveSamples(xcorr_update_sequence);
     }
 }
 
