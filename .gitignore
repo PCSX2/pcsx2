@@ -6,6 +6,7 @@
 *.p2m_backup
 *.tmp
 
+
 # PCSX2 Ignores
 .*.swp
 .*.swn
@@ -82,6 +83,10 @@ oprofile_data/
 /bin/plugins
 /bin/snaps
 /bin/sstates
+/bin/cheats
+/bin/cheats_ws
+bin/inis/*
+!bin/inis/PCSX2_keys.ini
 /deps
 /ipch
 
