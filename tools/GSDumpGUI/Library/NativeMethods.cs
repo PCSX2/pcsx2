@@ -30,6 +30,10 @@ namespace GSDumpGUI
         public extern static int GetLastError();
 
         [SuppressUnmanagedCodeSecurityAttribute]
+        [DllImport("kernel32", CharSet = CharSet.Ansi)]
+        public extern static int WritePrivateProfileString(string lpAppName, string lpKeyName, string lpString, string lpFileName);
+
+        [SuppressUnmanagedCodeSecurityAttribute]
         [DllImport("user32", CharSet = CharSet.Ansi)]
         public extern static short GetAsyncKeyState(int key);
 

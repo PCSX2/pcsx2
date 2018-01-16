@@ -163,7 +163,7 @@ namespace GSDumpGUI
         private void ExecuteFunction(String Function)
         {
             txtLog.Text = "";
-            String GSDXName = lstGSDX.SelectedItem.ToString().Split(new char[] { '|' })[0];
+            String GSDXName = lstGSDX.SelectedItem.ToString().Split(new char[] { '|' })[0].TrimEnd();
 
             CreateDirs(GSDXName);
 
@@ -191,22 +191,8 @@ namespace GSDumpGUI
             }
             if (SelectedRenderer != "-1")
             {
-                if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\" + GSDXName + "\\inis\\gsdx.ini"))
-                {
-                    String ini = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\" + GSDXName + "\\inis\\gsdx.ini");
-                    int pos = ini.IndexOf("Renderer=", 0);
-                    if (pos != -1)
-                    {
-                        String newini = ini.Substring(0, pos + 9);
-                        newini += SelectedRenderer;
-                        newini += ini.Substring(pos + 10, ini.Length - pos - 10);
-                        File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\" + GSDXName + "\\inis\\gsdx.ini", newini);
-                    }
-                    else
-                    {
-                        File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\" + GSDXName + "\\inis\\gsdx.ini", ini + Environment.NewLine + "Renderer=" + SelectedRenderer);
-                    }
-                }
+                String GSdxIniPath = AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\" + GSDXName + "\\inis\\gsdx.ini";
+                NativeMethods.WritePrivateProfileString("Settings", "Renderer", SelectedRenderer, GSdxIniPath);
             }
             if (lstDumps.SelectedItem != null)
                 DumpPath = Properties.Settings.Default.DumpDir + "\\" + 
