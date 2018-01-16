@@ -114,14 +114,26 @@ TLD_iopConsole = {
 TLD_deci2 = {
 	L"DECI2",		L"DECI&2 Console",
 	pxDt("Shows DECI2 debugging logs (EE processor)")
+},
+
+TLD_tasConsole = {
+	L"TAS",			L"TAS Console",
+	pxDt("Shows TAS related logs and information")
+},
+
+TLD_controlInfo = {
+	L"Controller Info",			L"Controller Info",
+	pxDt("Shows detailed info on controller input values every frame on controller port 1")
 };
 
 SysConsoleLogPack::SysConsoleLogPack()
-	: ELF		(&TLD_ELF, Color_Gray)
-	, eeRecPerf	(&TLD_eeRecPerf, Color_Gray)
-	, eeConsole	(&TLD_eeConsole)
-	, iopConsole(&TLD_iopConsole)
-	, deci2		(&TLD_deci2)
+	: ELF				(&TLD_ELF, Color_Gray)
+	, eeRecPerf			(&TLD_eeRecPerf, Color_Gray)
+	, eeConsole			(&TLD_eeConsole)
+	, iopConsole		(&TLD_iopConsole)
+	, deci2				(&TLD_deci2)
+	, tasConsole		(&TLD_tasConsole)
+	, controlInfo		(&TLD_controlInfo)
 {
 }
 

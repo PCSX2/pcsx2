@@ -16,6 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
 
+#include "Common.h"
+#include "ConsoleLogger.h"
 #include "Sio.h"
 #include "sio_internal.h"
 
@@ -220,22 +222,21 @@ SIO_WRITE sioWriteController(u8 data)
 
 		// -- TAS Debugging Helpful -- //
 		// Prints controlller data every frame //
-		/* TODO TAS - move this to a settings flag in the console or something instead of having to uncomment
-		std::string converted = std::to_string(sio.buf[sio.bufCount]);
+		// can use isSourceEnabled if this is a performance hit, but i don't think it will be an issue
+		// std::string converted = std::to_string(sio.buf[sio.bufCount]);
 		if (sio.port == 0 && sio.bufCount > 2) { // skip first two bytes because they dont seem to matter
 			if (sio.bufCount == 3) {
-				std::cout << "\n\nController Output - Port 1";
-				std::cout << "\nPressed Flags: ";
+				controlLog(wxString::Format("\nController Port %d", sio.port));
+				controlLog(wxString::Format("\nPressed Flags - "));
 			}
 			if (sio.bufCount == 5) { // analog sticks
-				std::cout << "\nAnalog Sticks: ";
+				controlLog(wxString::Format("\nAnalog Sticks - "));
 			}
 			if (sio.bufCount == 9) { // pressure sensitive bytes
-				std::cout << "\nPressure Bytes: ";
+				controlLog(wxString::Format("\nPressure Bytes - "));
 			}
-			std::cout << converted << " ";
+			controlLog(wxString::Format("%3d ", sio.buf[sio.bufCount]));
 		}
-		*/
 
 		break;
 	}

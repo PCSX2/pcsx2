@@ -1,6 +1,7 @@
 #include "PrecompiledHeader.h"
 
 #include "app.h"	//Counters.h‚ðinclude‚·‚é‚Ì‚É•K—v
+#include "Common.h"
 #include "Counters.h"	// use"g_FrameCount"
 #include "SaveState.h"	// create "SaveStateBase::keymovieFreeze()"
 #include "AppSaveStates.h"	// use "States_GetCurrentSlot()"
@@ -110,7 +111,7 @@ void KeyMovie::ControllerInterrupt(u8 &data, u8 &port, u16 & bufCount, u8 buf[])
 void KeyMovie::Stop() {
 	state = NONE;
 	if (keyMovieData.Close()) {
-		Console.WriteLn(Color_StrongBlue, L"[KeyMovie]KeyMovie stop.");
+		tasConLog(L"[TAS]: KeyMovie Recording Stopped.\n");
 	}
 }
 
@@ -128,7 +129,7 @@ void KeyMovie::Start(wxString FileName,bool fReadOnly, VmStateBuffer* ss)
 			return;
 		}
 		if (!keyMovieData.readHeaderAndCheck()) {
-			Console.WriteLn(Color_StrongBlue, L"[KeyMovie]This file is not a correct KeyMovie file.");
+			tasConLog(L"[TAS]: This file is not a correct KeyMovie file.\n");
 			keyMovieData.Close();
 			return;
 		}
@@ -136,20 +137,20 @@ void KeyMovie::Start(wxString FileName,bool fReadOnly, VmStateBuffer* ss)
 		if (!g_Conf->CurrentIso.IsEmpty())
 		{
 			if (Path::GetFilename(g_Conf->CurrentIso) != keyMovieData.getHeader().cdrom) {
-				Console.WriteLn(Color_StrongBlue, L"[KeyMovie]Information on CD in Movie file is different.");
+				tasConLog(L"[TAS]: Information on CD in Movie file is Different.\n");
 			}
 		}
 		state = REPLAY;
-		Console.WriteLn(Color_StrongBlue, wxString::Format( L"[KeyMovie]Replay movie.[%s]",FileName) );
-		Console.WriteLn(Color_StrongBlue, L"MaxFrame:%d", keyMovieData.getMaxFrame());
-		Console.WriteLn(Color_StrongBlue, L"UndoCount:%d", keyMovieData.getUndoCount());
+		tasConLog(wxString::Format(L"[TAS]: Replaying movie - [%s]\n",FileName));
+		tasConLog(wxString::Format(L"MaxFrame: %d\n", keyMovieData.getMaxFrame()));
+		tasConLog(wxString::Format(L"UndoCount: %d\n", keyMovieData.getUndoCount()));
 	}
 	else
 	{
 		// backup
 		wxString bpfile = wxString::Format(L"%s_backup", FileName);
 		if (CopyFile( FileName , bpfile, false)) {
-			Console.WriteLn(Color_StrongBlue, wxString::Format(L"[KeyMovie]Create backup file.[%s]", bpfile) );
+			tasConLog(wxString::Format(L"[TAS]: Created backup movie file - [%s]\n", bpfile));
 		}
 		// create
 		if (!keyMovieData.Open(FileName, true, ss)) {
@@ -164,7 +165,7 @@ void KeyMovie::Start(wxString FileName,bool fReadOnly, VmStateBuffer* ss)
 		keyMovieData.writeSavestate();
 
 		state = RECORD;
-		Console.WriteLn(Color_StrongBlue, wxString::Format(L"[KeyMovie]Start new record.[%s]",FileName ));
+		tasConLog(wxString::Format(L"[TAS]: Started new recording - [%s]\n", FileName));
 	}
 	// In every case, we reset the g_FrameCount
 	g_FrameCount = 0;
@@ -177,11 +178,11 @@ void KeyMovie::RecordModeToggle()
 {
 	if (state == REPLAY) {
 		state = RECORD;
-		Console.WriteLn(Color_StrongBlue, L"[KeyMovie]Record mode on.");
+		tasConLog("[TAS]: Record mode ON.\n");
 	}
 	else if (state == RECORD) {
 		state = REPLAY;
-		Console.WriteLn(Color_StrongBlue, L"[KeyMovie]Replay mode on.");
+		tasConLog("[TAS]: Replay mode ON.\n");
 	}
 }
 

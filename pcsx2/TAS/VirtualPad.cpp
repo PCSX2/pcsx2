@@ -1,4 +1,7 @@
 #include "PrecompiledHeader.h"
+
+#include "Common.h"
+
 #include "TAS/VirtualPad.h"
 #include "TAS/TASInputManager.h"
 
@@ -203,7 +206,7 @@ void VirtualPad::OnClick(wxCommandEvent & event)
 		g_TASInput.SetButtonState(port, PadDataNormalKeys[id], pressure);
 	}
 	else
-		Console.WriteLn("Virtual Pad Error: Unknown toggle button pressed");
+		tasConLog("[VirtualPad]: Unknown toggle button pressed.\n");
 }
 
 // TODO TAS - should probably implement an OnRelease (if wxwidgets has that?)
@@ -250,7 +253,7 @@ void VirtualPad::OnPressureCtrlChange(wxSpinEvent & event)
 		g_TASInput.SetButtonState(port, PadDataNormalKeys[id], pressure);
 	}
 	else
-		Console.WriteLn("Virtual Pad Error: Unknown pressure sensitivty change");
+		tasConLog("[VirtualPad]: Unknown pressure sensitivty change.\n");
 }
 
 void VirtualPad::OnTextCtrlChange(wxSpinEvent & event)
@@ -266,7 +269,7 @@ void VirtualPad::OnTextCtrlChange(wxSpinEvent & event)
 			g_TASInput.UpdateAnalog(port, PadDataAnalogKeys[id], event.GetInt());
 	}
 	else
-		Console.WriteLn("Virtual Pad Error: Unknown TextCtrl change");
+		tasConLog("[VirtualPad]: Unknown TextCtrl change.\n");
 }
 
 void VirtualPad::OnSliderMove(wxCommandEvent & event)
@@ -282,7 +285,7 @@ void VirtualPad::OnSliderMove(wxCommandEvent & event)
 			g_TASInput.UpdateAnalog(port, PadDataAnalogKeys[id], event.GetInt());
 	}
 	else
-		Console.WriteLn("Virtual Pad Error: Unknow TextCtrl change");
+		tasConLog("[VirtualPad]: Unknown TextCtrl change.\n");
 }
 
 int VirtualPad::getButtonIdFromPressure(int pressureCtrlId) {
