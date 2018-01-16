@@ -41,10 +41,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2015-09-20 10:38:32 +0300 (Sun, 20 Sep 2015) $
+// Last changed  : $Date: 2017-07-30 12:35:00 +0300 (su, 30 heinä 2017) $
 // File revision : $Revision: 4 $
 //
-// $Id: SoundTouch.h 230 2015-09-20 07:38:32Z oparviai $
+// $Id: SoundTouch.h 253 2017-07-30 09:35:00Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -79,10 +79,10 @@ namespace soundtouch
 {
 
 /// Soundtouch library version string
-#define SOUNDTOUCH_VERSION          "1.9.2"
+#define SOUNDTOUCH_VERSION          "2.0.0"
 
 /// SoundTouch library version id
-#define SOUNDTOUCH_VERSION_ID       (10902)
+#define SOUNDTOUCH_VERSION_ID       (20000)
 
 //
 // Available setting IDs for the 'setSetting' & 'get_setting' functions:
@@ -116,30 +116,61 @@ namespace soundtouch
 #define SETTING_OVERLAP_MS          5
 
 
-/// Call "getSetting" with this ID to query nominal average processing sequence
-/// size in samples. This value tells approcimate value how many input samples 
-/// SoundTouch needs to gather before it does DSP processing run for the sample batch.
+/// Call "getSetting" with this ID to query processing sequence size in samples. 
+/// This value gives approximate value of how many input samples you'll need to 
+/// feed into SoundTouch after initial buffering to get out a new batch of
+/// output samples. 
+///
+/// This value does not include initial buffering at beginning of a new processing 
+/// stream, use SETTING_INITIAL_LATENCY to get the initial buffering size.
 ///
 /// Notices: 
 /// - This is read-only parameter, i.e. setSetting ignores this parameter
-/// - Returned value is approximate average value, exact processing batch
-///   size may wary from time to time
-/// - This parameter value is not constant but may change depending on 
+/// - This parameter value is not constant but change depending on 
 ///   tempo/pitch/rate/samplerate settings.
-#define SETTING_NOMINAL_INPUT_SEQUENCE		6
+#define SETTING_NOMINAL_INPUT_SEQUENCE      6
 
 
 /// Call "getSetting" with this ID to query nominal average processing output 
 /// size in samples. This value tells approcimate value how many output samples 
 /// SoundTouch outputs once it does DSP processing run for a batch of input samples.
-///	
+///
 /// Notices: 
 /// - This is read-only parameter, i.e. setSetting ignores this parameter
-/// - Returned value is approximate average value, exact processing batch
-///   size may wary from time to time
-/// - This parameter value is not constant but may change depending on 
+/// - This parameter value is not constant but change depending on 
 ///   tempo/pitch/rate/samplerate settings.
-#define SETTING_NOMINAL_OUTPUT_SEQUENCE		7
+#define SETTING_NOMINAL_OUTPUT_SEQUENCE     7
+
+
+/// Call "getSetting" with this ID to query initial processing latency, i.e.
+/// approx. how many samples you'll need to enter to SoundTouch pipeline before 
+/// you can expect to get first batch of ready output samples out. 
+///
+/// After the first output batch, you can then expect to get approx. 
+/// SETTING_NOMINAL_OUTPUT_SEQUENCE ready samples out for every
+/// SETTING_NOMINAL_INPUT_SEQUENCE samples that you enter into SoundTouch.
+///
+/// Example:
+///     processing with parameter -tempo=5
+///     => initial latency = 5509 samples
+///        input sequence  = 4167 samples
+///        output sequence = 3969 samples
+///
+/// Accordingly, you can expect to feed in approx. 5509 samples at beginning of 
+/// the stream, and then you'll get out the first 3969 samples. After that, for 
+/// every approx. 4167 samples that you'll put in, you'll receive again approx. 
+/// 3969 samples out.
+///
+/// This also means that average latency during stream processing is 
+/// INITIAL_LATENCY-OUTPUT_SEQUENCE/2, in the above example case 5509-3969/2 
+/// = 3524 samples
+/// 
+/// Notices: 
+/// - This is read-only parameter, i.e. setSetting ignores this parameter
+/// - This parameter value is not constant but change depending on 
+///   tempo/pitch/rate/samplerate settings.
+#define SETTING_INITIAL_LATENCY             8
+
 
 class SoundTouch : public FIFOProcessor
 {
@@ -228,6 +259,24 @@ public:
     /// Sets sample rate.
     void setSampleRate(uint srate);
 
+    /// Get ratio between input and output audio durations, useful for calculating
+    /// processed output duration: if you'll process a stream of N samples, then 
+    /// you can expect to get out N * getInputOutputSampleRatio() samples.
+    ///
+    /// This ratio will give accurate target duration ratio for a full audio track, 
+    /// given that the the whole track is processed with same processing parameters.
+    /// 
+    /// If this ratio is applied to calculate intermediate offsets inside a processing
+    /// stream, then this ratio is approximate and can deviate +- some tens of milliseconds 
+    /// from ideal offset, yet by end of the audio stream the duration ratio will become
+    /// exact.
+    ///
+    /// Example: if processing with parameters "-tempo=15 -pitch=-3", the function
+    /// will return value 0.8695652... Now, if processing an audio stream whose duration
+    /// is exactly one million audio samples, then you can expect the processed 
+    /// output duration  be 0.869565 * 1000000 = 869565 samples.
+    double getInputOutputSampleRatio();
+
     /// Flushes the last samples from the processing pipeline to the output.
     /// Clears also the internal processing buffers.
     //
@@ -286,6 +335,11 @@ public:
     /// Returns number of samples currently unprocessed.
     virtual uint numUnprocessedSamples() const;
 
+    /// Return number of channels
+    uint numChannels() const
+    {
+        return channels;
+    }
 
     /// Other handy functions that are implemented in the ancestor classes (see
     /// classes 'FIFOProcessor' and 'FIFOSamplePipe')

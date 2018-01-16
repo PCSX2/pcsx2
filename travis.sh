@@ -18,17 +18,15 @@ linux_32_before_install() {
 	if [ "${CXX}" = "clang++" ]; then
 		sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
 		sudo add-apt-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-${VERSION} main"
-		# g++-4.9-multilib is necessary for compiler dependencies. 4.8 currently
-		# has dependency issues, but 4.9 from the toolchain repo seems to work
-		# fine, so let's just use that.
-		COMPILER_PACKAGE="clang-${VERSION} g++-4.9-multilib clang-format-${VERSION}"
+		# g++-x-multilib is necessary for compiler dependencies.
+		COMPILER_PACKAGE="clang-${VERSION} g++-7-multilib clang-format-${VERSION}"
 	fi
 	if [ "${CXX}" = "g++" ]; then
-		COMPILER_PACKAGE="g++-${VERSION}-multilib"
+		# python:i386 is required to avoid dependency issues for gcc-4.9 and
+		# gcc-7. It causes issues with clang-format though, so the dependency is
+		# only specified for gcc.
+		COMPILER_PACKAGE="g++-${VERSION}-multilib python:i386"
 	fi
-
-	# apt-get update fails because Chrome is 64-bit only.
-	sudo rm -f /etc/apt/sources.list.d/google-chrome.list
 
 	sudo apt-get -qq update
 

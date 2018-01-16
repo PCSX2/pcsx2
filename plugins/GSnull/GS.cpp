@@ -82,19 +82,6 @@ PS2EgetLibVersion2(u32 type)
     return (version << 16) | (revision << 8) | build;
 }
 
-EXPORT_C_(void)
-GSprintf(int timeout, char *fmt, ...)
-{
-    va_list list;
-    char msg[512];
-
-    va_start(list, fmt);
-    vsprintf(msg, fmt, list);
-    va_end(list);
-
-    GSLog::Print("GSprintf:%s", msg);
-}
-
 // basic funcs
 EXPORT_C_(void)
 GSsetSettingsDir(const char *dir)

@@ -44,7 +44,7 @@ msgstr ""
 msgid ""
 "Failed to read/write NMV/MEC file. Check your bios setup/permission settings"
 msgstr ""
-
+"Échec de la lecture/écriture du fichier NMV/MEC. Verifiez vos paramètres/permissions dans votre bios "
 #: pcsx2/System.cpp:112
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "

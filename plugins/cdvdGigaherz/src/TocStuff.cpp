@@ -16,6 +16,7 @@
 #include "CDVD.h"
 
 #include <algorithm>
+#include <array>
 
 void cdvdParseTOC()
 {
@@ -45,10 +46,17 @@ void cdvdParseTOC()
         strack = std::min(strack, entry.track);
         etrack = std::max(etrack, entry.track);
         tracks[entry.track].start_lba = entry.lba;
-        if (!(entry.control & 0x04))
+        if ((entry.control & 0x0C) == 0x04) {
+            std::array<u8, 2352> buffer;
+            // Byte 15 of a raw CD data sector determines the track mode
+            if (src->ReadSectors2352(entry.lba, 1, buffer.data()) && (buffer[15] & 3) == 2) {
+                tracks[entry.track].type = CDVD_MODE2_TRACK;
+            } else {
+                tracks[entry.track].type = CDVD_MODE1_TRACK;
+            }
+        } else {
             tracks[entry.track].type = CDVD_AUDIO_TRACK;
-        else
-            tracks[entry.track].type = CDVD_MODE1_TRACK;
+        }
         fprintf(stderr, "Track %u start sector: %u\n", entry.track, entry.lba);
     }
 }

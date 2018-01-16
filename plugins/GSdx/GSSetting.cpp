@@ -122,6 +122,13 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_TC_DEPTH:
 			return "Disable the support of Depth buffer in the texture cache.\n"
 				"It can help to increase speed but it will likely create various glitches.";
+		case IDC_CPU_FB_CONVERSION:
+			return "Convert 4-bit and 8-bit frame buffer on the CPU instead of the GPU.\n\n"
+				"The hack can fix glitches in some games.\n"
+				"Harry Potter games (Direct3D and OpenGL).\n"
+				"FIFA Street games (Direct3D).\n"
+				"Other games might also benefit from this hack especially on Direct3D.\n\n"
+				"Note: This hack has an impact on performance.\n";
 		case IDC_AFCOMBO:
 			return "Reduces texture aliasing at extreme viewing angles. High performance impact.";
 		case IDC_AA1:
@@ -174,6 +181,8 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Uploads GS data when rendering a new frame to reproduce some effects accurately. Fixes black screen issues in games like Armored Core: Last Raven.";
 		case IDC_MIPMAP_HW:
 			return	"Control the accuracy level of the mipmapping emulation\n\n"
+				"Automatic:\nAutomatically sets the mipmapping level based on the game.\n"
+				"This is the recommended setting.\n\n"
 				"Off:\nMipmapping emulation is disabled.\n\n"
 				"Basic (Fast):\nPartially emulates mipmapping, performance impact is negligible in most cases.\n\n"
 				"Full (Slow):\nCompletely emulates the mipmapping function of the GS, might significantly impact performance.";

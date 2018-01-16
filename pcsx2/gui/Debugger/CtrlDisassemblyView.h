@@ -61,6 +61,7 @@ private:
 	void toggleBreakpoint(bool toggleEnabled);
 	void updateStatusBarText();
 	std::string disassembleRange(u32 start, u32 size);
+	std::string disassembleCurAddress();
 	void copyInstructions(u32 startAddr, u32 endAddr, bool withDisasm);
 	void disassembleToFile();
 	void editBreakpoint();

@@ -47,9 +47,6 @@ bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
 			skip = 1315;
 		}
 	}
-	else
-	{
-	}
 
 	return true;
 }
@@ -106,27 +103,7 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
     return true;
 }
 
-bool GSC_WildArms4(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x03100 && fi.FPSM == PSM_PSMZ32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ32)
-		{
-			skip = 100;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x02a00 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_WildArms5(const GSFrameInfo& fi, int& skip)
+bool GSC_WildArmsGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
@@ -321,6 +298,7 @@ bool GSC_EvangelionJo(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.TBP0 == 0x2BC0 || (fi.FBP == 0 || fi.FBP == 0x1180) && (fi.FPSM | fi.TPSM) == 0)
 		{
+			// Removes blur/glow. Fixes ghosting when resolution is upscaled.
 			skip = 1;
 		}
 	}
@@ -471,6 +449,19 @@ bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
+{
+	if (skip == 0)
+	{
+		if (fi.TME && fi.FBP == 0x00500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00f00 && fi.TPSM == PSM_PSMCT16)
+		{
+			skip = 2; // blur
+		}
+	}
+
+	return true;
+}
+
 bool GSC_TimeSplitters2(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -552,14 +543,32 @@ bool GSC_HeavyMetalThunder(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
+bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP == 0x01180 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03fc0 && fi.TPSM == PSM_PSMCT32)
+		if(Aggressive && fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x02d80 || fi.FBP == 0x02ea0 || fi.FBP == 0x03620) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
 		{
-			skip = 1;
+			// Fixes/removes ghosting/blur effect and white lines appearing in stages: Moonfit Wilderness, Acid Rain - caused by upscaling.
+			// Downside is it also removes the channel effect which is fixed on OpenGL.
+			// Let's enable this hack for Aggressive only since it's an upscaling issue for both renders.
+			skip = 95;
 		}
+		else if(fi.TME && (fi.FBP == 0x02bc0 || fi.FBP == 0x02be0 || fi.FBP == 0x02d00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
+		{
+			// The moving display effect(flames) is not emulated properly in the entire screen so let's remove the effect in the stage: Burning Temple. Related to half screen bottom issue.
+			// Fixes black lines in the stage: Burning Temple - caused by upscaling. Note the black lines can also be fixed with Merge Sprite hack.
+			skip = 2;
+		}
+		// It's unknown what this hack does so let's comment it out since it doesn't cause any issues when disabled it seems.
+		/*else if(fi.TME)
+		{
+			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
+				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
+			{
+				skip = 24;
+			}
+		}*/
 	}
 
 	return true;
@@ -941,6 +950,7 @@ bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.TBP0 ==0x0700 || fi.TBP0 ==0x0a80) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
 		{
+			// removes glow/blur which cause ghosting and other sprite issues similar to Tekken 5 
 			skip = 1;
 		}
 	}
@@ -1058,44 +1068,6 @@ bool GSC_TalesofSymphonia(const GSFrameInfo& fi, int& skip)
 		if(fi.TME  && (fi.TBP0==0x1180 || fi.TBP0==0x1a40 || fi.TBP0==0x2300) && fi.FBMSK>=0xFF000000)
 		{
 			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SoulCalibur2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 2;
-			}
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SoulCalibur3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 2;
-			}
 		}
 	}
 
@@ -1243,31 +1215,6 @@ bool GSC_TalesOfAbyss(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x02d80 || fi.FBP == 0x02ea0 || fi.FBP == 0x03620) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 95;
-		}
-		else if(fi.TME && (fi.FBP == 0x02bc0 || fi.FBP == 0x02be0 || fi.FBP == 0x02d00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 2;
-		}
-		else if(fi.TME)
-		{
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-				{
-					skip = 24;
-				}
-		}
-	}
-
-	return true;
-}
-
 bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1406,20 +1353,6 @@ bool GSC_SkyGunner(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_JamesBondEverythingOrNothing(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-
-		if(fi.TME && (fi.FBP < 0x02000 && !(fi.FBP == 0x0 || fi.FBP == 0x00e00)) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 > 0x01c00 && fi.TBP0 < 0x03000) && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 1; //Huge Vram usage
-		}
-	}
-
-	return true;
-}
-
 bool GSC_StarWarsBattlefront(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1500,19 +1433,6 @@ bool GSC_MetalGearSolid3(const GSFrameInfo& fi, int& skip)
 			{
 				skip = 136;	//pal
 			}
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x00500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00f00 && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 2; // blur
 		}
 	}
 
@@ -1686,26 +1606,6 @@ bool GSC_SonicUnleashed(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03000 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 100;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_StarOcean3(const GSFrameInfo& fi, int& skip)
 {
 	// The game emulate a stencil buffer with the alpha channel of the RT
@@ -1788,6 +1688,25 @@ bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
 		if(!(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH))
 		{
 			skip = 0;
+		}
+	}
+
+	return true;
+}
+
+bool GSC_SoulCaliburGames(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME)
+		{
+			// depth textures (bully, mgs3s1 intro, Front Mission 5)
+			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
+				// General, often problematic post processing
+				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
+			{
+				skip = 2;
+			}
 		}
 	}
 
@@ -2103,6 +2022,20 @@ bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
+{
+	if(Aggressive && skip == 0)
+	{
+		if(fi.TME && fi.FBP == 0x01180 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03fc0 && fi.TPSM == PSM_PSMCT32)
+		{
+			// Removes body shading. Not needed but offers a very decent speed boost.
+			skip = 1;
+		}
+	}
+
+	return true;
+}
+
 template<uptr state_addr>
 bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 {
@@ -2160,50 +2093,10 @@ bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
             }*/
     }
 
-
-
-
-
 	return true;
 }
 
-bool GSC_FFXII(const GSFrameInfo& fi, int& skip)
-{
-	if(Aggressive && skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-	return true;
-}
-
-bool GSC_FFX2(const GSFrameInfo& fi, int& skip)
-{
-	if(Aggressive && skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-	return true;
-}
-
-bool GSC_FFX(const GSFrameInfo& fi, int& skip)
+bool GSC_FFXGames(const GSFrameInfo& fi, int& skip)
 {
 	if(Aggressive && skip == 0)
 	{
@@ -2238,19 +2131,16 @@ bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SSX3(const GSFrameInfo& fi, int& skip)
+bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
 {
 	if(Aggressive && skip == 0)
 	{
-		if(fi.TME)
+		if(fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
 		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
+			// Removes character outlines, similar to DBZ BT3.
+			// Upscaling causes the outlines to be out of place but can be fixed with TC Offsets.
+			// The hack can be used to increase slight performance.
+			skip = 2;
 		}
 	}
 
@@ -2408,7 +2298,6 @@ void GSState::SetupCrcHack()
 	if (Dx_and_OGL) {
 		lut[CRC::AceCombat4] = GSC_AceCombat4;
 		lut[CRC::BlackHawkDown] = GSC_BlackHawkDown;
-		lut[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
 		lut[CRC::BurnoutDominator] = GSC_Burnout;
 		lut[CRC::BurnoutRevenge] = GSC_Burnout;
 		lut[CRC::BurnoutTakedown] = GSC_Burnout;
@@ -2445,21 +2334,21 @@ void GSState::SetupCrcHack()
 		lut[CRC::ShadowofRome] = GSC_ShadowofRome;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
 		lut[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
-		lut[CRC::SoulCalibur2] = GSC_SoulCalibur2;
-		lut[CRC::SoulCalibur3] = GSC_SoulCalibur3;
 		lut[CRC::Spartan] = GSC_Spartan;
 		lut[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
 		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
+		lut[CRC::SFEX3] = GSC_SFEX3;
 		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
+		lut[CRC::Tekken5] = GSC_Tekken5;
 		lut[CRC::TimeSplitters2] = GSC_TimeSplitters2;
 		lut[CRC::TombRaiderAnniversary] = GSC_TombRaider;
 		lut[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
 		lut[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
 		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
 		lut[CRC::UrbanReign] = GSC_UrbanReign;
-		lut[CRC::WildArms4] = GSC_WildArms4;
-		lut[CRC::WildArms5] = GSC_WildArms5;
+		lut[CRC::WildArms4] = GSC_WildArmsGames;
+		lut[CRC::WildArms5] = GSC_WildArmsGames;
 		lut[CRC::Yakuza2] = GSC_Yakuza2;
 		lut[CRC::Yakuza] = GSC_Yakuza;
 		lut[CRC::ZettaiZetsumeiToshi2] = GSC_ZettaiZetsumeiToshi2;
@@ -2468,15 +2357,16 @@ void GSState::SetupCrcHack()
 		lut[CRC::StarOcean3] = GSC_StarOcean3;
 		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
 		// Only Aggressive
+		lut[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
+		lut[CRC::FFX2] = GSC_FFXGames;
+		lut[CRC::FFX] = GSC_FFXGames;
+		lut[CRC::FFXII] = GSC_FFXGames;
 		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
-		lut[CRC::FFX2] = GSC_FFX2;
-		lut[CRC::FFX] = GSC_FFX;
-		lut[CRC::FFXII] = GSC_FFXII;
+		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
 		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
 		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
 		lut[CRC::SoTC] = GSC_SoTC;
-		lut[CRC::SSX3] = GSC_SSX3;
 	}
 
 	// Hack that were fixed on openGL
@@ -2488,7 +2378,8 @@ void GSState::SetupCrcHack()
 		lut[CRC::ICO] = GSC_ICO;
 		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 		lut[CRC::Okami] = GSC_Okami;
-		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
+		lut[CRC::SoulCalibur2] = GSC_SoulCaliburGames;
+		lut[CRC::SoulCalibur3] = GSC_SoulCaliburGames;
 		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
 		lut[CRC::XE3] = GSC_XE3;
 
@@ -2502,7 +2393,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::LegoBatman] = GSC_LegoBatman;
 		lut[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
 		lut[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
-		lut[CRC::SFEX3] = GSC_SFEX3;
 		lut[CRC::SpyroEternalNight] = GSC_SpyroEternalNight;
 		lut[CRC::SpyroNewBeginning] = GSC_SpyroNewBeginning;
 		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed;
@@ -2527,7 +2417,6 @@ void GSState::SetupCrcHack()
 
 		// Channel Effect
 		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
-		lut[CRC::JamesBondEverythingOrNothing] = GSC_JamesBondEverythingOrNothing;
 		lut[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // + accurate blending
 		lut[CRC::SkyGunner] = GSC_SkyGunner;
 		lut[CRC::StarWarsBattlefront2] = GSC_StarWarsBattlefront2;
@@ -2538,7 +2427,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::GT3] = GSC_GT3;
 		lut[CRC::GTConcept] = GSC_GTConcept;
 		lut[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
-		lut[CRC::Tekken5] = GSC_Tekken5;
 
 		// RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly
 		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas;

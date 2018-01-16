@@ -38,6 +38,7 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 		m_preload_frame                = theApp.GetConfigB("preload_frame_with_gs_data");
 		m_disable_partial_invalidation = theApp.GetConfigB("UserHacks_DisablePartialInvalidation");
 		m_can_convert_depth            = !theApp.GetConfigB("UserHacks_DisableDepthSupport");
+		m_cpu_fb_conversion            = theApp.GetConfigB("UserHacks_CPU_FB_Conversion");
 		m_texture_inside_rt            = theApp.GetConfigB("UserHacks_TextureInsideRt");
 		m_wrap_gs_mem                  = theApp.GetConfigB("wrap_gs_mem");
 	} else {
@@ -46,6 +47,7 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 		m_preload_frame                = false;
 		m_disable_partial_invalidation = false;
 		m_can_convert_depth            = true;
+		m_cpu_fb_conversion            = false;
 		m_texture_inside_rt            = false;
 		m_wrap_gs_mem                  = false;
 	}
@@ -268,25 +270,21 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				uint32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
 
 				if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t_psm)) {
-					if (!s_IS_OPENGL && (psm == PSM_PSMT8)) {
-						// OpenGL can convert the texture directly in the GPU. Not sure we want to keep this
-						// code for DX. It fixes effect but it is slow (MGS3)
-
-						// It is a complex to convert the code in shader. As a reference, let's do it on the CPU, it will
-						// be slow but
-						// 1/ it just works :)
-						// 2/ even with upscaling
-						// 3/ for both DX and OpenGL
-
-						// Gregory: to avoid a massive slow down for nothing, let's only enable
-						// this code when CRC is below the FULL level
-						if (m_crc_hack_level < CRCHackLevel::Full)
-							Read(t, t->m_valid);
-						else
-							dst = t;
-					} else {
+					// It is a complex to convert the code in shader. As a reference, let's do it on the CPU, it will be slow but
+					// 1/ it just works :)
+					// 2/ even with upscaling
+					// 3/ for both DX and OpenGL
+					if (m_cpu_fb_conversion && (psm == PSM_PSMT4 || psm == PSM_PSMT8))
+						// Forces 4-bit and 8-bit frame buffer conversion to be done on the CPU instead of the GPU, but performance will be slower.
+						// There is no dedicated shader to handle 4-bit conversion.
+						// Direct3D doesn't support 8-bit fb conversion, OpenGL does support it but it doesn't render some corner cases properly.
+						// The hack can fix glitches in some games.
+						// Harry Potter games (Direct3D and OpenGL).
+						// FIFA Street games (Direct3D).
+						// Other games might also benefit from this hack especially on Direct3D.
+						Read(t, t->m_valid);
+					else
 						dst = t;
-					}
 
 					break;
 
@@ -298,6 +296,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					dst = t;
 
 					break;
+
 				} else if (m_texture_inside_rt && psm == PSM_PSMCT32 && bw == 1 && bp_end < t->m_end_block && t->m_TEX0.TBP0 < bp) {
 					// Note bw == 1 until we find a generic formulae below
 					dst = t;
@@ -518,27 +517,26 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		//
 		// From a performance point of view, it might cost a little on big upscaling
 		// but normally few RT are miss so it must remain reasonable.
-		if (s_IS_OPENGL) {
-			if (m_preload_frame && TEX0.TBW > 0) {
-				GL_INS("Preloading the RT DATA");
-				// RT doesn't have height but if we use a too big value, we will read outside of the GS memory.
-				int page0 = TEX0.TBP0 >> 5;
-				int max_page = (MAX_PAGES - page0);
-				int max_h = 32 * max_page / TEX0.TBW;
-				// h is likely smaller than w (true most of the time). Reduce the upload size (speed)
-				max_h = std::min<int>(max_h, TEX0.TBW * 64);
+		bool supported_fmt = m_can_convert_depth || psm_s.depth == 0;
+		if (m_preload_frame && TEX0.TBW > 0 && supported_fmt) {
+			GL_INS("Preloading the RT DATA");
+			// RT doesn't have height but if we use a too big value, we will read outside of the GS memory.
+			int page0 = TEX0.TBP0 >> 5;
+			int max_page = (MAX_PAGES - page0);
+			int max_h = 32 * max_page / TEX0.TBW;
+			// h is likely smaller than w (true most of the time). Reduce the upload size (speed)
+			max_h = std::min<int>(max_h, TEX0.TBW * 64);
 
-				dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, max_h), TEX0.PSM));
-				dst->Update();
-			} else {
+			dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, max_h), TEX0.PSM));
+			dst->Update();
+		} else {
 #ifdef ENABLE_OGL_DEBUG
-				switch (type) {
-					case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
-					case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture); break;
-					default:break;
-				}
-#endif
+			switch (type) {
+			case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
+			case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture); break;
+			default: break;
 			}
+#endif
 		}
 	}
 	ScaleTexture(dst->m_texture);
