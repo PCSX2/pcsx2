@@ -39,16 +39,18 @@
             this.lstDumps = new System.Windows.Forms.ListBox();
             this.lblDumps = new System.Windows.Forms.Label();
             this.GsdxList = new System.Windows.Forms.Label();
-            this.cmdStart = new System.Windows.Forms.Button();
+            this.cmdRun = new System.Windows.Forms.Button();
             this.cmdConfigGSDX = new System.Windows.Forms.Button();
             this.txtLog = new System.Windows.Forms.TextBox();
             this.lblLog = new System.Windows.Forms.Label();
             this.cmdOpenIni = new System.Windows.Forms.Button();
             this.pctBox = new System.Windows.Forms.PictureBox();
             this.rdaDX9HW = new System.Windows.Forms.RadioButton();
-            this.rdaDX10HW = new System.Windows.Forms.RadioButton();
+            this.rdaDX1011HW = new System.Windows.Forms.RadioButton();
+            this.rdaOGLHW = new System.Windows.Forms.RadioButton();
             this.rdaDX9SW = new System.Windows.Forms.RadioButton();
-            this.rdaDX10SW = new System.Windows.Forms.RadioButton();
+            this.rdaDX1011SW = new System.Windows.Forms.RadioButton();
+            this.rdaOGLSW = new System.Windows.Forms.RadioButton();
             this.lblOverride = new System.Windows.Forms.Label();
             this.rdaNone = new System.Windows.Forms.RadioButton();
             this.lblInternalLog = new System.Windows.Forms.Label();
@@ -88,7 +90,7 @@
             // 
             // txtGSDXDirectory
             // 
-            this.txtGSDXDirectory.Location = new System.Drawing.Point(871, 26);
+            this.txtGSDXDirectory.Location = new System.Drawing.Point(871, 24);
             this.txtGSDXDirectory.Name = "txtGSDXDirectory";
             this.txtGSDXDirectory.Size = new System.Drawing.Size(243, 20);
             this.txtGSDXDirectory.TabIndex = 0;
@@ -98,17 +100,17 @@
             // lblDirectory
             // 
             this.lblDirectory.AutoSize = true;
-            this.lblDirectory.Location = new System.Drawing.Point(874, 10);
+            this.lblDirectory.Location = new System.Drawing.Point(871, 10);
             this.lblDirectory.Name = "lblDirectory";
-            this.lblDirectory.Size = new System.Drawing.Size(82, 13);
+            this.lblDirectory.Size = new System.Drawing.Size(78, 13);
             this.lblDirectory.TabIndex = 1;
-            this.lblDirectory.Text = "GSDX Directory";
+            this.lblDirectory.Text = "GSdx Directory";
             // 
             // cmdBrowseGSDX
             // 
             this.cmdBrowseGSDX.Location = new System.Drawing.Point(1120, 24);
             this.cmdBrowseGSDX.Name = "cmdBrowseGSDX";
-            this.cmdBrowseGSDX.Size = new System.Drawing.Size(29, 23);
+            this.cmdBrowseGSDX.Size = new System.Drawing.Size(26, 22);
             this.cmdBrowseGSDX.TabIndex = 2;
             this.cmdBrowseGSDX.TabStop = false;
             this.cmdBrowseGSDX.Text = "...";
@@ -117,9 +119,9 @@
             // 
             // cmdBrowseDumps
             // 
-            this.cmdBrowseDumps.Location = new System.Drawing.Point(1120, 67);
+            this.cmdBrowseDumps.Location = new System.Drawing.Point(1120, 64);
             this.cmdBrowseDumps.Name = "cmdBrowseDumps";
-            this.cmdBrowseDumps.Size = new System.Drawing.Size(29, 23);
+            this.cmdBrowseDumps.Size = new System.Drawing.Size(26, 23);
             this.cmdBrowseDumps.TabIndex = 5;
             this.cmdBrowseDumps.TabStop = false;
             this.cmdBrowseDumps.Text = "...";
@@ -129,7 +131,7 @@
             // lblDumpDirectory
             // 
             this.lblDumpDirectory.AutoSize = true;
-            this.lblDumpDirectory.Location = new System.Drawing.Point(871, 54);
+            this.lblDumpDirectory.Location = new System.Drawing.Point(871, 51);
             this.lblDumpDirectory.Name = "lblDumpDirectory";
             this.lblDumpDirectory.Size = new System.Drawing.Size(85, 13);
             this.lblDumpDirectory.TabIndex = 4;
@@ -137,7 +139,7 @@
             // 
             // txtDumpsDirectory
             // 
-            this.txtDumpsDirectory.Location = new System.Drawing.Point(871, 70);
+            this.txtDumpsDirectory.Location = new System.Drawing.Point(871, 67);
             this.txtDumpsDirectory.Name = "txtDumpsDirectory";
             this.txtDumpsDirectory.Size = new System.Drawing.Size(243, 20);
             this.txtDumpsDirectory.TabIndex = 3;
@@ -147,9 +149,9 @@
             // lstGSDX
             // 
             this.lstGSDX.FormattingEnabled = true;
-            this.lstGSDX.Location = new System.Drawing.Point(454, 26);
+            this.lstGSDX.Location = new System.Drawing.Point(451, 24);
             this.lstGSDX.Name = "lstGSDX";
-            this.lstGSDX.Size = new System.Drawing.Size(411, 199);
+            this.lstGSDX.Size = new System.Drawing.Size(411, 173);
             this.lstGSDX.TabIndex = 1;
             // 
             // lstDumps
@@ -157,7 +159,7 @@
             this.lstDumps.FormattingEnabled = true;
             this.lstDumps.Location = new System.Drawing.Point(12, 24);
             this.lstDumps.Name = "lstDumps";
-            this.lstDumps.Size = new System.Drawing.Size(433, 199);
+            this.lstDumps.Size = new System.Drawing.Size(433, 173);
             this.lstDumps.TabIndex = 0;
             this.lstDumps.SelectedIndexChanged += new System.EventHandler(this.lstDumps_SelectedIndexChanged);
             // 
@@ -173,140 +175,164 @@
             // GsdxList
             // 
             this.GsdxList.AutoSize = true;
-            this.GsdxList.Location = new System.Drawing.Point(451, 11);
+            this.GsdxList.Location = new System.Drawing.Point(451, 8);
             this.GsdxList.Name = "GsdxList";
-            this.GsdxList.Size = new System.Drawing.Size(56, 13);
+            this.GsdxList.Size = new System.Drawing.Size(52, 13);
             this.GsdxList.TabIndex = 10;
-            this.GsdxList.Text = "GSDX List";
+            this.GsdxList.Text = "GSdx List";
             // 
-            // cmdStart
+            // cmdRun
             // 
-            this.cmdStart.Location = new System.Drawing.Point(970, 165);
-            this.cmdStart.Name = "cmdStart";
-            this.cmdStart.Size = new System.Drawing.Size(182, 58);
-            this.cmdStart.TabIndex = 11;
-            this.cmdStart.TabStop = false;
-            this.cmdStart.Text = "Start";
-            this.cmdStart.UseVisualStyleBackColor = true;
-            this.cmdStart.Click += new System.EventHandler(this.cmdStart_Click);
+            this.cmdRun.Location = new System.Drawing.Point(871, 167);
+            this.cmdRun.Name = "cmdRun";
+            this.cmdRun.Size = new System.Drawing.Size(275, 30);
+            this.cmdRun.TabIndex = 11;
+            this.cmdRun.TabStop = false;
+            this.cmdRun.Text = "Run";
+            this.cmdRun.UseVisualStyleBackColor = true;
+            this.cmdRun.Click += new System.EventHandler(this.cmdRun_Click);
             // 
             // cmdConfigGSDX
             // 
-            this.cmdConfigGSDX.Location = new System.Drawing.Point(970, 103);
+            this.cmdConfigGSDX.Location = new System.Drawing.Point(1051, 93);
             this.cmdConfigGSDX.Name = "cmdConfigGSDX";
-            this.cmdConfigGSDX.Size = new System.Drawing.Size(88, 56);
+            this.cmdConfigGSDX.Size = new System.Drawing.Size(95, 32);
             this.cmdConfigGSDX.TabIndex = 12;
             this.cmdConfigGSDX.TabStop = false;
-            this.cmdConfigGSDX.Text = "Configure Current GSDX";
+            this.cmdConfigGSDX.Text = "Configure GSdx";
             this.cmdConfigGSDX.UseVisualStyleBackColor = true;
             this.cmdConfigGSDX.Click += new System.EventHandler(this.cmdConfigGSDX_Click);
             // 
             // txtLog
             // 
-            this.txtLog.Location = new System.Drawing.Point(269, 249);
+            this.txtLog.Location = new System.Drawing.Point(15, 225);
             this.txtLog.Multiline = true;
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtLog.Size = new System.Drawing.Size(448, 208);
+            this.txtLog.Size = new System.Drawing.Size(430, 160);
             this.txtLog.TabIndex = 13;
             this.txtLog.TabStop = false;
             // 
             // lblLog
             // 
             this.lblLog.AutoSize = true;
-            this.lblLog.Location = new System.Drawing.Point(266, 233);
+            this.lblLog.Location = new System.Drawing.Point(12, 209);
             this.lblLog.Name = "lblLog";
             this.lblLog.Size = new System.Drawing.Size(58, 13);
             this.lblLog.TabIndex = 14;
-            this.lblLog.Text = "Log GSDX";
+            this.lblLog.Text = "Log GSdx";
             // 
             // cmdOpenIni
             // 
-            this.cmdOpenIni.Location = new System.Drawing.Point(1064, 103);
+            this.cmdOpenIni.Location = new System.Drawing.Point(1051, 130);
             this.cmdOpenIni.Name = "cmdOpenIni";
-            this.cmdOpenIni.Size = new System.Drawing.Size(88, 56);
+            this.cmdOpenIni.Size = new System.Drawing.Size(95, 32);
             this.cmdOpenIni.TabIndex = 15;
             this.cmdOpenIni.TabStop = false;
-            this.cmdOpenIni.Text = "Open GSDX.ini";
+            this.cmdOpenIni.Text = "Open GSdx.ini";
             this.cmdOpenIni.UseVisualStyleBackColor = true;
             this.cmdOpenIni.Click += new System.EventHandler(this.cmdOpenIni_Click);
             // 
             // pctBox
             // 
-            this.pctBox.Location = new System.Drawing.Point(12, 236);
+            this.pctBox.Location = new System.Drawing.Point(871, 225);
             this.pctBox.Name = "pctBox";
-            this.pctBox.Size = new System.Drawing.Size(248, 221);
+            this.pctBox.Size = new System.Drawing.Size(275, 160);
             this.pctBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pctBox.TabIndex = 17;
+            this.pctBox.TabIndex = 16;
             this.pctBox.TabStop = false;
             this.pctBox.Click += new System.EventHandler(this.pctBox_Click);
             // 
             // rdaDX9HW
             // 
             this.rdaDX9HW.AutoSize = true;
-            this.rdaDX9HW.Location = new System.Drawing.Point(876, 138);
+            this.rdaDX9HW.Location = new System.Drawing.Point(874, 111);
             this.rdaDX9HW.Name = "rdaDX9HW";
-            this.rdaDX9HW.Size = new System.Drawing.Size(68, 17);
-            this.rdaDX9HW.TabIndex = 18;
+            this.rdaDX9HW.Size = new System.Drawing.Size(75, 17);
+            this.rdaDX9HW.TabIndex = 17;
             this.rdaDX9HW.Tag = "1";
-            this.rdaDX9HW.Text = "DX9 HW";
+            this.rdaDX9HW.Text = "D3D9 HW";
             this.rdaDX9HW.UseVisualStyleBackColor = true;
             this.rdaDX9HW.CheckedChanged += new System.EventHandler(this.rda_CheckedChanged);
             // 
-            // rdaDX10HW
+            // rdaDX1011HW
             // 
-            this.rdaDX10HW.AutoSize = true;
-            this.rdaDX10HW.Location = new System.Drawing.Point(876, 161);
-            this.rdaDX10HW.Name = "rdaDX10HW";
-            this.rdaDX10HW.Size = new System.Drawing.Size(74, 17);
-            this.rdaDX10HW.TabIndex = 19;
-            this.rdaDX10HW.Tag = "2";
-            this.rdaDX10HW.Text = "DX10 HW";
-            this.rdaDX10HW.UseVisualStyleBackColor = true;
-            this.rdaDX10HW.CheckedChanged += new System.EventHandler(this.rda_CheckedChanged);
+            this.rdaDX1011HW.AutoSize = true;
+            this.rdaDX1011HW.Location = new System.Drawing.Point(874, 129);
+            this.rdaDX1011HW.Name = "rdaDX1011HW";
+            this.rdaDX1011HW.Size = new System.Drawing.Size(81, 17);
+            this.rdaDX1011HW.TabIndex = 18;
+            this.rdaDX1011HW.Tag = "2";
+            this.rdaDX1011HW.Text = "D3D11 HW";
+            this.rdaDX1011HW.UseVisualStyleBackColor = true;
+            this.rdaDX1011HW.CheckedChanged += new System.EventHandler(this.rda_CheckedChanged);
+            // 
+            // rdaOGLHW
+            // 
+            this.rdaOGLHW.AutoSize = true;
+            this.rdaOGLHW.Location = new System.Drawing.Point(874, 147);
+            this.rdaOGLHW.Name = "rdaOGLHW";
+            this.rdaOGLHW.Size = new System.Drawing.Size(69, 17);
+            this.rdaOGLHW.TabIndex = 19;
+            this.rdaOGLHW.Tag = "3";
+            this.rdaOGLHW.Text = "OGL HW";
+            this.rdaOGLHW.UseVisualStyleBackColor = true;
+            this.rdaOGLHW.CheckedChanged += new System.EventHandler(this.rda_CheckedChanged);
             // 
             // rdaDX9SW
             // 
             this.rdaDX9SW.AutoSize = true;
-            this.rdaDX9SW.Location = new System.Drawing.Point(876, 184);
+            this.rdaDX9SW.Location = new System.Drawing.Point(971, 111);
             this.rdaDX9SW.Name = "rdaDX9SW";
-            this.rdaDX9SW.Size = new System.Drawing.Size(67, 17);
+            this.rdaDX9SW.Size = new System.Drawing.Size(74, 17);
             this.rdaDX9SW.TabIndex = 20;
-            this.rdaDX9SW.Tag = "3";
-            this.rdaDX9SW.Text = "DX9 SW";
+            this.rdaDX9SW.Tag = "4";
+            this.rdaDX9SW.Text = "D3D9 SW";
             this.rdaDX9SW.UseVisualStyleBackColor = true;
             this.rdaDX9SW.CheckedChanged += new System.EventHandler(this.rda_CheckedChanged);
             // 
-            // rdaDX10SW
+            // rdaDX1011SW
             // 
-            this.rdaDX10SW.AutoSize = true;
-            this.rdaDX10SW.Location = new System.Drawing.Point(876, 207);
-            this.rdaDX10SW.Name = "rdaDX10SW";
-            this.rdaDX10SW.Size = new System.Drawing.Size(73, 17);
-            this.rdaDX10SW.TabIndex = 21;
-            this.rdaDX10SW.Tag = "4";
-            this.rdaDX10SW.Text = "DX10 SW";
-            this.rdaDX10SW.UseVisualStyleBackColor = true;
-            this.rdaDX10SW.CheckedChanged += new System.EventHandler(this.rda_CheckedChanged);
+            this.rdaDX1011SW.AutoSize = true;
+            this.rdaDX1011SW.Location = new System.Drawing.Point(971, 129);
+            this.rdaDX1011SW.Name = "rdaDX1011SW";
+            this.rdaDX1011SW.Size = new System.Drawing.Size(80, 17);
+            this.rdaDX1011SW.TabIndex = 21;
+            this.rdaDX1011SW.Tag = "5";
+            this.rdaDX1011SW.Text = "D3D11 SW";
+            this.rdaDX1011SW.UseVisualStyleBackColor = true;
+            this.rdaDX1011SW.CheckedChanged += new System.EventHandler(this.rda_CheckedChanged);
+            // 
+            // rdaOGLSW
+            // 
+            this.rdaOGLSW.AutoSize = true;
+            this.rdaOGLSW.Location = new System.Drawing.Point(971, 147);
+            this.rdaOGLSW.Name = "rdaOGLSW";
+            this.rdaOGLSW.Size = new System.Drawing.Size(68, 17);
+            this.rdaOGLSW.TabIndex = 22;
+            this.rdaOGLSW.Tag = "6";
+            this.rdaOGLSW.Text = "OGL SW";
+            this.rdaOGLSW.UseVisualStyleBackColor = true;
+            this.rdaOGLSW.CheckedChanged += new System.EventHandler(this.rda_CheckedChanged);
             // 
             // lblOverride
             // 
             this.lblOverride.AutoSize = true;
-            this.lblOverride.Location = new System.Drawing.Point(871, 103);
+            this.lblOverride.Location = new System.Drawing.Point(871, 93);
             this.lblOverride.Name = "lblOverride";
             this.lblOverride.Size = new System.Drawing.Size(94, 13);
-            this.lblOverride.TabIndex = 22;
+            this.lblOverride.TabIndex = 23;
             this.lblOverride.Text = "Renderer Override";
             // 
             // rdaNone
             // 
             this.rdaNone.AutoSize = true;
             this.rdaNone.Checked = true;
-            this.rdaNone.Location = new System.Drawing.Point(875, 119);
+            this.rdaNone.Location = new System.Drawing.Point(971, 93);
             this.rdaNone.Name = "rdaNone";
             this.rdaNone.Size = new System.Drawing.Size(51, 17);
-            this.rdaNone.TabIndex = 23;
+            this.rdaNone.TabIndex = 24;
             this.rdaNone.TabStop = true;
             this.rdaNone.Tag = "0";
             this.rdaNone.Text = "None";
@@ -316,7 +342,7 @@
             // lblInternalLog
             // 
             this.lblInternalLog.AutoSize = true;
-            this.lblInternalLog.Location = new System.Drawing.Point(725, 233);
+            this.lblInternalLog.Location = new System.Drawing.Point(451, 209);
             this.lblInternalLog.Name = "lblInternalLog";
             this.lblInternalLog.Size = new System.Drawing.Size(63, 13);
             this.lblInternalLog.TabIndex = 25;
@@ -324,28 +350,29 @@
             // 
             // txtIntLog
             // 
-            this.txtIntLog.Location = new System.Drawing.Point(728, 249);
+            this.txtIntLog.Location = new System.Drawing.Point(451, 225);
             this.txtIntLog.Multiline = true;
             this.txtIntLog.Name = "txtIntLog";
             this.txtIntLog.ReadOnly = true;
             this.txtIntLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtIntLog.Size = new System.Drawing.Size(421, 208);
+            this.txtIntLog.Size = new System.Drawing.Size(411, 160);
             this.txtIntLog.TabIndex = 24;
             this.txtIntLog.TabStop = false;
             // 
             // lblDebugger
             // 
             this.lblDebugger.AutoSize = true;
-            this.lblDebugger.Location = new System.Drawing.Point(417, 470);
+            this.lblDebugger.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblDebugger.Location = new System.Drawing.Point(417, 398);
             this.lblDebugger.Name = "lblDebugger";
-            this.lblDebugger.Size = new System.Drawing.Size(54, 13);
+            this.lblDebugger.Size = new System.Drawing.Size(62, 13);
             this.lblDebugger.TabIndex = 26;
             this.lblDebugger.Text = "Debugger";
             // 
             // lstProcesses
             // 
             this.lstProcesses.FormattingEnabled = true;
-            this.lstProcesses.Location = new System.Drawing.Point(12, 502);
+            this.lstProcesses.Location = new System.Drawing.Point(12, 430);
             this.lstProcesses.Name = "lstProcesses";
             this.lstProcesses.Size = new System.Drawing.Size(248, 277);
             this.lstProcesses.TabIndex = 27;
@@ -354,7 +381,7 @@
             // lblChild
             // 
             this.lblChild.AutoSize = true;
-            this.lblChild.Location = new System.Drawing.Point(9, 487);
+            this.lblChild.Location = new System.Drawing.Point(9, 414);
             this.lblChild.Name = "lblChild";
             this.lblChild.Size = new System.Drawing.Size(82, 13);
             this.lblChild.TabIndex = 28;
@@ -364,7 +391,7 @@
             // 
             this.lblDumpSize.AutoSize = true;
             this.lblDumpSize.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDumpSize.Location = new System.Drawing.Point(279, 487);
+            this.lblDumpSize.Location = new System.Drawing.Point(279, 430);
             this.lblDumpSize.Name = "lblDumpSize";
             this.lblDumpSize.Size = new System.Drawing.Size(67, 13);
             this.lblDumpSize.TabIndex = 29;
@@ -373,24 +400,26 @@
             // txtDumpSize
             // 
             this.txtDumpSize.AutoSize = true;
-            this.txtDumpSize.Location = new System.Drawing.Point(279, 502);
+            this.txtDumpSize.Location = new System.Drawing.Point(279, 445);
             this.txtDumpSize.Name = "txtDumpSize";
             this.txtDumpSize.Size = new System.Drawing.Size(0, 13);
             this.txtDumpSize.TabIndex = 30;
+            this.txtDumpSize.Text = "N/A";
             // 
             // txtGIFPackets
             // 
             this.txtGIFPackets.AutoSize = true;
-            this.txtGIFPackets.Location = new System.Drawing.Point(279, 539);
+            this.txtGIFPackets.Location = new System.Drawing.Point(279, 478);
             this.txtGIFPackets.Name = "txtGIFPackets";
             this.txtGIFPackets.Size = new System.Drawing.Size(0, 13);
             this.txtGIFPackets.TabIndex = 33;
+            this.txtGIFPackets.Text = "N/A";
             // 
             // lblGIFPackets
             // 
             this.lblGIFPackets.AutoSize = true;
             this.lblGIFPackets.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblGIFPackets.Location = new System.Drawing.Point(279, 523);
+            this.lblGIFPackets.Location = new System.Drawing.Point(279, 463);
             this.lblGIFPackets.Name = "lblGIFPackets";
             this.lblGIFPackets.Size = new System.Drawing.Size(110, 13);
             this.lblGIFPackets.TabIndex = 32;
@@ -399,16 +428,17 @@
             // txtPath1
             // 
             this.txtPath1.AutoSize = true;
-            this.txtPath1.Location = new System.Drawing.Point(279, 578);
+            this.txtPath1.Location = new System.Drawing.Point(279, 512);
             this.txtPath1.Name = "txtPath1";
             this.txtPath1.Size = new System.Drawing.Size(0, 13);
             this.txtPath1.TabIndex = 35;
+            this.txtPath1.Text = "N/A";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(279, 560);
+            this.label2.Location = new System.Drawing.Point(279, 497);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(114, 13);
             this.label2.TabIndex = 34;
@@ -417,16 +447,17 @@
             // txtPath2
             // 
             this.txtPath2.AutoSize = true;
-            this.txtPath2.Location = new System.Drawing.Point(279, 618);
+            this.txtPath2.Location = new System.Drawing.Point(279, 546);
             this.txtPath2.Name = "txtPath2";
             this.txtPath2.Size = new System.Drawing.Size(0, 13);
             this.txtPath2.TabIndex = 37;
+            this.txtPath2.Text = "N/A";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(279, 601);
+            this.label3.Location = new System.Drawing.Point(279, 531);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(114, 13);
             this.label3.TabIndex = 36;
@@ -435,16 +466,17 @@
             // txtPath3
             // 
             this.txtPath3.AutoSize = true;
-            this.txtPath3.Location = new System.Drawing.Point(279, 653);
+            this.txtPath3.Location = new System.Drawing.Point(279, 580);
             this.txtPath3.Name = "txtPath3";
             this.txtPath3.Size = new System.Drawing.Size(0, 13);
             this.txtPath3.TabIndex = 39;
+            this.txtPath3.Text = "N/A";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(279, 635);
+            this.label5.Location = new System.Drawing.Point(279, 565);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(114, 13);
             this.label5.TabIndex = 38;
@@ -453,16 +485,17 @@
             // txtVSync
             // 
             this.txtVSync.AutoSize = true;
-            this.txtVSync.Location = new System.Drawing.Point(279, 690);
+            this.txtVSync.Location = new System.Drawing.Point(279, 615);
             this.txtVSync.Name = "txtVSync";
             this.txtVSync.Size = new System.Drawing.Size(0, 13);
             this.txtVSync.TabIndex = 41;
+            this.txtVSync.Text = "N/A";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(279, 671);
+            this.label4.Location = new System.Drawing.Point(279, 600);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(91, 13);
             this.label4.TabIndex = 40;
@@ -471,16 +504,17 @@
             // txtReadFifo
             // 
             this.txtReadFifo.AutoSize = true;
-            this.txtReadFifo.Location = new System.Drawing.Point(279, 724);
+            this.txtReadFifo.Location = new System.Drawing.Point(279, 649);
             this.txtReadFifo.Name = "txtReadFifo";
             this.txtReadFifo.Size = new System.Drawing.Size(0, 13);
             this.txtReadFifo.TabIndex = 43;
+            this.txtReadFifo.Text = "N/A";
             // 
             // label7
             // 
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(279, 709);
+            this.label7.Location = new System.Drawing.Point(279, 634);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(114, 13);
             this.label7.TabIndex = 42;
@@ -489,16 +523,17 @@
             // txtRegisters
             // 
             this.txtRegisters.AutoSize = true;
-            this.txtRegisters.Location = new System.Drawing.Point(279, 764);
+            this.txtRegisters.Location = new System.Drawing.Point(279, 684);
             this.txtRegisters.Name = "txtRegisters";
             this.txtRegisters.Size = new System.Drawing.Size(0, 13);
             this.txtRegisters.TabIndex = 45;
+            this.txtRegisters.Text = "N/A";
             // 
             // label6
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(279, 744);
+            this.label6.Location = new System.Drawing.Point(279, 669);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(110, 13);
             this.label6.TabIndex = 44;
@@ -508,7 +543,7 @@
             // 
             this.chkDebugMode.AutoSize = true;
             this.chkDebugMode.Enabled = false;
-            this.chkDebugMode.Location = new System.Drawing.Point(758, 497);
+            this.chkDebugMode.Location = new System.Drawing.Point(759, 430);
             this.chkDebugMode.Name = "chkDebugMode";
             this.chkDebugMode.Size = new System.Drawing.Size(88, 17);
             this.chkDebugMode.TabIndex = 46;
@@ -520,7 +555,7 @@
             // 
             this.lblGif.AutoSize = true;
             this.lblGif.Enabled = false;
-            this.lblGif.Location = new System.Drawing.Point(417, 487);
+            this.lblGif.Location = new System.Drawing.Point(417, 415);
             this.lblGif.Name = "lblGif";
             this.lblGif.Size = new System.Drawing.Size(66, 13);
             this.lblGif.TabIndex = 48;
@@ -529,7 +564,7 @@
             // btnStep
             // 
             this.btnStep.Enabled = false;
-            this.btnStep.Location = new System.Drawing.Point(758, 571);
+            this.btnStep.Location = new System.Drawing.Point(759, 499);
             this.btnStep.Name = "btnStep";
             this.btnStep.Size = new System.Drawing.Size(108, 40);
             this.btnStep.TabIndex = 49;
@@ -541,7 +576,7 @@
             // btnRunToSelection
             // 
             this.btnRunToSelection.Enabled = false;
-            this.btnRunToSelection.Location = new System.Drawing.Point(758, 617);
+            this.btnRunToSelection.Location = new System.Drawing.Point(759, 545);
             this.btnRunToSelection.Name = "btnRunToSelection";
             this.btnRunToSelection.Size = new System.Drawing.Size(108, 40);
             this.btnRunToSelection.TabIndex = 50;
@@ -553,7 +588,7 @@
             // treTreeView
             // 
             this.treTreeView.Enabled = false;
-            this.treTreeView.Location = new System.Drawing.Point(420, 503);
+            this.treTreeView.Location = new System.Drawing.Point(420, 431);
             this.treTreeView.Name = "treTreeView";
             this.treTreeView.Size = new System.Drawing.Size(332, 276);
             this.treTreeView.TabIndex = 51;
@@ -562,7 +597,7 @@
             // cmdGoToStart
             // 
             this.cmdGoToStart.Enabled = false;
-            this.cmdGoToStart.Location = new System.Drawing.Point(758, 525);
+            this.cmdGoToStart.Location = new System.Drawing.Point(759, 453);
             this.cmdGoToStart.Name = "cmdGoToStart";
             this.cmdGoToStart.Size = new System.Drawing.Size(108, 40);
             this.cmdGoToStart.TabIndex = 52;
@@ -574,7 +609,7 @@
             // cmdGoToNextVSync
             // 
             this.cmdGoToNextVSync.Enabled = false;
-            this.cmdGoToNextVSync.Location = new System.Drawing.Point(758, 667);
+            this.cmdGoToNextVSync.Location = new System.Drawing.Point(759, 591);
             this.cmdGoToNextVSync.Name = "cmdGoToNextVSync";
             this.cmdGoToNextVSync.Size = new System.Drawing.Size(108, 40);
             this.cmdGoToNextVSync.TabIndex = 53;
@@ -586,7 +621,7 @@
             // txtGifPacketSize
             // 
             this.txtGifPacketSize.AutoSize = true;
-            this.txtGifPacketSize.Location = new System.Drawing.Point(873, 502);
+            this.txtGifPacketSize.Location = new System.Drawing.Point(873, 430);
             this.txtGifPacketSize.Name = "txtGifPacketSize";
             this.txtGifPacketSize.Size = new System.Drawing.Size(0, 13);
             this.txtGifPacketSize.TabIndex = 55;
@@ -595,7 +630,7 @@
             // 
             this.lblGIFPacketSize.AutoSize = true;
             this.lblGIFPacketSize.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblGIFPacketSize.Location = new System.Drawing.Point(873, 487);
+            this.lblGIFPacketSize.Location = new System.Drawing.Point(871, 398);
             this.lblGIFPacketSize.Name = "lblGIFPacketSize";
             this.lblGIFPacketSize.Size = new System.Drawing.Size(95, 13);
             this.lblGIFPacketSize.TabIndex = 54;
@@ -604,16 +639,16 @@
             // treeGifPacketContent
             // 
             this.treeGifPacketContent.Enabled = false;
-            this.treeGifPacketContent.Location = new System.Drawing.Point(871, 541);
+            this.treeGifPacketContent.Location = new System.Drawing.Point(874, 431);
             this.treeGifPacketContent.Name = "treeGifPacketContent";
-            this.treeGifPacketContent.Size = new System.Drawing.Size(278, 238);
+            this.treeGifPacketContent.Size = new System.Drawing.Size(272, 276);
             this.treeGifPacketContent.TabIndex = 57;
             // 
             // lblContent
             // 
             this.lblContent.AutoSize = true;
             this.lblContent.Enabled = false;
-            this.lblContent.Location = new System.Drawing.Point(871, 525);
+            this.lblContent.Location = new System.Drawing.Point(871, 414);
             this.lblContent.Name = "lblContent";
             this.lblContent.Size = new System.Drawing.Size(101, 13);
             this.lblContent.TabIndex = 56;
@@ -623,7 +658,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1164, 790);
+            this.ClientSize = new System.Drawing.Size(1158, 718);
             this.Controls.Add(this.treeGifPacketContent);
             this.Controls.Add(this.lblContent);
             this.Controls.Add(this.txtGifPacketSize);
@@ -658,9 +693,11 @@
             this.Controls.Add(this.txtIntLog);
             this.Controls.Add(this.rdaNone);
             this.Controls.Add(this.lblOverride);
-            this.Controls.Add(this.rdaDX10SW);
+            this.Controls.Add(this.rdaOGLSW);
+            this.Controls.Add(this.rdaDX1011SW);
             this.Controls.Add(this.rdaDX9SW);
-            this.Controls.Add(this.rdaDX10HW);
+            this.Controls.Add(this.rdaOGLHW);
+            this.Controls.Add(this.rdaDX1011HW);
             this.Controls.Add(this.rdaDX9HW);
             this.Controls.Add(this.lstGSDX);
             this.Controls.Add(this.pctBox);
@@ -668,7 +705,7 @@
             this.Controls.Add(this.lblLog);
             this.Controls.Add(this.txtLog);
             this.Controls.Add(this.cmdConfigGSDX);
-            this.Controls.Add(this.cmdStart);
+            this.Controls.Add(this.cmdRun);
             this.Controls.Add(this.GsdxList);
             this.Controls.Add(this.lblDumps);
             this.Controls.Add(this.lstDumps);
@@ -704,16 +741,18 @@
         private System.Windows.Forms.ListBox lstDumps;
         private System.Windows.Forms.Label lblDumps;
         private System.Windows.Forms.Label GsdxList;
-        private System.Windows.Forms.Button cmdStart;
+        private System.Windows.Forms.Button cmdRun;
         private System.Windows.Forms.Button cmdConfigGSDX;
         private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.Label lblLog;
         private System.Windows.Forms.Button cmdOpenIni;
         private System.Windows.Forms.PictureBox pctBox;
         private System.Windows.Forms.RadioButton rdaDX9HW;
-        private System.Windows.Forms.RadioButton rdaDX10HW;
+        private System.Windows.Forms.RadioButton rdaDX1011HW;
+        private System.Windows.Forms.RadioButton rdaOGLHW;
         private System.Windows.Forms.RadioButton rdaDX9SW;
-        private System.Windows.Forms.RadioButton rdaDX10SW;
+        private System.Windows.Forms.RadioButton rdaDX1011SW;
+        private System.Windows.Forms.RadioButton rdaOGLSW;
         private System.Windows.Forms.Label lblOverride;
         private System.Windows.Forms.RadioButton rdaNone;
         private System.Windows.Forms.Label lblInternalLog;

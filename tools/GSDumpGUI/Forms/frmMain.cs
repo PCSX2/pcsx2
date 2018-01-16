@@ -24,7 +24,7 @@ namespace GSDumpGUI
             get { return _selected; }
             set
             {
-                if (value > 4)
+                if (value > 6)
                     value = 0;
                 _selected = value;
                 switch (_selected)
@@ -36,13 +36,19 @@ namespace GSDumpGUI
                         rdaDX9HW.Checked = true;
                         break;
                     case 2:
-                        rdaDX10HW.Checked = true;
+                        rdaDX1011HW.Checked = true;
                         break;
                     case 3:
-                        rdaDX9SW.Checked = true;
+                        rdaOGLHW.Checked = true;
                         break;
                     case 4:
-                        rdaDX10SW.Checked = true;
+                        rdaDX9SW.Checked = true;
+                        break;
+                    case 5:
+                        rdaDX1011SW.Checked = true;
+                        break;
+                    case 6:
+                        rdaOGLSW.Checked = true;
                         break;
                 }
             }
@@ -146,7 +152,7 @@ namespace GSDumpGUI
             ReloadGSDXs();
         }
 
-        private void cmdStart_Click(object sender, EventArgs e)
+        private void cmdRun_Click(object sender, EventArgs e)
         {
             // Execute the GSReplay function
             if (lstDumps.SelectedIndex != -1)
@@ -183,10 +189,16 @@ namespace GSDumpGUI
                     SelectedRenderer = "3";
                     break;
                 case 3:
-                    SelectedRenderer = "1";
+                    SelectedRenderer = "12";
                     break;
                 case 4:
+                    SelectedRenderer = "1";
+                    break;
+                case 5:
                     SelectedRenderer = "4";
+                    break;
+                case 6:
+                    SelectedRenderer = "13";
                     break;
             }
             if (SelectedRenderer != "-1")
@@ -309,7 +321,7 @@ namespace GSDumpGUI
         private void GSDumpGUI_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Return)
-                cmdStart_Click(sender, e);
+                cmdRun_Click(sender, e);
 
             if (e.KeyCode == Keys.F1)
                 cmdConfigGSDX_Click(sender, e);
