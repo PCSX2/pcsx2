@@ -707,11 +707,4 @@ if(USE_VTUNE)
     set(pcsx2FinalLibs ${pcsx2FinalLibs} ${VTUNE_LIBRARIES})
 endif()
 
-# Suppress all the system-specific predefined macros outside the reserved namespace.
-# Needed when stringifying macros.
-# See issue: 1233
-if(PACKAGE_MODE)
-	SET_SOURCE_FILES_PROPERTIES(gui/AppConfig.cpp PROPERTIES COMPILE_FLAGS "-Wp,-ansi,-U__STRICT_ANSI__")
-endif()
-
 add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
