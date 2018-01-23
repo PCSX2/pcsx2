@@ -374,20 +374,18 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             wmEvent = LOWORD(wParam);
             HWND hwndDlg = (HWND)lParam;
 
-            // TB_THUMBTRACK passes the curpos in wParam.  Other messages
-            // have to use TBM_GETPOS, so they will override this assignment (see below)
-
             int curpos = HIWORD(wParam);
 
             switch (wmEvent) {
-                //case TB_ENDTRACK:
-                //case TB_THUMBPOSITION:
                 case TB_LINEUP:
                 case TB_LINEDOWN:
                 case TB_PAGEUP:
                 case TB_PAGEDOWN:
+                case TB_TOP:
+                case TB_BOTTOM:
                     curpos = (int)SendMessage(hwndDlg, TBM_GETPOS, 0, 0);
 
+                case TB_THUMBPOSITION:
                 case TB_THUMBTRACK:
                     Clampify(curpos,
                              (int)SendMessage(hwndDlg, TBM_GETRANGEMIN, 0, 0),

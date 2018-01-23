@@ -346,13 +346,14 @@ private:
                 wmId = LOWORD(wParam);
                 wmEvent = HIWORD(wParam);
                 switch (wmId) {
-                    //case TB_ENDTRACK:
-                    //case TB_THUMBPOSITION:
                     case TB_LINEUP:
                     case TB_LINEDOWN:
                     case TB_PAGEUP:
                     case TB_PAGEDOWN:
+                    case TB_TOP:
+                    case TB_BOTTOM:
                         wmEvent = (int)SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
+                    case TB_THUMBPOSITION:
                     case TB_THUMBTRACK: {
                         wchar_t temp[128];
                         if (wmEvent < 2)
