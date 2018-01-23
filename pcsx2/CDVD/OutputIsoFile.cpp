@@ -133,3 +133,8 @@ bool OutputIsoFile::IsOpened() const
 {
 	return m_outstream && m_outstream->IsOk();
 }
+
+u32 OutputIsoFile::GetBlockSize() const
+{
+	return m_blocksize;
+}

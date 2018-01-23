@@ -123,7 +123,7 @@ public:
 	virtual ~OutputIsoFile();
 
 	bool IsOpened() const;
-	
+	u32 GetBlockSize() const;
 	
 	const wxString& GetFilename() const
 	{
