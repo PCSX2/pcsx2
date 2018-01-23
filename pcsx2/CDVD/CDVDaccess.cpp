@@ -394,7 +394,7 @@ bool DoCDVDopen()
 	cdvdTD td;
 	CDVD->getTD(0, &td);
 
-	blockDumpFile.Create(temp, 3);
+	blockDumpFile.Create(temp, 2);
 
 	if( blockDumpFile.IsOpened() )
 	{
