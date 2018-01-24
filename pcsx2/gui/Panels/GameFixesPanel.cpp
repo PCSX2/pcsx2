@@ -107,6 +107,10 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 		{
 			_("VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"),
 			wxEmptyString
+		},
+		{
+			_("Alternate Vsync timing. Fixing timing issues in Jak II, Fatal Fury Battle Archives, Shadow Of Rome."),
+			wxEmptyString
 		}
 	};
 

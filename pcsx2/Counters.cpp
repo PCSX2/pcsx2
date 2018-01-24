@@ -198,9 +198,13 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	u64 HalfFrame = Frame / 2;
 
 	// One test we have shows that VBlank lasts for ~22 HBlanks, another we have show that is the time it's off.
-	// There exists a game (Legendz Gekitou! Saga Battle) Which runs REALLY slowly if VBlank is ~22 HBlanks, so the other test wins.
+	// There's a game (Legendz Gekitou! Saga Battle) which runs REALLY slowly if VBlank is ~22 HBlanks, so the other test wins.
 
 	u64 Blank = HalfFrame / 2; // PAL VBlank Period is off for roughly 22 HSyncs
+
+	if (EmuConfig.Gamefixes.VsyncTimingHack)
+		// This fixes timing issues Jak II, Fatal Fury Battle Archives (1) and Shadow Of Rome
+		Blank = (Frame / scansPerFrame) * (gsVideoMode == GS_VideoMode::NTSC ? 26 : 22);
 
 	//I would have suspected this to be Frame - Blank, but that seems to completely freak it out
 	//and the test results are completely wrong. It seems 100% the same as the PS2 test on this,
@@ -346,8 +350,10 @@ u32 UpdateVSyncRate()
 	}
 
 	bool ActiveVideoMode = gsVideoMode != GS_VideoMode::Uninitialized;
-	if (vSyncInfo.Framerate != framerate || vSyncInfo.VideoMode != gsVideoMode)
+	static bool vSyncHack = EmuConfig.Gamefixes.VsyncTimingHack;
+	if (vSyncInfo.Framerate != framerate || vSyncInfo.VideoMode != gsVideoMode || vSyncHack != EmuConfig.Gamefixes.VsyncTimingHack)
 	{
+		vSyncHack = EmuConfig.Gamefixes.VsyncTimingHack;
 		vSyncInfo.VideoMode = gsVideoMode;
 		vSyncInfoCalc( &vSyncInfo, framerate, scanlines );
 		if(ActiveVideoMode)

@@ -147,7 +147,7 @@ void SysCoreThread::ApplySettings( const Pcsx2Config& src )
 
 	m_resetRecompilers		= ( src.Cpu != EmuConfig.Cpu ) || ( src.Gamefixes != EmuConfig.Gamefixes ) || ( src.Speedhacks != EmuConfig.Speedhacks );
 	m_resetProfilers		= ( src.Profiler != EmuConfig.Profiler );
-	m_resetVsyncTimers		= ( src.GS != EmuConfig.GS );
+	m_resetVsyncTimers		= ( src.GS != EmuConfig.GS ) || ( src.Gamefixes.VsyncTimingHack != EmuConfig.Gamefixes.VsyncTimingHack );
 
 	const_cast<Pcsx2Config&>(EmuConfig) = src;
 }

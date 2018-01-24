@@ -70,6 +70,7 @@
 -- VIF1StallHack     = 1 // SOCOM II HUD and Spy Hunter loading hang.
 -- FMVinSoftwareHack = 1 // Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering while an FMV plays.
 -- ScarfaceIbitHack  = 1 // VU I bit Hack avoid constant recompilation. ( Scarface The World Is Yours)
+-- VsyncTimingHack   = 1 // Alternate Vsync timing. Fixing timing issues in Jak II, Fatal Fury Battle Archives 1, Shadow Of Rome.
 
 ---------------------------------------------
 -- Speed Hacks (SpeedHackName = <value>)
@@ -485,6 +486,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20073
 Name   = Jak and Daxter II
 Region = NTSC-Unk
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SCAJ-20074
 Name   = King of Fighters 2002, The
@@ -1697,6 +1699,7 @@ Serial = SCES-51608
 Name   = Jak II: Renegade
 Region = PAL-M7
 Compat = 5
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SCES-51610
 Name   = This is Football 2004 (Red Devils 2004)
@@ -2800,6 +2803,7 @@ EETimingHack = 1 // Else serious slowdown due to VIF timing. Can be disabled onc
 Serial = SCKA-20010
 Name   = Jak II
 Region = NTSC-K
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SCKA-20011
 Name   = Ratchet & Clank 2
@@ -3377,6 +3381,7 @@ Region = NTSC-J
 Serial = SCPS-15021
 Name   = Jak & Daxter 2
 Region = NTSC-J
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SCPS-15022
 Name   = Dual Hearts
@@ -3542,6 +3547,7 @@ MemCardFilter = SCPS-15056/SCPS-15037
 Serial = SCPS-15057
 Name   = Jak & Daxter 2
 Region = NTSC-J
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SCPS-15058
 Name   = Arc the Lad - Generation
@@ -5055,6 +5061,7 @@ Serial = SCUS-97265
 Name   = Jak II
 Region = NTSC-U
 Compat = 5
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SCUS-97266
 Name   = Final Fantasy XI [Disc1of2]
@@ -5087,10 +5094,12 @@ Region = NTSC-U
 Serial = SCUS-97273
 Name   = Jak II [Demo]
 Region = NTSC-U
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SCUS-97274
 Name   = Jak II [Video Demo]
 Region = NTSC-U
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SCUS-97275
 Name   = SOCOM II - U.S. Navy SEALs
@@ -5793,6 +5802,7 @@ Region = NTSC-U
 Serial = SCUS-97509
 Name   = Jak II [Greatest Hits]
 Region = NTSC-U
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SCUS-97510
 Name   = ATV Off-Road Fury 2 [Greatest Hits]
@@ -12924,6 +12934,7 @@ Serial = SLES-52950
 Name   = Shadow of Rome
 Region = PAL-M5
 Compat = 5
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLES-52951
 Name   = Phantom Brave
@@ -16738,6 +16749,7 @@ Region = PAL-E
 Serial = SLES-54790
 Name   = Art of Fighting Anthology
 Region = PAL-E
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLES-54793
 Name   = WWE SmackDown vs. Raw 2008
@@ -17288,8 +17300,9 @@ Name   = Summer Athletics
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-55231
-Name   = Fatal Fury - Battle Archives Volume 1
+Name   = Fatal Fury Battle Archives Volume 1
 Region = PAL-E
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLES-55232
 Name   = SNK Arcade Classics Vol. 1
@@ -17298,6 +17311,7 @@ Region = PAL-E
 Serial = SLES-55233
 Name   = World Heroes Anthology
 Region = PAL-E
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLES-55237
 Name   = Naruto - Ultimate Ninja 3
@@ -24485,6 +24499,7 @@ Region = NTSC-J
 Serial = SLPM-65883
 Name   = Shadow of Rome
 Region = NTSC-J
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLPM-65884
 Name   = Remote Control Dandy SF
@@ -27641,6 +27656,7 @@ Region = NTSC-J
 Serial = SLPM-66745
 Name   = Shadow of Rome [CapKore]
 Region = NTSC-J
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLPM-66746
 Name   = Guilty Gear XX - Accent Core
@@ -32524,6 +32540,7 @@ Region = NTSC-J
 Serial = SLPS-25610
 Name   = Ryuuko no Ken - Ten-Chi-Jin (Art of Fighting Collection)
 Region = NTSC-J
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLPS-25611
 Name   = Strawberry Panic [Limited Edition]
@@ -32743,6 +32760,7 @@ Serial = SLPS-25664
 Name   = NeoGeo Online Collection - Garou Densetsu Battle Archives Vol.1
 Region = NTSC-J
 Compat = 5
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLPS-25665
 Name   = Pachitte Chonmage Tatsujin 10
@@ -33199,6 +33217,7 @@ Compat = 5
 Serial = SLPS-25782
 Name   = World Heroes - Gorgeous
 Region = NTSC-J
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLPS-25783
 Name   = King of Fighters '98, The - Ultimate Match
@@ -33228,6 +33247,7 @@ Region = NTSC-J
 Serial = SLPS-25790
 Name   = Art of Fighting Collection [NeoGeo Online Collection the Best]
 Region = NTSC-J
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLPS-25791
 Name   = King of Fighters, The - Orochi Collection [NeoGeo Online Collection the Best]
@@ -33517,6 +33537,7 @@ Region = NTSC-J
 Serial = SLPS-25863
 Name   = Fatal Fury - Battle Archives 1 [SNK the Best]
 Region = NTSC-J
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLPS-25864
 Name   = Fatal Fury - Battle Archives 2 [SNK the Best]
@@ -38029,6 +38050,7 @@ Serial = SLUS-20902
 Name   = Shadow of Rome
 Region = NTSC-U
 Compat = 5
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLUS-20903
 Name   = MegaMan X - Command Mission
@@ -40967,6 +40989,7 @@ Serial = SLUS-21487
 Name   = Art of Fighting Anthology
 Region = NTSC-U
 Compat = 5
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLUS-21488
 Name   = dot Hack - G.U. Vol.2 - Reminisce
@@ -41049,9 +41072,10 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21537
-Name   = NeoGeo Fatal Fury Collection
+Name   = Fatal Fury Battle Archives Volume 1
 Region = NTSC-U
 Compat = 5
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLUS-21538
 Name   = Eureka Seven - Vol.2 - The New Vision
@@ -41919,6 +41943,7 @@ Serial = SLUS-21725
 Name   = World Heroes Anthology
 Region = NTSC-U
 Compat = 5
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLUS-21726
 Name   = Samurai Warriors 2 - Xtreme Legends
@@ -43417,6 +43442,7 @@ Region = NTSC-U
 Serial = SLUS-29139
 Name   = Shadow of Rome [Demo]
 Region = NTSC-U
+VsyncTimingHack = 1
 ---------------------------------------------
 Serial = SLUS-29140
 Name   = MX vs. ATV Unleashed [Demo]
