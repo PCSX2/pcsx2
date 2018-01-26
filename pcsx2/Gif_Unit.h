@@ -289,7 +289,10 @@ struct Gif_Path {
 				}
 
 				gifTag.setTag(&buffer[curOffset], 1);
-				state = (GIF_PATH_STATE)(gifTag.tag.FLG + 1);
+
+				//Don't set state to PACKED if it is a NOP packet
+				if(gifTag.tag.NLOOP > 0)
+					state = (GIF_PATH_STATE)(gifTag.tag.FLG + 1);
 
 				// We don't have enough data for a complete GS packet
 				if(!gifTag.hasAD && curOffset + 16 + gifTag.len > curSize) {
