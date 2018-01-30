@@ -197,13 +197,6 @@ bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8 *buffer) const
 bool IOCtlSrc::ReadDVDInfo()
 {
     DWORD unused;
-    DVD_SESSION_ID session_id;
-
-    BOOL ret = DeviceIoControl(m_device, IOCTL_DVD_START_SESSION, nullptr, 0,
-                               &session_id, sizeof(session_id), &unused, nullptr);
-    if (!ret)
-        return false;
-
     // 4 bytes header + 18 bytes layer descriptor - Technically you only need
     // to read 17 bytes of the layer descriptor since bytes 17-2047 is for
     // media specific information. However, Windows requires you to read at
@@ -211,9 +204,9 @@ bool IOCtlSrc::ReadDVDInfo()
     // media specific information seems to be empty, so there's no point reading
     // any more than that.
     std::array<u8, 22> buffer;
-    DVD_READ_STRUCTURE dvdrs{{0}, DvdPhysicalDescriptor, session_id, 0};
+    DVD_READ_STRUCTURE dvdrs{{0}, DvdPhysicalDescriptor, 0, 0};
 
-    ret = DeviceIoControl(m_device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs),
+    BOOL ret = DeviceIoControl(m_device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs),
                           buffer.data(), buffer.size(), &unused, nullptr);
     if (ret) {
         auto &layer = *reinterpret_cast<DVD_LAYER_DESCRIPTOR *>(
@@ -248,9 +241,6 @@ bool IOCtlSrc::ReadDVDInfo()
             m_sectors = end_sector_layer0 - start_sector + 1 + end_sector - (~end_sector_layer0 & 0xFFFFFFU) + 1;
         }
     }
-
-    DeviceIoControl(m_device, IOCTL_DVD_END_SESSION, &session_id,
-                    sizeof(session_id), nullptr, 0, &unused, nullptr);
 
     return !!ret;
 }
