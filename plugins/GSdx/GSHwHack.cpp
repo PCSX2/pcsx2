@@ -58,11 +58,17 @@ bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && /*fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 &&*/ (fi.TBP0 == 0x01c00 || fi.TBP0 == 0x02000) && fi.TPSM == PSM_PSMZ16)
 		{
-			if (Dx_only) // Feel like texture shuffle but not sure
-				skip = 26; //27
+			// Alpha channel (red line issue has been fixed).
+			// Sky texture (Depth) is properly rendered on OpenGL only for the NTSC version. The PAL version still has some issues (half screen bottom issue).
+			if (g_crc_region == CRC::EU || Dx_only)
+			{
+				skip = 26;
+			}
 		}
 		else if(!fi.TME && (fi.FBP == 0x02a00 || fi.FBP == 0x03000) && fi.FPSM == PSM_PSMCT16)
 		{
+			// Character outlines.
+			// Glow/blur effect. Causes ghosting on upscaled resolution.
 			skip = 10;
 		}
 	}

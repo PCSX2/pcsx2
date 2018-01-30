@@ -92,7 +92,7 @@ CRC::Game CRC::m_games[] =
 	{0xB0D195EF, MetalGearSolid3, KO, 0}, //Metal Gear Solid 3 Subsistence disc1
 	{0x3EBABC9C, MetalGearSolid3, KO, 0}, //Metal Gear Solid 3 Subsistence disc2
 	{0x8A5C25A7, MetalGearSolid3, ES, 0}, //Metal Gear Solid 3 Subsistence Spanish version
-	{0x278722BF, DBZBT2, US, 0},
+	{0x278722BF, DBZBT2, EU, 0},
 	{0xFE961D28, DBZBT2, US, 0},
 	{0x0393B6BE, DBZBT2, EU, 0},
 	{0xE2F289ED, DBZBT2, JP, 0}, // Sparking Neo!
@@ -546,7 +546,8 @@ CRC::Game CRC::m_games[] =
 	{0xB3A71D10, RatchetAndClank2, US, 0}, // Going Commando
 	{0x38996035, RatchetAndClank2, US, 0},
 	{0x2F486E6F, RatchetAndClank2, EU, 0},
-	{0x45FE0CC4, RatchetAndClank3, US, 0}, //  Up Your Arsenal
+	{0x45FE0CC4, RatchetAndClank3, US, 0}, // Up Your Arsenal
+	{0x17125698, RatchetAndClank3, EU, 0},
 	{0x9BFBCD42, RatchetAndClank4, US, 0}, // Deadlocked
 	{0x8661F7BA, RatchetAndClank5, US, 0}, // Size Matters
 	{0x8634861F, RickyPontingInternationalCricket, EU, 0},
