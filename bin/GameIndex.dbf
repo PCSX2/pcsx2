@@ -2899,7 +2899,7 @@ Name   = Hot Shots Golf 3 [PlayStation 2 Big Hit Series]
 Region = NTSC-K
 ---------------------------------------------
 Serial = SCKA-20037
-Name   = Ratchet & Clank 3
+Name   = Ratchet & Clank 3: Up Your Arsenal
 Region = NTSC-K
 MemCardFilter = SCKA-20037/SCKA-20011/SCKA-20120
 ---------------------------------------------
@@ -4375,7 +4375,7 @@ Compat = 5
 ---------------------------------------------
 Serial = SCPS-56011
 Name   = U - Underwater Unit
-Region = NTSC-J
+Region = NTSC-K
 ---------------------------------------------
 Serial = SCPS-56012
 Name   = Raw Danger
@@ -4388,7 +4388,7 @@ Compat = 5
 ---------------------------------------------
 Serial = SCPS-56015
 Name   = Ninja Assault
-Region = NTSC-J
+Region = NTSC-K
 ---------------------------------------------
 Serial = SCUS-21295
 Name   = Tony Hawk's American Wasteland Collector's Edition
@@ -18107,7 +18107,7 @@ Name   = Air Ranger 2 - Rescue Helicopter
 Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25060
-Name   = I.Q. Remix+ - Intelligent Qube
+Name   = I.Q. Remix+: Intelligent Qube
 Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25062
@@ -18457,7 +18457,7 @@ Region = NTSC-K
 ---------------------------------------------
 Serial = SLKA-25263
 Name   = NanoBreaker
-Region = NTSC-J
+Region = NTSC-K
 Compat = 5
 ---------------------------------------------
 Serial = SLKA-25265
@@ -21496,10 +21496,6 @@ Serial = SLPM-65033
 Name   = Kikou Heiden - J-Pheonix
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPM-65034
-Name   = Sangokushi North Winds
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-65038
 Name   = Devil May Cry
 Region = NTSC-J
@@ -22164,18 +22160,10 @@ Serial = SLPM-65247
 Name   = Sangokushi Senki 2
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPM-65248
-Name   = Shin Sangoku Musou 3
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-65249
 Name   = Chaos Legion
 Region = NTSC-J
 Compat = 5
----------------------------------------------
-Serial = SLPM-65254
-Name   = Galaxy Angel
-Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65255
 Name   = Chobits
@@ -22610,14 +22598,6 @@ Serial = SLPM-65374
 Name   = Energy Airforce - Aim Strike!
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPM-65375
-Name   = Shin Sangoku Musou 3 - Mushouden [Premium Pack]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-65377
-Name   = Shin Sangoku Musou 3 - Mushouden
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-65378
 Name   = Busin 0: Wizardry Alternative Neo
 Region = NTSC-J
@@ -22809,10 +22789,6 @@ Serial = SLPM-65428
 Name   = BioHazard Outbreak
 Region = NTSC-J
 Compat = 5
----------------------------------------------
-Serial = SLPM-65429
-Name   = Galaxy Angel - Moonlit Lovers
-Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65431
 Name   = Sonic Heroes
@@ -23077,17 +23053,32 @@ Compat = 5
 Serial = SLPM-65504
 Name   = Cool Girl [Limited Edition] [Disc1of2]
 Region = NTSC-J
-MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65742
+MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65507/SLPM-65742/SLPM-65743
 ---------------------------------------------
 Serial = SLPM-65505
 Name   = Cool Girl [Limited Edition] [Disc2of2]
 Region = NTSC-J
-MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65742
+MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65507/SLPM-65742/SLPM-65743
 ---------------------------------------------
 Serial = SLPM-65506
-Name   = Cool Girl
+Name   = Cool Girl [Disc1of2]
 Region = NTSC-J
-MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65742
+MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65507/SLPM-65742/SLPM-65743
+---------------------------------------------
+Serial = SLPM-65507
+Name   = Cool Girl [Disc2of2]
+Region = NTSC-J
+MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65507/SLPM-65742/SLPM-65743
+---------------------------------------------
+Serial = SLPM-65742
+Name   = Cool Girl [Disc1of2] [Konami the Best]
+Region = NTSC-J
+MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65507/SLPM-65742/SLPM-65743
+---------------------------------------------
+Serial = SLPM-65743
+Name   = Cool Girl [Disc2of2] [Konami the Best]
+Region = NTSC-J
+MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65507/SLPM-65742/SLPM-65743
 ---------------------------------------------
 Serial = SLPM-65508
 Name   = Pop'n Music 9
@@ -23173,10 +23164,6 @@ Serial = SLPM-65532
 Name   = Puyo Puyo Fever
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPM-65533
-Name   = Pyu to Fuku! Jaguar Ashita no Japan
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-65534
 Name   = Rogue Ops
 Region = NTSC-J
@@ -23195,10 +23182,6 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65539
 Name   = V-Rally 3
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-65540
-Name   = Galaxy Angel - Moonlit Lovers [First Limited Edition]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65541
@@ -23276,18 +23259,6 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65560
 Name   = Tenohira Taiyouni
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-65561
-Name   = Shin Sangoku Musou 3 [Super Premium Pack]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-65564
-Name   = Shin Sangoku Musou 3 - Empires
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-65565
-Name   = Shin Sangoku Musou 3 - Empires
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65566
@@ -23850,10 +23821,6 @@ Serial = SLPM-65717
 Name   = Tsuki wa Higashi ni Ha wa Nishi na - Operation Sanctuary
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPM-65718
-Name   = Sengoku Musou Moushouden
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-65719
 Name   = Burnout 3 - Takedown
 Region = NTSC-J
@@ -23926,7 +23893,7 @@ Name   = Ao no Mamade [Treasure Box]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65736
-Name   = Ao no Mamade
+Name   = Aoi no Mamade...
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65737
@@ -23949,11 +23916,6 @@ Region = NTSC-J
 Serial = SLPM-65741
 Name   = Driver 3
 Region = NTSC-J
----------------------------------------------
-Serial = SLPM-65742
-Name   = Cool Girl [Konami the Best]
-Region = NTSC-J
-MemCardFilter = SLPM-65504/SLPM-65505/SLPM-65506/SLPM-65742
 ---------------------------------------------
 Serial = SLPM-65744
 Name   = Firefighter F.D. 18 [Konami The Best]
@@ -24458,10 +24420,6 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65876
 Name   = Busin 0: Wizardry Alternative Neo [Atlus Best Collection]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-65878
-Name   = Galaxy Angel - Eternal Lovers
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65879
@@ -25349,10 +25307,6 @@ Serial = SLPM-66116
 Name   = NBA Live 2005 [EA Best Hits]
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPM-66117
-Name   = Metal Gear Solid 3 - Subsistence [with Headset]
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-66122
 Name   = Kingdom Hearts [Ultimate Hits]
 Region = NTSC-J
@@ -25792,10 +25746,6 @@ Name   = Dance Dance Revolution - Strike
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
-Serial = SLPM-66243
-Name   = Galaxy Angel II
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-66244
 Name   = Derby Tsuku 5 - Derby Uma o Tsukurou!
 Region = NTSC-J
@@ -25986,10 +25936,6 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66289
 Name   = Black Cat
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-66290
-Name   = Galaxy Angel [The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66291
@@ -26806,10 +26752,6 @@ Name   = Taito Memories Vol.2 [Taito The Best]
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
-Serial = SLPM-66522
-Name   = Shin Sangoku Musou 3 [KOEI Selection]
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-66523
 Name   = Sangokushi IX [with Power-Up Kit]
 Region = NTSC-J
@@ -27100,10 +27042,6 @@ Name   = Ryu ga Gotoku 2 [Disc2of2]
 Region = NTSC-J
 MemCardFilter = SLPM-66602/SLPM-74301/SLPM-66168/SLPM-74234/SLPM-74253
 ---------------------------------------------
-Serial = SLPM-66604
-Name   = Galaxy Angel - Moonlit Lovers [Banpresido the Best]
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-66605
 Name   = Castle Fantasia - Arihato Senki
 Region = NTSC-J
@@ -27296,14 +27234,6 @@ Serial = SLPM-66656
 Name   = Warship Gunner 2 - Change of Direction [Koei the Best]
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPM-66657
-Name   = Shin Sangoku Musou 3 Mushoden [Koei Selection]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-66658
-Name   = Shin Sangoku Musou 3 Empires [Koei Selection]
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-66659
 Name   = Soshite Kono Uchuu ni Kirameku Kimi no Shi XXX
 Region = NTSC-J
@@ -27393,7 +27323,7 @@ Region = NTSC-J
 MemCardFilter = SLPM-66679/SLPM-66683/SLPM-66246/SLPM-66634
 ---------------------------------------------
 Serial = SLPM-66681
-Name   = Shin Megami Tensei - Nocturne Maniax
+Name   = Shin Megami Tensei III: Nocturne Maniax [Chronicle Edition]
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
@@ -27507,7 +27437,7 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SLPM-66713
-Name   = Taito Memories Vol.2 Gekan
+Name   = Taito Memories II Gekan
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
@@ -27772,14 +27702,6 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66777
 Name   = Jikkyou Powerful Pro Yakyuu 14
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-66778
-Name   = Galaxy Angel - Eternal Lovers [Broccoli The Best Quality]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-66779
-Name   = Galaxy Angel II - Mugen Kairou no Kagi
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66781
@@ -28503,10 +28425,6 @@ Region = NTSC-J
 Compat = 5
 VuClipFlagHack = 1
 ---------------------------------------------
-Serial = SLPM-66987
-Name   = Kowloon Youma Gakuen Ki [Best Version]
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-66989
 Name   = Castle Fantasia - Arihato Senki [Best Version]
 Region = NTSC-J
@@ -28576,10 +28494,6 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-67007
 Name   = Train Simulator - Keisei Toei Keikyu
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-67008
-Name   = Metal Gear Solid 2 - Substance [Konami Dendou Collection]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-67009
@@ -28790,16 +28704,8 @@ Serial = SLPM-74212
 Name   = Sengoku Musou [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPM-74215
-Name   = Shin Sangoku Musou 3 [PlayStation 2 The Best]
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-74218
 Name   = Shining Tears [PlayStation 2 The Best]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-74219
-Name   = Shin Sangoku Musou 3 - Empires [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-74220
@@ -32048,10 +31954,6 @@ Serial = SLPS-25488
 Name   = Zeonic Front - Mobile Suit Gundam 0079 [Gundam the Best]
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPS-25489
-Name   = Ambition of Giren - Zeon Independence War + Direction Book of Capture [Gundam the Best]
-Region = NTSC-J
----------------------------------------------
 Serial = SLPS-25491
 Name   = SD Gundam G Generation Neo [Gundam The Best]
 Region = NTSC-J
@@ -32143,7 +32045,7 @@ Name   = Rasetsu Alternative
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25513
-Name   = Aoi Umi no Trista [Limited Edition]
+Name   = Aoi Umi no Tristia: Nanoca Flanka Hatsumei Koubouki [Limited Edition]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25514
@@ -32908,14 +32810,6 @@ Serial = SLPS-25704
 Name   = Summon Night 4
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPS-25708
-Name   = Zero no Tsukaima [Limited Edition]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPS-25709
-Name   = Zero no Tsukaima
-Region = NTSC-J
----------------------------------------------
 Serial = SLPS-25710
 Name   = K-1 World Grand Prix 2006
 Region = NTSC-J
@@ -33064,11 +32958,11 @@ Name   = Garouden Break Blow - Fist or Twist
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25748
-Name   = Aoi Sora no Neosphere - Nanoka Franka no Hatsumei Koubouki 2 [Limited Edition]
+Name   = Aoi Sora no Neosphere - Nanoka Flanka Hatsumei Koubouki 2 [Limited Edition]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25749
-Name   = Aoi Sora no Neosphere - Nanoka Franka no Hatsumei Koubouki 2
+Name   = Aoi Sora no Neosphere - Nanoka Flanka Hatsumei Koubouki 2
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25750
@@ -33361,10 +33255,6 @@ Serial = SLPS-25823
 Name   = Spider-Man 3
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPS-25825
-Name   = Zero no Tsukaima [Best Collection]
-Region = NTSC-J
----------------------------------------------
 Serial = SLPS-25826
 Name   = My Home o Tsukurou 2! Easy Design [Best Collection]
 Region = NTSC-J
@@ -33379,14 +33269,6 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25829
 Name   = A.C.E. Another Century's Episode 2 [Special Vocal Version]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPS-25830
-Name   = Zero no Tsukaima - Muma ga Tsumugu Yokaze no Gensoukyoku [Limited Edition]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPS-25831
-Name   = Zero no Tsukaima - Muma ga Tsumugu Yokaze no Gensoukyoku
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25832
@@ -33543,7 +33425,7 @@ Name   = CR Shinseiki Evangelion - Shito, Futatabi
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25881
-Name   = Kinnikuman Muscle Grand Prix 2
+Name   = Kinnikuman Muscle Grand Prix Max 2 - Tokumori
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
@@ -43720,5 +43602,4673 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = TCPS-10172
 Name   = Homura [Taito the Best]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLKA-15023
+Name   = Assault Suits Valken
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20068
+Name   = Cars
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25010
+Name   = Chou Battle Houshin
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25155
+Name   = Crimson Sea 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25080
+Name   = .hack//Kansen Kakudai Vol. 1
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25138
+Name   = .hack//Akushou Heni Vol. 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25145
+Name   = .hack//Shinshoku Osen Vol. 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25174
+Name   = .hack//Zettai Houi Vol. 4
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64551
+Name   = Shin Contra
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64513
+Name   = Crash Bandicoot: Return of The Demon King
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64532
+Name   = Digital Holmes
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56010
+Name   = Downhill Racer
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25196
+Name   = DRIV3R
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67526
+Name   = Ghost Vibration
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15013
+Name   = Grand Slam 2003 Tennis
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-10001
+Name   = Hardware Online Arena
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25349
+Name   = Jacked
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67505
+Name   = 007: Agent Under Fire
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25129
+Name   = 007: Everything or Nothing
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25004
+Name   = 007: NightFire
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25146
+Name   = Kaido Battle 2: Chain Reaction
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25009
+Name   = Kengo 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25211
+Name   = King of Fighters: Maximum Impact
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25045
+Name   = King of Fighters 2000, The
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15006
+Name   = Knight Rider
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67516
+Name   = Soul Reaver 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20005
+Name   = Let's Bravo Music
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25303
+Name   = Matrix, The: Path of Neo
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25072
+Name   = Maximo vs. Army of Zin
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25140
+Name   = Medal of Honor: Rising Sun
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67533
+Name   = Men in Black II: Alien Escape
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67515
+Name   = Metal Gear Solid 2: Sons of Liberty
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25355
+Name   = Metal Gear Solid 3: Subsistence (Limited Edition) [Disc3of3]
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56007
+Name   = Minna no Golf 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20057
+Name   = Minna no Golf 4
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25028
+Name   = Mission Impossible: Operation Surma
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64534
+Name   = Psyvariar: Complete Edition
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64521
+Name   = Raging Bless
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20093
+Name   = Ratatouille
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25078
+Name   = Rayman 3: Hoodlum Havoc
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67519
+Name   = Rayman Revolution
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25034
+Name   = Top Angler: Real Bass Fishing
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25011
+Name   = Reign of Fire
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25044
+Name   = Robotech: Battlecry
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25128
+Name   = San Goku Shi IX
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67522
+Name   = San Goku Shi Senki
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25088
+Name   = San Goku Shi Senki 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25047
+Name   = Shin Combat Choro Q
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25076
+Name   = Shin Megami Tensei III: Nocturne
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67550
+Name   = Shin Sangoku Musou 2 Mushouden
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25050
+Name   = Shin Sangoku Musou 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25187
+Name   = Shin Sangoku Musou 3 Empires
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25126
+Name   = Shin Sangoku Musou 3 Mushouden
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25109
+Name   = Shirachuu Tankenbu
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25065
+Name   = Silent Hill 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64552
+Name   = Silent Scope 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15028
+Name   = THE Love * Upper
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15030
+Name   = THE Block Hyper
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15029
+Name   = THE Shooting: Double Shienryu
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25399
+Name   = Sims 2, The: Pets
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64540
+Name   = Sims, The
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25099
+Name   = Urbz, The: Sims in the City
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25137
+Name   = Sims, The: Bustin' Out
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56009
+Name   = Smash Court Tennis Pro Tournament
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20007
+Name   = SOCOM: U.S. Navy SEALs
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25122
+Name   = Sonic Heroes
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15002
+Name   = Space Raiders
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25018
+Name   = Sphinx and the Cursed Mummy
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20098
+Name   = SpongeBob SquarePants: Creature from the Krusty Krab
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25319
+Name   = SpongeBob SquarePants: Lights, Camera, Pants!
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25007
+Name   = Spy Fiction
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25325
+Name   = SSX On Tour
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25090
+Name   = Starsky & Hutch
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20067
+Name   = Stuart Little 3: Big Photo Adventure
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25123
+Name   = Mononoke Ibunroku
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64544
+Name   = Tetsu 1: Densha de Battle!
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25343
+Name   = Thrillville: Off the Rails
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20003
+Name   = War of the Monsters
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64519
+Name   = Woody Woodpecker: Escape from Buzz Buzzard Park
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25105
+Name   = XIII
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25161
+Name   = Aqua Kids
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56016
+Name   = Axel Impact
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15001
+Name   = Barbarian
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25102
+Name   = Batman: Rise of Sin Tzu
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20089
+Name   = BioHazard 4
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25277
+Name   = Brothers in Arms: Road to Hill 30
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25206
+Name   = Burnout 3: Takedown
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25039
+Name   = Burnout 2: Point of Impact
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25304
+Name   = Burnout Revenge
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25107
+Name   = Crouching Tiger, Hidden Dragon
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67520
+Name   = Tarzan: Untamed
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25032
+Name   = Enter the Matrix
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25108
+Name   = EVE Burst Error Plus
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67521
+Name   = EOE: Eve of Extinction
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67537
+Name   = FIFA 2003
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25378
+Name   = 2006 FIFA World Cup
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67512
+Name   = 2002 FIFA World Cup
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25056
+Name   = Finding Nemo
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25264
+Name   = Full Spectrum Warrior
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15016
+Name   = Harry Potter: Quidditch World Cup
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64528
+Name   = Harry Potter and the Chamber of Secrets
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25327
+Name   = Harry Potter and the Goblet of Fire
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25172
+Name   = Harry Potter and the Prisoner of Azkaban
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25003
+Name   = Herdy Gerdy
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64535
+Name   = High Heat Major League Baseball 2003
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15009
+Name   = Takahashi Meijin no Adventure Island
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15015
+Name   = Ichigeki Sacchuu!! HoiHoi-San
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25316
+Name   = Incredibles, The: Rise of the Underminer
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25309
+Name   = Indigo Prophecy
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20006
+Name   = Argus no Senshi
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25098
+Name   = Lord of the Rings, The: The Return of the King
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25237
+Name   = Lord of the Rings, The: The Third Age
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25404
+Name   = NBA Live 08
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67541
+Name   = NBA Live 2003
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25086
+Name   = NBA Live 2004
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25110
+Name   = NBA Live 2005
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25315
+Name   = NBA Live 06
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25027
+Name   = NBA Street Vol. 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25334
+Name   = Need for Speed Most Wanted
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25136
+Name   = Need for Speed Underground
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25241
+Name   = Need for Speed Underground 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56004
+Name   = Otostaz
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25120
+Name   = Prince of Persia: The Sands of Time
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25346
+Name   = Prince of Persia: The Two Thrones
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25247
+Name   = Prince of Persia: Warrior Within
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15031
+Name   = Princess Maker
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15033
+Name   = Princess Maker 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25274
+Name   = Princess Maker 4
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67545
+Name   = Project Minerva
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25176
+Name   = Pump It Up: Exceed
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15035
+Name   = Saiyuki Reload: Gunlock
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25154
+Name   = Seven Samurai 20XX
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25118
+Name   = SSX 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25097
+Name   = Tiger Woods PGA Tour 2004
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20002
+Name   = Time Crisis 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25020
+Name   = TimeSplitters 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25031
+Name   = Tom Clancy's Ghost Recon
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25173
+Name   = Tom Clancy's Rainbow Six 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25061
+Name   = Tom Clancy's Splinter Cell
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25180
+Name   = Tom Clancy's Splinter Cell Pandora Tomorrow
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25073
+Name   = Tomb Raider: The Angel of Darkness
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25006
+Name   = Twin Caliber
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25169
+Name   = UEFA Euro 2004: Portugal
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20065
+Name   = Urban Reign
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25121
+Name   = Vexx
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25117
+Name   = World Soccer Winning Eleven 7 International
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25262
+Name   = World Soccer Winning Eleven 8 International
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25318
+Name   = WWE SmackDown! vs. Raw 2006
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25168
+Name   = WWE SmackDown vs. Raw 2007
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25116
+Name   = WWE SmackDown! Here Comes the Pain
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20001
+Name   = XI 5
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15011
+Name   = XII Stag
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64539
+Name   = Ultimate Fighting Championship: Tapout 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20024
+Name   = EyeToy: Groove
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20017
+Name   = EyeToy: Play
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20041
+Name   = EyeToy: Play 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20036
+Name   = Pipo Saru Get You 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-10007
+Name   = EyeToy: Tales
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-10005
+Name   = EyeToy: EduKids
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15018
+Name   = Kidou Senshi Gundam SEED
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64537
+Name   = Dark Angel: Vampire Apocalypse
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25223
+Name   = K-League Winning Eleven 8 Asia Championship
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20031
+Name   = Athens 2004
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67503
+Name   = FIFA 2002
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25235
+Name   = FIFA Street
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56003
+Name   = Jak and Daxter: The Precursor Legacy
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25029
+Name   = MVP Baseball 2003
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67530
+Name   = NHL 2003
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25234
+Name   = Rumble Roses
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15045
+Name   = THE Chanbara
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15058
+Name   = THE Chikyuu Boueigun 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25210
+Name   = Summer Heat Beach Volleyball
+Region = NTSC-K
+---------------------------------------------
+Serial = SCPS-56013
+Name   = This is Football 2003
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64507
+Name   = Wave Rally
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25025
+Name   = World Soccer Winning Eleven 6 International
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25203
+Name   = World Soccer Winning Eleven 8
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25030
+Name   = WWE SmackDown! Shut Your Mouth
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67525
+Name   = Medal of Honor: Frontline
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25095
+Name   = Madden NFL 2004
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25292
+Name   = Batman Begins
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25148
+Name   = MVP Baseball 2004
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64517
+Name   = Freekstyle
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64514
+Name   = Legends of Wrestling
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25230
+Name   = Def Jam: Fight for NY
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25054
+Name   = Grand Prix Challenge
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64524
+Name   = Shox
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67538
+Name   = SideWinder F
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25142
+Name   = Tak and the Power of Juju
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67543
+Name   = Star Wars: Jedi Starfighter
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15022
+Name   = Speed Kings
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67506
+Name   = Thunder Strike: Operation Phoenix
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25002
+Name   = Energy Airforce
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25014
+Name   = Evolution Snowboarding
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25059
+Name   = Pride FC: Fighting Championships
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25209
+Name   = FIFA 2005
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25242
+Name   = Fight Night Round 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25330
+Name   = Battlefield 2: Modern Combat
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64550
+Name   = Supper Puzzle Bobble 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64512
+Name   = Supper Puzzle Bobble
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25449
+Name   = Call of Duty: World at War - Final Fronts
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25345
+Name   = Chicken Little
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25382
+Name   = Chronicles of Narnia, The: The Lion, The Witch and The Wardrobe
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25374
+Name   = FIFA Street 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25368
+Name   = Full Spectrum Warrior: Ten Hammers
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25371
+Name   = Garouden Breakblow
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25338
+Name   = Godfather, The
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-64510
+Name   = International Superstar Soccer 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25283
+Name   = Juiced
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25436
+Name   = Kung Fu Panda
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20091
+Name   = MLB 07: The Show
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20140
+Name   = MLB 10: The Show
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20142
+Name   = MLB 11: The Show
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25314
+Name   = Kidou Senshi Gundam SEED: Rengou vs. Z.A.F.T.
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20084
+Name   = Monster House
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25282
+Name   = MX vs. ATV Unleashed
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25395
+Name   = NBA Live 07
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25185
+Name   = Need for Speed Carbon (Collector's Edition)
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25411
+Name   = Need for Speed ProStreet
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25446
+Name   = Need for Speed Undercover
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15055
+Name   = Raiden III
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15054
+Name   = THE Demolition Girl
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15042
+Name   = THE Suieitaikai
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25358
+Name   = Sonic Riders
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25385
+Name   = Spider-Man 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25245
+Name   = SpongeBob SquarePants: Movin' with Friends
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25272
+Name   = Tak 2: The Staff of Dreams
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25220
+Name   = Viewtiful Joe
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25448
+Name   = WWE SmackDown vs. Raw 2009
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25463
+Name   = WWE SmackDown vs. Raw 2010
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64510
+Name   = International Superstar Soccer 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25394
+Name   = King of Fighters: Maximum Impact 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25306
+Name   = Evil Dead: Regeneration
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25360
+Name   = Samurai Champloo
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-30005
+Name   = Rogue Galaxy
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25332
+Name   = Guilty Gear XX Slash
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25362
+Name   = Sega Rally 2006
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25335
+Name   = Shadow the Hedgehog
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25465
+Name   = Silent Hill: Shattered Memories
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15056
+Name   = Taito Legends
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25401
+Name   = FlatOut 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25305
+Name   = Taito Memories Gekan
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25379
+Name   = Sengoku Musou 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25459
+Name   = Transformers: Revenge of the Fallen
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25156
+Name   = Medal of Honor: Vanguard
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25337
+Name   = Peter Jackson's King Kong: The Official Game of the Movie
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25344
+Name   = Tom Clancy's Ghost Recon Advanced Warfighter
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25372
+Name   = Black
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25380
+Name   = WinBack 2: Project Poseidon
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25434
+Name   = Guitar Hero: Aerosmith
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20094
+Name   = Ookami
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67504
+Name   = SSX Tricky
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-20066
+Name   = EyeToy: Play 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15041
+Name   = THE Catfight
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15020
+Name   = Aliens Versus Predator: Extinction
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64533
+Name   = F1 2002
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15019
+Name   = F1 Career Challenge
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25278
+Name   = MVP Baseball 2005
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25250
+Name   = GoldenEye: Rogue Agent
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-15007
+Name   = Growlanser II: The Sense of Justice
+Region = NTSC-K
+---------------------------------------------
+Serial = SCKA-15021
+Name   = Growlanser III: The Dual Darkness
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15034
+Name   = Kinnikuman Generations
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-67527
+Name   = Need for Speed Hot Pursuit 2
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25053
+Name   = Def Jam Vendetta
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-64504
+Name   = Maximo
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25288
+Name   = Metal Slug 5 (Metal Slug 4 & 5) [Disc2of2]
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25226
+Name   = Incredibles, The
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25276
+Name   = King of Fighters 2002 & 2003, The [Disc2of2]
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-64502
+Name   = WinBack: Covert Operations
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25442
+Name   = 007: Quantum of Solace
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25408
+Name   = FIFA 08
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25447
+Name   = FIFA 09
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25363
+Name   = Guitar Hero III: Legends of Rock
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25271
+Name   = Harry Potter and the Order of the Phoenix
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25393
+Name   = Metal Slug 6
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25377
+Name   = OutRun 2006: Coast 2 Coast
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25367
+Name   = Superman Returns
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-15059
+Name   = Sega Rally Championship 1995
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25373
+Name   = Fight Night Round 3
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25464
+Name   = FIFA 10
+Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25475
+Name   = FIFA 11
+Region = NTSC-K
+---------------------------------------------
+Serial = SLPM-62136
+Name   = Netfront for Delta
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62140
+Name   = Cyber Jansou: Touhuu Syou Hen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55060
+Name   = D.Gray-man: Sousha no Shikaku
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25872
+Name   = Daisenryaku: Dai Toua Kouboushi - Tora Tora Tora Ware Kishuu Ni Seikou Seri
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66930
+Name   = Dance Dance Revolution SuperNOVA 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55090
+Name   = Dance Dance Revolution X
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20314
+Name   = Gold X
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25056
+Name   = Golf Navigator Vol. 4
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25027
+Name   = Golf Paradise DX
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65081
+Name   = Grandia II
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25203
+Name   = 007: NightFire
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55213
+Name   = Jigoku Shoujo Mioyosuga
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55155
+Name   = Jikkyou Powerful Major League 2009
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55062
+Name   = Jikkyou Powerful Major League 3
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55024
+Name   = Jikkyou Powerful Pro Yakyuu 15
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62071
+Name   = Jikkyou Powerful Pro Yakyuu 8
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62192
+Name   = Jikkyou Powerful Pro Yakyuu 9
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20448
+Name   = Kamen Rider Hibiki (Taiko no Tatsujin Special Version)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55055
+Name   = Kanuchi: Shiroki Tsubasa no Sho (Special Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25883
+Name   = Kateikyoushi Hitman Reborn Nerae!? Ring x Bongole Returns
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25904
+Name   = Kateikyoushi Hitman Reborn! Kindan no Yami no Delta
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65250
+Name   = Kattobi! Golf
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55248
+Name   = Kiniro no Corda 3
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66083
+Name   = Ramune: Garasu-Bin ni Uturu Umi (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65292
+Name   = Love Hina Gorgeous: Chiratto Happening!!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55197
+Name   = Memories Off 6: Next Relation
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25031
+Name   = Might and Magic: Day of the Destroyer
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55103
+Name   = Monochrome Factor: Cross Road
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62286
+Name   = Monster Bass
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55287
+Name   = Moujuutsukai to Oujisama: Snow Bride
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62769
+Name   = Quiz & Variety: Suku Suku Inufuku 2: Motto Sukusuku
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55189
+Name   = Rosario to Vampire Capu 2: Koi to Yume no Rhapsodia
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66357
+Name   = Rozen Maiden ~duellwalzer~
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25917
+Name   = Sacred Blaze
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55266
+Name   = Scared Rider Xechs
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25941
+Name   = SD Gundam G Generation Wars
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65217
+Name   = Seaman: Kindan no Pet (Kanzenban)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-67014
+Name   = Sengoku Musou 2 Mushouden
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55082
+Name   = Shin Sangoku Musou 5 Special
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25916
+Name   = Shinjuku no Ookami
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55095
+Name   = Shinkyouku Soukai Polyphonica: THE BLACK - Episode 1&2 CS Edition
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55231
+Name   = Silent Hill: Shattered Memories
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62026
+Name   = Silent Scope
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62085
+Name   = Silent Scope 2: Innocent Sweeper
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62179
+Name   = Simple 2000 Honkaku Shikou Series Vol. 2: The Igo
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62174
+Name   = Simple 2000 Honkaku Shikou Series Vol. 3: The Chess
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62396
+Name   = Simple 2000 Honkaku Shikou Series Vol. 6: The Card
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62093
+Name   = Simple 2000 Series Ultimate Vol. 1: Love * Smash
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62399
+Name   = Simple 2000 Series Ultimate Vol. 13: Kyousou! Tansha King
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62431
+Name   = Simple 2000 Series Ultimate Vol. 14: Topai! Dramatic Mahjong
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62196
+Name   = Simple 2000 Series Vol. 6: The Snowboard
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62231
+Name   = Simple 2000 Series Vol. 12: The Quiz 20000-Mon
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62313
+Name   = Simple 2000 Series Vol. 23: The Puzzle Collection 2000-Mon
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62309
+Name   = Simple 2000 Series Vol. 25: The Menkyo Shutoku Simulation
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62398
+Name   = Simple 2000 Series Vol. 39: Boku no Machi Zukuri - Machi-ing Maker++
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25912
+Name   = Soul Eater: Battle Resonance
+Region = NTSC-J
+---------------------------------------------
+Serial = SRPM-70201
+Name   = Space Venus Starring Morning Musume
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25252
+Name   = Star Wars: Jango Fett
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20109
+Name   = Star Wars Starfighter
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25888
+Name   = Star Wars: The Force Unleashed
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62181
+Name   = Street Golfer
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55174
+Name   = Strike Witches: Anata to Dekiru Koto - A Little Peaceful Days
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25947
+Name   = Summon Night Gran-These: Horobi no Tsurugi to Yakusoku no Kishi
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25920
+Name   = Super Robot Taisen Z Special Disc
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66403
+Name   = TT SuperBikes: Real Road Racing
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55247
+Name   = S.Y.K Renshouden
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62470
+Name   = Teitoku no Ketsudan IV with Power-Up Kit
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65145
+Name   = Tokimeki Memorial Girl's Side
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62320
+Name   = 2003-Toshi Kaimaku: Ganbare Kyuukaiou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65151
+Name   = Akudaikan
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25918
+Name   = Amagami
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25106
+Name   = America Oudan Ultra-Quiz
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55147
+Name   = Suggoi! Arcana Heart 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55014
+Name   = Aria: The Origination ~Aoi Hoshi no El Cielo~
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25140
+Name   = Baldur's Gate: Dark Alliance
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20169
+Name   = Chou! Rakushii Internet Tomodachi Nowa (Type-PG)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25073
+Name   = Cinema Surfing: Youga Taizen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55255
+Name   = Clover no Kuni no Alice
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20056
+Name   = Colorio: Hagaki Print
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62195
+Name   = Dai Guruguru Onsen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25932
+Name   = Evangelion: Jo
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-68514
+Name   = Front Mission Online [BETA Version]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25940
+Name   = Gendai Daisenryaku: Isshoku Sokuhatsu - Gunji Balance Houkai
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62126
+Name   = Hyper Sports 2002 Winter
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25101
+Name   = Nichibeikan Pro Yakyuu: Final League
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62784
+Name   = Kao no nai Tsuki: Select Story
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55166
+Name   = Kazeiro Surf (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65646
+Name   = Komorebi no Namikimichi: Utsurikawaru Kisetsu no Chuu de
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25253
+Name   = Mezamashi Telebi 10th Anniversary: Kyo-no Wanko
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55200
+Name   = Touka Gettan: Koufuu no Ryouou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20190
+Name   = Netsu Chu! Pro Yakyuu 2002
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62099
+Name   = Nihon Sumo Kyokai Kounin: Nihon Oozumou Gekitou Honbashohen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55193
+Name   = Nuga-Cel!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20506
+Name   = Daito Giken Koushiki Pachi-Slot Simulator: 24 - Twenty-Four
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20298
+Name   = Fever 8
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20233
+Name   = Hissatsu Pachinko Station V6: Yume no Choutokkyuu
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25909
+Name   = Hisshou Pachinko*Pachi-Slot Kouryaku Series Vol. 13: Shinseiki Evangelion - Yakusoku no Toki
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62074
+Name   = Honkakuteki Pachinko Jikki Kouryaku Series: Milky Bar and Kirakuin
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20215
+Name   = Jissen Pachi-Slot Hisshouhou! Aladdin A
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20193
+Name   = Jissen Pachi-Slot Hisshouhou! Sammy's Collection
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20292
+Name   = Jissen Pachi-Slot Hisshouhou! Savanna Park DX
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20240
+Name   = Jissen Pachi-Slot Hisshouhou! Moujuuou S
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20427
+Name   = Pachi-Slot Club Collection: Pachi-Slot Dayo Koumon Chama
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20151
+Name   = Pachi-Slot Aruze Oukoku 6
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62220
+Name   = Pachi-Slot Kanzen Kouryaku: Gigazone
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20307
+Name   = Rakushou! Pachi-Slot Sengen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20261
+Name   = Sanyo Pachinko Paradise 8: Shin Umi Monogatari
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55152
+Name   = Slotter Up Core 11: Kyoujin no Hoshi IV Seishun Gunzou-hen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20286
+Name   = Slotter Up Core 2: Gouda! Minami no Teiou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55228
+Name   = Slotter Up Mania 11: 2027 vs 2027 II
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20306
+Name   = Slotter Up Mania 2: Kokuchi no Kiwame! Juggler Special
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20338
+Name   = Slotter Up Mania 3: Densetsu Fukkatsu! New Pegasus Special
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20278
+Name   = Slotter Up Mania: Chou Oki Slot! Pioneer Special
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55102
+Name   = Pia Carrot e Youkoso!! G.P. Gakuen Princess
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20077
+Name   = Pilot ni Narou! 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55012
+Name   = Poi! Hito Natsu no Keiken!?
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55130
+Name   = Pro Yakyuu Spirits 5 Kanzenban
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55158
+Name   = Pro Yakyuu Spirits 6
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62156
+Name   = Saikyou no Igo 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55278
+Name   = Sengoku Hime 2 Honoo: Hyakubana, Senran Tatsukaze no Gotoku
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20197
+Name   = Surfing Air Show with RatBoy
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55185
+Name   = SweetHoneyComing (DX Pack)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65369
+Name   = TBS All-Star Kansha Matsuri 2003-Aki Chou Gouka! Quiz Ketteiban
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65261
+Name   = TBS All-Star Kansha Matsuri Vol .1: Chou Gouka! Quiz Ketteiban
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65402
+Name   = Tengai Makyou II: Manji Maru
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55052
+Name   = Triggerheart Exelica Enhanced
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20115
+Name   = TVware Jouhou Kakumei Series: Gendai Yougo no Kisochishiki 2001
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20114
+Name   = TVware Jouhou Kakumei Series: Katei no Igaku
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20116
+Name   = TVware Jouhou Kakumei Series: Jouhoukakumei Nihongo Daijiten
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20146
+Name   = TVware Jouhou Kakumei Series Pro Atlas for TV: Kinki
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20145
+Name   = TVware Jouhou Kakumei Series Pro Atlas for TV: Shutoken
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20147
+Name   = TVware Jouhou Kakumei Series Pro Atlas for TV: Toukai
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25067
+Name   = TVware Jouhou Kakumei Series Pro Atlas for TV: Zengokuban
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66404
+Name   = Ultimate Spider-Man
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20264
+Name   = Usagi: Yasei no Topai - The Arcade
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20207
+Name   = Usagi: Yasei no Topai
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55177
+Name   = Wand of Fortune
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62042
+Name   = Kurogane no Houkou: Warship Commander
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20170
+Name   = Wave Rally
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55209
+Name   = World Soccer Winning Eleven 2010
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55294
+Name   = World Soccer Winning Eleven 2012
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55253
+Name   = Winning Post World 2010
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62742
+Name   = Wizardry Gaiden: Sentou no Kangoku - Prisoners of the Battles
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20195
+Name   = World Fantasista
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20210
+Name   = Yamasa Digi World 3 DX
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20211
+Name   = Yamasa Digi World 3
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20257
+Name   = Yamasa Digi World 4 DX
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20315
+Name   = Yamasa Digi World SP: Neo Magic Pulsar XX
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66928
+Name   = Your: Memories Off Girls Style
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66707
+Name   = Yukinko Daisenpuu: Saiyuki to Koyuki no Hie Hie Daisoudou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55221
+Name   = BeatMania IIDX 16: Empress + Premium Best
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55222
+Name   = BeatMania IIDX 16: Empress + Premium Best
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55117
+Name   = BeatMania IIDX 15: DJ Troopers
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20181
+Name   = Alpine Racer 3
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25987
+Name   = Amagami (EBKore+)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25989
+Name   = Amagami (EBKore+ Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55169
+Name   = Arcobaleno!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20080
+Name   = Ashita no Joe Touchi: Typing Namida Hashi (Keyboard Set)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20081
+Name   = Ashita no Joe Touchi: Typing Namida Hashi
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62411
+Name   = Buggy Grand Prix: Kattobi! Dai-Sakusen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62038
+Name   = Choukousoku Mahjong
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62114
+Name   = Crash Bandicoot 4: Sakurestsu! Majin Power
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25268
+Name   = Dead to Rights
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55259
+Name   = Desert Kingdom
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20138
+Name   = Digital Holmes
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20070
+Name   = Donald Duck: Rescue Daisakusen!!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20099
+Name   = Dream Audition 3
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65415
+Name   = EX Jinsei Game II
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20295
+Name   = F1 Career Challenge
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55298
+Name   = Final Fantasy XI: Adoulin no Makyou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55121
+Name   = Fukakutei Sekai no Tantei Shinshi: Akugyou Futaasa no Jiken File
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62020
+Name   = G1 Jockey 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62061
+Name   = G1 Jockey 2 2001
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65046
+Name   = Gobuato no Sekai
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20309
+Name   = Hanabi Hyakkei
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20234
+Name   = Harry Potter to Himitsu no Heya
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-68005
+Name   = Harry Potter to Himitsu no Heya (Coca Cola Original version)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55245
+Name   = Himawari: Pebble in the Sky
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20308
+Name   = Hanabi Hyakkei (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20124
+Name   = Initial D: Takahashi Ryosuke no Typing Saisoku Riron
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25068
+Name   = Jitsumei Jikkyou Keiba Dream Classic 2001 Autumn
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20131
+Name   = Jissen Pachi-Slot Hisshouhou! Kemono Oh
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25021
+Name   = Jitsumei Jikkyou Keiba Dream Classic 2001 Spring
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25979
+Name   = Kaeru Batake de Tsukamaete
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25988
+Name   = Kaeru Batake de Tsukamaete: Natsu Senbokuryou Sansen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55041
+Name   = Kanokon: Esuii
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-68007
+Name   = Karaoke Revolution: Mic Douhou Otameshi Disc
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-53960
+Name   = Kinnikuman Muscle Grand Prix Max 2 - Tokumori
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55203
+Name   = Little Busters! Converted Edition
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20313
+Name   = Mahjong Haou: Taikai Battle
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62030
+Name   = Mahjong Sengen Kyoujin de Ron!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55006
+Name   = Akane Iro ni Somaru Saka: Parallel
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65037
+Name   = Angelique Trois: Aizouhen (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65027
+Name   = Anime Eikaiwa: 15 Shounen Hyouryuuhen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65028
+Name   = Anime Eikaiwa: Totoi
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66995
+Name   = BeatMania IIDX 14: Gold
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55187
+Name   = Canvas 3: Tanshoku no Pastel
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55136
+Name   = Clear: Atarashii Kaze no Fuku Oka de
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55281
+Name   = Clock Zero: Shuuen no Ichibyou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55285
+Name   = Crimson Empire
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-86658
+Name   = Culdcept Expansion Plus
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-86223
+Name   = Culdcept Expansion
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55239
+Name   = Death Connection
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20160
+Name   = Tarzan: Freeride
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25870
+Name   = Drastic Killer (Excellent Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66975
+Name   = Edel Blume (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55240
+Name   = Ef - a fairy tale of the two. (First Print Limited Special Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62116
+Name   = EX Jinsei Game
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20096
+Name   = Gambler Densetsu Tetsuya
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66980
+Name   = Gin no Eclipse
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55064
+Name   = Hakuouki Shinsengumi Kitan
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55208
+Name   = Hakuouki: Zuisouroku
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55273
+Name   = Hakuouki: Reimeiroku
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55057
+Name   = Hakushaku to Yousei: Yume to Kizuna ni Omoi Hasete
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55263
+Name   = Hana to Otome ni Shukufuku o: Harukaze no Okurimono
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66347
+Name   = Harukanaru Toki no Naka de 3: Unmei no Meikyuu (Premium Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55138
+Name   = Harukanaru Toki no Naka de: Yumenoukihashi Special
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55044
+Name   = Heart no Kuni no Alice
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55215
+Name   = Hiiro no Kakera: Shin Tamayori Hime Denshou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55216
+Name   = Hiiro no Kakera (Aizouban)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25939
+Name   = Himehibi: New Princess Days!! Zoku! Ni-Gakki
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55159
+Name   = Hyakko: Yorozuya Jikenbo!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62034
+Name   = Jikkyou Powerful Pro Yakyuu 7 Ketteiban
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25902
+Name   = Junjou Romanchika: Koi no Doki Doki Daisakusen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55161
+Name   = Kanuchi: Kuroki Tsubasa no Shou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62346
+Name   = Keiei Simulation: Jurassic Park
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20075
+Name   = Kikou Heidan J-Phoenix Joshouhen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66834
+Name   = Kiniro no Corda 2 Encore (Premium Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55132
+Name   = Kira * Kira: Rock 'n' Roll Show (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55068
+Name   = Koihime + Musou: Doki*Shoujo Darake no Sangokushi Engi
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55098
+Name   = Koisuru Otome to Shugo no Tate: The Shield of AIGIS
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20046
+Name   = Kuusen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65272
+Name   = Kyuuketsu Hime Yui: Senyasyo
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55009
+Name   = L no Kisetsu 2: Invisible Memories
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25958
+Name   = Last Escort: Club Katze
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25929
+Name   = Little Anchor
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20247
+Name   = Lotus Challenge
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55149
+Name   = Loveroot Zero: Kiss Kiss * Labyrinth
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55257
+Name   = Lucian Bee's: Evil Violet
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55256
+Name   = Lucian Bee's: Justice Yellow
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55194
+Name   = Lucian Bee's: Resurrection Supernova
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62066
+Name   = Machi-ing Maker
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20270
+Name   = Magical Sports: Hard Hitter 2 (New Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65469
+Name   = Medal of Honor: Rising Sun
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66988
+Name   = Memories Off 6: T-Wave
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20255
+Name   = Million God
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20281
+Name   = Monopoly: Mezase!! Daifugou Jinsei!!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20183
+Name   = Motto Golful Golf
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55264
+Name   = Moujuutsukai to Oujisama
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55053
+Name   = Murasaki no Honoo
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55223
+Name   = NadePro!! Kisama no Seiyuu Yatte Miro!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65136
+Name   = Natsuiro no Sunadokei
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55269
+Name   = Pandora: Kimi no Namae o Boku wa Shiru
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25148
+Name   = Panel Quiz Attack 25
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55032
+Name   = Piyo-Tan: Oyashiki Sennyuu Daisakusen!
+Region = NTSC-J
+---------------------------------------------
+Serial = SCPN-60130
+Name   = PlayStation BB Navigator - Version 0.20
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55195
+Name   = Princess Lover! Eternal Love for My Lady (First Print Special Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62025
+Name   = PrintFan with popegg
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55252
+Name   = Pro Yakyuu Spirits 2010
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25110
+Name   = Project FIFA World Cup: Sorenara Kimi ga Daihyo Kantoku
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55104
+Name   = Real Rode
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55206
+Name   = S.Y.K Shinsetsu Saiyuuki
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55289
+Name   = Sangoku Rensenki: Otome no Heihou!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65673
+Name   = San Goku Shi IX with Power-Up Kit
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55290
+Name   = Scared Rider Xechs: Stardust Lovers
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55079
+Name   = Scarlett: Nichijou no Kyoukaisen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55028
+Name   = Secret Game: Killer Queen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55227
+Name   = Sekirei: Mirai Kara no Okurimono
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-99999
+Name   = Shaolin Streets (Beta/Unreleased)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62246
+Name   = Silent Scope 3
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65662
+Name   = Spider-Man 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25147
+Name   = Star Wars: Jedi Starfighter
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55047
+Name   = Sugar + Spice! - Anoko no Suteki na Nanimokamo
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62487
+Name   = Hanafuda (SuperLite 2000 Table)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20117
+Name   = Taikyoku Mahjong: Net de Ron!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62145
+Name   = Teitoku no Ketsudan IV
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65371
+Name   = Tennis no Oujisama: Sweat & Tears 2 - Seishun Gakuten Tennis Matsuri 03 Perfect Live
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25207
+Name   = TimeSplitter: Jikuu no Shinryakusha
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25412
+Name   = To Heart 2 (First Print Deluxe Edition w/To Heart)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20242
+Name   = Tomak: Save the Earth - Love Story
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25189
+Name   = Toukon Inoki Michi: Puzzle de Daa!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20090
+Name   = Train Kit for A-Ressha de Ikou 2001
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25880
+Name   = True Fortune
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20174
+Name   = Typing Renai Hakusho: Boys Be... (Keyboard Set)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55175
+Name   = Under the Moon: Crescent
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55274
+Name   = Uragiri wa Boku no Namae o Shitteiru: Tasogare ni Ochita Inori
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62019
+Name   = Winning Post 4 Maximum
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20158
+Name   = Yamasa Digi World 2: LCD Edition
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55016
+Name   = Yotsunoha: A Journey of Sincerity
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55071
+Name   = Yumemi Hakusho: Second Dream
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55153
+Name   = Tsuyo Kiss 2 Gakki: Swift Love (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-55141
+Name   = Pac-Man World 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25222
+Name   = Pia Carrot e Youkoso!! 3: Round Summer
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20077
+Name   = Pilot ni Narou! 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55217
+Name   = Shin Hisui no Shizuku: Hiiro no Kakera 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55270
+Name   = Shinkyouku Soukai Polyphonica: After School
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55170
+Name   = Skip Beat!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55013
+Name   = Sorayume
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55040
+Name   = Soukoku no Kusabi: Hiiro no Kakera 3
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55039
+Name   = Soukoku no Kusabi: Hiiro no Kakera 3 (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20353
+Name   = Suki Namono wa Suki Dakarashou Ganai!! First Limit & Target Nights: Sukisyo Episode #1 & #2 [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55243
+Name   = Suzunone Seven: Rebirth Knot
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62146
+Name   = Choukousoku Mahjong Plus
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20266
+Name   = Baskelian
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-66666
+Name   = Deadlands (BETA Version)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62119
+Name   = Jikkyou Powerful Pro Yakyuu 8 Ketteiban
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55146
+Name   = Jikkyou Powerful Pro Yakyuu 2009
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25879
+Name   = Bully
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62037
+Name   = Choukousoku Igo
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62039
+Name   = Choukousoku Shogi
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20397
+Name   = Pachitte Chonmage Tatsujin 7: CR Pachinko Dokaben
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55156
+Name   = D.C.I.F.: Da Capo Innocent Finale
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20228
+Name   = Daisenryaku 1941: Gyakuten no Taiheiyou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20508
+Name   = Hayarigami 2: Keishichou Kaii Jiken File (Best Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20385
+Name   = Hayarigami: Keishichou Kaii Jiken File
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25942
+Name   = Hisshou Pachinko*Pachi-Slot Kouryaku Series Vol. 14: CR Shinseiki Evangelion - Saigo no Mono (Limited Special Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66925
+Name   = D.C. II P.S.: Da Capo II Plus Situation [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65396
+Name   = Digi Charat Fantasy Excellent
+Region = NTSC-J
+---------------------------------------------
+Serial = PAPX-90202
+Name   = I.Q. Remix+ - Intelligent Qube [Taikenban]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20140
+Name   = Dream Audition Super Hit Disc 1
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20141
+Name   = Dream Audition Super Hit Disc 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-69004
+Name   = EGBrowser Light For I-O Data Device Inc.
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20184
+Name   = Eikan wa Kimini 2002: Koushien no Kodou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62050
+Name   = Densha de Go! 3 Tsuukinhen [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25188
+Name   = Erde: Nezu no Izuki no Shita de
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20267
+Name   = Jissen Pachi-Slot Hisshouhou! Salaryman Kintarou (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20268
+Name   = Jissen Pachi-Slot Hisshouhou! Salaryman Kintarou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65003
+Name   = 0 Story [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25705
+Name   = Eureka Seven: New Wave Graduation (Welcome Price 2800)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65258
+Name   = EX Jinsei Game II (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62103
+Name   = EX Okuman Chouja Game
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25087
+Name   = Exciting Pro Wrestling 3
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25210
+Name   = Exciting Pro Wrestling 4
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55134
+Name   = FIFA 09: World Class Soccer
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25420
+Name   = Sinbad Adventure wa Enomoto Kanako de Dou Desu ka
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65034
+Name   = Kitakata Kenzou San Goku Shi [Disc1of2] (Sangokushi North Winds)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65035
+Name   = Kitakata Kenzou San Goku Shi [Disc2of2] (Sangokushi North Winds)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65304
+Name   = Frogger
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55190
+Name   = L2: Love x Loop (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55191
+Name   = L2: Love x Loop
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25908
+Name   = Lego Batman
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20173
+Name   = Magical Sports: Hard Hitter 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55163
+Name   = Myself; Yourself: Sorezore no Finale
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55162
+Name   = Myself; Yourself: Sorezore no Finale (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55072
+Name   = G1 Jockey 4 2008
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20192
+Name   = Hissatsu Pachinko Station V3: Shutsudou! Miniskirt Police
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20213
+Name   = Hissatsu Pachinko Station V4: Dramatic Mahjong
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20229
+Name   = Hissatsu Pachinko Station V5: Pink Lady
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20217
+Name   = Hokkahoka Sentou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66784
+Name   = Idol Janshi Suchie-Pai III Remix
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62386
+Name   = Ishikura Noboru no Igo Kouza: Chuukyuuhen - Jitsuryoku 5-Kyuu o Mejasu Hito e
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20509
+Name   = Hachi-One Diver
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25772
+Name   = GrimGrimoire (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62573
+Name   = Kessen III (Treasure Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55065
+Name   = Kamiyo Gakuen Makorouku Kurunugia
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65048
+Name   = Kinniku Banzuke: Muscle Wars 21
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62293
+Name   = Magical Pachinko Cotton: Pachinko Juuki Simulation
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20134
+Name   = Mahjong Haou: Jansou Battle
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20310
+Name   = Mahjong Hiryu Densetsu: Tenpai
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20155
+Name   = MotoGP 02
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55031
+Name   = Majin Tantei Nougami Neuro: Battle da Yo! Hannin Shugou!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25956
+Name   = Moe Moe 2-Ji Daisenryaku 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25896
+Name   = Moe Moe 2-ji Daisenryaku Deluxe
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20212
+Name   = Neppachi Gold: CR Monster Mansion
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55267
+Name   = Natsuzora no Monologue
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55089
+Name   = Naxat Soft Reachmania Vol. 1: CR Galaxy Angel
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25173
+Name   = Omoide ni Kawaru-Kun: Memories Off
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55220
+Name   = Osouji Sentai Clean Keeper H
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20186
+Name   = Pachinko de Yuubou! Fever Dodeka Saurus
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20157
+Name   = Pachitte Chonmage Tatsujin: CR Nettou Power Pro Kun
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20253
+Name   = Pachitte Chonmage Tatsujin 2: CR Jurassic Park
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20275
+Name   = Pachitte Chonmage Tatsujin 3: CR P-Man & CR Yawara Kids Kiwame-hen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20276
+Name   = Pachitte Chonmage Tatsujin 4: CR Hissatsu Shigotonin Gekitou-hen [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20277
+Name   = Pachitte Chonmage Tatsujin 4: CR Hissatsu Shigotonin Gekitou-hen [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25907
+Name   = Pachitte Chonmage Tatsujin 15: Pachinko Fuyu no Sonata 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25980
+Name   = Pachitte Chonmage Tatsujin 16: Pachinko Hissatsu Shigotonin III - Matsuri Version
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20135
+Name   = Pai Chenjan
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55211
+Name   = Pachi-Slot Higrashi no Naku Koro ni Matsuri
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65240
+Name   = Pro Yakyuu Team o Tsukurou! 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25921
+Name   = Rakushou! Pachi-Slot Sengen 6: Rio 2 Cruising Vanadis
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62065
+Name   = Simple 2000 Series Vol. 1: The Table Game
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62150
+Name   = Simple 2000 Series Vol. 3: The Bass Fishing
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62352
+Name   = Simple 2000 Series Vol. 40: The Touyou Sandai Senjutsu - Fuusui, Seimei Handan, Ekisen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62160
+Name   = Simple 2000 Series Vol. 4: The Double Mahjong Puzzle
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66088
+Name   = Simple 2000 Series Vol. 84: The Boku ni Oma Cafe - Kimagure Strawberry Cafe
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25874
+Name   = Simple 2000 Series Vol. 123: The Office Love Jikenbou - Reijou Tantei
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62079
+Name   = Se-Pa 2001
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-68020
+Name   = Suzumiya Haruhi no Tomadoi (Bonus Disc)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25249
+Name   = Sanyo Pachinko Paradise 9: Shinkai o Kawari
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55225
+Name   = Sengoku Hime: Senran ni Mau Otometachi
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25919
+Name   = Sengoku Tenka Touitsu
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55288
+Name   = Shin Koihime Musou: Otome Ryouran * Sangokushi Engi
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25978
+Name   = Shin Master of Monsters Final EX: Mukunaru Nageki Tenmei no Saika
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74233
+Name   = Shin Onimusha: Dawn of Dreams (PlayStation 2 the Best) [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55275
+Name   = Slotter Up Core 12: PinPon
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62105
+Name   = Taikou Risshiden IV
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65895
+Name   = Tsuki wa Kirisaku: Tantei Sagara Kyoichiro (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55154
+Name   = Tsuyo Kiss 2 Gakki: Swift Love
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-60200
+Name   = Visual Works of Anubis - Zone of the Enders
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20227
+Name   = Yamasa Digi World SP
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62533
+Name   = Usagi: Yasei no Topai The Arcade - Yamashiro Mahjong-Hen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-68008
+Name   = Virtua Fighter: 10th Anniversary
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25922
+Name   = Vitamin Z: Welcome Our New Supplement Boys (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25923
+Name   = Vitamin Z: Welcome Our New Supplement Boys
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55246
+Name   = Wand of Fortune: Mirai e no Prologue
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55051
+Name   = Will O' Wisp: Easter no Kiseki
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55150
+Name   = Winning Post World
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-67001
+Name   = Wonder Zone
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55058
+Name   = Wrestle Angels: Survivor 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20404
+Name   = Rakushou! Pachi-Slot Sengen 2: DekaDan Jyuujika
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20419
+Name   = Rakushou! Pachi-Slot Sengen 3: Rio de Carnival, Juujika 600-shiki 
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20203
+Name   = Sanyo Pachinko Paradise 7: Edo-kko Minamoto-san
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66923
+Name   = D.C. II P.S.: Da Capo II Plus Situation (DX Pack) [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65522
+Name   = Bakushou! Jinsei Kaidow: NOVA Usagi ga miteruzo!!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74419
+Name   = Bakusou Dekotora Densetsu: Otoko Hanamichi Yume Roman (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20248
+Name   = Downforce
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-68525
+Name   = Keshikyun Puzzle: Atori Mahiro VS Saitou- Elle VS Hakkai - Hakuouki Reimeiroku
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-25153
+Name   = Lilo and Stitch: Stitch no Daibouken
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66079
+Name   = Medal of Honor: Europa Kyoushuu
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25263
+Name   = Monster Farm 4
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62194
+Name   = Nihon Sumo Kyokai Kounin: Nihon Oozumou Gekitou Honbashohen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25141
+Name   = Pac-Man World 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25652
+Name   = .hack//G.U. vol. 1: Saitan Terminal Disc
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73259
+Name   = .hack//G.U. Vol. 1: Saitan (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25755
+Name   = .hack//G.U. Vol. 1: Saitan (Welcome Price!!)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73266
+Name   = .hack//G.U. Vol. 2: Kimi Omou Koe (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73267
+Name   = .hack//G.U. Vol. 3: Aruku Youna Hayasa de (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20318
+Name   = 3D Kakutou Tsukuru 2 (Enterbrain Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62329
+Name   = AI Igo 2003
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62330
+Name   = AI Mahjong 2003
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62323
+Name   = AI Shogi 2003
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66982
+Name   = Air (Best Version)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55145
+Name   = Akudaikan 3 (Global the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25229
+Name   = America Oudan Ultra-Quiz (DigiCube Best Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55085
+Name   = Angel Profile (Best Hit Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65159
+Name   = Angelique Trois: Aizouhen (Naho Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-84075
+Name   = Anubis: Zone of the Enders (Konami Dendou Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55165
+Name   = Aoishiro (SuperLite 2000 Adventure)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55106
+Name   = Arcana Heart (AQ the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55168
+Name   = Arcobaleno! (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25082
+Name   = A-Ressha de Ikou 2001 Perfect Set
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-61036
+Name   = Argus no Senshi (Taikenban)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55204
+Name   = Aria: The Origination ~Aoi Hoshi no El Cielo~ (Alchemist Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55034
+Name   = Battlefield 2: Modern Combat (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55143
+Name   = BioHazard Code: Veronica Kanzenban (Best Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65485
+Name   = Bomberman Jetters (Hudson the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62311
+Name   = Bomberman Kart (Hudson the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-61060
+Name   = BUSIN 0: Wizardry Alternative NEO (Taikenban)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25877
+Name   = Busou Renkin: Yokosu Papillon Park e (Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66095
+Name   = Chou Battle Houshin (Koei Teiban Series)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20149
+Name   = Chou! Rakushii Internet Tomodachi Nowa (Type-OS)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20283
+Name   = Chulip (Victor the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55178
+Name   = Clannad (Best Version Premium Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55181
+Name   = Clannad (Best Version)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66414
+Name   = Colorful Box: To Love (2800 Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62188
+Name   = Crazy Bump's: Kattobi Car Battle (Syscom Game Gallery)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25953
+Name   = Dai Senryaku VII: Exceed (System Soft Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65774
+Name   = DDR Festival Dance Dance Revolution (w/DDR Controller 2)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74268
+Name   = Devil May Cry 3: Special Edition (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62242
+Name   = Doukyu Billiard Master 2 (Low-Price Version)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55081
+Name   = Drag-On Dragoon 2: Fuuin no Kurenai, Haitoku no Kuro (Ultimate Hits)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55023
+Name   = Dragon Quest & Final Fantasy in Itadaki Street Special (Ultimate Hits)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55139
+Name   = Drift Nights: Juiced 2 (THQ Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20274
+Name   = Eikan wa Kimini 2002: Koushien no Kodou (DigiCube Best Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25707
+Name   = Eureka Seven: New Wave Graduation (Welcome Price w/DVD)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55086
+Name   = Ever17: The Out of Infinity (Renai Game Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62115
+Name   = EX Jinsei Game (Roulette Controller Pack)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-60124
+Name   = Extreme Racing SSX (Taikenban)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55238
+Name   = Fate/unlimited codes (Best Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20505
+Name   = FIVB Volleyball World Cup: Venus Evolution (Spike the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65029
+Name   = Anime Eikaiwa: Tondemo Nezumi Daikatsuyaku
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55282
+Name   = Armen Noir
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55107
+Name   = Baroque International
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20346
+Name   = Beast Sapp
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66423
+Name   = Beni no Umi 2: Crimson Sea (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74288
+Name   = BioHazard 4 (PlayStation 2 the Best 2nd Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74262
+Name   = BioHazard 4 (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20304
+Name   = Boku wa Chiisai (Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25431
+Name   = Bokujou Monogatari: Oh! Wonderful Life
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25950
+Name   = Bully (Best of Bethesda)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55036
+Name   = Burnout Dominator (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55004
+Name   = Burnout Revenge (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66230
+Name   = Cartagra: Tamashii no Kunou (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65149
+Name   = Choro Q HG (The Best Takara)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20127
+Name   = Chou! Rakushii Internet Tomodachi Nowa
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66981
+Name   = Clannad
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65743
+Name   = Cool Girl [Disc2of2] (Konami the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66067
+Name   = Crash Bandicoot Bakusou! Nitro Kart (Konami the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20324
+Name   = Daisenryaku 1941: Gyakuten no Taiheiyou (Sammy best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55001
+Name   = Def Jam Vendetta (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55078
+Name   = Def Jam: Fight for NY (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74214
+Name   = Densha de Go! Final (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55141
+Name   = Destroy All Humans! (THQ Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25024
+Name   = Dinosaur
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55115
+Name   = Dokapon Kingdom (Sting the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65865
+Name   = Doko e Ikuno Anohi: Hikaru Ashita e (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55080
+Name   = Drag-on Dragoon (Ultimate Hits)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66976
+Name   = Edel Blume
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55241
+Name   = Ef - a fairy tale of the two.
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62141
+Name   = Eisei Meijin VI
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62302
+Name   = Eisei Meijin VII: Tsuushin Shougi Club
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25706
+Name   = Eureka Seven: New Vision (Welcome Price 2800)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62187
+Name   = EX Billiards (Takara Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74274
+Name   = EX Jinsei Game II (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73409
+Name   = Exciting Pro Wrestling 3
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25083
+Name   = Exciting Pro Wrestling 3 (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20223
+Name   = Exciting Pro Wrestling 3 (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25327
+Name   = Exciting Pro Wrestling 5
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74270
+Name   = Fate/Stay Night [Realta Nua] (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55035
+Name   = Fight Night Round 2 (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55229
+Name   = Final Fantasy XI: Vana'diel Collection 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55022
+Name   = Final Fantasy XII (Ultimate Hits)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55210
+Name   = Final Fantasy XII International Zodiac Job System (Ultimate Hits)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66017
+Name   = Firefighter F.D. 18 (Konami Dendou Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20231
+Name   = Freekstyle Motocross
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55029
+Name   = Galaxy Angel II: Zettairyouiki no Tobira (Broccoli Best Quality)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55093
+Name   = Galaxy Angel II: Mugen Kairou no Kagi (Broccoli Best Quality) [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55094
+Name   = Galaxy Angel II: Mugen Kairou no Kagi (Broccoli Best Quality) [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55118
+Name   = Galaxy Angel II: Eigou Kaiki no Koku [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55119
+Name   = Galaxy Angel II: Eigou Kaiki no Koku [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65254
+Name   = Galaxy Angel
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65429
+Name   = Galaxy Angel: Moonlit Lovers (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65540
+Name   = Galaxy Angel: Moonlit Lovers (First Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65878
+Name   = Galaxy Angel: Eternal Lovers
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65905
+Name   = Galaxy Angel: Eternal Lovers (Special Package)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66243
+Name   = Galaxy Angel II
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66290
+Name   = Galaxy Angel [The Best]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66604
+Name   = Galaxy Angel: Moonlit Lovers (Broccoli Best Quality)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66778
+Name   = Galaxy Angel: Eternal Lovers (Broccoli Best Quality)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66779
+Name   = Galaxy Angel II: Mugen Kairou no Kagi [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66780
+Name   = Galaxy Angel II: Mugen Kairou no Kagi [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25280
+Name   = Galerians: Ash (Enterbrain Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73004
+Name   = Gambler Densetsu Tetsuya (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-60267
+Name   = Garouden Breakblow (Taikenban)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25985
+Name   = Gendai Daisenryaku: Isshoku Sokuhatsu - Gunji Balance Houkai (System Soft Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62289
+Name   = Global Folktale (IF Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SCPS-72001
+Name   = Gran Turismo 3: A-Spec (Mega Hits!)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55293
+Name   = Grand Theft Auto III (Rockstar Classics)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55292
+Name   = Grand Theft Auto: San Andreas (Rockstar Classics)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-85976
+Name   = Grandia III [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-85977
+Name   = Grandia III [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25884
+Name   = GrimGrimoire (Best Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74213
+Name   = Genso Suikoden IV (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66979
+Name   = Gin no Eclipse (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-67017
+Name   = God of War II - Shuuen No Jokyoku (Best Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20302
+Name   = Gokuraku Jan Premium
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55038
+Name   = Grand Theft Auto: Liberty City Stories (Best Price) 
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55135
+Name   = Grand Theft Auto: Vice City Stories (Best Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25886
+Name   = Guitar Hero: Aerosmith (w/Guitar)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74267
+Name   = Gundam Musou Special (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55125
+Name   = Hakarena Heart: Dare ga Tame ni Kimi wa Aru (Russel Games Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55063
+Name   = Hakuouki Shinsengumi Kitan (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55283
+Name   = Hakuouki: Reimeiroku (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55207
+Name   = Hakuouki: Zuisouroku (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62777
+Name   = Harukaze P.S.: Plus Situation (DX Pack)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55214
+Name   = Hiiro no Kakera: Shin Tamayori Hime Denshou (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66335
+Name   = Ichigo 100% Strawberry Diary (Tomy Collection Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62317
+Name   = Igo (SuperLite 2000 Table)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62241
+Name   = Harry Potter to Himitsu no Heya
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65849
+Name   = Harukanaru Toki no Naka de 3 (Premium Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55296
+Name   = Harukanaru Toki no Naka de 4 (Koei Tecmo the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55050
+Name   = Harukanaru Toki no Naka de: Maihitoyo (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25194
+Name   = Herdy Gerdy
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25911
+Name   = Hisshou Pachinko*Pachi-Slot Kouryaku Series Vol. 11: Shinseiki Evangelion - Magokoro o, Kimi ni (Special Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25269
+Name   = Hitman 2: Silent Assassin
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65536
+Name   = Houshin Engi 2 (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20039
+Name   = Ide Yosuke no Mahjong Kazoku 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25882
+Name   = Ikki Tousen: Shining Dragon (Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20123
+Name   = Initial D: Takahashi Ryosuke no Typing Saisoku Riron (Keyboard Set)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55126
+Name   = Itsuka, Todoku, Ano Sora ni (Russel Games Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55212
+Name   = Jigoku Shoujo Mioyosuga (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20209
+Name   = Jissen Pachi-Slot Hisshouhou! Aladdin A (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20239
+Name   = Jissen Pachi-Slot Hisshouhou! Moujuuou S (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62178
+Name   = Internet Igo: Heisei Kiin 24
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62170
+Name   = Internet Mahjong: Touhuusou de Asobou
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62172
+Name   = Internet Shogi: Shogi Doujou 24
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62421
+Name   = Ishikura Noboru no Igo Kouza: Joukyuuhen
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25901
+Name   = Junjou Romanchika: Koi no Doki Doki Daisakusen (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73265
+Name   = Kagero 2: Dark Illusion (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20004
+Name   = Kakinoki Shogi IV
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73413
+Name   = Kamaitachi no Yoru 2: Kangoku-jima no Warabe-uta (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73007
+Name   = Kamaitachi no Yoru 2: Kangoku-jima no Warabe-uta (Special Eizou CD)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25132
+Name   = Kamaitachi no Yoru 2: Kangoku-jima no Warabe-uta (Special Pack)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55160
+Name   = Kanuchi: Kuroki Tsubasa no Shou (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55059
+Name   = Kanuchi: Shiroki Tsubasa no Sho
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55054
+Name   = Kanuchi: Shiroki Tsubasa no Sho (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55055
+Name   = Kanuchi: Shiroki Tsubasa no Sho (Special Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25931
+Name   = Kateikyoushi Hitman Reborn Nerae!? Ring x Bongole Returns (Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25910
+Name   = Kateikyoushi Hitman Reborn! Dream Hyper Battle! (Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25952
+Name   = Kateikyoushi Hitman Reborn! Kindan no Yami no Delta (Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25899
+Name   = Kateikyoushi Hitman Reborn!! Let's Ansatsu!? (Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25061
+Name   = Kidou Senshi Gundam Ver. 1.5 (Gundam the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25489
+Name   = Kidou Senshi Gundam Giren no Yabou: Zeon Dokuritsu Sensouden / Kouryaku Shireisho (Gundam the Best) [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25490
+Name   = Kidou Senshi Gundam Giren no Yabou: Zeon Dokuritsu Sensouden / Kouryaku Shireisho (Gundam the Best) [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25900
+Name   = Kidou Senshi Gundam 00: Gundam Meisters
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25961
+Name   = Kidou Senshi Gundam SEED Destiny: Rengou vs. Z.A.F.T. II Plus (Gundam 30th Anniversary Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25962
+Name   = Kidou Senshi Gundam 00: Gundam Meisters (Gundam 30th Anniversary Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73268
+Name   = Kidou Senshi Gundam : Giren no Yabou - Axis no Kyoui V (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25938
+Name   = King of Fighters Maximum Impact Regulation A (SNK Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55019
+Name   = Kingdom Hearts II (Ultimate Hits)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55020
+Name   = Kingdom Hearts II: Final Mix+ (Ultimate Hits)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55233
+Name   = Kiniro no Corda: La Corda d'Oro (Koei Teiban Series)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55067
+Name   = Koihime + Musou: Doki*Shoujo Darake no Sangokushi Engi (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66161
+Name   = Kokoro no Tobira (Best Hit Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20269
+Name   = Koushien: Konpeki no Sora (New Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66987
+Name   = Kowloon Youma Gakuenki re:charge (Atlus Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55167
+Name   = Kazeiro Surf
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62346
+Name   = Keiei Simulation: Jurassic Park
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73002
+Name   = Kengo
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74401
+Name   = Kessen (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74413
+Name   = Kessen II (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74223
+Name   = Kessen III (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SCES-60971
+Name   = Kingdom Hearts II: Final Mix+
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55249
+Name   = Kiniro no Corda 2 (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55133
+Name   = Kira * Kira: Rock 'n' Roll Show
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20191
+Name   = Knockout Kings 2002
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20172
+Name   = Koushien: Konpeki no Sora
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20074
+Name   = Kousoku Tanigawa Shogi
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20180
+Name   = Lake Masters EX Super (Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25957
+Name   = Last Escort: Club Katze (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25928
+Name   = Little Anchor (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65940
+Name   = Mabino Style (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20244
+Name   = Magical Sports 2000 Koushien (NewPrice)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20204
+Name   = Magical Sports 2001 Koushien (NewPrice)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20205
+Name   = Magical Sports: Hard Hitter (New Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25903
+Name   = Magician's Academy (eb! Kore)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62782
+Name   = Mahjong Haoh: Dankyuu Battle II (MyCom Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20327
+Name   = Mahjong Haou: Jansou Battle (MyCom Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62781
+Name   = Mahjong San Goku Shi (MyCom Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62191
+Name   = Mahjong Taikai III: Millennium League (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62064
+Name   = Mahjong Yarouze! 2 (Konami the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-64073
+Name   = Mahou Sensei Negima! 1-Jikanme: Okochama Sensei wa Mahoutsukai! (Konami the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55030
+Name   = Majin Tantei Nougami Neuro: Battle da Yo! Hannin Shugou! (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65144
+Name   = Maken Shao (Atlus Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66614
+Name   = Medal of Honor: Rising Sun (EA Best Hits)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55002
+Name   = Medal of Honor: Rising Sun (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55037
+Name   = Medal of Honor: Europa Kyoushuu (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55076
+Name   = Medal of Honor: Vanguard (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55183
+Name   = Melty Blood: Actress Again (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55101
+Name   = Memories Off Duet: 1st & 2nd Stories (Renai Game Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55100
+Name   = Memories Off: Sorekara (Renai Game Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55230
+Name   = Mercenaries 2: World in Flames (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62189
+Name   = Midnight Club: Street Racing (Syscom Game Gallery)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25955
+Name   = Moe Moe 2-Ji Daisenryaku 2 (Premium Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25977
+Name   = Moe Moe 2-ji Daisenryaku Deluxe (SystemSoft Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55286
+Name   = Moujuutsukai to Oujisama: Snow Bride (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55111
+Name   = Murasaki no Honoo (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74285
+Name   = Musou Orochi (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74271
+Name   = Musou Orochi (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74282
+Name   = Musou Orochi: Maou Sairin (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55164
+Name   = Myself; Yourself (Yeti Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25153
+Name   = Lilo and Stitch: Stitch no Daibouken
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55010
+Name   = LoveDrops (Best Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25157
+Name   = Madden NFL Super Bowl 2003
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20224
+Name   = Mahjong Haou: Kaikyuu Battle
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62003
+Name   = Mahjong Taikai III: Millennium League
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55109
+Name   = Major League Baseball 2K8
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25167
+Name   = Major League Baseball: Triple Play 2002
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25043
+Name   = Maken Shao
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20061
+Name   = Mamimune * Mogacho no Print Hour
+Region = NTSC-J
+---------------------------------------------
+Serial = SCPM-85101
+Name   = McDonald's Original Happy Disc
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-67008
+Name   = Metal Gear Solid 2 - Substance [Konami Dendou Collection]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66117
+Name   = Metal Gear Solid 3 - Subsistence [with Headset] [Disc1of3]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66118
+Name   = Metal Gear Solid 3: Subsistence [with Headset] [Disc2of3]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66119
+Name   = Metal Gear Solid 3: Subsistence [with Headset] [Disc3of3]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74255
+Name   = Metal Gear Solid 2: Sons of Liberty (PlayStation 2 the Best) [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74256
+Name   = Metal Gear Solid 2: Sons of Liberty (PlayStation 2 the Best) [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74257
+Name   = Metal Gear Solid 3: Snake Eater (PlayStation 2 the Best) [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74258
+Name   = Metal Gear Solid 3: Snake Eater (PlayStation 2 the Best) [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74901
+Name   = Metal Gear Solid 2: Substance (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25937
+Name   = Metal Slug Complete (SNK Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SCPS-72002
+Name   = Minna no Golf 3 (Mega Hits!)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74105
+Name   = Momotarou Dentetsu 16: Hokkaido Dai Idou no Kan (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20008
+Name   = Morita Shogi
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66256
+Name   = NANA (Konami the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25913
+Name   = Naraku no Shiro: Ichiyanagi Nagomu, 2-Dome no Junan (The Best Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65355
+Name   = Natsuiro Komachi [Ichiji Senka] (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55198
+Name   = Naxat Soft Reachmania Vol. 1: CR Galaxy Angel (Naxat Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55144
+Name   = NBA Live 08 (EA Best Hits)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55097
+Name   = NBA Live 09
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20159
+Name   = NBA Live 2002
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25168
+Name   = NBA Live 2003
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25297
+Name   = NBA Live 2004
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20107
+Name   = NBA Street
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25239
+Name   = NBA Street Vol. 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55061
+Name   = Need for Speed Carbon (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55003
+Name   = Need for Speed Most Wanted (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55151
+Name   = Need for Speed ProStreet (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66955
+Name   = Neo Angelique Full Voice (Premium Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55088
+Name   = Never7: The End of Infinity (Renai Game Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74273
+Name   = New Jinsei Game (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25925
+Name   = NHL 2K9
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55232
+Name   = Nobunaga no Yabou: Tenka Sousei with Power Up Kit (Koei Teiban Series)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55268
+Name   = Nobunaga no Yabou: Kakushin with Power-Up Kit (Koei Tecmo the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62148
+Name   = Nobunaga no Yabou: Ranseiki
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62208
+Name   = Nobunaga no Yabou Online Beta version
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62283
+Name   = Nobunaga no Yabou: Soutensoku
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62520
+Name   = Nobunaga no Yabou: Soutensoku (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65455
+Name   = Nobunaga no Yabou: Soutensoku with Power-Up Kit
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66425
+Name   = Nobunaga no Yabou: Soutensoku with Power-Up Kit (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74263
+Name   = Nobunaga no Yabou: Tenka Sousei (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74281
+Name   = Nobunaga no Yabou: Kakushin (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25891
+Name   = Nogizaka Sunkou no Himitsu Cosplay, Hajime Mashita (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55192
+Name   = Nuga-Cel! (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55099
+Name   = Omoide ni Kawaru-Kun: Memories Off (Renai Game Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25583
+Name   = One Piece: Pirates' Carnival (Multi-Tap Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62388
+Name   = Nankuro (SuperLite 2000 Puzzle)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25325
+Name   = Nishikaze no Kyoushikyouku: The Rhapsody of Zephyr
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66162
+Name   = Only You: Liber Cross (Best Hit Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-09446
+Name   = Ookami (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55219
+Name   = Osouji Sentai Clean Keeper H (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55279
+Name   = Otometeki Koi Kakumei * Love Revo (Best Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20220
+Name   = Pachi-Slot Aruze Oukoku 7
+Region = NTSC-J
+---------------------------------------------
+Serial = SCPS-55038
+Name   = Pac-Man World 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25187
+Name   = Panel Quiz Attack 25 (DigiCube Best Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-83770
+Name   = Persona 3: Fes (Append Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55142
+Name   = Pia Carrot e Youkoso!! G.O. Summer Fair (Best Version)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20133
+Name   = Pro Mahjong Kiwame Next (Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73001
+Name   = Pilot ni Narou! 2 (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20164
+Name   = Plarail: Yume ga Ippai! - Plarial de Ikou!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55011
+Name   = Poi! Hito Natsu no Keiken!? (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55196
+Name   = Princess Lover! Eternal Love for My Lady
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65568
+Name   = Pyuu to Fuku! Jogger Ashita no Japan
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65533
+Name   = Pyuu to Fuku! Jogger Ashita no Japan (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66355
+Name   = Rakugaki Oukoku 2: Maou-jou no Tatakai (Taito Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20246
+Name   = Rally Shox
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55087
+Name   = Remember 11: The Age of Infinity (Renai Game Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-60122
+Name   = Ring of Red (Taikenban)
+Region = NTSC-J
+---------------------------------------------
+Serial = SCPS-19254
+Name   = Rogue Galaxy: Director's Cut (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55128
+Name   = Rugby 08 (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25029
+Name   = Rayman Revolution
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20182
+Name   = Real Bass Fishing: Top Angler
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-71502
+Name   = Ridge Racer V (Mega Hits!)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-60109
+Name   = Ridge Racer V (Taikenban)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55188
+Name   = Rosario to Vampire Capu 2: Koi to Yume no Rhapsodia (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55205
+Name   = S.Y.K Shinsetsu Saiyuuki (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62785
+Name   = Saikyo Shogi Gekisashi Special (Mycom Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62312
+Name   = Saikyou no Igo 2 (Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20237
+Name   = Saikyou Toudai Shogi 3 (Mycom Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20332
+Name   = Saikyou Toudai Shogi 4 (Mycom Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62783
+Name   = Saikyou Toudai Shogi Special II (Mycom Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66312
+Name   = Saishuu Heiki Kanojo (Konami the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55069
+Name   = Saishuu Shiken Kujira: Alive (Sweet So Sweet)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55043
+Name   = Sakura Taisen 3: Paris wa Moeteiru ka (Sega the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-60241
+Name   = Sakurazaka Shouboutai (Taikenban)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55265
+Name   = Scared Rider Xechs (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55075
+Name   = Scarlett: Nichijou no Kyoukaisen (DX Pack)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25960
+Name   = SD Gundam G Generation Spirits (Gundam 30th Anniversary Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55084
+Name   = Secret of Evangelion (Best Hit Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74275
+Name   = Sengoku Basara 2 Eiyuu Gaiden (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74264
+Name   = Sengoku Basara 2 Eiyuu Gaiden (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55224
+Name   = Sengoku Basara X (Best Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55277
+Name   = Sengoku Hime 2 Honoo: Hyakubana, Senran Tatsukaze no Gotoku (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55295
+Name   = Sengoku Hime: Senran ni Mau Otometachi (SystemSoft Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55218
+Name   = Sengoku Hime: Senran ni Mau Otometachi (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65516
+Name   = Sengoku Musou (Treasure Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65711
+Name   = Sengoku Musou (Premium Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74280
+Name   = Sengoku Musou 2 (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62716
+Name   = Sengoku Musou 2 (Treasure Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74284
+Name   = Sengoku Musou 2 Empires (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74266
+Name   = Sengoku Musou 2 Empires (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25984
+Name   = Sengoku Tenka Touitsu (SystemSoft Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73408
+Name   = Seven: Molmorth no Kiheitai (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-73214
+Name   = Shadow Hearts II: Director's Cut (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25876
+Name   = Shin Bokujou Monogatari: Pure Innocent Life (Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62361
+Name   = Shin Contra (Konami the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62498
+Name   = Shin Sangoku Musou 3 - Empires (Super Premium Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65248
+Name   = Shin Sangoku Musou 3
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65251
+Name   = Shin Sangoku Musou 3 (Treasure Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65375
+Name   = Shin Sangoku Musou 3 [Premium Pack] [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65376
+Name   = Shin Sangoku Musou 3 [Premium Pack] [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65377
+Name   = Shin Sangoku Musou 3 - Mushouden
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65561
+Name   = Shin Sangoku Musou 3 [Super Premium Pack]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65564
+Name   = Shin Sangoku Musou 3 - Empires
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65565
+Name   = Shin Sangoku Musou 3 - Empires
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66522
+Name   = Shin Sangoku Musou 3 [KOEI Selection]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66657
+Name   = Shin Sangoku Musou 3 - Mushoden [Koei Selection]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66658
+Name   = Shin Sangoku Musou 3 - Empires [Koei Selection]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74215
+Name   = Shin Sangoku Musou 3 [PlayStation 2 The Best]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74216
+Name   = Shin Sangoku Musou 3 - Mushouden [PlayStation 2 the Best]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74219
+Name   = Shin Sangoku Musou 3 - Empires [PlayStation 2 The Best]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62592
+Name   = Shin Sangoku Musou 4 (Treasure Box)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74260
+Name   = Shining Force Exa (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74261
+Name   = Shining Wind (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65660
+Name   = Shirachuu Tankenbu (Taito Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55025
+Name   = Shirogane no Soleil: Contract to the Future - Mirai e no Keiyaku (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55026
+Name   = Shirogane no Soleil: Contract to the Future - Mirai e no Keiyaku
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55201
+Name   = Shirogane no Soleil: Contract to the Future - Mirai e no Keiyaku (Russel Games Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65363
+Name   = Shoujo Yoshitsuneden (Special Version)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62619
+Name   = Shoujo Yoshitsuneden 2: Koku o Koeru Chigiri (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66133
+Name   = Shuffle! On the Stage (DX Pack)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55202
+Name   = Shuumatsu Shoujo Gensou Alicematic Apocalypse (Russel Games Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62090
+Name   = Silent Scope (Konami Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20201
+Name   = Saikyou Toudai Shogi 4
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25089
+Name   = Salt Lake 2002
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66172
+Name   = San Goku Shi IX (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65403
+Name   = San Goku Shi Senki (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55157
+Name   = San Goku Shi X (Koei Teiban Series)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55049
+Name   = San Goku Shi XI (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55272
+Name   = San Goku Shi XI with Power-Up Kit (Koei Tecmo Teiban Series)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55112
+Name   = San Goku Shi XI with Power-Up Kit (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25066
+Name   = Seaman: Kindan no Pet: Gaze Hakushi no Jikken Shima
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25065
+Name   = Seaman: Kindan no Pet: Gaze Hakushi no Jikken Shima (First Print Limited Edition w/Microphone)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55027
+Name   = Secret Game: Killer Queen (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-47642
+Name   = Seiken Densetsu 4
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66865
+Name   = Sengoku Basara 2 (Best Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65718
+Name   = Sengoku Musou Moushouden
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65713
+Name   = Sengoku Musou Moushouden (Treasure Box) [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62535
+Name   = Sengoku Musou Moushouden (Treasure Box) [Disc2of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20030
+Name   = Shanghai: Four Elements
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20241
+Name   = Shanghai: Sangoku Pai Tatagi
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65198
+Name   = Shaun Palmer's Pro Snowboarder
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-74272
+Name   = Shin Sangoku Musou 4 (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62306
+Name   = Shogi (SuperLite 2000 Table)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20252
+Name   = Shogi World Champion Gekihashi 2
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20326
+Name   = Shogi World Champion Gekihashi 2 (Mycom Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25895
+Name   = Soul Cradle: Sekai o Kurau Mono (The Best Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55077
+Name   = SSX 3 (EA:SY! 1980)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65104
+Name   = SSX Tricky
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66252
+Name   = Star Wars Episode III: Sith no Fukushuu (DVD Pack)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20126
+Name   = Street Mahjong Trans-Asakami 2 (Super Value 2800)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55173
+Name   = Strike Witches: Anata to Dekiru Koto - A Little Peaceful Days (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62387
+Name   = Sudoku (Superlite 2000 Puzzle)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55042
+Name   = Suika A.S+ Eternal Name (Sweet So Sweet)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25936
+Name   = Sunsoft Collection (NeoGeo Online Collection The Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73262
+Name   = Super Robot Taisen OG: Original Generations (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73270
+Name   = Super Robot Taisen Z (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73264
+Name   = Suzumiya Haruhi no Tomadoi (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25267
+Name   = Summon Night 3
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55186
+Name   = SweetHoneyComing
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25954
+Name   = Taiheiyou no Arashi: Senkan Yamato, Akatsuki ni Shutsugekisu (System Soft Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62405
+Name   = Taikou Risshiden IV (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55018
+Name   = Taito Memories II Gekan (Eternal Hits)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55017
+Name   = Taito Memories II Joukan (Eternal Hits)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65577
+Name   = TBS All-Star Kansha Matsuri 2003-Aki Chou Gouka! Quiz Ketteiban (Hudson the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65578
+Name   = TBS All-Star Kansha Matsuri Vol .1: Chou Gouka! Quiz Ketteiban (Hudson the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-73414
+Name   = Tekken 4 (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-71501
+Name   = Tekken Tag Tournament (Mega Hits!)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66599
+Name   = Tsukiyo ni Saraba (Taito Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65877
+Name   = Tennis no Oji-Sama: Rush & Dream!
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25982
+Name   = Tir Na Nog: Yuukyuu no Jin (SystemSoft Selection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55046
+Name   = TOCA Race Driver 3: The Ultimate Racing Simulator (Best Price)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65079
+Name   = Tokimeki Memorial 3: Yakusoku no Ano Basho de (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25946
+Name   = Tomb Raider: Anniversary (Spike the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25945
+Name   = Tomb Raider: Legend (Spike the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SCPS-19334
+Name   = Toro to Kyuujitsu (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20225
+Name   = Toudai Shogi: Shikenbisha Dojo (Mycom Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25281
+Name   = True Love Story 3 (Enterbrain Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20415
+Name   = Tsuki no Hikari: Shizumeru Kane no Satsujin (Super Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20297
+Name   = Tsuki no Hikari: Shizumeru Kane no Satsujin (Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66517
+Name   = Urbz, The: Sims in the City
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62281
+Name   = US Open 2002
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55176
+Name   = Wand of Fortune (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SCPS-19335
+Name   = Wander to Kyozou (PlayStation 2 the Best Reprint)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55250
+Name   = Warship Gunner 2: Koutetsu no Houkou (Koei Teiban Series)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62058
+Name   = Winning Post 4 Maximum 2001 & G1 Jockey 2 2001
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65893
+Name   = Winning Post 6: 2005 Nendoban (w/G1 Jockey 3)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25933
+Name   = World Heroes Gorgeous (NeoGeo Online Collection The Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55056
+Name   = Wrestle Angels: Survivor 2 (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66326
+Name   = Ys: Napishtim no Hako (Konami the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-65647
+Name   = Yu-Gi-Oh! Shin Duel Monsters II: Keishousareshi Kioku (Konami Dendou Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55070
+Name   = Yumemi Hakusho: Second Dream (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55234
+Name   = Zill O'll - Infinite (Koei Teiban Series)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62507
+Name   = Vampire Panic
+Region = NTSC-J
+---------------------------------------------
+Serial = SCPS-19333
+Name   = Wild Arms the Vth Vanguard (PlayStation 2 the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55113
+Name   = WinBack 2: Project Poseidon (Koei Teiban Series)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66173
+Name   = Winning Post 6 (Koei the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62590
+Name   = Winning Post 6: 2005 Nendoban
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66442
+Name   = World Football Climax
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25875
+Name   = xxxHolic: Shigatsu Tsuitachi no Izayoi Sowa (Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20156
+Name   = Yamasa Digi World 2: LCD Edition (DX Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66597
+Name   = Yatohime Zankikou: Ken no Maki (First Print Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55015
+Name   = Yotsunoha: A Journey of Sincerity (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66066
+Name   = Yu-Gi-Oh! Capsule Monster Coliseum (Konami the Best)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25708
+Name   = Zero no Tsukaima [Limited Edition]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25709
+Name   = Zero no Tsukaima
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25825
+Name   = Zero no Tsukaima [Best Collection]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25830
+Name   = Zero no Tsukaima: Muma ga Tsumugu Yokaze no Gensoukyoku [Limited Edition]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25831
+Name   = Zero no Tsukaima: Muma ga Tsumugu Yokaze no Gensoukyoku
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25893
+Name   = Zero no Tsukaima: Muma ga Tsumugu Yokaze no Nocturne (Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25897
+Name   = Zero no Tsukaima: Maigo no Period to Ikusen no Symphony (Limited Edition)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25898
+Name   = Zero no Tsukaima: Maigo no Period to Ikusen no Symphony
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25948
+Name   = Zero no Tsukaima: Maigo no Period to Ikusen no Symphony (Best Collection)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-20152
+Name   = Stunt GP
+Region = NTSC-J
+---------------------------------------------
+Serial = PAPX-90203
+Name   = Gran Turismo 3 Demo ((PlayStation Festival 2000 (Taikenban))
+Region = NTSC-J
+---------------------------------------------
+Serial = PAPX-90202
+Name   = I.Q Remix+: Intelligent Qube (Taikenban)
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25871
+Name   = Drastic Killer
 Region = NTSC-J
 ---------------------------------------------
