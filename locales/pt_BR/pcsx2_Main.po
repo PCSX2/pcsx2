@@ -2505,37 +2505,37 @@ msgid "Insert card"
 msgstr "Inserir cartão"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1024
-msgid "Eject card"
-msgstr "Ejetar cartão"
+msgid "&Eject card"
+msgstr "&Ejetar cartão"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1024
-msgid "Insert card ..."
-msgstr "Renomear cartão..."
+msgid "&Insert card ..."
+msgstr "&Inserir cartão..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1025
-msgid "Duplicate card ..."
-msgstr "Duplicar Cartão ..."
+msgid "D&uplicate card ..."
+msgstr "D&uplicar cartão ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1026
-msgid "Rename card ..."
-msgstr "Renomear cartão..."
+msgid "&Rename card ..."
+msgstr "&Renomear cartão..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
-msgid "Delete card"
-msgstr "Excluir cartão"
+msgid "&Delete card"
+msgstr "&Excluir cartão"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1029
-msgid "Convert card"
-msgstr "Converter cartão"
+msgid "&Convert card"
+msgstr "&Converter cartão"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1033
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1037
-msgid "Create a new card ..."
-msgstr "Criar um novo cartão..."
+msgid "&Create a new card ..."
+msgstr "&Criar um novo cartão..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1041
-msgid "Refresh List"
-msgstr "Atualizar Lista"
+msgid "Re&fresh List"
+msgstr "&Atualizar Lista"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:99
 msgid "PS2 Port"
