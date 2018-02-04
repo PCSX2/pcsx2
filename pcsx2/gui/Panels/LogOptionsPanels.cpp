@@ -206,7 +206,7 @@ Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 	: BaseApplicableConfigPanel( parent )
 	, m_checks( new pxCheckBox*[traceLogCount] )
 {
-	wxStaticBoxSizer&	s_misc		= *new wxStaticBoxSizer( wxHORIZONTAL, this, L"Misc" );
+	m_miscSection = new wxStaticBoxSizer( wxHORIZONTAL, this, L"Misc" );
 
 	m_eeSection		= new eeLogOptionsPanel( this );
 	m_iopSection	= new iopLogOptionsPanel( this );
@@ -238,8 +238,8 @@ Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 		}
 		else
 		{
-			addsizer = &s_misc;
-			addparent = this;
+			addsizer = m_miscSection;
+			addparent = m_miscSection->GetStaticBox();
 		}
 
 		*addsizer += m_checks[i] = new pxCheckBox( addparent, item.GetName() );
@@ -263,7 +263,7 @@ Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 	*this		+= new wxStaticLine( this )		| StdExpand().Border(wxLEFT | wxRIGHT, 20);
 	*this		+= 5;
 	*this		+= topSizer						| StdExpand();
-	*this		+= s_misc						| StdSpace().Centre();
+	*this		+= m_miscSection				| StdSpace().Centre();
 
 	Bind(wxEVT_CHECKBOX, &LogOptionsPanel::OnCheckBoxClicked, this, m_masterEnabler->GetWxPtr()->GetId());
 }
@@ -299,6 +299,7 @@ void Panels::LogOptionsPanel::OnUpdateEnableAll()
 
 	m_eeSection->Enable( enabled );
 	m_iopSection->Enable( enabled );
+	m_miscSection->GetStaticBox()->Enable( enabled );
 }
 
 void Panels::LogOptionsPanel::OnCheckBoxClicked(wxCommandEvent &evt)
