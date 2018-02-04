@@ -72,7 +72,10 @@ public:
 		: TextFileTraceLog( &desc->base ) {}
 
 	void DoWrite( const char *fmt ) const;
-
+	bool IsActive() const override
+	{
+		return EmuConfig.Trace.Enabled && Enabled;
+	}
 };
 
 class SysTraceLog_EE : public SysTraceLog
@@ -85,7 +88,7 @@ public:
 	void ApplyPrefix( FastFormatAscii& ascii ) const;
 	bool IsActive() const
 	{
-		return EmuConfig.Trace.Enabled && Enabled && EmuConfig.Trace.EE.m_EnableAll;
+		return SysTraceLog::IsActive() && EmuConfig.Trace.EE.m_EnableAll;
 	}
 	
 	wxString GetCategory() const { return L"EE"; }
@@ -157,7 +160,7 @@ public:
 	void ApplyPrefix( FastFormatAscii& ascii ) const;
 	bool IsActive() const
 	{
-		return EmuConfig.Trace.Enabled && Enabled && EmuConfig.Trace.IOP.m_EnableAll;
+		return SysTraceLog::IsActive() && EmuConfig.Trace.IOP.m_EnableAll;
 	}
 
 	wxString GetCategory() const { return L"IOP"; }
