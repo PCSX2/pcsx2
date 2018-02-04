@@ -76,7 +76,6 @@ namespace Panels
 	protected:
 		eeLogOptionsPanel*	m_eeSection;
 		iopLogOptionsPanel*	m_iopSection;
-		bool				m_IsDirty;		// any settings modified since last apply will flag this "true"
 
 		pxCheckBox*			m_masterEnabler;
 

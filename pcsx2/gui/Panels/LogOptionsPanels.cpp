@@ -265,7 +265,7 @@ Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 	*this		+= topSizer						| StdExpand();
 	*this		+= s_misc						| StdSpace().Centre();
 
-	Bind(wxEVT_CHECKBOX, &LogOptionsPanel::OnCheckBoxClicked, this);
+	Bind(wxEVT_CHECKBOX, &LogOptionsPanel::OnCheckBoxClicked, this, m_masterEnabler->GetWxPtr()->GetId());
 }
 
 Panels::BaseCpuLogOptionsPanel* Panels::LogOptionsPanel::GetCpuPanel( const wxString& token ) const
@@ -303,21 +303,16 @@ void Panels::LogOptionsPanel::OnUpdateEnableAll()
 
 void Panels::LogOptionsPanel::OnCheckBoxClicked(wxCommandEvent &evt)
 {
-	m_IsDirty = true;
-	if( evt.GetId() == m_masterEnabler->GetWxPtr()->GetId() )
-		OnUpdateEnableAll();
+	OnUpdateEnableAll();
+	evt.Skip();
 }
 
 void Panels::LogOptionsPanel::Apply()
 {
-	if( !m_IsDirty ) return;
-
 	g_Conf->EmuOptions.Trace.Enabled	= m_masterEnabler->GetValue();
 
 	m_eeSection->Apply();
 	m_iopSection->Apply();
-
-	m_IsDirty = false;
 
 	for( uint i = 0; i<traceLogCount; ++i )
 	{
