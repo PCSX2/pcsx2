@@ -76,6 +76,7 @@ namespace Panels
 	protected:
 		eeLogOptionsPanel*	m_eeSection;
 		iopLogOptionsPanel*	m_iopSection;
+		wxStaticBoxSizer*	m_miscSection;
 
 		pxCheckBox*			m_masterEnabler;
 
