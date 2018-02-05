@@ -141,7 +141,7 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	if (isEbit || isVU1) { // Clear 'is busy' Flags
 		if (!mVU.index || !THREAD_VU1) {
 			xAND(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? ~0x100 : ~0x001)); // VBS0/VBS1 flag
-			//xAND(ptr32[&mVU.getVifRegs().stat], ~VIF1_STAT_VEW); // Clear VU 'is busy' signal for vif
+			xAND(ptr32[&mVU.getVifRegs().stat], ~VIF1_STAT_VEW); // Clear VU 'is busy' signal for vif
 		}
 	}
 
@@ -199,7 +199,7 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump) {
 	xJMP(gprT1);  // Jump to rec-code address
 }
 
-void normBranch(mV, microFlagCycles& mFC) {
+void normBranch(mV, microFlagCycles& mFC, bool mBit) {
 
 	// E-bit or T-Bit or D-Bit Branch
 	if (mVUup.dBit && doDBitHandling) 
@@ -225,6 +225,16 @@ void normBranch(mV, microFlagCycles& mFC) {
 		mVUDTendProgram(mVU, &mFC, 1);
 		eJMP.SetTarget();
 		iPC = tempPC;	
+	}
+	if (mBit) {
+		DevCon.Warning("Mbit on NormBranch");
+		u32 tempPC = iPC;
+		xTEST(ptr32[&mVU.regs().flags], VUFLAG_MFLAGSET);
+		xForwardJump32 eJMP(Jcc_Zero);
+		iPC = branchAddr(mVU) / 4;
+		mVUDTendProgram(mVU, &mFC, 0);
+		eJMP.SetTarget();
+		iPC = tempPC;
 	}
 	if (mVUup.eBit) { 
 		if(mVUlow.badBranch) 
@@ -262,6 +272,7 @@ void normBranch(mV, microFlagCycles& mFC) {
 void condJumpProcessingEvil(mV, microFlagCycles& mFC, int JMPcc) {
 
 	u32 bPC = iPC-1; // mVUcompile can modify iPC, mVUpBlock, and mVUregs so back them up
+	microBlock* pBlock = mVUpBlock;
 	u32 badBranchAddr;
 	iPC = bPC-2;
 	setCode();
@@ -295,7 +306,7 @@ void condJumpProcessingEvil(mV, microFlagCycles& mFC, int JMPcc) {
 	normJumpCompile(mVU, mFC, true); //Compile evil branch, just in time!
 
 }
-void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
+void condBranch(mV, microFlagCycles& mFC, int JMPcc, bool mBit) {
 	mVUsetupBranch(mVU, mFC);
 	
 	if (mVUup.tBit)
@@ -318,6 +329,25 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		xJMP(mVU.exitFunct);
 		eJMP.SetTarget();
 		iPC = tempPC;	
+	}
+	if (mBit) {
+		DevCon.Warning("Mbit on CondBranch");
+		u32 tempPC = iPC;
+		xTEST(ptr32[&mVU.regs().flags], VUFLAG_MFLAGSET);
+		xForwardJump32 eJMP(Jcc_Zero);
+		mVUDTendProgram(mVU, &mFC, 0);
+		xCMP(ptr16[&mVU.branch], 0);
+		xForwardJump32 tJMP(xInvertCond((JccComparisonType)JMPcc));
+		incPC(4); // Set PC to First instruction of Non-Taken Side
+		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
+		xJMP(mVU.exitFunct);
+		tJMP.SetTarget();
+		incPC(-4); // Go Back to Branch Opcode to get branchAddr
+		iPC = branchAddr(mVU) / 4;
+		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
+		xJMP(mVU.exitFunct);
+		eJMP.SetTarget();
+		iPC = tempPC;
 	}
 	if (mVUup.dBit && doDBitHandling) 
 	{
@@ -398,7 +428,7 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 	}
 }
 
-void normJump(mV, microFlagCycles& mFC) {
+void normJump(mV, microFlagCycles& mFC, bool mBit) {
 	if (mVUlow.constJump.isValid) { // Jump Address is Constant
 		if (mVUup.eBit) { // E-bit Jump
 			iPC = (mVUlow.constJump.regValue*2) & (mVU.progMemMask);
@@ -445,6 +475,16 @@ void normJump(mV, microFlagCycles& mFC) {
 		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x400 : 0x4));
 		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
 		mVUDTendProgram(mVU, &mFC, 2);
+		xMOV(gprT1, ptr32[&mVU.branch]);
+		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], gprT1);
+		xJMP(mVU.exitFunct);
+		eJMP.SetTarget();
+	}
+	if (mBit) {
+		DevCon.Warning("Mbit on Jump");
+		xTEST(ptr32[&mVU.regs().flags], VUFLAG_MFLAGSET);
+		xForwardJump32 eJMP(Jcc_Zero);
+		mVUDTendProgram(mVU, &mFC, 0);
 		xMOV(gprT1, ptr32[&mVU.branch]);
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], gprT1);
 		xJMP(mVU.exitFunct);

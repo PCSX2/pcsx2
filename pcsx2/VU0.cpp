@@ -55,13 +55,12 @@ void COP2_Unknown()
 //****************************************************************************
 
 __fi void _vu0run(bool breakOnMbit, bool addCycles) {
-
 	if (!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
 
 	int startcycle = VU0.cycle;
 	u32 runCycles  = breakOnMbit ? vu0RunCycles : 0x7fffffff;
 	VU0.flags	  &= ~VUFLAG_MFLAGSET;
-
+	VU0.breakOnMbit = breakOnMbit;
 	do { // Run VU until it finishes or M-Bit
 		CpuVU0->Execute(runCycles);
 	} while ((VU0.VI[REG_VPU_STAT].UL & 1)						// E-bit Termination

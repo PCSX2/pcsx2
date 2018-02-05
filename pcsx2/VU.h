@@ -163,6 +163,8 @@ struct __aligned16 VURegs {
 	efuPipe efu;
 	ialuPipe ialu[8];
 
+	bool breakOnMbit;
+
 	VURegs()
 	{
 		Mem = NULL;

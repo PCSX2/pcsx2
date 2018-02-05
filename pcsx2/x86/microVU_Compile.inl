@@ -516,6 +516,17 @@ void mVUDoDBit(microVU& mVU, microFlagCycles* mFC)
 	eJMP.SetTarget();
 }
 
+void mVUDoMBit(microVU& mVU, microFlagCycles* mFC)
+{
+	xTEST(ptr32[&mVU.regs().flags], VUFLAG_MFLAGSET);
+	xForwardJump32 eJMP(Jcc_Zero);	
+	incPC(1);
+	mVUendProgram(mVU, mFC, 0);
+	incPC(-1);
+	eJMP.SetTarget();
+	
+}
+
 void mVUDoTBit(microVU& mVU, microFlagCycles* mFC)
 {
 	xTEST(ptr32[&VU0.VI[REG_FBRST].UL], (isVU1 ? 0x800 : 0x8));
@@ -608,9 +619,11 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {
 	setCode();
 	mVUbranch = 0;
 	u32 x = 0;
+	bool mBit = false;
 	for( ; x < endCount; x++) {
 		if (mVUinfo.isEOB)			{ handleBadOp(mVU, x); x = 0xffff; } // handleBadOp currently just prints a warning
-		if (mVUup.mBit)				{ xOR(ptr32[&mVU.regs().flags], VUFLAG_MFLAGSET); }
+		if (mVUup.mBit) { xOR(ptr32[&mVU.regs().flags], VUFLAG_MFLAGSET);  mBit = true; }
+		
 		mVUexecuteInstruction(mVU);
 		if(!mVUinfo.isBdelay && !mVUlow.branch) //T/D Bit on branch is handled after the branch, branch delay slots are executed.
 		{
@@ -619,7 +632,14 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {
 			}
 			else if (mVUup.dBit && doDBitHandling) {
 				mVUDoDBit(mVU, &mFC);
+			} else if (mBit && VU0.breakOnMbit) {
+				mVUDoMBit(mVU, &mFC);
+				mBit = false;
 			}
+			//Note: Doing M Flag handling here is the wrong way around, the EE should be stalling waiting for the VU's
+			// However due to how we run the VU's instantly, this will never work, so we have to guess stop the VU's to wait for the EE.
+			//Needs VU0.breakOnMbit check else it breaks Star Ocean and Mike Tyson looks worse in a different way.
+			//This handling of mBit currently breaks Crash Twinsanity.
 		}
 
 		if (mVUinfo.doXGKICK) {
@@ -640,14 +660,14 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState) {
 			incPC(-3); // Go back to branch opcode
 
 			switch (mVUlow.branch) {
-				case 1: case 2:  normBranch(mVU, mFC);			  goto perf_and_return; // B/BAL
-				case 9: case 10: normJump  (mVU, mFC);			  goto perf_and_return; // JR/JALR
-				case 3: condBranch(mVU, mFC, Jcc_Equal);		  goto perf_and_return; // IBEQ
-				case 4: condBranch(mVU, mFC, Jcc_GreaterOrEqual); goto perf_and_return; // IBGEZ
-				case 5: condBranch(mVU, mFC, Jcc_Greater);		  goto perf_and_return; // IBGTZ
-				case 6: condBranch(mVU, mFC, Jcc_LessOrEqual);	  goto perf_and_return; // IBLEQ
-				case 7: condBranch(mVU, mFC, Jcc_Less);			  goto perf_and_return; // IBLTZ
-				case 8: condBranch(mVU, mFC, Jcc_NotEqual);		  goto perf_and_return; // IBNEQ
+				case 1: case 2:  normBranch(mVU, mFC, mBit);			  return thisPtr; // B/BAL
+				case 9: case 10: normJump  (mVU, mFC, mBit);			  return thisPtr; // JR/JALR
+				case 3: condBranch(mVU, mFC, Jcc_Equal, mBit);		  return thisPtr; // IBEQ
+				case 4: condBranch(mVU, mFC, Jcc_GreaterOrEqual, mBit); return thisPtr; // IBGEZ
+				case 5: condBranch(mVU, mFC, Jcc_Greater, mBit);		  return thisPtr; // IBGTZ
+				case 6: condBranch(mVU, mFC, Jcc_LessOrEqual, mBit);	  return thisPtr; // IBLEQ
+				case 7: condBranch(mVU, mFC, Jcc_Less, mBit);			  return thisPtr; // IBLTZ
+				case 8: condBranch(mVU, mFC, Jcc_NotEqual, mBit);		  return thisPtr; // IBNEQ
 			}
 
 		}
