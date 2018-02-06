@@ -499,7 +499,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
 		const uint32& m = m_context->FRAME.FBMSK;
-		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 31) & 0x8000);
+		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
 		om_bsel.wrgba = 0;
 
 		// 2 Select the new mask (Please someone put SSE here)
