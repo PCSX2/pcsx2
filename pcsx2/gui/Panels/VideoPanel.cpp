@@ -293,17 +293,8 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 
 	m_restore_defaults = new wxButton(right, wxID_DEFAULT, _("Restore Defaults"));
 
-	m_check_DisableOutput = new pxCheckBox( left, _("Disable all GS output"),
-		_t("Completely disables all GS plugin activity; ideal for benchmarking EEcore components.")
-	);
-
 	m_check_SynchronousGS->SetToolTip( pxEt( L"Enable this if you think MTGS thread sync is causing crashes or graphical errors.")
 	) ;
-
-	m_check_DisableOutput->SetToolTip( pxEt( L"Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This option is best used in conjunction with savestates: save a state at an ideal scene, enable this option, and re-load the savestate.\n\nWarning: This option can be enabled on-the-fly but typically cannot be disabled on-the-fly (video will typically be garbage)."
-	) );
-
-	m_check_DisableOutput->Hide(); // Band-aid fix since currently broken
 
 	//GSWindowSettingsPanel* winpan = new GSWindowSettingsPanel( left );
 	//winpan->AddFrame(_("Display/Window"));
@@ -325,7 +316,6 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	*left		+= m_fpan		| pxExpand;
 	*left		+= 5;
 	*left		+= m_check_SynchronousGS | StdExpand();
-	*left		+= m_check_DisableOutput;
 
 	*s_table	+= left		| StdExpand();
 	*s_table	+= right	| StdExpand();
@@ -357,7 +347,6 @@ void Panels::VideoPanel::OnOpenWindowSettings( wxCommandEvent& evt )
 void Panels::VideoPanel::Apply()
 {
 	g_Conf->EmuOptions.GS.SynchronousMTGS	= m_check_SynchronousGS->GetValue();
-	g_Conf->EmuOptions.GS.DisableOutput		= m_check_DisableOutput->GetValue();
 }
 
 void Panels::VideoPanel::AppStatusEvent_OnSettingsApplied()
@@ -368,10 +357,8 @@ void Panels::VideoPanel::AppStatusEvent_OnSettingsApplied()
 void Panels::VideoPanel::ApplyConfigToGui( AppConfig& configToApply, int flags ){
 	
 	m_check_SynchronousGS->SetValue( configToApply.EmuOptions.GS.SynchronousMTGS );
-	m_check_DisableOutput->SetValue( configToApply.EmuOptions.GS.DisableOutput );
 
 	m_check_SynchronousGS->Enable(!configToApply.EnablePresets);
-	m_check_DisableOutput->Enable(!configToApply.EnablePresets);
 
 	if( flags & AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE )
 	{

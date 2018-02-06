@@ -89,8 +89,6 @@ class GSFrame : public wxFrame
 protected:
 	wxTimer					m_timer_UpdateTitle;
 	wxWindowID				m_id_gspanel;
-	wxWindowID				m_id_OutputDisabled;
-	wxStaticText*			m_label_Disabled;
 	wxStatusBar*			m_statusbar;
 
 	CpuUsageProvider		m_CpuUsage;
@@ -102,7 +100,6 @@ public:
 	GSPanel* GetViewport();
 	void SetFocus();
 	bool Show( bool shown=true );
-	wxStaticText* GetLabel_OutputDisabled() const;
 
 	bool ShowFullScreen(bool show, bool updateConfig = true);
 
