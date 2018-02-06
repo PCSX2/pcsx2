@@ -52,7 +52,7 @@ protected:
 };
 
 void DBLoaderHelper::doError(bool doMsg) {
-	if (doMsg) Console.Error("GameDatabase: Bad file data [%s]", WX_STR(m_dest));
+	if (doMsg) Console.Error(L"GameDatabase: Bad file data [%s]", WX_STR(m_dest));
 	m_keyPair.Clear();
 }
 
