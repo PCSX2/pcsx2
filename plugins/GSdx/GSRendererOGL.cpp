@@ -234,7 +234,13 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 		// Avious dubious call to m_texture_shuffle on 16 bits games
 		// The pattern is severals column of 8 pixels. A single sprite
 		// smell fishy but a big sprite is wrong.
-		m_texture_shuffle = ((v[1].U - v[0].U) < 256);
+
+		// Tomb Raider Angel of Darkness relies on this behavior to produce a fog effect.
+		// In this case, the address of the framebuffer and texture are the same. 
+		// The game will take RG => BA and then the BA => RG of next pixels. 
+		// However, only RG => BA needs to be emulated because RG isn't used.
+		GL_INS("WARNING: Possible misdetection of a texture shuffle effect");
+		m_texture_shuffle = ((v[1].U - v[0].U) < 256) || m_context->FRAME.Block() == m_context->TEX0.TBP0;
 	}
 
 
