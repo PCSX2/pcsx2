@@ -9668,8 +9668,8 @@ Compat = 4
 Serial = SLES-51434
 Name   = Silent Hill 3
 Region = PAL-M5
-Compat = 5
 MemCardFilter = SLES-51434/SLES-50382/SLES-51156
+vuClampMode = 2 // fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected)
 FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLES-51435
@@ -22190,6 +22190,7 @@ Name   = Silent Hill 3
 Region = NTSC-J
 Compat = 5
 MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
+vuClampMode = 2 // fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected)
 FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLPM-65260
@@ -23516,6 +23517,7 @@ Serial = SLPM-65622
 Name   = Silent Hill 3 [Konami The Best]
 Region = NTSC-J
 MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
+vuClampMode = 2 // fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected)
 FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLPM-65623
@@ -24987,6 +24989,7 @@ Serial = SLPM-66018
 Name   = Silent Hill 3 [Konami Dendou Collection]
 Region = NTSC-J
 MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
+vuClampMode = 2 // fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected)
 FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLPM-66019
@@ -36736,6 +36739,7 @@ Region = NTSC-U
 Compat = 5
 // reads Silent Hill 2 for easter egg
 MemCardFilter = SLUS-20622/SLUS-20228
+vuClampMode = 2 // fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected)
 FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLUS-20623
