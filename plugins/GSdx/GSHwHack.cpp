@@ -217,16 +217,16 @@ bool GSC_Spartan(const GSFrameInfo& fi, int& skip)
 		}
 		else
 		{
-				if(fi.TME)
+			if(fi.TME)
+			{
+				// depth textures (bully, mgs3s1 intro, Front Mission 5)
+				if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
+					// General, often problematic post processing
+					(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
 				{
-					// depth textures (bully, mgs3s1 intro, Front Mission 5)
-					if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-						// General, often problematic post processing
-						(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-					{
-						skip = 1;
-					}
+					skip = 1;
 				}
+			}
 		}
 	}
 
@@ -237,7 +237,7 @@ bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP == 0x00a80 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
+		if(Dx_only && fi.TME && fi.FBP == 0x00a80 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
 		{
 			skip = 1000; // shadow (result is broken without depth copy, also includes 16 bit)
 		}
@@ -248,7 +248,7 @@ bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
 	}
 	else if(skip > 7)
 	{
-		if(fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00700 && fi.TPSM == PSM_PSMCT16)
+		if(Dx_only && fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00700 && fi.TPSM == PSM_PSMCT16)
 		{
 			skip = 7; // the last steps of shadow drawing
 		}
@@ -291,9 +291,6 @@ bool GSC_Genji(const GSFrameInfo& fi, int& skip)
 			skip = 1;
 		}
 	}
-	else
-	{
-	}
 
 	return true;
 }
@@ -317,9 +314,9 @@ bool GSC_CaptainTsubasa(const GSFrameInfo& fi, int& skip)
 	if(skip == 0)
 	{
 		if(fi.TME && fi.FBP == 0x1C00 && !fi.FBMSK)
-			{
-				skip = 1;
-			}
+		{
+			skip = 1;
+		}
 	}
 	return true;
 }
