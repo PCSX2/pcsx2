@@ -15496,6 +15496,7 @@ Serial = SLES-54132
 Name   = Guitar Hero
 Region = PAL-M5
 Compat = 5
+vuRoundMode = 2 // Fixes cut-off numbers and restores missing whitespace inside combo meter
 ---------------------------------------------
 Serial = SLES-54135
 Name   = Grand Theft Auto - Liberty City Stories
@@ -16194,6 +16195,7 @@ Serial = SLES-54442
 Name   = Guitar Hero II
 Region = PAL-M5
 Compat = 5
+vuRoundMode = 2 // Fixes cut-off numbers and restores missing whitespace inside combo meter
 ---------------------------------------------
 Serial = SLES-54444
 Name   = Made Man
@@ -16823,6 +16825,7 @@ Serial = SLES-54859
 Name   = Guitar Hero - Rocks The 80's
 Region = PAL-E
 Compat = 5
+vuRoundMode = 2 // Fixes cut-off numbers and restores missing whitespace inside combo meter
 ---------------------------------------------
 Serial = SLES-54861
 Name   = Thomas & Friends - A Day at the Races
@@ -37937,6 +37940,7 @@ Serial = SLUS-20882
 Name   = Hitman - Contracts
 Region = NTSC-U
 Compat = 3
+vuRoundMode = 2 // Fixes missing light shafts under lamps
 ---------------------------------------------
 Serial = SLUS-20883
 Name   = Tom Clancy's Rainbow Six 3
@@ -39639,6 +39643,7 @@ Serial = SLUS-21224
 Name   = Guitar Hero
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 2 // Fixes cut-off numbers and restores missing whitespace inside combo meter
 ---------------------------------------------
 Serial = SLUS-21225
 Name   = Bratz - Rock Angels
@@ -40771,6 +40776,7 @@ Serial = SLUS-21447
 Name   = Guitar Hero II
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 2 // Fixes cut-off numbers and restores missing whitespace inside combo meter
 ---------------------------------------------
 Serial = SLUS-21448
 Name   = Rule of Rose
@@ -41281,6 +41287,7 @@ Serial = SLUS-21586
 Name   = Guitar Hero Encore - Rocks the '80s
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 2 // Fixes cut-off numbers and restores missing whitespace inside combo meter
 ---------------------------------------------
 Serial = SLUS-21587
 Name   = Made Man
