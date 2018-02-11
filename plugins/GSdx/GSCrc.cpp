@@ -147,14 +147,14 @@ CRC::Game CRC::m_games[] =
 	{0x7ABDBB5E, GT3, CH, 0}, // cutie comment
 	{0x3E9D448A, GT3, CH, 0}, // cutie comment
 	{0xAD66643C, GT3, CH, 0}, // cutie comment
-	{0x6810C3BC, GT3, CH, 0}, //GRAN TURISMO Concept 2002 Tokyo-Geneva
+	{0x6810C3BC, GT3, CH, 0}, // Gran Turismo Concept 2002 Tokyo-Geneva
 	{0x85AE91B3, GT3, US, 0},
 	{0x8AA991B0, GT3, US, 0},
 	{0xC220951A, GT3, JP, 0},
 	{0x9DE5CF65, GT3, JP, 0}, //Gran Turismo 3: A-spec
 	{0x60013EBD, GTConcept, EU, 0},
 	{0xB590CE04, GTConcept, EU, 0},
-	{0x0EEF32A3, GTConcept, KO, 0}, //Gran Turismo Concept 2002 Tokyo-Seoul
+	{0x0EEF32A3, GTConcept, KO, 0}, // Gran Turismo Concept 2002 Tokyo-Seoul
 	{0xC164550A, WildArms5, JPUNDUB, 0},
 	{0xC1640D2C, WildArms5, US, 0},
 	{0x0FCF8FE4, WildArms5, EU, 0},
@@ -463,7 +463,7 @@ CRC::Game CRC::m_games[] =
 	{0x4A4B623A, FightingBeautyWulong, JP,0}, // cutie comment
 	{0x5AC7E79C, TouristTrophy, CH, 0}, // cutie comment
 	{0xFF9C0E93, TouristTrophy, US, 0},
-	{0xCA9AA903, TouristTrophy, EU, 0}, //crc hack not fully working on PAL, still needs brightness =0
+	{0xCA9AA903, TouristTrophy, EU, 0},
 	{0xA1B3F232, GTASanAndreas, EU, 0}, // cutie comment
 	{0xB440A8FE, GTASanAndreas, EU, 0},
 	{0x399A49CA, GTASanAndreas, US, 0},
