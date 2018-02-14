@@ -15644,15 +15644,6 @@ Name   = Gottlieb Pinball Classics
 Region = PAL-M5
 Compat = 5
 ---------------------------------------------
-Serial = SLUS-21111
-Name   = Scarface - The World is Yours
-Region = NTSC-U
-Compat = 4
----------------------------------------------
-Serial = SLUS-21492
-Name   = Scarface - The World is Yours [Collector's Edition]
-Region = NTSC-U
----------------------------------------------
 Serial = SLES-54182
 Name   = Scarface - The World is Yours
 Region = PAL-M4
@@ -39103,6 +39094,11 @@ Name   = Pirates of the Caribbean - The Legend of Jack Sparrow
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
+Serial = SLUS-21111
+Name   = Scarface - The World is Yours
+Region = NTSC-U
+Compat = 4
+---------------------------------------------
 Serial = SLUS-21112
 Name   = L.A. Rush
 Region = NTSC-U
@@ -41003,6 +40999,10 @@ Serial = SLUS-21491
 Name   = World Series of Poker - Tournament of Champions
 Region = NTSC-U
 Compat = 5
+---------------------------------------------
+Serial = SLUS-21492
+Name   = Scarface - The World is Yours [Collector's Edition]
+Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21493
 Name   = Need for Speed - Carbon
