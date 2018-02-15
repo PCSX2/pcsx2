@@ -15659,16 +15659,6 @@ Name   = Scarface - The World is Yours
 Region = PAL-R
 ScarfaceIbitHack = 1
 ---------------------------------------------
-Serial = SLES-54271
-Name   = Scarface - The World is Yours
-Region = PAL-E
-ScarfaceIbitHack = 1
----------------------------------------------
-Serial = SLES-54534
-Name   = Scarface - The World is Yours [Collector's Edition]
-Region = PAL-E
-ScarfaceIbitHack = 1
----------------------------------------------
 Serial = SLES-54185
 Name   = Dirge of Cerberus - Final Fantasy VII
 Region = PAL-M5
@@ -15877,6 +15867,11 @@ Compat = 5
 Serial = SLES-54256
 Name   = WWII - Battle Over the Pacific
 Region = PAL-E
+---------------------------------------------
+Serial = SLES-54271
+Name   = Scarface - The World is Yours
+Region = PAL-E
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLES-54305
 Name   = Demon Chaos
@@ -16370,6 +16365,11 @@ Region = PAL-M5
 Serial = SLES-54527
 Name   = Flushed Away
 Region = PAL-M5
+---------------------------------------------
+Serial = SLES-54534
+Name   = Scarface - The World is Yours [Collector's Edition]
+Region = PAL-E
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLES-54541
 Name   = Xena - Warrior Princess
