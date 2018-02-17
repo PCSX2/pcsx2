@@ -120,13 +120,26 @@ void sioInit()
 
 bool isR3000ATest = false;
 
+u16 currentStat = 0, lastStat = 0, currentMode = 0, lastMode = 0, currentBaud = 0, lastBaud = 0;
+
 // Check the active game's type, and fire the matching interrupt.
 // The 3rd bit of the HW_IFCG register lets us know if PSX mode is active. 1 = PSX, 0 = PS2
 // Note that the R3000A's call to interrupts only calls the PS2 based (lack of) delays.
 SIO_FORCEINLINE void sioInterrupt() {
 	if ((psxHu32(HW_ICFG) & (1 << 3)) && !isR3000ATest) {
-		if (!(psxRegs.interrupt & (1 << IopEvt_SIO)))
-			PSX_INT(IopEvt_SIO, 64); // PSXCLK/250000);
+		if (!(psxRegs.interrupt & (1 << IopEvt_SIO))) {
+			currentStat = sio.StatReg & 67106816; // Mask out bits 11-25
+			currentMode = sio.ModeReg & 3; // Mask out bits 0-1
+			currentBaud = sio.BaudReg; // The entire baud reg
+			// If anything changes, print.
+			if (currentStat != lastStat || currentMode != lastMode || currentBaud != lastBaud)
+				DevCon.WriteLn("%s // StatReg (bits 11-25) = %08X // ModeReg = %08X // BaudReg = %08X", __FUNCTION__, currentStat, currentMode, currentBaud);
+			lastStat = currentStat;
+			lastMode = currentMode;
+			lastBaud = currentBaud;
+			
+			PSX_INT(IopEvt_SIO, sio.BaudReg * 8); // PSXCLK/250000);
+		}
 	} else {
 		PAD_LOG("Sio Interrupt");
 		sio.StatReg |= IRQ;
