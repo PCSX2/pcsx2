@@ -41,23 +41,6 @@ int Interpolation = 4;
 bool EffectsDisabled = false;
 
 float FinalVolume; // Global
-bool AdvancedVolumeControl;
-float VolumeAdjustFLdb; // decibels settings, cos audiophiles love that
-float VolumeAdjustCdb;
-float VolumeAdjustFRdb;
-float VolumeAdjustBLdb;
-float VolumeAdjustBRdb;
-float VolumeAdjustSLdb;
-float VolumeAdjustSRdb;
-float VolumeAdjustLFEdb;
-float VolumeAdjustFL; // linear coefs calcualted from decibels,
-float VolumeAdjustC;
-float VolumeAdjustFR;
-float VolumeAdjustBL;
-float VolumeAdjustBR;
-float VolumeAdjustSL;
-float VolumeAdjustSR;
-float VolumeAdjustLFE;
 unsigned int delayCycles;
 unsigned int delayCycles_override;
 
@@ -94,25 +77,8 @@ void ReadSettings()
     if (FinalVolume > 1.0f)
         FinalVolume = 1.0f;
 
-    AdvancedVolumeControl = CfgReadBool(L"MIXING", L"AdvancedVolumeControl", false);
-    VolumeAdjustCdb = CfgReadFloat(L"MIXING", L"VolumeAdjustC(dB)", 0);
-    VolumeAdjustFLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustFL(dB)", 0);
-    VolumeAdjustFRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustFR(dB)", 0);
-    VolumeAdjustBLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustBL(dB)", 0);
-    VolumeAdjustBRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustBR(dB)", 0);
-    VolumeAdjustSLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSL(dB)", 0);
-    VolumeAdjustSRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSR(dB)", 0);
-    VolumeAdjustLFEdb = CfgReadFloat(L"MIXING", L"VolumeAdjustLFE(dB)", 0);
     delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
     delayCycles_override = 0;
-    VolumeAdjustC = powf(10, VolumeAdjustCdb / 10);
-    VolumeAdjustFL = powf(10, VolumeAdjustFLdb / 10);
-    VolumeAdjustFR = powf(10, VolumeAdjustFRdb / 10);
-    VolumeAdjustBL = powf(10, VolumeAdjustBLdb / 10);
-    VolumeAdjustBR = powf(10, VolumeAdjustBRdb / 10);
-    VolumeAdjustSL = powf(10, VolumeAdjustSLdb / 10);
-    VolumeAdjustSR = powf(10, VolumeAdjustSRdb / 10);
-    VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
 
     SynchMode = CfgReadInt(L"OUTPUT", L"Synch_Mode", 0);
     numSpeakers = CfgReadInt(L"OUTPUT", L"SpeakerConfiguration", 0);
@@ -151,6 +117,7 @@ void ReadSettings()
 
     SoundtouchCfg::ReadSettings();
     DebugConfig::ReadSettings();
+    AdvancedVolumeConfig::ReadSettings();
 
     // Sanity Checks
     // -------------
@@ -175,16 +142,6 @@ void WriteSettings()
     CfgWriteBool(L"MIXING", L"DealiasFilter", postprocess_filter_dealias);
     CfgWriteInt(L"MIXING", L"FinalVolume", (int)(FinalVolume * 100 + 0.5f));
 
-    CfgWriteBool(L"MIXING", L"AdvancedVolumeControl", AdvancedVolumeControl);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustC(dB)", VolumeAdjustCdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustFL(dB)", VolumeAdjustFLdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustFR(dB)", VolumeAdjustFRdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustBL(dB)", VolumeAdjustBLdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustBR(dB)", VolumeAdjustBRdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustSL(dB)", VolumeAdjustSLdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustSR(dB)", VolumeAdjustSRdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustLFE(dB)", VolumeAdjustLFEdb);
-
     CfgWriteStr(L"OUTPUT", L"Output_Module", mods[OutputModule]->GetIdent());
     CfgWriteInt(L"OUTPUT", L"Latency", SndOutLatencyMS);
     CfgWriteInt(L"OUTPUT", L"Synch_Mode", SynchMode);
@@ -205,6 +162,7 @@ void WriteSettings()
     DSoundOut->WriteSettings();
     SoundtouchCfg::WriteSettings();
     DebugConfig::WriteSettings();
+    AdvancedVolumeConfig::WriteSettings();
 }
 
 void CheckOutputModule(HWND window)
@@ -222,6 +180,7 @@ void CheckOutputModule(HWND window)
 
     EnableWindow(GetDlgItem(window, IDC_OUTCONF), IsConfigurable);
     EnableWindow(GetDlgItem(window, IDC_SPEAKERS), AudioExpansion);
+    EnableWindow(GetDlgItem(window, IDC_DPLDECODE), AudioExpansion);
 }
 
 BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -255,6 +214,12 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             SendDialogMsg(hWnd, IDC_SPEAKERS, CB_ADDSTRING, 0, (LPARAM)L"Surround 7.1");
             SendDialogMsg(hWnd, IDC_SPEAKERS, CB_SETCURSEL, numSpeakers, 0);
 
+            SendDialogMsg(hWnd, IDC_DPLDECODE, CB_RESETCONTENT, 0, 0);
+            SendDialogMsg(hWnd, IDC_DPLDECODE, CB_ADDSTRING, 0, (LPARAM)L"0");
+            SendDialogMsg(hWnd, IDC_DPLDECODE, CB_ADDSTRING, 0, (LPARAM)L"1");
+            SendDialogMsg(hWnd, IDC_DPLDECODE, CB_ADDSTRING, 0, (LPARAM)L"2");
+            SendDialogMsg(hWnd, IDC_DPLDECODE, CB_SETCURSEL, dplLevel, 0);
+
             SendDialogMsg(hWnd, IDC_OUTPUT, CB_RESETCONTENT, 0, 0);
 
             int modidx = 0;
@@ -285,11 +250,13 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_SOUNDTOUCH), (SynchMode == 0));
             EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_DEBUG), DebugEnabled);
+            EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_ADVANCED_VOL), AdvancedVolumeControl);
 
             SET_CHECK(IDC_EFFECTS_DISABLE, EffectsDisabled);
             SET_CHECK(IDC_DEALIASFILTER, postprocess_filter_dealias);
             SET_CHECK(IDC_DEBUG_ENABLE, DebugEnabled);
             SET_CHECK(IDC_DSP_ENABLE, dspPluginEnabled);
+            SET_CHECK(IDC_ADVANCED_VOL_ENABLE, AdvancedVolumeControl);
         } break;
 
         case WM_COMMAND:
@@ -306,6 +273,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     OutputModule = (int)SendDialogMsg(hWnd, IDC_OUTPUT, CB_GETCURSEL, 0, 0);
                     SynchMode = (int)SendDialogMsg(hWnd, IDC_SYNCHMODE, CB_GETCURSEL, 0, 0);
                     numSpeakers = (int)SendDialogMsg(hWnd, IDC_SPEAKERS, CB_GETCURSEL, 0, 0);
+                    dplLevel = (int)SendDialogMsg(hWnd, IDC_DPLDECODE, CB_GETCURSEL, 0, 0);
 
                     WriteSettings();
                     EndDialog(hWnd, 0);
@@ -355,6 +323,9 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     }
                 } break;
 
+                case IDC_OPEN_CONFIG_ADVANCED_VOL:
+                    AdvancedVolumeConfig::OpenDialog();
+                    break;
 
                 case IDC_OPEN_CONFIG_SOUNDTOUCH:
                     SoundtouchCfg::OpenDialog(hWnd);
@@ -363,6 +334,11 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     HANDLE_CHECK(IDC_EFFECTS_DISABLE, EffectsDisabled);
                     HANDLE_CHECK(IDC_DEALIASFILTER, postprocess_filter_dealias);
                     HANDLE_CHECK(IDC_DSP_ENABLE, dspPluginEnabled);
+
+                    HANDLE_CHECKNB(IDC_ADVANCED_VOL_ENABLE, AdvancedVolumeControl);
+                    EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_ADVANCED_VOL), AdvancedVolumeControl);
+                    break;
+
                     HANDLE_CHECKNB(IDC_DEBUG_ENABLE, DebugEnabled);
                     DebugConfig::EnableControls(hWnd);
                     EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_DEBUG), DebugEnabled);

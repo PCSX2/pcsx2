@@ -141,6 +141,7 @@
     <ClCompile Include="ConfigDebug.cpp" />
     <ClCompile Include="ConfigSoundtouch.cpp" />
     <ClCompile Include="RealtimeDebugger.cpp" />
+    <ClCompile Include="ConfigAdvancedVolume.cpp" />
     <ClCompile Include="UIHelpers.cpp" />
     <ClCompile Include="..\PS2E-spu2.cpp" />
   </ItemGroup>

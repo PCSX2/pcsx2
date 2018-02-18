@@ -213,6 +213,9 @@
     <ClCompile Include="SndOut_XAudio2.cpp">
       <Filter>Source Files\Sound Output\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="ConfigAdvancedVolume.cpp">
+      <Filter>Source Files\GUI\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LGPL.txt">
