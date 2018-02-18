@@ -1025,19 +1025,20 @@ static void __fastcall RegWrite_VoiceParams(u16 value)
 
         // REG_VP_ENVX, REG_VP_VOLXL and REG_VP_VOLXR have been confirmed to not be allowed to be written to, so code has been commented out.
         // Colin McRae Rally 2005 triggers case 5 (ADSR), but it doesn't produce issues enabled or disabled.
+        // Enabled cases again due a regression in Wallace And Gromit: Curse Of The Were-Rabbit.
 
         case 5:
             // [Air] : Mysterious ADSR set code.  Too bad none of my games ever use it.
             //      (as usual... )
-            //thisvoice.ADSR.Value = (value << 16) | value;
-            //ConLog("* SPU2: Mysterious ADSR Volume Set to 0x%x\n", value);
+            thisvoice.ADSR.Value = (value << 16) | value;
+            ConLog("* SPU2: Mysterious ADSR Volume Set to 0x%x\n", value);
             break;
 
         case 6:
-            //thisvoice.Volume.Left.RegSet(value);
+            thisvoice.Volume.Left.RegSet(value);
             break;
         case 7:
-            //thisvoice.Volume.Right.RegSet(value);
+            thisvoice.Volume.Right.RegSet(value);
             break;
 
             jNO_DEFAULT;
@@ -1082,15 +1083,16 @@ static void __fastcall RegWrite_VoiceAddr(u16 value)
 
         // NextA has been confirmed to not be allowed to be written to, so code has been commented out.
         // FlatOut & Soul Reaver 2 trigger these cases, but don't produce issues enabled or disabled.
+        // Enabled cases again due a regression in Wallace And Gromit: Curse Of The Were-Rabbit.
 
         case 4:
-            //thisvoice.NextA = ((value & 0x0F) << 16) | (thisvoice.NextA & 0xFFF8) | 1;
-            //thisvoice.SCurrent = 28;
+            thisvoice.NextA = ((value & 0x0F) << 16) | (thisvoice.NextA & 0xFFF8) | 1;
+            thisvoice.SCurrent = 28;
             break;
 
         case 5:
-            //thisvoice.NextA = (thisvoice.NextA & 0x0F0000) | (value & 0xFFF8) | 1;
-            //thisvoice.SCurrent = 28;
+            thisvoice.NextA = (thisvoice.NextA & 0x0F0000) | (value & 0xFFF8) | 1;
+            thisvoice.SCurrent = 28;
             break;
     }
 }
