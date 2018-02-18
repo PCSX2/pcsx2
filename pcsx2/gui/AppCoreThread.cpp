@@ -262,11 +262,16 @@ static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game) {
 		gf++;
 	}
 
-
 	if (game.keyExists("mvuFlagSpeedHack")) {
 		bool vuFlagHack = game.getInt("mvuFlagSpeedHack") ? 1 : 0;
 		PatchesCon->WriteLn("(GameDB) Changing mVU flag speed hack [mode=%d]", vuFlagHack);
 		dest.Speedhacks.vuFlagHack = vuFlagHack;
+		gf++;
+	}
+
+	if (game.keyExists("DelayCycles")) {
+		int delayCycles = game.getInt("DelayCycles");
+		SPU2DelayCycles(delayCycles);
 		gf++;
 	}
 

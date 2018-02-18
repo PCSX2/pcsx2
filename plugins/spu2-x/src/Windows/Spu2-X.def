@@ -62,3 +62,4 @@ EXPORTS
 	SPU2replay = s2r_replay	@33
 
 	SPU2reset			@34
+	SPU2DelayCycles		@35

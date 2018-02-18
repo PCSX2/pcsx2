@@ -303,6 +303,7 @@ _SPU2irqCallback   SPU2irqCallback;
 
 _SPU2setClockPtr   SPU2setClockPtr;
 _SPU2async         SPU2async;
+_SPU2DelayCycles   SPU2DelayCycles;
 #endif
 
 
@@ -610,6 +611,7 @@ static const LegacyApi_OptMethod s_MethMessOpt_SPU2[] =
 	{	"SPU2setDMABaseAddr",	(vMeth**)&SPU2setDMABaseAddr},
 #endif
 	{	"SPU2setupRecording",	(vMeth**)&SPU2setupRecording},
+	{	"SPU2DelayCycles",		(vMeth**)&SPU2DelayCycles	},
 
 	{ NULL }
 };

@@ -394,6 +394,8 @@ s32 CALLBACK SPU2freeze(int mode, freezeData *data);
 void CALLBACK SPU2configure();
 s32 CALLBACK SPU2test();
 
+void CALLBACK SPU2DelayCycles(int DelayCyclese);
+
 #endif
 
 /* CDVD plugin API */
@@ -643,6 +645,7 @@ typedef void(CALLBACK *_SPU2setTimeStretcher)(short int enable);
 
 typedef void(CALLBACK *_SPU2async)(u32 cycles);
 
+typedef void(CALLBACK *_SPU2DelayCycles)(int DelayCycles);
 
 // CDVD
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
@@ -803,6 +806,8 @@ extern _SPU2setClockPtr SPU2setClockPtr;
 extern _SPU2setTimeStretcher SPU2setTimeStretcher;
 
 extern _SPU2async SPU2async;
+
+extern _SPU2DelayCycles SPU2DelayCycles;
 #endif
 
 // DEV9

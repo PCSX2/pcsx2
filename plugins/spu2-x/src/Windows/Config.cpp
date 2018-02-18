@@ -59,6 +59,7 @@ float VolumeAdjustSL;
 float VolumeAdjustSR;
 float VolumeAdjustLFE;
 unsigned int delayCycles;
+unsigned int delayCycles_override;
 
 bool postprocess_filter_enabled = 1;
 bool postprocess_filter_dealias = false;
@@ -103,6 +104,7 @@ void ReadSettings()
     VolumeAdjustSRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSR(dB)", 0);
     VolumeAdjustLFEdb = CfgReadFloat(L"MIXING", L"VolumeAdjustLFE(dB)", 0);
     delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
+    delayCycles_override = 0;
     VolumeAdjustC = powf(10, VolumeAdjustCdb / 10);
     VolumeAdjustFL = powf(10, VolumeAdjustFLdb / 10);
     VolumeAdjustFR = powf(10, VolumeAdjustFRdb / 10);

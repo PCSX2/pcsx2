@@ -302,9 +302,10 @@ void V_Core::UpdateEffectsBufferSize()
 
 void V_Voice::QueueStart()
 {
-    if (Cycles - PlayCycle < delayCycles) {
+    unsigned int temp_delayCycle = delayCycles_override > 0 ? delayCycles_override : delayCycles;
+    if (Cycles - PlayCycle < temp_delayCycle) {
         // Required by The Legend of Spyro: The Eternal Night (probably the other two legend games too)
-        ConLog(" *** KeyOn after less than %d T disregarded.\n", delayCycles);
+        ConLog(" *** KeyOn after less than %d T disregarded.\n", temp_delayCycle);
         return;
     }
     PlayCycle = Cycles;
@@ -312,7 +313,8 @@ void V_Voice::QueueStart()
 
 bool V_Voice::Start()
 {
-    if ((Cycles - PlayCycle) >= delayCycles) {
+    unsigned int temp_delayCycle = delayCycles_override > 0 ? delayCycles_override : delayCycles;
+    if ((Cycles - PlayCycle) >= temp_delayCycle) {
         if (StartA & 7) {
             fprintf(stderr, " *** Misaligned StartA %05x!\n", StartA);
             StartA = (StartA + 0xFFFF8) + 0x8;
