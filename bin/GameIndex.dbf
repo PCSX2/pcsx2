@@ -1110,6 +1110,7 @@ Serial = SCED-50642
 Name   = Final Fantasy X [Demo] [Final Fantasy VI PS1 - Bonus Disc]
 Region = PAL-E
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCED-50748
 Name   = Official PlayStation 2 Magazine Demo 26
@@ -1119,6 +1120,7 @@ Serial = SCED-50907
 Name   = Final Fantasy X [Bonus Disc - Beyond Final Fantasy]
 Region = PAL-Unk
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCED-51531
 Name   = Official PlayStation 2 Magazine Demo 33
@@ -1305,27 +1307,32 @@ Name   = Final Fantasy X
 Region = PAL-E
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50491
 Name   = Final Fantasy X
 Region = PAL-F
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50492
 Name   = Final Fantasy X
 Region = PAL-G
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50493
 Name   = Final Fantasy X
 Region = PAL-I
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50494
 Name   = Final Fantasy X
 Region = PAL-S
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50499
 Name   = Ecco the Dolphin - Defender of the Future
@@ -25368,6 +25375,7 @@ Serial = SLPM-66124
 Name   = Final Fantasy X [Ultimate Hits]
 Region = NTSC-J
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SLPM-66125
 Name   = Final Fantasy X-2 [Ultimate Hits]
@@ -30528,6 +30536,7 @@ Name   = Final Fantasy X
 Region = NTSC-J
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SLPS-25051
 Name   = Missing Blue
@@ -33648,6 +33657,7 @@ Serial = SLPS-72501
 Name   = Final Fantasy X [Mega Hits]
 Region = NTSC-J
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SLPS-72502
 Name   = Tales of Destiny 2 [Mega Hits]
@@ -35334,6 +35344,7 @@ Name   = Final Fantasy X
 Region = NTSC-U
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SLUS-20313
 Name   = Wave Rally
