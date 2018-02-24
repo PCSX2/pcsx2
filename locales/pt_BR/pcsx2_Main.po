@@ -1261,11 +1261,11 @@ msgstr "Log de rastreamento"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:38
 msgid "Auto-eject memory cards when loading savestates"
-msgstr "Autoejetar cartões de memória quando estiver carregando estados de jogos salvos"
+msgstr "Ejetar automaticamente cartões de memória quando estiver carregando estados de jogos salvos"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
-msgstr "Gerenciar automaticamente saves baseado no jogo"
+msgstr "Gerenciar automaticamente jogos salvos baseado no jogo"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:101
 msgid "MemoryCard Manager"
