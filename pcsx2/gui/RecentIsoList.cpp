@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "App.h"
 #include "AppCoreThread.h"
 #include "RecentIsoList.h"
 #include "IsoDropTarget.h"
@@ -34,7 +35,9 @@ RecentIsoManager::RecentIsoManager( wxMenu* menu, int firstIdForMenuItems_or_wxI
 	, m_firstIdForMenuItems_or_wxID_ANY ( firstIdForMenuItems_or_wxID_ANY )
 {
 	m_cursel	= 0;
-	m_Separator	= NULL;
+	m_Separator	= nullptr;
+	m_ClearSeparator = nullptr;
+	m_Clear = nullptr;
 
 	IniLoader loader;
 	LoadListFrom(loader);
@@ -94,10 +97,22 @@ void RecentIsoManager::RemoveAllFromMenu()
 		curitem.ItemPtr = NULL;
 	}
 	
-	if( m_Separator != NULL )
+	if( m_Separator != nullptr )
 	{
 		m_Menu->Destroy( m_Separator );
-		m_Separator = NULL;
+		m_Separator = nullptr;
+	}
+
+	if ( m_ClearSeparator != nullptr )
+	{
+		m_Menu->Destroy( m_ClearSeparator );
+		m_ClearSeparator = nullptr;
+	}
+
+	if ( m_Clear != nullptr )
+	{
+		m_Menu->Destroy( m_Clear );
+		m_Clear = nullptr;
 	}
 }
 
@@ -119,6 +134,9 @@ void RecentIsoManager::Repopulate()
 	//  but the menu is composed in reverse order such that the most recent item appears at the top.
 	for( int i=cnt-1; i>=0; --i )
 		InsertIntoMenu( i );
+
+	m_ClearSeparator = m_Menu->AppendSeparator();
+	m_Clear = m_Menu->Append(MenuIdentifiers::MenuId_IsoClear, _("Clear ISO list"));
 }
 
 void RecentIsoManager::Add( const wxString& src )
@@ -170,14 +188,22 @@ void RecentIsoManager::InsertIntoMenu( int id )
 	if (this->m_firstIdForMenuItems_or_wxID_ANY != wxID_ANY)
 		wxid = this->m_firstIdForMenuItems_or_wxID_ANY + id;
 
-	curitem.ItemPtr = m_Menu->AppendRadioItem( wxid, Path::GetFilename(curitem.Filename), curitem.Filename );
-	bool exists = wxFileExists( curitem.Filename );
+	wxString filename = Path::GetFilename(curitem.Filename);
+	// & is used to specify the keyboard shortcut key in menu labels. && must
+	// be used to display an &.
+	filename.Replace("&", "&&", true);
 
-	if( m_cursel == id && exists )
-		curitem.ItemPtr->Check();
+	curitem.ItemPtr = m_Menu->AppendRadioItem( wxid, filename, curitem.Filename );
+	curitem.ItemPtr->Enable(wxFileExists(curitem.Filename) && !g_Conf->AskOnBoot);
+}
 
-	if ( !exists )
-		curitem.ItemPtr->Enable( false );
+void RecentIsoManager::EnableItems(bool display)
+{
+	for (const auto& list : m_Items)
+	{
+		// Files which don't exist still need to be grayed out.
+		list.ItemPtr->Enable(display && wxFileExists(list.Filename));
+	}
 }
 
 void RecentIsoManager::LoadListFrom( IniInterface& ini )

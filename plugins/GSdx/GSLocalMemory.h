@@ -173,10 +173,10 @@ protected:
 
 	//
 
-	hash_map<uint32, GSOffset*> m_omap;
-	hash_map<uint32, GSPixelOffset*> m_pomap;
-	hash_map<uint32, GSPixelOffset4*> m_po4map;
-	hash_map<uint64, vector<GSVector2i>*> m_p2tmap;
+	std::unordered_map<uint32, GSOffset*> m_omap;
+	std::unordered_map<uint32, GSPixelOffset*> m_pomap;
+	std::unordered_map<uint32, GSPixelOffset4*> m_po4map;
+	std::unordered_map<uint64, std::vector<GSVector2i>*> m_p2tmap;
 
 public:
 	GSLocalMemory();
@@ -185,7 +185,7 @@ public:
 	GSOffset* GetOffset(uint32 bp, uint32 bw, uint32 psm);
 	GSPixelOffset* GetPixelOffset(const GIFRegFRAME& FRAME, const GIFRegZBUF& ZBUF);
 	GSPixelOffset4* GetPixelOffset4(const GIFRegFRAME& FRAME, const GIFRegZBUF& ZBUF);
-	vector<GSVector2i>* GetPage2TileMap(const GIFRegTEX0& TEX0);
+	std::vector<GSVector2i>* GetPage2TileMap(const GIFRegTEX0& TEX0);
 
 	// address
 
@@ -917,6 +917,6 @@ public:
 
 	//
 
-	void SaveBMP(const string& fn, uint32 bp, uint32 bw, uint32 psm, int w, int h);
+	void SaveBMP(const std::string& fn, uint32 bp, uint32 bw, uint32 psm, int w, int h);
 };
 

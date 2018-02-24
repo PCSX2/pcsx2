@@ -34,7 +34,7 @@ public:
 	GSWnd() : m_managed(false) {};
 	virtual ~GSWnd() {};
 
-	virtual bool Create(const string& title, int w, int h) = 0;
+	virtual bool Create(const std::string& title, int w, int h) = 0;
 	virtual bool Attach(void* handle, bool managed = true) = 0;
 	virtual void Detach() = 0;
 	bool IsManaged() const {return m_managed;}
@@ -52,7 +52,7 @@ public:
 	virtual void HideFrame() = 0;
 
 	virtual void Flip() {};
-	virtual void SetVSync(bool enable) {};
+	virtual void SetVSync(int vsync) {};
 
 };
 
@@ -60,14 +60,23 @@ class GSWndGL : public GSWnd
 {
 protected:
 	bool m_ctx_attached;
+	std::atomic<bool> m_vsync_change_requested;
+	std::atomic<int> m_vsync;
 
 	bool IsContextAttached() const { return m_ctx_attached; }
+	void PopulateGlFunction();
+	virtual void PopulateWndGlFunction() = 0;
+	void FullContextInit();
+	virtual void CreateContext(int major, int minor) = 0;
+
+	virtual void SetSwapInterval() = 0;
+	virtual bool HasLateVsyncSupport() = 0;
 
 public:
-	GSWndGL() : m_ctx_attached(false) {};
+	GSWndGL() : m_ctx_attached(false), m_vsync_change_requested(false), m_vsync(0) {};
 	virtual ~GSWndGL() {};
 
-	virtual bool Create(const string& title, int w, int h) = 0;
+	virtual bool Create(const std::string& title, int w, int h) = 0;
 	virtual bool Attach(void* handle, bool managed = true) = 0;
 	virtual void Detach() = 0;
 
@@ -84,7 +93,5 @@ public:
 	virtual void Hide() = 0;
 	virtual void HideFrame() = 0;
 	virtual void Flip() = 0;
-	virtual void SetVSync(bool enable) = 0;
-
-	void PopulateGlFunction();
+	virtual void SetVSync(int vsync) final;
 };

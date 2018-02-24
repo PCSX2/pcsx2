@@ -36,7 +36,6 @@ EXPORTS
 	GSsetupRecording		
 	GSsetGameCRC		
 	GSsetFrameSkip
-	GSsetFrameLimit		
 	GSsetVsync
 	GSsetExclusive
 	GSsetSettingsDir

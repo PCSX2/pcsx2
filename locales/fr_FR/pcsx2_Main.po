@@ -25,13 +25,11 @@ msgstr "Erreur critique."
 
 #: common/include/Utilities/Exceptions.h:255
 msgid "Parse error"
-msgstr "Erreur d'annalyse"
+msgstr "erreur d'analyse"
 
 #: common/include/Utilities/Exceptions.h:279
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
-msgstr ""
-"Le matériel de votre ordinateur rend impossible le fonctionnement de PCSX2. "
-"Bien essayé !"
+msgstr "Le matériel de votre ordinateur rend impossible le fonctionnement de PCSX2.  Désolé."
 
 #: common/src/Utilities/Exceptions.cpp:233
 msgid "Oh noes! Out of memory!"
@@ -2088,7 +2086,7 @@ msgstr "Un double-clic pemet de basculer vers le mode plein-écran"
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:52
 #, fuzzy
 msgid "Switch to 4:3 aspect ratio when an FMV plays"
-msgstr "Passer au rendu logiciel de GSdx quand une vidéo est lue"
+msgstr "Basculer l'écran virtuel en 4:3 quand une cinématique est lue"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:86
 msgid "Aspect Ratio:"
@@ -2121,28 +2119,28 @@ msgstr "Éditeur de base de données"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:348
 msgid "Name: "
-msgstr ""
+msgstr "Nom"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:349
 msgid "Region: "
-msgstr ""
+msgstr "Region"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:350
 msgid "Compatibility: "
-msgstr ""
+msgstr "Compatibilité"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:351
 msgid "Comments: "
-msgstr ""
+msgstr "Commentaires"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:352
 msgid "Patches: "
-msgstr ""
+msgstr "Patches"
 
 #: pcsx2/gui/Panels/GameDatabasePanel.cpp:356
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
 msgid "Gamefixes"
-msgstr "Patchs"
+msgstr "Correctifs personnalisés"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:40
 msgid "VU Add Hack - Fixes Tri-Ace games boot crash."
@@ -2221,10 +2219,8 @@ msgid ""
 msgstr "Retarder VIF1 FIFO - Pour le HUD de SOCOM2."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
-msgid ""
-"Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ "
-"Hero)"
-msgstr ""
+msgid "Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ Hero)"
+msgstr "Active le GIF FIFO (Plus lent mais obligatoire pour Hotwheels, Wallace and Gromit, DJ Hero)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:100
 msgid "Switch to GSdx software rendering when an FMV plays"
@@ -2236,11 +2232,8 @@ msgstr "Précharger le hack TLB pour éviter un manque de TLB dans Goemon"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:108
 #, fuzzy
-msgid ""
-"VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
-msgstr ""
-"Hack bit VU I: éviter une recompilation constante (Scarface The World is "
-"Yours)"
+msgid "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
+msgstr "Hack bit VU I: éviter une recompilation permanente (Scarface The World is Yours)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:119
 msgid "Enable manual game fixes [Not recommended]"

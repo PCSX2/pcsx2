@@ -174,7 +174,6 @@ _GSgetTitleInfo2   GSgetTitleInfo2;
 _GSmakeSnapshot	   GSmakeSnapshot;
 _GSmakeSnapshot2   GSmakeSnapshot2;
 _GSirqCallback 	   GSirqCallback;
-_GSprintf      	   GSprintf;
 _GSsetBaseMem		GSsetBaseMem;
 _GSsetGameCRC		GSsetGameCRC;
 _GSsetFrameSkip		GSsetFrameSkip;
@@ -192,17 +191,6 @@ static void CALLBACK GS_setFrameSkip(int frameskip) {}
 static void CALLBACK GS_setVsync(int enabled) {}
 static void CALLBACK GS_setExclusive(int isExcl) {}
 static void CALLBACK GS_changeSaveState( int, const char* filename ) {}
-static void CALLBACK GS_printf(int timeout, char *fmt, ...)
-{
-	va_list list;
-	char msg[512];
-
-	va_start(list, fmt);
-	vsprintf(msg, fmt, list);
-	va_end(list);
-
-	Console.WriteLn(msg);
-}
 
 void CALLBACK GS_getTitleInfo2( char* dest, size_t length )
 {
@@ -410,7 +398,6 @@ static const LegacyApi_ReqMethod s_MethMessReq_GS[] =
 
 	{	"GSmakeSnapshot",	(vMeth**)&GSmakeSnapshot,	(vMeth*)GS_makeSnapshot },
 	{	"GSirqCallback",	(vMeth**)&GSirqCallback,	(vMeth*)GS_irqCallback },
-	{	"GSprintf",			(vMeth**)&GSprintf,			(vMeth*)GS_printf },
 	{	"GSsetBaseMem",		(vMeth**)&GSsetBaseMem,		NULL	},
 	{	"GSwriteCSR",		(vMeth**)&GSwriteCSR,		NULL	},
 	{	"GSsetGameCRC",		(vMeth**)&GSsetGameCRC,		(vMeth*)GS_setGameCRC },

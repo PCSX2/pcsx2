@@ -183,3 +183,23 @@ void GSWndGL::PopulateGlFunction()
 	// renderer/device
 	GLLoader::check_gl_requirements();
 }
+
+void GSWndGL::FullContextInit()
+{
+	CreateContext(3, 3);
+	AttachContext();
+	PopulateGlFunction();
+	PopulateWndGlFunction();
+}
+
+void GSWndGL::SetVSync(int vsync)
+{
+	if (!HasLateVsyncSupport() && vsync < 0)
+		m_vsync = -vsync; // Late vsync not supported, fallback to standard vsync
+	else
+		m_vsync = vsync;
+
+	// The WGL/GLX/EGL swap interval function must be called on the rendering
+	// thread or else the change won't be properly applied.
+	m_vsync_change_requested = true;
+}

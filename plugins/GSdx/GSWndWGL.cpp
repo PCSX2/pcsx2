@@ -40,7 +40,7 @@ static void win_error(const char* msg, bool fatal = true)
 
 
 GSWndWGL::GSWndWGL()
-	: m_NativeWindow(NULL), m_NativeDisplay(NULL), m_context(NULL)
+	: m_NativeWindow(nullptr), m_NativeDisplay(nullptr), m_context(nullptr), m_has_late_vsync(false)
 {
 }
 
@@ -139,6 +139,20 @@ void GSWndWGL::DetachContext()
 	}
 }
 
+void GSWndWGL::PopulateWndGlFunction()
+{
+	m_swapinterval = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+
+	// To ease the process, extension management is itself an extension. Clever isn't it!
+	PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)wglGetProcAddress("wglGetExtensionsStringARB");
+	if (wglGetExtensionsStringARB) {
+		const char* ext = wglGetExtensionsStringARB(m_NativeDisplay);
+		m_has_late_vsync = m_swapinterval && ext && strstr(ext, "WGL_EXT_swap_control_tear");
+	} else {
+		m_has_late_vsync = false;
+	}
+}
+
 bool GSWndWGL::Attach(void* handle, bool managed)
 {
 	m_NativeWindow = (HWND)handle;
@@ -146,13 +160,7 @@ bool GSWndWGL::Attach(void* handle, bool managed)
 
 	OpenWGLDisplay();
 
-	CreateContext(3, 3);
-
-	AttachContext();
-
-	m_swapinterval = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	UpdateWindow(m_NativeWindow);
 
@@ -229,7 +237,7 @@ void GSWndWGL::CloseWGLDisplay()
 // Used by GSReplay. At least for now.
 // More or less copy pasted from GSWndDX::Create and GSWndWGL::Attach with a few
 // modifications
-bool GSWndWGL::Create(const string& title, int w, int h)
+bool GSWndWGL::Create(const std::string& title, int w, int h)
 {
 	if(m_NativeWindow) return false;
 
@@ -288,16 +296,9 @@ bool GSWndWGL::Create(const string& title, int w, int h)
 
 	OpenWGLDisplay();
 
-	CreateContext(3, 3);
-
-	AttachContext();
-
-	m_swapinterval = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	return true;
-
 }
 
 //Same as DX
@@ -323,16 +324,19 @@ void* GSWndWGL::GetProcAddress(const char* name, bool opt)
 
 //TODO: check extensions supported or not
 //FIXME : extension allocation
-void GSWndWGL::SetVSync(bool enable)
+void GSWndWGL::SetSwapInterval()
 {
 	// m_swapinterval uses an integer as parameter
 	// 0 -> disable vsync
 	// n -> wait n frame
-	if (m_swapinterval) m_swapinterval((int)enable);
+	if (m_swapinterval) m_swapinterval(m_vsync);
 }
 
 void GSWndWGL::Flip()
 {
+	if (m_vsync_change_requested.exchange(false))
+		SetSwapInterval();
+
 	SwapBuffers(m_NativeDisplay);
 }
 

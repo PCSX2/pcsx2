@@ -501,7 +501,7 @@ void GSRendererCS::Draw()
 	{
 		GSVertexShader11 vs;
 
-		hash_map<uint32, GSVertexShader11>::const_iterator i = m_vs.find(vs_sel);
+		auto i = std::as_const(m_vs).find(vs_sel);
 
 		if(i != m_vs.end())
 		{
@@ -509,7 +509,7 @@ void GSRendererCS::Draw()
 		}
 		else
 		{
-			string str[2];
+			std::string str[2];
 
 			str[0] = format("%d", vs_sel.tme);
 			str[1] = format("%d", vs_sel.fst);
@@ -558,7 +558,7 @@ void GSRendererCS::Draw()
 	{
 		gs_sel.prim = j == 0 ? m_vt.m_primclass : GS_SPRITE_CLASS;
 
-		hash_map<uint32, CComPtr<ID3D11GeometryShader> >::const_iterator i = m_gs.find(gs_sel);
+		auto i = std::as_const(m_gs).find(gs_sel);
 
 		if(i != m_gs.end())
 		{
@@ -566,7 +566,7 @@ void GSRendererCS::Draw()
 		}
 		else
 		{
-			string str[2];
+			std::string str[2];
 
 			str[0] = format("%d", gs_sel.iip);
 			str[1] = format("%d", j == 0 ? gs_sel.prim : GS_SPRITE_CLASS);
@@ -597,7 +597,7 @@ void GSRendererCS::Draw()
 
 	CComPtr<ID3D11PixelShader> ps[2] = {m_ps0, NULL};
 
-	hash_map<uint64, CComPtr<ID3D11PixelShader> >::const_iterator i = m_ps1.find(ps_sel);
+	auto i = std::as_const(m_ps1).find(ps_sel);
 
 	if(i != m_ps1.end())
 	{
@@ -605,7 +605,7 @@ void GSRendererCS::Draw()
 	}
 	else
 	{
-		string str[15];
+		std::string str[15];
 
 		str[0] = format("%d", PS_BATCH_SIZE);
 		str[1] = format("%d", context->FRAME.PSM);
@@ -825,7 +825,7 @@ bool GSRendererCS::GetOffsetBuffer(OffsetBuffer** fzbo)
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvd;
 	D3D11_SUBRESOURCE_DATA data;
 
-	hash_map<uint32, OffsetBuffer>::iterator i = m_offset.find(m_context->offset.fzb->hash);
+	auto i = m_offset.find(m_context->offset.fzb->hash);
 
 	if(i == m_offset.end())
 	{

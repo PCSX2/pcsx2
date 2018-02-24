@@ -29,9 +29,9 @@ struct OCLDeviceDesc
 #ifdef ENABLE_OPENCL
 	cl::Device device;
 #endif
-	string name;
+	std::string name;
 	int version;
-	string tmppath;
+	std::string tmppath;
 };
 
 class GSUtil
@@ -55,8 +55,8 @@ public:
 	static CRCHackLevel GetRecommendedCRCHackLevel(GSRendererType type);
 
 #ifdef ENABLE_OPENCL
-	static void GetDeviceDescs(list<OCLDeviceDesc>& dl);
-	static string GetDeviceUniqueName(cl::Device& device);
+	static void GetDeviceDescs(std::list<OCLDeviceDesc>& dl);
+	static std::string GetDeviceUniqueName(cl::Device& device);
 #endif
 
 #ifdef _WIN32

@@ -58,7 +58,7 @@ void GPUSettingsDlg::OnInit()
 				{
 					m_modes.push_back(mode);
 
-					string str = format("%dx%d %dHz", mode.Width, mode.Height, mode.RefreshRate);
+					std::string str = format("%dx%d %dHz", mode.Width, mode.Height, mode.RefreshRate);
 
 					ComboBoxAppend(IDC_RESOLUTION, str.c_str(), (LPARAM)&m_modes.back(), w == mode.Width && h == mode.Height && hz == mode.RefreshRate);
 				}

@@ -50,7 +50,7 @@ GSShaderOGL::~GSShaderOGL()
 	glDeleteProgramPipelines(m_pipe_to_delete.size(), &m_pipe_to_delete[0]);
 }
 
-GLuint GSShaderOGL::LinkPipeline(const string& pretty_print, GLuint vs, GLuint gs, GLuint ps)
+GLuint GSShaderOGL::LinkPipeline(const std::string& pretty_print, GLuint vs, GLuint gs, GLuint ps)
 {
 	GLuint p;
 	glCreateProgramPipelines(1, &p);
@@ -224,7 +224,7 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 	} else {
 		header += "#define DISABLE_GL42_image\n";
 	}
-	if (GLLoader::fglrx_buggy_driver || GLLoader::intel_buggy_driver)
+	if (GLLoader::vendor_id_amd || GLLoader::vendor_id_intel)
 		header += "#define BROKEN_DRIVER as_usual\n";
 
 	// Stupid GL implementation (can't use GL_ES)
@@ -331,7 +331,7 @@ GLuint GSShaderOGL::CompileShader(const std::string& glsl_file, const std::strin
 // GLSL improvement (unfortunately).
 int GSShaderOGL::DumpAsm(const std::string& file, GLuint p)
 {
-	if (!GLLoader::nvidia_buggy_driver) return 0;
+	if (!GLLoader::vendor_id_nvidia) return 0;
 
 	GLint   binaryLength;
 	glGetProgramiv(p, GL_PROGRAM_BINARY_LENGTH, &binaryLength);

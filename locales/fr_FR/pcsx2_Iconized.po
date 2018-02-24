@@ -42,7 +42,8 @@ msgid ""
 "Failed to read/write NMV/MEC file. Check your bios setup/permission settings"
 msgstr ""
 "Echec de l'écriture/lecture du fichier NMV/MEC "
-Vérifiez vos paramètres/permissions dans votre bios." 
+"Vérifiez vos paramètres/permissions dans votre bios." 
+
 #: pcsx2/System.cpp:112
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
@@ -657,7 +658,7 @@ msgid ""
 "-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"-2 - Diminue la fréquence du processeur EE d'environ 50%.  Amélioration "
+"-2 - Diminue la fréquence du processeur EE d'environ 60%.  Amélioration "
 "modérée des performances, mais le son de certaines cinématiques sera haché."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
@@ -666,7 +667,7 @@ msgid ""
 "-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
-"-1 - Diminue la fréquence du processeur EE d'environ 33%. Amélioration des "
+"-1 - Diminue la fréquence du processeur EE d'environ 75%. Amélioration des "
 "performances et compatibilité élevée."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:45
@@ -684,7 +685,7 @@ msgid ""
 "1 - Increases the EE's cyclerate to about 130%. Mildly increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
-"1 - Augmente la fréquence du processeur EE d'environ 33%. Augmente les "
+"1 - Augmente la fréquence du processeur EE d'environ 130%. Augmente les "
 "ressources nécessaires mais peut augmenter les FPS."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:55
@@ -693,7 +694,7 @@ msgid ""
 "2 - Increases the EE's cyclerate to about 180%. Increases hardware "
 "requirements, may noticeably increase in-game FPS."
 msgstr ""
-"2 - Augmente la fréquence du processeur EE d'environ 33%. Augmente les "
+"2 - Augmente la fréquence du processeur EE d'environ 180%. Augmente les "
 "ressources nécessaires mais peut augmenter les FPS."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:60
@@ -703,7 +704,7 @@ msgid ""
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
-"3 - Augmente la fréquence du processeur EE d'environ 50%. Augmente beaucoup "
+"3 - Augmente la fréquence du processeur EE d'environ 300%. Augmente beaucoup "
 "les ressources nécessaires mais peut augmenter considérablement les FPS.\n"
 "Ce paramètre peut empêcher certains jeux de démarrer !"
 

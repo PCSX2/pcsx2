@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2018  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -191,27 +191,28 @@ namespace Dialogs
 		wxDirName	m_mcdpath;
 		wxString	m_mcdfile;
 		wxTextCtrl*	m_text_filenameInput;
+		wxStaticText *m_mcd_Extension;
 
 		//wxFilePickerCtrl*	m_filepicker;
-		pxRadioPanel*		m_radio_CardSize;
+		pxRadioPanel *m_radio_CardType;
 
-	#ifdef __WXMSW__
-		pxCheckBox*			m_check_CompressNTFS;
-	#endif
+#ifdef __WXMSW__
+		pxCheckBox *m_check_CompressNTFS;
+#endif
 
 	public:
 		virtual ~CreateMemoryCardDialog()  = default;
 		CreateMemoryCardDialog( wxWindow* parent, const wxDirName& mcdpath, const wxString& suggested_mcdfileName);
 	
 		//duplicate of MemoryCardFile::Create. Don't know why the existing method isn't used. - avih
-		static bool CreateIt( const wxString& mcdFile, uint sizeInMB );
+		static bool CreateIt( const wxString& mcdFile, uint sizeInMB, bool isPSX );
 		wxString result_createdMcdFilename;
 		//wxDirName GetPathToMcds() const;
 
-
 	protected:
 		void CreateControls();
-		void OnOk_Click( wxCommandEvent& evt );
+		void OnRadioChanged(wxCommandEvent &evt);
+		void OnOk_Click(wxCommandEvent &evt);
 	};
 
 	// --------------------------------------------------------------------------------------
@@ -222,8 +223,8 @@ namespace Dialogs
 	protected:
 		wxDirName     m_mcdPath;
 		wxString      m_mcdSourceFilename;
-		wxTextCtrl*   m_text_filenameInput;
-		pxRadioPanel* m_radio_CardType;
+		wxTextCtrl   *m_text_filenameInput;
+		pxRadioPanel *m_radio_CardType;
 
 	public:
 		virtual ~ConvertMemoryCardDialog()  = default;

@@ -218,6 +218,7 @@ public:
 		wxPoint		WindowPos;
 		bool		IsMaximized;
 		bool		IsFullscreen;
+		bool		EnableVsyncWindowFlag;
 
 		bool		IsToggleFullscreenOnDoubleClick;
 		bool		IsToggleAspectRatioSwitch;
@@ -314,6 +315,8 @@ public:
 	// The next 2 vars enable/disable presets alltogether, and select/reflect current preset, respectively.
 	bool		EnablePresets;
 	int			PresetIndex;
+
+	bool		AskOnBoot;
 
 	wxString				CurrentIso;
 	wxString				CurrentELF;

@@ -214,11 +214,11 @@ void GPULocalMemory::Invalidate(const GSVector4i& r)
 		}
 	}
 
-	for(int y = 0, ye = min(r.bottom, 512), j = 0; y < ye; y += 256, j++)
+	for(int y = 0, ye = std::min(r.bottom, 512), j = 0; y < ye; y += 256, j++)
 	{
 		if(r.top >= y + 256) continue;
 
-		for(int x = 0, xe = min(r.right, 1024), i = 0; x < xe; x += 64, i++)
+		for(int x = 0, xe = std::min(r.right, 1024), i = 0; x < xe; x += 64, i++)
 		{
 			uint32 flag = 1 << i;
 
@@ -583,7 +583,7 @@ void GPULocalMemory::Expand24(const uint16* RESTRICT src, uint32* RESTRICT dst, 
 
 #include "GSTextureSW.h"
 
-void GPULocalMemory::SaveBMP(const string& fn, const GSVector4i& r2, int tp, int cx, int cy)
+void GPULocalMemory::SaveBMP(const std::string& fn, const GSVector4i& r2, int tp, int cx, int cy)
 {
 	GSVector4i r;
 

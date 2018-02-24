@@ -549,7 +549,7 @@ void Update(unsigned int port, unsigned int slot)
                     int cmd = b->command;
                     int state = dev->virtualControlState[b->controlIndex];
                     if (!(rapidFire & b->rapidFire)) {
-                        if (cmd > 0x0F && cmd != 0x28) {
+                        if ((cmd > 0x0F && cmd < 0x2A && cmd != 0x28) || cmd > 0x2C) {
                             ProcessButtonBinding(b, &s[port][slot], state);
                         } else if ((state >> 15) && !(dev->oldVirtualControlState[b->controlIndex] >> 15)) {
                             if (cmd == 0x0F) { // Mouse
@@ -1364,7 +1364,7 @@ u8 CALLBACK PADpoll(u8 value)
             // QUERY_DS2_ANALOG_MODE
             case 0x41:
                 // Right?  Wrong?  No clue.
-                if (pad->mode == MODE_PS1_MOUSE || pad->mode == MODE_NEGCON) {
+                if (pad->mode == MODE_DIGITAL || pad->mode == MODE_PS1_MOUSE || pad->mode == MODE_NEGCON) {
                     queryMaskMode[1] = queryMaskMode[2] = queryMaskMode[3] = 0;
                     queryMaskMode[6] = 0x00;
                 } else {

@@ -63,8 +63,7 @@ extern bool RunLinuxDialog();
 static GSRenderer* s_gs = NULL;
 static void (*s_irq)() = NULL;
 static uint8* s_basemem = NULL;
-static bool s_framelimit = true;
-static bool s_vsync = false;
+static int s_vsync = 0;
 static bool s_exclusive = true;
 static const char *s_renderer_name = "";
 static const char *s_renderer_type = "";
@@ -449,7 +448,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 	s_gs->SetRegsMem(s_basemem);
 	s_gs->SetIrqCallback(s_irq);
 	s_gs->SetVSync(s_vsync);
-	s_gs->SetFrameLimit(s_framelimit);
 
 	if(!old_api)
 		s_gs->SetMultithreaded(true);
@@ -545,7 +543,7 @@ EXPORT_C_(int) GSopen(void** dsp, const char* title, int mt)
 
 	// Legacy GUI expects to acquire vsync from the configuration files.
 
-	s_vsync = !!theApp.GetConfigI("vsync");
+	s_vsync = theApp.GetConfigI("vsync");
 
 	if(mt == 2)
 	{
@@ -755,7 +753,7 @@ EXPORT_C_(uint32) GSmakeSnapshot(char* path)
 {
 	try
 	{
-		string s(path);
+		std::string s{path};
 
 		if(!s.empty() && s[s.length() - 1] != DIRECTORY_SEPARATOR)
 		{
@@ -943,7 +941,7 @@ EXPORT_C GSgetLastTag(uint32* tag)
 
 EXPORT_C GSgetTitleInfo2(char* dest, size_t length)
 {
-	string s = "GSdx";
+	std::string s{"GSdx"};
 	s.append(s_renderer_name).append(s_renderer_type);
 
 	// TODO: this gets called from a different thread concurrently with GSOpen (on linux)
@@ -967,9 +965,9 @@ EXPORT_C GSsetFrameSkip(int frameskip)
 	s_gs->SetFrameSkip(frameskip);
 }
 
-EXPORT_C GSsetVsync(int enabled)
+EXPORT_C GSsetVsync(int vsync)
 {
-	s_vsync = !!enabled;
+	s_vsync = vsync;
 
 	if(s_gs)
 	{
@@ -987,16 +985,6 @@ EXPORT_C GSsetExclusive(int enabled)
 	}
 }
 
-EXPORT_C GSsetFrameLimit(int limit)
-{
-	s_framelimit = !!limit;
-
-	if(s_gs)
-	{
-		s_gs->SetFrameLimit(s_framelimit);
-	}
-}
-
 #ifdef _WIN32
 
 #include <io.h>
@@ -1005,7 +993,7 @@ EXPORT_C GSsetFrameLimit(int limit)
 class Console
 {
 	HANDLE m_console;
-	string m_title;
+	std::string m_title;
 
 public:
 	Console::Console(LPCSTR title, bool open)
@@ -1101,7 +1089,7 @@ EXPORT_C GSReplay(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 	std::array<uint8, 0x2000> regs;
 	GSsetBaseMem(regs.data());
 
-	s_vsync = theApp.GetConfigB("vsync");
+	s_vsync = theApp.GetConfigI("vsync");
 
 	HWND hWnd = nullptr;
 
@@ -1439,15 +1427,15 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		return;
 	}
 
-	struct Packet {uint8 type, param; uint32 size, addr; vector<uint8> buff;};
+	struct Packet {uint8 type, param; uint32 size, addr; std::vector<uint8> buff;};
 
-	list<Packet*> packets;
-	vector<uint8> buff;
+	std::list<Packet*> packets;
+	std::vector<uint8> buff;
 	uint8 regs[0x2000];
 
 	GSsetBaseMem(regs);
 
-	s_vsync = theApp.GetConfigB("vsync");
+	s_vsync = theApp.GetConfigI("vsync");
 	int finished = theApp.GetConfigI("linux_replay");
 	bool repack_dump = (finished < 0);
 

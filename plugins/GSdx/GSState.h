@@ -221,7 +221,6 @@ public:
 	std::unique_ptr<GSDumpBase> m_dump;
 	int m_options;
 	int m_frameskip;
-	bool m_framelimit;
 	bool m_NTSC_Saturation;
 	bool m_nativeres;
 	int m_mipmap;
@@ -234,7 +233,7 @@ public:
 	bool s_savef;
 	int s_saven;
 	int s_savel;
-	string m_dump_root;
+	std::string m_dump_root;
 
 public:
 	GSState();

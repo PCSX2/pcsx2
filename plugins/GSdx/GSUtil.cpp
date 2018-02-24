@@ -255,7 +255,7 @@ CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
 #define OCL_PROGRAM_VERSION 3
 
 #ifdef ENABLE_OPENCL
-void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
+void GSUtil::GetDeviceDescs(std::list<OCLDeviceDesc>& dl)
 {
 	dl.clear();
 
@@ -275,7 +275,7 @@ void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
 
 			for(auto& device : ds)
 			{
-				string type;
+				std::string type;
 
 				switch(device.getInfo<CL_DEVICE_TYPE>())
 				{
@@ -317,13 +317,13 @@ void GSUtil::GetDeviceDescs(list<OCLDeviceDesc>& dl)
 	}
 }
 
-string GSUtil::GetDeviceUniqueName(cl::Device& device)
+std::string GSUtil::GetDeviceUniqueName(cl::Device& device)
 {
 	std::string vendor = device.getInfo<CL_DEVICE_VENDOR>();
 	std::string name = device.getInfo<CL_DEVICE_NAME>();
 	std::string version = device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
 
-	string type;
+	std::string type;
 
 	switch(device.getInfo<CL_DEVICE_TYPE>())
 	{

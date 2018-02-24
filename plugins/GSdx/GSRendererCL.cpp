@@ -405,7 +405,7 @@ void GSRendererCL::Draw()
 			}
 		}
 
-		shared_ptr<TFXJob> job(new TFXJob());
+		std::shared_ptr<TFXJob> job(new TFXJob());
 
 		if(!SetupParameter(job.get(), pb, vb, m_vertex.next, m_index.buff, m_index.tail))
 		{
@@ -891,7 +891,7 @@ void GSRendererCL::Enqueue()
 						}
 					}
 
-					std::list<shared_ptr<TFXJob>> jobs(head, next);
+					std::list<std::shared_ptr<TFXJob>> jobs(head, next);
 
 					JoinTFX(jobs);
 
@@ -945,7 +945,7 @@ void GSRendererCL::Enqueue()
 	m_cl.Map();
 }
 
-void GSRendererCL::EnqueueTFX(std::list<shared_ptr<TFXJob>>& jobs, uint32 bin_count, const cl_uchar4& bin_dim)
+void GSRendererCL::EnqueueTFX(std::list<std::shared_ptr<TFXJob>>& jobs, uint32 bin_count, const cl_uchar4& bin_dim)
 {
 	cl_kernel tfx_prev = NULL;
 
@@ -995,7 +995,7 @@ void GSRendererCL::EnqueueTFX(std::list<shared_ptr<TFXJob>>& jobs, uint32 bin_co
 	}
 }
 
-void GSRendererCL::JoinTFX(std::list<shared_ptr<TFXJob>>& jobs)
+void GSRendererCL::JoinTFX(std::list<std::shared_ptr<TFXJob>>& jobs)
 {
 	// join tfx kernel calls where the selector and fbp/zbp/bw/fpsm/zpsm are the same and src_pages != prev dst_pages
 
@@ -1887,7 +1887,7 @@ GSRendererCL::CL::CL()
 	ocldev = "Intel(R) Corporation Intel(R) Core(TM) i7-4770 CPU @ 3.40GHz OpenCL C 1.2 CPU";
 #endif
 
-	list<OCLDeviceDesc> dl;
+	std::list<OCLDeviceDesc> dl;
 
 	GSUtil::GetDeviceDescs(dl);
 
@@ -1919,7 +1919,7 @@ GSRendererCL::CL::CL()
 		throw new std::runtime_error("OpenCL device not found");
 	}
 
-	vector<cl::Device> tmp;
+	std::vector<cl::Device> tmp;
 
 	for(auto d : devs) tmp.push_back(d.device);
 
@@ -1997,7 +1997,7 @@ void GSRendererCL::CL::Unmap()
 	pb.mapped_ptr = pb.ptr = NULL;
 }
 
-cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
+cl::Kernel GSRendererCL::CL::Build(const char* entry, std::ostringstream& opt)
 {
 	cl::Program program;
 
@@ -2009,7 +2009,7 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 		{
 			for(auto d : devs)
 			{
-				string path = d.tmppath + "/" + entry;
+				std::string path = d.tmppath + "/" + entry;
 
 				FILE* f = fopen(path.c_str(), "rb");
 
@@ -2017,7 +2017,7 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 				{
 					fseek(f, 0, SEEK_END);
 					long size = ftell(f);
-					pair<void*, size_t> b(new char[size], size);
+					std::pair<void*, size_t> b(new char[size], size);
 					fseek(f, 0, SEEK_SET);
 					fread(b.first, b.second, 1, f);
 					fclose(f);
@@ -2032,7 +2032,7 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 
 			if(binaries.size() == devs.size())
 			{
-				vector<cl::Device> tmp;
+				std::vector<cl::Device> tmp;
 
 				for(auto d : devs) tmp.push_back(d.device);
 
@@ -2087,12 +2087,12 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 	{
 		try
 		{
-			vector<size_t> sizes = program.getInfo<CL_PROGRAM_BINARY_SIZES>();
-			vector<char*> binaries = program.getInfo<CL_PROGRAM_BINARIES>();
+			std::vector<size_t> sizes = program.getInfo<CL_PROGRAM_BINARY_SIZES>();
+			std::vector<char*> binaries = program.getInfo<CL_PROGRAM_BINARIES>();
 
 			for(size_t i = 0; i < binaries.size(); i++)
 			{
-				string path = devs[i].tmppath + "/" + entry;
+				std::string path = devs[i].tmppath + "/" + entry;
 
 				FILE* f = fopen(path.c_str(), "wb");
 
@@ -2114,7 +2114,7 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, ostringstream& opt)
 	return cl::Kernel(program, entry);
 }
 
-void GSRendererCL::CL::AddDefs(ostringstream& opt)
+void GSRendererCL::CL::AddDefs(std::ostringstream& opt)
 {
 	if(version == 110) opt << "-cl-std=CL1.1 ";
 	else opt << "-cl-std=CL1.2 ";
@@ -2146,7 +2146,7 @@ cl::Kernel& GSRendererCL::CL::GetPrimKernel(const PrimSelector& sel)
 
 	sprintf(entry, "prim_%02x", sel.key);
 
-	ostringstream opt;
+	std::ostringstream opt;
 
 	opt << "-D KERNEL_PRIM=" << entry << " ";
 	opt << "-D PRIM=" << sel.prim << " ";
@@ -2173,7 +2173,7 @@ cl::Kernel& GSRendererCL::CL::GetTileKernel(const TileSelector& sel)
 
 	sprintf(entry, "tile_%02x", sel.key);
 
-	ostringstream opt;
+	std::ostringstream opt;
 
 	opt << "-D KERNEL_TILE=" << entry << " ";
 	opt << "-D PRIM=" << sel.prim << " ";
@@ -2202,7 +2202,7 @@ cl::Kernel& GSRendererCL::CL::GetTFXKernel(const TFXSelector& sel)
 
 	sprintf(entry, "tfx_%016llx", sel.key);
 
-	ostringstream opt;
+	std::ostringstream opt;
 
 	opt << "-D KERNEL_TFX=" << entry << " ";
 	opt << "-D FPSM=" << sel.fpsm << " ";

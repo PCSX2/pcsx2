@@ -158,7 +158,8 @@ public:
 		{
 			struct
 			{
-				uint32 _free:32;
+				uint32 int_fst:1;
+				uint32 _free:31;
 			};
 
 			uint32 key;
@@ -473,11 +474,11 @@ public:
 		GLuint timer() { return timer_query[last_query]; }
 	} m_profiler;
 
-	GLuint m_vs[1];
+	GLuint m_vs[1<<1];
 	GLuint m_gs[1<<3];
 	GLuint m_ps_ss[1<<7];
 	GSDepthStencilOGL* m_om_dss[1<<5];
-	hash_map<uint64, GLuint > m_ps;
+	std::unordered_map<uint64, GLuint> m_ps;
 	GLuint m_apitrace;
 
 	GLuint m_palette_ss;
@@ -523,7 +524,7 @@ public:
 	bool Create(const std::shared_ptr<GSWnd> &wnd);
 	bool Reset(int w, int h);
 	void Flip();
-	void SetVSync(bool enable);
+	void SetVSync(int vsync);
 
 	void DrawPrimitive() final;
 	void DrawPrimitive(int offset, int count);
@@ -578,8 +579,8 @@ public:
 	GLuint CreateSampler(PSSamplerSelector sel);
 	GSDepthStencilOGL* CreateDepthStencil(OMDepthStencilSelector dssel);
 
-	void SelfShaderTestPrint(const string& test, int& nb_shader);
-	void SelfShaderTestRun(const string& dir, const string& file, const PSSelector& sel, int& nb_shader);
+	void SelfShaderTestPrint(const std::string& test, int& nb_shader);
+	void SelfShaderTestRun(const std::string& dir, const std::string& file, const PSSelector& sel, int& nb_shader);
 	void SelfShaderTest();
 
 	void SetupIA(const void* vertex, int vertex_count, const uint32* index, int index_count, int prim);

@@ -118,17 +118,12 @@ typedef int64 sint64;
 #include <mutex>
 #include <condition_variable>
 #include <functional>
-
-using namespace std;
-
 #include <memory>
 
 #include <zlib.h>
 
 #include <unordered_map>
 #include <unordered_set>
-#define hash_map unordered_map
-#define hash_set unordered_set
 
 #ifdef _WIN32
 

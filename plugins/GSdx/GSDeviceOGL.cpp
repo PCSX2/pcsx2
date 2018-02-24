@@ -393,7 +393,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 		m_convert.vs = vs;
 		for(size_t i = 0; i < countof(m_convert.ps); i++) {
 			ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
-			string pretty_name = "Convert pipe " + to_string(i);
+			std::string pretty_name = "Convert pipe " + std::to_string(i);
 			m_convert.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
 
@@ -422,7 +422,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		for(size_t i = 0; i < countof(m_merge_obj.ps); i++) {
 			ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
-			string pretty_name = "Merge pipe " + to_string(i);
+			std::string pretty_name = "Merge pipe " + std::to_string(i);
 			m_merge_obj.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
 	}
@@ -439,7 +439,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		for(size_t i = 0; i < countof(m_interlace.ps); i++) {
 			ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
-			string pretty_name = "Interlace pipe " + to_string(i);
+			std::string pretty_name = "Interlace pipe " + std::to_string(i);
 			m_interlace.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
 	}
@@ -528,7 +528,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	// Get Available Memory
 	// ****************************************************************
 	GLint vram[4] = {0};
-	if (GLLoader::fglrx_buggy_driver) {
+	if (GLLoader::vendor_id_amd) {
 		// Full vram, remove a small margin for others buffer
 		glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, vram);
 	} else if (GLLoader::found_GL_NVX_gpu_memory_info) {
@@ -593,7 +593,8 @@ void GSDeviceOGL::CreateTextureFX()
 	m_gs[2] = CompileGS(GSSelector(2));
 	m_gs[4] = CompileGS(GSSelector(4));
 
-	m_vs[0] = CompileVS(VSSelector(0));
+	for (uint32 key = 0; key < countof(m_vs); key++)
+		m_vs[key] = CompileVS(VSSelector(key));
 
 	// Enable all bits for stencil operations. Technically 1 bit is
 	// enough but buffer is polluted with noise. Clear will be limited
@@ -620,9 +621,9 @@ bool GSDeviceOGL::Reset(int w, int h)
 	return true;
 }
 
-void GSDeviceOGL::SetVSync(bool enable)
+void GSDeviceOGL::SetVSync(int vsync)
 {
-	m_wnd->SetVSync(enable);
+	m_wnd->SetVSync(vsync);
 }
 
 void GSDeviceOGL::Flip()
@@ -917,10 +918,12 @@ void GSDeviceOGL::Barrier(GLbitfield b)
 
 GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 {
+	std::string macro = format("#define VS_INT_FST %d\n", sel.int_fst);
+
 	if (GLLoader::buggy_sso_dual_src)
-		return m_shader->CompileShader("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), "");
+		return m_shader->CompileShader("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), macro);
 	else
-		return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), "");
+		return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), macro);
 }
 
 GLuint GSDeviceOGL::CompileGS(GSSelector sel)
@@ -979,10 +982,10 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, m_shader_tfx_fs.data(), macro);
 }
 
-void GSDeviceOGL::SelfShaderTestRun(const string& dir, const string& file, const PSSelector& sel, int& nb_shader)
+void GSDeviceOGL::SelfShaderTestRun(const std::string& dir, const std::string& file, const PSSelector& sel, int& nb_shader)
 {
 #ifdef __unix__
-	string out = "/tmp/GSdx_Shader/";
+	std::string out = "/tmp/GSdx_Shader/";
 	GSmkdir(out.c_str());
 
 	out += dir + "/";
@@ -990,12 +993,12 @@ void GSDeviceOGL::SelfShaderTestRun(const string& dir, const string& file, const
 
 	out += file;
 #else
-	string out = file;
+	std::string out = file;
 #endif
 
 #ifdef __linux__
 	// Nouveau actually
-	if (GLLoader::mesa_buggy_driver) {
+	if (GLLoader::mesa_driver) {
 		if (freopen(out.c_str(), "w", stderr) == NULL)
 			fprintf(stderr, "Failed to redirect stderr\n");
 	}
@@ -1007,14 +1010,14 @@ void GSDeviceOGL::SelfShaderTestRun(const string& dir, const string& file, const
 
 #ifdef __linux__
 	// Nouveau actually
-	if (GLLoader::mesa_buggy_driver) {
+	if (GLLoader::mesa_driver) {
 		if (freopen("/dev/tty", "w", stderr) == NULL)
 			fprintf(stderr, "Failed to restore stderr\n");
 	}
 #endif
 }
 
-void GSDeviceOGL::SelfShaderTestPrint(const string& test, int& nb_shader)
+void GSDeviceOGL::SelfShaderTestPrint(const std::string& test, int& nb_shader)
 {
 	fprintf(stderr, "%-25s\t\t%d shaders:\t%d instructions (M %4.2f)\t%d registers (M %4.2f)\n",
 			test.c_str(), nb_shader,
@@ -1028,13 +1031,13 @@ void GSDeviceOGL::SelfShaderTestPrint(const string& test, int& nb_shader)
 
 void GSDeviceOGL::SelfShaderTest()
 {
-	string out = "";
+	std::string out;
 
 #ifdef __unix__
 	setenv("NV50_PROG_DEBUG", "1", 1);
 #endif
 
-	string test;
+	std::string test;
 	m_shader_inst = 0;
 	m_shader_reg  = 0;
 	int nb_shader = 0;
@@ -1525,6 +1528,7 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 		std::string   config_name(theApp.GetConfigS("shaderfx_conf"));
 		std::ifstream fconfig(config_name);
 		std::stringstream config;
+		config << "#extension GL_ARB_gpu_shader5 : require\n";
 		if (fconfig.good())
 			config << fconfig.rdbuf();
 		else

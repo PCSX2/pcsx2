@@ -37,7 +37,7 @@ protected:
 	int m_filter;
 	int m_dither;
 	int m_aspectratio;
-	bool m_vsync;
+	int m_vsync;
 	bool m_shaderfx;
 	bool m_fxaa;
 	bool m_shadeboost;
@@ -50,7 +50,7 @@ protected:
 
 	HWND m_hWnd;
 	WNDPROC m_wndproc;
-	static map<HWND, GPURenderer*> m_wnd2gpu;
+	static std::map<HWND, GPURenderer*> m_wnd2gpu;
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
@@ -65,7 +65,7 @@ public:
 
 	virtual bool Create(void* hWnd);
 	virtual void VSync();
-	virtual bool MakeSnapshot(const string& path);
+	virtual bool MakeSnapshot(const std::string& path);
 };
 
 template<class Vertex>

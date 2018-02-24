@@ -234,7 +234,13 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 		// Avious dubious call to m_texture_shuffle on 16 bits games
 		// The pattern is severals column of 8 pixels. A single sprite
 		// smell fishy but a big sprite is wrong.
-		m_texture_shuffle = ((v[1].U - v[0].U) < 256);
+
+		// Tomb Raider Angel of Darkness relies on this behavior to produce a fog effect.
+		// In this case, the address of the framebuffer and texture are the same. 
+		// The game will take RG => BA and then the BA => RG of next pixels. 
+		// However, only RG => BA needs to be emulated because RG isn't used.
+		GL_INS("WARNING: Possible misdetection of a texture shuffle effect");
+		m_texture_shuffle = ((v[1].U - v[0].U) < 256) || m_context->FRAME.Block() == m_context->TEX0.TBP0;
 	}
 
 
@@ -422,6 +428,7 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 			*rt = tex->m_from_target;
 		} else if (m_game.title == CRC::Tekken5) {
 			if (m_context->FRAME.FBW == 1) {
+				// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
 				GL_INS("Tekken5 RGB Channel");
 				m_ps_sel.channel = 7;
 				m_context->FRAME.FBMSK = 0xFF000000;
@@ -733,6 +740,7 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		// Require a float conversion if the texure is a depth otherwise uses Integral scaling
 		if (psm.depth) {
 			m_ps_sel.depth_fmt = (tex->m_texture->GetType() != GSTexture::DepthStencil) ? 3 : 1;
+			m_vs_sel.int_fst = !PRIM->FST; // select float/int coordinate
 		}
 
 		// Shuffle is a 16 bits format, so aem is always required
@@ -784,12 +792,14 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		if (tex->m_texture->GetType() == GSTexture::DepthStencil) {
 			// Require a float conversion if the texure is a depth format
 			m_ps_sel.depth_fmt = (psm.bpp == 16) ? 2 : 1;
+			m_vs_sel.int_fst = !PRIM->FST; // select float/int coordinate
 
 			// Don't force interpolation on depth format
 			bilinear &= m_vt.IsLinear();
 		} else if (psm.depth) {
 			// Use Integral scaling
 			m_ps_sel.depth_fmt = 3;
+			m_vs_sel.int_fst = !PRIM->FST; // select float/int coordinate
 
 			// Don't force interpolation on depth format
 			bilinear &= m_vt.IsLinear();
@@ -1003,13 +1013,13 @@ void GSRendererOGL::SendDraw()
 
 #if defined(_DEBUG)
 		// Check how draw call is split.
-		map<size_t, size_t> frequency;
+		std::map<size_t, size_t> frequency;
 		for (const auto& it: m_drawlist)
 			++frequency[it];
 
-		string message;
+		std::string message;
 		for (const auto& it: frequency)
-			message += " " + to_string(it.first) + "(" + to_string(it.second) + ")";
+			message += " " + std::to_string(it.first) + "(" + std::to_string(it.second) + ")";
 
 		GL_PERF("Split single draw (%d sprites) into %zu draws: consecutive draws(frequency):%s",
 			m_index.tail / nb_vertex, m_drawlist.size(), message.c_str());

@@ -24,24 +24,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_ABOUT DIALOGEX 0, 0, 291, 223
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About SPU2-X"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "I've Seen Enough",IDOK,91,204,111,14
-    CTEXT           "Original portions from SPU2ghz are (c) 2008 by David Quintana [gigaherz]",IDC_STATIC,9,184,273,11
-    CONTROL         114,IDC_STATIC,"Static",SS_BITMAP,45,5,203,64,WS_EX_CLIENTEDGE
-    CTEXT           "A Sound Processing Unit 2 plugin for Playstation 2 emulators.",IDC_STATIC,9,71,273,10
-    CTEXT           "For updates and news, visit the following links:",IDC_STATIC,9,98,273,10
-    CTEXT           "The SPU2-X project is derived from SPU2ghz v1.9beta released in 2008 and later modified and upgraded by the Pcsx2 Playground Team.",IDC_STATIC,25,161,242,17
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,20,157,252,41
-    CTEXT           "Compile Date, Revision, Etc.",IDC_LABEL_VERSION_INFO,9,80,273,17
-    CTEXT           "Pcsx2 Official Git Repository @ GitHub",IDC_LINK_GOOGLECODE,9,121,273,10,SS_NOPREFIX | SS_NOTIFY
-    CTEXT           "Pcsx2 Official Website and Forums",IDC_LINK_WEBSITE,9,110,273,10,SS_NOPREFIX | SS_NOTIFY
-    CTEXT           "Brought to you by the collaborative efforts of the Pcsx2 Development Team.",IDC_STATIC,9,141,273,10
-END
-
 IDD_CONFIG DIALOGEX 0, 0, 319, 302
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "SPU2-X Settings"
@@ -62,7 +44,7 @@ BEGIN
     LTEXT           "Module:",IDC_STATIC,161,16,50,9,NOT WS_GROUP
     LTEXT           "(speedup!) Skips reverb effects processing, but won't sound as good in most games.",IDC_STATIC,26,60,104,36
     LTEXT           "(currently requires manual configuration via the ini file)",IDC_STATIC,162,236,146,20
-    CTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,224,86,58,9
+    CTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,224,84,58,9
     CONTROL         116,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,213,119,55,WS_EX_CLIENTEDGE
     PUSHBUTTON      "Advanced...",IDC_OPEN_CONFIG_SOUNDTOUCH,219,149,84,12
     PUSHBUTTON      "Configure Debug Options...",IDC_OPEN_CONFIG_DEBUG,14,167,108,14
@@ -70,7 +52,6 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,6,143,129,46
     LTEXT           "Audio Expansion Mode:",IDC_STATIC,161,176,135,9,NOT WS_GROUP
     COMBOBOX        IDC_SPEAKERS,163,185,135,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "WIP - XAudio2 Only",IDC_STATIC,161,204,135,9,NOT WS_GROUP
     CONTROL         "Synchronizing Mode:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,161,116,131,8
     COMBOBOX        IDC_SYNCHMODE,163,125,134,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Volume:",IDC_STATIC,192,59,26,8,NOT WS_GROUP
@@ -122,6 +103,7 @@ BEGIN
     CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL,70,37,95,11
 END
 
+// fixme: This dialog doesn't work (was it ever used in the first place?)
 IDD_XAUDIO2 DIALOGEX 0, 0, 202, 116
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "XAudio2 Output Module Settings"
@@ -195,14 +177,6 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
-    IDD_ABOUT, DIALOG
-    BEGIN
-        LEFTMARGIN, 9
-        RIGHTMARGIN, 282
-        TOPMARGIN, 5
-        BOTTOMMARGIN, 218
-    END
-
     IDD_CONFIG, DIALOG
     BEGIN
         LEFTMARGIN, 6
@@ -269,7 +243,6 @@ END
 // Bitmap
 //
 
-IDB_SPU2X               BITMAP                  "..\\..\\spu2-x.bmp"
 IDB_SPU2X_SMALL         BITMAP                  "..\\..\\spu2-x-sm.bmp"
 
 /////////////////////////////////////////////////////////////////////////////

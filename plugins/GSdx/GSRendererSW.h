@@ -87,7 +87,7 @@ protected:
 	GSTexture* GetFeedbackOutput();
 
 	void Draw();
-	void Queue(shared_ptr<GSRasterizerData>& item);
+	void Queue(std::shared_ptr<GSRasterizerData>& item);
 	void Sync(int reason);
 	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r);
 	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false);

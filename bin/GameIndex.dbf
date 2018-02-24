@@ -69,6 +69,7 @@
 -- VIFFIFOHack       = 1 // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
 -- VIF1StallHack     = 1 // SOCOM II HUD and Spy Hunter loading hang.
 -- FMVinSoftwareHack = 1 // Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering while an FMV plays.
+-- ScarfaceIbitHack  = 1 // VU I bit Hack avoid constant recompilation. ( Scarface The World Is Yours)
 
 ---------------------------------------------
 -- Speed Hacks (SpeedHackName = <value>)
@@ -1109,6 +1110,7 @@ Serial = SCED-50642
 Name   = Final Fantasy X [Demo] [Final Fantasy VI PS1 - Bonus Disc]
 Region = PAL-E
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCED-50748
 Name   = Official PlayStation 2 Magazine Demo 26
@@ -1118,6 +1120,7 @@ Serial = SCED-50907
 Name   = Final Fantasy X [Bonus Disc - Beyond Final Fantasy]
 Region = PAL-Unk
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCED-51531
 Name   = Official PlayStation 2 Magazine Demo 33
@@ -1169,7 +1172,7 @@ Region = PAL-M5
 Serial = SCES-50003
 Name   = Dead or Alive 2 - Hardcore
 Region = PAL-M5
-Compat = 1
+Compat = 5
 [patches = 7A51F86E]
 //Patched by Prafull
 //Some missing sounds
@@ -1304,27 +1307,32 @@ Name   = Final Fantasy X
 Region = PAL-E
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50491
 Name   = Final Fantasy X
 Region = PAL-F
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50492
 Name   = Final Fantasy X
 Region = PAL-G
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50493
 Name   = Final Fantasy X
 Region = PAL-I
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50494
 Name   = Final Fantasy X
 Region = PAL-S
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SCES-50499
 Name   = Ecco the Dolphin - Defender of the Future
@@ -1616,6 +1624,9 @@ Region = PAL-M5
 Serial = SCES-51176
 Name   = Disney's Treasure Planet
 Region = PAL-M4
+EETimingHack = 1 // Fixes hang before going ingame
+eeRoundMode = 0 // Fixes characters flying into sky
+eeClampMode = 3 // Required to load areas correctly
 ---------------------------------------------
 Serial = SCES-51177
 Name   = Disney's Treasure Planet
@@ -1685,6 +1696,7 @@ Serial = SCES-51607
 Name   = Ratchet & Clank 2 - Locked & Loaded
 Region = PAL-M5
 Compat = 5
+EETimingHack = 1 // Fixes crash & cinematic after Jammer Array level
 // reads Ratchet 1 data
 MemCardFilter = SCES-51607/SCES-50916
 ---------------------------------------------
@@ -6243,6 +6255,7 @@ Region = NTSC-Unk
 Serial = SLAJ-25053
 Name   = Burnout 3 - Takedown
 Region = NTSC-Unk
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLAJ-25055
 Name   = Def Jam - Fight for N.Y.
@@ -6279,6 +6292,7 @@ Region = NTSC-Unk
 Serial = SLAJ-25066
 Name   = Burnout Revenge - Battle Racing Ignited
 Region = NTSC-Unk
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 MemCardFilter = SLAJ-25066/SLPM-66108/SLPM-66652/SLPM-65719/SLPM-65958/SLPM-66962/SLAJ-25053/SLPM-66204
 ---------------------------------------------
 Serial = SLAJ-25068
@@ -6351,6 +6365,7 @@ Region = NTSC-Unk
 Serial = SLAJ-25094
 Name   = Burnout Dominator
 Region = NTSC-Unk
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLAJ-25095
 Name   = Medal of Honor - Vanguard
@@ -6915,6 +6930,7 @@ Region = PAL-E
 Serial = SLES-50176
 Name   = Oni
 Region = PAL-F
+Compat = 5
 [patches = F77639F1]
 
 		comment=patches by Nachbrenner
@@ -7281,10 +7297,22 @@ Serial = SLES-50325
 Name   = Max Payne
 Region = PAL-E
 Compat = 5
+// Apparently using these specific Game Fixes fixes the game from crashing and freezing.
+eeRoundMode = 0
+eeClampMode = 3
+vuRoundMode = 0
+vuClampMode = 3
+EETimingHack = 1 // Fixes crashes
 ---------------------------------------------
 Serial = SLES-50326
 Name   = Max Payne
 Region = PAL-M4
+// Apparently using these specific Game Fixes fixes the game from crashing and freezing.
+eeRoundMode = 0
+eeClampMode = 3
+vuRoundMode = 0
+vuClampMode = 3
+EETimingHack = 1 // Fixes crashes
 ---------------------------------------------
 Serial = SLES-50330
 Name   = Grand Theft Auto III
@@ -7947,7 +7975,7 @@ Region = PAL-M3
 Serial = SLES-50662
 Name   = Shadow of Zorro, The
 Region = PAL-M5
-Compat = 4
+Compat = 4 // Need the VU1 in interpreter mode.
 ---------------------------------------------
 Serial = SLES-50670
 Name   = ESPN Winter X-Games Snowboarding 2
@@ -7956,7 +7984,7 @@ Region = PAL-M3
 Serial = SLES-50672
 Name   = Baldur's Gate: Dark Alliance
 Region = PAL-M5
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLES-50677
 Name   = Shadow Hearts
@@ -8308,22 +8336,42 @@ Region = PAL-Unk
 Serial = SLES-50831
 Name   = Star Wars - Bounty Hunter
 Region = PAL-E
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLES-50832
 Name   = Star Wars - Bounty Hunter
 Region = PAL-F
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLES-50833
 Name   = Star Wars - Bounty Hunter
 Region = PAL-G
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLES-50834
 Name   = Star Wars - Bounty Hunter
 Region = PAL-I
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLES-50835
 Name   = Star Wars - Bounty Hunter
 Region = PAL-S
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLES-50836
 Name   = Indiana Jones and The Emperor's Tomb
@@ -9627,8 +9675,8 @@ Compat = 4
 Serial = SLES-51434
 Name   = Silent Hill 3
 Region = PAL-M5
-Compat = 5
 MemCardFilter = SLES-51434/SLES-50382/SLES-51156
+vuClampMode = 2 // fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected)
 FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLES-51435
@@ -10638,6 +10686,7 @@ Region = PAL-M5
 Serial = SLES-51917
 Name   = Beyond Good and Evil
 Region = PAL-M6
+eeRoundMode = 0 // fix SPS with water in some places
 ---------------------------------------------
 Serial = SLES-51918
 Name   = Prince of Persia - The Sands of Time
@@ -11177,7 +11226,7 @@ Compat = 5
 Serial = SLES-52188
 Name   = Baldur's Gate: Dark Alliance II
 Region = PAL-M3
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52190
 Name   = RPM Tuning
@@ -11389,7 +11438,7 @@ Region = PAL-M5
 Serial = SLES-52309
 Name   = R - Racing
 Region = PAL-M5
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLES-52312
 Name   = World Championship Rugby
@@ -11998,10 +12047,12 @@ Serial = SLES-52584
 Name   = Burnout 3 - Takedown
 Region = PAL-M4
 Compat = 5
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLES-52585
 Name   = Burnout 3 - Takedown
 Region = PAL-F-G-I
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLES-52587
 Name   = Army Men - Sarge's War
@@ -13200,7 +13251,7 @@ eeRoundMode = 0
 Serial = SLES-53039
 Name   = Champions - Return to Arms	// aka "Champions of Norrath 2"
 Region = PAL-M4
-Compat = 4
+Compat = 5
 // allows import of characters from first game
 MemCardFilter = SLES-53039/SLES-52325
 ---------------------------------------------
@@ -14137,12 +14188,14 @@ Serial = SLES-53506
 Name   = Burnout Revenge
 Region = PAL-M5
 Compat = 5
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 MemCardFilter = SLES-53506/SLES-53507/SLES-52584/SLES-52585/SLES-53510
 ---------------------------------------------
 Serial = SLES-53507
 Name   = Burnout Revenge
 Region = PAL-M3
 Compat = 5
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 MemCardFilter = SLES-53506/SLES-53507/SLES-52584/SLES-52585/SLES-53510
 ---------------------------------------------
 Serial = SLES-53508
@@ -15601,14 +15654,17 @@ Compat = 5
 Serial = SLES-54182
 Name   = Scarface - The World is Yours
 Region = PAL-F
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLES-54183
 Name   = Scarface - The World is Yours
 Region = PAL-G
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLES-54184
 Name   = Scarface - The World is Yours
 Region = PAL-R
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLES-54185
 Name   = Dirge of Cerberus - Final Fantasy VII
@@ -15822,6 +15878,7 @@ Region = PAL-E
 Serial = SLES-54271
 Name   = Scarface - The World is Yours
 Region = PAL-E
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLES-54305
 Name   = Demon Chaos
@@ -16465,6 +16522,7 @@ Serial = SLES-54627
 Name   = Burnout Dominator
 Region = PAL-M5
 Compat = 5
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLES-54629
 Name   = Shin Megami Tensei - Devil Summoner - Raidou Kuzunoha vs. the Soulless Army
@@ -16566,6 +16624,7 @@ Compat = 5
 Serial = SLES-54681
 Name   = Burnout Dominator
 Region = PAL-E
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLES-54683
 Name   = Medal of Honor - Vanguard
@@ -16629,14 +16688,21 @@ Region = PAL-M5
 Serial = SLES-54733
 Name   = Disney-Pixar Ratatouille
 Region = PAL-E
+Comapt = 5
+---------------------------------------------
+Serial = SLES-54734
+Name   = Disney-Pixar Ratatouille
+Region = PAL-F
 ---------------------------------------------
 Serial = SLES-54735
 Name   = Disney-Pixar Ratatouille
 Region = PAL-G
+Comapt = 5
 ---------------------------------------------
 Serial = SLES-54747
 Name   = Disney-Pixar Ratatouille
 Region = PAL-P-S
+Comapt = 5
 ---------------------------------------------
 Serial = SLES-54755
 Name   = Transformers - The Game
@@ -16848,6 +16914,11 @@ Name   = The Simpsons Game
 Region = PAL-M4
 Compat = 5
 ---------------------------------------------
+Serial = SLES-54905
+Name   = The Simpsons Game
+Region = PAL-F
+Compat = 5
+---------------------------------------------
 Serial = SLES-54906
 Name   = The Simpsons Game
 Region = PAL-I-S
@@ -16968,6 +17039,8 @@ Region = PAL-M6
 Serial = SLES-54994
 Name   = Pippa Funnell - Ranch Rescue
 Region = PAL-M11
+Compat = 5
+VIFFIFOHack = 1 // fix hang at loading screen
 ---------------------------------------------
 Serial = SLES-54995
 Name   = Puzzle Quest - Challenge of the Warlords
@@ -16985,8 +17058,9 @@ Compat = 5
 EETimingHack = 1	//flickery textures
 ---------------------------------------------
 Serial = SLES-54998
-Name   = Bratz - The Movie
-Region = PAL-M5
+Name   = Mercenaries 2 - World in Flames
+Region = PAL-F
+EETimingHack = 1	//flickery textures
 ---------------------------------------------
 Serial = SLES-55000
 Name   = Mercenaries 2 - World in Flames
@@ -17048,6 +17122,10 @@ Region = PAL-F-G
 Serial = SLES-55024
 Name   = Nickelodeon SpongeBob's Atlantis SquarePantis
 Region = PAL-M4
+---------------------------------------------
+Serial = SLES-55031
+Name   = Kung Fu Panda
+Region = PAL-F
 ---------------------------------------------
 Serial = SLES-55032
 Name   = Off Road
@@ -17181,6 +17259,11 @@ Serial = SLES-55198
 Name   = Iron Man
 Region = PAL-M5
 Compat = 5
+---------------------------------------------
+Serial = SLES-55199
+Name   = Nascar 09
+Region = PAL-M5
+Compat = 5 // The game only load with the EE set to interpreter + cache enable.
 ---------------------------------------------
 Serial = SLES-55200
 Name   = Guitar Hero - Aerosmith
@@ -22114,6 +22197,7 @@ Name   = Silent Hill 3
 Region = NTSC-J
 Compat = 5
 MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
+vuClampMode = 2 // fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected)
 FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLPM-65260
@@ -23440,6 +23524,7 @@ Serial = SLPM-65622
 Name   = Silent Hill 3 [Konami The Best]
 Region = NTSC-J
 MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
+vuClampMode = 2 // fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected)
 FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLPM-65623
@@ -23781,6 +23866,7 @@ Region = NTSC-J
 Serial = SLPM-65719
 Name   = Burnout 3 - Takedown
 Region = NTSC-J
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLPM-65720
 Name   = Shin Sangoku Musou 2 Mushouden [Koei the Best]
@@ -23807,8 +23893,12 @@ Name   = James Bond 007 - Everything or Nothing [EA Best Hits]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65726
-Name   = Star Wars - Jango Fett [EA Best Hits]
+Name   = Star Wars - Bounty Hunter [EA Best Hits]
 Region = NTSC-J
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLPM-65727
 Name   = Lord of the Rings, The - The Return of the King [EA Best Hits]
@@ -24269,7 +24359,7 @@ Region = NTSC-J
 Serial = SLPM-65845
 Name   = Baldur's Gate: Dark Alliance II
 Region = NTSC-J
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLPM-65846
 Name   = Lord of the Rings, The - Uchitsu Kuni Daisanki
@@ -24690,6 +24780,7 @@ Region = NTSC-J
 Serial = SLPM-65958
 Name   = Burnout 3 - Takedown [EA Best Hits]
 Region = NTSC-J
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLPM-65959
 Name   = Standard Daisenryoku - Shiwareta Shouri
@@ -24905,6 +24996,7 @@ Serial = SLPM-66018
 Name   = Silent Hill 3 [Konami Dendou Collection]
 Region = NTSC-J
 MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
+vuClampMode = 2 // fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected)
 FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLPM-66019
@@ -25236,6 +25328,7 @@ Region = NTSC-J
 Serial = SLPM-66108
 Name   = Burnout Revenge
 Region = NTSC-J
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 MemCardFilter = SLAJ-25066/SLPM-66108/SLPM-66652/SLPM-65719/SLPM-65958/SLPM-66962/SLAJ-25053/SLPM-66204
 ---------------------------------------------
 Serial = SLPM-66109
@@ -25282,6 +25375,7 @@ Serial = SLPM-66124
 Name   = Final Fantasy X [Ultimate Hits]
 Region = NTSC-J
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SLPM-66125
 Name   = Final Fantasy X-2 [Ultimate Hits]
@@ -27194,6 +27288,7 @@ Region = NTSC-J
 Serial = SLPM-66652
 Name   = Burnout Revenge [EA Best Hits]
 Region = NTSC-J
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 MemCardFilter = SLAJ-25066/SLPM-66108/SLPM-66652/SLPM-65719/SLPM-65958/SLPM-66962/SLAJ-25053/SLPM-66204
 ---------------------------------------------
 Serial = SLPM-66653
@@ -27531,6 +27626,7 @@ Region = NTSC-J
 Serial = SLPM-66739
 Name   = Burnout Dominator
 Region = NTSC-J
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLPM-66740
 Name   = Sentou Kokka Kai - Legend [DX Pack]
@@ -27782,6 +27878,7 @@ Region = NTSC-J
 Serial = SLPM-66807
 Name   = Disney-Pixar's Remy no Oishii Restaurant (Ratatouille)
 Region = NTSC-J
+Comapt = 5
 ---------------------------------------------
 Serial = SLPM-66808
 Name   = Tom Clancy's Ghost Recon - Advanced Warfighter [Ubisoft the Best]
@@ -28356,6 +28453,7 @@ vuClampMode = 0
 Serial = SLPM-66962
 Name   = Burnout 3 - Takedown [EA-SY! 1980]
 Region = NTSC-J
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLPM-66963
 Name   = Medal of Honor - Frontline [EA-SY! 1980]
@@ -30354,7 +30452,7 @@ EETimingHack = 1		//Correct graphics after changing scene.
 Serial = SLPS-25026
 Name   = Dead or Alive 2 - Hardcore
 Region = NTSC-J
-Compat = 1
+Compat = 5 // The game only load with the EE set to interpreter + cache enable.
 ---------------------------------------------
 Serial = SLPS-25028
 Name   = Shutokou Battle 0
@@ -30438,6 +30536,7 @@ Name   = Final Fantasy X
 Region = NTSC-J
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SLPS-25051
 Name   = Missing Blue
@@ -30712,7 +30811,7 @@ Region = NTSC-J
 Serial = SLPS-25139
 Name   = Baldur's Gate: Dark Alliance
 Region = NTSC-J
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-25142
 Name   = Tiger Woods PGA Tour 2002
@@ -31045,6 +31144,12 @@ Compat = 5
 Serial = SLPS-25244
 Name   = Max Payne
 Region = NTSC-J
+// Apparently using these specific Game Fixes fixes the game from crashing and freezing.
+eeRoundMode = 0
+eeClampMode = 3
+vuRoundMode = 0
+vuClampMode = 3
+EETimingHack = 1 // Fixes crashes
 ---------------------------------------------
 Serial = SLPS-25245
 Name   = True Love Story - Summer Days and Yet
@@ -31072,6 +31177,14 @@ Region = NTSC-J
 Serial = SLPS-25251
 Name   = MVP Baseball 2003
 Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25252
+Name   = Star wars - Bounty Hunter
+Region = NTSC-J
+Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLPS-25254
 Name   = Enter the Matrix
@@ -31183,7 +31296,7 @@ Region = NTSC-J
 Serial = SLPS-25291
 Name   = Baldur's Gate: Dark Alliance [PCCW The Best]
 Region = NTSC-J
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-25292
 Name   = D-A - Black
@@ -33544,6 +33657,7 @@ Serial = SLPS-72501
 Name   = Final Fantasy X [Mega Hits]
 Region = NTSC-J
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SLPS-72502
 Name   = Tales of Destiny 2 [Mega Hits]
@@ -33877,6 +33991,7 @@ Region = NTSC-J
 Serial = SLPS-73406
 Name   = Dead or Alive 2 - Hardcore [PlayStation 2 The Best]
 Region = NTSC-J
+Compat = 5 // The game only load with the EE set to interpreter + cache enable.
 ---------------------------------------------
 Serial = SLPS-73407
 Name   = Sidewinder MAX [PlayStation 2 The Best]
@@ -34870,6 +34985,12 @@ Serial = SLUS-20230
 Name   = Max Payne
 Region = NTSC-U
 Compat = 5
+// Apparently using these specific Game Fixes fixes the game from crashing and freezing.
+eeRoundMode = 0
+eeClampMode = 3
+vuRoundMode = 0
+vuClampMode = 3
+EETimingHack = 1 // Fixes crashes
 ---------------------------------------------
 Serial = SLUS-20231
 Name   = Herdy Gerdy
@@ -35223,6 +35344,7 @@ Name   = Final Fantasy X
 Region = NTSC-U
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // Fix reverse control and boss in some places
 ---------------------------------------------
 Serial = SLUS-20313
 Name   = Wave Rally
@@ -35722,6 +35844,9 @@ Serial = SLUS-20420
 Name   = Star Wars - Bounty Hunter
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0
+vuClampMode = 3
+eeClampMode = 2	// fix missing/grey texture or geometry ingame
 ---------------------------------------------
 Serial = SLUS-20421
 Name   = Battlestar Galactica
@@ -36625,6 +36750,7 @@ Region = NTSC-U
 Compat = 5
 // reads Silent Hill 2 for easter egg
 MemCardFilter = SLUS-20622/SLUS-20228
+vuClampMode = 2 // fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected)
 FMVinSoftwareHack = 1 // avoids obscured FMVs due to GS upscaling lines and memory wrapping
 ---------------------------------------------
 Serial = SLUS-20623
@@ -37069,7 +37195,7 @@ Compat = 5
 Serial = SLUS-20721
 Name   = R Racing Evolution
 Region = NTSC-U
-Compat = 4
+Compat = 5
 ---------------------------------------------
 Serial = SLUS-20722
 Name   = Maximo vs. Army of Zin
@@ -37291,6 +37417,7 @@ Serial = SLUS-20763
 Name   = Beyond Good and Evil
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 0 // fix SPS with water in some places
 ---------------------------------------------
 Serial = SLUS-20764
 Name   = Bombastic
@@ -38704,6 +38831,7 @@ Serial = SLUS-21050
 Name   = Burnout 3 - Takedown
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLUS-21051
 Name   = FIFA 2005
@@ -39628,6 +39756,7 @@ Serial = SLUS-21242
 Name   = Burnout Revenge
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 // reads Burnout 3 and NFL 06 saves for unlockables
 MemCardFilter = SLUS-21242/SLUS-21050/SLUS-21213
 ---------------------------------------------
@@ -41653,7 +41782,8 @@ Compat = 5
 Serial = SLUS-21689
 Name   = Petz - Horsez 2
 Region = NTSC-U
-Compat = 4
+Compat = 5
+VIFFIFOHack = 1 // fix hang at loading screen
 ---------------------------------------------
 Serial = SLUS-21690
 Name   = Alone in the Dark
@@ -41896,7 +42026,7 @@ Compat = 5
 Serial = SLUS-21744
 Name   = NASCAR '09
 Region = NTSC-U
-Compat = 1
+Compat = 5 // The game only load with the EE set to interpreter + cache enable.
 ---------------------------------------------
 Serial = SLUS-21746
 Name   = Call Of Duty - World At War - Final Fronts
@@ -43160,6 +43290,7 @@ Region = NTSC-U
 Serial = SLUS-29082
 Name   = Beyond Good and Evil [Demo]
 Region = NTSC-U
+eeRoundMode = 0 // fix SPS with water in some places
 ---------------------------------------------
 Serial = SLUS-29083
 Name   = Maximo vs. The Army of Zin [Demo]
@@ -43239,6 +43370,7 @@ Region = NTSC-U
 Serial = SLUS-29113
 Name   = Burnout 3 [Demo]
 Region = NTSC-U
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLUS-29116
 Name   = WWE SmackDown! vs. RAW [Public Beta Vol.1.0]
@@ -43332,6 +43464,7 @@ Region = NTSC-U
 Serial = SLUS-29153
 Name   = Burnout Revenge [Demo]
 Region = NTSC-U
+vuClampMode = 0 //Fixes buggy lighting on certain objects
 ---------------------------------------------
 Serial = SLUS-29154
 Name   = NHL '06 [Demo]

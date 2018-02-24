@@ -194,8 +194,8 @@ class GSRendererCL : public GSRenderer
 		std::map<uint32, cl::Kernel> tile_map;
 		std::map<uint64, cl::Kernel> tfx_map;
 
-		cl::Kernel Build(const char* entry, ostringstream& opt);
-		void AddDefs(ostringstream& opt);
+		cl::Kernel Build(const char* entry, std::ostringstream& opt);
+		void AddDefs(std::ostringstream& opt);
 
 	public:
 		std::vector<OCLDeviceDesc> devs;
@@ -223,7 +223,7 @@ class GSRendererCL : public GSRenderer
 	};
 
 	CL m_cl;
-	std::list<shared_ptr<TFXJob>> m_jobs;
+	std::list<std::shared_ptr<TFXJob>> m_jobs;
 	uint32 m_vb_start;
 	uint32 m_vb_count;
 	uint32 m_pb_start;
@@ -231,8 +231,8 @@ class GSRendererCL : public GSRenderer
 	bool m_synced;
 
 	void Enqueue();
-	void EnqueueTFX(std::list<shared_ptr<TFXJob>>& jobs, uint32 bin_count, const cl_uchar4& bin_dim);
-	void JoinTFX(std::list<shared_ptr<TFXJob>>& jobs);
+	void EnqueueTFX(std::list<std::shared_ptr<TFXJob>>& jobs, uint32 bin_count, const cl_uchar4& bin_dim);
+	void JoinTFX(std::list<std::shared_ptr<TFXJob>>& jobs);
 	bool UpdateTextureCache(TFXJob* job);
 	void InvalidateTextureCache(TFXJob* job);
 	void UsePages(uint32* pages);

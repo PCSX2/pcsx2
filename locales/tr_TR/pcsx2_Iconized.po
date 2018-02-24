@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2016-08-15 15:18+0300\n"
+"PO-Revision-Date: 2017-07-22 14:07+0300\n"
 "Last-Translator: Ceyhun Özgöç <atiamar@hotmail.com>\n"
 "Language-Team: Ceyhun Özgöç (PyramidHead) <atiamar@hotmail.com>\n"
 "Language: tr_TR\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: C:/Users/Ceyhun/Downloads/PCSX2 SVN\n"
-"X-Generator: Poedit 1.8.8\n"
+"X-Generator: Poedit 2.0.2\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -44,6 +44,8 @@ msgstr ""
 msgid ""
 "Failed to read/write NMV/MEC file. Check your bios setup/permission settings"
 msgstr ""
+"NMV/MEC dosyası okunamadı/yazılamadı. BIOS kurulumunuzu veya izin "
+"ayarlarınızı kontrol edin"
 
 #: pcsx2/System.cpp:112
 msgid ""
@@ -71,7 +73,7 @@ msgid ""
 "have been disabled:"
 msgstr ""
 "Uyarı: Yapılandırılmış bazı PS2 derleyicileri başlatılamadı ve devre dışı "
-"bırakıldı."
+"bırakıldı:"
 
 #: pcsx2/gui/AppInit.cpp:206
 msgid ""
@@ -227,8 +229,8 @@ msgid ""
 "compresses memory cards very well (this option is highly recommended)."
 msgstr ""
 "NTFS sıkıştırma seçeneği yerleşiktir, hızlıdır ve tamamen güvenilirdir. "
-"Hafıza kartının diskte kapladığı boyutu oldukça azaltır. (bu seçenek "
-"önerilir.)"
+"Hafıza kartının diskte kapladığı boyutu oldukça azaltır (bu seçenek şiddetle "
+"önerilir)."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:39
 msgid ""
@@ -238,7 +240,7 @@ msgid ""
 msgstr ""
 "Kayıt konumlarının yüklenmesinden sonra oyunları kart içeriklerini yeniden "
 "dizinlemeleri konusunda zorlayarak hafıza kartı bozulmalarını önler. Tüm "
-"oyunlarla uyumlu olmayabilir. (Guitar Hero)"
+"oyunlarla uyumlu olmayabilir (Guitar Hero gibi)."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
 msgid ""
@@ -317,7 +319,7 @@ msgstr ""
 "Bilinen önemli oyun düzeltmeleri otomatik olarak uygulanır.\n"
 "\n"
 "--> Ayarları (seçili ön ayarı temel alarak) el ile yapmak için işareti "
-"kaldırın."
+"kaldırın"
 
 #: pcsx2/gui/IsoDropTarget.cpp:28
 msgid ""
@@ -375,7 +377,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:112
 msgid "Notice: Most games are fine with the default options. "
-msgstr "Not: Birçok oyun varsayılan ayarlarla çalışabilir."
+msgstr "Uyarı: Birçok oyun varsayılan ayarlarla çalışabilir. "
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:180
 msgid "Notice: Most games are fine with the default options."
@@ -392,7 +394,7 @@ msgid ""
 "with PCSX2's current usermode setting. "
 msgstr ""
 "Seçildiğinde bu klasör, PCSX2'nin şu anki ilişkilendirilmiş varsayılan "
-"kullanıcı modu ayarını otomatik olarak yansıtır."
+"kullanıcı modu ayarını otomatik olarak yansıtır. "
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:55
 msgid ""
@@ -619,67 +621,62 @@ msgstr ""
 "yapamıyorsanız İptal'i tıklayarak Yapılandırma panelini kapatın."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
 msgid ""
 "-3 - Reduces the EE's cyclerate to about 50%.  Big speedup, but *will* cause "
 "stuttering audio on many FMVs."
 msgstr ""
-"-2 - EE'nin döngü oranını %50 oranında azaltır. Ortalama hız artışı "
-"sağlamasına rağmen çoğu FMV videolarında seste takılmalara neden olur."
+"-3 - EE'nin döngü oranını %50 oranında azaltır. Büyük hız artışı sağlamasına "
+"rağmen çoğu FMV videolarında seste takılmalara neden olur."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
 msgid ""
 "-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"-2 - EE'nin döngü oranını %50 oranında azaltır. Ortalama hız artışı "
+"-2 - EE'nin döngü oranını %60 oranında azaltır. Ortalama hız artışı "
 "sağlamasına rağmen çoğu FMV videolarında seste takılmalara neden olur."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
 msgid ""
 "-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
-"-2 - EE'nin döngü oranını %33 oranında azaltır. Birçok oyunda hız artışı "
-"sağlar ve uyumluluğu yüksektir."
+"-1 - EE'nin döngü oranını %75 oranında azaltır. Birçok oyunda bir miktar hız "
+"artışı sağlar ve uyumluluğu yüksektir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:45
-#, fuzzy
 msgid ""
 "0 - Default cyclerate (100%). This closely matches the actual speed of a "
 "real PS2 EmotionEngine."
 msgstr ""
-"0 - Varsayılan döngü oranı. Gerçek PS2 EmotionEngine hızına oldukça yakındır."
+"0 - Varsayılan döngü oranı (%100). Gerçek PS2 EmotionEngine hızına oldukça "
+"yakındır."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
-#, fuzzy
 msgid ""
 "1 - Increases the EE's cyclerate to about 130%. Mildly increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
-"1 - EE'nin döngü oranını %33 oranında artırır. Donanım gereksinimlerini "
-"artırır ve oyun içi FPS oranını artırabilir."
+"1 - EE'nin döngü oranını %130 oranında artırır. Donanım gereksinimlerini bir "
+"miktar artırır ve oyun içi FPS oranını artırabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:55
-#, fuzzy
 msgid ""
 "2 - Increases the EE's cyclerate to about 180%. Increases hardware "
 "requirements, may noticeably increase in-game FPS."
 msgstr ""
-"1 - EE'nin döngü oranını %33 oranında artırır. Donanım gereksinimlerini "
-"artırır ve oyun içi FPS oranını artırabilir."
+"2 - EE'nin döngü oranını %180 oranında artırır. Donanım gereksinimlerini "
+"artırır ve oyun içi FPS oranını gözle görülür ölçüde artırabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:60
-#, fuzzy
 msgid ""
 "3 - Increases the EE's cyclerate to about 300%. Greatly increases hardware "
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
-"2 - EE'nin döngü oranını %50 oranında artırır. Donanım gereksinimlerini "
-"büyük oranda artırır ve oyun içi FPS oranını gözle görülür ölçüde artırır.\n"
+"2 - EE'nin döngü oranını %300 oranında artırır. Donanım gereksinimlerini "
+"büyük oranda artırır ve oyun içi FPS oranını gözle görülür ölçüde "
+"artırabilir.\n"
 "Bu ayar nedeniyle oyunlar BAŞLATILAMAYABİLİR."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:77
@@ -800,7 +797,7 @@ msgid ""
 "this. (Often marked as needing 'mode 1' or 'slow DVD'"
 msgstr ""
 "Bilinen sorunlu oyunlar listesini görmek için HDLoader uyumluluk listesine "
-"bakın. (Sorunlu oyunlar 'mode1' ya da 'slow DVD' olarak işaretlidir)"
+"bakın (Sorunlu oyunlar 'mode1' ya da 'slow DVD' olarak işaretlidir)."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:35
 msgid ""

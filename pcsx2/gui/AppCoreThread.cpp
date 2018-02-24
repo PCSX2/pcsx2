@@ -356,7 +356,7 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 	if( overrides.ProfilingMode )
 	{
 		fixup.GS.FrameLimitEnable = false;
-		fixup.GS.VsyncEnable = false;
+		fixup.GS.VsyncEnable = VsyncMode::Off;
 	}
 
 	wxString gameCRC;
@@ -458,13 +458,15 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 		}
 	}
 
+	// When we're booting, the bios loader will set a a title which would be more interesting than this
+	// to most users - with region, version, etc, so don't overwrite it with patch info. That's OK. Those
+	// users which want to know the status of the patches at the bios can check the console content.
 	wxString consoleTitle = gameName + gameSerial;
 	consoleTitle += L" [" + gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
 	if (ingame)
 		Console.SetTitle(consoleTitle);
-	// When we're booting, the bios loader will set a a title which would be more interesting than this
-	// to most users - with region, version, etc, so don't overwrite it with patch info. That's OK. Those
-	// users which want to know the status of the patches at the bios can check the console content.
+
+	gsUpdateFrequency(fixup);
 }
 
 // FIXME: This function is not for general consumption. Its only consumer (and
@@ -508,6 +510,9 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 	{
 		_parent::ApplySettings( fixup );
 	}
+
+	if (m_ExecMode >= ExecMode_Paused)
+		GSsetVsync(EmuConfig.GS.GetVsync());
 }
 
 // --------------------------------------------------------------------------------------

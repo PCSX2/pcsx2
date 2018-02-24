@@ -123,7 +123,7 @@ bool GSDumpLzma::Read(void* ptr, size_t size) {
 			Decompress();
 		}
 
-		size_t l = min(size, m_avail);
+		size_t l = std::min(size, m_avail);
 		memcpy(dst + off, m_area+m_start, l);
 		m_avail -= l;
 		size    -= l;
@@ -159,7 +159,7 @@ GSDumpRaw::GSDumpRaw(char* filename, const char* repack_filename) : GSDumpFile(f
 }
 
 bool GSDumpRaw::IsEof() {
-	return feof(m_fp);
+	return !!feof(m_fp);
 }
 
 bool GSDumpRaw::Read(void* ptr, size_t size) {

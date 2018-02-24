@@ -135,7 +135,11 @@ void JoystickConfiguration::InitJoystickConfiguration()
      * Prevent to use a none initialized value on s_vgamePad (core dump)
     */
     if (s_vgamePad.size() < m_pad_id + 1) {
-        wxMessageBox(L"No gamepad detected.");
+        if (s_vgamePad.empty())
+            wxMessageBox(L"No gamepad detected.");
+        else
+            wxMessageBox(L"No second gamepad detected.");
+
         // disable all checkbox
         if (m_isForLeftJoystick) {
             m_cb_reverse_Lx->Disable();

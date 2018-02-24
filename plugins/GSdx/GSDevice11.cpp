@@ -41,8 +41,10 @@ GSDevice11::GSDevice11()
 
 	if (theApp.GetConfigB("UserHacks")) {
 		UserHacks_unscale_pt_ln = theApp.GetConfigB("UserHacks_unscale_point_line");
+		UserHacks_disable_NV_hack = theApp.GetConfigB("UserHacks_DisableNVhack");
 	} else {
 		UserHacks_unscale_pt_ln = false;
+		UserHacks_disable_NV_hack = false;
 	}
 }
 
@@ -256,7 +258,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	int ShadeBoost_Brightness = theApp.GetConfigI("ShadeBoost_Brightness");
 	int ShadeBoost_Saturation = theApp.GetConfigI("ShadeBoost_Saturation");
 
-	string str[3];
+	std::string str[3];
 
 	str[0] = format("%d", ShadeBoost_Saturation);
 	str[1] = format("%d", ShadeBoost_Brightness);
@@ -432,6 +434,11 @@ void GSDevice11::SetExclusive(bool isExcl)
 	}
 }
 
+void GSDevice11::SetVSync(int vsync)
+{
+	m_vsync = vsync ? 1 : 0;
+}
+
 void GSDevice11::Flip()
 {
 	m_swapchain->Present(m_vsync, 0);
@@ -449,7 +456,7 @@ void GSDevice11::DrawIndexedPrimitive()
 
 void GSDevice11::DrawIndexedPrimitive(int offset, int count)
 {
-	ASSERT(offset + count <= m_index.count);
+	ASSERT(offset + count <= (int)m_index.count);
 
 	m_ctx->DrawIndexed(count, m_index.start + offset, m_vertex.start);
 }
@@ -1291,8 +1298,8 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		D3D11_VIEWPORT vp;
 		memset(&vp, 0, sizeof(vp));
 
-		vp.TopLeftX = (spritehack > 0 || isNative) ? 0.0f : -0.01f;
-		vp.TopLeftY = (spritehack > 0 || isNative) ? 0.0f : -0.01f;
+		vp.TopLeftX = (UserHacks_disable_NV_hack || spritehack > 0 || isNative) ? 0.0f : -0.01f;
+		vp.TopLeftY = (UserHacks_disable_NV_hack || spritehack > 0 || isNative) ? 0.0f : -0.01f;
 		vp.Width = (float)size.x;
 		vp.Height = (float)size.y;
 		vp.MinDepth = 0.0f;
@@ -1350,7 +1357,7 @@ void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, 
 {
 	HRESULT hr;
 
-	vector<D3D_SHADER_MACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 
@@ -1387,7 +1394,7 @@ void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, 
 {
 	HRESULT hr;
 
-	vector<D3D_SHADER_MACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 
@@ -1417,7 +1424,7 @@ void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, 
 {
 	HRESULT hr;
 
-	vector<D3D_SHADER_MACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 
@@ -1447,7 +1454,7 @@ void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, 
 {
 	HRESULT hr;
 
-	vector<D3D_SHADER_MACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 
@@ -1477,7 +1484,7 @@ void GSDevice11::CompileShader(const char* source, size_t size, const char *fn, 
 {
 	HRESULT hr;
 
-	vector<D3D_SHADER_MACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 

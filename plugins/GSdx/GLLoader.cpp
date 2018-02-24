@@ -266,13 +266,13 @@ namespace GLLoader {
 
 	bool s_first_load = true;
 
-	bool legacy_fglrx_buggy_driver = false;
-	bool fglrx_buggy_driver    = false;
-	bool mesa_buggy_driver     = false;
-	bool nvidia_buggy_driver   = false;
-	bool intel_buggy_driver    = false;
-	bool in_replayer           = false;
-	bool buggy_sso_dual_src    = false;
+	bool amd_legacy_buggy_driver = false;
+	bool vendor_id_amd      = false;
+	bool vendor_id_nvidia   = false;
+	bool vendor_id_intel    = false;
+	bool mesa_driver        = false;
+	bool in_replayer        = false;
+	bool buggy_sso_dual_src = false;
 
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
@@ -341,26 +341,31 @@ namespace GLLoader {
 
 		// Name changed but driver is still bad!
 		if (strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI Technologies Inc.") || strstr(vendor, "ATI"))
-			fglrx_buggy_driver = true;
-		if (fglrx_buggy_driver && (
-					strstr((const char*)&s[v], " 15.") || // Blacklist all 2015 AMD drivers.
-					strstr((const char*)&s[v], " 16.") || // Blacklist all 2016 AMD drivers.
-					strstr((const char*)&s[v], " 17.") // Blacklist all 2017 AMD drivers for now.
-					))
-			legacy_fglrx_buggy_driver = true;
-
+			vendor_id_amd = true;
+		/*if (vendor_id_amd && (
+				strstr((const char*)&s[v], " 10.") || // Blacklist all 2010 AMD drivers.
+				strstr((const char*)&s[v], " 11.") || // Blacklist all 2011 AMD drivers.
+				strstr((const char*)&s[v], " 12.") || // Blacklist all 2012 AMD drivers.
+				strstr((const char*)&s[v], " 13.") || // Blacklist all 2013 AMD drivers.
+				strstr((const char*)&s[v], " 14.") || // Blacklist all 2014 AMD drivers.
+				strstr((const char*)&s[v], " 15.") || // Blacklist all 2015 AMD drivers.
+				strstr((const char*)&s[v], " 16.") || // Blacklist all 2016 AMD drivers.
+				strstr((const char*)&s[v], " 17.") // Blacklist all 2017 AMD drivers for now.
+				))
+			amd_legacy_buggy_driver = true;
+		*/
 		if (strstr(vendor, "NVIDIA Corporation"))
-			nvidia_buggy_driver = true;
+			vendor_id_nvidia = true;
 
 #ifdef _WIN32
 		if (strstr(vendor, "Intel"))
-			intel_buggy_driver = true;
+			vendor_id_intel = true;
 #else
 		// On linux assumes the free driver if it isn't nvidia or amd pro driver
-		mesa_buggy_driver = !nvidia_buggy_driver && !fglrx_buggy_driver;
+		mesa_driver = !vendor_id_nvidia && !vendor_id_amd;
 #endif
 
-		buggy_sso_dual_src = intel_buggy_driver || fglrx_buggy_driver || legacy_fglrx_buggy_driver;
+		buggy_sso_dual_src = vendor_id_intel || vendor_id_amd /*|| amd_legacy_buggy_driver*/;
 
 		if (theApp.GetConfigI("override_geometry_shader") != -1) {
 			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");
@@ -385,7 +390,7 @@ namespace GLLoader {
 
 		if (glGetStringi && max_ext) {
 			for (GLint i = 0; i < max_ext; i++) {
-				string ext((const char*)glGetStringi(GL_EXTENSIONS, i));
+				std::string ext{(const char*)glGetStringi(GL_EXTENSIONS, i)};
 				// Bonus
 				if (ext.compare("GL_EXT_texture_filter_anisotropic") == 0) found_GL_EXT_texture_filter_anisotropic = true;
 				if (ext.compare("GL_NVX_gpu_memory_info") == 0) found_GL_NVX_gpu_memory_info = true;
@@ -442,25 +447,35 @@ namespace GLLoader {
 		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier");
 		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 
-		if (fglrx_buggy_driver) {
-			fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver.\n"
-			"Check out the link below for further information.\n"
-			"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
+		if (s_first_load) {
+			if (vendor_id_amd) {
+				fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver.\n"
+					"Check out the link below for further information.\n"
+					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
+			}
+
+			if (vendor_id_intel) {
+				fprintf(stderr, "The OpenGL renderer is inefficient on Intel GPUs due to an inefficient driver.\n"
+					"Check out the link below for further information.\n"
+					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know\n");
+			}
 		}
 
 		if (!found_GL_ARB_viewport_array) {
-			fprintf(stderr, "GL_ARB_viewport_array: not supported ! function pointer will be replaced\n");
 			glScissorIndexed   = ReplaceGL::ScissorIndexed;
 			glViewportIndexedf = ReplaceGL::ViewportIndexedf;
+			if (s_first_load)
+				fprintf(stderr, "GL_ARB_viewport_array is not supported! Function pointer will be replaced\n");
 		}
 
 		if (!found_GL_ARB_texture_barrier) {
-			fprintf(stderr, "GL_ARB_texture_barrier: not supported ! Rendering will be corrupted\n");
 			glTextureBarrier = ReplaceGL::TextureBarrier;
+			if (s_first_load)
+				fprintf(stderr, "GL_ARB_texture_barrier is not supported! Blending emulation will not be supported\n");
 		}
 
 #ifdef _WIN32
-		// Thanks you Intel to not provide support of basic feature on your iGPU
+		// Thank you Intel for not providing support of basic features on your IGPUs.
 		if (!found_GL_ARB_direct_state_access) {
 			Emulate_DSA::Init();
 		}

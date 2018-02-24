@@ -86,15 +86,12 @@ namespace Implementations
 		{
 			g_Conf->EmuOptions.GS.FrameLimitEnable = true;
 			g_LimiterMode = Limit_Turbo;
-			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.TurboScalar;
 			OSDlog( Color_StrongRed, true, "(FrameLimiter) Turbo + FrameLimit ENABLED." );
 			g_Conf->EmuOptions.GS.FrameSkipEnable = !!g_Conf->Framerate.SkipOnTurbo;
 		}
 		else if( g_LimiterMode == Limit_Turbo )
 		{
-			GSsetVsync( g_Conf->EmuOptions.GS.VsyncEnable );
 			g_LimiterMode = Limit_Nominal;
-			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
 
 			if ( g_Conf->Framerate.SkipOnLimit)
 			{
@@ -109,9 +106,7 @@ namespace Implementations
 		}
 		else
 		{
-			GSsetVsync( false );
 			g_LimiterMode = Limit_Turbo;
-			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.TurboScalar;
 
 			if ( g_Conf->Framerate.SkipOnTurbo)
 			{
@@ -124,6 +119,9 @@ namespace Implementations
 				g_Conf->EmuOptions.GS.FrameSkipEnable = false;
 			}
 		}
+
+		gsUpdateFrequency(g_Conf->EmuOptions);
+
 		pauser.AllowResume();
 	}
 
@@ -136,20 +134,20 @@ namespace Implementations
 		// out a better consistency approach... -air
 
 		ScopedCoreThreadPause pauser;
-		GSsetVsync( g_Conf->EmuOptions.GS.VsyncEnable );
 		if( g_LimiterMode == Limit_Slomo )
 		{
 			g_LimiterMode = Limit_Nominal;
-			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
 			OSDlog( Color_StrongRed, true, "(FrameLimiter) SlowMotion DISABLED." );
 		}
 		else
 		{
 			g_LimiterMode = Limit_Slomo;
-			g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.SlomoScalar;
 			OSDlog( Color_StrongRed, true, "(FrameLimiter) SlowMotion ENABLED." );
 			g_Conf->EmuOptions.GS.FrameLimitEnable = true;
 		}
+
+		gsUpdateFrequency(g_Conf->EmuOptions);
+
 		pauser.AllowResume();
 	}
 
@@ -157,8 +155,11 @@ namespace Implementations
 	{
 		ScopedCoreThreadPause pauser;
 		g_Conf->EmuOptions.GS.FrameLimitEnable = !g_Conf->EmuOptions.GS.FrameLimitEnable;
-		GSsetVsync( g_Conf->EmuOptions.GS.FrameLimitEnable && g_Conf->EmuOptions.GS.VsyncEnable );
 		OSDlog( Color_StrongRed, true, "(FrameLimiter) %s.", g_Conf->EmuOptions.GS.FrameLimitEnable ? "ENABLED" : "DISABLED" );
+
+		// Turbo/Slowmo don't make sense when framelimiter is toggled
+		g_LimiterMode = Limit_Nominal;
+
 		pauser.AllowResume();
 	}
 
@@ -371,7 +372,7 @@ namespace Implementations
 		// FIXME: Some of the trace logs will require recompiler resets to be activated properly.
 #ifdef PCSX2_DEVBUILD		
 		SetTraceConfig().Enabled = !EmuConfig.Trace.Enabled;
-		GSprintf(10, const_cast<char*>(EmuConfig.Trace.Enabled ? "Logging Enabled." : "Logging Disabled."));
+		Console.WriteLn(EmuConfig.Trace.Enabled ? "Logging Enabled." : "Logging Disabled.");
 #endif
 	}
 

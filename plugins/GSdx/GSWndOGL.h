@@ -30,17 +30,22 @@ class GSWndOGL final : public GSWndGL
 	Window     m_NativeWindow;
 	Display*   m_NativeDisplay;
 	GLXContext m_context;
+	bool       m_has_late_vsync;
 
 	PFNGLXSWAPINTERVALEXTPROC  m_swapinterval_ext;
 	PFNGLXSWAPINTERVALMESAPROC m_swapinterval_mesa;
 
+	void PopulateWndGlFunction();
 	void CreateContext(int major, int minor);
+
+	void SetSwapInterval();
+	bool HasLateVsyncSupport() { return m_has_late_vsync; }
 
 public:
 	GSWndOGL();
 	virtual ~GSWndOGL() {};
 
-	bool Create(const string& title, int w, int h);
+	bool Create(const std::string& title, int w, int h);
 	bool Attach(void* handle, bool managed = true);
 	void Detach();
 
@@ -57,7 +62,6 @@ public:
 	void Hide();
 	void HideFrame();
 	void Flip();
-	void SetVSync(bool enable);
 };
 
 #endif

@@ -38,8 +38,8 @@ protected:
 		VALUE f;
 	};
 
-	hash_map<KEY, VALUE> m_map;
-	hash_map<KEY, ActivePtr*> m_map_active;
+	std::unordered_map<KEY, VALUE> m_map;
+	std::unordered_map<KEY, ActivePtr*> m_map_active;
 
 	ActivePtr* m_active;
 
@@ -60,15 +60,15 @@ public:
 	{
 		m_active = NULL;
 
-		typename hash_map<KEY, ActivePtr*>::iterator i = m_map_active.find(key);
+		auto it = m_map_active.find(key);
 
-		if(i != m_map_active.end())
+		if(it != m_map_active.end())
 		{
-			m_active = i->second;
+			m_active = it->second;
 		}
 		else
 		{
-			typename hash_map<KEY, VALUE>::iterator i = m_map.find(key);
+			auto i = m_map.find(key);
 
 			ActivePtr* p = new ActivePtr();
 
@@ -108,11 +108,9 @@ public:
 	{
 		uint64 ttpf = 0;
 
-		typename hash_map<KEY, ActivePtr*>::iterator i;
-
-		for(i = m_map_active.begin(); i != m_map_active.end(); ++i)
+		for(const auto &i : m_map_active)
 		{
-			ActivePtr* p = i->second;
+			ActivePtr* p = i.second;
 
 			if(p->frames)
 			{
@@ -122,10 +120,10 @@ public:
 
 		printf("GS stats\n");
 
-		for(i = m_map_active.begin(); i != m_map_active.end(); ++i)
+		for (const auto &i : m_map_active)
 		{
-			KEY key = i->first;
-			ActivePtr* p = i->second;
+			KEY key = i.first;
+			ActivePtr* p = i.second;
 
 			if(p->frames && ttpf)
 			{
@@ -159,9 +157,9 @@ public:
 template<class CG, class KEY, class VALUE>
 class GSCodeGeneratorFunctionMap : public GSFunctionMap<KEY, VALUE>
 {
-	string m_name;
+	std::string m_name;
 	void* m_param;
-	hash_map<uint64, VALUE> m_cgmap;
+	std::unordered_map<uint64, VALUE> m_cgmap;
 	GSCodeBuffer m_cb;
 	size_t m_total_code_size;
 
@@ -186,7 +184,7 @@ public:
 	{
 		VALUE ret = NULL;
 
-		typename hash_map<uint64, VALUE>::iterator i = m_cgmap.find(key);
+		auto i = m_cgmap.find(key);
 
 		if(i != m_cgmap.end())
 		{
@@ -219,7 +217,7 @@ public:
 
 			// if(iJIT_IsProfilingActive()) // always > 0
 			{
-				string name = format("%s<%016llx>()", m_name.c_str(), (uint64)key);
+				std::string name = format("%s<%016llx>()", m_name.c_str(), (uint64)key);
 
 				iJIT_Method_Load ml;
 

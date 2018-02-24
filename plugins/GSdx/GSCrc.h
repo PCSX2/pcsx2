@@ -27,12 +27,15 @@ public:
 	enum Title
 	{
 		NoTitle,
+		AceCombatZero,
 		AceCombat4,
+		AceCombat5,
 		ArTonelico2,
 		BigMuthaTruckers,
 		Black,
 		BlackHawkDown,
 		BleachBladeBattlers,
+		BrianLaraInternationalCricket,
 		Bully,
 		BullyCC,
 		BurnoutDominator,
@@ -44,10 +47,13 @@ public:
 		Clannad,
 		CrashBandicootWoC,
 		CrashNburn,
+		DarkCloud,
 		DBZBT2,
 		DBZBT3,
 		DeathByDegreesTekkenNinaWilliams,
 		DemonStone,
+		DestroyAllHumans,
+		DestroyAllHumans2,
 		DevilMayCry3,
 		Dororo,
 		DuelSaviorDestiny,
@@ -56,6 +62,9 @@ public:
 		FFX,
 		FFX2,
 		FFXII,
+		FIFA03,
+		FIFA04,
+		FIFA05,
 		FightingBeautyWulong,
 		FinalFightStreetwise,
 		FrontMission5,
@@ -90,6 +99,7 @@ public:
 		Kunoichi,
 		KyuuketsuKitanMoonties,
 		Lamune,
+		LegacyOfKainDefiance,
 		LegoBatman,
 		LordOfTheRingsThirdAge,
 		LordOfTheRingsTwoTowers,
@@ -109,8 +119,14 @@ public:
 		Onimusha3,
 		PiaCarroteYoukosoGPGakuenPrincess,
 		RadiataStories,
+		RatchetAndClank,
+		RatchetAndClank2,
+		RatchetAndClank3,
+		RatchetAndClank4,
+		RatchetAndClank5,
 		RedDeadRevolver,
 		ResidentEvil4,
+		RickyPontingInternationalCricket,
 		RozenMaidenGebetGarden,
 		SacredBlaze,
 		SakuraTaisen,
@@ -137,6 +153,7 @@ public:
 		SoTC,
 		SoulCalibur2,
 		SoulCalibur3,
+		SoulReaver2,
 		Spartan,
 		SpyroEternalNight,
 		SpyroNewBeginning,
@@ -159,6 +176,7 @@ public:
 		TombRaiderAnniversary,
 		TombRaiderLegend,
 		TombRaiderUnderworld,
+		TribesAerialAssault,
 		TomoyoAfter,
 		TouristTrophy,
 		UltramanFightingEvolution,
@@ -166,6 +184,7 @@ public:
 		ValkyrieProfile2,
 		VF4,
 		VF4EVO,
+		Whiplash,
 		WildArms4,
 		WildArms5,
 		XE3,
@@ -209,7 +228,7 @@ public:
 
 private:
 	static Game m_games[];
-	static map<uint32, Game*> m_map;
+	static std::map<uint32, Game*> m_map;
 
 public:
 	static Game Lookup(uint32 crc);

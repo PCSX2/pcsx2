@@ -18,17 +18,15 @@ linux_32_before_install() {
 	if [ "${CXX}" = "clang++" ]; then
 		sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
 		sudo add-apt-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-${VERSION} main"
-		# g++-4.9-multilib is necessary for compiler dependencies. 4.8 currently
-		# has dependency issues, but 4.9 from the toolchain repo seems to work
-		# fine, so let's just use that.
-		COMPILER_PACKAGE="clang-${VERSION} g++-4.9-multilib clang-format-${VERSION}"
+		# g++-x-multilib is necessary for compiler dependencies.
+		COMPILER_PACKAGE="clang-${VERSION} g++-7-multilib clang-format-${VERSION}"
 	fi
 	if [ "${CXX}" = "g++" ]; then
-		COMPILER_PACKAGE="g++-${VERSION}-multilib"
+		# python:i386 is required to avoid dependency issues for gcc-4.9 and
+		# gcc-7. It causes issues with clang-format though, so the dependency is
+		# only specified for gcc.
+		COMPILER_PACKAGE="g++-${VERSION}-multilib python:i386"
 	fi
-
-	# apt-get update fails because Chrome is 64-bit only.
-	sudo rm -f /etc/apt/sources.list.d/google-chrome.list
 
 	sudo apt-get -qq update
 
@@ -41,19 +39,23 @@ linux_32_before_install() {
 		gir1.2-gdkpixbuf-2.0:i386 \
 		gir1.2-glib-2.0:i386 \
 		libcairo2-dev:i386 \
+		libegl1-mesa-dev:i386 \
 		libgdk-pixbuf2.0-dev:i386 \
 		libgirepository-1.0-1:i386 \
 		libglib2.0-dev:i386 \
 		libaio-dev:i386 \
 		libasound2-dev:i386 \
 		libgl1-mesa-dev:i386 \
+		libglu1-mesa-dev:i386 \
 		libgtk2.0-dev:i386 \
 		liblzma-dev:i386 \
+		libpango1.0-dev:i386 \
 		libpng12-dev:i386 \
 		libsdl2-dev:i386 \
 		libsoundtouch-dev:i386 \
 		libwxgtk3.0-dev:i386 \
 		libxext-dev:i386 \
+		libxft-dev:i386 \
 		portaudio19-dev:i386 \
 		zlib1g-dev:i386 \
 		${COMPILER_PACKAGE}
@@ -105,6 +107,7 @@ linux_64_before_install() {
 	sudo apt-get -y install \
 		libaio-dev \
 		libasound2-dev \
+		libegl1-mesa-dev \
 		libgtk2.0-dev \
 		libpng12-dev \
 		libsdl2-dev \

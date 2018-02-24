@@ -153,6 +153,10 @@ void GSWndEGL::DetachContext()
 	}
 }
 
+void GSWndEGL::PopulateWndGlFunction()
+{
+}
+
 void GSWndEGL::BindAPI()
 {
 	eglBindAPI(EGL_OPENGL_API);
@@ -171,11 +175,7 @@ bool GSWndEGL::Attach(void* handle, bool managed)
 
 	OpenEGLDisplay();
 
-	CreateContext(3, 3);
-
-	AttachContext();
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	return true;
 }
@@ -196,7 +196,7 @@ void GSWndEGL::Detach()
 	DestroyNativeResources();
 }
 
-bool GSWndEGL::Create(const string& title, int w, int h)
+bool GSWndEGL::Create(const std::string& title, int w, int h)
 {
 	if(w <= 0 || h <= 0) {
 		w = theApp.GetConfigI("ModeWidth");
@@ -209,11 +209,7 @@ bool GSWndEGL::Create(const string& title, int w, int h)
 
 	m_native_window = CreateNativeWindow(w, h);
 
-	CreateContext(3, 3);
-
-	AttachContext();
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	return true;
 }
@@ -239,15 +235,18 @@ GSVector4i GSWndEGL::GetClientRect()
 	return GSVector4i(0, 0, w, h);
 }
 
-void GSWndEGL::SetVSync(bool enable)
+void GSWndEGL::SetSwapInterval()
 {
 	// 0 -> disable vsync
 	// n -> wait n frame
-	eglSwapInterval(m_eglDisplay, enable);
+	eglSwapInterval(m_eglDisplay, m_vsync);
 }
 
 void GSWndEGL::Flip()
 {
+	if (m_vsync_change_requested.exchange(false))
+		SetSwapInterval();
+
 	eglSwapBuffers(m_eglDisplay, m_eglSurface);
 }
 

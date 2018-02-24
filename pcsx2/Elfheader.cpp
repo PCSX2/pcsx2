@@ -323,8 +323,8 @@ int GetPS2ElfName( wxString& name )
 			const ParsedAssignmentString parts( original );
 
 			if( parts.lvalue.IsEmpty() && parts.rvalue.IsEmpty() ) continue;
-			if( parts.rvalue.IsEmpty() )
-			{
+			if( parts.rvalue.IsEmpty() && file.getLength() != file.getSeekPos() )
+			{ // Some games have a character on the last line of the file, don't print the error in those cases.
 				Console.Warning( "(SYSTEM.CNF) Unusual or malformed entry in SYSTEM.CNF ignored:" );
 				Console.Indent().WriteLn( original );
 				continue;

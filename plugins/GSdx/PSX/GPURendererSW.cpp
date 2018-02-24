@@ -71,7 +71,7 @@ void GPURendererSW::Draw()
 {
 	GPUDrawScanline::SharedData* sd = new GPUDrawScanline::SharedData();
 
-	shared_ptr<GSRasterizerData> data(sd);
+	std::shared_ptr<GSRasterizerData> data(sd);
 
 	GPUScanlineGlobalData& gd = sd->global;
 
@@ -118,8 +118,8 @@ void GPURendererSW::Draw()
 
 	data->scissor.left = (int)m_env.DRAREATL.X << m_scale.x;
 	data->scissor.top = (int)m_env.DRAREATL.Y << m_scale.y;
-	data->scissor.right = min((int)(m_env.DRAREABR.X + 1) << m_scale.x, m_mem.GetWidth());
-	data->scissor.bottom = min((int)(m_env.DRAREABR.Y + 1) << m_scale.y, m_mem.GetHeight());
+	data->scissor.right = std::min((int)(m_env.DRAREABR.X + 1) << m_scale.x, m_mem.GetWidth());
+	data->scissor.bottom = std::min((int)(m_env.DRAREABR.Y + 1) << m_scale.y, m_mem.GetHeight());
 	
 	data->buff = (uint8*)_aligned_malloc(sizeof(GSVertexSW) * m_count, 32);
 	data->vertex = (GSVertexSW*)data->buff;

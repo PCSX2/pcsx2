@@ -205,6 +205,22 @@ void WriteSettings()
     DebugConfig::WriteSettings();
 }
 
+void CheckOutputModule(HWND window)
+{
+    OutputModule = SendMessage(GetDlgItem(window, IDC_OUTPUT), CB_GETCURSEL, 0, 0);
+    const bool IsConfigurable =
+        mods[OutputModule] == PortaudioOut ||
+        mods[OutputModule] == WaveOut ||
+        mods[OutputModule] == DSoundOut;
+
+    const bool AudioExpansion =
+        mods[OutputModule] == XAudio2Out ||
+        mods[OutputModule] == PortaudioOut;
+
+    EnableWindow(GetDlgItem(window, IDC_OUTCONF), IsConfigurable);
+    EnableWindow(GetDlgItem(window, IDC_SPEAKERS), AudioExpansion);
+}
+
 BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     int wmId, wmEvent;
@@ -262,6 +278,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             swprintf_s(temp, L"%d%%", configvol);
             SetWindowText(GetDlgItem(hWnd, IDC_VOLUME_LABEL), temp);
 
+            CheckOutputModule(hWnd);
+
             EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_SOUNDTOUCH), (SynchMode == 0));
             EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_DEBUG), DebugEnabled);
 
@@ -292,6 +310,12 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 case IDCANCEL:
                     EndDialog(hWnd, 0);
+                    break;
+
+                case IDC_OUTPUT:
+                    if (wmEvent == CBN_SELCHANGE) {
+                        CheckOutputModule(hWnd);
+                    }
                     break;
 
                 case IDC_OUTCONF: {
@@ -350,20 +374,18 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             wmEvent = LOWORD(wParam);
             HWND hwndDlg = (HWND)lParam;
 
-            // TB_THUMBTRACK passes the curpos in wParam.  Other messages
-            // have to use TBM_GETPOS, so they will override this assignment (see below)
-
             int curpos = HIWORD(wParam);
 
             switch (wmEvent) {
-                //case TB_ENDTRACK:
-                //case TB_THUMBPOSITION:
                 case TB_LINEUP:
                 case TB_LINEDOWN:
                 case TB_PAGEUP:
                 case TB_PAGEDOWN:
+                case TB_TOP:
+                case TB_BOTTOM:
                     curpos = (int)SendMessage(hwndDlg, TBM_GETPOS, 0, 0);
 
+                case TB_THUMBPOSITION:
                 case TB_THUMBTRACK:
                     Clampify(curpos,
                              (int)SendMessage(hwndDlg, TBM_GETRANGEMIN, 0, 0),

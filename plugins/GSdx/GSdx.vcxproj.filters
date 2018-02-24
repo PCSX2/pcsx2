@@ -581,6 +581,9 @@
     <ClInclude Include="boost_spsc_queue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GSFastList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="GSThread_CXX11.h">
       <Filter>Header Files</Filter>
     </ClInclude>

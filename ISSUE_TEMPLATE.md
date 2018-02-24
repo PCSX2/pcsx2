@@ -1,14 +1,14 @@
 ***PCSX2 version:***
 ``(For example, stable build v1.4.0 (or) development builds v1.5.xxx)``
 
-- **Note**: It's preferred to only report bugs which are present on the [latest development builds](http://pcsx2.net/download/development.html).
-
-- **Note2**: The new backwards compatibility (psx) mode is in active development. Issue reports are too early at this point.
+- **Notes**:
+  - It's preferred to only report bugs which are present on the [latest development builds](http://pcsx2.net/download/development.html).
+  - The PSX backward compatibility mode is still in its early stage of development. Issue reports are too early at this point.
 
 ***PCSX2 options:***
 ``(For example, Clamping/Rounding, Speedhacks, GameFixes)``
 
-- **Note**: Generally it's recommended to have settings as default as possible and use the ``Safest`` preset along with MTVU speed hack disabled. If there's no issue with these settings but there is an issue with some other non-default option, then please state it explicitly.
+- **Note**: Generally it's recommended to have settings as default as possible and use the ``Safest`` preset. If there's no issue with these settings but there is an issue with some other non-default option, then please state it explicitly.
 
 
 ***Plugins used:***

@@ -149,14 +149,14 @@ namespace GSDumpGUI
         public void GSConfig()
         {
             if (!Loaded)
-                throw new Exception("GSDX is not loaded");
+                throw new Exception("GSdx is not loaded");
             gsConfigure.Invoke();
         }
 
         public String PSEGetLibName()
         {
             if (!Loaded)
-                throw new Exception("GSDX is not loaded");
+                throw new Exception("GSdx is not loaded");
             return Marshal.PtrToStringAnsi(PsegetLibName.Invoke());
         }
 

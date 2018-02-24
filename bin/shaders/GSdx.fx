@@ -17,7 +17,6 @@
 
 #ifndef SHADER_MODEL
 #define GLSL 1
-#extension GL_ARB_gpu_shader5 : enable
 #else
 #define GLSL 0
 #endif
@@ -49,6 +48,7 @@ in SHADER
 {
     vec4 p;
     vec2 t;
+    vec4 c;
 } PSin;
 
 layout(location = 0) out vec4 SV_Target0;

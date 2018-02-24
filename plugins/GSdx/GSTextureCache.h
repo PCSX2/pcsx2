@@ -22,6 +22,7 @@
 #pragma once
 
 #include "GSRenderer.h"
+#include "GSFastList.h"
 #include "GSDirtyRect.h"
 
 class GSTextureCache
@@ -66,14 +67,14 @@ public:
 		bool m_complete;
 		bool m_repeating;
 		bool m_spritehack_t;
-		vector<GSVector2i>* m_p2t;
+		std::vector<GSVector2i>* m_p2t;
 		// Keep a trace of the target origin. There is no guarantee that pointer will
 		// still be valid on future. However it ought to be good when the source is created
 		// so it can be used to access un-converted data for the current draw call.
 		GSTexture* m_from_target;
 		GIFRegTEX0 m_layer_TEX0[7]; // Detect already loaded value
-		// Keep an GSTextureCache::m_map iterator to allow fast erase
-		std::array<std::list<Source*>::iterator, MAX_PAGES> m_erase_it;
+		// Keep a GSTextureCache::SourceMap::m_map iterator to allow fast erase
+		std::array<uint16, MAX_PAGES> m_erase_it;
 		uint32* m_pages_as_bit;
 
 	public:
@@ -107,8 +108,8 @@ public:
 	class SourceMap
 	{
 	public:
-		hash_set<Source*> m_surfaces;
-		std::list<Source*> m_map[MAX_PAGES];
+		std::unordered_set<Source*> m_surfaces;
+		std::array<FastList<Source*>, MAX_PAGES> m_map;
 		uint32 m_pages[16]; // bitmap of all pages
 		bool m_used;
 
@@ -123,12 +124,13 @@ public:
 protected:
 	GSRenderer* m_renderer;
 	SourceMap m_src;
-	std::list<Target*> m_dst[2];
+	FastList<Target*> m_dst[2];
 	bool m_paltex;
 	int m_spritehack;
 	bool m_preload_frame;
 	uint8* m_temp;
 	bool m_can_convert_depth;
+	bool m_cpu_fb_conversion;
 	CRCHackLevel m_crc_hack_level;
 	static bool m_disable_partial_invalidation;
 	bool m_texture_inside_rt;

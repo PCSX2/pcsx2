@@ -45,13 +45,13 @@ public:
 
 	INT_PTR DoModal();
 
-	string GetText(UINT id);
+	std::string GetText(UINT id);
 	int GetTextAsInt(UINT id);
 
 	void SetText(UINT id, const char* str);
 	void SetTextAsInt(UINT id, int i);
 
-	void ComboBoxInit(UINT id, const vector<GSSetting>& settings, int32_t selectionValue, int32_t maxValue = INT32_MAX);
+	void ComboBoxInit(UINT id, const std::vector<GSSetting>& settings, int32_t selectionValue, int32_t maxValue = INT32_MAX);
 	int ComboBoxAppend(UINT id, const char* str, LPARAM data = 0, bool select = false);
 	bool ComboBoxGetSelData(UINT id, INT_PTR& data);
 	void ComboBoxFixDroppedWidth(UINT id);

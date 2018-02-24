@@ -474,6 +474,10 @@ GSVector4i GSState::GetDisplayRect(int i)
 
 GSVector4i GSState::GetFrameRect(int i)
 {
+	// If no specific context is requested then pass the merged rectangle as return value
+	if (i == -1)
+		return GetFrameRect(0).runion(GetFrameRect(1));
+
 	GSVector4i rectangle = GetDisplayRect(i);
 
 	int w = rectangle.width();
@@ -500,11 +504,17 @@ GSVector4i GSState::GetFrameRect(int i)
 
 int GSState::GetFramebufferHeight()
 {
-	const GSVector4i output[2] = { GetFrameRect(0), GetFrameRect(1) };
 	// Framebuffer height is 11 bits max according to GS user manual
 	const int height_limit = (1 << 11);
+	const GSVector4i output[2] = { GetFrameRect(0), GetFrameRect(1) };
+	const GSVector4i merged_output = output[0].runion(output[1]);
+
 	int max_height = std::max(output[0].height(), output[1].height());
-	int frame_memory_height = std::max(max_height, output[0].runion_ordered(output[1]).height() % height_limit);
+	// DBY isn't an offset to the frame memory but rather an offset to read output circuit inside
+	// the frame memory, hence the top offset should also be calculated for the total height of the
+	// frame memory. Also we need to wrap the value only when we're dealing with values with range of the
+	// frame memory (offset + read output circuit height, IOW bottom of merged_output)
+	int frame_memory_height = std::max(max_height, merged_output.bottom % height_limit);
 
 	if (frame_memory_height > 1024)
 		GL_PERF("Massive framebuffer height detected! (height:%d)", frame_memory_height);
@@ -1543,7 +1553,7 @@ void GSState::FlushWrite()
 	*/
 /*
 	static int n = 0;
-	string s;
+	std::string s;
 	s = format("c:\\temp1\\[%04d]_%05x_%d_%d_%d_%d_%d_%d.bmp",
 		n++, (int)m_env.BITBLTBUF.DBP, (int)m_env.BITBLTBUF.DBW, (int)m_env.BITBLTBUF.DPSM,
 		r.left, r.top, r.right, r.bottom);
@@ -1740,7 +1750,7 @@ void GSState::Write(const uint8* mem, int len)
 
 		/*
 		static int n = 0;
-		string s;
+		std::string s;
 		s = format("c:\\temp1\\[%04d]_%05x_%d_%d_%d_%d_%d_%d.bmp",
 			n++, (int)blit.DBP, (int)blit.DBW, (int)blit.DPSM,
 			r.left, r.top, r.right, r.bottom);
@@ -1821,7 +1831,7 @@ void GSState::Read(uint8* mem, int len)
 	m_mem.ReadImageX(m_tr.x, m_tr.y, mem, len, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
 
 	if(s_dump && s_save && s_n >= s_saven) {
-		string s= m_dump_root + format("%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
+		std::string s = m_dump_root + format("%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
 				s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM,
 				r.left, r.top, r.right, r.bottom);
 		m_mem.SaveBMP(s, m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM, r.right, r.bottom);
@@ -2240,7 +2250,7 @@ template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 			case GIF_FLG_IMAGE:
 
 				{
-					int len = (int)min(size, path.nloop);
+					int len = (int)std::min(size, path.nloop);
 
 					//ASSERT(!(len&3));
 
@@ -2954,8 +2964,8 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 			// This commented code cannot be used directly because it needs uv before the intersection
 			/*if (uv_.x >> tw == uv_.z >> tw)
 			{
-				vr.x = max(vr.x, (uv_.x & ((1 << tw) - 1)));
-				vr.z = min(vr.z, (uv_.z & ((1 << tw) - 1)) + 1);
+				vr.x = std::max(vr.x, (uv_.x & ((1 << tw) - 1)));
+				vr.z = std::min(vr.z, (uv_.z & ((1 << tw) - 1)) + 1);
 			}*/
 			if(mask & 0x000f) {if(vr.x < u.x) vr.x = u.x; if(vr.z > u.z + 1) vr.z = u.z + 1;}
 			break;
@@ -3047,8 +3057,8 @@ void GSState::GetAlphaMinMax()
 			a.w = env.TEXA.TA0;
 			break;
 		case 2:
-			a.y = env.TEXA.AEM ? 0 : min(env.TEXA.TA0, env.TEXA.TA1);
-			a.w = max(env.TEXA.TA0, env.TEXA.TA1);
+			a.y = env.TEXA.AEM ? 0 : std::min(env.TEXA.TA0, env.TEXA.TA1);
+			a.w = std::max(env.TEXA.TA0, env.TEXA.TA1);
 			break;
 		case 3:
 			m_mem.m_clut.GetAlphaMinMax32(a.y, a.w);

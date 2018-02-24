@@ -25,7 +25,6 @@ EXPORTS
 	GSmakeSnapshot			@20
 	GSmakeSnapshot2			@21
 	GSirqCallback			@22
-	GSprintf				@23
 	GSsetBaseMem			@24
 	GSsetGameCRC			@25
 	GSsetFrameSkip			@26

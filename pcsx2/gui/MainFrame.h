@@ -168,6 +168,7 @@ protected:
 	void Menu_ResetAllSettings_Click(wxCommandEvent &event);
 
 	void Menu_IsoBrowse_Click(wxCommandEvent &event);
+	void Menu_IsoClear_Click(wxCommandEvent &event);
 	void Menu_EnableBackupStates_Click(wxCommandEvent &event);
 	void Menu_EnablePatches_Click(wxCommandEvent &event);
 	void Menu_EnableCheats_Click(wxCommandEvent &event);
@@ -195,6 +196,7 @@ protected:
 	void Menu_Debug_MemoryDump_Click(wxCommandEvent &event);
 	void Menu_Debug_Logging_Click(wxCommandEvent &event);
 	void Menu_Debug_CreateBlockdump_Click(wxCommandEvent &event);
+	void Menu_Ask_On_Boot_Click(wxCommandEvent &event);
 
 	void Menu_ShowConsole(wxCommandEvent &event);
 	void Menu_ChangeLang(wxCommandEvent &event);

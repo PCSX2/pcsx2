@@ -498,9 +498,9 @@ GSLocalMemory::~GSLocalMemory()
 	for(auto &i : m_pomap) _aligned_free(i.second);
 	for(auto &i : m_po4map) _aligned_free(i.second);
 
-	for(hash_map<uint64, vector<GSVector2i>*>::iterator i = m_p2tmap.begin(); i != m_p2tmap.end(); ++i)
+	for(auto &i : m_p2tmap)
 	{
-		delete [] i->second;
+		delete [] i.second;
 	}
 }
 
@@ -508,7 +508,7 @@ GSOffset* GSLocalMemory::GetOffset(uint32 bp, uint32 bw, uint32 psm)
 {
 	uint32 hash = bp | (bw << 14) | (psm << 20);
 
-	hash_map<uint32, GSOffset*>::iterator i = m_omap.find(hash);
+	auto i = m_omap.find(hash);
 
 	if(i != m_omap.end())
 	{
@@ -539,11 +539,11 @@ GSPixelOffset* GSLocalMemory::GetPixelOffset(const GIFRegFRAME& FRAME, const GIF
 
 	uint32 hash = (FRAME.FBP << 0) | (ZBUF.ZBP << 9) | (bw << 18) | (fpsm_hash << 24) | (zpsm_hash << 28);
 
-	hash_map<uint32, GSPixelOffset*>::iterator i = m_pomap.find(hash);
+	auto it = m_pomap.find(hash);
 
-	if(i != m_pomap.end())
+	if(it != m_pomap.end())
 	{
-		return i->second;
+		return it->second;
 	}
 
 	GSPixelOffset* off = (GSPixelOffset*)_aligned_malloc(sizeof(GSPixelOffset), 32);
@@ -595,11 +595,11 @@ GSPixelOffset4* GSLocalMemory::GetPixelOffset4(const GIFRegFRAME& FRAME, const G
 
 	uint32 hash = (FRAME.FBP << 0) | (ZBUF.ZBP << 9) | (bw << 18) | (fpsm_hash << 24) | (zpsm_hash << 28);
 
-	hash_map<uint32, GSPixelOffset4*>::iterator i = m_po4map.find(hash);
+	auto it = m_po4map.find(hash);
 
-	if(i != m_po4map.end())
+	if(it != m_po4map.end())
 	{
-		return i->second;
+		return it->second;
 	}
 
 	GSPixelOffset4* off = (GSPixelOffset4*)_aligned_malloc(sizeof(GSPixelOffset4), 32);
@@ -636,15 +636,15 @@ GSPixelOffset4* GSLocalMemory::GetPixelOffset4(const GIFRegFRAME& FRAME, const G
 
 static bool cmp_vec2x(const GSVector2i& a, const GSVector2i& b) {return a.x < b.x;}
 
-vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
+std::vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 {
 	uint64 hash = TEX0.u64 & 0x3ffffffffull; // TBP0 TBW PSM TW TH
 
-	hash_map<uint64, vector<GSVector2i>*>::iterator i = m_p2tmap.find(hash);
+	auto it = m_p2tmap.find(hash);
 
-	if(i != m_p2tmap.end())
+	if(it != m_p2tmap.end())
 	{
-		return i->second;
+		return it->second;
 	}
 
 	GSVector2i bs = m_psm[TEX0.PSM].bs;
@@ -654,7 +654,7 @@ vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 
 	const GSOffset* off = GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
-	hash_map<uint32, hash_set<uint32> > tmp; // key = page, value = y:x, 7 bits each, max 128x128 tiles for the worst case (1024x1024 32bpp 8x8 blocks)
+	std::unordered_map<uint32, std::unordered_set<uint32>> tmp; // key = page, value = y:x, 7 bits each, max 128x128 tiles for the worst case (1024x1024 32bpp 8x8 blocks)
 
 	for(int y = 0; y < th; y += bs.y)
 	{
@@ -670,24 +670,22 @@ vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 
 	// combine the lower 5 bits of the address into a 9:5 pointer:mask form, so the "valid bits" can be tested against an uint32 array
 
-	vector<GSVector2i>* p2t = new vector<GSVector2i>[MAX_PAGES];
+	auto p2t = new std::vector<GSVector2i>[MAX_PAGES];
 
-	for(hash_map<uint32, hash_set<uint32> >::iterator i = tmp.begin(); i != tmp.end(); ++i)
+	for(const auto &i : tmp)
 	{
-		uint32 page = i->first;
+		uint32 page = i.first;
 
-		hash_set<uint32>& tiles = i->second;
+		auto& tiles = i.second;
 
-		hash_map<uint32, uint32> m;
+		std::unordered_map<uint32, uint32> m;
 
-		for(hash_set<uint32>::iterator j = tiles.begin(); j != tiles.end(); ++j)
+		for(const auto addr : tiles)
 		{
-			uint32 addr = *j;
-
 			uint32 row = addr >> 5;
 			uint32 col = 1 << (addr & 31);
 
-			hash_map<uint32, uint32>::iterator k = m.find(row);
+			auto k = m.find(row);
 
 			if(k != m.end())
 			{
@@ -699,11 +697,14 @@ vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 			}
 		}
 
+		// Allocate vector with initial size
+		p2t[page].reserve(m.size());
+
 		// sort by x and flip the mask (it will be used to erase a lot of bits in a loop, [x] &= ~y)
 
-		for(hash_map<uint32, uint32>::iterator j = m.begin(); j != m.end(); ++j)
+		for(const auto &j : m)
 		{
-			p2t[page].push_back(GSVector2i(j->first, ~j->second));
+			p2t[page].push_back(GSVector2i(j.first, ~j.second));
 		}
 
 		std::sort(p2t[page].begin(), p2t[page].end(), cmp_vec2x);
@@ -815,7 +816,7 @@ void GSLocalMemory::WriteImageTopBottom(int l, int r, int y, int h, const uint8*
 
 	if(y2 > 0)
 	{
-		int h2 = min(h, csy - y2);
+		int h2 = std::min(h, csy - y2);
 
 		for(int x = l; x < r; x += bsx)
 		{
@@ -968,7 +969,7 @@ void GSLocalMemory::WriteImage(int& tx, int& ty, const uint8* src, int len, GIFR
 
 	if(tx != l)
 	{
-		int n = min(len, (r - tx) * trbpp >> 3);
+		int n = std::min(len, (r - tx) * trbpp >> 3);
 		WriteImageX(tx, ty, src, n, BITBLTBUF, TRXPOS, TRXREG);
 		src += n;
 		len -= n;
@@ -1007,7 +1008,7 @@ void GSLocalMemory::WriteImage(int& tx, int& ty, const uint8* src, int len, GIFR
 			// top part
 
 			{
-				int h2 = min(h, bsy - (ty & (bsy - 1)));
+				int h2 = std::min(h, bsy - (ty & (bsy - 1)));
 
 				if(h2 < bsy)
 				{
@@ -2009,7 +2010,7 @@ void GSLocalMemory::ReadTextureBlock4HHP(uint32 bp, uint8* dst, int dstpitch, co
 
 #include "GSTextureSW.h"
 
-void GSLocalMemory::SaveBMP(const string& fn, uint32 bp, uint32 bw, uint32 psm, int w, int h)
+void GSLocalMemory::SaveBMP(const std::string& fn, uint32 bp, uint32 bw, uint32 psm, int w, int h)
 {
 	int pitch = w * 4;
 	int size = pitch * h;

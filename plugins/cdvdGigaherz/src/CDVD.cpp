@@ -126,7 +126,7 @@ void keepAliveThread()
                                     []() { return !s_keepalive_is_open; })) {
 
         //printf(" * keepAliveThread: polling drive.\n");
-        if (g_last_sector_block.mode == CDVD_MODE_2048)
+        if (src->GetMediaType() >= 0)
             src->ReadSectors2048(g_last_sector_block.lsn, 1, throwaway);
         else
             src->ReadSectors2352(g_last_sector_block.lsn, 1, throwaway);
@@ -306,7 +306,7 @@ EXPORT s32 CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ *subq)
     lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
 
     u8 i = strack;
-    while (i < etrack && lsn < tracks[i + 1].start_lba)
+    while (i < etrack && lsn >= tracks[i + 1].start_lba)
         ++i;
 
     lsn -= tracks[i].start_lba;

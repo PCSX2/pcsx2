@@ -172,12 +172,12 @@ public: // TODO
 
 	// Shaders...
 
-	hash_map<uint32, GSVertexShader9 > m_vs;
-	hash_map<uint64, CComPtr<IDirect3DPixelShader9> > m_ps;
-	hash_map<uint32, Direct3DSamplerState9* > m_ps_ss;
-	hash_map<uint32, Direct3DDepthStencilState9* > m_om_dss;
-	hash_map<uint32, Direct3DBlendState9* > m_om_bs;
-	hash_map<uint32, GSTexture*> m_mskfix;
+	std::unordered_map<uint32, GSVertexShader9> m_vs;
+	std::unordered_map<uint64, CComPtr<IDirect3DPixelShader9>> m_ps;
+	std::unordered_map<uint32, Direct3DSamplerState9*> m_ps_ss;
+	std::unordered_map<uint32, Direct3DDepthStencilState9*> m_om_dss;
+	std::unordered_map<uint32, Direct3DBlendState9*> m_om_bs;
+	std::unordered_map<uint32, GSTexture*> m_mskfix;
 
 	GSTexture* CreateMskFix(uint32 size, uint32 msk, uint32 fix);
 
@@ -190,7 +190,7 @@ public:
 	bool IsLost(bool update);
 	void Flip();
 
-	void SetVSync(bool enable);
+	void SetVSync(int vsync);
 
 	void BeginScene();
 	void DrawPrimitive();
@@ -237,8 +237,8 @@ public:
 	IDirect3DDevice9* operator->() {return m_dev;}
 	operator IDirect3DDevice9*() {return m_dev;}
 
-	void CompileShader(const char *source, size_t size, const char *filename, const string& entry, const D3D_SHADER_MACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il);
-	void CompileShader(const char *source, size_t size, const char *filename, const string& entry, const D3D_SHADER_MACRO* macro, IDirect3DPixelShader9** ps);
+	void CompileShader(const char *source, size_t size, const char *filename, const std::string& entry, const D3D_SHADER_MACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il);
+	void CompileShader(const char *source, size_t size, const char *filename, const std::string& entry, const D3D_SHADER_MACRO* macro, IDirect3DPixelShader9** ps);
 
 	void SetupVS(VSSelector sel, const VSConstantBuffer* cb);
 	void SetupGS(GSSelector sel, const GSConstantBuffer* cb) {}

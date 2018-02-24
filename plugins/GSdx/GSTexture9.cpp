@@ -97,8 +97,8 @@ bool GSTexture9::Update(const GSVector4i& r, const void* data, int pitch, int la
 			default: ASSERT(m_desc.Format == D3DFMT_A8R8G8B8); break;
 			}
 
-			bytes = min(bytes, pitch);
-			bytes = min(bytes, lr.Pitch);
+			bytes = std::min(bytes, pitch);
+			bytes = std::min(bytes, lr.Pitch);
 
 			for(int i = 0, j = r.height(); i < j; i++, src += pitch, dst += lr.Pitch)
 			{
@@ -142,7 +142,7 @@ void GSTexture9::Unmap()
 	}
 }
 
-bool GSTexture9::Save(const string& fn, bool dds)
+bool GSTexture9::Save(const std::string& fn, bool dds)
 {
 	bool rb_swapped = true;
 	CComPtr<IDirect3DSurface9> surface;

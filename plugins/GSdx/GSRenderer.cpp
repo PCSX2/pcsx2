@@ -34,7 +34,6 @@ GSRenderer::GSRenderer()
 	: m_shader(0)
 	, m_shift_key(false)
 	, m_control_key(false)
-	, m_framelimit(false)
 	, m_texture_shuffle(false)
 	, m_real_size(0,0)
 	, m_wnd()
@@ -45,7 +44,7 @@ GSRenderer::GSRenderer()
 	m_interlace   = theApp.GetConfigI("interlace") % s_interlace_nb;
 	m_aspectratio = theApp.GetConfigI("AspectRatio") % s_aspect_ratio_nb;
 	m_shader      = theApp.GetConfigI("TVShader") % s_post_shader_nb;
-	m_vsync       = theApp.GetConfigB("vsync");
+	m_vsync       = theApp.GetConfigI("vsync");
 	m_aa1         = theApp.GetConfigB("aa1");
 	m_fxaa        = theApp.GetConfigB("fxaa");
 	m_shaderfx    = theApp.GetConfigB("shaderfx");
@@ -73,7 +72,7 @@ bool GSRenderer::CreateDevice(GSDevice* dev)
 	}
 
 	m_dev = dev;
-	m_dev->SetVSync(m_vsync && m_framelimit);
+	m_dev->SetVSync(m_vsync);
 
 	return true;
 }
@@ -102,10 +101,10 @@ bool GSRenderer::Merge(int field)
 			fr[i] = GetFrameRect(i);
 			dr[i] = GetDisplayRect(i);
 
-			display_baseline.x = min(dr[i].left, display_baseline.x);
-			display_baseline.y = min(dr[i].top, display_baseline.y);
-			frame_baseline.x = min(fr[i].left, frame_baseline.x);
-			frame_baseline.y = min(fr[i].top, frame_baseline.y);
+			display_baseline.x = std::min(dr[i].left, display_baseline.x);
+			display_baseline.y = std::min(dr[i].top, display_baseline.y);
+			frame_baseline.x = std::min(fr[i].left, frame_baseline.x);
+			frame_baseline.y = std::min(fr[i].top, frame_baseline.y);
 
 			//printf("[%d]: %d %d %d %d, %d %d %d %d\n", i, fr[i].x,fr[i].y,fr[i].z,fr[i].w , dr[i].x,dr[i].y,dr[i].z,dr[i].w);
 		}
@@ -161,8 +160,8 @@ bool GSRenderer::Merge(int field)
 			// dr[0] = 127 50 639 494
 			// dr[1] = 127 50 639 494
 
-			int top = min(fr[0].top, fr[1].top);
-			int bottom = min(fr[0].bottom, fr[1].bottom);
+			int top = std::min(fr[0].top, fr[1].top);
+			int bottom = std::min(fr[0].bottom, fr[1].bottom);
 
 			fr[0].top = fr[1].top = top;
 			fr[0].bottom = fr[1].bottom = bottom;
@@ -238,8 +237,8 @@ bool GSRenderer::Merge(int field)
 
 		dst[i] = GSVector4(off).xyxy() + scale * GSVector4(r.rsize());
 
-		fs.x = max(fs.x, (int)(dst[i].z + 0.5f));
-		fs.y = max(fs.y, (int)(dst[i].w + 0.5f));
+		fs.x = std::max(fs.x, (int)(dst[i].z + 0.5f));
+		fs.y = std::max(fs.y, (int)(dst[i].w + 0.5f));
 	}
 
 	ds = fs;
@@ -305,16 +304,9 @@ GSVector2i GSRenderer::GetInternalResolution()
 	return m_real_size;
 }
 
-void GSRenderer::SetFrameLimit(bool limit)
+void GSRenderer::SetVSync(int vsync)
 {
-	m_framelimit = limit;
-
-	if(m_dev) m_dev->SetVSync(m_vsync && m_framelimit);
-}
-
-void GSRenderer::SetVSync(bool enabled)
-{
-	m_vsync = enabled;
+	m_vsync = vsync;
 
 	if(m_dev) m_dev->SetVSync(m_vsync);
 }
@@ -354,7 +346,7 @@ void GSRenderer::VSync(int field)
 
 		double fps = 1000.0f / m_perfmon.Get(GSPerfMon::Frame);
 
-		string s;
+		std::string s;
 
 #ifdef GSTITLEINFO_API_FORCE_VERBOSE
 		if(1)//force verbose reply
@@ -364,7 +356,7 @@ void GSRenderer::VSync(int field)
 		{
 			//GSdx owns the window's title, be verbose.
 
-			string s2 = m_regs->SMODE2.INT ? (string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
+			std::string s2 = m_regs->SMODE2.INT ? (std::string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
 
 			s = format(
 				"%lld | %d x %d | %.2f fps (%d%%) | %s - %s | %s | %d S/%d P/%d D | %d%% CPU | %.2f | %.2f",
@@ -516,7 +508,7 @@ void GSRenderer::VSync(int field)
 	}
 }
 
-bool GSRenderer::MakeSnapshot(const string& path)
+bool GSRenderer::MakeSnapshot(const std::string& path)
 {
 	if(m_snapshot.empty())
 	{
@@ -550,7 +542,7 @@ bool GSRenderer::MakeSnapshot(const string& path)
 bool GSRenderer::BeginCapture()
 {
 	GSVector4i disp = m_wnd->GetClientRect().fit(m_aspectratio);
-	float aspect = (float)disp.width() / max(1, disp.height());
+	float aspect = (float)disp.width() / std::max(1, disp.height());
 
 	return m_capture.BeginCapture(GetTvRefreshRate(), GetInternalResolution(), aspect);
 }

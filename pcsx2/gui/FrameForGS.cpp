@@ -491,8 +491,13 @@ bool GSFrame::ShowFullScreen(bool show, bool updateConfig)
 	// also happens on Linux.
 
 	if( !IsShown() ) Show();
-	bool retval = _parent::ShowFullScreen( show );
-	
+
+	uint flags = wxFULLSCREEN_ALL;
+#ifdef _WIN32
+	flags |= g_Conf->GSWindow.EnableVsyncWindowFlag ? WS_POPUP : 0;
+#endif
+	bool retval = _parent::ShowFullScreen( show, flags );
+
 	return retval;
 }
 
@@ -618,9 +623,11 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	out << std::fixed << std::setprecision(2) << fps;
 	OSDmonitor(Color_StrongGreen, "FPS:", out.str());
 
+#ifdef __linux__
 	// Important Linux note: When the title is set in fullscreen the window is redrawn. Unfortunately
 	// an intermediate white screen appears too which leads to a very annoying flickering.
 	if (IsFullScreen()) return;
+#endif
 
 	AppConfig::UiTemplateOptions& templates = g_Conf->Templates;
 
@@ -655,6 +662,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	title.Replace(L"${omodef}",		omodef);
 	title.Replace(L"${omodei}",		omodei);
 	title.Replace(L"${gsdx}",		fromUTF8(gsDest));
+	title.Replace(L"${videomode}",	ReportVideoMode());
 	if (CoreThread.IsPaused())
 		title = templates.Paused + title;
 

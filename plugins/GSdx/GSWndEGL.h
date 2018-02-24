@@ -38,8 +38,12 @@ class GSWndEGL : public GSWndGL
 
 	int m_platform;
 
+	void PopulateWndGlFunction();
 	void CreateContext(int major, int minor);
 	void BindAPI();
+
+	void SetSwapInterval() final;
+	bool HasLateVsyncSupport() final { return false; }
 
 	void OpenEGLDisplay();
 	void CloseEGLDisplay();
@@ -48,7 +52,7 @@ public:
 	GSWndEGL(int platform);
 	virtual ~GSWndEGL() {};
 
-	bool Create(const string& title, int w, int h) final;
+	bool Create(const std::string& title, int w, int h) final;
 	bool Attach(void* handle, bool managed = true) final;
 	void Detach() final;
 
@@ -65,7 +69,6 @@ public:
 	void* GetProcAddress(const char* name, bool opt = false) final;
 
 	void Flip() final;
-	void SetVSync(bool enable) final;
 
 	// Deprecated API
 	void Show() final {};

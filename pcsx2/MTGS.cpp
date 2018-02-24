@@ -203,7 +203,7 @@ void SysMtgsThread::OpenPlugin()
 		result = GSopen( (void*)pDsp, "PCSX2", renderswitch ? 2 : 1 );
 
 
-	GSsetVsync(EmuConfig.GS.FrameLimitEnable && EmuConfig.GS.VsyncEnable);
+	GSsetVsync(EmuConfig.GS.GetVsync());
 
 	if( result != 0 )
 	{

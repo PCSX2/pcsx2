@@ -91,7 +91,7 @@ class GSSettingsDlg : public GSDialog
 
 	std::vector<Adapter> adapters;
 
-	vector<GSSetting> m_ocl_devs;
+	std::vector<GSSetting> m_ocl_devs;
 	uint32 m_lastValidMsaa; // used to revert to previous dialog value if the user changed to invalid one, or lesser one and canceled
 
 	void UpdateRenderers();

@@ -772,9 +772,7 @@ void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
 	lt.t.zw = rb.t.zw;
 
 	// flat color
-	#if GS_IIP == 0
 	lt.c = rb.c;
-	#endif
 
 	// Swap texture and position coordinate
 	VS_OUTPUT lb = rb;

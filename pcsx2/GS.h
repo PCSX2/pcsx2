@@ -414,6 +414,7 @@ extern void gsSetVideoMode( GS_VideoMode mode );
 extern void gsResetFrameSkip();
 extern void gsPostVsyncStart();
 extern void gsFrameSkip();
+extern void gsUpdateFrequency( Pcsx2Config& config );
 
 // Some functions shared by both the GS and MTGS
 extern void _gs_ResetFrameskip();

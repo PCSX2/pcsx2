@@ -244,7 +244,7 @@ void GamepadConfiguration::repopulate()
     tmp = g_conf.get_sensibility();
     m_sl_joystick_sensibility->SetValue(tmp);
 
-    u32 joyid = GamePad::uid_to_index(g_conf.get_joy_uid(m_pad_id));
+    u32 joyid = GamePad::uid_to_index(m_pad_id);
     if (joyid < m_joy_map->GetCount() && !m_joy_map->IsEmpty())
         m_joy_map->SetSelection(joyid);
 
