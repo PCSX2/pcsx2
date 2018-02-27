@@ -105,8 +105,9 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			wxEmptyString
 		},
 		{
-			_("VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"),
-			wxEmptyString
+			_("VU I bit Hack avoid constant recompilation. Fixes memory leak slowdowns/stalls."),
+			pxEt( L"Try this when \"microVU1: Program cache limit\" is printed in the log.\nKnown to affect following games:\n * Scarface The World Is Yours\n * Crash Tag Team Racing"
+			)
 		}
 	};
 
