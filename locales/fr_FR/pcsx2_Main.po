@@ -1,16 +1,13 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR PCSX2 Dev Team
+# Copyright (C) 2018 PCSX2 Dev Team
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
 "PO-Revision-Date: 2016-02-27 09:57+0100\n"
-"Last-Translator: goldeng <odakawoi@yahoo.fr>\n"
-"Language-Team: goldeng;piorrro33 <odakawoi@yahoo.fr;piorrro33@outlook.com>\n"
+"Last-Translator: Atomic83\n"
+"Language-Team: Atomic83;goldeng;piorrro33 <odakawoi@yahoo.fr;piorrro33@outlook.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1523,12 +1520,12 @@ msgstr "Fermer %s est dangereux pour la santé !"
 #: pcsx2/gui/MainFrame.cpp:460
 #, fuzzy
 msgid "ISO &Selector"
-msgstr "Choisir un ISO"
+msgstr "&Choisir un ISO"
 
 #: pcsx2/gui/MainFrame.cpp:461
 #, fuzzy
 msgid "Plugin &Menu"
-msgstr "Gestionnaire de plugins"
+msgstr "&Gestionnaire de plugins"
 
 #: pcsx2/gui/MainFrame.cpp:464
 msgid "&ISO"
@@ -1540,7 +1537,7 @@ msgstr "Utilise l'image ISO choisie comme un disque PS2."
 
 #: pcsx2/gui/MainFrame.cpp:465
 msgid "&Plugin"
-msgstr "Plugin"
+msgstr "&Plugin"
 
 #: pcsx2/gui/MainFrame.cpp:465
 msgid "Uses an external plugin as the CDVD source."
@@ -1548,7 +1545,7 @@ msgstr "Utilise un plugin externe en tant que CDVD-source."
 
 #: pcsx2/gui/MainFrame.cpp:466
 msgid "&No disc"
-msgstr "Pas de disque"
+msgstr "Pas de &disque"
 
 #: pcsx2/gui/MainFrame.cpp:466
 msgid "Use this to boot into your virtual PS2's BIOS configuration."
@@ -1568,7 +1565,7 @@ msgstr "&Choix des Plugins/BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:477
 msgid "&Game Database Editor"
-msgstr "Éditeur de base de données"
+msgstr "Éditeur de &base de données"
 
 #: pcsx2/gui/MainFrame.cpp:483
 msgid "&Video (GS)"
@@ -1584,27 +1581,27 @@ msgstr "&Contrôleurs (PAD)"
 
 #: pcsx2/gui/MainFrame.cpp:486
 msgid "&Dev9"
-msgstr "Dev9"
+msgstr "&Dev9"
 
 #: pcsx2/gui/MainFrame.cpp:487
 msgid "&USB"
-msgstr "USB"
+msgstr "&USB"
 
 #: pcsx2/gui/MainFrame.cpp:488
 msgid "&Firewire"
-msgstr "Sans-fil"
+msgstr "&Firewire"
 
 #: pcsx2/gui/MainFrame.cpp:494
 msgid "Multitap &1"
-msgstr "Multitap 1"
+msgstr "Multitap &1"
 
 #: pcsx2/gui/MainFrame.cpp:495
 msgid "Multitap &2"
-msgstr "Multitap 2"
+msgstr "Multitap &2"
 
 #: pcsx2/gui/MainFrame.cpp:498
 msgid "C&lear all settings..."
-msgstr "Effacer tous les paramètres..."
+msgstr "&Effacer tous les paramètres..."
 
 #: pcsx2/gui/MainFrame.cpp:499
 #, c-format
@@ -1615,19 +1612,19 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:521
 msgid "&About..."
-msgstr "À propos de..."
+msgstr "&À propos de..."
 
 #: pcsx2/gui/MainFrame.cpp:526
 msgid "&Open Debug Window..."
-msgstr "Ouvrir la fenêtre de debug..."
+msgstr "Ouvrir la &fenêtre de debug..."
 
 #: pcsx2/gui/MainFrame.cpp:529
 msgid "&Logging..."
-msgstr "Connexion en cours..."
+msgstr "&Connexion en cours..."
 
 #: pcsx2/gui/MainFrame.cpp:609
 msgid "Paus&e"
-msgstr "Pause"
+msgstr "&Pause"
 
 #: pcsx2/gui/MainFrame.cpp:610
 msgid "Safely pauses emulation and preserves the PS2 state."
@@ -1635,7 +1632,7 @@ msgstr "Met l'émulation en pause et préserve son bon fonctionnement."
 
 #: pcsx2/gui/MainFrame.cpp:617
 msgid "R&esume"
-msgstr "Reprendre le jeu"
+msgstr "R&eprendre le jeu"
 
 #: pcsx2/gui/MainFrame.cpp:618
 msgid "Resumes the suspended emulation state."
@@ -1643,7 +1640,7 @@ msgstr "Relance l'émulation là où elle s'était arrêtée."
 
 #: pcsx2/gui/MainFrame.cpp:622
 msgid "Pause/Resume"
-msgstr "Pause / Reprendre"
+msgstr "Pause/Reprendre"
 
 #: pcsx2/gui/MainFrame.cpp:623
 msgid "No emulation state is active; cannot suspend or resume."
@@ -1653,7 +1650,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:632
 msgid "Res&tart"
-msgstr "Redémarrer"
+msgstr "&Redémarrer"
 
 #: pcsx2/gui/MainFrame.cpp:633
 msgid "Simulates hardware reset of the PS2 virtual machine."
@@ -1669,17 +1666,17 @@ msgstr "Démarre le système en sautant les logos PS2/Sony."
 
 #: pcsx2/gui/MainFrame.cpp:660
 #, fuzzy
-msgid "Boot ISO (fast)"
-msgstr "Démarrer l'ISO (rapide)"
+msgid "Boot ISO (&fast)"
+msgstr "Démarrer le CDVD (&rapide)"
 
 #: pcsx2/gui/MainFrame.cpp:663
-msgid "Boot CDVD (fast)"
-msgstr "Démarrer le CDVD (rapide)"
+msgid "Boot CDVD (&fast)"
+msgstr "Démarrer le CDVD (&rapide)"
 
 #: pcsx2/gui/MainFrame.cpp:687
 #, fuzzy
-msgid "Boot ISO (full)"
-msgstr "Démarrer l'ISO (complet)"
+msgid "Boo&t ISO (full)"
+msgstr "Démarrer le CDVD (co&mplet)"
 
 #: pcsx2/gui/MainFrame.cpp:688
 #, fuzzy
@@ -1688,8 +1685,8 @@ msgstr "Démarre le système à partir du DVD ou de l'ISO source."
 
 #: pcsx2/gui/MainFrame.cpp:691
 #, fuzzy
-msgid "Boot CDVD (full)"
-msgstr "Démarrer le CDVD (complet)"
+msgid "Boo&t CDVD (full)"
+msgstr "Démarrer le CDVD (co&mplet)"
 
 #: pcsx2/gui/MainFrame.cpp:692
 #, fuzzy
@@ -1697,8 +1694,8 @@ msgid "Boot the VM using the current CD/DVD source media"
 msgstr "Démarre le système à partir du DVD ou de l'ISO source."
 
 #: pcsx2/gui/MainFrame.cpp:695
-msgid "Boot BIOS"
-msgstr "Démarrer le BIOS"
+msgid "Boo&t BIOS"
+msgstr "Démarrer le &BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:696
 #, fuzzy
@@ -1710,8 +1707,8 @@ msgid "No plugin loaded"
 msgstr "Aucun plugin chargé"
 
 #: pcsx2/gui/MainFrame.cpp:782
-msgid "Core GS Settings..."
-msgstr "Paramètres du Core GS..."
+msgid "&Core GS Settings..."
+msgstr "Paramètres du &Core GS..."
 
 #: pcsx2/gui/MainFrame.cpp:783
 msgid ""
@@ -1720,16 +1717,16 @@ msgid ""
 msgstr "Modifie les paramètres d'émulation hardware gérés par PCSX2."
 
 #: pcsx2/gui/MainFrame.cpp:785
-msgid "Window Settings..."
-msgstr "Paramètres du mode fenêtré..."
+msgid "&Window Settings..."
+msgstr "Paramètres du mode &fenêtré..."
 
 #: pcsx2/gui/MainFrame.cpp:786
 msgid "Modify window and appearance options, including aspect ratio."
-msgstr "Modifie la fenêtre et l'apparence dont le ratio d'aspect (4:3, 16:9)."
+msgstr "Modifie la fenêtre et l'apparence dont le ratio d'aspect."
 
 #: pcsx2/gui/MainFrame.cpp:793
 msgid "&Plugin Settings..."
-msgstr "Paramètres du plugin..."
+msgstr "Paramètres du &plugin..."
 
 #: pcsx2/gui/MainFrame.cpp:794
 #, c-format
