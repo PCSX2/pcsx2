@@ -103,6 +103,12 @@
 ---------------------------------------------
 -- Game List
 ---------------------------------------------
+Serial = GUST-00009
+Name   = Mana Khemia: Alchemists of Al-Revis [Premium Box]
+Region = NTSC-J
+DMABusyHack = 1
+eeRoundMode = 0 // Fix jump issue
+---------------------------------------------
 Serial = PAPX-90512
 Name   = Gran Turismo 4 - Toyota Prius [Trial]
 Region = NTSC-J
@@ -1266,7 +1272,8 @@ Serial = SCES-50354
 Name   = Klonoa 2 - Lunatea's Veil
 Region = PAL-M5
 Compat = 5
-eeClampMode = 3		//Objects needed appear in wrong places without it
+eeClampMode = 3 // Objects appear in wrong places without it 
+vuClampMode = 2 // Fixes water reflection
 ---------------------------------------------
 Serial = SCES-50360
 Name   = Twisted Metal - Black
@@ -6491,6 +6498,7 @@ Region = PAL-E
 Serial = SLED-53953
 Name   = FIFA Street 2 [Demo]
 Region = PAL-E
+GIFFIFOHack = 1 // Fix flag corruptions
 ---------------------------------------------
 Serial = SLED-54035
 Name   = Play the Best Demos from Atari [Demo]
@@ -6617,6 +6625,7 @@ Compat = 5
 Serial = SLES-50037
 Name   = Silent Scope
 Region = PAL-M5
+Compat = 5
 ---------------------------------------------
 Serial = SLES-50038
 Name   = Gradius III & IV
@@ -7297,22 +7306,12 @@ Serial = SLES-50325
 Name   = Max Payne
 Region = PAL-E
 Compat = 5
-// Apparently using these specific Game Fixes fixes the game from crashing and freezing.
-eeRoundMode = 0
-eeClampMode = 3
-vuRoundMode = 0
-vuClampMode = 3
-EETimingHack = 1 // Fixes crashes
+eeClampMode = 3 // Fixes crashes
 ---------------------------------------------
 Serial = SLES-50326
 Name   = Max Payne
 Region = PAL-M4
-// Apparently using these specific Game Fixes fixes the game from crashing and freezing.
-eeRoundMode = 0
-eeClampMode = 3
-vuRoundMode = 0
-vuClampMode = 3
-EETimingHack = 1 // Fixes crashes
+eeClampMode = 3 // Fixes crashes
 ---------------------------------------------
 Serial = SLES-50330
 Name   = Grand Theft Auto III
@@ -7684,6 +7683,7 @@ Region = PAL-Unk
 Serial = SLES-50507
 Name   = Half-Life
 Region = PAL-F
+Compat = 5
 ---------------------------------------------
 Serial = SLES-50508
 Name   = Half-Life
@@ -10564,6 +10564,7 @@ Region = PAL-FI-S
 Serial = SLES-51871
 Name   = Disney-Pixar's Finding Nemo
 Region = PAL-F-G
+Compat = 5
 ---------------------------------------------
 Serial = SLES-51872
 Name   = Disney-Pixar's Finding Nemo
@@ -12147,6 +12148,7 @@ Region = PAL-G
 Serial = SLES-52628
 Name   = NBA Ballers
 Region = PAL-E
+vuClampMode = 2 // Fixes transparency issues
 ---------------------------------------------
 Serial = SLES-52630
 Name   = Conflict - Vietnam
@@ -14739,6 +14741,7 @@ Region = PAL-DU-F
 Serial = SLES-53739
 Name   = Disney's Chicken Little
 Region = PAL-F-S
+Compat = 5
 ---------------------------------------------
 Serial = SLES-53740
 Name   = Disney's Chicken Little
@@ -14858,10 +14861,12 @@ Serial = SLES-53796
 Name   = FIFA Street 2
 Region = PAL-E
 Compat = 5
+GIFFIFOHack = 1 // Fix flag corruptions
 ---------------------------------------------
 Serial = SLES-53797
 Name   = FIFA Street 2
 Region = PAL-M6
+GIFFIFOHack = 1 // Fix flag corruptions
 ---------------------------------------------
 Serial = SLES-53799
 Name   = Matrix, The - Path of Neo
@@ -17541,6 +17546,7 @@ Name   = Mana Khemia - Alchemists of Al-Revis
 Region = PAL-E
 Compat = 5
 DMABusyHack = 1
+eeRoundMode = 0 // Fix jump issue
 ---------------------------------------------
 Serial = SLES-55444
 Name   = Ar tonelico II: Melody of Metafalica
@@ -18051,6 +18057,10 @@ Region = NTSC-K
 Compat = 5
 MemCardFilter = SLKA-25012
 ---------------------------------------------
+Serial = SLKA-25014
+Name   = Evolution Snowboarding
+Region = NTSC-J
+---------------------------------------------
 Serial = SLKA-25015
 Name   = Evolution Skateboarding
 Region = NTSC-K
@@ -18271,8 +18281,8 @@ eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
 Serial = SLKA-25165
 Name   = Mobile Suit Gundam - Seed Destiny - Rengou vs. Z.A.F.T. II Plus
 Region = NTSC-K
-eeRoundMode = 1
-FpuNegDivHack = 1
+eeRoundMode = 1 // Fix camera issue
+FpuNegDivHack = 1 // Fix target loss issue
 ---------------------------------------------
 Serial = SLKA-25166
 Name   = Sengoku Musou
@@ -18571,6 +18581,12 @@ Region = NTSC-K
 Compat = 5
 OPHFLagHack = 1
 ---------------------------------------------
+Serial = SLKA-25314
+Name   = Kidou Senshi Gundam SEED: Rengou vs. Z.A.F.T.
+Region = NTSC-K
+eeRoundMode = 1 // Fix camera issue
+FpuNegDivHack = 1 // Fix target loss issue
+---------------------------------------------
 Serial = SLKA-25317
 Name   = Shin Sangoku Musou 3 [PlayStation 2 - Big Hit Series]
 Region = NTSC-K
@@ -18659,6 +18675,11 @@ Name   = Naruto - Uzumaki Chronicles 2
 Region = NTSC-K
 Compat = 5
 OPHFLagHack = 1
+---------------------------------------------
+Serial = SLKA-25374
+Name   = Fifa Street 2
+Region = NTSC-K
+GIFFIFOHack = 1 // Fix flag corruptions
 ---------------------------------------------
 Serial = SLKA-25375
 Name   = Transformers - The Game
@@ -26506,6 +26527,7 @@ Region = NTSC-J
 Serial = SLPM-66443
 Name   = FIFA Street 2
 Region = NTSC-J
+GIFFIFOHack = 1 // Fix flag corruptions
 ---------------------------------------------
 Serial = SLPM-66444
 Name   = Spartan - Total Warrior
@@ -27671,6 +27693,7 @@ Serial = SLPM-66748
 Name   = Mana-Khemia - Gakuen no Renkinjutsu Shitachi
 Region = NTSC-J
 DMABusyHack = 1
+eeRoundMode = 0 // Fix jump issue
 ---------------------------------------------
 Serial = SLPM-66749
 Name   = Wizardry X 2 - Mugen no Gakuto [Wonder Price]
@@ -28547,6 +28570,7 @@ Serial = SLPM-66994
 Name   = Mana-Khemia - Gakuen no Renkinjutsu Shitachi [Best Version]
 Region = NTSC-J
 DMABusyHack = 1
+eeRoundMode = 0 // Fix jump issue
 ---------------------------------------------
 Serial = SLPM-66996
 Name   = Shuumatsu Otome Gensou Alicematic Apocalypse [Limited Edition]
@@ -30475,7 +30499,8 @@ Serial = SLPS-25033
 Name   = Kaze no Klonoa 2 - Sekai ga Nozonda Wasuremono
 Region = NTSC-J
 Compat = 5
-eeClampMode = 3		//Objects needed appear in wrong places without it
+eeClampMode = 3 // Objects appear in wrong places without it 
+vuClampMode = 2 // Fixes water reflection
 ---------------------------------------------
 Serial = SLPS-25034
 Name   = Flower, Sun and Rain
@@ -31149,12 +31174,7 @@ Compat = 5
 Serial = SLPS-25244
 Name   = Max Payne
 Region = NTSC-J
-// Apparently using these specific Game Fixes fixes the game from crashing and freezing.
-eeRoundMode = 0
-eeClampMode = 3
-vuRoundMode = 0
-vuClampMode = 3
-EETimingHack = 1 // Fixes crashes
+eeClampMode = 3 // Fixes crashes
 ---------------------------------------------
 Serial = SLPS-25245
 Name   = True Love Story - Summer Days and Yet
@@ -32382,8 +32402,8 @@ Region = NTSC-J
 Serial = SLPS-25569
 Name   = Kidou Senshi Gundam SEED - Rengou vs. Z.A.F.T.
 Region = NTSC-J
-eeRoundMode = 1
-FpuNegDivHack = 1
+eeRoundMode = 1 // Fix camera issue
+FpuNegDivHack = 1 // Fix target loss issue
 ---------------------------------------------
 Serial = SLPS-25570
 Name   = Kino no Tabi 2 - The Beautiful World
@@ -32972,8 +32992,8 @@ Serial = SLPS-25718
 Name   = Mobile Suit Gundam Seed Destiny - Rengou vs. Z.A.F.T. II Plus
 Region = NTSC-J
 Compat = 5
-eeRoundMode = 1
-FpuNegDivHack = 1
+eeRoundMode = 1 // Fix camera issue
+FpuNegDivHack = 1 // Fix target loss issue
 ---------------------------------------------
 Serial = SLPS-25719
 Name   = Happiness! Deluxe [First Print Limited Edition]
@@ -33630,6 +33650,12 @@ Name   = Kidou Senshi Gundam: Giren no Yabou - Axis no Kyoui V
 Region = NTSC-J
 FpuNegDivHack = 1
 ---------------------------------------------
+Serial = SLPS-25961
+Name   = Kidou Senshi Gundam SEED: Rengou vs. Z.A.F.T.
+Region = NTSC-K
+eeRoundMode = 1 // Fix camera issue
+FpuNegDivHack = 1 // Fix target loss issue
+---------------------------------------------
 Serial = SLPS-25983
 Name   = The King of Fighters 2002 - Unlimited Match
 Region = NTSC-J
@@ -33972,6 +33998,12 @@ Name   = Ar tonelico II: Sekai ni Hibiku Shoujo-Tachi no Metafalica [PlayStation
 Region = NTSC-J
 eeRoundMode = 0 // Fixes "Fall through floor" bug when aproaching chests
 ---------------------------------------------
+Serial = SLPS-73269
+Name   = Kidou Senshi Gundam SEED: Rengou vs. Z.A.F.T.
+Region = NTSC-K
+eeRoundMode = 1 // Fix camera issue
+FpuNegDivHack = 1 // Fix target loss issue
+---------------------------------------------
 Serial = SLPS-73401
 Name   = Victorious Boxers - Championship Edition [PlayStation 2 The Best]
 Region = NTSC-J
@@ -33987,7 +34019,8 @@ Region = NTSC-J
 Serial = SLPS-73404
 Name   = Klonoa 2 [PlayStation 2 The Best]
 Region = NTSC-J
-eeClampMode = 3		//Objects needed appear in wrong places without it
+eeClampMode = 3 // Objects appear in wrong places without it 
+vuClampMode = 2 // Fixes water reflection
 ---------------------------------------------
 Serial = SLPS-73405
 Name   = Zero [PlayStation 2 The Best]
@@ -34623,7 +34656,8 @@ Serial = SLUS-20151
 Name   = Klonoa 2 - Lunatea's Veil
 Region = NTSC-U
 Compat = 5
-eeClampMode = 3		//Objects needed appear in wrong places without it
+eeClampMode = 3 // Objects appear in wrong places without it 
+vuClampMode = 2 // Fixes water reflection
 ---------------------------------------------
 Serial = SLUS-20152
 Name   = Ace Combat 4 - Shattered Skies
@@ -34990,12 +35024,7 @@ Serial = SLUS-20230
 Name   = Max Payne
 Region = NTSC-U
 Compat = 5
-// Apparently using these specific Game Fixes fixes the game from crashing and freezing.
-eeRoundMode = 0
-eeClampMode = 3
-vuRoundMode = 0
-vuClampMode = 3
-EETimingHack = 1 // Fixes crashes
+eeClampMode = 3 // Fixes crashes
 ---------------------------------------------
 Serial = SLUS-20231
 Name   = Herdy Gerdy
@@ -36403,7 +36432,7 @@ Serial = SLUS-20541
 Name   = NBA Ballers
 Region = NTSC-U
 Compat = 5
-vuClampMode = 2 //Fixes transparency issues
+vuClampMode = 2 // Fixes transparency issues
 ---------------------------------------------
 Serial = SLUS-20543
 Name   = Metal Gear Solid 2
@@ -36422,7 +36451,9 @@ Compat = 5
 Serial = SLUS-20546
 Name   = Evolution Snowboarding
 Region = NTSC-U
-Compat = 3
+Compat = 4
+// Needs EmotionEngine set to "Interpreter" and "Enable EE Cache" enabled.
+OPHFLagHack = 1 // Avoid hanging at the "press start" screen
 ---------------------------------------------
 Serial = SLUS-20547
 Name   = Cubix Showdown
@@ -40403,6 +40434,7 @@ Serial = SLUS-21369
 Name   = FIFA Street 2
 Region = NTSC-U
 Compat = 5
+GIFFIFOHack = 1 // Fix flag corruptions
 ---------------------------------------------
 Serial = SLUS-21370
 Name   = MegaMan X Collection
@@ -41992,6 +42024,7 @@ Name   = Mana Khemia - Alchemists of Al-Revis
 Region = NTSC-U
 Compat = 5
 DMABusyHack = 1
+eeRoundMode = 0 // Fix jump issue
 ---------------------------------------------
 Serial = SLUS-21736
 Name   = Wall-E
@@ -42904,7 +42937,8 @@ Region = NTSC-U
 Serial = SLUS-28004
 Name   = Klonoa 2 - Lunatea's Veil [Trade Demo]
 Region = NTSC-U
-eeClampMode = 3		//Objects needed appear in wrong places without it
+eeClampMode = 3 // Objects appear in wrong places without it 
+vuClampMode = 2 // Fixes water reflection
 ---------------------------------------------
 Serial = SLUS-28006
 Name   = Burnout [Trade Demo]
