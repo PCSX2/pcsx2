@@ -259,19 +259,19 @@ void GSdxApp::Init()
 	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced), "Bilinear", "Forced"));
 	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::PS2), "Bilinear", "PS2"));
 
-	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::None), "None", ""));
+	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::None), "None", "Default"));
 	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::PS2), "Trilinear", ""));
 	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::Forced), "Trilinear", "Ultra/Slow"));
 
-	m_gs_gl_ext.push_back(GSSetting(-1, "Auto", ""));
+	m_gs_gl_ext.push_back(GSSetting(-1, "Auto", "Default"));
 	m_gs_gl_ext.push_back(GSSetting(0,  "Force-Disabled", ""));
 	m_gs_gl_ext.push_back(GSSetting(1,  "Force-Enabled", ""));
 
-	m_gs_hack.push_back(GSSetting(0,  "Off", ""));
+	m_gs_hack.push_back(GSSetting(0,  "Off", "Default"));
 	m_gs_hack.push_back(GSSetting(1,  "Half", ""));
 	m_gs_hack.push_back(GSSetting(2,  "Full", ""));
 
-	m_gs_offset_hack.push_back(GSSetting(0,  "Off", ""));
+	m_gs_offset_hack.push_back(GSSetting(0,  "Off", "Default"));
 	m_gs_offset_hack.push_back(GSSetting(1,  "Normal", "Vertex"));
 	m_gs_offset_hack.push_back(GSSetting(2,  "Special", "Texture"));
 	m_gs_offset_hack.push_back(GSSetting(3,  "Special", "Texture - aggressive"));
