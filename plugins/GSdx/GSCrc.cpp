@@ -66,6 +66,7 @@ CRC::Game CRC::m_games[] =
 	{0xCA284668, FFXII, EU, 0},
 	{0xC52B466E, FFXII, EU, 0}, //ES
 	{0xE5E71BF9, FFXII, FR, 0},
+	{0x0779FBDB, FFXII, US, 0},
 	{0x280AD120, FFXII, JP, 0},
 	{0x08C1ED4D, HauntingGround, EU, 0},
 	{0x2CD5794C, HauntingGround, EU, 0},
@@ -107,13 +108,14 @@ CRC::Game CRC::m_games[] =
 	{0x983C53D2, DBZBT3, NoRegion, 0},
 	{0x983C53D3, DBZBT3, EU, 0},
 	{0x9B0E119F, DBZBT3, KO, 0}, //DragonBall Z Sparking Meteo
+	{0x5E13E6D6, SFEX3, EU, 0},
 	{0x72B3802A, SFEX3, US, 0},
 	{0x71521863, SFEX3, US, 0},
 	{0x63642E9F, SFEX3, JP, 0},
 	{0xCA1F6E53, SFEX3, JP, 0}, // Taikenban Disc (Demo/Trial)
 	{0x28703748, Bully, US, 0},
 	{0x019CFA48, Bully, JP, 0},
-	{0xC78A495D, BullyCC, US, 0},
+	{0xC78A495D, BullyCC, EU, 0},
 	{0xC19A374E, SoTC, US, 0},
 	{0x7D8F539A, SoTC, EU, 0},
 	{0x0F0C4A9C, SoTC, EU, 0},
@@ -137,6 +139,7 @@ CRC::Game CRC::m_games[] =
 	// and as "Twisted Metal - Black" (PAL).
 	{0x788D8B4F, ICO, EU, 0},
 	{0x29C28734, ICO, CH, 0},
+	{0xC02C653E, GT4, CH, 0}, // China Speed!
 	{0xAEAD1CA3, GT4, JP, 0},
 	{0x30E41D93, GT4, KO, 0},
 	{0x715CF2EC, GT4, EU, 0},
@@ -144,6 +147,7 @@ CRC::Game CRC::m_games[] =
 	{0x0086E35B, GT4, EU, 0},
 	{0x77E61C8A, GT4, US, 0},
 	{0x33C6E35E, GT4, US, 0},
+	{0x32A1C752, GT4, US, 0}, // GT4 Online Beta
 	{0x7ABDBB5E, GT3, CH, 0}, // cutie comment
 	{0x3E9D448A, GT3, CH, 0}, // cutie comment
 	{0xAD66643C, GT3, CH, 0}, // cutie comment
@@ -182,6 +186,8 @@ CRC::Game CRC::m_games[] =
 	{0x5ED8FB53, AceCombat4, JP, 0},
 	{0x1B9B7563, AceCombat4, EU, 0},
 	{0x39B574F0, AceCombat5, US, 0},
+	{0x86089F31, AceCombat5, JP, 0},
+	{0x1D54FEA9, AceCombat5, EU, 0}, // Squadron Leader
 	{0xFC46EA61, Tekken5, JP, 0},
 	{0x1F88EE37, Tekken5, EU, 0},
 	{0x1F88BECD, Tekken5, EU, 0},	//language selector...
@@ -523,7 +529,9 @@ CRC::Game CRC::m_games[] =
 	{0x4653CA3E, HarleyDavidson, NoRegion, 0},
 	// Games list for Automatic Mipmapping
 	// Basic mipmapping
+	{0x194C9F38, AceCombatZero, EU, 0},
 	{0x65729657, AceCombatZero, US, 0},
+	{0xA04B52DB, AceCombatZero, JP, 0},
 	{0x0940508D, BrianLaraInternationalCricket, EU, 0},
 	{0x0BAA8DD8, DarkCloud, EU, 0},
 	{0x1DF41F33, DarkCloud, US, 0},
@@ -533,23 +541,32 @@ CRC::Game CRC::m_games[] =
 	{0x67A29886, DestroyAllHumans, US, 0},
 	{0xE3E8E893, DestroyAllHumans, EU, 0},
 	{0x42DF8C8C, DestroyAllHumans2, US, 0},
+	{0x743E10C2, DestroyAllHumans2, EU, 0},
 	{0x722BBD62, FIFA03, EU, 0},
 	{0x2BCCF704, FIFA03, EU, 0},
 	{0xCC6AA742, FIFA04, KO, 0},
 	{0x2C6A4E2E, FIFA04, US, 0},
 	{0x972611BB, FIFA05, US, 0},
 	{0x230CB71D, SoulReaver2, US, 0},
+	{0x6F991F52, SoulReaver2, JP, 0},
 	{0x6D8B4CD1, SoulReaver2, EU, 0},
 	{0x728AB07C, LegacyOfKainDefiance, US, 0},
+	{0xBCAD1E8A, LegacyOfKainDefiance, EU, 0},
 	{0xCE4933D0, RatchetAndClank, US, 0},
+	{0x56A35F77, RatchetAndClank, JP, 0},
 	{0x76F724A3, RatchetAndClank, EU, 0},
 	{0xB3A71D10, RatchetAndClank2, US, 0}, // Going Commando
 	{0x38996035, RatchetAndClank2, US, 0},
+	{0x8CAA5F16, RatchetAndClank2, JP, 0}, // Gagaga! Ginga no Commando-ssu
 	{0x2F486E6F, RatchetAndClank2, EU, 0},
 	{0x45FE0CC4, RatchetAndClank3, US, 0}, // Up Your Arsenal
+	{0x64DC6000, RatchetAndClank3, JP, 0}, // Totsugeki! Galactic Rangers
 	{0x17125698, RatchetAndClank3, EU, 0},
 	{0x9BFBCD42, RatchetAndClank4, US, 0}, // Deadlocked
+	{0x2EC9DA96, RatchetAndClank4, JP, 0}, // GiriGiri Ginga no Giga Battle
+	{0xD697D204, RatchetAndClank4, EU, 0}, // Ratchet Gladiator
 	{0x8661F7BA, RatchetAndClank5, US, 0}, // Size Matters
+	{0xFCB981D5, RatchetAndClank5, EU, 0}, // Size Matters
 	{0x8634861F, RickyPontingInternationalCricket, EU, 0},
 	{0x2B58234D, TribesAerialAssault, US, 0},
 	{0x4D22DB95, Whiplash, US, 0},
