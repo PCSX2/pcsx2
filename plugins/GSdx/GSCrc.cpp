@@ -139,7 +139,7 @@ CRC::Game CRC::m_games[] =
 	// and as "Twisted Metal - Black" (PAL).
 	{0x788D8B4F, ICO, EU, 0},
 	{0x29C28734, ICO, CH, 0},
-	{0xC02C653E, GT4, CH, 0}, // China Speed!
+	{0xC02C653E, GT4, CH, 0},
 	{0xAEAD1CA3, GT4, JP, 0},
 	{0x30E41D93, GT4, KO, 0},
 	{0x715CF2EC, GT4, EU, 0},
