@@ -30,7 +30,6 @@
 class GSRendererHW : public GSRenderer
 {
 private:
-	GSVector2i native_buffer = GSVector2i{1280, 1024};
 	int m_width;
 	int m_height;
 	int m_custom_width;

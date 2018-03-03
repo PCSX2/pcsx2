@@ -23,8 +23,8 @@
 #include "GSRendererHW.h"
 
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
-	: m_width(native_buffer.x)
-	, m_height(native_buffer.y)
+	: m_width(default_rt_size.x)
+	, m_height(default_rt_size.y)
 	, m_custom_width(1024)
 	, m_custom_height(1024)
 	, m_reset(false)
@@ -159,8 +159,8 @@ void GSRendererHW::CustomResolutionScaling()
 		return;
 
 	m_tc->RemovePartial();
-	m_width = std::max(m_width, native_buffer.x);
-	m_height = std::max(framebuffer_height[m_large_framebuffer], native_buffer.y);
+	m_width = std::max(m_width, default_rt_size.x);
+	m_height = std::max(framebuffer_height[m_large_framebuffer], default_rt_size.y);
 
 	std::string overhead = std::to_string(framebuffer_height[1] - framebuffer_height[0]);
 	std::string message = "(Custom resolution) Framebuffer size set to " + std::to_string(crtc_width) + "x" + std::to_string(crtc_height);
