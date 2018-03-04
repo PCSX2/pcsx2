@@ -305,7 +305,6 @@ namespace Panels
 	protected:
 		pxCheckBox*			m_check_SynchronousGS;
 		wxButton*			m_restore_defaults;
-		pxCheckBox*			m_check_DisableOutput;
 		FrameSkipPanel*		m_span;
 		FramelimiterPanel*	m_fpan;
 

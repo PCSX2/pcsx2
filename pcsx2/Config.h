@@ -295,7 +295,7 @@ struct Pcsx2Config
 		// forces the MTGS to execute tags/tasks in fully blocking/synchronous
 		// style.  Useful for debugging potential bugs in the MTGS pipeline.
 		bool	SynchronousMTGS;
-		bool	DisableOutput;
+
 		int		VsyncQueueSize;
 
 		bool		FrameLimitEnable;
@@ -318,7 +318,6 @@ struct Pcsx2Config
 		{
 			return
 				OpEqu( SynchronousMTGS )		&&
-				OpEqu( DisableOutput )			&&
 				OpEqu( VsyncQueueSize )			&&
 				
 				OpEqu( FrameSkipEnable )		&&
