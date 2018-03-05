@@ -68,6 +68,7 @@
 -- DMABusyHack       = 1 // Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
 -- VIFFIFOHack       = 1 // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
 -- VIF1StallHack     = 1 // SOCOM II HUD and Spy Hunter loading hang.
+-- GIFFIFOHack       = 1 // Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
 -- FMVinSoftwareHack = 1 // Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering while an FMV plays.
 -- ScarfaceIbitHack  = 1 // VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
 
@@ -16139,8 +16140,9 @@ Region = PAL-E
 Compat = 5
 ---------------------------------------------
 Serial = SLES-54400
-Name   = SpongeBob Squarepants - Creature from the Krusty Krab
+Name   = SpongeBob SquarePants - Creature from the Krusty Krab
 Region = PAL-M7
+GIFFIFOHack = 1 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLES-54402
 Name   = Need for Speed - Carbon [Collector's Edition]
@@ -27489,6 +27491,7 @@ Region = NTSC-J
 Serial = SLPM-66694
 Name   = Spongebob
 Region = NTSC-J
+GIFFIFOHack = 1 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLPM-66695
 Name   = Kono Aozora ni Yakusoku o - Melody of the Sun and Sea
@@ -40548,6 +40551,7 @@ Compat = 4
 Serial = SLUS-21391
 Name   = SpongeBob SquarePants - Creature from the Krusty Krab
 Region = NTSC-U
+GIFFIFOHack = 1 // Fixes bad graphics.
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21392
