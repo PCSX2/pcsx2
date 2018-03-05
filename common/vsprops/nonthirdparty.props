@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir Condition="'$(ConfigurationType)'=='DynamicLibrary'">$(PCSX2RootDir)bin\plugins\</OutDir>
+    <OutDir Condition="'$(ConfigurationType)'=='Application'">$(PCSX2RootDir)bin\</OutDir>
+    <TargetName Condition="$(Configuration.Contains(SSE2))">$(TargetName)-SSE2</TargetName>
+    <TargetName Condition="$(Configuration.Contains(SSE4))">$(TargetName)-SSE4</TargetName>
+    <TargetName Condition="$(Configuration.Contains(AVX2))">$(TargetName)-AVX2</TargetName>
+    <TargetName Condition="$(Configuration.Contains(Devel))">$(TargetName)-dev</TargetName>
+    <TargetName Condition="$(Configuration.Contains(Debug))">$(TargetName)-dbg</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(PCSX2RootDir)common\include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_M_X86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">_ARCH_64=1;_M_X86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">_ARCH_32=1;_M_X86_32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Condition="$(Configuration.Contains(SSE2))">
+      <PreprocessorDefinitions>_M_SSE=0x200;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Condition="$(Configuration.Contains(SSE4))">
+      <PreprocessorDefinitions>_M_SSE=0x401;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Condition="$(Configuration.Contains(AVX2))">
+      <PreprocessorDefinitions>_M_SSE=0x501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <ClCompile Condition="$(Configuration.Contains(Devel))">
+      <PreprocessorDefinitions>PCSX2_DEVEL;PCSX2_DEVBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Condition="$(Configuration.Contains(Debug))">
+      <PreprocessorDefinitions>PCSX2_DEBUG;PCSX2_DEVBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <PreBuildEvent>
+      <Command Condition="'$(ConfigurationType)'=='DynamicLibrary' Or '$(ConfigurationType)'=='Application'">"$(PCSX2RootDir)common\vsprops\preBuild.cmd"</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>
