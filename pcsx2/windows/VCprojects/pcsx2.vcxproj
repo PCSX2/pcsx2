@@ -41,29 +41,27 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets">
-    <Import Project="vsprops\common.props" />
-    <Import Project="..\..\..\common\vsprops\BaseProperties.props" />
-    <Import Project="..\..\..\common\vsprops\3rdpartyDeps.props" />
-    <Import Project="..\..\..\common\vsprops\pthreads.props" />
-    <Import Condition="$(Configuration.Contains(Debug))" Project="..\..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Condition="$(Configuration.Contains(Devel))" Project="..\..\..\common\vsprops\CodeGen_Devel.props" />
-    <Import Condition="$(Configuration.Contains(Release))" Project="..\..\..\common\vsprops\CodeGen_Release.props" />
-    <Import Condition="!$(Configuration.Contains(Release))" Project="..\..\..\common\vsprops\IncrementalLinking.props" />
+    <Import Project="$(SolutionDir)common\vsprops\base.props" />
+    <Import Project="$(PCSX2RootDir)common\vsprops\zlib.props" />
+    <Import Project="$(PCSX2RootDir)common\vsprops\pthreads.props" />
+    <Import Project="$(PCSX2RootDir)common\vsprops\wxwidgets.props" />
+    <Import Project="$(PCSX2RootDir)common\vsprops\nonthirdparty.props" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  <PropertyGroup Label="UserMacros">
+    <ProjectRootDir>$(ProjectDir)\..\..\</ProjectRootDir>
   </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectRootDir);$(ProjectRootDir)gui;$(ProjectRootDir)IPU;$(ProjectRootDir)System;$(ProjectRootDir)x86;$(ProjectRootDir)x86\ix86-32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">DISABLE_SVU;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+      <DisableSpecificWarnings>4100;4324;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
+      <AdditionalDependencies>comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LargeAddressAware>Yes</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
@@ -592,10 +590,6 @@
     <ResourceCompile Include="..\wxResources.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">
-      <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_adv.vcxproj">
       <Project>{24c45343-fd20-5c92-81c1-35a2ae841e79}</Project>
     </ProjectReference>
@@ -604,10 +598,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_core.vcxproj">
       <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\zlib\zlib.vcxproj">
-      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\build\Utilities\utilities.vcxproj">
       <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>

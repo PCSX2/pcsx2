@@ -37,7 +37,7 @@
 #ifndef lib_pcap_pcap_h
 #define lib_pcap_pcap_h
 
-#if defined(WIN32)
+#if defined(_WIN32)
   #include <pcap-stdinc.h>
 #elif defined(MSDOS)
   #include <sys/types.h>

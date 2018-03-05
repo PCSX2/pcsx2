@@ -41,19 +41,16 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets">
-    <Import Project="..\..\vsprops\CommonLibrary.props" />
-    <Import Project="..\..\vsprops\pthreads.props" />
-    <Import Condition="$(Configuration.Contains(Debug))" Project="..\..\vsprops\CodeGen_Debug.props" />
-    <Import Condition="$(Configuration.Contains(Devel))" Project="..\..\vsprops\CodeGen_Devel.props" />
-    <Import Condition="$(Configuration.Contains(Release))" Project="..\..\vsprops\CodeGen_Release.props" />
-    <Import Condition="!$(Configuration.Contains(Release))" Project="..\..\vsprops\IncrementalLinking.props" />
+    <Import Project="$(SolutionDir)common\vsprops\base.props" />
+    <Import Project="$(PCSX2RootDir)common\vsprops\pthreads.props" />
+    <Import Project="$(PCSX2RootDir)common\vsprops\wxwidgets.props" />
+    <Import Project="$(PCSX2RootDir)common\vsprops\nonthirdparty.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
+      <AdditionalIncludeDirectories>$(PCSX2RootDir)common\include\x86emitter;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
     </ClCompile>

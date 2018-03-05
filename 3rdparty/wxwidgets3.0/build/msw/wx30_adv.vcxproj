@@ -41,16 +41,11 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)common\vsprops\base.props" />
     <Import Project="Common.props" />
-    <Import Condition="$(Configuration.Contains(Debug))" Project="..\..\..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Condition="$(Configuration.Contains(Devel))" Project="..\..\..\..\common\vsprops\CodeGen_Devel.props" />
-    <Import Condition="$(Configuration.Contains(Release))" Project="..\..\..\..\common\vsprops\CodeGen_Release.props" />
-    <Import Condition="!$(Configuration.Contains(Release))" Project="..\..\..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemGroup>
     <ClCompile Include="..\..\src\common\animatecmn.cpp" />
     <ClCompile Include="..\..\src\common\bmpcboxcmn.cpp" />

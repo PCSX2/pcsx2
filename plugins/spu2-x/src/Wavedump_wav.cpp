@@ -19,7 +19,7 @@
 #ifdef __POSIX__
 #include "WavFile.h"
 #else
-#include "soundtouch/source/SoundStretch/WavFile.h"
+#include "source/SoundStretch/WavFile.h"
 #endif
 
 static WavOutFile *_new_WavOutFile(const char *destfile)

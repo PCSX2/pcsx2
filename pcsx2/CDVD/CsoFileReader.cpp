@@ -18,11 +18,7 @@
 #include "CompressedFileReaderUtils.h"
 #include "CsoFileReader.h"
 #include "Pcsx2Types.h"
-#ifdef __POSIX__
 #include <zlib.h>
-#else
-#include <zlib/zlib.h>
-#endif
 
 // Implementation of CSO compressed ISO reading, based on:
 // https://github.com/unknownbrackets/maxcso/blob/master/README_CSO.md

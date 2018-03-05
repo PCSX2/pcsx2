@@ -7,8 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "svnrev.h"
-#include "afxresmw.h"
+#include <windows.h>
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -364,8 +363,8 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include ""svnrev.h""\r\n"
-    "#include ""afxresmw.h""\0"
+    "#include <windows.h>"
+    "\0"
 END
 
 3 TEXTINCLUDE 

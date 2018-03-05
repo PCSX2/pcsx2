@@ -38,6 +38,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)common\vsprops\base.props" />
     <Import Project="Common.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />

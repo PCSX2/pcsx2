@@ -41,16 +41,13 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)common\vsprops\base.props" />
     <Import Project="Common.props" />
-    <Import Condition="$(Configuration.Contains(Debug))" Project="..\..\..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Condition="$(Configuration.Contains(Devel))" Project="..\..\..\..\common\vsprops\CodeGen_Devel.props" />
-    <Import Condition="$(Configuration.Contains(Release))" Project="..\..\..\..\common\vsprops\CodeGen_Release.props" />
-    <Import Condition="!$(Configuration.Contains(Release))" Project="..\..\..\..\common\vsprops\IncrementalLinking.props" />
+    <Import Project="$(PCSX2RootDir)common\vsprops\libpng.props" />
+    <Import Project="$(PCSX2RootDir)common\vsprops\libjpeg.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>wxUSE_BASE=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
