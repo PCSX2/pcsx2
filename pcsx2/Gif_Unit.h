@@ -290,8 +290,8 @@ struct Gif_Path {
 
 				gifTag.setTag(&buffer[curOffset], 1);
 
-				//Don't set state to PACKED if it is a NOP packet
-				if(gifTag.tag.NLOOP > 0)
+				//Don't set state to PACKED if it is a NOP packet. Must check if PRIM or Regs are transferring
+				if (gifTag.tag.NLOOP > 0 || gifTag.tag.NREG != 0 || gifTag.tag.PRE)
 					state = (GIF_PATH_STATE)(gifTag.tag.FLG + 1);
 
 				// We don't have enough data for a complete GS packet
