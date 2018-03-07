@@ -151,13 +151,13 @@ CRC::Game CRC::m_games[] =
 	{0x7ABDBB5E, GT3, CH, 0}, // cutie comment
 	{0x3E9D448A, GT3, CH, 0}, // cutie comment
 	{0xAD66643C, GT3, CH, 0}, // cutie comment
-	{0x6810C3BC, GT3, CH, 0}, // Gran Turismo Concept 2002 Tokyo-Geneva
 	{0x85AE91B3, GT3, US, 0},
 	{0x8AA991B0, GT3, US, 0},
 	{0xC220951A, GT3, JP, 0},
-	{0x9DE5CF65, GT3, JP, 0}, // Gran Turismo 3: A-spec
+	{0x9DE5CF65, GT3, JP, 0},
+	{0xB590CE04, GT3, EU, 0},
 	{0x60013EBD, GTConcept, EU, 0},
-	{0xB590CE04, GTConcept, EU, 0},
+	{0x6810C3BC, GTConcept, CH, 0}, // Gran Turismo Concept 2002 Tokyo-Geneva
 	{0x0EEF32A3, GTConcept, KO, 0}, // Gran Turismo Concept 2002 Tokyo-Seoul
 	{0xC164550A, WildArms5, JPUNDUB, 0},
 	{0xC1640D2C, WildArms5, US, 0},
@@ -260,6 +260,7 @@ CRC::Game CRC::m_games[] =
 	{0x774DE8E2, ValkyrieProfile2, JP, 0},
 	{0x04CCB600, ValkyrieProfile2, EU, 0},
 	{0xB65E141B, ValkyrieProfile2, DE, 0}, // PAL German
+	{0x8510854E, ValkyrieProfile2, FR, 0},
 	{0xC70FC973, ValkyrieProfile2, IT, 0},
 	{0x47B9B2FD, RadiataStories, US, 0},
 	{0xAC73005E, RadiataStories, JP, 0},
@@ -372,17 +373,19 @@ CRC::Game CRC::m_games[] =
 	{0xB05805B6, TombRaiderAnniversary, JP, 0}, // cutie comment
 	{0xA629A376, TombRaiderAnniversary, EU, 0},
 	{0xBC8B3F50, TombRaiderLegend, US, 0}, // cutie comment
+	{0x365172A0, TombRaiderLegend, JP, 0},
 	{0x05177ECE, TombRaiderLegend, EU, 0},
 	{0x08FFF00D, SSX3, JP, 0}, // cutie comment
 	{0xCE942B2A, SSX3, EU, 0},
 	{0x5C891FF1, Black, US, 0},
 	{0xCAA04879, Black, EU, 0},
-	{0xADDFF505, Black, EU, 0},	//?
+	{0xADDFF505, Black, EU, 0},
 	{0xB3A9F9ED, Black, JP, 0},
 	{0x7838882F, VF4, JP, 0},
 	{0xEA131B57, VF4, US, 0},
 	{0x879CDA5E, StarWarsForceUnleashed, US, 0},
 	{0x137C792E, StarWarsForceUnleashed, US, 0},
+	{0xDAF2145C, StarWarsForceUnleashed, EU, 0},
 	{0x503BF9E1, StarWarsBattlefront, NoRegion, 0}, // EU and US versions have the same CRC
 	{0x02F4B541, StarWarsBattlefront2, NoRegion, 0}, // EU and US versions have the same CRC
 	{0xA8DB29DF, BlackHawkDown, EU, 0},
@@ -410,7 +413,7 @@ CRC::Game CRC::m_games[] =
 	{0xD03D4C77, SpyroNewBeginning, US, 0},
 	{0x0EE5646B, SpyroNewBeginning, EU, 0},
 	// {0x7ACF7E03, SpyroNewBeginning, NoRegion, 0}, // same CRC as {ICO, NoRegion}
-	//  and as "Twisted Metal - Black" (PAL).
+	// and as "Twisted Metal - Black" (PAL).
 	{0xB80CE8EC, SpyroEternalNight, US, 0},
 	{0x8AE9536D, SpyroEternalNight, EU, 0},
 	{0xC95F0198, SpyroEternalNight, NoRegion, 0},
@@ -516,6 +519,7 @@ CRC::Game CRC::m_games[] =
 	{0x9F391882, SteambotChronicles, US, 0},
 	{0xFEFCF9DE, SteambotChronicles, JP, 0}, // Ponkotsu Roman Daikatsugeki: Bumpy Trot 
 	{0XE1BF5DCA, SuperManReturns, US, 0},
+	{0XE8F7BAB6, SuperManReturns, EU, 0},
 	{0x06A7506A, SacredBlaze, JP, 0},
 	{0x4CE7FB04, ItadakiStreet, JP, 0},
 	{0x9C712FF0, Jak1, EU, 0},
@@ -526,7 +530,7 @@ CRC::Game CRC::m_games[] =
 	{0x644CFD03, Jak3, US, 0},
 	{0xDF659E77, JakX, EU, 0},
 	{0x3091E6FB, JakX, US, 0},
-	{0x4653CA3E, HarleyDavidson, NoRegion, 0},
+	{0x4653CA3E, HarleyDavidson, US, 0},
 	// Games list for Automatic Mipmapping
 	// Basic mipmapping
 	{0x194C9F38, AceCombatZero, EU, 0},
@@ -542,11 +546,14 @@ CRC::Game CRC::m_games[] =
 	{0xE3E8E893, DestroyAllHumans, EU, 0},
 	{0x42DF8C8C, DestroyAllHumans2, US, 0},
 	{0x743E10C2, DestroyAllHumans2, EU, 0},
+	{0x67C38BAA, FIFA03, US, 0},
 	{0x722BBD62, FIFA03, EU, 0},
 	{0x2BCCF704, FIFA03, EU, 0},
 	{0xCC6AA742, FIFA04, KO, 0},
 	{0x2C6A4E2E, FIFA04, US, 0},
+	{0x684ADFC6, FIFA04, EU, 0},
 	{0x972611BB, FIFA05, US, 0},
+	{0x972719A3, FIFA05, EU, 0},
 	{0x230CB71D, SoulReaver2, US, 0},
 	{0x6F991F52, SoulReaver2, JP, 0},
 	{0x6D8B4CD1, SoulReaver2, EU, 0},
