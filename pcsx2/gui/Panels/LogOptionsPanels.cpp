@@ -249,7 +249,7 @@ Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 
 	m_masterEnabler = new pxCheckBox( this, _("Enable Trace Logging"),
 		_("Trace logs are all written to emulog.txt.  Toggle trace logging at any time using F10.") );
-	m_masterEnabler->SetToolTip( _("Warning: Enabling trace logs is typically very slow, and is a leading cause of 'What happened to my FPS?' problems. :)") );
+	m_masterEnabler->SetToolTip( _("Warning: Trace logging is typically very slow, and is a leading cause of 'What happened to my FPS?' problems. :)") );
 
 	wxFlexGridSizer& topSizer = *new wxFlexGridSizer( 2 );
 
