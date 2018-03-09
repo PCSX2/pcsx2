@@ -1122,8 +1122,8 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::MetalSlug6, CRC::RegionCount, &GSRendererHW::OI_MetalSlug6));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::RozenMaidenGebetGarden, CRC::RegionCount, &GSRendererHW::OI_RozenMaidenGebetGarden));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::StarWarsForceUnleashed, CRC::RegionCount, &GSRendererHW::OI_StarWarsForceUnleashed));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroNewBeginning, CRC::RegionCount, &GSRendererHW::OI_SpyroNewBeginning));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroEternalNight, CRC::RegionCount, &GSRendererHW::OI_SpyroEternalNight));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroNewBeginning, CRC::RegionCount, &GSRendererHW::OI_SpyroGames));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroEternalNight, CRC::RegionCount, &GSRendererHW::OI_SpyroGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TalesOfLegendia, CRC::RegionCount, &GSRendererHW::OI_TalesOfLegendia));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
@@ -1136,9 +1136,9 @@ GSRendererHW::Hacks::Hacks()
 
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::OO_DBZBT2));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::OO_MajokkoALaMode2));
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak2, CRC::RegionCount, &GSRendererHW::OO_Jak));
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OO_Jak));
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::JakX, CRC::RegionCount, &GSRendererHW::OO_Jak));
+	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak2, CRC::RegionCount, &GSRendererHW::OO_JakGames));
+	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OO_JakGames));
+	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::JakX, CRC::RegionCount, &GSRendererHW::OO_JakGames));
 
 	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::CU_DBZBT2));
 	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::CU_MajokkoALaMode2));
@@ -1563,23 +1563,7 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 	return true;
 }
 
-bool GSRendererHW::OI_SpyroNewBeginning(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if(PRIM->TME)
-	{
-		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_min.p.z == 0))
-		{
-			m_dev->ClearDepth(ds);
-		}
-	}
-
-	return true;
-}
-
-bool GSRendererHW::OI_SpyroEternalNight(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+bool GSRendererHW::OI_SpyroGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	uint32 FBP = m_context->FRAME.Block();
 	uint32 FPSM = m_context->FRAME.PSM;
@@ -1816,7 +1800,7 @@ void GSRendererHW::OO_MajokkoALaMode2()
 	}
 }
 
-void GSRendererHW::OO_Jak()
+void GSRendererHW::OO_JakGames()
 {
 	// FIXME might need a CU_Jak too
 	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
@@ -1825,7 +1809,7 @@ void GSRendererHW::OO_Jak()
 	if(!PRIM->FST && PRIM->TME && (r == r_p).alltrue() && m_context->TEX0.TW == 4 && m_context->TEX0.TH == 4 && m_context->TEX0.PSM == PSM_PSMCT32) {
 		// Game will render a texture directly into a palette.
 		uint32 FBP = m_context->FRAME.Block();
-		GL_INS("OO_Jak read back 0x%x", FBP);
+		GL_INS("OO_JakGames read back 0x%x", FBP);
 
 		GIFRegBITBLTBUF BITBLTBUF;
 
