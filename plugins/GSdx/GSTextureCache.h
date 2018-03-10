@@ -60,7 +60,7 @@ public:
 
 	public:
 		GSTexture* m_palette;
-		bool m_initpalette;
+		bool m_should_have_tex_palette; // Enables m_clut (and possibly m_palette) recycling on object destruction
 		uint32 m_valid[MAX_PAGES]; // each uint32 bits map to the 32 blocks of that page
 		uint32* m_clut;
 		bool m_target;
@@ -105,6 +105,47 @@ public:
 		void Update();
 	};
 
+	class Palette
+	{
+	private:
+		uint32* m_clut; // Pointer to a copy of relevant clut
+		GSTexture* m_tex_palette; // Pointer to valid texture with relevant clut as content
+
+	public:
+		Palette(); // Default constructor
+		Palette(const Palette& palette); // Copy constructor
+		Palette(const GSRenderer* renderer, uint16 pal); // Creates a copy of the current clut and a texture with its content
+
+		// Getter for clut pointer
+		__forceinline uint32* GetClut();
+
+		// Getter for palette texture pointer
+		__forceinline GSTexture* GetPaletteGSTexture();
+	};
+
+	class PaletteMap
+	{
+	private:
+		static const uint16 MAX_SIZE = 2048; // Max size of the map
+		uint16 m_size = 0; // Both size counter and valid stack top index
+		std::array<Palette, MAX_SIZE> m_palettes_stack; // Stack of Palette to be used to avoid memory fragmentation
+		
+		// Array of 2 multimaps, the first for 64B palettes and the second for 1024B palettes.
+		//     Each multimap has the clut hash value as key and the relevant palettes as values (multiple values possible for each key)
+		std::array<std::unordered_multimap<size_t, Palette*>, 2> m_multimaps;
+
+		// Helper function to compute an hash value of the clut
+		__forceinline static size_t HashClut(uint16 pal, const uint32* clut);
+
+	public:
+		PaletteMap(); // Default constructor
+
+		// Retrieves a pointer to valid Palette from m_multimaps or creates a new one adding it to the data structure
+		Palette* GetPalette(const GSRenderer* renderer, uint16 pal); 
+
+		void Clear(GSRenderer* renderer); // Clears m_multimaps, deleting clut(s) arrays and recycling palette textures 
+	};
+
 	class SourceMap
 	{
 	public:
@@ -123,6 +164,7 @@ public:
 
 protected:
 	GSRenderer* m_renderer;
+	PaletteMap m_palette_map;
 	SourceMap m_src;
 	FastList<Target*> m_dst[2];
 	bool m_paltex;
@@ -174,4 +216,6 @@ public:
 	}
 
 	void PrintMemoryUsage();
+
+	__forceinline void SetPalette(Source* s, const GSRenderer* renderer, uint16 pal);
 };

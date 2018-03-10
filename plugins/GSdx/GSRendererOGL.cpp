@@ -1344,12 +1344,16 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 			// We need the palette to convert the depth to the correct alpha value.
 			if (!tex->m_palette) {
+				if (tex->m_should_have_tex_palette) {
+					tex->m_clut = nullptr; // Release possible reference to any cached clut
+					tex->m_should_have_tex_palette = false; // This triggers the recycle of the palette on Source destruction
+				}
+
 				tex->m_palette = m_dev->CreateTexture(256, 1);
 
 				const uint32* clut = m_mem.m_clut;
-				int pal = GSLocalMemory::m_psm[tex->m_TEX0.PSM].pal;
+				uint16 pal = GSLocalMemory::m_psm[tex->m_TEX0.PSM].pal;
 				tex->m_palette->Update(GSVector4i(0, 0, pal, 1), clut, pal * sizeof(clut[0]));
-				tex->m_initpalette = false;
 
 				dev->PSSetShaderResource(1, tex->m_palette);
 			}
