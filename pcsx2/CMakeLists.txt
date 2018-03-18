@@ -358,7 +358,6 @@ set(pcsx2GuiResources
     ${res_bin}/AppIcon32.h
     ${res_bin}/AppIcon64.h
     ${res_bin}/BackgroundLogo.h
-    ${res_bin}/ConfigIcon_Appearance.h
     ${res_bin}/ButtonIcon_Camera.h
     ${res_bin}/ConfigIcon_Cpu.h
     ${res_bin}/ConfigIcon_Gamefixes.h
@@ -698,7 +697,7 @@ file(MAKE_DIRECTORY ${res_bin})
 
 foreach(res_file IN ITEMS
         AppIcon16 AppIcon32 AppIcon64 BackgroundLogo Logo ButtonIcon_Camera
-        ConfigIcon_Appearance ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
+        ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
         ConfigIcon_Paths ConfigIcon_Plugins ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
     add_custom_command(OUTPUT  "${res_bin}/${res_file}.h" COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_src}/${res_file}.png" "${res_bin}/${res_file}" )
 endforeach()

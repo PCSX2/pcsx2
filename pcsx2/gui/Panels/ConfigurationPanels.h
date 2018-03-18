@@ -480,29 +480,6 @@ namespace Panels
 	};
 
 	// --------------------------------------------------------------------------------------
-	//  ThemeSelectorPanel
-	// --------------------------------------------------------------------------------------
-	class ThemeSelectorPanel : public BaseSelectorPanel
-	{
-		typedef BaseSelectorPanel _parent;
-
-	protected:
-		std::unique_ptr<wxArrayString> m_ThemeList;
-		wxListBox* m_ComboBox;
-		DirPickerPanel* m_FolderPicker;
-
-	public:
-		virtual ~ThemeSelectorPanel();
-		ThemeSelectorPanel( wxWindow* parent );
-
-	protected:
-		virtual void Apply();
-		virtual void AppStatusEvent_OnSettingsApplied();
-		virtual void DoRefresh();
-		virtual bool ValidateEnumerationStatus();	
-	};
-
-	// --------------------------------------------------------------------------------------
 	//  BiosSelectorPanel
 	// --------------------------------------------------------------------------------------
 	class BiosSelectorPanel : public BaseSelectorPanel
