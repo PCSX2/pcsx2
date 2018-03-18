@@ -34,6 +34,7 @@ protected:
 		Direct3DBlendState9 bs;
 	} m_fba;
 
+	void EmulateTextureShuffleAndFbmask();
 	void SetupIA(const float& sx, const float& sy);
 	void UpdateFBA(GSTexture* rt);
 
