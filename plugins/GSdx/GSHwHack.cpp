@@ -1047,19 +1047,6 @@ bool GSC_SengokuBasara(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_FinalFightStreetwise(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(!fi.TME && (fi.FBP == 0 || fi.FBP == 0x08c0) && fi.FPSM == PSM_PSMCT32 && (fi.TPSM == PSM_PSMT8 || fi.TPSM == PSM_PSMT4) && fi.FBMSK == 0x00FFFFFF)
-		{
-			skip = 3;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_TalesofSymphonia(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1083,10 +1070,12 @@ bool GSC_Simple2000Vol114(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME==0 && (fi.FBP==0x1500) && (fi.TBP0==0x2c97 || fi.TBP0==0x2ace || fi.TBP0==0x03d0 || fi.TBP0==0x2448) && (fi.FBMSK == 0x0000))
 		{
+			// Upscaling issues, removes glow/blur effect which fixes ghosting.
 			skip = 1;
 		}
 		if(fi.TME && (fi.FBP==0x0e00) && (fi.TBP0==0x1000) && (fi.FBMSK == 0x0000))
 		{
+			// Depth shadows, they don't work properly on OpenGL as well.
 			skip = 1;
 		}
 	}
@@ -1132,6 +1121,25 @@ bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 ////////////////////////////////////////////////////////////////////////////////
 // Correctly emulated on OpenGL but can be used as potential speed hack
 ////////////////////////////////////////////////////////////////////////////////
+
+bool GSC_FinalFightStreetwise(const GSFrameInfo& fi, int& skip)
+{
+	if (skip == 0)
+	{
+		if(fi.TME)
+		{
+			// depth textures (bully, mgs3s1 intro, Front Mission 5)
+			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
+				// General, often problematic post processing
+				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
+			{
+				skip = 1;
+			}
+		}
+	}
+
+	return true;
+}
 
 bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
 {
@@ -2239,7 +2247,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::EternalPoison] = GSC_EternalPoison;
 		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
-		lut[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise;
 		lut[CRC::FrontMission5] = GSC_FrontMission5;
 		lut[CRC::Genji] = GSC_Genji;
 		lut[CRC::GiTS] = GSC_GiTS;
@@ -2304,6 +2311,7 @@ void GSState::SetupCrcHack()
 		// Depth
 		lut[CRC::Bully] = GSC_Bully;
 		lut[CRC::BullyCC] = GSC_BullyCC;
+		lut[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::ICO] = GSC_ICO;
 		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
