@@ -201,6 +201,7 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 		case CRC::FIFA03:
 		case CRC::FIFA04:
 		case CRC::FIFA05:
+		case CRC::Shox:
 		case CRC::SoulReaver2:
 		case CRC::LegacyOfKainDefiance:
 		case CRC::RatchetAndClank:

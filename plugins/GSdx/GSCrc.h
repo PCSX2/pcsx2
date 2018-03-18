@@ -138,6 +138,7 @@ public:
 		ShadowHearts,
 		ShadowofRome,
 		ShinOnimusha,
+		Shox,
 		SilentHill2,
 		SilentHill3,
 		Simple2000Vol114,
