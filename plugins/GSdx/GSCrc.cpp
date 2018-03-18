@@ -575,6 +575,9 @@ CRC::Game CRC::m_games[] =
 	{0x8661F7BA, RatchetAndClank5, US, 0}, // Size Matters
 	{0xFCB981D5, RatchetAndClank5, EU, 0}, // Size Matters
 	{0x8634861F, RickyPontingInternationalCricket, EU, 0},
+	{0xDDAC3815, Shox, US, 0},
+	{0x78FFA39F, Shox, EU, 0},
+	{0x3DF10389, Shox, EU, 0},
 	{0x2B58234D, TribesAerialAssault, US, 0},
 	{0x4D22DB95, Whiplash, US, 0},
 	{0xB1BE3E51, Whiplash, EU, 0},
