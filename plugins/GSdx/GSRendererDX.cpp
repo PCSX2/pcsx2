@@ -147,6 +147,53 @@ void GSRendererDX::EmulateZbuffer()
 	}
 }
 
+void GSRendererDX::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex)
+{
+	// Channel shuffle effect not supported on DX. Let's keep the logic because it help to
+	// reduce memory requirement (and why not a partial port)
+
+	// Uncomment to disable (allow to trace the draw call)
+	// m_channel_shuffle = false;
+
+	// First let's check we really have a channel shuffle effect
+	if (m_channel_shuffle) {
+		if (m_game.title == CRC::Tekken5) {
+			if (m_context->FRAME.FBW == 1) {
+				// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
+				// Skip channel effect, it misses a shader for proper screen effect but at least the top left screen issue isn't appearing anymore 
+				// 12 pages: 2 calls by channel, 3 channels, 1 blit
+				// Minus current draw call
+				m_skip = 12 * (3 + 3 + 1) - 1;
+			} else {
+				// Could skip model drawing if wrongly detected
+				m_channel_shuffle = false;
+			}
+		} else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt)) {
+			// So far 2 games hit this code path. Urban Chaos and Tales of Abyss.
+			// Lacks shader like usual but maybe we can still use it to skip some bad draw calls.
+			throw GSDXRecoverableError();
+		} else if (m_index.tail <= 64 && m_context->CLAMP.WMT == 3) {
+			// Blood will tell. I think it is channel effect too but again
+			// implemented in a different way. I don't want to add more CRC stuff. So
+			// let's disable channel when the signature is different.
+			//
+			// Note: Tales Of Abyss and Tekken5 could hit this path too. Those games are
+			// handled above.
+			m_channel_shuffle = false;
+		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
+			// Read either blue or Alpha. Let's go for Blue ;)
+			// MGS3/Kill Zone
+			throw GSDXRecoverableError();
+		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0)) {
+			// Read either Red or Green. Let's check the V coordinate. 0-1 is likely top so
+			// red. 2-3 is likely bottom so green (actually depends on texture base pointer offset)
+			throw GSDXRecoverableError();
+		} else {
+			m_channel_shuffle = false;
+		}
+	}
+}
+
 void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 {
 	const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
@@ -302,32 +349,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	dev = (GSDeviceDX*)m_dev;
 
-	// Channel shuffle effect not supported on DX. Let's keep the logic because it help to
-	// reduce memory requirement (and why not a partial port)
-
-	// Uncomment to disable (allow to trace the draw call)
-	// m_channel_shuffle = false;
-
-	if (m_channel_shuffle) {
-		if (m_game.title == CRC::Tekken5) {
-			if (m_context->FRAME.FBW == 1) {
-				// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
-				// Skip channel effect, it misses a shader for proper screen effect but at least the top left screen issue isn't appearing anymore 
-				// 12 pages: 2 calls by channel, 3 channels, 1 blit
-				// Minus current draw call
-				m_skip = 12 * (3 + 3 + 1) - 1;
-			} else {
-				// Could skip model drawing if wrongly detected
-				m_channel_shuffle = false;
-			}
-		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
-			;
-		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0)) {
-			;
-		} else {
-			m_channel_shuffle = false;
-		}
-	}
+	EmulateChannelShuffle(&rt, tex);
 
 	// Upscaling hack to avoid various line/grid issues
 	MergeSprite(tex);
@@ -452,90 +474,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	m_ps_sel.key = 0;
 	m_ps_ssel.key = 0;
 
-	// Gregory: code is not yet ready so let's only enable it when
-	// CRC is below the FULL level
-	if (m_texture_shuffle && (m_crc_hack_level < CRCHackLevel::Full)) {
-		m_ps_sel.shuffle = 1;
-		m_ps_sel.fmt = 0;
-
-		const GIFRegXYOFFSET& o = m_context->XYOFFSET;
-		GSVertex* v = &m_vertex.buff[0];
-		size_t count = m_vertex.next;
-
-		// vertex position is 8 to 16 pixels, therefore it is the 16-31 bits of the colors
-		int  pos = (v[0].XYZ.X - o.OFX) & 0xFF;
-		bool write_ba = (pos > 112 && pos < 136);
-		// Read texture is 8 to 16 pixels (same as above)
-		int tex_pos = v[0].U & 0xFF;
-		m_ps_sel.read_ba = (tex_pos > 112 && tex_pos < 144);
-
-		GL_INS("Color shuffle %s => %s", m_ps_sel.read_ba ? "BA" : "RG", write_ba ? "BA" : "RG");
-
-		// Convert the vertex info to a 32 bits color format equivalent
-		for (size_t i = 0; i < count; i += 2) {
-			if (write_ba)
-				v[i].XYZ.X -= 128u;
-			else
-				v[i + 1].XYZ.X += 128u;
-
-			if (m_ps_sel.read_ba)
-				v[i].U -= 128u;
-			else
-				v[i + 1].U += 128u;
-
-			// Height is too big (2x).
-			int tex_offset = v[i].V & 0xF;
-			GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
-
-			GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i + 1].XYZ.Y, v[i + 1].V);
-			tmp = GSVector4i(tmp - offset).srl32(1) + offset;
-
-			v[i].XYZ.Y = (uint16)tmp.x;
-			v[i].V = (uint16)tmp.y;
-			v[i + 1].XYZ.Y = (uint16)tmp.z;
-			v[i + 1].V = (uint16)tmp.w;
-		}
-
-		// Please bang my head against the wall!
-		// 1/ Reduce the frame mask to a 16 bit format
-		const uint32& m = m_context->FRAME.FBMSK;
-		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
-		om_bsel.wrgba = 0;
-
-		// 2 Select the new mask (Please someone put SSE here)
-		if ((fbmask & 0xFF) == 0) {
-			if (write_ba)
-				om_bsel.wb = 1;
-			else
-				om_bsel.wr = 1;
-		}
-		else if ((fbmask & 0xFF) != 0xFF) {
-#ifdef _DEBUG
-			fprintf(stderr, "Please fix me! wb %u wr %u\n", om_bsel.wb, om_bsel.wr);
-#endif
-			//ASSERT(0);
-		}
-
-		fbmask >>= 8;
-		if ((fbmask & 0xFF) == 0) {
-			if (write_ba)
-				om_bsel.wa = 1;
-			else
-				om_bsel.wg = 1;
-		}
-		else if ((fbmask & 0xFF) != 0xFF) {
-#ifdef _DEBUG
-			fprintf(stderr, "Please fix me! wa %u wg %u\n", om_bsel.wa, om_bsel.wg);
-#endif
-			//ASSERT(0);
-		}
-
-	}
-	else {
-		//ps_sel.fmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
-
-		om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
-	}
+	EmulateTextureShuffleAndFbmask();
 
 	if(DATE)
 	{

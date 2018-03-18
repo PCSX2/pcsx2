@@ -36,8 +36,10 @@ class GSRendererDX : public GSRendererHW
 protected:
 	void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
 	void EmulateZbuffer();
+	void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
 	void EmulateTextureSampler(const GSTextureCache::Source* tex);
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
+	virtual void EmulateTextureShuffleAndFbmask() = 0;
 	virtual void SetupIA(const float& sx, const float& sy) = 0;
 	virtual void UpdateFBA(GSTexture* rt) {}
 
