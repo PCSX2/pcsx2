@@ -441,7 +441,7 @@ u128 R5900DebugInterface::getRegister(int cat, int num)
 		result = u128::From32(VU1.VI[num].UL);
 		break;
 	default:
-		result.From32(0);
+		result = u128::From32(0);
 		break;
 	}
 
