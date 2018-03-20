@@ -26,6 +26,36 @@
 
 #ifdef _WIN32
 
+class CPinInfo : public PIN_INFO {
+public:
+	CPinInfo() { pFilter = NULL; }
+	~CPinInfo() { if (pFilter) pFilter->Release(); }
+};
+
+class CFilterInfo : public FILTER_INFO {
+public:
+	CFilterInfo() { pGraph = NULL; }
+	~CFilterInfo() { if (pGraph) pGraph->Release(); }
+};
+
+#define BeginEnumFilters(pFilterGraph, pEnumFilters, pBaseFilter) \
+	{CComPtr<IEnumFilters> pEnumFilters; \
+	if(pFilterGraph && SUCCEEDED(pFilterGraph->EnumFilters(&pEnumFilters))) \
+	{ \
+		for(CComPtr<IBaseFilter> pBaseFilter; S_OK == pEnumFilters->Next(1, &pBaseFilter, 0); pBaseFilter = NULL) \
+		{ \
+
+#define EndEnumFilters }}}
+
+#define BeginEnumPins(pBaseFilter, pEnumPins, pPin) \
+	{CComPtr<IEnumPins> pEnumPins; \
+	if(pBaseFilter && SUCCEEDED(pBaseFilter->EnumPins(&pEnumPins))) \
+	{ \
+		for(CComPtr<IPin> pPin; S_OK == pEnumPins->Next(1, &pPin, 0); pPin = NULL) \
+		{ \
+
+#define EndEnumPins }}}
+
 //
 // GSSource
 //
@@ -331,15 +361,6 @@ public:
 		return m_output->DeliverEndOfStream();
 	}
 };
-
-#define BeginEnumPins(pBaseFilter, pEnumPins, pPin) \
-	{CComPtr<IEnumPins> pEnumPins; \
-	if(pBaseFilter && SUCCEEDED(pBaseFilter->EnumPins(&pEnumPins))) \
-	{ \
-		for(CComPtr<IPin> pPin; S_OK == pEnumPins->Next(1, &pPin, 0); pPin = NULL) \
-		{ \
-
-#define EndEnumPins }}}
 
 static IPin* GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION dir)
 {
