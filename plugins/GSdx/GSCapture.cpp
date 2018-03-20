@@ -458,11 +458,6 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 			pPin->QueryPinInfo(&pi);
 			std::wstring s{pi.achName};
 			printf("- Pin [%p - %p]: %s (%s)\n", pPin.p, pPinTo.p, std::string{s.begin(), s.end()}.c_str(), pi.dir ? "out" : "in");
-
-			BeginEnumMediaTypes(pPin, pEMT, pmt)
-			{
-			}
-			EndEnumMediaTypes(pmt)
 		}
 		EndEnumPins
 	}
