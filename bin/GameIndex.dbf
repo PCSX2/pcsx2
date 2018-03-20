@@ -121,7 +121,7 @@ Name   = Dead or Alive 2
 Region = NTSC-J
 Compat = 5
 [patches = 70D26E09]
-	// change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function
+	// Change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function.
 	patch=0,EE,00290408,word,24060000
 [/patches]
 ---------------------------------------------
@@ -599,8 +599,8 @@ Serial = SCAJ-20099
 Name   = Ico
 Region = NTSC-Unk
 Compat = 5
-eeClampMode = 2 // Otherwise freezes in various spots, check full intro
-vuClampMode = 1	// Otherwise camera gets stuck off the player in various spots.
+eeClampMode = 2 // Otherwise freezes in various spots, check full intro.
+vuClampMode = 1 // Otherwise camera gets stuck off the player in various spots.
 ---------------------------------------------
 Serial = SCAJ-20100
 Name   = Tenchu Kurenai
@@ -1181,10 +1181,10 @@ Name   = Dead or Alive 2 - Hardcore
 Region = PAL-M5
 Compat = 5
 [patches = 7A51F86E]
-//Patched by Prafull
-//Some missing sounds
-patch=0,EE,002b4c44,word,24060000
-patch=0,EE,002b4dc0,word,10000014
+	comment=Patch by Prafull
+	// Fixes game hanging on boot, but removes all sound effects.
+	patch=0,EE,002b4c44,word,24060000
+	patch=0,EE,002b4dc0,word,10000014
 [/patches]
 ---------------------------------------------
 Serial = SCES-50004
@@ -1199,18 +1199,13 @@ Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SCES-50006
-Name   = Drakan - The Ancients' Gates	// aka "Drakan 2"
+Name   = Drakan - The Ancients' Gates
 Region = PAL-M5
 Compat = 5
-EETimingHack = 1	// flickery textures
+EETimingHack = 1 // Fixes flickering textures.
 [patches]
 	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-	// =====
-	// Fix by pgert against displaycrap which arises with HD
-	//  when using GSdx (in HW-mode) around the Health & Mana bars.
-	patch=1,EE,001C2274,word,3C013F7F // 3C013F80
-	patch=1,EE,001C228C,word,3C013E10 // 3C013F00
 [/patches]
 ---------------------------------------------
 Serial = SCES-50009
@@ -1434,8 +1429,8 @@ Serial = SCES-50760
 Name   = Ico
 Region = PAL-M5
 Compat = 5
-eeClampMode = 2 // Otherwise freezes in various spots, check full intro
-vuClampMode = 1	// Otherwise camera gets stuck off the player in various spots.
+eeClampMode = 2 // Otherwise freezes in various spots, check full intro.
+vuClampMode = 1 // Otherwise camera gets stuck off the player in various spots.
 ---------------------------------------------
 Serial = SCES-50781
 Name   = Destruction Derby Arena [Beta, Promo, & Full Retail]
@@ -1712,6 +1707,10 @@ Serial = SCES-51608
 Name   = Jak II: Renegade
 Region = PAL-M7
 Compat = 5
+[patches]
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
+	comment=- Implementation requires Full boot - "Boot CDVD (full)".
+[/patches]
 ---------------------------------------------
 Serial = SCES-51610
 Name   = This is Football 2004 (Red Devils 2004)
@@ -1755,10 +1754,10 @@ Region = PAL-M8
 Compat = 5
 XgKickHack = 1
 [patches = 80802EA9]
-comment= Patch By Prafull
-// fix hang at loading screen
-patch=1,EE,002aa934,word,00000000
-patch=1,EE,002aa574,word,00000000
+	comment=Patch by Prafull
+	// Fix hang at loading screen.
+	patch=1,EE,002aa934,word,00000000
+	patch=1,EE,002aa574,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SCES-51685
@@ -1982,6 +1981,10 @@ Serial = SCES-52460
 Name   = Jak 3
 Region = PAL-M7
 Compat = 5
+[patches]
+	comment=- This gamedisc supports multiple languages through the BIOS configuration.
+	comment=- Implementation requires Full boot - "Boot CDVD (full)".
+[/patches]
 ---------------------------------------------
 Serial = SCES-52529
 Name   = Sly Racoon 2 - Band of Thieves
@@ -2885,8 +2888,8 @@ Serial = SCKA-20028
 Name   = Ico [PlayStation2 Big Hit Series]
 Region = NTSC-K
 Compat = 5
-eeClampMode = 2 // Otherwise freezes in various spots, check full intro
-vuClampMode = 1	// Otherwise camera gets stuck off the player in various spots.
+eeClampMode = 2 // Otherwise freezes in various spots, check full intro.
+vuClampMode = 1 // Otherwise camera gets stuck off the player in various spots.
 ---------------------------------------------
 Serial = SCKA-20029
 Name   = Gran Turismo Concept 2002 Tokyo-Seoul [PlayStation 2 Big Hit Series]
@@ -3151,8 +3154,8 @@ Serial = SCPS-11003
 Name   = Ico
 Region = NTSC-J
 Compat = 5
-eeClampMode = 2 // Otherwise freezes in various spots, check full intro
-vuClampMode = 1	// Otherwise camera gets stuck off the player in various spots.
+eeClampMode = 2 // Otherwise freezes in various spots, check full intro.
+vuClampMode = 1 // Otherwise camera gets stuck off the player in various spots.
 ---------------------------------------------
 Serial = SCPS-11004
 Name   = Bikkuri Mouse
@@ -3246,6 +3249,11 @@ Region = NTSC-J
 Serial = SCPS-11022
 Name   = Yoake no Mariko 2nd Act
 Region = NTSC-J
+[patches = 0cf7e6ff]
+	comment=Patch by Prafull
+	// Fix initial hang.
+	patch=1,EE,00176000,word,00000000
+[/patches]	
 ---------------------------------------------
 Serial = SCPS-11023
 Name   = Bravo Music - Chou-Meikyokuban
@@ -3879,8 +3887,8 @@ Serial = SCPS-19103
 Name   = Ico [PlayStation 2 The Best]
 Region = NTSC-J
 Compat = 5
-eeClampMode = 2 // Otherwise freezes in various spots, check full intro
-vuClampMode = 1	// Otherwise camera gets stuck off the player in various spots.
+eeClampMode = 2 // Otherwise freezes in various spots, check full intro.
+vuClampMode = 1 // Otherwise camera gets stuck off the player in various spots.
 ---------------------------------------------
 Serial = SCPS-19104
 Name   = Pipo Saru 2001 [PlayStation 2 The Best]
@@ -3894,8 +3902,8 @@ Serial = SCPS-19151
 Name   = Ico [PlayStation 2 The Best]
 Region = NTSC-J
 Compat = 5
-eeClampMode = 2 // Otherwise freezes in various spots, check full intro
-vuClampMode = 1	// Otherwise camera gets stuck off the player in various spots.
+eeClampMode = 2 // Otherwise freezes in various spots, check full intro.
+vuClampMode = 1 // Otherwise camera gets stuck off the player in various spots.
 ---------------------------------------------
 Serial = SCPS-19152
 Name   = Saru Get You! 2 [PlayStation 2 The Best]
@@ -4165,8 +4173,8 @@ Serial = SCPS-55001
 Name   = Ico
 Region = NTSC-J
 Compat = 5
-eeClampMode = 2 // Otherwise freezes in various spots, check full intro
-vuClampMode = 1	// Otherwise camera gets stuck off the player in various spots.
+eeClampMode = 2 // Otherwise freezes in various spots, check full intro.
+vuClampMode = 1 // Otherwise camera gets stuck off the player in various spots.
 ---------------------------------------------
 Serial = SCPS-55002
 Name   = Zero
@@ -4360,8 +4368,8 @@ Serial = SCPS-56001
 Name   = Ico
 Region = NTSC-K
 Compat = 5
-eeClampMode = 2 // Otherwise freezes in various spots, check full intro
-vuClampMode = 1	// Otherwise camera gets stuck off the player in various spots.
+eeClampMode = 2 // Otherwise freezes in various spots, check full intro.
+vuClampMode = 1 // Otherwise camera gets stuck off the player in various spots.
 ---------------------------------------------
 Serial = SCPS-56002
 Name   = Tekken Tag Tournament
@@ -4483,8 +4491,8 @@ Serial = SCUS-97113
 Name   = Ico
 Region = NTSC-U
 Compat = 5
-eeClampMode = 2 // Otherwise freezes in various spots, check full intro
-vuClampMode = 1	// Otherwise camera gets stuck off the player in various spots.
+eeClampMode = 2 // Otherwise freezes in various spots, check full intro.
+vuClampMode = 1 // Otherwise camera gets stuck off the player in various spots.
 ---------------------------------------------
 Serial = SCUS-97114
 Name   = NBA ShootOut 2001
@@ -4542,10 +4550,10 @@ Name   = Kiosk Demo Disc 2.02
 Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97128
-Name   = Drakan - The Ancients' Gates	// aka "Drakan 2"
+Name   = Drakan - The Ancients' Gates
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1	// flickery textures
+EETimingHack = 1 // Fixes flickering textures.
 ---------------------------------------------
 Serial = SCUS-97129
 Name   = Okage - Shadow King
@@ -4673,8 +4681,8 @@ Serial = SCUS-97159
 Name   = Ico [Demo]
 Region = NTSC-U
 Compat = 5
-eeClampMode = 2 // Otherwise freezes in various spots, check full intro
-vuClampMode = 1	// Otherwise camera gets stuck off the player in various spots.
+eeClampMode = 2 // Otherwise freezes in various spots, check full intro.
+vuClampMode = 1 // Otherwise camera gets stuck off the player in various spots.
 ---------------------------------------------
 Serial = SCUS-97160
 Name   = Extermination [Demo]
@@ -4706,8 +4714,9 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SCUS-97169
-Name   = Drakan - The Ancients' Gates [Demo]	// aka "Drakan 2 [Demo]"
+Name   = Drakan - The Ancients' Gates [Demo]
 Region = NTSC-U
+EETimingHack = 1 // Fixes flickering textures.
 ---------------------------------------------
 Serial = SCUS-97170
 Name   = Jak and Daxter - The Precursor Legacy [Cingular Wireless Demo]
@@ -7178,12 +7187,12 @@ Name   = Penny Racers
 Region = PAL-M3
 Compat = 5
 [patches = FBE2613D]
-	//Patched by Prafull
-	//Fixes vsync issues
+	comment=Patch by Prafull
+	// Fixes vsync issues.
 	patch=0,EE,001a66ac,word,03e00008
-	//Avoid hang at first loading screen
+	// Avoid hang at first loading screen.
 	patch=0,EE,001a6688,word,00000000
-	//Skips movies
+	// Skips movies.
 	patch=0,EE,001b1b00,word,24020001
 [/patches]
 ---------------------------------------------
@@ -7355,6 +7364,11 @@ Compat = 5
 Serial = SLES-50355
 Name   = Batman Vengeance
 Region = PAL-M6
+[patches = A6F234C7]
+	comment=Patch by Prafull
+	// Fixes the hang in certain scenarios.
+	patch=1,EE,0049e998,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-50356
 Name   = ESPN International Winter Sports
@@ -7666,6 +7680,14 @@ Compat = 5
 Serial = SLES-50503
 Name   = Weakest Link
 Region = PAL-E
+[patches = 7193F81D]
+	comment=Patch by Prafull
+	// Fixes game hanging at start.
+	patch=1,EE,00195f38,word,00000000
+	patch=1,EE,001a2fbc,word,00000000
+	patch=1,EE,00198b68,word,00000000
+	patch=1,EE,00145b50,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-50504
 Name   = Half-Life
@@ -8032,6 +8054,14 @@ Region = PAL-M4
 Serial = SLES-50709
 Name   = Weakest Link (Le Maillon Fable)
 Region = PAL-F
+[patches = 837321FA]
+	comment=Patch by Prafull
+	// Fixes game hanging at start.
+	patch=1,EE,001980a8,word,00000000
+	patch=1,EE,001a512c,word,00000000
+	patch=1,EE,0019acd8,word,00000000
+	patch=1,EE,00147cc0,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-50710
 Name   = Dr. Muto
@@ -8413,6 +8443,24 @@ Compat = 5
 Serial = SLES-50843
 Name   = Crashed
 Region = PAL-M5
+[patches = 0379b4f7]
+	comment=Patch by Prafull
+	// Fix hang at start.
+	patch=0,EE,00151898,word,00000000
+	// Fix ingame hangs.
+	patch=0,EE,001518b0,word,00000000
+	patch=0,EE,001518c4,word,00000000
+	patch=0,EE,001518d8,word,00000000
+	patch=0,EE,001518ec,word,00000000
+	patch=0,EE,00151900,word,00000000
+	patch=0,EE,00151914,word,00000000
+	patch=0,EE,00151928,word,00000000
+	patch=0,EE,0015193C,word,00000000
+	patch=0,EE,00151950,word,00000000
+	patch=0,EE,00151968,word,00000000
+	patch=0,EE,00151978,word,00000000
+	patch=0,EE,00151914,word,00000000
+[/patches]	
 ---------------------------------------------
 Serial = SLES-50845
 Name   = Medal of Honour - Frontline
@@ -8483,8 +8531,8 @@ Name   = F1 2002
 Region = PAL-M4
 Compat = 5
 [patches = A0ED2D23]
-	//Patched by Prafull
-	//Fixes controller issue but skips videos
+	comment=Patch by Prafull
+	// Fixes controller issue but skips videos.
 	patch=0,EE,002d8568,word,03e00008
 	patch=0,EE,002d856c,word,00000000
 [/patches]
@@ -12398,6 +12446,11 @@ Compat = 5
 Serial = SLES-52711
 Name   = Titeuf Mega Compet
 Region = PAL-F
+[patches = 958e5086]
+	comment=Patch by Prafull
+	// Sheep screen freeze fix.
+	patch=1,EE,001c83a4,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-52713
 Name   = NBA Live 2005
@@ -12630,10 +12683,10 @@ Name   = Disney-Pixar's The Incredibles
 Region = PAL-E
 Compat = 5
 [patches = EBDB6E4B]
-comment= Patch By Prafull
-// fix hang at loading screen
-patch=1,EE,0010ec20,word,00000000
-	comment=- This disc has the same CRC as SLUS-20905, the NTSC-U disc.
+	comment=Patch by Prafull
+	// Fix hang at loading screen.
+	patch=1,EE,0010ec20,word,00000000
+	comment=This disc has the same CRC as SLUS-20905, the NTSC-U disc.
 [/patches]
 ---------------------------------------------
 Serial = SLES-52813
@@ -12653,9 +12706,9 @@ Serial = SLES-52816
 Name   = Incredibles, The
 Region = PAL-S
 [patches = 197641AA]
-comment= Patch By Prafull
-// fix hang at loading screen
-patch=1,EE,0010ec20,word,00000000
+	comment=Patch by Prafull
+	// Fix hang at loading screen.
+	patch=1,EE,0010ec20,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLES-52820
@@ -12812,9 +12865,9 @@ Name   = Spongebob Squarepants - The Movie
 Region = PAL-E
 Compat = 5
 [patches = 536FEB77]
-comment= Patch By Prafull
-// fix hang at loading screen
-patch=1,EE,0010f3e0,word,00000000
+	comment=Patch by Prafull
+	// Fix hang at loading screen.
+	patch=1,EE,0010f3e0,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLES-52896
@@ -12917,8 +12970,8 @@ Serial = SLES-52943
 Name   = ESPN NFL 2K5
 Region = PAL-E
 [patches = 7D5403E1]
-	//Patched by Prafull
-	//Fixes random hangs
+	comment=Patch by Prafull
+	// Fixes random hangs.
 	patch=0,EE,0043c930,word,00000000
 [/patches]
 ---------------------------------------------
@@ -13044,18 +13097,18 @@ Serial = SLES-52985
 Name   = Spongebob Squarepants - The Movie
 Region = PAL-G
 [patches = B3C11E2D]
-comment= Patch By Prafull
-// fix hang at loading screen
-patch=1,EE,0010f3e0,word,00000000
+	comment=Patch by Prafull
+	// Fix hang at loading screen.
+	patch=1,EE,0010f3e0,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLES-52986
 Name   = Spongebob Squarepants - The Movie
 Region = PAL-S
 [patches = 34DA05D2]
-comment= Patch By Prafull
-// fix hang at loading screen
-patch=1,EE,0010f3e0,word,00000000
+	comment=Patch by Prafull
+	// Fix hang at loading screen.
+	patch=1,EE,0010f3e0,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLES-52988
@@ -14114,8 +14167,8 @@ Serial = SLES-53474
 Name   = Incredibles, The - Rise of the Underminer
 Region = PAL-M3
 [patches = F3AE68FC]
-	//Patch By Prafull
-	//fix hang at loading screen
+	comment=Patch by Prafull
+	// Fix hang at loading screen.
 	patch=1,EE,001110e0,word,00000000
 [/patches]
 ---------------------------------------------
@@ -17206,6 +17259,15 @@ Region = PAL-M5
 Serial = SLES-55108
 Name   = Samurai Warriors 2 - Xtreme Legends
 Region = PAL-E
+---------------------------------------------
+Serial = SLES-55109
+Name   = The Spiderwick Chronicles
+Region = PAL-E
+[patches = D5D1D002]
+	comment=Patch by Prafull
+	// Fixes hang at boot.
+	patch=1,EE,0011f6a4,word,00000000 //5460fff6
+[/patches]
 ---------------------------------------------
 Serial = SLES-55110
 Name   = Odin Sphere
@@ -21642,6 +21704,12 @@ Region = NTSC-J
 Serial = SLPM-65071
 Name   = Drift Champ
 Region = NTSC-J
+[patches = 8449ffe1]
+	comment=Patch by Prafull
+	// Fix the hang at start of chapter 2.
+	patch=1,EE,002a140c,word,00000000
+	patch=1,EE,002a120c,word,00000000
+[/patches]	
 ---------------------------------------------
 Serial = SLPM-65072
 Name   = ESPN Winter X-Games Snowboarding 2002
@@ -26756,6 +26824,11 @@ Region = NTSC-J
 Serial = SLPM-66497
 Name   = Ice Age 2
 Region = NTSC-J
+[patches = 33DB9037]
+	// Intro screen freeze fix.
+	patch=1,EE,002e91e8,word,27bdfee0 //27bdff70
+	patch=1,EE,002e9224,word,27bd0120 //27bd0090
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66498
 Name   = TOCA Race Driver 2 - Ultimate Racing Simulator
@@ -28729,6 +28802,21 @@ Serial = SLPM-67552
 Name   = Tomak - Save the Earth Again [Complete Edition]
 Region = NTSC-K
 ---------------------------------------------
+Serial = SLPM-68005
+Name   = Harry Potter to Himitsu no Heya(Coca Cola Original version)
+Region = NTSC-J
+[patches = E90BE9F8]
+	comment=Patch by Prafull
+	// Fix initial hang.
+	patch=1,EE,002032fc,word,03e00008 //1440fffa
+	// Load game quickly.
+	patch=1,EE,001f708c,word,1000000f //54400006
+	// Fixes ingame hang in few stages.
+	patch=1,EE,001f70f4,word,1000000f //1480fffa
+	// Fixes flickering graphics (Thanks to Kian Stevens for finding this).
+	patch=1,EE,80000000,word,00000000
+[/patches]
+---------------------------------------------
 Serial = SLPM-68018
 Name   = Virtua Fighter - 10th Anniversary Edition
 Region = NTSC-J
@@ -29597,6 +29685,21 @@ Name   = Chulip
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
+Serial = SLPS-20234 
+Name   = Harry Potter to Himitsu no Heya
+Region = NTSC-J
+[patches = E1963055]
+	comment=Patch by Prafull
+	// Fix initial hang.
+	patch=1,EE,002032bc,word,03e00008 //1440fffa
+	// Load game quickly.
+	patch=1,EE,001f704c,word,1000000f //54400006
+	// This fixes hang in few stages.
+	patch=1,EE,001f70b4,word,1000000f //1480fffa
+	// Fixes flickering graphics (Thanks to Kian Stevens for finding this).
+	patch=1,EE,80000000,word,00000000
+[/patches]
+---------------------------------------------
 Serial = SLPS-20243
 Name   = New Price Go Go Golf
 Region = NTSC-J
@@ -30380,12 +30483,10 @@ Name   = Dead or Alive 2
 Region = NTSC-J
 Compat = 5
 [patches = 7894BA09]
-	// change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function
+	// Change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function.
 	patch=0,EE,00290408,word,24060000
-
 	//patch=0,EE,0029055C,word,10000013
-
-	// I tried to write a comment explaining this then realised the futility
+	// I tried to write a comment explaining this then realised the futility.
 	//patch=0,EE,0028FE78,word,FFB300E0
 	//patch=0,EE,0028FE7C,word,3C130058
 	//patch=0,EE,0028FE80,word,0C0CD678
@@ -31834,8 +31935,13 @@ Name   = Mobile Suit Gundam - Gundam vs. Z-Gundam
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25421
-Name   = Bokujou Monogarari - Oh! Wonderful Life
+Name   = Bokujou Monogatari - Oh! Wonderful Life (First Print Limited Edition)
 Region = NTSC-J
+[patches = D2F0DC73]
+	comment=Patch by Prafull
+	// Fix hang at shipping shed.
+	patch=1,EE,002bd36c,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLPS-25422
 Name   = Death by Degrees - Tekken - Nina Williams
@@ -34352,22 +34458,20 @@ Name   = Dead or Alive 2
 Region = NTSC-U
 Compat = 5
 [patches = 23AF6876]
-//dvd version
-	// change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function
+// Dvd version.
+	// Change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function.
 	patch=0,EE,002b06ec,word,24060000
-
-	//Patch by Prafull after combining pseudonym's gamefix and benji229's patch
-	//skips some sound but game works
+	// Patch by Prafull after combining pseudonym's gamefix and benji229's patch.
+	// Fixes game hanging on boot, but removes all sound effects.
 	patch=0,EE,002b06ec,word,24060000
 	patch=0,EE,002b0868,word,10000014
 [/patches]
 [patches = 51068006]
-//cd version
-	// change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function
+// Cd version.
+	// Change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function.
 	patch=0,EE,002b06ec,word,24060000
-
-	//Patch by Prafull after combining pseudonym's gamefix and benji229's patch
-	//skips some sound but game works
+	// Patch by Prafull after combining pseudonym's gamefix and benji229's patch.
+	// Fixes game hanging on boot, but removes all sound effects.
 	patch=0,EE,002b06ec,word,24060000
 	patch=0,EE,002b0868,word,10000014
 [/patches]
@@ -34998,12 +35102,12 @@ Name   = Gadget Racers
 Region = NTSC-U
 Compat = 5
 [patches = 03854A28]
-	//Patched by Prafull
-	//Fixes vsync issues
+	comment=Patch by Prafull
+	// Fixes vsync issues.
 	patch=0,EE,001a62ac,word,03e00008
-	//Avoid hang at first loading screen
+	// Avoid hang at first loading screen.
 	patch=0,EE,001a6288,word,00000000
-	//Skips movies
+	// Skips movies.
 	patch=0,EE,001b1700,word,24020001
 [/patches]
 ---------------------------------------------
@@ -36028,8 +36132,8 @@ Serial = SLUS-20455
 Name   = F1 2002
 Region = NTSC-U
 [patches = 8FF059A1]
-	//Patched by Prafull
-	//Fixes controller issue but skips videos
+	comment=Patch by Prafull
+	// Fixes controller issue but skips videos.
 	patch=0,EE,002d8c58,word,03e00008
 	patch=0,EE,002d8c5c,word,00000000
 [/patches]
@@ -36160,14 +36264,11 @@ Name   = WWE Smackdown - Shut Your Mouth
 Region = NTSC-U
 Compat = 5
 [patches = B0AE1898]
-	
-	comment=patched by prafull
-	
-	//skip sceipusync
+	comment=Patch by Prafull
+	// Skip sceipusync.
 	patch=0,EE,0010b880,word,00000000
 	patch=0,EE,0010b798,word,00000000
 	patch=0,EE,0010b7c8,word,00000000
-	
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20484
@@ -36601,6 +36702,17 @@ Serial = SLUS-20576
 Name   = Harry Potter and The Chamber of Secrets
 Region = NTSC-U
 Compat = 2
+[patches = c5473413]
+	comment=Patch by Prafull
+	// Fix initial hang.
+	patch=1,EE,002032bc,word,03e00008
+	// Load game quickly.
+	patch=1,EE,001f704c,word,1000000f
+	// Fixes ingame hang.
+	patch=1,EE,001f70b4,word,1000000f
+	// Fixes flickering graphics (Thanks to Kian Stevens for finding this).
+	patch=1,EE,80000000,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20577
 Name   = Drome Racers
@@ -37023,6 +37135,13 @@ Name   = Mafia
 Region = NTSC-U
 Compat = 4
 EETimingHack = 1
+[patches = B67F4F9E]
+	comment=Patch by Prafull
+	// Avoid hang before molotov party.
+	patch=1,EE,003e2bb4,word,00000000
+	// Fix crash in The priest mission.
+	patch=1,EE,0016f04c,word,1000000d
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20672
 Name   = Final Fantasy X-2
@@ -37265,8 +37384,8 @@ Serial = SLUS-20726
 Name   = ESPN - NBA Basketball
 Region = NTSC-U
 [patches = A13E5DD5]
-	//Patched by Prafull
-	//Avoid hang at start
+	comment=Patch by Prafull
+	// Avoid hang at start.
 	patch=0,EE,003161c0,word,00000000
 [/patches]
 ---------------------------------------------
@@ -37274,8 +37393,8 @@ Serial = SLUS-20727
 Name   = ESPN - NFL Football
 Region = NTSC-U
 [patches = 56920AD1]
-	//Patched by Prafull
-	//Fixes random hangs
+	comment=Patch by Prafull
+	// Fixes random hangs.
 	patch=0,EE,003bb900,word,00000000
 [/patches]
 ---------------------------------------------
@@ -38100,10 +38219,10 @@ Name   = SpongeBob Squarepants - The Movie
 Region = NTSC-U
 Compat = 5
 [patches = 536FEB77]
-comment= Patch By Prafull
-// fix hang at loading screen
-patch=1,EE,0010f3e0,word,00000000
-comment= this disc has the same crc as SLES-52895.
+	comment=Patch by Prafull
+	// Fix hang at loading screen.
+	patch=1,EE,0010f3e0,word,00000000
+	comment=This disc has the same crc as SLES-52895.
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20905
@@ -38111,10 +38230,10 @@ Name   = Incredibles, The
 Region = NTSC-U
 Compat = 5
 [patches = EBDB6E4B]
-comment= Patch By Prafull
-// fix hang at loading screen
-patch=1,EE,0010ec20,word,00000000
-	comment=- This disc has the same CRC as SLES-52812, the PAL-E disc.
+	comment=Patch by Prafull
+	// Fix hang at loading screen.
+	patch=1,EE,0010ec20,word,00000000
+	comment=This disc has the same CRC as SLES-52812, the PAL-E disc.
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20906
@@ -38184,8 +38303,8 @@ Name   = ESPN - NFL 2K5
 Region = NTSC-U
 Compat = 5
 [patches = 42F9D5AF]
-	//Patched by Prafull
-	//Fixes random hangs
+	comment=Patch by Prafull
+	// Fixes random hangs.
 	patch=0,EE,0041c680,word,00000000
 [/patches]
 ---------------------------------------------
@@ -38193,8 +38312,8 @@ Serial = SLUS-20920
 Name   = ESPN - NBA 2K5
 Region = NTSC-U
 [patches = 903C7BC5]
-	//Patched by Prafull
-	//avoid hanging at loading screen
+	comment=Patch by Prafull
+	// Avoid hanging at loading screen.
 	patch=0,EE,003bc800,word,00000000
 [/patches]
 ---------------------------------------------
@@ -38203,8 +38322,8 @@ Name   = ESPN - NHL 2K5
 Region = NTSC-U
 Compat = 5
 [patches = 9B6E69EC]
-	//Patched by Prafull
-	//Avoid hang at start
+	comment=Patch by Prafull
+	// Avoid hang at start.
 	patch=0,EE,003ed218,word,00000000
 [/patches]
 ---------------------------------------------
@@ -38212,6 +38331,11 @@ Serial = SLUS-20922
 Name   = ESPN - College Hoops 2K5
 Region = NTSC-U
 Compat = 2
+[patches = 2b54d3e5]
+	comment=Patch by Prafull
+	// Avoid hang at loading.
+	patch=1,EE,003bcc08,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20923
 Name   = King of Fighters - Maximum Impact
@@ -38406,10 +38530,10 @@ Name   = Neo Contra
 Region = NTSC-U
 Compat = 4
 [patches = 08901101]
-	comment=Patches by prafull
-	//New patch fixes most issues
+	comment=Patch by Prafull
+	// New patch fixes most issues.
 	patch=0,EE,003a94f8,word,00000000
-	//Fix hang at Level 4
+	// Fix hang at Level 4.
 	patch=0,EE,0037b1a4,word,03e00008
 	patch=0,EE,0037b1a8,word,00000000
 [/patches]
@@ -39432,6 +39556,11 @@ Serial = SLUS-21171
 Name   = Harvest Moon - A Wonderful Life [Special Edition]
 Region = NTSC-U
 Compat = 5
+[patches = 304c115c]
+	comment=Patch by Prafull
+	// Fix hang at shipping shed.
+	patch=1,EE,002bdb1c,word,00000000
+[/patches]	
 ---------------------------------------------
 Serial = SLUS-21172
 Name   = Conflict - Global Terror
@@ -39656,9 +39785,9 @@ Name   = Incredibles, The - Rise of the Underminers
 Region = NTSC-U
 Compat = 5
 [patches = 6DFE8ED7]
-comment= Patch By Prafull
-// fix hang at loading screen
-patch=1,EE,001110e0,word,00000000
+	comment=Patch by Prafull
+	// Fix hang at loading screen.
+	patch=1,EE,001110e0,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLUS-21218
@@ -39740,8 +39869,8 @@ Name   = College Hoops 2K6
 Region = NTSC-U
 Compat = 5
 [patches = A60E027C]
-	//Patched by Prafull
-	//This fixes random hangs and makes the game playable
+	comment=Patch by Prafull
+	// This fixes random hangs and makes the game playable.
 	patch=0,EE,0045f410,word,00000000
 [/patches]
 ---------------------------------------------
@@ -39749,8 +39878,8 @@ Serial = SLUS-21233
 Name   = NBA 2K6
 Region = NTSC-U
 [patches = E5C65369]
-	//Patched by Prafull
-	//Avoid hang at start
+	comment=Patch by Prafull
+	// Avoid hang at start.
 	patch=0,EE,004413a8,word,00000000
 [/patches]
 ---------------------------------------------
@@ -39764,8 +39893,8 @@ Name   = MLB 2k6
 Region = NTSC-U
 Compat = 5
 [patches = 88BB9A5C]
-	//Patched by Prafull
-	//Avoid hang at start
+	comment=Patch by Prafull
+	// Avoid hang at start.
 	patch=0,EE,003c4280,word,00000000
 [/patches]
 ---------------------------------------------
@@ -40157,6 +40286,16 @@ Serial = SLUS-21314
 Name   = Ruff Trigger - Vancore Conspiracy
 Region = NTSC-U
 Compat = 4
+EETimingHack = 1 // Needed to going ingame
+[patches = f73488d5]
+	comment=Patch by Prafull
+	// Ingame freeze fix.
+	patch=1,EE,00291df8,word,00000000
+	patch=1,EE,002bebe8,word,00000000
+	patch=1,EE,00291150,word,00000000
+	patch=1,EE,00291dcc,word,00000000
+	patch=1,EE,00296750,word,00000000
+[/patches]	
 ---------------------------------------------
 Serial = SLUS-21315
 Name   = 50cent - Bulletproof
@@ -40205,6 +40344,11 @@ Compat = 5
 Serial = SLUS-21324
 Name   = Major League Baseball 2K5 [World Series Edition]
 Region = NTSC-U
+[patches = D592B291]
+	comment=Patch by Prafull
+	// Skip hang at start.
+	patch=1,EE,0036b220,word,00000000 //1040fffd
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21325
 Name   = Harry Potter and The Goblet of Fire
@@ -40713,8 +40857,8 @@ Serial = SLUS-21424
 Name   = NBA 2K7
 Region = NTSC-U
 [patches = F5AEDCC3]
-	//Patched by Prafull
-	//Avoid hang at start
+	comment=Patch by Prafull
+	// Avoid hang at start.
 	patch=0,EE,0044ef60,word,00000000
 [/patches]
 ---------------------------------------------
@@ -40723,8 +40867,8 @@ Name   = NHL 2K7
 Region = NTSC-U
 Compat = 5
 [patches = 478EFBDB]
-	//Patched by Prafull
-	//Avoid hang at start
+	comment=Patch by Prafull
+	// Avoid hang at start.
 	patch=0,EE,004409d8,word,00000000
 [/patches]
 ---------------------------------------------
@@ -41944,6 +42088,11 @@ Serial = SLUS-21716
 Name   = Spiderwick Chronicles, The
 Region = NTSC-U
 Compat = 5
+[patches = 23B262A5]
+	comment=Patch by Prafull
+	// Fixes hang at boot.
+	patch=1,EE,0011f6a4,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21717
 Name   = Dora the Explorer - Dora Saves the Mermaids
@@ -42797,8 +42946,8 @@ Name   = NHL 2K10
 Region = NTSC-U
 Compat = 5
 [patches = 82CA153C]
-	//Patched by Prafull
-	//Fix hanging problem
+	comment=Patch by Prafull
+	// Fix hanging problem.
 	patch=0,EE,00431b70,word,00000000
 [/patches]
 ---------------------------------------------
