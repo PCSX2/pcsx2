@@ -63,8 +63,6 @@ void GSRendererDX9::EmulateTextureShuffleAndFbmask()
 		// It's still broken but more bearable. Broken effect is on the screen but fully instead of vertical lines.
 		throw GSDXRecoverableError();
 	} else {
-		//m_ps_sel.fmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
-
 		om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
 	}
 }
