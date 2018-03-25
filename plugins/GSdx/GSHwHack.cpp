@@ -1253,12 +1253,15 @@ bool GSC_ICO(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP == 0x00800 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03d00 && fi.TPSM == PSM_PSMCT32)
+		if(Aggressive && fi.TME && fi.FBP == 0x00800 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03d00 && fi.TPSM == PSM_PSMCT32)
 		{
+			// Removes shadows, shadows can be a little misaligned when upscaled. HPO fixes the issue.
+			// Can be used as a speed hack.
 			skip = 3;
 		}
 		else if(fi.TME && fi.FBP == 0x00800 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x02800 && fi.TPSM == PSM_PSMT8H)
 		{
+			// Depth effects.
 			skip = 1;
 		}
 		else if(Aggressive && fi.TME && fi.FBP == 0x0800 && (fi.TBP0 == 0x2800 || fi.TBP0 ==0x2c00) && fi.TPSM ==0  && fi.FBMSK == 0)
@@ -1452,6 +1455,8 @@ bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
 		{
+			// Texture shuffle. Not supported on D3D9.
+			// Can be used as a speed hack.
 			skip = 1000;
 		}
 		else if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0xff000000)
@@ -1461,12 +1466,6 @@ bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 		else if(fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8 && ((fi.TZTST == 2 && fi.FBMSK == 0x00FFFFFF) || (fi.TZTST == 1 && fi.FBMSK == 0x00FFFFFF) || (fi.TZTST == 3 && fi.FBMSK == 0xFF000000)))
 		{
 			skip = 1; // wall of fog
-		}
-		else if (fi.TME && (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S))
-		{
-			// Equivalent to the UserHacks_AutoSkipDrawDepth hack but enabled by default
-			// http://forums.pcsx2.net/Thread-God-of-War-Red-line-rendering-explained
-			skip = 1;
 		}
 	}
 	else
@@ -1504,12 +1503,6 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 			else if(Aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x0100 ) && (fi.TBP0==0x2b00 || fi.TBP0==0x2e80)) // 480P 2e80
 			{
 				skip = 1; // water effect and water vertical lines
-			}
-			else if (fi.TME && (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S))
-			{
-				// Equivalent to the UserHacks_AutoSkipDrawDepth hack but enabled by default
-				// http://forums.pcsx2.net/Thread-God-of-War-Red-line-rendering-explained
-				skip = 1;
 			}
 		}
 	}
@@ -1702,7 +1695,7 @@ bool GSC_Sly2(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME &&  (fi.FBP == 0x00000 || fi.FBP == 0x00700 || fi.FBP == 0x00800) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
+		if(fi.TME &&  (fi.FBP == 0x00000 || fi.FBP == 0x00700 || fi.FBP == 0x00800 || fi.FBP == 0x008c0) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
 		{
 			skip = 1000;
 		}
