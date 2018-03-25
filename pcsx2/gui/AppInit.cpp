@@ -20,6 +20,8 @@
 #include "MSWstuff.h"
 #include "MTVU.h" // for thread cancellation on shutdown
 
+#include "DiscordRPC.h"
+
 #include "Utilities/IniInterface.h"
 #include "DebugTools/Debug.h"
 #include "Dialogs/ModalPopups.h"
@@ -454,6 +456,9 @@ bool Pcsx2App::OnInit()
 	Bind(wxEVT_KEY_DOWN, &Pcsx2App::OnEmuKeyDown, this, pxID_PadHandler_Keydown);
 	Bind(wxEVT_DESTROY, &Pcsx2App::OnDestroyWindow, this);
 
+	drpcInit();
+	drpcUpdate();
+
 	// User/Admin Mode Dual Setup:
 	//   PCSX2 now supports two fundamental modes of operation.  The default is Classic mode,
 	//   which uses the Current Working Directory (CWD) for all user data files, and requires
@@ -618,6 +623,7 @@ void Pcsx2App::CleanupRestartable()
 void Pcsx2App::CleanupOnExit()
 {
 	AffinityAssert_AllowFrom_MainUI();
+	drpcShutdown();
 
 	try
 	{
