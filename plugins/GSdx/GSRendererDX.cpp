@@ -427,8 +427,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		}
 	}
 
-	om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
-
 	// vs
 
 	GSDeviceDX::VSSelector vs_sel;
