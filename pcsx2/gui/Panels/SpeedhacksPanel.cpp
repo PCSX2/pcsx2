@@ -115,10 +115,10 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	const wxSizerFlags sliderFlags( wxSizerFlags().Border( wxLEFT | wxRIGHT, 8 ).Expand() );
 
 	m_check_Enable = new pxCheckBox( this, _("Enable speedhacks"),
-		pxE( L"Speedhacks usually improve emulation speed, but can cause glitches, broken audio, and false FPS readings.  When having emulation problems, disable this panel first."
+		pxE( L"Speedhacks overall increases emulation speed, but can cause glitches, broken audio, and/or false FPS readings.\nWhen having emulation problems, disable (or alter) this panel first, in troubleshooting."
 		)
 	);
-	m_check_Enable->SetToolTip(_("A safe and easy way to make sure that all speedhacks are completely disabled.")).SetSubPadding( 1 );
+	m_check_Enable->SetToolTip(_("Having this disabled, effectively & securely disables ALL speedhacks.")).SetSubPadding( 1 );
 
 	wxPanelWithHelpers* left	= new wxPanelWithHelpers( this, wxVERTICAL );
 	wxPanelWithHelpers* right	= new wxPanelWithHelpers( this, wxVERTICAL );
