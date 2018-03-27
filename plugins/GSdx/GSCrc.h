@@ -118,6 +118,7 @@ public:
 		OnePieceGrandBattle,
 		Onimusha3,
 		PiaCarroteYoukosoGPGakuenPrincess,
+		Quake3Revolution,
 		RadiataStories,
 		RatchetAndClank,
 		RatchetAndClank2,

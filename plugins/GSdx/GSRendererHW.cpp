@@ -210,6 +210,7 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 		case CRC::RatchetAndClank4:
 		case CRC::RatchetAndClank5:
 		case CRC::RickyPontingInternationalCricket:
+		case CRC::Quake3Revolution:
 		case CRC::TombRaiderAnniversary:
 		case CRC::TribesAerialAssault:
 		case CRC::Whiplash:
