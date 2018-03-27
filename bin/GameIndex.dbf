@@ -6853,6 +6853,13 @@ Serial = SLES-50126
 Name   = Quake III - Revolution
 Region = PAL-M3
 Compat = 5
+[patches = 2064ACE6]
+	comment=Patch by leilei
+	// Removes intro and end credits FMVs.
+	// Fixes hanging caused by FMVs.
+	patch=1,EE,0072C161,byte,00000061
+	patch=1,EE,00722677,byte,00000061
+[/patches]
 ---------------------------------------------
 Serial = SLES-50127
 Name   = Quake III - Revolution
@@ -34838,6 +34845,13 @@ Serial = SLUS-20167
 Name   = Quake III - Revolution
 Region = NTSC-U
 Compat = 5
+[patches = A56A0525]
+	comment=Patch by leilei
+	// Removes intro and end credits FMVs.
+	// Fixes hanging caused by FMVs.
+	patch=1,EE,0072C1E1,byte,00000061
+	patch=1,EE,007226F7,byte,00000061
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20168
 Name   = Triple Play 2002
