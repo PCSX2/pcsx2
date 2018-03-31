@@ -283,6 +283,7 @@ CRC::Game CRC::m_games[] =
 	{0x1CC39DBD, SuikodenTactics, US, 0},
 	{0x3E205556, SuikodenTactics, EU, 0},
 	{0xB808413B, SuikodenTactics, JP, 0},
+	{0xA33AF77A, TenchuFS, US, 0},
 	{0x64C58FB4, TenchuFS, US, 0},
 	{0xE7CCCB1E, TenchuFS, EU, 0},
 	{0x1969B19A, TenchuFS, ES, 0}, // PAL Spanish
@@ -465,7 +466,9 @@ CRC::Game CRC::m_games[] =
 	{0xFE44479E, ShinOnimusha, US, 0},
 	{0xFFDE85E9, ShinOnimusha, US, 0},
 	{0xE21404E2, GetaWay, US, 0},
+	{0x458485EF, GetaWay, EU, 0},
 	{0xE78971DF, GetaWayBlackMonday, US, 0},
+	{0x09C3DF79, GetaWayBlackMonday, EU, 0},
 	{0x1130BF23, SakuraTaisen, CH, 0}, // cutie comment
 	{0x4FAE8B83, SakuraTaisen, KO, 0},
 	{0xEF06DBD6, SakuraWarsSoLongMyLove, JP, 0}, // cutie comment
@@ -487,6 +490,7 @@ CRC::Game CRC::m_games[] =
 	{0xAEDAEE99, GodHand, JP, 0},
 	{0x6FB69282, GodHand, US, 0},
 	{0x924C4AA6, GodHand, KO, 0},
+	{0xDE9722A5, GodHand, EU, 0},
 	{0x9637D496, KnightsOfTheTemple2, JP, 0}, // cutie comment
 	{0x4E811100, UltramanFightingEvolution, JP, 0}, // cutie comment
 	{0xF7F181C3, DeathByDegreesTekkenNinaWilliams, CH, 0}, // cutie comment
