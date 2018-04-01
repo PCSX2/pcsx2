@@ -27,6 +27,8 @@
 #include "ps2/BiosTools.h"
 #include "GS.h"
 
+#include "DiscordRPC.h"
+
 #include "CDVD/CDVD.h"
 #include "Elfheader.h"
 #include "Patch.h"
@@ -108,6 +110,9 @@ void AppCoreThread::Cancel( bool isBlocking )
 
 void AppCoreThread::Reset()
 {
+	drpcSetGame(drpcMenuStr);
+	drpcUpdate();
+
 	if( !GetSysExecutorThread().IsSelf() )
 	{
 		GetSysExecutorThread().PostEvent( SysExecEvent_InvokeCoreThreadMethod(&AppCoreThread::Reset) );
@@ -414,6 +419,16 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 			}
 		}
 	}
+	
+	char drpcGameTitleBuffer[128];
+
+	if (!gameName.Trim().IsEmpty()) {
+		sprintf(drpcGameTitleBuffer, "%s", (const char*) gameName.mbc_str());
+	} else if (!DiscSerial.Trim().IsEmpty()) {
+		sprintf(drpcGameTitleBuffer, "%s", (const char*) DiscSerial.mbc_str());
+	} else {
+		sprintf(drpcGameTitleBuffer, "Unknown Game");
+	}
 
 	if (!gameMemCardFilter.IsEmpty())
 		sioSetGameSerial(gameMemCardFilter);
@@ -427,6 +442,7 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 		// the BIos isn't loaded until after initial calls to ApplySettings.
 
 		gameName = L"Booting PS2 BIOS... ";
+		sprintf(drpcGameTitleBuffer, "PS2 BIOS");
 	}
 
 	//Till the end of this function, entry CRC will be 00000000
@@ -457,6 +473,9 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);
 		}
 	}
+
+	drpcSetGame(drpcGameTitleBuffer);
+	drpcUpdate();
 
 	// When we're booting, the bios loader will set a a title which would be more interesting than this
 	// to most users - with region, version, etc, so don't overwrite it with patch info. That's OK. Those

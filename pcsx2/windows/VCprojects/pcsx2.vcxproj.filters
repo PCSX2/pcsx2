@@ -148,6 +148,9 @@
     <Filter Include="AppHost\Debugger">
       <UniqueIdentifier>{7a0a1104-f9ee-4cd1-aaba-f8267eba1658}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AppHost\Discord">
+      <UniqueIdentifier>{8da7a0b3-9a85-47a0-9009-c14ef0079881}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -871,6 +874,9 @@
     <ClCompile Include="..\..\ps2\Iop\PsxBios.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gui\Discord\DiscordRPC.cpp">
+      <Filter>AppHost\Discord</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1310,6 +1316,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Mdec.h">
       <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\Discord\discord_register.h">
+      <Filter>AppHost\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\Discord\discord_rpc.h">
+      <Filter>AppHost\Discord</Filter>
+    </ClInclude>
+    <ClInclude Include="DiscordRPC.h">
+      <Filter>AppHost\Discord</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
