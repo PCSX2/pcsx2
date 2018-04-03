@@ -358,11 +358,7 @@ bool GSC_NarutimateAccel(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0 && (fi.FPSM | fi.TPSM) == 0)
-			{
-				skip = 105;
-			}
-		else if(!fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0x1E00 && fi.FPSM == 0 && fi.TPSM == 49 && fi.FBMSK == 0xFF000000)
+		if(!fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0x1E00 && fi.FPSM == 0 && fi.TPSM == 49 && fi.FBMSK == 0xFF000000)
 			{
 				skip = 1;
 			}
@@ -382,11 +378,7 @@ bool GSC_Naruto(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0 && (fi.FPSM | fi.TPSM) == 0)
-			{
-				skip = 105;
-			}
-		else if(!fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0x1E00 && fi.FPSM == 0 && fi.TPSM == 49 && fi.FBMSK == 0xFF000000)
+		if(!fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0x1E00 && fi.FPSM == 0 && fi.TPSM == 49 && fi.FBMSK == 0xFF000000)
 			{
 				skip = 0;
 			}
