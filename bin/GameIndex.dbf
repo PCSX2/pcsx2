@@ -34797,6 +34797,11 @@ Region = NTSC-U
 Compat = 5
 eeClampMode = 3 // Objects appear in wrong places without it 
 vuClampMode = 2 // Fixes water reflection
+[patches = 2F56CBC9]
+	comment=patch by Prafull
+	// Avoid cave hang at Volk City.
+	patch=1,EE,00305bcc,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20152
 Name   = Ace Combat 4 - Shattered Skies
