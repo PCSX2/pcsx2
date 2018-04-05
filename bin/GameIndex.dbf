@@ -14105,7 +14105,6 @@ Compat = 5
 Serial = SLES-53439
 Name   = Crash Tag Team Racing
 Region = PAL-M6
-ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLES-53441
 Name   = Heroes of the Pacific
@@ -25368,7 +25367,6 @@ Region = NTSC-J
 Serial = SLPM-66090
 Name   = Crash Bandicoot: Gacchanko World
 Region = NTSC-J
-ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLPM-66091
 Name   = Shinobido Imashime
@@ -39673,7 +39671,6 @@ Serial = SLUS-21191
 Name   = Crash Tag Team Racing
 Region = NTSC-U
 Compat = 5
-ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLUS-21192
 Name   = Cabela's Outdoor Adventures 2006
