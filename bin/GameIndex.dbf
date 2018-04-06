@@ -38266,9 +38266,10 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20909
-Name   = Crash Bandicoot Twinsanity
+Name   = Crash Twinsanity
 Region = NTSC-U
 Compat = 5
+XgKickHack = 1 // Fixes bad geometry.
 ---------------------------------------------
 Serial = SLUS-20910
 Name   = Test Drive - Eve of Destruction
