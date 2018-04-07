@@ -614,10 +614,6 @@ GSFrame::GSFrame( const wxString& title)
 	GSPanel* gsPanel = new GSPanel( this );
 	m_id_gspanel = gsPanel->GetId();
 
-	GSGUIPanel *gsguiPanel = new GSGUIPanel(this);
-	gsguiPanel->Show(!EmuConfig.GS.DisableOutput);
-	m_id_gsguipanel = gsguiPanel->GetId();
-
 	// TODO -- Implement this GS window status window!  Whee.
 	// (main concern is retaining proper client window sizes when closing/re-opening the window).
 	//m_statusbar = CreateStatusBar( 2 );
@@ -732,11 +728,6 @@ void GSFrame::AppStatusEvent_OnSettingsApplied()
 GSPanel* GSFrame::GetViewport()
 {
 	return (GSPanel*)FindWindowById( m_id_gspanel );
-}
-
-GSGUIPanel* GSFrame::GetGui()
-{
-	return (GSGUIPanel*)FindWindowById(m_id_gsguipanel);
 }
 
 void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
