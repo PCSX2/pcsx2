@@ -1261,11 +1261,11 @@ msgstr "Log de rastreamento"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:38
 msgid "Auto-eject memory cards when loading savestates"
-msgstr "Autoejetar cartões de memória quando estiver carregando estados de jogos salvos"
+msgstr "Ejetar automaticamente cartões de memória quando estiver carregando estados de jogos salvos"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
-msgstr "Gerenciar automaticamente saves baseado no jogo"
+msgstr "Gerenciar automaticamente jogos salvos baseado no jogo"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:101
 msgid "MemoryCard Manager"
@@ -2505,37 +2505,37 @@ msgid "Insert card"
 msgstr "Inserir cartão"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1024
-msgid "Eject card"
-msgstr "Ejetar cartão"
+msgid "&Eject card"
+msgstr "&Ejetar cartão"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1024
-msgid "Insert card ..."
-msgstr "Renomear cartão..."
+msgid "&Insert card ..."
+msgstr "&Inserir cartão..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1025
-msgid "Duplicate card ..."
-msgstr "Duplicar Cartão ..."
+msgid "D&uplicate card ..."
+msgstr "D&uplicar cartão ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1026
-msgid "Rename card ..."
-msgstr "Renomear cartão..."
+msgid "&Rename card ..."
+msgstr "&Renomear cartão..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
-msgid "Delete card"
-msgstr "Excluir cartão"
+msgid "&Delete card"
+msgstr "&Excluir cartão"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1029
-msgid "Convert card"
-msgstr "Converter cartão"
+msgid "&Convert card"
+msgstr "&Converter cartão"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1033
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1037
-msgid "Create a new card ..."
-msgstr "Criar um novo cartão..."
+msgid "&Create a new card ..."
+msgstr "&Criar um novo cartão..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1041
-msgid "Refresh List"
-msgstr "Atualizar Lista"
+msgid "Re&fresh List"
+msgstr "&Atualizar Lista"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:99
 msgid "PS2 Port"

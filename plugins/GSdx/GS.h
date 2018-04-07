@@ -1457,3 +1457,9 @@ enum class CRCHackLevel : int8
 	Full,
 	Aggressive
 };
+
+#ifdef ENABLE_ACCURATE_BUFFER_EMULATION
+const GSVector2i default_rt_size(2048, 2048);
+#else
+const GSVector2i default_rt_size(1280, 1024);
+#endif

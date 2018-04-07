@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2018  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -71,9 +71,8 @@ bool EnumerateMemoryCard( McdSlotItem& dest, const wxFileName& filename, const w
 
 		wxFileOffset length = mcdFile.Length();
 
-		if( length < (1024*528) && length != 0x20000 )
-		{
-			Console.Warning( "... MemoryCard appears to be truncated.  Ignoring." );
+		if (length < (1024 * 528) && length != 0x20000) {
+			Console.Warning("... Memory card appears to be truncated. Ignoring.");
 			return false;
 		}
 
@@ -487,6 +486,8 @@ void Panels::MemoryCardListPanel_Simple::UpdateUI()
 	pxSetToolTip( m_button_Duplicate, dupTip );
 
 	m_button_Convert->Enable( card.IsPresent && card.IsFormatted && !card.IsPSX );
+	pxSetToolTip(m_button_Convert, _("Convert this memory card to or from a folder memory card. Creates a duplicate of the current memory card in the new type.\n\n"
+		"Note: Only available when a memory card is formatted. Not available for PSX memory cards."));
 
 	//m_button_Create->Enable( card.Slot>=0 || card.IsPresent);
 	m_button_Create->SetLabel( card.IsPresent ? _("Delete") : _("Create ...") );
@@ -514,9 +515,8 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 	_parent::Apply();
 
 	int used=0;
-	Console.WriteLn( L"Apply Memory cards:" );
-	for( uint slot=0; slot<8; ++slot )
-	{
+	Console.WriteLn(L"Apply memory cards:");
+	for(uint slot=0; slot<8; ++slot) {
 		g_Conf->Mcd[slot].Type = m_Cards[slot].Type;
 		g_Conf->Mcd[slot].Enabled = m_Cards[slot].IsEnabled && m_Cards[slot].IsPresent;
 		if (m_Cards[slot].IsPresent)
@@ -524,14 +524,13 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 		else
 			g_Conf->Mcd[slot].Filename = L"";
 
-		if( g_Conf->Mcd[slot].Enabled )
-		{
+		if (g_Conf->Mcd[slot].Enabled) {
 			used++;
-			Console.WriteLn( L"slot[%d]='%s'", slot, WX_STR(g_Conf->Mcd[slot].Filename.GetFullName()) );
+			Console.WriteLn(L"slot[%d]='%s'", slot, WX_STR(g_Conf->Mcd[slot].Filename.GetFullName()));
 		}
 	}
-	if( !used )
-		Console.WriteLn( L"No active slots" );
+	if (!used)
+		Console.WriteLn(L"No active slots.");
 
 	SetForceMcdEjectTimeoutNow();
 
@@ -539,26 +538,22 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 
 void Panels::MemoryCardListPanel_Simple::AppStatusEvent_OnSettingsApplied()
 {
-	for( uint slot=0; slot<8; ++slot )
-	{
+	for (uint slot=0; slot<8; ++slot) {
 		m_Cards[slot].IsEnabled = g_Conf->Mcd[slot].Enabled;
 		m_Cards[slot].Filename = g_Conf->Mcd[slot].Filename;
 		
-		//automatically create the enabled but non-existing file such that it can be managed (else will get created anyway on boot)
+		// Automatically create the enabled but non-existing file such that it can be managed (else will get created anyway on boot)
 		wxString targetFile = (GetMcdPath() + m_Cards[slot].Filename.GetFullName()).GetFullPath();
-		if ( m_Cards[slot].IsEnabled && !( wxFileExists( targetFile ) || wxDirExists( targetFile ) ) )
-		{
+		if (m_Cards[slot].IsEnabled && !(wxFileExists(targetFile) || wxDirExists(targetFile))) {
 			wxString errMsg;
-			if (isValidNewFilename(m_Cards[slot].Filename.GetFullName(), GetMcdPath(), errMsg, 5))
-			{
-				if ( !Dialogs::CreateMemoryCardDialog::CreateIt(targetFile, 8, false) )
-					Console.Error( L"Automatic createion of MCD '%s' failed. Hope for the best...", WX_STR(targetFile) );
-				else
-					Console.WriteLn( L"memcard created: '%s'.", WX_STR(targetFile) );
-			}
-			else
-			{
-				Console.Error( L"memcard was enabled but had an invalid file name. Aborting automatic creation. Hope for the best... (%s)", WX_STR(errMsg) );
+			if (isValidNewFilename(m_Cards[slot].Filename.GetFullName(), GetMcdPath(), errMsg, 5)) {
+				if (!Dialogs::CreateMemoryCardDialog::CreateIt(targetFile, 8, false)) {
+					Console.Error(L"Automatic creation of memory card '%s' failed. Hope for the best...", WX_STR(targetFile));
+				} else {
+					Console.WriteLn(L"Memory card created: '%s'.", WX_STR(targetFile));
+				}
+			} else {
+				Console.Error(L"Memory card was enabled, but it had an invalid file name. Aborting automatic creation. Hope for the best... (%s)", WX_STR(errMsg));
 			}
 		}
 
@@ -621,36 +616,38 @@ void Panels::MemoryCardListPanel_Simple::DoRefresh()
 // =====================================================================================================
 
 void Panels::MemoryCardListPanel_Simple::UiCreateNewCard( McdSlotItem& card )
-{//card can also be the filesystem placeholder. On that case, the changes
- //  made to it will be reverted on refresh, and we'll just have a new card at the folder.
-	if( card.IsPresent ){
-		Console.WriteLn("Error: Aborted: create mcd invoked but but a file is already associated.");
+{
+	// card can also be the filesystem placeholder. On that case, the changes
+	// made to it will be reverted on refresh, and we'll just have a new card at the folder.
+	if (card.IsPresent) {
+		Console.WriteLn("Error: Aborted: create memory card invoked, but a file is already associated.");
 		return;
 	}
 
-	Dialogs::CreateMemoryCardDialog dialog( this, m_FolderPicker->GetPath(), L"my memory card" );
+	Dialogs::CreateMemoryCardDialog dialog(this, m_FolderPicker->GetPath(), L"my memory card");
 	wxWindowID result = dialog.ShowModal();
 
-	if (result != wxID_CANCEL)
-	{
+	if (result != wxID_CANCEL) {
 		card.IsEnabled = true;
 		card.Filename  = dialog.result_createdMcdFilename;
 		card.IsPresent = true;
-		if ( card.Slot >= 0)
-			Console.WriteLn(L"setting new card to slot %u: '%s'", card.Slot, WX_STR(card.Filename.GetFullName()));
-		else
-			Console.WriteLn(L"Created a new unassigned card file: '%s'", WX_STR(card.Filename.GetFullName()) );
+		if (card.Slot >= 0) {
+			Console.WriteLn(L"Setting new memory card to slot %u: '%s'", card.Slot, WX_STR(card.Filename.GetFullName()));
+		} else {
+			Console.WriteLn(L"Created a new unassigned memory card file: '%s'", WX_STR(card.Filename.GetFullName()));
+		}
+	} else {
+		card.IsEnabled = false;
 	}
-	else
-		card.IsEnabled=false;
 
 	Apply();
 	RefreshSelections();
 }
 
-void Panels::MemoryCardListPanel_Simple::UiConvertCard( McdSlotItem& card ) {
-	if ( !card.IsPresent ) {
-		Console.WriteLn( "Error: Aborted: Convert mcd invoked but but a file is not associated." );
+void Panels::MemoryCardListPanel_Simple::UiConvertCard( McdSlotItem& card )
+{
+	if (!card.IsPresent) {
+		Console.WriteLn("Error: Aborted: Convert memory card invoked, but a file is not associated.");
 		return;
 	}
 
@@ -669,11 +666,10 @@ void Panels::MemoryCardListPanel_Simple::UiConvertCard( McdSlotItem& card ) {
 
 void Panels::MemoryCardListPanel_Simple::UiDeleteCard( McdSlotItem& card )
 {
-	if( !card.IsPresent ){
-		Console.WriteLn("Error: Aborted: delete mcd invoked but but a file is not associated.");
+	if (!card.IsPresent) {
+		Console.WriteLn("Error: Aborted: delete memory card invoked, but a file is not associated.");
 		return;
 	}
-
 
 	bool result = true;
 	if( card.IsFormatted )
@@ -790,7 +786,7 @@ bool Panels::MemoryCardListPanel_Simple::UiDuplicateCard(McdSlotItem& src, McdSl
 void Panels::MemoryCardListPanel_Simple::UiRenameCard( McdSlotItem& card )
 {
 	if( !card.IsPresent ){
-		Console.WriteLn("Error: Aborted: Rename mcd invoked but no file is associated.");
+		Console.WriteLn("Error: Aborted: Rename memory card invoked, but no file is associated.");
 		return;
 	}
 
@@ -1016,29 +1012,27 @@ void Panels::MemoryCardListPanel_Simple::OnOpenItemContextMenu(wxListEvent& evt)
 
 	wxMenu* junk = new wxMenu();
 
-	if( idx != wxNOT_FOUND )
-	{
+	if (idx != wxNOT_FOUND) {
 		const McdSlotItem& card( GetCardForViewIndex(idx) );
 
-		if (card.IsPresent){
-			junk->Append( McdMenuId_AssignUnassign,	card.Slot>=0?_("Eject card"):_("Insert card ...") );
-			junk->Append( McdMenuId_Duplicate,	_("Duplicate card ...") );
-			junk->Append( McdMenuId_Rename,		_("Rename card ...") );
-			junk->Append( McdMenuId_Create,		_("Delete card") );
+		if (card.IsPresent) {
+			junk->Append(McdMenuId_AssignUnassign,	card.Slot>=0?_("&Eject card"):_("&Insert card ..."));
+			junk->Append(McdMenuId_Duplicate,	_("D&uplicate card ..."));
+			junk->Append(McdMenuId_Rename,		_("&Rename card ..."));
+			junk->Append(McdMenuId_Create,		_("&Delete card"));
 			if (card.IsFormatted && !card.IsPSX) {
-				junk->Append( McdMenuId_Convert, _("Convert card") );
+				junk->Append(McdMenuId_Convert, _("&Convert card"));
 			}
+		} else {
+			junk->Append(McdMenuId_Create, _("&Create a new card ..."));
 		}
-		else
-			junk->Append( McdMenuId_Create, _("Create a new card ...") );
-
+	} else {
+		junk->Append(McdMenuId_Create, _("&Create a new card ..."));
 	}
-	else
-		junk->Append( McdMenuId_Create, _("Create a new card ...") );
 
 	junk->AppendSeparator();
 
-	junk->Append( McdMenuId_RefreshList, _("Refresh List") );
+	junk->Append(McdMenuId_RefreshList, _("Re&fresh List"));
 
 	PopupMenu( junk );
 	m_listview->RefreshItem( idx );

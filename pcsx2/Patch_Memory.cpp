@@ -74,11 +74,11 @@ void handle_extended_t(IniPatch *p)
 		PrevCheatType = 0;
 		break;
 
-	case 0x5000: // dddddddd iiiiiiii
+	case 0x5000: // bbbbbbbb 00000000
 		for (u32 i = 0; i < IterationCount; i++)
 		{
 			u8 mem = memRead8(PrevCheatAddr + i);
-			memWrite8(((u32)p->data) + i, mem);
+			memWrite8((p->addr + i) & 0x0FFFFFFF, mem);
 		}
 		PrevCheatType = 0;
 		break;

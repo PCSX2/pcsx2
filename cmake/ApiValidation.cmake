@@ -1,9 +1,14 @@
 set(wx_sdl_c_code "
 #include <wx/setup.h>
 
-#if (wxUSE_LIBSDL != 0)
+#if (wxUSE_LIBSDL == 0)
 #error cmake_WX_SDL
 #endif
+
+int main()
+{
+    return 0;
+}
 ")
 
 set(gcc7_mmx_code "
@@ -83,19 +88,29 @@ function(WX_vs_SDL)
     file(WRITE "${CMAKE_BINARY_DIR}/wx_sdl.c" "${wx_sdl_c_code}")
     enable_language(C)
 
-    try_run(
-            run_result_unused
-            compile_result_unused
-            "${CMAKE_BINARY_DIR}"
-            "${CMAKE_BINARY_DIR}/wx_sdl.c"
-            COMPILE_OUTPUT_VARIABLE OUT
-            CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${wxWidgets_INCLUDE_DIRS}"
-        )
+    try_compile(
+        wx_linked_to_sdl
+        "${CMAKE_BINARY_DIR}"
+        "${CMAKE_BINARY_DIR}/wx_sdl.c"
+        CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${wxWidgets_INCLUDE_DIRS}"
+        LINK_LIBRARIES "${wxWidgets_LIBRARIES}"
+        COPY_FILE "${CMAKE_BINARY_DIR}/wx_sdl"
+    )
 
-    if (${OUT} MATCHES "cmake_WX_SDL" AND SDL2_API)
-        message(FATAL_ERROR "WxWidget is linked to SDL (wxUSE_LIBSDL) and it is likely SDL1.2.
-        Unfortunately you try to build PCSX2 with SDL2 support which is not compatible
-        Please use -DSDL2_API=FALSE")
+    if (NOT wx_linked_to_sdl)
+        return()
+    endif()
+
+    execute_process(
+        COMMAND ldd "${CMAKE_BINARY_DIR}/wx_sdl"
+        COMMAND grep -c SDL2
+        OUTPUT_VARIABLE sdl2_count
+    )
+
+    if (SDL2_API AND sdl2_count STREQUAL "0")
+        message(FATAL_ERROR "wxWidgets is linked to SDL1.2. Please use -DSDL2_API=FALSE.")
+    elseif (NOT SDL2_API AND NOT sdl2_count STREQUAL "0")
+        message(FATAL_ERROR "wxWidgets is linked to SDL2. Please use -DSDL2_API=TRUE")
     endif()
 endfunction()
 

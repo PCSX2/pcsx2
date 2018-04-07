@@ -388,7 +388,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_offset_label   = left_label("Half-pixel Offset:");
 	GtkWidget* hack_offset_box     = CreateComboBoxFromVector(theApp.m_gs_offset_hack, "UserHacks_HalfPixelOffset");
 	GtkWidget* hack_skipdraw_label = left_label("Skipdraw:");
-	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 1000, "UserHacks_SkipDraw");
+	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 10000, "UserHacks_SkipDraw");
 	GtkWidget* hack_wild_check     = CreateCheckBox("Wild Arms Hack", "UserHacks_WildHack");
 	GtkWidget* hack_tco_label      = left_label("Texture Offset: 0x");
 	GtkWidget* hack_tco_entry      = CreateTextBox("UserHacks_TCOffset");

@@ -297,11 +297,6 @@ void SysMtgsThread::ExecuteTaskInThread()
 		// ever be modified by this thread.
 		while( m_ReadPos.load(std::memory_order_relaxed) != m_WritePos.load(std::memory_order_acquire))
 		{
-			if (EmuConfig.GS.DisableOutput) {
-				m_ReadPos = m_WritePos.load();
-				continue;
-			}
-
 			const unsigned int local_ReadPos = m_ReadPos.load(std::memory_order_relaxed);
 
 			pxAssert( local_ReadPos < RingBufferSize );

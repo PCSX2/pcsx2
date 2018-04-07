@@ -229,15 +229,6 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 	size_t count = m_vertex.next;
 	GSVertex* v = &m_vertex.buff[0];
 
-	// Shadow_of_memories_Shadow_Flickering (Okami mustn't call this code)
-	if (m_texture_shuffle && count < 3 && PRIM->FST && (m_context->FRAME.FBMSK == 0)) {
-		// Avious dubious call to m_texture_shuffle on 16 bits games
-		// The pattern is severals column of 8 pixels. A single sprite
-		// smell fishy but a big sprite is wrong.
-		m_texture_shuffle = ((v[1].U - v[0].U) < 256);
-	}
-
-
 	if (m_texture_shuffle) {
 		m_ps_sel.shuffle = 1;
 		m_ps_sel.dfmt = 0;

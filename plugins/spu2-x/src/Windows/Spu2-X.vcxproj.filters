@@ -186,9 +186,6 @@
     <ClCompile Include="..\Linux\Dialogs.cpp">
       <Filter>Source Files\GUI\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="AboutBox.cpp">
-      <Filter>Source Files\GUI\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="CfgHelpers.cpp">
       <Filter>Source Files\GUI\Windows</Filter>
     </ClCompile>
@@ -224,13 +221,7 @@
     <None Include="..\..\License.txt">
       <Filter>Documents</Filter>
     </None>
-    <None Include="..\..\Website.txt">
-      <Filter>Documents</Filter>
-    </None>
     <None Include="..\..\spu2-x-sm.bmp">
-      <Filter>Resources</Filter>
-    </None>
-    <None Include="..\..\spu2-x.bmp">
       <Filter>Resources</Filter>
     </None>
     <None Include="Spu2-X.def">

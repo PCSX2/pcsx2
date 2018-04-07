@@ -23,8 +23,8 @@
 #include "GSRendererHW.h"
 
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
-	: m_width(native_buffer.x)
-	, m_height(native_buffer.y)
+	: m_width(default_rt_size.x)
+	, m_height(default_rt_size.y)
 	, m_custom_width(1024)
 	, m_custom_height(1024)
 	, m_reset(false)
@@ -159,8 +159,8 @@ void GSRendererHW::CustomResolutionScaling()
 		return;
 
 	m_tc->RemovePartial();
-	m_width = std::max(m_width, native_buffer.x);
-	m_height = std::max(framebuffer_height[m_large_framebuffer], native_buffer.y);
+	m_width = std::max(m_width, default_rt_size.x);
+	m_height = std::max(framebuffer_height[m_large_framebuffer], default_rt_size.y);
 
 	std::string overhead = std::to_string(framebuffer_height[1] - framebuffer_height[0]);
 	std::string message = "(Custom resolution) Framebuffer size set to " + std::to_string(crtc_width) + "x" + std::to_string(crtc_height);
@@ -201,6 +201,7 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 		case CRC::FIFA03:
 		case CRC::FIFA04:
 		case CRC::FIFA05:
+		case CRC::Shox:
 		case CRC::SoulReaver2:
 		case CRC::LegacyOfKainDefiance:
 		case CRC::RatchetAndClank:
@@ -209,6 +210,7 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 		case CRC::RatchetAndClank4:
 		case CRC::RatchetAndClank5:
 		case CRC::RickyPontingInternationalCricket:
+		case CRC::Quake3Revolution:
 		case CRC::TombRaiderAnniversary:
 		case CRC::TribesAerialAssault:
 		case CRC::Whiplash:
@@ -881,6 +883,22 @@ void GSRendererHW::Draw()
 		m_texture_shuffle = (GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 16) && (tex_psm.bpp == 16)
 			&& draw_sprite_tex && tex->m_32_bits_fmt;
 
+		// Shadow_of_memories_Shadow_Flickering (Okami mustn't call this code)
+		if (m_texture_shuffle && m_vertex.next < 3 && PRIM->FST && (m_context->FRAME.FBMSK == 0)) {
+			// Avious dubious call to m_texture_shuffle on 16 bits games
+			// The pattern is severals column of 8 pixels. A single sprite
+			// smell fishy but a big sprite is wrong.
+
+			// Tomb Raider Angel of Darkness relies on this behavior to produce a fog effect.
+			// In this case, the address of the framebuffer and texture are the same. 
+			// The game will take RG => BA and then the BA => RG of next pixels. 
+			// However, only RG => BA needs to be emulated because RG isn't used.
+			GL_INS("WARNING: Possible misdetection of a texture shuffle effect");
+
+			GSVertex* v = &m_vertex.buff[0];
+			m_texture_shuffle = ((v[1].U - v[0].U) < 256) || m_context->FRAME.Block() == m_context->TEX0.TBP0;
+		}
+
 		// Texture shuffle is not yet supported with strange clamp mode
 		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
 
@@ -1122,8 +1140,8 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::MetalSlug6, CRC::RegionCount, &GSRendererHW::OI_MetalSlug6));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::RozenMaidenGebetGarden, CRC::RegionCount, &GSRendererHW::OI_RozenMaidenGebetGarden));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::StarWarsForceUnleashed, CRC::RegionCount, &GSRendererHW::OI_StarWarsForceUnleashed));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroNewBeginning, CRC::RegionCount, &GSRendererHW::OI_SpyroNewBeginning));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroEternalNight, CRC::RegionCount, &GSRendererHW::OI_SpyroEternalNight));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroNewBeginning, CRC::RegionCount, &GSRendererHW::OI_SpyroGames));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SpyroEternalNight, CRC::RegionCount, &GSRendererHW::OI_SpyroGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TalesOfLegendia, CRC::RegionCount, &GSRendererHW::OI_TalesOfLegendia));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
@@ -1136,9 +1154,9 @@ GSRendererHW::Hacks::Hacks()
 
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::OO_DBZBT2));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::OO_MajokkoALaMode2));
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak2, CRC::RegionCount, &GSRendererHW::OO_Jak));
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OO_Jak));
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::JakX, CRC::RegionCount, &GSRendererHW::OO_Jak));
+	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak2, CRC::RegionCount, &GSRendererHW::OO_JakGames));
+	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OO_JakGames));
+	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::JakX, CRC::RegionCount, &GSRendererHW::OO_JakGames));
 
 	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::CU_DBZBT2));
 	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::CU_MajokkoALaMode2));
@@ -1563,23 +1581,7 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 	return true;
 }
 
-bool GSRendererHW::OI_SpyroNewBeginning(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if(PRIM->TME)
-	{
-		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_min.p.z == 0))
-		{
-			m_dev->ClearDepth(ds);
-		}
-	}
-
-	return true;
-}
-
-bool GSRendererHW::OI_SpyroEternalNight(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+bool GSRendererHW::OI_SpyroGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
 	uint32 FBP = m_context->FRAME.Block();
 	uint32 FPSM = m_context->FRAME.PSM;
@@ -1816,7 +1818,7 @@ void GSRendererHW::OO_MajokkoALaMode2()
 	}
 }
 
-void GSRendererHW::OO_Jak()
+void GSRendererHW::OO_JakGames()
 {
 	// FIXME might need a CU_Jak too
 	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
@@ -1825,7 +1827,7 @@ void GSRendererHW::OO_Jak()
 	if(!PRIM->FST && PRIM->TME && (r == r_p).alltrue() && m_context->TEX0.TW == 4 && m_context->TEX0.TH == 4 && m_context->TEX0.PSM == PSM_PSMCT32) {
 		// Game will render a texture directly into a palette.
 		uint32 FBP = m_context->FRAME.Block();
-		GL_INS("OO_Jak read back 0x%x", FBP);
+		GL_INS("OO_JakGames read back 0x%x", FBP);
 
 		GIFRegBITBLTBUF BITBLTBUF;
 

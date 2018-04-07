@@ -394,7 +394,7 @@ bool DoCDVDopen()
 	cdvdTD td;
 	CDVD->getTD(0, &td);
 
-	blockDumpFile.Create(temp, 3);
+	blockDumpFile.Create(temp, 2);
 
 	if( blockDumpFile.IsOpened() )
 	{
@@ -439,7 +439,16 @@ s32 DoCDVDreadSector(u8* buffer, u32 lsn, int mode)
 
 	if (ret == 0 && blockDumpFile.IsOpened())
 	{
-		blockDumpFile.WriteSector(buffer, lsn);
+		if (blockDumpFile.GetBlockSize() == CD_FRAMESIZE_RAW && mode != CDVD_MODE_2352)
+		{
+			u8 blockDumpBuffer[CD_FRAMESIZE_RAW];
+			if (CDVD->readSector(blockDumpBuffer, lsn, CDVD_MODE_2352) == 0)
+				blockDumpFile.WriteSector(blockDumpBuffer, lsn);
+		}
+		else
+		{
+			blockDumpFile.WriteSector(buffer, lsn);
+		}
 	}
 
 	return ret;
@@ -478,7 +487,16 @@ s32 DoCDVDgetBuffer(u8* buffer)
 
 	if (ret == 0 && blockDumpFile.IsOpened())
 	{
-		blockDumpFile.WriteSector(buffer, lastLSN);
+		if (blockDumpFile.GetBlockSize() == CD_FRAMESIZE_RAW && lastReadSize != 2352)
+		{
+			u8 blockDumpBuffer[CD_FRAMESIZE_RAW];
+			if (CDVD->readSector(blockDumpBuffer, lastLSN, CDVD_MODE_2352) == 0)
+				blockDumpFile.WriteSector(blockDumpBuffer, lastLSN);
+		}
+		else
+		{
+			blockDumpFile.WriteSector(buffer, lastLSN);
+		}
 	}
 
 	return ret;
