@@ -2267,20 +2267,9 @@ msgstr ""
 "Предварительная загрузка хака TLB во избежание пропуска TLB в игре Goemon"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:108
-msgid "VU I bit Hack avoid constant recompilation. Fixes memory leak slowdowns/stalls."
+msgid "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
 msgstr ""
-"VU I bit Hack во избежание постоянной рекомпиляции. Исправляет "
-"тормоза/зависания из-за утечек памяти."
-
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:109
-msgid ""
-"Try this when \"microVU1: Program cache limit\" is printed in the log.\n"
-"Known to affect following games:\n * Scarface The World Is Yours\n * "
-"Crash Tag Team Racing"
-msgstr ""
-"Включите, если в лог выводится \"microVU1: Program cache limit\".\n"
-"Известно влияние на следующие игры:\n * Scarface The World Is Yours\n * "
-"Crash Tag Team Racing"
+"VU I bit Hack во избежание постоянной рекомпиляции (Scarface The World Is Yours)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:119
 msgid "Enable manual game fixes [Not recommended]"
