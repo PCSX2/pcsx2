@@ -1203,7 +1203,7 @@ Name   = Drakan - The Ancients' Gates
 Region = PAL-M5
 Compat = 5
 EETimingHack = 1 // Fixes flickering textures.
-[patches = 04F9D87F]
+[patches]	// 04F9D87F
 	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
@@ -4379,7 +4379,7 @@ Serial = SCPS-56008
 Name   = Fatal Frame
 Region = NTSC-K
 Compat = 5
-[patches = BCF04BF3]
+[patches]	// BCF04BF3
 	comment=- At least when using GSdx in D3D11 HardWare mode, and due to missing
 	comment=-  rendering-fixes, black stripes can show up on ghosts,
 	comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
@@ -8343,7 +8343,7 @@ Serial = SLES-50821
 Name   = Project Zero
 Region = PAL-M5
 Compat = 5
-[patches = 22E91837]
+[patches]	// 22E91837
 	comment=- At least when using GSdx in D3D11 HardWare mode, and due to missing
 	comment=-  rendering-fixes, black stripes can show up on ghosts,
 	comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
