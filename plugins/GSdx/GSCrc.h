@@ -167,6 +167,7 @@ public:
 		SteambotChronicles,
 		SuikodenTactics,
 		SuperManReturns,
+		SVCChaos,
 		TalesOfAbyss,
 		TalesofDestiny,
 		TalesOfLegendia,
