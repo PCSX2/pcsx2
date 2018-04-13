@@ -182,6 +182,8 @@ CRC::Game CRC::m_games[] =
 	{0x72E1E60E, Spartan, EU, 0},
 	{0x26689C87, Spartan, JP, 0},
 	{0x08277A9E, Spartan, US, 0},
+	{0xAC3C1147, SVCChaos, EU, 0}, // SVC Chaos: SNK vs. Capcom
+	{0xB00FF2ED, SVCChaos, JP, 0},
 	{0xA32F7CD0, AceCombat4, US, 0}, // Also needed for automatic mipmapping
 	{0x5ED8FB53, AceCombat4, JP, 0},
 	{0x1B9B7563, AceCombat4, EU, 0},
@@ -221,6 +223,7 @@ CRC::Game CRC::m_games[] =
 	{0xFA0DF523, GodOfWar2, CH, 0}, // cutie comment
 	{0x9FEE3466, GodOfWar2, CH, 0}, // cutie comment
 	{0x5D482F18, JackieChanAdv, EU, 0},
+	{0xAC4DFD5A, JackieChanAdv, EU, 0},
 	{0xF0A6D880, HarvestMoon, US, 0},
 	{0x9536E111, NamcoXCapcom, JP, 0},
 	{0x75C01A04, NamcoXCapcom, US, 0}, // same CRC as another JP disc
