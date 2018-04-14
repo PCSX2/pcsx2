@@ -16532,6 +16532,7 @@ Region = PAL-M5
 Serial = SLES-54584
 Name   = Pac-Man Rally
 Region = PAL-M5
+vuClampMode=2 // Fixes bad geometry.
 ---------------------------------------------
 Serial = SLES-54586
 Name   = Ar tonelico: Melody of Elemia
@@ -40383,7 +40384,7 @@ Serial = SLUS-21328
 Name   = Pac-Man World Rally
 Region = NTSC-U
 Compat = 5
-eeClampMode = 3
+vuClampMode = 2 // Fixes bad geometry.
 ---------------------------------------------
 Serial = SLUS-21329
 Name   = Karaoke Revolution Country - CMT Presents
