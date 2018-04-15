@@ -2012,11 +2012,6 @@ Serial = SCES-52677
 Name   = Network Access Disc & Hardware - Online Arena
 Region = PAL-M7
 Compat = 5	// With GSdx, SW-mode only for HOA.
-[patches = D859B1B4]
-	comment=- This gamedisc supports multiple languages and widescreen.
-	comment=- Language & widescreen selection is done through the BIOS configuration.
-	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-[/patches]
 ---------------------------------------------
 Serial = SCES-52748
 Name   = EyeToy - Play 2
