@@ -35072,6 +35072,7 @@ Serial = SLUS-20217
 Name   = Arctic Thunder
 Region = NTSC-U
 Compat = 5
+SkipMPEGHack = 1
 ---------------------------------------------
 Serial = SLUS-20218
 Name   = Stunt GP
@@ -38818,6 +38819,7 @@ Serial = SLUS-21008
 Name   = Katamari Damacy
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3
 mvuFlagSpeedHack = 0
 ---------------------------------------------
 Serial = SLUS-21009
