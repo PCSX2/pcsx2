@@ -301,6 +301,8 @@ CRC::Game CRC::m_games[] =
 	{0xC8DADF58, TenchuWoH, EU, 0},
 	{0x13DD9957, TenchuWoH, JP, 0},
 	{0x8BC95883, Sly3, US, 0},
+	{0x3130A4D3, Sly3, US, 0}, // E3 Demo
+	{0x35CCFA60, Sly3, US, 0}, // Regular Demo
 	{0x8164C614, Sly3, EU, 0},
 	{0xA8CC1583, Sly3, KO, 0},
 	{0x518DD841, Sly2, KO, 0},
