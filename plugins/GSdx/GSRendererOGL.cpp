@@ -444,7 +444,7 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 			//
 			// Note: Tales Of Abyss and Tekken5 could hit this path too. Those games are
 			// handled above.
-			GL_INS("maybe not a channel!");
+			GL_INS("Maybe not a channel!");
 			m_channel_shuffle = false;
 		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8)) {
 			// Read either blue or Alpha. Let's go for Blue ;)
@@ -495,7 +495,7 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 				m_ps_sel.channel = 1;
 			}
 		} else {
-			GL_INS("channel not supported");
+			GL_INS("Channel not supported");
 			m_channel_shuffle = false;
 		}
 	}
