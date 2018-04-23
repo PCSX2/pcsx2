@@ -119,17 +119,20 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
-		// FIXME GSVector will be nice here
 		const uint32& m = m_context->FRAME.FBMSK;
 		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
+		// FIXME GSVector will be nice here
+		uint8 rg_mask = fbmask & 0xFF;
+		uint8 ba_mask = (fbmask >> 8) & 0xFF;
 		om_bsel.wrgba = 0;
 
 		// 2 Select the new mask (Please someone put SSE here)
-		if ((fbmask & 0xFF) == 0) {
-			if (write_ba)
+		if (rg_mask != 0xFF) {
+			if (write_ba) {
 				om_bsel.wb = 1;
-			else
+			} else {
 				om_bsel.wr = 1;
+			}
 		} else if ((fbmask & 0xFF) != 0xFF) {
 #ifdef _DEBUG
 			fprintf(stderr, "Please fix me! wb %u wr %u\n", om_bsel.wb, om_bsel.wr);
@@ -137,12 +140,12 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 			//ASSERT(0);
 		}
 
-		fbmask >>= 8;
-		if ((fbmask & 0xFF) == 0) {
-			if (write_ba)
+		if (ba_mask != 0xFF) {
+			if (write_ba) {
 				om_bsel.wa = 1;
-			else
+			} else {
 				om_bsel.wg = 1;
+			}
 		} else if ((fbmask & 0xFF) != 0xFF) {
 #ifdef _DEBUG
 			fprintf(stderr, "Please fix me! wa %u wg %u\n", om_bsel.wa, om_bsel.wg);
