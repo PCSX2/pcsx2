@@ -2112,7 +2112,7 @@ size_t GSTextureCache::PaletteMap::HashClut(uint16 pal, const uint32* clut) {
 }
 
 // Retrieves the palette with the desired clut
-GSTextureCache::Palette* GSTextureCache::PaletteMap::GetPalette(const GSRenderer* renderer, uint16 pal) {
+GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRenderer* renderer, uint16 pal) {
 	// Choose which hash map search into:
 	//    pal == 16  : index 0
 	//    pal == 256 : index 1
