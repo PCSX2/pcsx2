@@ -159,7 +159,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		// If it is too expensive, one could cut memory allocation in Source constructor for this
 		// use case.
 		if (palette) {
-			SetPalette(src, m_renderer, psm_s.pal);
+			AttachPaletteToSource(src, m_renderer, psm_s.pal);
 		}
 
 		m_src.m_surfaces.insert(src);
@@ -389,7 +389,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	}
 
 	if (src->m_should_have_tex_palette && (!src->m_clut || !GSVector4i::compare64(src->m_clut, clut, psm_s.pal * sizeof(uint32)))) {
-		SetPalette(src, m_renderer, psm_s.pal);
+		AttachPaletteToSource(src, m_renderer, psm_s.pal);
 	}
 
 	src->Update(r);
@@ -2035,7 +2035,7 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 }
 
 // Query the PaletteMap for a valid Palette, then assign both palette texture pointer and clut copy pointer to the Source object
-void GSTextureCache::SetPalette(Source* s, const GSRenderer* renderer, uint16 pal)
+void GSTextureCache::AttachPaletteToSource(Source* s, const GSRenderer* renderer, uint16 pal)
 {
 	Palette* p = m_palette_map.GetPalette(m_renderer, pal);
 	s->m_palette = p->GetPaletteGSTexture();

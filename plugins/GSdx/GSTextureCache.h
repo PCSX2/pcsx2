@@ -217,5 +217,5 @@ public:
 
 	void PrintMemoryUsage();
 
-	__forceinline void SetPalette(Source* s, const GSRenderer* renderer, uint16 pal);
+	__forceinline void AttachPaletteToSource(Source* s, const GSRenderer* renderer, uint16 pal);
 };
