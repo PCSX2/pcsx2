@@ -137,6 +137,7 @@ class GSFrame : public wxFrame
 protected:
 	wxTimer					m_timer_UpdateTitle;
 	wxWindowID				m_id_gspanel;
+	wxWindowID				m_id_gsguipanel;
 	wxStatusBar*			m_statusbar;
 
 	CpuUsageProvider		m_CpuUsage;

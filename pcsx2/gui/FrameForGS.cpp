@@ -730,6 +730,11 @@ GSPanel* GSFrame::GetViewport()
 	return (GSPanel*)FindWindowById( m_id_gspanel );
 }
 
+GSGUIPanel* GSFrame::GetGui()
+{
+	return (GSGUIPanel*)FindWindowById( m_id_gsguipanel );
+}
+
 void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 {
 	// Update the title only after the completion of at least a single Vsync, it's pointless to display the fps
