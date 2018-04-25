@@ -21,6 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>bin2cpp</ProjectName>
     <ProjectGuid>{677B7D11-D5E1-40B3-88B1-9A4DF83D2213}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">

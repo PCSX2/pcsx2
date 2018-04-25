@@ -407,7 +407,7 @@ __fi void _cpuEventTest_Shared()
 	if( iopEventAction )
 	{
 		//if( EEsCycle < -450 )
-		//	Console.WriteLn( " IOP ahead by: %d cycles", -EEsCycle );
+			//Console.WriteLn( " IOP ahead by: %d cycles", -EEsCycle );
 
 		EEsCycle = psxCpu->ExecuteBlock( EEsCycle );
 
@@ -436,7 +436,7 @@ __fi void _cpuEventTest_Shared()
 
 	// The IOP could be running ahead/behind of us, so adjust the iop's next branch by its
 	// relative position to the EE (via EEsCycle)
-	cpuSetNextEventDelta( ((g_iopNextEventCycle-psxRegs.cycle)*8) - EEsCycle );
+	cpuSetNextEventDelta( ((g_iopNextEventCycle-psxRegs.cycle)*static_cast<int>(8.71)) - EEsCycle );
 
 	// Apply the hsync counter's nextCycle
 	cpuSetNextEvent( hsyncCounter.sCycle, hsyncCounter.CycleT );
