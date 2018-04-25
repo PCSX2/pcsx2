@@ -144,7 +144,7 @@ public:
 		// Retrieves a pointer to a valid Palette from m_multimaps or creates a new one adding it to the data structure
 		Palette* LookupPalette(const GSRenderer* renderer, uint16 pal); 
 
-		void Clear(GSRenderer* renderer); // Clears m_multimaps, deleting clut(s) arrays and recycling palette textures 
+		void Clear(const GSRenderer* renderer); // Clears m_multimaps, deleting clut(s) arrays and recycling palette textures 
 	};
 
 	class SourceMap

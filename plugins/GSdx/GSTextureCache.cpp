@@ -2153,7 +2153,7 @@ GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRende
 	return palette;
 }
 
-void GSTextureCache::PaletteMap::Clear(GSRenderer* renderer) {
+void GSTextureCache::PaletteMap::Clear(const GSRenderer* renderer) {
 	for (auto& multimap : m_multimaps) {
 		for (auto it1 : multimap) {
 			Palette* palette = it1.second;
