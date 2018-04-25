@@ -2087,11 +2087,26 @@ GSTextureCache::PaletteMap::PaletteMap() {
 // Hashes the content of the clut
 size_t GSTextureCache::PaletteMap::HashClut(uint16 pal, const uint32* clut) {
 	size_t clut_hash = 3831179159;
-	for (uint16 i = 0; i < pal; i += 4) {
+	for (uint16 i = 0; i < pal; i += 16) {
 		clut_hash = (clut_hash + 1488000301) ^ (clut[i] + 33644011);
 		clut_hash = (clut_hash + 3831179159) ^ (clut[i + 1] + 47627467);
 		clut_hash = (clut_hash + 3659574209) ^ (clut[i + 2] + 577038523);
 		clut_hash = (clut_hash + 33644011) ^ (clut[i + 3] + 3491555267);
+
+		clut_hash = (clut_hash + 777771959) ^ (clut[i + 4] + 3301075993);
+		clut_hash = (clut_hash + 4019618579) ^ (clut[i + 5] + 4186992613);
+		clut_hash = (clut_hash + 3465668953) ^ (clut[i + 6] + 3043435883);
+		clut_hash = (clut_hash + 3494478943) ^ (clut[i + 7] + 3441897883);
+
+		clut_hash = (clut_hash + 3432010979) ^ (clut[i + 8] + 2167922789);
+		clut_hash = (clut_hash + 1570862863) ^ (clut[i + 9] + 3401920591);
+		clut_hash = (clut_hash + 1002648679) ^ (clut[i + 10] + 1293530519);
+		clut_hash = (clut_hash + 551381741) ^ (clut[i + 11] + 2539834039);
+
+		clut_hash = (clut_hash + 3768974459) ^ (clut[i + 12] + 169943507);
+		clut_hash = (clut_hash + 862380703) ^ (clut[i + 13] + 2906932549);
+		clut_hash = (clut_hash + 3433082137) ^ (clut[i + 14] + 4234384109);
+		clut_hash = (clut_hash + 2679083843) ^ (clut[i + 15] + 2719605247);
 	}
 	return clut_hash;
 }
