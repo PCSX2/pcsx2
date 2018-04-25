@@ -669,7 +669,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 // must invalidate the Target/Depth respectively
 void GSTextureCache::InvalidateVideoMemType(int type, uint32 bp)
 {
-	if (!CanConvertDepth())
+	if (!CanConvertDepth() && m_renderer->m_game.title != CRC::JackieChanAdv)
+		// JackieChanAdv shouldn't hit this code path even if depth is not supported,
+		// otherwise it causes a regression on D3D/OGL on the main menu where the background image is back instead of yellow, and it also fixes texture flickering ingame.
+		// Note: The game also doesn't like Depth Emulation as it causes half right screen issue so this is the best workaround we have atm.
 		return;
 
 	auto& list = m_dst[type];
