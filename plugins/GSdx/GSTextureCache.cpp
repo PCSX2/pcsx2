@@ -99,7 +99,13 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 {
 	if (!CanConvertDepth()) {
 		GL_CACHE("LookupDepthSource not supported (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
-		throw GSDXRecoverableError();
+		if (m_renderer->m_game.title == CRC::JackieChanAdv || m_renderer->m_game.title == CRC::SVCChaos) {
+			// JackieChan and SVCChaos cause regressions when skipping the draw calls when depth is disabled/not supported.
+			// This way we make sure there are no regressions on D3D as well.
+			return LookupSource(TEX0, TEXA, r);
+		} else {
+			throw GSDXRecoverableError();
+		}
 	}
 
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
@@ -176,14 +182,18 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		// Note: might worth to check previous frame
 		// Note: otherwise return NULL and skip the draw
 
-		// Full Spectrum Warrior: first draw call of cut-scene rendering
-		// The game tries to emulate a texture shuffle with an old depth buffer
-		// (don't exists yet for us due to the cache)
-		// Rendering is nicer (less garbage) if we skip the draw call.
-		throw GSDXRecoverableError();
+		if (m_renderer->m_game.title == CRC::JackieChanAdv || m_renderer->m_game.title == CRC::SVCChaos) {
+			// JackieChan and SVCChaos cause regressions when skipping the draw calls so we reuse the old code for these two.
+			return LookupSource(TEX0, TEXA, r);
+		} else {
+			// Full Spectrum Warrior: first draw call of cut-scene rendering
+			// The game tries to emulate a texture shuffle with an old depth buffer
+			// (don't exists yet for us due to the cache)
+			// Rendering is nicer (less garbage) if we skip the draw call.
+			throw GSDXRecoverableError();
+		}
 
 		//ASSERT(0);
-		//return LookupSource(TEX0, TEXA, r);
 	}
 
 	return src;

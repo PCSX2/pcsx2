@@ -45,22 +45,26 @@ Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 		L"%s: \n"
 		L"Arcum42, Aumatt, drk||raziel, "
 		L"cottonvibes, gigaherz, saqib, "
-		L"Alexey silinov, Aumatt, "
-		L"Florin, goldfinger, Linuzappz, loser, "
+		L"\n"
+		L"Alexey Silinov, Florin, "
+		L"goldfinger, Linuzappz, loser, "
 		L"Nachbrenner, shadow, Zerofrog, tmkk, Jake.Stine"
 		L"\n\n"
 		L"%s:\n"
-		L"Falcon4ever, Bositman",
+		L"Falcon4ever, Bositman, Akasha",
 		_("Previous versions"), _("Webmasters"));
 
 	wxString contribsString = wxsFormat(
-		L"%s: \n"
-		L"ChickenLiver(Lilypad), Gabest (GSdx, Cdvdolio, Xpad)"
+		L"ssakash, FlatOut, CK1, lightningterror, atomic83github, Pandubz, Prafull, Blyss Sarania, Nobbs66, Alessandro Vetere"
 		L"\n\n"
 		L"%s: \n"
-		L"Ckemu, Prafull, General Plot, KrossX, Devina, ssakash, FlatOut, Blyss Sarania, micove, black_wd, Belmont, BGome,"
-		L" _Demo_, Dreamtime, Hiryu and Sjeep, nneeve, Shadow Lady, F|RES, Jake.Stine, MrBrown, razorblade, Seta-san, Skarmeth, feal87, Athos",
-		_("Plugin Specialists"), _("Special thanks to"));
+		L"ChickenLiver (Lilypad), Gabest (GSdx, Cdvdolio, Xpad), Ckemu, "
+		L"General Plot, KrossX, Devina, micove, black_wd, Belmont, "
+		L"\n"
+		L"BGome, _Demo_, Dreamtime, Hiryu and Sjeep, nneeve, F|RES, "
+		L"Shadow Lady, MrBrown, razorblade, Seta-san, Skarmeth, feal87, Athos"
+		L"\n",
+		_("Previous versions"));
 
 	wxFlexGridSizer& boxesContainer = *new wxFlexGridSizer(2, 0, StdPadding);
 	boxesContainer.AddGrowableCol(0, 1);

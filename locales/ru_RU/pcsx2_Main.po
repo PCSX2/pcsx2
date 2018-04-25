@@ -672,13 +672,20 @@ msgid "Executing PS2 Virtual Machine..."
 msgstr "Запуск вирутальной машины PS2..."
 
 #: pcsx2/gui/AppRes.cpp:66
-#, fuzzy
-msgid "Browse for an ISO that is not in your recent history."
-msgstr "Поиск и выбор нового образа диска."
+msgid "Always ask when booting"
+msgstr "Всегда спрашивать при загрузке"
 
 #: pcsx2/gui/AppRes.cpp:66
+msgid "Manually select an ISO upon boot ignoring the selection from recent ISO list."
+msgstr "Выбирать ISO вручную, игнорируя список недавно запущенных ISO."
+
+#: pcsx2/gui/AppRes.cpp:68
 msgid "Browse..."
 msgstr "Обзор..."
+
+#: pcsx2/gui/AppRes.cpp:68
+msgid "Browse for an ISO that is not in your recent history."
+msgstr "Выбрать ISO, которого нет в списке недавно запущенных ISO."
 
 #: pcsx2/gui/AppUserMode.cpp:95
 msgid "The following folders exist, but are not writable:"
@@ -798,16 +805,15 @@ msgstr "Очищает окно лога."
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "Auto&dock"
-msgstr ""
+msgstr "&Автоматическое прикрепление"
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "Dock log window to main PCSX2 window"
-msgstr ""
+msgstr "Прикреплять окно лога к главному окну PCSX2"
 
 #: pcsx2/gui/ConsoleLogger.cpp:411
-#, fuzzy
 msgid "&Appearance"
-msgstr "Внешний вид"
+msgstr "&Внешний вид"
 
 #: pcsx2/gui/ConsoleLogger.cpp:413
 msgid "&Close"
@@ -1528,12 +1534,10 @@ msgstr ""
 "вашем здоровье..."
 
 #: pcsx2/gui/MainFrame.cpp:460
-#, fuzzy
 msgid "ISO &Selector"
 msgstr "Выбор ISO"
 
 #: pcsx2/gui/MainFrame.cpp:461
-#, fuzzy
 msgid "Plugin &Menu"
 msgstr "CDVD-плагин"
 
@@ -1618,6 +1622,14 @@ msgstr "Сбросить все настройки..."
 msgid "Clears all %s settings and re-runs the startup wizard."
 msgstr "Сбрасывает все настройки %s и перезапускает мастер настройки."
 
+#: pcsx2/gui/MainFrame.cpp:520
+msgid "Create &Blockdump"
+msgstr "Создать Block-дамп"
+
+#: pcsx2/gui/MainFrame.cpp:520
+msgid "Creates a block dump for debugging purposes."
+msgstr "Создает Block-дамп для отладки."
+
 #: pcsx2/gui/MainFrame.cpp:521
 msgid "&About..."
 msgstr "О программе..."
@@ -1671,7 +1683,6 @@ msgid "Use fast boot to skip PS2 startup and splash screens"
 msgstr "Использование быстрой загрузки для пропуска загрузочных экранов PS2"
 
 #: pcsx2/gui/MainFrame.cpp:660
-#, fuzzy
 msgid "Boot ISO (&fast)"
 msgstr "Запустить CD/DVD (быстро)"
 
@@ -1680,12 +1691,10 @@ msgid "Boot CDVD (&fast)"
 msgstr "Запустить CD/DVD (быстро)"
 
 #: pcsx2/gui/MainFrame.cpp:687
-#, fuzzy
 msgid "Boo&t ISO (full)"
 msgstr "Запустить CD/DVD (все этапы)"
 
 #: pcsx2/gui/MainFrame.cpp:688
-#, fuzzy
 msgid "Boot the VM using the current ISO source media"
 msgstr ""
 "Запускает виртуальную машину PS2, используя выбранный DVD-диск или ISO-файл."
@@ -2074,6 +2083,18 @@ msgstr "Стандартное (4:3)"
 msgid "Widescreen (16:9)"
 msgstr "Широкоформатное (16:9)"
 
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:38
+msgid "Disabled"
+msgstr "Отключено"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:39
+msgid "Standard"
+msgstr "Стандартное"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:40
+msgid "Adaptive"
+msgstr "Адаптивное"
+
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:46
 msgid "Disable window resize border"
 msgstr "Заблокировать растягивание кромки окна"
@@ -2091,8 +2112,8 @@ msgid "Default to fullscreen mode on open"
 msgstr "Переходить в полный экран при запуске"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:50
-msgid "Wait for Vsync on refresh"
-msgstr "Ожидание Vsync на обновлении"
+msgid "Wait for Vsync on refresh:"
+msgstr "Ожидание Vsync при обновлении:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:51
 msgid "Double-click toggles fullscreen mode"
@@ -2246,11 +2267,9 @@ msgstr ""
 "Предварительная загрузка хака TLB во избежание пропуска TLB в игре Goemon"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:108
-msgid ""
-"VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
+msgid "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
 msgstr ""
-"VU I bit Hack во избежание постоянной рекомпиляции (Scarface The World Is "
-"Yours)"
+"VU I bit Hack во избежание постоянной рекомпиляции (Scarface The World Is Yours)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:119
 msgid "Enable manual game fixes [Not recommended]"
