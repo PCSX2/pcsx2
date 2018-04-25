@@ -1588,6 +1588,8 @@ GSTextureCache::Source::~Source()
 	if (!m_should_have_tex_palette) {
 		_aligned_free(m_clut);
 		if (m_palette) {
+			ASSERT(m_renderer->m_game.title == CRC::ICO);
+			ASSERT(false);
 			m_renderer->m_dev->Recycle(m_palette);
 		}
 	}
