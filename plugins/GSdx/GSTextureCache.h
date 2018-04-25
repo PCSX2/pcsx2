@@ -142,7 +142,7 @@ public:
 		std::array<Palette, MAX_SIZE> m_palettes_stack; // Stack of Palette to be used to avoid memory fragmentation
 		
 		// Array of 2 multimaps, the first for 64B palettes and the second for 1024B palettes.
-		//     Each multimap has the clut hash value as key and the relevant palettes as values (multiple values possible for each key)
+		// Each multimap has the clut hash value as key and the relevant palettes as values (multiple values possible for each key)
 		std::array<std::unordered_multimap<size_t, Palette*>, 2> m_multimaps;
 
 		// Helper function to compute an hash value of the clut
