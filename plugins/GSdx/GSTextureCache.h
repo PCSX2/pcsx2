@@ -109,6 +109,7 @@ public:
 	class Palette
 	{
 	private:
+		uint16 m_ref_counter = 0; // Reference counter
 		uint32* m_clut; // Pointer to a copy of relevant clut
 		GSTexture* m_tex_palette; // Pointer to valid texture with relevant clut as content
 
@@ -122,6 +123,15 @@ public:
 
 		// Getter for palette texture pointer
 		__forceinline GSTexture* GetPaletteGSTexture();
+
+		// Getter for the reference counter
+		__forceinline uint16 GetRefCounter();
+
+		// Increment the reference counter by 1
+		__forceinline void IncrementRefCounter();
+
+		// Decrement the reference counter by 1
+		__forceinline void DecrementRefCounter();
 	};
 
 	class PaletteMap
