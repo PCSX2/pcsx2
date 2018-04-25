@@ -137,9 +137,7 @@ public:
 	class PaletteMap
 	{
 	private:
-		static const uint16 MAX_SIZE = 2048; // Max size of the map
-		uint16 m_size = 0; // Both size counter and valid stack top index
-		std::array<Palette, MAX_SIZE> m_palettes_stack; // Stack of Palette to be used to avoid memory fragmentation
+		static const uint16 MAX_SIZE = 65535; // Max size of the map
 		
 		// Array of 2 multimaps, the first for 64B palettes and the second for 1024B palettes.
 		// Each multimap has the clut hash value as key and the relevant palettes as values (multiple values possible for each key)

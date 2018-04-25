@@ -2158,15 +2158,14 @@ GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRende
 	// No Palette with matching clut content hash, MISS
 
 	// Create new Palette
-	m_palettes_stack[m_size] = Palette(renderer, pal);
-	Palette* palette = &m_palettes_stack[m_size];
-	++m_size;
-	if (m_size == MAX_SIZE) {
-		throw std::runtime_error("PaletteMap size maxed out at MAX_SIZE (2048) elements.");
-	}
+	Palette* palette = new Palette(renderer, pal);
 	
 	// Add the new palette to the multimap
-	multimap.insert(std::make_pair(clut_hash, palette));
+	multimap.emplace(clut_hash, palette);
+
+	if (multimap.size() == MAX_SIZE) {
+		throw std::runtime_error("PaletteMap size maxed out at MAX_SIZE (2048) elements.");
+	}
 	
 	// Return the pointer to the newly created Palette
 	return palette;
@@ -2182,6 +2181,5 @@ void GSTextureCache::PaletteMap::Clear(const GSRenderer* renderer) {
 		multimap.clear(); // Clear all the nodes of the multimap
 		multimap.reserve(MAX_SIZE); // Ensure multimap capacity is not modified by the clearing
 	}
-	m_size = 0; // Reset stack top index
 }
 
