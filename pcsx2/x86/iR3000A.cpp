@@ -62,6 +62,8 @@ u32 psxpc;			// recompiler psxpc
 int psxbranch;		// set for branch
 u32 g_iopCyclePenalty;
 
+int psxEEmultiplier; //This files definition for the psxEEmultiplier contained in IopCommon.h
+
 static EEINST* s_pInstCache = NULL;
 static u32 s_nInstCacheSize = 0;
 
@@ -942,7 +944,8 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		xMOV(ptr32[&psxRegs.cycle], eax); // update cycles
 
 		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
-		xSUB(ptr32[&iopCycleEE], (s32)(round(blockCycles* psxEEmultiplier)));
+		xSUB(ptr32[&iopCycleEE], (s32)(round(blockCycles* psxEEmultiplier))); // One of two parts of an equation that determins the EE to Iop clock speed, note the value is trunacated.
+		                                                                      // due to the freaquency in PS1 mode being 8.71 that get's rounded up to 9. 
 		xJLE(iopExitRecompiledCode);
 
 		// check if an event is pending

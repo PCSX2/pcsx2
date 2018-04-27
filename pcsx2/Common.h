@@ -20,8 +20,10 @@
 static const u32 BIAS = 2;				// Bus is half of the actual ps2 speed
 static const u32 PS2CLK = 294912000;	//hz	/* 294.912 mhz */
 
-extern int psxEEmultiplier;
-
+extern int psxEEmultiplier; // This variable controls and set's the Multiplier value for the EE to Iop cycle clock, 
+                            // The thing that controls the freaquency of Iop to EE interaction and vice versa.  
+                            // This changes between PS2 and PS1 mode's to account for the clock difference in 
+                            // The Iop or ps1 processor speed between the two modes.
 #include "System.h"
 #include "Memory.h"
 #include "R5900.h"

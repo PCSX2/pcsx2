@@ -28,7 +28,7 @@
 #include "IopCounters.h"
 #include "IopSio2.h"
 #include "IopGte.h"
-extern s64 PSXCLK;	
+extern s64 PSXCLK; // The Iop cycle clock or the PS1's main processor this variable determins and set's the freaquency of the processor. 	
 //#define PSXCLK	 9216000	/* 36.864 Mhz */
 //#define PSXCLK	186864000	/* 36.864 Mhz */
 

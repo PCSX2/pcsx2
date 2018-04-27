@@ -63,7 +63,7 @@ void psxReset()
 	g_iopNextEventCycle = psxRegs.cycle + 4;
 
 	psxHwReset();
-	psxEEmultiplier = 8; /*Base clock speed for the Playstation 2*/
+	psxEEmultiplier = 8; /*Base EE to Iop Clock speed for the Playstation 2*/
 	PSXCLK = 36864000; /* 36.864 Mhz Playstation 2 speed*/
 	ioman::reset();
 	psxBiosReset();
