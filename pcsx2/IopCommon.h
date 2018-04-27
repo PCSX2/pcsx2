@@ -28,7 +28,7 @@
 #include "IopCounters.h"
 #include "IopSio2.h"
 #include "IopGte.h"
-static s64 PSXCLK = 36864000;	/* 36.864 Mhz */
+extern s64 PSXCLK;	
 //#define PSXCLK	 9216000	/* 36.864 Mhz */
 //#define PSXCLK	186864000	/* 36.864 Mhz */
 

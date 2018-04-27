@@ -59,6 +59,9 @@ u32 eeloadMain = 0;
 
 extern SysMainMemory& GetVmMemory();
 
+int psxEEmultiplier; //to fixed the unresolved external symbol. 
+
+
 void cpuReset()
 {
 	vu1Thread.WaitVU();
@@ -435,7 +438,7 @@ __fi void _cpuEventTest_Shared()
 		cpuSetNextEventDelta( 48 );
 		//Console.Warning( "EE ahead of the IOP -- Rapid Event!  %d", EEsCycle );
 	}
-
+	
 	// The IOP could be running ahead/behind of us, so adjust the iop's next branch by its
 	// relative position to the EE (via EEsCycle)
 	cpuSetNextEventDelta(((s32)((g_iopNextEventCycle - psxRegs.cycle)*psxEEmultiplier)) - EEsCycle);

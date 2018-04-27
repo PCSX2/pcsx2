@@ -32,6 +32,8 @@
 	 VBlank non-interlaced	59.82 Hz
 	 HBlank					15.73426573 KHz */
 
+s64 PSXCLK;
+
 // Misc IOP Clocks
 #define PSXPIXEL        ((int)(PSXCLK / 13500000))
 #define PSXSOUNDCLK		((int)(48000))

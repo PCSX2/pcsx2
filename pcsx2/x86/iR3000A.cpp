@@ -942,7 +942,7 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		xMOV(ptr32[&psxRegs.cycle], eax); // update cycles
 
 		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
-		xSUB(ptr32[&iopCycleEE], (s32)(round(blockCycles* psxEEmultiplier)));//this line breaks compiler in ps1 mode, weird. 
+		xSUB(ptr32[&iopCycleEE], (s32)(round(blockCycles* psxEEmultiplier)));
 		xJLE(iopExitRecompiledCode);
 
 		// check if an event is pending
