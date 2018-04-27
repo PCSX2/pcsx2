@@ -62,8 +62,6 @@ u32 psxpc;			// recompiler psxpc
 int psxbranch;		// set for branch
 u32 g_iopCyclePenalty;
 
-int psxEEmultiplier; //This files definition for the psxEEmultiplier contained in IopCommon.h
-
 static EEINST* s_pInstCache = NULL;
 static u32 s_nInstCacheSize = 0;
 

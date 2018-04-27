@@ -88,6 +88,7 @@ u8 Test23[] = { 0x43, 0x58, 0x44, 0x32, 0x39 ,0x34, 0x30, 0x51 };
 //#define cdReadTime ((PSXCLK / 75) / BIAS)
 u32 cdReadTime;// = ((PSXCLK / 75) / BIAS);
 
+
 #define CDR_INT(eCycle)    PSX_INT(IopEvt_Cdrom, eCycle)
 #define CDREAD_INT(eCycle) PSX_INT(IopEvt_CdromRead, eCycle)
 
@@ -976,6 +977,11 @@ void cdrReset() {
 	cdr.CurTrack=1;
 	cdr.File=1; cdr.Channel=1;
 	cdReadTime = (PSXCLK / 1757) * BIAS;
+
+	if ((psxHu32(HW_ICFG) & (1 << 3)))
+	{
+		cdReadTime = ((PSXCLK / 75) / BIAS);
+	}
 }
 
 void SaveStateBase::cdrFreeze()

@@ -38,8 +38,6 @@ wxString DiscSerial;
 
 static cdvdStruct cdvd;
 
-int PSXCLK; //this files definition of the PSXCLK contained in IopCommon.h
-
 static __fi void SetResultSize(u8 size)
 {
 	cdvd.ResultC = size;
