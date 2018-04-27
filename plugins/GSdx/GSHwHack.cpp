@@ -963,23 +963,6 @@ bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_FrontMission5(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-		if(fi.TME && (fi.FBP ==0x1000) && (fi.TBP0 ==0x2e00 || fi.TBP0 ==0x3200) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; //fi.TBP0 ==0x1f00
-		}
-	}
-
-	return true;
-}
-
 bool GSC_GodHand(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1139,6 +1122,27 @@ bool GSC_FinalFightStreetwise(const GSFrameInfo& fi, int& skip)
 			{
 				skip = 1;
 			}
+		}
+	}
+
+	return true;
+}
+
+bool GSC_FrontMission5(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
+		{
+			// Texture shuffle and depth support.
+			// Correctly emulated on OGL.
+			skip = 1;
+		}
+		if(fi.TME && (fi.FBP ==0x1000) && (fi.TBP0 ==0x2e00 || fi.TBP0 ==0x3200) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
+		{
+			// Shadows, glitchy black ground textures.
+			// Can be Fixed with Preload Frame Data hw hack, DX needs depth support.
+			skip = 1; //fi.TBP0 ==0x1f00
 		}
 	}
 
@@ -2222,7 +2226,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::DevilMayCry3] = GSC_DevilMayCry3;
 		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
-		lut[CRC::FrontMission5] = GSC_FrontMission5;
 		lut[CRC::Genji] = GSC_Genji;
 		lut[CRC::GodHand] = GSC_GodHand;
 		lut[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
@@ -2295,6 +2298,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::Bully] = GSC_Bully;
 		lut[CRC::BullyCC] = GSC_BullyCC;
 		lut[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise; // + blending
+		lut[CRC::FrontMission5] = GSC_FrontMission5;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::ICO] = GSC_ICO;
 		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
