@@ -441,8 +441,10 @@ __fi void _cpuEventTest_Shared()
 	
 	// The IOP could be running ahead/behind of us, so adjust the iop's next branch by its
 	// relative position to the EE (via EEsCycle)
-	cpuSetNextEventDelta((s32)((g_iopNextEventCycle - psxRegs.cycle)*psxEEmultiplier) - EEsCycle); // One of two parts of an equation that determines the EE to Iop clock speed, note the value is trunacated.
-		                                                                                           // due to the freaquency in PS1 mode being 8.71 that get's rounded up to 9. 
+
+	// One of two parts of an equation that determines the EE to Iop clock speed, note the value is trunacated.		                                                                                           
+	// due to the freaquency in PS1 mode being 8.71 that get's rounded up to 9. 
+	cpuSetNextEventDelta((s32)((g_iopNextEventCycle - psxRegs.cycle)*psxEEmultiplier) - EEsCycle); 
 	
 	// Apply the hsync counter's nextCycle
 	cpuSetNextEvent( hsyncCounter.sCycle, hsyncCounter.CycleT );
