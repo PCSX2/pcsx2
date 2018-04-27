@@ -438,8 +438,8 @@ __fi void _cpuEventTest_Shared()
 
 	// The IOP could be running ahead/behind of us, so adjust the iop's next branch by its
 	// relative position to the EE (via EEsCycle)
-	cpuSetNextEventDelta( ((g_iopNextEventCycle-psxRegs.cycle)*8) - EEsCycle );
-
+	cpuSetNextEventDelta(((s32)((g_iopNextEventCycle - psxRegs.cycle)*psxEEmultiplier)) - EEsCycle);
+	
 	// Apply the hsync counter's nextCycle
 	cpuSetNextEvent( hsyncCounter.sCycle, hsyncCounter.CycleT );
 

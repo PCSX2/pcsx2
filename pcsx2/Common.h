@@ -20,6 +20,8 @@
 static const u32 BIAS = 2;				// Bus is half of the actual ps2 speed
 static const u32 PS2CLK = 294912000;	//hz	/* 294.912 mhz */
 
+static int psxEEmultiplier = 8;
+
 #include "System.h"
 #include "Memory.h"
 #include "R5900.h"

@@ -1416,6 +1416,8 @@ static __fi void cdvdWrite0F(u8 rt) { // TYPE
 static __fi void cdvdWrite14(u8 rt) { // PS1 MODE?? // This should be done in the SBUS_F240 bit 19 write in HwWrite.cpp
 	u32 cycle = psxRegs.cycle;
 
+	PSXCLK = 33868800; /* 33.8688 Mhz */
+	psxEEmultiplier = 8.71; //proper EE to iop cycle freaquency. 
 	if (rt == 0xFE)
 		Console.Warning("*PCSX2*: go PS1 mode DISC SPEED = FAST");
 	else
