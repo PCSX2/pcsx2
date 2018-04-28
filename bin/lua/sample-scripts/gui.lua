@@ -1,3 +1,6 @@
+-- These scripts are provided as-is and are not
+-- incredibly well tested or (as you can see) well documented
+
 function draw()
 	gui.drawLine(20, 20, 100, 400, "green")
 	gui.text(50, 50, "This is a test", "magenta")

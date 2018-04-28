@@ -1,7 +1,9 @@
+-- These scripts are provided as-is and are not
+-- incredibly well tested or (as you can see) well documented
+
 ----------------------------------------------------------
 -- KeyWriter.lua
 ----------------------------------------------------------
-
 
 ----------------------------------------------------------
 -- file
@@ -29,36 +31,28 @@ end
 s=s .. "\n"
 file:write(s)
 
-
 --------------
 -- main
 --------------
 emu.registerbefore(function()
 	local s=""
-	
-	s=s .. emu.framecount() 
-	
+	s=s .. emu.framecount()
 	local key = joypad.get(0)
-	
 	for i=1 , #keyKeys do
 		local v = key[ keyKeys[i] ]
 		if type(v) == "boolean" then
 			if v then
-				s=s .. "," .. 1 
+				s=s .. "," .. 1
 			else
-				s=s .. "," .. 0  
+				s=s .. "," .. 0
 			end
 		else
-			s=s .. "," .. v 
+			s=s .. "," .. v
 		end
 	end
-	
 	s=s .. "\n"
 	file:write(s)
-	
 end)
-
-
 
 --------------
 -- loop
@@ -66,6 +60,3 @@ end)
 while emu.frameadvance do
 	emu.frameadvance()
 end
-
-
-
