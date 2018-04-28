@@ -76,7 +76,6 @@ oprofile_data/
 /bin/dumps
 /bin/help
 /bin/inis
-!/bin/inis/PCSX2_keys.ini
 /bin/logs
 /bin/memcards
 /bin/plugins
