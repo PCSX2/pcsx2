@@ -1,85 +1,35 @@
-# PCSX2-RR  
-## Credit  
-This is a fork of https://github.com/DocSkellington/pcsx2-1.4.0-rr which itself is a fork of https://github.com/pocokhc/pcsx2-1.4.0-rr, which itself is based off the original [pcsx2-rr](<https://code.google.com/archive/p/pcsx2-rr/>). However, since the content has changed a lot and simple merging can not be done, the source code has changed considerably from this original version.
+# PCSX2
+[![Travis Build Status](https://travis-ci.org/PCSX2/pcsx2.svg?branch=master)](https://travis-ci.org/PCSX2/pcsx2) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/b67odm0dd506co78/branch/master?svg=true)](https://ci.appveyor.com/project/gregory38/pcsx2/branch/master) [![Coverity Scan Build Status](https://scan.coverity.com/projects/6310/badge.svg)](https://scan.coverity.com/projects/6310)
 
-## About  
-This work tries to bring TAS tools to the latest version of the PCSX2 emulator.
-If you have other ideas (or if you find bugs), don't hesitate to open an issue (or write a post in TASVideos' forum).  
+PCSX2 is an open-source PlayStation 2 (AKA PS2) emulator. Its purpose is to emulate the PS2 hardware, using a combination of MIPS CPU [Interpreters](http://en.wikipedia.org/wiki/Interpreter_\(computing\)), [Recompilers](http://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](http://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.
 
-If you would like to make an improvement to the project, don't hesitate to follow the [steps to build from source](https://github.com/xTVaser/pcsx2-rr/wiki/Building-from-Source) and submit a pull request.
+# Project Details
 
-Have fun while creating TAS! :D
+The PCSX2 project has been running for more than ten years. Once only able to run a few public domain demos, newer versions enable many games to work at full speed, including popular titles such as Final Fantasy X or Devil May Cry 3. Visit the [PCSX2 homepage](http://pcsx2.net) to check the latest compatibility status of games (with more than 2000 titles tested), or ask for help in the [official forums](http://forums.pcsx2.net/).
 
-## Video Examples  
-Here is a simple tutorial on getting started with PCSX2-rr, note that keybindings may have changed!  
-* [Video Tutorial](https://www.youtube.com/watch?v=1rgJ3jowxIo)  
+The latest officially released stable version is version 1.4.0.
 
-Here are some TAS examples (made with the original pcsx2-rr v.1):  
-* [TAS of Chulip part0 (WIP) pcsx2-1.4.0-rr (nicovideo)](http://www.nicovideo.jp/watch/sm30385451)  
-* [TAS of Chulip part0 (WIP) pcsx2-1.4.0-rr (youtube)](https://youtu.be/Ib2MnRfCCzc)  
+Installers and binaries for both Windows and Linux are available from [our website](http://pcsx2.net/download.html).
 
-## Getting the Emulator  
-Check the [release page](https://github.com/xTVaser/pcsx2-rr/releases) for the latest build, there is also a build for the old 1.4.0 release of pcsx2 that may be better suited for some games.  
-You will need:  
-* The [Visual C++ 2015 x86 Redistributables](https://www.microsoft.com/en-us/download/details.aspx?id=48145)
+Development builds are also available from [our website](http://pcsx2.net/download/development/git.html).
 
-This was tested only on Windows 10, but the application should work on the other OS supported by PCSX2.  
+# System Requirements
 
-## Features  
-* KeyMovie recording  
-* Pause/Unpause/FrameAdvance  
-* Lua Support  
-  * Lua engine keeps running when the end of the script is reached (allows to display data each frame);
-* Save/Load states to/from files;  
-* An editor for KeyMovie files  
-* Virtual Pad;  
-  * TAS Input Manager:  
-    *  Calls LuaManager::ControllerInterrupt  
-    *  Reads, if it is open, the virtual pad. Be wary that the virtual pad overwrites the other sources of inputs (lua and user).  
-
-
-For more detail, see the wikis:
-* [PCSX2-rr v3](https://github.com/pocokhc/pcsx2-1.4.0-rr/wiki) (in Japanese)
-* [PCSX2-rr v4](https://github.com/DocSkellington/pcsx2-1.4.0-rr/wiki) (only explains changes)
-
-## New shortcuts
-### Activate Shortcuts for save/load  
-If you wish to activate the keyboard shortcuts for saving to (or loading from) a specific slot without having to manually switch the current slot to this one (so, if you don't want to use only F1, F2 and F3), here are the steps:
-1. In the `PCSX2-rr_keys.ini` remove the `#` before States_SaveSlot0, States_SaveSlot1 (and so on)
-2. Change the 10 into a 0 (zero)
-3. In LilyPad settings, switch the Keyboard API to Raw input
-
-### Fast Frame Advance
-If you set Lilypad's Keyboard API to Raw Input (in the Plugin Settings), you will be able to hold space to "frame advance" multiple times in a row (the number of times per second should depend on your operating system's settings).
-
-## Desync
-See this [wiki page](https://github.com/xTVaser/pcsx2-rr/wiki#key-movie-creation-assumption-procedure-updated-april-9-2017)
-  
-## How to build for development (Windows 10) full details to come
-See this [wiki article](https://github.com/xTVaser/pcsx2-rr/wiki/Building-from-Source)
-
-## Current Issues (probably should just move to an issue page  
-### Titlebar during FrameAdvance  
-Had to cheat a little to force the frame counter to update in the titlebar. So, the other information displayed is not accurate (because it's not updated).  
-
-
----
-
-
-
-## Relevant Information from PCSX2's README
-### System Requirements
-#### Minimum
+## Minimum
 * OS: Windows Vista SP2 or newer or GNU/Linux (32-bit or 64-bit)
 * CPU: Any that supports SSE2 (Pentium 4 and up, Athlon64 and up)
 * GPU: DirectX 10 GPU or better
 * RAM: 2GB or more
 
-#### Recommended
+## Recommended
 * OS: Windows 7/8/8.1/10 (64-bit) or GNU/Linux (64-bit)
 * CPU: Intel Haswell (or AMD equivalent) @ 3.2GHz or better
 * GPU: DirectX 11 GPU or greater
 * RAM: 4GB or more
+
+## Notes
+
+- You need the [Visual C++ 2015 x86 Redistributables](https://www.microsoft.com/en-us/download/details.aspx?id=48145) for this version to work.
 
 - PCSX2 1.4.0 is the last version to support Windows XP. Windows XP is no longer getting updates (including security-related updates), and graphics drivers for Windows XP are older and no longer maintained.
 
@@ -89,6 +39,13 @@ Had to cheat a little to force the frame counter to update in the titlebar. So, 
 
 - PCSX2 mainly takes advantage of 2 CPU cores. As of [this commit](https://github.com/PCSX2/pcsx2/commit/ac9bf45) PCSX2 can now take advantage of more than 2 cores using the MTVU speedhack. This can be a significant speedup on CPUs with 3+ cores, however on GS-limited games (or on CPUs with less than 2 cores) it may be a slowdown.
 
-### Licence
-[License GNU LGPL](http://www.gnu.org/licenses/lgpl.html)  
+# Screenshots
 
+![Okami](http://pcsx2.net/images/stories/gitsnaps/okami_n1s.jpg "Okami")
+![Final Fantasy XII](http://pcsx2.net/images/stories/gitsnaps/finalfantasy12izjs_s2.jpg "Final Fantasy XII")
+![Shadow of the Colossus](http://pcsx2.net/images/stories/gitsnaps/sotc6s2.jpg "Shadow of the Colossus")
+![DragonBall Z Budokai Tenkaichi 3](http://pcsx2.net/images/stories/gitsnaps/DBZ-BT-3s.jpg "DragonBall Z Budokai Tenkaichi 3")
+![Kingdom Hearts 2: Final Mix](http://pcsx2.net/images/stories/gitsnaps/kh2_fm_n1s2.jpg "Kingdom Hearts 2: Final Mix")
+![God of War 2](http://pcsx2.net/images/stories/gitsnaps/gow2_s2.jpg "God of War 2")
+![Metal Gear Solid 3: Snake Eater](http://pcsx2.net/images/stories/gitsnaps/mgs3-1_s2.jpg "Metal Gear Solid 3: Snake Eater")
+![Rogue Galaxy](http://pcsx2.net/images/stories/gitsnaps/rogue_galaxy_n1s2.jpg "Rogue Galaxy")
