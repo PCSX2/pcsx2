@@ -445,7 +445,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 		_("For running raw PS2 binaries directly"));
 
 	m_menuSys.AppendSeparator();
-	// TODO TAS - no more restart button
 	m_menuSys.Append(MenuId_Sys_SuspendResume,	_("Initializing..."));
 	m_menuSys.AppendSeparator();
 

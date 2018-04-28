@@ -580,7 +580,8 @@ __fi void rcntUpdate_vSync()
 		if (dlg)dlg->FrameUpdate();
 		//-----------------//
 
-		g_MovieControle.StopCheck();//--TAS--//
+		//--TAS--//
+		g_MovieControle.StopCheck();
 
 
 		VSyncStart(vsyncCounter.sCycle);

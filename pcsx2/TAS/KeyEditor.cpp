@@ -1,7 +1,7 @@
 #include "PrecompiledHeader.h"
 
 
-#include "app.h"	//Counters.hÇincludeÇ∑ÇÈÇÃÇ…ïKóv
+#include "app.h"	// Counters.h
 #include "Counters.h"	// use"g_FrameCount"
 
 #include "KeyEditor.h"
@@ -54,13 +54,10 @@ KeyEditor::KeyEditor(wxWindow * parent)
 	int y = 2;
 	wxPanel *panel = new wxPanel(this, wxID_ANY);
 
-	
-
-
 	// listbox
 	frameList = new wxListBox(panel, ID_List_KeyFrame, wxPoint(x, y),wxSize(250,460));
 	x += 250 + 5;
-	
+
 	// key
 	keyTextView = new wxTextCtrl(panel, wxID_ANY, L"", wxPoint(x, y), wxSize(420, 25));
 	keyTextView->Disable();
@@ -75,14 +72,14 @@ KeyEditor::KeyEditor(wxWindow * parent)
 	}
 	keyCheckList1 = new wxCheckListBox(panel, ID_CheckList_NormalKey1, wxPoint(x, y), wxSize(90, 300), tmp);
 	x += 90+5;
-	
+
 	// analog
 	for (int i = 0; i < PadDataAnalogKeysSize; i++) {
 		(new wxTextCtrl(panel, wxID_ANY, PadDataAnalogKeys[i] , wxPoint(x, y), wxSize(100, 28)))->Disable();
 		analogKeyText[i] = new wxTextCtrl(panel, (ID_Text_AnalogKey1+i), "", wxPoint(x + 100, y), wxSize(80, 28));
 		y += 28;
 	}
-	
+
 	// button
 	int w = 90;
 	new wxButton(panel, ID_Btn_Update, L"update", wxPoint(x,y));
@@ -114,15 +111,13 @@ KeyEditor::KeyEditor(wxWindow * parent)
 
 	//checklist
 	Bind(wxEVT_CHECKLISTBOX, &KeyEditor::OnCheckList_NormalKey1, this, ID_CheckList_NormalKey1);
-	
+
 	//text
 	Bind(wxEVT_TEXT, &KeyEditor::OnText_Edit, this, ID_Text_Edit);
 	Bind(wxEVT_TEXT, &KeyEditor::OnText_Analog1, this, ID_Text_AnalogKey1);
 	Bind(wxEVT_TEXT, &KeyEditor::OnText_Analog2, this, ID_Text_AnalogKey2);
 	Bind(wxEVT_TEXT, &KeyEditor::OnText_Analog3, this, ID_Text_AnalogKey3);
 	Bind(wxEVT_TEXT, &KeyEditor::OnText_Analog4, this, ID_Text_AnalogKey4);
-
-	
 }
 void KeyEditor::OnClose(wxCloseEvent& evt)
 {
@@ -166,7 +161,6 @@ void KeyEditor::FrameUpdate()
 		recordMessage = L"[replay]";
 	}
 	SetTitle(wxString::Format(L"%d / %d ", g_FrameCount, g_KeyMovieData.getMaxFrame())+ pauseMessage+ recordMessage );
-	
 }
 
 //-------------------------------
@@ -174,7 +168,8 @@ void KeyEditor::FrameUpdate()
 //-------------------------------
 void KeyEditor::DrawKeyFrameList(long selectFrame)
 {
-	// ï\é¶Ç∑ÇÈÉtÉåÅ[ÉÄêîÇÇ´ÇﬂÇÈ
+	// Decide the number of frames to display
+	// ÔøΩ\ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩtÔøΩÔøΩÔøΩ[ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩﬂÇÔøΩ
 	int start = selectFrame - 100;
 	unsigned int end = selectFrame +100;
 	if (start < 0) {
@@ -219,7 +214,6 @@ void KeyEditor::DrawKeyButtonCheck()
 // event
 // TODO: all of these need to be updated for the key editor window 
 //----------------------------------------------
-
 void KeyEditor::OnBtnUpdate(wxCommandEvent& event)
 {
 	int select = frameList->GetSelection();
@@ -232,7 +226,6 @@ void KeyEditor::OnBtnUpdate(wxCommandEvent& event)
 		frameTextFoeMove->ChangeValue(wxString::Format(L"%d", frame));
 		DrawKeyFrameList(frame);
 	}
-	
 }
 void KeyEditor::OnBtnInsert(wxCommandEvent& event)
 {

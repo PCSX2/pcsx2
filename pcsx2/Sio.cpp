@@ -215,24 +215,27 @@ SIO_WRITE sioWriteController(u8 data)
 		g_KeyMovie.ControllerInterrupt(data, sio.port, sio.bufCount, sio.buf);
 
 		//--LuaEngine--//
-		if (g_KeyMovie.isInterruptFrame()) {
+		if (g_KeyMovie.isInterruptFrame())
+		{
 			g_TASInput.ControllerInterrupt(data, sio.port, sio.bufCount, sio.buf);
 		}
 		//------------//
 
 		// -- TAS Debugging Helpful -- //
-		// Prints controlller data every frame //
-		// can use isSourceEnabled if this is a performance hit, but i don't think it will be an issue
-		// std::string converted = std::to_string(sio.buf[sio.bufCount]);
-		if (sio.port == 0 && sio.bufCount > 2) { // skip first two bytes because they dont seem to matter
-			if (sio.bufCount == 3) {
+		// Prints controlller data every frame to the Controller Log filter, disabled by default //
+		if (sio.port == 0 && sio.bufCount > 2) // skip first two bytes because they dont seem to matter
+		{
+			if (sio.bufCount == 3)
+			{
 				controlLog(wxString::Format("\nController Port %d", sio.port));
 				controlLog(wxString::Format("\nPressed Flags - "));
 			}
-			if (sio.bufCount == 5) { // analog sticks
+			if (sio.bufCount == 5) // analog sticks
+			{
 				controlLog(wxString::Format("\nAnalog Sticks - "));
 			}
-			if (sio.bufCount == 9) { // pressure sensitive bytes
+			if (sio.bufCount == 9) // pressure sensitive bytes
+			{
 				controlLog(wxString::Format("\nPressure Bytes - "));
 			}
 			controlLog(wxString::Format("%3d ", sio.buf[sio.bufCount]));

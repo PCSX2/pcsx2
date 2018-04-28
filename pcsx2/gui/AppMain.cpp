@@ -611,22 +611,27 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 
 void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event)
 {
-	try {
+	try
+	{
 		// TAS
-		if (g_MovieControle.isStop()) {
-			// TODO TAS - translate these
-			//ストップ中はGSFrameのキーイベントも停止するのでここからキー入力を取得
-			//それに伴ってGSFrameで設定してあるショートカットキーも使えない
-			if (PADkeyEvent != NULL) {
+		if (g_MovieControle.isStop())
+		{
+			// While stopping, GSFrame key event also stops, so get key input from here
+			// Along with that, you can not use the shortcut keys set in GSFrame
+			// ストップ中はGSFrameのキーイベントも停止するのでここからキー入力を取得
+			// それに伴ってGSFrameで設定してあるショートカットキーも使えない
+			if (PADkeyEvent != NULL)
+			{
+				// Acquire key information, possibly calling it only once per frame
 				// キー情報を取得、多分1frameに1回だけ呼び出す系
 				const keyEvent* ev = PADkeyEvent();
-				if (ev != NULL) {
+				if (ev != NULL)
+				{
 					sApp.TAS_PadKeyDispatch(*ev);
 				}
 			}
 		}
 		g_MovieControle.StartCheck();
-		
 		(handler->*func)(event);
 	}
 	// ----------------------------------------------------------------------------

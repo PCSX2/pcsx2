@@ -302,10 +302,10 @@ static ConsoleLogSource* const ConLogSources[] =
 // WARNING ConsoleLogSources & ConLogDefaults must have the same size
 static const bool ConLogDefaults[] =
 {
+	true,
+	true,
 	false,
-	false,
-	false,
-	false,
+	true,
 	false,
 	false,
 	false,
@@ -343,8 +343,8 @@ void ConLog_LoadSaveSettings( IniInterface& ini )
 	ConLogInitialized = true;
 }
 
-bool isSourceEnabled(int index) {
-
+bool isSourceEnabled(int index)
+{
 	if (ConsoleLogSource* log = ConLogSources[index])
 	{
 		return log->Enabled;

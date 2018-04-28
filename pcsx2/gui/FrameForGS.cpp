@@ -90,7 +90,7 @@ void GSPanel::InitDefaultAccelerators()
 	m_Accels->Map(AAC(wxKeyCode('p')), "TogglePause");
 	m_Accels->Map(AAC(wxKeyCode('r')), "KeyMovieModeToggle");
 
-	// TODO TAS - Translate
+	// Set commands not used
 	// 使わないコマンドを設定
 	// WXK_NONE is error
 	m_Accels->Map(AAC(WXK_COMMAND), "States_SaveSlot0");

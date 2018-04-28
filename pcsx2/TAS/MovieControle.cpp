@@ -12,9 +12,12 @@ MovieControle g_MovieControle;
 
 
 //-----------------------------------------------
-// ƒQ[ƒ€‚ÍCoreThread‚Å“®‚¢‚Ä‚¨‚èA“®‚¢‚Ä‚¢‚éŠÔ‚ÍGSFrame(wxFrame)‚Ìˆ—‚ğó‚¯•t‚¯‚È‚¢
-// (ƒL[“ü—Í‚Ìó‚¯•t‚¯‚àCoreThread“à‚ÆGSFrame“à‚Ì2‰ÓŠ‚ªİ’è‚³‚ê‚Ä‚é‚Á‚Û‚¢)
-// CoreThread‚ª’â~‚µ‚Ä‚¢‚éŠÔ‚ÍwxFrame‚Ì“ü—Í‚ª“®‚­d‘g‚İ‚Á‚Û‚¢
+// The game is running with CoreThread, and it will not accept processing of GSFrame (wxFrame) while it is running
+// (It seems that two places are accepted for key input within CoreThread and GSFrame, too)
+// While CoreThread is stopped, the input of wxFrame works like a mechanism
+// ï¿½Qï¿½[ï¿½ï¿½ï¿½ï¿½CoreThreadï¿½Å“ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ô‚ï¿½GSFrame(wxFrame)ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ó‚¯•tï¿½ï¿½ï¿½È‚ï¿½
+// (ï¿½Lï¿½[ï¿½ï¿½ï¿½Í‚Ìó‚¯•tï¿½ï¿½ï¿½ï¿½CoreThreadï¿½ï¿½ï¿½GSFrameï¿½ï¿½ï¿½2ï¿½Óï¿½ï¿½ï¿½ï¿½İ’è‚³ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Û‚ï¿½)
+// CoreThreadï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ô‚ï¿½wxFrameï¿½Ì“ï¿½ï¿½Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½dï¿½gï¿½İ‚ï¿½ï¿½Û‚ï¿½
 //-----------------------------------------------
 
 bool MovieControle::isStop()
@@ -22,7 +25,7 @@ bool MovieControle::isStop()
 	return (fPauseState && CoreThread.IsOpen() && CoreThread.IsPaused());
 }
 //-----------------------------------------------
-// Counters(CoreThread)“à‚Ì’â~”»’è—p
+// Counters(CoreThread)ï¿½ï¿½Ì’ï¿½~ï¿½ï¿½ï¿½ï¿½p (For stop judgment in)
 //-----------------------------------------------
 void MovieControle::StartCheck()
 {
@@ -51,14 +54,15 @@ void MovieControle::StopCheck()
 			frameIndex += frameCount.length();
 
 			title.replace(frameIndex, oldTitle.length() - frameIndex, oldTitle.c_str().AsChar() + frameIndex);
-			
+
 			wxGetApp().GetGsFrame().SetTitle(title);
 		}
 	}
 	if (fStop && CoreThread.IsOpen() && CoreThread.IsRunning())
 	{
 		fPauseState = true;
-		CoreThread.PauseSelf();	//self‚¶‚á‚È‚¢‚Æ~‚Ü‚ç‚È‚¢
+		CoreThread.PauseSelf();	// I can not stop unless it is self
+								// selfï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Æ~ï¿½Ü‚ï¿½È‚ï¿½
 	}
 }
 

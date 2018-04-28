@@ -7,13 +7,16 @@
 
 //----------------------------
 // header
-// fseek‚Å’¼ÚêŠw’è‚µ‚Ä‚¢‚é‚Ì‚Å•Ï”‚Ì‡”Ô‚Í‘å–
-// ‹ï‘Ì“I‚É‚ÍuFrameMaxv‚Í+2uUndoCountv‚Í+6ƒoƒCƒg‚ÌˆÊ’u‚É”z’u
+// fseek since the direct place designation is done with, the order of the variables is important
+// Specifically, "FrameMax" +2 "UndoCount" is located at the position of +6 bytes
+// fseekï¿½Å’ï¿½ï¿½ÚêŠï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½Ì‚Å•Ïï¿½ï¿½Ìï¿½ï¿½Ô‚Í‘å–
+// ï¿½ï¿½Ì“Iï¿½É‚ÍuFrameMaxï¿½vï¿½ï¿½+2ï¿½uUndoCountï¿½vï¿½ï¿½+6ï¿½oï¿½Cï¿½gï¿½ÌˆÊ’uï¿½É”zï¿½u
 //----------------------------
 struct KeyMovieHeader
 {
 	u8 version = 3;
-	u8 ID = 0xCC;//“Á‚ÉˆÓ–¡‚Í‚È‚µAkeyƒtƒ@ƒCƒ‹‚©”»’è—p‚ÌID
+	u8 ID = 0xCC; // Especially, there is no meaning, a key file or ID for judgment
+				  // ï¿½ï¿½ï¿½ÉˆÓ–ï¿½ï¿½Í‚È‚ï¿½ï¿½Akeyï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½ID
 
 	char emu[50] = "PCSX2-1.4.0-rr";
 	char author[50] = "";

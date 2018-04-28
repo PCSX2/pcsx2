@@ -669,15 +669,20 @@ void MainEmuFrame::Menu_KeyMovie_Record(wxCommandEvent &event)
 	g_KeyMovie.Stop();
 
 	KeyMovieFrame* keyMovieFrame = wxGetApp().GetKeyMovieFramePtr();
-	if (keyMovieFrame) {
+	if (keyMovieFrame)
+	{
 		if (keyMovieFrame->ShowModal() == wxID_CANCEL)
+		{
 			return;
-
-		// Frow Power-On
+		}
+		// From Power-On
 		if (keyMovieFrame->getFrom() == 0)
+		{
 			g_KeyMovie.Start(keyMovieFrame->getFile(), false);
+		}
 		// From Now
-		else if (keyMovieFrame->getFrom() == 1) {
+		else if (keyMovieFrame->getFrom() == 1)
+		{
 			VmStateBuffer savestate;
 			memSavingState memSS(savestate);
 			memSS.FreezeAll();

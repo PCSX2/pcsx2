@@ -928,7 +928,8 @@ AppConfig::UiTemplateOptions::UiTemplateOptions()
 	OutputProgressive	= L"Progressive";
 	OutputInterlaced	= L"Interlaced";
 	Paused				= L"<PAUSED> ";
-	TitleTemplate		= L"Frame: ${frame} | MaxFrame: ${maxFrame} | Mode: ${mode} | Speed: ${speed} (${vfps}) | Limiter: ${limiter} | ${cpuusage}";
+	// TODO: would be much better to change the title depending on if a recording/playback is currently in process
+	TitleTemplate    	= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | Frame: ${frame} | MaxFrame: ${maxFrame} | Rec. Mode: ${mode} | ${gsdx} | ${omodei} | ${cpuusage}"; 
 }
 
 void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)

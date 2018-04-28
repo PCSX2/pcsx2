@@ -1,6 +1,6 @@
 #include "PrecompiledHeader.h"
 
-#include "app.h"	//Counters.h‚ğinclude‚·‚é‚Ì‚É•K—v
+#include "app.h"	// Counters.h
 #include "Common.h"
 #include "Counters.h"	// use"g_FrameCount"
 #include "SaveState.h"	// create "SaveStateBase::keymovieFreeze()"
@@ -15,12 +15,14 @@
 KeyMovie g_KeyMovie;
 
 //-----------------------------------------------
-// save or load‚ÅƒtƒŒ[ƒ€”‚Ì•Û‘¶
+// Save or Load - Save frame number
+// Save or load - ï¿½Åƒtï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Ì•Û‘ï¿½
 //-----------------------------------------------
 void SaveStateBase::keymovieFreeze()
 {
 	FreezeTag("keymovie");
-	Freeze(g_FrameCount);	//FreezeŠÖ”‚Å‚È‚º‚©frame‚Ì•Û‘¶‚ª‚¤‚Ü‚­‚¢‚Á‚½
+	Freeze(g_FrameCount);	// Somehow the function saved the frame successfully
+							// Freezeï¿½Öï¿½ï¿½Å‚È‚ï¿½ï¿½ï¿½frameï¿½Ì•Û‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 	if (IsLoading()) {
 		g_KeyMovieData.addUndoCount();
