@@ -82,7 +82,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpng", "3rdparty\libpng\p
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pthreads4w", "3rdparty\pthreads4w\build\pthreads4w.vcxproj", "{0FAE817D-9A32-4830-857E-81DA57246E16}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "baseclasses", "unfree\baseclasses\baseclasses.vcxproj", "{27F17499-A372-4408-8AFA-4F9F4584FBD3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "baseclasses", "3rdparty\baseclasses\baseclasses.vcxproj", "{27F17499-A372-4408-8AFA-4F9F4584FBD3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freetype", "3rdparty\freetype\builds\windows\freetype.vcxproj", "{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}"
 EndProject
