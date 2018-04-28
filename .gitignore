@@ -1,13 +1,3 @@
-# PCSX2-RR Ignores
-*.p2s
-*.p2m2
-*.p2m2_backup
-*.p2m
-*.p2m_backup
-*.tmp
-
-
-# PCSX2 Ignores
 .*.swp
 .*.swn
 .*.swo
@@ -64,6 +54,13 @@ Devel
 
 oprofile_data/
 
+# TAS Specific Ignores (pcsx2-rr)
+*.p2s
+*.p2m2
+*.p2m2_backup
+*.p2m
+*.p2m_backup
+
 # Visual Studio upgrades
 /Backup*
 /UpgradeLog*.htm
@@ -78,15 +75,13 @@ oprofile_data/
 /bin/bios
 /bin/dumps
 /bin/help
+/bin/inis
+!/bin/inis/PCSX2_keys.ini
 /bin/logs
 /bin/memcards
 /bin/plugins
 /bin/snaps
 /bin/sstates
-/bin/cheats
-/bin/cheats_ws
-bin/inis/*
-!bin/inis/PCSX2_keys.ini
 /deps
 /ipch
 
