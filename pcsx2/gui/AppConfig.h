@@ -255,6 +255,7 @@ public:
 		wxString OutputInterlaced;
 		wxString Paused;
 		wxString TitleTemplate;
+		wxString TASTemplate;
 	};
 
 public:

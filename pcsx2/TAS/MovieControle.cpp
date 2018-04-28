@@ -46,7 +46,7 @@ void MovieControle::StopCheck()
 
 			// We force the frame counter in the title bar to change
 			wxString oldTitle = wxGetApp().GetGsFrame().GetTitle();
-			wxString title = g_Conf->Templates.TitleTemplate;
+			wxString title = g_Conf->Templates.TASTemplate;
 			wxString frameCount = wxString::Format("%d", g_FrameCount);
 
 			title.Replace(L"${frame}", frameCount);	//--TAS--//

@@ -799,22 +799,25 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	wxString omodef = (smode2 & 2) ? templates.OutputFrame : templates.OutputField;
 	wxString omodei = (smode2 & 1) ? templates.OutputInterlaced : templates.OutputProgressive;
 	wxString movieMode;
+	wxString title;
 	switch (g_KeyMovie.getModeState()) {
 	case KeyMovie::KEY_MOVIE_MODE::RECORD:
 			movieMode = "Recording";
+			title = templates.TASTemplate;
 			break;
 	case KeyMovie::KEY_MOVIE_MODE::REPLAY:
 			movieMode = "Replaying";
+			title = templates.TASTemplate;
 			break;
 	case KeyMovie::KEY_MOVIE_MODE::NONE:
 			movieMode = "No movie";
+			title = templates.TitleTemplate;
 			break;
 	}
 
-	wxString title = templates.TitleTemplate;
-	title.Replace(L"${frame}", pxsFmt(L"%d", g_FrameCount));	//--TAS--//
-	title.Replace(L"${maxFrame}", pxsFmt(L"%d", g_KeyMovie.getKeyMovieData().getMaxFrame()));
-	title.Replace(L"${mode}", movieMode);
+	title.Replace(L"${frame}", 		pxsFmt(L"%d", g_FrameCount));	//--TAS--//
+	title.Replace(L"${maxFrame}", 	pxsFmt(L"%d", g_KeyMovie.getKeyMovieData().getMaxFrame())); //--TAS--//
+	title.Replace(L"${mode}", 		movieMode); //--TAS--//
 	title.Replace(L"${slot}",		pxsFmt(L"%d", States_GetCurrentSlot()));
 	title.Replace(L"${limiter}",	limiterStr);
 	title.Replace(L"${speed}",		pxsFmt(L"%3d%%", lround(percentage)));
