@@ -1203,7 +1203,8 @@ Name   = Drakan - The Ancients' Gates
 Region = PAL-M5
 Compat = 5
 EETimingHack = 1 // Fixes flickering textures.
-[patches]	// 04F9D87F
+[patches]
+	// 04F9D87F
 	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
@@ -2012,7 +2013,8 @@ Serial = SCES-52677
 Name   = Network Access Disc & Hardware - Online Arena
 Region = PAL-M7
 Compat = 5	// With GSdx, SW-mode only for HOA.
-[patches = D859B1B4]
+[patches]
+	// D859B1B4
 	comment=- This gamedisc supports widescreen through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
@@ -4378,7 +4380,8 @@ Serial = SCPS-56008
 Name   = Fatal Frame
 Region = NTSC-K
 Compat = 5
-[patches]	// BCF04BF3
+[patches]
+	// BCF04BF3
 	comment=- At least when using GSdx in D3D11 HardWare mode, and due to missing
 	comment=-  rendering-fixes, black stripes can show up on ghosts,
 	comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
@@ -8342,7 +8345,8 @@ Serial = SLES-50821
 Name   = Project Zero
 Region = PAL-M5
 Compat = 5
-[patches]	// 22E91837
+[patches]
+	// 22E91837
 	comment=- At least when using GSdx in D3D11 HardWare mode, and due to missing
 	comment=-  rendering-fixes, black stripes can show up on ghosts,
 	comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
@@ -9291,7 +9295,8 @@ Name   = Tomb Raider - Angel of Darkness	// aka "TRAOD"
 Region = PAL-M10
 Compat = 5
 //OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
-[patches = 54AD76D7]
+[patches]
+	// 54AD76D7
 	comment=- This gamedisc supports multiple languages and widescreen.
 	comment=- Language & widescreen selection is done through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
@@ -22205,7 +22210,8 @@ Serial = SLPM-65232
 Name   = Devil May Cry 2 [Dante Disc]
 Region = NTSC-J
 Compat = 5
-[patches = 08995DEE]
+[patches]
+	// 08995DEE
 	comment=- This disc has the same CRC as SLUS-20484, the NTSC-U disc.
 [/patches]
 ---------------------------------------------
@@ -30739,7 +30745,8 @@ Serial = SLPS-25074
 Name   = Project Zero
 Region = NTSC-J
 Compat = 5
-[patches = 9883194E]
+[patches]
+	// 9883194E
 	comment=- At least when using GSdx in D3D11 HardWare mode, and due to missing
 	comment=-  rendering-fixes, black stripes can show up on ghosts,
 	comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
@@ -35868,7 +35875,8 @@ Serial = SLUS-20388
 Name   = Fatal Frame
 Region = NTSC-U
 Compat = 5
-[patches = 339A0B8C]
+[patches]
+	// 339A0B8C
 	comment=- At least when using GSdx in D3D11 HardWare mode, and due to missing
 	comment=-  rendering-fixes, black stripes can show up on ghosts,
 	comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
@@ -36297,7 +36305,8 @@ Serial = SLUS-20484
 Name   = Devil May Cry 2 [Disc1of2]
 Region = NTSC-U
 Compat = 5
-[patches = 08995DEE]
+[patches]
+	// 08995DEE
 	comment=- This disc has the same CRC as SLPM-65232, the NTSC-J disc.
 [/patches]
 ---------------------------------------------
