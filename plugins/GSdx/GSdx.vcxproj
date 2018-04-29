@@ -129,7 +129,6 @@
     <ClCompile Include="GSRasterizer.cpp" />
     <ClCompile Include="GSRenderer.cpp" />
     <ClCompile Include="GSRendererCL.cpp" />
-    <ClCompile Include="GSRendererCS.cpp" />
     <ClCompile Include="GSRendererDX.cpp" />
     <ClCompile Include="GSRendererDX11.cpp" />
     <ClCompile Include="GSRendererDX9.cpp" />
@@ -220,7 +219,6 @@
     <ClInclude Include="GSRasterizer.h" />
     <ClInclude Include="GSRenderer.h" />
     <ClInclude Include="GSRendererCL.h" />
-    <ClInclude Include="GSRendererCS.h" />
     <ClInclude Include="GSRendererDX.h" />
     <ClInclude Include="GSRendererDX11.h" />
     <ClInclude Include="GSRendererDX9.h" />
@@ -286,7 +284,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="GSdx.def" />
-    <None Include="res\cs.fx" />
     <None Include="res\fxaa.fx" />
     <None Include="res\logo10.bmp" />
     <None Include="res\logo9.bmp" />

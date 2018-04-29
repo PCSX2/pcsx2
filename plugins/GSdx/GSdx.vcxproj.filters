@@ -240,9 +240,6 @@
     <ClCompile Include="GSDrawScanlineCodeGenerator.x86.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSRendererCS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GSDrawScanlineCodeGenerator.x86.avx2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -530,9 +527,6 @@
     <ClInclude Include="config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSRendererCS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -615,9 +609,6 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="res\shadeboost.fx">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="res\cs.fx">
       <Filter>Shaders</Filter>
     </None>
     <None Include="res\tfx.cl">
