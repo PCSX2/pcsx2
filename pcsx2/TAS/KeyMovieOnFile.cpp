@@ -57,8 +57,6 @@ bool KeyMovieOnFile::Open(const wxString fn, bool fNewOpen, VmStateBuffer *ss)
 			}
 		}
 		else {
-			// TODO TAS - this option no longer exists
-			// UI_DisableSysReset();
 			sApp.SysExecute();
 		}
 	}
@@ -411,7 +409,6 @@ void KeyMovieOnFile::ConvertLegacy(wxString filename)
 	}
 
 	//--------------------------------------
-	// pcsx2_rr ‚Ì“à—e
 	// fread(&g_Movie.FrameMax, 4, 1, g_Movie.File);
 	// fread(&g_Movie.Rerecs, 4, 1, g_Movie.File);
 	// fread(g_PadData[0]+2, 6, 1, g_Movie.File);
