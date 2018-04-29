@@ -149,7 +149,6 @@
 #define IDR_MERGE_FX                    10002
 #define IDR_INTERLACE_FX                10003
 #define IDR_FXAA_FX                     10004
-#define IDR_CS_FX                       10005
 #define IDD_SHADER                      10006
 #define IDR_SHADEBOOST_FX               10007
 #define IDR_TFX_CL                      10008

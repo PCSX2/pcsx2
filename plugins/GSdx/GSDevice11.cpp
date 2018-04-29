@@ -1211,42 +1211,6 @@ void GSDevice11::PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb)
 	}
 }
 
-void GSDevice11::CSSetShaderSRV(int i, ID3D11ShaderResourceView* srv)
-{
-	if(m_state.cs_srv[i] != srv)
-	{
-		m_state.cs_srv[i] = srv;
-
-		m_ctx->CSSetShaderResources(i, 1, &srv);
-	}
-}
-
-void GSDevice11::CSSetShaderUAV(int i, ID3D11UnorderedAccessView* uav)
-{
-	uint32 counters[8];
-		
-	memset(counters, 0, sizeof(counters));
-
-	m_ctx->CSSetUnorderedAccessViews(i, 1, &uav, counters);
-}
-
-void GSDevice11::CSSetShader(ID3D11ComputeShader* cs, ID3D11Buffer* cs_cb)
-{
-	if(m_state.cs != cs)
-	{
-		m_state.cs = cs;
-
-		m_ctx->CSSetShader(cs, NULL, 0);
-	}
-
-	if(m_state.cs_cb != cs_cb)
-	{
-		m_state.cs_cb = cs_cb;
-
-		m_ctx->CSSetConstantBuffers(0, 1, &cs_cb);
-	}
-}
-
 void GSDevice11::OMSetDepthStencilState(ID3D11DepthStencilState* dss, uint8 sref)
 {
 	if(m_state.dss != dss || m_state.sref != sref)
@@ -1473,36 +1437,6 @@ void GSDevice11::CompileShader(const char* source, size_t size, const char* fn, 
 	}
 
 	hr = m_dev->CreatePixelShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, ps);
-
-	if(FAILED(hr))
-	{
-		throw GSDXRecoverableError();
-	}
-}
-
-void GSDevice11::CompileShader(const char* source, size_t size, const char *fn, ID3DInclude *include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11ComputeShader** cs)
-{
-	HRESULT hr;
-
-	std::vector<D3D_SHADER_MACRO> m;
-
-	PrepareShaderMacro(m, macro);
-
-	CComPtr<ID3DBlob> shader, error;
-
-	hr = s_pD3DCompile(source, size, fn, &m[0], s_old_d3d_compiler_dll ? nullptr : include, entry, m_shader.cs.c_str(), 0, 0, &shader, &error);
-
-	if(error)
-	{
-		printf("%s\n", (const char*)error->GetBufferPointer());
-	}
-
-	if(FAILED(hr))
-	{
-		throw GSDXRecoverableError();
-	}
-
-	hr = m_dev->CreateComputeShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, cs);
 
 	if(FAILED(hr))
 	{
