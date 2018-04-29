@@ -29,6 +29,10 @@
 
 #include "Utilities/IniInterface.h"
 
+#include "lua/LuaFrame.h"
+#include "TAS/KeyMovie.h"
+#include "TAS/VirtualPad.h"
+
 using namespace Dialogs;
 
 void MainEmuFrame::Menu_SysSettings_Click(wxCommandEvent &event)
@@ -530,12 +534,30 @@ void MainEmuFrame::Menu_SaveStates_Click(wxCommandEvent &event)
 
 void MainEmuFrame::Menu_LoadStateOther_Click(wxCommandEvent &event)
 {
-   Console.WriteLn("If this were hooked up, it would load a savestate file.");
+	wxFileDialog loadStateDialog(this, _("Load State"), L"", L"",
+		L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
+
+	if (loadStateDialog.ShowModal() == wxID_CANCEL)
+		return;
+
+	wxString path = loadStateDialog.GetPath();
+	Console.WriteLn(path);
+
+	StateCopy_LoadFromFile(path);
 }
 
 void MainEmuFrame::Menu_SaveStateOther_Click(wxCommandEvent &event)
 {
-   Console.WriteLn("If this were hooked up, it would save a savestate file.");
+	wxFileDialog saveStateDialog(this, _("Save State"), L"", L"",
+		L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
+
+	if (saveStateDialog.ShowModal() == wxID_CANCEL)
+		return;
+
+	wxString path = saveStateDialog.GetPath();
+	Console.WriteLn(path);
+
+	StateCopy_SaveToFile(path);
 }
 
 void MainEmuFrame::Menu_Exit_Click(wxCommandEvent &event)
@@ -631,4 +653,192 @@ void MainEmuFrame::Menu_ShowConsole_Stdio(wxCommandEvent &event)
 void MainEmuFrame::Menu_ShowAboutBox(wxCommandEvent &event)
 {
 	AppOpenDialog<AboutBoxDialog>( this );
+}
+
+//--LuaEngine--//
+void MainEmuFrame::Menu_Lua_Open_Click(wxCommandEvent &event)
+{
+	LuaFrame* dlg = wxGetApp().GetLuaFramePtr();
+	if (dlg)
+		dlg->Show();
+}
+//------------//
+//--TAS--//
+void MainEmuFrame::Menu_KeyMovie_Record(wxCommandEvent &event)
+{
+	g_KeyMovie.Stop();
+
+	KeyMovieFrame* keyMovieFrame = wxGetApp().GetKeyMovieFramePtr();
+	if (keyMovieFrame)
+	{
+		if (keyMovieFrame->ShowModal() == wxID_CANCEL)
+		{
+			return;
+		}
+		// From Power-On
+		if (keyMovieFrame->getFrom() == 0)
+		{
+			g_KeyMovie.Start(keyMovieFrame->getFile(), false);
+		}
+		// From Now
+		else if (keyMovieFrame->getFrom() == 1)
+		{
+			VmStateBuffer savestate;
+			memSavingState memSS(savestate);
+			memSS.FreezeAll();
+			g_KeyMovie.Start(keyMovieFrame->getFile(), false, &savestate);
+		}
+		g_KeyMovieHeader.setAuthor(keyMovieFrame->getAuthor());
+	}
+}
+void MainEmuFrame::Menu_KeyMovie_Play(wxCommandEvent &event)
+{
+	g_KeyMovie.Stop();
+
+	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
+		L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
+	if (openFileDialog.ShowModal() == wxID_CANCEL)return;	// cancel
+	wxString path = openFileDialog.GetPath();
+	g_KeyMovie.Start(path, true);
+}
+void MainEmuFrame::Menu_KeyMovie_Stop(wxCommandEvent &event)
+{
+	g_KeyMovie.Stop();
+}
+void MainEmuFrame::Menu_KeyMovie_ConvertV2ToV3(wxCommandEvent &event)
+{
+	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
+		L"p2m file(*.p2m2)|*.p2m2", wxFD_OPEN);
+	if (openFileDialog.ShowModal() == wxID_CANCEL)return;// cancel
+	wxString path = openFileDialog.GetPath();
+	g_KeyMovieData.ConvertV2ToV3(path);
+}
+void MainEmuFrame::Menu_KeyMovie_ConvertV1_XToV2(wxCommandEvent &event)
+{
+	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
+		L"p2m file(*.p2m2)|*.p2m2", wxFD_OPEN);
+	if (openFileDialog.ShowModal() == wxID_CANCEL)return;// cancel
+	wxString path = openFileDialog.GetPath();
+	g_KeyMovieData.ConvertV1_XToV2(path);
+}
+void MainEmuFrame::Menu_KeyMovie_ConvertV1ToV2(wxCommandEvent &event)
+{
+	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
+		L"p2m file(*.p2m2)|*.p2m2", wxFD_OPEN);
+	if (openFileDialog.ShowModal() == wxID_CANCEL)return;// cancel
+	wxString path = openFileDialog.GetPath();
+	g_KeyMovieData.ConvertV1ToV2(path);
+}
+
+void MainEmuFrame::Menu_KeyMovie_ConvertLegacy(wxCommandEvent &event)
+{
+	wxFileDialog openFileDialog(this, _("Select P2M record file."), L"", L"",
+		L"p2m file(*.p2m)|*.p2m", wxFD_OPEN);
+	if (openFileDialog.ShowModal() == wxID_CANCEL)return;// cancel
+	wxString path = openFileDialog.GetPath();
+	g_KeyMovieData.ConvertLegacy(path);
+}
+
+void MainEmuFrame::Menu_KeyMovie_OpenKeyEditor(wxCommandEvent &event)
+{
+	KeyEditor* dlg = wxGetApp().GetKeyEditorPtr();
+	if (dlg)dlg->Show();
+}
+
+//------//
+
+// Virtual Pad
+void MainEmuFrame::Menu_VirtualPad_Open(wxCommandEvent &event)
+{
+	VirtualPad *vp;
+	if (event.GetId() == MenuId_VirtualPad_Port0)
+		vp = wxGetApp().GetVirtualPadPtr(0);
+	else if (event.GetId() == MenuId_VirtualPad_Port1)
+		vp = wxGetApp().GetVirtualPadPtr(1);
+	if (vp)
+		vp->Show();
+}
+
+// AVI/WAV
+void MainEmuFrame::Menu_AVIWAV_Record(wxCommandEvent &event)
+{
+	ScopedCoreThreadPause paused_core;
+	paused_core.AllowResume();
+
+	m_recordAVIWAV = true;
+	AVIWAVUpdate();
+}
+
+void MainEmuFrame::Menu_AVIWAV_Stop(wxCommandEvent &event)
+{
+	ScopedCoreThreadPause paused_core;
+	paused_core.AllowResume();
+
+	m_recordAVIWAV = false;
+	AVIWAVUpdate();
+}
+
+void MainEmuFrame::AVIWAVUpdate()
+{
+	GetMTGS().WaitGS();		// make sure GS is in sync with the audio stream when we start.
+	if (m_recordAVIWAV) {
+		// start recording
+
+		// make the recording setup dialog[s] pseudo-modal also for the main PCSX2 window
+		// (the GSdx dialog is already properly modal for the GS window)
+		bool needsMainFrameEnable = false;
+		if (GetMainFramePtr() && GetMainFramePtr()->IsEnabled()) {
+			needsMainFrameEnable = true;
+			GetMainFramePtr()->Disable();
+		}
+
+		if (GSsetupRecording) {
+			// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
+			if (GSsetupRecording(m_recordAVIWAV, NULL)) {
+				if (SPU2setupRecording) SPU2setupRecording(m_recordAVIWAV, NULL);
+			}
+			else {
+				// recording dialog canceled by the user. align our state
+				m_recordAVIWAV = false;
+			}
+		}
+		else {
+			// the GS doesn't support recording.
+			if (SPU2setupRecording) SPU2setupRecording(m_recordAVIWAV, NULL);
+		}
+
+		if (GetMainFramePtr() && needsMainFrameEnable)
+			GetMainFramePtr()->Enable();
+
+	}
+	else {
+		// stop recording
+		if (GSsetupRecording) GSsetupRecording(m_recordAVIWAV, NULL);
+		if (SPU2setupRecording) SPU2setupRecording(m_recordAVIWAV, NULL);
+	}
+
+	if (m_recordAVIWAV) {
+		m_AVIWAVSubmenu.FindItem(MenuId_AVIWAV_Record)->Enable(false);
+		m_AVIWAVSubmenu.FindItem(MenuId_AVIWAV_Stop)->Enable(true);
+	}
+	else {
+		m_AVIWAVSubmenu.FindItem(MenuId_AVIWAV_Record)->Enable(true);
+		m_AVIWAVSubmenu.FindItem(MenuId_AVIWAV_Stop)->Enable(false);
+	}
+}
+
+// Screenshot
+void MainEmuFrame::Menu_Screenshot_Shot(wxCommandEvent & event)
+{
+	GSmakeSnapshot(g_Conf->Folders.Snapshots.ToAscii());
+}
+
+void MainEmuFrame::Menu_Screenshot_SaveAs(wxCommandEvent &event)
+{
+	wxFileDialog fileDialog(this, "Select a file", g_Conf->Folders.Snapshots.ToAscii(), wxEmptyString, "BMP files (*.bmp)|*.bmp", wxFD_SAVE);
+
+	if (fileDialog.ShowModal() == wxID_OK)
+	{
+		GSmakeSnapshot(fileDialog.GetPath());
+	}
 }

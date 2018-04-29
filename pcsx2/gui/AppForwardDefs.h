@@ -29,6 +29,7 @@ class Pcsx2App;
 class MainEmuFrame;
 class GSFrame;
 class ConsoleLogFrame;
+class LuaFrame;
 class PipeRedirectionBase;
 class AppCoreThread;
 class Pcsx2AppMethodEvent;

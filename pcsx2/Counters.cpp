@@ -19,6 +19,7 @@
 #include <time.h>
 #include <cmath>
 
+#include "App.h"
 #include "Common.h"
 #include "R3000A.h"
 #include "Counters.h"
@@ -30,6 +31,10 @@
 #include "ps2/HwInternal.h"
 
 #include "Sio.h"
+
+#include "lua/LuaManager.h"
+#include "TAS/MovieControle.h"
+#include "TAS/KeyEditor.h"
 
 using namespace Threading;
 
@@ -566,6 +571,19 @@ __fi void rcntUpdate_vSync()
 	}
 	else	// VSYNC end / VRENDER begin
 	{
+		//--LuaEngine--//
+		g_Lua.FrameBoundary();
+		//-------------//
+
+		//--TASKeyEditor--//
+		KeyEditor* dlg = wxGetApp().GetKeyEditorPtr();
+		if (dlg)dlg->FrameUpdate();
+		//-----------------//
+
+		//--TAS--//
+		g_MovieControle.StopCheck();
+
+
 		VSyncStart(vsyncCounter.sCycle);
 
 

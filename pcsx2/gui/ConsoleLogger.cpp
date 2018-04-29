@@ -294,6 +294,9 @@ static ConsoleLogSource* const ConLogSources[] =
 	NULL,
 	(ConsoleLogSource*)&pxConLog_Event,
 	(ConsoleLogSource*)&pxConLog_Thread,
+	NULL,
+	(ConsoleLogSource*)&SysConsole.tasConsole,
+	(ConsoleLogSource*)&SysConsole.controlInfo,
 };
 
 // WARNING ConsoleLogSources & ConLogDefaults must have the same size
@@ -306,6 +309,9 @@ static const bool ConLogDefaults[] =
 	false,
 	false,
 	false,
+	false,
+	false,
+	true,
 	false
 };
 
@@ -335,6 +341,15 @@ void ConLog_LoadSaveSettings( IniInterface& ini )
 	}
 
 	ConLogInitialized = true;
+}
+
+bool isSourceEnabled(int index)
+{
+	if (ConsoleLogSource* log = ConLogSources[index])
+	{
+		return log->Enabled;
+	}
+	return false;
 }
 
 

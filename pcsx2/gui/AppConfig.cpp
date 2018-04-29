@@ -75,19 +75,19 @@ namespace PathDefs
 
 		const wxDirName& Bios()
 		{
-			static const wxDirName retval(L"bios");
+			static const wxDirName retval( L"bios");
 			return retval;
 		}
 
 		const wxDirName& Cheats()
 		{
-			static const wxDirName retval(L"cheats");
+			static const wxDirName retval( L"cheats");
 			return retval;
 		}
 
 		const wxDirName& CheatsWS()
 		{
-			static const wxDirName retval(L"cheats_ws");
+			static const wxDirName retval( L"cheats_ws");
 			return retval;
 		}
 
@@ -928,7 +928,8 @@ AppConfig::UiTemplateOptions::UiTemplateOptions()
 	OutputProgressive	= L"Progressive";
 	OutputInterlaced	= L"Interlaced";
 	Paused				= L"<PAUSED> ";
-	TitleTemplate		= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
+	TitleTemplate    	= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
+	TASTemplate			= L"Slot: ${slot} | Frame: ${frame}/${maxFrame} | Rec. Mode: ${mode} | Speed: ${speed} (${vfps}) | Limiter: ${limiter}";
 }
 
 void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
@@ -945,6 +946,7 @@ void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
 	IniEntry(OutputInterlaced);
 	IniEntry(Paused);
 	IniEntry(TitleTemplate);
+	IniEntry(TASTemplate);
 }
 
 int AppConfig::GetMaxPresetIndex()

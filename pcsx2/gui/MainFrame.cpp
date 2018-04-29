@@ -47,7 +47,7 @@ wxMenu* MainEmuFrame::MakeStatesSubMenu( int baseid, int loadBackupId ) const
 		States_registerLoadBackupMenuItem( m );
 	}
 
-	//mnuSubstates->Append( baseid - 1,	_("Other...") );
+	mnuSubstates->Append( baseid - 1,	_("Other...") );
 	return mnuSubstates;
 }
 
@@ -192,9 +192,9 @@ void MainEmuFrame::ConnectMenus()
 
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_LoadStates_Click, this, MenuId_State_Load01 + 1, MenuId_State_Load01 + 10);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_LoadStates_Click, this, MenuId_State_LoadBackup);
-	//Bind(wxEVT_MENU, &MainEmuFrame::Menu_LoadStateOther_Click, this, MenuId_State_LoadOther);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_LoadStateOther_Click, this, MenuId_State_LoadOther);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SaveStates_Click, this, MenuId_State_Save01 + 1, MenuId_State_Save01 + 10);
-	//Bind(wxEVT_MENU, &MainEmuFrame::Menu_SaveStateOther_Click, this, MenuId_State_SaveOther);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SaveStateOther_Click, this, MenuId_State_SaveOther);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableBackupStates_Click, this, MenuId_EnableBackupStates);
 
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnablePatches_Click, this, MenuId_EnablePatches);
@@ -227,6 +227,31 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_MultitapToggle_Click, this, MenuId_Config_Multitap0Toggle);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_MultitapToggle_Click, this, MenuId_Config_Multitap1Toggle);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ResetAllSettings_Click, this, MenuId_Config_ResetAll);
+
+	// TAS
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_KeyMovie_Record, this, MenuId_KeyMovie_Record);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_KeyMovie_Play, this, MenuId_KeyMovie_Play);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_KeyMovie_Stop, this, MenuId_KeyMovie_Stop);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_KeyMovie_ConvertV2ToV3, this, MenuId_KeyMovie_ConvertV2ToV3);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_KeyMovie_ConvertV1_XToV2, this, MenuId_KeyMovie_ConvertV1_XToV2);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_KeyMovie_ConvertV1ToV2, this, MenuId_KeyMovie_ConvertV1ToV2);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_KeyMovie_ConvertLegacy, this, MenuId_KeyMovie_ConvertLegacy);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_KeyMovie_OpenKeyEditor, this, MenuId_KeyMovie_OpenKeyEditor);
+
+	// LuaEngine
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Lua_Open_Click, this, MenuId_Lua_Open);
+
+	// Virtual Pad
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_VirtualPad_Open, this, MenuId_VirtualPad_Port0);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_VirtualPad_Open, this, MenuId_VirtualPad_Port1);
+
+	// AVI/WAV
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_AVIWAV_Record, this, MenuId_AVIWAV_Record);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_AVIWAV_Stop, this, MenuId_AVIWAV_Stop);
+
+	// Screenshot
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Screenshot_Shot, this, MenuId_Screenshot_Shot);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Screenshot_SaveAs, this, MenuId_Screenshot_SaveAs);
 
 	// Misc
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowConsole, this, MenuId_Console);
@@ -314,11 +339,16 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	, m_menubar( *new wxMenuBar() )
 
-	, m_menuCDVD	( *new wxMenu() )
-	, m_menuSys		( *new wxMenu() )
-	, m_menuConfig	( *new wxMenu() )
-	, m_menuMisc	( *new wxMenu() )
-	, m_menuDebug	( *new wxMenu() )
+	, m_menuCDVD			( *new wxMenu() )
+	, m_menuSys				( *new wxMenu() )
+	, m_menuConfig			( *new wxMenu() )
+	, m_menuMisc			( *new wxMenu() )
+	, m_menuDebug			( *new wxMenu() )
+	, m_CheatsSubmenu		( *new wxMenu() )
+	, m_MovieSubmenu		( *new wxMenu() )
+	, m_AVIWAVSubmenu		( *new wxMenu() )
+	, m_ScreenshotSubmenu	( *new wxMenu() )
+	, m_menuTools			( *new wxMenu() )	//--Tools--//
 
 	, m_LoadStatesSubmenu( *MakeStatesSubMenu( MenuId_State_Load01, MenuId_State_LoadBackup ) )
 	, m_SaveStatesSubmenu( *MakeStatesSubMenu( MenuId_State_Save01 ) )
@@ -343,6 +373,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menubar.Append( &m_menuConfig,	_("&Config") );
 	m_menubar.Append( &m_menuMisc,		_("&Misc") );
 	m_menubar.Append( &m_menuDebug,		_("&Debug") );
+	m_menubar.Append( &m_menuTools,		_("&Tools") );
 
 	SetMenuBar( &m_menubar );
 
@@ -428,20 +459,16 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	m_menuSys.AppendSeparator();
 
-	m_menuSys.Append(MenuId_EnablePatches,	_("Automatic &Gamefixes"),
-		_("Automatically applies needed Gamefixes to known problematic games"), wxITEM_CHECK);
-
-	m_menuSys.Append(MenuId_EnableCheats,	_("Enable &Cheats"),
-		wxEmptyString, wxITEM_CHECK);
-
-	m_menuSys.Append(MenuId_EnableWideScreenPatches,	_("Enable &Widescreen Patches"),
-		wxEmptyString, wxITEM_CHECK);
-
-	if(IsDebugBuild || IsDevBuild)
-		m_menuSys.Append(MenuId_EnableHostFs,	_("Enable &Host Filesystem"),
-			wxEmptyString, wxITEM_CHECK);
+	m_menuSys.Append(MenuId_Sys_Cheats, _("Cheats"), &m_CheatsSubmenu);
 
 	m_menuSys.AppendSeparator();
+
+	m_menuSys.Append(MenuId_Sys_Movie, _("Movie"), &m_MovieSubmenu)->Enable(false);
+	m_menuSys.Append(MenuId_Sys_AVIWAV, _("AVI/WAV"), &m_AVIWAVSubmenu)->Enable(false);
+	m_menuSys.Append(MenuId_Sys_Screenshot, _("Screenshot"), &m_ScreenshotSubmenu)->Enable(false);
+
+	m_menuSys.AppendSeparator();
+
 
 	m_menuSys.Append(MenuId_Sys_Shutdown,	_("Shut&down"),
 		_("Wipes all internal VM states and shuts down plugins."));
@@ -517,7 +544,54 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 #ifdef PCSX2_DEVBUILD
 	m_menuDebug.Append(MenuId_Debug_Logging,	_("&Logging..."),			wxEmptyString);
 #endif
+
 	m_menuDebug.AppendCheckItem(MenuId_Debug_CreateBlockdump, _("Create &Blockdump"), _("Creates a block dump for debugging purposes."));
+
+	m_CheatsSubmenu.Append(MenuId_EnablePatches, _("Automatic &Gamefixes"),
+		_("Automatically applies needed Gamefixes to known problematic games"), wxITEM_CHECK);
+
+	m_CheatsSubmenu.Append(MenuId_EnableCheats, _("Enable &Cheats"),
+		wxEmptyString, wxITEM_CHECK);
+
+	m_CheatsSubmenu.Append(MenuId_EnableWideScreenPatches, _("Enable &Widescreen Patches"),
+		wxEmptyString, wxITEM_CHECK);
+
+	if (IsDebugBuild || IsDevBuild)
+		m_CheatsSubmenu.Append(MenuId_EnableHostFs, _("Enable &Host Filesystem"),
+			wxEmptyString, wxITEM_CHECK);
+
+	//--TAS--//
+	m_MovieSubmenu.Append(MenuId_KeyMovie_Record, _("New Record"));
+	m_MovieSubmenu.Append(MenuId_KeyMovie_Play, _("Play"));
+	m_MovieSubmenu.Append(MenuId_KeyMovie_Stop, _("Stop"));
+	m_MovieSubmenu.AppendSeparator();
+	m_MovieSubmenu.Append(MenuId_KeyMovie_OpenKeyEditor, _("Open KeyEditor Window..."));
+	m_MovieSubmenu.AppendSeparator();
+	// TODO TAS - these should be moved to a non-disabled submenu because you dont need the game running
+	// to convert a movie file (or atleast you shouldnt)
+	// Would also be nice to have the older, non-latest conversion be in its own submenus
+	m_MovieSubmenu.Append(MenuId_KeyMovie_ConvertV2ToV3, _("Convert Movie (v2.0 -> v3.0)"))->Enable(false);
+	m_MovieSubmenu.Append(MenuId_KeyMovie_ConvertV1_XToV2, _("Convert Movie (v1.X -> v2.0)"));
+	m_MovieSubmenu.Append(MenuId_KeyMovie_ConvertV1ToV2, _("Convert Movie (v1.0 -> v2.0)"))->Enable(false);
+	m_MovieSubmenu.Append(MenuId_KeyMovie_ConvertLegacy, _("Convert Legacy Movie (p2m -> p2m2)"));
+	//-------//
+
+	//--LuaEngine--//
+	m_menuTools.Append(MenuId_Lua_Open, _("Lua Console"));
+	//------------//
+
+	m_menuTools.AppendSeparator();
+	// Virtual Pad
+	m_menuTools.Append(MenuId_VirtualPad_Port0, _("Virtual Pad Port 1"));
+	m_menuTools.Append(MenuId_VirtualPad_Port1, _("Virtual Pad Port 2"));
+
+	// AVI/WAV
+	m_AVIWAVSubmenu.Append(MenuId_AVIWAV_Record, _("Record AVI/WAV"));
+	m_AVIWAVSubmenu.Append(MenuId_AVIWAV_Stop, _("Stop AVI/WAV"))->Enable(false);
+
+	// Screenshot
+	m_ScreenshotSubmenu.Append(MenuId_Screenshot_Shot, _("Screenshot"));
+	m_ScreenshotSubmenu.Append(MenuId_Screenshot_SaveAs, _("Screenshot as..."));
 
 	m_MenuItem_Console.Check( g_Conf->ProgLogBox.Visible );
 
@@ -586,6 +660,7 @@ void MainEmuFrame::ApplyCoreStatus()
 	// [TODO] : Ideally each of these items would bind a listener instance to the AppCoreThread
 	// dispatcher, and modify their states accordingly.  This is just a hack (for now) -- air
 
+	// TODO TAS - no restart anymore
 	if (wxMenuItem* susres = menubar.FindItem(MenuId_Sys_SuspendResume))
 	{
 		if( !CoreThread.IsClosing() )
@@ -670,6 +745,9 @@ void MainEmuFrame::ApplyCoreStatus()
 			pxAssert(false);
 		}
 	}
+	menubar.Enable(MenuId_Sys_Movie, SysHasValidState() || CorePlugins.AreAnyInitialized());
+	menubar.Enable(MenuId_Sys_AVIWAV, SysHasValidState() || CorePlugins.AreAnyInitialized());
+	menubar.Enable(MenuId_Sys_Screenshot, SysHasValidState() || CorePlugins.AreAnyInitialized());
 }
 
 //Apply a config to the menu such that the menu reflects it properly

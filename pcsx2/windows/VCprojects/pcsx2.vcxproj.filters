@@ -148,6 +148,12 @@
     <Filter Include="AppHost\Debugger">
       <UniqueIdentifier>{7a0a1104-f9ee-4cd1-aaba-f8267eba1658}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TAS">
+      <UniqueIdentifier>{7b917318-5a5e-44c0-8463-1dfab67f3b67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LuaTools">
+      <UniqueIdentifier>{c47c56bc-b2a6-4f89-ba05-50aa607908d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -871,6 +877,42 @@
     <ClCompile Include="..\..\ps2\Iop\PsxBios.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\lua\LuaEngine.cpp">
+      <Filter>LuaTools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lua\LuaFrame.cpp">
+      <Filter>LuaTools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lua\LuaFunctions.cpp">
+      <Filter>LuaTools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lua\LuaManager.cpp">
+      <Filter>LuaTools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\TAS\KeyEditor.cpp">
+      <Filter>TAS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\TAS\KeyMovie.cpp">
+      <Filter>TAS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\TAS\KeyMovieFrame.cpp">
+      <Filter>TAS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\TAS\KeyMovieOnFile.cpp">
+      <Filter>TAS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\TAS\MovieControle.cpp">
+      <Filter>TAS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\TAS\PadData.cpp">
+      <Filter>TAS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\TAS\TASInputManager.cpp">
+      <Filter>TAS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\TAS\VirtualPad.cpp">
+      <Filter>TAS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1310,6 +1352,42 @@
     </ClInclude>
     <ClInclude Include="..\..\Mdec.h">
       <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lua\LuaEngine.h">
+      <Filter>LuaTools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lua\LuaFrame.h">
+      <Filter>LuaTools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lua\LuaFunctions.h">
+      <Filter>LuaTools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\lua\LuaManager.h">
+      <Filter>LuaTools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TAS\KeyEditor.h">
+      <Filter>TAS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TAS\KeyMovie.h">
+      <Filter>TAS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TAS\KeyMovieFrame.h">
+      <Filter>TAS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TAS\KeyMovieOnFile.h">
+      <Filter>TAS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TAS\MovieControle.h">
+      <Filter>TAS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TAS\PadData.h">
+      <Filter>TAS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TAS\TASInputManager.h">
+      <Filter>TAS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TAS\VirtualPad.h">
+      <Filter>TAS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

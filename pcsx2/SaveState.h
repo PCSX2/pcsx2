@@ -217,6 +217,8 @@ protected:
 	void sio2Freeze();
 
 	void deci2Freeze();
+
+	void keymovieFreeze(); // TAS
 };
 
 // --------------------------------------------------------------------------------------

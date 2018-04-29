@@ -111,9 +111,14 @@ protected:
 	wxMenu&			m_menuConfig;
 	wxMenu&			m_menuMisc;
 	wxMenu&			m_menuDebug;
+	wxMenu&			m_menuTools;
 
 	wxMenu&			m_LoadStatesSubmenu;
 	wxMenu&			m_SaveStatesSubmenu;
+	wxMenu&			m_CheatsSubmenu;
+	wxMenu&			m_MovieSubmenu;
+	wxMenu&			m_ScreenshotSubmenu;
+	wxMenu&			m_AVIWAVSubmenu;
 
 	wxMenuItem*		m_menuItem_RecentIsoMenu;
 	wxMenuItem&		m_MenuItem_Console;
@@ -122,6 +127,8 @@ protected:
 #endif
 
 	PerPluginMenuInfo	m_PluginMenuPacks[PluginId_Count];
+
+	bool			m_recordAVIWAV;
 
 	virtual void DispatchEvent( const PluginEventType& plugin_evt );
 	virtual void DispatchEvent( const CoreThreadStatus& status );
@@ -202,6 +209,33 @@ protected:
 	void Menu_ChangeLang(wxCommandEvent &event);
 	void Menu_ShowConsole_Stdio(wxCommandEvent &event);
 	void Menu_ShowAboutBox(wxCommandEvent &event);
+
+	//--TAS--//
+	void Menu_KeyMovie_Record(wxCommandEvent &event);
+	void Menu_KeyMovie_Stop(wxCommandEvent &event);
+	void Menu_KeyMovie_Play(wxCommandEvent &event);
+	void Menu_KeyMovie_ConvertV2ToV3(wxCommandEvent &event);
+	void Menu_KeyMovie_ConvertV1_XToV2(wxCommandEvent &event);
+	void Menu_KeyMovie_ConvertV1ToV2(wxCommandEvent &event);
+	void Menu_KeyMovie_ConvertLegacy(wxCommandEvent &event);
+	void Menu_KeyMovie_OpenKeyEditor(wxCommandEvent &event);
+	//-------//
+
+	//--LuaEngine--//
+	void Menu_Lua_Open_Click(wxCommandEvent &event);
+	//------------//
+
+	// Virtual Pad
+	void Menu_VirtualPad_Open(wxCommandEvent &event);
+
+	// AVI/WAV
+	void Menu_AVIWAV_Record(wxCommandEvent &event);
+	void Menu_AVIWAV_Stop(wxCommandEvent &event);
+	void AVIWAVUpdate();
+
+	// Screenshot
+	void Menu_Screenshot_Shot(wxCommandEvent &event);
+	void Menu_Screenshot_SaveAs(wxCommandEvent &event);
 
 	void _DoBootCdvd();
 	bool _DoSelectIsoBrowser( wxString& dest );

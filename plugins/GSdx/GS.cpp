@@ -755,9 +755,16 @@ EXPORT_C_(uint32) GSmakeSnapshot(char* path)
 	{
 		std::string s{path};
 
-		if(!s.empty() && s[s.length() - 1] != DIRECTORY_SEPARATOR)
+		if (!s.empty())
 		{
-			s = s + DIRECTORY_SEPARATOR;
+			if (s.substr(s.size() - 4, 4) == ".bmp")
+			{
+				return s_gs->MakeSnapshot(s);
+			}
+			else if (s[s.length() - 1] != DIRECTORY_SEPARATOR)
+			{
+				s = s + DIRECTORY_SEPARATOR;
+			}
 		}
 
 		return s_gs->MakeSnapshot(s + "gsdx");
