@@ -2012,7 +2012,7 @@ Region = PAL-Unk
 Serial = SCES-52677
 Name   = Network Access Disc & Hardware - Online Arena
 Region = PAL-M7
-Compat = 5	// With GSdx, SW-mode only for HOA.
+Compat = 5
 [patches]
 	// D859B1B4
 	comment=- This gamedisc supports widescreen through the BIOS configuration.
