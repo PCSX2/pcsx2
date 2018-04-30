@@ -35,8 +35,11 @@
 s64 PSXCLK; //This is the definition of the Processor Clock for the PS1 externally declared in IopCommon.h
 
 // Misc IOP Clocks
-#define PSXPIXEL        ((int)(PSXCLK / 13500000))
+int PSXPIXEL((PSXCLK / 13500000));
 #define PSXSOUNDCLK		((int)(48000))
+//#define PSXPIXEL        ((int)(44100*300*11/7)) ps1 mode the literal equation defined by nocash.
+//#define PSXPIXEL        ((int)(PSXCLK / 53.222400)) another version of teh above equation for ps1 mode
+
 
 psxCounter psxCounters[NUM_COUNTERS];
 s32 psxNextCounter;

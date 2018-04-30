@@ -411,8 +411,8 @@ __fi void _cpuEventTest_Shared()
 
 	if( iopEventAction )
 	{
-		//if( EEsCycle < -450 )
-		//	Console.WriteLn( " IOP ahead by: %d cycles", -EEsCycle );
+		//if( EEsCycle < -450 )	
+		//Console.WriteLn( " IOP ahead by: %d cycles", -EEsCycle );
 
 		EEsCycle = psxCpu->ExecuteBlock( EEsCycle );
 
