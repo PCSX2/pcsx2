@@ -24291,6 +24291,7 @@ Serial = SLPM-65801
 Name   = Crash Bandicoot 5
 Region = NTSC-J
 Compat = 5
+XgKickHack = 1 // Fixes bad geometry.
 ---------------------------------------------
 Serial = SLPM-65802
 Name   = Def Jam - Vendetta [EA Best Hits]
