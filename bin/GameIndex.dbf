@@ -91,13 +91,13 @@
 -- MemCardFilter = SLUS-12345/SLUS-12346/SLUS-12347
 
 ---------------------------------------------
--- Patches ([patches] or [patches = crc])
+-- Patches ([patches] or [patches = CRC])
 ---------------------------------------------
 -- Patches must be specified in blocks.
 -- The blocks must end with a [/patch] tag.
 -- The block tags must be on their own lines.
 -- pcsx2 only loads the first [patches] block that matches the game.
--- The [patches] block based on crc takes priority when pcsx2 searches for patches...
+-- The [patches] block based on CRC takes priority when pcsx2 searches for patches...
 -- Everything inside the patches block gets fed to pcsx2's old patch parser.
 -- Currently the patch syntax is the same as pcsx2's old *.pnach system...
 
@@ -1204,6 +1204,7 @@ Region = PAL-M5
 Compat = 5
 EETimingHack = 1 // Fixes flickering textures.
 [patches]
+	// 04F9D87F
 	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 [/patches]
@@ -1524,7 +1525,7 @@ Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SCES-50960
-Name   = Disney's Stitch: Experiment 626
+Name   = Disney's Stitch - Experiment 626
 Region = PAL-F-G
 Compat = 5
 ---------------------------------------------
@@ -1601,19 +1602,7 @@ Region = PAL-S
 Serial = SCES-51135
 Name   = Primal
 Region = PAL-M5
-Compat = 5	// With GSdx, SW-mode only (issue 1212).
-// [patches]
-//	comment=- Widescreen enforcement lazy-hack by pgert.
-//	patch=1,EE,204886FC,extended,00000001 // 00000000
-//	//
-//	patch=1,EE,00103D9C,word,3C013F55 // 3C013F66 - X-axis of X-button & "Start" on Start menu - better.
-//	patch=1,EE,80103D9C,word,3C013F55 // 3C013F66 - a clone from 00103D9C.
-//	patch=1,EE,A0103D9C,word,3C013F55 // 3C013F66 - a clone from 00103D9C.
-//	//
-//	patch=1,EE,0012A000,word,3C013F40 // 3C013F66 - Y-axis of X-button & "Select" on TV-mode menu - better.
-//	patch=1,EE,8012A000,word,3C013F40 // 3C013F66 - a clone from 0012A000.
-//	patch=1,EE,A012A000,word,3C013F40 // 3C013F66 - a clone from 0012A000.
-// [/patches]
+Compat = 5	// With GSdx, SW-mode only.
 ---------------------------------------------
 Serial = SCES-51159
 Name   = Getaway, The
@@ -2025,18 +2014,14 @@ Name   = Network Access Disc & Hardware - Online Arena
 Region = PAL-M7
 Compat = 5
 [patches]
-	comment=- This gamedisc supports multiple languages and widescreen.
-	comment=- Language & widescreen selection is done through the BIOS configuration.
+	// D859B1B4
+	comment=- This gamedisc supports widescreen through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-	comment=-  *  *  *  *  *  *
-	comment=- Using GSdx, this gamedisc crashes in gamemenu with SW-mode, 
-	comment=-  and has no 3D display with HW-mode.
-	comment=- Playable by toggling between HW-mode (in menu) and SW-mode (in game).
 [/patches]
 ---------------------------------------------
 Serial = SCES-52748
 Name   = EyeToy - Play 2
-Region = PAL-M12	// SpyToy - M11
+Region = PAL-M12
 Compat = 2
 ---------------------------------------------
 Serial = SCES-52756
@@ -2751,7 +2736,7 @@ Name   = Jak and Dexter - The Lost Frontier
 Region = PAL-M12
 ---------------------------------------------
 Serial = SCES-55535
-Name   = Desi Adda : Games of India
+Name   = Desi Adda: Games of India
 Region = PAL-M4	// Eng, Hindi, Punjabi & Tamil
 Compat = 5
 ---------------------------------------------
@@ -4395,6 +4380,15 @@ Serial = SCPS-56008
 Name   = Fatal Frame
 Region = NTSC-K
 Compat = 5
+[patches]
+	// BCF04BF3
+	comment=- At least when using GSdx in D3D11 HardWare mode, and due to missing
+	comment=-  rendering-fixes, black stripes can show up on ghosts,
+	comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
+	comment=- This can be fixed by having "Enable HW Hacks" set
+	comment=-  in the GSdx configuration dialog, and having "Align Sprite" set
+	comment=-  and "Sprite" set to Half in "Advanced Settings and Hacks".
+[/patches]
 ---------------------------------------------
 Serial = SCPS-56011
 Name   = U - Underwater Unit
@@ -7113,7 +7107,7 @@ Compat = 5
 ---------------------------------------------
 Serial = SLES-50217
 Name   = Dave Mirra Freestyle BMX 2
-Region = PAL-E
+Region = PAL-E-S
 ---------------------------------------------
 Serial = SLES-50218
 Name   = All-Star Baseball 2002
@@ -8352,10 +8346,13 @@ Name   = Project Zero
 Region = PAL-M5
 Compat = 5
 [patches]
-	comment=- This gamedisc only lets you choose language once,
-	comment=-  whereafter it stores that setting in the memcard.
-	comment=- To change the language you actually have to erase
-	comment=-  the memcard content for the game.
+	// 22E91837
+	comment=- At least when using GSdx in D3D11 HardWare mode, and due to missing
+	comment=-  rendering-fixes, black stripes can show up on ghosts,
+	comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
+	comment=- This can be fixed by having "Enable HW Hacks" set
+	comment=-  in the GSdx configuration dialog, and having "Align Sprite" set
+	comment=-  and "Sprite" set to Half in "Advanced Settings and Hacks".
 [/patches]
 ---------------------------------------------
 Serial = SLES-50822
@@ -9299,6 +9296,7 @@ Region = PAL-M10
 Compat = 5
 //OPHFlagHack = 1 // 08.09.2014 not needed anymore and actually causes a hang
 [patches]
+	// 54AD76D7
 	comment=- This gamedisc supports multiple languages and widescreen.
 	comment=- Language & widescreen selection is done through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
@@ -12693,7 +12691,7 @@ Compat = 5
 	comment=Patch by Prafull
 	// Fix hang at loading screen.
 	patch=1,EE,0010ec20,word,00000000
-	comment=This disc has the same CRC as SLUS-20905, the NTSC-U disc.
+	comment=- This disc has the same CRC as SLUS-20905, the NTSC-U disc.
 [/patches]
 ---------------------------------------------
 Serial = SLES-52813
@@ -12875,6 +12873,7 @@ Compat = 5
 	comment=Patch by Prafull
 	// Fix hang at loading screen.
 	patch=1,EE,0010f3e0,word,00000000
+	comment=- This disc has the same CRC as SLUS-20904, the NTSC-U disc.
 [/patches]
 ---------------------------------------------
 Serial = SLES-52896
@@ -13381,7 +13380,7 @@ Region = PAL-E
 Compat = 5
 ---------------------------------------------
 Serial = SLES-53073
-Name   = Michigan : Report from Hell
+Name   = Michigan: Report from Hell
 Region = PAL-M4
 Compat = 5
 ---------------------------------------------
@@ -22213,7 +22212,8 @@ Name   = Devil May Cry 2 [Dante Disc]
 Region = NTSC-J
 Compat = 5
 [patches]
-	comment=Note that this disc has the same CRC as SLUS-20484, the NTSC-U disc.
+	// 08995DEE
+	comment=- This disc has the same CRC as SLUS-20484, the NTSC-U disc.
 [/patches]
 ---------------------------------------------
 Serial = SLPM-65233
@@ -30747,6 +30747,15 @@ Serial = SLPS-25074
 Name   = Project Zero
 Region = NTSC-J
 Compat = 5
+[patches]
+	// 9883194E
+	comment=- At least when using GSdx in D3D11 HardWare mode, and due to missing
+	comment=-  rendering-fixes, black stripes can show up on ghosts,
+	comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
+	comment=- This can be fixed by having "Enable HW Hacks" set
+	comment=-  in the GSdx configuration dialog, and having "Align Sprite" set
+	comment=-  and "Sprite" set to Half in "Advanced Settings and Hacks".
+[/patches]
 ---------------------------------------------
 Serial = SLPS-25075
 Name   = Sidewinder F
@@ -34465,7 +34474,7 @@ Name   = Dead or Alive 2
 Region = NTSC-U
 Compat = 5
 [patches = 23AF6876]
-// Dvd version.
+// DVD version.
 	// Change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function.
 	patch=0,EE,002b06ec,word,24060000
 	// Patch by Prafull after combining pseudonym's gamefix and benji229's patch.
@@ -34474,7 +34483,7 @@ Compat = 5
 	patch=0,EE,002b0868,word,10000014
 [/patches]
 [patches = 51068006]
-// Cd version.
+// CD version.
 	// Change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function.
 	patch=0,EE,002b06ec,word,24060000
 	// Patch by Prafull after combining pseudonym's gamefix and benji229's patch.
@@ -35869,6 +35878,15 @@ Serial = SLUS-20388
 Name   = Fatal Frame
 Region = NTSC-U
 Compat = 5
+[patches]
+	// 339A0B8C
+	comment=- At least when using GSdx in D3D11 HardWare mode, and due to missing
+	comment=-  rendering-fixes, black stripes can show up on ghosts,
+	comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
+	comment=- This can be fixed by having "Enable HW Hacks" set
+	comment=-  in the GSdx configuration dialog, and having "Align Sprite" set
+	comment=-  and "Sprite" set to Half in "Advanced Settings and Hacks".
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20389
 Name   = Endgame
@@ -36291,7 +36309,8 @@ Name   = Devil May Cry 2 [Disc1of2]
 Region = NTSC-U
 Compat = 5
 [patches]
-	comment=Note that this disc has the same CRC as SLPM-65232, the NTSC-J disc.
+	// 08995DEE
+	comment=- This disc has the same CRC as SLPM-65232, the NTSC-J disc.
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20485
@@ -38237,7 +38256,7 @@ Compat = 5
 	comment=Patch by Prafull
 	// Fix hang at loading screen.
 	patch=1,EE,0010f3e0,word,00000000
-	comment=This disc has the same crc as SLES-52895.
+	comment=- This disc has the same CRC as SLES-52895, the PAL-E disc.
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20905
@@ -38248,7 +38267,7 @@ Compat = 5
 	comment=Patch by Prafull
 	// Fix hang at loading screen.
 	patch=1,EE,0010ec20,word,00000000
-	comment=This disc has the same CRC as SLES-52812, the PAL-E disc.
+	comment=- This disc has the same CRC as SLES-52812, the PAL-E disc.
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20906
@@ -38835,7 +38854,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21011
-Name   = Cabela's Big Game Hunter - 2005 Adventures
+Name   = Cabela's Deer Hunt - 2005 Season
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21012
@@ -39029,7 +39048,7 @@ Name   = Disney's Monsters Inc.
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21053
-Name   = Disney's Stitch 926
+Name   = Disney's Stitch - Experiment 626
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21054
@@ -42865,7 +42884,7 @@ Region = NTSC-U
 Compat = 3
 ---------------------------------------------
 Serial = SLUS-21890
-Name   = Mana Khemia 2 : Fall Of Alchemy
+Name   = Mana Khemia 2: Fall Of Alchemy
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -42931,7 +42950,7 @@ Name   = FIFA Soccer 10
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21906
-Name   = Cabela's Outdoor - Adventures 2010
+Name   = Cabela's Outdoor Adventures 2010
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21907
