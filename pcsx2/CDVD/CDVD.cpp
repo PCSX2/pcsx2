@@ -1419,7 +1419,7 @@ static __fi void cdvdWrite14(u8 rt) { // PS1 MODE?? // This should be done in th
 
 	PSXCLK = 33868800; /* 33.8688 Mhz Playstation 1 speed.*/
 	psxEEmultiplier = 8.71; //proper EE to iop cycle freaquency. 
-	setPsxSpeed();
+	setPsxSpeed();//this sets the cd speed for ps1 mode.
 	if (rt == 0xFE)
 		Console.Warning("*PCSX2*: go PS1 mode DISC SPEED = FAST");
 	else
