@@ -9213,6 +9213,17 @@ Serial = SLES-51192
 Name   = Harry Potter and the Chamber of Secrets
 Region = PAL-E
 Compat = 3
+[patches = C5473413]
+	comment=Patch by Prafull
+	// Fix initial hang.
+	patch=1,EE,002032bc,word,03e00008
+	// Load game quickly.
+	patch=1,EE,001f704c,word,1000000f
+	// Fixes ingame hang.
+	patch=1,EE,001f70b4,word,1000000f
+	// Fixes flickering graphics (Thanks to Kian Stevens for finding this).
+	patch=1,EE,80000000,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-51194
 Name   = Harry Potter - Kammer D Schreckens
@@ -36736,7 +36747,7 @@ Serial = SLUS-20576
 Name   = Harry Potter and The Chamber of Secrets
 Region = NTSC-U
 Compat = 2
-[patches = c5473413]
+[patches = C5473413]
 	comment=Patch by Prafull
 	// Fix initial hang.
 	patch=1,EE,002032bc,word,03e00008
