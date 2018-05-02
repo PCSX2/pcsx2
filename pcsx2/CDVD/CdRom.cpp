@@ -940,6 +940,12 @@ void psxDma3(u32 madr, u32 bcr, u32 chcr) {
 	psxDmaInterrupt(3);
 }
 
+void setPsxSpeed()
+{
+	cdReadTime = ((PSXCLK / 75) / BIAS);
+}
+
+
 #ifdef ENABLE_NEW_IOPDMA
 s32 CALLBACK cdvdDmaRead(s32 channel, u32* data, u32 bytesLeft, u32* bytesProcessed)
 {
@@ -977,12 +983,6 @@ void cdrReset() {
 	cdr.CurTrack=1;
 	cdr.File=1; cdr.Channel=1;
 	cdReadTime = (PSXCLK / 1757) * BIAS;
-
-
-	if ((psxHu32(HW_ICFG) & (1 << 3)))
-	{
-		cdReadTime = ((PSXCLK / 75) / BIAS);
-	}
 }
 
 void SaveStateBase::cdrFreeze()

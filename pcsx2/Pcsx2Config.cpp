@@ -210,8 +210,8 @@ Pcsx2Config::GSOptions::GSOptions()
 	FramesToSkip			= 2;
 
 	LimitScalar				= 1.0;
-	FramerateNTSC			= 59.94;
-	FrameratePAL			= 50.0;
+	FramerateNTSC			= 59.29;
+	FrameratePAL			= 49.76;
 }
 
 void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )

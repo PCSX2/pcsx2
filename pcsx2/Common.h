@@ -19,6 +19,8 @@
 
 static const u32 BIAS = 2;				// Bus is half of the actual ps2 speed
 static const u32 PS2CLK = 294912000;	//hz	/* 294.912 mhz */
+extern u32 PSXCLK; // The Iop cycle clock or the PS1's main processor this variable determins and set's the freaquency of the processor. 	
+
 
 // This variable controls and set's the Multiplier value for the EE to Iop cycle clock,                     
 // The thing that controls the freaquency of Iop to EE interaction and vice versa.                       

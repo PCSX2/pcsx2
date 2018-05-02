@@ -21,7 +21,6 @@
 #define USBdefs
 #include "PS2Edefs.h"
 #include "PS2Eext.h"
-
 typedef struct
 {
     int Log;
