@@ -329,18 +329,6 @@ bool GSC_EvangelionJo(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_CaptainTsubasa(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x1C00 && !fi.FBMSK)
-		{
-			skip = 1;
-		}
-	}
-	return true;
-}
-
 bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2221,7 +2209,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::BurnoutDominator] = GSC_Burnout;
 		lut[CRC::BurnoutRevenge] = GSC_Burnout;
 		lut[CRC::BurnoutTakedown] = GSC_Burnout;
-		lut[CRC::CaptainTsubasa] = GSC_CaptainTsubasa;
 		lut[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
 		lut[CRC::DevilMayCry3] = GSC_DevilMayCry3;
 		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
@@ -2233,7 +2220,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
 		lut[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
 		lut[CRC::Kunoichi] = GSC_Kunoichi;
-		lut[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;
 		lut[CRC::Manhunt2] = GSC_Manhunt2;
 		lut[CRC::MidnightClub3] = GSC_MidnightClub3;
 		lut[CRC::NarutimateAccel] = GSC_NarutimateAccel;
@@ -2267,6 +2253,9 @@ void GSState::SetupCrcHack()
 		// Channel Effect
 		lut[CRC::GiTS] = GSC_GiTS;
 		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
+
+		// Colclip not supported
+		lut[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;
 
 		// Half Screen bottom issue
 		lut[CRC::DBZBT2] = GSC_DBZBT2;
