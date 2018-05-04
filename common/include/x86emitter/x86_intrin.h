@@ -49,6 +49,7 @@ static __inline__ __attribute__((always_inline)) void cpuid(int CPUInfo[], const
     __cpuid(InfoType, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
 }
 
+#if __GNUC__ < 8
 static __inline__ __attribute__((always_inline)) unsigned long long _xgetbv(unsigned int index)
 {
     unsigned int eax, edx;
@@ -57,6 +58,7 @@ static __inline__ __attribute__((always_inline)) unsigned long long _xgetbv(unsi
                          : "c"(index));
     return ((unsigned long long)edx << 32) | eax;
 }
+#endif
 
 #endif
 
