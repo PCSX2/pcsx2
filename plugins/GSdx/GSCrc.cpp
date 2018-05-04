@@ -163,7 +163,7 @@ CRC::Game CRC::m_games[] =
 	{0xC1640D2C, WildArms5, US, 0},
 	{0x0FCF8FE4, WildArms5, EU, 0},
 	{0x2294D322, WildArms5, JP, 0},
-	{0x565B6170, WildArms5, JP, 0},
+	{0x565B6170, WildArms4, JP, 0}, // Wild Arms: The 4th Detonator
 	{0xBBC3EFFA, WildArms4, US, 0},
 	{0xBBC396EC, WildArms4, US, 0}, // hmm such a small diff in the CRC..
 	{0x7B2DE9CC, WildArms4, EU, 0},
@@ -356,6 +356,7 @@ CRC::Game CRC::m_games[] =
 	{0x73C560BA, FinalFightStreetwise, EU, 0},
 	{0xCBB87BF9, EvangelionJo, JP, 0}, // cutie comment
 	{0x278A91FD, CaptainTsubasa, JP, 0}, // cutie comment
+	{0x2CF3EFF3, CaptainTsubasa, JP, 0},
 	{0xC5B75C7C, Oneechanbara2Special, JP, 0}, // cutie comment
 	{0xC0659AD1, NarutimateAccel, JP, 0}, // cutie comment
 	{0xF3D9DFBE, NarutimateAccel, JP, 0},
