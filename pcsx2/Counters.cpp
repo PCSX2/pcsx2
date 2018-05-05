@@ -322,7 +322,7 @@ u32 UpdateVSyncRate()
 
 	case GS_VideoMode::NTSC:
 	case GS_VideoMode::DVD_NTSC:
-		isCustom = (EmuConfig.GS.FramerateNTSC != 59.29);
+		isCustom = (EmuConfig.GS.FramerateNTSC != 59.94);
 		scanlines = SCANLINES_TOTAL_NTSC;
 		if (!gsIsInterlaced) scanlines += 1;
 		break;

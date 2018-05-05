@@ -1424,6 +1424,7 @@ static __fi void cdvdWrite14(u8 rt) { // PS1 MODE?? // This should be done in th
 		Console.Warning("*PCSX2*: go PS1 mode DISC SPEED = FAST");
 	else
 		Console.Warning("*PCSX2*: go PS1 mode DISC SPEED = %dX", rt);
+
 	psxReset();
 	psxHu32(0x1f801450) = 0x8;
 	psxHu32(0x1f801078) = 1;
