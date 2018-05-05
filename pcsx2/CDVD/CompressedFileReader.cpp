@@ -28,10 +28,8 @@ AsyncFileReader* CompressedFileReader::GetNewReader(const wxString& fileName) {
 	if (CsoFileReader::CanHandle(fileName))
 		return new CsoFileReader();
 
-#ifdef ISO_LZMA_READER
 	if (LzmaFileReader::CanHandle(fileName))
 		return new LzmaFileReader();
-#endif
 
 	// This is the one which will fail on open.
 	return NULL;

@@ -19,8 +19,6 @@
 
 #include <fstream>
 
-#ifdef ISO_LZMA_READER
-
 LzmaBlock::LzmaBlock(const std::shared_ptr<wxFile>& file, const lzma_index_iter& iter)
 {
 	m_fd = file;
@@ -136,7 +134,12 @@ u8* LzmaFileCache::MapBlock(LzmaBlock& block)
 
 
 bool LzmaFileReader::CanHandle(const wxString& fileName) {
+	// Only recent LZMA is supported
+#if LZMA_VERSION_MAJOR >= 5 && LZMA_VERSION_MINOR >= 3
 	return wxFileName::FileExists(fileName) && fileName.Lower().EndsWith(L".xz");
+#else
+	return 0;
+#endif
 }
 
 LzmaFileReader::LzmaFileReader()
@@ -284,5 +287,3 @@ int LzmaFileReader::ReadSync(void* pBuffer, uint sector, uint count)
 
 	return bytes;
 }
-
-#endif

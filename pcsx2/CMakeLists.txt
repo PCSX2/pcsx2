@@ -22,10 +22,6 @@ set(CommonFlags
     -DWX_PRECOMP
 	)
 
-if (EXPERIMENTAL_ISO_LZMA_READER)
-	set(CommonFlags "${CommonFlags} -DISO_LZMA_READER")
-endif()
-
 if ("${PGO}" STREQUAL "generate")
     set(pcsx2FinalFlags -fprofile-generate)
 elseif("${PGO}" STREQUAL "use")

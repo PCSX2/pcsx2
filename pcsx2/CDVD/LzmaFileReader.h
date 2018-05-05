@@ -18,8 +18,6 @@
 #include "AsyncFileReader.h"
 #include <lzma.h>
 
-#ifdef ISO_LZMA_READER
-
 class LzmaBlock
 {
 	lzma_block m_header;
@@ -103,5 +101,3 @@ public:
 	virtual void SetBlockSize(uint bytes) { m_blocksize = bytes; }
 	virtual void SetDataOffset(int bytes) { m_dataoffset = bytes; }
 };
-
-#endif

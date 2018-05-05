@@ -30,8 +30,6 @@ endif()
 
 option(USE_VTUNE "Plug VTUNE to profile GSdx JIT.")
 
-option(EXPERIMENTAL_ISO_LZMA_READER "Support .iso.xz file. Requires unreleased xz 5.3")
-
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
