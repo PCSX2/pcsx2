@@ -2153,6 +2153,7 @@ GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRende
 			return palette;
 		}
 		// Same clut hash but content mismatch, FALSE HIT
+		GL_PERF("TC, %u-bit PaletteMap (Size %u): FALSE HIT for hash value %u.", palette_size, multimap.size(), clut_hash);
 	}
 
 	// No Palette with matching clut content hash, MISS
@@ -2167,6 +2168,8 @@ GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRende
 		GL_INS("ERROR, %u-bit PaletteMap (Size %u): Max size %u exceeded, negative performance impact.", palette_size, multimap.size(), MAX_SIZE);
 		// TODO Maybe: Clear palettes currently not referenced by any Source object
 	}
+
+	GL_CACHE("TC, %u-bit PaletteMap (Size %u): Added new palette.", palette_size, multimap.size());
 	
 	// Return the pointer to the newly created Palette
 	return palette;
