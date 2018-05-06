@@ -2040,9 +2040,8 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 // Query the PaletteMap for a valid Palette, then assign both palette texture pointer and clut copy pointer to the Source object
 void GSTextureCache::AttachPaletteToSource(Source* s, const GSRenderer* renderer, uint16 pal)
 {
-	if (s->m_palette) {
-		Palette* old_p = ((Palette*)s->m_palette_obj);
-		old_p->DecrementRefCounter();
+	if (s->m_palette_obj) {
+		((Palette*)s->m_palette_obj)->DecrementRefCounter();
 	}
 	
 	Palette* p = m_palette_map.LookupPalette(m_renderer, pal);
