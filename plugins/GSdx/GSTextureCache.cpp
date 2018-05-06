@@ -1586,13 +1586,12 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 
 GSTextureCache::Source::~Source()
 {
-	if (!m_should_have_tex_palette) {
+	if (m_palette_obj) {
+		((Palette*)m_palette_obj)->DecrementRefCounter();
+	}
+	else {
 		_aligned_free(m_clut);
-		if (m_palette) {
-			ASSERT(m_renderer->m_game.title == CRC::ICO);
-			ASSERT(false);
-			m_renderer->m_dev->Recycle(m_palette);
-		}
+		m_renderer->m_dev->Recycle(m_palette);
 	}
 
 	_aligned_free(m_write.rect);
