@@ -107,6 +107,10 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 		{
 			_("VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"),
 			wxEmptyString
+		},
+		{
+			_("Set the EE Cycle rate to 100% when a FMV plays"),
+			wxEmptyString
 		}
 	};
 

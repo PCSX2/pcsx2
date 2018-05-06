@@ -267,7 +267,8 @@ const wxChar *const tbl_GamefixNames[] =
 	L"GIFFIFO",
 	L"FMVinSoftware",
 	L"GoemonTlb",
-	L"ScarfaceIbit"
+	L"ScarfaceIbit",
+	L"FMVEECycle"
 };
 
 const __fi wxChar* EnumToString( GamefixId id )
@@ -323,14 +324,15 @@ void Pcsx2Config::GamefixOptions::Set( GamefixId id, bool enabled )
 		case Fix_IpuWait:		IPUWaitHack			= enabled;	break;
 		case Fix_EETiming:		EETimingHack		= enabled;	break;
 		case Fix_SkipMpeg:		SkipMPEGHack		= enabled;	break;
-		case Fix_OPHFlag:		OPHFlagHack			= enabled;  break;
-		case Fix_DMABusy:		DMABusyHack			= enabled;  break;
-		case Fix_VIFFIFO:		VIFFIFOHack			= enabled;  break;
-		case Fix_VIF1Stall:		VIF1StallHack		= enabled;  break;
-		case Fix_GIFFIFO:		GIFFIFOHack			= enabled;  break;
-		case Fix_FMVinSoftware:	FMVinSoftwareHack	= enabled;  break;
-		case Fix_GoemonTlbMiss: GoemonTlbHack		= enabled;  break;
-		case Fix_ScarfaceIbit:  ScarfaceIbit        = enabled;  break;
+		case Fix_OPHFlag:		OPHFlagHack			= enabled;	break;
+		case Fix_DMABusy:		DMABusyHack			= enabled;	break;
+		case Fix_VIFFIFO:		VIFFIFOHack			= enabled;	break;
+		case Fix_VIF1Stall:		VIF1StallHack		= enabled;	break;
+		case Fix_GIFFIFO:		GIFFIFOHack			= enabled;	break;
+		case Fix_FMVinSoftware:	FMVinSoftwareHack	= enabled;	break;
+		case Fix_GoemonTlbMiss:	GoemonTlbHack		= enabled;	break;
+		case Fix_ScarfaceIbit:	ScarfaceIbit		= enabled;	break;
+		case Fix_FMVEECycle:	FMVEECycleHack		= enabled;	break;
 		jNO_DEFAULT;
 	}
 }
@@ -357,6 +359,7 @@ bool Pcsx2Config::GamefixOptions::Get( GamefixId id ) const
 		case Fix_FMVinSoftware:	return FMVinSoftwareHack;
 		case Fix_GoemonTlbMiss: return GoemonTlbHack;
 		case Fix_ScarfaceIbit:  return ScarfaceIbit;
+		case Fix_FMVEECycle:    return FMVEECycleHack;
 		jNO_DEFAULT;
 	}
 	return false;		// unreachable, but we still need to suppress warnings >_<
@@ -383,6 +386,7 @@ void Pcsx2Config::GamefixOptions::LoadSave( IniInterface& ini )
 	IniBitBool( FMVinSoftwareHack );
 	IniBitBool( GoemonTlbHack );
 	IniBitBool( ScarfaceIbit );
+  IniBitBool( FMVEECycleHack );
 }
 
 
