@@ -2164,8 +2164,9 @@ GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRende
 	// Add the new palette to the multimap
 	multimap.emplace(clut_hash, palette);
 
-	if (multimap.size() == MAX_SIZE) {
-		throw std::runtime_error("PaletteMap size maxed out at MAX_SIZE (2048) elements.");
+	if (multimap.size() >= MAX_SIZE) {
+		GL_INS("ERROR, %u-bit PaletteMap (Size %u): Max size %u exceeded, negative performance impact.", palette_size, multimap.size(), MAX_SIZE);
+		// TODO Maybe: Clear palettes currently not referenced by any Source object
 	}
 	
 	// Return the pointer to the newly created Palette
