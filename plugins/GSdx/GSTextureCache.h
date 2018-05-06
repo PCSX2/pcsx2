@@ -137,7 +137,7 @@ public:
 	class PaletteMap
 	{
 	private:
-		static const uint16 MAX_SIZE = 65535; // Max size of the map
+		static const uint16 MAX_SIZE = 65535; // Max size of each map.
 		
 		// Array of 2 multimaps, the first for 64B palettes and the second for 1024B palettes.
 		// Each multimap has the clut hash value as key and the relevant palettes as values (multiple values possible for each key)
