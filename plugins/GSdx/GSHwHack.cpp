@@ -516,26 +516,6 @@ bool GSC_RedDeadRevolver(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_HeavyMetalThunder(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x03100 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ32)
-		{
-			skip = 100;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x02a00 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1166,6 +1146,26 @@ bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
 			{
 				skip = 1;
 			}
+		}
+	}
+
+	return true;
+}
+
+bool GSC_HeavyMetalThunder(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && fi.FBP == 0x03100 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ32)
+		{
+			skip = 100;
+		}
+	}
+	else
+	{
+		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x02a00 && fi.TPSM == PSM_PSMCT32)
+		{
+			skip = 1;
 		}
 	}
 
@@ -2215,7 +2215,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
 		lut[CRC::Genji] = GSC_Genji;
 		lut[CRC::GodHand] = GSC_GodHand;
-		lut[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
 		lut[CRC::HummerBadlands] = GSC_HummerBadlands;
 		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
 		lut[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
@@ -2289,6 +2288,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise; // + blending
 		lut[CRC::FrontMission5] = GSC_FrontMission5;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
+		lut[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
 		lut[CRC::ICO] = GSC_ICO;
 		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 		lut[CRC::Okami] = GSC_Okami;
