@@ -37,14 +37,19 @@ CRC::Region g_crc_region = CRC::NoRegion;
 // (note: could potentially work with latest OpenGL)
 ////////////////////////////////////////////////////////////////////////////////
 
-// Channel effect not properly supported yet
-bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
+bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP == 0x01400 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x02e40 && fi.TPSM == PSM_PSMCT16)
+		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00a00) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16)
 		{
-			skip = 1315;
+			// A real mess.
+			// Half screen bottom and vertical stripes issues.
+			//
+			// HDR colclip/conclip not supported,
+			// Depth target lookup,
+			// Texture shuffle and SW emulated fbmask.
+			skip = 3;
 		}
 	}
 
@@ -123,6 +128,20 @@ bool GSC_DemonStone(const GSFrameInfo& fi, int& skip)
 		if(Dx_only && fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32)
 		{
 			skip = 2;
+		}
+	}
+
+	return true;
+}
+
+// Channel effect not properly supported yet
+bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && fi.FBP == 0x01400 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x02e40 && fi.TPSM == PSM_PSMCT16)
+		{
+			skip = 1315;
 		}
 	}
 
@@ -1708,19 +1727,6 @@ bool GSC_Sly2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00a00) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 3;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_LordOfTheRingsTwoTowers(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2205,6 +2211,7 @@ void GSState::SetupCrcHack()
 
 	if (Dx_and_OGL) {
 		lut[CRC::AceCombat4] = GSC_AceCombat4;
+		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
 		lut[CRC::BlackHawkDown] = GSC_BlackHawkDown;
 		lut[CRC::BurnoutDominator] = GSC_Burnout;
 		lut[CRC::BurnoutRevenge] = GSC_Burnout;
@@ -2303,7 +2310,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::HauntingGround] = GSC_HauntingGround;
 
 		// Not tested but must be fixed with texture shuffle
-		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
 		lut[CRC::CrashNburn] = GSC_CrashNburn; // seem to be a basic depth effect
 		lut[CRC::EternalPoison] = GSC_EternalPoison;
 		lut[CRC::LegoBatman] = GSC_LegoBatman;
