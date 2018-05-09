@@ -26,48 +26,50 @@ bool iopIsDelaySlot = false;
 static bool branch2 = 0;
 static u32 branchPC;
 
-static void doBranch(s32 tar);	// forward declared prototype
+static void doBranch(s32 tar); // forward declared prototype
 
 /*********************************************************
 * Register branch logic                                  *
 * Format:  OP rs, offset                                 *
 *********************************************************/
 
-void psxBGEZ()         // Branch if Rs >= 0
+void psxBGEZ() // Branch if Rs >= 0
 {
-	if (_i32(_rRs_) >= 0) doBranch(_BranchTarget_);
+    if (_i32(_rRs_) >= 0)
+        doBranch(_BranchTarget_);
 }
 
-void psxBGEZAL()   // Branch if Rs >= 0 and link
+void psxBGEZAL() // Branch if Rs >= 0 and link
 {
-	_SetLink(31);
-	if (_i32(_rRs_) >= 0)
-	{
-		doBranch(_BranchTarget_);
-	}
+    _SetLink(31);
+    if (_i32(_rRs_) >= 0) {
+        doBranch(_BranchTarget_);
+    }
 }
 
-void psxBGTZ()          // Branch if Rs >  0
+void psxBGTZ() // Branch if Rs >  0
 {
-	if (_i32(_rRs_) > 0) doBranch(_BranchTarget_);
+    if (_i32(_rRs_) > 0)
+        doBranch(_BranchTarget_);
 }
 
-void psxBLEZ()         // Branch if Rs <= 0
+void psxBLEZ() // Branch if Rs <= 0
 {
-	if (_i32(_rRs_) <= 0) doBranch(_BranchTarget_);
+    if (_i32(_rRs_) <= 0)
+        doBranch(_BranchTarget_);
 }
-void psxBLTZ()          // Branch if Rs <  0
+void psxBLTZ() // Branch if Rs <  0
 {
-	if (_i32(_rRs_) < 0) doBranch(_BranchTarget_);
+    if (_i32(_rRs_) < 0)
+        doBranch(_BranchTarget_);
 }
 
-void psxBLTZAL()    // Branch if Rs <  0 and link
+void psxBLTZAL() // Branch if Rs <  0 and link
 {
-	_SetLink(31);
-	if (_i32(_rRs_) < 0)
-		{
-			doBranch(_BranchTarget_);
-		}
+    _SetLink(31);
+    if (_i32(_rRs_) < 0) {
+        doBranch(_BranchTarget_);
+    }
 }
 
 /*********************************************************
@@ -75,14 +77,16 @@ void psxBLTZAL()    // Branch if Rs <  0 and link
 * Format:  OP rs, rt, offset                             *
 *********************************************************/
 
-void psxBEQ()   // Branch if Rs == Rt
+void psxBEQ() // Branch if Rs == Rt
 {
-	if (_i32(_rRs_) == _i32(_rRt_)) doBranch(_BranchTarget_);
+    if (_i32(_rRs_) == _i32(_rRt_))
+        doBranch(_BranchTarget_);
 }
 
-void psxBNE()   // Branch if Rs != Rt
+void psxBNE() // Branch if Rs != Rt
 {
-	if (_i32(_rRs_) != _i32(_rRt_)) doBranch(_BranchTarget_);
+    if (_i32(_rRs_) != _i32(_rRt_))
+        doBranch(_BranchTarget_);
 }
 
 /*********************************************************
@@ -91,18 +95,18 @@ void psxBNE()   // Branch if Rs != Rt
 *********************************************************/
 void psxJ()
 {
-	// check for iop module import table magic
-	u32 delayslot = iopMemRead32(psxRegs.pc);
-	if (delayslot >> 16 == 0x2400 && irxImportExec(irxImportTableAddr(psxRegs.pc), delayslot & 0xffff))
-		return;
+    // check for iop module import table magic
+    u32 delayslot = iopMemRead32(psxRegs.pc);
+    if (delayslot >> 16 == 0x2400 && irxImportExec(irxImportTableAddr(psxRegs.pc), delayslot & 0xffff))
+        return;
 
-	doBranch(_JumpTarget_);
+    doBranch(_JumpTarget_);
 }
 
 void psxJAL()
 {
-	_SetLink(31);
-	doBranch(_JumpTarget_);
+    _SetLink(31);
+    doBranch(_JumpTarget_);
 }
 
 /*********************************************************
@@ -111,16 +115,15 @@ void psxJAL()
 *********************************************************/
 void psxJR()
 {
-	doBranch(_u32(_rRs_));
+    doBranch(_u32(_rRs_));
 }
 
 void psxJALR()
 {
-	if (_Rd_)
-	{
-		_SetLink(_Rd_);
-	}
-	doBranch(_u32(_rRs_));
+    if (_Rd_) {
+        _SetLink(_Rd_);
+    }
+    doBranch(_u32(_rRs_));
 }
 
 ///////////////////////////////////////////
@@ -128,90 +131,105 @@ void psxJALR()
 
 static __fi void execI()
 {
-	// Inject IRX hack
-	if (psxRegs.pc == 0x1630 && g_Conf->CurrentIRX.Length() > 3) {
-		if (iopMemRead32(0x20018) == 0x1F) {
-			// FIXME do I need to increase the module count (0x1F -> 0x20)
-			iopMemWrite32(0x20094, 0xbffc0000);
-		}
-	}
-
-	psxRegs.code = iopMemRead32(psxRegs.pc);
-
-		PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
-
-	psxRegs.pc+= 4;
-	psxRegs.cycle++;
-	iopCycleEE-=8;
-
-	psxBSC[psxRegs.code >> 26]();
-}
-
-static void doBranch(s32 tar) {
-	branch2 = iopIsDelaySlot = true;
-	branchPC = tar;
-	execI();
-	PSXCPU_LOG( "\n" );
-	iopIsDelaySlot = false;
-	psxRegs.pc = branchPC;
-
-	iopEventTest();
-}
-
-static void intReserve() {
-}
-
-static void intAlloc() {
-}
-
-static void intReset() {
-	intAlloc();
-}
-
-static void intExecute() {
-	for (;;) execI();
-}
-
-static s32 intExecuteBlock( s32 eeCycles )
-{
-	iopBreak = 0;
-	iopCycleEE = eeCycles;
-
-	while (iopCycleEE > 0){
-		if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
-			psxBiosCall();
-
-		branch2 = 0;
-		while (!branch2) {
-			execI();
+    // Inject IRX hack
+    if (psxRegs.pc == 0x1630 && g_Conf->CurrentIRX.Length() > 3) {
+        if (iopMemRead32(0x20018) == 0x1F) {
+            // FIXME do I need to increase the module count (0x1F -> 0x20)
+            iopMemWrite32(0x20094, 0xbffc0000);
         }
+    }
+
+    psxRegs.code = iopMemRead32(psxRegs.pc);
+
+    PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
+
+    psxRegs.pc += 4;
+    psxRegs.cycle++;
+    iopCycleEE -= 8;
+
+    if ((psxHu32(HW_ICFG) & (1 << 3)))    
+	{
+        //this get's set to 9 because in the EE's half of this equation	                 
+		//Were trunacating the value 8.71 to a 9 instead due to casting
+		//setting this causes Iop to stay correctly synced to EE in ps1 mode
+		//Whilst before Iop was running ahead of EE.
+		iopCycleEE -= 9; 
 	}
-	return iopBreak + iopCycleEE;
+    psxBSC[psxRegs.code >> 26]();
 }
 
-static void intClear(u32 Addr, u32 Size) {
+static void doBranch(s32 tar)
+{
+    branch2 = iopIsDelaySlot = true;
+    branchPC = tar;
+    execI();
+    PSXCPU_LOG("\n");
+    iopIsDelaySlot = false;
+    psxRegs.pc = branchPC;
+
+    iopEventTest();
 }
 
-static void intShutdown() {
+static void intReserve()
+{
 }
 
-static void intSetCacheReserve( uint reserveInMegs )
+static void intAlloc()
+{
+}
+
+static void intReset()
+{
+    intAlloc();
+}
+
+static void intExecute()
+{
+    for (;;)
+        execI();
+}
+
+static s32 intExecuteBlock(s32 eeCycles)
+{
+    iopBreak = 0;
+    iopCycleEE = eeCycles;
+
+    while (iopCycleEE > 0) {
+        if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
+            psxBiosCall();
+
+        branch2 = 0;
+        while (!branch2) {
+            execI();
+        }
+    }
+    return iopBreak + iopCycleEE;
+}
+
+static void intClear(u32 Addr, u32 Size)
+{
+}
+
+static void intShutdown()
+{
+}
+
+static void intSetCacheReserve(uint reserveInMegs)
 {
 }
 
 static uint intGetCacheReserve()
 {
-	return 0;
+    return 0;
 }
 
 R3000Acpu psxInt = {
-	intReserve,
-	intReset,
-	intExecute,
-	intExecuteBlock,
-	intClear,
-	intShutdown,
+    intReserve,
+    intReset,
+    intExecute,
+    intExecuteBlock,
+    intClear,
+    intShutdown,
 
-	intGetCacheReserve,
-	intSetCacheReserve
-};
+    intGetCacheReserve,
+    intSetCacheReserve};
