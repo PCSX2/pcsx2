@@ -1181,10 +1181,12 @@ Name   = Dead or Alive 2 - Hardcore
 Region = PAL-M5
 Compat = 5
 [patches = 7A51F86E]
-	comment=Patch by Prafull
-	// Fixes game hanging on boot, but removes all sound effects.
+	comment=Patch by Prafull and kozarovv
+	// Fixes game hanging on boot.
 	patch=0,EE,002b4c44,word,24060000
-	patch=0,EE,002b4dc0,word,10000014
+	patch=1,IOP,001D77E4,word,27C40010
+	patch=1,IOP,001D77E8,word,0C0032B7
+	patch=1,IOP,001D77EC,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SCES-50004
