@@ -9223,6 +9223,7 @@ Compat = 3
 	patch=1,EE,001f70b4,word,1000000f
 	// Fixes flickering graphics (Thanks to Kian Stevens for finding this).
 	patch=1,EE,80000000,word,00000000
+	comment=This disc has the same CRC as SLUS-20576, the NTSC-U disc.
 [/patches]
 ---------------------------------------------
 Serial = SLES-51194
@@ -36762,6 +36763,7 @@ Compat = 2
 	patch=1,EE,001f70b4,word,1000000f
 	// Fixes flickering graphics (Thanks to Kian Stevens for finding this).
 	patch=1,EE,80000000,word,00000000
+	comment=This disc has the same CRC as SLES-51192, the PAL-E disc.
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20577
@@ -39324,7 +39326,8 @@ Compat = 5
 Serial = SLUS-21111
 Name   = Scarface - The World is Yours
 Region = NTSC-U
-Compat = 4
+Compat = 5
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLUS-21112
 Name   = L.A. Rush
@@ -41254,6 +41257,8 @@ Compat = 5
 Serial = SLUS-21492
 Name   = Scarface - The World is Yours [Collector's Edition]
 Region = NTSC-U
+Compat = 5
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLUS-21493
 Name   = Need for Speed - Carbon
