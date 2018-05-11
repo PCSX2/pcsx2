@@ -438,7 +438,7 @@ __fi void _cpuEventTest_Shared()
 		cpuSetNextEventDelta( 48 );
 		//Console.Warning( "EE ahead of the IOP -- Rapid Event!  %d", EEsCycle );
 	}
-	
+
 	// The IOP could be running ahead/behind of us, so adjust the iop's next branch by its
 	// relative position to the EE (via EEsCycle)
 
