@@ -9216,6 +9216,7 @@ Name   = Harry Potter and the Chamber of Secrets
 Region = PAL-E
 Compat = 3
 [patches = C5473413]
+	// This disc has the same CRC as SLUS-20576, the NTSC-U disc.
 	comment=Patch by Prafull
 	// Fix initial hang.
 	patch=1,EE,002032bc,word,03e00008
@@ -36755,6 +36756,7 @@ Name   = Harry Potter and The Chamber of Secrets
 Region = NTSC-U
 Compat = 2
 [patches = C5473413]
+	// This disc has the same CRC as SLES-51192, the PAL-E disc.
 	comment=Patch by Prafull
 	// Fix initial hang.
 	patch=1,EE,002032bc,word,03e00008
@@ -39326,7 +39328,8 @@ Compat = 5
 Serial = SLUS-21111
 Name   = Scarface - The World is Yours
 Region = NTSC-U
-Compat = 4
+Compat = 5
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLUS-21112
 Name   = L.A. Rush
@@ -41256,6 +41259,8 @@ Compat = 5
 Serial = SLUS-21492
 Name   = Scarface - The World is Yours [Collector's Edition]
 Region = NTSC-U
+Compat = 5
+ScarfaceIbitHack = 1
 ---------------------------------------------
 Serial = SLUS-21493
 Name   = Need for Speed - Carbon
