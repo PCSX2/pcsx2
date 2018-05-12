@@ -939,7 +939,7 @@ void setPsxSpeed()
     // 1x = 75 sectors per second
     // PSXCLK = 1 sec in the ps
     // so (PSXCLK / 75) / BIAS = cdr read time (linuzappz)
-	cdReadTime = ((PSXCLK / 75) / BIAS);
+    cdReadTime = ((PSXCLK / 75) / BIAS);
 }
 
 

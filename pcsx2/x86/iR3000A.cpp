@@ -944,7 +944,7 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
 		// One of two parts of an equation that determins the EE to Iop clock speed, note the value is trunacated.		                                                                      
 		// due to the freaquency in PS1 mode being 8.71 that get's rounded up to 9. 
-		xSUB(ptr32[&iopCycleEE], (s32)(round(blockCycles* psxEEmultiplier))); 
+		xSUB(ptr32[&iopCycleEE], (s32)(round(blockCycles* psxEEmultiplier)));
 
 		xJLE(iopExitRecompiledCode);
 
