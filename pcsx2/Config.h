@@ -56,7 +56,7 @@ enum GamefixId
 	Fix_VIFFIFO,
 	Fix_VIF1Stall,
 	Fix_GIFFIFO,
-	Fix_FMVinSoftware,
+	Fix_FMVFix,
 	Fix_GoemonTlbMiss,
 	Fix_ScarfaceIbit,
 
@@ -353,15 +353,15 @@ struct Pcsx2Config
 				XgKickHack		:1,		// Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
 				IPUWaitHack     :1,		// FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
 				EETimingHack	:1,		// General purpose timing hack.
-				SkipMPEGHack	:1,		// Skips MPEG videos (Katamari and other games need this)
+				SkipMPEGHack	:1,		// Skips MPEG videos (Katamari and other games need this).
 				OPHFlagHack		:1,		// Bleach Blade Battlers
 				DMABusyHack		:1,		// Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
 				VIFFIFOHack		:1,     // Pretends to fill the non-existant VIF FIFO Buffer.
 				VIF1StallHack   :1,     // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
-				GIFFIFOHack		:1,		// Enabled the GIF FIFO (more correct but slower)
-				FMVinSoftwareHack:1,	// Toggle in and out of software rendering when an FMV runs.
-				GoemonTlbHack	:1,		// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
-				ScarfaceIbit 	:1;		// Scarface I bit hack. Needed to stop constant VU recompilation
+				GIFFIFOHack		:1,		// Enabled the GIF FIFO (more correct but slower).
+				FMVFix			:1,		// Use GSdx software rendering & regular EE cyclerate for FMVs.
+				GoemonTlbHack	:1,		// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup.
+				ScarfaceIbit 	:1;		// Scarface I bit hack. Needed to stop constant VU recompilation.
 		BITFIELD_END
 
 		GamefixOptions();
@@ -536,15 +536,15 @@ TraceLogFilters&				SetTraceConfig();
 #define CHECK_FPUMULHACK			(EmuConfig.Gamefixes.FpuMulHack)	 // Special Fix for Tales of Destiny hangs.
 #define CHECK_FPUNEGDIVHACK			(EmuConfig.Gamefixes.FpuNegDivHack)	 // Special Fix for Gundam games messed up camera-view.
 #define CHECK_XGKICKHACK			(EmuConfig.Gamefixes.XgKickHack)	 // Special Fix for Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics.
-#define CHECK_IPUWAITHACK			(EmuConfig.Gamefixes.IPUWaitHack)	 // Special Fix For FFX
+#define CHECK_IPUWAITHACK			(EmuConfig.Gamefixes.IPUWaitHack)	 // Special Fix For FFX.
 #define CHECK_EETIMINGHACK			(EmuConfig.Gamefixes.EETimingHack)	 // Fix all scheduled events to happen in 1 cycle.
-#define CHECK_SKIPMPEGHACK			(EmuConfig.Gamefixes.SkipMPEGHack)	 // Finds sceMpegIsEnd pattern to tell the game the mpeg is finished (Katamari and a lot of games need this)
+#define CHECK_SKIPMPEGHACK			(EmuConfig.Gamefixes.SkipMPEGHack)	 // Finds sceMpegIsEnd pattern to tell the game the mpeg is finished (Katamari and a lot of games need this).
 #define CHECK_OPHFLAGHACK			(EmuConfig.Gamefixes.OPHFlagHack)	 // Bleach Blade Battlers
 #define CHECK_DMABUSYHACK			(EmuConfig.Gamefixes.DMABusyHack)    // Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
 #define CHECK_VIFFIFOHACK			(EmuConfig.Gamefixes.VIFFIFOHack)    // Pretends to fill the non-existant VIF FIFO Buffer.
 #define CHECK_VIF1STALLHACK			(EmuConfig.Gamefixes.VIF1StallHack)  // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
-#define CHECK_GIFFIFOHACK			(EmuConfig.Gamefixes.GIFFIFOHack)	 // Enabled the GIF FIFO (more correct but slower)
-#define CHECK_FMVINSOFTWAREHACK	 	(EmuConfig.Gamefixes.FMVinSoftwareHack) // Toggle in and out of software rendering when an FMV runs.
+#define CHECK_GIFFIFOHACK			(EmuConfig.Gamefixes.GIFFIFOHack)	 // Enabled the GIF FIFO (more correct but slower).
+#define CHECK_FMVFIX				(EmuConfig.Gamefixes.FMVFix)		 // Use GSdx software rendering & regular EE cyclerate for FMVs.
 //------------ Advanced Options!!! ---------------
 #define CHECK_VU_OVERFLOW			(EmuConfig.Cpu.Recompiler.vuOverflow)
 #define CHECK_VU_EXTRA_OVERFLOW		(EmuConfig.Cpu.Recompiler.vuExtraOverflow) // If enabled, Operands are clamped before being used in the VU recs

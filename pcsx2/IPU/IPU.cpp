@@ -409,7 +409,7 @@ static __ri void ipuBDEC(tIPU_CMD_BDEC bdec)
 
 static __fi bool ipuVDEC(u32 val)
 {
-	if (EmuConfig.Gamefixes.FMVinSoftwareHack || g_Conf->GSWindow.IsToggleAspectRatioSwitch) {
+	if (EmuConfig.Gamefixes.FMVFix || g_Conf->GSWindow.IsToggleAspectRatioSwitch) {
 		static int count = 0;
 		if (count++ > 5) {
 			if (!FMVstarted) {

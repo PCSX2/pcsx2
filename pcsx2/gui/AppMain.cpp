@@ -514,6 +514,7 @@ extern uint eecount_on_last_vdec;
 extern bool FMVstarted;
 extern bool renderswitch;
 extern bool EnableFMV;
+s8 eecycle_backup;
 
 void DoFmvSwitch(bool on)
 {
@@ -529,8 +530,9 @@ void DoFmvSwitch(bool on)
 				viewport->DoResize();
 	}
 
-	if (EmuConfig.Gamefixes.FMVinSoftwareHack) {
+	if (EmuConfig.Gamefixes.FMVFix) {
 		ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(PluginId_GS));
+		g_Conf->EmuOptions.Speedhacks.EECycleRate = 0;
 		renderswitch = !renderswitch;
 		paused_core.AllowResume();
 	}
@@ -546,8 +548,9 @@ void Pcsx2App::LogicalVsync()
 
 	FpsManager.DoFrame();
 	
-	if (EmuConfig.Gamefixes.FMVinSoftwareHack || g_Conf->GSWindow.IsToggleAspectRatioSwitch) {
+	if (EmuConfig.Gamefixes.FMVFix || g_Conf->GSWindow.IsToggleAspectRatioSwitch) {
 		if (EnableFMV) {
+			eecycle_backup = g_Conf->EmuOptions.Speedhacks.EECycleRate;
 			DevCon.Warning("FMV on");
 			DoFmvSwitch(true);
 			EnableFMV = false;
@@ -559,6 +562,9 @@ void Pcsx2App::LogicalVsync()
 				DevCon.Warning("FMV off");
 				DoFmvSwitch(false);
 				FMVstarted = false;
+				ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(PluginId_GS));
+				g_Conf->EmuOptions.Speedhacks.EECycleRate = eecycle_backup;
+				paused_core.AllowResume();
 			}
 		}
 	}
