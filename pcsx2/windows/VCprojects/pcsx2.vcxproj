@@ -152,6 +152,7 @@
     <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\CsoFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\GzippedFileReader.cpp" />
+    <ClCompile Include="..\..\CDVD\LzmaFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\OutputIsoFile.cpp" />
     <ClCompile Include="..\..\DebugTools\Breakpoints.cpp" />
     <ClCompile Include="..\..\DebugTools\DebugInterface.cpp" />
@@ -415,6 +416,7 @@
     <ClInclude Include="..\..\CDVD\CompressedFileReaderUtils.h" />
     <ClInclude Include="..\..\CDVD\CsoFileReader.h" />
     <ClInclude Include="..\..\CDVD\GzippedFileReader.h" />
+    <ClInclude Include="..\..\CDVD\LzmaFileReader.h" />
     <ClInclude Include="..\..\CDVD\zlib_indexed.h" />
     <ClInclude Include="..\..\DebugTools\Breakpoints.h" />
     <ClInclude Include="..\..\DebugTools\DebugInterface.h" />
@@ -600,6 +602,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_core.vcxproj">
       <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\3rdparty\xz\liblzma.vcxproj">
+      <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\zlib\zlib.vcxproj">
       <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>

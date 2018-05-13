@@ -871,6 +871,9 @@
     <ClCompile Include="..\..\ps2\Iop\PsxBios.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\CDVD\LzmaFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1310,6 +1313,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Mdec.h">
       <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CDVD\LzmaFileReader.h">
+      <Filter>System\ISO</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
