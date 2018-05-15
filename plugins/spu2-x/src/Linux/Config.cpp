@@ -66,6 +66,7 @@ float VolumeAdjustSL;
 float VolumeAdjustSR;
 float VolumeAdjustLFE;
 unsigned int delayCycles;
+unsigned int delayCycles_override;
 
 bool postprocess_filter_enabled = true;
 bool postprocess_filter_dealias = false;
@@ -116,7 +117,7 @@ void ReadSettings()
     VolumeAdjustSR = powf(10, VolumeAdjustSRdb / 10);
     VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
     delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
-
+    delayCycles_override = 0;
 
     wxString temp;
     CfgReadStr(L"OUTPUT", L"Output_Module", temp, PortaudioOut->GetIdent());

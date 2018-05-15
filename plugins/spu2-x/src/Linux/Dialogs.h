@@ -28,6 +28,13 @@ extern void WriteSettings();
 extern void DisplayDialog();
 }
 
+namespace AdvancedVolumeConfig
+{
+extern void ReadSettings();
+extern void WriteSettings();
+extern void DisplayDialog();
+}
+
 extern void CfgSetSettingsDir(const char *dir);
 extern void CfgSetLogDir(const char *dir);
 

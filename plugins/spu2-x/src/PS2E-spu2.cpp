@@ -328,11 +328,20 @@ CALLBACK SPU2writeDMA7Mem(u16 *pMem, u32 size)
 EXPORT_C_(void)
 SPU2reset()
 {
+    delayCycles_override = 0;
     memset(spu2regs, 0, 0x010000);
     memset(_spu2mem, 0, 0x200000);
     memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
     Cores[0].Init(0);
     Cores[1].Init(1);
+}
+EXPORT_C_(void)
+SPU2DelayCycles(int cyclesnr = 0)
+{
+    if (cyclesnr != delayCycles_override) {
+        delayCycles_override = cyclesnr;
+        printf("(GameDB) Changing SPU2-X delay cycles to %u\n", delayCycles_override);
+    }
 }
 
 EXPORT_C_(s32)

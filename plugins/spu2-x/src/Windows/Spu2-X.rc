@@ -31,34 +31,42 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     PUSHBUTTON      "OK",IDOK,200,276,54,15,NOT WS_TABSTOP
     PUSHBUTTON      "Cancel",IDCANCEL,259,276,54,15,NOT WS_TABSTOP
-    GROUPBOX        "Mixing Settings",IDC_STATIC,6,5,130,115
+    // Mixing Settings:
+    GROUPBOX        "Mixing Settings",IDC_STATIC,6,5,130,145
+    LTEXT           "Interpolation:",IDC_STATIC,12,16,55,10,NOT WS_GROUP
+    COMBOBOX        IDC_INTERPOLATE,14,26,114,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CHECKBOX        "Disable Effects Processing",IDC_EFFECTS_DISABLE,14,47,112,10
+    LTEXT           "(speedup!) Skips reverb effects processing, but won't sound as good in most games.",IDC_STATIC,26,60,104,36
+    CONTROL         "Use the de-alias filter",IDC_DEALIASFILTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,92,112,10
+    LTEXT           "(overemphasizes the highs)",IDC_STATIC,26,104,100,12,NOT WS_GROUP
+    CHECKBOX        "Advanced Volume Control",IDC_ADVANCED_VOL_ENABLE,14,118,112,10
+    PUSHBUTTON      "Configure...",IDC_OPEN_CONFIG_ADVANCED_VOL,64,132,54,12
+    // Output Settings:
     GROUPBOX        "Output Settings",IDC_STATIC,142,0,172,268
+    LTEXT           "Module:",IDC_STATIC,161,16,50,9,NOT WS_GROUP
     COMBOBOX        IDC_OUTPUT,154,26,126,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Configure...",IDC_OUTCONF,236,40,54,12
-    COMBOBOX        IDC_INTERPOLATE,14,26,114,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Slider2",IDC_LATENCY_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,166,94,116,10
-    CONTROL         "Use a Winamp DSP plugin",IDC_DSP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,149,223,126,11
-    CHECKBOX        "Disable Effects Processing",IDC_EFFECTS_DISABLE,14,47,112,10
-    LTEXT           "Latency:",IDC_STATIC,189,84,29,8,NOT WS_GROUP
-    LTEXT           "Interpolation:",IDC_STATIC,12,16,55,10,NOT WS_GROUP
-    LTEXT           "Module:",IDC_STATIC,161,16,50,9,NOT WS_GROUP
-    LTEXT           "(speedup!) Skips reverb effects processing, but won't sound as good in most games.",IDC_STATIC,26,60,104,36
-    LTEXT           "(currently requires manual configuration via the ini file)",IDC_STATIC,162,236,146,20
-    CTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,224,84,58,9
-    CONTROL         116,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,213,119,55,WS_EX_CLIENTEDGE
-    PUSHBUTTON      "Advanced...",IDC_OPEN_CONFIG_SOUNDTOUCH,219,149,84,12
-    PUSHBUTTON      "Configure Debug Options...",IDC_OPEN_CONFIG_DEBUG,14,167,108,14
-    CHECKBOX        "Enable Debug Options",IDC_DEBUG_ENABLE,14,153,104,10,NOT WS_TABSTOP
-    GROUPBOX        "",IDC_STATIC,6,143,129,46
-    LTEXT           "Audio Expansion Mode:",IDC_STATIC,161,176,135,9,NOT WS_GROUP
-    COMBOBOX        IDC_SPEAKERS,163,185,135,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Synchronizing Mode:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,161,116,131,8
-    COMBOBOX        IDC_SYNCHMODE,163,125,134,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Volume:",IDC_STATIC,192,59,26,8,NOT WS_GROUP
     CTEXT           "100%",IDC_VOLUME_LABEL,224,59,58,9
     CONTROL         "",IDC_VOLUME_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,166,69,116,10
-    CONTROL         "Use the de-alias filter",IDC_DEALIASFILTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,92,112,10
-    LTEXT           "(overemphasizes the highs)",IDC_STATIC,26,104,100,12,NOT WS_GROUP
+    LTEXT           "Latency:",IDC_STATIC,189,84,29,8,NOT WS_GROUP
+    CTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,224,84,58,9
+    CONTROL         "Slider2",IDC_LATENCY_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,166,94,116,10
+    CONTROL         "Synchronizing Mode:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,161,116,131,8
+    COMBOBOX        IDC_SYNCHMODE,163,125,134,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Advanced...",IDC_OPEN_CONFIG_SOUNDTOUCH,219,144,84,12
+    LTEXT           "Audio Expansion Mode:",IDC_STATIC,161,166,135,9,NOT WS_GROUP
+    COMBOBOX        IDC_SPEAKERS,163,175,135,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Dolby Pro Logic Level:",IDC_STATIC,161,196,135,9,NOT WS_GROUP
+    COMBOBOX        IDC_DPLDECODE,163,205,135,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Use a Winamp DSP plugin",IDC_DSP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,149,228,126,11
+    LTEXT           "(currently requires manual configuration via the ini file)",IDC_STATIC,162,241,146,20
+    // Debug Settings:
+    GROUPBOX        "",IDC_STATIC,6,158,129,46
+    CHECKBOX        "Enable Debug Options",IDC_DEBUG_ENABLE,14,168,104,10,NOT WS_TABSTOP
+    PUSHBUTTON      "Configure Debug Options...",IDC_OPEN_CONFIG_DEBUG,14,182,108,14
+    // Logo
+    CONTROL         116,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,213,119,55,WS_EX_CLIENTEDGE
 END
 
 IDD_DEBUG DIALOGEX 0, 0, 303, 473
@@ -166,6 +174,40 @@ BEGIN
     LTEXT           "Note: This is a non-devel build.  For performance reasons, some logging options are disabled; and only available in devel/debug builds.",IDC_MSG_PUBLIC_BUILD,9,187,174,30
     GROUPBOX        "Others",IDC_DEBUG_OTHERS,5,104,135,68
     CONTROL         "Show Core Activity",IDC_DEBUG_VISUAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,116,90,11
+END
+
+IDD_CONFIG_ADVANCEDVOLUME DIALOGEX 0, 0, 206, 230
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Advanced Volume Control - SPU2-X"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,14,210,50,14
+    PUSHBUTTON      "Restore Defaults",IDC_RESET_DEFAULTS,68,210,70,14
+    PUSHBUTTON      "Cancel",IDCANCEL,142,210,50,14
+    LTEXT           "Center Volume:",IDC_STATIC,47,5,80,8,NOT WS_GROUP
+    CTEXT           "0%",IDC_ADV_VOL_C_LABEL,125,5,58,9
+    CONTROL         "",IDC_VOLADJ_CDB,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,47,15,116,10
+    LTEXT           "Front Left Volume:",IDC_STATIC,47,30,80,8,NOT WS_GROUP
+    CTEXT           "0%",IDC_ADV_VOL_FL_LABEL,125,30,58,9
+    CONTROL         "",IDC_VOLADJ_FLDB,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,47,40,116,10
+    LTEXT           "Front Right Volume:",IDC_STATIC,47,55,80,8,NOT WS_GROUP
+    CTEXT           "0%",IDC_ADV_VOL_FR_LABEL,125,55,58,9
+    CONTROL         "",IDC_VOLADJ_FRDB,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,47,65,116,10
+    LTEXT           "Back Left Volume:",IDC_STATIC,47,80,80,8,NOT WS_GROUP
+    CTEXT           "0%",IDC_ADV_VOL_BL_LABEL,125,80,58,9
+    CONTROL         "",IDC_VOLADJ_BLDB,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,47,90,116,10
+    LTEXT           "Back Right Volume:",IDC_STATIC,47,105,80,8,NOT WS_GROUP
+    CTEXT           "0%",IDC_ADV_VOL_BR_LABEL,125,105,58,9
+    CONTROL         "",IDC_VOLADJ_BRDB,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,47,115,116,10
+    LTEXT           "Side Left Volume:",IDC_STATIC,47,130,80,8,NOT WS_GROUP
+    CTEXT           "0%",IDC_ADV_VOL_SL_LABEL,125,130,58,9
+    CONTROL         "",IDC_VOLADJ_SLDB,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,47,140,116,10
+    LTEXT           "Side Right Volume:",IDC_STATIC,47,155,80,8,NOT WS_GROUP
+    CTEXT           "0%",IDC_ADV_VOL_SR_LABEL,125,155,58,9
+    CONTROL         "",IDC_VOLADJ_SRDB,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,47,165,116,10
+    LTEXT           "Low-Frequency Volume:",IDC_STATIC,47,180,80,8,NOT WS_GROUP
+    CTEXT           "0%",IDC_ADV_VOL_LFE_LABEL,125,180,58,9
+    CONTROL         "",IDC_VOLADJ_LFEDB,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,47,190,116,10
 END
 
 

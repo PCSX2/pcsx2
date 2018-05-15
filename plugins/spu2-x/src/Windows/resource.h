@@ -61,6 +61,26 @@
 #define IDC_PA_HOSTAPI                  1071
 #define IDC_LATENCY                     1072
 #define IDC_EXCLUSIVE                   1073
+#define IDC_DPLDECODE                   1074
+#define IDC_ADVANCED_VOL_ENABLE         1075
+#define IDC_OPEN_CONFIG_ADVANCED_VOL    1076
+#define IDC_VOLADJ_CDB                  1077
+#define IDC_VOLADJ_FLDB                 1078
+#define IDC_VOLADJ_FRDB                 1079
+#define IDC_VOLADJ_BLDB                 1080
+#define IDC_VOLADJ_BRDB                 1081
+#define IDC_VOLADJ_SLDB                 1082
+#define IDC_VOLADJ_SRDB                 1083
+#define IDC_VOLADJ_LFEDB                1084
+#define IDC_ADV_VOL_C_LABEL             1085
+#define IDC_ADV_VOL_FL_LABEL            1086
+#define IDC_ADV_VOL_FR_LABEL            1087
+#define IDC_ADV_VOL_BL_LABEL            1088
+#define IDC_ADV_VOL_BR_LABEL            1089
+#define IDC_ADV_VOL_SL_LABEL            1090
+#define IDC_ADV_VOL_SR_LABEL            1091
+#define IDC_ADV_VOL_LFE_LABEL           1092
+#define IDD_CONFIG_ADVANCEDVOLUME       1093
 
 // Next default values for new objects
 // 
@@ -68,7 +88,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        120
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1074
+#define _APS_NEXT_CONTROL_VALUE         1094
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

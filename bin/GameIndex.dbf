@@ -73,6 +73,12 @@
 -- ScarfaceIbitHack  = 1 // VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
 
 ---------------------------------------------
+-- SPU2-X Delay Cycles (DelayCycles = n):
+---------------------------------------------
+-- 1 = Fixes a number of games like Unreal Tournament.
+-- 4 = Default setting, good for most games.
+
+---------------------------------------------
 -- Speed Hacks (SpeedHackName = <value>)
 ---------------------------------------------
 -- mvuFlagSpeedHack = 1 or 0 // Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
@@ -6767,6 +6773,7 @@ Serial = SLES-50074
 Name   = Unreal Tournament
 Region = PAL-M5
 Compat = 5
+DelayCycles = 1 // Fixes infinitely looping audio
 ---------------------------------------------
 Serial = SLES-50075
 Name   = ESPN NBA 2Night
@@ -6791,6 +6798,7 @@ Compat = 5
 Serial = SLES-50079
 Name   = Armored Core 2
 Region = PAL-E
+DelayCycles = 1 // Fixes infinitely looping audio
 ---------------------------------------------
 Serial = SLES-50080
 Name   = NBA Hoopz
@@ -8292,22 +8300,27 @@ Region = PAL-G
 Serial = SLES-50804
 Name   = Deus Ex
 Region = PAL-E
+DelayCycles = 1 // Fixes skipping audio
 ---------------------------------------------
 Serial = SLES-50805
 Name   = Deus Ex
 Region = PAL-G
+DelayCycles = 1 // Fixes skipping audio
 ---------------------------------------------
 Serial = SLES-50806
 Name   = Deus Ex
 Region = PAL-F
+DelayCycles = 1 // Fixes skipping audio
 ---------------------------------------------
 Serial = SLES-50807
 Name   = Deus Ex
 Region = PAL-I
+DelayCycles = 1 // Fixes skipping audio
 ---------------------------------------------
 Serial = SLES-50808
 Name   = Deus Ex
 Region = PAL-S
+DelayCycles = 1 // Fixes skipping audio
 ---------------------------------------------
 Serial = SLES-50809
 Name   = Next Generation Tennis 2003
@@ -27298,6 +27311,7 @@ Region = NTSC-J
 Serial = SLPM-66620
 Name   = Higurashi no Naku Koro ni Matsuri
 Region = NTSC-J
+DelayCycles = 1
 ---------------------------------------------
 Serial = SLPM-66621
 Name   = Beatmania IIDX 12 - Happy Sky
@@ -28409,10 +28423,12 @@ Region = NTSC-J
 Serial = SLPM-66912
 Name   = Higurashi no Naku Koro ni Matsuri - Kakera Asobi [Append Version]
 Region = NTSC-J
+DelayCycles = 1
 ---------------------------------------------
 Serial = SLPM-66913
 Name   = Higurashi no Naku Koro ni Matsuri - Kakera Asobi
 Region = NTSC-J
+DelayCycles = 1 // Some voices don't play.
 ---------------------------------------------
 Serial = SLPM-66914
 Name   = Houkago wa Hakugin no Shirabe
@@ -30544,6 +30560,7 @@ Region = NTSC-J
 Serial = SLPS-25007
 Name   = Armored Core 2
 Region = NTSC-J
+DelayCycles = 1 // Fixes infinitely looping audio
 ---------------------------------------------
 Serial = SLPS-25008
 Name   = Sorcerous Stabber Orphen
@@ -34159,6 +34176,7 @@ Region = NTSC-J
 Serial = SLPS-73403
 Name   = Armored Core 2 [PlayStation 2 The Best]
 Region = NTSC-J
+DelayCycles = 1 // Fixes infinitely looping audio
 ---------------------------------------------
 Serial = SLPS-73404
 Name   = Klonoa 2 [PlayStation 2 The Best]
@@ -34300,6 +34318,7 @@ Serial = SLUS-20014
 Name   = Armored Core 2
 Region = NTSC-U
 Compat = 5
+DelayCycles = 1 // Fixes infinitely looping audio
 ---------------------------------------------
 Serial = SLUS-20015
 Name   = Eternal Ring
@@ -34350,6 +34369,7 @@ Serial = SLUS-20034
 Name   = Unreal Tournament
 Region = NTSC-U
 Compat = 5
+DelayCycles = 1 // Fixes infinitely looping audio
 ---------------------------------------------
 Serial = SLUS-20035
 Name   = Baldur's Gate: Dark Alliance
@@ -34669,6 +34689,7 @@ Serial = SLUS-20111
 Name   = Deus Ex - The Conspiracy
 Region = NTSC-U
 Compat = 5
+DelayCycles = 1 // Fixes skipping audio
 ---------------------------------------------
 Serial = SLUS-20112
 Name   = Star Trek - Shattered Universe

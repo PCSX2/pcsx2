@@ -31,6 +31,13 @@ extern void OpenDialog();
 extern void EnableControls(HWND hWnd);
 }
 
+namespace AdvancedVolumeConfig
+{
+extern void ReadSettings();
+extern void WriteSettings();
+extern void OpenDialog();
+}
+
 namespace SoundtouchCfg
 {
 extern void ReadSettings();
