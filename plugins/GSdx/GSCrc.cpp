@@ -473,7 +473,6 @@ CRC::Game CRC::m_games[] =
 	{0xF7F181C3, DeathByDegreesTekkenNinaWilliams, CH, 0}, // cutie comment
 	{0xF088FA5B, DeathByDegreesTekkenNinaWilliams, KO, 0},
 	{0x59683BB0, DeathByDegreesTekkenNinaWilliams, EU, 0},
-	{0x449E1F6B, HummerBadlands, US, 0},
 	{0x5B659BED, Grandia3, JP, 0},
 	{0x5B657DAD, Grandia3, US, 0},
 	{0x830B6FB1, TalesofSymphonia, JP, 0},

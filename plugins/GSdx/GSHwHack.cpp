@@ -993,19 +993,6 @@ bool GSC_UltramanFightingEvolution(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_HummerBadlands(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP ==0x0a00) && (fi.TBP0 ==0x03200 || fi.TBP0==0x3700) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_TalesofSymphonia(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2222,7 +2209,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
 		lut[CRC::Genji] = GSC_Genji;
 		lut[CRC::GodHand] = GSC_GodHand;
-		lut[CRC::HummerBadlands] = GSC_HummerBadlands;
 		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
 		lut[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
 		lut[CRC::Kunoichi] = GSC_Kunoichi;

@@ -81,7 +81,6 @@ public:
 		HarleyDavidson,
 		HauntingGround,
 		HeavyMetalThunder,
-		HummerBadlands,
 		ICO,
 		IkkiTousen,
 		ItadakiStreet,
