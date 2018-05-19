@@ -1243,8 +1243,15 @@ mVUop(mVU_XGKICK) {
 //------------------------------------------------------------------
 
 void setBranchA(mP, int x, int _x_) {
+	bool isBranchDelaySlot = false;
+
+	incPC(-2);
+	if (mVUlow.branch)
+		isBranchDelaySlot = true;
+	incPC(2);
+
 	pass1 {
-		if (_Imm11_ == 1 && !_x_) {
+		if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot) {
 			DevCon.WriteLn(Color_Green, "microVU%d: Branch Optimization", mVU.index);
 			mVUlow.isNOP = true;
 			return;
@@ -1252,9 +1259,9 @@ void setBranchA(mP, int x, int _x_) {
 		mVUbranch	  = x;
 		mVUlow.branch = x;
 	}
-	pass2 { if (_Imm11_ == 1 && !_x_) { return; } mVUbranch = x; }
+	pass2 { if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot) { return; } mVUbranch = x; }
 	pass3 { mVUbranch = x; }
-	pass4 { if (_Imm11_ == 1 && !_x_) { return; } mVUbranch = x; }
+	pass4 { if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot) { return; } mVUbranch = x; }
 }
 
 void condEvilBranch(mV, int JMPcc) {
