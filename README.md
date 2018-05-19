@@ -18,7 +18,7 @@ Development builds are also available from [our website](http://pcsx2.net/downlo
 ## Minimum
 * OS: Windows Vista SP2 or newer or GNU/Linux (32-bit or 64-bit)
 * CPU: Any that supports SSE2 (Pentium 4 and up, Athlon64 and up)
-* GPU: DirectX 10 GPU or better
+* GPU: DirectX 10 GPU or better (on linux Required Opengl 3.3)
 * RAM: 2GB or more
 
 ## Recommended
