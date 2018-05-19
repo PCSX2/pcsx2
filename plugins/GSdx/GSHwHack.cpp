@@ -936,6 +936,28 @@ bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_SonicUnleashed(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && fi.FPSM == PSM_PSMCT16S && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT16)
+		{
+			// Improper Texture shuffle emulation.
+			// Half Screen bottom issue.
+			skip = 1000; // shadow
+		}
+	}
+	else
+	{
+		if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMCT16S)
+		{
+			skip = 2;
+		}
+	}
+
+	return true;
+}
+
 bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1513,26 +1535,6 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 		if(fi.TME && (fi.FBP == 0x00100 || fi.FBP == 0x02100) && fi.FPSM == PSM_PSMCT16)
 		{
 			skip = 3;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SonicUnleashed(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FPSM == PSM_PSMCT16S && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 1000; // shadow
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMCT16S)
-		{
-			skip = 2;
 		}
 	}
 
@@ -2253,6 +2255,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::DBZBT2] = GSC_DBZBT2;
 		lut[CRC::DBZBT3] = GSC_DBZBT3;
 		lut[CRC::DemonStone] = GSC_DemonStone;
+		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed; // + Texture shuffle
 		lut[CRC::Tekken5] = GSC_Tekken5;
 
 		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to DX only)
@@ -2273,12 +2276,12 @@ void GSState::SetupCrcHack()
 		lut[CRC::SoTC] = GSC_SoTC;
 	}
 
-	// Hack that were fixed on openGL
+	// Hacks that were fixed on OpenGL
 	if (Dx_only) {
 		// Depth
 		lut[CRC::Bully] = GSC_Bully;
 		lut[CRC::BullyCC] = GSC_BullyCC;
-		lut[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise; // + blending
+		lut[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise; // + Blending
 		lut[CRC::FrontMission5] = GSC_FrontMission5;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
@@ -2303,7 +2306,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
 		lut[CRC::SpyroEternalNight] = GSC_SpyroEternalNight;
 		lut[CRC::SpyroNewBeginning] = GSC_SpyroNewBeginning;
-		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed;
 
 		// Those games might requires accurate fbmask
 		lut[CRC::Sly2] = GSC_Sly2;
