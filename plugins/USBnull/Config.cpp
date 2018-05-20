@@ -35,12 +35,6 @@ void setLoggingState()
 }
 
 EXPORT_C_(void)
-USBabout()
-{
-    SysMessage("USBnull: A simple null plugin.");
-}
-
-EXPORT_C_(void)
 USBconfigure()
 {
     LoadConfig();
