@@ -38,12 +38,6 @@ void setLoggingState()
 }
 
 EXPORT_C_(void)
-DEV9about()
-{
-    SysMessage("Dev9null: A simple null plugin.");
-}
-
-EXPORT_C_(void)
 DEV9configure()
 {
     LoadConfig();

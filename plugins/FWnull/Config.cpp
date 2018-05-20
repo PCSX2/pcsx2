@@ -35,12 +35,6 @@ void setLoggingState()
 }
 
 EXPORT_C_(void)
-FWabout()
-{
-    SysMessage("FWnull: A simple null plugin.");
-}
-
-EXPORT_C_(void)
 FWconfigure()
 {
     LoadConfig();

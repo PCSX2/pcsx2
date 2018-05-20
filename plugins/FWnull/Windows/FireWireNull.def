@@ -16,6 +16,5 @@ EXPORTS
 	FWirqCallback		@15
 	FWconfigure		@17
 	FWtest			@18
-	FWabout			@19
 	
 	FWsetSettingsDir
