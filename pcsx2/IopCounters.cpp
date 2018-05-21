@@ -32,9 +32,11 @@
 	 VBlank non-interlaced	59.82 Hz
 	 HBlank					15.73426573 KHz */
 
+s64 PSXCLK; //This is the definition of the Processor Clock for the PS1 externally declared in IopCommon.h
+
 // Misc IOP Clocks
-#define PSXPIXEL        ((int)(PSXCLK / 13500000))
-#define PSXSOUNDCLK		((int)(48000))
+#define PSXPIXEL          ((int)(PSXCLK / 13500000))
+#define PSXSOUNDCLK		  ((int)(48000))
 
 psxCounter psxCounters[NUM_COUNTERS];
 s32 psxNextCounter;

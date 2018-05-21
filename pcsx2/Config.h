@@ -305,9 +305,9 @@ struct Pcsx2Config
 		int		FramesToDraw;	// number of consecutive frames (fields) to render
 		int		FramesToSkip;	// number of consecutive frames (fields) to skip
 
-		Fixed100	LimitScalar;
-		Fixed100	FramerateNTSC;
-		Fixed100	FrameratePAL;
+		Fixed100 LimitScalar;
+		Fixed100 FramerateNTSC;
+		Fixed100 FrameratePAL;
 
 		GSOptions();
 		void LoadSave( IniInterface& conf );
