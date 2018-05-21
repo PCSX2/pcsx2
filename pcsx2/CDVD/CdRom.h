@@ -89,6 +89,7 @@ extern cdrStruct cdr;
 void cdrReset();
 void  cdrInterrupt();
 void  cdrReadInterrupt();
+void setPsxSpeed();
 u8   cdrRead0(void);
 u8   cdrRead1(void);
 u8   cdrRead2(void);

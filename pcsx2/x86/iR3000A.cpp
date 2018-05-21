@@ -942,7 +942,10 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		xMOV(ptr32[&psxRegs.cycle], eax); // update cycles
 
 		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
-		xSUB(ptr32[&iopCycleEE], blockCycles*8);
+		// One of two parts of an equation that determins the EE to Iop clock speed, note the value is trunacated.		                                                                      
+		// due to the freaquency in PS1 mode being 8.71 that get's rounded up to 9. 
+		xSUB(ptr32[&iopCycleEE], (s32)(round(blockCycles * psxEEmultiplier)));
+
 		xJLE(iopExitRecompiledCode);
 
 		// check if an event is pending
@@ -992,7 +995,7 @@ void rpsxSYSCALL()
 	j8Ptr[0] = JE8(0);
 
 	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles() );
-	xSUB(ptr32[&iopCycleEE], psxScaleBlockCycles()*8 );
+    xSUB(ptr32[&iopCycleEE], (s32)(psxScaleBlockCycles() * psxEEmultiplier));
 	JMP32((uptr)iopDispatcherReg - ( (uptr)x86Ptr + 5 ));
 
 	// jump target for skipping blockCycle updates
@@ -1014,7 +1017,7 @@ void rpsxBREAK()
 	xCMP(ptr32[&psxRegs.pc], psxpc-4);
 	j8Ptr[0] = JE8(0);
 	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles() );
-	xSUB(ptr32[&iopCycleEE], psxScaleBlockCycles()*8 );
+	xSUB(ptr32[&iopCycleEE], (s32)(psxScaleBlockCycles()*psxEEmultiplier));
 	JMP32((uptr)iopDispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1284,7 +1287,7 @@ StartRecomp:
 		else
 		{
 			xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles() );
-			xSUB(ptr32[&iopCycleEE], psxScaleBlockCycles()*8 );
+            xSUB(ptr32[&iopCycleEE], (s32)(psxScaleBlockCycles() * psxEEmultiplier));
 		}
 
 		if (willbranch3 || !psxbranch) {

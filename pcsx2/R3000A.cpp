@@ -63,7 +63,8 @@ void psxReset()
 	g_iopNextEventCycle = psxRegs.cycle + 4;
 
 	psxHwReset();
-
+	psxEEmultiplier = 8; /*Base EE to Iop Clock speed for the Playstation 2*/
+	PSXCLK = 36864000; /* 36.864 Mhz Playstation 2 speed*/
 	ioman::reset();
 	psxBiosReset();
 }
@@ -149,7 +150,7 @@ __fi void PSX_INT( IopEventId n, s32 ecycle )
 		// The EE called this int, so inform it to branch as needed:
 		// fixme - this doesn't take into account EE/IOP sync (the IOP may be running
 		// ahead or behind the EE as per the EEsCycles value)
-		s32 iopDelta = (g_iopNextEventCycle-psxRegs.cycle)*8;
+		s32 iopDelta = (s32)((g_iopNextEventCycle-psxRegs.cycle)*psxEEmultiplier);
 		cpuSetNextEventDelta( iopDelta );
 	}
 }

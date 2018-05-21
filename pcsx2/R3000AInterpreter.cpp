@@ -144,7 +144,15 @@ static __fi void execI()
 	psxRegs.cycle++;
 	iopCycleEE-=8;
 
-	psxBSC[psxRegs.code >> 26]();
+    if ((psxHu32(HW_ICFG) & (1 << 3)))    
+	{
+        //this get's set to 9 because in the EE's half of this equation	                 
+		//Were trunacating the value 8.71 to a 9 instead due to casting
+		//setting this causes Iop to stay correctly synced to EE in ps1 mode
+		//Whilst before Iop was running ahead of EE.
+		iopCycleEE -= 9; 
+	}
+    psxBSC[psxRegs.code >> 26]();
 }
 
 static void doBranch(s32 tar) {
