@@ -1593,8 +1593,8 @@ bool GSRendererHW::OI_SpyroNewBeginning(GSTexture* rt, GSTexture* ds, GSTextureC
 	if(PRIM->TME)
 	{
 		// Old code (FBP == 0x0 || FBP == 0x01180)
-		// First two TBP NTSC, other two PAL.
-		if((TBP == 0x37c0 || TBP == 0x3020 || TBP == 0x34a0 || TBP == 0x3a00) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_min.p.z == 0))
+		// First two TBP PAL, other two NTSC.
+		if((TBP == 0x03020 || TBP == 0x037c0 || TBP == 0x034a0 || TBP == 0x03a00) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_min.p.z == 0))
 		{
 			m_dev->ClearDepth(ds);
 		}
