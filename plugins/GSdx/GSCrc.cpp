@@ -433,6 +433,8 @@ CRC::Game CRC::m_games[] =
 	{0x9000252A, SkyGunner, JP, 0},
 	{0x93092623, SkyGunner, JP, 0},
 	{0xA9461CB2, SkyGunner, US, 0},
+	{0xC71DE999, SkyGunner, US, 0}, // Regular Demo
+	{0xAADF3287, SkyGunner, US, 0}, // Trade Demo
 	{0xB799A60C, SkyGunner, NoRegion, 0},
 	{0x90F4B057, ZettaiZetsumeiToshi2, CH, 0},
 	{0xC988ECBB, ZettaiZetsumeiToshi2, JP, 0},
