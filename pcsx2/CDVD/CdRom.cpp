@@ -82,11 +82,7 @@ u8 Test20[] = { 0x98, 0x06, 0x10, 0xC3 };
 u8 Test22[] = { 0x66, 0x6F, 0x72, 0x20, 0x45, 0x75, 0x72, 0x6F };
 u8 Test23[] = { 0x43, 0x58, 0x44, 0x32, 0x39 ,0x34, 0x30, 0x51 };
 
-// 1x = 75 sectors per second
-// PSXCLK = 1 sec in the ps
-// so (PSXCLK / 75) / BIAS = cdr read time (linuzappz)
-//#define cdReadTime ((PSXCLK / 75) / BIAS)
-u32 cdReadTime;// = ((PSXCLK / 75) / BIAS);
+u32 cdReadTime;
 
 #define CDR_INT(eCycle)    PSX_INT(IopEvt_Cdrom, eCycle)
 #define CDREAD_INT(eCycle) PSX_INT(IopEvt_CdromRead, eCycle)
@@ -602,6 +598,14 @@ void cdrWrite0(u8 rt) {
 		cdr.ParamC = 0;
 		cdr.ResultReady = 0;
 	}
+}
+
+void setPsxSpeed()
+{
+	// 1x = 75 sectors per second
+	// PSXCLK = 1 sec in the ps
+	// so (PSXCLK / 75) / BIAS = cdr read time (linuzappz)
+	 cdReadTime = ((PSXCLK / 75) / BIAS);
 }
 
 u8 cdrRead1(void) {
