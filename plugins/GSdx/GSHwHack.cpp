@@ -1062,6 +1062,19 @@ bool GSC_UrbanReign(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_SkyGunner(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(!fi.TME && !(fi.FBP == 0x0 || fi.FBP == 0x00800 || fi.FBP == 0x008c0 || fi.FBP == 0x03e00) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x0 || fi.TBP0 == 0x01800) && fi.TPSM == PSM_PSMCT32)
+		{
+			skip = 1; // Huge Vram usage
+		}
+	}
+
+	return true;
+}
+
 bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1298,20 +1311,6 @@ bool GSC_ICO(const GSFrameInfo& fi, int& skip)
 		if(fi.TME && fi.TBP0 == 0x00800 && fi.TPSM == PSM_PSMCT32)
 		{
 			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SkyGunner(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-
-		if(!fi.TME && !(fi.FBP == 0x0 || fi.FBP == 0x00800 || fi.FBP == 0x008c0 || fi.FBP == 0x03e00) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x0 || fi.TBP0 == 0x01800) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; //Huge Vram usage
 		}
 	}
 
@@ -2246,6 +2245,7 @@ void GSState::SetupCrcHack()
 
 		// Channel Effect
 		lut[CRC::GiTS] = GSC_GiTS;
+		lut[CRC::SkyGunner] = GSC_SkyGunner; // Maybe not a channel effect
 		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
 
 		// Colclip not supported
@@ -2326,7 +2326,6 @@ void GSState::SetupCrcHack()
 		// Channel Effect
 		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
 		lut[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // + accurate blending
-		lut[CRC::SkyGunner] = GSC_SkyGunner;
 		lut[CRC::StarWarsBattlefront2] = GSC_StarWarsBattlefront2;
 		lut[CRC::StarWarsBattlefront] = GSC_StarWarsBattlefront;
 
