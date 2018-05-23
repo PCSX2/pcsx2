@@ -12,12 +12,10 @@ set(FWnullFinalFlags "")
 
 # FWnull sources
 set(FWnullSources
-	Config.cpp
 	FW.cpp)
 
 # FWnull headers
 set(FWnullHeaders
-	Config.h
 	FW.h)
 
 # FWnull Linux sources

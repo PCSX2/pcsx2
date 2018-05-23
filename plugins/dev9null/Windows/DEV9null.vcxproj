@@ -53,14 +53,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\DEV9.cpp" />
-    <ClCompile Include="..\Config.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dev9null.def" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\DEV9.h" />
-    <ClInclude Include="..\Config.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\common\include\null\null.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -12,12 +12,10 @@ set(USBnullFinalFlags "")
 
 # USBnull sources
 set(USBnullSources
-	Config.cpp
 	USB.cpp)
 
 # USBnull headers
 set(USBnullHeaders
-	Config.h
 	USB.h)
 
 # USBnull Linux sources
