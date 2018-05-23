@@ -22,6 +22,7 @@ using namespace std;
 
 #include "FW.h"
 #include "svnrev.h"
+#include "null/config.inl"
 
 const u8 version = PS2E_FW_VERSION;
 const u8 revision = 0;
@@ -34,16 +35,22 @@ string s_strLogPath = "logs";
 
 u8 phyregs[16];
 s8 *fwregs;
-Config conf;
-PluginLog FWLog;
 
 void (*FWirq)();
+
+EXPORT_C_(void)
+FWconfigure()
+{
+    const std::string ini_path = s_strIniPath + "/FWnull.ini";
+    LoadConfig(ini_path);
+    ConfigureLogging();
+    SaveConfig(ini_path);
+}
 
 void LogInit()
 {
     const std::string LogFile(s_strLogPath + "/FWnull.log");
-    setLoggingState();
-    FWLog.Open(LogFile);
+    g_plugin_log.Open(LogFile);
 }
 
 EXPORT_C_(void)
@@ -53,7 +60,7 @@ FWsetLogDir(const char *dir)
     s_strLogPath = (dir == NULL) ? "logs" : dir;
 
     // Reload the log file after updated the path
-    FWLog.Close();
+    g_plugin_log.Close();
     LogInit();
 }
 
@@ -79,16 +86,16 @@ PS2EgetLibVersion2(u32 type)
 EXPORT_C_(s32)
 FWinit()
 {
-    LoadConfig();
+    LoadConfig(s_strIniPath + "/FWnull.ini");
     LogInit();
-    FWLog.WriteLn("FWnull plugin version %d,%d", revision, build);
-    FWLog.WriteLn("Initializing FWnull");
+    g_plugin_log.WriteLn("FWnull plugin version %d,%d", revision, build);
+    g_plugin_log.WriteLn("Initializing FWnull");
 
     memset(phyregs, 0, sizeof(phyregs));
     // Initializing our registers.
     fwregs = (s8 *)calloc(0x10000, 1);
     if (fwregs == NULL) {
-        FWLog.Message("Error allocating Memory");
+        g_plugin_log.Message("Error allocating Memory");
         return -1;
     }
     return 0;
@@ -101,13 +108,13 @@ FWshutdown()
     free(fwregs);
     fwregs = NULL;
 
-    FWLog.Close();
+    g_plugin_log.Close();
 }
 
 EXPORT_C_(s32)
 FWopen(void *pDsp)
 {
-    FWLog.WriteLn("Opening FWnull.");
+    g_plugin_log.WriteLn("Opening FWnull.");
 
     return 0;
 }
@@ -116,7 +123,7 @@ EXPORT_C_(void)
 FWclose()
 {
     // Close the plugin.
-    FWLog.WriteLn("Closing FWnull.");
+    g_plugin_log.WriteLn("Closing FWnull.");
 }
 
 void PHYWrite()
@@ -175,7 +182,7 @@ FWread32(u32 addr)
             break;
     }
 
-    FWLog.WriteLn("FW read mem 0x%x: 0x%x", addr, ret);
+    g_plugin_log.WriteLn("FW read mem 0x%x: 0x%x", addr, ret);
 
     return ret;
 }
@@ -264,7 +271,7 @@ FWwrite32(u32 addr, u32 value)
             fwRu32(addr) = value;
             break;
     }
-    FWLog.WriteLn("FW write mem 0x%x: 0x%x", addr, value);
+    g_plugin_log.WriteLn("FW write mem 0x%x: 0x%x", addr, value);
 }
 
 EXPORT_C_(void)

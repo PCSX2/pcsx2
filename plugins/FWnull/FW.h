@@ -30,17 +30,6 @@ extern s8 *fwregs;
 //PHY Access Address for ease of use :P
 #define PHYACC fwRu32(0x8414)
 
-typedef struct
-{
-    s32 Log;
-} Config;
-
-extern Config conf;
-
 extern void (*FWirq)();
-
-extern void SaveConfig();
-extern void LoadConfig();
-extern void setLoggingState();
 
 #endif

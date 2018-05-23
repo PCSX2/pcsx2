@@ -12,12 +12,10 @@ set(dev9nullFinalFlags "")
 
 # dev9null sources
 set(dev9nullSources
-	Config.cpp
 	DEV9.cpp)
 
 # dev9null headers
 set(dev9nullHeaders
-	Config.h
 	DEV9.h)
 
 # dev9null Linux sources

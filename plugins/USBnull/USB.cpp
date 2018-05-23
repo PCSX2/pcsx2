@@ -18,6 +18,8 @@
 using namespace std;
 #include "svnrev.h"
 #include "USB.h"
+#include "null/config.inl"
+
 string s_strIniPath = "inis";
 string s_strLogPath = "logs";
 
@@ -28,16 +30,22 @@ const unsigned char build = 7; // increase that with each version
 static char libraryName[256];
 
 USBcallback USBirq;
-Config conf;
-PluginLog USBLog;
 
 s8 *usbregs, *ram;
+
+EXPORT_C_(void)
+USBconfigure()
+{
+    const std::string ini_path = s_strIniPath + "/USBnull.ini";
+    LoadConfig(ini_path);
+    ConfigureLogging();
+    SaveConfig(ini_path);
+}
 
 void LogInit()
 {
     const std::string LogFile(s_strLogPath + "/USBnull.log");
-    setLoggingState();
-    USBLog.Open(LogFile);
+    g_plugin_log.Open(LogFile);
 }
 
 EXPORT_C_(void)
@@ -47,7 +55,7 @@ USBsetLogDir(const char *dir)
     s_strLogPath = (dir == NULL) ? "logs" : dir;
 
     // Reload the log file after updated the path
-    USBLog.Close();
+    g_plugin_log.Close();
     LogInit();
 }
 
@@ -73,16 +81,16 @@ PS2EgetLibVersion2(u32 type)
 EXPORT_C_(s32)
 USBinit()
 {
-    LoadConfig();
+    LoadConfig(s_strIniPath + "/USBnull.ini");
     LogInit();
-    USBLog.WriteLn("USBnull plugin version %d,%d", revision, build);
-    USBLog.WriteLn("Initializing USBnull");
+    g_plugin_log.WriteLn("USBnull plugin version %d,%d", revision, build);
+    g_plugin_log.WriteLn("Initializing USBnull");
 
     // Initialize memory structures here.
     usbregs = (s8 *)calloc(0x10000, 1);
 
     if (usbregs == NULL) {
-        USBLog.Message("Error allocating memory");
+        g_plugin_log.Message("Error allocating memory");
         return -1;
     }
 
@@ -94,7 +102,7 @@ USBshutdown()
 {
     // Yes, we close things in the Shutdown routine, and
     // don't do anything in the close routine.
-    USBLog.Close();
+    g_plugin_log.Close();
 
     free(usbregs);
     usbregs = NULL;
@@ -103,7 +111,7 @@ USBshutdown()
 EXPORT_C_(s32)
 USBopen(void *pDsp)
 {
-    USBLog.WriteLn("Opening USBnull.");
+    g_plugin_log.WriteLn("Opening USBnull.");
 
     // Take care of anything else we need on opening, other then initialization.
     return 0;
@@ -112,7 +120,7 @@ USBopen(void *pDsp)
 EXPORT_C_(void)
 USBclose()
 {
-    USBLog.WriteLn("Closing USBnull.");
+    g_plugin_log.WriteLn("Closing USBnull.");
 }
 
 // Note: actually uncommenting the read/write functions I provided here
@@ -125,12 +133,12 @@ USBread8(u32 addr)
     switch (addr) {
         // Handle any appropriate addresses here.
         case 0x1f801600:
-            USBLog.WriteLn("(USBnull) 8 bit read at address %lx", addr);
+            g_plugin_log.WriteLn("(USBnull) 8 bit read at address %lx", addr);
             break;
 
         default:
             //value = usbRu8(addr);
-            USBLog.WriteLn("*(USBnull) 8 bit read at address %lx", addr);
+            g_plugin_log.WriteLn("*(USBnull) 8 bit read at address %lx", addr);
             break;
     }
     return value;
@@ -144,12 +152,12 @@ USBread16(u32 addr)
     switch (addr) {
         // Handle any appropriate addresses here.
         case 0x1f801600:
-            USBLog.WriteLn("(USBnull) 16 bit read at address %lx", addr);
+            g_plugin_log.WriteLn("(USBnull) 16 bit read at address %lx", addr);
             break;
 
         default:
             //value = usbRu16(addr);
-            USBLog.WriteLn("(USBnull) 16 bit read at address %lx", addr);
+            g_plugin_log.WriteLn("(USBnull) 16 bit read at address %lx", addr);
     }
     return value;
 }
@@ -162,12 +170,12 @@ USBread32(u32 addr)
     switch (addr) {
         // Handle any appropriate addresses here.
         case 0x1f801600:
-            USBLog.WriteLn("(USBnull) 32 bit read at address %lx", addr);
+            g_plugin_log.WriteLn("(USBnull) 32 bit read at address %lx", addr);
             break;
 
         default:
             //value = usbRu32(addr);
-            USBLog.WriteLn("(USBnull) 32 bit read at address %lx", addr);
+            g_plugin_log.WriteLn("(USBnull) 32 bit read at address %lx", addr);
     }
     return value;
 }
@@ -178,12 +186,12 @@ USBwrite8(u32 addr, u8 value)
     switch (addr) {
         // Handle any appropriate addresses here.
         case 0x1f801600:
-            USBLog.WriteLn("(USBnull) 8 bit write at address %lx value %x", addr, value);
+            g_plugin_log.WriteLn("(USBnull) 8 bit write at address %lx value %x", addr, value);
             break;
 
         default:
             //usbRu8(addr) = value;
-            USBLog.WriteLn("(USBnull) 8 bit write at address %lx value %x", addr, value);
+            g_plugin_log.WriteLn("(USBnull) 8 bit write at address %lx value %x", addr, value);
     }
 }
 
@@ -193,12 +201,12 @@ USBwrite16(u32 addr, u16 value)
     switch (addr) {
         // Handle any appropriate addresses here.
         case 0x1f801600:
-            USBLog.WriteLn("(USBnull) 16 bit write at address %lx value %x", addr, value);
+            g_plugin_log.WriteLn("(USBnull) 16 bit write at address %lx value %x", addr, value);
             break;
 
         default:
             //usbRu16(addr) = value;
-            USBLog.WriteLn("(USBnull) 16 bit write at address %lx value %x", addr, value);
+            g_plugin_log.WriteLn("(USBnull) 16 bit write at address %lx value %x", addr, value);
     }
 }
 
@@ -208,12 +216,12 @@ USBwrite32(u32 addr, u32 value)
     switch (addr) {
         // Handle any appropriate addresses here.
         case 0x1f801600:
-            USBLog.WriteLn("(USBnull) 16 bit write at address %lx value %x", addr, value);
+            g_plugin_log.WriteLn("(USBnull) 16 bit write at address %lx value %x", addr, value);
             break;
 
         default:
             //usbRu32(addr) = value;
-            USBLog.WriteLn("(USBnull) 32 bit write at address %lx value %x", addr, value);
+            g_plugin_log.WriteLn("(USBnull) 32 bit write at address %lx value %x", addr, value);
     }
 }
 
@@ -245,7 +253,7 @@ EXPORT_C_(void)
 USBsetRAM(void *mem)
 {
     ram = (s8 *)mem;
-    USBLog.WriteLn("*Setting ram.");
+    g_plugin_log.WriteLn("*Setting ram.");
 }
 
 EXPORT_C_(void)
@@ -287,6 +295,3 @@ USBtest()
     // 0 if the plugin works, non-0 if it doesn't.
     return 0;
 }
-
-/* For operating systems that need an entry point for a dll/library, here it is. Defined in PS2Eext.h. */
-ENTRY_POINT;

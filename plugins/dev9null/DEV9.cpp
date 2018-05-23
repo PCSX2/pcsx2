@@ -32,6 +32,7 @@ using namespace std;
 
 #include "DEV9.h"
 #include "svnrev.h"
+#include "null/config.inl"
 
 const unsigned char version = PS2E_DEV9_VERSION;
 const unsigned char revision = 0;
@@ -47,14 +48,19 @@ __aligned16 s8 dev9regs[0x10000];
 string s_strIniPath = "inis";
 string s_strLogPath = "logs";
 
-PluginLog Dev9Log;
-Config conf;
+EXPORT_C_(void)
+DEV9configure()
+{
+    const std::string ini_path = s_strIniPath + "/Dev9null.ini";
+    LoadConfig(ini_path);
+    ConfigureLogging();
+    SaveConfig(ini_path);
+}
 
 void LogInit()
 {
     const std::string LogFile(s_strLogPath + "/dev9null.log");
-    setLoggingState();
-    Dev9Log.Open(LogFile);
+    g_plugin_log.Open(LogFile);
 }
 
 EXPORT_C_(void)
@@ -64,7 +70,7 @@ DEV9setLogDir(const char *dir)
     s_strLogPath = (dir == NULL) ? "logs" : dir;
 
     // Reload the log file after updated the path
-    Dev9Log.Close();
+    g_plugin_log.Close();
     LogInit();
 }
 
@@ -90,11 +96,10 @@ PS2EgetLibVersion2(u32 type)
 EXPORT_C_(s32)
 DEV9init()
 {
-    LoadConfig();
-    setLoggingState();
+    LoadConfig(s_strIniPath + "/Dev9null.ini");
     LogInit();
-    Dev9Log.WriteLn("dev9null plugin version %d,%d", revision, build);
-    Dev9Log.WriteLn("Initializing dev9null");
+    g_plugin_log.WriteLn("dev9null plugin version %d,%d", revision, build);
+    g_plugin_log.WriteLn("Initializing dev9null");
     // Initialize anything that needs to be initialized.
     memset(dev9regs, 0, sizeof(dev9regs));
     return 0;
@@ -103,14 +108,14 @@ DEV9init()
 EXPORT_C_(void)
 DEV9shutdown()
 {
-    Dev9Log.WriteLn("Shutting down Dev9null.");
-    Dev9Log.Close();
+    g_plugin_log.WriteLn("Shutting down Dev9null.");
+    g_plugin_log.Close();
 }
 
 EXPORT_C_(s32)
 DEV9open(void *pDsp)
 {
-    Dev9Log.WriteLn("Opening Dev9null.");
+    g_plugin_log.WriteLn("Opening Dev9null.");
     // Get anything ready we need to. Opening and creating hard
     // drive files, for example.
     return 0;
@@ -119,7 +124,7 @@ DEV9open(void *pDsp)
 EXPORT_C_(void)
 DEV9close()
 {
-    Dev9Log.WriteLn("Closing Dev9null.");
+    g_plugin_log.WriteLn("Closing Dev9null.");
     // Close files opened.
 }
 
@@ -134,7 +139,7 @@ DEV9read8(u32 addr)
             break;       // We need to have at least one case to avoid warnings.
         default:
             //value = dev9Ru8(addr);
-            Dev9Log.WriteLn("*Unknown 8 bit read at address %lx", addr);
+            g_plugin_log.WriteLn("*Unknown 8 bit read at address %lx", addr);
             break;
     }
     return value;
@@ -167,7 +172,7 @@ DEV9read16(u32 addr)
             break;
         default:
             //value = dev9Ru16(addr);
-            Dev9Log.WriteLn("*Unknown 16 bit read at address %lx", addr);
+            g_plugin_log.WriteLn("*Unknown 16 bit read at address %lx", addr);
             break;
     }
 
@@ -184,7 +189,7 @@ DEV9read32(u32 addr)
             break;
         default:
             //value = dev9Ru32(addr);
-            Dev9Log.WriteLn("*Unknown 32 bit read at address %lx", addr);
+            g_plugin_log.WriteLn("*Unknown 32 bit read at address %lx", addr);
             break;
     }
 
@@ -198,7 +203,7 @@ DEV9write8(u32 addr, u8 value)
         case 0x10000038: /*dev9Ru8(addr) = value;*/
             break;
         default:
-            Dev9Log.WriteLn("*Unknown 8 bit write; address %lx = %x", addr, value);
+            g_plugin_log.WriteLn("*Unknown 8 bit write; address %lx = %x", addr, value);
             //dev9Ru8(addr) = value;
             break;
     }
@@ -213,7 +218,7 @@ DEV9write16(u32 addr, u16 value)
         case 0x10000038: /*dev9Ru16(addr) = value;*/
             break;
         default:
-            Dev9Log.WriteLn("*Unknown 16 bit write; address %lx = %x", addr, value);
+            g_plugin_log.WriteLn("*Unknown 16 bit write; address %lx = %x", addr, value);
             //dev9Ru16(addr) = value;
             break;
     }
@@ -226,7 +231,7 @@ DEV9write32(u32 addr, u32 value)
         case 0x10000038: /*dev9Ru32(addr) = value;*/
             break;
         default:
-            Dev9Log.WriteLn("*Unknown 32 bit write; address %lx = %x", addr, value);
+            g_plugin_log.WriteLn("*Unknown 32 bit write; address %lx = %x", addr, value);
             //dev9Ru32(addr) = value;
             break;
     }
@@ -238,7 +243,7 @@ DEV9dmaRead(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed)
 {
     // You'll want to put your own DMA8 reading code here.
     // Time to interact with your fake (or real) hardware.
-    Dev9Log.WriteLn("Reading DMA8 Mem.");
+    g_plugin_log.WriteLn("Reading DMA8 Mem.");
     *bytesProcessed = bytesLeft;
     return 0;
 }
@@ -247,7 +252,7 @@ EXPORT_C_(s32)
 DEV9dmaWrite(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed)
 {
     // See above.
-    Dev9Log.WriteLn("Writing DMA8 Mem.");
+    g_plugin_log.WriteLn("Writing DMA8 Mem.");
     *bytesProcessed = bytesLeft;
     return 0;
 }
@@ -263,14 +268,14 @@ DEV9readDMA8Mem(u32 *pMem, int size)
 {
     // You'll want to put your own DMA8 reading code here.
     // Time to interact with your fake (or real) hardware.
-    Dev9Log.WriteLn("Reading DMA8 Mem.");
+    g_plugin_log.WriteLn("Reading DMA8 Mem.");
 }
 
 EXPORT_C_(void)
 DEV9writeDMA8Mem(u32 *pMem, int size)
 {
     // See above.
-    Dev9Log.WriteLn("Writing DMA8 Mem.");
+    g_plugin_log.WriteLn("Writing DMA8 Mem.");
 }
 //#endif
 
@@ -328,6 +333,3 @@ DEV9freeze(int mode, freezeData *data)
     }
     return 0;
 }
-
-/* For operating systems that need an entry point for a dll/library, here it is. Defined in PS2Eext.h. */
-ENTRY_POINT;
