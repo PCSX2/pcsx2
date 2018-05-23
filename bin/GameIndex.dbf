@@ -16163,7 +16163,8 @@ Region = PAL-E
 Serial = SLES-54379
 Name   = NFL Street 3
 Region = PAL-E
-vuClampMode = 3			// missing geometry with microVU
+vuClampMode = 3 // Missing geometry with microVU.
+GIFFIFOHack = 1 // Fixes corrupt textures.
 ---------------------------------------------
 Serial = SLES-54380
 Name   = Babe
@@ -41228,7 +41229,8 @@ Serial = SLUS-21482
 Name   = NFL Street 3
 Region = NTSC-U
 Compat = 5
-vuClampMode = 3			// missing geometry with microVU
+vuClampMode = 3 // Missing geometry with microVU.
+GIFFIFOHack = 1 // Fixes corrupt textures.
 ---------------------------------------------
 Serial = SLUS-21483
 Name   = Tiger Woods PGA Tour 07
