@@ -272,7 +272,7 @@ set(GSdxFinalLibs
 )
 
 if(EGL_API AND EGL_FOUND)
-    set(GSdxFinalLibs ${GSdxFinalLibs} ${EGL_LIBRARIES})
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${EGL_LIBRARIES} ${X11_XCB_LIBRARIES})
 endif()
 
 if(USE_VTUNE)
