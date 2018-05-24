@@ -39,6 +39,9 @@ wxString DiscSerial;
 
 static cdvdStruct cdvd;
 
+s64 PSXCLK = 36864000;
+
+
 static __fi void SetResultSize(u8 size)
 {
 	cdvd.ResultC = size;
