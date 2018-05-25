@@ -134,6 +134,17 @@ Name   = Gran Turismo 3 - A-Spec [PS2 Bundle]
 Region = NTSC-U
 MemCardFilter = PBPX-95503/SCUS-97102
 ---------------------------------------------
+Serial = PBPX-95506
+Name   = Playstation 2 - Demo Disc 2001
+Region = PAL-M5
+[patches]
+	// 7ACF7E03
+	comment=You must enable the EETimingHack when playing the WRC demo to avoids random hangs.
+	comment=You must change the EE Clamping mode to Full when playing the Klonoa 2 demo to avoids misplaced objects.
+	comment=You must change the VU Clamping mode to extra when playing the Klonoa 2 demo to fixes reflections issues.
+	comment=You must use the ZeroSPU2 plugin when playing the Klonoa 2 demo to avoids bad/missing sounds.
+[/patches]
+---------------------------------------------
 Serial = PBPX-95517
 Name   = Network Adapter Start-Up Disc
 Region = NTSC-U
@@ -6616,6 +6627,7 @@ Region = PAL-M5	// Eng & Nordic
 Serial = SLES-50044
 Name   = Rayman Revolution
 Region = PAL-M5
+eeRoundMode = 0 // Fixes game hanging in the "Clark running away" ingame cutscene.
 ---------------------------------------------
 Serial = SLES-50045
 Name   = Disney's Jungle Book - Groove Party
@@ -28705,6 +28717,11 @@ Serial = SLPM-67518
 Name   = Onimusha 2 Samurai's Destiny
 Region = NTSC-K
 ---------------------------------------------
+Serial = SLPM-67519
+Name   = Rayman 2 Revolution
+Region = NTSC-K
+eeRoundMode = 0 // Fixes game hanging in the "Clark running away" ingame cutscene.
+---------------------------------------------
 Serial = SLPM-67524
 Name   = Armored Core 3
 Region = NTSC-K
@@ -30543,6 +30560,11 @@ Compat = 5 // The game only load with the EE set to interpreter + cache enable.
 Serial = SLPS-25028
 Name   = Shutokou Battle 0
 Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25029
+Name   = Rayman 2 Revolution
+Region = NTSC-J
+eeRoundMode = 0 // Fixes game hanging in the "Clark running away" ingame cutscene.
 ---------------------------------------------
 Serial = SLPS-25030
 Name   = Lunatic Dawn - Tempest
@@ -34652,6 +34674,7 @@ Serial = SLUS-20138
 Name   = Rayman 2 - Revolution
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 0 // Fixes game hanging in the "Clark running away" ingame cutscene.
 ---------------------------------------------
 Serial = SLUS-20139
 Name   = Simpsons, The - Road Rage
