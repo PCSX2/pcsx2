@@ -17,6 +17,7 @@
 #include <deque>
 #include "System/SysThreads.h"
 #include "Gif.h"
+#include "Vif.h"
 #include "GS.h"
 
 // FIXME common path ?
@@ -290,9 +291,7 @@ struct Gif_Path {
 
 				gifTag.setTag(&buffer[curOffset], 1);
 
-				//Don't set state to PACKED if it is a NOP packet. Must check if PRIM or Regs are transferring
-				if (gifTag.tag.NLOOP > 0 || gifTag.tag.NREG != 0 || gifTag.tag.PRE)
-					state = (GIF_PATH_STATE)(gifTag.tag.FLG + 1);
+				state = (GIF_PATH_STATE)(gifTag.tag.FLG + 1);
 
 				// We don't have enough data for a complete GS packet
 				if(!gifTag.hasAD && curOffset + 16 + gifTag.len > curSize) {
@@ -451,6 +450,11 @@ struct Gif_Unit {
 		gifPath[2].Reset(softReset);
 		if(!softReset) {
 			lastTranType = GIF_TRANS_INVALID;
+		}
+		//If the VIF has paused waiting for PATH3, recheck it after the reset has occurred (Eragon)
+		if (vif1Regs.stat.VGW) {
+			if (!(cpuRegs.interrupt & (1 << DMAC_VIF1)))
+				CPU_INT(DMAC_VIF1, 1);
 		}
 	}
 
