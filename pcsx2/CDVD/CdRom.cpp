@@ -85,7 +85,6 @@ u8 Test23[] = { 0x43, 0x58, 0x44, 0x32, 0x39 ,0x34, 0x30, 0x51 };
 // 1x = 75 sectors per second
 // PSXCLK = 1 sec in the ps
 // so (PSXCLK / 75) / BIAS = cdr read time (linuzappz)
-//#define cdReadTime ((PSXCLK / 75) / BIAS)
 u32 cdReadTime;// = ((PSXCLK / 75) / BIAS);
 
 #define CDR_INT(eCycle)    PSX_INT(IopEvt_Cdrom, eCycle)
@@ -602,6 +601,11 @@ void cdrWrite0(u8 rt) {
 		cdr.ParamC = 0;
 		cdr.ResultReady = 0;
 	}
+}
+
+void setPsxSpeed()
+{
+	 cdReadTime = ((PSXCLK / 75) / BIAS);
 }
 
 u8 cdrRead1(void) {

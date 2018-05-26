@@ -21,6 +21,7 @@
 #include <ctype.h>
 #include <wx/datetime.h>
 
+#include "CdRom.h"
 #include "CDVD.h"
 #include "CDVD_internal.h"
 #include "CDVDisoReader.h"
@@ -37,6 +38,9 @@
 wxString DiscSerial;
 
 static cdvdStruct cdvd;
+
+s64 PSXCLK = 36864000;
+
 
 static __fi void SetResultSize(u8 size)
 {
@@ -1415,6 +1419,9 @@ static __fi void cdvdWrite0F(u8 rt) { // TYPE
 
 static __fi void cdvdWrite14(u8 rt) { // PS1 MODE?? // This should be done in the SBUS_F240 bit 19 write in HwWrite.cpp
 	u32 cycle = psxRegs.cycle;
+
+	PSXCLK =  33868800;
+	setPsxSpeed();
 
 	if (rt == 0xFE)
 		Console.Warning("*PCSX2*: go PS1 mode DISC SPEED = FAST");
