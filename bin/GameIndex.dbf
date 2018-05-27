@@ -9168,8 +9168,8 @@ Serial = SLES-51192
 Name   = Harry Potter and the Chamber of Secrets
 Region = PAL-E
 Compat = 3
+// This disc has the same CRC as SLUS-20576, the NTSC-U disc - C5473413.
 [patches = C5473413]
-	// This disc has the same CRC as SLUS-20576, the NTSC-U disc.
 	comment=Patch by Prafull
 	// Fixes initial hanging.
 	patch=1,EE,002032bc,word,03e00008
@@ -11691,6 +11691,7 @@ Serial = SLES-52440
 Name   = Harry Potter and the Prisoner of Azkaban
 Region = PAL-M7
 Compat = 3
+// This disc has the same CRC as SLUS-20926, the NTSC-U disc - 51E019BC.
 ---------------------------------------------
 Serial = SLES-52444
 Name   = Hyper Street Fighter II - The Anniversary Edition
@@ -11946,6 +11947,7 @@ Serial = SLES-52545
 Name   = Star Wars Battlefront
 Region = PAL-M3
 Compat = 5
+// This disc has the same CRC as SLUS-20898, the NTSC-U disc - 503BF9E1.
 ---------------------------------------------
 Serial = SLES-52546
 Name   = Star Wars Battlefront
@@ -12642,11 +12644,11 @@ Serial = SLES-52812
 Name   = Disney-Pixar's The Incredibles
 Region = PAL-E
 Compat = 5
+// This disc has the same CRC as SLUS-20905, the NTSC-U disc - EBDB6E4B.
 [patches = EBDB6E4B]
 	comment=Patch by Prafull
 	// Fixes hanging at loading screen.
 	patch=1,EE,0010ec20,word,00000000
-	comment=- This disc has the same CRC as SLUS-20905, the NTSC-U disc.
 [/patches]
 ---------------------------------------------
 Serial = SLES-52813
@@ -12824,11 +12826,11 @@ Serial = SLES-52895
 Name   = Spongebob Squarepants - The Movie
 Region = PAL-E
 Compat = 5
+// This disc has the same CRC as SLUS-20904, the NTSC-U disc - 536FEB77.
 [patches = 536FEB77]
 	comment=Patch by Prafull
 	// Fixes hanging at loading screen.
 	patch=1,EE,0010f3e0,word,00000000
-	comment=- This disc has the same CRC as SLUS-20904, the NTSC-U disc.
 [/patches]
 ---------------------------------------------
 Serial = SLES-52896
@@ -14184,6 +14186,7 @@ Serial = SLES-53501
 Name   = Star Wars - Battlefront II
 Region = PAL-M3
 Compat = 5
+// This disc has the same CRC as SLUS-21240, the NTSC-U disc - 02F4B541.
 ---------------------------------------------
 Serial = SLES-53502
 Name   = Star Wars - Battlefront II
@@ -22166,10 +22169,7 @@ Serial = SLPM-65232
 Name   = Devil May Cry 2 [Dante Disc]
 Region = NTSC-J
 Compat = 5
-[patches]
-	// 08995DEE
-	comment=- This disc has the same CRC as SLUS-20484, the NTSC-U disc.
-[/patches]
+// This disc has the same CRC as SLUS-20484, the NTSC-U disc - 08995DEE.
 ---------------------------------------------
 Serial = SLPM-65233
 Name   = Devil May Cry 2 [Lucia Disc]
@@ -36258,10 +36258,7 @@ Serial = SLUS-20484
 Name   = Devil May Cry 2 [Disc1of2]
 Region = NTSC-U
 Compat = 5
-[patches]
-	// 08995DEE
-	comment=- This disc has the same CRC as SLPM-65232, the NTSC-J disc.
-[/patches]
+// This disc has the same CRC as SLPM-65232, the NTSC-J disc - 08995DEE.
 ---------------------------------------------
 Serial = SLUS-20485
 Name   = Dino Stalker
@@ -36686,8 +36683,8 @@ Serial = SLUS-20576
 Name   = Harry Potter and The Chamber of Secrets
 Region = NTSC-U
 Compat = 2
+// This disc has the same CRC as SLES-51192, the PAL-E disc - C5473413.
 [patches = C5473413]
-	// This disc has the same CRC as SLES-51192, the PAL-E disc.
 	comment=Patch by Prafull
 	// Fixes initial hanging.
 	patch=1,EE,002032bc,word,03e00008
@@ -38177,6 +38174,7 @@ Serial = SLUS-20898
 Name   = Star Wars Battlefront
 Region = NTSC-U
 Compat = 5
+// This disc has the same CRC as SLES-52545, the PAL-M3 disc - 503BF9E1.
 ---------------------------------------------
 Serial = SLUS-20899
 Name   = Samurai Jack - The Shadow of Aku
@@ -38202,22 +38200,22 @@ Serial = SLUS-20904
 Name   = SpongeBob Squarepants - The Movie
 Region = NTSC-U
 Compat = 5
+// This disc has the same CRC as SLES-52895, the PAL-E disc - 536FEB77.
 [patches = 536FEB77]
 	comment=Patch by Prafull
 	// Fixes hanging at loading screen.
 	patch=1,EE,0010f3e0,word,00000000
-	comment=- This disc has the same CRC as SLES-52895, the PAL-E disc.
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20905
 Name   = Incredibles, The
 Region = NTSC-U
 Compat = 5
+// This disc has the same CRC as SLES-52812, the PAL-E disc - EBDB6E4B.
 [patches = EBDB6E4B]
 	comment=Patch by Prafull
 	// Fixes hanging at loading screen.
 	patch=1,EE,0010ec20,word,00000000
-	comment=- This disc has the same CRC as SLES-52812, the PAL-E disc.
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20906
@@ -38340,6 +38338,7 @@ Compat = 2
 Serial = SLUS-20926
 Name   = Harry Potter and The Prisoner of Azkaban
 Region = NTSC-U
+// This disc has the same CRC as SLES-52440, the PAL-M7 disc - 51E019BC.
 ---------------------------------------------
 Serial = SLUS-20927
 Name   = Time Crisis - Crisis Zone
@@ -39908,6 +39907,7 @@ Serial = SLUS-21240
 Name   = Star Wars Battlefront II
 Region = NTSC-U
 Compat = 5
+// This disc has the same CRC as SLES-53501, the PAL-M3 disc - 02F4B541.
 ---------------------------------------------
 Serial = SLUS-21241
 Name   = NHL '06
