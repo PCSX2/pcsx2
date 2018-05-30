@@ -563,6 +563,7 @@ extern void hwDmacIrq(int n);
 
 extern void FireMFIFOEmpty();
 extern bool hwMFIFOWrite(u32 addr, const u128* data, uint size_qwc);
+extern void hwMFIFOResume(u32 transferred);
 extern void hwDmacSrcTadrInc(DMACh& dma);
 extern bool hwDmacSrcChainWithStack(DMACh& dma, int id);
 extern bool hwDmacSrcChain(DMACh& dma, int id);

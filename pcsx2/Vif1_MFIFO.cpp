@@ -29,7 +29,6 @@ static u32 qwctag(u32 mask)
 static u16 QWCinVIFMFIFO(u32 DrainADDR)
 {
 	u32 ret;
-	
 
 	SPR_LOG("VIF MFIFO Requesting %x QWC from the MFIFO Base %x MFIFO Top %x, SPR MADR %x Drain %x", vif1ch.qwc, dmacRegs.rbor.ADDR, dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16, spr0ch.madr, DrainADDR);
 	//Calculate what we have in the fifo.
@@ -46,7 +45,7 @@ static u16 QWCinVIFMFIFO(u32 DrainADDR)
 		ret = ((spr0ch.madr - dmacRegs.rbor.ADDR) + (limit - DrainADDR)) >> 4;
 	}
 	SPR_LOG("%x Available of the %x requested", ret, vif1ch.qwc);
-	
+
 	return ret;
 }
 static __fi bool mfifoVIF1rbTransfer()
@@ -56,8 +55,11 @@ static __fi bool mfifoVIF1rbTransfer()
 	u16 mfifoqwc = std::min(QWCinVIFMFIFO(vif1ch.madr), vif1ch.qwc);
 	u32 *src;
 	bool ret;
-
-	if(mfifoqwc == 0) return true; //Cant do anything, lets forget it 
+	
+	if (mfifoqwc == 0) {
+		DevCon.Warning("VIF MFIFO no QWC before transfer (in transfer function, bit late really)");
+		return true; //Cant do anything, lets forget it 
+	}
 
 	/* Check if the transfer should wrap around the ring buffer */
 	if ((vif1ch.madr + (mfifoqwc << 4)) > (msize))
@@ -81,18 +83,19 @@ static __fi bool mfifoVIF1rbTransfer()
 		{
 			if(vif1.irqoffset.value != 0) DevCon.Warning("VIF1 MFIFO Offest != 0! vifoffset=%x", vif1.irqoffset.value);
             /* and second copy 's2' bytes from 'maddr' to '&data[s1]' */
-            vif1ch.madr = maddr;
+			//DevCon.Warning("Loopyloop");
+			vif1ch.tadr = qwctag(vif1ch.tadr);
+			vif1ch.madr = qwctag(vif1ch.madr);
 
-            src = (u32*)PSM(maddr);
+            src = (u32*)PSM(vif1ch.madr);
             if (src == NULL) return false;
             VIF1transfer(src, ((mfifoqwc << 2) - s1));
 		}
-		
 	}
 	else
 	{
 		SPR_LOG("Direct MFIFO");
-		
+
 		/* it doesn't, so just transfer 'qwc*4' words */
 		src = (u32*)PSM(vif1ch.madr);
 		if (src == NULL) return false;
@@ -101,7 +104,6 @@ static __fi bool mfifoVIF1rbTransfer()
 			ret = VIF1transfer(src + vif1.irqoffset.value, mfifoqwc * 4 - vif1.irqoffset.value);
 		else
 			ret = VIF1transfer(src, mfifoqwc << 2);
-
 	}
 	return ret;
 }
@@ -117,16 +119,18 @@ static __fi void mfifo_VIF1chain()
 
 	if (vif1ch.madr >= dmacRegs.rbor.ADDR &&
 	        vif1ch.madr < (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u))
-	{		
+	{
 		//if(vif1ch.madr == (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16)) DevCon.Warning("Edge VIF1");
-		
-		vif1ch.madr = qwctag(vif1ch.madr);
+		if (QWCinVIFMFIFO(vif1ch.madr) == 0) {
+			SPR_LOG("VIF MFIFO Empty before transfer");
+			vif1.inprogress |= 0x10;
+			g_vif1Cycles += 4;
+			return;
+		}
+
 		mfifoVIF1rbTransfer();
 		vif1ch.tadr = qwctag(vif1ch.tadr);
 		vif1ch.madr = qwctag(vif1ch.madr);
-		if(QWCinVIFMFIFO(vif1ch.madr) == 0) vif1.inprogress |= 0x10;
-
-		//vifqwc -= startqwc - vif1ch.qwc;
 		
 	}
 	else
@@ -171,36 +175,21 @@ void mfifoVifMaskMem(int id)
 	}
 }
 
-void mfifoVIF1transfer(int qwc)
+void mfifoVIF1transfer()
 {
 	tDMA_TAG *ptag;
 
 	g_vif1Cycles = 0;
 
-	if (qwc > 0)
-	{
-		//vifqwc += qwc;
-		SPR_LOG("Added %x qw to mfifo,Vif CHCR %x Stalled %x done %x", qwc, vif1ch.chcr._u32, vif1.vifstalled.enabled, vif1.done);
-		if (vif1.inprogress & 0x10)
-		{
-			//Don't resume if stalled or already looping
-			if(vif1ch.chcr.STR && !(cpuRegs.interrupt & (1<<DMAC_MFIFO_VIF)) && !vif1Regs.stat.INT)
-			{
-				SPR_LOG("Data Added, Resuming");
-				//Need to simulate the time it takes to copy here, if the VIF resumes before the SPR has finished, it isn't happy.
-				CPU_INT(DMAC_MFIFO_VIF, qwc * BIAS);
-			}
-
-			//Apparently this is bad, i guess so, the data is going to memory rather than the FIFO
-			//vif1Regs.stat.FQC = 0x10; // FQC=16
-		}
-		vif1.inprogress &= ~0x10;
-
-		return;
-	}
-
 	if (vif1ch.qwc == 0)
 	{
+		if (QWCinVIFMFIFO(vif1ch.tadr) == 0) {
+			SPR_LOG("VIF MFIFO Empty before tag");
+			vif1.inprogress |= 0x10;
+			g_vif1Cycles += 4;
+			return;
+		}
+
 		vif1ch.tadr = qwctag(vif1ch.tadr);
 		ptag = dmaGetAddr(vif1ch.tadr, false);
 
@@ -211,7 +200,7 @@ void mfifoVIF1transfer(int qwc)
 
 		if (vif1ch.chcr.TTE)
 		{
-            bool ret;
+			bool ret;
 
 			static __aligned16 u128 masked_tag;
 
@@ -230,7 +219,6 @@ void mfifoVIF1transfer(int qwc)
 				vif1.irqoffset.value = 2;
 				vif1.irqoffset.enabled = true;
 				ret = VIF1transfer((u32*)&masked_tag + 2, 2, true);  //Transfer Tag
-				//ret = VIF1transfer((u32*)ptag + 2, 2);  //Transfer Tag
 			}
 
 			if (!ret && vif1.irqoffset.enabled)
@@ -238,18 +226,16 @@ void mfifoVIF1transfer(int qwc)
 				vif1.inprogress &= ~1;
 				return;        //IRQ set by VIFTransfer
 				
-			} //else vif1.vifstalled.enabled = false;
+			}
 			g_vif1Cycles += 2;
 		}
-		
+
 		vif1.irqoffset.value = 0;
 		vif1.irqoffset.enabled = false;
 
         vif1ch.unsafeTransfer(ptag);
 
 		vif1ch.madr = ptag[1]._u32;
-
-		//vifqwc--;
 
 		SPR_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx mfifo qwc = %x spr0 madr = %x",
         ptag[1]._u32, ptag[0]._u32, vif1ch.qwc, ptag->ID, vif1ch.madr, vif1ch.tadr, vifqwc, spr0ch.madr);
@@ -264,12 +250,9 @@ void mfifoVIF1transfer(int qwc)
 			vif1.done = true;
 		}
 
-		
-		if(vif1ch.qwc > 0) 	vif1.inprogress |= 1;
-
 		vif1ch.tadr = qwctag(vif1ch.tadr);
 
-		if(QWCinVIFMFIFO(vif1ch.tadr) == 0) vif1.inprogress |= 0x10;
+		if(vif1ch.qwc > 0) 	vif1.inprogress |= 1;
 	}
 	else
 	{
@@ -285,17 +268,17 @@ void vifMFIFOInterrupt()
 	g_vif1Cycles = 0;
 	VIF_LOG("vif mfifo interrupt");
 
+	if (dmacRegs.ctrl.MFD != MFD_VIF1) {
+		vif1Interrupt();
+		return;
+	}
+
 	if( gifRegs.stat.APATH == 2  && gifUnit.gifPath[1].isDone())
 	{
 		gifRegs.stat.APATH = 0;
 		gifRegs.stat.OPH = 0;
 
 		if(gifUnit.checkPaths(1,0,1)) gifUnit.Execute(false, true);
-	}
-
-	if (dmacRegs.ctrl.MFD != MFD_VIF1) {
-		DevCon.Warning("Not in VIF MFIFO mode! Stopping VIF MFIFO");
-		return;
 	}
 
 	if (vif1ch.chcr.DIR) {
@@ -354,7 +337,7 @@ void vifMFIFOInterrupt()
 
 	if(vif1.inprogress & 0x10) {
 		FireMFIFOEmpty();
-		if(!(vif1.done && vif1ch.qwc == 0))return;
+		return;
 	}
 
 	vif1.vifstalled.enabled = false;
@@ -362,13 +345,7 @@ void vifMFIFOInterrupt()
 	if (!vif1.done || vif1ch.qwc) {
 		switch(vif1.inprogress & 1) {
 			case 0: //Set up transfer
-				if (QWCinVIFMFIFO(vif1ch.tadr) == 0) {
-					vif1.inprogress |= 0x10;
-					CPU_INT(DMAC_MFIFO_VIF, 4 );	
-					return;
-				}
-				
-                mfifoVIF1transfer(0);
+				mfifoVIF1transfer();
 				vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
 				
 			case 1: //Transfer data

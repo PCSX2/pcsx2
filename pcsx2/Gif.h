@@ -87,10 +87,21 @@ enum GIF_REG {
 
 enum gifstate_t {
 	GIF_STATE_READY = 0,
-	GIF_STATE_STALL = 1,
-	GIF_STATE_DONE  = 2,
 	GIF_STATE_EMPTY = 0x10
 };
+
+struct gifStruct {
+	int  gifstate;
+	bool gspath3done;
+
+	u32 gscycles;
+	u32 prevcycles;
+	u32 mfifocycles;
+	u32 gifqwc;
+	bool gifmfifoirq;
+};
+
+extern __aligned16 gifStruct gif;
 
 struct GIF_Fifo
 {
@@ -300,5 +311,6 @@ extern void gifInterrupt();
 extern int _GIFchain();
 extern void GIFdma();
 extern void dmaGIF();
-extern void mfifoGIFtransfer(int qwc);
+extern void mfifoGIFtransfer();
 extern void gifMFIFOInterrupt();
+extern void clearFIFOstuff(bool full);
