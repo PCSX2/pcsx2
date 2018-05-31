@@ -657,6 +657,7 @@ void GSHacksDlg::OnInit()
 
 	// It can only be accessed with a HW renderer, so this is sufficient.
 	bool dx9 = renderer == GSRendererType::DX9_HW;
+	bool dx11 = renderer == GSRendererType::DX1011_HW;
 	bool ogl = renderer == GSRendererType::OGL_HW;
 	bool native = upscaling_multiplier == 1;
 
@@ -723,7 +724,7 @@ void GSHacksDlg::OnInit()
 
 	// Direct3D-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), !ogl);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), !ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), dx11);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAACB), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !ogl);
 
