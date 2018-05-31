@@ -190,8 +190,9 @@ public:
 				uint32 point_sampler:1;
 				uint32 shuffle:1;
 				uint32 read_ba:1;
+				uint32 dfmt:2;
 
-				uint32 _free:32;
+				uint32 _free:30;
 			};
 
 			uint64 key;
