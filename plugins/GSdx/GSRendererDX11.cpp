@@ -50,7 +50,7 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 	// Note: D3D1011 is limited and can't read the current framebuffer so we can't have PS_FBMASK and PS_WRITE_RG shaders ported and working.
 	if (m_texture_shuffle) {
 		m_ps_sel.shuffle = 1;
-		m_ps_sel.fmt = 0;
+		m_ps_sel.dfmt = 0;
 
 		const GIFRegXYOFFSET& o = m_context->XYOFFSET;
 
@@ -154,7 +154,7 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 		}
 
 	} else {
-		//m_ps_sel.fmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
+		m_ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
 		om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
 	}

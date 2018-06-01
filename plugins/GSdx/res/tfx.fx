@@ -43,6 +43,7 @@
 #define PS_SHUFFLE 0
 #define PS_READ_BA 0
 #define PS_PAL_FMT 0
+#define PS_DFMT 0
 #endif
 
 struct VS_INPUT
@@ -852,15 +853,15 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	output.c1 = c.a * 2; // used for alpha blending
 
-	if(PS_AOUT) // 16 bit output
+	if ((PS_DFMT == FMT_16) || PS_AOUT) // 16 bit output
 	{
 		float a = 128.0f / 255; // alpha output will be 0x80
 		
 		c.a = PS_FBA ? a : step(0.5, c.a) * a;
 	}
-	else if(PS_FBA)
+	else if ((PS_DFMT == FMT_32) && (PS_FBA != 0))
 	{
-		if(c.a < 0.5) c.a += 0.5;
+		if (c.a < 0.5) c.a += 0.5;
 	}
 
 	output.c0 = c;
