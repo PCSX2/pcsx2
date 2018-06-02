@@ -47,12 +47,6 @@ extern track tracks[100];
 extern int curDiskType;
 extern int curTrayStatus;
 
-struct CacheRequest
-{
-    u32 lsn;
-    s32 mode;
-};
-
 struct toc_entry
 {
     u32 lba;

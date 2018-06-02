@@ -110,7 +110,7 @@ bool weAreInNewDiskCB = false;
 
 std::unique_ptr<IOCtlSrc> src;
 
-extern CacheRequest g_last_sector_block;
+extern u32 g_last_sector_block_lsn;
 
 ///////////////////////////////////////////////////////////////////////////////
 // keepAliveThread throws a read event regularly to prevent drive spin down  //
@@ -127,9 +127,9 @@ void keepAliveThread()
 
         //printf(" * keepAliveThread: polling drive.\n");
         if (src->GetMediaType() >= 0)
-            src->ReadSectors2048(g_last_sector_block.lsn, 1, throwaway);
+            src->ReadSectors2048(g_last_sector_block_lsn, 1, throwaway);
         else
-            src->ReadSectors2352(g_last_sector_block.lsn, 1, throwaway);
+            src->ReadSectors2352(g_last_sector_block_lsn, 1, throwaway);
     }
 
     printf(" * CDVD: KeepAlive thread finished.\n");
