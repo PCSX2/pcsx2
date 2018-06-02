@@ -180,9 +180,8 @@ bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8 *buffer) const
         DWORD unused;
         if (DeviceIoControl(m_device, IOCTL_SCSI_PASS_THROUGH_DIRECT, &sptd,
                             sizeof(sptd), &sptd, sizeof(sptd), &unused, nullptr)) {
-            if (sptd.info.DataTransferLength != 2352)
-                printf(" * CDVD: SPTI short transfer of %u bytes", sptd.info.DataTransferLength);
-            continue;
+            if (sptd.info.DataTransferLength == 2352)
+                continue;
         }
         printf(" * CDVD: SPTI failed reading sector %u; SENSE %u -", current_sector, sptd.info.SenseInfoLength);
         for (const auto &c : sptd.sense_buffer)
