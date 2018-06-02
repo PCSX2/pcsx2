@@ -16048,6 +16048,11 @@ Compat = 5
 Serial = SLES-54359
 Name   = Legend of Spyro, The - A New Beginning
 Region = PAL-M6
+[patches = 0EE5646B]
+	comment=Patch by Kozarovv and Refraction
+	// Fixes HUD and menu display.
+	patch=1,EE,001849b8,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-54360
 Name   = Pro Evolution Soccer 6
@@ -16807,6 +16812,11 @@ Serial = SLES-54815
 Name   = Spyro - The Eternal Night
 Region = PAL-M6
 Compat = 5
+[patches = 8AE9536D]
+	comment=Patch by Kozarovv and Refraction
+	// Fixes HUD and menu display.
+	patch=1,EE,00173c38,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-54819
 Name   = Manhunt 2
@@ -40587,6 +40597,11 @@ Serial = SLUS-21372
 Name   = Legend of Spyro, The - A New Beginning
 Region = NTSC-U
 Compat = 5
+[patches = D03D4C77]
+	comment=Patch by Kozarovv and Refraction
+	// Fixes HUD and menu display.
+	patch=1,EE,001849b8,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21373
 Name   = Drakengard 2
@@ -41579,6 +41594,11 @@ Serial = SLUS-21607
 Name   = Legend of Spyro, The - The Eternal Night
 Region = NTSC-U
 Compat = 5
+[patches = B80CE8EC]
+	comment=Patch by Kozarovv and Refraction
+	// Fixes HUD and menu display.
+	patch=1,EE,00173cb8,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21608
 Name   = Dance Dance Revolution - SuperNOVA 2
