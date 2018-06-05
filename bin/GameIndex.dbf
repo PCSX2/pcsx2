@@ -16200,10 +16200,12 @@ Region = PAL-M6	// Eng, P & Nordic
 Serial = SLES-54430
 Name   = Teen Titans
 Region = PAL-E-F
+eeRoundMode = 2 // Restores missing text in pause menu/load game screen.
 ---------------------------------------------
 Serial = SLES-54431
 Name   = Teen Titans
 Region = PAL-E
+eeRoundMode = 2 // Restores missing text in pause menu/load game screen.
 ---------------------------------------------
 Serial = SLES-54432
 Name   = Mercury Meltdown Remix
@@ -39614,6 +39616,7 @@ Serial = SLUS-21183
 Name   = Teen Titans
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 2 // Restores missing text in pause menu/load game screen.
 ---------------------------------------------
 Serial = SLUS-21184
 Name   = Teenage Mutant Ninja Turtles 3 - Mutant Nightmare
