@@ -29,6 +29,7 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp) {
 	const int  c = 1024*1; // Continue Cycles
 	if (!(stat & test)) return;
 	if (startUp) {  // Start Executing a microprogram
+		VU0.breakOnMbit = false;
 		Execute(s); // Kick start VU
 
 		// Let VUs run behind EE instead of ahead
@@ -41,6 +42,7 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp) {
 		s32 delta = (s32)(u32)(cpuRegs.cycle - m_lastEEcycles) & ~1;
 		if (delta >   0) {	// Enough time has passed
 			delta >>= 1;	// Divide by 2 (unsigned)
+			VU0.breakOnMbit = false;
 			Execute(delta);	// Execute the time since the last call
 			if (stat & test) {
 				cpuSetNextEventDelta(c*2);
@@ -67,6 +69,7 @@ void __fastcall BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu) {
 			warn--;
 		}
 		#endif
+		VU0.breakOnMbit = false;
 		cpu->Execute(c);	// Execute VU
 		if (stat & test) {
 			cpu->m_lastEEcycles+=(c*2);
