@@ -1428,6 +1428,11 @@ static __fi void cdvdWrite14(u8 rt) { // PS1 MODE?? // This should be done in th
 	psxReset();
 	PSXCLK =  33868800;
 	setPsxSpeed();
+	// psxmode: todo: we should recalculate video timings for iop and ee. how to do that best?
+	// unlike regular ps2 games, the video mode for ps1driver isn't going through the GS set mode syscall
+	// so.. something like this? :
+	//gsSetVideoMode(GS_VideoMode::NTSC);
+	//gsSetVideoMode(GS_VideoMode::DVD_NTSC);
 	psxHu32(0x1f801450) = 0x8;
 	psxHu32(0x1f801078) = 1;
 	psxRegs.cycle = cycle;
