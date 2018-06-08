@@ -85,11 +85,13 @@ u8 Test23[] = { 0x43, 0x58, 0x44, 0x32, 0x39 ,0x34, 0x30, 0x51 };
 // 1x = 75 sectors per second
 // PSXCLK = 1 sec in the ps
 // so (PSXCLK / 75) / BIAS = cdr read time (linuzappz)
-u32 cdReadTime;// = ((PSXCLK / 75) / BIAS);
+u32 cdReadTime; // = ((PSXCLK / 75) / BIAS);
 
 #define CDR_INT(eCycle)    PSX_INT(IopEvt_Cdrom, eCycle)
 #define CDREAD_INT(eCycle) PSX_INT(IopEvt_CdromRead, eCycle)
 
+const uint shortSectorSeekReadDelay = 1000; // delay for reads/seeks that may or may not have a seek action preceeding it
+uint sectorSeekReadDelay = 0x800; // for calculated seek delays
 
 static void AddIrqQueue(u8 irq, u32 ecycle);
 
@@ -97,7 +99,9 @@ static __fi void StartReading(u32 type) {
    	cdr.Reading = type;
   	cdr.FirstSector = 1;
   	cdr.Readed = 0xff;
-	AddIrqQueue(READ_ACK, 0x800);
+	//DevCon.Warning("ReadN/ReadS delay: %d", sectorSeekReadDelay);
+	AddIrqQueue(READ_ACK, sectorSeekReadDelay);
+	sectorSeekReadDelay = shortSectorSeekReadDelay;
 }
 
 static __fi void StopReading() {
@@ -493,7 +497,7 @@ void  cdrReadInterrupt() {
 		return;
 
 	if (cdr.Stat) {
-		CDREAD_INT(0x800);
+		CDREAD_INT(0x800 * 4); // * 4 reduces dma3 errors lots here
 		return;
 	}
 
@@ -548,8 +552,8 @@ void  cdrReadInterrupt() {
 	}
 	else {
 		ReadTrack();
-		// psxmode: extra delays | remove once dma is stable (fixes "dma3 not ready" and mdec glitches)
-		CDREAD_INT((cdr.Mode & 0x80) ? (cdReadTime / 2) * 3 : cdReadTime * 3);
+		//DevCon.Warning("normal: %d",cdReadTime);
+		CDREAD_INT((cdr.Mode & 0x80) ? (cdReadTime / 2) : cdReadTime);
 	}
 
 	psxHu32(0x1070)|= 0x4;
@@ -605,7 +609,11 @@ void cdrWrite0(u8 rt) {
 
 void setPsxSpeed()
 {
-	 cdReadTime = ((PSXCLK / 75) / BIAS);
+	// psxmode: trying to get delays right (fix "dma3 not ready" and mdec glitches)
+	// odd.. tests suggest this should be exactly * 2. could it be that the old psx 1x / 2x speeds aren't handled the same on PS2?
+	// used Chrono Cross intro music and see that it doesn't stutter, then use any other FMV game (with sound) and see that it doesn't stall.
+	// result: cdReadTime = ((PSXCLK / 75) / BIAS) * 2; is exactly right
+	cdReadTime = ((PSXCLK / 75) / BIAS) * 2;
 }
 
 u8 cdrRead1(void) {
@@ -627,13 +635,14 @@ void cdrWrite1(u8 rt) {
 	cdr.Cmd = rt;
 	cdr.OCUP = 0;
 
+//#define CDRCMD_DEBUG
 #ifdef CDRCMD_DEBUG
-	SysPrintf("CD1 write: %x (%s)", rt, CmdName[rt]);
+	DevCon.Warning("CD1 write: %x (%s)", rt, CmdName[rt]);
 	if (cdr.ParamC) {
-		SysPrintf(" Param[%d] = {", cdr.ParamC);
-		for (i=0;i<cdr.ParamC;i++) SysPrintf(" %x,", cdr.Param[i]);
-		SysPrintf("}\n");
-	} else SysPrintf("\n");
+		DevCon.Warning(" Param[%d] = {", cdr.ParamC);
+		for (i=0;i<cdr.ParamC;i++) DevCon.Warning(" %x,", cdr.Param[i]);
+		DevCon.Warning("}\n");
+	} else DevCon.Warning("\n");
 #endif
 
 	if (cdr.Ctrl & 0x1) return;
@@ -652,16 +661,28 @@ void cdrWrite1(u8 rt) {
 			break;
 
 		case CdlSetloc:
-			StopReading();
-			for (i=0; i<3; i++) cdr.SetSector[i] = btoi(cdr.Param[i]);
+		{
+			//StopReading();
+			// Setloc is memorizing the wanted target, and marks it as unprocessed, and has no other effect 
+			// (it doesn't start reading or seeking, and doesn't interrupt or redirect any active reads).
+			int oldSector = msf_to_lsn(cdr.SetSector);
+			for (i = 0; i < 3; i++) cdr.SetSector[i] = btoi(cdr.Param[i]);
 			cdr.SetSector[3] = 0;
 			if ((cdr.SetSector[0] | cdr.SetSector[1] | cdr.SetSector[2]) == 0) {
 				*(u32 *)cdr.SetSector = *(u32 *)cdr.SetSectorSeek;
 			}
-			cdr.Ctrl|= 0x80;
+			int newSector = msf_to_lsn(cdr.SetSector);
+			
+			// sectorSeekReadDelay should lead to sensible random seek results in QA (Aging Disk) test
+			sectorSeekReadDelay = abs(newSector - oldSector) * 100;
+			if (sectorSeekReadDelay < shortSectorSeekReadDelay) sectorSeekReadDelay = shortSectorSeekReadDelay;
+			//DevCon.Warning("CdlSetloc sectorSeekReadDelay: %d", sectorSeekReadDelay);
+
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
-			AddIrqQueue(cdr.Cmd, 0x800);
-			break;
+			AddIrqQueue(cdr.Cmd, 0x800); // the seek delay occurs on the next read / seek command (CdlReadS, CdlSeekL, etc)
+		}
+		break;
 
 		case CdlPlay:
 			cdr.Play = 1;
@@ -790,14 +811,20 @@ void cdrWrite1(u8 rt) {
 			((u32 *)cdr.SetSectorSeek)[0] = ((u32 *)cdr.SetSector)[0];
 			cdr.Ctrl|= 0x80;
 			cdr.Stat = NoIntr;
-			AddIrqQueue(cdr.Cmd, 0x800);
+
+			//DevCon.Warning("CdlSeekL delay: %d", sectorSeekReadDelay);
+			AddIrqQueue(cdr.Cmd, sectorSeekReadDelay);
+			sectorSeekReadDelay = shortSectorSeekReadDelay;
 			break;
 
 		case CdlSeekP:
 			((u32 *)cdr.SetSectorSeek)[0] = ((u32 *)cdr.SetSector)[0];
 			cdr.Ctrl|= 0x80;
 			cdr.Stat = NoIntr;
-			AddIrqQueue(cdr.Cmd, 0x800);
+
+			//DevCon.Warning("CdlSeekP delay: %d", sectorSeekReadDelay);
+			AddIrqQueue(cdr.Cmd, sectorSeekReadDelay);
+			sectorSeekReadDelay = shortSectorSeekReadDelay;
 			break;
 
 		case CdlTest:
@@ -827,7 +854,7 @@ void cdrWrite1(u8 rt) {
 			break;
 
 		default:
-			CDVD_LOG("Unknown Cmd: %x\n", cdr.Cmd);
+			DevCon.Warning("Unknown CD Cmd: %x\n", cdr.Cmd);
 			return;
     }
 	if (cdr.Stat != NoIntr)
