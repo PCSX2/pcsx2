@@ -17247,6 +17247,11 @@ Name   = Odin Sphere
 Region = PAL-M5
 Compat = 5
 ---------------------------------------------
+Serial = SLES-55122
+Name   = Moorhuhn Fun Kart 2008
+Region = PAL-M4
+eeClampMode = 3 // Fixes falling through ground.
+---------------------------------------------
 Serial = SLES-55123
 Name   = Legend of Sayuki
 Region = PAL-M4
