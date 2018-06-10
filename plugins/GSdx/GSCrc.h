@@ -146,7 +146,6 @@ public:
 		Spartan,
 		SpyroEternalNight,
 		SpyroNewBeginning,
-		SSX3,
 		StarOcean3,
 		StarWarsBattlefront,
 		StarWarsBattlefront2,

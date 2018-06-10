@@ -370,8 +370,6 @@ CRC::Game CRC::m_games[] =
 	{0xBC8B3F50, TombRaiderLegend, US, 0}, // cutie comment
 	{0x365172A0, TombRaiderLegend, JP, 0},
 	{0x05177ECE, TombRaiderLegend, EU, 0},
-	{0x08FFF00D, SSX3, JP, 0}, // cutie comment
-	{0xCE942B2A, SSX3, EU, 0},
 	{0x5C891FF1, Black, US, 0},
 	{0xCAA04879, Black, EU, 0},
 	{0xADDFF505, Black, EU, 0},
