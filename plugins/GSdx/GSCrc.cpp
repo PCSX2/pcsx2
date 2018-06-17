@@ -480,6 +480,7 @@ CRC::Game CRC::m_games[] =
 	{0x86C57952, SoulCalibur2, JP, 0},
 	{0x83AFB38A, SoulCalibur2, KO, 0},
 	{0xE1B01308, SoulCalibur2, US, 0},
+	{0x4B66F38C, SoulCalibur2, US, 0}, // Demo
 	{0x632A5116, SoulCalibur2, EU, 0},
 	{0xFB8554A0, SoulCalibur3, JP, 0},
 	{0x7C7B9E71, SoulCalibur3, JP, 0},
@@ -534,6 +535,8 @@ CRC::Game CRC::m_games[] =
 	{0x728AB07C, LegacyOfKainDefiance, US, 0},
 	{0xBCAD1E8A, LegacyOfKainDefiance, EU, 0},
 	{0xCE4933D0, RatchetAndClank, US, 0},
+	{0x6F191506, RatchetAndClank, US, 0}, // E3 Demo
+	{0x81CBFEA2, RatchetAndClank, US, 0}, // EB Games Demo
 	{0x56A35F77, RatchetAndClank, JP, 0},
 	{0x76F724A3, RatchetAndClank, EU, 0},
 	{0xB3A71D10, RatchetAndClank2, US, 0}, // Going Commando
