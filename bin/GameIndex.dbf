@@ -43821,6 +43821,16 @@ Compat = 5
 EETimingHack = 1
 VIF1StallHack = 1 // HUD.
 ---------------------------------------------
+Serial = TCES-53286
+Name   = Jak X Beta Trial Code
+Region = PAL-E
+Compat = 5
+[patches = C20596DB]
+	comment=Patched by Luminar Light
+	// Patch fixes inability to boot.
+	patch=1,EE,00265B57,word,00000000
+[/patches]
+---------------------------------------------
 Serial = TCPS-10058
 Name   = Densha de Go! Shinkansen [with Controller]
 Region = NTSC-J
