@@ -19,18 +19,15 @@
 #include "Gif_Unit.h"
 #include "Vif_Dma.h"
 
-u16 vifqwc = 0;
-
 static u32 qwctag(u32 mask)
 {
 	return (dmacRegs.rbor.ADDR + (mask & dmacRegs.rbsr.RMSK));
 }
 
-static u16 QWCinVIFMFIFO(u32 DrainADDR)
+static u16 QWCinVIFMFIFO(u32 DrainADDR, u16 qwc)
 {
 	u32 ret;
-
-	SPR_LOG("VIF MFIFO Requesting %x QWC from the MFIFO Base %x MFIFO Top %x, SPR MADR %x Drain %x", vif1ch.qwc, dmacRegs.rbor.ADDR, dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16, spr0ch.madr, DrainADDR);
+	
 	//Calculate what we have in the fifo.
 	if(DrainADDR <= spr0ch.madr)
 	{
@@ -44,7 +41,8 @@ static u16 QWCinVIFMFIFO(u32 DrainADDR)
 		//calculate from base to the SPR tag addr and what is left in the top of the ring
 		ret = ((spr0ch.madr - dmacRegs.rbor.ADDR) + (limit - DrainADDR)) >> 4;
 	}
-	SPR_LOG("%x Available of the %x requested", ret, vif1ch.qwc);
+
+	SPR_LOG("VIF MFIFO Requesting %x QWC of %x Available from the MFIFO Base %x MFIFO Top %x, SPR MADR %x Drain %x", qwc, ret, dmacRegs.rbor.ADDR, dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16, spr0ch.madr, DrainADDR);
 
 	return ret;
 }
@@ -52,7 +50,7 @@ static __fi bool mfifoVIF1rbTransfer()
 {
 	u32 maddr = dmacRegs.rbor.ADDR;
 	u32 msize = dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16;
-	u16 mfifoqwc = std::min(QWCinVIFMFIFO(vif1ch.madr), vif1ch.qwc);
+	u16 mfifoqwc = std::min(QWCinVIFMFIFO(vif1ch.madr, vif1ch.qwc), vif1ch.qwc);
 	u32 *src;
 	bool ret;
 	
@@ -121,7 +119,7 @@ static __fi void mfifo_VIF1chain()
 	        vif1ch.madr < (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u))
 	{
 		//if(vif1ch.madr == (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16)) DevCon.Warning("Edge VIF1");
-		if (QWCinVIFMFIFO(vif1ch.madr) == 0) {
+		if (QWCinVIFMFIFO(vif1ch.madr, vif1ch.qwc) == 0) {
 			SPR_LOG("VIF MFIFO Empty before transfer");
 			vif1.inprogress |= 0x10;
 			g_vif1Cycles += 4;
@@ -183,7 +181,7 @@ void mfifoVIF1transfer()
 
 	if (vif1ch.qwc == 0)
 	{
-		if (QWCinVIFMFIFO(vif1ch.tadr) == 0) {
+		if (QWCinVIFMFIFO(vif1ch.tadr, 1) == 0) {
 			SPR_LOG("VIF MFIFO Empty before tag");
 			vif1.inprogress |= 0x10;
 			g_vif1Cycles += 4;
@@ -237,8 +235,8 @@ void mfifoVIF1transfer()
 
 		vif1ch.madr = ptag[1]._u32;
 
-		SPR_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx mfifo qwc = %x spr0 madr = %x",
-        ptag[1]._u32, ptag[0]._u32, vif1ch.qwc, ptag->ID, vif1ch.madr, vif1ch.tadr, vifqwc, spr0ch.madr);
+		SPR_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx spr0 madr = %x",
+        ptag[1]._u32, ptag[0]._u32, vif1ch.qwc, ptag->ID, vif1ch.madr, vif1ch.tadr, spr0ch.madr);
 
 		vif1.done |= hwDmacSrcChainWithStack(vif1ch, ptag->ID);
 
@@ -260,7 +258,7 @@ void mfifoVIF1transfer()
 	}
 	
 
-	SPR_LOG("mfifoVIF1transfer end %x madr %x, tadr %x vifqwc %x", vif1ch.chcr._u32, vif1ch.madr, vif1ch.tadr, vifqwc);
+	SPR_LOG("mfifoVIF1transfer end %x madr %x, tadr %x", vif1ch.chcr._u32, vif1ch.madr, vif1ch.tadr);
 }
 
 void vifMFIFOInterrupt()
