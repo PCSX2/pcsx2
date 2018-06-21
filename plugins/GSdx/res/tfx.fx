@@ -341,11 +341,32 @@ float4 sample_4a(float4 uv)
 	c.y = sample_c(uv.zy).a;
 	c.z = sample_c(uv.xw).a;
 	c.w = sample_c(uv.zw).a;
-	
-	#if SHADER_MODEL <= 0x300
-	if(PS_RT) c *= 128.0f / 255;
-	#endif
 
+#if SHADER_MODEL <= 0x300
+
+	if (PS_RT) c *= 128.0f / 255;
+	// D3D9 doesn't support integer operations
+
+#else
+
+	// Denormalize value
+	uint4 i = uint4(c * 255.0f + 0.5f);
+
+	if (PS_PAL_FMT == 1)
+	{
+		// 4HL
+		c = float4(i & 0xFu) / 255.0f;
+	}
+	else if (PS_PAL_FMT == 2)
+	{
+		// 4HH
+		c = float4(i >> 4u) / 255.0f;
+	}
+
+#endif
+
+	// Most of texture will hit this code so keep normalized float value
+	// 8 bits
 	return c * 255./256 + 0.5/256;
 }
 

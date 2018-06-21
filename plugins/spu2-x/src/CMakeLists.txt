@@ -89,7 +89,6 @@ if(Windows)
     include_directories("Windows")
 else()
     LIST(APPEND spu2xSources
-        Linux/AboutBox.cpp
         Linux/Alsa.cpp
         Linux/CfgHelpers.cpp
         Linux/Config.cpp

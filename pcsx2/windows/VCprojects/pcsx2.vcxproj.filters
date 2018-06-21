@@ -1380,9 +1380,6 @@
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Video.png">
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Appearance.png">
-      <Filter>AppHost\Resources</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\Breakpoint_Inactive.png">
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>

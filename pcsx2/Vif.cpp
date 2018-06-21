@@ -237,7 +237,7 @@ __fi void vif1FBRST(u32 value) {
 	if (FBRST(value).STC) // Cancel Vif Stall.
 	{
 		bool cancel = false;
-
+		//DevCon.Warning("Cancel stall. Stat = %x", vif1Regs.stat._u32);
 		/* Cancel stall, first check if there is a stall to cancel, and then clear VIF1_STAT VSS|VFS|VIS|INT|ER0|ER1 bits */
 		if (vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
 		{
@@ -277,9 +277,11 @@ __fi void vif1STAT(u32 value) {
 
 	/* Only FDR bit is writable, so mask the rest */
 	if ((vif1Regs.stat.FDR) ^ ((tVIF_STAT&)value).FDR) {
+		bool isStalled = false;
 		// different so can't be stalled
 		if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS)) {
-			DevCon.WriteLn("changing dir when vif1 fifo stalled done = %x qwc = %x", vif1.done, vif1ch.qwc);		
+			DbgCon.WriteLn("changing dir when vif1 fifo stalled done = %x qwc = %x stat = %x", vif1.done, vif1ch.qwc, vif1Regs.stat._u32);
+			isStalled = true;
 		}
 
 		//Hack!! Hotwheels seems to leave 1QW in the fifo and expect the DMA to be ready for a reverse FIFO
@@ -287,8 +289,10 @@ __fi void vif1STAT(u32 value) {
 		//Hotwheels had this in the "direction when stalled" area, however Sled Storm seems to keep an eye on the dma
 		//position, as we clear it and set it to the end well before the interrupt, the game assumes it's finished,
 		//then proceeds to reverse the dma before we have even done it ourselves. So lets just make sure VIF is ready :)
-		vif1ch.chcr.STR = false;
-		cpuRegs.interrupt &= ~((1 << DMAC_VIF1) | (1 << DMAC_MFIFO_VIF));
+		if (vif1ch.qwc > 0 || isStalled == false){
+			vif1ch.chcr.STR = false;
+			cpuRegs.interrupt &= ~((1 << DMAC_VIF1) | (1 << DMAC_MFIFO_VIF));
+		}
 		//This is actually more important for our handling, else the DMA for reverse fifo doesnt start properly.
 	}
 
@@ -312,6 +316,7 @@ __fi void vif1STAT(u32 value) {
 		//Sometimes the value from the GS is bigger than vif wanted, so it just sets it back and cancels it.
 		//Other times it can read it off ;)
 		vif1Regs.stat.FQC = 0;
+		if (vif1ch.chcr.STR) CPU_INT(DMAC_VIF1, 0);
 	}
 }
 

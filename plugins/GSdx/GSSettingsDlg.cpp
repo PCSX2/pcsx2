@@ -657,6 +657,7 @@ void GSHacksDlg::OnInit()
 
 	// It can only be accessed with a HW renderer, so this is sufficient.
 	bool dx9 = renderer == GSRendererType::DX9_HW;
+	bool dx11 = renderer == GSRendererType::DX1011_HW;
 	bool ogl = renderer == GSRendererType::OGL_HW;
 	bool native = upscaling_multiplier == 1;
 
@@ -712,7 +713,7 @@ void GSHacksDlg::OnInit()
 	ComboBoxInit(IDC_GEOMETRY_SHADER_OVERRIDE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_geometry_shader"));
 	ComboBoxInit(IDC_IMAGE_LOAD_STORE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_GL_ARB_shader_image_load_store"));
 
-	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETRANGE, 0, MAKELPARAM(1000, 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_SkipDraw"), 0));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
@@ -723,7 +724,7 @@ void GSHacksDlg::OnInit()
 
 	// Direct3D-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), !ogl);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), !ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), dx11);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAACB), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !ogl);
 

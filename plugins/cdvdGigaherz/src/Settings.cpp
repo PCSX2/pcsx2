@@ -16,7 +16,9 @@
 #include "Settings.h"
 
 #if defined(_WIN32)
-#include <codecvt>
+#define NOMINMAX
+#include <windows.h>
+#include <vector>
 #endif
 #include <fstream>
 #include <locale>
@@ -96,8 +98,10 @@ bool Settings::Get(const std::string &key, std::string &data) const
 #if defined(_WIN32)
 void Settings::Set(std::string key, std::wstring value)
 {
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    m_data[key] = converter.to_bytes(value);
+    int size = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    std::vector<char> converted_string(size);
+    WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, converted_string.data(), converted_string.size(), nullptr, nullptr);
+    m_data[key] = converted_string.data();
 }
 
 bool Settings::Get(const std::string &key, std::wstring &data) const
@@ -106,8 +110,10 @@ bool Settings::Get(const std::string &key, std::wstring &data) const
     if (it == m_data.end())
         return false;
 
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    data = converter.from_bytes(it->second);
+    int size = MultiByteToWideChar(CP_UTF8, 0, it->second.c_str(), -1, nullptr, 0);
+    std::vector<wchar_t> converted_string(size);
+    MultiByteToWideChar(CP_UTF8, 0, it->second.c_str(), -1, converted_string.data(), converted_string.size());
+    data = converted_string.data();
     return true;
 }
 #endif

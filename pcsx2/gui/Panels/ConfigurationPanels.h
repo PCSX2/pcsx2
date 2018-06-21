@@ -305,7 +305,6 @@ namespace Panels
 	protected:
 		pxCheckBox*			m_check_SynchronousGS;
 		wxButton*			m_restore_defaults;
-		pxCheckBox*			m_check_DisableOutput;
 		FrameSkipPanel*		m_span;
 		FramelimiterPanel*	m_fpan;
 
@@ -478,29 +477,6 @@ namespace Panels
 		virtual bool ValidateEnumerationStatus()=0;
 	
 		void OnShow(wxShowEvent& evt);
-	};
-
-	// --------------------------------------------------------------------------------------
-	//  ThemeSelectorPanel
-	// --------------------------------------------------------------------------------------
-	class ThemeSelectorPanel : public BaseSelectorPanel
-	{
-		typedef BaseSelectorPanel _parent;
-
-	protected:
-		std::unique_ptr<wxArrayString> m_ThemeList;
-		wxListBox* m_ComboBox;
-		DirPickerPanel* m_FolderPicker;
-
-	public:
-		virtual ~ThemeSelectorPanel();
-		ThemeSelectorPanel( wxWindow* parent );
-
-	protected:
-		virtual void Apply();
-		virtual void AppStatusEvent_OnSettingsApplied();
-		virtual void DoRefresh();
-		virtual bool ValidateEnumerationStatus();	
 	};
 
 	// --------------------------------------------------------------------------------------

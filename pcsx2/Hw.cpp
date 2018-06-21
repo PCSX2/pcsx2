@@ -170,8 +170,56 @@ __ri bool hwMFIFOWrite(u32 addr, const u128* data, uint qwc)
 		pxFailDev( wxsFormat( L"Scratchpad/MFIFO: Invalid base physical address: 0x%08x", dmacRegs.rbor.ADDR) );
 		return false;
 	}
-
+	
 	return true;
+}
+
+__ri void hwMFIFOResume(u32 transferred) {
+	
+	if (transferred == 0)
+	{
+		return; //Nothing got put in the MFIFO, we don't care
+	}
+
+	switch (dmacRegs.ctrl.MFD)
+	{
+		case MFD_VIF1: // Most common case.
+		{
+			SPR_LOG("Added %x qw to mfifo, Vif CHCR %x Stalled %x done %x", transferred, vif1ch.chcr._u32, vif1.vifstalled.enabled, vif1.done);
+			if (vif1.inprogress & 0x10)
+			{
+				vif1.inprogress &= ~0x10;
+				//Don't resume if stalled or already looping
+				if (vif1ch.chcr.STR && !(cpuRegs.interrupt & (1 << DMAC_MFIFO_VIF)) && !vif1Regs.stat.INT)
+				{
+					SPR_LOG("Data Added, Resuming");
+					//Need to simulate the time it takes to copy here, if the VIF resumes before the SPR has finished, it isn't happy.
+					CPU_INT(DMAC_MFIFO_VIF, transferred * BIAS);
+				}
+
+				//Apparently this is bad, i guess so, the data is going to memory rather than the FIFO
+				//vif1Regs.stat.FQC = 0x10; // FQC=16
+			}			
+			break;
+		}
+		case MFD_GIF:
+		{
+			SPR_LOG("Added %x qw to mfifo, Gif CHCR %x done %x", transferred, gifch.chcr._u32, gif.gspath3done);
+			if ((gif.gifstate & GIF_STATE_EMPTY)) {
+				CPU_INT(DMAC_MFIFO_GIF, transferred * BIAS);
+				gif.gifstate = GIF_STATE_READY;
+			}
+			if (!CHECK_GIFFIFOHACK)
+			{
+				gifRegs.stat.FQC = 16;
+				//GIF FIFO
+				clearFIFOstuff(true);
+			}			
+			break;
+		}
+		default:
+			break;
+	}
 }
 
 __ri bool hwDmacSrcChainWithStack(DMACh& dma, int id) {

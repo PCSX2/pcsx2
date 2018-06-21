@@ -616,16 +616,14 @@ msgstr ""
 "%s, нажмите \"Отмена\" для выхода из окна настроек."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
 msgid ""
 "-3 - Reduces the EE's cyclerate to about 50%.  Big speedup, but *will* cause "
 "stuttering audio on many FMVs."
 msgstr ""
-"-2 - понижает цикл работы EE примерно на 50%. Хорошее ускорение, чревато "
+"-3 - понижает цикл работы EE примерно на 50%. Хорошее ускорение, чревато "
 "возможным заиканием звука."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
 msgid ""
 "-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may "
 "cause stuttering audio on many FMVs."
@@ -634,7 +632,6 @@ msgstr ""
 "возможным заиканием звука."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
 msgid ""
 "-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games "
 "with high compatibility."
@@ -643,7 +640,6 @@ msgstr ""
 "большинства игр, без потери совместимости."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:45
-#, fuzzy
 msgid ""
 "0 - Default cyclerate (100%). This closely matches the actual speed of a "
 "real PS2 EmotionEngine."
@@ -652,7 +648,6 @@ msgstr ""
 "прироста скорости)."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
-#, fuzzy
 msgid ""
 "1 - Increases the EE's cyclerate to about 130%. Mildly increases hardware "
 "requirements, may increase in-game FPS."
@@ -661,22 +656,20 @@ msgstr ""
 "может увеличить FPS."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:55
-#, fuzzy
 msgid ""
 "2 - Increases the EE's cyclerate to about 180%. Increases hardware "
 "requirements, may noticeably increase in-game FPS."
 msgstr ""
-"1 - повышает цикл работы EE примерно на 33%. Требует более мощный компьютер, "
+"2 - повышает цикл работы EE примерно на 33%. Требует более мощный компьютер, "
 "может увеличить FPS."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:60
-#, fuzzy
 msgid ""
 "3 - Increases the EE's cyclerate to about 300%. Greatly increases hardware "
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
-"1 - повышает цикл работы EE примерно на 50%. Требует очень мощный компьютер, "
+"3 - повышает цикл работы EE примерно на 50%. Требует очень мощный компьютер, "
 "может значительно увеличить FPS.\n"
 "При выборе данной настройки игра может НЕ ЗАГРУЗИТЬСЯ!"
 

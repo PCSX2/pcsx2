@@ -152,12 +152,6 @@ SPU2configure()
     configure();
 }
 
-EXPORT_C_(void)
-SPU2about()
-{
-    AboutBox();
-}
-
 EXPORT_C_(s32)
 SPU2test()
 {

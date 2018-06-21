@@ -51,7 +51,7 @@ FixedInt<Precision> FixedInt<Precision>::operator+(const FixedInt<Precision> &ri
 template <int Precision>
 FixedInt<Precision> FixedInt<Precision>::operator-(const FixedInt<Precision> &right) const
 {
-    return FixedInt<Precision>().SetRaw(Raw + right.Raw);
+    return FixedInt<Precision>().SetRaw(Raw - right.Raw);
 }
 
 template <int Precision>
@@ -63,7 +63,7 @@ FixedInt<Precision> &FixedInt<Precision>::operator+=(const FixedInt<Precision> &
 template <int Precision>
 FixedInt<Precision> &FixedInt<Precision>::operator-=(const FixedInt<Precision> &right)
 {
-    return SetRaw(Raw + right.Raw);
+    return SetRaw(Raw - right.Raw);
 }
 
 template <int Precision>

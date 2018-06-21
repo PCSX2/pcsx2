@@ -5,25 +5,25 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.3.0\n"
+"Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2017-03-10 13:24+0100\n"
-"PO-Revision-Date: 2017-03-11 17:14+0100\n"
+"POT-Creation-Date: 2018-06-11 21:04+0200\n"
+"PO-Revision-Date: 2018-06-11 21:05+0200\n"
+"Last-Translator: Imre Kristoffer Eilertsen <imreeil42@gmail.com>\n"
 "Language-Team: \n"
+"Language: nb\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE;pxEt\n"
-"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: trunk\n"
-"X-Generator: Poedit 1.8.12\n"
-"Last-Translator: Imre Kristoffer Eilertsen <imreeil42@gmail.com>\n"
+"X-Generator: Poedit 2.0.8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Language: nb\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
-#: common/src/Utilities/Exceptions.cpp:268
+#: common/src/Utilities/Exceptions.cpp:254
 msgid ""
 "There is not enough virtual memory available, or necessary virtual memory "
 "mappings have already been reserved by other processes, services, or DLLs."
@@ -32,7 +32,7 @@ msgstr ""
 "virtuelle minnetilegninger allerede blitt reservert av andre prosesser, "
 "tjenester eller DLLer."
 
-#: pcsx2/CDVD/CDVD.cpp:401
+#: pcsx2/CDVD/CDVD.cpp:405
 msgid ""
 "Playstation game discs are not supported by PCSX2.  If you want to emulate "
 "PSX games then you'll have to download a PSX-specific emulator, such as "
@@ -42,11 +42,11 @@ msgstr ""
 "spill, må du nok laste ned en PS1-spesifikk emulator, slik som ePSXe eller "
 "PCSX."
 
-#: pcsx2/CDVD/CDVD.cpp:2054
+#: pcsx2/CDVD/CDVD.cpp:2067
 msgid ""
-"Failed to read/write NMV/MEC file. Check your bios setup/permission settings"
+"Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings."
 msgstr ""
-"Klarte ikke å lese inn / skrive til NMV/MEC-filen. Sjekk BIOS-oppsetts-/"
+"Klarte ikke å lese inn / skrive til NMV/MEC fil. Sjekk BIOS-oppsetts-/"
 "tillatelses-innstillingene."
 
 #: pcsx2/System.cpp:112
@@ -110,7 +110,7 @@ msgstr ""
 "'Lukk' for å prøve å lukke tråden.\n"
 "'Avslutt' for å avslutte PCSX2 umiddelbart.\n"
 
-#: pcsx2/gui/AppUserMode.cpp:57
+#: pcsx2/gui/AppUserMode.cpp:55
 msgid ""
 "Please ensure that these folders are created and that your user account is "
 "granted write permissions to them -- or re-run PCSX2 with elevated "
@@ -160,7 +160,7 @@ msgstr "Konverter dette minnekortet til en 32MB Memory Card .ps2-fil"
 msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
 msgstr "Konverter dette minnekortet til en 64MB Memory Card .ps2-fil"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:225
 msgid ""
 "NTFS compression can be changed manually at any time by using file "
 "properties from Windows Explorer."
@@ -252,15 +252,6 @@ msgstr ""
 "(Kun for mappetypen) Reindekser minnekortinnholdene hver gang et nytt spill "
 "startes opp. Dette hindrer minnekortet i å gå tom for plass til lagrefiler."
 
-#: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
-#, c-format
-msgid ""
-"The thread '%s' is not responding.  It could be deadlocked, or it might just "
-"be running *really* slowly."
-msgstr ""
-"'%s'-tråden svarer ikke. Den kan ha stagnert i en løkke, eller den bare "
-"kjører veldig, veldig tregt."
-
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:38
 msgid ""
 "Warning!  You are running PCSX2 with command line options that override your "
@@ -332,7 +323,7 @@ msgstr ""
 "Denne handlingen vil tilbakestille den virtuelle PS2-maskinens nåværende "
 "tilstand; all pågående fremgang vil gå tapt. Er du sikker?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:118
+#: pcsx2/gui/MainMenuClicks.cpp:112
 #, c-format
 msgid ""
 "This command clears %s settings and allows you to re-run the First-Time "
@@ -353,7 +344,7 @@ msgstr ""
 "\n"
 "(Bemerk at tilleggenes innstillinger ikke er påvirket.)"
 
-#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:534
+#: pcsx2/gui/MemoryCardFile.cpp:88 pcsx2/gui/MemoryCardFolder.h:534
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -369,7 +360,7 @@ msgstr ""
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr "(FolderMcd) Minnekortet er fullt, og kunne derfor ikke legge til %s."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:139
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:131
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -377,11 +368,7 @@ msgstr ""
 "Vennligst velg en gyldig BIOS. Hvis du ikke har mulighet til å gjøre et "
 "gyldig valg, klikk på Lukk for å lukke oppsettspanelet."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:112
-msgid "Notice: Most games are fine with the default options. "
-msgstr "Bemerk at de fleste spill kjører helt bra med standardinnstillingene. "
-
-#: pcsx2/gui/Panels/CpuPanel.cpp:180
+#: pcsx2/gui/Panels/CpuPanel.cpp:112 pcsx2/gui/Panels/CpuPanel.cpp:180
 msgid "Notice: Most games are fine with the default options."
 msgstr "Bemerk at de fleste spill kjører helt bra med standardinnstillingene."
 
@@ -398,7 +385,7 @@ msgstr ""
 "Når dette er valgt, vil denne mappen automatisk reflektere standarden som er "
 "tilknyttet PCSX2s nåværende brukermodusinnstilling. "
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:55
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:65
 msgid ""
 "Zoom = 100: Fit the entire image to the window without any cropping.\n"
 "Above/Below 100: Zoom In/Out\n"
@@ -420,7 +407,7 @@ msgstr ""
 "Tastatur: Ctrl + NUMPAD-pluss: Zoom inn; Ctrl + NUMPAD-minus: Zoom ut; Ctrl "
 "+ Numpad-*: Skift mellom 100 og 0."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:68
 msgid ""
 "Vsync eliminates screen tearing but typically has a big performance hit. It "
 "usually only applies to fullscreen mode, and may not work with all GS "
@@ -430,7 +417,7 @@ msgstr ""
 "spillytelsen. Det fungerer vanligvis kunn i fullskjermsmodus, og kan kanskje "
 "ikke virke med alle GS-tillegg."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:61
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:71
 msgid ""
 "Check this to force the mouse cursor invisible inside the GS window; useful "
 "if using the mouse as a primary control device for gaming.  By default the "
@@ -441,7 +428,7 @@ msgstr ""
 "spilling. Som standard gjemmes musen automatisk etter 2 sekunder med "
 "inaktivitet."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:74
 msgid ""
 "Enables automatic mode switch to fullscreen when starting or resuming "
 "emulation. You can still toggle fullscreen display at any time using alt-"
@@ -451,7 +438,7 @@ msgstr ""
 "fortsetter en emulering. Du kan forsatt skru av/på fullskjermsvisningen til "
 "enhver tid ved å bruke Alt+Enter."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:71
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:81
 msgid ""
 "Completely closes the often large and bulky GS window when pressing ESC or "
 "pausing the emulator."
@@ -526,7 +513,7 @@ msgstr ""
 "Den tryggeste måten er å sørge for at alle spillkorrigeringer er fullstendig "
 "skrudd av."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:683
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:679
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -535,14 +522,14 @@ msgstr ""
 "Du er i ferd med å slette det formatterte minnekortet '%s'. Alle dataer på "
 "dette kortet vil gå tapt!  Er du fullstendig, absolutt, positivt sikker?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:722
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:718
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 "Mislyktes: Duplisering er kun tillatt inn i en tom PS2-inngang eller til "
 "filsystemet."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:764
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:760
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr "Mislyktes: Målminnekortet '%s' er i bruk."
@@ -572,6 +559,10 @@ msgstr ""
 "satt til å bruke installasjonens standardverdier."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
+msgid "This folder is where PCSX2 loads cheats from."
+msgstr "Dette er mappen hvor PCSX2 laster inn juksekoder fra."
+
+#: pcsx2/gui/Panels/PathsPanel.cpp:48
 msgid ""
 "This folder is where PCSX2 records savestates; which are recorded either by "
 "using menus/toolbars, or by pressing F1/F3 (save/load)."
@@ -579,7 +570,7 @@ msgstr ""
 "Dette er mappen hvor PCSX2 lagrer lagretilstander; som lagres enten ved å "
 "bruke menyer/verktøylinjer, eller ved å trykke på F1 (Lagre) / F3 (Last inn)."
 
-#: pcsx2/gui/Panels/PathsPanel.cpp:48
+#: pcsx2/gui/Panels/PathsPanel.cpp:56
 msgid ""
 "This folder is where PCSX2 saves screenshots.  Actual screenshot image "
 "format and style may vary depending on the GS plugin being used."
@@ -587,7 +578,7 @@ msgstr ""
 "Dette er mappen hvor PCSX2 lagrer skjermklipp. Det faktiske skjermklippbilde-"
 "formatet og -stilen kan variere, avhengig av GS-tillegget som brukes."
 
-#: pcsx2/gui/Panels/PathsPanel.cpp:56
+#: pcsx2/gui/Panels/PathsPanel.cpp:64
 msgid ""
 "This folder is where PCSX2 saves its logfiles and diagnostic dumps.  Most "
 "plugins will also adhere to this folder, however some older plugins may "
@@ -597,7 +588,7 @@ msgstr ""
 "De fleste tillegg vil også bruke denne mappen, men noen eldre tillegg kan "
 "kanskje ignorere den."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:242
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:240
 msgid ""
 "Warning!  Changing plugins requires a complete shutdown and reset of the PS2 "
 "virtual machine. PCSX2 will attempt to save and restore the state, but if "
@@ -613,7 +604,7 @@ msgstr ""
 "\n"
 "Er du sikker på at du vil bruke disse innstillingene nå?"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:454
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:452
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
@@ -821,31 +812,13 @@ msgstr ""
 "Bemark at på grunn av PS2s maskinvaredesign, er presis rammehopping umulig. "
 "Å aktivere det vil forårsake store grafiske problemer i noen spill."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:298
+#: pcsx2/gui/Panels/VideoPanel.cpp:296
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
 msgstr ""
 "Aktiver dette hvis du tror at MTGS-trådsynkronisering forårsaker krasjer "
 "eller grafiske feil."
-
-#: pcsx2/gui/Panels/VideoPanel.cpp:301
-msgid ""
-"Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
-"option is best used in conjunction with savestates: save a state at an ideal "
-"scene, enable this option, and re-load the savestate.\n"
-"\n"
-"Warning: This option can be enabled on-the-fly but typically cannot be "
-"disabled on-the-fly (video will typically be garbage)."
-msgstr ""
-"Fjerner enhver ytelsesteststøy som er forårsaket av MTGS-tråden eller "
-"skjermkortets \"overhead\". Denne innstillingen brukes best sammen med "
-"lagretilstander: Lagre en tilstand ved en passende scene, aktiver denne "
-"innstillingen, og gjeninnlast lagretilstanden.\n"
-"\n"
-"Advarsel: Denne innstillingen kan bli aktivert midt i en aktivitet, men kan "
-"vanligvis ikke deaktiveres midt i en aktivitet (Videoen vil vanligvis ende "
-"opp som søppel)."
 
 #: pcsx2/vtlb.cpp:835
 msgid ""
@@ -868,3 +841,31 @@ msgstr ""
 "de spesifikke minneommrådene som var påkrevd, og vil ikke være tilgjengelig "
 "for bruk.  Dette er ikke en kritisk feil, etter som SuperVU er faset ut, og "
 "at du i stedet burde bruke microVU uansett. :)"
+
+#~ msgid ""
+#~ "The thread '%s' is not responding.  It could be deadlocked, or it might "
+#~ "just be running *really* slowly."
+#~ msgstr ""
+#~ "'%s'-tråden svarer ikke. Den kan ha stagnert i en løkke, eller den bare "
+#~ "kjører veldig, veldig tregt."
+
+#~ msgid "Notice: Most games are fine with the default options. "
+#~ msgstr ""
+#~ "Bemerk at de fleste spill kjører helt bra med standardinnstillingene. "
+
+#~ msgid ""
+#~ "Removes any benchmark noise caused by the MTGS thread or GPU overhead.  "
+#~ "This option is best used in conjunction with savestates: save a state at "
+#~ "an ideal scene, enable this option, and re-load the savestate.\n"
+#~ "\n"
+#~ "Warning: This option can be enabled on-the-fly but typically cannot be "
+#~ "disabled on-the-fly (video will typically be garbage)."
+#~ msgstr ""
+#~ "Fjerner enhver ytelsesteststøy som er forårsaket av MTGS-tråden eller "
+#~ "skjermkortets \"overhead\". Denne innstillingen brukes best sammen med "
+#~ "lagretilstander: Lagre en tilstand ved en passende scene, aktiver denne "
+#~ "innstillingen, og gjeninnlast lagretilstanden.\n"
+#~ "\n"
+#~ "Advarsel: Denne innstillingen kan bli aktivert midt i en aktivitet, men "
+#~ "kan vanligvis ikke deaktiveres midt i en aktivitet (Videoen vil vanligvis "
+#~ "ende opp som søppel)."

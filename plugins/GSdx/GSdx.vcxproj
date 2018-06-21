@@ -129,7 +129,6 @@
     <ClCompile Include="GSRasterizer.cpp" />
     <ClCompile Include="GSRenderer.cpp" />
     <ClCompile Include="GSRendererCL.cpp" />
-    <ClCompile Include="GSRendererCS.cpp" />
     <ClCompile Include="GSRendererDX.cpp" />
     <ClCompile Include="GSRendererDX11.cpp" />
     <ClCompile Include="GSRendererDX9.cpp" />
@@ -220,7 +219,6 @@
     <ClInclude Include="GSRasterizer.h" />
     <ClInclude Include="GSRenderer.h" />
     <ClInclude Include="GSRendererCL.h" />
-    <ClInclude Include="GSRendererCS.h" />
     <ClInclude Include="GSRendererDX.h" />
     <ClInclude Include="GSRendererDX11.h" />
     <ClInclude Include="GSRendererDX9.h" />
@@ -286,7 +284,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="GSdx.def" />
-    <None Include="res\cs.fx" />
     <None Include="res\fxaa.fx" />
     <None Include="res\logo10.bmp" />
     <None Include="res\logo9.bmp" />
@@ -323,7 +320,7 @@
     <ProjectReference Include="..\..\3rdparty\xz\liblzma.vcxproj">
       <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\unfree\baseclasses\baseclasses.vcxproj">
+    <ProjectReference Include="..\..\3rdparty\baseclasses\baseclasses.vcxproj">
       <Project>{27f17499-a372-4408-8afa-4f9f4584fbd3}</Project>
     </ProjectReference>
   </ItemGroup>

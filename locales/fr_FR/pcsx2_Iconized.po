@@ -1,17 +1,14 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR PCSX2 Dev Team
+# Copyright (C) 2018 PCSX2 Team
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
 "PO-Revision-Date: 2016-02-27 12:58+0100\n"
-"Last-Translator: goldeng <odakawoi@yahoo.fr>\n"
-"Language-Team: goldeng;piorrro33 <odakawoi@yahoo.fr;piorrro33@outlook.com>\n"
-"Language: fr\n"
+"Last-Translator: Atomic83\n"
+"Language-Team: Atomic83;goldeng;piorrro33 <odakawoi@yahoo.fr;piorrro33@outlook.com>\n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -44,7 +41,9 @@ msgstr ""
 msgid ""
 "Failed to read/write NMV/MEC file. Check your bios setup/permission settings"
 msgstr ""
-"Échec de la lecture/écriture du fichier NMV/MEC. Verifiez vos paramètres/permissions dans votre bios "
+"Echec de l'écriture/lecture du fichier NMV/MEC "
+"Vérifiez vos paramètres/permissions dans votre bios." 
+
 #: pcsx2/System.cpp:112
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
@@ -650,7 +649,7 @@ msgid ""
 "-3 - Reduces the EE's cyclerate to about 50%.  Big speedup, but *will* cause "
 "stuttering audio on many FMVs."
 msgstr ""
-"-2 - Diminue la fréquence du processeur EE d'environ 50% : amélioration "
+"-3 - Diminue la fréquence du processeur EE d'environ 50%.  Amélioration "
 "modérée des performances, mais le son de certaines cinématiques sera haché."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
@@ -659,7 +658,7 @@ msgid ""
 "-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may "
 "cause stuttering audio on many FMVs."
 msgstr ""
-"-2 - Diminue la fréquence du processeur EE d'environ 50% : amélioration "
+"-2 - Diminue la fréquence du processeur EE d'environ 60%.  Amélioration "
 "modérée des performances, mais le son de certaines cinématiques sera haché."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
@@ -668,7 +667,7 @@ msgid ""
 "-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games "
 "with high compatibility."
 msgstr ""
-"-1 - Diminue la fréquence du processeur EE d'environ 33% : amélioration des "
+"-1 - Diminue la fréquence du processeur EE d'environ 75%. Amélioration des "
 "performances et compatibilité élevée."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:45
@@ -677,7 +676,7 @@ msgid ""
 "0 - Default cyclerate (100%). This closely matches the actual speed of a "
 "real PS2 EmotionEngine."
 msgstr ""
-"0 - Fréquence par défaut : la vitesse d'émulation est exactement la même que "
+"0 - Fréquence par défaut. La vitesse d'émulation est exactement la même que "
 "celle d'une véritable console PlayStation 2."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
@@ -686,7 +685,7 @@ msgid ""
 "1 - Increases the EE's cyclerate to about 130%. Mildly increases hardware "
 "requirements, may increase in-game FPS."
 msgstr ""
-"1 - Augmente la fréquence du processeur EE d'environ 33%. Augmente les "
+"1 - Augmente la fréquence du processeur EE d'environ 130%. Augmente les "
 "ressources nécessaires mais peut augmenter les FPS."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:55
@@ -695,7 +694,7 @@ msgid ""
 "2 - Increases the EE's cyclerate to about 180%. Increases hardware "
 "requirements, may noticeably increase in-game FPS."
 msgstr ""
-"1 - Augmente la fréquence du processeur EE d'environ 33%. Augmente les "
+"2 - Augmente la fréquence du processeur EE d'environ 180%. Augmente les "
 "ressources nécessaires mais peut augmenter les FPS."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:60
@@ -705,9 +704,9 @@ msgid ""
 "requirements, may noticeably increase in-game FPS.\n"
 "This setting can cause games to FAIL TO BOOT."
 msgstr ""
-"2 - Augmente la fréquence du processeur EE d'environ 50%. Augmente beaucoup "
+"3 - Augmente la fréquence du processeur EE d'environ 300%. Augmente beaucoup "
 "les ressources nécessaires mais peut augmenter considérablement les FPS.\n"
-"Ce paramètre peut empêcher les jeux de démarrer !"
+"Ce paramètre peut empêcher certains jeux de démarrer !"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:77
 msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
@@ -719,7 +718,7 @@ msgid ""
 "1 - Mild VU Cycle Stealing.  Lower compatibility, but some speedup for most "
 "games."
 msgstr ""
-"1 - VU Cycle Stealing léger : faible compatibilité mais une amélioration "
+"1 - VU Cycle Stealing léger.  Faible compatibilité mais une amélioration "
 "sensible des performances pour certains jeux."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
@@ -727,7 +726,7 @@ msgid ""
 "2 - Moderate VU Cycle Stealing.  Even lower compatibility, but significant "
 "speedups in some games."
 msgstr ""
-"2 - VU Cycle Stealing modéré : très faible compatibilité, mais une "
+"2 - VU Cycle Stealing modéré.  Très faible compatibilité, mais une "
 "amélioration significative des performances pour certains jeux."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:93
@@ -735,7 +734,7 @@ msgid ""
 "3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause "
 "flickering visuals or slowdown in most games."
 msgstr ""
-"3 - VU Cycle Stealing maximal : relativement inutile puisqu'il engendre des "
+"3 - VU Cycle Stealing maximal.  Relativement inutile puisqu'il engendre des "
 "ralentissements et des bugs graphiques dans la plupart des jeux."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118

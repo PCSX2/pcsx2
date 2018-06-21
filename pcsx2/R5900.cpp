@@ -19,6 +19,7 @@
 
 #include "R5900.h"
 #include "R3000A.h"
+#include "ps2/pgif.h" // pgif init
 #include "VUmicro.h"
 #include "COP0.h"
 #include "MTVU.h"
@@ -82,6 +83,7 @@ void cpuReset()
 	EEsCycle = 0;
 	EEoCycle = cpuRegs.cycle;
 
+	pgifInit();
 	hwReset();
 	rcntInit();
 	psxReset();
@@ -288,7 +290,9 @@ static __fi void _cpuTestInterrupts()
 	// The following ints are rarely called.  Encasing them in a conditional
 	// as follows helps speed up most games.
 
-	if( cpuRegs.interrupt & 0x60F19 ) // Bits 0 3 4 8 9 10 11 17 18( 1100000111100011001 )
+	if (cpuRegs.interrupt & ((1 << DMAC_VIF0) | (1 << DMAC_FROM_IPU) | (1 << DMAC_TO_IPU)
+		| (1 << DMAC_FROM_SPR) | (1 << DMAC_TO_SPR) | (1 << DMAC_MFIFO_VIF) | (1 << DMAC_MFIFO_GIF)
+		| (1 << VIF_VU0_FINISH) | (1 << VIF_VU1_FINISH)))
 	{
 		TESTINT(DMAC_VIF0,		vif0Interrupt);
 

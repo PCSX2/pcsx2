@@ -99,7 +99,13 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 {
 	if (!CanConvertDepth()) {
 		GL_CACHE("LookupDepthSource not supported (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
-		throw GSDXRecoverableError();
+		if (m_renderer->m_game.title == CRC::JackieChanAdv || m_renderer->m_game.title == CRC::SVCChaos) {
+			// JackieChan and SVCChaos cause regressions when skipping the draw calls when depth is disabled/not supported.
+			// This way we make sure there are no regressions on D3D as well.
+			return LookupSource(TEX0, TEXA, r);
+		} else {
+			throw GSDXRecoverableError();
+		}
 	}
 
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
@@ -176,14 +182,18 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		// Note: might worth to check previous frame
 		// Note: otherwise return NULL and skip the draw
 
-		// Full Spectrum Warrior: first draw call of cut-scene rendering
-		// The game tries to emulate a texture shuffle with an old depth buffer
-		// (don't exists yet for us due to the cache)
-		// Rendering is nicer (less garbage) if we skip the draw call.
-		throw GSDXRecoverableError();
+		if (m_renderer->m_game.title == CRC::JackieChanAdv || m_renderer->m_game.title == CRC::SVCChaos) {
+			// JackieChan and SVCChaos cause regressions when skipping the draw calls so we reuse the old code for these two.
+			return LookupSource(TEX0, TEXA, r);
+		} else {
+			// Full Spectrum Warrior: first draw call of cut-scene rendering
+			// The game tries to emulate a texture shuffle with an old depth buffer
+			// (don't exists yet for us due to the cache)
+			// Rendering is nicer (less garbage) if we skip the draw call.
+			throw GSDXRecoverableError();
+		}
 
 		//ASSERT(0);
-		//return LookupSource(TEX0, TEXA, r);
 	}
 
 	return src;
@@ -1846,18 +1856,13 @@ void GSTextureCache::Target::Update()
 	// Alternate
 	// 1/ uses multiple vertex rectangle
 
-	GSVector2i t_size = m_texture->GetSize();
-	GSVector2 t_scale = m_texture->GetScale();
+	GSVector2i t_size = default_rt_size;
 
-	//Avoids division by zero when calculating texture size.
-	t_scale = GSVector2(std::max(1.0f, t_scale.x), std::max(1.0f, t_scale.y));
-	t_size.x = lround(static_cast<float>(t_size.x) / t_scale.x);
-	t_size.y = lround(static_cast<float>(t_size.y) / t_scale.y);
-
-	// Don't load above the GS memory
-	int max_y_blocks = (MAX_BLOCKS - m_TEX0.TBP0) / std::max(1u, m_TEX0.TBW);
-	int max_y = (max_y_blocks >> 5) * GSLocalMemory::m_psm[m_TEX0.PSM].pgs.y;
-	t_size.y = std::min(t_size.y, max_y);
+	// Ensure buffer width is at least of the minimum required value.
+	// Probably not necessary but doesn't hurt to be on the safe side.
+	// I've seen some games use buffer sizes over 1024, which might bypass our default limit
+	int buffer_width = m_TEX0.TBW << 6;
+	t_size.x = std::max(buffer_width, t_size.x);
 
 	GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, t_size);
 

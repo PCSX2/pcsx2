@@ -5,25 +5,25 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.4.0\n"
+"Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2017-05-30 09:58+0200\n"
-"PO-Revision-Date: 2017-06-08 15:30+0200\n"
+"POT-Creation-Date: 2018-06-11 21:01+0200\n"
+"PO-Revision-Date: 2018-06-11 21:02+0200\n"
+"Last-Translator: Jakob5566 <jakob5566@gmail.com>\n"
 "Language-Team: \n"
+"Language: da_DK\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE;pxEt\n"
-"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: trunk\n"
-"X-Generator: Poedit 2.0.2\n"
-"Last-Translator: Jakob5566 <jakob5566@gmail.com>\n"
+"X-Generator: Poedit 2.0.8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Language: da_DK\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
-#: common/src/Utilities/Exceptions.cpp:268
+#: common/src/Utilities/Exceptions.cpp:254
 msgid ""
 "There is not enough virtual memory available, or necessary virtual memory "
 "mappings have already been reserved by other processes, services, or DLLs."
@@ -32,20 +32,20 @@ msgstr ""
 "hukommelseskortlægninger allerede reserveret af andre processer, tjenester "
 "eller DLL-filer."
 
-#: pcsx2/CDVD/CDVD.cpp:401
+#: pcsx2/CDVD/CDVD.cpp:405
 msgid ""
 "Playstation game discs are not supported by PCSX2.  If you want to emulate "
 "PSX games then you'll have to download a PSX-specific emulator, such as "
 "ePSXe or PCSX."
 msgstr ""
 "Playstation spil understøttes ikke af PCSX2. Hvis du ønsker at emulere PSX-"
-"spil, skal du downloade en emulator, der er specielt lavet til PSX. F.eks "
+"spil, skal du downloade en emulator der er specielt lavet til PSX, F.eks "
 "ePSXe eller PCSX."
 
-#: pcsx2/CDVD/CDVD.cpp:2054
+#: pcsx2/CDVD/CDVD.cpp:2067
 msgid ""
-"Failed to read/write NMV/MEC file. Check your bios setup/permission settings"
-msgstr "Kunne ikke læse/skrive NMV/MEC filen. Undersøg dine BIOS indstillinger"
+"Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings."
+msgstr "Kunne ikke læse/skrive NMV/MEC fil. Undersøg dine BIOS indstillinger."
 
 #: pcsx2/System.cpp:112
 msgid ""
@@ -107,7 +107,7 @@ msgstr ""
 "'Annullér' for at forsøge at afbryde tråden.\n"
 "'Afbryd' for at afslutte PCSX2 med det samme.\n"
 
-#: pcsx2/gui/AppUserMode.cpp:57
+#: pcsx2/gui/AppUserMode.cpp:55
 msgid ""
 "Please ensure that these folders are created and that your user account is "
 "granted write permissions to them -- or re-run PCSX2 with elevated "
@@ -128,8 +128,8 @@ msgid ""
 "depending on how many are in the source memory card."
 msgstr ""
 "Vær opmærksom på at den følgende fil muligvis ikke indeholder alle gemte "
-"spilfiler. Det afhænger af, hvor mange filer, der er i det originale memory "
-"card."
+"spilfiler. Det afhænger af, hvor mange filer, der er i det originale "
+"MemoryCard."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
 msgid ""
@@ -137,27 +137,27 @@ msgid ""
 "emulator during the conversion process, even if the emulator is no longer "
 "responding to input."
 msgstr ""
-"ADVARSEL: Det vil tage noget tid at konvertere et memory card! Du må ikke "
+"ADVARSEL: Det vil tage noget tid at konvertere et MemoryCard! Du må ikke "
 "lukke ned for emulatoren under processen, heller ikke selvom emulatoren ikke "
 "længere reagerer på nogen input."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
-msgstr "Omdan dette memory card til en standard 8 MB memory card .ps2 fil."
+msgstr "Omdan dette MemoryCard til en standard 8 MB MemoryCard .ps2 fil."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
-msgstr "Omdan dette memory card til en 16 MB memory card .ps2 fil."
+msgstr "Omdan dette MemoryCard til en 16 MB MemoryCard .ps2 fil."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
-msgstr "Omdan dette memory card til en 32 MB memory card .ps2 fil."
+msgstr "Omdan dette MemoryCard til en 32 MB MemoryCard .ps2 fil."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
-msgstr "Omdan dette memory card til en 64 MB memory card .ps2 fil."
+msgstr "Omdan dette MemoryCard til en 64 MB MemoryCard .ps2 fil."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:225
 msgid ""
 "NTFS compression can be changed manually at any time by using file "
 "properties from Windows Explorer."
@@ -191,7 +191,7 @@ msgid ""
 "and BIOS.  It is recommended if this is your first time installing %s that "
 "you view the readme and configuration guide."
 msgstr ""
-"Guiden vil hjælpe dig med at konfigurere plugins, memory cards og BIOS. Det "
+"Guiden vil hjælpe dig med at konfigurere plugins, MemoryCards og BIOS. Det "
 "anbefales, at du læser readme-filen og konfigurationsguiden, hvis du "
 "installerer %s for første gang."
 
@@ -226,7 +226,7 @@ msgid ""
 "compresses memory cards very well (this option is highly recommended)."
 msgstr ""
 "NTFS-kompression er indbygget, hurtigt og fuldstændig troværdig; og "
-"komprimerer typisk memory cards uden problemer (denne valgmulighed er stærkt "
+"komprimerer typisk MemoryCards uden problemer (denne valgmulighed er stærkt "
 "anbefalet)."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:39
@@ -235,9 +235,9 @@ msgid ""
 "after loading from savestates.  May not be compatible with all games (Guitar "
 "Hero)."
 msgstr ""
-"Undgår beskadigelse på memory cards ved at tvinge spillet til at "
-"genindeksere kortindhold, efter det er blevet indlæst fra de gemte "
-"spiltilstande. Virker muligvis ikke til alle spil (Guitar Hero)."
+"Undgår beskadigelse på MemoryCards ved at tvinge spillet til at genindeksere "
+"kortindhold, efter det er blevet indlæst fra de gemte spiltilstande. Virker "
+"muligvis ikke til alle spil (Guitar Hero)."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
 msgid ""
@@ -245,18 +245,9 @@ msgid ""
 "software changes. This prevents the memory card from running out of space "
 "for saves."
 msgstr ""
-"(Virker kun til mapper) Genindekser indholdet på memory cardet hver gang den "
+"(Virker kun til mapper) Genindekser indholdet på MemoryCardet hver gang den "
 "igangværende software ændrer sig. Dette forhinder at hukommelseskortet løber "
 "tør for plads."
-
-#: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
-#, c-format
-msgid ""
-"The thread '%s' is not responding.  It could be deadlocked, or it might just "
-"be running *really* slowly."
-msgstr ""
-"Tråden '%s' svarer ikke. Den kan være fastlåst eller kører bare *meget* "
-"langsomt."
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:38
 msgid ""
@@ -324,7 +315,7 @@ msgstr ""
 "Denne handling vil nulstille den nuværende virtuelle PS2-maskines tilstand; "
 "al nuværende fremskridt vil gå tabt. Er du sikker på, du vil fortsætte?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:118
+#: pcsx2/gui/MainMenuClicks.cpp:112
 #, c-format
 msgid ""
 "This command clears %s settings and allows you to re-run the First-Time "
@@ -344,7 +335,7 @@ msgstr ""
 "du helt sikker?\n"
 "(bemærk: plugin-indstillinger forbliver upåvirket)"
 
-#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:534
+#: pcsx2/gui/MemoryCardFile.cpp:88 pcsx2/gui/MemoryCardFolder.h:534
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -352,14 +343,14 @@ msgid ""
 "and re-enable it at any time using Config:Memory cards from the main menu."
 msgstr ""
 "PS2-slottet %d er blevet afbrudt automatisk. Du kan løse problemet\n"
-"og genaktivere det ved at vælge Rediger: Memory cards fra hovedmenuen."
+"og genaktivere det ved at vælge Rediger: MemoryCards fra hovedmenuen."
 
 #: pcsx2/gui/MemoryCardFolder.h:539
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
-msgstr "(FolderMcd) Memory card er fyldt op, kunne ikke tilføje: %s"
+msgstr "(FolderMcd) MemoryCard er fyldt op, kunne ikke tilføje: %s"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:139
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:131
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -367,11 +358,7 @@ msgstr ""
 "Vælg venligst en gyldig BIOS-fil. Hvis du ikke kan vælge en, skal du trykke "
 "på Annullér for at lukke konfigurationsguiden."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:112
-msgid "Notice: Most games are fine with the default options. "
-msgstr "Bemærk: De fleste spil kan spilles med standardindstillingerne. "
-
-#: pcsx2/gui/Panels/CpuPanel.cpp:180
+#: pcsx2/gui/Panels/CpuPanel.cpp:112 pcsx2/gui/Panels/CpuPanel.cpp:180
 msgid "Notice: Most games are fine with the default options."
 msgstr "Bemærk: De fleste spil kan spilles med standardindstillingerne."
 
@@ -388,7 +375,7 @@ msgstr ""
 "Når denne boks er krydset af, afspejler denne mappe automatisk den standard, "
 "der er forbundet med PCSX2s aktuelle brugerindstilling. "
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:55
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:65
 msgid ""
 "Zoom = 100: Fit the entire image to the window without any cropping.\n"
 "Above/Below 100: Zoom In/Out\n"
@@ -411,7 +398,7 @@ msgstr ""
 "Tastaturgenveje: CTRL+NUMPAD-PLUS: Zoom-ind, CTRL+NUMPAD-MINUS: Zoom-ud, CTRL"
 "+NUMPAD-*: Skift mellem 100/0"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:68
 msgid ""
 "Vsync eliminates screen tearing but typically has a big performance hit. It "
 "usually only applies to fullscreen mode, and may not work with all GS "
@@ -421,7 +408,7 @@ msgstr ""
 "ydeevnen. Sædvanligvis bliver VSync kun anvendt i fuldskærmsvisning, og det "
 "virker muligvis ikke sammen med alle GS plugins."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:61
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:71
 msgid ""
 "Check this to force the mouse cursor invisible inside the GS window; useful "
 "if using the mouse as a primary control device for gaming.  By default the "
@@ -431,7 +418,7 @@ msgstr ""
 "er nyttigt, hvis man skal bruge musen til at spille. Musen forsvinder "
 "automatisk fra skærmen efter to sekunder, hvis den ikke er blevet brugt."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:74
 msgid ""
 "Enables automatic mode switch to fullscreen when starting or resuming "
 "emulation. You can still toggle fullscreen display at any time using alt-"
@@ -439,9 +426,9 @@ msgid ""
 msgstr ""
 "Gør så fuldskærmsvisning automatisk starter, når man kører eller genoptager "
 "en emulering. Du kan altid selv skfite til fuldskærmsvisning ved at trykke "
-"på alt+enter."
+"på Alt+Enter."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:71
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:81
 msgid ""
 "Completely closes the often large and bulky GS window when pressing ESC or "
 "pausing the emulator."
@@ -515,26 +502,26 @@ msgstr ""
 "\n"
 "Det sikreste er at sørge for, at alle spilrettelser er slået helt fra."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:683
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:679
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
 "card will be lost!  Are you absolutely and quite positively sure?"
 msgstr ""
-"Du er ved at slette det formaterede memory card '%s'. Al data på dette kort "
+"Du er ved at slette det formaterede MemoryCard '%s'. Al data på dette kort "
 "vil gå tabt! Er du helt sikker på, du vil fortsætte?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:722
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:718
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 "Mislykket: Det er kun muligt at kopiere til en tom PS2-port eller til "
 "filsystemet."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:764
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:760
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
-msgstr "Mislykket: Memory card '%s' er allerede i brug."
+msgstr "Mislykket: MemoryCard '%s' er allerede i brug."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:36
 msgid ""
@@ -544,7 +531,7 @@ msgid ""
 "Selector panel."
 msgstr ""
 "Vælg venligst din foretrukne standardplacering til PCSX2-dokumenter nedenfor "
-"(det inkluderer memory cards, skærmbilleder, indstillinger og gemte "
+"(det inkluderer MemoryCards, skærmbilleder, indstillinger og gemte "
 "spiltilstande). Disse mappeplaceringer kan overskrives når som helst via "
 "Plugin/BIOS vælger-panelet."
 
@@ -556,11 +543,15 @@ msgid ""
 "default value."
 msgstr ""
 "Du kan ændre din foretrukne standardplacering til PCSX2-dokumenter nedenfor "
-"(det inkluderer memory cards, skærmbilleder, indstillinger og gemte "
+"(det inkluderer MemoryCards, skærmbilleder, indstillinger og gemte "
 "spiltilstande). Denne valgmulighed påvirker kun standardstier, som bruger "
 "installationens normalværdi."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
+msgid "This folder is where PCSX2 loads cheats from."
+msgstr "Fra denne mappe indlæser PCSX2 snyder."
+
+#: pcsx2/gui/Panels/PathsPanel.cpp:48
 msgid ""
 "This folder is where PCSX2 records savestates; which are recorded either by "
 "using menus/toolbars, or by pressing F1/F3 (save/load)."
@@ -568,7 +559,7 @@ msgstr ""
 "I denne mappe gemmer PCSX2 spiltilstande; som bliver gemt enten via menuerne/"
 "værktøjsbjælken, eller ved at trykke F1/F3 (gem/indlæs)."
 
-#: pcsx2/gui/Panels/PathsPanel.cpp:48
+#: pcsx2/gui/Panels/PathsPanel.cpp:56
 msgid ""
 "This folder is where PCSX2 saves screenshots.  Actual screenshot image "
 "format and style may vary depending on the GS plugin being used."
@@ -576,7 +567,7 @@ msgstr ""
 "I denne mappe gemmer PCSX2 skærmbilleder. Formatet og stilen på "
 "skærmbillederne kan variere afhængig af hvilket GS plugin, der bliver brugt."
 
-#: pcsx2/gui/Panels/PathsPanel.cpp:56
+#: pcsx2/gui/Panels/PathsPanel.cpp:64
 msgid ""
 "This folder is where PCSX2 saves its logfiles and diagnostic dumps.  Most "
 "plugins will also adhere to this folder, however some older plugins may "
@@ -586,7 +577,7 @@ msgstr ""
 "plugins vil også holde sig til denne mappe, men nogle ældre plugins kan "
 "ignorere den."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:242
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:240
 msgid ""
 "Warning!  Changing plugins requires a complete shutdown and reset of the PS2 "
 "virtual machine. PCSX2 will attempt to save and restore the state, but if "
@@ -602,7 +593,7 @@ msgstr ""
 "\n"
 "Er du sikker på, du vil anvende disse indstillinger nu?"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:454
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:452
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
@@ -612,7 +603,7 @@ msgstr ""
 "Der skal være valgt gyldige plugins for at %s kan køre. Hvis du ikke kan "
 "vælge et gyldigt plugin, fordi der mangler et plugin eller installationen af "
 "%s har slået fejl, skal du trykke på Annullér eller lukke "
-"konfigurationsguiden."
+"Konfigurationsguiden."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
 msgid ""
@@ -620,7 +611,7 @@ msgid ""
 "stuttering audio on many FMVs."
 msgstr ""
 "-3 - Reducerer EE’ens cyklusfrekvens til cirka 50%. Markant forbedring af "
-"spilhastigheden, men lyden vil hakke, når man spiller."
+"spilhastigheden, men lyden vil hakke når man spiller."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
 msgid ""
@@ -628,7 +619,7 @@ msgid ""
 "cause stuttering audio on many FMVs."
 msgstr ""
 "-2 - Reducerer EE’ens cyklusfrekvens til cirka 60%. Moderat forbedering af "
-"spilhastigheden, men lyden vil hakke, når man spiller."
+"spilhastigheden, men lyden vil hakke når man spiller."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
 msgid ""
@@ -708,7 +699,7 @@ msgid ""
 msgstr ""
 "Speedhacks forbedrer normalt emuleringshastigheden, men kan forårsage fejl, "
 "ødelagt lyd, og forkerte aflæsninger af billeder pr. sekund. Hvis du har "
-"problemer, skal du slå dette panel fra først."
+"problemer skal du slå dette panel fra først."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:145
 msgid ""
@@ -810,30 +801,13 @@ msgstr ""
 "Hvis du aktiverer det, vil det forårsage voldsomme grafiske fejl i nogle "
 "spil."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:298
+#: pcsx2/gui/Panels/VideoPanel.cpp:296
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
 msgstr ""
 "Aktivér dette, hvis du mener, at MTGS-trådsynkroniseringen er skyld i "
 "nedbrud og grafikfejl."
-
-#: pcsx2/gui/Panels/VideoPanel.cpp:301
-msgid ""
-"Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
-"option is best used in conjunction with savestates: save a state at an ideal "
-"scene, enable this option, and re-load the savestate.\n"
-"\n"
-"Warning: This option can be enabled on-the-fly but typically cannot be "
-"disabled on-the-fly (video will typically be garbage)."
-msgstr ""
-"Fjerner alle benchmarklyde skabt af MTGS-procestråde eller overophedning af "
-"GPU’en. Denne valgmulighed virker bedst i forbindelse med gemte "
-"spiltilstande: gem en spiltilstand et ideelt sted, vælg denne valgmulighed "
-"og genindlæs den gemte tilstand.\n"
-"\n"
-"Advarsel: Denne valgmulighed kan aktiveres, mens spillet kører, men kan "
-"typisk ikke deaktiveres imens (video vil typisk se forfærdeligt ud)."
 
 #: pcsx2/vtlb.cpp:835
 msgid ""
@@ -855,3 +829,29 @@ msgstr ""
 "Ikke mere plads: SuperVU recompileren kunne ikke reservere den nødvendige "
 "hukommelse og vil ikke kunne bruges. Dette er ikke en kritisk fejl, da sVU "
 "rec er forældet, og du skal bruge microVU i stedet for. :)"
+
+#~ msgid ""
+#~ "The thread '%s' is not responding.  It could be deadlocked, or it might "
+#~ "just be running *really* slowly."
+#~ msgstr ""
+#~ "Tråden '%s' svarer ikke. Den kan være fastlåst eller kører bare *meget* "
+#~ "langsomt."
+
+#~ msgid "Notice: Most games are fine with the default options. "
+#~ msgstr "Bemærk: De fleste spil kan spilles med standardindstillingerne. "
+
+#~ msgid ""
+#~ "Removes any benchmark noise caused by the MTGS thread or GPU overhead.  "
+#~ "This option is best used in conjunction with savestates: save a state at "
+#~ "an ideal scene, enable this option, and re-load the savestate.\n"
+#~ "\n"
+#~ "Warning: This option can be enabled on-the-fly but typically cannot be "
+#~ "disabled on-the-fly (video will typically be garbage)."
+#~ msgstr ""
+#~ "Fjerner alle benchmarklyde skabt af MTGS-procestråde eller overophedning "
+#~ "af GPU’en. Denne valgmulighed virker bedst i forbindelse med gemte "
+#~ "spiltilstande: gem en spiltilstand et ideelt sted, vælg denne "
+#~ "valgmulighed og genindlæs den gemte tilstand.\n"
+#~ "\n"
+#~ "Advarsel: Denne valgmulighed kan aktiveres, mens spillet kører, men kan "
+#~ "typisk ikke deaktiveres imens (video vil typisk se forfærdeligt ud)."

@@ -136,7 +136,6 @@
     <ClCompile Include="..\Linux\Dialogs.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="AboutBox.cpp" />
     <ClCompile Include="CfgHelpers.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="ConfigDebug.cpp" />
@@ -148,9 +147,7 @@
   <ItemGroup>
     <None Include="..\..\LGPL.txt" />
     <None Include="..\..\License.txt" />
-    <None Include="..\..\Website.txt" />
     <None Include="..\..\spu2-x-sm.bmp" />
-    <None Include="..\..\spu2-x.bmp" />
     <None Include="SndOut_XAudio2.inl" />
     <None Include="Spu2-X.def" />
   </ItemGroup>

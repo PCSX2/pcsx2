@@ -59,7 +59,7 @@ static void rcntWhold(int index, u32 value);
 
 static bool IsAnalogVideoMode()
 {
-	return (gsVideoMode == GS_VideoMode::PAL || gsVideoMode == GS_VideoMode::NTSC);
+	return (gsVideoMode == GS_VideoMode::PAL || gsVideoMode == GS_VideoMode::NTSC || gsVideoMode == GS_VideoMode::DVD_NTSC || gsVideoMode == GS_VideoMode::DVD_PAL);
 }
 
 void rcntReset(int index) {
@@ -229,11 +229,12 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	info->hScanlinesPerFrame = scansPerFrame;
 
 	// Apply rounding:
-	if ((Render - info->Render) >= 5000) info->Render++;
-	else if ((Blank - info->Blank) >= 5000) info->Blank++;
+	// To investigate: Why is render rounding prioritized over blank? why skip the latter?
+	if ((Render % 10000) >= 5000) info->Render++;
+	else if ((Blank % 10000) >= 5000) info->Blank++;
 
-	if ((hRender - info->hRender) >= 5000) info->hRender++;
-	else if ((hBlank - info->hBlank) >= 5000) info->hBlank++;
+	if ((hRender % 10000) >= 5000) info->hRender++;
+	else if ((hBlank % 10000) >= 5000) info->hBlank++;
 
 	// Calculate accumulative hSync rounding error per half-frame:
 	if (IsAnalogVideoMode()) // gets off the chart in that mode

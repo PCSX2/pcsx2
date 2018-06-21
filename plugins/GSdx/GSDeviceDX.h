@@ -169,27 +169,39 @@ public:
 		{
 			struct
 			{
-				uint32 fst:1;
-				uint32 wms:2;
-				uint32 wmt:2;
+				// *** Word 1
+				// Format
 				uint32 fmt:4;
+				// Alpha extension/Correction
 				uint32 aem:1;
+				uint32 fba:1;
+				// Fog
+				uint32 fog:1;
+				// Pixel test
+				uint32 date:2;
+				uint32 atst:3;
+				// Color sampling
+				uint32 fst:1;
 				uint32 tfx:3;
 				uint32 tcc:1;
-				uint32 atst:3;
-				uint32 fog:1;
-				uint32 clr1:1;
-				uint32 fba:1;
-				uint32 aout:1;
-				uint32 rt:1;
+				uint32 wms:2;
+				uint32 wmt:2;
 				uint32 ltf:1;
+				// Shuffle and fbmask effect
+				uint32 shuffle:1;
+				uint32 read_ba:1;
+
+				// *** Word 2
+				// Blend and Colclip
+				uint32 clr1:1;
+				uint32 rt:1;
 				uint32 colclip:2;
-				uint32 date:2;
+
+				// Hack
+				uint32 aout:1;
 				uint32 spritehack:1;
 				uint32 tcoffsethack:1;
 				uint32 point_sampler:1;
-				uint32 shuffle:1;
-				uint32 read_ba:1;
 
 				uint32 _free:32;
 			};

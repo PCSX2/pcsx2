@@ -34,6 +34,7 @@
 
 #define cpuid __cpuid
 #define cpuidex __cpuidex
+#define xgetbv _xgetbv
 
 #else
 
@@ -49,7 +50,9 @@ static __inline__ __attribute__((always_inline)) void cpuid(int CPUInfo[], const
     __cpuid(InfoType, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
 }
 
-static __inline__ __attribute__((always_inline)) unsigned long long _xgetbv(unsigned int index)
+// _xgetbv on gcc 8 is broken (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85684).
+// It also isn't present on clang and earlier versions of gcc.
+static __inline__ __attribute__((always_inline)) unsigned long long xgetbv(unsigned int index)
 {
     unsigned int eax, edx;
     __asm__ __volatile__("xgetbv"

@@ -35,30 +35,10 @@
 #include "Resources/ConfigIcon_Paths.h"
 #include "Resources/ConfigIcon_Plugins.h"
 #include "Resources/ConfigIcon_MemoryCard.h"
-#include "Resources/ConfigIcon_Appearance.h"
 
 #include "Resources/AppIcon16.h"
 #include "Resources/AppIcon32.h"
 #include "Resources/AppIcon64.h"
-
-const wxImage& LoadImageAny(
-	wxImage& dest, bool useTheme, wxFileName& base, const wxChar* filename, IEmbeddedImage& onFail )
-{
-	if (useTheme && base.DirExists())
-	{
-		wxFileName pathname(base.GetFullPath(), filename);
-
-		const wxChar* extensions[3] = {L"png", L"jpg", L"bmp"};
-		for (size_t i = 0; i < sizeof(extensions)/sizeof(extensions[0]); ++i)
-		{
-			pathname.SetExt(extensions[i]);
-			if (pathname.FileExists() && dest.LoadFile(pathname.GetFullPath()))
-				return dest;
-		}
-	}
-
-	return dest = onFail.Get();
-}
 
 RecentIsoList::RecentIsoList(int firstIdForMenuItems_or_wxID_ANY)
 {
@@ -116,30 +96,7 @@ const wxBitmap& Pcsx2App::GetLogoBitmap()
 	std::unique_ptr <wxBitmap>& logo(GetResourceCache().Bitmap_Logo);
 	if( logo ) return *logo;
 
-	wxFileName themeDirectory;
-	bool useTheme = (g_Conf->DeskTheme != L"default");
-
-	if( useTheme )
-	{
-		themeDirectory.Assign(wxFileName(PathDefs::GetThemes().ToString()).GetFullPath(), g_Conf->DeskTheme);
-#if 0
-		wxFileName zipped(themeDirectory);
-
-		zipped.SetExt( L"zip" );
-		if( zipped.FileExists() )
-		{
-			// loading theme from zipfile.
-			//wxFileInputStream stream( zipped.ToString() )
-			//wxZipInputStream zstream( stream );
-
-			Console.Error( "Loading themes from zipfile is not supported yet.\nFalling back on default theme." );
-		}
-#endif
-	}
-
-	wxImage img;
-	EmbeddedImage<res_BackgroundLogo> temp;	// because gcc can't allow non-const temporaries.
-	LoadImageAny(img, useTheme, themeDirectory, L"BackgroundLogo", temp);
+	wxImage img = EmbeddedImage<res_BackgroundLogo>().Get();
 	float scale = MSW_GetDPIScale(); // 1.0 for non-Windows
 	logo = std::unique_ptr<wxBitmap>(new wxBitmap(img.Scale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH)));
 
@@ -151,17 +108,7 @@ const wxBitmap& Pcsx2App::GetScreenshotBitmap()
 	std::unique_ptr<wxBitmap>& screenshot(GetResourceCache().ScreenshotBitmap);
 	if (screenshot) return *screenshot;
 
-	wxFileName themeDirectory;
-	bool useTheme = (g_Conf->DeskTheme != L"default");
-
-	if (useTheme)
-	{
-		themeDirectory.Assign(wxFileName(PathDefs::GetThemes().ToString()).GetFullPath(), g_Conf->DeskTheme);
-	}
-
-	wxImage img;
-	EmbeddedImage<res_ButtonIcon_Camera> temp;	// because gcc can't allow non-const temporaries.
-	LoadImageAny(img, useTheme, themeDirectory, L"ButtonIcon_Camera", temp);
+	wxImage img = EmbeddedImage<res_ButtonIcon_Camera>().Get();
 	float scale = MSW_GetDPIScale(); // 1.0 for non-Windows
 	screenshot = std::unique_ptr<wxBitmap>(new wxBitmap(img.Scale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH)));
 
@@ -175,29 +122,11 @@ wxImageList& Pcsx2App::GetImgList_Config()
 	{
 		int image_size = MSW_GetDPIScale() * g_Conf->Listbook_ImageSize;
 		images = std::unique_ptr<wxImageList>(new wxImageList(image_size, image_size));
-		wxFileName themeDirectory;
-		bool useTheme = (g_Conf->DeskTheme != L"default");
-
-		if( useTheme )
-		{
-			themeDirectory.Assign(wxFileName(PathDefs::GetThemes().ToString()).GetFullPath(), g_Conf->DeskTheme);
-		}
-
-		wxImage img;
-
-		// GCC Specific: wxT() macro is required when using string token pasting.  For some
-		// reason L generates syntax errors. >_<
-		// TODO: This can be fixed with something like
-		// #define L_STR(x) L_STR2(x)
-		// #define L_STR2(x) L ## x
-		// but it's probably best to do it everywhere at once. wxWidgets
-		// recommends not to use it since v2.9.0.
 
 		#undef  FancyLoadMacro
 		#define FancyLoadMacro( name ) \
 		{ \
-			EmbeddedImage<res_ConfigIcon_##name> temp; \
-			LoadImageAny(img, useTheme, themeDirectory, L"ConfigIcon_" wxT(#name), temp); \
+			wxImage img = EmbeddedImage<res_ConfigIcon_##name>().Get(); \
 			img.Rescale(image_size, image_size, wxIMAGE_QUALITY_HIGH); \
 			m_Resources->ImageId.Config.name = images->Add(img); \
 		}
@@ -209,7 +138,6 @@ wxImageList& Pcsx2App::GetImgList_Config()
 		FancyLoadMacro( MemoryCard );
 		FancyLoadMacro( Video );
 		FancyLoadMacro( Cpu );
-		FancyLoadMacro( Appearance );
 	}
 	return *images;
 }
@@ -223,21 +151,12 @@ wxImageList& Pcsx2App::GetImgList_Toolbars()
 	{
 		const int imgSize = g_Conf->Toolbar_ImageSize ? 64 : 32;
 		images = std::unique_ptr<wxImageList>(new wxImageList(imgSize, imgSize));
-		wxFileName mess;
-		bool useTheme = (g_Conf->DeskTheme != L"default");
 
-		if( useTheme )
-		{
-			wxDirName theme( PathDefs::GetThemes() + g_Conf->DeskTheme );
-			mess = theme.ToString();
-		}
-
-		wxImage img;
 		#undef  FancyLoadMacro
 		#define FancyLoadMacro( name ) \
 		{ \
-			EmbeddedImage<res_ToolbarIcon_##name> temp( imgSize, imgSize ); \
-			m_Resources.ImageId.Toolbars.name = images->Add( LoadImageAny( img, useTheme, mess, L"ToolbarIcon" wxT(#name), temp ) ); \
+			wxImage img = EmbeddedImage<res_ToolbarIcon_##name>(imgSize, imgSize).Get(); \
+			m_Resources.ImageId.Toolbars.name = images->Add(img); \
 		}
 
 	}

@@ -38,7 +38,6 @@
 #include "GSDevice11.h"
 #include "GSWndDX.h"
 #include "GSWndWGL.h"
-#include "GSRendererCS.h"
 #include "GSSettingsDlg.h"
 
 static HRESULT s_hr = E_FAIL;

@@ -20,8 +20,6 @@
 #include "VUmicro.h"
 #include "MTVU.h"
 
-extern void mfifoGIFtransfer(int);
-
 static bool spr0finished = false;
 static bool spr1finished = false;
 static bool spr0lastqwc = false;
@@ -297,20 +295,12 @@ void SPRFROMinterrupt()
 			switch (dmacRegs.ctrl.MFD)
 			{
 				case MFD_VIF1: // Most common case.
-				{
-					if ((spr0ch.madr & ~dmacRegs.rbsr.RMSK) != dmacRegs.rbor.ADDR) Console.WriteLn("VIF MFIFO Write outside MFIFO area");
-					spr0ch.madr = dmacRegs.rbor.ADDR + (spr0ch.madr & dmacRegs.rbsr.RMSK);
-					//Console.WriteLn("mfifoVIF1transfer %x madr %x, tadr %x", vif1ch.chcr._u32, vif1ch.madr, vif1ch.tadr);
-					mfifoVIF1transfer(mfifotransferred);
-					mfifotransferred = 0;
-					break;
-				}
 				case MFD_GIF:
 				{
 					if ((spr0ch.madr & ~dmacRegs.rbsr.RMSK) != dmacRegs.rbor.ADDR) Console.WriteLn("GIF MFIFO Write outside MFIFO area");
 					spr0ch.madr = dmacRegs.rbor.ADDR + (spr0ch.madr & dmacRegs.rbsr.RMSK);
 					//Console.WriteLn("mfifoGIFtransfer %x madr %x, tadr %x", gif->chcr._u32, gif->madr, gif->tadr);
-					mfifoGIFtransfer(mfifotransferred);
+					hwMFIFOResume(mfifotransferred);
 					mfifotransferred = 0;
 					break;
 				}
