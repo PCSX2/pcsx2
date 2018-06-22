@@ -6,13 +6,13 @@ cache: ccache
 
 matrix:
   include:
-    - env: VERSION=7 BITS=64
+    - env: VERSION=8 BITS=64
+      compiler: gcc
+      os: linux
+    - env: VERSION=8 BITS=32
       compiler: gcc
       os: linux
     - env: VERSION=7 BITS=32
-      compiler: gcc
-      os: linux
-    - env: VERSION=6 BITS=32
       compiler: gcc
       os: linux
     - env: VERSION=4.9 BITS=32
