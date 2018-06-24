@@ -284,7 +284,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					// 1/ it just works :)
 					// 2/ even with upscaling
 					// 3/ for both DX and OpenGL
-					if (m_cpu_fb_conversion && (psm == PSM_PSMT4 || psm == PSM_PSMT8 || psm == PSM_PSMT4HH || psm == PSM_PSMT8H))
+					if (m_cpu_fb_conversion && (psm == PSM_PSMT4 || psm == PSM_PSMT8))
 						// Forces 4-bit and 8-bit frame buffer conversion to be done on the CPU instead of the GPU, but performance will be slower.
 						// There is no dedicated shader to handle 4-bit conversion.
 						// Direct3D doesn't support 8-bit fb conversion, OpenGL does support it but it doesn't render some corner cases properly.
