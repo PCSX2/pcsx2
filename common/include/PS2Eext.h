@@ -86,37 +86,40 @@ struct PluginLog
 
     void Write(const char *fmt, ...)
     {
-        va_list list;
-
         if (LogFile == NULL)
             return;
 
-        va_start(list, fmt);
-        if (WriteToFile)
+        va_list list;
+        if (WriteToFile) {
+            va_start(list, fmt);
             vfprintf(LogFile, fmt, list);
-        if (WriteToConsole)
+            va_end(list);
+        }
+        if (WriteToConsole) {
+            va_start(list, fmt);
             vfprintf(stdout, fmt, list);
-        va_end(list);
+            va_end(list);
+        }
     }
 
     void WriteLn(const char *fmt, ...)
     {
-        va_list list;
-
         if (LogFile == NULL)
             return;
 
-        va_start(list, fmt);
-        if (WriteToFile)
+        va_list list;
+        if (WriteToFile) {
+            va_start(list, fmt);
             vfprintf(LogFile, fmt, list);
-        if (WriteToConsole)
-            vfprintf(stdout, fmt, list);
-        va_end(list);
-
-        if (WriteToFile)
+            va_end(list);
             fprintf(LogFile, "\n");
-        if (WriteToConsole)
+        }
+        if (WriteToConsole) {
+            va_start(list, fmt);
+            vfprintf(stdout, fmt, list);
+            va_end(list);
             fprintf(stdout, "\n");
+        }
     }
 
 #if !defined(_MSC_VER) || !defined(UNICODE)

@@ -18,14 +18,10 @@ linux_32_before_install() {
 	if [ "${CXX}" = "clang++" ]; then
 		sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
 		sudo add-apt-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-${VERSION} main"
-		# g++-x-multilib is necessary for compiler dependencies.
-		COMPILER_PACKAGE="clang-${VERSION} g++-7-multilib clang-format-${VERSION}"
+		COMPILER_PACKAGE="g++-8-multilib clang-format-${VERSION}"
 	fi
 	if [ "${CXX}" = "g++" ]; then
-		# python:i386 is required to avoid dependency issues for gcc-4.9 and
-		# gcc-7. It causes issues with clang-format though, so the dependency is
-		# only specified for gcc.
-		COMPILER_PACKAGE="g++-${VERSION}-multilib python:i386"
+		COMPILER_PACKAGE="g++-${VERSION}-multilib"
 	fi
 
 	sudo apt-get -qq update
@@ -62,8 +58,8 @@ linux_32_before_install() {
 
 	# Manually add ccache symlinks for clang
 	if [ "${CXX}" = "clang++" ]; then
-		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CXX}-${VERSION}
-		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CC}-${VERSION}
+		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CXX}
+		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CC}
 	fi
 }
 
@@ -74,8 +70,10 @@ linux_32_script() {
 	# Prevents warning spam
 	if [ "${CXX}" = "clang++" ]; then
 		export CCACHE_CPP2=yes
+		export CC=${CC} CXX=${CXX}
+	else
+		export CC=${CC}-${VERSION} CXX=${CXX}-${VERSION}
 	fi
-	export CC=${CC}-${VERSION} CXX=${CXX}-${VERSION}
 	cmake \
 		-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake \
 		-DCMAKE_BUILD_TYPE=Release \
@@ -90,11 +88,6 @@ linux_32_script() {
 
 linux_64_before_install() {
 	# Compilers
-	if [ "${CXX}" = "clang++" ]; then
-		sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
-		sudo add-apt-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-${VERSION} main"
-		COMPILER_PACKAGE="clang-${VERSION} clang-format-${VERSION}"
-	fi
 	if [ "${CXX}" = "g++" ]; then
 		sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 		COMPILER_PACKAGE="g++-${VERSION}"
@@ -115,12 +108,6 @@ linux_64_before_install() {
 		libwxgtk3.0-dev \
 		portaudio19-dev \
 		${COMPILER_PACKAGE}
-
-	# Manually add ccache symlinks for clang
-	if [ "${CXX}" = "clang++" ]; then
-		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CXX}-${VERSION}
-		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CC}-${VERSION}
-	fi
 }
 
 
@@ -128,10 +115,6 @@ linux_64_script() {
 	mkdir build
 	cd build
 
-	# Prevents warning spam
-	if [ "${CXX}" = "clang++" ]; then
-		export CCACHE_CPP2=yes
-	fi
 	export CC=${CC}-${VERSION} CXX=${CXX}-${VERSION}
 	cmake \
 		-DCMAKE_BUILD_TYPE=Devel \
