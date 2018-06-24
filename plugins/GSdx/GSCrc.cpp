@@ -542,6 +542,7 @@ CRC::Game CRC::m_games[] =
 	{0x76F724A3, RatchetAndClank, EU, 0},
 	{0xB3A71D10, RatchetAndClank2, US, 0}, // Going Commando
 	{0x38996035, RatchetAndClank2, US, 0},
+	{0xDF6F94A1, RatchetAndClank2, US, 0}, // Demo - Going Commando & Jak II
 	{0x8CAA5F16, RatchetAndClank2, JP, 0}, // Gagaga! Ginga no Commando-ssu
 	{0x2F486E6F, RatchetAndClank2, EU, 0},
 	{0x45FE0CC4, RatchetAndClank3, US, 0}, // Up Your Arsenal
