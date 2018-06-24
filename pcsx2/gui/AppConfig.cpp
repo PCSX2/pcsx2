@@ -1035,13 +1035,13 @@ bool AppConfig::IsOkApplyPreset(int n)
 	switch (n){	//currently implemented such that any preset also applies all lower presets, with few exceptions.
 
 		case 5 :	//Set VU cycle steal to 2 clicks (maximum-1)
-					vuUsed?0:(vuUsed=true, EmuOptions.Speedhacks.VUCycleSteal = 2);
+					vuUsed?0:(vuUsed=true, EmuOptions.Speedhacks.EECycleSkip = 2);
 		
 		case 4 :	//set EE cyclerate to 2 clicks (maximum)
 					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = -2);
 
 		case 3 :	//Set VU cycle steal to 1 click, set VU clamp mode to 'none'
-					vuUsed?0:(vuUsed=true, EmuOptions.Speedhacks.VUCycleSteal = 1);
+					vuUsed?0:(vuUsed=true, EmuOptions.Speedhacks.EECycleSkip = 1);
 					EmuOptions.Cpu.Recompiler.vuOverflow	  =
 					EmuOptions.Cpu.Recompiler.vuExtraOverflow =
 					EmuOptions.Cpu.Recompiler.vuSignOverflow = false; //VU Clamp mode to 'none'

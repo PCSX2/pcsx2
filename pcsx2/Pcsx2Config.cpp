@@ -49,7 +49,7 @@ Pcsx2Config::SpeedhackOptions& Pcsx2Config::SpeedhackOptions::DisableAll()
 {
 	bitset			= 0;
 	EECycleRate		= 0;
-	VUCycleSteal	= 0;
+	EECycleSkip		= 0;
 	
 	return *this;
 }
@@ -59,7 +59,7 @@ void Pcsx2Config::SpeedhackOptions::LoadSave( IniInterface& ini )
 	ScopedIniGroup path( ini, L"Speedhacks" );
 
 	IniBitfield( EECycleRate );
-	IniBitfield( VUCycleSteal );
+	IniBitfield( EECycleSkip );
 	IniBitBool( fastCDVD );
 	IniBitBool( IntcStat );
 	IniBitBool( WaitLoop );

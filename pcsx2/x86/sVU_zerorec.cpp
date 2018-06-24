@@ -2533,9 +2533,9 @@ void SuperVUCleanupProgram(u32 startpc, int vuindex)
 
 	//VU cycle stealing hack, 3000 cycle maximum so it doesn't get out of hand
 	if (s_TotalVUCycles < 3000)
-		cpuRegs.cycle += s_TotalVUCycles * EmuConfig.Speedhacks.VUCycleSteal;
+		cpuRegs.cycle += s_TotalVUCycles * EmuConfig.Speedhacks.EECycleSkip;
 	else
-		cpuRegs.cycle += 3000 * EmuConfig.Speedhacks.VUCycleSteal;
+		cpuRegs.cycle += 3000 * EmuConfig.Speedhacks.EECycleSkip;
 
 	if ((int)s_writeQ > 0) VU->VI[REG_Q] = VU->q;
 	if ((int)s_writeP > 0)
