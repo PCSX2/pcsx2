@@ -139,9 +139,9 @@ bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP == 0x00000 || fi.FBP == 0x01400 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00000 || fi.TBP0 == 0x02e40 && fi.TPSM == PSM_PSMCT16)
+		if(fi.TME && fi.FBP == 0x01400 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x02e40 && fi.TPSM == PSM_PSMCT16)
 		{
-			skip = 1289;
+			skip = 2;
 		}
 	}
 
