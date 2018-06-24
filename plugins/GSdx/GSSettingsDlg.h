@@ -47,6 +47,8 @@ class GSHacksDlg : public GSDialog
 	std::string adapter_id;
 	
 	bool isdx9;
+	int m_oldSkipDrawOffset = -1;
+	int m_oldSkipDraw = -1;
 
 	void UpdateControls();
 
