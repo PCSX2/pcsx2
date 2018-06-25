@@ -546,6 +546,7 @@ CRC::Game CRC::m_games[] =
 	{0x8CAA5F16, RatchetAndClank2, JP, 0}, // Gagaga! Ginga no Commando-ssu
 	{0x2F486E6F, RatchetAndClank2, EU, 0},
 	{0x45FE0CC4, RatchetAndClank3, US, 0}, // Up Your Arsenal
+	{0x2A12175A, RatchetAndClank3, US, 0}, // Regular Demo
 	{0x64DC6000, RatchetAndClank3, JP, 0}, // Totsugeki! Galactic Rangers
 	{0x17125698, RatchetAndClank3, EU, 0},
 	{0x9BFBCD42, RatchetAndClank4, US, 0}, // Deadlocked
