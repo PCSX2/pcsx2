@@ -38777,7 +38777,6 @@ Compat = 5
 	patch=0,EE,00165BB4,word,4bec682c
 	patch=0,EE,00165BB8,word,4b8d617d
 	patch=0,EE,00165BC0,word,4a6d617c
-	patch=0,EE,001B0A3C,word,48468800
 	patch=0,EE,001B0A40,word,4bec682c
 	patch=0,EE,001B0A4C,word,4b8d617d
 	patch=0,EE,001BF4C0,word,48588800

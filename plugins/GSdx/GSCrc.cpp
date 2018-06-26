@@ -284,6 +284,7 @@ CRC::Game CRC::m_games[] =
 	{0x3E205556, SuikodenTactics, EU, 0},
 	{0xB808413B, SuikodenTactics, JP, 0},
 	{0xA33AF77A, TenchuFS, US, 0},
+	{0x89E63B6B, TenchuFS, US, 0},
 	{0x64C58FB4, TenchuFS, US, 0},
 	{0xE7CCCB1E, TenchuFS, EU, 0},
 	{0x1969B19A, TenchuFS, ES, 0}, // PAL Spanish
