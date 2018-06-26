@@ -204,6 +204,7 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 		case CRC::Shox:
 		case CRC::SoulReaver2:
 		case CRC::LegacyOfKainDefiance:
+		case CRC::NicktoonsUnite:
 		case CRC::RatchetAndClank:
 		case CRC::RatchetAndClank2:
 		case CRC::RatchetAndClank3:

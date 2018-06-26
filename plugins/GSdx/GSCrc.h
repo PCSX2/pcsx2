@@ -105,6 +105,7 @@ public:
 		NanoBreaker,
 		NarutimateAccel,
 		Naruto,
+		NicktoonsUnite,
 		Okami,
 		Oneechanbara2Special,
 		OnePieceGrandAdventure,

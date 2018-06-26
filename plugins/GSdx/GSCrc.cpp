@@ -536,6 +536,8 @@ CRC::Game CRC::m_games[] =
 	{0x6D8B4CD1, SoulReaver2, EU, 0},
 	{0x728AB07C, LegacyOfKainDefiance, US, 0},
 	{0xBCAD1E8A, LegacyOfKainDefiance, EU, 0},
+	{0x28D09BF9, NicktoonsUnite, US, 0},
+	{0xF25266C4, NicktoonsUnite, EU, 0}, // Nickelodeon SpongeBob SquarePants And Friends Unite
 	{0xCE4933D0, RatchetAndClank, US, 0},
 	{0x6F191506, RatchetAndClank, US, 0}, // E3 Demo
 	{0x81CBFEA2, RatchetAndClank, US, 0}, // EB Games Demo
