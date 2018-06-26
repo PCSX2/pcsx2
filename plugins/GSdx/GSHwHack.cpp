@@ -2389,8 +2389,8 @@ bool GSState::IsBadFrame()
 	}
 	else if (m_skip_offset > 1)
 	{
-		m_skip_offset--;
-		m_skip--;
+		m_skip_offset = 36;
+		m_skip = 1289;
 	}
 
 	return false;
