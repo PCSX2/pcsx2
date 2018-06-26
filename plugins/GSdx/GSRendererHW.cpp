@@ -272,8 +272,11 @@ void GSRendererHW::VSync(int field)
 	m_tc->PrintMemoryUsage();
 	m_dev->PrintMemoryUsage();
 
-	m_skip = 0;
-	m_skip_offset = 0;
+	m_skip = 1254;
+	m_skip_offset = 35;
+}
+	m_skip = 1000;
+	m_skip_offset = 1356;
 }
 
 void GSRendererHW::ResetDevice()
