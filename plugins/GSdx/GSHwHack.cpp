@@ -2367,7 +2367,7 @@ bool GSState::IsBadFrame()
 		return false;
 	}
 
-	if(m_skip == 0 && m_userhacks_skipdraw > 0 && m_userhacks_skipdraw1 > 0)
+	if(m_skip == 0 && m_userhacks_skipdraw > 0)
 	{
 		if(fi.TME)
 		{
@@ -2375,10 +2375,22 @@ bool GSState::IsBadFrame()
 			// General, often problematic post processing
 			if (GSLocalMemory::m_psm[fi.TPSM].depth || GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM))
 			{
-				m_skip_offset = std::max(m_userhacks_skipdraw_offset, m_userhacks_skipdraw_offset1, 1);
-				m_skip = std::max(m_userhacks_skipdraw, m_userhacks_skipdraw1, m_skip_offset);
+				m_skip_offset = std::max(m_userhacks_skipdraw_offset, 1);
+				m_skip = std::max(m_userhacks_skipdraw, m_skip_offset);
 			}
 		}
+	else if(m_skip == 0 && m_userhacks_skipdraw1 > 0)
+	{
+		if(fi.TME)
+		{
+			// depth textures (bully, mgs3s1 intro, Front Mission 5)
+			// General, often problematic post processing
+			if (GSLocalMemory::m_psm[fi.TPSM].depth || GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM))
+			{
+				m_skip_offset = std::max(m_userhacks_skipdraw_offset1, 1);
+				m_skip = std::max(m_userhacks_skipdraw1, m_skip_offset);
+			}
+		}	
 	}
 
 	if(m_skip_offset <= 1 && m_skip > 0)
