@@ -278,6 +278,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20015
 Name   = Shin Megami Tensei III: Nocturne
 Region = NTSC-Unk
+eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level.
 ---------------------------------------------
 Serial = SCAJ-20016
 Name   = Warrior of Argus
@@ -4861,6 +4862,7 @@ Region = NTSC-U
 Serial = SCUS-97217
 Name   = NBA Shootout 2003
 Region = NTSC-U
+EETimingHack = 1 // Fixes an issue with loading screens which cause the game to return on the Bios.
 ---------------------------------------------
 Serial = SCUS-97218
 Name   = Kiosk Demo Disc 2.06
@@ -8036,6 +8038,12 @@ Region = PAL-M5
 Serial = SLES-50713
 Name   = Freaky Flyers
 Region = PAL-E
+vuRoundMode = 1 // Fixes some bad effects.
+[patches = 6E62DE7B]
+	// Fixes hanging problem.
+	patch=1,EE,00132bd0,word,00000000
+	patch=1,EE,00132c88,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-50714
 Name   = Defender
@@ -9421,6 +9429,11 @@ Serial = SLES-51290
 Name   = Sword of the Samurai
 Region = PAL-E
 Compat = 5
+---------------------------------------------
+Serial = SLES-51292
+Name   = Savage Skies
+Region = PAL-M5
+Compat = 4 // This game needs the EE cache to work which is only supported in "interpreter" mode.
 ---------------------------------------------
 Serial = SLES-51294
 Name   = XIII
@@ -11692,6 +11705,17 @@ Serial = SLES-52440
 Name   = Harry Potter and the Prisoner of Azkaban
 Region = PAL-M7
 Compat = 3
+EETimingHack = 1 // Fixes ingame hangs.
+[patches = 51e019bc]
+	// Fixes game hanging on loading screens.
+	patch=1,EE,0016cf8c,word,00000000
+	patch=1,EE,0013cd64,word,00000000
+	patch=1,EE,0013c1a8,word,00000000
+	patch=1,EE,0013c1cc,word,00000000
+	patch=1,EE,80000000,word,00000000
+	patch=1,EE,0013df84,word,00000000
+	patch=1,EE,0013cd3c,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-52444
 Name   = Hyper Street Fighter II - The Anniversary Edition
@@ -15343,6 +15367,11 @@ Region = PAL-M5
 Serial = SLES-54021
 Name   = Ruff Trigger
 Region = PAL-M5
+EETimingHack = 1 // Fixes game engine errors when going ingame.
+[patches = b02c81e5]
+	// Fixes random hangs when going ingame.
+	patch=1,EE,001128e0,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-54023
 Name   = Bible Game, The
@@ -18324,7 +18353,7 @@ Region = NTSC-K
 Serial = SLKA-25160
 Name   = Shin Megami Tensei III: Nocturne Maniax
 Region = NTSC-K
-eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
+eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level.
 ---------------------------------------------
 Serial = SLKA-25165
 Name   = Mobile Suit Gundam - Seed Destiny - Rengou vs. Z.A.F.T. II Plus
@@ -22156,6 +22185,7 @@ Region = NTSC-J
 Serial = SLPM-65226
 Name   = Savage Skies
 Region = NTSC-J
+// This game needs the EE cache to work which is only supported in "interpreter" mode.
 ---------------------------------------------
 Serial = SLPM-65227
 Name   = J-League Pro Soccer Club - Tsukuku! 3
@@ -22221,12 +22251,12 @@ Region = NTSC-J
 Serial = SLPM-65241
 Name   = Shin Megami Tensei III: Nocturne [Limited Edition]
 Region = NTSC-J
-eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
+eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level.
 ---------------------------------------------
 Serial = SLPM-65242
 Name   = Shin Megami Tensei III: Nocturne
 Region = NTSC-J
-eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
+eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level.
 ---------------------------------------------
 Serial = SLPM-65243
 Name   = Densha de Go! Professional 2
@@ -23013,7 +23043,7 @@ Serial = SLPM-65462
 Name   = Shin Megami Tensei III: Nocturne Maniax
 Region = NTSC-J
 Compat = 5
-eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level
+eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level.
 ---------------------------------------------
 Serial = SLPM-65463
 Name   = Rocky
@@ -27489,6 +27519,7 @@ Serial = SLPM-66681
 Name   = Shin Megami Tensei - Nocturne Maniax
 Region = NTSC-J
 Compat = 5
+eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level.
 ---------------------------------------------
 Serial = SLPM-66683
 Name   = Devil Summoner: Kuzunoha Raidou tai Abaddon Ou
@@ -35361,6 +35392,12 @@ Serial = SLUS-20284
 Name   = Freaky Flyers
 Region = NTSC-U
 Compat = 4
+vuRoundMode = 1 // Fixes some bad effects.
+[patches = 9d1ba44d]
+	// Fixes hanging problem.
+	patch=1,EE,001323d0,word,00000000
+	patch=1,EE,00132488,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20285
 Name   = Moto GP 2
@@ -36024,7 +36061,7 @@ Compat = 5
 Serial = SLUS-20430
 Name   = Savage Skies
 Region = NTSC-U
-Compat = 5
+Compat = 5 // This game needs the EE cache to work which is only supported in "interpreter" mode.
 ---------------------------------------------
 Serial = SLUS-20431
 Name   = Wreckless - The Yakuza Missions
@@ -41985,8 +42022,11 @@ Compat = 5
 Serial = SLUS-21689
 Name   = Petz - Horsez 2
 Region = NTSC-U
-Compat = 5
-VIFFIFOHack = 1 // Fixes hang at loading screen.
+Compat = 4
+[patches = d0ba28bd]
+	// Fixes game hanging when going ingame.
+	patch=1,EE,002f6d30,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21690
 Name   = Alone in the Dark
@@ -42018,6 +42058,11 @@ Serial = SLUS-21697
 Name   = Iridium Runners
 Region = NTSC-U
 Compat = 3
+EETimingHack = 1 // Fixes game engine errors when going ingame.
+[patches = 304497e5]
+	// Fixes random hangs when going ingame.
+	patch=1,EE,002242e0,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21698
 Name   = NCAA March Madness '08
