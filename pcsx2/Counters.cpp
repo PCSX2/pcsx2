@@ -220,6 +220,8 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 		hRender /= 2;
 	}
 
+	//TODO: Carry fixed-point math all the way through the entire vsync and hsync counting processes, and continually apply rounding
+	//as needed for each scheduled v/hsync related event. Much better to handle than this messed state.
 	info->Framerate = framesPerSecond;
 	info->Render = (u32)(Render / 10000);
 	info->Blank = (u32)(Blank / 10000);
@@ -228,13 +230,11 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	info->hBlank = (u32)(hBlank / 10000);
 	info->hScanlinesPerFrame = scansPerFrame;
 
-	// Apply rounding:
-	// To investigate: Why is render rounding prioritized over blank? why skip the latter?
 	if ((Render % 10000) >= 5000) info->Render++;
-	else if ((Blank % 10000) >= 5000) info->Blank++;
+	if ((Blank % 10000) >= 5000) info->Blank++;
 
 	if ((hRender % 10000) >= 5000) info->hRender++;
-	else if ((hBlank % 10000) >= 5000) info->hBlank++;
+	if ((hBlank % 10000) >= 5000) info->hBlank++;
 
 	// Calculate accumulative hSync rounding error per half-frame:
 	if (IsAnalogVideoMode()) // gets off the chart in that mode
