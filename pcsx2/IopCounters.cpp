@@ -415,14 +415,14 @@ static void psxCheckEndGate32(int i)
 void psxVBlankStart()
 {
 	cdvdVsync();
-	psxHu32(0x1070) |= 1;
+	iopIntcIrq(0);
 	if(psxvblankgate & (1 << 1)) psxCheckStartGate16(1);
 	if(psxvblankgate & (1 << 3)) psxCheckStartGate32(3);
 }
 
 void psxVBlankEnd()
 {
-	psxHu32(0x1070) |= 0x800;
+	iopIntcIrq(11);
 	if(psxvblankgate & (1 << 1)) psxCheckEndGate16(1);
 	if(psxvblankgate & (1 << 3)) psxCheckEndGate32(3);
 }
