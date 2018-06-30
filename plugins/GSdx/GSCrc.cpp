@@ -447,6 +447,7 @@ CRC::Game CRC::m_games[] =
 	{0xE21404E2, GetaWay, US, 0},
 	{0x458485EF, GetaWay, EU, 0},
 	{0xE78971DF, GetaWayBlackMonday, US, 0},
+	{0x342D97FA, GetaWayBlackMonday, US, 0}, // Demo
 	{0xE8C0AD1A, GetaWayBlackMonday, JP, 0},
 	{0x09C3DF79, GetaWayBlackMonday, EU, 0},
 	{0x1130BF23, SakuraTaisen, CH, 0}, // cutie comment
