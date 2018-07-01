@@ -361,6 +361,7 @@ CRC::Game CRC::m_games[] =
 	{0xB1995E29, ShadowofRome, EU, 0}, // cutie comment
 	{0x958DCA28, ShadowofRome, EU, 0},
 	{0x57818AF6, ShadowofRome, US, 0},
+	{0x1E210E60, ShadowofRome, US, 0}, // Demo
 	{0xF21EE6E0, CrashNburn, US, 0},
 	{0x54A548B4, CrashNburn, EU, 0},
 	{0x694A998E, TombRaiderUnderworld, JP, 0}, // cutie comment
