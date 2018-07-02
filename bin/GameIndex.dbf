@@ -719,6 +719,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20132
 Name   = Drag-On Dragon 2 - Fuuin no Kurenai (Love Red, Ambivalence Black)
 Region = NTSC-J
+eeClampMode = 2 // Fixes wrong color on some characters and breakable objects.
 ---------------------------------------------
 Serial = SCAJ-20133
 Name   = Kagero 2 - Dark Illusion
@@ -3101,6 +3102,10 @@ Serial = SCKA-30006
 Name   = God of War 2
 Region = NTSC-K
 Compat = 5
+---------------------------------------------
+Serial = SCPM-85101
+Name   = McDonald's Original Happy Disc
+Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-11001
 Name   = I.Q. Remix
@@ -13473,6 +13478,7 @@ Serial = SLES-53114
 Name   = Full Spectrum Warrior
 Region = PAL-M5
 EETimingHack = 1 // Flickery textures.
+mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLES-53119
 Name   = Kessen III
@@ -13512,6 +13518,7 @@ Serial = SLES-53131
 Name   = Full Spectrum Warrior
 Region = PAL-E
 EETimingHack = 1 // Flickery textures.
+mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLES-53138
 Name   = Outlaw Volleyball - Remixed
@@ -14895,6 +14902,7 @@ Region = PAL-E
 Serial = SLES-53794
 Name   = Drakengard 2
 Region = PAL-M3
+eeClampMode = 2 // Fixes wrong color on some characters and breakable objects.
 ---------------------------------------------
 Serial = SLES-53796
 Name   = FIFA Street 2
@@ -18558,6 +18566,12 @@ Name   = NanoBreaker
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
+Serial = SLKA-25264
+Name   = Full Spectrum Warrior
+Region = NTSC-K
+EETimingHack = 1 // Flickery textures.
+mvuFlagSpeedHack = 0 // Fixes bad graphics.
+---------------------------------------------
 Serial = SLKA-25265
 Name   = Devil May Cry 3
 Region = NTSC-K
@@ -18871,6 +18885,19 @@ Serial = SLPM-55033
 Name   = J. League Winning Eleven 2008 - Club Championship
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPM-55063
+Name   = Hakuouki [Limited Edition]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55064
+Name   = Hakuouki
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55081
+Name   = Drag-on Dragoon 2 - Fuuin no Kurenai (Ultimate Hits)
+Region = NTSC-J
+eeClampMode = 2 // Fixes wrong color on some characters and breakable objects.
+---------------------------------------------
 Serial = SLPM-55096
 Name   = ThunderForce VI
 Region = NTSC-J
@@ -18890,6 +18917,15 @@ Serial = SLPM-55114
 Name   = Mana Khemia 2: Ochita Gakuen to Renkinjutsushi Tachi
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPM-55118
+Name   = Galaxy Angel II - Eigou Kaiki no Koku [Disc1of2]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55119
+Name   = Galaxy Angel II - Eigou Kaiki no Koku [Disc2of2]
+Region = NTSC-J
+MemCardFilter = SLPM-55118
+---------------------------------------------
 Serial = SLPM-55120
 Name   = Fukakutei Sekai no Tantei Shinshi - Agyou Souma no Jiken File
 Region = NTSC-J
@@ -18907,8 +18943,16 @@ Serial = SLPM-55131
 Name   = World Soccer Winning Eleven 2009
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPM-55138
+Name   = Harukanaru Toki no Naka de - Yumenoukihashi Special
+Region = NTSC-J
+---------------------------------------------
 Serial = SLPM-55148
 Name   = 007: Nagusame no Houshuu
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55170
+Name   = Skip Beat!
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-55182
@@ -18920,6 +18964,18 @@ Name   = Melty Blood - Actress Again
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
+Serial = SLPM-55191
+Name   = L2 - Love x Loop
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55207
+Name   = Hakuouki - Zuisouroku [Limited Edition]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55208
+Name   = Hakuouki - Zuisouroku
+Region = NTSC-J
+---------------------------------------------
 Serial = SLPM-55226
 Name   = FIFA 10: World Class Soccer
 Region = NTSC-J
@@ -18930,6 +18986,10 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-55251
 Name   = WWE SmackDown vs. Raw 2009
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55252
+Name   = Pro Yakyuu Spirits 2010
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-55258
@@ -18944,12 +19004,24 @@ Serial = SLPM-55271
 Name   = FIFA 10: World Class Soccer (EA:SY! 1980)
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPM-55273
+Name   = Hakuouki - Reimeiroku
+Region = NTSC-J
+---------------------------------------------
 Serial = SLPM-55276
 Name   = World Soccer Winning Eleven 2011
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-55280
 Name   = The King of Fighters '98 Ultimate Match
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55283
+Name   = Hakuouki - Reimeiroku [Limited Edition]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-55285
+Name   = Crimson Empire
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-60101
@@ -18992,6 +19064,11 @@ Region = NTSC-J
 Serial = SLPM-60265
 Name   = 10th Anniversary PlayStation & PlayStation 2 All-Soft Catalogue Special SaveData Collection [PS2 Disc]
 Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-61120
+Name   = Drag-on Dragoon 2 - Fuuin no Kurenai [Trial Version]
+Region = NTSC-J
+eeClampMode = 2 // Fixes wrong color on some characters and breakable objects.
 ---------------------------------------------
 Serial = SLPM-61147
 Name   = Xenosaga Episode III - Also Sprach Zarathustra [Demo]
@@ -21451,6 +21528,10 @@ Serial = SLPM-62780
 Name   = Fantasy Zone Complete Collection
 Region = NTSC-J
 Compat = 5
+---------------------------------------------
+Serial = SLPM-62784
+Name   = Kao no nai Tsuki Select Story
+Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-64504
 Name   = Maximo
@@ -25040,6 +25121,7 @@ Compat = 5
 Serial = SLPM-65999
 Name   = Drag-on Dragoon 2 - Fuuin no Kurenai
 Region = NTSC-J
+eeClampMode = 2 // Fixes wrong color on some characters and breakable objects.
 ---------------------------------------------
 Serial = SLPM-66000
 Name   = Conflict Delta II - Gulf War 1991
@@ -25342,6 +25424,10 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66082
 Name   = Fire Pro Wrestling Returns
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66083
+Name   = Ramune - Garasu-Bin ni Uturu Umi [Limited Edition]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66084
@@ -25987,6 +26073,7 @@ Serial = SLPM-66263
 Name   = Full Spectrum Warrior
 Region = NTSC-J
 EETimingHack = 1 // Flickery textures.
+mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLPM-66264
 Name   = Canvas 2 - Niji-iro no Sketch [Deluxe Pack]
@@ -26286,6 +26373,10 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66343
 Name   = Shin Sangoku Musou 4 - Empires
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66347
+Name   = Harukanaru Jikuu no Kade 3 - Unmei no Meikyuu [Premium Box]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66348
@@ -26666,7 +26757,7 @@ Name   = Asobi ni Iku Yo! [Limited Edition]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66457
-Name   = Asobi ni Iku Yo!
+Name   = Asobi ni Iku Yo! Chikyuu Pinchi no Konyaku Sengen
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66458
@@ -27905,8 +27996,13 @@ Name   = Galaxy Angel - Eternal Lovers [Broccoli The Best Quality]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66779
-Name   = Galaxy Angel II - Mugen Kairou no Kagi
+Name   = Galaxy Angel II - Mugen Kairou no Kagi [Disc1of2]
 Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66780
+Name   = Galaxy Angel II - Mugen Kairou no Kagi [Disc2of2]
+Region = NTSC-J
+MemCardFilter = SLPM-66779
 ---------------------------------------------
 Serial = SLPM-66781
 Name   = Dragon Quest - Shonen Yangus to Fushigi no Dungeon [Ultimate Hits]
@@ -31391,6 +31487,10 @@ Serial = SLPS-25266
 Name   = King of Fighters 2001, The
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPS-25267
+Name   = Summon Night 3
+Region = NTSC-J
+---------------------------------------------
 Serial = SLPS-25270
 Name   = Sunrise World War
 Region = NTSC-J
@@ -32863,6 +32963,10 @@ Name   = dot Hack G.U. Vol.1 - Saitan
 Region = NTSC-J
 MemCardFilter = SCPS-55029/SCPS-55042/SCAJ-20004/SCAJ-20024/SLPS-25121/SLPS-25143/SLPS-25158/SLPS-25202/SLPS-73230/SLPS-73231/SLPS-73232/SLPS-73233/SLPS-25651/SLPS-25655/SLPS-25656/SLPS-25756
 ---------------------------------------------
+Serial = SLPS-25652
+Name   = dot hack G.U. Vol. 1 - Saitan (Terminal Disc - The End of the World)
+Region = NTSC-J
+---------------------------------------------
 Serial = SLPS-25653
 Name   = Cluster Edge [Limited Edition]
 Region = NTSC-J
@@ -33741,6 +33845,14 @@ Serial = SLPS-25894
 Name   = Aa Megami-sama [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPS-25897
+Name   = Zero no Tsukaima - Maigo no Period to Ikusen no Symphony [Limited Edition]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25898
+Name   = Zero no Tsukaima - Maigo no Period to Ikusen no Symphony
+Region = NTSC-J
+---------------------------------------------
 Serial = SLPS-25905
 Name   = Dragon Ball Z: Infinite World
 Region = NTSC-J
@@ -33757,6 +33869,10 @@ FpuNegDivHack = 1
 ---------------------------------------------
 Serial = SLPS-25915
 Name   = The King of Fighters 2002 - Unlimited Match
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25917
+Name   = Sacred Blaze
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25927
@@ -33779,6 +33895,18 @@ Serial = SLPS-25944
 Name   = Kamen Rider Climax Heroes
 Region = NTSC-J
 Compat = 5
+---------------------------------------------
+Serial = SLPS-25947
+Name   = Summon Night Gran-These: Horobi no Ken to Yakusoku no Kishi
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25948
+Name   = Zero no Tsukaima - Maigo no Period to Ikusen no Symphony [Best Collection]
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25956
+Name   = Moe Moe 2-ji Taisen Ryoku 2
+Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25959
 Name   = Kidou Senshi Gundam: Giren no Yabou - Axis no Kyoui V
@@ -39467,6 +39595,7 @@ Name   = Full Spectrum Warrior
 Region = NTSC-U
 Compat = 5
 EETimingHack = 1 // Flickery textures.
+mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLUS-21146
 Name   = Far East of Eden
@@ -40643,6 +40772,7 @@ Serial = SLUS-21373
 Name   = Drakengard 2
 Region = NTSC-U
 Compat = 5
+eeClampMode = 2 // Fixes wrong color on some characters and breakable objects.
 ---------------------------------------------
 Serial = SLUS-21374
 Name   = Marvel - Ultimate Alliance
