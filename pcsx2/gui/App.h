@@ -30,6 +30,12 @@
 //Purely to make sure the saveslot define comes through. Remove if it gets removed.
 #include "Saveslots.h"
 
+#ifndef DISABLE_RECORDING
+#	include "Recording/InputRecordingEditor.h"
+#	include "Recording/VirtualPad.h"
+#	include "Recording/NewRecordingFrame.h"
+#endif
+
 class DisassemblyDialog;
 
 #include "System.h"
@@ -65,6 +71,19 @@ static const bool CloseViewportWithPlugins = false;
 // ------------------------------------------------------------------------
 // All Menu Options for the Main Window! :D
 // ------------------------------------------------------------------------
+
+enum TopLevelMenuIndices
+{
+	TopLevelMenu_System = 0,
+	TopLevelMenu_Cdvd,
+	TopLevelMenu_Config,
+	TopLevelMenu_Misc,
+	TopLevelMenu_Debug,
+	TopLevelMenu_Capture,
+#ifndef DISABLE_RECORDING
+	TopLevelMenu_Recording,
+#endif
+};
 
 enum MenuIdentifiers
 {
@@ -105,14 +124,16 @@ enum MenuIdentifiers
 	MenuId_EnablePatches,
 	MenuId_EnableCheats,
 	MenuId_EnableWideScreenPatches,
+	MenuId_EnableRecordingTools,
+	MenuId_EnableLuaTools,
 	MenuId_EnableHostFs,
 
 	MenuId_State_Load,
-	MenuId_State_LoadOther,
+	MenuId_State_LoadFromFile,
 	MenuId_State_Load01,		// first of many load slots
 	MenuId_State_LoadBackup = MenuId_State_Load01+20,
 	MenuId_State_Save,
-	MenuId_State_SaveOther,
+	MenuId_State_SaveToFile,
 	MenuId_State_Save01,		// first of many save slots
 
 	MenuId_State_EndSlotSection = MenuId_State_Save01+20,
@@ -160,6 +181,30 @@ enum MenuIdentifiers
 	MenuId_Debug_Logging,		// dialog for selection additional log options
 	MenuId_Debug_CreateBlockdump,
 	MenuId_Config_ResetAll,
+
+	// Capture Subsection
+	MenuId_Capture_Video,
+	MenuId_Capture_Video_Record,
+	MenuId_Capture_Video_Stop,
+	MenuId_Capture_Screenshot,
+	MenuId_Capture_Screenshot_Screenshot,
+	MenuId_Capture_Screenshot_Screenshot_As,
+
+#ifndef DISABLE_RECORDING
+	// Recording Subsection
+	MenuId_Recording_New,
+	MenuId_Recording_Play,
+	MenuId_Recording_Stop,
+	MenuId_Recording_Editor,
+	MenuId_Recording_VirtualPad_Port0,
+	MenuId_Recording_VirtualPad_Port1,
+	MenuId_Recording_Conversions,
+	MenuId_Recording_ConvertV2ToV3,
+	MenuId_Recording_ConvertV1_XToV2,
+	MenuId_Recording_ConvertV1ToV2,
+	MenuId_Recording_ConvertLegacy,
+#endif
+
 };
 
 namespace Exception
@@ -498,6 +543,12 @@ protected:
 	wxWindowID			m_id_ProgramLogBox;
 	wxWindowID			m_id_Disassembler;
 
+#ifndef DISABLE_RECORDING
+	wxWindowID			m_id_InputRecordingEditor;
+	wxWindowID			m_id_VirtualPad[2];
+	wxWindowID			m_id_NewRecordingFrame;
+#endif
+
 	wxKeyEvent			m_kevt;
 
 public:
@@ -521,7 +572,16 @@ public:
 	GSFrame*			GetGsFramePtr() const		{ return (GSFrame*)wxWindow::FindWindowById( m_id_GsFrame ); }
 	MainEmuFrame*		GetMainFramePtr() const		{ return (MainEmuFrame*)wxWindow::FindWindowById( m_id_MainFrame ); }
 	DisassemblyDialog*	GetDisassemblyPtr() const	{ return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
-	
+
+#ifndef DISABLE_RECORDING
+	InputRecordingEditor *			GetInputRecordingEditorPtr() const { return (InputRecordingEditor*)wxWindow::FindWindowById(m_id_InputRecordingEditor); }
+	VirtualPad *		GetVirtualPadPtr(int port) const {
+		if (port < 0 || port > 1) return NULL; // TODO i believe this is always false, linter errors picked it up, double check
+		return (VirtualPad*)wxWindow::FindWindowById(m_id_VirtualPad[port]);
+	}
+	NewRecordingFrame *		GetNewRecordingFramePtr() const { return (NewRecordingFrame*)wxWindow::FindWindowById(m_id_NewRecordingFrame); }
+#endif
+
 	void enterDebugMode();
 	void leaveDebugMode();
 	void resetDebugger();
@@ -618,7 +678,13 @@ protected:
 	void CleanupOnExit();
 	void OpenWizardConsole();
 	void PadKeyDispatch( const keyEvent& ev );
-	
+
+#ifndef DISABLE_RECORDING 
+public:
+	void Recording_PadKeyDispatch(const keyEvent& ev) { PadKeyDispatch(ev); }
+#endif 
+
+protected:
 	void HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event) const;
 	void HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event);
 

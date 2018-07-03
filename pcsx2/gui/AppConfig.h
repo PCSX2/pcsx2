@@ -263,6 +263,9 @@ public:
 		wxString OutputInterlaced;
 		wxString Paused;
 		wxString TitleTemplate;
+#ifndef DISABLE_RECORDING
+		wxString RecordingTemplate;
+#endif
 	};
 
 public:
