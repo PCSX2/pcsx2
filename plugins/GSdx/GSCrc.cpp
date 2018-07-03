@@ -229,6 +229,7 @@ CRC::Game CRC::m_games[] =
 	{0x2C5BF134, GiTS, US, 0}, // Demo
 	{0xA5768F53, GiTS, JP, 0},
 	{0xA3643EB1, GiTS, KO, 0},
+	{0x28557423, GiTS, RU, 0},
 	{0xBF6F101F, GiTS, EU, 0}, // same CRC as another US disc
 	{0x6BF11378, Onimusha3, US, 0},
 	{0x71320CA8, Onimusha3, JP, 0},
@@ -288,6 +289,7 @@ CRC::Game CRC::m_games[] =
 	{0xA33AF77A, TenchuFS, US, 0},
 	{0x64C58FB4, TenchuFS, US, 0},
 	{0xE7CCCB1E, TenchuFS, EU, 0},
+	{0x89E63B6B, TenchuFS, RU, 0}, // Beta
 	{0x1969B19A, TenchuFS, ES, 0}, // PAL Spanish
 	{0xBF0DC4CE, TenchuFS, DE, 0},
 	{0x696BBEC3, TenchuFS, KO, 0},
@@ -421,6 +423,7 @@ CRC::Game CRC::m_games[] =
 	{0x9B89F425, NanoBreaker, EU, 0},
 	{0x519E816B, Kunoichi, US, 0}, // Nightshade
 	{0x3FB419FD, Kunoichi, JP, 0},
+	{0x2919744A, Kunoichi, RU, 0}, // Nightshade
 	{0x086D198E, Kunoichi, CH, 0},
 	{0x3B470BBD, Kunoichi, EU, 0},
 	{0x6BA65DD8, Kunoichi, KO, 0},
@@ -497,6 +500,7 @@ CRC::Game CRC::m_games[] =
 	{0x37B99B14, SoulCalibur3, KO, 0},
 	{0xFC0F8A5B, Simple2000Vol114, JP, 0},
 	{0xBDD9BAAD, UrbanReign, US, 0}, // cutie comment
+	{0x0418486E, UrbanReign, RU, 0},
 	{0xAE4BEBD3, UrbanReign, EU, 0},
 	{0x48AC09BC, SteambotChronicles, EU, 0},
 	{0x9F391882, SteambotChronicles, US, 0},
