@@ -18,6 +18,10 @@
 
 #include "AppCommon.h"
 #include "CpuUsageProvider.h"
+
+#include "wx/dcbuffer.h"
+#include "wx/dcgraph.h"
+
 #include <memory>
 
 
@@ -47,14 +51,18 @@ protected:
 	bool					m_HasFocus;
 	bool					m_coreRunning;
 
+#ifndef DISABLE_RECORDING
+	int						m_frameAdvanceKey;
+#endif
+
 public:
 	GSPanel( wxWindow* parent );
 	virtual ~GSPanel();
 
-	void DoResize();
+	virtual void DoResize();
 	void DoShowMouse();
 	void DirectKeyCommand( wxKeyEvent& evt );
-	void DirectKeyCommand( const KeyAcceleratorCode& kac );
+	virtual void DirectKeyCommand( const KeyAcceleratorCode& kac );
 
 protected:
 	void AppStatusEvent_OnSettingsApplied();
@@ -74,7 +82,6 @@ protected:
 
 	void UpdateScreensaver();
 };
-
 
 // --------------------------------------------------------------------------------------
 //  GSFrame
