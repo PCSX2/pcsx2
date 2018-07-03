@@ -227,9 +227,9 @@ CRC::Game CRC::m_games[] =
 	{0xAC4DFD5A, JackieChanAdv, EU, 0},
 	{0x95CC86EF, GiTS, US, 0}, // same CRC also reported as EU
 	{0x2C5BF134, GiTS, US, 0}, // Demo
-	{0x28557423, GiTS, RU, 0},
 	{0xA5768F53, GiTS, JP, 0},
 	{0xA3643EB1, GiTS, KO, 0},
+	{0x28557423, GiTS, RU, 0},
 	{0xBF6F101F, GiTS, EU, 0}, // same CRC as another US disc
 	{0x6BF11378, Onimusha3, US, 0},
 	{0x71320CA8, Onimusha3, JP, 0},
