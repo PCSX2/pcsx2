@@ -53,6 +53,13 @@ Devel
 
 oprofile_data/
 
+# Recording Specific Ignores (pcsx2-rr)
+*.p2s
+*.p2m2
+*.p2m2_backup
+*.p2m
+*.p2m_backup
+
 # Visual Studio upgrades
 /Backup*
 /UpgradeLog*.htm
