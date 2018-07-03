@@ -16,8 +16,16 @@
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
 
+#include "Common.h"
+#include "ConsoleLogger.h"
 #include "Sio.h"
 #include "sio_internal.h"
+
+#ifndef DISABLE_RECORDING
+#	include "Recording/InputRecording.h"
+#	include "Recording/PadData.h"
+#	include "Recording/RecordingInputManager.h"
+#endif
 
 _sio sio;
 _mcd mcds[2][4];
@@ -206,6 +214,20 @@ SIO_WRITE sioWriteController(u8 data)
 
 	default:
 		sio.buf[sio.bufCount] = PADpoll(data);
+
+#ifndef DISABLE_RECORDING
+		if (g_Conf->EmuOptions.EnableRecordingTools)
+		{
+			g_InputRecording.ControllerInterrupt(data, sio.port, sio.bufCount, sio.buf);
+			if (g_InputRecording.isInterruptFrame())
+			{
+				g_RecordingInput.ControllerInterrupt(data, sio.port, sio.bufCount, sio.buf);
+			}
+
+			PadData::logPadData(sio.port, sio.bufCount, sio.buf);
+		}
+#endif
+		
 		break;
 	}
 	//Console.WriteLn( "SIO: sent = %02X  From pad data =  %02X  bufCnt %08X ", data, sio.buf[sio.bufCount], sio.bufCount);

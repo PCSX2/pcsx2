@@ -214,6 +214,11 @@ protected:
 	void sio2Freeze();
 
 	void deci2Freeze();
+
+#ifndef DISABLE_RECORDING
+	void InputRecordingFreeze();
+#endif
+	
 };
 
 // --------------------------------------------------------------------------------------
