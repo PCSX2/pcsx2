@@ -422,8 +422,8 @@ CRC::Game CRC::m_games[] =
 	{0x7098BE76, NanoBreaker, KO, 0},
 	{0x9B89F425, NanoBreaker, EU, 0},
 	{0x519E816B, Kunoichi, US, 0}, // Nightshade
-	{0x2919744A, Kunoichi, RU, 0}, // Nightshade
 	{0x3FB419FD, Kunoichi, JP, 0},
+	{0x2919744A, Kunoichi, RU, 0}, // Nightshade
 	{0x086D198E, Kunoichi, CH, 0},
 	{0x3B470BBD, Kunoichi, EU, 0},
 	{0x6BA65DD8, Kunoichi, KO, 0},
