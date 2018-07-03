@@ -19,6 +19,7 @@
 #include <time.h>
 #include <cmath>
 
+#include "App.h"
 #include "Common.h"
 #include "R3000A.h"
 #include "Counters.h"
@@ -30,6 +31,11 @@
 #include "ps2/HwInternal.h"
 
 #include "Sio.h"
+
+#ifndef DISABLE_RECORDING
+#	include "Recording/RecordingControls.h"
+#	include "Recording/InputRecordingEditor.h"
+#endif
 
 using namespace Threading;
 
@@ -566,6 +572,16 @@ __fi void rcntUpdate_vSync()
 	}
 	else	// VSYNC end / VRENDER begin
 	{
+
+#ifndef DISABLE_RECORDING
+		if (g_Conf->EmuOptions.EnableRecordingTools)
+		{
+			InputRecordingEditor* dlg = wxGetApp().GetInputRecordingEditorPtr();
+			if (dlg)dlg->FrameUpdate();
+			g_RecordingControls.StopCheck();
+		}
+#endif
+
 		VSyncStart(vsyncCounter.sCycle);
 
 
