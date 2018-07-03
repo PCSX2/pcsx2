@@ -22,6 +22,11 @@
 #include "AppAccelerators.h"
 #include "AppSaveStates.h"
 
+#ifndef DISABLE_RECORDING
+#	include "Recording/RecordingControls.h"
+#	include "Recording/InputRecording.h"
+#endif
+
 // Various includes needed for dumping...
 #include "GS.h"
 #include "Dump.h"
@@ -458,6 +463,53 @@ namespace Implementations
 		if( GSFrame* gsframe = wxGetApp().GetGsFramePtr() )
 			gsframe->ShowFullScreen( !gsframe->IsFullScreen() );
 	}
+#ifndef DISABLE_RECORDING
+	void FrameAdvance()
+	{
+		if (g_Conf->EmuOptions.EnableRecordingTools)
+			g_RecordingControls.FrameAdvance();
+	}
+	void TogglePause()
+	{
+		if (g_Conf->EmuOptions.EnableRecordingTools)
+			g_RecordingControls.TogglePause();
+	}
+	void InputRecordingModeToggle()
+	{
+		if (g_Conf->EmuOptions.EnableRecordingTools)
+			g_InputRecording.RecordModeToggle();
+	}
+	void States_SaveSlot(int slot)
+	{
+		States_SetCurrentSlot(slot);
+		States_FreezeCurrentSlot();
+	}
+	void States_LoadSlot(int slot)
+	{
+		States_SetCurrentSlot(slot);
+		States_DefrostCurrentSlot();
+	}
+	void States_SaveSlot0() { States_SaveSlot(0); }
+	void States_SaveSlot1() { States_SaveSlot(1); }
+	void States_SaveSlot2() { States_SaveSlot(2); }
+	void States_SaveSlot3() { States_SaveSlot(3); }
+	void States_SaveSlot4() { States_SaveSlot(4); }
+	void States_SaveSlot5() { States_SaveSlot(5); }
+	void States_SaveSlot6() { States_SaveSlot(6); }
+	void States_SaveSlot7() { States_SaveSlot(7); }
+	void States_SaveSlot8() { States_SaveSlot(8); }
+	void States_SaveSlot9() { States_SaveSlot(9); }
+	void States_LoadSlot0() { States_LoadSlot(0); }
+	void States_LoadSlot1() { States_LoadSlot(1); }
+	void States_LoadSlot2() { States_LoadSlot(2); }
+	void States_LoadSlot3() { States_LoadSlot(3); }
+	void States_LoadSlot4() { States_LoadSlot(4); }
+	void States_LoadSlot5() { States_LoadSlot(5); }
+	void States_LoadSlot6() { States_LoadSlot(6); }
+	void States_LoadSlot7() { States_LoadSlot(7); }
+	void States_LoadSlot8() { States_LoadSlot(8); }
+	void States_LoadSlot9() { States_LoadSlot(9); }
+#endif
 }
 
 // --------------------------------------------------------------------------------------
@@ -619,6 +671,31 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 		false,
 	},
 
+#ifndef DISABLE_RECORDING
+	{ "FrameAdvance"				, Implementations::FrameAdvance,				NULL, NULL, false },
+	{ "TogglePause"					, Implementations::TogglePause,					NULL, NULL, false },
+	{ "InputRecordingModeToggle"	, Implementations::InputRecordingModeToggle,	NULL, NULL, false },
+	{ "States_SaveSlot0"			, Implementations::States_SaveSlot0,			NULL, NULL, false },
+	{ "States_SaveSlot1"			, Implementations::States_SaveSlot1,			NULL, NULL, false },
+	{ "States_SaveSlot2"			, Implementations::States_SaveSlot2,			NULL, NULL, false },
+	{ "States_SaveSlot3"			, Implementations::States_SaveSlot3,			NULL, NULL, false },
+	{ "States_SaveSlot4"			, Implementations::States_SaveSlot4,			NULL, NULL, false },
+	{ "States_SaveSlot5"			, Implementations::States_SaveSlot5,			NULL, NULL, false },
+	{ "States_SaveSlot6"			, Implementations::States_SaveSlot6,			NULL, NULL, false },
+	{ "States_SaveSlot7"			, Implementations::States_SaveSlot7,			NULL, NULL, false },
+	{ "States_SaveSlot8"			, Implementations::States_SaveSlot8,			NULL, NULL, false },
+	{ "States_SaveSlot9"			, Implementations::States_SaveSlot9,			NULL, NULL, false },
+	{ "States_LoadSlot0"			, Implementations::States_LoadSlot0,			NULL, NULL, false },
+	{ "States_LoadSlot1"			, Implementations::States_LoadSlot1,			NULL, NULL, false },
+	{ "States_LoadSlot2"			, Implementations::States_LoadSlot2,			NULL, NULL, false },
+	{ "States_LoadSlot3"			, Implementations::States_LoadSlot3,			NULL, NULL, false },
+	{ "States_LoadSlot4"			, Implementations::States_LoadSlot4,			NULL, NULL, false },
+	{ "States_LoadSlot5"			, Implementations::States_LoadSlot5,			NULL, NULL, false },
+	{ "States_LoadSlot6"			, Implementations::States_LoadSlot6,			NULL, NULL, false },
+	{ "States_LoadSlot7"			, Implementations::States_LoadSlot7,			NULL, NULL, false },
+	{ "States_LoadSlot8"			, Implementations::States_LoadSlot8,			NULL, NULL, false },
+	{ "States_LoadSlot9"			, Implementations::States_LoadSlot9,			NULL, NULL, false },
+#endif
 	// Command Declarations terminator:
 	// (must always be last in list!!)
 	{ NULL }
