@@ -760,6 +760,13 @@ bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 			skip = 3;
 		}
 	}
+	else
+	{
+		if(fi.TME && (fi.FBP == 0x0e00) && fi.FPSM == PSM_PSMCT32 && fi.FBMSK == 0xFF000000)
+		{
+			skip = 0;
+		}
+	}
 
 	return true;
 }
