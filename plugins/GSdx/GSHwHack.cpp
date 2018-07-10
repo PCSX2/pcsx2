@@ -750,7 +750,7 @@ bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-//Shadows don't appear or cause darkness issues in different levels.
+// Removes depth effects(shadows) not rendered correctly on all renders.
 bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
