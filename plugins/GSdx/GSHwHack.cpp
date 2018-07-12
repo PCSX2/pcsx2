@@ -761,7 +761,6 @@ bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 		}
 		if(fi.TME && (fi.FBP ==0x0700 || fi.FBP==0) && fi.TBP0==0x0e00 && fi.TPSM ==0  && fi.FBMSK == 0)
 		{
-			// Removes depth effects(shadows) not rendered correctly on all renders.
 			skip = 1;
 		}
 		if(Aggressive && fi.TME)
