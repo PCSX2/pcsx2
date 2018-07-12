@@ -752,7 +752,6 @@ bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
 
 bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 {
-	// Removes depth effects(shadows) not rendered correctly on all renders.
 	if(skip == 0)
 	{
 		if(!fi.TME && (fi.FBP == 0x0 || fi.FBP == 0x00700 || fi.FBP == 0x00800) && fi.FPSM == PSM_PSMCT32 && fi.FBMSK == 0x00FFFFFF)
