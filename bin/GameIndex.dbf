@@ -1583,7 +1583,7 @@ Region = PAL-M5
 Compat = 5 // With GSdx, SW-mode only.
 ---------------------------------------------
 Serial = SCES-51159
-Name   = Getaway, The
+Name   = The Getaway
 Region = PAL-M5
 Compat = 5
 ---------------------------------------------
@@ -1623,7 +1623,7 @@ Name   = Dog's Life
 Region = PAL-M11
 ---------------------------------------------
 Serial = SCES-51426
-Name   = Getaway, The
+Name   = The Getaway
 Region = PAL-M5
 ---------------------------------------------
 Serial = SCES-51428
@@ -2005,7 +2005,7 @@ Name   = DJ - Decks & FX - Claudio Coccoluto Edition
 Region = PAL-I
 ---------------------------------------------
 Serial = SCES-52758
-Name   = Getaway, The - Black Monday
+Name   = The Getaway - Black Monday
 Region = PAL-M6
 ---------------------------------------------
 Serial = SCES-52762
@@ -2056,7 +2056,7 @@ Region = PAL-M5
 Compat = 2
 ---------------------------------------------
 Serial = SCES-52948
-Name   = Getaway, The - Black Monday
+Name   = The Getaway - Black Monday
 Region = PAL-M4
 ---------------------------------------------
 Serial = SCES-53033
@@ -4547,7 +4547,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SCUS-97133
-Name   = Getaway, The
+Name   = The Getaway
 Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97134
@@ -5421,7 +5421,7 @@ Name   = Kiosk Demo Disc Q2-Q3 2004
 Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97408
-Name   = Getaway, The - Black Monday
+Name   = The Getaway - Black Monday
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -5545,7 +5545,7 @@ Name   = Jak and Daxter Trilogy [Demo]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97441
-Name   = Getaway - Black Monday [Demo]
+Name   = The Getaway - Black Monday [Demo]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97442
@@ -13478,7 +13478,6 @@ Region = PAL-E
 Serial = SLES-53114
 Name   = Full Spectrum Warrior
 Region = PAL-M5
-EETimingHack = 1 // Flickery textures.
 mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLES-53119
@@ -13518,7 +13517,6 @@ Region = PAL-M5
 Serial = SLES-53131
 Name   = Full Spectrum Warrior
 Region = PAL-E
-EETimingHack = 1 // Flickery textures.
 mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLES-53138
@@ -14591,7 +14589,7 @@ Compat = 5
 Serial = SLES-53656
 Name   = Full Spectrum Warrior - Ten Hammers
 Region = PAL-M4
-EETimingHack = 1 // Flickery textures.
+mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLES-53657
 Name   = Shrek - Super Slam
@@ -15148,7 +15146,7 @@ Compat = 5
 Serial = SLES-53909
 Name   = Full Spectrum Warrior - Ten Hammers
 Region = PAL-G
-EETimingHack = 1 // Flickery textures.
+mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLES-53910
 Name   = Agent Hugo
@@ -18574,7 +18572,6 @@ Compat = 5
 Serial = SLKA-25264
 Name   = Full Spectrum Warrior
 Region = NTSC-K
-EETimingHack = 1 // Flickery textures.
 mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLKA-25265
@@ -22936,7 +22933,7 @@ Name   = Air Ranger 2 - Rescue Helicopter - Plus
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65410
-Name   = Getaway, The
+Name   = The Getaway
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65411
@@ -25774,7 +25771,7 @@ Name   = Kono Haretasora no Shita de [Good Price]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66183
-Name   = Getaway, The - Black Monday
+Name   = The Getaway - Black Monday
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-66184
@@ -26077,7 +26074,6 @@ Region = NTSC-J
 Serial = SLPM-66263
 Name   = Full Spectrum Warrior
 Region = NTSC-J
-EETimingHack = 1 // Flickery textures.
 mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLPM-66264
@@ -26644,7 +26640,7 @@ Region = NTSC-J
 Serial = SLPM-66427
 Name   = Full Spectrum Warrior - Ten Hammers
 Region = NTSC-J
-EETimingHack = 1 // Flickery textures.
+mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLPM-66429
 Name   = Special Forces - Fire for Effect
@@ -39605,7 +39601,6 @@ Serial = SLUS-21145
 Name   = Full Spectrum Warrior
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1 // Flickery textures.
 mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLUS-21146
@@ -40149,7 +40144,7 @@ Serial = SLUS-21250
 Name   = Full Spectrum Warrior - Ten Hammers
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1 // Flickery textures.
+mvuFlagSpeedHack = 0 // Fixes bad graphics.
 ---------------------------------------------
 Serial = SLUS-21251
 Name   = FlatOut 2
