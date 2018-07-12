@@ -756,19 +756,21 @@ bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 	{
 		if(!fi.TME && (fi.FBP == 0x0 || fi.FBP == 0x00700 || fi.FBP == 0x00800) && fi.FPSM == PSM_PSMCT32 && fi.FBMSK == 0x00FFFFFF)
 		{
+			// Removes depth effects(shadows) not rendered correctly on all renders.
 			skip = 3;
 		}
 		if(fi.TME && (fi.FBP ==0x0700 || fi.FBP==0) && fi.TBP0==0x0e00 && fi.TPSM ==0  && fi.FBMSK == 0)
 		{
 			skip = 1;
 		}
-		if(fi.TME)
+		if(Aggressive && fi.TME)
 		{
 			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
+			if((fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
 				// General, often problematic post processing
 				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
 			{
+				// Removes burning air effect, the effect causes major slowdowns.
 				skip = 1;
 			}
 		}
