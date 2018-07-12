@@ -762,6 +762,16 @@ bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1;
 		}
+		if(fi.TME)
+		{
+			// depth textures (bully, mgs3s1 intro, Front Mission 5)
+			if( (Aggressive && fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
+				// General, often problematic post processing
+				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
+			{
+				skip = 1;
+			}
+		}
 	}
 	else
 	{
@@ -770,19 +780,7 @@ bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 			skip = 0;
 		}
 	}
-	else(Aggressive && skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
+
 	return true;
 }
 
