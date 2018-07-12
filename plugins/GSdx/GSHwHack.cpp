@@ -766,7 +766,7 @@ bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 		if(fi.TME)
 		{
 			// Removes burning air effect, the effect causes major slowdowns.
-			if( (Aggressive && (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
+			if(Aggressive && (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
 				// General, often problematic post processing
 				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
 			{
