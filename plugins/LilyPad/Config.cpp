@@ -339,7 +339,7 @@ void CALLBACK PADsetSettingsDir(const char *dir)
     //swprintf_s( iniFile, L"%S", (dir==NULL) ? "inis" : dir );
 
     //uint targlen = MultiByteToWideChar(CP_ACP, 0, dir, -1, NULL, 0);
-    MultiByteToWideChar(CP_ACP, 0, dir, -1, iniFile, MAX_PATH * 2);
+    MultiByteToWideChar(CP_UTF8, 0, dir, -1, iniFile, MAX_PATH * 2);
     wcscat_s(iniFile, L"/LilyPad.ini");
 
     createIniDir = false;

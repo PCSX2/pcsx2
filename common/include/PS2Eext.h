@@ -43,6 +43,7 @@
 
 #endif
 
+#include <PluginCompatibility.h>
 //#include "PS2Edefs.h"
 
 #if !defined(_MSC_VER) || !defined(UNICODE)
@@ -65,7 +66,7 @@ struct PluginLog
 
     bool Open(std::string logname)
     {
-        LogFile = fopen(logname.c_str(), "w");
+        LogFile = px_fopen(logname, "w");
 
         if (LogFile) {
             setvbuf(LogFile, NULL, _IONBF, 0);
@@ -161,9 +162,9 @@ struct PluginConf
     bool Open(std::string name, FileMode mode = READ_FILE)
     {
         if (mode == READ_FILE) {
-            ConfFile = fopen(name.c_str(), "r");
+            ConfFile = px_fopen(name, "r");
         } else {
-            ConfFile = fopen(name.c_str(), "w");
+            ConfFile = px_fopen(name, "w");
         }
 
         if (ConfFile == NULL)
