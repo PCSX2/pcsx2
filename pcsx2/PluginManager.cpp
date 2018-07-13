@@ -1732,10 +1732,8 @@ void SysCorePlugins::SendSettingsFolder()
 	ScopedLock lock( m_mtx_PluginStatus );
 	if( m_SettingsFolder.IsEmpty() ) return;
 
-	wxCharBuffer buffer(m_SettingsFolder.mb_str(wxConvFile));
-
 	const PluginInfo* pi = tbl_PluginInfo; do {
-		if( m_info[pi->id] ) m_info[pi->id]->CommonBindings.SetSettingsDir( buffer );
+		if( m_info[pi->id] ) m_info[pi->id]->CommonBindings.SetSettingsDir( m_SettingsFolder.utf8_str() );
 	} while( ++pi, pi->shortname != NULL );
 }
 
@@ -1758,10 +1756,8 @@ void SysCorePlugins::SendLogFolder()
 	ScopedLock lock( m_mtx_PluginStatus );
 	if( m_LogFolder.IsEmpty() ) return;
 
-	wxCharBuffer buffer(m_LogFolder.mb_str(wxConvFile));
-
 	const PluginInfo* pi = tbl_PluginInfo; do {
-		if( m_info[pi->id] ) m_info[pi->id]->CommonBindings.SetLogDir( buffer );
+		if( m_info[pi->id] ) m_info[pi->id]->CommonBindings.SetLogDir( m_LogFolder.utf8_str() );
 	} while( ++pi, pi->shortname != NULL );
 }
 

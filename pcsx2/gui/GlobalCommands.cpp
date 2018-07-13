@@ -353,7 +353,7 @@ namespace Implementations
 
 	void Sys_TakeSnapshot()
 	{
-		GSmakeSnapshot( g_Conf->Folders.Snapshots.ToAscii() );
+		GSmakeSnapshot( g_Conf->Folders.Snapshots.ToUTF8() );
 	}
 
 	void Sys_RenderToggle()
