@@ -23,6 +23,7 @@
 #include <fstream>
 #include <locale>
 #include <string>
+#include <PluginCompatibility.h>
 
 Settings::Settings()
 {
@@ -45,7 +46,11 @@ void Settings::TrimWhitespace(std::string &str) const
 
 void Settings::Load(const std::string &filename)
 {
+#ifdef _WIN32
+    std::ifstream file(convert_utf8_to_utf16(filename));
+#else
     std::ifstream file(filename);
+#endif
     if (!file.is_open())
         return;
 
@@ -72,7 +77,11 @@ void Settings::Load(const std::string &filename)
 
 void Settings::Save(const std::string &filename) const
 {
+#ifdef _WIN32
+    std::ofstream file(convert_utf8_to_utf16(filename), std::ios::trunc);
+#else
     std::ofstream file(filename, std::ios::trunc);
+#endif
     if (!file.is_open())
         return;
 
