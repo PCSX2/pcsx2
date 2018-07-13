@@ -51,6 +51,7 @@
 
 #endif
 
+#include <PluginCompatibility.h>
 
 #ifdef ENABLE_OPENCL
 
