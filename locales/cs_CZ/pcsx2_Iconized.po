@@ -1,10 +1,11 @@
-# Translation of Iconized.po from PCSX2 project. (No icons here, what a let down.)
-# Copyright (C) 2002-2011 PCSX2_Dev_Team
+﻿# Translations for PCSX2 (Iconized).
+# Copyright (C) 2018 PCSX2 Dev Team
 # This file is distributed under the same license as the PCSX2 package.
-# Zbyněk Schwarz <zbynek.schwarz@gmail.com>, 2011.
+# First author: Zbyněk Schwarz <zbynek.schwarz@gmail.com>, 2011.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 0.9.9\n"
+"Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
 "PO-Revision-Date: 2017-06-30 19:49+0200\n"

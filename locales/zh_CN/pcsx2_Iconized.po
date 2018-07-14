@@ -1,11 +1,11 @@
-# Simplified Chinese Translation for PCSX2
-# Copyright (C) 2010-2011 PCSX2 Team
+﻿# Translations for PCSX2 (Iconized).
+# Copyright (C) 2018 PCSX2 Dev Team
 # This file is distributed under the same license as the PCSX2 package.
-# Wei Mingzhi <whistler_wmz@users.sf.net>, 2011.
+# First author: Wei Mingzhi <whistler_wmz@users.sf.net>, 2011.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.4.0\n"
+"Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
 "PO-Revision-Date: 2017-04-23 21:11+0800\n"

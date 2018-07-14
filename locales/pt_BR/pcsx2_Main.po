@@ -1,10 +1,11 @@
-# Brazilian Portuguese Translation for pcsx2 (Main)
-# Copyright (C) 2017 PCSX2 Dev Team
+﻿# Translations for PCSX2 (Iconized).
+# Copyright (C) 2018 PCSX2 Dev Team
 # This file is distributed under the same license as the PCSX2 package.
-# Rafael Fontenelle <rffontenelle@gmail.com>, 2011-2017.
+# First author: Rafael Fontenelle <rffontenelle@gmail.com>, 2011-2017.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: pcsx2_Main master\n"
+"Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
 "PO-Revision-Date: 2017-12-07 21:24-0200\n"

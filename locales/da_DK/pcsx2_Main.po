@@ -1,7 +1,7 @@
-# Danish translation for pcsx2 (Iconized).
-# Copyright (C) 2017 PCSX2 Dev Team
-# This file is distributed under the same license as the pcsx2 package.
-# Jakob5566 <jakob5566@gmail.com>, 2017.
+﻿# Translations for PCSX2 (Iconized).
+# Copyright (C) 2018 PCSX2 Dev Team
+# This file is distributed under the same license as the PCSX2 package.
+# First author: Jakob5566 <jakob5566@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
