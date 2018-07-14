@@ -37,7 +37,7 @@ void setIni(const wchar_t *Section)
 void CfgSetSettingsDir(const char *dir)
 {
     FileLog("CfgSetSettingsDir(%s)\n", dir);
-    path = wxString::FromAscii(dir) + L"/spu2-x.ini";
+    path = wxString::FromUTF8(dir) + L"/spu2-x.ini";
     pathSet = true;
 }
 
