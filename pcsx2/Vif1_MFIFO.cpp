@@ -42,7 +42,7 @@ static u16 QWCinVIFMFIFO(u32 DrainADDR, u16 qwc)
 		ret = ((spr0ch.madr - dmacRegs.rbor.ADDR) + (limit - DrainADDR)) >> 4;
 	}
 
-	SPR_LOG("VIF MFIFO Requesting %x QWC of %x Available from the MFIFO Base %x MFIFO Top %x, SPR MADR %x Drain %x", qwc, ret, dmacRegs.rbor.ADDR, dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16, spr0ch.madr, DrainADDR);
+	VIF_LOG("VIF MFIFO Requesting %x QWC of %x Available from the MFIFO Base %x MFIFO Top %x, SPR MADR %x Drain %x", qwc, ret, dmacRegs.rbor.ADDR, dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16, spr0ch.madr, DrainADDR);
 
 	return ret;
 }
@@ -64,7 +64,7 @@ static __fi bool mfifoVIF1rbTransfer()
 	{
 		int s1 = ((msize) - vif1ch.madr) >> 2;
 
-		SPR_LOG("Split MFIFO");
+		VIF_LOG("Split MFIFO");
 
 		/* it does, so first copy 's1' bytes from 'addr' to 'data' */
 		vif1ch.madr = qwctag(vif1ch.madr);
@@ -92,7 +92,7 @@ static __fi bool mfifoVIF1rbTransfer()
 	}
 	else
 	{
-		SPR_LOG("Direct MFIFO");
+		VIF_LOG("Direct MFIFO");
 
 		/* it doesn't, so just transfer 'qwc*4' words */
 		src = (u32*)PSM(vif1ch.madr);
@@ -120,21 +120,25 @@ static __fi void mfifo_VIF1chain()
 	{
 		//if(vif1ch.madr == (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16)) DevCon.Warning("Edge VIF1");
 		if (QWCinVIFMFIFO(vif1ch.madr, vif1ch.qwc) == 0) {
-			SPR_LOG("VIF MFIFO Empty before transfer");
+			VIF_LOG("VIF MFIFO Empty before transfer");
 			vif1.inprogress |= 0x10;
 			g_vif1Cycles += 4;
 			return;
 		}
 
 		mfifoVIF1rbTransfer();
-		vif1ch.tadr = qwctag(vif1ch.tadr);
 		vif1ch.madr = qwctag(vif1ch.madr);
+		//When transferring direct from the MFIFO, the TADR needs to be after the data last read
+		//FF7 DoC Expects the transfer to end with an Empty interrupt, so the TADR has to match SPR0_MADR
+		//It does an END tag (which normally doesn't increment TADR because it breaks Soul Calibur 2)
+		//with a QWC of 1 (rare) so we need to increment the TADR in the case of MFIFO.
+		vif1ch.tadr = vif1ch.madr;
 		
 	}
 	else
 	{
 		tDMA_TAG *pMem = dmaGetAddr(vif1ch.madr, !vif1ch.chcr.DIR);
-		SPR_LOG("Non-MFIFO Location");
+		VIF_LOG("Non-MFIFO Location");
 
 		//No need to exit on non-mfifo as it is indirect anyway, so it can be transferring this while spr refills the mfifo
 
@@ -182,7 +186,7 @@ void mfifoVIF1transfer()
 	if (vif1ch.qwc == 0)
 	{
 		if (QWCinVIFMFIFO(vif1ch.tadr, 1) == 0) {
-			SPR_LOG("VIF MFIFO Empty before tag");
+			VIF_LOG("VIF MFIFO Empty before tag");
 			vif1.inprogress |= 0x10;
 			g_vif1Cycles += 4;
 			return;
@@ -235,7 +239,7 @@ void mfifoVIF1transfer()
 
 		vif1ch.madr = ptag[1]._u32;
 
-		SPR_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx spr0 madr = %x",
+		VIF_LOG("dmaChain %8.8x_%8.8x size=%d, id=%d, madr=%lx, tadr=%lx spr0 madr = %x",
         ptag[1]._u32, ptag[0]._u32, vif1ch.qwc, ptag->ID, vif1ch.madr, vif1ch.tadr, spr0ch.madr);
 
 		vif1.done |= hwDmacSrcChainWithStack(vif1ch, ptag->ID);
@@ -258,7 +262,7 @@ void mfifoVIF1transfer()
 	}
 	
 
-	SPR_LOG("mfifoVIF1transfer end %x madr %x, tadr %x", vif1ch.chcr._u32, vif1ch.madr, vif1ch.tadr);
+	VIF_LOG("mfifoVIF1transfer end %x madr %x, tadr %x", vif1ch.chcr._u32, vif1ch.madr, vif1ch.tadr);
 }
 
 void vifMFIFOInterrupt()
@@ -302,7 +306,7 @@ void vifMFIFOInterrupt()
 	// Simulated GS transfer time done, clear the flags
 	
 	if (vif1.irq && vif1.vifstalled.enabled && vif1.vifstalled.value == VIF_IRQ_STALL) {
-		SPR_LOG("VIF MFIFO Code Interrupt detected");
+		VIF_LOG("VIF MFIFO Code Interrupt detected");
 		vif1Regs.stat.INT = true;
 
 		if (((vif1Regs.code >> 24) & 0x7f) != 0x7) {
@@ -316,7 +320,7 @@ void vifMFIFOInterrupt()
 			//vif1Regs.stat.FQC = 0; // FQC=0
 			//vif1ch.chcr.STR = false;
 			vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
-			VIF_LOG("VIF1 MFIFO Stalled qwc = %x done = %x inprogress = %x", vif1ch.qwc,vif1.done, vif1.inprogress & 0x10);
+			VIF_LOG("VIF1 MFIFO Stalled qwc = %x done = %x inprogress = %x", vif1ch.qwc, vif1.done, vif1.inprogress & 0x10);
 			//Used to check if the MFIFO was empty, there's really no need if it's finished what it needed.
 			if((vif1ch.qwc > 0 || !vif1.done)) {
 				VIF_LOG("VIF1 MFIFO Stalled");
@@ -357,11 +361,16 @@ void vifMFIFOInterrupt()
 				return;
 		}
 		return;
-	} 
+	}
 
 	vif1.vifstalled.enabled = false;
 	vif1.irqoffset.enabled = false;
 	vif1.done = 1;
+
+	if (spr0ch.madr == vif1ch.tadr) {
+		FireMFIFOEmpty();
+	}
+
 	g_vif1Cycles = 0;
 	vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
 	vif1ch.chcr.STR = false;
