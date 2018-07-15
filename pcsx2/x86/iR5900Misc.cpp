@@ -110,7 +110,7 @@ void recMFSA()
 void recMTSA()
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(ptr32[&cpuRegs.sa], g_cpuConstRegs[_Rs_].UL[0] & 0xf );
+		xMOV(ptr32[&cpuRegs.sa], g_cpuConstRegs[_Rs_].UL[0] /*& 0xf*/ );
 	}
 	else {
 		int mmreg;
@@ -122,19 +122,19 @@ void recMTSA()
 			xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 			xMOV(ptr[&cpuRegs.sa], eax);
 		}
-		xAND(ptr32[&cpuRegs.sa], 0xf);
 	}
 }
 
 void recMTSAB()
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(ptr32[&cpuRegs.sa], ((g_cpuConstRegs[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)) );
+		xMOV(ptr32[&cpuRegs.sa], ((g_cpuConstRegs[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)) << 3);
 	}
 	else {
 		_eeMoveGPRtoR(eax, _Rs_);
 		xAND(eax, 0xF);
 		xXOR(eax, _Imm_&0xf);
+		xSHL(eax, 3);
 		xMOV(ptr[&cpuRegs.sa], eax);
 	}
 }
@@ -142,13 +142,13 @@ void recMTSAB()
 void recMTSAH()
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(ptr32[&cpuRegs.sa], ((g_cpuConstRegs[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 1);
+		xMOV(ptr32[&cpuRegs.sa], ((g_cpuConstRegs[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 4);
 	}
 	else {
 		_eeMoveGPRtoR(eax, _Rs_);
 		xAND(eax, 0x7);
 		xXOR(eax, _Imm_&0x7);
-		xSHL(eax, 1);
+		xSHL(eax, 4);
 		xMOV(ptr[&cpuRegs.sa], eax);
 	}
 }

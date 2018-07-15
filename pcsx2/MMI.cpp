@@ -1001,7 +1001,7 @@ void QFSRV() {				// JayteeMaster: changed a bit to avoid screw up
 	GPR_reg Rd;
 	if (!_Rd_) return;
 
-	u32 sa_amt = cpuRegs.sa << 3;
+	u32 sa_amt = cpuRegs.sa;
 	if (sa_amt == 0) {
 		cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.GPR.r[_Rt_].UD[0];
 		cpuRegs.GPR.r[_Rd_].UD[1] = cpuRegs.GPR.r[_Rt_].UD[1];
