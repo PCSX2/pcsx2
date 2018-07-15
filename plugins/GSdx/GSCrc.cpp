@@ -289,7 +289,7 @@ CRC::Game CRC::m_games[] =
 	{0xA33AF77A, TenchuFS, US, 0},
 	{0x64C58FB4, TenchuFS, US, 0},
 	{0xE7CCCB1E, TenchuFS, EU, 0},
-	{0x89E63B6B, TenchuFS, RU, 0}, // Beta
+	{0x89E63B40, TenchuFS, RU, 0}, // Beta
 	{0x1969B19A, TenchuFS, ES, 0}, // PAL Spanish
 	{0xBF0DC4CE, TenchuFS, DE, 0},
 	{0x696BBEC3, TenchuFS, KO, 0},
@@ -345,6 +345,7 @@ CRC::Game CRC::m_games[] =
 	{0x9A93FE5D, CastlevaniaLoI, KO, 0},
 	{0x7985D894, FinalFightStreetwise, US, 0},
 	{0xED4BF0D3, FinalFightStreetwise, US, 0}, // cutie comment
+	{0x0BA2B682, FinalFightStreetwise, RU, 0},
 	{0x73C560BA, FinalFightStreetwise, EU, 0},
 	{0xCBB87BF9, EvangelionJo, JP, 0}, // cutie comment
 	{0xC5B75C7C, Oneechanbara2Special, JP, 0}, // cutie comment
@@ -423,7 +424,6 @@ CRC::Game CRC::m_games[] =
 	{0x9B89F425, NanoBreaker, EU, 0},
 	{0x519E816B, Kunoichi, US, 0}, // Nightshade
 	{0x3FB419FD, Kunoichi, JP, 0},
-	{0x2919744A, Kunoichi, RU, 0}, // Nightshade
 	{0x086D198E, Kunoichi, CH, 0},
 	{0x3B470BBD, Kunoichi, EU, 0},
 	{0x6BA65DD8, Kunoichi, KO, 0},
@@ -497,6 +497,7 @@ CRC::Game CRC::m_games[] =
 	{0x24090A12, SoulCalibur3, EU, 0},
 	{0x3BA95B70, SoulCalibur3, EU, 0},
 	{0xBC5480A3, SoulCalibur3, EU, 0},
+	{0xBE40779A, SoulCalibur3, RU, 0},
 	{0x37B99B14, SoulCalibur3, KO, 0},
 	{0xFC0F8A5B, Simple2000Vol114, JP, 0},
 	{0xBDD9BAAD, UrbanReign, US, 0}, // cutie comment
