@@ -1,4 +1,5 @@
 #pragma once
+
 #include <wx/wx.h>
 #include <wx/filepicker.h>
 
@@ -24,4 +25,3 @@ private:
 	wxButton *m_startRecording;
 	wxButton *m_cancelRecording;
 };
-

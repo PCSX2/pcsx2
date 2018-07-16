@@ -1,4 +1,5 @@
 #pragma once
+
 #include "PadData.h"
 
 class RecordingInputManager

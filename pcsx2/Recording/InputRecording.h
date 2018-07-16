@@ -1,6 +1,4 @@
 #pragma once
-#ifndef __KEY_MOVIE_H__
-#define __KEY_MOVIE_H__
 
 #include "InputRecordingFile.h"
 
@@ -47,6 +45,3 @@ private:
 extern InputRecording g_InputRecording;
 #define g_InputRecordingData (g_InputRecording.getInputRecordingData())
 #define g_InputRecordingHeader (g_InputRecording.getInputRecordingData().getHeader())
-
-
-#endif

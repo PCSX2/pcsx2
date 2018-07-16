@@ -1,6 +1,4 @@
 #pragma once
-#ifndef __KEY_EDITOR_H__
-#define __KEY_EDITOR_H__
 
 #include <wx/wx.h>
 #include <wx/listctrl.h>
@@ -65,5 +63,3 @@ private:
 
 	wxDECLARE_EVENT_TABLE();
 };
-
-#endif

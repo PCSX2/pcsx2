@@ -169,8 +169,7 @@ void InputRecordingEditor::FrameUpdate()
 //-------------------------------
 void InputRecordingEditor::DrawKeyFrameList(long selectFrame)
 {
-	// Decide the number of frames to display
-	// �\������t���[������߂�
+	// Determine the number of frames to display
 	int start = selectFrame - 100;
 	unsigned int end = selectFrame +100;
 	if (start < 0) {
