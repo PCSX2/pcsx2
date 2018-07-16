@@ -118,7 +118,6 @@ protected:
 
 #ifndef DISABLE_RECORDING
 	wxMenu&			m_menuRecording;
-	wxMenu&			m_submenuMovieConvert;
 #endif
 
 	wxMenu&			m_LoadStatesSubmenu;
@@ -231,10 +230,6 @@ protected:
 	void Menu_Recording_Stop_Click(wxCommandEvent &event);
 	void Menu_Recording_Editor_Click(wxCommandEvent &event);
 	void Menu_Recording_VirtualPad_Open_Click(wxCommandEvent &event);
-	void Menu_Recording_ConvertV2ToV3_Click(wxCommandEvent &event);
-	void Menu_Recording_ConvertV1_XToV2_Click(wxCommandEvent &event);
-	void Menu_Recording_ConvertV1ToV2_Click(wxCommandEvent &event);
-	void Menu_Recording_ConvertLegacy_Click(wxCommandEvent &event);
 #endif
 
 	void _DoBootCdvd();

@@ -514,7 +514,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 	}
 
 	g_Conf->EmuOptions.EnableRecordingTools = checked;
-	((ConsoleLogSource*)&SysConsole.recordingConsole)->Enabled = checked;
+	SysConsole.recordingConsole.Enabled = checked;
 	ConsoleLogFrame* proglog = wxGetApp().GetProgramLog();
 	proglog->UpdateLogList();
 	AppApplySettings();
@@ -843,41 +843,5 @@ void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent &event)
 		vp = wxGetApp().GetVirtualPadPtr(1);
 	if (vp)
 		vp->Show();
-}
-
-void MainEmuFrame::Menu_Recording_ConvertV2ToV3_Click(wxCommandEvent &event)
-{
-	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
-		L"p2m file(*.p2m2)|*.p2m2", wxFD_OPEN);
-	if (openFileDialog.ShowModal() == wxID_CANCEL)return;// cancel
-	wxString path = openFileDialog.GetPath();
-	g_InputRecordingData.ConvertV2ToV3(path);
-}
-
-void MainEmuFrame::Menu_Recording_ConvertV1_XToV2_Click(wxCommandEvent &event)
-{
-	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
-		L"p2m file(*.p2m2)|*.p2m2", wxFD_OPEN);
-	if (openFileDialog.ShowModal() == wxID_CANCEL)return;// cancel
-	wxString path = openFileDialog.GetPath();
-	g_InputRecordingData.ConvertV1_XToV2(path);
-}
-
-void MainEmuFrame::Menu_Recording_ConvertV1ToV2_Click(wxCommandEvent &event)
-{
-	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
-		L"p2m file(*.p2m2)|*.p2m2", wxFD_OPEN);
-	if (openFileDialog.ShowModal() == wxID_CANCEL)return;// cancel
-	wxString path = openFileDialog.GetPath();
-	g_InputRecordingData.ConvertV1ToV2(path);
-}
-
-void MainEmuFrame::Menu_Recording_ConvertLegacy_Click(wxCommandEvent &event)
-{
-	wxFileDialog openFileDialog(this, _("Select P2M record file."), L"", L"",
-		L"p2m file(*.p2m)|*.p2m", wxFD_OPEN);
-	if (openFileDialog.ShowModal() == wxID_CANCEL)return;// cancel
-	wxString path = openFileDialog.GetPath();
-	g_InputRecordingData.ConvertLegacy(path);
 }
 #endif

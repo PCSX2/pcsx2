@@ -52,12 +52,6 @@ public:
 	bool InsertPadData(unsigned long frame, const PadData& key);
 	bool UpdatePadData(unsigned long frame, const PadData& key);
 
-	// convert
-	void ConvertV2ToV3(wxString filename);
-	void ConvertV1_XToV2(wxString filename);
-	void ConvertV1ToV2(wxString filename);
-	void ConvertLegacy(wxString filename);
-
 private:
 	FILE * fp=NULL;
 	wxString filename = "";

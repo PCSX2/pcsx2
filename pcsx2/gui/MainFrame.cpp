@@ -258,10 +258,6 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_Editor_Click, this, MenuId_Recording_Editor);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_VirtualPad_Open_Click, this, MenuId_Recording_VirtualPad_Port0);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_VirtualPad_Open_Click, this, MenuId_Recording_VirtualPad_Port1);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_ConvertV2ToV3_Click, this, MenuId_Recording_ConvertV2ToV3);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_ConvertV1_XToV2_Click, this, MenuId_Recording_ConvertV1_XToV2);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_ConvertV1ToV2_Click, this, MenuId_Recording_ConvertV1ToV2);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_ConvertLegacy_Click, this, MenuId_Recording_ConvertLegacy);
 #endif
 
 	//Bind(wxEVT_MENU, &MainEmuFrame::Menu_Debug_MemoryDump_Click, this, MenuId_Debug_MemoryDump);
@@ -349,7 +345,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	, m_submenuScreenshot	( *new wxMenu() )
 #ifndef DISABLE_RECORDING
 	, m_menuRecording(*new wxMenu())
-	, m_submenuMovieConvert(*new wxMenu())
 #endif
 	, m_LoadStatesSubmenu( *MakeStatesSubMenu( MenuId_State_Load01, MenuId_State_LoadBackup ) )
 	, m_SaveStatesSubmenu( *MakeStatesSubMenu( MenuId_State_Save01 ) )
@@ -584,12 +579,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuRecording.Append(MenuId_Recording_Editor, _("Open Movie Editor"));
 	m_menuRecording.Append(MenuId_Recording_VirtualPad_Port0, _("Virtual Pad (Port 1)"));
 	m_menuRecording.Append(MenuId_Recording_VirtualPad_Port1, _("Virtual Pad (Port 2)"));
-	m_menuRecording.AppendSeparator();
-	m_menuRecording.Append(MenuId_Recording_Conversions, _("Movie File Conversions"), &m_submenuMovieConvert);
-	m_submenuMovieConvert.Append(MenuId_Recording_ConvertV2ToV3, _("Convert (v2.0 -> v3.0)"))->Enable(false); // TODO
-	m_submenuMovieConvert.Append(MenuId_Recording_ConvertV1_XToV2, _("Convert (v1.X -> v2.0)"));
-	m_submenuMovieConvert.Append(MenuId_Recording_ConvertV1ToV2, _("Convert (v1.0 -> v2.0)"))->Enable(false); // TODO
-	m_submenuMovieConvert.Append(MenuId_Recording_ConvertLegacy, _("Convert Legacy Movie (p2m -> p2m2)"));
 #endif
 
 	m_MenuItem_Console.Check( g_Conf->ProgLogBox.Visible );
