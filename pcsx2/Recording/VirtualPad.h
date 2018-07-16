@@ -1,4 +1,5 @@
 #pragma once
+
 #include <wx/wx.h>
 #include <wx/tglbtn.h>
 #include <wx/spinctrl.h>

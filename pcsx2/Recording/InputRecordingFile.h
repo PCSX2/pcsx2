@@ -1,24 +1,14 @@
 #pragma once
-#ifndef __KEY_MOVIE_ONFILE_H__
-#define __KEY_MOVIE_ONFILE_H__
 
 #include "PadData.h"
 #include "System.h"
 
-//----------------------------
-// header
-// fseek since the direct place designation is done with, the order of the variables is important
-// Specifically, "FrameMax" +2 "UndoCount" is located at the position of +6 bytes
-// fseek�Œ��ڏꏊ�w�肵�Ă���̂ŕϐ��̏��Ԃ͑厖
-// ��̓I�ɂ́uFrameMax�v��+2�uUndoCount�v��+6�o�C�g�̈ʒu�ɔz�u
-//----------------------------
 struct InputRecordingHeader
 {
 	u8 version = 3;
-	u8 ID = 0xCC; // Especially, there is no meaning, a key file or ID for judgment
-				  // ���ɈӖ��͂Ȃ��Akey�t�@�C��������p��ID
+	u8 ID = 0xCC;
 
-	char emu[50] = "PCSX2-1.4.0-rr";
+	char emu[50] = "pcsx2-1.5.X";
 	char author[50] = "";
 	char cdrom[50] = "";
 
@@ -105,7 +95,3 @@ private:
 
 
 };
-
-
-
-#endif

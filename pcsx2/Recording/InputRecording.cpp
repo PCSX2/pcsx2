@@ -1,10 +1,10 @@
 #include "PrecompiledHeader.h"
 
-#include "MemoryTypes.h"
+#include "AppSaveStates.h"
 #include "Common.h"
-#include "Counters.h"	// use"g_FrameCount"
-#include "SaveState.h"	// create "SaveStateBase::InputRecordingFreeze()"
-#include "AppSaveStates.h"	// use "States_GetCurrentSlot()"
+#include "Counters.h"
+#include "MemoryTypes.h"
+#include "SaveState.h"
 
 #include "Recording/RecordingControls.h"
 #include "InputRecording.h"
@@ -14,29 +14,27 @@
 
 InputRecording g_InputRecording;
 
-//-----------------------------------------------
-// Save or Load - Save frame number
-// Save or load - �Ńt���[�����̕ۑ�
-//-----------------------------------------------
+// --------------------------------
+// Tag and save framecount along with savestate
+// --------------------------------
 void SaveStateBase::InputRecordingFreeze()
 {
 	FreezeTag("InputRecording");
-	Freeze(g_FrameCount);	// Somehow the function saved the frame successfully
-							// Freeze�֐��łȂ���frame�̕ۑ������܂�������
-
+	Freeze(g_FrameCount);
 	if (IsLoading()) {
 		g_InputRecordingData.addUndoCount();
 	}
 }
 
 //----------------------------------
-// Main func for handling recording and inputting controller data
+// Main func for handling controller input data
 // Called by Sio.cpp::sioWriteController
 //----------------------------------
 void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 & bufCount, u8 buf[])
 {
+	// TODO - Multi-Tap Support
 	// Only examine controllers 1 / 2
-	if (port < 0 || 1 < port )
+	if (port < 0 || 1 < port)
 		return;
 
 	//==========================
@@ -47,7 +45,7 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 & bufCount, u8 
 	// See - Lilypad.cpp:1254
 	// 0x42 is the magic number for the default read query
 	//
-	// NOTE: this appears to possibly break if you have logging enabled in LilyPad's config!
+	// NOTE: this appears to break if you have logging enabled in LilyPad's config!
 	//==========================
 	if (bufCount == 1) {
 		if (data == 0x42)
@@ -59,7 +57,7 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 & bufCount, u8 
 			return;
 		}
 	}
-	else if ( bufCount == 2 ){
+	else if ( bufCount == 2 ) {
 		// See - LilyPad.cpp:1255
 		// 0x5A is always the second byte in the buffer
 		// when the normal READ_DATA_AND_VIBRRATE (0x42)
@@ -77,7 +75,7 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 & bufCount, u8 
 		return;
 
 	// We do not want to record or save the first two
-	// bytes in the return from LilyPad
+	// bytes in the data returned from LilyPad
 	if (bufCount < 3)
 		return;
 

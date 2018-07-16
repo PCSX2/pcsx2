@@ -1,6 +1,4 @@
 #pragma once
-#ifndef __MOVIE_CONTROLS_H__
-#define __MOVIE_CONTROLS_H__
 
 class RecordingControls {
 public:
@@ -31,5 +29,3 @@ private:
 
 };
 extern RecordingControls g_RecordingControls;
-
-#endif

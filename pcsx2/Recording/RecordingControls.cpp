@@ -3,30 +3,25 @@
 #include "GSFrame.h"
 
 #include "MemoryTypes.h"
-#include "App.h"	// use "CoreThread"
-#include "Counters.h"	// use"g_FrameCount"
+#include "App.h"
+#include "Counters.h"
 
 #include "RecordingControls.h"
 
 
 RecordingControls g_RecordingControls;
 
+// TODO - I think these functions could be named a lot better...
 
 //-----------------------------------------------
-// The game is running with CoreThread, and it will not accept processing of GSFrame (wxFrame) while it is running
-// (It seems that two places are accepted for key input within CoreThread and GSFrame, too)
-// While CoreThread is stopped, the input of wxFrame works like a mechanism
-// �Q�[����CoreThread�œ����Ă���A�����Ă���Ԃ�GSFrame(wxFrame)�̏�����󂯕t���Ȃ�
-// (�L�[���͂̎󂯕t����CoreThread���GSFrame���2�ӏ����ݒ肳��Ă���ۂ�)
-// CoreThread����~���Ă���Ԃ�wxFrame�̓��͂������d�g�݂��ۂ�
+// Status on whether or not the current recording is stopped
 //-----------------------------------------------
-
 bool RecordingControls::isStop()
 {
 	return (fPauseState && CoreThread.IsOpen() && CoreThread.IsPaused());
 }
 //-----------------------------------------------
-// Counters(CoreThread)��̒�~����p (For stop judgment in)
+// Called after inputs are recorded for that frame, places lock on input recording, effectively releasing resources and resuming CoreThread.
 //-----------------------------------------------
 void RecordingControls::StartCheck()
 {
@@ -37,6 +32,10 @@ void RecordingControls::StartCheck()
 	}
 }
 
+//-----------------------------------------------
+// Called at VSYNC End / VRender Begin, updates everything recording related for the next frame, 
+// toggles RecordingControl flags back to enable input recording for the next frame.
+//-----------------------------------------------
 void RecordingControls::StopCheck()
 {
 	if (fFrameAdvance) {
@@ -62,8 +61,7 @@ void RecordingControls::StopCheck()
 	if (fStop && CoreThread.IsOpen() && CoreThread.IsRunning())
 	{
 		fPauseState = true;
-		CoreThread.PauseSelf();	// I can not stop unless it is self
-								// self����Ȃ��Ǝ~�܂�Ȃ�
+		CoreThread.PauseSelf();
 	}
 }
 

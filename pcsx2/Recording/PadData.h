@@ -1,6 +1,4 @@
 #pragma once
-#ifndef __PAD_DATA_H__
-#define __PAD_DATA_H__
 
 #include <map>
 
@@ -81,6 +79,3 @@ private:
 
 
 };
-
-
-#endif
