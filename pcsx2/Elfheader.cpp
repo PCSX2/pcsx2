@@ -147,9 +147,7 @@ void ElfObject::readIso(IsoFile& file)
 void ElfObject::readFile()
 {
 	int rsize = 0;
-	FILE *f;
-
-	f = fopen( filename.ToUTF8(), "rb" );
+	FILE *f = wxFopen( filename, "rb" );
 	if (f == NULL) throw Exception::FileNotFound( filename );
 
 	fseek(f, 0, SEEK_SET);
