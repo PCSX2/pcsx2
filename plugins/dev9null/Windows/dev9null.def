@@ -33,3 +33,4 @@ EXPORTS
 	DEV9dmaInterrupt
 	
 	DEV9setSettingsDir
+	DEV9setLogDir
