@@ -1098,7 +1098,7 @@ void RelocateLogfile()
 	if( emuLog == NULL )
 	{
 		emuLogName = newlogname;
-		emuLog = fopen( emuLogName.ToUTF8(), "wb" );
+		emuLog = wxFopen( emuLogName, "wb" );
 	}
 
 	wxGetApp().EnableAllLogging();
