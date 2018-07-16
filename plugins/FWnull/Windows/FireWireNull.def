@@ -18,3 +18,4 @@ EXPORTS
 	FWtest			@18
 	
 	FWsetSettingsDir
+	FWsetLogDir
