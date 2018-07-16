@@ -512,6 +512,10 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 	{
 		GetMenuBar()->Insert(TopLevelMenu_Recording, &m_menuRecording, _("&Recording"));
 	}
+	else
+	{
+		GetMenuBar()->Remove(TopLevelMenu_Recording);
+	}
 
 	g_Conf->EmuOptions.EnableRecordingTools = checked;
 	SysConsole.recordingConsole.Enabled = checked;
