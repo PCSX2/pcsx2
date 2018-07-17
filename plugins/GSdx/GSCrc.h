@@ -79,6 +79,7 @@ public:
 		GTASanAndreas,
 		GTConcept,
 		HarleyDavidson,
+		HarryPotterOOTP,
 		HauntingGround,
 		HeavyMetalThunder,
 		ICO,

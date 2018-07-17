@@ -539,6 +539,8 @@ CRC::Game CRC::m_games[] =
 	{0x684ADFC6, FIFA04, EU, 0},
 	{0x972611BB, FIFA05, US, 0},
 	{0x972719A3, FIFA05, EU, 0},
+	{0x4C01B1B0, HarryPotterOOTP, US, 0},
+	{0x01A9BF0E, HarryPotterOOTP, EU, 0},
 	{0x230CB71D, SoulReaver2, US, 0},
 	{0x6F991F52, SoulReaver2, JP, 0},
 	{0x6D8B4CD1, SoulReaver2, EU, 0},
