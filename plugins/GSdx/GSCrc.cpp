@@ -544,8 +544,10 @@ CRC::Game CRC::m_games[] =
 	{0x230CB71D, SoulReaver2, US, 0},
 	{0x6F991F52, SoulReaver2, JP, 0},
 	{0x6D8B4CD1, SoulReaver2, EU, 0},
+	{0x60F56E8F, SoulReaver2, RU, 0}, // Unofficial RU-version
 	{0x728AB07C, LegacyOfKainDefiance, US, 0},
 	{0xBCAD1E8A, LegacyOfKainDefiance, EU, 0},
+	{0x018AC37C, LegacyOfKainDefiance, RU, 0}, // Unofficial RU-version
 	{0x28D09BF9, NicktoonsUnite, US, 0},
 	{0xF25266C4, NicktoonsUnite, EU, 0}, // Nickelodeon SpongeBob SquarePants And Friends Unite
 	{0xCE4933D0, RatchetAndClank, US, 0},
