@@ -180,6 +180,8 @@ CRC::Game CRC::m_games[] =
 	{0x6BA2F6B9, ResidentEvil4, EU, 0},
 	{0x60FA8C69, ResidentEvil4, JP, 0},
 	{0x5F254B7C, ResidentEvil4, KO, 0},
+	{0x7C48D927, ResidentEvilCodeVeronicaX, RU, 0}, // unofficial RU-version
+	{0x546C846B, RuleOfRose, RU, 0}, // unofficial RU-version
 	{0x72E1E60E, Spartan, EU, 0},
 	{0x26689C87, Spartan, JP, 0},
 	{0x08277A9E, Spartan, US, 0},
@@ -197,6 +199,7 @@ CRC::Game CRC::m_games[] =
 	{0x652050D2, Tekken5, US, 0},
 	{0xEA64EF39, Tekken5, KO, 0},
 	{0x9E98B8AE, IkkiTousen, JP, 0},
+	{0x8191D10A, IndigoProphecy, RU, 0}, // unofficial RU-version
 	{0xD6385328, GodOfWar, US, 0},
 	{0xF2A8D307, GodOfWar, US, 0},
 	{0xFB0E6D72, GodOfWar, EU, 0},
@@ -206,7 +209,7 @@ CRC::Game CRC::m_games[] =
 	{0xBFCC1795, GodOfWar, KO, 0},
 	{0x9567B7D6, GodOfWar, KO, 0},
 	{0x9B5C97BA, GodOfWar, KO, 0},
-	{0xA61A4C6D, GodOfWar, US, 0},
+	{0xA61A4C6D, GodOfWar, US, 0},  // same CRC as RU
 	{0xE23D532B, GodOfWar, NoRegion, 0},
 	{0xDF1AF973, GodOfWar, EU, 0},
 	{0x1A85E924, GodOfWar, NoRegion, 0}, // cutie comment
@@ -313,6 +316,9 @@ CRC::Game CRC::m_games[] =
 	{0x615EA2DB, Sly2, JP, 0}, // Kaitou Sly Cooper 2
 	{0xFDA1CBF6, Sly2, EU, 0},
 	{0x15DD1F6F, Sly2, NoRegion, 0},
+	{0x1E33F427, SilentHillShatteredMemories, RU, 0}, // unofficial RU-version
+	{0xEDF02195, SilentHill2, RU, 0}, // unofficial RU-version
+	{0x51CED27D, SilentHill3, RU, 0}, // unofficial RU-version
 	{0xA9C82AB9, DemonStone, US, 0},
 	{0x7C7578F3, DemonStone, EU, 0},
 	{0x22425C19, DemonStone, KO, 0},
@@ -371,12 +377,14 @@ CRC::Game CRC::m_games[] =
 	{0x694A998E, TombRaiderUnderworld, JP, 0}, // cutie comment
 	{0x8E214549, TombRaiderUnderworld, EU, 0},
 	{0x618769D6, TombRaiderUnderworld, US, 0},
+	{0x8E265148, TombRaiderUnderworld, RU, 0}, // unofficial RU-version
 	{0xB639EB17, TombRaiderAnniversary, US, 0}, // Also needed for automatic mipmapping
 	{0xB05805B6, TombRaiderAnniversary, JP, 0}, // cutie comment
 	{0xA629A376, TombRaiderAnniversary, EU, 0},
 	{0xBC8B3F50, TombRaiderLegend, US, 0}, // cutie comment
 	{0x365172A0, TombRaiderLegend, JP, 0},
 	{0x05177ECE, TombRaiderLegend, EU, 0},
+	{0x4C380F9B, TotalOverdose, RU, 0}, // unofficial RU-version
 	{0x5C891FF1, Black, US, 0},
 	{0xCAA04879, Black, EU, 0},
 	{0xADDFF505, Black, EU, 0},
@@ -395,7 +403,7 @@ CRC::Game CRC::m_games[] =
 	{0x79C952B0, DevilMayCry3, JP, 0}, // SE
 	{0x7F3DDEAB, DevilMayCry3, JP, 0},
 	{0x05931990, DevilMayCry3, KO, 0},
-	{0x4AD36D59, DevilMayCry3, RU, 0},
+	{0x4AD36D59, DevilMayCry3, RU, 0}, // same CRC as RU
 	{0xBEBF8793, BurnoutTakedown, US, 0},
 	{0x75BECC18, BurnoutTakedown, EU, 0},
 	{0xCE49B0DE, BurnoutTakedown, EU, 0},
@@ -427,6 +435,7 @@ CRC::Game CRC::m_games[] =
 	{0x086D198E, Kunoichi, CH, 0},
 	{0x3B470BBD, Kunoichi, EU, 0},
 	{0x6BA65DD8, Kunoichi, KO, 0},
+	{0x9AC63A2E, Kuon, RU, 0}, // unofficial RU-version
 	{0XD3F182A3, Yakuza, EU, 0},
 	{0x6F9F99F8, Yakuza, EU, 0},
 	{0x388F687B, Yakuza, US, 0},
@@ -485,6 +494,7 @@ CRC::Game CRC::m_games[] =
 	{0x59683BB0, DeathByDegreesTekkenNinaWilliams, EU, 0},
 	{0x5B659BED, Grandia3, JP, 0},
 	{0x5B657DAD, Grandia3, US, 0},
+	{0x1E1DC2EF, GrandTheftAutoViceCity, RU, 0}, // unofficial RU-version
 	{0x830B6FB1, TalesofSymphonia, JP, 0},
 	{0x86C57952, SoulCalibur2, JP, 0},
 	{0x83AFB38A, SoulCalibur2, KO, 0},
@@ -543,8 +553,10 @@ CRC::Game CRC::m_games[] =
 	{0x230CB71D, SoulReaver2, US, 0},
 	{0x6F991F52, SoulReaver2, JP, 0},
 	{0x6D8B4CD1, SoulReaver2, EU, 0},
+	{0x60F56E8F, SoulReaver2, RU, 0}, // unofficial RU-version
 	{0x728AB07C, LegacyOfKainDefiance, US, 0},
 	{0xBCAD1E8A, LegacyOfKainDefiance, EU, 0},
+	{0x018AC37C, LegacyOfKainDefiance, RU, 0}, // unofficial RU-version
 	{0x28D09BF9, NicktoonsUnite, US, 0},
 	{0xF25266C4, NicktoonsUnite, EU, 0}, // Nickelodeon SpongeBob SquarePants And Friends Unite
 	{0xCE4933D0, RatchetAndClank, US, 0},
