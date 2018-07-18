@@ -411,8 +411,6 @@ CRC::Game CRC::m_games[] =
 	{0x60A42FF5, MidnightClub3, US, 0}, // remix
 	{0xD03D4C77, SpyroNewBeginning, US, 0},
 	{0x0EE5646B, SpyroNewBeginning, EU, 0},
-	// {0x7ACF7E03, SpyroNewBeginning, NoRegion, 0}, // same CRC as {ICO, NoRegion}
-	// and as "Twisted Metal - Black" (PAL).
 	{0xB80CE8EC, SpyroEternalNight, US, 0},
 	{0x8AE9536D, SpyroEternalNight, EU, 0},
 	{0xC95F0198, SpyroEternalNight, NoRegion, 0},
