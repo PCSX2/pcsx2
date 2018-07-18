@@ -370,8 +370,8 @@ CRC::Game CRC::m_games[] =
 	{0x54A548B4, CrashNburn, EU, 0},
 	{0x694A998E, TombRaiderUnderworld, JP, 0}, // cutie comment
 	{0x8E214549, TombRaiderUnderworld, EU, 0},
-	{0x618769D6, TombRaiderUnderworld, US, 0},
 	{0x8E265148, TombRaiderUnderworld, RU, 0}, // Unofficial RU-version
+	{0x618769D6, TombRaiderUnderworld, US, 0},
 	{0xB639EB17, TombRaiderAnniversary, US, 0}, // Also needed for automatic mipmapping
 	{0xB05805B6, TombRaiderAnniversary, JP, 0}, // cutie comment
 	{0xA629A376, TombRaiderAnniversary, EU, 0},
