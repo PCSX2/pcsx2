@@ -231,6 +231,7 @@ CRC::Game CRC::m_games[] =
 	{0x28557423, GiTS, RU, 0},
 	{0xBF6F101F, GiTS, EU, 0}, // same CRC as another US disc
 	{0x6BF11378, Onimusha3, US, 0},
+	{0x78F1136A, Onimusha3, RU, 0}, // Unofficial RU-version
 	{0x71320CA8, Onimusha3, JP, 0},
 	{0xDAFFFB0D, Onimusha3, KO, 0},
 	{0xF442260C, MajokkoALaMode2, JP, 0},
