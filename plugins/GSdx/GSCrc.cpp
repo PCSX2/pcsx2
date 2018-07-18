@@ -136,8 +136,7 @@ CRC::Game CRC::m_games[] =
 	{0xB01A4C95, ICO, JP, 0},
 	{0x2DF2C1EA, ICO, KO, 0},
 	{0x5C991F4E, ICO, EU, 0},
-	{0x7ACF7E03, ICO, NoRegion, 0}, // same CRC as {SpyroNewBeginning, NoRegion}
-	// and as "Twisted Metal - Black" (PAL).
+	{0x3DCE2229, ICO, RU, 0}, // Unofficial RU-version
 	{0x788D8B4F, ICO, EU, 0},
 	{0x29C28734, ICO, CH, 0},
 	{0xC02C653E, GT4, CH, 0},
