@@ -257,6 +257,7 @@ bool GSC_Spartan(const GSFrameInfo& fi, int& skip)
 			}
 		}
 	}
+	
 	return true;
 }
 
