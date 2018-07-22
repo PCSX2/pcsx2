@@ -875,37 +875,6 @@ bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-
-		if(fi.TME && fi.FBP == 0x001000 && (fi.TBP0 ==0 || fi.TBP0 == 0x0800) && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0x00FFFFFF)
-		{
-			skip = 0;
-		}
-		else if(fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01000) // || fi.FBP == 0x00000
-		{
-			skip = 28; //28 30 56 64
-		}
-		else if(fi.FBP && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0xFFFFFF)
-		{
-			skip = 0; //24 33 40 9
-		}
-		else if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0xFF000000)
-		{
-			skip = 1;
-		}
-		else if(fi.TME && (fi.TBP0 ==0x1400 || fi.TBP0 ==0x1000 ||fi.TBP0 == 0x1200) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
-		{
-			skip = 1;
-		}
-
-	}
-
-	return true;
-}
-
 bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2040,6 +2009,37 @@ bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
+{
+	if(Aggressive && skip == 0)
+	{
+
+		if(fi.TME && fi.FBP == 0x001000 && (fi.TBP0 ==0 || fi.TBP0 == 0x0800) && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0x00FFFFFF)
+		{
+			skip = 0;
+		}
+		else if(fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01000) // || fi.FBP == 0x00000
+		{
+			skip = 28; //28 30 56 64
+		}
+		else if(fi.FBP && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0xFFFFFF)
+		{
+			skip = 0; //24 33 40 9
+		}
+		else if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0xFF000000)
+		{
+			skip = 1;
+		}
+		else if(fi.TME && (fi.TBP0 ==0x1400 || fi.TBP0 ==0x1000 ||fi.TBP0 == 0x1200) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
+		{
+			skip = 1;
+		}
+
+	}
+
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #undef Aggressive
@@ -2215,7 +2215,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::SakuraTaisen] = GSC_SakuraTaisen;
 		lut[CRC::SakuraWarsSoLongMyLove] = GSC_SakuraWarsSoLongMyLove;
 		lut[CRC::ShadowofRome] = GSC_ShadowofRome;
-		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
 		lut[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
 		lut[CRC::Spartan] = GSC_Spartan;
 		lut[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
@@ -2265,6 +2264,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
 		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
 		lut[CRC::SoTC] = GSC_SoTC;
+		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
 	}
 
 	// Hacks that were fixed on OpenGL
