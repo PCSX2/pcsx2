@@ -1,3 +1,7 @@
+﻿# Translations for PCSX2 (Iconized).
+# Copyright (C) 2018 PCSX2 Dev Team
+# This file is distributed under the same license as the PCSX2 package.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
