@@ -3644,6 +3644,7 @@ MemCardFilter = SCPS-15084/SCPS-15056/SCPS-15037
 Serial = SCPS-15085
 Name   = Kenran Butousai
 Region = NTSC-J
+eeClampMode = 0 // Fixes missing graphics.
 ---------------------------------------------
 Serial = SCPS-15086
 Name   = Bakufuu Slash! Kizna Arashi [Game Only]
