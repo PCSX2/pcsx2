@@ -519,10 +519,10 @@ void R5900DebugInterface::setRegister(int cat, int num, u128 newValue)
 		fpuRegs.fprc[num] = newValue._u32[0];
 		break;
 	case EECAT_VU0F:
-		VU1.VF[num].UQ = newValue;
+		VU0.VF[num].UQ = newValue;
 		break;
 	case EECAT_VU0I:
-		VU1.VI[num].UL = newValue._u32[0];
+		VU0.VI[num].UL = newValue._u32[0];
 		break;
 	default:
 		break;
