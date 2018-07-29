@@ -435,10 +435,10 @@ u128 R5900DebugInterface::getRegister(int cat, int num)
 		result = u128::From32(fpuRegs.fprc[num]);
 		break;
 	case EECAT_VU0F:
-		result = VU1.VF[num].UQ;
+		result = VU0.VF[num].UQ;
 		break;
 	case EECAT_VU0I:
-		result = u128::From32(VU1.VI[num].UL);
+		result = u128::From32(VU0.VI[num].UL);
 		break;
 	default:
 		result = u128::From32(0);
