@@ -7,8 +7,7 @@ Changes and updates should be made to these files and then exported to PDF forma
 /bin/docs/ folder prior to running installers or packaging zip files.
 
 Also, files that containing in this folder for now are GPL license and header files.
-These are no
-needed for building public releases.
+These are no needed for building public releases.
 
 The legacy/ folder contains changelogs and blogs for the CVS development branch of PCSX2
 (being 0.9.4 and prior releases).
