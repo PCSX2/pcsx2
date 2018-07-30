@@ -1765,8 +1765,8 @@ Serial = SCES-51904
 Name   = SOCOM II - U.S. Navy SEALs
 Region = PAL-M5
 Compat = 5
-EETimingHack = 1
-VIF1StallHack = 1// HUD.
+EETimingHack = 1 // Get rids of DMA8/9 non-fatal errors.
+VIF1StallHack = 1 // Fixes broken HUD.
 ---------------------------------------------
 Serial = SCES-51910
 Name   = Arc the Lad - Twilight of the Spirits
@@ -1842,8 +1842,8 @@ Serial = SCES-52306
 Name   = SOCOM II - U.S. Navy SEALs
 Region = PAL-Unk
 Compat = 5
-EETimingHack = 1
-VIF1StallHack = 1// HUD.
+EETimingHack = 1 // Get rids of DMA8/9 non-fatal errors.
+VIF1StallHack = 1 // Fixes broken HUD.
 ---------------------------------------------
 Serial = SCES-52327
 Name   = Forbidden Siren
@@ -2696,6 +2696,10 @@ Serial = SCES-55387
 Name   = Buzz! Deutschlands Superquiz
 Region = PAL-G
 ---------------------------------------------
+Serial = SCES-55436
+Name   = SingStar ABBA
+Region = PAL-F
+---------------------------------------------
 Serial = SCES-55437
 Name   = SingStar ABBA
 Region = PAL-G
@@ -2819,8 +2823,8 @@ Serial = SCKA-20020
 Name   = SOCOM II - U.S. Navy SEALs
 Region = NTSC-K
 Compat = 5
-EETimingHack = 1
-VIF1StallHack = 1// HUD.
+EETimingHack = 1 // Get rids of DMA8/9 non-fatal errors.
+VIF1StallHack = 1 // Fixes broken HUD.
 ---------------------------------------------
 Serial = SCKA-20022
 Name   = Gran Turismo 4 Prologue
@@ -2940,8 +2944,8 @@ Serial = SCKA-20053
 Name   = SOCOM II - U.S. Navy SEALs [PlayStation 2 Big Hit Series]
 Region = NTSC-K
 Compat = 5
-EETimingHack = 1
-VIF1StallHack = 1// HUD.
+EETimingHack = 1 // Get rids of DMA8/9 non-fatal errors.
+VIF1StallHack = 1 // Fixes broken HUD.
 ---------------------------------------------
 Serial = SCKA-20054
 Name   = Tales of Destiny 2 [PlayStation 2 Big Hit Series]
@@ -3040,6 +3044,7 @@ Compat = 5
 Serial = SCKA-20092
 Name   = K-1 World Grand Prix 2006
 Region = NTSC-K
+XgKickHack = 1 // Fixes grey fighters problem.
 ---------------------------------------------
 Serial = SCKA-20096
 Name   = Barnyard
@@ -3560,8 +3565,8 @@ Serial = SCPS-15065
 Name   = SOCOM II - U.S. Navy SEALs
 Region = NTSC-J
 Compat = 5
-EETimingHack = 1
-VIF1StallHack = 1// HUD.
+EETimingHack = 1 // Get rids of DMA8/9 non-fatal errors.
+VIF1StallHack = 1 // Fixes broken HUD.
 ---------------------------------------------
 Serial = SCPS-15066
 Name   = Prince of Persia - The Sands of Time
@@ -5093,8 +5098,8 @@ Serial = SCUS-97275
 Name   = SOCOM II - U.S. Navy SEALs
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1
-VIF1StallHack = 1// HUD.
+EETimingHack = 1 // Get rids of DMA8/9 non-fatal errors.
+VIF1StallHack = 1 // Fixes broken HUD.
 ---------------------------------------------
 Serial = SCUS-97276
 Name   = NFL GameDay 2004
@@ -5300,8 +5305,8 @@ Serial = SCUS-97366
 Name   = SOCOM II - U.S. Navy SEALs [Public Beta v1.0]
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1
-VIF1StallHack = 1// HUD.
+EETimingHack = 1 // Get rids of DMA8/9 non-fatal errors.
+VIF1StallHack = 1 // Fixes broken HUD.
 ---------------------------------------------
 Serial = SCUS-97367
 Name   = Neopets - The Darkest Faerie
@@ -5312,8 +5317,8 @@ Serial = SCUS-97368
 Name   = SOCOM II - U.S. Navy SEALs [Regular Demo]
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1
-VIF1StallHack = 1// HUD.
+EETimingHack = 1 // Get rids of DMA8/9 non-fatal errors.
+VIF1StallHack = 1 // Fixes broken HUD.
 ---------------------------------------------
 Serial = SCUS-97369
 Name   = ATV Off-Road Fury 2
@@ -5803,8 +5808,8 @@ Serial = SCUS-97511
 Name   = SOCOM II - U.S. Navy SEALs [Greatest Hits]
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1
-VIF1StallHack = 1// HUD.
+EETimingHack = 1 // Get rids of DMA8/9 non-fatal errors.
+VIF1StallHack = 1 // Fixes broken HUD.
 ---------------------------------------------
 Serial = SCUS-97512
 Name   = Gran Turismo 3 - A-Spec [Greatest Hits]
@@ -12071,6 +12076,7 @@ Region = PAL-E
 Serial = SLES-52573
 Name   = Conflict - Global Storm
 Region = PAL-M5
+eeRoundMode = 2 // Fixes abnormal character behaviour.
 ---------------------------------------------
 Serial = SLES-52576
 Name   = Yu-Gi-Oh! - Capsule Monster Colisee
@@ -26322,7 +26328,8 @@ Region = NTSC-J
 Serial = SLPM-66329
 Name   = Mahou Sensei Negima! Kagai Jugyou
 Region = NTSC-J
-Compat = 5	// GS Software rendering only. VU XGkick Hack fixes some rendering problem.
+Compat = 5	// GS Software rendering only.
+XgKickHack = 1 // Fixes rendering problems.
 ---------------------------------------------
 Serial = SLPM-66330
 Name   = Tokimeki Memorial - Girl's Side - 2nd Kiss
@@ -33203,6 +33210,7 @@ Serial = SLPS-25710
 Name   = K-1 World Grand Prix 2006
 Region = NTSC-J
 Compat = 4
+XgKickHack = 1 // Fixes grey fighters problem.
 ---------------------------------------------
 Serial = SLPS-25711
 Name   = Kashimashi! Girl Meets Girl [Best Collection]
@@ -39735,6 +39743,7 @@ Serial = SLUS-21172
 Name   = Conflict - Global Terror
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 2 // Fixes abnormal character behaviour.
 ---------------------------------------------
 Serial = SLUS-21173
 Name   = Dora the Explorer - To the Purple Planet
@@ -44000,8 +44009,8 @@ Serial = TCES-51904
 Name   = SOCOM II - U.S. Navy SEALs [Beta]
 Region = PAL-M5
 Compat = 5
-EETimingHack = 1
-VIF1StallHack = 1 // HUD.
+EETimingHack = 1 // Get rids of DMA8/9 non-fatal errors.
+VIF1StallHack = 1 // Fixes broken HUD.
 ---------------------------------------------
 Serial = TCES-53286
 Name   = Jak X Beta Trial Code
