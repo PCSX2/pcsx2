@@ -6,7 +6,7 @@ This folder contains original "editable format" documents that are packaged with
 Changes and updates should be made to these files and then exported to PDF format into the
 /bin/docs/ folder prior to running installers or packaging zip files.
 
-Also, files that containing in this folder for now are GPL license and header files.
+Also contained in this folder for now are GPL license and header files.
 These are not needed for building public releases.
 
 The legacy/ folder contains changelogs and blogs for the CVS development branch of PCSX2
