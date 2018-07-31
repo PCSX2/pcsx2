@@ -14,7 +14,7 @@ The legacy/ folder contains changelogs and blogs for the CVS development branch 
 
 IMPORTANT: Documents saved here must be of a format that everyone (or mostly everyone) can
 read! This seems to exclude Word 2007 and ODT (openoffice) formats; the latter because Word
-likes to save non-standard ODT files that OpenOffice can't read correctly (woops).  So far the
+likes to save non-standard ODT files that OpenOffice can't read correctly (Whoops).  So far the
 *best* choice seems to be the Word 97/2000 format.  It's fairly feature-full, and seems to be
 well-supported by most word processors these days (most importantly Word and OpenO).
 
