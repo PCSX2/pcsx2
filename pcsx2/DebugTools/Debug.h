@@ -71,7 +71,7 @@ public:
 	SysTraceLog( const SysTraceLogDescriptor* desc )
 		: TextFileTraceLog( &desc->base ) {}
 
-	void DoWrite( const char *fmt ) const;
+	void DoWrite( const char *fmt ) const override;
 	bool IsActive() const override
 	{
 		return EmuConfig.Trace.Enabled && Enabled;
@@ -85,13 +85,13 @@ class SysTraceLog_EE : public SysTraceLog
 public:
 	SysTraceLog_EE( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
 
-	void ApplyPrefix( FastFormatAscii& ascii ) const;
-	bool IsActive() const
+	void ApplyPrefix( FastFormatAscii& ascii ) const override;
+	bool IsActive() const override
 	{
 		return SysTraceLog::IsActive() && EmuConfig.Trace.EE.m_EnableAll;
 	}
 	
-	wxString GetCategory() const { return L"EE"; }
+	wxString GetCategory() const override { return L"EE"; }
 };
 
 class SysTraceLog_VIFcode : public SysTraceLog_EE
@@ -101,7 +101,7 @@ class SysTraceLog_VIFcode : public SysTraceLog_EE
 public:
 	SysTraceLog_VIFcode( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
 
-	void ApplyPrefix( FastFormatAscii& ascii ) const;
+	void ApplyPrefix( FastFormatAscii& ascii ) const override;
 };
 
 class SysTraceLog_EE_Disasm : public SysTraceLog_EE
@@ -111,12 +111,12 @@ class SysTraceLog_EE_Disasm : public SysTraceLog_EE
 public:
 	SysTraceLog_EE_Disasm( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
 
-	bool IsActive() const
+	bool IsActive() const override
 	{
 		return _parent::IsActive() && EmuConfig.Trace.EE.m_EnableDisasm;
 	}
 
-	wxString GetCategory() const { return _parent::GetCategory() + L".Disasm"; }
+	wxString GetCategory() const override { return _parent::GetCategory() + L".Disasm"; }
 };
 
 class SysTraceLog_EE_Registers : public SysTraceLog_EE
@@ -126,12 +126,12 @@ class SysTraceLog_EE_Registers : public SysTraceLog_EE
 public:
 	SysTraceLog_EE_Registers( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
 
-	bool IsActive() const
+	bool IsActive() const override
 	{
 		return _parent::IsActive() && EmuConfig.Trace.EE.m_EnableRegisters;
 	}
 
-	wxString GetCategory() const { return _parent::GetCategory() + L".Registers"; }
+	wxString GetCategory() const override { return _parent::GetCategory() + L".Registers"; }
 };
 
 class SysTraceLog_EE_Events : public SysTraceLog_EE
@@ -141,12 +141,12 @@ class SysTraceLog_EE_Events : public SysTraceLog_EE
 public:
 	SysTraceLog_EE_Events( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
 
-	bool IsActive() const
+	bool IsActive() const override
 	{
 		return _parent::IsActive() && EmuConfig.Trace.EE.m_EnableEvents;
 	}
 
-	wxString GetCategory() const { return _parent::GetCategory() + L".Events"; }
+	wxString GetCategory() const override { return _parent::GetCategory() + L".Events"; }
 };
 
 
@@ -157,13 +157,13 @@ class SysTraceLog_IOP : public SysTraceLog
 public:
 	SysTraceLog_IOP( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
 
-	void ApplyPrefix( FastFormatAscii& ascii ) const;
-	bool IsActive() const
+	void ApplyPrefix( FastFormatAscii& ascii ) const override;
+	bool IsActive() const override
 	{
 		return SysTraceLog::IsActive() && EmuConfig.Trace.IOP.m_EnableAll;
 	}
 
-	wxString GetCategory() const { return L"IOP"; }
+	wxString GetCategory() const override { return L"IOP"; }
 };
 
 class SysTraceLog_IOP_Disasm : public SysTraceLog_IOP
@@ -172,12 +172,12 @@ class SysTraceLog_IOP_Disasm : public SysTraceLog_IOP
 
 public:
 	SysTraceLog_IOP_Disasm( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
-	bool IsActive() const
+	bool IsActive() const override
 	{
 		return _parent::IsActive() && EmuConfig.Trace.IOP.m_EnableDisasm;
 	}
 
-	wxString GetCategory() const { return _parent::GetCategory() + L".Disasm"; }
+	wxString GetCategory() const override { return _parent::GetCategory() + L".Disasm"; }
 };
 
 class SysTraceLog_IOP_Registers : public SysTraceLog_IOP
@@ -186,12 +186,12 @@ class SysTraceLog_IOP_Registers : public SysTraceLog_IOP
 
 public:
 	SysTraceLog_IOP_Registers( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
-	bool IsActive() const
+	bool IsActive() const override
 	{
 		return _parent::IsActive() && EmuConfig.Trace.IOP.m_EnableRegisters;
 	}
 
-	wxString GetCategory() const { return _parent::GetCategory() + L".Registers"; }
+	wxString GetCategory() const override { return _parent::GetCategory() + L".Registers"; }
 };
 
 class SysTraceLog_IOP_Events : public SysTraceLog_IOP
@@ -200,12 +200,12 @@ class SysTraceLog_IOP_Events : public SysTraceLog_IOP
 
 public:
 	SysTraceLog_IOP_Events( const SysTraceLogDescriptor* desc ) : _parent( desc ) {}
-	bool IsActive() const
+	bool IsActive() const override
 	{
 		return _parent::IsActive() && EmuConfig.Trace.IOP.m_EnableEvents;
 	}
 
-	wxString GetCategory() const { return _parent::GetCategory() + L".Events"; }
+	wxString GetCategory() const override { return _parent::GetCategory() + L".Events"; }
 };
 
 // --------------------------------------------------------------------------------------
