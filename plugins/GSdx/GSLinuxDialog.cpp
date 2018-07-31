@@ -29,7 +29,7 @@
 // Port of deprecated GTK2 API to recent GTK3. Those defines
 // could prove handy for testing
 #define GTK3_MONITOR_API GTK_CHECK_VERSION(3, 22, 0)
-#define GTK3_GRID_API GTK_CHECK_VERSION(3, 10, 0)
+#define GTK3_GRID_API GTK_CHECK_VERSION(3, 12, 0)
 
 static GtkWidget* s_hack_frame;
 
@@ -219,8 +219,8 @@ static int s_table_line = 0;
 void AttachInTable(GtkWidget* table, GtkWidget *w, int pos, int pad = 0, int size = 1)
 {
 #if GTK3_GRID_API
-	g_object_set(w, "margin-left", pad, NULL);
-	g_object_set(w, "expand", true, nullptr);
+	gtk_widget_set_margin_start(w, pad);
+	gtk_widget_set_hexpand(w, true);
 	gtk_grid_attach(GTK_GRID(table), w, pos, s_table_line, size, 1);
 #else
 	GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
@@ -252,7 +252,7 @@ void InsertWidgetInTable(GtkWidget* table, GtkWidget *left, GtkWidget *right = N
 GtkWidget* CreateTableInBox(GtkWidget* parent_box, const char* frame_title, int row, int col) {
 #if GTK3_GRID_API
 	GtkWidget* table = gtk_grid_new();
-	g_object_set(table, "expand", true, nullptr);
+	gtk_widget_set_hexpand(table, true);
 #else
 	GtkWidget* table = gtk_table_new(row, col, false);
 #endif
