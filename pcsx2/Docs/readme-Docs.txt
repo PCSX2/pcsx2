@@ -20,5 +20,5 @@ well-supported by most word processors these days (most importantly Word and Ope
 
 When editing and re-saving doc files, please make sure that you have enabled legacy
 Word 97/2000 output.
-Word and OpenOffice should be set to default to retain the format, but may prompt you
+Word and OpenOffice should be set by default to retain the format, but may prompt you
 to upgrade to a newer version.  IGNORE IT.
