@@ -1049,13 +1049,26 @@ void QFSRV() {				// JayteeMaster: changed a bit to avoid screw up
 
 static __fi void _PMADDW(int dd, int ss)
 {
-	s64 temp = (s64)((s64)cpuRegs.LO.SL[ss] | ((s64)cpuRegs.HI.SL[ss] << 32)) +
-			   ((s64)cpuRegs.GPR.r[_Rs_].SL[ss] * (s64)cpuRegs.GPR.r[_Rt_].SL[ss]);
+	s64 temp = ((s64)cpuRegs.GPR.r[_Rs_].SL[ss] * (s64)cpuRegs.GPR.r[_Rt_].SL[ss]);
+	s64 temp2 = temp + ((s64)cpuRegs.HI.SL[ss] << 32);
 
-	cpuRegs.LO.SD[dd] = (s32)(temp & 0xffffffff);
-	cpuRegs.HI.SD[dd] = (s32)(temp >> 32);
+	if (ss == 0)
+	{
+		if (((cpuRegs.GPR.r[_Rt_].SL[ss] & 0x7FFFFFFF) == 0 || (cpuRegs.GPR.r[_Rt_].SL[ss] & 0x7FFFFFFF) == 0x7FFFFFFF) &&
+			cpuRegs.GPR.r[_Rs_].SL[ss] != cpuRegs.GPR.r[_Rt_].SL[ss])
+			temp2 += 0x70000000;
+	}
 
-	if (_Rd_) cpuRegs.GPR.r[_Rd_].SD[dd] = temp;
+	temp2 = (s32)(temp2 / 4294967295);
+
+	cpuRegs.LO.SD[dd] = (s32)(temp & 0xffffffff) + cpuRegs.LO.SL[ss];
+	cpuRegs.HI.SD[dd] = (s32)temp2;
+
+	if (_Rd_)
+	{
+		cpuRegs.GPR.r[_Rd_].UL[dd * 2] = cpuRegs.LO.UL[dd * 2];
+		cpuRegs.GPR.r[_Rd_].UL[(dd * 2) + 1] = cpuRegs.HI.UL[dd * 2];
+	}
 }
 
 void PMADDW() {
@@ -1083,13 +1096,19 @@ void PSRLVW() {
 
 __fi void  _PMSUBW(int dd, int ss)
 {
-	s64 temp = (s64)((s64)cpuRegs.LO.SL[ss] | ((s64)cpuRegs.HI.SL[ss] << 32)) -
-			   ((s64)cpuRegs.GPR.r[_Rs_].SL[ss] * (s64)cpuRegs.GPR.r[_Rt_].SL[ss]);
+	s64 temp = ((s64)cpuRegs.GPR.r[_Rs_].SL[ss] * (s64)cpuRegs.GPR.r[_Rt_].SL[ss]);
+	s64 temp2 = ((s64)cpuRegs.HI.SL[ss] << 32) - temp;
 
-	cpuRegs.LO.SD[dd] = (s32)(temp & 0xffffffff);
-	cpuRegs.HI.SD[dd] = (s32)(temp >> 32);
+	temp2 = (s32)(temp2 / 4294967295);
 
-	if (_Rd_) cpuRegs.GPR.r[_Rd_].SD[dd] = temp;
+	cpuRegs.LO.SD[dd] = cpuRegs.LO.SL[ss] - (s32)(temp & 0xffffffff);
+	cpuRegs.HI.SD[dd] = (s32)temp2;
+
+	if (_Rd_)
+	{
+		cpuRegs.GPR.r[_Rd_].UL[dd * 2] = cpuRegs.LO.UL[dd * 2];
+		cpuRegs.GPR.r[_Rd_].UL[(dd * 2) + 1] = cpuRegs.HI.UL[dd * 2];
+	}
 }
 
 void PMSUBW() {
