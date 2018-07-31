@@ -52,7 +52,7 @@ void JoystickInfo::EnumerateJoysticks(vector<GamePad *> &vjoysticks)
         if (SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_EVENTS) < 0)
             return;
         // WTF! Give me back the control of my system
-        struct sigaction action = {0};
+        struct sigaction action = {};
         action.sa_handler = SIG_DFL;
         sigaction(SIGINT, &action, NULL);
         sigaction(SIGTERM, &action, NULL);
