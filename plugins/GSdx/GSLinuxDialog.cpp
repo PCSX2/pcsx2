@@ -28,8 +28,8 @@
 
 // Port of deprecated GTK2 API to recent GTK3. Those defines
 // could prove handy for testing
-#define GTK3_MONITOR_API (0 && GTK_CHECK_VERSION(3, 22, 0))
-#define GTK3_GRID_API (0 && GTK_CHECK_VERSION(3, 10, 0))
+#define GTK3_MONITOR_API GTK_CHECK_VERSION(3, 22, 0)
+#define GTK3_GRID_API GTK_CHECK_VERSION(3, 10, 0)
 
 static GtkWidget* s_hack_frame;
 
