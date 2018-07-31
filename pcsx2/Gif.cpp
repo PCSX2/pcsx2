@@ -495,7 +495,7 @@ static __fi bool mfifoGIFrbTransfer()
 {
 	u16 qwc = std::min(QWCinGIFMFIFO(gifch.madr), gifch.qwc);
 	if (qwc == 0) {
-		DevCon.Warning("GIF FIFO EMPTY before transfer (how??)");
+		DevCon.Warning("GIF FIFO EMPTY before transfer (how?)");
 	}
 
 	u8* src = (u8*)PSM(gifch.madr);
