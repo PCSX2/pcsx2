@@ -9190,7 +9190,23 @@ Name   = Harry Potter and the Chamber of Secrets
 Region = PAL-E
 Compat = 3
 [patches = C5473413]
-	// This disc has the same CRC as SLUS-20576, the NTSC-U disc.
+	// This disc has the same CRC as other PAL and NTSC discs.
+	comment=Patch by Prafull
+	// Fixes initial hanging.
+	patch=1,EE,002032bc,word,03e00008
+	// Load game quickly.
+	patch=1,EE,001f704c,word,1000000f
+	// Fixes ingame hang.
+	patch=1,EE,001f70b4,word,1000000f
+	// Fixes flickering graphics (Thanks to Kian Stevens for finding this).
+	patch=1,EE,80000000,word,00000000
+[/patches]
+---------------------------------------------
+Serial = SLES-51193
+Name   = Harry Potter et la Chambre des Secrets
+Region = PAL-F
+[patches = C5473413]
+	// This disc has the same CRC as other PAL and NTSC discs.
 	comment=Patch by Prafull
 	// Fixes initial hanging.
 	patch=1,EE,002032bc,word,03e00008
@@ -9203,16 +9219,52 @@ Compat = 3
 [/patches]
 ---------------------------------------------
 Serial = SLES-51194
-Name   = Harry Potter - Kammer D Schreckens
+Name   = Harry Potter und die Kammer des Schreckens
 Region = PAL-G
+[patches = C5473413]
+	// This disc has the same CRC as other PAL and NTSC discs.
+	comment=Patch by Prafull
+	// Fixes initial hanging.
+	patch=1,EE,002032bc,word,03e00008
+	// Load game quickly.
+	patch=1,EE,001f704c,word,1000000f
+	// Fixes ingame hang.
+	patch=1,EE,001f70b4,word,1000000f
+	// Fixes flickering graphics (Thanks to Kian Stevens for finding this).
+	patch=1,EE,80000000,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-51195
 Name   = Harry Potter y La Camara Secreta
 Region = PAL-S
+[patches = C5473413]
+	// This disc has the same CRC as other PAL and NTSC discs.
+	comment=Patch by Prafull
+	// Fixes initial hanging.
+	patch=1,EE,002032bc,word,03e00008
+	// Load game quickly.
+	patch=1,EE,001f704c,word,1000000f
+	// Fixes ingame hang.
+	patch=1,EE,001f70b4,word,1000000f
+	// Fixes flickering graphics (Thanks to Kian Stevens for finding this).
+	patch=1,EE,80000000,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-51196
 Name   = Harry Potter e La Camera dei Secreti
 Region = PAL-I
+[patches = C5473413]
+	// This disc has the same CRC as other PAL and NTSC discs.
+	comment=Patch by Prafull
+	// Fixes initial hanging.
+	patch=1,EE,002032bc,word,03e00008
+	// Load game quickly.
+	patch=1,EE,001f704c,word,1000000f
+	// Fixes ingame hang.
+	patch=1,EE,001f70b4,word,1000000f
+	// Fixes flickering graphics (Thanks to Kian Stevens for finding this).
+	patch=1,EE,80000000,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-51197
 Name   = FIFA 2003
@@ -9259,6 +9311,14 @@ Compat = 5
 Serial = SLES-51214
 Name   = 18 Wheeler - American Pro Trucker
 Region = PAL-Unk
+---------------------------------------------
+Serial = SLES-51217
+Name   = Harry Potter och Hemligheternas Kammare
+Region = PAL-SE
+---------------------------------------------
+Serial = SLES-51218
+Name   = Harry Potter en de Geheime Kamer
+Region = PAL-DU
 ---------------------------------------------
 Serial = SLES-51220
 Name   = Ty - The Tazmanian Tiger
@@ -11718,7 +11778,8 @@ Name   = Harry Potter and the Prisoner of Azkaban
 Region = PAL-M7
 Compat = 3
 EETimingHack = 1 // Fixes ingame hangs.
-[patches = 51e019bc]
+[patches = 51E019BC]
+	// This disc has the same CRC as SLUS-20926, the NTSC-U disc.
 	// Fixes game hanging on loading screens.
 	patch=1,EE,0016cf8c,word,00000000
 	patch=1,EE,0013cd64,word,00000000
@@ -18396,6 +18457,10 @@ Name   = Guon
 Region = NTSC-K
 Compat = 5
 ---------------------------------------------
+Serial = SLKA-25172
+Name   = Harry Potter and The Prisoner of Azkaban
+Region = NTSC-K
+---------------------------------------------
 Serial = SLKA-25175
 Name   = Transformers
 Region = NTSC-K
@@ -19722,6 +19787,10 @@ Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62239
 Name   = Supercar Street Challenge
+Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-62241
+Name   = Harry Potter to Himitsu no Heya
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-62244
@@ -21559,6 +21628,10 @@ Serial = SLPM-64525
 Name   = Guilty Gear X Plus "By Your Side"
 Region = NTSC-K
 Compat = 5
+---------------------------------------------
+Serial = SLPM-64528
+Name   = Harry Potter and the Chamber of Secrets
+Region = NTSC-K
 ---------------------------------------------
 Serial = SLPM-64549
 Name   = Shikigami no Shiro
@@ -36877,7 +36950,7 @@ Name   = Harry Potter and The Chamber of Secrets
 Region = NTSC-U
 Compat = 2
 [patches = C5473413]
-	// This disc has the same CRC as SLES-51192, the PAL-E disc.
+	// This disc has the same CRC as other PAL and NTSC discs.
 	comment=Patch by Prafull
 	// Fixes initial hanging.
 	patch=1,EE,002032bc,word,03e00008
@@ -38530,6 +38603,17 @@ Compat = 2
 Serial = SLUS-20926
 Name   = Harry Potter and The Prisoner of Azkaban
 Region = NTSC-U
+[patches = 51E019BC]
+	// This disc has the same CRC as SLES-52440, the PAL-M7 disc.
+	// Fixes game hanging on loading screens.
+	patch=1,EE,0016cf8c,word,00000000
+	patch=1,EE,0013cd64,word,00000000
+	patch=1,EE,0013c1a8,word,00000000
+	patch=1,EE,0013c1cc,word,00000000
+	patch=1,EE,80000000,word,00000000
+	patch=1,EE,0013df84,word,00000000
+	patch=1,EE,0013cd3c,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20927
 Name   = Time Crisis - Crisis Zone
