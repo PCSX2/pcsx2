@@ -40,7 +40,7 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjo
             return;
 
         // WTF! Give me back the control of my system
-        struct sigaction action = {0};
+        struct sigaction action = {};
         action.sa_handler = SIG_DFL;
         sigaction(SIGINT, &action, nullptr);
         sigaction(SIGTERM, &action, nullptr);
