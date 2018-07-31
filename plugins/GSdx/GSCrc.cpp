@@ -140,15 +140,20 @@ CRC::Game CRC::m_games[] =
 	{0x788D8B4F, ICO, EU, 0},
 	{0x29C28734, ICO, CH, 0},
 	{0xC02C653E, GT4, CH, 0},
+	{0x7ABDBB5E, GT4, CH, 0}, // cutie comment
 	{0xAEAD1CA3, GT4, JP, 0},
+	{0xE906EA37, GT4, JP, 0}, // GT4 First Preview 
+	{0xCA6243B9, GT4, JP, 0}, // GT4 Prologue
+	{0xDD764BBE, GT4, JP, 0}, // GT4 Prologue
 	{0x30E41D93, GT4, KO, 0},
 	{0x715CF2EC, GT4, EU, 0},
 	{0x44A61C8F, GT4, EU, 0},
 	{0x0086E35B, GT4, EU, 0},
+	{0x3FB69323, GT4, EU, 0}, // GT4 Prologue
 	{0x77E61C8A, GT4, US, 0},
 	{0x33C6E35E, GT4, US, 0},
 	{0x32A1C752, GT4, US, 0}, // GT4 Online Beta
-	{0x7ABDBB5E, GT3, CH, 0}, // cutie comment
+	{0x70538747, GT4, US, 0}, // Toyota Prius Trial
 	{0x3E9D448A, GT3, CH, 0}, // cutie comment
 	{0xAD66643C, GT3, CH, 0}, // cutie comment
 	{0x85AE91B3, GT3, US, 0},
@@ -540,7 +545,10 @@ CRC::Game CRC::m_games[] =
 	{0x684ADFC6, FIFA04, EU, 0},
 	{0x972611BB, FIFA05, US, 0},
 	{0x972719A3, FIFA05, EU, 0},
-	{0x4C01B1B0, HarryPotterOOTP, US, 0},
+	{0xC5473413, HarryPotterATCOS, US, 0}, // Same CRC as EU - Chamber Of Secrets
+	{0xE90BE9F8, HarryPotterATCOS, JP, 0 }, // Coca Cola original Version
+	{0x51E019BC, HarryPotterATPOA, US, 0 }, // Same CRC as EU - Prisoner of Azkaban
+	{0x4C01B1B0, HarryPotterOOTP, US, 0}, // Order Of The Phoenix
 	{0x01A9BF0E, HarryPotterOOTP, EU, 0},
 	{0x230CB71D, SoulReaver2, US, 0},
 	{0x6F991F52, SoulReaver2, JP, 0},
@@ -576,6 +584,8 @@ CRC::Game CRC::m_games[] =
 	{0xDDAC3815, Shox, US, 0},
 	{0x78FFA39F, Shox, EU, 0},
 	{0x3DF10389, Shox, EU, 0},
+	{0xF17AF8BD, TheIncredibleHulkUD, US, 0},
+	{0x6B3D50A5, TheIncredibleHulkUD, EU, 0},
 	{0x2B58234D, TribesAerialAssault, US, 0},
 	{0x4D22DB95, Whiplash, US, 0},
 	{0xB1BE3E51, Whiplash, EU, 0},
