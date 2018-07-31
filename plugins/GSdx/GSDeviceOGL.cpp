@@ -48,7 +48,6 @@ static const uint32 g_fx_cb_index         = 14;
 static const uint32 g_convert_index       = 15;
 static const uint32 g_vs_cb_index         = 20;
 static const uint32 g_ps_cb_index         = 21;
-static const uint32 g_gs_cb_index         = 22;
 
 bool  GSDeviceOGL::m_debug_gl_call = false;
 int   GSDeviceOGL::m_shader_inst = 0;
