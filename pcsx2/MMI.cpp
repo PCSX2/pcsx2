@@ -1052,13 +1052,14 @@ static __fi void _PMADDW(int dd, int ss)
 	s64 temp = ((s64)cpuRegs.GPR.r[_Rs_].SL[ss] * (s64)cpuRegs.GPR.r[_Rt_].SL[ss]);
 	s64 temp2 = temp + ((s64)cpuRegs.HI.SL[ss] << 32);
 
+	//Playstation 2 division voodoo, for some reason only the lower half is affected
 	if (ss == 0)
 	{
 		if (((cpuRegs.GPR.r[_Rt_].SL[ss] & 0x7FFFFFFF) == 0 || (cpuRegs.GPR.r[_Rt_].SL[ss] & 0x7FFFFFFF) == 0x7FFFFFFF) &&
 			cpuRegs.GPR.r[_Rs_].SL[ss] != cpuRegs.GPR.r[_Rt_].SL[ss])
 			temp2 += 0x70000000;
 	}
-
+	//Multiplication error on the PS2 causes this not to be exactly >> 32 (off by 1)
 	temp2 = (s32)(temp2 / 4294967295);
 
 	cpuRegs.LO.SD[dd] = (s32)(temp & 0xffffffff) + cpuRegs.LO.SL[ss];
@@ -1099,6 +1100,7 @@ __fi void  _PMSUBW(int dd, int ss)
 	s64 temp = ((s64)cpuRegs.GPR.r[_Rs_].SL[ss] * (s64)cpuRegs.GPR.r[_Rt_].SL[ss]);
 	s64 temp2 = ((s64)cpuRegs.HI.SL[ss] << 32) - temp;
 
+	//Multiplication error on the PS2 causes this not to be exactly >> 32 (off by 1)
 	temp2 = (s32)(temp2 / 4294967295);
 
 	cpuRegs.LO.SD[dd] = cpuRegs.LO.SL[ss] - (s32)(temp & 0xffffffff);
