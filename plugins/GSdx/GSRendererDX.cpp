@@ -286,7 +286,6 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		// m_ps_sel.aem     = 0; // removed as an optimization
 	}
 
-
 	if (m_context->TEX0.TFX == TFX_MODULATE && m_vt.m_eq.rgba == 0xFFFF && m_vt.m_min.c.eq(GSVector4i(128))) {
 		// Micro optimization that reduces GPU load (removes 5 instructions on the FS program)
 		m_ps_sel.tfx = TFX_DECAL;
@@ -324,8 +323,9 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	m_ps_sel.tcoffsethack = !!UserHacks_TCOffset;
 	ps_cb.TC_OffsetHack = GSVector4(UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
 
-	m_ps_ssel.tau = (m_context->CLAMP.WMS + 3) >> 1;
-	m_ps_ssel.tav = (m_context->CLAMP.WMT + 3) >> 1;
+	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
+	m_ps_ssel.tau = (wms != CLAMP_CLAMP);
+	m_ps_ssel.tav = (wmt != CLAMP_CLAMP);
 	m_ps_ssel.ltf = bilinear && !shader_emulated_sampler;
 }
 
@@ -501,7 +501,13 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	{
 		m_ps_sel.fog = 1;
 
-		ps_cb.FogColor_AREF = GSVector4::rgba32(m_env.FOGCOL.u32[0]) / 255;
+		GSVector4 fc = GSVector4::rgba32(m_env.FOGCOL.u32[0]);
+#if _M_SSE >= 0x401
+		// Blend AREF to avoid to load a random value for alpha (dirty cache)
+		ps_cb.FogColor_AREF = fc.blend32<8>(ps_cb.FogColor_AREF) / 255;
+#else
+		ps_cb.FogColor_AREF = fc / 255;
+#endif
 	}
 
 	// Warning must be done after EmulateZbuffer
