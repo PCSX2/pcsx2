@@ -1993,27 +1993,10 @@ bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
-{
-	if(Aggressive && skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
-		{
-			// Removes character outlines, similar to DBZ BT3.
-			// Upscaling causes the outlines to be out of place but can be fixed with TC Offsets.
-			// The hack can be used to increase slight performance.
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 {
 	if(Aggressive && skip == 0)
 	{
-
 		if(fi.TME && fi.FBP == 0x001000 && (fi.TBP0 ==0 || fi.TBP0 == 0x0800) && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0x00FFFFFF)
 		{
 			skip = 0;
@@ -2034,7 +2017,22 @@ bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1;
 		}
+	}
 
+	return true;
+}
+
+bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
+{
+	if(Aggressive && skip == 0)
+	{
+		if(fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
+		{
+			// Removes character outlines, similar to DBZ BT3.
+			// Upscaling causes the outlines to be out of place but can be fixed with TC Offsets.
+			// The hack can be used to increase slight performance.
+			skip = 2;
+		}
 	}
 
 	return true;
