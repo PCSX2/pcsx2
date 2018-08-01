@@ -2257,12 +2257,12 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFX] = GSC_FFXGames;
 		lut[CRC::FFXII] = GSC_FFXGames;
 		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
+		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
 		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
 		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
 		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
 		lut[CRC::SoTC] = GSC_SoTC;
-		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
 	}
 
 	// Hacks that were fixed on OpenGL
