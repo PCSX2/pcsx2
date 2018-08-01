@@ -333,7 +333,7 @@ float4x4 sample_4c(float4 uv)
 	return c;
 }
 
-float4 sample_4a(float4 uv)
+float4 sample_4_index(float4 uv)
 {
 	float4 c;
 
@@ -415,7 +415,7 @@ float4 sample(float2 st, float q)
 		uv = clamp_wrap_uv(uv);
 
 #if PS_PAL_FMT != 0
-			c = sample_4p(sample_4a(uv));
+			c = sample_4p(sample_4_index(uv));
 #else
 			c = sample_4c(uv);
 #endif
