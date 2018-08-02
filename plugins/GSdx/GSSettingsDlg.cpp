@@ -713,6 +713,10 @@ void GSHacksDlg::OnInit()
 	ComboBoxInit(IDC_GEOMETRY_SHADER_OVERRIDE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_geometry_shader"));
 	ComboBoxInit(IDC_IMAGE_LOAD_STORE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_GL_ARB_shader_image_load_store"));
 
+	m_old_skipdraw_offset = 0;
+	m_old_skipdraw = 0;
+	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_SkipDraw_Offset"), 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_SkipDraw"), 0));
 
@@ -753,6 +757,8 @@ void GSHacksDlg::OnInit()
 
 	AddTooltip(IDC_SKIPDRAWHACKEDIT);
 	AddTooltip(IDC_SKIPDRAWHACK);
+	AddTooltip(IDC_SKIPDRAWOFFSETEDIT);
+	AddTooltip(IDC_SKIPDRAWOFFSET);
 	AddTooltip(IDC_ALPHAHACK);
 	AddTooltip(IDC_OFFSETHACK);
 	AddTooltip(IDC_SPRITEHACK);
@@ -776,10 +782,38 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_MERGE_PP_SPRITE);
 	AddTooltip(IDC_GEOMETRY_SHADER_OVERRIDE);
 	AddTooltip(IDC_IMAGE_LOAD_STORE);
+
+	UpdateControls();
 }
 
 void GSHacksDlg::UpdateControls()
-{}
+{
+	int skipdraw_offset = SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_GETPOS, 0, 0);
+	int skipdraw = SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0);
+
+	bool skipdraw_offset_changed = skipdraw_offset != m_old_skipdraw_offset;
+	bool skipdraw_changed = skipdraw != m_old_skipdraw;
+
+	if (skipdraw_offset == 0 && skipdraw_offset_changed || skipdraw == 0 && skipdraw_changed)
+	{
+		skipdraw_offset = 0;
+		skipdraw = 0;
+	}
+	else if (skipdraw_offset > skipdraw)
+	{
+		if (skipdraw_offset_changed)
+			skipdraw = skipdraw_offset;
+	}
+	else if (skipdraw > 0 && skipdraw_offset == 0)
+	{
+		skipdraw_offset = 1;
+	}
+
+	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_SETPOS, 0, MAKELPARAM(skipdraw_offset, 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(skipdraw, 0));
+	m_old_skipdraw_offset = skipdraw_offset;
+	m_old_skipdraw = skipdraw;
+}
 
 bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -791,7 +825,12 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 		switch(id)
 		{
-		case IDOK: 
+		case IDC_SKIPDRAWHACKEDIT:
+		case IDC_SKIPDRAWOFFSETEDIT:
+			if (HIWORD(wParam) == EN_CHANGE)
+				UpdateControls();
+			break;
+		case IDOK:
 		{
 			INT_PTR data;
 			if (ComboBoxGetSelData(IDC_TRI_FILTER, data))
@@ -818,9 +857,17 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				theApp.SetConfig("override_GL_ARB_shader_image_load_store", (int)data);
 			}
+
+			// It's more user friendly to lower the skipdraw offset value here - it prevents the skipdraw offset
+			// value from decreasing unnecessarily if the user types a skipdraw value that is temporarily lower
+			// than the skipdraw offset value.
+			int skipdraw_offset = SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_GETPOS, 0, 0);
+			int skipdraw = SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0);
+			theApp.SetConfig("UserHacks_SkipDraw_Offset", std::min(skipdraw_offset, skipdraw));
+			theApp.SetConfig("UserHacks_SkipDraw", skipdraw);
+
 			theApp.SetConfig("UserHacks_MSAA", cb2msaa[(int)SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_GETCURSEL, 0, 0)]);
 			theApp.SetConfig("UserHacks_AlphaHack", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHAHACK));
-			theApp.SetConfig("UserHacks_SkipDraw", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("UserHacks_WildHack", (int)IsDlgButtonChecked(m_hWnd, IDC_WILDHACK));
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
 			theApp.SetConfig("preload_frame_with_gs_data", (int)IsDlgButtonChecked(m_hWnd, IDC_PRELOAD_GS));
