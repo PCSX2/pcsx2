@@ -163,7 +163,9 @@ protected:
 	CRCHackLevel m_crc_hack_level;
 	GetSkipCount m_gsc;
 	int m_skip;
+	int m_skip_offset;
 	int m_userhacks_skipdraw;
+	int m_userhacks_skipdraw_offset;
 	bool m_userhacks_auto_flush;
 
 	GSVertex m_v;

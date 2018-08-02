@@ -57,9 +57,13 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Works as a speedhack for: BleachBB, Kunoichi, Steambot Chronicles, The Simpsons Game.";
 		case IDC_SKIPDRAWHACK:
 		case IDC_SKIPDRAWHACKEDIT:
-			return "Skips drawing n surfaces completely. "
-				"Use it, for example, to try and get rid of bad post processing effects."
-				" Try values between 1 and 100.";
+		case IDC_SKIPDRAWOFFSET:
+		case IDC_SKIPDRAWOFFSETEDIT:
+			return "Completely skips drawing surfaces from the surface in the left box up to the surface specified in the box on the right.\n\n"
+				"Use it, for example, to try and get rid of bad post processing effects.\n"
+				"Step 1: Increase the value in the left box and keep the value in the right box set to the same value as the left box to find and remove a bad effect.\n"
+				"Step 2: If a bad effect found with Step 1 is not completely removed yet, then without changing the value in the left box, try increasing the value in the box to right until the effect is completely gone.\n"
+				"Note: Increase the value in the right box and keep the value in the left box set to \"1\" to reproduce the old skipdraw behaviour.";
 		case IDC_ALPHAHACK:
 			return "Different alpha handling. Can work around some shadow problems.";
 		case IDC_OFFSETHACK:

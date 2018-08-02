@@ -2364,7 +2364,8 @@ bool GSState::IsBadFrame()
 			// General, often problematic post processing
 			if (GSLocalMemory::m_psm[fi.TPSM].depth || GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM))
 			{
-				m_skip = m_userhacks_skipdraw;
+				m_skip_offset = m_userhacks_skipdraw_offset;
+				m_skip = std::max(m_userhacks_skipdraw, m_skip_offset);
 			}
 		}
 	}
@@ -2373,7 +2374,10 @@ bool GSState::IsBadFrame()
 	{
 		m_skip--;
 
-		return true;
+		if (m_skip_offset > 1)
+			m_skip_offset--;
+		else
+			return true;
 	}
 
 	return false;

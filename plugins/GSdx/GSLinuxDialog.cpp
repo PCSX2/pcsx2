@@ -388,12 +388,53 @@ void populate_shader_table(GtkWidget* shader_table)
 	InsertWidgetInTable(shader_table , tv_shader_label     , tv_shader);
 }
 
+static GtkWidget* s_hack_skipdraw_offset_spin;
+static GtkWidget* s_hack_skipdraw_spin;
+
+static void CB_SkipdrawRange(GtkSpinButton*, gpointer)
+{
+	int skipdraw_offset = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(s_hack_skipdraw_offset_spin));
+	int skipdraw = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(s_hack_skipdraw_spin));
+
+	bool skipdraw_offset_changed = skipdraw_offset != theApp.GetConfigI("UserHacks_SkipDraw_Offset");
+	bool skipdraw_changed = skipdraw != theApp.GetConfigI("UserHacks_SkipDraw");
+
+	if (skipdraw_offset == 0 && skipdraw_offset_changed || skipdraw == 0 && skipdraw_changed) {
+		skipdraw_offset = 0;
+		skipdraw = 0;
+	} else if (skipdraw_offset > skipdraw) {
+		if (skipdraw_offset_changed)
+			skipdraw = skipdraw_offset;
+		if (skipdraw_changed)
+			skipdraw_offset = skipdraw;
+	} else if (skipdraw > 0 && skipdraw_offset == 0) {
+		skipdraw_offset = 1;
+	}
+
+	theApp.SetConfig("UserHacks_SkipDraw_Offset", skipdraw_offset);
+	theApp.SetConfig("UserHacks_SkipDraw", skipdraw);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(s_hack_skipdraw_offset_spin), skipdraw_offset);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(s_hack_skipdraw_spin), skipdraw);
+}
+
+static void CreateSkipdrawSpinButtons(double min, double max)
+{
+	s_hack_skipdraw_offset_spin = gtk_spin_button_new_with_range(min, max, 1);
+	s_hack_skipdraw_spin = gtk_spin_button_new_with_range(min, max, 1);
+
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(s_hack_skipdraw_offset_spin), theApp.GetConfigI("UserHacks_SkipDraw_Offset"));
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(s_hack_skipdraw_spin), theApp.GetConfigI("UserHacks_SkipDraw"));
+
+	g_signal_connect(s_hack_skipdraw_offset_spin, "value-changed", G_CALLBACK(CB_SkipdrawRange), nullptr);
+	g_signal_connect(s_hack_skipdraw_spin, "value-changed", G_CALLBACK(CB_SkipdrawRange), nullptr);
+}
+
 void populate_hack_table(GtkWidget* hack_table)
 {
 	GtkWidget* hack_offset_label   = left_label("Half-pixel Offset:");
 	GtkWidget* hack_offset_box     = CreateComboBoxFromVector(theApp.m_gs_offset_hack, "UserHacks_HalfPixelOffset");
-	GtkWidget* hack_skipdraw_label = left_label("Skipdraw:");
-	GtkWidget* hack_skipdraw_spin  = CreateSpinButton(0, 10000, "UserHacks_SkipDraw");
+	GtkWidget* hack_skipdraw_label = left_label("Skipdraw Range:");
+	CreateSkipdrawSpinButtons(0, 10000);
 	GtkWidget* hack_wild_check     = CreateCheckBox("Wild Arms Hack", "UserHacks_WildHack");
 	GtkWidget* hack_tco_label      = left_label("Texture Offset: 0x");
 	GtkWidget* hack_tco_entry      = CreateTextBox("UserHacks_TCOffset");
@@ -418,7 +459,8 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_offset_label, IDC_OFFSETHACK);
 	AddTooltip(hack_offset_box, IDC_OFFSETHACK);
 	AddTooltip(hack_skipdraw_label, IDC_SKIPDRAWHACK);
-	AddTooltip(hack_skipdraw_spin, IDC_SKIPDRAWHACK);
+	AddTooltip(s_hack_skipdraw_offset_spin, IDC_SKIPDRAWHACK);
+	AddTooltip(s_hack_skipdraw_spin, IDC_SKIPDRAWHACK);
 	AddTooltip(hack_wild_check, IDC_WILDHACK);
 	AddTooltip(hack_sprite_label, hack_sprite_box, IDC_SPRITEHACK);
 	AddTooltip(hack_tco_label, IDC_TCOFFSETX);
@@ -450,7 +492,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	InsertWidgetInTable(hack_table , hack_offset_label   , hack_offset_box);
 	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
-	InsertWidgetInTable(hack_table , hack_skipdraw_label , hack_skipdraw_spin);
+	InsertWidgetInTable(hack_table , hack_skipdraw_label , s_hack_skipdraw_offset_spin, s_hack_skipdraw_spin);
 	InsertWidgetInTable(hack_table , hack_tco_label      , hack_tco_entry);
 }
 
