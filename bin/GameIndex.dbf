@@ -33571,6 +33571,8 @@ Region = NTSC-J
 Serial = SLPS-25784
 Name   = Another Century's Episode 3 - The Final
 Region = NTSC-J
+eeClampMode = 3 // The game won't freeze on mission 2 loading.
+vuClampMode = 3 // The game won't freeze on mission 2 loading.
 ---------------------------------------------
 Serial = SLPS-25786
 Name   = Hisshou Pachinko-Pachislot Kouryoku Series Vol.10 - CR Shinseiki Evangelion - Kiseki no Hachi Ha
