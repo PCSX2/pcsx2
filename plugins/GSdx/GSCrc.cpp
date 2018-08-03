@@ -25,6 +25,7 @@
 
 CRC::Game CRC::m_games[] =
 {
+	// Note: Id 0x7ACF7E03 shouldn't be added as it's from the multiloader when packing games.
 	{0x00000000, NoTitle, NoRegion, 0},
 	{0xF46142D3, ArTonelico2, NoRegion, 0},
 	{0xC38067F4, ArTonelico2, NoRegion, 0}, // project metafalica 1.0
@@ -204,16 +205,17 @@ CRC::Game CRC::m_games[] =
 	{0x9E98B8AE, IkkiTousen, JP, 0},
 	{0xD6385328, GodOfWar, US, 0},
 	{0xF2A8D307, GodOfWar, US, 0},
+	{0xA61A4C6D, GodOfWar, US, 0},
+	{0xDF3A5A5C, GodOfWar, US, 0}, // Demo
 	{0xFB0E6D72, GodOfWar, EU, 0},
 	{0xEB001875, GodOfWar, EU, 0},
 	{0xCF148C74, GodOfWar, EU, 0},
+	{0xDF1AF973, GodOfWar, EU, 0},
 	{0xCA052D22, GodOfWar, JP, 0},
 	{0xBFCC1795, GodOfWar, KO, 0},
 	{0x9567B7D6, GodOfWar, KO, 0},
 	{0x9B5C97BA, GodOfWar, KO, 0},
-	{0xA61A4C6D, GodOfWar, US, 0},
 	{0xE23D532B, GodOfWar, NoRegion, 0},
-	{0xDF1AF973, GodOfWar, EU, 0},
 	{0x1A85E924, GodOfWar, NoRegion, 0}, // cutie comment
 	{0x608ACBD3, GodOfWar, CH, 0}, // cutie comment
 	{0x2F123FD8, GodOfWar2, US, 0}, // same CRC as RU
@@ -406,6 +408,7 @@ CRC::Game CRC::m_games[] =
 	{0xBEBF8793, BurnoutTakedown, US, 0},
 	{0x75BECC18, BurnoutTakedown, EU, 0},
 	{0xCE49B0DE, BurnoutTakedown, EU, 0},
+	{0x381EE9EF, BurnoutTakedown, EU, 0}, // E3 Demo
 	{0xD224D348, BurnoutRevenge, US, 0},
 	{0x7E83CC5B, BurnoutRevenge, EU, 0},
 	{0xEEA60511, BurnoutRevenge, KO, 0},
@@ -545,9 +548,9 @@ CRC::Game CRC::m_games[] =
 	{0x684ADFC6, FIFA04, EU, 0},
 	{0x972611BB, FIFA05, US, 0},
 	{0x972719A3, FIFA05, EU, 0},
-	{0xC5473413, HarryPotterATCOS, US, 0}, // Same CRC as EU - Chamber Of Secrets
+	{0xC5473413, HarryPotterATCOS, NoRegion, 0}, // EU and US versions have the same CRC - Chamber Of Secrets
 	{0xE90BE9F8, HarryPotterATCOS, JP, 0 }, // Coca Cola original Version
-	{0x51E019BC, HarryPotterATPOA, US, 0 }, // Same CRC as EU - Prisoner of Azkaban
+	{0x51E019BC, HarryPotterATPOA, NoRegion, 0 }, // EU and US versions have the same CRC - Prisoner of Azkaban
 	{0x4C01B1B0, HarryPotterOOTP, US, 0}, // Order Of The Phoenix
 	{0x01A9BF0E, HarryPotterOOTP, EU, 0},
 	{0x230CB71D, SoulReaver2, US, 0},
