@@ -41204,6 +41204,7 @@ Serial = SLUS-21439
 Name   = Destroy All Humans! 2
 Region = NTSC-U
 Compat = 5
+eeClampMode = 3 // Fixes material stretching across screen that appears for a split second.
 ---------------------------------------------
 Serial = SLUS-21440
 Name   = LarryBoy and the Bad Apple
