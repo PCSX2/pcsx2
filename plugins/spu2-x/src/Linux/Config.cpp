@@ -325,15 +325,27 @@ void DisplayDialog()
 
     advanced_button = gtk_button_new_with_label("Advanced...");
 
+#if GTK_MAJOR_VERSION < 3
     main_box = gtk_hbox_new(false, 5);
+#else
+    main_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#endif
     main_frame = gtk_frame_new("SPU2-X Config");
     gtk_container_add(GTK_CONTAINER(main_frame), main_box);
 
+#if GTK_MAJOR_VERSION < 3
     mixing_box = gtk_vbox_new(false, 5);
+#else
+    mixing_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+#endif
     mixing_frame = gtk_frame_new("Mixing Settings:");
     gtk_container_add(GTK_CONTAINER(mixing_frame), mixing_box);
 
+#if GTK_MAJOR_VERSION < 3
     output_box = gtk_vbox_new(false, 5);
+#else
+    output_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+#endif
     output_frame = gtk_frame_new("Output Settings:");
     gtk_container_add(GTK_CONTAINER(output_frame), output_box);
 
