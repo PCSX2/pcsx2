@@ -1479,11 +1479,11 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 			{
 					skip = 1; // wall of fog
 			}
-			else if(Aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x1300 ) && (fi.TBP0 ==0x0F00 || fi.TBP0 ==0x1300 || fi.TBP0==0x2b00)) // || fi.FBP == 0x0100
+			else if(Aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP == 0x1300 ) && (fi.TBP0 == 0x0F00 || fi.TBP0 == 0x1300 || fi.TBP0 == 0x2b00)) // || fi.FBP == 0x0100
 			{
 				skip = 1; // global haze/halo
 			}
-			else if(Aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x0100 ) && (fi.TBP0==0x2b00 || fi.TBP0==0x2e80)) // 480P 2e80
+			else if(Aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP == 0x0100 || fi.FBP == 0x2100) && (fi.TBP0 == 0x2b00 || fi.TBP0 == 0x2e80) || fi.TBP0 == 0x3100) // 480P 2e80, interlaced 3100
 			{
 				skip = 1; // water effect and water vertical lines
 			}
