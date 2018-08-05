@@ -2093,6 +2093,12 @@ void GSTextureCache::Palette::DecrementRefCounter() {
 	--m_ref_counter;
 }
 
+void GSTextureCache::Palette::Dispose(const GSRenderer* renderer) {
+	ASSERT(GetRefCounter() == 0);
+	renderer->m_dev->Recycle(GetPaletteGSTexture()); // Recycle palette texture
+	_aligned_free(GetClut()); // Free clut copy
+}
+
 // GSTextureCache::PaletteMap
 
 // Default constructor, reverses space in the multimaps
@@ -2178,8 +2184,7 @@ void GSTextureCache::PaletteMap::Clear(const GSRenderer* renderer) {
 	for (auto& multimap : m_multimaps) {
 		for (auto it1 : multimap) {
 			Palette* palette = it1.second;
-			renderer->m_dev->Recycle(palette->GetPaletteGSTexture()); // Recycle palette texture
-			_aligned_free(palette->GetClut()); // Free clut copy
+			palette->Dispose(renderer); // Dispose referenced palette object
 		}
 		multimap.clear(); // Clear all the nodes of the multimap
 		multimap.reserve(MAX_SIZE); // Ensure multimap capacity is not modified by the clearing

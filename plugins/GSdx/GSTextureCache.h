@@ -132,6 +132,9 @@ public:
 
 		// Decrement the reference counter by 1
 		__forceinline void DecrementRefCounter();
+
+		// Recycles palette texture and frees clut copy
+		__forceinline void Dispose(const GSRenderer* renderer);
 	};
 
 	class PaletteMap
