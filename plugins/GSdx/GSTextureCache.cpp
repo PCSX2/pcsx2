@@ -2163,16 +2163,40 @@ GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRende
 
 	// No Palette with matching clut content hash, MISS
 
+	if (multimap.size() > MAX_SIZE) {
+		// If the multimap is too big, try to clean it by disposing and removing unused palettes, before adding the new one
+		GL_INS("WARNING, %u-bit PaletteMap (Size %u): Max size %u exceeded, clearing unused palettes.", palette_size, multimap.size(), MAX_SIZE);
+
+		uint32 current_size = multimap.size();
+
+		for (auto it = multimap.begin(); it != multimap.end(); ) {
+			Palette* palette = it->second;
+			if (palette->GetRefCounter() == 0) {
+				// Palette is unused
+				palette->Dispose(renderer); // Dispose referenced palette object
+				it = multimap.erase(it); // Erase element from multimap
+			}
+			else {
+				++it;
+			}
+		}
+
+		uint32 cleared_palette_count = current_size - (uint32)multimap.size();
+
+		if (cleared_palette_count == 0) {
+			GL_INS("ERROR, %u-bit PaletteMap (Size %u): Max size %u exceeded, could not clear any palette, negative performance impact.", palette_size, multimap.size(), MAX_SIZE);
+		}
+		else {
+			multimap.reserve(MAX_SIZE); // Ensure multimap capacity is not modified by the clearing
+			GL_INS("INFO, %u-bit PaletteMap (Size %u): Cleared %u palettes.", palette_size, multimap.size(), cleared_palette_count);
+		}
+	}
+
 	// Create new Palette
 	Palette* palette = new Palette(renderer, pal);
 	
 	// Add the new palette to the multimap
 	multimap.emplace(clut_hash, palette);
-
-	if (multimap.size() >= MAX_SIZE) {
-		GL_INS("ERROR, %u-bit PaletteMap (Size %u): Max size %u exceeded, negative performance impact.", palette_size, multimap.size(), MAX_SIZE);
-		// TODO Maybe: Clear palettes currently not referenced by any Source object
-	}
 
 	GL_CACHE("TC, %u-bit PaletteMap (Size %u): Added new palette.", palette_size, multimap.size());
 	
