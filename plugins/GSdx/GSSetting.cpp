@@ -53,8 +53,8 @@ const char* dialog_message(int ID, bool* updateText) {
 				"For an optimal experience with OpenGL, Blending Unit Accuracy/Depth Emulation may need to be enabled.\n\n"
 				"Full:\nEnable all CRC hacks.\n\n"
 				"Aggressive:\nUse more aggressive CRC hacks. Only affects a few games, removing some effects which might make the image sharper/clearer.\n"
-				"Affected games: FFX, FFX2, FFXII, GOW2, ICO, SoTC, SSX3, SMT3, SMTDDS1, SMTDDS2.\n"
-				"Works as a speedhack for: Steambot Chronicles.";
+				"Affected games: AC4, DBZBT3, FFX, FFX2, FFXII, GOW2, ICO, LegoBatman, OnimushaDoD, RE4, SoTC, SMT3, SMTDDS1, SMTDDS2, Tekken5.\n"
+				"Works as a speedhack for: BleachBB, Kunoichi, Steambot Chronicles, The Simpsons Game.";
 		case IDC_SKIPDRAWHACK:
 		case IDC_SKIPDRAWHACKEDIT:
 			return "Skips drawing n surfaces completely. "
