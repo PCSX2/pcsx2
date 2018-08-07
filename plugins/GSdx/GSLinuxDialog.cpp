@@ -36,9 +36,14 @@ static GtkWidget* s_hack_frame;
 bool BigEnough()
 {
 #if GTK3_MONITOR_API
-	GdkMonitor *monitor = gdk_display_get_primary_monitor(gdk_display_get_default());
-	// int scale = gdk_monitor_get_scale_factor(monitor);
-	GdkRectangle my_geometry;
+	GdkDisplay *display = gdk_display_get_default();
+	GdkSeat *seat = gdk_display_get_default_seat(display);
+	GdkDevice *pointer = gdk_seat_get_pointer(seat);
+	int x;
+	int y;
+	gdk_device_get_position(pointer, nullptr, &x, &y);
+	GdkMonitor *monitor = gdk_display_get_monitor_at_point(display, x, y);
+	GdkRectangle my_geometry{};
 	gdk_monitor_get_geometry(monitor, &my_geometry);
 	return my_geometry.height > 1000;
 #else
