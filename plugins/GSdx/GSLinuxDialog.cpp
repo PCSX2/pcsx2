@@ -628,9 +628,9 @@ bool RunLinuxDialog()
 
 	// Handle some nice tab
 	GtkWidget* notebook = gtk_notebook_new();
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box , gtk_label_new("Renderer Settings"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), advanced_box, gtk_label_new("Advanced Settings"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box   , gtk_label_new("Debug/Recording"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(central_box), gtk_label_new("Renderer Settings"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(advanced_box), gtk_label_new("Advanced Settings"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(debug_box), gtk_label_new("Debug/Recording"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(osd_box), gtk_label_new("Post-Processing/OSD"));
 
 	// Put everything in the big box.
