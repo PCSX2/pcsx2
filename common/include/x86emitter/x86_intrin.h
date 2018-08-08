@@ -50,7 +50,8 @@ static __inline__ __attribute__((always_inline)) void cpuid(int CPUInfo[], const
     __cpuid(InfoType, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
 }
 
-// _xgetbv on gcc 8 is broken (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85684).
+#if defined(__clang__) || __GNUC__ < 8 || (__GNUC__ == 8 && __GNUC_MINOR__ < 2)
+// _xgetbv on gcc 8.1 is broken (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85684).
 // It also isn't present on clang and earlier versions of gcc.
 static __inline__ __attribute__((always_inline)) unsigned long long xgetbv(unsigned int index)
 {
@@ -60,6 +61,9 @@ static __inline__ __attribute__((always_inline)) unsigned long long xgetbv(unsig
                          : "c"(index));
     return ((unsigned long long)edx << 32) | eax;
 }
+#else
+#define xgetbv _xgetbv
+#endif
 
 #endif
 
