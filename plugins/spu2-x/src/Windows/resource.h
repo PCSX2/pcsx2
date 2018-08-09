@@ -25,6 +25,7 @@
 #define IDC_OUTPUT                      1013
 #define IDC_BUFFERS_SLIDER              1014
 #define IDC_SPEAKERS                    1015
+#define IDC_SPEAKERS_TEXT               1016
 #define IDC_MSGKEY                      1020
 #define IDC_MSGDMA                      1021
 #define IDC_MSGADMA                     1022

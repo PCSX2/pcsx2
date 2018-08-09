@@ -220,6 +220,7 @@ void CheckOutputModule(HWND window)
 
     EnableWindow(GetDlgItem(window, IDC_OUTCONF), IsConfigurable);
     EnableWindow(GetDlgItem(window, IDC_SPEAKERS), AudioExpansion);
+    EnableWindow(GetDlgItem(window, IDC_SPEAKERS_TEXT), AudioExpansion);
 }
 
 BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
