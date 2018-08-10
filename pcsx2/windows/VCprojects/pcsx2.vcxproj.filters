@@ -754,12 +754,6 @@
     <ClCompile Include="..\..\gui\Dialogs\McdConfigDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\Dialogs\GameDatabaseDialog.cpp">
-      <Filter>AppHost\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\gui\Panels\GameDatabasePanel.cpp">
-      <Filter>AppHost\Panels</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\Panels\MemoryCardListView.cpp">
       <Filter>AppHost\Panels</Filter>
     </ClCompile>
