@@ -118,7 +118,6 @@ enum MenuIdentifiers
 	MenuId_Config_SysSettings,
 	MenuId_Config_McdSettings,
 	MenuId_Config_AppSettings,
-	MenuId_Config_GameDatabase,
 	MenuId_Config_BIOS,
 	MenuId_Config_Language,
 

@@ -384,40 +384,6 @@ namespace Panels
 		void ApplyConfigToGui( AppConfig& configToApply, int flags=0 );
 	};
 
-	// --------------------------------------------------------------------------------------
-	//  GameDatabasePanel
-	// --------------------------------------------------------------------------------------
-	class GameDatabasePanel : public BaseApplicableConfigPanel
-	{
-	protected:
-		//wxTextCtrl*	searchBox;
-		//wxComboBox*	searchType;
-		//wxListBox*	searchList;
-		wxButton*	searchBtn;
-		wxTextCtrl*	serialBox;
-		wxTextCtrl*	nameBox;
-		wxTextCtrl*	regionBox;
-		wxTextCtrl*	compatBox;
-		wxTextCtrl*	commentBox;
-		wxTextCtrl*	patchesBox;
-		pxCheckBox*	gameFixes[GamefixId_COUNT];
-
-	public:
-		GameDatabasePanel( wxWindow* parent );
-		virtual ~GameDatabasePanel() = default;
-		void Apply();
-		void AppStatusEvent_OnSettingsApplied();
-
-	protected:
-		void PopulateFields( const wxString& serial=wxEmptyString );
-		bool WriteFieldsToDB();
-		void Search_Click( wxCommandEvent& evt );
-
-	private:
-		void placeTextBox(wxFlexGridSizer& sizer1, wxTextCtrl* wxBox, const wxString& txt);
-		void blankLine(wxFlexGridSizer& sizer1);
-	};
-
 	class SettingsDirPickerPanel : public DirPickerPanel
 	{
 	public:

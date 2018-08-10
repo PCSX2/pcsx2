@@ -262,7 +262,6 @@ set(pcsx2GuiSources
 	gui/Dialogs/ConvertMemoryCardDialog.cpp
 	gui/Dialogs/CreateMemoryCardDialog.cpp
 	gui/Dialogs/FirstTimeWizard.cpp
-	gui/Dialogs/GameDatabaseDialog.cpp
 	gui/Dialogs/ImportSettingsDialog.cpp
 	gui/Dialogs/LogOptionsDialog.cpp
 	gui/Dialogs/McdConfigDialog.cpp
@@ -290,7 +289,6 @@ set(pcsx2GuiSources
 	gui/Panels/BiosSelectorPanel.cpp
 	gui/Panels/CpuPanel.cpp
 	gui/Panels/DirPickerPanel.cpp
-	gui/Panels/GameDatabasePanel.cpp
 	gui/Panels/GameFixesPanel.cpp
 	gui/Panels/GSWindowPanel.cpp
 	gui/Panels/LogOptionsPanels.cpp
