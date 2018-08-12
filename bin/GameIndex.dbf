@@ -8690,6 +8690,7 @@ Compat = 5
 Serial = SLES-50958
 Name   = Warhammer 40,000 - Firewarrior
 Region = PAL-M4
+XgKickHack = 1 // Fixes corrupted graphics.
 ---------------------------------------------
 Serial = SLES-50963
 Name   = Riding Spirits
@@ -37048,6 +37049,7 @@ Compat = 5
 Serial = SLUS-20597
 Name   = Warhammer 40K - Fire Warrior
 Region = NTSC-U
+XgKickHack = 1 // Fixes corrupted graphics.
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20598
@@ -43681,6 +43683,7 @@ Region = NTSC-U
 Serial = SLUS-29049
 Name   = Warhammer 40,000 - Fire Warrior [Demo]
 Region = NTSC-U
+XgKickHack = 1 // Fixes corrupted graphics.
 ---------------------------------------------
 Serial = SLUS-29050
 Name   = Everquest Online Adventures [Regular Demo]
