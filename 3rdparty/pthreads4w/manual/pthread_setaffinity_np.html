@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<TITLE>PTHREAD_SETAFFINITY_NP(3) manual page</TITLE>
+	<STYLE TYPE="text/css">
+	<!--
+		H4.cjk { font-family: "SimSun" }
+		H4.ctl { font-family: "Mangal" }
+		H2.cjk { font-family: "SimSun" }
+		H2.ctl { font-family: "Mangal" }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-GB" BGCOLOR="#ffffff" DIR="LTR">
+<H4 CLASS="western"><FONT FACE="Times New Roman, serif"><FONT SIZE=3><SPAN STYLE="font-style: normal">POSIX
+Threads for Windows &ndash; REFERENCE - <A HREF="https://sourceforge.net/projects/pthreads4w/">Pthreads4w</A></SPAN></FONT></FONT></H4>
+<P><A HREF="index.html">Reference Index</A></P>
+<P><A HREF="#toc">Table of Contents</A></P>
+<H2 CLASS="western"><A HREF="#toc0" NAME="sect0">Name</A></H2>
+<P>pthread_setaffinity_np - set thread CPU affinity</P>
+<P>pthread_getaffinity_np - get thread CPU affinity</P>
+<H2 CLASS="western"><A HREF="#toc1" NAME="sect1">Synopsis</A></H2>
+<P><B>#include &lt;pthread.h&gt; </B>
+</P>
+<P><B>int pthread_setaffinity_np(pthread_t </B><I><SPAN STYLE="font-weight: normal">tid</SPAN></I><B>,
+int </B><I><SPAN STYLE="font-weight: normal">cpusetsize</SPAN></I><B>,
+const cpu_set_t *</B><I><SPAN STYLE="font-weight: normal">mask</SPAN></I><B>);</B></P>
+<P><B>int pthread_getaffinity_np(pthread_t </B><I><SPAN STYLE="font-weight: normal">tid</SPAN></I><B>,
+int </B><I><SPAN STYLE="font-weight: normal">cpusetsize</SPAN></I><B>,
+cpu_set_t *</B><I><SPAN STYLE="font-weight: normal">mask</SPAN></I><B>);</B></P>
+<H2 CLASS="western"><A HREF="#toc2" NAME="sect2">Description</A></H2>
+<P><B>pthread_setaffinity_np</B> sets the CPU affinity mask of the thread
+whose ID is <I>tid</I> to the value specified by mask. The argument <I>cpusetsize</I>
+is the length (in bytes) of the data pointed to by <I>mask</I>.
+Normally this argument would be specified as <I>sizeof(cpu_set_t)</I>.</P>
+<P>If the thread specified by <I>tid</I> is not currently running on
+one of the CPUs specified in <I>mask</I>, then that thread is
+migrated to one of the CPUs specified in <I>mask</I>.</P>
+<P>After a call to <B>pthread_setaffinity_np</B>, the set of CPUs on which
+the thread will actually run is the intersection of the set
+specified in the <I>mask</I> argument and the set of CPUs actually
+present on the system.</P>
+<P><B>pthread_getaffinity_np</B> writes the affinity mask of the thread
+whose ID is <I>tid</I> into the cpu_set_t structure pointed to by
+<I>mask</I>. The <I>cpusetsize</I> argument specifies the size (in
+bytes) of <I>mask</I>.
+<P><B>Pthreads4w</B> currently ignores the <I>cpusetsize</I>
+parameter for either function because cpu_set_t is a direct typeset
+to the Windows affinity vector type DWORD_PTR.</P>
+<H2 CLASS="western"><A HREF="#toc3" NAME="sect3">Return Value</A></H2>
+<P>On success, <B>pthread_setaffinity_np</B> and <B>pthread_getaffinity_np</B>
+return 0. On error, an error number is returned.</P>
+<H2 CLASS="western"><A HREF="#toc4" NAME="sect4">Errors</A></H2>
+<DL>
+	<DT><B>EFAULT</B></DT><DL>
+		<DL>
+			<DT STYLE="margin-left: 0.02cm">
+			A supplied memory address was invalid.</DT></DL>
+	</DL>
+	<DT>
+	<B>EINVAL</B></DT><DL>
+		<DL>
+			<DT STYLE="margin-left: 0.04cm">
+			The affinity bit mask mask contains no processors that are
+			currently physically on the system.</DT></DL>
+	</DL>
+	<DT>
+	<B>EAGAIN</B></DT><DL>
+		<DL>
+			<DT STYLE="margin-left: 0.02cm">
+			The function did not succeed in changing or obtaining the CPU
+			affinity for some undetermined reason. Try again.</DT></DL>
+	</DL>
+	<DT>
+	<B>EPERM</B></DT><DL>
+		<DL>
+			<DT STYLE="margin-left: 0.02cm">
+			The calling process does not have appropriate privileges.</DT></DL>
+	</DL>
+	<DT>
+	<B>ESRCH</B> 
+	</DT><DL>
+		<DL>
+			<DT STYLE="margin-left: 0.02cm">
+			The thread whose ID is tid could not be found.</DT></DL>
+	</DL>
+</DL>
+<H2 CLASS="western">
+<A HREF="#toc5" NAME="sect5">Application Usage</A></H2>
+<P>A thread's CPU affinity mask determines the set of CPUs on which
+it is eligible to run. On a multiprocessor system, setting the CPU
+affinity mask can be used to obtain performance benefits. For
+example, by dedicating one CPU to a particular thread (i.e., setting
+the affinity mask of that thread to specify a single CPU, and
+setting the affinity mask of all other threads to exclude that
+CPU), it is possible to ensure maximum execution speed for that
+thread. Restricting a thread to run on a single CPU also minimises the
+performance cost caused by the cache invalidation that occurs when a
+thread ceases to execute on one CPU and then recommences execution
+on a different CPU.</P>
+<P>A CPU affinity mask is represented by the cpu_set_t structure, a
+&quot;CPU set&quot;, pointed to by <I>mask</I>. A set of macros for
+manipulating CPU sets is described in <B>cpu_set</B>(3).</P>
+<H2 CLASS="western"><A HREF="#toc6" NAME="sect6">See Also</A></H2>
+<P><A HREF="cpu_set.html"><B>cpu_set</B>(3)</A>,
+<A HREF="sched_setaffinity.html"><B>sched_setaffininty</B>(3)</A>,
+<A HREF="sched_setaffinity.html"><B>sched_getaffinity</B>(3)</A></P>
+<H2 CLASS="western"><A HREF="#toc7" NAME="sect7">Copyright</A></H2>
+<P>Most of this is taken from the Linux manual page.</P>
+<P>Modified by Ross Johnson for use with <B>Pthreads4w</B>.</P>
+<HR>
+<P><A NAME="toc"></A><B>Table of Contents</B></P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect0" NAME="toc0">Name</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect1" NAME="toc1">Synopsis</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect2" NAME="toc2">Description</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect3" NAME="toc3">Return
+	Value</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect4" NAME="toc4">Errors</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect5" NAME="toc5">Application
+	Usage</A></P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect6" NAME="toc6">See
+	Also</A></P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect7" NAME="toc7">Copyright</A></P>
+</UL>
+<H4 CLASS="western"><BR><BR>
+</H4>
+</BODY>
+</HTML>

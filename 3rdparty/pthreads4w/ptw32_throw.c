@@ -7,33 +7,37 @@
  *
  * --------------------------------------------------------------------------
  *
- *      Pthreads-win32 - POSIX Threads Library for Win32
+ *      Pthreads4w - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
+ *      Copyright(C) 1999-2018, Pthreads4w contributors
+ *
+ *      Homepage: https://sourceforge.net/projects/pthreads4w/
+ *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
  *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
- * 
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
- * 
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
- * 
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *      https://sourceforge.net/p/pthreads4w/wiki/Contributors/
+ *
+ * This file is part of Pthreads4w.
+ *
+ *    Pthreads4w is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    Pthreads4w is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with Pthreads4w.  If not, see <http://www.gnu.org/licenses/>. *
  */
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
 #include "pthread.h"
 #include "implement.h"
@@ -45,24 +49,13 @@
 /*
  * ptw32_throw
  *
- * All canceled and explicitly exited POSIX threads go through
+ * All cancelled and explicitly exited POSIX threads go through
  * here. This routine knows how to exit both POSIX initiated threads and
  * 'implicit' POSIX threads for each of the possible language modes (C,
  * C++, and SEH).
  */
-#if defined(_MSC_VER)
-/*
- * Ignore the warning:
- * "C++ exception specification ignored except to indicate that
- * the function is not __declspec(nothrow)."
- */
-#pragma warning(disable:4290)
-#endif
 void
 ptw32_throw (DWORD exception)
-#if defined(__CLEANUP_CXX)
-  throw(ptw32_exception_cancel,ptw32_exception_exit)
-#endif
 {
   /*
    * Don't use pthread_self() to avoid creating an implicit POSIX thread handle
@@ -90,21 +83,21 @@ ptw32_throw (DWORD exception)
        * explicit thread exit here after cleaning up POSIX
        * residue (i.e. cleanup handlers, POSIX thread handle etc).
        */
-#if ! (defined(__MINGW64__) || defined(__MINGW32__)) || defined (__MSVCRT__) || defined (__DMC__)
+#if ! defined (__MINGW32__) || defined (__MSVCRT__) || defined (__DMC__)
       unsigned exitCode = 0;
 
       switch (exception)
-	{
-	case PTW32_EPS_CANCEL:
-	  exitCode = (unsigned)(size_t) PTHREAD_CANCELED;
-	  break;
-	case PTW32_EPS_EXIT:
-	  if (NULL != sp)
-	    {
-	      exitCode = (unsigned)(size_t) sp->exitStatus;
-	    }
-	  break;
-	}
+        {
+      	  case PTW32_EPS_CANCEL:
+      		exitCode = (unsigned)(size_t) PTHREAD_CANCELED;
+      		break;
+      	  case PTW32_EPS_EXIT:
+      		if (NULL != sp)
+      		  {
+      			exitCode = (unsigned)(size_t) sp->exitStatus;
+      		  }
+      		break;
+        }
 #endif
 
 #if defined(PTW32_STATIC_LIB)
@@ -113,7 +106,7 @@ ptw32_throw (DWORD exception)
 
 #endif
 
-#if ! (defined(__MINGW64__) || defined(__MINGW32__)) || defined (__MSVCRT__) || defined (__DMC__)
+#if ! defined (__MINGW32__) || defined (__MSVCRT__) || defined (__DMC__)
       _endthreadex (exitCode);
 #else
       _endthread ();
@@ -128,7 +121,7 @@ ptw32_throw (DWORD exception)
   exceptionInformation[1] = (DWORD) (0);
   exceptionInformation[2] = (DWORD) (0);
 
-  RaiseException (EXCEPTION_PTW32_SERVICES, 0, 3, exceptionInformation);
+  RaiseException (EXCEPTION_PTW32_SERVICES, 0, 3, (ULONG_PTR *) exceptionInformation);
 
 #else /* __CLEANUP_SEH */
 

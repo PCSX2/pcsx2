@@ -1,4 +1,4 @@
-/* 
+/*
  * test.h
  *
  * Useful definitions and declarations for tests.
@@ -6,37 +6,44 @@
  *
  * --------------------------------------------------------------------------
  *
- *      Pthreads-win32 - POSIX Threads Library for Win32
+ *      Pthreads4w - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
+ *      Copyright(C) 1999-2018, Pthreads4w contributors
+ *
+ *      Homepage: https://sourceforge.net/projects/pthreads4w/
+ *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
  *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
- * 
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
- * 
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
- * 
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *      https://sourceforge.net/p/pthreads4w/wiki/Contributors/
+ *
+ * This file is part of Pthreads4w.
+ *
+ *    Pthreads4w is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    Pthreads4w is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with Pthreads4w.  If not, see <http://www.gnu.org/licenses/>. *
  *
  */
 
 #ifndef _PTHREAD_TEST_H_
 #define _PTHREAD_TEST_H_
+
+/*
+ * Some tests sneak a peek at ../implement.h
+ * This is used inside ../implement.h to control
+ * what these test apps see and don't see.
+ */
+#define PTW32_TEST_SNEAK_PEEK
 
 #include "pthread.h"
 #include "sched.h"
@@ -44,21 +51,28 @@
 
 #include <windows.h>
 #include <stdio.h>
+#include <sys/timeb.h>
+/*
+ * FIXME: May not be available on all platforms.
+ */
+#include <errno.h>
 
 #define PTW32_THREAD_NULL_ID {NULL,0}
 
 /*
  * Some non-thread POSIX API substitutes
  */
-#define rand_r( _seed ) \
+#if !defined(__MINGW64_VERSION_MAJOR)
+#  define rand_r( _seed ) \
         ( _seed == _seed? rand() : rand() )
+#endif
 
 #if defined(__MINGW32__)
-#include <stdint.h>
+# include <stdint.h>
 #elif defined(__BORLANDC__)
-#define int64_t ULONGLONG
+# define int64_t ULONGLONG
 #else
-#define int64_t _int64
+# define int64_t _int64
 #endif
 
 #if defined(_MSC_VER) && _MSC_VER >= 1400
@@ -117,9 +131,12 @@ const char * error_string[] = {
   "ENOLCK",
   "ENOSYS",
   "ENOTEMPTY",
+#if PTW32_VERSION_MAJOR > 2
   "EILSEQ",
-  "EOWNERDEAD",
+#else
+  "EILSEQ_or_EOWNERDEAD",
   "ENOTRECOVERABLE"
+#endif
 };
 
 /*
@@ -154,8 +171,12 @@ int assertE;
 			            #e, __FILE__, (int) __LINE__), \
 	                            fflush(stderr) : \
                              0) : \
-          (fprintf(stderr, "Assertion failed: (%s %s %s), file %s, line %d, error %s\n", \
-                   #e,#o,#r, __FILE__, (int) __LINE__, error_string[assertE]), exit(1), 0))
+       (assertE <= (int) (sizeof(error_string)/sizeof(error_string[0]))) ? \
+	   (fprintf(stderr, "Assertion failed: (%s %s %s), file %s, line %d, error %s\n", \
+			    #e,#o,#r, __FILE__, (int) __LINE__, error_string[assertE]), exit(1), 0) :\
+		   (fprintf(stderr, \
+			    "Assertion failed: (%s %s %s), file %s, line %d, error %d\n", \
+		            #e,#o,#r, __FILE__, (int) __LINE__, assertE), exit(1), 0))
 
 #endif
 

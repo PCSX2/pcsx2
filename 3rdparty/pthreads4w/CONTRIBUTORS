@@ -17,10 +17,9 @@ Ross Johnson		Ross dot Johnson at  dot homemail dot com dot au
 					testsuite.
 Robert Colquhoun	rjc at trump dot net dot au
 					Early bug fixes.
-John E. Bossom		John dot Bossom at cognos dot com
+John E. Bossom		john dot bossom at gmail dot com
 					Contributed substantial original working implementation;
 					bug fixes;
-					ongoing guidance and standards interpretation.
 Anders Norlander	anorland at hem2 dot passagen dot se
 					Early enhancements and runtime checking for supported
 					Win32 routines.
@@ -55,7 +54,7 @@ Rich Peters		rpeters at micro-magic dot com
 Todd Owen		towen at lucidcalm dot dropbear dot id dot au
 					Bug fixes to dll loading.
 Jason Nye		jnye at nbnet dot nb dot ca
-					Implementation of async cancelation.
+					Implementation of async cancellation.
 Fred Forester		fforest at eticomm dot net
 Kevin D. Clark		kclark at cabletron dot com
 David Baggett		dmb at itasoftware dot com
@@ -77,7 +76,7 @@ Alexander Terekhov	TEREKHOV at de dot ibm dot com
 					enhancements to mutexes;
 					new mutex implementation in 'futex' style;
 					suggested a robust implementation of pthread_once
-					similar to that implemented by V.Kliathcko;
+					using a named mutex;
 					system clock change handling re CV timeouts;
 					bug fixes.
 Thomas Pfaff		tpfaff at gmx dot net
@@ -85,16 +84,16 @@ Thomas Pfaff		tpfaff at gmx dot net
 					re-implemented mutex routines to avoid Win32 mutexes
 					and TryEnterCriticalSection;
 					procedure to fix Mingw32 thread-safety issues.
-Franco Bez		franco dot bez at gmx dot de
+Franco Bez			franco dot bez at gmx dot de
 					procedure to fix Mingw32 thread-safety issues.
 Louis Thomas		lthomas at arbitrade dot com
 					(with Alexander Terekhov) re-implemented and improved
 					condition variables.
-David Korn		dgk at research dot att dot com
+David Korn			dgk at research dot att dot com
 					Ported to UWIN.
 Phil Frisbie, Jr.	phil at hawksoft dot com
 					Bug fix.
-Ralf Brese		Ralf dot Brese at pdb4 dot siemens dot de
+Ralf Brese			Ralf dot Brese at pdb4 dot siemens dot de
 					Bug fix.
 prionx at juno dot com 	prionx at juno dot com
 					Bug fixes.
@@ -103,7 +102,7 @@ Max Woodbury		mtew at cds dot duke dot edu
 					reduced namespace pollution;
 					idea to separate routines to reduce statically
 					linked image sizes.
-Rob Fanner		rfanner at stonethree dot com
+Rob Fanner			rfanner at stonethree dot com
 					Bug fix.
 Michael Johnson 	michaelj at maine dot rr dot com
 					Bug fix.
@@ -111,15 +110,15 @@ Nicolas Barry		boozai at yahoo dot com
 					Bug fixes.
 Piet van Bruggen	pietvb at newbridges dot nl
 					Bug fix.
-Makoto Kato		raven at oldskool dot jp
+Makoto Kato			raven at oldskool dot jp
 					AMD64 port.
 Panagiotis E. Hadjidoukas	peh at hpclab dot ceid dot upatras dot gr
                                 phadjido at cs dot uoi dot gr
 					Contributed the QueueUserAPCEx package which
-					makes preemptive async cancelation possible.
-Will Bryant		will dot bryant at ecosm dot com
+					makes preemptive async cancellation possible.
+Will Bryant			will dot bryant at ecosm dot com
 					Borland compiler patch and makefile.
-Anuj Goyal		anuj dot goyal at gmail dot com
+Anuj Goyal			anuj dot goyal at gmail dot com
 					Port to Digital Mars compiler.
 Gottlob Frege		gottlobfrege at  gmail dot com
 					re-implemented pthread_once (version 2)
@@ -131,10 +130,10 @@ Vladimir Kliatchko	vladimir at kliatchko dot com
 Ramiro Polla		ramiro.polla at gmail dot com
 					static library auto init/cleanup on application
 					start/exit via RT hooks (MSC and GCC compilers only).
-Daniel Richard G.			skunk at iSKUNK dot org
+Daniel Richard G.	skunk at iSKUNK dot org
 					Patches and cleanups for x86 and x64, particularly
 					across a range of MS build environments.
-John Kamp		john dot kamp at globalgraphics dot com
+John Kamp			john dot kamp at globalgraphics dot com
 					Patches to fix various problems on x64; brutal testing
 					particularly using high memory run environments.
 

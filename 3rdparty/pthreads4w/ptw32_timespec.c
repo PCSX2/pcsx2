@@ -7,45 +7,46 @@
  *
  * --------------------------------------------------------------------------
  *
- *      Pthreads-win32 - POSIX Threads Library for Win32
+ *      Pthreads4w - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
+ *      Copyright(C) 1999-2018, Pthreads4w contributors
+ *
+ *      Homepage: https://sourceforge.net/projects/pthreads4w/
+ *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
  *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
- * 
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
- * 
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
- * 
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *      https://sourceforge.net/p/pthreads4w/wiki/Contributors/
+ *
+ * This file is part of Pthreads4w.
+ *
+ *    Pthreads4w is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    Pthreads4w is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with Pthreads4w.  If not, see <http://www.gnu.org/licenses/>. *
  */
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
 #include "pthread.h"
 #include "implement.h"
-
-
-#if defined(NEED_FTIME)
 
 /*
  * time between jan 1, 1601 and jan 1, 1970 in units of 100 nanoseconds
  */
 #define PTW32_TIMESPEC_TO_FILETIME_OFFSET \
-	  ( ((int64_t) 27111902 << 32) + (int64_t) 3577643008 )
+	  ( ((uint64_t) 27111902UL << 32) + (uint64_t) 3577643008UL )
 
 INLINE void
 ptw32_timespec_to_filetime (const struct timespec *ts, FILETIME * ft)
@@ -58,7 +59,7 @@ ptw32_timespec_to_filetime (const struct timespec *ts, FILETIME * ft)
       * -------------------------------------------------------------------
       */
 {
-  *(int64_t *) ft = ts->tv_sec * 10000000
+  *(uint64_t *) ft = ts->tv_sec * 10000000UL
     + (ts->tv_nsec + 50) / 100 + PTW32_TIMESPEC_TO_FILETIME_OFFSET;
 }
 
@@ -74,10 +75,8 @@ ptw32_filetime_to_timespec (const FILETIME * ft, struct timespec *ts)
       */
 {
   ts->tv_sec =
-    (int) ((*(int64_t *) ft - PTW32_TIMESPEC_TO_FILETIME_OFFSET) / 10000000);
+    (int) ((*(uint64_t *) ft - PTW32_TIMESPEC_TO_FILETIME_OFFSET) / 10000000UL);
   ts->tv_nsec =
-    (int) ((*(int64_t *) ft - PTW32_TIMESPEC_TO_FILETIME_OFFSET -
-	    ((int64_t) ts->tv_sec * (int64_t) 10000000)) * 100);
+    (int) ((*(uint64_t *) ft - PTW32_TIMESPEC_TO_FILETIME_OFFSET -
+	    ((uint64_t) ts->tv_sec * (uint64_t) 10000000UL)) * 100);
 }
-
-#endif /* NEED_FTIME */

@@ -1,11 +1,260 @@
-RELEASE 2.9.0
+RELEASE 2.11.0
+--------------
+(2018-08-08)
+
+General
+-------
+New bug fixes in all releases since 2.8.0 have NOT been applied to the
+1.x.x series.
+
+Some changes from 2011-02-26 onward may not be compatible with
+pre Windows 2000 systems.
+
+License Change to LGPL v3
+-------------------------
+Pthreads4w version 2.11 and all future 2.x versions will be released
+under the Lesser GNU Public License version 3 (LGPLv3).
+
+Planned Release Under the Apache License v2
+-------------------------------------------
+The next major version of this software (version 3) will be released
+under the Apache License version 2.0 (ALv2). Releasing 2.11 under LGPLv3
+will allow modifications to version 3 of this software to be backported
+to version 2 going forward. Further to this, any GPL projects currently
+using this library will be able to continue to use either version 2 or 3
+of this code in their projects.
+
+For more information please see:
+https://www.apache.org/licenses/GPL-compatibility.html
+
+In order to remain consistent with this change, from this point on
+modifications to this library will only be accepted against version 3
+of this software under the terms of the ALv2. They will then, where
+appropriate, be backported to version 2.
+
+We hope to release version 3 at the same time as we release version 2.11.
+
+Testing and verification
+------------------------
+This version has been tested on SMP architecture (Intel x64 Hex Core)
+by completing the included test suite, as well as the stress and bench
+tests.
+
+Be sure to run your builds against the test suite. If you see failures
+then please consider how your toolchains might be contributing to the
+failure. See the README file for more detailed descriptions of the
+toolchains and test systems that we have used to get the tests to pass
+successfully. We recommend MinGW64 over MinGW32 for both 64 and 32 bit
+GNU CC builds. MinGW64 also includes its own independent pthreads
+implementation, which you may prefer to use.
+
+New Features or Changes
+-----------------------
+For Microsoft toolchain builds:
+(1) Static linking requires both this library and any linking
+libraries or applications to be compiled with /MT consistently.
+
+(2) Static libraries have been renamed as libpthreadV*.lib
+to differentiate them from DLL import libs pthreadV*.lib.
+
+(3) If you are using mixed linkage, e.g. linking the static /MT version
+of the library to an application linked with /MD you may be able to use
+GetLastError() to interrogate the error code because the library sets
+both errno (via _set_errno()) and SetLastError().
+
+Bug Fixes
+---------
+Remove the attempt to set PTW32_USES_SEPARATE_CRT in the headers which
+can cause unexpected results. In certain situations a user may want to
+define it explicitly in their environment to invoke it's effects, either
+when buidling the library or an application or both. See README.NONPORTABLE.
+-- Ross Johnson
+
+The library should be more reliable under fully statically linked
+scenarios. Note: we have removed the PIMAGE_TLS_CALLBACK code and
+reverted to the earlier method that appears to be more reliable
+across all compiler editions.
+- Mark Pizzolato
+
+Various corrections to GNUmakefile. Although this file has been removed, 
+for completeness the changes have been recorded as commits to the
+repository.
+- Kyle Schwarz
+
+MinGW64-w64 defines pid_t as __int64. sched.h now reflects that.
+- Kyle Schwarz
+
+Several tests have been fixed that were seen to fail on machines under
+load. Other tests that used similar crude mechanisms to synchronise
+threads (these are unit tests) had the same improvements applied:
+semaphore5.c recognises that sem_destroy can legitimately return
+EBUSY; mutex6*.c, mutex7*.c and mutex8*.c all replaced a single
+Sleep() with a polling loop.
+- Ross Johnson
+
+
+RELEASE 2.10.0
+--------------
+(2016-09-18)
+
+General
+-------
+New bug fixes in all releases since 2.8.0 have NOT been applied to the
+1.x.x series.
+
+Some changes from 2011-02-26 onward may not be compatible with
+pre Windows 2000 systems.
+
+Testing and verification
+------------------------
+This version has been tested on SMP architecture (Intel x64 Hex Core)
+by completing the included test suite, as well as the stress and bench
+tests.
+
+Be sure to run your builds against the test suite. If you see failures
+then please consider how your toolchains might be contributing to the
+failure. See the README file for more detailed descriptions of the
+toolchains and test systems that we have used to get the tests to pass
+successfully. We recommend MinGW64 over MinGW32 for both 64 and 32 bit
+GNU CC builds. MinGW64 also includes its own independent pthreads
+implementation, which you may prefer to use.
+
+New Features
+------------
+New routines:
+pthread_timedjoin_np()
+pthread_tryjoin_np()
+ - added for compatibility with Linux.
+sched_getaffinity()
+sched_setaffinity()
+pthread_getaffinity_np()
+pthread_setaffinity_np()
+pthread_attr_getaffinity_np()
+pthread_attr_setaffinity_np()
+ - added for compatibility with Linux and other libgcc-based systems.
+   The macros to manipulate cpu_set_t objects (the cpu affinity mask
+   vector) are also defined: CPU_ZERO, CPU_CLR, CPU_SET, CPU_EQUAL,
+   CPU_AND, CPU_OR, CPU_XOR, CPU_COUNT, CPU_ISSET.
+pthread_getname_np()
+pthread_setname_np()
+pthread_attr_getname_np()
+pthread_attr_setname_np()
+ - added for compatibility with other POSIX implementations. Because
+   some implementations use different *_setname_np() prototypes
+   you can define one of the following macros when building the library:
+     PTW32_COMPATIBILITY_BSD (compatibility with NetBSD, FreeBSD)
+     PTW32_COMPATIBILITY_TRU64
+   If not defined then compatibility is with Linux and other equivalents.
+   We don't impose a strict limit on the length of the thread name for the
+   default compatibility case. Unlike Linux, no default thread name is set.
+   For MSVC builds, the thread name if set is made available for use by the
+   MSVS debugger, i.e. it should be displayed within the debugger to
+   identify the thread in place of/as well as a threadID.
+pthread_win32_getabstime_np()
+ - Return the current time plus an optional offset in a platform-aware way
+   that is compatible with POSIX timed calls (returns the struct timespec
+   address which is the first argument). Intended primarily to make it
+   easier to write tests but may be useful for applications generally. 
+GNU compiler environments (MinGW32 and MinGW64) now have the option of using
+autoconf to automatically configure the build.
+
+Builds:
+New makefile targets have been added and existing targets modified or
+removed. For example, targets to build and test all of the possible
+configurations of both dll and static libs.
+
+GNU compiler builds are now explicitly using ISO C and C++ 2011 standards
+compatibility. If your GNU compiler doesn't support this please consider
+updating. Auto configuration is now possible via 'configure' script. The
+script must be generated using autoconf - see the README file. Thanks to
+Keith Marshall from the MinGW project.
+
+Static linking:
+The autostatic functionality has been moved to dll.c, and extended so
+that builds using MSVC8 and later no longer require apps to call
+pthread_win32_thread_detach_np(). That is, all of the DllMain
+functionality is now automatic for static linking for these builds.
+
+Some nmake static linking targets have been disabled:
+Due to an issue with TLS behaviour, the V*-small-static* nmake targets
+in Makefile have been disabled. The issue is exposed by tests/semaphore3.c
+where the pthread_self() call inside the thread fails to return the
+correct POSIX thread handle but returns a new "implicit" POSIX thread
+handle instead. Implicit pthread handles have detached thread status, which
+causes the pthread_detach() call inside the thread to return EINVAL. The
+V*-static* targets appear to be not affected. The primary difference is
+that the latter are generated from a single compilation unit.
+
+Bug Fixes
+---------
+Small object file static linking now works (MinGW). The autostatic code
+is required but nothing explicitly referenced this code so was getting
+optimised out.
+- Daniel Richard G.
+
+sem_getvalue() could return the errno value instead of setting errno
+and returning -1.
+- Ross Johnson
+
+Errno values were being lost if the library is statically linked
+with the runtime library, meaning also that the application used a
+separate runtime instance. This is still the case except a build
+switch has been added that allows more robust error status to be
+incorporated, i.e. allow the return code to be retrieved via
+GetLastError().
+- Daniel Richard G.
+
+Identified the cause of significant failures around cancelation
+and pthread_exit() for the GCE (GNU C++) build configuration as
+coming from Mingw32. Not sure if this is general or just when
+building 32 bit libraries and apps that run on 64 bit systems.
+These failures do not arise with Mingw64 32 bit builds (GCC built
+with multilib enabled) running on 64 bit systems.
+- Daniel Richard G. and Ross Johnson
+
+pthread_key_delete() bug introduced in release 2.9.x caused this
+routine to fail in a way that the test suite was not detecting. A
+new test has been added to confirm that this routine behaves
+correctly, particularly when keys with destructors are deleted
+before threads exit.
+- Stephane Clairet
+
+pthread_win32_process_attach_np() fix potential failure/security around
+finding and loading of QUSEREX.DLL.
+- Jason Baker
+
+_POSIX_THREAD_ATTR_STACKADDR is now set equal to -1 in pthread.h. As a
+consequence pthread_attr_setstackaddr() now returns ENOSYS. Previously
+the value was stored and could be retrieved but was otherwise unused.
+pthread_attr_getstackaddr() returns ENOSYS correspondingly.
+- Ross Johnson
+
+Fixed a potential memory leak in pthread_mutex_init(). The leak would
+only occur if the mutex initialisation failed (extremely rare if ever).
+- Jaeeun Choi
+
+Fixed sub-millisecond timeouts, which caused the library to busy wait.
+- Mark Smith
+
+Fix a race condition and crash in MCS locks. The waiter queue management
+code in ptw32_mcs_lock_acquire was racing with the queue management code
+in ptw32_mcs_lock_release and causing a segmentation fault.
+- Anurag Sharma
+- Jonathan Brown (also reported this bug and provided a fix)
+
+RELEASE 2.9.1
 -------------
-(2012-05-25)
+(2012-05-27)
 
 General
 -------
 New bug fixes in this release since 2.8.0 have NOT been applied to the
 1.x.x series.
+
+This release replaces an extremely brief 2.9.0 release and adds
+some last minute non-code changes were made to embed better
+descriptive properties in the dlls to indicate target architecture
+and build environments.
 
 Some changes post 2011-02-26 in CVS may not be compatible with pre
 Windows 2000 systems.
@@ -230,8 +479,8 @@ General
 
 The package now includes a reference documentation set consisting of
 HTML formatted Unix-style manual pages that have been edited for
-consistency with Pthreads-w32. The set can also be read online at:
-http://sources.redhat.com/pthreads-win32/manual/index.html
+consistency with Pthreads4w. The set can also be read online at:
+https://sourceforge.net/projects/pthreads4w//manual/index.html
 
 Thanks again to Tim Theisen for running the test suite pre-release
 on an MP system.
@@ -328,7 +577,7 @@ semaphores, such as WinCE prior to version 3.0. An alternate implementation
 of POSIX semaphores is built using W32 events for these systems when
 NEED_SEM is defined. This code has been completely rewritten in this
 release to reuse most of the default POSIX semaphore code, and particularly,
-to implement all of the sem_* routines supported by pthreads-win32. Tim
+to implement all of the sem_* routines supported by Pthreads4w. Tim
 Theisen also run the test suite over the NEED_SEM code on his MP system. All
 tests passed.
 
@@ -338,7 +587,7 @@ New features
 ------------
 
 * pthread_mutex_timedlock() and all sem_* routines provided by
-pthreads-win32 are now implemented for WinCE versions prior to 3.0. Those
+Pthreads4w are now implemented for WinCE versions prior to 3.0. Those
 versions did not implement W32 semaphores. Define NEED_SEM in config.h when
 building the library for these systems.
 
@@ -433,11 +682,11 @@ incremented from 1 to 2, e.g. pthreadVC2.dll.
 
 Version 1.4.0 back-ports the new functionality included in this
 release. Please distribute DLLs built from that version with updates
-to applications built on pthreads-win32 version 1.x.x.
+to applications built on Pthreads4w version 1.x.x.
 
 The package naming has changed, replacing the snapshot date with 
 the version number + descriptive information. E.g. this
-release is "pthreads-w32-2-0-0-release".
+release is "Pthreads4w-2-0-0-release".
 
 Bugs fixed
 ----------
@@ -445,7 +694,7 @@ Bugs fixed
 * pthread_setcancelstate() no longer checks for a pending
 async cancel event if the library is using alertable async
 cancel. See the README file (Prerequisites section) for info
-on adding alertable async cancelation.
+on adding alertable async cancellation.
 
 New features
 ------------
@@ -531,7 +780,7 @@ New features
 * A Microsoft-style version resource has been added to the DLL for
 applications that wish to check DLL compatibility at runtime.
 
-* Pthreads-win32 DLL naming has been extended to allow incompatible DLL
+* Pthreads4w DLL naming has been extended to allow incompatible DLL
 versions to co-exist in the same filesystem. See the README file for details,
 but briefly: while the version information inside the DLL will change with
 each release from now on, the DLL version names will only change if the new
@@ -541,7 +790,7 @@ The versioning scheme has been borrowed from GNU Libtool, and the DLL
 naming scheme is from Cygwin. Provided the Libtool-style numbering rules are
 honoured, the Cygwin DLL naming scheme automatcally ensures that DLL name
 changes are minimal and that applications will not load an incompatible
-pthreads-win32 DLL.
+Pthreads4w DLL.
 
 Those who use the pre-built DLLs will find that the DLL/LIB names have a new
 suffix (1) in this snapshot. E.g. pthreadVC1.dll etc.
@@ -559,7 +808,7 @@ Certain POSIX macros have changed.
 
 These changes are intended to conform to the Single Unix Specification version 3,
 which states that, if set to 0 (zero) or not defined, then applications may use
-sysconf() to determine their values at runtime. Pthreads-win32 does not
+sysconf() to determine their values at runtime. Pthreads4w does not
 implement sysconf().
 
 The following macros are no longer undefined, but defined and set to -1
@@ -611,7 +860,7 @@ Bug fixes
 A segfault (memory access fault) will result, and no thread will be
 created.
 
-* pthread_barrier_wait() no longer acts as a cancelation point.
+* pthread_barrier_wait() no longer acts as a cancellation point.
 
 * Fix potential race condition in pthread_once()
 - Tristan Savatier  <tristan at mpegtv.com>
@@ -650,7 +899,7 @@ destruction/creation cycles.
 New tests
 ---------
 
-* semaphore4.c: Tests cancelation of the new sem_wait().
+* semaphore4.c: Tests cancellation of the new sem_wait().
 
 * semaphore4t.c: Likewise for sem_timedwait().
 
@@ -688,21 +937,21 @@ New features
 * Ported to AMD64.
 - Makoto Kato  <raven at oldskool.jp>
 
-* True pre-emptive asynchronous cancelation of threads. This is optional
+* True pre-emptive asynchronous cancellation of threads. This is optional
 and requires that Panagiotis E. Hadjidoukas's QueueUserAPCEx package be
-installed. This package is included in the pthreads-win32 self-unpacking
+installed. This package is included in the Pthreads4w self-unpacking
 Zip archive starting from this snapshot. See the README.txt file inside
 the package for installation details.
 
-Note: If you don't use async cancelation in your application, or don't need
+Note: If you don't use async cancellation in your application, or don't need
 to cancel threads that are blocked on system resources such as network I/O,
-then the default non-preemptive async cancelation is probably good enough.
-However, pthreads-win32 auto-detects the availability of these components
+then the default non-preemptive async cancellation is probably good enough.
+However, Pthreads4w auto-detects the availability of these components
 at run-time, so you don't need to rebuild the library from source if you
 change your mind later.
 
 All of the advice available in books and elsewhere on the undesirability
-of using async cancelation in any application still stands, but this
+of using async cancellation in any application still stands, but this
 feature is a welcome addition with respect to the library's conformance to
 the POSIX standard.
 
@@ -731,12 +980,12 @@ SNAPSHOT 2003-09-04
 
 Bug fixes
 ---------
-* ptw32_cancelableWait() now allows cancelation of waiting implicit POSIX
+* ptw32_cancelableWait() now allows cancellation of waiting implicit POSIX
 threads.
 
 New test
 --------
-* cancel8.c tests cancelation of Win32 threads waiting at a POSIX cancelation
+* cancel8.c tests cancellation of Win32 threads waiting at a POSIX cancellation
 point.
 
 
@@ -751,13 +1000,13 @@ DuplicateHandle failed instead of recycle it (very unlikely).
 * pthread_exit() was neither freeing nor recycling the POSIX thread struct
 for implicit POSIX threads.
 
-New feature - Cancelation of/by Win32 (non-POSIX) threads
+New feature - cancellation of/by Win32 (non-POSIX) threads
 ---------------------------------------------------------
 Since John Bossom's original implementation, the library has allowed non-POSIX
-initialised threads (Win32 threads) to call pthreads-win32 routines and
+initialised threads (Win32 threads) to call Pthreads4w routines and
 therefore interact with POSIX threads. This is done by creating an on-the-fly
 POSIX thread ID for the Win32 thread that, once created, allows fully
-reciprical interaction. This did not extend to thread cancelation (async or
+reciprical interaction. This did not extend to thread cancellation (async or
 deferred). Now it does.
 
 Any thread can be canceled by any other thread (Win32 or POSIX) if the former
@@ -767,15 +1016,15 @@ PTHREAD_CANCELED (retrieved with GetExitCodeThread()).
 
 This allows a Win32 thread to, for example, call POSIX CV routines in the same way
 that POSIX threads would/should, with pthread_cond_wait() cancelability and
-cleanup handlers (pthread_cond_wait() is a POSIX cancelation point).
+cleanup handlers (pthread_cond_wait() is a POSIX cancellation point).
 
-By adding cancelation, Win32 threads should now be able to call all POSIX
+By adding cancellation, Win32 threads should now be able to call all POSIX
 threads routines that make sense including semaphores, mutexes, condition
 variables, read/write locks, barriers, spinlocks, tsd, cleanup push/pop,
-cancelation, pthread_exit, scheduling, etc.
+cancellation, pthread_exit, scheduling, etc.
 
 Note that these on-the-fly 'implicit' POSIX thread IDs are initialised as detached
-(not joinable) with deferred cancelation type. The POSIX thread ID will be created
+(not joinable) with deferred cancellation type. The POSIX thread ID will be created
 automatically by any POSIX routines that need a POSIX handle (unless the routine
 needs a pthread_t as a parameter of course). A Win32 thread can discover it's own
 POSIX thread ID by calling pthread_self(), which will create the handle if
@@ -840,7 +1089,7 @@ Bug fixes
 
 * pthread_mutex_trylock() now returns correct error values.
 pthread_mutex_destroy() will no longer destroy a recursively locked mutex.
-pthread_mutex_lock() is no longer inadvertantly behaving as a cancelation point.
+pthread_mutex_lock() is no longer inadvertantly behaving as a cancellation point.
 - Thomas Pfaff  <tpfaff@gmx.net>
 
 * pthread_mutex_timedlock() no longer occasionally sets incorrect mutex
@@ -888,7 +1137,7 @@ from the compiler/language, and one of the following was defined accordingly:
         __CLEANUP_C             C, including GNU GCC, not MSVC
 
 These defines determine the style of cleanup (see pthread.h) and,
-most importantly, the way that cancelation and thread exit (via
+most importantly, the way that cancellation and thread exit (via
 pthread_exit) is performed (see the routine ptw32_throw() in private.c).
 
 In short, the exceptions versions of the library throw an exception
@@ -900,7 +1149,7 @@ is when it's canceled or exits via pthread_exit().
 In this and future snapshots, unless the build explicitly defines (e.g.
 via a compiler option) __CLEANUP_SEH, __CLEANUP_CXX, or __CLEANUP_C, then
 the build NOW always defaults to __CLEANUP_C style cleanup. This style
-uses setjmp/longjmp in the cancelation and pthread_exit implementations,
+uses setjmp/longjmp in the cancellation and pthread_exit implementations,
 and therefore won't do stack unwinding even when linked to applications
 that have it (e.g. C++ apps). This is for consistency with most
 current commercial Unix POSIX threads implementations. Compaq's TRU64
@@ -964,7 +1213,7 @@ There are a few reasons:
   do the expected thing in that context. (There are equally respected
   people who believe it should not be easily accessible, if it's there
   at all, for unconditional conformity to other implementations.)
-- because pthreads-win32 is one of the few implementations that has
+- because Pthreads4w is one of the few implementations that has
   the choice, perhaps the only freely available one, and so offers
   a laboratory to people who may want to explore the effects;
 - although the code will always be around somewhere for anyone who
@@ -1096,14 +1345,14 @@ with the C version, but AFAIK cleanup handlers would not then run in the
 correct sequence with destructors and exception cleanup handlers when
 an exception occurs.
 
-* Cancelation once started in a thread cannot now be inadvertantly
-double canceled. That is, once a thread begins it's cancelation run,
-cancelation is disabled and a subsequent cancel request will
+* cancellation once started in a thread cannot now be inadvertantly
+double canceled. That is, once a thread begins it's cancellation run,
+cancellation is disabled and a subsequent cancel request will
 return an error (ESRCH).
 
 * errno: An incorrect compiler directive caused a local version
 of errno to be used instead of the Win32 errno. Both instances are
-thread-safe but applications checking errno after a pthreads-win32
+thread-safe but applications checking errno after a Pthreads4w
 call would be wrong. Fixing this also fixed a bad compiler
 option in the testsuite (/MT should have been /MD) which is
 needed to link with the correct library MSVCRT.LIB.
@@ -1146,7 +1395,7 @@ SNAPSHOT 2000-08-10
 -------------------
 
 New:
--       asynchronous cancelation on X86 (Jason Nye)
+-       asynchronous cancellation on X86 (Jason Nye)
 -       Makefile compatible with MS nmake to replace
         buildlib.bat
 -       GNUmakefile for Mingw32
@@ -1186,7 +1435,7 @@ Some new tests have been added.
 SNAPSHOT 1999-10-17
 -------------------
 
-Bug fix - Cancelation of threads waiting on condition variables
+Bug fix - cancellation of threads waiting on condition variables
 now works properly (Lorin Hochstein and Peter Slacik)
 
 

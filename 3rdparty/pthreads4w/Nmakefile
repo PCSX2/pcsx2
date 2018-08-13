@@ -2,10 +2,10 @@
  * nmake file for uwin pthread library
  */
 
-VERSION 		= -
-CCFLAGS 		= -V -g $(CC.DLL)
-HAVE_PTW32_CONFIG_H	== 1
-_MT			== 1
+VERSION 	= -
+CCFLAGS 	= -V -g $(CC.DLL)
+HAVE_CONFIG_H	== 1
+_MT		== 1
 _timeb		== timeb
 _ftime		== ftime
 _errno		== _ast_errno

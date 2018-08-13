@@ -17,8 +17,8 @@ projects so I can't try that out, unfortunately.)
 
 [RPJ: Added tests\Bmakefile as well.]
 
-Borland C++ doesn't define the ENOSYS constant used by pthreads-win32;
-rather than make more extensive patches to the pthreads-win32 source I
+Borland C++ doesn't define the ENOSYS constant used by Pthreads4w;
+rather than make more extensive patches to the Pthreads4w source I
 have a mostly-arbitrary constant for it in the makefile.  However this
 doesn't make it visible to the application using the library, so if
 anyone actually wants to use this constant in their apps (why?)

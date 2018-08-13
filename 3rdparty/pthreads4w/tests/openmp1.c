@@ -28,7 +28,7 @@ void *_thread(void* Id) {
     if (Verbose && i%1000==0) {
       int tid = omp_get_thread_num();
 #  pragma omp critical
-      printf("thread %d : tid %d handles %d\n",(int)Id,tid,i);
+      printf("thread %d : tid %d handles %d\n",(int)(size_t)Id,tid,i);
     }
 #endif
 
@@ -43,9 +43,9 @@ void *_thread(void* Id) {
 #ifdef _OPENMP
 #  pragma omp critical
 #endif
-    printf("Id %d : %s : %d(should be %d)\n",(int)Id, __FUNCTION__, Sum,ShouldSum);
+    printf("Id %d : %s : %d(should be %d)\n",(int)(size_t)Id, __FUNCTION__, Sum,ShouldSum);
   }
-  if (Sum == ShouldSum) ThreadOK[(int)Id] = 1;
+  if (Sum == ShouldSum) ThreadOK[(int)(size_t)Id] = 1;
   return NULL;
 }
 
@@ -61,7 +61,7 @@ void MainThread() {
       int tid = omp_get_thread_num();
 #  pragma omp critical
       printf("Main : tid %d\n",tid);
-      _thread((void *)tid);
+      _thread((void *)(size_t)tid);
 #endif
   }
   return;

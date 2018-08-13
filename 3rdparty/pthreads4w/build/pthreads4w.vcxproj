@@ -69,9 +69,10 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\pthread.c" />
+   <ClCompile Include="..\pthread.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\_ptw32.h" />
     <ClInclude Include="..\config.h" />
     <ClInclude Include="..\context.h" />
     <ClInclude Include="..\implement.h" />

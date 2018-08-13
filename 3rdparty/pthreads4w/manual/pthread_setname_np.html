@@ -1,0 +1,228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE>PTHREAD_SETNAME_NP(3) manual page</TITLE>
+	<STYLE TYPE="text/css">
+	<!--
+		P { margin-bottom: 0.21cm }
+		TD P { margin-bottom: 0.21cm }
+		PRE.western { font-family: "Times New Roman", serif }
+		PRE.cjk { font-family: "NSimSun", monospace }
+		H4 { margin-bottom: 0.21cm }
+		H4.western { font-family: "Arial", sans-serif; font-size: 11pt; font-style: italic }
+		H4.cjk { font-family: "Microsoft YaHei"; font-size: 11pt; font-style: italic }
+		H4.ctl { font-family: "Mangal"; font-size: 11pt; font-style: italic }
+		H2 { margin-bottom: 0.21cm }
+		H2.cjk { font-family: "SimSun" }
+		H2.ctl { font-family: "Mangal" }
+		P.list-indent { margin-left: 5cm; text-indent: -4.5cm }
+		A:link { so-language: zxx }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-AU" DIR="LTR">
+<H4 CLASS="western"><SPAN STYLE="font-variant: normal"><FONT FACE="Times New Roman, serif"><FONT SIZE=3><SPAN STYLE="font-style: normal">POSIX
+Threads for Windows &ndash; REFERENCE - <A HREF="http://sourceforge.net/projects/pthreads4w/">Pthreads4w</A></SPAN></FONT></FONT></SPAN></H4>
+<P><A HREF="index.html">Reference Index</A></P>
+<P><A HREF="#toc" NAME="sect">Table of Contents</A></P>
+<H2 CLASS="western"><A HREF="#toc0" NAME="sect0">Name</A></H2>
+<P>pthread_getname_np, pthread_setname_np - get and set the thread
+name</P>
+<H2 CLASS="western"><A HREF="#toc1" NAME="sect1"><SPAN STYLE="text-decoration: none">Synopsis</SPAN></A></H2>
+<P><B>#include &lt;pthread.h&gt; </B>
+</P>
+<P><B>int pthread_getname_np(pthread_t </B><I><SPAN STYLE="font-weight: normal">thr</SPAN></I><B>,
+char * </B><I><SPAN STYLE="font-weight: normal">name</SPAN></I><B>,
+int </B><I><SPAN STYLE="font-weight: normal">len</SPAN></I><B>);</B></P>
+<P>#if defined(PTW32_COMPATIBILITY_BSD) ||
+defined(PTW32_COMPATIBILITY_TRU64)<BR><B>int
+pthread_setname_np(pthread_t </B><I><SPAN STYLE="font-weight: normal">thr</SPAN></I><B>,
+const char * </B><I><SPAN STYLE="font-weight: normal">name</SPAN></I><B>,
+void * </B><I><SPAN STYLE="font-weight: normal">arg</SPAN></I><B>);</B></P>
+<P>#else</P>
+<P><B>int pthread_setname_np(pthread_t </B><I><SPAN STYLE="font-weight: normal">thr</SPAN></I><B>,
+const char * </B><I><SPAN STYLE="font-weight: normal">name</SPAN></I><B>);</B></P>
+<P>#endif</P>
+<H2 CLASS="western"><A HREF="#toc2" NAME="sect2">Description</A></H2>
+<P><B>pthread_setname_np()</B> sets the descriptive name of the
+thread. It takes the following arguments.</P>
+<P>#if defined(PTW32_COMPATIBILITY_BSD)</P>
+<TABLE WIDTH=100% CELLPADDING=4 CELLSPACING=0>
+	<COL WIDTH=30*>
+	<COL WIDTH=226*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=12% STYLE="border: none; padding: 0cm">
+			<P><I>thr</I></P>
+		</TD>
+		<TD WIDTH=88% STYLE="border: none; padding: 0cm">
+			<P>The thread whose name will be set.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=12% STYLE="border: none; padding: 0cm">
+			<P><I>name</I></P>
+		</TD>
+		<TD WIDTH=88% STYLE="border: none; padding: 0cm">
+			<P>The printf(3) format string to be used to construct the name of
+			the thread. The resulting name should be shorter than
+			<B>PTHREAD_MAX_NAMELEN_NP</B>.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=12% STYLE="border: none; padding: 0cm">
+			<P><I>arg</I></P>
+		</TD>
+		<TD WIDTH=88% STYLE="border: none; padding: 0cm">
+			<P>The printf(3) argument used with name.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P>#elif defined(PTW32_COMPATIBILITY_TRU64)</P>
+<TABLE WIDTH=100% CELLPADDING=4 CELLSPACING=0>
+	<COL WIDTH=30*>
+	<COL WIDTH=226*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=12% STYLE="border: none; padding: 0cm">
+			<P><I>thr</I></P>
+		</TD>
+		<TD WIDTH=88% STYLE="border: none; padding: 0cm">
+			<P>The thread whose name will be set.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=12% STYLE="border: none; padding: 0cm">
+			<P><I>name</I></P>
+		</TD>
+		<TD WIDTH=88% STYLE="border: none; padding: 0cm">
+			<P>The name.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=12% STYLE="border: none; padding: 0cm">
+			<P><I>arg</I></P>
+		</TD>
+		<TD WIDTH=88% STYLE="border: none; padding: 0cm">
+			<P>Reserved for future use.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P>#else</P>
+<TABLE WIDTH=100% CELLPADDING=4 CELLSPACING=0>
+	<COL WIDTH=30*>
+	<COL WIDTH=226*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=12% STYLE="border: none; padding: 0cm">
+			<P><I>thr</I></P>
+		</TD>
+		<TD WIDTH=88% STYLE="border: none; padding: 0cm">
+			<P>The thread whose name will be set.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=12% STYLE="border: none; padding: 0cm">
+			<P><I>name</I></P>
+		</TD>
+		<TD WIDTH=88% STYLE="border: none; padding: 0cm">
+			<P>The name.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P>#endif</P>
+<P>The string passed as the name argument is copied.</P>
+<P><BR><BR>
+</P>
+<P><B>pthread_getname_np()</B> gets the descriptive name of the
+thread. It takes the following arguments.</P>
+<TABLE WIDTH=100% CELLPADDING=4 CELLSPACING=0>
+	<COL WIDTH=30*>
+	<COL WIDTH=226*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=12% STYLE="border: none; padding: 0cm">
+			<P><I>thr</I></P>
+		</TD>
+		<TD WIDTH=88% STYLE="border: none; padding: 0cm">
+			<P>The thread whose descriptive name will be obtained.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=12% STYLE="border: none; padding: 0cm">
+			<P><I>name</I></P>
+		</TD>
+		<TD WIDTH=88% STYLE="border: none; padding: 0cm">
+			<P>The buffer to be filled with the descriptive name of the
+			thread.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=12% STYLE="border: none; padding: 0cm">
+			<P><I>len</I></P>
+		</TD>
+		<TD WIDTH=88% STYLE="border: none; padding: 0cm">
+			<P>The size of the buffer name in bytes.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR>
+</P>
+<P>For the MSVC built library the name is made available for use and
+display by the MSVS debugger.</P>
+<H2 CLASS="western"><A HREF="#toc3" NAME="sect3">Return Value</A></H2>
+<P>These routines return 0 on success or an error code on failure.</P>
+<PRE CLASS="western" STYLE="margin-bottom: 0.5cm">        </PRE><H2 CLASS="western">
+<A HREF="#toc4" NAME="sect4">Errors</A></H2>
+<P>The pthread_setname_np function shall fail if: 
+</P>
+<DL>
+	<DT STYLE="margin-bottom: 0.5cm"><B>ESRCH</B> 
+	</DT></DL>
+<P CLASS="list-indent">
+The value specified by thr does not refer to a valid thread.</P>
+<DL>
+	<DT STYLE="margin-bottom: 0.5cm"><B>EINVAL</B></DT></DL>
+<P CLASS="list-indent">
+The expansion of name with arg has length greater or equal to
+<B>PTHREAD_MAX_NAMELEN_NP</B>.</P>
+<P><BR><BR>
+</P>
+<P><I>The following sections are informative. </I>
+</P>
+<H2 CLASS="western"><A HREF="#toc5" NAME="sect5">Examples</A></H2>
+<P>None. 
+</P>
+<H2 CLASS="western"><A HREF="#toc6" NAME="sect6">Application Usage</A></H2>
+<P>In addition to use within applications, when the library is built
+with MSVC, thread names set via pthread_setname_np will be available
+for display in the MSVS debugger.</P>
+<H2 CLASS="western"><A HREF="#toc7" NAME="sect7">Rationale</A></H2>
+<P>None. 
+</P>
+<H2 CLASS="western"><A HREF="#toc8" NAME="sect8">Future Directions</A></H2>
+<P>None. 
+</P>
+<H2 CLASS="western"><A HREF="#toc9" NAME="sect9">See Also</A></H2>
+<P>The Base Definitions volume of IEEE&nbsp;Std&nbsp;1003.1-2001,
+&lt;pthread.h&gt; 
+</P>
+<H2 CLASS="western"><A HREF="#sect" NAME="toc">Table of Contents</A></H2>
+<P><A HREF="#sect0" NAME="toc0">Name</A> 
+</P>
+<P><A HREF="#sect1" NAME="toc1">Synopsis</A> 
+</P>
+<P><A HREF="#sect2" NAME="toc2">Description</A> 
+</P>
+<P><A HREF="#sect3" NAME="toc3">Return Value</A> 
+</P>
+<P><A HREF="#sect4" NAME="toc4">Errors</A> 
+</P>
+<P><A HREF="#sect5" NAME="toc5">Examples</A> 
+</P>
+<P><A HREF="#sect6" NAME="toc6">Application Usage</A> 
+</P>
+<P><A HREF="#sect7" NAME="toc7">Rationale</A> 
+</P>
+<P><A HREF="#sect8" NAME="toc8">Future Directions</A> 
+</P>
+<P><A HREF="#sect9" NAME="toc9">See Also</A></P>
+</BODY>
+</HTML>

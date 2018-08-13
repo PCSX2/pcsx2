@@ -2,14 +2,14 @@ README.CV -- Condition Variables
 --------------------------------
 
 The original implementation of condition variables in
-pthreads-win32 was based on a discussion paper:
+Pthreads4w was based on a discussion paper:
 
 "Strategies for Implementing POSIX Condition Variables
 on Win32": http://www.cs.wustl.edu/~schmidt/win32-cv-1.html
 
 The changes suggested below were made on Feb 6 2001. This
 file is included in the package for the benefit of anyone
-interested in understanding the pthreads-win32 implementation
+interested in understanding the Pthreads4w implementation
 of condition variables and the (sometimes subtle) issues that
 it attempts to resolve.
 
@@ -132,7 +132,7 @@ Subject:  Implementation of POSIX CVs: spur.wakeups/lost
 
         See attached patch to pthread-win32.. well, I can not
         claim that it is completely bug free but at least my
-        test and tests provided by pthreads-win32 seem to work.
+        test and tests provided by Pthreads4w seem to work.
         Perhaps that will help.
 
         regards,
@@ -658,7 +658,7 @@ to the source code of pthread-win32 implementation:
 
 http://sources.redhat.com/cgi-bin/cvsweb.cgi/pthreads/
 condvar.c?rev=1.36&content-type=text/
-x-cvsweb-markup&cvsroot=pthreads-win32
+x-cvsweb-markup&cvsroot=Pthreads4w
 
 
   /*
@@ -686,15 +686,15 @@ Sleep( 1 ); // @AT
       *              a timeout
       *
       * Note:
-      *      ptw32_sem_timedwait is a cancelation point,
+      *      ptw32_sem_timedwait is a cancellation point,
       *      hence providing the
-      *      mechanism for making pthread_cond_wait a cancelation
+      *      mechanism for making pthread_cond_wait a cancellation
       *      point. We use the cleanup mechanism to ensure we
       *      re-lock the mutex and decrement the waiters count
       *      if we are canceled.
       */
       if (ptw32_sem_timedwait (&(cv->sema), abstime) == -1)         {
-          result = errno;
+          result = PTW32_GET_ERRNO();
         }
     }
 
@@ -964,10 +964,10 @@ to the source code of pthread-win32 implementation:
 
 http://sources.redhat.com/cgi-bin/cvsweb.cgi/pthreads/
 condvar.c?rev=1.36&content-type=text/
-x-cvsweb-markup&cvsroot=pthreads-win32
+x-cvsweb-markup&cvsroot=Pthreads4w
 
   if (wereWaiters)
-    {(wereWaiters)sroot=pthreads-win32eb.cgi/pthreads/Yem...m
+    {(wereWaiters)sroot=Pthreads4web.cgi/pthreads/Yem...m
       /*
       * Wake up all waiters
       */
@@ -1272,7 +1272,7 @@ ptw32_cond_wait_cleanup(void * args)
       */
       if (sem_post(&(cv->semBlockLock)) != 0)
         {(sem_post(&(cv->semBlockLock))
-          *resultPtr = errno;
+          *resultPtr = PTW32_GET_ERRNO();
           return;
         }
     }
@@ -1286,7 +1286,7 @@ ptw32_cond_wait_cleanup(void * args)
       */
       if (sem_post(&(cv->semBlockQueue)) != 0)
         {(sem_post(&(cv->semBlockQueue))
-          *resultPtr = errno;
+          *resultPtr = PTW32_GET_ERRNO();
           return;
         }
     }
@@ -1385,7 +1385,7 @@ ptw32_cond_timedwait (pthread_cond_t * cond,
        */
       if (ptw32_sem_timedwait (&(cv->semBlockQueue), abstime) != 0)
         {(ptw32_sem_timedwait
-          result = errno;
+          result = PTW32_GET_ERRNO();
         }
     }
 
@@ -1548,7 +1548,7 @@ TEREKHOV@de.ibm.com on 17.01.2001 01:00:57
 
 Please respond to TEREKHOV@de.ibm.com
 
-To:   pthreads-win32@sourceware.cygnus.com
+To:   Pthreads4w@sourceware.cygnus.com
 cc:   schmidt@uci.edu
 Subject:  win32 conditions: sem+counter+event = broadcast_deadlock +
       spur.wakeup/unfairness/incorrectness ??
@@ -2838,7 +2838,7 @@ in a single call to post/release (e.g. POSIX realtime semaphores -
 8c/8d) for WinCE prior to 3.0 (WinCE 3.0 does have semaphores)
 
 ok. so, which one is the 'final' algorithm(s) which we should use in
-pthreads-win32??
+Pthreads4w??
 
 regards,
 alexander.

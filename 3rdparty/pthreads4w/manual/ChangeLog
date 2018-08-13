@@ -1,3 +1,27 @@
+2015-02-03  Ross Johnson  <ross at homemail dot com dot au>
+
+	* *.html: Fix HEAD section inconsistencies and remove editor meta tags.
+	* pthread_equal.html (pthread_self): Fix HREF URL.
+	* pthread_exit.html (several): Likewise.
+	* pthread_setaffinity_np.html: New.
+
+2012-10-04  Ross Johnson  <ross at homemail dot com dot au>
+
+	* pthread_join.html (pthread_tryjoin_np): Added description.
+	* index.html (pthread_tryjoin_np): Added link.
+
+2012-09-20  Ross Johnson  <ross at homemail dot com dot au>
+
+	* cpu_set.html: New manual page.
+	* pthread_create.html: Updated.
+	* index.html: Updated.
+	* sched_setaffinity.html: Fixed corrupted formatting.
+	
+2012-08-19  Ross Johnson  <ross at homemail dot com dot au>
+
+	* pthread_join.html(pthread_timedjoin_np): Added.
+	* index.html(pthread_timedjoin_np): Added link.
+
 2011-03-26  Ross Johnson  <ross at homemail dot com dot au>
 
 	* pthread_nutex_init.html (robust mutexes): Added
@@ -14,7 +38,7 @@
 
 	* PortabilityIssues.html: Was nonPortableIssues.html.
 	* index.html: Updated; add table of contents at top.
-	* *.html: Add Pthreads-win32 header info; add link back to the
+	* *.html: Add Pthreads4w header info; add link back to the
 	index page 'index.html'.
 
 2005-05-06  Ross Johnson  <ross at callisto.canberra.edu.au>

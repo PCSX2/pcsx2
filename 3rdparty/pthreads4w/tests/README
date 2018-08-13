@@ -3,7 +3,7 @@ Running test cases in this directory
 
 These make scripts expect to be able to copy the dll, library
 and header files from this directory's parent directory,
-which should be the pthreads-win32 source directory.
+which should be the Pthreads4w source directory.
 
 MS VC nmake
 -------------
@@ -33,12 +33,15 @@ Tests written in this test suite should behave in the following manner:
 
 	* If a test succeeds, leave main() with a result of 0.
 
-	* No diagnostic output should appear when the test is succeeding.
-	  Diagnostic output may be emitted if something in the test
-	  fails, to help determine the cause of the test failure.
+	* No diagnostic output should appear when the test is succeeding
+	  unless it is particularly useful to visualise test behaviour.
+	  Diagnostic output should be emitted if something in the test
+	  fails, to help determine the cause of the test failure. Use assert()
+	  for all API calls if possible.
 
 Notes:
 ------
 
 Many test cases use knowledge of implementation internals which are supposed
-to be opaque to portable applications.
+to be opaque to portable applications. These should not be used as examples
+of methods that can be conformantly applied to application code.

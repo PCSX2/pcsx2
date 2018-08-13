@@ -1,3 +1,551 @@
+2018-08-08  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile: "nmake realclean VC VC-static" and similar wasn't remaking pthread.obj.
+	* common.mk: changes to accommodate the above.
+	* GNUmakefile: use changes in common.mk but still has problem with
+	"make realclean GC GC-static" and similar.
+	* configure.ac (AC_INIT): package name change.
+
+2018-08-08  Mark Pizzolato <markpizzolato dash pthreads dash win32 at subscriptions dot pizzolato dot net>
+
+	* config.h (NEED_FTIME): Removed
+	* _ptw32.h (NEED_FTIME): Removed.
+	* ptw32_timespec.c (NEED_FTIME): Removed conditional.
+	* ptw32_relmillisecs: Fix long-standing bug in NEED_FTIME code; remove NEED_FTIME
+	and all !NEED_FTIME code; compare nanoseconds and convert to milliseconds
+	at the end.
+	* implement.h (NEED_FTIME): remove conditionals.
+	* pthread.h: Remove Borland compiler time types no longer needed.
+	* configure.ac (NEED_FTIME): Removed check.
+	
+2018-08-07  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* GNUmakefile.in (DLL_VER): rename as PTW32_VER.
+	* Makefile (DLL_VER): Likewise.
+	* Bmakefile (DLL_VER): Likewise; does anyone use this anymore?
+	* pthread.h: Move internal library stuff from pthread.h to _pthw32.h
+	* _ptw32.h: As above.
+	* ANNOUNCE: Update.
+	* NEWS: Update.
+	* Makefile: Static libraries renamed to libpthreadV*
+
+2018-07-22  Mark Pizzolato <markpizzolato dash pthreads dash win32 at subscriptions dot pizzolato dot net>
+
+	* _ptw32.h: Restore support for compiling as static (with /MT or /MTd);
+	define int64_t and uint64_t as typedefs rather than #defines.
+	* dll.c: Likewise.
+	* implement.h: Likewise.
+	* need_errno.h: Likewise.
+	* pthread_detach.c: Likewise.
+
+2018-07-22  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile (all-tests-md): New; run the /MD build and tests from
+	all-tests-cflags.
+	* Makefile (all-tests-mt): New; run the /MT build and tests from
+	all-tests-cflags.
+	* Makefile (all-tests-cflags): retain; require all-tests-md and
+	all-tests-mt.
+	
+2018-07-22  Mark Pizzolato <markpizzolato dash pthreads dash win32 at subscriptions dot pizzolato dot net>
+
+	* _ptw32.h (int64_t): change from #define to typedef.
+	* _ptw32.h (uint64_t): Likewise.
+
+2018-07-22  Carlo Bramini <carlo underscore bramini at users dot sourceforge dot net>
+
+	* context.h (ARM): Additional macros checked for ARM processors.
+
+2016-12-18  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* implement.h (PTW32_TEST_SNEAK_PEEK): Defined in tests/test.h
+	to control what some tests see when sneaking a peek inside this
+	header.
+	* GNUMakefile.in: call tests "make realclean"
+
+2016-12-17  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* _ptw32.h: MINGW(all) include stdint.h to define all specific
+	size integers (int64_t etc).
+	
+2016-12-17  Kyle Schwarz <kyle dot r dot schwarz at gmail dot com>
+
+	* _ptw32.h: MINGW6464 define pid_t as __int64.
+	
+2016-04-01  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* _ptw32.h: Move more header stuff into here.
+	* pthread.h: Move stuff from here into _ptw32.h.
+	* implement.h: Likewise.
+	* sched.h (struct timespec): Wrap with extra condition check.
+	* pthread_win32_attach_detach.c: Source stdlib.h to define
+	_countof et. al.
+
+2016-03-31  Keith Marshall <MinGW32 project>
+
+	* aclocal.m4: New from MinGW32 patches for autoconf.
+	* configure.ac: Likewise.
+	* GNUmakefile.in: Likewise.
+	* install-sh: Likewise.
+	* _ptw32.h: Likewise.
+	* implement.h: Patched.
+	* pthread.h: Patched.
+	* sched.h: Patched.
+	* sem_open.c: Patched.
+	* semaphore.h: Patched.
+	* pthread_self.c: Patched.
+
+2016-03-28  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* ptw32_relmillisecs.c (pthread_win32_getabstime_np): New
+	platform-aware function to return the current time plus optional
+	offset.
+	* pthread.h (pthread_win32_getabstime_np): New exported function.
+	* ptw32_timespec.c: COnditionally compile only if NEED_FTIME config
+	flagged.
+	* sched.h: Update platform config flags for applications.
+	* semaphore.h: Likewise.
+	* pthread.h: Likewise.
+
+2016-03-25  Bill Parker <wp02855 at gmail dot com>
+
+	* pthread_mutex_init.c: Memory allocation of robust mutex element
+	was not being checked.
+	
+2016-02-29  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* GNUmakefile (MINGW_HAVE_SECURE_API): Moved to config.h. Undefined
+	for __MINGW32__; remove (make optional) forcing a specific C std.
+	* implement.h (uint64_t): Define for Visual Studio.
+
+2016-02-29	Keith Marshall <keithmarshall at users dot sourceforge dot net>
+
+	* ptw32_timespec.c: Fix C90 warnings from GCC; int64_t -> uint64_t
+
+2016-02-18	Carey Gister <careygister at outlook dot com>
+
+	* dll.c (DllMain): Should not be defined for static library builds.
+	Doing so prevents static linking with a dll library.
+
+2015-11-01	Anurag Sharma <anurags at fb dot com>
+
+	* ptw32_MCS_lock.c: Fix a race condition causing crashes.
+	This race condition was also analysed and reported with a slightly
+	different fix independently by Jonathan Brown at VMware.
+
+2015-11-01	Mark Smith <masmith at fb dot com>
+
+	* ptw32_relnillisecs.c: Fix erroneous 0-time waits, symptomizing as
+	busy-spinning eating CPU. When the time to wait is specified to be less
+	than 1 millisecond were erroneously rounded down to 0; Modify WinCE
+	dependency.
+	* ptw32_timespec.c: Remove NEED_FTIME conditionality.
+
+2015-06-31  Dimitry <>
+
+	* sem_init.c: Remove double free() when NEED_SEM defined (for
+	early versions of WinCE).
+
+2014-05-29  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* autostatic.c: Move content to dll.c so autostatic no longer required.
+	* dll.c: Include content from autostatic.c.
+	* pthread.c (autostatic.c): Remove #include.
+	* common.mk (autostatic.*): remove from builds.
+	* Makefile (realclean): delete make.log.txt if present.
+	* GNUMakefile (realclean): Likewise.
+
+2014-05-28  Jaeeun Choi <jaeeun at mdstec dot com>
+
+	* pthread_mutex_init.c: Check and free malloced robustNode element if
+	init is returning an ENOSPC error.
+
+2013-12-10  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile (*-small-static): Removed all small-static targets in the MS
+	toolchain builds due to	failures of TLS in apps linked with these
+	library builds, specifically fails tests/semaphore3.c. The other static
+	builds pass this test.
+	* dll.c: Remove unused MinGW static linking hooks; See autostatic.c.
+	Hope to incorporate a working set of hooks here for gcc that supports
+	PIMAGE_TLS_CALLBACK later at which point autostatic.c will be required
+	only for older compilers.
+
+2013-12-09  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile (.rc.res): Add logic to extract target CPU from different
+	environments.
+
+2013-07-23  Keith Clanton <keith dot clanton at cloudcar dot com>
+
+	* create.c: Don't apply cpu affinity from thread attributes for WINCE;
+	bug fix.
+	
+2013-07-23  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* config.h (HAVE_CPU_AFFINITY): Defined.
+	* several (WINCE): Substitute HAVE_CPU_AFFINITY where appropriate.
+
+2013-07-17  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* pthread_getname_np.c: Replace strncpy_s with strncpy to support older
+	MSVCRT.DLLs.
+	* pthread_attr_getname_np.c: Likewise.
+
+2013-06-19  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* pthread_attr_init.c: Initialise thread name element.
+	* create.c: Initialise thread name from attributes.
+
+2013-06-13  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* pthread_setname_np.c: Initial version.
+	* pthread_getname_np.c: Initial version.
+	* pthread_attr_setname_np.c: Initial version.
+	* pthread_attr_getname_np.c: Initial version.
+	* pthread.h: Add new prototypes.
+	* implement.h (pthread_attr_t_): Add "thrname" element.
+	* (ptw32_thread_t): Add "name" element.
+
+2013-06-06  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* pthread.h (_POSIX_THREAD_ATTR_STACKADDR): Now set to -1. The API
+	prototypes are defined but return ENOSYS; previously the addr value was
+	stored in the attribute struct and retreivable but unused.
+	* pthread_attr_setstackaddr.c: Should return ENOSYS rather than silently
+	ignore the setting.
+	* pthread_attr_getstackaddr.c: Likewise.
+	* pthread_attr_getaffinity_np.c: Initial version.
+	* pthread_attr_setaffinity_np.c: Initial version.
+
+2013-05-01  Andrew Chernow <achernow at gmail dot com>
+
+	* dll.c: Add invocation of thread detach logic for static linked
+	applications for MSVC8.0 or later builds.
+
+2012-12-19  Jason Baker <jason underscore baker at symantec dot com>
+
+	* pthread_win32_attach_detach_np.c (pthread_win32_process_attach_np):
+	Fix function calls involving TCHAR.
+
+2012-10-29  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* sem_destroy.c: Remove NULL argument checks. These are only useful
+	to guard against some uninitialised arguments, not an invalid sem_t.
+	* sem_wait.c: Likewise.
+	* sem_post.c: Likewise.
+	* sem_post_multiple.c: Likewise.
+	* sem_timedwait.c: Likewise.
+	* sem_trywait.c: Likewise.
+	* ptw32_semwait.c: Likewise.
+
+2012-10-28  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* implement.h: sem_t_ replace internal state mutex with MCS lock.
+	* sem_init.c: Rewrite to use MCS lock rather than mutex.
+	* sem_destroy.c: Likewise.
+	* sem_wait.c: Likewise.
+	* sem_post.c: Likewise.
+	* sem_post_multiple.c: Likewise.
+	* sem_timedwait.c: Likewise.
+	* sem_trywait.c: Likewise.
+	* ptw32_semwait.c: Likewise.
+
+2012-10-26	sicaf-- at hanmail dot net
+
+	* error.c: For WinCE use a more specific cast.
+	* implement.h: For WinCE don't include process.h.
+	* pthread_win32_attach_detach_np.c: For WinCE don't restrict QUserEx.dll
+	search to system path.
+
+2012-10-24  Stephane Clairet <Stephane dot Clairet at 4d dot com>
+
+	* pthread_key_delete.c: Bug fix - move keylock release to after the
+	while loop. (This bug first was introduced at release 2.9.1) 
+
+2012-10-16  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile: Remove SDK environment setting; now needs to be done
+	explicitly before running any nmake.
+	* GNUmakefile: Move per command-line ARCH setting to TESTS_ENV.
+
+2012-10-04  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* pthread_tryjoin_np.c: New API
+	* pthread.c (pthread_try_join_np): Added.
+	* common.mk (pthread_tryjoin_np): Added.
+	* pthread.h (pthread_tryjoin_np): Added.
+	* NEWS: Updated.
+	* README: Updated.
+	* ANNOUNCE: Updated.
+
+2012-10-02  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* sched.h (cpu_set_t): Redefined.
+	* implement.h (_sched_cpu_set_vector_): Created as the private equivalent
+	of cpu_set.
+	(pthread_thread_t_.cpuset): Type change. 
+	* sched_setaffinity.c: Reflect changes to cpu_set_t and _sched_cpu_set_vector_.
+	* pthread_setaffinity.c: Likewise.
+	* create.c: Likewise.
+	* pthread_self.c: Likewise.
+	* ptw32_new.c: Likewise.
+
+2012-09-28  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* pthread.c: pulls all individual source modules into a single
+	translation unit.
+	* common.mk: Remove everything related to the non-inlined dll targets.
+	This removes all the intermediate .c files that #include other .c files
+	except for pthread.c.
+	* Makefile: Remove and rename targets; remove or edit variables. All
+	of this is to remove the intermediate translation unit aggregation
+	source files.
+	* GNUmakefile: Likewise.
+	* attr.c: Removed.
+	* barrier.c: Removed.
+	* cancel.c: Removed.
+	* condvar.c: Removed.
+	* exit.c: Removed.
+	* fork.c: Removed.
+	* misc.c: Removed.
+	* mutex.c: Removed.
+	* nonportable.c: Removed.
+	* private.c: Removed.
+	* rwlock.c: Removed.
+	* sched.c: Removed.
+	* spin.c: Removed.
+	* sync.c: Removed.
+	* tsd.c: Removed.
+
+2012-09-28  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile: expand on rudimentary install target; add DEST_LIB_NAME
+	variable defaulting to "pthread.lib".
+	* GNUmakefile: Add install target similar to Makefile with DEST_LIB_NAME
+	defaulting to "libpthread.a".
+
+2012-09-28  Daniel Richard. G <danielg at teragram dot com>
+
+	* all: #include<config.h>; renamed HAVE_PTW32_CONFIG_H define in
+	build files to HAVE_CONFIG_H since we no longer need a
+	uniquely-named symbol for this.
+	* Bmakefile: Removed _WIN32_WINNT assignment from build files since
+	this is now handled in source.
+	* Wmakefile: Likewise.
+	* Makefile: Added mkdir invocations to "install" target.
+	* common.mk: Elaborated the pthread.$(OBJEXT) dependency list.
+	* pthread.h: Removed the #include"config.h" bit.
+
+2012-09-23  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* GNUmakefile: Modify "all-tests" to use new targets in tests
+	GNUmakefile.
+	* Makefile: Similarly.
+
+2012-09-22  Daniel Richard. G <danielg at teragram dot com>
+
+	* GNUmakefile: Reordered the command lines in the "help" target
+	to match the ordering of the targets in the makefile, which IMO
+	is nicer to the eye; tweaked some of the parentheticals for better
+	clarity; delete *.manifest files, in case the user just finished
+	doing an MSVC build.
+	* Makefile: Use *.static_stamp for the static targets instead of
+	*.static; added a note re VC++6 and /EHs vs. /EHa; reordered the
+	targets, and added a number of new ones (e.g. VSE-small-static);
+	added a note recommending *-inlined and *-small-static to make
+	things a little easier for users bewildered by the large number of
+	targets; reworked the all-tests[-cflags] targets so that (1) more
+	useful targets are built first (the small-static targets make it
+	easier to track down compilation errors), (2) *-debug build and
+	test targets can be used, (3) less-useful build/test permutations
+	are enabled only if EXHAUSTIVE and/or MORE_EXHAUSTIVE is defined,
+	and (4) /MDd and /MTd are covered too; "nmake all-tests-cflags
+	EXHAUSTIVE=1 MORE_EXHAUSTIVE=1" takes a few hours to run; moved
+	some of the VCE targets up, since the pattern in the file was
+	already to list VCE targets first, then VSE, then VC; actually
+	touch the stamp file in the stamp targets.
+	* README.NONPORTABLE: It's "DllMain", not "dllMain".
+	* common.mk: Start of an attempt to define dependencies for
+	pthread.$(OBJEXT).
+	* implement.h: Generalized PTW32_BROKEN_ERRNO into
+	PTW32_USES_SEPARATE_CRT; don't do the autostatic-anchoring thing
+	if we're not building the library!
+	* pthread.h: Moved the PTW32_CDECL bit into sched.h. pthread.h
+	already #includes sched.h, so the latter is a good place to put
+	definitions that need to be shared in common; severely simplified
+	the errno declaration for Open Watcom, made it applicable only to
+	Open Watcom, and made the comment less ambiguous; updated the long
+	comment describing PTW32_BROK^WPTW32_USES_SEPARATE_CRT; added
+	(conditional) declaration of pthread_win32_set_terminate_np(), as
+	well as ptw32_terminate_handler (so that eh.h doesn't have to get
+	involved).
+	* pthread_cond_wait.c: Missed a couple of errno conversions.
+	* pthread_mutex_consistent.c: Visual Studio (either 2010 or 2008
+	Express, don't recall now) actually errored out due to charset
+	issues in this file, so I've replaced non-ASCII characters with
+	ASCII approximations.
+	* ptw32_threadStart.c: Big rewrite of ptw32_threadStart().
+	Everything passes with this, except for GCE (and I can't figure
+	out why).
+	* sched.h: Moved the PTW32_CDECL section here (and made it
+	idempotent); need to #include <stdlib.h> for size_t (one of the test
+	programs #includes sched.h as the very first thing); moved the
+	DWORD_PTR definition up, since it groups better with the pid_t
+	definition; also need ULONG_PTR, don't need PDWORD_PTR; can't use
+	PTW32_CONFIG_MSVC6, because if you only #include sched.h you
+	don't get that bit in pthread.h; use a cpp symbol
+	(PTW32_HAVE_DWORD_PTR) to inhibit defining *_PTR if needed. Note
+	that this isn't #defined inside the conditional, because there are
+	no other instances of these typedefs that need to be disabled, and
+	sched.h itself is already protected against multiple inclusion;
+	DWORD_PTR can't be size_t, because (on MSVC6) the former is "unsigned
+	long" and the latter is "unsigned int" and C++ doesn't see them as
+	interchangeable; minor edit to the comment... I don't like saying
+	"VC++" without the "Microsoft" qualifier; use PTW32_CDECL instead of
+	a literal __cdecl (this was why I moved the PTW32_CDECL bit into this
+	file).
+	* semaphore.h: Put in another idempotentized PTW32_CDECL bit here;
+	use PTW32_CDECL instead of __cdecl, and fixed indentation of function
+	formal parameters.
+
+2012-09-21  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* create.c: Major changes to incorporate CPU affinity inheritance.
+	* pthread_self.c: Likewise.
+	* ptw32_new.c (cpuset): Initialise new pthread_thread_t element.
+	* pthread.h (DWORD_PTR): Conditional definition moved to sched.h.
+	* sched.h (DWORD_PTR): As above; other changes.
+	* sem_post.c: Fix errno handling and restructure.
+	* sem_getvalue.c: Fix return value and restructure.
+	
+2012-09-18  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* sched_setaffinity.c: New API to set process CPU affinity in POSIX
+	context; compatibility with Linux.
+	* pthread_setaffinity.c: Likewise.
+	* implement.h (pthread_t_): Added cpuset element.
+	* sched.h: Added new prototypes. 
+	* sched.h (cpu_set_t): Support for new process and thread affinity API.
+	* pthread.h: Added new prototypes.
+
+2012-09-16  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* README (Version numbering): Changes back to major.minor.micro.
+	* README.NONPORTABLE: Updated description around process/thread
+	attach/detach routines.
+
+2012-09-05  Daniel Richard. G <danielg at teragram dot com>
+
+	* implement.h: whitespace adjustment.
+	* dll.c: Facilitate PTW32_STATIC_LIB being defined in a header file.
+
+2012-09-04  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile (VCEFLAGS): Changed from /EHsc to /EHs which fixed a problem
+	in tests/once3.c which was causing it to hang.
+
+2012-09-03  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile: Remove descriptive info from help target, just list the
+	available targets. Output tends to be poorly formatted and cluttered
+	otherwise.
+	(VCE-static): Add VC++ static build target.
+	(VCE-small-static): Likewise.
+	(VCE-small-static-debug): Likewise.
+	(VCE-small-static-debug): Likewise.
+
+2012-09-02  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* All: correct spelling to 'cancellation'.
+
+2012-08-31  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* pthread_attr_getschedpolicy.c: Remove pedantic arg check.
+	* pthread_getschedparam.c: Likewise.
+	* pthread_mutex_timelock.c: Restructure to address unreached final
+	return statement.
+
+2012-08-31  Daniel Richard. G <danielg at teragram dot com>
+
+	* implement.h (INLINE): only define if building the inlined make targets. G++
+	complained about undefined reference to ptw32_robust_mutex_remove() because it
+	appears in separate compilation units for "make GCE".
+
+2012-08-29  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* ptw32_MCS_lock.c (ptw32_mcs_flag_wait): Fix cast in first 'if' statement.
+	* pthread_mutex_consistent.c (comment): Fix awkward grammar.
+	* pthread_mutexattr_init.c: Initialize robustness element.
+
+2012-08-29  Daniel Richard. G <danielg at teragram dot com>
+
+	* implement.h (PTW32_INTERLOCKED_SIZE): Define as long or LONGLONG.
+	(PTW32_INTERLOCKED_SIZEPTR): Define as long* or LONGLONG*.
+	* pthread_attr_getschedpolicy.c (SCHED_MAX): Fix cast.
+	* ptw32_mutex_check_need_init.c: Fix static mutexattr_t struct initializations.
+	* ptw32_threadStart.c (ExceptionFilter): Add cast.
+	* ptw32_throw.c: Add cast.
+
+2012-08-18  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* pthread_timedjoin_np.c: New non-portable function.
+	* common.mk (pthread_timedjoin_np): Add new function.
+	* nonportable.c (pthread_timedjoin_np): Likewise.
+
+2012-08-16  Daniel Richard. G <danielg at teragram dot com>
+
+	* pthread.h (PTW32_CONFIG_MINGW): Defined to simplify complex macro combination.
+	* (PTW32_CONFIG_MSVC6): Likewise.
+	* (PTW32_CONFIG_MSVC8): Likewise.
+	* autostatic.c: Substitute new macros.
+	* create.c: Likewise.
+	* pthread_cond_wait.c: Likewise.
+	* pthread_exit.c: Likewise.
+	* pthread_once.c: Likewise.
+	* pthread_rwlock_timedwrlock.c: Likewise.
+	* pthread_rwlock_wrlock.c: Likewise.
+	* pthread_win32_attach_detach_np.c: Likewise.
+	* ptw32_relmillisecs.c: Likewise.
+	* ptw32_threadDestroy.c: Likewise.
+	* ptw32_threadStart.c: Likewise.
+	* ptw32_throw.c: Likewise.
+	* sem_timedwait.c: Likewise.
+	* sem_wait.c: Likewise.
+	* implement.h: Likewise.
+	* sched.h: Likewise.
+
+2012-08-11  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* common.mk (default_target): restore previous behaviour of outputing
+	useful help when "make" is run without a target argument.
+
+2012-08-11  Daniel Richard. G <danielg at teragram dot com>
+
+	* autostatic.c (ptw32_autostatic_anchor): new function; other
+	changes aimed at de-abstracting functionality.
+	* impliment.h (ptw32_autostatic_anchor): dummy reference to
+	ensure that autostatic.o is always linked into static applications.
+	* GNUmakefile: Various improvements.
+	* Makefile: Likewise.
+
+2012-03-19  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* implement.h: Fix interlocked pointer casting under VC++ x64.
+
+2012-03-19  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* implement.h (ptw32_spinlock_check_need_init): added missing
+	forward declaration.
+	
+2012-07-19  Daniel Richard. G <danielg at teragram dot com>
+
+	* common.mk: New; macros common to all build environment makefiles.
+	* Bmakefile: Include new common.mk
+	* Makefile: Likewise; various fixes; added normal and small objects
+	static build.
+	* GNUmakefile: Likewise.
+
 2012-03-18  Ross Johnson <ross dot johnson at homemail dot com dot au>
 
 	* create.c (pthread_create): add __cdecl attribute to thread routine
@@ -362,7 +910,7 @@
 2007-01-06  Romano Paolo Tenca <rotenca at telvia dot it>
 
 	* pthread_cond_destroy.c: Replace sem_wait() with non-cancelable
-	ptw32_semwait() since pthread_cond_destroy() is not a cancelation
+	ptw32_semwait() since pthread_cond_destroy() is not a cancellation
 	point.
 	* implement.h (ptw32_spinlock_check_need_init): Add prototype.
 	* ptw32_MCS_lock.c: Reverse order of includes.
@@ -640,15 +1188,15 @@
 	NOTES:
 	The design (based on pseudo code contributed by Gottlob Frege) avoids
 	creating a kernel object if there is no contention. See URL for details:-
-	http://sources.redhat.com/ml/pthreads-win32/2005/msg00029.html
+	http://sources.redhat.com/ml/Pthreads4w/2005/msg00029.html
 	This uses late initialisation similar to the technique already used for
-	pthreads-win32 mutexes and semaphores (from Alexander Terekhov).
+	Pthreads4w mutexes and semaphores (from Alexander Terekhov).
 
-	The subsequent cancelation cleanup additions (by rpj) could not be implemented
+	The subsequent cancellation cleanup additions (by rpj) could not be implemented
 	without sacrificing some of the efficiency in Gottlob's design. In particular,
 	although each once_control uses it's own event to block on, a global CS is
 	required to manage it - since the event must be either re-usable or
-	re-creatable under cancelation. This is not needed in the non-cancelable
+	re-creatable under cancellation. This is not needed in the non-cancelable
 	design because it is able to mark the event as closed (forever).
 
 	When uncontested, a CS operation is equivalent to an Interlocked operation
@@ -717,10 +1265,10 @@
 
 	* pthread_cond_wait.c (ptw32_cond_wait_cleanup): Undo change
 	from 2004-11-02.
-	* Makefile (DLL_VER): Added for DLL naming suffix - see README.
-	* GNUmakefile (DLL_VER): Likewise.
-	* Wmakefile (DLL_VER): Likewise.
-	* Bmakefile (DLL_VER): Likewise.
+	* Makefile (PTW32_VER): Added for DLL naming suffix - see README.
+	* GNUmakefile (PTW32_VER): Likewise.
+	* Wmakefile (PTW32_VER): Likewise.
+	* Bmakefile (PTW32_VER): Likewise.
 	* pthread.dsw (version.rc): Added to MSVS workspace.
 
 2004-11-20  Boudewijn Dekker  <b.dekker at ellipsis.nl>
@@ -763,7 +1311,7 @@
 	'PThreadStateCancelPending' state as short cut to avoid entering
 	kernel space via WaitForSingleObject() call. This was obviated
 	by user space sema acquisition in sem_wait() and sem_timedwait(),
-	which are also cancelation points. A call to pthread_testcancel()
+	which are also cancellation points. A call to pthread_testcancel()
 	was required, which introduced a kernel call, effectively nullifying
 	any gains made by the user space sem acquisition checks.
 	* pthread_cancel.c (pthread_cancel): Set new thread
@@ -785,7 +1333,7 @@
 	being the address of the thread struct. The new pthread_t retains
 	the reuse stack but provides virtually unique thread IDs.
 	* sem_wait.c (ptw32_sem_wait_cleanup): New routine used for
-	cancelation cleanup.
+	cancellation cleanup.
 	* sem_timedwait.c (ptw32_sem_timedwait_cleanup): Likewise.
 
 2004-10-22  Ross Johnson  <rpj at callisto.canberra.edu.au>
@@ -825,12 +1373,12 @@
 	keeps it's own counter. Although the motivation to do this has existed
 	for a long time, credit goes to Alexander Terekhov for providing
 	the logic. I have deviated slightly from AT's logic to add the waiters
-	count, which has made the code more complicated by adding cancelation
+	count, which has made the code more complicated by adding cancellation
 	cleanup. This also appears to have broken the VCE (C++ EH) version of
 	the library (the same problem as previously reported - see BUGS #2),
 	only apparently not fixable using the usual workaround, nor by turning
 	all optimisation off. The GCE version works fine, so it is presumed to
-	be a bug in MSVC++ 6.0. The cancelation exception is thrown and caught
+	be a bug in MSVC++ 6.0. The cancellation exception is thrown and caught
 	correctly, but the cleanup class destructor is never called. The failing
 	test is tests\semaphore4.c.
 	* sem_wait.c (sem_wait): Implemented user space check model.
@@ -890,7 +1438,7 @@
 	Drepper's paper at http://people.redhat.com/drepper/futex.pdf, but
 	using the existing semaphore in place of the futex described in the
 	paper. Idea suggested by Alexander Terekhov - see:
-	http://sources.redhat.com/ml/pthreads-win32/2003/msg00108.html
+	http://sources.redhat.com/ml/Pthreads4w/2003/msg00108.html
 	* pthread_mutex_timedlock.c pthread_mutex_timedlock(): Similarly.
 	* pthread_mutex_trylock.c (pthread_mutex_trylock): Similarly.
 	* pthread_mutex_unlock.c (pthread_mutex_unlock): Similarly.
@@ -963,7 +1511,7 @@
 	location. This is consistent with GNU/Linux but different to
 	Solaris or MKS (and possibly others), which accept NULL as meaning
 	'don't return the created thread's ID'. Applications that run
-	using pthreads-win32 will run on all other POSIX threads
+	using Pthreads4w will run on all other POSIX threads
 	implementations, at least w.r.t. this feature.
 
 	It was decided not to copy the Solaris et al behaviour because,
@@ -1033,15 +1581,15 @@
 
 	* pthread_cancel.c (pthread_cancel): Adapted to use auto-detected
 	QueueUserAPCEx features at run-time.
-	(ptw32_RegisterCancelation): Drop in replacement for QueueUserAPCEx()
+	(ptw32_Registercancellation): Drop in replacement for QueueUserAPCEx()
 	if it can't be used. Provides older style non-preemptive async
-	cancelation.
+	cancellation.
 	* pthread_win32_attach_detach_np.c (pthread_win32_attach_np):
 	Auto-detect quserex.dll and the availability of alertdrv.sys;
 	initialise and close on process attach/detach.
-	* global.c (ptw32_register_cancelation): Pointer to either
-	QueueUserAPCEx() or ptw32_RegisterCancelation() depending on
-	availability. QueueUserAPCEx makes pre-emptive async cancelation
+	* global.c (ptw32_register_cancellation): Pointer to either
+	QueueUserAPCEx() or ptw32_Registercancellation() depending on
+	availability. QueueUserAPCEx makes pre-emptive async cancellation
 	possible.
 	* implement.h: Add definitions and prototypes related to QueueUserAPC.
 
@@ -1050,8 +1598,8 @@
 	* QueueUserAPCEx (separate contributed package): Provides preemptive
 	APC feature.
 	* pthread_cancel.c (pthread_cancel): Initial integration of
-	QueueUserAPCEx into pthreads-win32 to provide true pre-emptive
-	async cancelation of threads, including blocked threads.
+	QueueUserAPCEx into Pthreads4w to provide true pre-emptive
+	async cancellation of threads, including blocked threads.
 
 2004-05-06  Makoto Kato  <raven at oldskool.jp>
 
@@ -1158,7 +1706,7 @@
 
 2003-09-03  Ross Johnson  <rpj at callisto.canberra.edu.au>
 
-	* w32_cancelableWait.c (ptw32_cancelable_wait): Allow cancelation
+	* w32_cancelableWait.c (ptw32_cancelable_wait): Allow cancellation
 	of implicit POSIX threads as well.
 
 2003-09-02  Ross Johnson  <rpj at callisto.canberra.edu.au>
@@ -1574,7 +2122,7 @@
 2002-02-07  Alexander Terekhov<TEREKHOV at de.ibm.com>
 
 	* nonportable.c (pthread_delay_np): Make a true
-	cancelation point. Deferred cancels will interrupt the
+	cancellation point. Deferred cancels will interrupt the
 	wait.
 
 2002-02-07  Ross Johnson  <rpj at setup1.ise.canberra.edu.au
@@ -1661,7 +2209,7 @@
 
 2002-02-04  Ross Johnson  <rpj at setup1.ise.canberra.edu.au>
 
-	The following extends the idea above to the rest of pthreads-win32 - rpj
+	The following extends the idea above to the rest of Pthreads4w - rpj
 	
 	* attr.c: All routines are now in separate compilation units;
 	This file is used to congregate the separate modules for
@@ -1683,8 +2231,8 @@
 2002-02-02  Ross Johnson  <rpj at setup1.ise.canberra.edu.au>
 
 	* cancel.c: Rearranged some code and introduced checks
-	to disable cancelation at the start of a thread's cancelation
-	run to prevent double cancelation. The main problem
+	to disable cancellation at the start of a thread's cancellation
+	run to prevent double cancellation. The main problem
 	arises if a thread is canceling and then receives a subsequent
 	async cancel request.
 	* private.c: Likewise.
@@ -1749,7 +2297,7 @@
 	* pthread.h: Unless the build explicitly defines __CLEANUP_SEH,
 	__CLEANUP_CXX, or __CLEANUP_C, then the build defaults to
 	__CLEANUP_C style cleanup. This style uses setjmp/longjmp
-	in the cancelation and thread exit implementations and therefore
+	in the cancellation and thread exit implementations and therefore
 	won't do stack unwinding if linked to applications that have it
 	(e.g. C++ apps). This is currently consistent with most/all
 	commercial Unix POSIX threads implementations.
@@ -1936,7 +2484,7 @@
 2001-07-15  Ross Johnson  <rpj at setup1.ise.canberra.edu.au>
 
 	* rwlock.c (pthread_rwlock_wrlock): Is allowed to be
-	a cancelation point; re-enable deferred cancelability
+	a cancellation point; re-enable deferred cancelability
 	around the CV call.
 
 2001-07-10  Ross Johnson  <rpj at setup1.ise.canberra.edu.au>
@@ -1999,8 +2547,8 @@
 	for this object.
 	* pthread.h (PTHREAD_BARRIER_INITIALIZER): Removed.
 	* rwlock.c (pthread_rwlock_wrlock): This routine is
-	not a cancelation point - disable deferred
-	cancelation around call to pthread_cond_wait().
+	not a cancellation point - disable deferred
+	cancellation around call to pthread_cond_wait().
 
 2001-07-05  Ross Johnson  <rpj at setup1.ise.canberra.edu.au>
 
@@ -2252,7 +2800,7 @@
 	* (pthread_mutex_lock): Likewise.
 	* (pthread_mutex_trylock): Likewise.
 	* (pthread_mutex_unlock): Likewise.
-	* Use longjmp/setjmp to implement cancelation when building the library
+	* Use longjmp/setjmp to implement cancellation when building the library
 	using a C compiler which doesn't support exceptions, e.g. gcc -x c (note
 	that gcc -x c++ uses exceptions).
 	* Also fixed some of the same typos and eliminated PT_STDCALL as
@@ -2580,7 +3128,7 @@
 	* pthread.h: Add compile-time message when using
 	MSC_VER compiler and C++ EH to warn application
 	programmers to use PtW32Catch instead of catch(...)
-	if they want cancelation and pthread_exit to work.
+	if they want cancellation and pthread_exit to work.
 
 	* implement.h: Remove #include <semaphore.h>; we
 	use our own local semaphore.h.
@@ -2628,7 +3176,7 @@
 	* pthread.h (PtW32CatchAll): Add macro. When compiling
 	applications using VC++ with C++ EH rather than SEH
 	'PtW32CatchAll' must be used in place of any 'catch( ... )'
-	if the application wants pthread cancelation or
+	if the application wants pthread cancellation or
 	pthread_exit() to work.
 
 2000-08-03  Ross Johnson  <rpj at special.ise.canberra.edu.au>
@@ -2839,7 +3387,7 @@
 	rather than Makefile. Makefile will become the MSC nmake compatible
 	version
 
-1999-11-13  John Bossom (John.Bossom@cognos.com>
+1999-11-13  John Bossom (John.Bossom@gmail.com>
 
 	* misc.c (pthread_self): Add a note about GetCurrentThread
 	returning a pseudo-handle
@@ -2862,7 +3410,7 @@
 
 1999-11-10  Ross Johnson  <rpj at ixobrychus.canberra.edu.au>
 
-	* sync.c (pthread_join): Make it a deferred cancelation point.
+	* sync.c (pthread_join): Make it a deferred cancellation point.
 
 	* misc.c (pthread_self): Explicitly initialise implicitly
 	created thread state to default values.
@@ -2969,7 +3517,7 @@ Thu Sep 16 1999  Ross Johnson  <rpj at swan.canberra.edu.au>
 	the application thread startup routine.
 	- Milan Gardian <mg at tatramed.sk>
 
-1999-08-18  John Bossom <john.Bossom at cognos.com>
+1999-08-18  John Bossom <john.Bossom at gmail.com>
 
 	* exit.c (pthread_exit): Put status into pthread_t->exitStatus
 	* private.c (ptw32_threadStart): Set pthread->exitStatus
@@ -3131,7 +3679,7 @@ Fri Apr  2 11:08:50 1999  Ross Johnson  <rpj at ixobrychus.canberra.edu.au>
 
 	* pthread.h (pthread_t_): Add per-thread errno element.
 
-Fri Apr  2 11:08:50 1999  John Bossom <jebossom at cognos.com>
+Fri Apr  2 11:08:50 1999  John Bossom <john.bossom at gmail.com>
 
 	* semaphore.c (ptw32_sem_*): Change to sem_*; these functions
 	will be exported from the library; set errno on error.
@@ -3143,7 +3691,7 @@ Fri Mar 26 14:11:45 1999  Tor Lillqvist <tml at iki.fi>
 	* semaphore.c (ptw32_sem_timedwait): Check for negative
 	milliseconds.
 
-Wed Mar 24 11:32:07 1999  John Bossom <jebossom at cognos.com>
+Wed Mar 24 11:32:07 1999  John Bossom <john.bossom at gmail.com>
 
 	* misc.c (CancelableWait): Initialise exceptionInformation[2].
 	(pthread_self): Get a real Win32 thread handle for implicit threads.
@@ -3388,7 +3936,7 @@ Fri Jan 29 11:56:28 1999  Ross Johnson  <rpj at swan.canberra.edu.au>
 
 	* implement.h: Add semaphore function prototypes and rename all
 	functions to prepend 'ptw32_'. They are
-	now private to the pthreads-win32 implementation.
+	now private to the Pthreads4w implementation.
 
 	* private.c: Change #warning.
 	Move ptw32_sem_timedwait() to semaphore.c.
@@ -4591,7 +5139,7 @@ Sun Jul 26 00:09:59 1998  Ross Johnson  <rpj at ixobrychus.canberra.edu.au>
  	a part of making the eventual pthreads DLL binary compatible
  	through version changes.
 
-	* condvar.c (cond_wait): Add cancelation point. This applies the
+	* condvar.c (cond_wait): Add cancellation point. This applies the
 	point to both pthread_cond_wait() and pthread_cond_timedwait().
 
 	* exit.c (pthread_exit): Rename "this" to "us".

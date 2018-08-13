@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE>PTHREAD_WIN32_ATTACH_DETACH_NP(3) manual page</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice 4.1.1  (Win32)">
+	<META NAME="CREATED" CONTENT="0;0">
+	<META NAME="CHANGEDBY" CONTENT="Ross Johnson">
+	<META NAME="CHANGED" CONTENT="20160330;18071352">
+	<STYLE TYPE="text/css">
+	<!--
+		H4.cjk { font-family: "SimSun" }
+		H4.ctl { font-family: "Mangal" }
+		H2.cjk { font-family: "SimSun" }
+		H2.ctl { font-family: "Mangal" }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-GB" BGCOLOR="#ffffff" DIR="LTR">
+<H4 CLASS="western">POSIX Threads for Windows &ndash; REFERENCE -
+<A HREF="https://sourceforge.net/projects/pthreads4w/">Pthreads4w</A></H4>
+<P><A HREF="index.html">Reference Index</A></P>
+<P><A HREF="#toc">Table of Contents</A></P>
+<H2 CLASS="western"><A HREF="#toc0" NAME="sect0">Name</A></H2>
+<P STYLE="font-weight: normal">pthread_win32_getabstime_np</P>
+<H2 CLASS="western"><A HREF="#toc1" NAME="sect1">Synopsis</A></H2>
+<P><B>#include &lt;pthread.h&gt;</B> 
+</P>
+<P><B>struct timespec * pthread_win32_getabstime_np (struct timespec
+* abstime, struct timespec * reltime);</B></P>
+<H2 CLASS="western"><A HREF="#toc2" NAME="sect2">Description</A></H2>
+<P>Primarily to facilitate writing unit tests but exported for
+convenience. The <FONT COLOR="#000000"><I><U>struct</U></I></FONT><I>
+</I><FONT COLOR="#000000"><I><U>timespec</U></I></FONT> pointed to by
+the first parameter is modified to represent the current time plus an
+optional offset value <I>struct </I><FONT COLOR="#000000"><I><U>timespec</U></I></FONT>
+in a platform optimal way.</P>
+<P>Returns the first parameter so is compatible as the<I> </I><FONT COLOR="#000000"><I><U>struct</U></I></FONT><I>
+</I><FONT COLOR="#000000"><I><U>timespec</U></I></FONT><I> *</I>
+parameter in POSIX timed function calls.</P>
+<H2 CLASS="western"><A HREF="#toc3" NAME="sect3">Cancellation</A></H2>
+<P>None.</P>
+<H2 CLASS="western"><A HREF="#toc4" NAME="sect4"><FONT COLOR="#000080">Return
+Value</FONT></A></H2>
+<P>This routine returns the first parameter (non-zero) on success, or
+NULL (0) if it fails.</P>
+<H2 CLASS="western"><A HREF="#toc5" NAME="sect5">Errors</A></H2>
+<P>None.</P>
+<H2 CLASS="western"><A HREF="#toc6" NAME="sect6">Author</A></H2>
+<P>Ross Johnson for use with <A HREF="https://sourceforge.net/projects/pthreads4w/">Pthreads4w</A>.</P>
+<HR>
+<P><A NAME="toc"></A><B>Table of Contents</B></P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect0" NAME="toc0">Name</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect1" NAME="toc1">Synopsis</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect2" NAME="toc2">Description</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect3" NAME="toc3">Cancellation</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect4" NAME="toc4">Return
+	Value</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect5" NAME="toc5">Errors</A>
+		</P>
+	<LI><P><A HREF="#sect6" NAME="toc6">Author</A> 
+	</P>
+</UL>
+</BODY>
+</HTML>

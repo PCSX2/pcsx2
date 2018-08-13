@@ -1,6 +1,45 @@
 This file documents non-portable functions and other issues.
 
-Non-portable functions included in pthreads-win32
+
+MSVC: Errno and GetLastError
+----------------------------
+
+If Pthreads4w is compiled as a DLL with MSVC, and
+both it and the application are linked against the static
+C runtime (i.e. with the /MT compiler flag), then the
+application will not see the same C runtime globals as
+the library. These include the errno variable, and the
+termination routine called by terminate(). For details,
+refer to the following links:
+
+http://support.microsoft.com/kb/94248
+(Section 4: Problems Encountered When Using Multiple CRT Libraries)
+
+http://social.msdn.microsoft.com/forums/en-US/vclanguage/thread/b4500c0d-1b69-40c7-9ef5-08da1025b5bf
+
+Therefore the library does the following:
+
+(1) In addition to setting the errno variable when errors
+occur, the library will also call SetLastError() with the
+same value. The application can then use GetLastError()
+to obtain the value of errno. (This pair of routines are
+in kernel32.dll, and so are not affected by the use of
+multiple CRT libraries.)
+
+(2) If PTW32_USES_SEPARATE_CRT is defined, when C++ or SEH
+cleanup is used, the library defines a function
+pthread_win32_set_terminate_np(), which can be used to set
+the termination routine that should be called when an unhandled
+exception occurs in a thread function (or otherwise inside the
+library). E.g. see tests/exception3.c for usage.
+
+Note: The test suite recognises PTW32_USES_SEPARATE_CRT for
+the case (1) above but it still needs to be defined explicitly.
+At present there are no runs of the test suite that require
+that to be set because they use either /MD or /MT everywhere
+not mixed. E.g. see tests/errno0.c
+
+Non-portable functions included in Pthreads4w
 -------------------------------------------------
 
 BOOL
@@ -25,7 +64,7 @@ pthread_win32_test_features_np(int mask)
 			QUSEREX.DLL is available and the AlertDrv.sys
 			driver is loaded into Windows, providing
 			alertable (pre-emptive) asyncronous threads
-			cancelation. If this feature returns FALSE
+			cancellation. If this feature returns FALSE
 			then the default async cancel scheme is in
 			use, which cannot cancel blocked threads.
 
@@ -110,8 +149,9 @@ pthread_mutexattr_getkind_np(pthread_mutexattr_t * attr, int *kind)
                 PTHREAD_MUTEX_ERRORCHECK
                 PTHREAD_MUTEX_RECURSIVE
 
+
 int
-pthread_delay_np (const struct timespec *interval);
+pthread_delay_np (const struct timespec *interval)
 
         This routine causes a thread to delay execution for a specific period of time.
         This period ends at the current time plus the specified interval. The routine
@@ -121,9 +161,9 @@ pthread_delay_np (const struct timespec *interval);
 
         Specifying an interval of zero (0) seconds and zero (0) nanoseconds is
         allowed and can be used to force the thread to give up the processor or to
-        deliver a pending cancelation request.
+        deliver a pending cancellation request.
 
-        This routine is a cancelation point.
+        This routine is a cancellation point.
 
         The timespec structure contains the following two fields:
 
@@ -138,6 +178,34 @@ pthread_delay_np (const struct timespec *interval);
         0          Successful completion. 
         [EINVAL]   The value specified by interval is invalid. 
 
+
+__int64
+pthread_getunique_np (pthread_t thr)
+
+		Returns the unique number associated with thread thr.
+		The unique numbers are a simple way of positively identifying a thread when
+		pthread_t cannot be relied upon to identify the true thread instance. I.e. a
+		pthread_t value may be assigned to different threads throughout the life of a 
+		process.
+		
+		Because pthreads4w (Pthreads4w) threads can be uniquely identified by their
+		pthread_t values this routine is provided only for source code compatibility.
+		
+		NOTE: if the library is re-initialised, i.e. by calling pthread_win32_process_detach_np()
+		followed by pthread_win32_process_attach_np(), then the unique number is reset along with
+		several other library global values. Library reinitialisation should not be required,
+		however, some older applications may still call these routines as they were once required to
+		do when statically linking the library.
+
+int
+pthread_timedjoin_np (pthread_t thread, void **value_ptr, const struct timespec *abstime)
+
+int
+pthread_tryjoin_np (pthread_t thread, void **value_ptr)
+
+		These function is added for compatibility with Linux.
+
+
 int
 pthread_num_processors_np (void)
 
@@ -145,6 +213,7 @@ pthread_num_processors_np (void)
         in the system. This implementation actually returns the number of
         processors available to the process, which can be a lower number
         than the system's number, depending on the process's affinity mask.
+
 
 BOOL
 pthread_win32_process_attach_np (void);
@@ -158,30 +227,39 @@ pthread_win32_thread_attach_np (void);
 BOOL
 pthread_win32_thread_detach_np (void);
 
-	These functions contain the code normally run via dllMain
-	when the library is used as a dll but which need to be
-	called explicitly by an application when the library
-	is statically linked. As of version 2.9.0 of the library, static
-	builds using either MSC or GCC will call pthread_win32_process_*
-	automatically at application startup and exit respectively.
+	These functions contain the code normally run via DllMain
+	when the library is used as a dll. As of version 2.9.0 of the
+	library, static builds using either MSC or GCC will call
+	pthread_win32_process_* automatically at application startup and
+	exit respectively.
 
-	Otherwise, you will need to call pthread_win32_process_attach_np()
-	before you can call any pthread routines when statically linking.
-	You should call pthread_win32_process_detach_np() before
-	exiting your application to clean up.
-
-	pthread_win32_thread_attach_np() is currently a no-op, but
-	pthread_win32_thread_detach_np() is needed to clean up
-	the implicit pthread handle that is allocated to a Win32 thread if
-	it calls any pthreads routines. Call this routine when the
-	Win32 thread exits.
-
-	Threads created through pthread_create() do not	need to call
-	pthread_win32_thread_detach_np().
+	pthread_win32_thread_attach_np() is currently a no-op.
+	
+	pthread_win32_thread_detach_np() is not a no-op. It cleans up the
+	implicit pthread handle that is allocated to any thread not started
+	via pthread_create(). Such non-posix threads should call this routine
+	when they exit, or call pthread_exit() to both cleanup and exit.
 
 	These functions invariably return TRUE except for
 	pthread_win32_process_attach_np() which will return FALSE
-	if pthreads-win32 initialisation fails.
+	if Pthreads4w initialisation fails.
+
+
+int
+pthread_attr_getaffinity_np (pthread_attr_t * attr, size_t cpusetsize, cpu_set_t * cpuset);
+
+int
+pthread_attr_setaffinity_np (pthread_attr_t * attr, size_t cpusetsize, const cpu_set_t * cpuset);
+
+int
+pthread_getaffinity_np (pthread_t thread, size_t cpusetsize, cpu_set_t * cpuset);
+
+int
+pthread_setaffinity_np (pthread_t thread, size_t cpusetsize, const cpu_set_t * cpuset);
+
+	Manipulate the CPU affinity of threads. Compatibility with libgcc-based pthreads
+	implementations.
+
 
 int
 pthreadCancelableWait (HANDLE waitHandle);
@@ -196,6 +274,32 @@ pthreadCancelableTimedWait (HANDLE waitHandle, DWORD timeout);
 	pthread_cancel has been called. It is implemented using
 	WaitForMultipleObjects on 'waitHandle' and a manually
 	reset w32 event used to implement pthread_cancel.
+
+int
+pthread_getname_np(pthread_t thr, char *name, int len);
+
+If PTW32_COMPATIBILITY_BSD or PTW32_COMPATIBILITY_TRU64 defined
+int
+pthread_setname_np(pthread_t thr, const char *name, void *arg);
+
+Otherwise:
+int
+pthread_setname_np(pthread_t thr, const char *name);
+
+	Set and get thread names. Compatibility.
+
+
+struct timespec *
+pthread_win32_getabstime_np (struct timespec * abstime, const struct timespec * relative);
+
+	Primarily to facilitate writing unit tests but exported for convenience.
+	The struct timespec pointed to by the first parameter is modified to represent the
+	time 'now' plus an optional offset value timespec in a platform optimal way.
+	Returns the first parameter so is compatible as the struct timespec * parameter in
+	POSIX timed function calls, e.g.
+	
+	struct timespec abstime, reltime = { 0, 5000000 } /* 5 ms */; 
+	pthread_mutex_timedwait(&mtx, pthread_win32_getabstime_np(&abstime, &reltime));
 
 
 Non-portable issues
@@ -284,7 +388,7 @@ Thread priority
 	As you can see, the real priority levels available to any individual
 	Win32 thread are non-contiguous.
 
-	An application using pthreads-win32 should not make assumptions about
+	An application using Pthreads4w should not make assumptions about
 	the numbers used to represent thread priority levels, except that they
 	are monotonic between the values returned by sched_get_priority_min()
 	and sched_get_priority_max(). E.g. Windows 95, 98, NT, 2000, XP make
@@ -293,14 +397,14 @@ Thread priority
 	(THREAD_PRIORITY_LOWEST) as 5, and the maximum priority
 	(THREAD_PRIORITY_HIGHEST) as 1.
 
-	Internally, pthreads-win32 maps any priority levels between
+	Internally, Pthreads4w maps any priority levels between
 	THREAD_PRIORITY_IDLE and THREAD_PRIORITY_LOWEST to THREAD_PRIORITY_LOWEST,
 	or between THREAD_PRIORITY_TIME_CRITICAL and THREAD_PRIORITY_HIGHEST to
 	THREAD_PRIORITY_HIGHEST. Currently, this also applies to
 	REALTIME_PRIORITY_CLASSi even if levels -7, -6, -5, -4, -3, 3, 4, 5, and 6
 	are supported.
 
-	If it wishes, a Win32 application using pthreads-win32 can use the Win32
+	If it wishes, a Win32 application using Pthreads4w can use the Win32
 	defined priority macros THREAD_PRIORITY_IDLE through
 	THREAD_PRIORITY_TIME_CRITICAL.
 
@@ -330,29 +434,38 @@ the API function pthread_equal() to test for equality.
 
 The problem
 
-Certain applications would like to be able to access only the 'pure' pthread_t
-id values, primarily to use as keys into data structures to manage threads or
+Certain applications would like to be able to access a scalar pthread_t,
+primarily to use as keys into data structures to manage threads or
 thread-related data, but this is not possible in a maximally portable and
 standards compliant way for current POSIX threads implementations.
 
-For implementations that define pthread_t as a scalar, programmers often employ
-direct relational and equality operators on pthread_t. This code will break when
-ported to an implementation that defines pthread_t as an aggregate type.
+This use is often required because pthread_t values are not unique through
+the life of the process and so it is necessary for the application to keep
+track of a threads status itself, and ironically this is because they are
+scalar types in the first place.
+
+To my knowledge the only platform that provides a scalar pthread_t that is
+unique through the life of a process is Solaris. Other platforms, including
+HPUX, will not provide support to applications that do this.
+
+For implementations that define pthread_t as a scalar, programmers often
+employ direct relational and equality operators with pthread_t. This code
+will break when ported to a standard-comforming implementation that defines
+pthread_t as an aggregate type.
 
 For implementations that define pthread_t as an aggregate, e.g. a struct,
 programmers can use memcmp etc., but then face the prospect that the struct may
 include alignment padding bytes or bits as well as extra implementation-specific
 members that are not part of the unique identifying value.
 
-[While this is not currently the case for pthreads-win32, opacity also
-means that an implementation is free to change the definition, which should
-generally only require that applications be recompiled and relinked, not
-rewritten.]
+Opacity also means that an implementation is free to change the definition,
+which should generally only require that applications be recompiled and relinked,
+not rewritten.
 
 
 Doesn't the compiler take care of padding?
 
-The C89 and later standards only effectively guarrantee element-by-element
+The C89 and later standards only effectively guarantee element-by-element
 equivalence following an assignment or pass by value of a struct or union,
 therefore undefined areas of any two otherwise equivalent pthread_t instances
 can still compare differently, e.g. attempting to compare two such pthread_t
@@ -391,9 +504,9 @@ How can we force the behaviour we need?
 Solutions
 
 Adding new functions to the standard API or as non-portable extentions is
-the only reliable and portable way to provide the necessary operations.
-Remember also that POSIX is not tied to the C language. The most common
-functions that have been suggested are:
+the only reliable to provide the necessary operations. Remember also that
+POSIX is not tied to the C language. The most common functions that have
+been suggested are:
 
 pthread_null()
 pthread_compare()
@@ -402,7 +515,7 @@ pthread_hash()
 A single more general purpose function could also be defined as a
 basis for at least the last two of the above functions.
 
-First we need to list the freedoms and constraints with restpect
+First we need to list the freedoms and constraints with respect
 to pthread_t so that we can be sure our solution is compatible with the
 standard.
 
@@ -429,7 +542,7 @@ within the pthread_t that don't uniquely identify the thread, including padding,
 such that client code can return consistent results from operations done on the
 result. If the additional bits are a pointer to an associate structure then
 this function would ensure that the memory used to store that associate
-structure does not leak. After normalization the following compare would be
+structure does not leak. With normalization the following compare would be
 valid and repeatable:
 
 memcmp(pthread_normalize(&t1),pthread_normalize(&t2),sizeof(pthread_t))
@@ -572,7 +685,7 @@ bitclear((void*) &non-id, (void*) pthread_normalize(&id), sizeof(pthread_t));
 
 A pthread_t type change proposal to neutralise the effects of padding
 
-Even if pthread_nornalize() is available, padding is still a problem because
+Even if pthread_normalize() is available, padding is still a problem because
 the standard only garrantees element-by-element equivalence through
 copy operations (assignment and pass-by-value). So padding bit values can
 still change randomly after calls to pthread_normalize().
@@ -714,7 +827,8 @@ extention: provided the union contains a member of the same type as the
 object then the object may be cast to the union itself.
 
 We could use this feature to speed up the pthrcmp() function from example 2
-above by casting rather than assigning the pthread_t arguments to the union, e.g.:
+above by directly referencing rather than copying the pthread_t arguments to
+the local union variables, e.g.:
 
 int pthcmp(pthread_t left, pthread_t right)
 {
@@ -772,12 +886,14 @@ I have not provided any solution to the problem of handling extra values embedde
 in pthread_t, e.g. debugging or trap information that an implementation is entitled
 to include. Therefore none of this replaces the portability and flexibility of API
 functions but what functions are needed? The threads standard is unlikely to
-include that can be implemented by a combination of existing features and more
-generic functions (several references in the threads rationale suggest this.
+include new functions that can be implemented by a combination of existing features
+and more generic functions (several references in the threads rationale suggest this).
 Therefore I propose that the following function could replace the several functions
 that have been suggested in conversations:
 
 pthread_t * pthread_normalize(pthread_t * handle);
 
 For most existing pthreads implementations this function, or macro, would reduce to
-a no-op with zero call overhead.
+a no-op with zero call overhead. Most of the other desired operations on pthread_t
+values (null, compare, hash, etc.) can be trivially derived from this and other
+standard functions.

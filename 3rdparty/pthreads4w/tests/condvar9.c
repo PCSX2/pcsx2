@@ -4,37 +4,37 @@
  *
  * --------------------------------------------------------------------------
  *
- *      Pthreads-win32 - POSIX Threads Library for Win32
+ *      Pthreads4w - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
+ *      Copyright(C) 1999-2018, Pthreads4w contributors
+ *
+ *      Homepage: https://sourceforge.net/projects/pthreads4w/
+ *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
  *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
- * 
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
- * 
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
- * 
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *      https://sourceforge.net/p/pthreads4w/wiki/Contributors/
+ *
+ * This file is part of Pthreads4w.
+ *
+ *    Pthreads4w is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    Pthreads4w is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with Pthreads4w.  If not, see <http://www.gnu.org/licenses/>. *
  *
  * --------------------------------------------------------------------------
  *
  * Test Synopsis:
- * - Test multiple pthread_cond_broadcasts with thread cancelation.
+ * - Test multiple pthread_cond_broadcasts with thread cancellation.
  *
  * Test Method (Validation or Falsification):
  * - Validation
@@ -108,7 +108,7 @@ static cvthing_t cvthing = {
 
 static pthread_mutex_t start_flag = PTHREAD_MUTEX_INITIALIZER;
 
-static struct timespec abstime = { 0, 0 };
+static struct timespec abstime, reltime = { 5, 0 };
 
 static int awoken;
 
@@ -128,7 +128,7 @@ mythread(void * arg)
   assert(pthread_mutex_lock(&cvthing.lock) == 0);
 
   /*
-   * pthread_cond_timedwait is a cancelation point and we're
+   * pthread_cond_timedwait is a cancellation point and we're
    * going to cancel some threads deliberately.
    */
 #ifdef _MSC_VER
@@ -163,21 +163,13 @@ main()
   int canceledThreads = 0;
   pthread_t t[NUMTHREADS + 1];
 
-  PTW32_STRUCT_TIMEB currSysTime;
-  const DWORD NANOSEC_PER_MILLISEC = 1000000;
-
   assert((t[0] = pthread_self()).p != NULL);
 
   assert(cvthing.notbusy == PTHREAD_COND_INITIALIZER);
 
   assert(cvthing.lock == PTHREAD_MUTEX_INITIALIZER);
 
-  PTW32_FTIME(&currSysTime);
-
-  abstime.tv_sec = (long)currSysTime.time;
-  abstime.tv_nsec = NANOSEC_PER_MILLISEC * currSysTime.millitm;
-
-  abstime.tv_sec += 5;
+  (void) pthread_win32_getabstime_np(&abstime, &reltime);
 
   assert((t[0] = pthread_self()).p != NULL);
 
@@ -199,7 +191,7 @@ main()
 	}
 
       /*
-       * Code to control or munipulate child threads should probably go here.
+       * Code to control or manipulate child threads should probably go here.
        */
       cvthing.shared = 0;
 

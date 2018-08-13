@@ -1,23 +1,36 @@
-PTHREADS-WIN32 RELEASE 2.9.0 (2012-05-25)
------------------------------------------
-Web Site: http://sourceware.org/pthreads-win32/
-FTP Site: ftp://sourceware.org/pub/pthreads-win32
-Maintainer: Ross Johnson <ross.johnson@loungebythelake.net>
+PTHREADS4W RELEASE 2.11.0 (2018-08-07)
+--------------------------------------
+Web Site:	https://sourceforge.net/projects/pthreads4w/
+Repository:	https://sourceforge.net/p/pthreads4w/code
+Releases:	https://sourceforge.net/projects/pthreads4w/files
+Maintainer: Ross Johnson <firstname dot lastname at loungebythelake dot net>
 
 
 We are pleased to announce the availability of a new release of
-Pthreads-win32, an Open Source Software implementation of the
-Threads component of the POSIX 1003.1 2001 Standard for Microsoft's
-Win32 environment. Some functions from other sections of POSIX
-1003.1 2001 are also supported including semaphores and scheduling
-functions.
+Pthreads4w (a.k.a. Pthreads4w), an Open Source Software implementation
+of the Threads component of the SUSV3 Standard for Microsoft's
+Windows (x86 and x64). Some relevant functions from other sections
+of SUSV3 are also supported including semaphores and scheduling
+functions. See the Conformance section below for details.
 
-Some common non-portable functions are also implemented for
-additional compatibility, as are a few functions specific
-to pthreads-win32 for easier integration with Win32 applications.
+Some common non-portable functions are also implemented for additional
+compatibility, as are a few functions specific to pthreads4w for easier
+integration with Windows applications.
 
-Pthreads-win32 is free software, distributed under the GNU Lesser
-General Public License (LGPL).
+Pthreads4w is free software, distributed under the GNU Lesser General
+Public License (LGPL). Version 2.11.0 moves to the LGPL v3 for compatibility
+with Pthreads4w version 3 which will be released under the Apache Licence
+v2.0.
+
+For those who want to try the most recent changes, the SourceForge Git repository
+is the one to use. The Sourceware CVS repository is synchronised much less often
+and may be abandoned altogether.
+
+Release 2.9.1 was probably the last to provide pre-built libraries. The supported
+compilers are now all available free for personal use. The MSVS version should
+build out of the box using nmake. The GCC versions now make use of GNU autoconf
+to generate a configure script which in turn creates a custom config.h for the
+environment you use: MinGW or MinGW64, etc. and the GNUmakefiles.
 
 
 Acknowledgements
@@ -28,16 +41,19 @@ implementation contributed by John Bossom.
 The implementation of Condition Variables uses algorithms developed
 by Alexander Terekhov and Louis Thomas.
 
-The implementation of POSIX mutexes has been improved by Thomas Pfaff
+The implementation of POSIX mutexes was improved by Thomas Pfaff
 and later by Alexander Terekhov.
 
 The implementation of Spinlocks and Barriers was contributed
 by Ross Johnson.
 
 The implementation of read/write locks was contributed by
-Aurelio Medina and improved by Alexander Terekhov.
+Aurelio Medina and improved (replaced) by Alexander Terekhov.
 
-Many others have contributed significant time and effort to solve crutial
+An implementation of MCS queue-based locks (used internally) was contributed
+by Vladimir Kliatchko.
+
+Many others have contributed significant time and effort to solve crucial
 problems in order to make the library workable, robust and reliable.
 
 Thanks to Xavier Leroy for granting permission to use and modify his
@@ -50,7 +66,7 @@ were extracted from it.
 There is also a separate CONTRIBUTORS file. This file and others are
 on the web site:
 
-	http://sourceware.org/pthreads-win32
+	http://sourceware.org/Pthreads4w
 
 As much as possible, the ChangeLog file acknowledges contributions to the
 code base in more detail.
@@ -70,7 +86,7 @@ These are now documented in the BUGS file.
 Level of standards conformance
 ------------------------------
 
-The following POSIX 1003.1 2001 options are defined and set to 200112L:
+The following POSIX options are defined and set to 200809L:
 
       _POSIX_THREADS
       _POSIX_THREAD_SAFE_FUNCTIONS
@@ -81,8 +97,7 @@ The following POSIX 1003.1 2001 options are defined and set to 200112L:
       _POSIX_SPIN_LOCKS
       _POSIX_BARRIERS
 
-
-The following POSIX 1003.1 2001 options are defined and set to -1:
+The following POSIX options are defined and set to -1:
 
       _POSIX_THREAD_ATTR_STACKADDR
       _POSIX_THREAD_PRIO_INHERIT
@@ -90,7 +105,7 @@ The following POSIX 1003.1 2001 options are defined and set to -1:
       _POSIX_THREAD_PROCESS_SHARED
 
 
-The following POSIX 1003.1 2001 limits are defined and set:
+The following POSIX limits are defined and set:
 
       _POSIX_THREAD_THREADS_MAX
       _POSIX_SEM_VALUE_MAX
@@ -151,9 +166,9 @@ The following functions are implemented:
       pthread_mutexattr_setpshared
       pthread_mutexattr_gettype
       pthread_mutexattr_settype (types: PTHREAD_MUTEX_DEFAULT
-					PTHREAD_MUTEX_NORMAL
-					PTHREAD_MUTEX_ERRORCHECK
-					PTHREAD_MUTEX_RECURSIVE  )
+										PTHREAD_MUTEX_NORMAL
+										PTHREAD_MUTEX_ERRORCHECK
+										PTHREAD_MUTEX_RECURSIVE  )
       pthread_mutexattr_getrobust
       pthread_mutexattr_setrobust (values: PTHREAD_MUTEX_STALLED
                                            PTHREAD_MUTEX_ROBUST)
@@ -249,6 +264,8 @@ The following functions are implemented:
       sched_get_priority_max
       sched_get_priority_min
       sched_rr_get_interval  (returns an error ENOTSUP)
+      sched_getaffinity
+      sched_setaffinity
       sched_setscheduler     (only supports SCHED_OTHER)
       sched_getscheduler     (only supports SCHED_OTHER)
       sched_yield
@@ -261,12 +278,23 @@ The following functions are implemented:
                               for thread validity checking)
 
       ---------------------------
-      Non-portable routines (see the README.NONPORTABLE file for usage)
+      Non-portable routines
       ---------------------------
+      (See the README.NONPORTABLE file or HTML manual pages for usage.)
+      pthread_attr_getname_np
+      pthread_attr_setname_np
+      pthread_getname_np
+      pthread_setname_np
+      pthread_timedjoin_np
+      pthread_tryjoin_np
       pthread_getw32threadhandle_np
       pthread_timechange_handler_np
       pthread_delay_np
       pthread_getunique_np
+      pthread_attr_getaffinity_np
+      pthread_attr_setaffinity_np
+      pthread_getaffinity_np
+      pthread_setaffinity_np
       pthread_mutexattr_getkind_np
       pthread_mutexattr_setkind_np	(types: PTHREAD_MUTEX_FAST_NP,
 						PTHREAD_MUTEX_ERRORCHECK_NP,
@@ -274,6 +302,7 @@ The following functions are implemented:
 						PTHREAD_MUTEX_ADAPTIVE_NP,
 						PTHREAD_MUTEX_TIMED_NP)
       pthread_num_processors_np
+      pthread_win32_getabstime_np
       (The following four routines may be required when linking statically.
        The process_* routines should not be needed for MSVC or GCC.)
       pthread_win32_process_attach_np
@@ -296,6 +325,19 @@ The following functions are implemented:
       PTHREAD_COND_INITIALIZER
       PTHREAD_RWLOCK_INITIALIZER
       PTHREAD_SPINLOCK_INITIALIZER
+
+      ---------------------------
+      CPU Affinity Mask Support
+      ---------------------------
+      CPU_ZERO
+      CPU_EQUAL
+      CPU_COUNT
+      CPU_SET
+      CPU_CLR
+      CPU_ISSET
+      CPU_AND
+      CPU_OR
+      CPU_XOR
 
 
 The library includes two non-API functions for creating cancellation
@@ -365,88 +407,11 @@ The following functions are not implemented:
       rand_r
 
 
-Availability
------------- 
-
-The prebuilt DLL, export libs (for both MSVC and Mingw32), and the header
-files (pthread.h, semaphore.h, sched.h) are available along with the
-complete source code.
-
-The source code can be found at:
-
-	ftp://sources.redhat.com/pub/pthreads-win32
-
-and as individual source code files at
-
-	ftp://sources.redhat.com/pub/pthreads-win32/source
-
-The pre-built DLL, export libraries and include files can be found at:
-
-	ftp://sources.redhat.com/pub/pthreads-win32/dll-latest
-
-
-      
-Mailing List 
-------------  
-      
-There is a mailing list for discussing pthreads on Win32. To join,
-send email to:
-
-	pthreads-win32-subscribe@sourceware.cygnus.com
-      
-
 Application Development Environments
 ------------------------------------
 
 See the README file for more information.
       
-MSVC:
-MSVC using SEH works. Distribute pthreadVSE.dll with your application.
-MSVC using C++ EH works. Distribute pthreadVCE.dll with your application.
-MSVC using C setjmp/longjmp works. Distribute pthreadVC.dll with your application.
-
-
-Mingw32:
-See the FAQ, Questions 6 and 10.
-
-Mingw using C++ EH works. Distribute pthreadGCE.dll with your application.
-Mingw using C setjmp/longjmp works. Distribute pthreadGC.dll with your application.
-
-
-Cygwin: (http://sourceware.cygnus.com/cygwin/)
-Developers using Cygwin do not need pthreads-win32 since it has POSIX threads
-support. Refer to its documentation for details and extent.
-
-
-UWIN:
-UWIN is a complete Unix-like environment for Windows from AT&T. Pthreads-win32
-doesn't currently support UWIN (and vice versa), but that may change in the
-future.
-
-Generally:
-For convenience, the following pre-built files are available on the FTP site
-(see Availability above):
-
-	pthread.h	- for POSIX threads
-	semaphore.h	- for POSIX semaphores
-	sched.h 	- for POSIX scheduling
-	pthreadVCE.dll	- built with MSVC++ compiler using C++ EH
-	pthreadVCE.lib
-	pthreadVC.dll	- built with MSVC compiler using C setjmp/longjmp
-	pthreadVC.lib
-	pthreadVSE.dll	- built with MSVC compiler using SEH
-	pthreadVSE.lib
-	pthreadGCE.dll	- built with Mingw32 G++ 2.95.2-1
-	pthreadGC.dll	- built with Mingw32 GCC 2.95.2-1 using setjmp/longjmp
-	libpthreadGCE.a - derived from pthreadGCE.dll
-	libpthreadGC.a	- derived from pthreadGC.dll
-	gcc.dll 	- needed if distributing applications that use
-			  pthreadGCE.dll (but see the FAQ Q 10 for the latest
-			  related information)
-
-These are the only files you need in order to build POSIX threads
-applications for Win32 using either MSVC or Mingw32.
-
 See the FAQ file in the source tree for additional information.
 
 
@@ -468,14 +433,6 @@ available:
        Pthreads Programming
        By Bradford Nichols, Dick Buttlar & Jacqueline Proulx Farrell
        O'Reilly (pub)
-
-On the web: see the links at the bottom of the pthreads-win32 site:
-
-       http://sources.redhat.com/pthreads-win32/
-
-       Currently, there is no documentation included in the package apart
-       from the copious comments in the source code.
-
 
 
 Enjoy!

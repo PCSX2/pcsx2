@@ -1,3 +1,340 @@
+2018-08-07  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* GNUmakefile.in (DLL_VER): rename as PTW32_VER.
+	* Makefile (DLL_VER): Likewise.
+	* Bmakefile (DLL_VER): Likewise; does anyone use this anymore?
+	* Makefile: Variable renaming: e.g. VCLIB to VCIMP for DLL import
+	library pthreadVC2.lib and VCLIB now holds static library name
+	libpthreadVC2.lib, and similar for the other cleanup method versions.
+
+2018-07-22  Mark Pizzolato <markpizzolato dash pthreads dash win32 at subscriptions dot pizzolato dot net>
+
+	* Makefile: Change the various static test runs to actually
+	compile with /MT or /MTd, i.e. No mixed /MT and /MD. Static
+	builds no longer create a separate pthreads*.lib static library
+	because errno does not work across that linkage.
+	* sequence1.c: Use more reasonable number of threads to avoid
+	resource limits.
+
+2016-12-21  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* mutex6.c: fix random failures by using a polling loop to replace
+	a single Sleep().
+	* mutex6n.c: Likewise.
+	* mutex6s.c: Likewise.
+	* mutex7.c: Likewise.
+	* mutex7n.c: Likewise.
+	* mutex8.c: Likewise
+	* mutex8n.c: Likewise.
+	* semaphore5.c: don't fail on expected sem_destroy EBUSY.
+
+2016-124-18  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* test.c (PTW32_TEST_SNEAK_PEEK): #define this to prevent some
+	tests from failing (specifically "make GCX-small-static") with
+	undefined ptw32_autostatic_anchor. Checked in ../implament.h.
+	* GNUMakfile.in: Rename testsuite log to test-specific name and
+	do not remove.
+	* GNUMakfile.in: Add realclean target
+
+2016-04-30  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* semaphore4t.c: No longer need to include ptw32_timespec.c and the
+	defines that tried to make it work (but failed). There is now an
+	exported routine that this test uses that can also be used by
+	applications. It's a general routine that keeps all the platform
+	conditional stuff inside the library.
+	* Makefile: Remove _ptw32.h copied from parent directory.
+
+2016-03-31  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile (_ptw32.h): Copy header to tests directory required to
+	build tests, and apps.
+
+2016-03-31  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* test.h: source errno.h
+
+2016-03-31  Keith Marshall <MinGW32 project>
+
+	* test.h: Patch for MinGW32 autoconf.
+	* GNUmakefile.in: New for autoconf.
+
+2016-03-28  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* condvar2.c: Use platform-aware pthread_win32_getabstime_np.
+	* condvar2_1.c: Likewise.
+	* condvar3.c: Likewise.
+	* condvar3_1.c: Likewise.
+	* condvar3_2.c: Likewise.
+	* condvar3_3.c: Likewise.
+	* condvar4.c: Likewise.
+	* condvar5.c: Likewise.
+	* condvar6.c: Likewise.
+	* condvar7.c: Likewise.
+	* condvar8.c: Likewise.
+	* condvar9.c: Likewise.
+	* join4.c: Likewise.
+	* mutex8.c: Likewise.
+	* mutex8e.c: Likewise.
+	* mutex8n.c: Likewise.
+	* mutex8r.c: Likewise.
+	* reinit1.c: Likewise.
+	* rwlock2_t.c: Likewise.
+	* rwlock3_t.c: Likewise.
+	* rwlock4_t.c: Likewise.
+	* rwlock5_t.c: Likewise.
+	* rwlock6_t.c: Likewise.
+	* rwlock6_t2.c: Likewise.
+	* semaphore4t.c: Likewise.
+	* stress1.c: Likewise.
+	* reinit1.c: Remove unused variable declarations.
+
+2015-11-01	Mark Smith <masmith at fb dot com>
+
+	* semaphore4t.c: Enhanced and additional testing of sub-millisecond
+	timeouts.
+
+2014-07-22  Scott Libert  <scott underscore libert at dell dot com>
+
+	* semaphore3.c: Wait for threads to complete before exiting main().
+	This test would sometimes fail because, behaviourally, it was not
+	standard-compliant.
+
+2013-12-10  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* cancel9.c (bytes, dwEvent): Removed to eliminate warning "set but
+	not used".
+
+2013-11-13  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* reinit1.c: New test - reinitialising the library.
+	* common.mk: Add new test.
+	* reorder.mk: Likewise.
+
+2013-07-23  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* affinity*.c: Skipped under WINCE.
+
+2013-07-02  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* threestage.c: New test/example code; not written specifically as
+	a test; independently written and essentially unmodified pthreads
+	example.
+
+2013-06-19  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* exit6.c: New test (added some time ago but not committed).
+	* name_np1.c: New test for pthread_[sg]etname_np().
+	* name_np2.c: New test for pthread_attr_[sg]etname_np().
+	* common.mk: Add new tests.
+	* reorder.mk: Likewise.
+
+2013-06-06  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* affinity6.c: New test for pthread_attr_[gs]etaffinity_np()
+	* common.mk: Add new tests.
+	* reorder.mk: Likewise.
+
+2012-10-24  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* tsd3.c: New regression test for Stephane Clairet bug fix/report;
+	this test confirms that keys are deleted correctly prior to threads
+	exiting.
+	* tsd2.c: Modified comments and indentation.
+	* tsd1.c: Likewise.
+	* common.mk (tsd3): New test added.
+	* reorder.mk (tsd3): Likewise.
+
+2012-10-16  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* GNUmakefile (EXTRAVERSION): Naming option for libraries to be
+	consistent with MSVS Makefile; no longer automatically based on
+	ARCH setting.
+
+2012-10-10  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* cancel1.c: Fix comment typo.
+	* Makefile: Adding functionality to support rapid turnaround of
+	individual or small sets of tests; removed loadfree test.
+	* GNUmakefile: Likewise.
+	* Bmakefile: Removed loadfree test.
+	* Wmakefile: Likewise.
+	* common.mk: New makefile include file; split out common macros.
+	* runorder.mk: New makefile include file; split out run order rules
+	to allow selective inclusion.
+	* loadfree.c: Removed from suite; not required; unnecessarily
+	complicates the makefiles.
+
+2012-10-04  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* join4.c: Modified for pthread_tryjoin_np tests.
+
+2012-09-29  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile: Align target names with build makefile target names
+	following changes there; remove the separate static tests list.
+	* GNUmakefile: Likewise; consolidate rules.
+
+2012-09-25  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* context1.c (anotherEnding): Should exit the thread, not return.
+
+2012-09-23  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile: Add secondary target names to existing test targets so
+	we can output how the library was built, e.g. "Running VC-inlined test".
+	This is useful when making "all-tests" from the library build Makefile.
+	* GNUmakefile: Similarly.
+
+2012-09-22  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* GNUmakefile: Do what Makefile does and print the make target
+	when running each test.
+
+2012-09-22  Daniel Richard. G <danielg at teragram dot com>
+
+	* Makefile: This reverts an earlier change of mine. In some
+	versions of nmake, $(MAKE) is a full path, which utterly futzes
+	up the "make help" output; regularized the test targets, so we
+	have e.g. VSE-static now; regularized the parentheticals;
+	removed a spurious use of $(PTW32_VER); new test targets: VCX-debug
+	{VSE,VCX}-static{,-debug}; fixed the {VC,VCE}-static-debug targets.
+	* exception3.c: Narrowly exclude this test from the known-bad VS2005
+	configuration (By the way: I downloaded and tested with what is
+	presumably the most up-to-date MSVCR80.DLL. Same deal.); use
+	pthread_win32_set_terminate_np() when appropriate, and verify that
+	it has an effect different from calling set_terminate(); no need for
+	that assert(); it's overly pedantic.
+	* exception3_0.c: Same VS2005 exclusion.
+	* once3.c: Put in a note so that users know what to do if the test
+	hangs or exits abnormally (I figured this is better than narrowly
+	disabling pthread_cancel() on MSVC6, since cancellation does seem to
+	work correctly with /EHa, and we don't have any way of telling at
+	compile time whether /EHs or /EHa is in use).
+	* once4.c: Likewise.
+	* semaphore1.c: s/PTW32_BROKEN_ERRNO/PTW32_USES_SEPARATE_CRT/
+
+2012-09-22  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* pthread_win32_attach_detach_np.c (pthread_win32_detach_thread_np):
+	Check for NULL ptw32_selfThreadKey before call to TlsSetKey(). Need
+	to find where this is being set to NULL before this point. Was
+	consistently failing tests/seamphore3.c in all GC static builds and
+	never seen in GC DLL builds. May also be responsible for
+	inconsistent VCE fails on that test, although the fail mode was
+	different - the latter hangs the test while the former segfaults.
+
+2012-09-22  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* GNUmakefile (GC-static-debug): New make target.
+
+2012-09-21  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* affinity1.c: New test for new process CPU affinity routines.
+	* affinity2.c: New test for new process CPU affinity routines.
+	* affinity3.c: New test for new process and thread CPU affinity routines.
+	* affinity4.c: New test for new process and thread CPU affinity routines.
+	* affinity5.c: New test for new process and thread CPU affinity routines.
+	* Makefile: Add new tests.
+	* GNUmakfile: Likewise.
+	* Bmakfile: Likewise.
+	* Wmakfile: Likewise.
+
+2012-09-09  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* exception3.c: Rewrite to fix strategy.
+	* exception3_0.c: New test.
+	* exception2.c: Reduce sleep time to speed up test.
+	* Makefile (exception3_0.*): Add new test.
+	* GNUmakefile (exception3_0.*): Add new test.
+	* Bmakefile (exception3_0.*): Add new test.
+	* Wmakefile (exception3_0.*): Add new test.
+
+2012-09-05  Daniel Richard. G <danielg at teragram dot com>
+
+	* exception2.c: Fix result codes to avoid false negative failures.
+	* cancel9.c: cosmetic change.
+	* GNUmakefile (clean): delete manifest files.
+	* Bmakefile: Likewise.
+	* Wmakefile: Likewise.
+	* Makefile: Likewise.
+
+2012-09-04  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile (VCEFLAGS): Changed from /EHsc to /EHs which was causing
+	tests/once3.c to hang, suspect exceptions not being thrown from
+	extern C routines.
+	* cancel2.c: Rewrite to use a barrier for thread control; remove
+	asyncronous cancel type which was a massive bug in the test strategy
+	and cusing SEGFAULTs (access violations).
+	* eyal1.c: Remove unused variable 'i' to clear compiler warning.
+	* context1.c: Remove call to pthread_exit() in alternate ending to
+	quell error in GCE tests see when running x86 build on x64.
+
+2012-09-03  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* Makefile (VCE-static): Add VC++ static build target
+	(VCE-static-debug): Likewise.
+
+2012-08-29  Daniel Richard. G <danielg at teragram dot com>
+
+	* mutex6.c: Removed pointless exit(0) and never-reached comment.
+	* mutex6r.c: Likewise.
+	* mutex6rs.c: Likewise.
+	* mutex6s.c: Likewise.
+	* mutex6e.c: Likewise.
+	* mutex6es.c: Likewise.
+	* mutex7.c: Likewise.
+	* mutex7e.c: Likewise.
+	* mutex7n.c: Likewise.
+	* mutex7r.c: Likewise.
+	* mutex6n.c: Likewise; ensure operator precedence.
+	* once2.c (sharedInt_t): replace static initialization of struct with memset.
+	* once3.c: Likewise.
+	* once4.c: Likewise.
+	* cleanup0.c: Likewise.
+	* cleanup1.c: Likewise.
+	* cleanup2.c: Likewise.
+	* cleanup3.c: Likewise.
+	* openmp1.c: Fix casts.
+	* exit1.c: Remove assert statement that is never reached and return 1.
+	* exception2.c: Prevent displaying modal error dialog.
+
+2012-08-19  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* join4.c: Test for new pthread_timedjoin_np routine
+	* Makefile (join4): Added.
+	* GNUmakefile (join4): Added.
+	* Bmakefile (join4): Added.
+	* Wmakefile (join4): Added.
+	* test.h (sys/timeb.h): Add #include.
+	* mutex8.c (sys/timeb.h): Remove #include.
+	* mutex8e.c (sys/timeb.h): Remove #include.
+	* mutex8n.c (sys/timeb.h): Remove #include.
+	* mutex8r.c (sys/timeb.h): Remove #include.
+	* benchtest1.c (sys/timeb.h): Remove #include.
+	* benchtest2.c (sys/timeb.h): Remove #include.
+	* benchtest3.c (sys/timeb.h): Remove #include.
+	* benchtest4.c (sys/timeb.h): Remove #include.
+	* benchtest5.c (sys/timeb.h): Remove #include.
+
+2012-08-11  Daniel Richard. G <danielg at teragram dot com>
+
+	* Makefile: Various improvements.
+	* GNUmakefile: Likewise.
+
+2011-07-20  Ross Johnson <ross dot johnson at homemail dot com dot au>
+
+	* cancel2.c (PTHREAD_CANCELED): Fix cast warning when compiling with g++.
+	* cleanup0.c (PTHREAD_CANCELED): Likewise.
+	* cleanup1.c (PTHREAD_CANCELED): Likewise.
+
+2012-07-19  Daniel Richard. G <danielg at teragram dot com>
+
+	* Makefile: Various fixes.
+	* GNUmakefile: Likewise.
+
 2011-07-03  Ross Johnson <ross dot johnson at homemail dot com dot au>
 
 	* create3.c: Removed; testing a condition that is not in the library's
@@ -96,7 +433,7 @@
 	* GNUMakefile: Update for new tests.
 	* Makefile: Ditto.
 	* BMakefile: Ditto.
-	* once3.c: Improve cancelation testing.
+	* once3.c: Improve cancellation testing.
 	* stress1.c: Fix comment.
 
 2007-01-04  Ross Johnson <Ross dot Johnson at homemail dot com dot au>
@@ -176,9 +513,9 @@
 2004-11-19  Ross Johnson  <rpj@callisto.canberra.edu.au>
 
 	* Bmakefile: New makefile for Borland.
-	* Makefile (DLL_VER): Added.
-	* GNUmakefile (DLL_VER): Added.
-	* Wmakefile (DLL_VER): Added.
+	* Makefile (PTW32_VER): Added.
+	* GNUmakefile (PTW32_VER): Added.
+	* Wmakefile (PTW32_VER): Added.
 
 2004-10-29  Ross Johnson  <rpj@callisto.canberra.edu.au>
 
@@ -358,7 +695,7 @@
 	   *          exit code 3.
 	   *       2) A term_func() must not throw an exception. Therefore
 	   *          term_func() should not call pthread_exit() if an
-	   *          an exception-using version of pthreads-win32 library
+	   *          an exception-using version of Pthreads4w library
 	   *          is being used (i.e. either pthreadVCE or pthreadVSE).
 
 
@@ -574,7 +911,7 @@
 	handle it under Mingw32. Mingw32 now builds the
 	library correctly to pass all tests - see Thomas
 	Pfaff's detailed instructions re needed changes
-	to Mingw32 in the Pthreads-Win32 FAQ.
+	to Mingw32 in the Pthreads4w FAQ.
 
 2000-09-08  Ross Johnson  <rpj@special.ise.canberra.edu.au>
 
@@ -742,13 +1079,13 @@
 
 2000-01-04  Ross Johnson  <rpj@special.ise.canberra.edu.au>
 
-	* cancel4.c: New; Test cancelation does not occur in deferred
-	cancelation threads with no cancelation points.
+	* cancel4.c: New; Test cancellation does not occur in deferred
+	cancellation threads with no cancellation points.
 
-	* cancel3.c: New; Test asynchronous cancelation.
+	* cancel3.c: New; Test asynchronous cancellation.
 
 	* context1.c: New; Test context switching method for async
-	cancelation.
+	cancellation.
 
 1999-11-23  Ross Johnson  <rpj@special.ise.canberra.edu.au>
 
@@ -772,7 +1109,7 @@ Oct 14 1999  Ross Johnson  <rpj@ixobrychus.canberra.edu.au>
 	* condvar7.c: New. Test broadcast after waiting thread is canceled.
 	* condvar8.c: New. Test multiple broadcasts.
 	* condvar9.c: New. Test multiple broadcasts with thread
-	cancelation.
+	cancellation.
 	
 Sep 16 1999  Ross Johnson  <rpj@ixobrychus.canberra.edu.au>
 

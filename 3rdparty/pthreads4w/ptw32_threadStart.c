@@ -7,33 +7,37 @@
  *
  * --------------------------------------------------------------------------
  *
- *      Pthreads-win32 - POSIX Threads Library for Win32
+ *      Pthreads4w - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
+ *      Copyright(C) 1999-2018, Pthreads4w contributors
+ *
+ *      Homepage: https://sourceforge.net/projects/pthreads4w/
+ *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
  *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
- * 
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
- * 
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
- * 
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *      https://sourceforge.net/p/pthreads4w/wiki/Contributors/
+ *
+ * This file is part of Pthreads4w.
+ *
+ *    Pthreads4w is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    Pthreads4w is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with Pthreads4w.  If not, see <http://www.gnu.org/licenses/>. *
  */
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
 #include "pthread.h"
 #include "implement.h"
@@ -59,7 +63,7 @@ ExceptionFilter (EXCEPTION_POINTERS * ep, DWORD * ei)
 
 	for (param = 0; param < numParams; param++)
 	  {
-	    ei[param] = ep->ExceptionRecord->ExceptionInformation[param];
+	    ei[param] = (DWORD) ep->ExceptionRecord->ExceptionInformation[param];
 	  }
 
 	return EXCEPTION_EXECUTE_HANDLER;
@@ -89,38 +93,32 @@ ExceptionFilter (EXCEPTION_POINTERS * ep, DWORD * ei)
 #elif defined(__WATCOMC__)
 # include <eh.h>
 # include <exceptio.h>
-typedef terminate_handler
-  terminate_function;
 #else
 # if defined(__GNUC__) && __GNUC__ < 3
 #   include <new.h>
 # else
 #   include <new>
 using
-  std::terminate_handler;
-using
   std::terminate;
 using
   std::set_terminate;
 # endif
-typedef terminate_handler
-  terminate_function;
 #endif
 
-static terminate_function
-  ptw32_oldTerminate;
+#endif /* __CLEANUP_CXX */
 
-void
-ptw32_terminate ()
-{
-  set_terminate (ptw32_oldTerminate);
-  (void) pthread_win32_thread_detach_np ();
-  terminate ();
-}
-
+/*
+ * MSVC6 does not optimize ptw32_threadStart() safely
+ * (i.e. tests/context1.c fails with "abnormal program
+ * termination" in some configurations), and there's no
+ * point to optimizing this routine anyway
+ */
+#ifdef _MSC_VER
+# pragma optimize("g", off)
+# pragma warning( disable : 4748 )
 #endif
 
-#if ! (defined(__MINGW64__) || defined(__MINGW32__)) || (defined (__MSVCRT__) && ! defined (__DMC__))
+#if ! defined (__MINGW32__) || (defined (__MSVCRT__) && ! defined (__DMC__))
 unsigned
   __stdcall
 #else
@@ -153,24 +151,22 @@ ptw32_threadStart (void *vthreadParms)
 
   free (threadParms);
 
-#if (defined(__MINGW64__) || defined(__MINGW32__)) && ! defined (__MSVCRT__)
+#if ! defined (__MINGW32__) || defined (__MSVCRT__) || defined (__DMC__)
+#else
   /*
-   * beginthread does not return the thread id and is running
+   * _beginthread does not return the thread id and is running
    * before it returns us the thread handle, and so we do it here.
    */
   sp->thread = GetCurrentThreadId ();
+#endif
+
+  pthread_setspecific (ptw32_selfThreadKey, sp);
   /*
    * Here we're using stateLock as a general-purpose lock
    * to make the new thread wait until the creating thread
    * has the new handle.
    */
   ptw32_mcs_lock_acquire (&sp->stateLock, &stateLock);
-  pthread_setspecific (ptw32_selfThreadKey, sp);
-#else
-  pthread_setspecific (ptw32_selfThreadKey, sp);
-  ptw32_mcs_lock_acquire (&sp->stateLock, &stateLock);
-#endif
-
   sp->state = PThreadStateRunning;
   ptw32_mcs_lock_release (&stateLock);
 
@@ -194,19 +190,19 @@ ptw32_threadStart (void *vthreadParms)
   {
     switch (ei[0])
       {
-      case PTW32_EPS_CANCEL:
-	status = sp->exitStatus = PTHREAD_CANCELED;
+        case PTW32_EPS_CANCEL:
+          status = sp->exitStatus = PTHREAD_CANCELED;
 #if defined(_UWIN)
-	if (--pthread_count <= 0)
-	  exit (0);
+          if (--pthread_count <= 0)
+        	exit (0);
 #endif
-	break;
-      case PTW32_EPS_EXIT:
-	status = sp->exitStatus;
-	break;
-      default:
-	status = sp->exitStatus = PTHREAD_CANCELED;
-	break;
+          break;
+        case PTW32_EPS_EXIT:
+          status = sp->exitStatus;
+          break;
+        default:
+          status = sp->exitStatus = PTHREAD_CANCELED;
+          break;
       }
   }
 
@@ -218,7 +214,6 @@ ptw32_threadStart (void *vthreadParms)
 
   if (0 == setjmp_rc)
     {
-
       /*
        * Run the caller's routine;
        */
@@ -228,64 +223,27 @@ ptw32_threadStart (void *vthreadParms)
   else
     {
       switch (setjmp_rc)
-	{
-	case PTW32_EPS_CANCEL:
-	  status = sp->exitStatus = PTHREAD_CANCELED;
-	  break;
-	case PTW32_EPS_EXIT:
-	  status = sp->exitStatus;
-	  break;
-	default:
-	  status = sp->exitStatus = PTHREAD_CANCELED;
-	  break;
-	}
+        {
+      	  case PTW32_EPS_CANCEL:
+      		status = sp->exitStatus = PTHREAD_CANCELED;
+      		break;
+      	  case PTW32_EPS_EXIT:
+      		status = sp->exitStatus;
+      		break;
+      	  default:
+      		status = sp->exitStatus = PTHREAD_CANCELED;
+      		break;
+        }
     }
 
 #else /* __CLEANUP_C */
 
 #if defined(__CLEANUP_CXX)
 
-  ptw32_oldTerminate = set_terminate (&ptw32_terminate);
-
   try
   {
-    /*
-     * Run the caller's routine in a nested try block so that we
-     * can run the user's terminate function, which may call
-     * pthread_exit() or be canceled.
-     */
-    try
-    {
-      status = sp->exitStatus = (*start) (arg);
-      sp->state = PThreadStateExiting;
-    }
-    catch (ptw32_exception &)
-    {
-      /*
-       * Pass these through to the outer block.
-       */
-      throw;
-    }
-    catch (...)
-    {
-      /*
-       * We want to run the user's terminate function if supplied.
-       * That function may call pthread_exit() or be canceled, which will
-       * be handled by the outer try block.
-       *
-       * ptw32_terminate() will be called if there is no user
-       * supplied function.
-       */
-      terminate_function
-	term_func = set_terminate (0);
-      set_terminate (term_func);
-
-      if (term_func != 0)
-	{
-	  term_func ();
-	}
-      throw;
-    }
+    status = sp->exitStatus = (*start) (arg);
+    sp->state = PThreadStateExiting;
   }
   catch (ptw32_exception_cancel &)
   {
@@ -304,15 +262,12 @@ ptw32_threadStart (void *vthreadParms)
   catch (...)
   {
     /*
-     * A system unexpected exception has occurred running the user's
-     * terminate routine. We get control back within this block
-     * and exit with a substitute status. If the thread was not
-     * cancelled then this indicates the unhandled exception.
+     * Some other exception occurred. Clean up while we have
+     * the opportunity, and call the terminate handler.
      */
-    status = sp->exitStatus = PTHREAD_CANCELED;
+    (void) pthread_win32_thread_detach_np ();
+    terminate ();
   }
-
-  (void) set_terminate (ptw32_oldTerminate);
 
 #else
 
@@ -326,7 +281,7 @@ ptw32_threadStart (void *vthreadParms)
   /*
    * We need to cleanup the pthread now if we have
    * been statically linked, in which case the cleanup
-   * in dllMain won't get done. Joinable threads will
+   * in DllMain won't get done. Joinable threads will
    * only be partially cleaned up and must be fully cleaned
    * up by pthread_join() or pthread_detach().
    *
@@ -334,13 +289,13 @@ ptw32_threadStart (void *vthreadParms)
    * implicitly created pthreads (those created
    * for Win32 threads which have called pthreads routines)
    * must be cleaned up explicitly by the application
-   * (by calling pthread_win32_thread_detach_np()).
-   * For the dll, dllMain will do the cleanup automatically.
+   * by calling pthread_exit().
+   * For the dll, DllMain will do the cleanup automatically.
    */
   (void) pthread_win32_thread_detach_np ();
 #endif
 
-#if ! (defined(__MINGW64__) || defined(__MINGW32__)) || defined (__MSVCRT__) || defined (__DMC__)
+#if ! defined (__MINGW32__) || defined (__MSVCRT__) || defined (__DMC__)
   _endthreadex ((unsigned)(size_t) status);
 #else
   _endthread ();
@@ -350,8 +305,23 @@ ptw32_threadStart (void *vthreadParms)
    * Never reached.
    */
 
-#if ! (defined(__MINGW64__) || defined(__MINGW32__)) || defined (__MSVCRT__) || defined (__DMC__)
+#if ! defined (__MINGW32__) || defined (__MSVCRT__) || defined (__DMC__)
   return (unsigned)(size_t) status;
 #endif
 
 }				/* ptw32_threadStart */
+
+/*
+ * Reset optimization
+ */
+#ifdef _MSC_VER
+# pragma optimize("", on)
+#endif
+
+#if defined (PTW32_USES_SEPARATE_CRT) && (defined(__CLEANUP_CXX) || defined(__CLEANUP_SEH))
+ptw32_terminate_handler
+pthread_win32_set_terminate_np(ptw32_terminate_handler termFunction)
+{
+  return set_terminate(termFunction);
+}
+#endif

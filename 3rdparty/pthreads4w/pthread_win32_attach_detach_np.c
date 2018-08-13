@@ -6,39 +6,47 @@
  *
  * --------------------------------------------------------------------------
  *
- *      Pthreads-win32 - POSIX Threads Library for Win32
+ *      Pthreads4w - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
+ *      Copyright(C) 1999-2018, Pthreads4w contributors
+ *
+ *      Homepage: https://sourceforge.net/projects/pthreads4w/
+ *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
  *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
- * 
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
- * 
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
- * 
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *      https://sourceforge.net/p/pthreads4w/wiki/Contributors/
+ *
+ * This file is part of Pthreads4w.
+ *
+ *    Pthreads4w is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    Pthreads4w is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with Pthreads4w.  If not, see <http://www.gnu.org/licenses/>. *
  */
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
 #include "pthread.h"
 #include "implement.h"
+#include <tchar.h>
+#if ! (defined(__GNUC__) || defined(PTW32_CONFIG_MSVC7) || defined(WINCE))
+# include <stdlib.h>
+#endif
 
 /*
- * Handle to quserex.dll 
+ * Handle to quserex.dll
  */
 static HINSTANCE ptw32_h_quserex;
 
@@ -70,7 +78,7 @@ pthread_win32_process_attach_np ()
    *
    * This should take care of any security issues.
    */
-#if defined(__GNUC__) || _MSC_VER < 1400
+#if defined(__GNUC__) || defined(PTW32_CONFIG_MSVC7)
   if(GetSystemDirectory(QuserExDLLPathBuf, sizeof(QuserExDLLPathBuf)))
   {
     (void) strncat(QuserExDLLPathBuf,
@@ -79,17 +87,18 @@ pthread_win32_process_attach_np ()
     ptw32_h_quserex = LoadLibrary(QuserExDLLPathBuf);
   }
 #else
-  /* strncat is secure - this is just to avoid a warning */
-  if(GetSystemDirectory(QuserExDLLPathBuf, sizeof(QuserExDLLPathBuf)) &&
-     0 == strncat_s(QuserExDLLPathBuf, sizeof(QuserExDLLPathBuf), "\\QUSEREX.DLL", 12))
-  {
-    ptw32_h_quserex = LoadLibrary(QuserExDLLPathBuf);
-  }
+#  if ! defined(WINCE)
+  if(GetSystemDirectory(QuserExDLLPathBuf, sizeof(QuserExDLLPathBuf)/sizeof(TCHAR)) &&
+      0 == _tcsncat_s(QuserExDLLPathBuf, _countof(QuserExDLLPathBuf), TEXT("\\QUSEREX.DLL"), 12))
+    {
+      ptw32_h_quserex = LoadLibrary(QuserExDLLPathBuf);
+    }
+#  endif
 #endif
 
   if (ptw32_h_quserex != NULL)
     {
-      ptw32_register_cancelation = (DWORD (*)(PAPCFUNC, HANDLE, DWORD))
+      ptw32_register_cancellation = (DWORD (*)(PAPCFUNC, HANDLE, DWORD))
 #if defined(NEED_UNICODE_CONSTS)
 	GetProcAddress (ptw32_h_quserex,
 			(const TCHAR *) TEXT ("QueueUserAPCEx"));
@@ -98,9 +107,9 @@ pthread_win32_process_attach_np ()
 #endif
     }
 
-  if (NULL == ptw32_register_cancelation)
+  if (NULL == ptw32_register_cancellation)
     {
-      ptw32_register_cancelation = ptw32_RegisterCancelation;
+      ptw32_register_cancellation = ptw32_Registercancellation;
 
       if (ptw32_h_quserex != NULL)
 	{
@@ -123,7 +132,7 @@ pthread_win32_process_attach_np ()
 
       if (queue_user_apc_ex_init == NULL || !queue_user_apc_ex_init ())
 	{
-	  ptw32_register_cancelation = ptw32_RegisterCancelation;
+	  ptw32_register_cancellation = ptw32_Registercancellation;
 
 	  (void) FreeLibrary (ptw32_h_quserex);
 	  ptw32_h_quserex = 0;
@@ -155,7 +164,10 @@ pthread_win32_process_detach_np ()
 	  if (sp->detachState == PTHREAD_CREATE_DETACHED)
 	    {
 	      ptw32_threadDestroy (sp->ptHandle);
-	      TlsSetValue (ptw32_selfThreadKey->key, NULL);
+	      if (ptw32_selfThreadKey)
+	        {
+	    	  TlsSetValue (ptw32_selfThreadKey->key, NULL);
+	        }
 	    }
 	}
 
@@ -230,7 +242,7 @@ pthread_win32_thread_detach_np ()
                        (PTW32_INTERLOCKED_LONG)-1);
               /*
                * If there are no waiters then the next thread to block will
-               * sleep, wakeup immediately and then go back to sleep.
+               * sleep, wake up immediately and then go back to sleep.
                * See pthread_mutex_lock.c.
                */
               SetEvent(mx->event);
@@ -241,7 +253,10 @@ pthread_win32_thread_detach_np ()
 	    {
 	      ptw32_threadDestroy (sp->ptHandle);
 
-	      TlsSetValue (ptw32_selfThreadKey->key, NULL);
+	      if (ptw32_selfThreadKey)
+	        {
+	    	  TlsSetValue (ptw32_selfThreadKey->key, NULL);
+	        }
 	    }
 	}
     }

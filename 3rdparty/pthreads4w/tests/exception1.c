@@ -4,54 +4,54 @@
  *
  * --------------------------------------------------------------------------
  *
- *      Pthreads-win32 - POSIX Threads Library for Win32
+ *      Pthreads4w - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
+ *      Copyright(C) 1999-2018, Pthreads4w contributors
+ *
+ *      Homepage: https://sourceforge.net/projects/pthreads4w/
+ *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
  *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
- * 
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
- * 
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
- * 
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *      https://sourceforge.net/p/pthreads4w/wiki/Contributors/
+ *
+ * This file is part of Pthreads4w.
+ *
+ *    Pthreads4w is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    Pthreads4w is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with Pthreads4w.  If not, see <http://www.gnu.org/licenses/>. *
  *
  * --------------------------------------------------------------------------
  *
  * Test Synopsis: Test passing of exceptions back to the application.
  *
  * Test Method (Validation or Falsification):
- * - 
+ * -
  *
  * Requirements Tested:
  * -
  *
  * Features Tested:
- * - 
+ * -
  *
  * Cases Tested:
- * - 
+ * -
  *
  * Description:
- * - 
+ * -
  *
  * Environment:
- * - 
+ * -
  *
  * Input:
  * - None.
@@ -153,7 +153,7 @@ canceledThread(void * arg)
   {
     /*
      * We wait up to 10 seconds, waking every 0.1 seconds,
-     * for a cancelation to be applied to us.
+     * for a cancellation to be applied to us.
      */
     for (count = 0; count < 100; count++)
       Sleep(100);
@@ -168,7 +168,7 @@ canceledThread(void * arg)
   {
     /*
      * We wait up to 10 seconds, waking every 0.1 seconds,
-     * for a cancelation to be applied to us.
+     * for a cancellation to be applied to us.
      */
     for (count = 0; count < 100; count++)
       Sleep(100);
@@ -196,6 +196,9 @@ main()
   pthread_t et[NUMTHREADS];
   pthread_t ct[NUMTHREADS];
 
+  DWORD dwMode = SetErrorMode(SEM_NOGPFAULTERRORBOX);
+  SetErrorMode(dwMode | SEM_NOGPFAULTERRORBOX);
+
   assert((mt = pthread_self()).p != NULL);
 
   for (i = 0; i < NUMTHREADS; i++)
@@ -205,9 +208,9 @@ main()
     }
 
   /*
-   * Code to control or munipulate child threads should probably go here.
+   * Code to control or manipulate child threads should probably go here.
    */
-  Sleep(1000);
+  Sleep(100);
 
   for (i = 0; i < NUMTHREADS; i++)
     {
@@ -217,7 +220,7 @@ main()
   /*
    * Give threads time to run.
    */
-  Sleep(NUMTHREADS * 1000);
+  Sleep(NUMTHREADS * 100);
 
   /*
    * Check any results here. Set "failed" and only print output on failure.

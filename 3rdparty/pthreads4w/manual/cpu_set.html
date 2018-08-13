@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<TITLE>CPU_SET(3) manual page</TITLE>
+	<STYLE TYPE="text/css">
+	<!--
+		H4.cjk { font-family: "SimSun" }
+		H4.ctl { font-family: "Mangal" }
+		H2.cjk { font-family: "SimSun" }
+		H2.ctl { font-family: "Mangal" }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-GB" BGCOLOR="#ffffff" DIR="LTR">
+<H4 CLASS="western"><FONT FACE="Times New Roman, serif"><FONT SIZE=3><SPAN STYLE="font-style: normal">POSIX
+Threads for Windows &ndash; REFERENCE - <A HREF="https://sourceforge.net/projects/pthreads4w/">Pthreads4w</A></SPAN></FONT></FONT></H4>
+<P><A HREF="index.html">Reference Index</A></P>
+<P><A HREF="#toc">Table of Contents</A></P>
+<H2 CLASS="western"><A HREF="#toc0" NAME="sect0">Name</A></H2>
+<P>Operations on CPU affinity sets:</P>
+<P>CPU_EQUAL		- test equality of two sets</P>
+<P>CPU_ZERO		- clear all CPUs from set</P>
+<P>CPU_SET		- set a specified CPU in a set</P>
+<P>CPU_CLR		- unset a specified CPU in a set</P>
+<P>CPU_ISSET		- test if a specified CPU in a set is set</P>
+<P>CPU_COUNT		- return the number of CPUs currently set</P>
+<P>CPU_AND		- obtain the intersection of two sets</P>
+<P>CPU_OR		- obtain the union of two sets</P>
+<P>CPU_XOR		- obtain the mutually excluded set</P>
+<H2 CLASS="western"><A HREF="#toc1" NAME="sect1">Synopsis</A></H2>
+<P><B>#include &lt;sched.h&gt; </B>
+</P>
+<P><B>int CPU_EQUAL(cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">set1</SPAN></I><B>,
+cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">set2</SPAN></I><B>);</B></P>
+<P><B>void CPU_ZERO(cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">set</SPAN></I><B>);</B></P>
+<P><B>void CPU_SET(int </B><I><SPAN STYLE="font-weight: normal">cpu</SPAN></I><B>,
+cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">set</SPAN></I><B>);</B></P>
+<P><B>void CPU_CLR(int </B><I><SPAN STYLE="font-weight: normal">cpu</SPAN></I><B>,
+cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">set</SPAN></I><B>);</B></P>
+<P><B>int CPU_ISSET(int </B><I><SPAN STYLE="font-weight: normal">cpu</SPAN></I><B>,
+cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">set</SPAN></I><B>);</B></P>
+<P><B>int CPU_COUNT(cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">set</SPAN></I><B>);</B></P>
+<P><B>void CPU_AND(cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">destset</SPAN></I><B>,
+cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">srcset1</SPAN></I><B>,
+cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">srcset2</SPAN></I><B>);</B></P>
+<P><B>void CPU_OR(cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">destset</SPAN></I><B>,
+cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">srcset1</SPAN></I><B>,
+cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">srcset2</SPAN></I><B>);</B></P>
+<P><B>void CPU_XOR(cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">destset</SPAN></I><B>,
+cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">srcset1</SPAN></I><B>,
+cpu_set_t * </B><I><SPAN STYLE="font-weight: normal">srcset2</SPAN></I><B>);</B></P>
+<H2 CLASS="western"><A HREF="#toc2" NAME="sect2">Description</A></H2>
+<P>The cpu_set_t data structure represents a set of CPUs. CPU sets
+are used by <A HREF="sched_setaffinity.html"><B>sched_setaffinity</B>()</A>
+and <A HREF="pthread_setaffinity_np.html"><B>pthread_setaffinity_np</B>()</A>,
+etc.</P>
+<P>The cpu_set_t data type is implemented as a bitset. However, the
+data structure is considered opaque: all manipulation of CPU sets
+should be done via the macros described in this page.</P>
+<P>The following macros are provided to operate on the CPU set set:</P>
+<P><B>CPU_ZERO</B>		Clears <I>set</I>, so that it contains no CPUs.</P>
+<P><B>CPU_SET</B>		Add CPU cpu to <I>set</I>.</P>
+<P><B>CPU_CLR</B>		Remove CPU cpu from <I>set</I>.</P>
+<P><B>CPU_ISSET</B>		Test to see if CPU cpu is a member of <I>set</I>.</P>
+<P><B>CPU_COUNT</B>	Return the number of CPUs in <I>set</I>.</P>
+<P>Where a <I>cpu</I> argument is specified, it should not produce
+side effects, since the above macros may evaluate the argument more
+than once.</P>
+<P>The first available CPU on the system corresponds to a cpu value
+of 0, the next CPU corresponds to a cpu value of 1, and so on.</P>
+<P>The following macros perform logical operations on CPU sets:</P>
+<P><B>CPU_AND</B>		Store the intersection of the sets <I>srcset1</I>
+and <I>srcset2</I> in <I>destset</I> (which may be one of the source
+sets).</P>
+<P><B>CPU_OR</B>		Store the union of the sets  <I>srcset1</I>  and 
+<I>srcset2</I>  in <I>destset</I> (which may be one of the source
+sets).</P>
+<P><B>CPU_XOR</B>		Store the XOR of the sets <I>srcset1</I> and
+<I>srcset2</I> in <I>destset</I> (which may be one of the source
+sets).   The  XOR means the set of CPUs that are in either srcset1 or
+srcset2, but not both.</P>
+<P><B>CPU_EQUAL</B>		Test whether two CPU set contain exactly the
+same CPUs.</P>
+<H2 CLASS="western"><A HREF="#toc3" NAME="sect3">Return Value</A></H2>
+<P>These macros either return a value consistent with the operation
+or nothing.</P>
+<H2 CLASS="western"><A HREF="#toc4" NAME="sect4">Errors</A></H2>
+<P>These macros do not return an error status.</P>
+<H2 CLASS="western"><A HREF="#toc6" NAME="sect6">See Also</A></H2>
+<P><A HREF="sched_setaffinity.html"><B>sched_getaffinity(3)</B></A> ,
+<A HREF="sched_setaffinity.html"><B>sched_setaffinity(3)</B></A><SPAN STYLE="font-weight: normal">
+, </SPAN><A HREF="pthread_setaffinity_np.html"><B>pthread_setaffininty_np</B>(3)</A>
+, <A HREF="pthread_setaffinity_np.html"><B>pthread_getaffinity_np</B>(3)</A>
+.</P>
+<HR>
+<P><A NAME="toc"></A><B>Table of Contents</B></P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect0" NAME="toc0">Name</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect1" NAME="toc1">Synopsis</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect2" NAME="toc2">Description</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect3" NAME="toc3">Return
+	Value</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect4" NAME="toc4">Errors</A>
+		</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#sect6" NAME="toc6">See
+	Also</A></P>
+</UL>
+<H4 CLASS="western"><BR><BR>
+</H4>
+</BODY>
+</HTML>
