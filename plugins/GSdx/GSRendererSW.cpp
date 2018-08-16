@@ -1317,7 +1317,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 			gd.dimx = (GSVector4i*)_aligned_malloc(sizeof(env.dimx), 32);
 
-			memcpy(gd.dimx, env.dimx, sizeof(env.dimx));
+			memcpy(static_cast<void *>(gd.dimx), env.dimx, sizeof(env.dimx));
 		}
 	}
 

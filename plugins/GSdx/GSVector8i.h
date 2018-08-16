@@ -1179,7 +1179,7 @@ public:
 
 		if(size == 0) return;
 
-		memcpy(d, s, size);
+		memcpy(static_cast<void *>(d), s, size);
 	}
 
 	// TODO: swizzling

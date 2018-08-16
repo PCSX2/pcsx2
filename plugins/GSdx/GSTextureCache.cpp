@@ -1823,7 +1823,7 @@ void GSTextureCache::Source::Flush(uint32 count, int layer)
 	if(count < m_write.count)
 	{
 		// Warning src and destination overlap. Memmove must be used instead of memcpy
-		memmove(&m_write.rect[0], &m_write.rect[count], (m_write.count - count) * sizeof(m_write.rect[0]));
+		memmove(static_cast<void *>(&m_write.rect[0]), &m_write.rect[count], (m_write.count - count) * sizeof(m_write.rect[0]));
 	}
 
 	m_write.count -= count;

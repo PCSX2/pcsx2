@@ -1346,7 +1346,7 @@ static VuBaseBlock* SuperVUBuildBlocks(VuBaseBlock* parent, u32 startpc, const V
 		{
 			pinst->pqcycles = QWaitTimes[pinst->info.pqinst] + 1;
 
-			memset(&w, 0, sizeof(w));
+			memset(static_cast<void *>(&w), 0, sizeof(w));
 			w.nParentPc = pc - 8;
 			w.cycle = pinst->info.cycle + pinst->pqcycles;
 			w.viwrite[0] = 1 << REG_Q;

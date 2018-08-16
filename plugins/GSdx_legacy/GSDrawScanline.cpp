@@ -27,7 +27,7 @@ GSDrawScanline::GSDrawScanline()
 	: m_sp_map("GSSetupPrim", &m_local)
 	, m_ds_map("GSDrawScanline", &m_local)
 {
-	memset(&m_local, 0, sizeof(m_local));
+	memset(static_cast<void *>(&m_local), 0, sizeof(m_local));
 
 	m_local.gd = &m_global;
 }
@@ -38,7 +38,7 @@ GSDrawScanline::~GSDrawScanline()
 
 void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 {
-	memcpy(&m_global, &((const SharedData*)data)->global, sizeof(m_global));
+	memcpy(static_cast<void *>(&m_global), &((const SharedData*)data)->global, sizeof(m_global));
 
 	if(m_global.sel.mmin && m_global.sel.lcm)
 	{

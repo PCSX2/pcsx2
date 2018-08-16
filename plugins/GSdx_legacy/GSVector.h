@@ -1876,7 +1876,7 @@ public:
 
 		if(size == 0) return;
 
-		memcpy(d, s, size);
+		memcpy(static_cast<void *>(d), s, size);
 	}
 
 	__forceinline static void transpose(GSVector4i& a, GSVector4i& b, GSVector4i& c, GSVector4i& d)

@@ -118,7 +118,7 @@ V_Core::~V_Core() throw()
 void V_Core::Init(int index)
 {
     ConLog("* SPU2-X: Init SPU2 core %d \n", index);
-    memset(this, 0, sizeof(V_Core));
+    memset(static_cast<void *>(this), 0, sizeof(V_Core));
     psxmode = false;
 
     const int c = Index = index;

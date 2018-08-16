@@ -131,7 +131,7 @@ protected:
 
 		if(m_vertices != NULL)
 		{
-			memcpy(vertices, m_vertices, sizeof(Vertex) * m_maxcount);
+			memcpy(static_cast<void *>(vertices), m_vertices, sizeof(Vertex) * m_maxcount);
 			_aligned_free(m_vertices);
 		}
 

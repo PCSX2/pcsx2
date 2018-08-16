@@ -61,7 +61,7 @@ void GPUState::Reset()
 
 	m_mem.Invalidate(GSVector4i(0, 0, 1024, 512));
 
-	memset(&m_v, 0, sizeof(m_v));
+	memset(static_cast<void *>(&m_v), 0, sizeof(m_v));
 }
 
 void GPUState::Flush()

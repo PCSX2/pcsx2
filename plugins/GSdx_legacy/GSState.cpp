@@ -72,7 +72,7 @@ GSState::GSState()
 	m_crc_hack_level = theApp.GetConfig("crc_hack_level", 3);
 	s_crc_hack_level = m_crc_hack_level;
 
-	memset(&m_v, 0, sizeof(m_v));
+	memset(static_cast<void *>(&m_v), 0, sizeof(m_v));
 	memset(&m_vertex, 0, sizeof(m_vertex));
 	memset(&m_index, 0, sizeof(m_index));
 
@@ -212,8 +212,8 @@ void GSState::Reset()
 	//printf("GSdx info: GS reset\n");
 
 	// FIXME: memset(m_mem.m_vm8, 0, m_mem.m_vmsize); // bios logo not shown cut in half after reset, missing graphics in GoW after first FMV
-	memset(&m_path[0], 0, sizeof(m_path[0]) * countof(m_path));
-	memset(&m_v, 0, sizeof(m_v));
+	memset(static_cast<void *>(&m_path[0]), 0, sizeof(m_path[0]) * countof(m_path));
+	memset(static_cast<void *>(&m_v), 0, sizeof(m_v));
 
 //	PRIM = &m_env.PRIM;
 //	m_env.PRMODECONT.AC = 1;
@@ -1505,7 +1505,7 @@ void GSState::FlushPrim()
 
 		if(unused > 0)
 		{
-			memcpy(m_vertex.buff, buff, sizeof(GSVertex) * unused);
+			memcpy(static_cast<void *>(m_vertex.buff), buff, sizeof(GSVertex) * unused);
 
 			m_vertex.tail = unused;
 			m_vertex.next = next > head ? next - head : 0;
@@ -1861,12 +1861,12 @@ void GSState::SoftReset(uint32 mask)
 {
 	if(mask & 1)
 	{
-		memset(&m_path[0], 0, sizeof(GIFPath));
-		memset(&m_path[3], 0, sizeof(GIFPath));
+		memset(static_cast<void *>(&m_path[0]), 0, sizeof(GIFPath));
+		memset(static_cast<void *>(&m_path[3]), 0, sizeof(GIFPath));
 	}
 
-	if(mask & 2) memset(&m_path[1], 0, sizeof(GIFPath));
-	if(mask & 4) memset(&m_path[2], 0, sizeof(GIFPath));
+	if(mask & 2) memset(static_cast<void *>(&m_path[1]), 0, sizeof(GIFPath));
+	if(mask & 4) memset(static_cast<void *>(&m_path[2]), 0, sizeof(GIFPath));
 
 	m_env.TRXDIR.XDIR = 3; //-1 ; set it to invalid value
 
@@ -2400,7 +2400,7 @@ void GSState::GrowVertexBuffer()
 
 	if(m_vertex.buff != NULL)
 	{
-		memcpy(vertex, m_vertex.buff, sizeof(GSVertex) * m_vertex.tail);
+		memcpy(static_cast<void *>(vertex), m_vertex.buff, sizeof(GSVertex) * m_vertex.tail);
 
 		_aligned_free(m_vertex.buff);
 	}

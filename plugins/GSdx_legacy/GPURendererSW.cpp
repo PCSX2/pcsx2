@@ -125,7 +125,7 @@ void GPURendererSW::Draw()
 	data->vertex = (GSVertexSW*)data->buff;
 	data->vertex_count = m_count;
 
-	memcpy(data->vertex, m_vertices, sizeof(GSVertexSW) * m_count);
+	memcpy(static_cast<void *>(data->vertex), m_vertices, sizeof(GSVertexSW) * m_count);
 	
 	data->frame = m_perfmon.GetFrame();
 

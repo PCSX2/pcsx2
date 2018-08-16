@@ -29,7 +29,7 @@ extern u8 memcmp_mmx(const void *src1, const void *src2, int cmpsize);
 template <typename T>
 static __fi void memzero(T &object)
 {
-    memset(&object, 0, sizeof(T));
+    memset(static_cast<void *>(&object), 0, sizeof(T));
 }
 
 // This method clears an object with the given 8 bit value.
