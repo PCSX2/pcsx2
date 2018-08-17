@@ -199,14 +199,14 @@ struct pxWindowAndFlags
 
 extern wxSizerFlags operator&(const wxSizerFlags &_flgs, const wxSizerFlags &_flgs2);
 
-template <typename WinType>
+template <typename WinType, typename = typename std::enable_if<std::is_base_of<wxObject, WinType>::value>::type>
 pxWindowAndFlags<WinType> operator|(WinType *_win, const wxSizerFlags &_flgs)
 {
     pxWindowAndFlags<WinType> result = {_win, _flgs};
     return result;
 }
 
-template <typename WinType>
+template <typename WinType, typename = typename std::enable_if<std::is_base_of<wxObject, WinType>::value>::type>
 pxWindowAndFlags<WinType> operator|(WinType &_win, const wxSizerFlags &_flgs)
 {
     pxWindowAndFlags<WinType> result = {&_win, _flgs};
