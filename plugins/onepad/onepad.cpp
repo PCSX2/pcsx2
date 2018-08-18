@@ -224,6 +224,7 @@ PADsetSlot(u8 port, u8 slot)
 {
     port--;
     slot--;
+
     if (port > 1 || slot > 3) {
         return 0;
     }
@@ -268,7 +269,6 @@ PADfreeze(int mode, freezeData *data)
 
                 memcpy(&pads[port][slot], &pdata->padData[port][slot], sizeof(PadFreezeData));
             }
-
             if (pdata->slot[port] < 4)
             slots[port] = pdata->slot[port];
         }

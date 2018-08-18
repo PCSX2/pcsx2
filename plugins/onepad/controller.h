@@ -37,16 +37,16 @@ public:
     {
         struct
         {
-            u16 forcefeedback : 1;
-            u16 reverse_lx : 1;
-            u16 reverse_ly : 1;
-            u16 reverse_rx : 1;
-            u16 reverse_ry : 1;
-            u16 mouse_l : 1;
-            u16 mouse_r : 1;
-            u16 _free : 9;             // The 9 remaining bits are unused, do what you wish with them ;)
+            u8 forcefeedback : 1;
+            u8 reverse_lx : 1;
+            u8 reverse_ly : 1;
+            u8 reverse_rx : 1;
+            u8 reverse_ry : 1;
+            u8 mouse_l : 1;
+            u8 mouse_r : 1;
+            u8 _free : 1;             // The 1 remaining bit is unused, do what you wish with it ;)
         } pad_options[GAMEPAD_NUMBER]; // One for each pads
-        u32 packed_options;            // Only first 8 bits of each 16 bits series are really used, rest is padding
+        u32 packed_options;            // Only first 7 bits of each 8 bit series is really used, rest is padding
     };
 
     u32 log;

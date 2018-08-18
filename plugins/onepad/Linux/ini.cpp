@@ -61,9 +61,12 @@ void SaveConfig()
     fprintf(f, "options = %d\n", g_conf.packed_options);
     fprintf(f, "mouse_sensibility = %d\n", g_conf.get_sensibility());
     fprintf(f, "ff_intensity = %d\n", g_conf.get_ff_intensity());
-    fprintf(f, "uid[0] = %zu\n", g_conf.get_joy_uid(0));
-    fprintf(f, "uid[1] = %zu\n", g_conf.get_joy_uid(1));
 
+	for (int uidpad = 0; uidpad < GAMEPAD_NUMBER; uidpad++)
+		if (g_conf.get_joy_uid(uidpad) != NULL) {
+			fprintf(f, "uid(%d) = %zu\n", uidpad, g_conf.get_joy_uid(uidpad));
+		}
+	//something here isn't working, placeholder while investigating, possibly works with non-identical controllers
     for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
         for (auto const &it : g_conf.keysym_map[pad])
             fprintf(f, "PAD %d:KEYSYM 0x%x = %d\n", pad, it.first, it.second);
@@ -106,11 +109,11 @@ void LoadConfig()
     if (fscanf(f, "ff_intensity = %u\n", &value) == 1)
         g_conf.set_ff_intensity(value);
 
-    size_t uid;
-    if (fscanf(f, "uid[0] = %zu\n", &uid) == 1)
-        g_conf.set_joy_uid(0, uid);
-    if (fscanf(f, "uid[1] = %zu\n", &uid) == 1)
-        g_conf.set_joy_uid(1, uid);
+	size_t uid;
+	for (int uidpadload = 0; uidpadload < GAMEPAD_NUMBER; uidpadload++)
+		if (fscanf(f, "uid(%d) = %zu\n", uidpadload, &uid) == 1) {
+			g_conf.set_joy_uid(uidpadload, uid);
+		}
 
     u32 pad;
     u32 keysym;
