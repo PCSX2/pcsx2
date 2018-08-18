@@ -398,59 +398,63 @@ void GSSettingsDlg::UpdateControls()
 		ShowWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_OPENCL_TEXT), SW_HIDE);
 #endif
-
-		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGZ), dx9 ? SW_SHOW: SW_HIDE);
-		ShowWindow(GetDlgItem(m_hWnd, IDC_FBA), dx9 ? SW_SHOW : SW_HIDE);
-
-		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl ? SW_SHOW : SW_HIDE);
-		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl ? SW_SHOW : SW_HIDE);
-		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl ? SW_SHOW : SW_HIDE);
-
-		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW_TEXT), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_LARGE_FB), integer_scaling != 1 && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), ocl);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !integer_scaling);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && !integer_scaling);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY), hw && !integer_scaling);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY_EDIT), hw && !integer_scaling);
+
+		// Hardware Renderer Settings:
+		ShowWindow(GetDlgItem(m_hWnd, IDC_HW_RENDER_TEXT), hw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw ? SW_SHOW : SW_HIDE);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_LARGE_FB), hw && integer_scaling != 1);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_LARGE_FB), hw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER_TEXT), hw ? SW_SHOW : SW_HIDE);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CUSTOM_TEXT), hw && !integer_scaling);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER_TEXT), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_LOGZ), dx9 && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_FBA), dx9 && hw);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_CUSTOM_TEXT), hw ? SW_SHOW : SW_HIDE);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !integer_scaling);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_RESX), hw ? SW_SHOW : SW_HIDE);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && !integer_scaling);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw ? SW_SHOW : SW_HIDE);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY), hw && !integer_scaling);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_RESY), hw ? SW_SHOW : SW_HIDE);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY_EDIT), hw && !integer_scaling);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_RESY_EDIT), hw ? SW_SHOW : SW_HIDE);
 
 		INT_PTR filter;
 		if (ComboBoxGetSelData(IDC_FILTER, filter))
 		{
 			EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO), hw && filter && !IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
+			ShowWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO), hw ? SW_SHOW : SW_HIDE);
 			EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO_TEXT), hw && filter && !IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
+			ShowWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO_TEXT), hw ? SW_SHOW : SW_HIDE);
 		}
-		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl && hw);
-
-		// Software mode settings
-		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_SW), sw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_AA1), sw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_TEXT), sw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_EDIT), sw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS), sw);
-
-		// Hacks
-		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKS_ENABLED), hw);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW), hw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW_TEXT), hw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL_TEXT), hw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_HACKS_ENABLED), hw ? SW_SHOW : SW_HIDE);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw && IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
+		ShowWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl && hw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl && hw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl && hw ? SW_SHOW : SW_HIDE);
+		// D3D9 only options
+		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGZ), dx9 && hw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_FBA), dx9 && hw ? SW_SHOW : SW_HIDE);
+
+		// Software Renderer Settings:
+		ShowWindow(GetDlgItem(m_hWnd, IDC_SW_RENDER_TEXT), sw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_SW), sw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_AA1), sw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_TEXT), sw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_EDIT), sw ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS), sw ? SW_SHOW : SW_HIDE);
 
 		// OSD Configuration
 		EnableWindow(GetDlgItem(m_hWnd, IDC_OSDBUTTON), ogl);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_OSDBUTTON), !null ? SW_SHOW : SW_HIDE);
 
 		// Shader Configuration
-		EnableWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON), !null);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON), !null ? SW_SHOW : SW_HIDE);
 	}
-
 }
 
 // Shader Configuration Dialog
