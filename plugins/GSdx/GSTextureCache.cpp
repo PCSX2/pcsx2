@@ -2040,12 +2040,12 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 void GSTextureCache::AttachPaletteToSource(Source* s, const GSRenderer* renderer, uint16 pal)
 {
 	if (s->m_palette_obj) {
-		((Palette*)s->m_palette_obj)->DecrementRefCounter();
+		s->m_palette_obj->DecrementRefCounter();
 	}
 	
 	Palette* p = m_palette_map.LookupPalette(m_renderer, pal);
 	p->IncrementRefCounter();
-	s->m_palette_obj = (void*)p;
+	s->m_palette_obj = p;
 	s->m_palette = p->GetPaletteGSTexture();
 	s->m_clut = p->GetClut();
 }

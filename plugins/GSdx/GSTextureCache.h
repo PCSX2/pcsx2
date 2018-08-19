@@ -51,6 +51,8 @@ public:
 		void UpdateAge();
 	};
 
+	class Palette;
+
 	class Source : public Surface
 	{
 		struct {GSVector4i* rect; uint32 count;} m_write;
@@ -59,7 +61,7 @@ public:
 		void Flush(uint32 count, int layer);
 
 	public:
-		void* m_palette_obj; // Pointer to the relevant Palette object (if any)
+		Palette* m_palette_obj; // Pointer to the relevant Palette object (if any)
 		GSTexture* m_palette;
 		bool m_should_have_tex_palette; // Enables m_clut (and possibly m_palette) recycling on object destruction
 		uint32 m_valid[MAX_PAGES]; // each uint32 bits map to the 32 blocks of that page
