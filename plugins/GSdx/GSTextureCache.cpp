@@ -2174,6 +2174,7 @@ GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRende
 			if (palette->GetRefCounter() == 0) {
 				// Palette is unused
 				palette->Dispose(renderer); // Dispose referenced palette object
+				delete palette;
 				it = multimap.erase(it); // Erase element from multimap
 			}
 			else {
@@ -2209,6 +2210,7 @@ void GSTextureCache::PaletteMap::Clear(const GSRenderer* renderer) {
 		for (auto it1 : multimap) {
 			Palette* palette = it1.second;
 			palette->Dispose(renderer); // Dispose referenced palette object
+			delete palette;
 		}
 		multimap.clear(); // Clear all the nodes of the multimap
 		multimap.reserve(MAX_SIZE); // Ensure multimap capacity is not modified by the clearing
