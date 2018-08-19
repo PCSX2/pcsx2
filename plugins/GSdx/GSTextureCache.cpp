@@ -2068,9 +2068,17 @@ GSTextureCache::Palette::Palette(const Palette& palette) {
 GSTextureCache::Palette::Palette(const GSRenderer* renderer, uint16 pal) {
 	uint16 palette_size = pal * sizeof(uint32);
 	m_clut = (uint32*)_aligned_malloc(palette_size, 64);
-	memcpy(m_clut, (const uint32*)renderer->m_mem.m_clut, palette_size);
-	m_tex_palette = renderer->m_dev->CreateTexture(256, 1);
+	m_renderer = renderer;
+	memcpy(m_clut, (const uint32*)m_renderer->m_mem.m_clut, palette_size);
+	m_tex_palette = m_renderer->m_dev->CreateTexture(256, 1);
 	m_tex_palette->Update(GSVector4i(0, 0, pal, 1), m_clut, palette_size);
+}
+
+// Default destructor, recycles palette texture and frees clut copy
+GSTextureCache::Palette::~Palette() {
+	ASSERT(GetRefCounter() == 0);
+	m_renderer->m_dev->Recycle(GetPaletteGSTexture()); // Recycle palette texture
+	_aligned_free(GetClut()); // Free clut copy
 }
 
 uint32* GSTextureCache::Palette::GetClut() {
@@ -2091,12 +2099,6 @@ void GSTextureCache::Palette::IncrementRefCounter() {
 
 void GSTextureCache::Palette::DecrementRefCounter() {
 	--m_ref_counter;
-}
-
-void GSTextureCache::Palette::Dispose(const GSRenderer* renderer) {
-	ASSERT(GetRefCounter() == 0);
-	renderer->m_dev->Recycle(GetPaletteGSTexture()); // Recycle palette texture
-	_aligned_free(GetClut()); // Free clut copy
 }
 
 // GSTextureCache::PaletteMap
@@ -2173,8 +2175,7 @@ GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRende
 			Palette* palette = it->second;
 			if (palette->GetRefCounter() == 0) {
 				// Palette is unused
-				palette->Dispose(renderer); // Dispose referenced palette object
-				delete palette;
+				delete palette; // Delete palette object freeing palette texture and clut copy
 				it = multimap.erase(it); // Erase element from multimap
 			}
 			else {
@@ -2209,8 +2210,7 @@ void GSTextureCache::PaletteMap::Clear(const GSRenderer* renderer) {
 	for (auto& multimap : m_multimaps) {
 		for (auto it1 : multimap) {
 			Palette* palette = it1.second;
-			palette->Dispose(renderer); // Dispose referenced palette object
-			delete palette;
+			delete palette; // Delete palette object freeing palette texture and clut copy
 		}
 		multimap.clear(); // Clear all the nodes of the multimap
 		multimap.reserve(MAX_SIZE); // Ensure multimap capacity is not modified by the clearing

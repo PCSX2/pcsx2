@@ -114,11 +114,13 @@ public:
 		uint16 m_ref_counter = 0; // Reference counter
 		uint32* m_clut; // Pointer to a copy of relevant clut
 		GSTexture* m_tex_palette; // Pointer to valid texture with relevant clut as content
+		const GSRenderer* m_renderer; // Pointer to the current renderer, needed to recycle the referenced GSTexture on destruction
 
 	public:
 		Palette(); // Default constructor
 		Palette(const Palette& palette); // Copy constructor
 		Palette(const GSRenderer* renderer, uint16 pal); // Creates a copy of the current clut and a texture with its content
+		virtual ~Palette(); // Default destructor, recycles palette texture and frees clut copy
 
 		// Getter for clut pointer
 		uint32* GetClut();
@@ -134,9 +136,6 @@ public:
 
 		// Decrement the reference counter by 1
 		void DecrementRefCounter();
-
-		// Recycles palette texture and frees clut copy
-		void Dispose(const GSRenderer* renderer);
 	};
 
 	class PaletteMap
