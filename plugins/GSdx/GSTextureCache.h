@@ -121,22 +121,22 @@ public:
 		Palette(const GSRenderer* renderer, uint16 pal); // Creates a copy of the current clut and a texture with its content
 
 		// Getter for clut pointer
-		__forceinline uint32* GetClut();
+		uint32* GetClut();
 
 		// Getter for palette texture pointer
-		__forceinline GSTexture* GetPaletteGSTexture();
+		GSTexture* GetPaletteGSTexture();
 
 		// Getter for the reference counter
-		__forceinline uint16 GetRefCounter();
+		uint16 GetRefCounter();
 
 		// Increment the reference counter by 1
-		__forceinline void IncrementRefCounter();
+		void IncrementRefCounter();
 
 		// Decrement the reference counter by 1
-		__forceinline void DecrementRefCounter();
+		void DecrementRefCounter();
 
 		// Recycles palette texture and frees clut copy
-		__forceinline void Dispose(const GSRenderer* renderer);
+		void Dispose(const GSRenderer* renderer);
 	};
 
 	class PaletteMap
@@ -149,7 +149,7 @@ public:
 		std::array<std::unordered_multimap<size_t, Palette*>, 2> m_multimaps;
 
 		// Helper function to compute an hash value of the clut
-		__forceinline static size_t HashClut(uint16 pal, const uint32* clut);
+		static size_t HashClut(uint16 pal, const uint32* clut);
 
 	public:
 		PaletteMap(); // Default constructor
@@ -231,5 +231,5 @@ public:
 
 	void PrintMemoryUsage();
 
-	__forceinline void AttachPaletteToSource(Source* s, const GSRenderer* renderer, uint16 pal);
+	void AttachPaletteToSource(Source* s, const GSRenderer* renderer, uint16 pal);
 };
