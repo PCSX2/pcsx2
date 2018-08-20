@@ -649,6 +649,9 @@ GSHacksDlg::GSHacksDlg() :
 
 void GSHacksDlg::OnInit()
 {
+	m_oldSkipDrawOffset = -1;
+	m_oldSkipDraw = -1;
+
 	HWND hwnd_renderer = GetDlgItem(GetParent(m_hWnd), IDC_RENDERER);
 	HWND hwnd_upscaling = GetDlgItem(GetParent(m_hWnd), IDC_UPSCALE_MULTIPLIER);
 	GSRendererType renderer = static_cast<GSRendererType>(SendMessage(hwnd_renderer, CB_GETITEMDATA, SendMessage(hwnd_renderer, CB_GETCURSEL, 0, 0), 0));
@@ -716,6 +719,9 @@ void GSHacksDlg::OnInit()
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_SkipDraw"), 0));
 
+	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_SkipDraw_Offset"), 0));
+
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_TCOffset") & 0xFFFF, 0));
 
@@ -753,6 +759,8 @@ void GSHacksDlg::OnInit()
 
 	AddTooltip(IDC_SKIPDRAWHACKEDIT);
 	AddTooltip(IDC_SKIPDRAWHACK);
+	AddTooltip(IDC_SKIPDRAWOFFSETEDIT);
+	AddTooltip(IDC_SKIPDRAWOFFSET);
 	AddTooltip(IDC_ALPHAHACK);
 	AddTooltip(IDC_OFFSETHACK);
 	AddTooltip(IDC_SPRITEHACK);
@@ -776,23 +784,62 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_MERGE_PP_SPRITE);
 	AddTooltip(IDC_GEOMETRY_SHADER_OVERRIDE);
 	AddTooltip(IDC_IMAGE_LOAD_STORE);
+
+	UpdateControls();
 }
 
 void GSHacksDlg::UpdateControls()
-{}
+{
+	int SkipDrawOffset = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_GETPOS, 0, 0);
+	int SkipDraw = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0);
+
+	if (SkipDraw == 0 && m_oldSkipDraw > 0 || SkipDrawOffset == 0 && m_oldSkipDrawOffset > 0)
+	{
+		SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(0, 0));
+		SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_SETPOS, 0, MAKELPARAM(0, 0));
+	}
+	else if (SkipDrawOffset > SkipDraw && SkipDrawOffset != m_oldSkipDrawOffset)
+	{
+		SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(SkipDrawOffset, 0));
+	}
+	else if (SkipDraw > 0 && SkipDrawOffset == 0)
+	{
+		SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_SETPOS, 0, MAKELPARAM(1, 0));
+	}
+
+	m_oldSkipDrawOffset = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_GETPOS, 0, 0);
+	m_oldSkipDraw = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0);
+}
 
 bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	switch(message)
+	switch (message)
 	{
 	case WM_COMMAND:
 	{
 		int id = LOWORD(wParam);
 
-		switch(id)
+		switch (id)
 		{
-		case IDOK: 
+		case IDC_SKIPDRAWHACKEDIT:
+		case IDC_SKIPDRAWOFFSETEDIT:
+			if (HIWORD(wParam) == EN_CHANGE)
+				UpdateControls();
+			break;
+		case IDOK:
 		{
+			int SkipDrawOffset = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_GETPOS, 0, 0);
+			int SkipDraw = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0);
+
+			if (SkipDrawOffset > SkipDraw)
+			{
+				theApp.SetConfig("UserHacks_SkipDraw_Offset", SkipDraw);
+			}
+			else
+			{
+				theApp.SetConfig("UserHacks_SkipDraw_Offset", SkipDrawOffset);
+			}
+
 			INT_PTR data;
 			if (ComboBoxGetSelData(IDC_TRI_FILTER, data))
 			{
@@ -820,7 +867,7 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			theApp.SetConfig("UserHacks_MSAA", cb2msaa[(int)SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_GETCURSEL, 0, 0)]);
 			theApp.SetConfig("UserHacks_AlphaHack", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHAHACK));
-			theApp.SetConfig("UserHacks_SkipDraw", (int)SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0));
+			theApp.SetConfig("UserHacks_SkipDraw", SkipDraw);
 			theApp.SetConfig("UserHacks_WildHack", (int)IsDlgButtonChecked(m_hWnd, IDC_WILDHACK));
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
 			theApp.SetConfig("preload_frame_with_gs_data", (int)IsDlgButtonChecked(m_hWnd, IDC_PRELOAD_GS));

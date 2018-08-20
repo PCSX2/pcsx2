@@ -36,6 +36,7 @@ GSState::GSState()
 	, m_init_read_fifo_supported(false)
 	, m_gsc(NULL)
 	, m_skip(0)
+	, m_skip_offset(0)
 	, m_q(1.0f)
 	, m_texflush(true)
 	, m_vt(this)
@@ -50,6 +51,7 @@ GSState::GSState()
 	m_mipmap = theApp.GetConfigI("mipmap");
 	m_NTSC_Saturation = theApp.GetConfigB("NTSC_Saturation");
 	m_userhacks_skipdraw = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SkipDraw") : 0;
+	m_userhacks_skipdraw_offset = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SkipDraw_Offset") : 0;
 	m_userhacks_auto_flush = theApp.GetConfigB("UserHacks") ? theApp.GetConfigB("UserHacks_AutoFlush") : 0;
 	m_clut_load_before_draw = theApp.GetConfigB("clut_load_before_draw");
 
