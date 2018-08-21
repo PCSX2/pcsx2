@@ -3,9 +3,6 @@
 #define FMT_24 1
 #define FMT_16 2
 
-// And I say this as an ATI user.
-#define ATI_SUCKS 1
-
 #if SHADER_MODEL >= 0x400
 
 #ifndef VS_BPPZ
@@ -116,7 +113,7 @@ cbuffer cb2
 
 float4 sample_c(float2 uv)
 {
-	if (ATI_SUCKS && PS_POINT_SAMPLER)
+	if (PS_POINT_SAMPLER)
 	{
 		// Weird issue with ATI cards (happens on at least HD 4xxx and 5xxx),
 		// it looks like they add 127/128 of a texel to sampling coordinates

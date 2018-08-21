@@ -391,7 +391,7 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 				// The safe and accurate path (but slow)
 				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
 						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
-				m_require_full_barrier = true;;
+				m_require_full_barrier = true;
 			}
 		}
 	}
@@ -816,6 +816,7 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	m_ps_sel.tcc = m_context->TEX0.TCC;
 
 	m_ps_sel.ltf = bilinear && shader_emulated_sampler;
+	m_ps_sel.point_sampler = GLLoader::vendor_id_amd && (!bilinear || shader_emulated_sampler);
 
 	int w = tex->m_texture->GetWidth();
 	int h = tex->m_texture->GetHeight();

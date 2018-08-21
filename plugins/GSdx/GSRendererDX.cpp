@@ -300,7 +300,7 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	m_ps_sel.rt = tex->m_target;
 	m_ps_sel.spritehack = tex->m_spritehack_t;
-	m_ps_sel.point_sampler = !(bilinear && !shader_emulated_sampler);
+	m_ps_sel.point_sampler = !bilinear || shader_emulated_sampler;
 
 	if (PRIM->FST)
 	{

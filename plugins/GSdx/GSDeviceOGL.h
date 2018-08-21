@@ -301,8 +301,9 @@ public:
 				uint32 tex_is_fb:1; // Jak Shadows
 				uint32 automatic_lod:1;
 				uint32 manual_lod:1;
+				uint32 point_sampler:1;
 
-				uint32 _free2:11;
+				uint32 _free2:10;
 			};
 
 			uint64 key;
