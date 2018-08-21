@@ -82,6 +82,15 @@ vec4 sample_c(vec2 uv)
     return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
 #else
 
+#if PS_POINT_SAMPLER
+    // Weird issue with ATI cards (happens on at least HD 4xxx and 5xxx),
+    // it looks like they add 127/128 of a texel to sampling coordinates
+    // occasionally causing point sampling to erroneously round up.
+    // I'm manually adjusting coordinates to the centre of texels here,
+    // though the centre is just paranoia, the top left corner works fine.
+    uv = (trunc(uv * WH.zw) + vec2(0.5, 0.5)) / WH.zw;
+#endif
+
 #if PS_AUTOMATIC_LOD == 1
     return texture(TextureSampler, uv);
 #elif PS_MANUAL_LOD == 1
