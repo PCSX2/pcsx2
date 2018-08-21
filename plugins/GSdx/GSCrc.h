@@ -30,6 +30,7 @@ public:
 		AceCombatZero,
 		AceCombat4,
 		AceCombat5,
+		ApeEscape2,
 		ArTonelico2,
 		BigMuthaTruckers,
 		Black,
