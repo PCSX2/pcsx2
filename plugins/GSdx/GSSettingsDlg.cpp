@@ -645,10 +645,12 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 GSHacksDlg::GSHacksDlg(const std::string &adapter_id)
 	: GSDialog{IDD_HACKS}
+	, cb2msaa{}
+	, msaa2cb{}
 	, m_adapter_id(adapter_id)
+	, m_old_skipdraw_offset{0}
+	, m_old_skipdraw{0}
 {
-	memset(msaa2cb, 0, sizeof(msaa2cb));
-	memset(cb2msaa, 0, sizeof(cb2msaa));
 }
 
 void GSHacksDlg::OnInit()
@@ -717,8 +719,6 @@ void GSHacksDlg::OnInit()
 	ComboBoxInit(IDC_GEOMETRY_SHADER_OVERRIDE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_geometry_shader"));
 	ComboBoxInit(IDC_IMAGE_LOAD_STORE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_GL_ARB_shader_image_load_store"));
 
-	m_old_skipdraw_offset = 0;
-	m_old_skipdraw = 0;
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_SkipDraw_Offset"), 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
