@@ -984,7 +984,13 @@ void SYSCALL()
 				__Deci2Call(cpuRegs.GPR.n.a0.UL[0], (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));
 		}
 		break;
-
+		case Syscall::sysPrintOut:
+		{
+			if (cpuRegs.GPR.n.a0.UL[0] != 0)
+			{
+				sysConLog(ShiftJIS_ConvertString((char*)PSM(cpuRegs.GPR.n.a0.UL[0])));
+			}
+		}
 		default:
 			break;
 	}
