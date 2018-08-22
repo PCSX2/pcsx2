@@ -586,9 +586,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\logo10.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\logo9.bmp">
       <Filter>Resource Files</Filter>
     </None>

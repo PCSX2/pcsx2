@@ -101,8 +101,6 @@ IDR_TFX_FS_GLSL         RCDATA                  "res\\glsl\\tfx_fs.glsl";
 
 IDB_LOGO9               BITMAP                  "res\\logo9.bmp"
 
-IDB_LOGO10              BITMAP                  "res\\logo10.bmp"
-
 IDB_LOGO11              BITMAP                  "res\\logo11.bmp"
 
 IDB_LOGOGL              BITMAP                  "res\\logo-ogl.bmp"
@@ -286,7 +284,6 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     // General Settings:
     CONTROL         IDB_LOGO9,IDC_LOGO9,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
-    CONTROL         IDB_LOGO10,IDC_LOGO10,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
     CONTROL         IDB_LOGO11,IDC_LOGO11,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
     CONTROL         IDB_LOGOGL,IDC_LOGOGL,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
     CONTROL         IDB_NULL,IDC_NULL,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
