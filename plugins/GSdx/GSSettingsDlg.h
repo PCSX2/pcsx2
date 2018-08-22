@@ -83,9 +83,12 @@ class GSSettingsDlg : public GSDialog
 		Adapter(const std::string &n, const std::string &i, const D3D_FEATURE_LEVEL &l) : name(n), id(i), level(l) {}
 	};
 
-	std::vector<Adapter> adapters;
+	std::vector<Adapter> m_adapters;
 
 	std::vector<GSSetting> m_ocl_devs;
+
+	std::vector<Adapter> EnumerateD3D11Adapters();
+	std::vector<Adapter> EnumerateD3D9Adapters();
 
 	void UpdateRenderers();
 	void UpdateControls();
