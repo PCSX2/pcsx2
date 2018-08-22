@@ -10,8 +10,9 @@
 #define IDB_LOGOGL                      2006
 #define IDC_NULL                        2007
 #define IDC_LOGO9                       2008
-#define IDC_LOGO11                      2010
-#define IDC_LOGOGL                      2011
+#define IDC_LOGO11                      2009
+#define IDC_LOGOGL                      2010
+#define IDC_ADAPTER_TEXT                2011
 #define IDC_ADAPTER                     2012
 #define IDC_RENDERER                    2013
 #define IDC_FILTER_TEXT                 2014
