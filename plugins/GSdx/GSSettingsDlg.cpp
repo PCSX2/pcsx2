@@ -346,7 +346,6 @@ void GSSettingsDlg::UpdateRenderers()
 		if(renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL)
 		{
 			if(level < D3D_FEATURE_LEVEL_10_0) continue;
-			r.name += (level >= D3D_FEATURE_LEVEL_11_0 ? "11" : "10");
 		}
 
 		renderers.push_back(r);
@@ -374,7 +373,6 @@ void GSSettingsDlg::UpdateControls()
 	if(ComboBoxGetSelData(IDC_RENDERER, i))
 	{
 		GSRendererType renderer = static_cast<GSRendererType>(i);
-		D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level();
 
 		bool dx9 = renderer == GSRendererType::DX9_HW || renderer == GSRendererType::DX9_SW || renderer == GSRendererType::DX9_OpenCL;
 		bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL;
@@ -386,8 +384,7 @@ void GSSettingsDlg::UpdateControls()
 		bool null = renderer == GSRendererType::Null;
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO9), dx9 ? SW_SHOW : SW_HIDE);
-		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), (dx11 && level >= D3D_FEATURE_LEVEL_11_0) ? SW_SHOW : SW_HIDE);
-		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO10), (dx11 && level < D3D_FEATURE_LEVEL_11_0) ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_NULL), null ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGOGL), ogl ? SW_SHOW : SW_HIDE);
 #ifndef ENABLE_OPENCL
