@@ -987,7 +987,7 @@ void SYSCALL()
 		}
 		case Syscall::sysPrintOut:
 		{
-			if (memRead32(cpuRegs.GPR.n.a0.UL[0]) != 0)
+			if (cpuRegs.GPR.n.a0.UL[0] != 0)
 			{
 				// TODO: Only supports 7 format arguments. Need to read from the stack for more.
 				// Is there a function which collects PS2 arguments?
