@@ -44,7 +44,7 @@ class GSHacksDlg : public GSDialog
 {
 	unsigned short cb2msaa[17];
 	unsigned short msaa2cb[17];
-	std::string adapter_id;
+	std::string m_adapter_id;
 	int m_old_skipdraw_offset;
 	int m_old_skipdraw;
 
@@ -55,13 +55,7 @@ protected:
 	bool OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
 
 public:
-	GSHacksDlg();
-
-	// Ugh
-	void SetAdapter(std::string adapter_id_)
-	{
-		adapter_id = adapter_id_;
-	}
+	GSHacksDlg(const std::string &adapter_id);
 };
 
 class GSOSDDlg : public GSDialog
@@ -92,7 +86,6 @@ class GSSettingsDlg : public GSDialog
 	std::vector<Adapter> adapters;
 
 	std::vector<GSSetting> m_ocl_devs;
-	uint32 m_lastValidMsaa; // used to revert to previous dialog value if the user changed to invalid one, or lesser one and canceled
 
 	void UpdateRenderers();
 	void UpdateControls();
@@ -100,11 +93,6 @@ class GSSettingsDlg : public GSDialog
 protected:
 	void OnInit();
 	bool OnCommand(HWND hWnd, UINT id, UINT code);
-
-	// Shade Boost
-	GSShaderDlg ShaderDlg;
-	GSHacksDlg HacksDlg;
-	GSOSDDlg OSDDlg;
 
 public:
 	GSSettingsDlg();

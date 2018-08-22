@@ -222,15 +222,21 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			break;
 		case IDC_SHADEBUTTON:
 			if (code == BN_CLICKED)
-				ShaderDlg.DoModal();
+				GSShaderDlg().DoModal();
 			break;
 		case IDC_OSDBUTTON:
 			if (code == BN_CLICKED)
-				OSDDlg.DoModal();
+				GSOSDDlg().DoModal();
 			break;
 		case IDC_HACKSBUTTON:
 			if (code == BN_CLICKED)
-				HacksDlg.DoModal();
+			{
+				INT_PTR data;
+				std::string adapter_id;
+				if (ComboBoxGetSelData(IDC_ADAPTER, data))
+					adapter_id = adapters[data].id;
+				GSHacksDlg(adapter_id).DoModal();
+			}
 			break;
 		case IDOK:
 		{
@@ -318,9 +324,6 @@ void GSSettingsDlg::UpdateRenderers()
 
 	if (!ComboBoxGetSelData(IDC_ADAPTER, i))
 		return;
-
-	// Ugggh
-	HacksDlg.SetAdapter(adapters[(int)i].id);
 
 	D3D_FEATURE_LEVEL level = adapters[(int)i].level;
 
@@ -640,8 +643,9 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 // Hacks Dialog
 
-GSHacksDlg::GSHacksDlg() :
-	GSDialog(IDD_HACKS)
+GSHacksDlg::GSHacksDlg(const std::string &adapter_id)
+	: GSDialog{IDD_HACKS}
+	, m_adapter_id(adapter_id)
 {
 	memset(msaa2cb, 0, sizeof(msaa2cb));
 	memset(cb2msaa, 0, sizeof(cb2msaa));
@@ -665,7 +669,7 @@ void GSHacksDlg::OnInit()
 	{
 		if( i == 1) continue;
 
-		int depth = GSDevice9::GetMaxDepth(i, adapter_id);
+		int depth = GSDevice9::GetMaxDepth(i, m_adapter_id);
 
 		if(depth)
 		{
