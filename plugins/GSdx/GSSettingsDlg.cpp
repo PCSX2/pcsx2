@@ -33,6 +33,10 @@ GSSettingsDlg::GSSettingsDlg()
 	: GSDialog(IDD_CONFIG)
 
 {
+	m_adapters = EnumerateD3D11Adapters();
+	if (m_adapters.empty())
+		m_adapters = EnumerateD3D9Adapters();
+
 #ifdef ENABLE_OPENCL
 	std::list<OCLDeviceDesc> ocldevs;
 
@@ -47,86 +51,75 @@ GSSettingsDlg::GSSettingsDlg()
 #endif
 }
 
+std::vector<GSSettingsDlg::Adapter> GSSettingsDlg::EnumerateD3D11Adapters()
+{
+	CComPtr<IDXGIFactory1> dxgi_factory;
+	CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory));
+	if (dxgi_factory == nullptr)
+		return {};
+
+	std::vector<Adapter> adapters {
+		{"Default Hardware Device", "default", GSUtil::CheckDirect3D11Level(nullptr, D3D_DRIVER_TYPE_HARDWARE)},
+		{"Reference Device", "ref", GSUtil::CheckDirect3D11Level(nullptr, D3D_DRIVER_TYPE_REFERENCE)},
+	};
+
+	CComPtr<IDXGIAdapter1> adapter;
+	for (int i = 0; dxgi_factory->EnumAdapters1(i, &adapter) == S_OK; ++i, adapter = nullptr)
+	{
+		DXGI_ADAPTER_DESC1 desc;
+		if (adapter->GetDesc1(&desc) != S_OK)
+			continue;
+
+		D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level(adapter, D3D_DRIVER_TYPE_UNKNOWN);
+
+		int size = WideCharToMultiByte(CP_ACP, 0, desc.Description, sizeof(desc.Description), nullptr, 0, nullptr, nullptr);
+		std::vector<char> buf(size);
+		WideCharToMultiByte(CP_ACP, 0, desc.Description, sizeof(desc.Description), buf.data(), size, nullptr, nullptr);
+		adapters.push_back({buf.data(), GSAdapter(desc), level});
+	}
+	return adapters;
+}
+
+std::vector<GSSettingsDlg::Adapter> GSSettingsDlg::EnumerateD3D9Adapters()
+{
+	CComPtr<IDirect3D9> d3d9;
+	d3d9.Attach(Direct3DCreate9(D3D_SDK_VERSION));
+	if (d3d9 == nullptr)
+		return {};
+
+	std::vector<Adapter> adapters{
+		{"Default Hardware Device", "default", static_cast<D3D_FEATURE_LEVEL>(0)},
+		{"Reference Device", "ref", static_cast<D3D_FEATURE_LEVEL>(0)},
+	};
+
+	int n = d3d9->GetAdapterCount();
+	for (int i = 0; i < n; i++)
+	{
+		D3DADAPTER_IDENTIFIER9 desc;
+		if (d3d9->GetAdapterIdentifier(i, 0, &desc) != D3D_OK)
+			break;
+
+		adapters.push_back({desc.Description, GSAdapter(desc), static_cast<D3D_FEATURE_LEVEL>(0)});
+	}
+	return adapters;
+}
+
 void GSSettingsDlg::OnInit()
 {
 	__super::OnInit();
-
-	CComPtr<IDirect3D9> d3d9;
-
-	d3d9.Attach(Direct3DCreate9(D3D_SDK_VERSION));
-
-	CComPtr<IDXGIFactory1> dxgi_factory;
-	
-	if(GSUtil::CheckDXGI())
-	{
-		CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgi_factory);
-	}
-	adapters.clear();
-	adapters.push_back(Adapter("Default Hardware Device", "default", GSUtil::CheckDirect3D11Level(NULL, D3D_DRIVER_TYPE_HARDWARE)));
-	adapters.push_back(Adapter("Reference Device", "ref", GSUtil::CheckDirect3D11Level(NULL, D3D_DRIVER_TYPE_REFERENCE)));
-
-	if(dxgi_factory)
-	{
-		for(int i = 0;; i++)
-		{
-			CComPtr<IDXGIAdapter1> adapter;
-
-			if(S_OK != dxgi_factory->EnumAdapters1(i, &adapter))
-				break;
-
-			DXGI_ADAPTER_DESC1 desc;
-
-			HRESULT hr = adapter->GetDesc1(&desc);
-
-			if(S_OK == hr)
-			{
-				D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level(adapter, D3D_DRIVER_TYPE_UNKNOWN);
-				// GSDX isn't unicode!?
-#if 1
-				int size = WideCharToMultiByte(CP_ACP, 0, desc.Description, sizeof(desc.Description), NULL, 0, NULL, NULL);
-				char *buf = new char[size];
-				WideCharToMultiByte(CP_ACP, 0, desc.Description, sizeof(desc.Description), buf, size, NULL, NULL);
-				adapters.push_back(Adapter(buf, GSAdapter(desc), level));
-				delete[] buf;
-#else
-				adapters.push_back(Adapter(desc.Description, GSAdapter(desc), level));
-#endif
-			}
-		}
-	}
-	else if(d3d9)
-	{
-		int n = d3d9->GetAdapterCount();
-		for(int i = 0; i < n; i++)
-		{
-			D3DADAPTER_IDENTIFIER9 desc;
-
-			if(D3D_OK != d3d9->GetAdapterIdentifier(i, 0, &desc))
-				break;
-
-			// GSDX isn't unicode!?
-#if 0
-			wchar_t buf[sizeof desc.Description * sizeof(WCHAR)];
-			MultiByteToWideChar(CP_ACP /* I have no idea if this is right */, 0, desc.Description, sizeof(desc.Description), buf, sizeof buf / sizeof *buf);
-			adapters.push_back(Adapter(buf, GSAdapter(desc), (D3D_FEATURE_LEVEL)0));
-#else
-			adapters.push_back(Adapter(desc.Description, GSAdapter(desc), (D3D_FEATURE_LEVEL)0));
-#endif
-		}
-	}
 
 	std::string adapter_setting = theApp.GetConfigS("Adapter");
 	std::vector<GSSetting> adapter_settings;
 	unsigned int adapter_sel = 0;
 
-	for(unsigned int i = 0; i < adapters.size(); i++)
+	for(unsigned int i = 0; i < m_adapters.size(); i++)
 	{
-		if(adapters[i].id == adapter_setting)
+		if (m_adapters[i].id == adapter_setting)
 		{
 			adapter_sel = i;
 		}
 
-		adapter_settings.push_back(GSSetting(i, adapters[i].name.c_str(), ""));
+		adapter_settings.push_back(GSSetting(i, m_adapters[i].name.c_str(), ""));
 	}
 
 	std::string ocldev = theApp.GetConfigS("ocldev");
@@ -234,7 +227,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				INT_PTR data;
 				std::string adapter_id;
 				if (ComboBoxGetSelData(IDC_ADAPTER, data))
-					adapter_id = adapters[data].id;
+					adapter_id = m_adapters[data].id;
 				GSHacksDlg(adapter_id).DoModal();
 			}
 			break;
@@ -244,7 +237,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 			if(ComboBoxGetSelData(IDC_ADAPTER, data))
 			{
-				theApp.SetConfig("Adapter", adapters[(int)data].id.c_str());
+				theApp.SetConfig("Adapter", m_adapters[data].id.c_str());
 			}
 
 			if(ComboBoxGetSelData(IDC_OPENCL_DEVICE, data))
@@ -325,7 +318,7 @@ void GSSettingsDlg::UpdateRenderers()
 	if (!ComboBoxGetSelData(IDC_ADAPTER, i))
 		return;
 
-	D3D_FEATURE_LEVEL level = adapters[(int)i].level;
+	D3D_FEATURE_LEVEL level = m_adapters[i].level;
 
 	std::vector<GSSetting> renderers;
 
