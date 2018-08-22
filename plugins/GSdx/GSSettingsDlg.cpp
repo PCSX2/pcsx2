@@ -27,15 +27,24 @@
 #include "GSDevice11.h"
 #include "resource.h"
 #include "GSSetting.h"
-
+#include <algorithm>
 
 GSSettingsDlg::GSSettingsDlg()
 	: GSDialog(IDD_CONFIG)
-
+	, m_renderers{theApp.m_gs_renderers}
+	, m_d3d11_adapters{EnumerateD3D11Adapters()}
+	, m_d3d9_adapters{EnumerateD3D9Adapters()}
+	, m_current_adapters{nullptr}
+	, m_last_selected_adapter_id{theApp.GetConfigS("Adapter")}
 {
-	m_adapters = EnumerateD3D11Adapters();
-	if (m_adapters.empty())
-		m_adapters = EnumerateD3D9Adapters();
+	if (m_d3d11_adapters.empty())
+	{
+		auto is_d3d11_renderer = [](const auto &renderer) {
+			const GSRendererType type = static_cast<GSRendererType>(renderer.value);
+			return type == GSRendererType::DX1011_HW || type == GSRendererType::DX1011_SW || type == GSRendererType::DX1011_OpenCL;
+		};
+		m_renderers.erase(std::remove_if(m_renderers.begin(), m_renderers.end(), is_d3d11_renderer), m_renderers.end());
+	}
 
 #ifdef ENABLE_OPENCL
 	std::list<OCLDeviceDesc> ocldevs;
@@ -77,6 +86,10 @@ std::vector<GSSettingsDlg::Adapter> GSSettingsDlg::EnumerateD3D11Adapters()
 		WideCharToMultiByte(CP_ACP, 0, desc.Description, sizeof(desc.Description), buf.data(), size, nullptr, nullptr);
 		adapters.push_back({buf.data(), GSAdapter(desc), level});
 	}
+
+	auto unsupported_adapter = [](const auto &adapter) { return adapter.level < D3D_FEATURE_LEVEL_10_0; };
+	adapters.erase(std::remove_if(adapters.begin(), adapters.end(), unsupported_adapter), adapters.end());
+
 	return adapters;
 }
 
@@ -108,19 +121,12 @@ void GSSettingsDlg::OnInit()
 {
 	__super::OnInit();
 
-	std::string adapter_setting = theApp.GetConfigS("Adapter");
-	std::vector<GSSetting> adapter_settings;
-	unsigned int adapter_sel = 0;
-
-	for(unsigned int i = 0; i < m_adapters.size(); i++)
-	{
-		if (m_adapters[i].id == adapter_setting)
-		{
-			adapter_sel = i;
-		}
-
-		adapter_settings.push_back(GSSetting(i, m_adapters[i].name.c_str(), ""));
-	}
+	GSRendererType renderer = GSRendererType(theApp.GetConfigI("Renderer"));
+	const bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL;
+	if (renderer == GSRendererType::Undefined || m_d3d11_adapters.empty() && dx11)
+		renderer = GSUtil::GetBestRenderer();
+	ComboBoxInit(IDC_RENDERER, m_renderers, static_cast<int32_t>(renderer));
+	UpdateAdapters();
 
 	std::string ocldev = theApp.GetConfigS("ocldev");
 
@@ -136,10 +142,8 @@ void GSSettingsDlg::OnInit()
 		}
 	}
 
-	ComboBoxInit(IDC_ADAPTER, adapter_settings, adapter_sel);
 	ComboBoxInit(IDC_OPENCL_DEVICE, m_ocl_devs, ocl_sel);
 	ComboBoxInit(IDC_MIPMAP_HW, theApp.m_gs_hw_mipmapping, theApp.GetConfigI("mipmap_hw"));
-	UpdateRenderers();
 
 	ComboBoxInit(IDC_INTERLACE, theApp.m_gs_interlace, theApp.GetConfigI("interlace"));
 	ComboBoxInit(IDC_UPSCALE_MULTIPLIER, theApp.m_gs_upscale_multiplier, theApp.GetConfigI("upscale_multiplier"));
@@ -193,13 +197,15 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 		case IDC_ADAPTER:
 			if (code == CBN_SELCHANGE)
 			{
-				UpdateRenderers();
-				UpdateControls();
+				INT_PTR data;
+				if (ComboBoxGetSelData(IDC_ADAPTER, data))
+					m_last_selected_adapter_id = (*m_current_adapters)[data].id;
 			}
 			break;
 		case IDC_RENDERER:
 			if (code == CBN_SELCHANGE)
 			{
+				UpdateAdapters();
 				UpdateControls();
 			}
 			break;
@@ -227,7 +233,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				INT_PTR data;
 				std::string adapter_id;
 				if (ComboBoxGetSelData(IDC_ADAPTER, data))
-					adapter_id = m_adapters[data].id;
+					adapter_id = (*m_current_adapters)[data].id;
 				GSHacksDlg(adapter_id).DoModal();
 			}
 			break;
@@ -237,7 +243,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 			if(ComboBoxGetSelData(IDC_ADAPTER, data))
 			{
-				theApp.SetConfig("Adapter", m_adapters[data].id.c_str());
+				theApp.SetConfig("Adapter", (*m_current_adapters)[data].id.c_str());
 			}
 
 			if(ComboBoxGetSelData(IDC_OPENCL_DEVICE, data))
@@ -311,52 +317,39 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 	return __super::OnCommand(hWnd, id, code);
 }
 
-void GSSettingsDlg::UpdateRenderers()
+void GSSettingsDlg::UpdateAdapters()
 {
-	INT_PTR i;
-
-	if (!ComboBoxGetSelData(IDC_ADAPTER, i))
+	INT_PTR data;
+	if (!ComboBoxGetSelData(IDC_RENDERER, data))
 		return;
 
-	D3D_FEATURE_LEVEL level = m_adapters[i].level;
+	const GSRendererType renderer = static_cast<GSRendererType>(data);
+	const bool ogl = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::OGL_SW || renderer == GSRendererType::OGL_OpenCL;
+	const bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL;
+	const bool null = renderer == GSRendererType::Null;
 
-	std::vector<GSSetting> renderers;
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ADAPTER), !(ogl || null));
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ADAPTER_TEXT), !(ogl || null));
 
-	GSRendererType renderer_setting;
-
-	if (ComboBoxGetSelData(IDC_RENDERER, i))
+	if (ogl || null)
 	{
-		renderer_setting = static_cast<GSRendererType>(i);
-	}
-	else
-	{
-		renderer_setting = GSRendererType(theApp.GetConfigI("Renderer"));
-		if (renderer_setting == GSRendererType::Undefined)
-			renderer_setting = GSUtil::GetBestRenderer();
+		SendMessage(GetDlgItem(m_hWnd, IDC_ADAPTER), CB_RESETCONTENT, 0, 0);
+		return;
 	}
 
-	GSRendererType renderer_sel = GSRendererType::Default;
+	m_current_adapters = dx11 ? &m_d3d11_adapters : &m_d3d9_adapters;
 
-	for(size_t i = 0; i < theApp.m_gs_renderers.size(); i++)
+	std::vector<GSSetting> adapter_settings;
+	unsigned int adapter_sel = 0;
+	for (unsigned int i = 0; i < m_current_adapters->size(); i++)
 	{
-		GSSetting r = theApp.m_gs_renderers[i];
+		if ((*m_current_adapters)[i].id == m_last_selected_adapter_id)
+			adapter_sel = i;
 
-		GSRendererType renderer = static_cast<GSRendererType>(r.value);
-
-		if(renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL)
-		{
-			if(level < D3D_FEATURE_LEVEL_10_0) continue;
-		}
-
-		renderers.push_back(r);
-
-		if (static_cast<GSRendererType>(r.value) == renderer_setting)
-		{
-			renderer_sel = renderer_setting;
-		}
+		adapter_settings.push_back(GSSetting{i, (*m_current_adapters)[i].name.c_str(), ""});
 	}
 
-	ComboBoxInit(IDC_RENDERER, renderers, static_cast<int32_t>(renderer_sel));
+	ComboBoxInit(IDC_ADAPTER, adapter_settings, adapter_sel);
 }
 
 void GSSettingsDlg::UpdateControls()
