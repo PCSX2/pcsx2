@@ -244,7 +244,7 @@ void DisplayDialog()
     gtk_container_add(GTK_CONTAINER(log_frame), log_box);
 
     // Dump Section
-    #if GTK_MAJOR_VERSION < 3
+#if GTK_MAJOR_VERSION < 3
     dump_box = gtk_vbox_new(false, 5);
 #else
     dump_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -304,4 +304,4 @@ void DisplayDialog()
 {
 }
 #endif
-}
+} // namespace DebugConfig

@@ -81,6 +81,8 @@ static u32 SdlOutputAPI = 0;
 
 int numSpeakers = 0;
 int dplLevel = 0;
+bool temp_debug_state;
+
 /*****************************************************************************/
 
 void ReadSettings()
@@ -221,6 +223,14 @@ void debug_dialog()
 
 #if defined(__unix__)
 
+static void toggle_sensitivity(GtkWidget *widget, gpointer data)
+{
+    GtkButton *btn = static_cast<GtkButton *>(data);
+
+    temp_debug_state = !temp_debug_state;
+    gtk_widget_set_sensitive(GTK_WIDGET(btn), temp_debug_state);
+}
+
 static void cb_adjust_latency(GtkComboBox *widget, gpointer data)
 {
     GtkRange *range = static_cast<GtkRange *>(data);
@@ -322,7 +332,7 @@ void DisplayDialog()
 #else
     volume_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 100, 5);
 #endif
-    gtk_range_set_value(GTK_RANGE(volume_slide), FinalVolume*100);
+    gtk_range_set_value(GTK_RANGE(volume_slide), FinalVolume * 100);
 
     sync_label = gtk_label_new("Synchronization Mode:");
     sync_box = gtk_combo_box_text_new();
@@ -396,12 +406,15 @@ void DisplayDialog()
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(effects_check), EffectsDisabled);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dealias_filter), postprocess_filter_dealias);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(debug_check), DebugEnabled);
+    gtk_widget_set_sensitive(GTK_WIDGET(debug_button), DebugEnabled);
+    temp_debug_state = DebugEnabled;
 
     gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_box);
     gtk_widget_show_all(dialog);
 
     g_signal_connect(sync_box, "changed", G_CALLBACK(cb_adjust_latency), latency_slide);
     g_signal_connect_swapped(advanced_button, "clicked", G_CALLBACK(advanced_dialog), advanced_button);
+    g_signal_connect(debug_check, "clicked", G_CALLBACK(toggle_sensitivity), debug_button);
     g_signal_connect_swapped(debug_button, "clicked", G_CALLBACK(debug_dialog), debug_button);
 
     return_value = gtk_dialog_run(GTK_DIALOG(dialog));

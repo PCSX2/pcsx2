@@ -173,4 +173,4 @@ void restore_defaults()
 {
 }
 #endif
-}
+} // namespace SoundtouchCfg
