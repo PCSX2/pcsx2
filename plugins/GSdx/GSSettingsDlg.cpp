@@ -426,8 +426,8 @@ void GSSettingsDlg::UpdateControls()
 		INT_PTR filter;
 		if (ComboBoxGetSelData(IDC_FILTER, filter))
 		{
-			EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO), hw && filter && !IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
-			EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO_TEXT), hw && filter && !IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
+			EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO), hw && filter && (ogl || !IsDlgButtonChecked(m_hWnd, IDC_PALTEX)));
+			EnableWindow(GetDlgItem(m_hWnd, IDC_AFCOMBO_TEXT), hw && filter && (ogl || !IsDlgButtonChecked(m_hWnd, IDC_PALTEX)));
 		}
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl && hw);
