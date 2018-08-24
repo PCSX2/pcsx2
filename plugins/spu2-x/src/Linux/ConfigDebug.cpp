@@ -161,7 +161,7 @@ void DisplayDialog()
     int return_value;
 
     GtkWidget *msg_box, *log_box, *dump_box, *main_box;
-    GtkWidget *msg_frame, *log_frame, *dump_frame, *main_frame;
+    GtkWidget *msg_frame, *log_frame, *dump_frame;
 
     GtkWidget *msg_console_check, *msg_key_check, *msg_voice_check, *msg_dma_check;
     GtkWidget *msg_autodma_check, *msg_overrun_check, *msg_cache_check;
@@ -176,17 +176,23 @@ void DisplayDialog()
         "Spu2-X Config",
         NULL, // parent window
         (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
-        "OK", GTK_RESPONSE_ACCEPT,
         "Cancel", GTK_RESPONSE_REJECT,
+        "OK", GTK_RESPONSE_ACCEPT,
         NULL);
 
+#if GTK_MAJOR_VERSION < 3
     main_box = gtk_hbox_new(false, 5);
-    main_frame = gtk_frame_new("Spu2-X Config");
-    gtk_container_add(GTK_CONTAINER(main_frame), main_box);
+#else
+    main_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#endif
 
     // Message Section
 
+#if GTK_MAJOR_VERSION < 3
     msg_box = gtk_vbox_new(false, 5);
+#else
+    msg_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+#endif
 
     msg_console_check = gtk_check_button_new_with_label("Show In Console");
     msg_key_check = gtk_check_button_new_with_label("KeyOn/Off Events");
@@ -216,7 +222,11 @@ void DisplayDialog()
     gtk_container_add(GTK_CONTAINER(msg_frame), msg_box);
 
     // Log Section
+#if GTK_MAJOR_VERSION < 3
     log_box = gtk_vbox_new(false, 5);
+#else
+    log_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+#endif
 
     log_access_check = gtk_check_button_new_with_label("Log Register/DMA Actions");
     log_dma_check = gtk_check_button_new_with_label("Log DMA Writes");
@@ -234,7 +244,11 @@ void DisplayDialog()
     gtk_container_add(GTK_CONTAINER(log_frame), log_box);
 
     // Dump Section
+    #if GTK_MAJOR_VERSION < 3
     dump_box = gtk_vbox_new(false, 5);
+#else
+    dump_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+#endif
 
     dump_core_check = gtk_check_button_new_with_label("Dump Core and Voice State");
     dump_mem_check = gtk_check_button_new_with_label("Dump Memory Contents");
@@ -258,7 +272,7 @@ void DisplayDialog()
     gtk_container_add(GTK_CONTAINER(main_box), dump_frame);
 
     // Add all our widgets, and show everything we've added to the dialog.
-    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_frame);
+    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_box);
     gtk_widget_show_all(dialog);
 
     return_value = gtk_dialog_run(GTK_DIALOG(dialog));
