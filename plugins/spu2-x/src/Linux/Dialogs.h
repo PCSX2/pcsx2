@@ -26,7 +26,7 @@ namespace DebugConfig
 extern void ReadSettings();
 extern void WriteSettings();
 extern void DisplayDialog();
-}
+} // namespace DebugConfig
 
 extern void CfgSetSettingsDir(const char *dir);
 extern void CfgSetLogDir(const char *dir);
@@ -41,5 +41,12 @@ extern void CfgReadStr(const wchar_t *Section, const wchar_t *Name, wxString &Da
 //extern void		CfgReadStr(const wchar_t* Section, const wchar_t* Name, wchar_t* Data, int DataSize, const wchar_t* Default);
 extern int CfgReadInt(const wchar_t *Section, const wchar_t *Name, int Default);
 extern float CfgReadFloat(const wchar_t *Section, const wchar_t *Name, float Default);
+
+#if defined(__unix__)
+extern GtkWidget *spu2x_gtk_hbox_new(int padding);
+extern GtkWidget *spu2x_gtk_vbox_new(int padding);
+extern GtkWidget *spu2x_gtk_hscale_new_with_range(double g_min, double g_max, int g_step);
+extern GtkWidget *spu2x_gtk_vscale_new_with_range(double g_min, double g_max, int g_step);
+#endif
 
 #endif
