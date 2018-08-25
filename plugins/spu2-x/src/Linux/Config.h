@@ -92,7 +92,7 @@ namespace SoundtouchCfg
 void ReadSettings();
 void WriteSettings();
 void DisplayDialog();
-}; // namespace SoundtouchCfg
+};
 
 void ReadSettings();
 void WriteSettings();

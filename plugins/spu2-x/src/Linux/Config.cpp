@@ -81,8 +81,6 @@ static u32 SdlOutputAPI = 0;
 
 int numSpeakers = 0;
 int dplLevel = 0;
-bool temp_debug_state;
-
 /*****************************************************************************/
 
 void ReadSettings()
@@ -223,14 +221,6 @@ void debug_dialog()
 
 #if defined(__unix__)
 
-static void toggle_sensitivity(GtkWidget *widget, gpointer data)
-{
-    GtkButton *btn = static_cast<GtkButton *>(data);
-
-    temp_debug_state = !temp_debug_state;
-    gtk_widget_set_sensitive(GTK_WIDGET(btn), temp_debug_state);
-}
-
 static void cb_adjust_latency(GtkComboBox *widget, gpointer data)
 {
     GtkRange *range = static_cast<GtkRange *>(data);
@@ -244,13 +234,14 @@ void DisplayDialog()
     int return_value;
 
     GtkWidget *dialog;
-    GtkWidget *main_box;
+    GtkWidget *main_frame, *main_box;
 
     GtkWidget *mixing_frame, *mixing_box;
     GtkWidget *int_label, *int_box;
     GtkWidget *effects_check;
     GtkWidget *dealias_filter;
-    GtkWidget *debug_check, *debug_button, *debug_frame, *debug_box;
+    GtkWidget *debug_check;
+    GtkWidget *debug_button;
 
     GtkWidget *output_frame, *output_box;
     GtkWidget *mod_label, *mod_box;
@@ -259,7 +250,6 @@ void DisplayDialog()
     GtkWidget *sdl_api_label, *sdl_api_box;
 #endif
     GtkWidget *latency_label, *latency_slide;
-    GtkWidget *volume_label, *volume_slide;
     GtkWidget *sync_label, *sync_box;
     GtkWidget *advanced_button;
 
@@ -268,8 +258,8 @@ void DisplayDialog()
         "SPU2-X Config",
         NULL, /* parent window*/
         (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
-        "Cancel", GTK_RESPONSE_REJECT,
         "OK", GTK_RESPONSE_ACCEPT,
+        "Cancel", GTK_RESPONSE_REJECT,
         NULL);
 
     int_label = gtk_label_new("Interpolation:");
@@ -326,14 +316,6 @@ void DisplayDialog()
 #endif
     gtk_range_set_value(GTK_RANGE(latency_slide), SndOutLatencyMS);
 
-    volume_label = gtk_label_new("Volume:");
-#if GTK_MAJOR_VERSION < 3
-    volume_slide = gtk_hscale_new_with_range(0, 100, 5);
-#else
-    volume_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 100, 5);
-#endif
-    gtk_range_set_value(GTK_RANGE(volume_slide), FinalVolume * 100);
-
     sync_label = gtk_label_new("Synchronization Mode:");
     sync_box = gtk_combo_box_text_new();
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sync_box), "TimeStretch (Recommended)");
@@ -348,6 +330,8 @@ void DisplayDialog()
 #else
     main_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 #endif
+    main_frame = gtk_frame_new("SPU2-X Config");
+    gtk_container_add(GTK_CONTAINER(main_frame), main_box);
 
 #if GTK_MAJOR_VERSION < 3
     mixing_box = gtk_vbox_new(false, 5);
@@ -355,7 +339,6 @@ void DisplayDialog()
     mixing_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 #endif
     mixing_frame = gtk_frame_new("Mixing Settings:");
-
     gtk_container_add(GTK_CONTAINER(mixing_frame), mixing_box);
 
 #if GTK_MAJOR_VERSION < 3
@@ -364,25 +347,14 @@ void DisplayDialog()
     output_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 #endif
     output_frame = gtk_frame_new("Output Settings:");
-
-#if GTK_MAJOR_VERSION < 3
-    debug_box = gtk_vbox_new(false, 5);
-#else
-    debug_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-#endif
-    debug_frame = gtk_frame_new("Debug Settings:");
-
-    gtk_container_add(GTK_CONTAINER(debug_box), debug_check);
-    gtk_container_add(GTK_CONTAINER(debug_box), debug_button);
-    gtk_container_add(GTK_CONTAINER(debug_frame), debug_box);
-
     gtk_container_add(GTK_CONTAINER(output_frame), output_box);
 
     gtk_container_add(GTK_CONTAINER(mixing_box), int_label);
     gtk_container_add(GTK_CONTAINER(mixing_box), int_box);
     gtk_container_add(GTK_CONTAINER(mixing_box), effects_check);
     gtk_container_add(GTK_CONTAINER(mixing_box), dealias_filter);
-    gtk_container_add(GTK_CONTAINER(mixing_box), debug_frame);
+    gtk_container_add(GTK_CONTAINER(mixing_box), debug_check);
+    gtk_container_add(GTK_CONTAINER(mixing_box), debug_button);
 
     gtk_container_add(GTK_CONTAINER(output_box), mod_label);
     gtk_container_add(GTK_CONTAINER(output_box), mod_box);
@@ -396,25 +368,21 @@ void DisplayDialog()
     gtk_container_add(GTK_CONTAINER(output_box), sync_box);
     gtk_container_add(GTK_CONTAINER(output_box), latency_label);
     gtk_container_add(GTK_CONTAINER(output_box), latency_slide);
-    gtk_container_add(GTK_CONTAINER(output_box), volume_label);
-    gtk_container_add(GTK_CONTAINER(output_box), volume_slide);
     gtk_container_add(GTK_CONTAINER(output_box), advanced_button);
 
-    gtk_box_pack_start(GTK_BOX(main_box), mixing_frame, TRUE, TRUE, 5);
-    gtk_box_pack_start(GTK_BOX(main_box), output_frame, TRUE, TRUE, 5);
+    gtk_container_add(GTK_CONTAINER(main_box), mixing_frame);
+    gtk_container_add(GTK_CONTAINER(main_box), output_frame);
 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(effects_check), EffectsDisabled);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dealias_filter), postprocess_filter_dealias);
+    //FinalVolume;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(debug_check), DebugEnabled);
-    gtk_widget_set_sensitive(GTK_WIDGET(debug_button), DebugEnabled);
-    temp_debug_state = DebugEnabled;
 
-    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_box);
+    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_frame);
     gtk_widget_show_all(dialog);
 
     g_signal_connect(sync_box, "changed", G_CALLBACK(cb_adjust_latency), latency_slide);
     g_signal_connect_swapped(advanced_button, "clicked", G_CALLBACK(advanced_dialog), advanced_button);
-    g_signal_connect(debug_check, "clicked", G_CALLBACK(toggle_sensitivity), debug_button);
     g_signal_connect_swapped(debug_button, "clicked", G_CALLBACK(debug_dialog), debug_button);
 
     return_value = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -426,6 +394,7 @@ void DisplayDialog()
             Interpolation = gtk_combo_box_get_active(GTK_COMBO_BOX(int_box));
 
         EffectsDisabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(effects_check));
+        //FinalVolume;
 
         if (gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box)) != -1)
             OutputModule = gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box));
@@ -464,7 +433,7 @@ void DisplayDialog()
             SDLOut->SetApiSettings(wxString(SDL_GetAudioDriver(SdlOutputAPI), wxConvUTF8));
         }
 #endif
-        FinalVolume = gtk_range_get_value(GTK_RANGE(volume_slide)) / 100;
+
         SndOutLatencyMS = gtk_range_get_value(GTK_RANGE(latency_slide));
 
         if (gtk_combo_box_get_active(GTK_COMBO_BOX(sync_box)) != -1)
