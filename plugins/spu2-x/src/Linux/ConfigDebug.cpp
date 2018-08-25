@@ -221,7 +221,7 @@ void DisplayDialog()
     msg_frame = gtk_frame_new("Message/Log Options");
     gtk_container_add(GTK_CONTAINER(msg_frame), msg_box);
 
-    // Log Section
+// Log Section
 #if GTK_MAJOR_VERSION < 3
     log_box = gtk_vbox_new(false, 5);
 #else
@@ -243,7 +243,7 @@ void DisplayDialog()
     log_frame = gtk_frame_new("Log Options");
     gtk_container_add(GTK_CONTAINER(log_frame), log_box);
 
-    // Dump Section
+// Dump Section
 #if GTK_MAJOR_VERSION < 3
     dump_box = gtk_vbox_new(false, 5);
 #else
