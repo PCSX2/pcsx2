@@ -2,6 +2,7 @@
 
 set -ex
 
+# Disabled for now
 clang_syntax_check() {
 	if [ "${CXX}" = "clang++" ]; then
         ./linux_various/check_format.sh
@@ -16,9 +17,10 @@ linux_32_before_install() {
 
 	# Compilers
 	if [ "${CXX}" = "clang++" ]; then
-		sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
-		sudo add-apt-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-${VERSION} main"
-		COMPILER_PACKAGE="g++-8-multilib clang-format-${VERSION}"
+		#sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
+		#sudo add-apt-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-${VERSION} main"
+		#COMPILER_PACKAGE="g++-8-multilib clang-format-${VERSION}"
+		COMPILER_PACKAGE="g++-8-multilib"
 	fi
 	if [ "${CXX}" = "g++" ]; then
 		COMPILER_PACKAGE="g++-${VERSION}-multilib"
@@ -136,7 +138,7 @@ before_install|script)
 	${TRAVIS_OS_NAME}_${BITS}_${1}
 	;;
 before_script)
-    clang_syntax_check
+#    clang_syntax_check
     ;;
 after_success)
 	${TRAVIS_OS_NAME}_${1}
