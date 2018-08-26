@@ -476,6 +476,7 @@ protected:
 
 	void CleanupEvent()
 	{
+		UI_UpdateSysControls();
 	}
 };
 
@@ -674,6 +675,7 @@ void StateCopy_SaveToSlot( uint num )
 	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", WX_STR(file) );
 
 	StateCopy_SaveToFile( file );
+	UI_UpdateSysControls();
 }
 
 void StateCopy_LoadFromSlot( uint slot, bool isFromBackup )
@@ -690,4 +692,5 @@ void StateCopy_LoadFromSlot( uint slot, bool isFromBackup )
 	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", WX_STR(file) );
 
 	StateCopy_LoadFromFile( file );
+	UI_UpdateSysControls();
 }

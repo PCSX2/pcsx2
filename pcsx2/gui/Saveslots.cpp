@@ -17,11 +17,13 @@
 #include "App.h"
 #include "AppSaveStates.h"
 #include "ConsoleLogger.h"
+#include "MainFrame.h"
 
 #include "Common.h"
 
 #include "GS.h"
 #include "Elfheader.h"
+#include "Saveslots.h"
 
 // --------------------------------------------------------------------------------------
 //  Saveslot Section
@@ -29,15 +31,7 @@
 
 static int StatesC = 0;
 static const int StateSlotsCount = 10;
-static wxMenuItem* g_loadBackupMenuItem =NULL;
-
-bool States_isSlotUsed(int num)
-{
-	if (ElfCRC == 0)
-		return false;
-	else
-		return wxFileExists( SaveStateBase::GetFilename( num ) );
-}
+Saveslot saveslot_cache[10] = {{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}};
 
 // FIXME : Use of the IsSavingOrLoading flag is mostly a hack until we implement a
 // complete thread to manage queuing savestate tasks, and zipping states to disk.  --air
@@ -49,90 +43,101 @@ public:
 	wxString GetEventName() const { return L"ClearSavingLoadingFlag"; }
 
 	virtual ~SysExecEvent_ClearSavingLoadingFlag() = default;
-	SysExecEvent_ClearSavingLoadingFlag()
-	{
-	}
-
-	SysExecEvent_ClearSavingLoadingFlag* Clone() const { return new SysExecEvent_ClearSavingLoadingFlag(); }
+	SysExecEvent_ClearSavingLoadingFlag() { }
+	SysExecEvent_ClearSavingLoadingFlag *Clone() const { return new SysExecEvent_ClearSavingLoadingFlag(); }
 
 protected:
 	void InvokeEvent()
 	{
 		IsSavingOrLoading = false;
+		UI_UpdateSysControls();
 	}
 };
 
-void Sstates_updateLoadBackupMenuItem( bool isBeforeSave = false);
+void Sstates_updateLoadBackupMenuItem(bool isBeforeSave);
 
 void States_FreezeCurrentSlot()
 {
 	// FIXME : Use of the IsSavingOrLoading flag is mostly a hack until we implement a
 	// complete thread to manage queuing savestate tasks, and zipping states to disk.  --air
-	if( !SysHasValidState() )
+	if (!SysHasValidState())
 	{
-		Console.WriteLn( "Save state: Aborting (VM is not active)." );
+		Console.WriteLn("Save state: Aborting (VM is not active).");
 		return;
 	}
 
-	if( wxGetApp().HasPendingSaves() || IsSavingOrLoading.exchange(true) )
+	if (wxGetApp().HasPendingSaves() || IsSavingOrLoading.exchange(true))
 	{
-		Console.WriteLn( "Load or save action is already pending." );
+		Console.WriteLn("Load or save action is already pending.");
 		return;
 	}
-	Sstates_updateLoadBackupMenuItem( true );
+	Sstates_updateLoadBackupMenuItem(true);
 
-	GSchangeSaveState( StatesC, SaveStateBase::GetFilename( StatesC ).ToUTF8() );
-	StateCopy_SaveToSlot( StatesC );
-	
-	GetSysExecutorThread().PostIdleEvent( SysExecEvent_ClearSavingLoadingFlag() );
+	GSchangeSaveState(StatesC, SaveStateBase::GetFilename(StatesC).ToUTF8());
+	StateCopy_SaveToSlot(StatesC);
+
+	// Hack: Update the saveslot saying it's filled *right now* because it's still writing the file and we don't have a timestamp.
+	saveslot_cache[StatesC].empty = false;
+	saveslot_cache[StatesC].updated = wxDateTime::Now();
+	saveslot_cache[StatesC].crc = ElfCRC;
+
+	GetSysExecutorThread().PostIdleEvent(SysExecEvent_ClearSavingLoadingFlag());
 }
 
-void _States_DefrostCurrentSlot( bool isFromBackup )
+void _States_DefrostCurrentSlot(bool isFromBackup)
 {
-	if( !SysHasValidState() )
+	if (!SysHasValidState())
 	{
-		Console.WriteLn( "Load state: Aborting (VM is not active)." );
+		Console.WriteLn("Load state: Aborting (VM is not active).");
 		return;
 	}
 
-	if( IsSavingOrLoading.exchange(true) )
+	if (IsSavingOrLoading.exchange(true))
 	{
-		Console.WriteLn( "Load or save action is already pending." );
+		Console.WriteLn("Load or save action is already pending.");
 		return;
 	}
 
-	GSchangeSaveState( StatesC, SaveStateBase::GetFilename( StatesC ).ToUTF8() );
-	StateCopy_LoadFromSlot( StatesC, isFromBackup );
+	GSchangeSaveState(StatesC, SaveStateBase::GetFilename(StatesC).ToUTF8());
+	StateCopy_LoadFromSlot(StatesC, isFromBackup);
 
-	GetSysExecutorThread().PostIdleEvent( SysExecEvent_ClearSavingLoadingFlag() );
+	GetSysExecutorThread().PostIdleEvent(SysExecEvent_ClearSavingLoadingFlag());
 
-	Sstates_updateLoadBackupMenuItem();
+	Sstates_updateLoadBackupMenuItem(false);
 }
 
 void States_DefrostCurrentSlot()
 {
-	_States_DefrostCurrentSlot( false );
+	_States_DefrostCurrentSlot(false);
 }
 
 void States_DefrostCurrentSlotBackup()
 {
-	_States_DefrostCurrentSlot( true );
+	_States_DefrostCurrentSlot(true);
 }
 
-
-void States_registerLoadBackupMenuItem( wxMenuItem* loadBackupMenuItem )
+// I'd keep an eye on this function, as it may still be problematic.
+void Sstates_updateLoadBackupMenuItem(bool isBeforeSave)
 {
-	g_loadBackupMenuItem = loadBackupMenuItem;
+	wxString file = SaveStateBase::GetFilename(StatesC);
+
+	if (!(isBeforeSave && g_Conf->EmuOptions.BackupSavestate))
+	{
+		file = file + L".backup";
+	}
+
+	sMainFrame.EnableMenuItem(MenuId_State_LoadBackup, wxFileExists(file));
+	sMainFrame.SetMenuItemLabel(MenuId_State_LoadBackup, wxsFormat(L"%s %d", _("Backup"), StatesC));
 }
 
 static void OnSlotChanged()
 {
-	OSDlog( Color_StrongGreen, true, " > Selected savestate slot %d", StatesC );
+	OSDlog(Color_StrongGreen, true, " > Selected savestate slot %d", StatesC);
 
-	if( GSchangeSaveState != NULL )
+	if (GSchangeSaveState != NULL)
 		GSchangeSaveState(StatesC, SaveStateBase::GetFilename(StatesC).utf8_str());
 
-	Sstates_updateLoadBackupMenuItem();
+	Sstates_updateLoadBackupMenuItem(false);
 }
 
 int States_GetCurrentSlot()
@@ -140,33 +145,20 @@ int States_GetCurrentSlot()
 	return StatesC;
 }
 
-void Sstates_updateLoadBackupMenuItem( bool isBeforeSave )
+void States_SetCurrentSlot(int slot)
 {
-	if( !g_loadBackupMenuItem )	return;
-
-	int slot = States_GetCurrentSlot();
-	wxString file = SaveStateBase::GetFilename( slot );
-	g_loadBackupMenuItem->Enable( wxFileExists( isBeforeSave && g_Conf->EmuOptions.BackupSavestate ? file : file + L".backup" ) );
-	wxString label;
-	label.Printf(L"%s %d", _("Backup"), slot );
-	g_loadBackupMenuItem->SetItemLabel( label );
-}
-
-void States_SetCurrentSlot( int slot )
-{
-	StatesC = std::min( std::max( slot, 0 ), StateSlotsCount );
+	StatesC = std::min(std::max(slot, 0), StateSlotsCount);
 	OnSlotChanged();
 }
 
 void States_CycleSlotForward()
 {
-	StatesC = (StatesC+1) % StateSlotsCount;
+	StatesC = (StatesC + 1) % StateSlotsCount;
 	OnSlotChanged();
 }
 
 void States_CycleSlotBackward()
 {
-	StatesC = (StatesC+StateSlotsCount-1) % StateSlotsCount;
+	StatesC = (StatesC + StateSlotsCount - 1) % StateSlotsCount;
 	OnSlotChanged();
 }
-
