@@ -84,65 +84,37 @@ struct Game_Data
 		kList.clear();
 	}
 
-	bool keyExists(const wxChar* key) const;
-	wxString getString(const wxChar* key) const;
+	bool keyExists(const wxString& key) const;
+	wxString getString(const wxString& key) const;
 	void writeString(const wxString& key, const wxString& value);
 
 	bool IsOk() const {
 		return !id.IsEmpty();
 	}
 
-	bool sectionExists(const wxChar* key, const wxString& value) const {
-		return keyExists(wxsFormat(L"[%s%s%s]", key, value.IsEmpty() ? L"" : L" = ", WX_STR(value)));
+	bool sectionExists(const wxString& key, const wxString& value) const {
+		return keyExists("[" + key + (value.empty() ? "" : " = ") + value + "]");
 	}
 
-	wxString getSection(const wxChar* key, const wxString& value) const {
-		return getString(wxsFormat(L"[%s%s%s]", key, value.IsEmpty() ? L"" : L" = ", WX_STR(value)).wx_str());
+	wxString getSection(const wxString& key, const wxString& value) const {
+		return getString("[" + key + (value.empty() ? "" : " = ") + value + "]");
 	}
 
 	// Gets an integer representation of the 'value' for the given key
-	int getInt(const wxChar* key) const {
+	int getInt(const wxString& key) const {
 		unsigned long val;
 		getString(key).ToULong(&val);
 		return val;
 	}
 
 	// Gets a u8 representation of the 'value' for the given key
-	u8 getU8(const wxChar* key) const {
+	u8 getU8(const wxString& key) const {
 		return (u8)wxAtoi(getString(key));
 	}
 
 	// Gets a bool representation of the 'value' for the given key
-	bool getBool(const wxChar* key) const {
-		return !!wxAtoi(getString(key));
-	}
-
-	bool keyExists(const char* key) const {
-		return keyExists(fromUTF8(key).wx_str());
-	}
-
-	bool keyExists(const wxString& key) const {
-		return keyExists(key.wx_str());
-	}
-
-	wxString getString(const char* key) const {
-		return getString(fromUTF8(key).wx_str());
-	}
-
-	int getInt(const char* key) const {
-		return getInt(fromUTF8(key).wx_str());
-	}
-
-	u8 getU8(const char* key) const {
-		return getU8(fromUTF8(key).wx_str());
-	}
-
-	bool getBool(const char* key) const {
-		return getBool(fromUTF8(key).wx_str());
-	}
-
 	bool getBool(const wxString& key) const {
-		return getBool(key.wx_str());
+		return !!wxAtoi(getString(key));
 	}
 };
 
