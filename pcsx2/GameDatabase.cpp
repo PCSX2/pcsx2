@@ -80,20 +80,6 @@ Game_Data* BaseGameDatabaseImpl::createNewGame( const wxString& id )
 	return retval;
 }
 
-void BaseGameDatabaseImpl::updateGame(const Game_Data& game)
-{
-	GameDataHash::const_iterator iter( gHash.find(game.id) );
-
-	if( iter == gHash.end() ) {
-		*(createNewGame( game.id )) = game;
-	}
-	else
-	{
-		// Re-assign existing vector/array entry!
-		*gHash[game.id] = game;
-	}
-}
-
 // Searches the current game's data to see if the given key exists
 bool Game_Data::keyExists(const wxChar* key) const {
 	for (auto it = kList.begin(); it != kList.end(); ++it) {
@@ -102,16 +88,6 @@ bool Game_Data::keyExists(const wxChar* key) const {
 		}
 	}
 	return false;
-}
-
-// Totally Deletes the specified key/pair value from the current game's data
-void Game_Data::deleteKey(const wxChar* key) {
-	for (auto it = kList.begin(); it != kList.end(); ++it) {
-		if (it->CompareKey(key)) {
-			kList.erase(it);
-			return;
-		}
-	}
 }
 
 // Gets a string representation of the 'value' for the given key
@@ -137,9 +113,4 @@ void Game_Data::writeString(const wxString& key, const wxString& value) {
 	if( !value.IsEmpty() ) {
 		kList.push_back(key_pair(key, value));
 	}
-}
-
-// Write a bool value to the specified key
-void Game_Data::writeBool(const wxString& key, bool value) {
-	writeString(key, value ? L"1" : L"0");
 }

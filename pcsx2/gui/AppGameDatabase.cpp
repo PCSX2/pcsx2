@@ -42,7 +42,6 @@ public:
 	{
 	}
 
-	wxString ReadHeader();
 	void ReadGames();
 
 protected:
@@ -97,37 +96,9 @@ void DBLoaderHelper::extract() {
 	if( m_keyPair.value.IsEmpty() ) doError(true);
 }
 
-wxString DBLoaderHelper::ReadHeader()
-{
-	wxString header;
-	header.reserve(2048);
-
-	while(!m_reader.Eof()) {
-		pxReadLine(m_reader, m_dest, m_intermediate);
-		m_dest.Trim(false).Trim(true);
-		if( !(m_dest.IsEmpty() || m_dest.StartsWith(L"--") || m_dest.StartsWith( L"//" ) || m_dest.StartsWith( L";" )) ) break;
-		header += m_dest + L'\n';
-	}
-
-	if( !m_dest.IsEmpty() )
-	{
-		m_keyPair.Clear();
-		if( !extractMultiLine() ) extract();
-	}
-	return header;
-}
-
 void DBLoaderHelper::ReadGames()
 {
 	Game_Data* game = NULL;
-
-	if (m_keyPair.IsOk())
-	{
-		game = m_gamedb.createNewGame(m_keyPair.value);
-		game->writeString(m_keyPair.key, m_keyPair.value);
-		//if( m_keyPair.CompareKey(m_gamedb.getBaseKey()) )
-		//	game.id = m_keyPair.value;
-	}
 
 	while(!m_reader.Eof()) { // Fill game data, find new game, repeat...
 		pthread_testcancel();
@@ -187,7 +158,6 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file, const wxSt
 	DBLoaderHelper loader( reader, *this );
 
 	u64 qpc_Start = GetCPUTicks();
-	header = loader.ReadHeader();
 	loader.ReadGames();
 	u64 qpc_end = GetCPUTicks();
 
@@ -195,31 +165,6 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file, const wxSt
 		gHash.size(), (u32)(((qpc_end-qpc_Start)*1000) / GetTickFrequency()) );
 
 	return *this;
-}
-
-// Saves changes to the database
-
-void AppGameDatabase::SaveToFile(const wxString& file) {
-	wxFFileOutputStream writer( file );
-	pxWriteMultiline(writer, header);
-
-	for(uint blockidx=0; blockidx<=m_BlockTableWritePos; ++blockidx)
-	{
-		if( !m_BlockTable[blockidx] ) continue;
-
-		const uint endidx = (blockidx == m_BlockTableWritePos) ? m_CurBlockWritePos : m_GamesPerBlock;
-
-		for( uint gameidx=0; gameidx<endidx; ++gameidx )
-		{
-			const Game_Data& game( m_BlockTable[blockidx][gameidx] );
-
-			for (auto i = game.kList.begin(); i != game.kList.end(); ++i) {
-				pxWriteMultiline(writer, i->toString() );
-			}
-
-			pxWriteLine(writer, L"---------------------------------------------");
-		}
-	}
 }
 
 AppGameDatabase* Pcsx2App::GetGameDatabase()
