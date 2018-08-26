@@ -17,32 +17,9 @@
 #include "GameDatabase.h"
 
 BaseGameDatabaseImpl::BaseGameDatabaseImpl()
-	: gHash( 9400 )
+	: gHash( 9900 )
 	, m_baseKey( L"Serial" )
 {
-	m_BlockTable.reserve(48);
-
-	m_CurBlockWritePos		= 0;
-	m_BlockTableWritePos	= 0;
-
-	m_GamesPerBlock			= 256;
-
-	m_BlockTable.push_back(NULL);
-}
-
-BaseGameDatabaseImpl::~BaseGameDatabaseImpl()
-{
-	for(uint blockidx=0; blockidx<=m_BlockTableWritePos; ++blockidx)
-	{
-		if( !m_BlockTable[blockidx] ) continue;
-
-		const uint endidx = (blockidx == m_BlockTableWritePos) ? m_CurBlockWritePos : m_GamesPerBlock;
-
-		for( uint gameidx=0; gameidx<endidx; ++gameidx )
-			m_BlockTable[blockidx][gameidx].~Game_Data();
-
-		safe_free( m_BlockTable[blockidx] );
-	}
 }
 
 // Sets the current game to the one matching the serial id given
@@ -54,30 +31,13 @@ bool BaseGameDatabaseImpl::findGame(Game_Data& dest, const wxString& id) {
 		dest.clear();
 		return false;
 	}
-	dest = *iter->second;
+	dest = iter->second;
 	return true;
 }
 
 Game_Data* BaseGameDatabaseImpl::createNewGame( const wxString& id )
 {
-	if(!m_BlockTable[m_BlockTableWritePos])
-		m_BlockTable[m_BlockTableWritePos] = (Game_Data*)malloc(m_GamesPerBlock * sizeof(Game_Data));
-
-	Game_Data* block = m_BlockTable[m_BlockTableWritePos];
-	Game_Data* retval = &block[m_CurBlockWritePos];
-
-	gHash[id] = retval;
-
-	new (retval) Game_Data(id);
-
-	if( ++m_CurBlockWritePos >= m_GamesPerBlock )
-	{
-		++m_BlockTableWritePos;
-		m_CurBlockWritePos = 0;
-		m_BlockTable.push_back(NULL);
-	}
-
-	return retval;
+	return &gHash.emplace(id, Game_Data{id}).first->second;
 }
 
 // Searches the current game's data to see if the given key exists

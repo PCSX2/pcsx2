@@ -131,7 +131,7 @@ public:
 	virtual Game_Data* createNewGame( const wxString& id )=0;
 };
 
-typedef std::unordered_map<wxString, Game_Data*, StringHash> GameDataHash;
+using GameDataHash = std::unordered_map<wxString, Game_Data, StringHash>;
 
 // --------------------------------------------------------------------------------------
 //  BaseGameDatabaseImpl 
@@ -142,14 +142,9 @@ protected:
 	GameDataHash	gHash;			// hash table of game serials matched to their gList indexes!
 	wxString		m_baseKey;
 
-	std::vector<Game_Data*>	m_BlockTable;
-	uint					m_BlockTableWritePos;
-	int						m_CurBlockWritePos;
-	int						m_GamesPerBlock;
-
 public:
 	BaseGameDatabaseImpl();
-	virtual ~BaseGameDatabaseImpl();
+	virtual ~BaseGameDatabaseImpl() = default;
 
 	wxString getBaseKey() const { return m_baseKey; }
 	void setBaseKey( const wxString& key ) { m_baseKey = key; }
