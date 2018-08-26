@@ -19,84 +19,119 @@
 
 // General Notes:
 //  * It's very important that we re-discover menu items by ID every time we change them,
-//    because the modern era of configurable GUIs means that we can't be assured the IDs
-//    exist anymore.
+//	because the modern era of configurable GUIs means that we can't be assured the IDs
+//	exist anymore.
 
 
 // This is necessary because this stupid wxWidgets thing has implicit debug errors
 // in the FindItem call that asserts if the menu options are missing.  This is bad
 // mojo for configurable/dynamic menus. >_<
-void MainEmuFrame::EnableMenuItem( int id, bool enable )
+void MainEmuFrame::EnableMenuItem(int id, bool enable)
 {
-	if( wxMenuItem* item = m_menubar.FindItem(id) )
-		item->Enable( enable );
+	if (wxMenuItem *item = m_menubar.FindItem(id))
+		item->Enable(enable);
 }
 
-static void _SaveLoadStuff( bool enabled )
+void MainEmuFrame::SetMenuItemLabel(int id, wxString str)
 {
-	sMainFrame.EnableMenuItem( MenuId_Sys_LoadStates, enabled );
-	sMainFrame.EnableMenuItem( MenuId_Sys_SaveStates, enabled );
+	if (wxMenuItem *item = m_menubar.FindItem(id))
+		item->SetItemLabel(str);
+}
+
+static void _SaveLoadStuff(bool enabled)
+{
+	sMainFrame.EnableMenuItem(MenuId_Sys_LoadStates, enabled);
+	sMainFrame.EnableMenuItem(MenuId_Sys_SaveStates, enabled);
+
+	for (int i = 0; i < 10; i++)
+	{
+		int load_menu_item = MenuId_State_Load01 + i + 1;
+		int save_menu_item = MenuId_State_Save01 + i + 1;
+
+		// If the cache is out of sync with the actual files, we need to update things. First update, the cache'll be blank, and this will populate everything.
+		if (saveslot_cache[i].empty == saveslot_cache[i].isUsed())
+		{
+			// If there is actually a file there, or the cache was for a different game, we force an update.
+			// If the cache says there's a saveslot for the current game that there isn't a file for, writing it is done in a different thread,
+			// so it might not be written yet. Which is why I cache to begin with. 
+			if (saveslot_cache[i].isUsed() || (saveslot_cache[i].crc != ElfCRC)) 
+			{
+				saveslot_cache[i].UpdateCache();
+			}
+		}
+
+		sMainFrame.EnableMenuItem(load_menu_item, !saveslot_cache[i].empty);
+		sMainFrame.SetMenuItemLabel(load_menu_item, saveslot_cache[i].SlotName());
+		sMainFrame.SetMenuItemLabel(save_menu_item, saveslot_cache[i].SlotName());
+	}
+	Sstates_updateLoadBackupMenuItem(false);
 }
 
 // Updates the enable/disable status of all System related controls: menus, toolbars,
 // etc.  Typically called by SysEvtHandler whenever the message pump becomes idle.
 void UI_UpdateSysControls()
 {
-	if( wxGetApp().Rpc_TryInvokeAsync( &UI_UpdateSysControls ) ) return;
+	if (wxGetApp().Rpc_TryInvokeAsync(&UI_UpdateSysControls))
+		return;
 
-	sApp.PostAction( CoreThreadStatusEvent( CoreThread_Indeterminate ) );
+	sApp.PostAction(CoreThreadStatusEvent(CoreThread_Indeterminate));
 
-	//_SaveLoadStuff( true );
-	_SaveLoadStuff( SysHasValidState() );
+	_SaveLoadStuff(SysHasValidState());
 }
 
 void UI_DisableSysShutdown()
 {
-	if( wxGetApp().Rpc_TryInvokeAsync( &UI_DisableSysShutdown ) ) return;
+	if (wxGetApp().Rpc_TryInvokeAsync(&UI_DisableSysShutdown))
+		return;
 
-	sMainFrame.EnableMenuItem( MenuId_Sys_Shutdown, false );
+	sMainFrame.EnableMenuItem(MenuId_Sys_Shutdown, false);
 	sMainFrame.EnableMenuItem(MenuId_IsoBrowse, !g_Conf->AskOnBoot);
 	wxGetApp().GetRecentIsoManager().EnableItems(!g_Conf->AskOnBoot);
 }
 
 void UI_EnableSysShutdown()
 {
-	if( wxGetApp().Rpc_TryInvokeAsync( &UI_EnableSysShutdown ) ) return;
+	if (wxGetApp().Rpc_TryInvokeAsync(&UI_EnableSysShutdown))
+		return;
 
-	sMainFrame.EnableMenuItem( MenuId_Sys_Shutdown, true );
+	sMainFrame.EnableMenuItem(MenuId_Sys_Shutdown, true);
 }
 
 
 void UI_DisableSysActions()
 {
-	if( wxGetApp().Rpc_TryInvokeAsync( &UI_DisableSysActions ) ) return;
+	if (wxGetApp().Rpc_TryInvokeAsync(&UI_DisableSysActions))
+		return;
 
-	sMainFrame.EnableMenuItem( MenuId_Sys_Shutdown, false );
-	
-	_SaveLoadStuff( false );
+	sMainFrame.EnableMenuItem(MenuId_Sys_Shutdown, false);
+
+	_SaveLoadStuff(false);
 }
 
 void UI_EnableSysActions()
 {
-	if( wxGetApp().Rpc_TryInvokeAsync( &UI_EnableSysActions ) ) return;
+	if (wxGetApp().Rpc_TryInvokeAsync(&UI_EnableSysActions))
+		return;
 
-	sMainFrame.EnableMenuItem( MenuId_Sys_Shutdown, true );
+	sMainFrame.EnableMenuItem(MenuId_Sys_Shutdown, true);
 	sMainFrame.EnableMenuItem(MenuId_IsoBrowse, true);
 	wxGetApp().GetRecentIsoManager().EnableItems(true);
-	
-	_SaveLoadStuff( true );
+
+	_SaveLoadStuff(true);
 }
 
 void UI_DisableStateActions()
 {
-	if( wxGetApp().Rpc_TryInvokeAsync( &UI_DisableStateActions ) ) return;
-	_SaveLoadStuff( false );
+	if (wxGetApp().Rpc_TryInvokeAsync(&UI_DisableStateActions))
+		return;
+
+	_SaveLoadStuff(false);
 }
 
 void UI_EnableStateActions()
 {
-	if( wxGetApp().Rpc_TryInvokeAsync( &UI_EnableStateActions ) ) return;
-	_SaveLoadStuff( true );
+	if (wxGetApp().Rpc_TryInvokeAsync(&UI_EnableStateActions))
+		return;
+
+	_SaveLoadStuff(true);
 }
-
-

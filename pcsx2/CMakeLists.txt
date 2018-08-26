@@ -343,6 +343,7 @@ set(pcsx2GuiHeaders
 	gui/Panels/MemoryCardPanels.h
 	gui/pxEventThread.h
 	gui/RecentIsoList.h
+	gui/Saveslots.h
 	)
 
 # Warning: the declaration of the .h are mandatory in case of resources files. It will ensure the creation

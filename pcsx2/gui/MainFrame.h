@@ -137,6 +137,7 @@ public:
 	void UpdateIsoSrcSelection();
 	void RemoveCdvdMenu();
 	void EnableMenuItem( int id, bool enable );
+	void SetMenuItemLabel(int id, wxString str);
 	void EnableCdvdPluginSubmenu(bool isEnable = true);
 	
 	bool Destroy();

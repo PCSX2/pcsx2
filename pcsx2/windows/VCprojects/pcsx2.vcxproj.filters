@@ -1197,6 +1197,9 @@
     <ClInclude Include="..\..\gui\RecentIsoList.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\gui\Saveslots.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
     <ClInclude Include="..\cheats\cheats.h">
       <Filter>AppHost\Cheats</Filter>
     </ClInclude>
