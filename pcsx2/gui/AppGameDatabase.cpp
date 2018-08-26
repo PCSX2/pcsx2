@@ -110,8 +110,10 @@ void DBLoaderHelper::ReadGames()
 		if (!extractMultiLine()) extract();
 
 		if (!m_keyPair.IsOk()) continue;
-		if (m_keyPair.CompareKey(m_gamedb.getBaseKey()))
+		if (m_keyPair.CompareKey(m_gamedb.getBaseKey())) {
 			game = m_gamedb.createNewGame(m_keyPair.value);
+			continue;
+		}
 
 		game->writeString( m_keyPair.key, m_keyPair.value );
 	}
