@@ -60,35 +60,11 @@ struct key_pair {
 	bool IsOk() const {
 		return !key.IsEmpty();
 	}
-
-	wxString toString() const {
-		if (key[0] == '[') {
-			pxAssertDev( key.EndsWith(L"]"), "Malformed multiline key detected: missing end bracket!" );
-
-			// Terminating tag must be written without the "rvalue" -- in the form of:
-			//   [/patches]
-			// Use Mid() to strip off the left and right side brackets.
-			wxString midLine(key.Mid(1, key.Length()-2));
-			wxString keyLvalue(midLine.BeforeFirst(L'=').Trim(true).Trim(false));
-
-			return wxsFormat( L"%s\n%s[/%s]\n",
-				key.c_str(), value.c_str(), keyLvalue.c_str()
-			);
-		}
-		else {
-			// Note: 6 char padding on the l-value makes things look nicer.
-			return wxsFormat(L"%-6s = %s\n", key.c_str(), value.c_str() );
-		}
-	
-	}
 };
 
 // --------------------------------------------------------------------------------------
 //  Game_Data
 // --------------------------------------------------------------------------------------
-// This container is more or less required to be a simple struct (POD classification) --
-// no virtuals and no inheritance.  This is because it is used in a std::vector, so POD
-// makes things... smoother.
 struct Game_Data
 {
 	wxString		id;				// Serial Identification Code
@@ -109,10 +85,8 @@ struct Game_Data
 	}
 
 	bool keyExists(const wxChar* key) const;
-	void deleteKey(const wxChar* key);
 	wxString getString(const wxChar* key) const;
 	void writeString(const wxString& key, const wxString& value);
-	void writeBool(const wxString& key, bool value);
 
 	bool IsOk() const {
 		return !id.IsEmpty();
@@ -183,7 +157,6 @@ public:
 	virtual wxString getBaseKey() const=0;
 	virtual bool findGame(Game_Data& dest, const wxString& id)=0;
 	virtual Game_Data* createNewGame( const wxString& id )=0;
-	virtual void updateGame(const Game_Data& game)=0;
 };
 
 typedef std::unordered_map<wxString, Game_Data*, StringHashNoCase> GameDataHash;
@@ -213,7 +186,6 @@ public:
 
 	bool findGame(Game_Data& dest, const wxString& id);
 	Game_Data* createNewGame( const wxString& id );
-	void updateGame(const Game_Data& game);
 };
 
 extern IGameDatabase* AppHost_GetGameDatabase();
