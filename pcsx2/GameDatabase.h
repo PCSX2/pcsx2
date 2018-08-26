@@ -17,7 +17,6 @@
 
 //#include "Common.h"
 #include "AppConfig.h"
-#include "Utilities/HashMap.h"
 
 #include <unordered_map>
 #include <wx/wfstream.h>
@@ -25,14 +24,15 @@
 struct	key_pair;
 struct	Game_Data;
 
-class StringHashNoCase
+struct StringHash
 {
-public:
-	StringHashNoCase() {}
-
-	HashTools::hash_key_t operator()( const wxString& src ) const
+	std::size_t operator()( const wxString& src ) const
 	{
-		return HashTools::Hash( (const char *)src.Lower().wc_str(), src.length() * sizeof( wxChar ) );
+#ifdef _WIN32
+		return std::hash<std::wstring>{}(src.ToStdWstring());
+#else
+		return std::hash<std::string>{}({src.utf8_str()});
+#endif
 	}
 };
 
@@ -131,13 +131,11 @@ public:
 	virtual Game_Data* createNewGame( const wxString& id )=0;
 };
 
-typedef std::unordered_map<wxString, Game_Data*, StringHashNoCase> GameDataHash;
+typedef std::unordered_map<wxString, Game_Data*, StringHash> GameDataHash;
 
 // --------------------------------------------------------------------------------------
 //  BaseGameDatabaseImpl 
 // --------------------------------------------------------------------------------------
-// [TODO] Create a version of this that uses google hashsets; should be several magnitudes
-// faster that way.
 class BaseGameDatabaseImpl : public IGameDatabase
 {
 protected:
