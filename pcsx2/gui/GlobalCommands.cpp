@@ -22,8 +22,6 @@
 #include "AppAccelerators.h"
 #include "AppSaveStates.h"
 
-#include "Utilities/HashMap.h"
-
 // Various includes needed for dumping...
 #include "GS.h"
 #include "Dump.h"
