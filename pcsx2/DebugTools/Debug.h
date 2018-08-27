@@ -318,6 +318,7 @@ struct SysConsoleLogPack
 {
 	ConsoleLogSource		ELF;
 	ConsoleLogSource		eeRecPerf;
+	ConsoleLogSource		sysoutConsole;
 
 	ConsoleLogFromVM<Color_Cyan>		eeConsole;
 	ConsoleLogFromVM<Color_Yellow>		iopConsole;
@@ -387,8 +388,9 @@ extern void __Log( const char* fmt, ... );
 #define MDEC_LOG		macTrace(IOP.MDEC)
 
 
-#define ELF_LOG			SysConsole.ELF.IsActive()		&& SysConsole.ELF.Write
-#define eeRecPerfLog	SysConsole.eeRecPerf.IsActive()	&& SysConsole.eeRecPerf
-#define eeConLog		SysConsole.eeConsole.IsActive()	&& SysConsole.eeConsole.Write
-#define eeDeci2Log		SysConsole.deci2.IsActive()		&& SysConsole.deci2.Write
-#define iopConLog		SysConsole.iopConsole.IsActive()&& SysConsole.iopConsole.Write
+#define ELF_LOG			SysConsole.ELF.IsActive()			&& SysConsole.ELF.Write
+#define eeRecPerfLog	SysConsole.eeRecPerf.IsActive()		&& SysConsole.eeRecPerf
+#define eeConLog		SysConsole.eeConsole.IsActive()		&& SysConsole.eeConsole.Write
+#define eeDeci2Log		SysConsole.deci2.IsActive()			&& SysConsole.deci2.Write
+#define iopConLog		SysConsole.iopConsole.IsActive()	&& SysConsole.iopConsole.Write
+#define sysConLog		SysConsole.sysoutConsole.IsActive()	&& SysConsole.sysoutConsole.Write

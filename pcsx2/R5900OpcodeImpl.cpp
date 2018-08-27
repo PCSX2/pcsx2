@@ -982,8 +982,29 @@ void SYSCALL()
 			}
 			else
 				__Deci2Call(cpuRegs.GPR.n.a0.UL[0], (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));
+
+			break;
 		}
-		break;
+		case Syscall::sysPrintOut:
+		{
+			if (cpuRegs.GPR.n.a0.UL[0] != 0)
+			{
+				// TODO: Only supports 7 format arguments. Need to read from the stack for more.
+				// Is there a function which collects PS2 arguments?
+				sysConLog(
+					ShiftJIS_ConvertString((char*)PSM(cpuRegs.GPR.n.a0.UL[0])),
+					cpuRegs.GPR.n.a1.UL[0],
+					cpuRegs.GPR.n.a2.UL[0],
+					cpuRegs.GPR.n.a3.UL[0],
+					cpuRegs.GPR.n.t0.UL[0],
+					cpuRegs.GPR.n.t1.UL[0],
+					cpuRegs.GPR.n.t2.UL[0],
+					cpuRegs.GPR.n.t3.UL[0]
+				);
+			}
+			break;
+		}
+		
 
 		default:
 			break;
