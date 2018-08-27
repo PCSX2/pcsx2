@@ -562,6 +562,7 @@ public:
 	void IASetPrimitiveTopology(GLenum topology);
 	void IASetVertexBuffer(const void* vertices, size_t count);
 	void IASetIndexBuffer(const void* index, size_t count);
+	void IAResizeVertexArray(size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr) final;
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1) final;

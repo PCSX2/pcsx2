@@ -343,23 +343,8 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	// ****************************************************************
 	// Vertex buffer state
 	// ****************************************************************
-	{
-		GL_PUSH("GSDeviceOGL::Vertex Buffer");
 
-		static_assert(sizeof(GSVertexPT1) == sizeof(GSVertex), "wrong GSVertex size");
-		GSInputLayoutOGL il_convert[] =
-		{
-			{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(0) }  ,
-			{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(16) } ,
-			{4 , GL_UNSIGNED_BYTE  , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(8) }  ,
-			{1 , GL_FLOAT          , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(12) } ,
-			{2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(16) } ,
-			{1 , GL_UNSIGNED_INT   , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(20) } ,
-			{2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(24) } ,
-			{4 , GL_UNSIGNED_BYTE  , GL_TRUE  , sizeof(GSVertex)    , (const GLvoid*)(28) } , // Only 1 byte is useful but hardware unit only support 4B
-		};
-		m_va = new GSVertexBufferStateOGL(il_convert, countof(il_convert));
-	}
+	IAResizeVertexArray(4 * 1024 * 1024);
 
 	// ****************************************************************
 	// Pre Generate the different sampler object
@@ -1640,6 +1625,31 @@ void GSDeviceOGL::IASetIndexBuffer(const void* index, size_t count)
 void GSDeviceOGL::IASetPrimitiveTopology(GLenum topology)
 {
 	m_va->SetTopology(topology);
+}
+
+void GSDeviceOGL::IAResizeVertexArray(size_t count)
+{
+	GL_PUSH("GSDeviceOGL::IAResizeVertexArray");
+
+	delete m_va;
+
+	static_assert(sizeof(GSVertexPT1) == sizeof(GSVertex), "wrong GSVertex size");
+	GSInputLayoutOGL il_convert[] =
+	{
+		{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(0) }  ,
+		{2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(16) } ,
+		{4 , GL_UNSIGNED_BYTE  , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(8) }  ,
+		{1 , GL_FLOAT          , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(12) } ,
+		{2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(16) } ,
+		{1 , GL_UNSIGNED_INT   , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(20) } ,
+		{2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(24) } ,
+		{4 , GL_UNSIGNED_BYTE  , GL_TRUE  , sizeof(GSVertex)    , (const GLvoid*)(28) } , // Only 1 byte is useful but hardware unit only support 4B
+	};
+
+	// Round up on power of 2
+	size_t power_of_2 = 1u << (1 + (int)std::log2(count - 1));
+
+	m_va = new GSVertexBufferStateOGL(il_convert, countof(il_convert), power_of_2);
 }
 
 void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)

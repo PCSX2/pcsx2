@@ -93,5 +93,6 @@ public:
 
 struct GSDXError {};
 struct GSDXRecoverableError : GSDXError {};
+struct GSDXErrorGlVertexArrayTooSmall : GSDXError {};
 
 extern GSdxApp theApp;

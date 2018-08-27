@@ -129,9 +129,18 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 			__assume(0);
 	}
 
-	dev->IASetVertexBuffer(m_vertex.buff, m_vertex.next);
-	dev->IASetIndexBuffer(m_index.buff, m_index.tail);
-	dev->IASetPrimitiveTopology(t);
+	while (true) {
+		// IAResizeVertexArray will reset all states.
+		try {
+			dev->IASetVertexBuffer(m_vertex.buff, m_vertex.next);
+			dev->IASetIndexBuffer(m_index.buff, m_index.tail);
+			dev->IASetPrimitiveTopology(t);
+			break;
+		} catch (GSDXErrorGlVertexArrayTooSmall) {
+			GL_INS("GL vertex array is too small");
+			dev->IAResizeVertexArray(std::max(m_vertex.next, m_index.tail));
+		}
+	}
 }
 
 void GSRendererOGL::EmulateAtst(const int pass, const GSTextureCache::Source* tex)
