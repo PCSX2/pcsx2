@@ -56,8 +56,9 @@ class GSBufferOGL {
 	{
 		glGenBuffers(1, &m_buffer_name);
 		// Warning m_limit is the number of object (not the size in Bytes)
-		m_limit = count;
-		m_quarter_shift = std::log2(m_limit * STRIDE) - 2;
+		// Round it to next power of 2
+		m_limit = 1u << (1u + (size_t)std::log2(count - 1u));
+		m_quarter_shift = (size_t)std::log2(m_limit * STRIDE) - 2;
 
 		for (size_t i = 0; i < 5; i++) {
 			m_fence[i] = 0;
@@ -294,9 +295,7 @@ public:
 			} catch (GSDXErrorGlVertexArrayTooSmall) {
 				GL_INS("GL vertex buffer is too small");
 
-				// Round up on power of 2
-				size_t bigger_count = 1u << (1 + (int)std::log2(count - 1));
-				m_vb.reset(new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER, bigger_count));
+				m_vb.reset(new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER, count));
 
 				set_internal_format();
 			}
@@ -313,9 +312,7 @@ public:
 			} catch (GSDXErrorGlVertexArrayTooSmall) {
 				GL_INS("GL vertex buffer is too small");
 
-				// Round up on power of 2
-				size_t bigger_count = 1u << (1 + (int)std::log2(count - 1));
-				m_vb.reset(new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER, bigger_count));
+				m_vb.reset(new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER, count));
 
 				set_internal_format();
 			}
@@ -330,9 +327,7 @@ public:
 			} catch (GSDXErrorGlVertexArrayTooSmall) {
 				GL_INS("GL index buffer is too small");
 
-				// Round up on power of 2
-				size_t bigger_count = 1u << (1 + (int)std::log2(count - 1));
-				m_ib.reset(new GSBufferOGL<sizeof(uint32)>(GL_ELEMENT_ARRAY_BUFFER, bigger_count));
+				m_ib.reset(new GSBufferOGL<sizeof(uint32)>(GL_ELEMENT_ARRAY_BUFFER, count));
 			}
 		}
 	}
