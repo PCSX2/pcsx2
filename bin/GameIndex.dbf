@@ -7057,7 +7057,7 @@ Serial = SLES-50212
 Name   = Paris-Dakar Rally
 Region = PAL-E
 Compat = 5
-SkipMPEGPatch = 1
+SkipMPEGHack = 1
 ---------------------------------------------
 Serial = SLES-50213
 Name   = NFL Quarterback Club 2002
