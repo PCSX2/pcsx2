@@ -11780,6 +11780,7 @@ Region = PAL-M7
 Compat = 3
 EETimingHack = 1 // Fixes ingame hangs.
 [patches = 51E019BC]
+	comment=Patch by Prafull
 	// This disc has the same CRC as SLUS-20926, the NTSC-U disc.
 	// Fixes game hanging on loading screens.
 	patch=1,EE,0016cf8c,word,00000000
@@ -18438,8 +18439,8 @@ eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level.
 Serial = SLKA-25165
 Name   = Mobile Suit Gundam - Seed Destiny - Rengou vs. Z.A.F.T. II Plus
 Region = NTSC-K
-eeRoundMode = 1 // Fix camera issue
-FpuNegDivHack = 1 // Fix target loss issue
+eeRoundMode = 1 // Fixes camera issue.
+FpuNegDivHack = 1 // Fixes target loss issue.
 ---------------------------------------------
 Serial = SLKA-25166
 Name   = Sengoku Musou
@@ -18461,6 +18462,18 @@ Compat = 5
 Serial = SLKA-25172
 Name   = Harry Potter and The Prisoner of Azkaban
 Region = NTSC-K
+[patches = 99A8B4FF]
+	comment=Patch by Prafull and Arapapa
+	// Fixes game hanging on loading screens.
+	// EETimingHack may be needed.
+	patch=1,EE,0016cf8c,word,00000000
+	patch=1,EE,0013cd64,word,00000000
+	patch=1,EE,0013c1a8,word,00000000
+	patch=1,EE,0013c1cc,word,00000000
+	patch=1,EE,80000000,word,00000000
+	patch=1,EE,0013df84,word,00000000
+	patch=1,EE,0013cd3c,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLKA-25175
 Name   = Transformers
@@ -23748,8 +23761,20 @@ Name   = Pizzicato Polka
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65612
-Name   = Harry Potter and The Prisoner of Azkaban
+Name   = Harry Potter to Azkaban no Shuujin
 Region = NTSC-J
+[patches = A8901AD6]
+	comment=Patch by Prafull and Arapapa
+	// Fixes game hanging on loading screens.
+	// EETimingHack may be needed.
+	patch=1,EE,0016cf5c,word,00000000
+	patch=1,EE,0013cd34,word,00000000
+	patch=1,EE,0013c178,word,00000000
+	patch=1,EE,0013c19c,word,00000000
+	patch=1,EE,80000000,word,00000000
+	patch=1,EE,0013df54,word,00000000
+	patch=1,EE,0013cd0c,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLPM-65613
 Name   = Yu-Gi-Oh! Capsule Monster Coliseum
@@ -38608,8 +38633,10 @@ Serial = SLUS-20926
 Name   = Harry Potter and The Prisoner of Azkaban
 Region = NTSC-U
 [patches = 51E019BC]
+	comment=Patch by Prafull
 	// This disc has the same CRC as SLES-52440, the PAL-M7 disc.
 	// Fixes game hanging on loading screens.
+	// EETimingHack may be needed.
 	patch=1,EE,0016cf8c,word,00000000
 	patch=1,EE,0013cd64,word,00000000
 	patch=1,EE,0013c1a8,word,00000000
