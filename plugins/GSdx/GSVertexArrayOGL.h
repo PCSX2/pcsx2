@@ -28,6 +28,7 @@ extern uint64 g_vertex_upload_byte;
 #endif
 
 struct GSInputLayoutOGL {
+	GLint   location;
 	GLint   size;
 	GLenum  type;
 	GLboolean normalize;
@@ -216,12 +217,13 @@ class GSVertexBufferStateOGL {
 
 	GLuint m_va;
 	GLenum m_topology;
+	std::vector<GSInputLayoutOGL> m_layout;
 
 	// No copy constructor please
 	GSVertexBufferStateOGL(const GSVertexBufferStateOGL& ) = delete;
 
 public:
-	GSVertexBufferStateOGL(GSInputLayoutOGL* layout, uint32 layout_nbr) : m_vb(NULL), m_ib(NULL), m_topology(0)
+	GSVertexBufferStateOGL(const std::vector<GSInputLayoutOGL>& layout) : m_vb(NULL), m_ib(NULL), m_topology(0), m_layout(layout)
 	{
 		glGenVertexArrays(1, &m_va);
 		glBindVertexArray(m_va);
@@ -232,7 +234,7 @@ public:
 		m_vb->bind();
 		m_ib->bind();
 
-		set_internal_format(layout, layout_nbr);
+		set_internal_format();
 	}
 
 	void bind()
@@ -243,23 +245,23 @@ public:
 			m_vb->bind();
 	}
 
-	void set_internal_format(GSInputLayoutOGL* layout, uint32 layout_nbr)
+	void set_internal_format()
 	{
-		for (uint32 i = 0; i < layout_nbr; i++) {
+		for (const auto &l : m_layout) {
 			// Note this function need both a vertex array object and a GL_ARRAY_BUFFER buffer
-			glEnableVertexAttribArray(i);
-			switch (layout[i].type) {
+			glEnableVertexAttribArray(l.location);
+			switch (l.type) {
 				case GL_UNSIGNED_SHORT:
 				case GL_UNSIGNED_INT:
-					if (layout[i].normalize) {
-						glVertexAttribPointer(i, layout[i].size, layout[i].type, layout[i].normalize,  layout[i].stride, layout[i].offset);
+					if (l.normalize) {
+						glVertexAttribPointer(l.location, l.size, l.type, l.normalize, l.stride, l.offset);
 					} else {
 						// Rule: when shader use integral (not normalized) you must use glVertexAttribIPointer (note the extra I)
-						glVertexAttribIPointer(i, layout[i].size, layout[i].type, layout[i].stride, layout[i].offset);
+						glVertexAttribIPointer(l.location, l.size, l.type, l.stride, l.offset);
 					}
 					break;
 				default:
-					glVertexAttribPointer(i, layout[i].size, layout[i].type, layout[i].normalize,  layout[i].stride, layout[i].offset);
+					glVertexAttribPointer(l.location, l.size, l.type, l.normalize, l.stride, l.offset);
 					break;
 			}
 		}
