@@ -40,22 +40,23 @@ class GSBufferOGL {
 	size_t m_start;
 	size_t m_count;
 	size_t m_limit;
+	size_t m_quarter_shift;
 	const  GLenum m_target;
 	GLuint m_buffer_name;
 	uint8*  m_buffer_ptr;
 	GLsync m_fence[5];
 
 	public:
-	GSBufferOGL(GLenum target)
+	GSBufferOGL(GLenum target, size_t count)
 		: m_start(0)
 		, m_count(0)
 		, m_limit(0)
 		, m_target(target)
 	{
 		glGenBuffers(1, &m_buffer_name);
-		// Opengl works best with 1-4MB buffer.
 		// Warning m_limit is the number of object (not the size in Bytes)
-		m_limit = 8 * 1024 * 1024 / STRIDE;
+		m_limit = count;
+		m_quarter_shift = std::log2(m_limit * STRIDE) - 2;
 
 		for (size_t i = 0; i < 5; i++) {
 			m_fence[i] = 0;
@@ -99,13 +100,14 @@ class GSBufferOGL {
 	{
 		m_count = count;
 
-		ASSERT(m_count < m_limit);
+		if (m_count >= m_limit)
+			throw GSDXErrorGlVertexArrayTooSmall();
 
 		size_t offset = m_start * STRIDE;
 		size_t length = m_count * STRIDE;
 
 		if (m_count > (m_limit - m_start) ) {
-			size_t current_chunk = offset >> 21;
+			size_t current_chunk = offset >> m_quarter_shift;
 #ifdef ENABLE_OGL_DEBUG_FENCE
 			fprintf(stderr, "%x: Wrap buffer\n", m_target);
 			fprintf(stderr, "%x: Insert a fence in chunk %zu\n", m_target, current_chunk);
@@ -135,8 +137,8 @@ class GSBufferOGL {
 		}
 
 		// Protect buffer with fences
-		size_t current_chunk = offset >> 21;
-		size_t next_chunk = (offset + length) >> 21;
+		size_t current_chunk = offset >> m_quarter_shift;
+		size_t next_chunk = (offset + length) >> m_quarter_shift;
 		for (size_t c = current_chunk + 1; c <= next_chunk; c++) {
 #ifdef ENABLE_OGL_DEBUG_FENCE
 			fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, c-1);
@@ -221,13 +223,13 @@ class GSVertexBufferStateOGL {
 	GSVertexBufferStateOGL(const GSVertexBufferStateOGL& ) = delete;
 
 public:
-	GSVertexBufferStateOGL(GSInputLayoutOGL* layout, uint32 layout_nbr) : m_vb(NULL), m_ib(NULL), m_topology(0)
+	GSVertexBufferStateOGL(GSInputLayoutOGL* layout, uint32 layout_nbr, size_t array_size) : m_vb(NULL), m_ib(NULL), m_topology(0)
 	{
 		glGenVertexArrays(1, &m_va);
 		glBindVertexArray(m_va);
 
-		m_vb = new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER);
-		m_ib = new GSBufferOGL<sizeof(uint32)>(GL_ELEMENT_ARRAY_BUFFER);
+		m_vb = new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER, array_size);
+		m_ib = new GSBufferOGL<sizeof(uint32)>(GL_ELEMENT_ARRAY_BUFFER, array_size);
 
 		m_vb->bind();
 		m_ib->bind();
