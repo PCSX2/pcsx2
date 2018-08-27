@@ -41,22 +41,23 @@ class GSBufferOGL {
 	size_t m_start;
 	size_t m_count;
 	size_t m_limit;
+	size_t m_quarter_shift;
 	const  GLenum m_target;
 	GLuint m_buffer_name;
 	uint8*  m_buffer_ptr;
 	GLsync m_fence[5];
 
 	public:
-	GSBufferOGL(GLenum target)
+	GSBufferOGL(GLenum target, size_t count)
 		: m_start(0)
 		, m_count(0)
 		, m_limit(0)
 		, m_target(target)
 	{
 		glGenBuffers(1, &m_buffer_name);
-		// Opengl works best with 1-4MB buffer.
 		// Warning m_limit is the number of object (not the size in Bytes)
-		m_limit = 8 * 1024 * 1024 / STRIDE;
+		m_limit = count;
+		m_quarter_shift = std::log2(m_limit * STRIDE) - 2;
 
 		for (size_t i = 0; i < 5; i++) {
 			m_fence[i] = 0;
@@ -100,13 +101,14 @@ class GSBufferOGL {
 	{
 		m_count = count;
 
-		ASSERT(m_count < m_limit);
+		if (m_count >= m_limit)
+			throw GSDXErrorGlVertexArrayTooSmall();
 
 		size_t offset = m_start * STRIDE;
 		size_t length = m_count * STRIDE;
 
 		if (m_count > (m_limit - m_start) ) {
-			size_t current_chunk = offset >> 21;
+			size_t current_chunk = offset >> m_quarter_shift;
 #ifdef ENABLE_OGL_DEBUG_FENCE
 			fprintf(stderr, "%x: Wrap buffer\n", m_target);
 			fprintf(stderr, "%x: Insert a fence in chunk %zu\n", m_target, current_chunk);
@@ -136,8 +138,8 @@ class GSBufferOGL {
 		}
 
 		// Protect buffer with fences
-		size_t current_chunk = offset >> 21;
-		size_t next_chunk = (offset + length) >> 21;
+		size_t current_chunk = offset >> m_quarter_shift;
+		size_t next_chunk = (offset + length) >> m_quarter_shift;
 		for (size_t c = current_chunk + 1; c <= next_chunk; c++) {
 #ifdef ENABLE_OGL_DEBUG_FENCE
 			fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, c-1);
@@ -212,8 +214,8 @@ class GSBufferOGL {
 };
 
 class GSVertexBufferStateOGL {
-	GSBufferOGL<sizeof(GSVertexPT1)> *m_vb;
-	GSBufferOGL<sizeof(uint32)> *m_ib;
+	std::unique_ptr<GSBufferOGL<sizeof(GSVertexPT1)>> m_vb;
+	std::unique_ptr<GSBufferOGL<sizeof(uint32)>> m_ib;
 
 	GLuint m_va;
 	GLenum m_topology;
@@ -223,13 +225,13 @@ class GSVertexBufferStateOGL {
 	GSVertexBufferStateOGL(const GSVertexBufferStateOGL& ) = delete;
 
 public:
-	GSVertexBufferStateOGL(const std::vector<GSInputLayoutOGL>& layout) : m_vb(NULL), m_ib(NULL), m_topology(0), m_layout(layout)
+	GSVertexBufferStateOGL(const std::vector<GSInputLayoutOGL>& layout) : m_topology(0), m_layout(layout)
 	{
 		glGenVertexArrays(1, &m_va);
 		glBindVertexArray(m_va);
 
-		m_vb = new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER);
-		m_ib = new GSBufferOGL<sizeof(uint32)>(GL_ELEMENT_ARRAY_BUFFER);
+		m_vb.reset(new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER, 256 * 1024));
+		m_ib.reset(new GSBufferOGL<sizeof(uint32)>(GL_ELEMENT_ARRAY_BUFFER, 2 * 1024 * 1024));
 
 		m_vb->bind();
 		m_ib->bind();
@@ -283,19 +285,61 @@ public:
 
 	void SetTopology(GLenum topology) { m_topology = topology; }
 
-	void* MapVB(size_t count) { return m_vb->map(count); }
+	void* MapVB(size_t count) {
+		void *ptr;
+		while (true) {
+			try {
+				ptr = m_vb->map(count);
+				break;
+			} catch (GSDXErrorGlVertexArrayTooSmall) {
+				GL_INS("GL vertex buffer is too small");
+
+				// Round up on power of 2
+				size_t bigger_count = 1u << (1 + (int)std::log2(count - 1));
+				m_vb.reset(new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER, bigger_count));
+
+				set_internal_format();
+			}
+		}
+
+		return ptr;
+	}
 	void UnmapVB() { m_vb->unmap(); }
-	void UploadVB(const void* vertices, size_t count) { m_vb->upload(vertices, count); }
+	void UploadVB(const void* vertices, size_t count) {
+		while (true) {
+			try {
+				m_vb->upload(vertices, count);
+				break;
+			} catch (GSDXErrorGlVertexArrayTooSmall) {
+				GL_INS("GL vertex buffer is too small");
+
+				// Round up on power of 2
+				size_t bigger_count = 1u << (1 + (int)std::log2(count - 1));
+				m_vb.reset(new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER, bigger_count));
+
+				set_internal_format();
+			}
+		}
+	}
 
 	void UploadIB(const void* index, size_t count) {
-		m_ib->upload(index, count);
+		while (true) {
+			try {
+				m_ib->upload(index, count);
+				break;
+			} catch (GSDXErrorGlVertexArrayTooSmall) {
+				GL_INS("GL index buffer is too small");
+
+				// Round up on power of 2
+				size_t bigger_count = 1u << (1 + (int)std::log2(count - 1));
+				m_ib.reset(new GSBufferOGL<sizeof(uint32)>(GL_ELEMENT_ARRAY_BUFFER, bigger_count));
+			}
+		}
 	}
 
 	~GSVertexBufferStateOGL()
 	{
 		glDeleteVertexArrays(1, &m_va);
-		delete m_vb;
-		delete m_ib;
 	}
 
 };
