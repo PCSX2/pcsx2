@@ -3152,7 +3152,7 @@ Name   = Boku to Mao
 Region = NTSC-J
 Compat = 5
 [patches = EE838B5C]
-	comment=patches by Nachbrenner 
+	comment=patches by Nachbrenner
 	// Skip OP.PSS.
 	patch=0,EE,001d6258,word,24020001
 [/patches]
@@ -9913,7 +9913,7 @@ Compat = 5
 	comment=patches by Nachbrenner
 	// Fix IPU busy!
 	patch=0,EE,003300b0,word,03e00008
-	patch=0,EE,003300b4,word,00000000 
+	patch=0,EE,003300b4,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLES-51496
@@ -21892,7 +21892,7 @@ Region = NTSC-J
 	// Fixes the hang at start of chapter 2.
 	patch=1,EE,002a140c,word,00000000
 	patch=1,EE,002a120c,word,00000000
-[/patches]	
+[/patches]
 ---------------------------------------------
 Serial = SLPM-65072
 Name   = ESPN Winter X-Games Snowboarding 2002
@@ -29901,7 +29901,7 @@ Name   = Chulip
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
-Serial = SLPS-20234 
+Serial = SLPS-20234
 Name   = Harry Potter to Himitsu no Heya
 Region = NTSC-J
 [patches = E1963055]
@@ -39852,7 +39852,7 @@ Compat = 5
 	comment=Patch by Prafull
 	// Fix hang at shipping shed.
 	patch=1,EE,002bdb1c,word,00000000
-[/patches]	
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21172
 Name   = Conflict - Global Terror
@@ -40587,7 +40587,7 @@ EETimingHack = 1 // Needed to going ingame.
 	patch=1,EE,00291150,word,00000000
 	patch=1,EE,00291dcc,word,00000000
 	patch=1,EE,00296750,word,00000000
-[/patches]	
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21315
 Name   = 50cent - Bulletproof
