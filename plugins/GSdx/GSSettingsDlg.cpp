@@ -384,6 +384,10 @@ void GSSettingsDlg::UpdateControls()
 		ShowWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_OPENCL_TEXT), SW_HIDE);
 #endif
+		EnableWindow(GetDlgItem(m_hWnd, IDC_INTERLACE), !null);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_INTERLACE_TEXT), !null);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER), !null);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER_TEXT), !null);
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGZ), dx9 ? SW_SHOW: SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_FBA), dx9 ? SW_SHOW : SW_HIDE);
