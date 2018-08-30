@@ -1442,13 +1442,8 @@ Serial = SCES-50878
 Name   = Tekken 4
 Region = PAL-M5
 Compat = 5
-[patches = 2251E14D]
-	comment=patches by Shadow Lady
-	// IPU BUSY! fix...
-	patch=0,EE,00292424,word,24200001
-	patch=0,EE,00292624,word,00000000
-[/patches]
-[patches = F48F994A]
+[patches]
+	// CRC 2251E14D, F48F994A
 	comment=patches by Shadow Lady
 	// IPU BUSY! fix...
 	patch=0,EE,00292424,word,24200001
@@ -31047,13 +31042,8 @@ Serial = SLPS-25100
 Name   = Tekken 4
 Region = NTSC-J
 Compat = 5
-[patches = 26173F9A]
-	comment=patches by Shadow Lady
-	// IPU BUSY! fix...
-	patch=0,EE,00291764,word,24200001
-	patch=0,EE,00291964,word,00000000
-[/patches]
-[patches = 7c359c94]
+[patches]
+	// CRC 26173F9A, 7c359c94
 	comment=patches by Shadow Lady
 	// IPU BUSY! fix...
 	patch=0,EE,00291764,word,24200001
@@ -37829,11 +37819,8 @@ Serial = SLUS-20759
 Name   = Growlanser Generations [Disc2of2]
 Region = NTSC-U
 Compat = 5
-[patches = 4AD529BB]
-	comment=IPU freeze fix
-	patch=0,EE,00109d04,word,00000000
-[/patches]
-[patches = 4CD3663F]
+[patches]
+	// CRC 4AD529BB, 4CD3663F
 	comment=IPU freeze fix
 	patch=0,EE,00109d04,word,00000000
 [/patches]
