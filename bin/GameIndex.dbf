@@ -4566,26 +4566,20 @@ Region = NTSC-U
 Compat = 5
 [patches = DBD09DD4]
 	comment=COP2 flag instance patch
-	// pair of vsubs with associated cfc2s
+	// Pair of vsubs with associated cfc2s.
 	patch=0,EE,002EA424,word,48468801
 	patch=0,EE,002EA434,word,4BC311AC
-
-	// bunch of vclips without enough cycles before reading the clip flag
+	// Bunch of vclips without enough cycles before reading the clip flag.
 	patch=0,EE,00329110,word,48489000
 	patch=0,EE,00329124,word,4BDAD1FF
-
 	patch=0,EE,0032916C,word,48459000
 	patch=0,EE,00329180,word,4BDAD1FF
-
 	patch=0,EE,003291DC,word,48459000
 	patch=0,EE,003291F0,word,4BDAD1FF
-
 	patch=0,EE,0032924C,word,48459000
 	patch=0,EE,00329260,word,4BDAD1FF
-
 	patch=0,EE,003292BC,word,48459000
 	patch=0,EE,003292D0,word,4BDAD1FF
-
 	patch=0,EE,0032940C,word,48459000
 	patch=0,EE,00329420,word,4BDAD1FF
 [/patches]
@@ -11360,7 +11354,7 @@ Compat = 5
 Serial = SLES-52230
 Name   = Muppets Party Cruise
 Region = PAL-Unk
-EETimingHack = 1		//Path 3 masking errors
+EETimingHack = 1 // Path 3 masking errors.
 ---------------------------------------------
 Serial = SLES-52237
 Name   = dot Hack - Part 1 - Infection
@@ -11663,7 +11657,7 @@ Serial = SLES-52378
 Name   = Euro Rally Champion
 Region = PAL-M5
 Compat = 5
-EETimingHack = 1		//For dmac errors and so 3d is visible and steady.
+EETimingHack = 1 // For dmac errors and so 3d is visible and steady.
 ---------------------------------------------
 Serial = SLES-52379
 Name   = Shrek 2
@@ -13107,7 +13101,7 @@ Serial = SLES-52968
 Name   = Burnout 2 - Point of Impact
 Region = PAL-Unk
 Compat = 5
-vuRoundMode = 1		//bright lights in cars
+vuRoundMode = 1 // Bright lights in cars.
 ---------------------------------------------
 Serial = SLES-52973
 Name   = Ski Racing 2005
@@ -13362,7 +13356,7 @@ Compat = 5
 eeRoundMode = 0
 ---------------------------------------------
 Serial = SLES-53039
-Name   = Champions - Return to Arms	// aka "Champions of Norrath 2"
+Name   = Champions - Return to Arms // aka "Champions of Norrath 2"
 Region = PAL-M4
 Compat = 5
 // allows import of characters from first game
@@ -14867,7 +14861,7 @@ Region = PAL-R
 ---------------------------------------------
 Serial = SLES-53743
 Name   = Disney's Chicken Little
-Region = PAL-M3	// Scandinavia
+Region = PAL-M3 // Scandinavia
 ---------------------------------------------
 Serial = SLES-53744
 Name   = Disney's Chicken Little
@@ -15434,7 +15428,7 @@ Region = PAL-E
 ---------------------------------------------
 Serial = SLES-54015
 Name   = Disney-Pixar's Cars
-Region = PAL-M3	// DA, FI & NO
+Region = PAL-M3 // DA, FI & NO
 ---------------------------------------------
 Serial = SLES-54016
 Name   = AND 1 Streetball
@@ -15595,7 +15589,7 @@ Serial = SLES-54115
 Name   = Delta Force - Black Hawk Down - Team Sabre
 Region = PAL-M5
 Compat = 5
-EETimingHack = 1	//missing text
+EETimingHack = 1 // Missing text.
 ---------------------------------------------
 Serial = SLES-54116
 Name   = Operation Winback 2 - Project Poseidon
@@ -15801,11 +15795,6 @@ Compat = 5
 	comment=- This gamedisc supports multiple languages.
 	comment=- Language selection is done through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
-	//
-	// Override sceScfGetLanguage patches by nachbrenner:
-	//  patch=0,EE,002486d8,word,24020000 // japanese
-	//  patch=0,EE,002486d8,word,24020001 // english
-	//  patch=0,EE,002486d8,word,24020004 // german
 [/patches]
 ---------------------------------------------
 Serial = SLES-54186
@@ -15957,7 +15946,7 @@ Region = PAL-P-S
 ---------------------------------------------
 Serial = SLES-54244
 Name   = FIFA '07
-Region = PAL-M5	// DU & Nordic
+Region = PAL-M5 // DU & Nordic
 ---------------------------------------------
 Serial = SLES-54245
 Name   = NHL '07
@@ -16114,7 +16103,7 @@ Region = PAL-M3
 ---------------------------------------------
 Serial = SLES-54344
 Name   = Bratz - Forever Diamondz
-Region = PAL-M3	// Eng, DA & SE
+Region = PAL-M3 // Eng, DA & SE
 ---------------------------------------------
 Serial = SLES-54346
 Name   = Heatseeker
@@ -16292,15 +16281,15 @@ Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-54424
 Name   = Dr. Dolittle
-Region = PAL-M7	// P, PL & Nordic
+Region = PAL-M7 // P, PL & Nordic
 ---------------------------------------------
 Serial = SLES-54426
 Name   = Casper and The Ghostly Trio
-Region = PAL-M7	// P, PL & Nordic
+Region = PAL-M7 // P, PL & Nordic
 ---------------------------------------------
 Serial = SLES-54427
 Name   = Jumanji
-Region = PAL-M6	// Eng, P & Nordic
+Region = PAL-M6 // Eng, P & Nordic
 ---------------------------------------------
 Serial = SLES-54430
 Name   = Teen Titans
@@ -16520,7 +16509,7 @@ Compat = 5
 ---------------------------------------------
 Serial = SLES-54542
 Name   = Xena - Warrior Princess
-Region = PAL-M6	// Eng, P & Nordic
+Region = PAL-M6 // Eng, P & Nordic
 ---------------------------------------------
 Serial = SLES-54544
 Name   = Gun Club
@@ -17652,7 +17641,7 @@ Region = PAL-E
 ---------------------------------------------
 Serial = SLES-55395
 Name   = Disney TH!NK Fast
-Region = PAL-M3	// DU, FR & GE
+Region = PAL-M3 // DU, FR & GE
 ---------------------------------------------
 Serial = SLES-55398
 Name   = Disney High School Musical 3 - Senior Year Dance!
@@ -17672,7 +17661,7 @@ Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-55430
 Name   = Disney Bolt
-Region = PAL-M3	// DU, FR & GE
+Region = PAL-M3 // DU, FR & GE
 ---------------------------------------------
 Serial = SLES-55431
 Name   = Disney Vol't
@@ -17865,7 +17854,7 @@ Region = PAL-F-G
 ---------------------------------------------
 Serial = SLES-55583
 Name   = FIFA 10
-Region = PAL-M4	// Eng & Scandinavia
+Region = PAL-M4 // Eng & Scandinavia
 Compat = 5
 ---------------------------------------------
 Serial = SLES-55584
@@ -23778,7 +23767,7 @@ Region = NTSC-J
 Serial = SLPM-65614
 Name   = Need for Speed Underground [EA Best Hits]
 Region = NTSC-J
-EETimingHack = 1	//broken textures
+EETimingHack = 1 // Broken textures.
 ---------------------------------------------
 Serial = SLPM-65615
 Name   = Dokapon DX
@@ -26422,7 +26411,7 @@ Region = NTSC-J
 Serial = SLPM-66329
 Name   = Mahou Sensei Negima! Kagai Jugyou
 Region = NTSC-J
-Compat = 5	// GS Software rendering only.
+Compat = 5 // GS Software rendering only.
 XgKickHack = 1 // Fixes rendering problems.
 ---------------------------------------------
 Serial = SLPM-66330
@@ -32182,7 +32171,7 @@ Region = NTSC-J
 Serial = SLPS-25425
 Name   = SD Gundam Force Daikessen!
 Region = NTSC-J
-eeClampMode = 2		//Needed for SPS on some characters
+eeClampMode = 2 // Needed for SPS on some characters.
 ---------------------------------------------
 Serial = SLPS-25426
 Name   = Detective Conan - Inheritance of Britain
@@ -33866,7 +33855,7 @@ Region = NTSC-J
 Serial = SLPS-25854
 Name   = Poison Pink
 Region = NTSC-J
-eeClampMode = 0		//in-game background visible
+eeClampMode = 0 // In-game background visible.
 ---------------------------------------------
 Serial = SLPS-25855
 Name   = Battle of Sunrise
@@ -36610,7 +36599,7 @@ Serial = SLUS-20497
 Name   = Burnout 2 - Point of Impact
 Region = NTSC-U
 Compat = 5
-vuRoundMode = 1	// Bright lights in cars.
+vuRoundMode = 1 // Bright lights in cars.
 ---------------------------------------------
 Serial = SLUS-20498
 Name   = Auto Modellista
@@ -36635,7 +36624,7 @@ Serial = SLUS-20504
 Name   = Tony Hawk's Pro Skater 4
 Region = NTSC-U
 Compat = 5
-vuRoundMode = 0	// Crashes without.
+vuRoundMode = 0 // Crashes without.
 ---------------------------------------------
 Serial = SLUS-20505
 Name   = Mace Griffin - Bounty Hunter
@@ -37233,7 +37222,7 @@ Serial = SLUS-20635
 Name   = Muppets Party Cruise, Jim Henson's
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1		//Path 3 masking errors
+EETimingHack = 1 // Path 3 masking errors.
 ---------------------------------------------
 Serial = SLUS-20636
 Name   = Suffering, The
@@ -43902,7 +43891,7 @@ Name   = Konami Preview Disc
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-29126
-Name   = Champions - Return to Arms [Demo]	// aka "Champions of Norrath 2 [Demo]"
+Name   = Champions - Return to Arms [Demo] // aka "Champions of Norrath 2 [Demo]"
 Region = NTSC-U
 Compat = 4
 ---------------------------------------------
