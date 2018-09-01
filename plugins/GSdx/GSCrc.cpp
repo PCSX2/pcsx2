@@ -318,6 +318,7 @@ CRC::Game CRC::m_games[] =
 	{0x518DD841, Sly2, KO, 0},
 	{0x07652DD9, Sly2, US, 0},
 	{0x5B93397F, Sly2, US, 0}, // E3 Demo
+	{0xDD0B5E6C, Sly2, US, 0}, // Internal prototype disc
 	{0x615EA2DB, Sly2, JP, 0}, // Kaitou Sly Cooper 2
 	{0xFDA1CBF6, Sly2, EU, 0},
 	{0x15DD1F6F, Sly2, NoRegion, 0},
