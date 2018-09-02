@@ -381,7 +381,10 @@ float4x4 sample_4p(float4 u)
 
 float4 sample(float2 st, float q)
 {
-	if(!PS_FST) st /= q;
+	if(PS_FST == 0)
+	{
+		st /= q;
+	}
 
 	#if PS_TCOFFSETHACK
 	st += TC_OffsetHack.xy;
@@ -612,6 +615,10 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	else if(VS_BPPZ == 2) // 16
 	{
 		input.z = input.z & 0xffff;
+	}
+	else
+	{
+		input.z;
 	}
 
 	VS_OUTPUT output;
