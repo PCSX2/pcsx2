@@ -51,7 +51,25 @@ public:
 		void UpdateAge();
 	};
 
-	class Palette;
+	class Palette
+	{
+	private:
+		uint32* m_clut; // Pointer to a copy of relevant clut
+		GSTexture* m_tex_palette; // Pointer to valid texture with relevant clut as content
+		const GSRenderer* m_renderer; // Pointer to the current renderer, needed to recycle the referenced GSTexture on destruction
+
+	public:
+		Palette(); // Default constructor
+		Palette(const Palette& palette); // Copy constructor
+		Palette(const GSRenderer* renderer, uint16 pal); // Creates a copy of the current clut and a texture with its content
+		virtual ~Palette(); // Default destructor, recycles palette texture and frees clut copy
+
+		// Getter for clut pointer
+		uint32* GetClut();
+
+		// Getter for palette texture pointer
+		GSTexture* GetPaletteGSTexture();
+	};
 
 	class Source : public Surface
 	{
@@ -106,26 +124,6 @@ public:
 		bool Inside(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect);
 
 		void Update();
-	};
-
-	class Palette
-	{
-	private:
-		uint32* m_clut; // Pointer to a copy of relevant clut
-		GSTexture* m_tex_palette; // Pointer to valid texture with relevant clut as content
-		const GSRenderer* m_renderer; // Pointer to the current renderer, needed to recycle the referenced GSTexture on destruction
-
-	public:
-		Palette(); // Default constructor
-		Palette(const Palette& palette); // Copy constructor
-		Palette(const GSRenderer* renderer, uint16 pal); // Creates a copy of the current clut and a texture with its content
-		virtual ~Palette(); // Default destructor, recycles palette texture and frees clut copy
-
-		// Getter for clut pointer
-		uint32* GetClut();
-
-		// Getter for palette texture pointer
-		GSTexture* GetPaletteGSTexture();
 	};
 
 	class PaletteMap
