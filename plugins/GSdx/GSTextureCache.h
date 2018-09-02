@@ -61,7 +61,7 @@ public:
 		void Flush(uint32 count, int layer);
 
 	public:
-		Palette* m_palette_obj; // Pointer to the relevant Palette object (if any)
+		std::shared_ptr<Palette> m_palette_obj; // Shared pointer to the relevant Palette object (if any)
 		GSTexture* m_palette;
 		bool m_should_have_tex_palette; // Enables m_clut (and possibly m_palette) recycling on object destruction
 		uint32 m_valid[MAX_PAGES]; // each uint32 bits map to the 32 blocks of that page
@@ -111,7 +111,6 @@ public:
 	class Palette
 	{
 	private:
-		uint16 m_ref_counter = 0; // Reference counter
 		uint32* m_clut; // Pointer to a copy of relevant clut
 		GSTexture* m_tex_palette; // Pointer to valid texture with relevant clut as content
 		const GSRenderer* m_renderer; // Pointer to the current renderer, needed to recycle the referenced GSTexture on destruction
@@ -127,25 +126,17 @@ public:
 
 		// Getter for palette texture pointer
 		GSTexture* GetPaletteGSTexture();
-
-		// Getter for the reference counter
-		uint16 GetRefCounter();
-
-		// Increment the reference counter by 1
-		void IncrementRefCounter();
-
-		// Decrement the reference counter by 1
-		void DecrementRefCounter();
 	};
 
 	class PaletteMap
 	{
 	private:
 		static const uint16 MAX_SIZE = 65535; // Max size of each map.
+		const GSRenderer* m_renderer; // Reference to the current renderer
 		
 		// Array of 2 multimaps, the first for 64B palettes and the second for 1024B palettes.
 		// Each multimap has the clut hash value as key and the relevant palettes as values (multiple values possible for each key)
-		std::array<std::unordered_multimap<size_t, Palette*>, 2> m_multimaps;
+		std::array<std::unordered_multimap<size_t, std::shared_ptr<Palette>>, 2> m_multimaps;
 
 		// Helper function to compute an hash value of the clut
 		static size_t HashClut(uint16 pal, const uint32* clut);
@@ -153,10 +144,13 @@ public:
 	public:
 		PaletteMap(); // Default constructor
 
-		// Retrieves a pointer to a valid Palette from m_multimaps or creates a new one adding it to the data structure
-		Palette* LookupPalette(const GSRenderer* renderer, uint16 pal); 
+		// Setter for m_renderer
+		void SetRenderer(const GSRenderer* renderer) { m_renderer = renderer; };
 
-		void Clear(const GSRenderer* renderer); // Clears m_multimaps, deleting clut(s) arrays and recycling palette textures 
+		// Retrieves a shared pointer to a valid Palette from m_multimaps or creates a new one adding it to the data structure
+		std::shared_ptr<Palette> LookupPalette(uint16 pal);
+
+		void Clear(); // Clears m_multimaps, deleting clut(s) arrays and recycling palette textures
 	};
 
 	class SourceMap
@@ -230,5 +224,5 @@ public:
 
 	void PrintMemoryUsage();
 
-	void AttachPaletteToSource(Source* s, const GSRenderer* renderer, uint16 pal);
+	void AttachPaletteToSource(Source* s, uint16 pal);
 };

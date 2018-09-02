@@ -62,6 +62,8 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	// isn't enough in custom resolution)
 	// Test: onimusha 3 PAL 60Hz
 	m_temp = (uint8*)_aligned_malloc(9 * 1024 * 1024, 32);
+
+	m_palette_map.SetRenderer((const GSRenderer*) r);
 }
 
 GSTextureCache::~GSTextureCache()
@@ -94,7 +96,7 @@ void GSTextureCache::RemoveAll()
 		m_dst[type].clear();
 	}
 
-	m_palette_map.Clear(m_renderer);
+	m_palette_map.Clear();
 }
 
 GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette)
@@ -159,7 +161,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		// If it is too expensive, one could cut memory allocation in Source constructor for this
 		// use case.
 		if (palette) {
-			AttachPaletteToSource(src, m_renderer, psm_s.pal);
+			AttachPaletteToSource(src, psm_s.pal);
 		}
 
 		m_src.m_surfaces.insert(src);
@@ -389,7 +391,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	}
 
 	if (src->m_should_have_tex_palette && (!src->m_clut || !GSVector4i::compare64(src->m_clut, clut, psm_s.pal * sizeof(uint32)))) {
-		AttachPaletteToSource(src, m_renderer, psm_s.pal);
+		AttachPaletteToSource(src, psm_s.pal);
 	}
 
 	src->Update(r);
@@ -1586,10 +1588,7 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 
 GSTextureCache::Source::~Source()
 {
-	if (m_palette_obj) {
-		((Palette*)m_palette_obj)->DecrementRefCounter();
-	}
-	else {
+	if (!m_palette_obj) {
 		_aligned_free(m_clut);
 		m_renderer->m_dev->Recycle(m_palette);
 	}
@@ -2037,14 +2036,9 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 }
 
 // Query the PaletteMap for a valid Palette, then assign both palette texture pointer and clut copy pointer to the Source object
-void GSTextureCache::AttachPaletteToSource(Source* s, const GSRenderer* renderer, uint16 pal)
+void GSTextureCache::AttachPaletteToSource(Source* s, uint16 pal)
 {
-	if (s->m_palette_obj) {
-		s->m_palette_obj->DecrementRefCounter();
-	}
-	
-	Palette* p = m_palette_map.LookupPalette(m_renderer, pal);
-	p->IncrementRefCounter();
+	std::shared_ptr<Palette> p = m_palette_map.LookupPalette(pal);
 	s->m_palette_obj = p;
 	s->m_palette = p->GetPaletteGSTexture();
 	s->m_clut = p->GetClut();
@@ -2076,7 +2070,6 @@ GSTextureCache::Palette::Palette(const GSRenderer* renderer, uint16 pal) {
 
 // Default destructor, recycles palette texture and frees clut copy
 GSTextureCache::Palette::~Palette() {
-	ASSERT(GetRefCounter() == 0);
 	m_renderer->m_dev->Recycle(GetPaletteGSTexture()); // Recycle palette texture
 	_aligned_free(GetClut()); // Free clut copy
 }
@@ -2087,18 +2080,6 @@ uint32* GSTextureCache::Palette::GetClut() {
 
 GSTexture* GSTextureCache::Palette::GetPaletteGSTexture() {
 	return m_tex_palette;
-}
-
-uint16 GSTextureCache::Palette::GetRefCounter() {
-	return m_ref_counter;
-}
-
-void GSTextureCache::Palette::IncrementRefCounter() {
-	++m_ref_counter;
-}
-
-void GSTextureCache::Palette::DecrementRefCounter() {
-	--m_ref_counter;
 }
 
 // GSTextureCache::PaletteMap
@@ -2138,13 +2119,13 @@ size_t GSTextureCache::PaletteMap::HashClut(uint16 pal, const uint32* clut) {
 }
 
 // Retrieves the palette with the desired clut
-GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRenderer* renderer, uint16 pal) {
+std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalette(uint16 pal) {
 	// Choose which hash map search into:
 	//    pal == 16  : index 0
 	//    pal == 256 : index 1
 	auto& multimap = m_multimaps[pal == 16 ? 0 : 1];
 
-	const uint32* clut = (const uint32*)renderer->m_mem.m_clut;
+	const uint32* clut = (const uint32*)m_renderer->m_mem.m_clut;
 
 	// Search for the clut hash into the hash map
 	size_t clut_hash = HashClut(pal, clut);
@@ -2154,7 +2135,7 @@ GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRende
 	uint16 palette_size = pal * sizeof(uint32);
 	for (auto it2 = it1.first; it2 != it1.second; ++it2) {
 		// Hash check passed, compare Palette clut content
-		Palette* palette = it2->second;
+		std::shared_ptr<Palette> palette = it2->second;
 		if (GSVector4i::compare64(palette->GetClut(), clut, palette_size)) {
 			// Clut content match, HIT
 			return palette;
@@ -2172,11 +2153,12 @@ GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRende
 		uint32 current_size = multimap.size();
 
 		for (auto it = multimap.begin(); it != multimap.end(); ) {
-			Palette* palette = it->second;
-			if (palette->GetRefCounter() == 0) {
+			// If the palette is unused, there is only one shared pointers holding a reference to the unused Palette object,
+			// and this shared pointer is the one stored in the multimap itself
+			if (it->second.use_count() <= 1) {
 				// Palette is unused
-				delete palette; // Delete palette object freeing palette texture and clut copy
 				it = multimap.erase(it); // Erase element from multimap
+				// The palette object should now be gone as the shared pointer to the object in the multimap is deleted
 			}
 			else {
 				++it;
@@ -2194,25 +2176,21 @@ GSTextureCache::Palette* GSTextureCache::PaletteMap::LookupPalette(const GSRende
 		}
 	}
 
-	// Create new Palette
-	Palette* palette = new Palette(renderer, pal);
+	// Create new Palette using shared pointer
+	std::shared_ptr<Palette> palette = std::make_shared<Palette>(m_renderer, pal);
 	
 	// Add the new palette to the multimap
 	multimap.emplace(clut_hash, palette);
 
 	GL_CACHE("TC, %u-bit PaletteMap (Size %u): Added new palette.", palette_size, multimap.size());
 	
-	// Return the pointer to the newly created Palette
+	// Return the shared pointer to the newly created Palette
 	return palette;
 }
 
-void GSTextureCache::PaletteMap::Clear(const GSRenderer* renderer) {
+void GSTextureCache::PaletteMap::Clear() {
 	for (auto& multimap : m_multimaps) {
-		for (auto it1 : multimap) {
-			Palette* palette = it1.second;
-			delete palette; // Delete palette object freeing palette texture and clut copy
-		}
-		multimap.clear(); // Clear all the nodes of the multimap
+		multimap.clear(); // Clear all the nodes of the multimap, deleting Palette objects managed by shared pointers as they should be unused elsewhere
 		multimap.reserve(MAX_SIZE); // Ensure multimap capacity is not modified by the clearing
 	}
 }
