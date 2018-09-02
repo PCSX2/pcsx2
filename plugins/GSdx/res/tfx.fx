@@ -402,7 +402,7 @@ float4 sample(float2 st, float q)
 	{
 		float4 uv;
 
-		if(PS_LTF)
+		if(PS_LTF != 0)
 		{
 			uv = st.xyxy + HalfTexel;
 			dd = frac(uv.xy * WH.zw);
@@ -440,7 +440,7 @@ float4 sample(float2 st, float q)
 		}
 	}
 
-	if(PS_LTF)
+	if(PS_LTF != 0)
 	{	
 		t = lerp(lerp(c[0], c[1], dd.x), lerp(c[2], c[3], dd.x), dd.y);
 	}
