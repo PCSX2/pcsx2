@@ -79,7 +79,7 @@ BEGIN
     COMBOBOX        IDC_DS_DEVICE,8,13,180,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "DirectSound Device:",IDC_STATIC,6,3,65,8
     CONTROL         "",IDC_BUFFERS_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,40,137,108,10
-    LTEXT           "Increase the buffer count if you are experiencing loopy or studdery audio even when games run at high FPS.",IDC_STATIC,13,157,169,27
+    LTEXT           "Increase the buffer count if you are experiencing loopy or stuttery audio even when games run at high FPS.",IDC_STATIC,13,157,169,27
     CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL,46,123,95,11
     LTEXT           "The options above are useful for compatibility with older and/or buggy sound drivers ONLY, and should not be checked unless you experience sound problems (such as crackly audio or silence).",IDC_STATIC,18,68,172,38
     CONTROL         "Disable Global Focus",IDC_GLOBALFOCUS_DISABLE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,6,38,140,10
@@ -286,7 +286,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,105,144,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,161,144,50,14
     COMBOBOX        IDC_PA_HOSTAPI,7,17,95,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Host Api:",IDC_STATIC,7,7,29,8
+    LTEXT           "Host API:",IDC_STATIC,7,7,32,8
     COMBOBOX        IDC_PA_DEVICE,108,17,201,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Device Name:",IDC_STATIC,107,7,45,8
     CONTROL         "",IDC_LATENCY,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,96,93,155,10
