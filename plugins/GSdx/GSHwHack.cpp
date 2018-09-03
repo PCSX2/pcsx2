@@ -356,9 +356,9 @@ bool GSC_NarutimateAccel(const GSFrameInfo& fi, int& skip)
 	if(skip == 0)
 	{
 		if(!fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0x1E00 && fi.FPSM == 0 && fi.TPSM == 49 && fi.FBMSK == 0xFF000000)
-			{
-				skip = 1;
-			}
+		{
+			skip = 1;
+		}
 	}
 	else
 	{
@@ -376,9 +376,9 @@ bool GSC_Naruto(const GSFrameInfo& fi, int& skip)
 	if(skip == 0)
 	{
 		if(!fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0x1E00 && fi.FPSM == 0 && fi.TPSM == 49 && fi.FBMSK == 0xFF000000)
-			{
-				skip = 0;
-			}
+		{
+			skip = 0;
+		}
 	}
 	else
 	{
@@ -573,6 +573,7 @@ bool GSC_TombRaiderLegend(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
+		// ||fi.TBP0 ==0x2F00
 		if(fi.TME && fi.FBP == 0x01000 && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2b60 ||fi.TBP0 == 0x2b80 || fi.TBP0 == 0x2E60 ||fi.TBP0 ==0x3020 ||fi.TBP0 == 0x3200 || fi.TBP0 == 0x3320))
 		{
 			skip = 1;
@@ -581,9 +582,7 @@ bool GSC_TombRaiderLegend(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 2;
 		}
-
-
-	}// ||fi.TBP0 ==0x2F00
+	}
 
 	return true;
 }
@@ -613,7 +612,6 @@ bool GSC_DevilMayCry3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-
 		if(Dx_only && fi.TME && fi.FBP == 0x01800 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x01000 && fi.TPSM == PSM_PSMZ16)
 		{
 			skip = 32;
@@ -795,7 +793,6 @@ bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip)
 			// call....
 			skip = 1000;
 		}
-
 	}
 	else
 	{
@@ -823,7 +820,6 @@ bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 2; //
 		}
-
 	}
 
 	return true;
@@ -1194,12 +1190,12 @@ bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
 		}
 	}
 	if(fi.TME)
+	{
+		if((fi.FBP | fi.TBP0 | fi.FPSM | fi.TPSM) && (fi.FBMSK == 0x00FFFFFF ))
 		{
-			if((fi.FBP | fi.TBP0 | fi.FPSM | fi.TPSM) && (fi.FBMSK == 0x00FFFFFF ))
-			{
-				skip = 1;
-			}
+			skip = 1;
 		}
+	}
 
 	return true;
 }
@@ -1948,6 +1944,7 @@ bool GSC_FFXGames(const GSFrameInfo& fi, int& skip)
 			}
 		}
 	}
+
 	return true;
 }
 
