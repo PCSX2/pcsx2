@@ -114,9 +114,9 @@ DEVASSERT_INLINE void pxOnAssert(const DiagnosticOrigin &origin, const wxString 
 
     if (pxDoAssert == NULL) {
         // Note: Format uses MSVC's syntax for output window hotlinking.
-        trapit = pxAssertImpl_LogIt(origin, msg);
+        trapit = pxAssertImpl_LogIt(origin, msg.wc_str());
     } else {
-        trapit = pxDoAssert(origin, msg);
+        trapit = pxDoAssert(origin, msg.wc_str());
     }
 
     if (trapit) {
