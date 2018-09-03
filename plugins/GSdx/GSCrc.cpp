@@ -443,6 +443,7 @@ CRC::Game CRC::m_games[] =
 	{0xA60C2E65, Yakuza2, EU, 0},
 	{0x800E3E5A, Yakuza2, EU, 0},
 	{0x97E9C87E, Yakuza2, US, 0},
+	{0xB1EBD841, Yakuza2, US, 0},
 	{0xC6B95C48, Yakuza2, JP, 0},
 	{0x9000252A, SkyGunner, JP, 0},
 	{0x93092623, SkyGunner, JP, 0},
