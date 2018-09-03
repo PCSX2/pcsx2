@@ -200,6 +200,7 @@ protected:
     void _ThreadCleanup();
 
     static void *_internal_callback(void *func);
+    static void internal_callback_helper(void *func);
     static void _pt_callback_cleanup(void *handle);
 };
 
