@@ -24,7 +24,6 @@
 #define IDC_HACKSBUTTON                 2019
 #define IDC_OSDBUTTON                   2020
 #define IDC_SHADEBUTTON                 2021
-#define IDC_CHECK_DISABLE_ALL_HACKS     2022
 // Hardware Renderer Settings:
 #define IDC_PALTEX                      2030
 #define IDC_LARGE_FB                    2031

@@ -84,13 +84,6 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Extend stencil based emulation of destination alpha to perform stencil operations while drawing.\n\n"
 				"Improves many shadows which are normally overdrawn in parts, may affect other effects.\n"
 				"Will disable partial transparency in some games or even prevent drawing some elements altogether.";
-		case IDC_CHECK_DISABLE_ALL_HACKS:
-			return "FOR TESTING ONLY!!\n\n"
-				"Disable all CRC hacks - will break many games. Overrides CrcHacksExclusion at gsdx.ini\n"
-				"\n"
-				"It's possible to exclude CRC hacks also via the gsdx.ini. E.g.:\n"
-				"CrcHacksExclusions=all\n"
-				"CrcHacksExclusions=0x0F0C4A9C, 0x0EE5646B, 0x7ACF7E03";
 		case IDC_ALIGN_SPRITE:
 			return "Fixes issues with upscaling(vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc.";
 		case IDC_ROUND_SPRITE:
@@ -103,7 +96,7 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_TCOFFSETY2:
 			return "Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too.\n\n"
 				"  0500 0500, fixes Persona 3 minimap, helps Haunting Ground.\n"
-				"  0000 1000, fixes Xenosaga hair edges (DX10+ Issue)";
+				"  0000 1000, fixes Xenosaga hair edges (DX10+ Issue).";
 		case IDC_OSD_LOG:
 			return "Prints log messages from the Function keys onscreen.";
 		case IDC_OSD_MONITOR:
