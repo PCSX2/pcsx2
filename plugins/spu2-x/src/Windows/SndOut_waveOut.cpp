@@ -303,7 +303,7 @@ public:
 
     const wchar_t *GetLongName() const
     {
-        return L"waveOut (Laggy)";
+        return L"WaveOut (Laggy)";
     }
 
     void ReadSettings()

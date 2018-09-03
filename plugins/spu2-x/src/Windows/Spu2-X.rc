@@ -74,47 +74,33 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "DirectSound Output Module Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,83,200,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,141,200,50,14
-    COMBOBOX        IDC_DS_DEVICE,4,15,146,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "DirectSound Device",IDC_STATIC,4,3,63,8
-    CONTROL         "",IDC_BUFFERS_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,38,137,108,10
-    LTEXT           "Increase the buffer count if you are experiencing loopy or studdery audio even when games run at high FPS.",IDC_STATIC,11,157,169,27
-    CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL,44,123,95,11
-    LTEXT           "The options above are useful for compatibility with older and/or buggy sound drivers ONLY, and should not be checked unless you experience sound problems (such as crackly audio or silence).",IDC_STATIC,16,68,175,38
-    CONTROL         "Disable Global Focus",IDC_GLOBALFOCUS_DISABLE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,4,38,140,10
+    DEFPUSHBUTTON   "OK",IDOK,45,196,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,102,196,50,14
+    COMBOBOX        IDC_DS_DEVICE,8,13,180,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "DirectSound Device:",IDC_STATIC,6,3,65,8
+    CONTROL         "",IDC_BUFFERS_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,40,137,108,10
+    LTEXT           "Increase the buffer count if you are experiencing loopy or studdery audio even when games run at high FPS.",IDC_STATIC,13,157,169,27
+    CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL,46,123,95,11
+    LTEXT           "The options above are useful for compatibility with older and/or buggy sound drivers ONLY, and should not be checked unless you experience sound problems (such as crackly audio or silence).",IDC_STATIC,18,68,172,38
+    CONTROL         "Disable Global Focus",IDC_GLOBALFOCUS_DISABLE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,6,38,140,10
     CONTROL         "Use a crappy alternate buffering mode",IDC_USE_HARDWARE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,53,140,10
-    GROUPBOX        "Output Buffers",IDC_STATIC,4,111,185,79
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,53,140,10
+    GROUPBOX        "Output Buffers",IDC_STATIC,6,111,183,77
 END
 
 IDD_WAVEOUT DIALOGEX 0, 0, 170, 122
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "waveOut Output Module Settings"
+CAPTION "WaveOut Output Module Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,52,104,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,115,104,50,14
-    COMBOBOX        IDC_DS_DEVICE,4,15,161,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "waveOut Device",IDC_STATIC,4,3,54,8
+    DEFPUSHBUTTON   "OK",IDOK,32,100,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,88,100,50,14
+    COMBOBOX        IDC_DS_DEVICE,6,13,159,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "WaveOut Device:",IDC_STATIC,4,3,60,8
     LTEXT           "Number of Buffers",IDC_STATIC,4,39,61,11
     CONTROL         "",IDC_BUFFERS_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,71,48,94,10
     LTEXT           "Use extra buffers if you are experiencing loopy or studdery audio even when games run at high FPS.",IDC_STATIC,8,66,151,27
     CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL,70,37,95,11
-END
-
-// fixme: This dialog doesn't work (was it ever used in the first place?)
-IDD_XAUDIO2 DIALOGEX 0, 0, 202, 116
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "XAudio2 Output Module Settings"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,88,98,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,147,98,50,14
-    COMBOBOX        IDC_DS_DEVICE,4,15,193,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "XAudio Device",IDC_STATIC,4,3,46,8
-    CONTROL         "Use Triple Buffering",IDC_XA2_TRIBLE_BUFFER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,40,109,10
-    LTEXT           "Increases latency by a few milliseconds.  Enable triple buffering you are experiencing loopy or studdery audio even when games run at high FPS.",IDC_STATIC,20,53,175,35
 END
 
 IDD_CONFIG_SOUNDTOUCH DIALOGEX 0, 0, 206, 223
@@ -122,21 +108,21 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Soundtouch Advanced Configuration - SPU2-X"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,50,205,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,104,205,50,14
+    DEFPUSHBUTTON   "OK",IDOK,50,201,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,106,201,50,14
     CTEXT           "These are advanced configuration options for fine tuning time stretching behavior.  Larger values are better for slowdown, while smaller values are better for speed-up (better than 60fps).\n\nAll options are in milliseconds (ms).",IDC_STATIC,5,5,196,52
     CONTROL         "",IDC_SEQLEN_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,50,98,105,10
-    CTEXT           "Sequence Length",IDC_STATIC,72,88,64,9
-    CONTROL         "",IDC_SEEKWIN_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,50,136,105,10
-    CTEXT           "Seekwindow Size",IDC_STATIC,70,125,66,9
-    CONTROL         "",IDC_OVERLAP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,50,170,105,10
-    CTEXT           "Overlap",IDC_STATIC,86,162,34,9
-    LTEXT           "20",IDC_STATIC,50,112,9,8
-    LTEXT           "100",IDC_STATIC,146,112,13,8
-    LTEXT           "10",IDC_STATIC,50,149,9,8
-    LTEXT           "30",IDC_STATIC,146,149,9,8
-    LTEXT           "5",IDC_STATIC,52,184,8,8
-    LTEXT           "15",IDC_STATIC,146,184,9,8
+    CTEXT           "Sequence Length",IDC_STATIC,72,86,64,9
+    CONTROL         "",IDC_SEEKWIN_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,50,134,105,10
+    CTEXT           "Seekwindow Size",IDC_STATIC,70,123,66,9
+    CONTROL         "",IDC_OVERLAP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,50,168,105,10
+    CTEXT           "Overlap",IDC_STATIC,86,160,34,9
+    LTEXT           "20",IDC_STATIC,50,110,9,8
+    LTEXT           "100",IDC_STATIC,146,110,13,8
+    LTEXT           "10",IDC_STATIC,50,147,9,8
+    LTEXT           "30",IDC_STATIC,146,147,9,8
+    LTEXT           "5",IDC_STATIC,52,182,8,8
+    LTEXT           "15",IDC_STATIC,146,182,9,8
     PUSHBUTTON      "Reset Defaults",IDC_RESET_DEFAULTS,61,62,82,12
 END
 
@@ -145,8 +131,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "SPU2-X Debugging Options"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,190,220,46,14
-    PUSHBUTTON      "Cancel",IDCANCEL,241,220,46,14
+    DEFPUSHBUTTON   "OK",IDOK,93,217,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,149,217,50,14
     GROUPBOX        "",IDC_STATIC,5,5,135,93
     GROUPBOX        "Logfile-only Logs",IDC_STATIC,151,5,136,53
     GROUPBOX        "Dumps (on close)",IDC_STATIC,151,60,135,54
@@ -209,14 +195,6 @@ BEGIN
         RIGHTMARGIN, 165
         TOPMARGIN, 3
         BOTTOMMARGIN, 118
-    END
-
-    IDD_XAUDIO2, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 197
-        TOPMARGIN, 3
-        BOTTOMMARGIN, 112
     END
 
     IDD_CONFIG_SOUNDTOUCH, DIALOG
@@ -305,16 +283,16 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Portaudio Output Module Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,205,145,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,259,145,50,14
-    COMBOBOX        IDC_PA_HOSTAPI,7,18,95,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Host Api",IDC_STATIC,7,7,28,8
-    COMBOBOX        IDC_PA_DEVICE,108,18,201,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Device Name",IDC_STATIC,107,7,42,8
+    DEFPUSHBUTTON   "OK",IDOK,105,144,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,161,144,50,14
+    COMBOBOX        IDC_PA_HOSTAPI,7,17,95,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Host Api:",IDC_STATIC,7,7,29,8
+    COMBOBOX        IDC_PA_DEVICE,108,17,201,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Device Name:",IDC_STATIC,107,7,45,8
     CONTROL         "",IDC_LATENCY,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,96,93,155,10
     LTEXT           "NOTE: Depending on the hardware and drivers, the suggested manual latency might not be used, and portaudio will choose the closest possible value.",IDC_STATIC,12,111,286,19
     CTEXT           "20ms",IDC_LATENCY_LABEL,264,93,35,11
-    GROUPBOX        "Output Latency",IDC_STATIC,7,57,302,82
+    GROUPBOX        "Output Latency",IDC_STATIC,7,57,302,79
     CONTROL         "Use smallest possible (may cause issues if the actual value is too small)",IDC_MINIMIZE,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,75,258,10
     CONTROL         "Use this latency:",IDC_MANUAL,"Button",BS_AUTORADIOBUTTON,12,93,69,10

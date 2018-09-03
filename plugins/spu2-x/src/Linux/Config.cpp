@@ -287,24 +287,24 @@ void DisplayDialog()
 
     int_label = gtk_label_new("Interpolation:");
     int_box = gtk_combo_box_text_new();
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "0 - Nearest (fastest/bad quality)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "1 - Linear (simple/okay sound)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "2 - Cubic (artificial highs)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "3 - Hermite (better highs)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "0 - Nearest (Fastest/bad quality)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "1 - Linear (Simple/okay sound)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "2 - Cubic (Artificial highs)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "3 - Hermite (Better highs)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "4 - Catmull-Rom (PS2-like/slow)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(int_box), Interpolation);
 
     effects_check = gtk_check_button_new_with_label("Disable Effects Processing");
-    dealias_filter = gtk_check_button_new_with_label("Use the de-alias filter (overemphasizes the highs)");
+    dealias_filter = gtk_check_button_new_with_label("Use the de-alias filter (Overemphasizes the highs)");
 
     debug_check = gtk_check_button_new_with_label("Enable Debug Options");
-    debug_button = gtk_button_new_with_label("Debug...");
+    debug_button = gtk_button_new_with_label("Configure...");
 
     mod_label = gtk_label_new("Module:");
     mod_box = gtk_combo_box_text_new();
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "0 - No Sound (emulate SPU2 only)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "1 - PortAudio (cross-platform)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "2 - SDL Audio (recommended for PulseAudio)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "0 - No Sound (Emulate SPU2 only)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "1 - PortAudio (Cross-platform)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "2 - SDL Audio (Recommended for PulseAudio)");
     //gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "3 - Alsa (probably doesn't work)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(mod_box), OutputModule);
 

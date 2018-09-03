@@ -416,7 +416,7 @@ public:
 
     const wchar_t *GetLongName() const
     {
-        return L"DirectSound (nice)";
+        return L"DirectSound (Nice)";
     }
 
     void ReadSettings()

@@ -6,7 +6,6 @@
 #define IDD_DEBUG                       105
 #define IDD_DSOUND                      106
 #define IDD_WAVEOUT                     109
-#define IDD_XAUDIO2                     111
 #define IDB_SPU2X_SMALL                 116
 #define IDD_CONFIG_SOUNDTOUCH           117
 #define IDD_CONFIG_DEBUG                118
@@ -44,7 +43,6 @@
 #define IDC_SEEKWIN_SLIDER              1044
 #define IDC_OVERLAP_SLIDER              1045
 #define IDC_MSG_PUBLIC_BUILD            1048
-#define IDC_XA2_TRIBLE_BUFFER           1050
 #define IDC_RESET_DEFAULTS              1057
 #define IDC_OPEN_CONFIG_SOUNDTOUCH      1058
 #define IDC_OPEN_CONFIG_DEBUG           1059

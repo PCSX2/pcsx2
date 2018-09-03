@@ -544,7 +544,7 @@ public:
 
     const wchar_t *GetLongName() const
     {
-        return L"Portaudio (crossplatform)";
+        return L"PortAudio (Cross-platform)";
     }
 
     void ReadSettings()
