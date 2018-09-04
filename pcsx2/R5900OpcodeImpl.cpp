@@ -1021,11 +1021,11 @@ void BREAK() {
 
 void MFSA() {
 	if (!_Rd_) return;
-    cpuRegs.GPR.r[_Rd_].UD[0] = (u64)cpuRegs.sa / 8;
+	cpuRegs.GPR.r[_Rd_].UD[0] = (u64)cpuRegs.sa;
 }
 
 void MTSA() {
-	cpuRegs.sa = (u32)cpuRegs.GPR.r[_Rs_].UD[0] * 8;
+	cpuRegs.sa = (u32)cpuRegs.GPR.r[_Rs_].UD[0];
 }
 
 // SNY supports three basic modes, two which synchronize memory accesses (related
@@ -1081,11 +1081,11 @@ void TLTIU() { if (cpuRegs.GPR.r[_Rs_].UD[0] <  (u64)_Imm_) trap(); }
 *********************************************************/
 
 void MTSAB() {
- 	cpuRegs.sa = ((cpuRegs.GPR.r[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)) << 3;
+	cpuRegs.sa = ((cpuRegs.GPR.r[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF));
 }
 
 void MTSAH() {
-    cpuRegs.sa = ((cpuRegs.GPR.r[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 4;
+	cpuRegs.sa = ((cpuRegs.GPR.r[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 1;
 }
 
 } }	} // end namespace R5900::Interpreter::OpcodeImpl
