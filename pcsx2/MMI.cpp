@@ -1002,7 +1002,6 @@ void QFSRV() {				// JayteeMaster: changed a bit to avoid screw up
 	if (!_Rd_) return;
 
 	u32 sa_amt = cpuRegs.sa << 3;
-    DevCon.Warning("QFSRV %d", sa_amt);
 	if (sa_amt == 0) {
 		cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.GPR.r[_Rt_].UD[0];
 		cpuRegs.GPR.r[_Rd_].UD[1] = cpuRegs.GPR.r[_Rt_].UD[1];
