@@ -1021,11 +1021,11 @@ void BREAK() {
 
 void MFSA() {
 	if (!_Rd_) return;
-	cpuRegs.GPR.r[_Rd_].SD[0] = (s64)cpuRegs.sa;
+    cpuRegs.GPR.r[_Rd_].UD[0] = (u64)cpuRegs.sa / 8;
 }
 
 void MTSA() {
-	cpuRegs.sa = (s32)cpuRegs.GPR.r[_Rs_].SD[0];
+	cpuRegs.sa = (u32)cpuRegs.GPR.r[_Rs_].UD[0] * 8;
 }
 
 // SNY supports three basic modes, two which synchronize memory accesses (related

@@ -96,10 +96,12 @@ void recMFSA()
 
 	mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
 	if( mmreg >= 0 ) {
-		xMOVL.PS(xRegisterSSE(mmreg), ptr[&cpuRegs.sa]);
+        xMOVL.PS(xRegisterSSE(mmreg), ptr[&cpuRegs.sa]);
+        xPSRL.DQ(xRegisterSSE(mmreg), 3);
 	}
 	else {
 		xMOV(eax, ptr[&cpuRegs.sa]);
+        xSHR(eax, 3);
 		_deleteEEreg(_Rd_, 0);
 		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
 		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[1]], 0);
@@ -116,10 +118,13 @@ void recMTSA()
 		int mmreg;
 
 		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
+            xPSLL.DQ(xRegisterSSE(mmreg), 3);
 			xMOVSS(ptr[&cpuRegs.sa], xRegisterSSE(mmreg));
+            xPSRL.DQ(xRegisterSSE(mmreg), 3);
 		}
 		else {
 			xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+            xSHL(eax, 3);
 			xMOV(ptr[&cpuRegs.sa], eax);
 		}
 	}
