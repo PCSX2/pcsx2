@@ -285,6 +285,8 @@ public:
 
 	wxString		ElfFile;
 
+	wxString		GameLaunchArgs;
+
 	// Specifies the CDVD source type to use when AutoRunning
 	CDVD_SourceType CdvdSource;
 
