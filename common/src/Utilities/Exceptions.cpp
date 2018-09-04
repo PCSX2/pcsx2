@@ -95,7 +95,7 @@ bool pxAssertImpl_LogIt(const DiagnosticOrigin &origin, const wxChar *msg)
 }
 
 
-DEVASSERT_INLINE void pxOnAssert(const DiagnosticOrigin &origin, const wxString &msg)
+DEVASSERT_INLINE void pxOnAssert(const DiagnosticOrigin &origin, const wxChar *msg)
 {
     // Recursion guard: Allow at least one recursive call.  This is useful because sometimes
     // we get meaningless assertions while unwinding stack traces after exceptions have occurred.
@@ -114,14 +114,24 @@ DEVASSERT_INLINE void pxOnAssert(const DiagnosticOrigin &origin, const wxString 
 
     if (pxDoAssert == NULL) {
         // Note: Format uses MSVC's syntax for output window hotlinking.
-        trapit = pxAssertImpl_LogIt(origin, msg.wc_str());
+        trapit = pxAssertImpl_LogIt(origin, msg);
     } else {
-        trapit = pxDoAssert(origin, msg.wc_str());
+        trapit = pxDoAssert(origin, msg);
     }
 
     if (trapit) {
         pxTrap();
     }
+}
+
+__fi void pxOnAssert(const DiagnosticOrigin &origin, const char *msg)
+{
+    pxOnAssert(origin, fromUTF8(msg));
+}
+
+__fi void pxOnAssert(const DiagnosticOrigin &origin, const wxString &msg)
+{
+    pxOnAssert(origin, msg.wc_str());
 }
 
 __fi void pxOnAssert(const DiagnosticOrigin &origin, const FastFormatUnicode &msg)

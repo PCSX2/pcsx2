@@ -680,7 +680,8 @@ protected:
     wxPoint m_curpos;
     int m_leading;
 
-    virtual void _DoWriteLn(const wxString &msg);
+    virtual void _DoWriteLn(const wxChar *msg);
+    void _DoWriteLn(const wxString msg);
     void _DoWrite(const wxChar *msg);
 
 public:

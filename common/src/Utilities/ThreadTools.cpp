@@ -685,21 +685,12 @@ void *Threading::pxThread::_internal_callback(void *itsme)
 {
     if (!pxAssertDev(itsme != NULL, wxNullChar))
         return NULL;
-
-    internal_callback_helper(itsme);
-    return NULL;
-}
-
-// __try is used in pthread_cleanup_push when CLEANUP_SEH is used as the cleanup model.
-// That can't be used in a function that has objects that require unwinding (compile
-// error C2712), so move it into a separate function.
-void Threading::pxThread::internal_callback_helper(void *itsme)
-{
-    pxThread &owner = *static_cast<pxThread *>(itsme);
+    pxThread &owner = *((pxThread *)itsme);
 
     pthread_cleanup_push(_pt_callback_cleanup, itsme);
     owner._internal_execute();
     pthread_cleanup_pop(true);
+    return NULL;
 }
 
 void Threading::pxThread::_DoSetThreadName(const wxString &name)
