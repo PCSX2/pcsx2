@@ -57,11 +57,13 @@ static const uint eeWaitCycles = 3072;
 bool eeEventTestIsActive = false;
 
 u32 g_eeloadMain = 0, g_eeloadExec = 0, g_osdsys_str = 0;
-const int kMaxArgs = 16; /* I don't know how much space for args there is in the memory block used for args in full boot mode,
-							but in fast boot mode, the block we use can fit at least 16 argv pointers (varies with BIOS version).
-							The second EELOAD call during full boot has three built-in arguments ("EELOAD rom0:PS2LOGO <ELF>"),
-							meaning that only the first 13 game arguments supplied by the user can be added on and passed through.
-							In fast boot mode, 15 arguments can fit because the only call to EELOAD is "<ELF> <<args>>". */
+
+/* I don't know how much space for args there is in the memory block used for args in full boot mode,
+but in fast boot mode, the block we use can fit at least 16 argv pointers (varies with BIOS version).
+The second EELOAD call during full boot has three built-in arguments ("EELOAD rom0:PS2LOGO <ELF>"),
+meaning that only the first 13 game arguments supplied by the user can be added on and passed through.
+In fast boot mode, 15 arguments can fit because the only call to EELOAD is "<ELF> <<args>>". */
+const int kMaxArgs = 16;
 uptr g_argPtrs[kMaxArgs];
 #define DEBUG_LAUNCHARG 0 // show lots of helpful console messages as the launch arguments are passed to the game
 
@@ -555,12 +557,12 @@ int ParseArgumentString(u32 arg_block)
 
 	int argc = 1; // one arg is guaranteed at least
 	g_argPtrs[0] = arg_block; // first arg is right here
-	bool isSpace = false, wasSpace = false; // status of current char. and last char. scanned
+	bool wasSpace = false; // status of last char. scanned
 	int args_len = strlen((char *)PSM(arg_block));
 	for (int i = 0; i < args_len; i++)
 	{
 		char curchar = *(char *)PSM(arg_block + i);
-		isSpace = curchar == ' ' ? true : false;
+		bool isSpace = curchar == ' ' ? true : false;
 		bool isNull = curchar == '\0' ? true : false;
 		if (isNull)
 			break; // should never reach this
@@ -608,7 +610,7 @@ void __fastcall eeloadHook()
 	if (argc) // calls to EELOAD *after* the first one during the startup process will come here
 	{
 #if DEBUG_LAUNCHARG
-		Console.WriteLn("eeloadHook: EELOAD was called with %d arguments according to $a0 and %d according to Florin's block:",
+		Console.WriteLn("eeloadHook: EELOAD was called with %d arguments according to $a0 and %d according to vargs block:",
 			argc, memRead32(cpuRegs.GPR.n.a1.UD[0] - 4));
 		for (int a = 0; a < argc; a++)
 			Console.WriteLn("argv[%d]: %p -> %p -> '%s'", a, cpuRegs.GPR.n.a1.UL[0] + (a * 4),
