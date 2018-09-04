@@ -1011,12 +1011,7 @@ void QFSRV() {				// JayteeMaster: changed a bit to avoid screw up
 	} else {
 		//Console.WriteLn( "SA Properly Valued at: %d (after %d zeros)", sa_amt, saZero );
 		//saZero = 0;
-		if (sa_amt == 0)
-		{
-            Rd.UD[0] = cpuRegs.GPR.r[_Rt_].UD[0] >> sa_amt;
-            Rd.UD[1] = cpuRegs.GPR.r[_Rt_].UD[1] >> sa_amt;
-            cpuRegs.GPR.r[_Rd_] = Rd;
-		} else if (sa_amt < 64) {
+		if (sa_amt < 64) {
 			/*
 			cpuRegs.GPR.r[_Rd_].UD[0] = cpuRegs.GPR.r[_Rt_].UD[0] >> sa_amt;
 			cpuRegs.GPR.r[_Rd_].UD[1] = cpuRegs.GPR.r[_Rt_].UD[1] >> sa_amt;
