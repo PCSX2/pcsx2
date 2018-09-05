@@ -562,11 +562,11 @@ int ParseArgumentString(u32 arg_block)
 	for (int i = 0; i < args_len; i++)
 	{
 		char curchar = *(char *)PSM(arg_block + i);
-		bool isSpace = curchar == ' ' ? true : false;
-		bool isNull = curchar == '\0' ? true : false;
-		if (isNull)
+		if (curchar == '\0')
 			break; // should never reach this
-		else if (isSpace)
+
+		bool isSpace = (curchar == ' ');
+		if (isSpace)
 			memset(PSM(arg_block + i), 0, 1);
 		else if (wasSpace) // then we're at a new arg
 		{
