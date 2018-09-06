@@ -48,6 +48,7 @@ static __fi void ZeroQWC( u128& dest )
 #define psHs16(mem)	(*(s16*)&eeHw[(mem) & 0xffff])
 #define psHs32(mem)	(*(s32*)&eeHw[(mem) & 0xffff])
 #define psHs64(mem)	(*(s64*)&eeHw[(mem) & 0xffff])
+#define psHs128(mem)(*(s128*)&eeHw[(mem) & 0xffff])
 #define psHu8(mem)	(*(u8 *)&eeHw[(mem) & 0xffff])
 #define psHu16(mem)	(*(u16*)&eeHw[(mem) & 0xffff])
 #define psHu32(mem)	(*(u32*)&eeHw[(mem) & 0xffff])
@@ -58,46 +59,56 @@ static __fi void ZeroQWC( u128& dest )
 #define psMs16(mem)	(*(s16*)&eeMem->Main[(mem) & 0x1ffffff])
 #define psMs32(mem)	(*(s32*)&eeMem->Main[(mem) & 0x1ffffff])
 #define psMs64(mem)	(*(s64*)&eeMem->Main[(mem) & 0x1ffffff])
+#define psMs128(mem)(*(s128*)&eeMem->Main[(mem) & 0x1ffffff])
 #define psMu8(mem)	(*(u8 *)&eeMem->Main[(mem) & 0x1ffffff])
 #define psMu16(mem)	(*(u16*)&eeMem->Main[(mem) & 0x1ffffff])
 #define psMu32(mem)	(*(u32*)&eeMem->Main[(mem) & 0x1ffffff])
 #define psMu64(mem)	(*(u64*)&eeMem->Main[(mem) & 0x1ffffff])
+#define psMu128(mem)(*(u128*)&eeMem->Main[(mem) & 0x1ffffff])
 
 #define psRs8(mem)	(*(s8 *)&eeMem->ROM[(mem) & 0x3fffff])
 #define psRs16(mem)	(*(s16*)&eeMem->ROM[(mem) & 0x3fffff])
 #define psRs32(mem)	(*(s32*)&eeMem->ROM[(mem) & 0x3fffff])
 #define psRs64(mem)	(*(s64*)&eeMem->ROM[(mem) & 0x3fffff])
+#define psRs128(mem)(*(s128*)&eeMem->ROM[(mem) & 0x3fffff])
 #define psRu8(mem)	(*(u8 *)&eeMem->ROM[(mem) & 0x3fffff])
 #define psRu16(mem)	(*(u16*)&eeMem->ROM[(mem) & 0x3fffff])
 #define psRu32(mem)	(*(u32*)&eeMem->ROM[(mem) & 0x3fffff])
 #define psRu64(mem)	(*(u64*)&eeMem->ROM[(mem) & 0x3fffff])
+#define psRu128(mem)(*(u128*)&eeMem->ROM[(mem) & 0x3fffff])
 
 #define psR1s8(mem)		(*(s8 *)&eeMem->ROM1[(mem) & 0x3ffff])
 #define psR1s16(mem)	(*(s16*)&eeMem->ROM1[(mem) & 0x3ffff])
 #define psR1s32(mem)	(*(s32*)&eeMem->ROM1[(mem) & 0x3ffff])
 #define psR1s64(mem)	(*(s64*)&eeMem->ROM1[(mem) & 0x3ffff])
+#define psR1s128(mem)	(*(s128*)&eeMem->ROM1[(mem) & 0x3ffff])
 #define psR1u8(mem)		(*(u8 *)&eeMem->ROM1[(mem) & 0x3ffff])
 #define psR1u16(mem)	(*(u16*)&eeMem->ROM1[(mem) & 0x3ffff])
 #define psR1u32(mem)	(*(u32*)&eeMem->ROM1[(mem) & 0x3ffff])
 #define psR1u64(mem)	(*(u64*)&eeMem->ROM1[(mem) & 0x3ffff])
+#define psR1u128(mem)	(*(u128*)&eeMem->ROM1[(mem) & 0x3ffff])
 
 #define psR2s8(mem)		(*(s8 *)&eeMem->ROM2[(mem) & 0x3ffff])
 #define psR2s16(mem)	(*(s16*)&eeMem->ROM2[(mem) & 0x3ffff])
 #define psR2s32(mem)	(*(s32*)&eeMem->ROM2[(mem) & 0x3ffff])
 #define psR2s64(mem)	(*(s64*)&eeMem->ROM2[(mem) & 0x3ffff])
+#define psR2s128(mem)	(*(s128*)&eeMem->ROM2[(mem) & 0x3ffff])
 #define psR2u8(mem)		(*(u8 *)&eeMem->ROM2[(mem) & 0x3ffff])
 #define psR2u16(mem)	(*(u16*)&eeMem->ROM2[(mem) & 0x3ffff])
 #define psR2u32(mem)	(*(u32*)&eeMem->ROM2[(mem) & 0x3ffff])
 #define psR2u64(mem)	(*(u64*)&eeMem->ROM2[(mem) & 0x3ffff])
+#define psR2u128(mem)	(*(u128*)&eeMem->ROM2[(mem) & 0x3ffff])
 
 #define psERs8(mem)		(*(s8 *)&eeMem->EROM[(mem) & 0x3ffff])
 #define psERs16(mem)	(*(s16*)&eeMem->EROM[(mem) & 0x3ffff])
 #define psERs32(mem)	(*(s32*)&eeMem->EROM[(mem) & 0x3ffff])
 #define psERs64(mem)	(*(s64*)&eeMem->EROM[(mem) & 0x3ffff])
+#define psERs128(mem)	(*(s128*)&eeMem->EROM[(mem) & 0x3ffff])
 #define psERu8(mem)		(*(u8 *)&eeMem->EROM[(mem) & 0x3ffff])
 #define psERu16(mem)	(*(u16*)&eeMem->EROM[(mem) & 0x3ffff])
 #define psERu32(mem)	(*(u32*)&eeMem->EROM[(mem) & 0x3ffff])
 #define psERu64(mem)	(*(u64*)&eeMem->EROM[(mem) & 0x3ffff])
+#define psERu128(mem)	(*(u128*)&eeMem->EROM[(mem) & 0x3ffff])
 
 #define psSs32(mem)		(*(s32 *)&eeMem->Scratch[(mem) & 0x3fff])
 #define psSs64(mem)		(*(s64 *)&eeMem->Scratch[(mem) & 0x3fff])
@@ -139,13 +150,13 @@ extern void mmap_ResetBlockTracking();
 static __fi void memRead64(u32 mem, mem64_t* out)	{ vtlb_memRead64(mem, out); }
 static __fi void memRead64(u32 mem, mem64_t& out)	{ vtlb_memRead64(mem, &out); }
 
-static __fi void memRead128(u32 mem, mem128_t* out) { vtlb_memRead128(mem, out); }
-static __fi void memRead128(u32 mem, mem128_t& out) { vtlb_memRead128(mem, &out); }
+static __fi void memRead128(u32 mem, mem128_t* out)	  { vtlb_memRead128(mem, out); }
+static __fi void memRead128(u32 mem, mem128_t& out)   { vtlb_memRead128(mem, &out); }
 
 static __fi void memWrite64(u32 mem, const mem64_t* val)	{ vtlb_memWrite64(mem, val); }
 static __fi void memWrite64(u32 mem, const mem64_t& val)	{ vtlb_memWrite64(mem, &val); }
-static __fi void memWrite128(u32 mem, const mem128_t* val)	{ vtlb_memWrite128(mem, val); }
-static __fi void memWrite128(u32 mem, const mem128_t& val)	{ vtlb_memWrite128(mem, &val); }
+static __fi void memWrite128(u32 mem, const mem128_t* val)	  { vtlb_memWrite128(mem, val); }
+static __fi void memWrite128(u32 mem, const mem128_t& val)	  { vtlb_memWrite128(mem, &val); }
 
 
 extern u16 ba0R16(u32 mem);

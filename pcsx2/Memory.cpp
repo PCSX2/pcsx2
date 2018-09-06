@@ -226,6 +226,11 @@ static void __fastcall nullRead128(u32 mem, mem128_t *out) {
 	MEM_LOG("Read uninstalled memory at address %08x", mem);
 	ZeroQWC(out);
 }
+//256MB Mem 
+//static void __fastcall nullRead256(u32 mem, mem256_t *out) {
+//	MEM_LOG("Read uninstalled memory at address %08x", mem);
+//	ZeroQWC(out);
+//}
 static void __fastcall nullWrite8(u32 mem, mem8_t value)
 {
 	MEM_LOG("Write uninstalled memory at address %08x", mem);
@@ -246,6 +251,12 @@ static void __fastcall nullWrite128(u32 mem, const mem128_t *value)
 {
 	MEM_LOG("Write uninstalled memory at address %08x", mem);
 }
+
+// 256MB memory card
+//static void __fastcall nullWrite256(u32 mem, const mem256_t *value)
+//{
+//	MEM_LOG("Write uninstalled memory at address %08x", mem);
+//}
 
 template<int p>
 static mem8_t __fastcall _ext_memRead8 (u32 mem)
