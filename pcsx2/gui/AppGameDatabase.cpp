@@ -45,13 +45,13 @@ public:
 	void ReadGames();
 
 protected:
-	void doError(bool doMsg = false);
+	void doError(const wxString& msg);
 	bool extractMultiLine();
 	void extract();
 };
 
-void DBLoaderHelper::doError(bool doMsg) {
-	if (doMsg) Console.Error(L"GameDatabase: Bad file data [%s]", WX_STR(m_dest));
+void DBLoaderHelper::doError(const wxString& msg) {
+	Console.Error(msg);
 	m_keyPair.Clear();
 }
 
@@ -68,7 +68,7 @@ bool DBLoaderHelper::extractMultiLine() {
 	if (m_dest[0] != L'[') return false;		// All multiline sections begin with a '['!
 
 	if (!m_dest.EndsWith(L"]")) {
-		doError(true);
+		doError("GameDatabase: Malformed section start tag: " + m_dest);
 		return false;
 	}
 
@@ -84,16 +84,21 @@ bool DBLoaderHelper::extractMultiLine() {
 
 	while(!m_reader.Eof()) {
 		pxReadLine( m_reader, m_dest, m_intermediate );
-		if (m_dest.CmpNoCase(endString) == 0) break;
+		// Abort if the closing tag is missing/incorrect so subsequent database entries aren't affected.
+		if (m_dest == "---------------------------------------------")
+			break;
+		if (m_dest.CmpNoCase(endString) == 0)
+			return true;
 		m_keyPair.value += m_dest + L"\n";
 	}
+	doError("GameDatabase: Missing or incorrect section end tag:\n" + m_keyPair.key + "\n" + m_keyPair.value);
 	return true;
 }
 
 void DBLoaderHelper::extract() {
 
 	if( !pxParseAssignmentString( m_dest, m_keyPair.key, m_keyPair.value ) ) return;
-	if( m_keyPair.value.IsEmpty() ) doError(true);
+	if( m_keyPair.value.IsEmpty() ) doError("GameDatabase: Bad file data: " + m_dest);
 }
 
 void DBLoaderHelper::ReadGames()
