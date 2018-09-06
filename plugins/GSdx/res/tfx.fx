@@ -254,7 +254,7 @@ float4 clamp_wrap_uv(float4 uv)
 		else if(PS_WMS == 3)
 		{
 			#if SHADER_MODEL >= 0x400
-			uv = (float4)(((int4)(uv * WH.xyxy) & MskFix.xyxy) | MskFix.zwzw) / WH.xyxy;
+			uv = (float4)((int4(uv * WH.xyxy) & int4(MskFix.xyxy)) | int4(MskFix.zwzw)) / WH.xyxy;
 			#elif SHADER_MODEL <= 0x300
 			uv.x = tex1D(UMSKFIX, uv.x);
 			uv.y = tex1D(VMSKFIX, uv.y);
@@ -283,7 +283,7 @@ float4 clamp_wrap_uv(float4 uv)
 		else if(PS_WMS == 3)
 		{
 			#if SHADER_MODEL >= 0x400
-			uv.xz = (float2)(((int2)(uv.xz * WH.xx) & MskFix.xx) | MskFix.zz) / WH.xx;
+			uv.xz = (float2)((int2(uv.xz * WH.xx) & int2(MskFix.xx)) | int2(MskFix.zz)) / WH.xx;
 			#elif SHADER_MODEL <= 0x300
 			uv.x = tex1D(UMSKFIX, uv.x);
 			uv.z = tex1D(UMSKFIX, uv.z);
@@ -307,7 +307,7 @@ float4 clamp_wrap_uv(float4 uv)
 		else if(PS_WMT == 3)
 		{
 			#if SHADER_MODEL >= 0x400
-			uv.yw = (float2)(((int2)(uv.yw * WH.yy) & MskFix.yy) | MskFix.ww) / WH.yy;
+			uv.yw = (float2)((int2(uv.yw * WH.yy) & int2(MskFix.yy)) | int2(MskFix.ww)) / WH.yy;
 			#elif SHADER_MODEL <= 0x300
 			uv.y = tex1D(VMSKFIX, uv.y);
 			uv.w = tex1D(VMSKFIX, uv.w);
@@ -381,7 +381,10 @@ float4x4 sample_4p(float4 u)
 
 float4 sample(float2 st, float q)
 {
-	if(!PS_FST) st /= q;
+	if(PS_FST == 0)
+	{
+		st /= q;
+	}
 
 	#if PS_TCOFFSETHACK
 	st += TC_OffsetHack.xy;
@@ -399,7 +402,7 @@ float4 sample(float2 st, float q)
 	{
 		float4 uv;
 
-		if(PS_LTF)
+		if(PS_LTF != 0)
 		{
 			uv = st.xyxy + HalfTexel;
 			dd = frac(uv.xy * WH.zw);
@@ -437,7 +440,7 @@ float4 sample(float2 st, float q)
 		}
 	}
 
-	if(PS_LTF)
+	if(PS_LTF != 0)
 	{	
 		t = lerp(lerp(c[0], c[1], dd.x), lerp(c[2], c[3], dd.x), dd.y);
 	}
@@ -607,11 +610,15 @@ VS_OUTPUT vs_main(VS_INPUT input)
 {
 	if(VS_BPPZ == 1) // 24
 	{
-		input.z = input.z & 0xffffff; 
+		input.z = input.z & uint(0xffffff); 
 	}
 	else if(VS_BPPZ == 2) // 16
 	{
-		input.z = input.z & 0xffff;
+		input.z = input.z & uint(0xffff);
+	}
+	else
+	{
+		input.z;
 	}
 
 	VS_OUTPUT output;
