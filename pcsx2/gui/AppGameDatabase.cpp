@@ -77,7 +77,11 @@ bool DBLoaderHelper::extractMultiLine() {
 	// Use Mid() to strip off the left and right side brackets.
 	wxString midLine(m_dest.Mid(1, m_dest.Length()-2));
 	wxString lvalue(midLine.BeforeFirst(L'=').Trim(true).Trim(false));
-	//wxString rvalue(midLine.AfterFirst(L'=').Trim(true).Trim(false));
+	wxString rvalue(midLine.AfterFirst(L'=').Trim(true).Trim(false));
+
+	wxString key = '[' + lvalue + (rvalue.empty() ? "" : " = ") + rvalue + ']';
+	if (key != m_keyPair.key)
+		Console.Warning("GameDB: Badly formatted section start tag.\nActual: " + m_keyPair.key + "\nExpected: " + key);
 
 	wxString endString;
 	endString.Printf( L"[/%s]", lvalue.c_str() );
