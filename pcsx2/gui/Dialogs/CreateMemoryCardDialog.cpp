@@ -252,8 +252,8 @@ void Dialogs::CreateMemoryCardDialog::CreateControls()
 		.	SetToolTip(_t("Use at your own risk.  Erratic memory card behavior is possible (though unlikely)."))
 		.	SetInt(64),
 
-		RadioPanelItem(_("128MB"), _("[Experimental] Low compatibility warning: It's the massive memory card you can have, but it may not work with many games."))
-		.	SetToolTip(_t("Use at your own risk. Few games may work with this card, since it's a huge card, it's possible that it'll take longer to load Browser."))
+		RadioPanelItem(_("128MB"), _("It's the massive memory card you can have, but it may not work with many games."))
+		.	SetToolTip(_t("Since it's a huge card, it's possible that it'll take longer to load into Browser."))
 		.	SetInt(128),
 
 		RadioPanelItem(_("Folder [experimental]"), _("Store memory card contents in the host filesystem instead of a file."))
