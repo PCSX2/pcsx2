@@ -227,7 +227,7 @@ public:
 
 	ConsoleLogFromVM( const TraceLogDescriptor* desc ) : _parent( desc ) {}
 
-	bool Write( const wxString &msg ) const
+	bool Write( const wxChar* msg ) const
 	{
 		ConsoleColorScope cs(conColor);
 		Console.WriteRaw( msg );
@@ -239,6 +239,12 @@ public:
 
 		return false;
 	}
+
+	bool Write( const wxString msg ) const
+	{
+		return Write(msg.wc_str());
+	}
+
 };
 
 // --------------------------------------------------------------------------------------

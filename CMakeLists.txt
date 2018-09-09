@@ -64,9 +64,11 @@ include(SelectPcsx2Plugins)
 # Must be done after SearchForStuff
 write_svnrev_h()
 
+if(NOT NO_TRANSLATION)
 # make the translation
 if(EXISTS "${CMAKE_SOURCE_DIR}/locales")
     add_subdirectory(locales)
+endif()
 endif()
 
 # make common
