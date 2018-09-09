@@ -65,6 +65,7 @@ oprofile_data/
 /bin/**/*.pdb
 /bin/PCSX2
 /bin/*ReplayLoader
+/bin/cheats
 /bin/bios
 /bin/dumps
 /bin/help
