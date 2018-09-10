@@ -436,8 +436,9 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_skipdraw_label = left_label("Skipdraw Range:");
 	CreateSkipdrawSpinButtons(0, 10000);
 	GtkWidget* hack_wild_check     = CreateCheckBox("Wild Arms Hack", "UserHacks_WildHack");
-	GtkWidget* hack_tco_label      = left_label("Texture Offset: 0x");
-	GtkWidget* hack_tco_entry      = CreateTextBox("UserHacks_TCOffset");
+	GtkWidget* hack_tco_label      = left_label("Texture Offset:");
+	GtkWidget* hack_tco_x_spin     = CreateSpinButton(0, 10000, "UserHacks_TCOffsetX");
+	GtkWidget* hack_tco_y_spin     = CreateSpinButton(0, 10000, "UserHacks_TCOffsetY");
 	GtkWidget* align_sprite_check  = CreateCheckBox("Align Sprite", "UserHacks_align_sprite_X");
 	GtkWidget* preload_gs_check    = CreateCheckBox("Preload Frame Data", "preload_frame_with_gs_data");
 	GtkWidget* hack_fast_inv       = CreateCheckBox("Fast Texture Invalidation", "UserHacks_DisablePartialInvalidation");
@@ -464,7 +465,8 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_wild_check, IDC_WILDHACK);
 	AddTooltip(hack_sprite_label, hack_sprite_box, IDC_SPRITEHACK);
 	AddTooltip(hack_tco_label, IDC_TCOFFSETX);
-	AddTooltip(hack_tco_entry, IDC_TCOFFSETX);
+	AddTooltip(hack_tco_x_spin, IDC_TCOFFSETX);
+	AddTooltip(hack_tco_y_spin, IDC_TCOFFSETX);
 	AddTooltip(align_sprite_check, IDC_ALIGN_SPRITE);
 	AddTooltip(stretch_hack_label, stretch_hack_box, IDC_ROUND_SPRITE);
 	AddTooltip(preload_gs_check, IDC_PRELOAD_GS);
@@ -493,7 +495,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
 	InsertWidgetInTable(hack_table , hack_skipdraw_label , s_hack_skipdraw_offset_spin, s_hack_skipdraw_spin);
-	InsertWidgetInTable(hack_table , hack_tco_label      , hack_tco_entry);
+	InsertWidgetInTable(hack_table , hack_tco_label      , hack_tco_x_spin, hack_tco_y_spin);
 }
 
 void populate_main_table(GtkWidget* main_table)

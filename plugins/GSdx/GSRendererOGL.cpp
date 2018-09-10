@@ -838,7 +838,7 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	}
 
 	// TC Offset Hack
-	m_ps_sel.tcoffsethack = !!m_userhacks_tcoffset;
+	m_ps_sel.tcoffsethack = m_userhacks_tcoffset;
 	ps_cb.TC_OH_TS = GSVector4(1/16.0f, 1/16.0f, m_userhacks_tcoffset_x, m_userhacks_tcoffset_y) / WH.xyxy();
 
 

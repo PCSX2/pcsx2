@@ -315,7 +315,7 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	}
 
 	// TC Offset Hack
-	m_ps_sel.tcoffsethack = !!m_userhacks_tcoffset;
+	m_ps_sel.tcoffsethack = m_userhacks_tcoffset;
 	ps_cb.TC_OffsetHack = GSVector4(m_userhacks_tcoffset_x, m_userhacks_tcoffset_y).xyxy() / WH.xyxy();
 
 	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader

@@ -444,7 +444,8 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_SkipDraw"]                         = "0";
 	m_default_configuration["UserHacks_SkipDraw_Offset"]                  = "0";
 	m_default_configuration["UserHacks_SpriteHack"]                       = "0";
-	m_default_configuration["UserHacks_TCOffset"]                         = "0";
+	m_default_configuration["UserHacks_TCOffsetX"]                        = "0";
+	m_default_configuration["UserHacks_TCOffsetY"]                        = "0";
 	m_default_configuration["UserHacks_TextureInsideRt"]                  = "0";
 	m_default_configuration["UserHacks_TriFilter"]                        = std::to_string(static_cast<int8>(TriFiltering::None));
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
