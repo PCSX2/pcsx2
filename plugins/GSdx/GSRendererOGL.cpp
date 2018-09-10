@@ -34,9 +34,6 @@ GSRendererOGL::GSRendererOGL()
 	// Hope nothing requires too many draw calls.
 	m_drawlist.reserve(2048);
 
-	UserHacks_TCOffset       = theApp.GetConfigI("UserHacks_TCOffset");
-	UserHacks_TCO_x          = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
-	UserHacks_TCO_y          = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
 	UserHacks_unscale_pt_ln  = theApp.GetConfigB("UserHacks_unscale_point_line");
 	UserHacks_HPO            = theApp.GetConfigI("UserHacks_HalfPixelOffset");
 	UserHacks_tri_filter     = static_cast<TriFiltering>(theApp.GetConfigI("UserHacks_TriFilter"));
@@ -45,9 +42,6 @@ GSRendererOGL::GSRendererOGL()
 	ResetStates();
 
 	if (!theApp.GetConfigB("UserHacks")) {
-		UserHacks_TCOffset       = 0;
-		UserHacks_TCO_x          = 0;
-		UserHacks_TCO_y          = 0;
 		UserHacks_unscale_pt_ln  = false;
 		UserHacks_HPO            = 0;
 		UserHacks_tri_filter     = TriFiltering::None;
@@ -844,8 +838,8 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	}
 
 	// TC Offset Hack
-	m_ps_sel.tcoffsethack = !!UserHacks_TCOffset;
-	ps_cb.TC_OH_TS = GSVector4(1/16.0f, 1/16.0f, UserHacks_TCO_x, UserHacks_TCO_y) / WH.xyxy();
+	m_ps_sel.tcoffsethack = !!m_userhacks_tcoffset;
+	ps_cb.TC_OH_TS = GSVector4(1/16.0f, 1/16.0f, m_userhacks_tcoffset_x, m_userhacks_tcoffset_y) / WH.xyxy();
 
 
 	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader

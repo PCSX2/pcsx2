@@ -33,17 +33,12 @@ GSRendererDX::GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter)
 	if (theApp.GetConfigB("UserHacks")) {
 		UserHacks_AlphaHack    = theApp.GetConfigB("UserHacks_AlphaHack");
 		UserHacks_AlphaStencil = theApp.GetConfigB("UserHacks_AlphaStencil");
-		UserHacks_TCOffset     = theApp.GetConfigI("UserHacks_TCOffset");
 		UserHacks_HPO          = theApp.GetConfigI("UserHacks_HalfPixelOffset");
 	} else {
 		UserHacks_AlphaHack    = false;
 		UserHacks_AlphaStencil = false;
-		UserHacks_TCOffset     = 0;
 		UserHacks_HPO          = 0;
 	}
-
-	UserHacks_TCO_x = (UserHacks_TCOffset & 0xFFFF) / -1000.0f;
-	UserHacks_TCO_y = ((UserHacks_TCOffset >> 16) & 0xFFFF) / -1000.0f;
 }
 
 GSRendererDX::~GSRendererDX()
@@ -320,8 +315,8 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	}
 
 	// TC Offset Hack
-	m_ps_sel.tcoffsethack = !!UserHacks_TCOffset;
-	ps_cb.TC_OffsetHack = GSVector4(UserHacks_TCO_x, UserHacks_TCO_y).xyxy() / WH.xyxy();
+	m_ps_sel.tcoffsethack = !!m_userhacks_tcoffset;
+	ps_cb.TC_OffsetHack = GSVector4(m_userhacks_tcoffset_x, m_userhacks_tcoffset_y).xyxy() / WH.xyxy();
 
 	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
 	m_ps_ssel.tau = (wms != CLAMP_CLAMP);
