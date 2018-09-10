@@ -23,6 +23,7 @@
 #include "GSTextureCache.h"
 #include "GSUtil.h"
 
+bool s_IS_DIRECT3D11 = false;
 bool s_IS_OPENGL = false;
 bool GSTextureCache::m_disable_partial_invalidation = false;
 bool GSTextureCache::m_wrap_gs_mem = false;
@@ -30,6 +31,7 @@ bool GSTextureCache::m_wrap_gs_mem = false;
 GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
 {
+	s_IS_DIRECT3D11 = theApp.GetCurrentRendererType() == GSRendererType::DX1011_HW;
 	s_IS_OPENGL = theApp.GetCurrentRendererType() == GSRendererType::OGL_HW;
 
 	if (theApp.GetConfigB("UserHacks")) {
@@ -1187,7 +1189,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// TODO: clean up this mess
 
 		int shader = dst->m_type != RenderTarget ? ShaderConvert_FLOAT32_TO_RGBA8 : ShaderConvert_COPY;
-		bool is_8bits = TEX0.PSM == PSM_PSMT8 && s_IS_OPENGL;
+		bool is_8bits = TEX0.PSM == PSM_PSMT8 && (s_IS_DIRECT3D11 || s_IS_OPENGL);
 
 		if (is_8bits) {
 			GL_INS("Reading RT as a packed-indexed 8 bits format");
