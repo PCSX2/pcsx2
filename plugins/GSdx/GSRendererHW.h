@@ -150,7 +150,7 @@ protected:
 	int m_userhacks_round_sprite_offset;
 	int m_userHacks_HPO;
 
-	unsigned int m_userhacks_tcoffset;
+	bool m_userhacks_tcoffset;
 	float m_userhacks_tcoffset_x;
 	float m_userhacks_tcoffset_y;
 

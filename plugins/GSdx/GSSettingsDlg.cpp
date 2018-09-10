@@ -712,10 +712,10 @@ void GSHacksDlg::OnInit()
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_SkipDraw"), 0));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
-	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_TCOffset") & 0xFFFF, 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_TCOffsetX"), 0));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
-	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_SETPOS, 0, MAKELPARAM((theApp.GetConfigI("UserHacks_TCOffset") >> 16) & 0xFFFF, 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_TCOffsetY"), 0));
 
 	// Direct3D-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), !ogl);
@@ -870,11 +870,8 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_unscale_point_line", (int)IsDlgButtonChecked(m_hWnd, IDC_UNSCALE_POINT_LINE));
 			theApp.SetConfig("wrap_gs_mem", (int)IsDlgButtonChecked(m_hWnd, IDC_MEMORY_WRAPPING));
 			theApp.SetConfig("UserHacks_merge_pp_sprite", (int)IsDlgButtonChecked(m_hWnd, IDC_MERGE_PP_SPRITE));
-
-			unsigned int TCOFFSET  =  SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0) & 0xFFFF;
-						 TCOFFSET |= (SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_GETPOS, 0, 0) & 0xFFFF) << 16;
-
-			theApp.SetConfig("UserHacks_TCOffset", TCOFFSET);
+			theApp.SetConfig("UserHacks_TCOffsetX", SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0));
+			theApp.SetConfig("UserHacks_TCOffsetY", SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_GETPOS, 0, 0));
 
 			EndDialog(m_hWnd, id);
 		} break;

@@ -30,7 +30,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_reset(false)
 	, m_upscale_multiplier(1)
 	, m_tc(tc)
-	, m_userhacks_tcoffset(0)
+	, m_userhacks_tcoffset(false)
 	, m_userhacks_tcoffset_x(0)
 	, m_userhacks_tcoffset_y(0)
 	, m_channel_shuffle(false)
@@ -45,9 +45,9 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userhacks_disable_gs_mem_clear = theApp.GetConfigB("UserHacks_DisableGsMemClear");
 		m_userHacks_HPO                  = theApp.GetConfigI("UserHacks_HalfPixelOffset");
 		m_userHacks_merge_sprite         = theApp.GetConfigB("UserHacks_merge_pp_sprite");
-		m_userhacks_tcoffset             = theApp.GetConfigI("UserHacks_TCOffset");
-		m_userhacks_tcoffset_x           = (m_userhacks_tcoffset & 0xFFFF) / -1000.0f;
-		m_userhacks_tcoffset_y           = ((m_userhacks_tcoffset >> 16) & 0xFFFF) / -1000.0f;
+		m_userhacks_tcoffset_x           = theApp.GetConfigI("UserHacks_TCOffsetX") / -1000.0f;
+		m_userhacks_tcoffset_y           = theApp.GetConfigI("UserHacks_TCOffsetY") / -1000.0f;
+		m_userhacks_tcoffset             = m_userhacks_tcoffset_x < 0.0f || m_userhacks_tcoffset_y < 0.0f;
 	} else {
 		m_userhacks_align_sprite_X       = false;
 		m_userhacks_round_sprite_offset  = 0;
