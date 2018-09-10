@@ -3,7 +3,7 @@
 
 struct VS_INPUT
 {
-	float4 p : POSITION; 
+	float4 p : POSITION;
 	float2 t : TEXCOORD0;
 };
 
@@ -36,7 +36,7 @@ struct PS_OUTPUT
 
 struct VS_INPUT
 {
-	float4 p : POSITION; 
+	float4 p : POSITION;
 	float2 t : TEXCOORD0;
 };
 
@@ -215,6 +215,162 @@ PS_OUTPUT ps_main9(PS_INPUT input) // triangular
 		output.c = sample_c(input.t); 
 	else
 		output.c = (0.9 - 0.4 * cos(2 * PI * input.t.y * texdim.y)) * sample_c(float2(input.t.x, (floor(input.t.y * texdim.y) + 0.5) / texdim.y));
+
+	return output;
+}
+
+// DUMMY SHADERS START
+PS_OUTPUT ps_main10(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	output.c = input.p;
+
+	return output;
+}
+
+PS_OUTPUT ps_main11(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	output.c = input.p;
+
+	return output;
+}
+
+PS_OUTPUT ps_main12(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	output.c = input.p;
+
+	return output;
+}
+
+PS_OUTPUT ps_main13(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	output.c = input.p;
+
+	return output;
+}
+
+PS_OUTPUT ps_main14(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	output.c = input.p;
+
+	return output;
+}
+
+PS_OUTPUT ps_main15(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	output.c = input.p;
+
+	return output;
+}
+
+PS_OUTPUT ps_main16(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	output.c = input.p;
+
+	return output;
+}
+// DUMMY SHADERS END
+
+PS_OUTPUT ps_main17(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	// Potential speed optimization. There is a high probability that
+	// game only want to extract a single channel (blue). It will allow
+	// to remove most of the conditional operation and yield a +2/3 fps
+	// boost on MGS3
+	//
+	// Hypothesis wrong in Prince of Persia ... Seriously WTF !
+	//#define ONLY_BLUE;
+
+	// Convert a RGBA texture into a 8 bits packed texture
+	// Input column: 8x2 RGBA pixels
+	// 0: 8 RGBA
+	// 1: 8 RGBA
+	// Output column: 16x4 Index pixels
+	// 0: 8 R | 8 B
+	// 1: 8 R | 8 B
+	// 2: 8 G | 8 A
+	// 3: 8 G | 8 A
+	float c;
+
+	uint2 sel = uint2(input.p.xy) % uint2(16u, 16u);
+	int2  tb  = ((int2(input.p.xy) & ~int2(15, 3)) >> 1);
+
+	int ty   = tb.y | (int(input.p.y) & 1);
+	int txN  = tb.x | (int(input.p.x) & 7);
+	int txH  = tb.x | ((int(input.p.x) + 4) & 7);
+
+	//txN *= ScalingFactor.x;
+	//txH *= ScalingFactor.x;
+	//ty  *= ScalingFactor.y;
+
+	// TODO investigate texture gather
+	float4 cN = Texture.Load(int3(txN, ty, 0));
+	float4 cH = Texture.Load(int3(txH, ty, 0));
+
+
+	if ((sel.y & 4u) == 0u)
+	{
+#ifdef ONLY_BLUE
+		c = cN.b;
+#else
+		// Column 0 and 2
+		if ((sel.y & 3u) < 2u)
+		{
+			// First 2 lines of the col
+			if (sel.x < 8u)
+				c = cN.r;
+			else
+				c = cN.b;
+		}
+		else
+		{
+			if (sel.x < 8u)
+				c = cH.g;
+			else
+				c = cH.a;
+		}
+#endif
+	}
+	else
+	{
+#ifdef ONLY_BLUE
+		c = cH.b;
+#else
+		// Column 1 and 3
+		if ((sel.y & 3u) < 2u)
+		{
+			// First 2 lines of the col
+			if (sel.x < 8u)
+				c = cH.r;
+			else
+				c = cH.b;
+		}
+		else
+		{
+			if (sel.x < 8u)
+				c = cN.g;
+			else
+				c = cN.a;
+		}
+#endif
+	}
+
+	output.c = (float4)(c); // Divide by something here?
 
 	return output;
 }
