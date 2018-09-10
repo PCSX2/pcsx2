@@ -50,8 +50,6 @@ class GSRendererOGL final : public GSRendererHW
 		PRIM_OVERLAP m_prim_overlap;
 		std::vector<size_t> m_drawlist;
 
-		unsigned int UserHacks_TCOffset;
-		float UserHacks_TCO_x, UserHacks_TCO_y;
 		bool UserHacks_unscale_pt_ln;
 		int UserHacks_HPO;
 		TriFiltering UserHacks_tri_filter;

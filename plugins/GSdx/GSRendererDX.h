@@ -44,8 +44,6 @@ protected:
 	virtual void SetupIA(const float& sx, const float& sy) = 0;
 	virtual void UpdateFBA(GSTexture* rt) {}
 
-	unsigned int UserHacks_TCOffset;
-	float UserHacks_TCO_x, UserHacks_TCO_y;
 	int UserHacks_HPO;
 
 	bool DATE;
