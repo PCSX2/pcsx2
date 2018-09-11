@@ -545,7 +545,7 @@ static void intExecute()
 							else if (typeAexecjump >> 26 == 3) // JAL to 0x82170
 								g_eeloadExec = EELOAD_START + 0x170;
 							else
-								Console.WriteLn("recRecompile: Could not enable launch arguments for fast boot mode; unidentified BIOS version! Please report this to the PCSX2 developers.");
+								Console.WriteLn("intExecute: Could not enable launch arguments for fast boot mode; unidentified BIOS version! Please report this to the PCSX2 developers.");
 						}
 					}
 					else if (cpuRegs.pc == g_eeloadExec)
