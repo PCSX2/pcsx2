@@ -134,12 +134,14 @@
 #define IDC_OSD_FONT_EDIT               2174
 #define IDC_OSD_SPEED                   2175
 #define IDC_OSD_SPEED_EDIT              2176
-#define IDC_OSD_SIZE                    2177
-#define IDC_OSD_SIZE_EDIT               2178
-#define IDC_OSD_TRANSPARENCY_SLIDER     2179
-#define IDC_OSD_TRANSPARENCY_TEXT       2180
-#define IDC_OSD_MAX_LOG                 2181
-#define IDC_OSD_MAX_LOG_EDIT            2182
+#define IDC_OSD_SPEED_TEXT              2177
+#define IDC_OSD_SIZE                    2178
+#define IDC_OSD_SIZE_EDIT               2179
+#define IDC_OSD_TRANSPARENCY_SLIDER     2180
+#define IDC_OSD_TRANSPARENCY_TEXT       2181
+#define IDC_OSD_MAX_LOG                 2182
+#define IDC_OSD_MAX_LOG_EDIT            2183
+#define IDC_OSD_MAX_LOG_TEXT            2184
 // OpenGL Advanced Settings:
 #define IDC_GEOMETRY_SHADER_OVERRIDE    2190
 #define IDC_GEOMETRY_SHADER_TEXT        2191
