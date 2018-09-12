@@ -644,7 +644,6 @@ bool GSC_StarWarsForceUnleashed(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 2;
 		}
-
 	}
 
 	return true;
@@ -1325,7 +1324,6 @@ bool GSC_Bully(const GSFrameInfo& fi, int& skip)
 		{
 			return false; // allowed
 		}
-
 		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01180) && fi.FPSM == PSM_PSMCT16S && fi.TBP0 == 0x02300 && fi.TPSM == PSM_PSMZ16S)
 		{
 			skip = 6;
@@ -1350,7 +1348,6 @@ bool GSC_BullyCC(const GSFrameInfo& fi, int& skip)
 		{
 			return false; // allowed
 		}
-
 		if(!fi.TME && fi.FBP == 0x02800 && fi.FPSM == PSM_PSMCT24)
 		{
 			skip = 9;

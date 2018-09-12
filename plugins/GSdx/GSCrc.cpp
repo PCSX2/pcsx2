@@ -439,6 +439,7 @@ CRC::Game CRC::m_games[] =
 	{0XD3F182A3, Yakuza, EU, 0},
 	{0x6F9F99F8, Yakuza, EU, 0},
 	{0x388F687B, Yakuza, US, 0},
+	{0xC1B91FC5, Yakuza, US, 0}, // Demo
 	{0xB7B3800A, Yakuza, JP, 0},
 	{0xA60C2E65, Yakuza2, EU, 0},
 	{0x800E3E5A, Yakuza2, EU, 0},
