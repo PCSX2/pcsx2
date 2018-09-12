@@ -938,6 +938,13 @@ void GSOSDDlg::UpdateControls()
 	char text[8] = { 0 };
 	sprintf(text, "%d", m_transparency);
 	SetDlgItemText(m_hWnd, IDC_OSD_TRANSPARENCY_TEXT, text);
+
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_SPEED), IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_SPEED_EDIT), IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_SPEED_TEXT), IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG_EDIT), IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG_TEXT), IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
 }
 
 bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
@@ -985,6 +992,10 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 			EndDialog(m_hWnd, id);
 		} break;
+		case IDC_OSD_LOG:
+			if (HIWORD(wParam) == BN_CLICKED)
+				UpdateControls();
+			break;
 		case IDC_OSD_FONT_BUTTON:
 			if (HIWORD(wParam) == BN_CLICKED)
 				OpenFileDialog(IDC_OSD_FONT_EDIT, "Select External Font");
