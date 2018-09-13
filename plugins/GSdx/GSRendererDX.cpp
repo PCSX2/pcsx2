@@ -475,6 +475,12 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	EmulateTextureShuffleAndFbmask();
 
+	if(m_ps_sel.dfmt == 1)
+	{
+		// Disable writing of the alpha channel
+		om_bsel.wa = 0;
+	}
+
 	if(DATE)
 	{
 		if(dev->HasStencil())
