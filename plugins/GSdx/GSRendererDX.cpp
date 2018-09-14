@@ -329,6 +329,17 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	m_ps_ssel.ltf = bilinear && !shader_emulated_sampler;
 }
 
+void GSRendererDX::ResetStates()
+{
+	m_vs_sel.key = 0;
+	m_gs_sel.key = 0;
+	m_ps_sel.key = 0;
+
+	m_ps_ssel.key = 0;
+	om_bsel.key   = 0;
+	om_dssel.key  = 0;
+}
+
 void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
 	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
@@ -339,8 +350,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	bool ate_first_pass = m_context->TEST.DoFirstPass();
 	bool ate_second_pass = m_context->TEST.DoSecondPass();
 
-	m_gs_sel.key = 0;
-
+	ResetStates();
 	vs_cb.Texture_Scale_Offset = GSVector4(0.0f);
 
 	GSTexture* rtcopy = NULL;
@@ -390,16 +400,12 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	// om
 
-	om_dssel.key = 0;
-
 	EmulateZbuffer();
 
 	if (m_fba)
 	{
 		om_dssel.fba = m_context->FBA.FBA;
 	}
-
-	om_bsel.key = 0;
 
 	if (!IsOpaque())
 	{
@@ -429,12 +435,10 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	// vs
 
-	GSDeviceDX::VSSelector vs_sel;
-
-	vs_sel.tme = PRIM->TME;
-	vs_sel.fst = PRIM->FST;
-	vs_sel.logz = dev->HasDepth32() ? 0 : m_logz ? 1 : 0;
-	vs_sel.rtcopy = !!rtcopy;
+	m_vs_sel.tme = PRIM->TME;
+	m_vs_sel.fst = PRIM->FST;
+	m_vs_sel.logz = !dev->HasDepth32() && m_logz;
+	m_vs_sel.rtcopy = rtcopy != nullptr;
 
 	float sx = 2.0f * rtscale.x / (rtsize.x << 4);
 	float sy = 2.0f * rtscale.y / (rtsize.y << 4);
@@ -468,9 +472,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	m_gs_sel.prim = m_vt.m_primclass;
 
 	// ps
-
-	m_ps_sel.key = 0;
-	m_ps_ssel.key = 0;
 
 	EmulateTextureShuffleAndFbmask();
 
@@ -591,7 +592,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	SetupIA(sx, sy);
 
 	dev->SetupOM(om_dssel, om_bsel, afix);
-	dev->SetupVS(vs_sel, &vs_cb);
+	dev->SetupVS(m_vs_sel, &vs_cb);
 	dev->SetupGS(m_gs_sel, &gs_cb);
 	dev->SetupPS(m_ps_sel, &ps_cb, m_ps_ssel);
 
