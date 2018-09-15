@@ -411,7 +411,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuSys.Append(MenuId_Boot_CDVD2,		_("Initializing..."));
 
 	m_menuSys.Append(MenuId_Boot_ELF,		_("&Run ELF..."),
-		_("For running raw PS2 binaries directly"));
+		_("For running raw PS2 binaries directly."));
 
 	m_menuSys.AppendSeparator();
 	m_menuSys.Append(MenuId_Sys_SuspendResume,	_("Initializing..."));
@@ -429,7 +429,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuSys.AppendSeparator();
 
 	m_menuSys.Append(MenuId_EnablePatches,	_("Automatic &Gamefixes"),
-		_("Automatically applies needed Gamefixes to known problematic games"), wxITEM_CHECK);
+		_("Automatically applies needed Gamefixes."), wxITEM_CHECK);
 
 	m_menuSys.Append(MenuId_EnableCheats,	_("Enable &Cheats"),
 		wxEmptyString, wxITEM_CHECK);
@@ -448,7 +448,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuSys.FindItem(MenuId_Sys_Shutdown)->Enable(false);
 
 	m_menuSys.Append(MenuId_Exit,			_("E&xit"),
-		AddAppName(_("Closing %s may be hazardous to your health")));
+		AddAppName(_("Closing %s may be hazardous to your health.")));
 
 
 	// ------------------------------------------------------------------------
@@ -461,7 +461,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuCDVD.AppendSeparator();
 	m_menuCDVD.Append( MenuId_Src_Iso,		_("&ISO"),		_("Makes the specified ISO image the CDVD source."), wxITEM_RADIO );
 	m_menuCDVD.Append( MenuId_Src_Plugin,	_("&Plugin"),	_("Uses an external plugin as the CDVD source."), wxITEM_RADIO );
-	m_menuCDVD.Append( MenuId_Src_NoDisc,	_("&No disc"),	_("Use this to boot into your virtual PS2's BIOS configuration."), wxITEM_RADIO );
+	m_menuCDVD.Append( MenuId_Src_NoDisc,	_("&No disc"),	_("Boots into your virtual PS2's BIOS configuration."), wxITEM_RADIO );
 
 	//m_menuCDVD.AppendSeparator();
 	//m_menuCDVD.Append( MenuId_SkipBiosToggle,_("Enable BOOT2 injection"),
@@ -623,7 +623,7 @@ void MainEmuFrame::ApplyCoreStatus()
 	else
 	{
 		wxString label;
-		wxString help_text = _("Use fast boot to skip PS2 startup and splash screens");
+		wxString help_text = _("Use fast boot to skip PS2 startup and splash screens.");
 
 		switch (Source)
 		{
@@ -655,15 +655,15 @@ void MainEmuFrame::ApplyCoreStatus()
 		{
 		case CDVD_SourceType::Iso:
 			cdvd_full->SetItemLabel(_("Boo&t ISO (full)"));
-			cdvd_full->SetHelp(_("Boot the VM using the current ISO source media"));
+			cdvd_full->SetHelp(_("Boot the VM using the current ISO source media."));
 			break;
 		case CDVD_SourceType::Plugin:
 			cdvd_full->SetItemLabel(_("Boo&t CDVD (full)"));
-			cdvd_full->SetHelp(_("Boot the VM using the current CD/DVD source media"));
+			cdvd_full->SetHelp(_("Boot the VM using the current CD/DVD source media."));
 			break;
 		case CDVD_SourceType::NoDisc:
 			cdvd_full->SetItemLabel(_("Boo&t BIOS"));
-			cdvd_full->SetHelp(_("Boot the VM without any source media"));
+			cdvd_full->SetHelp(_("Boot the VM without any source media."));
 			break;
 		default:
 			pxAssert(false);
