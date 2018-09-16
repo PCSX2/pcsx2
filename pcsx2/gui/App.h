@@ -73,8 +73,8 @@ enum MenuIdentifiers
 	MenuId_Audio,				// audio options filled in by SPU2 plugin
 	MenuId_Misc,				// Misc options and help!
 
+	MenuId_About,
 	MenuId_Exit = wxID_EXIT,
-	MenuId_About = wxID_ABOUT,
 
 	MenuId_EndTopLevel = 20,
 
