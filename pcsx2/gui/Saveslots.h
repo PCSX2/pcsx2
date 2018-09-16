@@ -32,7 +32,7 @@ public:
 	{
 		slot_num = 0;
 		empty = true;
-		updated = wxDateTime(1, wxDateTime::Jan, 1970);
+		updated = wxInvalidDateTime;
 		crc = ElfCRC;
 	}
 
@@ -40,7 +40,7 @@ public:
 	{
 		slot_num = i;
 		empty = true;
-		updated = wxDateTime(1, wxDateTime::Jan, 1970);
+		updated = wxInvalidDateTime;
 		crc = ElfCRC;
 	}
 
@@ -51,7 +51,7 @@ public:
 
 	wxDateTime GetTimestamp()
 	{
-		if (!isUsed()) return wxDateTime(1, wxDateTime::Jan, 1970);
+		if (!isUsed()) return wxInvalidDateTime;
 
 		return wxDateTime(wxFileModificationTime(SaveStateBase::GetFilename(slot_num)));
 	}
@@ -67,7 +67,7 @@ public:
 	{
 		if (empty) return wxsFormat(_("Slot %d - Empty"), slot_num);
 
-		if (updated != wxDateTime(1, wxDateTime::Jan, 1970)) return wxsFormat(_("Slot %d - %s %s"), slot_num, updated.FormatDate(), updated.FormatTime());
+		if (updated.IsValid()) return wxsFormat(_("Slot %d - %s %s"), slot_num, updated.FormatDate(), updated.FormatTime());
 
 		return wxsFormat(_("Slot %d - Unknown Time"), slot_num);
 	}
