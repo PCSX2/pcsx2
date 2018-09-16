@@ -122,7 +122,6 @@ extern void sioWrite8(u8 value);
 extern void sioWriteCtrl16(u16 value);
 extern void sioInterrupt();
 extern void sioInterruptR();
-extern void InitializeSIO(u8 value);
 extern void SetForceMcdEjectTimeoutNow();
 extern void ClearMcdEjectTimeoutNow();
 extern void sioStatRead();
