@@ -40,6 +40,18 @@ public:
 	GSShaderDlg();
 };
 
+class GSDebugDlg : public GSDialog
+{
+	void UpdateControls();
+
+protected:
+	void OnInit();
+	bool OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
+
+public:
+	GSDebugDlg();
+};
+
 class GSHacksDlg : public GSDialog
 {
 	unsigned short cb2msaa[17];

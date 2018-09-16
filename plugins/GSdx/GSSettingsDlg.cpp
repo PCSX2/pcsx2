@@ -219,11 +219,17 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			if (code == BN_CLICKED)
 				UpdateControls();
 			break;
+		case IDC_DEBUGBUTTON:
+			if (code == BN_CLICKED)
+				GSDebugDlg().DoModal();
+			break;
 		case IDC_SHADEBUTTON:
+		case IDC_SHADEBUTTON2:
 			if (code == BN_CLICKED)
 				GSShaderDlg().DoModal();
 			break;
 		case IDC_OSDBUTTON:
+		case IDC_OSDBUTTON2:
 			if (code == BN_CLICKED)
 				GSOSDDlg().DoModal();
 			break;
@@ -434,11 +440,20 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKS_ENABLED), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw && IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 
-		// OSD Configuration
+		// OSD, Shader, Debug Configuration
 		EnableWindow(GetDlgItem(m_hWnd, IDC_OSDBUTTON), ogl);
-
-		// Shader Configuration
+		EnableWindow(GetDlgItem(m_hWnd, IDC_OSDBUTTON2), ogl);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON), !null);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON2), !null);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_DEBUGBUTTON), !null);
+#ifdef _DEBUG
+		ShowWindow(GetDlgItem(m_hWnd, IDC_OSDBUTTON), SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON), SW_HIDE);
+#else
+		ShowWindow(GetDlgItem(m_hWnd, IDC_OSDBUTTON2), SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON2), SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_DEBUGBUTTON), SW_HIDE);
+#endif
 	}
 
 }
@@ -1001,6 +1016,82 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 				OpenFileDialog(IDC_OSD_FONT_EDIT, "Select External Font");
 			break;
 
+		case IDCANCEL:
+		{
+			EndDialog(m_hWnd, IDCANCEL);
+		} break;
+		}
+
+	} break;
+
+	case WM_CLOSE:EndDialog(m_hWnd, IDCANCEL); break;
+
+	default: return false;
+	}
+
+
+	return true;
+}
+
+// Debug Configuration Dialog
+
+GSDebugDlg::GSDebugDlg() :
+	GSDialog(IDD_DEBUG)
+{}
+
+void GSDebugDlg::OnInit()
+{
+	HWND hwnd_renderer = GetDlgItem(GetParent(m_hWnd), IDC_RENDERER);
+	GSRendererType renderer = static_cast<GSRendererType>(SendMessage(hwnd_renderer, CB_GETITEMDATA, SendMessage(hwnd_renderer, CB_GETCURSEL, 0, 0), 0));
+
+	bool ogl = renderer == GSRendererType::OGL_HW;
+
+	CheckDlgButton(m_hWnd, IDC_GL_DEBUGLOG, theApp.GetConfigB("debug_opengl"));
+	CheckDlgButton(m_hWnd, IDC_GL_DEBUGGLSL, theApp.GetConfigB("debug_glsl_shader"));
+	CheckDlgButton(m_hWnd, IDC_DUMP_GS, theApp.GetConfigB("dump"));
+	CheckDlgButton(m_hWnd, IDC_DUMP_SAVE, theApp.GetConfigB("save"));
+	CheckDlgButton(m_hWnd, IDC_DUMP_SAVEF, theApp.GetConfigB("savef"));
+	CheckDlgButton(m_hWnd, IDC_DUMP_SAVET, theApp.GetConfigB("savet"));
+	CheckDlgButton(m_hWnd, IDC_DUMP_SAVEZ, theApp.GetConfigB("savez"));
+
+	SendMessage(GetDlgItem(m_hWnd, IDC_DUMP_SAVEL), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_DUMP_SAVEL), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigB("savel"), 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_DUMP_SAVEN), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_DUMP_SAVEN), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigB("saven"), 0));
+
+	EnableWindow(GetDlgItem(m_hWnd, IDC_GL_DEBUGLOG), ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_GL_DEBUGGLSL), ogl);
+
+	UpdateControls();
+}
+
+void GSDebugDlg::UpdateControls() { }
+
+bool GSDebugDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_COMMAND:
+	{
+		int id = LOWORD(wParam);
+
+		switch (id)
+		{
+		case IDOK:
+		{
+			INT_PTR data;
+			theApp.SetConfig("debug_opengl", (int)IsDlgButtonChecked(m_hWnd, IDC_GL_DEBUGLOG));
+			theApp.SetConfig("debug_glsl_shader", (int)IsDlgButtonChecked(m_hWnd, IDC_GL_DEBUGGLSL));
+			theApp.SetConfig("dump", (int)IsDlgButtonChecked(m_hWnd, IDC_DUMP_GS));
+			theApp.SetConfig("save", (int)IsDlgButtonChecked(m_hWnd, IDC_DUMP_SAVE));
+			theApp.SetConfig("savef", (int)IsDlgButtonChecked(m_hWnd, IDC_DUMP_SAVEF));
+			theApp.SetConfig("savet", (int)IsDlgButtonChecked(m_hWnd, IDC_DUMP_SAVET));
+			theApp.SetConfig("savez", (int)IsDlgButtonChecked(m_hWnd, IDC_DUMP_SAVEZ));
+			theApp.SetConfig("savel", (int)(SendMessage(GetDlgItem(m_hWnd, IDC_DUMP_SAVEL), UDM_GETPOS, 0, 0)));
+			theApp.SetConfig("saven", (int)(SendMessage(GetDlgItem(m_hWnd, IDC_DUMP_SAVEN), UDM_GETPOS, 0, 0)));
+
+			EndDialog(m_hWnd, id);
+		}
 		case IDCANCEL:
 		{
 			EndDialog(m_hWnd, IDCANCEL);
