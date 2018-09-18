@@ -384,7 +384,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 		m_misc_cb_cache.ScalingFactor = GSVector4i(theApp.GetConfigI("upscale_multiplier"));
 		m_convert.cb->cache_upload(&m_misc_cb_cache);
 
-		theApp.LoadResource(IDR_CONVERT_GLSL, shader);
+		if(!theApp.LoadFile("convert.glsl", m_shader_tfx_fs)) theApp.LoadResource(IDR_CONVERT_GLSL, shader);
 
 		vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, shader.data());
 
@@ -416,7 +416,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		m_merge_obj.cb = new GSUniformBufferOGL("Merge UBO", g_merge_cb_index, sizeof(MergeConstantBuffer));
 
-		theApp.LoadResource(IDR_MERGE_GLSL, shader);
+		if(!theApp.LoadFile("merge.glsl", m_shader_tfx_fs)) theApp.LoadResource(IDR_MERGE_GLSL, shader);
 
 		for(size_t i = 0; i < countof(m_merge_obj.ps); i++) {
 			ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
@@ -433,7 +433,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		m_interlace.cb = new GSUniformBufferOGL("Interlace UBO", g_interlace_cb_index, sizeof(InterlaceConstantBuffer));
 
-		theApp.LoadResource(IDR_INTERLACE_GLSL, shader);
+		if(!theApp.LoadFile("interlace.glsl", m_shader_tfx_fs)) theApp.LoadResource(IDR_INTERLACE_GLSL, shader);
 
 		for(size_t i = 0; i < countof(m_interlace.ps); i++) {
 			ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
@@ -455,7 +455,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 			+ format("#define SB_BRIGHTNESS %d.0\n", ShadeBoost_Brightness)
 			+ format("#define SB_CONTRAST %d.0\n", ShadeBoost_Contrast);
 
-		theApp.LoadResource(IDR_SHADEBOOST_GLSL, shader);
+		if(!theApp.LoadFile("shadeboost.glsl", m_shader_tfx_fs)) theApp.LoadResource(IDR_SHADEBOOST_GLSL, shader);
 
 		ps = m_shader->Compile("shadeboost.glsl", "ps_main", GL_FRAGMENT_SHADER, shader.data(), shade_macro);
 		m_shadeboost.ps = m_shader->LinkPipeline("ShadeBoost pipe", vs, 0, ps);
@@ -577,8 +577,8 @@ void GSDeviceOGL::CreateTextureFX()
 	m_vs_cb = new GSUniformBufferOGL("HW VS UBO", g_vs_cb_index, sizeof(VSConstantBuffer));
 	m_ps_cb = new GSUniformBufferOGL("HW PS UBO", g_ps_cb_index, sizeof(PSConstantBuffer));
 
-	theApp.LoadResource(IDR_TFX_VGS_GLSL, m_shader_tfx_vgs);
-	theApp.LoadResource(IDR_TFX_FS_GLSL, m_shader_tfx_fs);
+	if(!theApp.LoadFile("tfx_vgs.glsl", m_shader_tfx_vgs)) theApp.LoadResource(IDR_TFX_VGS_GLSL, m_shader_tfx_vgs);
+	if(!theApp.LoadFile("tfx_fs.glsl", m_shader_tfx_fs)) theApp.LoadResource(IDR_TFX_FS_GLSL, m_shader_tfx_fs);
 
 	// warning 1 sampler by image unit. So you cannot reuse m_ps_ss...
 	m_palette_ss = CreateSampler(PSSamplerSelector(0));
@@ -1497,7 +1497,7 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 		fxaa_macro += "#extension GL_ARB_gpu_shader5 : enable\n";
 
 		std::vector<char> shader;
-		theApp.LoadResource(IDR_FXAA_FX, shader);
+		if(!theApp.LoadFile("fxaa.fx", shader)) theApp.LoadResource(IDR_FXAA_FX, shader);
 
 		GLuint ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, shader.data(), fxaa_macro);
 		m_fxaa.ps = m_shader->LinkPipeline("FXAA pipe", m_convert.vs, 0, ps);

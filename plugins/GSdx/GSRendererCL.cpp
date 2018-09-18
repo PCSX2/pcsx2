@@ -1931,7 +1931,7 @@ GSRendererCL::CL::CL()
 
 	std::vector<char> buff;
 
-	if(theApp.LoadResource(IDR_TFX_CL, buff))
+	if(theApp.LoadFile("tfx.cl", m_common_header) || theApp.LoadResource(IDR_TFX_CL, buff))
 	{
 		kernel_str = std::string(buff.data(), buff.size());
 	}

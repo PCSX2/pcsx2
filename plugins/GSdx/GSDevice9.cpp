@@ -291,7 +291,7 @@ bool GSDevice9::Create(const std::shared_ptr<GSWnd> &wnd)
 	};
 
 	std::vector<char> shader;
-	theApp.LoadResource(IDR_CONVERT_FX, shader);
+	if(!theApp.LoadFile("convert.fx", shader)) theApp.LoadResource(IDR_CONVERT_FX, shader);
 	CompileShader(shader.data(), shader.size(), "convert.fx", "vs_main", nullptr, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
 
 	for(size_t i = 0; i < countof(m_convert.ps); i++)
@@ -325,7 +325,7 @@ bool GSDevice9::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	// merge
 
-	theApp.LoadResource(IDR_MERGE_FX, shader);
+	if(!theApp.LoadFile("merge.fx", shader)) theApp.LoadResource(IDR_MERGE_FX, shader);
 	for(size_t i = 0; i < countof(m_merge.ps); i++)
 	{
 		CompileShader(shader.data(), shader.size(), "merge.fx", format("ps_main%d", i), nullptr, &m_merge.ps[i]);
@@ -342,7 +342,7 @@ bool GSDevice9::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	// interlace
 
-	theApp.LoadResource(IDR_INTERLACE_FX, shader);
+	if(!theApp.LoadFile("interlace.fx", shader)) theApp.LoadResource(IDR_INTERLACE_FX, shader);
 	for(size_t i = 0; i < countof(m_interlace.ps); i++)
 	{
 		CompileShader(shader.data(), shader.size(), "interlace.fx", format("ps_main%d", i), nullptr, &m_interlace.ps[i]);
@@ -368,7 +368,7 @@ bool GSDevice9::Create(const std::shared_ptr<GSWnd> &wnd)
 		{NULL, NULL},
 	};
 
-	theApp.LoadResource(IDR_SHADEBOOST_FX, shader);
+	if(!theApp.LoadFile("shadeboost.fx", shader)) theApp.LoadResource(IDR_SHADEBOOST_FX, shader);
 	CompileShader(shader.data(), shader.size(), "shadeboost.fx", "ps_main", macro, &m_shadeboost.ps);
 
 	// create shader layout
@@ -997,7 +997,7 @@ void GSDevice9::InitFXAA()
 	{
 		try {
 			std::vector<char> shader;
-			theApp.LoadResource(IDR_FXAA_FX, shader);
+			if(!theApp.LoadFile("fxaa.fx", shader)) theApp.LoadResource(IDR_FXAA_FX, shader);
 			CompileShader(shader.data(), shader.size(), "fxaa.fx", "ps_main", nullptr, &m_fxaa.ps);
 		}
 		catch (GSDXRecoverableError) {

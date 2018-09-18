@@ -33,7 +33,7 @@ GSShaderOGL::GSShaderOGL(bool debug) :
 	m_pipeline(0),
 	m_debug_shader(debug)
 {
-	theApp.LoadResource(IDR_COMMON_GLSL, m_common_header);
+	if(!theApp.LoadFile("common_header.glsl", m_common_header)) theApp.LoadResource(IDR_COMMON_GLSL, m_common_header);
 
 	// Create a default pipeline
 	m_pipeline = LinkPipeline("HW pipe", 0, 0, 0);
