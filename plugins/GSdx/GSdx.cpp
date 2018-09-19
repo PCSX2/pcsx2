@@ -23,6 +23,7 @@
 #include "GSdx.h"
 #include "GS.h"
 #include "PSX/GPU.h"
+#include <fstream>
 
 static void* s_hModule;
 
