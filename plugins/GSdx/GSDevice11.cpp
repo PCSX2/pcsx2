@@ -39,6 +39,8 @@ GSDevice11::GSDevice11()
 	m_state.topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	m_state.bf = -1;
 
+	m_mipmap = theApp.GetConfigI("mipmap");
+
 	if (theApp.GetConfigB("UserHacks")) {
 		UserHacks_unscale_pt_ln = theApp.GetConfigB("UserHacks_unscale_point_line");
 		UserHacks_disable_NV_hack = theApp.GetConfigB("UserHacks_DisableNVhack");
@@ -514,6 +516,10 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, bool msaa, int form
 		desc.SampleDesc = m_msaa_desc;
 	}
 
+	// mipmap = m_mipmap > 1 || m_filter != TriFiltering::None;
+	bool mipmap = m_mipmap > 1;
+	int layers = mipmap && format == DXGI_FORMAT_R8G8B8A8_UNORM ? (int)log2(std::max(w,h)) : 1;
+
 	switch(type)
 	{
 	case GSTexture::RenderTarget:
@@ -524,6 +530,7 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, bool msaa, int form
 		break;
 	case GSTexture::Texture:
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		desc.MipLevels = layers;
 		break;
 	case GSTexture::Offscreen:
 		desc.Usage = D3D11_USAGE_STAGING;
@@ -709,14 +716,14 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	GSSelector sel;
 	//Don't use shading for stretching, we're just passing through - Note: With Win10 it seems to cause other bugs when shading is off if any of the coords is greater than 0
 	//I really don't know whats going on there, but this seems to resolve it mostly (if not all, not tester a lot of games, only BIOS, FFXII and VP2)
-	//sel.iip = (sRect.y > 0.0f || sRect.w > 0.0f) ? 1 : 0; 
+	//sel.iip = (sRect.y > 0.0f || sRect.w > 0.0f) ? 1 : 0;
 	//sel.prim = 2; //Triangle Strip
 	//SetupGS(sel);
 
 	GSSetShader(NULL, NULL);
 
 	/*END OF HACK*/
-	
+
 	//
 
 	// ps

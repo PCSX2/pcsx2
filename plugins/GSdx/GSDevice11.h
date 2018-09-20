@@ -60,6 +60,8 @@ class GSDevice11 : public GSDeviceDX
 	bool UserHacks_unscale_pt_ln;
 	bool UserHacks_disable_NV_hack;
 
+	int m_mipmap;
+
 	struct
 	{
 		ID3D11Buffer* vb;

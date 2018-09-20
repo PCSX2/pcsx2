@@ -34,6 +34,9 @@ class GSTexture11 : public GSTexture
 	CComPtr<ID3D11RenderTargetView> m_rtv;
 	CComPtr<ID3D11DepthStencilView> m_dsv;
 
+	int m_layer;
+	int m_max_layer;
+
 public:
 	explicit GSTexture11(ID3D11Texture2D* texture);
 
