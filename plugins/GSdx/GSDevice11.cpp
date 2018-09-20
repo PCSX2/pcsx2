@@ -41,12 +41,13 @@ GSDevice11::GSDevice11()
 
 	m_mipmap = theApp.GetConfigI("mipmap");
 
-	if (theApp.GetConfigB("UserHacks")) {
+	if (theApp.GetConfigB("UserHacks"))
+	{
 		UserHacks_unscale_pt_ln = theApp.GetConfigB("UserHacks_unscale_point_line");
-		UserHacks_disable_NV_hack = theApp.GetConfigB("UserHacks_DisableNVhack");
-	} else {
+	}
+	else
+	{
 		UserHacks_unscale_pt_ln = false;
-		UserHacks_disable_NV_hack = false;
 	}
 }
 
@@ -121,10 +122,6 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	scd.Windowed = TRUE;
 
-	spritehack = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SpriteHack") : 0;
-
-	isNative = theApp.GetConfigI("upscale_multiplier") == 1;
-
 	// NOTE : D3D11_CREATE_DEVICE_SINGLETHREADED
 	//   This flag is safe as long as the DXGI's internal message pump is disabled or is on the
 	//   same thread as the GS window (which the emulator makes sure of, if it utilizes a
@@ -152,6 +149,32 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	if(!SetFeatureLevel(level, true))
 	{
 		return false;
+	}
+
+	{	// HACK: check nVIDIA
+		bool nvidia_gpu = false;
+		IDXGIDevice *dxd;
+
+		if(SUCCEEDED(m_dev->QueryInterface(IID_PPV_ARGS(&dxd))))
+		{
+			IDXGIAdapter *dxa;
+
+			if(SUCCEEDED(dxd->GetAdapter(&dxa)))
+			{
+				DXGI_ADAPTER_DESC dxad;
+
+				if(SUCCEEDED(dxa->GetDesc(&dxad)))
+					nvidia_gpu = dxad.VendorId == 0x10DE;
+
+				dxa->Release();
+			}
+			dxd->Release();
+		}
+
+		bool native_resolution = theApp.GetConfigI("upscale_multiplier") == 1;
+		bool spritehack_enabled = theApp.GetConfigB("UserHacks") && theApp.GetConfigI("UserHacks_SpriteHack");
+
+		m_hack_topleft_offset = (!nvidia_gpu || native_resolution || spritehack_enabled) ? 0.0f : -0.01f;
 	}
 
 	D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS options;
@@ -1269,8 +1292,8 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		D3D11_VIEWPORT vp;
 		memset(&vp, 0, sizeof(vp));
 
-		vp.TopLeftX = (UserHacks_disable_NV_hack || spritehack > 0 || isNative) ? 0.0f : -0.01f;
-		vp.TopLeftY = (UserHacks_disable_NV_hack || spritehack > 0 || isNative) ? 0.0f : -0.01f;
+		vp.TopLeftX = m_hack_topleft_offset;
+		vp.TopLeftY = m_hack_topleft_offset;
 		vp.Width = (float)size.x;
 		vp.Height = (float)size.y;
 		vp.MinDepth = 0.0f;
