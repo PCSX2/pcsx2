@@ -23,6 +23,7 @@
 #include "GSdx.h"
 #include "GS.h"
 #include "PSX/GPU.h"
+#include <fstream>
 
 static void* s_hModule;
 
@@ -173,6 +174,24 @@ int GSdxApp::GetPrivateProfileInt(const char* lpAppName, const char* lpKeyName, 
 		return atoi(value.c_str());
 }
 #endif
+
+bool GSdxApp::LoadFile(const char* fn, std::vector<char>& buff)
+{
+	std::ifstream file(fn, std::ios::binary | std::ios::ate);
+	
+	if(file.is_open()) {
+		size_t fsize = (size_t)file.tellg();
+		
+		if(fsize) {
+			buff.resize(fsize);
+			file.seekg(0, std::ios::beg);
+			file.read(&buff[0], fsize);
+			return true;
+		}
+	}
+	
+	return false;
+}
 
 GSdxApp theApp;
 

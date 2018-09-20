@@ -29,6 +29,11 @@ class GSTexture9 : public GSTexture
 	CComPtr<IDirect3DSurface9> m_surface;
 	CComPtr<IDirect3DTexture9> m_texture;
 	D3DSURFACE_DESC m_desc;
+	
+	bool m_generate_mipmap;
+	
+	int m_layer;
+	int m_max_layer;
 
 public:
 	explicit GSTexture9(IDirect3DSurface9* surface);

@@ -291,7 +291,7 @@ bool GSDevice9::Create(const std::shared_ptr<GSWnd> &wnd)
 	};
 
 	std::vector<char> shader;
-	theApp.LoadResource(IDR_CONVERT_FX, shader);
+	if(!theApp.LoadFile("convert.fx", shader)) theApp.LoadResource(IDR_CONVERT_FX, shader);
 	CompileShader(shader.data(), shader.size(), "convert.fx", "vs_main", nullptr, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
 
 	for(size_t i = 0; i < countof(m_convert.ps); i++)
@@ -325,7 +325,7 @@ bool GSDevice9::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	// merge
 
-	theApp.LoadResource(IDR_MERGE_FX, shader);
+	if(!theApp.LoadFile("merge.fx", shader)) theApp.LoadResource(IDR_MERGE_FX, shader);
 	for(size_t i = 0; i < countof(m_merge.ps); i++)
 	{
 		CompileShader(shader.data(), shader.size(), "merge.fx", format("ps_main%d", i), nullptr, &m_merge.ps[i]);
@@ -342,7 +342,7 @@ bool GSDevice9::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	// interlace
 
-	theApp.LoadResource(IDR_INTERLACE_FX, shader);
+	if(!theApp.LoadFile("interlace.fx", shader)) theApp.LoadResource(IDR_INTERLACE_FX, shader);
 	for(size_t i = 0; i < countof(m_interlace.ps); i++)
 	{
 		CompileShader(shader.data(), shader.size(), "interlace.fx", format("ps_main%d", i), nullptr, &m_interlace.ps[i]);
@@ -368,7 +368,7 @@ bool GSDevice9::Create(const std::shared_ptr<GSWnd> &wnd)
 		{NULL, NULL},
 	};
 
-	theApp.LoadResource(IDR_SHADEBOOST_FX, shader);
+	if(!theApp.LoadFile("shadeboost.fx", shader)) theApp.LoadResource(IDR_SHADEBOOST_FX, shader);
 	CompileShader(shader.data(), shader.size(), "shadeboost.fx", "ps_main", macro, &m_shadeboost.ps);
 
 	// create shader layout
@@ -694,6 +694,11 @@ GSTexture* GSDevice9::CreateSurface(int type, int w, int h, bool msaa, int forma
 
 	CComPtr<IDirect3DTexture9> texture;
 	CComPtr<IDirect3DSurface9> surface;
+	
+	// mipmap = m_mipmap > 1 || m_filter != TriFiltering::None;
+	// layers = mipmap && (m_type == GSTexture::Texture) && m_format == GL_RGBA8 ? (int)log2(std::max(w,h)) : 1;
+	bool mipmap = true; 
+	int layers = mipmap ? (int)log2(std::max(w,h)) : 1;
 
 	switch(type)
 	{
@@ -706,7 +711,7 @@ GSTexture* GSDevice9::CreateSurface(int type, int w, int h, bool msaa, int forma
 		else hr = m_dev->CreateDepthStencilSurface(w, h, (D3DFORMAT)format, D3DMULTISAMPLE_NONE, 0, FALSE, &surface, NULL);
 		break;
 	case GSTexture::Texture:
-		hr = m_dev->CreateTexture(w, h, 1, 0, (D3DFORMAT)format, D3DPOOL_MANAGED, &texture, NULL);
+		hr = m_dev->CreateTexture(w, h, layers, 0, (D3DFORMAT)format, D3DPOOL_MANAGED, &texture, NULL);
 		break;
 	case GSTexture::Offscreen:
 		hr = m_dev->CreateOffscreenPlainSurface(w, h, (D3DFORMAT)format, D3DPOOL_SYSTEMMEM, &surface, NULL);
@@ -997,7 +1002,7 @@ void GSDevice9::InitFXAA()
 	{
 		try {
 			std::vector<char> shader;
-			theApp.LoadResource(IDR_FXAA_FX, shader);
+			if(!theApp.LoadFile("fxaa.fx", shader)) theApp.LoadResource(IDR_FXAA_FX, shader);
 			CompileShader(shader.data(), shader.size(), "fxaa.fx", "ps_main", nullptr, &m_fxaa.ps);
 		}
 		catch (GSDXRecoverableError) {

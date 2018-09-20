@@ -24,9 +24,8 @@
 #include "GSPng.h"
 
 GSTexture9::GSTexture9(IDirect3DSurface9* surface)
+	: m_surface(surface), m_layer(0)
 {
-	m_surface = surface;
-
 	surface->GetDevice(&m_dev);
 	surface->GetDesc(&m_desc);
 
@@ -48,12 +47,13 @@ GSTexture9::GSTexture9(IDirect3DSurface9* surface)
 	m_format = (int)m_desc.Format;
 
 	m_msaa = m_desc.MultiSampleType != D3DMULTISAMPLE_NONE;
+	
+	m_max_layer = m_desc.MipLevels;
 }
 
 GSTexture9::GSTexture9(IDirect3DTexture9* texture)
+	: m_texture(texture), m_layer(0)
 {
-	m_texture = texture;
-
 	texture->GetDevice(&m_dev);
 	texture->GetLevelDesc(0, &m_desc);
 	texture->GetSurfaceLevel(0, &m_surface);
@@ -79,6 +79,9 @@ GSTexture9::~GSTexture9()
 
 bool GSTexture9::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
+	if (layer >= m_max_layer)
+		return true;
+	
 	if(m_surface)
 	{
 		D3DLOCKED_RECT lr;
@@ -117,6 +120,9 @@ bool GSTexture9::Update(const GSVector4i& r, const void* data, int pitch, int la
 bool GSTexture9::Map(GSMap& m, const GSVector4i* r, int layer)
 {
 	HRESULT hr;
+	
+	if (layer >= m_max_layer)
+		return false;
 
 	if(m_surface)
 	{
@@ -127,6 +133,8 @@ bool GSTexture9::Map(GSMap& m, const GSVector4i* r, int layer)
 			m.bits = (uint8*)lr.pBits;
 			m.pitch = (int)lr.Pitch;
 
+			m_layer = layer;
+			
 			return true;
 		}
 	}

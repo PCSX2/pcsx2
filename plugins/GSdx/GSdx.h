@@ -54,6 +54,7 @@ public:
 #endif
 
 	bool LoadResource(int id, std::vector<char>& buff, const char* type = nullptr);
+	bool LoadFile( const char* fn, std::vector<char>& buff);
 
 	void SetConfig(const char* entry, const char* value);
 	void SetConfig(const char* entry, int value);
