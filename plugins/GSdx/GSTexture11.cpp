@@ -24,7 +24,7 @@
 #include "GSPng.h"
 
 GSTexture11::GSTexture11(ID3D11Texture2D* texture)
-	: m_texture(texture)
+	: m_texture(texture), m_layer(0)
 {
 	ASSERT(m_texture);
 
@@ -44,15 +44,21 @@ GSTexture11::GSTexture11(ID3D11Texture2D* texture)
 	m_format = (int)m_desc.Format;
 
 	m_msaa = m_desc.SampleDesc.Count > 1;
+
+	m_max_layer = m_desc.MipLevels;
 }
 
 bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
+	if(layer >= m_max_layer)
+		return true;
+
 	if(m_dev && m_texture)
 	{
 		D3D11_BOX box = { (UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U };
+		UINT subresource = layer; // MipSlice + (ArraySlice * MipLevels).
 
-		m_ctx->UpdateSubresource(m_texture, 0, &box, data, pitch, 0);
+		m_ctx->UpdateSubresource(m_texture, subresource, &box, data, pitch, 0);
 
 		return true;
 	}
@@ -65,18 +71,23 @@ bool GSTexture11::Map(GSMap& m, const GSVector4i* r, int layer)
 	if(r != NULL)
 	{
 		// ASSERT(0); // not implemented
-
 		return false;
 	}
+
+	if(layer >= m_max_layer)
+		return false;
 
 	if(m_texture && m_desc.Usage == D3D11_USAGE_STAGING)
 	{
 		D3D11_MAPPED_SUBRESOURCE map;
+		UINT subresource = layer;
 
-		if(SUCCEEDED(m_ctx->Map(m_texture, 0, D3D11_MAP_READ_WRITE, 0, &map)))
+		if(SUCCEEDED(m_ctx->Map(m_texture, subresource, D3D11_MAP_READ_WRITE, 0, &map)))
 		{
 			m.bits = (uint8*)map.pData;
 			m.pitch = (int)map.RowPitch;
+
+			m_layer = layer;
 
 			return true;
 		}
@@ -89,7 +100,8 @@ void GSTexture11::Unmap()
 {
 	if(m_texture)
 	{
-		m_ctx->Unmap(m_texture, 0);
+		UINT subresource = m_layer;
+		m_ctx->Unmap(m_texture, subresource);
 	}
 }
 

@@ -32,6 +32,7 @@ GSDevice9::GSDevice9()
 	FXAA_Compiled = false;
 	ExShader_Compiled = false;
 
+	m_mipmap = theApp.GetConfigI("mipmap");
 
 	memset(&m_pp, 0, sizeof(m_pp));
 	memset(&m_d3dcaps, 0, sizeof(m_d3dcaps));
@@ -695,6 +696,10 @@ GSTexture* GSDevice9::CreateSurface(int type, int w, int h, bool msaa, int forma
 	CComPtr<IDirect3DTexture9> texture;
 	CComPtr<IDirect3DSurface9> surface;
 
+	// mipmap = m_mipmap > 1 || m_filter != TriFiltering::None;
+	bool mipmap = m_mipmap > 1;
+	int layers = mipmap && format == D3DFMT_A8R8G8B8 ? (int)log2(std::max(w,h)) : 1;
+
 	switch(type)
 	{
 	case GSTexture::RenderTarget:
@@ -706,7 +711,7 @@ GSTexture* GSDevice9::CreateSurface(int type, int w, int h, bool msaa, int forma
 		else hr = m_dev->CreateDepthStencilSurface(w, h, (D3DFORMAT)format, D3DMULTISAMPLE_NONE, 0, FALSE, &surface, NULL);
 		break;
 	case GSTexture::Texture:
-		hr = m_dev->CreateTexture(w, h, 1, 0, (D3DFORMAT)format, D3DPOOL_MANAGED, &texture, NULL);
+		hr = m_dev->CreateTexture(w, h, layers, 0, (D3DFORMAT)format, D3DPOOL_MANAGED, &texture, NULL);
 		break;
 	case GSTexture::Offscreen:
 		hr = m_dev->CreateOffscreenPlainSurface(w, h, (D3DFORMAT)format, D3DPOOL_SYSTEMMEM, &surface, NULL);
@@ -981,7 +986,7 @@ void GSDevice9::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 	GSVector4 dRect(0, 0, s.x, s.y);
 
 	ExternalFXConstantBuffer cb;
-	
+
 	InitExternalFX();
 
 	cb.xyFrame = GSVector2((float)s.x, (float)s.y);

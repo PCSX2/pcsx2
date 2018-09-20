@@ -24,17 +24,20 @@
 #include "GSPng.h"
 
 GSTexture9::GSTexture9(IDirect3DSurface9* surface)
+	: m_surface(surface), m_layer(0), m_generate_mipmap(true)
 {
-	m_surface = surface;
-
 	surface->GetDevice(&m_dev);
 	surface->GetDesc(&m_desc);
+
+	m_max_layer = 1;
 
 	if(m_desc.Type != D3DRTYPE_SURFACE)
 	{
 		surface->GetContainer(__uuidof(IDirect3DTexture9), (void**)&m_texture);
 
 		ASSERT(m_texture != NULL);
+
+		m_max_layer = m_texture->GetLevelCount();
 	}
 
 	m_size.x = (int)m_desc.Width;
@@ -51,9 +54,8 @@ GSTexture9::GSTexture9(IDirect3DSurface9* surface)
 }
 
 GSTexture9::GSTexture9(IDirect3DTexture9* texture)
+	: m_texture(texture), m_layer(0), m_generate_mipmap(true)
 {
-	m_texture = texture;
-
 	texture->GetDevice(&m_dev);
 	texture->GetLevelDesc(0, &m_desc);
 	texture->GetSurfaceLevel(0, &m_surface);
@@ -71,6 +73,8 @@ GSTexture9::GSTexture9(IDirect3DTexture9* texture)
 	m_format = (int)m_desc.Format;
 
 	m_msaa = m_desc.MultiSampleType > 1;
+
+	m_max_layer = m_texture->GetLevelCount();
 }
 
 GSTexture9::~GSTexture9()
@@ -79,6 +83,16 @@ GSTexture9::~GSTexture9()
 
 bool GSTexture9::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
+	if(layer >= m_max_layer)
+		return true;
+
+	if(m_texture)
+	{
+		m_surface = nullptr;
+
+		m_texture->GetSurfaceLevel(layer, &m_surface);
+	}
+
 	if(m_surface)
 	{
 		D3DLOCKED_RECT lr;
@@ -107,6 +121,8 @@ bool GSTexture9::Update(const GSVector4i& r, const void* data, int pitch, int la
 
 			m_surface->UnlockRect();
 
+			m_generate_mipmap = true;
+
 			return true;
 		}
 	}
@@ -118,6 +134,16 @@ bool GSTexture9::Map(GSMap& m, const GSVector4i* r, int layer)
 {
 	HRESULT hr;
 
+	if(layer >= m_max_layer)
+		return false;
+
+	if(m_texture)
+	{
+		m_surface = nullptr;
+
+		m_texture->GetSurfaceLevel(layer, &m_surface);
+	}
+
 	if(m_surface)
 	{
 		D3DLOCKED_RECT lr;
@@ -126,6 +152,8 @@ bool GSTexture9::Map(GSMap& m, const GSVector4i* r, int layer)
 		{
 			m.bits = (uint8*)lr.pBits;
 			m.pitch = (int)lr.Pitch;
+
+			m_layer = layer;
 
 			return true;
 		}
@@ -139,6 +167,8 @@ void GSTexture9::Unmap()
 	if(m_surface)
 	{
 		m_surface->UnlockRect();
+
+		m_generate_mipmap = true;
 	}
 }
 

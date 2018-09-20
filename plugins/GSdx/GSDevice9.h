@@ -97,6 +97,8 @@ class GSDevice9 : public GSDeviceDX
 	bool m_lost;
 	D3DFORMAT m_depth_format;
 
+	int m_mipmap;
+
 	struct
 	{
 		IDirect3DVertexBuffer9* vb;
