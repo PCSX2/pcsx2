@@ -531,6 +531,12 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, bool msaa, int form
 		desc.CPUAccessFlags |= D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
 		break;
 	}
+	
+	// mipmap = m_mipmap > 1 || m_filter != TriFiltering::None;
+	// layers = mipmap && (m_type == GSTexture::Texture) && m_format == GL_RGBA8 ? (int)log2(std::max(w,h)) : 1;
+	bool mipmap = true; 
+	int layers = mipmap && (m_type == GSTexture::Texture) ? (int)log2(std::max(w,h)) : 1;
+	desc.MipLevels = layers;
 
 	GSTexture11* t = NULL;
 

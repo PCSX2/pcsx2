@@ -694,6 +694,11 @@ GSTexture* GSDevice9::CreateSurface(int type, int w, int h, bool msaa, int forma
 
 	CComPtr<IDirect3DTexture9> texture;
 	CComPtr<IDirect3DSurface9> surface;
+	
+	// mipmap = m_mipmap > 1 || m_filter != TriFiltering::None;
+	// layers = mipmap && (m_type == GSTexture::Texture) && m_format == GL_RGBA8 ? (int)log2(std::max(w,h)) : 1;
+	bool mipmap = true; 
+	int layers = mipmap ? (int)log2(std::max(w,h)) : 1;
 
 	switch(type)
 	{
@@ -706,7 +711,7 @@ GSTexture* GSDevice9::CreateSurface(int type, int w, int h, bool msaa, int forma
 		else hr = m_dev->CreateDepthStencilSurface(w, h, (D3DFORMAT)format, D3DMULTISAMPLE_NONE, 0, FALSE, &surface, NULL);
 		break;
 	case GSTexture::Texture:
-		hr = m_dev->CreateTexture(w, h, 1, 0, (D3DFORMAT)format, D3DPOOL_MANAGED, &texture, NULL);
+		hr = m_dev->CreateTexture(w, h, layers, 0, (D3DFORMAT)format, D3DPOOL_MANAGED, &texture, NULL);
 		break;
 	case GSTexture::Offscreen:
 		hr = m_dev->CreateOffscreenPlainSurface(w, h, (D3DFORMAT)format, D3DPOOL_SYSTEMMEM, &surface, NULL);
