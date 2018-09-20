@@ -15,7 +15,7 @@
 
 // The code has been designed for 64Mb flash and uses as file support the second memory card
 #include <stdio.h>
-#include <winsock2.h>
+//#include <winsock2.h>
 #include "DEV9.h"
 
 #define	PAGE_SIZE_BITS	9
@@ -31,7 +31,7 @@
 static volatile u32 ctrl, cmd= (u32)-1, address, id, counter, addrbyte;
 static u8 data[PAGE_SIZE_ECC], file[CARD_SIZE_ECC];
 
-static void xfromman_call20_calculateXors(unsigned char buffer[128], unsigned char xor[4]);
+static void xfromman_call20_calculateXors(unsigned char buffer[128], unsigned char blah[4]);
 
 static void calculateECC(u8 page[PAGE_SIZE_ECC]){
 	memset(page+PAGE_SIZE, 0x00, ECC_SIZE);
@@ -41,7 +41,7 @@ static void calculateECC(u8 page[PAGE_SIZE_ECC]){
 	xfromman_call20_calculateXors(page + 3*(PAGE_SIZE>>2), page+PAGE_SIZE+3*3);//(ECC_SIZE>>2));
 }
 
-static char* getCmdName(u32 cmd){
+static const char* getCmdName(u32 cmd){
 	switch(cmd) {
 	case SM_CMD_READ1:			return "READ1";
 	case SM_CMD_READ2:			return "READ2";
@@ -57,7 +57,8 @@ static char* getCmdName(u32 cmd){
 	}
 }
 
-void CALLBACK FLASHinit(){
+EXPORT_C_(void)
+FLASHinit(){
 	FILE *fd;
 
 	id= FLASH_ID_64MBIT;
@@ -69,14 +70,20 @@ void CALLBACK FLASHinit(){
 	calculateECC(data);
 	ctrl = FLASH_PP_READY;
 	
-	if (fd=fopen("flash.dat", "rb")){
-		fread(file, 1, CARD_SIZE_ECC, fd);
+	fd=fopen("flash.dat", "rb");
+	if (fd != NULL){
+		size_t ret;
+
+		ret = fread(file, 1, CARD_SIZE_ECC, fd);
+		if (ret != CARD_SIZE_ECC) { DEV9_LOG("Reading error."); }
+
 		fclose(fd);
 	}else
 		memset(file, 0xFF, CARD_SIZE_ECC);
 }
 
-u32  CALLBACK FLASHread32(u32 addr, int size) {
+EXPORT_C_(u32)
+ FLASHread32(u32 addr, int size) {
 	u32 value, refill= 0;
 
 	switch(addr) {
@@ -133,14 +140,16 @@ u32  CALLBACK FLASHread32(u32 addr, int size) {
 			DEV9_LOG("*FLASH STATUS %dbit read 0x%08lX\n", size*8, value);
 			return value;
 		}//else fall off
+		return 0;
 
 	default:
-		DEV9_LOG("*FLASH Unkwnown %dbit read at address %lx\n", size*8, addr);
+		DEV9_LOG("*FLASH Unknown %dbit read at address %lx\n", size*8, addr);
 		return 0;
 	}
 }
 
-void CALLBACK FLASHwrite32(u32 addr, u32 value, int size) {
+EXPORT_C_(void)
+FLASHwrite32(u32 addr, u32 value, int size) {
 
 	switch(addr & 0x1FFFFFFF) {
 	case FLASH_R_DATA:
@@ -247,7 +256,7 @@ static unsigned char xor_table[256]={
  0xC3, 0x44, 0x55, 0xD2, 0x66, 0xE1, 0xF0, 0x77, 0x77, 0xF0, 0xE1, 0x66, 0xD2, 0x55, 0x44, 0xC3,
  0x00, 0x87, 0x96, 0x11, 0xA5, 0x22, 0x33, 0xB4, 0xB4, 0x33, 0x22, 0xA5, 0x11, 0x96, 0x87, 0x00};
 
-static void xfromman_call20_calculateXors(unsigned char buffer[128], unsigned char xor[4]){
+static void xfromman_call20_calculateXors(unsigned char buffer[128], unsigned char blah[4]){
 	register unsigned char a=0, b=0, c=0, i;
 
 	for (i=0; i<128; i++){
@@ -258,7 +267,7 @@ static void xfromman_call20_calculateXors(unsigned char buffer[128], unsigned ch
 		}
 	}
 
-	xor[0]=(~a) & 0x77;
-	xor[1]=(~b) & 0x7F;
-	xor[2]=(~c) & 0x7F;
+	blah[0]=(~a) & 0x77;
+	blah[1]=(~b) & 0x7F;
+	blah[2]=(~c) & 0x7F;
 }

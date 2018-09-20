@@ -15,13 +15,15 @@
 
 #define WINVER 0x0600
 #define _WIN32_WINNT 0x0600
+#ifdef _WIN32
 #include <winsock2.h>
+#include <Winioctl.h>
+#include <windows.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <Winioctl.h>
 #include <fcntl.h>
-#include <windows.h>
 #include <stdarg.h>
 #include <mutex>
 
@@ -29,7 +31,6 @@
 #include "net.h"
 #include "pcap.h"
 #include "pcap_io.h"
-#include "tap.h"
 
 bool has_link=true;
 volatile bool fireIntR = false;
@@ -88,11 +89,6 @@ bool rx_fifo_can_rx()
 
 void rx_process(NetPacket* pk)
 {
-	if (!rx_fifo_can_rx())
-	{
-		emu_printf("ERROR : !rx_fifo_can_rx at rx_process\n");
-		return;
-	}
 	smap_bd_t *pbd= ((smap_bd_t *)&dev9.dev9R[SMAP_BD_RX_BASE & 0xffff])+dev9.rxbdi;
 
 	int bytes=(pk->size+3)&(~3);
@@ -322,7 +318,8 @@ void emac3_write(u32 addr)
 	}
 	dev9Ru32(addr)=wswap(value);
 }
-u8 CALLBACK smap_read8(u32 addr)
+EXPORT_C_(u8)
+smap_read8(u32 addr)
 {
 	switch(addr)
 	{
@@ -344,7 +341,8 @@ u8 CALLBACK smap_read8(u32 addr)
 	DEV9_LOG("SMAP : error , 8 bit read @ %X,v=%X\n",addr,dev9Ru8(addr));
 	return dev9Ru8(addr);
 }
-u16 CALLBACK smap_read16(u32 addr)
+EXPORT_C_(u16)
+smap_read16(u32 addr)
 {
 	if (addr >= SMAP_BD_TX_BASE && addr < (SMAP_BD_TX_BASE + SMAP_BD_SIZE)) 
 	{
@@ -497,7 +495,8 @@ u16 CALLBACK smap_read16(u32 addr)
 			return dev9Ru16(addr);
 	}
 }
-u32 CALLBACK smap_read32(u32 addr)
+EXPORT_C_(u32)
+smap_read32(u32 addr)
 {
 	if (addr>=SMAP_EMAC3_REGBASE && addr<SMAP_EMAC3_REGEND)
 	{
@@ -536,7 +535,8 @@ u32 CALLBACK smap_read32(u32 addr)
 		return dev9Ru32(addr);
 	}
 }
-void CALLBACK smap_write8(u32 addr, u8 value)
+EXPORT_C_(void)
+smap_write8(u32 addr, u8 value)
 {
 	std::unique_lock<std::mutex> reset_lock(reset_mutex, std::defer_lock);
 	std::unique_lock<std::mutex> counter_lock(frame_counter_mutex, std::defer_lock);
@@ -611,7 +611,8 @@ void CALLBACK smap_write8(u32 addr, u8 value)
 		return;
 	}
 }
-void CALLBACK smap_write16(u32 addr, u16 value)
+EXPORT_C_(void)
+smap_write16(u32 addr, u16 value)
 {
 	if (addr >= SMAP_BD_TX_BASE && addr < (SMAP_BD_TX_BASE + SMAP_BD_SIZE)) {
 		if(dev9.bd_swap)
@@ -643,7 +644,7 @@ void CALLBACK smap_write16(u32 addr, u16 value)
 	}
 	else if (addr >= SMAP_BD_RX_BASE && addr < (SMAP_BD_RX_BASE + SMAP_BD_SIZE)) 
 	{
-		int rx_index=(addr - SMAP_BD_RX_BASE)>>3;
+		//int rx_index=(addr - SMAP_BD_RX_BASE)>>3;
 		if(dev9.bd_swap)
 			value = (value>>8)|(value<<8);
 		dev9Ru16(addr) = value;
@@ -791,7 +792,8 @@ void CALLBACK smap_write16(u32 addr, u16 value)
 		return;
 	}
 }
-void CALLBACK smap_write32(u32 addr, u32 value)
+EXPORT_C_(void)
+smap_write32(u32 addr, u32 value)
 {
 	if (addr>=SMAP_EMAC3_REGBASE && addr<SMAP_EMAC3_REGEND)
 	{
@@ -815,7 +817,8 @@ void CALLBACK smap_write32(u32 addr, u32 value)
 		return;
 	}
 }
-void CALLBACK smap_readDMA8Mem(u32 *pMem, int size)
+EXPORT_C_(void)
+smap_readDMA8Mem(u32 *pMem, int size)
 {
 	if(dev9Ru16(SMAP_R_RXFIFO_CTRL)&SMAP_RXFIFO_DMAEN)
 	{
@@ -835,7 +838,8 @@ void CALLBACK smap_readDMA8Mem(u32 *pMem, int size)
 		dev9Ru16(SMAP_R_RXFIFO_CTRL) &= ~SMAP_RXFIFO_DMAEN;
 	}
 }
-void CALLBACK smap_writeDMA8Mem(u32* pMem, int size)
+EXPORT_C_(void)
+smap_writeDMA8Mem(u32* pMem, int size)
 {
 	if(dev9Ru16(SMAP_R_TXFIFO_CTRL)&SMAP_TXFIFO_DMAEN)
 	{
@@ -858,7 +862,8 @@ void CALLBACK smap_writeDMA8Mem(u32* pMem, int size)
 
 	}
 }
-void CALLBACK smap_async(u32 cycles)
+EXPORT_C_(void)
+smap_async(u32 cycles)
 {
 	if (fireIntR)
 	{

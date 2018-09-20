@@ -4,6 +4,8 @@
 ## Use cmake package to find module
 if (Linux)
     find_package(ALSA)
+    find_package(PCAP)
+    find_package(LibXml2)
 endif()
 find_package(Freetype) # GSdx OSD
 find_package(Gettext) # translation tool
@@ -171,6 +173,14 @@ endif()
 
 if(wxWidgets_FOUND)
 	include(${wxWidgets_USE_FILE})
+endif()
+
+if(PCAP_FOUND)
+	include_directories(${PCAP_INCLUDE_DIR})
+endif()
+
+if(LIBXML2_FOUND)
+	include_directories(${LIBXML2_INCLUDE_DIRS})
 endif()
 
 if(ZLIB_FOUND)

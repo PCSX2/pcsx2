@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "net.h"
+#include "..\net.h"
 #include "..\Dev9.h"
 
 //mtfifo<NetPacket*> rx_fifo;

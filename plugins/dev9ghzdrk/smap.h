@@ -14,15 +14,25 @@
  */
 
 #pragma once
-#include "dev9.h"
+#include "DEV9.h"
 
-void ata_init();
-void ata_term();
+EXPORT_C_(u8)
+smap_read8(u32 addr);
+EXPORT_C_(u16)
+smap_read16(u32 addr);
+EXPORT_C_(u32)
+smap_read32(u32 addr);
 
-template<int sz>
-void CALLBACK ata_write(u32 addr, u32 value);
-template<int sz>
-u8 CALLBACK ata_read(u32 addr);
+EXPORT_C_(void)
+smap_write8(u32 addr, u8 value);
+EXPORT_C_(void)
+smap_write16(u32 addr, u16 value);
+EXPORT_C_(void)
+smap_write32(u32 addr, u32 value);
 
-void CALLBACK ata_readDMA8Mem(u32 *pMem, int size);
-void CALLBACK ata_writeDMA8Mem(u32 *pMem, int size);
+EXPORT_C_(void)
+smap_readDMA8Mem(u32 *pMem, int size);
+EXPORT_C_(void)
+smap_writeDMA8Mem(u32 *pMem, int size);
+EXPORT_C_(void)
+smap_async(u32 cycles);

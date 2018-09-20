@@ -22,6 +22,10 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/dev9null" AND dev9null)
 	add_subdirectory(dev9null)
 endif()
 
+if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/dev9ghzdrk" AND dev9ghzdrk)
+	add_subdirectory(dev9ghzdrk)
+endif()
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/FWnull" AND FWnull)
 	add_subdirectory(FWnull)
 endif()
