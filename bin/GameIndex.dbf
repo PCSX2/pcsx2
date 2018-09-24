@@ -1480,6 +1480,8 @@ Region = PAL-M5
 Serial = SCES-50928
 Name   = SOCOM - U.S. Navy SEALs [Beta & Full Release]
 Region = PAL-M6
+vuClampMode = 2 // Fixes bad shadows.
+GIFFIFOHack = 1 // Resolves random sprite/HUD corruption.
 ---------------------------------------------
 Serial = SCES-50934
 Name   = WRC II Extreme
@@ -1695,8 +1697,10 @@ Name   = Monde des Bleus 2004, Le - Nouvelle Generation
 Region = PAL-F
 ---------------------------------------------
 Serial = SCES-51618
-Name   = SOCOM
+Name   = SOCOM - U.S. Navy SEALs
 Region = PAL-Unk
+vuClampMode = 2 // Fixes bad shadows.
+GIFFIFOHack = 1 // Resolves random sprite/HUD corruption.
 ---------------------------------------------
 Serial = SCES-51635
 Name   = Brave - The Search for Spirit Dancer
@@ -3086,6 +3090,8 @@ VuClipFlagHack = 1
 Serial = SCKA-24008
 Name   = SOCOM - U.S. Navy SEALs
 Region = NTSC-K
+vuClampMode = 2 // Fixes bad shadows.
+GIFFIFOHack = 1 // Resolves random sprite/HUD corruption.
 ---------------------------------------------
 Serial = SCKA-30001
 Name   = Gran Turismo 4
@@ -3460,6 +3466,8 @@ Compat = 4
 Serial = SCPS-15044
 Name   = SOCOM - U.S. Navy SEALs
 Region = NTSC-J
+vuClampMode = 2 // Fixes bad shadows.
+GIFFIFOHack = 1 // Resolves random sprite/HUD corruption.
 ---------------------------------------------
 Serial = SCPS-15045
 Name   = Ka (Mosquito) - Let's Go Hawaiian
@@ -4555,6 +4563,8 @@ Serial = SCUS-97134
 Name   = SOCOM - U.S. Navy SEALs
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // Fixes bad shadows.
+GIFFIFOHack = 1 // Resolves random sprite/HUD corruption.
 ---------------------------------------------
 Serial = SCUS-97136
 Name   = NCAA Final Four 2002
@@ -4819,6 +4829,8 @@ Region = NTSC-U
 Serial = SCUS-97205
 Name   = SOCOM - U.S. Navy SEALs [Demo]
 Region = NTSC-U
+vuClampMode = 2 // Fixes bad shadows.
+GIFFIFOHack = 1 // Resolves random sprite/HUD corruption.
 ---------------------------------------------
 Serial = SCUS-97206
 Name   = PlayStation Underground Jampack Summer 2002
@@ -4908,6 +4920,8 @@ Region = NTSC-U
 Serial = SCUS-97230
 Name   = SOCOM - U.S. Navy SEALs (Online)
 Region = NTSC-U
+vuClampMode = 2 // Fixes bad shadows.
+GIFFIFOHack = 1 // Resolves random sprite/HUD corruption.
 ---------------------------------------------
 Serial = SCUS-97231
 Name   = Arc the Lad - Twilight of the Spirits
