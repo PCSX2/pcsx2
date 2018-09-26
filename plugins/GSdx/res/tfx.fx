@@ -403,6 +403,12 @@ float4 sample(float2 st, float q)
 		{
 			uv = st.xyxy + HalfTexel;
 			dd = frac(uv.xy * WH.zw);
+			#if SHADER_MODEL >= 0x400
+			if(PS_FST == 0)
+			{
+				dd = clamp(dd, (float2)0.0, (float2)0.9999999);
+			}
+			#endif
 		}
 		else
 		{
