@@ -428,7 +428,7 @@ vec4 sample_color(vec2 st)
         // Background in Shin Megami Tensei Lucifers
         // I suspect that uv isn't a standard number, so fract is outside of the [0;1] range
         // Note: it is free on GPU but let's do it only for float coordinate
-        // Strangely Dx doesn't suffer from this issue.
+        // Strangely DX9 doesn't suffer from this issue.
         dd = clamp(dd, vec2(0.0f), vec2(1.0f));
 #endif
     }
