@@ -140,47 +140,36 @@ void GSRendererHW::CustomResolutionScaling()
 {
 	const int crtc_width = GetDisplayRect().width();
 	const int crtc_height = GetDisplayRect().height();
-	const float scaling_ratio = std::ceil(static_cast<float>(m_custom_height) / crtc_height);
+	GSVector2 scaling_ratio;
+	scaling_ratio.x = std::ceil(static_cast<float>(m_custom_width) / crtc_width);
+	scaling_ratio.y = std::ceil(static_cast<float>(m_custom_height) / crtc_height);
+
 	// Avoid using a scissor value which is too high, developers can even leave the scissor to max (2047)
 	// at some cases when they don't want to limit the rendering size. Our assumption is that developers
 	// set the scissor to the actual data in the buffer. Let's use the scissoring value only at such cases
+	const int scissor_width = std::min(640, static_cast<int>(m_context->SCISSOR.SCAX1 - m_context->SCISSOR.SCAX0) + 1);
 	const int scissor_height = std::min(640, static_cast<int>(m_context->SCISSOR.SCAY1 - m_context->SCISSOR.SCAY0) + 1);
-	const int single_buffer_size = std::max(GetDisplayRect().height(), scissor_height);
 
-	// We have two contexts of framebuffer height -
-	// One for lower memory consumption and low accuracy
-	// Another one for higher memory consumption at necessary scenarios for higher accuracy
-	std::array<int, 2> framebuffer_height;
-	// When Large Framebuffer is disabled - Let's only consider the height of the display rectangle
-	// as the base (This is wrong implementation when we consider it theoretically as CRTC has no relation
-	// to the Framebuffer size)
-	framebuffer_height[0] = static_cast<int>(std::round((crtc_height * scaling_ratio)));
-	// When Large Framebuffer is enabled - We also consider for potential scissor sizes which are around
+	GSVector2i scissored_buffer_size;
+	//TODO: SCAX is not used yet, not sure if it's worth considering the horizontal scissor? dunno where it helps yet.
+	// the ICO testcase is there to show that vertical scissor is helpful on the double scan mode games.
+	scissored_buffer_size.x = std::max(crtc_width, scissor_width);
+	scissored_buffer_size.y = std::max(crtc_height, scissor_height);
+
+	// We also consider for potential scissor sizes which are around
 	// the size of the actual image data stored. (Helps ICO to properly scale to right size by help of the
 	// scissoring values) Display rectangle has a height of 256 but scissor has a height of 512 which seems to
-	// be the real buffer size.
-	framebuffer_height[1] = static_cast<int>(std::round(single_buffer_size * scaling_ratio));
+	// be the real buffer size. Not sure if the width one is needed, need to check it on some random data before enabling it.
+	// int framebuffer_width = static_cast<int>(std::round(scissored_buffer_size.x * scaling_ratio.x));
+	int framebuffer_height  = static_cast<int>(std::round(scissored_buffer_size.y * scaling_ratio.y));
 
-	if (m_width >= m_custom_width && m_height >= framebuffer_height[m_large_framebuffer])
+	if (m_width >= m_custom_width && m_height >= framebuffer_height)
 		return;
 
 	m_tc->RemovePartial();
 	m_width = std::max(m_width, default_rt_size.x);
-	m_height = std::max(framebuffer_height[m_large_framebuffer], default_rt_size.y);
-
-	std::string overhead = std::to_string(framebuffer_height[1] - framebuffer_height[0]);
-	std::string message = "(Custom resolution) Framebuffer size set to " + std::to_string(crtc_width) + "x" + std::to_string(crtc_height);
-	message += " (" + std::to_string(m_width) + "x" + std::to_string(m_height) + ")\n";
-
-	if (m_large_framebuffer)
-	{
-		message += "Additional " + overhead + " pixels overhead by enabling Large Framebuffer\n";
-	}
-	else
-	{
-		message += "Saved " + overhead + " pixels overhead by disabling Large Framebuffer\n";
-	}
-	printf("%s", message.c_str());
+	m_height = std::max(framebuffer_height, default_rt_size.y);
+	printf("Frame buffer size set to  %dx%d (%dx%d)\n", scissored_buffer_size.x, scissored_buffer_size.y, m_width, m_height);
 }
 
 GSRendererHW::~GSRendererHW()
