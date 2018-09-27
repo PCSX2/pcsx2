@@ -399,7 +399,7 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_LARGE_FB), integer_scaling != 1 && hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_LARGE_FB), integer_scaling > 1 && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), ocl);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !integer_scaling);
