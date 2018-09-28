@@ -127,7 +127,7 @@ vec4 clamp_wrap_uv(vec4 uv)
 #if PS_WMS == 2
     uv_out = clamp(uv, MinMax.xyxy, MinMax.zwzw);
 #elif PS_WMS == 3
-    uv_out = vec4((ivec4(uv * WH.xyxy) & ivec4(MskFix.xyxy)) | ivec4(MskFix.zwzw)) / WH.xyxy;
+    uv_out = vec4((uvec4(fract(uv) * WH.xyxy) & ivec4(MskFix.xyxy)) | ivec4(MskFix.zwzw)) / WH.xyxy;
 #endif
 
 #else // PS_WMS != PS_WMT
@@ -136,7 +136,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     uv_out.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
 
 #elif PS_WMS == 3
-    uv_out.xz = vec2((ivec2(uv.xz * WH.xx) & ivec2(MskFix.xx)) | ivec2(MskFix.zz)) / WH.xx;
+    uv_out.xz = vec2((uvec2(fract(uv.xz) * WH.xx) & ivec2(MskFix.xx)) | ivec2(MskFix.zz)) / WH.xx;
 
 #endif
 
@@ -145,7 +145,7 @@ vec4 clamp_wrap_uv(vec4 uv)
 
 #elif PS_WMT == 3
 
-    uv_out.yw = vec2((ivec2(uv.yw * WH.yy) & ivec2(MskFix.yy)) | ivec2(MskFix.ww)) / WH.yy;
+    uv_out.yw = vec2((uvec2(fract(uv.yw) * WH.yy) & ivec2(MskFix.yy)) | ivec2(MskFix.ww)) / WH.yy;
 #endif
 
 #endif
