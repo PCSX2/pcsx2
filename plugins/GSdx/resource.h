@@ -22,8 +22,11 @@
 #define IDC_OPENCL_DEVICE               2017
 #define IDC_OPENCL_TEXT                 2018
 #define IDC_HACKSBUTTON                 2019
-#define IDC_OSDBUTTON                   2020
-#define IDC_SHADEBUTTON                 2021
+#define IDC_DEBUGBUTTON                 2020
+#define IDC_OSDBUTTON                   2021
+#define IDC_SHADEBUTTON                 2022
+#define IDC_OSDBUTTON2                  2023
+#define IDC_SHADEBUTTON2                2024
 // Hardware Renderer Settings:
 #define IDC_PALTEX                      2030
 #define IDC_LARGE_FB                    2031
@@ -142,16 +145,29 @@
 #define IDC_OSD_MAX_LOG                 2182
 #define IDC_OSD_MAX_LOG_EDIT            2183
 #define IDC_OSD_MAX_LOG_TEXT            2184
+// Debug Menu:
+#define IDC_GL_DEBUGLOG                 2190
+#define IDC_GL_DEBUGGLSL                2191
+#define IDC_DUMP_GS                     2192
+#define IDC_DUMP_SAVE                   2193
+#define IDC_DUMP_SAVEF                  2194
+#define IDC_DUMP_SAVEL                  2195
+#define IDC_DUMP_SAVEN                  2196
+#define IDC_DUMP_SAVET                  2197
+#define IDC_DUMP_SAVEZ                  2198
+#define IDC_DUMP_SAVEL_EDIT             2199
+#define IDC_DUMP_SAVEN_EDIT             2200
 // OpenGL Advanced Settings:
-#define IDC_GEOMETRY_SHADER_OVERRIDE    2190
-#define IDC_GEOMETRY_SHADER_TEXT        2191
-#define IDC_IMAGE_LOAD_STORE            2192
-#define IDC_IMAGE_LOAD_STORE_TEXT       2193
+#define IDC_GEOMETRY_SHADER_OVERRIDE    2250
+#define IDC_GEOMETRY_SHADER_TEXT        2251
+#define IDC_IMAGE_LOAD_STORE            2252
+#define IDC_IMAGE_LOAD_STORE_TEXT       2253
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
 #define IDR_MERGE_FX                    10002
 #define IDR_INTERLACE_FX                10003
 #define IDR_FXAA_FX                     10004
+#define IDD_DEBUG                       10005
 #define IDD_SHADER                      10006
 #define IDR_SHADEBOOST_FX               10007
 #define IDR_TFX_CL                      10008
