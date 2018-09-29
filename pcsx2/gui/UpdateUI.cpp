@@ -43,6 +43,7 @@ static void _SaveLoadStuff(bool enabled)
 	sMainFrame.EnableMenuItem(MenuId_Sys_LoadStates, enabled);
 	sMainFrame.EnableMenuItem(MenuId_Sys_SaveStates, enabled);
 
+#ifdef USE_NEW_SAVESLOTS_UI
 	for (int i = 0; i < 10; i++)
 	{
 		int load_menu_item = MenuId_State_Load01 + i + 1;
@@ -65,6 +66,7 @@ static void _SaveLoadStuff(bool enabled)
 		sMainFrame.SetMenuItemLabel(save_menu_item, saveslot_cache[i].SlotName());
 	}
 	Sstates_updateLoadBackupMenuItem(false);
+#endif
 }
 
 // Updates the enable/disable status of all System related controls: menus, toolbars,

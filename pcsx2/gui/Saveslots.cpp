@@ -76,10 +76,12 @@ void States_FreezeCurrentSlot()
 	GSchangeSaveState(StatesC, SaveStateBase::GetFilename(StatesC).ToUTF8());
 	StateCopy_SaveToSlot(StatesC);
 
+#ifdef USE_NEW_SAVESLOTS_UI
 	// Hack: Update the saveslot saying it's filled *right now* because it's still writing the file and we don't have a timestamp.
 	saveslot_cache[StatesC].empty = false;
 	saveslot_cache[StatesC].updated = wxDateTime::Now();
 	saveslot_cache[StatesC].crc = ElfCRC;
+#endif
 
 	GetSysExecutorThread().PostIdleEvent(SysExecEvent_ClearSavingLoadingFlag());
 }
