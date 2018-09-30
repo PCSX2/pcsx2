@@ -20,7 +20,7 @@
 #include "System.h"
 #include "Elfheader.h"
 
-#define USE_NEW_SAVESLOTS_UI
+//#define USE_NEW_SAVESLOTS_UI
 
 class Saveslot
 {

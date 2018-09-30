@@ -31,7 +31,10 @@
 
 static int StatesC = 0;
 static const int StateSlotsCount = 10;
+
+#ifdef USE_NEW_SAVESLOTS_UI
 Saveslot saveslot_cache[10] = {{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}};
+#endif
 
 // FIXME : Use of the IsSavingOrLoading flag is mostly a hack until we implement a
 // complete thread to manage queuing savestate tasks, and zipping states to disk.  --air
