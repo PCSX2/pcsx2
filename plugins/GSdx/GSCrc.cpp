@@ -412,6 +412,7 @@ CRC::Game CRC::m_games[] =
 	{0x381EE9EF, BurnoutTakedown, EU, 0}, // E3 Demo
 	{0xD224D348, BurnoutRevenge, US, 0},
 	{0x7E83CC5B, BurnoutRevenge, EU, 0},
+	{0x2CAC3DBC, BurnoutRevenge, EU, 0},
 	{0xEEA60511, BurnoutRevenge, KO, 0},
 	{0x8C9576A1, BurnoutDominator, US, 0},
 	{0x8C9576B4, BurnoutDominator, EU, 0},
