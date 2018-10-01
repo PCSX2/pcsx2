@@ -95,8 +95,7 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_TCOFFSETY:
 		case IDC_TCOFFSETY2:
 			return "Offset for the ST/UV texture coordinates. Fixes some odd texture issues and might fix some post processing alignment too.\n\n"
-				"  0500 0500, fixes Persona 3 minimap, helps Haunting Ground.\n"
-				"  0000 1000, fixes Xenosaga hair edges (DX10+ Issue).";
+				"  0500 0500, fixes Persona 3 minimap, helps Haunting Ground.";
 		case IDC_OSD_LOG:
 			return "Prints log messages from the Function keys onscreen.";
 		case IDC_OSD_MONITOR:
