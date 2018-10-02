@@ -64,42 +64,6 @@ void SysMessage(const wchar_t *fmt, ...)
 }
 #endif
 
-GtkWidget *spu2x_gtk_hbox_new(int padding = 5)
-{
-#if GTK_MAJOR_VERSION < 3
-    return gtk_hbox_new(false, padding);
-#else
-    return gtk_box_new(GTK_ORIENTATION_HORIZONTAL, padding);
-#endif
-}
-
-GtkWidget *spu2x_gtk_vbox_new(int padding = 5)
-{
-#if GTK_MAJOR_VERSION < 3
-    return gtk_vbox_new(false, padding);
-#else
-    return gtk_box_new(GTK_ORIENTATION_VERTICAL, padding);
-#endif
-}
-
-GtkWidget *spu2x_gtk_hscale_new_with_range(double g_min, double g_max, int g_step = 5)
-{
-#if GTK_MAJOR_VERSION < 3
-    return gtk_hscale_new_with_range(g_min, g_max, g_step);
-#else
-    return gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, g_min, g_max, g_step);
-#endif
-}
-
-GtkWidget *spu2x_gtk_vscale_new_with_range(double g_min, double g_max, int g_step = 5)
-{
-#if GTK_MAJOR_VERSION < 3
-    return gtk_vscale_new_with_range(g_min, g_max, g_step);
-#else
-    return gtk_scale_new_with_range(GTK_ORIENTATION_VERTICAL, g_min, g_max, g_step);
-#endif
-}
-
 void DspUpdate()
 {
 }

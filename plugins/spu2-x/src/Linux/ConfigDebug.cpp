@@ -180,10 +180,10 @@ void DisplayDialog()
         "OK", GTK_RESPONSE_ACCEPT,
         NULL);
 
-    main_box = spu2x_gtk_hbox_new(5);
+    main_box = ps_gtk_hbox_new(5);
 
     // Message Section
-    msg_box = spu2x_gtk_vbox_new(5);
+    msg_box = ps_gtk_vbox_new(5);
 
     msg_console_check = gtk_check_button_new_with_label("Show In Console");
     msg_key_check = gtk_check_button_new_with_label("KeyOn/Off Events");
@@ -213,7 +213,7 @@ void DisplayDialog()
     gtk_container_add(GTK_CONTAINER(msg_frame), msg_box);
 
     // Log Section
-    log_box = spu2x_gtk_vbox_new(5);
+    log_box = ps_gtk_vbox_new(5);
 
     log_access_check = gtk_check_button_new_with_label("Log Register/DMA Actions");
     log_dma_check = gtk_check_button_new_with_label("Log DMA Writes");
@@ -231,7 +231,7 @@ void DisplayDialog()
     gtk_container_add(GTK_CONTAINER(log_frame), log_box);
 
     // Dump Section
-    dump_box = spu2x_gtk_vbox_new(5);
+    dump_box = ps_gtk_vbox_new(5);
 
     dump_core_check = gtk_check_button_new_with_label("Dump Core and Voice State");
     dump_mem_check = gtk_check_button_new_with_label("Dump Memory Contents");

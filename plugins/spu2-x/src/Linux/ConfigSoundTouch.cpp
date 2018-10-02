@@ -107,18 +107,18 @@ void DisplayDialog()
     default_button = gtk_button_new_with_label("Reset to Defaults");
 
     seq_label = gtk_label_new("Sequence Length");
-    seq_slide = spu2x_gtk_hscale_new_with_range(SequenceLen_Min, SequenceLen_Max, 2);
+    seq_slide = ps_gtk_hscale_new_with_range(SequenceLen_Min, SequenceLen_Max, 2);
     gtk_range_set_value(GTK_RANGE(seq_slide), SequenceLenMS);
 
     seek_label = gtk_label_new("Seek Window Size");
-    seek_slide = spu2x_gtk_hscale_new_with_range(SeekWindow_Min, SeekWindow_Max, 2);
+    seek_slide = ps_gtk_hscale_new_with_range(SeekWindow_Min, SeekWindow_Max, 2);
     gtk_range_set_value(GTK_RANGE(seek_slide), SeekWindowMS);
 
     over_label = gtk_label_new("Overlap");
-    over_slide = spu2x_gtk_hscale_new_with_range(Overlap_Min, Overlap_Max, 2);
+    over_slide = ps_gtk_hscale_new_with_range(Overlap_Min, Overlap_Max, 2);
     gtk_range_set_value(GTK_RANGE(over_slide), OverlapMS);
 
-    adv_box = spu2x_gtk_vbox_new(5);
+    adv_box = ps_gtk_vbox_new(5);
 
     gtk_box_pack_start(GTK_BOX(adv_box), main_label, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(adv_box), default_button, TRUE, TRUE, 5);

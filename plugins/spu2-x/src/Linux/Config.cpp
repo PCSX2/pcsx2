@@ -333,12 +333,12 @@ void DisplayDialog()
     latency_label = gtk_label_new("Latency:");
     const int min_latency = SynchMode == 0 ? LATENCY_MIN_TIMESTRETCH : LATENCY_MIN;
 
-    latency_slide = spu2x_gtk_hscale_new_with_range(min_latency, LATENCY_MAX, 5);
+    latency_slide = ps_gtk_hscale_new_with_range(min_latency, LATENCY_MAX, 5);
     gtk_range_set_value(GTK_RANGE(latency_slide), SndOutLatencyMS);
 
     volume_label = gtk_label_new("Volume:");
 
-    volume_slide = spu2x_gtk_hscale_new_with_range(0, 100, 5);
+    volume_slide = ps_gtk_hscale_new_with_range(0, 100, 5);
     gtk_range_set_value(GTK_RANGE(volume_slide), FinalVolume * 100);
 
     sync_label = gtk_label_new("Synchronization Mode:");
@@ -350,17 +350,17 @@ void DisplayDialog()
 
     advanced_button = gtk_button_new_with_label("Advanced...");
 
-    main_box = spu2x_gtk_hbox_new(5);
+    main_box = ps_gtk_hbox_new(5);
 
-    mixing_box = spu2x_gtk_vbox_new(5);
+    mixing_box = ps_gtk_vbox_new(5);
     mixing_frame = gtk_frame_new("Mixing Settings:");
     gtk_container_add(GTK_CONTAINER(mixing_frame), mixing_box);
 
 
-    output_box = spu2x_gtk_vbox_new(5);
+    output_box = ps_gtk_vbox_new(5);
     output_frame = gtk_frame_new("Output Settings:");
 
-    debug_box = spu2x_gtk_vbox_new(5);
+    debug_box = ps_gtk_vbox_new(5);
     debug_frame = gtk_frame_new("Debug Settings:");
 
     gtk_container_add(GTK_CONTAINER(debug_box), debug_check);
