@@ -254,7 +254,12 @@ float4 clamp_wrap_uv(float4 uv)
 		else if(PS_WMS == 3)
 		{
 			#if SHADER_MODEL >= 0x400
-			uv = (float4)(((uint4)(frac(uv) * WH.xyxy) & MskFix.xyxy) | MskFix.zwzw) / WH.xyxy;
+			#if PS_FST == 0
+			// wrap negative uv coords to avoid an off by one error that shifted
+			// textures. Fixes Xenosaga's hair issue.
+			uv = frac(uv);
+			#endif
+			uv = (float4)(((uint4)(uv * WH.xyxy) & MskFix.xyxy) | MskFix.zwzw) / WH.xyxy;
 			#elif SHADER_MODEL <= 0x300
 			uv.x = tex1D(UMSKFIX, uv.x);
 			uv.y = tex1D(VMSKFIX, uv.y);
@@ -283,7 +288,10 @@ float4 clamp_wrap_uv(float4 uv)
 		else if(PS_WMS == 3)
 		{
 			#if SHADER_MODEL >= 0x400
-			uv.xz = (float2)(((uint2)(frac(uv.xz) * WH.xx) & MskFix.xx) | MskFix.zz) / WH.xx;
+			#if PS_FST == 0
+			uv.xz = frac(uv.xz);
+			#endif
+			uv.xz = (float2)(((uint2)(uv.xz * WH.xx) & MskFix.xx) | MskFix.zz) / WH.xx;
 			#elif SHADER_MODEL <= 0x300
 			uv.x = tex1D(UMSKFIX, uv.x);
 			uv.z = tex1D(UMSKFIX, uv.z);
@@ -307,7 +315,10 @@ float4 clamp_wrap_uv(float4 uv)
 		else if(PS_WMT == 3)
 		{
 			#if SHADER_MODEL >= 0x400
-			uv.yw = (float2)(((uint2)(frac(uv.yw) * WH.yy) & MskFix.yy) | MskFix.ww) / WH.yy;
+			#if PS_FST == 0
+			uv.yw = frac(uv.yw);
+			#endif
+			uv.yw = (float2)(((uint2)(uv.yw * WH.yy) & MskFix.yy) | MskFix.ww) / WH.yy;
 			#elif SHADER_MODEL <= 0x300
 			uv.y = tex1D(VMSKFIX, uv.y);
 			uv.w = tex1D(VMSKFIX, uv.w);
