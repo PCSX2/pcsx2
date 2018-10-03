@@ -533,7 +533,16 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	bool colclip_wrap = m_env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST;
 	if (colclip_wrap)
 	{
-		m_ps_sel.colclip = 1;
+		if ((m_context->ALPHA.A == m_context->ALPHA.B) || !om_bsel.abe) // Optimize-away colclip
+		{
+			// No addition neither substraction so no risk of overflow the [0:255] range.
+			colclip_wrap = false;
+		}
+		else
+		{
+			m_ps_sel.colclip = 1;
+			// fprintf(stderr, "COLCLIP ENABLED (blending is %d/%d/%d/%d)\n", m_context->ALPHA.A, m_context->ALPHA.B, m_context->ALPHA.C, m_context->ALPHA.D);
+		}
 	}
 
 	m_ps_sel.clr1 = om_bsel.IsCLR1();
