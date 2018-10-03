@@ -48,9 +48,6 @@ protected:
 
 	bool DATE;
 
-	GSDrawingContext* context;
-	GSDrawingEnvironment env;
-
 	GSDeviceDX* dev;
 
 	GSDeviceDX::VSSelector m_vs_sel;
