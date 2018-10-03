@@ -63,27 +63,21 @@
     <ClCompile Include="..\pcap_io.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="Win32.cpp" />
-    <ClCompile Include="smap.cpp" />
+    <ClCompile Include="..\smap.cpp" />
     <ClCompile Include="net.cpp" />
     <ClCompile Include="tap-win32.cpp" />
-    <ClCompile Include="icmp.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="socket_io.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="DEV9ghzdrk.def" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mtfifo.h" />
-    <ClInclude Include="smap.h" />
-    <ClInclude Include="net.h" />
-    <ClInclude Include="pcap_io.h" />
+    <ClInclude Include="..\smap.h" />
+    <ClInclude Include="..\net.h" />
+    <ClInclude Include="..\pcap_io.h" />
     <ClInclude Include="tap.h" />
     <ClInclude Include="..\DEV9.h" />
-    <ClInclude Include="..\PS2Edefs.h" />
+    <ClInclude Include="PS2Edefs.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DEV9ghzdrk.rc" />

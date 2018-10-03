@@ -116,6 +116,15 @@ if(GTKn_FOUND)
     set(dev9null TRUE)
 endif()
 #---------------------------------------
+#			dev9ghzdrk
+#---------------------------------------
+if(GTKn_FOUND AND PCAP_FOUND AND LIBXML2_FOUND)
+    set(dev9ghzdrk TRUE)
+    list(APPEND CMAKE_MODULE_PATH
+        ${CMAKE_MODULE_PATH}/macros)
+    include(GlibCompileResourcesSupport)    
+endif()
+#---------------------------------------
 
 #---------------------------------------
 #			FWnull

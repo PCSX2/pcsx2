@@ -18,12 +18,12 @@
 #include <windows.h>
 #include <windowsx.h>
 
-#include "Config.h"
+#include "..\Config.h"
 #include "resource.h"
 #include "..\DEV9.h"
 #include "pcap.h"
-#include "pcap_io.h"
-#include "net.h"
+#include "..\pcap_io.h"
+#include "..\net.h"
 #include "tap.h"
 
 extern HINSTANCE hInst;
@@ -48,16 +48,13 @@ void OnInitDialog(HWND hW) {
 
 	ComboBox_AddString(GetDlgItem(hW, IDC_BAYTYPE), "Expansion");
 	ComboBox_AddString(GetDlgItem(hW, IDC_BAYTYPE), "PC Card");
-	for (int j=0;j<2;j++)
-	{
 	for (int i=0; i<pcap_io_get_dev_num(); i++) {
-		dev = pcap_io_get_dev_desc(i,j);
+		dev = pcap_io_get_dev_desc(i);
 		int itm=ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), dev);
-		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV),itm,strdup(pcap_io_get_dev_name(i,j)));
-		if (strcmp(pcap_io_get_dev_name(i,j), config.Eth) == 0) {
+		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV),itm,strdup(pcap_io_get_dev_name(i)));
+		if (strcmp(pcap_io_get_dev_name(i), config.Eth) == 0) {
 			ComboBox_SetCurSel(GetDlgItem(hW, IDC_ETHDEV), itm);
 		}
-	}
 	}
 	vector<tap_adapter> * al=GetTapAdapters();
 	for (size_t i=0; i<al->size(); i++) {
@@ -146,7 +143,8 @@ BOOL CALLBACK AboutDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	return FALSE;
 }
 
-void CALLBACK DEV9configure() {
+EXPORT_C_(void)
+DEV9configure() {
     DialogBox(hInst,
               MAKEINTRESOURCE(IDD_CONFIG),
               GetActiveWindow(),  
@@ -154,7 +152,8 @@ void CALLBACK DEV9configure() {
 		//SysMessage("Nothing to Configure");
 }
 
-void CALLBACK DEV9about() {
+EXPORT_C_(void)
+DEV9about() {
     DialogBox(hInst,
               MAKEINTRESOURCE(IDD_ABOUT),
               GetActiveWindow(),  
@@ -176,17 +175,7 @@ UINT DEV9ThreadProc() {
 NetAdapter* GetNetAdapter()
 {
 	NetAdapter* na;
-	if(config.Eth[0]=='p')
-	{
-		na = new PCAPAdapter();
-	}
-	else if (config.Eth[0]=='t')
-	{
-		na = new TAPAdapter();
-	}
-	else
-		return 0;
-
+	na = (config.Eth[0]=='t') ? static_cast<NetAdapter*>(new TAPAdapter()) : static_cast<NetAdapter*>(new PCAPAdapter());
 
 	if (!na->isInitialised())
 	{

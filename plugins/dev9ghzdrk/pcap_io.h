@@ -143,8 +143,6 @@ typedef struct _full_arp_packet
 
 extern mac_address virtual_mac;
 extern mac_address broadcast_mac;
-extern mac_address gateway_mac;
-extern ip_address virtual_ip;
 
 #define mac_compare(a,b) (memcmp(&(a),&(b),6))
 #define ip_compare(a,b) (memcmp(&(a),&(b),4))
@@ -156,8 +154,8 @@ int pcap_io_recv(void* packet, int max_len);
 void pcap_io_close();
 */
 int pcap_io_get_dev_num();
-char* pcap_io_get_dev_desc(int num,int md);
-char* pcap_io_get_dev_name(int num,int md);
+char* pcap_io_get_dev_desc(int num);
+char* pcap_io_get_dev_name(int num);
 
 #ifdef __cplusplus
 }
