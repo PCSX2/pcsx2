@@ -530,7 +530,8 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		}
 	}
 
-	if (m_env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
+	bool colclip_wrap = m_env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST;
+	if (colclip_wrap)
 	{
 		m_ps_sel.colclip = 1;
 	}
@@ -652,7 +653,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	{
 		dev->DrawIndexedPrimitive();
 
-		if (m_env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
+		if (colclip_wrap)
 		{
 			GSDeviceDX::OMBlendSelector om_bselneg(om_bsel);
 			GSDeviceDX::PSSelector ps_selneg(m_ps_sel);
@@ -728,7 +729,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 			dev->DrawIndexedPrimitive();
 
-			if (m_env.COLCLAMP.CLAMP == 0 && /* hack */ !tex && PRIM->PRIM != GS_POINTLIST)
+			if (colclip_wrap)
 			{
 				GSDeviceDX::OMBlendSelector om_bselneg(om_bsel);
 				GSDeviceDX::PSSelector ps_selneg(m_ps_sel);
