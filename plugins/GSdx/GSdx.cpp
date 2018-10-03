@@ -263,7 +263,7 @@ void GSdxApp::Init()
 	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::PS2), "Trilinear", ""));
 	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::Forced), "Trilinear", "Ultra/Slow"));
 
-	m_gs_gl_ext.push_back(GSSetting(-1, "Auto", "Default"));
+	m_gs_gl_ext.push_back(GSSetting(-1, "Automatic", "Default"));
 	m_gs_gl_ext.push_back(GSSetting(0,  "Force-Disabled", ""));
 	m_gs_gl_ext.push_back(GSSetting(1,  "Force-Enabled", ""));
 
