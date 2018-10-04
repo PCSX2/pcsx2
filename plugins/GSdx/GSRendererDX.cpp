@@ -379,7 +379,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
 	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
 
-	DATE = m_context->TEST.DATE && m_context->FRAME.PSM != PSM_PSMCT24;
+	bool DATE = m_context->TEST.DATE && m_context->FRAME.PSM != PSM_PSMCT24;
 
 	bool ate_first_pass = m_context->TEST.DoFirstPass();
 	bool ate_second_pass = m_context->TEST.DoSecondPass();

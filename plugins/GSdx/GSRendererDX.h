@@ -46,8 +46,6 @@ protected:
 
 	int UserHacks_HPO;
 
-	bool DATE;
-
 	GSDeviceDX* dev;
 
 	GSDeviceDX::VSSelector m_vs_sel;
