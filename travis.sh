@@ -56,6 +56,8 @@ linux_32_before_install() {
 		libxft-dev:i386 \
 		portaudio19-dev:i386 \
 		zlib1g-dev:i386 \
+		libxml2-dev:i386 \
+		libpcap0.8-dev:i386 \
 		${COMPILER_PACKAGE}
 
 	# Manually add ccache symlinks for clang
@@ -109,6 +111,8 @@ linux_64_before_install() {
 		libsoundtouch-dev \
 		libwxgtk3.0-dev \
 		portaudio19-dev \
+		libxml2-dev \
+		libpcap0.8-dev \
 		${COMPILER_PACKAGE}
 }
 
