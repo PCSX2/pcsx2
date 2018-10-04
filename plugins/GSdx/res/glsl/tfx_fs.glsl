@@ -132,7 +132,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     // textures. Fixes Xenosaga's hair issue.
     uv = fract(uv);
     #endif
-    uv_out = vec4((uvec4(uv * WH.xyxy) & ivec4(MskFix.xyxy)) | ivec4(MskFix.zwzw)) / WH.xyxy;
+    uv_out = vec4((uvec4(uv * WH.xyxy) & MskFix.xyxy) | MskFix.zwzw) / WH.xyxy;
 #endif
 
 #else // PS_WMS != PS_WMT
@@ -144,7 +144,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     #if PS_FST == 0
     uv.xz = fract(uv.xz);
     #endif
-    uv_out.xz = vec2((uvec2(uv.xz * WH.xx) & ivec2(MskFix.xx)) | ivec2(MskFix.zz)) / WH.xx;
+    uv_out.xz = vec2((uvec2(uv.xz * WH.xx) & MskFix.xx) | MskFix.zz) / WH.xx;
 
 #endif
 
@@ -155,7 +155,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     #if PS_FST == 0
     uv.yw = fract(uv.yw);
     #endif
-    uv_out.yw = vec2((uvec2(uv.yw * WH.yy) & ivec2(MskFix.yy)) | ivec2(MskFix.ww)) / WH.yy;
+    uv_out.yw = vec2((uvec2(uv.yw * WH.yy) & MskFix.yy) | MskFix.ww) / WH.yy;
 #endif
 
 #endif
