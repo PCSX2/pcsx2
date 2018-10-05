@@ -90,7 +90,7 @@ Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 	*this += Text(_("PlayStation 2 Emulator"));
 
 	*this += new wxHyperlinkCtrl(this, wxID_ANY,
-		_("PCSX2 Official Website and Forums"), L"http://www.pcsx2.net"
+		_("PCSX2 Official Website and Forums"), L"https://pcsx2.net"
 		) | pxProportion(1).Center().Border(wxALL, 3);
 
 	*this += new wxHyperlinkCtrl(this, wxID_ANY,

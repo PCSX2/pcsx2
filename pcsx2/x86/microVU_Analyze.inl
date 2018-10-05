@@ -386,7 +386,7 @@ __fi void mVUanalyzeXGkick(mV, int Fs, int xCycles) {
 // If the VI reg is modified directly before the branch, then the VI
 // value read by the branch is the value the VI reg had at the start
 // of the instruction 4 instructions ago (assuming no stalls).
-// See: http://forums.pcsx2.net/Thread-blog-PS2-VU-Vector-Unit-Documentation-Part-1
+// See: https://forums.pcsx2.net/Thread-blog-PS2-VU-Vector-Unit-Documentation-Part-1
 static void analyzeBranchVI(mV, int xReg, bool& infoVar) {
 	if (!xReg) return;
 	if (mVUstall) { // I assume a stall on branch means the vi reg is not modified directly b4 the branch...
