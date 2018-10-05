@@ -69,6 +69,7 @@
         </child>
         <child>
           <object class="GtkComboBoxText" id="IDC_BAYTYPE">
+         <property name="sensitive">False</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="has_entry">True</property>
@@ -129,7 +130,7 @@
               <object class="GtkComboBoxText" id="IDC_ETHDEV">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="has_entry">True</property>
+            <property name="has_entry">False</property>
             <property name="entry_text_column">0</property>
               </object>
               <packing>
@@ -172,6 +173,7 @@
         <child>
           <object class="GtkCheckButton" id="IDC_HDDENABLED">
             <property name="label" translatable="yes">ENABLED</property>
+            <property name="sensitive">False</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
@@ -201,6 +203,7 @@
             </child>
             <child>
               <object class="GtkEntry" id="IDC_HDDFILE">
+            <property name="sensitive">False</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
               </object>
@@ -223,7 +226,7 @@
           <object class="GtkLabel" id="label2">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Hard Disk Drive (not yet properly implemented</property>
+        <property name="label" translatable="yes">Hard Disk Drive (not yet properly implemented)</property>
           </object>
         </child>
       </object>
