@@ -425,17 +425,6 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 				else
 					; // god knows, best just not to mess with it for now
 			}
-
-			if(m_blendMapD3D9[i].bogus == 1)
-			{
-				(bsel.a == 0 ? bd.RenderTarget[0].SrcBlend : bd.RenderTarget[0].DestBlend) = D3D11_BLEND_ONE;
-
-				const std::string afixstr = format("%d >> 7", afix);
-				const char *col[3] = {"Cs", "Cd", "0"};
-				const char *alpha[3] = {"As", "Ad", afixstr.c_str()};
-				
-				printf("Impossible blend for D3D: (%s - %s) * %s + %s\n", col[bsel.a], col[bsel.b], alpha[bsel.c], col[bsel.d]);
-			}
 		}
 
 		if(bsel.wr) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_RED;

@@ -318,17 +318,6 @@ void GSDevice9::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint
 				else
 					; // god knows, best just not to mess with it for now
 			}
-
-			if(m_blendMapD3D9[i].bogus == 1)
-			{
-				(bsel.a == 0 ? bs->SrcBlend : bs->DestBlend) = D3DBLEND_ONE;
-
-				const std::string afixstr = format("%d >> 7", afix);
-				const char *col[3] = {"Cs", "Cd", "0"};
-				const char *alpha[3] = {"As", "Ad", afixstr.c_str()};
-
-				printf("Impossible blend for D3D: (%s - %s) * %s + %s\n", col[bsel.a], col[bsel.b], alpha[bsel.c], col[bsel.d]);
-			}
 		}
 
 		// this is not a typo; dx9 uses BGRA rather than the gs native RGBA, unlike dx10
