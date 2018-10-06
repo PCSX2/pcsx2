@@ -48,22 +48,28 @@ static void _SaveLoadStuff(bool enabled)
 	{
 		int load_menu_item = MenuId_State_Load01 + i + 1;
 		int save_menu_item = MenuId_State_Save01 + i + 1;
+		
+		// We need to reload the file information if the crc changed.
+		if (saveslot_cache[i].crc != ElfCRC) saveslot_cache[i].invalid_cache = true;
 
-		// If the cache is out of sync with the actual files, we need to update things. First update, the cache'll be blank, and this will populate everything.
-		if (saveslot_cache[i].empty == saveslot_cache[i].isUsed())
+		// Either the cache needs updating, or the menu items do, or both.
+		if (saveslot_cache[i].menu_update || saveslot_cache[i].invalid_cache)
 		{
-			// If there is actually a file there, or the cache was for a different game, we force an update.
-			// If the cache says there's a saveslot for the current game that there isn't a file for, writing it is done in a different thread,
-			// so it might not be written yet. Which is why I cache to begin with. 
-			if (saveslot_cache[i].isUsed() || (saveslot_cache[i].crc != ElfCRC)) 
+			if (saveslot_cache[i].invalid_cache)
 			{
+				// Pull everything from disk.
 				saveslot_cache[i].UpdateCache();
 			}
+
+			// Update from the cached information.
+			saveslot_cache[i].menu_update = false;
+			saveslot_cache[i].crc = ElfCRC;
+
+			sMainFrame.EnableMenuItem(load_menu_item, !saveslot_cache[i].empty);
+			sMainFrame.SetMenuItemLabel(load_menu_item, saveslot_cache[i].SlotName());
+			sMainFrame.SetMenuItemLabel(save_menu_item, saveslot_cache[i].SlotName());
 		}
 
-		sMainFrame.EnableMenuItem(load_menu_item, !saveslot_cache[i].empty);
-		sMainFrame.SetMenuItemLabel(load_menu_item, saveslot_cache[i].SlotName());
-		sMainFrame.SetMenuItemLabel(save_menu_item, saveslot_cache[i].SlotName());
 	}
 	Sstates_updateLoadBackupMenuItem(false);
 #endif

@@ -84,6 +84,7 @@ void States_FreezeCurrentSlot()
 	saveslot_cache[StatesC].empty = false;
 	saveslot_cache[StatesC].updated = wxDateTime::Now();
 	saveslot_cache[StatesC].crc = ElfCRC;
+	saveslot_cache[StatesC].menu_update = true;
 #endif
 
 	GetSysExecutorThread().PostIdleEvent(SysExecEvent_ClearSavingLoadingFlag());

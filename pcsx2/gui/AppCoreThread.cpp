@@ -485,6 +485,11 @@ void LoadAllPatchesAndStuff(const Pcsx2Config& cfg)
 	Pcsx2Config dummy;
 	PatchesVerboseReset();
 	_ApplySettings(cfg, dummy);
+
+	// And I'm hacking in updating the UI here too.
+#ifdef USE_NEW_SAVESLOTS_UI
+	UI_UpdateSysControls();
+#endif
 }
 
 void AppCoreThread::ApplySettings( const Pcsx2Config& src )

@@ -29,6 +29,7 @@ public:
 	bool empty;
 	wxDateTime updated;
 	u32 crc;
+	bool menu_update, invalid_cache;
 
 	Saveslot()
 	{
@@ -36,6 +37,8 @@ public:
 		empty = true;
 		updated = wxInvalidDateTime;
 		crc = ElfCRC;
+		menu_update = false;
+		invalid_cache = true;
 	}
 
 	Saveslot(int i)
@@ -44,6 +47,8 @@ public:
 		empty = true;
 		updated = wxInvalidDateTime;
 		crc = ElfCRC;
+		menu_update = false;
+		invalid_cache = true;
 	}
 
 	bool isUsed()
@@ -63,6 +68,7 @@ public:
 		empty = !isUsed();
 		updated = GetTimestamp();
 		crc = ElfCRC;
+		invalid_cache = false;
 	}
 
 	wxString SlotName()
@@ -86,8 +92,8 @@ public:
 		if (updated != wxInvalidDateTime)
 			Console.WriteLn(wxsFormat(_("Write time is %s %s."), updated.FormatDate(), updated.FormatTime()));
 
-		if (isUsed())
-			Console.WriteLn(wxsFormat(_("The disk has a file on it dated %s %s."), GetTimestamp().FormatDate(), GetTimestamp().FormatTime()));
+		//if (isUsed())
+		//	Console.WriteLn(wxsFormat(_("The disk has a file on it dated %s %s."), GetTimestamp().FormatDate(), GetTimestamp().FormatTime()));
 	}
 };
 
