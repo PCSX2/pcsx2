@@ -56,7 +56,7 @@ public:
 
     void Destroy();
     // opens handles to all possible joysticks
-    static void EnumerateJoysticks(vector<GamePad *> &vjoysticks);
+    static void EnumerateJoysticks(std::vector<GamePad *> &vjoysticks);
 
     void Rumble(int type, int pad);
 

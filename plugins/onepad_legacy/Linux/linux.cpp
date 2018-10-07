@@ -78,7 +78,7 @@ void _PADclose()
 {
     SetAutoRepeat(true);
 
-    vector<GamePad *>::iterator it = s_vgamePad.begin();
+    std::vector<GamePad *>::iterator it = s_vgamePad.begin();
 
     // Delete everything in the vector vjoysticks.
     while (it != s_vgamePad.end()) {
@@ -138,15 +138,15 @@ void PollForJoystickInput(int cpad)
                     if (full_axis) {
                         value += 0x8000;
                         if (value > gamePad->GetDeadzone())
-                            key_status->press(cpad, i, min(value / 256, 0xFF));
+                            key_status->press(cpad, i, std::min(value / 256, 0xFF));
                         else
                             key_status->release(cpad, i);
 
                     } else {
                         if (sign && (-value > gamePad->GetDeadzone()))
-                            key_status->press(cpad, i, min(-value / 128, 0xFF));
+                            key_status->press(cpad, i, std::min(-value / 128, 0xFF));
                         else if (!sign && (value > gamePad->GetDeadzone()))
-                            key_status->press(cpad, i, min(value / 128, 0xFF));
+                            key_status->press(cpad, i, std::min(value / 128, 0xFF));
                         else
                             key_status->release(cpad, i);
                     }

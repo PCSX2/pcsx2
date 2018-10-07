@@ -28,9 +28,9 @@
 
 extern std::string s_strIniPath;
 
-string KeyName(int pad, int key, int keysym)
+std::string KeyName(int pad, int key, int keysym)
 {
-    string tmp;
+    std::string tmp;
     tmp.resize(28);
 
     if (keysym) {
@@ -141,7 +141,7 @@ void SaveConfig()
         }
     }
 
-    map<u32, u32>::iterator it;
+    std::map<u32, u32>::iterator it;
     for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
         for (it = conf->keysym_map[pad].begin(); it != conf->keysym_map[pad].end(); ++it)
             fprintf(f, "PAD %d:KEYSYM 0x%x = %d\n", pad, it->first, it->second);

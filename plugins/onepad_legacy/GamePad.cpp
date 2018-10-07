@@ -3,7 +3,7 @@
 #include "SDL/joystick.h"
 #endif
 
-vector<GamePad *> s_vgamePad;
+std::vector<GamePad *> s_vgamePad;
 bool GamePadIdWithinBounds(int GamePadId)
 {
     return ((GamePadId >= 0) && (GamePadId < (int)s_vgamePad.size()));
@@ -17,7 +17,7 @@ bool GamePadIdWithinBounds(int GamePadId)
 /**
  * Find every interesting devices and create right structure for them(depend on backend)
  **/
-void GamePad::EnumerateGamePads(vector<GamePad *> &vgamePad)
+void GamePad::EnumerateGamePads(std::vector<GamePad *> &vgamePad)
 {
 #ifdef SDL_BUILD
     JoystickInfo::EnumerateJoysticks(vgamePad);

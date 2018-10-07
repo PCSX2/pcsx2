@@ -76,7 +76,7 @@ public:
     u32 keys[GAMEPAD_NUMBER][MAX_KEYS];
     u32 log;
     u32 joyid_map;
-    map<u32, u32> keysym_map[GAMEPAD_NUMBER];
+    std::map<u32, u32> keysym_map[GAMEPAD_NUMBER];
 
     PADconf() { init(); }
 

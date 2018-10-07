@@ -534,7 +534,7 @@ void Dialog::config_key(int pad, int key)
     // I don't have any guarantee that not-yet-pressed state is egual to released state
     GamePad::UpdateReleaseState();
     while (!captured) {
-        vector<GamePad *>::iterator itjoy;
+        std::vector<GamePad *>::iterator itjoy;
         if (PollX11KeyboardMouseEvent(key_pressed)) {
             // special case for keyboard/mouse to handle multiple keys
             // Note: key_pressed == 0 when ESC is hit to abort the capture
@@ -615,7 +615,7 @@ void Dialog::repopulate()
         }
 
         // keyboard/mouse key
-        map<u32, u32>::iterator it;
+       std::map<u32, u32>::iterator it;
         for (it = conf->keysym_map[gamepad_id].begin();
              it != conf->keysym_map[gamepad_id].end(); ++it) {
             int keysym = it->first;

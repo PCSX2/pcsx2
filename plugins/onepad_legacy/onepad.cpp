@@ -57,7 +57,7 @@ pthread_spinlock_t mutex_KeyEvent;
 bool mutex_WasInit = false;
 KeyStatus *key_status = NULL;
 
-queue<keyEvent> ev_fifo;
+std::queue<keyEvent> ev_fifo;
 
 static void InitLibraryName()
 {

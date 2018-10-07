@@ -44,7 +44,6 @@
 #include <map>
 #include <string>
 #include <pthread.h>
-using namespace std;
 
 #define PADdefs
 #include "PS2Edefs.h"
@@ -123,7 +122,7 @@ enum gamePadValues {
 };
 
 extern keyEvent event;
-extern queue<keyEvent> ev_fifo;
+extern std::queue<keyEvent> ev_fifo;
 extern pthread_spinlock_t mutex_KeyEvent;
 
 void clearPAD(int pad);

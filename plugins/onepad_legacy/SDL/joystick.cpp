@@ -30,7 +30,7 @@ static u32 s_bSDLInit = false;
 
 void JoystickInfo::UpdateReleaseState()
 {
-    vector<GamePad *>::iterator itjoy = s_vgamePad.begin();
+    std::vector<GamePad *>::iterator itjoy = s_vgamePad.begin();
 
     SDL_JoystickUpdate();
 
@@ -42,7 +42,7 @@ void JoystickInfo::UpdateReleaseState()
 }
 
 // opens handles to all possible joysticks
-void JoystickInfo::EnumerateJoysticks(vector<GamePad *> &vjoysticks)
+void JoystickInfo::EnumerateJoysticks(std::vector<GamePad *> &vjoysticks)
 {
 
     if (!s_bSDLInit) {
@@ -64,7 +64,7 @@ void JoystickInfo::EnumerateJoysticks(vector<GamePad *> &vjoysticks)
         s_bSDLInit = true;
     }
 
-    vector<GamePad *>::iterator it = vjoysticks.begin();
+    std::vector<GamePad *>::iterator it = vjoysticks.begin();
 
     // Delete everything in the vector vjoysticks.
     while (it != vjoysticks.end()) {
@@ -201,7 +201,7 @@ bool JoystickInfo::Init(int id)
     auto found_hack = devname.find("PLAYSTATION(R)3");
     // FIXME: people need to restart the plugin to take the option into account.
     bool hack_enabled = (conf->pad_options[0].sixaxis_pressure) || (conf->pad_options[1].sixaxis_pressure);
-    if (found_hack != string::npos && numaxes > 4 && hack_enabled) {
+    if (found_hack != std::string::npos && numaxes > 4 && hack_enabled) {
         numbuttons = 4; // (select, start, l3, r3)
         // Enable this hack in bluetooth too. It avoid to restart the onepad gui
         numbuttons += 4; // the 4 hat buttons
@@ -280,7 +280,7 @@ bool JoystickInfo::PollAxes(u32 &pkey)
 
     for (int i = 0; i < GetNumAxes(); ++i) {
         // Sixaxis, dualshock3 hack
-        if (found_hack != string::npos) {
+        if (found_hack != std::string::npos) {
             // The analog mode of the hat button is quite erratic. Values can be in half- axis
             // or full axis... So better keep them as button for the moment -- gregory
             if (i >= 8 && i <= 11 && (conf->pad_options[pad].sixaxis_usb))
