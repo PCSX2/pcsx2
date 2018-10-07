@@ -134,12 +134,6 @@ void Pad::rumble(int port)
 
 void Pad::stop_vibrate_all()
 {
-#if 0
-	for (int i=0; i<8; i++) {
-		SetVibrate(i&1, i>>1, 0, 0);
-		SetVibrate(i&1, i>>1, 1, 0);
-	}
-#endif
     // FIXME equivalent ?
     for (int port = 0; port < 2; port++)
         for (int slot = 0; slot < 4; slot++)
@@ -212,41 +206,6 @@ u8 pad_poll(u8 value)
             case CMD_READ_DATA_AND_VIBRATE:
             {
                 query.response[2] = 0x5A;
-#if 0
-				int i;
-				Update(query.port, query.slot);
-				ButtonSum *sum = &pad->sum;
-
-				u8 b1 = 0xFF, b2 = 0xFF;
-				for (i = 0; i<4; i++) {
-					b1 -= (sum->buttons[i]   > 0) << i;
-				}
-				for (i = 0; i<8; i++) {
-					b2 -= (sum->buttons[i+4] > 0) << i;
-				}
-#endif
-
-// FIXME
-#if 0
-				if (config.padConfigs[query.port][query.slot].type == GuitarPad && !config.GH2) {
-					sum->buttons[15] = 255;
-					// Not sure about this.  Forces wammy to be from 0 to 0x7F.
-					// if (sum->sticks[2].vert > 0) sum->sticks[2].vert = 0;
-				}
-#endif
-
-#if 0
-				for (i = 4; i<8; i++) {
-					b1 -= (sum->buttons[i+8] > 0) << i;
-				}
-#endif
-
-// FIXME
-#if 0
-				//Left, Right and Down are always pressed on Pop'n Music controller.
-				if (config.padConfigs[query.port][query.slot].type == PopnPad)
-					b1=b1 & 0x1f;
-#endif
 
                 uint16_t buttons = key_status->get(query.port);
 
@@ -283,42 +242,6 @@ u8 pad_poll(u8 value)
                         query.response[20] = !test_bit(buttons, 1) ? key_status->get(query.port, PAD_R2) : 0;
                     }
                 }
-
-#if 0
-				query.response[3] = b1;
-				query.response[4] = b2;
-
-				query.numBytes = 5;
-				if (pad->mode != MODE_DIGITAL) {
-					query.response[5] = Cap((sum->sticks[0].horiz+255)/2);
-					query.response[6] = Cap((sum->sticks[0].vert+255)/2);
-					query.response[7] = Cap((sum->sticks[1].horiz+255)/2);
-					query.response[8] = Cap((sum->sticks[1].vert+255)/2);
-
-					query.numBytes = 9;
-					if (pad->mode != MODE_ANALOG) {
-						// Good idea?  No clue.
-						//query.response[3] &= pad->mask[0];
-						//query.response[4] &= pad->mask[1];
-
-						// No need to cap these, already done int CapSum().
-						query.response[9] = (unsigned char)sum->buttons[13]; //D-pad right
-						query.response[10] = (unsigned char)sum->buttons[15]; //D-pad left
-						query.response[11] = (unsigned char)sum->buttons[12]; //D-pad up
-						query.response[12] = (unsigned char)sum->buttons[14]; //D-pad down
-
-						query.response[13] = (unsigned char) sum->buttons[8];
-						query.response[14] = (unsigned char) sum->buttons[9];
-						query.response[15] = (unsigned char) sum->buttons[10];
-						query.response[16] = (unsigned char) sum->buttons[11];
-						query.response[17] = (unsigned char) sum->buttons[6];
-						query.response[18] = (unsigned char) sum->buttons[7];
-						query.response[19] = (unsigned char) sum->buttons[4];
-						query.response[20] = (unsigned char) sum->buttons[5];
-						query.numBytes = 21;
-					}
-				}
-#endif
             }
 
                 query.lastByte = 1;
@@ -414,7 +337,6 @@ u8 pad_poll(u8 value)
                     pad->set_vibrate(1, 255 * (value & 1));
                 else if (query.lastByte == pad->vibrateI[1])
                     pad->set_vibrate(0, value);
-
                 break;
 
             case CMD_CONFIG_MODE:
