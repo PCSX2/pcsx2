@@ -41,7 +41,8 @@ char *KeysymToChar(int keysym)
 void SetAutoRepeat(bool autorep)
 {
 #if defined(__unix__)
-    if (toggleAutoRepeat) {
+    if (toggleAutoRepeat)
+    {
         if (autorep)
             XAutoRepeatOn(GSdsp);
         else
@@ -61,29 +62,36 @@ void AnalyzeKeyEvent(keyEvent &evt)
     int pad = 0;
     int index = -1;
 
-    for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
+    for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
+    {
         int tmp_index = get_keyboard_key(cpad, key);
-        if (tmp_index != -1) {
+        if (tmp_index != -1)
+        {
             pad = cpad;
             index = tmp_index;
         }
     }
 
-    switch (evt.evt) {
+    switch (evt.evt)
+    {
         case KeyPress:
             // Shift F12 is not yet use by pcsx2. So keep it to grab/ungrab input
             // I found it very handy vs the automatic fullscreen detection
             // 1/ Does not need to detect full-screen
             // 2/ Can use a debugger in full-screen
             // 3/ Can grab input in window without the need of a pixelated full-screen
-            if (key == XK_Shift_R || key == XK_Shift_L)
-                s_Shift = true;
-            if (key == XK_F12 && s_Shift) {
-                if (!s_grab_input) {
+            if (key == XK_Shift_R || key == XK_Shift_L) s_Shift = true;
+
+            if (key == XK_F12 && s_Shift)
+            {
+                if (!s_grab_input)
+                {
                     s_grab_input = true;
                     XGrabPointer(GSdsp, GSwin, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, GSwin, None, CurrentTime);
                     XGrabKeyboard(GSdsp, GSwin, True, GrabModeAsync, GrabModeAsync, CurrentTime);
-                } else {
+                }
+                else
+                {
                     s_grab_input = false;
                     XUngrabPointer(GSdsp, CurrentTime);
                     XUngrabKeyboard(GSdsp, CurrentTime);
@@ -91,8 +99,10 @@ void AnalyzeKeyEvent(keyEvent &evt)
             }
 
             // Analog controls.
-            if (IsAnalogKey(index)) {
-                switch (index) {
+            if (IsAnalogKey(index))
+            {
+                switch (index)
+                {
                     case PAD_R_LEFT:
                     case PAD_R_UP:
                     case PAD_L_LEFT:
@@ -106,7 +116,8 @@ void AnalyzeKeyEvent(keyEvent &evt)
                         key_status->press(pad, index, MAX_ANALOG_VALUE);
                         break;
                 }
-            } else if (index != -1)
+            }
+            else if (index != -1)
                 key_status->press(pad, index);
 
             //PAD_LOG("Key pressed:%d\n", index);
@@ -116,11 +127,9 @@ void AnalyzeKeyEvent(keyEvent &evt)
             break;
 
         case KeyRelease:
-            if (key == XK_Shift_R || key == XK_Shift_L)
-                s_Shift = false;
+            if (key == XK_Shift_R || key == XK_Shift_L)  s_Shift = false;
 
-            if (index != -1)
-                key_status->release(pad, index);
+            if (index != -1) key_status->release(pad, index);
 
             event.evt = KEYRELEASE;
             event.key = key;
@@ -136,13 +145,11 @@ void AnalyzeKeyEvent(keyEvent &evt)
             break;
 
         case ButtonPress:
-            if (index != -1)
-                key_status->press(pad, index);
+            if (index != -1) key_status->press(pad, index);
             break;
 
         case ButtonRelease:
-            if (index != -1)
-                key_status->release(pad, index);
+            if (index != -1) key_status->release(pad, index);
             break;
 
         case MotionNotify:
@@ -150,14 +157,18 @@ void AnalyzeKeyEvent(keyEvent &evt)
             // 1/ small move == no move. Cons : can not do small movement
             // 2/ use a watchdog timer thread
             // 3/ ??? idea welcome ;)
-            if (conf->pad_options[pad].mouse_l | conf->pad_options[pad].mouse_r) {
+            if (conf->pad_options[pad].mouse_l | conf->pad_options[pad].mouse_r)
+            {
                 unsigned int pad_x;
                 unsigned int pad_y;
                 // Note when both PADOPTION_MOUSE_R and PADOPTION_MOUSE_L are set, take only the right one
-                if (conf->pad_options[pad].mouse_r) {
+                if (conf->pad_options[pad].mouse_r)
+                {
                     pad_x = PAD_R_RIGHT;
                     pad_y = PAD_R_UP;
-                } else {
+                }
+                else
+                {
                     pad_x = PAD_L_RIGHT;
                     pad_y = PAD_L_UP;
                 }
@@ -207,7 +218,8 @@ void PollForX11KeyboardInput()
     XEvent E = {0};
 
     // Keyboard input send by PCSX2
-    while (!ev_fifo.empty()) {
+    while (!ev_fifo.empty())
+    {
         AnalyzeKeyEvent(ev_fifo.front());
         pthread_spin_lock(&mutex_KeyEvent);
         ev_fifo.pop();
@@ -215,13 +227,15 @@ void PollForX11KeyboardInput()
     }
 
     // keyboard input
-    while (XPending(GSdsp) > 0) {
+    while (XPending(GSdsp) > 0)
+    {
         XNextEvent(GSdsp, &E);
 
         // Change the format of the structure to be compatible with GSOpen2
         // mode (event come from pcsx2 not X)
         evt.evt = E.type;
-        switch (E.type) {
+        switch (E.type)
+        {
             case MotionNotify:
                 evt.key = (E.xbutton.x & 0xFFFF) | (E.xbutton.y << 16);
                 break;
@@ -241,11 +255,15 @@ bool PollX11KeyboardMouseEvent(u32 &pkey)
 {
     GdkEvent *ev = gdk_event_get();
 
-    if (ev != NULL) {
-        if (ev->type == GDK_KEY_PRESS) {
+    if (ev != NULL)
+    {
+        if (ev->type == GDK_KEY_PRESS)
+        {
             pkey = ev->key.keyval != GDK_KEY_Escape ? ev->key.keyval : 0;
             return true;
-        } else if (ev->type == GDK_BUTTON_PRESS) {
+        }
+        else if (ev->type == GDK_BUTTON_PRESS)
+        {
             pkey = ev->button.button;
             return true;
         }
@@ -260,14 +278,18 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     static bool lbutton = false, rbutton = false;
     key_status->keyboard_state_acces(cpad);
 
-    switch (msg) {
+    switch (msg)
+    {
         case WM_KEYDOWN:
             if (lParam & 0x40000000)
                 return TRUE;
 
-            for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad) {
-                for (int i = 0; i < MAX_KEYS; i++) {
-                    if (wParam == get_key(pad, i)) {
+            for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
+            {
+                for (int i = 0; i < MAX_KEYS; i++)
+                {
+                    if (wParam == get_key(pad, i))
+                    {
                         key_status->press(pad, i);
                         break;
                     }
@@ -279,9 +301,12 @@ LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_KEYUP:
-            for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad) {
-                for (int i = 0; i < MAX_KEYS; i++) {
-                    if (wParam == get_key(pad, i)) {
+            for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
+            {
+                for (int i = 0; i < MAX_KEYS; i++)
+                {
+                    if (wParam == get_key(pad, i))
+                    {
                         key_status->release(pad, i);
                         break;
                     }

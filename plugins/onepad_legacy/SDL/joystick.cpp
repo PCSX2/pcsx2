@@ -35,7 +35,8 @@ void JoystickInfo::UpdateReleaseState()
     SDL_JoystickUpdate();
 
     // Save everything in the vector s_vjoysticks.
-    while (itjoy != s_vgamePad.end()) {
+    while (itjoy != s_vgamePad.end())
+    {
         (*itjoy)->SaveState();
         ++itjoy;
     }
@@ -45,20 +46,20 @@ void JoystickInfo::UpdateReleaseState()
 void JoystickInfo::EnumerateJoysticks(std::vector<GamePad *> &vjoysticks)
 {
 
-    if (!s_bSDLInit) {
+    if (!s_bSDLInit)
+    {
 #if SDL_MAJOR_VERSION >= 2
         // Tell SDL to catch event even if the windows isn't focussed
         SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
-        if (SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_EVENTS) < 0)
-            return;
+        if (SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_EVENTS) < 0) return;
+        
         // WTF! Give me back the control of my system
         struct sigaction action = {};
         action.sa_handler = SIG_DFL;
         sigaction(SIGINT, &action, NULL);
         sigaction(SIGTERM, &action, NULL);
 #else
-        if (SDL_Init(SDL_INIT_JOYSTICK) < 0)
-            return;
+        if (SDL_Init(SDL_INIT_JOYSTICK) < 0) return;
 #endif
         SDL_JoystickEventState(SDL_QUERY);
         s_bSDLInit = true;
@@ -67,14 +68,16 @@ void JoystickInfo::EnumerateJoysticks(std::vector<GamePad *> &vjoysticks)
     std::vector<GamePad *>::iterator it = vjoysticks.begin();
 
     // Delete everything in the vector vjoysticks.
-    while (it != vjoysticks.end()) {
+    while (it != vjoysticks.end())
+    {
         delete *it;
         ++it;
     }
 
     vjoysticks.resize(SDL_NumJoysticks());
 
-    for (int i = 0; i < (int)vjoysticks.size(); ++i) {
+    for (int i = 0; i < (int)vjoysticks.size(); ++i)
+    {
         vjoysticks[i] = new JoystickInfo();
         vjoysticks[i]->Init(i);
     }
@@ -83,7 +86,8 @@ void JoystickInfo::EnumerateJoysticks(std::vector<GamePad *> &vjoysticks)
 void JoystickInfo::GenerateDefaultEffect()
 {
 #if SDL_MAJOR_VERSION >= 2
-    for (int i = 0; i < NB_EFFECT; i++) {
+    for (int i = 0; i < NB_EFFECT; i++)
+    {
         SDL_HapticEffect effect;
         memset(&effect, 0, sizeof(SDL_HapticEffect)); // 0 is safe default
         SDL_HapticDirection direction;
@@ -104,16 +108,14 @@ void JoystickInfo::GenerateDefaultEffect()
 
 void JoystickInfo::Rumble(int type, int pad)
 {
-    if (type > 1)
-        return;
-    if (!(conf->pad_options[pad].forcefeedback))
-        return;
+    if (type > 1) return;
+    if (!(conf->pad_options[pad].forcefeedback)) return;
 
 #if SDL_MAJOR_VERSION >= 2
-    if (haptic == NULL)
-        return;
+    if (haptic == NULL) return;
 
-    if (first) { // If done multiple times, device memory will be filled
+    if (first) // If done multiple times, device memory will be filled
+    {
         first = 0;
         GenerateDefaultEffect();
         /** Sine and triangle are quite probably the best, don't change that lightly and if you do
@@ -125,21 +127,24 @@ void JoystickInfo::Rumble(int type, int pad)
 		 **/
         effects[0].type = SDL_HAPTIC_SINE;
         effects_id[0] = SDL_HapticNewEffect(haptic, &effects[0]);
-        if (effects_id[0] < 0) {
+        if (effects_id[0] < 0)
+        {
             fprintf(stderr, "ERROR: Effect is not uploaded! %s, id is %d\n", SDL_GetError(), effects_id[0]);
         }
 
         /** Effect for big motor **/
         effects[1].type = SDL_HAPTIC_TRIANGLE;
         effects_id[1] = SDL_HapticNewEffect(haptic, &effects[1]);
-        if (effects_id[1] < 0) {
+        if (effects_id[1] < 0)
+        {
             fprintf(stderr, "ERROR: Effect is not uploaded! %s, id is %d\n", SDL_GetError(), effects_id[1]);
         }
     }
 
     int id;
     id = effects_id[type];
-    if (SDL_HapticRunEffect(haptic, id, 1) != 0) {
+    if (SDL_HapticRunEffect(haptic, id, 1) != 0)
+    {
         fprintf(stderr, "ERROR: Effect is not working! %s, id is %d\n", SDL_GetError(), id);
     }
 #endif
@@ -147,10 +152,12 @@ void JoystickInfo::Rumble(int type, int pad)
 
 void JoystickInfo::Destroy()
 {
-    if (joy != NULL) {
+    if (joy != NULL)
+    {
 #if SDL_MAJOR_VERSION >= 2
         // Haptic must be closed before the joystick
-        if (haptic != NULL) {
+        if (haptic != NULL)
+        {
             SDL_HapticClose(haptic);
             haptic = NULL;
         }
@@ -158,12 +165,10 @@ void JoystickInfo::Destroy()
 
 #if SDL_MAJOR_VERSION >= 2
 #if SDL_MINOR_VERSION >= 4 // Version before 2.0.4 are bugged, JoystickClose crashes randomly
-        if (joy)
-            SDL_JoystickClose(joy);
+        if (joy) SDL_JoystickClose(joy);
 #endif
 #else
-        if (SDL_JoystickOpened(_id))
-            SDL_JoystickClose(joy);
+        if (SDL_JoystickOpened(_id)) SDL_JoystickClose(joy);
 #endif
         joy = NULL;
     }
@@ -175,7 +180,8 @@ bool JoystickInfo::Init(int id)
     _id = id;
 
     joy = SDL_JoystickOpen(id);
-    if (joy == NULL) {
+    if (joy == NULL)
+    {
         PAD_LOG("failed to open joystick %d\n", id);
         return false;
     }
@@ -201,17 +207,24 @@ bool JoystickInfo::Init(int id)
     auto found_hack = devname.find("PLAYSTATION(R)3");
     // FIXME: people need to restart the plugin to take the option into account.
     bool hack_enabled = (conf->pad_options[0].sixaxis_pressure) || (conf->pad_options[1].sixaxis_pressure);
-    if (found_hack != std::string::npos && numaxes > 4 && hack_enabled) {
+
+    if (found_hack != std::string::npos && numaxes > 4 && hack_enabled)
+    {
         numbuttons = 4; // (select, start, l3, r3)
-        // Enable this hack in bluetooth too. It avoid to restart the onepad gui
+
+        // Enable this hack in bluetooth too. It avoids restarting the onepad gui
         numbuttons += 4; // the 4 hat buttons
     }
 
 #if SDL_MAJOR_VERSION >= 2
-    if (haptic == NULL) {
-        if (!SDL_JoystickIsHaptic(joy)) {
+    if (haptic == NULL)
+    {
+        if (!SDL_JoystickIsHaptic(joy))
+        {
             PAD_LOG("Haptic devices not supported!\n");
-        } else {
+        }
+        else
+        {
             haptic = SDL_HapticOpenFromJoystick(joy);
             first = true;
         }
@@ -236,11 +249,12 @@ bool JoystickInfo::TestForce(float strength = 0.60)
 {
 #if SDL_MAJOR_VERSION >= 2
     // This code just use standard rumble to check that SDL handles the pad correctly! --3kinox
-    if (haptic == NULL)
-        return false; // Otherwise, core dump!
+    if (haptic == NULL) return false; // Otherwise, core dump!
     SDL_HapticRumbleInit(haptic);
+
     // Make the haptic pad rumble 60% strength for half a second, shoudld be enough for user to see if it works or not
-    if (SDL_HapticRumblePlay(haptic, strength, 400) != 0) {
+    if (SDL_HapticRumblePlay(haptic, strength, 400) != 0)
+    {
         fprintf(stderr, "ERROR: Rumble is not working! %s\n", SDL_GetError());
         return false;
     }
@@ -253,18 +267,20 @@ bool JoystickInfo::TestForce(float strength = 0.60)
 bool JoystickInfo::PollButtons(u32 &pkey)
 {
     // MAKE sure to look for changes in the state!!
-    for (int i = 0; i < GetNumButtons(); ++i) {
+    for (int i = 0; i < GetNumButtons(); ++i)
+    {
         int but = SDL_JoystickGetButton(GetJoy(), i);
-        if (but != GetButtonState(i)) {
+        if (but != GetButtonState(i))
+        {
             // Pressure sensitive button are detected as both button (digital) and axes (analog). So better
             // drop the button to emulate the pressure sensiblity of the ds2 :)
             // Trick: detect the release of the button. It avoid all races condition between axes and buttons :)
             // If the button support pressure it will be detected as an axis when it is pressed.
-            if (but) {
+            if (but)
+            {
                 SetButtonState(i, but);
                 return false;
             }
-
 
             pkey = button_to_key(i);
             return true;
@@ -278,25 +294,26 @@ bool JoystickInfo::PollAxes(u32 &pkey)
 {
     auto found_hack = devname.find("PLAYSTATION(R)3");
 
-    for (int i = 0; i < GetNumAxes(); ++i) {
+    for (int i = 0; i < GetNumAxes(); ++i)
+    {
         // Sixaxis, dualshock3 hack
-        if (found_hack != std::string::npos) {
+        if (found_hack != std::string::npos)
+        {
             // The analog mode of the hat button is quite erratic. Values can be in half- axis
             // or full axis... So better keep them as button for the moment -- gregory
-            if (i >= 8 && i <= 11 && (conf->pad_options[pad].sixaxis_usb))
-                continue;
+            if (i >= 8 && i <= 11 && (conf->pad_options[pad].sixaxis_usb)) continue;
+
             // Disable accelerometer
-            if ((i >= 4 && i <= 6))
-                continue;
+            if ((i >= 4 && i <= 6)) continue;
         }
 
         s32 value = SDL_JoystickGetAxis(GetJoy(), i);
         s32 old_value = GetAxisState(i);
 
-        if (abs(value - old_value) < 0x1000)
-            continue;
+        if (abs(value - old_value) < 0x1000) continue;
 
-        if (value != old_value) {
+        if (value != old_value)
+        {
             PAD_LOG("Change in joystick %d: %d.\n", i, value);
             // There are several kinds of axes
             // Half+: 0 (release) -> 32768
@@ -313,7 +330,8 @@ bool JoystickInfo::PollAxes(u32 &pkey)
                 continue;
             }
 
-            if ((!is_full_axis && abs(value) > half_axis_ceil) || (is_full_axis && value > full_axis_ceil)) {
+            if ((!is_full_axis && abs(value) > half_axis_ceil) || (is_full_axis && value > full_axis_ceil))
+            {
                 bool sign = (value < 0);
                 pkey = axis_to_key(is_full_axis, sign, i);
 
@@ -327,11 +345,14 @@ bool JoystickInfo::PollAxes(u32 &pkey)
 
 bool JoystickInfo::PollHats(u32 &pkey)
 {
-    for (int i = 0; i < GetNumHats(); ++i) {
+    for (int i = 0; i < GetNumHats(); ++i)
+    {
         int value = SDL_JoystickGetHat(GetJoy(), i);
 
-        if ((value != GetHatState(i)) && (value != SDL_HAT_CENTERED)) {
-            switch (value) {
+        if ((value != GetHatState(i)) && (value != SDL_HAT_CENTERED))
+        {
+            switch (value)
+            {
                 case SDL_HAT_UP:
                 case SDL_HAT_RIGHT:
                 case SDL_HAT_DOWN:

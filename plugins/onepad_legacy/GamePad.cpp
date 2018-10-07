@@ -37,10 +37,10 @@ void GamePad::UpdateReleaseState()
 void GamePad::DoRumble(int type, int pad)
 {
     u32 id = conf->get_joyid(pad);
-    if (GamePadIdWithinBounds(id)) {
+    if (GamePadIdWithinBounds(id))
+    {
         GamePad *gamePad = s_vgamePad[id];
-        if (gamePad)
-            gamePad->Rumble(type, pad);
+        if (gamePad) gamePad->Rumble(type, pad);
     }
 }
 

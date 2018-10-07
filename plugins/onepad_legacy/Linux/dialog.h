@@ -58,7 +58,7 @@ enum gui_buttons {
     Cancel                   // Exit without apply modificatons
 };
 
-#define BUTTONS_LENGHT 32 // numbers of buttons on the gamepad
+#define BUTTONS_LENGTH 32 // numbers of buttons on the gamepad
 #define UPDATE_TIME 5
 #define DEFAULT_WIDTH 1000
 #define DEFAULT_HEIGHT 740
@@ -70,7 +70,7 @@ class Dialog : public wxDialog
     // Notebooks
     wxNotebook *m_tab_gamepad; // Joysticks Tabs
     // Buttons
-    wxButton *m_bt_gamepad[GAMEPAD_NUMBER][BUTTONS_LENGHT]; // Joystick button use to modify the button mapping
+    wxButton *m_bt_gamepad[GAMEPAD_NUMBER][BUTTONS_LENGTH]; // Joystick button use to modify the button mapping
     // Contain all simulated key
     u32 m_simulatedKeys[GAMEPAD_NUMBER][MAX_KEYS];
     // Timer

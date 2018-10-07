@@ -85,7 +85,8 @@ opPanel::opPanel(wxWindow *parent,
     m_picture[img_r_arrow_bottom] = EmbeddedImage<res_arrow_bottom>().Get();
     m_picture[img_r_arrow_left] = EmbeddedImage<res_arrow_left>().Get();
 
-    for (int i = 0; i < NB_IMG; ++i) {
+    for (int i = 0; i < NB_IMG; ++i)
+    {
         m_show_image[i] = false;
         HideImg(i);
     }
@@ -100,7 +101,8 @@ opPanel::opPanel(wxWindow *parent,
 
 void opPanel::HideImg(int id)
 {
-    if (id < NB_IMG) {
+    if (id < NB_IMG)
+    {
         m_show_image[id] = false;
         Refresh();
     }
@@ -108,7 +110,8 @@ void opPanel::HideImg(int id)
 
 void opPanel::ShowImg(int id)
 {
-    if (id < NB_IMG) {
+    if (id < NB_IMG)
+    {
         m_show_image[id] = true;
         Refresh();
     }
@@ -116,13 +119,20 @@ void opPanel::ShowImg(int id)
 
 void opPanel::MoveJoystick(int axe, int value)
 {
-    if (axe == 0) {
+    if (axe == 0)
+    {
         m_left_cursor_x = value * 30 / 40000;
-    } else if (axe == 1) {
+    }
+    else if (axe == 1)
+    {
         m_left_cursor_y = value * 30 / 40000;
-    } else if (axe == 2) {
+    }
+    else if (axe == 2)
+    {
         m_right_cursor_x = value * 30 / 40000;
-    } else {
+    }
+    else
+    {
         m_right_cursor_y = value * 30 / 40000;
     }
 }

@@ -53,14 +53,12 @@ void SysMessage(const char *fmt, ...)
     gtk_widget_destroy(dialog);
 }
 
-EXPORT_C_(void)
-PADabout()
+EXPORT_C_(void) PADabout()
 {
     SysMessage("OnePad is a rewrite of Zerofrog's ZeroPad, done by arcum42.");
 }
 
-EXPORT_C_(s32)
-PADtest()
+EXPORT_C_(s32) PADtest()
 {
     return 0;
 }
@@ -81,7 +79,8 @@ void _PADclose()
     std::vector<GamePad *>::iterator it = s_vgamePad.begin();
 
     // Delete everything in the vector vjoysticks.
-    while (it != s_vgamePad.end()) {
+    while (it != s_vgamePad.end())
+    {
         delete *it;
         ++it;
     }
@@ -96,11 +95,14 @@ void PollForJoystickInput(int cpad)
         return;
 
     GamePad::UpdateGamePadState();
-    for (int i = 0; i < MAX_KEYS; i++) {
+    for (int i = 0; i < MAX_KEYS; i++)
+    {
         GamePad *gamePad = s_vgamePad[joyid];
 
-        switch (type_of_joykey(cpad, i)) {
-            case PAD_JOYBUTTONS: {
+        switch (type_of_joykey(cpad, i))
+        {
+            case PAD_JOYBUTTONS:
+            {
 
                 int value = gamePad->GetButton(key_to_button(cpad, i));
                 if (value)
@@ -110,7 +112,8 @@ void PollForJoystickInput(int cpad)
 
                 break;
             }
-            case PAD_HAT: {
+            case PAD_HAT:
+            {
                 int value = gamePad->GetHat(key_to_axis(cpad, i));
 
                 // key_to_hat_dir and SDL_JoystickGetHat are a 4 bits bitmap, one for each directions. Only 1 bit can be high for
@@ -123,26 +126,31 @@ void PollForJoystickInput(int cpad)
 
                 break;
             }
-            case PAD_AXIS: {
+            case PAD_AXIS:
+            {
                 int value = gamePad->GetAxisFromKey(cpad, i);
                 bool sign = key_to_axis_sign(cpad, i);
                 bool full_axis = key_to_axis_type(cpad, i);
 
-                if (IsAnalogKey(i)) {
+                if (IsAnalogKey(i))
+                {
                     if (abs(value) > gamePad->GetDeadzone())
                         key_status->press(cpad, i, value);
                     else
                         key_status->release(cpad, i);
-
-                } else {
-                    if (full_axis) {
+                }
+                else
+                {
+                    if (full_axis)
+                    {
                         value += 0x8000;
                         if (value > gamePad->GetDeadzone())
                             key_status->press(cpad, i, std::min(value / 256, 0xFF));
                         else
                             key_status->release(cpad, i);
-
-                    } else {
+                    }
+                    else
+                    {
                         if (sign && (-value > gamePad->GetDeadzone()))
                             key_status->press(cpad, i, std::min(-value / 128, 0xFF));
                         else if (!sign && (value > gamePad->GetDeadzone()))
@@ -158,15 +166,15 @@ void PollForJoystickInput(int cpad)
     }
 }
 
-EXPORT_C_(void)
-PADupdate(int pad)
+EXPORT_C_(void) PADupdate(int pad)
 {
     // Gamepad inputs don't count as an activity. Therefore screensaver will
     // be fired after a couple of minute.
     // Emulate an user activity
     static int count = 0;
     count++;
-    if ((count & 0xFFF) == 0) {
+    if ((count & 0xFFF) == 0)
+    {
         // 1 call every 4096 Vsync is enough
         XResetScreenSaver(GSdsp);
     }
@@ -176,13 +184,15 @@ PADupdate(int pad)
 
     // Poll keyboard/mouse event. There is currently no way to separate pad0 from pad1 event.
     // So we will populate both pad in the same time
-    for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
+    for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
+    {
         key_status->keyboard_state_acces(cpad);
     }
     PollForX11KeyboardInput();
 
     // Get joystick state + Commit
-    for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
+    for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
+    {
         key_status->joystick_state_acces(cpad);
 
         PollForJoystickInput(cpad);
@@ -193,8 +203,7 @@ PADupdate(int pad)
     Pad::rumble_all();
 }
 
-EXPORT_C_(void)
-PADconfigure()
+EXPORT_C_(void) PADconfigure()
 {
     LoadConfig();
 

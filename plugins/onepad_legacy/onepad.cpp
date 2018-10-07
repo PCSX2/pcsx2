@@ -85,21 +85,18 @@ static void InitLibraryName()
 #endif
 }
 
-EXPORT_C_(u32)
-PS2EgetLibType()
+EXPORT_C_(u32) PS2EgetLibType()
 {
     return PS2E_LT_PAD;
 }
 
-EXPORT_C_(const char *)
-PS2EgetLibName()
+EXPORT_C_(const char *) PS2EgetLibName()
 {
     InitLibraryName();
     return libraryName;
 }
 
-EXPORT_C_(u32)
-PS2EgetLibVersion2(u32 type)
+EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)
 {
     return (version << 16) | (revision << 8) | build;
 }
@@ -148,7 +145,8 @@ void initLogging()
 void CloseLogging()
 {
 #ifdef PAD_LOG
-    if (padLog) {
+    if (padLog)
+    {
         fclose(padLog);
         padLog = NULL;
     }
@@ -162,8 +160,7 @@ void clearPAD(int pad)
         set_key(pad, key, 0);
 }
 
-EXPORT_C_(s32)
-PADinit(u32 flags)
+EXPORT_C_(s32) PADinit(u32 flags)
 {
     initLogging();
 
@@ -176,13 +173,12 @@ PADinit(u32 flags)
     query.reset();
 
     for (int port = 0; port < 2; port++)
-    slots[port] = 0;
+        slots[port] = 0;
 
     return 0;
 }
 
-EXPORT_C_(void)
-PADshutdown()
+EXPORT_C_(void) PADshutdown()
 {
     CloseLogging();
 
@@ -193,8 +189,7 @@ PADshutdown()
     key_status = nullptr;
 }
 
-EXPORT_C_(s32)
-PADopen(void *pDsp)
+EXPORT_C_(s32) PADopen(void *pDsp)
 {
     memset(&event, 0, sizeof(event));
     key_status->Init();
@@ -210,15 +205,13 @@ PADopen(void *pDsp)
     return _PADopen(pDsp);
 }
 
-EXPORT_C_(void)
-PADsetSettingsDir(const char *dir)
+EXPORT_C_(void) PADsetSettingsDir(const char *dir)
 {
     // Get the path to the ini directory.
     s_strIniPath = (dir == NULL) ? "inis/" : dir;
 }
 
-EXPORT_C_(void)
-PADsetLogDir(const char *dir)
+EXPORT_C_(void) PADsetLogDir(const char *dir)
 {
     // Get the path to the log directory.
     s_strLogPath = (dir == NULL) ? "logs/" : dir;
@@ -228,8 +221,7 @@ PADsetLogDir(const char *dir)
     initLogging();
 }
 
-EXPORT_C_(void)
-PADclose()
+EXPORT_C_(void) PADclose()
 {
     while (!ev_fifo.empty())
         ev_fifo.pop();
@@ -238,18 +230,17 @@ PADclose()
     _PADclose();
 }
 
-EXPORT_C_(u32)
-PADquery()
+EXPORT_C_(u32) PADquery()
 {
     return 3; // both
 }
 
-EXPORT_C_(s32)
-PADsetSlot(u8 port, u8 slot)
+EXPORT_C_(s32) PADsetSlot(u8 port, u8 slot)
 {
     port--;
     slot--;
-    if (port > 1 || slot > 3) {
+    if (port > 1 || slot > 3)
+    {
         return 0;
     }
     // Even if no pad there, record the slot, as it is the active slot regardless.
@@ -258,16 +249,17 @@ PADsetSlot(u8 port, u8 slot)
     return 1;
 }
 
-EXPORT_C_(s32)
-PADfreeze(int mode, freezeData *data)
+EXPORT_C_(s32) PADfreeze(int mode, freezeData *data)
 {
     if (!data)
         return -1;
 
-    if (mode == FREEZE_SIZE) {
+    if (mode == FREEZE_SIZE)
+    {
         data->size = sizeof(PadPluginFreezeData);
-
-    } else if (mode == FREEZE_LOAD) {
+    }
+    else if (mode == FREEZE_LOAD)
+    {
         PadPluginFreezeData *pdata = (PadPluginFreezeData *)(data->data);
 
         Pad::stop_vibrate_all();
@@ -277,17 +269,21 @@ PADfreeze(int mode, freezeData *data)
             return 0;
 
         query = pdata->query;
-        if (pdata->query.slot < 4) {
+        if (pdata->query.slot < 4)
+        {
             query = pdata->query;
         }
 
         // Tales of the Abyss - pad fix
         // - restore data for both ports
-        for (int port = 0; port < 2; port++) {
-            for (int slot = 0; slot < 4; slot++) {
+        for (int port = 0; port < 2; port++)
+        {
+            for (int slot = 0; slot < 4; slot++)
+            {
                 u8 mode = pdata->padData[port][slot].mode;
 
-                if (mode != MODE_DIGITAL && mode != MODE_ANALOG && mode != MODE_DS2_NATIVE) {
+                if (mode != MODE_DIGITAL && mode != MODE_ANALOG && mode != MODE_DS2_NATIVE)
+                {
                     break;
                 }
 
@@ -295,10 +291,11 @@ PADfreeze(int mode, freezeData *data)
             }
 
             if (pdata->slot[port] < 4)
-            slots[port] = pdata->slot[port];
+                slots[port] = pdata->slot[port];
         }
-
-    } else if (mode == FREEZE_SAVE) {
+    }
+    else if (mode == FREEZE_SAVE)
+    {
         if (data->size != sizeof(PadPluginFreezeData))
             return 0;
 
@@ -312,36 +309,36 @@ PADfreeze(int mode, freezeData *data)
         pdata->version = PAD_SAVE_STATE_VERSION;
         pdata->query = query;
 
-        for (int port = 0; port < 2; port++) {
-            for (int slot = 0; slot < 4; slot++) {
+        for (int port = 0; port < 2; port++)
+        {
+            for (int slot = 0; slot < 4; slot++)
+            {
                 pdata->padData[port][slot] = pads[port][slot];
             }
 
             pdata->slot[port] = slots[port];
         }
-
-    } else {
+    }
+    else
+    {
         return -1;
     }
 
     return 0;
 }
 
-EXPORT_C_(u8)
-PADstartPoll(int pad)
+EXPORT_C_(u8) PADstartPoll(int pad)
 {
     return pad_start_poll(pad);
 }
 
-EXPORT_C_(u8)
-PADpoll(u8 value)
+EXPORT_C_(u8) PADpoll(u8 value)
 {
     return pad_poll(value);
 }
 
 // PADkeyEvent is called every vsync (return NULL if no event)
-EXPORT_C_(keyEvent *)
-PADkeyEvent()
+EXPORT_C_(keyEvent *) PADkeyEvent()
 {
     s_event = event;
     event.evt = 0;
@@ -350,12 +347,12 @@ PADkeyEvent()
 }
 
 #if defined(__unix__)
-EXPORT_C_(void)
-PADWriteEvent(keyEvent &evt)
+EXPORT_C_(void) PADWriteEvent(keyEvent &evt)
 {
     // This function call be called before PADopen. Therefore we cann't
     // guarantee that the spin lock was initialized
-    if (mutex_WasInit) {
+    if (mutex_WasInit)
+    {
         pthread_spin_lock(&mutex_KeyEvent);
         ev_fifo.push(evt);
         pthread_spin_unlock(&mutex_KeyEvent);

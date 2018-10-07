@@ -30,7 +30,7 @@ enum KeyType {
     PAD_NULL = -1
 };
 
-extern void set_keyboad_key(int pad, int keysym, int index);
+extern void set_keyboard_key(int pad, int keysym, int index);
 extern int get_keyboard_key(int pad, int keysym);
 extern void set_key(int pad, int index, int value);
 extern int get_key(int pad, int index);
@@ -86,7 +86,8 @@ public:
         log = packed_options = joyid_map = 0;
         ff_intensity = 0x7FFF; // set it at max value by default
         sensibility = 500;
-        for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
+        for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
+        {
             keysym_map[pad].clear();
             set_joyid((u32)pad, (u32)pad); // define id mapping for each gamepad
         }
@@ -119,7 +120,8 @@ public:
 	 **/
     void set_ff_intensity(u32 new_intensity)
     {
-        if (new_intensity <= 0x7FFF) {
+        if (new_intensity <= 0x7FFF)
+        {
             ff_intensity = new_intensity;
         }
     }
@@ -131,7 +133,8 @@ public:
 	 **/
     void set_sensibility(u32 new_sensibility)
     {
-        if (sensibility > 0) {
+        if (sensibility > 0)
+        {
             sensibility = new_sensibility;
         }
     }

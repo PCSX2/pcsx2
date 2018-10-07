@@ -33,10 +33,13 @@ std::string KeyName(int pad, int key, int keysym)
     std::string tmp;
     tmp.resize(28);
 
-    if (keysym) {
-        if (keysym < 10) {
+    if (keysym)
+    {
+        if (keysym < 10)
+        {
             // mouse
-            switch (keysym) {
+            switch (keysym)
+            {
                 case 1:
                     sprintf(&tmp[0], "Mouse Left");
                     break;
@@ -49,31 +52,40 @@ std::string KeyName(int pad, int key, int keysym)
                 default: // Use only number for extra button
                     sprintf(&tmp[0], "Mouse %d", keysym);
             }
-        } else {
+        }
+        else
+        {
             // keyboard
             char *pstr = XKeysymToString(keysym);
             if (pstr != NULL)
                 tmp = pstr;
         }
-    } else {
+    }
+    else
+    {
         // joystick
         KeyType k = type_of_joykey(pad, key);
-        switch (k) {
-            case PAD_JOYBUTTONS: {
+        switch (k)
+        {
+            case PAD_JOYBUTTONS:
+            {
                 int button = key_to_button(pad, key);
                 sprintf(&tmp[0], "JBut %d", button);
                 break;
             }
-            case PAD_AXIS: {
+            case PAD_AXIS:
+            {
                 if (key_to_axis_type(pad, key))
                     sprintf(&tmp[0], "JAxis %d Full", key_to_axis(pad, key));
                 else
                     sprintf(&tmp[0], "JAxis %d Half%s", key_to_axis(pad, key), key_to_axis_sign(pad, key) ? "-" : "+");
                 break;
             }
-            case PAD_HAT: {
+            case PAD_HAT:
+            {
                 int axis = key_to_axis(pad, key);
-                switch (key_to_hat_dir(pad, key)) {
+                switch (key_to_hat_dir(pad, key))
+                {
                     case HAT_UP:
                         sprintf(&tmp[0], "JPOVU-%d", axis);
                         break;
@@ -102,20 +114,20 @@ std::string KeyName(int pad, int key, int keysym)
 
 void DefaultKeyboardValues()
 {
-    set_keyboad_key(0, XK_a, PAD_L2);
-    set_keyboad_key(0, XK_semicolon, PAD_R2);
-    set_keyboad_key(0, XK_w, PAD_L1);
-    set_keyboad_key(0, XK_p, PAD_R1);
-    set_keyboad_key(0, XK_i, PAD_TRIANGLE);
-    set_keyboad_key(0, XK_l, PAD_CIRCLE);
-    set_keyboad_key(0, XK_k, PAD_CROSS);
-    set_keyboad_key(0, XK_j, PAD_SQUARE);
-    set_keyboad_key(0, XK_v, PAD_SELECT);
-    set_keyboad_key(0, XK_n, PAD_START);
-    set_keyboad_key(0, XK_e, PAD_UP);
-    set_keyboad_key(0, XK_f, PAD_RIGHT);
-    set_keyboad_key(0, XK_d, PAD_DOWN);
-    set_keyboad_key(0, XK_s, PAD_LEFT);
+    set_keyboard_key(0, XK_a, PAD_L2);
+    set_keyboard_key(0, XK_semicolon, PAD_R2);
+    set_keyboard_key(0, XK_w, PAD_L1);
+    set_keyboard_key(0, XK_p, PAD_R1);
+    set_keyboard_key(0, XK_i, PAD_TRIANGLE);
+    set_keyboard_key(0, XK_l, PAD_CIRCLE);
+    set_keyboard_key(0, XK_k, PAD_CROSS);
+    set_keyboard_key(0, XK_j, PAD_SQUARE);
+    set_keyboard_key(0, XK_v, PAD_SELECT);
+    set_keyboard_key(0, XK_n, PAD_START);
+    set_keyboard_key(0, XK_e, PAD_UP);
+    set_keyboard_key(0, XK_f, PAD_RIGHT);
+    set_keyboard_key(0, XK_d, PAD_DOWN);
+    set_keyboard_key(0, XK_s, PAD_LEFT);
 }
 
 void SaveConfig()
@@ -124,7 +136,8 @@ void SaveConfig()
 
     const std::string iniFile(s_strIniPath + "OnePAD.ini");
     f = fopen(iniFile.c_str(), "w");
-    if (f == NULL) {
+    if (f == NULL)
+    {
         printf("OnePAD: failed to save ini %s\n", iniFile.c_str());
         return;
     }
@@ -135,8 +148,10 @@ void SaveConfig()
     fprintf(f, "joy_pad_map = %d\n", conf->joyid_map);
     fprintf(f, "ff_intensity = %d\n", conf->get_ff_intensity());
 
-    for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
-        for (int key = 0; key < MAX_KEYS; key++) {
+    for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
+    {
+        for (int key = 0; key < MAX_KEYS; key++)
+        {
             fprintf(f, "[%d][%d] = 0x%x\n", pad, key, get_key(pad, key));
         }
     }
@@ -155,40 +170,42 @@ void LoadConfig()
     char str[256];
     bool have_user_setting = false;
 
-    if (!conf)
-        conf = new PADconf;
+    if (!conf) conf = new PADconf;
 
     conf->init();
 
     const std::string iniFile(s_strIniPath + "OnePAD.ini");
     f = fopen(iniFile.c_str(), "r");
-    if (f == NULL) {
+    if (f == NULL)
+    {
         printf("OnePAD: failed to load ini %s\n", iniFile.c_str());
         SaveConfig(); //save and return
         return;
     }
 
     u32 value;
-    if (fscanf(f, "log = %u\n", &value) == 0)
-        goto error;
+
+    if (fscanf(f, "log = %u\n", &value) == 0) goto error;
     conf->log = value;
-    if (fscanf(f, "options = %u\n", &value) == 0)
-        goto error;
+
+    if (fscanf(f, "options = %u\n", &value) == 0) goto error;
     conf->packed_options = value;
-    if (fscanf(f, "mouse_sensibility = %u\n", &value) == 0)
-        goto error;
+
+    if (fscanf(f, "mouse_sensibility = %u\n", &value) == 0) goto error;
     conf->set_sensibility(value);
-    if (fscanf(f, "joy_pad_map = %u\n", &value) == 0)
-        goto error;
+
+    if (fscanf(f, "joy_pad_map = %u\n", &value) == 0) goto error;
     // Value is now hardcoded in controller.h avoid to reload a bad
     // value from an old ini file.
     //conf->joyid_map = value;
-    if (fscanf(f, "ff_intensity = %u\n", &value) == 0)
-        goto error;
+
+    if (fscanf(f, "ff_intensity = %u\n", &value) == 0) goto error;
     conf->set_ff_intensity(value);
 
-    for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
-        for (int key = 0; key < MAX_KEYS; key++) {
+    for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
+    {
+        for (int key = 0; key < MAX_KEYS; key++)
+        {
             sprintf(str, "[%d][%d] = 0x%%x\n", pad, key);
             u32 temp = 0;
 
@@ -203,8 +220,9 @@ void LoadConfig()
     u32 pad;
     u32 keysym;
     u32 index;
-    while (fscanf(f, "PAD %u:KEYSYM 0x%x = %u\n", &pad, &keysym, &index) != EOF) {
-        set_keyboad_key(pad & 1, keysym, index);
+    while (fscanf(f, "PAD %u:KEYSYM 0x%x = %u\n", &pad, &keysym, &index) != EOF)
+    {
+        set_keyboard_key(pad & 1, keysym, index);
         if (pad == 0)
             have_user_setting = true;
     }
