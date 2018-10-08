@@ -60,10 +60,9 @@ void GSRendererDX9::EmulateTextureShuffleAndFbmask()
 {
 	if (m_texture_shuffle)
 	{
-		// We can do a partial port for D3D9 that skips the draw call to give it a slight improvement.
-		// It's still broken but more bearable. Broken effect is on the screen but fully instead of vertical lines.
-		throw GSDXRecoverableError();
-	} 
+		// Texture shuffle is not supported so make sure nothing is written on all channels.
+		om_bsel.wrgba = 0;
+	}
 	else
 	{
 		m_ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
