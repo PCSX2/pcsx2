@@ -512,8 +512,16 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	EmulateTextureShuffleAndFbmask();
 
+	uint8 afix = m_context->ALPHA.FIX;
+
 	if (m_ps_sel.dfmt == 1)
 	{
+		if (m_context->ALPHA.C == 1)
+		{
+			// 24 bits no alpha channel so use 1.0f fix factor as equivalent
+			m_context->ALPHA.C = 2;
+			afix = 0x00000001;
+		}
 		// Disable writing of the alpha channel
 		om_bsel.wa = 0;
 	}
@@ -646,8 +654,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	dev->PSSetShaderResource(0, tex ? tex->m_texture : NULL);
 	dev->PSSetShaderResource(1, tex ? tex->m_palette : NULL);
 	dev->PSSetShaderResource(2, rtcopy);
-
-	uint8 afix = m_context->ALPHA.FIX;
 
 	SetupIA(sx, sy);
 
