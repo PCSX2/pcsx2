@@ -705,10 +705,10 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 		switch(m_context->TEST.AFAIL)
 		{
-			case 0: z = r = g = b = a = false; break; // none
-			case 1: z = false; break; // rgba
-			case 2: r = g = b = a = false; break; // z
-			case 3: z = a = false; break; // rgb
+			case AFAIL_KEEP: z = r = g = b = a = false; break; // none
+			case AFAIL_FB_ONLY: z = false; break; // rgba
+			case AFAIL_ZB_ONLY: r = g = b = a = false; break; // z
+			case AFAIL_RGB_ONLY: z = a = false; break; // rgb
 			default: __assume(0);
 		}
 
