@@ -9017,7 +9017,7 @@ Name   = Eggo Mania
 Region = PAL-M3
 Compat = 5
 [patches = 30b27954]
-	comment= patches by Nachbrenner
+	comment=Patches by Nachbrenner
 	// Skip IPU synchronisation.
 	patch=0,EE,00111100,word,00000000
 [/patches]
@@ -15368,6 +15368,12 @@ Region = PAL-E-F
 Serial = SLES-53984
 Name   = Ice Age 2 - The Meltdown
 Region = PAL-M6
+[patches = 2EC49E65]
+	comment=Patch by Kozarovv
+	// Intro screen freeze fix.
+	patch=1,EE,002FF3F0,word,27BDFEE0
+	patch=1,EE,002FF42C,word,27BD0120
+[/patches]
 ---------------------------------------------
 Serial = SLES-53987
 Name   = Over the Hedge
@@ -18097,7 +18103,7 @@ Name   = Onimusha - Dawn of Dreams [Disc1]
 Region = PAL-M5
 Compat = 5
 [patches = 812C5A96]
-	comment= patch by Shadow Lady
+	comment=Patch by Shadow Lady
 	patch=0,EE,00104170,word,00000000
 [/patches]
 ---------------------------------------------
@@ -18107,7 +18113,7 @@ Region = PAL-M5
 Compat = 5
 MemCardFilter = SLES-82038
 [patches = 812C5A96]
-	comment= patch by Shadow Lady
+	comment=Patch by Shadow Lady
 	patch=0,EE,00104170,word,00000000
 [/patches]
 ---------------------------------------------
@@ -26230,7 +26236,7 @@ Name   = Shin Onimusha - Dawn of Dreams [Disc1of2]
 Region = NTSC-J
 Compat = 5
 [patches = BD17248E]
-	comment= patch by Shadow Lady
+	comment=Patch by Shadow Lady
 	patch=0,EE,00104170,word,00000000
 [/patches]
 ---------------------------------------------
@@ -26240,7 +26246,7 @@ Region = NTSC-J
 Compat = 2
 MemCardFilter = SLPM-66275
 [patches = BD17248E]
-	comment= patch by Shadow Lady
+	comment=Patch by Shadow Lady
 	patch=0,EE,00104170,word,00000000
 [/patches]
 ---------------------------------------------
@@ -39888,7 +39894,7 @@ Name   = Onimusha - Dawn of Dreams [Disc1]
 Region = NTSC-U
 Compat = 5
 [patches = FE44479E]
-	comment= patch by Shadow Lady
+	comment=Patch by Shadow Lady
 	patch=0,EE,00104170,word,00000000
 [/patches]
 ---------------------------------------------
@@ -40539,6 +40545,12 @@ Serial = SLUS-21307
 Name   = Ice Age 2 - The Meltdown
 Region = NTSC-U
 Compat = 2
+[patches = EEC195CA]
+	comment=Patch by Kozarovv
+	// Intro screen freeze fix.
+	patch=1,EE,002FEB80,word,27bdfee0
+	patch=1,EE,002FEBBC,word,27bd0120
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21309
 Name   = Let's Ride - Silver Buckle Stables
@@ -40832,7 +40844,7 @@ Region = NTSC-U
 Compat = 5
 MemCardFilter = SLUS-21180
 [patches = FFDE85E9]
-	comment= patch by Shadow Lady
+	comment=Patch by Shadow Lady
 	patch=0,EE,00104170,word,00000000
 [/patches]
 ---------------------------------------------
