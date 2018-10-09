@@ -51,29 +51,46 @@ int GetMACAddress(char *adapter, mac_address* addr)
 {
 	int retval = 0;
 #ifdef _WIN32
-	static IP_ADAPTER_INFO AdapterInfo[128];       // Allocate information
-												 // for up to 128 NICs
-	static PIP_ADAPTER_INFO pAdapterInfo;
-	ULONG dwBufLen = sizeof(AdapterInfo);	// Save memory size of buffer
+	static IP_ADAPTER_ADDRESSES AdapterInfo[128];
 
-	DWORD dwStatus = GetAdaptersInfo(      // Call GetAdapterInfo
-	AdapterInfo,                 // [out] buffer to receive data
-	&dwBufLen);                  // [in] size of receive data buffer
-	if(dwStatus != ERROR_SUCCESS)    // Verify return value is
-		return 0;                       // valid, no buffer overflow
+	static PIP_ADAPTER_ADDRESSES pAdapterInfo;
+	ULONG dwBufLen = sizeof(AdapterInfo);
 
-	pAdapterInfo = AdapterInfo; // Contains pointer to
-											   // current adapter info
-	do {
-		if(strcmp(pAdapterInfo->AdapterName,adapter)==0)
+	DWORD dwStatus = GetAdaptersAddresses(
+		AF_UNSPEC,
+		GAA_FLAG_INCLUDE_PREFIX,
+		NULL,
+		AdapterInfo,
+		&dwBufLen
+	);
+	if(dwStatus != ERROR_SUCCESS)
+		return 0;
+
+	pAdapterInfo = AdapterInfo;
+
+	char adapter_desc[128] = "";
+
+	// Must get friendly description from the cryptic adapter name
+	for (int ii = 0; ii < pcap_io_get_dev_num(); ii++)
+		if (0 == strcmp(pcap_io_get_dev_name(ii), adapter))
 		{
-			memcpy(addr,pAdapterInfo->Address,6);
+			strcpy(adapter_desc, pcap_io_get_dev_desc(ii));
+			break;
+		}
+
+	wchar_t wadapter[128];
+	std::mbstowcs(wadapter, adapter_desc, 128);
+
+	do {
+		if ( 0 == wcscmp(pAdapterInfo->Description, wadapter ) )
+		{
+			memcpy(addr,pAdapterInfo->PhysicalAddress,6);
 			return 1;
 		}
 
-		pAdapterInfo = pAdapterInfo->Next;    // Progress through
+		pAdapterInfo = pAdapterInfo->Next;
 	}
-	while(pAdapterInfo);                    // Terminate if last adapter
+	while(pAdapterInfo);
 #elif defined(__linux__)
 	struct ifreq ifr;
 	int fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -304,7 +321,7 @@ char* pcap_io_get_dev_desc(int num)
 
 PCAPAdapter::PCAPAdapter()
 {
-	//if (config.ethEnable == 0) return; //whut? nada!
+	if (config.ethEnable == 0) return;
 	if (pcap_io_init(config.Eth) == -1) {
 		SysMessage("Can't open Device '%s'\n", config.Eth);
 	}

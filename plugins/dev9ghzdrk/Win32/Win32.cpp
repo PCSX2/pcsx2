@@ -51,16 +51,15 @@ void OnInitDialog(HWND hW) {
 	for (int i=0; i<pcap_io_get_dev_num(); i++) {
 		dev = pcap_io_get_dev_desc(i);
 		int itm=ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), dev);
-		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV),itm,strdup(pcap_io_get_dev_name(i)));
+		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV),itm,_strdup(pcap_io_get_dev_name(i)));
 		if (strcmp(pcap_io_get_dev_name(i), config.Eth) == 0) {
 			ComboBox_SetCurSel(GetDlgItem(hW, IDC_ETHDEV), itm);
 		}
 	}
 	vector<tap_adapter> * al=GetTapAdapters();
 	for (size_t i=0; i<al->size(); i++) {
-		
 		int itm=ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), al[0][i].name.c_str());
-		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV),itm,strdup( al[0][i].guid.c_str()));
+		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV),itm,_strdup( al[0][i].guid.c_str()));
 		if (strcmp(al[0][i].guid.c_str(), config.Eth) == 0) {
 			ComboBox_SetCurSel(GetDlgItem(hW, IDC_ETHDEV), itm);
 		}
@@ -77,27 +76,27 @@ void OnOk(HWND hW) {
 	if (i == -1)
 	{
 		//adapter not selected
-		if (Button_GetCheck(GetDlgItem(hW, IDC_ETHENABLED)))
+		if ( Button_GetCheck(GetDlgItem(hW, IDC_ETHENABLED)))
 		{
 			//Trying to use an ethernet without
 			//selected adapter, we can't have that
 			SysMessage("Please select an ethernet adapter");
 			return;
 		}
-		else 
+		else
 		{
 			//user not planning on using
 			//ethernet anyway
 			strcpy(config.Eth, ETH_DEF);
 		}
 	}
-	else 
+	else
 	{
 		//adapter is selected
 		char* ptr = (char*)ComboBox_GetItemData(GetDlgItem(hW, IDC_ETHDEV), i);
 		strcpy(config.Eth, ptr);
 	}
-	
+
 	Edit_GetText(GetDlgItem(hW, IDC_HDDFILE), config.Hdd, 256);
 
 	config.ethEnable = Button_GetCheck(GetDlgItem(hW, IDC_ETHENABLED));
@@ -109,7 +108,7 @@ void OnOk(HWND hW) {
 }
 
 BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	
+
 	switch(uMsg) {
 		case WM_INITDIALOG:
 			OnInitDialog(hW);
@@ -147,8 +146,8 @@ EXPORT_C_(void)
 DEV9configure() {
     DialogBox(hInst,
               MAKEINTRESOURCE(IDD_CONFIG),
-              GetActiveWindow(),  
-             (DLGPROC)ConfigureDlgProc); 
+              GetActiveWindow(),
+             (DLGPROC)ConfigureDlgProc);
 		//SysMessage("Nothing to Configure");
 }
 
@@ -156,12 +155,12 @@ EXPORT_C_(void)
 DEV9about() {
     DialogBox(hInst,
               MAKEINTRESOURCE(IDD_ABOUT),
-              GetActiveWindow(),  
+              GetActiveWindow(),
               (DLGPROC)AboutDlgProc);
 }
 
 BOOL APIENTRY DllMain(HANDLE hModule,                  // DLL INIT
-                      DWORD  dwReason, 
+                      DWORD  dwReason,
                       LPVOID lpReserved) {
 	hInst = (HINSTANCE)hModule;
 	return TRUE;                                          // very quick :)
@@ -184,7 +183,7 @@ NetAdapter* GetNetAdapter()
 	}
 	return na;
 }
-s32  _DEV9open() 
+s32  _DEV9open()
 {
 	//handleDEV9Thread = CreateThread (NULL, 0, (LPTHREAD_START_ROUTINE) DEV9ThreadProc, &dwThrdParam, CREATE_SUSPENDED, &dwThreadId);
 	//SetThreadPriority(handleDEV9Thread,THREAD_PRIORITY_HIGHEST);

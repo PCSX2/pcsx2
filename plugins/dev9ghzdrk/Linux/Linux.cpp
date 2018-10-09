@@ -143,11 +143,6 @@ DEV9configure() {
 
 }
 
-void __attribute__((constructor)) DllMain() {
-    //gtk_builder_add_from_file(builder, "dev9ghzdrk.ui", NULL);
-    //builder = gtk_build_new_from_resource( "/net/pcsx2/dev9ghzdrk/dev9ghzdrk.ui" );
-}
-
 NetAdapter* GetNetAdapter()
 {
     NetAdapter* na;

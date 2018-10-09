@@ -344,14 +344,14 @@ smap_read8(u32 addr)
 EXPORT_C_(u16)
 smap_read16(u32 addr)
 {
-	if (addr >= SMAP_BD_TX_BASE && addr < (SMAP_BD_TX_BASE + SMAP_BD_SIZE)) 
+	int rv = dev9Ru16(addr);
+	if (addr >= SMAP_BD_TX_BASE && addr < (SMAP_BD_TX_BASE + SMAP_BD_SIZE))
 	{
-		int rv = dev9Ru16(addr);
-		if(dev9.bd_swap)
-				return (rv<<8)|(rv>>8);
+		if (dev9.bd_swap)
+			return (rv << 8) | (rv >> 8);
 		return rv;
 		/*
-		switch (addr & 0x7) 
+		switch (addr & 0x7)
 		{
 		case 0: // ctrl_stat
 			hard = dev9Ru16(addr);
@@ -380,14 +380,13 @@ smap_read16(u32 addr)
 		}
 		*/
 	}
-	else if (addr >= SMAP_BD_RX_BASE && addr < (SMAP_BD_RX_BASE + SMAP_BD_SIZE)) 
+	else if (addr >= SMAP_BD_RX_BASE && addr < (SMAP_BD_RX_BASE + SMAP_BD_SIZE))
 	{
-		int rv = dev9Ru16(addr);
-		if(dev9.bd_swap)
-				return (rv<<8)|(rv>>8);
+		if (dev9.bd_swap)
+			return (rv << 8) | (rv >> 8);
 		return rv;
 		/*
-		switch (addr & 0x7) 
+		switch (addr & 0x7)
 		{
 		case 0: // ctrl_stat
 			hard = dev9Ru16(addr);
@@ -416,10 +415,9 @@ smap_read16(u32 addr)
 		}
 		*/
 	}
-
+#ifdef DEV9_LOG_ENABLE
 	switch(addr)
 	{
-#ifdef DEV9_LOG_ENABLE
 		case SMAP_R_TXFIFO_FRAME_CNT:
 			printf("SMAP_R_TXFIFO_FRAME_CNT read 16\n");
 			return dev9Ru16(addr);
@@ -489,12 +487,14 @@ smap_read16(u32 addr)
 		case SMAP_R_EMAC3_STA_CTRL_H:
 			DEV9_LOG("SMAP_R_EMAC3_STA_CTRL_H 16bit read %x\n", dev9Ru16(addr));
 			return dev9Ru16(addr);
-#endif
 		default:
 			DEV9_LOG("SMAP : Unknown 16 bit read @ %X,v=%X\n",addr,dev9Ru16(addr));
 			return dev9Ru16(addr);
 	}
+#endif
+	return rv;
 }
+
 EXPORT_C_(u32)
 smap_read32(u32 addr)
 {
