@@ -11,7 +11,6 @@ set(Output dev9ghzdrk-0.4)
 set(CommonFlags
     -fvisibility=hidden
     -Wall
-    -fpermissive
     -I${LIBXML2_INCLUDE_DIR}
     -I${PCAP_INCLUDE_DIR}
     )
