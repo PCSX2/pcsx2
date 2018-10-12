@@ -30,6 +30,7 @@ bool GSDeviceDX::s_old_d3d_compiler_dll;
 
 GSDeviceDX::GSDeviceDX()
 {
+	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
 	m_msaa = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_MSAA") : 0;
 
 	m_msaa_desc.Count = 1;

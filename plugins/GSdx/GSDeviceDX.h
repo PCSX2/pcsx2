@@ -27,6 +27,9 @@
 
 class GSDeviceDX : public GSDevice
 {
+protected:
+	int m_upscale_multiplier;
+
 public:
 	#pragma pack(push, 1)
 

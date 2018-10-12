@@ -171,10 +171,9 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 			dxd->Release();
 		}
 
-		bool native_resolution = theApp.GetConfigI("upscale_multiplier") == 1;
 		bool spritehack_enabled = theApp.GetConfigB("UserHacks") && theApp.GetConfigI("UserHacks_SpriteHack");
 
-		m_hack_topleft_offset = (!nvidia_gpu || native_resolution || spritehack_enabled) ? 0.0f : -0.01f;
+		m_hack_topleft_offset = (!nvidia_gpu || m_upscale_multiplier == 1 || spritehack_enabled) ? 0.0f : -0.01f;
 	}
 
 	D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS options;
@@ -214,9 +213,19 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	theApp.LoadResource(IDR_CONVERT_FX, shader);
 	CompileShader(shader.data(), shader.size(), "convert.fx", nullptr, "vs_main", nullptr, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
 
+	std::string convert_mstr[1];
+
+	convert_mstr[0] = format("%d", m_upscale_multiplier);
+
+	D3D_SHADER_MACRO convert_macro[] =
+	{
+		{"PS_SCALE_FACTOR", convert_mstr[0].c_str()},
+		{NULL, NULL},
+	};
+
 	for(size_t i = 0; i < countof(m_convert.ps); i++)
 	{
-		CompileShader(shader.data(), shader.size(), "convert.fx", nullptr, format("ps_main%d", i).c_str(), nullptr, &m_convert.ps[i]);
+		CompileShader(shader.data(), shader.size(), "convert.fx", nullptr, format("ps_main%d", i).c_str(), convert_macro, &m_convert.ps[i]);
 	}
 
 	memset(&dsd, 0, sizeof(dsd));

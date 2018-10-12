@@ -1,6 +1,10 @@
 #ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
 #if SHADER_MODEL >= 0x400
 
+#ifndef PS_SCALE_FACTOR
+#define PS_SCALE_FACTOR 1
+#endif
+
 struct VS_INPUT
 {
 	float4 p : POSITION;
@@ -314,9 +318,9 @@ PS_OUTPUT ps_main17(PS_INPUT input)
 	int txN  = tb.x | (int(input.p.x) & 7);
 	int txH  = tb.x | ((int(input.p.x) + 4) & 7);
 
-	//txN *= ScalingFactor.x;
-	//txH *= ScalingFactor.x;
-	//ty  *= ScalingFactor.y;
+	txN *= PS_SCALE_FACTOR;
+	txH *= PS_SCALE_FACTOR;
+	ty  *= PS_SCALE_FACTOR;
 
 	// TODO investigate texture gather
 	float4 cN = Texture.Load(int3(txN, ty, 0));
