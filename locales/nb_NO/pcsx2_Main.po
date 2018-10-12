@@ -3,10 +3,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.5.0 - 180923\n"
+"Project-Id-Version: PCSX2 1.5.0 - 181012\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2018-09-23 09:16+0200\n"
-"PO-Revision-Date: 2018-09-23 09:31+0200\n"
+"POT-Creation-Date: 2018-10-12 19:09+0200\n"
+"PO-Revision-Date: 2018-10-12 19:53+0200\n"
 "Last-Translator: Imre Kristoffer Eilertsen <imreeil42@gmail.com>\n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: trunk\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
@@ -49,7 +49,7 @@ msgstr ""
 
 #: common/src/Utilities/Exceptions.cpp:305
 msgid "Path: "
-msgstr "Filbane:"
+msgstr "Filbane: "
 
 #: common/src/Utilities/Exceptions.cpp:309
 msgid "[Unnamed or unknown]"
@@ -193,7 +193,7 @@ msgstr ""
 
 #: pcsx2/PluginManager.cpp:1515
 msgid "Internal Memorycard Plugin failed to initialize."
-msgstr "Det interne minnekorttillegget nektet å starte opp."
+msgstr "Det interne MinneKortTillegget nektet å starte opp."
 
 #: pcsx2/PluginManager.cpp:1908
 msgid "Unloaded Plugin"
@@ -262,7 +262,7 @@ msgstr "Disasm av EE sine VU0macro-samprosessorinstruksjoner."
 
 #: pcsx2/SourceLog.cpp:187
 msgid "Execution of EE cache instructions."
-msgstr "Eksekvering av EE-minne instruksjon"
+msgstr "Eksekvering av EE-minne instruksjon."
 
 #: pcsx2/SourceLog.cpp:193
 msgid ""
@@ -300,7 +300,7 @@ msgstr "All prosessering involvert i Path3-maskering"
 
 #: pcsx2/SourceLog.cpp:235
 msgid "Scratchpad's MFIFO activity."
-msgstr "Scratchpad sin MFIFO-aktivitet"
+msgstr "Scratchpad sin MFIFO-aktivitet."
 
 #: pcsx2/SourceLog.cpp:241
 msgid "Actual data transfer logs, bus right arbitration, stalls, etc."
@@ -324,7 +324,7 @@ msgstr "SYSCALL og IRX-aktivitet."
 
 #: pcsx2/SourceLog.cpp:276
 msgid "Direct memory accesses to unknown or unmapped IOP memory space."
-msgstr "Direkte minnetilgang til ukjent eller ukartlagt IOP minne område"
+msgstr "Direkte minnetilgang til ukjent eller ukartlagt IOP minne område."
 
 #: pcsx2/SourceLog.cpp:288
 msgid "Disasm of the IOP's GPU co-processor instructions."
@@ -339,7 +339,7 @@ msgstr ""
 
 #: pcsx2/SourceLog.cpp:312
 msgid "Memorycard reads, writes, erases, terminators, and other processing."
-msgstr "Minnekortlesinger, skrivinger, slettinger, og andre prosesseringer."
+msgstr "MinneKort lesinger, skrivinger, slettinger, og andre prosesseringer."
 
 #: pcsx2/SourceLog.cpp:318
 msgid "Gamepad activity on the SIO."
@@ -438,11 +438,11 @@ msgstr "tvinger programmets logg/konsoll til å være synlige"
 
 #: pcsx2/gui/AppInit.cpp:232
 msgid "use fullscreen GS mode"
-msgstr "Bruk fullskjerms GS-modus"
+msgstr "bruk fullskjerms GS-modus"
 
 #: pcsx2/gui/AppInit.cpp:233
 msgid "use windowed GS mode"
-msgstr "Bruk GS-modus i et vindu"
+msgstr "bruk GS-modus i et vindu"
 
 #: pcsx2/gui/AppInit.cpp:235
 msgid "disables display of the gui while running games"
@@ -450,9 +450,7 @@ msgstr "deaktiverer visningen av grensesnittet mens spill blir kjørt"
 
 #: pcsx2/gui/AppInit.cpp:236
 msgid "when nogui - prompt before exiting on suspend"
-msgstr ""
-"Når du ikke bruker et grafisk grensesnitt, advar før du avslutter ved "
-"suspendering."
+msgstr "med ingen GUI - anmerk innen uttrede"
 
 #: pcsx2/gui/AppInit.cpp:238
 msgid "executes an ELF image"
@@ -464,11 +462,11 @@ msgstr "eksekverer en IRX-fil"
 
 #: pcsx2/gui/AppInit.cpp:240
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
-msgstr "Starter opp en tom DVD-leser; brukes til å gå til PS2-systemmenyen"
+msgstr "starter opp en tom DVD-leser; brukes til å gå til PS2-systemmenyen"
 
 #: pcsx2/gui/AppInit.cpp:241
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
-msgstr "Starter opp fra CDVD-tillegget (Overkjører IsoFile-parametre)"
+msgstr "starter opp fra CDVD-tillegget (Overkjører IsoFile-parametre)"
 
 #: pcsx2/gui/AppInit.cpp:243
 msgid "disables all speedhacks"
@@ -477,7 +475,7 @@ msgstr "deaktiverer alle hastighetskorrigeringer"
 #: pcsx2/gui/AppInit.cpp:244
 msgid "use the specified comma or pipe-delimited list of gamefixes."
 msgstr ""
-"Bruk den spesifiserte kommalisten eller pipe-avbegrensede listen for "
+"bruk den spesifiserte kommalisten eller pipe-avbegrensede listen for "
 "spillkorrigeringer."
 
 #: pcsx2/gui/AppInit.cpp:245
@@ -505,12 +503,12 @@ msgstr ""
 #: pcsx2/gui/AppInit.cpp:252
 msgid "update options to ease profiling (debug)"
 msgstr ""
-"Oppdater innstillingene for å gjøre profileringen lettere (Problemløsing)"
+"oppdater innstillingene for å gjøre profileringen lettere (Problemløsing)"
 
 #: pcsx2/gui/AppInit.cpp:256
 #, c-format
 msgid "specify the file to use as the %s plugin"
-msgstr "Spesifiser filen som skal brukes som %s-tillegget"
+msgstr "spesifiser filen som skal brukes som %s-tillegget"
 
 #: pcsx2/gui/AppInit.cpp:306
 #, c-format
@@ -571,7 +569,7 @@ msgstr "&Legg til"
 
 #: pcsx2/gui/AppInit.cpp:724
 msgid "&Next >"
-msgstr "&Neste →"
+msgstr "&Neste >"
 
 #: pcsx2/gui/AppInit.cpp:725
 msgid "< &Back"
@@ -603,7 +601,7 @@ msgstr "&Lagre"
 
 #: pcsx2/gui/AppInit.cpp:732
 msgid "Save &As..."
-msgstr "Lagre &Som"
+msgstr "Lagre &Som..."
 
 #: pcsx2/gui/AppInit.cpp:733
 msgid "&Help"
@@ -961,7 +959,7 @@ msgstr "Start på nytt"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:36
 msgid "Convert a memory card to a different format"
-msgstr "Konverter et minnekort til et annet format"
+msgstr "Konverter et MinneKort til et annet format"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:47
 msgid "Convert"
@@ -973,7 +971,7 @@ msgstr "Konverter: "
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:56
 msgid "To: "
-msgstr "Til:"
+msgstr "Til: "
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "8MB File"
@@ -997,7 +995,7 @@ msgstr "Mappe"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Convert this memory card to a folder of individual saves."
-msgstr "Konverter dette minnekortet til en mappe med individuelle lagrefiler."
+msgstr "Konverter dette MinneKort til en mappe med individuelle lagrefiler."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:179
@@ -1010,7 +1008,7 @@ msgstr "Feil (%s)"
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:159
 msgid "Convert memory card"
-msgstr "Konverter minnekort"
+msgstr "Konverter MinneKort"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
 msgid "This target type is not supported!"
@@ -1018,11 +1016,11 @@ msgstr "Denne måltypen støttes ikke!"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:159
 msgid "Memory Card conversion failed for unknown reasons."
-msgstr "Minnekortkonverteringen mislyktes av ukjente årsaker."
+msgstr "MinneKortKonverteringen mislyktes av ukjente årsaker."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:41
 msgid "Create a new memory card"
-msgstr "Opprett nytt minnekort"
+msgstr "Opprett nytt MinneKort"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:58
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:73
@@ -1032,7 +1030,7 @@ msgstr "Opprett"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:72
 msgid "New memory card:"
-msgstr "Nytt minnekort:"
+msgstr "Nytt MinneKort:"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:73
 msgid "At folder:    "
@@ -1040,25 +1038,25 @@ msgstr "I mappen:  "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:76
 msgid "Select file name: "
-msgstr "Velg filnavn:"
+msgstr "Velg filnavn: "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:180
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:192
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:207
 msgid "Create memory card"
-msgstr "Opprett minnekort"
+msgstr "Opprett MinneKort"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:191
 msgid "Error: The directory for the memory card could not be created."
-msgstr "Advarsel: Mappen til minnekortet kunne ikke bli opprettet."
+msgstr "Advarsel: Mappen til MinneKortet kunne ikke bli opprettet."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:206
 msgid "Error: The memory card could not be created."
-msgstr "Feil: Minnekortet kunne ikke skapes."
+msgstr "Feil: MinneKortet kunne ikke skapes."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:221
 msgid "Use NTFS compression when creating this card."
-msgstr "Bruk NTFS komprimering når man skaper dette kortet."
+msgstr "Bruk NTFS komprimering for skapende av dette kort."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:239
 msgid "8 MB [most compatible]"
@@ -1076,7 +1074,7 @@ msgid ""
 "Always use this option if you want the safest and surest memory card "
 "behavior."
 msgstr ""
-"Altid bruk dette valget hvis du ønsker den tryggeste minnekortoppførselen."
+"Altid bruk dette valget hvis du ønsker den tryggeste MinneKortOppførselen."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:243
 msgid "16 MB"
@@ -1087,7 +1085,7 @@ msgstr "16 MB"
 msgid ""
 "A typical size for 3rd-party memory cards which should work with most games."
 msgstr ""
-"En typisk størrelse for tredjepartsleverandører som burde fungere med de "
+"En typisk størrelse for tredjeparts-MinneKort som burde fungere med de "
 "fleste spill."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:244
@@ -1116,7 +1114,7 @@ msgid ""
 "Use at your own risk.  Erratic memory card behavior is possible (though "
 "unlikely)."
 msgstr ""
-"Bruk på egen risiko, irrasjonell minnekortoppførsel er mulig (men "
+"Bruk på egen risiko, irrasjonell MinneKortOppførsel er mulig (men "
 "usannsynlig)"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:255
@@ -1125,7 +1123,7 @@ msgstr "Mappe [eksperimentell]"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:255
 msgid "Store memory card contents in the host filesystem instead of a file."
-msgstr "Lagre minnekortinnhold i vertsfilsystemet istedet for som en fil."
+msgstr "Lagre MinneKortInnhold i vertsfilsystemet istedet for som en fil."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:256
 msgid ""
@@ -1134,10 +1132,10 @@ msgid ""
 "files in and out of the memory card with your standard file explorer. This "
 "is still experimental, so use at your own risk!"
 msgstr ""
-"Behandler automatisk minnekortinnhold, sånn at maskinen kun ser filene som "
+"Behandler automatisk MinneKortInnhold, sånn at maskinen kun ser filene som "
 "er tilknyttet den kjørende programvaren. Dette tillater deg å dra og slippe "
-"filer inn og ut av minnekortet med din vanlige filutforsker. Dette er "
-"fortsatt eksperimentelt, så bruk det på din egen risiko."
+"filer inn og ut av MinneKortet med din vanlige filutforsker. Dette er "
+"fortsatt eksperimentelt, så bruk det på din egen risiko!"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:259
 msgid "128 KiB (PSX)"
@@ -1148,7 +1146,7 @@ msgid ""
 "This is the standard Sony-provisioned size PSX memory card, only compatible "
 "with PSX games."
 msgstr ""
-"Dette er Sonys standardstørrelse for PSX minnekort, og er kun kompatibelt "
+"Dette er Sonys standardstørrelse for PSX-MinneKort, og er kun kompatibelt "
 "med PSX spill."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:260
@@ -1156,7 +1154,7 @@ msgid ""
 "This memory card is required by PSX games. It is not compatible with PS2 "
 "games."
 msgstr ""
-"Dette minnekort kreves av PSX spill. Det er ikke kompatibelt med PS2 spill."
+"Dette MinneKort kreves av PSX-spill. Det er ikke kompatibelt med PS2-spill."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
 msgid "Settings"
@@ -1198,7 +1196,7 @@ msgstr "%s førstegangsoppsett"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:24
 msgid "Import Existing Settings?"
-msgstr "Importer eksisterende innstillinger"
+msgstr "Importere eksisterende innstillinger?"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:36
 msgid "Import"
@@ -1214,7 +1212,7 @@ msgstr "Sporingslogg"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:38
 msgid "Auto-eject memory cards when loading savestates"
-msgstr "Koble automatisk fra minnekortene ved innlasting av lagretilstander"
+msgstr "Koble automatisk fra MinneKortene ved innlasting av lagretilstander"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
@@ -1222,7 +1220,7 @@ msgstr "Behandle automatisk lagrefiler basert på det pågående spillet"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:101
 msgid "MemoryCard Manager"
-msgstr "Minnekortbehandler"
+msgstr "MinneKortBehandler"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:116
 msgid "Drag cards to or from PS2-ports"
@@ -1235,7 +1233,7 @@ msgid ""
 msgstr ""
 "\n"
 "Notis: Duplisering/Nytt navn/Opprett/Slett vil ikke bli tilbakestilt med "
-"knappen 'Avbryt'"
+"knappen 'Avbryt'."
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:24
 msgid "PCSX2 First Time configuration"
@@ -1397,7 +1395,7 @@ msgstr "Du har sluppet den følgende ISO-filen inn i %s:"
 msgid "Slot %d"
 msgstr "Inngang %d"
 
-#: pcsx2/gui/MainFrame.cpp:48 pcsx2/gui/Saveslots.cpp:130
+#: pcsx2/gui/MainFrame.cpp:48 pcsx2/gui/Saveslots.cpp:136
 msgid "Backup"
 msgstr "Sikkerhetskopi"
 
@@ -1529,7 +1527,7 @@ msgstr "Emulerings&innstillinger"
 
 #: pcsx2/gui/MainFrame.cpp:473
 msgid "&Memory cards"
-msgstr "&Minnekort"
+msgstr "&MinneKort"
 
 #: pcsx2/gui/MainFrame.cpp:474
 msgid "&Plugin/BIOS Selector"
@@ -1623,7 +1621,7 @@ msgstr "Ingen emulering er aktiv; kan ikke Avvente eller gjenoppta."
 
 #: pcsx2/gui/MainFrame.cpp:626
 msgid "Use fast boot to skip PS2 startup and splash screens"
-msgstr "Bruk hurtigstart for å hoppe over PS2 sine grafiske oppstartsrutiner."
+msgstr "Bruk hurtigstart for å hoppe over PS2 sine grafiske oppstartsrutiner"
 
 #: pcsx2/gui/MainFrame.cpp:631
 msgid "Boot ISO (&fast)"
@@ -1659,7 +1657,7 @@ msgstr "Start opp VMen uten noen kildemedier"
 
 #: pcsx2/gui/MainFrame.cpp:744 pcsx2/gui/MainFrame.cpp:779
 msgid "No plugin loaded"
-msgstr "Ingen tillegg er lastet inn."
+msgstr "Ingen tillegg er lastet inn"
 
 #: pcsx2/gui/MainFrame.cpp:749
 msgid "&Core GS Settings..."
@@ -1675,7 +1673,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:752
 msgid "&Window Settings..."
-msgstr "&Vindusinnstillinger"
+msgstr "&Vindusinnstillinger..."
 
 #: pcsx2/gui/MainFrame.cpp:753
 msgid "Modify window and appearance options, including aspect ratio."
@@ -1800,7 +1798,7 @@ msgid ""
 "%s\n"
 "\n"
 msgstr ""
-"Kunne ikke skape et minnekort: \n"
+"Kunne ikke skape et MinneKort: \n"
 "\n"
 "%s\n"
 "\n"
@@ -1813,7 +1811,7 @@ msgid ""
 "%s\n"
 "\n"
 msgstr ""
-"Tilgangen til minnekortet er nektet: \n"
+"Tilgangen til MinneKortet er nektet: \n"
 "\n"
 "%s\n"
 "\n"
@@ -2057,7 +2055,7 @@ msgstr "Åpne i fullskjerm ved oppstart som standard"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:61
 msgid "Double-click toggles fullscreen mode"
-msgstr "Dobbeltklikk aktiverer fullskjermmodus."
+msgstr "Dobbeltklikk aktiverer fullskjermmodus"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:62
 msgid "Switch to 4:3 aspect ratio when an FMV plays"
@@ -2217,7 +2215,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:187
 msgid "Select folder with PS2 memory cards"
-msgstr "Velg en mappe med PS2-minnekort"
+msgstr "Velg en mappe med PS2-MinneKort"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:388
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:480
@@ -2244,16 +2242,16 @@ msgstr "Konverter..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:404
 msgid "Card: "
-msgstr "Kort:"
+msgstr "Kort: "
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:462
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:500
 msgid "Create a new memory card."
-msgstr "Opprett nytt minnekort."
+msgstr "Opprett nytt MinneKort."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:476
 msgid "Rename this memory card ..."
-msgstr "Gi dette minnekortet nytt navn ..."
+msgstr "Gi dette MinneKortet nytt navn ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:480
 msgid "Insert ..."
@@ -2269,7 +2267,7 @@ msgstr "Sett dette kortet inn i en port ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:485
 msgid "Create a duplicate of this memory card ..."
-msgstr "Opprett et duplikat av dette minnekortet ..."
+msgstr "Opprett et duplikat av dette MinneKortet ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:489
 msgid ""
@@ -2279,11 +2277,11 @@ msgid ""
 "Note: Only available when a memory card is formatted. Not available for PSX "
 "memory cards."
 msgstr ""
-"Konverter dette minnekort til eller frå en minnekort-mappe. Skaper et "
-"duplikat av det nåværende minnekortet i den nye måtet.\n"
+"Konverter dette MinneKort til eller frå en MinnekortMappe.\n"
+"Skaper et duplikat av det nåværende MinneKortet i den nye måtet.\n"
 "\n"
-"Notis: Kun muligt når et minnekort er formatert. Ikke muligt for PSX "
-"minnekort."
+"Notis: Kun muligt når et MinneKort er formatert.\n"
+" Ikke muligt for PSX-MinneKort."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
 msgid "Delete"
@@ -2291,15 +2289,15 @@ msgstr "Slett"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:496
 msgid "Permanently delete this memory card from disk (all contents are lost)"
-msgstr "Permanent sletter dette minnekortet fra disk (alt innhold er tapt)"
+msgstr "Permanent sletter dette MinneKortet fra disk (alt innhold er tapt)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:498
 msgid "Create a new memory card and assign it to this Port."
-msgstr "Opprett et nytt minnekort og tilegn den til denne porten."
+msgstr "Opprett et nytt MinneKort og tilegn den til denne porten."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:683
 msgid "Delete memory file?"
-msgstr "Slett minnekort fil?"
+msgstr "Slett minne fil?"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
 msgid "Failed: Can only duplicate an existing card."
@@ -2310,7 +2308,7 @@ msgstr "Feilet: Kan bare duplisere eksisterende kort."
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:742
 msgid "Duplicate memory card"
-msgstr "Dupliser minnekort"
+msgstr "Dupliser MinneKort"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 msgid ""
@@ -2332,7 +2330,7 @@ msgstr "Kopieringen feilet!"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
-msgstr "Minnekortet '%s' er duplisert til '%s'."
+msgstr "MinneKortet '%s' er duplisert til '%s'."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:777
 msgid "Success"
@@ -2344,14 +2342,14 @@ msgid ""
 "Select a new name for the memory card '%s'\n"
 "( '.ps2' will be added automatically)"
 msgstr ""
-"Velg et nytt navn for minnekortet '%s'\n"
+"Velg et nytt navn for MinneKortet '%s'\n"
 "( '.ps2' vil bli lagt til automatisk)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:800
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:812
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:826
 msgid "Rename memory card"
-msgstr "Gi minnekortet nytt navn"
+msgstr "Gi MinneKortet nytt navn"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:826
 msgid "Error: Rename could not be completed.\n"
@@ -2361,7 +2359,7 @@ msgstr "Feil: Nytt navn kunne ikke gis.\n"
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:134
 #, c-format
 msgid "Port-%u / Multitap-%u--Port-1"
-msgstr "Port-%u / Multitap-%u—Port-1"
+msgstr "Port-%u / Multitap-%u--Port-1"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:927
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:135
@@ -2461,11 +2459,11 @@ msgstr "PS2"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:165
 msgid "[-- Unused cards --]"
-msgstr "[— Ubrukte kort —]"
+msgstr "[-- Ubrukte kort --]"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:167
 msgid "[-- No unused cards --]"
-msgstr "[— Ingen ubrukte kort —]"
+msgstr "[-- Ingen ubrukte kort --]"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:34
 msgid "Usermode Selection"
@@ -2506,7 +2504,7 @@ msgstr "Gjør dette språket til mitt standardspråk nå!"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:38
 msgid "Cheats:"
-msgstr "Juksekoder"
+msgstr "Juksekoder:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:39
 msgid "Select folder for Cheats"
@@ -2534,7 +2532,7 @@ msgstr "Logger og dumper:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:63
 msgid "Select a folder for logs/dumps"
-msgstr "Velg en mappe for logger og dumper."
+msgstr "Velg en mappe for logger/dumper"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:228
 msgid "Applying settings..."
@@ -2700,7 +2698,7 @@ msgstr "NTSC-Bildefrekvens:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:81 pcsx2/gui/Panels/VideoPanel.cpp:87
 msgid "FPS"
-msgstr "bilder i sekundet"
+msgstr "Bildefrekvens"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:84
 msgid "PAL Framerate:"
@@ -2737,11 +2735,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:209
 msgid "Frames to Draw"
-msgstr "rammer å tegne."
+msgstr "Rammer å Tegne"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:214
 msgid "Frames to Skip"
-msgstr "rammer å hoppe over."
+msgstr "Rammer å Hoppe over"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:290
 msgid "Use Synchronized MTGS"
@@ -2767,30 +2765,25 @@ msgstr "Rammebegrenser"
 msgid "Clear ISO list"
 msgstr "Tøm ISO-listen"
 
-#: pcsx2/gui/Saveslots.h:68
+#: pcsx2/gui/Saveslots.h:76
 #, c-format
 msgid "Slot %d - Empty"
 msgstr "Inngang %d - Tom"
 
-#: pcsx2/gui/Saveslots.h:70
+#: pcsx2/gui/Saveslots.h:78
 #, c-format
 msgid "Slot %d - %s %s"
 msgstr "Inngang %d - %s %s"
 
-#: pcsx2/gui/Saveslots.h:72
+#: pcsx2/gui/Saveslots.h:80
 #, c-format
 msgid "Slot %d - Unknown Time"
 msgstr "Slot %d - Ukjend Tid"
 
-#: pcsx2/gui/Saveslots.h:85
+#: pcsx2/gui/Saveslots.h:93
 #, c-format
 msgid "Write time is %s %s."
 msgstr "Skrivetid er %s %s."
-
-#: pcsx2/gui/Saveslots.h:88
-#, c-format
-msgid "The disk has a file on it dated %s %s."
-msgstr "Disken har en fil datert %s %s."
 
 #: pcsx2/gui/SysState.cpp:291 pcsx2/gui/SysState.cpp:298
 msgid "Cannot load this savestate. The state is an unsupported version."
@@ -2801,7 +2794,7 @@ msgstr ""
 msgid "There is no active virtual machine state to download or save."
 msgstr "Det er ingen aktiv virtuell maskintilstand å laste ned eller lagre."
 
-#: pcsx2/gui/SysState.cpp:525
+#: pcsx2/gui/SysState.cpp:529
 msgid ""
 "This savestate cannot be loaded because it is not a valid gzip archive.  It "
 "may have been created by an older unsupported version of PCSX2, or it may be "
@@ -2811,12 +2804,12 @@ msgstr ""
 "arkiv. Det kan hende at det er skapt av en eldre ustøttet versjon av PCSX2, "
 "eller den kan være korrupt."
 
-#: pcsx2/gui/SysState.cpp:584
+#: pcsx2/gui/SysState.cpp:588
 msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
 msgstr ""
 "Dette er ikke en godkjent PCSX2-lagretilstand. Se loggfilen for detaljer."
 
-#: pcsx2/gui/SysState.cpp:603
+#: pcsx2/gui/SysState.cpp:607
 msgid ""
 "This savestate cannot be loaded due to missing critical components.  See the "
 "log file for details."
@@ -2831,7 +2824,8 @@ msgstr " (Standard)"
 #: pcsx2/ps2/BiosTools.cpp:90 pcsx2/ps2/BiosTools.cpp:158
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
 msgstr ""
-"Den valgte BIOS-filen er ikke en godkjent PS2 BIOS. Vennligst re-konfigurer."
+"Den valgte BIOS-filen er ikke en godkjent PS2 BIOS, så vennligst re-"
+"konfigurer."
 
 #: pcsx2/ps2/BiosTools.cpp:271
 msgid ""
@@ -2839,12 +2833,12 @@ msgid ""
 "configuration has been corrupted.  Please re-configure."
 msgstr ""
 "PS2 BIOS kunne ikke lastes inn. BIOS har ikke blitt konfigurert, eller "
-"konfigurasjonen har blitt korrumpert, vennligst sett opp på nytt."
+"konfigurasjonen har blitt korrumpert, så vennligst sett opp på nytt."
 
 #: pcsx2/ps2/BiosTools.cpp:278
 msgid "The configured BIOS file does not exist.  Please re-configure."
 msgstr ""
-"Den konfigurerte BIOS-filen eksisterer ikke, vennligst sett opp på nytt."
+"Den konfigurerte BIOS-filen eksisterer ikke, så vennligst sett opp på nytt."
 
 #: pcsx2/x86/ix86-32/iR5900-32.cpp:472
 #, c-format
@@ -2862,6 +2856,9 @@ msgid ""
 msgstr ""
 "%s utvidelser ble ikke funnet. microVU krever en vertsprosessor med SSE2-"
 "utvidelser."
+
+#~ msgid "The disk has a file on it dated %s %s."
+#~ msgstr "Disken har en fil datert %s %s."
 
 #~ msgid "Game database - %s"
 #~ msgstr "Spilldatabase - %s"
