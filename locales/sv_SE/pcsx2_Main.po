@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 - 180923\n"
+"Project-Id-Version: PCSX2 - 181012\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2018-09-23 09:17+0200\n"
-"PO-Revision-Date: 2018-09-23 09:34+0200\n"
+"POT-Creation-Date: 2018-10-12 19:32+0200\n"
+"PO-Revision-Date: 2018-10-12 19:54+0200\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
 "PCSX2-Svenskt-anv%C3%A4ndargr%C3%A4nssnitt-f%C3%B6r-PCSX2\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: trunk\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
@@ -51,7 +51,7 @@ msgstr ""
 
 #: common/src/Utilities/Exceptions.cpp:305
 msgid "Path: "
-msgstr "Filväg:"
+msgstr "Filväg: "
 
 #: common/src/Utilities/Exceptions.cpp:309
 msgid "[Unnamed or unknown]"
@@ -152,12 +152,12 @@ msgstr ""
 #: pcsx2/PluginManager.cpp:976
 #, c-format
 msgid "The configured %s plugin file was not found"
-msgstr "Den konfigurerade %s-InsticksProgramFilen hittades ej."
+msgstr "Den konfigurerade %s-InsticksProgramFilen hittades ej"
 
 #: pcsx2/PluginManager.cpp:980
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
-msgstr "Det konfigurerade %s-InsticksProgrammet är inte en giltlig DLL."
+msgstr "Det konfigurerade %s-InsticksProgrammet är inte en giltlig DLL"
 
 #: pcsx2/PluginManager.cpp:997
 #, c-format
@@ -447,7 +447,7 @@ msgstr "spärrar uppvisning av GUI medans spel körs"
 
 #: pcsx2/gui/AppInit.cpp:236
 msgid "when nogui - prompt before exiting on suspend"
-msgstr "med ingen GUI - anmärk innan utträdning"
+msgstr "med ingen GUI - anmärk innan utträde"
 
 #: pcsx2/gui/AppInit.cpp:238
 msgid "executes an ELF image"
@@ -607,7 +607,7 @@ msgstr "Hem"
 
 #: pcsx2/gui/AppInit.cpp:736
 msgid "Show about dialog"
-msgstr "InfoDialog om PCSX2."
+msgstr "InfoDialog om PCSX2"
 
 #: pcsx2/gui/AppMain.cpp:74
 msgid ""
@@ -794,7 +794,7 @@ msgstr "AutoAnlägg"
 
 #: pcsx2/gui/ConsoleLogger.cpp:413
 msgid "Dock log window to main PCSX2 window"
-msgstr "Anlägg loggfönster vid PCSX2's huvudfönster."
+msgstr "Anlägg loggfönster vid PCSX2's huvudfönster"
 
 #: pcsx2/gui/ConsoleLogger.cpp:414
 msgid "&Appearance"
@@ -959,11 +959,11 @@ msgstr "Omvandla"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:53
 msgid "Convert: "
-msgstr "Omvandla:"
+msgstr "Omvandla: "
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:56
 msgid "To: "
-msgstr "Till:"
+msgstr "Till: "
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "8MB File"
@@ -1026,11 +1026,11 @@ msgstr "Nytt Minneskort:"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:73
 msgid "At folder:    "
-msgstr "Hos mappen:"
+msgstr "Hos mappen: "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:76
 msgid "Select file name: "
-msgstr "Välj filnamn:"
+msgstr "Välj filnamn: "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:180
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:192
@@ -1385,9 +1385,9 @@ msgstr "Ni har släppt följande ISO-avbild i %s:"
 msgid "Slot %d"
 msgstr "Spalt %d"
 
-#: pcsx2/gui/MainFrame.cpp:48 pcsx2/gui/Saveslots.cpp:130
+#: pcsx2/gui/MainFrame.cpp:48 pcsx2/gui/Saveslots.cpp:136
 msgid "Backup"
-msgstr "Kopiera Spalt "
+msgstr "Kopiera Spalt"
 
 #: pcsx2/gui/MainFrame.cpp:326
 msgid "&Show Console"
@@ -1428,7 +1428,7 @@ msgstr "Kör ELF ..."
 
 #: pcsx2/gui/MainFrame.cpp:414
 msgid "For running raw PS2 binaries directly"
-msgstr "För att direktköra råa PS2-binärer."
+msgstr "För att direktköra råa PS2-binärer"
 
 #: pcsx2/gui/MainFrame.cpp:423
 msgid "&Load state"
@@ -1450,7 +1450,7 @@ msgstr "Automatiska Spelfixar"
 msgid "Automatically applies needed Gamefixes to known problematic games"
 msgstr ""
 "Tillämpar automatiskt erfordeliga Spelfixar för till vetskap problematiska "
-"spel."
+"spel"
 
 #: pcsx2/gui/MainFrame.cpp:434
 msgid "Enable &Cheats"
@@ -1479,7 +1479,7 @@ msgstr "Stäng av Emulatorn"
 #: pcsx2/gui/MainFrame.cpp:451
 #, c-format
 msgid "Closing %s may be hazardous to your health"
-msgstr "Att stänga %s kan vara riskfyllt för Edert välbefinnande."
+msgstr "Att stänga %s kan vara riskfyllt för Edert välbefinnande"
 
 #: pcsx2/gui/MainFrame.cpp:458
 msgid "ISO &Selector"
@@ -1576,7 +1576,7 @@ msgstr "Öppna FelsökningsFönster ..."
 
 #: pcsx2/gui/MainFrame.cpp:517
 msgid "&Logging..."
-msgstr "Loggning"
+msgstr "Loggning..."
 
 #: pcsx2/gui/MainFrame.cpp:519
 msgid "Create &Blockdump"
@@ -1612,7 +1612,7 @@ msgstr "Inget emuleringstillstånd är aktivt; inget att Pausa/Återuppta."
 
 #: pcsx2/gui/MainFrame.cpp:626
 msgid "Use fast boot to skip PS2 startup and splash screens"
-msgstr "Använd detta för att hoppa över PS2-uppstart och plaskskärmar."
+msgstr "Använd detta för att hoppa över PS2-uppstart och plaskskärmar"
 
 #: pcsx2/gui/MainFrame.cpp:631
 msgid "Boot ISO (&fast)"
@@ -1628,7 +1628,7 @@ msgstr "Kör ISO (fullt)"
 
 #: pcsx2/gui/MainFrame.cpp:658
 msgid "Boot the VM using the current ISO source media"
-msgstr "Kör VM'en med den nuvarande ISO-källmediat."
+msgstr "Kör VM'en med den nuvarande ISO-källmediat"
 
 #: pcsx2/gui/MainFrame.cpp:661
 msgid "Boo&t CDVD (full)"
@@ -1636,7 +1636,7 @@ msgstr "Kör CDVD (fullt)"
 
 #: pcsx2/gui/MainFrame.cpp:662
 msgid "Boot the VM using the current CD/DVD source media"
-msgstr "Kör VM'en med den nuvarande CD/DVD-källmediat."
+msgstr "Kör VM'en med den nuvarande CD/DVD-källmediat"
 
 #: pcsx2/gui/MainFrame.cpp:665
 msgid "Boo&t BIOS"
@@ -1644,7 +1644,7 @@ msgstr "Kör BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:666
 msgid "Boot the VM without any source media"
-msgstr "Kör VM'en utan något källmedium."
+msgstr "Kör VM'en utan något källmedium"
 
 #: pcsx2/gui/MainFrame.cpp:744 pcsx2/gui/MainFrame.cpp:779
 msgid "No plugin loaded"
@@ -1939,7 +1939,7 @@ msgstr "Möjliggör EE-förråd (Långsammare)"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:154
 msgid "Interpreter only; provided for diagnostic"
-msgstr "Endast tolkare; tillhandahålls för Diagnostiksyften."
+msgstr "Endast tolkare; tillhandahålls för Diagnostiksyften"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:226
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:128 pcsx2/gui/Panels/VideoPanel.cpp:294
@@ -2149,7 +2149,7 @@ msgid ""
 "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD and Spy Hunter loading hang."
 msgstr ""
 "Försena VIF1-uppehåll (VIF1 FIFO) - För HUD i ''SOCOM 2'' och laddningsstrul "
-"i ''Spy  Hunter''."
+"i ''Spy Hunter''."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
 msgid ""
@@ -2161,11 +2161,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:100
 msgid "Switch to GSdx software rendering when an FMV plays"
-msgstr "Växla till GSdx MjukvaruFramställning då FMV'er spelas."
+msgstr "Växla till GSdx MjukvaruFramställning då FMV'er spelas"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:104
 msgid "Preload TLB hack to avoid tlb miss on Goemon"
-msgstr "Förladda TLB trim för att undvika TLB fel hos ''Goemon''."
+msgstr "Förladda TLB trim för att undvika TLB fel hos ''Goemon''"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:108
 msgid ""
@@ -2460,7 +2460,7 @@ msgstr "AnvändarnivåDokument (anrådes)"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:46
 msgid "Location: "
-msgstr "Placering:"
+msgstr "Placering: "
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:50
 msgid "Custom folder:"
@@ -2754,30 +2754,25 @@ msgstr "BildhastighetsReglering"
 msgid "Clear ISO list"
 msgstr "Rensa ISO-listan"
 
-#: pcsx2/gui/Saveslots.h:68
+#: pcsx2/gui/Saveslots.h:76
 #, c-format
 msgid "Slot %d - Empty"
 msgstr "Spalt %d - Tom"
 
-#: pcsx2/gui/Saveslots.h:70
+#: pcsx2/gui/Saveslots.h:78
 #, c-format
 msgid "Slot %d - %s %s"
 msgstr "Spalt %d - %s %s"
 
-#: pcsx2/gui/Saveslots.h:72
+#: pcsx2/gui/Saveslots.h:80
 #, c-format
 msgid "Slot %d - Unknown Time"
 msgstr "Spalt %d - Okänd Tid"
 
-#: pcsx2/gui/Saveslots.h:85
+#: pcsx2/gui/Saveslots.h:93
 #, c-format
 msgid "Write time is %s %s."
 msgstr "Skrivtiden är %s %s."
-
-#: pcsx2/gui/Saveslots.h:88
-#, c-format
-msgid "The disk has a file on it dated %s %s."
-msgstr "Disken har en fil  daterad %s %s."
 
 #: pcsx2/gui/SysState.cpp:291 pcsx2/gui/SysState.cpp:298
 msgid "Cannot load this savestate. The state is an unsupported version."
@@ -2787,7 +2782,7 @@ msgstr "Kan ej ladda Sparpunkten eftersom den är av en ostödjandes version."
 msgid "There is no active virtual machine state to download or save."
 msgstr "Det finns inget aktivt VM-tillstånd att nedladda eller spara."
 
-#: pcsx2/gui/SysState.cpp:525
+#: pcsx2/gui/SysState.cpp:529
 msgid ""
 "This savestate cannot be loaded because it is not a valid gzip archive.  It "
 "may have been created by an older unsupported version of PCSX2, or it may be "
@@ -2797,11 +2792,11 @@ msgstr ""
 "Den kan ha skapats av en äldre ostödjandes version av PCSX2, eller så kan "
 "den ha förstörts."
 
-#: pcsx2/gui/SysState.cpp:584
+#: pcsx2/gui/SysState.cpp:588
 msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
 msgstr "Denna fil är inte en giltlig PCSX2-Sparpunkt. Se loggfil för detaljer."
 
-#: pcsx2/gui/SysState.cpp:603
+#: pcsx2/gui/SysState.cpp:607
 msgid ""
 "This savestate cannot be loaded due to missing critical components.  See the "
 "log file for details."
@@ -2815,7 +2810,7 @@ msgstr " (förval)"
 
 #: pcsx2/ps2/BiosTools.cpp:90 pcsx2/ps2/BiosTools.cpp:158
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
-msgstr "Den valda BIOS filen är inte giltligt PS2 BIOS. Omkonfigurera!"
+msgstr "Den valda BIOS filen är inte giltligt PS2 BIOS, så omkonfigurera."
 
 #: pcsx2/ps2/BiosTools.cpp:271
 msgid ""
@@ -2823,11 +2818,11 @@ msgid ""
 "configuration has been corrupted.  Please re-configure."
 msgstr ""
 "PS2 BIOS'et kunde inte laddas eftersom det inte har konfigurerats, eller så "
-"har konfigurationen förstörts. Omkonfigurera!"
+"har konfigurationen förstörts, så omkonfigurera."
 
 #: pcsx2/ps2/BiosTools.cpp:278
 msgid "The configured BIOS file does not exist.  Please re-configure."
-msgstr "Den konfigurerade BIOS filen finns ej. Omkonfigurera!"
+msgstr "Den konfigurerade BIOS filen finns ej, så omkonfigurera."
 
 #: pcsx2/x86/ix86-32/iR5900-32.cpp:472
 #, c-format
@@ -2845,6 +2840,9 @@ msgid ""
 msgstr ""
 "%s-utökningar ej funna. microVU kräver en värd-CPU med SSE2-utökningar."
 
+#~ msgid "The disk has a file on it dated %s %s."
+#~ msgstr "Disken har en fil daterad %s %s."
+
 #~ msgid "Game database - %s"
 #~ msgstr "Speldatabas - %s"
 
@@ -2858,19 +2856,19 @@ msgstr ""
 #~ msgstr "SpeldatabasRedigerare"
 
 #~ msgid "Name: "
-#~ msgstr "Namn:"
+#~ msgstr "Namn: "
 
 #~ msgid "Region: "
-#~ msgstr "Region:"
+#~ msgstr "Region: "
 
 #~ msgid "Compatibility: "
-#~ msgstr "Förenlighet:"
+#~ msgstr "Förenlighet: "
 
 #~ msgid "Comments: "
-#~ msgstr "Anmärkningar:"
+#~ msgstr "Anmärkningar: "
 
 #~ msgid "Patches: "
-#~ msgstr "Fixar:"
+#~ msgstr "Fixar: "
 
 #~ msgid "Plugin Specialists"
 #~ msgstr "InsticksProgramsSpecialister"
