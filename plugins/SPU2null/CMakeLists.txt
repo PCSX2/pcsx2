@@ -8,8 +8,13 @@ endif()
 
 # plugin name
 set(Output SPU2null)
-set(SPU2nullFinalFlags "")
 
+set(SPU2nullFinalFlags
+-fvisibility=hidden
+-Wall
+-Wno-parentheses
+	)
+	
 # SPU2null sources
 set(SPU2nullSources
 	SPU2.cpp)

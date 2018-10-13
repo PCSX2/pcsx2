@@ -8,7 +8,12 @@ endif()
 
 # plugin name
 set(Output FWnull-0.7.0)
-set(FWnullFinalFlags "")
+
+set(FWnullFinalFlags
+    -fvisibility=hidden
+    -Wall
+    -Wno-parentheses
+	)
 
 # FWnull sources
 set(FWnullSources

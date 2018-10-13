@@ -24,6 +24,7 @@ set(CommonFlags
     -fno-strict-aliasing
     -Wstrict-aliasing # Allow to track strict aliasing issue.
     -Wunused-variable
+    -Wno-parentheses
     )
 
 #Clang doesn't support a few common flags that GCC does.
@@ -42,12 +43,12 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
 elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
     set(zzoglFinalFlags
         ${zzoglFinalFlags}
-        ${CommonFlags} -g -W -DZEROGS_DEVBUILD
+        ${CommonFlags} -g -W -DZEROGS_DEVBUILD -fvisibility=hidden
     )
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
     set(zzoglFinalFlags
         ${zzoglFinalFlags}
-        ${CommonFlags} -W
+        ${CommonFlags} -W -fvisibility=hidden
     )
 endif()
 

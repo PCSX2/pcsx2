@@ -8,8 +8,13 @@ endif()
 
 # plugin name
 set(Output CDVDnull)
-set(CDVDnullFinalFlags "")
 
+set(CDVDnullFinalFlags
+    -fvisibility=hidden
+    -Wall
+    -Wno-parentheses
+	)
+	
 # CDVDnull sources
 set(CDVDnullSources
 	CDVD.cpp)

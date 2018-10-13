@@ -8,7 +8,12 @@ endif()
 
 # plugin name
 set(Output USBnull-0.7.0)
-set(USBnullFinalFlags "")
+
+set(USBnullFinalFlags
+-fvisibility=hidden
+-Wall
+-Wno-parentheses
+	)
 
 # USBnull sources
 set(USBnullSources

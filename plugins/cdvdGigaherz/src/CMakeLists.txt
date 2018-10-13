@@ -8,6 +8,12 @@ endif()
 #plugin name(no version number to ease future version bump and bisect)
 set(Output cdvdGigaherz)
 
+set(FinalFlags
+    -fvisibility=hidden
+    -Wall
+    -Wno-parentheses
+    )
+
 set(Sources
     CDVD.cpp
     ReadThread.cpp

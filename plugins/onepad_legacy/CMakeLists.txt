@@ -41,7 +41,12 @@ set(onepadGuiResources
 
 # plugin name
 set(Output onepad-legacy)
-set(onepadFinalFlags "")
+
+set(onepadFinalFlags
+    -fvisibility=hidden
+    -Wall
+    -Wno-parentheses
+	)
 
 # onepad sources
 set(onepadSources

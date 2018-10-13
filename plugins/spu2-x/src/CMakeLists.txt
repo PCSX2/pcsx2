@@ -12,16 +12,22 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif()
 
 
+set(CommonFlags
+-fvisibility=hidden
+-Wall
+-Wno-parentheses
+    )
+
 # plugin name
 set(Output spu2x-2.0.0)
 if (UNIX AND NOT APPLE)
 	if (SDL2_API)
-		set(spu2xFinalFlags "-DSPU2X_SDL2")
+		set(spu2xFinalFlags "-DSPU2X_SDL2" ${CommonFlags})
 	else()
-		set(spu2xFinalFlags "-DSPU2X_SDL")
+		set(spu2xFinalFlags "-DSPU2X_SDL" ${CommonFlags})
 	endif()
 else()
-	set(spu2xFinalFlags "")
+	set(spu2xFinalFlags ${CommonFlags})
 endif()
 
 # spu2x sources
