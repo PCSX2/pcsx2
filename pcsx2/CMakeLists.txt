@@ -18,6 +18,9 @@ set(CommonFlags
     -Wstrict-aliasing # Allow to track strict aliasing issue.
     -Wno-char-subscripts # only impact svu which is deprecated
     -Wno-missing-braces
+    # Largely turning off because LegacyPluginAPI_Common in Plugins.h spams really badly in gcc 8 due to the memzero initialization.
+    # Should probably be fixed properly, but for now this should work.
+    -Wno-class-memaccess 
     #-Wno-ignored-attributes # don't remember why I put here but it is pure C option, therefore it complains for nothings on cpp files
     -DWX_PRECOMP
 	)

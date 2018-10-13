@@ -15,6 +15,10 @@ set(CommonFlags
     -Wno-unknown-pragmas
     -Wno-parentheses
     -Wunused-variable # __dummy variable need to be investigated
+    # The next two need to be looked at, but spam really badly in gcc 8.
+    # Largely class alignment in GSDevice.h and memcpy in GSVector*.h.
+    -Wno-class-memaccess 
+    -Wno-packed-not-aligned
     )
 
 set(GSdxFinalFlags ${CommonFlags})
