@@ -7,7 +7,11 @@ endif()
 
 # plugin name
 set(Output PADnull)
-set(PadNullFinalFlags "")
+set(PadNullFinalFlags
+-fvisibility=hidden
+-Wall
+-Wno-parentheses
+	)
 
 # PadNull sources
 set(PadNullSources

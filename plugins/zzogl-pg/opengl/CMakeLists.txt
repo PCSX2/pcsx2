@@ -25,6 +25,8 @@ set(CommonFlags
     -Wstrict-aliasing # Allow to track strict aliasing issue.
     -Wunused-variable
     -Wno-parentheses
+    # Mute the warnings about the huge classes we initialise with memset.
+    -Wno-class-memaccess
     )
 
 #Clang doesn't support a few common flags that GCC does.
