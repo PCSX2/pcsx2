@@ -9,6 +9,8 @@ set(compiled_images "${CMAKE_BINARY_DIR}/plugins/onepad_legacy/ImgHeader")
 set(image_sources "${CMAKE_SOURCE_DIR}/plugins/onepad/Img")
 set(linux_sources "Linux")
 set(linux_headers "Linux")
+set(wx_sources "wx_dialog")
+set(wx_headers "wx_dialog")
 
 
 set(onepadGuiResources
@@ -62,21 +64,27 @@ set(onepadHeaders
 	onepad.h
 	state_management.h)
 
+# onepad wx sources
+set(onepadwxSources
+    ${wx_sources}/dialog.cpp
+    ${wx_sources}/opPanel.cpp
+    ${wx_sources}/GamepadConfiguration.cpp
+    ${wx_headers}/JoystickConfiguration.cpp)
+
+# onepad wx headers
+set(onepadwxHeaders
+    ${wx_headers}/opPanel.h
+    ${wx_headers}/GamepadConfiguration.h
+	${wx_headers}/JoystickConfiguration.h)
+	
 # onepad Linux sources
 set(onepadLinuxSources
 	${linux_sources}/ini.cpp
-	${linux_sources}/dialog.cpp
-	${linux_sources}/linux.cpp
-	${linux_sources}/opPanel.cpp
-	${linux_sources}/GamepadConfiguration.cpp
-	${linux_headers}/JoystickConfiguration.cpp)
+	${linux_sources}/linux.cpp)
 
 # onepad Linux headers
 set(onepadLinuxHeaders
-	${linux_headers}/linux.h
-	${linux_headers}/opPanel.h
-	${linux_headers}/GamepadConfiguration.h
-	${linux_headers}/JoystickConfiguration.h)
+	${linux_headers}/linux.h)
 
 # onepad Windows sources
 set(onepadWindowsSources
@@ -104,6 +112,8 @@ set(onepadFinalLibs
 set(onepadFinalSources
 	${onepadSources}
 	${onepadHeaders}
+	${onepadwxSources}
+	${onepadwxHeaders}
 	${onepadLinuxSources}
 	${onepadLinuxHeaders}
 	${onepadGuiResources}
