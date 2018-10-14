@@ -236,9 +236,6 @@ void SysCoreThread::GameStartingInThread()
 	sApp.PostAppMethod(&Pcsx2App::resetDebugger);
 
 	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
-#ifdef USE_SAVESLOT_UI_UPDATES
-	UI_UpdateSysControls();
-#endif
 }
 
 bool SysCoreThread::StateCheckInThread()

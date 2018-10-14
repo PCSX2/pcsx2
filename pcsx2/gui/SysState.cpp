@@ -476,11 +476,6 @@ protected:
 
 	void CleanupEvent()
 	{
-#ifdef USE_NEW_SAVESLOTS_UI
-		// I have a feeling this doesn't need to be here, so I'm commenting this out for the moment.
-		// I'll remove it if it doesn't cause other issues.
-		//UI_UpdateSysControls();
-#endif
 	}
 };
 
@@ -679,8 +674,8 @@ void StateCopy_SaveToSlot( uint num )
 	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", WX_STR(file) );
 
 	StateCopy_SaveToFile( file );
-#ifdef USE_NEW_SAVESLOTS_UI
-	UI_UpdateSysControls();
+#ifdef USE_SAVESLOT_UI_UPDATES
+	States_UpdateSaveslotMenu();
 #endif
 }
 
@@ -698,7 +693,7 @@ void StateCopy_LoadFromSlot( uint slot, bool isFromBackup )
 	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", WX_STR(file) );
 
 	StateCopy_LoadFromFile( file );
-#ifdef USE_NEW_SAVESLOTS_UI
-	UI_UpdateSysControls();
+#ifdef USE_SAVESLOT_UI_UPDATES
+	States_UpdateSaveslotMenu();
 #endif
 }

@@ -43,47 +43,7 @@ static void _SaveLoadStuff(bool enabled)
 	sMainFrame.EnableMenuItem(MenuId_Sys_LoadStates, enabled);
 	sMainFrame.EnableMenuItem(MenuId_Sys_SaveStates, enabled);
 
-#ifdef USE_NEW_SAVESLOTS_UI
-	// Run though all the slots.Update if they need updating or the crc changed.
-	for (int i = 0; i < 10; i++)
-	{
-		int load_menu_item = MenuId_State_Load01 + i + 1;
-		int save_menu_item = MenuId_State_Save01 + i + 1;
-		
-		// We need to reload the file information if the crc changed.
-		if (saveslot_cache[i].crc != ElfCRC) saveslot_cache[i].invalid_cache = true;
-
-		// Either the cache needs updating, or the menu items do, or both.
-		if (saveslot_cache[i].menu_update || saveslot_cache[i].invalid_cache)
-		{
-			#ifdef SAVESLOT_LOGS
-			Console.WriteLn("Updating slot %i.", i);
-			if (saveslot_cache[i].menu_update) Console.WriteLn("Menu update needed.");
-			if (saveslot_cache[i].invalid_cache) Console.WriteLn("Invalid cache. (CRC different or just initialized.)");
-			#endif
-
-			if (saveslot_cache[i].invalid_cache)
-			{
-				// Pull everything from disk.
-				saveslot_cache[i].UpdateCache();
-
-				#ifdef SAVESLOT_LOGS
-				saveslot_cache[i].ConsoleDump();
-				#endif
-			}
-
-			// Update from the cached information.
-			saveslot_cache[i].menu_update = false;
-			saveslot_cache[i].crc = ElfCRC;
-
-			sMainFrame.EnableMenuItem(load_menu_item, !saveslot_cache[i].empty);
-			sMainFrame.SetMenuItemLabel(load_menu_item, saveslot_cache[i].SlotName());
-			sMainFrame.SetMenuItemLabel(save_menu_item, saveslot_cache[i].SlotName());
-		}
-
-	}
-	Sstates_updateLoadBackupMenuItem(false);
-#endif
+	States_UpdateSaveslotMenu();
 }
 
 // Updates the enable/disable status of all System related controls: menus, toolbars,
