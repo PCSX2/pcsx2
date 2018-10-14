@@ -80,10 +80,13 @@ void States_FreezeCurrentSlot()
 	StateCopy_SaveToSlot(StatesC);
 
 #ifdef USE_NEW_SAVESLOTS_UI
-	// Hack: Update the saveslot saying it's filled *right now* because it's still writing the file and we don't have a timestamp.
+	// Update the saveslot cache with the new saveslot, and give it the current timestamp, 
+	// Because we aren't going to be able to get the real timestamp from disk right now.
 	saveslot_cache[StatesC].empty = false;
 	saveslot_cache[StatesC].updated = wxDateTime::Now();
 	saveslot_cache[StatesC].crc = ElfCRC;
+
+	// Update the slot next time we run through the UI update.
 	saveslot_cache[StatesC].menu_update = true;
 #endif
 

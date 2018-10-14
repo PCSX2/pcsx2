@@ -27,6 +27,9 @@
 #include "AppCoreThread.h"
 #include "RecentIsoList.h"
 
+//Purely to make sure the saveslot define comes through. Remove if it gets removed.
+#include "Saveslots.h"
+
 class DisassemblyDialog;
 
 #include "System.h"

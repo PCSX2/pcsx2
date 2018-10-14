@@ -487,7 +487,7 @@ void LoadAllPatchesAndStuff(const Pcsx2Config& cfg)
 	_ApplySettings(cfg, dummy);
 
 	// And I'm hacking in updating the UI here too.
-#ifdef USE_NEW_SAVESLOTS_UI
+#ifdef USE_SAVESLOT_UI_UPDATES
 	UI_UpdateSysControls();
 #endif
 }

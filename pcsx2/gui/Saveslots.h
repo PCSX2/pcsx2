@@ -20,7 +20,21 @@
 #include "System.h"
 #include "Elfheader.h"
 
+// Uncomment to turn on the new saveslot UI.
 //#define USE_NEW_SAVESLOTS_UI
+
+// Uncomment to turn on the extra UI updates *without* the UI.
+//#define USE_SAVESLOT_UI_UPDATES
+
+#ifdef USE_NEW_SAVESLOTS_UI
+// Should always be enabled if the new saveslots are.
+#define USE_SAVESLOT_UI_UPDATES
+#endif
+
+#ifdef USE_SAVESLOT_UI_UPDATES
+// Uncomment to add saveslot logging and comment to turn off.
+#define SAVESLOT_LOGS
+#endif
 
 class Saveslot
 {
