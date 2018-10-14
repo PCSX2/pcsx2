@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+echo 'Enabling networking capability on Linux...'
+set -x
+[ -f /usr/games/PCSX2 ] && setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' /usr/games/PCSX2
+set +x
