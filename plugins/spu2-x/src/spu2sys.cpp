@@ -1078,10 +1078,9 @@ static void __fastcall RegWrite_VoiceAddr(u16 value)
         // for example).  Tests should be done to find games that write to this
         // reg, and see if they're buggy or not. --air
 
-        // NextA has been confirmed to not be allowed to be written to, so code has been commented out.
         // FlatOut & Soul Reaver 2 trigger these cases, but don't produce issues enabled or disabled.
         // Wallace And Gromit: Curse Of The Were-Rabbit triggers case 4 and 5 to produce proper sound,
-        // without it some sound effects get cut off.
+        // without it some sound effects get cut off so we need the two NextA cases enabled.
 
         case 4:
             thisvoice.NextA = ((value & 0x0F) << 16) | (thisvoice.NextA & 0xFFF8) | 1;
