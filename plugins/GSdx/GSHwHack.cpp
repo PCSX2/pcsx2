@@ -23,6 +23,7 @@
 #include "GSState.h"
 #include "GSdx.h"
 
+bool s_nativeres;
 static CRCHackLevel s_crc_hack_level = CRCHackLevel::Full;
 
 // hacks
@@ -102,8 +103,9 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 				skip = 5;
 			}
 		}
-		else if(fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
+		else if((g_crc_region == CRC::EU || Dx_only || !s_nativeres) && fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
 		{
+			// Don't enable hack on native res if crc is below DX level.
 			// Ghosting (glow) effect. Ghosting appears when resolution is upscaled. Doesn't appear on native resolution.
 			// This can also be fixed by using the TC Offsets x and y hardware hacks or using Native resolution.
 			skip = 3;
@@ -270,8 +272,9 @@ bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1000; // shadow (result is broken without depth copy, also includes 16 bit)
 		}
-		else if(fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
+		else if((Aggressive || !s_nativeres) && fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
 		{
+			// Don't enable hack on native res if crc is below aggressive.
 			skip = 11; // blur
 		}
 	}
@@ -328,8 +331,9 @@ bool GSC_EvangelionJo(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.TBP0 == 0x2BC0 || (fi.FBP == 0 || fi.FBP == 0x1180) && (fi.FPSM | fi.TPSM) == 0)
+		if((Aggressive || !s_nativeres) && fi.TME && fi.TBP0 == 0x2BC0 || (fi.FBP == 0 || fi.FBP == 0x1180) && (fi.FPSM | fi.TPSM) == 0)
 		{
+			// Don't enable hack on native res if crc is below aggressive.
 			// Removes blur/glow. Fixes ghosting when resolution is upscaled.
 			skip = 1;
 		}
@@ -455,8 +459,9 @@ bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
 	{
-		if (fi.TME && fi.FBP == 0x00500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00f00 && fi.TPSM == PSM_PSMCT16)
+		if ((Aggressive || !s_nativeres) && fi.TME && fi.FBP == 0x00500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00f00 && fi.TPSM == PSM_PSMCT16)
 		{
+			// Don't enable hack on native res if crc is below aggressive.
 			skip = 2; // blur
 		}
 	}
@@ -509,8 +514,9 @@ bool GSC_RedDeadRevolver(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 2;	//filter
 		}
-		else if(fi.FBP == 0x03700 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT24)
+		else if((Aggressive || !s_nativeres) && fi.FBP == 0x03700 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT24)
 		{
+			// Don't enable hack on native res if crc is below aggressive.
 			skip = 2;	//blur
 		}
 	}
@@ -529,8 +535,9 @@ bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(Aggressive && fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x02d80 || fi.FBP == 0x02ea0 || fi.FBP == 0x03620 || fi.FBP == 0x03640) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
+		if((Aggressive || !s_nativeres) && fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x02d80 || fi.FBP == 0x02ea0 || fi.FBP == 0x03620 || fi.FBP == 0x03640) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
 		{
+			// Don't enable hack on native res if crc is below aggressive.
 			// Fixes/removes ghosting/blur effect and white lines appearing in stages: Moonfit Wilderness, Acid Rain - caused by upscaling.
 			// Downside is it also removes the channel effect which is fixed on OpenGL.
 			// Let's enable this hack for Aggressive only since it's an upscaling issue for both renders.
@@ -871,8 +878,9 @@ bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && (fi.TBP0 ==0x0700 || fi.TBP0 ==0x0a80) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
+		if((Aggressive || !s_nativeres) && fi.TME && (fi.TBP0 ==0x0700 || fi.TBP0 ==0x0a80) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
 		{
+			// Don't enable hack on native res if crc is below aggressive.
 			// removes glow/blur which cause ghosting and other sprite issues similar to Tekken 5 
 			skip = 1;
 		}
@@ -915,8 +923,9 @@ bool GSC_UltramanFightingEvolution(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FBP==0x2a00 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x1c00 && fi.TPSM == PSM_PSMZ24)
+		if((Aggressive || !s_nativeres) && fi.TME && fi.FBP==0x2a00 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x1c00 && fi.TPSM == PSM_PSMZ24)
 		{
+			// Don't enable hack on native res if crc is below aggressive.
 			skip = 5; // blur
 		}
 	}
@@ -945,8 +954,9 @@ bool GSC_Simple2000Vol114(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME==0 && (fi.FBP==0x1500) && (fi.TBP0==0x2c97 || fi.TBP0==0x2ace || fi.TBP0==0x03d0 || fi.TBP0==0x2448) && (fi.FBMSK == 0x0000))
+		if((Aggressive || !s_nativeres) && fi.TME==0 && (fi.FBP==0x1500) && (fi.TBP0==0x2c97 || fi.TBP0==0x2ace || fi.TBP0==0x03d0 || fi.TBP0==0x2448) && (fi.FBMSK == 0x0000))
 		{
+			// Don't enable hack on native res if crc is below aggressive.
 			// Upscaling issues, removes glow/blur effect which fixes ghosting.
 			skip = 1;
 		}
@@ -2151,6 +2161,7 @@ void GSState::SetupCrcHack()
 {
 	GetSkipCount lut[CRC::TitleCount];
 
+	s_nativeres = m_nativeres;
 	s_crc_hack_level = m_crc_hack_level;
 
 	memset(lut, 0, sizeof(lut));
