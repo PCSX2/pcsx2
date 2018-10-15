@@ -5,6 +5,7 @@ project(Pcsx2)
 cmake_minimum_required(VERSION 2.8.5)
 
 # Keep OLD policy. Code was updated to support the new one but wasn't tested
+# Well, no time like the present to test it!
 #
 # cmake version 2.8.9
 #   CMP0018
@@ -34,10 +35,10 @@ cmake_minimum_required(VERSION 2.8.5)
 #        CMAKE_SHARED_LIBRARY_<Lang>_FLAGS whether it is modified or not and
 #        honor the POSITION_INDEPENDENT_CODE target property.
 if(POLICY CMP0018)
-    cmake_policy(SET CMP0018 OLD)
+    cmake_policy(SET CMP0018 NEW)
 endif()
 if(POLICY CMP0022)
-    cmake_policy(SET CMP0022 OLD)
+    cmake_policy(SET CMP0022 NEW)
 endif()
 
 # Variable to check that people use the good file
