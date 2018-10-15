@@ -435,7 +435,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 		wxEmptyString, wxITEM_CHECK);
 
 	m_menuSys.Append(MenuId_EnableWideScreenPatches,	_("Enable &Widescreen Patches"),
-		wxEmptyString, wxITEM_CHECK);
+		_("Enablind Widescreen Patches may occasionally cause issues."), wxITEM_CHECK);
 
 	if(IsDebugBuild || IsDevBuild)
 		m_menuSys.Append(MenuId_EnableHostFs,	_("Enable &Host Filesystem"),
