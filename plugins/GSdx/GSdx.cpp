@@ -237,15 +237,15 @@ void GSdxApp::Init()
 	m_gs_aspectratio.push_back(GSSetting(1, "4:3", ""));
 	m_gs_aspectratio.push_back(GSSetting(2, "16:9", ""));
 
-	m_gs_upscale_multiplier.push_back(GSSetting(1, "Native", ""));
-	m_gs_upscale_multiplier.push_back(GSSetting(2, "2x Native", ""));
-	m_gs_upscale_multiplier.push_back(GSSetting(3, "3x Native", ""));
-	m_gs_upscale_multiplier.push_back(GSSetting(4, "4x Native", ""));
-	m_gs_upscale_multiplier.push_back(GSSetting(5, "5x Native", ""));
-	m_gs_upscale_multiplier.push_back(GSSetting(6, "6x Native", ""));
-	m_gs_upscale_multiplier.push_back(GSSetting(8, "8x Native", ""));
+	m_gs_upscale_multiplier.push_back(GSSetting(1, "Native", "PS2"));
+	m_gs_upscale_multiplier.push_back(GSSetting(2, "2x Native", "~720p"));
+	m_gs_upscale_multiplier.push_back(GSSetting(3, "3x Native", "~1080p"));
+	m_gs_upscale_multiplier.push_back(GSSetting(4, "4x Native", "~1440p 2K"));
+	m_gs_upscale_multiplier.push_back(GSSetting(5, "5x Native", "~1620p 3K"));
+	m_gs_upscale_multiplier.push_back(GSSetting(6, "6x Native", "~2160p 4K"));
+	m_gs_upscale_multiplier.push_back(GSSetting(8, "8x Native", "~2880p 5K"));
 #ifndef __unix__
-	m_gs_upscale_multiplier.push_back(GSSetting(0, "Custom", ""));
+	m_gs_upscale_multiplier.push_back(GSSetting(0, "Custom", "Not Recommended"));
 #endif
 
 	m_gs_max_anisotropy.push_back(GSSetting(0, "Off", ""));
