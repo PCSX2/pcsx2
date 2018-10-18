@@ -1210,37 +1210,6 @@ bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_ICO(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(Aggressive && fi.TME && fi.FBP == 0x00800 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03d00 && fi.TPSM == PSM_PSMCT32)
-		{
-			// Removes shadows, shadows can be a little misaligned when upscaled. HPO fixes the issue.
-			// Can be used as a speed hack.
-			skip = 3;
-		}
-		else if(fi.TME && fi.FBP == 0x00800 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x02800 && fi.TPSM == PSM_PSMT8H)
-		{
-			// Depth effects.
-			skip = 1;
-		}
-		else if(Aggressive && fi.TME && fi.FBP == 0x0800 && (fi.TBP0 == 0x2800 || fi.TBP0 ==0x2c00) && fi.TPSM ==0  && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.TBP0 == 0x00800 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_StarWarsBattlefront(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2253,7 +2222,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::FrontMission5] = GSC_FrontMission5;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
-		lut[CRC::ICO] = GSC_ICO;
 		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 		lut[CRC::Okami] = GSC_Okami;
 		lut[CRC::SoulCalibur2] = GSC_SoulCaliburGames;

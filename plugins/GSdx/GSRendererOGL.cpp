@@ -1312,7 +1312,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// Depth buffer was moved so GSdx will invalide it which means a
 			// downscale. ICO uses the MSB depth bits as the texture alpha
 			// channel.  However this depth of field effect requires
-			// texel:pixel mapping accuraccy.
+			// texel:pixel mapping accuracy.
 			//
 			// Use an HLE shader to sample depth directly as the alpha channel
 			GL_INS("ICO sample depth as alpha");
