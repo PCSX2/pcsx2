@@ -132,7 +132,7 @@
     <ClCompile Include="Renderers\OpenGL\GSShaderOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderers\OpenGL\GSState.cpp">
+    <ClCompile Include="GSState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSTables.cpp">

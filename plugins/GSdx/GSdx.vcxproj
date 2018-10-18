@@ -146,7 +146,7 @@
     <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x86.avx2.cpp" />
     <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x86.cpp" />
     <ClCompile Include="Renderers\OpenGL\GSShaderOGL.cpp" />
-    <ClCompile Include="Renderers\OpenGL\GSState.cpp" />
+    <ClCompile Include="GSState.cpp" />
     <ClCompile Include="GSTables.cpp" />
     <ClCompile Include="Renderers\Common\GSTexture.cpp" />
     <ClCompile Include="GSTexture11.cpp" />
@@ -155,7 +155,7 @@
     <ClCompile Include="Renderers\Common\GSTextureCache.cpp" />
     <ClCompile Include="GSTextureCache11.cpp" />
     <ClCompile Include="GSTextureCache9.cpp" />
-    <ClCompile Include="GSTextureCacheOGL.cpp" />
+    <ClCompile Include="Renderers\OpenGL\GSTextureCacheOGL.cpp" />
     <ClCompile Include="Renderers\SW\GSTextureCacheSW.cpp" />
     <ClCompile Include="GSTextureFX11.cpp" />
     <ClCompile Include="GSTextureFX9.cpp" />
