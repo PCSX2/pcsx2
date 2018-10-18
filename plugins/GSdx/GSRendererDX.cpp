@@ -376,6 +376,8 @@ void GSRendererDX::ResetStates()
 
 void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
+	GSTexture* rtcopy = NULL;
+
 	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
 	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
 
@@ -387,16 +389,60 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	ResetStates();
 	vs_cb.Texture_Scale_Offset = GSVector4(0.0f);
 
-	GSTexture* rtcopy = NULL;
-
 	ASSERT(m_dev != NULL);
-
 	dev = (GSDeviceDX*)m_dev;
 
+	// HLE implementation of the channel selection effect
+	//
+	// Warning it must be done at the begining because it will change the vertex list
 	EmulateChannelShuffle(&rt, tex);
 
 	// Upscaling hack to avoid various line/grid issues
 	MergeSprite(tex);
+
+	EmulateTextureShuffleAndFbmask();
+
+	// Blend
+
+	if (!IsOpaque())
+	{
+		om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
+
+		om_bsel.a = m_context->ALPHA.A;
+		om_bsel.b = m_context->ALPHA.B;
+		om_bsel.c = m_context->ALPHA.C;
+		om_bsel.d = m_context->ALPHA.D;
+
+		if (m_env.PABE.PABE)
+		{
+			if (om_bsel.a == 0 && om_bsel.b == 1 && om_bsel.c == 0 && om_bsel.d == 1)
+			{
+				// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
+				// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
+
+				om_bsel.abe = 0;
+			}
+			else
+			{
+				//Breath of Fire Dragon Quarter triggers this in battles. Graphics are fine though.
+				//ASSERT(0);
+			}
+		}
+	}
+
+	uint8 afix = m_context->ALPHA.FIX;
+
+	if (m_ps_sel.dfmt == 1)
+	{
+		if (m_context->ALPHA.C == 1)
+		{
+			// 24 bits no alpha channel so use 1.0f fix factor as equivalent
+			m_context->ALPHA.C = 2;
+			afix = 0x00000001;
+		}
+		// Disable writing of the alpha channel
+		om_bsel.wa = 0;
+	}
 
 	if (DATE)
 	{
@@ -441,32 +487,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		om_dssel.fba = m_context->FBA.FBA;
 	}
 
-	if (!IsOpaque())
-	{
-		om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
-
-		om_bsel.a = m_context->ALPHA.A;
-		om_bsel.b = m_context->ALPHA.B;
-		om_bsel.c = m_context->ALPHA.C;
-		om_bsel.d = m_context->ALPHA.D;
-
-		if (m_env.PABE.PABE)
-		{
-			if (om_bsel.a == 0 && om_bsel.b == 1 && om_bsel.c == 0 && om_bsel.d == 1)
-			{
-				// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
-				// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
-
-				om_bsel.abe = 0;
-			}
-			else
-			{
-				//Breath of Fire Dragon Quarter triggers this in battles. Graphics are fine though.
-				//ASSERT(0);
-			}
-		}
-	}
-
 	// vs
 
 	m_vs_sel.tme = PRIM->TME;
@@ -509,22 +529,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	m_gs_sel.prim = m_vt.m_primclass;
 
 	// ps
-
-	EmulateTextureShuffleAndFbmask();
-
-	uint8 afix = m_context->ALPHA.FIX;
-
-	if (m_ps_sel.dfmt == 1)
-	{
-		if (m_context->ALPHA.C == 1)
-		{
-			// 24 bits no alpha channel so use 1.0f fix factor as equivalent
-			m_context->ALPHA.C = 2;
-			afix = 0x00000001;
-		}
-		// Disable writing of the alpha channel
-		om_bsel.wa = 0;
-	}
 
 	if (DATE)
 	{
