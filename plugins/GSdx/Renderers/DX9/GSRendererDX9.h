@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "GSRendererDX.h"
+#include "Renderers/DXCommon/GSRendererDX.h"
 #include "Renderers/HW/GSVertexHW.h"
 #include "GSTextureCache9.h"
 

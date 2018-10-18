@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "GSDeviceDX.h"
+#include "Renderers/DXCommon/GSDeviceDX.h"
 #include "GSTexture9.h"
 
 struct Direct3DSamplerState9

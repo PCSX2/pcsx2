@@ -208,8 +208,8 @@ if(Windows)
     LIST(APPEND GSdxSources
         GSDevice11.cpp
         GSDevice9.cpp
-        GSDeviceDX.cpp
-        GSDialog.cpp
+        Renderers/DXCommon/GSDeviceDX.cpp
+        Window/GSDialog.cpp
         GSRendererDX11.cpp
         GSRendererDX9.cpp
         GSRendererDX.cpp
@@ -219,7 +219,7 @@ if(Windows)
         GSTextureCache9.cpp
         GSTextureFX11.cpp
         GSTextureFX9.cpp
-        GSTextureFX.cpp
+        Renderers/DXCommon/GSTextureFX.cpp
         GSVertexList.cpp
         GSVertexSW.cpp
         Window/GSCaptureDlg.cpp
@@ -232,10 +232,10 @@ if(Windows)
     LIST(APPEND GSdxHeaders
         GSDevice11.h
         GSDevice9.h
-        GSDeviceDX.h
+        Renderers/DXCommon/GSDeviceDX.h
         GSRendererDX11.h
         GSRendererDX9.h
-        GSRendererDX.h
+        Renderers/DXCommon/GSRendererDX.h
         GSTexture11.h
         GSTexture9.h
         GSTextureCache11.h

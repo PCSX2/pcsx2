@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "GSScanlineEnvironment.h"
+#include "Renderers/SW/GSScanlineEnvironment.h"
 #include "Renderers/Common/GSFunctionMap.h"
 #include "GSUtil.h"
 

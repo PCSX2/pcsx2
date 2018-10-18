@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "GSDeviceDX.h"
+#include "Renderers\DXCommon\GSDeviceDX.h"
 #include "GSTexture11.h"
 
 struct GSVertexShader11

@@ -48,16 +48,16 @@
     <ClCompile Include="Renderers\Common\GSDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDevice11.cpp">
+    <ClCompile Include="Renderers\DX11\GSDevice11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDevice9.cpp">
+    <ClCompile Include="Renderers\DX9\GSDevice9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\Null\GSDeviceNull.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDeviceOGL.cpp">
+    <ClCompile Include="Renderers\OpenGL\GSDeviceOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Window\GSDialog.cpp">
@@ -81,7 +81,7 @@
     <ClCompile Include="Renderers\Common\GSFunctionMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSHwHack.cpp">
+    <ClCompile Include="Renderers\HW\GSHwHack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSLocalMemory.cpp">
@@ -99,16 +99,16 @@
     <ClCompile Include="Renderers\Common\GSRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSRendererDX.cpp">
+    <ClCompile Include="Renderers\DXCommon\GSRendererDX.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSRendererDX11.cpp">
+    <ClCompile Include="Renderers\DX11\GSRendererDX11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSRendererDX9.cpp">
+    <ClCompile Include="Renderers\DX9\GSRendererDX9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSRendererHW.cpp">
+    <ClCompile Include="Renderers\HW\GSRendererHW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\Null\GSRendererNull.cpp">
@@ -141,10 +141,10 @@
     <ClCompile Include="Renderers\Common\GSTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTexture11.cpp">
+    <ClCompile Include="Renderers\DX11\GSTexture11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTexture9.cpp">
+    <ClCompile Include="Renderers\DX9\GSTexture9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\OpenGL\GSTextureOGL.cpp">
@@ -153,10 +153,10 @@
     <ClCompile Include="Renderers\Common\GSTextureCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTextureCache11.cpp">
+    <ClCompile Include="Renderers\DX11\GSTextureCache11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTextureCache9.cpp">
+    <ClCompile Include="Renderers\DX9\GSTextureCache9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\OpenGL\GSTextureCacheOGL.cpp">
@@ -165,10 +165,10 @@
     <ClCompile Include="Renderers\SW\GSTextureCacheSW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTextureFX11.cpp">
+    <ClCompile Include="Renderers\DX11\GSTextureFX11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTextureFX9.cpp">
+    <ClCompile Include="Renderers\DX9\GSTextureFX9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\Null\GSTextureNull.cpp">
@@ -207,7 +207,7 @@
     <ClCompile Include="Renderers\OpenGL\GLState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDeviceDX.cpp">
+    <ClCompile Include="Renderers\DXCommon\GSDeviceDX.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\SW\GSTextureSW.cpp">
@@ -323,13 +323,13 @@
     <ClInclude Include="Renderers\Common\GSDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSDevice11.h">
+    <ClInclude Include="Renderers\DX11\GSDevice11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSDevice9.h">
+    <ClInclude Include="Renderers\DX9\GSDevice9.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSDeviceDX.h">
+    <ClInclude Include="Renderers\DXCommon\GSDeviceDX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\Null\GSDeviceNull.h">
@@ -380,13 +380,13 @@
     <ClInclude Include="Renderers\Common\GSRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSRendererDX.h">
+    <ClInclude Include="Renderers\DXCommon\GSRendererDX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSRendererDX11.h">
+    <ClInclude Include="Renderers\DX11\GSRendererDX11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSRendererDX9.h">
+    <ClInclude Include="Renderers\DX9\GSRendererDX9.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\HW\GSRendererHW.h">
@@ -425,10 +425,10 @@
     <ClInclude Include="Renderers\Common\GSTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSTexture11.h">
+    <ClInclude Include="Renderers\DX11\GSTexture11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSTexture9.h">
+    <ClInclude Include="Renderers\DX9\GSTexture9.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\OpenGL\GSTextureOGL.h">
@@ -437,13 +437,13 @@
     <ClInclude Include="Renderers\Common\GSTextureCache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSTextureCache11.h">
+    <ClInclude Include="Renderers\DX11\GSTextureCache11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSTextureCache9.h">
+    <ClInclude Include="Renderers\DX9\GSTextureCache9.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSTextureCacheOGL.h">
+    <ClInclude Include="Renderers\OpenGL\GSTextureCacheOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\SW\GSTextureCacheSW.h">

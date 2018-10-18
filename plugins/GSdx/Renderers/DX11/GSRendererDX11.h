@@ -21,37 +21,21 @@
 
 #pragma once
 
-#include "Renderers/SW/GSScanlineEnvironment.h"
-#include "Renderers/Common/GSFunctionMap.h"
-#include "GSUtil.h"
+#include "Renderers/DXCommon/GSRendererDX.h"
+#include "Renderers/HW/GSVertexHW.h"
+#include "GSTextureCache11.h"
 
-class GSSetupPrimCodeGenerator : public GSCodeGenerator
+class GSRendererDX11 : public GSRendererDX
 {
-	void operator = (const GSSetupPrimCodeGenerator&);
+	bool UserHacks_unscale_pt_ln;
 
-	GSScanlineSelector m_sel;
-	GSScanlineLocalData& m_local;
-	bool m_rip;
-
-	struct {uint32 z:1, f:1, t:1, c:1;} m_en;
-
-#if _M_SSE < 0x501
-	void Generate_SSE();
-	void Depth_SSE();
-	void Texture_SSE();
-	void Color_SSE();
-
-	void Generate_AVX();
-	void Depth_AVX();
-	void Texture_AVX();
-	void Color_AVX();
-#else
-	void Generate_AVX2();
-	void Depth_AVX2();
-	void Texture_AVX2();
-	void Color_AVX2();
-#endif
+protected:
+	void EmulateTextureShuffleAndFbmask();
+	void SetupIA(const float& sx, const float& sy);
 
 public:
-	GSSetupPrimCodeGenerator(void* param, uint64 key, void* code, size_t maxsize);
+	GSRendererDX11();
+	virtual ~GSRendererDX11() {}
+
+	bool CreateDevice(GSDevice* dev);
 };
