@@ -459,10 +459,11 @@ bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
 	{
-		if ((Aggressive || !s_nativeres) && fi.TME && fi.FBP == 0x00500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00f00 && fi.TPSM == PSM_PSMCT16)
+		if (fi.TME && fi.FBP == 0x00500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00f00 && fi.TPSM == PSM_PSMCT16)
 		{
-			// Don't enable hack on native res if crc is below aggressive.
-			skip = 2; // blur
+			// Not an upscaling issue.
+			// Elements on the screen show double/distorted.
+			skip = 2;
 		}
 	}
 
