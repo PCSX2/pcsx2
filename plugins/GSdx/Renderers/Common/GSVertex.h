@@ -24,7 +24,7 @@
 #include "GS.h"
 #include "GSVector.h"
 #include "GSVertexHW.h"
-#include "GSVertexSW.h"
+#include "Renderers/SW/GSVertexSW.h"
 
 #pragma pack(push, 1)
 

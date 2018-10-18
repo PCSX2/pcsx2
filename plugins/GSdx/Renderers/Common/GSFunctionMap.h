@@ -26,7 +26,7 @@
 #include "xbyak/xbyak.h"
 #include "xbyak/xbyak_util.h"
 
-#include "GSScanlineEnvironment.h"
+#include "Renderers/SW/GSScanlineEnvironment.h"
 
 template<class KEY, class VALUE> class GSFunctionMap
 {

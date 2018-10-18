@@ -23,7 +23,7 @@
 
 #include "GSDrawingContext.h"
 #include "GSVertex.h"
-#include "GSVertexSW.h"
+#include "Renderers/SW/GSVertexSW.h"
 #include "GSVertexHW.h"
 #include "GSFunctionMap.h"
 

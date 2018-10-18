@@ -22,7 +22,7 @@
 #pragma once
 
 #include "GPUState.h"
-#include "GSRasterizer.h"
+#include "Renderers/SW/GSRasterizer.h"
 #include "GPUScanlineEnvironment.h"
 #include "GPUSetupPrimCodeGenerator.h"
 #include "GPUDrawScanlineCodeGenerator.h"

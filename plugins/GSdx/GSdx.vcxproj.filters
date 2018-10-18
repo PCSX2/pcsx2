@@ -66,10 +66,10 @@
     <ClCompile Include="Renderers\Common\GSDirtyRect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDrawScanline.cpp">
+    <ClCompile Include="Renderers\SW\GSDrawScanline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDrawScanlineCodeGenerator.cpp">
+    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSDump.cpp">
@@ -90,10 +90,10 @@
     <ClCompile Include="GSPerfMon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSOsdManager.cpp">
+    <ClCompile Include="Renderers\Common\GSOsdManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSRasterizer.cpp">
+    <ClCompile Include="Renderers\SW\GSRasterizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\Common\GSRenderer.cpp">
@@ -117,7 +117,7 @@
     <ClCompile Include="GSRendererOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSRendererSW.cpp">
+    <ClCompile Include="Renderers\SW\GSRendererSW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Window\GSSetting.cpp">
@@ -126,7 +126,7 @@
     <ClCompile Include="Window\SSettingsDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSSetupPrimCodeGenerator.cpp">
+    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSShaderOGL.cpp">
@@ -162,7 +162,7 @@
     <ClCompile Include="GSTextureCacheOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTextureCacheSW.cpp">
+    <ClCompile Include="Renderers\SW\GSTextureCacheSW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSTextureFX11.cpp">
@@ -183,10 +183,10 @@
     <ClCompile Include="Renderers\Common\GSVertexList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSVertexSW.cpp">
+    <ClCompile Include="Renderers\SW\GSVertexSW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSVertexTrace.cpp">
+    <ClCompile Include="Renderers\Common\GSVertexTrace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Window\GSWnd.cpp">
@@ -210,43 +210,43 @@
     <ClCompile Include="GSDeviceDX.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTextureSW.cpp">
+    <ClCompile Include="Renderers\SW\GSTextureSW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSSetupPrimCodeGenerator.x64.avx.cpp">
+    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x64.avx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSSetupPrimCodeGenerator.x64.cpp">
+    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSSetupPrimCodeGenerator.x86.avx.cpp">
+    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x86.avx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSSetupPrimCodeGenerator.x86.cpp">
+    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x86.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDrawScanlineCodeGenerator.x64.avx.cpp">
+    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x64.avx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDrawScanlineCodeGenerator.x64.avx2.cpp">
+    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x64.avx2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDrawScanlineCodeGenerator.x64.cpp">
+    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDrawScanlineCodeGenerator.x86.avx.cpp">
+    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x86.avx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDrawScanlineCodeGenerator.x86.cpp">
+    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x86.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDrawScanlineCodeGenerator.x86.avx2.cpp">
+    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x86.avx2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSSetupPrimCodeGenerator.x86.avx2.cpp">
+    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x86.avx2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSSetupPrimCodeGenerator.x64.avx2.cpp">
+    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x64.avx2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSRendererCL.cpp">
@@ -350,10 +350,10 @@
     <ClInclude Include="GSDrawingEnvironment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSDrawScanline.h">
+    <ClInclude Include="Renderers\SW\GSDrawScanline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSDrawScanlineCodeGenerator.h">
+    <ClInclude Include="Renderers\SW\GSDrawScanlineCodeGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSDump.h">
@@ -371,10 +371,10 @@
     <ClInclude Include="GSPerfMon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSOsdManager.h">
+    <ClInclude Include="Renderers\Common\GSOsdManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSRasterizer.h">
+    <ClInclude Include="Renderers\SW\GSRasterizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\Common\GSRenderer.h">
@@ -398,10 +398,10 @@
     <ClInclude Include="GSRendererOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSRendererSW.h">
+    <ClInclude Include="Renderers\SW\GSRendererSW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSScanlineEnvironment.h">
+    <ClInclude Include="Renderers\SW\GSScanlineEnvironment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Window\GSSetting.h">
@@ -410,7 +410,7 @@
     <ClInclude Include="Window\GSSettingsDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSSetupPrimCodeGenerator.h">
+    <ClInclude Include="Renderers\SW\GSSetupPrimCodeGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSShaderOGL.h">
@@ -488,7 +488,7 @@
     <ClInclude Include="Renderers\Common\GSVertexList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSVertexSW.h">
+    <ClInclude Include="Renderers\SW\GSVertexSW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\Common\GSVertexTrace.h">
@@ -521,7 +521,7 @@
     <ClInclude Include="xbyak\xbyak_util.h">
       <Filter>Xbyak</Filter>
     </ClInclude>
-    <ClInclude Include="GSTextureSW.h">
+    <ClInclude Include="Renderers\SW\GSTextureSW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="config.h">
