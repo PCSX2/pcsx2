@@ -42500,6 +42500,7 @@ Region = NTSC-U
 Compat = 5
 DMABusyHack = 1
 eeRoundMode = 0 // Fixes jump issue.
+GIFFIFOHack = 1 // Fixes flickering sprites.
 ---------------------------------------------
 Serial = SLUS-21736
 Name   = Wall-E
@@ -43169,6 +43170,7 @@ Serial = SLUS-21890
 Name   = Mana Khemia 2: Fall Of Alchemy
 Region = NTSC-U
 Compat = 5
+GIFFIFOHack = 1 // Fixes flickering sprites.
 ---------------------------------------------
 Serial = SLUS-21891
 Name   = G-Force
