@@ -21,11 +21,11 @@
 
 #pragma once
 
-#include "GSRendererHW.h"
+#include "Renderers/HW/GSRendererHW.h"
 
 #include "Renderers/Common/GSRenderer.h"
 #include "GSTextureCacheOGL.h"
-#include "GSVertexHW.h"
+#include "Renderers/HW/GSVertexHW.h"
 
 class GSRendererOGL final : public GSRendererHW
 {

@@ -24,7 +24,7 @@
 #include "GSDrawingContext.h"
 #include "GSVertex.h"
 #include "Renderers/SW/GSVertexSW.h"
-#include "GSVertexHW.h"
+#include "Renderers/HW/GSVertexHW.h"
 #include "GSFunctionMap.h"
 
 class GSState;

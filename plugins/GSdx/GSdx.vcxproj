@@ -109,7 +109,7 @@
     <ClCompile Include="Window\GSDialog.cpp" />
     <ClCompile Include="Renderers\Common\GSDirtyRect.cpp" />
     <ClCompile Include="GSDrawingContext.cpp" />
-    <ClCompile Include="GSDrawScanline.cpp" />
+    <ClCompile Include="Renderers\SW\GSDrawScanline.cpp" />
     <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.cpp" />
     <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x64.avx.cpp" />
     <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x64.avx2.cpp" />
@@ -120,7 +120,7 @@
     <ClCompile Include="GSDump.cpp" />
     <ClCompile Include="GSdx.cpp" />
     <ClCompile Include="Renderers\Common\GSFunctionMap.cpp" />
-    <ClCompile Include="GSHwHack.cpp" />
+    <ClCompile Include="Renderers\HW\GSHwHack.cpp" />
     <ClCompile Include="GSLocalMemory.cpp" />
     <ClCompile Include="GSLzma.cpp" />
     <ClCompile Include="GSPerfMon.cpp" />
@@ -132,7 +132,7 @@
     <ClCompile Include="GSRendererDX.cpp" />
     <ClCompile Include="GSRendererDX11.cpp" />
     <ClCompile Include="GSRendererDX9.cpp" />
-    <ClCompile Include="GSRendererHW.cpp" />
+    <ClCompile Include="Renderers\HW\GSRendererHW.cpp" />
     <ClCompile Include="Renderers\Null\GSRendererNull.cpp" />
     <ClCompile Include="GSRendererOGL.cpp" />
     <ClCompile Include="Renderers\SW\GSRendererSW.cpp" />
@@ -164,7 +164,7 @@
     <ClCompile Include="GSUtil.cpp" />
     <ClCompile Include="GSVector.cpp" />
     <ClCompile Include="Renderers\Common\GSVertexList.cpp" />
-    <ClCompile Include="GSVertexSW.cpp" />
+    <ClCompile Include="Renderers\SW\GSVertexSW.cpp" />
     <ClCompile Include="Renderers\Common\GSVertexTrace.cpp" />
     <ClCompile Include="Window\GSWnd.cpp" />
     <ClCompile Include="Window\GSWndDX.cpp" />
@@ -221,7 +221,7 @@
     <ClInclude Include="GSRendererDX.h" />
     <ClInclude Include="GSRendererDX11.h" />
     <ClInclude Include="GSRendererDX9.h" />
-    <ClInclude Include="GSRendererHW.h" />
+    <ClInclude Include="Renderers\HW\GSRendererHW.h" />
     <ClInclude Include="Renderers\Null\GSRendererNull.h" />
     <ClInclude Include="GSRendererOGL.h" />
     <ClInclude Include="Renderers\SW\GSRendererSW.h" />
@@ -254,7 +254,7 @@
     <ClInclude Include="GSVector8.h" />
     <ClInclude Include="Renderers\Common\GSVertex.h" />
     <ClInclude Include="GSVertexArrayOGL.h" />
-    <ClInclude Include="GSVertexHW.h" />
+    <ClInclude Include="Renderers\HW\GSVertexHW.h" />
     <ClInclude Include="Renderers\Common\GSVertexList.h" />
     <ClInclude Include="Renderers\SW\GSVertexSW.h" />
     <ClInclude Include="Renderers\Common\GSVertexTrace.h" />

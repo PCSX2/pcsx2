@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "GSRendererHW.h"
+#include "Renderers/HW/GSRendererHW.h"
 #include "GSDeviceDX.h"
 
 class GSRendererDX : public GSRendererHW

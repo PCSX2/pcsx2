@@ -389,7 +389,7 @@
     <ClInclude Include="GSRendererDX9.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSRendererHW.h">
+    <ClInclude Include="Renderers\HW\GSRendererHW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\Null\GSRendererNull.h">
@@ -446,7 +446,7 @@
     <ClInclude Include="GSTextureCacheOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSTextureCacheSW.h">
+    <ClInclude Include="Renderers\SW\GSTextureCacheSW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\Null\GSTextureNull.h">
@@ -482,7 +482,7 @@
     <ClInclude Include="GSVertexArrayOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSVertexHW.h">
+    <ClInclude Include="Renderers\HW\GSVertexHW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\Common\GSVertexList.h">

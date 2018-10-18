@@ -22,7 +22,7 @@
 #pragma once
 
 #include "GSRendererDX.h"
-#include "GSVertexHW.h"
+#include "Renderers/HW/GSVertexHW.h"
 #include "GSTextureCache9.h"
 
 class GSRendererDX9 : public GSRendererDX

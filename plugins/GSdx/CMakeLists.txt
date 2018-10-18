@@ -67,13 +67,11 @@ set(GSdxSources
     GSDeviceOGL.cpp
     GSDrawingContext.cpp
     GSDump.cpp
-    GSHwHack.cpp
     GSLocalMemory.cpp
     GSLzma.cpp
     GSPerfMon.cpp
     GSPng.cpp
     GSRendererCL.cpp
-    GSRendererHW.cpp
     GSRendererOGL.cpp
     GSShaderOGL.cpp
     GSState.cpp
@@ -96,6 +94,8 @@ set(GSdxSources
     Renderers/Null/GSDeviceNull.cpp
     Renderers/Null/GSRendererNull.cpp
     Renderers/Null/GSTextureNull.cpp
+    Renderers/HW/GSHwHack.cpp
+    Renderers/HW/GSRendererHW.cpp
     Renderers/SW/GSDrawScanline.cpp
     Renderers/SW/GSDrawScanlineCodeGenerator.cpp
     Renderers/SW/GSDrawScanlineCodeGenerator.x64.cpp
@@ -141,7 +141,6 @@ set(GSdxHeaders
     GSPerfMon.h
     GSPng.h
     GSRendererCL.h
-    GSRendererHW.h
     GSRendererOGL.h
     GSShaderOGL.h
     GSState.h
@@ -158,7 +157,6 @@ set(GSdxHeaders
     GSVector8.h
     GSVector8i.h
     GSVertexArrayOGL.h
-    GSVertexHW.h
     stdafx.h
     PSX/GPUDrawingEnvironment.h
     PSX/GPUDrawScanlineCodeGenerator.h
@@ -185,6 +183,8 @@ set(GSdxHeaders
     Renderers/Null/GSDeviceNull.h
     Renderers/Null/GSRendererNull.h
     Renderers/Null/GSTextureNull.h
+    Renderers/HW/GSRendererHW.h
+    Renderers/HW/GSVertexHW.h
     Renderers/SW/GSDrawScanlineCodeGenerator.h
     Renderers/SW/GSDrawScanline.h
     Renderers/SW/GSRasterizer.h
