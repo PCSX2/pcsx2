@@ -22,7 +22,7 @@
 #pragma once
 
 #include "GSScanlineEnvironment.h"
-#include "GSFunctionMap.h"
+#include "Renderers/Common/GSFunctionMap.h"
 #include "GSUtil.h"
 
 class GSSetupPrimCodeGenerator : public GSCodeGenerator

@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "GSRenderer.h"
+#include "Renderers/Common/GSRenderer.h"
 #include "GSTextureCacheSW.h"
 #include "GSDrawScanline.h"
 

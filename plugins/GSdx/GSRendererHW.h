@@ -21,10 +21,10 @@
 
 #pragma once
 
-#include "GSRenderer.h"
-#include "GSTextureCache.h"
+#include "Renderers/Common/GSRenderer.h"
+#include "Renderers/Common/GSTextureCache.h"
 #include "GSCrc.h"
-#include "GSFunctionMap.h"
+#include "Renderers/Common/GSFunctionMap.h"
 #include "GSState.h"
 
 class GSRendererHW : public GSRenderer

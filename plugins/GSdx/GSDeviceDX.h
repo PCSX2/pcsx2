@@ -22,7 +22,7 @@
 #pragma once
 
 #include "GSVector.h"
-#include "GSDevice.h"
+#include "Renderers/Common/GSDevice.h"
 #include "GSAlignedClass.h"
 
 class GSDeviceDX : public GSDevice

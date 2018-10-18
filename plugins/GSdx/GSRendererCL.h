@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "GSRenderer.h"
+#include "Renderers/Common/GSRenderer.h"
 
 #ifdef ENABLE_OPENCL
 

@@ -21,7 +21,7 @@
 
 #include "stdafx.h"
 #include "GSRendererOGL.h"
-#include "GSRenderer.h"
+#include "Renderers/Common/GSRenderer.h"
 
 
 GSRendererOGL::GSRendererOGL()

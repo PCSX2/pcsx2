@@ -45,7 +45,7 @@
     <ClCompile Include="GSCrc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDevice.cpp">
+    <ClCompile Include="Renderers\Common\GSDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSDevice11.cpp">
@@ -63,7 +63,7 @@
     <ClCompile Include="Window\GSDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDirtyRect.cpp">
+    <ClCompile Include="Renderers\Common\GSDirtyRect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSDrawScanline.cpp">
@@ -78,7 +78,7 @@
     <ClCompile Include="GSdx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSFunctionMap.cpp">
+    <ClCompile Include="Renderers\Common\GSFunctionMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSHwHack.cpp">
@@ -96,7 +96,7 @@
     <ClCompile Include="GSRasterizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSRenderer.cpp">
+    <ClCompile Include="Renderers\Common\GSRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSRendererDX.cpp">
@@ -138,7 +138,7 @@
     <ClCompile Include="GSTables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTexture.cpp">
+    <ClCompile Include="Renderers\Common\GSTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSTexture11.cpp">
@@ -150,7 +150,7 @@
     <ClCompile Include="GSTextureOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTextureCache.cpp">
+    <ClCompile Include="Renderers\Common\GSTextureCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSTextureCache11.cpp">
@@ -180,7 +180,7 @@
     <ClCompile Include="GSVector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSVertexList.cpp">
+    <ClCompile Include="Renderers\Common\GSVertexList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSVertexSW.cpp">
@@ -320,7 +320,7 @@
     <ClInclude Include="GSCrc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSDevice.h">
+    <ClInclude Include="Renderers\Common\GSDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSDevice11.h">
@@ -341,7 +341,7 @@
     <ClInclude Include="Window\GSDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSDirtyRect.h">
+    <ClInclude Include="Renderers\Common\GSDirtyRect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSDrawingContext.h">
@@ -362,7 +362,7 @@
     <ClInclude Include="GSdx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSFunctionMap.h">
+    <ClInclude Include="Renderers\Common\GSFunctionMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSLocalMemory.h">
@@ -377,7 +377,7 @@
     <ClInclude Include="GSRasterizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSRenderer.h">
+    <ClInclude Include="Renderers\Common\GSRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSRendererDX.h">
@@ -422,7 +422,7 @@
     <ClInclude Include="GSTables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSTexture.h">
+    <ClInclude Include="Renderers\Common\GSTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSTexture11.h">
@@ -434,7 +434,7 @@
     <ClInclude Include="GSTextureOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSTextureCache.h">
+    <ClInclude Include="Renderers\Common\GSTextureCache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSTextureCache11.h">
@@ -476,7 +476,7 @@
     <ClInclude Include="GSVector8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSVertex.h">
+    <ClInclude Include="Renderers\Common\GSVertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSVertexArrayOGL.h">
@@ -485,13 +485,13 @@
     <ClInclude Include="GSVertexHW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSVertexList.h">
+    <ClInclude Include="Renderers\Common\GSVertexList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSVertexSW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSVertexTrace.h">
+    <ClInclude Include="Renderers\Common\GSVertexTrace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Window\GSWnd.h">

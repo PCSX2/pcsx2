@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "GSTextureCache.h"
+#include "Renderers/Common/GSTextureCache.h"
 #include "GSDevice11.h"
 
 class GSTextureCache11 : public GSTextureCache

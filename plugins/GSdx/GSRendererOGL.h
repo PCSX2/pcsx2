@@ -23,7 +23,7 @@
 
 #include "GSRendererHW.h"
 
-#include "GSRenderer.h"
+#include "Renderers/Common/GSRenderer.h"
 #include "GSTextureCacheOGL.h"
 #include "GSVertexHW.h"
 

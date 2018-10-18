@@ -20,7 +20,7 @@
  */
 
 #include "stdafx.h"
-#include "GSTextureCache.h"
+#include "Renderers/Common/GSTextureCache.h"
 #include "GSUtil.h"
 
 bool s_IS_DIRECT3D11 = false;
