@@ -71,7 +71,6 @@ set(GSdxSources
     GSLzma.cpp
     GSPerfMon.cpp
     GSPng.cpp
-    GSRendererCL.cpp
     GSRendererOGL.cpp
     GSShaderOGL.cpp
     GSState.cpp
@@ -115,6 +114,7 @@ set(GSdxSources
     Renderers/SW/GSSetupPrimCodeGenerator.x86.avx2.cpp
     Renderers/SW/GSTextureCacheSW.cpp
     Renderers/SW/GSTextureSW.cpp
+    Renderers/OpenCL/GSRendererCL.cpp
     Window/GSSetting.cpp
     Window/GSWnd.cpp
     )
@@ -140,7 +140,6 @@ set(GSdxHeaders
     GSLzma.h
     GSPerfMon.h
     GSPng.h
-    GSRendererCL.h
     GSRendererOGL.h
     GSShaderOGL.h
     GSState.h
@@ -194,6 +193,7 @@ set(GSdxHeaders
     Renderers/SW/GSTextureCacheSW.h
     Renderers/SW/GSTextureSW.h
     Renderers/SW/GSVertexSW.h
+    Renderers/OpenCL/GSRendererCL.h
     Window/GSCaptureDlg.h
     Window/GSDialog.h
     Window/GSSetting.h

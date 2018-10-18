@@ -249,7 +249,7 @@
     <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x64.avx2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSRendererCL.cpp">
+    <ClCompile Include="Renderers\OpenCL\GSRendererCL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSDrawingContext.cpp">
@@ -530,7 +530,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSRendererCL.h">
+    <ClInclude Include="Renderers\OpenCL\GSRendererCL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSPng.h">

@@ -27,7 +27,7 @@
 #include "Renderers/Null/GSDeviceNull.h"
 #include "GSDeviceOGL.h"
 #include "GSRendererOGL.h"
-#include "GSRendererCL.h"
+#include "Renderers/OpenCL/GSRendererCL.h"
 #include "GSLzma.h"
 
 #ifdef _WIN32

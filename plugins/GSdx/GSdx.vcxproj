@@ -128,7 +128,7 @@
     <ClCompile Include="GSPng.cpp" />
     <ClCompile Include="Renderers\SW\GSRasterizer.cpp" />
     <ClCompile Include="Renderers\Common\GSRenderer.cpp" />
-    <ClCompile Include="GSRendererCL.cpp" />
+    <ClCompile Include="Renderers\OpenCL\GSRendererCL.cpp" />
     <ClCompile Include="GSRendererDX.cpp" />
     <ClCompile Include="GSRendererDX11.cpp" />
     <ClCompile Include="GSRendererDX9.cpp" />
@@ -217,7 +217,7 @@
     <ClInclude Include="GSPng.h" />
     <ClInclude Include="Renderers\SW\GSRasterizer.h" />
     <ClInclude Include="Renderers\Common\GSRenderer.h" />
-    <ClInclude Include="GSRendererCL.h" />
+    <ClInclude Include="Renderers\OpenCL\GSRendererCL.h" />
     <ClInclude Include="GSRendererDX.h" />
     <ClInclude Include="GSRendererDX11.h" />
     <ClInclude Include="GSRendererDX9.h" />
