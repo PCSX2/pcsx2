@@ -47,8 +47,6 @@ if(OPENCL_API)
 endif()
 
 set(GSdxSources
-    GLLoader.cpp
-    GLState.cpp
     PSX/GPU.cpp
     PSX/GPUDrawScanline.cpp
     PSX/GPUDrawScanlineCodeGenerator.cpp
@@ -109,6 +107,8 @@ set(GSdxSources
     Renderers/SW/GSSetupPrimCodeGenerator.x86.avx2.cpp
     Renderers/SW/GSTextureCacheSW.cpp
     Renderers/SW/GSTextureSW.cpp
+    Renderers/OpenGL/GLLoader.cpp
+    Renderers/OpenGL/GLState.cpp
     Renderers/OpenGL/GSDeviceOGL.cpp
     Renderers/OpenGL/GSRendererOGL.cpp
     Renderers/OpenGL/GSShaderOGL.cpp
@@ -121,8 +121,6 @@ set(GSdxSources
 
 set(GSdxHeaders
     config.h
-    GLLoader.h
-    GLState.h
     GSAlignedClass.h
     GSBlock.h
     GSCapture.h
@@ -186,6 +184,8 @@ set(GSdxHeaders
     Renderers/SW/GSTextureCacheSW.h
     Renderers/SW/GSTextureSW.h
     Renderers/SW/GSVertexSW.h
+    Renderers/OpenGL/GLLoader.h
+    Renderers/OpenGL/GLState.h
     Renderers/OpenGL/GSDeviceOGL.h
     Renderers/OpenGL/GSRendererOGL.h
     Renderers/OpenGL/GSShaderOGL.h

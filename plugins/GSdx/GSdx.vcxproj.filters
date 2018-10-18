@@ -201,7 +201,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GLLoader.cpp">
+    <ClCompile Include="Renderers\OpenGL\GLLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\OpenGL\GLState.cpp">
@@ -290,10 +290,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GLLoader.h">
+    <ClInclude Include="Renderers\OpenGL\GLLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GLState.h">
+    <ClInclude Include="Renderers\OpenGL\GLState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GS.h">

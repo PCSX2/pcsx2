@@ -90,8 +90,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="GLLoader.cpp" />
-    <ClCompile Include="GLState.cpp" />
+    <ClCompile Include="Renderers\OpenGL\GLLoader.cpp" />
+    <ClCompile Include="Renderers\OpenGL\GLState.cpp" />
     <ClCompile Include="GS.cpp" />
     <ClCompile Include="GSAlignedClass.cpp" />
     <ClCompile Include="GSBlock.cpp" />
@@ -184,8 +184,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.h" />
-    <ClInclude Include="GLLoader.h" />
-    <ClInclude Include="GLState.h" />
+    <ClInclude Include="Renderers\OpenGL\GLLoader.h" />
+    <ClInclude Include="Renderers\OpenGL\GLState.h" />
     <ClInclude Include="GS.h" />
     <ClInclude Include="GSAlignedClass.h" />
     <ClInclude Include="GSBlock.h" />
