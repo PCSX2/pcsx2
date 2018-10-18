@@ -65,7 +65,6 @@ set(GSdxSources
     GSCodeBuffer.cpp
     GSCrc.cpp
     GSDeviceOGL.cpp
-    GSDeviceNull.cpp
     GSDrawingContext.cpp
     GSDrawScanline.cpp
     GSDrawScanlineCodeGenerator.cpp
@@ -84,7 +83,6 @@ set(GSdxSources
     GSRasterizer.cpp
     GSRendererCL.cpp
     GSRendererHW.cpp
-    GSRendererNull.cpp
     GSRendererOGL.cpp
     GSRendererSW.cpp
     GSSetupPrimCodeGenerator.cpp
@@ -100,7 +98,6 @@ set(GSdxSources
     GSTextureCacheSW.cpp
     GSTextureCacheOGL.cpp
     GSTextureOGL.cpp
-    GSTextureNull.cpp
     GSTextureSW.cpp
     GSUtil.cpp
     GSVector.cpp
@@ -115,6 +112,9 @@ set(GSdxSources
     Renderers/Common/GSTexture.cpp
     Renderers/Common/GSTextureCache.cpp
     Renderers/Common/GSVertexTrace.cpp
+    Renderers/Null/GSDeviceNull.cpp
+    Renderers/Null/GSRendererNull.cpp
+    Renderers/Null/GSTextureNull.cpp
     Window/GSSetting.cpp
     Window/GSWnd.cpp
     )
@@ -129,7 +129,6 @@ set(GSdxHeaders
     GSClut.h
     GSCodeBuffer.h
     GSCrc.h
-    GSDeviceNull.h
     GSDeviceOGL.h
     GSDrawingContext.h
     GSDrawingEnvironment.h
@@ -146,7 +145,6 @@ set(GSdxHeaders
     GSRasterizer.h
     GSRendererCL.h
     GSRendererHW.h
-    GSRendererNull.h
     GSRendererOGL.h
     GSRendererSW.h
     GSScanlineEnvironment.h
@@ -156,7 +154,6 @@ set(GSdxHeaders
     GSTables.h
     GSTextureCacheOGL.h
     GSTextureCacheSW.h
-    GSTextureNull.h
     GSTextureOGL.h
     GSTextureSW.h
     GSThread_CXX11.h
@@ -194,6 +191,9 @@ set(GSdxHeaders
     Renderers/Common/GSVertex.h
     Renderers/Common/GSVertexList.h
     Renderers/Common/GSVertexTrace.h
+    Renderers/Null/GSDeviceNull.h
+    Renderers/Null/GSRendererNull.h
+    Renderers/Null/GSTextureNull.h
     Window/GSCaptureDlg.h
     Window/GSDialog.h
     Window/GSSetting.h

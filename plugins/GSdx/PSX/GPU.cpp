@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "GSdx.h"
 #include "GSUtil.h"
-#include "GSDeviceNull.h"
+#include "Renderers/Null/GSDeviceNull.h"
 #include "GPURendererSW.h"
 
 #ifdef _WIN32

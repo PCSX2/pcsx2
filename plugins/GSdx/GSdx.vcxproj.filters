@@ -54,7 +54,7 @@
     <ClCompile Include="GSDevice9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDeviceNull.cpp">
+    <ClCompile Include="Renderers\Null\GSDeviceNull.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSDeviceOGL.cpp">
@@ -111,7 +111,7 @@
     <ClCompile Include="GSRendererHW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSRendererNull.cpp">
+    <ClCompile Include="Renderers\Null\GSRendererNull.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSRendererOGL.cpp">
@@ -171,7 +171,7 @@
     <ClCompile Include="GSTextureFX9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTextureNull.cpp">
+    <ClCompile Include="Renderers\Null\GSTextureNull.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSUtil.cpp">
@@ -332,7 +332,7 @@
     <ClInclude Include="GSDeviceDX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSDeviceNull.h">
+    <ClInclude Include="Renderers\Null\GSDeviceNull.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSDeviceOGL.h">
@@ -392,7 +392,7 @@
     <ClInclude Include="GSRendererHW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSRendererNull.h">
+    <ClInclude Include="Renderers\Null\GSRendererNull.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSRendererOGL.h">
@@ -449,7 +449,7 @@
     <ClInclude Include="GSTextureCacheSW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSTextureNull.h">
+    <ClInclude Include="Renderers\Null\GSTextureNull.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSThread.h">
