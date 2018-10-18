@@ -650,8 +650,24 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		m_ps_sel.tfx = 4;
 	}
 
-	// rs
+	if (m_game.title == CRC::ICO)
+	{
+		GSVertex* v = &m_vertex.buff[0];
+		const GSVideoMode mode = GetVideoMode();
+		if (tex && m_vt.m_primclass == GS_SPRITE_CLASS && m_vertex.next == 2 && PRIM->ABE && // Blend texture
+				((v[1].U == 8200 && v[1].V == 7176 && mode == GSVideoMode::NTSC) || // at display resolution 512x448
+				(v[1].U == 8200 && v[1].V == 8200 && mode == GSVideoMode::PAL)) && // at display resolution 512x512
+				tex->m_TEX0.PSM == PSM_PSMT8H) // i.e. read the alpha channel of a 32 bits texture
+		{
+			// Note potentially we can limit to TBP0:0x2800
 
+			// DX doesn't support depth or channel shuffle yet so we can just do a partial port that skips the bad drawcalls,
+			// this way we can purge any remaining crc hacks.
+			throw GSDXRecoverableError();
+		}
+	}
+
+	// rs
 	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * m_context->scissor.in).rintersect(GSVector4i(rtsize).zwxy());
 
 	dev->OMSetRenderTargets(rt, ds, &scissor);
