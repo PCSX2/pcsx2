@@ -92,7 +92,6 @@ set(GSdxSources
     GSRendererOGL.cpp
     GSRendererSW.cpp
     GSOsdManager.cpp
-    GSSetting.cpp
     GSSetupPrimCodeGenerator.cpp
     GSSetupPrimCodeGenerator.x64.cpp
     GSSetupPrimCodeGenerator.x64.avx.cpp
@@ -113,10 +112,11 @@ set(GSdxSources
     GSUtil.cpp
     GSVector.cpp
     GSVertexTrace.cpp
-    GSWnd.cpp
     GSdx.cpp
     GSdxResources.cpp
     stdafx.cpp
+    Window/GSSetting.cpp
+    Window/GSWnd.cpp
     )
 
 set(GSdxHeaders
@@ -125,7 +125,6 @@ set(GSdxHeaders
     GLState.h
     GSAlignedClass.h
     GSBlock.h
-    GSCaptureDlg.h
     GSCapture.h
     GSClut.h
     GSCodeBuffer.h
@@ -133,7 +132,6 @@ set(GSdxHeaders
     GSDevice.h
     GSDeviceNull.h
     GSDeviceOGL.h
-    GSDialog.h
     GSDirtyRect.h
     GSDrawingContext.h
     GSDrawingEnvironment.h
@@ -158,8 +156,6 @@ set(GSdxHeaders
     GSRendererOGL.h
     GSRendererSW.h
     GSScanlineEnvironment.h
-    GSSetting.h
-    GSSettingsDlg.h
     GSSetupPrimCodeGenerator.h
     GSShaderOGL.h
     GSState.h
@@ -186,7 +182,6 @@ set(GSdxHeaders
     GSVertexList.h
     GSVertexSW.h
     GSVertexTrace.h
-    GSWnd.h
     PSX/GPUDrawingEnvironment.h
     PSX/GPUDrawScanlineCodeGenerator.h
     PSX/GPUDrawScanline.h
@@ -199,6 +194,11 @@ set(GSdxHeaders
     PSX/GPUState.h
     PSX/GPUVertex.h
     stdafx.h
+    Window/GSCaptureDlg.h
+    Window/GSDialog.h
+    Window/GSSetting.h
+    Window/GSSettingsDlg.h
+    Window/GSWnd.h
     xbyak/xbyak.h
     xbyak/xbyak_mnemonic.h
     xbyak/xbyak_util.h
@@ -206,7 +206,6 @@ set(GSdxHeaders
 
 if(Windows)
     LIST(APPEND GSdxSources
-        GSCaptureDlg.cpp
         GSDevice11.cpp
         GSDevice9.cpp
         GSDeviceDX.cpp
@@ -214,7 +213,6 @@ if(Windows)
         GSRendererDX11.cpp
         GSRendererDX9.cpp
         GSRendererDX.cpp
-        GSSettingsDlg.cpp
         GSTexture11.cpp
         GSTexture9.cpp
         GSTextureCache11.cpp
@@ -224,8 +222,10 @@ if(Windows)
         GSTextureFX.cpp
         GSVertexList.cpp
         GSVertexSW.cpp
-        GSWndDX.cpp
-        GSWndWGL.cpp
+        Window/GSCaptureDlg.cpp
+        Window/GSSettingsDlg.cpp
+        Window/GSWndDX.cpp
+        Window/GSWndWGL.cpp
         PSX/GPUSettingsDlg.cpp
         )
 
@@ -240,22 +240,22 @@ if(Windows)
         GSTexture9.h
         GSTextureCache11.h
         GSTextureCache9.h
-        GSWndDX.h
-        GSWndWGL.h
+        Window/GSWndDX.h
+        Window/GSWndWGL.h
         PSX/GPUSettingsDlg.h
         resource.h
         targetver.h
         )
 else()
     LIST(APPEND GSdxSources
-        GSLinuxDialog.cpp
-        GSWndOGL.cpp
-        GSWndEGL.cpp
+        Window/GSLinuxDialog.cpp
+        Window/GSWndOGL.cpp
+        Window/GSWndEGL.cpp
         )
 
     LIST(APPEND GSdxHeaders
-        GSWndEGL.h
-        GSWndOGL.h
+        Window/GSWndEGL.h
+        Window/GSWndOGL.h
         )
 endif()
 

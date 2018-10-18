@@ -25,7 +25,7 @@
 #include "GSVertexList.h"
 #include "GSDevice.h"
 #ifdef _WIN32
-#include "GSWndDX.h"
+#include "Window/GSWndDX.h"
 #endif
 
 class GPURenderer : public GPUState

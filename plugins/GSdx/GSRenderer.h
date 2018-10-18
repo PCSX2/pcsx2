@@ -22,7 +22,7 @@
 #pragma once
 
 #include "GSdx.h"
-#include "GSWnd.h"
+#include "Window/GSWnd.h"
 #include "GSState.h"
 #include "GSCapture.h"
 

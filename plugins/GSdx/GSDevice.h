@@ -22,7 +22,7 @@
 #pragma once
 
 #include "GSFastList.h"
-#include "GSWnd.h"
+#include "Window/GSWnd.h"
 #include "GSTexture.h"
 #include "GSVertex.h"
 #include "GSAlignedClass.h"

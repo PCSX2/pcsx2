@@ -33,7 +33,7 @@
     <ClCompile Include="GSCapture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSCaptureDlg.cpp">
+    <ClCompile Include="Window\GSCaptureDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSClut.cpp">
@@ -60,7 +60,7 @@
     <ClCompile Include="GSDeviceOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSDialog.cpp">
+    <ClCompile Include="Window\GSDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSDirtyRect.cpp">
@@ -120,10 +120,10 @@
     <ClCompile Include="GSRendererSW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSSetting.cpp">
+    <ClCompile Include="Window\GSSetting.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSSettingsDlg.cpp">
+    <ClCompile Include="Window\SSettingsDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSSetupPrimCodeGenerator.cpp">
@@ -189,13 +189,13 @@
     <ClCompile Include="GSVertexTrace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSWnd.cpp">
+    <ClCompile Include="Window\GSWnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSWndDX.cpp">
+    <ClCompile Include="Window\GSWndDX.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSWndWGL.cpp">
+    <ClCompile Include="Window\GSWndWGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
@@ -308,7 +308,7 @@
     <ClInclude Include="GSCapture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSCaptureDlg.h">
+    <ClInclude Include="Window\GSCaptureDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSClut.h">
@@ -338,7 +338,7 @@
     <ClInclude Include="GSDeviceOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSDialog.h">
+    <ClInclude Include="Window\GSDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSDirtyRect.h">
@@ -404,10 +404,10 @@
     <ClInclude Include="GSScanlineEnvironment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSSetting.h">
+    <ClInclude Include="Window\GSSetting.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSSettingsDlg.h">
+    <ClInclude Include="Window\GSSettingsDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSSetupPrimCodeGenerator.h">
@@ -494,13 +494,13 @@
     <ClInclude Include="GSVertexTrace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSWnd.h">
+    <ClInclude Include="Window\GSWnd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSWndDX.h">
+    <ClInclude Include="Window\GSWndDX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSWndWGL.h">
+    <ClInclude Include="Window\GSWndWGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">

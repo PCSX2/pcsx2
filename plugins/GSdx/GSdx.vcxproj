@@ -96,7 +96,7 @@
     <ClCompile Include="GSAlignedClass.cpp" />
     <ClCompile Include="GSBlock.cpp" />
     <ClCompile Include="GSCapture.cpp" />
-    <ClCompile Include="GSCaptureDlg.cpp" />
+    <ClCompile Include="Window\GSCaptureDlg.cpp" />
     <ClCompile Include="GSClut.cpp" />
     <ClCompile Include="GSCodeBuffer.cpp" />
     <ClCompile Include="GSCrc.cpp" />
@@ -106,7 +106,7 @@
     <ClCompile Include="GSDeviceDX.cpp" />
     <ClCompile Include="GSDeviceNull.cpp" />
     <ClCompile Include="GSDeviceOGL.cpp" />
-    <ClCompile Include="GSDialog.cpp" />
+    <ClCompile Include="Window\GSDialog.cpp" />
     <ClCompile Include="GSDirtyRect.cpp" />
     <ClCompile Include="GSDrawingContext.cpp" />
     <ClCompile Include="GSDrawScanline.cpp" />
@@ -136,8 +136,8 @@
     <ClCompile Include="GSRendererNull.cpp" />
     <ClCompile Include="GSRendererOGL.cpp" />
     <ClCompile Include="GSRendererSW.cpp" />
-    <ClCompile Include="GSSetting.cpp" />
-    <ClCompile Include="GSSettingsDlg.cpp" />
+    <ClCompile Include="Window\GSSetting.cpp" />
+    <ClCompile Include="Window\GSSettingsDlg.cpp" />
     <ClCompile Include="GSSetupPrimCodeGenerator.cpp" />
     <ClCompile Include="GSSetupPrimCodeGenerator.x64.avx.cpp" />
     <ClCompile Include="GSSetupPrimCodeGenerator.x64.avx2.cpp" />
@@ -166,9 +166,9 @@
     <ClCompile Include="GSVertexList.cpp" />
     <ClCompile Include="GSVertexSW.cpp" />
     <ClCompile Include="GSVertexTrace.cpp" />
-    <ClCompile Include="GSWnd.cpp" />
-    <ClCompile Include="GSWndDX.cpp" />
-    <ClCompile Include="GSWndWGL.cpp" />
+    <ClCompile Include="Window\GSWnd.cpp" />
+    <ClCompile Include="Window\GSWndDX.cpp" />
+    <ClCompile Include="Window\GSWndWGL.cpp" />
     <ClCompile Include="PSX\GPU.cpp" />
     <ClCompile Include="PSX\GPUDrawScanline.cpp" />
     <ClCompile Include="PSX\GPUDrawScanlineCodeGenerator.cpp" />
@@ -190,7 +190,7 @@
     <ClInclude Include="GSAlignedClass.h" />
     <ClInclude Include="GSBlock.h" />
     <ClInclude Include="GSCapture.h" />
-    <ClInclude Include="GSCaptureDlg.h" />
+    <ClInclude Include="Window\GSCaptureDlg.h" />
     <ClInclude Include="GSClut.h" />
     <ClInclude Include="GSCodeBuffer.h" />
     <ClInclude Include="GSCrc.h" />
@@ -200,7 +200,7 @@
     <ClInclude Include="GSDeviceDX.h" />
     <ClInclude Include="GSDeviceNull.h" />
     <ClInclude Include="GSDeviceOGL.h" />
-    <ClInclude Include="GSDialog.h" />
+    <ClInclude Include="Window\GSDialog.h" />
     <ClInclude Include="GSDirtyRect.h" />
     <ClInclude Include="GSDrawingContext.h" />
     <ClInclude Include="GSDrawingEnvironment.h" />
@@ -227,7 +227,7 @@
     <ClInclude Include="GSRendererSW.h" />
     <ClInclude Include="GSScanlineEnvironment.h" />
     <ClInclude Include="GSSetting.h" />
-    <ClInclude Include="GSSettingsDlg.h" />
+    <ClInclude Include="Window\GSSettingsDlg.h" />
     <ClInclude Include="GSSetupPrimCodeGenerator.h" />
     <ClInclude Include="GSShaderOGL.h" />
     <ClInclude Include="GSState.h" />
@@ -258,9 +258,9 @@
     <ClInclude Include="GSVertexList.h" />
     <ClInclude Include="GSVertexSW.h" />
     <ClInclude Include="GSVertexTrace.h" />
-    <ClInclude Include="GSWnd.h" />
-    <ClInclude Include="GSWndDX.h" />
-    <ClInclude Include="GSWndWGL.h" />
+    <ClInclude Include="Window\GSWnd.h" />
+    <ClInclude Include="Window\GSWndDX.h" />
+    <ClInclude Include="Window\GSWndWGL.h" />
     <ClInclude Include="PSX\GPU.h" />
     <ClInclude Include="PSX\GPUDrawingEnvironment.h" />
     <ClInclude Include="PSX\GPUDrawScanline.h" />

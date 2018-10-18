@@ -36,16 +36,16 @@
 #include "GSRendererDX11.h"
 #include "GSDevice9.h"
 #include "GSDevice11.h"
-#include "GSWndDX.h"
-#include "GSWndWGL.h"
-#include "GSSettingsDlg.h"
+#include "Window/GSWndDX.h"
+#include "Window/GSWndWGL.h"
+#include "Window/GSSettingsDlg.h"
 
 static HRESULT s_hr = E_FAIL;
 
 #else
 
-#include "GSWndOGL.h"
-#include "GSWndEGL.h"
+#include "Window/GSWndOGL.h"
+#include "Window/GSWndEGL.h"
 
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
