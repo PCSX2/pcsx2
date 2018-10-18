@@ -114,7 +114,7 @@
     <ClCompile Include="Renderers\Null\GSRendererNull.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSRendererOGL.cpp">
+    <ClCompile Include="Renderers\OpenGL\GSRendererOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\SW\GSRendererSW.cpp">
@@ -129,10 +129,10 @@
     <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSShaderOGL.cpp">
+    <ClCompile Include="Renderers\OpenGL\GSShaderOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSState.cpp">
+    <ClCompile Include="Renderers\OpenGL\GSState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSTables.cpp">
@@ -147,7 +147,7 @@
     <ClCompile Include="GSTexture9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTextureOGL.cpp">
+    <ClCompile Include="Renderers\OpenGL\GSTextureOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\Common\GSTextureCache.cpp">
@@ -159,7 +159,7 @@
     <ClCompile Include="GSTextureCache9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GSTextureCacheOGL.cpp">
+    <ClCompile Include="Renderers\OpenGL\GSTextureCacheOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\SW\GSTextureCacheSW.cpp">
@@ -204,7 +204,7 @@
     <ClCompile Include="GLLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GLState.cpp">
+    <ClCompile Include="Renderers\OpenGL\GLState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSDeviceDX.cpp">
@@ -335,7 +335,7 @@
     <ClInclude Include="Renderers\Null\GSDeviceNull.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSDeviceOGL.h">
+    <ClInclude Include="Renderers\OpenGL\GSDeviceOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Window\GSDialog.h">
@@ -395,7 +395,7 @@
     <ClInclude Include="Renderers\Null\GSRendererNull.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSRendererOGL.h">
+    <ClInclude Include="Renderers\OpenGL\GSRendererOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\SW\GSRendererSW.h">
@@ -413,7 +413,7 @@
     <ClInclude Include="Renderers\SW\GSSetupPrimCodeGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSShaderOGL.h">
+    <ClInclude Include="Renderers\OpenGL\GSShaderOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSState.h">
@@ -431,7 +431,7 @@
     <ClInclude Include="GSTexture9.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSTextureOGL.h">
+    <ClInclude Include="Renderers\OpenGL\GSTextureOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\Common\GSTextureCache.h">
@@ -455,7 +455,7 @@
     <ClInclude Include="GSThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSUniformBufferOGL.h">
+    <ClInclude Include="Renderers\OpenGL\GSUniformBufferOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSUtil.h">
@@ -479,7 +479,7 @@
     <ClInclude Include="Renderers\Common\GSVertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GSVertexArrayOGL.h">
+    <ClInclude Include="Renderers\OpenGL\GSVertexArrayOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\HW\GSVertexHW.h">

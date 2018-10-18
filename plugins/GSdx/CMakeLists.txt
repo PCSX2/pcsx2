@@ -64,19 +64,14 @@ set(GSdxSources
     GSClut.cpp
     GSCodeBuffer.cpp
     GSCrc.cpp
-    GSDeviceOGL.cpp
     GSDrawingContext.cpp
     GSDump.cpp
     GSLocalMemory.cpp
     GSLzma.cpp
     GSPerfMon.cpp
     GSPng.cpp
-    GSRendererOGL.cpp
-    GSShaderOGL.cpp
     GSState.cpp
     GSTables.cpp
-    GSTextureCacheOGL.cpp
-    GSTextureOGL.cpp
     GSUtil.cpp
     GSVector.cpp
     GSdx.cpp
@@ -114,6 +109,11 @@ set(GSdxSources
     Renderers/SW/GSSetupPrimCodeGenerator.x86.avx2.cpp
     Renderers/SW/GSTextureCacheSW.cpp
     Renderers/SW/GSTextureSW.cpp
+    Renderers/OpenGL/GSDeviceOGL.cpp
+    Renderers/OpenGL/GSRendererOGL.cpp
+    Renderers/OpenGL/GSShaderOGL.cpp
+    Renderers/OpenGL/GSTextureCacheOGL.cpp
+    Renderers/OpenGL/GSTextureOGL.cpp
     Renderers/OpenCL/GSRendererCL.cpp
     Window/GSSetting.cpp
     Window/GSWnd.cpp
@@ -129,7 +129,6 @@ set(GSdxHeaders
     GSClut.h
     GSCodeBuffer.h
     GSCrc.h
-    GSDeviceOGL.h
     GSDrawingContext.h
     GSDrawingEnvironment.h
     GSDump.h
@@ -140,22 +139,16 @@ set(GSdxHeaders
     GSLzma.h
     GSPerfMon.h
     GSPng.h
-    GSRendererOGL.h
-    GSShaderOGL.h
     GSState.h
     GSTables.h
-    GSTextureCacheOGL.h
-    GSTextureOGL.h
     GSThread_CXX11.h
     GSThread.h
-    GSUniformBufferOGL.h
     GSUtil.h
     GSVector.h
     GSVector4.h
     GSVector4i.h
     GSVector8.h
     GSVector8i.h
-    GSVertexArrayOGL.h
     stdafx.h
     PSX/GPUDrawingEnvironment.h
     PSX/GPUDrawScanlineCodeGenerator.h
@@ -193,6 +186,13 @@ set(GSdxHeaders
     Renderers/SW/GSTextureCacheSW.h
     Renderers/SW/GSTextureSW.h
     Renderers/SW/GSVertexSW.h
+    Renderers/OpenGL/GSDeviceOGL.h
+    Renderers/OpenGL/GSRendererOGL.h
+    Renderers/OpenGL/GSShaderOGL.h
+    Renderers/OpenGL/GSTextureCacheOGL.h
+    Renderers/OpenGL/GSTextureOGL.h
+    Renderers/OpenGL/GSUniformBufferOGL.h
+    Renderers/OpenGL/GSVertexArrayOGL.h
     Renderers/OpenCL/GSRendererCL.h
     Window/GSCaptureDlg.h
     Window/GSDialog.h

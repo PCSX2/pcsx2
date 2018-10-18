@@ -22,7 +22,7 @@
 #pragma once
 
 #include "GS.h"
-#include "GSVertexSW.h"
+#include "Renderers/SW/GSVertexSW.h"
 #include "Renderers/Common/GSFunctionMap.h"
 #include "GSAlignedClass.h"
 #include "GSPerfMon.h"

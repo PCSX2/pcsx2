@@ -25,8 +25,8 @@
 #include "Renderers/SW/GSRendererSW.h"
 #include "Renderers/Null/GSRendererNull.h"
 #include "Renderers/Null/GSDeviceNull.h"
-#include "GSDeviceOGL.h"
-#include "GSRendererOGL.h"
+#include "Renderers/OpenGL/GSDeviceOGL.h"
+#include "Renderers/OpenGL/GSRendererOGL.h"
 #include "Renderers/OpenCL/GSRendererCL.h"
 #include "GSLzma.h"
 
