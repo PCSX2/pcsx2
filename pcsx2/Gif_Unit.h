@@ -21,7 +21,7 @@
 #include "GS.h"
 
 // FIXME common path ?
-#include "../plugins/GSdx/boost_spsc_queue.hpp"
+#include "Utilities/boost_spsc_queue.hpp"
 
 struct GS_Packet;
 extern void Gif_MTGS_Wait(bool isMTVU);

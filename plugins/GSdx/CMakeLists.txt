@@ -47,8 +47,6 @@ if(OPENCL_API)
 endif()
 
 set(GSdxSources
-    GLLoader.cpp
-    GLState.cpp
     PSX/GPU.cpp
     PSX/GPUDrawScanline.cpp
     PSX/GPUDrawScanlineCodeGenerator.cpp
@@ -64,129 +62,92 @@ set(GSdxSources
     GSClut.cpp
     GSCodeBuffer.cpp
     GSCrc.cpp
-    GSDevice.cpp
-    GSDeviceOGL.cpp
-    GSDeviceNull.cpp
-    GSDirtyRect.cpp
     GSDrawingContext.cpp
-    GSDrawScanline.cpp
-    GSDrawScanlineCodeGenerator.cpp
-    GSDrawScanlineCodeGenerator.x64.cpp
-    GSDrawScanlineCodeGenerator.x64.avx.cpp
-    GSDrawScanlineCodeGenerator.x64.avx2.cpp
-    GSDrawScanlineCodeGenerator.x86.cpp
-    GSDrawScanlineCodeGenerator.x86.avx.cpp
-    GSDrawScanlineCodeGenerator.x86.avx2.cpp
     GSDump.cpp
-    GSFunctionMap.cpp
-    GSHwHack.cpp
     GSLocalMemory.cpp
     GSLzma.cpp
     GSPerfMon.cpp
     GSPng.cpp
-    GSRasterizer.cpp
-    GSRenderer.cpp
-    GSRendererCL.cpp
-    GSRendererHW.cpp
-    GSRendererNull.cpp
-    GSRendererOGL.cpp
-    GSRendererSW.cpp
-    GSOsdManager.cpp
-    GSSetting.cpp
-    GSSetupPrimCodeGenerator.cpp
-    GSSetupPrimCodeGenerator.x64.cpp
-    GSSetupPrimCodeGenerator.x64.avx.cpp
-    GSSetupPrimCodeGenerator.x64.avx2.cpp
-    GSSetupPrimCodeGenerator.x86.cpp
-    GSSetupPrimCodeGenerator.x86.avx.cpp
-    GSSetupPrimCodeGenerator.x86.avx2.cpp
-    GSShaderOGL.cpp
     GSState.cpp
     GSTables.cpp
-    GSTexture.cpp
-    GSTextureCache.cpp
-    GSTextureCacheSW.cpp
-    GSTextureCacheOGL.cpp
-    GSTextureOGL.cpp
-    GSTextureNull.cpp
-    GSTextureSW.cpp
     GSUtil.cpp
     GSVector.cpp
-    GSVertexTrace.cpp
-    GSWnd.cpp
     GSdx.cpp
     GSdxResources.cpp
     stdafx.cpp
+    Renderers/Common/GSDevice.cpp
+    Renderers/Common/GSDirtyRect.cpp
+    Renderers/Common/GSFunctionMap.cpp
+    Renderers/Common/GSOsdManager.cpp
+    Renderers/Common/GSRenderer.cpp
+    Renderers/Common/GSTexture.cpp
+    Renderers/Common/GSTextureCache.cpp
+    Renderers/Common/GSVertexTrace.cpp
+    Renderers/Null/GSDeviceNull.cpp
+    Renderers/Null/GSRendererNull.cpp
+    Renderers/Null/GSTextureNull.cpp
+    Renderers/HW/GSHwHack.cpp
+    Renderers/HW/GSRendererHW.cpp
+    Renderers/SW/GSDrawScanline.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.x64.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx2.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.x86.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx2.cpp
+    Renderers/SW/GSRasterizer.cpp
+    Renderers/SW/GSRendererSW.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.x64.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.x64.avx.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.x64.avx2.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.x86.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.x86.avx.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.x86.avx2.cpp
+    Renderers/SW/GSTextureCacheSW.cpp
+    Renderers/SW/GSTextureSW.cpp
+    Renderers/OpenGL/GLLoader.cpp
+    Renderers/OpenGL/GLState.cpp
+    Renderers/OpenGL/GSDeviceOGL.cpp
+    Renderers/OpenGL/GSRendererOGL.cpp
+    Renderers/OpenGL/GSShaderOGL.cpp
+    Renderers/OpenGL/GSTextureCacheOGL.cpp
+    Renderers/OpenGL/GSTextureOGL.cpp
+    Renderers/OpenCL/GSRendererCL.cpp
+    Window/GSSetting.cpp
+    Window/GSWnd.cpp
     )
 
 set(GSdxHeaders
     config.h
-    GLLoader.h
-    GLState.h
     GSAlignedClass.h
     GSBlock.h
-    GSCaptureDlg.h
     GSCapture.h
     GSClut.h
     GSCodeBuffer.h
     GSCrc.h
-    GSDevice.h
-    GSDeviceNull.h
-    GSDeviceOGL.h
-    GSDialog.h
-    GSDirtyRect.h
     GSDrawingContext.h
     GSDrawingEnvironment.h
-    GSDrawScanlineCodeGenerator.h
-    GSDrawScanline.h
     GSDump.h
     GSdx.h
     GSdxResources.h
-    GSFastList.h
-    GSFunctionMap.h
     GS.h
     GSLocalMemory.h
     GSLzma.h
-    GSOsdManager.h
     GSPerfMon.h
     GSPng.h
-    GSRasterizer.h
-    GSRendererCL.h
-    GSRenderer.h
-    GSRendererHW.h
-    GSRendererNull.h
-    GSRendererOGL.h
-    GSRendererSW.h
-    GSScanlineEnvironment.h
-    GSSetting.h
-    GSSettingsDlg.h
-    GSSetupPrimCodeGenerator.h
-    GSShaderOGL.h
     GSState.h
     GSTables.h
-    GSTextureCache.h
-    GSTextureCacheOGL.h
-    GSTextureCacheSW.h
-    GSTexture.h
-    GSTextureNull.h
-    GSTextureOGL.h
-    GSTextureSW.h
     GSThread_CXX11.h
     GSThread.h
-    GSUniformBufferOGL.h
     GSUtil.h
     GSVector.h
     GSVector4.h
     GSVector4i.h
     GSVector8.h
     GSVector8i.h
-    GSVertexArrayOGL.h
-    GSVertex.h
-    GSVertexHW.h
-    GSVertexList.h
-    GSVertexSW.h
-    GSVertexTrace.h
-    GSWnd.h
+    stdafx.h
     PSX/GPUDrawingEnvironment.h
     PSX/GPUDrawScanlineCodeGenerator.h
     PSX/GPUDrawScanline.h
@@ -198,7 +159,46 @@ set(GSdxHeaders
     PSX/GPUSetupPrimCodeGenerator.h
     PSX/GPUState.h
     PSX/GPUVertex.h
-    stdafx.h
+    Renderers/Common/GSDevice.h
+    Renderers/Common/GSDirtyRect.h
+    Renderers/Common/GSFastList.h
+    Renderers/Common/GSFunctionMap.h
+    Renderers/Common/GSOsdManager.h
+    Renderers/Common/GSRenderer.h
+    Renderers/Common/GSTextureCache.h
+    Renderers/Common/GSTexture.h
+    Renderers/Common/GSVertex.h
+    Renderers/Common/GSVertexList.h
+    Renderers/Common/GSVertexTrace.h
+    Renderers/Null/GSDeviceNull.h
+    Renderers/Null/GSRendererNull.h
+    Renderers/Null/GSTextureNull.h
+    Renderers/HW/GSRendererHW.h
+    Renderers/HW/GSVertexHW.h
+    Renderers/SW/GSDrawScanlineCodeGenerator.h
+    Renderers/SW/GSDrawScanline.h
+    Renderers/SW/GSRasterizer.h
+    Renderers/SW/GSRendererSW.h
+    Renderers/SW/GSScanlineEnvironment.h
+    Renderers/SW/GSSetupPrimCodeGenerator.h
+    Renderers/SW/GSTextureCacheSW.h
+    Renderers/SW/GSTextureSW.h
+    Renderers/SW/GSVertexSW.h
+    Renderers/OpenGL/GLLoader.h
+    Renderers/OpenGL/GLState.h
+    Renderers/OpenGL/GSDeviceOGL.h
+    Renderers/OpenGL/GSRendererOGL.h
+    Renderers/OpenGL/GSShaderOGL.h
+    Renderers/OpenGL/GSTextureCacheOGL.h
+    Renderers/OpenGL/GSTextureOGL.h
+    Renderers/OpenGL/GSUniformBufferOGL.h
+    Renderers/OpenGL/GSVertexArrayOGL.h
+    Renderers/OpenCL/GSRendererCL.h
+    Window/GSCaptureDlg.h
+    Window/GSDialog.h
+    Window/GSSetting.h
+    Window/GSSettingsDlg.h
+    Window/GSWnd.h
     xbyak/xbyak.h
     xbyak/xbyak_mnemonic.h
     xbyak/xbyak_util.h
@@ -206,56 +206,55 @@ set(GSdxHeaders
 
 if(Windows)
     LIST(APPEND GSdxSources
-        GSCaptureDlg.cpp
-        GSDevice11.cpp
-        GSDevice9.cpp
-        GSDeviceDX.cpp
-        GSDialog.cpp
-        GSRendererDX11.cpp
-        GSRendererDX9.cpp
-        GSRendererDX.cpp
-        GSSettingsDlg.cpp
-        GSTexture11.cpp
-        GSTexture9.cpp
-        GSTextureCache11.cpp
-        GSTextureCache9.cpp
-        GSTextureFX11.cpp
-        GSTextureFX9.cpp
-        GSTextureFX.cpp
+        Renderers/DX11/GSDevice11.cpp
+        Renderers/DX9/GSDevice9.cpp
+        Renderers/DXCommon/GSDeviceDX.cpp
+        Window/GSDialog.cpp
+        Renderers/DX11/GSRendererDX11.cpp
+        Renderers/DX9/GSRendererDX9.cpp
+        Renderers/DXCommon/GSRendererDX.cpp
+        Renderers/DX11/GSTexture11.cpp
+        Renderers/DX9/GSTexture9.cpp
+        Renderers/DX11/GSTextureCache11.cpp
+        Renderers/DX9/GSTextureCache9.cpp
+        Renderers/DX11/GSTextureFX11.cpp
+        Renderers/DX9/GSTextureFX9.cpp
         GSVertexList.cpp
-        GSVertexSW.cpp
-        GSWndDX.cpp
-        GSWndWGL.cpp
+        Renderers/SW/GSVertexSW.cpp
+        Window/GSCaptureDlg.cpp
+        Window/GSSettingsDlg.cpp
+        Window/GSWndDX.cpp
+        Window/GSWndWGL.cpp
         PSX/GPUSettingsDlg.cpp
         )
 
     LIST(APPEND GSdxHeaders
-        GSDevice11.h
-        GSDevice9.h
-        GSDeviceDX.h
-        GSRendererDX11.h
-        GSRendererDX9.h
-        GSRendererDX.h
-        GSTexture11.h
-        GSTexture9.h
-        GSTextureCache11.h
-        GSTextureCache9.h
-        GSWndDX.h
-        GSWndWGL.h
+        Renderers/DX11/GSDevice11.h
+        Renderers/DX9/GSDevice9.h
+        Renderers/DXCommon/GSDeviceDX.h
+        Renderers/DX11/GSRendererDX11.h
+        Renderers/DX9/GSRendererDX9.h
+        Renderers/DXCommon/GSRendererDX.h
+        Renderers/DX11/GSTexture11.h
+        Renderers/DX9/GSTexture9.h
+        Renderers/DX11/GSTextureCache11.h
+        Renderers/DX9/GSTextureCache9.h
+        Window/GSWndDX.h
+        Window/GSWndWGL.h
         PSX/GPUSettingsDlg.h
         resource.h
         targetver.h
         )
 else()
     LIST(APPEND GSdxSources
-        GSLinuxDialog.cpp
-        GSWndOGL.cpp
-        GSWndEGL.cpp
+        Window/GSLinuxDialog.cpp
+        Window/GSWndOGL.cpp
+        Window/GSWndEGL.cpp
         )
 
     LIST(APPEND GSdxHeaders
-        GSWndEGL.h
-        GSWndOGL.h
+        Window/GSWndEGL.h
+        Window/GSWndOGL.h
         )
 endif()
 

@@ -22,7 +22,7 @@
 #pragma once
 
 #include "GPUScanlineEnvironment.h"
-#include "GSFunctionMap.h"
+#include "Renderers/Common/GSFunctionMap.h"
 
 class GPUSetupPrimCodeGenerator : public GSCodeGenerator
 {
