@@ -81,6 +81,7 @@ public:
 		GTConcept,
 		HarleyDavidson,
 		HarryPotterATCOS,
+		HarryPotterATHBP,
 		HarryPotterATPOA,
 		HarryPotterOOTP,
 		HauntingGround,

@@ -557,6 +557,8 @@ CRC::Game CRC::m_games[] =
 	{0x972719A3, FIFA05, EU, 0},
 	{0xC5473413, HarryPotterATCOS, NoRegion, 0}, // EU and US versions have the same CRC - Chamber Of Secrets
 	{0xE90BE9F8, HarryPotterATCOS, JP, 0 }, // Coca Cola original Version
+	{0x9C3A84F4, HarryPotterATHBP, US, 0 }, // Half-Blood Prince
+	{0xCB598BC2, HarryPotterATHBP, EU, 0 },
 	{0x51E019BC, HarryPotterATPOA, NoRegion, 0 }, // EU and US versions have the same CRC - Prisoner of Azkaban
 	{0x99A8B4FF, HarryPotterATPOA, KO, 0 },
 	{0xA8901AD6, HarryPotterATPOA, JP, 0 }, // Harry Potter to Azkaban no Shuujin
