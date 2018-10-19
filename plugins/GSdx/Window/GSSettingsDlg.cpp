@@ -23,8 +23,8 @@
 #include "GSdx.h"
 #include "GSSettingsDlg.h"
 #include "GSUtil.h"
-#include "GSDevice9.h"
-#include "GSDevice11.h"
+#include "Renderers/DX9/GSDevice9.h"
+#include "Renderers/DX11/GSDevice11.h"
 #include "resource.h"
 #include "GSSetting.h"
 #include <algorithm>

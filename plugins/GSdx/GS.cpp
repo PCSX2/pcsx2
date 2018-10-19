@@ -32,10 +32,10 @@
 
 #ifdef _WIN32
 
-#include "GSRendererDX9.h"
-#include "GSRendererDX11.h"
-#include "GSDevice9.h"
-#include "GSDevice11.h"
+#include "Renderers/DX9/GSRendererDX9.h"
+#include "Renderers/DX11/GSRendererDX11.h"
+#include "Renderers/DX9/GSDevice9.h"
+#include "Renderers/DX11/GSDevice11.h"
 #include "Window/GSWndDX.h"
 #include "Window/GSWndWGL.h"
 #include "Window/GSSettingsDlg.h"

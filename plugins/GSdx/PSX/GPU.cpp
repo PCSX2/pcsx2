@@ -28,8 +28,8 @@
 #ifdef _WIN32
 
 #include "GPUSettingsDlg.h"
-#include "GSDevice9.h"
-#include "GSDevice11.h"
+#include "Renderers/DX9/GSDevice9.h"
+#include "Renderers/DX11/GSDevice11.h"
 
 static HRESULT s_hr = E_FAIL;
 
