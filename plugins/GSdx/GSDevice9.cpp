@@ -1077,7 +1077,7 @@ void GSDevice9::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* verti
 		GSTexture* rt2 = rt->IsMSAA() ? Resolve(rt) : rt;
 
 		PSSetShaderResources(rt2, NULL);
-		PSSetShader(m_convert.ps[datm ? 2 : 3], NULL, 0);
+		PSSetShader(m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0], NULL, 0);
 		PSSetSamplerState(&m_convert.pt);
 
 		//
