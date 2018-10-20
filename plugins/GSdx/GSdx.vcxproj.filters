@@ -123,9 +123,6 @@
     <ClCompile Include="Window\GSSetting.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Window\SSettingsDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -286,6 +283,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSLzma.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Window\GSSettingsDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -572,16 +572,13 @@
     <ClInclude Include="PSX\GPUVertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="boost_spsc_queue.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GSFastList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GSThread_CXX11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GSLzma.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\Common\GSFastList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
