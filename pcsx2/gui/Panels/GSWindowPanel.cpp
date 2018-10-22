@@ -85,42 +85,42 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	//  Layout and Positioning
 
 	wxBoxSizer& s_customsize( *new wxBoxSizer( wxHORIZONTAL ) );
-	s_customsize	+= m_text_WindowWidth;
-	s_customsize	+= Label( L"x" )	| StdExpand();
-	s_customsize	+= m_text_WindowHeight;
+	s_customsize += m_text_WindowWidth;
+	s_customsize += Label( L"x" )                     | StdExpand();
+	s_customsize += m_text_WindowHeight;
 
 	wxFlexGridSizer& s_AspectRatio( *new wxFlexGridSizer( 2, StdPadding, StdPadding ) );
 	//s_AspectRatio.AddGrowableCol( 0 );
 	s_AspectRatio.AddGrowableCol( 1 );
 
-	s_AspectRatio += Label(_("Aspect Ratio:"))		| pxMiddle;
-	s_AspectRatio += m_combo_AspectRatio			| pxExpand;
-	s_AspectRatio += Label(_("Custom Window Size:"))| pxMiddle;
-	s_AspectRatio += s_customsize					| pxAlignRight;
+	s_AspectRatio += Label(_("Aspect Ratio:"))        | pxMiddle;
+	s_AspectRatio += m_combo_AspectRatio              | pxAlignRight;
+	s_AspectRatio += Label(_("Custom Window Size:"))  | pxMiddle;
+	s_AspectRatio += s_customsize                     | pxAlignRight;
 
-	s_AspectRatio	+= Label(_("Zoom:"))			| StdExpand();
-	s_AspectRatio	+= m_text_Zoom;
+	s_AspectRatio += Label(_("Zoom:"))                | pxMiddle;
+	s_AspectRatio += m_text_Zoom                      | pxAlignRight;
 
 	wxFlexGridSizer& s_vsync( *new wxFlexGridSizer( 2, StdPadding, StdPadding ) );
 	s_vsync.AddGrowableCol( 1 );
 
-	s_vsync += Label(_("Wait for Vsync on refresh:"))		| pxMiddle;
-	s_vsync += m_combo_vsync      			| pxExpand;
+	s_vsync += Label(_("Wait for Vsync on refresh:")) | pxMiddle;
+	s_vsync += m_combo_vsync                          | pxAlignRight;
 
-	*this += s_AspectRatio				| StdExpand();
+	*this += s_AspectRatio                            | StdExpand();
 	*this += m_check_SizeLock;
 	*this += m_check_HideMouse;
 	*this += m_check_CloseGS;
-	*this += new wxStaticLine( this )	| StdExpand();
+	*this += new wxStaticLine( this )                 | StdExpand();
 
 	*this += m_check_Fullscreen;
 	*this += m_check_DclickFullscreen;
 	*this += m_check_AspectRatioSwitch;
 
 	//*this += m_check_ExclusiveFS;
-	*this += new wxStaticLine( this )	| StdExpand();
+	*this += new wxStaticLine( this )                 | StdExpand();
 
-	*this += s_vsync;
+	*this += s_vsync                                  | StdExpand();
 
 	wxBoxSizer* centerSizer = new wxBoxSizer( wxVERTICAL );
 	*centerSizer += GetSizer()	| pxCenter;
