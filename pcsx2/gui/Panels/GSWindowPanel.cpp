@@ -32,6 +32,13 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 		_("Widescreen (16:9)")
 	};
 
+	const wxString fmv_aspect_ratio_switch_labels[] =
+	{
+		_("Standard (4:3)"),
+		_("Widescreen (16:9)"),
+		_("Off (Default)")
+	};
+
 	// Warning must match the order of the VsyncMode Enum
 	const wxString vsync_label[] =
 	{
@@ -44,6 +51,9 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 
 	m_combo_AspectRatio	= new wxComboBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
 		ArraySize(aspect_ratio_labels), aspect_ratio_labels, wxCB_READONLY );
+
+	m_combo_FMVAspectRatioSwitch = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+		ArraySize(fmv_aspect_ratio_switch_labels), fmv_aspect_ratio_switch_labels, wxCB_READONLY);
 
 	m_combo_vsync = new wxComboBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
 		ArraySize(vsync_label), vsync_label, wxCB_READONLY );
@@ -59,8 +69,11 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	m_check_CloseGS		= new pxCheckBox( this, _("Hide window when paused") );
 	m_check_Fullscreen	= new pxCheckBox( this, _("Default to fullscreen mode on open") );
 	m_check_DclickFullscreen = new pxCheckBox( this, _("Double-click toggles fullscreen mode") );
-	m_check_AspectRatioSwitch = new pxCheckBox(this, _("Switch to 4:3 aspect ratio when an FMV plays"));
 	//m_check_ExclusiveFS = new pxCheckBox( this, _("Use exclusive fullscreen mode (if available)") );
+
+	m_combo_FMVAspectRatioSwitch->SetToolTip( pxEt( L"4:3: Temporarily switch to a 4:3 aspect ratio while an FMV plays to correctly display an 4:3 FMV.\n\n"
+		L"16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to correctly display a widescreen 16:9 FMV.\n\n"
+		L"Off: Disables temporary aspect ratio switch.") );
 
 	m_text_Zoom->SetToolTip( pxEt( L"Zoom = 100: Fit the entire image to the window without any cropping.\nAbove/Below 100: Zoom In/Out\n0: Automatic-Zoom-In untill the black-bars are gone (Aspect ratio is kept, some of the image goes out of screen).\n  NOTE: Some games draw their own black-bars, which will not be removed with '0'.\n\nKeyboard: CTRL + NUMPAD-PLUS: Zoom-In, CTRL + NUMPAD-MINUS: Zoom-Out, CTRL + NUMPAD-*: Toggle 100/0"
 	) );
@@ -86,41 +99,42 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 
 	wxBoxSizer& s_customsize( *new wxBoxSizer( wxHORIZONTAL ) );
 	s_customsize += m_text_WindowWidth;
-	s_customsize += Label( L"x" )                     | StdExpand();
+	s_customsize += Label( L"x" ) | StdExpand();
 	s_customsize += m_text_WindowHeight;
 
 	wxFlexGridSizer& s_AspectRatio( *new wxFlexGridSizer( 2, StdPadding, StdPadding ) );
 	//s_AspectRatio.AddGrowableCol( 0 );
 	s_AspectRatio.AddGrowableCol( 1 );
 
-	s_AspectRatio += Label(_("Aspect Ratio:"))        | pxMiddle;
-	s_AspectRatio += m_combo_AspectRatio              | pxAlignRight;
-	s_AspectRatio += Label(_("Custom Window Size:"))  | pxMiddle;
-	s_AspectRatio += s_customsize                     | pxAlignRight;
+	s_AspectRatio += Label(_("Aspect Ratio:")) | pxMiddle;
+	s_AspectRatio += m_combo_AspectRatio | pxAlignRight;
+	s_AspectRatio += Label(_("FMV Aspect Ratio Override:")) | pxMiddle;
+	s_AspectRatio += m_combo_FMVAspectRatioSwitch | pxAlignRight;
+	s_AspectRatio += Label(_("Custom Window Size:")) | pxMiddle;
+	s_AspectRatio += s_customsize | pxAlignRight;
 
-	s_AspectRatio += Label(_("Zoom:"))                | pxMiddle;
-	s_AspectRatio += m_text_Zoom                      | pxAlignRight;
+	s_AspectRatio += Label(_("Zoom:")) | pxMiddle;
+	s_AspectRatio += m_text_Zoom | pxAlignRight;
 
 	wxFlexGridSizer& s_vsync( *new wxFlexGridSizer( 2, StdPadding, StdPadding ) );
 	s_vsync.AddGrowableCol( 1 );
 
 	s_vsync += Label(_("Wait for Vsync on refresh:")) | pxMiddle;
-	s_vsync += m_combo_vsync                          | pxAlignRight;
+	s_vsync += m_combo_vsync | pxAlignRight;
 
-	*this += s_AspectRatio                            | StdExpand();
+	*this += s_AspectRatio | StdExpand();
 	*this += m_check_SizeLock;
 	*this += m_check_HideMouse;
 	*this += m_check_CloseGS;
-	*this += new wxStaticLine( this )                 | StdExpand();
+	*this += new wxStaticLine( this ) | StdExpand();
 
 	*this += m_check_Fullscreen;
 	*this += m_check_DclickFullscreen;
-	*this += m_check_AspectRatioSwitch;
 
 	//*this += m_check_ExclusiveFS;
-	*this += new wxStaticLine( this )                 | StdExpand();
+	*this += new wxStaticLine( this ) | StdExpand();
 
-	*this += s_vsync                                  | StdExpand();
+	*this += s_vsync | StdExpand();
 
 	wxBoxSizer* centerSizer = new wxBoxSizer( wxVERTICAL );
 	*centerSizer += GetSizer()	| pxCenter;
@@ -146,10 +160,10 @@ void Panels::GSWindowSettingsPanel::ApplyConfigToGui( AppConfig& configToApply, 
 		m_check_SizeLock	->SetValue( conf.DisableResizeBorders );
 
 		m_combo_AspectRatio	->SetSelection( (int)conf.AspectRatio );
+		m_combo_FMVAspectRatioSwitch->SetSelection( enum_cast( conf.FMVAspectRatioSwitch ) );
 		m_text_Zoom			->ChangeValue( conf.Zoom.ToString() );
 
 		m_check_DclickFullscreen ->SetValue( conf.IsToggleFullscreenOnDoubleClick );
-		m_check_AspectRatioSwitch->SetValue( conf.IsToggleAspectRatioSwitch );
 
 		m_text_WindowWidth	->ChangeValue( wxsFormat( L"%d", conf.WindowSize.GetWidth() ) );
 		m_text_WindowHeight	->ChangeValue( wxsFormat( L"%d", conf.WindowSize.GetHeight() ) );
@@ -170,12 +184,12 @@ void Panels::GSWindowSettingsPanel::Apply()
 	appconf.DisableResizeBorders	= m_check_SizeLock	->GetValue();
 
 	appconf.AspectRatio		= (AspectRatioType)m_combo_AspectRatio->GetSelection();
+	appconf.FMVAspectRatioSwitch = (FMVAspectRatioSwitchType)m_combo_FMVAspectRatioSwitch->GetSelection();
 	appconf.Zoom			= Fixed100::FromString( m_text_Zoom->GetValue() );
 
 	gsconf.VsyncEnable = static_cast<VsyncMode>(m_combo_vsync->GetSelection());
 
 	appconf.IsToggleFullscreenOnDoubleClick = m_check_DclickFullscreen->GetValue();
-	appconf.IsToggleAspectRatioSwitch = m_check_AspectRatioSwitch->GetValue();
 
 	long xr, yr = 1;
 

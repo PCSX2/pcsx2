@@ -817,6 +817,7 @@ AppConfig::GSWindowOptions::GSWindowOptions()
 	DisableScreenSaver		= true;
 
 	AspectRatio				= AspectRatio_4_3;
+	FMVAspectRatioSwitch	= FMV_AspectRatio_Switch_Off;
 	Zoom					= 100;
 	StretchY				= 100;
 	OffsetX					= 0;
@@ -829,7 +830,6 @@ AppConfig::GSWindowOptions::GSWindowOptions()
 	EnableVsyncWindowFlag	= false;
 
 	IsToggleFullscreenOnDoubleClick = true;
-	IsToggleAspectRatioSwitch = false;
 }
 
 void AppConfig::GSWindowOptions::SanityCheck()
@@ -868,7 +868,6 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 	IniEntry( EnableVsyncWindowFlag );
 
 	IniEntry( IsToggleFullscreenOnDoubleClick );
-	IniEntry( IsToggleAspectRatioSwitch );
 
 	static const wxChar* AspectRatioNames[] =
 	{
@@ -880,6 +879,18 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 	};
 
 	ini.EnumEntry( L"AspectRatio", AspectRatio, AspectRatioNames, AspectRatio );
+
+	static const wxChar* FMVAspectRatioSwitchNames[] =
+	{
+		// FIXME: fmv_aspect_ratio_switch_labels[] is inverted
+		L"Off", // Standard (4:3)
+		L"4:3", // Widescreen (16:9)
+		L"16:9", // Off
+		// WARNING: array must be NULL terminated to compute it size
+		NULL
+	};
+	ini.EnumEntry(L"FMVAspectRatioSwitch", FMVAspectRatioSwitch, FMVAspectRatioSwitchNames, FMVAspectRatioSwitch);
+
 	IniEntry( Zoom );
 
 	if( ini.IsLoading() ) SanityCheck();
