@@ -517,7 +517,7 @@ extern bool EnableFMV;
 
 void DoFmvSwitch(bool on)
 {
-	if (g_Conf->GSWindow.IsToggleAspectRatioSwitch) {
+	if (g_Conf->GSWindow.FMVAspectRatioSwitch != FMV_AspectRatio_Switch_Off) {
 		if (on) {
 			switchAR = true;
 			iniAR = g_Conf->GSWindow.AspectRatio;
@@ -546,7 +546,7 @@ void Pcsx2App::LogicalVsync()
 
 	FpsManager.DoFrame();
 	
-	if (EmuConfig.Gamefixes.FMVinSoftwareHack || g_Conf->GSWindow.IsToggleAspectRatioSwitch) {
+	if (EmuConfig.Gamefixes.FMVinSoftwareHack || g_Conf->GSWindow.FMVAspectRatioSwitch != FMV_AspectRatio_Switch_Off) {
 		if (EnableFMV) {
 			DevCon.Warning("FMV on");
 			DoFmvSwitch(true);

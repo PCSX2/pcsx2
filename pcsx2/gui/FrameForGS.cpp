@@ -172,6 +172,12 @@ void GSPanel::DoResize()
 			targetAr = 4.0 / 3.0;
 		else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9)
 			targetAr = 16.0 / 9.0;
+	} else if (switchAR) {
+		if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_4_3 && g_Conf->GSWindow.AspectRatio != AspectRatio_4_3) {
+			targetAr = 4.0 / 3.0;
+		} else if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_16_9 && g_Conf->GSWindow.AspectRatio != AspectRatio_16_9) {
+			targetAr = 16.0 / 9.0;
+		}
 	} else {
 		targetAr = 4.0 / 3.0;
 	}

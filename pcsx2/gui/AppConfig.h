@@ -96,6 +96,14 @@ enum AspectRatioType
 	AspectRatio_MaxCount
 };
 
+enum FMVAspectRatioSwitchType
+{
+	FMV_AspectRatio_Switch_4_3,
+	FMV_AspectRatio_Switch_16_9,
+	FMV_AspectRatio_Switch_Off,
+	FMV_AspectRatio_Switch_MaxCount
+};
+
 enum MemoryCardType
 {
 	MemoryCard_None,
@@ -205,6 +213,7 @@ public:
 		bool		DisableScreenSaver;
 
 		AspectRatioType AspectRatio;
+		FMVAspectRatioSwitchType FMVAspectRatioSwitch;
 		Fixed100	Zoom;
 		Fixed100	StretchY;
 		Fixed100	OffsetX;
@@ -218,7 +227,6 @@ public:
 		bool		EnableVsyncWindowFlag;
 
 		bool		IsToggleFullscreenOnDoubleClick;
-		bool		IsToggleAspectRatioSwitch;
 
 		GSWindowOptions();
 
