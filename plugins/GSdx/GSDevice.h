@@ -28,7 +28,8 @@
 #include "GSAlignedClass.h"
 #include "GSOsdManager.h"
 
-enum ShaderConvert {
+enum ShaderConvert
+{
 	ShaderConvert_COPY = 0,
 	ShaderConvert_RGBA8_TO_16_BITS,
 	ShaderConvert_DATM_1,
@@ -50,6 +51,17 @@ enum ShaderConvert {
 	ShaderConvert_OSD,
 	ShaderConvert_YUV,
 	ShaderConvert_Count
+};
+
+enum ChannelFetch
+{
+	ChannelFetch_NONE  = 0,
+	ChannelFetch_RED   = 1,
+	ChannelFetch_GREEN = 2,
+	ChannelFetch_BLUE  = 3,
+	ChannelFetch_ALPHA = 4,
+	ChannelFetch_GXBY  = 6,
+	ChannelFetch_RGB   = 7,
 };
 
 #pragma pack(push, 1)
