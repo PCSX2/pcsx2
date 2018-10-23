@@ -402,14 +402,14 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 	if (m_channel_shuffle) {
 		if (m_game.title == CRC::GT4 || m_game.title == CRC::GT3 || m_game.title == CRC::GTConcept || m_game.title == CRC::TouristTrophy) {
 			GL_INS("Gran Turismo RGB Channel");
-			m_ps_sel.channel = 7;
+			m_ps_sel.channel = ChannelFetch_RGB;
 			m_context->TEX0.TFX = TFX_DECAL;
 			*rt = tex->m_from_target;
 		} else if (m_game.title == CRC::Tekken5) {
 			if (m_context->FRAME.FBW == 1) {
 				// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
 				GL_INS("Tekken5 RGB Channel");
-				m_ps_sel.channel = 7;
+				m_ps_sel.channel = ChannelFetch_RGB;
 				m_context->FRAME.FBMSK = 0xFF000000;
 				// 12 pages: 2 calls by channel, 3 channels, 1 blit
 				// Minus current draw call
@@ -444,7 +444,7 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 			// Read either blue or Alpha. Let's go for Blue ;)
 			// MGS3/Kill Zone
 			GL_INS("Blue channel");
-			m_ps_sel.channel = 3;
+			m_ps_sel.channel = ChannelFetch_BLUE;
 		} else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0)) {
 			// Read either Red or Green. Let's check the V coordinate. 0-1 is likely top so
 			// red. 2-3 is likely bottom so green (actually depends on texture base pointer offset)
@@ -473,20 +473,20 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 
 				if (blue_shift >= 0) {
 					GL_INS("Green/Blue channel (%d, %d)", blue_shift, green_shift);
-					m_ps_sel.channel = 6;
+					m_ps_sel.channel = ChannelFetch_GXBY;
 					m_context->FRAME.FBMSK = 0x00FFFFFF;
 				} else {
 					GL_INS("Green channel (wrong mask) (fbmask %x)", m_context->FRAME.FBMSK >> 24);
-					m_ps_sel.channel = 2;
+					m_ps_sel.channel = ChannelFetch_GREEN;
 				}
 
 			} else if (green) {
 				GL_INS("Green channel");
-				m_ps_sel.channel = 2;
+				m_ps_sel.channel = ChannelFetch_GREEN;
 			} else {
 				// Pop
 				GL_INS("Red channel");
-				m_ps_sel.channel = 1;
+				m_ps_sel.channel = ChannelFetch_RED;
 			}
 		} else {
 			GL_INS("Channel not supported");
@@ -1319,7 +1319,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			m_require_full_barrier = true;
 			// Extract the depth as palette index
 			m_ps_sel.depth_fmt = 1;
-			m_ps_sel.channel = 3;
+			m_ps_sel.channel = ChannelFetch_BLUE;
 			dev->PSSetShaderResource(4, ds);
 
 			// We need the palette to convert the depth to the correct alpha value.
