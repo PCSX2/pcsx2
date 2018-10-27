@@ -898,8 +898,8 @@ static void sioWrite8inl(u8 data)
 	if (IS_LAST_BYTE_IN_PACKET != 1) //The following should be set after each byte transfer but the last one.
 		sio.StatReg |= ACK_INP; //Signal that Controller (or MC) has brought the /ACK (Acknowledge) line active low.
 
-		sioInterrupt();
-		//chkTriggerInt();
+	sioInterrupt();
+	//chkTriggerInt();
 	//Console.WriteLn( "SIO0 WR DATA COMMON %02X  INT_STAT= %08X  IOPpc= %08X " , data, psxHu32(0x1070), psxRegs.pc);
 	byteCnt++;
 }
@@ -910,11 +910,11 @@ void sioStatRead() {
 
 if (clrAckCnt > 1) {  //This check can probably be removed...
 	sio.StatReg &= ~ACK_INP; //clear (goes inactive) /ACK line.
-//sio.StatReg &= ~TX_RDY;
-//	sio.StatReg &= ~0x200; //irq
-	//if (byteCnt == 1)
-	//	sio.StatReg &= ~RX_RDY;
-clrAckCnt = 0;
+	// sio.StatReg &= ~TX_RDY;
+	// sio.StatReg &= ~0x200; //irq
+	// if (byteCnt == 1)
+	// 	sio.StatReg &= ~RX_RDY;
+	clrAckCnt = 0;
 }
 	//The /ACK line should go active for >2us, in a time window between 12us and 100us after each byte is sent (received by the controller).
 	//If that doesn't happen, the controller is considered missing.

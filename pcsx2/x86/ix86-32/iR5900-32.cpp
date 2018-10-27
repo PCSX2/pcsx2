@@ -1095,6 +1095,7 @@ int cop2flags(u32 code)
 				default:
 					break;
 			}
+			break;
 		case 4: // MAXbc
 		case 5: // MINbc
 		case 12: // IADD, ISUB, IADDI

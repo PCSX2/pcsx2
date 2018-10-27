@@ -310,7 +310,7 @@ bool SysThreadBase::StateCheckInThread()
 			m_ExecMode = ExecMode_Closed;
 			m_RunningLock.Release();
 		}
-		// fallthrough...
+		// Fall through
 
 		case ExecMode_Closed:
 			while( m_ExecMode == ExecMode_Closed )
