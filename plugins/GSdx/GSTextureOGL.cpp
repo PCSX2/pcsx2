@@ -252,6 +252,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, 
 		case GSTexture::Offscreen:
 			// Offscreen is only used to read color. So it only requires 4B by pixel
 			m_local_buffer = (uint8*)_aligned_malloc(m_size.x * m_size.y * 4, 32);
+			// fall through
 		case GSTexture::Texture:
 		case GSTexture::RenderTarget:
 		case GSTexture::DepthStencil:

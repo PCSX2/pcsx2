@@ -47,6 +47,10 @@ public:
 
 	__forceinline GSVector4i()
 	{
+		x = 0;
+		y = 0;
+		z = 0;
+		w = 0;
 	}
 
 	__forceinline GSVector4i(int x, int y, int z, int w)
