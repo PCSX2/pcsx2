@@ -50,8 +50,8 @@ static void _SaveLoadStuff(bool enabled)
 		int load_menu_item = MenuId_State_Load01 + i + 1;
 		int save_menu_item = MenuId_State_Save01 + i + 1;
 		
-		// We need to reload the file information if the crc changed.
-		if (saveslot_cache[i].crc != ElfCRC) saveslot_cache[i].invalid_cache = true;
+		// We need to reload the file information if the crc or serial # changed.
+		if ((saveslot_cache[i].crc != ElfCRC)|| (saveslot_cache[i].serialName != DiscSerial)) saveslot_cache[i].invalid_cache = true;
 
 		// Either the cache needs updating, or the menu items do, or both.
 		if (saveslot_cache[i].menu_update || saveslot_cache[i].invalid_cache)
