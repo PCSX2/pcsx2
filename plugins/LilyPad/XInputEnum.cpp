@@ -161,13 +161,14 @@ public:
     {
         if (!active)
             return 0;
-        XINPUT_STATE state;
-        if (ERROR_SUCCESS != pXInputGetStateEx(index, &state)) {
-            Deactivate();
-            return 0;
-        }
         SCP_EXTN pressure;
         if (!pXInputGetExtended || (ERROR_SUCCESS != pXInputGetExtended(index, &pressure))) {
+            XINPUT_STATE state;
+            if (ERROR_SUCCESS != pXInputGetStateEx(index, &state)) {
+                Deactivate();
+                return 0;
+            }
+
             int buttons = state.Gamepad.wButtons;
             for (int i = 0; i < 15; i++) {
                 physicalControlState[i] = ((buttons >> physicalControls[i].id) & 1) << 16;
