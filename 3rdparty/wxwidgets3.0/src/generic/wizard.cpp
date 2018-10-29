@@ -428,7 +428,10 @@ void wxWizard::AddButtonRow(wxBoxSizer *mainColumn)
         btnHelp=new wxButton(this, wxID_HELP, wxEmptyString, wxDefaultPosition, wxDefaultSize, buttonStyle);
 #endif
 
-    m_btnNext = new wxButton(this, wxID_FORWARD, _("&Next >"));
+    m_nextLabel = _("&Next >");
+    m_finishLabel = _("&Finish");
+
+    m_btnNext = new wxButton(this, wxID_FORWARD, m_nextLabel);
     wxButton *btnCancel=new wxButton(this, wxID_CANCEL, _("&Cancel"), wxDefaultPosition, wxDefaultSize, buttonStyle);
 #ifndef __WXMAC__
     if (GetExtraStyle() & wxWIZARD_EX_HELPBUTTON)
@@ -623,7 +626,7 @@ bool wxWizard::ShowPage(wxWizardPage *page, bool goingForward)
     m_btnPrev->Enable(HasPrevPage(m_page));
 
     const bool hasNext = HasNextPage(m_page);
-    const wxString label = hasNext ? _("&Next >") : _("&Finish");
+    const wxString& label = hasNext ? m_nextLabel : m_finishLabel;
     if ( label != m_btnNext->GetLabel() )
         m_btnNext->SetLabel(label);
 
