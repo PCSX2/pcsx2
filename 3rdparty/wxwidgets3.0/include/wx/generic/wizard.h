@@ -131,6 +131,10 @@ protected:
                 *m_btnNext;     // the "Next>" or "Finish" button
     wxStaticBitmap *m_statbmp;  // the control for the bitmap
 
+    // cached labels so their locale stays consistent
+    wxString m_nextLabel,
+             m_finishLabel;
+
     // Border around page area sizer requested using SetBorder()
     int m_border;
 
