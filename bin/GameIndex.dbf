@@ -8622,6 +8622,11 @@ Serial = SLES-50920
 Name   = King's Field IV
 Region = PAL-M5
 Compat = 5
+[patches = 401F4726]
+	comment=Patch by Wgarvin
+	// Fixes central tower level loading.
+	patch=1,EE,001BCC4C,word,46150036
+[/patches]
 ---------------------------------------------
 Serial = SLES-50921
 Name   = Way of the Samurai
@@ -35788,6 +35793,11 @@ Serial = SLUS-20318
 Name   = King's Field IV
 Region = NTSC-U
 Compat = 5
+[patches = 36E02E91]
+	comment=Patch by Wgarvin
+	// Fixes central tower level loading.
+	patch=1,EE,001BE42C,word,46150036
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20319
 Name   = Romance of the Three Kingdoms VII
