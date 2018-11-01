@@ -8624,7 +8624,8 @@ Region = PAL-M5
 Compat = 5
 [patches = 401F4726]
 	comment=Patch by Wgarvin
-	// Fixes central tower level loading.
+	// Fixes (black voids) central tower level loading.
+	// Issue: Some doors leading to some areas appeared as black voids that you can walk in to.
 	patch=1,EE,001BCC4C,word,46150036
 [/patches]
 ---------------------------------------------
@@ -35795,7 +35796,8 @@ Region = NTSC-U
 Compat = 5
 [patches = 36E02E91]
 	comment=Patch by Wgarvin
-	// Fixes central tower level loading.
+	// Fixes (black voids) central tower level loading.
+	// Issue: Some doors leading to some areas appeared as black voids that you can walk in to.
 	patch=1,EE,001BE42C,word,46150036
 [/patches]
 ---------------------------------------------
