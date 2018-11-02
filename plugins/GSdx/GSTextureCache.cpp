@@ -2045,18 +2045,6 @@ void GSTextureCache::AttachPaletteToSource(Source* s, uint16 pal)
 
 // GSTextureCache::Palette
 
-// Default constructor
-GSTextureCache::Palette::Palette() {
-	m_clut = nullptr;
-	m_tex_palette = nullptr;
-}
-
-// Copy constructor
-GSTextureCache::Palette::Palette(const Palette& palette) {
-	m_clut = palette.m_clut;
-	m_tex_palette = palette.m_tex_palette;
-};
-
 // Creates a new palette texture with current clut content, keeping a reference to its copy
 GSTextureCache::Palette::Palette(const GSRenderer* renderer, uint16 pal) {
 	uint16 palette_size = pal * sizeof(uint32);

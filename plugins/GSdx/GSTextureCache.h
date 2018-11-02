@@ -59,10 +59,16 @@ public:
 		const GSRenderer* m_renderer; // Pointer to the current renderer, needed to recycle the referenced GSTexture on destruction
 
 	public:
-		Palette(); // Default constructor
-		Palette(const Palette& palette); // Copy constructor
 		Palette(const GSRenderer* renderer, uint16 pal); // Creates a copy of the current clut and a texture with its content
 		virtual ~Palette(); // Default destructor, recycles palette texture and frees clut copy
+
+		// Disable copy constructor and copy operator
+		Palette(const Palette&) = delete;
+		Palette& operator=(const Palette&) = delete;
+
+		// Disable move constructor and move operator
+		Palette(const Palette&&) = delete;
+		Palette& operator=(const Palette&&) = delete;
 
 		// Getter for clut pointer
 		uint32* GetClut();
