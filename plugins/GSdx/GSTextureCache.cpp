@@ -2079,7 +2079,13 @@ GSTextureCache::PaletteMap::PaletteMap(const GSRenderer* renderer) {
 	}
 }
 
-// Hashes the content of the clut
+// Hashes the content of the clut.
+// The hashing function is implemented by taking two things into account:
+// 1) The clut can be an array of 16 or 256 uint32 (depending on the pal parameter) and in order to speed up the computation of the hash
+//    the array is hashed in blocks of 16 uint32, so for clut of size 16 uint32 the hashing is computed in one pass and for clut of 256 uint32
+//    it is computed in 16 passes,
+// 2) The clut can contain many 0s, so as a way to increase the spread of hashing values for small changes in the input clut the hashing function
+//    is using addition in combination with logical XOR operator; The addition constants are large prime numbers, which may help in achieving what intended.
 size_t GSTextureCache::PaletteMap::HashClut(uint16 pal, const uint32* clut) {
 	size_t clut_hash = 3831179159;
 	for (uint16 i = 0; i < pal; i += 16) {
