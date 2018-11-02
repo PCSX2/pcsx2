@@ -287,8 +287,8 @@ void GSdxApp::Init()
 		GSSetting(CRCHackLevel::Automatic, "Automatic", "Default"),
 		GSSetting(CRCHackLevel::None , "None", "Debug"),
 		GSSetting(CRCHackLevel::Minimum, "Minimum", "Debug"),
-		GSSetting(CRCHackLevel::Partial, "Partial", "OpenGL Recommended"),
-		GSSetting(CRCHackLevel::Full, "Full", "Direct3D Recommended"),
+		GSSetting(CRCHackLevel::Partial, "Partial", "OpenGL"),
+		GSSetting(CRCHackLevel::Full, "Full", "Direct3D"),
 		GSSetting(CRCHackLevel::Aggressive, "Aggressive", ""),
 	};
 
