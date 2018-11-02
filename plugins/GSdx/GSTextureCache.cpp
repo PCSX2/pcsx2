@@ -28,7 +28,8 @@ bool GSTextureCache::m_disable_partial_invalidation = false;
 bool GSTextureCache::m_wrap_gs_mem = false;
 
 GSTextureCache::GSTextureCache(GSRenderer* r)
-	: m_renderer(r)
+	: m_renderer(r),
+	m_palette_map(r)
 {
 	s_IS_OPENGL = theApp.GetCurrentRendererType() == GSRendererType::OGL_HW;
 
@@ -62,8 +63,6 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	// isn't enough in custom resolution)
 	// Test: onimusha 3 PAL 60Hz
 	m_temp = (uint8*)_aligned_malloc(9 * 1024 * 1024, 32);
-
-	m_palette_map.SetRenderer((const GSRenderer*) r);
 }
 
 GSTextureCache::~GSTextureCache()
@@ -2084,8 +2083,9 @@ GSTexture* GSTextureCache::Palette::GetPaletteGSTexture() {
 
 // GSTextureCache::PaletteMap
 
-// Default constructor, reverses space in the multimaps
-GSTextureCache::PaletteMap::PaletteMap() {
+// Default constructor, stores renderer pointer and reverses space in the multimaps
+GSTextureCache::PaletteMap::PaletteMap(const GSRenderer* renderer) {
+	this->m_renderer = renderer;
 	for (auto& multimap : m_multimaps) {
 		multimap.reserve(MAX_SIZE);
 	}

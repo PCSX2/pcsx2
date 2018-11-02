@@ -140,10 +140,7 @@ public:
 		static size_t HashClut(uint16 pal, const uint32* clut);
 
 	public:
-		PaletteMap(); // Default constructor
-
-		// Setter for m_renderer
-		void SetRenderer(const GSRenderer* renderer) { m_renderer = renderer; };
+		PaletteMap(const GSRenderer* renderer); // Default constructor
 
 		// Retrieves a shared pointer to a valid Palette from m_multimaps or creates a new one adding it to the data structure
 		std::shared_ptr<Palette> LookupPalette(uint16 pal);
