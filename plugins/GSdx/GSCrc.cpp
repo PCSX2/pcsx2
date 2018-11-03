@@ -341,6 +341,7 @@ CRC::Game CRC::m_games[] =
 	{0x37CD4279, LordOfTheRingsThirdAge, KO, 0},
 	{0xE169BAF8, RedDeadRevolver, US, 0},
 	{0xE2E67E23, RedDeadRevolver, EU, 0},
+	{0x87844524, RedDeadRevolver, RU, 0}, // Unofficial RU-version
 	{0xF56C7948, HeavyMetalThunder, JP, 0},
 	{0x6DF62AEA, BleachBladeBattlers, JP, 0},
 	{0x6EB71AB0, BleachBladeBattlers, JP, 0}, // 2nd
