@@ -2148,12 +2148,10 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 	}
 
 	// No Palette with matching clut content hash, MISS
-	
-	uint16 palette_size = pal * sizeof(uint32);
 
 	if (map.size() > MAX_SIZE) {
 		// If the map is too big, try to clean it by disposing and removing unused palettes, before adding the new one
-		GL_INS("WARNING, %u-bit PaletteMap (Size %u): Max size %u exceeded, clearing unused palettes.", palette_size, map.size(), MAX_SIZE);
+		GL_INS("WARNING, %u-bit PaletteMap (Size %u): Max size %u exceeded, clearing unused palettes.", pal * sizeof(uint32), map.size(), MAX_SIZE);
 
 		uint32 current_size = map.size();
 
@@ -2173,11 +2171,11 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 		uint32 cleared_palette_count = current_size - (uint32)map.size();
 
 		if (cleared_palette_count == 0) {
-			GL_INS("ERROR, %u-bit PaletteMap (Size %u): Max size %u exceeded, could not clear any palette, negative performance impact.", palette_size, map.size(), MAX_SIZE);
+			GL_INS("ERROR, %u-bit PaletteMap (Size %u): Max size %u exceeded, could not clear any palette, negative performance impact.", pal * sizeof(uint32), map.size(), MAX_SIZE);
 		}
 		else {
 			map.reserve(MAX_SIZE); // Ensure map capacity is not modified by the clearing
-			GL_INS("INFO, %u-bit PaletteMap (Size %u): Cleared %u palettes.", palette_size, map.size(), cleared_palette_count);
+			GL_INS("INFO, %u-bit PaletteMap (Size %u): Cleared %u palettes.", pal * sizeof(uint32), map.size(), cleared_palette_count);
 		}
 	}
 
@@ -2190,7 +2188,7 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 	// Add the new palette to the map
 	map.emplace(palette_key, palette);
 
-	GL_CACHE("TC, %u-bit PaletteMap (Size %u): Added new palette.", palette_size, map.size());
+	GL_CACHE("TC, %u-bit PaletteMap (Size %u): Added new palette.", pal * sizeof(uint32), map.size());
 	
 	// Return the shared pointer to the newly created Palette
 	return palette;
