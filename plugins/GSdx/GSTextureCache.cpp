@@ -29,7 +29,8 @@ bool GSTextureCache::m_disable_partial_invalidation = false;
 bool GSTextureCache::m_wrap_gs_mem = false;
 
 GSTextureCache::GSTextureCache(GSRenderer* r)
-	: m_renderer(r)
+	: m_renderer(r),
+	m_palette_map(r)
 {
 	s_IS_DIRECT3D11 = theApp.GetCurrentRendererType() == GSRendererType::DX1011_HW;
 	s_IS_OPENGL = theApp.GetCurrentRendererType() == GSRendererType::OGL_HW;
@@ -95,6 +96,8 @@ void GSTextureCache::RemoveAll()
 
 		m_dst[type].clear();
 	}
+
+	m_palette_map.Clear();
 }
 
 GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette)
@@ -165,12 +168,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		// If it is too expensive, one could cut memory allocation in Source constructor for this
 		// use case.
 		if (palette) {
-			const uint32* clut = m_renderer->m_mem.m_clut;
-			int size = psm_s.pal * sizeof(clut[0]);
-
-			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
-			src->m_palette->Update(GSVector4i(0, 0, psm_s.pal, 1), clut, size);
-			src->m_initpalette = false;
+			AttachPaletteToSource(src, psm_s.pal);
 		}
 
 		m_src.m_surfaces.insert(src);
@@ -229,7 +227,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			// converted by the CPU (s->m_palette == NULL), we need to ensure
 			// palette content is the same.
 			// Note: content of the palette will be uploaded at the end of the function
-			if (psm_s.pal > 0 && s->m_palette == NULL && !GSVector4i::compare64(clut, s->m_clut, psm_s.pal * sizeof(clut[0])))
+			if (psm_s.pal > 0 && !s->m_should_have_tex_palette && !GSVector4i::compare64(clut, s->m_clut, psm_s.pal * sizeof(clut[0])))
 				continue;
 
 			// We request a 24/16 bit RGBA texture. Alpha expansion was done by
@@ -403,15 +401,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					psm_str(TEX0.PSM));
 	}
 
-	if (src->m_palette)
-	{
-		int size = psm_s.pal * sizeof(clut[0]);
-
-		if(src->m_initpalette || !GSVector4i::update(src->m_clut, clut, size))
-		{
-			src->m_palette->Update(GSVector4i(0, 0, psm_s.pal, 1), src->m_clut, size);
-			src->m_initpalette = false;
-		}
+	if (src->m_should_have_tex_palette && (!src->m_clut || !GSVector4i::compare64(src->m_clut, clut, psm_s.pal * sizeof(uint32)))) {
+		AttachPaletteToSource(src, psm_s.pal);
 	}
 
 	src->Update(r);
@@ -1347,7 +1338,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// However it is different here. We want to reuse a Render Target as a texture.
 		// Because the texture is already on the GPU, CPU can't convert it.
 		if (psm.pal > 0) {
-			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
+			src->m_should_have_tex_palette = true;
 		}
 		// Disable linear filtering for various GS post-processing effect
 		// 1/ Palette is used to interpret the alpha channel of the RT as an index.
@@ -1461,18 +1452,20 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		if (m_paltex && psm.pal > 0)
 		{
 			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th, Get8bitFormat());
-			src->m_palette = m_renderer->m_dev->CreateTexture(256, 1);
+			src->m_should_have_tex_palette = true;
 		}
-		else
+		else {
 			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th);
+
+			if (psm.pal > 0) {
+				uint16 palette_size = psm.pal * sizeof(uint32);
+				src->m_clut = (uint32*)_aligned_malloc(palette_size * sizeof(uint32), 64);
+				memcpy(src->m_clut, (const uint32*)m_renderer->m_mem.m_clut, palette_size);
+			}
+		}
 	}
 
 	ASSERT(src->m_texture);
-
-	if(psm.pal > 0)
-	{
-		memcpy(src->m_clut, (const uint32*)m_renderer->m_mem.m_clut, psm.pal * sizeof(uint32));
-	}
 
 	m_src.Add(src, TEX0, m_renderer->m_context->offset.tex);
 
@@ -1563,8 +1556,10 @@ void GSTextureCache::Surface::UpdateAge()
 
 GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp, bool dummy_container)
 	: Surface(r, temp)
+	, m_palette_obj(nullptr)
 	, m_palette(NULL)
-	, m_initpalette(true)
+	, m_should_have_tex_palette(false)
+	, m_clut(NULL)
 	, m_target(false)
 	, m_complete(false)
 	, m_spritehack_t(false)
@@ -1580,18 +1575,12 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 		m_write.rect = NULL;
 		m_write.count = 0;
 
-		m_clut = NULL;
-
 		m_repeating = false;
 
 	} else {
 		memset(m_layer_TEX0, 0, sizeof(m_layer_TEX0));
 
 		memset(m_valid, 0, sizeof(m_valid));
-
-		m_clut = (uint32*)_aligned_malloc(256 * sizeof(uint32), 32);
-
-		memset(m_clut, 0, 256*sizeof(uint32));
 
 		m_write.rect = (GSVector4i*)_aligned_malloc(3 * sizeof(GSVector4i), 32);
 		m_write.count = 0;
@@ -1610,9 +1599,10 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 
 GSTextureCache::Source::~Source()
 {
-	m_renderer->m_dev->Recycle(m_palette);
-
-	_aligned_free(m_clut);
+	if (!m_palette_obj) {
+		_aligned_free(m_clut);
+		m_renderer->m_dev->Recycle(m_palette);
+	}
 
 	_aligned_free(m_write.rect);
 }
@@ -2006,7 +1996,7 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 
 void GSTextureCache::SourceMap::RemoveAll()
 {
-	for(auto s : m_surfaces) delete s;
+	for (auto s : m_surfaces) delete s;
 
 	m_surfaces.clear();
 
@@ -2055,3 +2045,171 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 
 	delete s;
 }
+
+// Query the PaletteMap for a valid Palette, then assign both palette texture pointer and clut copy pointer to the Source object
+void GSTextureCache::AttachPaletteToSource(Source* s, uint16 pal)
+{
+	std::shared_ptr<Palette> p = m_palette_map.LookupPalette(pal);
+	s->m_palette_obj = p;
+	s->m_palette = p->GetPaletteGSTexture();
+	s->m_clut = p->GetClut();
+}
+
+// GSTextureCache::Palette
+
+// Creates a new palette texture with current clut content, keeping a reference to its copy
+GSTextureCache::Palette::Palette(const GSRenderer* renderer, uint16 pal) {
+	uint16 palette_size = pal * sizeof(uint32);
+	m_clut = (uint32*)_aligned_malloc(palette_size, 64);
+	m_renderer = renderer;
+	memcpy(m_clut, (const uint32*)m_renderer->m_mem.m_clut, palette_size);
+	m_tex_palette = m_renderer->m_dev->CreateTexture(256, 1);
+	m_tex_palette->Update(GSVector4i(0, 0, pal, 1), m_clut, palette_size);
+}
+
+// Default destructor, recycles palette texture and frees clut copy
+GSTextureCache::Palette::~Palette() {
+	m_renderer->m_dev->Recycle(GetPaletteGSTexture()); // Recycle palette texture
+	_aligned_free(GetClut()); // Free clut copy
+}
+
+uint32* GSTextureCache::Palette::GetClut() {
+	return m_clut;
+}
+
+GSTexture* GSTextureCache::Palette::GetPaletteGSTexture() {
+	return m_tex_palette;
+}
+
+// GSTextureCache::PaletteKeyHash
+
+// Hashes the content of the clut.
+// The hashing function is implemented by taking two things into account:
+// 1) The clut can be an array of 16 or 256 uint32 (depending on the pal parameter) and in order to speed up the computation of the hash
+//    the array is hashed in blocks of 16 uint32, so for clut of size 16 uint32 the hashing is computed in one pass and for clut of 256 uint32
+//    it is computed in 16 passes,
+// 2) The clut can contain many 0s, so as a way to increase the spread of hashing values for small changes in the input clut the hashing function
+//    is using addition in combination with logical XOR operator; The addition constants are large prime numbers, which may help in achieving what intended.
+std::size_t GSTextureCache::PaletteKeyHash::operator()(const PaletteKey &key) const {
+	uint16 pal = key.pal;
+	const uint32* clut = key.clut;
+
+	size_t clut_hash = 3831179159;
+	for (uint16 i = 0; i < pal; i += 16) {
+		clut_hash = (clut_hash + 1488000301) ^ (clut[i] + 33644011);
+		clut_hash = (clut_hash + 3831179159) ^ (clut[i + 1] + 47627467);
+		clut_hash = (clut_hash + 3659574209) ^ (clut[i + 2] + 577038523);
+		clut_hash = (clut_hash + 33644011) ^ (clut[i + 3] + 3491555267);
+
+		clut_hash = (clut_hash + 777771959) ^ (clut[i + 4] + 3301075993);
+		clut_hash = (clut_hash + 4019618579) ^ (clut[i + 5] + 4186992613);
+		clut_hash = (clut_hash + 3465668953) ^ (clut[i + 6] + 3043435883);
+		clut_hash = (clut_hash + 3494478943) ^ (clut[i + 7] + 3441897883);
+
+		clut_hash = (clut_hash + 3432010979) ^ (clut[i + 8] + 2167922789);
+		clut_hash = (clut_hash + 1570862863) ^ (clut[i + 9] + 3401920591);
+		clut_hash = (clut_hash + 1002648679) ^ (clut[i + 10] + 1293530519);
+		clut_hash = (clut_hash + 551381741) ^ (clut[i + 11] + 2539834039);
+
+		clut_hash = (clut_hash + 3768974459) ^ (clut[i + 12] + 169943507);
+		clut_hash = (clut_hash + 862380703) ^ (clut[i + 13] + 2906932549);
+		clut_hash = (clut_hash + 3433082137) ^ (clut[i + 14] + 4234384109);
+		clut_hash = (clut_hash + 2679083843) ^ (clut[i + 15] + 2719605247);
+	}
+	return clut_hash;
+};
+
+// GSTextureCache::PaletteKeyEqual
+
+// Compare clut contents
+bool GSTextureCache::PaletteKeyEqual::operator()(const PaletteKey &lhs, const PaletteKey &rhs) const {
+	ASSERT(lhs.pal == rhs.pal); // By design, each map SHOULD contain only PaletteKey with the same pal value
+	
+	uint16 pal = lhs.pal;
+	uint16 palette_size = pal * sizeof(uint32);
+	return GSVector4i::compare64(lhs.clut, rhs.clut, palette_size);
+};
+
+// GSTextureCache::PaletteMap
+
+// Default constructor, stores renderer pointer and reverses space in the maps
+GSTextureCache::PaletteMap::PaletteMap(const GSRenderer* renderer) {
+	this->m_renderer = renderer;
+	for (auto& map : m_maps) {
+		map.reserve(MAX_SIZE);
+	}
+}
+
+// Retrieves the palette with the desired clut
+std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalette(uint16 pal) {
+	// Choose which hash map search into:
+	//    pal == 16  : index 0
+	//    pal == 256 : index 1
+	auto& map = m_maps[pal == 16 ? 0 : 1];
+
+	const uint32* clut = (const uint32*)m_renderer->m_mem.m_clut;
+
+	// Create PaletteKey for searching into map (clut is actually not copied, so do not store this key into the map)
+	PaletteKey palette_key = { clut, pal };
+
+	auto it1 = map.find(palette_key);
+
+	if (it1 != map.end()) {
+		// Clut content match, HIT
+		return it1->second;
+	}
+
+	// No Palette with matching clut content hash, MISS
+
+	if (map.size() > MAX_SIZE) {
+		// If the map is too big, try to clean it by disposing and removing unused palettes, before adding the new one
+		GL_INS("WARNING, %u-bit PaletteMap (Size %u): Max size %u exceeded, clearing unused palettes.", pal * sizeof(uint32), map.size(), MAX_SIZE);
+
+		uint32 current_size = map.size();
+
+		for (auto it = map.begin(); it != map.end(); ) {
+			// If the palette is unused, there is only one shared pointers holding a reference to the unused Palette object,
+			// and this shared pointer is the one stored in the map itself
+			if (it->second.use_count() <= 1) {
+				// Palette is unused
+				it = map.erase(it); // Erase element from map
+				// The palette object should now be gone as the shared pointer to the object in the map is deleted
+			}
+			else {
+				++it;
+			}
+		}
+
+		uint32 cleared_palette_count = current_size - (uint32)map.size();
+
+		if (cleared_palette_count == 0) {
+			GL_INS("ERROR, %u-bit PaletteMap (Size %u): Max size %u exceeded, could not clear any palette, negative performance impact.", pal * sizeof(uint32), map.size(), MAX_SIZE);
+		}
+		else {
+			map.reserve(MAX_SIZE); // Ensure map capacity is not modified by the clearing
+			GL_INS("INFO, %u-bit PaletteMap (Size %u): Cleared %u palettes.", pal * sizeof(uint32), map.size(), cleared_palette_count);
+		}
+	}
+
+	// Create new Palette using shared pointer
+	std::shared_ptr<Palette> palette = std::make_shared<Palette>(m_renderer, pal);
+	
+	// Create key for storing the Palette into the map (use copy of the clut stored into Palette itself as key attribute)
+	palette_key = { palette->GetClut(), pal };
+
+	// Add the new palette to the map
+	map.emplace(palette_key, palette);
+
+	GL_CACHE("TC, %u-bit PaletteMap (Size %u): Added new palette.", pal * sizeof(uint32), map.size());
+	
+	// Return the shared pointer to the newly created Palette
+	return palette;
+}
+
+void GSTextureCache::PaletteMap::Clear() {
+	for (auto& map : m_maps) {
+		map.clear(); // Clear all the nodes of the map, deleting Palette objects managed by shared pointers as they should be unused elsewhere
+		map.reserve(MAX_SIZE); // Ensure map capacity is not modified by the clearing
+	}
+}
+
