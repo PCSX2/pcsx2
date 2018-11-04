@@ -77,6 +77,21 @@ public:
 		GSTexture* GetPaletteGSTexture();
 	};
 
+	struct PaletteKey {
+		const uint32* clut;
+		uint16 pal;
+	};
+
+	struct PaletteKeyHash {
+		// Calculate hash
+		virtual std::size_t operator()(const PaletteKey &key) const;
+	};
+
+	struct PaletteKeyEqual {
+		// Compare clut contents
+		virtual bool operator()(const PaletteKey &lhs, const PaletteKey &rhs) const;
+	};
+
 	class Source : public Surface
 	{
 		struct {GSVector4i* rect; uint32 count;} m_write;
@@ -138,20 +153,18 @@ public:
 		static const uint16 MAX_SIZE = 65535; // Max size of each map.
 		const GSRenderer* m_renderer; // Reference to the current renderer
 		
-		// Array of 2 multimaps, the first for 64B palettes and the second for 1024B palettes.
-		// Each multimap has the clut hash value as key and the relevant palettes as values (multiple values possible for each key)
-		std::array<std::unordered_multimap<size_t, std::shared_ptr<Palette>>, 2> m_multimaps;
-
-		// Helper function to compute an hash value of the clut
-		static size_t HashClut(uint16 pal, const uint32* clut);
+		// Array of 2 maps, the first for 64B palettes and the second for 1024B palettes.
+		// Each map stores the key PaletteKey (clut copy, pal value) pointing to the relevant shared pointer to Palette object.
+		// There is one PaletteKey per Palette, and the hashing and comparison of PaletteKey is done with custom operators PaletteKeyHash and PaletteKeyEqual.
+		std::array<std::unordered_map<PaletteKey, std::shared_ptr<Palette>, PaletteKeyHash, PaletteKeyEqual>, 2> m_maps;
 
 	public:
 		PaletteMap(const GSRenderer* renderer); // Default constructor
 
-		// Retrieves a shared pointer to a valid Palette from m_multimaps or creates a new one adding it to the data structure
+		// Retrieves a shared pointer to a valid Palette from m_maps or creates a new one adding it to the data structure
 		std::shared_ptr<Palette> LookupPalette(uint16 pal);
 
-		void Clear(); // Clears m_multimaps, deleting clut(s) arrays and recycling palette textures
+		void Clear(); // Clears m_maps, deleting clut(s) arrays and recycling palette textures
 	};
 
 	class SourceMap

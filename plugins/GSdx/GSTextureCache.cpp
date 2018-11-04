@@ -2069,15 +2069,7 @@ GSTexture* GSTextureCache::Palette::GetPaletteGSTexture() {
 	return m_tex_palette;
 }
 
-// GSTextureCache::PaletteMap
-
-// Default constructor, stores renderer pointer and reverses space in the multimaps
-GSTextureCache::PaletteMap::PaletteMap(const GSRenderer* renderer) {
-	this->m_renderer = renderer;
-	for (auto& multimap : m_multimaps) {
-		multimap.reserve(MAX_SIZE);
-	}
-}
+// GSTextureCache::PaletteKeyHash
 
 // Hashes the content of the clut.
 // The hashing function is implemented by taking two things into account:
@@ -2086,7 +2078,10 @@ GSTextureCache::PaletteMap::PaletteMap(const GSRenderer* renderer) {
 //    it is computed in 16 passes,
 // 2) The clut can contain many 0s, so as a way to increase the spread of hashing values for small changes in the input clut the hashing function
 //    is using addition in combination with logical XOR operator; The addition constants are large prime numbers, which may help in achieving what intended.
-size_t GSTextureCache::PaletteMap::HashClut(uint16 pal, const uint32* clut) {
+std::size_t GSTextureCache::PaletteKeyHash::operator()(const PaletteKey &key) const {
+	uint16 pal = key.pal;
+	const uint32* clut = key.clut;
+
 	size_t clut_hash = 3831179159;
 	for (uint16 i = 0; i < pal; i += 16) {
 		clut_hash = (clut_hash + 1488000301) ^ (clut[i] + 33644011);
@@ -2110,6 +2105,27 @@ size_t GSTextureCache::PaletteMap::HashClut(uint16 pal, const uint32* clut) {
 		clut_hash = (clut_hash + 2679083843) ^ (clut[i + 15] + 2719605247);
 	}
 	return clut_hash;
+};
+
+// GSTextureCache::PaletteKeyEqual
+
+// Compare clut contents
+bool GSTextureCache::PaletteKeyEqual::operator()(const PaletteKey &lhs, const PaletteKey &rhs) const {
+	ASSERT(lhs.pal == rhs.pal); // By design, each map SHOULD contain only PaletteKey with the same pal value
+	
+	uint16 pal = lhs.pal;
+	uint16 palette_size = pal * sizeof(uint32);
+	return GSVector4i::compare64(lhs.clut, rhs.clut, palette_size);
+};
+
+// GSTextureCache::PaletteMap
+
+// Default constructor, stores renderer pointer and reverses space in the maps
+GSTextureCache::PaletteMap::PaletteMap(const GSRenderer* renderer) {
+	this->m_renderer = renderer;
+	for (auto& map : m_maps) {
+		map.reserve(MAX_SIZE);
+	}
 }
 
 // Retrieves the palette with the desired clut
@@ -2117,75 +2133,71 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 	// Choose which hash map search into:
 	//    pal == 16  : index 0
 	//    pal == 256 : index 1
-	auto& multimap = m_multimaps[pal == 16 ? 0 : 1];
+	auto& map = m_maps[pal == 16 ? 0 : 1];
 
 	const uint32* clut = (const uint32*)m_renderer->m_mem.m_clut;
 
-	// Search for the clut hash into the hash map
-	size_t clut_hash = HashClut(pal, clut);
+	// Create PaletteKey for seraching into map (clut is actually not copied, so do not store this key into the map)
+	PaletteKey palette_key = { clut, pal };
 
-	// Retrieve all the relevant Palette(s)
-	auto it1 = multimap.equal_range(clut_hash);
-	uint16 palette_size = pal * sizeof(uint32);
-	for (auto it2 = it1.first; it2 != it1.second; ++it2) {
-		// Hash check passed, compare Palette clut content
-		std::shared_ptr<Palette> palette = it2->second;
-		if (GSVector4i::compare64(palette->GetClut(), clut, palette_size)) {
-			// Clut content match, HIT
-			return palette;
-		}
-		// Same clut hash but content mismatch, FALSE HIT
-		GL_PERF("TC, %u-bit PaletteMap (Size %u): FALSE HIT for hash value %u.", palette_size, multimap.size(), clut_hash);
+	auto it1 = map.find(palette_key);
+
+	if (it1 != map.end()) {
+		// Clut content match, HIT
+		return it1->second;
 	}
 
 	// No Palette with matching clut content hash, MISS
 
-	if (multimap.size() > MAX_SIZE) {
-		// If the multimap is too big, try to clean it by disposing and removing unused palettes, before adding the new one
-		GL_INS("WARNING, %u-bit PaletteMap (Size %u): Max size %u exceeded, clearing unused palettes.", palette_size, multimap.size(), MAX_SIZE);
+	if (map.size() > MAX_SIZE) {
+		// If the map is too big, try to clean it by disposing and removing unused palettes, before adding the new one
+		GL_INS("WARNING, %u-bit PaletteMap (Size %u): Max size %u exceeded, clearing unused palettes.", palette_size, map.size(), MAX_SIZE);
 
-		uint32 current_size = multimap.size();
+		uint32 current_size = map.size();
 
-		for (auto it = multimap.begin(); it != multimap.end(); ) {
+		for (auto it = map.begin(); it != map.end(); ) {
 			// If the palette is unused, there is only one shared pointers holding a reference to the unused Palette object,
-			// and this shared pointer is the one stored in the multimap itself
+			// and this shared pointer is the one stored in the map itself
 			if (it->second.use_count() <= 1) {
 				// Palette is unused
-				it = multimap.erase(it); // Erase element from multimap
-				// The palette object should now be gone as the shared pointer to the object in the multimap is deleted
+				it = map.erase(it); // Erase element from map
+				// The palette object should now be gone as the shared pointer to the object in the map is deleted
 			}
 			else {
 				++it;
 			}
 		}
 
-		uint32 cleared_palette_count = current_size - (uint32)multimap.size();
+		uint32 cleared_palette_count = current_size - (uint32)map.size();
 
 		if (cleared_palette_count == 0) {
-			GL_INS("ERROR, %u-bit PaletteMap (Size %u): Max size %u exceeded, could not clear any palette, negative performance impact.", palette_size, multimap.size(), MAX_SIZE);
+			GL_INS("ERROR, %u-bit PaletteMap (Size %u): Max size %u exceeded, could not clear any palette, negative performance impact.", palette_size, map.size(), MAX_SIZE);
 		}
 		else {
-			multimap.reserve(MAX_SIZE); // Ensure multimap capacity is not modified by the clearing
-			GL_INS("INFO, %u-bit PaletteMap (Size %u): Cleared %u palettes.", palette_size, multimap.size(), cleared_palette_count);
+			map.reserve(MAX_SIZE); // Ensure map capacity is not modified by the clearing
+			GL_INS("INFO, %u-bit PaletteMap (Size %u): Cleared %u palettes.", palette_size, map.size(), cleared_palette_count);
 		}
 	}
 
 	// Create new Palette using shared pointer
 	std::shared_ptr<Palette> palette = std::make_shared<Palette>(m_renderer, pal);
 	
-	// Add the new palette to the multimap
-	multimap.emplace(clut_hash, palette);
+	// Create key for storing the Palette into the map (use copy of the clut stored into Palette itself as key attribute)
+	palette_key = { palette->GetClut(), pal };
 
-	GL_CACHE("TC, %u-bit PaletteMap (Size %u): Added new palette.", palette_size, multimap.size());
+	// Add the new palette to the map
+	map.emplace(palette_key, palette);
+
+	GL_CACHE("TC, %u-bit PaletteMap (Size %u): Added new palette.", palette_size, map.size());
 	
 	// Return the shared pointer to the newly created Palette
 	return palette;
 }
 
 void GSTextureCache::PaletteMap::Clear() {
-	for (auto& multimap : m_multimaps) {
-		multimap.clear(); // Clear all the nodes of the multimap, deleting Palette objects managed by shared pointers as they should be unused elsewhere
-		multimap.reserve(MAX_SIZE); // Ensure multimap capacity is not modified by the clearing
+	for (auto& map : m_maps) {
+		map.clear(); // Clear all the nodes of the map, deleting Palette objects managed by shared pointers as they should be unused elsewhere
+		map.reserve(MAX_SIZE); // Ensure map capacity is not modified by the clearing
 	}
 }
 
