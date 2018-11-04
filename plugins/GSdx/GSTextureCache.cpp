@@ -2148,6 +2148,8 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 	}
 
 	// No Palette with matching clut content hash, MISS
+	
+	uint16 palette_size = pal * sizeof(uint32);
 
 	if (map.size() > MAX_SIZE) {
 		// If the map is too big, try to clean it by disposing and removing unused palettes, before adding the new one
