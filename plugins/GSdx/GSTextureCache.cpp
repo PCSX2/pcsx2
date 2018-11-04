@@ -1544,15 +1544,15 @@ void GSTextureCache::Surface::UpdateAge()
 
 GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp, bool dummy_container)
 	: Surface(r, temp)
-	, m_should_have_tex_palette(false)
 	, m_palette_obj(nullptr)
 	, m_palette(NULL)
+	, m_should_have_tex_palette(false)
+	, m_clut(NULL)
 	, m_target(false)
 	, m_complete(false)
 	, m_spritehack_t(false)
 	, m_p2t(NULL)
 	, m_from_target(NULL)
-	, m_clut(NULL)
 {
 	m_TEX0 = TEX0;
 	m_TEXA = TEXA;
