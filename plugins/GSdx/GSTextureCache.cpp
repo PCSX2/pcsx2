@@ -2137,7 +2137,7 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 
 	const uint32* clut = (const uint32*)m_renderer->m_mem.m_clut;
 
-	// Create PaletteKey for seraching into map (clut is actually not copied, so do not store this key into the map)
+	// Create PaletteKey for searching into map (clut is actually not copied, so do not store this key into the map)
 	PaletteKey palette_key = { clut, pal };
 
 	auto it1 = map.find(palette_key);
