@@ -522,15 +522,35 @@ static void intExecute()
 				case RESET:
 					do
 						execI();
-					while (cpuRegs.pc != (eeloadMain ? eeloadMain : EELOAD_START));
+					while (cpuRegs.pc != (g_eeloadMain ? g_eeloadMain : EELOAD_START));
 					if (cpuRegs.pc == EELOAD_START)
 					{
 						// The EELOAD _start function is the same across all BIOS versions afaik
 						u32 mainjump = memRead32(EELOAD_START + 0x9c);
 						if (mainjump >> 26 == 3) // JAL
-							eeloadMain = ((EELOAD_START + 0xa0) & 0xf0000000U) | (mainjump << 2 & 0x0fffffffU);
-					} else if (cpuRegs.pc == eeloadMain)
+							g_eeloadMain = ((EELOAD_START + 0xa0) & 0xf0000000U) | (mainjump << 2 & 0x0fffffffU);
+					}
+					else if (cpuRegs.pc == g_eeloadMain)
+					{
 						eeloadHook();
+						if (g_SkipBiosHack)
+						{
+							// See comments on this code in iR5900-32.cpp's recRecompile()
+							u32 typeAexecjump = memRead32(EELOAD_START + 0x470);
+							u32 typeBexecjump = memRead32(EELOAD_START + 0x5B0);
+							u32 typeCexecjump = memRead32(EELOAD_START + 0x618);
+							u32 typeDexecjump = memRead32(EELOAD_START + 0x600);
+							if ((typeBexecjump >> 26 == 3) || (typeCexecjump >> 26 == 3) || (typeDexecjump >> 26 == 3)) // JAL to 0x822B8
+								g_eeloadExec = EELOAD_START + 0x2B8;
+							else if (typeAexecjump >> 26 == 3) // JAL to 0x82170
+								g_eeloadExec = EELOAD_START + 0x170;
+							else
+								Console.WriteLn("intExecute: Could not enable launch arguments for fast boot mode; unidentified BIOS version! Please report this to the PCSX2 developers.");
+						}
+					}
+					else if (cpuRegs.pc == g_eeloadExec)
+						eeloadHook2();
+
 					if (g_GameLoading)
 						state = GAME_LOADING;
 					else

@@ -243,6 +243,7 @@ void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 	parser.AddSwitch( wxEmptyString,L"nohacks",		_("disables all speedhacks") );
 	parser.AddOption( wxEmptyString,L"gamefixes",	_("use the specified comma or pipe-delimited list of gamefixes.") + fixlist, wxCMD_LINE_VAL_STRING );
 	parser.AddSwitch( wxEmptyString,L"fullboot",	_("disables fast booting") );
+	parser.AddOption( wxEmptyString,L"gameargs",	_("passes the specified space-delimited string of launch arguments to the game"), wxCMD_LINE_VAL_STRING);
 
 	parser.AddOption( wxEmptyString,L"cfgpath",		_("changes the configuration file path"), wxCMD_LINE_VAL_STRING );
 	parser.AddOption( wxEmptyString,L"cfg",			_("specifies the PCSX2 configuration file to use"), wxCMD_LINE_VAL_STRING );
@@ -364,6 +365,10 @@ bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
 			Startup.ElfFile = elf_file;
 		}
 	}
+
+	wxString game_args;
+	if (parser.Found(L"gameargs", &game_args) && !game_args.IsEmpty())
+		Startup.GameLaunchArgs = game_args;
 
 	if( parser.Found(L"usecd") )
 	{
@@ -507,6 +512,7 @@ bool Pcsx2App::OnInit()
 			if (Startup.CdvdSource == CDVD_SourceType::Iso)
 				SysUpdateIsoSrcFile( Startup.IsoFile );
 			sApp.SysExecute( Startup.CdvdSource );
+			g_Conf->CurrentGameArgs = Startup.GameLaunchArgs;
 		}
 		else if ( Startup.SysAutoRunElf )
 		{

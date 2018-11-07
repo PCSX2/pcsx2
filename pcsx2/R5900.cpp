@@ -56,7 +56,16 @@ static const uint eeWaitCycles = 3072;
 
 bool eeEventTestIsActive = false;
 
-u32 eeloadMain = 0;
+u32 g_eeloadMain = 0, g_eeloadExec = 0, g_osdsys_str = 0;
+
+/* I don't know how much space for args there is in the memory block used for args in full boot mode,
+but in fast boot mode, the block we use can fit at least 16 argv pointers (varies with BIOS version).
+The second EELOAD call during full boot has three built-in arguments ("EELOAD rom0:PS2LOGO <ELF>"),
+meaning that only the first 13 game arguments supplied by the user can be added on and passed through.
+In fast boot mode, 15 arguments can fit because the only call to EELOAD is "<ELF> <<args>>". */
+const int kMaxArgs = 16;
+uptr g_argPtrs[kMaxArgs];
+#define DEBUG_LAUNCHARG 0 // show lots of helpful console messages as the launch arguments are passed to the game
 
 extern SysMainMemory& GetVmMemory();
 
@@ -110,7 +119,7 @@ void cpuReset()
 	// is why I found out about this) --air
 	LastELF = L"";
 
-	eeloadMain = 0;
+	g_eeloadMain = 0, g_eeloadExec = 0, g_osdsys_str = 0;
 }
 
 void cpuShutdown()
@@ -540,6 +549,49 @@ void __fastcall eeGameStarting()
 	}
 }
 
+// Count arguments, save their starting locations, and replace the space separators with null terminators so they're separate strings
+int ParseArgumentString(u32 arg_block)
+{
+	if (!arg_block)
+		return 0;
+
+	int argc = 1; // one arg is guaranteed at least
+	g_argPtrs[0] = arg_block; // first arg is right here
+	bool wasSpace = false; // status of last char. scanned
+	int args_len = strlen((char *)PSM(arg_block));
+	for (int i = 0; i < args_len; i++)
+	{
+		char curchar = *(char *)PSM(arg_block + i);
+		if (curchar == '\0')
+			break; // should never reach this
+
+		bool isSpace = (curchar == ' ');
+		if (isSpace)
+			memset(PSM(arg_block + i), 0, 1);
+		else if (wasSpace) // then we're at a new arg
+		{
+			if (argc < kMaxArgs)
+			{
+				g_argPtrs[argc] = arg_block + i;
+				argc++;
+			}
+			else
+			{
+				Console.WriteLn("ParseArgumentString: Discarded additional arguments beyond the maximum of %d.", kMaxArgs);
+				break;
+			}
+		}
+		wasSpace = isSpace;
+	}
+#if DEBUG_LAUNCHARG
+	// Check our args block
+	Console.WriteLn("ParseArgumentString: Saving these strings:");
+	for (int a = 0; a < argc; a++)
+		Console.WriteLn("%p -> '%s'.", g_argPtrs[a], (char *)PSM(g_argPtrs[a]));
+#endif
+	return argc;
+}
+
 // Called from recompilers; __fastcall define is mandatory.
 void __fastcall eeloadHook()
 {
@@ -554,9 +606,71 @@ void __fastcall eeloadHook()
 	int disctype = GetPS2ElfName(discelf);
 
 	std::string elfname;
-	if (cpuRegs.GPR.n.a0.SD[0] >= 2) // argc >= 2
-		elfname = (char*)PSM(memRead32(cpuRegs.GPR.n.a1.UD[0] + 4)); // argv[1]
+	int argc = cpuRegs.GPR.n.a0.SD[0];
+	if (argc) // calls to EELOAD *after* the first one during the startup process will come here
+	{
+#if DEBUG_LAUNCHARG
+		Console.WriteLn("eeloadHook: EELOAD was called with %d arguments according to $a0 and %d according to vargs block:",
+			argc, memRead32(cpuRegs.GPR.n.a1.UD[0] - 4));
+		for (int a = 0; a < argc; a++)
+			Console.WriteLn("argv[%d]: %p -> %p -> '%s'", a, cpuRegs.GPR.n.a1.UL[0] + (a * 4),
+				memRead32(cpuRegs.GPR.n.a1.UD[0] + (a * 4)), (char *)PSM(memRead32(cpuRegs.GPR.n.a1.UD[0] + (a * 4))));
+#endif
+		if (argc > 1)
+			elfname = (char*)PSM(memRead32(cpuRegs.GPR.n.a1.UD[0] + 4)); // argv[1] in OSDSYS's invocation "EELOAD <game ELF>"
 
+		// This code fires if the user chooses "full boot". First the Sony Computer Entertainment screen appears. This is the result
+		// of an EELOAD call that does not want to accept launch arguments (but we patch it to do so in eeloadHook2() in fast boot
+		// mode). Then EELOAD is called with the argument "rom0:PS2LOGO". At this point, we do not need any additional tricks
+		// because EELOAD is now ready to accept launch arguments. So in full-boot mode, we simply wait for PS2LOGO to be called,
+		// then we add the desired launch arguments. PS2LOGO passes those on to the game itself as it calls EELOAD a third time.
+		if (!g_Conf->CurrentGameArgs.empty() && !strcmp(elfname.c_str(), "rom0:PS2LOGO"))
+		{
+			const char *argString = g_Conf->CurrentGameArgs.c_str();
+			Console.WriteLn("eeloadHook: Supplying launch argument(s) '%s' to module '%s'...", argString, elfname.c_str());
+
+			// Join all arguments by space characters so they can be processed as one string by ParseArgumentString(), then add the
+			// user's launch arguments onto the end
+			u32 arg_ptr = 0;
+			int arg_len = 0;
+			for (int a = 0; a < argc; a++)
+			{
+				arg_ptr = memRead32(cpuRegs.GPR.n.a1.UD[0] + (a * 4));
+				arg_len = strlen((char *)PSM(arg_ptr));
+				memset(PSM(arg_ptr + arg_len), 0x20, 1);
+			}
+			strcpy((char *)PSM(arg_ptr + arg_len + 1), g_Conf->CurrentGameArgs.c_str());
+			u32 first_arg_ptr = memRead32(cpuRegs.GPR.n.a1.UD[0]);
+#if DEBUG_LAUNCHARG
+			Console.WriteLn("eeloadHook: arg block is '%s'.", (char *)PSM(first_arg_ptr));
+#endif
+			argc = ParseArgumentString(first_arg_ptr);
+
+			// Write pointer to next slot in $a1
+			for (int a = 0; a < argc; a++)
+				memWrite32(cpuRegs.GPR.n.a1.UD[0] + (a * 4), g_argPtrs[a]);
+			cpuRegs.GPR.n.a0.SD[0] = argc;
+#if DEBUG_LAUNCHARG
+			// Check our work
+			Console.WriteLn("eeloadHook: New arguments are:");
+			for (int a = 0; a < argc; a++)
+				Console.WriteLn("argv[%d]: %p -> '%s'", a, memRead32(cpuRegs.GPR.n.a1.UD[0] + (a * 4)),
+				(char *)PSM(memRead32(cpuRegs.GPR.n.a1.UD[0] + (a * 4))));
+#endif
+		}
+		// else it's presumed that the invocation is "EELOAD <game ELF> <<launch args>>", coming from PS2LOGO, and we needn't do
+		// anything more
+	}
+#if DEBUG_LAUNCHARG
+	// This code fires in full/fast boot mode when EELOAD is called the first/only time. When EELOAD is not given any arguments,
+	// it calls rom0:OSDSYS by default, which displays the Sony Computer Entertainment screen. OSDSYS then calls "EELOAD
+	// rom0:PS2LOGO" and we end up above.
+	else
+		Console.WriteLn("eeloadHook: EELOAD was called with no arguments.");
+#endif
+
+	// If "fast boot" was chosen, then on EELOAD's first call we won't yet know what the game's ELF is. Find the name and write it
+	// into EELOAD's memory.
 	if (g_SkipBiosHack && elfname.empty())
 	{
 		std::string elftoload;
@@ -571,42 +685,70 @@ void __fastcall eeloadHook()
 				elftoload = discelf.ToUTF8();
 		}
 
+		// When fast-booting, we insert the game's ELF name into EELOAD so that the game is called instead of the default call of
+		// "rom0:OSDSYS"; any launch arguments supplied by the user will be inserted into EELOAD later by eeloadHook2()
 		if (!elftoload.empty())
 		{
-#if 0
-			// FIXME: you'd think that changing argc and argv would work but no, need to work out why not
-			// This method would support adding command line arguments to homebrew (and is generally less hacky)
-			// It works if you hook on rom0:PS2LOGO loading, but not on the first call with no arguments
-			cpuRegs.GPR.n.a0.SD[0] = 2; // argc = 2
-			// argv[0] = "EELOAD"
-			strcpy((char*)PSM(cpuRegs.GPR.n.a1.UD[0] + 0x40), "EELOAD");
-			memWrite32(cpuRegs.GPR.n.a1.UD[0] + 0, cpuRegs.GPR.n.a1.UD[0] + 0x40);
-			// argv[1] = elftoload
-			strcpy((char*)PSM(cpuRegs.GPR.n.a1.UD[0] + 0x47), elftoload.c_str());
-			memWrite32(cpuRegs.GPR.n.a1.UD[0] + 4, cpuRegs.GPR.n.a1.UD[0] + 0x47);
-			memWrite32(cpuRegs.GPR.n.a1.UD[0] + 8, 0);
-			g_GameLoading = true;
-			return;
-#else
-			// The strings are all 64-bit aligned.  Why? I don't know, but they are
-			for (u32 osdsys_str = EELOAD_START; osdsys_str < EELOAD_START + EELOAD_SIZE; osdsys_str += 8) {
-				if (!strcmp((char*)PSM(osdsys_str), "rom0:OSDSYS")) {
-					for (u32 osdsys_ptr = osdsys_str - 4; osdsys_ptr >= EELOAD_START; osdsys_ptr -= 4) {
-						if (memRead32(osdsys_ptr) == osdsys_str) {
-							strcpy((char*)PSM(cpuRegs.GPR.n.a1.UD[0] + 0x40), elftoload.c_str());
-							memWrite32(osdsys_ptr, cpuRegs.GPR.n.a1.UD[0] + 0x40);
-							g_GameLoading = true;
-							return;
-						}
-					}
+			// Find and save location of default/fallback call "rom0:OSDSYS"; to be used later by eeloadHook2()
+			for (g_osdsys_str = EELOAD_START; g_osdsys_str < EELOAD_START + EELOAD_SIZE; g_osdsys_str += 8) // strings are 64-bit aligned
+			{
+				if (!strcmp((char*)PSM(g_osdsys_str), "rom0:OSDSYS"))
+				{
+					// Overwrite OSDSYS with game's ELF name
+					strcpy((char*)PSM(g_osdsys_str), elftoload.c_str());
+					g_GameLoading = true;
+					return;
 				}
 			}
-#endif
 		}
 	}
 
 	if (!g_GameStarted && (disctype == 2 || disctype == 1) && elfname == discelf)
 		g_GameLoading = true;
+}
+
+// Called from recompilers; __fastcall define is mandatory.
+// Only called if g_SkipBiosHack is true
+void __fastcall eeloadHook2()
+{
+	if (g_Conf->CurrentGameArgs.empty())
+		return;
+
+	if (!g_osdsys_str)
+	{
+		Console.WriteLn("eeloadHook2: Called before \"rom0:OSDSYS\" was found by eeloadHook()!");
+		return;
+	}
+
+	const char *argString = g_Conf->CurrentGameArgs.c_str();
+	Console.WriteLn("eeloadHook2: Supplying launch argument(s) '%s' to ELF '%s'.", argString, (char *)PSM(g_osdsys_str));
+
+	// Add args string after game's ELF name that was written over "rom0:OSDSYS" by eeloadHook(). In between the ELF name and args
+	// string we insert a space character so that ParseArgumentString() has one continuous string to process.
+	int game_len = strlen((char *)PSM(g_osdsys_str));
+	memset(PSM(g_osdsys_str + game_len), 0x20, 1);
+	strcpy((char *)PSM(g_osdsys_str + game_len + 1), g_Conf->CurrentGameArgs.c_str());
+#if DEBUG_LAUNCHARG
+	Console.WriteLn("eeloadHook2: arg block is '%s'.", (char *)PSM(g_osdsys_str));
+#endif
+	int argc = ParseArgumentString(g_osdsys_str);
+	
+	// Back up 4 bytes from start of args block for every arg + 4 bytes for start of argv pointer block, write pointers
+	uptr block_start = g_osdsys_str - (argc * 4);
+	for (int a = 0; a < argc; a++)
+	{
+#if DEBUG_LAUNCHARG
+		Console.WriteLn("eeloadHook2: Writing address %p to location %p.", g_argPtrs[a], block_start + (a * 4));
+#endif
+		memWrite32(block_start + (a * 4), g_argPtrs[a]);
+	}
+
+	// Save argc and argv as incoming arguments for EELOAD function which calls ExecPS2()
+#if DEBUG_LAUNCHARG
+	Console.WriteLn("eeloadHook2: Saving %d and %p in $a0 and $a1.", argc, block_start);
+#endif
+	cpuRegs.GPR.n.a0.SD[0] = argc;
+	cpuRegs.GPR.n.a1.UD[0] = block_start;
 }
 
 inline bool isBranchOrJump(u32 addr)

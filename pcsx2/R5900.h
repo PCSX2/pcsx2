@@ -273,10 +273,11 @@ const u32 EEKERNEL_START	= 0;
 const u32 EENULL_START		= 0x81FC0;
 const u32 EELOAD_START		= 0x82000;
 const u32 EELOAD_SIZE		= 0x20000; // overestimate for searching
-extern u32 eeloadMain;
+extern u32 g_eeloadMain, g_eeloadExec;
 
 extern void __fastcall eeGameStarting();
 extern void __fastcall eeloadHook();
+extern void __fastcall eeloadHook2();
 
 // --------------------------------------------------------------------------------------
 //  R5900cpu
