@@ -604,7 +604,9 @@ bool R5900DebugInterface::isValidAddress(u32 addr)
 	case 0xA:
 	case 0xB:
 		// [ 8000_0000 - BFFF_FFFF ] kernel
-		// return true;
+		// We only need to access the EE kernel (which is 1 MB large)
+		if (lopart < 0x100000)
+			return true;
 		break;
 	case 0xF:
 		// [ 8000_0000 - BFFF_FFFF ] IOP or kernel stack
