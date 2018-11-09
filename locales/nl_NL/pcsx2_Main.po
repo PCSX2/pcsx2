@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2018-10-31 17:57+0100\n"
-"PO-Revision-Date: 2018-11-09 12:35+0100\n"
+"PO-Revision-Date: 2018-11-09 13:01+0100\n"
 "Last-Translator: Jos van Mourik\n"
 "Language-Team: \n"
 "Language: nl_NL\n"
@@ -2613,11 +2613,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:137
 msgid "EE Cyclerate [Not Recommended]"
-msgstr "EE Cyclerate [Niet aanbevolen]"
+msgstr "EE Kloksnelheid [Niet aanbevolen]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:150
 msgid "EE Cycle Skipping [Not Recommended]"
-msgstr "VU Cycle Overslaan [Niet aanbevolen]"
+msgstr "EE Cyclus Overslaan [Niet aanbevolen]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:165
 msgid "microVU Hacks"
@@ -2866,96 +2866,3 @@ msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
 msgstr ""
 "%s Extensies niet gevonden.  microVU vereist een host-CPU met SSE2-extensies."
-
-#~ msgid "Plugin Specialists"
-#~ msgstr "Plugin Specialisten"
-
-#~ msgid "Special thanks to"
-#~ msgstr "Speciale dank aan"
-
-#~ msgid "Game database - %s"
-#~ msgstr "Speldatabase - %s"
-
-#~ msgid "PCSX2 Thread is not responding"
-#~ msgstr "PCSX2-thread reageert niet"
-
-#~ msgid "Appearance/Themes - %s"
-#~ msgstr "Uiterlijk/Thema's - %s"
-
-#~ msgid "Appearance"
-#~ msgstr "Uiterlijk"
-
-#~ msgid "Press Cancel to attempt to cancel the action."
-#~ msgstr "Druk op Annuleren om te proberen om de actie te annuleren."
-
-#~ msgid "Press Terminate to kill %s immediately."
-#~ msgstr "Druk op Beëindig om %s inmiddelijk te stoppen."
-
-#~ msgid "Terminate App"
-#~ msgstr "App Beëindigen"
-
-#~ msgid "GS Output is Disabled!"
-#~ msgstr "GS-uitvoer is uitgeschakeld!"
-
-#~ msgid "&Game Database Editor"
-#~ msgstr "&Speldatabase Bewerker"
-
-#~ msgid "Res&tart"
-#~ msgstr "Her&starten"
-
-#~ msgid "Simulates hardware reset of the PS2 virtual machine."
-#~ msgstr "Simuleert hardwarereset van de PS2 virtuele machine."
-
-#~ msgid "No emulation state is active; boot something first."
-#~ msgstr "Geen emulatiestaat actief; start eerst iets op."
-
-#~ msgid "Search"
-#~ msgstr "Zoeken"
-
-#~ msgid "Game Database Editor"
-#~ msgstr "Speldatabase Bewerker"
-
-#~ msgid "Name: "
-#~ msgstr "Naam: "
-
-#~ msgid "Region: "
-#~ msgstr "Regio: "
-
-#~ msgid "Compatibility: "
-#~ msgstr "Compatibaliteit: "
-
-#~ msgid "Comments: "
-#~ msgstr "Commentaar: "
-
-#~ msgid "Patches: "
-#~ msgstr "Patches: "
-
-#~ msgid "Themes Search Path:"
-#~ msgstr "Thema's zoekpad:"
-
-#~ msgid "Select folder containing PCSX2 visual themes"
-#~ msgstr "Selecteer een map met PCSX2 visuele thema's"
-
-#~ msgid ""
-#~ "Click the Browse button to select a different folder containing PCSX2 "
-#~ "visual themes."
-#~ msgstr ""
-#~ "Klik op de Bladeren-knop om een andere map met PCSX2 visuele thema's te "
-#~ "selecteren."
-
-#~ msgid "Select a visual theme:"
-#~ msgstr "Selecteer een visueel thema:"
-
-#~ msgid "Disable all GS output"
-#~ msgstr "Schakel alle GS-uitvoer uit"
-
-#~ msgid ""
-#~ "Completely disables all GS plugin activity; ideal for benchmarking EEcore "
-#~ "components."
-#~ msgstr ""
-#~ "Schakelt alle GS plugin-activiteiten volledig uit; ideaal voor het "
-#~ "benchmarken van EEcore-componenten."
-
-#~ msgid "Cannot load this savestate.  The state is an unsupported version."
-#~ msgstr ""
-#~ "Kan deze savestaat niet laden.  De staat is een niet-ondersteunde versie."
