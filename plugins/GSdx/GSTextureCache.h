@@ -60,7 +60,7 @@ public:
 
 	public:
 		Palette(const GSRenderer* renderer, uint16 pal); // Creates a copy of the current clut and a texture with its content
-		virtual ~Palette(); // Default destructor, recycles palette texture and frees clut copy
+		~Palette(); // Default destructor, recycles palette texture and frees clut copy
 
 		// Disable copy constructor and copy operator
 		Palette(const Palette&) = delete;
@@ -84,12 +84,12 @@ public:
 
 	struct PaletteKeyHash {
 		// Calculate hash
-		virtual std::size_t operator()(const PaletteKey &key) const;
+		std::size_t operator()(const PaletteKey &key) const;
 	};
 
 	struct PaletteKeyEqual {
 		// Compare clut contents
-		virtual bool operator()(const PaletteKey &lhs, const PaletteKey &rhs) const;
+		bool operator()(const PaletteKey &lhs, const PaletteKey &rhs) const;
 	};
 
 	class Source : public Surface
