@@ -85,6 +85,11 @@ struct StereoOut32
         Left = (s32)(Left * VolumeAdjustFL);
         Right = (s32)(Right * VolumeAdjustFR);
     }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+    }
 };
 
 struct FrequencyResponseFilter

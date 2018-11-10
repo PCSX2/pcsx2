@@ -97,6 +97,11 @@ struct StereoOut16
         Left = (s16)(Left * VolumeAdjustFL);
         Right = (s16)(Right * VolumeAdjustFR);
     }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+    }
 };
 
 struct StereoOutFloat
@@ -127,6 +132,11 @@ struct StereoOutFloat
         , Right(right)
     {
     }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+    }
 };
 
 struct Stereo21Out16
@@ -149,6 +159,12 @@ struct Stereo21Out16
         Left = (s16)(Left * VolumeAdjustFL);
         Right = (s16)(Right * VolumeAdjustFR);
         LFE = (s16)(LFE * VolumeAdjustLFE);
+    }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        LFE = 0;
     }
 };
 
@@ -176,6 +192,13 @@ struct Stereo40Out16
         LeftBack = (s16)(LeftBack * VolumeAdjustBL);
         RightBack = (s16)(RightBack * VolumeAdjustBR);
     }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        LeftBack = 0;
+        RightBack = 0;
+    }
 };
 
 struct Stereo40Out32
@@ -201,6 +224,13 @@ struct Stereo40Out32
         Right = (s32)(Right * VolumeAdjustFR);
         LeftBack = (s32)(LeftBack * VolumeAdjustBL);
         RightBack = (s32)(RightBack * VolumeAdjustBR);
+    }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        LeftBack = 0;
+        RightBack = 0;
     }
 };
 
@@ -230,6 +260,14 @@ struct Stereo41Out16
         LeftBack = (s32)(LeftBack * VolumeAdjustBL);
         RightBack = (s32)(RightBack * VolumeAdjustBR);
         LFE = (s32)(LFE * VolumeAdjustLFE);
+    }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        LFE = 0;
+        LeftBack = 0;
+        RightBack = 0;
     }
 };
 
@@ -268,6 +306,15 @@ struct Stereo51Out16
         Center = (s16)(Center * VolumeAdjustC);
         LFE = (s16)(LFE * VolumeAdjustLFE);
     }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        Center = 0;
+        LFE = 0;
+        LeftBack = 0;
+        RightBack = 0;
+    }
 };
 
 struct Stereo51Out16DplII
@@ -294,6 +341,15 @@ struct Stereo51Out16DplII
         RightBack = (s32)(RightBack * VolumeAdjustBR);
         Center = (s32)(Center * VolumeAdjustC);
         LFE = (s32)(LFE * VolumeAdjustLFE);
+    }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        Center = 0;
+        LFE = 0;
+        LeftBack = 0;
+        RightBack = 0;
     }
 };
 
@@ -322,6 +378,15 @@ struct Stereo51Out32DplII
         Center = (s32)(Center * VolumeAdjustC);
         LFE = (s32)(LFE * VolumeAdjustLFE);
     }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        Center = 0;
+        LFE = 0;
+        LeftBack = 0;
+        RightBack = 0;
+    }
 };
 
 struct Stereo51Out16Dpl
@@ -349,6 +414,15 @@ struct Stereo51Out16Dpl
         Center = (s32)(Center * VolumeAdjustC);
         LFE = (s32)(LFE * VolumeAdjustLFE);
     }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        Center = 0;
+        LFE = 0;
+        LeftBack = 0;
+        RightBack = 0;
+    }
 };
 
 struct Stereo51Out32Dpl
@@ -375,6 +449,15 @@ struct Stereo51Out32Dpl
         RightBack = (s32)(RightBack * VolumeAdjustBR);
         Center = (s32)(Center * VolumeAdjustC);
         LFE = (s32)(LFE * VolumeAdjustLFE);
+    }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        Center = 0;
+        LFE = 0;
+        LeftBack = 0;
+        RightBack = 0;
     }
 };
 
@@ -415,6 +498,17 @@ struct Stereo71Out16
         Center = (s16)(Center * VolumeAdjustC);
         LFE = (s16)(LFE * VolumeAdjustLFE);
     }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        Center = 0;
+        LFE = 0;
+        LeftBack = 0;
+        RightBack = 0;
+        LeftSide = 0;
+        RightSide = 0;
+    }
 };
 
 struct Stereo71Out32
@@ -454,6 +548,17 @@ struct Stereo71Out32
         Center = (s32)(Center * VolumeAdjustC);
         LFE = (s32)(LFE * VolumeAdjustLFE);
     }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        Center = 0;
+        LFE = 0;
+        LeftBack = 0;
+        RightBack = 0;
+        LeftSide = 0;
+        RightSide = 0;
+    }
 };
 
 struct Stereo20Out32
@@ -473,6 +578,11 @@ struct Stereo20Out32
 
         Left = (s32)(Left * VolumeAdjustFL);
         Right = (s32)(Right * VolumeAdjustFR);
+    }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
     }
 };
 
@@ -496,6 +606,12 @@ struct Stereo21Out32
         Left = (s32)(Left * VolumeAdjustFL);
         Right = (s32)(Right * VolumeAdjustFR);
         LFE = (s32)(LFE * VolumeAdjustLFE);
+    }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        LFE = 0;
     }
 };
 
@@ -526,6 +642,14 @@ struct Stereo41Out32
         LeftBack = (s32)(LeftBack * VolumeAdjustBL);
         RightBack = (s32)(RightBack * VolumeAdjustBR);
         LFE = (s32)(LFE * VolumeAdjustLFE);
+    }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        LFE = 0;
+        LeftBack = 0;
+        RightBack = 0;
     }
 };
 
@@ -558,6 +682,15 @@ struct Stereo51Out32
         RightBack = (s32)(RightBack * VolumeAdjustBR);
         Center = (s32)(Center * VolumeAdjustC);
         LFE = (s32)(LFE * VolumeAdjustLFE);
+    }
+    void Clear()
+    {
+        Left = 0;
+        Right = 0;
+        Center = 0;
+        LFE = 0;
+        LeftBack = 0;
+        RightBack = 0;
     }
 };
 
