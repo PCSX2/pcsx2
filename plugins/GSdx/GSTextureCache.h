@@ -55,12 +55,12 @@ public:
 	{
 	private:
 		uint32* m_clut; // Pointer to a copy of relevant clut
-		GSTexture* m_tex_palette; // Pointer to valid texture with relevant clut as content
-		const GSRenderer* m_renderer; // Pointer to the current renderer, needed to recycle the referenced GSTexture on destruction
+		GSTexture* m_tex_palette; // Pointer to valid texture with relevant clut as content, if instantiated by the constructor
+		const GSRenderer* m_renderer; // Pointer to the current renderer, needed to recycle the eventually referenced GSTexture on destruction
 
 	public:
-		Palette(const GSRenderer* renderer, uint16 pal); // Creates a copy of the current clut and a texture with its content
-		~Palette(); // Default destructor, recycles palette texture and frees clut copy
+		Palette(const GSRenderer* renderer, uint16 pal, bool need_gs_texture); // Creates a copy of the current clut and, if needed (need_gs_texture == true), a texture with its content
+		~Palette(); // Default destructor, frees clut copy and eventually recycles palette texture
 
 		// Disable copy constructor and copy operator
 		Palette(const Palette&) = delete;
@@ -73,7 +73,7 @@ public:
 		// Getter for clut pointer
 		uint32* GetClut();
 
-		// Getter for palette texture pointer
+		// Getter for palette texture pointer, may be nullptr if object has been instantiated with need_gs_texture == false
 		GSTexture* GetPaletteGSTexture();
 	};
 
@@ -162,9 +162,9 @@ public:
 		PaletteMap(const GSRenderer* renderer); // Default constructor
 
 		// Retrieves a shared pointer to a valid Palette from m_maps or creates a new one adding it to the data structure
-		std::shared_ptr<Palette> LookupPalette(uint16 pal);
+		std::shared_ptr<Palette> LookupPalette(uint16 pal, bool need_gs_texture);
 
-		void Clear(); // Clears m_maps, deleting clut(s) arrays and recycling palette textures
+		void Clear(); // Clears m_maps, thus deletes Palette objects
 	};
 
 	class SourceMap
@@ -238,5 +238,5 @@ public:
 
 	void PrintMemoryUsage();
 
-	void AttachPaletteToSource(Source* s, uint16 pal);
+	void AttachPaletteToSource(Source* s, uint16 pal, bool need_gs_texture);
 };
