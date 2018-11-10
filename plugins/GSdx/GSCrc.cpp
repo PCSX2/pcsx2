@@ -25,7 +25,7 @@
 
 CRC::Game CRC::m_games[] =
 {
-	// Note: Id 0x7ACF7E03 shouldn't be added as it's from the multiloader when packing games.
+	// Note: IDs 0x7ACF7E03, 0x7D4EA48F, 0x37C53760 - shouldn't be added as it's from the multiloaders when packing games.
 	{0x00000000, NoTitle, NoRegion, 0},
 	{0xF46142D3, ArTonelico2, NoRegion, 0},
 	{0xC38067F4, ArTonelico2, NoRegion, 0}, // project metafalica 1.0
@@ -71,7 +71,6 @@ CRC::Game CRC::m_games[] =
 	{0x280AD120, FFXII, JP, 0},
 	{0x08C1ED4D, HauntingGround, EU, 0},
 	{0x2CD5794C, HauntingGround, EU, 0},
-	// {0x7D4EA48F, HauntingGround, EU, 0}, // same CRC as {Genji, EU}
 	{0x867BB945, HauntingGround, JP, 0},
 	{0xE263BC4B, HauntingGround, JP, 0},
 	{0x901AAC09, HauntingGround, US, 0},
@@ -261,7 +260,6 @@ CRC::Game CRC::m_games[] =
 	{0x56242EC9, Genji, KO, 0},
 	{0xCDAF243D, Genji, CH, 0},
 	{0x2A5E0B61, Genji, CH, 0},
-	{0x7D4EA48F, Genji, EU, 0}, // same CRC as {HauntingGround, EU}
 	{0xE04EA200, StarOcean3, EU, 0},
 	{0x23A97857, StarOcean3, US, 0},
 	{0xBEC32D49, StarOcean3, JP, 0},
