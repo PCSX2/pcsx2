@@ -139,12 +139,26 @@ CRC::Game CRC::m_games[] =
 	{0x3DCE2229, ICO, RU, 0}, // Unofficial RU-version
 	{0x788D8B4F, ICO, EU, 0},
 	{0x29C28734, ICO, CH, 0},
+	{0x60013EBD, GTConcept, EU, 0},
+	{0x6810C3BC, GTConcept, CH, 0}, // Gran Turismo Concept 2002 Tokyo-Geneva
+	{0x0EEF32A3, GTConcept, KO, 0}, // Gran Turismo Concept 2002 Tokyo-Seoul
+	{0x3E9D448A, GT3, CH, 0}, // cutie comment
+	{0xAD66643C, GT3, CH, 0}, // cutie comment
+	{0x85AE91B3, GT3, US, 0},
+	{0x8AA991B0, GT3, US, 0},
+	{0xC220951A, GT3, JP, 0},
+	{0x9DE5CF65, GT3, JP, 0},
+	{0x706DFF80, GT3, JP, 0}, // GT3 Store Disc Vol. 2
+	{0x55CE5111, GT3, JP, 0}, // Gran Turismo 2000 Body Omen
+	{0xB590CE04, GT3, EU, 0},
 	{0xC02C653E, GT4, CH, 0},
 	{0x7ABDBB5E, GT4, CH, 0}, // cutie comment
 	{0xAEAD1CA3, GT4, JP, 0},
 	{0xE906EA37, GT4, JP, 0}, // GT4 First Preview 
 	{0xCA6243B9, GT4, JP, 0}, // GT4 Prologue
 	{0xDD764BBE, GT4, JP, 0}, // GT4 Prologue
+	{0xE1258846, GT4, JP, 0}, // GT4 Prologue
+	{0x27B8F05F, GT4, JP, 0}, // GT4 Prius Trial Version
 	{0x30E41D93, GT4, KO, 0},
 	{0x715CF2EC, GT4, EU, 0},
 	{0x44A61C8F, GT4, EU, 0},
@@ -152,18 +166,9 @@ CRC::Game CRC::m_games[] =
 	{0x3FB69323, GT4, EU, 0}, // GT4 Prologue
 	{0x77E61C8A, GT4, US, 0},
 	{0x33C6E35E, GT4, US, 0},
-	{0x32A1C752, GT4, US, 0}, // GT4 Online Beta
 	{0x70538747, GT4, US, 0}, // Toyota Prius Trial
-	{0x3E9D448A, GT3, CH, 0}, // cutie comment
-	{0xAD66643C, GT3, CH, 0}, // cutie comment
-	{0x85AE91B3, GT3, US, 0},
-	{0x8AA991B0, GT3, US, 0},
-	{0xC220951A, GT3, JP, 0},
-	{0x9DE5CF65, GT3, JP, 0},
-	{0xB590CE04, GT3, EU, 0},
-	{0x60013EBD, GTConcept, EU, 0},
-	{0x6810C3BC, GTConcept, CH, 0}, // Gran Turismo Concept 2002 Tokyo-Geneva
-	{0x0EEF32A3, GTConcept, KO, 0}, // Gran Turismo Concept 2002 Tokyo-Seoul
+	{0x32A1C752, GT4, US, 0}, // GT4 Online Beta
+	{0x0087EEC4, GT4, NoRegion, 0}, // // JP and US versions have the same CRC - GT4 Online Beta
 	{0xC164550A, WildArms5, JPUNDUB, 0},
 	{0xC1640D2C, WildArms5, US, 0},
 	{0x0FCF8FE4, WildArms5, EU, 0},
