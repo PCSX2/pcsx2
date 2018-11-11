@@ -156,7 +156,7 @@ void GSRendererDX::EmulateZbuffer()
 	}
 }
 
-void GSRendererDX::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex)
+void GSRendererDX::EmulateChannelShuffle(const GSTextureCache::Source* tex)
 {
 	// Channel shuffle effect not supported on DX. Let's keep the logic because it help to
 	// reduce memory requirement (and why not a partial port)
@@ -395,7 +395,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// HLE implementation of the channel selection effect
 	//
 	// Warning it must be done at the begining because it will change the vertex list
-	EmulateChannelShuffle(&rt, tex);
+	EmulateChannelShuffle(tex);
 
 	// Upscaling hack to avoid various line/grid issues
 	MergeSprite(tex);
