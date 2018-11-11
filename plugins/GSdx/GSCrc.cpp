@@ -168,7 +168,7 @@ CRC::Game CRC::m_games[] =
 	{0x33C6E35E, GT4, US, 0},
 	{0x70538747, GT4, US, 0}, // Toyota Prius Trial
 	{0x32A1C752, GT4, US, 0}, // GT4 Online Beta
-	{0x0087EEC4, GT4, NoRegion, 0}, // // JP and US versions have the same CRC - GT4 Online Beta
+	{0x0087EEC4, GT4, NoRegion, 0}, // JP and US versions have the same CRC - GT4 Online Beta
 	{0xC164550A, WildArms5, JPUNDUB, 0},
 	{0xC1640D2C, WildArms5, US, 0},
 	{0x0FCF8FE4, WildArms5, EU, 0},
