@@ -564,7 +564,7 @@ bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TombRaider(const GSFrameInfo& fi, int& skip)
+bool GSC_TombRaiderAnniversary(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
@@ -674,7 +674,7 @@ bool GSC_BlackHawkDown(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Burnout(const GSFrameInfo& fi, int& skip)
+bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
@@ -1136,7 +1136,7 @@ bool GSC_HeavyMetalThunder(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GetaWay(const GSFrameInfo& fi, int& skip)
+bool GSC_GetaWayGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
@@ -1630,7 +1630,7 @@ bool GSC_LordOfTheRingsTwoTowers(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Castlevania(const GSFrameInfo& fi, int& skip)
+bool GSC_CastlevaniaGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
@@ -2140,9 +2140,9 @@ void GSState::SetupCrcHack()
 		lut[CRC::AceCombat4] = GSC_AceCombat4;
 		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
 		lut[CRC::BlackHawkDown] = GSC_BlackHawkDown;
-		lut[CRC::BurnoutDominator] = GSC_Burnout;
-		lut[CRC::BurnoutRevenge] = GSC_Burnout;
-		lut[CRC::BurnoutTakedown] = GSC_Burnout;
+		lut[CRC::BurnoutDominator] = GSC_BurnoutGames;
+		lut[CRC::BurnoutRevenge] = GSC_BurnoutGames;
+		lut[CRC::BurnoutTakedown] = GSC_BurnoutGames;
 		lut[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
 		lut[CRC::DevilMayCry3] = GSC_DevilMayCry3;
 		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
@@ -2170,7 +2170,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
 		lut[CRC::TimeSplitters2] = GSC_TimeSplitters2;
-		lut[CRC::TombRaiderAnniversary] = GSC_TombRaider;
+		lut[CRC::TombRaiderAnniversary] = GSC_TombRaiderAnniversary;
 		lut[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
 		lut[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
 		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
@@ -2250,8 +2250,8 @@ void GSState::SetupCrcHack()
 		lut[CRC::Sly3] = GSC_Sly3;
 
 		// Those games require accurate_colclip (perf)
-		lut[CRC::CastlevaniaCoD] = GSC_Castlevania;
-		lut[CRC::CastlevaniaLoI] = GSC_Castlevania;
+		lut[CRC::CastlevaniaCoD] = GSC_CastlevaniaGames;
+		lut[CRC::CastlevaniaLoI] = GSC_CastlevaniaGames;
 		lut[CRC::GodOfWar] = GSC_GodOfWar;
 
 		// Deprecated hack could be removed (Cutie)
@@ -2264,8 +2264,8 @@ void GSState::SetupCrcHack()
 		// Channel Effect
 		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
 		lut[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // + accurate blending
-		lut[CRC::StarWarsBattlefront2] = GSC_StarWarsBattlefront2;
 		lut[CRC::StarWarsBattlefront] = GSC_StarWarsBattlefront;
+		lut[CRC::StarWarsBattlefront2] = GSC_StarWarsBattlefront2;
 
 		// Dedicated shader for channel effect
 		lut[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
@@ -2274,8 +2274,8 @@ void GSState::SetupCrcHack()
 		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas;
 
 		// Can be fixed by setting Blending Unit Accuracy to at least High.
-		lut[CRC::GetaWayBlackMonday] = GSC_GetaWay;
-		lut[CRC::GetaWay] = GSC_GetaWay;
+		lut[CRC::GetaWay] = GSC_GetaWayGames;
+		lut[CRC::GetaWayBlackMonday] = GSC_GetaWayGames;
 
 		// Accumulation blend
 		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
