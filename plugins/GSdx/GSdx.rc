@@ -325,8 +325,8 @@ BEGIN
     LTEXT           "Blending Unit Accuracy:",IDC_ACCURATE_BLEND_UNIT_TEXT,22,272,79,10
     COMBOBOX        IDC_ACCURATE_BLEND_UNIT,105,270,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     // Direct3D 9 (Hardware) Settings:
-    CONTROL         "Logarithmic Z",IDC_LOGZ,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,256,90,8
-    CONTROL         "Alpha Correction",IDC_FBA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,256,74,8
+    CONTROL         "Alpha Correction",IDC_FBA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,256,74,8
+    CONTROL         "Logarithmic Z",IDC_LOGZ,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,256,90,8
     // Software Renderer Settings:
     GROUPBOX        "Software Renderer Settings",IDC_STATIC,6,295,231,40,BS_CENTER
     CONTROL         "Edge Anti-aliasing (AA1)",IDC_AA1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,306,91,10
