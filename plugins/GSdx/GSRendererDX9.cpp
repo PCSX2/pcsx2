@@ -61,13 +61,13 @@ void GSRendererDX9::EmulateTextureShuffleAndFbmask()
 	if (m_texture_shuffle)
 	{
 		// Texture shuffle is not supported so make sure nothing is written on all channels.
-		om_bsel.wrgba = 0;
+		m_om_bsel.wrgba = 0;
 	}
 	else
 	{
 		m_ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
-		om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+		m_om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
 	}
 }
 

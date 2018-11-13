@@ -370,7 +370,7 @@ void GSRendererDX::ResetStates()
 	m_ps_sel.key = 0;
 
 	m_ps_ssel.key  = 0;
-	om_bsel.key    = 0;
+	m_om_bsel.key  = 0;
 	m_om_dssel.key = 0;
 }
 
@@ -406,21 +406,21 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	if (!IsOpaque())
 	{
-		om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
+		m_om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
 
-		om_bsel.a = m_context->ALPHA.A;
-		om_bsel.b = m_context->ALPHA.B;
-		om_bsel.c = m_context->ALPHA.C;
-		om_bsel.d = m_context->ALPHA.D;
+		m_om_bsel.a = m_context->ALPHA.A;
+		m_om_bsel.b = m_context->ALPHA.B;
+		m_om_bsel.c = m_context->ALPHA.C;
+		m_om_bsel.d = m_context->ALPHA.D;
 
 		if (m_env.PABE.PABE)
 		{
-			if (om_bsel.a == 0 && om_bsel.b == 1 && om_bsel.c == 0 && om_bsel.d == 1)
+			if (m_om_bsel.a == 0 && m_om_bsel.b == 1 && m_om_bsel.c == 0 && m_om_bsel.d == 1)
 			{
 				// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
 				// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
 
-				om_bsel.abe = 0;
+				m_om_bsel.abe = 0;
 			}
 			else
 			{
@@ -441,7 +441,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			afix = 0x00000001;
 		}
 		// Disable writing of the alpha channel
-		om_bsel.wa = 0;
+		m_om_bsel.wa = 0;
 	}
 
 	if (DATE)
@@ -545,7 +545,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	bool colclip_wrap = m_env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST;
 	if (colclip_wrap)
 	{
-		if ((m_context->ALPHA.A == m_context->ALPHA.B) || !om_bsel.abe) // Optimize-away colclip
+		if ((m_context->ALPHA.A == m_context->ALPHA.B) || !m_om_bsel.abe) // Optimize-away colclip
 		{
 			// No addition neither substraction so no risk of overflow the [0:255] range.
 			colclip_wrap = false;
@@ -557,7 +557,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		}
 	}
 
-	m_ps_sel.clr1 = om_bsel.IsCLR1();
+	m_ps_sel.clr1 = m_om_bsel.IsCLR1();
 	m_ps_sel.fba = m_context->FBA.FBA;
 	m_ps_sel.aout = m_context->FRAME.PSM == PSM_PSMCT16 || m_context->FRAME.PSM == PSM_PSMCT16S || (m_context->FRAME.FBMSK & 0xff000000) == 0x7f000000 ? 1 : 0;
 	m_ps_sel.aout &= !m_ps_sel.shuffle;
@@ -611,7 +611,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		// Render RGB color but don't update depth/alpha
 		// ATE is disabled here
 		m_om_dssel.zwe = false;
-		om_bsel.wa = false;
+		m_om_bsel.wa = false;
 	}
 	else
 	{
@@ -622,7 +622,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// to only draw pixels which would cause the destination alpha test to fail in the future once.
 	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
 	// The interaction with FBA in D3D9 is probably less than ideal.
-	if (UserHacks_AlphaStencil && DATE && dev->HasStencil() && om_bsel.wa && !m_context->TEST.ATE)
+	if (UserHacks_AlphaStencil && DATE && dev->HasStencil() && m_om_bsel.wa && !m_context->TEST.ATE)
 	{
 		if (!m_context->FBA.FBA)
 		{
@@ -677,7 +677,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	SetupIA(sx, sy);
 
-	dev->SetupOM(m_om_dssel, om_bsel, afix);
+	dev->SetupOM(m_om_dssel, m_om_bsel, afix);
 	dev->SetupVS(m_vs_sel, &vs_cb);
 	dev->SetupGS(m_gs_sel, &gs_cb);
 	dev->SetupPS(m_ps_sel, &ps_cb, m_ps_ssel);
@@ -690,7 +690,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 		if (colclip_wrap)
 		{
-			GSDeviceDX::OMBlendSelector om_bselneg(om_bsel);
+			GSDeviceDX::OMBlendSelector om_bselneg(m_om_bsel);
 			GSDeviceDX::PSSelector ps_selneg(m_ps_sel);
 
 			om_bselneg.negative = 1;
@@ -700,7 +700,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			dev->SetupPS(ps_selneg, &ps_cb, m_ps_ssel);
 
 			dev->DrawIndexedPrimitive();
-			dev->SetupOM(m_om_dssel, om_bsel, afix);
+			dev->SetupOM(m_om_dssel, m_om_bsel, afix);
 		}
 	}
 
@@ -724,10 +724,10 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		dev->SetupPS(m_ps_sel, &ps_cb, m_ps_ssel);
 
 		bool z = m_om_dssel.zwe;
-		bool r = om_bsel.wr;
-		bool g = om_bsel.wg;
-		bool b = om_bsel.wb;
-		bool a = om_bsel.wa;
+		bool r = m_om_bsel.wr;
+		bool g = m_om_bsel.wg;
+		bool b = m_om_bsel.wb;
+		bool a = m_om_bsel.wa;
 
 		switch(m_context->TEST.AFAIL)
 		{
@@ -755,18 +755,18 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		if (z || r || g || b || a)
 		{
 			m_om_dssel.zwe = z;
-			om_bsel.wr = r;
-			om_bsel.wg = g;
-			om_bsel.wb = b;
-			om_bsel.wa = a;
+			m_om_bsel.wr = r;
+			m_om_bsel.wg = g;
+			m_om_bsel.wb = b;
+			m_om_bsel.wa = a;
 
-			dev->SetupOM(m_om_dssel, om_bsel, afix);
+			dev->SetupOM(m_om_dssel, m_om_bsel, afix);
 
 			dev->DrawIndexedPrimitive();
 
 			if (colclip_wrap)
 			{
-				GSDeviceDX::OMBlendSelector om_bselneg(om_bsel);
+				GSDeviceDX::OMBlendSelector om_bselneg(m_om_bsel);
 				GSDeviceDX::PSSelector ps_selneg(m_ps_sel);
 
 				om_bselneg.negative = 1;

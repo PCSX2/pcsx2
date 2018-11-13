@@ -133,24 +133,24 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 		// FIXME GSVector will be nice here
 		uint8 rg_mask = fbmask & 0xFF;
 		uint8 ba_mask = (fbmask >> 8) & 0xFF;
-		om_bsel.wrgba = 0;
+		m_om_bsel.wrgba = 0;
 
 		// 2 Select the new mask (Please someone put SSE here)
 		if (rg_mask != 0xFF)
 		{
 			if (write_ba)
 			{
-				om_bsel.wb = 1;
+				m_om_bsel.wb = 1;
 			}
 			else
 			{
-				om_bsel.wr = 1;
+				m_om_bsel.wr = 1;
 			}
 		}
 		else if ((fbmask & 0xFF) != 0xFF)
 		{
 #ifdef _DEBUG
-			fprintf(stderr, "Please fix me! wb %u wr %u\n", om_bsel.wb, om_bsel.wr);
+			fprintf(stderr, "Please fix me! wb %u wr %u\n", m_om_bsel.wb, m_om_bsel.wr);
 #endif
 			//ASSERT(0);
 		}
@@ -159,17 +159,17 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 		{
 			if (write_ba)
 			{
-				om_bsel.wa = 1;
+				m_om_bsel.wa = 1;
 			}
 			else
 			{
-				om_bsel.wg = 1;
+				m_om_bsel.wg = 1;
 			}
 		}
 		else if ((fbmask & 0xFF) != 0xFF)
 		{
 #ifdef _DEBUG
-			fprintf(stderr, "Please fix me! wa %u wg %u\n", om_bsel.wa, om_bsel.wg);
+			fprintf(stderr, "Please fix me! wa %u wg %u\n", m_om_bsel.wa, m_om_bsel.wg);
 #endif
 			//ASSERT(0);
 		}
@@ -178,7 +178,7 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 	{
 		m_ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
-		om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+		m_om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
 	}
 }
 
