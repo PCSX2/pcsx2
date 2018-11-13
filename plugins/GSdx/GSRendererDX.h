@@ -52,9 +52,9 @@ protected:
 	GSDeviceDX::GSSelector m_gs_sel;
 	GSDeviceDX::PSSelector m_ps_sel;
 
-	GSDeviceDX::PSSamplerSelector m_ps_ssel;
-	GSDeviceDX::OMBlendSelector	om_bsel;
-	GSDeviceDX::OMDepthStencilSelector om_dssel;
+	GSDeviceDX::PSSamplerSelector      m_ps_ssel;
+	GSDeviceDX::OMBlendSelector        om_bsel;
+	GSDeviceDX::OMDepthStencilSelector m_om_dssel;
 
 	GSDeviceDX::PSConstantBuffer ps_cb;
 	GSDeviceDX::VSConstantBuffer vs_cb;

@@ -103,12 +103,12 @@ void GSRendererDX::EmulateZbuffer()
 {
 	if (m_context->TEST.ZTE)
 	{
-		om_dssel.ztst = m_context->TEST.ZTST;
-		om_dssel.zwe = !m_context->ZBUF.ZMSK;
+		m_om_dssel.ztst = m_context->TEST.ZTST;
+		m_om_dssel.zwe = !m_context->ZBUF.ZMSK;
 	}
 	else
 	{
-		om_dssel.ztst = ZTST_ALWAYS;
+		m_om_dssel.ztst = ZTST_ALWAYS;
 	}
 
 	uint32 max_z;
@@ -129,7 +129,7 @@ void GSRendererDX::EmulateZbuffer()
 	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
 	// We are probably receiving bad coordinates from VU1 in these cases.
 
-	if (om_dssel.ztst >= ZTST_ALWAYS && om_dssel.zwe && (m_context->ZBUF.PSM != PSM_PSMZ32))
+	if (m_om_dssel.ztst >= ZTST_ALWAYS && m_om_dssel.zwe && (m_context->ZBUF.PSM != PSM_PSMZ32))
 	{
 		if (m_vt.m_max.p.z > max_z)
 		{
@@ -140,19 +140,19 @@ void GSRendererDX::EmulateZbuffer()
 #ifdef _DEBUG
 				fprintf(stdout, "Bad Z size on %s buffers\n", psm_str(m_context->ZBUF.PSM));
 #endif
-				om_dssel.ztst = ZTST_ALWAYS;
+				m_om_dssel.ztst = ZTST_ALWAYS;
 			}
 		}
 	}
 
 	GSVertex* v = &m_vertex.buff[0];
 	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
-	if (om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z && v[0].XYZ.Z == max_z)
+	if (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z && v[0].XYZ.Z == max_z)
 	{
 #ifdef _DEBUG
 		fprintf(stdout, "Optimize Z test GEQUAL to ALWAYS (%s)\n", psm_str(m_context->ZBUF.PSM));
 #endif
-		om_dssel.ztst = ZTST_ALWAYS;
+		m_om_dssel.ztst = ZTST_ALWAYS;
 	}
 }
 
@@ -369,9 +369,9 @@ void GSRendererDX::ResetStates()
 	m_gs_sel.key = 0;
 	m_ps_sel.key = 0;
 
-	m_ps_ssel.key = 0;
-	om_bsel.key   = 0;
-	om_dssel.key  = 0;
+	m_ps_ssel.key  = 0;
+	om_bsel.key    = 0;
+	m_om_dssel.key = 0;
 }
 
 void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
@@ -484,7 +484,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	if (m_fba)
 	{
-		om_dssel.fba = m_context->FBA.FBA;
+		m_om_dssel.fba = m_context->FBA.FBA;
 	}
 
 	// vs
@@ -534,7 +534,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	{
 		if (dev->HasStencil())
 		{
-			om_dssel.date = 1;
+			m_om_dssel.date = 1;
 		}
 		else
 		{
@@ -587,7 +587,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 #ifdef _DEBUG
 		fprintf(stdout, "Complex Alpha Test\n");
 #endif
-		bool commutative_depth = (om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (om_dssel.ztst == ZTST_ALWAYS);
+		bool commutative_depth = (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (m_om_dssel.ztst == ZTST_ALWAYS);
 		bool commutative_alpha = (m_context->ALPHA.C != 1); // when either Alpha Src or a constant
 
 		ate_RGBA_then_Z = (m_context->TEST.AFAIL == AFAIL_FB_ONLY) & commutative_depth;
@@ -601,7 +601,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 #endif
 		// Render all color but don't update depth
 		// ATE is disabled here
-		om_dssel.zwe = false;
+		m_om_dssel.zwe = false;
 	}
 	else if (ate_RGB_then_ZA)
 	{
@@ -610,7 +610,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 #endif
 		// Render RGB color but don't update depth/alpha
 		// ATE is disabled here
-		om_dssel.zwe = false;
+		m_om_dssel.zwe = false;
 		om_bsel.wa = false;
 	}
 	else
@@ -638,7 +638,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			ps_cb.FogColor_AREF.a = (float)0x80;
 		}
 		if (!(m_context->FBA.FBA && m_context->TEST.DATM == 1))
-			om_dssel.alpha_stencil = 1;
+			m_om_dssel.alpha_stencil = 1;
 	}
 
 	if (tex)
@@ -677,7 +677,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	SetupIA(sx, sy);
 
-	dev->SetupOM(om_dssel, om_bsel, afix);
+	dev->SetupOM(m_om_dssel, om_bsel, afix);
 	dev->SetupVS(m_vs_sel, &vs_cb);
 	dev->SetupGS(m_gs_sel, &gs_cb);
 	dev->SetupPS(m_ps_sel, &ps_cb, m_ps_ssel);
@@ -696,11 +696,11 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			om_bselneg.negative = 1;
 			ps_selneg.colclip = 2;
 
-			dev->SetupOM(om_dssel, om_bselneg, afix);
+			dev->SetupOM(m_om_dssel, om_bselneg, afix);
 			dev->SetupPS(ps_selneg, &ps_cb, m_ps_ssel);
 
 			dev->DrawIndexedPrimitive();
-			dev->SetupOM(om_dssel, om_bsel, afix);
+			dev->SetupOM(m_om_dssel, om_bsel, afix);
 		}
 	}
 
@@ -723,7 +723,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 		dev->SetupPS(m_ps_sel, &ps_cb, m_ps_ssel);
 
-		bool z = om_dssel.zwe;
+		bool z = m_om_dssel.zwe;
 		bool r = om_bsel.wr;
 		bool g = om_bsel.wg;
 		bool b = om_bsel.wb;
@@ -754,13 +754,13 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 		if (z || r || g || b || a)
 		{
-			om_dssel.zwe = z;
+			m_om_dssel.zwe = z;
 			om_bsel.wr = r;
 			om_bsel.wg = g;
 			om_bsel.wb = b;
 			om_bsel.wa = a;
 
-			dev->SetupOM(om_dssel, om_bsel, afix);
+			dev->SetupOM(m_om_dssel, om_bsel, afix);
 
 			dev->DrawIndexedPrimitive();
 
@@ -772,7 +772,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 				om_bselneg.negative = 1;
 				ps_selneg.colclip = 2;
 
-				dev->SetupOM(om_dssel, om_bselneg, afix);
+				dev->SetupOM(m_om_dssel, om_bselneg, afix);
 				dev->SetupPS(ps_selneg, &ps_cb, m_ps_ssel);
 
 				dev->DrawIndexedPrimitive();
@@ -784,5 +784,5 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	dev->Recycle(rtcopy);
 
-	if (om_dssel.fba) UpdateFBA(rt);
+	if (m_om_dssel.fba) UpdateFBA(rt);
 }

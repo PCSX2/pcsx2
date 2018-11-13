@@ -66,8 +66,8 @@ class GSRendererOGL final : public GSRendererHW
 		GSDeviceOGL::GSSelector m_gs_sel;
 		GSDeviceOGL::PSSelector m_ps_sel;
 
-		GSDeviceOGL::PSSamplerSelector		m_ps_ssel;
-		GSDeviceOGL::OMColorMaskSelector	m_om_csel;
+		GSDeviceOGL::PSSamplerSelector      m_ps_ssel;
+		GSDeviceOGL::OMColorMaskSelector    m_om_csel;
 		GSDeviceOGL::OMDepthStencilSelector m_om_dssel;
 
 	private:
