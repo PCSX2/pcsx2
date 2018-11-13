@@ -2306,6 +2306,7 @@ Region = PAL-M5
 Compat = 5
 XgKickHack = 1 // SPS.
 [patches]
+	// CRC C040B6AB, Unknown
 	comment=swapping a COP2 op into place to make the flags work without delays
 	patch=0,EE,002E2B44,word,48449000
 	patch=0,EE,002E2B4C,word,4BC949FF
@@ -13298,7 +13299,6 @@ Region = PAL-M5
 	patch=0,EE,0012B5F8,word,4bec682c
 	patch=0,EE,0012B5FC,word,4b8d617d
 	patch=0,EE,0012B604,word,4a6d617c
-	patch=0,EE,001B0B58,word,48468800
 	patch=0,EE,001B0B5C,word,4bec682c
 	patch=0,EE,001B0B68,word,4b8d617d
 	patch=0,EE,001BF5FC,word,48588800
@@ -39076,7 +39076,8 @@ Serial = SLUS-21006
 Name   = Ghost in the Shell - Stane Alone Complex
 Region = NTSC-U
 Compat = 5
-[patches = 95CC86EF]
+[patches]
+	// CRC US 95CC86EF, RU 28557423
 	comment=Rearranging COP2 ops so as to avoid macflag bad stuff
 	// Solves door problems, possibly other issues later on (nobody ever got that far :P)
 	patch=0,EE,0010BC88,word,48468800
@@ -39095,7 +39096,6 @@ Compat = 5
 	patch=0,EE,00165BB4,word,4bec682c
 	patch=0,EE,00165BB8,word,4b8d617d
 	patch=0,EE,00165BC0,word,4a6d617c
-	patch=0,EE,001B0A3C,word,48468800
 	patch=0,EE,001B0A40,word,4bec682c
 	patch=0,EE,001B0A4C,word,4b8d617d
 	patch=0,EE,001BF4C0,word,48588800
