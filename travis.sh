@@ -32,6 +32,7 @@ linux_32_before_install() {
 	# build image. libgtk2.0-dev:i386 and libsdl2-dev:i386 require the 32-bit
 	# versions of the dependencies, and the 2 versions conflict. So those
 	# dependencies must be explicitly installed.
+	# Sometimes it complains about Python so we install that too.
 	sudo apt-get -y install \
 		gir1.2-freedesktop:i386 \
 		gir1.2-gdkpixbuf-2.0:i386 \
@@ -55,6 +56,7 @@ linux_32_before_install() {
 		libxext-dev:i386 \
 		libxft-dev:i386 \
 		portaudio19-dev:i386 \
+		python:i386 \
 		zlib1g-dev:i386 \
 		libxml2-dev:i386 \
 		libpcap0.8-dev:i386 \
