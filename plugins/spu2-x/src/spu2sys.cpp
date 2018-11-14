@@ -129,7 +129,8 @@ void V_Core::Init(int index)
     InputPosWrite = 0;
     InputDataProgress = 0;
     ReverbX = 0;
-    LastEffect.Clear();
+    LastEffect.Left = 0;
+    LastEffect.Right = 0;
     CoreEnabled = 0;
     AttrBit0 = 0;
     DmaMode = 0;

@@ -282,11 +282,7 @@ void SndBuffer::ReadSamples(T *bData)
     // If quietSamples != 0 it means we have an underrun...
     // Let's just dull out some silence, because that's usually the least
     // painful way of dealing with underruns:
-    for (int i = 0; i < quietSamples; i++)
-    {
-        bData[i].Clear();
-    }
-    //memset(bData, 0, quietSamples * sizeof(T));
+    std::fill_n(bData, quietSamples, T{});
 }
 
 template void SndBuffer::ReadSamples(StereoOut16 *);
@@ -394,17 +390,8 @@ void SndBuffer::Init()
 
     // clear buffers!
     // Fixes loopy sounds on emu resets.
-    //memset(sndTempBuffer, 0, sizeof(StereoOut32) * SndOutPacketSize);
-    for (int i = 0; i < SndOutPacketSize; i++)
-    {
-        sndTempBuffer[i].Clear();
-    }
-
-    //memset(sndTempBuffer16, 0, sizeof(StereoOut16) * SndOutPacketSize);
-    for (int i = 0; i < (SndOutPacketSize * 2); i++)
-    {
-        sndTempBuffer16[i].Clear();
-    }
+    std::fill_n(sndTempBuffer, SndOutPacketSize, StereoOut32{});
+    std::fill_n(sndTempBuffer16, SndOutPacketSize, StereoOut16{});
 
     sndTempProgress = 0;
 
@@ -459,11 +446,7 @@ void SndBuffer::Write(const StereoOut32 &Sample)
     if (ssFreeze > 0) {
         ssFreeze--;
         // Play silence
-        //memset(sndTempBuffer, 0, sizeof(StereoOut32) * SndOutPacketSize); 
-        for (int i = 0; i < SndOutPacketSize; i++)
-        {
-            sndTempBuffer[i].Clear();
-        }
+        std::fill_n(sndTempBuffer, SndOutPacketSize, StereoOut32{});
     }
 #ifndef __POSIX__
     if (dspPluginEnabled) {
