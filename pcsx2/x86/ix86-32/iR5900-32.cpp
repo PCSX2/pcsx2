@@ -1265,7 +1265,6 @@ void encodeMemcheck()
 
 void recompileNextInstruction(int delayslot)
 {
-	static u8 s_bFlushReg = 1;
 	u32 i;
 	int count;
 
@@ -1350,19 +1349,7 @@ void recompileNextInstruction(int delayslot)
 		}
 	}
 
-	if( !delayslot ) {
-		if( s_bFlushReg ) {
-			//if( !_flushUnusedConstReg() ) {
-				int flushed = 0;
-				if( false ) flushed = 0; // old mmx path. I don't understand why flushed isn't set in the line below
-				if( !flushed && _getNumXMMwrite() > 2 ) _flushXMMunused();
-				s_bFlushReg = !flushed;
-//			}
-//			else s_bFlushReg = 0;
-		}
-		else s_bFlushReg = 1;
-	}
-	else s_bFlushReg = 1;
+	if (!delayslot && (_getNumXMMwrite() > 2)) _flushXMMunused();
 
 	//CHECK_XMMCHANGED();
 	_clearNeededX86regs();

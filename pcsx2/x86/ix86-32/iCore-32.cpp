@@ -275,13 +275,14 @@ int _allocX86reg(xRegisterLong x86reg, int type, int reg, int mode)
 			if ( (int)i == esp.GetId() || (int)i == ebp.GetId() ) continue;
 			if (!x86regs[i].inuse || x86regs[i].type != type || x86regs[i].reg != reg) continue;
 
-			if( i >= maxreg ) {
+			// We're in a for loop until i<maxreg. This will never happen.
+			/*if( i >= maxreg ) {
 				if (x86regs[i].mode & MODE_READ) readfromreg = i;
 
 				mode |= x86regs[i].mode&MODE_WRITE;
 				x86regs[i].inuse = 0;
 				break;
-			}
+			}*/
 
 			if( !x86reg.IsEmpty() ) {
 				// requested specific reg, so return that instead
