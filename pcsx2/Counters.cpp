@@ -34,7 +34,6 @@
 
 #ifndef DISABLE_RECORDING
 #	include "Recording/RecordingControls.h"
-#	include "Recording/InputRecordingEditor.h"
 #endif
 
 using namespace Threading;
@@ -576,8 +575,6 @@ __fi void rcntUpdate_vSync()
 #ifndef DISABLE_RECORDING
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			InputRecordingEditor* dlg = wxGetApp().GetInputRecordingEditorPtr();
-			if (dlg)dlg->FrameUpdate();
 			g_RecordingControls.StopCheck();
 		}
 #endif

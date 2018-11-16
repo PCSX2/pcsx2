@@ -31,7 +31,6 @@
 #include "Saveslots.h"
 
 #ifndef DISABLE_RECORDING
-#	include "Recording/InputRecordingEditor.h"
 #	include "Recording/VirtualPad.h"
 #	include "Recording/NewRecordingFrame.h"
 #endif
@@ -544,7 +543,6 @@ protected:
 	wxWindowID			m_id_Disassembler;
 
 #ifndef DISABLE_RECORDING
-	wxWindowID			m_id_InputRecordingEditor;
 	wxWindowID			m_id_VirtualPad[2];
 	wxWindowID			m_id_NewRecordingFrame;
 #endif
@@ -574,12 +572,8 @@ public:
 	DisassemblyDialog*	GetDisassemblyPtr() const	{ return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
 
 #ifndef DISABLE_RECORDING
-	InputRecordingEditor *			GetInputRecordingEditorPtr() const { return (InputRecordingEditor*)wxWindow::FindWindowById(m_id_InputRecordingEditor); }
-	VirtualPad *		GetVirtualPadPtr(int port) const {
-		if (port < 0 || port > 1) return NULL; // TODO i believe this is always false, linter errors picked it up, double check
-		return (VirtualPad*)wxWindow::FindWindowById(m_id_VirtualPad[port]);
-	}
-	NewRecordingFrame *		GetNewRecordingFramePtr() const { return (NewRecordingFrame*)wxWindow::FindWindowById(m_id_NewRecordingFrame); }
+	VirtualPad*			GetVirtualPadPtr(int port) const	{ return (VirtualPad*)wxWindow::FindWindowById(m_id_VirtualPad[port]); }
+	NewRecordingFrame*	GetNewRecordingFramePtr() const		{ return (NewRecordingFrame*)wxWindow::FindWindowById(m_id_NewRecordingFrame); }
 #endif
 
 	void enterDebugMode();

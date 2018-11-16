@@ -465,7 +465,6 @@ set(pcsx2RDebugHeaders
 # Recording sources
 set(pcsx2RecordingSources
 	Recording/InputRecording.cpp
-	Recording/InputRecordingEditor.cpp
 	Recording/InputRecordingFile.cpp
 	Recording/NewRecordingFrame.cpp
 	Recording/PadData.cpp
@@ -477,7 +476,6 @@ set(pcsx2RecordingSources
 # Recording headers
 set(pcsx2RecordingHeaders
 	Recording/InputRecording.h
-	Recording/InputRecordingEditor.h
 	Recording/InputRecordingFile.h
 	Recording/NewRecordingFrame.h
 	Recording/PadData.h
