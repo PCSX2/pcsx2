@@ -23,7 +23,7 @@
 
 #include "stdafx.h"
 #include "GPUDrawScanlineCodeGenerator.h"
-#include "GSVertexSW.h"
+#include "Renderers/SW/GSVertexSW.h"
 
 static const int _args = 8;
 static const int _top = _args + 4;

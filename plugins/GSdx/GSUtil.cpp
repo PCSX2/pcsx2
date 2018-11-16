@@ -23,7 +23,7 @@
 #include "GSUtil.h"
 
 #ifdef _WIN32
-#include "GSDeviceDX.h"
+#include "Renderers/DXCommon/GSDeviceDX.h"
 #include <VersionHelpers.h>
 #include "svnrev.h"
 #else

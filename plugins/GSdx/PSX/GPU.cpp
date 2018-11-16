@@ -22,14 +22,14 @@
 #include "stdafx.h"
 #include "GSdx.h"
 #include "GSUtil.h"
-#include "GSDeviceNull.h"
+#include "Renderers/Null/GSDeviceNull.h"
 #include "GPURendererSW.h"
 
 #ifdef _WIN32
 
 #include "GPUSettingsDlg.h"
-#include "GSDevice9.h"
-#include "GSDevice11.h"
+#include "Renderers/DX9/GSDevice9.h"
+#include "Renderers/DX11/GSDevice11.h"
 
 static HRESULT s_hr = E_FAIL;
 

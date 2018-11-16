@@ -132,6 +132,9 @@
     <ClInclude Include="..\..\include\Utilities\Assertions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\Utilities\boost_spsc_queue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\Utilities\CheckedStaticBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
