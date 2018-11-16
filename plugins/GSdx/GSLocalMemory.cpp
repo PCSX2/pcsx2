@@ -494,7 +494,7 @@ GSLocalMemory::~GSLocalMemory()
 	else
 		vmfree(m_vm8, m_vmsize * 4);
 
-	for(auto &i : m_omap) _aligned_free(i.second);
+	for(auto &i : m_omap) delete i.second;
 	for(auto &i : m_pomap) _aligned_free(i.second);
 	for(auto &i : m_po4map) _aligned_free(i.second);
 
