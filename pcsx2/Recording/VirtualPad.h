@@ -9,32 +9,72 @@
 class VirtualPad : public wxFrame
 {
 public:
-	VirtualPad(wxWindow *parent, int controllerPort);
+	VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, int controllerPort, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_FRAME_STYLE);
 
 	bool Show(bool show = true) override;
+	void FrameUpdate();
+
+private:
+	void SetProperties();
+	void DoLayout();
 
 protected:
-	int port;
+	int controllerPort;
 
-	wxToggleButton *buttons[16];
-	wxSpinCtrl *buttonsPressure[16];
-	wxButton *reset;
+	wxToggleButton* l2Button;
+	wxSpinCtrl* l2ButtonPressure;
+	wxToggleButton* l1Button;
+	wxSpinCtrl* l1ButtonPressure;
+	wxToggleButton* r2Button;
+	wxSpinCtrl* r2ButtonPressure;
+	wxToggleButton* r1Button;
+	wxSpinCtrl* r1ButtonPressure;
+	wxToggleButton* upButton;
+	wxSpinCtrl* upButtonPressure;
+	wxToggleButton* leftButton;
+	wxSpinCtrl* leftButtonPressure;
+	wxToggleButton* rightButton;
+	wxSpinCtrl* rightButtonPressure;
+	wxToggleButton* downButton;
+	wxSpinCtrl* downButtonPressure;
+	wxToggleButton* startButton;
+	wxToggleButton* selectButton;
+	wxToggleButton* triangleButton;
+	wxSpinCtrl* triangleButtonPressure;
+	wxToggleButton* squareButton;
+	wxSpinCtrl* squareButtonPressure;
+	wxToggleButton* circleButton;
+	wxSpinCtrl* circleButtonPressure;
+	wxToggleButton* crossButton;
+	wxSpinCtrl* crossButtonPressure;
+	wxSlider* leftAnalogXVal;
+	wxSpinCtrl* leftAnalogXValPrecise;
+	wxToggleButton* l3Button;
+	wxSlider* leftAnalogYVal;
+	wxSpinCtrl* leftAnalogYValPrecise;
+	wxSlider* rightAnalogXVal;
+	wxSpinCtrl* rightAnalogXValPrecise;
+	wxToggleButton* r3Button;
+	wxSlider* rightAnalogYVal;
+	wxSpinCtrl* rightAnalogYValPrecise;
 
-	wxSlider *sticks[4];
-	wxSpinCtrl *sticksText[4];
+	wxToggleButton* buttons[16];
+	int buttonsLength = 16;
+	wxSpinCtrl* buttonsPressure[12];
+	int buttonsPressureLength = 12;
+	wxSlider* analogSliders[4];
+	int analogSlidersLength = 4;
+	wxSpinCtrl* analogVals[4];
+	int analogValsLength = 4;
+
+	// TODO - reset button
 
 protected:
 	void OnClose(wxCloseEvent &event);
-
-	void OnClick(wxCommandEvent &event);
-	void OnResetButton(wxCommandEvent &event);
-	void OnPressureCtrlChange(wxSpinEvent &event);
-	void OnTextCtrlChange(wxSpinEvent &event);
-	void OnSliderMove(wxCommandEvent &event);
-
-	int getButtonIdFromPressure(int pressureCtrlId);
-
-	bool isPressureSensitive(int buttonId);
+	void OnButtonPress(wxCommandEvent &event);
+	void OnPressureChange(wxSpinEvent &event);
+	void OnAnalogValChange(wxSpinEvent &event);
+	void OnAnalogSliderChange(wxCommandEvent &event);
 
 	wxDECLARE_EVENT_TABLE();
 };

@@ -6,6 +6,7 @@
 
 PadData::PadData()
 {
+	// TODO - multi-tap support eventually?
 	for (int port = 0; port < 2; port++)
 	{
 		buf[port][0] = 255;
@@ -177,6 +178,7 @@ int PadData::getNormalButton(int port, wxString button)const
 
 void PadData::getKeyBit(wxByte keybit[2], wxString button)const
 {
+	// TODO - switch statement or search array?
 	if (button == L"up") { keybit[0] = 0b00010000; keybit[1] = 0b00000000; }
 	else if (button == L"left") { keybit[0] = 0b10000000; keybit[1] = 0b00000000; }
 	else if (button == L"right") { keybit[0] = 0b00100000; keybit[1] = 0b00000000; }
@@ -185,7 +187,7 @@ void PadData::getKeyBit(wxByte keybit[2], wxString button)const
 	else if (button == L"start") { keybit[0] = 0b00001000; keybit[1] = 0b00000000; }
 	else if (button == L"select") { keybit[0] = 0b00000001; keybit[1] = 0b00000000; }
 
-	else if (button == L"x") { keybit[0] = 0b00000000; keybit[1] = 0b01000000; }
+	else if (button == L"cross") { keybit[0] = 0b00000000; keybit[1] = 0b01000000; }
 	else if (button == L"circle") { keybit[0] = 0b00000000; keybit[1] = 0b00100000; }
 	else if (button == L"square") { keybit[0] = 0b00000000; keybit[1] = 0b10000000; }
 	else if (button == L"triangle") { keybit[0] = 0b00000000; keybit[1] = 0b00010000; }
@@ -209,13 +211,13 @@ int PadData::getPressureByte(wxString button)const
 {
 	// button order
 	// R - L - U - D - Tri - Sqr - Circle - Cross - L1 - R1 - L2 - R2
-
+	// TODO - switch statement or search array?
 	if (button == L"up") { return 2; }
 	else if (button == L"left") { return 1; }
 	else if (button == L"right") { return 0; }
 	else if (button == L"down") { return 3; }
 
-	else if (button == L"x") { return 6; }
+	else if (button == L"cross") { return 6; }
 	else if (button == L"circle") { return 5; }
 	else if (button == L"square") { return 7; }
 	else if (button == L"triangle") { return 4; }
@@ -226,7 +228,7 @@ int PadData::getPressureByte(wxString button)const
 	else if (button == L"r2") { return 11; }
 	else
 	{
-		return 1;
+		return -1;
 	}
 }
 
@@ -256,19 +258,19 @@ void PadData::setAnalogButton(int port, wxString button, int push)
 	if (push < 0)push = 0;
 	else if (push > 255)push = 255;
 
-	if (button == L"l_leftright") { buf[port][4] = push; }
-	else if (button == L"l_updown") { buf[port][5] = push; }
-	else if (button == L"r_leftright") { buf[port][2] = push; }
-	else if (button == L"r_updown") { buf[port][3] = push; }
+	if (button == L"l_analog_x") { buf[port][4] = push; }
+	else if (button == L"l_analog_y") { buf[port][5] = push; }
+	else if (button == L"r_analog_x") { buf[port][2] = push; }
+	else if (button == L"r_analog_y") { buf[port][3] = push; }
 }
 
 int PadData::getAnalogButton(int port, wxString button)const
 {
 	if (port < 0 || 1 < port)return 0;
 	int val = 127;
-	if (button == L"l_leftright") { val = buf[port][4]; }
-	else if (button == L"l_updown") { val = buf[port][5]; }
-	else if (button == L"r_leftright") { val = buf[port][2]; }
-	else if (button == L"r_updown") { val = buf[port][3]; }
+	if (button == L"l_analog_x") { val = buf[port][4]; }
+	else if (button == L"l_analog_y") { val = buf[port][5]; }
+	else if (button == L"r_analog_x") { val = buf[port][2]; }
+	else if (button == L"r_analog_y") { val = buf[port][3]; }
 	return val;
 }

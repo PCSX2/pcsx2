@@ -9,27 +9,27 @@ const wxString PadDataNormalKeys[PadDataNormalKeysSize] =
 	"right",
 	"left",
 	"down",
-	"select",
-	"start",
-	"x",
+	"cross",
 	"circle",
 	"square",
 	"triangle",
 	"l1",
 	"l2",
-	"l3",
 	"r1",
 	"r2",
-	"r3"
+	"l3",
+	"r3",
+	"select",
+	"start"
 };
 
 #define PadDataAnalogKeysSize 4
 const wxString PadDataAnalogKeys[PadDataAnalogKeysSize] =
 {
-	"l_updown",
-	"l_leftright",
-	"r_updown",
-	"r_leftright"
+	"l_analog_x",
+	"l_analog_y",
+	"r_analog_x",
+	"r_analog_y"
 };
 
 
