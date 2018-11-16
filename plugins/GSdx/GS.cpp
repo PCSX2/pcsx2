@@ -276,6 +276,8 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				default:
 #ifdef _WIN32
 					wnds.push_back(std::make_shared<GSWndDX>());
+#else
+					wnds.push_back(std::make_shared<GSWndOGL>());
 #endif
 					break;
 			}
