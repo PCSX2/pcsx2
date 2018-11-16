@@ -194,7 +194,6 @@
     <ClCompile Include="..\..\ps2\pgif.cpp" />
     <ClCompile Include="..\..\ShiftJisToUnicode.cpp" />
     <ClCompile Include="..\..\sif2.cpp" />
-    <ClCompile Include="..\..\Recording\InputRecordingEditor.cpp" />
     <ClCompile Include="..\..\Recording\InputRecording.cpp" />
     <ClCompile Include="..\..\Recording\NewRecordingFrame.cpp" />
     <ClCompile Include="..\..\Recording\InputRecordingFile.cpp" />
@@ -450,7 +449,6 @@
     <ClInclude Include="..\..\Patch.h" />
     <ClInclude Include="..\..\PrecompiledHeader.h" />
     <ClInclude Include="..\..\ps2\pgif.h" />
-    <ClInclude Include="..\..\Recording\InputRecordingEditor.h" />
     <ClInclude Include="..\..\Recording\InputRecording.h" />
     <ClInclude Include="..\..\Recording\NewRecordingFrame.h" />
     <ClInclude Include="..\..\Recording\InputRecordingFile.h" />

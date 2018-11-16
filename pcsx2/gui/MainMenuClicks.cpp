@@ -832,12 +832,6 @@ void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent &event)
 	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(false);
 }
 
-void MainEmuFrame::Menu_Recording_Editor_Click(wxCommandEvent &event)
-{
-	InputRecordingEditor* dlg = wxGetApp().GetInputRecordingEditorPtr();
-	if (dlg)dlg->Show();
-}
-
 void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent &event)
 {
 	VirtualPad *vp;

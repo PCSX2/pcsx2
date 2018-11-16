@@ -6,7 +6,7 @@
 #include "Recording/RecordingInputManager.h"
 
 wxBEGIN_EVENT_TABLE(VirtualPad, wxFrame)
-EVT_CLOSE(VirtualPad::OnClose)
+	EVT_CLOSE(VirtualPad::OnClose)
 wxEND_EVENT_TABLE()
 
 // TODO - Problems:
@@ -129,26 +129,6 @@ void VirtualPad::OnClose(wxCloseEvent & event)
 	g_RecordingInput.SetVirtualPadReading(controllerPort, false);
 	Hide();
 }
-
-/* TODO - remove this, live update later
-void VirtualPad::FrameUpdate()
-{
-	std::map<wxString, int> buttonPressures = g_RecordingInput.GetButtonPressureState(controllerPort);
-	std::map<wxString, int> analogValues = g_RecordingInput.GetAnalogState(controllerPort);
-
-	for (int i = 0; i < PadDataNormalKeysSize - 4; i++)
-	{
-		int value = buttonPressures.at(PadDataNormalKeys[i]);
-		buttonsPressure[i]->SetValue(value);
-	}
-
-	for (int i = 0; i < PadDataAnalogKeysSize; i++)
-	{
-		int value = analogValues.at(PadDataAnalogKeys[i]) - 127;
-		analogSliders[i]->SetValue(value);
-	}
-}
-**/
 
 void VirtualPad::OnButtonPress(wxCommandEvent & event)
 {

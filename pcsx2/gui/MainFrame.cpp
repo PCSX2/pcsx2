@@ -255,7 +255,6 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_New_Click, this, MenuId_Recording_New);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_Play_Click, this, MenuId_Recording_Play);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_Stop_Click, this, MenuId_Recording_Stop);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_Editor_Click, this, MenuId_Recording_Editor);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_VirtualPad_Open_Click, this, MenuId_Recording_VirtualPad_Port0);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_VirtualPad_Open_Click, this, MenuId_Recording_VirtualPad_Port1);
 #endif
@@ -576,7 +575,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuRecording.Append(MenuId_Recording_Stop, _("Stop"))->Enable(false);
 	m_menuRecording.Append(MenuId_Recording_Play, _("Play"));
 	m_menuRecording.AppendSeparator();
-	m_menuRecording.Append(MenuId_Recording_Editor, _("Open Movie Editor"));
 	m_menuRecording.Append(MenuId_Recording_VirtualPad_Port0, _("Virtual Pad (Port 1)"));
 	m_menuRecording.Append(MenuId_Recording_VirtualPad_Port1, _("Virtual Pad (Port 2)"));
 #endif

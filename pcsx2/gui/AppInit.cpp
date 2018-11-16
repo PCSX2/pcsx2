@@ -77,9 +77,6 @@ void Pcsx2App::OpenMainFrame()
 	m_id_Disassembler = disassembly->GetId();
 
 #ifndef DISABLE_RECORDING
-	InputRecordingEditor* inputRecordingEditor = new InputRecordingEditor(mainFrame, wxID_ANY, wxEmptyString);
-	m_id_InputRecordingEditor = inputRecordingEditor->GetId();
-
 	VirtualPad* virtualPad0 = new VirtualPad(mainFrame, wxID_ANY, wxEmptyString, 0);
 	m_id_VirtualPad[0] = virtualPad0->GetId();
 	VirtualPad *virtualPad1 = new VirtualPad(mainFrame, wxID_ANY, wxEmptyString, 1);
@@ -769,9 +766,6 @@ Pcsx2App::Pcsx2App()
 	m_id_GsFrame				= wxID_ANY;
 	m_id_ProgramLogBox			= wxID_ANY;
 	m_id_Disassembler			= wxID_ANY;
-#ifndef DISABLE_RECORDING
-	m_id_InputRecordingEditor	= wxID_ANY;
-#endif
 	m_ptr_ProgramLog			= NULL;
 
 	SetAppName( L"PCSX2" );

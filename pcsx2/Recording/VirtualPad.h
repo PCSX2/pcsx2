@@ -12,13 +12,11 @@ public:
 	VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, int controllerPort, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_FRAME_STYLE);
 
 	bool Show(bool show = true) override;
-	void FrameUpdate();
 
 private:
 	void SetProperties();
 	void DoLayout();
 
-protected:
 	int controllerPort;
 
 	wxToggleButton* l2Button;
@@ -67,14 +65,13 @@ protected:
 	wxSpinCtrl* analogVals[4];
 	int analogValsLength = 4;
 
-	// TODO - reset button
-
-protected:
 	void OnClose(wxCloseEvent &event);
 	void OnButtonPress(wxCommandEvent &event);
 	void OnPressureChange(wxSpinEvent &event);
 	void OnAnalogValChange(wxSpinEvent &event);
 	void OnAnalogSliderChange(wxCommandEvent &event);
+	// TODO - reset button
 
+protected:
 	wxDECLARE_EVENT_TABLE();
 };
