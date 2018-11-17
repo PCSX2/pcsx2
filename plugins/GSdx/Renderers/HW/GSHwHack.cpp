@@ -309,6 +309,7 @@ bool GSC_Genji(const GSFrameInfo& fi, int& skip)
 		if(fi.TME && fi.FBP == 0x01500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00e00 && fi.TPSM == PSM_PSMZ16)
 		{
 			// likely fixed in openGL (texture shuffle)
+			// Missing block at the top left
 			if (Dx_only)
 				skip = 6;
 			else
@@ -316,11 +317,11 @@ bool GSC_Genji(const GSFrameInfo& fi, int& skip)
 		}
 		else if(fi.TPSM == PSM_PSMCT24 && fi.TME ==0x0001 && fi.TBP0==fi.FBP)
 		{
-			skip = 1;
+			skip = 1; // Blur
 		}
 		else if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; // White Fog
 		}
 	}
 
@@ -348,7 +349,7 @@ bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01180)
 		{
-			skip = 1;
+			skip = 1; // Ghosting
 		}
 	}
 
@@ -444,11 +445,11 @@ bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
 		}
 		else if(fi.TME && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 ==0x0160 ||fi.TBP0==0x01e0 || fi.TBP0<=0x0800) && fi.TPSM == PSM_PSMT8)
 		{
-			skip = 1;
+			skip = 1; // Speedhack ?
 		}
 		else if(fi.TME && (fi.TBP0==0x0700) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
 		{
-			skip = 1;
+			skip = 1; // Blur
 		}
 	}
 
@@ -561,7 +562,7 @@ bool GSC_TombRaiderAnniversary(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FBP == 0x01000 && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
-			skip = 1;
+			skip = 1; // Garbage TC
 		}
 	}
 
@@ -575,11 +576,11 @@ bool GSC_TombRaiderLegend(const GSFrameInfo& fi, int& skip)
 		// ||fi.TBP0 ==0x2F00
 		if(fi.TME && fi.FBP == 0x01000 && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2b60 ||fi.TBP0 == 0x2b80 || fi.TBP0 == 0x2E60 ||fi.TBP0 ==0x3020 ||fi.TBP0 == 0x3200 || fi.TBP0 == 0x3320))
 		{
-			skip = 1;
+			skip = 1; // Garbage TC
 		}
 		else if(fi.TPSM == PSM_PSMCT32 && (fi.TPSM | fi.FBP)==0x2fa0 && (fi.TBP0==0x2bc0 ) && fi.FBMSK ==0)
 		{
-			skip = 2;
+			skip = 2; // Underwater black screen
 		}
 	}
 
@@ -592,11 +593,11 @@ bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FBP == 0x01000 && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2B60 /*|| fi.TBP0 == 0x2EFF || fi.TBP0 ==0x2F00 || fi.TBP0 == 0x3020*/ || fi.TBP0 >= 0x2C01 && fi.TBP0!=0x3029 && fi.TBP0!=0x302d))
 		{
-			skip = 1;
+			skip = 1; // Garbage TC
 		}
 		else if(fi.TPSM == PSM_PSMCT32 && (fi.TPSM | fi.FBP)==0x2c00 && (fi.TBP0 ==0x0ee0) && fi.FBMSK ==0)
 		{
-			skip = 2;
+			skip = 2; // Underwater black screen
 		}
 	}
 
@@ -710,7 +711,7 @@ bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.FBP == 0x3f80 || fi.FBP == 0x03fa0) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8)
 		{
-			skip = 3; //3, 9
+			skip = 3; // 3, 9
 		}
 		if(fi.TME && fi.FBP == 0x3800 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMZ32)
 		{
@@ -718,15 +719,15 @@ bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
 		}
 		if(fi.TME && fi.FBP && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x3d80)
 		{
-			skip = 1;
+			skip = 1; // Missing block 2a00 in the upper left
 		}
 		if(fi.TME && fi.FBP ==0x1c00 && (fi.TBP0==0x2e80 ||fi.TBP0==0x2d80) && fi.TPSM ==0  && fi.FBMSK == 0xff000000)
 		{
-			skip = 1;
+			skip = 1; // Ghosting
 		}
 		if(!fi.TME && fi.FBP ==0x2a00 && (fi.TBP0==0x1C00 ) && fi.TPSM ==0  && fi.FBMSK == 0x00FFFFFF)
 		{
-			skip = 1;
+			skip = 1; // Poisoned layer dislocation
 		}
 	}
 
@@ -744,7 +745,7 @@ bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 		}
 		if(fi.TME && (fi.FBP ==0x0700 || fi.FBP==0) && fi.TBP0==0x0e00 && fi.TPSM ==0  && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; // Removes black screen (not needed anymore maybe)?
 		}
 		if(Aggressive && fi.TME)
 		{
@@ -779,7 +780,7 @@ bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip)
 		}
 		else if(fi.TME  && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0xFF000000)
 		{
-			skip = 2;
+			skip = 2; // Fog
  		}
 		else if((fi.FBP | fi.TBP0)&& fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x3FFF)
 		{
@@ -825,15 +826,15 @@ bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME==0 && fi.FBP != fi.TBP0 && fi.TBP0 && fi.FBMSK == 0x00FFFFFF)
 		{
-			skip = 3;
+			skip = 3; // Remove darkness
 		}
 		else if(fi.TME==0 && fi.FBP == fi.TBP0 && (fi.TBP0 ==0x1200 ||fi.TBP0 ==0x1180 ||fi.TBP0 ==0) && fi.FBMSK == 0x00FFFFFF)
 		{
-			skip = 3;
+			skip = 3; // Remove darkness
 		}
 		else if(fi.TME && (fi.FBP ==0 || fi.FBP ==0x1180) && fi.FPSM == PSM_PSMCT32 && fi.TBP0 ==0x3F3F && fi.TPSM == PSM_PSMT8)
 		{
-			skip = 1;
+			skip = 1; // Floodlight
 		}
 	}
 
@@ -883,7 +884,7 @@ bool GSC_GodHand(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.FBP ==0x0) && (fi.TBP0 ==0x2800) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
-			skip = 1;
+			skip = 1; // Blur
 		}
 	}
 
@@ -896,11 +897,11 @@ bool GSC_KnightsOfTheTemple2(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; // Ghosting
 		}
 		else if(fi.TPSM ==0x00000 && PSM_PSMCT24 && fi.TME && (fi.FBP ==0x3400 ||fi.FBP==0x3a00))
 		{
-			skip = 1 ;
+			skip = 1 ; // Light source
 		}
 	}
 
@@ -927,11 +928,11 @@ bool GSC_TalesofSymphonia(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2bc0 || fi.TBP0 <= 0x0200) && (fi.FBMSK==0xFF000000 ||fi.FBMSK==0x00FFFFFF))
 		{
-			skip = 1; //fi.FBMSK==0
+			skip = 1; //fi.FBMSK==0 Causing an animated black screen to speed up the battle
 		}
 		if(fi.TME  && (fi.TBP0==0x1180 || fi.TBP0==0x1a40 || fi.TBP0==0x2300) && fi.FBMSK>=0xFF000000)
 		{
-			skip = 1;
+			skip = 1; // Afterimage
 		}
 	}
 
@@ -964,7 +965,7 @@ bool GSC_UrbanReign(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FBP==0x0000 && fi.TBP0==0x3980 && fi.FPSM==fi.TPSM && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0x0)
 		{
-			skip = 1;
+			skip = 1; // Black shadow
 		}
 	}
 
@@ -1078,15 +1079,15 @@ bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
 		}
 		else if(fi.TME && fi.FBP == 0x3000 && fi.TBP0 == 0x3380)
 		{
-			skip = 1; // bloom
+			skip = 1; // Bloom
 		}
 		else if(fi.TME && (fi.FBP ==0x2200) && (fi.TBP0 ==0x3a80) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
-			skip = 1;
+			skip = 1; // Blur
 		}
 		else if(fi.FBP ==0x2200 && fi.TBP0==0x3000 && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; // Fog
 		}
 		else if(fi.TME)
 		{
@@ -1179,18 +1180,18 @@ bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.FBP ==0 ) && fi.TBP0==0x34a0 && (fi.TPSM == PSM_PSMCT32))
 		{
-			skip = 1;
+			skip = 1; // Animation pane
 		}
 		else if((fi.FBP ==0x3500)&& fi.TPSM == PSM_PSMT8 && fi.FBMSK == 0xFFFF00FF)
 		{
-			skip = 4;
+			skip = 4; // Underwater white fog
 		}
 	}
 	if(fi.TME)
 	{
 		if((fi.FBP | fi.TBP0 | fi.FPSM | fi.TPSM) && (fi.FBMSK == 0x00FFFFFF ))
 		{
-			skip = 1;
+			skip = 1; // Animation speed
 		}
 	}
 
@@ -1486,7 +1487,7 @@ bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
 		{
-			skip = 1;
+			skip = 1; // CMV vertical stripes
 		}
 		else if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
 		{
@@ -1718,11 +1719,11 @@ bool GSC_XE3(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK >= 0xEFFFFFFF)
 		{
-			skip = 73;
+			skip = 73; // Animation
 		}
 		else if(fi.TME && fi.FBP ==0x03800 && fi.TBP0 && fi.TPSM ==0  && fi.FBMSK == 0)
 		{
-			skip = 1;
+			skip = 1; // Ghosting
 		}
 		else
 		{
@@ -1748,7 +1749,7 @@ bool GSC_Grandia3(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.FBP ==0x0 || fi.FBP ==0x0e00) && (fi.TBP0 ==0x2a00 ||fi.TBP0==0x0e00 ||fi.TBP0==0) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
-			skip = 1;
+			skip = 1; // Blur
 		}
 	}
 
@@ -1761,7 +1762,7 @@ bool GSC_GTASanAndreas(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.FBP ==0x0a00 || fi.FBP ==0x08c0) && (fi.TBP0 ==0x1b80 || fi.TBP0 ==0x1a40) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
-			skip = 1;
+			skip = 1; // Ghosting
 		}
 	}
 
@@ -1861,7 +1862,7 @@ bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
 	{
 		if(Aggressive && fi.TME /*&& fi.FBP == 0x03d80*/ && fi.FPSM == 0 && fi.TBP0 == 0x03fc0 && fi.TPSM == 1)
 		{
-			 skip = 48;	//removes sky bloom
+			 skip = 48;	// Removes sky bloom
 		}
 	}
 
@@ -1906,7 +1907,7 @@ bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FBP == 0x001000 && (fi.TBP0 ==0 || fi.TBP0 == 0x0800) && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0x00FFFFFF)
 		{
-			skip = 0;
+			skip = 0; // Water ripple not needed ?
 		}
 		else if(fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01000) // || fi.FBP == 0x00000
 		{
@@ -1918,11 +1919,11 @@ bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 		}
 		else if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0xFF000000)
 		{
-			skip = 1;
+			skip = 1; // White fog when picking up things
 		}
 		else if(fi.TME && (fi.TBP0 ==0x1400 || fi.TBP0 ==0x1000 ||fi.TBP0 == 0x1200) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
 		{
-			skip = 1;
+			skip = 1; // Eliminate excessive flooding, water and other light and shadow
 		}
 	}
 
