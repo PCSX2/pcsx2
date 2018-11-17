@@ -550,15 +550,6 @@ bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
 			// Fixes black lines in the stage: Burning Temple - caused by upscaling. Note the black lines can also be fixed with Merge Sprite hack.
 			skip = 2;
 		}
-		// It's unknown what this hack does so let's comment it out since it doesn't cause any issues when disabled it seems.
-		/*else if(fi.TME)
-		{
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 24;
-			}
-		}*/
 	}
 
 	return true;
@@ -607,10 +598,6 @@ bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 2;
 		}
-		/*else if(fi.TPSM == PSM_PSMCT16 && (fi.TPSM | fi.FBP)>=0x0 && (fi.TBP0 >=0x0) && fi.FBMSK ==0)
-		{
-			skip = 600;
-		}*/
 	}
 
 	return true;
@@ -805,27 +792,27 @@ bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip)
 	{
 		if(!fi.TME && fi.TPSM == PSM_PSMCT32  && fi.FBP==0x1180 && fi.TBP0==0x1180 && (fi.FBMSK ==0))
 		{
-			skip = 0; //
+			skip = 0;
 		}
 		if(fi.TME && fi.TPSM == PSM_PSMT4  && fi.FBP && (fi.TBP0!=0x3753))
 		{
-			skip = 0; //
+			skip = 0;
 		}
 		if(fi.TME && fi.TPSM == PSM_PSMT8H && fi.FBP ==0x22e0 && fi.TBP0 ==0x36e0 )
 		{
-			skip = 0; //
+			skip = 0;
 		}
 		if(!fi.TME  && fi.TPSM == PSM_PSMT8H && fi.FBP ==0x22e0 )
 		{
-			skip = 0; //
+			skip = 0;
 		}
 		if(fi.TME  && fi.TPSM == PSM_PSMT8 && (fi.FBP==0x1180 || fi.FBP==0) && (fi.TBP0 !=0x3764 && fi.TBP0!=0x370f))
 		{
-			skip = 0; //
+			skip = 0;
 		}
 		if(fi.TME && fi.TPSM == PSM_PSMCT16S && (fi.FBP==0x1180 ))
 		{
-			skip = 2; //
+			skip = 2;
 		}
 	}
 
@@ -1737,14 +1724,6 @@ bool GSC_XE3(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1;
 		}
-		/*else if(fi.TPSM ==0x00000 && PSM_PSMCT24 && fi.TME && fi.FBP == 0x03800)
-		{
-			skip = 1 ;
-		}*/
-		/*else if(fi.TME ==0  && (fi.FBP ==0 ) && fi.FPSM == PSM_PSMCT32 && ( fi.TPSM == PSM_PSMT8 || fi.TPSM == PSM_PSMT4) && (fi.FBMSK == 0x00FFFFFF || fi.FBMSK == 0xFF000000))
-		{
-			skip = 1;
-		}*/
 		else
 		{
 			if(fi.TME)
@@ -1821,10 +1800,6 @@ bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 71; // clouds (z, 16-bit)
 		}
-		/*else if (fi.TME && fi.FBP == 0x02900 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT24)
-		{
-		skip = 28; // blur (seems applied by the above hack)
-		}*/
 	}
 
 	return true;
@@ -1888,19 +1863,6 @@ bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
 		{
 			 skip = 48;	//removes sky bloom
 		}
-		/*
-		if(fi.TME && fi.FBP == 0x02b80 && fi.FPSM == PSM_PSMCT24 && fi.TBP0 == 0x01e80 && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 9;
-		}
-		else if(fi.TME && fi.FBP == 0x01c00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03800 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 8;
-		}
-		else if(fi.TME && fi.FBP == 0x01e80 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03880 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 8;
-		}*/
 	}
 
 	return true;
@@ -1932,10 +1894,6 @@ bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
 		if (fi.TME && fi.FBP == 0x03100 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ24)
 		{
 			skip = 176; // Removes fog, but no longer required, does offer a decent speed boost.
-		}
-		else if (fi.TME && fi.FBP == 0x03100 && (fi.TBP0 == 0x2a00 || fi.TBP0 == 0x3480) && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0)
-		{
-			//skip = 1; // Disabled as it doesn't seem to fix any issue, doesn't offer a further speed boost, and it creates an offset regression in fire effects.
 		}
 	}
 
