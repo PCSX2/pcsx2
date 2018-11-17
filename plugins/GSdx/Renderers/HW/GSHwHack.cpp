@@ -1071,7 +1071,7 @@ bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16S && fi.FBMSK == 0x03FFF)
 		{
-			skip = 1;
+			skip = 1; // Depth dupicated ghost image
 		}
 		else if(fi.TME && fi.FBP == 0x3000 && fi.TBP0 == 0x3380)
 		{
@@ -1083,7 +1083,7 @@ bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
 		}
 		else if(fi.FBP ==0x2200 && fi.TBP0==0x3000 && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
 		{
-			skip = 1; // Fog
+			skip = 1; // Depth Fog
 		}
 		else if(fi.TME)
 		{
