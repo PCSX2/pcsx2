@@ -447,10 +447,6 @@ bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1; // Speedhack ?
 		}
-		else if(fi.TME && (fi.TBP0==0x0700) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
-		{
-			skip = 1; // Blur
-		}
 	}
 
 	return true;
