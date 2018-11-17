@@ -2045,7 +2045,7 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 	delete s;
 }
 
-// Query the PaletteMap for a valid Palette, then both its reference, clut copy pointer and eventually palette texture pointer to the Source object
+// Query the PaletteMap for a valid Palette, then assign its reference, CLUT copy pointer and optionally its palette texture pointer to the Source object.
 void GSTextureCache::AttachPaletteToSource(Source* s, uint16 pal, bool need_gs_texture)
 {
 	std::shared_ptr<Palette> p = m_palette_map.LookupPalette(pal, need_gs_texture);
