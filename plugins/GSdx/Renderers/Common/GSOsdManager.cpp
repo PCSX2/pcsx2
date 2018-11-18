@@ -61,7 +61,6 @@ GSOsdManager::GSOsdManager() : m_atlas_h(0)
 	m_log_enabled = theApp.GetConfigB("osd_log_enabled");
 	m_log_speed  = std::max(2, std::min(theApp.GetConfigI("osd_log_speed"), 10));
 	m_monitor_enabled = theApp.GetConfigB("osd_monitor_enabled");
-	m_indicator_enabled = theApp.GetConfigB("osd_indicator_enabled");
 	m_osd_transparency = std::max(0, std::min(theApp.GetConfigI("osd_transparency"), 100));
 	m_max_onscreen_messages = theApp.GetConfigI("osd_max_log_messages");
 	m_size = theApp.GetConfigI("osd_fontsize");
@@ -229,13 +228,6 @@ void GSOsdManager::Monitor(const char *key, const char *value, uint32 color) {
 	}
 }
 
-void GSOsdManager::Indicate(const std::string key, bool on) {
-	if(!m_indicator_enabled)
-		return;
-
-	m_indicator[key].on = on;
-}
-
 void GSOsdManager::RenderGlyph(GSVertexPT1* dst, const glyph_info g, float x, float y, uint32 color) {
 	float x2 = x + g.bl * (2.0f/m_real_size.x);
 	float y2 = -y - g.bt * (2.0f/m_real_size.y);
@@ -320,10 +312,6 @@ size_t GSOsdManager::Size() {
 			sum += pair.first.size();
 			sum += pair.second.first.size();
 		}
-	}
-
-	if(m_indicator_enabled) {
-		sum += m_indicator.size();
 	}
 
 	return sum * 6;
@@ -425,20 +413,6 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 			RenderString(dst, pair.second.first, x, y, color);
 			dst += pair.second.first.size() * 6;
 			drawn += pair.second.first.size() * 6;
-		}
-	}
-
-	if(m_indicator_enabled) {
-		for(const auto pair : m_indicator) {
-			float alpha = 1.0;
-			if(!pair.second.on) {
-				alpha = 0.25;
-			}
-			uint32 color = pair.second.color;
-			((uint8 *)&color)[3] = (uint8)(((uint8 *)&color)[3] * alpha * transparency);
-			RenderGlyph(dst, pair.second.glyph, pair.second.x, pair.second.y, color);
-			dst += 6;
-			drawn += 6;
 		}
 	}
 

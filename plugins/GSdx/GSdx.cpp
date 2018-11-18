@@ -387,7 +387,6 @@ void GSdxApp::Init()
 	m_default_configuration["osd_fontname"]                               = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
 #endif
 	m_default_configuration["osd_fontsize"]                               = "28";
-	m_default_configuration["osd_indicator_enabled"]                      = "0";
 	m_default_configuration["osd_log_enabled"]                            = "1";
 	m_default_configuration["osd_log_speed"]                              = "4";
 	m_default_configuration["osd_monitor_enabled"]                        = "0";

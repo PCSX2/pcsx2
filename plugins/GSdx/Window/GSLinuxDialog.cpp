@@ -573,7 +573,6 @@ void populate_osd_table(GtkWidget* osd_table)
 	GtkWidget* max_messages_label = left_label("Maximum Onscreen Log Messages:");
 	GtkWidget* max_messages_spin  = CreateSpinButton(1, 20, "osd_max_log_messages");
 	GtkWidget* monitor_check      = CreateCheckBox("Enable Monitor", "osd_monitor_enabled");
-	GtkWidget* indicator_check    = CreateCheckBox("Enable Indicator", "osd_indicator_enabled"); 
 
 	AddTooltip(log_check, IDC_OSD_LOG);
 	AddTooltip(monitor_check, IDC_OSD_MONITOR);
@@ -585,7 +584,7 @@ void populate_osd_table(GtkWidget* osd_table)
 	InsertWidgetInTable(osd_table , log_check);
 	InsertWidgetInTable(osd_table , log_speed_label    , log_speed_text);
 	InsertWidgetInTable(osd_table , max_messages_label , max_messages_spin);
-	InsertWidgetInTable(osd_table , monitor_check      , indicator_check); 
+	InsertWidgetInTable(osd_table , monitor_check);
 }
 
 GtkWidget* ScrollMe(GtkWidget* w)
