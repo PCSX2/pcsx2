@@ -10929,6 +10929,12 @@ EETimingHack = 1	//broken textures
 Serial = SLES-51968
 Name   = Spongebob Squarepants - Battle for Bikini Bottom
 Region = PAL-E
+[patches]
+	// CRC 8570b62d
+	comment=Patch by Prafull
+	// Fixes hang at start.
+	patch=1,EE,001ba624,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-51970
 Name   = Spongebob Schwammkopf - Schlacht um Bikini Bottom
