@@ -390,8 +390,11 @@ void SndBuffer::Init()
 
     // clear buffers!
     // Fixes loopy sounds on emu resets.
-    std::fill_n(sndTempBuffer, SndOutPacketSize, StereoOut32{});
-    std::fill_n(sndTempBuffer16, SndOutPacketSize, StereoOut16{});
+
+    // Per turtleli, the initialization here should no longer be necessary.
+    // Leaving the code commented out in case the issue above returns.
+    // std::fill_n(sndTempBuffer, SndOutPacketSize, StereoOut32{});
+    // std::fill_n(sndTempBuffer16, SndOutPacketSize, StereoOut16{});
 
     sndTempProgress = 0;
 
