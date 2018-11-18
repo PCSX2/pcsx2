@@ -362,6 +362,8 @@ CRC::Game CRC::m_games[] =
 	{0x73C560BA, FinalFightStreetwise, EU, 0},
 	{0xCBB87BF9, EvangelionJo, JP, 0}, // cutie comment
 	{0xC5B75C7C, Oneechanbara2Special, JP, 0}, // cutie comment
+	{0xC725CC6C, Oneechanbara2Special, JP, 0},
+	{0x07608CA2, Oneechanbara2Special, EU, 0}, // Zombie Hunters 2
 	{0xC0659AD1, NarutimateAccel, JP, 0}, // cutie comment
 	{0xF3D9DFBE, NarutimateAccel, JP, 0},
 	{0x59739DDE, Naruto, JP, 0}, // cutie comment

@@ -347,9 +347,11 @@ bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01180)
+		if((Aggressive || !s_nativeres) && fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01180)
 		{
-			skip = 1; // Ghosting
+			// Don't enable hack on native res if crc is below aggressive.
+			// Ghosting upscaling issue, bottom and right red lines also by upscaling.
+			skip = 1;
 		}
 	}
 
