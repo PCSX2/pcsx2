@@ -882,10 +882,9 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 
 	static const wxChar* FMVAspectRatioSwitchNames[] =
 	{
-		// FIXME: fmv_aspect_ratio_switch_labels[] is inverted
-		L"Off", // Standard (4:3)
-		L"4:3", // Widescreen (16:9)
-		L"16:9", // Off
+		L"4:3",
+		L"16:9",
+		L"Off",
 		// WARNING: array must be NULL terminated to compute it size
 		NULL
 	};
