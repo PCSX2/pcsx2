@@ -65,14 +65,6 @@ class GSOsdManager {
 
 	std::map<std::u32string, std::pair<std::u32string, uint32>> m_monitor;
 
-	struct indicator_info {
-		glyph_info glyph;
-		uint32 color;
-		bool on;
-		float x, y;
-	};
-	std::map<std::string, indicator_info> m_indicator;
-
 	void AddGlyph(char32_t codepoint);
 	void RenderGlyph(GSVertexPT1* dst, const glyph_info g, float x, float y, uint32 color);
 	void RenderString(GSVertexPT1* dst, const std::u32string msg, float x, float y, uint32 color);
@@ -81,7 +73,6 @@ class GSOsdManager {
 	bool m_log_enabled;
 	int m_log_speed;
 	bool m_monitor_enabled;
-	bool m_indicator_enabled;
 	int m_osd_transparency;
 	int m_max_onscreen_messages;
 
@@ -100,7 +91,6 @@ class GSOsdManager {
 
 	void Log(const char *utf8, uint32 color);
 	void Monitor(const char *key, const char *value, uint32 color);
-	void Indicate(const std::string key, bool on);
 
 	GSVector2i m_real_size;
 	size_t Size();

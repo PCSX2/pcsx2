@@ -900,12 +900,8 @@ GSOSDDlg::GSOSDDlg() :
 
 void GSOSDDlg::OnInit()
 {
-	// OSD Indicator is greyed out because it's currently an empty shell.
-	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_INDICATOR), false);
-
 	CheckDlgButton(m_hWnd, IDC_OSD_LOG, theApp.GetConfigB("osd_log_enabled"));
 	CheckDlgButton(m_hWnd, IDC_OSD_MONITOR, theApp.GetConfigB("osd_monitor_enabled"));
-	CheckDlgButton(m_hWnd, IDC_OSD_INDICATOR, theApp.GetConfigB("osd_indicator_enabled"));
 	m_transparency = theApp.GetConfigI("osd_transparency");
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TRANSPARENCY_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 100));
@@ -977,7 +973,6 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 			theApp.SetConfig("osd_log_enabled", (int)IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
 			theApp.SetConfig("osd_monitor_enabled", (int)IsDlgButtonChecked(m_hWnd, IDC_OSD_MONITOR));
-			theApp.SetConfig("osd_indicator_enabled", (int)IsDlgButtonChecked(m_hWnd, IDC_OSD_INDICATOR));
 
 			theApp.SetConfig("osd_transparency", m_transparency);
 
