@@ -29,13 +29,13 @@ Panels::BaseAdvancedCpuOptions::BaseAdvancedCpuOptions( wxWindow* parent )
 		RadioPanelItem(_("Nearest")),
 		RadioPanelItem(_("Negative")),
 		RadioPanelItem(_("Positive")),
-		RadioPanelItem(_("Chop / Zero"))
+		RadioPanelItem(_("Chop / Zero (Default)"))
 	};
 
 	const RadioPanelItem ClampModeChoices[] =
 	{
 		RadioPanelItem(_("None")),
-		RadioPanelItem(_("Normal")),
+		RadioPanelItem(_("Normal (Default)")),
 	};
 
 	m_RoundModePanel = new pxRadioPanel( this, RoundModeChoices );
@@ -114,19 +114,19 @@ Panels::CpuPanelEE::CpuPanelEE( wxWindow* parent )
 
 	const RadioPanelItem tbl_CpuTypes_EE[] =
 	{
-		RadioPanelItem(_("Interpreter"))
+		RadioPanelItem(_("Interpreter (Debug)"))
 		.SetToolTip(_("Quite possibly the slowest thing in the universe.")),
 
-		RadioPanelItem(_("Recompiler"))
+		RadioPanelItem(_("Recompiler (Default)"))
 		.SetToolTip(_("Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86."))
 	};
 
 	const RadioPanelItem tbl_CpuTypes_IOP[] =
 	{
-		RadioPanelItem(_("Interpreter"))
+		RadioPanelItem(_("Interpreter (Debug)"))
 		.SetToolTip(_("Pretty slow; provided for diagnostic purposes only.")),
 
-		RadioPanelItem(_("Recompiler"))
+		RadioPanelItem(_("Recompiler (Default)"))
 		.SetToolTip(_("Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."))
 	};
 
@@ -182,14 +182,14 @@ Panels::CpuPanelVU::CpuPanelVU( wxWindow* parent )
 
 	const RadioPanelItem tbl_CpuTypes_VU[] =
 	{
-		RadioPanelItem(_("Interpreter"))
+		RadioPanelItem(_("Interpreter (Debug)"))
 		.SetToolTip(_("Vector Unit Interpreter. Slow and not very compatible. Only use for diagnostics.")),
 
-		RadioPanelItem(_("microVU Recompiler"))
+		RadioPanelItem(_("MicroVU Recompiler (Default)"))
 		.SetToolTip(_("New Vector Unit recompiler with much improved compatibility. Recommended.")),
 
 #ifndef DISABLE_SVU
-		RadioPanelItem(_("superVU Recompiler [legacy]"))
+		RadioPanelItem(_("SuperVU Recompiler (Legacy)"))
 		.SetToolTip(_("Useful for diagnosing bugs or clamping issues in the new mVU recompiler."))
 #endif
 	};
