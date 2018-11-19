@@ -267,6 +267,7 @@ namespace GLLoader {
 	bool s_first_load = true;
 
 	bool amd_legacy_buggy_driver = false;
+	bool amd_buggy_driver = false;
 	bool vendor_id_amd      = false;
 	bool vendor_id_nvidia   = false;
 	bool vendor_id_intel    = false;
@@ -337,11 +338,27 @@ namespace GLLoader {
 			fprintf(stdout, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[0]);
 
 		// 32-bit driver should always actually just report the former
-		if (strstr(vendor, "ATI Technologies Inc.") || strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI"))
+		if (strstr(vendor, "ATI Technologies Inc.") || strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI")) {
 			vendor_id_amd = true;
-		/*if (vendor_id_amd)
-			amd_legacy_buggy_driver = true;
-		*/
+			// AMD's GL_version is made of: <OpenGL version number> <requested context> <DriverVersion>
+			// Technically speaking we'd just be interested in the atioglxx/fglrx_dri userspace lib
+			// (whose revision number is comfortably exposed in the first element of the string above)
+			// Unfortuntately after testing for at least these 2 cases we check, I found that had same
+			// versions across the buggy and fixed "branch". Threfore look for the kernel driver build.
+			//
+			// Screw Wx screwings (it's nice we have decimal separator localized... but dlls do not)
+			char* pEnd;
+#ifdef _WIN32
+			GLfloat v = _strtof_l(strrchr((char*)s, ' '), &pEnd, _create_locale(LC_NUMERIC, "C"));
+#else
+			GLfloat v = strtof_l(strrchr((char*)s, ' '), &pEnd, newlocale(LC_NUMERIC, "C", NULL));
+#endif
+			/*if (v < 15.3f)
+				amd_legacy_buggy_driver = true;
+			*/
+			if (v < 25.20f || (v < 25.21f && atoi(pEnd + 1) < 1407))
+				amd_buggy_driver = true;
+		}
 		if (strstr(vendor, "NVIDIA Corporation"))
 			vendor_id_nvidia = true;
 
@@ -353,7 +370,7 @@ namespace GLLoader {
 		mesa_driver = !vendor_id_nvidia && !vendor_id_amd;
 #endif
 
-		buggy_sso_dual_src = vendor_id_intel || vendor_id_amd /*|| amd_legacy_buggy_driver*/;
+		buggy_sso_dual_src = vendor_id_intel || amd_buggy_driver /*|| amd_legacy_buggy_driver*/;
 
 		if (theApp.GetConfigI("override_geometry_shader") != -1) {
 			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");
