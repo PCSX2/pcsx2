@@ -882,9 +882,9 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 
 	static const wxChar* FMVAspectRatioSwitchNames[] =
 	{
+		L"Off",
 		L"4:3",
 		L"16:9",
-		L"Off",
 		// WARNING: array must be NULL terminated to compute it size
 		NULL
 	};

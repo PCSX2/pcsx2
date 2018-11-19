@@ -98,9 +98,9 @@ enum AspectRatioType
 
 enum FMVAspectRatioSwitchType
 {
+	FMV_AspectRatio_Switch_Off,
 	FMV_AspectRatio_Switch_4_3,
 	FMV_AspectRatio_Switch_16_9,
-	FMV_AspectRatio_Switch_Off,
 	FMV_AspectRatio_Switch_MaxCount
 };
 
