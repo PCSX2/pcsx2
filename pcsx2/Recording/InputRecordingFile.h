@@ -53,7 +53,7 @@ public:
 	bool UpdatePadData(unsigned long frame, const PadData& key);
 
 private:
-	FILE * fp=NULL;
+	FILE * recordingFile = NULL;
 	wxString filename = "";
 
 private:
