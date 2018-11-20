@@ -29,20 +29,10 @@ long InputRecordingFile::_getBlockSeekPoint(const long & frame)
 	}
 }
 
-// Temporary Shim, probably a better cross-platform way to correct usages of fopen_s
-int fopen_s(FILE **f, const char *name, const char *mode) {
-	int ret = 0;
-	assert(f);
-	*f = fopen(name, mode);
-	if (!*f)
-		ret = errno;
-	return ret;
-}
-
 //----------------------------------
 // file
 //----------------------------------
-bool InputRecordingFile::Open(const wxString fn, bool fNewOpen, VmStateBuffer *ss)
+bool InputRecordingFile::Open(const wxString path, bool fNewOpen, VmStateBuffer *ss)
 {
 	Close();
 	wxString mode = L"rb+";
@@ -52,12 +42,13 @@ bool InputRecordingFile::Open(const wxString fn, bool fNewOpen, VmStateBuffer *s
 		UndoCount = 0;
 		header.init();
 	}
-	if ( fopen_s(&fp, fn.ToAscii(), mode.c_str()) != 0)
+	recordingFile = wxFopen(path, mode);
+	if ( recordingFile == NULL )
 	{
 		recordingConLog(wxString::Format("[REC]: Movie file opening failed. Error - %s\n", strerror(errno)));
 		return false;
 	}
-	filename = fn;
+	filename = path;
 
 	if (fNewOpen) {
 		if (ss) {
@@ -76,11 +67,11 @@ bool InputRecordingFile::Open(const wxString fn, bool fNewOpen, VmStateBuffer *s
 }
 bool InputRecordingFile::Close()
 {
-	if (fp == NULL)return false;
+	if (recordingFile == NULL)return false;
 	writeHeader();
 	writeSavestate();
-	fclose(fp);
-	fp = NULL;
+	fclose(recordingFile);
+	recordingFile = NULL;
 	filename = "";
 	return true;
 }
@@ -90,16 +81,16 @@ bool InputRecordingFile::Close()
 //----------------------------------
 bool InputRecordingFile::writeKeyBuf(const uint & frame, const uint port, const uint bufIndex, const u8 & buf)
 {
-	if (fp == NULL)return false;
+	if (recordingFile == NULL)return false;
 
 	long seek = _getBlockSeekPoint(frame) + BLOCK_HEADER_SIZE + 18 * port + bufIndex;
-	if (fseek(fp, seek, SEEK_SET) != 0){
+	if (fseek(recordingFile, seek, SEEK_SET) != 0){
 		return false;
 	}
-	if (fwrite(&buf, 1, 1, fp) != 1) {
+	if (fwrite(&buf, 1, 1, recordingFile) != 1) {
 		return false;
 	}
-	fflush(fp);
+	fflush(recordingFile);
 	return true;
 }
 
@@ -108,13 +99,13 @@ bool InputRecordingFile::writeKeyBuf(const uint & frame, const uint port, const 
 //----------------------------------
 bool InputRecordingFile::readKeyBuf(u8 & result,const uint & frame, const uint port, const uint  bufIndex)
 {
-	if (fp == NULL)return false;
+	if (recordingFile == NULL)return false;
 
 	long seek = _getBlockSeekPoint(frame) + BLOCK_HEADER_SIZE + 18 * port + bufIndex;
-	if (fseek(fp, seek, SEEK_SET) != 0) {
+	if (fseek(recordingFile, seek, SEEK_SET) != 0) {
 		return false;
 	}
-	if (fread(&result, 1, 1, fp) != 1) {
+	if (fread(&result, 1, 1, recordingFile) != 1) {
 		return false;
 	}
 	return true;
@@ -129,15 +120,15 @@ bool InputRecordingFile::readKeyBuf(u8 & result,const uint & frame, const uint p
 void InputRecordingFile::getPadData(PadData & result, unsigned long frame)
 {
 	result.fExistKey = false;
-	if (fp == NULL)return;
+	if (recordingFile == NULL)return;
 	long seek = _getBlockSeekPoint(frame) + BLOCK_HEADER_SIZE;
-	if (fseek(fp, seek, SEEK_SET) != 0)return;
-	if (fread(result.buf, 1, BLOCK_DATA_SIZE, fp) == 0)return;
+	if (fseek(recordingFile, seek, SEEK_SET) != 0)return;
+	if (fread(result.buf, 1, BLOCK_DATA_SIZE, recordingFile) == 0)return;
 	result.fExistKey = true;
 }
 bool InputRecordingFile::DeletePadData(unsigned long frame)
 {
-	if (fp == NULL)return false;
+	if (recordingFile == NULL)return false;
 
 	for (unsigned long i = frame; i < MaxFrame - 1; i++)
 	{
@@ -145,20 +136,20 @@ bool InputRecordingFile::DeletePadData(unsigned long frame)
 		long seek2 = _getBlockSeekPoint(i) + BLOCK_HEADER_SIZE;
 
 		u8 buf[2][18];
-		fseek(fp, seek1, SEEK_SET);
-		fread(buf, 1, BLOCK_DATA_SIZE, fp);
-		fseek(fp, seek2, SEEK_SET);
-		fwrite(buf,1, BLOCK_DATA_SIZE, fp);
+		fseek(recordingFile, seek1, SEEK_SET);
+		fread(buf, 1, BLOCK_DATA_SIZE, recordingFile);
+		fseek(recordingFile, seek2, SEEK_SET);
+		fwrite(buf,1, BLOCK_DATA_SIZE, recordingFile);
 	}
 	MaxFrame--;
 	writeMaxFrame();
-	fflush(fp);
+	fflush(recordingFile);
 
 	return true;
 }
 bool InputRecordingFile::InsertPadData(unsigned long frame, const PadData& key)
 {
-	if (fp == NULL)return false;
+	if (recordingFile == NULL)return false;
 	if (!key.fExistKey)return false;
 
 	for (unsigned long i = MaxFrame - 1; i >= frame; i--)
@@ -167,32 +158,32 @@ bool InputRecordingFile::InsertPadData(unsigned long frame, const PadData& key)
 		long seek2 = _getBlockSeekPoint(i+1) + BLOCK_HEADER_SIZE;
 
 		u8 buf[2][18];
-		fseek(fp, seek1, SEEK_SET);
-		fread(buf, 1, BLOCK_DATA_SIZE, fp);
-		fseek(fp, seek2, SEEK_SET);
-		fwrite(buf, 1, BLOCK_DATA_SIZE, fp);
+		fseek(recordingFile, seek1, SEEK_SET);
+		fread(buf, 1, BLOCK_DATA_SIZE, recordingFile);
+		fseek(recordingFile, seek2, SEEK_SET);
+		fwrite(buf, 1, BLOCK_DATA_SIZE, recordingFile);
 	}
 	{
 		long seek = _getBlockSeekPoint(frame) + BLOCK_HEADER_SIZE;
-		fseek(fp, seek, SEEK_SET);
-		fwrite(key.buf, 1, BLOCK_DATA_SIZE, fp);
+		fseek(recordingFile, seek, SEEK_SET);
+		fwrite(key.buf, 1, BLOCK_DATA_SIZE, recordingFile);
 	}
 	MaxFrame++;
 	writeMaxFrame();
-	fflush(fp);
+	fflush(recordingFile);
 
 	return true;
 }
 bool InputRecordingFile::UpdatePadData(unsigned long frame, const PadData& key)
 {
-	if (fp == NULL)return false;
+	if (recordingFile == NULL)return false;
 	if (!key.fExistKey)return false;
 
 	long seek = _getBlockSeekPoint(frame) + BLOCK_HEADER_SIZE;
-	fseek(fp, seek, SEEK_SET);
-	if (fwrite(key.buf, 1, BLOCK_DATA_SIZE, fp) == 0)return false;
+	fseek(recordingFile, seek, SEEK_SET);
+	if (fwrite(key.buf, 1, BLOCK_DATA_SIZE, recordingFile) == 0)return false;
 
-	fflush(fp);
+	fflush(recordingFile);
 	return true;
 }
 
@@ -204,15 +195,15 @@ bool InputRecordingFile::UpdatePadData(unsigned long frame, const PadData& key)
 //===================================
 bool InputRecordingFile::readHeaderAndCheck()
 {
-	if (fp == NULL)return false;
-	rewind(fp);
-	if (fread(&header, sizeof(InputRecordingHeader), 1, fp) != 1)return false;
-	if (fread(&MaxFrame, 4, 1, fp) != 1)return false;
-	if (fread(&UndoCount, 4, 1, fp) != 1)return false;
-	if (fread(&savestate.fromSavestate, sizeof(bool), 1, fp) != 1) return false;
+	if (recordingFile == NULL)return false;
+	rewind(recordingFile);
+	if (fread(&header, sizeof(InputRecordingHeader), 1, recordingFile) != 1)return false;
+	if (fread(&MaxFrame, 4, 1, recordingFile) != 1)return false;
+	if (fread(&UndoCount, 4, 1, recordingFile) != 1)return false;
+	if (fread(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1) return false;
 	if (savestate.fromSavestate) {
 		// We read the size (and the savestate) only if we must
-		if (fread(&savestate.savestatesize, sizeof(savestate.savestatesize), 1, fp) != 1) return false;
+		if (fread(&savestate.savestatesize, sizeof(savestate.savestatesize), 1, recordingFile) != 1) return false;
 		if (savestate.savestatesize == 0) {
 			recordingConLog(L"[REC]: Invalid size of the savestate.\n");
 			return false;
@@ -220,7 +211,7 @@ bool InputRecordingFile::readHeaderAndCheck()
 
 		savestate.savestate.MakeRoomFor(savestate.savestatesize);
 		// We read "savestatesize" * the size of a cell
-		if (fread(savestate.savestate.GetPtr(), sizeof(savestate.savestate[0]), savestate.savestatesize, fp)
+		if (fread(savestate.savestate.GetPtr(), sizeof(savestate.savestate[0]), savestate.savestatesize, recordingFile)
 			!= savestate.savestatesize) return false;
 
 		// We load the savestate
@@ -247,29 +238,29 @@ bool InputRecordingFile::readHeaderAndCheck()
 }
 bool InputRecordingFile::writeHeader()
 {
-	if (fp == NULL)return false;
-	rewind(fp);
-	if (fwrite(&header, sizeof(InputRecordingHeader), 1, fp) != 1) return false;
+	if (recordingFile == NULL)return false;
+	rewind(recordingFile);
+	if (fwrite(&header, sizeof(InputRecordingHeader), 1, recordingFile) != 1) return false;
 	return true;
 }
 bool InputRecordingFile::writeSavestate()
 {
-	if (fp == NULL) return false;
-	fseek(fp, SEEKPOINT_SAVESTATE, SEEK_SET);
-	if (fwrite(&savestate.fromSavestate, sizeof(bool), 1, fp) != 1) return false;
+	if (recordingFile == NULL) return false;
+	fseek(recordingFile, SEEKPOINT_SAVESTATE, SEEK_SET);
+	if (fwrite(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1) return false;
 
 	if (savestate.fromSavestate) {
-		if (fwrite(&savestate.savestatesize, sizeof(savestate.savestatesize), 1, fp) != 1) return false;
-		if (fwrite(savestate.savestate.GetPtr(), sizeof(savestate.savestate[0]), savestate.savestatesize, fp)
+		if (fwrite(&savestate.savestatesize, sizeof(savestate.savestatesize), 1, recordingFile) != 1) return false;
+		if (fwrite(savestate.savestate.GetPtr(), sizeof(savestate.savestate[0]), savestate.savestatesize, recordingFile)
 			!= savestate.savestatesize) return false;
 	}
 	return true;
 }
 bool InputRecordingFile::writeMaxFrame()
 {
-	if (fp == NULL)return false;
-	fseek(fp, SEEKPOINT_FRAMEMAX, SEEK_SET);
-	if (fwrite(&MaxFrame, 4, 1, fp) != 1) return false;
+	if (recordingFile == NULL)return false;
+	fseek(recordingFile, SEEKPOINT_FRAMEMAX, SEEK_SET);
+	if (fwrite(&MaxFrame, 4, 1, recordingFile) != 1) return false;
 	return true;
 }
 void InputRecordingFile::updateFrameMax(unsigned long frame)
@@ -278,16 +269,16 @@ void InputRecordingFile::updateFrameMax(unsigned long frame)
 		return;
 	}
 	MaxFrame = frame;
-	if (fp == NULL)return ;
-	fseek(fp, SEEKPOINT_FRAMEMAX, SEEK_SET);
-	fwrite(&MaxFrame, 4, 1, fp);
+	if (recordingFile == NULL)return ;
+	fseek(recordingFile, SEEKPOINT_FRAMEMAX, SEEK_SET);
+	fwrite(&MaxFrame, 4, 1, recordingFile);
 }
 void InputRecordingFile::addUndoCount()
 {
 	UndoCount++;
-	if (fp == NULL)return;
-	fseek(fp, SEEKPOINT_UNDOCOUNT, SEEK_SET);
-	fwrite(&UndoCount, 4, 1, fp);
+	if (recordingFile == NULL)return;
+	fseek(recordingFile, SEEKPOINT_UNDOCOUNT, SEEK_SET);
+	fwrite(&UndoCount, 4, 1, recordingFile);
 
 }
 
