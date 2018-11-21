@@ -32177,10 +32177,10 @@ Region = NTSC-J
 Compat = 5
 [patches = 86089F31]
 	comment=Rearranging COP2 instructions that use old results
-	patch=0,EE,001A3B94,word,48498800
-	patch=0,EE,001A3B98,word,4B00682C
-	patch=0,EE,001A3BA4,word,484A8800
-	patch=0,EE,001A3BA8,word,4B0C682C
+	patch=0,EE,001A3B6C,word,48498800
+	patch=0,EE,001A3B70,word,4B00682C
+	patch=0,EE,001A3B7C,word,484A8800
+	patch=0,EE,001A3B80,word,4B0C682C
 [/patches]
 ---------------------------------------------
 Serial = SLPS-25419
