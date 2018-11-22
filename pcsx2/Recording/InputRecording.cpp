@@ -1,6 +1,7 @@
 #include "PrecompiledHeader.h"
 
 #include "AppSaveStates.h"
+#include "AppGameDatabase.h"
 #include "Common.h"
 #include "Counters.h"
 #include "MemoryTypes.h"
@@ -117,52 +118,71 @@ void InputRecording::Stop() {
 //----------------------------------
 // start
 //----------------------------------
-void InputRecording::Start(wxString FileName,bool fReadOnly, VmStateBuffer* ss)
+void InputRecording::Create(wxString FileName, bool fromSaveState, wxString authorName)
 {
 	g_RecordingControls.Pause();
 	Stop();
 
-	if (fReadOnly)
+	// create
+	if (!InputRecordingData.Open(FileName, true, fromSaveState)) {
+		return;
+	}
+	// Set author name
+	if (!authorName.IsEmpty())
 	{
-		if (!InputRecordingData.Open(FileName, false)) {
-			return;
-		}
-		if (!InputRecordingData.readHeaderAndCheck()) {
-			recordingConLog(L"[REC]: This file is not a correct InputRecording file.\n");
-			InputRecordingData.Close();
-			return;
-		}
-		// cdrom
-		if (!g_Conf->CurrentIso.IsEmpty())
+		InputRecordingData.getHeader().setAuthor(authorName);
+	}
+	// Set Game Name
+	// Code loosely taken from AppCoreThread.cpp to resolve the Game Name
+	// Fallback is ISO name
+	wxString gameName;
+	const wxString gameKey(SysGetDiscID());
+	if (!gameKey.IsEmpty())
+	{
+		if (IGameDatabase* GameDB = AppHost_GetGameDatabase())
 		{
-			if (Path::GetFilename(g_Conf->CurrentIso) != InputRecordingData.getHeader().cdrom) {
-				recordingConLog(L"[REC]: Information on CD in Movie file is Different.\n");
+			Game_Data game;
+			if (GameDB->findGame(game, gameKey))
+			{
+				gameName = game.getString("Name");
+				gameName += L" (" + game.getString("Region") + L")";
 			}
 		}
-		state = REPLAY;
-		recordingConLog(wxString::Format(L"[REC]: Replaying movie - [%s]\n",FileName));
-		recordingConLog(wxString::Format(L"MaxFrame: %d\n", InputRecordingData.getMaxFrame()));
-		recordingConLog(wxString::Format(L"UndoCount: %d\n", InputRecordingData.getUndoCount()));
 	}
-	else
-	{
-		// create
-		if (!InputRecordingData.Open(FileName, true, ss)) {
-			return;
-		}
-		// cdrom
-		if (!g_Conf->CurrentIso.IsEmpty())
-		{
-			InputRecordingData.getHeader().setCdrom(Path::GetFilename(g_Conf->CurrentIso));
-		}
-		InputRecordingData.writeHeader();
-		InputRecordingData.writeSavestate();
+	InputRecordingData.getHeader().setGameName(!gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso));
+	InputRecordingData.writeHeader();
+	state = RECORD;
+	recordingConLog(wxString::Format(L"[REC]: Started new recording - [%s]\n", FileName));
 
-		state = RECORD;
-		recordingConLog(wxString::Format(L"[REC]: Started new recording - [%s]\n", FileName));
-	}
 	// In every case, we reset the g_FrameCount
 	g_FrameCount = 0;
+}
+
+void InputRecording::Play(wxString FileName, bool fromSaveState)
+{
+	g_RecordingControls.Pause();
+	Stop();
+
+	if (!InputRecordingData.Open(FileName, false, false)) {
+		return;
+	}
+	if (!InputRecordingData.readHeaderAndCheck()) {
+		recordingConLog(L"[REC]: This file is not a correct InputRecording file.\n");
+		InputRecordingData.Close();
+		return;
+	}
+	// Check author name
+	if (!g_Conf->CurrentIso.IsEmpty())
+	{
+		if (Path::GetFilename(g_Conf->CurrentIso) != InputRecordingData.getHeader().gameName) {
+			recordingConLog(L"[REC]: Information on CD in Movie file is Different.\n");
+		}
+	}
+	// TODO - probably output more informatiion on it
+	state = REPLAY;
+	recordingConLog(wxString::Format(L"[REC]: Replaying movie - [%s]\n", FileName));
+	recordingConLog(wxString::Format(L"MaxFrame: %d\n", InputRecordingData.getMaxFrame()));
+	recordingConLog(wxString::Format(L"UndoCount: %d\n", InputRecordingData.getUndoCount()));
 }
 
 //----------------------------------

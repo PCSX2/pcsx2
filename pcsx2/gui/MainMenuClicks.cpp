@@ -788,7 +788,6 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 		{
 			return;
 		}
-		g_InputRecordingHeader.setAuthor(NewRecordingFrame->getAuthor());
 		// From Current Frame
 		if (NewRecordingFrame->getFrom() == 0)
 		{
@@ -796,16 +795,13 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 				recordingConLog(L"[REC]: Game is not open, aborting new input recording.\n");
 				return;
 			}
-			VmStateBuffer savestate;
-			memSavingState memSS(savestate);
-			memSS.FreezeAll();
-			g_InputRecording.Start(NewRecordingFrame->getFile(), false, &savestate);
+			g_InputRecording.Create(NewRecordingFrame->getFile(), true, NewRecordingFrame->getAuthor());
 		}
 		// From Power-On
 		else if (NewRecordingFrame->getFrom() == 1)
 		{
 			// TODO extensively test this
-			g_InputRecording.Start(NewRecordingFrame->getFile(), false);
+			g_InputRecording.Create(NewRecordingFrame->getFile(), false, NewRecordingFrame->getAuthor());
 		}
 	}
 	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
@@ -815,12 +811,12 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent &event)
 {
 	g_InputRecording.Stop();
-
 	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
 		L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
-	if (openFileDialog.ShowModal() == wxID_CANCEL)return;	// cancel
+	if (openFileDialog.ShowModal() == wxID_CANCEL) return;
+
 	wxString path = openFileDialog.GetPath();
-	g_InputRecording.Start(path, true);
+	g_InputRecording.Play(path, true);
 	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
 	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
 }

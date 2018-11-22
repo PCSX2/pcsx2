@@ -1,14 +1,15 @@
 #include "PrecompiledHeader.h"
 
-#include "MemoryTypes.h"
 #include "App.h"
 #include "Common.h"
 #include "Counters.h"
+#include "MainFrame.h"
+#include "MemoryTypes.h"
 
 #include "InputRecordingFile.h"
 
 #define HEADER_SIZE (sizeof(InputRecordingHeader)+4+4)
-#define SAVESTATE_HEADER_SIZE (sizeof(bool) + sizeof(savestate.savestatesize) + sizeof(savestate.savestate[0]) * savestate.savestatesize)
+#define SAVESTATE_HEADER_SIZE (sizeof(bool))
 #define BLOCK_HEADER_SIZE (0) 
 #define BLOCK_DATA_SIZE (18*2)
 #define BLOCK_SIZE (BLOCK_HEADER_SIZE+BLOCK_DATA_SIZE)
@@ -29,10 +30,8 @@ long InputRecordingFile::_getBlockSeekPoint(const long & frame)
 	}
 }
 
-//----------------------------------
-// file
-//----------------------------------
-bool InputRecordingFile::Open(const wxString path, bool fNewOpen, VmStateBuffer *ss)
+// Inits the new (or existing) input recording file
+bool InputRecordingFile::Open(const wxString path, bool fNewOpen, bool fromSaveState)
 {
 	Close();
 	wxString mode = L"rb+";
@@ -50,14 +49,13 @@ bool InputRecordingFile::Open(const wxString path, bool fNewOpen, VmStateBuffer 
 	}
 	filename = path;
 
+	// TODO - from power on its fine
+	// problems seem to be be based in how we are saving the savestate
 	if (fNewOpen) {
-		if (ss) {
+		if (fromSaveState) {
 			savestate.fromSavestate = true;
-			savestate.savestatesize = ss->GetLength();
-			savestate.savestate.MakeRoomFor(ss->GetLength());
-			for (size_t i = 0; i < ss->GetLength(); i++) {
-				savestate.savestate[i] = (*ss)[i];
-			}
+			// TODO - Check if existing, if so rename
+			StateCopy_SaveToFile(path + "_SaveState.p2s");
 		}
 		else {
 			sApp.SysExecute();
@@ -65,14 +63,25 @@ bool InputRecordingFile::Open(const wxString path, bool fNewOpen, VmStateBuffer 
 	}
 	return true;
 }
+
 bool InputRecordingFile::Close()
 {
 	if (recordingFile == NULL)return false;
 	writeHeader();
-	writeSavestate();
+	writeSaveState();
 	fclose(recordingFile);
 	recordingFile = NULL;
 	filename = "";
+	return true;
+}
+
+bool InputRecordingFile::writeSaveState() {
+	if (recordingFile == NULL)
+	{
+		return false;
+	}
+	fseek(recordingFile, SEEKPOINT_SAVESTATE, SEEK_SET);
+	if (fwrite(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1) return false;
 	return true;
 }
 
@@ -111,9 +120,6 @@ bool InputRecordingFile::readKeyBuf(u8 & result,const uint & frame, const uint p
 	return true;
 }
 
-
-
-
 //===================================
 // pad
 //===================================
@@ -126,6 +132,7 @@ void InputRecordingFile::getPadData(PadData & result, unsigned long frame)
 	if (fread(result.buf, 1, BLOCK_DATA_SIZE, recordingFile) == 0)return;
 	result.fExistKey = true;
 }
+
 bool InputRecordingFile::DeletePadData(unsigned long frame)
 {
 	if (recordingFile == NULL)return false;
@@ -147,6 +154,7 @@ bool InputRecordingFile::DeletePadData(unsigned long frame)
 
 	return true;
 }
+
 bool InputRecordingFile::InsertPadData(unsigned long frame, const PadData& key)
 {
 	if (recordingFile == NULL)return false;
@@ -174,88 +182,53 @@ bool InputRecordingFile::InsertPadData(unsigned long frame, const PadData& key)
 
 	return true;
 }
+
 bool InputRecordingFile::UpdatePadData(unsigned long frame, const PadData& key)
 {
-	if (recordingFile == NULL)return false;
-	if (!key.fExistKey)return false;
+	if (recordingFile == NULL) return false;
+	if (!key.fExistKey) return false;
 
 	long seek = _getBlockSeekPoint(frame) + BLOCK_HEADER_SIZE;
 	fseek(recordingFile, seek, SEEK_SET);
-	if (fwrite(key.buf, 1, BLOCK_DATA_SIZE, recordingFile) == 0)return false;
+	if (fwrite(key.buf, 1, BLOCK_DATA_SIZE, recordingFile) == 0) return false;
 
 	fflush(recordingFile);
 	return true;
 }
 
-
-
-
-//===================================
-// header
-//===================================
+// TODO - see if we can get the actual game name, not just the ISO name
+// Verify header of recording file
 bool InputRecordingFile::readHeaderAndCheck()
 {
-	if (recordingFile == NULL)return false;
+	if (recordingFile == NULL) return false;
 	rewind(recordingFile);
-	if (fread(&header, sizeof(InputRecordingHeader), 1, recordingFile) != 1)return false;
-	if (fread(&MaxFrame, 4, 1, recordingFile) != 1)return false;
-	if (fread(&UndoCount, 4, 1, recordingFile) != 1)return false;
+	if (fread(&header, sizeof(InputRecordingHeader), 1, recordingFile) != 1) return false;
+	if (fread(&MaxFrame, 4, 1, recordingFile) != 1) return false;
+	if (fread(&UndoCount, 4, 1, recordingFile) != 1) return false;
 	if (fread(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1) return false;
 	if (savestate.fromSavestate) {
-		// We read the size (and the savestate) only if we must
-		if (fread(&savestate.savestatesize, sizeof(savestate.savestatesize), 1, recordingFile) != 1) return false;
-		if (savestate.savestatesize == 0) {
-			recordingConLog(L"[REC]: Invalid size of the savestate.\n");
-			return false;
-		}
-
-		savestate.savestate.MakeRoomFor(savestate.savestatesize);
-		// We read "savestatesize" * the size of a cell
-		if (fread(savestate.savestate.GetPtr(), sizeof(savestate.savestate[0]), savestate.savestatesize, recordingFile)
-			!= savestate.savestatesize) return false;
-
-		// We load the savestate
-		memLoadingState load(savestate.savestate);
-		UI_DisableSysActions();
-		GetCoreThread().Pause();
-		SysClearExecutionCache();
-		load.FreezeAll();
-		GetCoreThread().Resume();
+		// TODO - check to see if the file is there, if it AINT, return false, throw an error, ETC (SAY WHAT FILE WE ARE LOOKING FOR)
+		StateCopy_LoadFromFile(filename + "_SaveState.p2s");
 	}
 	else {
 		sApp.SysExecute();
 	}
 
-	// ID
-	if (header.ID != 0xCC) {
-		return false;
-	}
-	// ver
-	if (header.version != 3) {
+	// Check for current verison
+	// TODO - more specific log if fails for this reason
+	if (header.version != 1) {
 		return false;
 	}
 	return true;
 }
 bool InputRecordingFile::writeHeader()
 {
-	if (recordingFile == NULL)return false;
+	if (recordingFile == NULL) return false;
 	rewind(recordingFile);
 	if (fwrite(&header, sizeof(InputRecordingHeader), 1, recordingFile) != 1) return false;
 	return true;
 }
-bool InputRecordingFile::writeSavestate()
-{
-	if (recordingFile == NULL) return false;
-	fseek(recordingFile, SEEKPOINT_SAVESTATE, SEEK_SET);
-	if (fwrite(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1) return false;
 
-	if (savestate.fromSavestate) {
-		if (fwrite(&savestate.savestatesize, sizeof(savestate.savestatesize), 1, recordingFile) != 1) return false;
-		if (fwrite(savestate.savestate.GetPtr(), sizeof(savestate.savestate[0]), savestate.savestatesize, recordingFile)
-			!= savestate.savestatesize) return false;
-	}
-	return true;
-}
 bool InputRecordingFile::writeMaxFrame()
 {
 	if (recordingFile == NULL)return false;
@@ -263,6 +236,7 @@ bool InputRecordingFile::writeMaxFrame()
 	if (fwrite(&MaxFrame, 4, 1, recordingFile) != 1) return false;
 	return true;
 }
+
 void InputRecordingFile::updateFrameMax(unsigned long frame)
 {
 	if (MaxFrame >= frame) {
@@ -273,13 +247,13 @@ void InputRecordingFile::updateFrameMax(unsigned long frame)
 	fseek(recordingFile, SEEKPOINT_FRAMEMAX, SEEK_SET);
 	fwrite(&MaxFrame, 4, 1, recordingFile);
 }
+
 void InputRecordingFile::addUndoCount()
 {
 	UndoCount++;
 	if (recordingFile == NULL)return;
 	fseek(recordingFile, SEEKPOINT_UNDOCOUNT, SEEK_SET);
 	fwrite(&UndoCount, 4, 1, recordingFile);
-
 }
 
 void InputRecordingHeader::setAuthor(wxString _author)
@@ -288,14 +262,16 @@ void InputRecordingHeader::setAuthor(wxString _author)
 	strncpy(author, _author.c_str(), max);
 	author[max] = 0;
 }
-void InputRecordingHeader::setCdrom(wxString _cdrom)
+
+void InputRecordingHeader::setGameName(wxString _gameName)
 {
-	int max = ArraySize(cdrom) - 1;
-	strncpy(cdrom, _cdrom.c_str(), max);
-	cdrom[max] = 0;
+	int max = ArraySize(gameName) - 1;
+	strncpy(gameName, _gameName.c_str(), max);
+	gameName[max] = 0;
 }
+
 void InputRecordingHeader::init()
 {
 	memset(author, 0, ArraySize(author));
-	memset(cdrom, 0, ArraySize(cdrom));
+	memset(gameName, 0, ArraySize(gameName));
 }
