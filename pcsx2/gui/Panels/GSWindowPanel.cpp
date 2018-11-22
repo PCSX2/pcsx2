@@ -118,6 +118,8 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	s_vsync += m_combo_vsync | pxAlignRight;
 
 	*this += s_AspectRatio | StdExpand();
+	*this += new wxStaticLine( this ) | StdExpand();
+
 	*this += m_check_SizeLock;
 	*this += m_check_HideMouse;
 	*this += m_check_CloseGS;
