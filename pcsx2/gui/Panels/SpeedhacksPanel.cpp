@@ -30,12 +30,14 @@ const wxChar* Panels::SpeedHacksPanel::GetEECycleRateSliderMsg( int val )
 		}
 		case -2:
 		{
-			m_msg_eeRate->SetForegroundColour(wxColour(L"Red"));
+			const wxColour LightRed = wxColour(255, 80, 0);
+			m_msg_eeRate->SetForegroundColour(LightRed);
 			return pxEt(L"60% cyclerate. Moderate reduction of CPU requirements. Speedup for lightweight games, slows down others. FMVs and audio may stutter or skip.");
 		}
 		case -1:
 		{
-			m_msg_eeRate->SetForegroundColour(wxColour(L"Red"));
+			const wxColour Orange = wxColour(255, 120, 0);
+			m_msg_eeRate->SetForegroundColour(Orange);
 			return pxEt(L"75% cyclerate. Slight reduction of CPU requirements. Speedup for less demanding games, slows down others.");
 		}
 		case 0:
@@ -46,12 +48,14 @@ const wxChar* Panels::SpeedHacksPanel::GetEECycleRateSliderMsg( int val )
 		}
 		case 1:
 		{
-			m_msg_eeRate->SetForegroundColour(wxColour(L"Red"));
+			const wxColour Orange = wxColour(255, 120, 0);
+			m_msg_eeRate->SetForegroundColour(Orange);
 			return pxEt(L"130% cyclerate. Moderate increase of CPU requirements. Variable framerate games may have higher internal framerates.");
 		}
 		case 2:
 		{
-			m_msg_eeRate->SetForegroundColour(wxColour(L"Red"));
+			const wxColour LightRed = wxColour(255, 80, 0);
+			m_msg_eeRate->SetForegroundColour(LightRed);
 			return pxEt(L"180% cyclerate. Significant increase of CPU requirements. Variable framerate games will have higher internal framerates. FMVs may be slow. May cause stability problems.");
 		}
 		case 3:
@@ -78,12 +82,14 @@ const wxChar* Panels::SpeedHacksPanel::GetEECycleSkipSliderMsg( int val )
 		}
 		case 1:
 		{
-			m_msg_eeSkip->SetForegroundColour(wxColour(L"Red"));
+			const wxColour Orange = wxColour(255, 120, 0);
+			m_msg_eeSkip->SetForegroundColour(Orange);
 			return pxEt(L"Mild EE Cycle Skipping. Mild slow down for most games, but may help some games with mild VU starvation problems run at full speed.");
 		}
 		case 2:
 		{
-			m_msg_eeSkip->SetForegroundColour(wxColour(L"Red"));
+			const wxColour LightRed = wxColour(255, 80, 0);
+			m_msg_eeSkip->SetForegroundColour(LightRed);
 			return pxEt(L"Moderate EE Cycle Skipping. Slow down for most games, but may help some games with moderate VU starvation problems run at full speed.");
 		}
 		case 3:
