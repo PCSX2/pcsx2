@@ -16,7 +16,8 @@ public:
 
 	// menu bar
 	void Stop();
-	void Start(wxString filename, bool fReadOnly, VmStateBuffer* ss = nullptr);
+	void Create(wxString filename, bool fromSaveState, wxString authorName);
+	void Play(wxString filename, bool fromSaveState);
 
 	// shortcut key
 	void RecordModeToggle();
