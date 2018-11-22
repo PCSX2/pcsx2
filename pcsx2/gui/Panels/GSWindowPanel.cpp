@@ -69,7 +69,6 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	m_check_CloseGS		= new pxCheckBox( this, _("Hide window when paused") );
 	m_check_Fullscreen	= new pxCheckBox( this, _("Default to fullscreen mode on open") );
 	m_check_DclickFullscreen = new pxCheckBox( this, _("Double-click toggles fullscreen mode") );
-	//m_check_ExclusiveFS = new pxCheckBox( this, _("Use exclusive fullscreen mode (if available)") );
 
 	m_combo_FMVAspectRatioSwitch->SetToolTip( pxEt( L"Off: Disables temporary aspect ratio switch.\n\n"
 		L"4:3: Temporarily switch to a 4:3 aspect ratio while an FMV plays to correctly display an 4:3 FMV.\n\n"
@@ -87,10 +86,6 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	m_check_Fullscreen->SetToolTip( pxEt( L"Enables automatic mode switch to fullscreen when starting or resuming emulation. You can still toggle fullscreen display at any time using alt-enter."
 	) );
 
-/*
-	m_check_ExclusiveFS->SetToolTip( pxEt( L"Fullscreen Exclusive Mode may look better on older CRTs and might be a little faster on older video cards, but typically can lead to memory leaks or random crashes when entering/leaving fullscreen mode."
-	) );
-*/
 	m_check_CloseGS->SetToolTip( pxEt( L"Completely closes the often large and bulky GS window when pressing ESC or pausing the emulator."
 	) );
 
@@ -130,8 +125,6 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 
 	*this += m_check_Fullscreen;
 	*this += m_check_DclickFullscreen;
-
-	//*this += m_check_ExclusiveFS;
 	*this += new wxStaticLine( this ) | StdExpand();
 
 	*this += s_vsync | StdExpand();

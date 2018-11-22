@@ -176,7 +176,7 @@ void GSPanel::DoResize()
 			// Allows for better real time toggling, returns to the non fmv override aspect ratio.
 			switchAR = false;
 		}
-	} else if (!switchAR) {
+	} else {
 		if (g_Conf->GSWindow.AspectRatio == AspectRatio_4_3) {
 			targetAr = 4.0 / 3.0;
 		} else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9) {
