@@ -155,7 +155,7 @@ void VirtualPad::OnButtonPress(wxCommandEvent & event)
 				pressure = 255;
 			}
 		}
-		g_RecordingInput.SetButtonState(controllerPort, PadDataNormalKeys[buttonId], pressure);
+		g_RecordingInput.SetButtonState(controllerPort, PadDataNormalButton(buttonId), pressure);
 	}
 }
 
@@ -177,7 +177,7 @@ void VirtualPad::OnPressureChange(wxSpinEvent & event)
 		if (event.IsChecked()) {
 			pressure = buttonsPressure[spinnerId]->GetValue();
 		}
-		g_RecordingInput.SetButtonState(controllerPort, PadDataNormalKeys[spinnerId], pressure);
+		g_RecordingInput.SetButtonState(controllerPort, PadDataNormalButton(spinnerId), pressure);
 	}
 }
 
@@ -202,7 +202,7 @@ void VirtualPad::OnAnalogSliderChange(wxCommandEvent & event)
 			analogVals[sliderId]->SetValue(event.GetInt() * -1);
 		}
 		
-		g_RecordingInput.UpdateAnalog(controllerPort, PadDataAnalogKeys[sliderId], event.GetInt() + 127);
+		g_RecordingInput.UpdateAnalog(controllerPort, PadDataAnalogVector(sliderId), event.GetInt() + 127);
 	}
 }
 
@@ -219,14 +219,8 @@ void VirtualPad::OnAnalogValChange(wxSpinEvent & event)
 	}
 	if (spinnerId != -1)
 	{
-		if (spinnerId % 2 == 0) 
-		{
-			analogVals[spinnerId]->SetValue(event.GetInt());
-		}
-		else {
-			analogVals[spinnerId]->SetValue(event.GetInt() * -1);
-		}
-		g_RecordingInput.UpdateAnalog(controllerPort, PadDataAnalogKeys[spinnerId], event.GetInt() + 127);
+		analogVals[spinnerId]->SetValue(event.GetInt());
+		g_RecordingInput.UpdateAnalog(controllerPort, PadDataAnalogVector(spinnerId), event.GetInt() + 127);
 	}
 }
 

@@ -39,87 +39,27 @@ void PadData::logPadData(u8 port, u16 bufCount, u8 buf[512]) {
 	}
 }
 
-std::vector<wxString> split(const wxString &s, char delim) {
-	std::vector<wxString> elems;
-	wxString item;
-	for (char ch : s) {
-		if (ch == delim) {
-			if (!item.empty())
-				elems.push_back(item);
-			item.clear();
-		}
-		else {
-			item += ch;
-		}
-	}
-	if (!item.empty())
-		elems.push_back(item);
-	return elems;
-}
-
-void deserializeConvert(u8 & n, wxString s)
+int* PadData::getNormalButtons(int port) const
 {
-	try {
-		n = std::stoi(s.ToStdString(), NULL, 16);
+	int buttons[PadDataNormalButtonCount];
+	for (int i = 0; i < PadDataNormalButtonCount; i++)
+	{
+		buttons[i] = getNormalButton(port, PadDataNormalButton(i));
 	}
-	catch (std::invalid_argument e) {/*none*/ }
-	catch (std::out_of_range e) {/*none*/ }
+	return buttons;
 }
-
-wxString PadData::serialize()const
+void PadData::setNormalButtons(int port, int* buttons)
 {
-	if (!fExistKey)return L"";
-	wxString s = wxString::Format(L"%X", buf[0][0]);
-	for (int i = 1; i < ArraySize(buf[0]); i++)
+	for (int i = 0; i < PadDataNormalButtonCount; i++)
 	{
-		s += wxString::Format(L",%X", buf[0][i]);
-	}
-	for (int i = 0; i < ArraySize(buf[1]); i++)
-	{
-		s += wxString::Format(L",%X", buf[1][i]);
-	}
-	return s;
-}
-
-void PadData::deserialize(wxString s)
-{
-	std::vector<wxString> v = split(s, L',');
-	if (v.size() != 12)return;
-
-	for (int i = 0; i < 6; i++)
-	{
-		deserializeConvert(buf[0][i], v[i]);
-	}
-	for (int i = 0; i < 6; i++)
-	{
-		deserializeConvert(buf[1][i], v[6 + i]);
-	}
-	fExistKey = true;
-}
-
-//=====================================
-// normal key
-//=====================================
-std::map<wxString, int> PadData::getNormalKeys(int port)const
-{
-	std::map<wxString, int> key;
-	for (int i = 0; i < PadDataNormalKeysSize; i++)
-	{
-		key.insert(std::map<wxString, int>::value_type(PadDataNormalKeys[i], getNormalButton(port, PadDataNormalKeys[i])));
-	}
-	return key;
-}
-void PadData::setNormalKeys(int port, std::map<wxString, int> key)
-{
-	for (auto it = key.begin(); it != key.end(); ++it)
-	{
-		setNormalButton(port, it->first, it->second);
+		setNormalButton(port, PadDataNormalButton(i), buttons[i]);
 	}
 }
 
-void PadData::setNormalButton(int port, wxString button, int fpushed)
+void PadData::setNormalButton(int port, PadDataNormalButton button, int fpushed)
 {
-	if (port < 0 || 1 < port)return;
+	if (port < 0 || 1 < port)
+		return;
 	wxByte keybit[2];
 	getKeyBit(keybit, button);
 	int pressureByteIndex = getPressureByte(button);
@@ -149,9 +89,10 @@ void PadData::setNormalButton(int port, wxString button, int fpushed)
 	}
 }
 
-int PadData::getNormalButton(int port, wxString button)const
+int PadData::getNormalButton(int port, PadDataNormalButton button) const
 {
-	if (port < 0 || 1 < port)return false;
+	if (port < 0 || 1 < port)
+		return false;
 	wxByte keybit[2];
 	getKeyBit(keybit, button);
 	int pressureByteIndex = getPressureByte(button);
@@ -176,101 +117,110 @@ int PadData::getNormalButton(int port, wxString button)const
 	return 0;
 }
 
-void PadData::getKeyBit(wxByte keybit[2], wxString button)const
+void PadData::getKeyBit(wxByte keybit[2], PadDataNormalButton button) const
 {
-	// TODO - switch statement or search array?
-	if (button == L"up") { keybit[0] = 0b00010000; keybit[1] = 0b00000000; }
-	else if (button == L"left") { keybit[0] = 0b10000000; keybit[1] = 0b00000000; }
-	else if (button == L"right") { keybit[0] = 0b00100000; keybit[1] = 0b00000000; }
-	else if (button == L"down") { keybit[0] = 0b01000000; keybit[1] = 0b00000000; }
-
-	else if (button == L"start") { keybit[0] = 0b00001000; keybit[1] = 0b00000000; }
-	else if (button == L"select") { keybit[0] = 0b00000001; keybit[1] = 0b00000000; }
-
-	else if (button == L"cross") { keybit[0] = 0b00000000; keybit[1] = 0b01000000; }
-	else if (button == L"circle") { keybit[0] = 0b00000000; keybit[1] = 0b00100000; }
-	else if (button == L"square") { keybit[0] = 0b00000000; keybit[1] = 0b10000000; }
-	else if (button == L"triangle") { keybit[0] = 0b00000000; keybit[1] = 0b00010000; }
-
-	else if (button == L"l1") { keybit[0] = 0b00000000; keybit[1] = 0b00000100; }
-	else if (button == L"l2") { keybit[0] = 0b00000000; keybit[1] = 0b00000001; }
-	else if (button == L"l3") { keybit[0] = 0b00000010; keybit[1] = 0b00000000; }
-	else if (button == L"r1") { keybit[0] = 0b00000000; keybit[1] = 0b00001000; }
-	else if (button == L"r2") { keybit[0] = 0b00000000; keybit[1] = 0b00000010; }
-	else if (button == L"r3") { keybit[0] = 0b00000100; keybit[1] = 0b00000000; }
-	else
-	{
-		keybit[0] = 0;
-		keybit[1] = 0;
-	}
+	if (button == UP) { keybit[0] = 0b00010000; keybit[1] = 0b00000000; }
+	else if (button == LEFT) { keybit[0] = 0b10000000; keybit[1] = 0b00000000; }
+	else if (button == RIGHT) { keybit[0] = 0b00100000; keybit[1] = 0b00000000; }
+	else if (button == DOWN) { keybit[0] = 0b01000000; keybit[1] = 0b00000000; }
+	else if (button == START) { keybit[0] = 0b00001000; keybit[1] = 0b00000000; }
+	else if (button == SELECT) { keybit[0] = 0b00000001; keybit[1] = 0b00000000; }
+	else if (button == CROSS) { keybit[0] = 0b00000000; keybit[1] = 0b01000000; }
+	else if (button == CIRCLE) { keybit[0] = 0b00000000; keybit[1] = 0b00100000; }
+	else if (button == SQUARE) { keybit[0] = 0b00000000; keybit[1] = 0b10000000; }
+	else if (button == TRIANGLE) { keybit[0] = 0b00000000; keybit[1] = 0b00010000; }
+	else if (button == L1) { keybit[0] = 0b00000000; keybit[1] = 0b00000100; }
+	else if (button == L2) { keybit[0] = 0b00000000; keybit[1] = 0b00000001; }
+	else if (button == L3) { keybit[0] = 0b00000010; keybit[1] = 0b00000000; }
+	else if (button == R1) { keybit[0] = 0b00000000; keybit[1] = 0b00001000; }
+	else if (button == R2) { keybit[0] = 0b00000000; keybit[1] = 0b00000010; }
+	else if (button == R3) { keybit[0] = 0b00000100; keybit[1] = 0b00000000; }
+	else { keybit[0] = 0; keybit[1] = 0; }
 }
 
-// just returns an index for the buffer to set the pressure byte
-// returns -1 if it is a button that does not support pressure sensitivty
-int PadData::getPressureByte(wxString button)const
+// Returns an index for the buffer to set the pressure byte
+// Returns -1 if it is a button that does not support pressure sensitivty
+int PadData::getPressureByte(PadDataNormalButton button) const
 {
-	// button order
+	// Pressure Byte Order
 	// R - L - U - D - Tri - Sqr - Circle - Cross - L1 - R1 - L2 - R2
-	// TODO - switch statement or search array?
-	if (button == L"up") { return 2; }
-	else if (button == L"left") { return 1; }
-	else if (button == L"right") { return 0; }
-	else if (button == L"down") { return 3; }
-
-	else if (button == L"cross") { return 6; }
-	else if (button == L"circle") { return 5; }
-	else if (button == L"square") { return 7; }
-	else if (button == L"triangle") { return 4; }
-
-	else if (button == L"l1") { return 8; }
-	else if (button == L"l2") { return 10; }
-	else if (button == L"r1") { return 9; }
-	else if (button == L"r2") { return 11; }
+	if (button == UP) 
+		return 2;
+	else if (button == LEFT) 
+		return 1;
+	else if (button == RIGHT) 
+		return 0;
+	else if (button == DOWN) 
+		return 3;
+	else if (button == CROSS) 
+		return 6;
+	else if (button == CIRCLE) 
+		return 5;
+	else if (button == SQUARE) 
+		return 7;
+	else if (button == TRIANGLE) 
+		return 4;
+	else if (button == L1) 
+		return 8;
+	else if (button == L2)
+		return 10;
+	else if (button == R1) 
+		return 9;
+	else if (button == R2) 
+		return 11;
 	else
-	{
 		return -1;
-	}
 }
 
-//=====================================
-// analog key
-//=====================================
-std::map<wxString, int> PadData::getAnalogKeys(int port)const
+int* PadData::getAnalogVectors(int port) const
 {
-	std::map<wxString, int> key;
-	for (int i = 0; i < PadDataAnalogKeysSize; i++)
+	int vectors[PadDataAnalogVectorCount];
+	for (int i = 0; i < PadDataAnalogVectorCount; i++)
 	{
-		key.insert(std::map<wxString, int>::value_type(PadDataAnalogKeys[i], getAnalogButton(port, PadDataAnalogKeys[i])));
+		vectors[i] = getAnalogVector(port, PadDataAnalogVector(i));
 	}
-	return key;
+	return vectors;
 }
-void PadData::setAnalogKeys(int port, std::map<wxString, int> key)
+
+void PadData::setAnalogVectors(int port, int* vectors)
 {
-	for (auto it = key.begin(); it != key.end(); ++it)
+	for (int i = 0; i < PadDataAnalogVectorCount; i++)
 	{
-		setAnalogButton(port, it->first, it->second);
+		setAnalogVector(port, PadDataAnalogVector(i), vectors[i]);
 	}
 }
 
-void PadData::setAnalogButton(int port, wxString button, int push)
+void PadData::setAnalogVector(int port, PadDataAnalogVector vector, int val)
 {
-	if (port < 0 || 1 < port)return;
-	if (push < 0)push = 0;
-	else if (push > 255)push = 255;
+	if (port < 0 || 1 < port)
+		return;
+	if (val < 0)
+		val = 0;
+	else if (val > 255)
+		val = 255;
 
-	if (button == L"l_analog_x") { buf[port][4] = push; }
-	else if (button == L"l_analog_y") { buf[port][5] = push; }
-	else if (button == L"r_analog_x") { buf[port][2] = push; }
-	else if (button == L"r_analog_y") { buf[port][3] = push; }
+	buf[port][getAnalogVectorByte(vector)] = val;
 }
 
-int PadData::getAnalogButton(int port, wxString button)const
+int PadData::getAnalogVector(int port, PadDataAnalogVector vector) const
 {
-	if (port < 0 || 1 < port)return 0;
-	int val = 127;
-	if (button == L"l_analog_x") { val = buf[port][4]; }
-	else if (button == L"l_analog_y") { val = buf[port][5]; }
-	else if (button == L"r_analog_x") { val = buf[port][2]; }
-	else if (button == L"r_analog_y") { val = buf[port][3]; }
-	return val;
+	if (port < 0 || 1 < port)
+		return 0;
+
+	return buf[port][getAnalogVectorByte(vector)];
+}
+
+// Returns an index for the buffer to set the analog's vector
+int PadData::getAnalogVectorByte(PadDataAnalogVector vector) const
+{
+	// Vector Byte Ordering
+	// RX - RY - LX - LY
+	if (vector == LEFT_ANALOG_X)
+		return 4;
+	else if (vector == LEFT_ANALOG_Y)
+		return 5;
+	else if (vector == RIGHT_ANALOG_X)
+		return 2;
+	else
+		return 3;
 }
