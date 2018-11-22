@@ -40,18 +40,18 @@ void RecordingInputManager::ControllerInterrupt(u8 & data, u8 & port, u16 & BufC
 	}
 }
 
-void RecordingInputManager::SetButtonState(int port, wxString button, int pressure)
+void RecordingInputManager::SetButtonState(int port, PadDataNormalButton button, int pressure)
 {
-	auto normalKeys = pad.getNormalKeys(port);
-	normalKeys.at(button) = pressure;
-	pad.setNormalKeys(port, normalKeys);
+	int* buttons = pad.getNormalButtons(port);
+	buttons[button] = pressure;
+	pad.setNormalButtons(port, buttons);
 }
 
-void RecordingInputManager::UpdateAnalog(int port, wxString key, int value)
+void RecordingInputManager::UpdateAnalog(int port, PadDataAnalogVector vector, int value)
 {
-	auto analogKeys = pad.getAnalogKeys(port);
-	analogKeys.at(key) = value;
-	pad.setAnalogKeys(port, analogKeys);
+	int* vectors = pad.getAnalogVectors(port);
+	vectors[vector] = value;
+	pad.setAnalogVectors(port, vectors);
 }
 
 void RecordingInputManager::SetVirtualPadReading(int port, bool read)
