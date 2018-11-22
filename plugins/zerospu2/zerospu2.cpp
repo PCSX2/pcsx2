@@ -95,10 +95,8 @@ void InitADSR();
 
 // functions of main emu, called on spu irq
 void (*irqCallbackSPU2)()=0;
-#ifndef ENABLE_NEW_IOPDMA_SPU2
 void (*irqCallbackDMA4)()=0;
 void (*irqCallbackDMA7)()=0;
-#endif
 
 uptr g_pDMABaseAddr=0;
 u32 RateTable[160];
@@ -393,9 +391,7 @@ void CALLBACK SPU2async(u32 cycle)
 		if (SPUCycles - SPUStartCycle[1] >= SPUTargetCycle[1])
 		{
 			interrupt &= ~(1<<2);
-#ifndef ENABLE_NEW_IOPDMA_SPU2
 			irqCallbackDMA7();
-#endif
 		}
 
 	}
@@ -405,9 +401,7 @@ void CALLBACK SPU2async(u32 cycle)
 		if (SPUCycles - SPUStartCycle[0] >= SPUTargetCycle[0])
 		{
 			interrupt &= ~(1<<1);
-#ifndef ENABLE_NEW_IOPDMA_SPU2
 			irqCallbackDMA4();
-#endif
 		}
 	}
 
@@ -595,12 +589,10 @@ void MixChannels(s32 channel)
 						interrupt &= ~(0x2 * (channel + 1));
 						WARN_LOG("Stopping double interrupt DMA7\n");
 					}
-#ifndef ENABLE_NEW_IOPDMA_SPU2
 					if (channel == 0)
 						irqCallbackDMA4();
 					else
 						irqCallbackDMA7();
-#endif
 
 				}
 				if (channel == 1) Adma->Enabled = 2;
@@ -1148,13 +1140,6 @@ void CALLBACK SPU2setDMABaseAddr(uptr baseaddr)
 	g_pDMABaseAddr = baseaddr;
 }
 
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-void CALLBACK SPU2irqCallback(void (*SPU2callback)())
-{
-	LOG_CALLBACK("SPU2irqCallback()\n");
-	irqCallbackSPU2 = SPU2callback;
-}
-#else
 void CALLBACK SPU2irqCallback(void (*SPU2callback)(),void (*DMA4callback)(),void (*DMA7callback)())
 {
 	LOG_CALLBACK("SPU2irqCallback()\n");
@@ -1162,7 +1147,6 @@ void CALLBACK SPU2irqCallback(void (*SPU2callback)(),void (*DMA4callback)(),void
 	irqCallbackDMA4 = DMA4callback;
 	irqCallbackDMA7 = DMA7callback;
 }
-#endif
 
 s32 CALLBACK SPU2test()
 {

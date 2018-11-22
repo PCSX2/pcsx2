@@ -237,7 +237,6 @@ DEV9write32(u32 addr, u32 value)
     }
 }
 
-//#ifdef ENABLE_NEW_IOPDMA_DEV9
 EXPORT_C_(s32)
 DEV9dmaRead(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed)
 {
@@ -262,7 +261,7 @@ DEV9dmaInterrupt(s32 channel)
 {
     // See above.
 }
-//#else
+
 EXPORT_C_(void)
 DEV9readDMA8Mem(u32 *pMem, int size)
 {
@@ -277,7 +276,6 @@ DEV9writeDMA8Mem(u32 *pMem, int size)
     // See above.
     g_plugin_log.WriteLn("Writing DMA8 Mem.");
 }
-//#endif
 
 EXPORT_C_(void)
 DEV9irqCallback(DEV9callback callback)

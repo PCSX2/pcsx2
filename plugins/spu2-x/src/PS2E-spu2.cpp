@@ -245,13 +245,6 @@ SPU2dmaInterrupt(s32 channel)
         return Cores[1].NewDmaInterrupt();
 }
 
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-EXPORT_C_(void)
-SPU2irqCallback(void (*SPU2callback)())
-{
-    _irqcallback = SPU2callback;
-}
-#else
 EXPORT_C_(void)
 SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callback)())
 {
@@ -259,7 +252,6 @@ SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callb
     dma4callback = DMA4callback;
     dma7callback = DMA7callback;
 }
-#endif
 
 EXPORT_C_(void)
 CALLBACK SPU2readDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units

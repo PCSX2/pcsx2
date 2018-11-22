@@ -149,16 +149,12 @@ void dummy1()
 
 void dummy4()
 {
-#ifndef ENABLE_NEW_IOPDMA_SPU2
     SPU2interruptDMA4();
-#endif
 }
 
 void dummy7()
 {
-#ifndef ENABLE_NEW_IOPDMA_SPU2
     SPU2interruptDMA7();
-#endif
 }
 
 u64 HighResFrequency()
@@ -223,7 +219,6 @@ BOOL WINAPI HandlerRoutine(DWORD dwCtrlType)
 EXPORT_C_(void)
 s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdShow)
 {
-#ifndef ENABLE_NEW_IOPDMA_SPU2
     int events = 0;
 
     Running = true;
@@ -332,6 +327,5 @@ Finish:
 #endif
 
     replay_mode = false;
-#endif
 }
 #endif

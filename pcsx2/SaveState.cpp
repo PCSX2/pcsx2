@@ -220,9 +220,6 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	FreezeTag( "IOP-Subsystems" );
 	FreezeMem(iopMem->Sif, sizeof(iopMem->Sif));		// iop's sif memory (not really needed, but oh well)
 
-#ifdef ENABLE_NEW_IOPDMA
-	iopDmacFreeze();
-#endif
 	psxRcntFreeze();
 	sioFreeze();
 	sio2Freeze();

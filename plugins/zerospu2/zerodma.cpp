@@ -184,7 +184,6 @@ void CALLBACK SPU2interruptDMA(int channel)
 	spu2stat_set_80(channel);
 }
 
-#ifndef ENABLE_NEW_IOPDMA_SPU2
 void CALLBACK SPU2writeDMA4Mem(u16* pMem, int size)
 {
 	LOG_CALLBACK("SPU2writeDMA4Mem()\n");
@@ -208,22 +207,3 @@ void CALLBACK SPU2interruptDMA7()
 	LOG_CALLBACK("SPU2interruptDMA7()\n");
 	SPU2interruptDMA(7);
 }
-#else
-s32 CALLBACK SPU2dmaRead(s32 channel, u32* data, u32 bytesLeft, u32* bytesProcessed)
-{
-	// Needs implementation.
-	return 0;
-}
-
-s32 CALLBACK SPU2dmaWrite(s32 channel, u32* data, u32 bytesLeft, u32* bytesProcessed)
-{
-	// Needs implementation.
-	return 0;
- }
-
-void CALLBACK SPU2dmaInterrupt(s32 channel)
- {
-	LOG_CALLBACK("SPU2dmaInterruptDMA()\n");
-	SPU2interruptDMA(channel);
- }
-#endif
