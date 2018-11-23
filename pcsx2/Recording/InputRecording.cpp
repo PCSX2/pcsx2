@@ -178,9 +178,11 @@ void InputRecording::Play(wxString FileName, bool fromSaveState)
 			recordingConLog(L"[REC]: Information on CD in Movie file is Different.\n");
 		}
 	}
-	// TODO - probably output more informatiion on it
 	state = REPLAY;
 	recordingConLog(wxString::Format(L"[REC]: Replaying movie - [%s]\n", FileName));
+	recordingConLog(wxString::Format(L"Recording File Version: %d\n", InputRecordingData.getHeader().version));
+	recordingConLog(wxString::Format(L"Associated Game Name / ISO Filename: %s\n", InputRecordingData.getHeader().gameName));
+	recordingConLog(wxString::Format(L"Author: %s\n", InputRecordingData.getHeader().author));
 	recordingConLog(wxString::Format(L"MaxFrame: %d\n", InputRecordingData.getMaxFrame()));
 	recordingConLog(wxString::Format(L"UndoCount: %d\n", InputRecordingData.getUndoCount()));
 }
