@@ -187,7 +187,6 @@ enum MenuIdentifiers
 	MenuId_Capture_Video_Stop,
 	MenuId_Capture_Screenshot,
 	MenuId_Capture_Screenshot_Screenshot,
-	MenuId_Capture_Screenshot_Screenshot_As,
 
 #ifndef DISABLE_RECORDING
 	// Recording Subsection
@@ -198,10 +197,6 @@ enum MenuIdentifiers
 	MenuId_Recording_VirtualPad_Port0,
 	MenuId_Recording_VirtualPad_Port1,
 	MenuId_Recording_Conversions,
-	MenuId_Recording_ConvertV2ToV3,
-	MenuId_Recording_ConvertV1_XToV2,
-	MenuId_Recording_ConvertV1ToV2,
-	MenuId_Recording_ConvertLegacy,
 #endif
 
 };

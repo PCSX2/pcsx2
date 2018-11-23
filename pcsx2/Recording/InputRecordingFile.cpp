@@ -214,7 +214,6 @@ bool InputRecordingFile::UpdatePadData(unsigned long frame, const PadData& key)
 	return true;
 }
 
-// TODO - see if we can get the actual game name, not just the ISO name
 // Verify header of recording file
 bool InputRecordingFile::readHeaderAndCheck()
 {
@@ -225,7 +224,12 @@ bool InputRecordingFile::readHeaderAndCheck()
 	if (fread(&UndoCount, 4, 1, recordingFile) != 1) return false;
 	if (fread(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1) return false;
 	if (savestate.fromSavestate) {
-		// TODO - check to see if the file is there, if it AINT, return false, throw an error, ETC (SAY WHAT FILE WE ARE LOOKING FOR)
+		FILE* ssFileCheck = wxFopen(filename + "_SaveState.p2s", "r");
+		if (ssFileCheck = NULL) {
+			recordingConLog(wxString::Format("[REC]: Could not locate savestate file at location - %s\n", filename + "_SaveState.p2s"));
+			return false;
+		}
+		fclose(ssFileCheck);
 		StateCopy_LoadFromFile(filename + "_SaveState.p2s");
 	}
 	else {
@@ -233,8 +237,8 @@ bool InputRecordingFile::readHeaderAndCheck()
 	}
 
 	// Check for current verison
-	// TODO - more specific log if fails for this reason
 	if (header.version != 1) {
+		recordingConLog(wxString::Format("[REC]: Input recording file is not a supported version - %d\n", header.version));
 		return false;
 	}
 	return true;

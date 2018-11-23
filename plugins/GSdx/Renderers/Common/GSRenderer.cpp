@@ -499,37 +499,29 @@ void GSRenderer::VSync(int field)
 
 bool GSRenderer::MakeSnapshot(const std::string& path)
 {
-	if(m_snapshot.empty())
+	if (m_snapshot.empty())
 	{
-		// Facilitates Save As.. Feature
-		if (path.substr(path.size() - 4, 4) == ".bmp")
-		{
-			m_snapshot = path.substr(0, path.size() - 4);
-		}
-		else
-		{
-			time_t cur_time = time(nullptr);
-			static time_t prev_snap;
-			// The variable 'n' is used for labelling the screenshots when multiple screenshots are taken in
-			// a single second, we'll start using this variable for naming when a second screenshot request is detected
-			// at the same time as the first one. Hence, we're initially setting this counter to 2 to imply that
-			// the captured image is the 2nd image captured at this specific time.
-			static int n = 2;
-			char local_time[16];
+		time_t cur_time = time(nullptr);
+		static time_t prev_snap;
+		// The variable 'n' is used for labelling the screenshots when multiple screenshots are taken in
+		// a single second, we'll start using this variable for naming when a second screenshot request is detected
+		// at the same time as the first one. Hence, we're initially setting this counter to 2 to imply that
+		// the captured image is the 2nd image captured at this specific time.
+		static int n = 2;
+		char local_time[16];
 
-			if (strftime(local_time, sizeof(local_time), "%Y%m%d%H%M%S", localtime(&cur_time)))
+		if (strftime(local_time, sizeof(local_time), "%Y%m%d%H%M%S", localtime(&cur_time)))
+		{
+			if (cur_time == prev_snap)
 			{
-				if (cur_time == prev_snap)
-				{
-					m_snapshot = format("%s_%s_(%d)", path.c_str(), local_time, n++);
-				}
-				else
-				{
-					n = 2;
-					m_snapshot = format("%s_%s", path.c_str(), local_time);
-				}
-				prev_snap = cur_time;
+				m_snapshot = format("%s_%s_(%d)", path.c_str(), local_time, n++);
 			}
+			else
+			{
+				n = 2;
+				m_snapshot = format("%s_%s", path.c_str(), local_time);
+			}
+			prev_snap = cur_time;
 		}
 	}
 
