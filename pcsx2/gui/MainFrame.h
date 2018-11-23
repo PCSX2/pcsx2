@@ -222,7 +222,6 @@ protected:
 	void Menu_Capture_Video_Stop_Click(wxCommandEvent &event);
 	void VideoCaptureUpdate();
 	void Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent &event);
-	void Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent &event);
 
 #ifndef DISABLE_RECORDING
 	void Menu_Recording_New_Click(wxCommandEvent &event);

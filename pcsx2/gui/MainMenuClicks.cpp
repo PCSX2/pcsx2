@@ -759,23 +759,6 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent & eve
 	GSmakeSnapshot(g_Conf->Folders.Snapshots.ToAscii());
 }
 
-void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent &event)
-{
-	if (!CoreThread.IsOpen())
-		return;
-
-	wxFileDialog fileDialog(this, "Select a file", g_Conf->Folders.Snapshots.ToAscii(), wxEmptyString, "PNG files (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-
-	if (fileDialog.ShowModal() == wxID_OK)
-	{
-		wxString path = fileDialog.GetPath();
-		// GS Code expects a .bmp path, despite PNG compression being hardcoded.  
-		// Swap extensions so UX isn't confusing and avoid changing too much GS code that I'm not familiar with
-		path = wxString::Format("%s.bmp", path.substr(0, path.size() - 4));
-		GSmakeSnapshot(path);
-	}
-}
-
 #ifndef DISABLE_RECORDING
 void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 {
