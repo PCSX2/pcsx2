@@ -57,8 +57,7 @@ oprofile_data/
 *.p2s
 *.p2m2
 *.p2m2_backup
-*.p2m
-*.p2m_backup
+*.p2m2_SaveState.p2s
 
 # Visual Studio upgrades
 /Backup*

@@ -1,3 +1,18 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
@@ -20,7 +35,7 @@ PadData::PadData()
 
 void PadData::logPadData(u8 port, u16 bufCount, u8 buf[512]) {
 	// skip first two bytes because they dont seem to matter
-	if (port == 0 && bufCount > 2) 
+	if (port == 0 && bufCount > 2)
 	{
 		if (bufCount == 3)
 		{
@@ -144,29 +159,29 @@ int PadData::getPressureByte(PadDataNormalButton button) const
 {
 	// Pressure Byte Order
 	// R - L - U - D - Tri - Sqr - Circle - Cross - L1 - R1 - L2 - R2
-	if (button == UP) 
+	if (button == UP)
 		return 2;
-	else if (button == LEFT) 
+	else if (button == LEFT)
 		return 1;
-	else if (button == RIGHT) 
+	else if (button == RIGHT)
 		return 0;
-	else if (button == DOWN) 
+	else if (button == DOWN)
 		return 3;
-	else if (button == CROSS) 
+	else if (button == CROSS)
 		return 6;
-	else if (button == CIRCLE) 
+	else if (button == CIRCLE)
 		return 5;
-	else if (button == SQUARE) 
+	else if (button == SQUARE)
 		return 7;
-	else if (button == TRIANGLE) 
+	else if (button == TRIANGLE)
 		return 4;
-	else if (button == L1) 
+	else if (button == L1)
 		return 8;
 	else if (button == L2)
 		return 10;
-	else if (button == R1) 
+	else if (button == R1)
 		return 9;
-	else if (button == R2) 
+	else if (button == R2)
 		return 11;
 	else
 		return -1;

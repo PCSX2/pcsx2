@@ -499,7 +499,7 @@ void GSRenderer::VSync(int field)
 
 bool GSRenderer::MakeSnapshot(const std::string& path)
 {
-	if (m_snapshot.empty())
+	if(m_snapshot.empty())
 	{
 		time_t cur_time = time(nullptr);
 		static time_t prev_snap;

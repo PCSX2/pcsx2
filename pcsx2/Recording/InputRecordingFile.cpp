@@ -1,3 +1,18 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "PrecompiledHeader.h"
 
 #include "App.h"
@@ -10,7 +25,7 @@
 
 #define HEADER_SIZE (sizeof(InputRecordingHeader)+4+4)
 #define SAVESTATE_HEADER_SIZE (sizeof(bool))
-#define BLOCK_HEADER_SIZE (0) 
+#define BLOCK_HEADER_SIZE (0)
 #define BLOCK_DATA_SIZE (18*2)
 #define BLOCK_SIZE (BLOCK_HEADER_SIZE+BLOCK_DATA_SIZE)
 
@@ -85,7 +100,7 @@ bool InputRecordingFile::writeSaveState() {
 		return false;
 
 	fseek(recordingFile, SEEKPOINT_SAVESTATE, SEEK_SET);
-	if (fwrite(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1) 
+	if (fwrite(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1)
 		return false;
 
 	return true;
@@ -200,14 +215,14 @@ bool InputRecordingFile::InsertPadData(unsigned long frame, const PadData& key)
 
 bool InputRecordingFile::UpdatePadData(unsigned long frame, const PadData& key)
 {
-	if (recordingFile == NULL) 
+	if (recordingFile == NULL)
 		return false;
-	if (!key.fExistKey) 
+	if (!key.fExistKey)
 		return false;
 
 	long seek = _getBlockSeekPoint(frame) + BLOCK_HEADER_SIZE;
 	fseek(recordingFile, seek, SEEK_SET);
-	if (fwrite(key.buf, 1, BLOCK_DATA_SIZE, recordingFile) == 0) 
+	if (fwrite(key.buf, 1, BLOCK_DATA_SIZE, recordingFile) == 0)
 		return false;
 
 	fflush(recordingFile);
