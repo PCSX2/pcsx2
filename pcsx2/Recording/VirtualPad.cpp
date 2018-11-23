@@ -1,3 +1,18 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
@@ -15,7 +30,7 @@ wxEND_EVENT_TABLE()
 VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, int controllerPort, const wxPoint& pos, const wxSize& size, long style) :
 	wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE)
 {
-	// Define components 
+	// Define components
 	SetSize(wxSize(1000, 700));
 	l2Button = new wxToggleButton(this, wxID_ANY, wxT("L2"));
 	l2ButtonPressure = new wxSpinCtrl(this, wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 255, 255);
@@ -58,8 +73,8 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 	VirtualPad::controllerPort = controllerPort;
 
 	// NOTE: Order MATTERS, these match enum defined in PadData.h
-	wxToggleButton* tempButtons[16] = { 
-		// Pressure sensitive buttons 
+	wxToggleButton* tempButtons[16] = {
+		// Pressure sensitive buttons
 		upButton, rightButton, leftButton, downButton,
 		crossButton, circleButton, squareButton, triangleButton,
 		l1Button, l2Button, r1Button, r2Button,
@@ -85,23 +100,23 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 	std::copy(std::begin(tempAnalogVals), std::end(tempAnalogVals), std::begin(analogVals));
 
 	// Setup event bindings
-	for (int i = 0; i < std::size(buttons); i++) 
+	for (int i = 0; i < buttonsLength; i++)
 	{
 		(*buttons[i]).Bind(wxEVT_TOGGLEBUTTON, &VirtualPad::OnButtonPress, this);
 	}
-	for (int i = 0; i < std::size(buttonsPressure); i++)
+	for (int i = 0; i < buttonsPressureLength; i++)
 	{
 		(*buttonsPressure[i]).Bind(wxEVT_SPINCTRL, &VirtualPad::OnPressureChange, this);
 	}
-	for (int i = 0; i < std::size(analogSliders); i++)
+	for (int i = 0; i < analogSlidersLength; i++)
 	{
 		(*analogSliders[i]).Bind(wxEVT_SLIDER, &VirtualPad::OnAnalogSliderChange, this);
 	}
-	for (int i = 0; i < std::size(analogVals); i++)
+	for (int i = 0; i < analogValsLength; i++)
 	{
 		(*analogVals[i]).Bind(wxEVT_SPINCTRL, &VirtualPad::OnAnalogValChange, this);
 	}
-	
+
 	// Finalize layout
 	SetProperties();
 	DoLayout();
@@ -138,14 +153,14 @@ void VirtualPad::OnButtonPress(wxCommandEvent & event)
 {
 	wxToggleButton* pressedButton = (wxToggleButton*) event.GetEventObject();
 	int buttonId = -1;
-	for (int i = 0; i < std::size(buttons); i++) 
+	for (int i = 0; i < buttonsLength; i++)
 	{
-		if (pressedButton == buttons[i]) 
+		if (pressedButton == buttons[i])
 		{
 			buttonId = i;
 		}
 	}
-	if (buttonId != -1) 
+	if (buttonId != -1)
 	{
 		u8 pressure = 0;
 		if (event.IsChecked())
@@ -167,7 +182,7 @@ void VirtualPad::OnPressureChange(wxSpinEvent & event)
 {
 	wxSpinCtrl* updatedSpinner = (wxSpinCtrl*) event.GetEventObject();
 	int spinnerId = -1;
-	for (int i = 0; i < std::size(buttonsPressure); i++)
+	for (int i = 0; i < buttonsPressureLength; i++)
 	{
 		if (updatedSpinner == buttonsPressure[i])
 		{
@@ -189,7 +204,7 @@ void VirtualPad::OnAnalogSliderChange(wxCommandEvent & event)
 {
 	wxSlider* movedSlider = (wxSlider*) event.GetEventObject();
 	int sliderId = -1;
-	for (int i = 0; i < std::size(analogSliders); i++)
+	for (int i = 0; i < analogSlidersLength; i++)
 	{
 		if (movedSlider == analogSliders[i])
 		{
@@ -198,14 +213,14 @@ void VirtualPad::OnAnalogSliderChange(wxCommandEvent & event)
 	}
 	if (sliderId != -1)
 	{
-		if (sliderId % 2 == 0) 
+		if (sliderId % 2 == 0)
 		{
-			analogVals[sliderId]->SetValue(event.GetInt()); 
+			analogVals[sliderId]->SetValue(event.GetInt());
 		}
 		else {
 			analogVals[sliderId]->SetValue(event.GetInt() * -1);
 		}
-		
+
 		g_RecordingInput.UpdateAnalog(controllerPort, PadDataAnalogVector(sliderId), event.GetInt() + 127);
 	}
 }
@@ -214,7 +229,7 @@ void VirtualPad::OnAnalogValChange(wxSpinEvent & event)
 {
 	wxSpinCtrl* updatedSpinner = (wxSpinCtrl*)event.GetEventObject();
 	int spinnerId = -1;
-	for (int i = 0; i < std::size(analogVals); i++)
+	for (int i = 0; i < analogValsLength; i++)
 	{
 		if (updatedSpinner == analogVals[i])
 		{
