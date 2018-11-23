@@ -800,7 +800,6 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 		// From Power-On
 		else if (NewRecordingFrame->getFrom() == 1)
 		{
-			// TODO extensively test this
 			g_InputRecording.Create(NewRecordingFrame->getFile(), false, NewRecordingFrame->getAuthor());
 		}
 	}

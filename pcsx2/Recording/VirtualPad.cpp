@@ -9,8 +9,9 @@ wxBEGIN_EVENT_TABLE(VirtualPad, wxFrame)
 	EVT_CLOSE(VirtualPad::OnClose)
 wxEND_EVENT_TABLE()
 
-// TODO - Problems:
-// Controller inputs dont update UI, add a refresh method or something
+// TODO - Problems / Potential improvements:
+// - The UI doesn't update to manual controller inputs and actually overrides the controller when opened (easily noticable with analog stick)
+//   - This is less than ideal, but it's going to take a rather large / focused refactor, in it's current state the virtual pad does what it needs to do (precise inputs, frame by frame)
 VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, int controllerPort, const wxPoint& pos, const wxSize& size, long style) :
 	wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE)
 {
@@ -56,7 +57,7 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 	// Initialize class members
 	VirtualPad::controllerPort = controllerPort;
 
-	// NOTE: Order MATTERS, these match the map-key array defined in PadData.h
+	// NOTE: Order MATTERS, these match enum defined in PadData.h
 	wxToggleButton* tempButtons[16] = { 
 		// Pressure sensitive buttons 
 		upButton, rightButton, leftButton, downButton,
@@ -67,6 +68,7 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 		selectButton, startButton};
 	std::copy(std::begin(tempButtons), std::end(tempButtons), std::begin(buttons));
 
+	// NOTE: Order MATTERS, these match enum defined in PadData.h
 	wxSpinCtrl* tempPressureButtons[16] = {
 		// Pressure sensitive buttons
 		upButtonPressure, rightButtonPressure, leftButtonPressure, downButtonPressure,
@@ -74,9 +76,11 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 		l1ButtonPressure, l2ButtonPressure, r1ButtonPressure, r2ButtonPressure};
 	std::copy(std::begin(tempPressureButtons), std::end(tempPressureButtons), std::begin(buttonsPressure));
 
+	// NOTE: Order MATTERS, these match enum defined in PadData.h
 	wxSlider* tempAnalogSliders[4] = { leftAnalogXVal, leftAnalogYVal, rightAnalogXVal, rightAnalogYVal };
 	std::copy(std::begin(tempAnalogSliders), std::end(tempAnalogSliders), std::begin(analogSliders));
 
+	// NOTE: Order MATTERS, these match enum defined in PadData.h
 	wxSpinCtrl* tempAnalogVals[4] = { leftAnalogXValPrecise, leftAnalogYValPrecise, rightAnalogXValPrecise, rightAnalogYValPrecise };
 	std::copy(std::begin(tempAnalogVals), std::end(tempAnalogVals), std::begin(analogVals));
 
