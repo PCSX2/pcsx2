@@ -306,6 +306,7 @@ CRC::Game CRC::m_games[] =
 	{0x696BBEC3, TenchuFS, KO, 0},
 	{0x525C1994, TenchuFS, ASIA, 0},
 	{0x0D73BBCD, TenchuFS, KO, 0},
+	{0x735A10C2, TenchuFS, JP, 0}, // Tenchu Kurenai
 	{0xAFBFB287, TenchuWoH, KO, 0},
 	{0x767E383D, TenchuWoH, US, 0},
 	{0x83261085, TenchuWoH, DE, 0}, // PAL German
