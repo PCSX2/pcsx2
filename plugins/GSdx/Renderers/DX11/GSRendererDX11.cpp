@@ -42,7 +42,7 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 	size_t count = m_vertex.next;
 	GSVertex* v = &m_vertex.buff[0];
 
-	// Note: D3D1011 is limited and can't read the current framebuffer so we can't have PS_FBMASK and PS_WRITE_RG shaders ported and working.
+	// Note: D3D1011 is limited and can't read the current framebuffer so frame buffer masking will not be supported.
 	if (m_texture_shuffle)
 	{
 		m_ps_sel.shuffle = 1;
@@ -117,6 +117,11 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 				v[i+1].ST.T /= 2.0f;
 			}
 		}
+
+		// If date is enabled you need to test the green channel instead of the
+		// alpha channel. Only enable this code in DATE mode to reduce the number
+		// of shader.
+		m_ps_sel.write_rg = !write_ba && m_context->TEST.DATE;
 
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format

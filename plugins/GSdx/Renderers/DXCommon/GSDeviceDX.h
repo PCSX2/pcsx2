@@ -194,6 +194,7 @@ public:
 				// Shuffle and fbmask effect
 				uint32 shuffle:1;
 				uint32 read_ba:1;
+				uint32 write_rg:1;
 
 				// *** Word 2
 				// Blend and Colclip
@@ -207,7 +208,7 @@ public:
 				uint32 tcoffsethack:1;
 				uint32 point_sampler:1;
 
-				uint32 _free:30;
+				uint32 _free:29;
 			};
 
 			uint64 key;

@@ -39,6 +39,7 @@
 #define PS_POINT_SAMPLER 0
 #define PS_SHUFFLE 0
 #define PS_READ_BA 0
+#define PS_WRITE_RG 0
 #define PS_PAL_FMT 0
 #endif
 
@@ -516,10 +517,15 @@ float4 tfx(float4 t, float4 c)
 void datst(PS_INPUT input)
 {
 #if PS_DATE > 0
-	float alpha = sample_rt(input.tp.xy).a;
 #if SHADER_MODEL >= 0x400
+#if PS_WRITE_RG == 1
+	float alpha = sample_rt(input.tp.xy).g;
+#else
+	float alpha = sample_rt(input.tp.xy).a;
+#endif
 	float alpha0x80 = 128. / 255;
 #else
+	float alpha = sample_rt(input.tp.xy).a;
 	float alpha0x80 = 1;
 #endif
 
