@@ -98,13 +98,12 @@
 #define IDC_MEMORY_WRAPPING             2122
 #define IDC_TRI_FILTER                  2123
 #define IDC_TRI_FILTER_TEXT             2124
-#define IDC_UNSCALE_POINT_LINE          2125
-#define IDC_MERGE_PP_SPRITE             2126
-#define IDC_CPU_FB_CONVERSION           2127
-#define IDC_SKIPDRAWHACK                2128
-#define IDC_SKIPDRAWHACKEDIT            2129
-#define IDC_SKIPDRAWOFFSET              2130
-#define IDC_SKIPDRAWOFFSETEDIT          2131
+#define IDC_MERGE_PP_SPRITE             2125
+#define IDC_CPU_FB_CONVERSION           2126
+#define IDC_SKIPDRAWHACK                2127
+#define IDC_SKIPDRAWHACKEDIT            2128
+#define IDC_SKIPDRAWOFFSET              2129
+#define IDC_SKIPDRAWOFFSETEDIT          2130
 // Shader:
 #define IDC_SHADEBOOST                  2140
 #define IDC_FXAA                        2141

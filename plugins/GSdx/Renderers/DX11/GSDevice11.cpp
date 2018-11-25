@@ -40,15 +40,6 @@ GSDevice11::GSDevice11()
 	m_state.bf = -1;
 
 	m_mipmap = theApp.GetConfigI("mipmap");
-
-	if (theApp.GetConfigB("UserHacks"))
-	{
-		UserHacks_unscale_pt_ln = theApp.GetConfigB("UserHacks_unscale_point_line");
-	}
-	else
-	{
-		UserHacks_unscale_pt_ln = false;
-	}
 }
 
 GSDevice11::~GSDevice11()

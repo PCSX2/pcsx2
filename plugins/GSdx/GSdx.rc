@@ -138,8 +138,7 @@ BEGIN
     CONTROL         "Memory Wrapping",IDC_MEMORY_WRAPPING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,32,75,8
     CONTROL         "Merge Sprite",IDC_MERGE_PP_SPRITE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,45,90,8
     CONTROL         "Preload Frame Data",IDC_PRELOAD_GS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,58,80,8
-    CONTROL         "Unscale Point and Line",IDC_UNSCALE_POINT_LINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,71,90,8
-    CONTROL         "Wild Arms Offset",IDC_WILDHACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,84,70,8
+    CONTROL         "Wild Arms Offset",IDC_WILDHACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,71,70,8
     // Columns end
     //
     RTEXT           "MSAA:",IDC_MSAA_TEXT,54,99,22,8

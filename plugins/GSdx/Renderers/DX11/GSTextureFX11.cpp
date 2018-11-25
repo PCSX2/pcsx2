@@ -157,7 +157,7 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 {
 	CComPtr<ID3D11GeometryShader> gs;
 
-	bool Unscale_GSShader = (sel.point == 1 || sel.line == 1) && UserHacks_unscale_pt_ln;
+	bool Unscale_GSShader = (sel.point == 1 || sel.line == 1);
 	if((sel.prim > 0 && (sel.iip == 0 || sel.prim == 3)) || Unscale_GSShader) // geometry shader works in every case, but not needed
 	{
 		auto i = std::as_const(m_gs).find(sel);
