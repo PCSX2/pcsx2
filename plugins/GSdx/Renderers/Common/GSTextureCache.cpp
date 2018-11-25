@@ -287,12 +287,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					// 3/ for both Direct3D and OpenGL
 					if (m_cpu_fb_conversion && (psm == PSM_PSMT4 || psm == PSM_PSMT8))
 						// Forces 4-bit and 8-bit frame buffer conversion to be done on the CPU instead of the GPU, but performance will be slower.
-						// There is no dedicated shader to handle 4-bit conversion.
-						// Direct3D10/11 and OpenGL support 8-bit fb conversion but don't render some corner cases properly, also Direct3D supports it only on native res for now.
+						// There is no dedicated shader to handle 4-bit conversion (Stuntman has been confirmed to use 4-bit).
+						// Direct3D10/11 and OpenGL support 8-bit fb conversion but don't render some corner cases properly (Harry Potter games).
 						// The hack can fix glitches in some games.
-						// Harry Potter games (Direct3D and OpenGL).
-						// FIFA Street games (Direct3D).
-						// Other games might also benefit from this hack especially on Direct3D.
 						Read(t, t->m_valid);
 					else
 						dst = t;
