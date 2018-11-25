@@ -445,7 +445,6 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_depth_check    = CreateCheckBox("Disable Depth Emulation", "UserHacks_DisableDepthSupport");
 	GtkWidget* hack_cpu_fbcv       = CreateCheckBox("Frame Buffer Conversion", "UserHacks_CPU_FB_Conversion");
 	GtkWidget* hack_auto_flush     = CreateCheckBox("Auto Flush", "UserHacks_AutoFlush");
-	GtkWidget* hack_unscale_prim   = CreateCheckBox("Unscale Point and Line", "UserHacks_unscale_point_line");
 	GtkWidget* hack_merge_sprite   = CreateCheckBox("Merge Sprite", "UserHacks_merge_pp_sprite");
 	GtkWidget* hack_wrap_mem       = CreateCheckBox("Memory Wrapping", "wrap_gs_mem");
 
@@ -474,7 +473,6 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_depth_check, IDC_TC_DEPTH);
 	AddTooltip(hack_cpu_fbcv, IDC_CPU_FB_CONVERSION);
 	AddTooltip(hack_auto_flush, IDC_AUTO_FLUSH);
-	AddTooltip(hack_unscale_prim, IDC_UNSCALE_POINT_LINE);
 	AddTooltip(hack_merge_sprite, IDC_MERGE_PP_SPRITE);
 	AddTooltip(hack_wrap_mem, IDC_MEMORY_WRAPPING);
 	AddTooltip(trilinear_box, IDC_TRI_FILTER);
@@ -487,8 +485,8 @@ void populate_hack_table(GtkWidget* hack_table)
 	InsertWidgetInTable(hack_table , align_sprite_check  , hack_wrap_mem);
 	InsertWidgetInTable(hack_table , hack_auto_flush     , hack_merge_sprite);
 	InsertWidgetInTable(hack_table , hack_depth_check    , preload_gs_check);
-	InsertWidgetInTable(hack_table , hack_fast_inv       , hack_unscale_prim);
-	InsertWidgetInTable(hack_table , hack_cpu_fbcv       , hack_wild_check);
+	InsertWidgetInTable(hack_table , hack_fast_inv       , hack_wild_check);
+	InsertWidgetInTable(hack_table , hack_cpu_fbcv);
 	// Other upscaling hacks
 	InsertWidgetInTable(hack_table , trilinear_label     , trilinear_box);
 	InsertWidgetInTable(hack_table , hack_offset_label   , hack_offset_box);

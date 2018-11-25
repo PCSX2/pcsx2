@@ -54,7 +54,6 @@ class GSDevice11 : public GSDeviceDX
 	CComPtr<ID3D11Buffer> m_ib_old;
 
 	bool m_srv_changed, m_ss_changed;
-	bool UserHacks_unscale_pt_ln;
 	float m_hack_topleft_offset;
 
 	int m_mipmap;

@@ -27,14 +27,6 @@
 GSRendererDX11::GSRendererDX11()
 	: GSRendererDX(new GSTextureCache11(this), GSVector2(-0.5f))
 {
-	if (theApp.GetConfigB("UserHacks"))
-	{
-		UserHacks_unscale_pt_ln = theApp.GetConfigB("UserHacks_unscale_point_line");
-	}
-	else
-	{
-		UserHacks_unscale_pt_ln = false;
-	}
 }
 
 bool GSRendererDX11::CreateDevice(GSDevice* dev)
@@ -188,12 +180,12 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 
 	D3D11_PRIMITIVE_TOPOLOGY t;
 
-	bool unscale_hack = UserHacks_unscale_pt_ln && (GetUpscaleMultiplier() != 1);
+	bool unscale_pt_ln = (GetUpscaleMultiplier() != 1);
 
 	switch (m_vt.m_primclass)
 	{
 	case GS_POINT_CLASS:
-		if (unscale_hack)
+		if (unscale_pt_ln)
 		{
 			m_gs_sel.point = 1;
 			gs_cb.PointSize = GSVector2(16.0f * sx, 16.0f * sy);
@@ -202,7 +194,7 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 		t = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
 		break;
 	case GS_LINE_CLASS:
-		if (unscale_hack)
+		if (unscale_pt_ln)
 		{
 			m_gs_sel.line = 1;
 			gs_cb.PointSize = GSVector2(16.0f * sx, 16.0f * sy);
