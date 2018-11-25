@@ -592,10 +592,10 @@ vec4 ps_color()
     vec4 T = fetch_blue();
 #elif PS_CHANNEL_FETCH == 4
     vec4 T = fetch_alpha();
+#elif PS_CHANNEL_FETCH == 5
+    vec4 T = fetch_rgb();
 #elif PS_CHANNEL_FETCH == 6
     vec4 T = fetch_gXbY();
-#elif PS_CHANNEL_FETCH == 7
-    vec4 T = fetch_rgb();
 #elif PS_DEPTH_FMT > 0
     // Integral coordinate
     vec4 T = sample_depth(st_int);

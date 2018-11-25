@@ -60,8 +60,8 @@ enum ChannelFetch
 	ChannelFetch_GREEN = 2,
 	ChannelFetch_BLUE  = 3,
 	ChannelFetch_ALPHA = 4,
+	ChannelFetch_RGB   = 5,
 	ChannelFetch_GXBY  = 6,
-	ChannelFetch_RGB   = 7,
 };
 
 #pragma pack(push, 1)
