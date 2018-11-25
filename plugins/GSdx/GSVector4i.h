@@ -1945,7 +1945,7 @@ public:
 	{
 		ASSERT((size & 63) == 0);
 
-		size >>= 6;
+		size >>= 4;
 
 		GSVector4i* s = (GSVector4i*)src;
 		GSVector4i* d = (GSVector4i*)dst;
