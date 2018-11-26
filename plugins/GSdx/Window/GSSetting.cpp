@@ -190,7 +190,8 @@ const char* dialog_message(int ID, bool* updateText) {
 				"\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine games.";
 		case IDC_LARGE_FB:
 			return "Allocate a large framebuffer to be compliant with GS memory (Prevents FMV flickering).\n"
-				"It increases GPU/memory requirements.";
+				"It increases GPU/memory requirements.\n\n"
+				"Note: This hack can cause huge RAM/VRAM spikes on some games.";
 		default:
 			if (updateText)
 				*updateText = false;

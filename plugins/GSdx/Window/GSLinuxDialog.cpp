@@ -281,7 +281,6 @@ void populate_hw_table(GtkWidget* hw_table)
 
 	GtkWidget* paltex_check     = CreateCheckBox("Allow 8 bits textures", "paltex");
 	GtkWidget* acc_date_check   = CreateCheckBox("Accurate Date", "accurate_date");
-	GtkWidget* large_fb_check   = CreateCheckBox("Large Framebuffer", "large_framebuffer");
 
 	GtkWidget* acc_bld_label     = left_label("Blending Unit Accuracy:");
 	GtkWidget* acc_bld_combo_box = CreateComboBoxFromVector(theApp.m_gs_acc_blend_level, "accurate_blending_unit");
@@ -294,7 +293,6 @@ void populate_hw_table(GtkWidget* hw_table)
 	// Some helper string
 	AddTooltip(paltex_check, IDC_PALTEX);
 	AddTooltip(acc_date_check, IDC_ACCURATE_DATE);
-	AddTooltip(large_fb_check, IDC_LARGE_FB);
 	AddTooltip(crc_label, crc_combo_box, IDC_CRC_LEVEL);
 	AddTooltip(acc_bld_label, acc_bld_combo_box, IDC_ACCURATE_BLEND_UNIT);
 	AddTooltip(af_label, af_combo_box, IDC_AFCOMBO);
@@ -304,7 +302,7 @@ void populate_hw_table(GtkWidget* hw_table)
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table , paltex_check  , acc_date_check);
-	InsertWidgetInTable(hw_table , large_fb_check, hack_enable_check);
+	InsertWidgetInTable(hw_table , hack_enable_check);
 	InsertWidgetInTable(hw_table , fsaa_label    , fsaa_combo_box);
 	InsertWidgetInTable(hw_table , af_label      , af_combo_box);
 	InsertWidgetInTable(hw_table , acc_bld_label , acc_bld_combo_box);
@@ -446,6 +444,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_cpu_fbcv       = CreateCheckBox("Frame Buffer Conversion", "UserHacks_CPU_FB_Conversion");
 	GtkWidget* hack_auto_flush     = CreateCheckBox("Auto Flush", "UserHacks_AutoFlush");
 	GtkWidget* hack_merge_sprite   = CreateCheckBox("Merge Sprite", "UserHacks_merge_pp_sprite");
+	GtkWidget* large_fb_check      = CreateCheckBox("Large Framebuffer", "large_framebuffer");
 	GtkWidget* hack_wrap_mem       = CreateCheckBox("Memory Wrapping", "wrap_gs_mem");
 
 	GtkWidget* hack_sprite_box     = CreateComboBoxFromVector(theApp.m_gs_hack, "UserHacks_SpriteHack");
@@ -474,6 +473,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_cpu_fbcv, IDC_CPU_FB_CONVERSION);
 	AddTooltip(hack_auto_flush, IDC_AUTO_FLUSH);
 	AddTooltip(hack_merge_sprite, IDC_MERGE_PP_SPRITE);
+	AddTooltip(large_fb_check, IDC_LARGE_FB);
 	AddTooltip(hack_wrap_mem, IDC_MEMORY_WRAPPING);
 	AddTooltip(trilinear_box, IDC_TRI_FILTER);
 	AddTooltip(trilinear_label, IDC_TRI_FILTER);
@@ -482,11 +482,11 @@ void populate_hack_table(GtkWidget* hack_table)
 	s_table_line = 0;
 	//Hacks
 	// Column one and two HW Hacks
-	InsertWidgetInTable(hack_table , align_sprite_check  , hack_wrap_mem);
-	InsertWidgetInTable(hack_table , hack_auto_flush     , hack_merge_sprite);
-	InsertWidgetInTable(hack_table , hack_depth_check    , preload_gs_check);
-	InsertWidgetInTable(hack_table , hack_fast_inv       , hack_wild_check);
-	InsertWidgetInTable(hack_table , hack_cpu_fbcv);
+	InsertWidgetInTable(hack_table , align_sprite_check  , large_fb_check);
+	InsertWidgetInTable(hack_table , hack_auto_flush     , hack_wrap_mem);
+	InsertWidgetInTable(hack_table , hack_depth_check    , hack_merge_sprite);
+	InsertWidgetInTable(hack_table , hack_fast_inv       , preload_gs_check);
+	InsertWidgetInTable(hack_table , hack_cpu_fbcv       , hack_wild_check);
 	// Other upscaling hacks
 	InsertWidgetInTable(hack_table , trilinear_label     , trilinear_box);
 	InsertWidgetInTable(hack_table , hack_offset_label   , hack_offset_box);

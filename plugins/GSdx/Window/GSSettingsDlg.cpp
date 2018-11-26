@@ -153,7 +153,6 @@ void GSSettingsDlg::OnInit()
 	ComboBoxInit(IDC_CRC_LEVEL, theApp.m_gs_crc_level, theApp.GetConfigI("crc_hack_level"));
 
 	CheckDlgButton(m_hWnd, IDC_PALTEX, theApp.GetConfigB("paltex"));
-	CheckDlgButton(m_hWnd, IDC_LARGE_FB, theApp.GetConfigB("large_framebuffer"));
 	CheckDlgButton(m_hWnd, IDC_LOGZ, theApp.GetConfigB("logz"));
 	CheckDlgButton(m_hWnd, IDC_FBA, theApp.GetConfigB("fba"));
 	CheckDlgButton(m_hWnd, IDC_MIPMAP_SW, theApp.GetConfigB("mipmap"));
@@ -185,7 +184,6 @@ void GSSettingsDlg::OnInit()
 	AddTooltip(IDC_SWTHREADS_EDIT);
 	AddTooltip(IDC_FBA);
 	AddTooltip(IDC_LOGZ);
-	AddTooltip(IDC_LARGE_FB);
 
 	UpdateControls();
 }
@@ -299,7 +297,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 			theApp.SetConfig("mipmap", (int)IsDlgButtonChecked(m_hWnd, IDC_MIPMAP_SW));
 			theApp.SetConfig("paltex", (int)IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
-			theApp.SetConfig("large_framebuffer", (int)IsDlgButtonChecked(m_hWnd, IDC_LARGE_FB));
 			theApp.SetConfig("logz", (int)IsDlgButtonChecked(m_hWnd, IDC_LOGZ));
 			theApp.SetConfig("fba", (int)IsDlgButtonChecked(m_hWnd, IDC_FBA));
 			theApp.SetConfig("aa1", (int)IsDlgButtonChecked(m_hWnd, IDC_AA1));
@@ -399,7 +396,6 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_LARGE_FB), integer_scaling > 1 && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), ocl);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !integer_scaling);
@@ -653,6 +649,7 @@ void GSHacksDlg::OnInit()
 	bool dx11 = renderer == GSRendererType::DX1011_HW;
 	bool ogl = renderer == GSRendererType::OGL_HW;
 	bool native = upscaling_multiplier == 1;
+	bool custom = upscaling_multiplier == 0;
 
 	if(dx9) for(unsigned short i = 0; i < 17; i++)
 	{
@@ -695,6 +692,7 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_CPU_FB_CONVERSION, theApp.GetConfigB("UserHacks_CPU_FB_Conversion"));
 	CheckDlgButton(m_hWnd, IDC_FAST_TC_INV, theApp.GetConfigB("UserHacks_DisablePartialInvalidation"));
 	CheckDlgButton(m_hWnd, IDC_AUTO_FLUSH, theApp.GetConfigB("UserHacks_AutoFlush"));
+	CheckDlgButton(m_hWnd, IDC_LARGE_FB, theApp.GetConfigB("large_framebuffer"));
 	CheckDlgButton(m_hWnd, IDC_MEMORY_WRAPPING, theApp.GetConfigB("wrap_gs_mem"));
 	CheckDlgButton(m_hWnd, IDC_MERGE_PP_SPRITE, theApp.GetConfigB("UserHacks_merge_pp_sprite"));
 
@@ -737,6 +735,7 @@ void GSHacksDlg::OnInit()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK_TEXT), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK), !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MERGE_PP_SPRITE), !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_LARGE_FB), !native && !custom);
 
 	// OpenGL Very Advanced Custom Settings:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_GEOMETRY_SHADER_OVERRIDE), ogl);
@@ -765,6 +764,7 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_CPU_FB_CONVERSION);
 	AddTooltip(IDC_FAST_TC_INV);
 	AddTooltip(IDC_AUTO_FLUSH);
+	AddTooltip(IDC_LARGE_FB);
 	AddTooltip(IDC_MEMORY_WRAPPING);
 	AddTooltip(IDC_TRI_FILTER);
 	AddTooltip(IDC_MERGE_PP_SPRITE);
@@ -864,6 +864,7 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_CPU_FB_Conversion", (int)IsDlgButtonChecked(m_hWnd, IDC_CPU_FB_CONVERSION));
 			theApp.SetConfig("UserHacks_DisablePartialInvalidation", (int)IsDlgButtonChecked(m_hWnd, IDC_FAST_TC_INV));
 			theApp.SetConfig("UserHacks_AutoFlush", (int)IsDlgButtonChecked(m_hWnd, IDC_AUTO_FLUSH));
+			theApp.SetConfig("large_framebuffer", (int)IsDlgButtonChecked(m_hWnd, IDC_LARGE_FB));
 			theApp.SetConfig("wrap_gs_mem", (int)IsDlgButtonChecked(m_hWnd, IDC_MEMORY_WRAPPING));
 			theApp.SetConfig("UserHacks_merge_pp_sprite", (int)IsDlgButtonChecked(m_hWnd, IDC_MERGE_PP_SPRITE));
 			theApp.SetConfig("UserHacks_TCOffsetX", SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0));

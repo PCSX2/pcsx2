@@ -38,13 +38,13 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 {
 	m_mipmap = theApp.GetConfigI("mipmap_hw");
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
-	m_large_framebuffer  = theApp.GetConfigB("large_framebuffer");
 	if (theApp.GetConfigB("UserHacks")) {
 		m_userhacks_align_sprite_X       = theApp.GetConfigB("UserHacks_align_sprite_X");
 		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
 		m_userhacks_disable_gs_mem_clear = theApp.GetConfigB("UserHacks_DisableGsMemClear");
 		m_userHacks_HPO                  = theApp.GetConfigI("UserHacks_HalfPixelOffset");
 		m_userHacks_merge_sprite         = theApp.GetConfigB("UserHacks_merge_pp_sprite");
+		m_large_framebuffer              = theApp.GetConfigB("large_framebuffer");
 		m_userhacks_tcoffset_x           = theApp.GetConfigI("UserHacks_TCOffsetX") / -1000.0f;
 		m_userhacks_tcoffset_y           = theApp.GetConfigI("UserHacks_TCOffsetY") / -1000.0f;
 		m_userhacks_tcoffset             = m_userhacks_tcoffset_x < 0.0f || m_userhacks_tcoffset_y < 0.0f;
@@ -54,6 +54,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userhacks_disable_gs_mem_clear = false;
 		m_userHacks_HPO                  = 0;
 		m_userHacks_merge_sprite         = false;
+		m_large_framebuffer              = false;
 	}
 
 	if (!m_upscale_multiplier) { //Custom Resolution
