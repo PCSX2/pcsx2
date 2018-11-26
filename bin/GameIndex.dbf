@@ -7397,7 +7397,6 @@ Serial = SLES-50382
 Name   = Silent Hill 2
 Region = PAL-M6
 Compat = 5
-FMVinSoftwareHack = 1 // Avoids obscured FMVs due to GS upscaling lines.
 ---------------------------------------------
 Serial = SLES-50383
 Name   = Metal Gear Solid 2 - Sons of Liberty
@@ -9145,7 +9144,6 @@ Serial = SLES-51156
 Name   = Silent Hill 2 - Director's Cut
 Region = PAL-M5
 Compat = 5
-FMVinSoftwareHack = 1 // Avoids obscured FMVs due to GS upscaling lines.
 ---------------------------------------------
 Serial = SLES-51157
 Name   = Silent Scope 3
@@ -21851,7 +21849,6 @@ Serial = SLPM-65051
 Name   = Silent Hill 2
 Region = NTSC-J
 Compat = 5
-FMVinSoftwareHack = 1 // Avoids obscured FMVs due to GS upscaling lines.
 ---------------------------------------------
 Serial = SLPM-65052
 Name   = Guitar Freaks 4th Mix & Drummania 3rd Mix
@@ -22013,7 +22010,6 @@ Serial = SLPM-65098
 Name   = Silent Hill 2 - Saigo no Uta
 Region = NTSC-J
 Compat = 5
-FMVinSoftwareHack = 1 // Avoids obscured FMVs due to GS upscaling lines.
 ---------------------------------------------
 Serial = SLPM-65100
 Name   = Onimusha 2
@@ -22809,7 +22805,6 @@ Region = NTSC-J
 Serial = SLPM-65341
 Name   = Silent Hill 2 - Saigo No Uta [Konami The Best]
 Region = NTSC-J
-FMVinSoftwareHack = 1 // Avoids obscured FMVs due to GS upscaling lines.
 ---------------------------------------------
 Serial = SLPM-65342
 Name   = Kyoufu Shinbun (Heisei) Kaiki! Shinrei File
@@ -23872,7 +23867,6 @@ Region = NTSC-J
 Serial = SLPM-65631
 Name   = Silent Hill 2 [Konami The Best]
 Region = NTSC-J
-FMVinSoftwareHack = 1 // Avoids obscured FMVs due to GS upscaling lines.
 ---------------------------------------------
 Serial = SLPM-65632
 Name   = Virtua Fighter Cyber Generation - Ambition of the Judgement Six
@@ -35406,7 +35400,6 @@ Serial = SLUS-20228
 Name   = Silent Hill 2
 Region = NTSC-U
 Compat = 5
-FMVinSoftwareHack = 1 // Avoids obscured FMVs due to GS upscaling lines.
 ---------------------------------------------
 Serial = SLUS-20229
 Name   = Jonny Moseley - Mad Trix
