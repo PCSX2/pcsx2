@@ -292,6 +292,10 @@ void GSdxApp::Init()
 		GSSetting(CRCHackLevel::Aggressive, "Aggressive", ""),
 	};
 
+	m_gs_acc_date_level.push_back(GSSetting(0, "Off", ""));
+	m_gs_acc_date_level.push_back(GSSetting(1, "Fast", "Default"));
+	m_gs_acc_date_level.push_back(GSSetting(2, "Full", "Slow"));
+
 	m_gs_acc_blend_level.push_back(GSSetting(0, "None", "Fastest"));
 	m_gs_acc_blend_level.push_back(GSSetting(1, "Basic", "Recommended low-end PC"));
 	m_gs_acc_blend_level.push_back(GSSetting(2, "Medium", ""));
@@ -351,8 +355,8 @@ void GSdxApp::Init()
 #endif
 
 	m_default_configuration["aa1"]                                        = "0";
+	m_default_configuration["accurate_date"]                              = "1";
 	m_default_configuration["accurate_blending_unit"]                     = "1";
-	m_default_configuration["accurate_date"]                              = "0";
 	m_default_configuration["AspectRatio"]                                = "1";
 	m_default_configuration["capture_enabled"]                            = "0";
 	m_default_configuration["capture_out_dir"]                            = "/tmp/GSdx_Capture";
