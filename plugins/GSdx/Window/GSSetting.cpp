@@ -107,15 +107,25 @@ const char* dialog_message(int ID, bool* updateText) {
 				"It is basically a trade-off between GPU/CPU.";
 		case IDC_ACCURATE_DATE:
 			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n\n"
-				"It could be slower when the effects are used.";
+				"None:\nDisables accurate destination alpha testing.\n\n"
+				"Fast:\nFast accurate destination alpha testing.\n"
+				"Most of the time this option should be enough.\n"
+				"This is the recommended setting.\n\n"
+				"Full:\nSlower but fully emulates destination alpha testing.\n"
+				"Not needed unless Fast mode isn't enough.";
 		case IDC_ACCURATE_BLEND_UNIT:
 			return "Control the accuracy level of the GS blending unit emulation.\n\n"
-				"None:\nFast but introduce various rendering issues. It is intended for slow computer.\n\n"
-				"Basic:\nEmulate correctly most of the effects with a limited speed penalty. It is the recommended setting.\n\n"
+				"None:\nFast but introduces various rendering issues.\n"
+				"It is intended for slow computer.\n\n"
+				"Basic:\nEmulate correctly most of the effects with a limited speed penalty.\n"
+				"This is the recommended setting.\n\n"
 				"Medium:\nExtend it to all sprites. Performance impact remains reasonable in 3D game.\n\n"
-				"High:\nExtend it to destination alpha blending and color wrapping. (help shadow and fog effect). A good CPU is required.\n\n"
-				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is ultra slow! It is intended for debug.\n\n"
-				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow! It is intended for debug.";
+				"High:\nExtend it to destination alpha blending and color wrapping (helps shadow and fog effects).\n"
+				"A good CPU is required.\n\n"
+				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is ultra slow!\n"
+				"It is intended for debug.\n\n"
+				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow!\n"
+				"It is intended for debug.";
 		case IDC_TC_DEPTH:
 			return "Disable the support of Depth buffer in the texture cache.\n"
 				"It can help to increase speed but it will likely create various glitches.";

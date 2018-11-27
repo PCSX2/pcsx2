@@ -27,9 +27,8 @@
 GSRendererOGL::GSRendererOGL()
 	: GSRendererHW(new GSTextureCacheOGL(this))
 {
-	m_accurate_date   = theApp.GetConfigB("accurate_date");
-
-	m_sw_blending = theApp.GetConfigI("accurate_blending_unit");
+	m_accurate_date = theApp.GetConfigI("accurate_date");
+	m_sw_blending   = theApp.GetConfigI("accurate_blending_unit");
 
 	// Hope nothing requires too many draw calls.
 	m_drawlist.reserve(2048);
@@ -1131,15 +1130,27 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				m_require_full_barrier = true;
 				DATE_GL45 = true;
 				DATE = false;
-			} else if (m_accurate_date) {
-				GL_PERF("Slow DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
-
-				if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture) {
-					DATE_GL42 = true;
-				} else {
-					m_require_full_barrier = true;
-					DATE_GL45 = true;
-					DATE = false;
+			} else {
+				switch (m_accurate_date) {
+					case ACC_DATE_FULL:
+						GL_PERF("Full Accurate DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+						if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture) {
+							DATE_GL42 = true;
+						} else {
+							m_require_full_barrier = true;
+							DATE_GL45 = true;
+							DATE = false;
+						}
+						break;
+					case ACC_DATE_FAST:
+						GL_PERF("Fast Accurate DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+						DATE_one = true;
+						break;
+					case ACC_DATE_NONE:
+					default:
+						GL_PERF("Inaccurate DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+						DATE = true;
+						break;
 				}
 			}
 		} else if (!m_om_csel.wa && !m_context->TEST.ATE) {

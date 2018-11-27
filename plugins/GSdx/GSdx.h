@@ -81,6 +81,7 @@ public:
 	std::vector<GSSetting> m_gs_offset_hack;
 	std::vector<GSSetting> m_gs_hw_mipmapping;
 	std::vector<GSSetting> m_gs_crc_level;
+	std::vector<GSSetting> m_gs_acc_date_level;
 	std::vector<GSSetting> m_gs_acc_blend_level;
 	std::vector<GSSetting> m_gs_tv_shaders;
 
