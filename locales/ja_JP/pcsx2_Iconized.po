@@ -1,6 +1,7 @@
-# Copyright (C) YEAR PCSX2 Dev Team
+# Copyright (C) 2018 PCSX2 Dev Team
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Original Translation done by DeltaHF.
+# Chromaryu <knight.ryu12@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
