@@ -247,7 +247,7 @@ public:
 				uint32 zwe:1;
 				uint32 date:1;
 				uint32 fba:1;
-				uint32 alpha_stencil:1;
+				uint32 date_one:1;
 			};
 
 			uint32 key;

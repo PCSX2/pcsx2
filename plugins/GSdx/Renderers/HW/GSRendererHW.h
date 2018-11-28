@@ -154,6 +154,8 @@ protected:
 	float m_userhacks_tcoffset_x;
 	float m_userhacks_tcoffset_y;
 
+	int m_accurate_date;
+
 	bool m_channel_shuffle;
 
 	GSVector2i m_lod; // Min & Max level of detail

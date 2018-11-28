@@ -27,7 +27,6 @@
 GSRendererOGL::GSRendererOGL()
 	: GSRendererHW(new GSTextureCacheOGL(this))
 {
-	m_accurate_date = theApp.GetConfigI("accurate_date");
 	m_sw_blending   = theApp.GetConfigI("accurate_blending_unit");
 
 	// Hope nothing requires too many draw calls.
