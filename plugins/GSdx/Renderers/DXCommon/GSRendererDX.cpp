@@ -402,6 +402,55 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	EmulateTextureShuffleAndFbmask();
 
+	// DATE: selection of the algorithm.
+
+	if (DATE)
+	{
+		if (!UserHacks_AlphaStencil && m_om_bsel.wa && !m_context->TEST.ATE)
+		{
+			// Performance note: check alpha range with GetAlphaMinMax()
+			GetAlphaMinMax();
+			if (m_context->TEST.DATM && m_vt.m_alpha.max < 128)
+			{
+				// Only first pixel (write 0) will pass (alpha is 1)
+				// fprintf(stderr, "Fast DATE with alpha %d-%d\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				m_om_dssel.date_one = 1;
+			}
+			else if (!m_context->TEST.DATM && m_vt.m_alpha.min >= 128)
+			{
+				// Only first pixel (write 1) will pass (alpha is 0)
+				// fprintf(stderr, "Fast DATE with alpha %d-%d\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				m_om_dssel.date_one = 1;
+			}
+			else if ((m_vt.m_primclass == GS_SPRITE_CLASS /*&& m_drawlist.size() < 50*/) || (m_index.tail < 100))
+			{
+				// Direct3D doesn't support Slow DATE_GL45.
+				// Let's leave the check to ensure DATE_one is emulated properly on Fast Accurate DATE.
+				// m_drawlist.size() isn't supported on D3D so there will be more games hitting this code path,
+				// it should be fine with regular DATE since originally it ran with anyway.
+				// Note: Potentially Alpha Stencil might emulate SLOW DATE properly. Perhaps some of the code can be implemented here.
+				// fprintf(stderr, "Slow DATE with alpha %d-%d is not supported\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
+			}
+			else
+			{
+				if (m_accurate_date)
+				{
+					// fprintf(stderr, "Fast Accurate DATE with alpha %d-%d\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
+					m_om_dssel.date_one = 1;
+				}
+				else
+				{
+					// DATE is already true, no need for another check.
+					// fprintf(stderr, "Inaccurate DATE with alpha %d-%d\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				}
+			}
+		}
+		else if (!m_om_bsel.wa && !m_context->TEST.ATE)
+		{
+			// TODO: is it legal ? Likely but it need to be tested carefully.
+		}
+	}
+
 	// Blend
 
 	if (!IsOpaque())
@@ -638,7 +687,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			ps_cb.FogColor_AREF.a = (float)0x80;
 		}
 		if (!(m_context->FBA.FBA && m_context->TEST.DATM == 1))
-			m_om_dssel.alpha_stencil = 1;
+			m_om_dssel.date_one = 1;
 	}
 
 	if (tex)

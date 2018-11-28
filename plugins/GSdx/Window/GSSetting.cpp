@@ -112,7 +112,8 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Most of the time this option should be enough.\n"
 				"This is the recommended setting.\n\n"
 				"Full:\nSlower but fully emulates destination alpha testing.\n"
-				"Not needed unless Fast mode isn't enough.";
+				"Not needed unless Fast mode isn't enough.\n\n"
+				"Note: Full mode is not available on Direct3D.";
 		case IDC_ACCURATE_BLEND_UNIT:
 			return "Control the accuracy level of the GS blending unit emulation.\n\n"
 				"None:\nFast but introduces various rendering issues.\n"
