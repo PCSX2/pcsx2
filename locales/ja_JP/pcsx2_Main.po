@@ -3,8 +3,6 @@
 # Original Translation done by DeltaHF.
 # Chromaryu <knight.ryu12@gmail.com>, 2018. 
 #
-msgid ""
-msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2018-11-22 22:13+0900\n"
