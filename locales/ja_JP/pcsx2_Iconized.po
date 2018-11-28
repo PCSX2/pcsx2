@@ -1,9 +1,11 @@
 # Copyright (C) 2018 PCSX2 Dev Team
-# This file is distributed under the same license as the PCSX2 package.
+# This file is distributed under the same license as the PACKAGE package.
 # Original Translation done by DeltaHF.
 # Chromaryu <knight.ryu12@gmail.com>, 2018.
 #
-"Project-Id-Version: PCSX2 1.5.0\n"
+msgid ""
+msgstr ""
+"Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2018-11-21 22:02+0900\n"
 "PO-Revision-Date: 2018-11-28 21:14+0900\n"
