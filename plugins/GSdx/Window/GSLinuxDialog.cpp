@@ -270,6 +270,10 @@ GtkWidget* CreateTableInBox(GtkWidget* parent_box, const char* frame_title, int 
 
 void populate_hw_table(GtkWidget* hw_table)
 {
+	GtkWidget* hack_enable_check = CreateCheckBox("Enable User Hacks", "UserHacks");
+	GtkWidget* paltex_check   = CreateCheckBox("Allow 8 bits textures", "paltex");
+	GtkWidget* large_fb_check = CreateCheckBox("Large Framebuffer", "large_framebuffer");
+
 	GtkWidget* fsaa_label     = left_label("Internal Resolution:");
 	GtkWidget* fsaa_combo_box = CreateComboBoxFromVector(theApp.m_gs_upscale_multiplier, "upscale_multiplier");
 
@@ -279,8 +283,8 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* crc_label     = left_label("Automatic CRC level:");
 	GtkWidget* crc_combo_box = CreateComboBoxFromVector(theApp.m_gs_crc_level, "crc_hack_level");
 
-	GtkWidget* paltex_check   = CreateCheckBox("Allow 8 bits textures", "paltex");
-	GtkWidget* large_fb_check = CreateCheckBox("Large Framebuffer", "large_framebuffer");
+	GtkWidget* mipmap_label     = left_label("Mipmapping (Insert):");
+	GtkWidget* mipmap_combo_box = CreateComboBoxFromVector(theApp.m_gs_hw_mipmapping, "mipmap_hw");
 
 	GtkWidget* acc_date_label     = left_label("Accurate Date:");
 	GtkWidget* acc_date_combo_box = CreateComboBoxFromVector(theApp.m_gs_acc_date_level, "accurate_date");
@@ -288,31 +292,26 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* acc_bld_label     = left_label("Blending Unit Accuracy:");
 	GtkWidget* acc_bld_combo_box = CreateComboBoxFromVector(theApp.m_gs_acc_blend_level, "accurate_blending_unit");
 
-	GtkWidget* hack_enable_check   = CreateCheckBox("Enable User Hacks", "UserHacks");
-
-	GtkWidget* mipmap_label     = left_label("Mipmapping (Insert):");
-	GtkWidget* mipmap_combo_box = CreateComboBoxFromVector(theApp.m_gs_hw_mipmapping, "mipmap_hw");
-
 	// Some helper string
+	gtk_widget_set_tooltip_text(hack_enable_check, "Enable the HW hack option panel");
 	AddTooltip(paltex_check, IDC_PALTEX);
 	AddTooltip(large_fb_check, IDC_LARGE_FB);
 	AddTooltip(crc_label, crc_combo_box, IDC_CRC_LEVEL);
-	AddTooltip(acc_date_label, acc_date_combo_box, IDC_ACCURATE_DATE);
-	AddTooltip(acc_bld_label, acc_bld_combo_box, IDC_ACCURATE_BLEND_UNIT);
 	AddTooltip(af_label, af_combo_box, IDC_AFCOMBO);
-	gtk_widget_set_tooltip_text(hack_enable_check, "Enable the HW hack option panel");
 	AddTooltip(mipmap_label, IDC_MIPMAP_HW);
 	AddTooltip(mipmap_combo_box, IDC_MIPMAP_HW);
+	AddTooltip(acc_date_label, acc_date_combo_box, IDC_ACCURATE_DATE);
+	AddTooltip(acc_bld_label, acc_bld_combo_box, IDC_ACCURATE_BLEND_UNIT);
 
 	s_table_line = 0;
-	InsertWidgetInTable(hw_table , paltex_check);
-	InsertWidgetInTable(hw_table , large_fb_check, hack_enable_check);
-	InsertWidgetInTable(hw_table , fsaa_label    , fsaa_combo_box);
-	InsertWidgetInTable(hw_table , af_label      , af_combo_box);
-	InsertWidgetInTable(hw_table , acc_date_label, acc_date_combo_box);
-	InsertWidgetInTable(hw_table , acc_bld_label , acc_bld_combo_box);
-	InsertWidgetInTable(hw_table , crc_label     , crc_combo_box);
-	InsertWidgetInTable(hw_table , mipmap_label  , mipmap_combo_box);
+	InsertWidgetInTable(hw_table , hack_enable_check);
+	InsertWidgetInTable(hw_table , paltex_check   , large_fb_check);
+	InsertWidgetInTable(hw_table , fsaa_label     , fsaa_combo_box);
+	InsertWidgetInTable(hw_table , af_label       , af_combo_box);
+	InsertWidgetInTable(hw_table , crc_label      , crc_combo_box);
+	InsertWidgetInTable(hw_table , mipmap_label   , mipmap_combo_box);
+	InsertWidgetInTable(hw_table , acc_date_label , acc_date_combo_box);
+	InsertWidgetInTable(hw_table , acc_bld_label  , acc_bld_combo_box);
 }
 
 void populate_gl_table(GtkWidget* gl_table)
