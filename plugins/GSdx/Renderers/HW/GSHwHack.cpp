@@ -85,29 +85,36 @@ bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 // Potentially partially dx only
 bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 {
+	// Note: As of 29 Nov 2018 the behaviour of these hacks has slightly changed due to increase in emulator accuracy I think. 
 	if(skip == 0)
 	{
 		if(Aggressive && fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0x00000)
 		{
-			// Partially works on D3D. OpenGL has no such issues.
-			// Hack removes character outlines as well as black borders on the sides of the screen.
-			// Without the hack one of the borders at the bottom of the screen can start shaking when using the Direct3D 9 renderer. This is caused by resolution upscale.
-			// This can also be fixed by using the TC Offsets x and y hardware hacks or using Native resolution.
+			// Upscaling issue. Removes character outlines.
+			// Can be fixed with TC X,Y offsets.
 			skip = 28;
 		}
 		else if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMZ16)
 		{
 			// Sky texture (Depth) is properly rendered on OpenGL only for the NTSC version. The PAL version still has some issues (half screen bottom issue).
-			if(g_crc_region == CRC::EU || Dx_only)
+			if(g_crc_region == CRC::EU)
 			{
+				// Note: Depth Emulation should be disabled when running this hack. It may cause some ground glitches otherwise.
+				// Note2: skip 4 causes black texture flickering on some stages, also skip 5 breaks glow effect on native res.
 				skip = 5;
+			}
+			else
+			{
+				// Note: Skip 5 causes an entire black screen on some stages.
+				if(Dx_only)
+					skip = 4;
 			}
 		}
 		else if((g_crc_region == CRC::EU || Dx_only || !s_nativeres) && fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
 		{
 			// Don't enable hack on native res if crc is below DX level.
-			// Ghosting (glow) effect. Ghosting appears when resolution is upscaled. Doesn't appear on native resolution.
-			// This can also be fixed by using the TC Offsets x and y hardware hacks or using Native resolution.
+			// Ghosting/Blur effect. Upscaling issue.
+			// Can be fixed with TC X,Y offsets.
 			skip = 3;
 		}
 	}
