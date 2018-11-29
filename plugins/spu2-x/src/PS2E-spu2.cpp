@@ -218,33 +218,6 @@ CALLBACK SPU2setLogDir(const char *dir)
     CfgSetLogDir(dir);
 }
 
-EXPORT_C_(s32)
-SPU2dmaRead(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed)
-{
-    if (channel == 4)
-        return Cores[0].NewDmaRead(data, bytesLeft, bytesProcessed);
-    else
-        return Cores[1].NewDmaRead(data, bytesLeft, bytesProcessed);
-}
-
-EXPORT_C_(s32)
-SPU2dmaWrite(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed)
-{
-    if (channel == 4)
-        return Cores[0].NewDmaWrite(data, bytesLeft, bytesProcessed);
-    else
-        return Cores[1].NewDmaWrite(data, bytesLeft, bytesProcessed);
-}
-
-EXPORT_C_(void)
-SPU2dmaInterrupt(s32 channel)
-{
-    if (channel == 4)
-        return Cores[0].NewDmaInterrupt();
-    else
-        return Cores[1].NewDmaInterrupt();
-}
-
 EXPORT_C_(void)
 SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callback)())
 {
