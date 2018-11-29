@@ -382,6 +382,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
 
 	bool DATE = m_context->TEST.DATE && m_context->FRAME.PSM != PSM_PSMCT24;
+	bool DATE_one = false;
 
 	bool ate_first_pass = m_context->TEST.DoFirstPass();
 	bool ate_second_pass = m_context->TEST.DoSecondPass();
@@ -414,20 +415,20 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			{
 				// Only first pixel (write 0) will pass (alpha is 1)
 				// fprintf(stderr, "Fast DATE with alpha %d-%d\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
-				m_om_dssel.date_one = 1;
+				DATE_one = true;
 			}
 			else if (!m_context->TEST.DATM && m_vt.m_alpha.min >= 128)
 			{
 				// Only first pixel (write 1) will pass (alpha is 0)
 				// fprintf(stderr, "Fast DATE with alpha %d-%d\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
-				m_om_dssel.date_one = 1;
+				DATE_one = true;
 			}
 			else if ((m_vt.m_primclass == GS_SPRITE_CLASS /*&& m_drawlist.size() < 50*/) || (m_index.tail < 100))
 			{
 				// Direct3D doesn't support Slow DATE_GL45.
-				// Let's leave the check to ensure DATE_one is emulated properly on Fast Accurate DATE.
+				// Let's make sure it triggers this check and continues to use the old DATE code to avoid any issues with Fast Accurate Date.
 				// m_drawlist.size() isn't supported on D3D so there will be more games hitting this code path,
-				// it should be fine with regular DATE since originally it ran with anyway.
+				// it should be fine with regular DATE since originally it ran with it anyway.
 				// Note: Potentially Alpha Stencil might emulate SLOW DATE properly. Perhaps some of the code can be implemented here.
 				// fprintf(stderr, "Slow DATE with alpha %d-%d is not supported\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
 			}
@@ -436,7 +437,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 				if (m_accurate_date)
 				{
 					// fprintf(stderr, "Fast Accurate DATE with alpha %d-%d\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
-					m_om_dssel.date_one = 1;
+					DATE_one = true;
 				}
 				else
 				{
@@ -584,6 +585,10 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		if (dev->HasStencil())
 		{
 			m_om_dssel.date = 1;
+			if (DATE_one)
+			{
+				m_om_dssel.date_one = 1;
+			}
 		}
 		else
 		{
