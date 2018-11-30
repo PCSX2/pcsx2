@@ -407,7 +407,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	if (DATE)
 	{
-		if (!UserHacks_AlphaStencil && m_om_bsel.wa && !m_context->TEST.ATE)
+		if (m_om_bsel.wa && !m_context->TEST.ATE)
 		{
 			// Performance note: check alpha range with GetAlphaMinMax()
 			GetAlphaMinMax();
@@ -429,10 +429,10 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 				// Let's make sure it triggers this check and continues to use the old DATE code to avoid any issues with Fast Accurate Date.
 				// m_drawlist.size() isn't supported on D3D so there will be more games hitting this code path,
 				// it should be fine with regular DATE since originally it ran with it anyway.
-				// Note: Potentially Alpha Stencil might emulate SLOW DATE properly. Perhaps some of the code can be implemented here.
+				// Note: Potentially Alpha Stencil might emulate SLOW DATE to some degree. Perhaps some of the code can be implemented here.
 				// fprintf(stderr, "Slow DATE with alpha %d-%d is not supported\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
 			}
-			else
+			else if (!UserHacks_AlphaStencil)
 			{
 				if (m_accurate_date)
 				{
@@ -676,8 +676,9 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// to only draw pixels which would cause the destination alpha test to fail in the future once.
 	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
 	// The interaction with FBA in D3D9 is probably less than ideal.
-	if (UserHacks_AlphaStencil && DATE && dev->HasStencil() && m_om_bsel.wa && !m_context->TEST.ATE)
+	if (UserHacks_AlphaStencil && DATE && !DATE_one && dev->HasStencil() && m_om_bsel.wa && !m_context->TEST.ATE)
 	{
+		// fprintf(stderr, "Alpha Stencil detected\n");
 		if (!m_context->FBA.FBA)
 		{
 			if (m_context->TEST.DATM == 0)
