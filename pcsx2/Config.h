@@ -455,7 +455,7 @@ struct Pcsx2Config
 			EnableCheats		:1,		// enables cheat detection and application
 			EnableWideScreenPatches		:1,
 #ifndef DISABLE_RECORDING
-			EnableRecordingTools : 1,
+			EnableRecordingTools :1,
 #endif
 		// when enabled uses BOOT2 injection, skipping sony bios splashes
 			UseBOOT2Injection	:1,

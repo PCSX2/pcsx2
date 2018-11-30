@@ -219,15 +219,14 @@ SIO_WRITE sioWriteController(u8 data)
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
 			g_InputRecording.ControllerInterrupt(data, sio.port, sio.bufCount, sio.buf);
-			if (g_InputRecording.isInterruptFrame())
+			if (g_InputRecording.IsInterruptFrame())
 			{
 				g_RecordingInput.ControllerInterrupt(data, sio.port, sio.bufCount, sio.buf);
 			}
 
-			PadData::logPadData(sio.port, sio.bufCount, sio.buf);
+			PadData::LogPadData(sio.port, sio.bufCount, sio.buf);
 		}
 #endif
-		
 		break;
 	}
 	//Console.WriteLn( "SIO: sent = %02X  From pad data =  %02X  bufCnt %08X ", data, sio.buf[sio.bufCount], sio.bufCount);

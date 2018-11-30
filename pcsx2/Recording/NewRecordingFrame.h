@@ -18,17 +18,23 @@
 #include <wx/wx.h>
 #include <wx/filepicker.h>
 
-/*
- * The Dialog to pop-up when recording a new movie
-*/
+
+enum MenuIds_New_Recording_Frame
+{
+	MenuIds_New_Recording_Frame_File = 0,
+	MenuIds_New_Recording_Frame_Author,
+	MenuIds_New_Recording_Frame_From
+};
+
+// The Dialog to pop-up when recording a new movie
 class NewRecordingFrame : public wxDialog
 {
 public:
 	NewRecordingFrame(wxWindow *parent);
 
-	wxString getFile() const;
-	wxString getAuthor() const;
-	int getFrom() const;
+	wxString GetFile() const;
+	wxString GetAuthor() const;
+	int GetFrom() const;
 
 private:
 	wxStaticText *m_fileLabel;

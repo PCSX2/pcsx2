@@ -617,7 +617,7 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 #ifndef DISABLE_RECORDING
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			if (g_RecordingControls.isStop())
+			if (g_RecordingControls.HasRecordingStopped())
 			{
 				// While stopping, GSFrame key event also stops, so get key input from here
 				// Along with that, you can not use the shortcut keys set in GSFrame
@@ -631,7 +631,7 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 					}
 				}
 			}
-			g_RecordingControls.StartCheck();
+			g_RecordingControls.ResumeCoreThreadIfStarted();
 		}
 #endif
 		(handler->*func)(event);

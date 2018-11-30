@@ -22,130 +22,126 @@
 #include "MemoryTypes.h"
 #include "SaveState.h"
 
-#include "Recording/RecordingControls.h"
 #include "InputRecording.h"
+#include "Recording/RecordingControls.h"
 
 #include <vector>
 
 
 InputRecording g_InputRecording;
 
-// --------------------------------
 // Tag and save framecount along with savestate
-// --------------------------------
 void SaveStateBase::InputRecordingFreeze()
 {
 	FreezeTag("InputRecording");
 	Freeze(g_FrameCount);
-	if (IsLoading()) {
-		g_InputRecordingData.addUndoCount();
+
+	if (g_FrameCount > 0 && IsLoading())
+	{
+		g_InputRecordingData.AddUndoCount();
 	}
 }
 
-//----------------------------------
 // Main func for handling controller input data
-// Called by Sio.cpp::sioWriteController
-//----------------------------------
+// - Called by Sio.cpp::sioWriteController
 void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 & bufCount, u8 buf[])
 {
 	// TODO - Multi-Tap Support
 	// Only examine controllers 1 / 2
-	if (port < 0 || 1 < port)
+	if (port != 0 && port != 1)
+	{
 		return;
+	}
 
-	//==========================
-	// This appears to try to ensure that we are only paying attention
-	// to the frames that matter, the ones that are reading from
-	// the controller.
-	//
-	// See - Lilypad.cpp:1254
-	// 0x42 is the magic number for the default read query
-	//
-	// NOTE: this appears to break if you have logging enabled in LilyPad's config!
-	//==========================
-	if (bufCount == 1) {
-		if (data == 0x42)
+	/*
+		This appears to try to ensure that we are only paying attention
+		to the frames that matter, the ones that are reading from
+		the controller.
+
+		See - Lilypad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1193
+		0x42 is the magic number for the default read query
+	*/
+	if (bufCount == 1)
+	{
+		fInterruptFrame = data == 0x42;
+		if (!fInterruptFrame)
 		{
-			fInterruptFrame = true;
+			return;
 		}
-		else {
+	}
+	else if ( bufCount == 2 )
+	{
+		/*
+			See - LilyPad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1194
+			0x5A is always the second byte in the buffer
+			when the normal READ_DATA_AND_VIBRRATE (0x42)
+			query is executed, this looks like a sanity check
+		*/
+		if (buf[bufCount] != 0x5A)
+		{
 			fInterruptFrame = false;
 			return;
 		}
 	}
-	else if ( bufCount == 2 ) {
-		// See - LilyPad.cpp:1255
-		// 0x5A is always the second byte in the buffer
-		// when the normal READ_DATA_AND_VIBRRATE (0x42)
-		// query is executed, this looks like a sanity check
-		if (buf[bufCount] != 0x5A) {
-			fInterruptFrame = false;
-			return;
-		}
+
+	if (!fInterruptFrame
+		|| state == INPUT_RECORDING_MODE_NONE
+		// We do not want to record or save the first two
+		// bytes in the data returned from LilyPad
+		|| bufCount < 3)
+	{
+		return;
 	}
 
-	if (!fInterruptFrame)
-		return;
-
-	if (state == NONE)
-		return;
-
-	// We do not want to record or save the first two
-	// bytes in the data returned from LilyPad
-	if (bufCount < 3)
-		return;
-
-	//---------------
 	// Read or Write
-	//---------------
 	const u8 &nowBuf = buf[bufCount];
-	if (state == RECORD)
+	if (state == INPUT_RECORDING_MODE_RECORD)
 	{
-		InputRecordingData.updateFrameMax(g_FrameCount);
-		InputRecordingData.writeKeyBuf(g_FrameCount, port, bufCount - 3, nowBuf);
+		InputRecordingData.UpdateFrameMax(g_FrameCount);
+		InputRecordingData.WriteKeyBuf(g_FrameCount, port, bufCount - 3, nowBuf);
 	}
-	else if (state == REPLAY)
+	else if (state == INPUT_RECORDING_MODE_REPLAY)
 	{
-		if (InputRecordingData.getMaxFrame() <= g_FrameCount)
+		if (InputRecordingData.GetMaxFrame() <= g_FrameCount)
 		{
 			// Pause the emulation but the movie is not closed
 			g_RecordingControls.Pause();
 			return;
 		}
 		u8 tmp = 0;
-		if (InputRecordingData.readKeyBuf(tmp, g_FrameCount, port, bufCount - 3)) {
+		if (InputRecordingData.ReadKeyBuf(tmp, g_FrameCount, port, bufCount - 3))
+		{
 			buf[bufCount] = tmp;
 		}
 	}
 }
 
 
-//----------------------------------
-// stop
-//----------------------------------
-void InputRecording::Stop() {
-	state = NONE;
-	if (InputRecordingData.Close()) {
+// GUI Handler - Stop recording
+void InputRecording::Stop()
+{
+	state = INPUT_RECORDING_MODE_NONE;
+	if (InputRecordingData.Close())
+	{
 		recordingConLog(L"[REC]: InputRecording Recording Stopped.\n");
 	}
 }
 
-//----------------------------------
-// start
-//----------------------------------
+// GUI Handler - Start recording
 void InputRecording::Create(wxString FileName, bool fromSaveState, wxString authorName)
 {
 	g_RecordingControls.Pause();
 	Stop();
 
 	// create
-	if (!InputRecordingData.Open(FileName, true, fromSaveState)) {
+	if (!InputRecordingData.Open(FileName, true, fromSaveState))
+	{
 		return;
 	}
 	// Set author name
 	if (!authorName.IsEmpty())
 	{
-		InputRecordingData.getHeader().setAuthor(authorName);
+		InputRecordingData.GetHeader().SetAuthor(authorName);
 	}
 	// Set Game Name
 	// Code loosely taken from AppCoreThread.cpp to resolve the Game Name
@@ -164,24 +160,27 @@ void InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 			}
 		}
 	}
-	InputRecordingData.getHeader().setGameName(!gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso));
-	InputRecordingData.writeHeader();
-	state = RECORD;
+	InputRecordingData.GetHeader().SetGameName(!gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso));
+	InputRecordingData.WriteHeader();
+	state = INPUT_RECORDING_MODE_RECORD;
 	recordingConLog(wxString::Format(L"[REC]: Started new recording - [%s]\n", FileName));
 
 	// In every case, we reset the g_FrameCount
 	g_FrameCount = 0;
 }
 
+// GUI Handler - Play a recording
 void InputRecording::Play(wxString FileName, bool fromSaveState)
 {
 	g_RecordingControls.Pause();
 	Stop();
 
-	if (!InputRecordingData.Open(FileName, false, false)) {
+	if (!InputRecordingData.Open(FileName, false, false))
+	{
 		return;
 	}
-	if (!InputRecordingData.readHeaderAndCheck()) {
+	if (!InputRecordingData.ReadHeaderAndCheck())
+	{
 		recordingConLog(L"[REC]: This file is not a correct InputRecording file.\n");
 		InputRecordingData.Close();
 		return;
@@ -189,32 +188,46 @@ void InputRecording::Play(wxString FileName, bool fromSaveState)
 	// Check author name
 	if (!g_Conf->CurrentIso.IsEmpty())
 	{
-		if (Path::GetFilename(g_Conf->CurrentIso) != InputRecordingData.getHeader().gameName) {
+		if (Path::GetFilename(g_Conf->CurrentIso) != InputRecordingData.GetHeader().gameName)
+		{
 			recordingConLog(L"[REC]: Information on CD in Movie file is Different.\n");
 		}
 	}
-	state = REPLAY;
+	state = INPUT_RECORDING_MODE_REPLAY;
 	recordingConLog(wxString::Format(L"[REC]: Replaying movie - [%s]\n", FileName));
-	recordingConLog(wxString::Format(L"Recording File Version: %d\n", InputRecordingData.getHeader().version));
-	recordingConLog(wxString::Format(L"Associated Game Name / ISO Filename: %s\n", InputRecordingData.getHeader().gameName));
-	recordingConLog(wxString::Format(L"Author: %s\n", InputRecordingData.getHeader().author));
-	recordingConLog(wxString::Format(L"MaxFrame: %d\n", InputRecordingData.getMaxFrame()));
-	recordingConLog(wxString::Format(L"UndoCount: %d\n", InputRecordingData.getUndoCount()));
+	recordingConLog(wxString::Format(L"[REC]: Recording File Version: %d\n", InputRecordingData.GetHeader().version));
+	recordingConLog(wxString::Format(L"[REC]: Associated Game Name / ISO Filename: %s\n", InputRecordingData.GetHeader().gameName));
+	recordingConLog(wxString::Format(L"[REC]: Author: %s\n", InputRecordingData.GetHeader().author));
+	recordingConLog(wxString::Format(L"[REC]: MaxFrame: %d\n", InputRecordingData.GetMaxFrame()));
+	recordingConLog(wxString::Format(L"[REC]: UndoCount: %d\n", InputRecordingData.GetUndoCount()));
 }
 
-//----------------------------------
-// shortcut key
-//----------------------------------
+// Keybind Handler - Toggle between recording input and not
 void InputRecording::RecordModeToggle()
 {
-	if (state == REPLAY) {
-		state = RECORD;
+	if (state == INPUT_RECORDING_MODE_REPLAY)
+	{
+		state = INPUT_RECORDING_MODE_RECORD;
 		recordingConLog("[REC]: Record mode ON.\n");
 	}
-	else if (state == RECORD) {
-		state = REPLAY;
+	else if (state == INPUT_RECORDING_MODE_RECORD)
+	{
+		state = INPUT_RECORDING_MODE_REPLAY;
 		recordingConLog("[REC]: Replay mode ON.\n");
 	}
 }
 
+INPUT_RECORDING_MODE InputRecording::GetModeState()
+{
+	return state;
+}
 
+InputRecordingFile & InputRecording::GetInputRecordingData()
+{
+	return InputRecordingData;
+}
+
+bool InputRecording::IsInterruptFrame()
+{
+	return fInterruptFrame;
+}

@@ -16,35 +16,37 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
-#define PadDataNormalButtonCount 16
-enum PadDataNormalButton
+
+static const int PadDataNormalButtonCount = 16;
+enum PadData_NormalButton
 {
-	UP,
-	RIGHT,
-	LEFT,
-	DOWN,
-	CROSS,
-	CIRCLE,
-	SQUARE,
-	TRIANGLE,
-	L1,
-	L2,
-	R1,
-	R2,
-	L3,
-	R3,
-	SELECT,
-	START
+	PadData_NormalButton_UP,
+	PadData_NormalButton_RIGHT,
+	PadData_NormalButton_LEFT,
+	PadData_NormalButton_DOWN,
+	PadData_NormalButton_CROSS,
+	PadData_NormalButton_CIRCLE,
+	PadData_NormalButton_SQUARE,
+	PadData_NormalButton_TRIANGLE,
+	PadData_NormalButton_L1,
+	PadData_NormalButton_L2,
+	PadData_NormalButton_R1,
+	PadData_NormalButton_R2,
+	PadData_NormalButton_L3,
+	PadData_NormalButton_R3,
+	PadData_NormalButton_SELECT,
+	PadData_NormalButton_START
 };
 
-#define PadDataAnalogVectorCount 4
-enum PadDataAnalogVector
+static const int PadDataAnalogVectorCount = 4;
+enum PadData_AnalogVector
 {
-	LEFT_ANALOG_X,
-	LEFT_ANALOG_Y,
-	RIGHT_ANALOG_X,
-	RIGHT_ANALOG_Y
+	PadData_AnalogVector_LEFT_ANALOG_X,
+	PadData_AnalogVector_LEFT_ANALOG_Y,
+	PadData_AnalogVector_RIGHT_ANALOG_X,
+	PadData_AnalogVector_RIGHT_ANALOG_Y
 };
 
 struct PadData
@@ -57,29 +59,29 @@ public:
 	u8 buf[2][18];
 
 	// Prints controlller data every frame to the Controller Log filter, disabled by default
-	static void logPadData(u8 port, u16 bufCount, u8 buf[512]);
+	static void LogPadData(u8 port, u16 bufCount, u8 buf[512]);
 
 	// Normal Buttons
-	int* getNormalButtons(int port) const;
-	void setNormalButtons(int port, int* buttons);
+	std::vector<int> GetNormalButtons(int port) const;
+	void SetNormalButtons(int port, std::vector<int> buttons);
 
 	// Analog Vectors
 	// max left/up    : 0
 	// neutral        : 127
 	// max right/down : 255
-	int* getAnalogVectors(int port) const;
+	std::vector<int> GetAnalogVectors(int port) const;
 	// max left/up    : 0
 	// neutral        : 127
 	// max right/down : 255
-	void setAnalogVectors(int port, int* vector);
+	void SetAnalogVectors(int port, std::vector<int> vector);
 
 private:
-	void setNormalButton(int port, PadDataNormalButton button, int pressure);
-	int getNormalButton(int port, PadDataNormalButton button) const;
-	void getKeyBit(wxByte keybit[2], PadDataNormalButton button) const;
-	int getPressureByte(PadDataNormalButton button) const;
+	void SetNormalButton(int port, PadData_NormalButton button, int pressure);
+	int GetNormalButton(int port, PadData_NormalButton button) const;
+	void GetKeyBit(wxByte keybit[2], PadData_NormalButton button) const;
+	int GetPressureByte(PadData_NormalButton button) const;
 
-	void setAnalogVector(int port, PadDataAnalogVector vector, int val);
-	int getAnalogVector(int port, PadDataAnalogVector vector) const;
-	int getAnalogVectorByte(PadDataAnalogVector vector) const;
+	void SetAnalogVector(int port, PadData_AnalogVector vector, int val);
+	int GetAnalogVector(int port, PadData_AnalogVector vector) const;
+	int GetAnalogVectorByte(PadData_AnalogVector vector) const;
 };

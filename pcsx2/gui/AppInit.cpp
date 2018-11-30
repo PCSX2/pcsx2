@@ -763,11 +763,11 @@ Pcsx2App::Pcsx2App()
 	m_UseGUI				= true;
 	m_NoGuiExitPrompt		= true;
 
-	m_id_MainFrame				= wxID_ANY;
-	m_id_GsFrame				= wxID_ANY;
-	m_id_ProgramLogBox			= wxID_ANY;
-	m_id_Disassembler			= wxID_ANY;
-	m_ptr_ProgramLog			= NULL;
+	m_id_MainFrame		= wxID_ANY;
+	m_id_GsFrame		= wxID_ANY;
+	m_id_ProgramLogBox	= wxID_ANY;
+	m_id_Disassembler	= wxID_ANY;
+	m_ptr_ProgramLog	= NULL;
 
 	SetAppName( L"PCSX2" );
 	BuildCommandHash();

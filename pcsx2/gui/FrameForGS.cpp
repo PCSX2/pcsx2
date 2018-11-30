@@ -132,8 +132,10 @@ GSPanel::GSPanel( wxWindow* parent )
 
 #ifndef DISABLE_RECORDING
 	// Retrieving FrameAdvance Key
-	for (auto itr = m_Accels->begin(); itr != m_Accels->end(); ++itr) {
-		if (itr->second->Id == "FrameAdvance") {
+	for (auto itr = m_Accels->begin(); itr != m_Accels->end(); ++itr)
+	{
+		if (itr->second->Id == "FrameAdvance")
+		{
 			m_frameAdvanceKey = itr->first;
 			break;
 		}
@@ -377,14 +379,16 @@ void GSPanel::OnKeyDownOrUp( wxKeyEvent& evt )
 #endif
 
 	if ((PADopen != NULL) && CoreThread.IsOpen())
+	{
 		return;
+	}
 
 #ifndef DISABLE_RECORDING
 	if (g_Conf->EmuOptions.EnableRecordingTools)
 	{
 		// TODO-Recording: This is to allow for repeated frame-advance while holding the key
 		// However as per the explaination above, this event no longer seems to fire under normal
-		// circumstances and I'm unsure if there is a place to put this logic
+		// circumstances
 		if (evt.GetKeyCode() == m_frameAdvanceKey)
 		{
 			return;
@@ -727,23 +731,24 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 #ifndef DISABLE_RECORDING
 	wxString title;
 	wxString movieMode;
-	switch (g_InputRecording.getModeState()) {
-	case InputRecording::KEY_MOVIE_MODE::RECORD:
-		movieMode = "Recording";
-		title = templates.RecordingTemplate;
-		break;
-	case InputRecording::KEY_MOVIE_MODE::REPLAY:
-		movieMode = "Replaying";
-		title = templates.RecordingTemplate;
-		break;
-	case InputRecording::KEY_MOVIE_MODE::NONE:
-		movieMode = "No movie";
-		title = templates.TitleTemplate;
-		break;
+	switch (g_InputRecording.GetModeState())
+	{
+		case INPUT_RECORDING_MODE_RECORD:
+			movieMode = "Recording";
+			title = templates.RecordingTemplate;
+			break;
+		case INPUT_RECORDING_MODE_REPLAY:
+			movieMode = "Replaying";
+			title = templates.RecordingTemplate;
+			break;
+		case INPUT_RECORDING_MODE_NONE:
+			movieMode = "No movie";
+			title = templates.TitleTemplate;
+			break;
 	}
 
 	title.Replace(L"${frame}", pxsFmt(L"%d", g_FrameCount));
-	title.Replace(L"${maxFrame}", pxsFmt(L"%d", g_InputRecording.getInputRecordingData().getMaxFrame()));
+	title.Replace(L"${maxFrame}", pxsFmt(L"%d", g_InputRecording.GetInputRecordingData().GetMaxFrame()));
 	title.Replace(L"${mode}", movieMode);
 #else
 	wxString title = templates.TitleTemplate;
