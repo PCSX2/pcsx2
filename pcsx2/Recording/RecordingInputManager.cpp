@@ -18,18 +18,23 @@
 #include "RecordingInputManager.h"
 #include "InputRecording.h"
 
+
 RecordingInputManager g_RecordingInput;
 
 RecordingInputManager::RecordingInputManager()
 {
 	for (u8 i = 0; i < 2; i++)
+	{
 		virtualPad[i] = false;
+	}
 }
 
 void RecordingInputManager::ControllerInterrupt(u8 & data, u8 & port, u16 & BufCount, u8 buf[])
 {
 	if (port >= 2)
+	{
 		return;
+	}
 
 	if (virtualPad[port])
 	{
@@ -37,36 +42,44 @@ void RecordingInputManager::ControllerInterrupt(u8 & data, u8 & port, u16 & BufC
 		// first two bytes have nothing of interest in the buffer
 		// already handled by InputRecording.cpp
 		if (BufCount < 3)
+		{
 			return;
+		}
 
 		// Normal keys
 		// We want to perform an OR, but, since 255 means that no button is pressed and 0 that every button is pressed (and by De Morgan's Laws), we execute an AND.
 		if (BufCount <= 4)
-			buf[BufCount] = buf[BufCount] & pad.buf[port][BufCount - 3];
+		{
+			buf[BufCount] = buf[BufCount] & pad.buf[port][bufIndex];
+		}
 		// Analog keys (! overrides !)
-		else if ((BufCount > 4 && BufCount <= 6) && pad.buf[port][BufCount - 3] != 127)
-			buf[BufCount] = pad.buf[port][BufCount - 3];
+		else if ((BufCount > 4 && BufCount <= 6) && pad.buf[port][bufIndex] != 127)
+		{
+			buf[BufCount] = pad.buf[port][bufIndex];
+		}
 		// Pressure sensitivity bytes
 		else if (BufCount > 6)
-			buf[BufCount] = pad.buf[port][BufCount - 3];
+		{
+			buf[BufCount] = pad.buf[port][bufIndex];
+		}
 
 		// Updating movie file
 		g_InputRecording.ControllerInterrupt(data, port, BufCount, buf);
 	}
 }
 
-void RecordingInputManager::SetButtonState(int port, PadDataNormalButton button, int pressure)
+void RecordingInputManager::SetButtonState(int port, PadData_NormalButton button, int pressure)
 {
-	int* buttons = pad.getNormalButtons(port);
+	std::vector<int> buttons = pad.GetNormalButtons(port);
 	buttons[button] = pressure;
-	pad.setNormalButtons(port, buttons);
+	pad.SetNormalButtons(port, buttons);
 }
 
-void RecordingInputManager::UpdateAnalog(int port, PadDataAnalogVector vector, int value)
+void RecordingInputManager::UpdateAnalog(int port, PadData_AnalogVector vector, int value)
 {
-	int* vectors = pad.getAnalogVectors(port);
+	std::vector<int> vectors = pad.GetAnalogVectors(port);
 	vectors[vector] = value;
-	pad.setAnalogVectors(port, vectors);
+	pad.SetAnalogVectors(port, vectors);
 }
 
 void RecordingInputManager::SetVirtualPadReading(int port, bool read)

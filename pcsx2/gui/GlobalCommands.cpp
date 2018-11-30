@@ -467,48 +467,138 @@ namespace Implementations
 	void FrameAdvance()
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
+		{
 			g_RecordingControls.FrameAdvance();
+		}
 	}
+
 	void TogglePause()
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
+		{
 			g_RecordingControls.TogglePause();
+		}
 	}
+
 	void InputRecordingModeToggle()
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
+		{
 			g_InputRecording.RecordModeToggle();
+		}
 	}
+
 	void States_SaveSlot(int slot)
 	{
 		States_SetCurrentSlot(slot);
 		States_FreezeCurrentSlot();
 	}
+
 	void States_LoadSlot(int slot)
 	{
 		States_SetCurrentSlot(slot);
 		States_DefrostCurrentSlot();
 	}
-	void States_SaveSlot0() { States_SaveSlot(0); }
-	void States_SaveSlot1() { States_SaveSlot(1); }
-	void States_SaveSlot2() { States_SaveSlot(2); }
-	void States_SaveSlot3() { States_SaveSlot(3); }
-	void States_SaveSlot4() { States_SaveSlot(4); }
-	void States_SaveSlot5() { States_SaveSlot(5); }
-	void States_SaveSlot6() { States_SaveSlot(6); }
-	void States_SaveSlot7() { States_SaveSlot(7); }
-	void States_SaveSlot8() { States_SaveSlot(8); }
-	void States_SaveSlot9() { States_SaveSlot(9); }
-	void States_LoadSlot0() { States_LoadSlot(0); }
-	void States_LoadSlot1() { States_LoadSlot(1); }
-	void States_LoadSlot2() { States_LoadSlot(2); }
-	void States_LoadSlot3() { States_LoadSlot(3); }
-	void States_LoadSlot4() { States_LoadSlot(4); }
-	void States_LoadSlot5() { States_LoadSlot(5); }
-	void States_LoadSlot6() { States_LoadSlot(6); }
-	void States_LoadSlot7() { States_LoadSlot(7); }
-	void States_LoadSlot8() { States_LoadSlot(8); }
-	void States_LoadSlot9() { States_LoadSlot(9); }
+
+	void States_SaveSlot0()
+	{
+		States_SaveSlot(0);
+	}
+
+	void States_SaveSlot1()
+	{
+		States_SaveSlot(1);
+	}
+
+	void States_SaveSlot2()
+	{
+		States_SaveSlot(2);
+	}
+
+	void States_SaveSlot3()
+	{
+		States_SaveSlot(3);
+	}
+
+	void States_SaveSlot4()
+	{
+		States_SaveSlot(4);
+	}
+
+	void States_SaveSlot5()
+	{
+		States_SaveSlot(5);
+	}
+
+	void States_SaveSlot6()
+	{
+		States_SaveSlot(6);
+	}
+
+	void States_SaveSlot7()
+	{
+		States_SaveSlot(7);
+	}
+
+	void States_SaveSlot8()
+	{
+		States_SaveSlot(8);
+	}
+
+	void States_SaveSlot9()
+	{
+		States_SaveSlot(9);
+	}
+
+	void States_LoadSlot0()
+	{
+		States_LoadSlot(0);
+	}
+
+	void States_LoadSlot1()
+	{
+		States_LoadSlot(1);
+	}
+
+	void States_LoadSlot2()
+	{
+		States_LoadSlot(2);
+	}
+
+	void States_LoadSlot3()
+	{
+		States_LoadSlot(3);
+	}
+
+	void States_LoadSlot4()
+	{
+		States_LoadSlot(4);
+	}
+
+	void States_LoadSlot5()
+	{
+		States_LoadSlot(5);
+	}
+
+	void States_LoadSlot6()
+	{
+		States_LoadSlot(6);
+	}
+
+	void States_LoadSlot7()
+	{
+		States_LoadSlot(7);
+	}
+
+	void States_LoadSlot8()
+	{
+		States_LoadSlot(8);
+	}
+
+	void States_LoadSlot9()
+	{
+		States_LoadSlot(9);
+	}
 #endif
 }
 

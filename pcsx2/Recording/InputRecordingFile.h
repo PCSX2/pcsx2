@@ -18,6 +18,7 @@
 #include "PadData.h"
 #include "System.h"
 
+
 struct InputRecordingHeader
 {
 	u8 version = 1;
@@ -26,10 +27,12 @@ struct InputRecordingHeader
 	char gameName[255] = "";
 
 public:
-	void setAuthor(wxString author);
-	void setGameName(wxString cdrom);
-	void init();
+	void SetAuthor(wxString author);
+	void SetGameName(wxString cdrom);
+	void Init();
 };
+
+static const int RecordingHeaderSize = sizeof(InputRecordingHeader) + 4 + 4;
 
 // Contains info about the starting point of the movie
 struct InputRecordingSavestate
@@ -38,8 +41,8 @@ struct InputRecordingSavestate
 	bool fromSavestate = false;
 };
 
-
-class InputRecordingFile {
+class InputRecordingFile
+{
 public:
 	InputRecordingFile() {}
 	~InputRecordingFile() { Close(); }
@@ -47,38 +50,46 @@ public:
 	// Movie File Manipulation
 	bool Open(const wxString fn, bool fNewOpen, bool fromSaveState);
 	bool Close();
-	bool writeKeyBuf(const uint & frame, const uint port, const uint bufIndex, const u8 & buf);
-	bool readKeyBuf(u8 & result, const uint & frame, const uint port, const uint bufIndex);
+	bool WriteKeyBuf(const uint & frame, const uint port, const uint bufIndex, const u8 & buf);
+	bool ReadKeyBuf(u8 & result, const uint & frame, const uint port, const uint bufIndex);
 
 	// Controller Data
-	void getPadData(PadData & result_pad, unsigned long frame);
+	void GetPadData(PadData & result_pad, unsigned long frame);
 	bool DeletePadData(unsigned long frame);
 	bool InsertPadData(unsigned long frame, const PadData& key);
 	bool UpdatePadData(unsigned long frame, const PadData& key);
 
 	// Header
-	InputRecordingHeader& getHeader() { return header; }
-	unsigned long& getMaxFrame() { return MaxFrame; }
-	unsigned long& getUndoCount() { return UndoCount; }
-	const wxString & getFilename() { return filename; }
+	InputRecordingHeader& GetHeader();
+	unsigned long& GetMaxFrame();
+	unsigned long& GetUndoCount();
+	const wxString & GetFilename();
 
-	bool writeHeader();
-	bool writeMaxFrame();
-	bool writeSaveState();
+	bool WriteHeader();
+	bool WriteMaxFrame();
+	bool WriteSaveState();
 
-	bool readHeaderAndCheck();
-	void updateFrameMax(unsigned long frame);
-	void addUndoCount();
+	bool ReadHeaderAndCheck();
+	void UpdateFrameMax(unsigned long frame);
+	void AddUndoCount();
 
 private:
+	static const int RecordingSavestateHeaderSize = sizeof(bool);
+	static const int RecordingBlockHeaderSize = 0;
+	static const int RecordingBlockDataSize = 18 * 2;
+	static const int RecordingBlockSize = RecordingBlockHeaderSize + RecordingBlockDataSize;
+	static const int RecordingSeekpointFrameMax = sizeof(InputRecordingHeader);
+	static const int RecordingSeekpointUndoCount = sizeof(InputRecordingHeader) + 4;
+	static const int RecordingSeekpointSaveState = RecordingSeekpointUndoCount + 4;
+
 	// Movie File
 	FILE * recordingFile = NULL;
 	wxString filename = "";
-	long _getBlockSeekPoint(const long & frame);
+	long GetBlockSeekPoint(const long & frame);
 
 	// Header
 	InputRecordingHeader header;
 	InputRecordingSavestate savestate;
-	unsigned long  MaxFrame = 0;
-	unsigned long  UndoCount = 0;
+	unsigned long MaxFrame = 0;
+	unsigned long UndoCount = 0;
 };

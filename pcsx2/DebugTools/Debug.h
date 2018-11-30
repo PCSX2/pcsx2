@@ -320,9 +320,9 @@ struct SysConsoleLogPack
 	ConsoleLogSource		eeRecPerf;
 	ConsoleLogSource		sysoutConsole;
 
-	ConsoleLogFromVM<Color_Cyan>			eeConsole;
-	ConsoleLogFromVM<Color_Yellow>			iopConsole;
-	ConsoleLogFromVM<Color_Cyan>			deci2;
+	ConsoleLogFromVM<Color_Cyan>		eeConsole;
+	ConsoleLogFromVM<Color_Yellow>		iopConsole;
+	ConsoleLogFromVM<Color_Cyan>		deci2;
 
 #ifndef DISABLE_RECORDING
 	ConsoleLogFromVM<Color_StrongMagenta>	recordingConsole;

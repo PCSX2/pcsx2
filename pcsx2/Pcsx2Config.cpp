@@ -434,7 +434,7 @@ void Pcsx2Config::LoadSave( IniInterface& ini )
 	IniBitBool( EnableCheats );
 	IniBitBool( EnableWideScreenPatches );
 #ifndef DISABLE_RECORDING
-	IniBitBool(EnableRecordingTools);
+	IniBitBool( EnableRecordingTools );
 #endif
 	IniBitBool( ConsoleToStdio );
 	IniBitBool( HostFs );

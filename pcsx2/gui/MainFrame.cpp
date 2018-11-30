@@ -372,7 +372,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	SetMenuBar( &m_menubar );
 
 #ifndef DISABLE_RECORDING
-	// Append the Recording / Lua options if previous enabled and picked up from ini
+	// Append the Recording options if previously enabled and setting has been picked up from ini
 	if (g_Conf->EmuOptions.EnableRecordingTools)
 	{
 		m_menubar.Append(&m_menuRecording, _("&Recording"));

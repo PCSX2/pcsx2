@@ -575,7 +575,7 @@ __fi void rcntUpdate_vSync()
 #ifndef DISABLE_RECORDING
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			g_RecordingControls.StopCheck();
+			g_RecordingControls.HandleFrameAdvanceAndStop();
 		}
 #endif
 

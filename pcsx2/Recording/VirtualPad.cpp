@@ -125,10 +125,12 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 
 void VirtualPad::SetProperties()
 {
-	if (controllerPort == 0) {
+	if (controllerPort == 0)
+	{
 		SetTitle(wxT("Virtual Pad - Port 1"));
 	}
-	else {
+	else
+	{
 		SetTitle(wxT("Virtual Pad - Port 2"));
 	}
 	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW));
@@ -137,9 +139,13 @@ void VirtualPad::SetProperties()
 bool VirtualPad::Show(bool show)
 {
 	if (!wxFrame::Show(show))
+	{
 		return false;
+	}
 	if (show)
+	{
 		g_RecordingInput.SetVirtualPadReading(controllerPort, true);
+	}
 	return true;
 }
 
@@ -174,7 +180,7 @@ void VirtualPad::OnButtonPress(wxCommandEvent & event)
 				pressure = 255;
 			}
 		}
-		g_RecordingInput.SetButtonState(controllerPort, PadDataNormalButton(buttonId), pressure);
+		g_RecordingInput.SetButtonState(controllerPort, PadData_NormalButton(buttonId), pressure);
 	}
 }
 
@@ -193,10 +199,11 @@ void VirtualPad::OnPressureChange(wxSpinEvent & event)
 	if (spinnerId != -1)
 	{
 		u8 pressure = 0;
-		if (event.IsChecked()) {
+		if (event.IsChecked())
+		{
 			pressure = buttonsPressure[spinnerId]->GetValue();
 		}
-		g_RecordingInput.SetButtonState(controllerPort, PadDataNormalButton(spinnerId), pressure);
+		g_RecordingInput.SetButtonState(controllerPort, PadData_NormalButton(spinnerId), pressure);
 	}
 }
 
@@ -217,11 +224,12 @@ void VirtualPad::OnAnalogSliderChange(wxCommandEvent & event)
 		{
 			analogVals[sliderId]->SetValue(event.GetInt());
 		}
-		else {
+		else
+		{
 			analogVals[sliderId]->SetValue(event.GetInt() * -1);
 		}
 
-		g_RecordingInput.UpdateAnalog(controllerPort, PadDataAnalogVector(sliderId), event.GetInt() + 127);
+		g_RecordingInput.UpdateAnalog(controllerPort, PadData_AnalogVector(sliderId), event.GetInt() + 127);
 	}
 }
 
@@ -239,7 +247,7 @@ void VirtualPad::OnAnalogValChange(wxSpinEvent & event)
 	if (spinnerId != -1)
 	{
 		analogVals[spinnerId]->SetValue(event.GetInt());
-		g_RecordingInput.UpdateAnalog(controllerPort, PadDataAnalogVector(spinnerId), event.GetInt() + 127);
+		g_RecordingInput.UpdateAnalog(controllerPort, PadData_AnalogVector(spinnerId), event.GetInt() + 127);
 	}
 }
 

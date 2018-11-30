@@ -17,6 +17,7 @@
 
 #include "PadData.h"
 
+
 class RecordingInputManager
 {
 public:
@@ -24,9 +25,9 @@ public:
 
 	void ControllerInterrupt(u8 &data, u8 &port, u16 & BufCount, u8 buf[]);
 	// Handles normal keys
-	void SetButtonState(int port, PadDataNormalButton button, int pressure);
+	void SetButtonState(int port, PadData_NormalButton button, int pressure);
 	// Handles analog sticks
-	void UpdateAnalog(int port, PadDataAnalogVector vector, int value);
+	void UpdateAnalog(int port, PadData_AnalogVector vector, int value);
 	void SetVirtualPadReading(int port, bool read);
 
 protected:

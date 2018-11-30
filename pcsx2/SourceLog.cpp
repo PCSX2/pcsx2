@@ -135,15 +135,15 @@ TLD_controlInfo = {
 ; // End init of TraceLogDescriptors
 
 SysConsoleLogPack::SysConsoleLogPack()
-	: ELF				(&TLD_ELF, Color_Gray)
-	, eeRecPerf			(&TLD_eeRecPerf, Color_Gray)
+	: ELF		   (&TLD_ELF, Color_Gray)
+	, eeRecPerf	   (&TLD_eeRecPerf, Color_Gray)
 	, sysoutConsole(&TLD_sysoutConsole, Color_Gray)
-	, eeConsole			(&TLD_eeConsole)
-	, iopConsole		(&TLD_iopConsole)
-	, deci2				(&TLD_deci2)
+	, eeConsole	   (&TLD_eeConsole)
+	, iopConsole   (&TLD_iopConsole)
+	, deci2	(&TLD_deci2)
 #ifndef DISABLE_RECORDING
-	, recordingConsole(&TLD_recordingConsole)
-	, controlInfo(&TLD_controlInfo)
+	, recordingConsole	(&TLD_recordingConsole)
+	, controlInfo	(&TLD_controlInfo)
 #endif
 {
 }

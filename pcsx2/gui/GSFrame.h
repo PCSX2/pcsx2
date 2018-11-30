@@ -18,10 +18,6 @@
 
 #include "AppCommon.h"
 #include "CpuUsageProvider.h"
-
-#include "wx/dcbuffer.h"
-#include "wx/dcgraph.h"
-
 #include <memory>
 
 
@@ -59,10 +55,10 @@ public:
 	GSPanel( wxWindow* parent );
 	virtual ~GSPanel();
 
-	virtual void DoResize();
+	void DoResize();
 	void DoShowMouse();
 	void DirectKeyCommand( wxKeyEvent& evt );
-	virtual void DirectKeyCommand( const KeyAcceleratorCode& kac );
+	void DirectKeyCommand( const KeyAcceleratorCode& kac );
 
 protected:
 	void AppStatusEvent_OnSettingsApplied();
@@ -82,6 +78,7 @@ protected:
 
 	void UpdateScreensaver();
 };
+
 
 // --------------------------------------------------------------------------------------
 //  GSFrame
