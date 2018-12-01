@@ -66,9 +66,14 @@ bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 		{
 			// Alpha channel (red line issue has been fixed).
 			// Sky texture (Depth) is properly rendered on OpenGL only for the NTSC version. The PAL version still has some issues (half screen bottom issue).
-			if (g_crc_region == CRC::EU || Dx_only)
+			if (g_crc_region == CRC::EU)
 			{
-				skip = 26;
+				skip = 5;
+			}
+			else
+			{
+				if (Dx_only)
+					skip = 4;
 			}
 		}
 		else if(!fi.TME && (fi.FBP == 0x02a00 || fi.FBP == 0x03000) && fi.FPSM == PSM_PSMCT16)
