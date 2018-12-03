@@ -221,10 +221,13 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	memset(&dsd, 0, sizeof(dsd));
 
-	dsd.DepthEnable = false;
-	dsd.StencilEnable = false;
-
 	hr = m_dev->CreateDepthStencilState(&dsd, &m_convert.dss);
+
+	dsd.DepthEnable = true;
+	dsd.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsd.DepthFunc = D3D11_COMPARISON_ALWAYS;
+
+	hr = m_dev->CreateDepthStencilState(&dsd, &m_convert.dss_write);
 
 	memset(&bsd, 0, sizeof(bsd));
 
@@ -634,7 +637,7 @@ GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int
 		format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	}
 
-	if(format != DXGI_FORMAT_R8G8B8A8_UNORM && format != DXGI_FORMAT_R16_UINT)
+	if(format != DXGI_FORMAT_R8G8B8A8_UNORM && format != DXGI_FORMAT_R16_UINT && format != DXGI_FORMAT_R32_UINT)
 	{
 		ASSERT(0);
 
@@ -696,15 +699,27 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 		return;
 	}
 
+	bool draw_in_depth = (ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT32] || ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT24] ||
+		ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT16] || ps == m_convert.ps[ShaderConvert_RGB5A1_TO_FLOAT16]);
+
 	BeginScene();
 
 	GSVector2i ds = dTex->GetSize();
 
 	// om
 
-	OMSetDepthStencilState(m_convert.dss, 0);
+	
+	if (draw_in_depth)
+		OMSetDepthStencilState(m_convert.dss_write, 0);
+	else
+		OMSetDepthStencilState(m_convert.dss, 0);
+
 	OMSetBlendState(bs, 0);
-	OMSetRenderTargets(dTex, NULL);
+
+	if (draw_in_depth)
+		OMSetRenderTargets(NULL, dTex);
+	else
+		OMSetRenderTargets(dTex, NULL);
 
 	// ia
 

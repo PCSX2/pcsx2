@@ -97,6 +97,7 @@ public: // TODO
 		CComPtr<ID3D11SamplerState> ln;
 		CComPtr<ID3D11SamplerState> pt;
 		CComPtr<ID3D11DepthStencilState> dss;
+		CComPtr<ID3D11DepthStencilState> dss_write;
 		CComPtr<ID3D11BlendState> bs;
 	} m_convert;
 
