@@ -223,21 +223,23 @@ PS_OUTPUT ps_main9(PS_INPUT input) // triangular
 	return output;
 }
 
-// DUMMY SHADERS START
-PS_OUTPUT ps_main10(PS_INPUT input)
+uint ps_main10(PS_INPUT input) : SV_Target0
 {
-	PS_OUTPUT output;
-
-	output.c = input.p;
-
-	return output;
+	// Convert a FLOAT32 depth texture into a 32 bits UINT texture
+	return uint(exp2(32.0f) * sample_c(input.t).r);
 }
 
 PS_OUTPUT ps_main11(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
-	output.c = input.p;
+	// Convert a FLOAT32 depth texture into a RGBA color texture
+	const float4 bitSh = float4(exp2(24.0f), exp2(16.0f), exp2(8.0f), exp2(0.0f));
+	const float4 bitMsk = float4(0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
+
+	float4 res = frac(float4(sample_c(input.t).rrrr) * bitSh);
+
+	output.c = (res - res.xxyz * bitMsk) * 256.0f / 255.0f;
 
 	return output;
 }
@@ -246,47 +248,55 @@ PS_OUTPUT ps_main12(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
-	output.c = input.p;
+	// Convert a FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
+	const float4 bitSh = float4(exp2(32.0f), exp2(27.0f), exp2(22.0f), exp2(17.0f));
+	const uint4 bitMsk = uint4(0x1F, 0x1F, 0x1F, 0x1);
+	uint4 color = uint4(float4(sample_c(input.t).rrrr) * bitSh) & bitMsk;
+
+	output.c = float4(color) / float4(32.0f, 32.0f, 32.0f, 1.0f);
 
 	return output;
 }
-
-PS_OUTPUT ps_main13(PS_INPUT input)
+float ps_main13(PS_INPUT input) : SV_Depth
 {
-	PS_OUTPUT output;
+	// Convert a RRGBA texture into a float depth texture
+	// FIXME: I'm afraid of the accuracy
+	const float4 bitSh = float4(exp2(-32.0f), exp2(-24.0f), exp2(-16.0f), exp2(-8.0f)) * (float4)255.0;
 
-	output.c = input.p;
-
-	return output;
+	return dot(sample_c(input.t), bitSh);
 }
 
-PS_OUTPUT ps_main14(PS_INPUT input)
+float ps_main14(PS_INPUT input) : SV_Depth
 {
-	PS_OUTPUT output;
+	// Same as above but without the alpha channel (24 bits Z)
 
-	output.c = input.p;
+	// Convert a RRGBA texture into a float depth texture
+	const float3 bitSh = float3(exp2(-32.0f), exp2(-24.0f), exp2(-16.0f)) * (float3)255.0;
 
-	return output;
+	return dot(sample_c(input.t).rgb, bitSh);
 }
 
-PS_OUTPUT ps_main15(PS_INPUT input)
+float ps_main15(PS_INPUT input) : SV_Depth
 {
-	PS_OUTPUT output;
+	// Same as above but without the A/B channels (16 bits Z)
 
-	output.c = input.p;
+	// Convert a RRGBA texture into a float depth texture
+	// FIXME: I'm afraid of the accuracy
+	const float2 bitSh = float2(exp2(-32.0f), exp2(-24.0f)) * (float2)255.0;
 
-	return output;
+	return dot(sample_c(input.t).rg, bitSh);
 }
 
-PS_OUTPUT ps_main16(PS_INPUT input)
+float ps_main16(PS_INPUT input) : SV_Depth
 {
-	PS_OUTPUT output;
+	// Convert a RGB5A1 (saved as RGBA8) color to a 16 bit Z
+	// FIXME: I'm afraid of the accuracy
+	const float4 bitSh = float4(exp2(-32.0f), exp2(-27.0f), exp2(-22.0f), exp2(-17.0f));
+	// Trunc color to drop useless lsb
+	float4 color = trunc(sample_c(input.t) * (float4)255.0 / float4(8.0f, 8.0f, 8.0f, 128.0f));
 
-	output.c = input.p;
-
-	return output;
+	return dot(float4(color), bitSh);
 }
-// DUMMY SHADERS END
 
 PS_OUTPUT ps_main17(PS_INPUT input)
 {
