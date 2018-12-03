@@ -31,28 +31,43 @@ GSTextureCache11::GSTextureCache11(GSRenderer* r)
 
 void GSTextureCache11::Read(Target* t, const GSVector4i& r)
 {
-	if(t->m_type != RenderTarget)
+	if (!t->m_dirty.empty() || r.width() == 0 || r.height() == 0)
 	{
-		// TODO
-
 		return;
 	}
 
 	const GIFRegTEX0& TEX0 = t->m_TEX0;
 
-	if(TEX0.PSM != PSM_PSMCT32
-	&& TEX0.PSM != PSM_PSMCT24
-	&& TEX0.PSM != PSM_PSMCT16
-	&& TEX0.PSM != PSM_PSMCT16S)
+	DXGI_FORMAT format;
+	int ps_shader;
+	switch (TEX0.PSM)
 	{
-		//ASSERT(0);
+		case PSM_PSMCT32:
+		case PSM_PSMCT24:
+			format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			ps_shader = ShaderConvert_COPY;
+			break;
 
-		return;
-	}
+		case PSM_PSMCT16:
+		case PSM_PSMCT16S:
+			format = DXGI_FORMAT_R16_UINT;
+			ps_shader = ShaderConvert_RGBA8_TO_16_BITS;
+			break;
 
-	if (!t->m_dirty.empty() || r.width() == 0 || r.height() == 0)
-	{
-		return;
+		case PSM_PSMZ32:
+		case PSM_PSMZ24:
+			format = DXGI_FORMAT_R32_UINT;
+			ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
+			break;
+
+		case PSM_PSMZ16:
+		case PSM_PSMZ16S:
+			format = DXGI_FORMAT_R16_UINT;
+			ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
+			break;
+
+		default:
+			return;
 	}
 
 	// printf("GSRenderTarget::Read %d,%d - %d,%d (%08x)\n", r.left, r.top, r.right, r.bottom, TEX0.TBP0);
@@ -62,32 +77,35 @@ void GSTextureCache11::Read(Target* t, const GSVector4i& r)
 
 	GSVector4 src = GSVector4(r) * GSVector4(t->m_texture->GetScale()).xyxy() / GSVector4(t->m_texture->GetSize()).xyxy();
 
-	DXGI_FORMAT format = TEX0.PSM == PSM_PSMCT16 || TEX0.PSM == PSM_PSMCT16S ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R8G8B8A8_UNORM;
-
-	if(GSTexture* offscreen = m_renderer->m_dev->CopyOffscreen(t->m_texture, src, w, h, format))
+	if (GSTexture* offscreen = m_renderer->m_dev->CopyOffscreen(t->m_texture, src, w, h, format, ps_shader))
 	{
 		GSTexture::GSMap m;
 
-		if(offscreen->Map(m))
+		if (offscreen->Map(m))
 		{
 			// TODO: block level write
 
 			GSOffset* off = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
-			switch(TEX0.PSM)
+			switch (TEX0.PSM)
 			{
-			case PSM_PSMCT32:
-				m_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);
-				break;
-			case PSM_PSMCT24:
-				m_renderer->m_mem.WritePixel24(m.bits, m.pitch, off, r);
-				break;
-			case PSM_PSMCT16:
-			case PSM_PSMCT16S:
-				m_renderer->m_mem.WritePixel16(m.bits, m.pitch, off, r);
-				break;
-			default:
-				ASSERT(0);
+				case PSM_PSMCT32:
+				case PSM_PSMZ32:
+					m_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);
+					break;
+				case PSM_PSMCT24:
+				case PSM_PSMZ24:
+					m_renderer->m_mem.WritePixel24(m.bits, m.pitch, off, r);
+					break;
+				case PSM_PSMCT16:
+				case PSM_PSMCT16S:
+				case PSM_PSMZ16:
+				case PSM_PSMZ16S:
+					m_renderer->m_mem.WritePixel16(m.bits, m.pitch, off, r);
+					break;
+
+				default:
+					ASSERT(0);
 			}
 
 			offscreen->Unmap();
