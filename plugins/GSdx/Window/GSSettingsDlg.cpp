@@ -727,7 +727,7 @@ void GSHacksDlg::OnInit()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !ogl);
 
 	// OpenGL-only hacks:
-	EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), !dx9);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER), ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER_TEXT), ogl);
 
