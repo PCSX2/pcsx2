@@ -552,7 +552,7 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, bool msaa, int form
 		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 		break;
 	case GSTexture::DepthStencil:
-		desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 		break;
 	case GSTexture::Texture:
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -599,7 +599,7 @@ GSTexture* GSDevice11::CreateRenderTarget(int w, int h, bool msaa, int format)
 
 GSTexture* GSDevice11::CreateDepthStencil(int w, int h, bool msaa, int format)
 {
-	return __super::CreateDepthStencil(w, h, msaa, format ? format : DXGI_FORMAT_D32_FLOAT_S8X24_UINT); // DXGI_FORMAT_R32G8X24_TYPELESS
+	return __super::CreateDepthStencil(w, h, msaa, format ? format : DXGI_FORMAT_R32G8X24_TYPELESS);
 }
 
 GSTexture* GSDevice11::CreateTexture(int w, int h, int format)
@@ -637,12 +637,7 @@ GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int
 		format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	}
 
-	if(format != DXGI_FORMAT_R8G8B8A8_UNORM && format != DXGI_FORMAT_R16_UINT && format != DXGI_FORMAT_R32_UINT)
-	{
-		ASSERT(0);
-
-		return false;
-	}
+	ASSERT(format == DXGI_FORMAT_R8G8B8A8_UNORM || format == DXGI_FORMAT_R16_UINT || format == DXGI_FORMAT_R32_UINT);
 
 	if(GSTexture* rt = CreateRenderTarget(w, h, false, format))
 	{
