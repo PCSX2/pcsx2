@@ -32,7 +32,7 @@ protected:
 	void Read(Target* t, const GSVector4i& r);
 	void Read(Source* t, const GSVector4i& r);
 
-	virtual bool CanConvertDepth() { return false; }
+	virtual bool CanConvertDepth() { return m_can_convert_depth; }
 
 public:
 	GSTextureCache11(GSRenderer* r);
