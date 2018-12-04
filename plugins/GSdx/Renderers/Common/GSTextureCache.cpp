@@ -23,8 +23,7 @@
 #include "Renderers/Common/GSTextureCache.h"
 #include "GSUtil.h"
 
-bool s_IS_DIRECT3D11 = false;
-bool s_IS_OPENGL = false;
+bool s_IS_DIRECT3D9 = false;
 bool GSTextureCache::m_disable_partial_invalidation = false;
 bool GSTextureCache::m_wrap_gs_mem = false;
 
@@ -32,8 +31,7 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r),
 	m_palette_map(r)
 {
-	s_IS_DIRECT3D11 = theApp.GetCurrentRendererType() == GSRendererType::DX1011_HW;
-	s_IS_OPENGL = theApp.GetCurrentRendererType() == GSRendererType::OGL_HW;
+	s_IS_DIRECT3D9 = theApp.GetCurrentRendererType() == GSRendererType::DX9_HW;
 
 	if (theApp.GetConfigB("UserHacks")) {
 		m_spritehack                   = theApp.GetConfigI("UserHacks_SpriteHack");
@@ -56,7 +54,7 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	}
 
 	m_paltex = theApp.GetConfigB("paltex");
-	m_can_convert_depth &= s_IS_OPENGL; // only supported by openGL so far
+	m_can_convert_depth &= !s_IS_DIRECT3D9; // not supported on D3D9
 	m_crc_hack_level = theApp.GetConfigT<CRCHackLevel>("crc_hack_level");
 	if (m_crc_hack_level == CRCHackLevel::Automatic)
 		m_crc_hack_level = GSUtil::GetRecommendedCRCHackLevel(theApp.GetCurrentRendererType());
@@ -1178,7 +1176,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// TODO: clean up this mess
 
 		int shader = dst->m_type != RenderTarget ? ShaderConvert_FLOAT32_TO_RGBA8 : ShaderConvert_COPY;
-		bool is_8bits = TEX0.PSM == PSM_PSMT8 && (s_IS_DIRECT3D11 || s_IS_OPENGL);
+		bool is_8bits = TEX0.PSM == PSM_PSMT8 && !s_IS_DIRECT3D9;
 
 		if (is_8bits) {
 			GL_INS("Reading RT as a packed-indexed 8 bits format");
