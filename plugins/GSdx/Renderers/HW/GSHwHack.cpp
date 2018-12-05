@@ -1087,10 +1087,6 @@ bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1; // Depth dupicated ghost image
 		}
-		else if(fi.TME && fi.FBP == 0x3000 && fi.TBP0 == 0x3380)
-		{
-			skip = 1; // Bloom
-		}
 		else if(fi.TME && (fi.FBP ==0x2200) && (fi.TBP0 ==0x3a80) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
 			skip = 1; // Blur
