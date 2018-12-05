@@ -104,4 +104,7 @@ oprofile_data/
 /tools/bin
 /tools/GSDumpGUI/bin
 /tools/GSDumpGUI/obj
-/.vs
+.vs
+
+/pcsx2/windows/VCprojects/GSdx_opengl_debug_hw.txt
+/pcsx2/windows/VCprojects/GSdx_opengl_debug_sw.txt
