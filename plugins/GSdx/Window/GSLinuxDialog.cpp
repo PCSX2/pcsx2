@@ -561,30 +561,26 @@ void populate_record_table(GtkWidget* record_table)
 
 void populate_osd_table(GtkWidget* osd_table)
 {
-	GtkWidget* fontname_label     = left_label("Font:");
-	GtkWidget* fontname_file      = CreateFileChooser(GTK_FILE_CHOOSER_ACTION_OPEN, "Select a font", "osd_fontname");
+	GtkWidget* monitor_check      = CreateCheckBox("Enable Monitor", "osd_monitor_enabled");
+	GtkWidget* log_check          = CreateCheckBox("Enable Log", "osd_log_enabled");
 	GtkWidget* fontsize_label     = left_label("Size:");
 	GtkWidget* fontsize_text      = CreateSpinButton(1, 100, "osd_fontsize");
-	GtkWidget* transparency_label = left_label("Transparency:");
-	GtkWidget* transparency_slide = CreateScale("osd_transparency");
-	GtkWidget* log_check          = CreateCheckBox("Enable Log", "osd_log_enabled");
-	GtkWidget* log_speed_label    = left_label("Speed:");
-	GtkWidget* log_speed_text     = CreateSpinButton(2, 10, "osd_log_speed");
+	GtkWidget* opacity_label      = left_label("Opacity:");
+	GtkWidget* opacity_slide      = CreateScale("osd_color_opacity");
+	GtkWidget* log_timeout_label  = left_label("Timeout (seconds):");
+	GtkWidget* log_timeout_text   = CreateSpinButton(2, 10, "osd_log_timeout");
 	GtkWidget* max_messages_label = left_label("Maximum Onscreen Log Messages:");
 	GtkWidget* max_messages_spin  = CreateSpinButton(1, 20, "osd_max_log_messages");
-	GtkWidget* monitor_check      = CreateCheckBox("Enable Monitor", "osd_monitor_enabled");
 
 	AddTooltip(log_check, IDC_OSD_LOG);
 	AddTooltip(monitor_check, IDC_OSD_MONITOR);
 	AddTooltip(max_messages_label, max_messages_spin, IDC_OSD_MAX_LOG);
 
-	InsertWidgetInTable(osd_table , fontname_label     , fontname_file);
+	InsertWidgetInTable(osd_table , monitor_check      , log_check);
 	InsertWidgetInTable(osd_table , fontsize_label     , fontsize_text);
-	InsertWidgetInTable(osd_table , transparency_label , transparency_slide);
-	InsertWidgetInTable(osd_table , log_check);
-	InsertWidgetInTable(osd_table , log_speed_label    , log_speed_text);
+	InsertWidgetInTable(osd_table , opacity_label      , opacity_slide);
+	InsertWidgetInTable(osd_table , log_timeout_label  , log_timeout_text);
 	InsertWidgetInTable(osd_table , max_messages_label , max_messages_spin);
-	InsertWidgetInTable(osd_table , monitor_check);
 }
 
 GtkWidget* ScrollMe(GtkWidget* w)
