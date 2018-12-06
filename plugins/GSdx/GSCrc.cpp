@@ -546,6 +546,8 @@ CRC::Game CRC::m_games[] =
 	{0x09B3AD4D, ApeEscape2, EU, 0},
 	{0xBDD9F5E1, ApeEscape2, US, 0},
 	{0xFE0A6AB6, ApeEscape2, JP, 0}, // Saru! Get You! 2
+	{0xEC8EF2DE, Barnyard, US, 0}, // Nickelodeon: Barnyard
+	{0x5267A845, Barnyard, EU, 0},
 	{0x0940508D, BrianLaraInternationalCricket, EU, 0},
 	{0x0BAA8DD8, DarkCloud, EU, 0},
 	{0x1DF41F33, DarkCloud, US, 0},

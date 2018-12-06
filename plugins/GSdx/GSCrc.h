@@ -32,6 +32,7 @@ public:
 		AceCombat5,
 		ApeEscape2,
 		ArTonelico2,
+		Barnyard,
 		BigMuthaTruckers,
 		Black,
 		BlackHawkDown,
