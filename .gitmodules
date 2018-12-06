@@ -1,3 +1,6 @@
 [submodule "3rdparty/xz/xz"]
 	path = 3rdparty/xz/xz
 	url = https://github.com/PCSX2/xz.git
+[submodule "widescreen_patches/cheats_ws"]
+	path = widescreen_patches/cheats_ws
+	url = https://github.com/turtleli/wsrepotemp.git
