@@ -84,7 +84,7 @@ endif()
 # zzogl sources
 set(zzoglSources
     GifTransfer.cpp
-    GLWin32.cpp
+    #GLWin32.cpp
     GLWinX11.cpp
     GSDump.cpp
     GSmain.cpp
