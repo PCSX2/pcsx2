@@ -187,12 +187,12 @@ void CB_RangeChanged(GtkRange* range, gpointer user_data)
 	theApp.SetConfig((char*)user_data, (int)gtk_range_get_value(range));
 }
 
-GtkWidget* CreateScale(const char* opt_name)
+GtkWidget* CreateScale(const char* opt_name, int scale_min = 0, int scale_max = 100, int scale_range = 10)
 {
 #if GTK_CHECK_VERSION(3, 0, 0)
-	GtkWidget* scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 100, 10);
+	GtkWidget* scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, scale_min, scale_max, scale_range);
 #else
-	GtkWidget* scale = gtk_hscale_new_with_range(0, 100, 10);
+	GtkWidget* scale = gtk_hscale_new_with_range(scale_min, scale_max, scale_range);
 #endif
 
 	gtk_scale_set_value_pos(GTK_SCALE(scale), GTK_POS_RIGHT);
@@ -225,10 +225,10 @@ void AttachInTable(GtkWidget* table, GtkWidget *w, int pos, int pad = 0, int siz
 {
 #if GTK3_GRID_API
 	gtk_widget_set_margin_start(w, pad);
-	gtk_widget_set_hexpand(w, true);
+	gtk_widget_set_hexpand(w, false);
 	gtk_grid_attach(GTK_GRID(table), w, pos, s_table_line, size, 1);
 #else
-	GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
+	GtkAttachOptions opt = (GtkAttachOptions)(/*GTK_EXPAND | */GTK_FILL); // default
 	gtk_table_attach(GTK_TABLE(table), w, pos, pos + size, s_table_line, s_table_line+1, opt, opt, pad, 0);
 #endif
 }
@@ -565,6 +565,12 @@ void populate_osd_table(GtkWidget* osd_table)
 	GtkWidget* log_check          = CreateCheckBox("Enable Log", "osd_log_enabled");
 	GtkWidget* fontsize_label     = left_label("Size:");
 	GtkWidget* fontsize_text      = CreateSpinButton(1, 100, "osd_fontsize");
+	GtkWidget* osd_red_label      = left_label("Red:");
+	GtkWidget* osd_red_spin       = CreateScale("osd_color_r", 0, 255, 1);
+	GtkWidget* osd_green_label    = left_label("Green:");
+	GtkWidget* osd_green_spin     = CreateScale("osd_color_g", 0, 255, 1);
+	GtkWidget* osd_blue_label     = left_label("Blue:");
+	GtkWidget* osd_blue_spin      = CreateScale("osd_color_b", 0, 255, 1);
 	GtkWidget* opacity_label      = left_label("Opacity:");
 	GtkWidget* opacity_slide      = CreateScale("osd_color_opacity");
 	GtkWidget* log_timeout_label  = left_label("Timeout (seconds):");
@@ -578,6 +584,9 @@ void populate_osd_table(GtkWidget* osd_table)
 
 	InsertWidgetInTable(osd_table , monitor_check      , log_check);
 	InsertWidgetInTable(osd_table , fontsize_label     , fontsize_text);
+	InsertWidgetInTable(osd_table , osd_red_label      , osd_red_spin);
+	InsertWidgetInTable(osd_table , osd_green_label    , osd_green_spin);
+	InsertWidgetInTable(osd_table , osd_blue_label     , osd_blue_spin);
 	InsertWidgetInTable(osd_table , opacity_label      , opacity_slide);
 	InsertWidgetInTable(osd_table , log_timeout_label  , log_timeout_text);
 	InsertWidgetInTable(osd_table , max_messages_label , max_messages_spin);
@@ -591,7 +600,7 @@ GtkWidget* ScrollMe(GtkWidget* w)
 
 	GtkWidget* scrollbar = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrollbar), GTK_SHADOW_NONE);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollbar), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollbar), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 #if GTK_CHECK_VERSION(3, 22, 0)
 	gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(scrollbar), true);
 #endif
@@ -624,6 +633,7 @@ bool RunLinuxDialog()
 	GtkWidget* central_box  = CreateVbox();
 	GtkWidget* advanced_box = CreateVbox();
 	GtkWidget* debug_box    = CreateVbox();
+	GtkWidget* shader_box   = CreateVbox();
 	GtkWidget* osd_box      = CreateVbox();
 
 	// Grab a logo, to make things look nice.
@@ -647,7 +657,7 @@ bool RunLinuxDialog()
 	GtkWidget* record_table = CreateTableInBox(debug_box   , "Recording Settings"                   , 4  , 3);
 	GtkWidget* debug_table  = CreateTableInBox(debug_box   , "OpenGL / GSdx Debug Settings"         , 6  , 3);
 
-	GtkWidget* shader_table = CreateTableInBox(osd_box     , "Custom Shader Settings"               , 9  , 2);
+	GtkWidget* shader_table = CreateTableInBox(shader_box  , "Custom Shader Settings"               , 9  , 2);
 	GtkWidget* osd_table    = CreateTableInBox(osd_box     , "OSD"                                  , 6  , 2);
 
 	// Populate all the tables
@@ -665,12 +675,13 @@ bool RunLinuxDialog()
 
 	populate_osd_table(osd_table);
 
-	// Handle some nice tab
+	// Handle some nice tabs
 	GtkWidget* notebook = gtk_notebook_new();
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(central_box), gtk_label_new("Renderer Settings"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(advanced_box), gtk_label_new("Advanced Settings"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(debug_box), gtk_label_new("Debug/Recording"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(osd_box), gtk_label_new("Post-Processing/OSD"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(shader_box), gtk_label_new("Post-Processing"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(osd_box), gtk_label_new("OSD"));
 
 	// Put everything in the big box.
 	gtk_container_add(GTK_CONTAINER(main_box), notebook);
