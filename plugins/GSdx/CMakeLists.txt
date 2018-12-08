@@ -110,6 +110,7 @@ set(GSdxSources
     Renderers/OpenGL/GLLoader.cpp
     Renderers/OpenGL/GLState.cpp
     Renderers/OpenGL/GSDeviceOGL.cpp
+    Renderers/OpenGL/GSOsdManagerOGL.cpp
     Renderers/OpenGL/GSRendererOGL.cpp
     Renderers/OpenGL/GSShaderOGL.cpp
     Renderers/OpenGL/GSTextureCacheOGL.cpp
@@ -187,6 +188,7 @@ set(GSdxHeaders
     Renderers/OpenGL/GLLoader.h
     Renderers/OpenGL/GLState.h
     Renderers/OpenGL/GSDeviceOGL.h
+    Renderers/OpenGL/GSOsdManagerOGL.h
     Renderers/OpenGL/GSRendererOGL.h
     Renderers/OpenGL/GSShaderOGL.h
     Renderers/OpenGL/GSTextureCacheOGL.h
@@ -210,6 +212,7 @@ if(Windows)
         Renderers/DX9/GSDevice9.cpp
         Renderers/DXCommon/GSDeviceDX.cpp
         Window/GSDialog.cpp
+        Renderers/DX11/GSOsdManagerDX11.cpp
         Renderers/DX11/GSRendererDX11.cpp
         Renderers/DX9/GSRendererDX9.cpp
         Renderers/DXCommon/GSRendererDX.cpp
@@ -231,6 +234,7 @@ if(Windows)
     LIST(APPEND GSdxHeaders
         Renderers/DX11/GSDevice11.h
         Renderers/DX9/GSDevice9.h
+        Renderers/DX11/GSOsdManagerDX11.h
         Renderers/DXCommon/GSDeviceDX.h
         Renderers/DX11/GSRendererDX11.h
         Renderers/DX9/GSRendererDX9.h
