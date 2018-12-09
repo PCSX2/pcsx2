@@ -43,7 +43,6 @@ EOF
 	fi
 
 	sudo apt-get -qq update
-	get_deps
 	# The 64-bit versions of the first 7 dependencies are part of the initial
 	# build image. libgtk2.0-dev:i386 and libsdl2-dev:i386 require the 32-bit
 	# versions of the dependencies, and the 2 versions conflict. So those
@@ -121,8 +120,6 @@ linux_64_before_install() {
 		sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 		COMPILER_PACKAGE="g++-${VERSION}"
 	fi
-	
-	get_deps
 
 	cat > $APP.desktop <<EOF
 	[Desktop Entry]
