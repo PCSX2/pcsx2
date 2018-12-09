@@ -202,8 +202,8 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_LARGE_FB:
 			return "Allocate a large framebuffer to be compliant with GS memory (Prevents FMV flickering).\n"
 				"It increases GPU/memory requirements.\n\n"
-				"Note: It shold be disabled for Armored Core, Destroy All Humans, and Gran Turismo.\n"
-				"It can amplify RAM/VRAM spikes. Other games might be affected as well.";
+				"Note: It should be disabled for Armored Core, Destroy All Humans, and Gran Turismo.\n"
+				"It will amplify RAM/VRAM spikes. Other games might be affected as well.";
 		default:
 			if (updateText)
 				*updateText = false;
