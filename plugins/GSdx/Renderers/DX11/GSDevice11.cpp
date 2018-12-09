@@ -26,6 +26,7 @@
 #include "GSOsdManagerDX11.h"
 #include "resource.h"
 #include <fstream>
+#include "Utilities/MakeUnique.h"
 
 GSDevice11::GSDevice11()
 {
@@ -174,7 +175,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	hr = m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &options, sizeof(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS));
 
 	// OSD
-	m_osd = new GSOsdManagerDX11(m_dev);
+	m_osd = std::make_unique<GSOsdManagerDX11>(m_dev);
 
 	// msaa
 
@@ -422,9 +423,10 @@ bool GSDevice11::Reset(int w, int h)
 
 	if(m_swapchain)
 	{
-		GSOsdManagerDX11* osd = (GSOsdManagerDX11 *)m_osd;
 		// m_ctx_2d holds a reference to the backbuffer which must be released
 		// before the swapchain can be resized.
+		GSOsdManagerDX11 *osd = static_cast<GSOsdManagerDX11*>(m_osd.get());
+
 		osd->Release();
 
 		DXGI_SWAP_CHAIN_DESC scd;

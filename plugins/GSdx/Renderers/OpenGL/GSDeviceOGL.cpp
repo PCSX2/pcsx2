@@ -26,6 +26,7 @@
 #include "GSUtil.h"
 #include "GSOsdManagerOGL.h"
 #include <fstream>
+#include "Utilities/MakeUnique.h"
 
 //#define ONLY_LINES
 
@@ -561,7 +562,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	static_assert(sizeof(OMColorMaskSelector) == 4, "Wrong OMColorMaskSelector size");
 
 	// OSD
-	m_osd = new GSOsdManagerOGL(
+	m_osd = std::make_unique<GSOsdManagerOGL>(
 		this,
 		m_va,
 		m_fbo_read,

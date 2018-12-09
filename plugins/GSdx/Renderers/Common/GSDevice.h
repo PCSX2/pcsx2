@@ -146,7 +146,7 @@ protected:
 	virtual void DoExternalFX(GSTexture* sTex, GSTexture* dTex) {}
 
 public:
-	GSOsdManager* m_osd;
+	std::unique_ptr<GSOsdManager> m_osd;
 
 	GSDevice();
 	virtual ~GSDevice();
