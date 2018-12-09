@@ -52,10 +52,6 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 			break;
 
 		case PSM_PSMZ32:
-			fmt = GL_R32UI;
-			ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
-			break;
-
 		case PSM_PSMZ24:
 			fmt = GL_R32UI;
 			ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
@@ -94,22 +90,15 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 			switch(TEX0.PSM)
 			{
 				case PSM_PSMCT32:
+				case PSM_PSMZ32:
 					m_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);
 					break;
 				case PSM_PSMCT24:
+				case PSM_PSMZ24:
 					m_renderer->m_mem.WritePixel24(m.bits, m.pitch, off, r);
 					break;
 				case PSM_PSMCT16:
 				case PSM_PSMCT16S:
-					m_renderer->m_mem.WritePixel16(m.bits, m.pitch, off, r);
-					break;
-
-				case PSM_PSMZ32:
-					m_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);
-					break;
-				case PSM_PSMZ24:
-					m_renderer->m_mem.WritePixel24(m.bits, m.pitch, off, r);
-					break;
 				case PSM_PSMZ16:
 				case PSM_PSMZ16S:
 					m_renderer->m_mem.WritePixel16(m.bits, m.pitch, off, r);
