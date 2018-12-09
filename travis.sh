@@ -155,8 +155,6 @@ linux_64_script() {
 	echo "Setting up Desktop integration"
 	get_icon
 	get_desktop
-	get_desktopintegration "$APP"
-	fix_desktop "$APP"
 
 	echo "Generating AppImage!"
 	generate_appimage
