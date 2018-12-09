@@ -7,9 +7,9 @@ set -ex
 APP=PCSX2
 
 mkdir -p $APP.AppDir/usr/
-wget -q https://github.com/AppImage/AppImages/raw/${PKG2AICOMMIT}/functions.sh -O ./functions.sh
-sudo chmod u+x functions.sh 
+wget -q https://github.com/probonopd/AppImages/raw/master/functions.sh -O ./functions.sh
 . ./functions.sh
+
 
 
 # Disabled for now
