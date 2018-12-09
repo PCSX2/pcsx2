@@ -118,8 +118,30 @@ V_Core::~V_Core() throw()
 void V_Core::Init(int index)
 {
     ConLog("* SPU2-X: Init SPU2 core %d \n", index);
-    memset(this, 0, sizeof(V_Core));
+    //memset(this, 0, sizeof(V_Core));
+    // Explicitly initializing variables instead.
+    Mute = false;
+    DMABits = 0;
+    NoiseClk = 0;
+    AutoDMACtrl = 0;
+    InputDataLeft = 0;
+    InputPosRead = 0;
+    InputPosWrite = 0;
+    InputDataProgress = 0;
+    ReverbX = 0;
+    LastEffect.Left = 0;
+    LastEffect.Right = 0;
+    CoreEnabled = 0;
+    AttrBit0 = 0;
+    DmaMode = 0;
+    DMAPtr = nullptr;
+    MADR = 0;
+    TADR = 0;
+    KeyOn = 0;
+
     psxmode = false;
+    psxSoundDataTransferControl = 0;
+    psxSPUSTAT = 0;
 
     const int c = Index = index;
 
@@ -150,7 +172,7 @@ void V_Core::Init(int index)
     ExtEffectsStartA = EffectsStartA;
     ExtEffectsEndA = EffectsEndA;
 
-    FxEnable = 0; // Uninitialized it's 0 for both cores. Resetting libs however may set this to 0 or 1.
+    FxEnable = false; // Uninitialized it's 0 for both cores. Resetting libs however may set this to 0 or 1.
     // These are real PS2 values, mainly constant apart from a few bits: 0x3220EAA4, 0x40505E9C.
     // These values mean nothing.  They do not reflect the actual address the SPU2 is testing,
     // it would seem that reading the IRQA register returns the last written value, not the
@@ -160,7 +182,7 @@ void V_Core::Init(int index)
     // in the input or output areas, so we're using 0x800.
     // F1 2005 is known to rely on an uninitialised IRQA being an address which will be hit.
     IRQA = 0x800;
-    IRQEnable = 0; // PS2 confirmed
+    IRQEnable = false; // PS2 confirmed
 
     for (uint v = 0; v < NumVoices; ++v) {
         VoiceGates[v].DryL = -1;
@@ -180,7 +202,9 @@ void V_Core::Init(int index)
     }
 
     DMAICounter = 0;
-    AdmaInProgress = 0;
+    AutoDmaFree = 0;
+    AdmaInProgress = false;
+    DmaStarted = false;
 
     Regs.STATX = 0x80;
     Regs.ENDX = 0xffffff; // PS2 confirmed

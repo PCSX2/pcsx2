@@ -282,7 +282,7 @@ void SndBuffer::ReadSamples(T *bData)
     // If quietSamples != 0 it means we have an underrun...
     // Let's just dull out some silence, because that's usually the least
     // painful way of dealing with underruns:
-    memset(bData, 0, quietSamples * sizeof(T));
+    std::fill_n(bData, quietSamples, T{});
 }
 
 template void SndBuffer::ReadSamples(StereoOut16 *);
@@ -388,11 +388,6 @@ void SndBuffer::Init()
         return;
     }
 
-    // clear buffers!
-    // Fixes loopy sounds on emu resets.
-    memset(sndTempBuffer, 0, sizeof(StereoOut32) * SndOutPacketSize);
-    memset(sndTempBuffer16, 0, sizeof(StereoOut16) * SndOutPacketSize);
-
     sndTempProgress = 0;
 
     soundtouchInit(); // initializes the timestretching
@@ -445,7 +440,8 @@ void SndBuffer::Write(const StereoOut32 &Sample)
     //Don't play anything directly after loading a savestate, avoids static killing your speakers.
     if (ssFreeze > 0) {
         ssFreeze--;
-        memset(sndTempBuffer, 0, sizeof(StereoOut32) * SndOutPacketSize); // Play silence
+        // Play silence
+        std::fill_n(sndTempBuffer, SndOutPacketSize, StereoOut32{});
     }
 #ifndef __POSIX__
     if (dspPluginEnabled) {

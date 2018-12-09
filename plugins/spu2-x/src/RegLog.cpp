@@ -178,6 +178,7 @@ void SPU2writeLog(const char *action, u32 rmem, u16 value)
                 break;
             case REG_S_VMIXL:
                 RegLog(1, "VMIXL0", rmem, core, value);
+                break;
             case (REG_S_VMIXL + 2):
                 RegLog(1, "VMIXL1", rmem, core, value);
                 break;
