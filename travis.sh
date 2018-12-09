@@ -2,6 +2,15 @@
 
 set -ex
 
+
+#to init appImage
+APP=PCSX2
+
+mkdir -p $APP.AppDir/usr/
+wget -q https://github.com/AppImage/AppImages/raw/${PKG2AICOMMIT}/functions.sh -O ./functions.sh
+. ./functions.sh
+
+
 # Disabled for now
 clang_syntax_check() {
 	if [ "${CXX}" = "clang++" ]; then
@@ -85,6 +94,19 @@ linux_32_script() {
 
 	# Documentation says 1.5 cores, so 2 or 3 threads should work ok.
 	make -j3 install
+
+	cd $APP.AppDir
+
+	echo "Setting up Desktop integration"
+	get_icon
+	get_desktop
+	get_desktopintegration "$APP"
+	fix_desktop "$APP"
+
+	echo "Generating AppImage!"
+	generate_appimage
+	echo "All finished"
+
 }
 
 
@@ -126,6 +148,19 @@ linux_64_script() {
 
 	# Documentation says 1.5 cores, so 2 or 3 threads should work ok.
 	make -j3 install
+
+	cd $APP.AppDir
+
+
+	echo "Setting up Desktop integration"
+	get_icon
+	get_desktop
+	get_desktopintegration "$APP"
+	fix_desktop "$APP"
+
+	echo "Generating AppImage!"
+	generate_appimage
+	echo "All finished"
 }
 
 linux_after_success() {
