@@ -78,7 +78,7 @@ linux_32_script() {
 	mkdir build
 	cd build
 	mkdir -p $APP.AppDir/usr/
-
+		export ARCH=$(arch)
 	# Prevents warning spam
 	if [ "${CXX}" = "clang++" ]; then
 		export CCACHE_CPP2=yes
@@ -139,7 +139,8 @@ linux_64_script() {
 	mkdir build
 	cd build
 	mkdir -p $APP.AppDir/usr/
-
+	export ARCH=$(arch)
+	
 	export CC=${CC}-${VERSION} CXX=${CXX}-${VERSION}
 	cmake \
 		-DCMAKE_BUILD_TYPE=Devel \
