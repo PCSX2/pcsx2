@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
@@ -18,8 +18,8 @@
       <PreprocessorDefinitions>LZMA_API_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3d11.lib;d3d9.lib;dxgi.lib;dxguid.lib;winmm.lib;strmiids.lib;opengl32.lib;comsuppw.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs>d3d9.dll;d3d11.dll;dxgi.dll;opengl32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalDependencies>d3d11.lib;d3d9.lib;d2d1.lib;dwrite.lib;dxgi.lib;dxguid.lib;winmm.lib;strmiids.lib;opengl32.lib;comsuppw.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>d3d9.dll;d3d11.dll;d2d1.dll;dwrite.dll;dxgi.dll;opengl32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
