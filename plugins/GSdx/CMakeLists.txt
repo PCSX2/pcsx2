@@ -14,11 +14,17 @@ set(CommonFlags
     -Wno-unknown-pragmas
     -Wno-parentheses
     -Wunused-variable # __dummy variable need to be investigated
-    # The next two need to be looked at, but spam really badly in gcc 8.
-    # Largely class alignment in GSDevice.h and memcpy in GSVector*.h.
-    -Wno-class-memaccess 
-    -Wno-packed-not-aligned
     )
+
+# The next two need to be looked at, but spam really badly in gcc 8.
+# Largely class alignment in GSDevice.h and memcpy in GSVector*.h.
+if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
+    set(CommonFlags
+	    ${CommonFlags}
+        -Wno-class-memaccess
+        -Wno-packed-not-aligned
+    )
+endif()
 
 if(USE_ICC)
     set(CommonFlags "${CommonFlags} -restrict")
