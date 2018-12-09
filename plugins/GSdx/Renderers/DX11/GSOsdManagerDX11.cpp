@@ -32,8 +32,7 @@ GSOsdManagerDX11::GSOsdManagerDX11(ID3D11Device *dev)
 
 	HRESULT hr = E_FAIL;
 
-	D2D1_FACTORY_OPTIONS d2d_factory_options;
-	memset(&d2d_factory_options, 0, sizeof(d2d_factory_options));
+	D2D1_FACTORY_OPTIONS d2d_factory_options = {};
 
 #ifdef DEBUG
 	d2d_factory_options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
@@ -138,9 +137,7 @@ void GSOsdManagerDX11::SetBitmap(IDXGISurface *surface, DXGI_FORMAT format)
 	if (m_dev_2d == NULL)
 		return;
 
-	D2D1_BITMAP_PROPERTIES1 bitmap_props;
-
-	memset(&bitmap_props, 0, sizeof(bitmap_props));
+	D2D1_BITMAP_PROPERTIES1 bitmap_props = {};
 
 	bitmap_props.pixelFormat.format = format;
 	bitmap_props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_IGNORE;
