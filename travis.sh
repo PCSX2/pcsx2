@@ -96,7 +96,6 @@ linux_32_script() {
 	# Documentation says 1.5 cores, so 2 or 3 threads should work ok.
 	make -j3 install
 
-	cd $APP.AppDir
 
 	echo "Setting up Desktop integration"
 	get_icon
@@ -151,7 +150,6 @@ linux_64_script() {
 	# Documentation says 1.5 cores, so 2 or 3 threads should work ok.
 	make -j3 install
 
-	cd $APP.AppDir
 
 
 	echo "Setting up Desktop integration"
