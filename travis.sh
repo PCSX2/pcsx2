@@ -8,7 +8,8 @@ APP=PCSX2
 
 mkdir -p $APP.AppDir/usr/
 wget -q https://github.com/AppImage/AppImages/raw/${PKG2AICOMMIT}/functions.sh -O ./functions.sh
-source ./functions.sh
+sudo chmod u+x functions.sh 
+. ./functions.sh
 
 
 # Disabled for now
