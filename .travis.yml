@@ -34,4 +34,4 @@ script:
 after_success:
   - ./travis.sh after_success
   - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
-  - bash upload.sh out/*
+  - bash upload.sh PCSX2/*
