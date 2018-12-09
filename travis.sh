@@ -6,7 +6,6 @@ set -ex
 #to init appImage
 APP=PCSX2
 
-mkdir -p $APP.AppDir/usr/
 wget -q https://github.com/probonopd/AppImages/raw/master/functions.sh -O ./functions.sh
 . ./functions.sh
 
@@ -78,6 +77,7 @@ linux_32_before_install() {
 linux_32_script() {
 	mkdir build
 	cd build
+	mkdir -p $APP.AppDir/usr/
 
 	# Prevents warning spam
 	if [ "${CXX}" = "clang++" ]; then
@@ -139,6 +139,7 @@ linux_64_before_install() {
 linux_64_script() {
 	mkdir build
 	cd build
+	mkdir -p $APP.AppDir/usr/
 
 	export CC=${CC}-${VERSION} CXX=${CXX}-${VERSION}
 	cmake \
