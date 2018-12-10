@@ -200,7 +200,6 @@ public:
 	void FXAA();
 	void ShadeBoost();
 	void ExternalFX();
-	virtual void RenderOsd(GSTexture* dt) {};
 
 	bool ResizeTexture(GSTexture** t, int w, int h);
 
