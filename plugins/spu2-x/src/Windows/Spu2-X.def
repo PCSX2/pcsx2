@@ -39,26 +39,23 @@ EXPORTS
 	SPU2write			@15
 	SPU2read			@16
     SPU2async           @17
-    SPU2dmaRead			@18
-    SPU2dmaWrite		@19
-    SPU2dmaInterrupt	@20
 
-    SPU2readDMA4Mem     @21
-    SPU2writeDMA4Mem    @22
-    SPU2readDMA7Mem     @23
-    SPU2writeDMA7Mem    @24
-    SPU2interruptDMA4   @25
-    SPU2interruptDMA7   @26
+    SPU2readDMA4Mem     @18
+    SPU2writeDMA4Mem    @19
+    SPU2readDMA7Mem     @20
+    SPU2writeDMA7Mem    @21
+    SPU2interruptDMA4   @22
+    SPU2interruptDMA7   @23
    
-	SPU2irqCallback		@27
-	SPU2setupRecording  @28
+	SPU2irqCallback		@24
+	SPU2setupRecording  @25
     
-	SPU2ReadMemAddr		@29
-	SPU2WriteMemAddr	@30
+	SPU2ReadMemAddr		@26
+	SPU2WriteMemAddr	@27
 
-	SPU2setClockPtr		@31
-	SPU2setDMABaseAddr	@32
+	SPU2setClockPtr		@28
+	SPU2setDMABaseAddr	@29
 	
-	SPU2replay = s2r_replay	@33
+	SPU2replay = s2r_replay	@30
 
-	SPU2reset			@34
+	SPU2reset			@31

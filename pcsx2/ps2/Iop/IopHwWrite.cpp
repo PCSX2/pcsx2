@@ -347,16 +347,12 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 			// as asinine as that may seem).
 			//
 			mcase(0x1f8010C0):
-#ifndef ENABLE_NEW_IOPDMA_SPU2
 				SPU2WriteMemAddr( 0, val );
-#endif
 				HW_DMA4_MADR = val;
 			break;
 
 			mcase(0x1f801500):
-#ifndef ENABLE_NEW_IOPDMA_SPU2
 				SPU2WriteMemAddr( 1, val );
-#endif
 				HW_DMA7_MADR = val;
 			break;
 
@@ -395,11 +391,7 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 			mcase(0x1f8010c8):	// DMA4 CHCR -- SPU2 Core 1
 				psxHu(addr) = val;
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-				DmaExecNew(4);
-#else
 				DmaExec(4);
-#endif
 			break;
 
 			mcase(0x1f8010e8):	// DMA6 CHCR -- OT clear
@@ -409,20 +401,12 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 			mcase(0x1f801508):	// DMA7 CHCR -- SPU2 core 2
 				psxHu(addr) = val;
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-				DmaExecNew2(7);
-#else
 				DmaExec2(7);
-#endif
 			break;
 
 			mcase(0x1f801518):	// DMA8 CHCR -- DEV9
 				psxHu(addr) = val;
-#ifdef ENABLE_NEW_IOPDMA_DEV9
-				DmaExecNew2(8);
-#else
 				DmaExec2(8);
-#endif
 			break;
 
 			mcase(0x1f801528):	// DMA9 CHCR -- SIF0
@@ -438,20 +422,12 @@ static __fi void _HwWrite_16or32_Page1( u32 addr, T val )
 
 			mcase(0x1f801548):	// DMA11 CHCR -- SIO2 IN
 				psxHu(addr) = val;
-#ifdef ENABLE_NEW_IOPDMA_SIO
-				DmaExecNew2(11);
-#else
 				DmaExec2(11);
-#endif
 			break;
 
 			mcase(0x1f801558):	// DMA12 CHCR -- SIO2 OUT
 				psxHu(addr) = val;
-#ifdef ENABLE_NEW_IOPDMA_SIO
-				DmaExecNew2(12);
-#else
 				DmaExec2(12);
-#endif
 			break;
 
 			// ------------------------------------------------------------------------

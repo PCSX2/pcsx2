@@ -16,18 +16,6 @@
 #ifndef __PS2EDEFS_H__
 #define __PS2EDEFS_H__
 
-// Global enable/disable flag, disables all the parts if off
-//#define ENABLE_NEW_IOPDMA
-
-// Parts of the dmac, each one can be turned on independently
-#ifdef ENABLE_NEW_IOPDMA
-//#define ENABLE_NEW_IOPDMA_SPU2 /* working */
-//#define ENABLE_NEW_IOPDMA_SIO  /* working */
-//#define ENABLE_NEW_IOPDMA_CDVD /* NOT IMPLEMENTED */
-//#define ENABLE_NEW_IOPDMA_SIF  /* NOT IMPLEMENTED */
-//#define ENABLE_NEW_IOPDMA_DEV9 /* untested (no plugins) */
-#endif
-
 /*
  *  PS2E Definitions v0.6.2 (beta)
  *
@@ -104,17 +92,9 @@ typedef struct _keyEvent
 // PS2EgetLibVersion2 (high 16 bits)
 #define PS2E_GS_VERSION 0x0006
 #define PS2E_PAD_VERSION 0x0002 // -=[ OBSOLETE ]=-
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-#define PS2E_SPU2_VERSION 0x0006
-#else
 #define PS2E_SPU2_VERSION 0x0005
-#endif
 #define PS2E_CDVD_VERSION 0x0005
-#ifdef ENABLE_NEW_IOPDMA_DEV9
-#define PS2E_DEV9_VERSION 0x0004
-#else
 #define PS2E_DEV9_VERSION 0x0003
-#endif
 #define PS2E_USB_VERSION 0x0003
 #define PS2E_FW_VERSION 0x0002
 #define PS2E_SIO_VERSION 0x0001
@@ -354,14 +334,6 @@ void CALLBACK SPU2reset();
 void CALLBACK SPU2write(u32 mem, u16 value);
 u16 CALLBACK SPU2read(u32 mem);
 
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-s32 CALLBACK SPU2dmaRead(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed);
-s32 CALLBACK SPU2dmaWrite(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed);
-void CALLBACK SPU2dmaInterrupt(s32 channel);
-
-// dma irq callbacks not needed anymore, they are handled by the dmac
-void CALLBACK SPU2irqCallback(void (*SPU2callback)());
-#else
 void CALLBACK SPU2readDMA4Mem(u16 *pMem, int size);
 void CALLBACK SPU2writeDMA4Mem(u16 *pMem, int size);
 void CALLBACK SPU2interruptDMA4();
@@ -378,7 +350,6 @@ u32 CALLBACK SPU2ReadMemAddr(int core);
 void CALLBACK SPU2WriteMemAddr(int core, u32 value);
 
 void CALLBACK SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callback)());
-#endif
 
 // extended funcs
 // if start is 1, starts recording spu2 data, else stops
@@ -468,14 +439,9 @@ u32 CALLBACK DEV9read32(u32 addr);
 void CALLBACK DEV9write8(u32 addr, u8 value);
 void CALLBACK DEV9write16(u32 addr, u16 value);
 void CALLBACK DEV9write32(u32 addr, u32 value);
-#ifdef ENABLE_NEW_IOPDMA_DEV9
-s32 CALLBACK DEV9dmaRead(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed);
-s32 CALLBACK DEV9dmaWrite(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed);
-void CALLBACK DEV9dmaInterrupt(s32 channel);
-#else
 void CALLBACK DEV9readDMA8Mem(u32 *pMem, int size);
 void CALLBACK DEV9writeDMA8Mem(u32 *pMem, int size);
-#endif
+
 // cycles = IOP cycles before calling callback,
 // if callback returns 1 the irq is triggered, else not
 void CALLBACK DEV9irqCallback(DEV9callback callback);
@@ -615,15 +581,6 @@ typedef s32(CALLBACK *_SPU2open)(void *pDsp);
 typedef void(CALLBACK *_SPU2reset)();
 typedef void(CALLBACK *_SPU2write)(u32 mem, u16 value);
 typedef u16(CALLBACK *_SPU2read)(u32 mem);
-
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-typedef s32(CALLBACK *_SPU2dmaRead)(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed);
-typedef s32(CALLBACK *_SPU2dmaWrite)(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed);
-typedef void(CALLBACK *_SPU2dmaInterrupt)(s32 channel);
-
-// dma irq callbacks not needed anymore, they are handled by the dmac
-typedef void(CALLBACK *_SPU2irqCallback)(void (*SPU2callback)());
-#else
 typedef void(CALLBACK *_SPU2readDMA4Mem)(u16 *pMem, int size);
 typedef void(CALLBACK *_SPU2writeDMA4Mem)(u16 *pMem, int size);
 typedef void(CALLBACK *_SPU2interruptDMA4)();
@@ -634,7 +591,6 @@ typedef void(CALLBACK *_SPU2interruptDMA7)();
 typedef void(CALLBACK *_SPU2irqCallback)(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callback)());
 typedef u32(CALLBACK *_SPU2ReadMemAddr)(int core);
 typedef void(CALLBACK *_SPU2WriteMemAddr)(int core, u32 value);
-#endif
 
 typedef int(CALLBACK *_SPU2setupRecording)(int, void *);
 
@@ -688,14 +644,8 @@ typedef u32(CALLBACK *_DEV9read32)(u32 mem);
 typedef void(CALLBACK *_DEV9write8)(u32 mem, u8 value);
 typedef void(CALLBACK *_DEV9write16)(u32 mem, u16 value);
 typedef void(CALLBACK *_DEV9write32)(u32 mem, u32 value);
-#ifdef ENABLE_NEW_IOPDMA_DEV9
-typedef s32(CALLBACK *_DEV9dmaRead)(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed);
-typedef s32(CALLBACK *_DEV9dmaWrite)(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed);
-typedef void(CALLBACK *_DEV9dmaInterrupt)(s32 channel);
-#else
 typedef void(CALLBACK *_DEV9readDMA8Mem)(u32 *pMem, int size);
 typedef void(CALLBACK *_DEV9writeDMA8Mem)(u32 *pMem, int size);
-#endif
 typedef void(CALLBACK *_DEV9irqCallback)(DEV9callback callback);
 typedef DEV9handler(CALLBACK *_DEV9irqHandler)(void);
 typedef void(CALLBACK *_DEV9async)(u32 cycles);
@@ -777,11 +727,6 @@ extern _SPU2reset SPU2reset;
 extern _SPU2write SPU2write;
 extern _SPU2read SPU2read;
 
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-extern _SPU2dmaRead SPU2dmaRead;
-extern _SPU2dmaWrite SPU2dmaWrite;
-extern _SPU2dmaInterrupt SPU2dmaInterrupt;
-#else
 extern _SPU2readDMA4Mem SPU2readDMA4Mem;
 extern _SPU2writeDMA4Mem SPU2writeDMA4Mem;
 extern _SPU2interruptDMA4 SPU2interruptDMA4;
@@ -793,7 +738,6 @@ extern _SPU2ReadMemAddr SPU2ReadMemAddr;
 extern _SPU2setupRecording SPU2setupRecording;
 extern _SPU2WriteMemAddr SPU2WriteMemAddr;
 extern _SPU2irqCallback SPU2irqCallback;
-#endif
 
 extern _SPU2irqCallback SPU2irqCallback;
 
@@ -814,14 +758,8 @@ extern _DEV9read32 DEV9read32;
 extern _DEV9write8 DEV9write8;
 extern _DEV9write16 DEV9write16;
 extern _DEV9write32 DEV9write32;
-#ifdef ENABLE_NEW_IOPDMA_DEV9
-extern _DEV9dmaRead DEV9dmaRead;
-extern _DEV9dmaWrite DEV9dmaWrite;
-extern _DEV9dmaInterrupt DEV9dmaInterrupt;
-#else
 extern _DEV9readDMA8Mem DEV9readDMA8Mem;
 extern _DEV9writeDMA8Mem DEV9writeDMA8Mem;
-#endif
 extern _DEV9irqCallback DEV9irqCallback;
 extern _DEV9irqHandler DEV9irqHandler;
 extern _DEV9async DEV9async;

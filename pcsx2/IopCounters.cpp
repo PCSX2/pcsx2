@@ -152,12 +152,6 @@ void psxRcntInit() {
 		psxCounters[7].mode = 0x8;
 	}
 
-#ifdef ENABLE_NEW_IOPDMA
-		psxCounters[8].rate = 2000;
-		psxCounters[8].CycleT = psxCounters[7].rate;
-		psxCounters[8].mode = 0x8;
-#endif
-
 	for (i=0; i<8; i++)
 		psxCounters[i].sCycleT = psxRegs.cycle;
 
@@ -518,24 +512,6 @@ void psxRcntUpdate()
 		else c -= difference;
 		if (c < psxNextCounter) psxNextCounter = c;
 	}
-
-#ifdef ENABLE_NEW_IOPDMA
-
-	// New Iop DMA handler WIP
-	{
-		const s32 difference = psxRegs.cycle - psxCounters[8].sCycleT;
-		s32 c = psxCounters[8].CycleT;
-
-		if(difference >= psxCounters[8].CycleT)
-		{
-			psxCounters[8].sCycleT = psxRegs.cycle;
-			psxCounters[8].CycleT = psxCounters[8].rate;
-			IopDmaUpdate(difference);
-		}
-		else c -= difference;
-		if (c < psxNextCounter) psxNextCounter = c;
-	}
-#endif
 
 	for (i=0; i<6; i++) _rcntSet( i );
 }

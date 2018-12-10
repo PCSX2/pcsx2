@@ -198,9 +198,6 @@ protected:
 	void vuMicroFreeze();
 	void vif0Freeze();
 	void vif1Freeze();
-#ifdef ENABLE_NEW_IOPDMA
-	void iopDmacFreeze();
-#endif
 	void sifFreeze();
 	void ipuFreeze();
 	void ipuDmaFreeze();
