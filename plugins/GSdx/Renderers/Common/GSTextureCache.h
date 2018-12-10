@@ -80,6 +80,7 @@ public:
 
 		PaletteKey GetPaletteKey();
 
+		void InitializeTexture();
 	};
 
 	struct PaletteKeyHash {

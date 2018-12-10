@@ -2059,11 +2059,7 @@ GSTextureCache::Palette::Palette(const GSRenderer* renderer, uint16 pal, bool ne
 	m_clut = (uint32*)_aligned_malloc(palette_size, 64);
 	memcpy(m_clut, (const uint32*)m_renderer->m_mem.m_clut, palette_size);
 	if (need_gs_texture) {
-		m_tex_palette = m_renderer->m_dev->CreateTexture(256, 1);
-		m_tex_palette->Update(GSVector4i(0, 0, pal, 1), m_clut, palette_size);
-	}
-	else {
-		m_tex_palette = nullptr;
+		InitializeTexture();
 	}
 }
 
@@ -2078,6 +2074,18 @@ GSTexture* GSTextureCache::Palette::GetPaletteGSTexture() {
 
 GSTextureCache::PaletteKey GSTextureCache::Palette::GetPaletteKey() {
 	return { m_clut, m_pal };
+}
+
+void GSTextureCache::Palette::InitializeTexture() {
+	if (!m_tex_palette) {
+		// A palette texture is always created with dimensions 256x1 (also in the case that m_pal is 16, thus a 16x1 texture
+		// would be enough to store the CLUT data) because the coordinates that the shader uses for
+		// sampling such texture are always normalized by 255.
+		// This is because indexes are stored as normalized values of an RGBA texture (e.g. index 15 will be read as (15/255),
+		// and therefore will read texel 15/255 * texture size).
+		m_tex_palette = m_renderer->m_dev->CreateTexture(256, 1);
+		m_tex_palette->Update(GSVector4i(0, 0, m_pal, 1), m_clut, m_pal * sizeof(m_clut[0]));
+	}
 }
 
 // GSTextureCache::PaletteKeyHash
@@ -2157,6 +2165,10 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 
 	if (it1 != map.end()) {
 		// Clut content match, HIT
+		if (need_gs_texture && !it1->second->GetPaletteGSTexture()) {
+			// Generate GSTexture and upload clut content if needed and not done yet
+			it1->second->InitializeTexture();
+		}
 		return it1->second;
 	}
 
