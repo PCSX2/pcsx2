@@ -51,10 +51,16 @@ public:
 		void UpdateAge();
 	};
 
+	struct PaletteKey {
+		const uint32* clut;
+		uint16 pal;
+	};
+
 	class Palette
 	{
 	private:
 		uint32* m_clut;
+		uint16 m_pal;
 		GSTexture* m_tex_palette;
 		const GSRenderer* m_renderer;
 
@@ -70,14 +76,10 @@ public:
 		Palette(const Palette&&) = delete;
 		Palette& operator=(const Palette&&) = delete;
 
-		uint32* GetClut();
-
 		GSTexture* GetPaletteGSTexture();
-	};
 
-	struct PaletteKey {
-		const uint32* clut;
-		uint16 pal;
+		PaletteKey GetPaletteKey();
+
 	};
 
 	struct PaletteKeyHash {
@@ -102,7 +104,6 @@ public:
 		GSTexture* m_palette;
 		bool m_should_have_tex_palette; // Enables m_clut (and possibly m_palette) recycling on object destruction
 		uint32 m_valid[MAX_PAGES]; // each uint32 bits map to the 32 blocks of that page
-		uint32* m_clut;
 		bool m_target;
 		bool m_complete;
 		bool m_repeating;
@@ -123,6 +124,8 @@ public:
 
 		void Update(const GSVector4i& rect, int layer = 0);
 		void UpdateLayer(const GIFRegTEX0& TEX0, const GSVector4i& rect, int layer = 0);
+
+		bool ClutMatch(PaletteKey palette_key);
 	};
 
 	class Target : public Surface
