@@ -1593,11 +1593,6 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 
 GSTextureCache::Source::~Source()
 {
-	if (!m_should_have_tex_palette) {
-		// Eventually valid reference for m_palette is not managed by PaletteMap, so it has to be recycled
-		m_renderer->m_dev->Recycle(m_palette);
-	}
-
 	_aligned_free(m_write.rect);
 }
 

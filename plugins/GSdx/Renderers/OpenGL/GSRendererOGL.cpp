@@ -1338,16 +1338,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 			// We need the palette to convert the depth to the correct alpha value.
 			if (!tex->m_palette) {
-				// If this asserts fails, the allocated palette texture (tex->m_palette)
-				// is leaked because it is not released on tex destruction
-				ASSERT(!tex->m_should_have_tex_palette); // No 8-bit texture enabled
-
-				tex->m_palette = m_dev->CreateTexture(256, 1);
-
-				const uint32* clut = m_mem.m_clut;
 				uint16 pal = GSLocalMemory::m_psm[tex->m_TEX0.PSM].pal;
-				tex->m_palette->Update(GSVector4i(0, 0, pal, 1), clut, pal * sizeof(clut[0]));
-
+				m_tc->AttachPaletteToSource(tex, pal, true);
 				dev->PSSetShaderResource(1, tex->m_palette);
 			}
 		}
