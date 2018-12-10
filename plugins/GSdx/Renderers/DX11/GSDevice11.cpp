@@ -23,6 +23,7 @@
 #include "GSdx.h"
 #include "GSDevice11.h"
 #include "GSUtil.h"
+#include "GSOsdManagerDX11.h"
 #include "resource.h"
 #include <fstream>
 
@@ -117,8 +118,9 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	//   This flag is safe as long as the DXGI's internal message pump is disabled or is on the
 	//   same thread as the GS window (which the emulator makes sure of, if it utilizes a
 	//   multithreaded GS).  Setting the flag is a nice and easy 5% speedup on GS-intensive scenes.
-
-	uint32 flags = D3D11_CREATE_DEVICE_SINGLETHREADED;
+	// NOTE: D3D11_CREATE_DEVICE_BGRA_SUPPORT
+	//   Flag allows support for surfaces with different channel ordering, required for D2D.
+	uint32 flags = D3D11_CREATE_DEVICE_SINGLETHREADED | D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
 #ifdef DEBUG
 	flags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -170,6 +172,9 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS options;
 
 	hr = m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &options, sizeof(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS));
+
+	// OSD
+	m_osd = new GSOsdManagerDX11(m_dev);
 
 	// msaa
 
@@ -277,7 +282,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 		CompileShader(shader.data(), shader.size(), "interlace.fx", nullptr, format("ps_main%d", i).c_str(), nullptr, &m_interlace.ps[i]);
 	}
 
-	// Shade Boos
+	// Shade Boost
 
 	int ShadeBoost_Contrast = theApp.GetConfigI("ShadeBoost_Contrast");
 	int ShadeBoost_Brightness = theApp.GetConfigI("ShadeBoost_Brightness");
@@ -417,6 +422,11 @@ bool GSDevice11::Reset(int w, int h)
 
 	if(m_swapchain)
 	{
+		GSOsdManagerDX11* osd = (GSOsdManagerDX11 *)m_osd;
+		// m_ctx_2d holds a reference to the backbuffer which must be released
+		// before the swapchain can be resized.
+		osd->Release();
+
 		DXGI_SWAP_CHAIN_DESC scd;
 
 		memset(&scd, 0, sizeof(scd));
@@ -430,6 +440,11 @@ bool GSDevice11::Reset(int w, int h)
 		{
 			return false;
 		}
+
+		CComPtr<IDXGISurface> dxgi_backbuffer;
+		backbuffer->QueryInterface(IID_PPV_ARGS(&dxgi_backbuffer));
+
+		osd->SetBitmap(dxgi_backbuffer, scd.BufferDesc.Format);
 
 		m_backbuffer = new GSTexture11(backbuffer);
 	}
