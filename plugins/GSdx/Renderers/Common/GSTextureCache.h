@@ -54,13 +54,13 @@ public:
 	class Palette
 	{
 	private:
-		uint32* m_clut; // Pointer to a copy of relevant clut
-		GSTexture* m_tex_palette; // Pointer to valid texture with relevant clut as content, if instantiated by the constructor
-		const GSRenderer* m_renderer; // Pointer to the current renderer, needed to recycle the eventually referenced GSTexture on destruction
+		uint32* m_clut;
+		GSTexture* m_tex_palette;
+		const GSRenderer* m_renderer;
 
 	public:
-		Palette(const GSRenderer* renderer, uint16 pal, bool need_gs_texture); // Creates a copy of the current clut and, if needed (need_gs_texture == true), a texture with its content
-		~Palette(); // Default destructor, frees clut copy and eventually recycles palette texture
+		Palette(const GSRenderer* renderer, uint16 pal, bool need_gs_texture);
+		~Palette();
 
 		// Disable copy constructor and copy operator
 		Palette(const Palette&) = delete;
@@ -70,10 +70,8 @@ public:
 		Palette(const Palette&&) = delete;
 		Palette& operator=(const Palette&&) = delete;
 
-		// Getter for clut pointer
 		uint32* GetClut();
 
-		// Getter for palette texture pointer, may be nullptr if object has been instantiated with need_gs_texture == false
 		GSTexture* GetPaletteGSTexture();
 	};
 
@@ -88,7 +86,7 @@ public:
 	};
 
 	struct PaletteKeyEqual {
-		// Compare clut contents
+		// Compare pal value and clut contents
 		bool operator()(const PaletteKey &lhs, const PaletteKey &rhs) const;
 	};
 
@@ -100,7 +98,7 @@ public:
 		void Flush(uint32 count, int layer);
 
 	public:
-		std::shared_ptr<Palette> m_palette_obj; // Shared pointer to the relevant Palette object (if any)
+		std::shared_ptr<Palette> m_palette_obj;
 		GSTexture* m_palette;
 		bool m_should_have_tex_palette; // Enables m_clut (and possibly m_palette) recycling on object destruction
 		uint32 m_valid[MAX_PAGES]; // each uint32 bits map to the 32 blocks of that page
@@ -151,7 +149,7 @@ public:
 	{
 	private:
 		static const uint16 MAX_SIZE = 65535; // Max size of each map.
-		const GSRenderer* m_renderer; // Reference to the current renderer
+		const GSRenderer* m_renderer;
 		
 		// Array of 2 maps, the first for 64B palettes and the second for 1024B palettes.
 		// Each map stores the key PaletteKey (clut copy, pal value) pointing to the relevant shared pointer to Palette object.
@@ -159,7 +157,7 @@ public:
 		std::array<std::unordered_map<PaletteKey, std::shared_ptr<Palette>, PaletteKeyHash, PaletteKeyEqual>, 2> m_maps;
 
 	public:
-		PaletteMap(const GSRenderer* renderer); // Default constructor
+		PaletteMap(const GSRenderer* renderer);
 
 		// Retrieves a shared pointer to a valid Palette from m_maps or creates a new one adding it to the data structure
 		std::shared_ptr<Palette> LookupPalette(uint16 pal, bool need_gs_texture);
