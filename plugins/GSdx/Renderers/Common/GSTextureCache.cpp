@@ -2092,6 +2092,8 @@ std::size_t GSTextureCache::PaletteKeyHash::operator()(const PaletteKey &key) co
 	uint16 pal = key.pal;
 	const uint32* clut = key.clut;
 
+	ASSERT((pal & 15) == 0);
+
 	size_t clut_hash = 3831179159;
 	for (uint16 i = 0; i < pal; i += 16) {
 		clut_hash = (clut_hash + 1488000301) ^ (clut[i] + 33644011);
@@ -2140,6 +2142,8 @@ GSTextureCache::PaletteMap::PaletteMap(const GSRenderer* renderer) {
 
 // Retrieves the palette with the desired clut
 std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalette(uint16 pal, bool need_gs_texture) {
+	ASSERT(pal == 16 || pal == 256);
+
 	// Choose which hash map search into:
 	//    pal == 16  : index 0
 	//    pal == 256 : index 1
