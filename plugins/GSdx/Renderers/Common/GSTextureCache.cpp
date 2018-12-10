@@ -2123,11 +2123,11 @@ std::size_t GSTextureCache::PaletteKeyHash::operator()(const PaletteKey &key) co
 
 // Compare clut contents
 bool GSTextureCache::PaletteKeyEqual::operator()(const PaletteKey &lhs, const PaletteKey &rhs) const {
-	ASSERT(lhs.pal == rhs.pal); // By design, each map SHOULD contain only PaletteKey with the same pal value
-	
-	uint16 pal = lhs.pal;
-	uint16 palette_size = pal * sizeof(uint32);
-	return GSVector4i::compare64(lhs.clut, rhs.clut, palette_size);
+	if (lhs.pal != rhs.pal) {
+		return false;
+	}
+
+	return GSVector4i::compare64(lhs.clut, rhs.clut, lhs.pal * sizeof(lhs.clut[0]));
 };
 
 // GSTextureCache::PaletteMap
