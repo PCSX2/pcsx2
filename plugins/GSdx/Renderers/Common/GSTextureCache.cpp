@@ -1171,6 +1171,11 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_target = true;
 		src->m_from_target = dst->m_texture;
 		src->m_texture->SetScale(scale);
+
+		if (psm.pal > 0) {
+			// Attach palette for GPU texture conversion
+			AttachPaletteToSource(src, psm.pal, true);
+		}
 	}
 	else if (dst)
 	{
