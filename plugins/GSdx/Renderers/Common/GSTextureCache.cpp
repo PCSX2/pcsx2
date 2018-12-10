@@ -222,10 +222,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		// Target are converted (AEM & palette) on the fly by the GPU. They don't need extra check
 		if (!s->m_target) {
 			// We request a palette texture (psm_s.pal). If the texture was
-			// converted by the CPU (!s->m_should_have_tex_palette), we need to ensure
+			// converted by the CPU (!s->m_palette), we need to ensure
 			// palette content is the same.
-			// Note: content of the palette will be uploaded at the end of the function
-			if (psm_s.pal > 0 && !s->m_should_have_tex_palette && !s->ClutMatch({ clut, psm_s.pal }))
+			if (psm_s.pal > 0 && !s->m_palette && !s->ClutMatch({ clut, psm_s.pal }))
 				continue;
 
 			// We request a 24/16 bit RGBA texture. Alpha expansion was done by
@@ -376,6 +375,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		}
 	}
 
+	bool new_source = false;
+
 	if(src == NULL)
 	{
 #ifdef ENABLE_OGL_DEBUG
@@ -388,6 +389,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		}
 #endif
 		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset);
+		new_source = true;
 
 	} else {
 		GL_CACHE("TC: src hit: %d (0x%x, 0x%x, %s)",
@@ -396,7 +398,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					psm_str(TEX0.PSM));
 	}
 
-	if (src->m_should_have_tex_palette && (!src->m_clut || !src->ClutMatch({ clut, psm_s.pal }))) {
+	if (src->m_palette && !new_source && !src->ClutMatch({ clut, psm_s.pal })) {
 		AttachPaletteToSource(src, psm_s.pal, true);
 	}
 
@@ -1333,7 +1335,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// However it is different here. We want to reuse a Render Target as a texture.
 		// Because the texture is already on the GPU, CPU can't convert it.
 		if (psm.pal > 0) {
-			src->m_should_have_tex_palette = true;
+			AttachPaletteToSource(src, psm.pal, true);
 		}
 		// Disable linear filtering for various GS post-processing effect
 		// 1/ Palette is used to interpret the alpha channel of the RT as an index.
@@ -1447,11 +1449,13 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		if (m_paltex && psm.pal > 0)
 		{
 			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th, Get8bitFormat());
-			src->m_should_have_tex_palette = true;
+			AttachPaletteToSource(src, psm.pal, true);
 		}
 		else {
 			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th);
-			AttachPaletteToSource(src, psm.pal, false); // Attach only Palette object and clut copy
+			if (psm.pal > 0) {
+				AttachPaletteToSource(src, psm.pal, false);
+			}
 		}
 	}
 
@@ -1547,7 +1551,6 @@ void GSTextureCache::Surface::UpdateAge()
 GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp, bool dummy_container)
 	: Surface(r, temp)
 	, m_palette_obj(nullptr)
-	, m_should_have_tex_palette(false)
 	, m_palette(nullptr)
 	, m_target(false)
 	, m_complete(false)
