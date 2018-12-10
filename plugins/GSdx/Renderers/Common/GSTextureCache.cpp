@@ -2036,11 +2036,8 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 
 void GSTextureCache::AttachPaletteToSource(Source* s, uint16 pal, bool need_gs_texture)
 {
-	std::shared_ptr<Palette> p = m_palette_map.LookupPalette(pal, need_gs_texture);
-	s->m_palette_obj = p;
-	if (need_gs_texture) {
-		s->m_palette = p->GetPaletteGSTexture();
-	}
+	s->m_palette_obj = m_palette_map.LookupPalette(pal, need_gs_texture);
+	s->m_palette = need_gs_texture ? s->m_palette_obj->GetPaletteGSTexture() : nullptr;
 }
 
 // GSTextureCache::Palette
