@@ -102,7 +102,6 @@ public:
 	public:
 		std::shared_ptr<Palette> m_palette_obj;
 		GSTexture* m_palette;
-		bool m_should_have_tex_palette; // Enables m_clut (and possibly m_palette) recycling on object destruction
 		uint32 m_valid[MAX_PAGES]; // each uint32 bits map to the 32 blocks of that page
 		bool m_target;
 		bool m_complete;
