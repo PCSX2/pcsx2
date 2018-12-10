@@ -90,9 +90,6 @@
     <ClCompile Include="GSPerfMon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderers\Common\GSOsdManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderers\SW\GSRasterizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -286,6 +283,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Window\GSSettingsDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderers\OpenGL\GSOsdManagerOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -579,6 +579,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\Common\GSFastList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\OpenGL\GSOsdManagerOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

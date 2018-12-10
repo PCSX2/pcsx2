@@ -96,6 +96,7 @@
     <ClCompile Include="GSAlignedClass.cpp" />
     <ClCompile Include="GSBlock.cpp" />
     <ClCompile Include="GSCapture.cpp" />
+    <ClCompile Include="Renderers\OpenGL\GSOsdManagerOGL.cpp" />
     <ClCompile Include="Window\GSCaptureDlg.cpp" />
     <ClCompile Include="GSClut.cpp" />
     <ClCompile Include="GSCodeBuffer.cpp" />
@@ -124,7 +125,6 @@
     <ClCompile Include="GSLocalMemory.cpp" />
     <ClCompile Include="GSLzma.cpp" />
     <ClCompile Include="GSPerfMon.cpp" />
-    <ClCompile Include="Renderers\Common\GSOsdManager.cpp" />
     <ClCompile Include="GSPng.cpp" />
     <ClCompile Include="Renderers\SW\GSRasterizer.cpp" />
     <ClCompile Include="Renderers\Common\GSRenderer.cpp" />
@@ -190,6 +190,7 @@
     <ClInclude Include="GSAlignedClass.h" />
     <ClInclude Include="GSBlock.h" />
     <ClInclude Include="GSCapture.h" />
+    <ClInclude Include="Renderers\OpenGL\GSOsdManagerOGL.h" />
     <ClInclude Include="Window\GSCaptureDlg.h" />
     <ClInclude Include="GSClut.h" />
     <ClInclude Include="GSCodeBuffer.h" />
