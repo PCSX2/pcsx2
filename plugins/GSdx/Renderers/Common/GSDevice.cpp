@@ -41,6 +41,8 @@ GSDevice::GSDevice()
 	memset(&m_vertex, 0, sizeof(m_vertex));
 	memset(&m_index, 0, sizeof(m_index));
 	m_linear_present = theApp.GetConfigB("linear_present");
+
+	m_osd = new GSOsdManager();
 }
 
 GSDevice::~GSDevice()
@@ -55,6 +57,7 @@ GSDevice::~GSDevice()
 	delete m_fxaa;
 	delete m_shadeboost;
 	delete m_1x1;
+	delete m_osd;
 }
 
 bool GSDevice::Create(const std::shared_ptr<GSWnd>& wnd)
