@@ -24,7 +24,7 @@
 #include "GSDeviceOGL.h"
 #include "GLState.h"
 #include "GSUtil.h"
-#include "Renderers/Common/GSOsdManager.h"
+#include "GSOsdManagerOGL.h"
 #include <fstream>
 
 //#define ONLY_LINES
@@ -64,7 +64,6 @@ GSDeviceOGL::GSDeviceOGL()
 	, m_palette_ss(0)
 	, m_vs_cb(NULL)
 	, m_ps_cb(NULL)
-	, m_font(NULL)
 	, m_shader(NULL)
 {
 	memset(&m_merge_obj, 0, sizeof(m_merge_obj));
@@ -546,12 +545,6 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	fprintf(stdout, "Available VRAM/RAM:%lldMB for textures\n", GLState::available_vram >> 20u);
 
 	// ****************************************************************
-	// Texture Font (OSD)
-	// ****************************************************************
-	GSVector2i tex_font = m_osd.get_texture_font_size();
-	m_font = new GSTextureOGL(GSTextureOGL::Texture, tex_font.x, tex_font.y, GL_R8, m_fbo_read, false);
-
-	// ****************************************************************
 	// Finish window setup and backbuffer
 	// ****************************************************************
 	if(!GSDevice::Create(wnd))
@@ -566,6 +559,16 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	static_assert(sizeof(PSSamplerSelector) == 4, "Wrong PSSamplerSelector size");
 	static_assert(sizeof(OMDepthStencilSelector) == 4, "Wrong OMDepthStencilSelector size");
 	static_assert(sizeof(OMColorMaskSelector) == 4, "Wrong OMColorMaskSelector size");
+
+	// OSD
+	m_osd = new GSOsdManagerOGL(
+		this,
+		m_va,
+		m_fbo_read,
+		m_convert.ps[ShaderConvert_OSD],
+		m_convert.pt,
+		m_convert.dss
+	);
 
 	return true;
 }
@@ -1374,36 +1377,6 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// ************************************
 	// End
 	// ************************************
-
-	EndScene();
-}
-
-void GSDeviceOGL::RenderOsd(GSTexture* dt)
-{
-	BeginScene();
-
-	m_shader->BindPipeline(m_convert.ps[ShaderConvert_OSD]);
-
-	OMSetDepthStencilState(m_convert.dss);
-	OMSetBlendState((uint8)GSDeviceOGL::m_MERGE_BLEND);
-	OMSetRenderTargets(dt, NULL);
-
-	if(m_osd.m_texture_dirty) {
-		m_osd.upload_texture_atlas(m_font);
-	}
-
-	PSSetShaderResource(0, m_font);
-	PSSetSamplerState(m_convert.pt);
-
-	IASetPrimitiveTopology(GL_TRIANGLES);
-
-	// Note scaling could also be done in shader (require gl3/dx10)
-	size_t count = m_osd.Size();
-	GSVertexPT1* dst = (GSVertexPT1*)m_va->MapVB(count);
-	count = m_osd.GeneratePrimitives(dst, count);
-	m_va->UnmapVB();
-
-	DrawPrimitive();
 
 	EndScene();
 }
