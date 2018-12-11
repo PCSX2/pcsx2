@@ -40,6 +40,7 @@
 #define PS_SHUFFLE 0
 #define PS_READ_BA 0
 #define PS_PAL_FMT 0
+#define PS_CHANNEL_FETCH 0
 #endif
 
 struct VS_INPUT
@@ -82,6 +83,7 @@ struct PS_OUTPUT
 Texture2D<float4> Texture : register(t0);
 Texture2D<float4> Palette : register(t1);
 Texture2D<float4> RTCopy : register(t2);
+Texture2D<float4> RawTexture : register(t4);
 SamplerState TextureSampler : register(s0);
 SamplerState PaletteSampler : register(s1);
 SamplerState RTCopySampler : register(s2);
@@ -134,6 +136,50 @@ float4 sample_p(float u)
 float4 sample_rt(float2 uv)
 {
 	return RTCopy.Sample(RTCopySampler, uv);
+}
+
+float4 fetch_raw_color(int2 xy)
+{
+	return RawTexture.Load(int3(xy, 0));
+}
+
+float4 fetch_red(int2 xy)
+{
+	float4 rt = fetch_raw_color(xy);
+	return sample_p(rt.r);
+}
+
+float4 fetch_blue(int2 xy)
+{
+	float4 rt = fetch_raw_color(xy);
+	return sample_p(rt.b);
+}
+
+float4 fetch_green(int2 xy)
+{
+	float4 rt = fetch_raw_color(xy);
+	return sample_p(rt.g);
+}
+
+float4 fetch_alpha(int2 xy)
+{
+	float4 rt = fetch_raw_color(xy);
+	return sample_p(rt.a);
+}
+
+float4 fetch_rgb(int2 xy)
+{
+	float4 rt = fetch_raw_color(xy);
+	float4 c = float4(sample_p(rt.r).r, sample_p(rt.g).g, sample_p(rt.b).b, 1.0);
+	return c;
+}
+
+float4 fetch_gXbY(int2 xy)
+{
+	int4 rt = (int4)(fetch_raw_color(xy) * 255.0);
+	int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
+	int blue = (rt.b << ChannelShuffle.y) & ChannelShuffle.x;
+	return (float4)(green | blue) / 255.0;
 }
 
 #elif SHADER_MODEL <= 0x300
@@ -594,7 +640,21 @@ float4 ps_color(PS_INPUT input)
 {
 	datst(input);
 
+#if PS_CHANNEL_FETCH == 1
+	float4 t = fetch_red(int2(input.p.xy));
+#elif PS_CHANNEL_FETCH == 2
+	float4 t = fetch_green(int2(input.p.xy));
+#elif PS_CHANNEL_FETCH == 3
+	float4 t = fetch_blue(int2(input.p.xy));
+#elif PS_CHANNEL_FETCH == 4
+	float4 t = fetch_alpha(int2(input.p.xy));
+#elif PS_CHANNEL_FETCH == 5
+	float4 t = fetch_rgb(int2(input.p.xy));
+#elif PS_CHANNEL_FETCH == 6
+	float4 t = fetch_gXbY(int2(input.p.xy));
+#else
 	float4 t = sample(input.t.xy, input.t.w);
+#endif
 
 	float4 c = tfx(t, input.c);
 
