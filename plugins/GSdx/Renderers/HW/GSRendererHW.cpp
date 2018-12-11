@@ -1156,7 +1156,6 @@ GSRendererHW::Hacks::Hacks()
 	if (!can_handle_depth) {
 		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SMTNocturne, CRC::RegionCount, &GSRendererHW::OI_SMTNocturne));
 		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::GodOfWar2, CRC::RegionCount, &GSRendererHW::OI_GodOfWar2));
-		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::TalesOfLegendia, CRC::RegionCount, &GSRendererHW::OI_TalesOfLegendia));
 	}
 
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::OO_DBZBT2));
@@ -1583,20 +1582,6 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 		{
 			m_dev->ClearDepth(ds);
 		}
-	}
-
-	return true;
-}
-
-bool GSRendererHW::OI_TalesOfLegendia(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if (FPSM == PSM_PSMCT32 && FBP == 0x01c00 && !m_context->TEST.ATE && m_vt.m_eq.z)
-	{
-		m_context->TEST.ZTST = ZTST_ALWAYS;
-		//m_dev->ClearDepth(ds);
 	}
 
 	return true;
