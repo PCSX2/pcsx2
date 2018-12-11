@@ -105,6 +105,7 @@ cbuffer cb1
 	float2 MinF;
 	float2 TA;
 	uint4 MskFix;
+	int4 ChannelShuffle;
 	float4 TC_OffsetHack;
 };
 
