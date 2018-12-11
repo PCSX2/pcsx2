@@ -54,7 +54,7 @@ public:
 		empty = true;
 		updated = wxInvalidDateTime;
 		crc = ElfCRC;
-		serialName = DiscSerial;
+		serialName = L"";
 		menu_update = false;
 		invalid_cache = true;
 	}
