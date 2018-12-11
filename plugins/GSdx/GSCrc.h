@@ -91,6 +91,7 @@ public:
 		IkkiTousen,
 		ItadakiStreet,
 		JackieChanAdv,
+		Jak1,
 		Jak2,
 		Jak3,
 		JakX,

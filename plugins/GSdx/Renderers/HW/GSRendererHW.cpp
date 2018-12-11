@@ -205,7 +205,7 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 		case CRC::HarryPotterATHBP:
 		case CRC::HarryPotterATPOA:
 		case CRC::HarryPotterOOTP:
-		case CRC::JakX:
+		case CRC::Jak1:
 		case CRC::Jak3:
 		case CRC::LegacyOfKainDefiance:
 		case CRC::NicktoonsUnite:
