@@ -56,6 +56,61 @@ bool GSRendererDX9::CreateDevice(GSDevice* dev)
 	return true;
 }
 
+void GSRendererDX9::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex)
+{
+	// Channel shuffle will never be supported on Direct3D9 through shaders so just
+	// use code that skips the bad draw calls.
+	if (m_channel_shuffle)
+	{
+		if (m_game.title == CRC::Tekken5)
+		{
+			if (m_context->FRAME.FBW == 1)
+			{
+				// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
+				// 12 pages: 2 calls by channel, 3 channels, 1 blit
+				// Minus current draw call
+				m_skip = 12 * (3 + 3 + 1) - 1;
+			}
+			else
+			{
+				// Could skip model drawing if wrongly detected
+				m_channel_shuffle = false;
+			}
+		}
+		else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt))
+		{
+			// So far 2 games hit this code path. Urban Chaos and Tales of Abyss.
+			throw GSDXRecoverableError();
+		}
+		else if (m_index.tail <= 64 && m_context->CLAMP.WMT == 3)
+		{
+			// Blood will tell. I think it is channel effect too but again
+			// implemented in a different way. I don't want to add more CRC stuff. So
+			// let's disable channel when the signature is different.
+			//
+			// Note: Tales Of Abyss and Tekken5 could hit this path too. Those games are
+			// handled above.
+			m_channel_shuffle = false;
+		}
+		else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8))
+		{
+			// Read either blue or Alpha.
+			// MGS3/Kill Zone
+			throw GSDXRecoverableError();
+		}
+		else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0))
+		{
+			// Read either Red or Green.
+			// Terminator 3
+			throw GSDXRecoverableError();
+		}
+		else
+		{
+			m_channel_shuffle = false;
+		}
+	}
+}
+
 void GSRendererDX9::EmulateTextureShuffleAndFbmask()
 {
 	if (m_texture_shuffle)
