@@ -201,13 +201,16 @@ public:
 				uint32 rt:1;
 				uint32 colclip:2;
 
+				// Others ways to fetch the texture
+				uint32 channel:3;
+
 				// Hack
 				uint32 aout:1;
 				uint32 spritehack:1;
 				uint32 tcoffsethack:1;
 				uint32 point_sampler:1;
 
-				uint32 _free:30;
+				uint32 _free:27;
 			};
 
 			uint64 key;
