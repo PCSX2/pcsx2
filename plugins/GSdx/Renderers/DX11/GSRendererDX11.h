@@ -29,6 +29,7 @@ class GSRendererDX11 : public GSRendererDX
 {
 protected:
 	void EmulateTextureShuffleAndFbmask();
+	void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
 	void SetupIA(const float& sx, const float& sy);
 
 public:

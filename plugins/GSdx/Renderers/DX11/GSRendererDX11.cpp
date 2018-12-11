@@ -174,6 +174,145 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 	}
 }
 
+void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex)
+{
+	// Uncomment to disable HLE emulation (allow to trace the draw call)
+	// m_channel_shuffle = false;
+
+	// First let's check we really have a channel shuffle effect
+	if (m_channel_shuffle)
+	{
+		if (m_game.title == CRC::Tekken5)
+		{
+			if (m_context->FRAME.FBW == 1)
+			{
+				// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
+				// fprintf(stderr, "Tekken5 RGB Channel\n");
+				// m_ps_sel.channel = ChannelFetch_RGB;
+				// m_context->FRAME.FBMSK = 0xFF000000;
+				// 12 pages: 2 calls by channel, 3 channels, 1 blit
+				// Minus current draw call
+				m_skip = 12 * (3 + 3 + 1) - 1;
+				// *rt = tex->m_from_target;
+			}
+			else
+			{
+				// Could skip model drawing if wrongly detected
+				m_channel_shuffle = false;
+			}
+		}
+		else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt))
+		{
+			// So far 2 games hit this code path. Urban Chaos and Tales of Abyss.
+			// Lacks shader like usual but maybe we can still use it to skip some bad draw calls.
+			// fprintf(stderr, "Tales Of Abyss Crazyness/Urban Chaos channel not supported\n");
+			throw GSDXRecoverableError();
+		}
+		else if (m_index.tail <= 64 && m_context->CLAMP.WMT == 3)
+		{
+			// Blood will tell. I think it is channel effect too but again
+			// implemented in a different way. I don't want to add more CRC stuff. So
+			// let's disable channel when the signature is different.
+			//
+			// Note: Tales Of Abyss and Tekken5 could hit this path too. Those games are
+			// handled above.
+			// fprintf(stderr, "Maybe not a channel!\n");
+			m_channel_shuffle = false;
+		}
+		else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8))
+		{
+			// Read either blue or Alpha. Let's go for Blue ;)
+			// MGS3/Kill Zone
+			// fprintf(stderr, "Blue channel\n");
+			m_ps_sel.channel = ChannelFetch_BLUE;
+		}
+		else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0))
+		{
+			// Read either Red or Green. Let's check the V coordinate. 0-1 is likely top so
+			// red. 2-3 is likely bottom so green (actually depends on texture base pointer offset)
+			bool green = PRIM->FST && (m_vertex.buff[0].V & 32);
+			if (green && (m_context->FRAME.FBMSK & 0x00FFFFFF) == 0x00FFFFFF)
+			{
+				// Typically used in Terminator 3
+				int blue_mask = m_context->FRAME.FBMSK >> 24;
+				int green_mask = ~blue_mask & 0xFF;
+				int blue_shift = -1;
+
+				// Note: potentially we could also check the value of the clut
+				switch (m_context->FRAME.FBMSK >> 24)
+				{
+					case 0xFF: ASSERT(0);      break;
+					case 0xFE: blue_shift = 1; break;
+					case 0xFC: blue_shift = 2; break;
+					case 0xF8: blue_shift = 3; break;
+					case 0xF0: blue_shift = 4; break;
+					case 0xE0: blue_shift = 5; break;
+					case 0xC0: blue_shift = 6; break;
+					case 0x80: blue_shift = 7; break;
+					default:   ASSERT(0);      break;
+				}
+
+				int green_shift = 8 - blue_shift;
+				ps_cb.ChannelShuffle = GSVector4i(blue_mask, blue_shift, green_mask, green_shift);
+
+				if (blue_shift >= 0)
+				{
+					// fprintf(stderr, "Green/Blue channel (%d, %d)\n", blue_shift, green_shift);
+					m_ps_sel.channel = ChannelFetch_GXBY;
+					m_context->FRAME.FBMSK = 0x00FFFFFF;
+				}
+				else
+				{
+					// fprintf(stderr, "Green channel (wrong mask) (fbmask %x)\n", m_context->FRAME.FBMSK >> 24);
+					m_ps_sel.channel = ChannelFetch_GREEN;
+				}
+
+			}
+			else if (green)
+			{
+				// fprintf(stderr, "Green channel\n");
+				m_ps_sel.channel = ChannelFetch_GREEN;
+			}
+			else
+			{
+				// Pop
+				// fprintf(stderr, "Red channel\n");
+				m_ps_sel.channel = ChannelFetch_RED;
+			}
+		}
+		else
+		{
+			// fprintf(stderr, "Channel not supported\n");
+			m_channel_shuffle = false;
+		}
+	}
+
+	// Effect is really a channel shuffle effect so let's cheat a little
+	if (m_channel_shuffle)
+	{
+		dev->PSSetShaderResource(4, tex->m_from_target);
+		// Replace current draw with a fullscreen sprite
+		//
+		// Performance GPU note: it could be wise to reduce the size to
+		// the rendered size of the framebuffer
+
+		GSVertex* s = &m_vertex.buff[0];
+		s[0].XYZ.X = (uint16)(m_context->XYOFFSET.OFX + 0);
+		s[1].XYZ.X = (uint16)(m_context->XYOFFSET.OFX + 16384);
+		s[0].XYZ.Y = (uint16)(m_context->XYOFFSET.OFY + 0);
+		s[1].XYZ.Y = (uint16)(m_context->XYOFFSET.OFY + 16384);
+
+		m_vertex.head = m_vertex.tail = m_vertex.next = 2;
+		m_index.tail = 2;
+	}
+	else
+	{
+#ifdef _DEBUG
+		dev->PSSetShaderResource(4, NULL);
+#endif
+	}
+}
+
 void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 {
 	GSDevice11* dev = (GSDevice11*)m_dev;

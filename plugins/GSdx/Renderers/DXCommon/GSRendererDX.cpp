@@ -156,68 +156,6 @@ void GSRendererDX::EmulateZbuffer()
 	}
 }
 
-void GSRendererDX::EmulateChannelShuffle(const GSTextureCache::Source* tex)
-{
-	// Channel shuffle effect not supported on DX. Let's keep the logic because it help to
-	// reduce memory requirement (and why not a partial port)
-
-	// Uncomment to disable (allow to trace the draw call)
-	// m_channel_shuffle = false;
-
-	// First let's check we really have a channel shuffle effect
-	if (m_channel_shuffle)
-	{
-		if (m_game.title == CRC::Tekken5)
-		{
-			if (m_context->FRAME.FBW == 1)
-			{
-				// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
-				// Skip channel effect, it misses a shader for proper screen effect but at least the top left screen issue isn't appearing anymore 
-				// 12 pages: 2 calls by channel, 3 channels, 1 blit
-				// Minus current draw call
-				m_skip = 12 * (3 + 3 + 1) - 1;
-			}
-			else
-			{
-				// Could skip model drawing if wrongly detected
-				m_channel_shuffle = false;
-			}
-		}
-		else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt))
-		{
-			// So far 2 games hit this code path. Urban Chaos and Tales of Abyss.
-			// Lacks shader like usual but maybe we can still use it to skip some bad draw calls.
-			throw GSDXRecoverableError();
-		}
-		else if (m_index.tail <= 64 && m_context->CLAMP.WMT == 3)
-		{
-			// Blood will tell. I think it is channel effect too but again
-			// implemented in a different way. I don't want to add more CRC stuff. So
-			// let's disable channel when the signature is different.
-			//
-			// Note: Tales Of Abyss and Tekken5 could hit this path too. Those games are
-			// handled above.
-			m_channel_shuffle = false;
-		}
-		else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8))
-		{
-			// Read either blue or Alpha. Let's go for Blue ;)
-			// MGS3/Kill Zone
-			throw GSDXRecoverableError();
-		}
-		else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0))
-		{
-			// Read either Red or Green. Let's check the V coordinate. 0-1 is likely top so
-			// red. 2-3 is likely bottom so green (actually depends on texture base pointer offset)
-			throw GSDXRecoverableError();
-		}
-		else
-		{
-			m_channel_shuffle = false;
-		}
-	}
-}
-
 void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 {
 	const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
@@ -402,7 +340,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// HLE implementation of the channel selection effect
 	//
 	// Warning it must be done at the begining because it will change the vertex list
-	EmulateChannelShuffle(tex);
+	EmulateChannelShuffle(&rt, tex);
 
 	// Upscaling hack to avoid various line/grid issues
 	MergeSprite(tex);
@@ -729,7 +667,8 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	}
 
 	// rs
-	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * m_context->scissor.in).rintersect(GSVector4i(rtsize).zwxy());
+	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
+	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
 
 	dev->OMSetRenderTargets(rt, ds, &scissor);
 	dev->PSSetShaderResource(0, tex ? tex->m_texture : NULL);
