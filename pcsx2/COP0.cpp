@@ -441,7 +441,7 @@ void MFC0()
 		break;
 
 		case 24:
-			Console.WriteLn("MFC0 Breakpoint debug Registers code = %x", cpuRegs.code & 0x3FF);
+			COP0_LOG("MFC0 Breakpoint debug Registers code = %x", cpuRegs.code & 0x3FF);
 		break;
 
 		case 9:
@@ -473,7 +473,7 @@ void MTC0()
 		break;
 
 		case 24:
-			Console.WriteLn("MTC0 Breakpoint debug Registers code = %x", cpuRegs.code & 0x3FF);
+			COP0_LOG("MTC0 Breakpoint debug Registers code = %x", cpuRegs.code & 0x3FF);
 		break;
 
 		case 25:
