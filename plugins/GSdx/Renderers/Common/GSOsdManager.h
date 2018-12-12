@@ -1,6 +1,5 @@
 /*
- *	Copyright (C) 2014-2016 Gregory hainaut
- *	Copyright (C) 2016-2016 Jason Brown
+ *	Copyright (C) 2018 PCSX2 Dev Team
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,77 +21,34 @@
 #pragma once
 
 #include "stdafx.h"
-#include "GSVector.h"
-#include "GSVertex.h"
-#include "GSTexture.h"
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include "GSdx.h"
+#include "Renderers/Common/GSVertex.h"
+#include "Renderers/Common/GSTexture.h"
 
-class GSOsdManager {
-	struct glyph_info {
-		int32 ax; // advance.x
-		int32 ay; // advance.y
-
-		uint32 bw; // bitmap.width;
-		uint32 bh; // bitmap.rows;
-
-		int32 bl; // bitmap_left;
-		int32 bt; // bitmap_top;
-
-		float tx; // x offset of glyph
-		float ty; // y offset of glyph
-		float tw; // nomalized glyph width
-	};
-
-	std::map<char32_t, glyph_info> m_char_info;
-	std::map<std::pair<char32_t, char32_t>, FT_Pos> m_kern_info;
-
-	FT_Library m_library;
-	FT_Face    m_face;
-	FT_UInt    m_size;
-
-	uint32 m_atlas_h;
-	uint32 m_atlas_w;
-	int32 m_max_width;
-	int32 m_onscreen_messages;
-
-	struct log_info {
-		uint32 color;
-		std::u32string msg;
-		std::chrono::system_clock::time_point OnScreen;
-	};
-	std::vector<log_info> m_log;
-
-	std::map<std::u32string, std::pair<std::u32string, uint32>> m_monitor;
-
-	void AddGlyph(char32_t codepoint);
-	void RenderGlyph(GSVertexPT1* dst, const glyph_info g, float x, float y, uint32 color);
-	void RenderString(GSVertexPT1* dst, const std::u32string msg, float x, float y, uint32 color);
-	float StringSize(const std::u32string msg);
-
+class GSOsdManager
+{
+protected:
 	bool m_log_enabled;
-	int m_log_speed;
 	bool m_monitor_enabled;
-	int m_osd_transparency;
+
+	float m_opacity;
+
 	int m_max_onscreen_messages;
+	int m_log_timeout;
+	int m_size;
 
-	public:
-
-	GSOsdManager();
-	~GSOsdManager();
-
-	void LoadFont();
-	void LoadSize();
-
-	GSVector2i get_texture_font_size();
-
-	bool m_texture_dirty;
-	void upload_texture_atlas(GSTexture* t);
-
-	void Log(const char *utf8, uint32 color);
-	void Monitor(const char *key, const char *value, uint32 color);
+	uint32 m_color;
 
 	GSVector2i m_real_size;
-	size_t Size();
-	size_t GeneratePrimitives(GSVertexPT1* dst, size_t count);
+
+public:
+	GSOsdManager();
+	virtual ~GSOsdManager() { };
+
+	virtual void Log(const char *utf8, uint32 color) { };
+	virtual void Monitor(const char *key, const char *value, uint32 color) { };
+
+	void SetSize(int x, int y);
+
+	virtual void Render(GSTexture* dt) { };
 };
