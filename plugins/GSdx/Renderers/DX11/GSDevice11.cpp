@@ -425,9 +425,7 @@ bool GSDevice11::Reset(int w, int h)
 	{
 		// m_ctx_2d holds a reference to the backbuffer which must be released
 		// before the swapchain can be resized.
-		GSOsdManagerDX11 *osd = static_cast<GSOsdManagerDX11*>(m_osd.get());
-
-		osd->Release();
+		m_osd->Release();
 
 		DXGI_SWAP_CHAIN_DESC scd;
 
@@ -446,7 +444,7 @@ bool GSDevice11::Reset(int w, int h)
 		CComPtr<IDXGISurface> dxgi_backbuffer;
 		backbuffer->QueryInterface(IID_PPV_ARGS(&dxgi_backbuffer));
 
-		osd->SetBitmap(dxgi_backbuffer, scd.BufferDesc.Format);
+		m_osd->SetBitmap(dxgi_backbuffer, scd.BufferDesc.Format);
 
 		m_backbuffer = new GSTexture11(backbuffer);
 	}

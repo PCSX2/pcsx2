@@ -50,5 +50,10 @@ public:
 
 	void SetSize(int x, int y);
 
+	virtual void Release() { };
+#ifdef _WIN32
+	virtual void SetBitmap(IDXGISurface *surface, DXGI_FORMAT format) { };
+#endif
+
 	virtual void Render(GSTexture* dt) { };
 };
