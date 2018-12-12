@@ -39,6 +39,7 @@
 #define PS_POINT_SAMPLER 0
 #define PS_SHUFFLE 0
 #define PS_READ_BA 0
+#define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
 #define PS_CHANNEL_FETCH 0
 #endif
@@ -144,15 +145,43 @@ float4 fetch_raw_color(int2 xy)
 	return RawTexture.Load(int3(xy, 0));
 }
 
+int fetch_raw_depth(int2 xy)
+{
+	float4 col = RawTexture.Load(int3(xy, 0));
+	return (int)(col.r * exp2(32.0f));
+}
+
 float4 fetch_red(int2 xy)
 {
-	float4 rt = fetch_raw_color(xy);
+	float4 rt;
+
+	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
+	{
+		int depth = (fetch_raw_depth(xy)) & 0xFF;
+		rt = (float4)(depth) / 255.0f;
+	}
+	else
+	{
+		rt = fetch_raw_color(xy);
+	}
+
 	return sample_p(rt.r);
 }
 
 float4 fetch_blue(int2 xy)
 {
-	float4 rt = fetch_raw_color(xy);
+	float4 rt;
+
+	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
+	{
+		int depth = (fetch_raw_depth(xy) >> 16) & 0xFF;
+		rt = (float4)(depth) / 255.0f;
+	}
+	else
+	{
+		rt = fetch_raw_color(xy);
+	}
+
 	return sample_p(rt.b);
 }
 
@@ -177,10 +206,19 @@ float4 fetch_rgb(int2 xy)
 
 float4 fetch_gXbY(int2 xy)
 {
-	int4 rt = (int4)(fetch_raw_color(xy) * 255.0);
-	int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
-	int blue = (rt.b << ChannelShuffle.y) & ChannelShuffle.x;
-	return (float4)(green | blue) / 255.0;
+	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
+	{
+		int depth = fetch_raw_depth(xy);
+		int bg = (depth >> (8 + ChannelShuffle.w)) & 0xFF;
+		return (float4)(bg);
+	}
+	else
+	{
+		int4 rt = (int4)(fetch_raw_color(xy) * 255.0);
+		int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
+		int blue = (rt.b << ChannelShuffle.y) & ChannelShuffle.x;
+		return (float4)(green | blue) / 255.0;
+	}
 }
 
 #elif SHADER_MODEL <= 0x300
