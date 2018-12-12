@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2018-11-22 22:13+0900\n"
-"PO-Revision-Date: 2018-11-30 15:28+0900\n"
+"PO-Revision-Date: 2018-12-12 23:30+0900\n"
 "Last-Translator: nrusef <nrusef@gmail.com>\n"
 "Language-Team: DeltaHF Chromaryu\n"
 "Language: ja_JP\n"
@@ -725,13 +725,12 @@ msgid "Fits a lot of log in a microcosmically small area."
 msgstr "沢山のログを蚤より果てしなく小さなエリアに収められる。"
 
 #: pcsx2/gui/ConsoleLogger.cpp:394
-#, fuzzy
 msgid "&Normal font"
 msgstr "中"
 
 #: pcsx2/gui/ConsoleLogger.cpp:394
 msgid "It's what I use (the programmer guy)."
-msgstr "私が使ってる奴だ（by）。"
+msgstr "私が使ってる奴だ（byプログラマの人）。"
 
 #: pcsx2/gui/ConsoleLogger.cpp:396
 msgid "&Large"
@@ -2051,10 +2050,8 @@ msgid "Zoom:"
 msgstr "ズーム率："
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:122
-#, fuzzy
-#| msgid "Wait for Vsync on refresh"
 msgid "Wait for Vsync on refresh:"
-msgstr "垂直同期（垂直同期信号まで画面の書き換えを待機します）"
+msgstr "更新時垂直同期:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:199
 msgid ""
@@ -2367,38 +2364,29 @@ msgid "&Insert card ..."
 msgstr "メモリーカードを差し込む ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1020
-#, fuzzy
-#| msgid "Duplicate card ..."
 msgid "D&uplicate card ..."
-msgstr "メモリーカードを複製 ..."
+msgstr "メモリーカードを複製(&u) ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1021
-#, fuzzy
-#| msgid "Rename card ..."
 msgid "&Rename card ..."
-msgstr "メモリーカードの名前を変更する ..."
+msgstr "メモリーカードの名前を変更する(&r) ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1022
-#, fuzzy
-#| msgid "Delete card"
 msgid "&Delete card"
-msgstr "メモリーカードを削除"
+msgstr "メモリーカードを削除(&D)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1024
-#, fuzzy
 msgid "&Convert card"
-msgstr "メモリーカードを差し込む"
+msgstr "メモリーカードを変換(&C)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1030
-#, fuzzy
 msgid "&Create a new card ..."
-msgstr "メモリーカードを新規作成 ..."
+msgstr "メモリーカードを新規作成(&C) ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1035
-#, fuzzy
 msgid "Re&fresh List"
-msgstr "リスト更新"
+msgstr "リスト更新(&f)"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:99
 msgid "PS2 Port"
