@@ -290,6 +290,7 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 	// Effect is really a channel shuffle effect so let's cheat a little
 	if (m_channel_shuffle)
 	{
+		// FIXME: Slot 4 - unbind texture when it isn't used.
 		dev->PSSetShaderResource(4, tex->m_from_target);
 		// Replace current draw with a fullscreen sprite
 		//
