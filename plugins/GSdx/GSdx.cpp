@@ -384,11 +384,14 @@ void GSdxApp::Init()
 #else
 	m_default_configuration["osd_fontname"]                               = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
 #endif
+	m_default_configuration["osd_color_r"]                                = "0";
+	m_default_configuration["osd_color_g"]                                = "128";
+	m_default_configuration["osd_color_b"]                                = "0";
+	m_default_configuration["osd_color_opacity"]                          = "100";
 	m_default_configuration["osd_fontsize"]                               = "28";
 	m_default_configuration["osd_log_enabled"]                            = "1";
-	m_default_configuration["osd_log_speed"]                              = "4";
+	m_default_configuration["osd_log_timeout"]                            = "4";
 	m_default_configuration["osd_monitor_enabled"]                        = "0";
-	m_default_configuration["osd_transparency"]                           = "25";
 	m_default_configuration["osd_max_log_messages"]                       = "2";
 	m_default_configuration["override_geometry_shader"]                   = "-1";
 	m_default_configuration["override_GL_ARB_copy_image"]                 = "-1";

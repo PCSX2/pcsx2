@@ -426,7 +426,7 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw && IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 
 		// OSD Configuration
-		EnableWindow(GetDlgItem(m_hWnd, IDC_OSDBUTTON), ogl);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_OSDBUTTON), !null);
 
 		// Shader Configuration
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON), !null);
@@ -869,20 +869,25 @@ void GSOSDDlg::OnInit()
 {
 	CheckDlgButton(m_hWnd, IDC_OSD_LOG, theApp.GetConfigB("osd_log_enabled"));
 	CheckDlgButton(m_hWnd, IDC_OSD_MONITOR, theApp.GetConfigB("osd_monitor_enabled"));
-	m_transparency = theApp.GetConfigI("osd_transparency");
 
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TRANSPARENCY_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 100));
+	m_color.a = theApp.GetConfigI("osd_color_opacity");
+	m_color.r = theApp.GetConfigI("osd_color_r");
+	m_color.g = theApp.GetConfigI("osd_color_g");
+	m_color.b = theApp.GetConfigI("osd_color_b");
+
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_OPACITY_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 100));
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_RED_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 255));
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_GREEN_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 255));
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_BLUE_SLIDER), TBM_SETRANGE, TRUE, MAKELONG(0, 255));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SIZE), UDM_SETRANGE, 0, MAKELPARAM(100, 1));
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SIZE), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("osd_fontsize"), 0));
 
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SPEED), UDM_SETRANGE, 0, MAKELPARAM(10, 2));
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SPEED), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("osd_log_speed"), 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TIMEOUT), UDM_SETRANGE, 0, MAKELPARAM(10, 2));
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TIMEOUT), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("osd_log_timeout"), 0));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_SETRANGE, 0, MAKELPARAM(20, 1));
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("osd_max_log_messages"), 0));
-
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_FONT_EDIT), WM_SETTEXT, 0, (LPARAM)theApp.GetConfigS("osd_fontname").c_str());
 
 	AddTooltip(IDC_OSD_MAX_LOG);
 	AddTooltip(IDC_OSD_MAX_LOG_EDIT);
@@ -893,18 +898,51 @@ void GSOSDDlg::OnInit()
 
 void GSOSDDlg::UpdateControls()
 {
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TRANSPARENCY_SLIDER), TBM_SETPOS, TRUE, m_transparency);
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_OPACITY_SLIDER), TBM_SETPOS, TRUE, m_color.a);
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_RED_SLIDER), TBM_SETPOS, TRUE, m_color.r);
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_GREEN_SLIDER), TBM_SETPOS, TRUE, m_color.g);
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_BLUE_SLIDER), TBM_SETPOS, TRUE, m_color.b);
 
 	char text[8] = { 0 };
-	sprintf(text, "%d", m_transparency);
-	SetDlgItemText(m_hWnd, IDC_OSD_TRANSPARENCY_TEXT, text);
+	sprintf(text, "%d", m_color.a);
+	SetDlgItemText(m_hWnd, IDC_OSD_OPACITY_AMOUNT, text);
 
-	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_SPEED), IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
-	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_SPEED_EDIT), IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
-	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_SPEED_TEXT), IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
-	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
-	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG_EDIT), IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
-	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG_TEXT), IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
+	sprintf(text, "%d", m_color.r);
+	SetDlgItemText(m_hWnd, IDC_OSD_COLOR_RED_AMOUNT, text);
+
+	sprintf(text, "%d", m_color.g);
+	SetDlgItemText(m_hWnd, IDC_OSD_COLOR_GREEN_AMOUNT, text);
+
+	sprintf(text, "%d", m_color.b);
+	SetDlgItemText(m_hWnd, IDC_OSD_COLOR_BLUE_AMOUNT, text);
+
+	int monitor_enabled = IsDlgButtonChecked(m_hWnd, IDC_OSD_MONITOR);
+	int log_enabled = IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG);
+
+	// Font
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_COLOR_RED_SLIDER), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_COLOR_RED_TEXT), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_COLOR_RED_AMOUNT), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_COLOR_GREEN_SLIDER), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_COLOR_GREEN_TEXT), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_COLOR_GREEN_AMOUNT), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_COLOR_BLUE_SLIDER), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_COLOR_BLUE_TEXT), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_COLOR_BLUE_AMOUNT), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_SIZE_EDIT), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_SIZE), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_OPACITY_SLIDER), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_OPACITY_AMOUNT), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_SIZE_TEXT), monitor_enabled || log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_OPACITY_TEXT), monitor_enabled || log_enabled);
+
+	// Log
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_TIMEOUT), log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_TIMEOUT_EDIT), log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_TIMEOUT_TEXT), log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG_EDIT), log_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG_TEXT), log_enabled);
 }
 
 bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
@@ -913,14 +951,41 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_HSCROLL:
 	{
-		if ((HWND)lParam == GetDlgItem(m_hWnd, IDC_OSD_TRANSPARENCY_SLIDER))
+		if ((HWND)lParam == GetDlgItem(m_hWnd, IDC_OSD_OPACITY_SLIDER))
 		{
 			char text[8] = { 0 };
 
-			m_transparency = SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TRANSPARENCY_SLIDER), TBM_GETPOS, 0, 0);
+			m_color.a = SendMessage(GetDlgItem(m_hWnd, IDC_OSD_OPACITY_SLIDER), TBM_GETPOS, 0, 0);
 
-			sprintf(text, "%d", m_transparency);
-			SetDlgItemText(m_hWnd, IDC_OSD_TRANSPARENCY_TEXT, text);
+			sprintf(text, "%d", m_color.a);
+			SetDlgItemText(m_hWnd, IDC_OSD_OPACITY_AMOUNT, text);
+		}
+		else if ((HWND)lParam == GetDlgItem(m_hWnd, IDC_OSD_COLOR_RED_SLIDER))
+		{
+			char text[8] = { 0 };
+
+			m_color.r = SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_RED_SLIDER), TBM_GETPOS, 0, 0);
+
+			sprintf(text, "%d", m_color.r);
+			SetDlgItemText(m_hWnd, IDC_OSD_COLOR_RED_AMOUNT, text);
+		}
+		else if ((HWND)lParam == GetDlgItem(m_hWnd, IDC_OSD_COLOR_GREEN_SLIDER))
+		{
+			char text[8] = { 0 };
+
+			m_color.g = SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_GREEN_SLIDER), TBM_GETPOS, 0, 0);
+
+			sprintf(text, "%d", m_color.g);
+			SetDlgItemText(m_hWnd, IDC_OSD_COLOR_GREEN_AMOUNT, text);
+		}
+		else if ((HWND)lParam == GetDlgItem(m_hWnd, IDC_OSD_COLOR_BLUE_SLIDER))
+		{
+			char text[8] = { 0 };
+
+			m_color.b = SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_BLUE_SLIDER), TBM_GETPOS, 0, 0);
+
+			sprintf(text, "%d", m_color.b);
+			SetDlgItemText(m_hWnd, IDC_OSD_COLOR_BLUE_AMOUNT, text);
 		}
 	} break;
 
@@ -932,22 +997,17 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case IDOK:
 		{
-			INT_PTR data;
+			theApp.SetConfig("osd_color_opacity", m_color.a);
+			theApp.SetConfig("osd_color_r", m_color.r);
+			theApp.SetConfig("osd_color_g", m_color.g);
+			theApp.SetConfig("osd_color_b", m_color.b);
 
 			theApp.SetConfig("osd_fontsize", (int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SIZE), UDM_GETPOS, 0, 0));
-			theApp.SetConfig("osd_log_speed", (int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SPEED), UDM_GETPOS, 0, 0));
+			theApp.SetConfig("osd_log_timeout", (int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TIMEOUT), UDM_GETPOS, 0, 0));
 			theApp.SetConfig("osd_max_log_messages", (int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_GETPOS, 0, 0));
 
 			theApp.SetConfig("osd_log_enabled", (int)IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
 			theApp.SetConfig("osd_monitor_enabled", (int)IsDlgButtonChecked(m_hWnd, IDC_OSD_MONITOR));
-
-			theApp.SetConfig("osd_transparency", m_transparency);
-
-			// OSD Font
-			int length = ((int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_FONT_EDIT), WM_GETTEXTLENGTH, 0, 0)) + 1;
-			std::unique_ptr<char[]> buffer(new char[length]);
-			SendMessage(GetDlgItem(m_hWnd, IDC_OSD_FONT_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer.get());
-			theApp.SetConfig("osd_fontname", buffer.get());
 
 			EndDialog(m_hWnd, id);
 		} break;
@@ -955,11 +1015,10 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			if (HIWORD(wParam) == BN_CLICKED)
 				UpdateControls();
 			break;
-		case IDC_OSD_FONT_BUTTON:
+		case IDC_OSD_MONITOR:
 			if (HIWORD(wParam) == BN_CLICKED)
-				OpenFileDialog(IDC_OSD_FONT_EDIT, "Select External Font");
+				UpdateControls();
 			break;
-
 		case IDCANCEL:
 		{
 			EndDialog(m_hWnd, IDCANCEL);

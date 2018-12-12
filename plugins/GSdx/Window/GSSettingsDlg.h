@@ -60,7 +60,13 @@ public:
 
 class GSOSDDlg : public GSDialog
 {
-	int m_transparency;
+	struct
+	{
+		int r;
+		int g;
+		int b;
+		int a;
+	} m_color;
 
 	void UpdateControls();
 
