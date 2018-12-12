@@ -291,6 +291,9 @@
     <ClCompile Include="Renderers\Common\GSOsdManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Renderers\DX11\GSOsdManagerDX11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderers\OpenGL\GLLoader.h">
@@ -585,6 +588,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\OpenGL\GSOsdManagerOGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\DX11\GSOsdManagerDX11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
