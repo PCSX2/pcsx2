@@ -53,7 +53,7 @@ public:
 		slot_num = 0;
 		empty = true;
 		updated = wxInvalidDateTime;
-		crc = ElfCRC;
+		crc = 0;
 		serialName = L"";
 		menu_update = false;
 		invalid_cache = true;
@@ -64,8 +64,8 @@ public:
 		slot_num = i;
 		empty = true;
 		updated = wxInvalidDateTime;
-		crc = ElfCRC;
-		serialName = DiscSerial;
+		crc = 0;
+		serialName =  L"";
 		menu_update = false;
 		invalid_cache = true;
 	}
