@@ -240,6 +240,17 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 			bilinear &= m_vt.IsLinear();
 		}
 
+		// Depth format
+		if (tex->m_texture->GetType() == GSTexture::DepthStencil)
+		{
+			// Require a float conversion if the texure is a depth format
+			m_ps_sel.depth_fmt = (psm.bpp == 16) ? 2 : 1;
+			// m_vs_sel.int_fst = !PRIM->FST; // select float/int coordinate
+
+			// Don't force interpolation on depth format
+			bilinear &= m_vt.IsLinear();
+		}
+
 		GSVector4 half_offset = RealignTargetTextureCoordinate(tex);
 		vs_cb.Texture_Scale_Offset.z = half_offset.x;
 		vs_cb.Texture_Scale_Offset.w = half_offset.y;
