@@ -203,10 +203,20 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 		}
 		else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt))
 		{
-			// So far 2 games hit this code path. Urban Chaos and Tales of Abyss.
-			// Lacks shader like usual but maybe we can still use it to skip some bad draw calls.
-			// fprintf(stderr, "Tales Of Abyss Crazyness/Urban Chaos channel not supported\n");
-			throw GSDXRecoverableError();
+			// So far 2 games hit this code path. Urban Chaos and Tales of Abyss
+			// UC: will copy depth to green channel
+			// ToA: will copy depth to alpha channel
+			if ((m_context->FRAME.FBMSK & 0xFF0000) == 0xFF0000)
+			{
+				// Green channel is masked
+				// fprintf(stderr, "Tales Of Abyss Crazyness (MSB 16b depth to Alpha)\n");
+				m_ps_sel.tales_of_abyss_hle = 1;
+			}
+			else
+			{
+				// fprintf(stderr, "Urban Chaos Crazyness (Green extraction)\n");
+				m_ps_sel.urban_chaos_hle = 1;
+			}
 		}
 		else if (m_index.tail <= 64 && m_context->CLAMP.WMT == 3)
 		{
