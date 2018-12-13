@@ -42,6 +42,8 @@
 #define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
 #define PS_CHANNEL_FETCH 0
+#define PS_TALES_OF_ABYSS_HLE 0
+#define PS_URBAN_CHAOS_HLE 0
 #endif
 
 struct VS_INPUT
@@ -318,6 +320,43 @@ float4 sample_rt(float2 uv)
 
 #define PS_AEM_FMT (PS_FMT & 3)
 
+#if SHADER_MODEL >= 0x400
+float4 sample_depth(float2 pos)
+{
+	float4 t = (float4)(0.0f);
+
+	if (PS_TALES_OF_ABYSS_HLE == 1)
+	{
+		// Warning: UV can't be used in channel effect
+		int depth = fetch_raw_depth(pos);
+
+		// Convert msb based on the palette
+		t = Palette.Load(int3((depth >> 8) & 0xFF, 0, 0));
+	}
+	else if (PS_URBAN_CHAOS_HLE == 1)
+	{
+		// Depth buffer is read as a RGB5A1 texture. The game try to extract the green channel.
+		// So it will do a first channel trick to extract lsb, value is right-shifted.
+		// Then a new channel trick to extract msb which will shifted to the left.
+		// OpenGL uses a FLOAT32 format for the depth so it requires a couple of conversion.
+		// To be faster both steps (msb&lsb) are done in a single pass.
+
+		// Warning: UV can't be used in channel effect
+		int depth = fetch_raw_depth(pos);
+		
+		// Convert lsb based on the palette
+		t = Palette.Load(int3(depth & 0xFF, 0, 0));
+
+		// Msb is easier
+		float green = (float)((depth >> 8) & 0xFF) * 36.0f;
+		green = min(green, 255.0f);
+		t.g += green / 255.0f;
+	}
+
+	return t;
+}
+#endif
+
 float4 clamp_wrap_uv(float4 uv)
 {
 	if(PS_WMS == PS_WMT)
@@ -476,7 +515,7 @@ float4x4 sample_4p(float4 u)
 	return c;
 }
 
-float4 sample(float2 st, float q)
+float4 sample_color(float2 st, float q)
 {
 	if(!PS_FST) st /= q;
 
@@ -691,8 +730,10 @@ float4 ps_color(PS_INPUT input)
 	float4 t = fetch_rgb(int2(input.p.xy));
 #elif PS_CHANNEL_FETCH == 6
 	float4 t = fetch_gXbY(int2(input.p.xy));
+#elif PS_DEPTH_FMT > 0
+	float4 t = sample_depth(input.p.xy);
 #else
-	float4 t = sample(input.t.xy, input.t.w);
+	float4 t = sample_color(input.t.xy, input.t.w);
 #endif
 
 	float4 c = tfx(t, input.c);
