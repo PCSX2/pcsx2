@@ -212,9 +212,11 @@ public:
 				uint32 aout:1;
 				uint32 spritehack:1;
 				uint32 tcoffsethack:1;
+				uint32 urban_chaos_hle:1;
+				uint32 tales_of_abyss_hle:1;
 				uint32 point_sampler:1;
 
-				uint32 _free:25;
+				uint32 _free:23;
 			};
 
 			uint64 key;
