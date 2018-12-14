@@ -459,12 +459,12 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 EXPORT_C_(void) GSosdLog(const char *utf8, uint32 color)
 {
-	if(s_gs && s_gs->m_dev) s_gs->m_dev->m_osd.Log(utf8, color);
+	if(s_gs && s_gs->m_dev) s_gs->m_dev->m_osd.Log(utf8);
 }
 
 EXPORT_C_(void) GSosdMonitor(const char *key, const char *value, uint32 color)
 {
-	if(s_gs && s_gs->m_dev) s_gs->m_dev->m_osd.Monitor(key, value, color);
+	if(s_gs && s_gs->m_dev) s_gs->m_dev->m_osd.Monitor(key, value);
 }
 
 EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
