@@ -61,7 +61,7 @@ GSOsdManager::GSOsdManager() : m_atlas_h(0)
 	m_log_enabled = theApp.GetConfigB("osd_log_enabled");
 	m_log_speed  = std::max(2, std::min(theApp.GetConfigI("osd_log_speed"), 10));
 	m_monitor_enabled = theApp.GetConfigB("osd_monitor_enabled");
-	m_osd_transparency = std::max(0, std::min(theApp.GetConfigI("osd_transparency"), 100));
+	m_opacity = std::max(0, std::min(theApp.GetConfigI("osd_color_opacity"), 100));
 	m_max_onscreen_messages = theApp.GetConfigI("osd_max_log_messages");
 	m_size = theApp.GetConfigI("osd_fontsize");
 
@@ -337,7 +337,7 @@ float GSOsdManager::StringSize(const std::u32string msg) {
 
 size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 	size_t drawn = 0;
-	float transparency = 1.0f - m_osd_transparency / 100.0f;
+	float opacity = m_opacity * 0.01f;
 
 	if(m_log_enabled) {
 		float offset = 0;
@@ -365,7 +365,7 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 
 			y += offset += ((m_size+2) * (2.0f/m_real_size.y)) * ratio;
 			uint32 color = it->color;
-			((uint8 *)&color)[3] = (uint8)(((uint8 *)&color)[3] * (1.0f - ratio) * transparency);
+			((uint8 *)&color)[3] = (uint8)(((uint8 *)&color)[3] * (1.0f - ratio) * opacity);
 			RenderString(dst, it->msg, x, y, color);
 			dst += it->msg.size() * 6;
 			drawn += it->msg.size() * 6;
@@ -399,7 +399,7 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 			float y = -1.0f + ((m_size+2)*(2.0f/m_real_size.y)) * line++;
 
 			uint32 color = pair.second.second;
-			((uint8 *)&color)[3] = (uint8)(((uint8 *)&color)[3] * transparency);
+			((uint8 *)&color)[3] = (uint8)(((uint8 *)&color)[3] * opacity);
 
 			// Render the key
 			RenderString(dst, pair.first, x, y, color);
