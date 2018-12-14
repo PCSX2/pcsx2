@@ -59,7 +59,7 @@ GSOsdManager::GSOsdManager() : m_atlas_h(0)
                              , m_texture_dirty(true)
 {
 	m_log_enabled = theApp.GetConfigB("osd_log_enabled");
-	m_log_speed  = std::max(2, std::min(theApp.GetConfigI("osd_log_speed"), 10));
+	m_log_timeout = std::max(2, std::min(theApp.GetConfigI("osd_log_timeout"), 10));
 	m_monitor_enabled = theApp.GetConfigB("osd_monitor_enabled");
 	m_opacity = std::max(0, std::min(theApp.GetConfigI("osd_color_opacity"), 100));
 	m_max_onscreen_messages = theApp.GetConfigI("osd_max_log_messages");
@@ -294,12 +294,12 @@ size_t GSOsdManager::Size() {
 				elapsed = std::chrono::seconds(0);
 			} else {
 				elapsed = std::chrono::system_clock::now() - it->OnScreen;
-				if(elapsed > std::chrono::seconds(m_log_speed) || m_onscreen_messages > m_max_onscreen_messages) {
+				if(elapsed > std::chrono::seconds(m_log_timeout) || m_onscreen_messages > m_max_onscreen_messages) {
 					continue;
 				}
 			}
 
-			float ratio = (elapsed - std::chrono::seconds(m_log_speed/2)).count() / std::chrono::seconds(m_log_speed/2).count();
+			float ratio = (elapsed - std::chrono::seconds(m_log_timeout/2)).count() / std::chrono::seconds(m_log_timeout/2).count();
 			ratio = ratio > 1.0f ? 1.0f : ratio < 0.0f ? 0.0f : ratio;
 
 			y += offset += ((m_size+2) * (2.0f/m_real_size.y)) * ratio;
@@ -352,7 +352,7 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 				it->OnScreen = std::chrono::system_clock::now();
 
 			std::chrono::duration<float> elapsed = std::chrono::system_clock::now() - it->OnScreen;
-			if(elapsed > std::chrono::seconds(m_log_speed) || m_onscreen_messages > m_max_onscreen_messages) {
+			if(elapsed > std::chrono::seconds(m_log_timeout) || m_onscreen_messages > m_max_onscreen_messages) {
 				m_onscreen_messages--;
 				it = m_log.erase(it);
 				continue;
@@ -360,7 +360,7 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 
 			if(it->msg.size() * 6 > count - drawn) break;
 
-			float ratio = (elapsed - std::chrono::seconds(m_log_speed/2)).count() / std::chrono::seconds(m_log_speed/2).count();
+			float ratio = (elapsed - std::chrono::seconds(m_log_timeout/2)).count() / std::chrono::seconds(m_log_timeout/2).count();
 			ratio = ratio > 1.0f ? 1.0f : ratio < 0.0f ? 0.0f : ratio;
 
 			y += offset += ((m_size+2) * (2.0f/m_real_size.y)) * ratio;

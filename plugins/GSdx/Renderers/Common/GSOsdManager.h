@@ -71,7 +71,7 @@ class GSOsdManager {
 	float StringSize(const std::u32string msg);
 
 	bool m_log_enabled;
-	int m_log_speed;
+	int m_log_timeout;
 	bool m_monitor_enabled;
 	int m_opacity;
 	int m_max_onscreen_messages;
