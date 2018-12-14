@@ -411,6 +411,9 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 		SetExclusive(!theApp.GetConfigB("windowed"));
 	}
 
+	GSVector2i tex_font = m_osd.get_texture_font_size();
+	m_font = CreateSurface(GSTexture::Texture, tex_font.x, tex_font.y, false, DXGI_FORMAT_R8_UNORM);
+
 	return true;
 }
 
@@ -806,6 +809,47 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	EndScene();
 
 	PSSetShaderResources(NULL, NULL);
+}
+
+void GSDevice11::RenderOsd(GSTexture* dt)
+{
+	BeginScene();
+
+	// om
+	OMSetDepthStencilState(m_convert.dss, 0);
+	OMSetBlendState(m_merge.bs, 0);
+	OMSetRenderTargets(dt, NULL);
+
+	if(m_osd.m_texture_dirty) {
+		m_osd.upload_texture_atlas(m_font);
+	}
+
+	// ps
+	PSSetShaderResource(0, m_font);
+	PSSetSamplerState(m_convert.pt, NULL);
+	PSSetShader(m_convert.ps[ShaderConvert_OSD], NULL);
+
+	// ia
+	IASetInputLayout(m_convert.il);
+	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// Note scaling could also be done in shader (require gl3/dx10)
+	size_t count = m_osd.Size();
+	void* dst = NULL;
+
+	IAMapVertexBuffer(&dst, sizeof(GSVertexPT1), count);
+	count = m_osd.GeneratePrimitives((GSVertexPT1*)dst, count);
+	IAUnmapVertexBuffer();
+
+	// vs
+	VSSetShader(m_convert.vs, NULL);
+
+	// gs
+	GSSetShader(NULL, NULL);
+
+	DrawPrimitive();
+
+	EndScene();
 }
 
 void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
