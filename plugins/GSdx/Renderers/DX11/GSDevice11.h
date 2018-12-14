@@ -39,7 +39,7 @@ class GSDevice11 : public GSDeviceDX
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex);
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex);
 	void DoExternalFX(GSTexture* sTex, GSTexture* dTex);
-
+	void RenderOsd(GSTexture* dt);
 	void InitExternalFX();
 	void InitFXAA(); // Bug workaround! Stack corruption? Heap corruption? No idea
 	
@@ -94,7 +94,7 @@ public: // TODO
 	{
 		CComPtr<ID3D11InputLayout> il;
 		CComPtr<ID3D11VertexShader> vs;
-		CComPtr<ID3D11PixelShader> ps[18];
+		CComPtr<ID3D11PixelShader> ps[ShaderConvert_Count];
 		CComPtr<ID3D11SamplerState> ln;
 		CComPtr<ID3D11SamplerState> pt;
 		CComPtr<ID3D11DepthStencilState> dss;
@@ -158,6 +158,8 @@ public: // TODO
 	VSConstantBuffer m_vs_cb_cache;
 	GSConstantBuffer m_gs_cb_cache;
 	PSConstantBuffer m_ps_cb_cache;
+
+	GSTexture* m_font;
 
 	bool CreateTextureFX();
 
