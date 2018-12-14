@@ -8,12 +8,14 @@ struct VS_INPUT
 {
 	float4 p : POSITION;
 	float2 t : TEXCOORD0;
+	float4 c : COLOR;
 };
 
 struct VS_OUTPUT
 {
 	float4 p : SV_Position;
 	float2 t : TEXCOORD0;
+	float4 c : COLOR;
 };
 
 Texture2D Texture;
@@ -28,6 +30,7 @@ struct PS_INPUT
 {
 	float4 p : SV_Position;
 	float2 t : TEXCOORD0;
+	float4 c : COLOR;
 };
 
 struct PS_OUTPUT
@@ -41,6 +44,7 @@ VS_OUTPUT vs_main(VS_INPUT input)
 
 	output.p = input.p;
 	output.t = input.t;
+	output.c = input.c;
 
 	return output;
 }
