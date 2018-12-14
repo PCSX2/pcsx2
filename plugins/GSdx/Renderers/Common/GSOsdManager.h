@@ -73,7 +73,7 @@ class GSOsdManager {
 	bool m_log_enabled;
 	int m_log_speed;
 	bool m_monitor_enabled;
-	int m_osd_transparency;
+	int m_opacity;
 	int m_max_onscreen_messages;
 
 	public:
