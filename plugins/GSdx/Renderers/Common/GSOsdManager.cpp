@@ -65,6 +65,12 @@ GSOsdManager::GSOsdManager() : m_atlas_h(0)
 	m_max_onscreen_messages = theApp.GetConfigI("osd_max_log_messages");
 	m_size = theApp.GetConfigI("osd_fontsize");
 
+	int r = theApp.GetConfigI("osd_color_r");
+	int g = theApp.GetConfigI("osd_color_g");
+	int b = theApp.GetConfigI("osd_color_b");
+
+	m_color = r | (g << 8) | (b << 16) | (255 << 24);
+
 	if (FT_Init_FreeType(&m_library)) {
 		m_face = NULL;
 		fprintf(stderr, "Failed to init the freetype library\n");
@@ -167,7 +173,7 @@ void GSOsdManager::AddGlyph(char32_t codepoint) {
 	}
 }
 
-void GSOsdManager::Log(const char *utf8, uint32 color) {
+void GSOsdManager::Log(const char *utf8) {
 	if(!m_log_enabled)
 		return;
 
@@ -185,11 +191,11 @@ void GSOsdManager::Log(const char *utf8, uint32 color) {
 	for(auto const &c : buffer) AddGlyph(c);
 #endif
 	m_onscreen_messages++;
-	m_log.push_back(log_info{color, buffer, std::chrono::system_clock::time_point()});
+	m_log.push_back(log_info{buffer, std::chrono::system_clock::time_point()});
 
 }
 
-void GSOsdManager::Monitor(const char *key, const char *value, uint32 color) {
+void GSOsdManager::Monitor(const char *key, const char *value) {
 	if(!m_monitor_enabled)
 		return;
 
@@ -211,7 +217,7 @@ void GSOsdManager::Monitor(const char *key, const char *value, uint32 color) {
 		for(auto const &c : buffer) AddGlyph(c);
 		for(auto const &c : vbuffer) AddGlyph(c);
 #endif
-		m_monitor[buffer] = std::make_pair(vbuffer, color);
+		m_monitor[buffer] = vbuffer;
 	} else {
 #if __GNUC__ < 5 || ( __GNUC__ == 5 && __GNUC_MINOR__ < 4 )
 		char32_t buffer[256];
@@ -310,7 +316,7 @@ size_t GSOsdManager::Size() {
 	if(m_monitor_enabled) {
 		for(const auto &pair : m_monitor) {
 			sum += pair.first.size();
-			sum += pair.second.first.size();
+			sum += pair.second.size();
 		}
 	}
 
@@ -364,7 +370,7 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 			ratio = ratio > 1.0f ? 1.0f : ratio < 0.0f ? 0.0f : ratio;
 
 			y += offset += ((m_size+2) * (2.0f/m_real_size.y)) * ratio;
-			uint32 color = it->color;
+			uint32 color = m_color;
 			((uint8 *)&color)[3] = (uint8)(((uint8 *)&color)[3] * (1.0f - ratio) * opacity);
 			RenderString(dst, it->msg, x, y, color);
 			dst += it->msg.size() * 6;
@@ -381,7 +387,7 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 		float first_max = 0.0, second_max = 0.0;
 		for(const auto &pair : m_monitor) {
 			float first_len = StringSize(pair.first);
-			float second_len = StringSize(pair.second.first);
+			float second_len = StringSize(pair.second);
 
 			first_max = first_max < first_len ? first_len : first_max;
 			second_max = second_max < second_len ? second_len : second_max;
@@ -389,7 +395,7 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 
 		size_t line = 1;
 		for(const auto &pair : m_monitor) {
-			if((pair.first.size() + pair.second.first.size()) * 6 > count - drawn) break;
+			if((pair.first.size() + pair.second.size()) * 6 > count - drawn) break;
 
 			// Calculate where to start rendering from by taking the right most position 1.0
 			// and subtracting (going left) 8 scaled pixels for a margin, then subtracting
@@ -398,7 +404,7 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 			float x = 1.0f - 8 * (2.0f/m_real_size.x) - first_max - m_char_info[' '].ax * (2.0f/m_real_size.x) - second_max;
 			float y = -1.0f + ((m_size+2)*(2.0f/m_real_size.y)) * line++;
 
-			uint32 color = pair.second.second;
+			uint32 color = m_color;
 			((uint8 *)&color)[3] = (uint8)(((uint8 *)&color)[3] * opacity);
 
 			// Render the key
@@ -410,9 +416,9 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 			x = 1.0f - 8 * (2.0f/m_real_size.x) - second_max;
 
 			// Render the value
-			RenderString(dst, pair.second.first, x, y, color);
-			dst += pair.second.first.size() * 6;
-			drawn += pair.second.first.size() * 6;
+			RenderString(dst, pair.second, x, y, color);
+			dst += pair.second.size() * 6;
+			drawn += pair.second.size() * 6;
 		}
 	}
 

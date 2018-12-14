@@ -57,13 +57,12 @@ class GSOsdManager {
 	int32 m_onscreen_messages;
 
 	struct log_info {
-		uint32 color;
 		std::u32string msg;
 		std::chrono::system_clock::time_point OnScreen;
 	};
 	std::vector<log_info> m_log;
 
-	std::map<std::u32string, std::pair<std::u32string, uint32>> m_monitor;
+	std::map<std::u32string, std::u32string> m_monitor;
 
 	void AddGlyph(char32_t codepoint);
 	void RenderGlyph(GSVertexPT1* dst, const glyph_info g, float x, float y, uint32 color);
@@ -74,6 +73,7 @@ class GSOsdManager {
 	int m_log_timeout;
 	bool m_monitor_enabled;
 	int m_opacity;
+	uint32 m_color;
 	int m_max_onscreen_messages;
 
 	public:
@@ -89,8 +89,8 @@ class GSOsdManager {
 	bool m_texture_dirty;
 	void upload_texture_atlas(GSTexture* t);
 
-	void Log(const char *utf8, uint32 color);
-	void Monitor(const char *key, const char *value, uint32 color);
+	void Log(const char *utf8);
+	void Monitor(const char *key, const char *value);
 
 	GSVector2i m_real_size;
 	size_t Size();
