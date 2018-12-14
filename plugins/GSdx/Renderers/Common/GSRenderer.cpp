@@ -432,23 +432,12 @@ void GSRenderer::VSync(int field)
 
 	// present
 
-#if 0
-	// This will scale the OSD to the PS2's output resolution.
-	// Will be affected by 2x, 4x, etc scaling.
-	m_dev->m_osd.m_real_size = m_real_size
-#elif 0
 	// This will scale the OSD to the window's size.
 	// Will maintiain the font size no matter what size the window is.
 	GSVector4i window_size = m_wnd->GetClientRect();
 	m_dev->m_osd.m_real_size.x = window_size.v[2];
 	m_dev->m_osd.m_real_size.y = window_size.v[3];
-#else
-	// This will scale the OSD to the native resolution.
-	// Will size font relative to the window's size.
-  // TODO this should probably be done with native calls
-	m_dev->m_osd.m_real_size.x = 1024;
-	m_dev->m_osd.m_real_size.y = 768;
-#endif
+
 	m_dev->Present(m_wnd->GetClientRect().fit(m_aspectratio), m_shader);
 
 	// snapshot
