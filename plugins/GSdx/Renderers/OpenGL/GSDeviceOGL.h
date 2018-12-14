@@ -491,7 +491,7 @@ public:
 	PSConstantBuffer m_ps_cb_cache;
 	MiscConstantBuffer m_misc_cb_cache;
 
-	GSTextureOGL* m_font;
+	std::unique_ptr<GSTexture> m_font;
 
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
 	GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);

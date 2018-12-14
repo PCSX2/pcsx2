@@ -159,7 +159,7 @@ public: // TODO
 	GSConstantBuffer m_gs_cb_cache;
 	PSConstantBuffer m_ps_cb_cache;
 
-	GSTexture* m_font;
+	std::unique_ptr<GSTexture> m_font;
 
 	bool CreateTextureFX();
 

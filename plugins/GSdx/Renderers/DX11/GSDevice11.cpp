@@ -412,7 +412,10 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	}
 
 	GSVector2i tex_font = m_osd.get_texture_font_size();
-	m_font = CreateSurface(GSTexture::Texture, tex_font.x, tex_font.y, false, DXGI_FORMAT_R8_UNORM);
+
+	m_font = std::unique_ptr<GSTexture>(
+		CreateSurface(GSTexture::Texture, tex_font.x, tex_font.y, false, DXGI_FORMAT_R8_UNORM)
+	);
 
 	return true;
 }
@@ -821,11 +824,11 @@ void GSDevice11::RenderOsd(GSTexture* dt)
 	OMSetRenderTargets(dt, NULL);
 
 	if(m_osd.m_texture_dirty) {
-		m_osd.upload_texture_atlas(m_font);
+		m_osd.upload_texture_atlas(m_font.get());
 	}
 
 	// ps
-	PSSetShaderResource(0, m_font);
+	PSSetShaderResource(0, m_font.get());
 	PSSetSamplerState(m_convert.pt, NULL);
 	PSSetShader(m_convert.ps[ShaderConvert_OSD], NULL);
 
