@@ -64,7 +64,6 @@ GSDeviceOGL::GSDeviceOGL()
 	, m_palette_ss(0)
 	, m_vs_cb(NULL)
 	, m_ps_cb(NULL)
-	, m_font(NULL)
 	, m_shader(NULL)
 {
 	memset(&m_merge_obj, 0, sizeof(m_merge_obj));
@@ -549,7 +548,10 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	// Texture Font (OSD)
 	// ****************************************************************
 	GSVector2i tex_font = m_osd.get_texture_font_size();
-	m_font = new GSTextureOGL(GSTextureOGL::Texture, tex_font.x, tex_font.y, GL_R8, m_fbo_read, false);
+
+	m_font = std::unique_ptr<GSTexture>(
+		new GSTextureOGL(GSTextureOGL::Texture, tex_font.x, tex_font.y, GL_R8, m_fbo_read, false)
+	);
 
 	// ****************************************************************
 	// Finish window setup and backbuffer
@@ -1389,10 +1391,10 @@ void GSDeviceOGL::RenderOsd(GSTexture* dt)
 	OMSetRenderTargets(dt, NULL);
 
 	if(m_osd.m_texture_dirty) {
-		m_osd.upload_texture_atlas(m_font);
+		m_osd.upload_texture_atlas(m_font.get());
 	}
 
-	PSSetShaderResource(0, m_font);
+	PSSetShaderResource(0, m_font.get());
 	PSSetSamplerState(m_convert.pt);
 
 	IASetPrimitiveTopology(GL_TRIANGLES);
