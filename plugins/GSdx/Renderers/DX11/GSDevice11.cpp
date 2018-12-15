@@ -1286,9 +1286,10 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	if(rt) rtv = *(GSTexture11*)rt;
 	if(ds) dsv = *(GSTexture11*)ds;
 
-	if(m_state.rtv != rtv || m_state.dsv != dsv)
+	if(m_state.rt_view != rtv || m_state.dsv != dsv)
 	{
-		m_state.rtv = rtv;
+		m_state.rt_view = rtv;
+		m_state.rt_texture = (GSTexture11*)rt;
 		m_state.dsv = dsv;
 
 		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
@@ -1326,7 +1327,8 @@ void GSDevice11::OMSetRenderTargets(const GSVector2i& rtsize, int count, ID3D11U
 {
 	m_ctx->OMSetRenderTargetsAndUnorderedAccessViews(0, NULL, NULL, 0, count, uav, counters);
 
-	m_state.rtv = NULL;
+	m_state.rt_view = NULL;
+	m_state.rt_texture = NULL;
 	m_state.dsv = NULL;
 
 	if(m_state.viewport != rtsize)
