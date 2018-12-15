@@ -1181,7 +1181,7 @@ void GSDevice11::PSSetShaderResources(GSTexture* sr0, GSTexture* sr1)
 	PSSetShaderResource(0, sr0);
 	PSSetShaderResource(1, sr1);
 
-	for(size_t i = 2; i < countof(m_state.ps_srv); i++)
+	for(size_t i = 2; i < m_state.ps_sr_views.size(); i++)
 	{
 		PSSetShaderResource(i, NULL);
 	}
@@ -1193,16 +1193,17 @@ void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 
 	if(sr) srv = *(GSTexture11*)sr;
 
-	PSSetShaderResourceView(i, srv);
+	PSSetShaderResourceView(i, srv, sr);
 }
 
-void GSDevice11::PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv)
+void GSDevice11::PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv, GSTexture* sr)
 {
-	ASSERT(i < countof(m_state.ps_srv));
+	ASSERT(i < m_state.ps_sr_views.size());
 
-	if(m_state.ps_srv[i] != srv)
+	if(m_state.ps_sr_views[i] != srv)
 	{
-		m_state.ps_srv[i] = srv;
+		m_state.ps_sr_views[i] = srv;
+		m_state.ps_sr_texture[i] = (GSTexture11*)sr;
 
 		m_srv_changed = true;
 	}
@@ -1231,7 +1232,7 @@ void GSDevice11::PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb)
 
 	if(m_srv_changed)
 	{
-		m_ctx->PSSetShaderResources(0, countof(m_state.ps_srv), m_state.ps_srv);
+		m_ctx->PSSetShaderResources(0, m_state.ps_sr_views.size(), m_state.ps_sr_views.data());
 
 		m_srv_changed = false;
 	}
