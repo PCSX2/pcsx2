@@ -568,9 +568,15 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	m_ps_sel.clr1 = m_om_bsel.IsCLR1();
 	m_ps_sel.fba = m_context->FBA.FBA;
-	m_ps_sel.aout = m_context->FRAME.PSM == PSM_PSMCT16 || m_context->FRAME.PSM == PSM_PSMCT16S || (m_context->FRAME.FBMSK & 0xff000000) == 0x7f000000 ? 1 : 0;
-	m_ps_sel.aout &= !m_ps_sel.shuffle;
-	if (UserHacks_AlphaHack) m_ps_sel.aout = 1;
+
+	if (m_ps_sel.shuffle)
+	{
+		m_ps_sel.aout = 0;
+	}
+	else
+	{
+		m_ps_sel.aout = UserHacks_AlphaHack || m_context->FRAME.PSM == PSM_PSMCT16 || m_context->FRAME.PSM == PSM_PSMCT16S || (m_context->FRAME.FBMSK & 0xff000000) == 0x7f000000 ? 1 : 0;
+	}
 
 	if (PRIM->FGE)
 	{
