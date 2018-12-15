@@ -69,7 +69,8 @@ class GSDevice11 : public GSDeviceDX
 		ID3D11Buffer* vs_cb;
 		ID3D11GeometryShader* gs;
 		ID3D11Buffer* gs_cb;
-		ID3D11ShaderResourceView* ps_srv[16];
+		std::array<ID3D11ShaderResourceView*, 16> ps_sr_views;
+		std::array<GSTexture11*, 16> ps_sr_texture;
 		ID3D11PixelShader* ps;
 		ID3D11Buffer* ps_cb;
 		ID3D11SamplerState* ps_ss[3];
@@ -209,7 +210,7 @@ public:
 	void GSSetShader(ID3D11GeometryShader* gs, ID3D11Buffer* gs_cb = NULL);
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetShaderResource(int i, GSTexture* sr);
-	void PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv);
+	void PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv, GSTexture* sr);
 	void PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb);
 	void PSSetSamplerState(ID3D11SamplerState* ss0, ID3D11SamplerState* ss1, ID3D11SamplerState* ss2 = NULL);
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, uint8 sref);
