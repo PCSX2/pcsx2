@@ -274,3 +274,8 @@ GSTexture11::operator ID3D11DepthStencilView*()
 
 	return m_dsv;
 }
+
+bool GSTexture11::Equal(GSTexture11* tex)
+{
+	return tex && m_texture == tex->m_texture;
+}
