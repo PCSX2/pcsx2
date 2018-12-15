@@ -79,7 +79,8 @@ class GSDevice11 : public GSDeviceDX
 		uint8 sref;
 		ID3D11BlendState* bs;
 		float bf;
-		ID3D11RenderTargetView* rtv;
+		ID3D11RenderTargetView* rt_view;
+		GSTexture11* rt_texture;
 		ID3D11DepthStencilView* dsv;
 	} m_state;
 
