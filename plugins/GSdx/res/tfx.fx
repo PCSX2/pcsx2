@@ -45,6 +45,7 @@
 #define PS_CHANNEL_FETCH 0
 #define PS_TALES_OF_ABYSS_HLE 0
 #define PS_URBAN_CHAOS_HLE 0
+#define PS_SCALE_FACTOR 1
 #endif
 
 struct VS_INPUT
@@ -152,6 +153,11 @@ int fetch_raw_depth(int2 xy)
 {
 	float4 col = RawTexture.Load(int3(xy, 0));
 	return (int)(col.r * exp2(32.0f));
+}
+
+float4 fetch_c(int2 uv)
+{
+	return Texture.Load(int3(uv, 0));
 }
 
 float4 fetch_red(int2 xy)
@@ -322,8 +328,49 @@ float4 sample_rt(float2 uv)
 #define PS_AEM_FMT (PS_FMT & 3)
 
 #if SHADER_MODEL >= 0x400
-float4 sample_depth(float2 pos)
+int2 clamp_wrap_uv_depth(int2 uv)
 {
+	int4 mask = (int4)MskFix << 4;
+	if (PS_WMS == PS_WMT)
+	{
+		if (PS_WMS == 2)
+		{
+			uv = clamp(uv, mask.xy, mask.zw);
+		}
+		else if (PS_WMS == 3)
+		{
+			uv = (uv & mask.xy) | mask.zw;
+		}
+	}
+	else
+	{
+		if (PS_WMS == 2)
+		{
+			uv.x = clamp(uv.x, mask.x, mask.z);
+		}
+		else if (PS_WMS == 3)
+		{
+			uv.x = (uv.x & mask.x) | mask.z;
+		}
+		if (PS_WMT == 2)
+		{
+			uv.y = clamp(uv.y, mask.y, mask.w);
+		}
+		else if (PS_WMT == 3)
+		{
+			uv.y = (uv.y & mask.y) | mask.w;
+		}
+	}
+	return uv;
+}
+
+float4 sample_depth(float2 st, float q, float2 pos)
+{
+	if (!PS_FST) st /= q;
+
+	float2 uv_f = (float2)clamp_wrap_uv_depth(int2(st)) * (float2)PS_SCALE_FACTOR * (float2)(1.0f / 16.0f);
+	int2 uv = (int2)uv_f;
+
 	float4 t = (float4)(0.0f);
 
 	if (PS_TALES_OF_ABYSS_HLE == 1)
@@ -352,6 +399,43 @@ float4 sample_depth(float2 pos)
 		float green = (float)((depth >> 8) & 0xFF) * 36.0f;
 		green = min(green, 255.0f);
 		t.g += green / 255.0f;
+	}
+	else if (PS_DEPTH_FMT == 1)
+	{
+		// Based on ps_main11 of convert
+
+		// Convert a FLOAT32 depth texture into a RGBA color texture
+		const float4 bitSh = float4(exp2(24.0f), exp2(16.0f), exp2(8.0f), exp2(0.0f));
+		const float4 bitMsk = float4(0.0, 1.0f / 256.0f, 1.0f / 256.0f, 1.0f / 256.0f);
+
+		float4 res = frac((float4)fetch_c(uv).r * bitSh);
+
+		t = (res - res.xxyz * bitMsk) * 256.0f / 255.0f;
+	}
+	else if (PS_DEPTH_FMT == 2)
+	{
+		// Based on ps_main12 of convert
+
+		// Convert a FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
+		const float4 bitSh = float4(exp2(32.0f), exp2(27.0f), exp2(22.0f), exp2(17.0f));
+		const uint4 bitMsk = uint4(0x1F, 0x1F, 0x1F, 0x1);
+		uint4 color = (uint4)((float4)fetch_c(uv).r * bitSh) & bitMsk;
+
+		t = (float4)color * float4(8.0f, 8.0f, 8.0f, 128.0f);
+	}
+	else if (PS_DEPTH_FMT == 3)
+	{
+		// Convert a RGBA/RGB5A1 color texture into a RGBA/RGB5A1 color texture
+		t = fetch_c(uv);
+	}
+
+	if (PS_AEM_FMT == FMT_24)
+	{
+		t.a = ((PS_AEM == 0) || any(bool3(t.rgb))) ? 255.0f * TA.x : 0.0f;
+	}
+	else if (PS_AEM_FMT == FMT_16)
+	{
+		t.a = t.a >= 128.0f ? 255.0f * TA.y : ((PS_AEM == 0) || any(bool3(t.rgb))) ? 255.0f * TA.x : 0.0f;
 	}
 
 	return t;
@@ -732,7 +816,7 @@ float4 ps_color(PS_INPUT input)
 #elif PS_CHANNEL_FETCH == 6
 	float4 t = fetch_gXbY(int2(input.p.xy));
 #elif PS_DEPTH_FMT > 0
-	float4 t = sample_depth(input.p.xy);
+	float4 t = sample_depth(input.t.zw, input.t.w, input.p.xy);
 #else
 	float4 t = sample_color(input.t.xy, input.t.w);
 #endif
@@ -743,6 +827,7 @@ float4 ps_color(PS_INPUT input)
 
 	c = fog(c, input.t.z);
 
+	// FIXME: Colclip and Depth sampling shouldn't run together.
 	if (PS_COLCLIP == 2)
 	{
 		c.rgb = 256./255. - c.rgb;
