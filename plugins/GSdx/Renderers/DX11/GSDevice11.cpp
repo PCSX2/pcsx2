@@ -676,6 +676,18 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 	m_ctx->CopySubresourceRegion(*(GSTexture11*)dTex, 0, 0, 0, 0, *(GSTexture11*)sTex, 0, &box);
 }
 
+GSTexture* GSDevice11::CopyRenderTarget(GSTexture* src)
+{
+	int w = src->GetWidth();
+	int h = src->GetHeight();
+
+	GSTexture* dest = CreateRenderTarget(w, h, false);
+
+	CopyRect(src, dest, GSVector4i(0, 0, w, h));
+
+	return dest;
+}
+
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader, bool linear)
 {
 	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[shader], NULL, linear);
