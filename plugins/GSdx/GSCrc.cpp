@@ -462,9 +462,10 @@ CRC::Game CRC::m_games[] =
 	{0xC71DE999, SkyGunner, US, 0}, // Regular Demo
 	{0xAADF3287, SkyGunner, US, 0}, // Trade Demo
 	{0xB799A60C, SkyGunner, NoRegion, 0},
-	{0x90F4B057, ZettaiZetsumeiToshi2, CH, 0},
-	{0xC988ECBB, ZettaiZetsumeiToshi2, JP, 0},
 	{0x2905C5C6, ZettaiZetsumeiToshi2, US, 0}, // Raw Danger!
+	{0xC988ECBB, ZettaiZetsumeiToshi2, JP, 0},
+	{0x90F4B057, ZettaiZetsumeiToshi2, CH, 0},
+	{0xA98B5B22, ZettaiZetsumeiToshi2, EU, 0},
 	{0xBD17248E, ShinOnimusha, JP, 0},
 	{0xBE17248E, ShinOnimusha, JP, 0},
 	{0xB817248E, ShinOnimusha, JP, 0},
