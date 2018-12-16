@@ -479,7 +479,26 @@ void GSDevice11::DrawPrimitive()
 
 void GSDevice11::DrawIndexedPrimitive()
 {
-	m_ctx->DrawIndexed(m_index.count, m_index.start, m_vertex.start);
+	// DX can't read from the FB
+	// So let's copy it and set that as the shader
+	// resource for slot 4 to avoid issues.
+	if (m_state.ps_sr_texture[4] && m_state.ps_sr_texture[4]->Equal(m_state.rt_texture))
+	{
+		//fprintf(stdout, "FB read detected on slot 4: copying fb...\n");
+
+		GSTexture* cp = CopyRenderTarget(m_state.rt_texture);
+
+		PSSetShaderResource(4, cp);
+		PSUpdateShaderState();
+
+		m_ctx->DrawIndexed(m_index.count, m_index.start, m_vertex.start);
+
+		Recycle(cp);
+	}
+	else
+	{
+		m_ctx->DrawIndexed(m_index.count, m_index.start, m_vertex.start);
+	}
 }
 
 void GSDevice11::DrawIndexedPrimitive(int offset, int count)
