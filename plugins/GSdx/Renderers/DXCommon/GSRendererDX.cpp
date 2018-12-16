@@ -180,12 +180,6 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	GSVector4 WH(tw, th, w, h);
 
-	if (psm.depth)
-	{
-		// Depth fmt not supported yet, ensure draw calls are skipped to make sure convert depth works properly.
-		throw GSDXRecoverableError();
-	}
-
 	// Performance note:
 	// 1/ Don't set 0 as it is the default value
 	// 2/ Only keep aem when it is useful (avoid useless shader permutation)
