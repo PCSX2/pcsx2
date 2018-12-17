@@ -27,8 +27,6 @@
 GSRendererOGL::GSRendererOGL()
 	: GSRendererHW(new GSTextureCacheOGL(this))
 {
-	m_sw_blending   = theApp.GetConfigI("accurate_blending_unit");
-
 	// Hope nothing requires too many draw calls.
 	m_drawlist.reserve(2048);
 
