@@ -170,7 +170,48 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 	{
 		m_ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
-		m_om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+		GSVector4i fbmask_v = GSVector4i::load((int)m_context->FRAME.FBMSK);
+		int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
+		int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
+
+		m_om_bsel.wrgba = ~ff_fbmask; // Enable channel if at least 1 bit is 0
+
+		m_ps_sel.fbmask = m_sw_blending && (~ff_fbmask & ~zero_fbmask & 0xF);
+
+		if (m_ps_sel.fbmask) {
+			ps_cb.FbMask = fbmask_v.u8to32();
+			// Only alpha is special here, I think we can take a very unsafe shortcut
+			// Alpha isn't blended on the GS but directly copyied into the RT.
+			//
+			// Behavior is clearly undefined however there is a high probability that
+			// it will work. Masked bit will be constant and normally the same everywhere
+			// RT/FS output/Cached value.
+			//
+			// Just to be sure let's add a new safe hack for unsafe access :)
+			//
+			// Here the GL spec quote to emphasize the unexpected behavior.
+			/*
+			- If a texel has been written, then in order to safely read the result
+			a texel fetch must be in a subsequent Draw separated by the command
+
+			void TextureBarrier(void);
+
+			TextureBarrier() will guarantee that writes have completed and caches
+			have been invalidated before subsequent Draws are executed.
+			*/
+			// Safe option was removed. Likely nobody never use it. Keep the code commented if it becomes useful one day
+			if (!(~ff_fbmask & ~zero_fbmask & 0x7) /*&& !UserHacks_safe_fbmask*/)
+			{
+				fprintf(stderr, "FBMASK Unsafe SW emulated fb_mask:%x on %d bits format\n", m_context->FRAME.FBMSK,
+					(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
+			}
+			else
+			{
+				// The safe and accurate path (but slow)
+				fprintf(stderr, "FBMASK SW emulated fb_mask:%x on %d bits format\n", m_context->FRAME.FBMSK,
+					(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
+			}
+		}
 	}
 }
 

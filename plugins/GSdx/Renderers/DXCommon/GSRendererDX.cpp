@@ -583,7 +583,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	m_ps_sel.clr1 = m_om_bsel.IsCLR1();
 	m_ps_sel.fba = m_context->FBA.FBA;
 
-	if (m_ps_sel.shuffle)
+	if (m_ps_sel.shuffle || m_ps_sel.fbmask)
 	{
 		m_ps_sel.aout = 0;
 	}
