@@ -166,7 +166,7 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	bool complex_wms_wmt = !!((wms | wmt) & 2);
 
 	bool bilinear = m_vt.IsLinear();
-	bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt;
+	bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt || psm.depth;
 
 	// 1 and 0 are equivalent
 	m_ps_sel.wms = (wms & 2) ? wms : 0;
@@ -180,6 +180,10 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	GSVector4 WH(tw, th, w, h);
 
+	// Depth + bilinear filtering isn't done yet (And I'm not sure we need it anyway but a game will prove me wrong)
+	// So of course, GTA set the linear mode, but sampling is done at texel center so it is equivalent to nearest sampling
+	ASSERT(!(psm.depth && m_vt.IsLinear()));
+
 	// Performance note:
 	// 1/ Don't set 0 as it is the default value
 	// 2/ Only keep aem when it is useful (avoid useless shader permutation)
@@ -189,6 +193,13 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		// m_ps_sel.fmt = 0; // removed as an optimization
 		m_ps_sel.aem = m_env.TEXA.AEM;
 		ASSERT(tex->m_target);
+
+		// Require a float conversion if the texure is a depth otherwise uses Integral scaling
+		if (psm.depth)
+		{
+			m_ps_sel.depth_fmt = (tex->m_texture->GetType() != GSTexture::DepthStencil) ? 3 : 1;
+			// m_vs_sel.int_fst = !PRIM->FST; // select float/int coordinate
+		}
 
 		// Shuffle is a 16 bits format, so aem is always required
 		GSVector4 ta(m_env.TEXA & GSVector4i::x000000ff());
@@ -239,6 +250,15 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		{
 			// Require a float conversion if the texure is a depth format
 			m_ps_sel.depth_fmt = (psm.bpp == 16) ? 2 : 1;
+			// m_vs_sel.int_fst = !PRIM->FST; // select float/int coordinate
+
+			// Don't force interpolation on depth format
+			bilinear &= m_vt.IsLinear();
+		}
+		else if (psm.depth)
+		{
+			// Use Integral scaling
+			m_ps_sel.depth_fmt = 3;
 			// m_vs_sel.int_fst = !PRIM->FST; // select float/int coordinate
 
 			// Don't force interpolation on depth format
