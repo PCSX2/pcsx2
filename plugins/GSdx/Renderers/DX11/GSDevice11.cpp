@@ -1229,7 +1229,7 @@ void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 
 void GSDevice11::PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv, GSTexture* sr)
 {
-	ASSERT(i < m_state.ps_sr_views.size());
+	ASSERT(i < (int)m_state.ps_sr_views.size());
 
 	if(m_state.ps_sr_views[i] != srv)
 	{

@@ -118,7 +118,7 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(int s_n, const GSVector4& st, bool
 	}
 
 #if defined(_DEBUG) && 1
-	if(TEX0.TW != tw || TEX0.TH != th)
+	if((int)TEX0.TW != tw || (int)TEX0.TH != th)
 	{
 		printf("%5d:FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d st (%.0f,%.0f,%.0f,%.0f) uvmax %d,%d wm %d,%d (%d,%d,%d,%d)\n",
 			s_n,
