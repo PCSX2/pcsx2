@@ -94,6 +94,7 @@ public:
 		GSVector4 MinMax;
 		GSVector4 MinF_TA;
 		GSVector4i MskFix;
+		GSVector4i FbMask;
 		GSVector4i ChannelShuffle;
 
 		GSVector4 TC_OffsetHack;
@@ -106,6 +107,7 @@ public:
 			MinMax = GSVector4::zero();
 			MinF_TA = GSVector4::zero();
 			MskFix = GSVector4i::zero();
+			FbMask = GSVector4i::zero();
 			ChannelShuffle = GSVector4i::zero();
 		}
 
@@ -114,7 +116,7 @@ public:
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			if(!((a[0] == b[0]) /*& (a[1] == b1)*/ & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5]) & (a[6] == b[6])).alltrue()) // if WH matches HalfTexel does too
+			if(!((a[0] == b[0]) /*& (a[1] == b1)*/ & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5]) & (a[6] == b[6]) & (a[7] == b[7])).alltrue()) // if WH matches HalfTexel does too
 			{
 				a[0] = b[0];
 				a[1] = b[1];
@@ -123,6 +125,7 @@ public:
 				a[4] = b[4];
 				a[5] = b[5];
 				a[6] = b[6];
+				a[7] = b[7];
 
 				return true;
 			}
