@@ -39,6 +39,7 @@
 #define PS_POINT_SAMPLER 0
 #define PS_SHUFFLE 0
 #define PS_READ_BA 0
+#define PS_FBMASK 0
 #define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
 #define PS_CHANNEL_FETCH 0
@@ -108,6 +109,7 @@ cbuffer cb1
 	float2 MinF;
 	float2 TA;
 	uint4 MskFix;
+	uint4 FbMask;
 	int4 ChannelShuffle;
 	float4 TC_OffsetHack;
 };
@@ -998,6 +1000,12 @@ PS_OUTPUT ps_main(PS_INPUT input)
 			else
 				c.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
 		}
+	}
+
+	if (PS_FBMASK)
+	{
+		float4 rt = trunc(RTCopy.Load(int3(input.p.xy, 0)) * 255.0f + 0.1f);
+		c = float4((uint4(c) & ~FbMask) | (uint4(rt) & FbMask)) /255.0f;
 	}
 
 	output.c1 = c.a * 2; // used for alpha blending
