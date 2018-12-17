@@ -182,18 +182,25 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 	// First let's check we really have a channel shuffle effect
 	if (m_channel_shuffle)
 	{
-		if (m_game.title == CRC::Tekken5)
+		if (m_game.title == CRC::GT4 || m_game.title == CRC::GT3 || m_game.title == CRC::GTConcept || m_game.title == CRC::TouristTrophy)
+		{
+			// fprintf(stderr, "Gran Turismo RGB Channel\n");
+			m_ps_sel.channel = ChannelFetch_RGB;
+			m_context->TEX0.TFX = TFX_DECAL;
+			*rt = tex->m_from_target;
+		}
+		else if (m_game.title == CRC::Tekken5)
 		{
 			if (m_context->FRAME.FBW == 1)
 			{
 				// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
 				// fprintf(stderr, "Tekken5 RGB Channel\n");
-				// m_ps_sel.channel = ChannelFetch_RGB;
-				// m_context->FRAME.FBMSK = 0xFF000000;
+				m_ps_sel.channel = ChannelFetch_RGB;
+				m_context->FRAME.FBMSK = 0xFF000000;
 				// 12 pages: 2 calls by channel, 3 channels, 1 blit
 				// Minus current draw call
 				m_skip = 12 * (3 + 3 + 1) - 1;
-				// *rt = tex->m_from_target;
+				*rt = tex->m_from_target;
 			}
 			else
 			{
