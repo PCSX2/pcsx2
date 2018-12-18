@@ -66,6 +66,7 @@ struct VS_OUTPUT
 #if VS_RTCOPY
 	float4 tp : TEXCOORD1;
 #endif
+	float4 ti : TEXCOORD2;
 	float4 c : COLOR0;
 };
 
@@ -76,6 +77,7 @@ struct PS_INPUT
 #if PS_DATE > 0
 	float4 tp : TEXCOORD1;
 #endif
+	float4 ti : TEXCOORD2;
 	float4 c : COLOR0;
 };
 
@@ -364,10 +366,8 @@ int2 clamp_wrap_uv_depth(int2 uv)
 	return uv;
 }
 
-float4 sample_depth(float2 st, float q, float2 pos)
+float4 sample_depth(float2 st, float2 pos)
 {
-	if (!PS_FST) st /= q;
-
 	float2 uv_f = (float2)clamp_wrap_uv_depth(int2(st)) * (float2)PS_SCALE_FACTOR * (float2)(1.0f / 16.0f);
 	int2 uv = (int2)uv_f;
 
@@ -600,10 +600,8 @@ float4x4 sample_4p(float4 u)
 	return c;
 }
 
-float4 sample_color(float2 st, float q)
+float4 sample_color(float2 st)
 {
-	if(!PS_FST) st /= q;
-
 	#if PS_TCOFFSETHACK
 	st += TC_OffsetHack.xy;
 	#endif
@@ -802,6 +800,14 @@ float4 fog(float4 c, float f)
 float4 ps_color(PS_INPUT input)
 {
 	datst(input);
+	
+#if PS_FST == 0
+	float2 st = input.t.xy / input.t.w;
+	float2 st_int = input.ti.zw / input.t.w;
+#else
+	float2 st = input.ti.xy;
+	float2 st_int = input.ti.zw;
+#endif
 
 #if PS_CHANNEL_FETCH == 1
 	float4 t = fetch_red(int2(input.p.xy));
@@ -816,9 +822,9 @@ float4 ps_color(PS_INPUT input)
 #elif PS_CHANNEL_FETCH == 6
 	float4 t = fetch_gXbY(int2(input.p.xy));
 #elif PS_DEPTH_FMT > 0
-	float4 t = sample_depth(input.t.zw, input.t.w, input.p.xy);
+	float4 t = sample_depth(st_int, input.p.xy);
 #else
-	float4 t = sample_color(input.t.xy, input.t.w);
+	float4 t = sample_color(st);
 #endif
 
 	float4 c = tfx(t, input.c);
@@ -874,23 +880,31 @@ VS_OUTPUT vs_main(VS_INPUT input)
 
 	if(VS_TME)
 	{
-		if(VS_FST)
-		{
-			float2 uv = input.uv - Texture_Scale_Offset.zw;
+		float2 uv = input.uv - Texture_Scale_Offset.zw;
+		float2 st = input.st - Texture_Scale_Offset.zw;
 
-			output.t.xy = uv * Texture_Scale_Offset.xy;
-			output.t.zw = uv;
+		// Integer nomalized
+		output.ti.xy = uv * Texture_Scale_Offset.xy;
+
+		if (VS_FST)
+		{
+			// Integer integral
+			output.ti.zw = uv;
 		}
 		else
 		{
-			output.t.xy = input.st - Texture_Scale_Offset.zw;
-			output.t.w = input.q;
+			// float for post-processing in some games
+			output.ti.zw = st / Texture_Scale_Offset.xy;
 		}
+		// Float coords
+		output.t.xy = st;
+		output.t.w = input.q;
 	}
 	else
 	{
 		output.t.xy = 0;
 		output.t.w = 1.0f;
+		output.ti = 0;
 	}
 
 	output.c = input.c;
@@ -1040,10 +1054,14 @@ void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
 	VS_OUTPUT lb = rb;
 	lb.p.x = lt.p.x;
 	lb.t.x = lt.t.x;
+	lb.ti.x = lt.ti.x;
+	lb.ti.z = lt.ti.z;
 
 	VS_OUTPUT rt = rb;
 	rt.p.y = lt.p.y;
 	rt.t.y = lt.t.y;
+	rt.ti.y = lt.ti.y;
+	rt.ti.w = lt.ti.w;
 
 	stream.Append(lt);
 	stream.Append(lb);
