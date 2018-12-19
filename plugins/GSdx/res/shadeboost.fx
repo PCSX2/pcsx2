@@ -30,8 +30,6 @@ float4 ContrastSaturationBrightness(float4 color) // Ported to HLSL
 	return color;
 }
 
-#if SHADER_MODEL >= 0x400
-
 Texture2D Texture;
 SamplerState Sampler;
 
@@ -52,25 +50,4 @@ float4 ps_main(PS_INPUT input) : SV_Target0
 	return ContrastSaturationBrightness(c);
 }
 
-
-#elif SHADER_MODEL <= 0x300
-
-sampler Texture : register(s0);
-
-float4 g_params[1];
-
-#define BGColor	(g_params[0])
-
-struct PS_INPUT
-{
-	float2 t : TEXCOORD0;
-};
-
-float4 ps_main(PS_INPUT input) : COLOR
-{
-	float4 c = tex2D(Texture, input.t);
-	return ContrastSaturationBrightness(c);
-}
-
-#endif
 #endif

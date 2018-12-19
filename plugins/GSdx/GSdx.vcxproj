@@ -102,7 +102,6 @@
     <ClCompile Include="GSCrc.cpp" />
     <ClCompile Include="Renderers\Common\GSDevice.cpp" />
     <ClCompile Include="Renderers\DX11\GSDevice11.cpp" />
-    <ClCompile Include="Renderers\DX9\GSDevice9.cpp" />
     <ClCompile Include="Renderers\DXCommon\GSDeviceDX.cpp" />
     <ClCompile Include="Renderers\Null\GSDeviceNull.cpp" />
     <ClCompile Include="Renderers\OpenGL\GSDeviceOGL.cpp" />
@@ -131,7 +130,6 @@
     <ClCompile Include="Renderers\OpenCL\GSRendererCL.cpp" />
     <ClCompile Include="Renderers\DXCommon\GSRendererDX.cpp" />
     <ClCompile Include="Renderers\DX11\GSRendererDX11.cpp" />
-    <ClCompile Include="Renderers\DX9\GSRendererDX9.cpp" />
     <ClCompile Include="Renderers\HW\GSRendererHW.cpp" />
     <ClCompile Include="Renderers\Null\GSRendererNull.cpp" />
     <ClCompile Include="Renderers\OpenGL\GSRendererOGL.cpp" />
@@ -150,15 +148,12 @@
     <ClCompile Include="GSTables.cpp" />
     <ClCompile Include="Renderers\Common\GSTexture.cpp" />
     <ClCompile Include="Renderers\DX11\GSTexture11.cpp" />
-    <ClCompile Include="Renderers\DX9\GSTexture9.cpp" />
     <ClCompile Include="Renderers\OpenGL\GSTextureOGL.cpp" />
     <ClCompile Include="Renderers\Common\GSTextureCache.cpp" />
     <ClCompile Include="Renderers\DX11\GSTextureCache11.cpp" />
-    <ClCompile Include="Renderers\DX9\GSTextureCache9.cpp" />
     <ClCompile Include="Renderers\OpenGL\GSTextureCacheOGL.cpp" />
     <ClCompile Include="Renderers\SW\GSTextureCacheSW.cpp" />
     <ClCompile Include="Renderers\DX11\GSTextureFX11.cpp" />
-    <ClCompile Include="Renderers\DX9\GSTextureFX9.cpp" />
     <ClCompile Include="Renderers\Null\GSTextureNull.cpp" />
     <ClCompile Include="Renderers\SW\GSTextureSW.cpp" />
     <ClCompile Include="GSUtil.cpp" />
@@ -196,7 +191,6 @@
     <ClInclude Include="GSCrc.h" />
     <ClInclude Include="Renderers\Common\GSDevice.h" />
     <ClInclude Include="Renderers\DX11\GSDevice11.h" />
-    <ClInclude Include="Renderers\DX9\GSDevice9.h" />
     <ClInclude Include="Renderers\DXCommon\GSDeviceDX.h" />
     <ClInclude Include="Renderers\Null\GSDeviceNull.h" />
     <ClInclude Include="Renderers\OpenGL\GSDeviceOGL.h" />
@@ -220,7 +214,6 @@
     <ClInclude Include="Renderers\OpenCL\GSRendererCL.h" />
     <ClInclude Include="Renderers\DXCommon\GSRendererDX.h" />
     <ClInclude Include="Renderers\DX11\GSRendererDX11.h" />
-    <ClInclude Include="Renderers\DX9\GSRendererDX9.h" />
     <ClInclude Include="Renderers\HW\GSRendererHW.h" />
     <ClInclude Include="Renderers\Null\GSRendererNull.h" />
     <ClInclude Include="Renderers\OpenGL\GSRendererOGL.h" />
@@ -234,11 +227,9 @@
     <ClInclude Include="GSTables.h" />
     <ClInclude Include="Renderers\Common\GSTexture.h" />
     <ClInclude Include="Renderers\DX11\GSTexture11.h" />
-    <ClInclude Include="Renderers\DX9\GSTexture9.h" />
     <ClInclude Include="Renderers\OpenGL\GSTextureOGL.h" />
     <ClInclude Include="Renderers\Common\GSTextureCache.h" />
     <ClInclude Include="Renderers\DX11\GSTextureCache11.h" />
-    <ClInclude Include="Renderers\DX9\GSTextureCache9.h" />
     <ClInclude Include="Renderers\OpenGL\GSTextureCacheOGL.h" />
     <ClInclude Include="Renderers\SW\GSTextureCacheSW.h" />
     <ClInclude Include="Renderers\Null\GSTextureNull.h" />
@@ -284,7 +275,6 @@
   <ItemGroup>
     <None Include="GSdx.def" />
     <None Include="res\fxaa.fx" />
-    <None Include="res\logo9.bmp" />
     <None Include="res\logo_ogl.bmp" />
     <None Include="res\convert.fx" />
     <None Include="res\interlace.fx" />
@@ -302,7 +292,6 @@
     <Image Include="res\logo11.bmp" />
     <Image Include="res\psx-logo-null.bmp" />
     <Image Include="res\psx-logo11.bmp" />
-    <Image Include="res\psx-logo9.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\3rdparty\freetype\builds\windows\freetype.vcxproj">

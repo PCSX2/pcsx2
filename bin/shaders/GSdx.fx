@@ -21,10 +21,6 @@
 #define GLSL 0
 #endif
 
-#if defined(SHADER_MODEL) && (SHADER_MODEL <= 0x300)
-#error GSdx FX is not compatible with the D3D9 backend. Use OpenGL or D3D10|11.
-#endif
-
 /*------------------------------------------------------------------------------
                              [GLOBALS|FUNCTIONS]
 ------------------------------------------------------------------------------*/

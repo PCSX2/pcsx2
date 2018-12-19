@@ -28,7 +28,6 @@
 #ifdef _WIN32
 
 #include "GPUSettingsDlg.h"
-#include "Renderers/DX9/GSDevice9.h"
 #include "Renderers/DX11/GSDevice11.h"
 
 static HRESULT s_hr = E_FAIL;
@@ -141,13 +140,12 @@ EXPORT_C_(int32) GPUopen(void* hWnd)
 	switch(renderer)
 	{
 #ifdef _WIN32
-	case GPURendererType::D3D9_SW: s_gpu = new GPURendererSW(new GSDevice9(), threads); break;
 	case GPURendererType::D3D11_SW: s_gpu = new GPURendererSW(new GSDevice11(), threads); break;
 #endif
 	case GPURendererType::NULL_Renderer: s_gpu = new GPURendererSW(new GSDeviceNull(), threads); break;
 	default: // Fall back to D3D9/null mode if unknown value is read. No one could possibly enter here anyway.
 #ifdef _WIN32
-		s_gpu = new GPURendererSW(new GSDevice9(), threads); break;
+		s_gpu = new GPURendererSW(new GSDevice11(), threads); break;
 #else
 		s_gpu = new GPURendererSW(new GSDeviceNull(), threads); break;
 #endif

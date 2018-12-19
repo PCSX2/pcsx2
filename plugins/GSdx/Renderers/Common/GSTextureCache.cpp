@@ -23,7 +23,6 @@
 #include "Renderers/Common/GSTextureCache.h"
 #include "GSUtil.h"
 
-bool s_IS_DIRECT3D9 = false;
 bool GSTextureCache::m_disable_partial_invalidation = false;
 bool GSTextureCache::m_wrap_gs_mem = false;
 
@@ -31,8 +30,6 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
 	, m_palette_map(r)
 {
-	s_IS_DIRECT3D9 = theApp.GetCurrentRendererType() == GSRendererType::DX9_HW;
-
 	if (theApp.GetConfigB("UserHacks")) {
 		m_spritehack                   = theApp.GetConfigI("UserHacks_SpriteHack");
 		UserHacks_HalfPixelOffset      = theApp.GetConfigI("UserHacks_HalfPixelOffset") == 1;
@@ -54,7 +51,6 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	}
 
 	m_paltex = theApp.GetConfigB("paltex");
-	m_can_convert_depth &= !s_IS_DIRECT3D9; // not supported on D3D9
 	m_crc_hack_level = theApp.GetConfigT<CRCHackLevel>("crc_hack_level");
 	if (m_crc_hack_level == CRCHackLevel::Automatic)
 		m_crc_hack_level = GSUtil::GetRecommendedCRCHackLevel(theApp.GetCurrentRendererType());
@@ -1182,7 +1178,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// TODO: clean up this mess
 
 		int shader = dst->m_type != RenderTarget ? ShaderConvert_FLOAT32_TO_RGBA8 : ShaderConvert_COPY;
-		bool is_8bits = TEX0.PSM == PSM_PSMT8 && !s_IS_DIRECT3D9;
+		bool is_8bits = TEX0.PSM == PSM_PSMT8;
 
 		if (is_8bits) {
 			GL_INS("Reading RT as a packed-indexed 8 bits format");

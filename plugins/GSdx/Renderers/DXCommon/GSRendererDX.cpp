@@ -27,9 +27,6 @@ GSRendererDX::GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter)
 	: GSRendererHW(tc)
 	, m_pixelcenter(pixelcenter)
 {
-	m_logz = theApp.GetConfigB("logz");
-	m_fba = theApp.GetConfigB("fba");
-
 	if (theApp.GetConfigB("UserHacks"))
 	{
 		UserHacks_AlphaHack    = theApp.GetConfigB("UserHacks_AlphaHack");
@@ -498,16 +495,10 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	EmulateZbuffer();
 
-	if (m_fba)
-	{
-		m_om_dssel.fba = m_context->FBA.FBA;
-	}
-
 	// vs
 
 	m_vs_sel.tme = PRIM->TME;
 	m_vs_sel.fst = PRIM->FST;
-	m_vs_sel.logz = !dev->HasDepth32() && m_logz;
 	m_vs_sel.rtcopy = rtcopy != nullptr;
 
 	float sx = 2.0f * rtscale.x / (rtsize.x << 4);
@@ -813,6 +804,4 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	dev->EndScene();
 
 	dev->Recycle(rtcopy);
-
-	if (m_om_dssel.fba) UpdateFBA(rt);
 }

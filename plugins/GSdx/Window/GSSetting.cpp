@@ -170,15 +170,6 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Allows advanced atomic operations to speed up Accurate Date.\n"
 				"Only disable this if using Accurate Date causes (GPU driver) issues.\n\n"
 				"Note: This option is only supported by GPUs which support at least Direct3D 11.";
-#ifdef _WIN32
-		// DX9 only
-		case IDC_FBA:
-			return "Makes textures partially or fully transparent as required by emulation.\n"
-				"May cause unusual slowdowns or graphical glitches for some games.";
-		case IDC_LOGZ:
-			return "Treat depth as logarithmic instead of linear.\n"
-				"Recommended setting is on unless it causes graphical glitches.";
-#endif
 		case IDC_OSD_MAX_LOG_EDIT:
 		case IDC_OSD_MAX_LOG:
 			return "Sets the maximum number of log messages on the screen or in the buffer at the same time.\n\n"

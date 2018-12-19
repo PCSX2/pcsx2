@@ -5,11 +5,9 @@
 // General Dialog:
 #define IDD_CONFIG                      2001
 #define IDB_NULL                        2002
-#define IDB_LOGO9                       2003
 #define IDB_LOGO11                      2004
 #define IDB_LOGOGL                      2005
 #define IDC_NULL                        2006
-#define IDC_LOGO9                       2007
 #define IDC_LOGO11                      2008
 #define IDC_LOGOGL                      2009
 #define IDC_ADAPTER_TEXT                2010
@@ -45,8 +43,6 @@
 #define IDC_ACCURATE_DATE_TEXT          2047
 #define IDC_ACCURATE_BLEND_UNIT         2048
 #define IDC_ACCURATE_BLEND_UNIT_TEXT    2049
-#define IDC_FBA                         2050
-#define IDC_LOGZ                        2051
 // Software Renderer Settings:
 #define IDC_MIPMAP_SW                   2060
 #define IDC_AA1                         2061
@@ -55,7 +51,6 @@
 #define IDC_SWTHREADS_EDIT              2064
 // PSX:
 #define IDB_PSX_NULL                    2070
-#define IDB_PSX_LOGO9                   2071
 #define IDB_PSX_LOGO11                  2072
 #define IDC_PSX_NULL                    2073
 #define IDC_PSX_LOGO9                   2074
