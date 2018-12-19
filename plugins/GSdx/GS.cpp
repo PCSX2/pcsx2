@@ -33,7 +33,6 @@
 #ifdef _WIN32
 
 #include "Renderers/DX11/GSRendererDX11.h"
-#include "Renderers/DX9/GSDevice9.h"
 #include "Renderers/DX11/GSDevice11.h"
 #include "Window/GSWndDX.h"
 #include "Window/GSWndWGL.h"

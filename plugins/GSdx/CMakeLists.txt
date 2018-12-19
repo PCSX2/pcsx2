@@ -207,17 +207,13 @@ set(GSdxHeaders
 if(Windows)
     LIST(APPEND GSdxSources
         Renderers/DX11/GSDevice11.cpp
-        Renderers/DX9/GSDevice9.cpp
         Renderers/DXCommon/GSDeviceDX.cpp
         Window/GSDialog.cpp
         Renderers/DX11/GSRendererDX11.cpp
         Renderers/DXCommon/GSRendererDX.cpp
         Renderers/DX11/GSTexture11.cpp
-        Renderers/DX9/GSTexture9.cpp
         Renderers/DX11/GSTextureCache11.cpp
-        Renderers/DX9/GSTextureCache9.cpp
         Renderers/DX11/GSTextureFX11.cpp
-        Renderers/DX9/GSTextureFX9.cpp
         GSVertexList.cpp
         Renderers/SW/GSVertexSW.cpp
         Window/GSCaptureDlg.cpp
@@ -229,14 +225,11 @@ if(Windows)
 
     LIST(APPEND GSdxHeaders
         Renderers/DX11/GSDevice11.h
-        Renderers/DX9/GSDevice9.h
         Renderers/DXCommon/GSDeviceDX.h
         Renderers/DX11/GSRendererDX11.h
         Renderers/DXCommon/GSRendererDX.h
         Renderers/DX11/GSTexture11.h
-        Renderers/DX9/GSTexture9.h
         Renderers/DX11/GSTextureCache11.h
-        Renderers/DX9/GSTextureCache9.h
         Window/GSWndDX.h
         Window/GSWndWGL.h
         PSX/GPUSettingsDlg.h

@@ -51,9 +51,6 @@
     <ClCompile Include="Renderers\DX11\GSDevice11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderers\DX9\GSDevice9.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderers\Null\GSDeviceNull.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -138,9 +135,6 @@
     <ClCompile Include="Renderers\DX11\GSTexture11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderers\DX9\GSTexture9.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderers\OpenGL\GSTextureOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -150,9 +144,6 @@
     <ClCompile Include="Renderers\DX11\GSTextureCache11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderers\DX9\GSTextureCache9.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderers\OpenGL\GSTextureCacheOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -160,9 +151,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\DX11\GSTextureFX11.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\DX9\GSTextureFX9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\Null\GSTextureNull.cpp">
@@ -323,9 +311,6 @@
     <ClInclude Include="Renderers\DX11\GSDevice11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Renderers\DX9\GSDevice9.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Renderers\DXCommon\GSDeviceDX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -422,9 +407,6 @@
     <ClInclude Include="Renderers\DX11\GSTexture11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Renderers\DX9\GSTexture9.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Renderers\OpenGL\GSTextureOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -432,9 +414,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\DX11\GSTextureCache11.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderers\DX9\GSTextureCache9.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\OpenGL\GSTextureCacheOGL.h">
