@@ -226,7 +226,6 @@ public:
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix);
 
 	bool HasStencil() { return true; }
-	bool HasDepth32() { return true; }
 
 	ID3D11Device* operator->() {return m_dev;}
 	operator ID3D11Device*() {return m_dev;}

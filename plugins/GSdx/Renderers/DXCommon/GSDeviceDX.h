@@ -74,16 +74,18 @@ public:
 				uint32 bppz:2;
 				uint32 tme:1;
 				uint32 fst:1;
-				uint32 logz:1;
 				uint32 rtcopy:1;
+
+				uint32 _free:27;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0xff;}
+		operator uint32() const {return key;}
 
 		VSSelector() : key(0) {}
+		VSSelector(uint32 k) : key(k) {}
 	};
 
 	struct alignas(32) PSConstantBuffer
@@ -338,7 +340,6 @@ public:
 	virtual void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm) = 0;
 
 	virtual bool HasStencil() = 0;
-	virtual bool HasDepth32() = 0;
 
 	static bool LoadD3DCompiler();
 	static void FreeD3DCompiler();
