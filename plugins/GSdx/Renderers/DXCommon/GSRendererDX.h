@@ -27,8 +27,6 @@
 class GSRendererDX : public GSRendererHW
 {
 	GSVector2 m_pixelcenter;
-	bool m_logz;
-	bool m_fba;
 
 	bool UserHacks_AlphaHack;
 	bool UserHacks_AlphaStencil;
@@ -42,7 +40,6 @@ protected:
 	virtual void EmulateTextureShuffleAndFbmask() = 0;
 	virtual void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex) = 0;
 	virtual void SetupIA(const float& sx, const float& sy) = 0;
-	virtual void UpdateFBA(GSTexture* rt) {}
 
 	int UserHacks_HPO;
 
