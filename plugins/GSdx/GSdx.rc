@@ -99,15 +99,11 @@ IDR_TFX_FS_GLSL         RCDATA                  "res\\glsl\\tfx_fs.glsl";
 // Bitmap
 //
 
-IDB_LOGO9               BITMAP                  "res\\logo9.bmp"
-
 IDB_LOGO11              BITMAP                  "res\\logo11.bmp"
 
 IDB_LOGOGL              BITMAP                  "res\\logo-ogl.bmp"
 
 IDB_NULL                BITMAP                  "res\\logo-null.bmp"
-
-IDB_PSX_LOGO9           BITMAP                  "res\\psx-logo9.bmp"
 
 IDB_PSX_LOGO11          BITMAP                  "res\\psx-logo11.bmp"
 
@@ -252,7 +248,6 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Settings..."
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         IDB_PSX_LOGO9,IDC_PSX_LOGO9,"Static",SS_BITMAP,7,7,175,42
     CONTROL         IDB_PSX_LOGO11,IDC_PSX_LOGO11,"Static",SS_BITMAP,7,7,175,42
     CONTROL         IDB_PSX_NULL,IDC_PSX_NULL,"Static",SS_BITMAP,7,7,175,42
     LTEXT           "Resolution:",IDC_STATIC,7,59,37,8
@@ -281,7 +276,6 @@ CAPTION "GSdx Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     // General Settings:
-    CONTROL         IDB_LOGO9,IDC_LOGO9,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
     CONTROL         IDB_LOGO11,IDC_LOGO11,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
     CONTROL         IDB_LOGOGL,IDC_LOGOGL,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
     CONTROL         IDB_NULL,IDC_NULL,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
@@ -322,9 +316,6 @@ BEGIN
     COMBOBOX        IDC_ACCURATE_DATE,105,253,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Blending Unit Accuracy:",IDC_ACCURATE_BLEND_UNIT_TEXT,22,271,79,8
     COMBOBOX        IDC_ACCURATE_BLEND_UNIT,105,269,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    // Direct3D 9 (Hardware) Settings:
-    CONTROL         "Alpha Correction",IDC_FBA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,271,74,10
-    CONTROL         "Logarithmic Z",IDC_LOGZ,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,271,90,10
     // Software Renderer Settings:
     GROUPBOX        "Software Renderer Settings",IDC_STATIC,6,295,231,40,BS_CENTER
     CONTROL         "Edge Anti-aliasing (AA1)",IDC_AA1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,306,91,10

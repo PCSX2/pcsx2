@@ -556,9 +556,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\logo9.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\convert.fx">
       <Filter>Shaders</Filter>
     </None>
@@ -598,9 +595,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\logo-null.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\psx-logo9.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\psx-logo11.bmp">

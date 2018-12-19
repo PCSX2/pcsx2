@@ -346,8 +346,6 @@ void GSdxApp::Init()
 	m_default_configuration["Adapter"]                                    = "default";
 	m_default_configuration["CaptureFileName"]                            = "";
 	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
-	m_default_configuration["fba"]                                        = "1";
-	m_default_configuration["logz"]                                       = "0";
 #else
 	m_default_configuration["linux_replay"]                               = "1";
 #endif
