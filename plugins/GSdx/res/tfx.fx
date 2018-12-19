@@ -3,8 +3,6 @@
 #define FMT_24 1
 #define FMT_16 2
 
-#if SHADER_MODEL >= 0x400
-
 #ifndef VS_BPPZ
 #define VS_BPPZ 0
 #define VS_TME 1
@@ -232,104 +230,8 @@ float4 fetch_gXbY(int2 xy)
 	}
 }
 
-#elif SHADER_MODEL <= 0x300
-
-#ifndef VS_BPPZ
-#define VS_BPPZ 0
-#define VS_TME 1
-#define VS_FST 1
-#define VS_LOGZ 1
-#endif
-
-#ifndef PS_FST
-#define PS_FST 0
-#define PS_WMS 0
-#define PS_WMT 0
-#define PS_FMT FMT_32
-#define PS_AEM 0
-#define PS_TFX 0
-#define PS_TCC 0
-#define PS_ATST 4
-#define PS_FOG 0
-#define PS_CLR1 0
-#define PS_RT 0
-#define PS_LTF 0
-#define PS_COLCLIP 0
-#define PS_DATE 0
-#define PS_PAL_FMT 0
-#endif
-
-struct VS_INPUT
-{
-	float4 p : POSITION0;
-	float2 t : TEXCOORD0;
-	float4 c : COLOR0;
-	float4 f : COLOR1;
-};
-
-struct VS_OUTPUT
-{
-	float4 p : POSITION;
-	float4 t : TEXCOORD0;
-#if VS_RTCOPY
-	float4 tp : TEXCOORD1;
-#endif
-	float4 c : COLOR0;
-};
-
-struct PS_INPUT
-{
-	float4 t : TEXCOORD0;
-#if PS_DATE > 0
-	float4 tp : TEXCOORD1;
-#endif
-	float4 c : COLOR0;
-};
-
-sampler Texture : register(s0);
-sampler Palette : register(s1);
-sampler RTCopy : register(s2);
-sampler1D UMSKFIX : register(s3);
-sampler1D VMSKFIX : register(s4);
-
-float4 vs_params[3];
-
-#define VertexScale vs_params[0]
-#define VertexOffset vs_params[1]
-#define Texture_Scale_Offset vs_params[2]
-
-float4 ps_params[7];
-
-#define FogColor	ps_params[0].bgr
-#define AREF		ps_params[0].a
-#define HalfTexel	ps_params[1]
-#define WH			ps_params[2]
-#define MinMax		ps_params[3]
-#define MinF		ps_params[4].xy
-#define TA			ps_params[4].zw
-
-#define TC_OffsetHack ps_params[6]
-
-float4 sample_c(float2 uv)
-{
-	return tex2D(Texture, uv);
-}
-
-float4 sample_p(float u)
-{
-	return tex2D(Palette, u);
-}
-
-float4 sample_rt(float2 uv)
-{
-	return tex2D(RTCopy, uv);
-}
-
-#endif
-
 #define PS_AEM_FMT (PS_FMT & 3)
 
-#if SHADER_MODEL >= 0x400
 int2 clamp_wrap_uv_depth(int2 uv)
 {
 	int4 mask = (int4)MskFix << 4;
@@ -440,7 +342,6 @@ float4 sample_depth(float2 st, float2 pos)
 
 	return t;
 }
-#endif
 
 float4 clamp_wrap_uv(float4 uv)
 {
@@ -463,19 +364,12 @@ float4 clamp_wrap_uv(float4 uv)
 		}
 		else if(PS_WMS == 3)
 		{
-			#if SHADER_MODEL >= 0x400
 			#if PS_FST == 0
 			// wrap negative uv coords to avoid an off by one error that shifted
 			// textures. Fixes Xenosaga's hair issue.
 			uv = frac(uv);
 			#endif
 			uv = (float4)(((uint4)(uv * WH.xyxy) & MskFix.xyxy) | MskFix.zwzw) / WH.xyxy;
-			#elif SHADER_MODEL <= 0x300
-			uv.x = tex1D(UMSKFIX, uv.x);
-			uv.y = tex1D(VMSKFIX, uv.y);
-			uv.z = tex1D(UMSKFIX, uv.z);
-			uv.w = tex1D(VMSKFIX, uv.w);
-			#endif
 		}
 	}
 	else
@@ -497,15 +391,10 @@ float4 clamp_wrap_uv(float4 uv)
 		}
 		else if(PS_WMS == 3)
 		{
-			#if SHADER_MODEL >= 0x400
 			#if PS_FST == 0
 			uv.xz = frac(uv.xz);
 			#endif
 			uv.xz = (float2)(((uint2)(uv.xz * WH.xx) & MskFix.xx) | MskFix.zz) / WH.xx;
-			#elif SHADER_MODEL <= 0x300
-			uv.x = tex1D(UMSKFIX, uv.x);
-			uv.z = tex1D(UMSKFIX, uv.z);
-			#endif
 		}
 /*
 		if(PS_WMT == 0)
@@ -524,15 +413,10 @@ float4 clamp_wrap_uv(float4 uv)
 		}
 		else if(PS_WMT == 3)
 		{
-			#if SHADER_MODEL >= 0x400
 			#if PS_FST == 0
 			uv.yw = frac(uv.yw);
 			#endif
 			uv.yw = (float2)(((uint2)(uv.yw * WH.yy) & MskFix.yy) | MskFix.ww) / WH.yy;
-			#elif SHADER_MODEL <= 0x300
-			uv.y = tex1D(VMSKFIX, uv.y);
-			uv.w = tex1D(VMSKFIX, uv.w);
-			#endif
 		}
 	}
 
@@ -560,13 +444,6 @@ float4 sample_4_index(float4 uv)
 	c.z = sample_c(uv.xw).a;
 	c.w = sample_c(uv.zw).a;
 
-#if SHADER_MODEL <= 0x300
-
-	if (PS_RT) c *= 128.0f / 255;
-	// D3D9 doesn't support integer operations
-
-#else
-
 	// Denormalize value
 	uint4 i = uint4(c * 255.0f + 0.5f);
 
@@ -580,8 +457,6 @@ float4 sample_4_index(float4 uv)
 		// 4HH
 		c = float4(i >> 4u) / 255.0f;
 	}
-
-#endif
 
 	// Most of texture will hit this code so keep normalized float value
 	// 8 bits
@@ -622,12 +497,10 @@ float4 sample_color(float2 st)
 		{
 			uv = st.xyxy + HalfTexel;
 			dd = frac(uv.xy * WH.zw);
-			#if SHADER_MODEL >= 0x400
 			if(PS_FST == 0)
 			{
 				dd = clamp(dd, (float2)0.0, (float2)0.9999999);
 			}
-			#endif
 		}
 		else
 		{
@@ -646,13 +519,7 @@ float4 sample_color(float2 st)
 	[unroll]
 	for (uint i = 0; i < 4; i++)
 	{
-		if(PS_AEM_FMT == FMT_32)
-		{
-			#if SHADER_MODEL <= 0x300
-			if(PS_RT) c[i].a *= 128.0f / 255;
-			#endif
-		}
-		else if(PS_AEM_FMT == FMT_24)
+		if(PS_AEM_FMT == FMT_24)
 		{
 			c[i].a = !PS_AEM || any(c[i].rgb) ? TA.x : 0;
 		}
@@ -724,11 +591,8 @@ void datst(PS_INPUT input)
 {
 #if PS_DATE > 0
 	float alpha = sample_rt(input.tp.xy).a;
-#if SHADER_MODEL >= 0x400
+
 	float alpha0x80 = 128. / 255;
-#else
-	float alpha0x80 = 1;
-#endif
 
 	if (PS_DATE == 1 && alpha >= alpha0x80)
 		discard;
@@ -850,8 +714,6 @@ float4 ps_color(PS_INPUT input)
 
 	return c;
 }
-
-#if SHADER_MODEL >= 0x400
 
 VS_OUTPUT vs_main(VS_INPUT input)
 {
@@ -1121,74 +983,4 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	return output;
 }
-
-#elif SHADER_MODEL <= 0x300
-
-VS_OUTPUT vs_main(VS_INPUT input)
-{
-	if(VS_BPPZ == 1) // 24
-	{
-		input.p.z = fmod(input.p.z, 0x1000000);
-	}
-	else if(VS_BPPZ == 2) // 16
-	{
-		input.p.z = fmod(input.p.z, 0x10000);
-	}
-
-	VS_OUTPUT output;
-
-	// pos -= 0.05 (1/320 pixel) helps avoiding rounding problems (integral part of pos is usually 5 digits, 0.05 is about as low as we can go)
-	// example: ceil(afterseveralvertextransformations(y = 133)) => 134 => line 133 stays empty
-	// input granularity is 1/16 pixel, anything smaller than that won't step drawing up/left by one pixel
-	// example: 133.0625 (133 + 1/16) should start from line 134, ceil(133.0625 - 0.05) still above 133
-
-	float4 p = input.p - float4(0.05f, 0.05f, 0, 0);
-
-	output.p = p * VertexScale - VertexOffset;
-#if VS_RTCOPY
-	output.tp = (p * VertexScale - VertexOffset) * float4(0.5, -0.5, 0, 0) + 0.5;
-#endif
-
-	if(VS_LOGZ)
-	{
-		output.p.z = log2(1.0f + input.p.z) / 32;
-	}
-
-	if(VS_TME)
-	{
-		float2 t = input.t - Texture_Scale_Offset.zw;
-		if(VS_FST)
-		{
-
-			output.t.xy = t * Texture_Scale_Offset.xy;
-			output.t.zw = t;
-		}
-		else
-		{
-			output.t.xy = t;
-			output.t.w = input.p.w;
-		}
-	}
-	else
-	{
-		output.t.xy = 0;
-		output.t.w = 1.0f;
-	}
-
-	output.c = input.c;
-	output.t.z = input.f.b;
-
-	return output;
-}
-
-float4 ps_main(PS_INPUT input) : COLOR
-{
-	float4 c = ps_color(input);
-
-	c.a *= 2;
-
-	return c;
-}
-
-#endif
 #endif
