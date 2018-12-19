@@ -131,7 +131,6 @@
     <ClCompile Include="Renderers\OpenCL\GSRendererCL.cpp" />
     <ClCompile Include="Renderers\DXCommon\GSRendererDX.cpp" />
     <ClCompile Include="Renderers\DX11\GSRendererDX11.cpp" />
-    <ClCompile Include="Renderers\DX9\GSRendererDX9.cpp" />
     <ClCompile Include="Renderers\HW\GSRendererHW.cpp" />
     <ClCompile Include="Renderers\Null\GSRendererNull.cpp" />
     <ClCompile Include="Renderers\OpenGL\GSRendererOGL.cpp" />
@@ -220,7 +219,6 @@
     <ClInclude Include="Renderers\OpenCL\GSRendererCL.h" />
     <ClInclude Include="Renderers\DXCommon\GSRendererDX.h" />
     <ClInclude Include="Renderers\DX11\GSRendererDX11.h" />
-    <ClInclude Include="Renderers\DX9\GSRendererDX9.h" />
     <ClInclude Include="Renderers\HW\GSRendererHW.h" />
     <ClInclude Include="Renderers\Null\GSRendererNull.h" />
     <ClInclude Include="Renderers\OpenGL\GSRendererOGL.h" />

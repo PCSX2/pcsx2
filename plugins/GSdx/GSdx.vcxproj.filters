@@ -105,9 +105,6 @@
     <ClCompile Include="Renderers\DX11\GSRendererDX11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderers\DX9\GSRendererDX9.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderers\HW\GSRendererHW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -384,9 +381,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\DX11\GSRendererDX11.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderers\DX9\GSRendererDX9.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\HW\GSRendererHW.h">
