@@ -198,7 +198,6 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		if (psm.depth)
 		{
 			m_ps_sel.depth_fmt = (tex->m_texture->GetType() != GSTexture::DepthStencil) ? 3 : 1;
-			// m_vs_sel.int_fst = !PRIM->FST; // select float/int coordinate
 		}
 
 		// Shuffle is a 16 bits format, so aem is always required
@@ -250,7 +249,6 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		{
 			// Require a float conversion if the texure is a depth format
 			m_ps_sel.depth_fmt = (psm.bpp == 16) ? 2 : 1;
-			// m_vs_sel.int_fst = !PRIM->FST; // select float/int coordinate
 
 			// Don't force interpolation on depth format
 			bilinear &= m_vt.IsLinear();
@@ -259,7 +257,6 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		{
 			// Use Integral scaling
 			m_ps_sel.depth_fmt = 3;
-			// m_vs_sel.int_fst = !PRIM->FST; // select float/int coordinate
 
 			// Don't force interpolation on depth format
 			bilinear &= m_vt.IsLinear();
