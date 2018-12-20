@@ -228,7 +228,7 @@ void GSdxApp::Init()
 	m_gs_interlace.push_back(GSSetting(4, "Bob bff", "use blend if shaking"));
 	m_gs_interlace.push_back(GSSetting(5, "Blend tff", "slight blur, 1/2 fps"));
 	m_gs_interlace.push_back(GSSetting(6, "Blend bff", "slight blur, 1/2 fps"));
-	m_gs_interlace.push_back(GSSetting(7, "Auto", "Default"));
+	m_gs_interlace.push_back(GSSetting(7, "Automatic", "Default"));
 
 	m_gs_aspectratio.push_back(GSSetting(0, "Stretch", ""));
 	m_gs_aspectratio.push_back(GSSetting(1, "4:3", ""));
