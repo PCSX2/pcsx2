@@ -422,11 +422,6 @@ CRC::Game CRC::m_games[] =
 	{0x4A0E5B3A, MidnightClub3, US, 0}, // dub
 	{0xEBE1972D, MidnightClub3, EU, 0}, // dub
 	{0x60A42FF5, MidnightClub3, US, 0}, // remix
-	{0xD03D4C77, SpyroNewBeginning, US, 0},
-	{0x0EE5646B, SpyroNewBeginning, EU, 0},
-	{0xB80CE8EC, SpyroEternalNight, US, 0},
-	{0x8AE9536D, SpyroEternalNight, EU, 0},
-	{0xC95F0198, SpyroEternalNight, NoRegion, 0},
 	{0x43AB7214, TalesOfLegendia, US, 0},
 	{0x1F8640E0, TalesOfLegendia, JP, 0},
 	{0xE4F5DA2B, TalesOfLegendia, KO, 0},

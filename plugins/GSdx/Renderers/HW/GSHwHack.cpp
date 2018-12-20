@@ -1587,32 +1587,6 @@ bool GSC_CrashNburn(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SpyroNewBeginning(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x034a0 || fi.TBP0 == 0x03020) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SpyroEternalNight(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x034a0 || fi.TBP0 == 0x035a0 || fi.TBP0 == 0x036e0) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_XE3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2096,8 +2070,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::LegoBatman] = GSC_LegoBatman;
 		lut[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
 		lut[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
-		lut[CRC::SpyroEternalNight] = GSC_SpyroEternalNight;
-		lut[CRC::SpyroNewBeginning] = GSC_SpyroNewBeginning;
 
 		// Those games might requires accurate fbmask
 		lut[CRC::Sly2] = GSC_Sly2;

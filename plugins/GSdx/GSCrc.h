@@ -147,8 +147,6 @@ public:
 		SoTC,
 		SoulReaver2,
 		Spartan,
-		SpyroEternalNight,
-		SpyroNewBeginning,
 		StarOcean3,
 		StarWarsForceUnleashed,
 		SteambotChronicles,
