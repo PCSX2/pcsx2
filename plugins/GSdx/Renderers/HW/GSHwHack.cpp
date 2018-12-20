@@ -1440,7 +1440,7 @@ bool GSC_SuikodenTactics(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Tenchu(const GSFrameInfo& fi, int& skip)
+bool GSC_TenchuGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
@@ -1651,6 +1651,7 @@ bool GSC_YakuzaGames(const GSFrameInfo& fi, int& skip)
 			/*&& fi.FBMSK == 0xffffff && fi.TZTST && !GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)*/)
 		{
 			// Removes depth effect not rendered properly on D3D.
+			// Needs to be looked further, might be some upscaling issues present.
 			skip = 3;
 		}
 	}
@@ -2048,6 +2049,12 @@ void GSState::SetupCrcHack()
 
 	// Hacks that were fixed on OpenGL
 	if (Dx_only) {
+		// Accurate Blending
+		lut[CRC::GetaWay] = GSC_GetaWayGames; // Blending High
+		lut[CRC::GetaWayBlackMonday] = GSC_GetaWayGames; // Blending High
+		lut[CRC::TenchuFS] = GSC_TenchuGames;
+		lut[CRC::TenchuWoH] = GSC_TenchuGames;
+
 		// Depth
 		lut[CRC::Bully] = GSC_Bully;
 		lut[CRC::BullyCC] = GSC_BullyCC;
@@ -2055,8 +2062,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 		lut[CRC::Okami] = GSC_Okami;
 		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
-		lut[CRC::TenchuFS] = GSC_Tenchu;
-		lut[CRC::TenchuWoH] = GSC_Tenchu;
 		lut[CRC::XE3] = GSC_XE3;
 		lut[CRC::Yakuza] = GSC_YakuzaGames;
 		lut[CRC::Yakuza2] = GSC_YakuzaGames;
@@ -2068,10 +2073,10 @@ void GSState::SetupCrcHack()
 		lut[CRC::CrashNburn] = GSC_CrashNburn; // seem to be a basic depth effect
 		lut[CRC::EternalPoison] = GSC_EternalPoison;
 		lut[CRC::LegoBatman] = GSC_LegoBatman;
-		lut[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
-		lut[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
 
 		// Those games might requires accurate fbmask
+		lut[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
+		lut[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
 		lut[CRC::Sly2] = GSC_Sly2;
 		lut[CRC::Sly3] = GSC_Sly3;
 
@@ -2096,10 +2101,6 @@ void GSState::SetupCrcHack()
 
 		// RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly
 		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas;
-
-		// Can be fixed by setting Blending Unit Accuracy to at least High.
-		lut[CRC::GetaWay] = GSC_GetaWayGames;
-		lut[CRC::GetaWayBlackMonday] = GSC_GetaWayGames;
 
 		// Accumulation blend
 		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
