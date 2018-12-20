@@ -66,7 +66,6 @@ public:
 		FIFA04,
 		FIFA05,
 		FightingBeautyWulong,
-		FinalFightStreetwise,
 		FrontMission5,
 		Genji,
 		GetaWay,

@@ -1039,25 +1039,6 @@ bool GSC_EternalPoison(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_FinalFightStreetwise(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-
-	return true;
-}
-
 bool GSC_FrontMission5(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2189,7 +2170,6 @@ void GSState::SetupCrcHack()
 		// Depth
 		lut[CRC::Bully] = GSC_Bully;
 		lut[CRC::BullyCC] = GSC_BullyCC;
-		lut[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise; // + Blending
 		lut[CRC::FrontMission5] = GSC_FrontMission5;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
