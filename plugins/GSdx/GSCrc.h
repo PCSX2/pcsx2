@@ -145,8 +145,6 @@ public:
 		SMTNocturne,
 		SonicUnleashed,
 		SoTC,
-		SoulCalibur2,
-		SoulCalibur3,
 		SoulReaver2,
 		Spartan,
 		SpyroEternalNight,

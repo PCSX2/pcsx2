@@ -1456,25 +1456,6 @@ bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SoulCaliburGames(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 2;
-			}
-		}
-	}
-
-	return true;
-}
-
 bool GSC_SuikodenTactics(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2129,8 +2110,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 		lut[CRC::Okami] = GSC_Okami;
-		lut[CRC::SoulCalibur2] = GSC_SoulCaliburGames;
-		lut[CRC::SoulCalibur3] = GSC_SoulCaliburGames;
 		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
 		lut[CRC::TenchuFS] = GSC_Tenchu;
 		lut[CRC::TenchuWoH] = GSC_Tenchu;
