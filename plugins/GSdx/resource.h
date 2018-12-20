@@ -53,7 +53,6 @@
 #define IDB_PSX_NULL                    2070
 #define IDB_PSX_LOGO11                  2072
 #define IDC_PSX_NULL                    2073
-#define IDC_PSX_LOGO9                   2074
 #define IDC_PSX_LOGO11                  2075
 #define IDD_GPUCONFIG                   2076
 #define IDC_ASPECTRATIO                 2077

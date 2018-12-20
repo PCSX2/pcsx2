@@ -140,12 +140,10 @@ void GPUSettingsDlg::UpdateControls()
 	{
 		GPURendererType renderer = static_cast<GPURendererType>(i);
 
-		bool dx9 = renderer == GPURendererType::D3D9_SW;
 		bool dx11 = renderer == GPURendererType::D3D11_SW;
 		bool null = renderer == GPURendererType::NULL_Renderer;
 		bool sw = !null;
 
-		ShowWindow(GetDlgItem(m_hWnd, IDC_PSX_LOGO9), dx9 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_PSX_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_PSX_NULL), null ? SW_SHOW : SW_HIDE);
 		

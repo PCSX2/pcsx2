@@ -266,7 +266,6 @@ REG_SET_END
 
 enum class GPURendererType : int8
 {
-	D3D9_SW,
 	D3D11_SW,
 	NULL_Renderer,
 };
