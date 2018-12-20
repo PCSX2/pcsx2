@@ -84,7 +84,6 @@ public:
 		HarryPotterATPOA,
 		HarryPotterOOTP,
 		HauntingGround,
-		HeavyMetalThunder,
 		ICO,
 		IkkiTousen,
 		ItadakiStreet,
