@@ -31,7 +31,6 @@
 #define PS_AOUT 0
 #define PS_LTF 1
 #define PS_COLCLIP 0
-#define PS_DATE 0
 #define PS_SPRITEHACK 0
 #define PS_TCOFFSETHACK 0
 #define PS_POINT_SAMPLER 0
@@ -61,9 +60,6 @@ struct VS_OUTPUT
 {
 	float4 p : SV_Position;
 	float4 t : TEXCOORD0;
-#if VS_RTCOPY
-	float4 tp : TEXCOORD1;
-#endif
 	float4 ti : TEXCOORD2;
 	float4 c : COLOR0;
 };
@@ -72,9 +68,6 @@ struct PS_INPUT
 {
 	float4 p : SV_Position;
 	float4 t : TEXCOORD0;
-#if PS_DATE > 0
-	float4 tp : TEXCOORD1;
-#endif
 	float4 ti : TEXCOORD2;
 	float4 c : COLOR0;
 };
@@ -87,11 +80,9 @@ struct PS_OUTPUT
 
 Texture2D<float4> Texture : register(t0);
 Texture2D<float4> Palette : register(t1);
-Texture2D<float4> RTCopy : register(t2);
 Texture2D<float4> RawTexture : register(t4);
 SamplerState TextureSampler : register(s0);
 SamplerState PaletteSampler : register(s1);
-SamplerState RTCopySampler : register(s2);
 
 cbuffer cb0
 {
@@ -137,11 +128,6 @@ float4 sample_c(float2 uv)
 float4 sample_p(float u)
 {
 	return Palette.Sample(PaletteSampler, u);
-}
-
-float4 sample_rt(float2 uv)
-{
-	return RTCopy.Sample(RTCopySampler, uv);
 }
 
 float4 fetch_raw_color(int2 xy)
@@ -587,20 +573,6 @@ float4 tfx(float4 t, float4 c)
 	return saturate(c);
 }
 
-void datst(PS_INPUT input)
-{
-#if PS_DATE > 0
-	float alpha = sample_rt(input.tp.xy).a;
-
-	float alpha0x80 = 128. / 255;
-
-	if (PS_DATE == 1 && alpha >= alpha0x80)
-		discard;
-	else if (PS_DATE == 2 && alpha < alpha0x80)
-		discard;
-#endif
-}
-
 void atst(float4 c)
 {
 	float a = trunc(c.a * 255 + 0.01);
@@ -663,8 +635,6 @@ float4 fog(float4 c, float f)
 
 float4 ps_color(PS_INPUT input)
 {
-	datst(input);
-	
 #if PS_FST == 0
 	float2 st = input.t.xy / input.t.w;
 	float2 st_int = input.ti.zw / input.t.w;
@@ -736,9 +706,6 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	float4 p = float4(input.p, input.z, 0) - float4(0.05f, 0.05f, 0, 0);
 
 	output.p = p * VertexScale - VertexOffset;
-#if VS_RTCOPY
-	output.tp = (p * VertexScale - VertexOffset) * float4(0.5, -0.5, 0, 0) + 0.5;
-#endif
 
 	if(VS_TME)
 	{
