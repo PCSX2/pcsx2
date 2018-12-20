@@ -78,9 +78,8 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Lowers the GS precision to avoid gaps between pixels when upscaling.\n"
 				"Fixes the text on Wild Arms games.";
 		case IDC_MSAACB:
-			return "Enables hardware Anti-Aliasing. Needs lots of memory.\n"
-				" The Z-24 modes might need to have LogarithmicZ to compensate for the bits lost (only in DX9 mode).\n\n"
-				" MSAA is not implemented on the OpenGL renderer.";
+			return "Enables hardware Anti-Aliasing. Needs lots of memory.\n\n"
+				"Note: MSAA often causes graphical glitches.";
 		case IDC_ALPHASTENCIL:
 			return "Extend stencil based emulation of destination alpha to perform stencil operations while drawing.\n\n"
 				"Improves many shadows which are normally overdrawn in parts, may affect other effects.\n"
