@@ -1238,13 +1238,12 @@ void GSDevice11::PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv, G
 	}
 }
 
-void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0, ID3D11SamplerState* ss1, ID3D11SamplerState* ss2)
+void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0, ID3D11SamplerState* ss1)
 {
-	if(m_state.ps_ss[0] != ss0 || m_state.ps_ss[1] != ss1 || m_state.ps_ss[2] != ss2)
+	if(m_state.ps_ss[0] != ss0 || m_state.ps_ss[1] != ss1)
 	{
 		m_state.ps_ss[0] = ss0;
 		m_state.ps_ss[1] = ss1;
-		m_state.ps_ss[2] = ss2;
 	}
 }
 

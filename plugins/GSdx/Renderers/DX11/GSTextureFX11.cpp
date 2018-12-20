@@ -103,19 +103,17 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 
 	if(i == m_vs.end())
 	{
-		std::string str[4];
+		std::string str[3];
 
 		str[0] = format("%d", sel.bppz);
 		str[1] = format("%d", sel.tme);
 		str[2] = format("%d", sel.fst);
-		str[3] = format("%d", sel.rtcopy);
 
 		D3D_SHADER_MACRO macro[] =
 		{
 			{"VS_BPPZ", str[0].c_str()},
 			{"VS_TME", str[1].c_str()},
 			{"VS_FST", str[2].c_str()},
-			{"VS_RTCOPY", str[3].c_str()},
 			{NULL, NULL},
 		};
 
@@ -209,7 +207,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 
 	if(i == m_ps.end())
 	{
-		std::string str[27];
+		std::string str[26];
 
 		str[0] = format("%d", sel.fst);
 		str[1] = format("%d", sel.wms);
@@ -225,19 +223,18 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		str[11] = format("%d", sel.aout);
 		str[12] = format("%d", sel.ltf);
 		str[13] = format("%d", sel.colclip);
-		str[14] = format("%d", sel.date);
-		str[15] = format("%d", sel.spritehack);
-		str[16] = format("%d", sel.tcoffsethack);
-		str[17] = format("%d", sel.point_sampler);
-		str[18] = format("%d", sel.shuffle);
-		str[19] = format("%d", sel.read_ba);
-		str[20] = format("%d", sel.channel);
-		str[21] = format("%d", sel.tales_of_abyss_hle);
-		str[22] = format("%d", sel.urban_chaos_hle);
-		str[23] = format("%d", sel.dfmt);
-		str[24] = format("%d", sel.depth_fmt);
-		str[25] = format("%d", sel.fmt >> 2);
-		str[26] = format("%d", m_upscale_multiplier);
+		str[14] = format("%d", sel.spritehack);
+		str[15] = format("%d", sel.tcoffsethack);
+		str[16] = format("%d", sel.point_sampler);
+		str[17] = format("%d", sel.shuffle);
+		str[18] = format("%d", sel.read_ba);
+		str[19] = format("%d", sel.channel);
+		str[20] = format("%d", sel.tales_of_abyss_hle);
+		str[21] = format("%d", sel.urban_chaos_hle);
+		str[22] = format("%d", sel.dfmt);
+		str[23] = format("%d", sel.depth_fmt);
+		str[24] = format("%d", sel.fmt >> 2);
+		str[25] = format("%d", m_upscale_multiplier);
 
 		D3D_SHADER_MACRO macro[] =
 		{
@@ -255,19 +252,18 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 			{"PS_AOUT", str[11].c_str()},
 			{"PS_LTF", str[12].c_str()},
 			{"PS_COLCLIP", str[13].c_str()},
-			{"PS_DATE", str[14].c_str()},
-			{"PS_SPRITEHACK", str[15].c_str()},
-			{"PS_TCOFFSETHACK", str[16].c_str()},
-			{"PS_POINT_SAMPLER", str[17].c_str()},
-			{"PS_SHUFFLE", str[18].c_str() },
-			{"PS_READ_BA", str[19].c_str() },
-			{"PS_CHANNEL_FETCH", str[20].c_str() },
-			{"PS_TALES_OF_ABYSS_HLE", str[21].c_str() },
-			{"PS_URBAN_CHAOS_HLE", str[22].c_str() },
-			{"PS_DFMT", str[23].c_str() },
-			{"PS_DEPTH_FMT", str[24].c_str() },
-			{"PS_PAL_FMT", str[25].c_str() },
-			{"PS_SCALE_FACTOR", str[26].c_str() },
+			{"PS_SPRITEHACK", str[14].c_str()},
+			{"PS_TCOFFSETHACK", str[15].c_str()},
+			{"PS_POINT_SAMPLER", str[16].c_str()},
+			{"PS_SHUFFLE", str[17].c_str() },
+			{"PS_READ_BA", str[18].c_str() },
+			{"PS_CHANNEL_FETCH", str[19].c_str() },
+			{"PS_TALES_OF_ABYSS_HLE", str[20].c_str() },
+			{"PS_URBAN_CHAOS_HLE", str[21].c_str() },
+			{"PS_DFMT", str[22].c_str() },
+			{"PS_DEPTH_FMT", str[23].c_str() },
+			{"PS_PAL_FMT", str[24].c_str() },
+			{"PS_SCALE_FACTOR", str[25].c_str() },
 			{NULL, NULL},
 		};
 
@@ -332,7 +328,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		}
 	}
 
-	PSSetSamplerState(ss0, ss1, sel.date ? m_rt_ss : NULL);
+	PSSetSamplerState(ss0, ss1);
 
 	PSSetShader(i->second, m_ps_cb);
 }

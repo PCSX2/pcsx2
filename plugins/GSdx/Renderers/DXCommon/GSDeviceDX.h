@@ -74,9 +74,8 @@ public:
 				uint32 bppz:2;
 				uint32 tme:1;
 				uint32 fst:1;
-				uint32 rtcopy:1;
 
-				uint32 _free:27;
+				uint32 _free:28;
 			};
 
 			uint32 key;
@@ -188,7 +187,6 @@ public:
 				// Fog
 				uint32 fog:1;
 				// Pixel test
-				uint32 date:2;
 				uint32 atst:3;
 				// Color sampling
 				uint32 fst:1;
@@ -204,7 +202,6 @@ public:
 				// *** Word 2
 				// Blend and Colclip
 				uint32 clr1:1;
-				uint32 rt:1;
 				uint32 colclip:2;
 
 				// Others ways to fetch the texture
@@ -218,7 +215,7 @@ public:
 				uint32 tales_of_abyss_hle:1;
 				uint32 point_sampler:1;
 
-				uint32 _free:23;
+				uint32 _free:26;
 			};
 
 			uint64 key;
@@ -338,8 +335,6 @@ public:
 	virtual void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix) = 0;
 
 	virtual void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm) = 0;
-
-	virtual bool HasStencil() = 0;
 
 	static bool LoadD3DCompiler();
 	static void FreeD3DCompiler();
