@@ -278,21 +278,11 @@ bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(Dx_only && fi.TME && fi.FBP == 0x00a80 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
+		if((Aggressive || !s_nativeres) && fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
 		{
-			skip = 1000; // shadow (result is broken without depth copy, also includes 16 bit)
-		}
-		else if((Aggressive || !s_nativeres) && fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
-		{
+			// Might not be needed if any of the upscaling hacks fix the issues, needs to be further tested.
 			// Don't enable hack on native res if crc is below aggressive.
-			skip = 11; // blur
-		}
-	}
-	else if(skip > 7)
-	{
-		if(Dx_only && fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00700 && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 7; // the last steps of shadow drawing
+			skip = 11; // Upscaling blur/ghosting
 		}
 	}
 
