@@ -266,8 +266,8 @@ REG_SET_END
 
 enum class GPURendererType : int8
 {
-	D3D11_SW,
-	NULL_Renderer,
+	D3D11_SW = 1,
+	NULL_Renderer = 2,
 };
 
 struct GPUFreezeData
