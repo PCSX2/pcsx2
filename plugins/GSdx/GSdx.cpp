@@ -228,7 +228,7 @@ void GSdxApp::Init()
 	m_gs_interlace.push_back(GSSetting(4, "Bob bff", "use blend if shaking"));
 	m_gs_interlace.push_back(GSSetting(5, "Blend tff", "slight blur, 1/2 fps"));
 	m_gs_interlace.push_back(GSSetting(6, "Blend bff", "slight blur, 1/2 fps"));
-	m_gs_interlace.push_back(GSSetting(7, "Auto", ""));
+	m_gs_interlace.push_back(GSSetting(7, "Auto", "Default"));
 
 	m_gs_aspectratio.push_back(GSSetting(0, "Stretch", ""));
 	m_gs_aspectratio.push_back(GSSetting(1, "4:3", ""));
@@ -245,7 +245,7 @@ void GSdxApp::Init()
 	m_gs_upscale_multiplier.push_back(GSSetting(0, "Custom", "Not Recommended"));
 #endif
 
-	m_gs_max_anisotropy.push_back(GSSetting(0, "Off", ""));
+	m_gs_max_anisotropy.push_back(GSSetting(0, "Off", "Default"));
 	m_gs_max_anisotropy.push_back(GSSetting(2, "2x", ""));
 	m_gs_max_anisotropy.push_back(GSSetting(4, "4x", ""));
 	m_gs_max_anisotropy.push_back(GSSetting(8, "8x", ""));
