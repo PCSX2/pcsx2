@@ -1151,42 +1151,6 @@ bool GSC_Okami(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_MetalGearSolid3(const GSFrameInfo& fi, int& skip)
-{
-	// Game requires sub RT support (texture cache limitation)
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x02000 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 1000; // 76, 79
-		}
-		else if(fi.TME && fi.FBP == 0x02800 && fi.FPSM == PSM_PSMCT24 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1000; // 69
-		}
-	}
-	else
-	{
-		if(!fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32)
-		{
-			skip = 0;
-		}
-		else if(!fi.TME && fi.FBP == fi.TBP0 && fi.TBP0 == 0x2000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT24)
-		{
-			if(g_crc_region == CRC::US || g_crc_region == CRC::JP || g_crc_region == CRC::KO)
-			{
-				skip = 119;	//ntsc
-			}
-			else
-			{
-				skip = 136;	//pal
-			}
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Bully(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1685,6 +1649,43 @@ bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_MetalGearSolid3(const GSFrameInfo& fi, int& skip)
+{
+	// Halfscreen bottom issue
+	// Hack is old that was used to remove channel shuffle and likely needs to be updated.
+	if(Aggressive && skip == 0)
+	{
+		if(fi.TME && fi.FBP == 0x02000 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT24)
+		{
+			skip = 1000; // 76, 79
+		}
+		else if(fi.TME && fi.FBP == 0x02800 && fi.FPSM == PSM_PSMCT24 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT32)
+		{
+			skip = 1000; // 69
+		}
+	}
+	else if(Aggressive)
+	{
+		if(!fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32)
+		{
+			skip = 0;
+		}
+		else if(!fi.TME && fi.FBP == fi.TBP0 && fi.TBP0 == 0x2000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT24)
+		{
+			if(g_crc_region == CRC::US || g_crc_region == CRC::JP || g_crc_region == CRC::KO)
+			{
+				skip = 119;	//ntsc
+			}
+			else
+			{
+				skip = 136;	//pal
+			}
+		}
+	}
+
+	return true;
+}
+
 template<uptr state_addr>
 bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 {
@@ -2015,6 +2016,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::DBZBT2] = GSC_DBZBT2;
 		lut[CRC::DBZBT3] = GSC_DBZBT3;
 		lut[CRC::DemonStone] = GSC_DemonStone;
+		lut[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // + accurate blending
 		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed; // + Texture shuffle
 		lut[CRC::Tekken5] = GSC_Tekken5;
 
@@ -2084,7 +2086,6 @@ void GSState::SetupCrcHack()
 
 		// Channel Effect
 		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
-		lut[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // + accurate blending
 
 		// Dedicated shader for channel effect
 		lut[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
