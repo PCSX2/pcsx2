@@ -150,8 +150,6 @@ public:
 		SpyroEternalNight,
 		SpyroNewBeginning,
 		StarOcean3,
-		StarWarsBattlefront,
-		StarWarsBattlefront2,
 		StarWarsForceUnleashed,
 		SteambotChronicles,
 		SuikodenTactics,
