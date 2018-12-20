@@ -1039,41 +1039,17 @@ bool GSC_EternalPoison(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_FrontMission5(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
-		{
-			// Texture shuffle and depth support.
-			// Correctly emulated on OGL.
-			skip = 1;
-		}
-		if(fi.TME && (fi.FBP ==0x1000) && (fi.TBP0 ==0x2e00 || fi.TBP0 ==0x3200) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			// Shadows, glitchy black ground textures.
-			// Can be Fixed with Preload Frame Data hw hack, DX needs depth support.
-			skip = 1; //fi.TBP0 ==0x1f00
-		}
-	}
-
-	return true;
-}
-
 bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16S && fi.FBMSK == 0x03FFF)
-		{
-			skip = 1; // Depth dupicated ghost image
-		}
-		else if(fi.TME && (fi.FBP ==0x2200) && (fi.TBP0 ==0x3a80) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
+		if(fi.TME && (fi.FBP ==0x2200) && (fi.TBP0 ==0x3a80) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
 			skip = 1; // Blur
 		}
 		else if(fi.FBP ==0x2200 && fi.TBP0==0x3000 && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
 		{
+			// Rendered correctly however there's some offset issue on D3D11.
 			skip = 1; // Depth Fog
 		}
 		else if(fi.TME)
@@ -1539,7 +1515,7 @@ bool GSC_Tenchu(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
 		{
-			// Depth issues. D3D only.
+			// Depth is fine, blending issues remain, crc hack can be adjusted to skip blend wall/fog only.
 			skip = 3;
 		}
 	}
@@ -2170,7 +2146,6 @@ void GSState::SetupCrcHack()
 		// Depth
 		lut[CRC::Bully] = GSC_Bully;
 		lut[CRC::BullyCC] = GSC_BullyCC;
-		lut[CRC::FrontMission5] = GSC_FrontMission5;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
 		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
