@@ -333,13 +333,6 @@ CRC::Game CRC::m_games[] =
 	{0x90F0D852, BigMuthaTruckers, US, 0},
 	{0x5CC9BF81, TimeSplitters2, EU, 0},
 	{0x12532F1C, TimeSplitters2, US, 0},
-	{0xC818BEC2, LordOfTheRingsTwoTowers, US, 0},
-	{0xDC43F2B8, LordOfTheRingsTwoTowers, EU, 0},
-	{0x9ABF90FB, LordOfTheRingsTwoTowers, ES, 0},
-	{0x5FF407EE, LordOfTheRingsTwoTowers, IT, 0},
-	{0xC0E909E9, LordOfTheRingsTwoTowers, JP, 0},
-	{0x6898435D, LordOfTheRingsTwoTowers, KO, 0},
-	{0xDC2F9B98, LordOfTheRingsTwoTowers, CH, 0}, // cutie comment
 	{0xEB198738, LordOfTheRingsThirdAge, US, 0},
 	{0x614F4CF4, LordOfTheRingsThirdAge, EU, 0},
 	{0x37CD4279, LordOfTheRingsThirdAge, KO, 0},
@@ -367,9 +360,9 @@ CRC::Game CRC::m_games[] =
 	{0x2BE55519, EternalPoison, US, 0},
 	{0xE01F57EC, LegoBatman, US, 0}, // cutie comment
 	{0xE01F57ED, LegoBatman, EU, 0},
-	{0xE0347841, XE3, JP, 0}, // cutie comment
-	{0xA4E88698, XE3, CH, 0},
-	{0x2088950A, XE3, US, 0},
+	{0xE0347841, XenosagaE3, JP, 0}, // cutie comment
+	{0xA4E88698, XenosagaE3, CH, 0},
+	{0x2088950A, XenosagaE3, US, 0},
 	// DMC(1)? {0x79B8A95F, DevilMayCry3, US, 0},
 	{0x7F3D692D, DevilMayCry3, CH, 0},
 	// {0x1A85E924, DevilMayCry3, CH, 0}, // same CRC as {GodOfWar, NoRegion}

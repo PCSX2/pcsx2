@@ -1448,30 +1448,6 @@ bool GSC_Sly2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_LordOfTheRingsTwoTowers(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x01180 || fi.FBP == 0x01400) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 1000;//shadows
-		}
-		else if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.TBP0 == 0x01400 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			skip = 3;	//wall of fog
-		}
-	}
-	else
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && (fi.TBP0 == 0x01180 || fi.TBP0 == 0x01400) && fi.FPSM == PSM_PSMCT32)
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_CastlevaniaGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1541,7 +1517,7 @@ bool GSC_CrashNburn(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_XE3(const GSFrameInfo& fi, int& skip)
+bool GSC_XenosagaE3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
@@ -2051,10 +2027,9 @@ void GSState::SetupCrcHack()
 		lut[CRC::Bully] = GSC_Bully;
 		lut[CRC::BullyCC] = GSC_BullyCC;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
-		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 		lut[CRC::Okami] = GSC_Okami;
 		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
-		lut[CRC::XE3] = GSC_XE3;
+		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 		lut[CRC::Yakuza] = GSC_YakuzaGames;
 		lut[CRC::Yakuza2] = GSC_YakuzaGames;
 
@@ -2077,7 +2052,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::CastlevaniaLoI] = GSC_CastlevaniaGames;
 		lut[CRC::GodOfWar] = GSC_GodOfWar;
 
-		// Deprecated hack could be removed (Cutie)
+		// Unknown status
 		lut[CRC::Grandia3] = GSC_Grandia3;
 
 		// At least a part of the CRC is fixed with texture shuffle.
