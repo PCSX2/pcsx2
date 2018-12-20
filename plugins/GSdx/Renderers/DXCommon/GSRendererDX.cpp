@@ -294,7 +294,6 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	m_ps_sel.ltf = bilinear && shader_emulated_sampler;
 
-	m_ps_sel.rt = tex->m_target;
 	m_ps_sel.spritehack = tex->m_spritehack_t;
 	m_ps_sel.point_sampler = !bilinear || shader_emulated_sampler;
 
@@ -339,8 +338,6 @@ void GSRendererDX::ResetStates()
 
 void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
-	GSTexture* rtcopy = NULL;
-
 	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
 	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
 
@@ -459,32 +456,21 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	if (DATE)
 	{
-		if (dev->HasStencil())
+		GSVector4 s = GSVector4(rtscale.x / rtsize.x, rtscale.y / rtsize.y);
+		GSVector4 off = GSVector4(-1.0f, 1.0f);
+
+		GSVector4 src = ((m_vt.m_min.p.xyxy(m_vt.m_max.p) + off.xxyy()) * s.xyxy()).sat(off.zzyy());
+		GSVector4 dst = src * 2.0f + off.xxxx();
+
+		GSVertexPT1 vertices[] =
 		{
-			GSVector4 s = GSVector4(rtscale.x / rtsize.x, rtscale.y / rtsize.y);
-			GSVector4 off = GSVector4(-1.0f, 1.0f);
+			{GSVector4(dst.x, -dst.y, 0.5f, 1.0f), GSVector2(src.x, src.y)},
+			{GSVector4(dst.z, -dst.y, 0.5f, 1.0f), GSVector2(src.z, src.y)},
+			{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(src.x, src.w)},
+			{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(src.z, src.w)},
+		};
 
-			GSVector4 src = ((m_vt.m_min.p.xyxy(m_vt.m_max.p) + off.xxyy()) * s.xyxy()).sat(off.zzyy());
-			GSVector4 dst = src * 2.0f + off.xxxx();
-
-			GSVertexPT1 vertices[] =
-			{
-				{GSVector4(dst.x, -dst.y, 0.5f, 1.0f), GSVector2(src.x, src.y)},
-				{GSVector4(dst.z, -dst.y, 0.5f, 1.0f), GSVector2(src.z, src.y)},
-				{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(src.x, src.w)},
-				{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(src.z, src.w)},
-			};
-
-			dev->SetupDATE(rt, ds, vertices, m_context->TEST.DATM);
-		}
-		else
-		{
-			rtcopy = dev->CreateRenderTarget(rtsize.x, rtsize.y, false, rt->GetFormat());
-
-			// I'll use VertexTrace when I consider it more trustworthy
-
-			dev->CopyRect(rt, rtcopy, GSVector4i(rtsize).zwxy());
-		}
+		dev->SetupDATE(rt, ds, vertices, m_context->TEST.DATM);
 	}
 
 	//
@@ -499,7 +485,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	m_vs_sel.tme = PRIM->TME;
 	m_vs_sel.fst = PRIM->FST;
-	m_vs_sel.rtcopy = rtcopy != nullptr;
 
 	float sx = 2.0f * rtscale.x / (rtsize.x << 4);
 	float sy = 2.0f * rtscale.y / (rtsize.y << 4);
@@ -539,17 +524,10 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	if (DATE)
 	{
-		if (dev->HasStencil())
+		m_om_dssel.date = 1;
+		if (DATE_one)
 		{
-			m_om_dssel.date = 1;
-			if (DATE_one)
-			{
-				m_om_dssel.date_one = 1;
-			}
-		}
-		else
-		{
-			m_ps_sel.date = 1 + m_context->TEST.DATM;
+			m_om_dssel.date_one = 1;
 		}
 	}
 
@@ -641,7 +619,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// to only draw pixels which would cause the destination alpha test to fail in the future once.
 	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
 	// The interaction with FBA in D3D9 is probably less than ideal.
-	if (UserHacks_AlphaStencil && DATE && !DATE_one && dev->HasStencil() && m_om_bsel.wa && !m_context->TEST.ATE)
+	if (UserHacks_AlphaStencil && DATE && !DATE_one && m_om_bsel.wa && !m_context->TEST.ATE)
 	{
 		// fprintf(stderr, "Alpha Stencil detected\n");
 		if (!m_context->FBA.FBA)
@@ -694,7 +672,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	dev->OMSetRenderTargets(rt, ds, &scissor);
 	dev->PSSetShaderResource(0, tex ? tex->m_texture : NULL);
 	dev->PSSetShaderResource(1, tex ? tex->m_palette : NULL);
-	dev->PSSetShaderResource(2, rtcopy);
 
 	SetupIA(sx, sy);
 
@@ -802,6 +779,4 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	}
 
 	dev->EndScene();
-
-	dev->Recycle(rtcopy);
 }
