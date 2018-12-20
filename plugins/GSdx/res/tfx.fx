@@ -1,4 +1,5 @@
 #ifdef SHADER_MODEL // make safe to include in resource file to enforce dependency
+
 #define FMT_32 0
 #define FMT_24 1
 #define FMT_16 2
@@ -333,17 +334,6 @@ float4 clamp_wrap_uv(float4 uv)
 {
 	if(PS_WMS == PS_WMT)
 	{
-/*
-		if(PS_WMS == 0)
-		{
-			uv = frac(uv);
-		}
-		else if(PS_WMS == 1)
-		{
-			uv = saturate(uv);
-		}
-		else
-*/
 		if(PS_WMS == 2)
 		{
 			uv = clamp(uv, MinMax.xyxy, MinMax.zwzw);
@@ -360,17 +350,6 @@ float4 clamp_wrap_uv(float4 uv)
 	}
 	else
 	{
-/*
-		if(PS_WMS == 0)
-		{
-			uv.xz = frac(uv.xz);
-		}
-		else if(PS_WMS == 1)
-		{
-			uv.xz = saturate(uv.xz);
-		}
-		else
-*/
 		if(PS_WMS == 2)
 		{
 			uv.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
@@ -382,17 +361,6 @@ float4 clamp_wrap_uv(float4 uv)
 			#endif
 			uv.xz = (float2)(((uint2)(uv.xz * WH.xx) & MskFix.xx) | MskFix.zz) / WH.xx;
 		}
-/*
-		if(PS_WMT == 0)
-		{
-			uv.yw = frac(uv.yw);
-		}
-		else if(PS_WMT == 1)
-		{
-			uv.yw = saturate(uv.yw);
-		}
-		else
-*/
 		if(PS_WMT == 2)
 		{
 			uv.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
