@@ -137,7 +137,7 @@ bool GSC_DemonStone(const GSFrameInfo& fi, int& skip)
 	}
 	else
 	{
-		if(Dx_only && fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32)
+		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32)
 		{
 			skip = 2;
 		}
