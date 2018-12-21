@@ -149,7 +149,6 @@ public:
 		StarOcean3,
 		StarWarsForceUnleashed,
 		SteambotChronicles,
-		SuikodenTactics,
 		SuperManReturns,
 		SVCChaos,
 		TalesOfAbyss,

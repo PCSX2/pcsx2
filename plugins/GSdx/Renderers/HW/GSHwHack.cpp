@@ -1380,20 +1380,6 @@ bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SuikodenTactics(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if( !fi.TME && fi.TPSM == PSM_PSMT8H && fi.FPSM == 0 &&
-			fi.FBMSK == 0x0FF000000 && fi.TBP0 == 0 && GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM))
-		{
-			skip = 4;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_TenchuGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2028,7 +2014,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::BullyCC] = GSC_BullyCC;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::Okami] = GSC_Okami;
-		lut[CRC::SuikodenTactics] = GSC_SuikodenTactics;
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 		lut[CRC::Yakuza] = GSC_YakuzaGames;
 		lut[CRC::Yakuza2] = GSC_YakuzaGames;
