@@ -398,9 +398,9 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 		{
 			int i = ((bsel.a * 3 + bsel.b) * 3 + bsel.c) * 3 + bsel.d;
 
-			bd.RenderTarget[0].BlendOp = (D3D11_BLEND_OP)m_blendMapD3D11[i].op;
-			bd.RenderTarget[0].SrcBlend = (D3D11_BLEND)m_blendMapD3D11[i].src;
-			bd.RenderTarget[0].DestBlend = (D3D11_BLEND)m_blendMapD3D11[i].dst;
+			bd.RenderTarget[0].BlendOp = m_blendMapD3D11[i].op;
+			bd.RenderTarget[0].SrcBlend = m_blendMapD3D11[i].src;
+			bd.RenderTarget[0].DestBlend = m_blendMapD3D11[i].dst;
 			bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 			bd.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 			bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;

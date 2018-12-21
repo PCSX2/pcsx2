@@ -304,7 +304,12 @@ public:
 		}
 	};
 
-	struct D3D11Blend {int bogus, op, src, dst;};
+	struct D3D11Blend
+	{
+		int bogus;
+		D3D11_BLEND_OP op;
+		D3D11_BLEND src, dst;
+	};
 	static const D3D11Blend m_blendMapD3D11[3*3*3*3];
 
 	#pragma pack(pop)
