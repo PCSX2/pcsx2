@@ -1546,19 +1546,6 @@ bool GSC_Grandia3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GTASanAndreas(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP ==0x0a00 || fi.FBP ==0x08c0) && (fi.TBP0 ==0x1b80 || fi.TBP0 ==0x1a40) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; // Ghosting
-		}
-	}
-
-	return true;
-}
-
 bool GSC_YakuzaGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1605,6 +1592,19 @@ bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
 		{
 			// Removes body shading. Not needed but offers a very decent speed boost.
 			skip = 1;
+		}
+	}
+
+	return true;
+}
+
+bool GSC_GTASanAndreas(const GSFrameInfo& fi, int& skip)
+{
+	if(Aggressive && skip == 0)
+	{
+		if(fi.TME && (fi.FBP ==0x0a00 || fi.FBP ==0x08c0) && (fi.TBP0 ==0x1b80 || fi.TBP0 ==0x1a40) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
+		{
+			skip = 1; // Ghosting
 		}
 	}
 
@@ -1992,6 +1992,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFX2] = GSC_FFXGames;
 		lut[CRC::FFX] = GSC_FFXGames;
 		lut[CRC::FFXII] = GSC_FFXGames;
+		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas; // RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly. Can be used as an upscaling hack.
 		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
 		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
@@ -2049,9 +2050,6 @@ void GSState::SetupCrcHack()
 
 		// Dedicated shader for channel effect
 		lut[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
-
-		// RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly
-		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas;
 
 		// Accumulation blend
 		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
