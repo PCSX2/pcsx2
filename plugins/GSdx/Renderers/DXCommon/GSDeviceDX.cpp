@@ -148,7 +148,7 @@ bool GSDeviceDX::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)
 // # (tricky) => 1 * Cd + Cd * F => Use (Cd, F) as factor of color (1, Cd)
 // * (bogus) => C * (1 + F ) + ... => factor is always bigger than 1 (except above case)
 
-const GSDeviceDX::D3D9Blend GSDeviceDX::m_blendMapD3D9[3*3*3*3] =
+const GSDeviceDX::D3D11Blend GSDeviceDX::m_blendMapD3D11[3*3*3*3] =
 {
 	{0, D3DBLENDOP_ADD         , D3DBLEND_ONE               , D3DBLEND_ZERO}           , // 0000: (Cs - Cs)*As + Cs ==> Cs
 	{0, D3DBLENDOP_ADD         , D3DBLEND_ZERO              , D3DBLEND_ONE}            , // 0001: (Cs - Cs)*As + Cd ==> Cd
