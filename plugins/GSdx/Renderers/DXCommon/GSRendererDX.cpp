@@ -619,7 +619,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// Destination alpha pseudo stencil hack: use a stencil operation combined with an alpha test
 	// to only draw pixels which would cause the destination alpha test to fail in the future once.
 	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
-	// The interaction with FBA in D3D9 is probably less than ideal.
 	if (UserHacks_AlphaStencil && DATE && !DATE_one && m_om_bsel.wa && !m_context->TEST.ATE)
 	{
 		// fprintf(stderr, "Alpha Stencil detected\n");
