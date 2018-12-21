@@ -436,14 +436,6 @@ GSAdapter::GSAdapter(const DXGI_ADAPTER_DESC1 &desc_dxgi)
 	, rev(desc_dxgi.Revision)
 {
 }
-
-GSAdapter::GSAdapter(const D3DADAPTER_IDENTIFIER9 &desc_d3d9)
-	: vendor(desc_d3d9.VendorId)
-	, device(desc_d3d9.DeviceId)
-	, subsys(desc_d3d9.SubSysId)
-	, rev(desc_d3d9.Revision)
-{
-}
 #endif
 #ifdef __linux__
 // TODO

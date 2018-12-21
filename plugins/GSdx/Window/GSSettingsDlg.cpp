@@ -32,7 +32,6 @@ GSSettingsDlg::GSSettingsDlg()
 	: GSDialog(IDD_CONFIG)
 	, m_renderers{theApp.m_gs_renderers}
 	, m_d3d11_adapters{EnumerateD3D11Adapters()}
-	, m_d3d9_adapters{EnumerateD3D9Adapters()}
 	, m_current_adapters{nullptr}
 	, m_last_selected_adapter_id{theApp.GetConfigS("Adapter")}
 {
@@ -89,30 +88,6 @@ std::vector<GSSettingsDlg::Adapter> GSSettingsDlg::EnumerateD3D11Adapters()
 	auto unsupported_adapter = [](const auto &adapter) { return adapter.level < D3D_FEATURE_LEVEL_10_0; };
 	adapters.erase(std::remove_if(adapters.begin(), adapters.end(), unsupported_adapter), adapters.end());
 
-	return adapters;
-}
-
-std::vector<GSSettingsDlg::Adapter> GSSettingsDlg::EnumerateD3D9Adapters()
-{
-	CComPtr<IDirect3D9> d3d9;
-	d3d9.Attach(Direct3DCreate9(D3D_SDK_VERSION));
-	if (d3d9 == nullptr)
-		return {};
-
-	std::vector<Adapter> adapters{
-		{"Default Hardware Device", "default", static_cast<D3D_FEATURE_LEVEL>(0)},
-		{"Reference Device", "ref", static_cast<D3D_FEATURE_LEVEL>(0)},
-	};
-
-	int n = d3d9->GetAdapterCount();
-	for (int i = 0; i < n; i++)
-	{
-		D3DADAPTER_IDENTIFIER9 desc;
-		if (d3d9->GetAdapterIdentifier(i, 0, &desc) != D3D_OK)
-			break;
-
-		adapters.push_back({desc.Description, GSAdapter(desc), static_cast<D3D_FEATURE_LEVEL>(0)});
-	}
 	return adapters;
 }
 
@@ -334,7 +309,7 @@ void GSSettingsDlg::UpdateAdapters()
 		return;
 	}
 
-	m_current_adapters = dx11 ? &m_d3d11_adapters : &m_d3d9_adapters;
+	m_current_adapters = &m_d3d11_adapters;
 
 	std::vector<GSSetting> adapter_settings;
 	unsigned int adapter_sel = 0;
