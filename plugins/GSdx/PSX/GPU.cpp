@@ -143,7 +143,7 @@ EXPORT_C_(int32) GPUopen(void* hWnd)
 	case GPURendererType::D3D11_SW: s_gpu = new GPURendererSW(new GSDevice11(), threads); break;
 #endif
 	case GPURendererType::NULL_Renderer: s_gpu = new GPURendererSW(new GSDeviceNull(), threads); break;
-	default: // Fall back to D3D9/null mode if unknown value is read. No one could possibly enter here anyway.
+	default: // Fall back to D3D11/Null mode if unknown value is read. No one could possibly enter here anyway.
 #ifdef _WIN32
 		s_gpu = new GPURendererSW(new GSDevice11(), threads); break;
 #else

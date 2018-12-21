@@ -1224,7 +1224,6 @@ bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 	{
 		if(Aggressive && fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
 		{
-			// Texture shuffle. Not supported on D3D9.
 			// Can be used as a speed hack.
 			// Removes shadows.
 			skip = 1000;
@@ -1258,7 +1257,6 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 			if(Aggressive && fi.FBP == 0x00100 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00100 && fi.TPSM == PSM_PSMCT16 // ntsc
 				|| fi.FBP == 0x02100 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x02100 && fi.TPSM == PSM_PSMCT16) // pal
 			{
-				// Texture shuffle. Not supported on D3D9.
 				// Can be used as a speed hack.
 				// Removes shadows.
 				skip = 1000;
