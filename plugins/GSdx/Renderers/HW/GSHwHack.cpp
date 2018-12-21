@@ -1459,31 +1459,6 @@ bool GSC_CastlevaniaGames(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Black(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		// Note: the first part of the hack must be fixed in openGL (texture shuffle). Remains the 2nd part (HasSharedBits)
-		if(fi.TME /*&& (fi.FBP == 0x00000 || fi.FBP == 0x008c0)*/ && fi.FPSM == PSM_PSMCT16 && (fi.TBP0 == 0x01a40 || fi.TBP0 == 0x01b80 || fi.TBP0 == 0x030c0) && fi.TPSM == PSM_PSMZ16 || (GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)))
-		{
-			skip = 5;
-		}
-	}
-	else
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x0a00 ) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4)
-		{
-			skip = 0;
-		}
-		else if(!fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_CrashNburn(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -2040,10 +2015,6 @@ void GSState::SetupCrcHack()
 
 		// Unknown status
 		lut[CRC::Grandia3] = GSC_Grandia3;
-
-		// At least a part of the CRC is fixed with texture shuffle.
-		// The status of post-processing effect is unknown
-		lut[CRC::Black] = GSC_Black;
 
 		// Channel Effect
 		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
