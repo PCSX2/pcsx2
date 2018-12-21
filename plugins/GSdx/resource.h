@@ -58,8 +58,9 @@
 #define IDC_ASPECTRATIO                 2077
 #define IDC_DITHERING                   2078
 #define IDC_WINDOWED                    2079
-#define IDC_RESOLUTION                  2080
-#define IDC_SCALE                       2081
+#define IDC_RESOLUTION_TEXT             2080
+#define IDC_RESOLUTION                  2081
+#define IDC_SCALE                       2082
 // Capture:
 #define IDD_CAPTURE                     2090
 #define IDC_FILENAME                    2091
