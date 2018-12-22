@@ -170,14 +170,17 @@ bool GSTexture11::Save(const std::string& fn, bool dds)
 
 	res->GetDesc(&desc);
 
-	GSPng::Format format;
+#ifdef ENABLE_OGL_DEBUG
+	GSPng::Format format = GSPng::RGB_A_PNG;
+#else
+	GSPng::Format format = GSPng::RGB_PNG;
+#endif
 	switch (desc.Format)
 	{
 	case DXGI_FORMAT_A8_UNORM:
 		format = GSPng::R8I_PNG;
 		break;
 	case DXGI_FORMAT_R8G8B8A8_UNORM:
-		format = dds ? GSPng::RGBA_PNG : (m_desc.BindFlags & D3D11_BIND_DEPTH_STENCIL ? GSPng::RGB_A_PNG : GSPng::RGB_PNG);
 		break;
 	default:
 		fprintf(stderr, "DXGI_FORMAT %d not saved to image\n", desc.Format);
