@@ -297,11 +297,12 @@ void GSRendererDX::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	m_ps_sel.spritehack = tex->m_spritehack_t;
 	m_ps_sel.point_sampler = !bilinear || shader_emulated_sampler;
 
+	GSVector4 TextureScale = GSVector4(0.0625f) / WH.xyxy();
+	vs_cb.Texture_Scale_Offset.x = TextureScale.x;
+	vs_cb.Texture_Scale_Offset.y = TextureScale.y;
+
 	if (PRIM->FST)
 	{
-		GSVector4 TextureScale = GSVector4(0.0625f) / WH.xyxy();
-		vs_cb.Texture_Scale_Offset.x = TextureScale.x;
-		vs_cb.Texture_Scale_Offset.y = TextureScale.y;
 		//Maybe better?
 		//vs_cb.TextureScale = GSVector4(1.0f / 16) * GSVector4(tex->m_texture->GetScale()).xyxy() / WH.zwzw();
 		m_ps_sel.fst = 1;
