@@ -405,19 +405,6 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 			bd.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 			bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 
-			// SRC* -> SRC1*
-			// Yes, this casting mess really is needed.  I want to go back to C
-
-			if(bd.RenderTarget[0].SrcBlend >= 3 && bd.RenderTarget[0].SrcBlend <= 6)
-			{
-				bd.RenderTarget[0].SrcBlend = (D3D11_BLEND)((int)bd.RenderTarget[0].SrcBlend + 13);
-			}
-
-			if(bd.RenderTarget[0].DestBlend >= 3 && bd.RenderTarget[0].DestBlend <= 6)
-			{
-				bd.RenderTarget[0].DestBlend = (D3D11_BLEND)((int)bd.RenderTarget[0].DestBlend + 13);
-			}
-
 			// Not very good but I don't wanna write another 81 row table
 
 			if(bsel.negative)
