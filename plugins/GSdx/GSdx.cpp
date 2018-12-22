@@ -388,7 +388,7 @@ void GSdxApp::Init()
 	m_default_configuration["osd_color_g"]                                = "128";
 	m_default_configuration["osd_color_b"]                                = "0";
 	m_default_configuration["osd_color_opacity"]                          = "100";
-	m_default_configuration["osd_fontsize"]                               = "28";
+	m_default_configuration["osd_fontsize"]                               = "25";
 	m_default_configuration["osd_log_enabled"]                            = "1";
 	m_default_configuration["osd_log_timeout"]                            = "4";
 	m_default_configuration["osd_monitor_enabled"]                        = "0";
