@@ -671,7 +671,7 @@ GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int
 
 		if(GSTexture* src2 = src->IsMSAA() ? Resolve(src) : src)
 		{
-			StretchRect(src2, sRect, rt, dRect, m_convert.ps[format == DXGI_FORMAT_R16_UINT ? 1 : 0], NULL);
+			StretchRect(src2, sRect, rt, dRect, m_convert.ps[ps_shader], NULL);
 
 			if(src2 != src) Recycle(src2);
 		}
