@@ -1153,7 +1153,6 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ItadakiStreet, CRC::RegionCount, &GSRendererHW::OI_ItadakiStreet));
 
 	if (!can_handle_depth) {
-		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SMTNocturne, CRC::RegionCount, &GSRendererHW::OI_SMTNocturne));
 		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::GodOfWar2, CRC::RegionCount, &GSRendererHW::OI_GodOfWar2));
 	}
 
@@ -1581,31 +1580,6 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 		{
 			m_dev->ClearDepth(ds);
 		}
-	}
-
-	return true;
-}
-
-bool GSRendererHW::OI_SMTNocturne(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBMSK = m_context->FRAME.FBMSK;
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FBW = m_context->FRAME.FBW;
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if(FBMSK == 16777215 && m_vertex.head != 2 && m_vertex.tail != 4 && m_vertex.next != 4)
-	{
-
-		GIFRegTEX0 TEX0;
-
-		TEX0.TBP0 = FBP;
-		TEX0.TBW = FBW;
-		TEX0.PSM = FPSM;
-		if (GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
-		{
-			m_dev->ClearDepth(tmp_ds->m_texture);
-		}
-		return false;
 	}
 
 	return true;
