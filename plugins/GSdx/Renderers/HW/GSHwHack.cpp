@@ -1151,47 +1151,6 @@ bool GSC_Okami(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Bully(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01180) && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01180) && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.FPSM == fi.TPSM)
-		{
-			return false; // allowed
-		}
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01180) && fi.FPSM == PSM_PSMCT16S && fi.TBP0 == 0x02300 && fi.TPSM == PSM_PSMZ16S)
-		{
-			skip = 6;
-		}
-	}
-	else
-	{
-		if(!fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01180) && fi.FPSM == PSM_PSMCT32)
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_BullyCC(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01180) && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01180) && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.FPSM == fi.TPSM)
-		{
-			return false; // allowed
-		}
-		if(!fi.TME && fi.FBP == 0x02800 && fi.FPSM == PSM_PSMCT24)
-		{
-			skip = 9;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_OnePieceGrandAdventure(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1984,8 +1943,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::TenchuWoH] = GSC_TenchuGames;
 
 		// Depth
-		lut[CRC::Bully] = GSC_Bully;
-		lut[CRC::BullyCC] = GSC_BullyCC;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::Okami] = GSC_Okami;
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;

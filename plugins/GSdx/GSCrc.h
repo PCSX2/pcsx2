@@ -37,8 +37,6 @@ public:
 		BlackHawkDown,
 		BleachBladeBattlers,
 		BrianLaraInternationalCricket,
-		Bully,
-		BullyCC,
 		BurnoutDominator,
 		BurnoutRevenge,
 		BurnoutTakedown,

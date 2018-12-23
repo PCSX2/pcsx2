@@ -113,9 +113,6 @@ CRC::Game CRC::m_games[] =
 	{0x71521863, SFEX3, US, 0},
 	{0x63642E9F, SFEX3, JP, 0},
 	{0xCA1F6E53, SFEX3, JP, 0}, // Taikenban Disc (Demo/Trial)
-	{0x28703748, Bully, US, 0},
-	{0x019CFA48, Bully, JP, 0},
-	{0xC78A495D, BullyCC, EU, 0},
 	{0xC19A374E, SoTC, US, 0},
 	{0x7D8F539A, SoTC, EU, 0},
 	{0x0F0C4A9C, SoTC, EU, 0},
