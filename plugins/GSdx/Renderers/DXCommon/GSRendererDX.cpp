@@ -116,10 +116,12 @@ void GSRendererDX::EmulateZbuffer()
 	else if (m_context->ZBUF.PSM == PSM_PSMZ24)
 	{
 		max_z = 0xFFFFFF;
+		m_vs_sel.bppz = 1;
 	}
 	else
 	{
 		max_z = 0xFFFF;
+		m_vs_sel.bppz = 2;
 	}
 
 	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
