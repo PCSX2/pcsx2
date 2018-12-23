@@ -198,7 +198,6 @@ public:
 	enum Flags
 	{
 		PointListPalette = 1,
-		ZWriteMustNotClear = 2,
 	};
 
 	struct Game

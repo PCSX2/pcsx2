@@ -1857,9 +1857,6 @@ void GSTextureCache::Target::Update()
 		// do the most likely thing a direct write would do, clear it
 		GL_INS("ERROR: Update DepthStencil dummy");
 
-		if((m_renderer->m_game.flags & CRC::ZWriteMustNotClear) == 0)
-			m_renderer->m_dev->ClearDepth(m_texture);
-
 		return;
 	} else if (m_type == DepthStencil && m_renderer->m_game.title == CRC::FFX2) {
 		GL_INS("ERROR: bad invalidation detected, depth buffer will be cleared");

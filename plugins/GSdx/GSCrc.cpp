@@ -278,21 +278,21 @@ CRC::Game CRC::m_games[] =
 	{0xC70FC973, ValkyrieProfile2, IT, 0},
 	{0x47B9B2FD, RadiataStories, US, 0},
 	{0xAC73005E, RadiataStories, JP, 0},
-	{0xE8FCF8EC, SMTNocturne, US, ZWriteMustNotClear}, // saves/reloads z buffer around shadow drawing, same issue with all the SMT games following
-	{0xF0A31EE3, SMTNocturne, EU, ZWriteMustNotClear}, // SMTNocturne (Lucifers Call in EU)
-	{0xAE0DE7B7, SMTNocturne, EU, ZWriteMustNotClear}, // SMTNocturne (Lucifers Call in EU)
-	{0xD60DA6D4, SMTNocturne, JP, ZWriteMustNotClear}, // SMTNocturne
-	{0x0E762E8D, SMTNocturne, JP, ZWriteMustNotClear}, // SMTNocturne Maniacs
-	{0x47BA9034, SMTNocturne, JP, ZWriteMustNotClear}, // SMTNocturne Maniacs Chronicle
-	{0xD3FFC263, SMTNocturne, KO, ZWriteMustNotClear},
-	{0xD7273511, SMTDDS1, US, ZWriteMustNotClear}, // SMT Digital Devil Saga
-	{0x1683A6BE, SMTDDS1, EU, ZWriteMustNotClear}, // SMT Digital Devil Saga
-	{0x44865CE1, SMTDDS1, JP, ZWriteMustNotClear}, // SMT Digital Devil Saga
-	{0xF2E397C0, SMTDDS1, KO, ZWriteMustNotClear}, // SMT Digital Devil Saga
-	{0x43202D1A, SMTDDS2, KO, ZWriteMustNotClear}, // SMT Digital Devil Saga 2
-	{0xD382C164, SMTDDS2, US, ZWriteMustNotClear}, // SMT Digital Devil Saga 2
-	{0xD568B684, SMTDDS2, EU, ZWriteMustNotClear}, // SMT Digital Devil Saga 2
-	{0xE47C1A9C, SMTDDS2, JP, ZWriteMustNotClear}, // SMT Digital Devil Saga 2
+	{0xE8FCF8EC, SMTNocturne, US, 0},
+	{0xF0A31EE3, SMTNocturne, EU, 0}, // SMTNocturne (Lucifers Call in EU)
+	{0xAE0DE7B7, SMTNocturne, EU, 0}, // SMTNocturne (Lucifers Call in EU)
+	{0xD60DA6D4, SMTNocturne, JP, 0}, // SMTNocturne
+	{0x0E762E8D, SMTNocturne, JP, 0}, // SMTNocturne Maniacs
+	{0x47BA9034, SMTNocturne, JP, 0}, // SMTNocturne Maniacs Chronicle
+	{0xD3FFC263, SMTNocturne, KO, 0},
+	{0xD7273511, SMTDDS1, US, 0}, // SMT Digital Devil Saga
+	{0x1683A6BE, SMTDDS1, EU, 0}, // SMT Digital Devil Saga
+	{0x44865CE1, SMTDDS1, JP, 0}, // SMT Digital Devil Saga
+	{0xF2E397C0, SMTDDS1, KO, 0}, // SMT Digital Devil Saga
+	{0x43202D1A, SMTDDS2, KO, 0}, // SMT Digital Devil Saga 2
+	{0xD382C164, SMTDDS2, US, 0}, // SMT Digital Devil Saga 2
+	{0xD568B684, SMTDDS2, EU, 0}, // SMT Digital Devil Saga 2
+	{0xE47C1A9C, SMTDDS2, JP, 0}, // SMT Digital Devil Saga 2
 	{0x0B8AB37B, RozenMaidenGebetGarden, JP, 0},
 	{0xA33AF77A, TenchuFS, US, 0},
 	{0x64C58FB4, TenchuFS, US, 0},
