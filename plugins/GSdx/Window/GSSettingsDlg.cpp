@@ -617,6 +617,7 @@ void GSHacksDlg::OnInit()
 	bool dx11 = renderer == GSRendererType::DX1011_HW;
 	bool ogl = renderer == GSRendererType::OGL_HW;
 	bool native = upscaling_multiplier == 1;
+	bool msaadisabled = true;
 
 	for(unsigned short j = 0; j < 5; j++) // TODO: Make the same kind of check for d3d11, eventually....
 	{
@@ -666,8 +667,8 @@ void GSHacksDlg::OnInit()
 	// Direct3D-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), dx11);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAACB), !ogl);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAACB), !msaadisabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !msaadisabled);
 
 	// OpenGL-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER), ogl);
