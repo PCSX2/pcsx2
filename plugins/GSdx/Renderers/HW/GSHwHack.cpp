@@ -64,14 +64,15 @@ bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && /*fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 &&*/ (fi.TBP0 == 0x01c00 || fi.TBP0 == 0x02000) && fi.TPSM == PSM_PSMZ16)
 		{
-			// Alpha channel (red line issue has been fixed).
-			// Sky texture (Depth) is properly rendered on OpenGL only for the NTSC version. The PAL version still has some issues (half screen bottom issue).
-			// Note: (PAL skip 5) = (NTSC skip 4) 
+			// Sky effect. Depth on texture shuffle.
+			// The hack also causes issues with the blur effects, breaking them.
+			// Note: (PAL skip 5) = (NTSC skip 4)
 			if(g_crc_region == CRC::EU)
 			{
+				// Keep the hack on partial level because we have a half screen issue on EU region.
 				skip = 5;
 			}
-			else if(Dx_only)
+			else if(Aggressive)
 			{
 				skip = 4;
 			}
@@ -90,26 +91,20 @@ bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 // Potentially partially dx only
 bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 {
-	// Note: As of 29 Nov 2018 the behaviour of these hacks has slightly changed due to increase in emulator accuracy I think. 
 	if(skip == 0)
 	{
-		if(Aggressive && fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0x00000)
+		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMZ16)
 		{
-			// Upscaling issue. Removes character outlines.
-			// Can be fixed with TC X,Y offsets.
-			skip = 28;
-		}
-		else if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMZ16)
-		{
-			// Sky texture (Depth) is properly rendered on OpenGL only for the NTSC version. The PAL version still has some issues (half screen bottom issue).
-			// Note: Depth Emulation should be disabled when running this hack. It may cause some ground glitches otherwise.
+			// Sky effect. Depth on texture shuffle.
 			// The hack also causes issues with the blur effects, breaking them.
+			// Note: Depth Emulation should be disabled when running this hack. It may cause some ground glitches otherwise.
 			// Note2: (PAL skip 5) = (NTSC skip 4) 
 			if(g_crc_region == CRC::EU)
 			{
+				// Keep the hack on partial level because we have a half screen issue on EU region.
 				skip = 5;
 			}
-			else if(Dx_only)
+			else if(Aggressive)
 			{
 				skip = 4;
 			}
