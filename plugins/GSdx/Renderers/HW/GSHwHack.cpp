@@ -57,6 +57,22 @@ bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_Bully(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if((Aggressive || !s_nativeres) && !fi.TME && (fi.FBP == 0x02300  || fi.FBP == 0x02800) && fi.FPSM == PSM_PSMCT24)
+		{
+			// ntsc 0x02300, pal 0x02800
+			// Don't enable hack on native res if crc is below aggressive.
+			// skip 9 for pal but maybe 6 is enough, dump looks fine.
+			skip = 6; // Upscaling blur/ghosting
+		}
+	}
+
+	return true;
+}
+
 // Potentially partially dx only
 bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 {
@@ -1859,18 +1875,14 @@ void GSState::SetupCrcHack()
 		lut[CRC::BurnoutTakedown] = GSC_BurnoutGames;
 		lut[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
 		lut[CRC::DevilMayCry3] = GSC_DevilMayCry3;
-		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
-		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
 		lut[CRC::Genji] = GSC_Genji;
 		lut[CRC::GodHand] = GSC_GodHand;
-		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
 		lut[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
 		lut[CRC::Kunoichi] = GSC_Kunoichi;
 		lut[CRC::Manhunt2] = GSC_Manhunt2;
 		lut[CRC::MidnightClub3] = GSC_MidnightClub3;
 		lut[CRC::NarutimateAccel] = GSC_NarutimateAccel;
 		lut[CRC::Naruto] = GSC_Naruto;
-		lut[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
 		lut[CRC::Onimusha3] = GSC_Onimusha3;
 		lut[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
 		lut[CRC::SacredBlaze] = GSC_SacredBlaze;
@@ -1887,7 +1899,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::TombRaiderAnniversary] = GSC_TombRaiderAnniversary;
 		lut[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
 		lut[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
-		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
 		lut[CRC::UrbanReign] = GSC_UrbanReign;
 		lut[CRC::WildArms4] = GSC_WildArmsGames;
 		lut[CRC::WildArms5] = GSC_WildArmsGames;
@@ -1913,6 +1924,14 @@ void GSState::SetupCrcHack()
 		lut[CRC::RadiataStories] = GSC_RadiataStories;
 		lut[CRC::StarOcean3] = GSC_StarOcean3;
 		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
+
+		// Upscaling hacks
+		lut[CRC::Bully] = GSC_Bully;
+		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
+		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
+		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
+		lut[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
+		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
 
 		// Only Aggressive
 		lut[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
