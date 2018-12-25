@@ -32,7 +32,7 @@
 #define PCAP_NETMASK_UNKNOWN    0xffffffff
 #endif
 
-mac_address virtual_mac = { 0x00,0x24,0x8D,0x63, 0x30, 0x31 }; // first three recognized by Xlink as Sony PS2
+mac_address virtual_mac = { 0x00,0x04,0x1F,0x82, 0x30, 0x31 }; // first three recognized by Xlink as Sony PS2
 mac_address broadcast_mac = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
 pcap_t *adhandle;
