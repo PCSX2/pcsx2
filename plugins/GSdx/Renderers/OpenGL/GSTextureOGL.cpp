@@ -464,7 +464,7 @@ void GSTextureOGL::GenerateMipmap()
 	}
 }
 
-bool GSTextureOGL::Save(const std::string& fn, bool dds)
+bool GSTextureOGL::Save(const std::string& fn)
 {
 	// Collect the texture data
 	uint32 pitch = 4 * m_size.x;

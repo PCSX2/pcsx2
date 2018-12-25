@@ -105,7 +105,7 @@ void GSTexture11::Unmap()
 	}
 }
 
-bool GSTexture11::Save(const std::string& fn, bool dds)
+bool GSTexture11::Save(const std::string& fn)
 {
 	CComPtr<ID3D11Texture2D> res;
 	D3D11_TEXTURE2D_DESC desc;

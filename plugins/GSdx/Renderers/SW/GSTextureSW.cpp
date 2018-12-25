@@ -85,10 +85,8 @@ void GSTextureSW::Unmap()
 	m_mapped.clear(std::memory_order_release);
 }
 
-bool GSTextureSW::Save(const std::string& fn, bool dds)
+bool GSTextureSW::Save(const std::string& fn)
 {
-	if(dds) return false; // not implemented
-
 #ifdef ENABLE_OGL_DEBUG
 	GSPng::Format fmt = GSPng::RGB_A_PNG;
 #else
