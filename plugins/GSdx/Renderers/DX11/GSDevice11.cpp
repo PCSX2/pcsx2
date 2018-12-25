@@ -1470,22 +1470,6 @@ void GSDevice11::CreateShader(std::vector<char> source, const char* fn, ID3DIncl
 	}
 }
 
-void GSDevice11::CreateShader(std::vector<char> source, const char* fn, ID3DInclude *include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11GeometryShader** gs, D3D11_SO_DECLARATION_ENTRY* layout, int count)
-{
-	HRESULT hr;
-
-	CComPtr<ID3DBlob> shader;
-
-	CompileShader(source, fn, include, entry, macro, &shader, m_shader.gs);
-
-	hr = m_dev->CreateGeometryShaderWithStreamOutput((void*)shader->GetBufferPointer(), shader->GetBufferSize(), layout, count, NULL, 0, D3D11_SO_NO_RASTERIZED_STREAM, NULL, gs);
-
-	if(FAILED(hr))
-	{
-		throw GSDXRecoverableError();
-	}
-}
-
 void GSDevice11::CreateShader(std::vector<char> source, const char* fn, ID3DInclude *include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11PixelShader** ps)
 {
 	HRESULT hr;
