@@ -22,8 +22,6 @@
 #pragma once
 
 #include "Renderers/HW/GSRendererHW.h"
-
-#include "Renderers/Common/GSRenderer.h"
 #include "GSTextureCacheOGL.h"
 #include "Renderers/HW/GSVertexHW.h"
 

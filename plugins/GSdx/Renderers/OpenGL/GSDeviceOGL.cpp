@@ -24,7 +24,6 @@
 #include "GSDeviceOGL.h"
 #include "GLState.h"
 #include "GSUtil.h"
-#include "Renderers/Common/GSOsdManager.h"
 #include <fstream>
 
 //#define ONLY_LINES

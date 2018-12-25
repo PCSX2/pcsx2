@@ -21,9 +21,7 @@
 
 #pragma once
 
-#include "Renderers/Common/GSRenderer.h"
 #include "Renderers/Common/GSTextureCache.h"
-#include "GSCrc.h"
 #include "Renderers/Common/GSFunctionMap.h"
 #include "GSState.h"
 
