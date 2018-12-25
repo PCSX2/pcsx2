@@ -43,7 +43,7 @@ public:
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0);
 	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0);
 	void Unmap();
-	bool Save(const std::string& fn, bool dds = false);
+	bool Save(const std::string& fn);
 	bool Equal(GSTexture11* tex);
 
 	operator ID3D11Texture2D*();

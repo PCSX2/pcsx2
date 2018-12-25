@@ -71,7 +71,7 @@ class GSTextureOGL final : public GSTexture
 		bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) final;
 		void Unmap() final;
 		void GenerateMipmap() final;
-		bool Save(const std::string& fn, bool dds = false) final;
+		bool Save(const std::string& fn) final;
 
 		bool IsBackbuffer() { return (m_type == GSTexture::Backbuffer); }
 		bool IsDss() { return (m_type == GSTexture::DepthStencil); }

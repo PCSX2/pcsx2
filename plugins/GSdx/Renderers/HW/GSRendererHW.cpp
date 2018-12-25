@@ -947,13 +947,13 @@ void GSRendererHW::Draw()
 				(int)context->CLAMP.MINU, (int)context->CLAMP.MAXU,
 				(int)context->CLAMP.MINV, (int)context->CLAMP.MAXV);
 
-			tex->m_texture->Save(m_dump_root+s, true);
+			tex->m_texture->Save(m_dump_root+s);
 
 			if(tex->m_palette)
 			{
 				s = format("%05d_f%lld_itpx_%05x_%s.dds", s_n, frame, context->TEX0.CBP, psm_str(context->TEX0.CPSM));
 
-				tex->m_palette->Save(m_dump_root+s, true);
+				tex->m_palette->Save(m_dump_root+s);
 			}
 		}
 
