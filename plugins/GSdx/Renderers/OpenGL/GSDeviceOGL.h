@@ -28,7 +28,6 @@
 #include "GSUniformBufferOGL.h"
 #include "GSShaderOGL.h"
 #include "GLState.h"
-#include "Renderers/Common/GSOsdManager.h"
 
 // A couple of flag to determine the blending behavior
 #define BLEND_A_MAX		(0x100) // Impossible blending uses coeff bigger than 1
