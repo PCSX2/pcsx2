@@ -336,10 +336,12 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		case GSRendererType::Null:
 			renderer_mode = "(Null renderer)";
 			break;
+#ifdef ENABLE_OPENCL
 		case GSRendererType::DX1011_OpenCL:
 		case GSRendererType::OGL_OpenCL:
 			renderer_mode = "(OpenCL)";
 			break;
+#endif
 		default:
 			renderer_mode = "(Hardware renderer)";
 			break;
@@ -402,15 +404,13 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				s_gs = new GSRendererNull();
 				s_renderer_type = "";
 				break;
+#ifdef ENABLE_OPENCL
 			case GSRendererType::DX1011_OpenCL:
 			case GSRendererType::OGL_OpenCL:
-#ifdef ENABLE_OPENCL
 				s_gs = new GSRendererCL();
 				s_renderer_type = " OCL";
-#else
-				printf("GSdx error: OpenCL is disabled\n");
-#endif
 				break;
+#endif
 			}
 			if (s_gs == NULL)
 				return -1;
