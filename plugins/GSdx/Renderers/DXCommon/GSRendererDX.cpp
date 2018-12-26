@@ -368,7 +368,13 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	if (DATE)
 	{
-		if (m_om_bsel.wa && !m_context->TEST.ATE)
+		if (m_texture_shuffle)
+		{
+			// Direct3D doesn't support DATE_GL45 on m_texture_shuffle so keep using the old method.
+			// Let's leave the check in to ensure the next code cases are hit properly.
+			// fprintf(stderr, "Slow DATE with alpha %d-%d not supported on texture shuffle\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
+		}
+		else if (m_om_bsel.wa && !m_context->TEST.ATE)
 		{
 			// Performance note: check alpha range with GetAlphaMinMax()
 			GetAlphaMinMax();
@@ -391,7 +397,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 				// m_drawlist.size() isn't supported on D3D so there will be more games hitting this code path,
 				// it should be fine with regular DATE since originally it ran with it anyway.
 				// Note: Potentially Alpha Stencil might emulate SLOW DATE to some degree. Perhaps some of the code can be implemented here.
-				// fprintf(stderr, "Slow DATE with alpha %d-%d is not supported\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				// fprintf(stderr, "Slow DATE with alpha %d-%d not supported\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
 			}
 			else if (!UserHacks_AlphaStencil)
 			{
