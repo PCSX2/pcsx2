@@ -1,13 +1,13 @@
 # Copyright (C) 2018 PCSX2 Team
 # This file is distributed under the same license as the PCSX2 package.
-# Swedish translation by pgert.
+# Swedish translation for pcsx2 (Main).
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 - 181012\n"
+"Project-Id-Version: PCSX2 - 181226\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2018-10-12 19:32+0200\n"
-"PO-Revision-Date: 2018-10-12 19:54+0200\n"
+"POT-Creation-Date: 2018-12-26 14:17+0100\n"
+"PO-Revision-Date: 2018-12-26 14:24+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
 "PCSX2-Svenskt-anv%C3%A4ndargr%C3%A4nssnitt-f%C3%B6r-PCSX2\n"
@@ -123,14 +123,14 @@ msgstr ""
 "MTGS-tråden har blivit osvarandes under inväntningen av att GS-"
 "InsticksProgrammet ska öppna."
 
-#: pcsx2/PluginManager.cpp:730
+#: pcsx2/PluginManager.cpp:708
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
 msgstr ""
 "Sparpunkten kan inte laddas, eftersom den verkar vara förstörd eller "
 "ofullständig."
 
-#: pcsx2/PluginManager.cpp:741
+#: pcsx2/PluginManager.cpp:719
 #, c-format
 msgid ""
 "%s plugin failed to open.  Your computer may have insufficient resources, or "
@@ -140,7 +140,7 @@ msgstr ""
 "Er dator kan ha otillräckliga erfordeliga resurser,\n"
 " eller oförenlig hårdvara/drivrutiner."
 
-#: pcsx2/PluginManager.cpp:748
+#: pcsx2/PluginManager.cpp:726
 #, c-format
 msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
@@ -149,17 +149,17 @@ msgstr ""
 "%s's InsticksProgram kunde inte köra igång.\n"
 "Ert system kan ha otillräckligt med minne eller andra erfordeliga resurser."
 
-#: pcsx2/PluginManager.cpp:976
+#: pcsx2/PluginManager.cpp:954
 #, c-format
 msgid "The configured %s plugin file was not found"
 msgstr "Den konfigurerade %s-InsticksProgramFilen hittades ej"
 
-#: pcsx2/PluginManager.cpp:980
+#: pcsx2/PluginManager.cpp:958
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
 msgstr "Det konfigurerade %s-InsticksProgrammet är inte en giltlig DLL"
 
-#: pcsx2/PluginManager.cpp:997
+#: pcsx2/PluginManager.cpp:975
 #, c-format
 msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
@@ -168,14 +168,14 @@ msgstr ""
 "Det konfigurerade %s-InsticksProgrammet är inte ett giltigt\n"
 " PCSX2-InsticksProgram, eller är för en äldre ostödjandes version av PCSX2."
 
-#: pcsx2/PluginManager.cpp:1031
+#: pcsx2/PluginManager.cpp:1009
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr ""
 "InsticksProgrammet rapporterar att Er hårdvara\n"
 " och/eller mjukvara/drivrutiner icke stödjes."
 
-#: pcsx2/PluginManager.cpp:1052
+#: pcsx2/PluginManager.cpp:1030
 msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
@@ -183,7 +183,7 @@ msgstr ""
 "Det konfigurerade InsticksProgrammet är inte ett giltigt\n"
 " PCSX2-InsticksProgram, eller är för en äldre ostödjandes version av PCSX2."
 
-#: pcsx2/PluginManager.cpp:1077
+#: pcsx2/PluginManager.cpp:1055
 #, c-format
 msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
@@ -192,15 +192,15 @@ msgstr ""
 "Det konfigurerade %s-InsticksProgrammet är inte ett giltligt\n"
 " PCSX2-InsticksProgram, eller är för en äldre ostödjandes version av PCSX2."
 
-#: pcsx2/PluginManager.cpp:1515
+#: pcsx2/PluginManager.cpp:1489
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Det egna MinneskortsInsticksProgrammet kunde inte köra igång."
 
-#: pcsx2/PluginManager.cpp:1908
+#: pcsx2/PluginManager.cpp:1882
 msgid "Unloaded Plugin"
 msgstr "Oladdat InsticksProgram"
 
-#: pcsx2/SaveState.cpp:341
+#: pcsx2/SaveState.cpp:338
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
 msgstr ""
 "Kan ej ladda Sparpunkten eftersom den är av en okänd eller ostödjandes "
@@ -226,7 +226,7 @@ msgstr "Visar spelutvecklarens loggningstext (IOP-processor)"
 
 #: pcsx2/SourceLog.cpp:116
 msgid "Shows DECI2 debugging logs (EE processor)"
-msgstr "Visar DECI2-felsökningsloggar (EE-processor)"
+msgstr "Visar DECI2 felsökningsloggar (EE-processor)"
 
 #: pcsx2/SourceLog.cpp:121
 msgid "Shows strings printed to the system output stream."
@@ -370,31 +370,31 @@ msgstr ""
 "Den tillfälliga filen skapades framgångsrikt,\n"
 "men kunde inte flyttas till sin slutliga viloplats."
 
-#: pcsx2/gui/AppConfig.cpp:959
+#: pcsx2/gui/AppConfig.cpp:969
 msgid "Safest"
 msgstr "Säkrast"
 
-#: pcsx2/gui/AppConfig.cpp:960
+#: pcsx2/gui/AppConfig.cpp:970
 msgid "Safe (faster)"
 msgstr "Säkert (snabbare)"
 
-#: pcsx2/gui/AppConfig.cpp:961
+#: pcsx2/gui/AppConfig.cpp:971
 msgid "Balanced"
 msgstr "Balanserat"
 
-#: pcsx2/gui/AppConfig.cpp:962
+#: pcsx2/gui/AppConfig.cpp:972
 msgid "Aggressive"
 msgstr "Aggressivt"
 
-#: pcsx2/gui/AppConfig.cpp:963
+#: pcsx2/gui/AppConfig.cpp:973
 msgid "Aggressive plus"
 msgstr "Aggressivt plus"
 
-#: pcsx2/gui/AppConfig.cpp:964
+#: pcsx2/gui/AppConfig.cpp:974
 msgid "Mostly Harmful"
 msgstr "Mest Skadligt"
 
-#: pcsx2/gui/AppConfig.cpp:1126 pcsx2/gui/AppConfig.cpp:1132
+#: pcsx2/gui/AppConfig.cpp:1136 pcsx2/gui/AppConfig.cpp:1142
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr ""
 "Misslyckades att överskriva befintlig inställningsfil; tillstånd nekades."
@@ -478,38 +478,45 @@ msgstr "använd den angivna komma/linje avgränsande listan av Spelfixar."
 msgid "disables fast booting"
 msgstr "spärrar Snabbkörning"
 
-#: pcsx2/gui/AppInit.cpp:247
+#: pcsx2/gui/AppInit.cpp:246
+msgid ""
+"passes the specified space-delimited string of launch arguments to the game"
+msgstr ""
+"skickar den angivna mellanslags-avgränsade strängen med lanseringsargument "
+"till spelet"
+
+#: pcsx2/gui/AppInit.cpp:248
 msgid "changes the configuration file path"
 msgstr "ändrar KonfigurationfilsVägen"
 
-#: pcsx2/gui/AppInit.cpp:248
+#: pcsx2/gui/AppInit.cpp:249
 msgid "specifies the PCSX2 configuration file to use"
 msgstr "anger PCSX2-KonfigurationsFilen att använda"
 
-#: pcsx2/gui/AppInit.cpp:249
+#: pcsx2/gui/AppInit.cpp:250
 #, c-format
 msgid "forces %s to start the First-time Wizard"
 msgstr "tvingar %s att köra KonfigurationsDialogen"
 
-#: pcsx2/gui/AppInit.cpp:250
+#: pcsx2/gui/AppInit.cpp:251
 msgid "enables portable mode operation (requires admin/root access)"
 msgstr "möjliggör flyttbart-läge procedur (kräver AdministarörsBehörighet)"
 
-#: pcsx2/gui/AppInit.cpp:252
+#: pcsx2/gui/AppInit.cpp:253
 msgid "update options to ease profiling (debug)"
 msgstr "uppdateringsmöjligheter för att underlätta profilering (felsökning)"
 
-#: pcsx2/gui/AppInit.cpp:256
+#: pcsx2/gui/AppInit.cpp:257
 #, c-format
 msgid "specify the file to use as the %s plugin"
 msgstr "ange filen att använda som %s's InsticksProgram"
 
-#: pcsx2/gui/AppInit.cpp:306
+#: pcsx2/gui/AppInit.cpp:307
 #, c-format
 msgid "Plugin Override Error - %s"
 msgstr "Insticks Åsidosättande Fel - %s"
 
-#: pcsx2/gui/AppInit.cpp:309
+#: pcsx2/gui/AppInit.cpp:310
 #, c-format
 msgid ""
 "%s Plugin Override Error!  The following file does not exist or is not a "
@@ -520,92 +527,92 @@ msgstr ""
 " eller är icke ett giltligt %s-InsticksProgram:\n"
 "\n"
 
-#: pcsx2/gui/AppInit.cpp:316
+#: pcsx2/gui/AppInit.cpp:317
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
 "Tryck ''Vidare'' för att använda det förvalskonfigurerade "
 "InsticksProgrammet, eller ''Avbryt'' för att stänga %s."
 
-#: pcsx2/gui/AppInit.cpp:536 pcsx2/gui/AppInit.cpp:548
+#: pcsx2/gui/AppInit.cpp:542 pcsx2/gui/AppInit.cpp:554
 #, c-format
 msgid "Press OK to close %s."
 msgstr "Tryck ''Vidare'' för att stänga %s."
 
-#: pcsx2/gui/AppInit.cpp:536
+#: pcsx2/gui/AppInit.cpp:542
 msgid "PCSX2 Error: Hardware Deficiency"
 msgstr "PCSX2 Fel: HårdvaruBristfällighet"
 
-#: pcsx2/gui/AppInit.cpp:549
+#: pcsx2/gui/AppInit.cpp:555
 #, c-format
 msgid "%s Critical Error"
 msgstr "%s Kritiskt Fel"
 
-#: pcsx2/gui/AppInit.cpp:719
+#: pcsx2/gui/AppInit.cpp:725
 msgid "OK"
 msgstr "Vidare"
 
-#: pcsx2/gui/AppInit.cpp:720
+#: pcsx2/gui/AppInit.cpp:726
 msgid "&OK"
 msgstr "Vidare"
 
-#: pcsx2/gui/AppInit.cpp:721
+#: pcsx2/gui/AppInit.cpp:727
 msgid "Cancel"
 msgstr "Avbryt"
 
-#: pcsx2/gui/AppInit.cpp:722
+#: pcsx2/gui/AppInit.cpp:728
 msgid "&Cancel"
 msgstr "Avbryt"
 
-#: pcsx2/gui/AppInit.cpp:723
+#: pcsx2/gui/AppInit.cpp:729
 msgid "&Apply"
 msgstr "Tillämpa"
 
-#: pcsx2/gui/AppInit.cpp:724
+#: pcsx2/gui/AppInit.cpp:730
 msgid "&Next >"
 msgstr "Nästa >"
 
-#: pcsx2/gui/AppInit.cpp:725
+#: pcsx2/gui/AppInit.cpp:731
 msgid "< &Back"
 msgstr "< Tillbaka"
 
-#: pcsx2/gui/AppInit.cpp:726
+#: pcsx2/gui/AppInit.cpp:732
 msgid "&Back"
 msgstr "Tillbaka"
 
-#: pcsx2/gui/AppInit.cpp:727
+#: pcsx2/gui/AppInit.cpp:733
 msgid "&Finish"
 msgstr "Slutför"
 
-#: pcsx2/gui/AppInit.cpp:728
+#: pcsx2/gui/AppInit.cpp:734
 msgid "&Yes"
 msgstr "Ja"
 
-#: pcsx2/gui/AppInit.cpp:729
+#: pcsx2/gui/AppInit.cpp:735
 msgid "&No"
 msgstr "Nej"
 
-#: pcsx2/gui/AppInit.cpp:730
+#: pcsx2/gui/AppInit.cpp:736
 msgid "Browse"
 msgstr "Bläddra"
 
-#: pcsx2/gui/AppInit.cpp:731
+#: pcsx2/gui/AppInit.cpp:737
 msgid "&Save"
 msgstr "Spara"
 
-#: pcsx2/gui/AppInit.cpp:732
+#: pcsx2/gui/AppInit.cpp:738
 msgid "Save &As..."
 msgstr "Spara som ..."
 
-#: pcsx2/gui/AppInit.cpp:733
+#: pcsx2/gui/AppInit.cpp:739
 msgid "&Help"
 msgstr "Hjälp"
 
-#: pcsx2/gui/AppInit.cpp:734
+#: pcsx2/gui/AppInit.cpp:740
 msgid "&Home"
 msgstr "Hem"
 
-#: pcsx2/gui/AppInit.cpp:736
+#: pcsx2/gui/AppInit.cpp:742
 msgid "Show about dialog"
 msgstr "InfoDialog om PCSX2"
 
@@ -662,7 +669,7 @@ msgstr "Fråga alltid vid Uppstart"
 msgid ""
 "Manually select an ISO upon boot ignoring the selection from recent ISO list."
 msgstr ""
-"Välg egenhändigt en ISO vid Uppstart, vilket åsidosätter valet i ISO-listan."
+"Välj egenhändigt en ISO vid Uppstart, vilket åsidosätter valet i ISO-listan."
 
 #: pcsx2/gui/AppRes.cpp:48
 msgid "Browse..."
@@ -746,7 +753,7 @@ msgstr "Det är fint och läsbart."
 
 #: pcsx2/gui/ConsoleLogger.cpp:398
 msgid "&Huge"
-msgstr "Enorm"
+msgstr "Väldig"
 
 #: pcsx2/gui/ConsoleLogger.cpp:398
 msgid "In case you have a really high res display."
@@ -1059,7 +1066,7 @@ msgid ""
 "This is the standard Sony-provisioned size, and is supported by all games "
 "and BIOS versions."
 msgstr ""
-"Detta är den (av Sony) standard-stadgade storleken\n"
+"Detta är den (av Sony) stadgade storleken,\n"
 " och stödjes av alla spel och BIOS versioner."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:240
@@ -1143,7 +1150,7 @@ msgid ""
 "This is the standard Sony-provisioned size PSX memory card, only compatible "
 "with PSX games."
 msgstr ""
-"Detta är den (av Sony) standard-stadgade storleken\n"
+"Detta är den (av Sony) stadgade storleken\n"
 " för ett PSX-Minneskort, och stödjes bara av PSX-spel."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:260
@@ -1385,7 +1392,7 @@ msgstr "Ni har släppt följande ISO-avbild i %s:"
 msgid "Slot %d"
 msgstr "Spalt %d"
 
-#: pcsx2/gui/MainFrame.cpp:48 pcsx2/gui/Saveslots.cpp:136
+#: pcsx2/gui/MainFrame.cpp:48 pcsx2/gui/Saveslots.cpp:139
 msgid "Backup"
 msgstr "Kopiera Spalt"
 
@@ -1459,6 +1466,10 @@ msgstr "Möjliggör Fuskiskar"
 #: pcsx2/gui/MainFrame.cpp:437
 msgid "Enable &Widescreen Patches"
 msgstr "Möjliggör Bredbildsfixar"
+
+#: pcsx2/gui/MainFrame.cpp:438
+msgid "Enabling Widescreen Patches may occasionally cause issues."
+msgstr "Att möjliggöra Bredbildsfixar kan måhända vålla problem."
 
 #: pcsx2/gui/MainFrame.cpp:441
 msgid "Enable &Host Filesystem"
@@ -1677,7 +1688,7 @@ msgstr "InsticksInställningar ..."
 #: pcsx2/gui/MainFrame.cpp:761
 #, c-format
 msgid "Opens the %s plugin's advanced settings dialog."
-msgstr "Öppnar %s-InsticksProgrammets avancerade InställningsDialog."
+msgstr "Öppnar %s-InsticksProgrammets fördjupande InställningsDialog."
 
 #: pcsx2/gui/MainMenuClicks.cpp:109
 msgid "Reset all settings?"
@@ -1884,7 +1895,7 @@ msgstr "Normalt"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:86
 msgid "EE/FPU Advanced Recompiler Options"
-msgstr "EE/FPU Avancerade OmkompilerarFunktioner"
+msgstr "EE/FPU Fördjupande OmkompilerarVal"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:88 pcsx2/gui/Panels/CpuPanel.cpp:103
 msgid "Extra + Preserve Sign"
@@ -1896,7 +1907,7 @@ msgstr "Fullt"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:100
 msgid "VU0 / VU1 Advanced Recompiler Options"
-msgstr "VU0/VU1 Avancerade OmkompilerarFunktioner"
+msgstr "VU0/VU1 Fördjupande OmkompilerarVal"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:102
 msgid "Extra"
@@ -1942,7 +1953,7 @@ msgid "Interpreter only; provided for diagnostic"
 msgstr "Endast tolkare; tillhandahålls för Diagnostiksyften"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:226
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:128 pcsx2/gui/Panels/VideoPanel.cpp:294
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:134 pcsx2/gui/Panels/VideoPanel.cpp:294
 msgid "Restore Defaults"
 msgstr "Återställ Förval"
 
@@ -2006,67 +2017,71 @@ msgstr "Det finns ingen konfigurerad mapp. Ska %s försöka skapa en?"
 msgid "Fit to Window/Screen"
 msgstr "Anpassa till Fönster/Skärm"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:31
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:31 pcsx2/gui/Panels/GSWindowPanel.cpp:38
 msgid "Standard (4:3)"
-msgstr "Standard (4:3)"
+msgstr "Vanlig (4:3)"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:32
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:32 pcsx2/gui/Panels/GSWindowPanel.cpp:39
 msgid "Widescreen (16:9)"
 msgstr "Bredbild (16:9)"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:38
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:37
+msgid "Off (Default)"
+msgstr "Av (förval)"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:45
 msgid "Disabled"
 msgstr "Förhindrad"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:39
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:46
 msgid "Standard"
-msgstr "Standard"
+msgstr "Vanlig"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:40
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 msgid "Adaptive"
 msgstr "Anpassande"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:57
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:67
 msgid "Disable window resize border"
 msgstr "Förhindra FönsteråtergångsModul"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:68
 msgid "Always hide mouse cursor"
 msgstr "Dölj alltid Muspekaren"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:59
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:69
 msgid "Hide window when paused"
 msgstr "Dölj fönster vid Paus"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:60
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:70
 msgid "Default to fullscreen mode on open"
 msgstr "Använd Helskärmsläge vid Körstart"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:61
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:71
 msgid "Double-click toggles fullscreen mode"
 msgstr "Dubbelklick växlar Skärmläge"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:62
-msgid "Switch to 4:3 aspect ratio when an FMV plays"
-msgstr "Byt till 4:3-bildkvot då FMV'er spelas"
-
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:96
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:104
 msgid "Aspect Ratio:"
 msgstr "Bildkvot (''F6''):"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:98
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:106
+msgid "FMV Aspect Ratio Override:"
+msgstr "FMV BildkvotsÅsidosättning:"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:108
 msgid "Custom Window Size:"
 msgstr "Skräddad Fönsterstorlek:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:101
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:111
 msgid "Zoom:"
 msgstr "Zoom:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:107
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:117
 msgid "Wait for Vsync on refresh:"
 msgstr "Invänta Vsync vid Aktualisering:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:185
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:194
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
@@ -2089,7 +2104,7 @@ msgid ""
 " * Radiata Stories\n"
 " * Valkyrie Profile 2"
 msgstr ""
-"Spel som behöver denna fix för att köras:\n"
+"Spel som behöver denne fix för att köras:\n"
 " * ''Star Ocean 3''\n"
 " * ''Radiata Stories''\n"
 " * ''Valkyrie Profile 2''"
@@ -2575,11 +2590,11 @@ msgstr ""
 msgid "Completing tasks..."
 msgstr "Fullföljer uppgifter ..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:116
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:122
 msgid "Enable speedhacks"
 msgstr "Möjliggör UppsnabbningsTrimningar"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:120
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:126
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr ""
@@ -2587,34 +2602,34 @@ msgstr ""
 " om att alla UppsnabbningsTrimningar är helt\n"
 " spärrade, är att ha denna ruta Avmarkerad."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:137
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:143
 msgid "EE Cyclerate [Not Recommended]"
 msgstr "EE Cykelhastighet [Avrådes]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:150
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
 msgid "EE Cycle Skipping [Not Recommended]"
 msgstr "EE Cykelöverhoppning [Avrådes]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:165
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "microVU Hacks"
 msgstr "microVU trimningar"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
 msgid "mVU Flag Hack"
 msgstr "mVU Flagg trim"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:168
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
 "Bra uppsnabbning och hög förenlighet;\n"
 " kan vålla dålig grafik ... [Anrådes]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "MTVU (Multi-Trådad microVU1)"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
@@ -2622,38 +2637,38 @@ msgstr ""
 "Bra uppsnabbning och hög förenlighet; kan vålla\n"
 " att det strular sig ... [Anrådes för 3+ kärnor]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid "Other Hacks"
 msgstr "Andra trimningar"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:184
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
 msgid "Enable INTC Spin Detection"
 msgstr "Möjliggör INTC RotationsUpptäckning"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:185
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:191
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
 msgstr ""
-"Enorm uppsnabbning för vissa spel,\n"
+"Väldig uppsnabbning för vissa spel,\n"
 " och nästan utan FörenlighetsBieffekter. [Anrådes]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:187
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
 msgid "Enable Wait Loop Detection"
 msgstr "Möjliggör VäntgångsUpptäckning"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:194
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "Måttlig uppsnabbning för vissa spel,\n"
 " dock utan kända bieffekter. [Anrådes]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
 msgid "Enable fast CDVD"
 msgstr "Möjliggör snabb CDVD"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:191
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:197
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr ""
 "Snabb disktillgång med färre antal\n"
@@ -2754,22 +2769,22 @@ msgstr "BildhastighetsReglering"
 msgid "Clear ISO list"
 msgstr "Rensa ISO-listan"
 
-#: pcsx2/gui/Saveslots.h:76
+#: pcsx2/gui/Saveslots.h:96
 #, c-format
 msgid "Slot %d - Empty"
 msgstr "Spalt %d - Tom"
 
-#: pcsx2/gui/Saveslots.h:78
+#: pcsx2/gui/Saveslots.h:98
 #, c-format
 msgid "Slot %d - %s %s"
 msgstr "Spalt %d - %s %s"
 
-#: pcsx2/gui/Saveslots.h:80
+#: pcsx2/gui/Saveslots.h:100
 #, c-format
 msgid "Slot %d - Unknown Time"
 msgstr "Spalt %d - Okänd Tid"
 
-#: pcsx2/gui/Saveslots.h:93
+#: pcsx2/gui/Saveslots.h:113
 #, c-format
 msgid "Write time is %s %s."
 msgstr "Skrivtiden är %s %s."
@@ -2839,6 +2854,9 @@ msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
 msgstr ""
 "%s-utökningar ej funna. microVU kräver en värd-CPU med SSE2-utökningar."
+
+#~ msgid "Switch to 4:3 aspect ratio when an FMV plays"
+#~ msgstr "Byt till 4:3-Bildkvot då FMV'er spelas"
 
 #~ msgid "The disk has a file on it dated %s %s."
 #~ msgstr "Disken har en fil daterad %s %s."

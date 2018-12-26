@@ -1,15 +1,16 @@
 # Copyright (C) 2018 PCSX2 Dev Team
 # This file is distributed under the same license as the pcsx2 package.
-# Danish translation for pcsx2 (Iconized).
+# Danish translation for pcsx2 (Main).
 # Jakob5566 <jakob5566@gmail.com>, 2017.
+# pgert <http://forums.pcsx2.net/User-pgert>, 2018.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.5.0 - 181012\n"
+"Project-Id-Version: PCSX2 1.5.0 - 181226\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2018-10-12 19:08+0200\n"
-"PO-Revision-Date: 2018-10-12 19:52+0200\n"
-"Last-Translator: Jakob5566 <jakob5566@gmail.com>\n"
+"POT-Creation-Date: 2018-12-26 14:16+0100\n"
+"PO-Revision-Date: 2018-12-26 14:23+0100\n"
+"Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: \n"
 "Language: da_DK\n"
 "MIME-Version: 1.0\n"
@@ -125,14 +126,14 @@ msgstr ""
 "MTGS-procestråden er gået i stå, da den skulle vente på, at GS-plugin’et "
 "åbnede."
 
-#: pcsx2/PluginManager.cpp:730
+#: pcsx2/PluginManager.cpp:708
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
 msgstr ""
 "Den gemte spiltilstand kunne ikke indlæses, da den er beskadiget eller "
 "ufuldstændig."
 
-#: pcsx2/PluginManager.cpp:741
+#: pcsx2/PluginManager.cpp:719
 #, c-format
 msgid ""
 "%s plugin failed to open.  Your computer may have insufficient resources, or "
@@ -141,7 +142,7 @@ msgstr ""
 "%s plugin kunne ikke åbnes. Din computer kan have utilstrækkelige "
 "ressourcer, eller inkompatibelt hardware/drivere."
 
-#: pcsx2/PluginManager.cpp:748
+#: pcsx2/PluginManager.cpp:726
 #, c-format
 msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
@@ -150,17 +151,17 @@ msgstr ""
 "%s plugin kunne ikke initialisere. Dit system har utilstrækkelig minde eller "
 "mangler ressourcer."
 
-#: pcsx2/PluginManager.cpp:976
+#: pcsx2/PluginManager.cpp:954
 #, c-format
 msgid "The configured %s plugin file was not found"
 msgstr "Den konfigurerede %s plugin-fil blev ikke fundet"
 
-#: pcsx2/PluginManager.cpp:980
+#: pcsx2/PluginManager.cpp:958
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
 msgstr "Den konfigurerede %s plugin-fil er ikke et gyldigt dynamisk bibliotek"
 
-#: pcsx2/PluginManager.cpp:997
+#: pcsx2/PluginManager.cpp:975
 #, c-format
 msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
@@ -169,14 +170,14 @@ msgstr ""
 "Det konfigurerede %s plugin er ikke et PCSX2 plugin, eller det tilhører en "
 "version af PCSX2, der ikke længere er understøttet."
 
-#: pcsx2/PluginManager.cpp:1031
+#: pcsx2/PluginManager.cpp:1009
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr ""
 "Plugin’et fortæller, at dit hardware eller software/drivere ikke er "
 "understøttet."
 
-#: pcsx2/PluginManager.cpp:1052
+#: pcsx2/PluginManager.cpp:1030
 msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
@@ -184,7 +185,7 @@ msgstr ""
 "Det konfigurerede plugin er ikke et PCSX2 plugin, eller det tilhører en "
 "version af PCSX2, der ikke længere er understøttet."
 
-#: pcsx2/PluginManager.cpp:1077
+#: pcsx2/PluginManager.cpp:1055
 #, c-format
 msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
@@ -193,15 +194,15 @@ msgstr ""
 "Det konfigurerede %s plugin er ikke et PCSX2 plugin, eller det tilhører en "
 "version af PCSX2, der ikke længere er understøttet."
 
-#: pcsx2/PluginManager.cpp:1515
+#: pcsx2/PluginManager.cpp:1489
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Det interne MindesKort Plugin kunne ikke indlæses."
 
-#: pcsx2/PluginManager.cpp:1908
+#: pcsx2/PluginManager.cpp:1882
 msgid "Unloaded Plugin"
 msgstr "Plugin ikke indlæst"
 
-#: pcsx2/SaveState.cpp:341
+#: pcsx2/SaveState.cpp:338
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
 msgstr ""
 "Kan ikke indlæse den gemte spiltilstand. Versionen er ukendt eller "
@@ -377,31 +378,31 @@ msgstr ""
 "Spiltilstanden blev ikke gemt ordentligt. Den midlertidige fil blev oprettet "
 "med succes, men kunne ikke flyttes til dens endelige placering."
 
-#: pcsx2/gui/AppConfig.cpp:959
+#: pcsx2/gui/AppConfig.cpp:969
 msgid "Safest"
 msgstr "Sikrest"
 
-#: pcsx2/gui/AppConfig.cpp:960
+#: pcsx2/gui/AppConfig.cpp:970
 msgid "Safe (faster)"
 msgstr "Sikrere (hurtigere)"
 
-#: pcsx2/gui/AppConfig.cpp:961
+#: pcsx2/gui/AppConfig.cpp:971
 msgid "Balanced"
 msgstr "Balanceret"
 
-#: pcsx2/gui/AppConfig.cpp:962
+#: pcsx2/gui/AppConfig.cpp:972
 msgid "Aggressive"
 msgstr "Aggressivt"
 
-#: pcsx2/gui/AppConfig.cpp:963
+#: pcsx2/gui/AppConfig.cpp:973
 msgid "Aggressive plus"
 msgstr "Ekstra aggressivt"
 
-#: pcsx2/gui/AppConfig.cpp:964
+#: pcsx2/gui/AppConfig.cpp:974
 msgid "Mostly Harmful"
 msgstr "Mest skadelig"
 
-#: pcsx2/gui/AppConfig.cpp:1126 pcsx2/gui/AppConfig.cpp:1132
+#: pcsx2/gui/AppConfig.cpp:1136 pcsx2/gui/AppConfig.cpp:1142
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr ""
 "Kunne overskrive den eksisterende indstillingsfil: adgangen blev nægtet."
@@ -483,38 +484,45 @@ msgstr "bruger den givne komma- eller pileseparerede liste af spilløsninger."
 msgid "disables fast booting"
 msgstr "slår hurtig bootning fra"
 
-#: pcsx2/gui/AppInit.cpp:247
+#: pcsx2/gui/AppInit.cpp:246
+msgid ""
+"passes the specified space-delimited string of launch arguments to the game"
+msgstr ""
+"sender den angivne mellemslags-afgrænsede strengen med lanceringsargumenter "
+"til spillet"
+
+#: pcsx2/gui/AppInit.cpp:248
 msgid "changes the configuration file path"
 msgstr "ændrer konfigurationens filplacering"
 
-#: pcsx2/gui/AppInit.cpp:248
+#: pcsx2/gui/AppInit.cpp:249
 msgid "specifies the PCSX2 configuration file to use"
 msgstr "bestemmer hvilken PCSX2-konfigurationsfil, der skal bruges"
 
-#: pcsx2/gui/AppInit.cpp:249
+#: pcsx2/gui/AppInit.cpp:250
 #, c-format
 msgid "forces %s to start the First-time Wizard"
 msgstr "tvinger %s til at starte installationsguiden"
 
-#: pcsx2/gui/AppInit.cpp:250
+#: pcsx2/gui/AppInit.cpp:251
 msgid "enables portable mode operation (requires admin/root access)"
 msgstr "aktiverer transportabel modus (kræver admin/root adgang)"
 
-#: pcsx2/gui/AppInit.cpp:252
+#: pcsx2/gui/AppInit.cpp:253
 msgid "update options to ease profiling (debug)"
 msgstr "opdater muligheder for at lette profilering (fejlfinding)"
 
-#: pcsx2/gui/AppInit.cpp:256
+#: pcsx2/gui/AppInit.cpp:257
 #, c-format
 msgid "specify the file to use as the %s plugin"
 msgstr "angiv den fil, der skal bruges som %s plugin"
 
-#: pcsx2/gui/AppInit.cpp:306
+#: pcsx2/gui/AppInit.cpp:307
 #, c-format
 msgid "Plugin Override Error - %s"
 msgstr "Kunne ikke tilsidesætte plugin - %s"
 
-#: pcsx2/gui/AppInit.cpp:309
+#: pcsx2/gui/AppInit.cpp:310
 #, c-format
 msgid ""
 "%s Plugin Override Error!  The following file does not exist or is not a "
@@ -525,92 +533,92 @@ msgstr ""
 "ikke et gyldigt %s plugin:\n"
 "\n"
 
-#: pcsx2/gui/AppInit.cpp:316
+#: pcsx2/gui/AppInit.cpp:317
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
 "Tryk OK for at bruge det standardkonfigurerede plugin eller på Annullér for "
 "at lukke %s."
 
-#: pcsx2/gui/AppInit.cpp:536 pcsx2/gui/AppInit.cpp:548
+#: pcsx2/gui/AppInit.cpp:542 pcsx2/gui/AppInit.cpp:554
 #, c-format
 msgid "Press OK to close %s."
 msgstr "Tryk OK for at lukke %s."
 
-#: pcsx2/gui/AppInit.cpp:536
+#: pcsx2/gui/AppInit.cpp:542
 msgid "PCSX2 Error: Hardware Deficiency"
 msgstr "PCSX2-Fejl: Hardware ikke tilstrækkelig"
 
-#: pcsx2/gui/AppInit.cpp:549
+#: pcsx2/gui/AppInit.cpp:555
 #, c-format
 msgid "%s Critical Error"
 msgstr "%s Kritisk Fejl"
 
-#: pcsx2/gui/AppInit.cpp:719
+#: pcsx2/gui/AppInit.cpp:725
 msgid "OK"
 msgstr "OK"
 
-#: pcsx2/gui/AppInit.cpp:720
+#: pcsx2/gui/AppInit.cpp:726
 msgid "&OK"
 msgstr "OK"
 
-#: pcsx2/gui/AppInit.cpp:721
+#: pcsx2/gui/AppInit.cpp:727
 msgid "Cancel"
 msgstr "Annullér"
 
-#: pcsx2/gui/AppInit.cpp:722
+#: pcsx2/gui/AppInit.cpp:728
 msgid "&Cancel"
 msgstr "Annullér"
 
-#: pcsx2/gui/AppInit.cpp:723
+#: pcsx2/gui/AppInit.cpp:729
 msgid "&Apply"
 msgstr "Anvend"
 
-#: pcsx2/gui/AppInit.cpp:724
+#: pcsx2/gui/AppInit.cpp:730
 msgid "&Next >"
 msgstr "Næste >"
 
-#: pcsx2/gui/AppInit.cpp:725
+#: pcsx2/gui/AppInit.cpp:731
 msgid "< &Back"
 msgstr "< Tilbage"
 
-#: pcsx2/gui/AppInit.cpp:726
+#: pcsx2/gui/AppInit.cpp:732
 msgid "&Back"
 msgstr "Tilbage"
 
-#: pcsx2/gui/AppInit.cpp:727
+#: pcsx2/gui/AppInit.cpp:733
 msgid "&Finish"
 msgstr "Færdig"
 
-#: pcsx2/gui/AppInit.cpp:728
+#: pcsx2/gui/AppInit.cpp:734
 msgid "&Yes"
 msgstr "Ja"
 
-#: pcsx2/gui/AppInit.cpp:729
+#: pcsx2/gui/AppInit.cpp:735
 msgid "&No"
 msgstr "Nej"
 
-#: pcsx2/gui/AppInit.cpp:730
+#: pcsx2/gui/AppInit.cpp:736
 msgid "Browse"
 msgstr "Søg"
 
-#: pcsx2/gui/AppInit.cpp:731
+#: pcsx2/gui/AppInit.cpp:737
 msgid "&Save"
 msgstr "Gem"
 
-#: pcsx2/gui/AppInit.cpp:732
+#: pcsx2/gui/AppInit.cpp:738
 msgid "Save &As..."
-msgstr "Gem som…"
+msgstr "Gem som …"
 
-#: pcsx2/gui/AppInit.cpp:733
+#: pcsx2/gui/AppInit.cpp:739
 msgid "&Help"
 msgstr "Hjælp"
 
-#: pcsx2/gui/AppInit.cpp:734
+#: pcsx2/gui/AppInit.cpp:740
 msgid "&Home"
 msgstr "Hjem"
 
-#: pcsx2/gui/AppInit.cpp:736
+#: pcsx2/gui/AppInit.cpp:742
 msgid "Show about dialog"
 msgstr "Om"
 
@@ -674,7 +682,7 @@ msgstr ""
 
 #: pcsx2/gui/AppRes.cpp:48
 msgid "Browse..."
-msgstr "Søg…"
+msgstr "Søg …"
 
 #: pcsx2/gui/AppRes.cpp:48
 msgid "Browse for an ISO that is not in your recent history."
@@ -779,7 +787,7 @@ msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "&Save..."
-msgstr "Gem..."
+msgstr "Gem ..."
 
 #: pcsx2/gui/ConsoleLogger.cpp:410
 msgid "Save log contents to file"
@@ -1394,7 +1402,7 @@ msgstr "Du har indlæst følgende ISO-billede i %s:"
 msgid "Slot %d"
 msgstr "Gemmeplads %d"
 
-#: pcsx2/gui/MainFrame.cpp:48 pcsx2/gui/Saveslots.cpp:136
+#: pcsx2/gui/MainFrame.cpp:48 pcsx2/gui/Saveslots.cpp:139
 msgid "Backup"
 msgstr "Backup"
 
@@ -1433,7 +1441,7 @@ msgstr "Initialiserer…"
 
 #: pcsx2/gui/MainFrame.cpp:413
 msgid "&Run ELF..."
-msgstr "Kør ELF…"
+msgstr "Kør ELF …"
 
 #: pcsx2/gui/MainFrame.cpp:414
 msgid "For running raw PS2 binaries directly"
@@ -1467,6 +1475,10 @@ msgstr "Aktivér Snyder"
 #: pcsx2/gui/MainFrame.cpp:437
 msgid "Enable &Widescreen Patches"
 msgstr "Aktivér bredskærmsløsninger"
+
+#: pcsx2/gui/MainFrame.cpp:438
+msgid "Enabling Widescreen Patches may occasionally cause issues."
+msgstr "At muliggøre bredskærmsløsninger kan måske volde problemer."
 
 #: pcsx2/gui/MainFrame.cpp:441
 msgid "Enable &Host Filesystem"
@@ -1567,7 +1579,7 @@ msgstr "Multitap 2"
 
 #: pcsx2/gui/MainFrame.cpp:493
 msgid "C&lear all settings..."
-msgstr "Slet alle indstillinger…"
+msgstr "Slet alle indstillinger …"
 
 #: pcsx2/gui/MainFrame.cpp:494
 #, c-format
@@ -1576,11 +1588,11 @@ msgstr "Sletter alle %s indstillinger og kører installationsguiden igen."
 
 #: pcsx2/gui/MainFrame.cpp:509
 msgid "&About..."
-msgstr "Om…"
+msgstr "Om …"
 
 #: pcsx2/gui/MainFrame.cpp:514
 msgid "&Open Debug Window..."
-msgstr "Åbn debug-vinduet…"
+msgstr "Åbn debug-vinduet …"
 
 #: pcsx2/gui/MainFrame.cpp:517
 msgid "&Logging..."
@@ -1624,7 +1636,7 @@ msgstr "Brug hutig-start for at springe PS2 menuer, osv. over"
 
 #: pcsx2/gui/MainFrame.cpp:631
 msgid "Boot ISO (&fast)"
-msgstr "Boot ISO (hurtig)"
+msgstr "Kør ISO (hurtigt)"
 
 #: pcsx2/gui/MainFrame.cpp:634
 msgid "Boot CDVD (&fast)"
@@ -1632,7 +1644,7 @@ msgstr "Boot CDVD (hurtig)"
 
 #: pcsx2/gui/MainFrame.cpp:657
 msgid "Boo&t ISO (full)"
-msgstr "Boot ISO (fuld)"
+msgstr "Kør ISO (fuldt)"
 
 #: pcsx2/gui/MainFrame.cpp:658
 msgid "Boot the VM using the current ISO source media"
@@ -1677,7 +1689,7 @@ msgstr "Vindueindstillinger…"
 #: pcsx2/gui/MainFrame.cpp:753
 msgid "Modify window and appearance options, including aspect ratio."
 msgstr ""
-"Modificér indstillinger for vindue og udseende, det inkluderer billedformat."
+"Modificér indstillinger for vindue og udseende, det inkluderer Billedformat."
 
 #: pcsx2/gui/MainFrame.cpp:760
 msgid "&Plugin Settings..."
@@ -1950,7 +1962,7 @@ msgid "Interpreter only; provided for diagnostic"
 msgstr "Kun til tolkningsprogram; bruges til at diagnosticere"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:226
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:128 pcsx2/gui/Panels/VideoPanel.cpp:294
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:134 pcsx2/gui/Panels/VideoPanel.cpp:294
 msgid "Restore Defaults"
 msgstr "Gendan standardindstillinger"
 
@@ -2015,67 +2027,71 @@ msgstr ""
 msgid "Fit to Window/Screen"
 msgstr "Tilpas til vindue/skærm"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:31
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:31 pcsx2/gui/Panels/GSWindowPanel.cpp:38
 msgid "Standard (4:3)"
 msgstr "Standard (4:3)"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:32
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:32 pcsx2/gui/Panels/GSWindowPanel.cpp:39
 msgid "Widescreen (16:9)"
 msgstr "Bredskærmsformat (16:9)"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:38
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:37
+msgid "Off (Default)"
+msgstr "Af (standard)"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:45
 msgid "Disabled"
 msgstr "Deaktivered"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:39
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:46
 msgid "Standard"
 msgstr "Standard"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:40
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 msgid "Adaptive"
 msgstr "Tilpassede"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:57
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:67
 msgid "Disable window resize border"
 msgstr "Slå ændring af vindueskanten fra"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:68
 msgid "Always hide mouse cursor"
 msgstr "Skjul altid musemarkøren"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:59
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:69
 msgid "Hide window when paused"
 msgstr "Skjul vinduet, når der bliver pauset"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:60
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:70
 msgid "Default to fullscreen mode on open"
 msgstr "Automatisk fuldskærmsvisning ved opstart"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:61
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:71
 msgid "Double-click toggles fullscreen mode"
 msgstr "Dobbeltklik slår fuldskærmsvisning til"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:62
-msgid "Switch to 4:3 aspect ratio when an FMV plays"
-msgstr "Skift til 4:3 billedformat, når en FMV spiller"
-
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:96
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:104
 msgid "Aspect Ratio:"
-msgstr "Billedformat:"
+msgstr "Billedformat (''F6''):"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:98
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:106
+msgid "FMV Aspect Ratio Override:"
+msgstr "FMV BilledformatOverstyring:"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:108
 msgid "Custom Window Size:"
 msgstr "Vælg vinduestørrelse:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:101
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:111
 msgid "Zoom:"
 msgstr "Zoom:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:107
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:117
 msgid "Wait for Vsync on refresh:"
 msgstr "Vent på Vsync ved opdatering:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:185
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:194
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
@@ -2193,7 +2209,7 @@ msgid ""
 "using F10."
 msgstr ""
 "Sporingslogge bliver skrevet til emulog.txt. Du kan altid skifte til "
-"sporingslogføring ved at trykke F10."
+"sporingslogføring ved at trykke ''F10''."
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:252
 msgid ""
@@ -2580,43 +2596,43 @@ msgstr ""
 msgid "Completing tasks..."
 msgstr "Fuldfører opgaver…"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:116
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:122
 msgid "Enable speedhacks"
 msgstr "Aktivér speedhacks"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:120
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:126
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr "En sikker og nem måde til at slå alle speedhacks fuldstændig fra."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:137
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:143
 msgid "EE Cyclerate [Not Recommended]"
 msgstr "EE Cyclusfrekvens [Anbefales ikke]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:150
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
 msgid "EE Cycle Skipping [Not Recommended]"
 msgstr "EE-CyclusOverspringning [Anbefales ikke]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:165
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "microVU Hacks"
 msgstr "microVU Hacks"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
 msgid "mVU Flag Hack"
 msgstr "mVU Flag Hack"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:168
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
 "Forøger hastigheden og har høj kompatibilitet;\n"
 " kan give grafikfejl… [Anbefalet]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "MTVU (Multi-Threaded microVU1)"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
@@ -2624,15 +2640,15 @@ msgstr ""
 "Forøger hastigheden og har høj kompatibilitet; kan gøre\n"
 " så spillet hænger [Anbefalet, hvis man har 3+ kerner]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid "Other Hacks"
 msgstr "Andre hacks"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:184
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
 msgid "Enable INTC Spin Detection"
 msgstr "Aktivér INTC spin-opdagelse"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:185
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:191
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
@@ -2640,22 +2656,22 @@ msgstr ""
 "Forøger hastigheden marken i nogle spil\n"
 " og har ikke nogen sideeffekter. [Anbefalet]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:187
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
 msgid "Enable Wait Loop Detection"
 msgstr "Aktivér Wait Loop Detection"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:194
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "Forøger moderat hastigheden i nogle spil\n"
 " og har ingen sideeffekter [Anbefalet]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
 msgid "Enable fast CDVD"
 msgstr "Aktivér hurtig CDVD"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:191
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:197
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr ""
 "Hurtig diskadgang,\n"
@@ -2668,7 +2684,7 @@ msgstr "Slå framelimimiting fra"
 #: pcsx2/gui/Panels/VideoPanel.cpp:33
 msgid ""
 "Useful for running benchmarks. Toggle this option in-game by pressing F4."
-msgstr "Nyttigt til benchmarks. Tryk F4 i spillet for at anvende dette."
+msgstr "Nyttigt til benchmarks. Tryk ''F4'' i spillet for at anvende dette."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:57
 msgid "Base Framerate Adjust:"
@@ -2754,22 +2770,22 @@ msgstr "Framelimiter"
 msgid "Clear ISO list"
 msgstr "Rense ISO-listen"
 
-#: pcsx2/gui/Saveslots.h:76
+#: pcsx2/gui/Saveslots.h:96
 #, c-format
 msgid "Slot %d - Empty"
 msgstr "Gemmeplads %d - Tom"
 
-#: pcsx2/gui/Saveslots.h:78
+#: pcsx2/gui/Saveslots.h:98
 #, c-format
 msgid "Slot %d - %s %s"
 msgstr "Gemmeplads %d - %s %s"
 
-#: pcsx2/gui/Saveslots.h:80
+#: pcsx2/gui/Saveslots.h:100
 #, c-format
 msgid "Slot %d - Unknown Time"
 msgstr "Gemmeplads %d - Ukendt Tid"
 
-#: pcsx2/gui/Saveslots.h:93
+#: pcsx2/gui/Saveslots.h:113
 #, c-format
 msgid "Write time is %s %s."
 msgstr "Skriv tid er %s %s."
@@ -2844,6 +2860,9 @@ msgid ""
 msgstr ""
 "%s udvidelse ikke fundet microVU kræver en værtsprocessor med SSE2-"
 "udvidelser."
+
+#~ msgid "Switch to 4:3 aspect ratio when an FMV plays"
+#~ msgstr "Skift til 4:3 billedformat, når en FMV spiller"
 
 #~ msgid "The disk has a file on it dated %s %s."
 #~ msgstr "Disken har en fil dateret %s %s."

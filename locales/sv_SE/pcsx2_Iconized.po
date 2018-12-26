@@ -1,13 +1,13 @@
 # Copyright (C) 2018 PCSX2 Team
 # This file is distributed under the same license as the PCSX2 package.
-# Swedish translation by pgert.
+# Swedish translation for pcsx2 (Iconized).
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 - 181012\n"
+"Project-Id-Version: PCSX2 - 181226\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2018-10-12 19:05+0200\n"
-"PO-Revision-Date: 2018-10-12 19:54+0200\n"
+"POT-Creation-Date: 2018-12-26 14:17+0100\n"
+"PO-Revision-Date: 2018-12-26 14:23+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
 "PCSX2-Svenskt-anv%C3%A4ndargr%C3%A4nssnitt-f%C3%B6r-PCSX2\n"
@@ -55,8 +55,8 @@ msgid ""
 "a lot of memory."
 msgstr ""
 "Denna omkompilerare var oförmögen att reservera det kringliggande\n"
-" minne som krävs för dess egna förråd, ett fel som kan ha orsakats\n"
-" av en låg tillgång av Virtuellt Minne, exempelvis till följd av att en "
+" minne som krävs för dess egna förråd, ett fel som kan ha orsakats av\n"
+" en låg tillgång av Virtuellt Minne, exempelvis till följd av att en "
 "(alltför) liten eller\n"
 " spärrad växlingsfil används, eller av att ett annat program tar för sig "
 "mycket minne."
@@ -142,7 +142,7 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
-msgstr "Omvandla detta Minneskort till en standard 8 MB Minneskorts .ps2 fil."
+msgstr "Omvandla detta Minneskort till en vanlig 8 MB Minneskorts .ps2 fil."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
@@ -391,7 +391,25 @@ msgstr ""
 "Då markerad kommer denna mapp automatiskt att fungera enligt\n"
 " förvalen förknippade med PCSX2's nuvarande AnvändarInställningar. "
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:65
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:73
+msgid ""
+"Off: Disables temporary aspect ratio switch.\n"
+"\n"
+"4:3: Temporarily switch to a 4:3 aspect ratio while an FMV plays to "
+"correctly display an 4:3 FMV.\n"
+"\n"
+"16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to "
+"correctly display a widescreen 16:9 FMV."
+msgstr ""
+"Av: Förhindrar tillfällig BildkvotsVäxlare.\n"
+"\n"
+"4:3: Växlar tillfälligt till 4:3 Bildkvot medans en FMV spelas\n"
+" för att riktigt återge en 4:3 FMV.\n"
+"\n"
+"16:9: Växlar tillfälligt till 16:9 Bildkvot medans en FMV spelas\n"
+" för att riktigt återge en 16:9 FMV."
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:77
 msgid ""
 "Zoom = 100: Fit the entire image to the window without any cropping.\n"
 "Above/Below 100: Zoom In/Out\n"
@@ -408,7 +426,7 @@ msgstr ""
 "Bemärk: Zoom-värdet återställs inte automatiskt; det sparas i\n"
 " konfigurationsfilen, och tillämpas nästa gång Ni använder PCSX2.\n"
 "Zoom = 0.00: Automatisk inzoomning tills de svarta räckena\n"
-" är borta (bildkvot bevaras, en del av bilden går utanför fönstret).\n"
+" är borta (Bildkvot bibehålls, en del av bilden går utanför fönstret).\n"
 "Bemärk: Vissa spel ritar sina egna svarta räcken\n"
 " vilka inte tas bort med ''0.00''.\n"
 "\n"
@@ -417,7 +435,7 @@ msgstr ""
 " ''Ctrl'' + ''NumPad Minus'': Utzoomning\n"
 " ''Ctrl'' + ''NumPad Stjärna'': Växla 100/0"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:68
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:80
 msgid ""
 "Vsync eliminates screen tearing but typically has a big performance hit. It "
 "usually only applies to fullscreen mode, and may not work with all GS "
@@ -427,7 +445,7 @@ msgstr ""
 "Det tillämpas vanligtvis bara i Helskärmsläge,\n"
 " och kanske inte fungerar för alla GS-InsticksProgram."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:71
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
 msgid ""
 "Check this to force the mouse cursor invisible inside the GS window; useful "
 "if using the mouse as a primary control device for gaming.  By default the "
@@ -437,7 +455,7 @@ msgstr ""
 " användbart vid brukande av musen som främsta styrmojäng för spelande.\n"
 "Som praxis gömmer sig Muspekaren automatiskt efter 2 sekunders inaktivitet."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:74
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:86
 msgid ""
 "Enables automatic mode switch to fullscreen when starting or resuming "
 "emulation. You can still toggle fullscreen display at any time using alt-"
@@ -448,7 +466,7 @@ msgstr ""
 "Ni kan fortfarande växla mellan Helskärm och Inramningsläge genom att trycka "
 "''Alt'' + ''Enter''."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:81
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:89
 msgid ""
 "Completely closes the often large and bulky GS window when pressing ESC or "
 "pausing the emulator."
@@ -505,7 +523,7 @@ msgid ""
 "fixes for specific games). Manual game fixes will NOT increase your "
 "performance. In fact they may decrease it."
 msgstr ""
-"Det är över lag bättre att ha denna tillämpning spärrad, och att isället ha "
+"Det är över lag bättre att ha denna tillämpning spärrad, och att istället ha "
 "''Automatiska Spelfixar'' möjliggjort\n"
 " i Huvudmenyn (''Automatiska'' medför en tillämpning av särskilt utvalda och "
 "beprövade lösningar för enskilda spel).\n"
@@ -566,7 +584,7 @@ msgstr ""
 "Ni kan ändra det föredragna förvalsmålet för PCSX2's AnvändarnivåDokument "
 "här\n"
 " (vilket innefattar Minneskort, Skärmbilder, Inställningar, & Sparpunkter).\n"
-"Detta påverkar bara StandardFilvägarna, vilka ställs in för att använda "
+"Detta påverkar bara StandardFilvägarna, vilka ställs in efter "
 "InstallationsFörvalen."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
@@ -638,79 +656,79 @@ msgid ""
 "50% cyclerate. Significant reduction of CPU requirements. Speedup for very "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
-"50% Cykelgrad. Betydlig minskning av CPU-krav.\n"
+"50% cykelgrad. Betydlig minskning av CPU-krav.\n"
 "Uppsnabbning för mycket lättviktiga spel,\n"
 " maskning för andra.\n"
 "FMV'er och ljud måhända stammar eller överhoppas."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
 #, c-format
 msgid ""
 "60% cyclerate. Moderate reduction of CPU requirements. Speedup for "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
-"60% Cykelgrad. Måttlig miskning av CPU-krav.\n"
+"60% cykelgrad. Måttlig miskning av CPU-krav.\n"
 "Uppsnabbning för lättviktiga spel, maskning för andra.\n"
 "FMV'er och ljud måhända stammar eller överhoppas."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
 #, c-format
 msgid ""
 "75% cyclerate. Slight reduction of CPU requirements. Speedup for less "
 "demanding games, slows down others."
 msgstr ""
-"75% Cykelgrad. Nätt minskning av CPU-krav.\n"
+"75% cykelgrad. Nätt minskning av CPU-krav.\n"
 "Uppsnabbning för mindre krävande spel,\n"
 " maskning för andra."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:45
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:47
 msgid ""
 "Default cyclerate. Runs the emulated PS2 Emotion Engine at normal speed."
 msgstr ""
 "FörvalsCykelgrad. Kör den emulerade\n"
 " PS2'ns EE med normal hastighet."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:53
 #, c-format
 msgid ""
 "130% cyclerate. Moderate increase of CPU requirements. Variable framerate "
 "games may have higher internal framerates."
 msgstr ""
-"130% Cykelgrad. Måttlig ökning av CPU-krav.\n"
+"130% cykelgrad. Måttlig ökning av CPU-krav.\n"
 "Spel med ombytlig Bildfrekvens får måhända\n"
 " en högre egen Bildfrekvens."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:55
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:59
 #, c-format
 msgid ""
 "180% cyclerate. Significant increase of CPU requirements. Variable framerate "
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
-"180% Cykelgrad. Betydlig ökning av CPU-krav.\n"
+"180% cykelgrad. Betydlig ökning av CPU-krav.\n"
 "Spel med ombytlig Bildfrekvens får en högre\n"
 " egen Bildfrekvens. FMV'er måhända spelas sakta.\n"
 "Kan vålla stabilitetsproblem."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:60
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
 #, c-format
 msgid ""
 "300% cyclerate. Extreme increase of CPU requirements. Variable framerate "
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
-"300% Cykelgrad. Yttersta ökning av CPU-krav.\n"
+"300% cykelgrad. Yttersta ökning av CPU-krav.\n"
 "Spel med ombytlig Bildfrekvens får en högre\n"
 " egen Bildfrekvens. FMV'er måhända spelas sakta.\n"
 "Kan vålla stabilitetsproblem."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:77
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:81
 msgid "Disables EE Cycle Skipping. Most compatible setting."
 msgstr ""
 "Förhindrar EE-Cykelöverhoppning.\n"
 "Det mest förenliga läget."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:82
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
 msgid ""
 "Mild EE Cycle Skipping. Mild slow down for most games, but may help some "
 "games with mild VU starvation problems run at full speed."
@@ -719,7 +737,7 @@ msgstr ""
 "Blid maskning för de flesta spel, men hjälper måhända\n"
 " spel med blida VU-svältproblem att köras i full fart."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:93
 msgid ""
 "Moderate EE Cycle Skipping. Slow down for most games, but may help some "
 "games with moderate VU starvation problems run at full speed."
@@ -728,7 +746,7 @@ msgstr ""
 "Maskning för de flesta spel, men hjälper måhända vissa\n"
 " spel med måttliga VU-svältproblem att köras i full fart."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:92
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:98
 msgid ""
 "Maximum EE Cycle Skipping. Mostly harmful. May help games with significant "
 "VU starvation problems run at full speed."
@@ -737,7 +755,7 @@ msgstr ""
 "Mestadels skadlig. Hjälper måhända spel\n"
 " med betydliga VU-svältproblem att köras i full fart."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:123
 msgid ""
 "Speedhacks usually improve emulation speed, but can cause glitches, broken "
 "audio, and false FPS readings.  When having emulation problems, disable this "
@@ -748,7 +766,7 @@ msgstr ""
 " brutet ljud, och falska FPS-avläsningar. Spärra denna panel det första Ni "
 "gör vid EmuleringsProblem."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:143
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:149
 msgid ""
 "Modifies the emulated Emotion Engine CPU clock. Higher values may increase "
 "the internal framerate in games with variable framerates, but will increase "
@@ -761,7 +779,7 @@ msgstr ""
 "Lägre värden miskar CPU-kraven, vilket möjliggör\n"
 " lättviktiga spel att köras i full fart med klenare CPU'er."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:157
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:163
 msgid ""
 "Makes the emulated Emotion Engine skip cycles, allowing VU microprograms to "
 "execute at faster intervals. Helps a small subset of games with VU "
@@ -775,7 +793,7 @@ msgstr ""
 "Oftare än sällan är detta skadligt för prestanda,\n"
 " och vållar felaktiga FPS-avläsningar."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
 msgid ""
 "Updates Status Flags only on blocks which will read them, instead of all the "
 "time. This is safe most of the time, and Super VU does something similar by "
@@ -786,7 +804,7 @@ msgstr ""
 "Detta är för det mesta säkert,\n"
 " och superVU gör något liknande som norm."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
 msgid ""
 "Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with "
 "3 or more cores. This is safe for most games, but a few games are "
@@ -800,18 +818,18 @@ msgstr ""
 "Vidare kan en maskning ske för GS-begränsade spel\n"
 " (i synnerhet med dubbelkärniga CPU'er)."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:194
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:200
 msgid ""
 "This hack works best for games that use the INTC Status register to wait for "
 "vsyncs, which includes primarily non-3D RPG titles. Games that do not use "
 "this method of vsync will see little or no speedup from this hack."
 msgstr ""
-"Denna fix fungerar bäst för spel som använder INTC-statusregistret\n"
+"Denne fix fungerar bäst för spel som använder Statusregistret INTC\n"
 " för att invänta Vsync'ar, vilket främst omfattar icke-3D-RPG titlar.\n"
 "Spel som inte använder denna Vsync-metod\n"
 " kommer på sin höjd att få en Liten uppsnabbning."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:197
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:203
 msgid ""
 "Primarily targetting the EE idle loop at address 0x81FC0 in the kernel, this "
 "hack attempts to detect loops whose bodies are guaranteed to result in the "
@@ -821,14 +839,14 @@ msgid ""
 "timeslice, whichever comes first."
 msgstr ""
 "Främst inriktat på EE-tomgångsloop hos adress 0x81FC0 i kärnan,\n"
-" försöker denna fix att upptäcka loopar vars kroppar\n"
+" försöker denne fix att upptäcka loopar vars kroppar\n"
 " garanterat medför samma maskintillstånd vid varje upprepning\n"
 " tills en schemalagd händelse utlöser emulering av en annan enhet.\n"
-"Efter en enskild upprepning av en sådan loop, avancerar Vi till tiden\n"
+"Efter en enskild upprepning av en sådan loop, fortskrider Vi till tiden\n"
 " för nästa händelse eller till slutet av processorns tidskvantum,\n"
 " vilket som än kommer först."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:200
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this (often marked as needing 'mode 1' or 'slow DVD')."
