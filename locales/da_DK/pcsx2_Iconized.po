@@ -2,14 +2,15 @@
 # This file is distributed under the same license as the pcsx2 package.
 # Danish translation for pcsx2 (Iconized).
 # Jakob5566 <jakob5566@gmail.com>, 2017.
+# pgert <http://forums.pcsx2.net/User-pgert>, 2018.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.5.0 - 181012\n"
+"Project-Id-Version: PCSX2 1.5.0 - 181226\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2018-10-12 19:07+0200\n"
-"PO-Revision-Date: 2018-10-12 19:52+0200\n"
-"Last-Translator: Jakob5566 <jakob5566@gmail.com>\n"
+"POT-Creation-Date: 2018-12-26 14:16+0100\n"
+"PO-Revision-Date: 2018-12-26 14:23+0100\n"
+"Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: \n"
 "Language: da_DK\n"
 "MIME-Version: 1.0\n"
@@ -375,7 +376,25 @@ msgstr ""
 "Når denne boks er krydset af, afspejler denne mappe automatisk den standard, "
 "der er forbundet med PCSX2s aktuelle brugerindstilling. "
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:65
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:73
+msgid ""
+"Off: Disables temporary aspect ratio switch.\n"
+"\n"
+"4:3: Temporarily switch to a 4:3 aspect ratio while an FMV plays to "
+"correctly display an 4:3 FMV.\n"
+"\n"
+"16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to "
+"correctly display a widescreen 16:9 FMV."
+msgstr ""
+"Af: Forhindrer den tilfældige BilledformatVekslingen.\n"
+"\n"
+"4:3: Veksler tilfældigt til 4:3 Billedformat mens en FMV spilles\n"
+" for at rigtigt gengive en 4:3 FMV.\n"
+"\n"
+"16:9: Veksler tilfældigt til 16:9 Billedformat mens en FMV spilles\n"
+" for at rigtigt gengive en 16:9 FMV."
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:77
 msgid ""
 "Zoom = 100: Fit the entire image to the window without any cropping.\n"
 "Above/Below 100: Zoom In/Out\n"
@@ -400,7 +419,7 @@ msgstr ""
 " CTRL+NUMPAD-MINUS: Zoom-ud,\n"
 " CTRL+NUMPAD-*: Skift mellem 100/0"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:68
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:80
 msgid ""
 "Vsync eliminates screen tearing but typically has a big performance hit. It "
 "usually only applies to fullscreen mode, and may not work with all GS "
@@ -411,7 +430,7 @@ msgstr ""
 "Sædvanligvis bliver VSync kun anvendt i fuldskærmsvisning,\n"
 " og det virker muligvis ikke sammen med alle GS plugins."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:71
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:83
 msgid ""
 "Check this to force the mouse cursor invisible inside the GS window; useful "
 "if using the mouse as a primary control device for gaming.  By default the "
@@ -422,7 +441,7 @@ msgstr ""
 "Musen forsvinder automatisk fra skærmen\n"
 " efter to sekunder, hvis den ikke er blevet brugt."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:74
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:86
 msgid ""
 "Enables automatic mode switch to fullscreen when starting or resuming "
 "emulation. You can still toggle fullscreen display at any time using alt-"
@@ -432,7 +451,7 @@ msgstr ""
 " når man kører eller genoptager en emulering.\n"
 "Du kan altid selv skfite til fuldskærmsvisning ved at trykke på Alt+Enter."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:81
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:89
 msgid ""
 "Completely closes the often large and bulky GS window when pressing ESC or "
 "pausing the emulator."
@@ -562,7 +581,7 @@ msgid ""
 "using menus/toolbars, or by pressing F1/F3 (save/load)."
 msgstr ""
 "I denne mappe gemmer PCSX2 spiltilstande; som bliver gemt enten via menuerne/"
-"værktøjsbjælken, eller ved at trykke F1/F3 (gem/indlæs)."
+"værktøjsbjælken, eller ved at trykke ''F1''/''F3'' (gem/indlæs)."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:56
 msgid ""
@@ -616,77 +635,77 @@ msgid ""
 "50% cyclerate. Significant reduction of CPU requirements. Speedup for very "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
-"50% Cyclusfrekvens. Betydelig mindskning af CPU-krav.\n"
+"50% cyclusfrekvens. Betydelig mindskning af CPU-krav.\n"
 "Fartforøgelse for meget letvigtige spil, nedgang for andre.\n"
 "FMV'er og lyd måske stammer eller overspringes."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
 #, c-format
 msgid ""
 "60% cyclerate. Moderate reduction of CPU requirements. Speedup for "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
-"60% Cyclusfrekvens. Moderat mindskning af CPU-krav.\n"
+"60% cyclusfrekvens. Moderat mindskning af CPU-krav.\n"
 "Fartforøgelse for letvigtige spil, nedgang for andre.\n"
 "FMV'er og lyd måske stammer eller overspringes."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
 #, c-format
 msgid ""
 "75% cyclerate. Slight reduction of CPU requirements. Speedup for less "
 "demanding games, slows down others."
 msgstr ""
-"75% Cyclusfrekvens. Net mindskning af CPU-krav.\n"
+"75% cyclusfrekvens. Net mindskning af CPU-krav.\n"
 "Fartforøgelse for mindre krævende spil, nedgang for andre."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:45
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:47
 msgid ""
 "Default cyclerate. Runs the emulated PS2 Emotion Engine at normal speed."
 msgstr ""
 "StandardCyclusfrekvens. Kører den emulerede\n"
 " PS2'ns EE med normal hastighed."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:53
 #, c-format
 msgid ""
 "130% cyclerate. Moderate increase of CPU requirements. Variable framerate "
 "games may have higher internal framerates."
 msgstr ""
-"130% Cyclusfrekvens. Moderat øgning af CPU-krav.\n"
+"130% cyclusfrekvens. Moderat øgning af CPU-krav.\n"
 "Spil med vægelsindet billedfrekvens får måske\n"
 " en højere egen billedfrekvens."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:55
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:59
 #, c-format
 msgid ""
 "180% cyclerate. Significant increase of CPU requirements. Variable framerate "
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
-"180% Cyclusfrekvens. Betydelig øgning af CPU-krav.\n"
+"180% cyclusfrekvens. Betydelig øgning af CPU-krav.\n"
 "Spil med vægelsindet billedfrekvens\n"
 " får en højere egen billedfrekvens.\n"
 "FMV'er måske spilles sakte. Kan volde stabilitetsproblemer."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:60
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
 #, c-format
 msgid ""
 "300% cyclerate. Extreme increase of CPU requirements. Variable framerate "
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
-"300% Cyclusfrekvens. Yderste øgning af CPU-krav.\n"
+"300% cyclusfrekvens. Yderste øgning af CPU-krav.\n"
 "Spil med vægelsindet billedfrekvens\n"
 " får en højere egen billedfrekvens.\n"
 "FMV'er måske spilles sakte. Kan volde stabilitetsproblemer."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:77
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:81
 msgid "Disables EE Cycle Skipping. Most compatible setting."
 msgstr ""
 "Forhindrer EE-CyclusOverspringning.\n"
 "Den mest forenelige opstillingen."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:82
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
 msgid ""
 "Mild EE Cycle Skipping. Mild slow down for most games, but may help some "
 "games with mild VU starvation problems run at full speed."
@@ -695,7 +714,7 @@ msgstr ""
 "Blid nedgang for de fleste spil, men måske hjælper\n"
 " spil med blide VU-sultproblem at køres i fuld fart."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:93
 msgid ""
 "Moderate EE Cycle Skipping. Slow down for most games, but may help some "
 "games with moderate VU starvation problems run at full speed."
@@ -704,7 +723,7 @@ msgstr ""
 "Nedgang for de fleste spil, men måske hjælper visse\n"
 " spil med moderate VU-sultproblem at køres i fuld fart."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:92
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:98
 msgid ""
 "Maximum EE Cycle Skipping. Mostly harmful. May help games with significant "
 "VU starvation problems run at full speed."
@@ -713,7 +732,7 @@ msgstr ""
 "Meestendels skadelig. Måske hjælper spil\n"
 " med betydelige VU-sultproblem at køres i fuld fart."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:123
 msgid ""
 "Speedhacks usually improve emulation speed, but can cause glitches, broken "
 "audio, and false FPS readings.  When having emulation problems, disable this "
@@ -724,7 +743,7 @@ msgstr ""
 "pr. sekund.\n"
 "Hvis du har problemer skal du slå dette panel fra først."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:143
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:149
 msgid ""
 "Modifies the emulated Emotion Engine CPU clock. Higher values may increase "
 "the internal framerate in games with variable framerates, but will increase "
@@ -738,7 +757,7 @@ msgstr ""
 "Lavere værten mindsker CPU-kravene, hvilket muliggjør\n"
 " letvigtige spil at køres i fuld fart med svagere CPU'er."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:157
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:163
 msgid ""
 "Makes the emulated Emotion Engine skip cycles, allowing VU microprograms to "
 "execute at faster intervals. Helps a small subset of games with VU "
@@ -752,7 +771,7 @@ msgstr ""
 "Oftere end sjældent er dette skadeligt for præstanda\n"
 " og volder fejlaktige FPS-aflæsninger."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
 msgid ""
 "Updates Status Flags only on blocks which will read them, instead of all the "
 "time. This is safe most of the time, and Super VU does something similar by "
@@ -762,7 +781,7 @@ msgstr ""
 " i stedet for hele tiden. Dette er sikkert det meste af tiden,\n"
 " og SuperVU’en gør normalt noget lignende af sig selv."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
 msgid ""
 "Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with "
 "3 or more cores. This is safe for most games, but a few games are "
@@ -775,7 +794,7 @@ msgstr ""
 " men nogle spil vil kunne gå i stå. Hvis spil er begrænset til GS,\n"
 " kan det gøre spillene langsommere (især på en to-kernet processor)."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:194
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:200
 msgid ""
 "This hack works best for games that use the INTC Status register to wait for "
 "vsyncs, which includes primarily non-3D RPG titles. Games that do not use "
@@ -786,7 +805,7 @@ msgstr ""
 "Spil, der ikke bruger denne metode,\n"
 " vil kun opleve en lille eller slet ingen hastighedsforbedring."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:197
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:203
 msgid ""
 "Primarily targetting the EE idle loop at address 0x81FC0 in the kernel, this "
 "hack attempts to detect loops whose bodies are guaranteed to result in the "
@@ -803,7 +822,7 @@ msgstr ""
 "Efter første gentagelse af en sløjfe,\n"
 " fortsætter vi til næste begivenhed eller til næste tidsdel."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:200
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this (often marked as needing 'mode 1' or 'slow DVD')."
