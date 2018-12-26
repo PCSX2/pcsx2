@@ -375,13 +375,13 @@ DebugInterface::RegisterType R5900DebugInterface::getRegisterType(int cat)
 	{
 	case EECAT_GPR:
 	case EECAT_CP0:
-	case EECAT_VU0F:
 	case EECAT_VU0I:
 	case EECAT_FCR:
 	case EECAT_GSPRIV:
 	default:
 		return NORMAL;
 	case EECAT_FPR:
+    case EECAT_VU0F:
 		return SPECIAL;
 	}
 }
@@ -494,6 +494,12 @@ wxString R5900DebugInterface::getRegisterString(int cat, int num)
 			char str[64];
 			sprintf(str,"%f",fpuRegs.fpr[num].f);
 			return wxString(str,wxConvUTF8);
+		}
+    case EECAT_VU0F:
+		{
+            char str[256];
+			sprintf(str, "%7.2f %7.2f %7.2f %7.2f", VU0.VF[num].F[0], VU0.VF[num].F[1], VU0.VF[num].F[2], VU0.VF[num].F[3]);
+            return wxString(str, wxConvUTF8);
 		}
 	default:
 		return L"";
