@@ -212,7 +212,7 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
             # AVX requires some fix of the ABI (mangling) (default 2)
             # Note: V6 requires GCC 4.7
             #set(ARCH_FLAG "-march=native -fabi-version=6")
-            set(ARCH_FLAG "-mxsave -march=native")
+            set(ARCH_FLAG "-march=native")
         endif()
     endif()
 
