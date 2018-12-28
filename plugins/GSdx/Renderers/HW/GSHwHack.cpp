@@ -680,20 +680,6 @@ bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip)
 			// 0x01dc0 ntsc, 0x01f00 ntsc progressive
 			skip = 4;
 		}
-		else if(fi.TME && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMZ16) // fog
-		{
-			if (!Dx_only) return false;
-
-			if(fi.FBP == 0x00a00 && fi.TBP0 == 0x01e00)
-			{
-				skip = 4; // pal
-			}
-			if((fi.FBP == 0x008c0 || fi.FBP == 0x00a00) && (fi.TBP0 == 0x01a40 || fi.TBP0 == 0x01b80))
-			{
-				// 0x00a00 and 0x01b80 ntsc progressive
-				skip = 3; // ntsc
-			}
-		}
 		else if (fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x033a0) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x02d60 || fi.TBP0 == 0x033a0) && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0x0)
 		{
 			skip = 2; // impact screen
