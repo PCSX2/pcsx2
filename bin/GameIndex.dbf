@@ -16886,10 +16886,17 @@ Region = PAL-F-S
 Serial = SLES-54770
 Name   = DreamWorks Shrek the Third
 Region = PAL-E
+eeClampMode = 3 // Fixes objects spawning.
 ---------------------------------------------
 Serial = SLES-54771
 Name   = DreamWorks Shrek the Third
 Region = PAL-M5
+eeClampMode = 3 // Fixes objects spawning.
+---------------------------------------------
+Serial = SLES-54774
+Name   = DreamWorks Shrek the Third
+Region = PAL-M5
+eeClampMode = 3 // Fixes objects spawning.
 ---------------------------------------------
 Serial = SLES-54776
 Name   = Fantastic Four - Rise of the Silver Surfer
@@ -41340,9 +41347,10 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21454
-Name   = Shrek the Third
+Name   = DreamWorks Shrek the Third
 Region = NTSC-U
 Compat = 5
+eeClampMode = 3 // Fixes objects spawning.
 ---------------------------------------------
 Serial = SLUS-21455
 Name   = Happy Feet
