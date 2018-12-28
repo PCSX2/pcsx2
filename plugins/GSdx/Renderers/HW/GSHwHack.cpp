@@ -27,9 +27,9 @@ bool s_nativeres;
 static CRCHackLevel s_crc_hack_level = CRCHackLevel::Full;
 
 // hacks
-#define Aggressive (s_crc_hack_level >= CRCHackLevel::Aggressive)
-#define Dx_only (s_crc_hack_level >= CRCHackLevel::Full)
 #define Dx_and_OGL (s_crc_hack_level >= CRCHackLevel::Partial)
+#define Dx_only (s_crc_hack_level >= CRCHackLevel::Full)
+#define Aggressive (s_crc_hack_level >= CRCHackLevel::Aggressive)
 
 CRC::Region g_crc_region = CRC::NoRegion;
 
@@ -1516,7 +1516,7 @@ bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
 	// This hack also removes rockets, shows explosions(invisible without CRC hack) as garbage data,
 	// causes flickering issues with the HUD, and in some (night) missions removes the HUD altogether.
 
-	if (Aggressive && skip == 0)
+	if (skip == 0)
 	{
 		if (fi.TME && fi.FBP == 0x02a00 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01600 && fi.TPSM == PSM_PSMZ24)
 		{
@@ -1529,7 +1529,7 @@ bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
 
 bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
 {
-	if(Aggressive && skip == 0)
+	if(skip == 0)
 	{
 		if(fi.TME && fi.FBP == 0x01180 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03fc0 && fi.TPSM == PSM_PSMCT32)
 		{
@@ -1543,7 +1543,7 @@ bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
 
 bool GSC_GTASanAndreas(const GSFrameInfo& fi, int& skip)
 {
-	if(Aggressive && skip == 0)
+	if(skip == 0)
 	{
 		if(fi.TME && (fi.FBP ==0x0a00 || fi.FBP ==0x08c0) && (fi.TBP0 ==0x1b80 || fi.TBP0 ==0x1a40) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
@@ -1558,7 +1558,7 @@ bool GSC_MetalGearSolid3(const GSFrameInfo& fi, int& skip)
 {
 	// Halfscreen bottom issue
 	// Hack is old that was used to remove channel shuffle and likely needs to be updated.
-	if(Aggressive && skip == 0)
+	if(skip == 0)
 	{
 		if(fi.TME && fi.FBP == 0x02000 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT24)
 		{
@@ -1569,7 +1569,7 @@ bool GSC_MetalGearSolid3(const GSFrameInfo& fi, int& skip)
 			skip = 1000; // 69
 		}
 	}
-	else if(Aggressive)
+	else
 	{
 		if(!fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32)
 		{
@@ -1598,7 +1598,7 @@ bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 	// smudge filter from being drawn on USA versions of
 	// Nocturne, Digital Devil Saga 1 and Digital Devil Saga 2
 
-	if(Aggressive && g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME)
+	if(g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME)
 	{
 		// Note: it will crash if the core doesn't allocate the EE mem in 0x2000_0000 (unlikely but possible)
 		// Aggressive hacks are evil anyway
@@ -1615,7 +1615,7 @@ bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 
 bool GSC_LegoBatman(const GSFrameInfo& fi, int& skip)
 {
-	if(Aggressive && skip == 0)
+	if(skip == 0)
 	{
 		if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x00000)
 		{
@@ -1631,7 +1631,7 @@ bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
 	// Not needed anymore? What did it fix anyway? (rama)
 	if(skip == 0)
 	{
-		if(Aggressive && fi.TME /*&& fi.FBP == 0x03d80*/ && fi.FPSM == 0 && fi.TBP0 == 0x03fc0 && fi.TPSM == 1)
+		if(fi.TME /*&& fi.FBP == 0x03d80*/ && fi.FPSM == 0 && fi.TBP0 == 0x03fc0 && fi.TPSM == 1)
 		{
 			 skip = 48;	// Removes sky bloom
 		}
@@ -1642,7 +1642,7 @@ bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
 
 bool GSC_FFXGames(const GSFrameInfo& fi, int& skip)
 {
-	if(Aggressive && skip == 0)
+	if(skip == 0)
 	{
 		if(fi.TME)
 		{
@@ -1661,7 +1661,7 @@ bool GSC_FFXGames(const GSFrameInfo& fi, int& skip)
 
 bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
 {
-	if (Aggressive && skip == 0)
+	if (skip == 0)
 	{
 		if (fi.TME && fi.FBP == 0x03100 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ24)
 		{
@@ -1674,7 +1674,7 @@ bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
 
 bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 {
-	if(Aggressive && skip == 0)
+	if(skip == 0)
 	{
 		if(fi.TME && fi.FBP == 0x001000 && (fi.TBP0 ==0 || fi.TBP0 == 0x0800) && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0x00FFFFFF)
 		{
@@ -1703,7 +1703,7 @@ bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 
 bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
 {
-	if(Aggressive && skip == 0)
+	if(skip == 0)
 	{
 		if(fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
 		{
@@ -1718,8 +1718,6 @@ bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-#undef Aggressive
 
 #ifdef ENABLE_DYNAMIC_CRC_HACK
 
@@ -1932,20 +1930,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
 		lut[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
 		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
-
-		// Only Aggressive
-		lut[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
-		lut[CRC::FFX2] = GSC_FFXGames;
-		lut[CRC::FFX] = GSC_FFXGames;
-		lut[CRC::FFXII] = GSC_FFXGames;
-		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas; // RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly. Can be used as an upscaling hack.
-		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
-		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
-		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
-		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
-		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
-		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
-		lut[CRC::SoTC] = GSC_SoTC;
 	}
 
 	// Hacks that were fixed on OpenGL
@@ -1995,9 +1979,28 @@ void GSState::SetupCrcHack()
 		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
 	}
 
+	if (Aggressive) {
+		lut[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
+		lut[CRC::FFX2] = GSC_FFXGames;
+		lut[CRC::FFX] = GSC_FFXGames;
+		lut[CRC::FFXII] = GSC_FFXGames;
+		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas; // RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly. Can be used as an upscaling hack.
+		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
+		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
+		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
+		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
+		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
+		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
+		lut[CRC::SoTC] = GSC_SoTC;
+	}
+
 	m_gsc = lut[m_game.title];
 	g_crc_region = m_game.region;
 }
+
+#undef Dx_and_OGL
+#undef Dx_only
+#undef Aggressive
 
 bool GSState::IsBadFrame()
 {
