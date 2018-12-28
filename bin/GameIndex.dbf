@@ -4401,9 +4401,10 @@ Compat = 5
 vuRoundMode = 0 // Crashes without.
 ---------------------------------------------
 Serial = SCUS-21494
-Name   = Need for Speed Carbon Collector's Edition
+Name   = Need for Speed - Carbon Collector's Edition
 Region = NTSC-U
 Compat = 5
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SCUS-90174
 Name   = Toy Story 3 (PlayStation 2 Bundle)
@@ -6358,6 +6359,7 @@ Region = NTSC-Unk
 Serial = SLAJ-25091
 Name   = Need for Speed - Carbon
 Region = NTSC-Unk
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLAJ-25092
 Name   = Shin Sangoku Musou 4 [PlayStation 2 The Best]
@@ -6505,6 +6507,7 @@ Region = PAL-M5
 Serial = SLED-54312
 Name   = Need for Speed - Carbon [Demo]
 Region = PAL-Unk
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLES-50003
 Name   = Swap Magic DVD Disc v2.0
@@ -16079,18 +16082,22 @@ Serial = SLES-54321
 Name   = Need for Speed - Carbon
 Region = PAL-E
 Compat = 5
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLES-54322
 Name   = Need for Speed - Carbon
 Region = PAL-M8
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLES-54323
 Name   = Need for Speed - Carbon
 Region = PAL-I-S
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLES-54324
 Name   = Need for Speed - Carbon
 Region = PAL-R
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLES-54331
 Name   = Street Dance
@@ -16291,6 +16298,7 @@ GIFFIFOHack = 1 // Fixes bad graphics.
 Serial = SLES-54402
 Name   = Need for Speed - Carbon [Collector's Edition]
 Region = PAL-F
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLES-54418
 Name   = Powerdrome
@@ -16490,10 +16498,12 @@ Compat = 5
 Serial = SLES-54492
 Name   = Need for Speed - Carbon [Collector's Edition]
 Region = PAL-E
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLES-54493
 Name   = Need for Speed - Carbon [Collector's Edition]
 Region = PAL-F-G
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLES-54494
 Name   = Little Britain - The Video Game
@@ -27479,6 +27489,7 @@ Region = NTSC-J
 Serial = SLPM-66617
 Name   = Need for Speed - Carbon
 Region = NTSC-J
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLPM-66618
 Name   = Yumemishi [First Print Limited Edition]
@@ -28438,6 +28449,7 @@ Region = NTSC-J
 Serial = SLPM-66869
 Name   = Need for Speed - Carbon [EA Best Hits]
 Region = NTSC-J
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLPM-66870
 Name   = Kuri no Okurimono [First Print Special Edition]
@@ -41531,10 +41543,12 @@ Serial = SLUS-21493
 Name   = Need for Speed - Carbon
 Region = NTSC-U
 Compat = 5
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLUS-21494
 Name   = Need for Speed - Carbon [Collector's Edition]
 Region = NTSC-U
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLUS-21495
 Name   = Sudoku, Carol Vorderman's
@@ -44115,6 +44129,7 @@ Region = NTSC-U
 Serial = SLUS-29193
 Name   = Need for Speed - Carbon [Demo]
 Region = NTSC-U
+eeClampMode = 3 // Fixes game hang after opening intro.
 ---------------------------------------------
 Serial = SLUS-29194
 Name   = FIFA '07 [Demo]
