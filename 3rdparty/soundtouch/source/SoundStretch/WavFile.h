@@ -16,13 +16,6 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2014-10-05 19:20:24 +0300 (su, 05 loka 2014) $
-// File revision : $Revision: 4 $
-//
-// $Id: WavFile.h 200 2014-10-05 16:20:24Z oparviai $
-//
-////////////////////////////////////////////////////////////////////////////////
-//
 // License :
 //
 //  SoundTouch audio processing library
@@ -58,7 +51,7 @@ typedef unsigned int uint;
 typedef struct 
 {
     char riff_char[4];
-    int  package_len;
+    uint package_len;
     char wave[4];
 } WavRiff;
 
@@ -66,21 +59,21 @@ typedef struct
 typedef struct 
 {
     char  fmt[4];
-    int   format_len;
-    short fixed;
-    short channel_number;
-    int   sample_rate;
-    int   byte_rate;
-    short byte_per_sample;
-    short bits_per_sample;
+    unsigned int   format_len;
+    unsigned short fixed;
+    unsigned short channel_number;
+    unsigned int   sample_rate;
+    unsigned int   byte_rate;
+    unsigned short byte_per_sample;
+    unsigned short bits_per_sample;
 } WavFormat;
 
 /// WAV audio file 'fact' section header
 typedef struct 
 {
-    char  fact_field[4];
-    int   fact_len;
-    uint  fact_sample_len;
+    char fact_field[4];
+    uint fact_len;
+    uint fact_sample_len;
 } WavFact;
 
 /// WAV audio file 'data' section header
@@ -223,7 +216,6 @@ public:
     /// \return Nonzero if end-of-file reached.
     int eof() const;
 };
-
 
 
 /// Class for writing WAV audio files.

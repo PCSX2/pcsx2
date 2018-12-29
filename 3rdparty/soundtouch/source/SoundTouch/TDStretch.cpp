@@ -19,13 +19,6 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2017-04-07 22:01:22 +0300 (pe, 07 huhti 2017) $
-// File revision : $Revision: 1.12 $
-//
-// $Id: TDStretch.cpp 249 2017-04-07 19:01:22Z oparviai $
-//
-////////////////////////////////////////////////////////////////////////////////
-//
 // License :
 //
 //  SoundTouch audio processing library
@@ -134,8 +127,13 @@ void TDStretch::setParameters(int aSampleRate, int aSequenceMS,
                               int aSeekWindowMS, int aOverlapMS)
 {
     // accept only positive parameter values - if zero or negative, use old values instead
-    if (aSampleRate > 0)   this->sampleRate = aSampleRate;
-    if (aOverlapMS > 0)    this->overlapMs = aOverlapMS;
+    if (aSampleRate > 0)
+    {
+        if (aSampleRate > 192000) ST_THROW_RT_ERROR("Error: Excessive samplerate");
+        this->sampleRate = aSampleRate;
+    }
+
+    if (aOverlapMS > 0) this->overlapMs = aOverlapMS;
 
     if (aSequenceMS > 0)
     {
@@ -362,7 +360,7 @@ int TDStretch::seekBestOverlapPositionFull(const SAMPLETYPE *refPos)
 // with improved precision
 //
 // Based on testing:
-// - This algorithm gives on average 99% as good match as the full algorith
+// - This algorithm gives on average 99% as good match as the full algorithm
 // - this quick seek algorithm finds the best match on ~90% of cases
 // - on those 10% of cases when this algorithm doesn't find best match, 
 //   it still finds on average ~90% match vs. the best possible match
@@ -519,7 +517,7 @@ void TDStretch::clearCrossCorrState()
 void TDStretch::calcSeqParameters()
 {
     // Adjust tempo param according to tempo, so that variating processing sequence length is used
-    // at varius tempo settings, between the given low...top limits
+    // at various tempo settings, between the given low...top limits
     #define AUTOSEQ_TEMPO_LOW   0.5     // auto setting low tempo range (-50%)
     #define AUTOSEQ_TEMPO_TOP   2.0     // auto setting top tempo range (+100%)
 
@@ -590,9 +588,8 @@ void TDStretch::setTempo(double newTempo)
 // Sets the number of channels, 1 = mono, 2 = stereo
 void TDStretch::setChannels(int numChannels)
 {
-    assert(numChannels > 0);
-    if (channels == numChannels) return;
-//    assert(numChannels == 1 || numChannels == 2);
+    if (!verifyNumberOfChannels(numChannels) ||
+        (channels == numChannels)) return;
 
     channels = numChannels;
     inputBuffer.setChannels(channels);
@@ -807,7 +804,7 @@ TDStretch * TDStretch::newInstance()
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Integer arithmetics specific algorithm implementations.
+// Integer arithmetic specific algorithm implementations.
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -972,7 +969,7 @@ double TDStretch::calcCrossCorrAccumulate(const short *mixingPos, const short *c
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Floating point arithmetics specific algorithm implementations.
+// Floating point arithmetic specific algorithm implementations.
 //
 
 #ifdef SOUNDTOUCH_FLOAT_SAMPLES
