@@ -314,10 +314,8 @@ void Panels::SpeedHacksPanel::ApplyConfigToGui( AppConfig& configToApply, int fl
 	m_check_intc->SetValue(opts.IntcStat);
 	m_check_waitloop->SetValue(opts.WaitLoop);
 	m_check_fastCDVD->SetValue(opts.fastCDVD);
-
-	const bool preset_request = flags & AppConfig::APPLY_FLAG_FROM_PRESET;
-	if (!preset_request || configToApply.PresetIndex == 0)
-		m_check_vuThread->SetValue(opts.vuThread);
+	m_check_vuThread->SetValue(opts.vuThread);
+		
 
 	// Then, lock(gray out)/unlock the widgets as necessary.
 	EnableStuff( &configToApply );

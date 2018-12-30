@@ -165,7 +165,7 @@ void Panels::GSWindowSettingsPanel::ApplyConfigToGui( AppConfig& configToApply, 
 	}
 
 	m_combo_vsync->SetSelection(enum_cast(configToApply.EmuOptions.GS.VsyncEnable));
-	m_combo_vsync->Enable( !configToApply.EnablePresets );//grayed-out when presets are enabled
+	m_combo_vsync->Enable(true); // Always allow, regardless of preset
 }
 
 void Panels::GSWindowSettingsPanel::Apply()
