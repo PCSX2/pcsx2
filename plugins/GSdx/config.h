@@ -28,9 +28,6 @@
 
 #define EXTERNAL_SHADER_LOADING 1
 
-//#define ENABLE_DYNAMIC_CRC_HACK
-#define DYNA_DLL_PATH "c:/dev/pcsx2/trunk/tools/dynacrchack/DynaCrcHack.dll"
-
 //#define DISABLE_HW_TEXTURE_CACHE // Slow but fixes a lot of bugs
 
 //#define DISABLE_BITMASKING
@@ -54,4 +51,9 @@
 
 #ifdef _WIN32
 //#define ENABLE_OPENCL
+
+//#define ENABLE_DYNAMIC_CRC_HACK
+#ifdef ENABLE_DYNAMIC_CRC_HACK
+#define DYNA_DLL_PATH "tools/DynaCrcHack.dll"
+#endif
 #endif
