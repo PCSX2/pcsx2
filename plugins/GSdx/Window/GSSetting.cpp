@@ -47,14 +47,13 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Automatic:\nAutomatically sets the recommended CRC hack level based on the selected renderer.\n"
 				"This is the recommended setting.\n"
 				"Partial will be selected for OpenGL.\nFull will be selected for Direct3D.\n\n"
-				"None:\nRemove nearly all CRC hacks (debug only).\n\n"
-				"Minimum:\nEnable a couple of CRC hacks (23).\n\n"
+				"None:\nRemove all CRC hacks.\n\n"
+				"Minimum:\nEnable a couple of CRC hacks.\n\n"
 				"Partial:\nEnable most of the CRC hacks.\n"
-				"For an optimal experience with OpenGL, Blending Unit Accuracy/Depth Emulation may need to be enabled.\n\n"
-				"Full:\nEnable all CRC hacks.\n\n"
-				"Aggressive:\nUse more aggressive CRC hacks. Only affects a few games, removing some effects which might make the image sharper/clearer.\n"
-				"Affected games: AC4, DBZBT3, FFX, FFX2, FFXII, GOW2, LegoBatman, OnimushaDoD, RE4, SoTC, SMT3, SMTDDS1, SMTDDS2, Tekken5.\n"
-				"Works as a speedhack for: BleachBB, Kunoichi, Steambot Chronicles, The Simpsons Game.";
+				"For an optimal experience with OpenGL.\n\n"
+				"Full:\nEnable all CRC hacks.\n"
+				"For an optimal experience with Direct3D.\n\n"
+				"Aggressive:\nUse more aggressive CRC hacks. Only affects a few games, removing some effects which might make the image sharper/clearer, and it can provide a nice speed boost in some cases.\n";
 		case IDC_SKIPDRAWHACK:
 		case IDC_SKIPDRAWHACKEDIT:
 		case IDC_SKIPDRAWOFFSET:
