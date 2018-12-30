@@ -395,12 +395,25 @@ enum
  * but it will be up to the application to determine if handles are
  * live or dead, or resurrected for an entirely new/different thread.
  */
-typedef struct
+typedef struct ptw32_handle_t
 { void * p;                   /* Pointer to actual object */
 #if PTW32_VERSION_MAJOR > 2
   size_t x;                   /* Extra information - reuse count etc */
 #else
   unsigned int x;             /* Extra information - reuse count etc */
+#endif
+#ifdef __cplusplus
+// Added support for various operators so that the struct is
+// more pthreads-compliant in behavior. (air)
+  const bool operator ==(const struct ptw32_handle_t rightside) const
+  {
+	  return p == rightside.p;
+  }
+
+  const bool operator !=(const struct ptw32_handle_t rightside) const
+  {
+	  return p != rightside.p;
+  }
 #endif
 } ptw32_handle_t;
 
