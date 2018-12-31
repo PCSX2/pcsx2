@@ -640,6 +640,7 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_CPU_FB_CONVERSION, theApp.GetConfigB("UserHacks_CPU_FB_Conversion"));
 	CheckDlgButton(m_hWnd, IDC_FAST_TC_INV, theApp.GetConfigB("UserHacks_DisablePartialInvalidation"));
 	CheckDlgButton(m_hWnd, IDC_AUTO_FLUSH, theApp.GetConfigB("UserHacks_AutoFlush"));
+	CheckDlgButton(m_hWnd, IDC_SAFE_FEATURES, theApp.GetConfigB("UserHacks_Disable_Safe_Features"));
 	CheckDlgButton(m_hWnd, IDC_MEMORY_WRAPPING, theApp.GetConfigB("wrap_gs_mem"));
 	CheckDlgButton(m_hWnd, IDC_MERGE_PP_SPRITE, theApp.GetConfigB("UserHacks_merge_pp_sprite"));
 
@@ -709,6 +710,7 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_CPU_FB_CONVERSION);
 	AddTooltip(IDC_FAST_TC_INV);
 	AddTooltip(IDC_AUTO_FLUSH);
+	AddTooltip(IDC_SAFE_FEATURES);
 	AddTooltip(IDC_MEMORY_WRAPPING);
 	AddTooltip(IDC_TRI_FILTER);
 	AddTooltip(IDC_MERGE_PP_SPRITE);
@@ -808,6 +810,7 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_CPU_FB_Conversion", (int)IsDlgButtonChecked(m_hWnd, IDC_CPU_FB_CONVERSION));
 			theApp.SetConfig("UserHacks_DisablePartialInvalidation", (int)IsDlgButtonChecked(m_hWnd, IDC_FAST_TC_INV));
 			theApp.SetConfig("UserHacks_AutoFlush", (int)IsDlgButtonChecked(m_hWnd, IDC_AUTO_FLUSH));
+			theApp.SetConfig("UserHacks_Disable_Safe_Features", (int)IsDlgButtonChecked(m_hWnd, IDC_SAFE_FEATURES));
 			theApp.SetConfig("wrap_gs_mem", (int)IsDlgButtonChecked(m_hWnd, IDC_MEMORY_WRAPPING));
 			theApp.SetConfig("UserHacks_merge_pp_sprite", (int)IsDlgButtonChecked(m_hWnd, IDC_MERGE_PP_SPRITE));
 			theApp.SetConfig("UserHacks_TCOffsetX", SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0));

@@ -154,6 +154,12 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.\n"
 				"Warning: it's very costly on the performance.\n\n"
 				"Note: OpenGL HW renderer is able to handle Jak shadows at full speed without this option.";
+		case IDC_SAFE_FEATURES:
+			return "This option disables multiple safe features.\n\n"
+				"Disables accurate Ucnscale Point and Line rendering.\n"
+				"It can help Xenosaga games.\n\n"
+				"Disables accurate GS Memory Clearing to be done on the CPU, and let only the GPU hangle it.\n"
+				"It can help Kingdom Hearts games.";
 		case IDC_MEMORY_WRAPPING:
 			return "Emulates GS memory wrapping accurately. This fixes issues where part of the image is cut-off by block shaped sections such as the FMVs in Wallace & Gromit: The Curse of the Were-Rabbit and Thrillville.\n\n"
 				"Note: This hack can have a small impact on performance.";
@@ -180,7 +186,7 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Uploads GS data when rendering a new frame to reproduce some effects accurately.\n"
 				"Fixes black screen issues in games like Armored Core: Last Raven.";
 		case IDC_MIPMAP_HW:
-			return	"Control the accuracy level of the mipmapping emulation\n\n"
+			return	"Control the accuracy level of the mipmapping emulation.\n\n"
 				"Automatic:\nAutomatically sets the mipmapping level based on the game.\n"
 				"This is the recommended setting.\n\n"
 				"Off:\nMipmapping emulation is disabled.\n\n"

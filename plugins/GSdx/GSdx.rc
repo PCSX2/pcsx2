@@ -128,13 +128,14 @@ BEGIN
     CONTROL         "Alpha Stencil",IDC_ALPHASTENCIL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,45,57,8
     CONTROL         "Auto Flush",IDC_AUTO_FLUSH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,58,55,8
     CONTROL         "Disable Depth Emulation",IDC_TC_DEPTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,71,92,8
-    CONTROL         "Fast Texture Invalidation",IDC_FAST_TC_INV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,84,92,8
+    CONTROL         "Disable Safe Features",IDC_SAFE_FEATURES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,84,85,8
     // Column two - HW hacks
-    CONTROL         "Frame Buffer Conversion",IDC_CPU_FB_CONVERSION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,19,92,8
-    CONTROL         "Memory Wrapping",IDC_MEMORY_WRAPPING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,32,75,8
-    CONTROL         "Merge Sprite",IDC_MERGE_PP_SPRITE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,45,90,8
-    CONTROL         "Preload Frame Data",IDC_PRELOAD_GS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,58,80,8
-    CONTROL         "Wild Arms Offset",IDC_WILDHACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,71,70,8
+    CONTROL         "Fast Texture Invalidation",IDC_FAST_TC_INV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,19,92,8
+    CONTROL         "Frame Buffer Conversion",IDC_CPU_FB_CONVERSION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,32,92,8
+    CONTROL         "Memory Wrapping",IDC_MEMORY_WRAPPING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,45,75,8
+    CONTROL         "Merge Sprite",IDC_MERGE_PP_SPRITE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,58,90,8
+    CONTROL         "Preload Frame Data",IDC_PRELOAD_GS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,71,80,8
+    CONTROL         "Wild Arms Offset",IDC_WILDHACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,84,70,8
     // Columns end
     //
     RTEXT           "MSAA:",IDC_MSAA_TEXT,54,99,22,8
