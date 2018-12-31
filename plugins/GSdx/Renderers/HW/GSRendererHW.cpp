@@ -41,18 +41,20 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_large_framebuffer  = theApp.GetConfigB("large_framebuffer");
 	m_accurate_date = theApp.GetConfigI("accurate_date");
 	if (theApp.GetConfigB("UserHacks")) {
+		m_userhacks_enabled_gs_mem_clear = !theApp.GetConfigB("UserHacks_Disable_Safe_Features");
+		m_userHacks_enabled_unscale_ptln = !theApp.GetConfigB("UserHacks_Disable_Safe_Features");
 		m_userhacks_align_sprite_X       = theApp.GetConfigB("UserHacks_align_sprite_X");
 		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
-		m_userhacks_disable_gs_mem_clear = theApp.GetConfigB("UserHacks_DisableGsMemClear");
 		m_userHacks_HPO                  = theApp.GetConfigI("UserHacks_HalfPixelOffset");
 		m_userHacks_merge_sprite         = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 		m_userhacks_tcoffset_x           = theApp.GetConfigI("UserHacks_TCOffsetX") / -1000.0f;
 		m_userhacks_tcoffset_y           = theApp.GetConfigI("UserHacks_TCOffsetY") / -1000.0f;
 		m_userhacks_tcoffset             = m_userhacks_tcoffset_x < 0.0f || m_userhacks_tcoffset_y < 0.0f;
 	} else {
+		m_userhacks_enabled_gs_mem_clear = true;
+		m_userHacks_enabled_unscale_ptln = true;
 		m_userhacks_align_sprite_X       = false;
 		m_userhacks_round_sprite_offset  = 0;
-		m_userhacks_disable_gs_mem_clear = false;
 		m_userHacks_HPO                  = 0;
 		m_userHacks_merge_sprite         = false;
 	}
@@ -989,7 +991,7 @@ void GSRendererHW::Draw()
 		return;
 	}
 
-	if (!m_userhacks_disable_gs_mem_clear) {
+	if (m_userhacks_enabled_gs_mem_clear) {
 		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
 				&& (!PRIM->ABE || m_context->ALPHA.IsOpaque()) // No transparency

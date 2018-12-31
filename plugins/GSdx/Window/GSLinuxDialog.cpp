@@ -445,6 +445,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* preload_gs_check    = CreateCheckBox("Preload Frame Data", "preload_frame_with_gs_data");
 	GtkWidget* hack_fast_inv       = CreateCheckBox("Fast Texture Invalidation", "UserHacks_DisablePartialInvalidation");
 	GtkWidget* hack_depth_check    = CreateCheckBox("Disable Depth Emulation", "UserHacks_DisableDepthSupport");
+	GtkWidget* hack_safe_features  = CreateCheckBox("Disable Safe Features", "UserHacks_Disable_Safe_Features");
 	GtkWidget* hack_cpu_fbcv       = CreateCheckBox("Frame Buffer Conversion", "UserHacks_CPU_FB_Conversion");
 	GtkWidget* hack_auto_flush     = CreateCheckBox("Auto Flush", "UserHacks_AutoFlush");
 	GtkWidget* hack_merge_sprite   = CreateCheckBox("Merge Sprite", "UserHacks_merge_pp_sprite");
@@ -475,6 +476,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_depth_check, IDC_TC_DEPTH);
 	AddTooltip(hack_cpu_fbcv, IDC_CPU_FB_CONVERSION);
 	AddTooltip(hack_auto_flush, IDC_AUTO_FLUSH);
+	AddTooltip(hack_safe_features, IDC_SAFE_FEATURES);
 	AddTooltip(hack_merge_sprite, IDC_MERGE_PP_SPRITE);
 	AddTooltip(hack_wrap_mem, IDC_MEMORY_WRAPPING);
 	AddTooltip(trilinear_box, IDC_TRI_FILTER);
@@ -484,11 +486,11 @@ void populate_hack_table(GtkWidget* hack_table)
 	s_table_line = 0;
 	//Hacks
 	// Column one and two HW Hacks
-	InsertWidgetInTable(hack_table , align_sprite_check  , hack_wrap_mem);
-	InsertWidgetInTable(hack_table , hack_auto_flush     , hack_merge_sprite);
-	InsertWidgetInTable(hack_table , hack_depth_check    , preload_gs_check);
+	InsertWidgetInTable(hack_table , align_sprite_check  , hack_cpu_fbcv);
+	InsertWidgetInTable(hack_table , hack_auto_flush     , hack_wrap_mem);
+	InsertWidgetInTable(hack_table , hack_depth_check    , hack_merge_sprite);
+	InsertWidgetInTable(hack_table , hack_safe_features  , preload_gs_check);
 	InsertWidgetInTable(hack_table , hack_fast_inv       , hack_wild_check);
-	InsertWidgetInTable(hack_table , hack_cpu_fbcv);
 	// Other upscaling hacks
 	InsertWidgetInTable(hack_table , trilinear_label     , trilinear_box);
 	InsertWidgetInTable(hack_table , hack_offset_label   , hack_offset_box);

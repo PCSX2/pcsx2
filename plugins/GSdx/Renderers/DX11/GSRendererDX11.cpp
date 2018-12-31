@@ -335,7 +335,7 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 
 	D3D11_PRIMITIVE_TOPOLOGY t;
 
-	bool unscale_pt_ln = (GetUpscaleMultiplier() != 1);
+	bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1);
 
 	switch (m_vt.m_primclass)
 	{

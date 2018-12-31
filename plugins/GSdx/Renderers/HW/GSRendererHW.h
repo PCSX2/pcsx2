@@ -37,7 +37,7 @@ private:
 
 	bool m_large_framebuffer;
 	bool m_userhacks_align_sprite_X;
-	bool m_userhacks_disable_gs_mem_clear;
+	bool m_userhacks_enabled_gs_mem_clear;
 	bool m_userHacks_merge_sprite;
 
 	#pragma region hacks
@@ -145,6 +145,7 @@ protected:
 
 	int m_userhacks_round_sprite_offset;
 	int m_userHacks_HPO;
+	bool m_userHacks_enabled_unscale_ptln;
 
 	bool m_userhacks_tcoffset;
 	float m_userhacks_tcoffset_x;

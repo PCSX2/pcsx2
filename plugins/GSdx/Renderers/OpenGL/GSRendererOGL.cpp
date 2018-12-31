@@ -61,7 +61,7 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 	}
 
 	GLenum t = 0;
-	bool unscale_pt_ln = (GetUpscaleMultiplier() != 1) && GLLoader::found_geometry_shader;
+	bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1) && GLLoader::found_geometry_shader;
 
 	switch(m_vt.m_primclass)
 	{
