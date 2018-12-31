@@ -36,7 +36,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Bilinear Forced (excluding sprite):\nAlways enable interpolation except for sprites (FMV/Text/2D elements)."
 				" Rendering is smoother but it could generate a few glitches. If upscaling is enabled, this setting is recommended over 'Bilinear Forced'\n\n"
 				"Bilinear Forced:\nAlways enable interpolation. Rendering is smoother but it could generate some glitches.\n\n"
-				"Bilinear PS2:\nUse same mode as the PS2. It is the more accurate option.\n\n";
+				"Bilinear PS2:\nUse same mode as the PS2. It is the more accurate option.";
 		case IDC_TRI_FILTER:
 			return "Control the texture tri-filtering of the emulation.\n\n"
 				"None:\nNo extra trilinear filtering.\n\n"
@@ -49,11 +49,12 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Partial will be selected for OpenGL.\nFull will be selected for Direct3D.\n\n"
 				"None:\nRemove all CRC hacks.\n\n"
 				"Minimum:\nEnable a couple of CRC hacks.\n\n"
-				"Partial:\nEnable most of the CRC hacks.\n"
-				"For an optimal experience with OpenGL.\n\n"
-				"Full:\nEnable all CRC hacks.\n"
-				"For an optimal experience with Direct3D.\n\n"
-				"Aggressive:\nUse more aggressive CRC hacks. Only affects a few games, removing some effects which might make the image sharper/clearer, and it can provide a nice speed boost in some cases.\n";
+				"Partial:\nFor an optimal experience with OpenGL.\n\n"
+				"Full:\nFor an optimal experience with Direct3D.\n\n"
+				"Aggressive:\nUse more aggressive CRC hacks.\n"
+				"Removes effects in some games which make the image appear sharper/clearer.\n"
+				"Affected games: AC4, DBZBT 2 & 3, FF games, GOW games, LegoBatman, MGS3, OnimushaDoD, RE4, SoTC, SMT3, SMTDDS1, SMTDDS2.\n"
+				"Works as a speedhack for: BleachBB, Kunoichi, Steambot Chronicles, The Simpsons Game.";
 		case IDC_SKIPDRAWHACK:
 		case IDC_SKIPDRAWHACKEDIT:
 		case IDC_SKIPDRAWOFFSET:
