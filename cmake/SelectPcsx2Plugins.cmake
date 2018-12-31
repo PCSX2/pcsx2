@@ -306,12 +306,7 @@ if(GTKn_FOUND)
 endif()
 #---------------------------------------
 
-#-------------------------------------------------------------------------------
-# Super-seeded by cdvdGigaherz
-set(CDVDpeops FALSE)
-
 # [TODO] Write CMakeLists.txt for these plugins. (or not ;) )
-set(PeopsSPU2 FALSE)
 set(SSSPSXPAD FALSE)
 set(xpad FALSE)
 #-------------------------------------------------------------------------------

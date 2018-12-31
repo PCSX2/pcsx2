@@ -19,7 +19,6 @@
 *.dump
 
 *.asm
-!/plugins/CDVDpeops/i386.asm
 !/plugins/zerogs/dx/x86-32.asm
 !/plugins/zerogs/dx/x86-64.asm
 !/plugins/zerogs/opengl/x86-32.asm
@@ -96,7 +95,6 @@ oprofile_data/
 /3rdparty/**/wx/msw/rcdefs.h
 /pcsx2/gui/Resources/*.h
 !/pcsx2/gui/Resources/EmbeddedImage.h
-/plugins/CDVDolio/Template
 /plugins/GSdx/Template
 /plugins/USBqemu/Win32/bin
 /plugins/xpad/Template

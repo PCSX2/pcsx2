@@ -14,10 +14,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDnull" AND CDVDnull)
 	add_subdirectory(CDVDnull)
 endif()
 
-#if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDpeops" AND CDVDpeops)
-#	add_subdirectory(CDVDpeops)
-#endif()
-
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/dev9null" AND dev9null)
 	add_subdirectory(dev9null)
 endif()
@@ -57,10 +53,6 @@ endif()
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/PadNull" AND PadNull)
 	add_subdirectory(PadNull)
 endif()
-
-# if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/PeopsSPU2" AND PeopsSPU2)
-# 	add_subdirectory(PeopsSPU2)
-# endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/SPU2null" AND SPU2null)
 	add_subdirectory(SPU2null)
