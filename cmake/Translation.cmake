@@ -53,6 +53,10 @@ MACRO(GETTEXT_CREATE_TRANSLATIONS_PCSX2 _potFile _firstPoFileArg)
         GET_FILENAME_COMPONENT(_lang ${_abs_PATH} NAME_WE)
         SET(_gmoFile ${CMAKE_BINARY_DIR}/${_lang}__${_gmoBase}.gmo)
 
+        IF (_currentPoFile MATCHES ".git")
+            continue()
+        ENDIF (_currentPoFile MATCHES ".git")
+
         IF (CMAKE_BUILD_PO)
             ADD_CUSTOM_COMMAND( OUTPUT ${_gmoFile}
                 COMMAND ${GETTEXT_MSGMERGE_EXECUTABLE} --quiet --update --backup=none -s ${_absFile} ${_absPotFile}
