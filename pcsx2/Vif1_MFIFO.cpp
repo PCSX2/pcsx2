@@ -48,7 +48,6 @@ static u16 QWCinVIFMFIFO(u32 DrainADDR, u16 qwc)
 }
 static __fi bool mfifoVIF1rbTransfer()
 {
-	u32 maddr = dmacRegs.rbor.ADDR;
 	u32 msize = dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16;
 	u16 mfifoqwc = std::min(QWCinVIFMFIFO(vif1ch.madr, vif1ch.qwc), vif1ch.qwc);
 	u32 *src;
