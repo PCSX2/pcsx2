@@ -296,14 +296,12 @@ void GSSettingsDlg::UpdateAdapters()
 		return;
 
 	const GSRendererType renderer = static_cast<GSRendererType>(data);
-	const bool ogl = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::OGL_SW || renderer == GSRendererType::OGL_OpenCL;
 	const bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL;
-	const bool null = renderer == GSRendererType::Null;
 
-	EnableWindow(GetDlgItem(m_hWnd, IDC_ADAPTER), !(ogl || null));
-	EnableWindow(GetDlgItem(m_hWnd, IDC_ADAPTER_TEXT), !(ogl || null));
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ADAPTER), dx11);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ADAPTER_TEXT), dx11);
 
-	if (ogl || null)
+	if (!dx11)
 	{
 		SendMessage(GetDlgItem(m_hWnd, IDC_ADAPTER), CB_RESETCONTENT, 0, 0);
 		return;
@@ -614,7 +612,6 @@ void GSHacksDlg::OnInit()
 	unsigned short upscaling_multiplier = static_cast<unsigned short>(SendMessage(hwnd_upscaling, CB_GETITEMDATA, SendMessage(hwnd_upscaling, CB_GETCURSEL, 0, 0), 0));
 
 	// It can only be accessed with a HW renderer, so this is sufficient.
-	bool dx11 = renderer == GSRendererType::DX1011_HW;
 	bool ogl = renderer == GSRendererType::OGL_HW;
 	bool native = upscaling_multiplier == 1;
 	bool msaadisabled = true;
@@ -666,7 +663,7 @@ void GSHacksDlg::OnInit()
 
 	// Direct3D-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), !ogl);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), dx11);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAACB), !msaadisabled);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !msaadisabled);
 
