@@ -22,6 +22,7 @@
 #include "GameDatabase.h"
 
 #include <memory>
+#include <vector>
 #include <wx/textfile.h>
 #include <wx/dir.h>
 #include <wx/txtstrm.h>
@@ -33,7 +34,8 @@
 extern void _ApplyPatch(IniPatch *p);
 
 
-IniPatch Patch[ MAX_PATCH ];
+
+std::vector<IniPatch> Patch;
 
 int patchnumber = 0;
 
@@ -313,17 +315,15 @@ namespace PatchFunc
 
 		try
 		{
-			if(patchnumber >= MAX_PATCH)
-				throw wxString( L"Maximum number of patches reached" );
-
-			IniPatch& iPatch = Patch[patchnumber];
 			PatchPieces pieces(param);
 
+            IniPatch iPatch = { 0 };
 			iPatch.enabled = 0;
-
 			iPatch.placetopatch	= StrToU32(pieces.PlaceToPatch(), 10);
+
 			if (iPatch.placetopatch >= _PPT_END_MARKER)
 				throw wxsFormat(L"Invalid 'place' value '%s' (0 - once on startup, 1: continuously)", WX_STR(pieces.PlaceToPatch()));
+
 			iPatch.cpu			= (patch_cpu_type)PatchTableExecute(pieces.CpuType(), cpuCore);
 			iPatch.addr			= StrToU32(pieces.MemAddr(), 16);
 			iPatch.type			= (patch_data_type)PatchTableExecute(pieces.OperandSize(), dataType);
@@ -336,6 +336,7 @@ namespace PatchFunc
 				throw wxsFormat(L"Unrecognized Operand Size: '%s'", WX_STR(pieces.OperandSize()));
 
 			iPatch.enabled = 1; // omg success!!
+            Patch.push_back(iPatch);
 
 			patchnumber++;
 		}
