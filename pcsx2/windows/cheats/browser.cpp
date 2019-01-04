@@ -75,7 +75,7 @@ void RefreshListBox(HWND hWnd)
 	char cpucore[2][10]={"EE", "IOP"};
 
 	// Adding items
-	for (int i = patchnumber-1; i >= 0; i--)
+	for (int i = Patch.size()-1; i >= 0; i--)
 	{
 		sprintf(Address, "0x%.8x", patch[i].addr);
 		sprintf(CPU, "%s", cpucore[patch[i].cpu-1]);
@@ -697,8 +697,7 @@ BOOL CALLBACK AddPatchProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						break;
 
 					// Add new patch, refresh and exit
-					memcpy((void *)&patch[patchnumber], (void *)&temp, sizeof(IniPatch));
-					patchnumber++;
+                    Patch.push_back(temp);
 					RefreshListBox(hParent);
 					EndDialog(hWnd,1);
 					break;
@@ -952,7 +951,7 @@ BOOL CALLBACK pnachWriterProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					}
 
 					// write patches
-					for(int i=0;i<patchnumber;i++)
+					for(unsigned int i=0;i<Patch.size();i++)
 					{
 						char cpucore[10], type[10];
 						switch(patch[i].cpu)

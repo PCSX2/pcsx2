@@ -34,10 +34,8 @@
 extern void _ApplyPatch(IniPatch *p);
 
 
-
 std::vector<IniPatch> Patch;
 
-int patchnumber = 0;
 
 wxString strgametitle;
 
@@ -154,7 +152,7 @@ int LoadPatchesFromGamesDB(const wxString& crc, const Game_Data& game)
 
 	if (patchFound) TrimPatches(patch);
 
-	return patchnumber;
+	return Patch.size();
 }
 
 void inifile_processString(const wxString& inStr)
@@ -176,7 +174,7 @@ void inifile_process(wxTextFile &f1 )
 
 void ForgetLoadedPatches()
 {
-  patchnumber = 0;
+    Patch.clear();
 }
 
 static int _LoadPatchFiles(const wxDirName& folderName, wxString& fileSpec, const wxString& friendlyName, int& numberFoundPatchFiles)
@@ -189,18 +187,18 @@ static int _LoadPatchFiles(const wxDirName& folderName, wxString& fileSpec, cons
 	}
 	wxDir dir(folderName.ToString());
 
-	int before = patchnumber;
+	int before = Patch.size();
 	wxString buffer;
 	wxTextFile f;
 	bool found = dir.GetFirst(&buffer, L"*", wxDIR_FILES);
 	while (found) {
 		if (buffer.Upper().Matches(fileSpec.Upper())) {
 			PatchesCon->WriteLn(Color_Green, L"Found %s file: '%s'", WX_STR(friendlyName), WX_STR(buffer));
-			int before = patchnumber;
+			int before = Patch.size();
 			f.Open(Path::Combine(dir.GetName(), buffer));
 			inifile_process(f);
 			f.Close();
-			int loaded = patchnumber - before;
+			int loaded = Patch.size() - before;
 			PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), L"Loaded %d %s from '%s' at '%s'",
 			                    loaded, WX_STR(friendlyName), WX_STR(buffer), WX_STR(folderName.ToString()));
 			numberFoundPatchFiles++;
@@ -208,7 +206,7 @@ static int _LoadPatchFiles(const wxDirName& folderName, wxString& fileSpec, cons
 		found = dir.GetNext(&buffer);
 	}
 
-	return patchnumber - before;
+	return Patch.size() - before;
 }
 
 // This routine loads patches from a zip file
@@ -218,7 +216,7 @@ static int _LoadPatchFiles(const wxDirName& folderName, wxString& fileSpec, cons
 int LoadPatchesFromZip(wxString gameCRC, const wxString& patchesArchiveFilename) {
 	gameCRC.MakeUpper();
 
-	int before = patchnumber;
+	int before = Patch.size();
 
 	std::unique_ptr<wxZipEntry> entry;
 	wxFFileInputStream in(patchesArchiveFilename);
@@ -236,7 +234,7 @@ int LoadPatchesFromZip(wxString gameCRC, const wxString& patchesArchiveFilename)
 			}
 		}
 	}
-	return patchnumber - before;
+	return Patch.size() - before;
 }
 
 
@@ -338,7 +336,6 @@ namespace PatchFunc
 			iPatch.enabled = 1; // omg success!!
             Patch.push_back(iPatch);
 
-			patchnumber++;
 		}
 		catch( wxString& exmsg )
 		{
@@ -352,7 +349,7 @@ namespace PatchFunc
 // This is for applying patches directly to memory
 void ApplyLoadedPatches(patch_place_type place)
 {
-	for (int i = 0; i < patchnumber; i++)
+	for (unsigned int i = 0; i < Patch.size(); i++)
 	{
 	    if (Patch[i].placetopatch == place)
             _ApplyPatch(&Patch[i]);
