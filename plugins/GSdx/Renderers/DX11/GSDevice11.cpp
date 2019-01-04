@@ -1506,7 +1506,7 @@ void GSDevice11::CompileShader(std::vector<char> source, const char* fn, ID3DInc
 
 	if(error)
 	{
-		//fprintf(stderr, "%s\n", (const char*)error->GetBufferPointer());
+		fprintf(stderr, "%s\n", (const char*)error->GetBufferPointer());
 	}
 
 	if(FAILED(hr))
