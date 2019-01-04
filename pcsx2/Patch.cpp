@@ -349,9 +349,8 @@ namespace PatchFunc
 // This is for applying patches directly to memory
 void ApplyLoadedPatches(patch_place_type place)
 {
-	for (unsigned int i = 0; i < Patch.size(); i++)
-	{
-	    if (Patch[i].placetopatch == place)
-            _ApplyPatch(&Patch[i]);
+    for (auto i : Patch){
+	    if (i.placetopatch == place)
+            _ApplyPatch(&i);
 	}
 }
