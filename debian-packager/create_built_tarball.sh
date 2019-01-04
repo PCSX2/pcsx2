@@ -91,7 +91,7 @@ remove_not_yet_free_plugin()
 {
     echo "Remove non free plugins"
     # remove also deprecated plugins
-    for plugin in CDVDiso CDVDisoEFP CDVDlinuz CDVDolio CDVDpeops PeopsSPU2 SSSPSXPAD USBqemu xpad zerogs zerospu2
+    for plugin in CDVDiso SSSPSXPAD USBqemu xpad zerogs zerospu2
     do
         rm -fr $LOCAL_REPO/plugins/$plugin
     done
