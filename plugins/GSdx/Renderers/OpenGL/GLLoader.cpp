@@ -326,7 +326,32 @@ namespace GLLoader {
 		return true;
 	}
 
-    bool check_gl_version(int major, int minor) {
+	// AMD's GL_version is made of: <OpenGL version number> <requested context> <DriverVersion>
+	// Technically speaking we'd just be interested in the atioglxx/fglrx_dri userspace lib,
+	// whose revision number is comfortably exposed in the first element of the string above.
+	// Unfortunately (at least for the 2 problems we have), its reported version doesn't readily
+	// change across the buggy and fixed "branch". Therefore look for the kernel driver build.
+	//
+	// Coincidentally the same position is also where Intel and Nvidia put their only version id
+	bool check_driver_version(const unsigned char *s, std::string v) {
+		std::stringstream iss(v);
+		std::vector<int> fixed_version((std::istream_iterator<int>(iss)), std::istream_iterator<int>());
+		const char *version_string = strrchr(reinterpret_cast<const char *>(s), ' ');
+		char *offset;
+		for (const auto fixed_version_part : fixed_version)
+		{
+			const long used_version = strtol(version_string, &offset, 10);
+			if (used_version < fixed_version_part) {
+				return 0;
+			}
+			if (used_version > fixed_version_part)
+				return 1;
+			version_string = offset + 1;
+		}
+		return 1;
+	}
+
+	bool check_gl_version(int major, int minor) {
 
 		const GLubyte* s = glGetString(GL_VERSION);
 		if (s == NULL) {
@@ -340,25 +365,13 @@ namespace GLLoader {
 		// 32-bit driver should always actually just report the former
 		if (strstr(vendor, "ATI Technologies Inc.") || strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI")) {
 			vendor_id_amd = true;
-			// AMD's GL_version is made of: <OpenGL version number> <requested context> <DriverVersion>
-			// Technically speaking we'd just be interested in the atioglxx/fglrx_dri userspace lib
-			// (whose revision number is comfortably exposed in the first element of the string above)
-			// Unfortuntately after testing for at least these 2 cases we check, I found that had same
-			// versions across the buggy and fixed "branch". Threfore look for the kernel driver build.
-			//
-			// Screw Wx screwings (it's nice we have decimal separator localized... but dlls do not)
-			char* pEnd;
-#ifdef _WIN32
-			GLfloat v = _strtof_l(strrchr((char*)s, ' '), &pEnd, _create_locale(LC_NUMERIC, "C"));
-#else
-			GLfloat v = strtof_l(strrchr((char*)s, ' '), &pEnd, newlocale(LC_NUMERIC, "C", NULL));
-#endif
-			/*if (v < 15.3f)
-				amd_legacy_buggy_driver = true;
+			/*if (!check_driver_version(s,"15 300")) // Crimson ~15.11 beta
+			amd_legacy_buggy_driver = true;
 			*/
-			if (v < 25.20f || (v < 25.21f && atoi(pEnd + 1) < 1407))
+			if (!check_driver_version(s,"25 20 14007 1000")) // Adrenalin 18.10.2
 				amd_buggy_driver = true;
 		}
+
 		if (strstr(vendor, "NVIDIA Corporation"))
 			vendor_id_nvidia = true;
 
