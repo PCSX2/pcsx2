@@ -115,7 +115,7 @@ static void inifile_command(const wxString& cmd)
 
 	// Is this really what we want to be doing here? Seems like just leaving it empty/blank
 	// would make more sense... --air
-    if (set.rvalue.IsEmpty()) set.rvalue = set.lvalue;
+	if (set.rvalue.IsEmpty()) set.rvalue = set.lvalue;
 
 	/*int code = */PatchTableExecute(set, commands_patch);
 }
@@ -126,7 +126,7 @@ void TrimPatches(wxString& s)
 {
 	wxStringTokenizer tkn( s, L"\n" );
 
-    while(tkn.HasMoreTokens()) {
+	while(tkn.HasMoreTokens()) {
 		inifile_command(tkn.GetNextToken());
 	}
 }
@@ -157,24 +157,24 @@ int LoadPatchesFromGamesDB(const wxString& crc, const Game_Data& game)
 
 void inifile_processString(const wxString& inStr)
 {
-  wxString str(inStr);
-  inifile_trim(str);
-  if (!str.IsEmpty()) inifile_command(str);
+	wxString str(inStr);
+	inifile_trim(str);
+	if (!str.IsEmpty()) inifile_command(str);
 }
 
 // This routine receives a file from inifile_read, trims it,
 // Then sends the command to be parsed.
 void inifile_process(wxTextFile &f1 )
 {
-    for (uint i = 0; i < f1.GetLineCount(); i++)
-    {
-        inifile_processString(f1[i]);
-    }
+	for (uint i = 0; i < f1.GetLineCount(); i++)
+	{
+		inifile_processString(f1[i]);
+	}
 }
 
 void ForgetLoadedPatches()
 {
-    Patch.clear();
+	Patch.clear();
 }
 
 static int _LoadPatchFiles(const wxDirName& folderName, wxString& fileSpec, const wxString& friendlyName, int& numberFoundPatchFiles)
@@ -200,7 +200,7 @@ static int _LoadPatchFiles(const wxDirName& folderName, wxString& fileSpec, cons
 			f.Close();
 			int loaded = Patch.size() - before;
 			PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), L"Loaded %d %s from '%s' at '%s'",
-			                    loaded, WX_STR(friendlyName), WX_STR(buffer), WX_STR(folderName.ToString()));
+								loaded, WX_STR(friendlyName), WX_STR(buffer), WX_STR(folderName.ToString()));
 			numberFoundPatchFiles++;
 		}
 		found = dir.GetNext(&buffer);
@@ -227,7 +227,7 @@ int LoadPatchesFromZip(wxString gameCRC, const wxString& patchesArchiveFilename)
 		name.MakeUpper();
 		if (name.Find(gameCRC) == 0 && name.Find(L".PNACH")+6u == name.Length()) {
 			PatchesCon->WriteLn(Color_Green, L"Loading patch '%s' from archive '%s'",
-			                    WX_STR(entry->GetName()), WX_STR(patchesArchiveFilename));
+								WX_STR(entry->GetName()), WX_STR(patchesArchiveFilename));
 			wxTextInputStream pnach(zip);
 			while (!zip.Eof()) {
 				inifile_processString(pnach.ReadLine());
@@ -263,28 +263,28 @@ int LoadPatchesFromDir(wxString name, const wxDirName& folderName, const wxStrin
 
 static u32 StrToU32(const wxString& str, int base = 10)
 {
-    unsigned long l;
-    str.ToULong(&l, base);
-    return l;
+	unsigned long l;
+	str.ToULong(&l, base);
+	return l;
 }
 
 static u64 StrToU64(const wxString& str, int base = 10)
 {
-    wxULongLong_t l;
-    str.ToULongLong(&l, base);
-    return l;
+	wxULongLong_t l;
+	str.ToULongLong(&l, base);
+	return l;
 }
 
 // PatchFunc Functions.
 namespace PatchFunc
 {
-    void comment( const wxString& text1, const wxString& text2 )
-    {
+	void comment( const wxString& text1, const wxString& text2 )
+	{
 		PatchesCon->WriteLn(L"comment: " + text2);
-    }
+	}
 
-    struct PatchPieces
-    {
+	struct PatchPieces
+	{
 		wxArrayString m_pieces;
 
 		PatchPieces( const wxString& param )
@@ -299,7 +299,7 @@ namespace PatchFunc
 		const wxString& MemAddr() const			{ return m_pieces[2]; }
 		const wxString& OperandSize() const		{ return m_pieces[3]; }
 		const wxString& WriteValue() const		{ return m_pieces[4]; }
-    };
+	};
 
 	void patchHelper(const wxString& cmd, const wxString& param) {
 		// Error Handling Note:  I just throw simple wxStrings here, and then catch them below and
@@ -315,7 +315,7 @@ namespace PatchFunc
 		{
 			PatchPieces pieces(param);
 
-            IniPatch iPatch = { 0 };
+			IniPatch iPatch = { 0 };
 			iPatch.enabled = 0;
 			iPatch.placetopatch	= StrToU32(pieces.PlaceToPatch(), 10);
 
@@ -334,7 +334,7 @@ namespace PatchFunc
 				throw wxsFormat(L"Unrecognized Operand Size: '%s'", WX_STR(pieces.OperandSize()));
 
 			iPatch.enabled = 1; // omg success!!
-            Patch.push_back(iPatch);
+			Patch.push_back(iPatch);
 
 		}
 		catch( wxString& exmsg )
@@ -349,9 +349,9 @@ namespace PatchFunc
 // This is for applying patches directly to memory
 void ApplyLoadedPatches(patch_place_type place)
 {
-    for (auto& i : Patch)
-    {
-	    if (i.placetopatch == place)
-            _ApplyPatch(&i);
+	for (auto& i : Patch)
+	{
+		if (i.placetopatch == place)
+			_ApplyPatch(&i);
 	}
 }

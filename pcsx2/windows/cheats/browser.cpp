@@ -697,7 +697,7 @@ BOOL CALLBACK AddPatchProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						break;
 
 					// Add new patch, refresh and exit
-                    Patch.push_back(temp);
+					Patch.push_back(temp);
 					RefreshListBox(hParent);
 					EndDialog(hWnd,1);
 					break;
