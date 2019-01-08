@@ -44,7 +44,6 @@ struct Component_FileMcd;
 static const int MCD_SIZE	= 1024 *  8  * 16;		// Legacy PSX card default size
 
 static const int MC2_MBSIZE	= 1024 * 528 * 2;		// Size of a single megabyte of card data
-static const int MC2_SIZE	= MC2_MBSIZE * 8;		// PS2 card default size (8MB)
 
 // --------------------------------------------------------------------------------------
 //  FileMemoryCard
