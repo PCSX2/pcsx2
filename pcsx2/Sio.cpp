@@ -33,7 +33,8 @@ static const u8 memcard_psx[] = {0x5A, 0x5D, 0x5C, 0x5D, 0x04, 0x00, 0x00, 0x80}
 
 // Memory Card Specs for standard Sony 8mb carts:
 //    Flags (magic sio '+' thingie!), Sector size, eraseBlockSize (in pages), card size (in pages), xor checksum (superblock?), terminator (unused?).
-static const mc_command_0x26_tag mc_sizeinfo_8mb= {'+', 512, 16, 0x4000, 0x52, 0x5A};
+// FIXME variable commented out since it's not used atm.
+// static const mc_command_0x26_tag mc_sizeinfo_8mb= {'+', 512, 16, 0x4000, 0x52, 0x5A};
 
 // Ejection timeout management belongs in the MemoryCardFile plugin, except the plugin
 // interface is not yet complete.

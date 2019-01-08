@@ -129,7 +129,6 @@ static const __aligned16 u32 VU_Zero_Mask[4]				= {0x00000000, 0x00000000, 0x000
 static const __aligned16 u32 VU_Zero_Helper_Mask[4]			= {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
 static const __aligned16 u32 VU_Signed_Zero_Mask[4]			= {0x80000000, 0x80000000, 0x80000000, 0x80000000};
 static const __aligned16 u32 VU_Pos_Infinity[4]				= {0x7f800000, 0x7f800000, 0x7f800000, 0x7f800000};
-static const __aligned16 u32 VU_Neg_Infinity[4]				= {0xff800000, 0xff800000, 0xff800000, 0xff800000};
 //------------------------------------------------------------------
 
 
