@@ -61,7 +61,6 @@ set(spu2xHeaders
     Debug.h
     defs.h
     Dma.h
-    DPLII.h
     Global.h
     Lowpass.h
     Mixer.h
