@@ -202,7 +202,6 @@ public:
 				// *** Word 2
 				// Blend and Colclip
 				uint32 clr1:1;
-				uint32 colclip:2;
 
 				// Others ways to fetch the texture
 				uint32 channel:3;
@@ -215,7 +214,7 @@ public:
 				uint32 tales_of_abyss_hle:1;
 				uint32 point_sampler:1;
 
-				uint32 _free:26;
+				uint32 _free:28;
 			};
 
 			uint64 key;
@@ -281,7 +280,6 @@ public:
 				uint32 wg:1;
 				uint32 wb:1;
 				uint32 wa:1;
-				uint32 negative:1;
 			};
 
 			struct
@@ -294,7 +292,7 @@ public:
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x3fff;}
+		operator uint32() {return key & 0x1fff;}
 
 		OMBlendSelector() : key(0) {}
 

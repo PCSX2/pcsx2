@@ -31,7 +31,6 @@
 #define PS_FBA 0
 #define PS_AOUT 0
 #define PS_LTF 1
-#define PS_COLCLIP 0
 #define PS_SPRITEHACK 0
 #define PS_TCOFFSETHACK 0
 #define PS_POINT_SAMPLER 0
@@ -634,16 +633,6 @@ float4 ps_color(PS_INPUT input)
 	atst(c);
 
 	c = fog(c, input.t.z);
-
-	// FIXME: Colclip and Depth sampling shouldn't run together.
-	if (PS_COLCLIP == 2)
-	{
-		c.rgb = 256./255. - c.rgb;
-	}
-	if (PS_COLCLIP > 0)
-	{
-		c.rgb *= c.rgb < 128./255;
-	}
 
 	if(PS_CLR1) // needed for Cd * (As/Ad/F + 1) blending modes
 	{

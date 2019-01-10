@@ -538,21 +538,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		}
 	}
 
-	bool colclip_wrap = m_env.COLCLAMP.CLAMP == 0 && !tex && PRIM->PRIM != GS_POINTLIST;
-	if (colclip_wrap)
-	{
-		if ((m_context->ALPHA.A == m_context->ALPHA.B) || !m_om_bsel.abe) // Optimize-away colclip
-		{
-			// No addition neither substraction so no risk of overflow the [0:255] range.
-			colclip_wrap = false;
-		}
-		else
-		{
-			m_ps_sel.colclip = 1;
-			// fprintf(stderr, "COLCLIP ENABLED (blending is %d/%d/%d/%d)\n", m_context->ALPHA.A, m_context->ALPHA.B, m_context->ALPHA.C, m_context->ALPHA.D);
-		}
-	}
-
 	m_ps_sel.clr1 = m_om_bsel.IsCLR1();
 	m_ps_sel.fba = m_context->FBA.FBA;
 
@@ -691,21 +676,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	if (ate_first_pass)
 	{
 		dev->DrawIndexedPrimitive();
-
-		if (colclip_wrap)
-		{
-			GSDeviceDX::OMBlendSelector om_bselneg(m_om_bsel);
-			GSDeviceDX::PSSelector ps_selneg(m_ps_sel);
-
-			om_bselneg.negative = 1;
-			ps_selneg.colclip = 2;
-
-			dev->SetupOM(m_om_dssel, om_bselneg, afix);
-			dev->SetupPS(ps_selneg, &ps_cb, m_ps_ssel);
-
-			dev->DrawIndexedPrimitive();
-			dev->SetupOM(m_om_dssel, m_om_bsel, afix);
-		}
 	}
 
 	if (ate_second_pass)
@@ -767,20 +737,6 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 			dev->SetupOM(m_om_dssel, m_om_bsel, afix);
 
 			dev->DrawIndexedPrimitive();
-
-			if (colclip_wrap)
-			{
-				GSDeviceDX::OMBlendSelector om_bselneg(m_om_bsel);
-				GSDeviceDX::PSSelector ps_selneg(m_ps_sel);
-
-				om_bselneg.negative = 1;
-				ps_selneg.colclip = 2;
-
-				dev->SetupOM(m_om_dssel, om_bselneg, afix);
-				dev->SetupPS(ps_selneg, &ps_cb, m_ps_ssel);
-
-				dev->DrawIndexedPrimitive();
-			}
 		}
 	}
 
