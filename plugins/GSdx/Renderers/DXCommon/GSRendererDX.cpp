@@ -339,6 +339,8 @@ void GSRendererDX::ResetStates()
 
 void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
+	GSTexture* hdr_rt = NULL;
+
 	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
 	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
 
@@ -481,6 +483,18 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	}
 
 	//
+
+	bool hdr_colclip = m_env.COLCLAMP.CLAMP == 0 && rt;
+	if (hdr_colclip)
+	{
+		// fprintf(stderr, "COLCLIP HDR mode ENABLED\n");
+		GSVector4 sRect(0, 0, 1, 1);
+		GSVector4 dRect(0, 0, rtsize.x, rtsize.y);
+		hdr_rt = dev->CreateRenderTarget(rtsize.x, rtsize.y, false, DXGI_FORMAT_R32G32B32A32_FLOAT);
+		// Warning: StretchRect must be called before BeginScene otherwise
+		// vertices will be overwritten. Trust me you don't want to do that.
+		dev->StretchRect(rt, sRect, hdr_rt, dRect, ShaderConvert_COPY, false);
+	}
 
 	dev->BeginScene();
 
@@ -660,7 +674,11 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
 	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
 
-	dev->OMSetRenderTargets(rt, ds, &scissor);
+	if (hdr_colclip)
+		dev->OMSetRenderTargets(hdr_rt, ds, &scissor);
+	else
+		dev->OMSetRenderTargets(rt, ds, &scissor);
+
 	dev->PSSetShaderResource(0, tex ? tex->m_texture : NULL);
 	dev->PSSetShaderResource(1, tex ? tex->m_palette : NULL);
 
@@ -741,4 +759,15 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	}
 
 	dev->EndScene();
+
+	// Warning: EndScene must be called before StretchRect otherwise
+	// vertices will be overwritten. Trust me you don't want to do that.
+	if (hdr_rt)
+	{
+		GSVector4 sRect(0, 0, 1, 1);
+		GSVector4 dRect(0, 0, rtsize.x, rtsize.y);
+		dev->StretchRect(hdr_rt, sRect, rt, dRect, ShaderConvert_MOD_256, false);
+
+		dev->Recycle(hdr_rt);
+	}
 }
