@@ -131,8 +131,13 @@ PS_OUTPUT ps_main3(PS_INPUT input)
 PS_OUTPUT ps_main4(PS_INPUT input)
 {
 	PS_OUTPUT output;
-	
-	output.c = fmod(sample_c(input.t) * 255 + 0.5f, 256) / 255;
+
+	float4 c = round(sample_c(input.t) * 255);
+	// We use 2 fmod to avoid negative value.
+	float4 fmod1 = fmod(c, 256) + 256;
+	float4 fmod2 = fmod(fmod1, 256);
+
+	output.c = fmod2 / 255.0f;
 
 	return output;
 }
