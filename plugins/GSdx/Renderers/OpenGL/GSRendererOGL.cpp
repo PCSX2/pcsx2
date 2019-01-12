@@ -1097,7 +1097,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		if (m_prim_overlap == PRIM_OVERLAP_NO || m_texture_shuffle) {
 			// It is way too complex to emulate texture shuffle with DATE. So just use
 			// the slow but accurate algo
-			GL_PERF("Slower DATE with alpha %d-%d (%s)", m_vt.m_alpha.min, m_vt.m_alpha.max, m_texture_shuffle ? "texture shuffle" : "no prim overlap");
+			GL_PERF("DATE with %s", m_texture_shuffle ? "texture shuffle" : "no prim overlap");
 			m_require_full_barrier = true;
 			DATE_GL45 = true;
 			DATE = false;
