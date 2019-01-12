@@ -169,6 +169,7 @@ public:
 	void SetScaling();
 	void Lines2Sprites();
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
+	GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
 	void MergeSprite(GSTextureCache::Source* tex);
 
 	void Reset();

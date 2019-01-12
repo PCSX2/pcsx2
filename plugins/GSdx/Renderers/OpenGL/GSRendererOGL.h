@@ -59,8 +59,6 @@ class GSRendererOGL final : public GSRendererHW
 		GSDeviceOGL::VSConstantBuffer vs_cb;
 		GSDeviceOGL::PSConstantBuffer ps_cb;
 
-		GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
-
 		bool m_require_one_barrier;
 		bool m_require_full_barrier;
 
