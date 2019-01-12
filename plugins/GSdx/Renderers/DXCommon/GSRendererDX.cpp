@@ -465,11 +465,10 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	if (DATE)
 	{
-		GSVector4 s = GSVector4(rtscale.x / rtsize.x, rtscale.y / rtsize.y);
-		GSVector4 off = GSVector4(-1.0f, 1.0f);
+		GSVector4i dRect = ComputeBoundingBox(rtscale, rtsize);
 
-		GSVector4 src = ((m_vt.m_min.p.xyxy(m_vt.m_max.p) + off.xxyy()) * s.xyxy()).sat(off.zzyy());
-		GSVector4 dst = src * 2.0f + off.xxxx();
+		GSVector4 src = GSVector4(dRect) / GSVector4(rtsize.x, rtsize.y).xyxy();
+		GSVector4 dst = src * 2.0f - 1.0f;
 
 		GSVertexPT1 vertices[] =
 		{
@@ -488,8 +487,8 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	if (hdr_colclip)
 	{
 		// fprintf(stderr, "COLCLIP HDR mode ENABLED\n");
-		GSVector4 sRect(0, 0, 1, 1);
-		GSVector4 dRect(0, 0, rtsize.x, rtsize.y);
+		GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
+		GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
 		hdr_rt = dev->CreateRenderTarget(rtsize.x, rtsize.y, false, DXGI_FORMAT_R32G32B32A32_FLOAT);
 		// Warning: StretchRect must be called before BeginScene otherwise
 		// vertices will be overwritten. Trust me you don't want to do that.
@@ -674,7 +673,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
 	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
 
-	if (hdr_colclip)
+	if (hdr_rt)
 		dev->OMSetRenderTargets(hdr_rt, ds, &scissor);
 	else
 		dev->OMSetRenderTargets(rt, ds, &scissor);
@@ -764,8 +763,8 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	// vertices will be overwritten. Trust me you don't want to do that.
 	if (hdr_rt)
 	{
-		GSVector4 sRect(0, 0, 1, 1);
-		GSVector4 dRect(0, 0, rtsize.x, rtsize.y);
+		GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
+		GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
 		dev->StretchRect(hdr_rt, sRect, rt, dRect, ShaderConvert_MOD_256, false);
 
 		dev->Recycle(hdr_rt);

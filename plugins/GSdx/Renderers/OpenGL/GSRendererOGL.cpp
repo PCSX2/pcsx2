@@ -964,14 +964,6 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 	return overlap;
 }
 
-GSVector4i GSRendererOGL::ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize)
-{
-	GSVector4 scale = GSVector4(rtscale.x, rtscale.y);
-	GSVector4 offset = GSVector4(-1.0f, 1.0f); // Round value
-	GSVector4 box = m_vt.m_min.p.xyxy(m_vt.m_max.p) + offset.xxyy();
-	return GSVector4i(box * scale.xyxy()).rintersect(GSVector4i(0, 0, rtsize.x, rtsize.y));
-}
-
 void GSRendererOGL::SendDraw()
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
