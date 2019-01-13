@@ -55,7 +55,6 @@ public:
 		DestroyAllHumans2,
 		DevilMayCry3,
 		DuelSaviorDestiny,
-		EternalPoison,
 		EvangelionJo,
 		FFX,
 		FFX2,

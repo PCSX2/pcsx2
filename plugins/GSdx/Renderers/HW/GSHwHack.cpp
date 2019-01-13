@@ -1041,21 +1041,6 @@ bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 // Correctly emulated on OpenGL but can be used as potential speed hack
 ////////////////////////////////////////////////////////////////////////////////
 
-bool GSC_EternalPoison(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		// Texture shuffle or hdr colclip ???
-		if(fi.TPSM == PSM_PSMCT16S && fi.TBP0 == 0x3200)
-		{
-			// Removes shadows.
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1923,7 +1908,6 @@ void GSState::SetupCrcHack()
 
 		// Not tested but must be fixed with texture shuffle
 		lut[CRC::CrashNburn] = GSC_CrashNburn; // seem to be a basic depth effect
-		lut[CRC::EternalPoison] = GSC_EternalPoison;
 		lut[CRC::LegoBatman] = GSC_LegoBatman;
 
 		// Those games might requires accurate fbmask

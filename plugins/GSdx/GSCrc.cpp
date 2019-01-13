@@ -353,8 +353,6 @@ CRC::Game CRC::m_games[] =
 	{0xC0659AD1, NarutimateAccel, JP, 0}, // cutie comment
 	{0xF3D9DFBE, NarutimateAccel, JP, 0},
 	{0x59739DDE, Naruto, JP, 0}, // cutie comment
-	{0xF7786EE4, EternalPoison, JP, 0}, // cutie comment
-	{0x2BE55519, EternalPoison, US, 0},
 	{0xE01F57EC, LegoBatman, US, 0}, // cutie comment
 	{0xE01F57ED, LegoBatman, EU, 0},
 	{0xE0347841, XenosagaE3, JP, 0}, // cutie comment
