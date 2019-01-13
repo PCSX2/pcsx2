@@ -227,7 +227,7 @@ int LoadPatchesFromZip(wxString gameCRC, const wxString& patchesArchiveFilename)
 		name.MakeUpper();
 		if (name.Find(gameCRC) == 0 && name.Find(L".PNACH")+6u == name.Length()) {
 			PatchesCon->WriteLn(Color_Green, L"Loading patch '%s' from archive '%s'",
-								WX_STR(entry->GetName()), WX_STR(patchesArchiveFilename));
+				WX_STR(entry->GetName()), WX_STR(patchesArchiveFilename));
 			wxTextInputStream pnach(zip);
 			while (!zip.Eof()) {
 				inifile_processString(pnach.ReadLine());
