@@ -614,7 +614,6 @@ void GSHacksDlg::OnInit()
 	// It can only be accessed with a HW renderer, so this is sufficient.
 	bool ogl = renderer == GSRendererType::OGL_HW;
 	bool native = upscaling_multiplier == 1;
-	bool msaadisabled = true;
 
 	for(unsigned short j = 0; j < 5; j++) // TODO: Make the same kind of check for d3d11, eventually....
 	{
@@ -665,8 +664,6 @@ void GSHacksDlg::OnInit()
 	// Direct3D-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), !ogl);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAACB), !msaadisabled);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), !msaadisabled);
 
 	// OpenGL-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER), ogl);
@@ -688,6 +685,10 @@ void GSHacksDlg::OnInit()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_GEOMETRY_SHADER_TEXT), ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_IMAGE_LOAD_STORE), ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_IMAGE_LOAD_STORE_TEXT), ogl);
+
+	// FIXME: Temporarily disabled:
+	ShowWindow(GetDlgItem(m_hWnd, IDC_MSAACB), SW_HIDE);
+	ShowWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), SW_HIDE);
 
 	AddTooltip(IDC_SKIPDRAWHACKEDIT);
 	AddTooltip(IDC_SKIPDRAWHACK);
