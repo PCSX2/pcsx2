@@ -1185,10 +1185,6 @@ bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1; // blur
 		}
-		else if(fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8 && ((fi.TZTST == 2 && fi.FBMSK == 0x00FFFFFF) || (fi.TZTST == 1 && fi.FBMSK == 0x00FFFFFF) || (fi.TZTST == 3 && fi.FBMSK == 0xFF000000)))
-		{
-			skip = 1; // wall of fog
-		}
 	}
 	else
 	{
@@ -1205,31 +1201,22 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME)
+		if(Aggressive && fi.TME && fi.FBP == 0x00100 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00100 && fi.TPSM == PSM_PSMCT16 // ntsc
+			|| fi.FBP == 0x02100 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x02100 && fi.TPSM == PSM_PSMCT16) // pal
 		{
-			if(Aggressive && fi.FBP == 0x00100 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00100 && fi.TPSM == PSM_PSMCT16 // ntsc
-				|| fi.FBP == 0x02100 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x02100 && fi.TPSM == PSM_PSMCT16) // pal
-			{
-				// Can be used as a speed hack.
-				// Removes shadows.
-				skip = 1000;
-			}
-			else if((fi.FBP == 0x00100 || fi.FBP == 0x02100) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 & 0x03000) == 0x03000
-				&& (fi.TPSM == PSM_PSMT8 || fi.TPSM == PSM_PSMT4)
-				&& ((fi.TZTST == 2 && fi.FBMSK == 0x00FFFFFF) || (fi.TZTST == 1 && fi.FBMSK == 0x00FFFFFF) || (fi.TZTST == 3 && fi.FBMSK == 0xFF000000)))
-			{
-					skip = 1; // wall of fog
-			}
-			else if(Aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP == 0x1300 ) && (fi.TBP0 == 0x0F00 || fi.TBP0 == 0x1300 || fi.TBP0 == 0x2b00)) // || fi.FBP == 0x0100
-			{
-				skip = 1; // global haze/halo
-			}
-			else if((Aggressive || !s_nativeres) && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP == 0x0100 || fi.FBP == 0x2100) && (fi.TBP0 == 0x2b00 || fi.TBP0 == 0x2e80) || fi.TBP0 == 0x3100) // 480P 2e80, interlaced 3100
-			{
-				// Upscaling issue.
-				// Don't enable hack on native res if crc is below aggressive.
-				skip = 1; // water effect and water vertical lines
-			}
+			// Can be used as a speed hack.
+			// Removes shadows.
+			skip = 1000;
+		}
+		else if(Aggressive && fi.TME && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP == 0x1300 ) && (fi.TBP0 == 0x0F00 || fi.TBP0 == 0x1300 || fi.TBP0 == 0x2b00)) // || fi.FBP == 0x0100
+		{
+			skip = 1; // global haze/halo
+		}
+		else if((Aggressive || !s_nativeres) && fi.TME && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP == 0x0100 || fi.FBP == 0x2100) && (fi.TBP0 == 0x2b00 || fi.TBP0 == 0x2e80) || fi.TBP0 == 0x3100) // 480P 2e80, interlaced 3100
+		{
+			// Upscaling issue.
+			// Don't enable hack on native res if crc is below aggressive.
+			skip = 1; // water effect and water vertical lines
 		}
 	}
 	else
