@@ -1151,8 +1151,6 @@ GSRendererHW::Hacks::Hacks()
 	, m_oo(NULL)
 	, m_cu(NULL)
 {
-	bool can_handle_depth = (!theApp.GetConfigB("UserHacks") || !theApp.GetConfigB("UserHacks_DisableDepthSupport"));
-
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFXII, CRC::EU, &GSRendererHW::OI_FFXII));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFX, CRC::RegionCount, &GSRendererHW::OI_FFX));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::MetalSlug6, CRC::RegionCount, &GSRendererHW::OI_MetalSlug6));
@@ -1161,10 +1159,6 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ItadakiStreet, CRC::RegionCount, &GSRendererHW::OI_ItadakiStreet));
-
-	if (!can_handle_depth) {
-		m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::GodOfWar2, CRC::RegionCount, &GSRendererHW::OI_GodOfWar2));
-	}
 
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::OO_DBZBT2));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::OO_MajokkoALaMode2));
@@ -1493,33 +1487,6 @@ bool GSRendererHW::OI_MetalSlug6(GSTexture* rt, GSTexture* ds, GSTextureCache::S
 	}
 
 	m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, m_vt.m_primclass);
-
-	return true;
-}
-
-bool GSRendererHW::OI_GodOfWar2(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	uint32 FBP = m_context->FRAME.Block();
-	uint32 FBW = m_context->FRAME.FBW;
-	uint32 FPSM = m_context->FRAME.PSM;
-
-	if((FBP == 0x00f00 || FBP == 0x00100 || FBP == 0x01280) && FPSM == PSM_PSMZ24) // ntsc 0xf00, pal 0x100, ntsc "HD" 0x1280
-	{
-		// z buffer clear
-
-		GIFRegTEX0 TEX0;
-
-		TEX0.TBP0 = FBP;
-		TEX0.TBW = FBW;
-		TEX0.PSM = FPSM;
-
-		if(GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
-		{
-			m_dev->ClearDepth(tmp_ds->m_texture);
-		}
-
-		return false;
-	}
 
 	return true;
 }

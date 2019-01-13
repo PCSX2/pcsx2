@@ -54,7 +54,6 @@ private:
 	bool OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_MetalSlug6(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
-	bool OI_GodOfWar2(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
