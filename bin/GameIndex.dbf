@@ -11580,6 +11580,7 @@ Region = PAL-E
 Serial = SLES-52395
 Name   = UFEA Euro 2004
 Region = PAL-F-G
+vuClampMode = 2 // Fixes black box issues everywhere ingame.
 ---------------------------------------------
 Serial = SLES-52396
 Name   = Euro 2004
