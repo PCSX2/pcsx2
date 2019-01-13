@@ -171,6 +171,39 @@ bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(Aggressive && fi.TME && fi.FPSM == PSM_PSMCT16 && (fi.FBP == 0x00100 || fi.FBP == 0x02100) && (fi.TBP0 == 0x00100 || fi.TBP0 == 0x02100) && fi.TPSM == PSM_PSMCT16)
+		{
+			// Can be used as a speed hack.
+			// Removes shadows.
+			skip = 1000;
+		}
+		else if(Aggressive && fi.TME && fi.TPSM == PSM_PSMCT24 && fi.FBP == 0x1300 && (fi.TBP0 == 0x0F00 || fi.TBP0 == 0x1300 || fi.TBP0 == 0x2b00)) // || fi.FBP == 0x0100
+		{
+			// Upscaling hack maybe ? Needs to be verified, move it to Aggressive state just in case.
+			skip = 1; // global haze/halo
+		}
+		else if((Aggressive || !s_nativeres) && fi.TME && fi.TPSM == PSM_PSMCT24 && (fi.FBP == 0x0100 || fi.FBP == 0x2100) && (fi.TBP0 == 0x2b00 || fi.TBP0 == 0x2e80 || fi.TBP0 == 0x3100)) // 480P 2e80, interlaced 3100
+		{
+			// Upscaling issue.
+			// Don't enable hack on native res if crc is below aggressive.
+			skip = 1; // water effect and water vertical lines
+		}
+	}
+	else
+	{
+		if(Aggressive && fi.TME && (fi.FBP == 0x00100 || fi.FBP == 0x02100) && fi.FPSM == PSM_PSMCT16)
+		{
+			skip = 3;
+		}
+	}
+
+	return true;
+}
+
 bool GSC_WildArmsGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1171,65 +1204,6 @@ bool GSC_OnePieceGrandBattle(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(Aggressive && fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			// Can be used as a speed hack.
-			// Removes shadows.
-			skip = 1000;
-		}
-		else if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0xff000000)
-		{
-			skip = 1; // blur
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16)
-		{
-			skip = 3;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(Aggressive && fi.TME && fi.FBP == 0x00100 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00100 && fi.TPSM == PSM_PSMCT16 // ntsc
-			|| fi.FBP == 0x02100 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x02100 && fi.TPSM == PSM_PSMCT16) // pal
-		{
-			// Can be used as a speed hack.
-			// Removes shadows.
-			skip = 1000;
-		}
-		else if(Aggressive && fi.TME && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP == 0x1300 ) && (fi.TBP0 == 0x0F00 || fi.TBP0 == 0x1300 || fi.TBP0 == 0x2b00)) // || fi.FBP == 0x0100
-		{
-			skip = 1; // global haze/halo
-		}
-		else if((Aggressive || !s_nativeres) && fi.TME && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP == 0x0100 || fi.FBP == 0x2100) && (fi.TBP0 == 0x2b00 || fi.TBP0 == 0x2e80) || fi.TBP0 == 0x3100) // 480P 2e80, interlaced 3100
-		{
-			// Upscaling issue.
-			// Don't enable hack on native res if crc is below aggressive.
-			skip = 1; // water effect and water vertical lines
-		}
-	}
-	else
-	{
-		if(fi.TME && (fi.FBP == 0x00100 || fi.FBP == 0x02100) && fi.FPSM == PSM_PSMCT16)
-		{
-			skip = 3;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_StarOcean3(const GSFrameInfo& fi, int& skip)
 {
 	// The game emulate a stencil buffer with the alpha channel of the RT
@@ -1505,6 +1479,33 @@ bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
 		{
 			// Removes body shading. Not needed but offers a very decent speed boost.
 			skip = 1;
+		}
+	}
+
+	return true;
+}
+
+bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
+		{
+			// Can be used as a speed hack.
+			// Removes shadows.
+			skip = 1000;
+		}
+		else if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0xff000000)
+		{
+			// Upscaling hack maybe ? Needs to be verified, move it to Aggressive state just in case.
+			skip = 1; // blur
+		}
+	}
+	else
+	{
+		if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16)
+		{
+			skip = 3;
 		}
 	}
 
@@ -1897,6 +1898,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::Bully] = GSC_Bully;
 		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
+		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
 		lut[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
 		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
@@ -1911,7 +1913,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::TenchuWoH] = GSC_TenchuGames;
 
 		// Depth
-		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::Okami] = GSC_Okami;
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 		lut[CRC::Yakuza] = GSC_YakuzaGames;
@@ -1934,7 +1935,6 @@ void GSState::SetupCrcHack()
 		// Those games require accurate_colclip (perf)
 		lut[CRC::CastlevaniaCoD] = GSC_CastlevaniaGames;
 		lut[CRC::CastlevaniaLoI] = GSC_CastlevaniaGames;
-		lut[CRC::GodOfWar] = GSC_GodOfWar;
 
 		// Unknown status
 		lut[CRC::Grandia3] = GSC_Grandia3;
@@ -1954,6 +1954,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFX2] = GSC_FFXGames;
 		lut[CRC::FFX] = GSC_FFXGames;
 		lut[CRC::FFXII] = GSC_FFXGames;
+		lut[CRC::GodOfWar] = GSC_GodOfWar;
 		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas; // RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly. Can be used as an upscaling hack.
 		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
