@@ -200,7 +200,7 @@ static int _LoadPatchFiles(const wxDirName& folderName, wxString& fileSpec, cons
 			f.Close();
 			int loaded = Patch.size() - before;
 			PatchesCon->WriteLn((loaded ? Color_Green : Color_Gray), L"Loaded %d %s from '%s' at '%s'",
-								loaded, WX_STR(friendlyName), WX_STR(buffer), WX_STR(folderName.ToString()));
+				loaded, WX_STR(friendlyName), WX_STR(buffer), WX_STR(folderName.ToString()));
 			numberFoundPatchFiles++;
 		}
 		found = dir.GetNext(&buffer);
