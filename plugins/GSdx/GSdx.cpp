@@ -241,6 +241,8 @@ void GSdxApp::Init()
 	m_gs_upscale_multiplier.push_back(GSSetting(5, "5x Native", "~1620p 3K"));
 	m_gs_upscale_multiplier.push_back(GSSetting(6, "6x Native", "~2160p 4K"));
 	m_gs_upscale_multiplier.push_back(GSSetting(8, "8x Native", "~2880p 5K"));
+	m_gs_upscale_multiplier.push_back(GSSetting(10, "10x Native", "~3160p 6K"));
+	m_gs_upscale_multiplier.push_back(GSSetting(12, "12x Native", "~4320p 8K"));
 #ifndef __unix__
 	m_gs_upscale_multiplier.push_back(GSSetting(0, "Custom", "Not Recommended"));
 #endif
