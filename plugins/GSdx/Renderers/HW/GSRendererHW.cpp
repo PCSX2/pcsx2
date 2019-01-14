@@ -89,7 +89,6 @@ void GSRendererHW::SetScaling()
 	// 3/ upload of framebuffer (preload hack)
 	// 4/ framebuffer clear (color/depth/stencil)
 	// 5/ read back of the frambuffer
-	// 6/ MSAA
 	//
 	// With the solution
 	// 1/ Nothing to do.Except the texture cache bug (channel shuffle effect)
@@ -99,7 +98,6 @@ void GSRendererHW::SetScaling()
 	// 4a/ stencil can be limited to valid data.
 	// 4b/ is it useful to clear color? depth? (in any case, it ought to be few operation)
 	// 5/ limit the read to the valid data
-	// 6/ not support on openGL
 
 	// Framebuffer width is always a multiple of 64 so at certain cases it can't cover some weird width values.
 	// 480P , 576P use width as 720 which is not referencable by FBW * 64. so it produces 704 ( the closest value multiple by 64).
@@ -1343,7 +1341,7 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		// Do the blit. With a Copy mess to avoid issue with limited API (dx)
 		// m_dev->StretchRect(tex->m_texture, sRect, tex->m_texture, dRect);
 		GSVector4i r_full(0, 0, tw, th);
-		if (GSTexture* rt = m_dev->CreateRenderTarget(tw, th, false)) {
+		if (GSTexture* rt = m_dev->CreateRenderTarget(tw, th)) {
 			m_dev->CopyRect(tex->m_texture, rt, r_full);
 
 			m_dev->StretchRect(tex->m_texture, sRect, rt, dRect);

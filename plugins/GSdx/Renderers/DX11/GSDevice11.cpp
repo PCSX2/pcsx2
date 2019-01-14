@@ -171,27 +171,6 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	hr = m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &options, sizeof(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS));
 
-	// msaa
-
-	for(uint32 i = 2; i <= D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT; i++)
-	{
-		uint32 quality[2] = {0, 0};
-
-		if(SUCCEEDED(m_dev->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, i, &quality[0])) && quality[0] > 0
-		&& SUCCEEDED(m_dev->CheckMultisampleQualityLevels(DXGI_FORMAT_D32_FLOAT_S8X24_UINT, i, &quality[1])) && quality[1] > 0)
-		{
-			m_msaa_desc.Count = i;
-			m_msaa_desc.Quality = std::min<uint32>(quality[0] - 1, quality[1] - 1);
-
-			if(i >= m_msaa) break;
-		}
-	}
-
-	if(m_msaa_desc.Count == 1)
-	{
-		m_msaa = 0;
-	}
-
 	// convert
 
 	D3D11_INPUT_ELEMENT_DESC il_convert[] =
@@ -414,7 +393,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	GSVector2i tex_font = m_osd.get_texture_font_size();
 
 	m_font = std::unique_ptr<GSTexture>(
-		CreateSurface(GSTexture::Texture, tex_font.x, tex_font.y, false, DXGI_FORMAT_R8_UNORM)
+		CreateSurface(GSTexture::Texture, tex_font.x, tex_font.y, DXGI_FORMAT_R8_UNORM)
 	);
 
 	return true;
@@ -546,7 +525,7 @@ void GSDevice11::ClearStencil(GSTexture* t, uint8 c)
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_STENCIL, 0, c);
 }
 
-GSTexture* GSDevice11::CreateSurface(int type, int w, int h, bool msaa, int format)
+GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 {
 	HRESULT hr;
 
@@ -562,11 +541,6 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, bool msaa, int form
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
-
-	if(msaa)
-	{
-		desc.SampleDesc = m_msaa_desc;
-	}
 
 	// mipmap = m_mipmap > 1 || m_filter != TriFiltering::None;
 	bool mipmap = m_mipmap > 1;
@@ -618,14 +592,14 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, bool msaa, int form
 	return t;
 }
 
-GSTexture* GSDevice11::CreateRenderTarget(int w, int h, bool msaa, int format)
+GSTexture* GSDevice11::CreateRenderTarget(int w, int h, int format)
 {
-	return __super::CreateRenderTarget(w, h, msaa, format ? format : DXGI_FORMAT_R8G8B8A8_UNORM);
+	return __super::CreateRenderTarget(w, h, format ? format : DXGI_FORMAT_R8G8B8A8_UNORM);
 }
 
-GSTexture* GSDevice11::CreateDepthStencil(int w, int h, bool msaa, int format)
+GSTexture* GSDevice11::CreateDepthStencil(int w, int h, int format)
 {
-	return __super::CreateDepthStencil(w, h, msaa, format ? format : DXGI_FORMAT_R32G8X24_TYPELESS);
+	return __super::CreateDepthStencil(w, h, format ? format : DXGI_FORMAT_R32G8X24_TYPELESS);
 }
 
 GSTexture* GSDevice11::CreateTexture(int w, int h, int format)
@@ -636,22 +610,6 @@ GSTexture* GSDevice11::CreateTexture(int w, int h, int format)
 GSTexture* GSDevice11::CreateOffscreen(int w, int h, int format)
 {
 	return __super::CreateOffscreen(w, h, format ? format : DXGI_FORMAT_R8G8B8A8_UNORM);
-}
-
-GSTexture* GSDevice11::Resolve(GSTexture* t)
-{
-	ASSERT(t != NULL && t->IsMSAA());
-
-	if(GSTexture* dst = CreateRenderTarget(t->GetWidth(), t->GetHeight(), false, t->GetFormat()))
-	{
-		dst->SetScale(t->GetScale());
-
-		m_ctx->ResolveSubresource(*(GSTexture11*)dst, 0, *(GSTexture11*)t, 0, (DXGI_FORMAT)t->GetFormat());
-
-		return dst;
-	}
-
-	return NULL;
 }
 
 GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format, int ps_shader)
@@ -665,16 +623,11 @@ GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int
 
 	ASSERT(format == DXGI_FORMAT_R8G8B8A8_UNORM || format == DXGI_FORMAT_R16_UINT || format == DXGI_FORMAT_R32_UINT);
 
-	if(GSTexture* rt = CreateRenderTarget(w, h, false, format))
+	if(GSTexture* rt = CreateRenderTarget(w, h, format))
 	{
 		GSVector4 dRect(0, 0, w, h);
 
-		if(GSTexture* src2 = src->IsMSAA() ? Resolve(src) : src)
-		{
-			StretchRect(src2, sRect, rt, dRect, m_convert.ps[ps_shader], NULL);
-
-			if(src2 != src) Recycle(src2);
-		}
+		StretchRect(src, sRect, rt, dRect, m_convert.ps[ps_shader], NULL);
 
 		dst = CreateOffscreen(w, h, format);
 
@@ -1034,10 +987,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 	GSSetShader(NULL, NULL);
 
 	// ps
-
-	GSTexture* rt2 = rt->IsMSAA() ? Resolve(rt) : rt;
-
-	PSSetShaderResources(rt2, NULL);
+	PSSetShaderResources(rt, NULL);
 	PSSetSamplerState(m_convert.pt, NULL);
 	PSSetShader(m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0], NULL);
 
@@ -1048,8 +998,6 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 	//
 
 	EndScene();
-
-	if(rt2 != rt) Recycle(rt2);
 }
 
 void GSDevice11::IASetVertexBuffer(const void* vertex, size_t stride, size_t count)

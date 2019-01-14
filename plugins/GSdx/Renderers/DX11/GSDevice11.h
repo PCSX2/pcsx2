@@ -32,7 +32,7 @@ struct GSVertexShader11
 
 class GSDevice11 : public GSDeviceDX
 {
-	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
+	GSTexture* CreateSurface(int type, int w, int h, int format);
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c);
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0);
@@ -184,12 +184,10 @@ public:
 	void ClearDepth(GSTexture* t);
 	void ClearStencil(GSTexture* t, uint8 c);
 
-	GSTexture* CreateRenderTarget(int w, int h, bool msaa, int format = 0);
-	GSTexture* CreateDepthStencil(int w, int h, bool msaa, int format = 0);
+	GSTexture* CreateRenderTarget(int w, int h, int format = 0);
+	GSTexture* CreateDepthStencil(int w, int h, int format = 0);
 	GSTexture* CreateTexture(int w, int h, int format = 0);
 	GSTexture* CreateOffscreen(int w, int h, int format = 0);
-
-	GSTexture* Resolve(GSTexture* t);
 
 	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0);
 

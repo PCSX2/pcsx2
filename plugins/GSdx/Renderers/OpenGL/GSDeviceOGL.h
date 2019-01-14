@@ -409,7 +409,6 @@ public:
 	static int m_shader_reg;
 
 	private:
-	uint32 m_msaa;				// Level of Msaa
 	int m_force_texture_clear;
 	int m_mipmap;
 	TriFiltering m_filter;
@@ -492,8 +491,8 @@ public:
 
 	std::unique_ptr<GSTexture> m_font;
 
-	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
-	GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);
+	GSTexture* CreateSurface(int type, int w, int h, int format);
+	GSTexture* FetchSurface(int type, int w, int h, int format);
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0) final;
@@ -535,8 +534,8 @@ public:
 	void ClearDepth(GSTexture* t) final;
 	void ClearStencil(GSTexture* t, uint8 c) final;
 
-	GSTexture* CreateRenderTarget(int w, int h, bool msaa, int format = 0) final;
-	GSTexture* CreateDepthStencil(int w, int h, bool msaa, int format = 0) final;
+	GSTexture* CreateRenderTarget(int w, int h, int format = 0) final;
+	GSTexture* CreateDepthStencil(int w, int h, int format = 0) final;
 	GSTexture* CreateTexture(int w, int h, int format = 0) final;
 	GSTexture* CreateOffscreen(int w, int h, int format = 0) final;
 	void InitPrimDateTexture(GSTexture* rt, const GSVector4i& area);

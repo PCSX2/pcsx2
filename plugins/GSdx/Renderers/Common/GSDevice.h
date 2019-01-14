@@ -136,8 +136,8 @@ protected:
 	unsigned int m_frame; // for ageing the pool
 	bool m_linear_present;
 
-	virtual GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format) = 0;
-	virtual GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);
+	virtual GSTexture* CreateSurface(int type, int w, int h, int format) = 0;
+	virtual GSTexture* FetchSurface(int type, int w, int h, int format);
 
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) = 0;
 	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset) = 0;
@@ -175,12 +175,10 @@ public:
 	virtual void ClearDepth(GSTexture* t) {}
 	virtual void ClearStencil(GSTexture* t, uint8 c) {}
 
-	virtual GSTexture* CreateRenderTarget(int w, int h, bool msaa, int format = 0);
-	virtual GSTexture* CreateDepthStencil(int w, int h, bool msaa, int format = 0);
+	virtual GSTexture* CreateRenderTarget(int w, int h, int format = 0);
+	virtual GSTexture* CreateDepthStencil(int w, int h, int format = 0);
 	virtual GSTexture* CreateTexture(int w, int h, int format = 0);
 	virtual GSTexture* CreateOffscreen(int w, int h, int format = 0);
-
-	virtual GSTexture* Resolve(GSTexture* t) {return NULL;}
 
 	virtual GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0) {return NULL;}
 

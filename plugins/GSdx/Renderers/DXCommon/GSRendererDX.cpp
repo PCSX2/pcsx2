@@ -774,7 +774,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		// fprintf(stderr, "COLCLIP HDR mode ENABLED\n");
 		GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
 		GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-		hdr_rt = dev->CreateRenderTarget(rtsize.x, rtsize.y, false, DXGI_FORMAT_R32G32B32A32_FLOAT);
+		hdr_rt = dev->CreateRenderTarget(rtsize.x, rtsize.y, DXGI_FORMAT_R32G32B32A32_FLOAT);
 		// Warning: StretchRect must be called before BeginScene otherwise
 		// vertices will be overwritten. Trust me you don't want to do that.
 		dev->StretchRect(rt, sRect, hdr_rt, dRect, ShaderConvert_COPY, false);

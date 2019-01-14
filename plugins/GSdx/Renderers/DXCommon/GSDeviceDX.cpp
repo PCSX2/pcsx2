@@ -31,11 +31,6 @@ bool GSDeviceDX::s_old_d3d_compiler_dll;
 GSDeviceDX::GSDeviceDX()
 {
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
-	// m_msaa = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_MSAA") : 0;
-	m_msaa = 0; // Temporarily disable msaa until it's fixed.
-
-	m_msaa_desc.Count = 1;
-	m_msaa_desc.Quality = 0;
 }
 
 GSDeviceDX::~GSDeviceDX()
@@ -86,14 +81,9 @@ void GSDeviceDX::FreeD3DCompiler()
 	s_d3d_compiler_dll = nullptr;
 }
 
-GSTexture* GSDeviceDX::FetchSurface(int type, int w, int h, bool msaa, int format)
+GSTexture* GSDeviceDX::FetchSurface(int type, int w, int h, int format)
 {
-	if(m_msaa < 2)
-	{
-		msaa = false;
-	}
-
-	return __super::FetchSurface(type, w, h, msaa, format);
+	return __super::FetchSurface(type, w, h, format);
 }
 
 bool GSDeviceDX::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)

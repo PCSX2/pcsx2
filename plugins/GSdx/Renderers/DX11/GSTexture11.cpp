@@ -43,8 +43,6 @@ GSTexture11::GSTexture11(ID3D11Texture2D* texture)
 
 	m_format = (int)m_desc.Format;
 
-	m_msaa = m_desc.SampleDesc.Count > 1;
-
 	m_max_layer = m_desc.MipLevels;
 }
 
@@ -211,8 +209,6 @@ GSTexture11::operator ID3D11ShaderResourceView*()
 {
 	if(!m_srv && m_dev && m_texture)
 	{
-		ASSERT(!m_msaa);
-
 		if(m_desc.Format == DXGI_FORMAT_R32G8X24_TYPELESS)
 		{
 			D3D11_SHADER_RESOURCE_VIEW_DESC srvd = {};
@@ -236,8 +232,6 @@ GSTexture11::operator ID3D11UnorderedAccessView*()
 {
 	if(!m_uav && m_dev && m_texture)
 	{
-		ASSERT(!m_msaa);
-
 		m_dev->CreateUnorderedAccessView(m_texture, NULL, &m_uav);
 	}
 
