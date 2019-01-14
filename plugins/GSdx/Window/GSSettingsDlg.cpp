@@ -596,8 +596,6 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 GSHacksDlg::GSHacksDlg(const std::string &adapter_id)
 	: GSDialog{IDD_HACKS}
-	, cb2msaa{}
-	, msaa2cb{}
 	, m_adapter_id(adapter_id)
 	, m_old_skipdraw_offset{0}
 	, m_old_skipdraw{0}
@@ -614,21 +612,6 @@ void GSHacksDlg::OnInit()
 	// It can only be accessed with a HW renderer, so this is sufficient.
 	bool ogl = renderer == GSRendererType::OGL_HW;
 	bool native = upscaling_multiplier == 1;
-
-	for(unsigned short j = 0; j < 5; j++) // TODO: Make the same kind of check for d3d11, eventually....
-	{
-		unsigned short i = j == 0 ? 0 : 1 << j;
-
-		msaa2cb[i] = j;
-		cb2msaa[j] = i;
-
-		char text[32] = {0};
-		sprintf(text, "%dx ", i);
-
-		SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_ADDSTRING, 0, (LPARAM)text);
-	}
-
-	SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_SETCURSEL, msaa2cb[std::min(theApp.GetConfigI("UserHacks_MSAA"), 16)], 0);
 
 	CheckDlgButton(m_hWnd, IDC_ALPHAHACK, theApp.GetConfigB("UserHacks_AlphaHack"));
 	CheckDlgButton(m_hWnd, IDC_WILDHACK, theApp.GetConfigI("UserHacks_WildHack"));
@@ -686,10 +669,6 @@ void GSHacksDlg::OnInit()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_IMAGE_LOAD_STORE), ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_IMAGE_LOAD_STORE_TEXT), ogl);
 
-	// FIXME: Temporarily disabled:
-	ShowWindow(GetDlgItem(m_hWnd, IDC_MSAACB), SW_HIDE);
-	ShowWindow(GetDlgItem(m_hWnd, IDC_MSAA_TEXT), SW_HIDE);
-
 	AddTooltip(IDC_SKIPDRAWHACKEDIT);
 	AddTooltip(IDC_SKIPDRAWHACK);
 	AddTooltip(IDC_SKIPDRAWOFFSETEDIT);
@@ -698,7 +677,6 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_OFFSETHACK);
 	AddTooltip(IDC_SPRITEHACK);
 	AddTooltip(IDC_WILDHACK);
-	AddTooltip(IDC_MSAACB);
 	AddTooltip(IDC_ALPHASTENCIL);
 	AddTooltip(IDC_ALIGN_SPRITE);
 	AddTooltip(IDC_ROUND_SPRITE);
@@ -801,7 +779,6 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_SkipDraw_Offset", std::min(skipdraw_offset, skipdraw));
 			theApp.SetConfig("UserHacks_SkipDraw", skipdraw);
 
-			theApp.SetConfig("UserHacks_MSAA", cb2msaa[(int)SendMessage(GetDlgItem(m_hWnd, IDC_MSAACB), CB_GETCURSEL, 0, 0)]);
 			theApp.SetConfig("UserHacks_AlphaHack", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHAHACK));
 			theApp.SetConfig("UserHacks_WildHack", (int)IsDlgButtonChecked(m_hWnd, IDC_WILDHACK));
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));

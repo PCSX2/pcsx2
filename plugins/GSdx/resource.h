@@ -77,8 +77,6 @@
 #define IDC_OFFSETHACK_TEXT             2103
 #define IDC_SPRITEHACK                  2106
 #define IDC_SPRITEHACK_TEXT             2107
-#define IDC_MSAACB                      2108
-#define IDC_MSAA_TEXT                   2109
 #define IDC_ALPHASTENCIL                2110
 #define IDC_TCOFFSETX                   2111
 #define IDC_TCOFFSETX2                  2112

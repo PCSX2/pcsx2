@@ -702,7 +702,6 @@ bool RunLinuxDialog()
 	int mode_height = theApp.GetConfigI("ModeHeight");
 	theApp.SetConfig("ModeHeight", mode_height);
 	theApp.SetConfig("ModeWidth", mode_width);
-	theApp.SetConfig("msaa", 0);
 	theApp.SetConfig("windowed", 1);
 
 	gtk_widget_destroy (dialog);

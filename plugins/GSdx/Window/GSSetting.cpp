@@ -77,9 +77,6 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_WILDHACK:
 			return "Lowers the GS precision to avoid gaps between pixels when upscaling.\n"
 				"Fixes the text on Wild Arms games.";
-		case IDC_MSAACB:
-			return "Enables hardware Anti-Aliasing. Needs lots of memory.\n\n"
-				"Note: MSAA often causes graphical glitches.";
 		case IDC_ALPHASTENCIL:
 			return "Extend stencil based emulation of destination alpha to perform stencil operations while drawing.\n\n"
 				"Improves many shadows which are normally overdrawn in parts, may affect other effects.\n"
