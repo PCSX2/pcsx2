@@ -742,16 +742,8 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		}
 	}
 
-	uint8 afix = m_context->ALPHA.FIX;
-
 	if (m_ps_sel.dfmt == 1)
 	{
-		if (m_context->ALPHA.C == 1)
-		{
-			// 24 bits no alpha channel so use 1.0f fix factor as equivalent
-			m_context->ALPHA.C = 2;
-			afix = 0x00000001;
-		}
 		// Disable writing of the alpha channel
 		m_om_bsel.wa = 0;
 	}
@@ -976,6 +968,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 
 	SetupIA(sx, sy);
 
+	uint8 afix = m_context->ALPHA.FIX;
 	dev->SetupOM(m_om_dssel, m_om_bsel, afix);
 	dev->SetupVS(m_vs_sel, &vs_cb);
 	dev->SetupGS(m_gs_sel, &gs_cb);
