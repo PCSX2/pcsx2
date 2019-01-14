@@ -890,7 +890,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		}
 	}
 
-	output.c1 = c.a * 2; // used for alpha blending
+	output.c1 = c.a * 255.0f / 128.0f; // used for alpha blending
 
 	if((PS_DFMT == FMT_16) || PS_AOUT) // 16 bit output
 	{
@@ -900,7 +900,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	}
 	else if((PS_DFMT == FMT_32) && PS_FBA)
 	{
-		if(c.a < 0.5) c.a += 0.5;
+		if(c.a < 0.5) c.a += 128.0f/255.0f;
 	}
 
 	output.c0 = c;
