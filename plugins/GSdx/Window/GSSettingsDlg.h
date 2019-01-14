@@ -42,8 +42,6 @@ public:
 
 class GSHacksDlg : public GSDialog
 {
-	unsigned short cb2msaa[17];
-	unsigned short msaa2cb[17];
 	std::string m_adapter_id;
 	int m_old_skipdraw_offset;
 	int m_old_skipdraw;
