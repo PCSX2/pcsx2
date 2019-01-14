@@ -30,7 +30,6 @@ protected:
 	GSVector2i m_size;
 	int m_type;
 	int m_format;
-	bool m_msaa;
 
 public:
 	struct GSMap {uint8* bits; int pitch;};
@@ -59,8 +58,6 @@ public:
 
 	int GetType() const {return m_type;}
 	int GetFormat() const {return m_format;}
-
-	bool IsMSAA() const {return m_msaa;}
 
 	// frame number (arbitrary base) the texture was recycled on
 	// different purpose than texture cache ages, do not attempt to merge

@@ -131,7 +131,7 @@ void GSDevice::Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect,
 	StretchRect(sTex, dTex, dRect, shader, m_linear_present);
 }
 
-GSTexture* GSDevice::FetchSurface(int type, int w, int h, bool msaa, int format)
+GSTexture* GSDevice::FetchSurface(int type, int w, int h, int format)
 {
 	const GSVector2i size(w, h);
 
@@ -139,7 +139,7 @@ GSTexture* GSDevice::FetchSurface(int type, int w, int h, bool msaa, int format)
 	{
 		GSTexture* t = *i;
 
-		if(t->GetType() == type && t->GetFormat() == format && t->GetSize() == size && t->IsMSAA() == msaa)
+		if(t->GetType() == type && t->GetFormat() == format && t->GetSize() == size)
 		{
 			m_pool.erase(i);
 
@@ -147,7 +147,7 @@ GSTexture* GSDevice::FetchSurface(int type, int w, int h, bool msaa, int format)
 		}
 	}
 
-	return CreateSurface(type, w, h, msaa, format);
+	return CreateSurface(type, w, h, format);
 }
 
 void GSDevice::PrintMemoryUsage()
@@ -213,24 +213,24 @@ void GSDevice::PurgePool()
 	}
 }
 
-GSTexture* GSDevice::CreateRenderTarget(int w, int h, bool msaa, int format)
+GSTexture* GSDevice::CreateRenderTarget(int w, int h, int format)
 {
-	return FetchSurface(GSTexture::RenderTarget, w, h, msaa, format);
+	return FetchSurface(GSTexture::RenderTarget, w, h, format);
 }
 
-GSTexture* GSDevice::CreateDepthStencil(int w, int h, bool msaa, int format)
+GSTexture* GSDevice::CreateDepthStencil(int w, int h, int format)
 {
-	return FetchSurface(GSTexture::DepthStencil, w, h, msaa, format);
+	return FetchSurface(GSTexture::DepthStencil, w, h, format);
 }
 
 GSTexture* GSDevice::CreateTexture(int w, int h, int format)
 {
-	return FetchSurface(GSTexture::Texture, w, h, false, format);
+	return FetchSurface(GSTexture::Texture, w, h, format);
 }
 
 GSTexture* GSDevice::CreateOffscreen(int w, int h, int format)
 {
-	return FetchSurface(GSTexture::Offscreen, w, h, false, format);
+	return FetchSurface(GSTexture::Offscreen, w, h, format);
 }
 
 void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader, bool linear)
@@ -249,7 +249,7 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 	{
 		Recycle(m_merge);
 
-		m_merge = CreateRenderTarget(fs.x, fs.y, false);
+		m_merge = CreateRenderTarget(fs.x, fs.y);
 	}
 
 	// TODO: m_1x1
@@ -266,7 +266,7 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 		{
 			if(sTex[i] != NULL)
 			{
-				tex[i] = sTex[i]->IsMSAA() ? Resolve(sTex[i]) : sTex[i];
+				tex[i] = sTex[i];
 			}
 		}
 
@@ -294,7 +294,7 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	{
 		delete m_weavebob;
 
-		m_weavebob = CreateRenderTarget(ds.x, ds.y, false);
+		m_weavebob = CreateRenderTarget(ds.x, ds.y);
 	}
 
 	if(mode == 0 || mode == 2) // weave or blend
@@ -311,7 +311,7 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 			{
 				delete m_blend;
 
-				m_blend = CreateRenderTarget(ds.x, ds.y, false);
+				m_blend = CreateRenderTarget(ds.x, ds.y);
 			}
 
 			DoInterlace(m_weavebob, m_blend, 2, false, 0);
@@ -342,7 +342,7 @@ void GSDevice::ExternalFX()
 	if (m_shaderfx == NULL || m_shaderfx->GetSize() != s)
 	{
 		delete m_shaderfx;
-		m_shaderfx = CreateRenderTarget(s.x, s.y, false);
+		m_shaderfx = CreateRenderTarget(s.x, s.y);
 	}
 
 	if (m_shaderfx != NULL)
@@ -362,7 +362,7 @@ void GSDevice::FXAA()
 	if(m_fxaa == NULL || m_fxaa->GetSize() != s)
 	{
 		delete m_fxaa;
-		m_fxaa = CreateRenderTarget(s.x, s.y, false);
+		m_fxaa = CreateRenderTarget(s.x, s.y);
 	}
 
 	if(m_fxaa != NULL)
@@ -382,7 +382,7 @@ void GSDevice::ShadeBoost()
 	if(m_shadeboost == NULL || m_shadeboost->GetSize() != s)
 	{
 		delete m_shadeboost;
-		m_shadeboost = CreateRenderTarget(s.x, s.y, false);
+		m_shadeboost = CreateRenderTarget(s.x, s.y);
 	}
 
 	if(m_shadeboost != NULL)

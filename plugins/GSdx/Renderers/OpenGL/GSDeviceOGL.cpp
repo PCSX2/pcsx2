@@ -54,8 +54,7 @@ int   GSDeviceOGL::m_shader_reg  = 0;
 FILE* GSDeviceOGL::m_debug_gl_file = NULL;
 
 GSDeviceOGL::GSDeviceOGL()
-	: m_msaa(0)
-	, m_force_texture_clear(0)
+	: m_force_texture_clear(0)
 	, m_fbo(0)
 	, m_fbo_read(0)
 	, m_va(NULL)
@@ -233,7 +232,7 @@ void GSDeviceOGL::GenerateProfilerData()
 	}
 }
 
-GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt)
+GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, int fmt)
 {
 	GL_PUSH("Create surface");
 
@@ -259,9 +258,9 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, bool msaa, int fmt
 	return t;
 }
 
-GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, bool msaa, int format)
+GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, int format)
 {
-	GSTexture* t = GSDevice::FetchSurface(type, w, h, false, format);
+	GSTexture* t = GSDevice::FetchSurface(type, w, h, format);
 
 
 	if (m_force_texture_clear) {
@@ -1177,14 +1176,14 @@ void GSDeviceOGL::SelfShaderTest()
 	SelfShaderTestPrint(test, nb_shader);
 }
 
-GSTexture* GSDeviceOGL::CreateRenderTarget(int w, int h, bool msaa, int format)
+GSTexture* GSDeviceOGL::CreateRenderTarget(int w, int h, int format)
 {
-	return GSDevice::CreateRenderTarget(w, h, msaa, format ? format : GL_RGBA8);
+	return GSDevice::CreateRenderTarget(w, h, format ? format : GL_RGBA8);
 }
 
-GSTexture* GSDeviceOGL::CreateDepthStencil(int w, int h, bool msaa, int format)
+GSTexture* GSDeviceOGL::CreateDepthStencil(int w, int h, int format)
 {
-	return GSDevice::CreateDepthStencil(w, h, msaa, format ? format : GL_DEPTH32F_STENCIL8);
+	return GSDevice::CreateDepthStencil(w, h, format ? format : GL_DEPTH32F_STENCIL8);
 }
 
 GSTexture* GSDeviceOGL::CreateTexture(int w, int h, int format)
