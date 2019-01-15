@@ -838,15 +838,15 @@ void ps_main()
 
     ps_fbmask(C);
 
-#if PS_HDR == 1
+// #if PS_HDR == 1
     // Use negative value to avoid overflow of the texture (in accumulation mode)
     // Note: code were initially done for an Half-Float texture. Due to overflow
     // the texture was upgraded to a full float. Maybe this code is useless now!
     // Good testcase is castlevania
-    if (any(greaterThan(C.rgb, vec3(128.0f)))) {
-        C.rgb = (C.rgb - 256.0f);
-    }
-#endif
+    // if (any(greaterThan(C.rgb, vec3(128.0f)))) {
+        // C.rgb = (C.rgb - 256.0f);
+    // }
+// #endif
     SV_Target0 = C / 255.0f;
     SV_Target1 = vec4(alpha_blend);
 }

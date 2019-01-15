@@ -561,7 +561,7 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 										sw_blending |= (ALPHA.A != ALPHA.B) &&
 												((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 										// fall through
-		case ACC_BLEND_CCLIP_DALPHA:    sw_blending |= (ALPHA.C == 1) || (m_env.COLCLAMP.CLAMP == 0);
+		case ACC_BLEND_CCLIP_DALPHA:    sw_blending |= (ALPHA.C == 1);
 										// Initial idea was to enable accurate blending for sprite rendering to handle
 										// correctly post-processing effect. Some games (ZoE) use tons of sprites as particles.
 										// In order to keep it fast, let's limit it to smaller draw call.
@@ -598,7 +598,8 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 			m_ps_sel.colclip = 1;
 		} else {
 			// Speed hack skip previous slow algo
-			GL_INS("Sorry colclip isn't supported");
+			GL_INS("COLCLIP HDR Rare case ENABLED");
+			m_ps_sel.hdr = 1;
 		}
 	}
 
