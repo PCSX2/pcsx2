@@ -1571,19 +1571,6 @@ bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_LegoBatman(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x00000)
-		{
-			skip = 3;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
 {
 	// Not needed anymore? What did it fix anyway? (rama)
@@ -1910,7 +1897,6 @@ void GSState::SetupCrcHack()
 
 		// Not tested but must be fixed with texture shuffle
 		lut[CRC::CrashNburn] = GSC_CrashNburn; // seem to be a basic depth effect
-		lut[CRC::LegoBatman] = GSC_LegoBatman;
 
 		// Those games might requires accurate fbmask
 		lut[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;

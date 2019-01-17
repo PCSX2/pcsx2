@@ -95,7 +95,6 @@ public:
 		KyuuketsuKitanMoonties,
 		Lamune,
 		LegacyOfKainDefiance,
-		LegoBatman,
 		LordOfTheRingsThirdAge,
 		MajokkoALaMode2,
 		Manhunt2,

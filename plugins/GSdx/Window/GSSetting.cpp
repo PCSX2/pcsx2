@@ -53,7 +53,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Full:\nFor an optimal experience with Direct3D.\n\n"
 				"Aggressive:\nUse more aggressive CRC hacks.\n"
 				"Removes effects in some games which make the image appear sharper/clearer.\n"
-				"Affected games: AC4, DBZBT 2 & 3, FF games, GOW games, LegoBatman, MGS3, OnimushaDoD, RE4, SoTC, SMT3, SMTDDS1, SMTDDS2.\n"
+				"Affected games: AC4, DBZBT 2 & 3, FF games, GOW games, MGS3, OnimushaDoD, RE4, SoTC, SMT3, SMTDDS1, SMTDDS2.\n"
 				"Works as a speedhack for: BleachBB, Kunoichi, Steambot Chronicles, The Simpsons Game.";
 		case IDC_SKIPDRAWHACK:
 		case IDC_SKIPDRAWHACKEDIT:
