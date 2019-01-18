@@ -470,6 +470,7 @@ CRC::Game CRC::m_games[] =
 	{0x4E811100, UltramanFightingEvolution, JP, 0}, // cutie comment
 	{0xF7F181C3, DeathByDegreesTekkenNinaWilliams, CH, 0}, // cutie comment
 	{0xF088FA5B, DeathByDegreesTekkenNinaWilliams, KO, 0},
+	{0xE1D6F85E, DeathByDegreesTekkenNinaWilliams, US, 0},
 	{0x59683BB0, DeathByDegreesTekkenNinaWilliams, EU, 0},
 	{0x5B659BED, Grandia3, JP, 0},
 	{0x5B657DAD, Grandia3, US, 0},
