@@ -852,7 +852,8 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		m_ps_ssel.triln = 0;
 	} else {
 		m_ps_ssel.biln  = bilinear;
-		m_ps_ssel.aniso = 1;
+		// Enable aniso only for triangles. Sprites are flat so aniso is likely useless (it would save perf for others primitives).
+		m_ps_ssel.aniso = m_vt.m_primclass == GS_TRIANGLE_CLASS ? 1 : 0;
 		m_ps_ssel.triln = trilinear;
 		if (trilinear_manual) {
 			m_ps_sel.manual_lod = 1;
