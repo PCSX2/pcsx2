@@ -96,7 +96,7 @@ void GSTextureCache::RemoveAll()
 
 GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette)
 {
-	if (!CanConvertDepth()) {
+	if (!m_can_convert_depth) {
 		GL_CACHE("LookupDepthSource not supported (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
 		if (m_renderer->m_game.title == CRC::JackieChanAdv || m_renderer->m_game.title == CRC::SVCChaos) {
 			// JackieChan and SVCChaos cause regressions when skipping the draw calls when depth is disabled/not supported.
@@ -347,7 +347,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		//
 		// Sigh... They don't help us.
 
-		if (dst == NULL && CanConvertDepth()) {
+		if (dst == NULL && m_can_convert_depth) {
 			// Let's try a trick to avoid to use wrongly a depth buffer
 			// Unfortunately, I don't have any Arc the Lad testcase
 			//
@@ -458,7 +458,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 		dst->m_dirty_alpha |= (psm_s.trbpp == 32 && (fbmask & 0xFF000000) != 0xFF000000) || (psm_s.trbpp == 16);
 
-	} else if (CanConvertDepth()) {
+	} else if (m_can_convert_depth) {
 
 		int rev_type = (type == DepthStencil) ? RenderTarget : DepthStencil;
 
@@ -655,7 +655,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 // must invalidate the Target/Depth respectively
 void GSTextureCache::InvalidateVideoMemType(int type, uint32 bp)
 {
-	if (!CanConvertDepth())
+	if (!m_can_convert_depth)
 		return;
 
 	auto& list = m_dst[type];
@@ -1453,7 +1453,7 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 {
 	ASSERT(type == RenderTarget || type == DepthStencil);
 
-	Target* t = new Target(m_renderer, TEX0, m_temp, CanConvertDepth());
+	Target* t = new Target(m_renderer, TEX0, m_temp, m_can_convert_depth);
 
 	// FIXME: initial data should be unswizzled from local mem in Update() if dirty
 

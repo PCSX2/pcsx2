@@ -208,8 +208,6 @@ protected:
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;
 
-	virtual bool CanConvertDepth() { return m_can_convert_depth; }
-
 public:
 	GSTextureCache(GSRenderer* r);
 	virtual ~GSTextureCache();
