@@ -138,6 +138,36 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
+{
+	// Note: Game also has issues with texture shuffle not supported on strange clamp mode.
+	// See https://forums.pcsx2.net/Thread-GSDX-Texture-Cache-Bug-Report-Death-By-Degrees-SLUS-20934-NTSC
+	if(skip == 0)
+	{
+		if((Aggressive || !s_nativeres) && fi.TME && fi.FBP == 0  && fi.TBP0==0x34a0 && fi.TPSM == PSM_PSMCT32)
+		{
+			// Don't enable hack on native res if crc is below aggressive.
+			// Upscaling issue similar to Tekken 5.
+			skip = 1; // Animation pane
+		}
+		else if(Aggressive && fi.FBP == 0x3500 && fi.TPSM == PSM_PSMT8 && fi.FBMSK == 0xFFFF00FF)
+		{
+			// Needs to be further tested so put it on Aggressive for now, likely channel shuffle.
+			skip = 4; // Underwater white fog
+		}
+	}
+	else
+	{
+		if((Aggressive || !s_nativeres) && fi.TME && (fi.FBP | fi.TBP0 | fi.FPSM | fi.TPSM) && fi.FBMSK == 0x00FFFFFF)
+		{
+			// Needs to be further tested so assume it's related with the upscaling hack.
+			skip = 1; // Animation speed
+		}
+	}
+
+	return true;
+}
+
 bool GSC_DemonStone(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1121,30 +1151,6 @@ bool GSC_TalesOfAbyss(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP ==0 ) && fi.TBP0==0x34a0 && (fi.TPSM == PSM_PSMCT32))
-		{
-			skip = 1; // Animation pane
-		}
-		else if((fi.FBP ==0x3500)&& fi.TPSM == PSM_PSMT8 && fi.FBMSK == 0xFFFF00FF)
-		{
-			skip = 4; // Underwater white fog
-		}
-	}
-	if(fi.TME)
-	{
-		if((fi.FBP | fi.TBP0 | fi.FPSM | fi.TPSM) && (fi.FBMSK == 0x00FFFFFF ))
-		{
-			skip = 1; // Animation speed
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Okami(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1863,6 +1869,9 @@ void GSState::SetupCrcHack()
 		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed; // + Texture shuffle
 		lut[CRC::Tekken5] = GSC_Tekken5;
 
+		// Texture shuffle
+		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
+
 		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to DX only)
 		lut[CRC::RadiataStories] = GSC_RadiataStories;
 		lut[CRC::StarOcean3] = GSC_StarOcean3;
@@ -1910,9 +1919,6 @@ void GSState::SetupCrcHack()
 
 		// Unknown status
 		lut[CRC::Grandia3] = GSC_Grandia3;
-
-		// Channel Effect
-		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
 
 		// Dedicated shader for channel effect
 		lut[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
