@@ -556,6 +556,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="GSdx.def" />
+    <None Include="res\fxaa.fx">
+      <Filter>Shaders</Filter>
+    </None>
     <None Include="res\convert.fx">
       <Filter>Shaders</Filter>
     </None>
@@ -568,14 +572,31 @@
     <None Include="res\tfx.fx">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="GSdx.def" />
-    <None Include="res\fxaa.fx">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="res\shadeboost.fx">
       <Filter>Shaders</Filter>
     </None>
     <None Include="res\tfx.cl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="res\glsl\common_header.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="res\glsl\convert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="res\glsl\interlace.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="res\glsl\merge.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="res\glsl\shadeboost.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="res\glsl\tfx_fs.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="res\glsl\tfx_vgs.glsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="res\logo_ogl.bmp">

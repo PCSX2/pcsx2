@@ -280,8 +280,15 @@
     <None Include="res\interlace.fx" />
     <None Include="res\merge.fx" />
     <None Include="res\shadeboost.fx" />
-    <None Include="res\tfx.cl" />
     <None Include="res\tfx.fx" />
+    <None Include="res\tfx.cl" />
+    <None Include="res\glsl\common_header.glsl" />
+    <None Include="res\glsl\convert.glsl" />
+    <None Include="res\glsl\interlace.glsl" />
+    <None Include="res\glsl\merge.glsl" />
+    <None Include="res\glsl\shadeboost.glsl" />
+    <None Include="res\glsl\tfx_fs.glsl" />
+    <None Include="res\glsl\tfx_vgs.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GSdx.rc" />
