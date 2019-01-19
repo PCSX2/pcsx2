@@ -716,23 +716,6 @@ bool GSC_StarWarsForceUnleashed(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_BlackHawkDown(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(Dx_only && fi.TME && fi.FBP == 0x00800 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x01800 && fi.TPSM == PSM_PSMZ16)
-		{
-			skip = 2;	//wall of fog
-		}
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 5;	//night filter
-		}
-	}
-
-	return true;
-}
-
 bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1818,7 +1801,6 @@ void GSState::SetupCrcHack()
 	if (Dx_and_OGL) {
 		lut[CRC::AceCombat4] = GSC_AceCombat4;
 		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
-		lut[CRC::BlackHawkDown] = GSC_BlackHawkDown;
 		lut[CRC::BurnoutDominator] = GSC_BurnoutGames;
 		lut[CRC::BurnoutRevenge] = GSC_BurnoutGames;
 		lut[CRC::BurnoutTakedown] = GSC_BurnoutGames;

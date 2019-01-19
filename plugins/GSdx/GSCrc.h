@@ -34,7 +34,6 @@ public:
 		ArTonelico2,
 		Barnyard,
 		BigMuthaTruckers,
-		BlackHawkDown,
 		BleachBladeBattlers,
 		BrianLaraInternationalCricket,
 		Bully,
