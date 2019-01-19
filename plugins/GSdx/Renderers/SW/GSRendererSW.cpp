@@ -75,8 +75,6 @@ GSRendererSW::GSRendererSW(int threads)
 	InitCVB(GS_TRIANGLE_CLASS);
 	InitCVB(GS_SPRITE_CLASS);
 
-	m_dump_root = root_sw;
-
 	// Reset handler with the auto flush hack enabled on the SW renderer
 	// Impact on perf is rather small, and it avoids an extra hack option.
 	if (!GLLoader::in_replayer) {
@@ -1549,7 +1547,7 @@ void GSRendererSW::SharedData::UpdateSource()
 
 				s = format("%05d_f%lld_itex%d_%05x_%s.bmp", m_parent->s_n, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
 
-				m_tex[i].t->Save(root_sw+s);
+				m_tex[i].t->Save(m_parent->m_dump_root+s);
 			}
 
 			if(global.clut != NULL)
@@ -1560,7 +1558,7 @@ void GSRendererSW::SharedData::UpdateSource()
 
 				s = format("%05d_f%lld_itexp_%05x_%s.bmp", m_parent->s_n, frame, (int)m_parent->m_context->TEX0.CBP, psm_str(m_parent->m_context->TEX0.CPSM));
 
-				t->Save(root_sw+s);
+				t->Save(m_parent->m_dump_root+s);
 
 				delete t;
 			}

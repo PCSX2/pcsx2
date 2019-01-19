@@ -132,7 +132,7 @@ typedef int64 sint64;
 	#include "Renderers/OpenGL/GLLoader.h"
 
 	#define DIRECTORY_SEPARATOR '\\'
-
+	#define GS_DUMP_DIR_PREFIX "GSDX_32"
 #else
 
 	// Note use GL/glcorearb.h on the future
@@ -143,7 +143,7 @@ typedef int64 sint64;
 	#include <sys/stat.h> // mkdir
 
 	#define DIRECTORY_SEPARATOR '/'
-
+	#define GS_DUMP_DIR_PREFIX "GSDX_64"
 #endif
 
 #ifdef _MSC_VER
@@ -421,7 +421,3 @@ struct GLAutoPop {
 #define GL_INS(...)  (void)(0);
 #define GL_PERF(...) (void)(0);
 #endif
-
-// Helper path to dump texture
-extern const std::string root_sw;
-extern const std::string root_hw;

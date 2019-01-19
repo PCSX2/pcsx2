@@ -366,6 +366,11 @@ void GSdxApp::Init()
 	m_default_configuration["debug_opengl"]                               = "0";
 	m_default_configuration["disable_hw_gl_draw"]                         = "0";
 	m_default_configuration["dump"]                                       = "0";
+#ifdef _WIN32
+	m_default_configuration["dump_dir"]                                   = "C:\\tmp\\";
+#else
+	m_default_configuration["dump_dir"]                                   = "/tmp/";
+#endif
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";
 	m_default_configuration["filter"]                                     = std::to_string(static_cast<int8>(BiFiltering::PS2));

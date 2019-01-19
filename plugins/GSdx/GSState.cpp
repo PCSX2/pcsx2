@@ -44,6 +44,7 @@ GSState::GSState()
 	, m_crc(0)
 	, m_options(0)
 	, m_frameskip(0)
+	, m_dump_root("")
 {
 	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
 	// Let's keep it disabled to ease debug.
@@ -63,13 +64,13 @@ GSState::GSState()
 	s_savef = theApp.GetConfigB("savef");
 	s_saven = theApp.GetConfigI("saven");
 	s_savel = theApp.GetConfigI("savel");
-	m_dump_root = "";
-#if defined(__unix__)
+
+	// note: HW will overwrite
+	m_dump_root = theApp.GetConfigS("dump_dir") + GS_DUMP_DIR_PREFIX + "_SW" + DIRECTORY_SEPARATOR;
+
 	if (s_dump) {
-		GSmkdir(root_hw.c_str());
-		GSmkdir(root_sw.c_str());
+		GSmkdir(m_dump_root.c_str());
 	}
-#endif
 
 	//s_dump = 1;
 	//s_save = 1;

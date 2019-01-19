@@ -70,7 +70,11 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userHacks_merge_sprite         = false;
 	}
 
-	m_dump_root = root_hw;
+	m_dump_root = theApp.GetConfigS("dump_dir") + GS_DUMP_DIR_PREFIX + "_HW" + DIRECTORY_SEPARATOR;
+
+	if (s_dump) {
+		GSmkdir(m_dump_root.c_str());
+	}
 }
 
 void GSRendererHW::SetScaling()
