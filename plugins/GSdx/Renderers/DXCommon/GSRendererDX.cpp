@@ -948,9 +948,25 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 		{
 			// Note potentially we can limit to TBP0:0x2800
 
-			// DX doesn't support depth or channel shuffle yet so we can just do a partial port that skips the bad drawcalls,
-			// this way we can purge any remaining crc hacks.
-			throw GSDXRecoverableError();
+			// Depth buffer was moved so GSdx will invalide it which means a
+			// downscale. ICO uses the MSB depth bits as the texture alpha
+			// channel.  However this depth of field effect requires
+			// texel:pixel mapping accuracy.
+			//
+			// Use an HLE shader to sample depth directly as the alpha channel
+
+			// OutputDebugString("ICO HLE");
+
+			m_ps_sel.depth_fmt = 1;
+			m_ps_sel.channel = ChannelFetch_BLUE;
+
+			dev->PSSetShaderResource(4, ds);
+
+			if (!tex->m_palette)
+			{
+				uint16 pal = GSLocalMemory::m_psm[tex->m_TEX0.PSM].pal;
+				m_tc->AttachPaletteToSource(tex, pal, true);
+			}
 		}
 	}
 
