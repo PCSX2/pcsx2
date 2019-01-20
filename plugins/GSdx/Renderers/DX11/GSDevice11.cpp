@@ -468,11 +468,15 @@ void GSDevice11::DrawIndexedPrimitive()
 	// DX can't read from the FB
 	// So let's copy it and set that as the shader
 	// resource for slot 4 to avoid issues.
-	if (m_state.ps_sr_texture[4] && m_state.ps_sr_texture[4]->Equal(m_state.rt_texture))
-	{
-		//fprintf(stdout, "FB read detected on slot 4: copying fb...\n");
+	GSTexture11* tex = m_state.ps_sr_texture[4];
 
-		GSTexture* cp = CopyRenderTarget(m_state.rt_texture);
+	if (tex && (tex->Equal(m_state.rt_texture) || tex->Equal(m_state.rt_ds)))
+	{
+		// fprintf(stdout, "FB read detected on slot 4: copying fb...\n");
+
+		GSTexture* cp = nullptr;
+
+		CloneTexture(m_state.ps_sr_texture[4], &cp);
 
 		PSSetShaderResource(4, cp);
 		PSUpdateShaderState();
@@ -644,27 +648,40 @@ GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int
 
 void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 {
-	if(!sTex || !dTex)
+	if (!sTex || !dTex)
 	{
 		ASSERT(0);
 		return;
 	}
 
-	D3D11_BOX box = {(UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U};
+	D3D11_BOX box = { (UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U };
 
-	m_ctx->CopySubresourceRegion(*(GSTexture11*)dTex, 0, 0, 0, 0, *(GSTexture11*)sTex, 0, &box);
+	// DX api isn't happy if we pass a box for depth copy
+	// It complains that depth/multisample must be a full copy
+	// and asks us to use a NULL for the box
+	bool depth = (sTex->GetType() == GSTexture::DepthStencil);
+	auto pBox = depth ? nullptr : &box;
+
+	m_ctx->CopySubresourceRegion(*(GSTexture11*)dTex, 0, 0, 0, 0, *(GSTexture11*)sTex, 0, pBox);
 }
 
-GSTexture* GSDevice11::CopyRenderTarget(GSTexture* src)
+void GSDevice11::CloneTexture(GSTexture* src, GSTexture** dest)
 {
+	if (!src || !(src->GetType() == GSTexture::DepthStencil || src->GetType() == GSTexture::RenderTarget))
+	{
+		ASSERT(0);
+		return;
+	}
+
 	int w = src->GetWidth();
 	int h = src->GetHeight();
 
-	GSTexture* dest = CreateRenderTarget(w, h, false);
+	if (src->GetType() == GSTexture::DepthStencil)
+		*dest = CreateDepthStencil(w, h, src->GetFormat());
+	else
+		*dest = CreateRenderTarget(w, h, src->GetFormat());
 
-	CopyRect(src, dest, GSVector4i(0, 0, w, h));
-
-	return dest;
+	CopyRect(src, *dest, GSVector4i(0, 0, w, h));
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader, bool linear)
