@@ -1309,8 +1309,9 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	if(m_state.rt_view != rtv || m_state.dsv != dsv)
 	{
 		m_state.rt_view = rtv;
-		m_state.rt_texture = (GSTexture11*)rt;
+		m_state.rt_texture = static_cast<GSTexture11*>(rt);
 		m_state.dsv = dsv;
+		m_state.rt_ds = static_cast<GSTexture11*>(ds);
 
 		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
 	}
@@ -1349,6 +1350,7 @@ void GSDevice11::OMSetRenderTargets(const GSVector2i& rtsize, int count, ID3D11U
 
 	m_state.rt_view = NULL;
 	m_state.rt_texture = NULL;
+	m_state.rt_ds = NULL;
 	m_state.dsv = NULL;
 
 	if(m_state.viewport != rtsize)

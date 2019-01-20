@@ -81,6 +81,7 @@ class GSDevice11 : public GSDeviceDX
 		float bf;
 		ID3D11RenderTargetView* rt_view;
 		GSTexture11* rt_texture;
+		GSTexture11* rt_ds;
 		ID3D11DepthStencilView* dsv;
 	} m_state;
 
