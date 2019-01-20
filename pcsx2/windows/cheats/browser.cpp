@@ -951,10 +951,10 @@ BOOL CALLBACK pnachWriterProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					}
 
 					// write patches
-					for(unsigned int i=0;i<Patch.size();i++)
+					for (const auto& i : Patch)
 					{
 						char cpucore[10], type[10];
-						switch(patch[i].cpu)
+						switch(i.cpu)
 						{
 							case 1:
 								strcpy(cpucore, "EE");
@@ -964,7 +964,7 @@ BOOL CALLBACK pnachWriterProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 								break;
 						}
 
-						switch(patch[i].type)
+						switch(i.type)
 						{
 							case 1:
 								strcpy(type, "byte");
@@ -980,7 +980,7 @@ BOOL CALLBACK pnachWriterProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 								break;
 						}
 						//patch=placetopatch,cpucore,address,type,data
-						fprintf(fp, "patch=%d,%s,%.8x,%s,%.8x\n", patch[i].placetopatch, cpucore, patch[i].addr, type, patch[i].data);
+						fprintf(fp, "patch=%d,%s,%.8x,%s,%.8x\n", i.placetopatch, cpucore, i.addr, type, i.data);
 					}
 
 					fclose(fp);
