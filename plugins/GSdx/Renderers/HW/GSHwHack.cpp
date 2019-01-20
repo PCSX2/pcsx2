@@ -575,35 +575,6 @@ bool GSC_LordOfTheRingsThirdAge(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_RedDeadRevolver(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(!fi.TME && (fi.FBP == 0x02420 || fi.FBP == 0x025e0) && fi.FPSM == PSM_PSMCT24)
-		{
-			skip = 1200;
-		}
-		else if(fi.TME && (fi.FBP == 0x00800 || fi.FBP == 0x009c0) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x01600 || fi.TBP0 == 0x017c0) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 2;	//filter
-		}
-		else if((Aggressive || !s_nativeres) && fi.FBP == 0x03700 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT24)
-		{
-			// Don't enable hack on native res if crc is below aggressive.
-			skip = 2;	//blur
-		}
-	}
-	else
-	{
-		if(fi.TME && (fi.FBP == 0x00800 || fi.FBP == 0x009c0) && fi.FPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1815,7 +1786,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::NarutimateAccel] = GSC_NarutimateAccel;
 		lut[CRC::Naruto] = GSC_Naruto;
 		lut[CRC::Onimusha3] = GSC_Onimusha3;
-		lut[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
 		lut[CRC::SacredBlaze] = GSC_SacredBlaze;
 		lut[CRC::SakuraTaisen] = GSC_SakuraTaisen;
 		lut[CRC::SakuraWarsSoLongMyLove] = GSC_SakuraWarsSoLongMyLove;
