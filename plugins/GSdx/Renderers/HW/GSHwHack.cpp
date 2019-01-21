@@ -50,6 +50,7 @@ bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip)
 			// HDR colclip/conclip not supported,
 			// Depth target lookup,
 			// Texture shuffle and SW emulated fbmask.
+			// https://github.com/PCSX2/pcsx2/issues/2449
 			skip = 3;
 		}
 	}
@@ -1771,7 +1772,6 @@ void GSState::SetupCrcHack()
 
 	if (Dx_and_OGL) {
 		lut[CRC::AceCombat4] = GSC_AceCombat4;
-		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
 		lut[CRC::BurnoutDominator] = GSC_BurnoutGames;
 		lut[CRC::BurnoutRevenge] = GSC_BurnoutGames;
 		lut[CRC::BurnoutTakedown] = GSC_BurnoutGames;
@@ -1814,17 +1814,18 @@ void GSState::SetupCrcHack()
 		lut[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;
 
 		// Half Screen bottom issue
-		lut[CRC::DBZBT2] = GSC_DBZBT2;
-		lut[CRC::DBZBT3] = GSC_DBZBT3;
-		lut[CRC::DemonStone] = GSC_DemonStone;
+		lut[CRC::DBZBT2] = GSC_DBZBT2; // Half screen on depth format 16bit
+		lut[CRC::DBZBT3] = GSC_DBZBT3; // Half screen on depth format 16bit
+		lut[CRC::DemonStone] = GSC_DemonStone; // Half screen on texture shuffle
 		lut[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // + accurate blending
-		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed; // + Texture shuffle
 		lut[CRC::Tekken5] = GSC_Tekken5;
 
 		// Texture shuffle
+		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers; // + Half screen on texture shuffle
 		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
+		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed; // + Half screen on texture shuffle
 
-		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to DX only)
+		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to Aggressive)
 		lut[CRC::RadiataStories] = GSC_RadiataStories;
 		lut[CRC::StarOcean3] = GSC_StarOcean3;
 		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
