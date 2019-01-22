@@ -38,7 +38,6 @@
 #include "Pcsx2Defs.h"
 #include "SysForwardDefs.h"
 
-
 enum patch_cpu_type {
 	NO_CPU,
 	CPU_EE,
