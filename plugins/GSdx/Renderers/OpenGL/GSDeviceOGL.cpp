@@ -377,8 +377,10 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 		GL_PUSH("GSDeviceOGL::Convert");
 
 		m_convert.cb = new GSUniformBufferOGL("Misc UBO", g_convert_index, sizeof(MiscConstantBuffer));
-		// Upload once and forget about it
-		m_misc_cb_cache.ScalingFactor = GSVector4i(theApp.GetConfigI("upscale_multiplier"));
+		// Upload once and forget about it.
+		// Use value of 1 when upscale multiplier is 0 for ScalingFactor,
+		// this is to avoid doing math with 0 in shader. It helps custom res be less broken.
+		m_misc_cb_cache.ScalingFactor = GSVector4i(theApp.GetConfigI("upscale_multiplier") ? theApp.GetConfigI("upscale_multiplier") : 1);
 		m_convert.cb->cache_upload(&m_misc_cb_cache);
 
 		theApp.LoadResource(IDR_CONVERT_GLSL, shader);

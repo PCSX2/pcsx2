@@ -233,7 +233,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		str[21] = format("%d", sel.dfmt);
 		str[22] = format("%d", sel.depth_fmt);
 		str[23] = format("%d", sel.fmt >> 2);
-		str[24] = format("%d", m_upscale_multiplier);
+		str[24] = format("%d", m_upscale_multiplier ? m_upscale_multiplier : 1);
 
 		D3D_SHADER_MACRO macro[] =
 		{

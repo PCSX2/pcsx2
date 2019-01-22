@@ -186,7 +186,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	std::string convert_mstr[1];
 
-	convert_mstr[0] = format("%d", m_upscale_multiplier);
+	convert_mstr[0] = format("%d", m_upscale_multiplier ? m_upscale_multiplier : 1);
 
 	D3D_SHADER_MACRO convert_macro[] =
 	{
