@@ -102,7 +102,8 @@ const char* dialog_message(int ID, bool* updateText) {
 				"When unchecked the CPU will convert directly the texture to 32 bits.\n\n"
 				"It is basically a trade-off between GPU/CPU.";
 		case IDC_ACCURATE_DATE:
-			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n\n"
+			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n"
+				"It improves shadow and transparency rendering.\n\n"
 				"None:\nDisables accurate destination alpha testing.\n\n"
 				"Fast:\nFast accurate destination alpha testing.\n"
 				"Most of the time this option should be enough.\n"
