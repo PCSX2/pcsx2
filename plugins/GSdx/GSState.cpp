@@ -47,13 +47,24 @@ GSState::GSState()
 {
 	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
 	// Let's keep it disabled to ease debug.
-	m_nativeres = theApp.GetConfigI("upscale_multiplier") == 1 || GLLoader::in_replayer;
-	m_mipmap = theApp.GetConfigI("mipmap");
-	m_NTSC_Saturation = theApp.GetConfigB("NTSC_Saturation");
-	m_userhacks_skipdraw = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SkipDraw") : 0;
-	m_userhacks_skipdraw_offset = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_SkipDraw_Offset") : 0;
-	m_userhacks_auto_flush = theApp.GetConfigB("UserHacks") ? theApp.GetConfigB("UserHacks_AutoFlush") : 0;
+	m_nativeres             = theApp.GetConfigI("upscale_multiplier") == 1 || GLLoader::in_replayer;
+	m_mipmap                = theApp.GetConfigI("mipmap");
+	m_NTSC_Saturation       = theApp.GetConfigB("NTSC_Saturation");
 	m_clut_load_before_draw = theApp.GetConfigB("clut_load_before_draw");
+	if (theApp.GetConfigB("UserHacks"))
+	{
+		m_userhacks_auto_flush      = theApp.GetConfigB("UserHacks_AutoFlush");
+		m_userhacks_skipdraw        = theApp.GetConfigI("UserHacks_SkipDraw");
+		m_userhacks_skipdraw_offset = theApp.GetConfigI("UserHacks_SkipDraw_Offset");
+		UserHacks_WildHack          = theApp.GetConfigI("UserHacks_WildHack");
+	}
+	else
+	{
+		m_userhacks_auto_flush      = false;
+		m_userhacks_skipdraw        = 0;
+		m_userhacks_skipdraw_offset = 0;
+		UserHacks_WildHack          = 0;
+	}
 
 	s_n = 0;
 	s_dump  = theApp.GetConfigB("dump");
@@ -79,7 +90,6 @@ GSState::GSState()
 	//s_saven = 0;
 	//s_savel = 0;
 
-	UserHacks_WildHack = theApp.GetConfigB("UserHacks") ? theApp.GetConfigI("UserHacks_WildHack") : 0;
 	m_crc_hack_level = theApp.GetConfigT<CRCHackLevel>("crc_hack_level");
 	if (m_crc_hack_level == CRCHackLevel::Automatic)
 		m_crc_hack_level = GSUtil::GetRecommendedCRCHackLevel(theApp.GetCurrentRendererType());

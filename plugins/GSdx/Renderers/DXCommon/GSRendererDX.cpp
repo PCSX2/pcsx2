@@ -31,14 +31,14 @@ GSRendererDX::GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter)
 	{
 		UserHacks_AlphaHack    = theApp.GetConfigB("UserHacks_AlphaHack");
 		UserHacks_AlphaStencil = theApp.GetConfigB("UserHacks_AlphaStencil");
-		UserHacks_HPO          = theApp.GetConfigI("UserHacks_HalfPixelOffset");
 	}
 	else
 	{
 		UserHacks_AlphaHack    = false;
 		UserHacks_AlphaStencil = false;
-		UserHacks_HPO          = 0;
 	}
+
+	ResetStates();
 }
 
 GSRendererDX::~GSRendererDX()
@@ -804,7 +804,7 @@ void GSRendererDX::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sourc
 	//The resulting shifted output aligns better with common blending / corona / blurring effects,
 	//but introduces a few bad pixels on the edges.
 
-	if (rt && rt->LikelyOffset && UserHacks_HPO == 1)
+	if (rt && rt->LikelyOffset && m_userHacks_HPO == 1)
 	{
 		// DX9 has pixelcenter set to 0.0, so give it some value here
 

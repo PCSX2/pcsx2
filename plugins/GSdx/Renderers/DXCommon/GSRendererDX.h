@@ -41,8 +41,6 @@ protected:
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
 	virtual void SetupIA(const float& sx, const float& sy) = 0;
 
-	int UserHacks_HPO;
-
 	GSDeviceDX* dev;
 
 	GSDeviceDX::VSSelector m_vs_sel;

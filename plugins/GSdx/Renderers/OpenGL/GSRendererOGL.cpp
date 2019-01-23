@@ -26,21 +26,17 @@
 GSRendererOGL::GSRendererOGL()
 	: GSRendererHW(new GSTextureCacheOGL(this))
 {
-	m_sw_blending   = theApp.GetConfigI("accurate_blending_unit");
+	m_sw_blending = theApp.GetConfigI("accurate_blending_unit");
+	if (theApp.GetConfigB("UserHacks"))
+		UserHacks_tri_filter = static_cast<TriFiltering>(theApp.GetConfigI("UserHacks_TriFilter"));
+	else
+		UserHacks_tri_filter = TriFiltering::None;
 
 	// Hope nothing requires too many draw calls.
 	m_drawlist.reserve(2048);
 
-	UserHacks_HPO            = theApp.GetConfigI("UserHacks_HalfPixelOffset");
-	UserHacks_tri_filter     = static_cast<TriFiltering>(theApp.GetConfigI("UserHacks_TriFilter"));
-
 	m_prim_overlap = PRIM_OVERLAP_UNKNOW;
 	ResetStates();
-
-	if (!theApp.GetConfigB("UserHacks")) {
-		UserHacks_HPO            = 0;
-		UserHacks_tri_filter     = TriFiltering::None;
-	}
 }
 
 bool GSRendererOGL::CreateDevice(GSDevice* dev)
@@ -1225,7 +1221,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	//The resulting shifted output aligns better with common blending / corona / blurring effects,
 	//but introduces a few bad pixels on the edges.
 
-	if (rt && rt->LikelyOffset && UserHacks_HPO == 1)
+	if (rt && rt->LikelyOffset && m_userHacks_HPO == 1)
 	{
 		ox2 *= rt->OffsetHack_modx;
 		oy2 *= rt->OffsetHack_mody;

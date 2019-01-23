@@ -53,7 +53,6 @@ class GSRendererOGL final : public GSRendererHW
 		PRIM_OVERLAP m_prim_overlap;
 		std::vector<size_t> m_drawlist;
 
-		int UserHacks_HPO;
 		TriFiltering UserHacks_tri_filter;
 
 		GSDeviceOGL::VSConstantBuffer vs_cb;
