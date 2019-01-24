@@ -25,20 +25,20 @@
 #include "GSTextureCache11.h"
 #include "Renderers/HW/GSVertexHW.h"
 
-class GSRendererDX11 : public GSRendererHW
+class GSRendererDX11 final : public GSRendererHW
 {
+private:
 	bool UserHacks_AlphaHack;
 	bool UserHacks_AlphaStencil;
 
-protected:
-	void ResetStates();
-	void SetupIA(const float& sx, const float& sy);
-	void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
-	void EmulateZbuffer();
-	void EmulateTextureShuffleAndFbmask();
-	void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
-	void EmulateTextureSampler(const GSTextureCache::Source* tex);
-	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
+private:
+	inline void ResetStates();
+	inline void SetupIA(const float& sx, const float& sy);
+	inline void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
+	inline void EmulateZbuffer();
+	inline void EmulateTextureShuffleAndFbmask();
+	inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
+	inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
 
 	GSDeviceDX::VSSelector m_vs_sel;
 	GSDeviceDX::GSSelector m_gs_sel;
@@ -55,6 +55,8 @@ protected:
 public:
 	GSRendererDX11();
 	virtual ~GSRendererDX11() {}
+
+	void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) final;
 
 	bool CreateDevice(GSDevice* dev);
 };
