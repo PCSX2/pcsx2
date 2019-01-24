@@ -216,7 +216,6 @@ if(Windows)
         Renderers/DXCommon/GSDeviceDX.cpp
         Window/GSDialog.cpp
         Renderers/DX11/GSRendererDX11.cpp
-        Renderers/DXCommon/GSRendererDX.cpp
         Renderers/DX11/GSTexture11.cpp
         Renderers/DX11/GSTextureCache11.cpp
         Renderers/DX11/GSTextureFX11.cpp
@@ -233,7 +232,6 @@ if(Windows)
         Renderers/DX11/GSDevice11.h
         Renderers/DXCommon/GSDeviceDX.h
         Renderers/DX11/GSRendererDX11.h
-        Renderers/DXCommon/GSRendererDX.h
         Renderers/DX11/GSTexture11.h
         Renderers/DX11/GSTextureCache11.h
         Window/GSWndDX.h

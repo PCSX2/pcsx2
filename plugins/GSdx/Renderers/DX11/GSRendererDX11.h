@@ -21,14 +21,36 @@
 
 #pragma once
 
-#include "Renderers/DXCommon/GSRendererDX.h"
-#include "Renderers/HW/GSVertexHW.h"
+#include "Renderers/HW/GSRendererHW.h"
 #include "GSTextureCache11.h"
+#include "Renderers/HW/GSVertexHW.h"
 
-class GSRendererDX11 : public GSRendererDX
+class GSRendererDX11 : public GSRendererHW
 {
+	bool UserHacks_AlphaHack;
+	bool UserHacks_AlphaStencil;
+
 protected:
+	void ResetStates();
 	void SetupIA(const float& sx, const float& sy);
+	void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
+	void EmulateZbuffer();
+	void EmulateTextureShuffleAndFbmask();
+	void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
+	void EmulateTextureSampler(const GSTextureCache::Source* tex);
+	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
+
+	GSDeviceDX::VSSelector m_vs_sel;
+	GSDeviceDX::GSSelector m_gs_sel;
+	GSDeviceDX::PSSelector m_ps_sel;
+
+	GSDeviceDX::PSSamplerSelector      m_ps_ssel;
+	GSDeviceDX::OMBlendSelector        m_om_bsel;
+	GSDeviceDX::OMDepthStencilSelector m_om_dssel;
+
+	GSDeviceDX::PSConstantBuffer ps_cb;
+	GSDeviceDX::VSConstantBuffer vs_cb;
+	GSDeviceDX::GSConstantBuffer gs_cb;
 
 public:
 	GSRendererDX11();
