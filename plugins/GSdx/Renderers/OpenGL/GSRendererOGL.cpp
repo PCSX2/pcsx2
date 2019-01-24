@@ -1207,7 +1207,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// vs
 
-	// FIXME Opengl support half pixel center (as dx10). Code could be easier!!!
+	// FIXME D3D11 and GL support half pixel center. Code could be easier!!!
 	float sx = 2.0f * rtscale.x / (rtsize.x << 4);
 	float sy = 2.0f * rtscale.y / (rtsize.y << 4);
 	float ox = (float)(int)m_context->XYOFFSET.OFX;
@@ -1215,8 +1215,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	float ox2 = -1.0f / rtsize.x;
 	float oy2 = -1.0f / rtsize.y;
 
-	//This hack subtracts around half a pixel from OFX and OFY. (Cannot do this directly,
-	//because DX10 and DX9 have a different pixel center.)
+	//This hack subtracts around half a pixel from OFX and OFY.
 	//
 	//The resulting shifted output aligns better with common blending / corona / blurring effects,
 	//but introduces a few bad pixels on the edges.
