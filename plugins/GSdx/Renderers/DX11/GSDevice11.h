@@ -323,14 +323,14 @@ private:
 	GSTexture* CreateSurface(int type, int w, int h, int format);
 	GSTexture* FetchSurface(int type, int w, int h, int format);
 
-	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c);
-	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0);
-	void DoFXAA(GSTexture* sTex, GSTexture* dTex);
-	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex);
-	void DoExternalFX(GSTexture* sTex, GSTexture* dTex);
-	void RenderOsd(GSTexture* dt);
+	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;
+	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0) final;
+	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
+	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex) final;
+	void DoExternalFX(GSTexture* sTex, GSTexture* dTex) final;
 	void InitExternalFX();
 	void InitFXAA(); // Bug workaround! Stack corruption? Heap corruption? No idea
+	void RenderOsd(GSTexture* dt);
 	
 	//
 
@@ -470,28 +470,28 @@ public:
 
 	void SetExclusive(bool isExcl);
 
-	void DrawPrimitive();
+	void DrawPrimitive() final;
 	void DrawIndexedPrimitive();
-	void DrawIndexedPrimitive(int offset, int count);
+	void DrawIndexedPrimitive(int offset, int count) final;
 	void Dispatch(uint32 x, uint32 y, uint32 z);
 
-	void ClearRenderTarget(GSTexture* t, const GSVector4& c);
-	void ClearRenderTarget(GSTexture* t, uint32 c);
-	void ClearDepth(GSTexture* t);
-	void ClearStencil(GSTexture* t, uint8 c);
+	void ClearRenderTarget(GSTexture* t, const GSVector4& c) final;
+	void ClearRenderTarget(GSTexture* t, uint32 c) final;
+	void ClearDepth(GSTexture* t) final;
+	void ClearStencil(GSTexture* t, uint8 c) final;
 
-	GSTexture* CreateRenderTarget(int w, int h, int format = 0);
-	GSTexture* CreateDepthStencil(int w, int h, int format = 0);
-	GSTexture* CreateTexture(int w, int h, int format = 0);
-	GSTexture* CreateOffscreen(int w, int h, int format = 0);
+	GSTexture* CreateRenderTarget(int w, int h, int format = 0) final;
+	GSTexture* CreateDepthStencil(int w, int h, int format = 0) final;
+	GSTexture* CreateTexture(int w, int h, int format = 0) final;
+	GSTexture* CreateOffscreen(int w, int h, int format = 0) final;
 
-	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0);
+	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0) final;
 
 	void CloneTexture(GSTexture* src, GSTexture** dest);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
 
-	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true) final;
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, bool linear = true);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear = true);
 
@@ -505,17 +505,20 @@ public:
 	void IASetIndexBuffer(ID3D11Buffer* ib);
 	void IASetInputLayout(ID3D11InputLayout* layout);
 	void IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology);
+
 	void VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb);
 	void GSSetShader(ID3D11GeometryShader* gs, ID3D11Buffer* gs_cb = NULL);
-	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
-	void PSSetShaderResource(int i, GSTexture* sr);
+
+	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1) final;
+	void PSSetShaderResource(int i, GSTexture* sr) final;
 	void PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv, GSTexture* sr);
 	void PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb);
 	void PSUpdateShaderState();
 	void PSSetSamplerState(ID3D11SamplerState* ss0, ID3D11SamplerState* ss1);
+
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, uint8 sref);
 	void OMSetBlendState(ID3D11BlendState* bs, float bf);
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL);
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL) final;
 	void OMSetRenderTargets(const GSVector2i& rtsize, int count, ID3D11UnorderedAccessView** uav, uint32* counters, const GSVector4i* scissor = NULL);
 
 	bool CreateTextureFX();
