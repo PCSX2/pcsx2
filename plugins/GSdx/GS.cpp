@@ -246,7 +246,9 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			{
 				case GSRendererType::OGL_HW:
 				case GSRendererType::OGL_SW:
+#ifdef ENABLE_OPENCL
 				case GSRendererType::OGL_OpenCL:
+#endif
 #if defined(EGL_SUPPORTED) && defined(__unix__)
 					// Note: EGL code use GLX otherwise maybe it could be also compatible with Windows
 					// Yes OpenGL code isn't complicated enough !
@@ -353,7 +355,9 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 #ifdef _WIN32
 		case GSRendererType::DX1011_HW:
 		case GSRendererType::DX1011_SW:
+#ifdef ENABLE_OPENCL
 		case GSRendererType::DX1011_OpenCL:
+#endif
 			dev = new GSDevice11();
 			s_renderer_name = " D3D11";
 			renderer_fullname = "Direct3D 11";
@@ -366,7 +370,9 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			break;
 		case GSRendererType::OGL_HW:
 		case GSRendererType::OGL_SW:
+#ifdef ENABLE_OPENCL
 		case GSRendererType::OGL_OpenCL:
+#endif
 			dev = new GSDeviceOGL();
 			s_renderer_name = " OGL";
 			renderer_fullname = "OpenGL";
