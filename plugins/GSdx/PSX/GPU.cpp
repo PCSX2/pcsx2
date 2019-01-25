@@ -98,7 +98,7 @@ EXPORT_C_(int32) GPUclose()
 	s_gpu = NULL;
 
 #ifdef _WIN32
-	GSDeviceDX::FreeD3DCompiler();
+	GSDevice11::FreeD3DCompiler();
 
 	if(SUCCEEDED(s_hr))
 	{
@@ -130,7 +130,7 @@ EXPORT_C_(int32) GPUopen(void* hWnd)
 		return -1;
 	}
 
-	if (!GSDeviceDX::LoadD3DCompiler())
+	if (!GSDevice11::LoadD3DCompiler())
 		return -1;
 #endif
 

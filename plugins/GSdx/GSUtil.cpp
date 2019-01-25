@@ -23,7 +23,7 @@
 #include "GSUtil.h"
 
 #ifdef _WIN32
-#include "Renderers/DXCommon/GSDeviceDX.h"
+#include "Renderers/DX11/GSDevice11.h"
 #include <VersionHelpers.h>
 #include "svnrev.h"
 #else
@@ -341,9 +341,9 @@ std::string GSUtil::GetDeviceUniqueName(cl::Device& device)
 
 bool GSUtil::CheckDirectX()
 {
-	if (GSDeviceDX::LoadD3DCompiler())
+	if (GSDevice11::LoadD3DCompiler())
 	{
-		GSDeviceDX::FreeD3DCompiler();
+		GSDevice11::FreeD3DCompiler();
 		return true;
 	}
 

@@ -40,17 +40,17 @@ private:
 	inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
 	inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
 
-	GSDeviceDX::VSSelector m_vs_sel;
-	GSDeviceDX::GSSelector m_gs_sel;
-	GSDeviceDX::PSSelector m_ps_sel;
+	GSDevice11::VSSelector m_vs_sel;
+	GSDevice11::GSSelector m_gs_sel;
+	GSDevice11::PSSelector m_ps_sel;
 
-	GSDeviceDX::PSSamplerSelector      m_ps_ssel;
-	GSDeviceDX::OMBlendSelector        m_om_bsel;
-	GSDeviceDX::OMDepthStencilSelector m_om_dssel;
+	GSDevice11::PSSamplerSelector      m_ps_ssel;
+	GSDevice11::OMBlendSelector        m_om_bsel;
+	GSDevice11::OMDepthStencilSelector m_om_dssel;
 
-	GSDeviceDX::PSConstantBuffer ps_cb;
-	GSDeviceDX::VSConstantBuffer vs_cb;
-	GSDeviceDX::GSConstantBuffer gs_cb;
+	GSDevice11::PSConstantBuffer ps_cb;
+	GSDevice11::VSConstantBuffer vs_cb;
+	GSDevice11::GSConstantBuffer gs_cb;
 
 public:
 	GSRendererDX11();
