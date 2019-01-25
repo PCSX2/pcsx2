@@ -21,8 +21,9 @@
 
 #pragma once
 
-#include "Renderers\DXCommon\GSDeviceDX.h"
 #include "GSTexture11.h"
+#include "GSVector.h"
+#include "Renderers/Common/GSDevice.h"
 
 struct GSVertexShader11
 {
@@ -30,9 +31,297 @@ struct GSVertexShader11
 	CComPtr<ID3D11InputLayout> il;
 };
 
-class GSDevice11 : public GSDeviceDX
+class GSDevice11 final : public GSDevice
 {
+public:
+	#pragma pack(push, 1)
+
+	struct alignas(32) VSConstantBuffer
+	{
+		GSVector4 VertexScale;
+		GSVector4 VertexOffset;
+		GSVector4 Texture_Scale_Offset;
+
+		VSConstantBuffer()
+		{
+			VertexScale = GSVector4::zero();
+			VertexOffset = GSVector4::zero();
+			Texture_Scale_Offset = GSVector4::zero();
+		}
+
+		__forceinline bool Update(const VSConstantBuffer* cb)
+		{
+			GSVector4i* a = (GSVector4i*)this;
+			GSVector4i* b = (GSVector4i*)cb;
+
+			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3])).alltrue())
+			{
+				a[0] = b[0];
+				a[1] = b[1];
+				a[2] = b[2];
+				a[3] = b[3];
+
+				return true;
+			}
+
+			return false;
+		}
+	};
+
+	struct VSSelector
+	{
+		union
+		{
+			struct
+			{
+				uint32 bppz:2;
+				uint32 tme:1;
+				uint32 fst:1;
+
+				uint32 _free:28;
+			};
+
+			uint32 key;
+		};
+
+		operator uint32() const {return key;}
+
+		VSSelector() : key(0) {}
+		VSSelector(uint32 k) : key(k) {}
+	};
+
+	struct alignas(32) PSConstantBuffer
+	{
+		GSVector4 FogColor_AREF;
+		GSVector4 HalfTexel;
+		GSVector4 WH;
+		GSVector4 MinMax;
+		GSVector4 MinF_TA;
+		GSVector4i MskFix;
+		GSVector4i ChannelShuffle;
+
+		GSVector4 TC_OffsetHack;
+
+		PSConstantBuffer()
+		{
+			FogColor_AREF = GSVector4::zero();
+			HalfTexel = GSVector4::zero();
+			WH = GSVector4::zero();
+			MinMax = GSVector4::zero();
+			MinF_TA = GSVector4::zero();
+			MskFix = GSVector4i::zero();
+			ChannelShuffle = GSVector4i::zero();
+		}
+
+		__forceinline bool Update(const PSConstantBuffer* cb)
+		{
+			GSVector4i* a = (GSVector4i*)this;
+			GSVector4i* b = (GSVector4i*)cb;
+
+			if(!((a[0] == b[0]) /*& (a[1] == b1)*/ & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5]) & (a[6] == b[6])).alltrue()) // if WH matches HalfTexel does too
+			{
+				a[0] = b[0];
+				a[1] = b[1];
+				a[2] = b[2];
+				a[3] = b[3];
+				a[4] = b[4];
+				a[5] = b[5];
+				a[6] = b[6];
+
+				return true;
+			}
+
+			return false;
+		}
+	};
+
+	struct alignas(32) GSConstantBuffer
+	{
+		GSVector2 PointSize;
+
+		GSConstantBuffer()
+		{
+			PointSize = GSVector2(0);
+		}
+
+		__forceinline bool Update(const GSConstantBuffer* cb)
+		{
+			return true;
+		}
+	};
+
+	struct GSSelector
+	{
+		union
+		{
+			struct
+			{
+				uint32 iip:1;
+				uint32 prim:2;
+				uint32 point:1;
+				uint32 line:1;
+
+				uint32 _free:27;
+			};
+
+			uint32 key;
+		};
+
+		operator uint32() {return key;}
+
+		GSSelector() : key(0) {}
+		GSSelector(uint32 k) : key(k) {}
+	};
+
+	struct PSSelector
+	{
+		union
+		{
+			struct
+			{
+				// *** Word 1
+				// Format
+				uint32 fmt:4;
+				uint32 dfmt:2;
+				uint32 depth_fmt:2;
+				// Alpha extension/Correction
+				uint32 aem:1;
+				uint32 fba:1;
+				// Fog
+				uint32 fog:1;
+				// Pixel test
+				uint32 atst:3;
+				// Color sampling
+				uint32 fst:1;
+				uint32 tfx:3;
+				uint32 tcc:1;
+				uint32 wms:2;
+				uint32 wmt:2;
+				uint32 ltf:1;
+				// Shuffle and fbmask effect
+				uint32 shuffle:1;
+				uint32 read_ba:1;
+
+				// *** Word 2
+				// Blend and Colclip
+				uint32 clr1:1;
+
+				// Others ways to fetch the texture
+				uint32 channel:3;
+
+				// Hack
+				uint32 aout:1;
+				uint32 spritehack:1;
+				uint32 tcoffsethack:1;
+				uint32 urban_chaos_hle:1;
+				uint32 tales_of_abyss_hle:1;
+				uint32 point_sampler:1;
+
+				uint32 _free:28;
+			};
+
+			uint64 key;
+		};
+
+		operator uint64() {return key;}
+
+		PSSelector() : key(0) {}
+	};
+
+	struct PSSamplerSelector
+	{
+		union
+		{
+			struct
+			{
+				uint32 tau:1;
+				uint32 tav:1;
+				uint32 ltf:1;
+			};
+
+			uint32 key;
+		};
+
+		operator uint32() {return key & 0x7;}
+
+		PSSamplerSelector() : key(0) {}
+	};
+
+	struct OMDepthStencilSelector
+	{
+		union
+		{
+			struct
+			{
+				uint32 ztst:2;
+				uint32 zwe:1;
+				uint32 date:1;
+				uint32 fba:1;
+				uint32 date_one:1;
+			};
+
+			uint32 key;
+		};
+
+		operator uint32() {return key & 0x3f;}
+
+		OMDepthStencilSelector() : key(0) {}
+	};
+
+	struct OMBlendSelector
+	{
+		union
+		{
+			struct
+			{
+				uint32 abe:1;
+				uint32 a:2;
+				uint32 b:2;
+				uint32 c:2;
+				uint32 d:2;
+				uint32 wr:1;
+				uint32 wg:1;
+				uint32 wb:1;
+				uint32 wa:1;
+			};
+
+			struct
+			{
+				uint32 _pad:1;
+				uint32 abcd:8;
+				uint32 wrgba:4;
+			};
+
+			uint32 key;
+		};
+
+		operator uint32() {return key & 0x1fff;}
+
+		OMBlendSelector() : key(0) {}
+
+		bool IsCLR1() const
+		{
+			return (key & 0x19f) == 0x93; // abe == 1 && a == 1 && b == 2 && d == 1
+		}
+	};
+
+	struct D3D11Blend
+	{
+		int bogus;
+		D3D11_BLEND_OP op;
+		D3D11_BLEND src, dst;
+	};
+	static const D3D11Blend m_blendMapD3D11[3*3*3*3];
+
+	#pragma pack(pop)
+
+private:
+	float m_hack_topleft_offset;
+	int m_upscale_multiplier;
+	int m_mipmap;
+
 	GSTexture* CreateSurface(int type, int w, int h, int format);
+	GSTexture* FetchSurface(int type, int w, int h, int format);
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c);
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0);
@@ -52,10 +341,6 @@ class GSDevice11 : public GSDeviceDX
 	CComPtr<ID3D11Buffer> m_vb_old;
 	CComPtr<ID3D11Buffer> m_ib;
 	CComPtr<ID3D11Buffer> m_ib_old;
-
-	float m_hack_topleft_offset;
-
-	int m_mipmap;
 
 	struct
 	{
@@ -85,7 +370,6 @@ class GSDevice11 : public GSDeviceDX
 		ID3D11DepthStencilView* dsv;
 	} m_state;
 
-public: // TODO
 	CComPtr<ID3D11RasterizerState> m_rs;
 
 	bool FXAA_Compiled;
@@ -140,8 +424,6 @@ public: // TODO
 		CComPtr<ID3D11BlendState> bs;
 	} m_date;
 
-	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
-
 	// Shaders...
 
 	std::unordered_map<uint32, GSVertexShader11> m_vs;
@@ -162,11 +444,24 @@ public: // TODO
 
 	std::unique_ptr<GSTexture> m_font;
 
-	bool CreateTextureFX();
+protected:
+	struct {D3D_FEATURE_LEVEL level; std::string model, vs, gs, ps, cs;} m_shader;
+
+	static HMODULE s_d3d_compiler_dll;
+	static decltype(&D3DCompile) s_pD3DCompile;
+	// Older version doesn't support D3D_COMPILE_STANDARD_FILE_INCLUDE, which
+	// could be useful for external shaders.
+	static bool s_old_d3d_compiler_dll;
 
 public:
 	GSDevice11();
-	virtual ~GSDevice11();
+	virtual ~GSDevice11() {}
+
+	bool SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode);
+	void GetFeatureLevel(D3D_FEATURE_LEVEL& level) const { level = m_shader.level; }
+
+	static bool LoadD3DCompiler();
+	static void FreeD3DCompiler();
 
 	bool Create(const std::shared_ptr<GSWnd> &wnd);
 	bool Reset(int w, int h);
@@ -200,6 +495,8 @@ public:
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, bool linear = true);
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear = true);
 
+	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
+
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
 	bool IAMapVertexBuffer(void** vertex, size_t stride, size_t count);
 	void IAUnmapVertexBuffer();
@@ -221,6 +518,7 @@ public:
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL);
 	void OMSetRenderTargets(const GSVector2i& rtsize, int count, ID3D11UnorderedAccessView** uav, uint32* counters, const GSVector4i* scissor = NULL);
 
+	bool CreateTextureFX();
 	void SetupVS(VSSelector sel, const VSConstantBuffer* cb);
 	void SetupGS(GSSelector sel, const GSConstantBuffer* cb);
 	void SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel);
@@ -235,5 +533,27 @@ public:
 	void CreateShader(std::vector<char> source, const char* fn, ID3DInclude *include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11PixelShader** ps);
 
 	void CompileShader(std::vector<char> source, const char* fn, ID3DInclude *include, const char* entry, D3D_SHADER_MACRO* macro, ID3DBlob** shader, std::string shader_model);
+
+	template<class T> void PrepareShaderMacro(std::vector<T>& dst, const T* src)
+	{
+		dst.clear();
+
+		while (src && src->Definition && src->Name)
+		{
+			dst.push_back(*src++);
+		}
+
+		T m;
+
+		m.Name = "SHADER_MODEL";
+		m.Definition = m_shader.model.c_str();
+
+		dst.push_back(m);
+
+		m.Name = NULL;
+		m.Definition = NULL;
+
+		dst.push_back(m);
+	}
 };
 

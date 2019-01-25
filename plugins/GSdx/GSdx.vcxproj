@@ -102,7 +102,6 @@
     <ClCompile Include="GSCrc.cpp" />
     <ClCompile Include="Renderers\Common\GSDevice.cpp" />
     <ClCompile Include="Renderers\DX11\GSDevice11.cpp" />
-    <ClCompile Include="Renderers\DXCommon\GSDeviceDX.cpp" />
     <ClCompile Include="Renderers\Null\GSDeviceNull.cpp" />
     <ClCompile Include="Renderers\OpenGL\GSDeviceOGL.cpp" />
     <ClCompile Include="Window\GSDialog.cpp" />
@@ -190,7 +189,6 @@
     <ClInclude Include="GSCrc.h" />
     <ClInclude Include="Renderers\Common\GSDevice.h" />
     <ClInclude Include="Renderers\DX11\GSDevice11.h" />
-    <ClInclude Include="Renderers\DXCommon\GSDeviceDX.h" />
     <ClInclude Include="Renderers\Null\GSDeviceNull.h" />
     <ClInclude Include="Renderers\OpenGL\GSDeviceOGL.h" />
     <ClInclude Include="Window\GSDialog.h" />
