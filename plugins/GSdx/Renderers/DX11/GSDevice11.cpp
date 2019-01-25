@@ -539,44 +539,77 @@ void GSDevice11::Flip()
 	m_swapchain->Present(m_vsync, 0);
 }
 
+void GSDevice11::BeforeDraw()
+{
+	// DX can't read from the FB
+	// So let's copy it and send that to the shader instead
+
+	auto bits = m_state.ps_sr_bitfield;
+	m_state.ps_sr_bitfield = 0;
+
+	unsigned long i;
+	while (_BitScanForward(&i, bits))
+	{
+		GSTexture11* tex = m_state.ps_sr_texture[i];
+
+		if (tex->Equal(m_state.rt_texture) || tex->Equal(m_state.rt_ds))
+		{
+#ifdef _DEBUG
+			OutputDebugString(format("WARNING: FB read detected on slot %i, copying...", i).c_str());
+#endif
+			GSTexture* cp = nullptr;
+
+			CloneTexture(tex, &cp);
+
+			PSSetShaderResource(i, cp);
+		}
+
+		bits ^= 1u << i;
+	}
+
+	PSUpdateShaderState();
+}
+
+void GSDevice11::AfterDraw()
+{
+	unsigned long i;
+	while (_BitScanForward(&i, m_state.ps_sr_bitfield))
+	{
+#ifdef _DEBUG
+		OutputDebugString(format("WARNING: Cleaning up copied texture on slot %i", i).c_str());
+#endif
+		Recycle(m_state.ps_sr_texture[i]);
+		PSSetShaderResource(i, NULL);
+	}
+}
+
 void GSDevice11::DrawPrimitive()
 {
+	BeforeDraw();
+
 	m_ctx->Draw(m_vertex.count, m_vertex.start);
+
+	AfterDraw();
 }
 
 void GSDevice11::DrawIndexedPrimitive()
 {
-	// DX can't read from the FB
-	// So let's copy it and set that as the shader
-	// resource for slot 4 to avoid issues.
-	GSTexture11* tex = m_state.ps_sr_texture[4];
+	BeforeDraw();
 
-	if (tex && (tex->Equal(m_state.rt_texture) || tex->Equal(m_state.rt_ds)))
-	{
-		// fprintf(stdout, "FB read detected on slot 4: copying fb...\n");
+	m_ctx->DrawIndexed(m_index.count, m_index.start, m_vertex.start);
 
-		GSTexture* cp = nullptr;
-
-		CloneTexture(m_state.ps_sr_texture[4], &cp);
-
-		PSSetShaderResource(4, cp);
-		PSUpdateShaderState();
-
-		m_ctx->DrawIndexed(m_index.count, m_index.start, m_vertex.start);
-
-		Recycle(cp);
-	}
-	else
-	{
-		m_ctx->DrawIndexed(m_index.count, m_index.start, m_vertex.start);
-	}
+	AfterDraw();
 }
 
 void GSDevice11::DrawIndexedPrimitive(int offset, int count)
 {
 	ASSERT(offset + count <= (int)m_index.count);
 
+	BeforeDraw();
+
 	m_ctx->DrawIndexed(count, m_index.start + offset, m_vertex.start);
+
+	AfterDraw();
 }
 
 void GSDevice11::Dispatch(uint32 x, uint32 y, uint32 z)
@@ -1337,6 +1370,7 @@ void GSDevice11::PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv, G
 	{
 		m_state.ps_sr_views[i] = srv;
 		m_state.ps_sr_texture[i] = (GSTexture11*)sr;
+		srv ? m_state.ps_sr_bitfield |= 1u << i : m_state.ps_sr_bitfield &= ~(1u << i);
 	}
 }
 
@@ -1364,8 +1398,6 @@ void GSDevice11::PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb)
 
 		m_ctx->PSSetConstantBuffers(0, 1, &ps_cb);
 	}
-
-	PSUpdateShaderState();
 }
 
 void GSDevice11::PSUpdateShaderState()

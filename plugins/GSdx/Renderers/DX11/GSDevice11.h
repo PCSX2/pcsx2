@@ -331,6 +331,8 @@ private:
 	void InitExternalFX();
 	void InitFXAA(); // Bug workaround! Stack corruption? Heap corruption? No idea
 	void RenderOsd(GSTexture* dt);
+	void BeforeDraw();
+	void AfterDraw();
 	
 	//
 
@@ -368,6 +370,7 @@ private:
 		GSTexture11* rt_texture;
 		GSTexture11* rt_ds;
 		ID3D11DepthStencilView* dsv;
+		uint16_t ps_sr_bitfield;
 	} m_state;
 
 	CComPtr<ID3D11RasterizerState> m_rs;
