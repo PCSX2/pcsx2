@@ -1,4 +1,4 @@
-; Copyright (C) 2017 Christian Kenny
+; Copyright (C) 2019 PCSX2 Team
 
 Function UninstallPrevious
 

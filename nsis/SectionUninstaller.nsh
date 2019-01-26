@@ -66,6 +66,11 @@ Section "Un.Program and Plugins ${APP_NAME}"
   RMDir /r "$INSTDIR\Docs"
   RMDir /r "$INSTDIR\Shaders"
 
+  
+  ; FIXME: PCSX2 currently does not account for non-default file paths in the uninstaller
+  ; These paths would either have to be written to the registry by PCSX2 itself or read directly 
+  ; using a script in NSIS. 
+  
   SetShellVarContext current
   Delete $DOCUMENTS\PCSX2\inis\PCSX2_ui.ini
 SectionEnd

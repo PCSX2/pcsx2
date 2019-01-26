@@ -1,6 +1,5 @@
 ; PCSX2 Pre-Installer Script
-; Copyright (C) 2017 Christian Kenny
-; Copyright (C) 2017 PCSX2 Team
+; Copyright (C) 2019 PCSX2 Team
 
 !include "SharedDefs.nsh"
 
@@ -13,7 +12,7 @@ Var UserPrivileges
 Var IsAdmin
 Var DirectXSetupError
 
-; Dialog Vars
+; Dialogs and Controls
 Var hwnd
 Var PreInstall_Dialog
 Var PreInstall_DlgBack
@@ -23,8 +22,13 @@ Var InstallMode_Dialog
 Var InstallMode_DlgBack
 Var InstallMode_DlgNext
 Var InstallMode_Label
-Var InstallMode_Full
+
+# Normal installer mode (writes to Program Files)
+Var InstallMode_Normal
+
+# Portable installer mode
 Var InstallMode_Portable
+
 !include "nsDialogs.nsh"
 
 Page Custom IsUserAdmin
@@ -33,6 +37,7 @@ Page Custom InstallMode InstallModeLeave
 
 Function IsUserAdmin
 !include WinVer.nsh
+# No user should ever have to experience this pain ;)
   ${IfNot} ${AtLeastWinVista}
     MessageBox MB_OK "Your operating system is unsupported by PCSX2. Please upgrade your operating system or install PCSX2 1.4.0."
     Quit
@@ -73,9 +78,6 @@ Pop $PreInstall_Dialog
     GetDlgItem $PreInstall_DlgNext $HWNDPARENT 1
     EnableWindow $PreInstall_DlgNext 0
 
-${NSD_CreateProgressBar} 0 75 100% 10% "Test"
-    Pop $hwnd
-
   ${NSD_CreateTimer} NSD_Timer.Callback 1
 
 nsDialogs::Show
@@ -87,13 +89,18 @@ ${NSD_KillTimer} NSD_Timer.Callback
 
 !include WinVer.nsh
 !include "X64.nsh" 
+
+# If the user is running at least Windows 8.1
+# or has no admin rights, don't waste time trying
+# to install the DX and VS2015 runtimes.
+# (head straight to the first installer section)
 ${If} ${AtLeastWin8.1}
 ${OrIf} $IsAdmin == 0
 Call PreInstall_UsrWait
 SendMessage $HWNDPARENT ${WM_COMMAND} 1 0
-
 ${EndIf}
 
+# Check if the VC 2015 runtimes are installed
 ${If} ${RunningX64}
 ReadRegDword $R0 HKLM "SOFTWARE\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" "Installed"
 ${Else}
@@ -101,10 +108,12 @@ ${Else}
 ${EndIf}
     Pop $R0
 
+# If the runtimes are already here, check for DX.
 ${If} $R0 == "1"
 Goto ExecDxSetup
 ${EndIf}
 
+# Download and install the VC 2015 redistributable from the internet
 ${NSD_CreateLabel} 0 45 100% 10u "Downloading Visual C++ 2015 package"
 Pop $hwnd
 inetc::get "https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe" "$TEMP\vcredist_2015_Update_1_x86.exe" /SILENT /CONNECTTIMEOUT 30 /RECEIVETIMEOUT 30 /END
@@ -114,8 +123,9 @@ inetc::get "https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E
     SendMessage $hwnd ${PBM_SETPOS} 40 0
     Delete "$TEMP\vcredist_2015_Update_1_x86.exe"
 
-ExecDxSetup:
 
+# Download and install DirectX
+ExecDxSetup:
 ${NSD_CreateLabel} 0 45 100% 10u "Installing DXWebSetup package"
 Pop $hwnd
 SendMessage $hwnd ${PBM_SETPOS} 80 0
@@ -129,7 +139,6 @@ Delete "$TEMP\dxwebsetup.exe"
 Sleep 20
     Call PreInstall_UsrWait
 SendMessage $HWNDPARENT ${WM_COMMAND} 1 0
-
 FunctionEnd
 
 Function PreInstall_UsrWait
@@ -137,46 +146,64 @@ GetDlgItem $PreInstall_DlgNext $HWNDPARENT 1
 EnableWindow $PreInstall_DlgNext 1
 FunctionEnd
 
+# Creates the first dialog "section" to display a choice of installer modes.
 Function InstallMode
-
 nsDialogs::Create /NOUNLOAD 1018
 Pop $InstallMode_Dialog
 
-    GetDlgItem $InstallMode_DlgBack $HWNDPARENT 3
-    EnableWindow $InstallMode_DlgBack 0
+GetDlgItem $InstallMode_DlgBack $HWNDPARENT 3
+EnableWindow $InstallMode_DlgBack 0
 
-    GetDlgItem $InstallMode_DlgNext $HWNDPARENT 1
-    EnableWindow $InstallMode_DlgNext 0
+GetDlgItem $InstallMode_DlgNext $HWNDPARENT 1
+EnableWindow $InstallMode_DlgNext 0
 
 ${NSD_CreateLabel} 0 0 100% 10u "Select an installation mode for PCSX2."
 Pop $InstallMode_Label
 
-${NSD_CreateRadioButton} 0 35 100% 10u "Full Installation"
-Pop $InstallMode_Full
+${NSD_CreateRadioButton} 0 35 100% 10u "Normal Installation"
+Pop $InstallMode_Normal
 
+# If the user doesn't have admin rights, disable the button for the normal (non-portable) installer
 ${If} $IsAdmin == 0
-EnableWindow $InstallMode_Full 0
+EnableWindow $InstallMode_Normal 0
 ${EndIf}
 
-${NSD_OnClick} $InstallMode_Full InstallMode_UsrWait
+# Create labels/buttons for the normal installation
+${NSD_OnClick} $InstallMode_Normal InstallMode_UsrWait
 ${NSD_CreateLabel} 10 55 100% 20u "PCSX2 will be installed in Program Files unless another directory is specified. User files are stored in the Documents/PCSX2 directory."
 
+# Create labels/buttons for the portable installation
 ${NSD_CreateRadioButton} 0 95 100% 10u "Portable Installation"
 Pop $InstallMode_Portable
-    ${NSD_OnClick} $InstallMode_Portable InstallMode_UsrWait
-    ${NSD_CreateLabel} 10 115 100% 20u "Install PCSX2 to any directory you want. Choose this option if you prefer to have all of your files in the same folder or frequently update PCSX2 through Orphis' Buildbot."
+${NSD_OnClick} $InstallMode_Portable InstallMode_UsrWait
+${NSD_CreateLabel} 10 115 100% 20u "Install PCSX2 to any directory you want. Choose this option if you prefer to have all of your files in the same folder or frequently update PCSX2 through Orphis' Buildbot."
 
 nsDialogs::Show
 
 FunctionEnd
 
+# Disables the "next" button until a selection has been made
 Function InstallMode_UsrWait
 GetDlgItem $InstallMode_DlgNext $HWNDPARENT 1
 EnableWindow $InstallMode_DlgNext 1
+
+# Displays a UAC shield on the button
+${NSD_GetState} $InstallMode_Normal $0
+${NSD_GetState} $InstallMode_Portable $1
+
+${If} ${BST_CHECKED} == $0
+SendMessage $InstallMode_DlgNext ${BCM_SETSHIELD} 0 1
+${Else}
+SendMessage $InstallMode_DlgNext ${BCM_SETSHIELD} 0 0
+${EndIf}
+
 FunctionEnd
 
+# Runs the elevated installer and quits the current one
+# If they chose portable mode, the current (unelevated installer)
+# will still be used.
 Function InstallModeLeave
-${NSD_GetState} $InstallMode_Full $0
+${NSD_GetState} $InstallMode_Normal $0
 ${NSD_GetState} $InstallMode_Portable $1
 
 ${If} ${BST_CHECKED} == $0
@@ -203,11 +230,10 @@ FunctionEnd
 ; The default installation directory for the portable binary.
 InstallDir "$DOCUMENTS\$R8\PCSX2 ${APP_VERSION}"
 
-; Installed files are housed here
+; Files to be installed are housed here
 !include "SharedCore.nsh"
 
 Section "" INST_PORTABLE
-
 SetOutPath "$INSTDIR"
 File portable.ini
 SectionEnd
@@ -215,6 +241,7 @@ SectionEnd
 Section "" SID_PCSX2
 SectionEnd
 
+# Gives the user a fancy checkbox to run PCSX2 right from the installer!
 Function ModifyRunCheckbox
 ${IfNot} ${SectionIsSelected} ${SID_PCSX2}
     SendMessage $MUI.FINISHPAGE.RUN ${BM_SETCHECK} ${BST_UNCHECKED} 0
