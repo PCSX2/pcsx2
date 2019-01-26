@@ -332,7 +332,7 @@ void GSdxApp::Init()
 
 	// Avoid to clutter the ini file with useless options
 
-	// PSX option (or DX9). Not supported on linux
+	// PSX option. Not supported on linux.
 #ifdef _WIN32
 	m_default_configuration["dithering"]                                  = "1";
 	m_default_configuration["ModeRefreshRate"]                            = "0";
