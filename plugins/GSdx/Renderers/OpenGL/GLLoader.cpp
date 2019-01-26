@@ -364,7 +364,7 @@ namespace GLLoader {
 		// On linux assumes the free driver if it isn't nvidia or amd pro driver
 		mesa_driver = !vendor_id_nvidia && !vendor_id_amd;
 #endif
-
+		// As of 2019 SSO is still broken on intel (Kaby Lake confirmed).
 		buggy_sso_dual_src = vendor_id_intel || vendor_id_amd /*|| amd_legacy_buggy_driver*/;
 
 		if (theApp.GetConfigI("override_geometry_shader") != -1) {
@@ -454,7 +454,8 @@ namespace GLLoader {
 					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
 			}
 
-			if (vendor_id_intel) {
+			if (vendor_id_intel && !found_GL_ARB_texture_barrier && !found_GL_ARB_direct_state_access) {
+				// Assume that driver support is good when texture barrier and DSA is supported, disable the log then.
 				fprintf(stderr, "The OpenGL renderer is inefficient on Intel GPUs due to an inefficient driver.\n"
 					"Check out the link below for further information.\n"
 					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know\n");
