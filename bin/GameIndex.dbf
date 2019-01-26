@@ -18365,6 +18365,7 @@ Serial = SLKA-25082
 Name   = Castlevania - Lament of Innocence
 Region = NTSC-K
 Compat = 5
+eeClampMode = 3 // Fixes cutscene freezes.
 ---------------------------------------------
 Serial = SLKA-25087
 Name   = FIFA Soccer 2004
@@ -23041,6 +23042,7 @@ Compat = 5
 Serial = SLPM-65406
 Name   = Castlevania - Lament of Innocence [Limited Edition]
 Region = NTSC-J
+eeClampMode = 3 // Fixes cutscene freezes.
 ---------------------------------------------
 Serial = SLPM-65407
 Name   = Transformers Tatakai
@@ -23186,6 +23188,7 @@ Serial = SLPM-65444
 Name   = Castlevania - Lament of Innocence
 Region = NTSC-J
 Compat = 5
+eeClampMode = 3 // Fixes cutscene freezes.
 ---------------------------------------------
 Serial = SLPM-65445
 Name   = Powerful Pro Baseball 10 - Decision
@@ -26443,6 +26446,7 @@ Region = NTSC-J
 Serial = SLPM-66325
 Name   = Castlevania - Lament of Innocence [Konami Palace Selection]
 Region = NTSC-J
+eeClampMode = 3 // Fixes cutscene freezes.
 ---------------------------------------------
 Serial = SLPM-66327
 Name   = Wallace and Gromit - The Curse of the Were-Rabbit
@@ -37743,6 +37747,7 @@ Serial = SLUS-20733
 Name   = Castlevania - Lament of Innocence
 Region = NTSC-U
 Compat = 5
+eeClampMode = 3 // Fixes cutscene freezes.
 ---------------------------------------------
 Serial = SLUS-20734
 Name   = Frogger's Adventures - The Rescue
