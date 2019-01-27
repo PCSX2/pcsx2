@@ -215,10 +215,7 @@ protected:
 
 	void deci2Freeze();
 
-#ifndef DISABLE_RECORDING
 	void InputRecordingFreeze();
-#endif
-	
 };
 
 // --------------------------------------------------------------------------------------
