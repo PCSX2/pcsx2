@@ -1254,32 +1254,15 @@ bool GSC_TenchuGames(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Sly3(const GSFrameInfo& fi, int& skip)
+bool GSC_SlyGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00700 || fi.FBP == 0x00a80 || fi.FBP == 0x00e00) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x00700 || fi.TBP0 == 0x00a80 || fi.TBP0 == 0x00e00) && fi.TPSM == PSM_PSMCT16)
+		if(fi.TME && fi.FPSM == fi.TPSM && (fi.FBP == 0x00000 || fi.FBP == 0x00700 || fi.FBP == 0x00800 || fi.FBP == 0x008c0 || fi.FBP == 0x00a80 || fi.FBP == 0x00e00) && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
+			// 0x00a80, 0x00e00 from Sly 3
 		{
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			skip = 3;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_Sly2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME &&  (fi.FBP == 0x00000 || fi.FBP == 0x00700 || fi.FBP == 0x00800 || fi.FBP == 0x008c0) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
+			// Upscaling issue with texture shuffle on dx and gl. Also removes shadows on gl.
+			// Bbox issue on dx.
 			skip = 1000;
 		}
 	}
@@ -1854,17 +1837,12 @@ void GSState::SetupCrcHack()
 		lut[CRC::Yakuza] = GSC_YakuzaGames;
 		lut[CRC::Yakuza2] = GSC_YakuzaGames;
 
-		// Depth + Texture cache issue + Date (AKA a real mess)
-		lut[CRC::HauntingGround] = GSC_HauntingGround;
-
 		// Not tested but must be fixed with texture shuffle
 		lut[CRC::CrashNburn] = GSC_CrashNburn; // seem to be a basic depth effect
 
 		// Those games might requires accurate fbmask
 		lut[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
 		lut[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
-		lut[CRC::Sly2] = GSC_Sly2;
-		lut[CRC::Sly3] = GSC_Sly3;
 
 		// Those games require accurate_colclip (perf)
 		lut[CRC::CastlevaniaCoD] = GSC_CastlevaniaGames;
@@ -1872,6 +1850,11 @@ void GSState::SetupCrcHack()
 
 		// Unknown status
 		lut[CRC::Grandia3] = GSC_Grandia3;
+
+		// Bounding box issue
+		lut[CRC::HauntingGround] = GSC_HauntingGround; // + Texture cache issue + Date
+		lut[CRC::Sly2] = GSC_SlyGames; // + Upscaling issue
+		lut[CRC::Sly3] = GSC_SlyGames; // + Upscaling issue
 
 		// Dedicated shader for channel effect
 		lut[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;

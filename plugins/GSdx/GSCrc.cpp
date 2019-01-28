@@ -323,6 +323,7 @@ CRC::Game CRC::m_games[] =
 	{0x615EA2DB, Sly2, JP, 0}, // Kaitou Sly Cooper 2
 	{0xFDA1CBF6, Sly2, EU, 0},
 	{0x15DD1F6F, Sly2, NoRegion, 0},
+	{0xBF1739E2, Sly2, NoRegion, 0}, // Prototype maybe, is it official ? I don't remember, found it when testing my dumps (LT).
 	{0xA9C82AB9, DemonStone, US, 0},
 	{0x7C7578F3, DemonStone, EU, 0},
 	{0x22425C19, DemonStone, KO, 0},
