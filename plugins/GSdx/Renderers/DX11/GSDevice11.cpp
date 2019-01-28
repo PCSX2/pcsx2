@@ -1479,43 +1479,6 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	}
 }
 
-void GSDevice11::OMSetRenderTargets(const GSVector2i& rtsize, int count, ID3D11UnorderedAccessView** uav, uint32* counters, const GSVector4i* scissor)
-{
-	m_ctx->OMSetRenderTargetsAndUnorderedAccessViews(0, NULL, NULL, 0, count, uav, counters);
-
-	m_state.rt_view = NULL;
-	m_state.rt_texture = NULL;
-	m_state.rt_ds = NULL;
-	m_state.dsv = NULL;
-
-	if(m_state.viewport != rtsize)
-	{
-		m_state.viewport = rtsize;
-
-		D3D11_VIEWPORT vp;
-
-		memset(&vp, 0, sizeof(vp));
-
-		vp.TopLeftX = 0;
-		vp.TopLeftY = 0;
-		vp.Width = (float)rtsize.x;
-		vp.Height = (float)rtsize.y;
-		vp.MinDepth = 0.0f;
-		vp.MaxDepth = 1.0f;
-
-		m_ctx->RSSetViewports(1, &vp);
-	}
-
-	GSVector4i r = scissor ? *scissor : GSVector4i(rtsize).zwxy();
-
-	if(!m_state.scissor.eq(r))
-	{
-		m_state.scissor = r;
-
-		m_ctx->RSSetScissorRects(1, r);
-	}
-}
-
 void GSDevice11::CreateShader(std::vector<char> source, const char* fn, ID3DInclude *include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il)
 {
 	HRESULT hr;

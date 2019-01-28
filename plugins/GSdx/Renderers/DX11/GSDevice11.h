@@ -522,7 +522,6 @@ public:
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, uint8 sref);
 	void OMSetBlendState(ID3D11BlendState* bs, float bf);
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL) final;
-	void OMSetRenderTargets(const GSVector2i& rtsize, int count, ID3D11UnorderedAccessView** uav, uint32* counters, const GSVector4i* scissor = NULL);
 
 	bool CreateTextureFX();
 	void SetupVS(VSSelector sel, const VSConstantBuffer* cb);
