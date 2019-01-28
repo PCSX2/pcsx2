@@ -930,9 +930,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	bool ate_RGB_then_ZA = false;
 	if (ate_first_pass & ate_second_pass)
 	{
-#ifdef _DEBUG
-		fprintf(stdout, "Complex Alpha Test\n");
-#endif
+		// fprintf(stdout, "Complex Alpha Test\n");
 		bool commutative_depth = (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (m_om_dssel.ztst == ZTST_ALWAYS);
 		bool commutative_alpha = (m_context->ALPHA.C != 1); // when either Alpha Src or a constant
 
@@ -942,18 +940,14 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 
 	if (ate_RGBA_then_Z)
 	{
-#ifdef _DEBUG
-		fprintf(stdout, "Alternate ATE handling: ate_RGBA_then_Z\n");
-#endif
+		// fprintf(stdout, "Alternate ATE handling: ate_RGBA_then_Z\n");
 		// Render all color but don't update depth
 		// ATE is disabled here
 		m_om_dssel.zwe = false;
 	}
 	else if (ate_RGB_then_ZA)
 	{
-#ifdef _DEBUG
-		fprintf(stdout, "Alternate ATE handling: ate_RGB_then_ZA\n");
-#endif
+		// fprintf(stdout, "Alternate ATE handling: ate_RGB_then_ZA\n");
 		// Render RGB color but don't update depth/alpha
 		// ATE is disabled here
 		m_om_dssel.zwe = false;
