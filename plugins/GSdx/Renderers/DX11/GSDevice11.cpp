@@ -252,6 +252,28 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	hr = m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &options, sizeof(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS));
 
+	// debug
+#ifdef _DEBUG
+	CComPtr<ID3D11Debug> debug;
+	hr = m_dev->QueryInterface<ID3D11Debug>(&debug);
+
+	if (SUCCEEDED(hr))
+	{
+		CComPtr<ID3D11InfoQueue> info_queue;
+		hr = debug->QueryInterface<ID3D11InfoQueue>(&info_queue);
+
+		if (SUCCEEDED(hr))
+		{
+			int break_on = theApp.GetConfigI("dx_break_on_severity");
+
+			info_queue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, break_on & (1 << 0));
+			info_queue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, break_on & (1 << 1));
+			info_queue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, break_on & (1 << 2));
+			info_queue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_INFO, break_on & (1 << 3));
+		}
+	}
+#endif
+
 	// convert
 
 	D3D11_INPUT_ELEMENT_DESC il_convert[] =
