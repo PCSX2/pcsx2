@@ -198,161 +198,60 @@ typedef void (APIENTRYP PFNGLGETTEXTUREIMAGEPROC) (GLuint texture, GLint level, 
 
 // **********************  End of the extra header ******************* //
 
+// #define ENABLE_GL_ARB_ES3_2_compatibility 1
+// #define ENABLE_GL_ARB_bindless_texture 1
+// #define ENABLE_GL_ARB_cl_event 1
+// #define ENABLE_GL_ARB_compute_variable_group_size 1
+#define ENABLE_GL_ARB_debug_output 1
+// #define ENABLE_GL_ARB_draw_buffers_blend 1
+// #define ENABLE_GL_ARB_draw_instanced 1
+// #define ENABLE_GL_ARB_geometry_shader4 1
+// #define ENABLE_GL_ARB_gl_spirv 1
+// #define ENABLE_GL_ARB_gpu_shader_int64 1
+// #define ENABLE_GL_ARB_indirect_parameters 1
+// #define ENABLE_GL_ARB_instanced_arrays 1
+// #define ENABLE_GL_ARB_parallel_shader_compile 1
+// #define ENABLE_GL_ARB_robustness 1
+// #define ENABLE_GL_ARB_sample_locations 1
+// #define ENABLE_GL_ARB_sample_shading 1
+// #define ENABLE_GL_ARB_shading_language_include 1
+// #define ENABLE_GL_ARB_sparse_buffer 1
+// #define ENABLE_GL_ARB_sparse_texture 1
+// #define ENABLE_GL_ARB_texture_buffer_object 1
+// #define ENABLE_GL_KHR_blend_equation_advanced 1
+// #define ENABLE_GL_KHR_parallel_shader_compile 1
+
+// Dark age of openGL. Potentially it should be fixed with a migration
+// to the new header glcorearb.h. But we need to check old distribution
+// support first
+// #define ENABLE_GL_VERSION_1_0 1
+// #define ENABLE_GL_VERSION_1_1 1
+// #define ENABLE_GL_VERSION_1_2 1
+// #define ENABLE_GL_VERSION_1_3 1
+// #define ENABLE_GL_VERSION_1_4 1
+#define ENABLE_GL_VERSION_1_5 1
+#define ENABLE_GL_VERSION_2_0 1
+#define ENABLE_GL_VERSION_2_1 1
+#define ENABLE_GL_VERSION_3_0 1
+#define ENABLE_GL_VERSION_3_1 1
+#define ENABLE_GL_VERSION_3_2 1
+#define ENABLE_GL_VERSION_3_3 1
+#define ENABLE_GL_VERSION_4_0 1
+#define ENABLE_GL_VERSION_4_1 1
+#define ENABLE_GL_VERSION_4_2 1
+#define ENABLE_GL_VERSION_4_3 1
+#define ENABLE_GL_VERSION_4_4 1
+#define ENABLE_GL_VERSION_4_5 1
+// #define ENABLE_GL_VERSION_4_6 1
+
 // Note: glActiveTexture & glBlendColor aren't included in the win GL ABI.
 // (maybe gl.h is outdated, or my setup is wrong)
 // Anyway, let's just keep the mangled function pointer for those 2 functions.
 extern   PFNGLBLENDCOLORPROC                    gl_BlendColor;
-
-extern   PFNGLATTACHSHADERPROC                  glAttachShader;
-extern   PFNGLBINDBUFFERPROC                    glBindBuffer;
-extern   PFNGLBINDBUFFERBASEPROC                glBindBufferBase;
-extern   PFNGLBINDBUFFERRANGEPROC               glBindBufferRange;
-extern   PFNGLBINDFRAMEBUFFERPROC               glBindFramebuffer;
-extern   PFNGLBINDSAMPLERPROC                   glBindSampler;
-extern   PFNGLBINDVERTEXARRAYPROC               glBindVertexArray;
-extern   PFNGLBLENDEQUATIONSEPARATEIARBPROC     glBlendEquationSeparateiARB;
-extern   PFNGLBLENDFUNCSEPARATEIARBPROC         glBlendFuncSeparateiARB;
-extern   PFNGLBLITFRAMEBUFFERPROC               glBlitFramebuffer;
-extern   PFNGLBUFFERDATAPROC                    glBufferData;
-extern   PFNGLCHECKFRAMEBUFFERSTATUSPROC        glCheckFramebufferStatus;
-extern   PFNGLCLEARBUFFERFVPROC                 glClearBufferfv;
-extern   PFNGLCLEARBUFFERIVPROC                 glClearBufferiv;
-extern   PFNGLCLEARBUFFERUIVPROC                glClearBufferuiv;
-extern   PFNGLCOLORMASKIPROC                    glColorMaski;
-extern   PFNGLCREATESHADERPROGRAMVPROC          glCreateShaderProgramv;
-extern   PFNGLDELETEBUFFERSPROC                 glDeleteBuffers;
-extern   PFNGLDELETEFRAMEBUFFERSPROC            glDeleteFramebuffers;
-extern   PFNGLDELETEPROGRAMPROC                 glDeleteProgram;
-extern   PFNGLDELETESAMPLERSPROC                glDeleteSamplers;
-extern   PFNGLDELETEVERTEXARRAYSPROC            glDeleteVertexArrays;
-extern   PFNGLDETACHSHADERPROC                  glDetachShader;
-extern   PFNGLDRAWBUFFERSPROC                   glDrawBuffers;
-extern   PFNGLDRAWELEMENTSBASEVERTEXPROC        glDrawElementsBaseVertex;
-extern   PFNGLENABLEVERTEXATTRIBARRAYPROC       glEnableVertexAttribArray;
-extern   PFNGLFRAMEBUFFERRENDERBUFFERPROC       glFramebufferRenderbuffer;
-extern   PFNGLFRAMEBUFFERTEXTURE2DPROC          glFramebufferTexture2D;
-extern   PFNGLGENBUFFERSPROC                    glGenBuffers;
-extern   PFNGLGENFRAMEBUFFERSPROC               glGenFramebuffers;
-extern   PFNGLGENVERTEXARRAYSPROC               glGenVertexArrays;
-extern   PFNGLGETBUFFERPARAMETERIVPROC          glGetBufferParameteriv;
-extern   PFNGLGETDEBUGMESSAGELOGARBPROC         glGetDebugMessageLogARB;
-extern   PFNGLDEBUGMESSAGECALLBACKPROC          glDebugMessageCallback;
-extern   PFNGLGETPROGRAMINFOLOGPROC             glGetProgramInfoLog;
-extern   PFNGLGETPROGRAMIVPROC                  glGetProgramiv;
-extern   PFNGLGETSHADERIVPROC                   glGetShaderiv;
-extern   PFNGLGETSTRINGIPROC                    glGetStringi;
-extern   PFNGLISFRAMEBUFFERPROC                 glIsFramebuffer;
-extern   PFNGLMAPBUFFERPROC                     glMapBuffer;
-extern   PFNGLMAPBUFFERRANGEPROC                glMapBufferRange;
-extern   PFNGLPROGRAMPARAMETERIPROC             glProgramParameteri;
-extern   PFNGLSAMPLERPARAMETERFPROC             glSamplerParameterf;
-extern   PFNGLSAMPLERPARAMETERIPROC             glSamplerParameteri;
-extern   PFNGLSHADERSOURCEPROC                  glShaderSource;
-extern   PFNGLUNIFORM1IPROC                     glUniform1i;
-extern   PFNGLUNMAPBUFFERPROC                   glUnmapBuffer;
-extern   PFNGLUSEPROGRAMSTAGESPROC              glUseProgramStages;
-extern   PFNGLVERTEXATTRIBIPOINTERPROC          glVertexAttribIPointer;
-extern   PFNGLVERTEXATTRIBPOINTERPROC           glVertexAttribPointer;
-extern   PFNGLBUFFERSUBDATAPROC                 glBufferSubData;
-extern   PFNGLFENCESYNCPROC                     glFenceSync;
-extern   PFNGLDELETESYNCPROC                    glDeleteSync;
-extern   PFNGLCLIENTWAITSYNCPROC                glClientWaitSync;
-extern   PFNGLFLUSHMAPPEDBUFFERRANGEPROC        glFlushMappedBufferRange;
-extern   PFNGLBLENDEQUATIONSEPARATEPROC         glBlendEquationSeparate;
+extern   PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture;
 extern   PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate;
-// Shader compilation (Broken driver)
-extern   PFNGLCOMPILESHADERPROC                 glCompileShader;
-extern   PFNGLCREATEPROGRAMPROC                 glCreateProgram;
-extern   PFNGLCREATESHADERPROC                  glCreateShader;
-extern   PFNGLDELETESHADERPROC                  glDeleteShader;
-extern   PFNGLLINKPROGRAMPROC                   glLinkProgram;
-extern   PFNGLUSEPROGRAMPROC                    glUseProgram;
-extern   PFNGLGETSHADERINFOLOGPROC              glGetShaderInfoLog;
-extern   PFNGLPROGRAMUNIFORM1IPROC              glProgramUniform1i;
-// Query object
-extern   PFNGLBEGINQUERYPROC                    glBeginQuery;
-extern   PFNGLENDQUERYPROC                      glEndQuery;
-extern   PFNGLGETQUERYIVPROC                    glGetQueryiv;
-extern   PFNGLGETQUERYOBJECTIVPROC              glGetQueryObjectiv;
-extern   PFNGLGETQUERYOBJECTUIVPROC             glGetQueryObjectuiv;
-extern   PFNGLQUERYCOUNTERPROC                  glQueryCounter;
-extern   PFNGLGETQUERYOBJECTI64VPROC            glGetQueryObjecti64v;
-extern   PFNGLGETQUERYOBJECTUI64VPROC           glGetQueryObjectui64v;
-extern   PFNGLGETINTEGER64VPROC                 glGetInteger64v;
-extern   PFNGLCREATEQUERIESPROC                 glCreateQueries;
-extern   PFNGLDELETEQUERIESPROC                 glDeleteQueries;
-// GL4.0
-// GL4.1
-extern   PFNGLBINDPROGRAMPIPELINEPROC           glBindProgramPipeline;
-extern   PFNGLDELETEPROGRAMPIPELINESPROC        glDeleteProgramPipelines;
-extern   PFNGLGETPROGRAMPIPELINEIVPROC          glGetProgramPipelineiv;
-extern   PFNGLVALIDATEPROGRAMPIPELINEPROC       glValidateProgramPipeline;
-extern   PFNGLGETPROGRAMPIPELINEINFOLOGPROC     glGetProgramPipelineInfoLog;
-extern   PFNGLGETPROGRAMBINARYPROC              glGetProgramBinary;
-extern   PFNGLVIEWPORTINDEXEDFPROC              glViewportIndexedf;
-extern   PFNGLVIEWPORTINDEXEDFVPROC             glViewportIndexedfv;
-extern   PFNGLSCISSORINDEXEDPROC                glScissorIndexed;
-extern   PFNGLSCISSORINDEXEDVPROC               glScissorIndexedv;
-// GL4.2
-extern   PFNGLBINDIMAGETEXTUREPROC              glBindImageTexture;
-extern   PFNGLMEMORYBARRIERPROC                 glMemoryBarrier;
-extern   PFNGLPOPDEBUGGROUPPROC                 glPopDebugGroup;
-// GL4.3
-extern   PFNGLCOPYIMAGESUBDATAPROC              glCopyImageSubData;
-extern   PFNGLINVALIDATETEXIMAGEPROC            glInvalidateTexImage;
-extern   PFNGLPUSHDEBUGGROUPPROC                glPushDebugGroup;
-extern   PFNGLDEBUGMESSAGEINSERTPROC            glDebugMessageInsert;
-extern   PFNGLDEBUGMESSAGECONTROLPROC           glDebugMessageControl;
-extern   PFNGLOBJECTLABELPROC                   glObjectLabel;
-extern   PFNGLOBJECTPTRLABELPROC                glObjectPtrLabel;
-// GL4.4
-extern   PFNGLCLEARTEXIMAGEPROC                 glClearTexImage;
-extern   PFNGLCLEARTEXSUBIMAGEPROC              glClearTexSubImage;
-extern   PFNGLBUFFERSTORAGEPROC                 glBufferStorage;
 
-// GL4.5
-extern PFNGLCREATETEXTURESPROC                  glCreateTextures;
-extern PFNGLTEXTURESTORAGE2DPROC                glTextureStorage2D;
-extern PFNGLTEXTURESUBIMAGE2DPROC               glTextureSubImage2D;
-extern PFNGLCOPYTEXTURESUBIMAGE2DPROC           glCopyTextureSubImage2D;
-extern PFNGLBINDTEXTUREUNITPROC                 glBindTextureUnit;
-extern PFNGLGETTEXTUREIMAGEPROC                 glGetTextureImage;
-extern PFNGLTEXTUREPARAMETERIPROC               glTextureParameteri;
-extern PFNGLGENERATETEXTUREMIPMAPPROC           glGenerateTextureMipmap;
-
-extern PFNGLCREATEFRAMEBUFFERSPROC              glCreateFramebuffers;
-extern PFNGLCLEARNAMEDFRAMEBUFFERFVPROC         glClearNamedFramebufferfv;
-extern PFNGLCLEARNAMEDFRAMEBUFFERIVPROC         glClearNamedFramebufferiv;
-extern PFNGLCLEARNAMEDFRAMEBUFFERUIVPROC        glClearNamedFramebufferuiv;
-extern PFNGLNAMEDFRAMEBUFFERTEXTUREPROC         glNamedFramebufferTexture;
-extern PFNGLNAMEDFRAMEBUFFERDRAWBUFFERSPROC     glNamedFramebufferDrawBuffers;
-extern PFNGLNAMEDFRAMEBUFFERREADBUFFERPROC      glNamedFramebufferReadBuffer;
-extern PFNGLNAMEDFRAMEBUFFERPARAMETERIPROC      glNamedFramebufferParameteri;
-extern PFNGLCHECKNAMEDFRAMEBUFFERSTATUSPROC     glCheckNamedFramebufferStatus;
-
-extern PFNGLCREATEBUFFERSPROC                   glCreateBuffers;
-extern PFNGLNAMEDBUFFERSTORAGEPROC              glNamedBufferStorage;
-extern PFNGLNAMEDBUFFERDATAPROC                 glNamedBufferData;
-extern PFNGLNAMEDBUFFERSUBDATAPROC              glNamedBufferSubData;
-extern PFNGLMAPNAMEDBUFFERPROC                  glMapNamedBuffer;
-extern PFNGLMAPNAMEDBUFFERRANGEPROC             glMapNamedBufferRange;
-extern PFNGLUNMAPNAMEDBUFFERPROC                glUnmapNamedBuffer;
-extern PFNGLFLUSHMAPPEDNAMEDBUFFERRANGEPROC     glFlushMappedNamedBufferRange;
-
-extern PFNGLCREATESAMPLERSPROC                  glCreateSamplers;
-extern PFNGLCREATEPROGRAMPIPELINESPROC          glCreateProgramPipelines;
-
-extern PFNGLCLIPCONTROLPROC                     glClipControl;
-extern PFNGLTEXTUREBARRIERPROC                  glTextureBarrier;
-extern PFNGLGETTEXTURESUBIMAGEPROC              glGetTextureSubImage;
-
-#ifdef _WIN32
-extern PFNGLACTIVETEXTUREPROC                   gl_ActiveTexture;
-extern PFNGLTEXSTORAGE2DPROC                    glTexStorage2D;
-extern PFNGLGENPROGRAMPIPELINESPROC             glGenProgramPipelines;
-extern PFNGLGENSAMPLERSPROC                     glGenSamplers;
-extern PFNGLGENERATEMIPMAPPROC                  glGenerateMipmap;
-#endif
+#include "PFN_GLLOADER_HPP.h"
 
 
 namespace GLLoader {

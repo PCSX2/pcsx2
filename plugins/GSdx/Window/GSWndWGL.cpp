@@ -314,6 +314,18 @@ GSVector4i GSWndWGL::GetClientRect()
 void* GSWndWGL::GetProcAddress(const char* name, bool opt)
 {
 	void* ptr = (void*)wglGetProcAddress(name);
+	// In order to get function pointer of GL1.0 and GL1.1 you need to get from
+	// opengl32.dll directly
+	// Here an example from https://www.khronos.org/opengl/wiki/Load_OpenGL_Functions
+	// Note: so far we use direct linking but it could become handy for the migration
+	// to the new gl header (glcorearb.h)
+#if 0
+	if(ptr == 0 || (ptr == (void*)0x1) || (ptr == (void*)0x2) || (ptr == (void*)0x3) || (ptr == (void*)-1) )
+	{
+		HMODULE module = LoadLibraryA("opengl32.dll");
+		ptr = (void *)GetProcAddress(module, name);
+	}
+#endif
 	if (ptr == NULL) {
 		fprintf(stderr, "Failed to find %s\n", name);
 		if (!opt)
