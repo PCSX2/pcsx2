@@ -337,6 +337,7 @@ void GSdxApp::Init()
 	m_default_configuration["Adapter"]                                    = "default";
 	m_default_configuration["CaptureFileName"]                            = "";
 	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
+	m_default_configuration["dx_break_on_severity"]                       = "0";
 
 	// OpenCL device. Windows only for now.
 	m_default_configuration["ocldev"]                                     = "";
