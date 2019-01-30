@@ -149,10 +149,6 @@ GSDeviceOGL::~GSDeviceOGL()
 	// Must be done after the destruction of all shader/program objects
 	delete m_shader;
 	m_shader = NULL;
-
-	// Purge any pending message to reduce noise in Valgrind (potential memory leak
-	// in Mesa driver that doesn't free internal buffer when the context is destroyed)
-	CheckDebugLog();
 }
 
 void GSDeviceOGL::GenerateProfilerData()
@@ -631,10 +627,6 @@ void GSDeviceOGL::SetVSync(int vsync)
 
 void GSDeviceOGL::Flip()
 {
-	#ifdef ENABLE_OGL_DEBUG
-	CheckDebugLog();
-	#endif
-
 	m_wnd->Flip();
 
 	if (GLLoader::in_replayer) {
@@ -1889,34 +1881,6 @@ GLuint GSDeviceOGL::GetPaletteSamplerID()
 void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel)
 {
 	OMSetDepthStencilState(m_om_dss[dssel]);
-}
-
-void GSDeviceOGL::CheckDebugLog()
-{
-	if (!m_debug_gl_call) return;
-
-	unsigned int count = 16; // max. num. of messages that will be read from the log
-	int bufsize = 2048;
-	unsigned int sources[16] = {};
-	unsigned int types[16] = {};
-	unsigned int ids[16]   = {};
-	unsigned int severities[16] = {};
-	int lengths[16] = {};
-	char* messageLog = new char[bufsize];
-
-	unsigned int retVal = glGetDebugMessageLogARB(count, bufsize, sources, types, ids, severities, lengths, messageLog);
-
-	if(retVal > 0)
-	{
-		unsigned int pos = 0;
-		for(unsigned int i=0; i<retVal; i++)
-		{
-			DebugOutputToFile(sources[i], types[i], ids[i], severities[i], lengths[i], &messageLog[pos], NULL);
-			pos += lengths[i];
-		}
-	}
-
-	delete[] messageLog;
 }
 
 // Note: used as a callback of DebugMessageCallback. Don't change the signature

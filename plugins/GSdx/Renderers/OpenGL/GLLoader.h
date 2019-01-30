@@ -202,7 +202,7 @@ typedef void (APIENTRYP PFNGLGETTEXTUREIMAGEPROC) (GLuint texture, GLint level, 
 // #define ENABLE_GL_ARB_bindless_texture 1
 // #define ENABLE_GL_ARB_cl_event 1
 // #define ENABLE_GL_ARB_compute_variable_group_size 1
-#define ENABLE_GL_ARB_debug_output 1
+// #define ENABLE_GL_ARB_debug_output 1
 // #define ENABLE_GL_ARB_draw_buffers_blend 1
 // #define ENABLE_GL_ARB_draw_instanced 1
 // #define ENABLE_GL_ARB_geometry_shader4 1
