@@ -175,10 +175,10 @@ public:
 	virtual void ClearDepth(GSTexture* t) {}
 	virtual void ClearStencil(GSTexture* t, uint8 c) {}
 
-	virtual GSTexture* CreateRenderTarget(int w, int h, int format = 0);
-	virtual GSTexture* CreateDepthStencil(int w, int h, int format = 0);
-	virtual GSTexture* CreateTexture(int w, int h, int format = 0);
-	virtual GSTexture* CreateOffscreen(int w, int h, int format = 0);
+	GSTexture* CreateRenderTarget(int w, int h, int format = 0);
+	GSTexture* CreateDepthStencil(int w, int h, int format = 0);
+	GSTexture* CreateTexture(int w, int h, int format = 0);
+	GSTexture* CreateOffscreen(int w, int h, int format = 0);
 
 	virtual GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0) {return NULL;}
 

@@ -483,11 +483,6 @@ public:
 	void ClearDepth(GSTexture* t) final;
 	void ClearStencil(GSTexture* t, uint8 c) final;
 
-	GSTexture* CreateRenderTarget(int w, int h, int format = 0) final;
-	GSTexture* CreateDepthStencil(int w, int h, int format = 0) final;
-	GSTexture* CreateTexture(int w, int h, int format = 0) final;
-	GSTexture* CreateOffscreen(int w, int h, int format = 0) final;
-
 	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0) final;
 
 	void CloneTexture(GSTexture* src, GSTexture** dest);

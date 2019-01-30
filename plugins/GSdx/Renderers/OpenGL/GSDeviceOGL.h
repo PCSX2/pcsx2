@@ -534,10 +534,6 @@ public:
 	void ClearDepth(GSTexture* t) final;
 	void ClearStencil(GSTexture* t, uint8 c) final;
 
-	GSTexture* CreateRenderTarget(int w, int h, int format = 0) final;
-	GSTexture* CreateDepthStencil(int w, int h, int format = 0) final;
-	GSTexture* CreateTexture(int w, int h, int format = 0) final;
-	GSTexture* CreateOffscreen(int w, int h, int format = 0) final;
 	void InitPrimDateTexture(GSTexture* rt, const GSVector4i& area);
 	void RecycleDateTexture();
 

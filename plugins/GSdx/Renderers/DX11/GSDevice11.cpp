@@ -712,27 +712,10 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 
 GSTexture* GSDevice11::FetchSurface(int type, int w, int h, int format)
 {
+	if (format == 0)
+		format = (type == GSTexture::DepthStencil) ? DXGI_FORMAT_R32G8X24_TYPELESS : DXGI_FORMAT_R8G8B8A8_UNORM;
+
 	return __super::FetchSurface(type, w, h, format);
-}
-
-GSTexture* GSDevice11::CreateRenderTarget(int w, int h, int format)
-{
-	return __super::CreateRenderTarget(w, h, format ? format : DXGI_FORMAT_R8G8B8A8_UNORM);
-}
-
-GSTexture* GSDevice11::CreateDepthStencil(int w, int h, int format)
-{
-	return __super::CreateDepthStencil(w, h, format ? format : DXGI_FORMAT_R32G8X24_TYPELESS);
-}
-
-GSTexture* GSDevice11::CreateTexture(int w, int h, int format)
-{
-	return __super::CreateTexture(w, h, format ? format : DXGI_FORMAT_R8G8B8A8_UNORM);
-}
-
-GSTexture* GSDevice11::CreateOffscreen(int w, int h, int format)
-{
-	return __super::CreateOffscreen(w, h, format ? format : DXGI_FORMAT_R8G8B8A8_UNORM);
 }
 
 GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format, int ps_shader)

@@ -260,6 +260,9 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, int fmt)
 
 GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, int format)
 {
+	if (format == 0)
+		format = (type == GSTexture::DepthStencil) ? GL_DEPTH32F_STENCIL8 : GL_RGBA8;
+
 	GSTexture* t = GSDevice::FetchSurface(type, w, h, format);
 
 
@@ -1176,26 +1179,6 @@ void GSDeviceOGL::SelfShaderTest()
 		}
 	}
 	SelfShaderTestPrint(test, nb_shader);
-}
-
-GSTexture* GSDeviceOGL::CreateRenderTarget(int w, int h, int format)
-{
-	return GSDevice::CreateRenderTarget(w, h, format ? format : GL_RGBA8);
-}
-
-GSTexture* GSDeviceOGL::CreateDepthStencil(int w, int h, int format)
-{
-	return GSDevice::CreateDepthStencil(w, h, format ? format : GL_DEPTH32F_STENCIL8);
-}
-
-GSTexture* GSDeviceOGL::CreateTexture(int w, int h, int format)
-{
-	return GSDevice::CreateTexture(w, h, format ? format : GL_RGBA8);
-}
-
-GSTexture* GSDeviceOGL::CreateOffscreen(int w, int h, int format)
-{
-	return GSDevice::CreateOffscreen(w, h, format ? format : GL_RGBA8);
 }
 
 // blit a texture into an offscreen buffer
