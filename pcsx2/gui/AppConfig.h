@@ -359,7 +359,7 @@ public:
 	static int  GetMaxPresetIndex();
     static bool isOkGetPresetTextAndColor(int n, wxString& label, wxColor& c);
 	
-	bool        IsOkApplyPreset(int n);
+	bool        IsOkApplyPreset(int n, bool ignoreMTVU);
 
 
 	//The next 2 flags are used with ApplyConfigToGui which the presets system use:
