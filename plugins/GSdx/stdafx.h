@@ -126,6 +126,9 @@ typedef int64 sint64;
 #ifdef _WIN32
 
 	// Note use GL/glcorearb.h on the future
+	// Requirements:
+	//	* Update GSWndWGL::GetProcAddress to query 1.0 and 1.1 symbols
+	//	* define all ENABLE_GL_VERSION_1_*
 	#include <GL/gl.h>
 	#include <GL/glext.h>
 	#include <GL/wglext.h>
@@ -136,6 +139,10 @@ typedef int64 sint64;
 #else
 
 	// Note use GL/glcorearb.h on the future
+	// Requirements:
+	//	* Drop GLX that still include gl.h...
+	//	  EGL/OGL status on AMD GPU pro driver is unknown
+	//	* define all ENABLE_GL_VERSION_1_*
 	#include <GL/gl.h>
 	#include <GL/glext.h>
 	#include "Renderers/OpenGL/GLLoader.h"
