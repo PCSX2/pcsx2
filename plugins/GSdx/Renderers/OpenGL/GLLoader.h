@@ -254,6 +254,22 @@ extern   PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate;
 
 #include "PFN_GLLOADER_HPP.h"
 
+/*************************************************************
+ * Extra define not provided in glcorearb.h
+ * Currently they are included in the legacy glext.h but the plan
+ * is to move to core only OpenGL
+ ************************************************************/
+
+// Extension not in core profile. It will become irrelevant with sparse texture
+#ifndef GL_TEXTURE_FREE_MEMORY_ATI
+#define GL_TEXTURE_FREE_MEMORY_ATI 0x87FC
+#endif
+
+// Added in GL4.6. Code should be updated but driver support...
+#ifndef GL_TEXTURE_MAX_ANISOTROPY_EXT
+#define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE
+#endif
+
 
 namespace GLLoader {
 	void check_gl_requirements();
