@@ -221,14 +221,17 @@ typedef void (APIENTRYP PFNGLGETTEXTUREIMAGEPROC) (GLuint texture, GLint level, 
 // #define ENABLE_GL_KHR_blend_equation_advanced 1
 // #define ENABLE_GL_KHR_parallel_shader_compile 1
 
-// Dark age of openGL. Potentially it should be fixed with a migration
-// to the new header glcorearb.h. But we need to check old distribution
-// support first
+// Dark age of openGL. GL_10 and GL_11 are provided by opengl32.dll on windows.
+// Linux is a royal mess
+//
 // #define ENABLE_GL_VERSION_1_0 1
 // #define ENABLE_GL_VERSION_1_1 1
-// #define ENABLE_GL_VERSION_1_2 1
-// #define ENABLE_GL_VERSION_1_3 1
-// #define ENABLE_GL_VERSION_1_4 1
+#ifdef _WIN32
+#define ENABLE_GL_VERSION_1_2 1
+#define ENABLE_GL_VERSION_1_3 1
+#define ENABLE_GL_VERSION_1_4 1
+#endif
+
 #define ENABLE_GL_VERSION_1_5 1
 #define ENABLE_GL_VERSION_2_0 1
 #define ENABLE_GL_VERSION_2_1 1
@@ -244,12 +247,10 @@ typedef void (APIENTRYP PFNGLGETTEXTUREIMAGEPROC) (GLuint texture, GLint level, 
 #define ENABLE_GL_VERSION_4_5 1
 // #define ENABLE_GL_VERSION_4_6 1
 
-// Note: glActiveTexture & glBlendColor aren't included in the win GL ABI.
-// (maybe gl.h is outdated, or my setup is wrong)
-// Anyway, let's just keep the mangled function pointer for those 2 functions.
-extern   PFNGLBLENDCOLORPROC                    gl_BlendColor;
-extern   PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture;
+// It should be done by ENABLE_GL_VERSION_1_4 but it conflicts with the old gl.h
+#ifdef __unix__
 extern   PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate;
+#endif
 
 #include "PFN_GLLOADER_HPP.h"
 

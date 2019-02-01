@@ -23,10 +23,9 @@
 #include "GSdx.h"
 #include "GS.h"
 
-// GL1.x mess
-PFNGLBLENDCOLORPROC                    gl_BlendColor                       = NULL;
-PFNGLACTIVETEXTUREPROC                 gl_ActiveTexture                    = NULL;
+#ifdef __unix__
 PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate                 = NULL;
+#endif
 
 #include "PFN_GLLOADER_CPP.h"
 
@@ -52,7 +51,7 @@ namespace ReplaceGL {
 namespace Emulate_DSA {
 	// Texture entry point
 	void APIENTRY BindTextureUnit(GLuint unit, GLuint texture) {
-		gl_ActiveTexture(GL_TEXTURE0 + unit);
+		glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, texture);
 	}
 

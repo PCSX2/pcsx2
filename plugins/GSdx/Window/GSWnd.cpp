@@ -33,10 +33,8 @@ void GSWndGL::PopulateGlFunction()
 #include "PFN_WND.h"
 
 	// GL1.X mess
-	*(void**)&(gl_BlendColor) = GetProcAddress("glBlendColor");
+#ifdef __unix__
 	GL_EXT_LOAD(glBlendFuncSeparate);
-#ifdef _WIN32
-	*(void**)&(gl_ActiveTexture) = GetProcAddress("glActiveTexture");
 #endif
 
 	// Check openGL requirement as soon as possible so we can switch to another
