@@ -15,13 +15,6 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2014-01-05 23:40:22 +0200 (su, 05 tammi 2014) $
-// File revision : $Revision: 4 $
-//
-// $Id: FIFOSampleBuffer.h 177 2014-01-05 21:40:22Z oparviai $
-//
-////////////////////////////////////////////////////////////////////////////////
-//
 // License :
 //
 //  SoundTouch audio processing library
@@ -119,7 +112,7 @@ public:
     /// 'putSamples(numSamples)' function.
     SAMPLETYPE *ptrEnd(
                 uint slackCapacity   ///< How much free capacity (in samples) there _at least_ 
-                                     ///< should be so that the caller can succesfully insert the 
+                                     ///< should be so that the caller can successfully insert the 
                                      ///< desired samples to the buffer. If necessary, the function 
                                      ///< grows the buffer size to comply with this requirement.
                 );

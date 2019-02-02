@@ -17,13 +17,6 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2014-10-05 19:20:24 +0300 (su, 05 loka 2014) $
-// File revision : $Revision: 4 $
-//
-// $Id: WavFile.cpp 200 2014-10-05 16:20:24Z oparviai $
-//
-////////////////////////////////////////////////////////////////////////////////
-//
 // License :
 //
 //  SoundTouch audio processing library
@@ -62,7 +55,6 @@ static const char waveStr[] = "WAVE";
 static const char fmtStr[]  = "fmt ";
 static const char factStr[] = "fact";
 static const char dataStr[] = "data";
-
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -222,21 +214,21 @@ void WavInFile::init()
     if (hdrsOk != 0) 
     {
         // Something didn't match in the wav file headers 
-        string msg = "Input file is corrupt or not a WAV file";
-        ST_THROW_RT_ERROR(msg.c_str());
+        ST_THROW_RT_ERROR("Input file is corrupt or not a WAV file");
     }
 
-    /* Ignore 'fixed' field value as 32bit signed linear data can have other value than 1.
-    if (header.format.fixed != 1)
+    // sanity check for format parameters
+    if ((header.format.channel_number < 1)  || (header.format.channel_number > 9) ||
+        (header.format.sample_rate < 4000)  || (header.format.sample_rate > 192000) ||
+        (header.format.byte_per_sample < 1) || (header.format.byte_per_sample > 320) ||
+        (header.format.bits_per_sample < 8) || (header.format.bits_per_sample > 32))
     {
-        string msg = "Input file uses unsupported encoding.";
-        ST_THROW_RT_ERROR(msg.c_str());
+        // Something didn't match in the wav file headers 
+        ST_THROW_RT_ERROR("Error: Illegal wav file header format parameters.");
     }
-    */
 
     dataRead = 0;
 }
-
 
 
 WavInFile::~WavInFile()
@@ -244,7 +236,6 @@ WavInFile::~WavInFile()
     if (fptr) fclose(fptr);
     fptr = NULL;
 }
-
 
 
 void WavInFile::rewind()
@@ -463,7 +454,6 @@ int WavInFile::eof() const
 }
 
 
-
 // test if character code is between a white space ' ' and little 'z'
 static int isAlpha(char c)
 {
@@ -504,8 +494,6 @@ int WavInFile::readRIFFBlock()
 }
 
 
-
-
 int WavInFile::readHeaderBlock()
 {
     char label[5];
@@ -528,11 +516,15 @@ int WavInFile::readHeaderBlock()
         // read length of the format field
         if (fread(&nLen, sizeof(int), 1, fptr) != 1) return -1;
         // swap byte order if necessary
-        _swap32(nLen); // int format_len;
-        header.format.format_len = nLen;
+        _swap32(nLen);
 
-        // calculate how much length differs from expected
+        // calculate how much length differs from expected 
         nDump = nLen - ((int)sizeof(header.format) - 8);
+
+        // verify that header length isn't smaller than expected structure
+        if ((nLen < 0) || (nDump < 0)) return -1;
+
+        header.format.format_len = nLen;
 
         // if format_len is larger than expected, read only as much data as we've space for
         if (nDump > 0)
@@ -544,12 +536,12 @@ int WavInFile::readHeaderBlock()
         if (fread(&(header.format.fixed), nLen, 1, fptr) != 1) return -1;
 
         // swap byte order if necessary
-        _swap16(header.format.fixed);            // short int fixed;
-        _swap16(header.format.channel_number);   // short int channel_number;
-        _swap32((int &)header.format.sample_rate);      // int sample_rate;
-        _swap32((int &)header.format.byte_rate);        // int byte_rate;
-        _swap16(header.format.byte_per_sample);  // short int byte_per_sample;
-        _swap16(header.format.bits_per_sample);  // short int bits_per_sample;
+        _swap16((short &)header.format.fixed);            // short int fixed;
+        _swap16((short &)header.format.channel_number);   // short int channel_number;
+        _swap32((int &)header.format.sample_rate);        // int sample_rate;
+        _swap32((int &)header.format.byte_rate);          // int byte_rate;
+        _swap16((short &)header.format.byte_per_sample);  // short int byte_per_sample;
+        _swap16((short &)header.format.bits_per_sample);  // short int bits_per_sample;
 
         // if format_len is larger than expected, skip the extra data
         if (nDump > 0)
@@ -569,11 +561,15 @@ int WavInFile::readHeaderBlock()
         // read length of the fact field
         if (fread(&nLen, sizeof(int), 1, fptr) != 1) return -1;
         // swap byte order if necessary
-        _swap32(nLen); // int fact_len;
-        header.fact.fact_len = nLen;
+        _swap32(nLen);
 
         // calculate how much length differs from expected
         nDump = nLen - ((int)sizeof(header.fact) - 8);
+
+        // verify that fact length isn't smaller than expected structure
+        if ((nLen < 0) || (nDump < 0)) return -1;
+
+        header.fact.fact_len = nLen;
 
         // if format_len is larger than expected, read only as much data as we've space for
         if (nDump > 0)
@@ -669,7 +665,6 @@ uint WavInFile::getSampleRate() const
 }
 
 
-
 uint WavInFile::getDataSizeInBytes() const
 {
     return header.data.data_len;
@@ -701,7 +696,6 @@ uint WavInFile::getElapsedMS() const
 {
     return (uint)(1000.0 * (double)dataRead / (double)header.format.byte_rate);
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -742,14 +736,12 @@ WavOutFile::WavOutFile(FILE *file, int sampleRate, int bits, int channels)
 }
 
 
-
 WavOutFile::~WavOutFile()
 {
     finishHeader();
     if (fptr) fclose(fptr);
     fptr = NULL;
 }
-
 
 
 void WavOutFile::fillInHeader(uint sampleRate, uint bits, uint channels)
@@ -779,8 +771,8 @@ void WavOutFile::fillInHeader(uint sampleRate, uint bits, uint channels)
 
     // fill in the 'fact' part...
     memcpy(&(header.fact.fact_field), factStr, 4);
-	header.fact.fact_len = 4;
-	header.fact.fact_sample_len = 0;
+    header.fact.fact_len = 4;
+    header.fact.fact_sample_len = 0;
 
     // fill in the 'data' part..
 
@@ -796,11 +788,10 @@ void WavOutFile::finishHeader()
     // supplement the file length into the header structure
     header.riff.package_len = bytesWritten + sizeof(WavHeader) - sizeof(WavRiff) + 4;
     header.data.data_len = bytesWritten;
-	header.fact.fact_sample_len = bytesWritten / header.format.byte_per_sample; 
-	
+    header.fact.fact_sample_len = bytesWritten / header.format.byte_per_sample; 
+    
     writeHeader();
 }
-
 
 
 void WavOutFile::writeHeader()
@@ -835,7 +826,6 @@ void WavOutFile::writeHeader()
 }
 
 
-
 void WavOutFile::write(const unsigned char *buffer, int numElems)
 {
     int res;
@@ -854,7 +844,6 @@ void WavOutFile::write(const unsigned char *buffer, int numElems)
 
     bytesWritten += numElems;
 }
-
 
 
 void WavOutFile::write(const short *buffer, int numElems)
@@ -935,7 +924,7 @@ void WavOutFile::write(const float *buffer, int numElems)
 
     bytesPerSample = header.format.bits_per_sample / 8;
     numBytes = numElems * bytesPerSample;
-    short *temp = (short*)getConvBuffer(numBytes);
+    void *temp = getConvBuffer(numBytes + 7);   // round bit up to avoid buffer overrun with 24bit-value assignment
 
     switch (bytesPerSample)
     {
