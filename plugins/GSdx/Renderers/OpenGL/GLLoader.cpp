@@ -29,6 +29,23 @@ PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate                 = NUL
 
 #include "PFN_GLLOADER_CPP.h"
 
+namespace GLExtension {
+
+	static std::unordered_set<std::string> s_extensions;
+
+	bool Has(const std::string& ext)
+	{
+		return !!s_extensions.count(ext);
+	}
+
+	void Set(const std::string& ext, bool v)
+	{
+		if (v)
+			s_extensions.insert(ext);
+		else
+			s_extensions.erase(ext);
+	}
+}
 
 namespace ReplaceGL {
 	void APIENTRY ScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
@@ -141,24 +158,21 @@ namespace GLLoader {
 	bool found_GL_NVX_gpu_memory_info = false;
 
 	// Mandatory
-	bool found_GL_ARB_buffer_storage = false;
-	bool found_GL_ARB_clip_control = false;
-	bool found_GL_ARB_copy_image = false;
 	bool found_GL_ARB_direct_state_access = false;
-	bool found_GL_ARB_separate_shader_objects = false;
-	bool found_GL_ARB_shading_language_420pack = false;
 	bool found_GL_ARB_texture_barrier = false;
-	bool found_GL_ARB_texture_storage = false;
-	bool found_GL_KHR_debug = false;
 
-	static bool status_and_override(bool& found, const std::string& name, bool mandatory = false)
+	static bool mandatory(const std::string& ext)
 	{
-		if (mandatory) {
-			if (!found) {
-				fprintf(stderr, "ERROR: %s is NOT SUPPORTED\n", name.c_str());
-			}
-			return found;
-		}
+		bool found = GLExtension::Has(ext);
+		if (!found)
+			fprintf(stderr, "ERROR: %s is NOT SUPPORTED\n", ext.c_str());
+
+		return found;
+	}
+
+	static bool optional(bool& found, const std::string& name)
+	{
+		found = GLExtension::Has(name);
 
 		if (s_first_load) {
 			if (!found) {
@@ -174,13 +188,14 @@ namespace GLLoader {
 		if (theApp.GetConfigI(opt.c_str()) != -1) {
 			found = theApp.GetConfigB(opt.c_str());
 			fprintf(stderr, "Override %s detection (%s)\n", name.c_str(), found ? "Enabled" : "Disabled");
+			GLExtension::Set(name);
 		}
 
 		return true;
 	}
 
-    bool check_gl_version(int major, int minor) {
-
+	bool check_gl_version(int major, int minor)
+	{
 		const GLubyte* s = glGetString(GL_VERSION);
 		if (s == NULL) {
 			fprintf(stderr, "Error: GLLoader failed to get GL version\n");
@@ -223,6 +238,7 @@ namespace GLLoader {
 
 		if (theApp.GetConfigI("override_geometry_shader") != -1) {
 			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");
+			GLExtension::Set("GL_ARB_geometry_shader4", found_geometry_shader);
 			fprintf(stderr, "Overriding geometry shaders detection\n");
 		}
 
@@ -238,68 +254,60 @@ namespace GLLoader {
         return true;
     }
 
-	bool check_gl_supported_extension() {
+	bool check_gl_supported_extension()
+	{
 		int max_ext = 0;
 		glGetIntegerv(GL_NUM_EXTENSIONS, &max_ext);
 
 		if (glGetStringi && max_ext) {
 			for (GLint i = 0; i < max_ext; i++) {
 				std::string ext{(const char*)glGetStringi(GL_EXTENSIONS, i)};
-				// Bonus
-				if (ext.compare("GL_EXT_texture_filter_anisotropic") == 0) found_GL_EXT_texture_filter_anisotropic = true;
-				if (ext.compare("GL_NVX_gpu_memory_info") == 0) found_GL_NVX_gpu_memory_info = true;
-				// GL4.0
-				if (ext.compare("GL_ARB_gpu_shader5") == 0) found_GL_ARB_gpu_shader5 = true;
-				// GL4.1
-				if (ext.compare("GL_ARB_viewport_array") == 0) found_GL_ARB_viewport_array = true;
-				if (ext.compare("GL_ARB_separate_shader_objects") == 0) found_GL_ARB_separate_shader_objects = true;
-				// GL4.2
-				if (ext.compare("GL_ARB_shading_language_420pack") == 0) found_GL_ARB_shading_language_420pack = true;
-				if (ext.compare("GL_ARB_texture_storage") == 0) found_GL_ARB_texture_storage = true;
-				if (ext.compare("GL_ARB_shader_image_load_store") == 0) found_GL_ARB_shader_image_load_store = true;
-				// GL4.3
-				if (ext.compare("GL_ARB_copy_image") == 0) found_GL_ARB_copy_image = true;
-				if (ext.compare("GL_KHR_debug") == 0) found_GL_KHR_debug = true;
-				// GL4.4
-				if (ext.compare("GL_ARB_buffer_storage") == 0) found_GL_ARB_buffer_storage = true;
-				if (ext.compare("GL_ARB_clear_texture") == 0) found_GL_ARB_clear_texture = true;
-				// GL4.5
-				if (ext.compare("GL_ARB_direct_state_access") == 0) found_GL_ARB_direct_state_access = true;
-				if (ext.compare("GL_ARB_clip_control") == 0) found_GL_ARB_clip_control = true;
-				if (ext.compare("GL_ARB_texture_barrier") == 0) found_GL_ARB_texture_barrier = true;
-				if (ext.compare("GL_ARB_get_texture_sub_image") == 0) found_GL_ARB_get_texture_sub_image = true;
-
+				GLExtension::Set(ext);
 				//fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
 			}
 		}
 
 		bool status = true;
-		bool required_for_hw = (theApp.GetCurrentRendererType() == GSRendererType::OGL_HW);
 
-		// Bonus
-		status &= status_and_override(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic");
-		// GL4.0
-		status &= status_and_override(found_GL_ARB_gpu_shader5, "GL_ARB_gpu_shader5");
-		// GL4.1
-		status &= status_and_override(found_GL_ARB_viewport_array, "GL_ARB_viewport_array");
-		status &= status_and_override(found_GL_ARB_separate_shader_objects, "GL_ARB_separate_shader_objects", true);
-		// GL4.2
-		status &= status_and_override(found_GL_ARB_shader_image_load_store, "GL_ARB_shader_image_load_store");
-		status &= status_and_override(found_GL_ARB_shading_language_420pack, "GL_ARB_shading_language_420pack", true);
-		status &= status_and_override(found_GL_ARB_texture_storage, "GL_ARB_texture_storage", true);
-		// GL4.3
-		status &= status_and_override(found_GL_ARB_copy_image, "GL_ARB_copy_image", required_for_hw);
-		status &= status_and_override(found_GL_KHR_debug, "GL_KHR_debug", true);
-		// GL4.4
-		status &= status_and_override(found_GL_ARB_buffer_storage,"GL_ARB_buffer_storage", true);
-		status &= status_and_override(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
-		// GL4.5
-		status &= status_and_override(found_GL_ARB_clip_control, "GL_ARB_clip_control", required_for_hw);
-		status &= status_and_override(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
-		// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
-		// Rendering might be corrupted but it could be good enough for test/virtual machine.
-		status &= status_and_override(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier");
-		status &= status_and_override(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
+		// Mandatory for both renderer
+		{
+			// GL4.1
+			status &= mandatory("GL_ARB_separate_shader_objects");
+			// GL4.2
+			status &= mandatory("GL_ARB_shading_language_420pack");
+			status &= mandatory("GL_ARB_texture_storage");
+			// GL4.3
+			status &= mandatory("GL_KHR_debug");
+			// GL4.4
+			status &= mandatory("GL_ARB_buffer_storage");
+		}
+
+		// Only for HW renderer
+		if (theApp.GetCurrentRendererType() == GSRendererType::OGL_HW) {
+			status &= mandatory("GL_ARB_copy_image");
+			status &= mandatory("GL_ARB_clip_control");
+		}
+
+		// Extra
+		{
+			// Bonus
+			status &= optional(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic"); // ARB extension in 4.6
+			// GL4.0
+			status &= optional(found_GL_ARB_gpu_shader5, "GL_ARB_gpu_shader5");
+			// GL4.1
+			status &= optional(found_GL_ARB_viewport_array, "GL_ARB_viewport_array");
+			// GL4.2
+			status &= optional(found_GL_ARB_shader_image_load_store, "GL_ARB_shader_image_load_store");
+			// GL4.3
+			// GL4.4
+			status &= optional(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
+			// GL4.5
+			status &= optional(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
+			// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
+			// Rendering might be corrupted but it could be good enough for test/virtual machine.
+			status &= optional(found_GL_ARB_texture_barrier, "GL_ARB_texture_barrier");
+			status &= optional(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
+		}
 
 		if (s_first_load) {
 			if (vendor_id_amd) {

@@ -115,6 +115,10 @@ extern   PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate;
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE
 #endif
 
+namespace GLExtension {
+	extern bool Has(const std::string& ext);
+	extern void Set(const std::string& ext, bool v = true);
+}
 
 namespace GLLoader {
 	void check_gl_requirements();
@@ -129,8 +133,6 @@ namespace GLLoader {
 
 	// GL
 	extern bool found_geometry_shader;
-	extern bool found_GL_ARB_copy_image;
-	extern bool found_GL_ARB_clip_control;
 	extern bool found_GL_ARB_gpu_shader5;
 	extern bool found_GL_ARB_shader_image_load_store;
 	extern bool found_GL_ARB_clear_texture;
