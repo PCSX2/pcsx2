@@ -498,7 +498,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	// This extension allow FS depth to range from -1 to 1. So
 	// gl_position.z could range from [0, 1]
 	// Change depth convention
-	if (GLLoader::found_GL_ARB_clip_control && glClipControl)
+	if (GLExtension::Has("GL_ARB_clip_control"))
 		glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
 	// ****************************************************************
@@ -1234,7 +1234,7 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	PSSetShaderResource(6, sTex);
 #endif
 
-	ASSERT(GLLoader::found_GL_ARB_copy_image && glCopyImageSubData);
+	ASSERT(GLExtension::Has("GL_ARB_copy_image") && glCopyImageSubData);
 	glCopyImageSubData( sid, GL_TEXTURE_2D,
 			0, r.x, r.y, 0,
 			did, GL_TEXTURE_2D,
