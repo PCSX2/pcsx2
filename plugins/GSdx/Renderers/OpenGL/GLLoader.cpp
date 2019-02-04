@@ -145,7 +145,6 @@ namespace GLLoader {
 	bool in_replayer        = false;
 	bool buggy_sso_dual_src = false;
 
-
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_EXT_texture_filter_anisotropic = false;
 	bool found_GL_ARB_clear_texture = false;
@@ -154,12 +153,19 @@ namespace GLLoader {
 	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
 	bool found_GL_ARB_shader_image_load_store = false; // Intel IB. Nvidia/AMD miss Mesa implementation.
 	bool found_GL_ARB_viewport_array = false; // Intel IB. AMD/NVIDIA DX10
+	bool found_GL_ARB_shader_storage_buffer_object = false;
+	bool found_GL_ARB_sparse_texture = false;
+	bool found_GL_ARB_sparse_texture2 = false;
+	bool found_GL_ARB_compute_shader = false;
+	bool found_GL_ARB_texture_view = false; // maybe older gpu can support it ?
 	// Bonus to monitor the VRAM
 	bool found_GL_NVX_gpu_memory_info = false;
 
-	// Mandatory
+	// Mandatory in the future
 	bool found_GL_ARB_direct_state_access = false;
 	bool found_GL_ARB_texture_barrier = false;
+	bool found_GL_ARB_multi_bind = false;
+	bool found_GL_ARB_vertex_attrib_binding = false;
 
 	static bool mandatory(const std::string& ext)
 	{
@@ -292,6 +298,8 @@ namespace GLLoader {
 		{
 			// Bonus
 			status &= optional(found_GL_EXT_texture_filter_anisotropic, "GL_EXT_texture_filter_anisotropic"); // ARB extension in 4.6
+			status &= optional(found_GL_ARB_sparse_texture, "GL_ARB_sparse_texture");
+			status &= optional(found_GL_ARB_sparse_texture2, "GL_ARB_sparse_texture2");
 			// GL4.0
 			status &= optional(found_GL_ARB_gpu_shader5, "GL_ARB_gpu_shader5");
 			// GL4.1
@@ -299,8 +307,13 @@ namespace GLLoader {
 			// GL4.2
 			status &= optional(found_GL_ARB_shader_image_load_store, "GL_ARB_shader_image_load_store");
 			// GL4.3
+			status &= optional(found_GL_ARB_compute_shader, "GL_ARB_compute_shader");
+			status &= optional(found_GL_ARB_shader_storage_buffer_object, "GL_ARB_shader_storage_buffer_object");
+			status &= optional(found_GL_ARB_texture_view, "GL_ARB_texture_view");
+			status &= optional(found_GL_ARB_vertex_attrib_binding, "GL_ARB_vertex_attrib_binding");
 			// GL4.4
 			status &= optional(found_GL_ARB_clear_texture,"GL_ARB_clear_texture");
+			status &= optional(found_GL_ARB_multi_bind,"GL_ARB_multi_bind");
 			// GL4.5
 			status &= optional(found_GL_ARB_direct_state_access, "GL_ARB_direct_state_access");
 			// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
