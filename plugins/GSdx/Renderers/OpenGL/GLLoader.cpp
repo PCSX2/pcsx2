@@ -135,6 +135,8 @@ namespace Emulate_DSA {
 
 namespace GLLoader {
 
+#define fprintf_once(out, ...) do if (s_first_load) fprintf(out, __VA_ARGS__); while(0);
+
 	bool s_first_load = true;
 
 	bool amd_legacy_buggy_driver = false;
@@ -180,12 +182,10 @@ namespace GLLoader {
 	{
 		found = GLExtension::Has(name);
 
-		if (s_first_load) {
-			if (!found) {
-				fprintf(stdout, "INFO: %s is NOT SUPPORTED\n", name.c_str());
-			} else {
-				fprintf(stdout, "INFO: %s is available\n", name.c_str());
-			}
+		if (!found) {
+			fprintf_once(stdout, "INFO: %s is NOT SUPPORTED\n", name.c_str());
+		} else {
+			fprintf_once(stdout, "INFO: %s is available\n", name.c_str());
 		}
 
 		std::string opt("override_");
@@ -211,8 +211,7 @@ namespace GLLoader {
 		while (s[v] != '\0' && s[v-1] != ' ') v++;
 
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
-		if (s_first_load)
-			fprintf(stdout, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[v]);
+		fprintf_once(stdout, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[v]);
 
 		// Name changed but driver is still bad!
 		if (strstr(vendor, "Advanced Micro Devices") || strstr(vendor, "ATI Technologies Inc.") || strstr(vendor, "ATI"))
@@ -322,32 +321,28 @@ namespace GLLoader {
 			status &= optional(found_GL_ARB_get_texture_sub_image, "GL_ARB_get_texture_sub_image");
 		}
 
-		if (s_first_load) {
-			if (vendor_id_amd) {
-				fprintf(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver.\n"
+		if (vendor_id_amd) {
+			fprintf_once(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver.\n"
 					"Check out the link below for further information.\n"
 					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
-			}
+		}
 
-			if (vendor_id_intel && !found_GL_ARB_texture_barrier && !found_GL_ARB_direct_state_access) {
-				// Assume that driver support is good when texture barrier and DSA is supported, disable the log then.
-				fprintf(stderr, "The OpenGL renderer is inefficient on Intel GPUs due to an inefficient driver.\n"
+		if (vendor_id_intel && !found_GL_ARB_texture_barrier && !found_GL_ARB_direct_state_access) {
+			// Assume that driver support is good when texture barrier and DSA is supported, disable the log then.
+			fprintf_once(stderr, "The OpenGL renderer is inefficient on Intel GPUs due to an inefficient driver.\n"
 					"Check out the link below for further information.\n"
 					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know\n");
-			}
 		}
 
 		if (!found_GL_ARB_viewport_array) {
 			glScissorIndexed   = ReplaceGL::ScissorIndexed;
 			glViewportIndexedf = ReplaceGL::ViewportIndexedf;
-			if (s_first_load)
-				fprintf(stderr, "GL_ARB_viewport_array is not supported! Function pointer will be replaced\n");
+			fprintf_once(stderr, "GL_ARB_viewport_array is not supported! Function pointer will be replaced\n");
 		}
 
 		if (!found_GL_ARB_texture_barrier) {
 			glTextureBarrier = ReplaceGL::TextureBarrier;
-			if (s_first_load)
-				fprintf(stderr, "GL_ARB_texture_barrier is not supported! Blending emulation will not be supported\n");
+			fprintf_once(stderr, "GL_ARB_texture_barrier is not supported! Blending emulation will not be supported\n");
 		}
 
 #ifdef _WIN32
@@ -356,9 +351,6 @@ namespace GLLoader {
 			Emulate_DSA::Init();
 		}
 #endif
-
-		if (s_first_load)
-			fprintf(stdout, "\n");
 
 		return status;
 	}
@@ -370,6 +362,8 @@ namespace GLLoader {
 
 		if (!GLLoader::check_gl_supported_extension())
 			throw GSDXRecoverableError();
+
+		fprintf_once(stdout, "\n");
 
 		s_first_load = false;
 	}
