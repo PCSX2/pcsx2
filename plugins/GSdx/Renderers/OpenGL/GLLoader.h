@@ -140,4 +140,7 @@ namespace GLLoader {
 	extern bool found_GL_EXT_texture_filter_anisotropic;
 	extern bool found_GL_NVX_gpu_memory_info;
 	extern bool found_GL_ATI_meminfo;
+
+	extern bool found_compatible_GL_ARB_sparse_texture2;
+	extern bool found_compatible_sparse_depth;
 }
