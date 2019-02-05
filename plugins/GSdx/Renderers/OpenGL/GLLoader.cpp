@@ -169,6 +169,10 @@ namespace GLLoader {
 	bool found_GL_ARB_multi_bind = false;
 	bool found_GL_ARB_vertex_attrib_binding = false;
 
+	// In case sparse2 isn't supported
+	bool found_compatible_GL_ARB_sparse_texture2 = false;
+	bool found_compatible_sparse_depth = false;
+
 	static bool mandatory(const std::string& ext)
 	{
 		bool found = GLExtension::Has(ext);
@@ -355,6 +359,62 @@ namespace GLLoader {
 		return status;
 	}
 
+	bool is_sparse2_compatible(const char* name, GLenum internal_fmt, int x_max, int y_max)
+	{
+		GLint index_count = 0;
+		glGetInternalformativ(GL_TEXTURE_2D, internal_fmt, GL_NUM_VIRTUAL_PAGE_SIZES_ARB, 1, &index_count);
+		if (!index_count) {
+			fprintf_once(stdout, "%s isn't sparse compatible. No index found\n", name);
+			return false;
+		}
+
+		GLint x, y;
+		glGetInternalformativ(GL_TEXTURE_2D, internal_fmt, GL_VIRTUAL_PAGE_SIZE_X_ARB, 1, &x);
+		glGetInternalformativ(GL_TEXTURE_2D, internal_fmt, GL_VIRTUAL_PAGE_SIZE_Y_ARB, 1, &y);
+		if (x > x_max && y > y_max) {
+			fprintf_once(stdout, "%s isn't sparse compatible. Page size (%d,%d) is too big (%d, %d)\n",
+					name, x, y, x_max, y_max);
+			return false;
+		}
+
+		return true;
+	}
+
+	static void check_sparse_compatibility()
+	{
+		if (!found_GL_ARB_sparse_texture) {
+			found_compatible_GL_ARB_sparse_texture2 = false;
+			found_compatible_sparse_depth = false;
+
+			return;
+		}
+
+		found_compatible_GL_ARB_sparse_texture2 = true;
+		if (!found_GL_ARB_sparse_texture2) {
+			// Only check format from GSTextureOGL
+			found_compatible_GL_ARB_sparse_texture2 &= is_sparse2_compatible("GL_R8", GL_R8, 256, 256);
+
+			found_compatible_GL_ARB_sparse_texture2 &= is_sparse2_compatible("GL_R16UI", GL_R16UI, 256, 128);
+
+			found_compatible_GL_ARB_sparse_texture2 &= is_sparse2_compatible("GL_R32UI", GL_R32UI, 128, 128);
+			found_compatible_GL_ARB_sparse_texture2 &= is_sparse2_compatible("GL_R32I", GL_R32I, 128, 128);
+			found_compatible_GL_ARB_sparse_texture2 &= is_sparse2_compatible("GL_RGBA8", GL_RGBA8, 128, 128);
+
+			found_compatible_GL_ARB_sparse_texture2 &= is_sparse2_compatible("GL_RGBA16", GL_RGBA16, 128, 64);
+			found_compatible_GL_ARB_sparse_texture2 &= is_sparse2_compatible("GL_RGBA16I", GL_RGBA16I, 128, 64);
+			found_compatible_GL_ARB_sparse_texture2 &= is_sparse2_compatible("GL_RGBA16UI", GL_RGBA16UI, 128, 64);
+			found_compatible_GL_ARB_sparse_texture2 &= is_sparse2_compatible("GL_RGBA16F", GL_RGBA16F, 128, 64);
+
+			found_compatible_GL_ARB_sparse_texture2 &= is_sparse2_compatible("GL_RGBA32F", GL_RGBA32F, 64, 64);
+		}
+
+		// Can fit in 128x64 but 128x128 is enough
+		found_compatible_sparse_depth = is_sparse2_compatible("GL_DEPTH32F_STENCIL8", GL_DEPTH32F_STENCIL8, 128, 128);
+
+		fprintf_once(stdout, "INFO sparse color texture is %s\n", found_compatible_GL_ARB_sparse_texture2 ? "available" : "NOT SUPPORTED");
+		fprintf_once(stdout, "INFO sparse depth texture is %s\n", found_compatible_sparse_depth ? "available" : "NOT SUPPORTED");
+	}
+
 	void check_gl_requirements()
 	{
 		if (!GLLoader::check_gl_version(3, 3))
@@ -362,6 +422,9 @@ namespace GLLoader {
 
 		if (!GLLoader::check_gl_supported_extension())
 			throw GSDXRecoverableError();
+
+		// Bonus for sparse texture
+		check_sparse_compatibility();
 
 		fprintf_once(stdout, "\n");
 
