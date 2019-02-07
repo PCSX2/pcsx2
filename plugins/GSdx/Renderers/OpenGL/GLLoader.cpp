@@ -26,6 +26,7 @@
 #ifdef __unix__
 PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate                 = NULL;
 #endif
+PFNGLTEXTUREPAGECOMMITMENTEXTPROC      glTexturePageCommitmentEXT		   = NULL;
 
 #include "PFN_GLLOADER_CPP.h"
 
@@ -382,7 +383,7 @@ namespace GLLoader {
 
 	static void check_sparse_compatibility()
 	{
-		if (!found_GL_ARB_sparse_texture) {
+		if (!GLExtension::Has("GL_ARB_sparse_texture") || !GLExtension::Has("GL_EXT_direct_state_access")) {
 			found_compatible_GL_ARB_sparse_texture2 = false;
 			found_compatible_sparse_depth = false;
 
@@ -390,7 +391,7 @@ namespace GLLoader {
 		}
 
 		found_compatible_GL_ARB_sparse_texture2 = true;
-		if (!found_GL_ARB_sparse_texture2) {
+		if (!GLExtension::Has("GL_ARB_sparse_texture2")) {
 			// Only check format from GSTextureOGL
 			found_compatible_GL_ARB_sparse_texture2 &= is_sparse2_compatible("GL_R8", GL_R8, 256, 256);
 

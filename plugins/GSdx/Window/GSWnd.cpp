@@ -36,6 +36,7 @@ void GSWndGL::PopulateGlFunction()
 #ifdef __unix__
 	GL_EXT_LOAD(glBlendFuncSeparate);
 #endif
+	GL_EXT_LOAD(glTexturePageCommitmentEXT);
 
 	// Check openGL requirement as soon as possible so we can switch to another
 	// renderer/device
