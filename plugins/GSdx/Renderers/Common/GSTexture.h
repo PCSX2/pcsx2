@@ -28,8 +28,11 @@ class GSTexture
 protected:
 	GSVector2 m_scale;
 	GSVector2i m_size;
+	GSVector2i m_committed_size;
+	GSVector2i m_gpu_page_size;
 	int m_type;
 	int m_format;
+	bool m_sparse;
 
 public:
 	struct GSMap {uint8* bits; int pitch;};
@@ -58,6 +61,14 @@ public:
 
 	int GetType() const {return m_type;}
 	int GetFormat() const {return m_format;}
+
+	virtual void CommitPages(const GSVector2i& region, bool commit) {};
+	void CommitRegion(const GSVector2i& region);
+	void Commit();
+	void Uncommit();
+	GSVector2i GetCommittedSize() const { return m_committed_size; }
+	void SetGpuPageSize(const GSVector2i& page_size);
+	GSVector2i RoundUpPage(GSVector2i v);
 
 	// frame number (arbitrary base) the texture was recycled on
 	// different purpose than texture cache ages, do not attempt to merge

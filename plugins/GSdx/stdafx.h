@@ -117,6 +117,7 @@ typedef int64 sint64;
 #include <condition_variable>
 #include <functional>
 #include <memory>
+#include <bitset>
 
 #include <zlib.h>
 
