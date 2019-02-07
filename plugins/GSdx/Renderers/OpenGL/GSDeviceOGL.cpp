@@ -527,7 +527,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	if (GLLoader::vendor_id_amd) {
 		// Full vram, remove a small margin for others buffer
 		glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, vram);
-	} else if (GLLoader::found_GL_NVX_gpu_memory_info) {
+	} else if (GLExtension::Has("GL_NVX_gpu_memory_info")) {
 		// GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX <= give full memory
 		// Available vram
 		glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, vram);
@@ -837,8 +837,12 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	int anisotropy = theApp.GetConfigI("MaxAnisotropy");
-	if (GLLoader::found_GL_EXT_texture_filter_anisotropic && anisotropy && sel.aniso)
-		glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
+	if (anisotropy && sel.aniso) {
+		if (GLExtension::Has("GL_ARB_texture_filter_anisotropic"))
+			glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY, (float)anisotropy);
+		else if (GLExtension::Has("GL_EXT_texture_filter_anisotropic"))
+			glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float)anisotropy);
+	}
 
 	return sampler;
 }
