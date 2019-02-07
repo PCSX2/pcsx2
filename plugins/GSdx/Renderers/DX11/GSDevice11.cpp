@@ -713,7 +713,7 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 GSTexture* GSDevice11::FetchSurface(int type, int w, int h, int format)
 {
 	if (format == 0)
-		format = (type == GSTexture::DepthStencil) ? DXGI_FORMAT_R32G8X24_TYPELESS : DXGI_FORMAT_R8G8B8A8_UNORM;
+		format = (type == GSTexture::DepthStencil || type == GSTexture::SparseDepthStencil) ? DXGI_FORMAT_R32G8X24_TYPELESS : DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	return __super::FetchSurface(type, w, h, format);
 }

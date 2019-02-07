@@ -257,7 +257,7 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, int fmt)
 GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, int format)
 {
 	if (format == 0)
-		format = (type == GSTexture::DepthStencil) ? GL_DEPTH32F_STENCIL8 : GL_RGBA8;
+		format = (type == GSTexture::DepthStencil || type == GSTexture::SparseDepthStencil) ? GL_DEPTH32F_STENCIL8 : GL_RGBA8;
 
 	GSTexture* t = GSDevice::FetchSurface(type, w, h, format);
 

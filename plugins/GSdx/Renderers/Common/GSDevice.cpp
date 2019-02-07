@@ -201,6 +201,16 @@ void GSDevice::PurgePool()
 	}
 }
 
+GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, int format)
+{
+	return FetchSurface(HasColorSparse() ? GSTexture::SparseRenderTarget : GSTexture::RenderTarget, w, h, format);
+}
+
+GSTexture* GSDevice::CreateSparseDepthStencil(int w, int h, int format)
+{
+	return FetchSurface(HasDepthSparse() ? GSTexture::SparseDepthStencil : GSTexture::DepthStencil, w, h, format);
+}
+
 GSTexture* GSDevice::CreateRenderTarget(int w, int h, int format)
 {
 	return FetchSurface(GSTexture::RenderTarget, w, h, format);
