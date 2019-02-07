@@ -266,14 +266,14 @@ void GSdxApp::Init()
 	m_gs_gl_ext.push_back(GSSetting(0,  "Force-Disabled", ""));
 	m_gs_gl_ext.push_back(GSSetting(1,  "Force-Enabled", ""));
 
-	m_gs_hack.push_back(GSSetting(0,  "Off", "Default"));
-	m_gs_hack.push_back(GSSetting(1,  "Half", ""));
-	m_gs_hack.push_back(GSSetting(2,  "Full", ""));
+	m_gs_hack.push_back(GSSetting(0, "Off", "Default"));
+	m_gs_hack.push_back(GSSetting(1, "Half", ""));
+	m_gs_hack.push_back(GSSetting(2, "Full", ""));
 
-	m_gs_offset_hack.push_back(GSSetting(0,  "Off", "Default"));
-	m_gs_offset_hack.push_back(GSSetting(1,  "Normal", "Vertex"));
-	m_gs_offset_hack.push_back(GSSetting(2,  "Special", "Texture"));
-	m_gs_offset_hack.push_back(GSSetting(3,  "Special", "Texture - aggressive"));
+	m_gs_offset_hack.push_back(GSSetting(0, "Off", "Default"));
+	m_gs_offset_hack.push_back(GSSetting(1, "Normal", "Vertex"));
+	m_gs_offset_hack.push_back(GSSetting(2, "Special", "Texture"));
+	m_gs_offset_hack.push_back(GSSetting(3, "Special", "Texture - aggressive"));
 
 	m_gs_hw_mipmapping = {
 		GSSetting(HWMipmapLevel::Automatic, "Automatic", "Default"),
@@ -284,7 +284,7 @@ void GSdxApp::Init()
 
 	m_gs_crc_level = {
 		GSSetting(CRCHackLevel::Automatic, "Automatic", "Default"),
-		GSSetting(CRCHackLevel::None , "None", "Debug"),
+		GSSetting(CRCHackLevel::None, "None", "Debug"),
 		GSSetting(CRCHackLevel::Minimum, "Minimum", "Debug"),
 		GSSetting(CRCHackLevel::Partial, "Partial", "OpenGL"),
 		GSSetting(CRCHackLevel::Full, "Full", "Direct3D"),

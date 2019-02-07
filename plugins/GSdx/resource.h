@@ -149,6 +149,8 @@
 #define IDC_GEOMETRY_SHADER_TEXT        2201
 #define IDC_IMAGE_LOAD_STORE            2202
 #define IDC_IMAGE_LOAD_STORE_TEXT       2203
+#define IDC_SPARSE_TEXTURE              2204
+#define IDC_SPARSE_TEXTURE_TEXT         2205
 #define IDR_CONVERT_FX                  10000
 #define IDR_TFX_FX                      10001
 #define IDR_MERGE_FX                    10002
