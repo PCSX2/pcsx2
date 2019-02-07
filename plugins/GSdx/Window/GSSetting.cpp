@@ -173,6 +173,9 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Allows advanced atomic operations to speed up Accurate Date.\n"
 				"Only disable this if using Accurate Date causes (GPU driver) issues.\n\n"
 				"Note: This option is only supported by GPUs which support at least Direct3D 11.";
+		case IDC_SPARSE_TEXTURE:
+			return "Allows to reduce memory usage on the GPU.\n\n"
+				"Note: Feature is not yet implemented so Force Disable by default.";
 		case IDC_OSD_MAX_LOG_EDIT:
 		case IDC_OSD_MAX_LOG:
 			return "Sets the maximum number of log messages on the screen or in the buffer at the same time.\n\n"

@@ -407,7 +407,7 @@ void GSdxApp::Init()
 	m_default_configuration["override_GL_ARB_multi_bind"]                 = "-1";
 	m_default_configuration["override_GL_ARB_shader_image_load_store"]    = "-1";
 	m_default_configuration["override_GL_ARB_shader_storage_buffer_object"] = "-1";
-	m_default_configuration["override_GL_ARB_sparse_texture"]             = "-1";
+	m_default_configuration["override_GL_ARB_sparse_texture"]             = "0";
 	m_default_configuration["override_GL_ARB_sparse_texture2"]            = "-1";
 	m_default_configuration["override_GL_ARB_texture_view"]               = "-1";
 	m_default_configuration["override_GL_ARB_vertex_attrib_binding"]      = "-1";

@@ -698,6 +698,7 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_MERGE_PP_SPRITE);
 	AddTooltip(IDC_GEOMETRY_SHADER_OVERRIDE);
 	AddTooltip(IDC_IMAGE_LOAD_STORE);
+	AddTooltip(IDC_SPARSE_TEXTURE);
 
 	UpdateControls();
 }
