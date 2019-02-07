@@ -320,6 +320,8 @@ void populate_gl_table(GtkWidget* gl_table)
 	GtkWidget* gl_gs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_geometry_shader");
 	GtkWidget* gl_ils_label = left_label("Image Load Store:");
 	GtkWidget* gl_ils_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_shader_image_load_store");
+	GtkWidget* gl_sps_label = left_label("Sparse Texture:");
+	GtkWidget* gl_sps_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_sparse_texture");
 
 	AddTooltip(gl_gs_label, gl_gs_combo, IDC_GEOMETRY_SHADER_OVERRIDE);
 	AddTooltip(gl_ils_label, gl_ils_combo, IDC_IMAGE_LOAD_STORE);
@@ -327,6 +329,7 @@ void populate_gl_table(GtkWidget* gl_table)
 	s_table_line = 0;
 	InsertWidgetInTable(gl_table , gl_gs_label  , gl_gs_combo);
 	InsertWidgetInTable(gl_table , gl_ils_label , gl_ils_combo);
+	InsertWidgetInTable(gl_table , gl_sps_label , gl_sps_combo);
 }
 
 void populate_sw_table(GtkWidget* sw_table)
