@@ -325,6 +325,7 @@ void populate_gl_table(GtkWidget* gl_table)
 
 	AddTooltip(gl_gs_label, gl_gs_combo, IDC_GEOMETRY_SHADER_OVERRIDE);
 	AddTooltip(gl_ils_label, gl_ils_combo, IDC_IMAGE_LOAD_STORE);
+	AddTooltip(gl_sps_label, gl_sps_combo, IDC_SPARSE_TEXTURE);
 
 	s_table_line = 0;
 	InsertWidgetInTable(gl_table , gl_gs_label  , gl_gs_combo);
