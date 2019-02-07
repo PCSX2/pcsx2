@@ -84,5 +84,7 @@ class GSTextureOGL final : public GSTexture
 		void Clear(const void* data);
 		void Clear(const void* data, const GSVector4i& area);
 
+		void CommitPages(const GSVector2i& region, bool commit) final;
+
 		uint32 GetMemUsage();
 };

@@ -515,6 +515,24 @@ void GSTextureOGL::GenerateMipmap()
 	}
 }
 
+void GSTextureOGL::CommitPages(const GSVector2i& region, bool commit)
+{
+	GLState::available_vram += m_mem_usage;
+
+	if (commit) {
+		GL_INS("CommitPages %dx%d of %u", region.x, region.y, m_texture_id);
+		m_committed_size = region;
+	} else {
+		GL_INS("CommitPages release of %u", m_texture_id);
+		m_committed_size = GSVector2i(0, 0);
+	}
+
+	m_mem_usage = (m_committed_size.x * m_committed_size.y) << m_int_shift;
+	GLState::available_vram -= m_mem_usage;
+
+	glTexturePageCommitmentEXT(m_texture_id, GL_TEX_LEVEL_0, 0, 0, 0, m_committed_size.x, m_committed_size.y, 1, commit);
+}
+
 bool GSTextureOGL::Save(const std::string& fn)
 {
 	// Collect the texture data
