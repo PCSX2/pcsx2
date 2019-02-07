@@ -192,7 +192,7 @@ namespace GLLoader {
 		if (theApp.GetConfigI(opt.c_str()) != -1) {
 			found = theApp.GetConfigB(opt.c_str());
 			fprintf(stderr, "Override %s detection (%s)\n", name.c_str(), found ? "Enabled" : "Disabled");
-			GLExtension::Set(name);
+			GLExtension::Set(name, found);
 		}
 
 		return found;
