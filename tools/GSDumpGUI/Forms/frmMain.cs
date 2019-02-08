@@ -194,7 +194,7 @@ namespace GSDumpGUI
             txtLog.Text = "";
             String GSDXName = lstGSDX.SelectedItem.ToString().Split(new char[] { '|' })[0].TrimEnd();
 
-            CreateDirs(GSDXName);
+            CreateDirs();
 
             // Set the Arguments to pass to the child
             String DLLPath = Properties.Settings.Default.GSDXDir + "\\" + GSDXName;
@@ -226,7 +226,7 @@ namespace GSDumpGUI
             }
             if (SelectedRenderer != "-1")
             {
-                String GSdxIniPath = AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\" + GSDXName + "\\inis\\gsdx.ini";
+                String GSdxIniPath = AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\inis\\gsdx.ini";
                 NativeMethods.WritePrivateProfileString("Settings", "Renderer", SelectedRenderer, GSdxIniPath);
             }
             if (lstDumps.SelectedItem != null)
@@ -248,15 +248,10 @@ namespace GSDumpGUI
             Processes.Add(p);
         }
 
-        private static void CreateDirs(String GSDXName)
+        private static void CreateDirs()
         {
             // Create and set the config directory.
             String Dir = AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\";
-            if (!Directory.Exists(Dir))
-            {
-                Directory.CreateDirectory(Dir);
-            }
-            Dir += GSDXName;
             if (!Directory.Exists(Dir))
             {
                 Directory.CreateDirectory(Dir);
@@ -267,7 +262,7 @@ namespace GSDumpGUI
                 Directory.CreateDirectory(Dir);
                 File.Create(Dir + "\\gsdx.ini").Close();
             }
-            Dir = AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\" + GSDXName;
+            Dir = AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs";
             Directory.SetCurrentDirectory(Dir);
         }
 
@@ -302,9 +297,8 @@ namespace GSDumpGUI
             // Execute the GSconfigure function
             if (lstGSDX.SelectedIndex != -1)
             {
-                String GSDXName = lstGSDX.SelectedItem.ToString().Split(new char[] { '|' })[0];
-                CreateDirs(GSDXName);
-                Process.Start(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\" + GSDXName + "\\inis\\gsdx.ini");
+                CreateDirs();
+                Process.Start(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\inis\\gsdx.ini");
             }
             else
                 MessageBox.Show("Select your GSdx first", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);

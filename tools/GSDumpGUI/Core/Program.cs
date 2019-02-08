@@ -98,7 +98,7 @@ namespace GSDumpGUI
                 Int32 Renderer = Convert.ToInt32(args[3]);
 
                 wrap.Load(DLLPath);
-                Directory.SetCurrentDirectory(Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\" + Path.GetFileName(DLLPath) + "\\"));
+                Directory.SetCurrentDirectory(Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\"));
                 if (Operation == "GSReplay")
                 {
                     dump = GSDump.LoadDump(DumpPath);
