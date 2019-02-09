@@ -218,7 +218,9 @@ void* GSWndEGL::GetProcAddress(const char* name, bool opt)
 {
 	void* ptr = (void*)eglGetProcAddress(name);
 	if (ptr == nullptr) {
-		fprintf(stderr, "Failed to find %s\n", name);
+		if (theApp.GetConfigB("debug_opengl"))
+			fprintf(stderr, "Failed to find %s\n", name);
+
 		if (!opt)
 			throw GSDXRecoverableError();
 	}
