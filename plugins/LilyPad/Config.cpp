@@ -892,7 +892,9 @@ int SaveSettings(wchar_t *file = 0)
             wchar_t temp[50];
             wsprintf(temp, L"Pad %i %i", port, slot);
             WritePrivateProfileInt(temp, L"Mode", config.padConfigs[port][slot].type, file);
-            noError &= WritePrivateProfileInt(temp, L"Auto Analog", config.padConfigs[port][slot].autoAnalog, file);
+            // PS1 Emu compatibility code, no need to run it on pcsx2.
+            if (!ps2e)
+                noError &= WritePrivateProfileInt(temp, L"Auto Analog", config.padConfigs[port][slot].autoAnalog, file);
         }
     }
 
@@ -1008,7 +1010,9 @@ int LoadSettings(int force, wchar_t *file)
             wchar_t temp[50];
             wsprintf(temp, L"Pad %i %i", port, slot);
             config.padConfigs[port][slot].type = (PadType)GetPrivateProfileInt(temp, L"Mode", Dualshock2Pad, file);
-            config.padConfigs[port][slot].autoAnalog = GetPrivateProfileBool(temp, L"Auto Analog", 0, file);
+            // PS1 Emu compatibility code, no need to run it on pcsx2.
+            if (!ps2e)
+                config.padConfigs[port][slot].autoAnalog = GetPrivateProfileBool(temp, L"Auto Analog", 0, file);
         }
     }
 
@@ -2305,11 +2309,11 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                     SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM)padTypes[i]);
 
                 if (ps2e) {
-                    // This disabled some widgets which are not required for PCSX2.
+                    // This disables some widgets which are not required for PCSX2.
                     // Currently the trigger is that it's in PS2 emulation mode
                     const UINT *toDisable = PCSX2_disabledWidgets();
                     while (toDisable && *toDisable) {
-                        EnableWindow(GetDlgItem(hWnd, *toDisable), 0);
+                        ShowWindow(GetDlgItem(hWnd, *toDisable), 0);
                         toDisable++;
                     }
                 }
