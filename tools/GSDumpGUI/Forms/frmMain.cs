@@ -295,13 +295,8 @@ namespace GSDumpGUI
         private void cmdOpenIni_Click(object sender, EventArgs e)
         {
             // Execute the GSconfigure function
-            if (lstGSDX.SelectedIndex != -1)
-            {
-                CreateDirs();
-                Process.Start(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\inis\\gsdx.ini");
-            }
-            else
-                MessageBox.Show("Select your GSdx first", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            CreateDirs();
+            Process.Start(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\inis\\gsdx.ini");
         }
 
         private void lstDumps_SelectedIndexChanged(object sender, EventArgs e)
