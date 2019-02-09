@@ -148,9 +148,15 @@ namespace GSDumpGUI
         private void GSDumpGUI_Load(object sender, EventArgs e)
         {
             ReloadGSDXs();
+
+            // Auto select GS dump
             lstDumps.Focus();
             if (lstDumps.Items.Count > 0)
                 lstDumps.SelectedIndex = 0;
+
+            // Auto select GSdx dll
+            if (lstGSDX.Items.Count > 0)
+                lstGSDX.SelectedIndex = 0;
         }
 
         private void cmdBrowseGSDX_Click(object sender, EventArgs e)
