@@ -327,7 +327,9 @@ void* GSWndWGL::GetProcAddress(const char* name, bool opt)
 	}
 #endif
 	if (ptr == NULL) {
-		fprintf(stderr, "Failed to find %s\n", name);
+		if (theApp.GetConfigB("debug_opengl"))
+			fprintf(stderr, "Failed to find %s\n", name);
+
 		if (!opt)
 			throw GSDXRecoverableError();
 	}
