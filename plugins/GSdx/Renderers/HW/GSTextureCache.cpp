@@ -20,7 +20,7 @@
  */
 
 #include "stdafx.h"
-#include "Renderers/Common/GSTextureCache.h"
+#include "GSTextureCache.h"
 #include "GSUtil.h"
 
 bool GSTextureCache::m_disable_partial_invalidation = false;

@@ -87,13 +87,13 @@ set(GSdxSources
     Renderers/Common/GSOsdManager.cpp
     Renderers/Common/GSRenderer.cpp
     Renderers/Common/GSTexture.cpp
-    Renderers/Common/GSTextureCache.cpp
     Renderers/Common/GSVertexTrace.cpp
     Renderers/Null/GSDeviceNull.cpp
     Renderers/Null/GSRendererNull.cpp
     Renderers/Null/GSTextureNull.cpp
     Renderers/HW/GSHwHack.cpp
     Renderers/HW/GSRendererHW.cpp
+    Renderers/HW/GSTextureCache.cpp
     Renderers/SW/GSDrawScanline.cpp
     Renderers/SW/GSDrawScanlineCodeGenerator.cpp
     Renderers/SW/GSDrawScanlineCodeGenerator.x64.cpp
@@ -171,7 +171,6 @@ set(GSdxHeaders
     Renderers/Common/GSFunctionMap.h
     Renderers/Common/GSOsdManager.h
     Renderers/Common/GSRenderer.h
-    Renderers/Common/GSTextureCache.h
     Renderers/Common/GSTexture.h
     Renderers/Common/GSVertex.h
     Renderers/Common/GSVertexList.h
@@ -180,6 +179,7 @@ set(GSdxHeaders
     Renderers/Null/GSRendererNull.h
     Renderers/Null/GSTextureNull.h
     Renderers/HW/GSRendererHW.h
+    Renderers/HW/GSTextureCache.h
     Renderers/HW/GSVertexHW.h
     Renderers/SW/GSDrawScanlineCodeGenerator.h
     Renderers/SW/GSDrawScanline.h

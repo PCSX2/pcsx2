@@ -135,7 +135,7 @@
     <ClCompile Include="Renderers\OpenGL\GSTextureOGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderers\Common\GSTextureCache.cpp">
+    <ClCompile Include="Renderers\HW\GSTextureCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Renderers\DX11\GSTextureCache11.cpp">
@@ -398,7 +398,7 @@
     <ClInclude Include="Renderers\OpenGL\GSTextureOGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Renderers\Common\GSTextureCache.h">
+    <ClInclude Include="Renderers\HW\GSTextureCache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\DX11\GSTextureCache11.h">

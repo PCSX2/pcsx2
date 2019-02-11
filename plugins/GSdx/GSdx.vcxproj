@@ -147,7 +147,7 @@
     <ClCompile Include="Renderers\Common\GSTexture.cpp" />
     <ClCompile Include="Renderers\DX11\GSTexture11.cpp" />
     <ClCompile Include="Renderers\OpenGL\GSTextureOGL.cpp" />
-    <ClCompile Include="Renderers\Common\GSTextureCache.cpp" />
+    <ClCompile Include="Renderers\HW\GSTextureCache.cpp" />
     <ClCompile Include="Renderers\DX11\GSTextureCache11.cpp" />
     <ClCompile Include="Renderers\OpenGL\GSTextureCacheOGL.cpp" />
     <ClCompile Include="Renderers\SW\GSTextureCacheSW.cpp" />
@@ -224,7 +224,7 @@
     <ClInclude Include="Renderers\Common\GSTexture.h" />
     <ClInclude Include="Renderers\DX11\GSTexture11.h" />
     <ClInclude Include="Renderers\OpenGL\GSTextureOGL.h" />
-    <ClInclude Include="Renderers\Common\GSTextureCache.h" />
+    <ClInclude Include="Renderers\HW\GSTextureCache.h" />
     <ClInclude Include="Renderers\DX11\GSTextureCache11.h" />
     <ClInclude Include="Renderers\OpenGL\GSTextureCacheOGL.h" />
     <ClInclude Include="Renderers\SW\GSTextureCacheSW.h" />
