@@ -245,20 +245,13 @@ GSTexture* GSDevice::GetCurrent()
 
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
 {
-	if(m_merge == NULL || m_merge->GetSize() != fs)
-	{
-		Recycle(m_merge);
-
-		m_merge = CreateRenderTarget(fs.x, fs.y);
-	}
-
 	// TODO: m_1x1
 
 	// KH:COM crashes at startup when booting *through the bios* due to m_merge being NULL.
 	// (texture appears to be non-null, and is being re-created at a size around like 1700x340,
 	// dunno if that's relevant) -- air
 
-	if(m_merge)
+	if(ResizeTarget(&m_merge, fs.x, fs.y))
 	{
 		GSTexture* tex[3] = {NULL, NULL, NULL};
 
@@ -290,12 +283,7 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 
 void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffset)
 {
-	if(m_weavebob == NULL || m_weavebob->GetSize() != ds)
-	{
-		delete m_weavebob;
-
-		m_weavebob = CreateRenderTarget(ds.x, ds.y);
-	}
+	ResizeTarget(&m_weavebob, ds.x, ds.y);
 
 	if(mode == 0 || mode == 2) // weave or blend
 	{
@@ -307,12 +295,7 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 		{
 			// blend
 
-			if(m_blend == NULL || m_blend->GetSize() != ds)
-			{
-				delete m_blend;
-
-				m_blend = CreateRenderTarget(ds.x, ds.y);
-			}
+			ResizeTarget(&m_blend, ds.x, ds.y);
 
 			DoInterlace(m_weavebob, m_blend, 2, false, 0);
 
@@ -339,13 +322,7 @@ void GSDevice::ExternalFX()
 {
 	GSVector2i s = m_current->GetSize();
 
-	if (m_shaderfx == NULL || m_shaderfx->GetSize() != s)
-	{
-		delete m_shaderfx;
-		m_shaderfx = CreateRenderTarget(s.x, s.y);
-	}
-
-	if (m_shaderfx != NULL)
+	if (ResizeTarget(&m_shaderfx))
 	{
 		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dRect(0, 0, s.x, s.y);
@@ -359,13 +336,7 @@ void GSDevice::FXAA()
 {
 	GSVector2i s = m_current->GetSize();
 
-	if(m_fxaa == NULL || m_fxaa->GetSize() != s)
-	{
-		delete m_fxaa;
-		m_fxaa = CreateRenderTarget(s.x, s.y);
-	}
-
-	if(m_fxaa != NULL)
+	if(ResizeTarget(&m_fxaa))
 	{
 		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dRect(0, 0, s.x, s.y);
@@ -379,13 +350,7 @@ void GSDevice::ShadeBoost()
 {
 	GSVector2i s = m_current->GetSize();
 
-	if(m_shadeboost == NULL || m_shadeboost->GetSize() != s)
-	{
-		delete m_shadeboost;
-		m_shadeboost = CreateRenderTarget(s.x, s.y);
-	}
-
-	if(m_shadeboost != NULL)
+	if(ResizeTarget(&m_shadeboost))
 	{
 		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dRect(0, 0, s.x, s.y);
@@ -395,7 +360,7 @@ void GSDevice::ShadeBoost()
 	}
 }
 
-bool GSDevice::ResizeTexture(GSTexture** t, int w, int h)
+bool GSDevice::ResizeTexture(GSTexture** t, int type, int w, int h)
 {
 	if(t == NULL) {ASSERT(0); return false;}
 
@@ -405,12 +370,28 @@ bool GSDevice::ResizeTexture(GSTexture** t, int w, int h)
 	{
 		delete t2;
 
-		t2 = CreateTexture(w, h);
+		t2 = FetchSurface(type, w, h, 0);
 
 		*t = t2;
 	}
 
 	return t2 != NULL;
+}
+
+bool GSDevice::ResizeTexture(GSTexture** t, int w, int h)
+{
+	return ResizeTexture(t, GSTexture::Texture, w, h);
+}
+
+bool GSDevice::ResizeTarget(GSTexture** t, int w, int h)
+{
+	return ResizeTexture(t, GSTexture::RenderTarget, w, h);
+}
+
+bool GSDevice::ResizeTarget(GSTexture** t)
+{
+	GSVector2i s = m_current->GetSize();
+	return ResizeTexture(t, GSTexture::RenderTarget, s.x, s.y);
 }
 
 GSAdapter::operator std::string() const
