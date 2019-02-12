@@ -126,10 +126,7 @@ protected:
 	GSTexture* m_merge;
 	GSTexture* m_weavebob;
 	GSTexture* m_blend;
-	GSTexture* m_shaderfx;
-	GSTexture* m_fxaa;
-	GSTexture* m_shadeboost;
-	GSTexture* m_1x1;
+	GSTexture* m_target_tmp;
 	GSTexture* m_current;
 	struct {size_t stride, start, count, limit;} m_vertex;
 	struct {size_t start, count, limit;} m_index;

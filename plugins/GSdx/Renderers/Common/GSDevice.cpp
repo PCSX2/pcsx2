@@ -31,10 +31,7 @@ GSDevice::GSDevice()
 	, m_merge(NULL)
 	, m_weavebob(NULL)
 	, m_blend(NULL)
-	, m_shaderfx(NULL)
-	, m_fxaa(NULL)
-	, m_shadeboost(NULL)
-	, m_1x1(NULL)
+	, m_target_tmp(NULL)
 	, m_current(NULL)
 	, m_frame(0)
 {
@@ -51,10 +48,7 @@ GSDevice::~GSDevice()
 	delete m_merge;
 	delete m_weavebob;
 	delete m_blend;
-	delete m_shaderfx;
-	delete m_fxaa;
-	delete m_shadeboost;
-	delete m_1x1;
+	delete m_target_tmp;
 }
 
 bool GSDevice::Create(const std::shared_ptr<GSWnd>& wnd)
@@ -74,19 +68,13 @@ bool GSDevice::Reset(int w, int h)
 	delete m_merge;
 	delete m_weavebob;
 	delete m_blend;
-	delete m_shaderfx;
-	delete m_fxaa;
-	delete m_shadeboost;
-	delete m_1x1;
+	delete m_target_tmp;
 
 	m_backbuffer = NULL;
 	m_merge = NULL;
 	m_weavebob = NULL;
 	m_blend = NULL;
-	m_shaderfx = NULL;
-	m_fxaa = NULL;
-	m_shadeboost = NULL;
-	m_1x1 = NULL;
+	m_target_tmp = NULL;
 
 	m_current = NULL; // current is special, points to other textures, no need to delete
 
@@ -245,8 +233,6 @@ GSTexture* GSDevice::GetCurrent()
 
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
 {
-	// TODO: m_1x1
-
 	// KH:COM crashes at startup when booting *through the bios* due to m_merge being NULL.
 	// (texture appears to be non-null, and is being re-created at a size around like 1700x340,
 	// dunno if that's relevant) -- air
@@ -322,13 +308,13 @@ void GSDevice::ExternalFX()
 {
 	GSVector2i s = m_current->GetSize();
 
-	if (ResizeTarget(&m_shaderfx))
+	if (ResizeTarget(&m_target_tmp))
 	{
 		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_shaderfx, dRect, ShaderConvert_TRANSPARENCY_FILTER, false);
-		DoExternalFX(m_shaderfx, m_current);
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert_TRANSPARENCY_FILTER, false);
+		DoExternalFX(m_target_tmp, m_current);
 	}
 }
 
@@ -336,13 +322,13 @@ void GSDevice::FXAA()
 {
 	GSVector2i s = m_current->GetSize();
 
-	if(ResizeTarget(&m_fxaa))
+	if(ResizeTarget(&m_target_tmp))
 	{
 		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_fxaa, dRect, ShaderConvert_TRANSPARENCY_FILTER, false);
-		DoFXAA(m_fxaa, m_current);
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert_TRANSPARENCY_FILTER, false);
+		DoFXAA(m_target_tmp, m_current);
 	}
 }
 
@@ -350,13 +336,13 @@ void GSDevice::ShadeBoost()
 {
 	GSVector2i s = m_current->GetSize();
 
-	if(ResizeTarget(&m_shadeboost))
+	if(ResizeTarget(&m_target_tmp))
 	{
 		GSVector4 sRect(0, 0, 1, 1);
 		GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_shadeboost, dRect, ShaderConvert_COPY, false);
-		DoShadeBoost(m_shadeboost, m_current);
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert_COPY, false);
+		DoShadeBoost(m_target_tmp, m_current);
 	}
 }
 
