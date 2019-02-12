@@ -200,7 +200,10 @@ public:
 	void ExternalFX();
 	virtual void RenderOsd(GSTexture* dt) {};
 
+	bool ResizeTexture(GSTexture** t, int type, int w, int h);
 	bool ResizeTexture(GSTexture** t, int w, int h);
+	bool ResizeTarget(GSTexture** t, int w, int h);
+	bool ResizeTarget(GSTexture** t);
 
 	bool IsRBSwapped() {return m_rbswapped;}
 
