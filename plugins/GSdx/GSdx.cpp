@@ -308,6 +308,7 @@ void GSdxApp::Init()
 	m_gs_tv_shaders.push_back(GSSetting(3, "Triangular filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
 
+	// PSX options that start with m_gpu.
 	m_gpu_renderers.push_back(GSSetting(static_cast<int8>(GPURendererType::D3D11_SW), "Direct3D 11", "Software"));
 	m_gpu_renderers.push_back(GSSetting(static_cast<int8>(GPURendererType::NULL_Renderer), "Null", ""));
 
@@ -331,21 +332,21 @@ void GSdxApp::Init()
 	m_gpu_scale.push_back(GSSetting(2 | (2 << 2), "H x 4 - V x 4", ""));
 
 	// Avoid to clutter the ini file with useless options
+#ifdef _WIN32
+	// Per OS option.
+	m_default_configuration["Adapter"]                                    = "default";
+	m_default_configuration["CaptureFileName"]                            = "";
+	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
+
+	// OpenCL device. Windows only for now.
+	m_default_configuration["ocldev"]                                     = "";
 
 	// PSX option. Not supported on linux.
-#ifdef _WIN32
 	m_default_configuration["dithering"]                                  = "1";
 	m_default_configuration["ModeRefreshRate"]                            = "0";
 	m_default_configuration["scale_x"]                                    = "0";
 	m_default_configuration["scale_y"]                                    = "0";
 	m_default_configuration["windowed"]                                   = "1";
-#endif
-
-	// Per OS option
-#ifdef _WIN32
-	m_default_configuration["Adapter"]                                    = "default";
-	m_default_configuration["CaptureFileName"]                            = "";
-	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
 #else
 	m_default_configuration["linux_replay"]                               = "1";
 #endif
@@ -380,7 +381,6 @@ void GSdxApp::Init()
 	m_default_configuration["ModeHeight"]                                 = "480";
 	m_default_configuration["ModeWidth"]                                  = "640";
 	m_default_configuration["NTSC_Saturation"]                            = "1";
-	m_default_configuration["ocldev"]                                     = "";
 #ifdef _WIN32
 	m_default_configuration["osd_fontname"]                               = "C:\\Windows\\Fonts\\tahoma.ttf";
 #else
@@ -435,8 +435,11 @@ void GSdxApp::Init()
 	m_default_configuration["upscale_multiplier"]                         = "1";
 	m_default_configuration["UserHacks"]                                  = "0";
 	m_default_configuration["UserHacks_align_sprite_X"]                   = "0";
+#ifdef _WIN32
+	// Direct3D only hacks.
 	m_default_configuration["UserHacks_AlphaHack"]                        = "0";
 	m_default_configuration["UserHacks_AlphaStencil"]                     = "0";
+#endif
 	m_default_configuration["UserHacks_AutoFlush"]                        = "0";
 	m_default_configuration["UserHacks_DisableDepthSupport"]              = "0";
 	m_default_configuration["UserHacks_Disable_Safe_Features"]            = "0";
