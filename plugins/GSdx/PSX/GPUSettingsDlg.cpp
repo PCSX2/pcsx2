@@ -111,8 +111,8 @@ void GPUSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_RESOLUTION), !resscalenotsupported);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_RESOLUTION_TEXT), !resscalenotsupported);
 
-		ShowWindow(GetDlgItem(m_hWnd, IDC_PSX_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
-		ShowWindow(GetDlgItem(m_hWnd, IDC_PSX_NULL), null ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_NULL), null ? SW_SHOW : SW_HIDE);
 		
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SCALE), sw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_EDIT), sw);

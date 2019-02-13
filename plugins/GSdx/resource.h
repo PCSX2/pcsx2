@@ -50,17 +50,13 @@
 #define IDC_SWTHREADS                   2063
 #define IDC_SWTHREADS_EDIT              2064
 // PSX:
-#define IDB_PSX_NULL                    2070
-#define IDB_PSX_LOGO11                  2072
-#define IDC_PSX_NULL                    2073
-#define IDC_PSX_LOGO11                  2075
-#define IDD_GPUCONFIG                   2076
-#define IDC_ASPECTRATIO                 2077
-#define IDC_DITHERING                   2078
-#define IDC_WINDOWED                    2079
-#define IDC_RESOLUTION_TEXT             2080
-#define IDC_RESOLUTION                  2081
-#define IDC_SCALE                       2082
+#define IDD_GPUCONFIG                   2070
+#define IDC_ASPECTRATIO                 2071
+#define IDC_DITHERING                   2072
+#define IDC_WINDOWED                    2073
+#define IDC_RESOLUTION_TEXT             2074
+#define IDC_RESOLUTION                  2075
+#define IDC_SCALE                       2076
 // Capture:
 #define IDD_CAPTURE                     2090
 #define IDC_FILENAME                    2091

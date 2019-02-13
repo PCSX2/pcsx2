@@ -293,8 +293,6 @@
     <Image Include="res\logo-null.bmp" />
     <Image Include="res\logo-ogl.bmp" />
     <Image Include="res\logo11.bmp" />
-    <Image Include="res\psx-logo-null.bmp" />
-    <Image Include="res\psx-logo11.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\3rdparty\freetype\builds\windows\freetype.vcxproj">
