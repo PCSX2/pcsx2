@@ -158,8 +158,8 @@ protected:
 	bool IsBadFrame();
 	void SetupCrcHack();
 
-	int UserHacks_WildHack;
-	bool isPackedUV_HackFlag;
+	bool m_userhacks_wildhack;
+	bool m_isPackedUV_HackFlag;
 	CRCHackLevel m_crc_hack_level;
 	GetSkipCount m_gsc;
 	int m_skip;

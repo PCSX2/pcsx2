@@ -54,16 +54,16 @@ GSState::GSState()
 	if (theApp.GetConfigB("UserHacks"))
 	{
 		m_userhacks_auto_flush      = theApp.GetConfigB("UserHacks_AutoFlush");
+		m_userhacks_wildhack        = theApp.GetConfigB("UserHacks_WildHack");
 		m_userhacks_skipdraw        = theApp.GetConfigI("UserHacks_SkipDraw");
 		m_userhacks_skipdraw_offset = theApp.GetConfigI("UserHacks_SkipDraw_Offset");
-		UserHacks_WildHack          = theApp.GetConfigI("UserHacks_WildHack");
 	}
 	else
 	{
 		m_userhacks_auto_flush      = false;
+		m_userhacks_wildhack        = false;
 		m_userhacks_skipdraw        = 0;
 		m_userhacks_skipdraw_offset = 0;
-		UserHacks_WildHack          = 0;
 	}
 
 	s_n = 0;
@@ -281,7 +281,7 @@ void GSState::ResetHandlers()
 	m_fpGIFPackedRegHandlers[GIF_REG_PRIM] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerPRIM;
 	m_fpGIFPackedRegHandlers[GIF_REG_RGBA] = &GSState::GIFPackedRegHandlerRGBA;
 	m_fpGIFPackedRegHandlers[GIF_REG_STQ] = &GSState::GIFPackedRegHandlerSTQ;
-	m_fpGIFPackedRegHandlers[GIF_REG_UV] = !UserHacks_WildHack ? &GSState::GIFPackedRegHandlerUV : &GSState::GIFPackedRegHandlerUV_Hack;
+	m_fpGIFPackedRegHandlers[GIF_REG_UV] = m_userhacks_wildhack ? &GSState::GIFPackedRegHandlerUV_Hack : &GSState::GIFPackedRegHandlerUV;
 	m_fpGIFPackedRegHandlers[GIF_REG_TEX0_1] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerTEX0<0>;
 	m_fpGIFPackedRegHandlers[GIF_REG_TEX0_2] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerTEX0<1>;
 	m_fpGIFPackedRegHandlers[GIF_REG_CLAMP_1] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerCLAMP<0>;
@@ -330,7 +330,7 @@ void GSState::ResetHandlers()
 	m_fpGIFRegHandlers[GIF_A_D_REG_PRIM] = &GSState::GIFRegHandlerPRIM;
 	m_fpGIFRegHandlers[GIF_A_D_REG_RGBAQ] = &GSState::GIFRegHandlerRGBAQ;
 	m_fpGIFRegHandlers[GIF_A_D_REG_ST] = &GSState::GIFRegHandlerST;
-	m_fpGIFRegHandlers[GIF_A_D_REG_UV] = !UserHacks_WildHack ? &GSState::GIFRegHandlerUV : &GSState::GIFRegHandlerUV_Hack;
+	m_fpGIFRegHandlers[GIF_A_D_REG_UV] = m_userhacks_wildhack ? &GSState::GIFRegHandlerUV_Hack : &GSState::GIFRegHandlerUV;
 	m_fpGIFRegHandlers[GIF_A_D_REG_TEX0_1] = &GSState::GIFRegHandlerTEX0<0>;
 	m_fpGIFRegHandlers[GIF_A_D_REG_TEX0_2] = &GSState::GIFRegHandlerTEX0<1>;
 	m_fpGIFRegHandlers[GIF_A_D_REG_CLAMP_1] = &GSState::GIFRegHandlerCLAMP<0>;
@@ -635,7 +635,7 @@ void GSState::GIFPackedRegHandlerUV_Hack(const GIFPackedReg* RESTRICT r)
 
 	m_v.UV = (uint32)GSVector4i::store(v.ps32(v));
 
-    isPackedUV_HackFlag = true;
+	m_isPackedUV_HackFlag = true;
 }
 
 template<uint32 prim, uint32 adc, bool auto_flush>
@@ -842,14 +842,14 @@ void GSState::GIFRegHandlerST(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerUV(const GIFReg* RESTRICT r)
 {
-    m_v.UV = r->UV.u32[0] & 0x3fff3fff;
+	m_v.UV = r->UV.u32[0] & 0x3fff3fff;
 }
 
 void GSState::GIFRegHandlerUV_Hack(const GIFReg* RESTRICT r)
 {
-    m_v.UV = r->UV.u32[0] & 0x3fff3fff;
+	m_v.UV = r->UV.u32[0] & 0x3fff3fff;
 
-    isPackedUV_HackFlag = false;
+	m_isPackedUV_HackFlag = false;
 }
 
 template<uint32 prim, uint32 adc, bool auto_flush>

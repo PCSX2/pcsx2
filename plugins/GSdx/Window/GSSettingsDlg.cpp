@@ -614,7 +614,7 @@ void GSHacksDlg::OnInit()
 	bool native = upscaling_multiplier == 1;
 
 	CheckDlgButton(m_hWnd, IDC_ALPHAHACK, theApp.GetConfigB("UserHacks_AlphaHack"));
-	CheckDlgButton(m_hWnd, IDC_WILDHACK, theApp.GetConfigI("UserHacks_WildHack"));
+	CheckDlgButton(m_hWnd, IDC_WILDHACK, theApp.GetConfigB("UserHacks_WildHack"));
 	CheckDlgButton(m_hWnd, IDC_ALPHASTENCIL, theApp.GetConfigB("UserHacks_AlphaStencil"));
 	CheckDlgButton(m_hWnd, IDC_PRELOAD_GS, theApp.GetConfigB("preload_frame_with_gs_data"));
 	CheckDlgButton(m_hWnd, IDC_ALIGN_SPRITE, theApp.GetConfigB("UserHacks_align_sprite_X"));

@@ -51,7 +51,7 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
 
-	if (UserHacks_WildHack && !isPackedUV_HackFlag && PRIM->TME && PRIM->FST) {
+	if (m_userhacks_wildhack && !m_isPackedUV_HackFlag && PRIM->TME && PRIM->FST) {
 		for(unsigned int i = 0; i < m_vertex.next; i++)
 			m_vertex.buff[i].UV &= 0x3FEF3FEF;
 	}

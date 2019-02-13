@@ -91,7 +91,7 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 	{
 		GSVector4i::storent(ptr, m_vertex.buff, sizeof(GSVertex) * m_vertex.next);
 
-		if (UserHacks_WildHack && !isPackedUV_HackFlag)
+		if (m_userhacks_wildhack && !m_isPackedUV_HackFlag)
 		{
 			GSVertex* RESTRICT d = (GSVertex*)ptr;
 
