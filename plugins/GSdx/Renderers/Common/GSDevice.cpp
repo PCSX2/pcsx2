@@ -163,6 +163,7 @@ void GSDevice::Recycle(GSTexture* t)
 {
 	if(t)
 	{
+		t->Uncommit();
 		t->last_frame_used = m_frame;
 
 		m_pool.push_front(t);
