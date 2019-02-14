@@ -1298,6 +1298,14 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	dev->SetupPipeline(m_vs_sel, m_gs_sel, m_ps_sel);
 
+	GSVector4i commitRect = ComputeBoundingBox(rtscale, rtsize);
+
+	if (rt)
+		rt->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
+
+	if (ds)
+		ds->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
+
 	if (DATE_GL42) {
 		GL_PUSH("Date GL42");
 		// It could be good idea to use stencil in the same time.
