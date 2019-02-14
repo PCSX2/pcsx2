@@ -1480,13 +1480,13 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 
 	if(type == RenderTarget)
 	{
-		t->m_texture = m_renderer->m_dev->CreateRenderTarget(w, h);
+		t->m_texture = m_renderer->m_dev->CreateSparseRenderTarget(w, h);
 
 		t->m_used = true; // FIXME
 	}
 	else if(type == DepthStencil)
 	{
-		t->m_texture = m_renderer->m_dev->CreateDepthStencil(w, h);
+		t->m_texture = m_renderer->m_dev->CreateSparseDepthStencil(w, h);
 	}
 
 	m_dst[type].push_front(t);
