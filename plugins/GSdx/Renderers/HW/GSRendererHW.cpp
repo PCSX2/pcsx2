@@ -702,6 +702,10 @@ void GSRendererHW::Draw()
 	GSDrawingContext* context = m_context;
 	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
 
+	// Fix TEX0 size
+	if(PRIM->TME && !IsMipMapActive())
+		m_context->ComputeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t), m_vt.IsLinear());
+
 	// skip alpha test if possible
 	// Note: do it first so we know if frame/depth writes are masked
 

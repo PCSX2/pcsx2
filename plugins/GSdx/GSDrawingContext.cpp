@@ -137,3 +137,26 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(int s_n, const GSVector4& st, bool
 
 	return res;
 }
+
+void GSDrawingContext::ComputeFixedTEX0(const GSVector4& st, bool linear)
+{
+	GIFRegTEX0 reg = GetSizeFixedTEX0(0, st, linear, false);
+
+	if (reg.TW > TEX0.TW)
+	{
+		m_fixed_tex0 = true;
+		TEX0.TW = reg.TW;
+	}
+	if (reg.TH > TEX0.TH)
+	{
+		m_fixed_tex0 = true;
+		TEX0.TH = reg.TH;
+	}
+
+	if (m_fixed_tex0)
+	{
+		GL_INS("FixedTEX0 TW %d=>%d, TH %d=>%d wm %d,%d",
+				(int)stack.TEX0.TW, (int)TEX0.TW, (int)stack.TEX0.TH, (int)TEX0.TH,
+				(int)CLAMP.WMS, (int)CLAMP.WMT);
+	}
+}
