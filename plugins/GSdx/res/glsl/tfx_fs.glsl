@@ -122,6 +122,11 @@ vec4 sample_p(float idx)
 vec4 clamp_wrap_uv(vec4 uv)
 {
     vec4 uv_out = uv;
+#if PS_INVALID_TEX0 == 1
+    vec4 tex_size = WH.zwzw;
+#else
+    vec4 tex_size = WH.xyxy;
+#endif
 
 #if PS_WMS == PS_WMT
 
@@ -133,7 +138,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     // textures. Fixes Xenosaga's hair issue.
     uv = fract(uv);
     #endif
-    uv_out = vec4((uvec4(uv * WH.xyxy) & MskFix.xyxy) | MskFix.zwzw) / WH.xyxy;
+    uv_out = vec4((uvec4(uv * tex_size) & MskFix.xyxy) | MskFix.zwzw) / tex_size;
 #endif
 
 #else // PS_WMS != PS_WMT
@@ -145,7 +150,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     #if PS_FST == 0
     uv.xz = fract(uv.xz);
     #endif
-    uv_out.xz = vec2((uvec2(uv.xz * WH.xx) & MskFix.xx) | MskFix.zz) / WH.xx;
+    uv_out.xz = vec2((uvec2(uv.xz * tex_size.xx) & MskFix.xx) | MskFix.zz) / tex_size.xx;
 
 #endif
 
@@ -156,7 +161,7 @@ vec4 clamp_wrap_uv(vec4 uv)
     #if PS_FST == 0
     uv.yw = fract(uv.yw);
     #endif
-    uv_out.yw = vec2((uvec2(uv.yw * WH.yy) & MskFix.yy) | MskFix.ww) / WH.yy;
+    uv_out.yw = vec2((uvec2(uv.yw * tex_size.yy) & MskFix.yy) | MskFix.ww) / tex_size.yy;
 #endif
 
 #endif
@@ -574,7 +579,11 @@ void fog(inout vec4 C, float f)
 vec4 ps_color()
 {
     //FIXME: maybe we can set gl_Position.w = q in VS
-#if (PS_FST == 0)
+#if (PS_FST == 0) && (PS_INVALID_TEX0 == 1)
+    // Re-normalize coordinate from invalid GS to corrected texture size
+    vec2 st = (PSin.t_float.xy * WH.xy) / (vec2(PSin.t_float.w) * WH.zw);
+    // no st_int yet
+#elif (PS_FST == 0)
     vec2 st = PSin.t_float.xy / vec2(PSin.t_float.w);
     vec2 st_int = PSin.t_int.zw / vec2(PSin.t_float.w);
 #else

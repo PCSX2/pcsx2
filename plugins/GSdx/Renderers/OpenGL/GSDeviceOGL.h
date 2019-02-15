@@ -301,8 +301,9 @@ public:
 				uint32 automatic_lod:1;
 				uint32 manual_lod:1;
 				uint32 point_sampler:1;
+				uint32 invalid_tex0:1; // Lupin the 3rd
 
-				uint32 _free2:10;
+				uint32 _free2:9;
 			};
 
 			uint64 key;
