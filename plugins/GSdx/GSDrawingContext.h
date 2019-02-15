@@ -75,8 +75,12 @@ public:
 		GIFRegZBUF		ZBUF;
 	} stack;
 
+	bool m_fixed_tex0;
+
 	GSDrawingContext()
 	{
+		m_fixed_tex0 = false;
+
 		memset(&offset, 0, sizeof(offset));
 
 		Reset();
@@ -144,6 +148,7 @@ public:
 
 	GIFRegTEX0 GetSizeFixedTEX0(int s_n, const GSVector4& st, bool linear, bool mipmap = false);
 	void ComputeFixedTEX0(const GSVector4& st, bool linear);
+	bool HasFixedTEX0() const { return m_fixed_tex0;}
 
 	// Save & Restore before/after draw allow to correct/optimize current register for current draw
 	// Note: we could avoid the restore part if all renderer code is updated to use a local copy instead
@@ -162,6 +167,9 @@ public:
 		stack.FBA = FBA;
 		stack.FRAME = FRAME;
 		stack.ZBUF = ZBUF;
+
+		// This function is called before the draw so take opportunity to reset m_fixed_tex0
+		m_fixed_tex0 = false;
 	}
 
 	void RestoreReg()
