@@ -1651,6 +1651,8 @@ void GSState::FlushPrim()
 		{
 			m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
+			m_context->SaveReg();
+
 			try {
 				Draw();
 			} catch (GSDXRecoverableError&) {
@@ -1660,6 +1662,8 @@ void GSState::FlushPrim()
 				PurgePool();
 				fprintf(stderr, "GSDX OUT OF MEMORY\n");
 			}
+
+			m_context->RestoreReg();
 
 			m_perfmon.Put(GSPerfMon::Draw, 1);
 			m_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));

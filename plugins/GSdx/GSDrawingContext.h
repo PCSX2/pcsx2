@@ -58,6 +58,23 @@ public:
 		GSPixelOffset4* fzb4;
 	} offset;
 
+	struct
+	{
+		GIFRegXYOFFSET	XYOFFSET;
+		GIFRegTEX0		TEX0;
+		GIFRegTEX1		TEX1;
+		GIFRegTEX2		TEX2;
+		GIFRegCLAMP		CLAMP;
+		GIFRegMIPTBP1	MIPTBP1;
+		GIFRegMIPTBP2	MIPTBP2;
+		GIFRegSCISSOR	SCISSOR;
+		GIFRegALPHA		ALPHA;
+		GIFRegTEST		TEST;
+		GIFRegFBA		FBA;
+		GIFRegFRAME		FRAME;
+		GIFRegZBUF		ZBUF;
+	} stack;
+
 	GSDrawingContext()
 	{
 		memset(&offset, 0, sizeof(offset));
@@ -125,7 +142,44 @@ public:
 		return ZBUF.ZMSK == 0 && TEST.ZTE != 0; // ZTE == 0 is bug on the real hardware, write is blocked then
 	}
 
-	GIFRegTEX0 GetSizeFixedTEX0(int s_n, const GSVector4& st, bool linear, bool mipmap);
+	GIFRegTEX0 GetSizeFixedTEX0(int s_n, const GSVector4& st, bool linear, bool mipmap = false);
+	void ComputeFixedTEX0(const GSVector4& st, bool linear);
+
+	// Save & Restore before/after draw allow to correct/optimize current register for current draw
+	// Note: we could avoid the restore part if all renderer code is updated to use a local copy instead
+	void SaveReg()
+	{
+		stack.XYOFFSET = XYOFFSET;
+		stack.TEX0 = TEX0;
+		stack.TEX1 = TEX1;
+		stack.TEX2 = TEX2;
+		stack.CLAMP = CLAMP;
+		stack.MIPTBP1 = MIPTBP1;
+		stack.MIPTBP2 = MIPTBP2;
+		stack.SCISSOR = SCISSOR;
+		stack.ALPHA = ALPHA;
+		stack.TEST = TEST;
+		stack.FBA = FBA;
+		stack.FRAME = FRAME;
+		stack.ZBUF = ZBUF;
+	}
+
+	void RestoreReg()
+	{
+		XYOFFSET = stack.XYOFFSET;
+		TEX0 = stack.TEX0;
+		TEX1 = stack.TEX1;
+		TEX2 = stack.TEX2;
+		CLAMP = stack.CLAMP;
+		MIPTBP1 = stack.MIPTBP1;
+		MIPTBP2 = stack.MIPTBP2;
+		SCISSOR = stack.SCISSOR;
+		ALPHA = stack.ALPHA;
+		TEST = stack.TEST;
+		FBA = stack.FBA;
+		FRAME = stack.FRAME;
+		ZBUF = stack.ZBUF;
+	}
 
 	void Dump(const std::string& filename)
 	{
