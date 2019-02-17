@@ -492,7 +492,6 @@ void SelChanged(int port, int slot)
 
     // Input & Special Bindings:
     SetWindowTextW(GetDlgItem(hWnd, ID_SPECIAL_INPUTS), config.specialInputs[port][slot] ? L"Hide Special Inputs" : L"Show Special Inputs");
-    SetWindowPos(hWndList, NULL, 0, 0, 275, config.specialInputs[port][slot] ? 324 : 440, SWP_NOZORDER | SWP_NOMOVE);
     for (i = IDC_DPAD; i <= ID_SPECIAL_INPUTS; i++) {
         hWndTemp = GetDlgItem(hWnd, i);
         if (hWndTemp) {
@@ -1987,7 +1986,9 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                 } else if (cmd == IDC_CONFIGURE_ON_BIND) {
                     config.configureOnBind = IsDlgButtonChecked(hWnd, IDC_CONFIGURE_ON_BIND);
                 } else if (cmd == ID_SPECIAL_INPUTS) {
+                    // FIXME: Fix DPI Scaling.
                     config.specialInputs[port][slot] = !config.specialInputs[port][slot];
+                    SetWindowPos(hWndList, NULL, 0, 0, 275, config.specialInputs[port][slot] ? 324 : 440, SWP_NOZORDER | SWP_NOMOVE);
                     ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
                     UnselectAll(hWndList);
                     SelChanged(port, slot);
