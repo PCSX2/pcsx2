@@ -74,7 +74,7 @@ class GSTextureOGL final : public GSTexture
 		bool Save(const std::string& fn) final;
 
 		bool IsBackbuffer() { return (m_type == GSTexture::Backbuffer); }
-		bool IsDss() { return (m_type == GSTexture::DepthStencil); }
+		bool IsDss() { return (m_type == GSTexture::DepthStencil || m_type == GSTexture::SparseDepthStencil); }
 
 		uint32 GetID() final { return m_texture_id; }
 		bool HasBeenCleaned() { return m_clean; }
