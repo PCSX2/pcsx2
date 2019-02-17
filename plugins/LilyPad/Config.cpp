@@ -1986,11 +1986,11 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                 } else if (cmd == IDC_CONFIGURE_ON_BIND) {
                     config.configureOnBind = IsDlgButtonChecked(hWnd, IDC_CONFIGURE_ON_BIND);
                 } else if (cmd == ID_SPECIAL_INPUTS) {
-                    // FIXME: Fix DPI Scaling.
                     config.specialInputs[port][slot] = !config.specialInputs[port][slot];
-                    SetWindowPos(hWndList, NULL, 0, 0, 275, config.specialInputs[port][slot] ? 324 : 440, SWP_NOZORDER | SWP_NOMOVE);
-                    ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
-                    UnselectAll(hWndList);
+                    // FIXME: Fix DPI Scaling. Below code is commented out and a fixed size for inputs window is used to avoid DPI scaling issues.
+                    // SetWindowPos(hWndList, NULL, 0, 0, 275, config.specialInputs[port][slot] ? 324 : 440, SWP_NOZORDER | SWP_NOMOVE);
+                    // ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
+                    // UnselectAll(hWndList);
                     SelChanged(port, slot);
                 }
                 if (cmd == IDC_RAPID_FIRE) {
