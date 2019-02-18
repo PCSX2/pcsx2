@@ -357,11 +357,11 @@ void populate_shader_table(GtkWidget* shader_table)
 	GtkWidget* shader_label      = left_label("External shader glsl");
 	GtkWidget* shader_conf_label = left_label("External shader conf");
 
-	GtkWidget* shadeboost_check = CreateCheckBox("Shade boost", "ShadeBoost");
-	GtkWidget* fxaa_check       = CreateCheckBox("Fxaa shader", "fxaa");
-	GtkWidget* shaderfx_check   = CreateCheckBox("External shader", "shaderfx");
+	GtkWidget* shadeboost_check = CreateCheckBox("Shade Boost", "ShadeBoost");
+	GtkWidget* fxaa_check       = CreateCheckBox("Fxaa Shader (PgUp)", "fxaa");
+	GtkWidget* shaderfx_check   = CreateCheckBox("External Shader", "shaderfx");
 
-	GtkWidget* tv_shader_label  = left_label("TV shader:");
+	GtkWidget* tv_shader_label  = left_label("TV shader (F7):");
 	GtkWidget* tv_shader        = CreateComboBoxFromVector(theApp.m_gs_tv_shaders, "TVShader");
 
 	GtkWidget* linear_check     = CreateCheckBox("Texture Filtering of Display", "linear_present");

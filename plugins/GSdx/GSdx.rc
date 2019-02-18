@@ -173,7 +173,7 @@ CAPTION "Shader Configuration"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Texture Filtering of Display",IDC_LINEAR_PRESENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,6,100,10
-    CONTROL         "FXAA Shader",IDC_FXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,19,54,10
+    CONTROL         "FXAA Shader (PgUp)",IDC_FXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,19,80,10
     CONTROL         "Shade Boost",IDC_SHADEBOOST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,32,90,10
     LTEXT           "Shade Boost Brightness",IDC_BRIGHTNESS_TEXT,16,50,80,8
     CONTROL         "",IDC_BRIGHTNESS_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,95,48,135,15
