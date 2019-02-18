@@ -89,9 +89,6 @@
     <ClInclude Include="..\..\src\x86emitter\PrecompiledHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\x86emitter\sse_helpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\x86emitter\tools.h">
       <Filter>Header Files</Filter>
     </ClInclude>

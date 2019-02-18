@@ -50,7 +50,6 @@ set(x86emitterHeaders
 	../../include/x86emitter/legacy_instructions.h
 	../../include/x86emitter/legacy_internal.h
 	../../include/x86emitter/legacy_types.h
-	../../include/x86emitter/sse_helpers.h
 	../../include/x86emitter/tools.h
 	../../include/x86emitter/x86emitter.h
 	../../include/x86emitter/x86types.h

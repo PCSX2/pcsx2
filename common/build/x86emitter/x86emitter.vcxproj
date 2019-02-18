@@ -86,7 +86,6 @@
     <ClInclude Include="..\..\include\x86emitter\legacy_internal.h" />
     <ClInclude Include="..\..\include\x86emitter\legacy_types.h" />
     <ClInclude Include="..\..\src\x86emitter\PrecompiledHeader.h" />
-    <ClInclude Include="..\..\include\x86emitter\sse_helpers.h" />
     <ClInclude Include="..\..\include\x86emitter\tools.h" />
     <ClInclude Include="..\..\include\x86emitter\x86emitter.h" />
     <ClInclude Include="..\..\include\x86emitter\x86types.h" />
