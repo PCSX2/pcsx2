@@ -12,7 +12,6 @@
 							 [GLOBALS|FUNCTIONS]
 ------------------------------------------------------------------------------*/
 #if (FXAA_GLSL_130 == 1)
-
 in SHADER
 {
     vec4 p;
@@ -28,16 +27,9 @@ layout(std140, binding = 14) uniform cb14
     vec4 _rcpFrame;
 };
 
-#else
-
-#if (SHADER_MODEL >= 0x400)
+#elif (SHADER_MODEL >= 0x400)
 Texture2D Texture : register(t0);
 SamplerState TextureSampler : register(s0);
-#else
-texture2D Texture : register(t0);
-sampler2D TextureSampler : register(s0);
-#define SamplerState sampler2D
-#endif
 
 cbuffer cb0
 {
@@ -52,21 +44,13 @@ struct VS_INPUT
 
 struct VS_OUTPUT
 {
-	#if (SHADER_MODEL >= 0x400)
 	float4 p : SV_Position;
-	#else
-	float4 p : TEXCOORD1;
-	#endif
 	float2 t : TEXCOORD0;
 };
 
 struct PS_OUTPUT
 {
-	#if (SHADER_MODEL >= 0x400)
 	float4 c : SV_Target0;
-	#else
-	float4 c : COLOR0;
-	#endif
 };
 
 #endif
@@ -78,14 +62,13 @@ struct PS_OUTPUT
 #if (SHADER_MODEL >= 0x500)
 #define FXAA_HLSL_5 1
 #define FXAA_GATHER4_ALPHA 1
+
 #elif (SHADER_MODEL >= 0x400)
 #define FXAA_HLSL_4 1
 #define FXAA_GATHER4_ALPHA 0
+
 #elif (FXAA_GLSL_130 == 1)
 #define FXAA_GATHER4_ALPHA 1
-#else
-#define FXAA_HLSL_3 1
-#define FXAA_GATHER4_ALPHA 0
 #endif
 
 #if (FXAA_HLSL_5 == 1)
@@ -104,15 +87,7 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaDiscard clip(-1)
 #define FxaaSat(x) saturate(x)
 
-#elif (FXAA_HLSL_3 == 1)
-#define FxaaTex sampler2D
-#define int2 float2
-#define FxaaSat(x) saturate(x)
-#define FxaaTexTop(t, p) tex2Dlod(t, float4(p, 0.0, 0.0))
-#define FxaaTexOff(t, p, o, r) tex2Dlod(t, float4(p + (o * r), 0, 0))
-
 #elif (FXAA_GLSL_130 == 1)
-
 #define int2 ivec2
 #define float2 vec2
 #define float3 vec3
@@ -122,6 +97,7 @@ struct FxaaTex { SamplerState smpl; Texture2D tex; };
 #define FxaaTex sampler2D
 #define FxaaTexTop(t, p) textureLod(t, p, 0.0)
 #define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
+
 #if (FXAA_GATHER4_ALPHA == 1)
 // use #extension GL_ARB_gpu_shader5 : enable
 #define FxaaTexAlpha4(t, p) textureGather(t, p, 3)
@@ -190,10 +166,8 @@ float4 PreGammaPass(float4 color, float2 uv0)
 {
 	#if (SHADER_MODEL >= 0x400)
 		color = Texture.Sample(TextureSampler, uv0);
-    #elif (FXAA_GLSL_130 == 1)
+	#elif (FXAA_GLSL_130 == 1)
 		color = texture(TextureSampler, uv0);
-	#else
-		color = tex2D(TextureSampler, uv0);
 	#endif
 
 	const float GammaConst = 2.233;
@@ -234,7 +208,7 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 	#define lumaNW luma4B.w
 	#define lumaN luma4B.z
 	#define lumaW luma4B.x
-    
+
 	#else
 	float4 rgbyM = FxaaTexTop(tex, posM);
 	rgbyM.w = RGBLuminance(rgbyM.xyz);
@@ -518,7 +492,7 @@ float4 FxaaPixelShader(float2 pos, FxaaTex tex, float2 fxaaRcpFrame, float fxaaS
 
 #if (FXAA_GLSL_130 == 1)
 float4 FxaaPass(float4 FxaaColor, float2 uv0)
-#else
+#elif (SHADER_MODEL >= 0x400)
 float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 #endif
 {
@@ -531,15 +505,9 @@ float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 	Texture.GetDimensions(PixelSize.x, PixelSize.y);
 	FxaaColor = FxaaPixelShader(uv0, tex, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
 
-    #elif (FXAA_GLSL_130 == 1)
-
+	#elif (FXAA_GLSL_130 == 1)
 	vec2 PixelSize = textureSize(TextureSampler, 0);
 	FxaaColor = FxaaPixelShader(uv0, TextureSampler, 1.0/PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
-
-	#else
-	FxaaTex tex;
-	tex = TextureSampler;
-	FxaaColor = FxaaPixelShader(uv0, tex, PixelSize.xy, FxaaSubpixMax, FxaaEdgeThreshold, FxaaEdgeThresholdMin);
 	#endif
 
 	return FxaaColor;
@@ -552,30 +520,22 @@ float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 
 void ps_main()
 {
-    vec4 color = texture(TextureSampler, PSin.t);
-    color      = PreGammaPass(color, PSin.t);
-    color      = FxaaPass(color, PSin.t);
+	vec4 color = texture(TextureSampler, PSin.t);
+	color      = PreGammaPass(color, PSin.t);
+	color      = FxaaPass(color, PSin.t);
 
-    SV_Target0 = color;
+	SV_Target0 = color;
 }
 
-#else
-
+#elif (SHADER_MODEL >= 0x400)
 PS_OUTPUT ps_main(VS_OUTPUT input)
 {
 	PS_OUTPUT output;
 
-	#if (SHADER_MODEL >= 0x400)
-		float4 color = Texture.Sample(TextureSampler, input.t);
+	float4 color = Texture.Sample(TextureSampler, input.t);
 
-		color = PreGammaPass(color, input.t);
-		color = FxaaPass(color, input.t);
-	#else
-		float4 color = tex2D(TextureSampler, input.t);
-
-		color = PreGammaPass(color, input.t);
-		color = FxaaPass(color, input.t);
-	#endif
+	color = PreGammaPass(color, input.t);
+	color = FxaaPass(color, input.t);
 
 	output.c = color;
 	
