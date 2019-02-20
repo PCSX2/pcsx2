@@ -579,7 +579,8 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		{
 		case VK_F5:
 			m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
-			printf("GSdx: Set deinterlace mode to %d (%s).\n", (int)m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
+			theApp.SetConfig("interlace", m_interlace);
+			printf("GSdx: Set deinterlace mode to %d (%s).\n", m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
 			return;
 		case VK_F6:
 			if( m_wnd->IsManaged() )
@@ -587,22 +588,27 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 			return;
 		case VK_F7:
 			m_shader = (m_shader + s_post_shader_nb + step) % s_post_shader_nb;
-			printf("GSdx: Set shader to: %d.\n", (int)m_shader);
+			theApp.SetConfig("TVShader", m_shader);
+			printf("GSdx: Set shader to: %d.\n", m_shader);
 			return;
 		case VK_DELETE:
 			m_aa1 = !m_aa1;
+			theApp.SetConfig("aa1", m_aa1);
 			printf("GSdx: (Software) Edge anti-aliasing is now %s.\n", m_aa1 ? "enabled" : "disabled");
 			return;
 		case VK_INSERT:
 			m_mipmap = (m_mipmap + s_mipmap_nb + step) % s_mipmap_nb;
+			theApp.SetConfig("mipmap_hw", m_mipmap);
 			printf("GSdx: Mipmapping is now %s.\n", theApp.m_gs_hack.at(m_mipmap).name.c_str());
 			return;
 		case VK_PRIOR:
 			m_fxaa = !m_fxaa;
+			theApp.SetConfig("fxaa", m_fxaa);
 			printf("GSdx: FXAA anti-aliasing is now %s.\n", m_fxaa ? "enabled" : "disabled");
 			return;
 		case VK_HOME:
 			m_shaderfx = !m_shaderfx;
+			theApp.SetConfig("shaderfx", m_shaderfx);
 			printf("GSdx: External post-processing is now %s.\n", m_shaderfx ? "enabled" : "disabled");
 			return;
 		}

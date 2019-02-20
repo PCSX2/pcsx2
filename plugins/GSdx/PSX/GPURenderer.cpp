@@ -251,18 +251,23 @@ LRESULT GPURenderer::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_DELETE:
 			m_filter = (m_filter + 1) % 3;
+			theApp.SetConfig("filter", m_filter);
 			return 0;
 		case VK_END:
 			m_dither = m_dither ? 0 : 1;
+			theApp.SetConfig("dithering", m_dither);
 			return 0;
 		case VK_NEXT:
 			m_aspectratio = (m_aspectratio + 1) % 3;
+			theApp.SetConfig("AspectRatio", m_aspectratio);
 			return 0;
 		case VK_PRIOR:
 			m_fxaa = !m_fxaa;
+			theApp.SetConfig("fxaa", m_fxaa);
 			return 0;
 		case VK_HOME:
 			m_shaderfx = !m_shaderfx;
+			theApp.SetConfig("shaderfx", m_shaderfx);
 			return 0;
 		}
 	}
