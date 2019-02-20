@@ -632,7 +632,7 @@ void GSHacksDlg::OnInit()
 	ComboBoxInit(IDC_SPRITEHACK, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_SpriteHack"));
 	ComboBoxInit(IDC_GEOMETRY_SHADER_OVERRIDE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_geometry_shader"));
 	ComboBoxInit(IDC_IMAGE_LOAD_STORE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_GL_ARB_shader_image_load_store"));
-	ComboBoxInit(IDC_SPARSE_TEXTURE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_GL_ARB_sparse_texture"));
+	ComboBoxInit(IDC_SPARSE_TEXTURE, theApp.m_gs_gl_ext_sparsetext, theApp.GetConfigI("override_GL_ARB_sparse_texture"));
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_SkipDraw_Offset"), 0));
