@@ -263,13 +263,8 @@ void GSdxApp::Init()
 	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::Forced), "Trilinear", "Ultra/Slow"));
 
 	m_gs_gl_ext.push_back(GSSetting(-1, "Automatic", "Default"));
-	m_gs_gl_ext.push_back(GSSetting(0, "Force-Disabled", ""));
-	m_gs_gl_ext.push_back(GSSetting(1, "Force-Enabled", ""));
-
-	// FIXME: Temporary. Remove it once Sparse Texture is implemented properly and use m_gs_gl_ext.
-	m_gs_gl_ext_sparsetext.push_back(GSSetting(-1, "Automatic", ""));
-	m_gs_gl_ext_sparsetext.push_back(GSSetting(0, "Force-Disabled", "Default"));
-	m_gs_gl_ext_sparsetext.push_back(GSSetting(1, "Force-Enabled", ""));
+	m_gs_gl_ext.push_back(GSSetting(0,  "Force-Disabled", ""));
+	m_gs_gl_ext.push_back(GSSetting(1,  "Force-Enabled", ""));
 
 	m_gs_hack.push_back(GSSetting(0, "Off", "Default"));
 	m_gs_hack.push_back(GSSetting(1, "Half", ""));

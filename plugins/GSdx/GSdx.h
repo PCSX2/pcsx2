@@ -77,7 +77,6 @@ public:
 	std::vector<GSSetting> m_gs_bifilter;
 	std::vector<GSSetting> m_gs_trifilter;
 	std::vector<GSSetting> m_gs_gl_ext;
-	std::vector<GSSetting> m_gs_gl_ext_sparsetext;
 	std::vector<GSSetting> m_gs_hack;
 	std::vector<GSSetting> m_gs_offset_hack;
 	std::vector<GSSetting> m_gs_hw_mipmapping;
@@ -85,7 +84,7 @@ public:
 	std::vector<GSSetting> m_gs_acc_date_level;
 	std::vector<GSSetting> m_gs_acc_blend_level;
 	std::vector<GSSetting> m_gs_tv_shaders;
-	// PSX
+
 	std::vector<GSSetting> m_gpu_renderers;
 	std::vector<GSSetting> m_gpu_filter;
 	std::vector<GSSetting> m_gpu_dithering;
