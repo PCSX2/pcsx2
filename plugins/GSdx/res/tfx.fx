@@ -42,6 +42,7 @@
 #define PS_CHANNEL_FETCH 0
 #define PS_TALES_OF_ABYSS_HLE 0
 #define PS_URBAN_CHAOS_HLE 0
+#define PS_INVALID_TEX0 0
 #define PS_SCALE_FACTOR 1
 #endif
 
@@ -331,6 +332,13 @@ float4 sample_depth(float2 st, float2 pos)
 
 float4 clamp_wrap_uv(float4 uv)
 {
+	float4 tex_size;
+
+	if (PS_INVALID_TEX0 == 1)
+		tex_size = WH.zwzw;
+	else
+		tex_size = WH.xyxy;
+
 	if(PS_WMS == PS_WMT)
 	{
 		if(PS_WMS == 2)
@@ -344,7 +352,7 @@ float4 clamp_wrap_uv(float4 uv)
 			// textures. Fixes Xenosaga's hair issue.
 			uv = frac(uv);
 			#endif
-			uv = (float4)(((uint4)(uv * WH.xyxy) & MskFix.xyxy) | MskFix.zwzw) / WH.xyxy;
+			uv = (float4)(((uint4)(uv * tex_size) & MskFix.xyxy) | MskFix.zwzw) / tex_size;
 		}
 	}
 	else
@@ -358,7 +366,7 @@ float4 clamp_wrap_uv(float4 uv)
 			#if PS_FST == 0
 			uv.xz = frac(uv.xz);
 			#endif
-			uv.xz = (float2)(((uint2)(uv.xz * WH.xx) & MskFix.xx) | MskFix.zz) / WH.xx;
+			uv.xz = (float2)(((uint2)(uv.xz * tex_size.xx) & MskFix.xx) | MskFix.zz) / tex_size.xx;
 		}
 		if(PS_WMT == 2)
 		{
@@ -369,7 +377,7 @@ float4 clamp_wrap_uv(float4 uv)
 			#if PS_FST == 0
 			uv.yw = frac(uv.yw);
 			#endif
-			uv.yw = (float2)(((uint2)(uv.yw * WH.yy) & MskFix.yy) | MskFix.ww) / WH.yy;
+			uv.yw = (float2)(((uint2)(uv.yw * tex_size.yy) & MskFix.yy) | MskFix.ww) / tex_size.yy;
 		}
 	}
 
@@ -602,9 +610,13 @@ float4 fog(float4 c, float f)
 
 float4 ps_color(PS_INPUT input)
 {
-#if PS_FST == 0
-	float2 st = input.t.xy / input.t.w;
-	float2 st_int = input.ti.zw / input.t.w;
+#if PS_FST == 0 && PS_INVALID_TEX0 == 1
+	// Re-normalize coordinate from invalid GS to corrected texture size
+	float2 st = (input.t.xy * WH.xy) / (input.t.w * WH.zw);
+	// no st_int yet
+#elif PS_FST == 0
+	float2 st = input.t.xy / (input.t.w);
+	float2 st_int = input.ti.zw / (input.t.w);
 #else
 	float2 st = input.ti.xy;
 	float2 st_int = input.ti.zw;

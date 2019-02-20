@@ -216,8 +216,9 @@ public:
 				uint32 urban_chaos_hle:1;
 				uint32 tales_of_abyss_hle:1;
 				uint32 point_sampler:1;
+				uint32 invalid_tex0:1; // Lupin the 3rd
 
-				uint32 _free:28;
+				uint32 _free:27;
 			};
 
 			uint64 key;
