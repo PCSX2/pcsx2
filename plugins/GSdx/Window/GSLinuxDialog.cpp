@@ -338,7 +338,7 @@ void populate_sw_table(GtkWidget* sw_table)
 	GtkWidget* threads_label = left_label("Extra rendering threads:");
 	GtkWidget* threads_spin  = CreateSpinButton(0, 32, "extrathreads");
 
-	GtkWidget* aa_check         = CreateCheckBox("Edge anti-aliasing (AA1)", "aa1");
+	GtkWidget* aa_check         = CreateCheckBox("Edge Anti-aliasing (Del)", "aa1");
 	GtkWidget* mipmap_check     = CreateCheckBox("Mipmapping", "mipmap");
 
 	AddTooltip(aa_check, IDC_AA1);
@@ -359,9 +359,9 @@ void populate_shader_table(GtkWidget* shader_table)
 
 	GtkWidget* shadeboost_check = CreateCheckBox("Shade Boost", "ShadeBoost");
 	GtkWidget* fxaa_check       = CreateCheckBox("Fxaa Shader (PgUp)", "fxaa");
-	GtkWidget* shaderfx_check   = CreateCheckBox("External Shader", "shaderfx");
+	GtkWidget* shaderfx_check   = CreateCheckBox("External Shader (Home)", "shaderfx");
 
-	GtkWidget* tv_shader_label  = left_label("TV shader (F7):");
+	GtkWidget* tv_shader_label  = left_label("TV Shader (F7):");
 	GtkWidget* tv_shader        = CreateComboBoxFromVector(theApp.m_gs_tv_shaders, "TVShader");
 
 	GtkWidget* linear_check     = CreateCheckBox("Texture Filtering of Display", "linear_present");
