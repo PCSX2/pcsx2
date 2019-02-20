@@ -207,7 +207,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 
 	if(i == m_ps.end())
 	{
-		std::string str[25];
+		std::string str[26];
 
 		str[0] = format("%d", sel.fst);
 		str[1] = format("%d", sel.wms);
@@ -233,7 +233,8 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		str[21] = format("%d", sel.dfmt);
 		str[22] = format("%d", sel.depth_fmt);
 		str[23] = format("%d", sel.fmt >> 2);
-		str[24] = format("%d", m_upscale_multiplier ? m_upscale_multiplier : 1);
+		str[24] = format("%d", sel.invalid_tex0);
+		str[25] = format("%d", m_upscale_multiplier ? m_upscale_multiplier : 1);
 
 		D3D_SHADER_MACRO macro[] =
 		{
@@ -261,7 +262,8 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 			{"PS_DFMT", str[21].c_str() },
 			{"PS_DEPTH_FMT", str[22].c_str() },
 			{"PS_PAL_FMT", str[23].c_str() },
-			{"PS_SCALE_FACTOR", str[24].c_str() },
+			{"PS_INVALID_TEX0", str[24].c_str() },
+			{"PS_SCALE_FACTOR", str[25].c_str() },
 			{NULL, NULL},
 		};
 

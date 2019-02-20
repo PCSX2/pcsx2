@@ -678,6 +678,15 @@ void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	m_ps_sel.tcoffsethack = m_userhacks_tcoffset;
 	ps_cb.TC_OffsetHack = GSVector4(m_userhacks_tcoffset_x, m_userhacks_tcoffset_y).xyxy() / WH.xyxy();
 
+	// Must be done after all coordinates math
+	if (m_context->HasFixedTEX0() && !PRIM->FST)
+	{
+		m_ps_sel.invalid_tex0 = 1;
+		// Use invalid size to denormalize ST coordinate
+		ps_cb.WH.x = (float)(1 << m_context->stack.TEX0.TW);
+		ps_cb.WH.y = (float)(1 << m_context->stack.TEX0.TH);
+	}
+
 	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader
 	m_ps_ssel.tau = (wms != CLAMP_CLAMP);
 	m_ps_ssel.tav = (wmt != CLAMP_CLAMP);
