@@ -109,6 +109,7 @@ Name   = Mana Khemia: Alchemists of Al-Revis [Premium Box]
 Region = NTSC-J
 DMABusyHack = 1
 eeRoundMode = 0 // Fixes jump issue.
+GIFFIFOHack = 1 // Fixes flickering sprites.
 ---------------------------------------------
 Serial = PAPX-90512
 Name   = Gran Turismo 4 - Toyota Prius [Trial]
@@ -17747,6 +17748,7 @@ Region = PAL-E
 Compat = 5
 DMABusyHack = 1
 eeRoundMode = 0 // Fixes jump issue.
+GIFFIFOHack = 1 // Fixes flickering sprites.
 ---------------------------------------------
 Serial = SLES-55444
 Name   = Ar tonelico II: Melody of Metafalica
@@ -19007,6 +19009,7 @@ Compat = 5
 Serial = SLPM-55005
 Name   = Mana Khemia 2: Ochita Gakuen to Renkinjutsushi Tachi
 Region = NTSC-J
+GIFFIFOHack = 1 // Fixes flickering sprites.
 ---------------------------------------------
 Serial = SLPM-55008
 Name   = Sengoku Basara X
@@ -19048,6 +19051,7 @@ Region = NTSC-J
 Serial = SLPM-55114
 Name   = Mana Khemia 2: Ochita Gakuen to Renkinjutsushi Tachi
 Region = NTSC-J
+GIFFIFOHack = 1 // Fixes flickering sprites.
 ---------------------------------------------
 Serial = SLPM-55118
 Name   = Galaxy Angel II - Eigou Kaiki no Koku [Disc1of2]
