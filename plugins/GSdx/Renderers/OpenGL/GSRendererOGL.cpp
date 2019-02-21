@@ -211,84 +211,21 @@ void GSRendererOGL::EmulateZbuffer()
 
 void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 {
-	size_t count = m_vertex.next;
-	GSVertex* v = &m_vertex.buff[0];
-
 	if (m_texture_shuffle) {
 		m_ps_sel.shuffle = 1;
 		m_ps_sel.dfmt = 0;
 
-		const GIFRegXYOFFSET& o = m_context->XYOFFSET;
+		bool write_ba;
+		bool read_ba;
 
-		// vertex position is 8 to 16 pixels, therefore it is the 16-31 bits of the colors
-		int  pos = (v[0].XYZ.X - o.OFX) & 0xFF;
-		bool write_ba = (pos > 112 && pos < 136);
-		// Read texture is 8 to 16 pixels (same as above)
-		float tw = (float)(1u << m_context->TEX0.TW);
-		int tex_pos = (PRIM->FST) ? v[0].U : (int)(tw * v[0].ST.S);
-		tex_pos &= 0xFF;
-		m_ps_sel.read_ba = (tex_pos > 112 && tex_pos < 144);
-
-		// Convert the vertex info to a 32 bits color format equivalent
-		if (PRIM->FST) {
-			GL_INS("First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
-
-			for(size_t i = 0; i < count; i += 2) {
-				if (write_ba)
-					v[i].XYZ.X   -= 128u;
-				else
-					v[i+1].XYZ.X += 128u;
-
-				if (m_ps_sel.read_ba)
-					v[i].U       -= 128u;
-				else
-					v[i+1].U     += 128u;
-
-				// Height is too big (2x).
-				int tex_offset = v[i].V & 0xF;
-				GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
-
-				GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i+1].XYZ.Y, v[i+1].V);
-				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
-
-				v[i].XYZ.Y   = (uint16)tmp.x;
-				v[i].V       = (uint16)tmp.y;
-				v[i+1].XYZ.Y = (uint16)tmp.z;
-				v[i+1].V     = (uint16)tmp.w;
-			}
-		} else {
-			const float offset_8pix = 8.0f / tw;
-			GL_INS("First vertex is  P: %d => %d    T: %f => %f (offset %f)", v[0].XYZ.X, v[1].XYZ.X, v[0].ST.S, v[1].ST.S, offset_8pix);
-
-			for(size_t i = 0; i < count; i += 2) {
-				if (write_ba)
-					v[i].XYZ.X   -= 128u;
-				else
-					v[i+1].XYZ.X += 128u;
-
-				if (m_ps_sel.read_ba)
-					v[i].ST.S    -= offset_8pix;
-				else
-					v[i+1].ST.S  += offset_8pix;
-
-				// Height is too big (2x).
-				GSVector4i offset(o.OFY, o.OFY);
-
-				GSVector4i tmp(v[i].XYZ.Y, v[i+1].XYZ.Y);
-				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
-
-				//fprintf(stderr, "Before %d, After %d\n", v[i+1].XYZ.Y, tmp.y);
-				v[i].XYZ.Y   = (uint16)tmp.x;
-				v[i].ST.T   /= 2.0f;
-				v[i+1].XYZ.Y = (uint16)tmp.y;
-				v[i+1].ST.T /= 2.0f;
-			}
-		}
+		ConvertSpriteTextureShuffle(write_ba, read_ba);
 
 		// If date is enabled you need to test the green channel instead of the
 		// alpha channel. Only enable this code in DATE mode to reduce the number
 		// of shader.
 		m_ps_sel.write_rg = !write_ba && m_context->TEST.DATE;
+
+		m_ps_sel.read_ba = read_ba;
 
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
@@ -302,10 +239,10 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 		// 2 Select the new mask (Please someone put SSE here)
 		if (rg_mask != 0xFF) {
 			if (write_ba) {
-				GL_INS("Color shuffle %s => B", m_ps_sel.read_ba ? "B" : "R");
+				GL_INS("Color shuffle %s => B", read_ba ? "B" : "R");
 				m_om_csel.wb = 1;
 			} else {
-				GL_INS("Color shuffle %s => R", m_ps_sel.read_ba ? "B" : "R");
+				GL_INS("Color shuffle %s => R", read_ba ? "B" : "R");
 				m_om_csel.wr = 1;
 			}
 			if (rg_mask)
@@ -314,10 +251,10 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 
 		if (ba_mask != 0xFF) {
 			if (write_ba) {
-				GL_INS("Color shuffle %s => A", m_ps_sel.read_ba ? "A" : "G");
+				GL_INS("Color shuffle %s => A", read_ba ? "A" : "G");
 				m_om_csel.wa = 1;
 			} else {
-				GL_INS("Color shuffle %s => G", m_ps_sel.read_ba ? "A" : "G");
+				GL_INS("Color shuffle %s => G", read_ba ? "A" : "G");
 				m_om_csel.wg = 1;
 			}
 			if (ba_mask)
