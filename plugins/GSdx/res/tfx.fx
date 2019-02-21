@@ -615,8 +615,8 @@ float4 ps_color(PS_INPUT input)
 	float2 st = (input.t.xy * WH.xy) / (input.t.w * WH.zw);
 	// no st_int yet
 #elif PS_FST == 0
-	float2 st = input.t.xy / (input.t.w);
-	float2 st_int = input.ti.zw / (input.t.w);
+	float2 st = input.t.xy / input.t.w;
+	float2 st_int = input.ti.zw / input.t.w;
 #else
 	float2 st = input.ti.xy;
 	float2 st_int = input.ti.zw;

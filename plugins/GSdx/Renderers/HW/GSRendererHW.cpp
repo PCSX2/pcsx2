@@ -428,6 +428,97 @@ void GSRendererHW::Lines2Sprites()
 	}
 }
 
+// Fix the vertex position/tex_coordinate from 16 bits color to 32 bits color
+void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
+{
+	size_t count = m_vertex.next;
+	GSVertex* v = &m_vertex.buff[0];
+	const GIFRegXYOFFSET& o = m_context->XYOFFSET;
+
+	// vertex position is 8 to 16 pixels, therefore it is the 16-31 bits of the colors
+	int  pos = (v[0].XYZ.X - o.OFX) & 0xFF;
+	write_ba = (pos > 112 && pos < 136);
+
+	// Read texture is 8 to 16 pixels (same as above)
+	float tw = (float)(1u << m_context->TEX0.TW);
+	int tex_pos = (PRIM->FST) ? v[0].U : (int)(tw * v[0].ST.S);
+	tex_pos &= 0xFF;
+	read_ba = (tex_pos > 112 && tex_pos < 144);
+
+	if (PRIM->FST) {
+		GL_INS("First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
+
+		for(size_t i = 0; i < count; i += 2) {
+			if (write_ba)
+				v[i].XYZ.X   -= 128u;
+			else
+				v[i+1].XYZ.X += 128u;
+
+			if (read_ba)
+				v[i].U       -= 128u;
+			else
+				v[i+1].U     += 128u;
+
+			// Height is too big (2x).
+			int tex_offset = v[i].V & 0xF;
+			GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
+
+			GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i+1].XYZ.Y, v[i+1].V);
+			tmp = GSVector4i(tmp - offset).srl32(1) + offset;
+
+			v[i].XYZ.Y   = (uint16)tmp.x;
+			v[i].V       = (uint16)tmp.y;
+			v[i+1].XYZ.Y = (uint16)tmp.z;
+			v[i+1].V     = (uint16)tmp.w;
+		}
+	} else {
+		const float offset_8pix = 8.0f / tw;
+		GL_INS("First vertex is  P: %d => %d    T: %f => %f (offset %f)", v[0].XYZ.X, v[1].XYZ.X, v[0].ST.S, v[1].ST.S, offset_8pix);
+
+		for(size_t i = 0; i < count; i += 2) {
+			if (write_ba)
+				v[i].XYZ.X   -= 128u;
+			else
+				v[i+1].XYZ.X += 128u;
+
+			if (read_ba)
+				v[i].ST.S    -= offset_8pix;
+			else
+				v[i+1].ST.S  += offset_8pix;
+
+			// Height is too big (2x).
+			GSVector4i offset(o.OFY, o.OFY);
+
+			GSVector4i tmp(v[i].XYZ.Y, v[i+1].XYZ.Y);
+			tmp = GSVector4i(tmp - offset).srl32(1) + offset;
+
+			//fprintf(stderr, "Before %d, After %d\n", v[i+1].XYZ.Y, tmp.y);
+			v[i].XYZ.Y   = (uint16)tmp.x;
+			v[i].ST.T   /= 2.0f;
+			v[i+1].XYZ.Y = (uint16)tmp.y;
+			v[i+1].ST.T /= 2.0f;
+		}
+	}
+
+	// Update vertex trace too. Avoid issue to compute bounding box
+	if (write_ba)
+		m_vt.m_min.p.x -= 8.0f;
+	else
+		m_vt.m_max.p.x += 8.0f;
+
+
+	float delta_Y = m_vt.m_max.p.y - m_vt.m_min.p.y;
+	m_vt.m_max.p.y -= delta_Y / 2.0f;
+
+	if (read_ba)
+		m_vt.m_min.t.x -= 8.0f;
+	else
+		m_vt.m_max.t.x += 8.0f;
+
+	float delta_T = m_vt.m_max.t.y - m_vt.m_min.t.y;
+	m_vt.m_max.t.y -= delta_T / 2.0f;
+}
+
 GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Source* tex)
 {
 	if (m_userHacks_HPO <= 1 || GetUpscaleMultiplier() == 1) return GSVector4(0.0f);
