@@ -1793,6 +1793,7 @@ Serial = SCES-52004
 Name   = Killzone
 Region = PAL-M6
 Compat = 5
+vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
 ---------------------------------------------
 Serial = SCES-52033
 Name   = Syphon Filter - The Omega Strain
@@ -2048,6 +2049,7 @@ Compat = 5
 Serial = SCES-52893
 Name   = Killzone
 Region = PAL-E-GR-R
+vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
 ---------------------------------------------
 Serial = SCES-52930
 Name   = EyeToy - Monkey Mania
@@ -2917,6 +2919,7 @@ MemCardFilter = SCKA-20047/SLKA-25201/SLKA-25202
 Serial = SCKA-20048
 Name   = Killzone
 Region = NTSC-K
+vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
 ---------------------------------------------
 Serial = SCKA-20049
 Name   = Tekken 5
@@ -3015,6 +3018,7 @@ Region = NTSC-J
 Serial = SCKA-20078
 Name   = Killzone [PlayStation 2 Big Hit Series]
 Region = NTSC-K
+vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
 ---------------------------------------------
 Serial = SCKA-20079
 Name   = Valkyrie Profile 2 - Silmeria
@@ -5413,6 +5417,7 @@ Serial = SCUS-97402
 Name   = Killzone
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
 ---------------------------------------------
 Serial = SCUS-97403
 Name   = Athens 2004 [Demo]
@@ -5531,6 +5536,7 @@ Region = NTSC-U
 Serial = SCUS-97431
 Name   = Killzone Public Beta V1.0
 Region = NTSC-U
+vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
 ---------------------------------------------
 Serial = SCUS-97432
 Name   = Killzone [Regular Demo]
@@ -5840,6 +5846,7 @@ Region = NTSC-U
 Serial = SCUS-97517
 Name   = Killzone [Greatest Hits]
 Region = NTSC-U
+vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
 ---------------------------------------------
 Serial = SCUS-97518
 Name   = Ratchet & Clank - Up Your Arsenal [Greatest Hits]
@@ -10971,10 +10978,12 @@ Region = PAL-M5
 Serial = SLES-51981
 Name   = ShellShock - Nam '67
 Region = PAL-E
+vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
 ---------------------------------------------
 Serial = SLES-51982
 Name   = ShellShock - Nam '67
 Region = PAL-M3
+vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
 ---------------------------------------------
 Serial = SLES-51986
 Name   = Backyard Wrestling - Don't Try This At Home
@@ -12896,6 +12905,7 @@ Region = PAL-M5
 Serial = SLES-52872
 Name   = Constantine
 Region = PAL-M5
+eeRoundMode = 2 // Resolves dumpster not being able to be climbed from front in level 2.
 ---------------------------------------------
 Serial = SLES-52874
 Name   = Dark Wind (with Gametrak)
@@ -13164,6 +13174,7 @@ Serial = SLES-52982
 Name   = NFL Street 2
 Region = PAL-E
 vuClampMode = 3 // Missing geometry with microVU.
+GIFFIFOHack = 1 // Fixes garbage graphics.
 ---------------------------------------------
 Serial = SLES-52983
 Name   = Fitness Fun
@@ -25163,6 +25174,7 @@ Region = NTSC-J
 Serial = SLPM-65972
 Name   = Constantine
 Region = NTSC-J
+eeRoundMode = 2 // Resolves dumpster not being able to be climbed from front in level 2.
 ---------------------------------------------
 Serial = SLPM-65973
 Name   = Mirai Shounen Conan
@@ -25799,6 +25811,7 @@ Region = NTSC-J
 Serial = SLPM-66151
 Name   = Killzone
 Region = NTSC-J
+vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
 ---------------------------------------------
 Serial = SLPM-66152
 Name   = Konneko - Keep a Memory Green [Limited Edition]
@@ -38170,6 +38183,7 @@ Serial = SLUS-20828
 Name   = ShellShock - Nam '67
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
 ---------------------------------------------
 Serial = SLUS-20830
 Name   = Intellivision Lives!
@@ -39640,6 +39654,7 @@ Name   = NFL Street 2
 Region = NTSC-U
 Compat = 5
 vuClampMode = 3 // Missing geometry with microVU.
+GIFFIFOHack = 1 // Fixes garbage graphics.
 ---------------------------------------------
 Serial = SLUS-21119
 Name   = Kessen 3
@@ -39750,6 +39765,7 @@ Serial = SLUS-21142
 Name   = Constantine
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 2 // Resolves dumpster not being able to be climbed from front in level 2.
 ---------------------------------------------
 Serial = SLUS-21143
 Name   = Star Wars - Episode III - Revenge of the Sith
