@@ -1038,11 +1038,6 @@ bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1; // Blur
 		}
-		else if(fi.FBP ==0x2200 && fi.TBP0==0x3000 && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
-		{
-			// Rendered correctly however there's some offset issue on D3D11.
-			skip = 1; // Depth Fog
-		}
 		else if(fi.TME)
 		{
 			// depth textures (bully, mgs3s1 intro, Front Mission 5)
@@ -1264,7 +1259,6 @@ bool GSC_SlyGames(const GSFrameInfo& fi, int& skip)
 			// 0x00a80, 0x00e00 from Sly 3
 		{
 			// Upscaling issue with texture shuffle on dx and gl. Also removes shadows on gl.
-			// Bbox issue on dx.
 			skip = 1000;
 		}
 	}
@@ -1833,11 +1827,17 @@ void GSState::SetupCrcHack()
 		lut[CRC::TenchuFS] = GSC_TenchuGames;
 		lut[CRC::TenchuWoH] = GSC_TenchuGames;
 
+		// Accumulation blend
+		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
+
 		// Depth
 		lut[CRC::Okami] = GSC_Okami;
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 		lut[CRC::Yakuza] = GSC_YakuzaGames;
 		lut[CRC::Yakuza2] = GSC_YakuzaGames;
+
+		// Needs testing
+		lut[CRC::HauntingGround] = GSC_HauntingGround; // + Texture cache issue + Date
 
 		// Not tested but must be fixed with texture shuffle
 		lut[CRC::CrashNburn] = GSC_CrashNburn; // seem to be a basic depth effect
@@ -1845,6 +1845,8 @@ void GSState::SetupCrcHack()
 		// Those games might requires accurate fbmask
 		lut[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
 		lut[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
+		lut[CRC::Sly2] = GSC_SlyGames; // + Upscaling issue
+		lut[CRC::Sly3] = GSC_SlyGames; // + Upscaling issue
 
 		// Those games require accurate_colclip (perf)
 		lut[CRC::CastlevaniaCoD] = GSC_CastlevaniaGames;
@@ -1853,16 +1855,8 @@ void GSState::SetupCrcHack()
 		// Unknown status
 		lut[CRC::Grandia3] = GSC_Grandia3;
 
-		// Bounding box issue
-		lut[CRC::HauntingGround] = GSC_HauntingGround; // + Texture cache issue + Date
-		lut[CRC::Sly2] = GSC_SlyGames; // + Upscaling issue
-		lut[CRC::Sly3] = GSC_SlyGames; // + Upscaling issue
-
 		// Dedicated shader for channel effect
 		lut[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
-
-		// Accumulation blend
-		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
 	}
 
 	if (Aggressive) {
