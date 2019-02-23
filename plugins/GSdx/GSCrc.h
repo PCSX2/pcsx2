@@ -106,8 +106,6 @@ public:
 		NicktoonsUnite,
 		Okami,
 		Oneechanbara2Special,
-		OnePieceGrandAdventure,
-		OnePieceGrandBattle,
 		Onimusha3,
 		PiaCarroteYoukosoGPGakuenPrincess,
 		Quake3Revolution,

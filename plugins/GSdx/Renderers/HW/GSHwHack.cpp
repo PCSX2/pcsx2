@@ -1123,32 +1123,6 @@ bool GSC_Okami(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_OnePieceGrandAdventure(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x02d00 && fi.FPSM == PSM_PSMCT16 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x00e00 || fi.TBP0 == 0x00f00) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 4;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_OnePieceGrandBattle(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x02d00 && fi.FPSM == PSM_PSMCT16 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x00f00) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 4;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_StarOcean3(const GSFrameInfo& fi, int& skip)
 {
 	// The game emulate a stencil buffer with the alpha channel of the RT
@@ -1843,8 +1817,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::CrashNburn] = GSC_CrashNburn; // seem to be a basic depth effect
 
 		// Those games might requires accurate fbmask
-		lut[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
-		lut[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
 		lut[CRC::Sly2] = GSC_SlyGames; // + Upscaling issue
 		lut[CRC::Sly3] = GSC_SlyGames; // + Upscaling issue
 
