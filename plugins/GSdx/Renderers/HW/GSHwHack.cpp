@@ -1272,25 +1272,6 @@ bool GSC_CastlevaniaGames(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_CrashNburn(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-
-	return true;
-}
-
 bool GSC_XenosagaE3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1812,9 +1793,6 @@ void GSState::SetupCrcHack()
 
 		// Needs testing
 		lut[CRC::HauntingGround] = GSC_HauntingGround; // + Texture cache issue + Date
-
-		// Not tested but must be fixed with texture shuffle
-		lut[CRC::CrashNburn] = GSC_CrashNburn; // seem to be a basic depth effect
 
 		// Those games might requires accurate fbmask
 		lut[CRC::Sly2] = GSC_SlyGames; // + Upscaling issue

@@ -44,7 +44,6 @@ public:
 		CastlevaniaLoI,
 		Clannad,
 		CrashBandicootWoC,
-		CrashNburn,
 		DarkCloud,
 		DBZBT2,
 		DBZBT3,
