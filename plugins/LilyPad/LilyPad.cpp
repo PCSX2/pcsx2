@@ -1250,6 +1250,8 @@ u8 CALLBACK PADpoll(u8 value)
                     DEBUG_OUT(0xF3);
                     return 0xF3;
                 }
+                // Fall through
+                
             // READ_DATA_AND_VIBRATE
             case 0x42:
                 query.response[2] = 0x5A;

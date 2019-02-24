@@ -1048,15 +1048,19 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 		case 5: // Mostly Harmful
 			isRateSet ? 0 : (isRateSet = true, EmuOptions.Speedhacks.EECycleRate = 1); // +1 EE cyclerate
 			isSkipSet ? 0 : (isSkipSet = true, EmuOptions.Speedhacks.EECycleSkip = 1); // +1 EE cycle skip
+            // Fall through
 		
 		case 4: // Very Aggressive
 			isRateSet ? 0 : (isRateSet = true, EmuOptions.Speedhacks.EECycleRate = -2); // -2 EE cyclerate
+            // Fall through
 
 		case 3: // Aggressive
 			isRateSet ? 0 : (isRateSet = true, EmuOptions.Speedhacks.EECycleRate = -1); // -1 EE cyclerate
+            // Fall through
 
 		case 2: // Balanced
 			isMTVUSet ? 0 : (isMTVUSet = true, EmuOptions.Speedhacks.vuThread = true); // Enable MTVU
+            // Fall through
 
 		case 1: // Safe (Default)
 			EmuOptions.Speedhacks.IntcStat = true;
@@ -1065,6 +1069,7 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 			
 			// If waterfalling from > Safe, break to avoid MTVU disable.
 			if (n > 1) break;
+            // Fall through
 			
 		case 0: // Safest
 			isMTVUSet ? 0 : (isMTVUSet = true, EmuOptions.Speedhacks.vuThread = false); // Disable MTVU
