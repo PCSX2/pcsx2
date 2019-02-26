@@ -259,13 +259,16 @@ namespace GLLoader {
 	{
 		int max_ext = 0;
 		glGetIntegerv(GL_NUM_EXTENSIONS, &max_ext);
+		for (GLint i = 0; i < max_ext; i++) {
+			std::string ext{(const char*)glGetStringi(GL_EXTENSIONS, i)};
+			GLExtension::Set(ext);
+			//fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
+		}
 
-		if (glGetStringi && max_ext) {
-			for (GLint i = 0; i < max_ext; i++) {
-				std::string ext{(const char*)glGetStringi(GL_EXTENSIONS, i)};
-				GLExtension::Set(ext);
-				//fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
-			}
+		// Disable sparse by default (Note AMD is completely broken).
+		// AMD issue tracker https://community.amd.com/thread/237558
+		if (true) {
+			GLExtension::Set("GL_ARB_sparse_texture", false);
 		}
 
 		// Mandatory for both renderer
