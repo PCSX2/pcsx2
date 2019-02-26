@@ -1346,15 +1346,22 @@ void GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds)
 		// If both buffers are side by side we can expect a fast clear in on-going
 		if (half <= (base + written_pages)) {
 			uint32 color = v[1].RGBAQ.u32[0];
+			bool clear_depth = (m_context->FRAME.FBP > m_context->ZBUF.ZBP);
 
-			GL_INS("OI_DoubleHalfClear: base %x half %x. w_pages %d h_pages %d fbw %d. Color %x", base << 5, half << 5, w_pages, h_pages, m_context->FRAME.FBW, color);
+			GL_INS("OI_DoubleHalfClear:%s: base %x half %x. w_pages %d h_pages %d fbw %d. Color %x",
+					clear_depth ? "depth" : "target", base << 5, half << 5, w_pages, h_pages, m_context->FRAME.FBW, color);
 
-			if (m_context->FRAME.FBP > m_context->ZBUF.ZBP) {
+			// Commit texture with a factor 2 on the height
+			GSTexture* t = clear_depth ? ds : rt;
+			GSVector4i commitRect = ComputeBoundingBox(t->GetScale(), t->GetSize());
+			t->CommitRegion(GSVector2i(commitRect.z, 2 * commitRect.w));
+
+			if (clear_depth) {
 				// Only pure clear are supported for depth
 				ASSERT(color == 0);
-				m_dev->ClearDepth(ds);
+				m_dev->ClearDepth(t);
 			} else {
-				m_dev->ClearRenderTarget(rt, color);
+				m_dev->ClearRenderTarget(t, color);
 			}
 		}
 	}
@@ -1580,6 +1587,7 @@ bool GSRendererHW::OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* 
 	{
 		// random battle transition (z buffer written directly, clear it now)
 
+		ds->Commit(); // Don't bother to save few MB for a single game
 		m_dev->ClearDepth(ds);
 	}
 
@@ -1630,6 +1638,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 
 			if(GSTextureCache::Target* tmp_rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true))
 			{
+				tmp_rt->m_texture->Commit(); // Don't bother to save few MB for a single game
 				m_dev->ClearRenderTarget(tmp_rt->m_texture, 0);
 			}
 
@@ -1647,6 +1656,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 
 			if(GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
 			{
+				tmp_ds->m_texture->Commit(); // Don't bother to save few MB for a single game
 				m_dev->ClearDepth(tmp_ds->m_texture);
 			}
 
@@ -1666,6 +1676,7 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 	{
 		if(FPSM == PSM_PSMCT24 && FBP == 0x2bc0)
 		{
+			ds->Commit(); // Don't bother to save few MB for a single game
 			m_dev->ClearDepth(ds);
 
 			return false;
@@ -1675,6 +1686,7 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 	{
 		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_max.p.z == 0))
 		{
+			ds->Commit(); // Don't bother to save few MB for a single game
 			m_dev->ClearDepth(ds);
 		}
 	}
@@ -1759,6 +1771,7 @@ bool GSRendererHW::OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCac
 	ASSERT((v->RGBAQ.A << 24 | v->RGBAQ.B << 16 | v->RGBAQ.G << 8 | v->RGBAQ.R) == (int)v->XYZ.Z);
 
 	// Do a direct write
+	rt->Commit(); // Don't bother to save few MB for a single game
 	m_dev->ClearRenderTarget(rt, GSVector4(m_vt.m_min.c));
 
 	m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, ctx->FRAME.Block());
@@ -1793,6 +1806,7 @@ bool GSRendererHW::OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::
 
 	if (m_vertex.next == 2 && !PRIM->TME && m_context->FRAME.FBW == 10 && v->XYZ.Z == 0 && m_context->TEST.ZTST == ZTST_ALWAYS) {
 		GL_INS("OI_ArTonelico2");
+		ds->Commit(); // Don't bother to save few MB for a single game
 		m_dev->ClearDepth(ds);
 	}
 
