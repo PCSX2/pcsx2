@@ -520,17 +520,32 @@ void GSTextureOGL::CommitPages(const GSVector2i& region, bool commit)
 	GLState::available_vram += m_mem_usage;
 
 	if (commit) {
-		GL_INS("CommitPages %dx%d of %u", region.x, region.y, m_texture_id);
+		if (m_committed_size.x == 0) {
+			// Nothing allocated so far
+			GL_INS("CommitPages initial %dx%d of %u", region.x, region.y, m_texture_id);
+			glTexturePageCommitmentEXT(m_texture_id, GL_TEX_LEVEL_0, 0, 0, 0, region.x, region.y, 1, commit);
+		} else {
+			GL_INS("CommitPages extend %dx%d to %dx%d of %u", m_committed_size.x, m_committed_size.y, region.x, region.y, m_texture_id);
+			int w = region.x - m_committed_size.x;
+			int h = region.y - m_committed_size.y;
+			// Extend width
+			glTexturePageCommitmentEXT(m_texture_id, GL_TEX_LEVEL_0, m_committed_size.x, 0, 0, w, m_committed_size.y, 1, commit);
+			// Extend height
+			glTexturePageCommitmentEXT(m_texture_id, GL_TEX_LEVEL_0, 0, m_committed_size.y, 0, region.x, h, 1, commit);
+		}
 		m_committed_size = region;
+
 	} else {
+		// Release everything
 		GL_INS("CommitPages release of %u", m_texture_id);
+
+		glTexturePageCommitmentEXT(m_texture_id, GL_TEX_LEVEL_0, 0, 0, 0, m_committed_size.x, m_committed_size.y, 1, commit);
+
 		m_committed_size = GSVector2i(0, 0);
 	}
 
 	m_mem_usage = (m_committed_size.x * m_committed_size.y) << m_int_shift;
 	GLState::available_vram -= m_mem_usage;
-
-	glTexturePageCommitmentEXT(m_texture_id, GL_TEX_LEVEL_0, 0, 0, 0, m_committed_size.x, m_committed_size.y, 1, commit);
 }
 
 bool GSTextureOGL::Save(const std::string& fn)
