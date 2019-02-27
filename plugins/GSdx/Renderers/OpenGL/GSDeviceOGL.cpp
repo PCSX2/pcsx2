@@ -1352,7 +1352,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// ************************************
 	// Draw
 	// ************************************
-	dTex->CommitRegion(GSVector2i(dRect.z + 1, dRect.w + 1));
+	dTex->CommitRegion(GSVector2i((int)dRect.z + 1, (int)dRect.w + 1));
 	DrawPrimitive();
 
 	// ************************************
