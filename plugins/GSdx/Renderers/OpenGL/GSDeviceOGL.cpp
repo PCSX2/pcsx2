@@ -240,6 +240,10 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, int fmt)
 	// FIXME: it will be more logical to do it in FetchSurface. This code is only called at first creation
 	//  of the texture. However we could reuse a deleted texture.
 	if (m_force_texture_clear == 0) {
+		// Clear won't be done if the texture isn't committed. Commit the full texture to ensure
+		// correct behavior of force clear option (debug option)
+		t->Commit();
+
 		switch(type)
 		{
 			case GSTexture::RenderTarget:
@@ -264,6 +268,10 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, int format)
 
 
 	if (m_force_texture_clear) {
+		// Clear won't be done if the texture isn't committed. Commit the full texture to ensure
+		// correct behavior of force clear option (debug option)
+		t->Commit();
+
 		GSVector4 red(1.0f, 0.0f, 0.0f, 1.0f);
 		switch(type)
 		{
