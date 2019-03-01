@@ -939,7 +939,7 @@ void SYSCALL()
 							DevCon.Error("Mode %x is not supported. Report me upstream", cpuRegs.GPR.n.a1.UC[0]);
 							gsSetVideoMode(GS_VideoMode::Unknown);
 					}
-					DevCon.Warning("Set GS CRTC configuration. Interlace %s. Field Type %s. Mode %s", inter, field, mode.c_str());
+					DevCon.Warning("Set GS CRTC configuration. %s %s (%s)",mode.c_str(), inter, field);
 				}
 				break;
 
