@@ -1700,7 +1700,6 @@ void GSState::SetupCrcHack()
 	memset(lut, 0, sizeof(lut));
 
 	if (Dx_and_OGL) {
-		lut[CRC::AceCombat4] = GSC_AceCombat4;
 		lut[CRC::BurnoutDominator] = GSC_BurnoutGames;
 		lut[CRC::BurnoutRevenge] = GSC_BurnoutGames;
 		lut[CRC::BurnoutTakedown] = GSC_BurnoutGames;
@@ -1746,7 +1745,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::DBZBT2] = GSC_DBZBT2; // Half screen on depth format 16bit
 		lut[CRC::DBZBT3] = GSC_DBZBT3; // Half screen on depth format 16bit
 		lut[CRC::DemonStone] = GSC_DemonStone; // Half screen on texture shuffle
-		lut[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // + accurate blending
 		lut[CRC::Tekken5] = GSC_Tekken5;
 
 		// Texture shuffle
@@ -1805,12 +1803,14 @@ void GSState::SetupCrcHack()
 	}
 
 	if (Aggressive) {
+		lut[CRC::AceCombat4] = GSC_AceCombat4;
 		lut[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
 		lut[CRC::FFX2] = GSC_FFXGames;
 		lut[CRC::FFX] = GSC_FFXGames;
 		lut[CRC::FFXII] = GSC_FFXGames;
 		lut[CRC::GodOfWar] = GSC_GodOfWar;
 		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas; // RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly. Can be used as an upscaling hack.
+		lut[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // Half screen issue + accurate blending
 		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
 		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
