@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2018-11-22 22:13+0900\n"
-"PO-Revision-Date: 2018-12-12 23:30+0900\n"
+"POT-Creation-Date: 2019-03-01 17:19+0900\n"
+"PO-Revision-Date: 2019-03-01 17:28+0900\n"
 "Last-Translator: nrusef <nrusef@gmail.com>\n"
 "Language-Team: DeltaHF Chromaryu\n"
 "Language: ja_JP\n"
@@ -119,12 +119,12 @@ msgid ""
 "open."
 msgstr "GSプラグインのロード待機中にMTGSスレッドの応答が停止しました。"
 
-#: pcsx2/PluginManager.cpp:730
+#: pcsx2/PluginManager.cpp:708
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
 msgstr "セーブステートをロードできません。破損しているか不完全です。"
 
-#: pcsx2/PluginManager.cpp:741
+#: pcsx2/PluginManager.cpp:719
 #, c-format
 msgid ""
 "%s plugin failed to open.  Your computer may have insufficient resources, or "
@@ -133,7 +133,7 @@ msgstr ""
 "[%s]プラグインがロードに失敗しました。システムのリソースが不足しているか、互"
 "換性の無いハードウェアやドライバーがあります。"
 
-#: pcsx2/PluginManager.cpp:748
+#: pcsx2/PluginManager.cpp:726
 #, c-format
 msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
@@ -142,17 +142,17 @@ msgstr ""
 "[%s]プラグインが初期化に失敗しました。システムのメモリまたはリソースが不足し"
 "ています。"
 
-#: pcsx2/PluginManager.cpp:976
+#: pcsx2/PluginManager.cpp:954
 #, c-format
 msgid "The configured %s plugin file was not found"
 msgstr "設定された[%s]プラグインファイルが見つかりません"
 
-#: pcsx2/PluginManager.cpp:980
+#: pcsx2/PluginManager.cpp:958
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
 msgstr "設定された[%s]プラグインファイルは無効なDLLです。"
 
-#: pcsx2/PluginManager.cpp:997
+#: pcsx2/PluginManager.cpp:975
 #, c-format
 msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
@@ -161,14 +161,14 @@ msgstr ""
 "設定された[%s]プラグインはPCSX2のプラグインではないか、サポートされていない古"
 "いバージョンのプラグインです。"
 
-#: pcsx2/PluginManager.cpp:1031
+#: pcsx2/PluginManager.cpp:1009
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr ""
 "このプラグインではあなたのハードウェアもしくはソフトウェア、ドライバーはサ"
 "ポートされていません。"
 
-#: pcsx2/PluginManager.cpp:1052
+#: pcsx2/PluginManager.cpp:1030
 msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
@@ -176,7 +176,7 @@ msgstr ""
 "設定されたプラグインはPCSX2のプラグインではないか、サポートされていない古い"
 "バージョンのプラグインです。"
 
-#: pcsx2/PluginManager.cpp:1077
+#: pcsx2/PluginManager.cpp:1055
 #, c-format
 msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
@@ -185,15 +185,15 @@ msgstr ""
 "設定された[%s]プラグインはPCSX2のプラグインではないか、サポートされていない古"
 "いバージョンのプラグインです。"
 
-#: pcsx2/PluginManager.cpp:1515
+#: pcsx2/PluginManager.cpp:1489
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "内部メモリーカードプラグインの初期化に失敗しました。"
 
-#: pcsx2/PluginManager.cpp:1908
+#: pcsx2/PluginManager.cpp:1882
 msgid "Unloaded Plugin"
 msgstr "プラグインがロードされていません。"
 
-#: pcsx2/SaveState.cpp:341
+#: pcsx2/SaveState.cpp:338
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
 msgstr ""
 "セーブステートをロードできません。不明またはサポートされないバージョンです。"
@@ -368,12 +368,12 @@ msgstr ""
 "が保存先に移動できませんでした。"
 
 #: pcsx2/gui/AppConfig.cpp:969
-msgid "Safest"
-msgstr "最も安全"
+msgid "Safest (No hacks)"
+msgstr "安全（ハックなし)"
 
 #: pcsx2/gui/AppConfig.cpp:970
-msgid "Safe (faster)"
-msgstr "安全（速め）"
+msgid "Safe (Default)"
+msgstr "安全（デフォルト）"
 
 #: pcsx2/gui/AppConfig.cpp:971
 msgid "Balanced"
@@ -384,14 +384,14 @@ msgid "Aggressive"
 msgstr "アクティブ"
 
 #: pcsx2/gui/AppConfig.cpp:973
-msgid "Aggressive plus"
-msgstr "アクティブプラス"
+msgid "Very Aggressive"
+msgstr "アグレッシブ"
 
 #: pcsx2/gui/AppConfig.cpp:974
 msgid "Mostly Harmful"
 msgstr "ほぼ無益"
 
-#: pcsx2/gui/AppConfig.cpp:1136 pcsx2/gui/AppConfig.cpp:1142
+#: pcsx2/gui/AppConfig.cpp:1138 pcsx2/gui/AppConfig.cpp:1144
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "既存の設定ファイルの上書きに失敗しました。権限がありません。"
 
@@ -1236,7 +1236,7 @@ msgstr "通常設定無効化警告"
 msgid "Components Overrides Warning"
 msgstr "コンポーネント設定無視状態警告"
 
-#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:134
+#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:135
 msgid "Preset:"
 msgstr "プリセット："
 
@@ -1768,7 +1768,7 @@ msgstr ""
 "この操作はISOリストをクリアします。ISOが今実行されている場合、リストに残りま"
 "す。続けますか？"
 
-#: pcsx2/gui/MemoryCardFile.cpp:197
+#: pcsx2/gui/MemoryCardFile.cpp:196
 #, c-format
 msgid ""
 "Could not create a memory card: \n"
@@ -1781,7 +1781,7 @@ msgstr ""
 "%s\n"
 "\n"
 
-#: pcsx2/gui/MemoryCardFile.cpp:215
+#: pcsx2/gui/MemoryCardFile.cpp:214
 #, c-format
 msgid ""
 "Access denied to memory card: \n"
@@ -1794,19 +1794,19 @@ msgstr ""
 "%s\n"
 "\n"
 
-#: pcsx2/gui/MemoryCardFile.cpp:698
+#: pcsx2/gui/MemoryCardFile.cpp:697
 msgid "File name empty or too short"
 msgstr "ファイル名が無いか、短すぎます"
 
-#: pcsx2/gui/MemoryCardFile.cpp:703
+#: pcsx2/gui/MemoryCardFile.cpp:702
 msgid "File name outside of required directory"
 msgstr "ファイル名は要求されるディレクトリ外です"
 
-#: pcsx2/gui/MemoryCardFile.cpp:709 pcsx2/gui/MemoryCardFile.cpp:714
+#: pcsx2/gui/MemoryCardFile.cpp:708 pcsx2/gui/MemoryCardFile.cpp:713
 msgid "File name already exists"
 msgstr "同じ名前のファイルが既にあります"
 
-#: pcsx2/gui/MemoryCardFile.cpp:721
+#: pcsx2/gui/MemoryCardFile.cpp:720
 msgid "The Operating-System prevents this file from being created"
 msgstr "OSによりこのファイルを作成する事ができません"
 
@@ -1931,7 +1931,7 @@ msgid "Interpreter only; provided for diagnostic"
 msgstr "インタプリターモード専用、デバッグ用"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:226
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:128 pcsx2/gui/Panels/VideoPanel.cpp:294
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:134 pcsx2/gui/Panels/VideoPanel.cpp:294
 msgid "Restore Defaults"
 msgstr "デフォルトに戻す"
 
@@ -2033,33 +2033,33 @@ msgstr "実行時にフルスクリーンにする"
 msgid "Double-click toggles fullscreen mode"
 msgstr "ダブルクリックでフルスクリーンを切り替える"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:109
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:104
 msgid "Aspect Ratio:"
 msgstr "アスペクト比："
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:111
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:106
 msgid "FMV Aspect Ratio Override:"
 msgstr "FMVアスペクト比オーバーライド:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:113
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:108
 msgid "Custom Window Size:"
 msgstr "ウィンドウサイズ指定："
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:116
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:111
 msgid "Zoom:"
 msgstr "ズーム率："
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:122
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:117
 msgid "Wait for Vsync on refresh:"
 msgstr "更新時垂直同期:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:199
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:194
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
 msgstr ""
 "無効なサイズ指定です：\n"
-"整数以外は入力しないでください！　>_<"
+"整数以外は入力しないでください！>_<"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
 msgid "Gamefixes"
@@ -2561,77 +2561,77 @@ msgstr ""
 msgid "Completing tasks..."
 msgstr "タスク処理中..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:116
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:122
 msgid "Enable speedhacks"
 msgstr "スピードハック有効化"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:120
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:126
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr "スピードハックが全て無効化されている事を確認するための最善な方法です。"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:137
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:143
 msgid "EE Cyclerate [Not Recommended]"
 msgstr "EE サイクルレート [非推奨]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:150
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
 msgid "EE Cycle Skipping [Not Recommended]"
 msgstr "EE サイクルスキップ [非推奨]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:165
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "microVU Hacks"
 msgstr "microVU ハック"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
 msgid "mVU Flag Hack"
 msgstr "mVU Flag Hack"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:168
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr "速度が向上しますが、映像が乱れる可能性があります。 [推奨]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "MTVU（マルチスレッド microVU1）"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr ""
 "速度が大幅に向上しますが、フリーズする可能性があります。 [3コア以上推奨]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid "Other Hacks"
 msgstr "その他のハック"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:184
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
 msgid "Enable INTC Spin Detection"
 msgstr "INTC Spin Detection 有効化"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:185
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:191
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
 msgstr ""
 "一部のゲームで速度が大幅に向上し、互換性の低下もほぼありません。 [推奨]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:187
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
 msgid "Enable Wait Loop Detection"
 msgstr "Wait Loop Detection 有効化"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:194
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "一部のゲームで速度がそこそこ向上し、互換性は低下しないと思われます。 [推奨]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
 msgid "Enable fast CDVD"
 msgstr "Fast CDVD 有効化"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:191
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:197
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr "高速にディスクアクセスすることで読み込み時間を減少させます。 [非推奨]"
 
@@ -2817,6 +2817,12 @@ msgid ""
 msgstr ""
 "お使いのCPUは %s 拡張命令に対応していません。 microVUは MMX、SSE、およびSSE2 "
 "拡張命令に対応したCPUが必要です。"
+
+#~ msgid "Safest"
+#~ msgstr "最も安全"
+
+#~ msgid "Aggressive plus"
+#~ msgstr "アクティブプラス"
 
 #~ msgid "Plugin Specialists"
 #~ msgstr "プラグインスペシャリスト"
