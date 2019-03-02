@@ -9457,11 +9457,13 @@ Compat = 3
 Serial = SLES-51258
 Name   = James Bond 007 - Nightfire
 Region = PAL-M5
+vuClampMode = 2 // Fixes polygon clipping in driving missions.
 ---------------------------------------------
 Serial = SLES-51260
 Name   = James Bond 007 - Nightfire
 Region = PAL-G-S
 Compat = 5
+vuClampMode = 2 // Fixes polygon clipping in driving missions.
 ---------------------------------------------
 Serial = SLES-51265
 Name   = Dynasty Warriors Tactics
@@ -23532,6 +23534,7 @@ Region = NTSC-J
 Serial = SLPM-65538
 Name   = James Bond 007 - Nightfire [EA Best Hits]
 Region = NTSC-J
+vuClampMode = 2 // Fixes polygon clipping in driving missions.
 ---------------------------------------------
 Serial = SLPM-65539
 Name   = V-Rally 3
@@ -37064,6 +37067,7 @@ Serial = SLUS-20579
 Name   = James Bond 007 - Nightfire
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // Fixes polygon clipping in driving missions.
 ---------------------------------------------
 Serial = SLUS-20580
 Name   = FIFA Soccer 2003
