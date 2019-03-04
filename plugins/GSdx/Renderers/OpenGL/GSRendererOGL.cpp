@@ -1040,7 +1040,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// It is way too complex to emulate texture shuffle with DATE. So just use
 			// the slow but accurate algo
 			GL_PERF("DATE with %s", m_texture_shuffle ? "texture shuffle" : "no prim overlap");
-			m_require_full_barrier = true;
 			DATE_GL45 = true;
 			DATE = false;
 		} else if (m_om_csel.wa && !m_context->TEST.ATE) {
@@ -1060,7 +1059,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				// texture barrier will split the draw call into n draw call. It is very efficient for
 				// few primitive draws. Otherwise it sucks.
 				GL_PERF("Slower DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
-				m_require_full_barrier = true;
 				DATE_GL45 = true;
 				DATE = false;
 			} else {
@@ -1070,7 +1068,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 						if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture) {
 							DATE_GL42 = true;
 						} else {
-							m_require_full_barrier = true;
 							DATE_GL45 = true;
 							DATE = false;
 						}
@@ -1082,7 +1079,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 					case ACC_DATE_NONE:
 					default:
 						GL_PERF("Inaccurate DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
-						DATE = true;
 						break;
 				}
 			}
@@ -1180,6 +1176,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	m_ps_sel.iip = (m_vt.m_primclass == GS_SPRITE_CLASS) ? 1 : PRIM->IIP;
 
 	if (DATE_GL45) {
+		m_require_full_barrier = true;
 		m_ps_sel.date = 5 + m_context->TEST.DATM;
 	} else if (DATE_one) {
 		m_require_one_barrier = true;
