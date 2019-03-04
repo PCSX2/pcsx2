@@ -117,10 +117,9 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(int s_n, const GSVector4& st, bool
 		th = extend(uv.y, th);
 	}
 
-#if defined(_DEBUG) && 1
 	if((int)TEX0.TW != tw || (int)TEX0.TH != th)
 	{
-		printf("%5d:FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d st (%.0f,%.0f,%.0f,%.0f) uvmax %d,%d wm %d,%d (%d,%d,%d,%d)\n",
+		GL_INS("%5d:FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d st (%.0f,%.0f,%.0f,%.0f) uvmax %d,%d wm %d,%d (%d,%d,%d,%d)\n",
 			s_n,
 			(int)TEX0.TBP0, (int)TEX0.TBW, (int)TEX0.PSM,
 			(int)TEX0.TW, tw, (int)TEX0.TH, th,
@@ -128,7 +127,6 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(int s_n, const GSVector4& st, bool
 			uv.x, uv.y,
 			wms, wmt, minu, maxu, minv, maxv);
 	}
-#endif
 
 	GIFRegTEX0 res = TEX0;
 
@@ -142,18 +140,18 @@ void GSDrawingContext::ComputeFixedTEX0(const GSVector4& st, bool linear)
 {
 	GIFRegTEX0 reg = GetSizeFixedTEX0(0, st, linear, false);
 
-	if (reg.TW > TEX0.TW)
+	if(reg.TW > TEX0.TW)
 	{
 		m_fixed_tex0 = true;
 		TEX0.TW = reg.TW;
 	}
-	if (reg.TH > TEX0.TH)
+	if(reg.TH > TEX0.TH)
 	{
 		m_fixed_tex0 = true;
 		TEX0.TH = reg.TH;
 	}
 
-	if (m_fixed_tex0)
+	if(m_fixed_tex0)
 	{
 		GL_INS("FixedTEX0 TW %d=>%d, TH %d=>%d wm %d,%d",
 				(int)stack.TEX0.TW, (int)TEX0.TW, (int)stack.TEX0.TH, (int)TEX0.TH,
