@@ -119,7 +119,7 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(int s_n, const GSVector4& st, bool
 
 	if((int)TEX0.TW != tw || (int)TEX0.TH != th)
 	{
-		GL_INS("%5d:FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d st (%.0f,%.0f,%.0f,%.0f) uvmax %d,%d wm %d,%d (%d,%d,%d,%d)\n",
+		GL_INS("%5d:FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d st (%.0f,%.0f,%.0f,%.0f) uvmax %d,%d wm %d,%d (%d,%d,%d,%d)",
 			s_n,
 			(int)TEX0.TBP0, (int)TEX0.TBW, (int)TEX0.PSM,
 			(int)TEX0.TW, tw, (int)TEX0.TH, th,

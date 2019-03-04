@@ -665,9 +665,9 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	{
 		if (m_texture_shuffle)
 		{
-			// Direct3D doesn't support DATE_GL45 on m_texture_shuffle so keep using the old method.
-			// Let's leave the check in to ensure the next code cases are hit properly.
-			// fprintf(stderr, "Slow DATE with alpha %d-%d not supported on texture shuffle\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
+			// DATE case not supported yet so keep using the old method.
+			// Leave the check in to make sure other DATE cases are triggered correctly.
+			// fprintf(stderr, "DATE with texture shuffle\n");
 		}
 		else if (m_om_bsel.wa && !m_context->TEST.ATE)
 		{
@@ -687,14 +687,11 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 			}
 			else if ((m_vt.m_primclass == GS_SPRITE_CLASS /*&& m_drawlist.size() < 50*/) || (m_index.tail < 100))
 			{
-				// Direct3D doesn't support Slow DATE_GL45.
-				// Let's make sure it triggers this check and continues to use the old DATE code to avoid any issues with Fast Accurate Date.
-				// m_drawlist.size() isn't supported on D3D so there will be more games hitting this code path,
-				// it should be fine with regular DATE since originally it ran with it anyway.
-				// Note: Potentially Alpha Stencil might emulate SLOW DATE to some degree. Perhaps some of the code can be implemented here.
+				// DATE case not supported yet so keep using the old method.
+				// Leave the check in to make sure other DATE cases are triggered correctly.
 				// fprintf(stderr, "Slow DATE with alpha %d-%d not supported\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
 			}
-			else if (!UserHacks_AlphaStencil)
+			else
 			{
 				if (m_accurate_date)
 				{
@@ -703,7 +700,6 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 				}
 				else
 				{
-					// DATE is already true, no need for another check.
 					// fprintf(stderr, "Inaccurate DATE with alpha %d-%d\n", m_vt.m_alpha.min, m_vt.m_alpha.max);
 				}
 			}
@@ -893,9 +889,11 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 		EmulateAtst(1, tex);
 	}
 
+	// FIXME: Purge it when remaining DATE cases in DATE selection are supported properly.
 	// Destination alpha pseudo stencil hack: use a stencil operation combined with an alpha test
 	// to only draw pixels which would cause the destination alpha test to fail in the future once.
 	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
+	// It helps render transparency in Amagami, breaks a lot of other games.
 	if (UserHacks_AlphaStencil && DATE && !DATE_one && m_om_bsel.wa && !m_context->TEST.ATE)
 	{
 		// fprintf(stderr, "Alpha Stencil detected\n");
@@ -915,6 +913,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 		if (!(m_context->FBA.FBA && m_context->TEST.DATM == 1))
 			m_om_dssel.date_one = 1;
 	}
+	// END OF FIXME
 
 	if (tex)
 	{
