@@ -396,7 +396,7 @@ void GSSettingsDlg::UpdateControls()
 
 		// Hacks
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKS_ENABLED), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw && IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
+		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKSBUTTON), hw && (ogl || IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED)));
 
 		// OSD Configuration
 		EnableWindow(GetDlgItem(m_hWnd, IDC_OSDBUTTON), !null);
@@ -610,6 +610,7 @@ void GSHacksDlg::OnInit()
 	unsigned short upscaling_multiplier = static_cast<unsigned short>(SendMessage(hwnd_upscaling, CB_GETITEMDATA, SendMessage(hwnd_upscaling, CB_GETCURSEL, 0, 0), 0));
 
 	// It can only be accessed with a HW renderer, so this is sufficient.
+	bool hwhacks = IsDlgButtonChecked(GetParent(m_hWnd), IDC_HACKS_ENABLED) == BST_CHECKED;
 	bool ogl = renderer == GSRendererType::OGL_HW;
 	bool native = upscaling_multiplier == 1;
 
@@ -645,24 +646,48 @@ void GSHacksDlg::OnInit()
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_SETRANGE, 0, MAKELPARAM(10000, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("UserHacks_TCOffsetY"), 0));
 
+	EnableWindow(GetDlgItem(m_hWnd, IDC_PRELOAD_GS), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_CPU_FB_CONVERSION), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_FAST_TC_INV), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_AUTO_FLUSH), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SAFE_FEATURES), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_MEMORY_WRAPPING), hwhacks);
+
+	// Skipdraw hack:
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK_TEXT), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSETEDIT), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACKEDIT), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), hwhacks);
+
+	// Texture offsets hack:
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TCOFFSET_TEXT), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TCOFFSETX_TEXT), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TCOFFSETX), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TCOFFSETX2), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TCOFFSETY_TEXT), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TCOFFSETY), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TCOFFSETY2), hwhacks);
+
 	// Direct3D-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), !ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), !ogl);
 
 	// OpenGL-only hacks:
-	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER), ogl);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER_TEXT), ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER), hwhacks && ogl);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER_TEXT), hwhacks && ogl);
 
 	// Upscaling hacks:
-	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK), !native);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_WILDHACK), !native);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_ALIGN_SPRITE), !native);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_SPRITE), !native);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK_TEXT), !native);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_SPRITE_TEXT), !native);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK_TEXT), !native);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK), !native);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_MERGE_PP_SPRITE), !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK), hwhacks && !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_WILDHACK), hwhacks && !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ALIGN_SPRITE), hwhacks && !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_SPRITE), hwhacks && !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK_TEXT), hwhacks && !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_SPRITE_TEXT), hwhacks && !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK_TEXT), hwhacks && !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK), hwhacks && !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_MERGE_PP_SPRITE), hwhacks && !native);
 
 	// OpenGL Very Advanced Custom Settings:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_GEOMETRY_SHADER_OVERRIDE), ogl);
@@ -878,8 +903,8 @@ void GSOSDDlg::UpdateControls()
 	sprintf(text, "%d", m_color.b);
 	SetDlgItemText(m_hWnd, IDC_OSD_COLOR_BLUE_AMOUNT, text);
 
-	int monitor_enabled = IsDlgButtonChecked(m_hWnd, IDC_OSD_MONITOR);
-	int log_enabled = IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG);
+	bool monitor_enabled = IsDlgButtonChecked(m_hWnd, IDC_OSD_MONITOR) == BST_CHECKED;
+	bool log_enabled = IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG) == BST_CHECKED;
 
 	// Font
 	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_COLOR_RED_SLIDER), monitor_enabled || log_enabled);
