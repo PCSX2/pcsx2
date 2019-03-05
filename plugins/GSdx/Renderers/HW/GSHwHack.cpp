@@ -1026,6 +1026,22 @@ bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_YakuzaGames(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if((Aggressive || !s_nativeres) && !fi.TME && (fi.FBP == 0x1c20 || fi.FBP == 0x1e20 || fi.FBP == 0x1620) && (fi.TBP0 == 0xe00 || fi.TBP0 == 0x1000 || fi.TBP0 == 0x800) && fi.TPSM == PSM_PSMZ24 && fi.FPSM == PSM_PSMCT32
+			/*&& fi.FBMSK == 0xffffff && fi.TZTST && !GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)*/)
+		{
+			// Don't enable hack on native res if crc is below aggressive.
+			// Upscaling issues, removes glow/blur effect which fixes ghosting.
+			skip = 3;
+		}
+	}
+
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Correctly emulated on OpenGL but can be used as potential speed hack
 ////////////////////////////////////////////////////////////////////////////////
@@ -1304,22 +1320,6 @@ bool GSC_Grandia3(const GSFrameInfo& fi, int& skip)
 		if(fi.TME && (fi.FBP ==0x0 || fi.FBP ==0x0e00) && (fi.TBP0 ==0x2a00 ||fi.TBP0==0x0e00 ||fi.TBP0==0) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
 		{
 			skip = 1; // Blur
-		}
-	}
-
-	return true;
-}
-
-bool GSC_YakuzaGames(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(!fi.TME && (fi.FBP == 0x1c20 || fi.FBP == 0x1e20 || fi.FBP == 0x1620) && (fi.TBP0 == 0xe00 || fi.TBP0 == 0x1000 || fi.TBP0 == 0x800) && fi.TPSM == PSM_PSMZ24 && fi.FPSM == PSM_PSMCT32
-			/*&& fi.FBMSK == 0xffffff && fi.TZTST && !GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)*/)
-		{
-			// Removes depth effect not rendered properly on D3D.
-			// Needs to be looked further, might be some upscaling issues present.
-			skip = 3;
 		}
 	}
 
@@ -1765,6 +1765,8 @@ void GSState::SetupCrcHack()
 		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
 		lut[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
 		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
+		lut[CRC::Yakuza] = GSC_YakuzaGames;
+		lut[CRC::Yakuza2] = GSC_YakuzaGames;
 	}
 
 	// Hacks that were fixed on OpenGL
@@ -1781,8 +1783,6 @@ void GSState::SetupCrcHack()
 		// Depth
 		lut[CRC::Okami] = GSC_Okami;
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
-		lut[CRC::Yakuza] = GSC_YakuzaGames;
-		lut[CRC::Yakuza2] = GSC_YakuzaGames;
 
 		// Needs testing
 		lut[CRC::HauntingGround] = GSC_HauntingGround; // + Texture cache issue + Date
