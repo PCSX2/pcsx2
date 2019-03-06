@@ -1319,8 +1319,11 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		GSVector4 sRect(0, 0, w, h);
 
-		GSTexture* sTex = src->m_texture ? src->m_texture : dst->m_texture;
+		// Don't be fooled by the name. 'dst' is the old target (hence the input)
+		// 'src' is the new texture cache entry (hence the output)
+		GSTexture* sTex = dst->m_texture;
 		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(w, h);
+		src->m_texture = dTex;
 
 		// GH: by default (m_paltex == 0) GSdx converts texture to the 32 bit format
 		// However it is different here. We want to reuse a Render Target as a texture.
@@ -1354,11 +1357,6 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// copy. Likely a speed boost and memory usage reduction.
 		bool linear = (TEX0.PSM == PSM_PSMCT32 || TEX0.PSM == PSM_PSMCT24);
 
-		if(!src->m_texture)
-		{
-			src->m_texture = dTex;
-		}
-
 		if ((sRect == dRect).alltrue() && !shader)
 		{
 			if (half_right) {
@@ -1382,13 +1380,6 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			}
 
 			m_renderer->m_dev->StretchRect(sTex, sRect, dTex, dRect, shader, linear);
-		}
-
-		if(dTex != src->m_texture)
-		{
-			m_renderer->m_dev->Recycle(src->m_texture);
-
-			src->m_texture = dTex;
 		}
 
 		if( src->m_texture )
