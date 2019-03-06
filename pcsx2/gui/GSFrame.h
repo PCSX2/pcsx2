@@ -47,10 +47,6 @@ protected:
 	bool					m_HasFocus;
 	bool					m_coreRunning;
 
-#ifndef DISABLE_RECORDING
-	int						m_frameAdvanceKey;
-#endif
-
 public:
 	GSPanel( wxWindow* parent );
 	virtual ~GSPanel();
@@ -59,10 +55,13 @@ public:
 	void DoShowMouse();
 	void DirectKeyCommand( wxKeyEvent& evt );
 	void DirectKeyCommand( const KeyAcceleratorCode& kac );
+	void InitDefaultAccelerators();
+#ifndef DISABLE_RECORDING
+	void InitRecordingAccelerators();
+#endif
 
 protected:
 	void AppStatusEvent_OnSettingsApplied();
-	void InitDefaultAccelerators();
 
 	void OnCloseWindow( wxCloseEvent& evt );
 	void OnResize(wxSizeEvent& event);

@@ -85,8 +85,20 @@ void GSPanel::InitDefaultAccelerators()
 	m_Accels->Map( AAC( WXK_F12 ),				"Sys_RecordingToggle" );
 
 	m_Accels->Map( FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL,		"FullscreenToggle" );
+}
 
 #ifndef DISABLE_RECORDING
+void GSPanel::InitRecordingAccelerators()
+{
+	// Note: these override GlobalAccels ( Pcsx2App::InitDefaultGlobalAccelerators() )
+	// For plain letters or symbols, replace e.g. WXK_F1 with e.g. wxKeyCode('q') or wxKeyCode('-')
+	// For plain letter keys with shift, use e.g. AAC( wxKeyCode('q') ).Shift() and NOT wxKeyCode('Q')
+	// For a symbol with shift (e.g. '_' which is '-' with shift) use AAC( wxKeyCode('-') ).Shift()
+
+	typedef KeyAcceleratorCode AAC;
+
+	if (!m_Accels) m_Accels = std::unique_ptr<AcceleratorDictionary>(new AcceleratorDictionary);
+
 	m_Accels->Map(AAC(WXK_SPACE), "FrameAdvance");
 	m_Accels->Map(AAC(wxKeyCode('p')).Shift(), "TogglePause");
 	m_Accels->Map(AAC(wxKeyCode('r')).Shift(), "InputRecordingModeToggle");
@@ -111,9 +123,8 @@ void GSPanel::InitDefaultAccelerators()
 	m_Accels->Map(AAC(WXK_NUMPAD7), "States_LoadSlot7");
 	m_Accels->Map(AAC(WXK_NUMPAD8), "States_LoadSlot8");
 	m_Accels->Map(AAC(WXK_NUMPAD9), "States_LoadSlot9");
-#endif
-	
 }
+#endif
 
 GSPanel::GSPanel( wxWindow* parent )
 	: wxWindow()
@@ -131,14 +142,9 @@ GSPanel::GSPanel( wxWindow* parent )
 	InitDefaultAccelerators();
 
 #ifndef DISABLE_RECORDING
-	// Retrieving FrameAdvance Key
-	for (auto itr = m_Accels->begin(); itr != m_Accels->end(); ++itr)
+	if (g_Conf->EmuOptions.EnableRecordingTools)
 	{
-		if (itr->second->Id == "FrameAdvance")
-		{
-			m_frameAdvanceKey = itr->first;
-			break;
-		}
+		InitRecordingAccelerators();
 	}
 #endif
 
@@ -383,19 +389,6 @@ void GSPanel::OnKeyDownOrUp( wxKeyEvent& evt )
 		return;
 	}
 
-#ifndef DISABLE_RECORDING
-	if (g_Conf->EmuOptions.EnableRecordingTools)
-	{
-		// TODO-Recording: This is to allow for repeated frame-advance while holding the key
-		// However as per the explaination above, this event no longer seems to fire under normal
-		// circumstances
-		if (evt.GetKeyCode() == m_frameAdvanceKey)
-		{
-			return;
-		}
-	}
-#endif
-	
 	DirectKeyCommand( evt );
 }
 

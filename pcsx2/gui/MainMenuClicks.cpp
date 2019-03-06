@@ -18,6 +18,7 @@
 #include "App.h"
 #include "CDVD/CDVD.h"
 #include "GS.h"
+#include "GSFrame.h"
 
 #include "ConsoleLogger.h"
 #include "MainFrame.h"
@@ -513,16 +514,33 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 	if (checked)
 	{
 		GetMenuBar()->Insert(TopLevelMenu_Recording, &m_menuRecording, _("&Recording"));
+		// Enable Recording Keybindings
+		if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
+		{
+			if (GSPanel* viewport = gsFrame->GetViewport())
+			{
+				viewport->InitRecordingAccelerators();
+			}
+		}
 	}
 	else
 	{
 		GetMenuBar()->Remove(TopLevelMenu_Recording);
 		// Always turn controller logs off, but never turn it on by default
 		SysConsole.controlInfo.Enabled = checked;
+		// Return Keybindings Back to Normal
+		if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
+		{
+			if (GSPanel* viewport = gsFrame->GetViewport())
+			{
+				viewport->InitDefaultAccelerators();
+			}
+		}
 	}
 
 	g_Conf->EmuOptions.EnableRecordingTools = checked;
 	SysConsole.recordingConsole.Enabled = checked;
+	// Enable Recording Logs
 	ConsoleLogFrame* progLog = wxGetApp().GetProgramLog();
 	progLog->UpdateLogList();
 	AppApplySettings();
