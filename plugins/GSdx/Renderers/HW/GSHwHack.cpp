@@ -1676,12 +1676,8 @@ void GSState::SetupCrcHack()
 	memset(lut, 0, sizeof(lut));
 
 	if (Dx_and_OGL) {
-		lut[CRC::BurnoutDominator] = GSC_BurnoutGames;
-		lut[CRC::BurnoutRevenge] = GSC_BurnoutGames;
-		lut[CRC::BurnoutTakedown] = GSC_BurnoutGames;
 		lut[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
 		lut[CRC::DevilMayCry3] = GSC_DevilMayCry3;
-		lut[CRC::Genji] = GSC_Genji;
 		lut[CRC::GodHand] = GSC_GodHand;
 		lut[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
 		lut[CRC::Kunoichi] = GSC_Kunoichi;
@@ -1723,9 +1719,15 @@ void GSState::SetupCrcHack()
 		lut[CRC::DemonStone] = GSC_DemonStone; // Half screen on texture shuffle
 		lut[CRC::Tekken5] = GSC_Tekken5;
 
+		// Needs testing
+		lut[CRC::Genji] = GSC_Genji;
+
 		// Texture shuffle
 		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers; // + Half screen on texture shuffle
-		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
+		lut[CRC::BurnoutDominator] = GSC_BurnoutGames; // Could be a depth effect too
+		lut[CRC::BurnoutRevenge] = GSC_BurnoutGames; // Could be a depth effect too
+		lut[CRC::BurnoutTakedown] = GSC_BurnoutGames; // Could be a depth effect too
+		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams; // + Upscaling issues
 		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed; // + Half screen on texture shuffle
 
 		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to Aggressive)
@@ -1756,10 +1758,10 @@ void GSState::SetupCrcHack()
 		// Accumulation blend
 		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
 
-		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
-
 		// Needs testing
+		lut[CRC::Grandia3] = GSC_Grandia3;
 		lut[CRC::HauntingGround] = GSC_HauntingGround; // + Texture cache issue + Date
+		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 
 		// Those games might requires accurate fbmask
 		lut[CRC::Sly2] = GSC_SlyGames; // + Upscaling issue
@@ -1768,9 +1770,6 @@ void GSState::SetupCrcHack()
 		// Those games require accurate_colclip (perf)
 		lut[CRC::CastlevaniaCoD] = GSC_CastlevaniaGames;
 		lut[CRC::CastlevaniaLoI] = GSC_CastlevaniaGames;
-
-		// Unknown status
-		lut[CRC::Grandia3] = GSC_Grandia3;
 	}
 
 	if (Aggressive) {
@@ -1785,13 +1784,13 @@ void GSState::SetupCrcHack()
 		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
 		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
 		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
+		lut[CRC::SoTC] = GSC_SoTC;
 
 		// Upscaling issues
 		lut[CRC::GodOfWar] = GSC_GodOfWar;
 		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas; // RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly. Can be used as an upscaling hack.
 		lut[CRC::Okami] = GSC_Okami;
 		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
-		lut[CRC::SoTC] = GSC_SoTC;
 	}
 
 	m_gsc = lut[m_game.title];
