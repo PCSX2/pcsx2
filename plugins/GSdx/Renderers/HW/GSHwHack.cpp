@@ -1095,30 +1095,6 @@ bool GSC_NanoBreaker(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TalesOfAbyss(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00) && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMT8) // copies the z buffer to the alpha channel of the fb
-		{
-			skip = 1000;
-		}
-		else if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00) && (fi.TBP0 == 0x03560 || fi.TBP0 == 0x038e0) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.TPSM != PSM_PSMT8)
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Okami(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1797,9 +1773,6 @@ void GSState::SetupCrcHack()
 
 		// Unknown status
 		lut[CRC::Grandia3] = GSC_Grandia3;
-
-		// Dedicated shader for channel effect
-		lut[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
 	}
 
 	if (Aggressive) {
