@@ -1095,26 +1095,6 @@ bool GSC_NanoBreaker(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Okami(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03800 && fi.TPSM == PSM_PSMT4)
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_StarOcean3(const GSFrameInfo& fi, int& skip)
 {
 	// The game emulate a stencil buffer with the alpha channel of the RT
@@ -1470,6 +1450,26 @@ bool GSC_FFXGames(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_Okami(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
+		{
+			skip = 1000;
+		}
+	}
+	else
+	{
+		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03800 && fi.TPSM == PSM_PSMT4)
+		{
+			skip = 0;
+		}
+	}
+
+	return true;
+}
+
 bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -1756,8 +1756,6 @@ void GSState::SetupCrcHack()
 		// Accumulation blend
 		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
 
-		// Depth
-		lut[CRC::Okami] = GSC_Okami;
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 
 		// Needs testing
@@ -1781,15 +1779,18 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFX2] = GSC_FFXGames;
 		lut[CRC::FFX] = GSC_FFXGames;
 		lut[CRC::FFXII] = GSC_FFXGames;
-		lut[CRC::GodOfWar] = GSC_GodOfWar;
-		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas; // RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly. Can be used as an upscaling hack.
 		lut[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // Half screen issue + accurate blending
 		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
-		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
 		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
 		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
+
+		// Upscaling issues
+		lut[CRC::GodOfWar] = GSC_GodOfWar;
+		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas; // RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly. Can be used as an upscaling hack.
+		lut[CRC::Okami] = GSC_Okami;
+		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 		lut[CRC::SoTC] = GSC_SoTC;
 	}
 
