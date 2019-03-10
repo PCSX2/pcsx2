@@ -55,7 +55,7 @@ void InitNet(NetAdapter* ad)
        int max_prio_for_policy = 0;
 
 
-       rx_thread = pthread_create(&rx_thread, NULL, NetRxThread, NULL);
+       int ret = pthread_create(&rx_thread, NULL, NetRxThread, NULL);
        pthread_attr_init(&thAttr);
        pthread_attr_getschedpolicy(&thAttr, &policy);
        max_prio_for_policy = sched_get_priority_max(policy);
