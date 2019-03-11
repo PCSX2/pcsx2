@@ -97,7 +97,6 @@ oprofile_data/
 !/pcsx2/gui/Resources/EmbeddedImage.h
 /plugins/GSdx/Template
 /plugins/USBqemu/Win32/bin
-/plugins/xpad/Template
 /plugins/zerospu2/Windows/dsound51.cpp
 /tools/bin
 /tools/GSDumpGUI/bin

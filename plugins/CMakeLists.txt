@@ -62,17 +62,9 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x" AND spu2-x)
 	add_subdirectory(spu2-x/src)
 endif()
 
-#if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/SSSPSXPAD" AND SSSPSXPAD)
-#	add_subdirectory(SSSPSXPAD)
-#endif()
-
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/USBnull" AND USBnull)
 	add_subdirectory(USBnull)
 endif()
-
-#if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/xpad" AND xpad)
-#	add_subdirectory(xpad)
-#endif()
 
 #if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerogs" AND zerogs)
 #	add_subdirectory(zerogs)
@@ -80,10 +72,6 @@ endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg" AND zzogl)
 	add_subdirectory(zzogl-pg/opengl)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zeropad" AND zeropad)
-	add_subdirectory(zeropad)
 endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerospu2" AND zerospu2)

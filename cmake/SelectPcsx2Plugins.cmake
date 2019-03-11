@@ -305,8 +305,4 @@ if(GTKn_FOUND)
     set(USBnull TRUE)
 endif()
 #---------------------------------------
-
-# [TODO] Write CMakeLists.txt for these plugins. (or not ;) )
-set(SSSPSXPAD FALSE)
-set(xpad FALSE)
 #-------------------------------------------------------------------------------
