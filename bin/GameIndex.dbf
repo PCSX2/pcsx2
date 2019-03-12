@@ -30978,8 +30978,14 @@ Name   = Golf Navigator Vol.3
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25057
-Name   = King's Field 4
+Name   = King's Field IV
 Region = NTSC-J
+[patches = 04C3765E]
+	comment=Patch by Wgarvin
+	// Fixes (black voids) central tower level loading.
+	// Issue: Some doors leading to some areas appeared as black voids that you can walk in to.
+	patch=1,EE,001BE37C,word,46150036
+[/patches]
 ---------------------------------------------
 Serial = SLPS-25059
 Name   = G-Breaker - Legend of Cloudia
