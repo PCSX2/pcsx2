@@ -139,7 +139,7 @@ void GSRendererCL::Reset()
 static int pageuploads = 0;
 static int pageuploadcount = 0;
 static int tfxcount = 0;
-static int64 tfxpixels = 0;
+static long tfxpixels = 0;
 static int tfxselcount = 0;
 static int tfxdiffselcount = 0;
 
@@ -1267,7 +1267,7 @@ void GSRendererCL::UsePages(uint32* p)
 			*v = GSVector4i::zero();
 		}
 
-		*p++ = GSOffset::EOP;
+		*p++ = (uint32)GSOffset::EOP;
 	}
 }
 
