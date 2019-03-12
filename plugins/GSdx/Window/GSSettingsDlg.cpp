@@ -348,25 +348,24 @@ void GSSettingsDlg::UpdateControls()
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_NULL), null ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGOGL), ogl ? SW_SHOW : SW_HIDE);
+
 #ifndef ENABLE_OPENCL
-		ShowWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_OPENCL_TEXT), SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), SW_HIDE);
 #endif
+		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_TEXT), ocl);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), ocl);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_INTERLACE), !null);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_INTERLACE_TEXT), !null);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER), !null);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER_TEXT), !null);
 
 
-		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl ? SW_SHOW : SW_HIDE);
-		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl ? SW_SHOW : SW_HIDE);
-
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_LARGE_FB), integer_scaling > 1 && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL_TEXT), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), ocl);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !integer_scaling);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && !integer_scaling);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY), hw && !integer_scaling);
@@ -386,6 +385,8 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl && hw);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl ? SW_SHOW : SW_HIDE);
 
 		// Software mode settings
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_SW), sw);

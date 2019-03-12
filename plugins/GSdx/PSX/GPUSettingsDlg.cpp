@@ -105,14 +105,12 @@ void GPUSettingsDlg::UpdateControls()
 
 		bool dx11 = renderer == GPURendererType::D3D11_SW;
 		bool null = renderer == GPURendererType::NULL_Renderer;
-		bool resscalenotsupported = true;
-
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESOLUTION), !resscalenotsupported);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESOLUTION_TEXT), !resscalenotsupported);
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_NULL), null ? SW_SHOW : SW_HIDE);
 		
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESOLUTION), false);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_RESOLUTION_TEXT), false);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER), dx11);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER_TEXT), dx11);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_DITHERING), dx11);
