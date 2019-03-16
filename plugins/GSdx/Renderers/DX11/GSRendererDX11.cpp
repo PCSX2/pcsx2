@@ -662,7 +662,6 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	EmulateTextureShuffleAndFbmask();
 
 	// DATE: selection of the algorithm.
-
 	if (DATE)
 	{
 		if (m_texture_shuffle)
