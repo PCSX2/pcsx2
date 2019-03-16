@@ -1018,15 +1018,20 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Upscaling hack to avoid various line/grid issues
 	MergeSprite(tex);
 
-	// Always check if primitive overlap. The function will return PRIM_OVERLAP_UNKNOW for non sprite primitive
+	// Always check if primitive overlap as it is used in plenty of effects.
 	m_prim_overlap = PrimitiveOverlap();
-	if ((m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && m_sw_blending && (m_prim_overlap != PRIM_OVERLAP_NO) && (m_vertex.next > 2)) {
-		if (m_context->FRAME.FBMSK == 0x00FFFFFF) {
-			// Ratchet & Clank / Jak uses this pattern to compute the shadows. Alpha (multiplication) tfx is mostly equivalent to -1/+1 stencil operation
+
+	// Detect framebuffer read that will need special handling
+	if ((m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && m_sw_blending) {
+		if ((m_context->FRAME.FBMSK == 0x00FFFFFF) && (m_vt.m_primclass == GS_TRIANGLE_CLASS)) {
+			// Ratchet & Clank, Jak, Tri-Ace (Star Ocean 3) games use this pattern to compute the shadows.
+			// Alpha (multiplication) tfx is mostly equivalent to -1/+1 stencil operation.
 			GL_DBG("ERROR: Source and Target are the same! Let's sample the framebuffer");
 			m_ps_sel.tex_is_fb = 1;
 			m_require_full_barrier = true;
-		} else {
+		} else if (m_prim_overlap != PRIM_OVERLAP_NO) {
+			// Note: It is fine if the texture fits in a single GS page. First access will cache
+			// the page in the GS texture buffer.
 			GL_INS("ERROR: Source and Target are the same!");
 		}
 	}
@@ -1034,7 +1039,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	EmulateTextureShuffleAndFbmask();
 
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
-
 	if (DATE) {
 		if (m_prim_overlap == PRIM_OVERLAP_NO || m_texture_shuffle) {
 			// It is way too complex to emulate texture shuffle with DATE. So just use
