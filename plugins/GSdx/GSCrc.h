@@ -100,8 +100,6 @@ public:
 		MetalSlug6,
 		MidnightClub3,
 		NanoBreaker,
-		NarutimateAccel,
-		Naruto,
 		NicktoonsUnite,
 		Okami,
 		Oneechanbara2Special,

@@ -432,46 +432,6 @@ bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_NarutimateAccel(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(!fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0x1E00 && fi.FPSM == 0 && fi.TPSM == 49 && fi.FBMSK == 0xFF000000)
-		{
-			skip = 1;
-		}
-	}
-	else
-	{
-		if(fi.FBP == 0 && fi.TBP0 == 0x3800 && fi.TME && (fi.FPSM | fi.TPSM) == 0)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_Naruto(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(!fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0x1E00 && fi.FPSM == 0 && fi.TPSM == 49 && fi.FBMSK == 0xFF000000)
-		{
-			skip = 0;
-		}
-	}
-	else
-	{
-		if(fi.FBP == 0 && fi.TBP0 == 0x3800 && fi.TME && (fi.FPSM | fi.TPSM) == 0)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_SakuraTaisen(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1683,8 +1643,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::Kunoichi] = GSC_Kunoichi;
 		lut[CRC::Manhunt2] = GSC_Manhunt2;
 		lut[CRC::MidnightClub3] = GSC_MidnightClub3;
-		lut[CRC::NarutimateAccel] = GSC_NarutimateAccel;
-		lut[CRC::Naruto] = GSC_Naruto;
 		lut[CRC::Onimusha3] = GSC_Onimusha3;
 		lut[CRC::SacredBlaze] = GSC_SacredBlaze;
 		lut[CRC::SakuraTaisen] = GSC_SakuraTaisen;
@@ -1713,6 +1671,11 @@ void GSState::SetupCrcHack()
 		// Colclip not supported
 		lut[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;
 
+		// Depth Issue
+		lut[CRC::BurnoutDominator] = GSC_BurnoutGames;
+		lut[CRC::BurnoutRevenge] = GSC_BurnoutGames;
+		lut[CRC::BurnoutTakedown] = GSC_BurnoutGames;
+
 		// Half Screen bottom issue
 		lut[CRC::DBZBT2] = GSC_DBZBT2; // Half screen on depth format 16bit
 		lut[CRC::DBZBT3] = GSC_DBZBT3; // Half screen on depth format 16bit
@@ -1724,9 +1687,6 @@ void GSState::SetupCrcHack()
 
 		// Texture shuffle
 		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers; // + Half screen on texture shuffle
-		lut[CRC::BurnoutDominator] = GSC_BurnoutGames; // Could be a depth effect too
-		lut[CRC::BurnoutRevenge] = GSC_BurnoutGames; // Could be a depth effect too
-		lut[CRC::BurnoutTakedown] = GSC_BurnoutGames; // Could be a depth effect too
 		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams; // + Upscaling issues
 		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed; // + Half screen on texture shuffle
 
