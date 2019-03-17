@@ -328,7 +328,7 @@ BEGIN
     // Software Renderer Settings:
     GROUPBOX        "Software Renderer Settings",IDC_STATIC,6,295,230,40,BS_CENTER
     CONTROL         "Edge Anti-aliasing (Del)",IDC_AA1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,306,91,10
-    LTEXT           "Rendering threads:",IDC_SWTHREADS_TEXT,123,307,80,8
+    LTEXT           "Rendering threads:",IDC_SWTHREADS_TEXT,123,307,65,8
     EDITTEXT        IDC_SWTHREADS_EDIT,197,305,34,13,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_SWTHREADS,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,221,304,11,14
     CONTROL         "Mipmapping",IDC_MIPMAP_SW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,322,90,10
