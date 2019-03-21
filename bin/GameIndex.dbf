@@ -35091,9 +35091,9 @@ Compat = 5
 eeClampMode = 3 // Objects appear in wrong places without it.
 vuClampMode = 2 // Fixes water reflection.
 [patches = 2F56CBC9]
-	comment=patch by Prafull
-	// Avoid cave hang at Volk City.
-	patch=1,EE,00305bcc,word,00000000
+	comment= Patch by Prafull
+	//fixes hang in few stages and also fixes corrupt textures
+	patch=1,EE,003059c0,word,03e00008
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20152
