@@ -30893,6 +30893,12 @@ Region = NTSC-J
 Compat = 5
 eeClampMode = 3 // Objects appear in wrong places without it.
 vuClampMode = 2 // Fixes water reflection.
+[patches = 1645DE53]
+	comment=Patch by Prafull and Arapapa
+	// Fixes hang in few stages and also fixes corrupt textures.
+	// 2d408000 1c00028d
+	patch=1,EE,00304600,word,03e00008
+[/patches]
 ---------------------------------------------
 Serial = SLPS-25034
 Name   = Flower, Sun and Rain
