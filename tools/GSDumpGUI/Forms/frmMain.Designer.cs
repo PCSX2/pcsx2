@@ -219,7 +219,7 @@
             this.lblLog.AutoSize = true;
             this.lblLog.Location = new System.Drawing.Point(12, 209);
             this.lblLog.Name = "lblLog";
-            this.lblLog.Size = new System.Drawing.Size(58, 13);
+            this.lblLog.Size = new System.Drawing.Size(54, 13);
             this.lblLog.TabIndex = 14;
             this.lblLog.Text = "Log GSdx";
             // 
@@ -402,7 +402,7 @@
             this.txtDumpSize.AutoSize = true;
             this.txtDumpSize.Location = new System.Drawing.Point(279, 445);
             this.txtDumpSize.Name = "txtDumpSize";
-            this.txtDumpSize.Size = new System.Drawing.Size(0, 13);
+            this.txtDumpSize.Size = new System.Drawing.Size(27, 13);
             this.txtDumpSize.TabIndex = 30;
             this.txtDumpSize.Text = "N/A";
             // 
@@ -411,7 +411,7 @@
             this.txtGIFPackets.AutoSize = true;
             this.txtGIFPackets.Location = new System.Drawing.Point(279, 478);
             this.txtGIFPackets.Name = "txtGIFPackets";
-            this.txtGIFPackets.Size = new System.Drawing.Size(0, 13);
+            this.txtGIFPackets.Size = new System.Drawing.Size(27, 13);
             this.txtGIFPackets.TabIndex = 33;
             this.txtGIFPackets.Text = "N/A";
             // 
@@ -430,7 +430,7 @@
             this.txtPath1.AutoSize = true;
             this.txtPath1.Location = new System.Drawing.Point(279, 512);
             this.txtPath1.Name = "txtPath1";
-            this.txtPath1.Size = new System.Drawing.Size(0, 13);
+            this.txtPath1.Size = new System.Drawing.Size(27, 13);
             this.txtPath1.TabIndex = 35;
             this.txtPath1.Text = "N/A";
             // 
@@ -449,7 +449,7 @@
             this.txtPath2.AutoSize = true;
             this.txtPath2.Location = new System.Drawing.Point(279, 546);
             this.txtPath2.Name = "txtPath2";
-            this.txtPath2.Size = new System.Drawing.Size(0, 13);
+            this.txtPath2.Size = new System.Drawing.Size(27, 13);
             this.txtPath2.TabIndex = 37;
             this.txtPath2.Text = "N/A";
             // 
@@ -468,7 +468,7 @@
             this.txtPath3.AutoSize = true;
             this.txtPath3.Location = new System.Drawing.Point(279, 580);
             this.txtPath3.Name = "txtPath3";
-            this.txtPath3.Size = new System.Drawing.Size(0, 13);
+            this.txtPath3.Size = new System.Drawing.Size(27, 13);
             this.txtPath3.TabIndex = 39;
             this.txtPath3.Text = "N/A";
             // 
@@ -487,7 +487,7 @@
             this.txtVSync.AutoSize = true;
             this.txtVSync.Location = new System.Drawing.Point(279, 615);
             this.txtVSync.Name = "txtVSync";
-            this.txtVSync.Size = new System.Drawing.Size(0, 13);
+            this.txtVSync.Size = new System.Drawing.Size(27, 13);
             this.txtVSync.TabIndex = 41;
             this.txtVSync.Text = "N/A";
             // 
@@ -506,7 +506,7 @@
             this.txtReadFifo.AutoSize = true;
             this.txtReadFifo.Location = new System.Drawing.Point(279, 649);
             this.txtReadFifo.Name = "txtReadFifo";
-            this.txtReadFifo.Size = new System.Drawing.Size(0, 13);
+            this.txtReadFifo.Size = new System.Drawing.Size(27, 13);
             this.txtReadFifo.TabIndex = 43;
             this.txtReadFifo.Text = "N/A";
             // 
@@ -525,7 +525,7 @@
             this.txtRegisters.AutoSize = true;
             this.txtRegisters.Location = new System.Drawing.Point(279, 684);
             this.txtRegisters.Name = "txtRegisters";
-            this.txtRegisters.Size = new System.Drawing.Size(0, 13);
+            this.txtRegisters.Size = new System.Drawing.Size(27, 13);
             this.txtRegisters.TabIndex = 45;
             this.txtRegisters.Text = "N/A";
             // 
@@ -721,6 +721,7 @@
             this.MaximizeBox = false;
             this.Name = "GSDumpGUI";
             this.Text = "GSDumpGUI";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GSDumpGUI_FormClosing);
             this.Load += new System.EventHandler(this.GSDumpGUI_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.GSDumpGUI_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.pctBox)).EndInit();

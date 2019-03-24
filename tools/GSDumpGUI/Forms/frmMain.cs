@@ -461,5 +461,11 @@ namespace GSDumpGUI
             }
             treTreeView.SelectedNode = e.Node;
         }
+
+        private void GSDumpGUI_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Make sure all child processes are closed upon closing the main form
+            Processes.ForEach(v => v.Kill());
+        }
     }
 }
