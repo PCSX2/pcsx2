@@ -465,7 +465,11 @@ namespace GSDumpGUI
         private void GSDumpGUI_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Make sure all child processes are closed upon closing the main form
-            Processes.ForEach(v => v.Kill());
+            Processes.ForEach(p => 
+            {
+                try { p.Kill(); } catch { }
+                p.Dispose();
+            });
         }
     }
 }
