@@ -21473,6 +21473,11 @@ Compat = 5
 Serial = SLPM-62718
 Name   = Sega Ages 2500 Series Vol.27 - Panzer Dragoon
 Region = NTSC-J
+[patches = 8D984276]
+	// By PSI
+	comment=Stop screen shaking (game switches to Progressive)
+	patch=1,EE,20158558,extended,30420000
+[/patches]
 ---------------------------------------------
 Serial = SLPM-62719
 Name   = Nobunaga no Yabou - Tenka Souyo
