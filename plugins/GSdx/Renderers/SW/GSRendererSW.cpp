@@ -497,6 +497,7 @@ void GSRendererSW::Draw()
 
 			m_env.Dump(m_dump_root+s);
 			m_context->Dump(m_dump_root+s);
+            m_regs->Dump(m_dump_root+s);
 		}
 
 		if(s_savet && s_n >= s_saven && PRIM->TME)

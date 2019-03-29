@@ -1392,7 +1392,7 @@ struct GSPrivRegSet
 
 	void Dump(const std::string& filename)
 	{
-		FILE* fp = fopen(filename.c_str(), "wt");
+		FILE* fp = fopen(filename.c_str(), "at");
 		if (fp) {
 			Dump(fp);
 			fclose(fp);

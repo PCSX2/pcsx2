@@ -87,7 +87,7 @@ public:
 
 	void Dump(const std::string& filename)
 	{
-		FILE* fp = fopen(filename.c_str(), "wt");
+		FILE* fp = fopen(filename.c_str(), "at");
 		if (!fp) return;
 
 		fprintf(fp, "PRIM\n"
