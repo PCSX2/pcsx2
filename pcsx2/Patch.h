@@ -92,6 +92,7 @@ struct IniPatch
 
 namespace PatchFunc
 {
+	PATCHTABLEFUNC author;
 	PATCHTABLEFUNC comment;
 	PATCHTABLEFUNC gametitle;
 	PATCHTABLEFUNC patch;

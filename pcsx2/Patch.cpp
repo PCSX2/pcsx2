@@ -47,8 +47,9 @@ struct PatchTextTable
 
 static const PatchTextTable commands_patch[] =
 {
-	{ 1, L"comment",	PatchFunc::comment },
-	{ 2, L"patch",		PatchFunc::patch },
+	{ 1, L"author",		PatchFunc::author},
+	{ 2, L"comment",	PatchFunc::comment },
+	{ 3, L"patch",		PatchFunc::patch },
 	{ 0, wxEmptyString, NULL } // Array Terminator
 };
 
@@ -280,6 +281,11 @@ namespace PatchFunc
 	void comment( const wxString& text1, const wxString& text2 )
 	{
 		PatchesCon->WriteLn(L"comment: " + text2);
+	}
+
+	void author(const wxString& text1, const wxString& text2)
+	{
+		PatchesCon->WriteLn(L"Author: " + text2);
 	}
 
 	struct PatchPieces
