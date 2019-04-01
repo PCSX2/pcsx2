@@ -285,7 +285,7 @@ namespace PatchFunc
 
 	void author(const wxString& text1, const wxString& text2)
 	{
-        PatchesCon->WriteLn(L"Author: " + text2);
+		PatchesCon->WriteLn(L"Author: " + text2);
 	}
 
 	struct PatchPieces
