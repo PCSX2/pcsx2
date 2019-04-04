@@ -211,6 +211,9 @@ void GSRendererOGL::EmulateZbuffer()
 
 void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 {
+	// Uncomment to disable texture shuffle emulation.
+	// m_texture_shuffle = false;
+
 	if (m_texture_shuffle) {
 		m_ps_sel.shuffle = 1;
 		m_ps_sel.dfmt = 0;

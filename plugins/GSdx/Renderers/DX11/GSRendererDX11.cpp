@@ -218,6 +218,9 @@ void GSRendererDX11::EmulateZbuffer()
 
 void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 {
+	// Uncomment to disable texture shuffle emulation.
+	// m_texture_shuffle = false;
+
 	if (m_texture_shuffle)
 	{
 		m_ps_sel.shuffle = 1;
@@ -413,7 +416,6 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 	// Effect is really a channel shuffle effect so let's cheat a little
 	if (m_channel_shuffle)
 	{
-		// FIXME: Slot 4 - unbind texture when it isn't used.
 		dev->PSSetShaderResource(4, tex->m_from_target);
 		// Replace current draw with a fullscreen sprite
 		//

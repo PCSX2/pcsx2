@@ -76,8 +76,9 @@ GSDeviceOGL::GSDeviceOGL()
 	GLState::Clear();
 
 	m_mipmap = theApp.GetConfigI("mipmap");
-	m_filter = static_cast<TriFiltering>(theApp.GetConfigI("UserHacks_TriFilter"));
-	if (!theApp.GetConfigB("UserHacks"))
+	if (theApp.GetConfigB("UserHacks"))
+		m_filter = static_cast<TriFiltering>(theApp.GetConfigI("UserHacks_TriFilter"));
+	else
 		m_filter = TriFiltering::None;
 
 	// Reset the debug file
