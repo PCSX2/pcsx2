@@ -68,7 +68,7 @@ msgid ""
 "account rights."
 msgstr ""
 "Permissão negada na tentativa de abrir arquivo, provavelmente por permissões "
-"insuficientes da conta do usuário."
+"insuficientes na conta do usuário."
 
 #: common/src/Utilities/Exceptions.cpp:403
 msgid ""
@@ -294,7 +294,7 @@ msgstr ""
 #: pcsx2/SourceLog.cpp:211
 msgid "All GIFtag parse activity; path index, tag type, etc."
 msgstr ""
-"Todas atividades de análise do GIFtag: índice de caminho, tipo de tag, etc."
+"Todas atividades de análise do GIFtag: índice de caminho, tipo de tag etc."
 
 # VIF = Vector Unit (VU) Interface
 #: pcsx2/SourceLog.cpp:217
@@ -394,7 +394,7 @@ msgid ""
 "successfully but could not be moved to its final resting place."
 msgstr ""
 "O estado de jogo guardado não foi armazenado corretamente. O arquivo temporário foi criado "
-"com êxito, mas não pôde ser movido para seu destino de armazenamento."
+"com êxito, mas não pôde ser movido ao seu destino de armazenamento."
 
 #: pcsx2/gui/AppConfig.cpp:978
 msgid "Safest"
@@ -444,7 +444,7 @@ msgstr "Erro no recompilador do PCSX2"
 
 #: pcsx2/gui/AppInit.cpp:219
 msgid "All options are for the current session only and will not be saved.\n"
-msgstr "Todas as opções são apenas para a sessão atual e não serão salvas.\n"
+msgstr "Todas as opções são apenas para a sessão atual e não serão gravadas.\n"
 
 #: pcsx2/gui/AppInit.cpp:229 pcsx2/gui/AppMain.cpp:363
 msgid "IsoFile"
@@ -468,7 +468,7 @@ msgstr "usa o modo de tela inteira do GS"
 # opção de linha de comando
 #: pcsx2/gui/AppInit.cpp:233
 msgid "use windowed GS mode"
-msgstr "usa modo janela do GS"
+msgstr "usa o modo janela do GS"
 
 # opção de linha de comando
 #: pcsx2/gui/AppInit.cpp:235
@@ -537,14 +537,14 @@ msgstr "especifica qual arquivo de configuração do PCSX2 usar"
 #, c-format
 msgid "forces %s to start the First-time Wizard"
 msgstr ""
-"força %s a iniciar o assistente de primeiras\n"
+"força o %s a iniciar o assistente de primeiras\n"
 "\t\t\t  configurações"
 
 # opção de linha de comando; espaços/tabs adicionados para alinhamento --Rafael
 #: pcsx2/gui/AppInit.cpp:250
 msgid "enables portable mode operation (requires admin/root access)"
 msgstr ""
-"ativa operação em modo portátil (requer acesso como\n"
+"ativa a operação em modo portátil (requer acesso como\n"
 "\t\t\t  administrador/root)"
 
 # opção de linha de comando
@@ -556,7 +556,7 @@ msgstr "atualiza as opções, facilitando perfilamento (depuração)"
 #: pcsx2/gui/AppInit.cpp:256
 #, c-format
 msgid "specify the file to use as the %s plugin"
-msgstr "especifique o arquivo a ser usado como plug-in de %s"
+msgstr "especifique o arquivo a ser utilizado como plug-in de %s"
 
 #: pcsx2/gui/AppInit.cpp:306
 #, c-format
@@ -578,12 +578,12 @@ msgstr ""
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
-"Pressione OK para usar o plug-in configurado padrão, ou Cancelar para fechar "
+"Pressione OK para utilizar o plug-in configurado padrão, ou Cancelar para fechar "
 "%s."
 
 #: pcsx2/gui/AppInit.cpp:531
 msgid "PCSX2 Error: Hardware Deficiency"
-msgstr "Erro no PCSX2: Deficiência de Hardware"
+msgstr "Erro no PCSX2: Deficiência de hardware"
 
 #: pcsx2/gui/AppInit.cpp:531 pcsx2/gui/AppInit.cpp:543
 #, c-format
@@ -749,7 +749,7 @@ msgid ""
 "following errors:"
 msgstr ""
 "O PCSX2 foi instalado como uma aplicação portátil, mas não pôde ser executado "
-"por causa dos seguintes erros:"
+"por conta dos seguintes erros:"
 
 #: pcsx2/gui/AppUserMode.cpp:161
 msgid "Switch to User Documents Mode"
@@ -1297,7 +1297,7 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:28
 msgid "PCSX2 Thread is not responding"
-msgstr "A thread do PCSX2 não está respondendo"
+msgstr "O thread do PCSX2 não está respondendo"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:36
 msgid "Config Overrides Warning"
@@ -1844,7 +1844,7 @@ msgstr "Comprimidos (%s)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:283 pcsx2/gui/MainMenuClicks.cpp:304
 msgid "All Files (*.*)"
-msgstr "Todos arquivos (*.*)"
+msgstr "Todos os arquivos (*.*)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:286
 msgid "Select disc image, compressed disc image, or block-dump..."
