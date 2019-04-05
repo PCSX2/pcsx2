@@ -30835,6 +30835,15 @@ Region = NTSC-J
 Serial = SLPS-25015
 Name   = Choro Q - High Grade
 Region = NTSC-J
+[patches = 6F9C4D7C]
+	comment=Patch by Prafull
+	// Fixes vsync issues.
+	patch=1,EE,001a341c,word,03e00008
+	// Avoid hang at first loading screen.
+	patch=1,EE,001a33f8,word,00000000
+	// Skips movies.
+	patch=1,EE,001adc38,word,24020001
+[/patches]
 ---------------------------------------------
 Serial = SLPS-25016
 Name   = Neo Atlas 3
