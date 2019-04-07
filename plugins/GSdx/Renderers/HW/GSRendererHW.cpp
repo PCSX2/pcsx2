@@ -189,44 +189,46 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 	{
 		switch (CRC::Lookup(crc).title)
 		{
-		case CRC::AceCombatZero:
-		case CRC::AceCombat4:
-		case CRC::AceCombat5:
-		case CRC::ApeEscape2:
-		case CRC::Barnyard:
-		case CRC::BrianLaraInternationalCricket:
-		case CRC::DarkCloud:
-		case CRC::DestroyAllHumans:
-		case CRC::DestroyAllHumans2:
-		case CRC::FIFA03:
-		case CRC::FIFA04:
-		case CRC::FIFA05:
-		case CRC::HarryPotterATCOS:
-		case CRC::HarryPotterATHBP:
-		case CRC::HarryPotterATPOA:
-		case CRC::HarryPotterOOTP:
-		case CRC::Jak1:
-		case CRC::Jak3:
-		case CRC::LegacyOfKainDefiance:
-		case CRC::NicktoonsUnite:
-		case CRC::RatchetAndClank:
-		case CRC::RatchetAndClank2:
-		case CRC::RatchetAndClank3:
-		case CRC::RatchetAndClank4:
-		case CRC::RatchetAndClank5:
-		case CRC::RickyPontingInternationalCricket:
-		case CRC::Quake3Revolution:
-		case CRC::Shox:
-		case CRC::SoulReaver2:
-		case CRC::TheIncredibleHulkUD:
-		case CRC::TombRaiderAnniversary:
-		case CRC::TribesAerialAssault:
-		case CRC::Whiplash:
-			m_mipmap = static_cast<int>(HWMipmapLevel::Basic);
-			break;
-		default:
-			m_mipmap = static_cast<int>(HWMipmapLevel::Off);
-			break;
+			case CRC::AceCombatZero:
+			case CRC::AceCombat4:
+			case CRC::AceCombat5:
+			case CRC::ApeEscape2:
+			case CRC::Barnyard:
+			case CRC::BrianLaraInternationalCricket:
+			case CRC::DarkCloud:
+			case CRC::DestroyAllHumans:
+			case CRC::DestroyAllHumans2:
+			case CRC::FIFA03:
+			case CRC::FIFA04:
+			case CRC::FIFA05:
+			case CRC::HarryPotterATCOS:
+			case CRC::HarryPotterATHBP:
+			case CRC::HarryPotterATPOA:
+			case CRC::HarryPotterOOTP:
+			// Disable Automatic mipmapping for Jak games for now, it seems to cause a hard crash.
+			// Issue https://github.com/PCSX2/pcsx2/issues/2916
+			// case CRC::Jak1:
+			// case CRC::Jak3:
+			case CRC::LegacyOfKainDefiance:
+			case CRC::NicktoonsUnite:
+			case CRC::RatchetAndClank:
+			case CRC::RatchetAndClank2:
+			case CRC::RatchetAndClank3:
+			case CRC::RatchetAndClank4:
+			case CRC::RatchetAndClank5:
+			case CRC::RickyPontingInternationalCricket:
+			case CRC::Quake3Revolution:
+			case CRC::Shox:
+			case CRC::SoulReaver2:
+			case CRC::TheIncredibleHulkUD:
+			case CRC::TombRaiderAnniversary:
+			case CRC::TribesAerialAssault:
+			case CRC::Whiplash:
+				m_mipmap = static_cast<int>(HWMipmapLevel::Basic);
+				break;
+			default:
+				m_mipmap = static_cast<int>(HWMipmapLevel::Off);
+				break;
 		}
 	}
 }
