@@ -2299,6 +2299,19 @@ Serial = SCES-53669
 Name   = Buzz! The Music Quiz
 Region = PAL-E
 ---------------------------------------------
+Serial = SCES-53680
+Name   = WRC avec Sebastien Loeb
+Region = PAL-M5
+[patches = 79BAD675]
+	comment=patch by Prafull
+	// Fixes branch in delay slot hanging.
+	patch=1,EE,003d2024,word,00000000
+	patch=1,EE,003d2200,word,00000000
+	patch=1,EE,003d2394,word,00000000
+	patch=1,EE,003d26b0,word,00000000
+	patch=1,EE,003d1774,word,00000000
+[/patches]
+---------------------------------------------
 Serial = SCES-53688
 Name   = Urban Reign
 Region = PAL-M5
@@ -6691,6 +6704,7 @@ Compat = 5
 Serial = SLES-50051
 Name   = Eternal Ring
 Region = PAL-E
+eeRoundMode = 0 // Fixes FPU errors causing instant death in Limestone Cave.
 ---------------------------------------------
 Serial = SLES-50052
 Name   = Pool Master
@@ -6907,7 +6921,7 @@ Serial = SLES-50155
 Name   = Operation Winback
 Region = PAL-M3
 Compat = 5
-vuClampMode = 3 // For full textures showing.
+vuClampMode = 3 // Fixes missing 3D polygons when going ingame.
 ---------------------------------------------
 Serial = SLES-50158
 Name   = Gungriffon Blaze
@@ -15554,6 +15568,7 @@ Region = PAL-M5
 Serial = SLES-54080
 Name   = World Super Police
 Region = PAL-E
+EETimingHack = 1 // Fixes game hanging at mission 1.
 ---------------------------------------------
 Serial = SLES-54081
 Name   = FIFA World Cup 2006
@@ -15715,6 +15730,7 @@ Serial = SLES-54151
 Name   = Let's Make a Soccer Team!
 Region = PAL-M5
 Compat = 5
+eeClampMode = 3 // Makes the game to correctly register left and right Dpad button input.
 ---------------------------------------------
 Serial = SLES-54152
 Name   = Ant Bully, The
@@ -18594,6 +18610,7 @@ Serial = SLKA-25214
 Name   = Final Fantasy X - International [PlayStation 2 - Big Hit Series]
 Region = NTSC-K
 IPUWaitHack = 1
+eeRoundMode = 1 // Fixes reverse control and boss in some places.
 ---------------------------------------------
 Serial = SLKA-25215
 Name   = Shining Wild
@@ -19284,6 +19301,7 @@ Region = NTSC-J
 Serial = SLPM-62023
 Name   = Winback
 Region = NTSC-J
+vuClampMode = 3 // Fixes missing 3D polygons when going ingame.
 ---------------------------------------------
 Serial = SLPM-62027
 Name   = Snowboard Heaven
@@ -19720,6 +19738,7 @@ Region = NTSC-J
 Serial = SLPM-62201
 Name   = Winback
 Region = NTSC-J
+vuClampMode = 3 // Fixes missing 3D polygons when going ingame.
 ---------------------------------------------
 Serial = SLPM-62202
 Name   = Winning Post 4 Maximum 2001
@@ -20044,6 +20063,7 @@ Region = NTSC-J
 Serial = SLPM-62299
 Name   = Winback [Koei The Best]
 Region = NTSC-J
+vuClampMode = 3 // Fixes missing 3D polygons when going ingame.
 ---------------------------------------------
 Serial = SLPM-62300
 Name   = Horse Breaker [Koei The Best]
@@ -20935,6 +20955,7 @@ Region = NTSC-J
 Serial = SLPM-62567
 Name   = Winback [Koei Best Series]
 Region = NTSC-J
+vuClampMode = 3 // Fixes missing 3D polygons when going ingame.
 ---------------------------------------------
 Serial = SLPM-62568
 Name   = Shin Sangoku Musou [Koei The Best]
@@ -21681,6 +21702,11 @@ Serial = SLPM-62784
 Name   = Kao no nai Tsuki Select Story
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPM-64502
+Name   = Winback
+Region = NTSC-J
+vuClampMode = 3 // Fixes missing 3D polygons when going ingame.
+---------------------------------------------
 Serial = SLPM-64504
 Name   = Maximo
 Region = NTSC-K
@@ -22093,6 +22119,7 @@ Serial = SLPM-65115
 Name   = Final Fantasy X International
 Region = NTSC-J
 IPUWaitHack = 1
+eeRoundMode = 1 // Fixes reverse control and boss in some places.
 ---------------------------------------------
 Serial = SLPM-65116
 Name   = Lilie no Atelier Plus: Salburg no Renkinjutsushi 3
@@ -24381,6 +24408,7 @@ Region = NTSC-J
 Serial = SLPM-65761
 Name   = World Super Police
 Region = NTSC-J
+EETimingHack = 1 // Fixes game hanging at mission 1.
 ---------------------------------------------
 Serial = SLPM-65762
 Name   = Katakamuna
@@ -26435,6 +26463,7 @@ Region = NTSC-J
 Serial = SLPM-66316
 Name   = Pro Soccer Club o Tsukurou! Europe Championship
 Region = NTSC-J
+eeClampMode = 3 // Makes the game to correctly register left and right Dpad button input.
 ---------------------------------------------
 Serial = SLPM-66317
 Name   = Capcom Classics Collection Vol.1
@@ -27763,6 +27792,7 @@ Serial = SLPM-66677
 Name   = Final Fantasy X - International [Ultimate Hits]
 Region = NTSC-J
 IPUWaitHack = 1
+eeRoundMode = 1 // Fixes reverse control and boss in some places.
 ---------------------------------------------
 Serial = SLPM-66678
 Name   = Final Fantasy X-2 - International + Last Mission [Ultimate Hits]
@@ -29017,6 +29047,7 @@ Serial = SLPM-67513
 Name   = Final Fantasy X International
 Region = NTSC-K
 IPUWaitHack = 1
+eeRoundMode = 1 // Fixes reverse control and boss in some places.
 ---------------------------------------------
 Serial = SLPM-67514
 Name   = Kessen
@@ -30755,6 +30786,7 @@ Serial = SLPS-25001
 Name   = Eternal Ring
 Region = NTSC-J
 Compat = 5
+eeRoundMode = 0 // Fixes FPU errors causing instant death in Limestone Cave.
 ---------------------------------------------
 Serial = SLPS-25002
 Name   = Dead or Alive 2
@@ -31099,6 +31131,7 @@ Name   = Final Fantasy X International
 Region = NTSC-J
 Compat = 5
 IPUWaitHack = 1
+eeRoundMode = 1 // Fixes reverse control and boss in some places.
 ---------------------------------------------
 Serial = SLPS-25094
 Name   = Reveal Fantasia
@@ -34628,6 +34661,7 @@ Serial = SLUS-20015
 Name   = Eternal Ring
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 0 // Fixes FPU errors causing instant death in Limestone Cave.
 ---------------------------------------------
 Serial = SLUS-20016
 Name   = Evergrace
@@ -35160,6 +35194,7 @@ Serial = SLUS-20160
 Name   = Winback - Covert Operations
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3 // Fixes missing 3D polygons when going ingame.
 ---------------------------------------------
 Serial = SLUS-20162
 Name   = Aqua Aqua
