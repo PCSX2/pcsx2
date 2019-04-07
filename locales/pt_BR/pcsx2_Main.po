@@ -30,7 +30,7 @@ msgstr "Erro de análise"
 #: common/include/Utilities/Exceptions.h:279
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
 msgstr ""
-"O hardware da sua máquina não é capaz de executar o PCSX2. Sinto muito."
+"O hardware da sua máquina não é capaz de executar o PCSX2. Desculpe."
 
 #: common/src/Utilities/Exceptions.cpp:233
 msgid "Oh noes! Out of memory!"
@@ -44,7 +44,7 @@ msgid ""
 msgstr ""
 "Falha de mapeamento da memória virtual! O seu sistema pode ter conflitos nos "
 "drivers de dispositivos, serviços ou simplesmente tem memória ou recursos "
-"insuficientes para atender as majestosas necessidades do PCSX2."
+"insuficientes para atender às majestosas necessidades do PCSX2."
 
 #: common/src/Utilities/Exceptions.cpp:319
 msgid "Path: "
@@ -67,7 +67,7 @@ msgid ""
 "Permission denied while trying to open file, likely due to insufficient user "
 "account rights."
 msgstr ""
-"Permissão negada na tentativa de abrir arquivo, provavelmente por permissões "
+"Permissão negada na tentativa de abrir o arquivo, provavelmente por permissões "
 "insuficientes na conta do usuário."
 
 #: common/src/Utilities/Exceptions.cpp:403
@@ -80,7 +80,7 @@ msgstr ""
 
 #: common/src/Utilities/ThreadTools.cpp:41
 msgid "Threading activity: start, detach, sync, deletion, etc."
-msgstr "Manipulação de threads: iniciar, desanexar, sincronizar, exclusão, etc."
+msgstr "Manipulação de threads: inicío, desanexo, sincronização, eliminação etc."
 
 #: common/src/Utilities/ThreadingDialogs.cpp:30
 msgid "Waiting for tasks..."
@@ -122,7 +122,7 @@ msgstr ""
 msgid ""
 "The MTGS thread has become unresponsive while waiting for the GS plugin to "
 "open."
-msgstr "A thread MTGS não está respondendo enquanto espera o plug-in GS abrir."
+msgstr "O thread MTGS não está respondendo enquanto aguarda o plug-in GS abrir."
 
 #: pcsx2/PluginManager.cpp:737
 msgid ""
@@ -249,7 +249,7 @@ msgstr ""
 # MMU = Memory Management Unit
 #: pcsx2/SourceLog.cpp:163
 msgid "Disasm of COP0 instructions (MMU, cpu and dma status, etc)."
-msgstr "Desmontagem das instruções COP0 (MMU, estado de DMA e CPU, etc)."
+msgstr "Desmontagem das instruções COP0 (MMU, estado de DMA e CPU etc)."
 
 #: pcsx2/SourceLog.cpp:169
 msgid "Disasm of the EE's floating point unit (FPU) only."
@@ -287,24 +287,24 @@ msgstr "Registra somente registradores relacionados a DMA."
 #: pcsx2/SourceLog.cpp:205
 msgid "IPU activity: hardware registers, decoding operations, DMA status, etc."
 msgstr ""
-"Atividade do IPU: registradores de hardware, operações de decodificação, "
-"estado de DMA, etc."
+"Atividade do IPU: registradores de hardware, operações de descodificação, "
+"estado de DMA etc."
 
 # GIF = Graphics Interface; GIFTag is a PCSX2 variable GIF-related
 #: pcsx2/SourceLog.cpp:211
 msgid "All GIFtag parse activity; path index, tag type, etc."
 msgstr ""
-"Todas atividades de análise do GIFtag: índice de caminho, tipo de tag etc."
+"Todas as atividades de análise do GIFtag: índice de caminho, tipo de tag etc."
 
 # VIF = Vector Unit (VU) Interface
 #: pcsx2/SourceLog.cpp:217
 msgid "All VIFcode processing; command, tag style, interrupts."
-msgstr "Todo processamento de VIFcode: comando, estilo de tag, interrupções."
+msgstr "Todo o processamento de VIFcode: comando, estilo de tag, interrupções."
 
 # Path3 Masking = Techical solution of PCSX2 to problemas Path3-related
 #: pcsx2/SourceLog.cpp:223
 msgid "All processing involved in Path3 Masking"
-msgstr "Todo processamento envolvido no Path3 Masking"
+msgstr "Todo o processamento envolvido no Path3 Masking"
 
 # MFIFO = Memory First-In, First-Out
 #: pcsx2/SourceLog.cpp:229
@@ -520,7 +520,7 @@ msgstr ""
 # opção de linha de comando
 #: pcsx2/gui/AppInit.cpp:245
 msgid "disables fast booting"
-msgstr "desativa carregamento rápido"
+msgstr "desativa o carregamento rápido"
 
 # opção de linha de comando
 #: pcsx2/gui/AppInit.cpp:247
@@ -686,7 +686,7 @@ msgstr "Erro de BIOS de PS2"
 
 #: pcsx2/gui/AppMain.cpp:179
 msgid "Press Ok to go to the BIOS Configuration Panel."
-msgstr "Pressione OK para ir ao Painel de configuração de BIOS."
+msgstr "Pressione OK para ir ao painel de configuração de BIOS."
 
 #: pcsx2/gui/AppMain.cpp:202
 msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
@@ -1115,7 +1115,7 @@ msgstr "Erro: O cartão de memória não pôde ser criado."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:193
 msgid "Use NTFS compression when creating this card."
-msgstr "Usar compressão NTFS na criação desse cartão."
+msgstr "Utilizar a compressão NTFS na criação desse cartão."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:210
 msgid "8 MB [most compatible]"
@@ -1126,15 +1126,15 @@ msgid ""
 "This is the standard Sony-provisioned size, and is supported by all games and "
 "BIOS versions."
 msgstr ""
-"Esse é o tamanho padrão provido pela Sony e tem suporte em todos jogos e "
+"Este é o tamanho padrão provido pela Sony e é compatível em todos jogos e "
 "versões de BIOS."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:211
 msgid ""
 "Always use this option if you want the safest and surest memory card behavior."
 msgstr ""
-"Sempre use essa opção caso você queira o mais seguro e certo dos "
-"comportamentos de cartão de memória."
+"Sempre utilize esta opção caso queira o comportamento de cartão de "
+"memória mais seguro e confiável."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:214
 msgid "16 MB"
@@ -1152,7 +1152,7 @@ msgstr ""
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:219
 msgid "16 and 32 MB cards have roughly the same compatibility factor."
 msgstr ""
-"Cartões de 16 e 32 MB têm aproximadamente o mesmo fator de compatibilidade."
+"Os cartões de 16 e 32 MB têm aproximadamente o mesmo fator de compatibilidade."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:218
 msgid "32 MB"
@@ -1261,11 +1261,11 @@ msgstr "Registro de rastreamento"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:38
 msgid "Auto-eject memory cards when loading savestates"
-msgstr "Ejetar automaticamente cartões de memória quando estiver carregando estados de jogos salvos"
+msgstr "Ejetar automaticamente cartões de memória quando estiver carregando estados de jogos guardados"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
-msgstr "Gerenciar automaticamente jogos salvos baseado no jogo"
+msgstr "Gerenciar automaticamente jogos guardados baseado no jogo"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:101
 msgid "MemoryCard Manager"
@@ -1274,7 +1274,7 @@ msgstr "Gerenciador de cartão de memória"
 # ponto final adicional intencionalmente por ser descrição de botão --Rafael
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:116
 msgid "Drag cards to or from PS2-ports"
-msgstr "Arraste cartões de ou para portas do PS2"
+msgstr "Arraste os cartões de ou para as portas do PS2"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:117
 msgid ""
@@ -1282,7 +1282,7 @@ msgid ""
 "Note: Duplicate/Rename/Create/Delete will NOT be reverted with 'Cancel'."
 msgstr ""
 "\n"
-"Nota: duplicar/renomear/criar/eliminar NÃO será revertido com "Cancelar"."
+"Nota: Duplicar/Renomear/Criar/Eliminar NÃO será revertido com "Cancelar"."
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:24
 msgid "PCSX2 First Time configuration"
@@ -1292,7 +1292,7 @@ msgstr "Primeiras configurações do PCSX2"
 #, c-format
 msgid "%s is starting from a new or unknown folder and needs to be configured."
 msgstr ""
-"%s está iniciando a partir de uma pasta nova ou não conhecida e precisa "
+"%s está iniciando a partir de uma pasta nova ou desconhecida e precisa "
 "ser configurado."
 
 #: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:28
@@ -1382,7 +1382,7 @@ msgstr "Pressione Cancelar para tentar cancelar a ação."
 #: pcsx2/gui/ExecutorThread.cpp:431
 #, c-format
 msgid "Press Terminate to kill %s immediately."
-msgstr "Pressione Terminar para matar %s imediatamente."
+msgstr "Pressione Terminar para matar o %s imediatamente."
 
 #: pcsx2/gui/ExecutorThread.cpp:434
 msgid "Terminate App"
@@ -1434,7 +1434,7 @@ msgstr "Mudar para o compartimento anterior"
 
 #: pcsx2/gui/GlobalCommands.cpp:503
 msgid "Cycles the current save slot in -1 fashion!"
-msgstr "Altera o compartimento de salvamento atual num estilo -1!"
+msgstr "Altera o compartimento de gravação atual num estilo -1!"
 
 #: pcsx2/gui/IsoDropTarget.cpp:55
 msgid "Drag and Drop Error"
@@ -1721,7 +1721,7 @@ msgstr "Nenhum estado de emulação está ativo; carregue alguma coisa primeiro.
 # ponto final adicional intencionalmente por ser descrição de botão --Rafael
 #: pcsx2/gui/MainFrame.cpp:655
 msgid "Use fast boot to skip PS2 startup and splash screens"
-msgstr "Carrega mais rápido, pulando telas de inicialização do PS2."
+msgstr "Carrega mais rápido, ignorando telas de inicialização do PS2."
 
 #: pcsx2/gui/MainFrame.cpp:660
 msgid "Boot ISO (&fast)"
@@ -2273,7 +2273,7 @@ msgstr "Hack de tempo do EE - hack multipropósito. Tente se tudo mais falhar."
 msgid ""
 "Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."
 msgstr ""
-"Hack para pular MPEG - Pula vídeos/FMVs nos jogos para evitar travamentos/"
+"Hack para ignorar MPEG - Ignora vídeos/FMVs nos jogos para evitar travamentos/"
 "congelamentos nos jogos."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:77
@@ -2875,7 +2875,7 @@ msgstr "Quadros a serem desenhados"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:214
 msgid "Frames to Skip"
-msgstr "Quadros a serem pulados"
+msgstr "Quadros a serem ignorados"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:290
 msgid "Use Synchronized MTGS"
@@ -3011,7 +3011,7 @@ msgstr ""
 #~ msgstr "Recarregar CDVD (rápido)"
 
 #~ msgid "Reboot using fast BOOT (skips splash screens)"
-#~ msgstr "Recarregar mais rápido (pula tela de inicialização)"
+#~ msgstr "Recarregar mais rápido (ignora tela de inicialização)"
 
 #~ msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
 #~ msgstr ""
