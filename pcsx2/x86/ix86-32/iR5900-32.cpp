@@ -1311,22 +1311,33 @@ void recompileNextInstruction(int delayslot)
 	//Console.Warning("opcode name = %s, it's cycles = %d\n",opcode.Name,opcode.cycles);
 	// if this instruction is a jump or a branch, exit right away
 	if( delayslot ) {
+		bool check_branch_delay = false;
 		switch(_Opcode_) {
 			case 1:
 				switch(_Rt_) {
 					case 0: case 1: case 2: case 3: case 0x10: case 0x11: case 0x12: case 0x13:
-						Console.Warning("branch %x in delay slot!", cpuRegs.code);
-						_clearNeededX86regs();
-						_clearNeededXMMregs();
-						return;
+						check_branch_delay = true;
 				}
 				break;
 
 			case 2: case 3: case 4: case 5: case 6: case 7: case 0x14: case 0x15: case 0x16: case 0x17:
-				Console.Warning("branch %x in delay slot!", cpuRegs.code);
-				_clearNeededX86regs();
-				_clearNeededXMMregs();
-				return;
+				check_branch_delay = true;
+		}
+		// Check for branch in delay slot, new code by FlatOut.
+		// Gregory tested this in 2017 using the ps2autotests suite and remarked "So far we return 1 (even with this PR), and the HW 2.
+		// Original PR and discussion at https://github.com/PCSX2/pcsx2/pull/1783 so we don't forget this information.
+		if (check_branch_delay) {
+			DevCon.Warning("Branch %x in delay slot!", cpuRegs.code);
+			_clearNeededX86regs();
+			_clearNeededXMMregs();
+			pc += 4;
+			g_cpuFlushedPC = false;
+			g_cpuFlushedCode = false;
+			if (g_maySignalException)
+				xAND(ptr32[&cpuRegs.CP0.n.Cause], ~(1 << 31)); // BD
+
+			g_recompilingDelaySlot = false;
+			return;
 		}
 	}
 	// Check for NOP
