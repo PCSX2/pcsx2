@@ -1493,12 +1493,12 @@ Serial = SCES-50934
 Name   = WRC II Extreme
 Region = PAL-M7
 Compat = 5
-XgKickHack = 1
+XgKickHack = 1 // SPS.
 ---------------------------------------------
 Serial = SCES-50935
 Name   = WRC II Extreme
 Region = PAL-Unk
-XgKickHack = 1
+XgKickHack = 1 // SPS.
 ---------------------------------------------
 Serial = SCES-50956
 Name   = Ferrari F355 Challenge
@@ -1724,13 +1724,7 @@ Serial = SCES-51684
 Name   = WRC 3
 Region = PAL-M8
 Compat = 5
-XgKickHack = 1
-[patches = 80802EA9]
-	comment=Patch by Prafull
-	// Fix hang at loading screen.
-	patch=1,EE,002aa934,word,00000000
-	patch=1,EE,002aa574,word,00000000
-[/patches]
+XgKickHack = 1 // SPS.
 ---------------------------------------------
 Serial = SCES-51685
 Name   = Primal
@@ -2132,22 +2126,6 @@ Name   = WRC Rally Evolved
 Region = PAL-M8
 Compat = 5
 XgKickHack = 1 // SPS.
-[patches = cbbc2e7f]
-	comment=patches by Nachbrenner
-	// Fix delay slot violation.
-	patch=1,EE,003cc890,word,19c0004d
-	patch=1,EE,003cc894,word,01ad6826
-	patch=1,EE,003cbc78,word,01ce7026
-	patch=1,EE,003cbc7c,word,19a0006c
-	patch=1,EE,003cc528,word,01ce7026
-	patch=1,EE,003cc52c,word,19a0000c
-	patch=1,EE,003cc46c,word,01ce7026
-	patch=1,EE,003cc470,word,19a0000f
-	patch=1,EE,003cc704,word,01ce7026
-	patch=1,EE,003cc708,word,19a0000f
-	patch=1,EE,003ccbb4,word,01ce7026
-	patch=1,EE,003ccbb8,word,19a00011
-[/patches]
 ---------------------------------------------
 Serial = SCES-53285
 Name   = Ratchet - Gladiator
@@ -2302,15 +2280,7 @@ Region = PAL-E
 Serial = SCES-53680
 Name   = WRC avec Sebastien Loeb
 Region = PAL-M5
-[patches = 79BAD675]
-	comment=patch by Prafull
-	// Fixes branch in delay slot hanging.
-	patch=1,EE,003d2024,word,00000000
-	patch=1,EE,003d2200,word,00000000
-	patch=1,EE,003d2394,word,00000000
-	patch=1,EE,003d26b0,word,00000000
-	patch=1,EE,003d1774,word,00000000
-[/patches]
+XgKickHack = 1 // SPS.
 ---------------------------------------------
 Serial = SCES-53688
 Name   = Urban Reign
