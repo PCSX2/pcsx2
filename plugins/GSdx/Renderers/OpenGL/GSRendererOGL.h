@@ -90,4 +90,6 @@ class GSRendererOGL final : public GSRendererHW
 		PRIM_OVERLAP PrimitiveOverlap();
 
 		void SendDraw();
+
+		bool IsDummyTexture() const final;
 };
