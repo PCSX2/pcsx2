@@ -18,15 +18,19 @@
 #include "CompressedFileReader.h"
 #include "CsoFileReader.h"
 #include "GzippedFileReader.h"
+#include "LzmaFileReader.h"
 
 // CompressedFileReader factory.
 AsyncFileReader* CompressedFileReader::GetNewReader(const wxString& fileName) {
-	if (GzippedFileReader::CanHandle(fileName)) {
+	if (GzippedFileReader::CanHandle(fileName))
 		return new GzippedFileReader();
-	}
-	if (CsoFileReader::CanHandle(fileName)) {
+
+	if (CsoFileReader::CanHandle(fileName))
 		return new CsoFileReader();
-	}
+
+	if (LzmaFileReader::CanHandle(fileName))
+		return new LzmaFileReader();
+
 	// This is the one which will fail on open.
 	return NULL;
 }
