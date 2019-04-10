@@ -1220,6 +1220,8 @@ void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4
 
 	GL_PUSH(format("CopyRectConv from %d to %d", sid, did).c_str());
 
+	dTex->CommitRegion(GSVector2i(r.z, r.w));
+
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
 
 	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
@@ -1246,6 +1248,8 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 #ifdef ENABLE_OGL_DEBUG
 	PSSetShaderResource(6, sTex);
 #endif
+
+	dTex->CommitRegion(GSVector2i(r.z, r.w));
 
 	ASSERT(GLExtension::Has("GL_ARB_copy_image") && glCopyImageSubData);
 	glCopyImageSubData( sid, GL_TEXTURE_2D,
