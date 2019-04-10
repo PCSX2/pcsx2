@@ -1027,9 +1027,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Detect framebuffer read that will need special handling
 	if ((m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && m_sw_blending) {
 		if ((m_context->FRAME.FBMSK == 0x00FFFFFF) && (m_vt.m_primclass == GS_TRIANGLE_CLASS)) {
-			// Ratchet & Clank, Jak, Tri-Ace (Star Ocean 3) games use this pattern to compute the shadows.
-			// Alpha (multiplication) tfx is mostly equivalent to -1/+1 stencil operation.
-			GL_DBG("ERROR: Source and Target are the same! Let's sample the framebuffer");
+			// This pattern is used by several games to emulate a stencil (shadow)
+			// Ratchet & Clank, Jak do alpha integer multiplication (tfx) which is mostly equivalent to +1/-1
+			// Tri-Ace (Star Ocean 3/RadiataStories/VP2) uses a palette to handle the +1/-1
+			GL_DBG("Source and Target are the same! Let's sample the framebuffer");
 			m_ps_sel.tex_is_fb = 1;
 			m_require_full_barrier = true;
 		} else if (m_prim_overlap != PRIM_OVERLAP_NO) {
@@ -1416,4 +1417,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		dev->Recycle(hdr_rt);
 	}
+}
+
+bool GSRendererOGL::IsDummyTexture() const
+{
+	// Texture is actually the frame buffer. Stencil emulation to compute shadow (Jak series/tri-ace game)
+	// Will hit the "m_ps_sel.tex_is_fb = 1" path in the draw
+	return (m_context->FRAME.Block() == m_context->TEX0.TBP0) && PRIM->TME && m_sw_blending && m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_context->FRAME.FBMSK == 0x00FFFFFF);
 }

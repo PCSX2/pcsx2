@@ -180,4 +180,7 @@ public:
 	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r);
 	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false);
 	void Draw();
+
+	// Called by the texture cache to know if current texture is useful
+	virtual bool IsDummyTexture() const { return false;}
 };

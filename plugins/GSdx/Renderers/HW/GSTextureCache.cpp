@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "GSTextureCache.h"
+#include "GSRendererHW.h"
 #include "GSUtil.h"
 
 bool GSTextureCache::m_disable_partial_invalidation = false;
@@ -1172,6 +1173,31 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			// Attach palette for GPU texture conversion
 			AttachPaletteToSource(src, psm.pal, true);
 		}
+	}
+	else if (dst && static_cast<GSRendererHW*>(m_renderer)->IsDummyTexture())
+	{
+		// This shortcut is a temporary solution. It isn't a good solution
+		// as it won't work with Channel Shuffle/Texture Shuffle pattern
+		// (we need texture cache result to detect those effects).
+		// Instead a better solution would be to defer the copy/StrechRect later
+		// in the rendering.
+		// Still this poor solution is enough for a huge speed up in a couple of games
+		//
+		// Be aware that you can't use StrechRect between BeginScene/EndScene.
+		// So it could be tricky to put in the middle of the DrawPrims
+
+		// Texture is created to keep code compatibility
+		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(tw, th);
+
+		// Keep a trace of origin of the texture
+		src->m_texture = dTex;
+		src->m_target = true;
+		src->m_from_target = dst->m_texture;
+
+		// Even if we sample the framebuffer directly we might need the palette
+		// to handle the format conversion on GPU
+		if (psm.pal > 0)
+			AttachPaletteToSource(src, psm.pal, true);
 	}
 	else if (dst)
 	{
