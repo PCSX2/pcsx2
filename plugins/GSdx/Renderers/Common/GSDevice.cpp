@@ -163,7 +163,12 @@ void GSDevice::Recycle(GSTexture* t)
 {
 	if(t)
 	{
+#ifdef _DEBUG
+		// Uncommit saves memory but it means a futur allocation when we want to reuse the texture.
+		// Which is slow and defeat the purpose of the m_pool cache.
+		// However, it can help to spot part of texture that we forgot to commit
 		t->Uncommit();
+#endif
 		t->last_frame_used = m_frame;
 
 		m_pool.push_front(t);
