@@ -137,7 +137,7 @@ namespace GSDumpGUI
                 Server.OnClientMessageReceived += new BaseMessageServer.MessageReceivedHandler(Server_OnClientMessageReceived);
                 Server.OnClientAfterConnect += new TCPLibrary.Core.Server.ConnectedHandler(Server_OnClientAfterConnect);
                 Server.OnClientAfterDisconnected += new TCPLibrary.Core.Server.DisconnectedHandler(Server_OnClientAfterDisconnected);
-                Server.Port = 9999;
+                Server.Port = 0; // Automatically let the OS find the next free port
                 Server.Enabled = true;
 
                 Application.EnableVisualStyles();
