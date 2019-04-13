@@ -238,6 +238,7 @@ namespace GSDumpGUI
             if (lstDumps.SelectedItem != null)
                 DumpPath = Properties.Settings.Default.DumpDir + "\\" + 
                            lstDumps.SelectedItem.ToString().Split(new char[] { '|' })[0];
+            var port = Program.Server.Port;
 
             // Start the child and link the events.
             ProcessStartInfo psi = new ProcessStartInfo();
@@ -246,7 +247,7 @@ namespace GSDumpGUI
             psi.RedirectStandardError = false;
             psi.CreateNoWindow = true;
             psi.FileName = Process.GetCurrentProcess().ProcessName;
-            psi.Arguments = "\"" + DLLPath + "\"" + " \"" + DumpPath + "\"" + " \"" + Function + "\"" + " " + SelectedRenderer;
+            psi.Arguments = "\"" + DLLPath + "\"" + " \"" + DumpPath + "\"" + " \"" + Function + "\"" + " " + SelectedRenderer + " " + port;
             Process p = Process.Start(psi);
             p.OutputDataReceived += new DataReceivedEventHandler(p_OutputDataReceived);
             p.BeginOutputReadLine();

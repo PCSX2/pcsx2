@@ -42,10 +42,6 @@ namespace TCPLibrary.Core
         /// </summary>
         private TcpListener _socket;
         /// <summary>
-        /// Port to which the server will listen.
-        /// </summary>
-        private Int32 _port;
-        /// <summary>
         /// Whether the server is enabled or not.
         /// </summary>
         private Boolean _enabled;
@@ -132,13 +128,11 @@ namespace TCPLibrary.Core
         /// <exception cref="TCPLibrary.Core.ServerAttivoException" />
         public Int32 Port
         {
-            get { return _port; }
-            set
+            get
             {
-                if (Enabled == false)
-                    _port = value;
-                else
-                    throw new ArgumentException("Impossibile eseguire l'operazione a server attivo");
+                if (Enabled)
+                    return ((IPEndPoint) _socket.LocalEndpoint).Port;
+                throw new NotSupportedException("Server is not running and hence has no port.");
             }
         }
 
@@ -212,10 +206,10 @@ namespace TCPLibrary.Core
         /// </summary>
         protected virtual void ActivateServer()
         {
-            _socket = new TcpListener(IPAddress.Any, Port);
+            _socket = new TcpListener(IPAddress.Any, 0);
             _socket.Start(ConnectionBackLog);
             Thread thd = new Thread(new ThreadStart(MainThread));
-            thd.Name = "Server on port " + Port.ToString();
+            thd.Name = "Server on port " + ((IPEndPoint) _socket.LocalEndpoint).Port;
             thd.IsBackground = true;
             thd.Start();
             _enabled = true;
@@ -249,7 +243,6 @@ namespace TCPLibrary.Core
         public Server()
         {
             _clients = new List<ClientS>();
-            _port = 0;
             _connectionbacklog = 0;
             _enabled = false;
         }
