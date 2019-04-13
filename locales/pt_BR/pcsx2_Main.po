@@ -1282,7 +1282,7 @@ msgid ""
 "Note: Duplicate/Rename/Create/Delete will NOT be reverted with 'Cancel'."
 msgstr ""
 "\n"
-"Nota: Duplicar/Renomear/Criar/Eliminar NÃO será revertido com "Cancelar"."
+"Nota: Duplicar/Renomear/Criar/Eliminar NÃO será revertido com \"Cancelar\"."
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:24
 msgid "PCSX2 First Time configuration"
