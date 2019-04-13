@@ -54,7 +54,7 @@
             this.lblOverride = new System.Windows.Forms.Label();
             this.rdaNone = new System.Windows.Forms.RadioButton();
             this.lblInternalLog = new System.Windows.Forms.Label();
-            this.txtIntLog = new System.Windows.Forms.TextBox();
+            this.txtIntLog = new System.Windows.Forms.RichTextBox();
             this.lblDebugger = new System.Windows.Forms.Label();
             this.lstProcesses = new System.Windows.Forms.ListBox();
             this.lblChild = new System.Windows.Forms.Label();
@@ -354,7 +354,7 @@
             this.txtIntLog.Multiline = true;
             this.txtIntLog.Name = "txtIntLog";
             this.txtIntLog.ReadOnly = true;
-            this.txtIntLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.txtIntLog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Both;
             this.txtIntLog.Size = new System.Drawing.Size(411, 160);
             this.txtIntLog.TabIndex = 24;
             this.txtIntLog.TabStop = false;
@@ -757,7 +757,7 @@
         private System.Windows.Forms.Label lblOverride;
         private System.Windows.Forms.RadioButton rdaNone;
         private System.Windows.Forms.Label lblInternalLog;
-        private System.Windows.Forms.TextBox txtIntLog;
+        private System.Windows.Forms.RichTextBox txtIntLog;
         private System.Windows.Forms.Label lblDebugger;
         private System.Windows.Forms.Label lblChild;
         public System.Windows.Forms.ListBox lstProcesses;

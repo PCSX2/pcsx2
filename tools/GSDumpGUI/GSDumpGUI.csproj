@@ -55,6 +55,12 @@
     <Compile Include="Forms\frmMain.Designer.cs">
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\Helper\GsDumpFinder.cs" />
+    <Compile Include="Forms\Helper\GsdxDllFinder.cs" />
+    <Compile Include="Forms\Helper\IGsDumpFinder.cs" />
+    <Compile Include="Forms\Helper\IGsdxDllFinder.cs" />
+    <Compile Include="Forms\Helper\ILogger.cs" />
+    <Compile Include="Forms\Helper\RichTextBoxLogger.cs" />
     <Compile Include="Library\GSDump\GSData\GIFPacket\GIFPrim.cs" />
     <Compile Include="Library\GSDump\GSData\GIFPacket\GIFReg\GIFRegNOP.cs" />
     <Compile Include="Library\GSDump\GSData\GIFPacket\GIFReg\GIFRegUnimpl.cs" />
@@ -114,6 +120,7 @@
   <ItemGroup>
     <None Include="Resources\AppIcon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
