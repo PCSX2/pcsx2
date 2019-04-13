@@ -2281,6 +2281,12 @@ Serial = SCES-53680
 Name   = WRC avec Sebastien Loeb
 Region = PAL-M5
 XgKickHack = 1 // SPS.
+[patches = 79BAD675]
+	author=By Prafull
+	// Nopping a branch in delay slot instruction causing very bad performances
+	// in the playground mode when using physics (such as moving barrels etc..).
+	patch=1,EE,003d2394,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SCES-53688
 Name   = Urban Reign
