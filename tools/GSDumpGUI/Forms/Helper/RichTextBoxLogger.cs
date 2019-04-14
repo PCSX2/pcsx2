@@ -37,7 +37,7 @@ namespace GSDumpGUI.Forms.Helper
 
         private void WriteLine(Color color, string line = null)
         {
-            if (line is null)
+            if (line == null)
             {
                 _richTextBox.AppendText(Environment.NewLine);
                 return;
