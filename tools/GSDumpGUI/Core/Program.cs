@@ -52,16 +52,17 @@ namespace GSDumpGUI
         [STAThread]
         static void Main(String[] args)
         {
-            if (args.Length == 4)
+            if (args.Length == 5)
             {
                 // do this first, else racy mess ;)
                 wrap = new GSDXWrapper();
+                var port = Convert.ToInt32(args[4]);
 
                 try
                 {
                     Client = new TCPLibrary.MessageBased.Core.BaseMessageClient();
                     Client.OnMessageReceived += new TCPLibrary.MessageBased.Core.BaseMessageClient.MessageReceivedHandler(Client_OnMessageReceived);
-                    Client.Connect("localhost", 9999);
+                    Client.Connect("localhost", port);
                 }
                 catch (Exception)
                 {
@@ -137,7 +138,6 @@ namespace GSDumpGUI
                 Server.OnClientMessageReceived += new BaseMessageServer.MessageReceivedHandler(Server_OnClientMessageReceived);
                 Server.OnClientAfterConnect += new TCPLibrary.Core.Server.ConnectedHandler(Server_OnClientAfterConnect);
                 Server.OnClientAfterDisconnected += new TCPLibrary.Core.Server.DisconnectedHandler(Server_OnClientAfterDisconnected);
-                Server.Port = 9999;
                 Server.Enabled = true;
 
                 Application.EnableVisualStyles();
