@@ -23,6 +23,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using GSDumpGUI.Forms.Entities;
 
 namespace GSDumpGUI.Forms.Helper
 {
@@ -35,7 +36,7 @@ namespace GSDumpGUI.Forms.Helper
             _logger = logger;
         }
 
-        public IEnumerable<string> GetEnrichedPathToValidGsdxDumps(DirectoryInfo directory)
+        public IEnumerable<GsFile> GetEnrichedPathToValidGsdxDumps(DirectoryInfo directory)
         {
             var dumps = directory.GetFiles("*.gs", SearchOption.TopDirectoryOnly);
 
@@ -52,7 +53,11 @@ namespace GSDumpGUI.Forms.Helper
                 }
 
                 _logger.Information($"Identified Dump for game ({crc:X}) with filename '{dump}'");
-                yield return dump.Name + " | CRC : " + crc.ToString("X");
+                yield return new GsFile
+                {
+                        DisplayText = dump.Name + " | CRC : " + crc.ToString("X"),
+                        File = dump
+                };
             }
         }
     }

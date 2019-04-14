@@ -22,11 +22,12 @@
 
 using System.Collections.Generic;
 using System.IO;
+using GSDumpGUI.Forms.Entities;
 
 namespace GSDumpGUI.Forms.Helper
 {
     public interface IGsdxDllFinder
     {
-        IEnumerable<string> GetEnrichedPathToValidGsdxDlls(DirectoryInfo directory);
+        IEnumerable<GsFile> GetEnrichedPathToValidGsdxDlls(DirectoryInfo directory);
     }
 }

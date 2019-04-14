@@ -23,6 +23,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using GSDumpGUI.Forms.Entities;
 
 namespace GSDumpGUI.Forms.Helper
 {
@@ -35,19 +36,23 @@ namespace GSDumpGUI.Forms.Helper
             _logger = logger;
         }
 
-        public IEnumerable<string> GetEnrichedPathToValidGsdxDlls(DirectoryInfo directory)
+        public IEnumerable<GsFile> GetEnrichedPathToValidGsdxDlls(DirectoryInfo directory)
         {
             var availableDlls = directory.GetFiles("*.dll", SearchOption.TopDirectoryOnly);
 
             var wrap = new GSDXWrapper();
             foreach (var availableDll in availableDlls)
             {
-                string dllName;
+                GsFile dll;
                 try
                 {
                     wrap.Load(availableDll.FullName);
 
-                    dllName = availableDll.Name + " | " + wrap.PSEGetLibName();
+                    dll = new GsFile
+                    {
+                            DisplayText = availableDll.Name + " | " + wrap.PSEGetLibName(),
+                            File = availableDll
+                    };
                     _logger.Information($"'{availableDll}' correctly identified as '{wrap.PSEGetLibName()}'");
 
                     wrap.Unload();
@@ -58,7 +63,7 @@ namespace GSDumpGUI.Forms.Helper
                     continue;
                 }
 
-                yield return dllName;
+                yield return dll;
             }
         }
     }
