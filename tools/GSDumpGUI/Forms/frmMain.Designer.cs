@@ -241,7 +241,7 @@
             this.pctBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pctBox.TabIndex = 16;
             this.pctBox.TabStop = false;
-            this.pctBox.Click += new System.EventHandler(this.PreviewImageClick);
+            this.pctBox.Click += new System.EventHandler(PreviewImageClick);
             // 
             // rdaDX9HW
             // 
