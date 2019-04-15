@@ -22,23 +22,31 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Diagnostics;
-using System.Security;
+using System.Linq;
+using System.Linq.Expressions;
+using GSDumpGUI.Forms.Entities;
+using GSDumpGUI.Forms.Helper;
+using GSDumpGUI.Forms.SettingsProvider;
+using GSDumpGUI.Properties;
 using TCPLibrary.MessageBased.Core;
 
 namespace GSDumpGUI
 {
     public partial class GSDumpGUI : Form
     {
+        private readonly ILogger _internalLogger;
+        private readonly ILogger _gsdxLogger;
+        private readonly IGsdxDllFinder _gsdxDllFinder;
+        private readonly IGsDumpFinder _gsDumpFinder;
+        private readonly IFolderWithFallBackFinder _folderWithFallBackFinder;
+
         public List<Process> Processes;
 
         private Int32 _selected;
@@ -77,86 +85,96 @@ namespace GSDumpGUI
             }
         }
 
-        private Bitmap NoImage;
+        private readonly Bitmap NoImage;
+
+        private Settings Settings => Settings.Default;
+
+        private readonly GsDumps _availableGsDumps;
+        private readonly GsDlls _availableGsDlls;
 
         public GSDumpGUI()
         {
+            PortableXmlSettingsProvider.ApplyProvider(Settings);
+
             InitializeComponent();
+            _internalLogger = new RichTextBoxLogger(txtIntLog);
+            _gsdxLogger = new RichTextBoxLogger(txtLog);
+            _gsdxDllFinder = new GsdxDllFinder(_internalLogger);
+            _gsDumpFinder = new GsDumpFinder(_internalLogger);
+            _folderWithFallBackFinder = new FolderWithFallBackFinder();
+            _availableGsDumps = new GsDumps();
+            _availableGsDlls = new GsDlls();
+
+            _availableGsDumps.OnIndexUpdatedEvent += UpdatePreviewImage;
+
+            txtGSDXDirectory.DataBindings.Add(nameof(TextBox.Text), Settings, nameof(Settings.GSDXDir));
+            txtDumpsDirectory.DataBindings.Add(nameof(TextBox.Text), Settings, nameof(Settings.DumpDir));
+
+            BindListControl(lstDumps, _availableGsDumps, g => g.Files, f => f.DisplayText, g => g.SelectedFileIndex);
+            BindListControl(lstGSDX, _availableGsDlls, g => g.Files, f => f.DisplayText, g => g.SelectedFileIndex);
+
             Processes = new List<Process>();
 
-            NoImage = new Bitmap(320, 240, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            Graphics g = Graphics.FromImage(NoImage);
-            g.FillRectangle(new SolidBrush(Color.Black), new Rectangle(0, 0, 320, 240));
-            g.DrawString("No Image", new Font(FontFamily.GenericSansSerif, 48, FontStyle.Regular), new SolidBrush(Color.White), new PointF(0, 70));
-            g.Dispose();
+            NoImage = CreateDefaultImage();
         }
 
-        public void ReloadGSDXs()
+        private static void BindListControl<TModel, TElement>(ListControl lb, TModel model, Func<TModel, BindingList<TElement>> collectionAccessor, Expression<Func<TElement, string>> displayTextAccessor, Expression<Func<TModel, int>> selectedIndexAccessor)
         {
-            txtIntLog.Text += "Starting GSdx Loading Procedures" + Environment.NewLine + Environment.NewLine;
-
-            txtGSDXDirectory.Text = Properties.Settings.Default.GSDXDir;
-            txtDumpsDirectory.Text = Properties.Settings.Default.DumpDir;
-
-            lstGSDX.Items.Clear();
-            lstDumps.Items.Clear();
-
-            if (Directory.Exists(txtGSDXDirectory.Text))
+            lb.DataSource = new BindingSource
             {
-                String[] File = Directory.GetFiles(txtGSDXDirectory.Text, "*.dll", SearchOption.TopDirectoryOnly);
+                    DataSource = collectionAccessor(model)
+            };
+            lb.DisplayMember = ((MemberExpression)displayTextAccessor.Body).Member.Name;
+            lb.DataBindings.Add(nameof(lb.SelectedIndex), model, ((MemberExpression)selectedIndexAccessor.Body).Member.Name, false, DataSourceUpdateMode.OnPropertyChanged);
+        }
 
-                GSDXWrapper wrap = new GSDXWrapper();
-                foreach (var itm in File)
-                {
-                    try
-                    {
-                        wrap.Load(itm);
-
-                        lstGSDX.Items.Add(Path.GetFileName(itm) + " | " + wrap.PSEGetLibName());
-                        txtIntLog.Text += "\"" + itm + "\" correctly identified as " + wrap.PSEGetLibName() + Environment.NewLine;
-                        
-                        wrap.Unload();
-                    }
-                    catch (InvalidGSPlugin)
-                    {
-                        txtIntLog.Text += "Failed to load \"" + itm + "\". Is it really a GSdx DLL?" + Environment.NewLine;
-                    }
-                }
+        private static Bitmap CreateDefaultImage()
+        {
+            var defaultImage = new Bitmap(320, 240, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            using (var g = Graphics.FromImage(defaultImage))
+            {
+                g.FillRectangle(new SolidBrush(Color.Black), new Rectangle(0, 0, 320, 240));
+                g.DrawString("No Image", new Font(FontFamily.GenericSansSerif, 48, FontStyle.Regular), new SolidBrush(Color.White), new PointF(0, 70));
             }
 
-            txtIntLog.Text += Environment.NewLine + "Completed GSdx Loading Procedures" + Environment.NewLine + Environment.NewLine;
+            return defaultImage;
+        }
 
-            txtIntLog.Text += "Starting GSdx Dumps Loading Procedures : " + Environment.NewLine + Environment.NewLine;
-            if (Directory.Exists(txtDumpsDirectory.Text))
-            {
-                String[] Dumps = Directory.GetFiles(txtDumpsDirectory.Text, "*.gs", SearchOption.TopDirectoryOnly);
+        private void ReloadGsdxDlls()
+        {
+            _internalLogger.Information("Starting GSdx Loading Procedures");
 
-                foreach (var itm in Dumps)
-                {
-                    BinaryReader br = new BinaryReader(System.IO.File.Open(itm, FileMode.Open));
-                    Int32 CRC = br.ReadInt32();
-                    br.Close();
-                    lstDumps.Items.Add(Path.GetFileName(itm) + " | CRC : " + CRC.ToString("X"));
-                    txtIntLog.Text += "Identified Dump for game (" + CRC.ToString("X") + ") with filename \"" + itm + "\"" + Environment.NewLine;
-                }
-            }
-            txtIntLog.Text += Environment.NewLine + "Completed GSdx Dumps Loading Procedures : " + Environment.NewLine + Environment.NewLine;
-            txtIntLog.SelectionStart = txtIntLog.TextLength;
-            txtIntLog.ScrollToCaret();
+            var gsdxFolder = _folderWithFallBackFinder.GetViaPatternWithFallback(Settings.GSDXDir, "*.dll", "", "plugins", "dll", "dlls");
+            _availableGsDlls.Files.Clear();
+            foreach (var file in _gsdxDllFinder.GetEnrichedPathToValidGsdxDlls(gsdxFolder))
+                _availableGsDlls.Files.Add(file);
+
+            Settings.GSDXDir = gsdxFolder.FullName;
+            _internalLogger.Information("Completed GSdx Loading Procedures");
+        }
+
+        private void ReloadGsdxDumps()
+        {
+            _internalLogger.Information("Starting GSdx Dump Loading Procedures...");
+
+            var dumpFolder = _folderWithFallBackFinder.GetViaPatternWithFallback(Settings.DumpDir, "*.gs", "", "dumps", "gsdumps");
+
+            _availableGsDumps.Files.Clear();
+            foreach (var file in _gsDumpFinder.GetValidGsdxDumps(dumpFolder))
+                _availableGsDumps.Files.Add(file);
+
+            Settings.DumpDir = dumpFolder.FullName;
+            _internalLogger.Information("...Completed GSdx Dump Loading Procedures");
         }
 
         private void GSDumpGUI_Load(object sender, EventArgs e)
         {
-            ReloadGSDXs();
+            ReloadGsdxDlls();
+            ReloadGsdxDumps();
 
-            // Auto select GS dump
-            lstDumps.Focus();
-            if (lstDumps.Items.Count > 0)
-                lstDumps.SelectedIndex = 0;
-
-            // Auto select GSdx dll
-            if (lstGSDX.Items.Count > 0)
-                lstGSDX.SelectedIndex = 0;
+            // Auto select GS dump and GSdx dll
+            _availableGsDumps.Selected = _availableGsDumps.Files.FirstOrDefault();
+            _availableGsDlls.Selected = _availableGsDlls.Files.FirstOrDefault();
         }
 
         private void cmdBrowseGSDX_Click(object sender, EventArgs e)
@@ -165,9 +183,9 @@ namespace GSDumpGUI
             fbd.Description = "Select the GSdx DLL Directory";
             fbd.SelectedPath = AppDomain.CurrentDomain.BaseDirectory;
             if (fbd.ShowDialog() == DialogResult.OK)
-                txtGSDXDirectory.Text = fbd.SelectedPath;
-            SaveConfig();
-            ReloadGSDXs();
+                Settings.GSDXDir = fbd.SelectedPath;
+            Settings.Save();
+            ReloadGsdxDlls();
         }
 
         private void cmdBrowseDumps_Click(object sender, EventArgs e)
@@ -176,35 +194,36 @@ namespace GSDumpGUI
             fbd.Description = "Select the GSdx Dumps Directory";
             fbd.SelectedPath = AppDomain.CurrentDomain.BaseDirectory;
             if (fbd.ShowDialog() == DialogResult.OK)
-                txtDumpsDirectory.Text = fbd.SelectedPath;
-            SaveConfig();
-            ReloadGSDXs();
+                Settings.DumpDir = fbd.SelectedPath;
+            Settings.Save();
+            ReloadGsdxDumps();
         }
 
         private void cmdRun_Click(object sender, EventArgs e)
         {
             // Execute the GSReplay function
-            if (lstDumps.SelectedIndex != -1)
+            if (!_availableGsDumps.IsSelected)
             {
-                if (lstGSDX.SelectedIndex != -1)
-                    ExecuteFunction("GSReplay");
-                else
-                    MessageBox.Show("Select your GSdx first", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
                 MessageBox.Show("Select your Dump first", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (!_availableGsDlls.IsSelected)
+            {
+                MessageBox.Show("Select your GSdx first", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            ExecuteFunction("GSReplay");
         }
 
         private void ExecuteFunction(String Function)
         {
             txtLog.Text = "";
-            String GSDXName = lstGSDX.SelectedItem.ToString().Split(new char[] { '|' })[0].TrimEnd();
 
             CreateDirs();
 
             // Set the Arguments to pass to the child
-            String DLLPath = Properties.Settings.Default.GSDXDir + "\\" + GSDXName;
-            String DumpPath = "";
             String SelectedRenderer = "";
             switch (SelectedRad)
             {
@@ -230,15 +249,20 @@ namespace GSDumpGUI
                     SelectedRenderer = "13";
                     break;
             }
+
             if (SelectedRenderer != "-1")
             {
                 String GSdxIniPath = AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\inis\\gsdx.ini";
                 NativeMethods.WritePrivateProfileString("Settings", "Renderer", SelectedRenderer, GSdxIniPath);
             }
-            if (lstDumps.SelectedItem != null)
-                DumpPath = Properties.Settings.Default.DumpDir + "\\" + 
-                           lstDumps.SelectedItem.ToString().Split(new char[] { '|' })[0];
             var port = Program.Server.Port;
+
+            var dllPath = _availableGsDlls.Selected.File.FullName;
+            var dumpPath = _availableGsDumps.Selected.File.FullName;
+
+            _gsdxLogger.Information("Start new gsdx instance");
+            _gsdxLogger.Information($"\tdll: {dllPath}");
+            _gsdxLogger.Information($"\tdump: {dumpPath}");
 
             // Start the child and link the events.
             ProcessStartInfo psi = new ProcessStartInfo();
@@ -247,7 +271,7 @@ namespace GSDumpGUI
             psi.RedirectStandardError = false;
             psi.CreateNoWindow = true;
             psi.FileName = Process.GetCurrentProcess().ProcessName;
-            psi.Arguments = "\"" + DLLPath + "\"" + " \"" + DumpPath + "\"" + " \"" + Function + "\"" + " " + SelectedRenderer + " " + port;
+            psi.Arguments = "\"" + dllPath + "\"" + " \"" + dumpPath + "\"" + " \"" + Function + "\"" + " " + SelectedRenderer + " " + port;
             Process p = Process.Start(psi);
             p.OutputDataReceived += new DataReceivedEventHandler(p_OutputDataReceived);
             p.BeginOutputReadLine();
@@ -273,30 +297,27 @@ namespace GSDumpGUI
             Directory.SetCurrentDirectory(Dir);
         }
 
-        void p_Exited(object sender, EventArgs e)
+        private void p_Exited(object sender, EventArgs e)
         {
             // Remove the child if is closed
             Processes.Remove((Process)sender);
         }
 
-        void p_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        private void p_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            // Write the log.
-            txtLog.Invoke(new Action<object>(delegate(object o) 
-                { 
-                    txtLog.Text += e.Data + Environment.NewLine; 
-                    txtLog.SelectionStart = txtLog.Text.Length - 1;
-                    txtLog.ScrollToCaret();
-                }), new object[] { null });
+            _gsdxLogger.Information(e.Data);
         }
 
         private void cmdConfigGSDX_Click(object sender, EventArgs e)
         {
             // Execute the GSconfigure function
-            if (lstGSDX.SelectedIndex != -1)
-                ExecuteFunction("GSconfigure");
-            else
+            if (!_availableGsDlls.IsSelected)
+            {
                 MessageBox.Show("Select your GSdx first", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+                
+            ExecuteFunction("GSconfigure");
         }
 
         private void cmdOpenIni_Click(object sender, EventArgs e)
@@ -306,35 +327,30 @@ namespace GSDumpGUI
             Process.Start(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\inis\\gsdx.ini");
         }
 
-        private void lstDumps_SelectedIndexChanged(object sender, EventArgs e)
+        private void UpdatePreviewImage(object sender, GsFiles<GsDumpFile>.SelectedIndexUpdatedEventArgs args)
         {
-            if (lstDumps.SelectedIndex != -1)
+            if (pctBox.Image != NoImage)
+                pctBox.Image?.Dispose();
+            if (_availableGsDumps.Selected?.PreviewFile == null)
             {
-                String [] Extensions = new String[] { ".png", ".bmp" };
-                String DumpFileName = lstDumps.SelectedItem.ToString().Split(new char[] { '|' })[0];
-                String Filename = Path.GetDirectoryName(Properties.Settings.Default.DumpDir + "\\") + 
-                                  "\\" + Path.GetFileNameWithoutExtension(DumpFileName);
-
-                foreach (String Extension in Extensions)
-                {
-                    if (File.Exists(Filename + Extension))
-                    {
-                        pctBox.Load(Filename + Extension);
-                        pctBox.Cursor = Cursors.Hand;
-                        return;
-                    }
-                }
                 pctBox.Image = NoImage;
                 pctBox.Cursor = Cursors.Default;
             }
+            else
+            {
+                pctBox.Load(_availableGsDumps.Selected.PreviewFile.FullName);
+                pctBox.Cursor = Cursors.Hand;
+            }
+
+            pctBox.Tag = _availableGsDumps.Selected?.PreviewFile?.FullName;
         }
 
-        private void pctBox_Click(object sender, EventArgs e)
+        private static void PreviewImageClick(object sender, EventArgs e)
         {
-            if (pctBox.Cursor == Cursors.Hand)
-            {
-                Process.Start(pctBox.ImageLocation);
-            }
+            var previewControl = (PictureBox)sender;
+            if (previewControl.Tag == null)
+                return;
+            Process.Start((string)previewControl.Tag);
         }
 
         private void GSDumpGUI_KeyDown(object sender, KeyEventArgs e)
@@ -358,21 +374,14 @@ namespace GSDumpGUI
 
         private void txtGSDXDirectory_Leave(object sender, EventArgs e)
         {
-            SaveConfig();
-            ReloadGSDXs();
+            Settings.Save();
+            ReloadGsdxDlls();
         }
 
         private void txtDumpsDirectory_Leave(object sender, EventArgs e)
         {
-            SaveConfig(); 
-            ReloadGSDXs();
-        }
-
-        private void SaveConfig()
-        {
-            Properties.Settings.Default.GSDXDir = txtGSDXDirectory.Text;
-            Properties.Settings.Default.DumpDir = txtDumpsDirectory.Text;
-            Properties.Settings.Default.Save();
+            Settings.Save();
+            ReloadGsdxDumps();
         }
 
         private void lstProcesses_SelectedIndexChanged(object sender, EventArgs e)
