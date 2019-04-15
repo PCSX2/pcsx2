@@ -20,7 +20,12 @@
  * THE SOFTWARE.
  */
 
+using System.IO;
+
 namespace GSDumpGUI.Forms.Entities
 {
-    public sealed class GsDlls : GsFiles<GsFile> { }
+    public sealed class GsDumpFile : GsFile
+    {
+        public FileInfo PreviewFile { get; set; }
+    }
 }

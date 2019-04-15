@@ -36,7 +36,7 @@ namespace GSDumpGUI.Forms.Helper
             DirectoryInfo gsdxDllDirectory;
             if (TryGetExistingDirectory(fallBackFolder, filePattern, out gsdxDllDirectory))
                 return gsdxDllDirectory;
-            return new DirectoryInfo(Directory.GetCurrentDirectory());
+            return new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
         }
 
         private static bool TryGetExistingDirectory(string[] relativePaths, string pattern, out DirectoryInfo validDirectory)
@@ -46,7 +46,7 @@ namespace GSDumpGUI.Forms.Helper
             foreach (var relativePath in relativePaths)
             {
 
-                var candidate = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), relativePath));
+                var candidate = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativePath));
                 if (candidate.Exists && candidate.GetFiles(pattern).Any())
                 {
                     validDirectory = candidate;

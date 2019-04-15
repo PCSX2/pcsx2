@@ -36,7 +36,7 @@ namespace GSDumpGUI.Forms.Helper
             _logger = logger;
         }
 
-        public IEnumerable<GsFile> GetEnrichedPathToValidGsdxDumps(DirectoryInfo directory)
+        public IEnumerable<GsDumpFile> GetValidGsdxDumps(DirectoryInfo directory)
         {
             var dumps = directory.GetFiles("*.gs", SearchOption.TopDirectoryOnly);
 
@@ -52,11 +52,23 @@ namespace GSDumpGUI.Forms.Helper
                     }
                 }
 
+                var extensions = new[] {".png", ".bmp"};
+                var dumpPreview = default(FileInfo);
+                foreach (var extension in extensions)
+                {
+                    var imageFile = new FileInfo(Path.ChangeExtension(dump.FullName, extension));
+                    if (!imageFile.Exists)
+                        continue;
+                    dumpPreview = imageFile;
+                    break;
+                }
+
                 _logger.Information($"Identified Dump for game ({crc:X}) with filename '{dump}'");
-                yield return new GsFile
+                yield return new GsDumpFile
                 {
                         DisplayText = dump.Name + " | CRC : " + crc.ToString("X"),
-                        File = dump
+                        File = dump,
+                        PreviewFile = dumpPreview
                 };
             }
         }

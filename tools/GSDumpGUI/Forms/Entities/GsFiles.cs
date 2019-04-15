@@ -20,22 +20,59 @@
  * THE SOFTWARE.
  */
 
+using System;
 using System.ComponentModel;
 
 namespace GSDumpGUI.Forms.Entities
 {
-    public abstract class GsFiles
+    public abstract class GsFiles<TUnderlying>
+            where TUnderlying : GsFile
     {
-        public BindingList<GsFile> Files { get; } = new BindingList<GsFile>();
-        public int SelectedFileIndex { get; private set; } = -1;
+        private int _selectedFileIndex = -1;
 
-        public void SelectFirstIfAvailable()
+        public class SelectedIndexUpdatedEventArgs
         {
-            if (Files.Count > 0)
-                SelectedFileIndex = 0;
+            public SelectedIndexUpdatedEventArgs(int formerIndex, int updatedIndex)
+            {
+                FormerIndex = formerIndex;
+                UpdatedIndex = updatedIndex;
+            }
+
+            public int FormerIndex { get; }
+            public int UpdatedIndex { get; }
         }
 
-        public bool IsSelected => SelectedFileIndex != -1;
-        public GsFile Selected => SelectedFileIndex >= 0 ? Files[SelectedFileIndex] : default(GsFile);
+        public delegate void SelectedIndexUpdateEventHandler(object sender, SelectedIndexUpdatedEventArgs args);
+
+        public event SelectedIndexUpdateEventHandler OnIndexUpdatedEvent;
+        public BindingList<TUnderlying> Files { get; } = new BindingList<TUnderlying>();
+
+        public int SelectedFileIndex
+        {
+            get
+            {
+                return _selectedFileIndex;
+            }
+            set
+            {
+                var oldValue = _selectedFileIndex;
+                _selectedFileIndex = value;
+                OnIndexUpdatedEvent?.Invoke(this, new SelectedIndexUpdatedEventArgs(oldValue, value));
+            }
+        }
+
+        public bool IsSelected => SelectedFileIndex != -1 && Files.Count > SelectedFileIndex;
+
+        public TUnderlying Selected
+        {
+            get
+            {
+                return SelectedFileIndex >= 0 ? Files[SelectedFileIndex] : null;
+            }
+            set
+            {
+                SelectedFileIndex = Files.IndexOf(value);
+            }
+        }
     }
 }

@@ -33,15 +33,26 @@ namespace GSDumpGUI.Forms.Helper
         {
             _richTextBox = richTextBox;
             _richTextBox.BackColor = Color.White;
+            _richTextBox.Focus();
+            _richTextBox.HideSelection = false;
         }
 
         private void WriteLine(Color color, string line = null)
+        {
+            _richTextBox.Invoke(new MethodInvoker(delegate
+            {
+                ThreadLocalWrite(color, line);
+            }));
+        }
+
+        private void ThreadLocalWrite(Color color, string line)
         {
             if (line == null)
             {
                 _richTextBox.AppendText(Environment.NewLine);
                 return;
             }
+
             _richTextBox.SelectionStart = _richTextBox.TextLength;
             _richTextBox.SelectionLength = 0;
 

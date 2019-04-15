@@ -41,7 +41,7 @@
             this.GsdxList = new System.Windows.Forms.Label();
             this.cmdRun = new System.Windows.Forms.Button();
             this.cmdConfigGSDX = new System.Windows.Forms.Button();
-            this.txtLog = new System.Windows.Forms.TextBox();
+            this.txtLog = new System.Windows.Forms.RichTextBox();
             this.lblLog = new System.Windows.Forms.Label();
             this.cmdOpenIni = new System.Windows.Forms.Button();
             this.pctBox = new System.Windows.Forms.PictureBox();
@@ -161,7 +161,6 @@
             this.lstDumps.Name = "lstDumps";
             this.lstDumps.Size = new System.Drawing.Size(433, 173);
             this.lstDumps.TabIndex = 0;
-            this.lstDumps.SelectedIndexChanged += new System.EventHandler(this.lstDumps_SelectedIndexChanged);
             // 
             // lblDumps
             // 
@@ -209,7 +208,7 @@
             this.txtLog.Multiline = true;
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
-            this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.txtLog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Both;
             this.txtLog.Size = new System.Drawing.Size(430, 160);
             this.txtLog.TabIndex = 13;
             this.txtLog.TabStop = false;
@@ -242,7 +241,7 @@
             this.pctBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pctBox.TabIndex = 16;
             this.pctBox.TabStop = false;
-            this.pctBox.Click += new System.EventHandler(this.pctBox_Click);
+            this.pctBox.Click += new System.EventHandler(this.PreviewImageClick);
             // 
             // rdaDX9HW
             // 
@@ -744,7 +743,7 @@
         private System.Windows.Forms.Label GsdxList;
         private System.Windows.Forms.Button cmdRun;
         private System.Windows.Forms.Button cmdConfigGSDX;
-        private System.Windows.Forms.TextBox txtLog;
+        private System.Windows.Forms.RichTextBox txtLog;
         private System.Windows.Forms.Label lblLog;
         private System.Windows.Forms.Button cmdOpenIni;
         private System.Windows.Forms.PictureBox pctBox;

@@ -28,6 +28,6 @@ namespace GSDumpGUI.Forms.Helper
 {
     public interface IGsDumpFinder
     {
-        IEnumerable<GsFile> GetEnrichedPathToValidGsdxDumps(DirectoryInfo directory);
+        IEnumerable<GsDumpFile> GetValidGsdxDumps(DirectoryInfo directory);
     }
 }
