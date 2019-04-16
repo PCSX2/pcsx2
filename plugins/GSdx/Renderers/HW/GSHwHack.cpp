@@ -1690,11 +1690,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams; // + Upscaling issues
 		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed; // + Half screen on texture shuffle
 
-		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to Aggressive)
-		lut[CRC::RadiataStories] = GSC_RadiataStories;
-		lut[CRC::StarOcean3] = GSC_StarOcean3;
-		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
-
 		// Upscaling hacks
 		lut[CRC::Bully] = GSC_Bully;
 		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
@@ -1723,13 +1718,20 @@ void GSState::SetupCrcHack()
 		lut[CRC::HauntingGround] = GSC_HauntingGround; // + Texture cache issue + Date
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 
-		// Those games might requires accurate fbmask
+		// These games might requires accurate fbmask
 		lut[CRC::Sly2] = GSC_SlyGames; // + Upscaling issue
 		lut[CRC::Sly3] = GSC_SlyGames; // + Upscaling issue
 
-		// Those games require accurate_colclip (perf)
+		// These games require accurate_colclip (perf)
 		lut[CRC::CastlevaniaCoD] = GSC_CastlevaniaGames;
 		lut[CRC::CastlevaniaLoI] = GSC_CastlevaniaGames;
+
+		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to Aggressive)
+		// Needs at least Basic Blending,
+		// see https://github.com/PCSX2/pcsx2/pull/2921
+		lut[CRC::RadiataStories] = GSC_RadiataStories;
+		lut[CRC::StarOcean3] = GSC_StarOcean3;
+		lut[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
 	}
 
 	if (Aggressive) {
