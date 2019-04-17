@@ -27,12 +27,10 @@ GSRendererDX11::GSRendererDX11()
 {
 	if (theApp.GetConfigB("UserHacks"))
 	{
-		UserHacks_AlphaHack    = theApp.GetConfigB("UserHacks_AlphaHack");
 		UserHacks_AlphaStencil = theApp.GetConfigB("UserHacks_AlphaStencil");
 	}
 	else
 	{
-		UserHacks_AlphaHack    = false;
 		UserHacks_AlphaStencil = false;
 	}
 
@@ -829,17 +827,6 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 
 	m_ps_sel.clr1 = m_om_bsel.IsCLR1();
 	m_ps_sel.fba = m_context->FBA.FBA;
-
-	// FIXME: Purge aout with AlphaHack when FbMask emulation is added.
-	if (m_ps_sel.shuffle)
-	{
-		m_ps_sel.aout = 0;
-	}
-	else
-	{
-		m_ps_sel.aout = UserHacks_AlphaHack || (m_context->FRAME.FBMSK & 0xff000000) == 0x7f000000;
-	}
-	// END OF FIXME
 
 	if (PRIM->FGE)
 	{
