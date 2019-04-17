@@ -29,6 +29,7 @@ class GSRendererDX11 final : public GSRendererHW
 {
 private:
 	bool UserHacks_AlphaStencil;
+	bool m_bind_rtsample;
 
 private:
 	inline void ResetStates();

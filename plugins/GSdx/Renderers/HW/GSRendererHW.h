@@ -151,6 +151,7 @@ protected:
 	float m_userhacks_tcoffset_y;
 
 	int m_accurate_date;
+	int m_sw_blending;
 
 	bool m_channel_shuffle;
 
