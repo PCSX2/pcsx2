@@ -383,10 +383,8 @@ void GSSettingsDlg::UpdateControls()
 		}
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_DATE_TEXT), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl && hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl && hw);
-		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), ogl ? SW_SHOW : SW_HIDE);
-		ShowWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), ogl ? SW_SHOW : SW_HIDE);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_ACCURATE_BLEND_UNIT_TEXT), hw);
 
 		// Software mode settings
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_SW), sw);
@@ -615,7 +613,6 @@ void GSHacksDlg::OnInit()
 	bool ogl = renderer == GSRendererType::OGL_HW;
 	bool native = upscaling_multiplier == 1;
 
-	CheckDlgButton(m_hWnd, IDC_ALPHAHACK, theApp.GetConfigB("UserHacks_AlphaHack"));
 	CheckDlgButton(m_hWnd, IDC_WILDHACK, theApp.GetConfigB("UserHacks_WildHack"));
 	CheckDlgButton(m_hWnd, IDC_ALPHASTENCIL, theApp.GetConfigB("UserHacks_AlphaStencil"));
 	CheckDlgButton(m_hWnd, IDC_PRELOAD_GS, theApp.GetConfigB("preload_frame_with_gs_data"));
@@ -673,7 +670,6 @@ void GSHacksDlg::OnInit()
 
 	// Direct3D-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), !ogl);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHAHACK), !ogl);
 
 	// OpenGL-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER), hwhacks && ogl);
@@ -702,7 +698,6 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_SKIPDRAWHACK);
 	AddTooltip(IDC_SKIPDRAWOFFSETEDIT);
 	AddTooltip(IDC_SKIPDRAWOFFSET);
-	AddTooltip(IDC_ALPHAHACK);
 	AddTooltip(IDC_OFFSETHACK);
 	AddTooltip(IDC_SPRITEHACK);
 	AddTooltip(IDC_WILDHACK);
@@ -813,7 +808,6 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_SkipDraw_Offset", std::min(skipdraw_offset, skipdraw));
 			theApp.SetConfig("UserHacks_SkipDraw", skipdraw);
 
-			theApp.SetConfig("UserHacks_AlphaHack", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHAHACK));
 			theApp.SetConfig("UserHacks_WildHack", (int)IsDlgButtonChecked(m_hWnd, IDC_WILDHACK));
 			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
 			theApp.SetConfig("preload_frame_with_gs_data", (int)IsDlgButtonChecked(m_hWnd, IDC_PRELOAD_GS));
