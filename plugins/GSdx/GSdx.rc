@@ -120,11 +120,10 @@ BEGIN
     GROUPBOX        "Hacks",IDC_STATIC,7,7,196,186,0,WS_EX_TRANSPARENT
     // Column one - HW Hacks
     CONTROL         "Align Sprite",IDC_ALIGN_SPRITE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,19,58,8
-    CONTROL         "Alpha",IDC_ALPHAHACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,32,34,8
-    CONTROL         "Alpha Stencil",IDC_ALPHASTENCIL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,45,57,8
-    CONTROL         "Auto Flush",IDC_AUTO_FLUSH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,58,55,8
-    CONTROL         "Disable Depth Emulation",IDC_TC_DEPTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,71,92,8
-    CONTROL         "Disable Safe Features",IDC_SAFE_FEATURES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,84,85,8
+    CONTROL         "Alpha Stencil",IDC_ALPHASTENCIL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,32,57,8
+    CONTROL         "Auto Flush",IDC_AUTO_FLUSH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,45,55,8
+    CONTROL         "Disable Depth Emulation",IDC_TC_DEPTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,58,92,8
+    CONTROL         "Disable Safe Features",IDC_SAFE_FEATURES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,71,85,8
     // Column two - HW hacks
     CONTROL         "Fast Texture Invalidation",IDC_FAST_TC_INV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,19,92,8
     CONTROL         "Frame Buffer Conversion",IDC_CPU_FB_CONVERSION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,32,92,8

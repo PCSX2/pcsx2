@@ -438,7 +438,6 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_align_sprite_X"]                   = "0";
 #ifdef _WIN32
 	// Direct3D only hacks.
-	m_default_configuration["UserHacks_AlphaHack"]                        = "0";
 	m_default_configuration["UserHacks_AlphaStencil"]                     = "0";
 #endif
 	m_default_configuration["UserHacks_AutoFlush"]                        = "0";
