@@ -220,7 +220,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		str[8] = format("%d", sel.fog);
 		str[9] = format("%d", sel.clr1);
 		str[10] = format("%d", sel.fba);
-		str[11] = format("%d", sel.aout);
+		str[11] = format("%d", sel.fbmask);
 		str[12] = format("%d", sel.ltf);
 		str[13] = format("%d", sel.spritehack);
 		str[14] = format("%d", sel.tcoffsethack);
@@ -249,7 +249,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 			{"PS_FOG", str[8].c_str()},
 			{"PS_CLR1", str[9].c_str()},
 			{"PS_FBA", str[10].c_str()},
-			{"PS_AOUT", str[11].c_str()},
+			{"PS_FBMASK", str[11].c_str()},
 			{"PS_LTF", str[12].c_str()},
 			{"PS_SPRITEHACK", str[13].c_str()},
 			{"PS_TCOFFSETHACK", str[14].c_str()},

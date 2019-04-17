@@ -26,13 +26,9 @@ GSRendererDX11::GSRendererDX11()
 	: GSRendererHW(new GSTextureCache11(this))
 {
 	if (theApp.GetConfigB("UserHacks"))
-	{
 		UserHacks_AlphaStencil = theApp.GetConfigB("UserHacks_AlphaStencil");
-	}
 	else
-	{
 		UserHacks_AlphaStencil = false;
-	}
 
 	ResetStates();
 }
@@ -244,38 +240,71 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 		if (rg_mask != 0xFF)
 		{
 			if (write_ba)
+			{
+				// fprintf(stderr, "Color shuffle %s => B\n", read_ba ? "B" : "R");
 				m_om_bsel.wb = 1;
+			}
 			else
+			{
+				// fprintf(stderr, "Color shuffle %s => R"\n, read_ba ? "B" : "R");
 				m_om_bsel.wr = 1;
-		}
-		else if ((fbmask & 0xFF) != 0xFF)
-		{
+			}
 #ifdef _DEBUG
-			fprintf(stderr, "Please fix me! wb %u wr %u\n", m_om_bsel.wb, m_om_bsel.wr);
+			if (rg_mask)
+			{
+				fprintf(stderr, "ERROR: FBMASK SW emulated fb_mask:%x on RG tex shuffle not supported\n", fbmask);
+				// ASSERT(0);
+			}
 #endif
-			//ASSERT(0);
 		}
 
 		if (ba_mask != 0xFF)
 		{
 			if (write_ba)
+			{
+				// fprintf(stderr, "Color shuffle %s => A"\n, read_ba ? "A" : "G");
 				m_om_bsel.wa = 1;
+			}
 			else
+			{
+				// fprintf(stderr, "Color shuffle %s => G"\n, read_ba ? "A" : "G");
 				m_om_bsel.wg = 1;
-		}
-		else if ((fbmask & 0xFF) != 0xFF)
-		{
+			}
 #ifdef _DEBUG
-			fprintf(stderr, "Please fix me! wa %u wg %u\n", m_om_bsel.wa, m_om_bsel.wg);
+			if (ba_mask)
+			{
+				fprintf(stderr, "ERROR: FBMASK SW emulated fb_mask:%x on BA tex shuffle not supported\n", fbmask);
+				// ASSERT(0);
+			}
 #endif
-			//ASSERT(0);
 		}
 	}
 	else
 	{
 		m_ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
-		m_om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+		GSVector4i fbmask_v = GSVector4i::load((int)m_context->FRAME.FBMSK);
+		int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
+		int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
+
+		m_om_bsel.wrgba = ~ff_fbmask; // Enable channel if at least 1 bit is 0
+
+		m_ps_sel.fbmask = m_sw_blending && (~ff_fbmask & ~zero_fbmask & 0xF);
+
+		if (m_ps_sel.fbmask)
+		{
+			ps_cb.FbMask = fbmask_v.u8to32();
+			// Only alpha is special here, I think we can take a very unsafe shortcut
+			// Alpha isn't blended on the GS but directly copyied into the RT.
+			//
+			// Behavior is clearly undefined however there is a high probability that
+			// it will work. Masked bit will be constant and normally the same everywhere
+			// RT/FS output/Cached value.
+
+			/*fprintf(stderr, "FBMASK SW emulated alpha fb_mask:%x on %d bits format\n", m_context->FRAME.FBMSK,
+				(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);*/
+			m_bind_rtsample = true;
+		}
 	}
 }
 
@@ -621,6 +650,8 @@ void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 void GSRendererDX11::ResetStates()
 {
+	m_bind_rtsample = false;
+
 	m_vs_sel.key = 0;
 	m_gs_sel.key = 0;
 	m_ps_sel.key = 0;
@@ -910,6 +941,15 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	else
 	{
 		m_ps_sel.tfx = 4;
+	}
+
+	if (m_bind_rtsample)
+	{
+		// Bind the RT.This way special effect can use it.
+		// Do not always bind the rt when it's not needed,
+		// only bind it when effects use it such as fbmask emulation currently
+		// because we copy the frame buffer and it is quite slow.
+		dev->PSSetShaderResource(3, rt);
 	}
 
 	if (m_game.title == CRC::ICO)

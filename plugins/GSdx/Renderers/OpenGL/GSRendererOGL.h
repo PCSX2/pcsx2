@@ -49,7 +49,6 @@ class GSRendererOGL final : public GSRendererHW
 	};
 
 	private:
-		int m_sw_blending;
 		PRIM_OVERLAP m_prim_overlap;
 		std::vector<size_t> m_drawlist;
 
