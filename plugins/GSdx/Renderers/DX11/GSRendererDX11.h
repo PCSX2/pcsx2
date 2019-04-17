@@ -28,7 +28,6 @@
 class GSRendererDX11 final : public GSRendererHW
 {
 private:
-	bool UserHacks_AlphaHack;
 	bool UserHacks_AlphaStencil;
 
 private:
