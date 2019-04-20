@@ -154,9 +154,9 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Note: OpenGL HW renderer is able to handle Jak shadows at full speed without this option.";
 		case IDC_SAFE_FEATURES:
 			return "This option disables multiple safe features.\n\n"
-				"Disables accurate Ucnscale Point and Line rendering.\n"
+				"Disables accurate Unscale Point and Line rendering.\n"
 				"It can help Xenosaga games.\n\n"
-				"Disables accurate GS Memory Clearing to be done on the CPU, and let only the GPU hangle it.\n"
+				"Disables accurate GS Memory Clearing to be done on the CPU, and let only the GPU handle it.\n"
 				"It can help Kingdom Hearts games.";
 		case IDC_MEMORY_WRAPPING:
 			return "Emulates GS memory wrapping accurately. This fixes issues where part of the image is cut-off by block shaped sections such as the FMVs in Wallace & Gromit: The Curse of the Were-Rabbit and Thrillville.\n\n"
