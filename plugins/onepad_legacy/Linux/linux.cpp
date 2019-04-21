@@ -135,7 +135,7 @@ void PollForJoystickInput(int cpad)
                 if (IsAnalogKey(i))
                 {
                     if (abs(value) > gamePad->GetDeadzone())
-                        key_status->press(cpad, i, value*k);
+                        key_status->press(cpad, i, (int)(value*k));
                     else
                         key_status->release(cpad, i);
                 }
@@ -152,9 +152,9 @@ void PollForJoystickInput(int cpad)
                     else
                     {
                         if (sign && (-value > gamePad->GetDeadzone()))
-                            key_status->press(cpad, i, std::min((-value*k) / 128, 0xFF));
+                            key_status->press(cpad, i, std::min((int)(-value*k) / 128, 0xFF));
                         else if (!sign && (value > gamePad->GetDeadzone()))
-                            key_status->press(cpad, i, std::min((value*k) / 128, 0xFF));
+                            key_status->press(cpad, i, std::min((int)(value*k) / 128, 0xFF));
                         else
                             key_status->release(cpad, i);
                     }
