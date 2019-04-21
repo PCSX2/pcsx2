@@ -26,7 +26,7 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
           wxID_ANY,                    // ID
           _T("Gamepad configuration"), // Title
           wxDefaultPosition,           // Position
-          wxSize(400, 230),            // Width + Length
+          wxSize(400, 270),            // Width + Length
           // Style
           wxSYSTEM_MENU |
               wxCAPTION |
@@ -38,8 +38,8 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
     m_pan_gamepad_config = new wxPanel(
         this,              // Parent
         wxID_ANY,          // ID
-        wxDefaultPosition, // Prosition
-        wxSize(300, 200)   // Size
+        wxDefaultPosition, // Position
+        wxSize(300, 230)   // Size
     );
     m_cb_rumble = new wxCheckBox(
         m_pan_gamepad_config, // Parent
@@ -78,7 +78,8 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
         0,                    // min value 0x0000
         0x7FFF,               // max value 0x7FFF
         wxPoint(150, 83),     // Position
-        wxSize(200, 30)       // Size
+        wxSize(200, 50),       // Size
+        wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM
     );
 
     wxString txt_joystick = wxT("Joystick sensibility");
@@ -86,7 +87,7 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
         m_pan_gamepad_config, // Parent
         wxID_ANY,             // ID
         txt_joystick,         // Text which must be displayed
-        wxPoint(20, 120),     // Position
+        wxPoint(20, 150),     // Position
         wxDefaultSize         // Size
     );
 
@@ -96,23 +97,24 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
         0,                    // value
         0,                    // min value
         200,                  // max value
-        wxPoint(150, 113),    // Position
-        wxSize(200, 30)       // Size
-    );
-
-    m_bt_ok = new wxButton(
-        m_pan_gamepad_config, // Parent
-        wxID_ANY,             // ID
-        _T("&OK"),            // Label
-        wxPoint(250, 160),    // Position
-        wxSize(60, 25)        // Size
+        wxPoint(150, 143),    // Position
+        wxSize(200, 50),       // Size
+        wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM
     );
 
     m_bt_cancel = new wxButton(
         m_pan_gamepad_config, // Parent
         wxID_ANY,             // ID
         _T("&Cancel"),        // Label
-        wxPoint(320, 160),    // Position
+        wxPoint(250, 210),    // Position
+        wxSize(60, 25)        // Size
+    );
+
+    m_bt_ok = new wxButton(
+        m_pan_gamepad_config, // Parent
+        wxID_ANY,             // ID
+        _T("&OK"),            // Label
+        wxPoint(320, 210),    // Position
         wxSize(60, 25)        // Size
     );
 
