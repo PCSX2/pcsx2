@@ -85,7 +85,7 @@ public:
         memset(&keys, 0, sizeof(keys));
         log = packed_options = joyid_map = 0;
         ff_intensity = 0x7FFF; // set it at max value by default
-        sensibility = 500;
+        sensibility = 100;   // set it at 100%
         for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
         {
             keysym_map[pad].clear();

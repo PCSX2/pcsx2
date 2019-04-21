@@ -95,7 +95,7 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
         wxID_ANY,             // ID
         0,                    // value
         0,                    // min value
-        100,                  // max value
+        200,                  // max value
         wxPoint(150, 113),    // Position
         wxSize(200, 30)       // Size
     );
