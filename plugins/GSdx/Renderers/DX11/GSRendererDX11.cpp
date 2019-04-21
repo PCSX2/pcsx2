@@ -289,7 +289,14 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 
 		m_om_bsel.wrgba = ~ff_fbmask; // Enable channel if at least 1 bit is 0
 
-		m_ps_sel.fbmask = m_sw_blending && (~ff_fbmask & ~zero_fbmask & 0xF);
+		// TO DO LIST:
+		// Doing triangle class is slow on dx unlike on gl,
+		// an idea would be to split fbmask in separate levels such as
+		// 1 Basic level > fbmask when no text shuffle and no triangle class
+		// 2 Medium level > enable fbmask when there is also text shuffle, triangle class still excluded
+		// 3 High/Full level > enable fbmask on triangle class as well.
+		// Selection for the level can be shared and maybe have d3d use it's own blend gui list.
+		m_ps_sel.fbmask = m_sw_blending && (m_vt.m_primclass != GS_TRIANGLE_CLASS) && (~ff_fbmask & ~zero_fbmask & 0xF);
 
 		if (m_ps_sel.fbmask)
 		{
