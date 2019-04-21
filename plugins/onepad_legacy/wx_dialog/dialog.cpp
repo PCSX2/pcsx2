@@ -462,14 +462,19 @@ void Dialog::JoystickEvent(wxTimerEvent &event)
                         }
                         else
                         {
+                            int dir=0;
                             if (map >= PAD_L_UP && map <= PAD_L_LEFT)
                             {
-                                m_pan_tabs[events.jaxis.which]->MoveJoystick(events.jaxis.axis, events.jaxis.value);
+                                if ((map==PAD_L_LEFT) || (map==PAD_L_RIGHT)) dir=0;         // Assumption that LEFT-RIGHT axis is always 0 and UP-DOWN always 1
+                                else if ((map==PAD_L_UP) || (map==PAD_L_DOWN)) dir=1;       // and so on, can be wrong.
+                                m_pan_tabs[events.jaxis.which]->MoveJoystick(dir, events.jaxis.value);
                                 m_pan_tabs[events.jaxis.which]->ShowImg(img_left_cursor);
                             }
                             else if (map >= PAD_R_UP && map <= PAD_R_LEFT)
                             {
-                                m_pan_tabs[events.jaxis.which]->MoveJoystick(events.jaxis.axis, events.jaxis.value);
+                                if ((map==PAD_R_LEFT) || (map==PAD_R_RIGHT)) dir=2;
+                                else if ((map==PAD_R_UP) || (map==PAD_R_DOWN)) dir=3;
+                                m_pan_tabs[events.jaxis.which]->MoveJoystick(dir, events.jaxis.value);
                                 m_pan_tabs[events.jaxis.which]->ShowImg(img_right_cursor);
                             }
                             else if (map < PAD_L_UP) // if this is not a joystick
