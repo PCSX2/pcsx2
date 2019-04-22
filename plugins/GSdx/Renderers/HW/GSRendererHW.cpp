@@ -36,11 +36,14 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_channel_shuffle(false)
 	, m_lod(GSVector2i(0,0))
 	, m_src(nullptr)
+	, m_disable_ts_half_bottom(false)
 {
 	m_mipmap = theApp.GetConfigI("mipmap_hw");
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
 	m_large_framebuffer  = theApp.GetConfigB("large_framebuffer");
 	m_accurate_date = theApp.GetConfigI("accurate_date");
+	m_disable_ts_half_bottom = theApp.GetConfigB("disable_ts_half_bottom");
+
 	if (theApp.GetConfigB("UserHacks")) {
 		m_userhacks_enabled_gs_mem_clear = !theApp.GetConfigB("UserHacks_Disable_Safe_Features");
 		m_userHacks_enabled_unscale_ptln = !theApp.GetConfigB("UserHacks_Disable_Safe_Features");
@@ -460,7 +463,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 	// Test cases: Crash Twinsantiy and DBZ BT3
 	int height_delta = m_src->m_valid_rect.height() - m_r.height();
 	// Test Case: NFS: HP2 splits the effect h:256 and h:192 so 64
-	bool half_bottom = abs(height_delta) <= 64;
+	bool half_bottom = abs(height_delta) <= 64 && !m_disable_ts_half_bottom;
 
 	if (PRIM->FST) {
 		GL_INS("First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
