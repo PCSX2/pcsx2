@@ -157,6 +157,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		src->m_target = true; // So renderer can check if a conversion is required
 		src->m_from_target = dst->m_texture; // avoid complex condition on the renderer
 		src->m_32_bits_fmt = dst->m_32_bits_fmt;
+		src->m_valid_rect = dst->m_valid;
 
 		// Insert the texture in the hash set to keep track of it. But don't bother with
 		// texture cache list. It means that a new Source is created everytime we need it.
@@ -1224,6 +1225,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// Keep a trace of origin of the texture
 		src->m_target = true;
 		src->m_from_target = dst->m_texture;
+		src->m_valid_rect = dst->m_valid;
 
 		dst->Update();
 
@@ -1557,6 +1559,7 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	, m_spritehack_t(false)
 	, m_p2t(NULL)
 	, m_from_target(NULL)
+	, m_valid_rect(0, 0)
 {
 	m_TEX0 = TEX0;
 	m_TEXA = TEXA;
