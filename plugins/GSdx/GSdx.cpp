@@ -302,6 +302,11 @@ void GSdxApp::Init()
 	m_gs_acc_blend_level.push_back(GSSetting(4, "Full", "Very Slow"));
 	m_gs_acc_blend_level.push_back(GSSetting(5, "Ultra", "Ultra Slow"));
 
+	m_gs_acc_blend_level_d3d11.push_back(GSSetting(0, "None", "Fastest"));
+	m_gs_acc_blend_level_d3d11.push_back(GSSetting(1, "Basic", "Recommended"));
+	m_gs_acc_blend_level_d3d11.push_back(GSSetting(2, "Medium", "Debug"));
+	m_gs_acc_blend_level_d3d11.push_back(GSSetting(3, "High", "Debug"));
+
 	m_gs_tv_shaders.push_back(GSSetting(0, "None", ""));
 	m_gs_tv_shaders.push_back(GSSetting(1, "Scanline filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(2, "Diagonal filter", ""));
@@ -338,6 +343,9 @@ void GSdxApp::Init()
 	m_default_configuration["CaptureFileName"]                            = "";
 	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
 	m_default_configuration["dx_break_on_severity"]                       = "0";
+
+	// D3D Blending option
+	m_default_configuration["accurate_blending_unit_d3d11"]               = "1";
 
 	// OpenCL device. Windows only for now.
 	m_default_configuration["ocldev"]                                     = "";

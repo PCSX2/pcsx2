@@ -75,10 +75,6 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_WILDHACK:
 			return "Lowers the GS precision to avoid gaps between pixels when upscaling.\n"
 				"Fixes the text on Wild Arms games.";
-		case IDC_ALPHASTENCIL:
-			return "Extend stencil based emulation of destination alpha to perform stencil operations while drawing.\n\n"
-				"Improves many shadows which are normally overdrawn in parts, may affect other effects.\n"
-				"Will disable partial transparency in some games or even prevent drawing some elements altogether.";
 		case IDC_ALIGN_SPRITE:
 			return "Fixes issues with upscaling(vertical lines) in Namco games like Ace Combat, Tekken, Soul Calibur, etc.";
 		case IDC_ROUND_SPRITE:
@@ -121,8 +117,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is ultra slow!\n"
 				"It is intended for debug.\n\n"
 				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow!\n"
-				"It is intended for debug.\n\n"
-				"Note: Blending is very limited on Direct3D and only Basic mode is partially available.";
+				"It is intended for debug.";
 		case IDC_TC_DEPTH:
 			return "Disable the support of Depth buffer in the texture cache.\n"
 				"It can help to increase speed but it will likely create various glitches.";
@@ -200,6 +195,24 @@ const char* dialog_message(int ID, bool* updateText) {
 				"It increases GPU/memory requirements.\n\n"
 				"Note: It should be disabled for Armored Core, Destroy All Humans, and Gran Turismo.\n"
 				"It will amplify RAM/VRAM spikes. Other games might be affected as well.";
+		// Windows only options.
+#ifdef _WIN32
+		case IDC_ALPHASTENCIL:
+			return "Extend stencil based emulation of destination alpha to perform stencil operations while drawing.\n\n"
+				"Improves many shadows which are normally overdrawn in parts, may affect other effects.\n"
+				"Will disable partial transparency in some games or even prevent drawing some elements altogether.";
+		case IDC_ACCURATE_BLEND_UNIT_D3D11:
+			return "Control the accuracy level of the GS blending unit emulation.\n\n"
+				"None:\nFast but introduces various rendering issues.\n"
+				"It is intended for slow computer.\n\n"
+				"Basic:\nEmulate correctly some of the effects with a limited speed penalty.\n"
+				"This is the recommended setting.\n\n"
+				"Medium:\nExtend it to color shuffling. Performance impact remains reasonable..\n"
+				"It is intended for debug.\n\n"
+				"High:\nExtend it to triangle based primitives. It is ultra slow!\n"
+				"It is intended for debug.\n\n"
+				"Note: Direct3D and OpenGL blending options aren't the same, even High blending on Direct3D is like 1/3 of Basic blending on OpenGL.";
+#endif
 		default:
 			if (updateText)
 				*updateText = false;
