@@ -26,6 +26,7 @@
 GSRendererOGL::GSRendererOGL()
 	: GSRendererHW(new GSTextureCacheOGL(this))
 {
+	m_sw_blending = theApp.GetConfigI("accurate_blending_unit");
 	if (theApp.GetConfigB("UserHacks"))
 		UserHacks_tri_filter = static_cast<TriFiltering>(theApp.GetConfigI("UserHacks_TriFilter"));
 	else

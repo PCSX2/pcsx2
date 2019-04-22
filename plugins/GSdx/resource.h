@@ -42,7 +42,8 @@
 #define IDC_ACCURATE_DATE               2046
 #define IDC_ACCURATE_DATE_TEXT          2047
 #define IDC_ACCURATE_BLEND_UNIT         2048
-#define IDC_ACCURATE_BLEND_UNIT_TEXT    2049
+#define IDC_ACCURATE_BLEND_UNIT_D3D11   2049
+#define IDC_ACCURATE_BLEND_UNIT_TEXT    2050
 // Software Renderer Settings:
 #define IDC_MIPMAP_SW                   2060
 #define IDC_AA1                         2061
