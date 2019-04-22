@@ -27,6 +27,13 @@
 
 class GSRendererDX11 final : public GSRendererHW
 {
+	enum ACC_BLEND_D3D11 {
+		ACC_BLEND_NONE_D3D11   = 0,
+		ACC_BLEND_BASIC_D3D11  = 1,
+		ACC_BLEND_MEDIUM_D3D11 = 2,
+		ACC_BLEND_HIGH_D3D11   = 3
+	};
+
 private:
 	bool UserHacks_AlphaStencil;
 	bool m_bind_rtsample;

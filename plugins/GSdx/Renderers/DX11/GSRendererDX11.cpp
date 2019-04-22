@@ -212,6 +212,36 @@ void GSRendererDX11::EmulateZbuffer()
 
 void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 {
+	// FBmask blend level selection.
+	// We do this becaue:
+	// 1. D3D sucks.
+	// 2. FB copy is slow, especially on triangle primitives which is unplayable with some games.
+	// 3. SW blending isn't implemented yet.
+	bool enable_fbmask_emulation = false;
+	switch (m_sw_blending)
+	{
+		case ACC_BLEND_HIGH_D3D11:
+			// Fully enable Fbmask emulation like on opengl, note misses sw blending to work as opengl on some games (Genji).
+			// Debug
+			enable_fbmask_emulation = true;
+			break;
+		case ACC_BLEND_MEDIUM_D3D11:
+			// Enable Fbmask emulation excluding triangle class because it is quite slow.
+			// Exclude 0x80000000 because Genji needs sw blending, otherwise it breaks some effects.
+			enable_fbmask_emulation = ((m_vt.m_primclass != GS_TRIANGLE_CLASS) && (m_context->FRAME.FBMSK != 0x80000000));
+			break;
+		case ACC_BLEND_BASIC_D3D11:
+			// Enable Fbmask emulation excluding triangle class because it is quite slow.
+			// Exclude 0x80000000 because Genji needs sw blending, otherwise it breaks some effects.
+			// Also exclude fbmask emulation on texture shuffle just in case, it is probably safe tho.
+			enable_fbmask_emulation = (!m_texture_shuffle && (m_vt.m_primclass != GS_TRIANGLE_CLASS) && (m_context->FRAME.FBMSK != 0x80000000));
+			break;
+		case ACC_BLEND_NONE_D3D11:
+		default:
+			break;
+	}
+	
+
 	// Uncomment to disable texture shuffle emulation.
 	// m_texture_shuffle = false;
 
@@ -249,13 +279,8 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 				// fprintf(stderr, "Color shuffle %s => R"\n, read_ba ? "B" : "R");
 				m_om_bsel.wr = 1;
 			}
-#ifdef _DEBUG
 			if (rg_mask)
-			{
-				fprintf(stderr, "ERROR: FBMASK SW emulated fb_mask:%x on RG tex shuffle not supported\n", fbmask);
-				// ASSERT(0);
-			}
-#endif
+				m_ps_sel.fbmask = 1;
 		}
 
 		if (ba_mask != 0xFF)
@@ -270,13 +295,22 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 				// fprintf(stderr, "Color shuffle %s => G"\n, read_ba ? "A" : "G");
 				m_om_bsel.wg = 1;
 			}
-#ifdef _DEBUG
 			if (ba_mask)
-			{
-				fprintf(stderr, "ERROR: FBMASK SW emulated fb_mask:%x on BA tex shuffle not supported\n", fbmask);
-				// ASSERT(0);
-			}
-#endif
+				m_ps_sel.fbmask = 1;
+		}
+
+		if (m_ps_sel.fbmask && enable_fbmask_emulation)
+		{
+			// fprintf(stderr, "FBMASK SW emulated fb_mask:%x on tex shuffle\n", fbmask);
+			ps_cb.FbMask.r = rg_mask;
+			ps_cb.FbMask.g = rg_mask;
+			ps_cb.FbMask.b = ba_mask;
+			ps_cb.FbMask.a = ba_mask;
+			m_bind_rtsample = true;
+		}
+		else
+		{
+			m_ps_sel.fbmask = 0;
 		}
 	}
 	else
@@ -289,14 +323,7 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 
 		m_om_bsel.wrgba = ~ff_fbmask; // Enable channel if at least 1 bit is 0
 
-		// TO DO LIST:
-		// Doing triangle class is slow on dx unlike on gl,
-		// an idea would be to split fbmask in separate levels such as
-		// 1 Basic level > fbmask when no text shuffle and no triangle class
-		// 2 Medium level > enable fbmask when there is also text shuffle, triangle class still excluded
-		// 3 High/Full level > enable fbmask on triangle class as well.
-		// Selection for the level can be shared and maybe have d3d use it's own blend gui list.
-		m_ps_sel.fbmask = m_sw_blending && (m_vt.m_primclass != GS_TRIANGLE_CLASS) && (~ff_fbmask & ~zero_fbmask & 0xF);
+		m_ps_sel.fbmask = enable_fbmask_emulation && (~ff_fbmask & ~zero_fbmask & 0xF);
 
 		if (m_ps_sel.fbmask)
 		{
@@ -308,7 +335,7 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 			// it will work. Masked bit will be constant and normally the same everywhere
 			// RT/FS output/Cached value.
 
-			/*fprintf(stderr, "FBMASK SW emulated alpha fb_mask:%x on %d bits format\n", m_context->FRAME.FBMSK,
+			/*fprintf(stderr, "FBMASK SW emulated fb_mask:%x on %d bits format\n", m_context->FRAME.FBMSK,
 				(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);*/
 			m_bind_rtsample = true;
 		}
