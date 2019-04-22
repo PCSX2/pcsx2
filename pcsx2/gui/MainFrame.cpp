@@ -474,7 +474,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menuSys.Append(MenuId_EnableRecordingTools, _("Enable &Recording Tools"),
 		wxEmptyString, wxITEM_CHECK);
 #endif
-	m_menuSys.AppendSeparator();
 
 	if(IsDebugBuild || IsDevBuild)
 		m_menuSys.Append(MenuId_EnableHostFs,	_("Enable &Host Filesystem"),
