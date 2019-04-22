@@ -1081,7 +1081,7 @@ void GSRendererHW::Draw()
 	}
 
 	// The rectangle of the draw
-	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
+	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
 
 	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt_tex, ds_tex, tex))
 	{
@@ -1089,7 +1089,7 @@ void GSRendererHW::Draw()
 		return;
 	}
 
-	if (!OI_BlitFMV(rt, tex, r)) {
+	if (!OI_BlitFMV(rt, tex, m_r)) {
 		GL_INS("Warning skipping a draw call (%d)", s_n);
 		return;
 	}
@@ -1102,7 +1102,7 @@ void GSRendererHW::Draw()
 				&& !m_context->TEST.ATE // no alpha test
 				&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
 				&& (m_vt.m_eq.rgba == 0xFFFF) // constant color write
-				&& r.x == 0 && r.y == 0) { // Likely full buffer write
+				&& m_r.x == 0 && m_r.y == 0) { // Likely full buffer write
 
 			OI_GsMemClear();
 
@@ -1165,20 +1165,20 @@ void GSRendererHW::Draw()
 
 	// Help to detect rendering outside of the framebuffer
 #if _DEBUG
-	if (m_upscale_multiplier * r.z > m_width) {
-		GL_INS("ERROR: RT width is too small only %d but require %d", m_width, m_upscale_multiplier * r.z);
+	if (m_upscale_multiplier * m_r.z > m_width) {
+		GL_INS("ERROR: RT width is too small only %d but require %d", m_width, m_upscale_multiplier * m_r.z);
 	}
-	if (m_upscale_multiplier * r.w > m_height) {
-		GL_INS("ERROR: RT height is too small only %d but require %d", m_height, m_upscale_multiplier * r.w);
+	if (m_upscale_multiplier * m_r.w > m_height) {
+		GL_INS("ERROR: RT height is too small only %d but require %d", m_height, m_upscale_multiplier * m_r.w);
 	}
 #endif
 
 	if(fm != 0xffffffff && rt)
 	{
 		//rt->m_valid = rt->m_valid.runion(r);
-		rt->UpdateValidity(r);
+		rt->UpdateValidity(m_r);
 
-		m_tc->InvalidateVideoMem(context->offset.fb, r, false);
+		m_tc->InvalidateVideoMem(context->offset.fb, m_r, false);
 
 		m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, context->FRAME.Block());
 	}
@@ -1186,9 +1186,9 @@ void GSRendererHW::Draw()
 	if(zm != 0xffffffff && ds)
 	{
 		//ds->m_valid = ds->m_valid.runion(r);
-		ds->UpdateValidity(r);
+		ds->UpdateValidity(m_r);
 
-		m_tc->InvalidateVideoMem(context->offset.zb, r, false);
+		m_tc->InvalidateVideoMem(context->offset.zb, m_r, false);
 
 		m_tc->InvalidateVideoMemType(GSTextureCache::RenderTarget, context->ZBUF.Block());
 	}

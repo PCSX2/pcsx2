@@ -139,6 +139,7 @@ private:
 
 protected:
 	GSTextureCache* m_tc;
+	GSVector4i m_r;
 
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) = 0;
 
