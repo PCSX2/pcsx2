@@ -407,6 +407,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20055
 Name   = Battle Gear 3
 Region = NTSC-Unk
+vuClampMode = 3 // Stops car from falling through track.
 ---------------------------------------------
 Serial = SCAJ-20056
 Name   = Bujingai
@@ -23139,6 +23140,7 @@ Region = NTSC-J
 Serial = SLPM-65434
 Name   = Battle Gear 3
 Region = NTSC-J
+vuClampMode = 3 // Stops car from falling through track.
 ---------------------------------------------
 Serial = SLPM-65435
 Name   = Diamond Dust
