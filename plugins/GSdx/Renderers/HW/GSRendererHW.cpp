@@ -448,6 +448,20 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 	tex_pos &= 0xFF;
 	read_ba = (tex_pos > 112 && tex_pos < 144);
 
+	// Here's the idea
+	// TS effect is 16 bits but we emulate it on a 32 bits format
+	// Normally this means we need to divide size by 2.
+	//
+	// Some games do two TS effects on each half of the buffer.
+	// This makes a mess for us in the TC because we end up with two targets
+	// when we only want one, thus half screen bug.
+	//
+	// 32bits emulation means we can do the effect once but double the size.
+	// Test cases: Crash Twinsantiy and DBZ BT3
+	int height_delta = m_src->m_valid_rect.height() - m_r.height();
+	// Test Case: NFS: HP2 splits the effect h:256 and h:192 so 64
+	bool half_bottom = abs(height_delta) <= 64;
+
 	if (PRIM->FST) {
 		GL_INS("First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
 
@@ -462,17 +476,19 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 			else
 				v[i+1].U     += 128u;
 
-			// Height is too big (2x).
-			int tex_offset = v[i].V & 0xF;
-			GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
+			if (!half_bottom){
+				// Height is too big (2x).
+				int tex_offset = v[i].V & 0xF;
+				GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
 
-			GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i+1].XYZ.Y, v[i+1].V);
-			tmp = GSVector4i(tmp - offset).srl32(1) + offset;
+				GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i + 1].XYZ.Y, v[i + 1].V);
+				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
-			v[i].XYZ.Y   = (uint16)tmp.x;
-			v[i].V       = (uint16)tmp.y;
-			v[i+1].XYZ.Y = (uint16)tmp.z;
-			v[i+1].V     = (uint16)tmp.w;
+				v[i].XYZ.Y = (uint16)tmp.x;
+				v[i].V = (uint16)tmp.y;
+				v[i + 1].XYZ.Y = (uint16)tmp.z;
+				v[i + 1].V = (uint16)tmp.w;
+			}
 		}
 	} else {
 		const float offset_8pix = 8.0f / tw;
@@ -489,17 +505,19 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 			else
 				v[i+1].ST.S  += offset_8pix;
 
-			// Height is too big (2x).
-			GSVector4i offset(o.OFY, o.OFY);
+			if (!half_bottom) {
+				// Height is too big (2x).
+				GSVector4i offset(o.OFY, o.OFY);
 
-			GSVector4i tmp(v[i].XYZ.Y, v[i+1].XYZ.Y);
-			tmp = GSVector4i(tmp - offset).srl32(1) + offset;
+				GSVector4i tmp(v[i].XYZ.Y, v[i + 1].XYZ.Y);
+				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
-			//fprintf(stderr, "Before %d, After %d\n", v[i+1].XYZ.Y, tmp.y);
-			v[i].XYZ.Y   = (uint16)tmp.x;
-			v[i].ST.T   /= 2.0f;
-			v[i+1].XYZ.Y = (uint16)tmp.y;
-			v[i+1].ST.T /= 2.0f;
+				//fprintf(stderr, "Before %d, After %d\n", v[i+1].XYZ.Y, tmp.y);
+				v[i].XYZ.Y = (uint16)tmp.x;
+				v[i].ST.T /= 2.0f;
+				v[i + 1].XYZ.Y = (uint16)tmp.y;
+				v[i + 1].ST.T /= 2.0f;
+			}
 		}
 	}
 
@@ -509,17 +527,20 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 	else
 		m_vt.m_max.p.x += 8.0f;
 
-
-	float delta_Y = m_vt.m_max.p.y - m_vt.m_min.p.y;
-	m_vt.m_max.p.y -= delta_Y / 2.0f;
+	if (!half_bottom) {
+		float delta_Y = m_vt.m_max.p.y - m_vt.m_min.p.y;
+		m_vt.m_max.p.y -= delta_Y / 2.0f;
+	}
 
 	if (read_ba)
 		m_vt.m_min.t.x -= 8.0f;
 	else
 		m_vt.m_max.t.x += 8.0f;
 
-	float delta_T = m_vt.m_max.t.y - m_vt.m_min.t.y;
-	m_vt.m_max.t.y -= delta_T / 2.0f;
+	if (!half_bottom) {
+		float delta_T = m_vt.m_max.t.y - m_vt.m_min.t.y;
+		m_vt.m_max.t.y -= delta_T / 2.0f;
+	}
 }
 
 GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Source* tex)
