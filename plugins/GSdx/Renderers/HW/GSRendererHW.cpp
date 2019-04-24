@@ -35,6 +35,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_userhacks_tcoffset_y(0)
 	, m_channel_shuffle(false)
 	, m_lod(GSVector2i(0,0))
+	, m_src(nullptr)
 {
 	m_mipmap = theApp.GetConfigI("mipmap_hw");
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
@@ -880,7 +881,7 @@ void GSRendererHW::Draw()
 		ds_tex = ds->m_texture;
 	}
 
-	GSTextureCache::Source* tex = NULL;
+	m_src = nullptr;
 	m_texture_shuffle = false;
 
 	if(PRIM->TME)
@@ -960,7 +961,7 @@ void GSRendererHW::Draw()
 
 		GetTextureMinMax(r, TEX0, MIP_CLAMP, m_vt.IsLinear());
 
-		tex = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, r) : m_tc->LookupSource(TEX0, env.TEXA, r);
+		m_src = tex_psm.depth ? m_tc->LookupDepthSource(TEX0, env.TEXA, r) : m_tc->LookupSource(TEX0, env.TEXA, r);
 
 		// Round 2
 		if (IsMipMapActive() && m_mipmap == 2 && !tex_psm.depth) {
@@ -983,7 +984,7 @@ void GSRendererHW::Draw()
 
 				GetTextureMinMax(r, MIP_TEX0, MIP_CLAMP, m_vt.IsLinear());
 
-				tex->UpdateLayer(MIP_TEX0, r, layer - m_lod.x);
+				m_src->UpdateLayer(MIP_TEX0, r, layer - m_lod.x);
 			}
 
 			m_vt.m_min.t = tmin;
@@ -995,7 +996,7 @@ void GSRendererHW::Draw()
 		//
 		// Both input and output are 16 bits and texture was initially 32 bits!
 		m_texture_shuffle = (GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 16) && (tex_psm.bpp == 16)
-			&& draw_sprite_tex && tex->m_32_bits_fmt;
+			&& draw_sprite_tex && m_src->m_32_bits_fmt;
 
 		// Shadow_of_memories_Shadow_Flickering (Okami mustn't call this code)
 		if (m_texture_shuffle && m_vertex.next < 3 && PRIM->FST && (m_context->FRAME.FBMSK == 0)) {
@@ -1016,7 +1017,7 @@ void GSRendererHW::Draw()
 		// Texture shuffle is not yet supported with strange clamp mode
 		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
 
-		if (tex->m_target && m_context->TEX0.PSM == PSM_PSMT8 && single_page && draw_sprite_tex) {
+		if (m_src->m_target && m_context->TEX0.PSM == PSM_PSMT8 && single_page && draw_sprite_tex) {
 			GL_INS("Channel shuffle effect detected (2nd shot)");
 			m_channel_shuffle = true;
 		} else {
@@ -1044,7 +1045,7 @@ void GSRendererHW::Draw()
 			m_context->Dump(m_dump_root+s);
 		}
 
-		if(s_savet && s_n >= s_saven && tex)
+		if(s_savet && s_n >= s_saven && m_src)
 		{
 			s = format("%05d_f%lld_itex_%05x_%s_%d%d_%02x_%02x_%02x_%02x.dds",
 				s_n, frame, (int)context->TEX0.TBP0, psm_str(context->TEX0.PSM),
@@ -1052,13 +1053,13 @@ void GSRendererHW::Draw()
 				(int)context->CLAMP.MINU, (int)context->CLAMP.MAXU,
 				(int)context->CLAMP.MINV, (int)context->CLAMP.MAXV);
 
-			tex->m_texture->Save(m_dump_root+s);
+			m_src->m_texture->Save(m_dump_root+s);
 
-			if(tex->m_palette)
+			if(m_src->m_palette)
 			{
 				s = format("%05d_f%lld_itpx_%05x_%s.dds", s_n, frame, context->TEX0.CBP, psm_str(context->TEX0.CPSM));
 
-				tex->m_palette->Save(m_dump_root+s);
+				m_src->m_palette->Save(m_dump_root+s);
 			}
 		}
 
@@ -1083,13 +1084,13 @@ void GSRendererHW::Draw()
 	// The rectangle of the draw
 	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
 
-	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt_tex, ds_tex, tex))
+	if(m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt_tex, ds_tex, m_src))
 	{
 		GL_INS("Warning skipping a draw call (%d)", s_n);
 		return;
 	}
 
-	if (!OI_BlitFMV(rt, tex, m_r)) {
+	if (!OI_BlitFMV(rt, m_src, m_r)) {
 		GL_INS("Warning skipping a draw call (%d)", s_n);
 		return;
 	}
@@ -1153,7 +1154,7 @@ void GSRendererHW::Draw()
 
 	//
 
-	DrawPrims(rt_tex, ds_tex, tex);
+	DrawPrims(rt_tex, ds_tex, m_src);
 
 	//
 
