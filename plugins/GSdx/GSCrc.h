@@ -96,7 +96,6 @@ public:
 		LordOfTheRingsThirdAge,
 		MajokkoALaMode2,
 		Manhunt2,
-		MetalGearSolid3,
 		MetalSlug6,
 		MidnightClub3,
 		NanoBreaker,

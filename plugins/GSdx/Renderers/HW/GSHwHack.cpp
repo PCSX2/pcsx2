@@ -79,22 +79,7 @@ bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && /*fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 &&*/ (fi.TBP0 == 0x01c00 || fi.TBP0 == 0x02000) && fi.TPSM == PSM_PSMZ16)
-		{
-			// Sky effect. Depth on texture shuffle.
-			// The hack also causes issues with the blur effects, breaking them.
-			// Note: (PAL skip 5) = (NTSC skip 4)
-			if(g_crc_region == CRC::EU)
-			{
-				// Keep the hack on partial level because we have a half screen issue on EU region.
-				skip = 5;
-			}
-			else if(Aggressive)
-			{
-				skip = 4;
-			}
-		}
-		else if((g_crc_region == CRC::EU || Aggressive || !s_nativeres) && !fi.TME && (fi.FBP == 0x02a00 || fi.FBP == 0x03000) && fi.FPSM == PSM_PSMCT16)
+		if((g_crc_region == CRC::EU || Aggressive || !s_nativeres) && !fi.TME && (fi.FBP == 0x02a00 || fi.FBP == 0x03000) && fi.FPSM == PSM_PSMCT16)
 		{
 			// Character outlines.
 			// Glow/blur effect. Causes ghosting on upscaled resolution.
@@ -111,23 +96,7 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMZ16)
-		{
-			// Sky effect. Depth on texture shuffle.
-			// The hack also causes issues with the blur effects, breaking them.
-			// Note: Depth Emulation should be disabled when running this hack. It may cause some ground glitches otherwise.
-			// Note2: (PAL skip 5) = (NTSC skip 4) 
-			if(g_crc_region == CRC::EU)
-			{
-				// Keep the hack on partial level because we have a half screen issue on EU region.
-				skip = 5;
-			}
-			else if(Aggressive)
-			{
-				skip = 4;
-			}
-		}
-		else if((g_crc_region == CRC::EU || Aggressive || !s_nativeres) && fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
+		if((g_crc_region == CRC::EU || Aggressive || !s_nativeres) && fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
 		{
 			// Ghosting/Blur effect. Upscaling issue.
 			// Can be fixed with TC X,Y offsets.
@@ -824,7 +793,6 @@ bool GSC_SonicUnleashed(const GSFrameInfo& fi, int& skip)
 		if(fi.TME && fi.FPSM == PSM_PSMCT16S && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT16)
 		{
 			// Improper Texture shuffle emulation.
-			// Half Screen bottom issue.
 			skip = 1000; // shadow
 		}
 	}
@@ -1318,43 +1286,6 @@ bool GSC_GTASanAndreas(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_MetalGearSolid3(const GSFrameInfo& fi, int& skip)
-{
-	// Halfscreen bottom issue
-	// Hack is old that was used to remove channel shuffle and likely needs to be updated.
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x02000 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 1000; // 76, 79
-		}
-		else if(fi.TME && fi.FBP == 0x02800 && fi.FPSM == PSM_PSMCT24 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1000; // 69
-		}
-	}
-	else
-	{
-		if(!fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32)
-		{
-			skip = 0;
-		}
-		else if(!fi.TME && fi.FBP == fi.TBP0 && fi.TBP0 == 0x2000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT24)
-		{
-			if(g_crc_region == CRC::US || g_crc_region == CRC::JP || g_crc_region == CRC::KO)
-			{
-				skip = 119;	//ntsc
-			}
-			else
-			{
-				skip = 136;	//pal
-			}
-		}
-	}
-
-	return true;
-}
-
 template<uptr state_addr>
 bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 {
@@ -1677,8 +1608,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::BurnoutTakedown] = GSC_BurnoutGames;
 
 		// Half Screen bottom issue
-		lut[CRC::DBZBT2] = GSC_DBZBT2; // Half screen on depth format 16bit
-		lut[CRC::DBZBT3] = GSC_DBZBT3; // Half screen on depth format 16bit
 		lut[CRC::DemonStone] = GSC_DemonStone; // Half screen on texture shuffle
 		lut[CRC::Tekken5] = GSC_Tekken5;
 
@@ -1686,12 +1615,14 @@ void GSState::SetupCrcHack()
 		lut[CRC::Genji] = GSC_Genji;
 
 		// Texture shuffle
-		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers; // + Half screen on texture shuffle
+		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
 		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams; // + Upscaling issues
-		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed; // + Half screen on texture shuffle
+		lut[CRC::SonicUnleashed] = GSC_SonicUnleashed;
 
 		// Upscaling hacks
 		lut[CRC::Bully] = GSC_Bully;
+		lut[CRC::DBZBT2] = GSC_DBZBT2;
+		lut[CRC::DBZBT3] = GSC_DBZBT3;
 		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
@@ -1740,7 +1671,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFX2] = GSC_FFXGames;
 		lut[CRC::FFX] = GSC_FFXGames;
 		lut[CRC::FFXII] = GSC_FFXGames;
-		lut[CRC::MetalGearSolid3] = GSC_MetalGearSolid3; // Half screen issue + accurate blending
 		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
 		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;

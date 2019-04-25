@@ -77,22 +77,6 @@ CRC::Game CRC::m_games[] =
 	{0x21068223, Okami, US, 0},
 	{0x891F223F, Okami, EU, 0}, // PAL DE, ES & FR.
 	{0xC5DEFEA0, Okami, JP, 0},
-	{0x086273D2, MetalGearSolid3, EU, 0}, // - PAL UK & FR
-	{0x26A6E286, MetalGearSolid3, DE, 0},
-	{0x9F185CE1, MetalGearSolid3, EU, 0},
-	{0x98D4BC93, MetalGearSolid3, ES, 0},
-	{0x79ED26AD, MetalGearSolid3, EU, 0},
-	{0x5E31EA42, MetalGearSolid3, EU, 0},
-	{0xD7ED797D, MetalGearSolid3, DE, 0},
-	{0x053D2239, MetalGearSolid3, US, 0}, // Metal Gear Solid 3 Subsistence disc1
-	{0x01B2FA7F, MetalGearSolid3, US, 0}, // Metal Gear Solid 3 Subsistence disc2
-	{0xAA31B5BF, MetalGearSolid3, US, 0},
-	{0x86BC3040, MetalGearSolid3, US, 0}, // Metal Gear Solid 3 Subsistence disc1
-	{0x0481AD8A, MetalGearSolid3, JP, 0},
-	{0xC69ACB6F, MetalGearSolid3, KO, 0}, // Metal Gear Solid 3 Snake Eater
-	{0xB0D195EF, MetalGearSolid3, KO, 0}, // Metal Gear Solid 3 Subsistence disc1
-	{0x3EBABC9C, MetalGearSolid3, KO, 0}, // Metal Gear Solid 3 Subsistence disc2
-	{0x8A5C25A7, MetalGearSolid3, ES, 0}, // Metal Gear Solid 3 Subsistence Spanish version
 	{0x278722BF, DBZBT2, EU, 0},
 	{0xFE961D28, DBZBT2, US, 0},
 	{0x0393B6BE, DBZBT2, EU, 0},
