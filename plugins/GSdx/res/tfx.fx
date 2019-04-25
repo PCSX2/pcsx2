@@ -81,7 +81,7 @@ struct PS_OUTPUT
 
 Texture2D<float4> Texture : register(t0);
 Texture2D<float4> Palette : register(t1);
-Texture2D<float4> RtSample : register(t3);
+Texture2D<float4> RtSampler : register(t3);
 Texture2D<float4> RawTexture : register(t4);
 SamplerState TextureSampler : register(s0);
 SamplerState PaletteSampler : register(s1);
@@ -920,7 +920,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	if (PS_FBMASK)
 	{
-		float4 rt = RtSample.Load(int3(input.p.xy, 0));
+		float4 rt = RtSampler.Load(int3(input.p.xy, 0));
 		uint4 denorm_rt = uint4(rt * 255.0f + 0.5f);
 		uint4 denorm_c = uint4(c * 255.0f + 0.5f);
 		c = float4((denorm_c & ~FbMask) | (denorm_rt & FbMask)) / 255.0f;

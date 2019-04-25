@@ -74,16 +74,15 @@ bool GSC_Bully(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-// Potentially partially dx only
 bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if((g_crc_region == CRC::EU || Aggressive || !s_nativeres) && !fi.TME && (fi.FBP == 0x02a00 || fi.FBP == 0x03000) && fi.FPSM == PSM_PSMCT16)
+		if((Aggressive || !s_nativeres) && !fi.TME && (fi.FBP == 0x02a00 || fi.FBP == 0x03000) && fi.FPSM == PSM_PSMCT16)
 		{
 			// Character outlines.
 			// Glow/blur effect. Causes ghosting on upscaled resolution.
-			// Don't enable hack on native res if crc(ntsc only) is below aggressive.
+			// Don't enable hack on native res if crc is below aggressive.
 			skip = 10;
 		}
 	}
@@ -91,16 +90,15 @@ bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-// Potentially partially dx only
 bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if((g_crc_region == CRC::EU || Aggressive || !s_nativeres) && fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
+		if((Aggressive || !s_nativeres) && fi.TME && (fi.FBP == 0x03400 || fi.FBP == 0x02e00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
 		{
 			// Ghosting/Blur effect. Upscaling issue.
 			// Can be fixed with TC X,Y offsets.
-			// Don't enable hack on native res if crc(ntsc only) is below aggressive.
+			// Don't enable hack on native res if crc is below aggressive.
 			skip = 3;
 		}
 	}
@@ -159,13 +157,13 @@ bool GSC_DemonStone(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-// Channel effect not properly supported yet
 bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
 		if(fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8)
 		{
+			// Channel effect not properly supported yet
 			skip = 9;
 		}
 	}

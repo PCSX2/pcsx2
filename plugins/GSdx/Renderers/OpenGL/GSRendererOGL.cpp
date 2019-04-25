@@ -905,7 +905,7 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 	}
 #endif
 
-	//fprintf(stderr, "%d: Yes, code can be optimized (draw of %d vertices)\n", s_n, count);
+	fprintf(stderr, "%d: Yes, code can be optimized (draw of %d vertices)\n", s_n, count);
 	return overlap;
 }
 
