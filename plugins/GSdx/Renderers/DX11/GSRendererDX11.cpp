@@ -801,6 +801,18 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 				//ASSERT(0);
 			}
 		}
+
+		// Color clip
+		if (m_env.COLCLAMP.CLAMP == 0 && rt)
+		{
+			// fprintf(stderr, "COLCLIP HDR mode ENABLED\n");
+			GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
+			GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
+			hdr_rt = dev->CreateRenderTarget(rtsize.x, rtsize.y, DXGI_FORMAT_R32G32B32A32_FLOAT);
+			// Warning: StretchRect must be called before BeginScene otherwise
+			// vertices will be overwritten. Trust me you don't want to do that.
+			dev->StretchRect(rt, sRect, hdr_rt, dRect, ShaderConvert_COPY, false);
+		}
 	}
 
 	if (m_ps_sel.dfmt == 1)
@@ -828,18 +840,6 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	}
 
 	//
-
-	bool hdr_colclip = m_env.COLCLAMP.CLAMP == 0 && rt;
-	if (hdr_colclip)
-	{
-		// fprintf(stderr, "COLCLIP HDR mode ENABLED\n");
-		GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
-		GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-		hdr_rt = dev->CreateRenderTarget(rtsize.x, rtsize.y, DXGI_FORMAT_R32G32B32A32_FLOAT);
-		// Warning: StretchRect must be called before BeginScene otherwise
-		// vertices will be overwritten. Trust me you don't want to do that.
-		dev->StretchRect(rt, sRect, hdr_rt, dRect, ShaderConvert_COPY, false);
-	}
 
 	dev->BeginScene();
 
