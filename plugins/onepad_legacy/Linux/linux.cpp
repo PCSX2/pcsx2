@@ -131,11 +131,11 @@ void PollForJoystickInput(int cpad)
                 int value = gamePad->GetAxisFromKey(cpad, i);
                 bool sign = key_to_axis_sign(cpad, i);
                 bool full_axis = key_to_axis_type(cpad, i);
-
+                float k=conf->get_sensibility()/100.0; // convert sensibility to float
                 if (IsAnalogKey(i))
                 {
                     if (abs(value) > gamePad->GetDeadzone())
-                        key_status->press(cpad, i, value);
+                        key_status->press(cpad, i, (int)(value*k));
                     else
                         key_status->release(cpad, i);
                 }
@@ -152,9 +152,9 @@ void PollForJoystickInput(int cpad)
                     else
                     {
                         if (sign && (-value > gamePad->GetDeadzone()))
-                            key_status->press(cpad, i, std::min(-value / 128, 0xFF));
+                            key_status->press(cpad, i, std::min((int)(-value*k) / 128, 0xFF));
                         else if (!sign && (value > gamePad->GetDeadzone()))
-                            key_status->press(cpad, i, std::min(value / 128, 0xFF));
+                            key_status->press(cpad, i, std::min((int)(value*k) / 128, 0xFF));
                         else
                             key_status->release(cpad, i);
                     }

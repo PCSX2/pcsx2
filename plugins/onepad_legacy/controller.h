@@ -85,7 +85,7 @@ public:
         memset(&keys, 0, sizeof(keys));
         log = packed_options = joyid_map = 0;
         ff_intensity = 0x7FFF; // set it at max value by default
-        sensibility = 500;
+        sensibility = 100;   // set it at 100%
         for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
         {
             keysym_map[pad].clear();
@@ -127,16 +127,21 @@ public:
     }
 
     /**
-	 * Set sensibility value, sensibility is not yet implemented(and will probably be after evdev)
-	 * However, there will be an upper range too, less than 0 is an obvious wrong
-	 * Anyway, we are doing object oriented code, members are definitely not supposed to be public
+	 * Set sensibility value.
+	 * There will be an upper range, and less than 0 is obviously wrong.
+	 * We are doing object oriented code, so members are definitely not supposed to be public.
 	 **/
     void set_sensibility(u32 new_sensibility)
     {
-        if (sensibility > 0)
+        if (new_sensibility > 0)
         {
             sensibility = new_sensibility;
         }
+        else
+        {
+            sensibility = 1;
+        }
+        
     }
 
     u32 get_sensibility()
