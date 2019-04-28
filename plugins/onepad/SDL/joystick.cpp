@@ -263,9 +263,12 @@ bool JoystickInfo::TestForce(float strength = 0.60)
 
 int JoystickInfo::GetInput(gamePadValues input)
 {
+    float k = g_conf.get_sensibility() / 100.0; // convert sensibility to float
+
     // Handle analog inputs which range from -32k to +32k. Range conversion is handled later in the controller
     if (IsAnalogKey(input)) {
         int value = SDL_GameControllerGetAxis(m_controller, (SDL_GameControllerAxis)m_pad_to_sdl[input]);
+        value *= k;
         return (abs(value) > m_deadzone) ? value : 0;
     }
 
