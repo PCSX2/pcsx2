@@ -24,9 +24,12 @@
   * Pragmatically, event handing's going in here too.
   */
 
+#include "keyboard.h"
+
+#if defined(__unix__)
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-#include "keyboard.h"
+#endif
 
 #ifdef _WIN32
 char *KeysymToChar(int keysym)
@@ -276,7 +279,10 @@ bool PollX11KeyboardMouseEvent(u32 &pkey)
 LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     static bool lbutton = false, rbutton = false;
-    key_status->keyboard_state_acces(cpad);
+    for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
+    {
+        key_status->keyboard_state_acces(pad);
+    }
 
     switch (msg)
     {

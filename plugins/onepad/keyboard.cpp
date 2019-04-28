@@ -24,8 +24,11 @@
   * Pragmatically, event handing's going in here too.
   */
 
+#if defined(__unix__)
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#endif
+
 #include "keyboard.h"
 
 #ifdef _WIN32
@@ -240,7 +243,10 @@ bool PollX11KeyboardMouseEvent(u32 &pkey)
 LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     static bool lbutton = false, rbutton = false;
-    g_key_status.keyboard_state_acces(cpad);
+    for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad) 
+    {
+        g_key_status.keyboard_state_acces(pad);
+    }
 
     switch (msg) {
         case WM_KEYDOWN:

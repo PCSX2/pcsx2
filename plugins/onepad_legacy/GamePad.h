@@ -23,8 +23,10 @@
 
 #include "onepad.h"
 #include "controller.h"
+
 #ifdef SDL_BUILD
 #include <SDL.h>
+
 #define HAT_UP SDL_HAT_UP
 #define HAT_DOWN SDL_HAT_DOWN
 #define HAT_RIGHT SDL_HAT_RIGHT

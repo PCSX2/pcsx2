@@ -28,9 +28,10 @@
 #include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/slider.h>
-#include "GamePad.h"
-#include "keyboard.h"
-#include "onepad.h"
+
+#include "../GamePad.h"
+#include "../keyboard.h"
+#include "../onepad.h"
 
 class JoystickConfiguration : public wxDialog
 {
