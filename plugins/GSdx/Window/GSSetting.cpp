@@ -141,11 +141,15 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Enables external shader for additional post-processing effects.";
 		case IDC_FXAA:
 			return "Enables fast approximate anti-aliasing. Small performance impact.";
-		case IDC_AUTO_FLUSH:
+		case IDC_AUTO_FLUSH_HW:
 			return "Force a primitive flush when a framebuffer is also an input texture.\n"
 				"Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.\n"
-				"Warning: it's very costly on the performance.\n\n"
+				"Warning: It's very costly on the performance.\n\n"
 				"Note: OpenGL HW renderer is able to handle Jak shadows at full speed without this option.";
+		case IDC_AUTO_FLUSH_SW:
+			return "Force a primitive flush when a framebuffer is also an input texture.\n"
+				"Fixes some processing effects such as the shadows in the Jak series and radiosity in GTA:SA.\n"
+				"Warning: It's very costly on the performance.";
 		case IDC_SAFE_FEATURES:
 			return "This option disables multiple safe features.\n\n"
 				"Disables accurate Unscale Point and Line rendering.\n"

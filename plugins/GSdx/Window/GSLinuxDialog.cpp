@@ -338,16 +338,19 @@ void populate_sw_table(GtkWidget* sw_table)
 	GtkWidget* threads_label = left_label("Extra rendering threads:");
 	GtkWidget* threads_spin  = CreateSpinButton(0, 32, "extrathreads");
 
-	GtkWidget* aa_check         = CreateCheckBox("Edge Anti-aliasing (Del)", "aa1");
-	GtkWidget* mipmap_check     = CreateCheckBox("Mipmapping", "mipmap");
+	GtkWidget* aa_check           = CreateCheckBox("Edge Anti-aliasing (Del)", "aa1");
+	GtkWidget* mipmap_check       = CreateCheckBox("Mipmapping", "mipmap");
+	GtkWidget* autoflush_sw_check = CreateCheckBox("Auto Flush", "autoflush_sw");
 
 	AddTooltip(aa_check, IDC_AA1);
 	AddTooltip(mipmap_check, IDC_MIPMAP_SW);
+	AddTooltip(autoflush_sw_check, IDC_AUTO_FLUSH_SW);
 	AddTooltip(threads_label, threads_spin, IDC_SWTHREADS);
 
 	s_table_line = 0;
-	InsertWidgetInTable(sw_table , threads_label, threads_spin);
-	InsertWidgetInTable(sw_table , aa_check     , mipmap_check);
+	InsertWidgetInTable(sw_table , threads_label , threads_spin);
+	InsertWidgetInTable(sw_table , autoflush_sw_check , aa_check);
+	InsertWidgetInTable(sw_table , mipmap_check);
 }
 
 void populate_shader_table(GtkWidget* shader_table)
@@ -479,7 +482,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_fast_inv, IDC_FAST_TC_INV);
 	AddTooltip(hack_depth_check, IDC_TC_DEPTH);
 	AddTooltip(hack_cpu_fbcv, IDC_CPU_FB_CONVERSION);
-	AddTooltip(hack_auto_flush, IDC_AUTO_FLUSH);
+	AddTooltip(hack_auto_flush, IDC_AUTO_FLUSH_HW);
 	AddTooltip(hack_safe_features, IDC_SAFE_FEATURES);
 	AddTooltip(hack_merge_sprite, IDC_MERGE_PP_SPRITE);
 	AddTooltip(hack_wrap_mem, IDC_MEMORY_WRAPPING);
@@ -488,7 +491,7 @@ void populate_hack_table(GtkWidget* hack_table)
 
 
 	s_table_line = 0;
-	//Hacks
+	// Hacks
 	// Column one and two HW Hacks
 	InsertWidgetInTable(hack_table , align_sprite_check  , hack_cpu_fbcv);
 	InsertWidgetInTable(hack_table , hack_auto_flush     , hack_wrap_mem);
