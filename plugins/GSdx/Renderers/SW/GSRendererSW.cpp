@@ -77,9 +77,9 @@ GSRendererSW::GSRendererSW(int threads)
 
 	m_dump_root = root_sw;
 
-	// Reset handler with the auto flush hack enabled on the SW renderer
-	// Impact on perf is rather small, and it avoids an extra hack option.
-	if (!GLLoader::in_replayer) {
+	// Reset handler with the auto flush hack enabled on the SW renderer.
+	// Some games run better without the hack so rely on ini/gui option.
+	if (!GLLoader::in_replayer && theApp.GetConfigB("autoflush_sw")) {
 		m_userhacks_auto_flush = true;
 		ResetHandlers();
 	}

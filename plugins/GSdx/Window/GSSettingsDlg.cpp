@@ -132,6 +132,7 @@ void GSSettingsDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_LARGE_FB, theApp.GetConfigB("large_framebuffer"));
 	CheckDlgButton(m_hWnd, IDC_MIPMAP_SW, theApp.GetConfigB("mipmap"));
 	CheckDlgButton(m_hWnd, IDC_AA1, theApp.GetConfigB("aa1"));
+	CheckDlgButton(m_hWnd, IDC_AUTO_FLUSH_SW, theApp.GetConfigB("autoflush_sw"));
 
 	// Hacks
 	CheckDlgButton(m_hWnd, IDC_HACKS_ENABLED, theApp.GetConfigB("UserHacks"));
@@ -157,6 +158,7 @@ void GSSettingsDlg::OnInit()
 	AddTooltip(IDC_MIPMAP_SW);
 	AddTooltip(IDC_SWTHREADS);
 	AddTooltip(IDC_SWTHREADS_EDIT);
+	AddTooltip(IDC_AUTO_FLUSH_SW);
 	AddTooltip(IDC_LARGE_FB);
 
 	UpdateControls();
@@ -283,6 +285,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			theApp.SetConfig("paltex", (int)IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
 			theApp.SetConfig("large_framebuffer", (int)IsDlgButtonChecked(m_hWnd, IDC_LARGE_FB));
 			theApp.SetConfig("aa1", (int)IsDlgButtonChecked(m_hWnd, IDC_AA1));
+			theApp.SetConfig("autoflush_sw", (int)IsDlgButtonChecked(m_hWnd, IDC_AUTO_FLUSH_SW));
 			theApp.SetConfig("UserHacks", (int)IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 
 			// The LOWORD returned by UDM_GETPOS automatically restricts the value to its input range.
@@ -403,6 +406,7 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_TEXT), sw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS_EDIT), sw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SWTHREADS), sw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_AUTO_FLUSH_SW), sw);
 
 		// Hacks
 		EnableWindow(GetDlgItem(m_hWnd, IDC_HACKS_ENABLED), hw);
@@ -631,7 +635,7 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfigB("UserHacks_DisableDepthSupport"));
 	CheckDlgButton(m_hWnd, IDC_CPU_FB_CONVERSION, theApp.GetConfigB("UserHacks_CPU_FB_Conversion"));
 	CheckDlgButton(m_hWnd, IDC_FAST_TC_INV, theApp.GetConfigB("UserHacks_DisablePartialInvalidation"));
-	CheckDlgButton(m_hWnd, IDC_AUTO_FLUSH, theApp.GetConfigB("UserHacks_AutoFlush"));
+	CheckDlgButton(m_hWnd, IDC_AUTO_FLUSH_HW, theApp.GetConfigB("UserHacks_AutoFlush"));
 	CheckDlgButton(m_hWnd, IDC_SAFE_FEATURES, theApp.GetConfigB("UserHacks_Disable_Safe_Features"));
 	CheckDlgButton(m_hWnd, IDC_MEMORY_WRAPPING, theApp.GetConfigB("wrap_gs_mem"));
 	CheckDlgButton(m_hWnd, IDC_MERGE_PP_SPRITE, theApp.GetConfigB("UserHacks_merge_pp_sprite"));
@@ -659,7 +663,7 @@ void GSHacksDlg::OnInit()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TC_DEPTH), hwhacks);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_CPU_FB_CONVERSION), hwhacks);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_FAST_TC_INV), hwhacks);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_AUTO_FLUSH), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_AUTO_FLUSH_HW), hwhacks);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SAFE_FEATURES), hwhacks);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MEMORY_WRAPPING), hwhacks);
 
@@ -723,7 +727,7 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_TC_DEPTH);
 	AddTooltip(IDC_CPU_FB_CONVERSION);
 	AddTooltip(IDC_FAST_TC_INV);
-	AddTooltip(IDC_AUTO_FLUSH);
+	AddTooltip(IDC_AUTO_FLUSH_HW);
 	AddTooltip(IDC_SAFE_FEATURES);
 	AddTooltip(IDC_MEMORY_WRAPPING);
 	AddTooltip(IDC_TRI_FILTER);
@@ -826,7 +830,7 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_DisableDepthSupport", (int)IsDlgButtonChecked(m_hWnd, IDC_TC_DEPTH));
 			theApp.SetConfig("UserHacks_CPU_FB_Conversion", (int)IsDlgButtonChecked(m_hWnd, IDC_CPU_FB_CONVERSION));
 			theApp.SetConfig("UserHacks_DisablePartialInvalidation", (int)IsDlgButtonChecked(m_hWnd, IDC_FAST_TC_INV));
-			theApp.SetConfig("UserHacks_AutoFlush", (int)IsDlgButtonChecked(m_hWnd, IDC_AUTO_FLUSH));
+			theApp.SetConfig("UserHacks_AutoFlush", (int)IsDlgButtonChecked(m_hWnd, IDC_AUTO_FLUSH_HW));
 			theApp.SetConfig("UserHacks_Disable_Safe_Features", (int)IsDlgButtonChecked(m_hWnd, IDC_SAFE_FEATURES));
 			theApp.SetConfig("wrap_gs_mem", (int)IsDlgButtonChecked(m_hWnd, IDC_MEMORY_WRAPPING));
 			theApp.SetConfig("UserHacks_merge_pp_sprite", (int)IsDlgButtonChecked(m_hWnd, IDC_MERGE_PP_SPRITE));

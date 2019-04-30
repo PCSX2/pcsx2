@@ -50,6 +50,7 @@
 #define IDC_SWTHREADS_TEXT              2062
 #define IDC_SWTHREADS                   2063
 #define IDC_SWTHREADS_EDIT              2064
+#define IDC_AUTO_FLUSH_SW               2065
 // PSX:
 #define IDD_GPUCONFIG                   2070
 #define IDC_ASPECTRATIO                 2071
@@ -90,7 +91,7 @@
 #define IDC_TC_DEPTH                    2116
 #define IDC_PRELOAD_GS                  2117
 #define IDC_FAST_TC_INV                 2118
-#define IDC_AUTO_FLUSH                  2119
+#define IDC_AUTO_FLUSH_HW               2119
 #define IDC_MEMORY_WRAPPING             2120
 #define IDC_TRI_FILTER                  2121
 #define IDC_TRI_FILTER_TEXT             2122

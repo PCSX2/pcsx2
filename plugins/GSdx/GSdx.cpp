@@ -364,6 +364,7 @@ void GSdxApp::Init()
 	m_default_configuration["accurate_date"]                              = "1";
 	m_default_configuration["accurate_blending_unit"]                     = "1";
 	m_default_configuration["AspectRatio"]                                = "1";
+	m_default_configuration["autoflush_sw"]                               = "1";
 	m_default_configuration["capture_enabled"]                            = "0";
 	m_default_configuration["capture_out_dir"]                            = "/tmp/GSdx_Capture";
 	m_default_configuration["capture_threads"]                            = "4";
