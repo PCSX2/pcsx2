@@ -264,13 +264,24 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState) {
 		for ( ; it != list->end(); ++it) {
 			bool b = mVUcmpProg(mVU, *it[0], 0);
 			if (EmuConfig.Gamefixes.ScarfaceIbit) {
-				if (isVU1 && ((((u32*)mVU.regs().Micro)[startPC / 4 + 1]) == 0x80200118) && ((((u32*)mVU.regs().Micro)[startPC / 4 + 3]) == 0x81000062)) {
+				if (isVU1 && ((((u32*)mVU.regs().Micro)[startPC / 4 + 1]) == 0x80200118) &&
+						     ((((u32*)mVU.regs().Micro)[startPC / 4 + 3]) == 0x81000062)) {
 					b = true;
 					mVU.prog.cleared = 0;
 					mVU.prog.cur = it[0];
 					mVU.prog.isSame = 1;
 				}
-			}
+            } else if (EmuConfig.Gamefixes.CrashTagTeamRacingIbit) {
+				// Crash tag team tends to make changes to the I register settings in the addresses 0x2bd0 - 0x3ff8
+				// so detect when the code is only changed in this region and don't recompile. Use the same Scarface hack
+				// to access the new I regsiter settings (Look at doIbit() in microVU_Compile.inl
+                if (isVU1 && (memcmp_mmx((u8 *)(it[0]->data), (u8 *)(mVU.regs().Micro), 0x2bd0) == 0)) {
+                    b = true;
+                    mVU.prog.cleared = 0;
+                    mVU.prog.cur = it[0];
+                    mVU.prog.isSame = 1;
+                }
+            }
 			if (b) {
 				quick.block = it[0]->block[startPC/8];
 				quick.prog  = it[0];
