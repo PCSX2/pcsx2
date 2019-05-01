@@ -247,7 +247,7 @@ void MainEmuFrame::ConnectMenus()
 	// Capture
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Video_Record_Click, this, MenuId_Capture_Video_Record);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Video_Stop_Click, this, MenuId_Capture_Video_Stop);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click, this, MenuId_Capture_Screenshot_Screenshot);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click, this, MenuId_Capture_Screenshot);
 
 #ifndef DISABLE_RECORDING
 	// Recording
@@ -562,8 +562,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_submenuVideoCapture.Append(MenuId_Capture_Video_Record, _("Start Recording"));
 	m_submenuVideoCapture.Append(MenuId_Capture_Video_Stop, _("Stop Recording"))->Enable(false);
 
-	m_menuCapture.Append(MenuId_Capture_Screenshot, _("Screenshot"), &m_submenuScreenshot);
-	m_submenuScreenshot.Append(MenuId_Capture_Screenshot_Screenshot, _("Screenshot"));
+	m_menuCapture.Append(MenuId_Capture_Screenshot, _("Screenshot"));
 
 	// ------------------------------------------------------------------------
 

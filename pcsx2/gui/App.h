@@ -186,7 +186,6 @@ enum MenuIdentifiers
 	MenuId_Capture_Video_Record,
 	MenuId_Capture_Video_Stop,
 	MenuId_Capture_Screenshot,
-	MenuId_Capture_Screenshot_Screenshot,
 
 #ifndef DISABLE_RECORDING
 	// Recording Subsection
