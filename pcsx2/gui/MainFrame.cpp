@@ -340,7 +340,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	, m_menuDebug			( *new wxMenu() )
 	, m_menuCapture			( *new wxMenu() )
 	, m_submenuVideoCapture	( *new wxMenu() )
-	, m_submenuScreenshot	( *new wxMenu() )
 #ifndef DISABLE_RECORDING
 	, m_menuRecording(*new wxMenu())
 #endif

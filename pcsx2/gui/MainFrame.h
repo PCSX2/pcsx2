@@ -114,7 +114,6 @@ protected:
 
 	wxMenu&			m_menuCapture;
 	wxMenu&			m_submenuVideoCapture;
-	wxMenu&			m_submenuScreenshot;
 
 #ifndef DISABLE_RECORDING
 	wxMenu&			m_menuRecording;
