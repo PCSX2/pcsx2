@@ -595,26 +595,6 @@ bool GSC_DevilMayCry3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_StarWarsForceUnleashed(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x038a0 || fi.FBP == 0x03ae0) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x02300 && fi.TPSM == PSM_PSMZ24)
-		{
-			skip = 1000;	//9, shadows
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x034a0 || fi.TBP0 == 0x36e0) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1579,7 +1559,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::ShadowofRome] = GSC_ShadowofRome;
 		lut[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
 		lut[CRC::Spartan] = GSC_Spartan;
-		lut[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
 		lut[CRC::SFEX3] = GSC_SFEX3;
 		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
