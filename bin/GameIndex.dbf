@@ -14183,6 +14183,7 @@ Compat = 5
 Serial = SLES-53439
 Name   = Crash Tag Team Racing
 Region = PAL-M6
+CrashTagTeamRacingIbit = 1 // Fixes constant recompilation problems.
 ---------------------------------------------
 Serial = SLES-53441
 Name   = Heroes of the Pacific
@@ -40059,6 +40060,7 @@ Serial = SLUS-21191
 Name   = Crash Tag Team Racing
 Region = NTSC-U
 Compat = 5
+CrashTagTeamRacingIbit = 1 // Fixes constant recompilation problems.
 ---------------------------------------------
 Serial = SLUS-21192
 Name   = Cabela's Outdoor Adventures 2006
