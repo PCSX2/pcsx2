@@ -1672,18 +1672,7 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 	uint32 FBP = m_context->FRAME.Block();
 	uint32 FPSM = m_context->FRAME.PSM;
 
-	if(!PRIM->TME)
-	{
-		if(FPSM == PSM_PSMCT24 && FBP == 0x2bc0)
-		{
-			if(ds)
-				ds->Commit(); // Don't bother to save few MB for a single game
-			m_dev->ClearDepth(ds);
-
-			return false;
-		}
-	}
-	else if(PRIM->TME)
+	if(PRIM->TME)
 	{
 		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_max.p.z == 0))
 		{
