@@ -123,7 +123,6 @@ public:
 		ShinOnimusha,
 		Shox,
 		Simple2000Vol114,
-		SimpsonsGame,
 		SkyGunner,
 		Sly2,
 		Sly3,

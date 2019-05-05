@@ -1381,22 +1381,6 @@ bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
-		{
-			// Removes character outlines, similar to DBZ BT3.
-			// Upscaling causes the outlines to be out of place but can be fixed with TC Offsets.
-			// The hack can be used to increase slight performance.
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef ENABLE_DYNAMIC_CRC_HACK
@@ -1659,7 +1643,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::GodOfWar] = GSC_GodOfWar;
 		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas; // RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly. Can be used as an upscaling hack.
 		lut[CRC::Okami] = GSC_Okami;
-		lut[CRC::SimpsonsGame] = GSC_SimpsonsGame;
 	}
 
 	m_gsc = lut[m_game.title];
