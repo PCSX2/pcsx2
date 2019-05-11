@@ -673,8 +673,8 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 
 	memset(&desc, 0, sizeof(desc));
 
-	desc.Width = w;
-	desc.Height = h;
+	desc.Width = std::max(1, w); // texture min is 1 for dx
+	desc.Height = std::max(1, h);
 	desc.Format = (DXGI_FORMAT)format;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
