@@ -1554,12 +1554,12 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	: Surface(r, temp)
 	, m_palette_obj(nullptr)
 	, m_palette(nullptr)
+	, m_valid_rect(0, 0)
 	, m_target(false)
 	, m_complete(false)
 	, m_spritehack_t(false)
 	, m_p2t(NULL)
 	, m_from_target(NULL)
-	, m_valid_rect(0, 0)
 {
 	m_TEX0 = TEX0;
 	m_TEXA = TEXA;

@@ -29,14 +29,14 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_custom_height(1024)
 	, m_reset(false)
 	, m_upscale_multiplier(1)
+	, m_disable_ts_half_bottom(false)
 	, m_tc(tc)
+	, m_src(nullptr)
 	, m_userhacks_tcoffset(false)
 	, m_userhacks_tcoffset_x(0)
 	, m_userhacks_tcoffset_y(0)
 	, m_channel_shuffle(false)
 	, m_lod(GSVector2i(0,0))
-	, m_src(nullptr)
-	, m_disable_ts_half_bottom(false)
 {
 	m_mipmap = theApp.GetConfigI("mipmap_hw");
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
