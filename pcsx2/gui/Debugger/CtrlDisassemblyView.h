@@ -49,7 +49,7 @@ public:
 	void gotoAddress(u32 addr);
 	void gotoPc() { gotoAddress(cpu->getPC()); };
 	void scrollStepping(u32 newPc);
-	DECLARE_EVENT_TABLE()
+	wxDECLARE_EVENT_TABLE();
 private:
 	void drawBranchLine(wxDC& dc, std::map<u32,int>& addressPositions, BranchLine& line);
 	void render(wxDC& dc);

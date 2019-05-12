@@ -64,7 +64,7 @@
 #include <wx/osx/private.h>		// needed to implement the app!
 #endif
 
-IMPLEMENT_APP(Pcsx2App)
+wxIMPLEMENT_APP(Pcsx2App);
 
 std::unique_ptr<AppConfig> g_Conf;
 
@@ -232,7 +232,7 @@ void Pcsx2App::PostMenuAction( MenuIdentifiers menu_id ) const
 class Pcsx2AppMethodEvent : public pxActionEvent
 {
 	typedef pxActionEvent _parent;
-	DECLARE_DYNAMIC_CLASS_NO_ASSIGN(Pcsx2AppMethodEvent)
+	wxDECLARE_DYNAMIC_CLASS_NO_ASSIGN(Pcsx2AppMethodEvent);
 
 protected:
 	FnPtr_Pcsx2App	m_Method;
@@ -272,7 +272,7 @@ protected:
 };
 
 
-IMPLEMENT_DYNAMIC_CLASS( Pcsx2AppMethodEvent, pxActionEvent )
+wxIMPLEMENT_DYNAMIC_CLASS( Pcsx2AppMethodEvent, pxActionEvent );
 
 #ifdef __WXMSW__
 extern int TranslateVKToWXK( u32 keysym );

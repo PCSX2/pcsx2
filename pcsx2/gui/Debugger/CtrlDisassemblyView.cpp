@@ -32,7 +32,7 @@
 #include "Resources/Breakpoint_Active.h"
 #include "Resources/Breakpoint_Inactive.h"
 
-BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
+wxBEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_PAINT(CtrlDisassemblyView::paintEvent)
 	EVT_MOUSEWHEEL(CtrlDisassemblyView::mouseEvent)
 	EVT_LEFT_DOWN(CtrlDisassemblyView::mouseEvent)
@@ -49,7 +49,7 @@ BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_SIZE(CtrlDisassemblyView::sizeEvent)
 	EVT_SET_FOCUS(CtrlDisassemblyView::focusEvent)
 	EVT_KILL_FOCUS(CtrlDisassemblyView::focusEvent)
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 enum DisassemblyMenuIdentifiers
 {

@@ -501,7 +501,7 @@ public:
 class wxDialogWithHelpers : public wxDialog
 {
     typedef wxDialog _parent;
-    DECLARE_DYNAMIC_CLASS_NO_COPY(wxDialogWithHelpers)
+    wxDECLARE_DYNAMIC_CLASS_NO_COPY(wxDialogWithHelpers);
 
 protected:
     bool m_hasContextHelp;
@@ -565,7 +565,7 @@ protected:
 //
 class wxPanelWithHelpers : public wxPanel
 {
-    DECLARE_DYNAMIC_CLASS_NO_COPY(wxPanelWithHelpers)
+    wxDECLARE_DYNAMIC_CLASS_NO_COPY(wxPanelWithHelpers);
 
 public:
     wxPanelWithHelpers(wxWindow *parent, wxOrientation orient, const wxString &staticBoxLabel);

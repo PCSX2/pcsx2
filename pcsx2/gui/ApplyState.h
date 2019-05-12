@@ -114,7 +114,7 @@ class BaseApplicableDialog
 	: public wxDialogWithHelpers
 	, public IApplyState
 {
-	DECLARE_DYNAMIC_CLASS_NO_COPY(BaseApplicableDialog)
+	wxDECLARE_DYNAMIC_CLASS_NO_COPY(BaseApplicableDialog);
 
 public:
 	BaseApplicableDialog() {}
@@ -226,7 +226,7 @@ public:
 
 class ApplicableWizardPage : public wxWizardPageSimple, public IApplyState
 {
-	DECLARE_DYNAMIC_CLASS_NO_COPY(ApplicableWizardPage)
+	wxDECLARE_DYNAMIC_CLASS_NO_COPY(ApplicableWizardPage);
 
 public:
 	ApplicableWizardPage(

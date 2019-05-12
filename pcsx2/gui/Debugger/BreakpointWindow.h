@@ -27,7 +27,7 @@ public:
 	void initBreakpoint(u32 _address);
 	void addBreakpoint();
 
-	DECLARE_EVENT_TABLE()
+	wxDECLARE_EVENT_TABLE();
 protected:
 	void onRadioChange(wxCommandEvent& evt);
 	void onButtonOk(wxCommandEvent& evt);

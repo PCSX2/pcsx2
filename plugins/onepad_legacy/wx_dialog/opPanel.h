@@ -64,7 +64,7 @@ class opPanel : public wxPanel
     wxBitmap m_picture[NB_IMG];
     bool m_show_image[NB_IMG];
     int m_left_cursor_x, m_left_cursor_y, m_right_cursor_x, m_right_cursor_y;
-    DECLARE_EVENT_TABLE()
+    wxDECLARE_EVENT_TABLE();
     void OnPaint(wxPaintEvent &event);
 
 public:

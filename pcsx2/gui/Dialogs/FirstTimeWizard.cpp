@@ -26,7 +26,7 @@
 using namespace Panels;
 using namespace pxSizerFlags;
 
-IMPLEMENT_DYNAMIC_CLASS(ApplicableWizardPage, wxWizardPageSimple)
+wxIMPLEMENT_DYNAMIC_CLASS(ApplicableWizardPage, wxWizardPageSimple);
 
 ApplicableWizardPage::ApplicableWizardPage( wxWizard* parent, wxWizardPage* prev, wxWizardPage* next, const wxBitmap& bitmap )
 	: wxWizardPageSimple( parent, prev, next, bitmap )

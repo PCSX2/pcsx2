@@ -127,9 +127,9 @@ void opPanel::MoveJoystick(int axe, int value)
     }
 }
 
-BEGIN_EVENT_TABLE(opPanel, wxPanel)
+wxBEGIN_EVENT_TABLE(opPanel, wxPanel)
 EVT_PAINT(opPanel::OnPaint)
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 void opPanel::OnPaint(wxPaintEvent &event)
 {

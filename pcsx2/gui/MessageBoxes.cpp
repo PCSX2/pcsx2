@@ -45,7 +45,7 @@ static int pxMessageDialog( const wxString& caption, const wxString& content, co
 // --------------------------------------------------------------------------------------
 //  BaseMessageBoxEvent Implementation
 // --------------------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC_CLASS( BaseMessageBoxEvent, pxActionEvent )
+wxIMPLEMENT_DYNAMIC_CLASS( BaseMessageBoxEvent, pxActionEvent );
 
 BaseMessageBoxEvent::BaseMessageBoxEvent( const wxString& content, SynchronousActionState& instdata )
 	: m_Content( content )
@@ -81,7 +81,7 @@ int BaseMessageBoxEvent::_DoDialog() const
 // --------------------------------------------------------------------------------------
 //  pxMessageBoxEvent Implementation
 // --------------------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC_CLASS( pxMessageBoxEvent, BaseMessageBoxEvent )
+wxIMPLEMENT_DYNAMIC_CLASS( pxMessageBoxEvent, BaseMessageBoxEvent );
 
 pxMessageBoxEvent::pxMessageBoxEvent( const wxString& title, const wxString& content, const MsgButtons& buttons, SynchronousActionState& instdata )
 	: BaseMessageBoxEvent( content, instdata )
@@ -105,7 +105,7 @@ int pxMessageBoxEvent::_DoDialog() const
 // --------------------------------------------------------------------------------------
 //  pxAssertionEvent Implementation
 // --------------------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC_CLASS( pxAssertionEvent, BaseMessageBoxEvent )
+wxIMPLEMENT_DYNAMIC_CLASS( pxAssertionEvent, BaseMessageBoxEvent );
 
 pxAssertionEvent::pxAssertionEvent( const wxString& content, const wxString& trace, SynchronousActionState& instdata )
 	: BaseMessageBoxEvent( content, instdata )

@@ -57,7 +57,7 @@ public:
 	u32 getStepOutAddress();
 
 	void listBoxHandler(wxCommandEvent& event);
-	DECLARE_EVENT_TABLE()
+	wxDECLARE_EVENT_TABLE();
 private:
 	void setBottomTabPage(wxWindow* win);
 	void postEvent(wxEventType type, int value);
@@ -93,7 +93,7 @@ public:
 	WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
 #endif
 
-	DECLARE_EVENT_TABLE()
+	wxDECLARE_EVENT_TABLE();
 protected:
 	void onBreakRunClicked(wxCommandEvent& evt);
 	void onStepOverClicked(wxCommandEvent& evt);

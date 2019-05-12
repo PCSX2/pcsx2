@@ -86,7 +86,7 @@ public:
 // --------------------------------------------------------------------------------------
 //  BaseApplicableDialog  (implementations)
 // --------------------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC_CLASS(BaseApplicableDialog, wxDialogWithHelpers)
+wxIMPLEMENT_DYNAMIC_CLASS(BaseApplicableDialog, wxDialogWithHelpers);
 
 BaseApplicableDialog::BaseApplicableDialog( wxWindow* parent, const wxString& title, const pxDialogCreationFlags& cflags )
 	: wxDialogWithHelpers( parent, title, cflags.MinWidth(425).Minimize() )

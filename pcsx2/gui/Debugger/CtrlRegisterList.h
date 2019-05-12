@@ -30,7 +30,7 @@ public:
 	void onPopupClick(wxCommandEvent& evt);
 	void sizeEvent(wxSizeEvent& evt);
 	void redraw();
-	DECLARE_EVENT_TABLE()
+	wxDECLARE_EVENT_TABLE();
 
 	virtual wxSize GetMinClientSize() const
 	{

@@ -150,7 +150,7 @@ public:
 // --------------------------------------------------------------------------------------
 class ApplyPluginsDialog : public WaitForTaskDialog
 {
-	DECLARE_DYNAMIC_CLASS_NO_COPY(ApplyPluginsDialog)
+	wxDECLARE_DYNAMIC_CLASS_NO_COPY(ApplyPluginsDialog);
 
 	typedef wxDialogWithHelpers _parent;
 
@@ -222,7 +222,7 @@ protected:
 // --------------------------------------------------------------------------------------
 //  ApplyPluginsDialog Implementations
 // --------------------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC_CLASS(ApplyPluginsDialog, WaitForTaskDialog)
+wxIMPLEMENT_DYNAMIC_CLASS(ApplyPluginsDialog, WaitForTaskDialog);
 
 ApplyPluginsDialog::ApplyPluginsDialog( BaseApplicableConfigPanel* panel )
 : WaitForTaskDialog(_("Applying settings...")), m_panel(NULL)

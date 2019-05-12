@@ -27,7 +27,7 @@
 #include <Windows.h>
 #endif
 
-BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
+wxBEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_SETSTATUSBARTEXT, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_UPDATELAYOUT, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINMEMORYVIEW, DisassemblyDialog::onDebuggerEvent )
@@ -42,11 +42,11 @@ BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_MAPLOADED, DisassemblyDialog::onDebuggerEvent )
    EVT_SIZE(DisassemblyDialog::onSizeEvent)
    EVT_CLOSE( DisassemblyDialog::onClose )
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
-BEGIN_EVENT_TABLE(CpuTabPage, wxPanel)
+wxBEGIN_EVENT_TABLE(CpuTabPage, wxPanel)
 	EVT_LISTBOX_DCLICK( wxID_ANY, CpuTabPage::listBoxHandler)
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 DebuggerHelpDialog::DebuggerHelpDialog(wxWindow* parent)
 	: wxDialog(parent,wxID_ANY,L"Help")

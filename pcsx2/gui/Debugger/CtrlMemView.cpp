@@ -25,7 +25,7 @@
 #include <wx/clipbrd.h>
 
 
-BEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
+wxBEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
 	EVT_PAINT(CtrlMemView::paintEvent)
 	EVT_MOUSEWHEEL(CtrlMemView::mouseEvent)
 	EVT_LEFT_DOWN(CtrlMemView::mouseEvent)
@@ -40,7 +40,7 @@ BEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
 	EVT_SCROLLWIN_LINEDOWN(CtrlMemView::scrollbarEvent)
 	EVT_SCROLLWIN_PAGEUP(CtrlMemView::scrollbarEvent)
 	EVT_SCROLLWIN_PAGEDOWN(CtrlMemView::scrollbarEvent)
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 enum MemoryViewMenuIdentifiers
 {

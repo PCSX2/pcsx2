@@ -131,7 +131,7 @@ protected:
 class LoadSinglePluginEvent : public pxActionEvent
 {
 	typedef pxActionEvent _parent;
-	DECLARE_DYNAMIC_CLASS_NO_ASSIGN(LoadSinglePluginEvent)
+	wxDECLARE_DYNAMIC_CLASS_NO_ASSIGN(LoadSinglePluginEvent);
 
 protected:
 	wxString		m_filename;
@@ -161,7 +161,7 @@ protected:
 class SinglePluginMethodEvent : public pxActionEvent
 {
 	typedef pxActionEvent _parent;
-	DECLARE_DYNAMIC_CLASS_NO_ASSIGN(SinglePluginMethodEvent)
+	wxDECLARE_DYNAMIC_CLASS_NO_ASSIGN(SinglePluginMethodEvent);
 
 protected:
 	PluginsEnum_t			m_pid;
@@ -186,8 +186,8 @@ protected:
 	}
 };
 
-IMPLEMENT_DYNAMIC_CLASS( LoadSinglePluginEvent,	 pxActionEvent );
-IMPLEMENT_DYNAMIC_CLASS( SinglePluginMethodEvent, pxActionEvent );
+wxIMPLEMENT_DYNAMIC_CLASS( LoadSinglePluginEvent,	 pxActionEvent );
+wxIMPLEMENT_DYNAMIC_CLASS( SinglePluginMethodEvent, pxActionEvent );
 
 // --------------------------------------------------------------------------------------
 //  AppCorePlugins

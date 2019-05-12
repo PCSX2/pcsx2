@@ -697,7 +697,7 @@ protected:
 };
 
 
-DECLARE_APP(Pcsx2App)
+wxDECLARE_APP(Pcsx2App);
 
 // --------------------------------------------------------------------------------------
 //  s* macros!  ['s' stands for 'shortcut']
