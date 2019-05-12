@@ -57,6 +57,8 @@ public:
 	{
 	}
 
+	constexpr GSVector4(const GSVector4&) = default;
+
 	__forceinline GSVector4(float x, float y, float z, float w)
 	{
 		m = _mm_set_ps(w, z, y, x);

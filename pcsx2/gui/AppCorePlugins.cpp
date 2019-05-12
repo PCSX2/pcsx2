@@ -138,6 +138,7 @@ protected:
 	PluginsEnum_t	m_pid;
 
 public:
+	LoadSinglePluginEvent(const LoadSinglePluginEvent&) = default;
 	virtual ~LoadSinglePluginEvent() = default;
 	virtual LoadSinglePluginEvent *Clone() const { return new LoadSinglePluginEvent(*this); }
 
@@ -167,6 +168,7 @@ protected:
 	FnPtr_AppPluginPid		m_method;
 
 public:
+	SinglePluginMethodEvent(const SinglePluginMethodEvent&) = default;
 	virtual ~SinglePluginMethodEvent() = default;
 	virtual SinglePluginMethodEvent *Clone() const { return new SinglePluginMethodEvent(*this); }
 

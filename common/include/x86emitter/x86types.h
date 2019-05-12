@@ -504,6 +504,7 @@ public:
     xAddressVoid operator-(const void *right) const;
     xAddressVoid operator*(int factor) const;
     xAddressVoid operator<<(u32 shift) const;
+    xAddressReg& operator=(const xAddressReg&) = default;
 };
 
 // --------------------------------------------------------------------------------------
