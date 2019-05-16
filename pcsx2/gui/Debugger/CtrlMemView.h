@@ -32,7 +32,6 @@ public:
 	void redraw();
 	void gotoAddress(u32 address, bool pushInHistory = false);
 	void updateReference(u32 address);
-	void pasteHex();
 
 	wxDECLARE_EVENT_TABLE();
 private:
@@ -47,6 +46,7 @@ private:
 	void scrollCursor(int bytes);
 	void onPopupClick(wxCommandEvent& evt);
 	void focusEvent(wxFocusEvent& evt) { Refresh(); };
+	void pasteHex();
 
 	DebugInterface* cpu;
 	int rowHeight;
