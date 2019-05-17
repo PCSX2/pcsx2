@@ -421,11 +421,6 @@ CRC::Game CRC::m_games[] =
 	{0x5AC7E79C, TouristTrophy, CH, 0}, // cutie comment
 	{0xFF9C0E93, TouristTrophy, US, 0},
 	{0xCA9AA903, TouristTrophy, EU, 0},
-	{0xA1B3F232, GTASanAndreas, EU, 0}, // cutie comment
-	{0xB440A8FE, GTASanAndreas, EU, 0},
-	{0x399A49CA, GTASanAndreas, US, 0},
-	{0x2C6BE434, GTASanAndreas, US, 0},
-	{0x60FE139C, GTASanAndreas, JP, 0},
 	{0xAEDAEE99, GodHand, JP, 0},
 	{0x6FB69282, GodHand, US, 0},
 	{0x924C4AA6, GodHand, KO, 0},

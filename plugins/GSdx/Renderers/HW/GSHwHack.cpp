@@ -1251,19 +1251,6 @@ bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_GTASanAndreas(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP ==0x0a00 || fi.FBP ==0x08c0) && (fi.TBP0 ==0x1b80 || fi.TBP0 ==0x1a40) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; // Ghosting
-		}
-	}
-
-	return true;
-}
-
 template<uptr state_addr>
 bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
 {
@@ -1641,7 +1628,6 @@ void GSState::SetupCrcHack()
 
 		// Upscaling issues
 		lut[CRC::GodOfWar] = GSC_GodOfWar;
-		lut[CRC::GTASanAndreas] = GSC_GTASanAndreas; // RW frame buffer. UserHacks_AutoFlush allow to emulate it correctly. Can be used as an upscaling hack.
 		lut[CRC::Okami] = GSC_Okami;
 	}
 

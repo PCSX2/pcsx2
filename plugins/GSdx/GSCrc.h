@@ -71,7 +71,6 @@ public:
 		Grandia3,
 		GT3,
 		GT4,
-		GTASanAndreas,
 		GTConcept,
 		HarleyDavidson,
 		HarryPotterATCOS,
