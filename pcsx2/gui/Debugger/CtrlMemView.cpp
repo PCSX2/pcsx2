@@ -747,6 +747,11 @@ void CtrlMemView::pasteHex()
 			str.Replace("\n", "");
 			str.Replace("\r", "");
 			str.Replace("\t", "");
+
+			bool active = !cpu->isCpuPaused();
+			if (active)
+				cpu->pauseCpu();
+
 			std::size_t i;
 			for (i = 0; i < str.size() / 2; i++)
 			{
@@ -760,6 +765,9 @@ void CtrlMemView::pasteHex()
 				}
 			}
 			scrollCursor(i);
+
+			if(active)
+				cpu->resumeCpu();
 		}
 		wxTheClipboard->Close();
 	}
