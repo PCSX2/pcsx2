@@ -194,6 +194,7 @@ namespace GSDumpGUI
                         frmMain.chkDebugMode.Checked = (Boolean)Mess.Parameters[0];
 
                         frmMain.lblGif.Enabled = frmMain.chkDebugMode.Checked;
+                        frmMain.lblContent.Enabled = frmMain.chkDebugMode.Checked;
                         frmMain.btnRunToSelection.Enabled = frmMain.chkDebugMode.Checked;
                         frmMain.treTreeView.Enabled = frmMain.chkDebugMode.Checked;
                         frmMain.btnStep.Enabled = frmMain.chkDebugMode.Checked;
@@ -201,7 +202,10 @@ namespace GSDumpGUI
                         frmMain.cmdGoToNextVSync.Enabled = frmMain.chkDebugMode.Checked;
                         frmMain.treeGifPacketContent.Enabled = frmMain.chkDebugMode.Checked;
                         if (frmMain.chkDebugMode.Checked == false)
+                        {
+                            frmMain.treeGifPacketContent.Nodes.Clear();
                             frmMain.treTreeView.Nodes.Clear();
+                        }
 
                     }), new object[] { null });
                     break;
@@ -458,14 +462,17 @@ namespace GSDumpGUI
                 if (frmMain.lstProcesses.SelectedIndex == -1)
                 {
                     frmMain.chkDebugMode.Checked = false;
-                    frmMain.lblGif.Enabled = frmMain.chkDebugMode.Checked;
-                    frmMain.btnRunToSelection.Enabled = frmMain.chkDebugMode.Checked;
-                    frmMain.treTreeView.Enabled = frmMain.chkDebugMode.Checked;
-                    frmMain.btnStep.Enabled = frmMain.chkDebugMode.Checked;
-                    frmMain.cmdGoToStart.Enabled = frmMain.chkDebugMode.Checked;
-                    frmMain.cmdGoToNextVSync.Enabled = frmMain.chkDebugMode.Checked;
-                    frmMain.treTreeView.Nodes.Clear();
+                    frmMain.chkDebugMode.Enabled = false;
+                    frmMain.lblGif.Enabled = false;
+                    frmMain.lblContent.Enabled = false;
+                    frmMain.btnRunToSelection.Enabled = false;
+                    frmMain.treTreeView.Enabled = false;
+                    frmMain.btnStep.Enabled = false;
+                    frmMain.cmdGoToStart.Enabled = false;
+                    frmMain.cmdGoToNextVSync.Enabled = false;
+                    frmMain.treeGifPacketContent.Enabled = false;
                     frmMain.treeGifPacketContent.Nodes.Clear();
+                    frmMain.treTreeView.Nodes.Clear();
                 }
             }), new object[] { null});
         }
