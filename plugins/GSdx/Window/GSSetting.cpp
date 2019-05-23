@@ -53,8 +53,8 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Full:\nFor an optimal experience with Direct3D.\n\n"
 				"Aggressive:\nUse more aggressive CRC hacks.\n"
 				"Removes effects in some games which make the image appear sharper/clearer.\n"
-				"Affected games: AC4, DBZBT 2 & 3, FF games, GOW games, MGS3, OnimushaDoD, RE4, SoTC, SMT3, SMTDDS1, SMTDDS2.\n"
-				"Works as a speedhack for: BleachBB, Kunoichi, Steambot Chronicles, The Simpsons Game.";
+				"Affected games: AC4, DBZBT 2 & 3, FF games, GOW games, OnimushaDoD, RE4, SoTC, SMT3, SMTDDS1, SMTDDS2.\n"
+				"Works as a speedhack for: BleachBB, Kunoichi, Steambot Chronicles.";
 		case IDC_SKIPDRAWHACK:
 		case IDC_SKIPDRAWHACKEDIT:
 		case IDC_SKIPDRAWOFFSET:
@@ -202,9 +202,8 @@ const char* dialog_message(int ID, bool* updateText) {
 		// Windows only options.
 #ifdef _WIN32
 		case IDC_ALPHASTENCIL:
-			return "Extend stencil based emulation of destination alpha to perform stencil operations while drawing.\n\n"
-				"Improves many shadows which are normally overdrawn in parts, may affect other effects.\n"
-				"Will disable partial transparency in some games or even prevent drawing some elements altogether.";
+			return "Improves shadows/transparency rendering in games such as Amagami.\n\n"
+				"Note: It will break transparency rendering in many games, avoid using it.";
 		case IDC_ACCURATE_BLEND_UNIT_D3D11:
 			return "Control the accuracy level of the GS blending unit emulation.\n\n"
 				"None:\nFast but introduces various rendering issues.\n"

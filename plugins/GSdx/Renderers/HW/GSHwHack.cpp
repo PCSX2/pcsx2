@@ -1044,7 +1044,7 @@ bool GSC_ValkyrieProfile2(const GSFrameInfo& fi, int& skip)
 		}
 		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
 		{
-			skip = 1; // //garbage in cutscenes, doesn't remove completely, better use "Alpha Hack"
+			skip = 1; // //garbage in cutscenes, doesn't remove completely.
 		}*/
 		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
 		{
