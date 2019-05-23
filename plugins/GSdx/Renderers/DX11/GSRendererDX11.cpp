@@ -948,7 +948,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	// to only draw pixels which would cause the destination alpha test to fail in the future once.
 	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
 	// It helps render transparency in Amagami, breaks a lot of other games.
-	if (UserHacks_AlphaStencil && DATE && !DATE_one && m_om_bsel.wa && !m_context->TEST.ATE)
+	if (UserHacks_AlphaStencil && DATE && !DATE_one && !m_texture_shuffle && m_om_bsel.wa && !m_context->TEST.ATE)
 	{
 		// fprintf(stderr, "Alpha Stencil detected\n");
 		if (!m_context->FBA.FBA)
