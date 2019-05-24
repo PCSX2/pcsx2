@@ -483,6 +483,7 @@ CRC::Game CRC::m_games[] =
 	{0x972611BB, FIFA05, US, 0},
 	{0x972719A3, FIFA05, EU, 0},
 	{0xC5473413, HarryPotterATCOS, NoRegion, 0}, // EU and US versions have the same CRC - Chamber Of Secrets
+	{0xE1963055, HarryPotterATCOS, JP, 0 }, // Harry Potter to Himitsu no Heya
 	{0xE90BE9F8, HarryPotterATCOS, JP, 0 }, // Coca Cola original Version
 	{0x9C3A84F4, HarryPotterATHBP, US, 0 }, // Half-Blood Prince
 	{0xCB598BC2, HarryPotterATHBP, EU, 0 },

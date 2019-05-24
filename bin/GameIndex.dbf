@@ -9201,7 +9201,8 @@ Serial = SLES-51192
 Name   = Harry Potter and the Chamber of Secrets
 Region = PAL-E
 Compat = 3
-[patches = C5473413]
+[patches]
+	// CRC C5473413
 	// This disc has the same CRC as other PAL and NTSC discs.
 	comment=Patch by Prafull
 	// Fixes initial hanging.
@@ -9217,7 +9218,8 @@ Compat = 3
 Serial = SLES-51193
 Name   = Harry Potter et la Chambre des Secrets
 Region = PAL-F
-[patches = C5473413]
+[patches]
+	// CRC C5473413
 	// This disc has the same CRC as other PAL and NTSC discs.
 	comment=Patch by Prafull
 	// Fixes initial hanging.
@@ -9233,7 +9235,8 @@ Region = PAL-F
 Serial = SLES-51194
 Name   = Harry Potter und die Kammer des Schreckens
 Region = PAL-G
-[patches = C5473413]
+[patches]
+	// CRC C5473413
 	// This disc has the same CRC as other PAL and NTSC discs.
 	comment=Patch by Prafull
 	// Fixes initial hanging.
@@ -9249,7 +9252,8 @@ Region = PAL-G
 Serial = SLES-51195
 Name   = Harry Potter y La Camara Secreta
 Region = PAL-S
-[patches = C5473413]
+[patches]
+	// CRC C5473413
 	// This disc has the same CRC as other PAL and NTSC discs.
 	comment=Patch by Prafull
 	// Fixes initial hanging.
@@ -9265,7 +9269,8 @@ Region = PAL-S
 Serial = SLES-51196
 Name   = Harry Potter e La Camera dei Secreti
 Region = PAL-I
-[patches = C5473413]
+[patches]
+	// CRC C5473413
 	// This disc has the same CRC as other PAL and NTSC discs.
 	comment=Patch by Prafull
 	// Fixes initial hanging.
@@ -37084,7 +37089,8 @@ Serial = SLUS-20576
 Name   = Harry Potter and The Chamber of Secrets
 Region = NTSC-U
 Compat = 2
-[patches = C5473413]
+[patches]
+	// CRC C5473413
 	// This disc has the same CRC as other PAL and NTSC discs.
 	comment=Patch by Prafull
 	// Fixes initial hanging.
