@@ -1326,6 +1326,19 @@ bool GSC_Okami(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_RedDeadRevolver(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.FBP == 0x03700 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT24)
+		{
+			skip = 2; // Blur
+		}
+	}
+
+	return true;
+}
+
 bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -1619,6 +1632,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFX2] = GSC_FFXGames;
 		lut[CRC::FFX] = GSC_FFXGames;
 		lut[CRC::FFXII] = GSC_FFXGames;
+		lut[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
 		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
 		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;

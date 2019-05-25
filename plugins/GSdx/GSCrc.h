@@ -110,6 +110,7 @@ public:
 		RatchetAndClank3,
 		RatchetAndClank4,
 		RatchetAndClank5,
+		RedDeadRevolver,
 		ResidentEvil4,
 		RickyPontingInternationalCricket,
 		RozenMaidenGebetGarden,
