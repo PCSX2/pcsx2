@@ -18,6 +18,7 @@
 //#include "Common.h"
 #include "AppConfig.h"
 
+#undef _Target_
 #include <unordered_map>
 #include <wx/wfstream.h>
 
