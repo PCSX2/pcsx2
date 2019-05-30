@@ -138,23 +138,39 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(int s_n, const GSVector4& st, bool
 
 void GSDrawingContext::ComputeFixedTEX0(const GSVector4& st, bool linear)
 {
-	GIFRegTEX0 reg = GetSizeFixedTEX0(0, st, linear, false);
+	// It is quite complex to handle rescaling so this function is less stricter than GetSizeFixedTEX0,
+	// therefore we remove the reduce optimization and we don't handle bilinear filtering which might create wrong interpolation at the border.
 
-	if(reg.TW > TEX0.TW)
+	int tw = TEX0.TW;
+	int th = TEX0.TH;
+
+	int wms = (int)CLAMP.WMS;
+	int wmt = (int)CLAMP.WMT;
+
+	int minu = (int)CLAMP.MINU;
+	int minv = (int)CLAMP.MINV;
+	int maxu = (int)CLAMP.MAXU;
+	int maxv = (int)CLAMP.MAXV;
+
+	GSVector4i uv = GSVector4i(st.floor());
+
+	uv.x = findmax(uv.x, uv.z, (1 << TEX0.TW) - 1, wms, minu, maxu);
+	uv.y = findmax(uv.y, uv.w, (1 << TEX0.TH) - 1, wmt, minv, maxv);
+
+	if (wms == CLAMP_REGION_CLAMP || wms == CLAMP_REGION_REPEAT)
+		tw = extend(uv.x, tw);
+
+	if (wmt == CLAMP_REGION_CLAMP || wmt == CLAMP_REGION_REPEAT)
+		th = extend(uv.y, th);
+
+	if ((tw != (int)TEX0.TW) || (th != (int)TEX0.TH))
 	{
 		m_fixed_tex0 = true;
-		TEX0.TW = reg.TW;
-	}
-	if(reg.TH > TEX0.TH)
-	{
-		m_fixed_tex0 = true;
-		TEX0.TH = reg.TH;
-	}
+		TEX0.TW = tw;
+		TEX0.TH = th;
 
-	if(m_fixed_tex0)
-	{
 		GL_INS("FixedTEX0 TW %d=>%d, TH %d=>%d wm %d,%d",
-				(int)stack.TEX0.TW, (int)TEX0.TW, (int)stack.TEX0.TH, (int)TEX0.TH,
-				(int)CLAMP.WMS, (int)CLAMP.WMT);
+			(int)stack.TEX0.TW, (int)TEX0.TW, (int)stack.TEX0.TH, (int)TEX0.TH,
+			(int)CLAMP.WMS, (int)CLAMP.WMT);
 	}
 }
