@@ -675,6 +675,9 @@ void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		// Use invalid size to denormalize ST coordinate
 		ps_cb.WH.x = (float)(1 << m_context->stack.TEX0.TW);
 		ps_cb.WH.y = (float)(1 << m_context->stack.TEX0.TH);
+
+		// We can't handle m_target with invalid_tex0 atm due to upscaling
+		ASSERT(!tex->m_target);
 	}
 
 	// Only enable clamping in CLAMP mode. REGION_CLAMP will be done manually in the shader

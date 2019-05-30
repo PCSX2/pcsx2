@@ -136,7 +136,7 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(int s_n, const GSVector4& st, bool
 	return res;
 }
 
-void GSDrawingContext::ComputeFixedTEX0(const GSVector4& st, bool linear)
+void GSDrawingContext::ComputeFixedTEX0(const GSVector4& st)
 {
 	// It is quite complex to handle rescaling so this function is less stricter than GetSizeFixedTEX0,
 	// therefore we remove the reduce optimization and we don't handle bilinear filtering which might create wrong interpolation at the border.

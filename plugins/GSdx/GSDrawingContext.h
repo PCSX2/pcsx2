@@ -147,7 +147,7 @@ public:
 	}
 
 	GIFRegTEX0 GetSizeFixedTEX0(int s_n, const GSVector4& st, bool linear, bool mipmap = false);
-	void ComputeFixedTEX0(const GSVector4& st, bool linear);
+	void ComputeFixedTEX0(const GSVector4& st);
 	bool HasFixedTEX0() const { return m_fixed_tex0;}
 
 	// Save & Restore before/after draw allow to correct/optimize current register for current draw
