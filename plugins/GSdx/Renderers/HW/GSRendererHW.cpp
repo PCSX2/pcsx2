@@ -822,7 +822,7 @@ void GSRendererHW::Draw()
 
 	// Fix TEX0 size
 	if(PRIM->TME && !IsMipMapActive())
-		m_context->ComputeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t), m_vt.IsLinear());
+		m_context->ComputeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t));
 
 	// skip alpha test if possible
 	// Note: do it first so we know if frame/depth writes are masked
