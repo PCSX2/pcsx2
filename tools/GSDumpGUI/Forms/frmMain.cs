@@ -186,6 +186,9 @@ namespace GSDumpGUI
                 Settings.GSDXDir = fbd.SelectedPath;
             Settings.Save();
             ReloadGsdxDlls();
+
+            // Auto select GSdx dll
+            _availableGsDlls.Selected = _availableGsDlls.Files.FirstOrDefault();
         }
 
         private void cmdBrowseDumps_Click(object sender, EventArgs e)
@@ -197,6 +200,9 @@ namespace GSDumpGUI
                 Settings.DumpDir = fbd.SelectedPath;
             Settings.Save();
             ReloadGsdxDumps();
+
+            // Auto select GS dump
+            _availableGsDumps.Selected = _availableGsDumps.Files.FirstOrDefault();
         }
 
         private void cmdRun_Click(object sender, EventArgs e)
@@ -376,12 +382,18 @@ namespace GSDumpGUI
         {
             Settings.Save();
             ReloadGsdxDlls();
+
+            // Auto select GSdx dll
+            _availableGsDlls.Selected = _availableGsDlls.Files.FirstOrDefault();
         }
 
         private void txtDumpsDirectory_Leave(object sender, EventArgs e)
         {
             Settings.Save();
             ReloadGsdxDumps();
+
+            // Auto select GS dump
+            _availableGsDumps.Selected = _availableGsDumps.Files.FirstOrDefault();
         }
 
         private void lstProcesses_SelectedIndexChanged(object sender, EventArgs e)
