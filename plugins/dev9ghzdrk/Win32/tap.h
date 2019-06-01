@@ -15,6 +15,7 @@
 
 #pragma once
 #include <vector>
+#include <string>
 #include "..\net.h"
 using namespace std;
 

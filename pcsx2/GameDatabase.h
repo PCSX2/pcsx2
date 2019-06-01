@@ -18,6 +18,11 @@
 //#include "Common.h"
 #include "AppConfig.h"
 
+// _Target_ is defined by R300A.h and R5900.h and the definition leaks to here.
+// The problem, at least with Visual Studio 2019 on Windows,
+// is that unordered_map includes xhash which uses _Target_ as a template
+// parameter. Unless we undef it here, the build breaks with a cryptic error message.
+#undef _Target_
 #include <unordered_map>
 #include <wx/wfstream.h>
 
