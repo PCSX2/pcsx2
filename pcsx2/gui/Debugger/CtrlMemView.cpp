@@ -489,6 +489,10 @@ void CtrlMemView::keydownEvent(wxKeyEvent& evt)
 				}
 			}
 			break;
+		case 'v':
+		case 'V':
+			pasteHex();
+			break;
 		default:
 			evt.Skip();
 			break;
@@ -728,4 +732,43 @@ void CtrlMemView::gotoPoint(int x, int y)
 void CtrlMemView::updateReference(u32 address) {
 	referencedAddress = address;
 	redraw();
+}
+
+void CtrlMemView::pasteHex()
+{
+	if (wxTheClipboard->Open())
+	{
+		if (wxTheClipboard->IsSupported(wxDF_TEXT))
+		{
+			wxTextDataObject data;
+			wxTheClipboard->GetData(data);
+			wxString str = data.GetText();
+			str.Replace(" ", "");
+			str.Replace("\n", "");
+			str.Replace("\r", "");
+			str.Replace("\t", "");
+
+			bool active = !cpu->isCpuPaused();
+			if (active)
+				cpu->pauseCpu();
+
+			std::size_t i;
+			for (i = 0; i < str.size() / 2; i++)
+			{
+				long byte;
+				if (str.Mid(i * 2, 2).ToLong(&byte, 16))
+				{
+					cpu->write8(curAddress + i, static_cast<u8>(byte));
+				}
+				else {
+					break;
+				}
+			}
+			scrollCursor(i);
+
+			if(active)
+				cpu->resumeCpu();
+		}
+		wxTheClipboard->Close();
+	}
 }

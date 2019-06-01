@@ -46,6 +46,7 @@ private:
 	void scrollCursor(int bytes);
 	void onPopupClick(wxCommandEvent& evt);
 	void focusEvent(wxFocusEvent& evt) { Refresh(); };
+	void pasteHex();
 
 	DebugInterface* cpu;
 	int rowHeight;
