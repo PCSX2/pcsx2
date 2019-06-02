@@ -11499,6 +11499,7 @@ EETimingHack = 1
 Serial = SLES-52282
 Name   = Mafia
 Region = PAL-S
+EETimingHack = 1
 ---------------------------------------------
 Serial = SLES-52283
 Name   = Terminator 3 - The Redemption
