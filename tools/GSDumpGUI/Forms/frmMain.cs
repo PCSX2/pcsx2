@@ -263,8 +263,11 @@ namespace GSDumpGUI
             }
             var port = Program.Server.Port;
 
+            // dll path is mandatory for the two operations GSReplay and GSconfigure but dumpPath only for GSReplay
             var dllPath = _availableGsDlls.Selected.File.FullName;
-            var dumpPath = _availableGsDumps.Selected.File.FullName;
+            var dumpPath = _availableGsDumps.Selected?.File?.FullName;
+            if (string.IsNullOrWhiteSpace(dumpPath) && "GSReplay".Equals(Function))
+                throw new ArgumentException("You need to specify a dump path in case you want to replay a GsDump.", nameof(dumpPath));
 
             _gsdxLogger.Information("Start new gsdx instance");
             _gsdxLogger.Information($"\tdll: {dllPath}");
