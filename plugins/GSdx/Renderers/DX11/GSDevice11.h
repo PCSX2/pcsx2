@@ -102,6 +102,7 @@ public:
 		GSVector4i FbMask;
 
 		GSVector4 TC_OffsetHack;
+		GSVector4 Af;
 
 		PSConstantBuffer()
 		{
@@ -113,6 +114,7 @@ public:
 			MskFix = GSVector4i::zero();
 			ChannelShuffle = GSVector4i::zero();
 			FbMask = GSVector4i::zero();
+			Af = GSVector4::zero();
 		}
 
 		__forceinline bool Update(const PSConstantBuffer* cb)
@@ -120,7 +122,8 @@ public:
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			if(!((a[0] == b[0]) /*& (a[1] == b1)*/ & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5]) & (a[6] == b[6]) & (a[7] == b[7])).alltrue()) // if WH matches HalfTexel does too
+			if(!((a[0] == b[0]) /*& (a[1] == b1)*/ & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5]) &
+				(a[6] == b[6]) & (a[7] == b[7]) & (a[9] == b[9])).alltrue()) // if WH matches HalfTexel does too
 			{
 				a[0] = b[0];
 				a[1] = b[1];
@@ -130,6 +133,7 @@ public:
 				a[5] = b[5];
 				a[6] = b[6];
 				a[7] = b[7];
+				a[9] = b[9];
 
 				return true;
 			}
@@ -207,7 +211,12 @@ public:
 				uint32 fbmask:1;
 
 				// Blend and Colclip
+				uint32 blend_a:2;
+				uint32 blend_b:2;
+				uint32 blend_c:2;
+				uint32 blend_d:2;
 				uint32 clr1:1;
+				uint32 hdr:1;
 
 				// Others ways to fetch the texture
 				uint32 channel:3;
@@ -220,7 +229,7 @@ public:
 				uint32 point_sampler:1;
 				uint32 invalid_tex0:1; // Lupin the 3rd
 
-				uint32 _free:27;
+				uint32 _free:18;
 			};
 
 			uint64 key;
@@ -286,6 +295,7 @@ public:
 				uint32 wg:1;
 				uint32 wb:1;
 				uint32 wa:1;
+				uint32 accu_blend:1;
 			};
 
 			struct
@@ -298,7 +308,7 @@ public:
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x1fff;}
+		operator uint32() {return key & 0x3fff;}
 
 		OMBlendSelector() : key(0) {}
 
