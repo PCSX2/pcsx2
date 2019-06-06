@@ -44,7 +44,14 @@
 #define PS_URBAN_CHAOS_HLE 0
 #define PS_INVALID_TEX0 0
 #define PS_SCALE_FACTOR 1
+#define PS_HDR 0
+#define PS_BLEND_A 0
+#define PS_BLEND_B 0
+#define PS_BLEND_C 0
+#define PS_BLEND_D 0
 #endif
+
+#define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
 
 struct VS_INPUT
 {
@@ -106,6 +113,8 @@ cbuffer cb1
 	int4 ChannelShuffle;
 	uint4 FbMask;
 	float4 TC_OffsetHack;
+	float Af;
+	float3 _pad;
 };
 
 cbuffer cb2
