@@ -114,11 +114,40 @@ public:
 
 #pragma pack(pop)
 
+enum HWBlendFlags
+{
+	// A couple of flag to determine the blending behavior
+	BLEND_A_MAX  = 0x100, // Impossible blending uses coeff bigger than 1
+	BLEND_C_CLR  = 0x200, // Clear color blending (use directly the destination color as blending factor)
+	BLEND_NO_BAR = 0x400, // Doesn't require sampling of the RT as a texture
+	BLEND_ACCU   = 0x800, // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
+};
+
+// Determines the HW blend function for DX11/OGL
+struct HWBlend { uint16 flags, op, src, dst; };
+
 class GSDevice : public GSAlignedClass<32>
 {
+private:
 	FastList<GSTexture*> m_pool;
+	static std::array<HWBlend, 3*3*3*3 + 1> m_blendMap;
 
 protected:
+	enum : uint16
+	{
+		// HW blend factors
+		SRC_COLOR,   INV_SRC_COLOR,    DST_COLOR,  INV_DST_COLOR,
+		SRC1_COLOR,  INV_SRC1_COLOR,   SRC_ALPHA,  INV_SRC_ALPHA,
+		DST_ALPHA,   INV_DST_ALPHA,    SRC1_ALPHA, INV_SRC1_ALPHA,
+		CONST_COLOR, INV_CONST_COLOR,  CONST_ONE,  CONST_ZERO,
+
+		// HW blend operations
+		OP_ADD, OP_SUBTRACT, OP_REV_SUBTRACT
+	};
+
+	static const int m_NO_BLEND     = 0;
+	static const int m_MERGE_BLEND  = m_blendMap.size() - 1;
+
 	std::shared_ptr<GSWnd> m_wnd;
 	int m_vsync;
 	bool m_rbswapped;
@@ -141,6 +170,7 @@ protected:
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoExternalFX(GSTexture* sTex, GSTexture* dTex) {}
+	virtual uint16 ConvertBlendEnum(uint16 generic) = 0; // Convert blend factors/ops from the generic enum to DX11/OGl specific.
 
 public:
 	GSOsdManager m_osd;
@@ -213,6 +243,11 @@ public:
 	void PurgePool();
 
 	virtual void PrintMemoryUsage();
+
+	// Convert the GS blend equations to HW specific blend factors/ops
+	// Index is computed as ((((A * 3 + B) * 3) + C) * 3) + D. A, B, C, D taken from ALPHA register.
+	HWBlend GetBlend(size_t index);
+	uint16 GetBlendFlags(size_t index);
 };
 
 struct GSAdapter
