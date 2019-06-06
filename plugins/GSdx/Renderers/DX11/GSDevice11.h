@@ -206,7 +206,6 @@ public:
 				uint32 read_ba:1;
 				uint32 fbmask:1;
 
-				// *** Word 2
 				// Blend and Colclip
 				uint32 clr1:1;
 
@@ -309,14 +308,6 @@ public:
 		}
 	};
 
-	struct D3D11Blend
-	{
-		int bogus;
-		D3D11_BLEND_OP op;
-		D3D11_BLEND src, dst;
-	};
-	static const D3D11Blend m_blendMapD3D11[3*3*3*3];
-
 	#pragma pack(pop)
 
 private:
@@ -338,7 +329,7 @@ private:
 	void BeforeDraw();
 	void AfterDraw();
 	
-	//
+	uint16 ConvertBlendEnum(uint16 generic) final;
 
 	CComPtr<ID3D11Device> m_dev;
 	CComPtr<ID3D11DeviceContext> m_ctx;
