@@ -43,6 +43,7 @@ private:
 	inline void SetupIA(const float& sx, const float& sy);
 	inline void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
 	inline void EmulateZbuffer();
+	inline void EmulateBlending();
 	inline void EmulateTextureShuffleAndFbmask();
 	inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
 	inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
