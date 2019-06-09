@@ -880,6 +880,37 @@ void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
 
 #endif
 
+void ps_blend(inout float4 Color, float As, float2 pos_xy)
+{
+	if (SW_BLEND)
+	{
+		float4 RT = RtSampler.Load(int3(pos_xy, 0));
+
+		float3 Cs = trunc(Color.rgb * 255.0f + 0.1f);
+		float3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
+		float3 Cv;
+
+		float Ad = (PS_DFMT == FMT_24) ? 1.0f : (RT.a * 255.0f / 128.0f);
+
+		float3 A = (PS_BLEND_A == 0) ? Cs : ((PS_BLEND_A == 1) ? Cd : (float3)0.0f);
+		float3 B = (PS_BLEND_B == 0) ? Cs : ((PS_BLEND_B == 1) ? Cd : (float3)0.0f);
+		float3 C = (PS_BLEND_C == 0) ? As : ((PS_BLEND_C == 1) ? Ad : Af);
+		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
+
+		Cv = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
+
+		// Standard Clamp
+		if (PS_HDR == 0)
+			Cv = clamp(Cv, (float3)0.0f, (float3)255.0f);
+
+		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
+		if (PS_DFMT == FMT_16)
+			Cv = (float3)((int3)Cv & (int3)0xF8);
+
+		Color.rgb = Cv / 255.0f;
+	}
+}
+
 PS_OUTPUT ps_main(PS_INPUT input)
 {
 	float4 c = ps_color(input);
@@ -916,6 +947,10 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	// Must be done before alpha correction
 	float alpha_blend = c.a * 255.0f / 128.0f;
 
+	// Blending
+	ps_blend(c, alpha_blend, input.p.xy);
+
+	// Alpha correction
 	if (PS_DFMT == FMT_16) // 16 bit output
 	{
 		float a = 128.0f / 255; // alpha output will be 0x80

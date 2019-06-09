@@ -501,6 +501,99 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 	}
 }
 
+void GSRendererDX11::EmulateBlending()
+{
+	// Partial port of OGL SW blending. Currently only works for accumulation blend.
+	const GIFRegALPHA& ALPHA = m_context->ALPHA;
+	bool sw_blending         = false;
+
+	// No blending so early exit
+	if (!(PRIM->ABE || (PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS)))
+		return;
+
+	m_om_bsel.abe = 1;
+	m_om_bsel.a = ALPHA.A;
+	m_om_bsel.b = ALPHA.B;
+	m_om_bsel.c = ALPHA.C;
+	m_om_bsel.d = ALPHA.D;
+
+	if (m_env.PABE.PABE)
+	{
+		if (m_om_bsel.a == 0 && m_om_bsel.b == 1 && m_om_bsel.c == 0 && m_om_bsel.d == 1)
+		{
+			// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
+			// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
+
+			m_om_bsel.abe = 0;
+		}
+		else
+		{
+			//Breath of Fire Dragon Quarter triggers this in battles. Graphics are fine though.
+			//ASSERT(0);
+		}
+	}
+
+	uint8 blend_index  = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
+	int blend_flag = m_dev->GetBlendFlags(blend_index);
+
+	bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
+
+	switch (m_sw_blending)
+	{
+	case ACC_BLEND_HIGH_D3D11:
+	case ACC_BLEND_MEDIUM_D3D11:
+	case ACC_BLEND_BASIC_D3D11:
+		sw_blending |= accumulation_blend;
+	default: break;
+	}
+
+	if (m_env.COLCLAMP.CLAMP == 0)
+	{
+		if (accumulation_blend)
+			sw_blending = true;
+		m_ps_sel.hdr = 1;
+	}
+
+	if (sw_blending)
+	{
+		m_ps_sel.blend_a = ALPHA.A;
+		m_ps_sel.blend_b = ALPHA.B;
+		m_ps_sel.blend_c = ALPHA.C;
+		m_ps_sel.blend_d = ALPHA.D;
+
+		if (accumulation_blend)
+		{
+			m_om_bsel.accu_blend = 1;
+
+			if (ALPHA.A == 2) {
+				// The blend unit does a reverse subtraction so it means
+				// the shader must output a positive value.
+				// Replace 0 - Cs by Cs - 0
+				m_ps_sel.blend_a = ALPHA.B;
+				m_ps_sel.blend_b = 2;
+			}
+			// Remove the addition/substraction from the SW blending
+			m_ps_sel.blend_d = 2;
+		}
+		else
+		{
+			// We shouldn't hit this path as currently only accumulation blend is implemented
+			ASSERT(0);
+		}
+
+		// Require the fix alpha vlaue
+		if (ALPHA.C == 2)
+			ps_cb.Af.x = (float)ALPHA.FIX / 128.0f;
+	}
+	else
+	{
+		m_ps_sel.clr1 = !!(blend_flag & BLEND_C_CLR);
+		// FIXME: When doing HW blending with a 24 bit frambuffer and ALPHA.C == 1 (Ad) it should be handled
+		// as if Ad = 1.0f. As with OGL side it is probably best to set m_om_bsel.c = 1 (Af) and use
+		// AFIX = 0x80 (Af = 1.0f).
+	}
+}
+
 void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 {
 	const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
@@ -776,43 +869,20 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	}
 
 	// Blend
-
-	if (!IsOpaque())
+	if (!IsOpaque() && rt)
 	{
-		m_om_bsel.abe = PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS;
+		EmulateBlending();
+	}
 
-		m_om_bsel.a = m_context->ALPHA.A;
-		m_om_bsel.b = m_context->ALPHA.B;
-		m_om_bsel.c = m_context->ALPHA.C;
-		m_om_bsel.d = m_context->ALPHA.D;
-
-		if (m_env.PABE.PABE)
-		{
-			if (m_om_bsel.a == 0 && m_om_bsel.b == 1 && m_om_bsel.c == 0 && m_om_bsel.d == 1)
-			{
-				// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
-				// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
-
-				m_om_bsel.abe = 0;
-			}
-			else
-			{
-				//Breath of Fire Dragon Quarter triggers this in battles. Graphics are fine though.
-				//ASSERT(0);
-			}
-		}
-
-		// Color clip
-		if (m_env.COLCLAMP.CLAMP == 0 && rt)
-		{
-			// fprintf(stderr, "COLCLIP HDR mode ENABLED\n");
-			GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
-			GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-			hdr_rt = dev->CreateRenderTarget(rtsize.x, rtsize.y, DXGI_FORMAT_R32G32B32A32_FLOAT);
-			// Warning: StretchRect must be called before BeginScene otherwise
-			// vertices will be overwritten. Trust me you don't want to do that.
-			dev->StretchRect(rt, sRect, hdr_rt, dRect, ShaderConvert_COPY, false);
-		}
+	if (m_ps_sel.hdr)
+	{
+		// fprintf(stderr, "COLCLIP HDR mode ENABLED\n");
+		GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
+		GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
+		hdr_rt = dev->CreateRenderTarget(rtsize.x, rtsize.y, DXGI_FORMAT_R32G32B32A32_FLOAT);
+		// Warning: StretchRect must be called before BeginScene otherwise
+		// vertices will be overwritten. Trust me you don't want to do that.
+		dev->StretchRect(rt, sRect, hdr_rt, dRect, ShaderConvert_COPY, false);
 	}
 
 	if (m_ps_sel.dfmt == 1)
@@ -891,7 +961,6 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 		}
 	}
 
-	m_ps_sel.clr1 = m_om_bsel.IsCLR1();
 	m_ps_sel.fba = m_context->FBA.FBA;
 
 	if (PRIM->FGE)
