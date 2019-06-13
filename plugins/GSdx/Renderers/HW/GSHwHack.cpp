@@ -988,19 +988,6 @@ bool GSC_GetaWayGames(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_NanoBreaker(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x0 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x03800 || fi.TBP0 == 0x03900) && fi.TPSM == PSM_PSMCT16S)
-		{
-			skip = 2; // Removes shadows
-		}
-	}
-
-	return true;
-}
-
 bool GSC_StarOcean3(const GSFrameInfo& fi, int& skip)
 {
 	// The game emulate a stencil buffer with the alpha channel of the RT
@@ -1114,31 +1101,6 @@ bool GSC_SlyGames(const GSFrameInfo& fi, int& skip)
 		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
 		{
 			skip = 3;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_CastlevaniaGames(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		// This hack removes the shadows and globally darker image
-		// I think there are 2 issues on GSdx
-		//
-		// 1/ potential not correctly supported colclip.
-		//
-		// 2/ use of a 32 bits format to emulate a 16 bit formats
-		// For example, if you blend 64 time the value 4 on a dark destination pixels
-		//
-		// FMT32: 4*64 = 256 <= white pixels
-		//
-		// FMT16: output of blending will always be 0 because the 3 lsb of color is dropped.
-		//		  Therefore the pixel remains dark !!!
-		if(fi.TME && fi.FBP == 0 && fi.TBP0 && fi.TPSM == 10 && fi.FBMSK == 0xFFFFFF)
-		{
-			skip = 2;
 		}
 	}
 
@@ -1601,22 +1563,13 @@ void GSState::SetupCrcHack()
 		lut[CRC::GetaWayBlackMonday] = GSC_GetaWayGames; // Blending High
 		lut[CRC::TenchuFS] = GSC_TenchuGames;
 		lut[CRC::TenchuWoH] = GSC_TenchuGames;
-
-		// Accumulation blend
-		lut[CRC::NanoBreaker] = GSC_NanoBreaker;
+		lut[CRC::Sly2] = GSC_SlyGames; // SW blending on fbmask + Upscaling issue
+		lut[CRC::Sly3] = GSC_SlyGames; // SW blending on fbmask + Upscaling issue
 
 		// Needs testing
 		lut[CRC::Grandia3] = GSC_Grandia3;
 		lut[CRC::HauntingGround] = GSC_HauntingGround; // + Texture cache issue + Date
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
-
-		// These games might requires accurate fbmask
-		lut[CRC::Sly2] = GSC_SlyGames; // + Upscaling issue
-		lut[CRC::Sly3] = GSC_SlyGames; // + Upscaling issue
-
-		// These games require accurate_colclip (perf)
-		lut[CRC::CastlevaniaCoD] = GSC_CastlevaniaGames;
-		lut[CRC::CastlevaniaLoI] = GSC_CastlevaniaGames;
 
 		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to Aggressive)
 		// Needs at least Basic Blending,

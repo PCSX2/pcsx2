@@ -310,14 +310,6 @@ CRC::Game CRC::m_games[] =
 	{0x87844524, RedDeadRevolver, RU, 0}, // Unofficial RU-version
 	{0x6DF62AEA, BleachBladeBattlers, JP, 0},
 	{0x6EB71AB0, BleachBladeBattlers, JP, 0}, // 2nd
-	{0x3A446111, CastlevaniaCoD, US, 0},
-	{0xF321BC38, CastlevaniaCoD, EU, 0},
-	{0x950876FA, CastlevaniaCoD, KO, 0},
-	{0x237B84D3, CastlevaniaCoD, CH, 0},
-	{0x28270F7D, CastlevaniaLoI, US, 0},
-	{0x306CDADA, CastlevaniaLoI, EU, 0},
-	{0xA36CFF6C, CastlevaniaLoI, JP, 0},
-	{0x9A93FE5D, CastlevaniaLoI, KO, 0},
 	{0xCBB87BF9, EvangelionJo, JP, 0}, // cutie comment
 	{0xC5B75C7C, Oneechanbara2Special, JP, 0}, // cutie comment
 	{0xC725CC6C, Oneechanbara2Special, JP, 0},
@@ -374,10 +366,6 @@ CRC::Game CRC::m_games[] =
 	{0x43AB7214, TalesOfLegendia, US, 0},
 	{0x1F8640E0, TalesOfLegendia, JP, 0},
 	{0xE4F5DA2B, TalesOfLegendia, KO, 0},
-	{0xA79B0491, NanoBreaker, JP, 0},
-	{0x98C7B76D, NanoBreaker, US, 0},
-	{0x7098BE76, NanoBreaker, KO, 0},
-	{0x9B89F425, NanoBreaker, EU, 0},
 	{0x519E816B, Kunoichi, US, 0}, // Nightshade
 	{0x3FB419FD, Kunoichi, JP, 0},
 	{0x086D198E, Kunoichi, CH, 0},

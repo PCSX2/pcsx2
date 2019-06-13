@@ -311,11 +311,6 @@ public:
 		operator uint32() {return key & 0x3fff;}
 
 		OMBlendSelector() : key(0) {}
-
-		bool IsCLR1() const
-		{
-			return (key & 0x19f) == 0x93; // abe == 1 && a == 1 && b == 2 && d == 1
-		}
 	};
 
 	#pragma pack(pop)
