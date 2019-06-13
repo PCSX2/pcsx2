@@ -221,7 +221,10 @@ bool GSRenderer::Merge(int field)
 			off.x = tex[i]->GetScale().x * frame_diff.x;
 		}
 
-		if(display_diff.y >= 4) // Shouldn't this be >= 2?
+		// The Suffering series uses feedback write to render a post processing
+		// color effect into the frame. We don't want to modify the offset when this is happening because it causes
+		// the frame to "bob" up and down (between the correct and bad result).
+		if(display_diff.y >= 4 && !feedback_merge) // Shouldn't this be >= 2?
 		{
 			off.y = tex[i]->GetScale().y * display_diff.y;
 
