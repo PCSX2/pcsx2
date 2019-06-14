@@ -248,10 +248,6 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 		m_hack_topleft_offset = (!nvidia_gpu || m_upscale_multiplier == 1 || spritehack_enabled) ? 0.0f : -0.01f;
 	}
 
-	D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS options;
-
-	hr = m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &options, sizeof(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS));
-
 	// debug
 #ifdef _DEBUG
 	CComPtr<ID3D11Debug> debug;
@@ -283,23 +279,20 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 		{"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
+	ShaderMacro sm_model(m_shader.model);
+
 	std::vector<char> shader;
 	theApp.LoadResource(IDR_CONVERT_FX, shader);
-	CreateShader(shader, "convert.fx", nullptr, "vs_main", nullptr, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
+	CreateShader(shader, "convert.fx", nullptr, "vs_main", sm_model.GetPtr(), &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
 
-	std::string convert_mstr[1];
+	ShaderMacro sm_convert(m_shader.model);
+	sm_convert.AddMacro("PS_SCALE_FACTOR", std::max(1, m_upscale_multiplier));
 
-	convert_mstr[0] = format("%d", std::max(1, m_upscale_multiplier));
-
-	D3D_SHADER_MACRO convert_macro[] =
-	{
-		{"PS_SCALE_FACTOR", convert_mstr[0].c_str()},
-		{NULL, NULL},
-	};
+	D3D_SHADER_MACRO* sm_convert_ptr = sm_convert.GetPtr();
 
 	for(size_t i = 0; i < countof(m_convert.ps); i++)
 	{
-		CreateShader(shader, "convert.fx", nullptr, format("ps_main%d", i).c_str(), convert_macro, &m_convert.ps[i]);
+		CreateShader(shader, "convert.fx", nullptr, format("ps_main%d", i).c_str(), sm_convert_ptr, & m_convert.ps[i]);
 	}
 
 	memset(&dsd, 0, sizeof(dsd));
@@ -331,7 +324,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	theApp.LoadResource(IDR_MERGE_FX, shader);
 	for(size_t i = 0; i < countof(m_merge.ps); i++)
 	{
-		CreateShader(shader, "merge.fx", nullptr, format("ps_main%d", i).c_str(), nullptr, &m_merge.ps[i]);
+		CreateShader(shader, "merge.fx", nullptr, format("ps_main%d", i).c_str(), sm_model.GetPtr(), &m_merge.ps[i]);
 	}
 
 	memset(&bsd, 0, sizeof(bsd));
@@ -360,28 +353,16 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	theApp.LoadResource(IDR_INTERLACE_FX, shader);
 	for(size_t i = 0; i < countof(m_interlace.ps); i++)
 	{
-		CreateShader(shader, "interlace.fx", nullptr, format("ps_main%d", i).c_str(), nullptr, &m_interlace.ps[i]);
+		CreateShader(shader, "interlace.fx", nullptr, format("ps_main%d", i).c_str(), sm_model.GetPtr(), &m_interlace.ps[i]);
 	}
 
-	// Shade Boos
+	// Shade Boost
 
-	int ShadeBoost_Contrast = theApp.GetConfigI("ShadeBoost_Contrast");
-	int ShadeBoost_Brightness = theApp.GetConfigI("ShadeBoost_Brightness");
-	int ShadeBoost_Saturation = theApp.GetConfigI("ShadeBoost_Saturation");
+	ShaderMacro sm_sboost(m_shader.model);
 
-	std::string str[3];
-
-	str[0] = format("%d", ShadeBoost_Saturation);
-	str[1] = format("%d", ShadeBoost_Brightness);
-	str[2] = format("%d", ShadeBoost_Contrast);
-
-	D3D_SHADER_MACRO macro[] =
-	{
-		{"SB_SATURATION", str[0].c_str()},
-		{"SB_BRIGHTNESS", str[1].c_str()},
-		{"SB_CONTRAST", str[2].c_str()},
-		{NULL, NULL},
-	};
+	sm_sboost.AddMacro("SB_SATURATION", theApp.GetConfigI("ShadeBoost_Saturation"));
+	sm_sboost.AddMacro("SB_BRIGHTNESS", theApp.GetConfigI("ShadeBoost_Brightness"));
+	sm_sboost.AddMacro("SB_CONTRAST", theApp.GetConfigI("ShadeBoost_Contrast"));
 
 	memset(&bd, 0, sizeof(bd));
 
@@ -392,7 +373,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	hr = m_dev->CreateBuffer(&bd, NULL, &m_shadeboost.cb);
 
 	theApp.LoadResource(IDR_SHADEBOOST_FX, shader);
-	CreateShader(shader, "shadeboost.fx", nullptr, "ps_main", macro, &m_shadeboost.ps);
+	CreateShader(shader, "shadeboost.fx", nullptr, "ps_main", sm_sboost.GetPtr(), &m_shadeboost.ps);
 
 	// External fx shader
 
@@ -1007,8 +988,8 @@ void GSDevice11::InitExternalFX()
 				shader << fshader.rdbuf();
 				const std::string& s = shader.str();
 				std::vector<char> buff(s.begin(), s.end());
-
-				CreateShader(buff, shader_name.c_str(), D3D_COMPILE_STANDARD_FILE_INCLUDE, "ps_main", nullptr, &m_shaderfx.ps);
+				ShaderMacro sm(m_shader.model);
+				CreateShader(buff, shader_name.c_str(), D3D_COMPILE_STANDARD_FILE_INCLUDE, "ps_main", sm.GetPtr(), &m_shaderfx.ps);
 			}
 			else
 			{
@@ -1051,7 +1032,8 @@ void GSDevice11::InitFXAA()
 		try {
 			std::vector<char> shader;
 			theApp.LoadResource(IDR_FXAA_FX, shader);
-			CreateShader(shader, "fxaa.fx", nullptr, "ps_main", nullptr, &m_fxaa.ps);
+			ShaderMacro sm(m_shader.model);
+			CreateShader(shader, "fxaa.fx", nullptr, "ps_main", sm.GetPtr(), &m_fxaa.ps);
 		}
 		catch (GSDXRecoverableError) {
 			printf("GSdx: failed to compile fxaa shader.\n");
@@ -1484,6 +1466,27 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	}
 }
 
+GSDevice11::ShaderMacro::ShaderMacro(std::string& smodel)
+{
+	mlist.emplace_back("SHADER_MODEL", smodel);
+}
+
+void GSDevice11::ShaderMacro::AddMacro(const char* n, int d)
+{
+	mlist.emplace_back(n, std::to_string(d));
+}
+
+D3D_SHADER_MACRO* GSDevice11::ShaderMacro::GetPtr(void)
+{
+	mout.clear();
+
+	for (auto& i : mlist)
+		mout.emplace_back(i.name.c_str(), i.def.c_str());
+
+	mout.emplace_back(nullptr, nullptr);
+	return (D3D_SHADER_MACRO*)mout.data();
+}
+
 void GSDevice11::CreateShader(std::vector<char> source, const char* fn, ID3DInclude *include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il)
 {
 	HRESULT hr;
@@ -1543,10 +1546,6 @@ void GSDevice11::CompileShader(std::vector<char> source, const char* fn, ID3DInc
 {
 	HRESULT hr;
 
-	std::vector<D3D_SHADER_MACRO> m;
-
-	PrepareShaderMacro(m, macro);
-
 	CComPtr<ID3DBlob> error;
 
 	UINT flags = 0;
@@ -1555,7 +1554,7 @@ void GSDevice11::CompileShader(std::vector<char> source, const char* fn, ID3DInc
 	flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_AVOID_FLOW_CONTROL;
 #endif
 
-	hr = s_pD3DCompile(source.data(), source.size(), fn, &m[0], include, entry, shader_model.c_str(), flags, 0, shader, &error);
+	hr = s_pD3DCompile(source.data(), source.size(), fn, macro, include, entry, shader_model.c_str(), flags, 0, shader, &error);
 
 	if(error)
 	{

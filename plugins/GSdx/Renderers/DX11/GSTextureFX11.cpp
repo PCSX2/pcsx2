@@ -103,19 +103,11 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 
 	if(i == m_vs.end())
 	{
-		std::string str[3];
+		ShaderMacro sm(m_shader.model);
 
-		str[0] = format("%d", sel.bppz);
-		str[1] = format("%d", sel.tme);
-		str[2] = format("%d", sel.fst);
-
-		D3D_SHADER_MACRO macro[] =
-		{
-			{"VS_BPPZ", str[0].c_str()},
-			{"VS_TME", str[1].c_str()},
-			{"VS_FST", str[2].c_str()},
-			{NULL, NULL},
-		};
+		sm.AddMacro("VS_BPPZ", sel.bppz);
+		sm.AddMacro("VS_TME", sel.tme);
+		sm.AddMacro("VS_FST", sel.fst);
 
 		D3D11_INPUT_ELEMENT_DESC layout[] =
 		{
@@ -132,7 +124,7 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 
 		std::vector<char> shader;
 		theApp.LoadResource(IDR_TFX_FX, shader);
-		CreateShader(shader, "tfx.fx", nullptr, "vs_main", macro, &vs.vs, layout, countof(layout), &vs.il);
+		CreateShader(shader, "tfx.fx", nullptr, "vs_main", sm.GetPtr(), &vs.vs, layout, countof(layout), &vs.il);
 
 		m_vs[sel] = vs;
 
@@ -166,25 +158,16 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 		}
 		else
 		{
-			std::string str[4];
+			ShaderMacro sm(m_shader.model);
 
-			str[0] = format("%d", sel.iip);
-			str[1] = format("%d", sel.prim);
-			str[2] = format("%d", sel.point);
-			str[3] = format("%d", sel.line);
-
-			D3D_SHADER_MACRO macro[] =
-			{
-				{"GS_IIP", str[0].c_str()},
-				{"GS_PRIM", str[1].c_str()},
-				{"GS_POINT", str[2].c_str()},
-				{"GS_LINE", str[3].c_str()},
-				{NULL, NULL},
-			};
+			sm.AddMacro("GS_IIP", sel.iip);
+			sm.AddMacro("GS_PRIM", sel.prim);
+			sm.AddMacro("GS_POINT", sel.point);
+			sm.AddMacro("GS_LINE", sel.line);
 
 			std::vector<char> shader;
 			theApp.LoadResource(IDR_TFX_FX, shader);
-			CreateShader(shader, "tfx.fx", nullptr, "gs_main", macro, &gs);
+			CreateShader(shader, "tfx.fx", nullptr, "gs_main", sm.GetPtr(), &gs);
 
 			m_gs[sel] = gs;
 		}
@@ -207,81 +190,45 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 
 	if(i == m_ps.end())
 	{
-		std::string str[31];
+		ShaderMacro sm(m_shader.model);
 
-		str[0] = format("%d", sel.fst);
-		str[1] = format("%d", sel.wms);
-		str[2] = format("%d", sel.wmt);
-		str[3] = format("%d", sel.fmt);
-		str[4] = format("%d", sel.aem);
-		str[5] = format("%d", sel.tfx);
-		str[6] = format("%d", sel.tcc);
-		str[7] = format("%d", sel.atst);
-		str[8] = format("%d", sel.fog);
-		str[9] = format("%d", sel.clr1);
-		str[10] = format("%d", sel.fba);
-		str[11] = format("%d", sel.fbmask);
-		str[12] = format("%d", sel.ltf);
-		str[13] = format("%d", sel.spritehack);
-		str[14] = format("%d", sel.tcoffsethack);
-		str[15] = format("%d", sel.point_sampler);
-		str[16] = format("%d", sel.shuffle);
-		str[17] = format("%d", sel.read_ba);
-		str[18] = format("%d", sel.channel);
-		str[19] = format("%d", sel.tales_of_abyss_hle);
-		str[20] = format("%d", sel.urban_chaos_hle);
-		str[21] = format("%d", sel.dfmt);
-		str[22] = format("%d", sel.depth_fmt);
-		str[23] = format("%d", sel.fmt >> 2);
-		str[24] = format("%d", sel.invalid_tex0);
-		str[25] = format("%d", m_upscale_multiplier ? m_upscale_multiplier : 1);
-		str[26] = format("%d", sel.hdr);
-		str[27] = format("%d", sel.blend_a);
-		str[28] = format("%d", sel.blend_b);
-		str[29] = format("%d", sel.blend_c);
-		str[30] = format("%d", sel.blend_d);
-
-		D3D_SHADER_MACRO macro[] =
-		{
-			{"PS_FST", str[0].c_str()},
-			{"PS_WMS", str[1].c_str()},
-			{"PS_WMT", str[2].c_str()},
-			{"PS_FMT", str[3].c_str()},
-			{"PS_AEM", str[4].c_str()},
-			{"PS_TFX", str[5].c_str()},
-			{"PS_TCC", str[6].c_str()},
-			{"PS_ATST", str[7].c_str()},
-			{"PS_FOG", str[8].c_str()},
-			{"PS_CLR1", str[9].c_str()},
-			{"PS_FBA", str[10].c_str()},
-			{"PS_FBMASK", str[11].c_str()},
-			{"PS_LTF", str[12].c_str()},
-			{"PS_SPRITEHACK", str[13].c_str()},
-			{"PS_TCOFFSETHACK", str[14].c_str()},
-			{"PS_POINT_SAMPLER", str[15].c_str()},
-			{"PS_SHUFFLE", str[16].c_str() },
-			{"PS_READ_BA", str[17].c_str() },
-			{"PS_CHANNEL_FETCH", str[18].c_str() },
-			{"PS_TALES_OF_ABYSS_HLE", str[19].c_str() },
-			{"PS_URBAN_CHAOS_HLE", str[20].c_str() },
-			{"PS_DFMT", str[21].c_str() },
-			{"PS_DEPTH_FMT", str[22].c_str() },
-			{"PS_PAL_FMT", str[23].c_str() },
-			{"PS_INVALID_TEX0", str[24].c_str() },
-			{"PS_SCALE_FACTOR", str[25].c_str() },
-			{"PS_HDR", str[26].c_str() },
-			{"PS_BLEND_A", str[27].c_str() },
-			{"PS_BLEND_B", str[28].c_str() },
-			{"PS_BLEND_C", str[29].c_str() },
-			{"PS_BLEND_D", str[30].c_str() },
-			{NULL, NULL},
-		};
+		sm.AddMacro("PS_SCALE_FACTOR", std::max(1, m_upscale_multiplier));
+		sm.AddMacro("PS_FST", sel.fst);
+		sm.AddMacro("PS_WMS", sel.wms);
+		sm.AddMacro("PS_WMT", sel.wmt);
+		sm.AddMacro("PS_FMT", sel.fmt);
+		sm.AddMacro("PS_AEM", sel.aem);
+		sm.AddMacro("PS_TFX", sel.tfx);
+		sm.AddMacro("PS_TCC", sel.tcc);
+		sm.AddMacro("PS_ATST", sel.atst);
+		sm.AddMacro("PS_FOG", sel.fog);
+		sm.AddMacro("PS_CLR1", sel.clr1);
+		sm.AddMacro("PS_FBA", sel.fba);
+		sm.AddMacro("PS_FBMASK", sel.fbmask);
+		sm.AddMacro("PS_LTF", sel.ltf);
+		sm.AddMacro("PS_SPRITEHACK", sel.spritehack);
+		sm.AddMacro("PS_TCOFFSETHACK", sel.tcoffsethack);
+		sm.AddMacro("PS_POINT_SAMPLER", sel.point_sampler);
+		sm.AddMacro("PS_SHUFFLE", sel.shuffle);
+		sm.AddMacro("PS_READ_BA", sel.read_ba);
+		sm.AddMacro("PS_CHANNEL_FETCH", sel.channel);
+		sm.AddMacro("PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
+		sm.AddMacro("PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
+		sm.AddMacro("PS_DFMT", sel.dfmt);
+		sm.AddMacro("PS_DEPTH_FMT", sel.depth_fmt);
+		sm.AddMacro("PS_PAL_FMT", sel.fmt >> 2);
+		sm.AddMacro("PS_INVALID_TEX0", sel.invalid_tex0);
+		sm.AddMacro("PS_HDR", sel.hdr);
+		sm.AddMacro("PS_BLEND_A", sel.blend_a);
+		sm.AddMacro("PS_BLEND_B", sel.blend_b);
+		sm.AddMacro("PS_BLEND_C", sel.blend_c);
+		sm.AddMacro("PS_BLEND_D", sel.blend_d);
 
 		CComPtr<ID3D11PixelShader> ps;
 
 		std::vector<char> shader;
 		theApp.LoadResource(IDR_TFX_FX, shader);
-		CreateShader(shader, "tfx.fx", nullptr, "ps_main", macro, &ps);
+		CreateShader(shader, "tfx.fx", nullptr, "ps_main", sm.GetPtr(), &ps);
 
 		m_ps[sel] = ps;
 

@@ -315,6 +315,29 @@ public:
 
 	#pragma pack(pop)
 
+	class ShaderMacro
+	{
+		struct mcstr
+		{
+			const char* name, * def;
+			mcstr(const char* n, const char* d) : name(n), def(d) {}
+		};
+
+		struct mstring
+		{
+			std::string name, def;
+			mstring(const char* n, std::string d) : name(n), def(d) {}
+		};
+
+		std::vector<mstring> mlist;
+		std::vector<mcstr> mout;
+
+	public:
+		ShaderMacro(std::string& smodel);
+		void AddMacro(const char* n, int d);
+		D3D_SHADER_MACRO* GetPtr(void);
+	};
+
 private:
 	float m_hack_topleft_offset;
 	int m_upscale_multiplier;
@@ -533,27 +556,5 @@ public:
 	void CreateShader(std::vector<char> source, const char* fn, ID3DInclude *include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11PixelShader** ps);
 
 	void CompileShader(std::vector<char> source, const char* fn, ID3DInclude *include, const char* entry, D3D_SHADER_MACRO* macro, ID3DBlob** shader, std::string shader_model);
-
-	template<class T> void PrepareShaderMacro(std::vector<T>& dst, const T* src)
-	{
-		dst.clear();
-
-		while (src && src->Definition && src->Name)
-		{
-			dst.push_back(*src++);
-		}
-
-		T m;
-
-		m.Name = "SHADER_MODEL";
-		m.Definition = m_shader.model.c_str();
-
-		dst.push_back(m);
-
-		m.Name = NULL;
-		m.Definition = NULL;
-
-		dst.push_back(m);
-	}
 };
 
