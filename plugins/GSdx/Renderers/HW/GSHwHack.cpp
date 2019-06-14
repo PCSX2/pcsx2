@@ -952,29 +952,6 @@ bool GSC_YakuzaGames(const GSFrameInfo& fi, int& skip)
 // Correctly emulated on OpenGL but can be used as potential speed hack
 ////////////////////////////////////////////////////////////////////////////////
 
-bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP ==0x2200) && (fi.TBP0 ==0x3a80) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; // Blur
-		}
-		else if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-
-	return true;
-}
-
 bool GSC_GetaWayGames(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1568,7 +1545,6 @@ void GSState::SetupCrcHack()
 
 		// Needs testing
 		lut[CRC::Grandia3] = GSC_Grandia3;
-		lut[CRC::HauntingGround] = GSC_HauntingGround; // + Texture cache issue + Date
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 
 		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to Aggressive)
