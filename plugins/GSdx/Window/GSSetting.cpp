@@ -68,10 +68,6 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Might fix some misaligned fog, bloom, or blend effect.\n"
 				"The preferred option is Normal (Vertex) as it is most likely to resolve misalignment issues.\n"
 				"The special cases are only useful in a couple of games like Captain Tsubasa.";
-		case IDC_SPRITEHACK:
-			return "Helps getting rid of black inner lines in some filtered sprites."
-				" Half option is the preferred one. Use it for Mana Khemia or Ar tonelico for example."
-				" Full can be used for Tales of Destiny.";
 		case IDC_WILDHACK:
 			return "Lowers the GS precision to avoid gaps between pixels when upscaling.\n"
 				"Fixes the text on Wild Arms games.";

@@ -643,7 +643,6 @@ void GSHacksDlg::OnInit()
 	ComboBoxInit(IDC_TRI_FILTER, theApp.m_gs_trifilter, theApp.GetConfigI("UserHacks_TriFilter"));
 	ComboBoxInit(IDC_OFFSETHACK, theApp.m_gs_offset_hack, theApp.GetConfigI("UserHacks_HalfPixelOffset"));
 	ComboBoxInit(IDC_ROUND_SPRITE, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_round_sprite_offset"));
-	ComboBoxInit(IDC_SPRITEHACK, theApp.m_gs_hack, theApp.GetConfigI("UserHacks_SpriteHack"));
 	ComboBoxInit(IDC_GEOMETRY_SHADER_OVERRIDE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_geometry_shader"));
 	ComboBoxInit(IDC_IMAGE_LOAD_STORE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_GL_ARB_shader_image_load_store"));
 	ComboBoxInit(IDC_SPARSE_TEXTURE, theApp.m_gs_gl_ext, theApp.GetConfigI("override_GL_ARB_sparse_texture"));
@@ -691,11 +690,9 @@ void GSHacksDlg::OnInit()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER_TEXT), hwhacks && ogl);
 
 	// Upscaling hacks:
-	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK), hwhacks && !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_WILDHACK), hwhacks && !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ALIGN_SPRITE), hwhacks && !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_SPRITE), hwhacks && !native);
-	EnableWindow(GetDlgItem(m_hWnd, IDC_SPRITEHACK_TEXT), hwhacks && !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_SPRITE_TEXT), hwhacks && !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK_TEXT), hwhacks && !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK), hwhacks && !native);
@@ -714,7 +711,6 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_SKIPDRAWOFFSETEDIT);
 	AddTooltip(IDC_SKIPDRAWOFFSET);
 	AddTooltip(IDC_OFFSETHACK);
-	AddTooltip(IDC_SPRITEHACK);
 	AddTooltip(IDC_WILDHACK);
 	AddTooltip(IDC_ALPHASTENCIL);
 	AddTooltip(IDC_ALIGN_SPRITE);
@@ -793,10 +789,6 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			if (ComboBoxGetSelData(IDC_ROUND_SPRITE, data))
 			{
 				theApp.SetConfig("UserHacks_round_sprite_offset", (int)data);
-			}
-			if (ComboBoxGetSelData(IDC_SPRITEHACK, data))
-			{
-				theApp.SetConfig("UserHacks_SpriteHack", (int)data);
 			}
 			if (ComboBoxGetSelData(IDC_OFFSETHACK, data))
 			{

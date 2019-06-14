@@ -445,7 +445,7 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_skipdraw_label = left_label("Skipdraw Range:");
 	CreateSkipdrawSpinButtons(0, 10000);
 	GtkWidget* hack_wild_check     = CreateCheckBox("Wild Arms Hack", "UserHacks_WildHack");
-	GtkWidget* hack_tco_label      = left_label("Texture Offset:");
+	GtkWidget* hack_tco_label      = left_label("Texture Offsets:");
 	GtkWidget* hack_tco_x_spin     = CreateSpinButton(0, 10000, "UserHacks_TCOffsetX");
 	GtkWidget* hack_tco_y_spin     = CreateSpinButton(0, 10000, "UserHacks_TCOffsetY");
 	GtkWidget* align_sprite_check  = CreateCheckBox("Align Sprite", "UserHacks_align_sprite_X");
@@ -458,8 +458,6 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* hack_merge_sprite   = CreateCheckBox("Merge Sprite", "UserHacks_merge_pp_sprite");
 	GtkWidget* hack_wrap_mem       = CreateCheckBox("Memory Wrapping", "wrap_gs_mem");
 
-	GtkWidget* hack_sprite_box     = CreateComboBoxFromVector(theApp.m_gs_hack, "UserHacks_SpriteHack");
-	GtkWidget* hack_sprite_label   = left_label("Sprite:");
 	GtkWidget* stretch_hack_box    = CreateComboBoxFromVector(theApp.m_gs_hack, "UserHacks_round_sprite_offset");
 	GtkWidget* stretch_hack_label  = left_label("Round Sprite:");
 	GtkWidget* trilinear_box       = CreateComboBoxFromVector(theApp.m_gs_trifilter, "UserHacks_TriFilter");
@@ -472,7 +470,6 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(s_hack_skipdraw_offset_spin, IDC_SKIPDRAWHACK);
 	AddTooltip(s_hack_skipdraw_spin, IDC_SKIPDRAWHACK);
 	AddTooltip(hack_wild_check, IDC_WILDHACK);
-	AddTooltip(hack_sprite_label, hack_sprite_box, IDC_SPRITEHACK);
 	AddTooltip(hack_tco_label, IDC_TCOFFSETX);
 	AddTooltip(hack_tco_x_spin, IDC_TCOFFSETX);
 	AddTooltip(hack_tco_y_spin, IDC_TCOFFSETX);
@@ -501,7 +498,6 @@ void populate_hack_table(GtkWidget* hack_table)
 	// Other upscaling hacks
 	InsertWidgetInTable(hack_table , trilinear_label     , trilinear_box);
 	InsertWidgetInTable(hack_table , hack_offset_label   , hack_offset_box);
-	InsertWidgetInTable(hack_table , hack_sprite_label   , hack_sprite_box );
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
 	InsertWidgetInTable(hack_table , hack_skipdraw_label , s_hack_skipdraw_offset_spin, s_hack_skipdraw_spin);
 	InsertWidgetInTable(hack_table , hack_tco_label      , hack_tco_x_spin, hack_tco_y_spin);
