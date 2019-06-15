@@ -440,9 +440,10 @@ CRC::Game CRC::m_games[] =
 	{0x472E7699, Jak1, US, 0},
 	{0x2479F4A9, Jak2, EU, 0},
 	{0x9184AAF1, Jak2, US, 0},
+	{0xA2034C69, Jak2, US, 0}, // Demo
 	{0x12804727, Jak3, EU, 0},
 	{0x644CFD03, Jak3, US, 0},
-	{0x23F8D35B, Jak3, NoRegion, 0}, // EU Preview, US International
+	{0x23F8D35B, Jak3, NoRegion, 0}, // EU Preview, US Internal test build
 	{0xDF659E77, JakX, EU, 0}, // Jak X: Combat Racing
 	{0x3091E6FB, JakX, US, 0},
 	{0x4653CA3E, HarleyDavidson, US, 0},
