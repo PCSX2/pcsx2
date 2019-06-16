@@ -129,6 +129,8 @@ bool GSDevice11::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)
 
 bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 {
+	bool nvidia_vendor = false;
+
 	if(!__super::Create(wnd))
 	{
 		return false;
@@ -148,9 +150,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	std::string adapter_id = theApp.GetConfigS("Adapter");
 
-	if (adapter_id == "default")
-		;
-	else if (adapter_id == "ref")
+	if (adapter_id == "ref")
 	{
 		driver_type = D3D_DRIVER_TYPE_REFERENCE;
 	}
@@ -166,8 +166,11 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 					break;
 				DXGI_ADAPTER_DESC1 desc;
 				hr = enum_adapter->GetDesc1(&desc);
-				if (S_OK == hr && GSAdapter(desc) == adapter_id)
+				if (S_OK == hr && (GSAdapter(desc) == adapter_id || adapter_id == "default"))
 				{
+					if (desc.VendorId == 0x10DE)
+						nvidia_vendor = true;
+
 					adapter = enum_adapter;
 					driver_type = D3D_DRIVER_TYPE_UNKNOWN;
 					break;
@@ -224,26 +227,9 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	}
 
 	{	// HACK: check nVIDIA
-		bool nvidia_gpu = false;
-		IDXGIDevice *dxd;
-
-		if(SUCCEEDED(m_dev->QueryInterface(IID_PPV_ARGS(&dxd))))
-		{
-			IDXGIAdapter *dxa;
-
-			if(SUCCEEDED(dxd->GetAdapter(&dxa)))
-			{
-				DXGI_ADAPTER_DESC dxad;
-
-				if(SUCCEEDED(dxa->GetDesc(&dxad)))
-					nvidia_gpu = dxad.VendorId == 0x10DE;
-
-				dxa->Release();
-			}
-			dxd->Release();
-		}
-
-		m_hack_topleft_offset = (!nvidia_gpu || m_upscale_multiplier == 1) ? 0.0f : -0.01f;
+		// Note: It can cause Horizontal black stripes on Fatal Frame games on Nvidia gpu,
+		// better use opengl to avoid issue.
+		m_hack_topleft_offset = (m_upscale_multiplier != 1 && nvidia_vendor) ? -0.01f : 0.0f;
 	}
 
 	// debug
