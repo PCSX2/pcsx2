@@ -30,7 +30,6 @@ class GSTexture11 : public GSTexture
 	CComPtr<ID3D11Texture2D> m_texture;
 	D3D11_TEXTURE2D_DESC m_desc;
 	CComPtr<ID3D11ShaderResourceView> m_srv;
-	CComPtr<ID3D11UnorderedAccessView> m_uav;
 	CComPtr<ID3D11RenderTargetView> m_rtv;
 	CComPtr<ID3D11DepthStencilView> m_dsv;
 
@@ -48,7 +47,6 @@ public:
 
 	operator ID3D11Texture2D*();
 	operator ID3D11ShaderResourceView*();
-	operator ID3D11UnorderedAccessView*();
 	operator ID3D11RenderTargetView*();
 	operator ID3D11DepthStencilView*();
 };
