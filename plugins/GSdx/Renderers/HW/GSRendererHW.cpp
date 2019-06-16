@@ -1254,10 +1254,8 @@ void GSRendererHW::Draw()
 	}
 
 	#ifdef DISABLE_HW_TEXTURE_CACHE
-
 	if (rt)
-		m_tc->Read(rt, r);
-
+		m_tc->Read(rt, m_r);
 	#endif
 }
 
