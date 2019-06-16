@@ -113,15 +113,8 @@ void GSRendererDX11::EmulateAtst(const int pass, const GSTextureCache::Source* t
 	switch (atst)
 	{
 		case ATST_LESS:
-			if (tex && tex->m_spritehack_t)
-			{
-				m_ps_sel.atst = 0;
-			}
-			else
-			{
-				ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
-				m_ps_sel.atst = 1;
-			}
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+			m_ps_sel.atst = 1;
 			break;
 		case ATST_LEQUAL:
 			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
@@ -737,7 +730,6 @@ void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	m_ps_sel.ltf = bilinear && shader_emulated_sampler;
 
-	m_ps_sel.spritehack = tex->m_spritehack_t;
 	m_ps_sel.point_sampler = !bilinear || shader_emulated_sampler;
 
 	GSVector4 TextureScale = GSVector4(0.0625f) / WH.xyxy();
@@ -1029,12 +1021,8 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 			if (m_context->TEST.DATM == 0)
 				m_ps_sel.atst = 2; // >=
 			else
-			{
-				if (tex && tex->m_spritehack_t)
-					m_ps_sel.atst = 0; // <
-				else
-					m_ps_sel.atst = 1; // <
-			}
+				m_ps_sel.atst = 1; // <
+
 			ps_cb.FogColor_AREF.a = (float)0x80;
 		}
 		if (!(m_context->FBA.FBA && m_context->TEST.DATM == 1))

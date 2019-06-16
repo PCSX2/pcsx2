@@ -128,12 +128,8 @@ void GSRendererOGL::EmulateAtst(const int pass, const GSTextureCache::Source* te
 
 	switch (atst) {
 		case ATST_LESS:
-			if (tex && tex->m_spritehack_t) {
-				m_ps_sel.atst = 0;
-			} else {
-				ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
-				m_ps_sel.atst = 1;
-			}
+			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+			m_ps_sel.atst = 1;
 			break;
 		case ATST_LEQUAL:
 			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;

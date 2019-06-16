@@ -243,9 +243,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 			dxd->Release();
 		}
 
-		bool spritehack_enabled = theApp.GetConfigB("UserHacks") && theApp.GetConfigI("UserHacks_SpriteHack");
-
-		m_hack_topleft_offset = (!nvidia_gpu || m_upscale_multiplier == 1 || spritehack_enabled) ? 0.0f : -0.01f;
+		m_hack_topleft_offset = (!nvidia_gpu || m_upscale_multiplier == 1) ? 0.0f : -0.01f;
 	}
 
 	// debug
