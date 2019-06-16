@@ -67,7 +67,9 @@ std::vector<GSSettingsDlg::Adapter> GSSettingsDlg::EnumerateD3D11Adapters()
 
 	std::vector<Adapter> adapters {
 		{"Default Hardware Device", "default", GSUtil::CheckDirect3D11Level(nullptr, D3D_DRIVER_TYPE_HARDWARE)},
+#ifdef _DEBUG
 		{"Reference Device", "ref", GSUtil::CheckDirect3D11Level(nullptr, D3D_DRIVER_TYPE_REFERENCE)},
+#endif
 	};
 
 	CComPtr<IDXGIAdapter1> adapter;
