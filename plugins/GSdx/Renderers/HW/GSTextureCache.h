@@ -108,7 +108,6 @@ public:
 		bool m_target;
 		bool m_complete;
 		bool m_repeating;
-		bool m_spritehack_t;
 		std::vector<GSVector2i>* m_p2t;
 		// Keep a trace of the target origin. There is no guarantee that pointer will
 		// still be valid on future. However it ought to be good when the source is created
@@ -191,7 +190,6 @@ protected:
 	SourceMap m_src;
 	FastList<Target*> m_dst[2];
 	bool m_paltex;
-	int m_spritehack;
 	bool m_preload_frame;
 	uint8* m_temp;
 	bool m_can_convert_depth;

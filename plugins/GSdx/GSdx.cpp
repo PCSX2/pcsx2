@@ -459,7 +459,6 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_round_sprite_offset"]              = "0";
 	m_default_configuration["UserHacks_SkipDraw"]                         = "0";
 	m_default_configuration["UserHacks_SkipDraw_Offset"]                  = "0";
-	m_default_configuration["UserHacks_SpriteHack"]                       = "0";
 	m_default_configuration["UserHacks_TCOffsetX"]                        = "0";
 	m_default_configuration["UserHacks_TCOffsetY"]                        = "0";
 	m_default_configuration["UserHacks_TextureInsideRt"]                  = "0";

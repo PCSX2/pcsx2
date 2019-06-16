@@ -32,7 +32,6 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	, m_palette_map(r)
 {
 	if (theApp.GetConfigB("UserHacks")) {
-		m_spritehack                   = theApp.GetConfigI("UserHacks_SpriteHack");
 		UserHacks_HalfPixelOffset      = theApp.GetConfigI("UserHacks_HalfPixelOffset") == 1;
 		m_preload_frame                = theApp.GetConfigB("preload_frame_with_gs_data");
 		m_disable_partial_invalidation = theApp.GetConfigB("UserHacks_DisablePartialInvalidation");
@@ -41,7 +40,6 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 		m_texture_inside_rt            = theApp.GetConfigB("UserHacks_TextureInsideRt");
 		m_wrap_gs_mem                  = theApp.GetConfigB("wrap_gs_mem");
 	} else {
-		m_spritehack                   = 0;
 		UserHacks_HalfPixelOffset      = false;
 		m_preload_frame                = false;
 		m_disable_partial_invalidation = false;
@@ -1140,16 +1138,6 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 	bool hack = false;
 
-	if(m_spritehack && (TEX0.PSM == PSM_PSMT8 || TEX0.PSM == PSM_PSMT8H))
-	{
-		src->m_spritehack_t = true;
-
-		if(m_spritehack == 2 && TEX0.CPSM != PSM_PSMCT16)
-			src->m_spritehack_t = false;
-	}
-	else
-		src->m_spritehack_t = false;
-
 	if (dst && (x_offset != 0 || y_offset != 0))
 	{
 		GSVector2 scale = dst->m_texture->GetScale();
@@ -1557,7 +1545,6 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	, m_valid_rect(0, 0)
 	, m_target(false)
 	, m_complete(false)
-	, m_spritehack_t(false)
 	, m_p2t(NULL)
 	, m_from_target(NULL)
 {

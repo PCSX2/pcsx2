@@ -31,7 +31,6 @@
 #define PS_FBA 0
 #define PS_FBMASK 0
 #define PS_LTF 1
-#define PS_SPRITEHACK 0
 #define PS_TCOFFSETHACK 0
 #define PS_POINT_SAMPLER 0
 #define PS_SHUFFLE 0
@@ -590,9 +589,7 @@ void atst(float4 c)
 	}
 	else if(PS_ATST == 1)
 	{
-		#if PS_SPRITEHACK == 0
 		if (a > AREF) discard;
-		#endif
 	}
 	else if(PS_ATST == 2)
 	{
