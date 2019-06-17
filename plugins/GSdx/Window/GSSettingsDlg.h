@@ -52,7 +52,7 @@ protected:
 	bool OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
 
 public:
-	GSHacksDlg(const std::string &adapter_id);
+	GSHacksDlg();
 };
 
 class GSOSDDlg : public GSDialog

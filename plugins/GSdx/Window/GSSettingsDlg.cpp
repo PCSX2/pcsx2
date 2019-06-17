@@ -210,7 +210,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				std::string adapter_id;
 				if (ComboBoxGetSelData(IDC_ADAPTER, data))
 					adapter_id = (*m_current_adapters)[data].id;
-				GSHacksDlg(adapter_id).DoModal();
+				GSHacksDlg().DoModal();
 			}
 			break;
 		case IDOK:
@@ -610,7 +610,7 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 // Hacks Dialog
 
-GSHacksDlg::GSHacksDlg(const std::string &adapter_id)
+GSHacksDlg::GSHacksDlg()
 	: GSDialog{IDD_HACKS}
 	, m_old_skipdraw_offset{0}
 	, m_old_skipdraw{0}
