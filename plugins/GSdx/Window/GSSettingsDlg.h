@@ -42,7 +42,6 @@ public:
 
 class GSHacksDlg : public GSDialog
 {
-	std::string m_adapter_id;
 	int m_old_skipdraw_offset;
 	int m_old_skipdraw;
 

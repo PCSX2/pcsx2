@@ -612,7 +612,6 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 GSHacksDlg::GSHacksDlg(const std::string &adapter_id)
 	: GSDialog{IDD_HACKS}
-	, m_adapter_id(adapter_id)
 	, m_old_skipdraw_offset{0}
 	, m_old_skipdraw{0}
 {
