@@ -17104,6 +17104,7 @@ Region = PAL-G
 Serial = SLES-54878
 Name   = Naruto - Ultimate Ninja 2
 Region = PAL-M5
+vuClampMode = 0 // Fixes glow effects. 
 ---------------------------------------------
 Serial = SLES-54879
 Name   = WWE SmackDown vs. Raw 2008
@@ -17566,6 +17567,7 @@ Serial = SLES-55237
 Name   = Naruto - Ultimate Ninja 3
 Region = PAL-M5
 Compat = 5
+vuClampMode = 2 // Fixes invisible QTE button prompts and overbright in some scenes.
 ---------------------------------------------
 Serial = SLES-55240
 Name   = Pipe Mania
@@ -19252,6 +19254,11 @@ Serial = SLPM-61120
 Name   = Drag-on Dragoon 2 - Fuuin no Kurenai [Trial Version]
 Region = NTSC-J
 eeClampMode = 2 // Fixes wrong color on some characters and breakable objects.
+---------------------------------------------
+Serial = SLPM-61135
+Name   = Naruto - Narutimett Hero 3 [Trial Version]
+Region = NTSC-J
+vuClampMode = 2 // Fixes invisible QTE button prompts and overbright in some scenes.
 ---------------------------------------------
 Serial = SLPM-61147
 Name   = Xenosaga Episode III - Also Sprach Zarathustra [Demo]
@@ -32221,6 +32228,7 @@ Region = NTSC-J
 Serial = SLPS-25398
 Name   = Naruto - Narutimett Hero 2
 Region = NTSC-J
+vuClampMode = 0 // Fixes glow effects. 
 ---------------------------------------------
 Serial = SLPS-25399
 Name   = Keroro Gunsou - Mero Mero Battle Royale
@@ -32976,6 +32984,7 @@ Region = NTSC-J
 Serial = SLPS-25589
 Name   = Naruto Narutimett Hero 3
 Region = NTSC-J
+vuClampMode = 2 // Fixes invisible QTE button prompts and overbright in some scenes.
 ---------------------------------------------
 Serial = SLPS-25590
 Name   = Namco Museum Arcade Hits
@@ -34358,6 +34367,7 @@ Region = NTSC-J
 Serial = SLPS-73221
 Name   = Naruto Narutimett Hero 2 [PlayStation 2 The Best]
 Region = NTSC-J
+vuClampMode = 0 // Fixes glow effects.
 ---------------------------------------------
 Serial = SLPS-73222
 Name   = Harvest Moon - A Wonderful Life [PlayStation 2 The Best]
@@ -34492,6 +34502,7 @@ MemCardFilter = SCAJ-20173/SLPS-25629/SLPS-73250/SLPS-25052/SLPS-73205/SLPS-7341
 Serial = SLPS-73251
 Name   = Naruto - Narutimett Hero 3 [PlayStation 2 The Best]
 Region = NTSC-J
+vuClampMode = 2 // Fixes invisible QTE button prompts and overbright in some scenes.
 ---------------------------------------------
 Serial = SLPS-73252
 Name   = Tales of the Abyss [PlayStation 2 The Best]
@@ -41905,6 +41916,7 @@ Serial = SLUS-21575
 Name   = Naruto - Ultimate Ninja 2
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0 // Fixes glow effects. 
 ---------------------------------------------
 Serial = SLUS-21576
 Name   = Rayman - Raving Rabbids
@@ -42628,6 +42640,7 @@ Serial = SLUS-21727
 Name   = Naruto - Ultimate Ninja 3
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // Fixes invisible QTE button prompts and overbright in some scenes.
 ---------------------------------------------
 Serial = SLUS-21728
 Name   = Crash - Mind Over Mutant
@@ -44290,16 +44303,28 @@ Name   = MLB 11: The Show
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
+Serial = TCES-10001
+Name   = Mirage Beta Trial Code
+Region = PAL-E
+---------------------------------------------
 Serial = TCES-51613
-Name   = This Is Football 2004 [Beta]
+Name   = This Is Football 2004 Beta Trial Code
 Region = PAL-E-S
 ---------------------------------------------
 Serial = TCES-51904
-Name   = SOCOM II - U.S. Navy SEALs [Beta]
+Name   = SOCOM II - U.S. Navy SEALs Beta Trial Code
 Region = PAL-M5
 Compat = 5
 EETimingHack = 1 // Get rids of DMA8/9 non-fatal errors.
 VIF1StallHack = 1 // Fixes broken HUD.
+---------------------------------------------
+Serial = TCES-52456
+Name   = Ratchet and Clank 3 Beta Trial Code
+Region = PAL-E
+---------------------------------------------
+Serial = TCES-52456
+Name   = Formula One 05 Beta Trial Code
+Region = PAL-E
 ---------------------------------------------
 Serial = TCES-53286
 Name   = Jak X Beta Trial Code
