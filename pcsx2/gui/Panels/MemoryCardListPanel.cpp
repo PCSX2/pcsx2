@@ -76,7 +76,9 @@ bool EnumerateMemoryCard( McdSlotItem& dest, const wxFileName& filename, const w
 			return false;
 		}
 
-		dest.SizeInMB = (uint)( length / ( 1024 * 528 * 2 ) );
+		const int mb_ecc = 1024 * 528 * 2;
+		const int mb_noecc = 1024 * 512 * 2;
+		dest.SizeInMB = (uint)(length % mb_ecc ? length/mb_noecc : length/mb_ecc );
 
 		if ( length == 0x20000 ) {
 			dest.IsPSX = true; // PSX memcard;
@@ -1056,6 +1058,7 @@ void Panels::MemoryCardListPanel_Simple::ReadFilesAtMcdFolder(){
 	if ( memcardDir.IsOpened() ) {
 		// add memory card files
 		wxDir::GetAllFiles( filename, &memcardList, L"*.ps2", wxDIR_FILES );
+		wxDir::GetAllFiles( filename, &memcardList, L"*.bin", wxDIR_FILES);
 		wxDir::GetAllFiles( filename, &memcardList, L"*.mcd", wxDIR_FILES );
 		wxDir::GetAllFiles( filename, &memcardList, L"*.mcr", wxDIR_FILES );
 

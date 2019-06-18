@@ -45,6 +45,114 @@ static const int MCD_SIZE	= 1024 *  8  * 16;		// Legacy PSX card default size
 
 static const int MC2_MBSIZE	= 1024 * 528 * 2;		// Size of a single megabyte of card data
 
+// ECC code ported from mymc
+// https://sourceforge.net/p/mymc-opl/code/ci/master/tree/ps2mc_ecc.py
+// Public domain license
+
+static
+u32 CalculateECC(u8* buf)
+{
+	const u8 parity_table[256] = {0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,1,0,0,1,0,1,1,
+	0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,0,
+	1,1,0,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,0,1,1,
+	0,1,0,0,1,1,0,0,1,0,1,1,0,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,0,
+	1,1,0,1,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,
+	0,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,1,0,0,1,0,
+	1,1,0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,0,1,1,0,1,0,0,1,1,0,0,
+	1,0,1,1,0};
+
+	const u8 column_parity_mask[256] = {0,7,22,17,37,34,51,52,52,51,34,37,17,22,
+	7,0,67,68,85,82,102,97,112,119,119,112,97,102,82,85,68,67,82,85,68,67,119,112,
+	97,102,102,97,112,119,67,68,85,82,17,22,7,0,52,51,34,37,37,34,51,52,0,7,22,17,
+	97,102,119,112,68,67,82,85,85,82,67,68,112,119,102,97,34,37,52,51,7,0,17,22,
+	22,17,0,7,51,52,37,34,51,52,37,34,22,17,0,7,7,0,17,22,34,37,52,51,112,119,102,
+	97,85,82,67,68,68,67,82,85,97,102,119,112,112,119,102,97,85,82,67,68,68,67,82,
+	85,97,102,119,112,51,52,37,34,22,17,0,7,7,0,17,22,34,37,52,51,34,37,52,51,7,0,
+	17,22,22,17,0,7,51,52,37,34,97,102,119,112,68,67,82,85,85,82,67,68,112,119,102,
+	97,17,22,7,0,52,51,34,37,37,34,51,52,0,7,22,17,82,85,68,67,119,112,97,102,102,
+	97,112,119,67,68,85,82,67,68,85,82,102,97,112,119,119,112,97,102,82,85,68,67,
+	0,7,22,17,37,34,51,52,52,51,34,37,17,22,7,0};
+
+	u8 column_parity = 0x77;
+	u8 line_parity_0 = 0x7F;
+	u8 line_parity_1 = 0x7F;
+
+	for (int i = 0; i < 128; i++) {
+		u8 b = buf[i];
+		column_parity ^= column_parity_mask[b];
+		if (parity_table[b]) {
+			line_parity_0 ^= ~i;
+			line_parity_1 ^= i;
+		}
+	}
+
+	return column_parity | (line_parity_0 << 8) | (line_parity_1 << 16);
+}
+
+static
+bool ConvertNoECCtoRAW(wxString file_in, wxString file_out)
+{
+	bool result = false;
+	wxFFile fin(file_in, "rb");
+
+	if (fin.IsOpened()) {
+		wxFFile fout(file_out, "wb");
+
+		if (fout.IsOpened()) {
+			size_t size = fin.Length();
+			u8* buffer = (u8*)malloc(size);
+
+			if (buffer) {
+				u8 empty[4] = { 0 };
+				fin.Read(buffer, size);
+
+				for (size_t i = 0; i < (size / 512); i++) {
+					u8* buf = &buffer[i * 512];
+					fout.Write(buf, 512);
+
+					for (int j = 0; j < 4; j++) {
+						u32 checksum = CalculateECC(&buf[j * 128]);
+						fout.Write(&checksum, 3);
+					}
+
+					fout.Write(empty, 4);
+				}
+
+				result = true;
+				free(buffer);
+			}
+		}
+	}
+
+	return result;
+}
+
+static
+bool ConvertRAWtoNoECC(wxString file_in, wxString file_out)
+{
+	bool result = false;
+	wxFFile fout(file_out, "wb");
+
+	if (fout.IsOpened()) {
+		wxFFile fin(file_in, "rb");
+
+		if (fin.IsOpened()) {
+			u8 buffer[512];
+			size_t size = fin.Length();
+
+			for (size_t i = 0; i < (size / 528); i++) {
+				fin.Read(buffer, 512);
+				fout.Write(buffer, 512);
+				fin.Read(buffer, 16);
+			}
+
+			result = true;
+		}
+	}
+
+	return result;
+}
+
 // --------------------------------------------------------------------------------------
 //  FileMemoryCard
 // --------------------------------------------------------------------------------------
@@ -206,6 +314,18 @@ void FileMemoryCard::Open()
 		NTFS_CompressFile( str, g_Conf->McdCompressNTFS );
 #endif
 
+		if (str.EndsWith(".bin"))
+		{
+			wxString newname = str + "x";
+			if(!ConvertNoECCtoRAW(str, newname))
+			{
+				Console.Error(L"Could convert memory card: " + str);
+				wxRemoveFile(newname);
+				continue;
+			}
+			str = newname;
+		}
+
 		if( !m_file[slot].Open( str.c_str(), L"r+b" ) )
 		{
 			// Translation note: detailed description should mention that the memory card will be disabled
@@ -236,6 +356,13 @@ void FileMemoryCard::Close()
 				m_file[slot].Write( &m_chksum[slot], 8 );
 
 			m_file[slot].Close();
+
+			if (m_file[slot].GetName().EndsWith(".binx")) {
+				wxString name = m_file[slot].GetName();
+				wxString name_old = name.SubString(0, name.Last('.')) + "bin";
+				if(ConvertRAWtoNoECC(name, name_old))
+					wxRemoveFile(name);
+			}
 		}
 	}
 }
