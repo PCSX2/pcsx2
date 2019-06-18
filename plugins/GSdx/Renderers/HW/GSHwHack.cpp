@@ -578,10 +578,6 @@ bool GSC_DevilMayCry3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		if(Dx_only && fi.TME && fi.FBP == 0x01800 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x01000 && fi.TPSM == PSM_PSMZ16)
-		{
-			skip = 32;
-		}
 		if(fi.TME && fi.FBP == 0x01800 && fi.FPSM == PSM_PSMZ32 && fi.TBP0 == 0x0800 && fi.TPSM == PSM_PSMT8H)
 		{
 			skip = 16;
