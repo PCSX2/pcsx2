@@ -12069,6 +12069,18 @@ Region = PAL-M5
 Serial = SLES-52527
 Name   = Harry Potter og Fangen fra Azkaban
 Region = PAL-M4 // Nordic.
+[patches = 51E417AA]
+	comment=Patch by Prafull and Arapapa
+	// Fixes game hanging on loading screens.
+	// EETimingHack may be needed.
+	patch=1,EE,0016cf8c,word,00000000
+	patch=1,EE,0013cd64,word,00000000
+	patch=1,EE,0013c1a8,word,00000000
+	patch=1,EE,0013c1cc,word,00000000
+	patch=1,EE,80000000,word,00000000
+	patch=1,EE,0013df84,word,00000000
+	patch=1,EE,0013cd3c,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-52531
 Name   = Suffering, The
