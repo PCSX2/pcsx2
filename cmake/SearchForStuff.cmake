@@ -213,3 +213,12 @@ WX_vs_SDL()
 if(GCC_VERSION VERSION_EQUAL "7.0" OR GCC_VERSION VERSION_EQUAL "7.1")
     GCC7_BUG()
 endif()
+
+if(GCC_VERSION GREATER_EQUAL "9.0" AND GCC_VERSION LESS "9.2")
+    message(WARNING "
+    It looks like you are compiling with 9.0.x or 9.1.x. Using these versions is not recommended,
+    as there is a bug known to cause the compiler to segfault while compiling. See patch
+    https://gitweb.gentoo.org/proj/gcc-patches.git/commit/?id=275ab714637a64672c6630cfd744af2c70957d5a
+    Even with that patch, compiling with LTO may still segfault. Use at your own risk!
+    This text being in a compile log in an open issue may cause it to be closed.")
+endif()
