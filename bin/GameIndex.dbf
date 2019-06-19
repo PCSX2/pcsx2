@@ -42484,6 +42484,7 @@ Serial = SLUS-21710
 Name   = PopCap Hits Volume 1
 Region = NTSC-U
 Compat = 5
+EETimingHack = 1 // Fixes random crashing throughout the game.
 ---------------------------------------------
 Serial = SLUS-21711
 Name   = Biathlon 2008
@@ -42748,6 +42749,7 @@ Serial = SLUS-21768
 Name   = PopCap Hits Vol.2
 Region = NTSC-U
 Compat = 5
+EETimingHack = 1 // Fixes random crashing throughout the game.
 ---------------------------------------------
 Serial = SLUS-21769
 Name   = Yakuza 2
