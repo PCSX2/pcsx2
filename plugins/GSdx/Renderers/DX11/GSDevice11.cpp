@@ -783,7 +783,26 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	StretchRect(sTex, sRect, dTex, dRect, ps, ps_cb, m_convert.bs, linear);
 }
 
-void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear)
+void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha)
+{
+	D3D11_BLEND_DESC bd = {};
+	CComPtr<ID3D11BlendState> bs;
+
+	uint8 write_mask = 0;
+
+	if (red)   write_mask |= D3D11_COLOR_WRITE_ENABLE_RED;
+	if (green) write_mask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
+	if (blue)  write_mask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
+	if (alpha) write_mask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
+
+	bd.RenderTarget[0].RenderTargetWriteMask = write_mask;
+
+	m_dev->CreateBlendState(&bd, &bs);
+
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[ShaderConvert_COPY], nullptr, bs, false);
+}
+
+void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs , bool linear)
 {
 	if(!sTex || !dTex)
 	{
