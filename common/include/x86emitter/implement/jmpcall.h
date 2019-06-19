@@ -58,7 +58,7 @@ struct xImpl_FastCall
 
 
 // Type unsafety is nice
-#ifdef __x86_64__
+#ifdef __M_X86_64
 
 #define XFASTCALL \
     xCALL(f);
@@ -90,7 +90,7 @@ struct xImpl_FastCall
 
     void operator()(void *f, const xRegisterLong &a1 = xEmptyReg, const xRegisterLong &a2 = xEmptyReg) const
     {
-#ifdef __x86_64__
+#ifdef __M_X86_64
         if (a1.IsEmpty()) {
             XFASTCALL;
         } else if (a2.IsEmpty()) {
@@ -114,7 +114,7 @@ struct xImpl_FastCall
     {
         void *f = (void *)func;
 
-#ifdef __x86_64__
+#ifdef __M_X86_64
         XFASTCALL2;
 #else
         XFASTCALL2;
@@ -126,7 +126,7 @@ struct xImpl_FastCall
     {
         void *f = (void *)func;
 
-#ifdef __x86_64__
+#ifdef __M_X86_64
         XFASTCALL1;
 #else
         XFASTCALL1;
@@ -138,7 +138,7 @@ struct xImpl_FastCall
     {
         void *f = (void *)func;
 
-#ifdef __x86_64__
+#ifdef __M_X86_64
         XFASTCALL2;
 #else
         XFASTCALL2;
@@ -150,7 +150,7 @@ struct xImpl_FastCall
     {
         void *f = (void *)func;
 
-#ifdef __x86_64__
+#ifdef __M_X86_64
         XFASTCALL1;
 #else
         XFASTCALL1;
@@ -159,7 +159,7 @@ struct xImpl_FastCall
 
     void operator()(const xIndirect32 &f, const xRegisterLong &a1 = xEmptyReg, const xRegisterLong &a2 = xEmptyReg) const
     {
-#ifdef __x86_64__
+#ifdef __M_X86_64
         if (a1.IsEmpty()) {
             XFASTCALL;
         } else if (a2.IsEmpty()) {

@@ -120,7 +120,7 @@ __emitinline void xOpWriteC5(u8 prefix, u8 opcode, const T1 &param1, const T2 &p
 
     const xRegisterInt &reg = param1.IsReg() ? param1 : param2;
 
-#ifdef __x86_64__
+#ifdef __M_X86_64
     u8 nR = reg.IsExtended() ? 0x00 : 0x80;
 #else
     u8 nR = 0x80;
@@ -149,7 +149,7 @@ __emitinline void xOpWriteC4(u8 prefix, u8 mb_prefix, u8 opcode, const T1 &param
 
     const xRegisterInt &reg = param1.IsReg() ? param1 : param2;
 
-#ifdef __x86_64__
+#ifdef __M_X86_64
     u8 nR = reg.IsExtended() ? 0x00 : 0x80;
     u8 nB = param3.IsExtended() ? 0x00 : 0x20;
     u8 nX = 0x40; // likely unused so hardwired to disabled
