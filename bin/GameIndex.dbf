@@ -1469,6 +1469,7 @@ Compat = 5
 Serial = SCES-50888
 Name   = Pac-Man World 2
 Region = PAL-M5
+EETimingHack = 1 // Fixes hanging in Butane Pain, Ghost Bayou, Pinky's Revenge and Clyde in the Caldera levels.
 ---------------------------------------------
 Serial = SCES-50889
 Name   = Ninja Assault
@@ -1800,9 +1801,10 @@ Serial = SCES-52033
 Name   = Syphon Filter - The Omega Strain
 Region = PAL-M5
 Compat = 5
-EETimingHack = 1 // Random hangs in US version, code is the same.
+EETimingHack = 1 // Fixes random hangs.
 [patches = 27E54B37]
-	comment=COP2 patch by Refraction
+	author=Refraction
+	// Cop2 problems.
 	patch=0,EE,003953F8,word,48438000
 	patch=0,EE,003735FC,word,4B06521B
 [/patches]
@@ -2863,8 +2865,10 @@ Region = NTSC-K
 Serial = SCKA-20032
 Name   = Syphon Filter - The Omega Virus
 Region = NTSC-K
-EETimingHack = 1 // Random hangs.
+EETimingHack = 1 // Fixes random hangs.
 [patches = 3676E74C]
+	author=Refraction
+	// Cop2 problems.
 	patch=1,EE,00398898,word,48438000 //4b06521b
 	patch=1,EE,0039889c,word,4b06521b //48438000
 [/patches]
@@ -4278,6 +4282,11 @@ Serial = SCPS-55035
 Name   = Ape Escape 2
 Region = NTSC-J
 ---------------------------------------------
+Serial = SCPS-55038
+Name   = Pac-Man World 2
+Region = NTSC-J
+EETimingHack = 1 // Fixes hanging in Butane Pain, Ghost Bayou, Pinky's Revenge and Clyde in the Caldera levels.
+---------------------------------------------
 Serial = SCPS-55040
 Name   = G-Breaker 2 - Doumei no Hangeki
 Region = NTSC-J
@@ -5047,9 +5056,10 @@ Serial = SCUS-97264
 Name   = Syphon Filter - The Omega Strain
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1 // Random hangs.
+EETimingHack = 1 // Fixes random hangs.
 [patches = D5605611]
-	comment=COP2 patch by Refraction
+	author=Refraction
+	// Cop2 problems.
 	patch=0,EE,003735F8,word,48438000
 	patch=0,EE,003735FC,word,4B06521B
 [/patches]
@@ -31338,6 +31348,11 @@ Name   = Baldur's Gate: Dark Alliance
 Region = NTSC-J
 Compat = 5
 ---------------------------------------------
+Serial = SLPS-25141
+Name   = Pac-Man World 2
+Region = NTSC-J
+EETimingHack = 1 // Fixes hanging in Butane Pain, Ghost Bayou, Pinky's Revenge and Clyde in the Caldera levels.
+---------------------------------------------
 Serial = SLPS-25142
 Name   = Tiger Woods PGA Tour 2002
 Region = NTSC-J
@@ -35532,6 +35547,7 @@ Serial = SLUS-20224
 Name   = Pac-Man World 2
 Region = NTSC-U
 Compat = 4
+EETimingHack = 1 // Fixes hanging in Butane Pain, Ghost Bayou, Pinky's Revenge and Clyde in the Caldera levels.
 ---------------------------------------------
 Serial = SLUS-20225
 Name   = Gadget Racers
@@ -40893,9 +40909,10 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21337
-Name   = Arena Football - EA Sports
+Name   = Arena Football
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3 // Missing geometry with microVU.
 ---------------------------------------------
 Serial = SLUS-21338
 Name   = Armored Core - Last Raven
@@ -41260,6 +41277,7 @@ Serial = SLUS-21407
 Name   = NFL Head Coach
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3 // Missing geometry with microVU.
 ---------------------------------------------
 Serial = SLUS-21408
 Name   = FIFA World Cup '06
@@ -44332,13 +44350,40 @@ Compat = 5
 EETimingHack = 1 // Get rids of DMA8/9 non-fatal errors.
 VIF1StallHack = 1 // Fixes broken HUD.
 ---------------------------------------------
+Serial = TCES-52004
+Name   = Killzone Beta Trial Code
+Region = PAL-E
+vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
+---------------------------------------------
+Serial = TCES-52033
+Name   = Syphon Filter: The Omega Strain Beta Trial Code
+Region = PAL-E
+EETimingHack = 1 // Fixes random hangs.
+---------------------------------------------
+Serial = TCES-52042
+Name   = Forumla One 04 Beta Trial Code
+Region = PAL-E
+---------------------------------------------
+Serial = TCES-52389
+Name   = World Rally Championship 4 Beta Trial Code
+Region = PAL-E
+---------------------------------------------
 Serial = TCES-52456
 Name   = Ratchet and Clank 3 Beta Trial Code
 Region = PAL-E
 ---------------------------------------------
-Serial = TCES-52456
-Name   = Formula One 05 Beta Trial Code
+Serial = TCES-52582
+Name   = Everybody's Golf 4 Beta Trial Code
 Region = PAL-E
+---------------------------------------------
+Serial = TCES-53033
+Name   = Forumla One 05 Beta Trial Code
+Region = PAL-E
+---------------------------------------------
+Serial = TCES-53247
+Name   = WRC: Rally Evolved Beta Trial Code
+Region = PAL-E
+XgKickHack = 1 // SPS.
 ---------------------------------------------
 Serial = TCES-53286
 Name   = Jak X Beta Trial Code
@@ -44475,4 +44520,36 @@ Region = NTSC-J
 Serial = TCPS-10172
 Name   = Homura [Taito the Best]
 Region = NTSC-J
+---------------------------------------------
+Serial = TLES-52149
+Name   = Splinter Cell: Pandora Tomorrow Beta Trial Code
+Region = PAL-E
+---------------------------------------------
+Serial = TLES-52339
+Name   = Crash ‘N’ Burn Beta Trial Code
+Region = PAL-E
+---------------------------------------------
+Serial = TLES-52707
+Name   = Monster Hunter Beta Trial Code
+Region = PAL-E
+---------------------------------------------
+Serial = TLES-52781
+Name   = WWE: Smackdown Vs Raw Beta Trial Code
+Region = PAL-E
+---------------------------------------------
+Serial = TLES-52940
+Name   = S.L.A.I. Phantom Crash Beta Trial Code
+Region = PAL-E
+---------------------------------------------
+Serial = TLES-53544
+Name   = Pro Evolution Soccer 5 Beta Trial Code
+Region = PAL-E
+---------------------------------------------
+Serial = TLES-54240
+Name   = FIFA 07 Beta Trial Code
+Region = PAL-E
+---------------------------------------------
+Serial = TLES-82043
+Name   = Metal Gear Solid Subsistence Beta Trial Code
+Region = PAL-E
 ---------------------------------------------
