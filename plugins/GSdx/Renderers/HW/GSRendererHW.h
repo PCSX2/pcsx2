@@ -62,10 +62,10 @@ private:
 	bool OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_ItadakiStreet(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
+	bool OI_JakGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 
 	void OO_DBZBT2();
 	void OO_MajokkoALaMode2();
-	void OO_JakGames();
 
 	bool CU_DBZBT2();
 	bool CU_MajokkoALaMode2();
@@ -136,6 +136,7 @@ private:
 	uint16 Interpolate_UV(float alpha, int t0, int t1);
 	float alpha0(int L, int X0, int X1);
 	float alpha1(int L, int X0, int X1);
+	void SwSpriteRender();
 
 	template <bool linear> void RoundSpriteOffset();
 
