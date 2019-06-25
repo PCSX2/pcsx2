@@ -38,7 +38,17 @@ namespace GSDumpGUI.Forms.Helper
 
         public IEnumerable<GsDumpFile> GetValidGsdxDumps(DirectoryInfo directory)
         {
-            var dumps = directory.GetFiles("*.gs", SearchOption.TopDirectoryOnly);
+            var dumps = new FileInfo[0];
+
+            try
+            {
+                dumps = directory.GetFiles("*.gs", SearchOption.TopDirectoryOnly);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                _logger.Warning($"Failed to open folder '{directory}'.");
+                yield break;
+            }
 
             foreach (var dump in dumps)
             {
