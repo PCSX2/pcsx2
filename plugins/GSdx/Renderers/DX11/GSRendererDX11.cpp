@@ -529,6 +529,10 @@ void GSRendererDX11::EmulateBlending()
 	uint8 blend_index  = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
 	int blend_flag = m_dev->GetBlendFlags(blend_index);
 
+	// SW free blend.
+	bool free_blend = !!(blend_flag & (BLEND_NO_BAR|BLEND_ACCU));
+
+	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
 	bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
 
 	switch (m_sw_blending)
@@ -536,7 +540,7 @@ void GSRendererDX11::EmulateBlending()
 		case ACC_BLEND_HIGH_D3D11:
 		case ACC_BLEND_MEDIUM_D3D11:
 		case ACC_BLEND_BASIC_D3D11:
-			sw_blending |= accumulation_blend;
+			sw_blending |= free_blend;
 			// fall through
 		default: break;
 	}
@@ -548,6 +552,9 @@ void GSRendererDX11::EmulateBlending()
 			sw_blending = true;
 		m_ps_sel.hdr = 1;
 	}
+
+	/*fprintf(stderr, "%d: BLEND_INFO: %d/%d/%d/%d. Clamp:%d. Prim:%d number %d (sw %d)\n",
+		s_n, ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D, m_env.COLCLAMP.CLAMP, m_vt.m_primclass, m_vertex.next, sw_blending);*/
 
 	if (sw_blending)
 	{
@@ -572,8 +579,9 @@ void GSRendererDX11::EmulateBlending()
 		}
 		else
 		{
-			// We shouldn't hit this path as currently only accumulation blend is implemented
-			ASSERT(0);
+			// Disable HW blending
+			// Only BLEND_NO_BAR should hit this code path for now.
+			m_om_bsel.abe = 0;
 		}
 
 		// Require the fix alpha vlaue
