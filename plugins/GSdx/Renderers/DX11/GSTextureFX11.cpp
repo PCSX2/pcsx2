@@ -218,6 +218,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		sm.AddMacro("PS_PAL_FMT", sel.fmt >> 2);
 		sm.AddMacro("PS_INVALID_TEX0", sel.invalid_tex0);
 		sm.AddMacro("PS_HDR", sel.hdr);
+		sm.AddMacro("PS_COLCLIP", sel.colclip);
 		sm.AddMacro("PS_BLEND_A", sel.blend_a);
 		sm.AddMacro("PS_BLEND_B", sel.blend_b);
 		sm.AddMacro("PS_BLEND_C", sel.blend_c);
