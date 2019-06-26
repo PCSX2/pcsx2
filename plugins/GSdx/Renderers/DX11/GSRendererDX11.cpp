@@ -547,10 +547,24 @@ void GSRendererDX11::EmulateBlending()
 
 	if (m_env.COLCLAMP.CLAMP == 0)
 	{
-		// fprintf(stderr, "%d: COLCLIP HDR mode%s\n", s_n, accumulation_blend ? " with accumulation blend" : "");
 		if (accumulation_blend)
+		{
+			// fprintf(stderr, "%d: COLCLIP HDR mode with accumulation blend\n", s_n);
 			sw_blending = true;
-		m_ps_sel.hdr = 1;
+			m_ps_sel.hdr = 1;
+		}
+		else if (sw_blending)
+		{
+			// So far only BLEND_NO_BAR should hit this path, it's faster than standard HDR algo.
+			// Note: Isolate the code to BLEND_NO_BAR if other blending conditions are added.
+			// fprintf(stderr, "%d: COLCLIP SW ENABLED (blending is %d/%d/%d/%d)\n", s_n, ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
+			m_ps_sel.colclip = 1;
+		}
+		else
+		{
+			// fprintf(stderr, "%d: COLCLIP HDR mode\n", s_n);
+			m_ps_sel.hdr = 1;
+		}
 	}
 
 	/*fprintf(stderr, "%d: BLEND_INFO: %d/%d/%d/%d. Clamp:%d. Prim:%d number %d (sw %d)\n",

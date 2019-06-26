@@ -44,6 +44,7 @@
 #define PS_INVALID_TEX0 0
 #define PS_SCALE_FACTOR 1
 #define PS_HDR 0
+#define PS_COLCLIP 0
 #define PS_BLEND_A 0
 #define PS_BLEND_B 0
 #define PS_BLEND_C 0
@@ -897,12 +898,14 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 		Cv = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
 
 		// Standard Clamp
-		if (PS_HDR == 0)
+		if (PS_COLCLIP == 0 && PS_HDR == 0)
 			Cv = clamp(Cv, (float3)0.0f, (float3)255.0f);
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
 		if (PS_DFMT == FMT_16)
 			Cv = (float3)((int3)Cv & (int3)0xF8);
+		else if (PS_COLCLIP == 1 && PS_HDR == 0)
+			Cv = (float3)((int3)Cv & (int3)0xFF);
 
 		Color.rgb = Cv / 255.0f;
 	}

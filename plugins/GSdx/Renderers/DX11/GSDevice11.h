@@ -217,6 +217,7 @@ public:
 				uint32 blend_d:2;
 				uint32 clr1:1;
 				uint32 hdr:1;
+				uint32 colclip:1;
 
 				// Others ways to fetch the texture
 				uint32 channel:3;
@@ -228,7 +229,7 @@ public:
 				uint32 point_sampler:1;
 				uint32 invalid_tex0:1; // Lupin the 3rd
 
-				uint32 _free:19;
+				uint32 _free:18;
 			};
 
 			uint64 key;
