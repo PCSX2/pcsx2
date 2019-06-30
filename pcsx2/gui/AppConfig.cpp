@@ -640,6 +640,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	ini.Entry( L"CurrentIso", res, res, ini.IsLoading() || IsPortable() );
 	CurrentIso = res.GetFullPath();
 
+	IniEntry( CurrentBlockdump );
 	IniEntry( CurrentELF );
 	IniEntry( CurrentIRX );
 

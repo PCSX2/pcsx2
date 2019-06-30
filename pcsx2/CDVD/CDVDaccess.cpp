@@ -370,8 +370,6 @@ bool DoCDVDopen()
 		return true;
 	}
 
-	// TODO: Add a blockdumps configurable folder, and use that instead of CWD().
-
 	// TODO: "Untitled" should use pnach/slus name resolution, slus if no patch,
 	// and finally an "Untitled-[ElfCRC]" if no slus.
 
@@ -379,7 +377,10 @@ bool DoCDVDopen()
 	if( somepick.IsEmpty() )
 		somepick = L"Untitled";
 
-	wxString temp( Path::Combine( wxGetCwd(), somepick ) );
+	if (g_Conf->CurrentBlockdump.IsEmpty())
+        g_Conf->CurrentBlockdump = wxGetCwd();
+
+	wxString temp(Path::Combine(g_Conf->CurrentBlockdump, somepick));
 
 #ifdef ENABLE_TIMESTAMPS
 	wxDateTime curtime( wxDateTime::GetTimeNow() );
