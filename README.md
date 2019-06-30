@@ -16,15 +16,15 @@ Development builds are also available from [our website](https://pcsx2.net/downl
 # System Requirements
 
 ## Minimum
-* OS: Windows Vista SP2 or newer or GNU/Linux (32-bit or 64-bit)
-* CPU: Any that supports SSE2 (Pentium 4 and up, Athlon64 and up) @ 1600 STR or better
-* GPU: DirectX 10 GPU or better
-* RAM: 2GB or more
+* OS: Windows 7 or GNU/Linux
+* CPU: Any that supports SSE2 @ [1600 STR](#Notes)
+* GPU: DirectX 10 support
+* RAM: 2GB
 
 ## Recommended
-* OS: Windows 7/8/8.1/10 (64-bit) or GNU/Linux (64-bit)
-* CPU: Intel Haswell (or AMD equivalent) @ 2000 STR or better
-* GPU: DirectX 11 GPU or greater
+* OS: Windows 10 (64-bit) or GNU/Linux (64-bit)
+* CPU: Any that supports AVX2 (Core series Haswell or Ryzen and newer) @ [2000 STR](#Notes) or better
+* GPU: DirectX 11 support or better
 * RAM: 4GB or more
 
 ## Notes
