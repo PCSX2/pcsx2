@@ -370,15 +370,17 @@ bool DoCDVDopen()
 		return true;
 	}
 
-	// TODO: "Untitled" should use pnach/slus name resolution, slus if no patch,
-	// and finally an "Untitled-[ElfCRC]" if no slus.
-
-	wxString somepick( Path::GetFilenameWithoutExt( m_SourceFilename[CurrentSourceType] ) );
-	if( somepick.IsEmpty() )
+	wxString somepick( Path::GetFilenameWithoutExt( m_SourceFilename[CurrentSourceType] )  );
+	//FWIW Disc serial availability doesn't seem reliable enough, sometimes it's there and sometime it's just null
+	//Shouldn't the serial be available all time? Potentially need to look into Elfreloadinfo() reliability
+	//TODO: Add extra fallback case for CRC.
+	if (somepick.IsEmpty() && !DiscSerial.IsEmpty())
+		somepick = L"Untitled-" + DiscSerial;
+	else if (somepick.IsEmpty())
 		somepick = L"Untitled";
 
 	if (g_Conf->CurrentBlockdump.IsEmpty())
-        g_Conf->CurrentBlockdump = wxGetCwd();
+		g_Conf->CurrentBlockdump = wxGetCwd();
 
 	wxString temp(Path::Combine(g_Conf->CurrentBlockdump, somepick));
 
