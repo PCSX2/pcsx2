@@ -38,6 +38,28 @@ CRC::Region g_crc_region = CRC::NoRegion;
 // (note: could potentially work with latest OpenGL)
 ////////////////////////////////////////////////////////////////////////////////
 
+bool GSC_SniperElite(const GSFrameInfo& fi, int& skip)
+{
+	// Broken CS effect causing ghosting even on native res.
+	// Former TS half screen trouble child but fixed in #2934
+	// Pattern is:
+	// TS RG => BA
+	// CS
+
+	if (skip == 0)
+	{
+		if (fi.TME && fi.TBP0 == 0x2d80 && fi.FBP == 0x2a00 && fi.FPSM == PSM_PSMCT32)
+			skip = 1000;
+	}
+	else
+	{
+		if (fi.TME && fi.TBP0 == 0x3000 && (fi.FBP == 0xe00 || fi.FBP == 0x0000))
+			skip = 0;
+	}
+
+	return true;
+}
+
 bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1478,6 +1500,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::GiTS] = GSC_GiTS;
 		lut[CRC::SkyGunner] = GSC_SkyGunner; // Maybe not a channel effect
 		lut[CRC::SteambotChronicles] = GSC_SteambotChronicles;
+		lut[CRC::SniperElite] = GSC_SniperElite;
 
 		// Colclip not supported
 		lut[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;

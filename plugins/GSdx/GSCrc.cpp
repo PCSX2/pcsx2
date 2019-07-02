@@ -165,6 +165,7 @@ CRC::Game CRC::m_games[] =
 	{0x6BA2F6B9, ResidentEvil4, EU, 0},
 	{0x60FA8C69, ResidentEvil4, JP, 0},
 	{0x5F254B7C, ResidentEvil4, KO, 0},
+	{0x395779C5, SniperElite, US, 0},
 	{0x72E1E60E, Spartan, EU, 0},
 	{0x26689C87, Spartan, JP, 0},
 	{0x08277A9E, Spartan, US, 0},

@@ -126,6 +126,7 @@ public:
 		SMTDDS1,
 		SMTDDS2,
 		SMTNocturne,
+		SniperElite,
 		SonicUnleashed,
 		SoTC,
 		SoulReaver2,
