@@ -1948,7 +1948,7 @@ float4 TemperaturePass(float4 color, float2 texcoord)
    float temp = clamp(White_Point, 2000.0, 12000.0) / 100.0;
 
    // all calculations assume a scale of 255. We'll normalize this at the end
-   float3 wp = float3(255.0);
+   float3 wp = float3(255.0,255.0,255.0);
 
    // calculate RED
    wp.r = (temp <= 66.0) ? 255.0 : 351.97690566805693 + 0.114206453784165 * (temp - 55.0) - 40.25366309332127 * log(temp - 55.0);
@@ -1962,7 +1962,7 @@ float4 TemperaturePass(float4 color, float2 texcoord)
    wp.b = (temp >= 66.0) ? 255.0 : (temp <= 19.0) ? 0.0 : - 254.76935184120902 + 0.8274096064007395 * (temp - 10.0) + 115.67994401066147 * log(temp - 10.0) ;
 
    // clamp and normalize
-   wp.rgb = clamp(wp.rgb, float3(0.0), float3(255.0)) / float3(255.0);
+   wp.rgb = clamp(wp.rgb, 0.0, 255.0) / 255.0;
 
    float3 adjusted = color.rgb * wp;
    float3 base_luma = XYZtoYxy(RGBtoXYZ(color.rgb));
@@ -1970,7 +1970,7 @@ float4 TemperaturePass(float4 color, float2 texcoord)
    adjusted = adjusted_luma + (float3(base_luma.r,0.0,0.0) - float3(adjusted_luma.r,0.0,0.0));
    color = float4(XYZtoRGB(YxytoXYZ(adjusted)), 1.0);
 
-return color;
+   return color;
 
 }
 #endif
