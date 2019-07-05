@@ -66,15 +66,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/USBnull" AND USBnull)
 	add_subdirectory(USBnull)
 endif()
 
-#if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerogs" AND zerogs)
-#	add_subdirectory(zerogs)
-#endif()
-
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg" AND zzogl)
 	add_subdirectory(zzogl-pg/opengl)
 endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerospu2" AND zerospu2)
-	add_subdirectory(zerospu2)
-endif()
-
