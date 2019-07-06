@@ -2410,6 +2410,7 @@ Region = PAL-M5
 // Reads AC4 and 5 saves for bonus unlockables.
 MemCardFilter = SCES-54041/SCES-50410/SCES-52424
 [patches = 194C9F38]
+	// Fixes collision/missle hit issues.
 	patch=0,EE,00131EB4,word,48498800
 	patch=0,EE,00131EB8,word,4B00682C
 	patch=0,EE,00131EC4,word,484A8800
@@ -3002,6 +3003,13 @@ XgKickHack = 1 // SPS.
 Serial = SCKA-20070
 Name   = Ace Combat Zero - The Belkan War
 Region = NTSC-K
+[patches = 2799A4E5]
+	// Fixes collision/missle hit issues.
+	patch=0,EE,00131EB4,word,48498800
+	patch=0,EE,00131EB8,word,4B00682C
+	patch=0,EE,00131EC4,word,484A8800
+	patch=0,EE,00131EC8,word,4B0C682C
+[/patches]
 ---------------------------------------------
 Serial = SCKA-20071
 Name   = MLB '06 - The Show
@@ -33164,6 +33172,13 @@ Serial = SLPS-25629
 Name   = Ace Combat Zero - The Belkan War
 Region = NTSC-J
 MemCardFilter = SCAJ-20173/SLPS-25629/SLPS-73250/SLPS-25052/SLPS-73205/SLPS-73410/SCAJ-20104/SCAJ-20136/SLPS-25418/SLPS-73218
+[patches = A04B52DB]
+	// Fixes collision/missle hit issues.
+	patch=0,EE,00131e7c,word,48498800
+	patch=0,EE,00131e80,word,4B00682C
+	patch=0,EE,00131e8c,word,484A8800
+	patch=0,EE,00131e90,word,4B0C682C
+[/patches]
 ---------------------------------------------
 Serial = SLPS-25630
 Name   = Pro Yakyuu Netsu Star 2006
@@ -40961,6 +40976,7 @@ Region = NTSC-U
 Compat = 5
 MemCardFilter = SLUS-21346/SLUS-20152/SLUS-20851
 [patches = 65729657]
+	// Fixes collision/missle hit issues.
 	patch=0,EE,00131EBC,word,48498800
 	patch=0,EE,00131EC0,word,4B00682C
 	patch=0,EE,00131ECC,word,484A8800

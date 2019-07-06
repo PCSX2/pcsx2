@@ -449,9 +449,10 @@ CRC::Game CRC::m_games[] =
 	{0x4653CA3E, HarleyDavidson, US, 0},
 	// Games list for Automatic Mipmapping
 	// Basic mipmapping
-	{0x194C9F38, AceCombatZero, EU, 0},
+	{0x194C9F38, AceCombatZero, EU, 0}, // Ace Combat: The Belkan War
 	{0x65729657, AceCombatZero, US, 0},
 	{0xA04B52DB, AceCombatZero, JP, 0},
+	{0x2799A4E5, AceCombatZero, KO, 0},
 	{0x09B3AD4D, ApeEscape2, EU, 0},
 	{0xBDD9F5E1, ApeEscape2, US, 0},
 	{0xFE0A6AB6, ApeEscape2, JP, 0}, // Saru! Get You! 2
