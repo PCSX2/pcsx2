@@ -293,9 +293,6 @@
     <ClCompile Include="..\..\VUmicroMem.cpp">
       <Filter>System\Ps2\EmotionEngine\VU</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\x86\iVU1micro.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\x86\microVU.cpp">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </ClCompile>

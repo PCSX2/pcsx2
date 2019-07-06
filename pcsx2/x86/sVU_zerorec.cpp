@@ -4661,9 +4661,6 @@ void recSuperVU1::SetCacheReserve( uint reserveInMegs ) const
 	//microVU0.cacheSize = reserveInMegs * _1mb;
 }
 
-#if 0
-	#include "sVU_Compare.h"
-#else
 void recSuperVU1::Execute(u32 cycles)
 {
 	if ((VU0.VI[REG_VPU_STAT].UL & 0x100) == 0) return;
@@ -4680,4 +4677,3 @@ void recSuperVU1::Clear(u32 Addr, u32 Size)
 {
 	SuperVUClear(Addr, Size, 1);
 }
-#endif
