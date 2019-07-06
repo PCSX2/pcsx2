@@ -70,12 +70,12 @@ static __inline__ __attribute__((always_inline)) unsigned long long xgetbv(unsig
 // Rotate instruction
 #if defined(__clang__)
 // Seriously what is so complicated to provided this bunch of intrinsics in clangs.
-static unsigned int _rotr(unsigned int x, int s)
+[[maybe_unused]] static unsigned int _rotr(unsigned int x, int s)
 {
     return (x >> s) | (x << (32 - s));
 }
 
-static unsigned int _rotl(unsigned int x, int s)
+[[maybe_unused]] static unsigned int _rotl(unsigned int x, int s)
 {
     return (x << s) | (x >> (32 - s));
 }
