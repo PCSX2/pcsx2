@@ -363,12 +363,12 @@ DebugInterface::RegisterType R5900DebugInterface::getRegisterType(int cat)
 	{
 	case EECAT_GPR:
 	case EECAT_CP0:
-	case EECAT_VU0F:
 	case EECAT_VU0I:
 	case EECAT_FCR:
 	default:
 		return NORMAL;
 	case EECAT_FPR:
+	case EECAT_VU0F:
 		return SPECIAL;
 	}
 }
@@ -471,6 +471,26 @@ wxString R5900DebugInterface::getRegisterString(int cat, int num)
 	case EECAT_CP0:
 	case EECAT_FCR:
 		return getRegister(cat,num).ToString();
+	case EECAT_VU0F:
+		{
+			u128 inReg = getRegister(cat, num);
+			char partStrings[4][64];
+			for (int i = 3; i >= 0; i--) {
+				float value = *((float*)&inReg._u32[i]);
+				// make the thing always be 8 characters wide
+				sprintf(partStrings[i], "%.0f", value);
+				int wholeDigits = strlen(partStrings[i]);
+				if (wholeDigits > 8) {
+					sprintf(partStrings[i], "%.0e", value);
+					sprintf(partStrings[i], "%8.*e", 7 - strlen(partStrings[i]), value);
+				} else {
+					sprintf(partStrings[i], "%8.*f", 7 - wholeDigits, value);
+				}
+			}
+			char str[64];
+			sprintf(str, "%8.8s %8.8s %8.8s %8.8s", partStrings[3], partStrings[2], partStrings[1], partStrings[0]);
+			return wxString(str,wxConvUTF8);
+		}
 	case EECAT_FPR:
 		{
 			char str[64];
