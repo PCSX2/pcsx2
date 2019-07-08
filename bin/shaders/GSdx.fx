@@ -1955,11 +1955,11 @@ float4 TemperaturePass(float4 color, float2 texcoord)
    #endif
 
    // calculate RED
-   wp.r = (temp <= 66.0) ? 255.0 : 351.97690566805693 + 0.114206453784165 * (temp - 55.0) - 40.25366309332127 * log(clamp(temp - 55.0, 0.0, 1.0));
+   wp.r = (temp <= 66.0) ? 255.0 : 351.97690566805693 + 0.114206453784165 * (temp - 55.0) - 40.25366309332127 * log(clamp(temp - 55.0, 0.0, temp));
 
    // calculate GREEN
    float mg = - 155.25485562709179 - 0.44596950469579133 * (temp - 2.0)  + 104.49216199393888 * log(temp - 2.0);
-   float pg =   325.4494125711974  + 0.07943456536662342 * (temp - 50.0) - 28.0852963507957   * log(clamp(temp - 50.0, 0.0, 1.0));
+   float pg =   325.4494125711974  + 0.07943456536662342 * (temp - 50.0) - 28.0852963507957   * log(clamp(temp - 50.0, 0.0, temp));
    wp.g = (temp <= 66.0) ? mg : pg;
 
    // calculate BLUE
