@@ -206,6 +206,7 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 			case CRC::FIFA04:
 			case CRC::FIFA05:
 			case CRC::HarryPotterATCOS:
+			case CRC::HarryPotterATGOF:
 			case CRC::HarryPotterATHBP:
 			case CRC::HarryPotterATPOA:
 			case CRC::HarryPotterOOTP:
@@ -215,13 +216,14 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 			// case CRC::Jak3:
 			case CRC::LegacyOfKainDefiance:
 			case CRC::NicktoonsUnite:
+			case CRC::ProjectSnowblind:
+			case CRC::Quake3Revolution:
 			case CRC::RatchetAndClank:
 			case CRC::RatchetAndClank2:
 			case CRC::RatchetAndClank3:
 			case CRC::RatchetAndClank4:
 			case CRC::RatchetAndClank5:
 			case CRC::RickyPontingInternationalCricket:
-			case CRC::Quake3Revolution:
 			case CRC::Shox:
 			case CRC::SoulReaver2:
 			case CRC::TheIncredibleHulkUD:

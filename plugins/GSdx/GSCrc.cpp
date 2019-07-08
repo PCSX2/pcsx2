@@ -125,6 +125,7 @@ CRC::Game CRC::m_games[] =
 	{0x9DE5CF65, GT3, JP, 0},
 	{0x706DFF80, GT3, JP, 0}, // GT3 Store Disc Vol. 2
 	{0x55CE5111, GT3, JP, 0}, // Gran Turismo 2000 Body Omen
+	{0xE9A7E08D, GT3, JP, 0}, // Gran Turismo 2000 Body Omen
 	{0xB590CE04, GT3, EU, 0},
 	{0xC02C653E, GT4, CH, 0},
 	{0x7ABDBB5E, GT4, CH, 0}, // cutie comment
@@ -456,6 +457,7 @@ CRC::Game CRC::m_games[] =
 	{0x09B3AD4D, ApeEscape2, EU, 0},
 	{0xBDD9F5E1, ApeEscape2, US, 0},
 	{0xFE0A6AB6, ApeEscape2, JP, 0}, // Saru! Get You! 2
+	{0x64A9982B, ApeEscape2, CH, 0},
 	{0xEC8EF2DE, Barnyard, US, 0}, // Nickelodeon: Barnyard
 	{0x5267A845, Barnyard, EU, 0},
 	{0x0940508D, BrianLaraInternationalCricket, EU, 0},
@@ -479,6 +481,8 @@ CRC::Game CRC::m_games[] =
 	{0xC5473413, HarryPotterATCOS, NoRegion, 0}, // EU and US versions have the same CRC - Chamber Of Secrets
 	{0xE1963055, HarryPotterATCOS, JP, 0 }, // Harry Potter to Himitsu no Heya
 	{0xE90BE9F8, HarryPotterATCOS, JP, 0 }, // Coca Cola original Version
+	{0xB38CC628, HarryPotterATGOF, US, 0 },
+	{0xB18DC525, HarryPotterATGOF, EU, 0 },
 	{0x9C3A84F4, HarryPotterATHBP, US, 0 }, // Half-Blood Prince
 	{0xCB598BC2, HarryPotterATHBP, EU, 0 },
 	{0x51E019BC, HarryPotterATPOA, NoRegion, 0 }, // EU and US versions have the same CRC - Prisoner of Azkaban
@@ -496,6 +500,11 @@ CRC::Game CRC::m_games[] =
 	{0x018AC37C, LegacyOfKainDefiance, RU, 0}, // Unofficial RU-version
 	{0x28D09BF9, NicktoonsUnite, US, 0},
 	{0xF25266C4, NicktoonsUnite, EU, 0}, // Nickelodeon SpongeBob SquarePants And Friends Unite
+	{0x2BDA8ADB, ProjectSnowblind, US, 0},
+	{0xF00CA82B, ProjectSnowblind, EU, 0},
+	{0xF1583665, ProjectSnowblind, EU, 0},
+	{0xA56A0525, Quake3Revolution, US, 0},
+	{0x2064ACE6, Quake3Revolution, EU, 0},
 	{0xCE4933D0, RatchetAndClank, US, 0},
 	{0x6F191506, RatchetAndClank, US, 0}, // E3 Demo
 	{0x81CBFEA2, RatchetAndClank, US, 0}, // EB Games Demo
@@ -516,8 +525,6 @@ CRC::Game CRC::m_games[] =
 	{0x8661F7BA, RatchetAndClank5, US, 0}, // Size Matters
 	{0xFCB981D5, RatchetAndClank5, EU, 0}, // Size Matters
 	{0x8634861F, RickyPontingInternationalCricket, EU, 0},
-	{0xA56A0525, Quake3Revolution, US, 0},
-	{0x2064ACE6, Quake3Revolution, EU, 0},
 	{0xDDAC3815, Shox, US, 0},
 	{0x78FFA39F, Shox, EU, 0},
 	{0x3DF10389, Shox, EU, 0},

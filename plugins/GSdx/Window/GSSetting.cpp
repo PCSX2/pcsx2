@@ -208,7 +208,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"It is intended for slow computer.\n\n"
 				"Basic:\nEmulate correctly some of the effects with a limited speed penalty.\n"
 				"This is the recommended setting.\n\n"
-				"Medium:\nExtend it to color shuffling. Performance impact remains reasonable..\n"
+				"Medium:\nExtend it to color shuffling. Performance impact remains reasonable.\n"
 				"It is intended for debug.\n\n"
 				"High:\nExtend it to triangle based primitives. It is ultra slow!\n"
 				"It is intended for debug.\n\n"
