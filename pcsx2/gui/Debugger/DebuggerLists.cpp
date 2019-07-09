@@ -189,10 +189,14 @@ BreakpointList::BreakpointList(wxWindow* parent, DebugInterface* _cpu, CtrlDisas
 
 int BreakpointList::getRowCount()
 {
-	int count = (int)CBreakPoints::GetMemChecks().size();
+	int count = 0;
+	for (size_t i = 0; i < CBreakPoints::GetMemChecks().size(); i++)
+	{
+		if (displayedMemChecks_[i].cpu == cpu->getCpuType()) count++;
+	}
 	for (size_t i = 0; i < CBreakPoints::GetBreakpoints().size(); i++)
 	{
-		if (!displayedBreakPoints_[i].temporary) count++;
+		if (!displayedBreakPoints_[i].temporary && displayedBreakPoints_[i].cpu == cpu->getCpuType()) count++;
 	}
 
 	return count;
@@ -327,18 +331,21 @@ void BreakpointList::onKeyDown(int key)
 int BreakpointList::getBreakpointIndex(int itemIndex, bool& isMemory) const
 {
 	// memory breakpoints first
-	if (itemIndex < (int)displayedMemChecks_.size())
+	for (size_t i = 0; i < displayedMemChecks_.size(); i++)
 	{
-		isMemory = true;
-		return itemIndex;
+		if (displayedMemChecks_[i].cpu != cpu->getCpuType()) continue;
+		if (itemIndex == 0)
+		{
+			isMemory = true;
+			return (int)i;
+		}
+		itemIndex--;
 	}
-
-	itemIndex -= (int)displayedMemChecks_.size();
 
 	size_t i = 0;
 	while (i < displayedBreakPoints_.size())
 	{
-		if (displayedBreakPoints_[i].temporary)
+		if (displayedBreakPoints_[i].temporary || displayedBreakPoints_[i].cpu != cpu->getCpuType())
 		{
 			i++;
 			continue;
@@ -379,7 +386,7 @@ void BreakpointList::editBreakpoint(int itemIndex)
 		win.loadFromMemcheck(mem);
 		if (win.ShowModal() == wxID_OK)
 		{
-			CBreakPoints::RemoveMemCheck(mem.start,mem.end);
+			CBreakPoints::RemoveMemCheck(cpu->getCpuType(), mem.start,mem.end);
 			win.addBreakpoint();
 		}
 	} else {
@@ -387,7 +394,7 @@ void BreakpointList::editBreakpoint(int itemIndex)
 		win.loadFromBreakpoint(bp);
 		if (win.ShowModal() == wxID_OK)
 		{
-			CBreakPoints::RemoveBreakPoint(bp.addr);
+			CBreakPoints::RemoveBreakPoint(cpu->getCpuType(), bp.addr);
 			win.addBreakpoint();
 		}
 	}
@@ -401,10 +408,10 @@ void BreakpointList::toggleEnabled(int itemIndex)
 
 	if (isMemory) {
 		MemCheck mcPrev = displayedMemChecks_[index];
-		CBreakPoints::ChangeMemCheck(mcPrev.start, mcPrev.end, mcPrev.cond, MemCheckResult(mcPrev.result ^ MEMCHECK_BREAK));
+		CBreakPoints::ChangeMemCheck(cpu->getCpuType(), mcPrev.start, mcPrev.end, mcPrev.cond, MemCheckResult(mcPrev.result ^ MEMCHECK_BREAK));
 	} else {
 		BreakPoint bpPrev = displayedBreakPoints_[index];
-		CBreakPoints::ChangeBreakPoint(bpPrev.addr, !bpPrev.enabled);
+		CBreakPoints::ChangeBreakPoint(cpu->getCpuType(), bpPrev.addr, !bpPrev.enabled);
 	}
 }
 
@@ -433,10 +440,10 @@ void BreakpointList::removeBreakpoint(int itemIndex)
 	if (isMemory)
 	{
 		auto mc = displayedMemChecks_[index];
-		CBreakPoints::RemoveMemCheck(mc.start, mc.end);
+		CBreakPoints::RemoveMemCheck(cpu->getCpuType(), mc.start, mc.end);
 	} else {
 		u32 address = displayedBreakPoints_[index].addr;
-		CBreakPoints::RemoveBreakPoint(address);
+		CBreakPoints::RemoveBreakPoint(displayedBreakPoints_[index].cpu, address);
 	}
 }
 

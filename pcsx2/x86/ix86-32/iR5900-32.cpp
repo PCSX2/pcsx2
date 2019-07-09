@@ -112,6 +112,7 @@ static u32 dumplog = 0;
 static void iBranchTest(u32 newpc = 0xffffffff);
 static void ClearRecLUT(BASEBLOCK* base, int count);
 static u32 scaleblockcycles();
+static void recExitExecution();
 
 void _eeFlushAllUnused()
 {
@@ -335,6 +336,11 @@ static DynGenFunc* DispatchPageReset    = NULL;
 static void recEventTest()
 {
 	_cpuEventTest_Shared();
+
+	if (iopBreakpoint) {
+		iopBreakpoint = false;
+		recExitExecution();
+	}
 }
 
 // The address for all cleared blocks.  It recompiles the current pc and then
@@ -1125,21 +1131,21 @@ int cop2flags(u32 code)
 void dynarecCheckBreakpoint()
 {
 	u32 pc = cpuRegs.pc;
- 	if (CBreakPoints::CheckSkipFirst(pc) != 0)
+ 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_EE, pc) != 0)
 		return;
 
 	int bpFlags = isBreakpointNeeded(pc);
 	bool hit = false;
 	//check breakpoint at current pc
 	if (bpFlags & 1) {
-		auto cond = CBreakPoints::GetBreakPointCondition(pc);
+		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_EE, pc);
 		if (cond == NULL || cond->Evaluate()) {
 			hit = true;
 		}
 	}
 	//check breakpoint in delay slot
 	if (bpFlags & 2) {
-		auto cond = CBreakPoints::GetBreakPointCondition(pc + 4);
+		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_EE, pc + 4);
 		if (cond == NULL || cond->Evaluate())
 			hit = true;
 	}
@@ -1155,7 +1161,7 @@ void dynarecCheckBreakpoint()
 void dynarecMemcheck()
 {
 	u32 pc = cpuRegs.pc;
- 	if (CBreakPoints::CheckSkipFirst(pc) != 0)
+ 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_EE, pc) != 0)
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
@@ -1182,7 +1188,7 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	if (bits == 128)
 		xAND(ecx, ~0x0F);
 
-	xFastCall((void*)standardizeBreakpointAddress, ecx);
+	xFastCall((void*)standardizeBreakpointAddressEE, ecx);
 	xMOV(ecx,eax);
 	xMOV(edx,eax);
 	xADD(edx,bits/8);
@@ -1193,6 +1199,8 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	auto checks = CBreakPoints::GetMemChecks();
 	for (size_t i = 0; i < checks.size(); i++)
 	{
+		if (checks[i].cpu != BREAKPOINT_EE)
+			continue;
 		if (checks[i].result == 0)
 			continue;
 		if ((checks[i].cond & MEMCHECK_WRITE) == 0 && store)
@@ -1202,11 +1210,11 @@ void recMemcheck(u32 op, u32 bits, bool store)
 
 		// logic: memAddress < bpEnd && bpStart < memAddress+memSize
 
-		xMOV(eax,standardizeBreakpointAddress(checks[i].end));
+		xMOV(eax,standardizeBreakpointAddress(BREAKPOINT_EE, checks[i].end));
 		xCMP(ecx,eax);				// address < end
 		xForwardJGE8 next1;			// if address >= end then goto next1
 
-		xMOV(eax,standardizeBreakpointAddress(checks[i].start));
+		xMOV(eax,standardizeBreakpointAddress(BREAKPOINT_EE, checks[i].start));
 		xCMP(eax,edx);				// start < address+size
 		xForwardJGE8 next2;			// if start >= address+size then goto next2
 

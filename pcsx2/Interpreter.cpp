@@ -49,12 +49,12 @@ static void debugI()
 void intBreakpoint(bool memcheck)
 {
 	u32 pc = cpuRegs.pc;
- 	if (CBreakPoints::CheckSkipFirst(pc) != 0)
+ 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_EE, pc) != 0)
 		return;
 
 	if (!memcheck)
 	{
-		auto cond = CBreakPoints::GetBreakPointCondition(pc);
+		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_EE, pc);
 		if (cond && !cond->Evaluate())
 			return;
 	}
@@ -73,7 +73,7 @@ void intMemcheck(u32 op, u32 bits, bool store)
 	if (bits == 128)
 		start &= ~0x0F;
 
-	start = standardizeBreakpointAddress(start);
+	start = standardizeBreakpointAddress(BREAKPOINT_EE, start);
 	u32 end = start + bits/8;
 	
 	auto checks = CBreakPoints::GetMemChecks();
@@ -81,6 +81,8 @@ void intMemcheck(u32 op, u32 bits, bool store)
 	{
 		auto& check = checks[i];
 
+		if (check.cpu != BREAKPOINT_EE)
+			continue;
 		if (check.result == 0)
 			continue;
 		if ((check.cond & MEMCHECK_WRITE) == 0 && store)

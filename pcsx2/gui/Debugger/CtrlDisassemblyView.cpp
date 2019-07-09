@@ -525,7 +525,7 @@ void CtrlDisassemblyView::render(wxDC& dc)
 		
 		// display address/symbol
 		bool enabled;
-		if (CBreakPoints::IsAddressBreakPoint(address,&enabled))
+		if (CBreakPoints::IsAddressBreakPoint(cpu->getCpuType(),address,&enabled))
 		{
 			if (enabled)
 				textColor = 0x0000FF;
@@ -933,26 +933,26 @@ void CtrlDisassemblyView::scrollbarEvent(wxScrollWinEvent& evt)
 void CtrlDisassemblyView::toggleBreakpoint(bool toggleEnabled)
 {
 	bool enabled;
-	if (CBreakPoints::IsAddressBreakPoint(curAddress,&enabled))
+	if (CBreakPoints::IsAddressBreakPoint(cpu->getCpuType(), curAddress,&enabled))
 	{
 		if (!enabled)
 		{
 			// enable disabled breakpoints
-			CBreakPoints::ChangeBreakPoint(curAddress,true);
-		} else if (!toggleEnabled && CBreakPoints::GetBreakPointCondition(curAddress) != NULL)
+			CBreakPoints::ChangeBreakPoint(cpu->getCpuType(), curAddress,true);
+		} else if (!toggleEnabled && CBreakPoints::GetBreakPointCondition(cpu->getCpuType(), curAddress) != NULL)
 		{
 			// don't just delete a breakpoint with a custom condition
-			CBreakPoints::RemoveBreakPoint(curAddress);
+			CBreakPoints::RemoveBreakPoint(cpu->getCpuType(), curAddress);
 		} else if (toggleEnabled)
 		{
 			// disable breakpoint
-			CBreakPoints::ChangeBreakPoint(curAddress,false);
+			CBreakPoints::ChangeBreakPoint(cpu->getCpuType(), curAddress,false);
 		} else {
 			// otherwise just remove breakpoint
-			CBreakPoints::RemoveBreakPoint(curAddress);
+			CBreakPoints::RemoveBreakPoint(cpu->getCpuType(), curAddress);
 		}
 	} else {
-		CBreakPoints::AddBreakPoint(curAddress);
+		CBreakPoints::AddBreakPoint(cpu->getCpuType(), curAddress);
 	}
 }
 
@@ -1266,7 +1266,7 @@ void CtrlDisassemblyView::editBreakpoint()
 	BreakpointWindow win(this,cpu);
 
 	bool exists = false;
-	if (CBreakPoints::IsAddressBreakPoint(curAddress))
+	if (CBreakPoints::IsAddressBreakPoint(cpu->getCpuType(), curAddress))
 	{
 		auto breakpoints = CBreakPoints::GetBreakpoints();
 		for (size_t i = 0; i < breakpoints.size(); i++)
@@ -1286,7 +1286,7 @@ void CtrlDisassemblyView::editBreakpoint()
 	if (win.ShowModal() == wxID_OK)
 	{
 		if (exists)
-			CBreakPoints::RemoveBreakPoint(curAddress);
+			CBreakPoints::RemoveBreakPoint(cpu->getCpuType(), curAddress);
 		win.addBreakpoint();	
 		postEvent(debEVT_UPDATE,0);
 	}

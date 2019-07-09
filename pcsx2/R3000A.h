@@ -120,6 +120,7 @@ extern __aligned16 psxRegisters psxRegs;
 extern u32 g_iopNextEventCycle;
 extern s32 iopBreak;		// used when the IOP execution is broken and control returned to the EE
 extern s32 iopCycleEE;		// tracks IOP's current sych status with the EE
+extern bool iopBreakpoint;
 
 #ifndef _PC_
 
@@ -202,6 +203,9 @@ extern void psxReset();
 extern void __fastcall psxException(u32 code, u32 step);
 extern void iopEventTest();
 extern void psxMemReset();
+
+int psxIsBreakpointNeeded(u32 addr);
+int psxIsMemcheckNeeded(u32 pc);
 
 // Subsets
 extern void (*psxBSC[64])();

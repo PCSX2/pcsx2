@@ -22,14 +22,24 @@
 #include "../System.h"
 
 std::vector<BreakPoint> CBreakPoints::breakPoints_;
-u32 CBreakPoints::breakSkipFirstAt_ = 0;
-u64 CBreakPoints::breakSkipFirstTicks_ = 0;
+u32 CBreakPoints::breakSkipFirstAtEE_ = 0;
+u64 CBreakPoints::breakSkipFirstTicksEE_ = 0;
+u32 CBreakPoints::breakSkipFirstAtIop_ = 0;
+u64 CBreakPoints::breakSkipFirstTicksIop_ = 0;
 std::vector<MemCheck> CBreakPoints::memChecks_;
 std::vector<MemCheck *> CBreakPoints::cleanupMemChecks_;
 bool CBreakPoints::breakpointTriggered_ = false;
 
 // called from the dynarec
-u32 __fastcall standardizeBreakpointAddress(u32 addr)
+u32 __fastcall standardizeBreakpointAddress(BreakPointCpu cpu, u32 addr)
+{
+	if (cpu == BREAKPOINT_IOP)
+		return standardizeBreakpointAddressIop(addr);
+	else
+		return standardizeBreakpointAddressEE(addr);
+}
+
+u32 __fastcall standardizeBreakpointAddressEE(u32 addr)
 {
 	if (addr >= 0xFFFF8000)
 		return addr;
@@ -38,14 +48,19 @@ u32 __fastcall standardizeBreakpointAddress(u32 addr)
 		addr &= 0x1FFFFFFF;
 
 	addr &= 0x7FFFFFFF;
-	
+
 	if ((addr >> 28) == 2 || (addr >> 28) == 3)
 		addr &= ~(0xF << 28);
-	
+	return addr;
+}
+
+u32 __fastcall standardizeBreakpointAddressIop(u32 addr)
+{
 	return addr;
 }
 
 MemCheck::MemCheck() :
+	cpu(BREAKPOINT_EE),
 	start(0),
 	end(0),
 	cond(MEMCHECK_READWRITE),
@@ -120,104 +135,105 @@ void MemCheck::JitCleanup()
 		host->SetDebugMode(true);*/
 }
 
-size_t CBreakPoints::FindBreakpoint(u32 addr, bool matchTemp, bool temp)
+size_t CBreakPoints::FindBreakpoint(BreakPointCpu cpu, u32 addr, bool matchTemp, bool temp)
 {
-	addr = standardizeBreakpointAddress(addr);
+	addr = standardizeBreakpointAddress(cpu, addr);
 
 	for (size_t i = 0; i < breakPoints_.size(); ++i)
 	{
-		u32 cmp = standardizeBreakpointAddress(breakPoints_[i].addr);
-		if (cmp == addr && (!matchTemp || breakPoints_[i].temporary == temp))
+		u32 cmp = standardizeBreakpointAddress(cpu, breakPoints_[i].addr);
+		if (cpu == breakPoints_[i].cpu && cmp == addr && (!matchTemp || breakPoints_[i].temporary == temp))
 			return i;
 	}
 
 	return INVALID_BREAKPOINT;
 }
 
-size_t CBreakPoints::FindMemCheck(u32 start, u32 end)
+size_t CBreakPoints::FindMemCheck(BreakPointCpu cpu, u32 start, u32 end)
 {
-	start = standardizeBreakpointAddress(start);
-	end = standardizeBreakpointAddress(end);
+	start = standardizeBreakpointAddress(cpu, start);
+	end = standardizeBreakpointAddress(cpu, end);
 
 	for (size_t i = 0; i < memChecks_.size(); ++i)
 	{
-		u32 cmpStart = standardizeBreakpointAddress(memChecks_[i].start);
-		u32 cmpEnd = standardizeBreakpointAddress(memChecks_[i].end);
-		if (cmpStart == start && cmpEnd == end)
+		u32 cmpStart = standardizeBreakpointAddress(cpu, memChecks_[i].start);
+		u32 cmpEnd = standardizeBreakpointAddress(cpu, memChecks_[i].end);
+		if (memChecks_[i].cpu == cpu && cmpStart == start && cmpEnd == end)
 			return i;
 	}
 
 	return INVALID_MEMCHECK;
 }
 
-bool CBreakPoints::IsAddressBreakPoint(u32 addr)
+bool CBreakPoints::IsAddressBreakPoint(BreakPointCpu cpu, u32 addr)
 {
-	size_t bp = FindBreakpoint(addr);
+	size_t bp = FindBreakpoint(cpu, addr);
 	if (bp != INVALID_BREAKPOINT && breakPoints_[bp].enabled)
 		return true;
 	// Check again for overlapping temp breakpoint
-	bp = FindBreakpoint(addr, true, true);
+	bp = FindBreakpoint(cpu, addr, true, true);
 	return bp != INVALID_BREAKPOINT && breakPoints_[bp].enabled;
 }
 
-bool CBreakPoints::IsAddressBreakPoint(u32 addr, bool* enabled)
+bool CBreakPoints::IsAddressBreakPoint(BreakPointCpu cpu, u32 addr, bool* enabled)
 {
-	size_t bp = FindBreakpoint(addr);
+	size_t bp = FindBreakpoint(cpu, addr);
 	if (bp == INVALID_BREAKPOINT) return false;
 	if (enabled != NULL) *enabled = breakPoints_[bp].enabled;
 	return true;
 }
 
-bool CBreakPoints::IsTempBreakPoint(u32 addr)
+bool CBreakPoints::IsTempBreakPoint(BreakPointCpu cpu, u32 addr)
 {
-	size_t bp = FindBreakpoint(addr, true, true);
+	size_t bp = FindBreakpoint(cpu, addr, true, true);
 	return bp != INVALID_BREAKPOINT;
 }
 
-void CBreakPoints::AddBreakPoint(u32 addr, bool temp)
+void CBreakPoints::AddBreakPoint(BreakPointCpu cpu, u32 addr, bool temp)
 {
-	size_t bp = FindBreakpoint(addr, true, temp);
+	size_t bp = FindBreakpoint(cpu, addr, true, temp);
 	if (bp == INVALID_BREAKPOINT)
 	{
 		BreakPoint pt;
 		pt.enabled = true;
 		pt.temporary = temp;
 		pt.addr = addr;
+		pt.cpu = cpu;
 
 		breakPoints_.push_back(pt);
-		Update(addr);
+		Update(cpu, addr);
 	}
 	else if (!breakPoints_[bp].enabled)
 	{
 		breakPoints_[bp].enabled = true;
 		breakPoints_[bp].hasCond = false;
-		Update(addr);
+		Update(cpu, addr);
 	}
 }
 
-void CBreakPoints::RemoveBreakPoint(u32 addr)
+void CBreakPoints::RemoveBreakPoint(BreakPointCpu cpu, u32 addr)
 {
-	size_t bp = FindBreakpoint(addr);
+	size_t bp = FindBreakpoint(cpu, addr);
 	if (bp != INVALID_BREAKPOINT)
 	{
 		breakPoints_.erase(breakPoints_.begin() + bp);
 
 		// Check again, there might've been an overlapping temp breakpoint.
-		bp = FindBreakpoint(addr);
+		bp = FindBreakpoint(cpu, addr);
 		if (bp != INVALID_BREAKPOINT)
 			breakPoints_.erase(breakPoints_.begin() + bp);
 
-		Update(addr);
+		Update(cpu, addr);
 	}
 }
 
-void CBreakPoints::ChangeBreakPoint(u32 addr, bool status)
+void CBreakPoints::ChangeBreakPoint(BreakPointCpu cpu, u32 addr, bool status)
 {
-	size_t bp = FindBreakpoint(addr);
+	size_t bp = FindBreakpoint(cpu, addr);
 	if (bp != INVALID_BREAKPOINT)
 	{
 		breakPoints_[bp].enabled = status;
-		Update(addr);
+		Update(cpu, addr);
 	}
 }
 
@@ -239,15 +255,15 @@ void CBreakPoints::ClearTemporaryBreakPoints()
 	{
 		if (breakPoints_[i].temporary)
 		{
-			Update(breakPoints_[i].addr);
+			Update(breakPoints_[i].cpu, breakPoints_[i].addr);
 			breakPoints_.erase(breakPoints_.begin() + i);
 		}
 	}
 }
 
-void CBreakPoints::ChangeBreakPointAddCond(u32 addr, const BreakPointCond &cond)
+void CBreakPoints::ChangeBreakPointAddCond(BreakPointCpu cpu, u32 addr, const BreakPointCond &cond)
 {
-	size_t bp = FindBreakpoint(addr, true, false);
+	size_t bp = FindBreakpoint(cpu, addr, true, false);
 	if (bp != INVALID_BREAKPOINT)
 	{
 		breakPoints_[bp].hasCond = true;
@@ -256,9 +272,9 @@ void CBreakPoints::ChangeBreakPointAddCond(u32 addr, const BreakPointCond &cond)
 	}
 }
 
-void CBreakPoints::ChangeBreakPointRemoveCond(u32 addr)
+void CBreakPoints::ChangeBreakPointRemoveCond(BreakPointCpu cpu, u32 addr)
 {
-	size_t bp = FindBreakpoint(addr, true, false);
+	size_t bp = FindBreakpoint(cpu, addr, true, false);
 	if (bp != INVALID_BREAKPOINT)
 	{
 		breakPoints_[bp].hasCond = false;
@@ -266,25 +282,25 @@ void CBreakPoints::ChangeBreakPointRemoveCond(u32 addr)
 	}
 }
 
-BreakPointCond *CBreakPoints::GetBreakPointCondition(u32 addr)
+BreakPointCond *CBreakPoints::GetBreakPointCondition(BreakPointCpu cpu, u32 addr)
 {
-	size_t bp = FindBreakpoint(addr, true, true);
+	size_t bp = FindBreakpoint(cpu, addr, true, true);
 	//temp breakpoints are unconditional
 	if (bp != INVALID_BREAKPOINT)
 		return NULL;
 
-	bp = FindBreakpoint(addr, true, false);
+	bp = FindBreakpoint(cpu, addr, true, false);
 	if (bp != INVALID_BREAKPOINT && breakPoints_[bp].hasCond)
 		return &breakPoints_[bp].cond;
 	return NULL;
 }
 
-void CBreakPoints::AddMemCheck(u32 start, u32 end, MemCheckCondition cond, MemCheckResult result)
+void CBreakPoints::AddMemCheck(BreakPointCpu cpu, u32 start, u32 end, MemCheckCondition cond, MemCheckResult result)
 {
 	// This will ruin any pending memchecks.
 	cleanupMemChecks_.clear();
 
-	size_t mc = FindMemCheck(start, end);
+	size_t mc = FindMemCheck(cpu, start, end);
 	if (mc == INVALID_MEMCHECK)
 	{
 		MemCheck check;
@@ -292,39 +308,40 @@ void CBreakPoints::AddMemCheck(u32 start, u32 end, MemCheckCondition cond, MemCh
 		check.end = end;
 		check.cond = cond;
 		check.result = result;
+		check.cpu = cpu;
 
 		memChecks_.push_back(check);
-		Update();
+		Update(cpu);
 	}
 	else
 	{
 		memChecks_[mc].cond = (MemCheckCondition)(memChecks_[mc].cond | cond);
 		memChecks_[mc].result = (MemCheckResult)(memChecks_[mc].result | result);
-		Update();
+		Update(cpu);
 	}
 }
 
-void CBreakPoints::RemoveMemCheck(u32 start, u32 end)
+void CBreakPoints::RemoveMemCheck(BreakPointCpu cpu, u32 start, u32 end)
 {
 	// This will ruin any pending memchecks.
 	cleanupMemChecks_.clear();
 
-	size_t mc = FindMemCheck(start, end);
+	size_t mc = FindMemCheck(cpu, start, end);
 	if (mc != INVALID_MEMCHECK)
 	{
 		memChecks_.erase(memChecks_.begin() + mc);
-		Update();
+		Update(cpu);
 	}
 }
 
-void CBreakPoints::ChangeMemCheck(u32 start, u32 end, MemCheckCondition cond, MemCheckResult result)
+void CBreakPoints::ChangeMemCheck(BreakPointCpu cpu, u32 start, u32 end, MemCheckCondition cond, MemCheckResult result)
 {
-	size_t mc = FindMemCheck(start, end);
+	size_t mc = FindMemCheck(cpu, start, end);
 	if (mc != INVALID_MEMCHECK)
 	{
 		memChecks_[mc].cond = cond;
 		memChecks_[mc].result = result;
-		Update();
+		Update(cpu);
 	}
 }
 
@@ -340,18 +357,27 @@ void CBreakPoints::ClearAllMemChecks()
 	}
 }
 
-void CBreakPoints::SetSkipFirst(u32 pc)
+void CBreakPoints::SetSkipFirst(BreakPointCpu cpu, u32 pc)
 {
-	breakSkipFirstAt_ = standardizeBreakpointAddress(pc);
-	breakSkipFirstTicks_ = r5900Debug.getCycles();
+	if (cpu == BREAKPOINT_EE)
+	{
+		breakSkipFirstAtEE_ = standardizeBreakpointAddress(cpu, pc);
+		breakSkipFirstTicksEE_ = r5900Debug.getCycles();
+	}
+	else if (cpu == BREAKPOINT_IOP)
+	{
+		breakSkipFirstAtIop_ = standardizeBreakpointAddress(cpu, pc);
+		breakSkipFirstTicksIop_ = r3000Debug.getCycles();
+	}
 }
 
-u32 CBreakPoints::CheckSkipFirst(u32 cmpPc)
+u32 CBreakPoints::CheckSkipFirst(BreakPointCpu cpu, u32 cmpPc)
 {
-	cmpPc = standardizeBreakpointAddress(cmpPc);
-	u32 pc = breakSkipFirstAt_;
-	if (breakSkipFirstTicks_ == r5900Debug.getCycles())
-		return pc;
+	cmpPc = standardizeBreakpointAddress(cpu, cmpPc);
+	if (cpu == BREAKPOINT_EE && breakSkipFirstTicksEE_ == r5900Debug.getCycles())
+		return breakSkipFirstAtEE_;
+	else if (cpu == BREAKPOINT_IOP && breakSkipFirstTicksIop_ == r3000Debug.getCycles())
+		return breakSkipFirstAtIop_;
 	return 0;
 }
 
@@ -385,7 +411,7 @@ const std::vector<BreakPoint> CBreakPoints::GetBreakpoints()
 #include "App.h"
 #include "Debugger/DisassemblyDialog.h"
 
-void CBreakPoints::Update(u32 addr)
+void CBreakPoints::Update(BreakPointCpu cpu, u32 addr)
 {
 	bool resume = false;
 	if (!r5900Debug.isCpuPaused())
