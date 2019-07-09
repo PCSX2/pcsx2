@@ -468,7 +468,7 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 	{
 		GL_INS("!!! ENV PABE  not supported !!!");
 		if (m_sw_blending >= ACC_BLEND_CCLIP_DALPHA) {
-			m_ps_sel.pabe = 1;
+			// m_ps_sel.pabe = 1;
 			m_require_full_barrier |= (ALPHA.C == 1);
 			sw_blending = true;
 		}
