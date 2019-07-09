@@ -20,8 +20,10 @@
  */
 
 #pragma once
+#ifdef __clang__
 // Ignore format for this file, as it spams a lot of warnings about uint64 and %llu.
 #pragma clang diagnostic ignored "-Wformat"
+#endif
 
 #include "GS.h"
 #include "GSLocalMemory.h"
