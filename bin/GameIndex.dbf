@@ -14582,6 +14582,7 @@ Compat = 5
 Serial = SLES-53561
 Name   = Canis Canem Edit
 Region = PAL-M5
+eeClampMode = 3 // Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
 ---------------------------------------------
 Serial = SLES-53563
 Name   = Spongebob Squarepants and Friends - Untie!
@@ -34130,6 +34131,11 @@ Serial = SLPS-25869
 Name   = CR Shinseiki Evangelion - Shito, Futatabi
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPS-25879
+Name   = Bully
+Region = NTSC-J
+eeClampMode = 3 // Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
+---------------------------------------------
 Serial = SLPS-25881
 Name   = Kinnikuman Muscle Grand Prix 2
 Region = NTSC-J
@@ -34219,6 +34225,11 @@ Region = NTSC-J
 Serial = SLPS-25948
 Name   = Zero no Tsukaima - Maigo no Period to Ikusen no Symphony [Best Collection]
 Region = NTSC-J
+---------------------------------------------
+Serial = SLPS-25950
+Name   = Bully [Best of Bethesda]
+Region = NTSC-J
+eeClampMode = 3 // Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
 ---------------------------------------------
 Serial = SLPS-25956
 Name   = Moe Moe 2-ji Taisen Ryoku 2
@@ -40579,6 +40590,7 @@ Serial = SLUS-21269
 Name   = Bully
 Region = NTSC-U
 Compat = 5
+eeClampMode = 3 // Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
 ---------------------------------------------
 Serial = SLUS-21270
 Name   = MS Saga - A New Dawn
