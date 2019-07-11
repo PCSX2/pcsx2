@@ -1127,6 +1127,12 @@ Compat = 5
 	comment=Must enable FPU Negative Div Hack gamefix for Dakar 2 Demo
 [/patches]
 ---------------------------------------------
+Serial = SCED-52049
+Name   = Dog's Life [Demo]
+Region = PAL-Unk
+Compat = 5
+vuClampMode = 3 // Fixes minor SPS on characters.
+---------------------------------------------
 Serial = SCED-52436
 Name   = Playstation2 UK Demo 7-2004
 Region = PAL-Unk
@@ -1626,6 +1632,7 @@ Region = PAL-E
 Serial = SCES-51248
 Name   = Dog's Life
 Region = PAL-M11
+vuClampMode = 3 // Fixes minor SPS on characters.
 ---------------------------------------------
 Serial = SCES-51426
 Name   = The Getaway
@@ -9762,6 +9769,7 @@ Name   = Wallace & Gromit in Project Zoo
 Region = PAL-E
 Compat = 5
 GIFFIFOHack = 1
+vuClampMode = 3 // Fixes minor SPS on characters.
 ---------------------------------------------
 Serial = SLES-51374
 Name   = RoboCop
@@ -11055,6 +11063,7 @@ Name   = Wallace & Gromit in Project Zoo
 Region = PAL-M5
 Compat = 5
 GIFFIFOHack = 1
+vuClampMode = 3 // Fixes minor SPS on characters.
 ---------------------------------------------
 Serial = SLES-51991
 Name   = Dance UK
@@ -11144,6 +11153,7 @@ Name   = Wallace & Gromit in Project Zoo
 Region = PAL-G
 Compat = 5
 GIFFIFOHack = 1
+vuClampMode = 3 // Fixes minor SPS on characters.
 ---------------------------------------------
 Serial = SLES-52028
 Name   = Junior Sports Basketball
@@ -11297,6 +11307,7 @@ Serial = SLES-52118
 Name   = Castlevania - Lament of Innocence
 Region = PAL-M5
 Compat = 5
+eeClampMode = 3 // Fixes cutscene freezes.
 ---------------------------------------------
 Serial = SLES-52122
 Name   = Crime Life - Gang Wars
@@ -14045,7 +14056,7 @@ Serial = SLES-53350
 Name   = Sonic Gems Collection
 Region = PAL-M5
 Compat = 5
-vuRoundMode = 0 //Prevents only backgrounds from appearing in Sonic R's multiplayer modes.
+vuRoundMode = 0 // Prevents only backgrounds from appearing in Sonic R's multiplayer modes.
 // Vectorman unlocks by having a Mega Collection or Heroes save
 MemCardFilter = SLES-53350/SLES-52998/SLES-51950
 ---------------------------------------------
@@ -16949,20 +16960,54 @@ Serial = SLES-54733
 Name   = Disney-Pixar Ratatouille
 Region = PAL-E
 Comapt = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLES-54734
 Name   = Disney-Pixar Ratatouille
 Region = PAL-F
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLES-54735
 Name   = Disney-Pixar Ratatouille
 Region = PAL-G
 Comapt = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-54736
+Name   = Disney-Pixar Ratatouille
+Region = PAL-S
+Comapt = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-54737
+Name   = Disney-Pixar Ratatouille
+Region = PAL-R
+Comapt = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-54744
+Name   = Disney-Pixar Ratatouille
+Region = PAL-P-CR
+Comapt = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-54745
+Name   = Disney-Pixar Ratatouille
+Region = PAL-I
+Comapt = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-54746
+Name   = Disney-Pixar Ratatouille
+Region = PAL-G
+Comapt = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLES-54747
 Name   = Disney-Pixar Ratatouille
 Region = PAL-P-S
 Comapt = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLES-54755
 Name   = Transformers - The Game
@@ -24335,7 +24380,7 @@ Name   = James Bond 007 - Everything or Nothing [EA Best Hits]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65726
-Name   = Star Wars - Bounty Hunter [EA Best Hits]
+Name   = Star Wars - Jango Fett [EA Best Hits]
 Region = NTSC-J
 Compat = 5
 vuRoundMode = 0
@@ -25362,6 +25407,7 @@ Region = NTSC-J
 Serial = SLPM-65995
 Name   = Dog's Life
 Region = NTSC-J
+vuClampMode = 3 // Fixes minor SPS on characters.
 ---------------------------------------------
 Serial = SLPM-65996
 Name   = Mars of Destruction [Limited Edition]
@@ -25656,7 +25702,7 @@ Serial = SLPM-66074
 Name   = Sonic Gems Collection
 Region = NTSC-J
 Compat = 5
-vuRoundMode = 0 //Prevents only backgrounds from appearing in Sonic R's multiplayer modes.
+vuRoundMode = 0 // Prevents only backgrounds from appearing in Sonic R's multiplayer modes.
 MemCardFilter = SLPM-66074/SLPM-65758/SLAJ-25027/SLPM-65431
 ---------------------------------------------
 Serial = SLPM-66076
@@ -28353,6 +28399,7 @@ Serial = SLPM-66807
 Name   = Disney-Pixar's Remy no Oishii Restaurant (Ratatouille)
 Region = NTSC-J
 Comapt = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLPM-66808
 Name   = Tom Clancy's Ghost Recon - Advanced Warfighter [Ubisoft the Best]
@@ -31723,7 +31770,7 @@ Name   = MVP Baseball 2003
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25252
-Name   = Star wars - Bounty Hunter
+Name   = Star wars - Jango Fett
 Region = NTSC-J
 Compat = 5
 vuRoundMode = 0
@@ -37534,6 +37581,7 @@ Name   = Wallace & Gromit in Project Zoo
 Region = NTSC-U
 Compat = 5
 GIFFIFOHack = 1
+vuClampMode = 3 // Fixes minor SPS on characters.
 ---------------------------------------------
 Serial = SLUS-20648
 Name   = NBA Jam 2004
@@ -39367,6 +39415,7 @@ Serial = SLUS-21018
 Name   = Dog's Life
 Region = NTSC-U
 Compat = 5
+vuClampMode = 3 // Fixes minor SPS on characters.
 ---------------------------------------------
 Serial = SLUS-21019
 Name   = Technic Beat
@@ -41820,6 +41869,7 @@ Serial = SLUS-21541
 Name   = Ratatouille
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLUS-21542
 Name   = Sega Genesis Collection
