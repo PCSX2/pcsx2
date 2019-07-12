@@ -28,6 +28,7 @@ _mVUt void __mVULog(const char* fmt, ...) {
 	va_start(list, fmt);
 
 	// concatenate the log message after the prefix:
+	vsprintf(tmp, fmt, list);
 	va_end(list);
 
 	mVU.logFile->Write( tmp );
