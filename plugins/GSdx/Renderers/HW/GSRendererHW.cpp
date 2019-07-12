@@ -701,6 +701,199 @@ float GSRendererHW::alpha1(int L, int X0, int X1)
 	return float(x - X0) / (float)L;
 }
 
+void GSRendererHW::SwSpriteRender()
+{
+	// Supported drawing attributes
+	ASSERT(PRIM->PRIM == 4 || PRIM->PRIM == 6);
+	ASSERT(!PRIM->IIP);  // Flat shading method
+	ASSERT(!PRIM->FGE);  // No FOG
+	ASSERT(!PRIM->AA1);  // No antialiasing
+	ASSERT(!PRIM->FST);  // STQ texture coordinates
+	ASSERT(!PRIM->FIX);  // Normal fragment value control
+
+	ASSERT(!m_env.DTHE.DTHE); // No dithering
+
+	ASSERT(!m_context->TEST.ATE);  // No alpha test
+	ASSERT(!m_context->TEST.DATE);  // No destination alpha test
+	ASSERT(!m_context->DepthRead() && !m_context->DepthWrite());  // No depth handling
+
+	ASSERT(!m_context->TEX0.CSM);  // No CLUT usage
+
+	ASSERT(!m_env.PABE.PABE);  // No PABE
+
+	// PSMCT32 pixel format
+	ASSERT(!PRIM->TME || (PRIM->TME && m_context->TEX0.PSM == PSM_PSMCT32));
+	ASSERT(m_context->FRAME.PSM == PSM_PSMCT32);
+
+	// No rasterization required
+	ASSERT(m_vt.m_eq.rgba == 0xffff);
+	ASSERT(m_vt.m_eq.z == 0x1);
+	ASSERT(m_vt.m_eq.q == 0x1);
+
+	bool texture_mapping_enabled = PRIM->TME;
+
+	// Setup registers for SW rendering
+	GIFRegBITBLTBUF bitbltbuf;
+
+	if (texture_mapping_enabled)
+	{
+		bitbltbuf.SBP = m_context->TEX0.TBP0;
+		bitbltbuf.SBW = m_context->TEX0.TBW;
+		bitbltbuf.SPSM = m_context->TEX0.PSM;
+	}
+
+	bitbltbuf.DBP = m_context->FRAME.Block();
+	bitbltbuf.DBW = m_context->FRAME.FBW;
+	bitbltbuf.DPSM = m_context->FRAME.PSM;
+
+	GIFRegTRXPOS trxpos;
+
+	trxpos.DSAX = 0;
+	trxpos.DSAY = 0;
+	trxpos.SSAX = 0;
+	trxpos.SSAY = 0;
+
+	GIFRegTRXREG trxreg;
+
+	if (texture_mapping_enabled)
+	{
+		trxreg.RRW = m_context->TEX0.TW * 4;
+		trxreg.RRH = m_context->TEX0.TH * 4;
+		// Check drawing region
+		ASSERT((GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in)) == GSVector4i(0, 0, trxreg.RRW, trxreg.RRH)).alltrue());
+	}
+	else
+	{
+		GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+		trxreg.RRW = r.width();
+		trxreg.RRH = r.height();
+	}
+
+	// SW rendering code, mainly taken from GSState::Move(), TRXPOS.DIR{X,Y} management excluded
+
+	int sx = trxpos.SSAX;
+	int sy = trxpos.SSAY;
+	int dx = trxpos.DSAX;
+	int dy = trxpos.DSAY;
+	int w = trxreg.RRW;
+	int h = trxreg.RRH;
+
+	GL_INS("SwSpriteRender: Dest 0x%x W:%d F:%s, size(%d %d)", bitbltbuf.DBP, bitbltbuf.DBW, psm_str(bitbltbuf.DPSM), w, h);
+
+	if (texture_mapping_enabled)
+		InvalidateLocalMem(bitbltbuf, GSVector4i(sx, sy, sx + w, sy + h));
+	InvalidateVideoMem(bitbltbuf, GSVector4i(dx, dy, dx + w, dy + h));
+
+	GSOffset* RESTRICT spo = texture_mapping_enabled ? m_mem.GetOffset(bitbltbuf.SBP, bitbltbuf.SBW, bitbltbuf.SPSM) : nullptr;
+	GSOffset* RESTRICT dpo = m_mem.GetOffset(bitbltbuf.DBP, bitbltbuf.DBW, bitbltbuf.DPSM);
+
+	int* RESTRICT scol = texture_mapping_enabled ? &spo->pixel.col[0][sx] : nullptr;
+	int* RESTRICT dcol = &dpo->pixel.col[0][dx];
+
+	bool alpha_blending_enabled = PRIM->ABE;
+
+	GSVector4i vc = m_vt.m_min.c;  // 0x000000AA000000BB000000GG000000RR
+	vc = vc.ps32();                // 0x00AA00BB00GG00RR00AA00BB00GG00RR
+
+	GSVector4i a_mask = GSVector4i::xff000000().u8to16();  // 0x00FF00000000000000FF000000000000
+
+	bool fb_mask_enabled = m_context->FRAME.FBMSK != 0x0;
+	GSVector4i fb_mask = GSVector4i(m_context->FRAME.FBMSK).xxxx(); // 0x????????????????MMMMMMMMMMMMMMMM
+
+	uint8 tex0_tcc = m_context->TEX0.TCC;
+	uint8 alpha_b = m_context->ALPHA.B;
+
+	for (int y = 0; y < h; y++, ++sy, ++dy)
+	{
+		uint32* RESTRICT s = texture_mapping_enabled ? &m_mem.m_vm32[spo->pixel.row[sy]] : nullptr;
+		uint32* RESTRICT d = &m_mem.m_vm32[dpo->pixel.row[dy]];
+
+		ASSERT(w % 2 == 0);
+
+		for (int x = 0; x < w; x += 2)
+		{
+			GSVector4i sc;
+			if (texture_mapping_enabled)
+			{
+				// Read 2 source pixel colors
+				ASSERT((scol[x] + 1) == scol[x + 1]);  // Source pixel pair is adjacent in memory
+				sc = GSVector4i::loadl(&s[scol[x]]).u8to16();  // 0x00AA00BB00GG00RR00aa00bb00gg00rr
+
+				// Apply TFX
+				ASSERT(m_context->TEX0.TFX == 0);
+				sc = sc.mul16l(vc).srl16(7).clamp8();  // clamp((sc * vc) >> 7, 0, 255), srl16 is ok because 16 bit values are unsigned
+				if (tex0_tcc == 0)
+					sc = sc.blend(vc, a_mask);
+			}
+			else
+				sc = vc;
+
+			// No FOG
+
+			GSVector4i dc0;
+			GSVector4i dc;
+
+			if (alpha_blending_enabled || fb_mask_enabled)
+			{
+				// Read 2 destination pixel colors
+				ASSERT((dcol[x] + 1) == dcol[x + 1]);  // Destination pixel pair is adjacent in memory
+				dc0 = GSVector4i::loadl(&d[dcol[x]]).u8to16();  // 0x00AA00BB00GG00RR00aa00bb00gg00rr
+			}
+
+			if (alpha_blending_enabled)
+			{
+				// Blending
+				ASSERT(m_context->ALPHA.A == 0);
+				ASSERT(alpha_b == 1 || alpha_b == 2);
+				ASSERT(m_context->ALPHA.C == 0);
+				ASSERT(m_context->ALPHA.D == 1);
+				ASSERT(m_context->ALPHA.FIX == 0);
+
+				GSVector4i sc_alpha_vec =
+					sc.yyww()   // 0x00AA00BB00AA00BB00aa00bb00aa00bb
+					.srl32(16)  // 0x000000AA000000AA000000aa000000aa
+					.ps32()     // 0x00AA00AA00aa00aa00AA00AA00aa00aa
+					.xxyy();    // 0x00AA00AA00AA00AA00aa00aa00aa00aa
+
+				switch (alpha_b)
+				{
+				case 1:
+					dc = sc.sub16(dc0).mul16l(sc_alpha_vec).sra16(7).add16(dc0);  // (((Cs - Cd) * As) >> 7) + Cd, must use sra16 due to signed 16 bit values
+					break;
+				default:
+					dc = sc.mul16l(sc_alpha_vec).sra16(7).add16(dc0);  // (((Cs - 0) * As) >> 7) + Cd, must use sra16 due to signed 16 bit values
+					break;
+				}
+				// dc alpha channels (dc.u16[3], dc.u16[7]) dirty
+			}
+			else
+				dc = sc;
+
+			// No dithering
+
+			// Clamping
+			if (m_env.COLCLAMP.CLAMP)
+				dc = dc.clamp8();  // clamp(dc, 0, 255)
+			else
+				dc = dc.sll16(8).srl16(8);  // Mask, lower 8 bits enabled per channel
+
+			// No Alpha Correction
+			ASSERT(m_context->FBA.FBA == 0);
+			dc = dc.blend(sc, a_mask);
+			// dc alpha channels valid
+
+			// Frame buffer mask
+			if (fb_mask_enabled)
+				dc = dc.blend(dc0, fb_mask);
+
+			// Store 2 pixel colors
+			dc = dc.pu16(GSVector4i::zero());  // 0x0000000000000000AABBGGRRaabbggrr
+			ASSERT((dcol[x] + 1) == dcol[x + 1]);  // Destination pixel pair is adjacent in memory
+			GSVector4i::storel(&d[dcol[x]], dc);
+		}
+	}
+}
+
 template <bool linear>
 void GSRendererHW::RoundSpriteOffset()
 {
@@ -1280,12 +1473,12 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ItadakiStreet, CRC::RegionCount, &GSRendererHW::OI_ItadakiStreet));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak2, CRC::RegionCount, &GSRendererHW::OI_JakGames));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OI_JakGames));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::JakX, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::OO_DBZBT2));
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::OO_MajokkoALaMode2));
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak2, CRC::RegionCount, &GSRendererHW::OO_JakGames));
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OO_JakGames));
-	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::JakX, CRC::RegionCount, &GSRendererHW::OO_JakGames));
 
 	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::DBZBT2, CRC::RegionCount, &GSRendererHW::CU_DBZBT2));
 	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::CU_MajokkoALaMode2));
@@ -1865,6 +2058,64 @@ bool GSRendererHW::OI_ItadakiStreet(GSTexture* rt, GSTexture* ds, GSTextureCache
 	return true;
 }
 
+bool GSRendererHW::OI_JakGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
+	GSVector4i r_p = GSVector4i(0, 0, 16, 16);
+
+	if (!(r == r_p).alltrue())
+		return true;
+
+	// Rendering 16x16 palette
+
+	if (m_vt.m_eq.rgba != 0xffff || m_vt.m_eq.z != 0x1 || m_vt.m_eq.q != 0x1)
+		return true;
+
+	// No rasterization
+
+	if (m_context->DepthRead() || m_context->DepthWrite())
+		return true;
+
+	// No depth handling
+
+	// Game is clearing palette content.
+	// Jak X does a constant RGBA color write to clear palette prior to actual rendering 
+	// that is not being handled correctly, most likely due to TC issue, so let's bypass
+	// GPU render and TC and clear GS memory directly instead
+	bool palette_clear = PRIM->PRIM == 6
+		&& !PRIM->IIP
+		&& !PRIM->TME
+		&& !PRIM->FGE
+		&& !PRIM->ABE
+		&& !PRIM->AA1
+		&& !PRIM->FST
+		&& !PRIM->FIX
+		&& m_context->FRAME.FBMSK == 0x0
+		&& m_context->FRAME.FBW == 1
+		&& m_context->FRAME.PSM == PSM_PSMCT32
+		;
+
+	// Game is rendering directly to palette.
+	// Cannot perform GPU render to FB as reading back is both slow and clashes with
+	// texture inside FB reading needed for correct eye rendering,
+	// so perform CPU rendering instead and skip draw.
+	bool palette_render = !PRIM->FST
+		&& PRIM->TME
+		&& m_context->TEX0.TBW == 1
+		&& m_context->TEX0.TW == 4
+		&& m_context->TEX0.TH == 4
+		&& m_context->TEX0.PSM == PSM_PSMCT32
+		;
+
+	if (palette_clear || palette_render)
+	{
+		SwSpriteRender();
+		return false; // skip current draw
+	}
+
+	return true;
+}
+
 // OO (others output?) hacks: invalidate extra local memory after the draw call
 
 void GSRendererHW::OO_DBZBT2()
@@ -1894,27 +2145,6 @@ void GSRendererHW::OO_MajokkoALaMode2()
 
 	if(!PRIM->TME && FBP == 0x03f40)
 	{
-		GIFRegBITBLTBUF BITBLTBUF;
-
-		BITBLTBUF.SBP = FBP;
-		BITBLTBUF.SBW = 1;
-		BITBLTBUF.SPSM = PSM_PSMCT32;
-
-		InvalidateLocalMem(BITBLTBUF, GSVector4i(0, 0, 16, 16));
-	}
-}
-
-void GSRendererHW::OO_JakGames()
-{
-	// FIXME might need a CU_Jak too
-	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
-	GSVector4i r_p = GSVector4i(0, 0, 16, 16);
-
-	if(!PRIM->FST && PRIM->TME && (r == r_p).alltrue() && m_context->TEX0.TW == 4 && m_context->TEX0.TH == 4 && m_context->TEX0.PSM == PSM_PSMCT32) {
-		// Game will render a texture directly into a palette.
-		uint32 FBP = m_context->FRAME.Block();
-		GL_INS("OO_JakGames read back 0x%x", FBP);
-
 		GIFRegBITBLTBUF BITBLTBUF;
 
 		BITBLTBUF.SBP = FBP;
