@@ -4,6 +4,8 @@ sudo: required
 
 cache: ccache
 
+dist: xenial
+
 matrix:
   include:
     - env: VERSION=8 BITS=64
@@ -13,9 +15,6 @@ matrix:
       compiler: gcc
       os: linux
     - env: VERSION=7 BITS=32
-      compiler: gcc
-      os: linux
-    - env: VERSION=4.9 BITS=32
       compiler: gcc
       os: linux
     - env: VERSION=3.8 BITS=32
