@@ -579,7 +579,7 @@ bool Panels::PluginSelectorPanel::ValidateEnumerationStatus()
 
 	m_FileList.swap(pluginlist);
 
-	// set the gague length a little shorter than the plugin count.  2 reasons:
+	// set the gauge length a little shorter than the plugin count.  2 reasons:
 	//  * some of the plugins might be duds.
 	//  * on high end machines and Win7, the statusbar lags a lot and never gets to 100% before being hidden.
 	
@@ -669,7 +669,9 @@ void Panels::PluginSelectorPanel::OnEnumComplete( wxCommandEvent& evt )
 	//  (for now we just force it to selection zero if nothing's selected)
 
 	int emptyBoxes = 0;
-	const PluginInfo* pi = tbl_PluginInfo; do
+	const PluginInfo* pi = tbl_PluginInfo;
+
+	do
 	{
 		const PluginsEnum_t pid = pi->id;
 		if( m_ComponentBoxes->Get(pid).GetCount() <= 0 )
@@ -677,7 +679,7 @@ void Panels::PluginSelectorPanel::OnEnumComplete( wxCommandEvent& evt )
 
 		else if( m_ComponentBoxes->Get(pid).GetSelection() == wxNOT_FOUND )
 		{
-			if( pid == PluginId_GS )
+			if (pid == PluginId_GS)
 			{
 				int count = (int)m_ComponentBoxes->Get(pid).GetCount();
 
@@ -698,6 +700,48 @@ void Panels::PluginSelectorPanel::OnEnumComplete( wxCommandEvent& evt )
 				else if( index_sse4 >= 0 ) m_ComponentBoxes->Get(pid).SetSelection( index_sse4 );
 				else if( index_sse2 >= 0 ) m_ComponentBoxes->Get(pid).SetSelection( index_sse2 );
 				else m_ComponentBoxes->Get(pid).SetSelection( 0 );
+			}
+			else if (pid == PluginId_PAD)
+			{
+				int count = (int)m_ComponentBoxes->Get(pid).GetCount();
+
+				int index_lilypad = -1;
+				int index_onepad = -1;
+				int index_onepad_legacy = -1;
+
+				for( int i = 0; i < count; i++ )
+				{
+					auto str = m_ComponentBoxes->Get(pid).GetString(i);
+
+					if (str.Contains("lilypad")) index_lilypad = i;
+					if (str.Contains("onepad"))
+					{
+						if (str.Contains("legacy"))
+							index_onepad_legacy = i;
+						else
+							index_onepad = i;
+					}
+				}
+
+				#ifdef _WIN32
+					if (index_lilypad >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_lilypad);
+					/* else if (index_onepad >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_onepad);
+					else if (index_onepad_legacy >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_onepad_legacy); */
+					else
+						m_ComponentBoxes->Get(pid).SetSelection(0);
+				#else
+					if (index_onepad >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_onepad);
+					else if (index_onepad_legacy >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_onepad_legacy);
+					else if (index_lilypad >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_lilypad);
+					else
+						m_ComponentBoxes->Get(pid).SetSelection(0);
+				#endif
 			}
 			else
 				m_ComponentBoxes->Get(pid).SetSelection( 0 );
