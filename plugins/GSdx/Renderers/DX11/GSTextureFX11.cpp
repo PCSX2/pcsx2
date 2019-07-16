@@ -294,28 +294,26 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 {
 	auto i = std::as_const(m_om_dss).find(dssel);
 
-	if(i == m_om_dss.end())
+	if (i == m_om_dss.end())
 	{
-		D3D11_DEPTH_STENCIL_DESC dsd;
+		D3D11_DEPTH_STENCIL_DESC depth_stencil_desc = {};
 
-		memset(&dsd, 0, sizeof(dsd));
-
-		if(dssel.date)
+		if (dssel.date)
 		{
-			dsd.StencilEnable = true;
-			dsd.StencilReadMask = 1;
-			dsd.StencilWriteMask = 1;
-			dsd.FrontFace.StencilFunc = D3D11_COMPARISON_EQUAL;
-			dsd.FrontFace.StencilPassOp = dssel.date_one ? D3D11_STENCIL_OP_ZERO : D3D11_STENCIL_OP_KEEP;
-			dsd.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-			dsd.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-			dsd.BackFace.StencilFunc = D3D11_COMPARISON_EQUAL;
-			dsd.BackFace.StencilPassOp = dssel.date_one ? D3D11_STENCIL_OP_ZERO : D3D11_STENCIL_OP_KEEP;
-			dsd.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-			dsd.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+			depth_stencil_desc.StencilEnable = true;
+			depth_stencil_desc.StencilReadMask = 1;
+			depth_stencil_desc.StencilWriteMask = 1;
+			depth_stencil_desc.FrontFace.StencilFunc = D3D11_COMPARISON_EQUAL;
+			depth_stencil_desc.FrontFace.StencilPassOp = dssel.date_one ? D3D11_STENCIL_OP_ZERO : D3D11_STENCIL_OP_KEEP;
+			depth_stencil_desc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+			depth_stencil_desc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+			depth_stencil_desc.BackFace.StencilFunc = D3D11_COMPARISON_EQUAL;
+			depth_stencil_desc.BackFace.StencilPassOp = dssel.date_one ? D3D11_STENCIL_OP_ZERO : D3D11_STENCIL_OP_KEEP;
+			depth_stencil_desc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+			depth_stencil_desc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 		}
 
-		if(dssel.ztst != ZTST_ALWAYS || dssel.zwe)
+		if (dssel.ztst != ZTST_ALWAYS || dssel.zwe)
 		{
 			static const D3D11_COMPARISON_FUNC ztst[] =
 			{
@@ -325,14 +323,14 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 				D3D11_COMPARISON_GREATER
 			};
 
-			dsd.DepthEnable = true;
-			dsd.DepthWriteMask = dssel.zwe ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
-			dsd.DepthFunc = ztst[dssel.ztst];
+			depth_stencil_desc.DepthEnable = true;
+			depth_stencil_desc.DepthWriteMask = dssel.zwe ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
+			depth_stencil_desc.DepthFunc = ztst[dssel.ztst];
 		}
 
 		CComPtr<ID3D11DepthStencilState> dss;
 
-		m_dev->CreateDepthStencilState(&dsd, &dss);
+		m_dev->CreateDepthStencilState(&depth_stencil_desc, &dss);
 
 		m_om_dss[dssel] = dss;
 
@@ -343,41 +341,43 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 
 	auto j = std::as_const(m_om_bs).find(bsel);
 
-	if(j == m_om_bs.end())
+	if (j == m_om_bs.end())
 	{
-		D3D11_BLEND_DESC bd;
+		D3D11_BLEND_DESC blend_desc = {};
 
-		memset(&bd, 0, sizeof(bd));
-
-		bd.RenderTarget[0].BlendEnable = bsel.abe;
+		blend_desc.RenderTarget[0].BlendEnable = bsel.abe;
 
 		if(bsel.abe)
 		{
 			int i = ((bsel.a * 3 + bsel.b) * 3 + bsel.c) * 3 + bsel.d;
 
 			HWBlend blend = GetBlend(i);
-			bd.RenderTarget[0].BlendOp = (D3D11_BLEND_OP)blend.op;
-			bd.RenderTarget[0].SrcBlend = (D3D11_BLEND)blend.src;
-			bd.RenderTarget[0].DestBlend = (D3D11_BLEND)blend.dst;
-			bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-			bd.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-			bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+			blend_desc.RenderTarget[0].BlendOp = (D3D11_BLEND_OP)blend.op;
+			blend_desc.RenderTarget[0].SrcBlend = (D3D11_BLEND)blend.src;
+			blend_desc.RenderTarget[0].DestBlend = (D3D11_BLEND)blend.dst;
+			blend_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+			blend_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+			blend_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 
 			if (bsel.accu_blend)
 			{
-				bd.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-				bd.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+				blend_desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+				blend_desc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
 			}
 		}
 
-		if(bsel.wr) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_RED;
-		if(bsel.wg) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
-		if(bsel.wb) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
-		if(bsel.wa) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
+		uint8 write_mask = 0;
+
+		if (bsel.wr) write_mask |= D3D11_COLOR_WRITE_ENABLE_RED;
+		if (bsel.wg) write_mask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
+		if (bsel.wb) write_mask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
+		if (bsel.wa) write_mask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
+
+		blend_desc.RenderTarget[0].RenderTargetWriteMask = write_mask;
 
 		CComPtr<ID3D11BlendState> bs;
 
-		m_dev->CreateBlendState(&bd, &bs);
+		m_dev->CreateBlendState(&blend_desc, &bs);
 
 		m_om_bs[bsel] = bs;
 
