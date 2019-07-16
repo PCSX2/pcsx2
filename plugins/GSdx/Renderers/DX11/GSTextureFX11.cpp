@@ -135,7 +135,7 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 	{
 		ID3D11DeviceContext* ctx = m_ctx;
 
-		ctx->UpdateSubresource(m_vs_cb, 0, NULL, cb, 0, 0);
+		ctx->UpdateSubresource(m_vs_cb, 0, nullptr, cb, 0, 0);
 	}
 
 	VSSetShader(i->second.vs, m_vs_cb);
@@ -178,7 +178,7 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 	{
 		ID3D11DeviceContext* ctx = m_ctx;
 
-		ctx->UpdateSubresource(m_gs_cb, 0, NULL, cb, 0, 0);
+		ctx->UpdateSubresource(m_gs_cb, 0, nullptr, cb, 0, 0);
 	}
 
 	GSSetShader(gs, m_gs_cb);
@@ -188,7 +188,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 {
 	auto i = std::as_const(m_ps).find(sel);
 
-	if(i == m_ps.end())
+	if (i == m_ps.end())
 	{
 		ShaderMacro sm(m_shader.model);
 
@@ -235,54 +235,49 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		i = m_ps.find(sel);
 	}
 
-	if(m_ps_cb_cache.Update(cb))
+	if (m_ps_cb_cache.Update(cb))
 	{
 		ID3D11DeviceContext* ctx = m_ctx;
 
-		ctx->UpdateSubresource(m_ps_cb, 0, NULL, cb, 0, 0);
+		ctx->UpdateSubresource(m_ps_cb, 0, nullptr, cb, 0, 0);
 	}
 
 	CComPtr<ID3D11SamplerState> ss0, ss1;
 
-	if(sel.tfx != 4)
+	if (sel.tfx != 4)
 	{
-		if(!(sel.fmt < 3 && sel.wms < 3 && sel.wmt < 3))
-		{
+		if (!(sel.fmt < 3 && sel.wms < 3 && sel.wmt < 3))
 			ssel.ltf = 0;
-		}
 
 		auto i = std::as_const(m_ps_ss).find(ssel);
 
-		if(i != m_ps_ss.end())
+		if (i != m_ps_ss.end())
 		{
 			ss0 = i->second;
 		}
 		else
 		{
-			D3D11_SAMPLER_DESC sd, af;
+			D3D11_SAMPLER_DESC sampler_desc = {};
+			D3D11_SAMPLER_DESC aniso_filter;
 
-			memset(&sd, 0, sizeof(sd));
+			aniso_filter.Filter = theApp.GetConfigI("MaxAnisotropy") && !theApp.GetConfigB("paltex") ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+			sampler_desc.Filter = ssel.ltf ? aniso_filter.Filter : D3D11_FILTER_MIN_MAG_MIP_POINT;
 
-			af.Filter = theApp.GetConfigI("MaxAnisotropy") && !theApp.GetConfigB("paltex") ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-			sd.Filter = ssel.ltf ? af.Filter : D3D11_FILTER_MIN_MAG_MIP_POINT;
+			sampler_desc.AddressU = ssel.tau ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
+			sampler_desc.AddressV = ssel.tav ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
+			sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+			sampler_desc.MinLOD = -FLT_MAX;
+			sampler_desc.MaxLOD = FLT_MAX;
+			sampler_desc.MaxAnisotropy = theApp.GetConfigI("MaxAnisotropy");
+			sampler_desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
-			sd.AddressU = ssel.tau ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
-			sd.AddressV = ssel.tav ? D3D11_TEXTURE_ADDRESS_WRAP : D3D11_TEXTURE_ADDRESS_CLAMP;
-			sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-			sd.MinLOD = -FLT_MAX;
-			sd.MaxLOD = FLT_MAX;
-			sd.MaxAnisotropy = theApp.GetConfigI("MaxAnisotropy");
-			sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
-
-			m_dev->CreateSamplerState(&sd, &ss0);
+			m_dev->CreateSamplerState(&sampler_desc, &ss0);
 
 			m_ps_ss[ssel] = ss0;
 		}
 
-		if(sel.fmt >= 3)
-		{
+		if (sel.fmt >= 3)
 			ss1 = m_palette_ss;
-		}
 	}
 
 	PSSetSamplerState(ss0, ss1);
