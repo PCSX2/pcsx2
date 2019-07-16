@@ -28,58 +28,69 @@ bool GSDevice11::CreateTextureFX()
 {
 	HRESULT hr;
 
-	D3D11_BUFFER_DESC bd;
+	// Create Buffers
+	{
+		D3D11_BUFFER_DESC buffer_desc = {};
 
-	memset(&bd, 0, sizeof(bd));
+		buffer_desc.ByteWidth = sizeof(VSConstantBuffer);
+		buffer_desc.Usage = D3D11_USAGE_DEFAULT;
+		buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	bd.ByteWidth = sizeof(VSConstantBuffer);
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		hr = m_dev->CreateBuffer(&buffer_desc, nullptr, &m_vs_cb);
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_vs_cb);
+		if (FAILED(hr))
+			return false;
+	}
 
-	if(FAILED(hr)) return false;
+	{
+		D3D11_BUFFER_DESC buffer_desc = {};
 
-	memset(&bd, 0, sizeof(bd));
+		buffer_desc.ByteWidth = sizeof(GSConstantBuffer);
+		buffer_desc.Usage = D3D11_USAGE_DEFAULT;
+		buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	bd.ByteWidth = sizeof(GSConstantBuffer);
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		hr = m_dev->CreateBuffer(&buffer_desc, nullptr, &m_gs_cb);
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_gs_cb);
+		if (FAILED(hr))
+			return false;
+	}
 
-	if (FAILED(hr)) return false;
+	{
+		D3D11_BUFFER_DESC buffer_desc = {};
 
-	memset(&bd, 0, sizeof(bd));
+		buffer_desc.ByteWidth = sizeof(PSConstantBuffer);
+		buffer_desc.Usage = D3D11_USAGE_DEFAULT;
+		buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	bd.ByteWidth = sizeof(PSConstantBuffer);
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		hr = m_dev->CreateBuffer(&buffer_desc, nullptr, &m_ps_cb);
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_ps_cb);
+		if (FAILED(hr))
+			return false;
+	}
 
-	if(FAILED(hr)) return false;
+	// Create samplers
+	{
+		D3D11_SAMPLER_DESC sampler_desc = {};
 
-	D3D11_SAMPLER_DESC sd;
+		sampler_desc.Filter = theApp.GetConfigI("MaxAnisotropy") && !theApp.GetConfigB("paltex") ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_POINT;
+		sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		sampler_desc.MinLOD = -FLT_MAX;
+		sampler_desc.MaxLOD = FLT_MAX;
+		sampler_desc.MaxAnisotropy = theApp.GetConfigI("MaxAnisotropy");
+		sampler_desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
-	memset(&sd, 0, sizeof(sd));
+		hr = m_dev->CreateSamplerState(&sampler_desc, &m_palette_ss);
 
-	sd.Filter = theApp.GetConfigI("MaxAnisotropy") && !theApp.GetConfigB("paltex") ? D3D11_FILTER_ANISOTROPIC : D3D11_FILTER_MIN_MAG_MIP_POINT;
-	sd.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sd.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sd.MinLOD = -FLT_MAX;
-	sd.MaxLOD = FLT_MAX;
-	sd.MaxAnisotropy = theApp.GetConfigI("MaxAnisotropy");
-	sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		if (FAILED(hr))
+			return false;
 
-	hr = m_dev->CreateSamplerState(&sd, &m_palette_ss);
+		hr = m_dev->CreateSamplerState(&sampler_desc, &m_rt_ss);
 
-	if(FAILED(hr)) return false;
-
-	hr = m_dev->CreateSamplerState(&sd, &m_rt_ss);
-
-	if(FAILED(hr)) return false;
+		if (FAILED(hr))
+			return false;
+	}
 
 	// create layout
 
