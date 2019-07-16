@@ -526,12 +526,10 @@ bool GSDevice11::Reset(int w, int h)
 
 	if(m_swapchain)
 	{
-		DXGI_SWAP_CHAIN_DESC scd;
+		DXGI_SWAP_CHAIN_DESC swap_chain_desc = {};
 
-		memset(&scd, 0, sizeof(scd));
-
-		m_swapchain->GetDesc(&scd);
-		m_swapchain->ResizeBuffers(scd.BufferCount, w, h, scd.BufferDesc.Format, 0);
+		m_swapchain->GetDesc(&swap_chain_desc);
+		m_swapchain->ResizeBuffers(swap_chain_desc.BufferCount, w, h, swap_chain_desc.BufferDesc.Format, 0);
 
 		CComPtr<ID3D11Texture2D> backbuffer;
 
@@ -684,20 +682,16 @@ void GSDevice11::ClearStencil(GSTexture* t, uint8 c)
 
 GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 {
-	HRESULT hr;
+	D3D11_TEXTURE2D_DESC texture_desc = {};
 
-	D3D11_TEXTURE2D_DESC desc;
-
-	memset(&desc, 0, sizeof(desc));
-
-	desc.Width = std::max(1, std::min(w, 8192)); // Texture limit for D3D10 min 1, max 8192
-	desc.Height = std::max(1, std::min(h, 8192));
-	desc.Format = (DXGI_FORMAT)format;
-	desc.MipLevels = 1;
-	desc.ArraySize = 1;
-	desc.SampleDesc.Count = 1;
-	desc.SampleDesc.Quality = 0;
-	desc.Usage = D3D11_USAGE_DEFAULT;
+	texture_desc.Width = std::max(1, std::min(w, 8192)); // Texture limit for D3D10 min 1, max 8192
+	texture_desc.Height = std::max(1, std::min(h, 8192));
+	texture_desc.Format = (DXGI_FORMAT)format;
+	texture_desc.MipLevels = 1;
+	texture_desc.ArraySize = 1;
+	texture_desc.SampleDesc.Count = 1;
+	texture_desc.SampleDesc.Quality = 0;
+	texture_desc.Usage = D3D11_USAGE_DEFAULT;
 
 	// mipmap = m_mipmap > 1 || m_filter != TriFiltering::None;
 	bool mipmap = m_mipmap > 1;
@@ -706,28 +700,28 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 	switch(type)
 	{
 	case GSTexture::RenderTarget:
-		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		texture_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 		break;
 	case GSTexture::DepthStencil:
-		desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+		texture_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 		break;
 	case GSTexture::Texture:
-		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		desc.MipLevels = layers;
+		texture_desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		texture_desc.MipLevels = layers;
 		break;
 	case GSTexture::Offscreen:
-		desc.Usage = D3D11_USAGE_STAGING;
-		desc.CPUAccessFlags |= D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+		texture_desc.Usage = D3D11_USAGE_STAGING;
+		texture_desc.CPUAccessFlags |= D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
 		break;
 	}
 
-	GSTexture11* t = NULL;
+	GSTexture11* t = nullptr;
 
 	CComPtr<ID3D11Texture2D> texture;
 
-	hr = m_dev->CreateTexture2D(&desc, NULL, &texture);
+	HRESULT hr = m_dev->CreateTexture2D(&texture_desc, nullptr, &texture);
 
-	if(SUCCEEDED(hr))
+	if (SUCCEEDED(hr))
 	{
 		t = new GSTexture11(texture);
 
