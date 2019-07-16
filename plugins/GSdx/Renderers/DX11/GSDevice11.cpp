@@ -1188,31 +1188,28 @@ bool GSDevice11::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
 {
 	ASSERT(m_vertex.count == 0);
 
-	if(count * stride > m_vertex.limit * m_vertex.stride)
+	if (count * stride > m_vertex.limit * m_vertex.stride)
 	{
 		m_vb_old = m_vb;
-		m_vb = NULL;
+		m_vb = nullptr;
 
 		m_vertex.start = 0;
 		m_vertex.limit = std::max<int>(count * 3 / 2, 11000);
 	}
 
-	if(m_vb == NULL)
+	if (m_vb == nullptr)
 	{
-		D3D11_BUFFER_DESC bd;
+		D3D11_BUFFER_DESC buffer_desc = {};
 
-		memset(&bd, 0, sizeof(bd));
+		buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
+		buffer_desc.ByteWidth = m_vertex.limit * stride;
+		buffer_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-		bd.Usage = D3D11_USAGE_DYNAMIC;
-		bd.ByteWidth = m_vertex.limit * stride;
-		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		HRESULT hr = m_dev->CreateBuffer(&buffer_desc, nullptr, &m_vb);
 
-		HRESULT hr;
-
-		hr = m_dev->CreateBuffer(&bd, NULL, &m_vb);
-
-		if(FAILED(hr)) return false;
+		if (FAILED(hr)) 
+			return false;
 	}
 
 	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
@@ -1226,7 +1223,7 @@ bool GSDevice11::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
 
 	D3D11_MAPPED_SUBRESOURCE m;
 
-	if(FAILED(m_ctx->Map(m_vb, 0, type, 0, &m)))
+	if (FAILED(m_ctx->Map(m_vb, 0, type, 0, &m)))
 	{
 		return false;
 	}
