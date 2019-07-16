@@ -455,9 +455,9 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	{
 		GL_PUSH("GSDeviceOGL::Shadeboost");
 
-		int ShadeBoost_Contrast = theApp.GetConfigI("ShadeBoost_Contrast");
-		int ShadeBoost_Brightness = theApp.GetConfigI("ShadeBoost_Brightness");
-		int ShadeBoost_Saturation = theApp.GetConfigI("ShadeBoost_Saturation");
+		int ShadeBoost_Contrast = std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Contrast"), 100));
+		int ShadeBoost_Brightness = std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Brightness"), 100));
+		int ShadeBoost_Saturation = std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Saturation"), 100));
 		std::string shade_macro = format("#define SB_SATURATION %d.0\n", ShadeBoost_Saturation)
 			+ format("#define SB_BRIGHTNESS %d.0\n", ShadeBoost_Brightness)
 			+ format("#define SB_CONTRAST %d.0\n", ShadeBoost_Contrast);
