@@ -1261,36 +1261,33 @@ void GSDevice11::IASetIndexBuffer(const void* index, size_t count)
 {
 	ASSERT(m_index.count == 0);
 
-	if(count > m_index.limit)
+	if (count > m_index.limit)
 	{
 		m_ib_old = m_ib;
-		m_ib = NULL;
+		m_ib = nullptr;
 
 		m_index.start = 0;
 		m_index.limit = std::max<int>(count * 3 / 2, 11000);
 	}
 
-	if(m_ib == NULL)
+	if (m_ib == nullptr)
 	{
-		D3D11_BUFFER_DESC bd;
+		D3D11_BUFFER_DESC buffer_desc = {};
 
-		memset(&bd, 0, sizeof(bd));
+		buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
+		buffer_desc.ByteWidth = m_index.limit * sizeof(uint32);
+		buffer_desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-		bd.Usage = D3D11_USAGE_DYNAMIC;
-		bd.ByteWidth = m_index.limit * sizeof(uint32);
-		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		HRESULT hr = m_dev->CreateBuffer(&buffer_desc, nullptr, &m_ib);
 
-		HRESULT hr;
-
-		hr = m_dev->CreateBuffer(&bd, NULL, &m_ib);
-
-		if(FAILED(hr)) return;
+		if (FAILED(hr))
+			return;
 	}
 
 	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
 
-	if(m_index.start + count > m_index.limit)
+	if (m_index.start + count > m_index.limit)
 	{
 		m_index.start = 0;
 
@@ -1299,7 +1296,7 @@ void GSDevice11::IASetIndexBuffer(const void* index, size_t count)
 
 	D3D11_MAPPED_SUBRESOURCE m;
 
-	if(SUCCEEDED(m_ctx->Map(m_ib, 0, type, 0, &m)))
+	if (SUCCEEDED(m_ctx->Map(m_ib, 0, type, 0, &m)))
 	{
 		memcpy((uint8*)m.pData + m_index.start * sizeof(uint32), index, count * sizeof(uint32));
 
