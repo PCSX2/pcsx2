@@ -1486,8 +1486,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	{
 		m_state.viewport = size;
 
-		D3D11_VIEWPORT vp;
-		memset(&vp, 0, sizeof(vp));
+		D3D11_VIEWPORT vp = {};
 
 		vp.TopLeftX = m_hack_topleft_offset;
 		vp.TopLeftY = m_hack_topleft_offset;
