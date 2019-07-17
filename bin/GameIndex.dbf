@@ -9559,8 +9559,14 @@ Name   = Tiger Woods PGA Tour 2003
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-51283
-Name   = WWE Smackdown! 4 - Shut Your Mouth
+Name   = WWE SmackDown! Shut Your Mouth
 Region = PAL-E
+[patches = D1D97A29]
+	comment=Patch by Prafull
+	// Fixes freeze during entrances.
+	patch=1,EE,0010b7ac,word,00000000 //0440fffa
+	patch=1,EE,0010b894,word,00000000 //0440fffa
+[/patches]
 ---------------------------------------------
 Serial = SLES-51284
 Name   = Contra - Shattered Soldier
@@ -16943,9 +16949,23 @@ Name   = Charlotte's Web
 Region = PAL-M11
 ---------------------------------------------
 Serial = SLES-54723
-Name   = Spiderman 3
+Name   = Spider-Man 3
 Region = PAL-E
 Compat = 4
+[patches = 0C881B25]
+	comment=Patch by Kozarovv
+	// Fixes hang before loading level 2.
+	patch=1,EE,0044bae4,word,000002ff
+[/patches]
+---------------------------------------------
+Serial = SLES-54724
+Name   = Spider-Man 3
+Region = PAL-M4
+[patches = C529B0AD]
+	comment=Patch by Kozarovv
+	// Fixes hang before loading level 2.
+	patch=1,EE,0044bae4,word,000002ff
+[/patches]
 ---------------------------------------------
 Serial = SLES-54727
 Name   = Naruto - Uzumaki Chronicles
@@ -18403,6 +18423,16 @@ Region = NTSC-K
 Serial = SLKA-25026
 Name   = Chaos Legion
 Region = NTSC-K
+---------------------------------------------
+Serial = SLKA-25030
+Name   = WWE SmackDown! Shut Your Mouth
+Region = NTSC-K
+[patches = 43E396A7]
+	comment=Patch by Prafull and Arapapa
+	// Fixes freeze during entrances.
+	patch=1,EE,0010b894,word,00000000
+	patch=1,EE,0010b7ac,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLKA-25033
 Name   = Gregory Horror Show
@@ -31023,7 +31053,16 @@ EETimingHack = 1 // Correct graphics after changing scene.
 Serial = SLPS-25026
 Name   = Dead or Alive 2 - Hardcore
 Region = NTSC-J
-Compat = 5 // The game only load with the EE set to interpreter + cache enable.
+Compat = 5
+[patches = 82C02240]
+	comment=Patch by Prafull and Kozarovv
+	// Fixes game hanging on boot.
+	patch=1,EE,002B666C,word,24060000
+	// Fixes sound.
+	patch=1,IOP,001D77E4,word,27C40010
+	patch=1,IOP,001D77E8,word,0C0032B7
+	patch=1,IOP,001D77EC,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLPS-25028
 Name   = Shutokou Battle 0
@@ -31958,7 +31997,7 @@ Name   = Crouching Tiger, Hidden Dragon
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25309
-Name   = WWE SmackDown! 4 - Shut your mouth [Yuke's The Best]
+Name   = Exciting Pro Wrestling 4 [Yuke's The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-25310
@@ -33996,6 +34035,11 @@ Region = NTSC-J
 Serial = SLPS-25823
 Name   = Spider-Man 3
 Region = NTSC-J
+[patches = 9295A3BE]
+	comment=Patch by Kozarovv
+	// Fixes hang before loading level 2.
+	patch=1,EE,0044bae4,word,000002ff
+[/patches]
 ---------------------------------------------
 Serial = SLPS-25825
 Name   = Zero no Tsukaima [Best Collection]
@@ -36802,15 +36846,14 @@ Compat = 5
 OPHFLagHack = 1
 ---------------------------------------------
 Serial = SLUS-20483
-Name   = WWE Smackdown - Shut Your Mouth
+Name   = WWE SmackDown! Shut Your Mouth
 Region = NTSC-U
 Compat = 5
 [patches = B0AE1898]
 	comment=Patch by Prafull
-	// Skip sceipusync.
-	patch=0,EE,0010b880,word,00000000
-	patch=0,EE,0010b798,word,00000000
-	patch=0,EE,0010b7c8,word,00000000
+	// Fixes freeze during entrances.
+	patch=1,EE,0010b894,word,00000000
+	patch=1,EE,0010b7ac,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20484
@@ -41918,6 +41961,11 @@ Serial = SLUS-21552
 Name   = Spider-Man 3
 Region = NTSC-U
 Compat = 4
+[patches = 29873A0C]
+	comment= Patch by Kozarovv
+	// Fixes hang before loading level 2.
+	patch=1,EE,0044bae4,word,000002ff
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21553
 Name   = Lumines Plus
