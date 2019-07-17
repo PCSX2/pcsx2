@@ -19073,6 +19073,15 @@ Serial = SLKA-25384
 Name   = Blazing Souls
 Region = NTSC-K
 ---------------------------------------------
+Serial = SLKA-25385
+Name   = Spider-Man 3
+Region = NTSC-K
+[patches = B35F8AAE]
+	comment=Patch by Kozarovv and Arapapa
+	// Fixes hang before loading level 2.
+	patch=1,EE,0044bc64,word,000002ff //400002ff
+[/patches]
+---------------------------------------------
 Serial = SLKA-25388
 Name   = One Piece - Grand Adventure
 Region = NTSC-K
@@ -34036,9 +34045,9 @@ Serial = SLPS-25823
 Name   = Spider-Man 3
 Region = NTSC-J
 [patches = 9295A3BE]
-	comment=Patch by Kozarovv
+	comment=Patch by Kozarovv and Arapapa
 	// Fixes hang before loading level 2.
-	patch=1,EE,0044bae4,word,000002ff
+	patch=1,EE,0044bde4,word,000002ff //400002ff
 [/patches]
 ---------------------------------------------
 Serial = SLPS-25825
