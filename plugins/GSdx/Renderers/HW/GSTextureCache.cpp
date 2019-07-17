@@ -253,7 +253,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		uint32 bw = TEX0.TBW;
 		int tw = 1 << TEX0.TW;
 		int th = 1 << TEX0.TH;
-		uint32 bp_end = psm_s.bn(tw - 1, th - 1, bp, bw);
+		uint32 bp_end = psm_s.bn(tw - 1, th - 1, bp, bw);  // Valid only for color formats
 
 		// Arc the Lad finds the wrong surface here when looking for a depth stencil.
 		// Since we're currently not caching depth stencils (check ToDo in CreateSource) we should not look for it here.
@@ -559,7 +559,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 	// Let's try to find a perfect frame that contains valid data
 	for(auto t : m_dst[RenderTarget]) {
-		if(bp == t->m_TEX0.TBP0 && t->m_end_block > bp) {
+		if(bp == t->m_TEX0.TBP0 && t->m_end_block >= bp) {
 			dst = t;
 
 			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x %s)", w, h, dst->m_texture->GetID(), bp, t->m_end_block, psm_str(TEX0.PSM));
@@ -571,7 +571,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	// 2nd try ! Try to find a frame that include the bp
 	if (dst == NULL) {
 		for(auto t : m_dst[RenderTarget]) {
-			if (t->m_TEX0.TBP0 < bp && bp < t->m_end_block) {
+			if (t->m_TEX0.TBP0 < bp && bp <= t->m_end_block) {
 				dst = t;
 
 				GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: %d (0x%x, took 0x%x -> 0x%x %s)", w, h, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block, psm_str(TEX0.PSM));
@@ -726,12 +726,12 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 		// Note: the game only does a 0 direct write. If some games expect some real data
 		// we are screwed.
 		if (m_renderer->m_game.title == CRC::HauntingGround) {
-			uint32 end_block = GSLocalMemory::m_psm[psm].bn(rect.width(), rect.height(), bp, bw);
+			uint32 end_block = GSLocalMemory::m_psm[psm].bn(rect.z - 1, rect.w - 1, bp, bw);  // Valid only for color formats
 			auto type = RenderTarget;
 
 			for(auto t : m_dst[type])
 			{
-				if (t->m_TEX0.TBP0 > bp && t->m_end_block < end_block) {
+				if (t->m_TEX0.TBP0 > bp && t->m_end_block <= end_block) {
 					// Haunting ground expect to clean buffer B with a rendering into buffer A.
 					// Situation is quite messy as it would require to extract the data from the buffer A
 					// and to move in buffer B.
@@ -1915,20 +1915,17 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 {
 	m_valid = m_valid.runion(rect);
 
-	uint32 nb_block = m_TEX0.TBW * m_valid.height();
-	if (m_TEX0.PSM == PSM_PSMCT16)
-		nb_block >>= 1;
-
-	m_end_block = m_TEX0.TBP0 + nb_block;
+	// Block of the bottom right texel of the validity rectangle, last valid block of the texture
+	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW);  // Valid only for color formats
 
 	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
 }
 
 bool GSTextureCache::Target::Inside(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect)
 {
-	uint32 block = GSLocalMemory::m_psm[psm].bn(rect.width(), rect.height(), bp, bw);
+	uint32 block = GSLocalMemory::m_psm[psm].bn(rect.z - 1, rect.w - 1, bp, bw);  // Valid only for color formats
 
-	return bp > m_TEX0.TBP0 && block < m_end_block;
+	return bp > m_TEX0.TBP0 && block <= m_end_block;
 }
 
 // GSTextureCache::SourceMap
