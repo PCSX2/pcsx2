@@ -1,4 +1,4 @@
----------------------------------------------
+﻿---------------------------------------------
 -- PCSX2 Game DataBase!
 ---------------------------------------------
 
@@ -5752,6 +5752,12 @@ Region = NTSC-U
 Serial = SCUS-97488
 Name   = Jak X - Combat Racing [Public Beta v.1]
 Region = NTSC-U
+Compat = 5
+[patches = DA366A53]
+	comment=Patched by Luminar Light
+	// Patch fixes inability to boot.
+	patch=1,EE,00265ACB,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SCUS-97489
 Name   = SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]
