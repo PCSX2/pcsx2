@@ -257,7 +257,7 @@ static __forceinline void GetNextDataDummy(V_Core &thiscore, uint voiceidx)
 
 static s32 __forceinline GetNoiseValues()
 {
-    static s32 Seed = 0x41595321;
+    /*static s32 Seed = 0x41595321;
     s32 retval = 0x8000;
 
     if (Seed & 0x100)
@@ -272,7 +272,8 @@ static s32 __forceinline GetNoiseValues()
     y ^= x;
     Seed = _rotr(y, 0x3);
 
-    return retval;
+    return retval;*/
+    return (s32)(rand() & 0xFF) << 8;
 }
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
