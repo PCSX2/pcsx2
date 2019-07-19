@@ -1464,6 +1464,7 @@ GSRendererHW::Hacks::Hacks()
 	, m_oo(NULL)
 	, m_cu(NULL)
 {
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BigMuthaTruckers, CRC::RegionCount, &GSRendererHW::OI_BigMuthaTruckers));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFXII, CRC::EU, &GSRendererHW::OI_FFXII));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::FFX, CRC::RegionCount, &GSRendererHW::OI_FFX));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::MetalSlug6, CRC::RegionCount, &GSRendererHW::OI_MetalSlug6));
@@ -1688,6 +1689,38 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 }
 
 // OI (others input?/implementation?) hacks replace current draw call
+
+bool GSRendererHW::OI_BigMuthaTruckers(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	// Rendering pattern:
+	// CRTC frontbuffer at 0x0 is interlaced (half vertical resolution),
+	// game needs to do a depth effect (so green channel to alpha),
+	// but there is a vram limitation so green is pushed into the alpha channel of the CRCT buffer,
+	// vertical resolution is half so only half is processed at once
+	// We, however, don't have this limitation so we'll replace the draw with a full-screen TS.
+
+	GIFRegTEX0 Texture = m_context->TEX0;
+
+	GIFRegTEX0 Frame;
+	Frame.TBW = m_context->FRAME.FBW;
+	Frame.TBP0 = m_context->FRAME.FBP;
+	Frame.TBP0 = m_context->FRAME.Block();
+
+	if (PRIM->TME && Frame.TBW == 10 && Texture.TBW == 10 && Frame.TBP0 == 0x00a00 && Texture.PSM == PSM_PSMT8H && (m_r.y == 256 || m_r.y == 224))
+	{
+		// 224 ntsc, 256 pal.
+		GL_INS("OI_BigMuthaTruckers half bottom offset");
+
+		size_t count = m_vertex.next;
+		GSVertex* v = &m_vertex.buff[0];
+		const uint16 offset = (uint16)m_r.y * 16;
+
+		for (size_t i = 0; i < count; i++)
+			v[i].V += offset;
+	}
+
+	return true;
+}
 
 bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {

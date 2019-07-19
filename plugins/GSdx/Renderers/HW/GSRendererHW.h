@@ -52,6 +52,7 @@ private:
 	void OI_GsMemClear(); // always on
 	void OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds); // always on
 
+	bool OI_BigMuthaTruckers(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_MetalSlug6(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
