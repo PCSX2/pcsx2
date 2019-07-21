@@ -13356,6 +13356,7 @@ Serial = SLES-53007
 Name   = Tom Clancy's Splinter Cell - Chaos Theory
 Region = PAL-M5
 Compat = 5
+FMVinSoftwareHack = 1 // Fixes no video during FMVs in hardware mode.
 [patches]
 	comment=- This gamedisc supports multiple languages.
 	comment=- Language selection is done through the BIOS configuration.
@@ -13958,6 +13959,7 @@ Compat = 5
 Serial = SLES-53287
 Name   = Tom Clancy's Splinter Cell - Chaos Theory
 Region = PAL-M3
+FMVinSoftwareHack = 1 // Fixes no video during FMVs in hardware mode.
 ---------------------------------------------
 Serial = SLES-53296
 Name   = Ford Mustang - The Legend Lives
@@ -25929,6 +25931,7 @@ Region = NTSC-J
 Serial = SLPM-66130
 Name   = Tom Clancy's Splinter Cell - Chaos Theory
 Region = NTSC-J
+FMVinSoftwareHack = 1 // Fixes no video during FMVs in hardware mode.
 ---------------------------------------------
 Serial = SLPM-66131
 Name   = Tim Burton's The Nightmare Before Christmas [Premium Pack]
@@ -27268,6 +27271,7 @@ Region = NTSC-J
 Serial = SLPM-66496
 Name   = Tom Clancy's Splinter Cell - Chaos Theory
 Region = NTSC-J
+FMVinSoftwareHack = 1 // Fixes no video during FMVs in hardware mode.
 ---------------------------------------------
 Serial = SLPM-66497
 Name   = Ice Age 2
@@ -40019,6 +40023,7 @@ Serial = SLUS-21137
 Name   = Tom Clancy's Splinter Cell - Chaos Theory
 Region = NTSC-U
 Compat = 5
+FMVinSoftwareHack = 1 // Fixes no video during FMVs in hardware mode.
 ---------------------------------------------
 Serial = SLUS-21138
 Name   = X-Men Legends II - Rise of Apocalypse
