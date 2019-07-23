@@ -711,7 +711,7 @@ void Panels::PluginSelectorPanel::OnEnumComplete( wxCommandEvent& evt )
 
 				for( int i = 0; i < count; i++ )
 				{
-					auto str = m_ComponentBoxes->Get(pid).GetString(i);
+					auto str = m_ComponentBoxes->Get(pid).GetString(i).Lower();
 
 					if (str.Contains("lilypad")) index_lilypad = i;
 					if (str.Contains("onepad"))
