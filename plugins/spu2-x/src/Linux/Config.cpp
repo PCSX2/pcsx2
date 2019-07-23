@@ -120,9 +120,13 @@ void ReadSettings()
     VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
     delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
 
-
     wxString temp;
+
+#if SDL_MAJOR_VERSION >= 2
+    CfgReadStr(L"OUTPUT", L"Output_Module", temp, SDLOut->GetIdent());
+#else
     CfgReadStr(L"OUTPUT", L"Output_Module", temp, PortaudioOut->GetIdent());
+#endif
     OutputModule = FindOutputModuleById(temp.c_str()); // find the driver index of this module
 
 // find current API
