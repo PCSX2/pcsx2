@@ -13484,6 +13484,7 @@ Serial = SLES-53037
 Name   = Super Monkey Ball Deluxe
 Region = PAL-M5
 Compat = 5
+eeRoundMode = 0 // Fixes object balls never stoping in the Monkey Billiards DX minigame.
 ---------------------------------------------
 Serial = SLES-53038
 Name   = Devil May Cry 3 - Dante's Awakening
@@ -18918,6 +18919,7 @@ Region = NTSC-K
 Serial = SLKA-25290
 Name   = Super Monkey Ball Deluxe
 Region = NTSC-K
+eeRoundMode = 0 // Fixes object balls never stoping in the Monkey Billiards DX minigame.
 ---------------------------------------------
 Serial = SLKA-25291
 Name   = Chains of Power
@@ -25122,6 +25124,7 @@ Region = NTSC-J
 Serial = SLPM-65909
 Name   = Super Monkey Ball Deluxe
 Region = NTSC-J
+eeRoundMode = 0 // Fixes object balls never stoping in the Monkey Billiards DX minigame.
 ---------------------------------------------
 Serial = SLPM-65910
 Name   = Cafe Lindbergh - Summer Season [Sweet Box]
@@ -38902,6 +38905,7 @@ Serial = SLUS-20918
 Name   = Super Monkey Ball Deluxe
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 0 // Fixes object balls never stoping in the Monkey Billiards DX minigame.
 ---------------------------------------------
 Serial = SLUS-20919
 Name   = ESPN - NFL 2K5
