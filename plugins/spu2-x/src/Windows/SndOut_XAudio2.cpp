@@ -18,6 +18,7 @@
 #include "Global.h"
 #include "Dialogs.h"
 
+// WIN8 0x0602
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0x0602
 #include <xaudio2.h>
