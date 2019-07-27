@@ -22,6 +22,6 @@
 #if _WIN32_WINNT >= 0x602
 #error Time to remove this module.
 #endif
-#include <../3rdparty/xaudio2/XAudio2.h>
+#include "../3rdparty/xaudio2/XAudio2.h"
 
 #include "SndOut_XAudio2.inl"
