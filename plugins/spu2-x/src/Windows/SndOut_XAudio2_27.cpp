@@ -18,5 +18,9 @@
 #include "Global.h"
 #include "Dialogs.h"
 
+// WIN7 0x0601
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0601
 #include "../3rdparty/xaudio2/XAudio2.h"
+
 #include "SndOut_XAudio2.inl"
