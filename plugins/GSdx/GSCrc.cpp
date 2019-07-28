@@ -285,6 +285,7 @@ CRC::Game CRC::m_games[] =
 	{0x3130A4D3, Sly3, US, 0}, // E3 Demo
 	{0x35CCFA60, Sly3, US, 0}, // Regular Demo
 	{0x8C146034, Sly3, EU, 0}, // Demo
+	{0x3670B6F9, Sly3, EU, 0}, // Prototype
 	{0x8164C614, Sly3, EU, 0},
 	{0xA8CC1583, Sly3, KO, 0},
 	{0x518DD841, Sly2, KO, 0},
@@ -301,6 +302,8 @@ CRC::Game CRC::m_games[] =
 	{0x22425C19, DemonStone, KO, 0},
 	{0x506644B3, BigMuthaTruckers, EU, 0},
 	{0x90F0D852, BigMuthaTruckers, US, 0},
+	{0x92624842, BigMuthaTruckers, US, 0},
+	{0xDD93DA88, BigMuthaTruckers, JP, 0}, // Bakusou Convoy Densetsu - Otoko Hanamichi America Roman
 	{0x5CC9BF81, TimeSplitters2, EU, 0},
 	{0x12532F1C, TimeSplitters2, US, 0},
 	{0xEB198738, LordOfTheRingsThirdAge, US, 0},
@@ -447,6 +450,7 @@ CRC::Game CRC::m_games[] =
 	{0x23F8D35B, Jak3, NoRegion, 0}, // EU Preview, US Internal test build
 	{0xDF659E77, JakX, EU, 0}, // Jak X: Combat Racing
 	{0x3091E6FB, JakX, US, 0},
+	{0xDA366A53, JakX, US, 0}, // Public Beta v.1
 	{0x4653CA3E, HarleyDavidson, US, 0},
 	// Games list for Automatic Mipmapping
 	// Basic mipmapping

@@ -19904,6 +19904,7 @@ Region = NTSC-J
 Serial = SLPM-62203
 Name   = Dog of Bay
 Region = NTSC-J
+XgKickHack = 1 // Fixes corrupted textures.
 ---------------------------------------------
 Serial = SLPM-62204
 Name   = LEGO Racers 2
@@ -29831,6 +29832,7 @@ Compat = 5
 Serial = SLPS-20057
 Name   = Dog of Bay
 Region = NTSC-J
+XgKickHack = 1 // Fixes corrupted textures.
 ---------------------------------------------
 Serial = SLPS-20058
 Name   = Kengo
