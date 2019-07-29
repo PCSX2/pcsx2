@@ -1813,6 +1813,7 @@ bool GSRendererHW::OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* 
 	if((FBP == 0x00d00 || FBP == 0x00000) && ZBP == 0x02100 && PRIM->TME && TBP == 0x01a00 && m_context->TEX0.PSM == PSM_PSMCT16S)
 	{
 		// random battle transition (z buffer written directly, clear it now)
+		GL_INS("OI_FFX ZB clear");
 		if(ds)
 			ds->Commit(); // Don't bother to save few MB for a single game
 		m_dev->ClearDepth(ds);
@@ -1865,6 +1866,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 
 			if(GSTextureCache::Target* tmp_rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true))
 			{
+				GL_INS("OI_RozenMaidenGebetGarden FB clear");
 				tmp_rt->m_texture->Commit(); // Don't bother to save few MB for a single game
 				m_dev->ClearRenderTarget(tmp_rt->m_texture, 0);
 			}
@@ -1883,6 +1885,7 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 
 			if(GSTextureCache::Target* tmp_ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, true))
 			{
+				GL_INS("OI_RozenMaidenGebetGarden ZB clear");
 				tmp_ds->m_texture->Commit(); // Don't bother to save few MB for a single game
 				m_dev->ClearDepth(tmp_ds->m_texture);
 			}
@@ -1935,6 +1938,7 @@ bool GSRendererHW::OI_StarWarsForceUnleashed(GSTexture* rt, GSTexture* ds, GSTex
 	{
 		if((FBP == 0x0 || FBP == 0x01180) && FPSM == PSM_PSMCT32 && (m_vt.m_eq.z && m_vt.m_max.p.z == 0))
 		{
+			GL_INS("OI_StarWarsForceUnleashed FB clear");
 			if(ds)
 				ds->Commit(); // Don't bother to save few MB for a single game
 			m_dev->ClearDepth(ds);
@@ -2026,6 +2030,7 @@ bool GSRendererHW::OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCac
 	m_dev->ClearRenderTarget(rt, GSVector4(m_vt.m_min.c));
 
 	m_tc->InvalidateVideoMemType(GSTextureCache::DepthStencil, ctx->FRAME.Block());
+	GL_INS("OI_SuperManReturns");
 
 	return false;
 }

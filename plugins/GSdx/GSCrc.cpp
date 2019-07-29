@@ -449,6 +449,7 @@ CRC::Game CRC::m_games[] =
 	{0x644CFD03, Jak3, US, 0},
 	{0x23F8D35B, Jak3, NoRegion, 0}, // EU Preview, US Internal test build
 	{0xDF659E77, JakX, EU, 0}, // Jak X: Combat Racing
+	{0xC20596DB, JakX, EU, 0}, // Beta Trial Disc, v0.01
 	{0x3091E6FB, JakX, US, 0},
 	{0xDA366A53, JakX, US, 0}, // Public Beta v.1
 	{0x4653CA3E, HarleyDavidson, US, 0},
