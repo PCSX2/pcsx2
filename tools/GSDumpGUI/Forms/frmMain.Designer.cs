@@ -95,7 +95,7 @@
             this.txtGSDXDirectory.Size = new System.Drawing.Size(243, 20);
             this.txtGSDXDirectory.TabIndex = 0;
             this.txtGSDXDirectory.TabStop = false;
-			this.txtGSDXDirectory.Enter += new System.EventHandler(this.txtGSDXDirectory_Enter);
+            this.txtGSDXDirectory.Enter += new System.EventHandler(this.txtGSDXDirectory_Enter);
             this.txtGSDXDirectory.Leave += new System.EventHandler(this.txtGSDXDirectory_Leave);
             // 
             // lblDirectory
@@ -145,7 +145,7 @@
             this.txtDumpsDirectory.Size = new System.Drawing.Size(243, 20);
             this.txtDumpsDirectory.TabIndex = 3;
             this.txtDumpsDirectory.TabStop = false;
-			this.txtDumpsDirectory.Enter += new System.EventHandler(this.txtDumpsDirectory_Enter);
+            this.txtDumpsDirectory.Enter += new System.EventHandler(this.txtDumpsDirectory_Enter);
             this.txtDumpsDirectory.Leave += new System.EventHandler(this.txtDumpsDirectory_Leave);
             // 
             // lstGSDX
