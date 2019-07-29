@@ -215,7 +215,7 @@ namespace GSDumpGUI
 
                 GSsetGameCRC(dump.CRC, 0);
 
-                NativeMethods.SetClassLong(hWnd,/*GCL_HICON*/ -14, Program.hMainIcon.ToInt32());
+                NativeMethods.SetClassLong(hWnd,/*GCL_HICON*/ -14, (uint)Program.hMainIcon.ToInt32());
 
                 fixed (byte* freeze = dump.StateData)
                 {
