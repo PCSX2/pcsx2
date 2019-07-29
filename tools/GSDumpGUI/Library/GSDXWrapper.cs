@@ -39,14 +39,15 @@ namespace GSDumpGUI
     public delegate void GSreset();
     public delegate void GSreadFIFO2(IntPtr data, int size);
     public delegate void GSsetGameCRC(int crc, int options);
-    public delegate int GSfreeze(int mode, IntPtr data);
-    public delegate void GSopen(IntPtr hwnd, String Title, int renderer);
+    public delegate  int GSfreeze(int mode, IntPtr data);
+    public delegate  int GSopen(IntPtr hwnd, String Title, int renderer);
     public delegate void GSclose();
     public delegate void GSshutdown();
     public delegate void GSConfigure();
     public delegate void GSsetBaseMem(IntPtr data);
     public delegate IntPtr PSEgetLibName();
     public delegate void GSinit();
+    public delegate UInt32 GSmakeSnapshot(string path);
 
     public class InvalidGSPlugin : Exception
     {
@@ -73,7 +74,7 @@ namespace GSDumpGUI
         private GSsetBaseMem GSsetBaseMem;
         private GSinit GSinit;
         private GSreset GSreset;
-
+        private GSmakeSnapshot GSmakeSnapshot;
         private Boolean Loaded;
 
         private String DLL;
@@ -128,6 +129,7 @@ namespace GSDumpGUI
                         IntPtr funcaddrFreeze = NativeMethods.GetProcAddress(hmod, "GSfreeze");
                         IntPtr funcaddrGSreadFIFO2 = NativeMethods.GetProcAddress(hmod, "GSreadFIFO2");
                         IntPtr funcaddrinit = NativeMethods.GetProcAddress(hmod, "GSinit");
+                        IntPtr funcmakeSnapshot = NativeMethods.GetProcAddress(hmod, "GSmakeSnapshot");
 
                         if (!((funcaddrConfig.ToInt64() > 0) && (funcaddrLibName.ToInt64() > 0) && (funcaddrGIF.ToInt64() > 0)))
                         {
@@ -151,6 +153,7 @@ namespace GSDumpGUI
                         this.GSreset = (GSreset) Marshal.GetDelegateForFunctionPointer(funcaddrGSReset, typeof(GSreset));
                         this.GSreadFIFO2 = (GSreadFIFO2) Marshal.GetDelegateForFunctionPointer(funcaddrGSreadFIFO2, typeof(GSreadFIFO2));
                         this.GSinit = (GSinit) Marshal.GetDelegateForFunctionPointer(funcaddrinit, typeof(GSinit));
+                        this.GSmakeSnapshot = (GSmakeSnapshot)Marshal.GetDelegateForFunctionPointer(funcmakeSnapshot, typeof(GSmakeSnapshot));
 
                         Loaded = true;
                     }
@@ -205,9 +208,14 @@ namespace GSDumpGUI
             fixed (byte* pointer = tempregisters)
             {
                 GSsetBaseMem(new IntPtr(pointer));
-                Int32 HWND = 0;
-                GSopen(new IntPtr(&HWND), "", rendererOverride);
+                IntPtr hWnd = IntPtr.Zero;
+
+                if (GSopen(new IntPtr(&hWnd), "", rendererOverride) != 0)
+                    return;
+
                 GSsetGameCRC(dump.CRC, 0);
+
+                NativeMethods.SetClassLong(hWnd,/*GCL_HICON*/ -14, Program.hMainIcon.ToInt32());
 
                 fixed (byte* freeze = dump.StateData)
                 {
@@ -225,95 +233,93 @@ namespace GSDumpGUI
                         }
                         GSVSync(1);
 
+                        GSreset();
+                        Marshal.Copy(dump.Registers, 0, new IntPtr(pointer), 8192);
+                        GSsetBaseMem(new IntPtr(pointer));
+                        GSfreeze(0, new IntPtr(fr));
+
+                        int gs_idx = 0;
+                        int debug_idx = 0;
+                        NativeMessage msg;
+
                         while (Running)
                         {
-                            if (!NativeMethods.IsWindowVisible(new IntPtr(HWND)))
+                            while (NativeMethods.PeekMessage(out msg, hWnd, 0, 0, 1)) // PM_REMOVE
                             {
-                                Running = false;
-                                break;
+                                NativeMethods.TranslateMessage(ref msg);
+                                NativeMethods.DispatchMessage(ref msg);
+
+                                if(msg.msg == 0x0100) // WM_KEYDOWN
+                                {
+                                    switch(msg.wParam.ToInt32() & 0xFF)
+                                    {
+                                        case 0x1B: Running = false; break; // VK_ESCAPE;
+                                        case 0x77: GSmakeSnapshot(""); break; // VK_F8;
+                                    }
+                                }
                             }
 
-                            GSreset();
-                            Marshal.Copy(dump.Registers, 0, new IntPtr(pointer), 8192);
-                            GSsetBaseMem(new IntPtr(pointer));
-                            GSfreeze(0, new IntPtr(fr));
+                            if (!Running)
+                                break;
 
-                            for (int i = 0; i < dump.Data.Count; i++)
+                            if (DebugMode)
                             {
-                                GSData itm = dump.Data[i];
-                                CurrentGIFPacket = itm;
-
-                                if (DebugMode)
+                                if (QueueMessage.Count > 0)
                                 {
-                                    if (RunTo != -1)
+                                    TCPMessage Mess = QueueMessage.Dequeue();
+                                    switch (Mess.MessageType)
                                     {
-                                        if (i == RunTo)
-                                        {
-                                            RunTo = -1;
-                                            int idxnextReg = dump.Data.FindIndex(i, a => a.id == GSType.Registers);
-                                            if (idxnextReg != -1)
-                                            {
-                                                Step(dump.Data[idxnextReg], pointer);
-                                            }
-
-                                            GSData g = new GSData();
-                                            g.id = GSType.VSync;
-                                            Step(g, pointer);
-
-                                            TCPMessage Msg = new TCPMessage();
-                                            Msg.MessageType = MessageType.RunToCursor;
-                                            Msg.Parameters.Add(i);
-                                            Program.Client.Send(Msg);
-
-                                            ExternalEvent.Set();
-                                        }
-                                        else
-                                        {
-                                            Step(itm, pointer);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        while (!ThereIsWork && Running)
-                                        {
-                                            NativeMessage message;
-                                            while (NativeMethods.PeekMessage(out message, IntPtr.Zero, 0, 0, 1))
-                                            {
-                                                if (!NativeMethods.IsWindowVisible(new IntPtr(HWND)))
-                                                {
-                                                    Running = false;
-                                                }
-                                                NativeMethods.TranslateMessage(ref message);
-                                                NativeMethods.DispatchMessage(ref message);
-                                            }
-                                        }
-
-                                        ThereIsWork = false;
-                                        if (QueueMessage.Count > 0)
-                                        {
-                                            TCPMessage Mess = QueueMessage.Dequeue();
-                                            switch (Mess.MessageType)
-                                            {
-                                                case MessageType.Step:
-                                                    RunTo = i;
-                                                    break;
-                                                case MessageType.RunToCursor:
-                                                    RunTo = (int)Mess.Parameters[0];
-                                                    break;
-                                                case MessageType.RunToNextVSync:
-                                                    RunTo = dump.Data.FindIndex(i, a => a.id == GSType.VSync);
-                                                    break;
-                                                default:
-                                                    break;
-                                            }
+                                        case MessageType.Step:
+                                            if (debug_idx >= dump.Data.Count) debug_idx = 0;
+                                            RunTo = debug_idx;
                                             break;
-                                        }
+                                        case MessageType.RunToCursor:
+                                            RunTo = (int)Mess.Parameters[0];
+                                            if(debug_idx > RunTo) debug_idx = 0;
+                                            break;
+                                        case MessageType.RunToNextVSync:
+                                            if (debug_idx >= dump.Data.Count) debug_idx = 1;
+                                            RunTo = dump.Data.FindIndex(debug_idx, a => a.id == GSType.VSync);
+                                            break;
+                                        default:
+                                            break;
                                     }
                                 }
-                                else
+
+                                if (debug_idx <= RunTo)
                                 {
-                                    Step(itm, pointer);
+                                    while (debug_idx <= RunTo)
+                                    {
+                                        GSData itm = dump.Data[debug_idx];
+                                        CurrentGIFPacket = itm;
+                                        Step(itm, pointer);
+                                        debug_idx++;
+                                    }
+
+                                    int idxnextReg = dump.Data.FindIndex(debug_idx, a => a.id == GSType.Registers);
+                                    if (idxnextReg != -1)
+                                        Step(dump.Data[idxnextReg], pointer);
+
+                                    TCPMessage Msg = new TCPMessage();
+                                    Msg.MessageType = MessageType.RunToCursor;
+                                    Msg.Parameters.Add(debug_idx - 1);
+                                    Program.Client.Send(Msg);
+
+                                    ExternalEvent.Set();
                                 }
+
+                                GSData g = new GSData();
+                                g.id = GSType.VSync;
+                                Step(g, pointer);
+                                    
+                            }
+                            else
+                            {
+                                GSData itm = dump.Data[gs_idx++];
+                                CurrentGIFPacket = itm;
+                                Step(itm, pointer);
+
+                                if (gs_idx >= dump.Data.Count) gs_idx = 0;
                             }
                         }
 
