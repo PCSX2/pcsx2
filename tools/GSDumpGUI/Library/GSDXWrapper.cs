@@ -315,9 +315,15 @@ namespace GSDumpGUI
                             }
                             else
                             {
-                                GSData itm = dump.Data[gs_idx++];
-                                CurrentGIFPacket = itm;
-                                Step(itm, pointer);
+                                while (gs_idx < dump.Data.Count)
+                                {
+                                    GSData itm = dump.Data[gs_idx++];
+                                    CurrentGIFPacket = itm;
+                                    Step(itm, pointer);
+
+                                    if (gs_idx < dump.Data.Count && dump.Data[gs_idx].id == GSType.VSync)
+                                        break;
+                                }
 
                                 if (gs_idx >= dump.Data.Count) gs_idx = 0;
                             }
