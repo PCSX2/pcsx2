@@ -24,9 +24,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Threading;
 using System.IO;
 using System.Diagnostics;
 using System.Linq;
@@ -92,6 +94,11 @@ namespace GSDumpGUI
         private readonly GsDumps _availableGsDumps;
         private readonly GsDlls _availableGsDlls;
 
+        private List<FileSystemWatcher> dll_watcher;
+        private List<FileSystemWatcher> dump_watcher;
+
+        private ConcurrentQueue<int> watcher_events;
+
         public GSDumpGUI()
         {
             PortableXmlSettingsProvider.ApplyProvider(Settings);
@@ -116,6 +123,47 @@ namespace GSDumpGUI
             Processes = new List<Process>();
 
             NoImage = CreateDefaultImage();
+
+            dll_watcher = new List<FileSystemWatcher>();
+            dump_watcher = new List<FileSystemWatcher>();
+            watcher_events = new ConcurrentQueue<int>();
+
+            Thread wt = new Thread(changes_watchdog_thread);
+            wt.Start();
+        }
+
+        private void changes_watchdog_thread()
+        {
+            while (Program.prog_running)
+            {
+                bool dll_reload = false;
+                bool dump_reload = false;
+
+                int evt;
+                while (watcher_events.TryDequeue(out evt))
+                {
+                    if (evt == 1) dll_reload = true;
+                    else if (evt == 2) dump_reload = true;
+                }
+
+                if (dll_reload) this.Invoke((MethodInvoker)delegate { ReloadGsdxDlls(); });
+                if (dump_reload) this.Invoke((MethodInvoker)delegate { ReloadGsdxDumps(); });
+
+                Thread.Sleep(1000);
+            }
+        }
+
+
+        private void OnDllDirChange(object source, FileSystemEventArgs e)
+        {
+            watcher_events.Enqueue(1);
+            //ReloadGsdxDlls();
+        }
+
+        private void OnDumpDirChange(object source, FileSystemEventArgs e)
+        {
+            watcher_events.Enqueue(2);
+            //ReloadGsdxDumps();
         }
 
         private static void BindListControl<TModel, TElement>(ListControl lb, TModel model, Func<TModel, BindingList<TElement>> collectionAccessor, Expression<Func<TElement, string>> displayTextAccessor, Expression<Func<TModel, int>> selectedIndexAccessor)
@@ -151,6 +199,31 @@ namespace GSDumpGUI
 
             Settings.GSDXDir = gsdxFolder.FullName;
             _internalLogger.Information("Completed GSdx Loading Procedures");
+
+            string[] paths = { "", "\\plugins", "\\dll", "\\dlls" };
+
+            foreach (FileSystemWatcher w in dll_watcher)
+            {
+                w.EnableRaisingEvents = false;
+                w.Dispose();
+            }
+
+            dll_watcher.Clear();
+
+            for (int i = 0; i < 4; i++)
+            {
+                try
+                {
+                    FileSystemWatcher w = new FileSystemWatcher(Settings.GSDXDir + paths[i], "*.dll");
+                    //w.Changed += OnDllDirChange;
+                    w.Created += OnDllDirChange;
+                    w.Deleted += OnDllDirChange;
+                    w.Renamed += OnDllDirChange;
+                    w.EnableRaisingEvents = true;
+                    dll_watcher.Add(w);
+                }
+                catch { }
+            }
         }
 
         private void ReloadGsdxDumps()
@@ -165,6 +238,31 @@ namespace GSDumpGUI
 
             Settings.DumpDir = dumpFolder.FullName;
             _internalLogger.Information("...Completed GSdx Dump Loading Procedures");
+
+            string[] paths = { "", "\\dumps", "\\gsdumps" };
+
+            foreach (FileSystemWatcher w in dump_watcher)
+            {
+                w.EnableRaisingEvents = false;
+                w.Dispose();
+            }
+
+            dump_watcher.Clear();
+
+            for (int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    FileSystemWatcher w = new FileSystemWatcher(Settings.DumpDir + paths[i], "*.gs");
+                    //w.Changed += OnDumpDirChange;
+                    w.Created += OnDumpDirChange;
+                    w.Deleted += OnDumpDirChange;
+                    w.Renamed += OnDumpDirChange;
+                    w.EnableRaisingEvents = true;
+                    dump_watcher.Add(w);
+                }
+                catch { }
+            }
         }
 
         private void GSDumpGUI_Load(object sender, EventArgs e)
