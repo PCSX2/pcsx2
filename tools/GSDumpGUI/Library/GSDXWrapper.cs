@@ -262,7 +262,7 @@ namespace GSDumpGUI
                                 }
                             }
 
-                            if (!Running)
+                            if (!Running || !NativeMethods.IsWindowVisible(hWnd))
                                 break;
 
                             if (DebugMode)
