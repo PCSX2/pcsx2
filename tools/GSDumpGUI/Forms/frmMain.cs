@@ -398,8 +398,8 @@ namespace GSDumpGUI
             psi.FileName = Process.GetCurrentProcess().ProcessName;
             psi.Arguments = "\"" + dllPath + "\"" + " \"" + dumpPath + "\"" + " \"" + Function + "\"" + " " + SelectedRenderer + " " + port;
             Process p = Process.Start(psi);
-            p.OutputDataReceived += new DataReceivedEventHandler(p_OutputDataReceived);
-            p.ErrorDataReceived += new DataReceivedEventHandler(p_OutputDataReceived);
+            p.OutputDataReceived += new DataReceivedEventHandler(p_StdOutDataReceived);
+            p.ErrorDataReceived += new DataReceivedEventHandler(p_StdErrDataReceived);
             p.BeginOutputReadLine();
             p.Exited += new EventHandler(p_Exited);
             Processes.Add(p);
@@ -429,9 +429,14 @@ namespace GSDumpGUI
             Processes.Remove((Process)sender);
         }
 
-        private void p_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        private void p_StdOutDataReceived(object sender, DataReceivedEventArgs e)
         {
             _gsdxLogger.Information(e.Data);
+        }
+
+        private void p_StdErrDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            _gsdxLogger.Error(e.Data);
         }
 
         private void cmdConfigGSDX_Click(object sender, EventArgs e)
