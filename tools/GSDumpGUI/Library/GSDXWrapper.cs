@@ -238,6 +238,9 @@ namespace GSDumpGUI
                         GSsetBaseMem(new IntPtr(pointer));
                         GSfreeze(0, new IntPtr(fr));
 
+                        GSData gsd_vsync = new GSData();
+                        gsd_vsync.id = GSType.VSync;
+
                         int gs_idx = 0;
                         int debug_idx = 0;
                         NativeMessage msg;
@@ -308,10 +311,7 @@ namespace GSDumpGUI
                                     ExternalEvent.Set();
                                 }
 
-                                GSData g = new GSData();
-                                g.id = GSType.VSync;
-                                Step(g, pointer);
-                                    
+                                Step(gsd_vsync, pointer);
                             }
                             else
                             {
