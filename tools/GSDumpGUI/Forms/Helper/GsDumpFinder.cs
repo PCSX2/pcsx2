@@ -53,7 +53,7 @@ namespace GSDumpGUI.Forms.Helper
             foreach (var dump in dumps)
             {
                 int crc;
-                using (var fileStream = File.Open(dump.FullName, FileMode.Open))
+                using (var fileStream = File.OpenRead(dump.FullName))
                 {
                     using (var br = new BinaryReader(fileStream))
                     {
