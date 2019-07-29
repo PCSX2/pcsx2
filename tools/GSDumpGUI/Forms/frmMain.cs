@@ -393,12 +393,13 @@ namespace GSDumpGUI
             ProcessStartInfo psi = new ProcessStartInfo();
             psi.UseShellExecute = false;
             psi.RedirectStandardOutput = true;
-            psi.RedirectStandardError = false;
+            psi.RedirectStandardError = true;
             psi.CreateNoWindow = true;
             psi.FileName = Process.GetCurrentProcess().ProcessName;
             psi.Arguments = "\"" + dllPath + "\"" + " \"" + dumpPath + "\"" + " \"" + Function + "\"" + " " + SelectedRenderer + " " + port;
             Process p = Process.Start(psi);
             p.OutputDataReceived += new DataReceivedEventHandler(p_OutputDataReceived);
+            p.ErrorDataReceived += new DataReceivedEventHandler(p_OutputDataReceived);
             p.BeginOutputReadLine();
             p.Exited += new EventHandler(p_Exited);
             Processes.Add(p);
