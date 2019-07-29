@@ -43,17 +43,19 @@ namespace GSDumpGUI
         static public List<TCPLibrary.MessageBased.Core.BaseMessageClientS> Clients;
 
         static public TCPLibrary.MessageBased.Core.BaseMessageClient Client;
-        static private Boolean ChangeIcon;
         static private GSDump dump;
         static private GSDXWrapper wrap;
 
         static private TreeNode CurrentNode;
+        static public IntPtr hMainIcon;
 
         [STAThread]
         static void Main(String[] args)
         {
             if (args.Length == 5)
             {
+                hMainIcon = Resources.AppIcon.Handle;
+
                 // do this first, else racy mess ;)
                 wrap = new GSDXWrapper();
                 var port = Convert.ToInt32(args[4]);
@@ -68,29 +70,6 @@ namespace GSDumpGUI
                 {
                     Client = null;
                 }
-
-                Thread thd = new Thread(new ThreadStart(delegate
-                {
-                    while (true)
-                    {
-                        IntPtr pt = Process.GetCurrentProcess().MainWindowHandle;
-                        if (ChangeIcon)
-                        {
-                            if (pt.ToInt64() != 0)
-                            {
-                                NativeMethods.SetClassLong(pt, -14, Resources.AppIcon.Handle.ToInt64());
-                                ChangeIcon = false;
-                            }
-                        }
-
-                        Int32 tmp = NativeMethods.GetAsyncKeyState(0x1b) & 0xf;
-                        if (tmp != 0)
-                            Process.GetCurrentProcess().Kill();
-                        Thread.Sleep(16);
-                    }
-                }));
-                thd.IsBackground = true;
-                thd.Start();
 
                 // Retrieve parameters
                 String DLLPath = args[0];
@@ -111,7 +90,6 @@ namespace GSDumpGUI
                     }
 
                     wrap.Run(dump, Renderer);
-                    ChangeIcon = true;
                 }
                 else
                     wrap.GSConfig();
