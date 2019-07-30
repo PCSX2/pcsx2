@@ -401,6 +401,7 @@ namespace GSDumpGUI
             p.OutputDataReceived += new DataReceivedEventHandler(p_StdOutDataReceived);
             p.ErrorDataReceived += new DataReceivedEventHandler(p_StdErrDataReceived);
             p.BeginOutputReadLine();
+            p.BeginErrorReadLine();
             p.Exited += new EventHandler(p_Exited);
             Processes.Add(p);
         }
