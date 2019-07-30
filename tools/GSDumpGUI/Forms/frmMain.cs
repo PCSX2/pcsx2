@@ -94,12 +94,12 @@ namespace GSDumpGUI
         private readonly GsDumps _availableGsDumps;
         private readonly GsDlls _availableGsDlls;
 
-        private List<FileSystemWatcher> dll_watcher;
-        private List<FileSystemWatcher> dump_watcher;
+        private List<FileSystemWatcher> _dllWatcher;
+        private List<FileSystemWatcher> _dumpWatcher;
 
-        private ConcurrentQueue<int> watcher_events;
+        private ConcurrentQueue<int> _watcherEvents;
 
-        private string gsdx_path_old, dump_path_old;
+        private string _gsdxPathOld, _dumpPathOld;
 
         public GSDumpGUI()
         {
@@ -116,6 +116,12 @@ namespace GSDumpGUI
 
             _availableGsDumps.OnIndexUpdatedEvent += UpdatePreviewImage;
 
+            if (String.IsNullOrEmpty(Settings.GSDXDir))
+                Settings.GSDXDir = AppDomain.CurrentDomain.BaseDirectory;
+
+            if (String.IsNullOrEmpty(Settings.DumpDir))
+                Settings.DumpDir = AppDomain.CurrentDomain.BaseDirectory;
+
             txtGSDXDirectory.Text = Settings.GSDXDir;
             txtDumpsDirectory.Text = Settings.DumpDir;
 
@@ -126,46 +132,43 @@ namespace GSDumpGUI
 
             NoImage = CreateDefaultImage();
 
-            dll_watcher = new List<FileSystemWatcher>();
-            dump_watcher = new List<FileSystemWatcher>();
-            watcher_events = new ConcurrentQueue<int>();
+            _dllWatcher = new List<FileSystemWatcher>();
+            _dumpWatcher = new List<FileSystemWatcher>();
+            _watcherEvents = new ConcurrentQueue<int>();
 
-            Thread wt = new Thread(changes_watchdog_thread);
-            wt.Start();
+            Thread watcherThread = new Thread(ChangesWatchdogThread);
+            watcherThread.Start();
         }
 
-        private void changes_watchdog_thread()
+        private void ChangesWatchdogThread()
         {
-            while (Program.prog_running)
+            while (Program.isProgRunning)
             {
-                bool dll_reload = false;
-                bool dump_reload = false;
+                bool dllReload = false;
+                bool dumpReload = false;
 
                 int evt;
-                while (watcher_events.TryDequeue(out evt))
+                while (_watcherEvents.TryDequeue(out evt))
                 {
-                    if (evt == 1) dll_reload = true;
-                    else if (evt == 2) dump_reload = true;
+                    if (evt == 1) dllReload = true;
+                    else if (evt == 2) dumpReload = true;
                 }
 
-                if (dll_reload) this.Invoke((MethodInvoker)delegate { ReloadGsdxDlls(); });
-                if (dump_reload) this.Invoke((MethodInvoker)delegate { ReloadGsdxDumps(); });
+                if (dllReload) this.Invoke((MethodInvoker)delegate { ReloadGsdxDlls(); });
+                if (dumpReload) this.Invoke((MethodInvoker)delegate { ReloadGsdxDumps(); });
 
                 Thread.Sleep(1000);
             }
         }
 
-
         private void OnDllDirChange(object source, FileSystemEventArgs e)
         {
-            watcher_events.Enqueue(1);
-            //ReloadGsdxDlls();
+            _watcherEvents.Enqueue(1);
         }
 
         private void OnDumpDirChange(object source, FileSystemEventArgs e)
         {
-            watcher_events.Enqueue(2);
-            //ReloadGsdxDumps();
+            _watcherEvents.Enqueue(2);
         }
 
         private static void BindListControl<TModel, TElement>(ListControl lb, TModel model, Func<TModel, BindingList<TElement>> collectionAccessor, Expression<Func<TElement, string>> displayTextAccessor, Expression<Func<TModel, int>> selectedIndexAccessor)
@@ -204,13 +207,13 @@ namespace GSDumpGUI
 
             string[] paths = { "", "\\plugins", "\\dll", "\\dlls" };
 
-            foreach (FileSystemWatcher w in dll_watcher)
+            foreach (FileSystemWatcher w in _dllWatcher)
             {
                 w.EnableRaisingEvents = false;
                 w.Dispose();
             }
 
-            dll_watcher.Clear();
+            _dllWatcher.Clear();
 
             for (int i = 0; i < 4; i++)
             {
@@ -222,7 +225,7 @@ namespace GSDumpGUI
                     w.Deleted += OnDllDirChange;
                     w.Renamed += OnDllDirChange;
                     w.EnableRaisingEvents = true;
-                    dll_watcher.Add(w);
+                    _dllWatcher.Add(w);
                 }
                 catch { }
             }
@@ -243,13 +246,13 @@ namespace GSDumpGUI
 
             string[] paths = { "", "\\dumps", "\\gsdumps" };
 
-            foreach (FileSystemWatcher w in dump_watcher)
+            foreach (FileSystemWatcher w in _dumpWatcher)
             {
                 w.EnableRaisingEvents = false;
                 w.Dispose();
             }
 
-            dump_watcher.Clear();
+            _dumpWatcher.Clear();
 
             for (int i = 0; i < 3; i++)
             {
@@ -261,7 +264,7 @@ namespace GSDumpGUI
                     w.Deleted += OnDumpDirChange;
                     w.Renamed += OnDumpDirChange;
                     w.EnableRaisingEvents = true;
-                    dump_watcher.Add(w);
+                    _dumpWatcher.Add(w);
                 }
                 catch { }
             }
@@ -291,6 +294,7 @@ namespace GSDumpGUI
                 string newpath = Path.GetDirectoryName(ofd.FileName);
                 if (!Settings.GSDXDir.ToLower().Equals(newpath.ToLower()))
                 {
+                    txtGSDXDirectory.Text = newpath;
                     Settings.GSDXDir = newpath;
                     Settings.Save();
                     ReloadGsdxDlls();
@@ -313,6 +317,7 @@ namespace GSDumpGUI
                 string newpath = Path.GetDirectoryName(ofd.FileName);
                 if (!Settings.DumpDir.ToLower().Equals(newpath.ToLower()))
                 {
+                    txtDumpsDirectory.Text = newpath;
                     Settings.DumpDir = newpath;
                     Settings.Save();
                     ReloadGsdxDumps();
@@ -506,12 +511,12 @@ namespace GSDumpGUI
 
         private void txtGSDXDirectory_Enter(object sender, EventArgs e)
         {
-            gsdx_path_old = txtGSDXDirectory.Text;
+            _gsdxPathOld = txtGSDXDirectory.Text;
         }
 
         private void txtDumpsDirectory_Enter(object sender, EventArgs e)
         {
-            dump_path_old = txtDumpsDirectory.Text;
+            _dumpPathOld = txtDumpsDirectory.Text;
         }
 
         private void txtGSDXDirectory_Leave(object sender, EventArgs e)
@@ -519,7 +524,7 @@ namespace GSDumpGUI
             string newpath = txtGSDXDirectory.Text;
 
             if (!String.IsNullOrEmpty(newpath) &&
-                !gsdx_path_old.ToLower().Equals(newpath.ToLower()) &&
+                !_gsdxPathOld.ToLower().Equals(newpath.ToLower()) &&
                 Directory.Exists(newpath))
             {
                 Settings.GSDXDir = newpath;
@@ -534,7 +539,7 @@ namespace GSDumpGUI
             string newpath = txtDumpsDirectory.Text;
 
             if (!String.IsNullOrEmpty(newpath) &&
-                !dump_path_old.ToLower().Equals(newpath.ToLower()) &&
+                !_dumpPathOld.ToLower().Equals(newpath.ToLower()) &&
                 Directory.Exists(newpath))
             {
                 Settings.DumpDir = newpath;
