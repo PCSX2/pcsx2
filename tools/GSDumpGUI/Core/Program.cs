@@ -48,7 +48,7 @@ namespace GSDumpGUI
 
         static private TreeNode CurrentNode;
         static public IntPtr hMainIcon;
-        static public bool prog_running;
+        static public bool isProgRunning;
 
         [STAThread]
         static void Main(String[] args)
@@ -118,14 +118,14 @@ namespace GSDumpGUI
                 Server.OnClientAfterConnect += new TCPLibrary.Core.Server.ConnectedHandler(Server_OnClientAfterConnect);
                 Server.OnClientAfterDisconnected += new TCPLibrary.Core.Server.DisconnectedHandler(Server_OnClientAfterDisconnected);
                 Server.Enabled = true;
-                prog_running = true;
+                isProgRunning = true;
 
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 frmMain = new GSDumpGUI();
                 Application.Run(frmMain);
 
-                prog_running = false;
+                isProgRunning = false;
                 Server.Enabled = false;
             }
         }
