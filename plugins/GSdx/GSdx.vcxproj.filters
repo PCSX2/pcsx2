@@ -587,9 +587,6 @@
     <None Include="res\glsl\tfx_vgs.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="res\logo_ogl.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GSdx.rc">
