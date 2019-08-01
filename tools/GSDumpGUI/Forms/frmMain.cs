@@ -116,10 +116,10 @@ namespace GSDumpGUI
 
             _availableGsDumps.OnIndexUpdatedEvent += UpdatePreviewImage;
 
-            if (String.IsNullOrEmpty(Settings.GSDXDir))
+            if (String.IsNullOrEmpty(Settings.GSDXDir) || !Directory.Exists(Settings.GSDXDir))
                 Settings.GSDXDir = AppDomain.CurrentDomain.BaseDirectory;
 
-            if (String.IsNullOrEmpty(Settings.DumpDir))
+            if (String.IsNullOrEmpty(Settings.DumpDir) || !Directory.Exists(Settings.DumpDir))
                 Settings.DumpDir = AppDomain.CurrentDomain.BaseDirectory;
 
             txtGSDXDirectory.Text = Settings.GSDXDir;
