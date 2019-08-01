@@ -40,7 +40,7 @@ track tracks[100];
 int curDiskType;
 int curTrayStatus;
 
-int csector;
+static u32 csector;
 int cmode;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -252,7 +252,9 @@ EXPORT s32 CALLBACK CDVDreadTrack(u32 lsn, int mode)
         return ret;
     }
 
-    return lsn < src->GetSectorCount() ? cdvdRequestSector(lsn, mode) : -1;
+    cdvdRequestSector(lsn, mode);
+
+    return 0;
 }
 
 // return can be NULL (for async modes)
@@ -269,6 +271,13 @@ EXPORT u8 *CALLBACK CDVDgetBuffer()
 // return can be NULL (for async modes)
 EXPORT int CALLBACK CDVDgetBuffer2(u8 *dest)
 {
+    // Do nothing for out of bounds disc sector reads. It prevents some games
+    // from hanging (All-Star Baseball 2005, Hello Kitty: Roller Rescue,
+    // Hot Wheels: Beat That! (NTSC), Ratchet & Clank 3 (PAL),
+    // Test Drive: Eve of Destruction, etc.).
+    if (csector >= src->GetSectorCount())
+        return 0;
+
     int csize = 2352;
     switch (cmode) {
         case CDVD_MODE_2048:

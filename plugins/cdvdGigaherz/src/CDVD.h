@@ -113,7 +113,7 @@ extern void (*newDiscCB)();
 
 bool cdvdStartThread();
 void cdvdStopThread();
-s32 cdvdRequestSector(u32 sector, s32 mode);
+void cdvdRequestSector(u32 sector, s32 mode);
 u8 *cdvdGetSector(u32 sector, s32 mode);
 s32 cdvdDirectReadSector(u32 sector, s32 mode, u8 *buffer);
 s32 cdvdGetMediaType();
