@@ -35,10 +35,10 @@ static const char* nameFromType(int type)
 
 int InputIsoFile::ReadSync(u8* dst, uint lsn)
 {
-	if (lsn > m_blocks)
+	if (lsn >= m_blocks)
 	{
 		FastFormatUnicode msg;
-		msg.Write("isoFile error: Block index is past the end of file! (%u > %u).", lsn, m_blocks);
+		msg.Write("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
 
 		pxAssertDev(false, msg);
 		Console.Error(msg.c_str());
@@ -50,10 +50,10 @@ int InputIsoFile::ReadSync(u8* dst, uint lsn)
 
 void InputIsoFile::BeginRead2(uint lsn)
 {
-	if (lsn > m_blocks)
+	if (lsn >= m_blocks)
 	{
 		FastFormatUnicode msg;
-		msg.Write("isoFile error: Block index is past the end of file! (%u > %u).", lsn, m_blocks);
+		msg.Write("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
 
 		pxAssertDev(false, msg);
 		Console.Error(msg.c_str());
