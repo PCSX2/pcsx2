@@ -90,7 +90,7 @@ namespace GSDumpGUI
 
         public static UIntPtr SetClassLong(IntPtr hWnd, Int32 index, IntPtr dwNewLong)
         {
-            if (IntPtr.Size > 4) return SetClassLong64(hWnd, index, dwNewLong);
+            if (Environment.Is64BitProcess) return SetClassLong64(hWnd, index, dwNewLong);
             else return new UIntPtr(SetClassLong32(hWnd, index, dwNewLong.ToInt32()));
         }
     }

@@ -116,7 +116,7 @@ namespace GSDumpGUI
 
             _availableGsDumps.OnIndexUpdatedEvent += UpdatePreviewImage;
 
-            this.Text += " " + (IntPtr.Size * 8).ToString() + "bits";
+            this.Text += Environment.Is64BitProcess ? " 64bits" : " 32bits";
 
             if (String.IsNullOrEmpty(Settings.GSDXDir) || !Directory.Exists(Settings.GSDXDir))
                 Settings.GSDXDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -217,7 +217,7 @@ namespace GSDumpGUI
 
             _dllWatcher.Clear();
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < paths.Length; i++)
             {
                 try
                 {
@@ -256,7 +256,7 @@ namespace GSDumpGUI
 
             _dumpWatcher.Clear();
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < paths.Length; i++)
             {
                 try
                 {
@@ -294,7 +294,7 @@ namespace GSDumpGUI
             if(ofd.ShowDialog() == DialogResult.OK)
             {
                 string newpath = Path.GetDirectoryName(ofd.FileName);
-                if (!Settings.GSDXDir.ToLower().Equals(newpath.ToLower()))
+                if (!Settings.GSDXDir.Equals(newpath, StringComparison.OrdinalIgnoreCase))
                 {
                     txtGSDXDirectory.Text = newpath;
                     Settings.GSDXDir = newpath;
@@ -317,7 +317,7 @@ namespace GSDumpGUI
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 string newpath = Path.GetDirectoryName(ofd.FileName);
-                if (!Settings.DumpDir.ToLower().Equals(newpath.ToLower()))
+                if (!Settings.DumpDir.Equals(newpath, StringComparison.OrdinalIgnoreCase))
                 {
                     txtDumpsDirectory.Text = newpath;
                     Settings.DumpDir = newpath;
@@ -524,46 +524,50 @@ namespace GSDumpGUI
         private void txtGSDXDirectory_Leave(object sender, EventArgs e)
         {
             string newpath = txtGSDXDirectory.Text;
-            if (!_gsdxPathOld.ToLower().Equals(newpath.ToLower()))
+            if (!_gsdxPathOld.Equals(newpath, StringComparison.OrdinalIgnoreCase))
                 txtGSDXDirectory.Text = _gsdxPathOld;
         }
 
         private void txtDumpsDirectory_Leave(object sender, EventArgs e)
         {
             string newpath = txtDumpsDirectory.Text;
-            if(!_dumpPathOld.ToLower().Equals(newpath.ToLower()))
+            if(!_dumpPathOld.Equals(newpath, StringComparison.OrdinalIgnoreCase))
                 txtDumpsDirectory.Text = _dumpPathOld;
         }
 
         private void txtGSDXDirectory_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode != Keys.Return) return;
-
-            string newpath = txtGSDXDirectory.Text;
-            if (!String.IsNullOrEmpty(newpath) &&
-                !_gsdxPathOld.ToLower().Equals(newpath.ToLower()) &&
-                Directory.Exists(newpath))
+            if (e.KeyCode == Keys.Return)
             {
-                Settings.GSDXDir = newpath;
-                Settings.Save();
-                ReloadGsdxDlls();
-                _availableGsDlls.Selected = _availableGsDlls.Files.FirstOrDefault();
+                string newpath = txtGSDXDirectory.Text;
+                if (!String.IsNullOrEmpty(newpath) &&
+                    !_gsdxPathOld.Equals(newpath, StringComparison.OrdinalIgnoreCase) &&
+                    Directory.Exists(newpath))
+                {
+                    _gsdxPathOld = newpath;
+                    Settings.GSDXDir = newpath;
+                    Settings.Save();
+                    ReloadGsdxDlls();
+                    _availableGsDlls.Selected = _availableGsDlls.Files.FirstOrDefault();
+                }
             }
         }
 
         private void txtDumpsDirectory_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode != Keys.Return) return;
-
-            string newpath = txtDumpsDirectory.Text;
-            if (!String.IsNullOrEmpty(newpath) &&
-                !_dumpPathOld.ToLower().Equals(newpath.ToLower()) &&
-                Directory.Exists(newpath))
+            if (e.KeyCode == Keys.Return)
             {
-                Settings.DumpDir = newpath;
-                Settings.Save();
-                ReloadGsdxDumps();
-                _availableGsDumps.Selected = _availableGsDumps.Files.FirstOrDefault();
+                string newpath = txtDumpsDirectory.Text;
+                if (!String.IsNullOrEmpty(newpath) &&
+                    !_dumpPathOld.Equals(newpath, StringComparison.OrdinalIgnoreCase) &&
+                    Directory.Exists(newpath))
+                {
+                    _dumpPathOld = newpath;
+                    Settings.DumpDir = newpath;
+                    Settings.Save();
+                    ReloadGsdxDumps();
+                    _availableGsDumps.Selected = _availableGsDumps.Files.FirstOrDefault();
+                }
             }
         }
 

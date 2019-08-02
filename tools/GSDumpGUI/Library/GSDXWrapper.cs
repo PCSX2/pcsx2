@@ -31,22 +31,22 @@ using System.Threading;
 
 namespace GSDumpGUI
 {
-    public delegate void GSgifTransfer(IntPtr data, int size);
-    public delegate void GSgifTransfer1(IntPtr data, int size);
-    public delegate void GSgifTransfer2(IntPtr data, int size);
-    public delegate void GSgifTransfer3(IntPtr data, int size);
-    public delegate void GSVSync(byte field);
-    public delegate void GSreset();
-    public delegate void GSreadFIFO2(IntPtr data, int size);
-    public delegate void GSsetGameCRC(int crc, int options);
-    public delegate  int GSfreeze(int mode, IntPtr data);
-    public delegate  int GSopen(IntPtr hwnd, String Title, int renderer);
-    public delegate void GSclose();
-    public delegate void GSshutdown();
-    public delegate void GSConfigure();
-    public delegate void GSsetBaseMem(IntPtr data);
+    public delegate   void GSgifTransfer(IntPtr data, int size);
+    public delegate   void GSgifTransfer1(IntPtr data, int size);
+    public delegate   void GSgifTransfer2(IntPtr data, int size);
+    public delegate   void GSgifTransfer3(IntPtr data, int size);
+    public delegate   void GSVSync(byte field);
+    public delegate   void GSreset();
+    public delegate   void GSreadFIFO2(IntPtr data, int size);
+    public delegate   void GSsetGameCRC(int crc, int options);
+    public delegate    int GSfreeze(int mode, IntPtr data);
+    public delegate    int GSopen(IntPtr hwnd, String Title, int renderer);
+    public delegate   void GSclose();
+    public delegate   void GSshutdown();
+    public delegate   void GSConfigure();
+    public delegate   void GSsetBaseMem(IntPtr data);
     public delegate IntPtr PSEgetLibName();
-    public delegate void GSinit();
+    public delegate   void GSinit();
     public delegate UInt32 GSmakeSnapshot(string path);
 
     public class InvalidGSPlugin : Exception
@@ -105,7 +105,6 @@ namespace GSDumpGUI
                 if (dir == null) return;
 
                 Directory.SetCurrentDirectory(dir);
-                System.Diagnostics.Trace.WriteLine("LoadLibrary: " + DLL);
                 IntPtr hmod = NativeMethods.LoadLibrary(DLL);
                 if (hmod != IntPtr.Zero)
                 {
@@ -174,7 +173,6 @@ namespace GSDumpGUI
 
         public void Unload()
         {
-            System.Diagnostics.Trace.WriteLine("FreeLibrary: " + DLL);
             NativeMethods.FreeLibrary(DLLAddr);
             Loaded = false;
         }
@@ -218,7 +216,7 @@ namespace GSDumpGUI
                 {
                     byte[] GSFreez;
 
-                    if (IntPtr.Size > 4)
+                    if (Environment.Is64BitProcess)
                     {
                         GSFreez = new byte[16];
                         Array.Copy(BitConverter.GetBytes((Int64)dump.StateData.Length), 0, GSFreez, 0, 8);
@@ -281,15 +279,18 @@ namespace GSDumpGUI
                                     switch (Mess.MessageType)
                                     {
                                         case MessageType.Step:
-                                            if (debug_idx >= dump.Data.Count) debug_idx = 0;
+                                            if (debug_idx >= dump.Data.Count)
+                                                debug_idx = 0;
                                             RunTo = debug_idx;
                                             break;
                                         case MessageType.RunToCursor:
                                             RunTo = (int)Mess.Parameters[0];
-                                            if(debug_idx > RunTo) debug_idx = 0;
+                                            if(debug_idx > RunTo)
+                                                debug_idx = 0;
                                             break;
                                         case MessageType.RunToNextVSync:
-                                            if (debug_idx >= dump.Data.Count) debug_idx = 1;
+                                            if (debug_idx >= dump.Data.Count)
+                                                debug_idx = 1;
                                             RunTo = dump.Data.FindIndex(debug_idx, a => a.id == GSType.VSync);
                                             break;
                                         default:

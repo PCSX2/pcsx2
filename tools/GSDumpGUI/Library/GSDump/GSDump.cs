@@ -101,8 +101,8 @@ namespace GSDumpGUI
             dmp.CRC = br.ReadInt32();
 
             Int32 ss = br.ReadInt32();
-            dmp.StateData = br.ReadBytes(ss);         
-        
+            dmp.StateData = br.ReadBytes(ss); 
+
             dmp.Registers = br.ReadBytes(8192);
 
             while (br.PeekChar() != -1)
