@@ -53,6 +53,7 @@
     <Link>
       <AdditionalDependencies>Setupapi.lib;Winmm.lib;Comdlg32.lib;dinput8.lib;dxguid.lib;comctl32.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\LilyPad.def</ModuleDefinitionFile>
+      <DelayLoadDLLs>dinput8.dll;hid.dll;setupapi.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
       <TargetMachine Condition="'$(Platform)'=='Win32'">MachineX86</TargetMachine>
       <TargetMachine Condition="'$(Platform)'=='x64'">MachineX64</TargetMachine>
     </Link>

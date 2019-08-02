@@ -330,17 +330,19 @@ void UpdateEnabledDevices(int updateList = 0)
 #ifdef _MSC_VER
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, void *lpvReserved)
 {
-    hInst = hInstance;
     if (fdwReason == DLL_PROCESS_ATTACH) {
+        hInst = hInstance;
         InitializeCriticalSection(&updateLock);
 
         DisableThreadLibraryCalls(hInstance);
     } else if (fdwReason == DLL_PROCESS_DETACH) {
-        while (openCount)
-            PADclose();
-        PADshutdown();
-        UninitLibUsb();
-        DeleteCriticalSection(&updateLock);
+        if (lpvReserved == nullptr) {
+            while (openCount)
+                PADclose();
+            PADshutdown();
+            UninitLibUsb();
+            DeleteCriticalSection(&updateLock);
+        }
     }
     return 1;
 }
@@ -1183,7 +1185,7 @@ u8 CALLBACK PADpoll(u8 value)
                     return 0xF3;
                 }
                 // Fall through
-                
+
             // READ_DATA_AND_VIBRATE
             case 0x42:
                 query.response[2] = 0x5A;
@@ -1598,7 +1600,7 @@ s32 CALLBACK PADfreeze(int mode, freezeData *data)
             }
 
             if (pdata.slot[port] < 4)
-            slots[port] = pdata.slot[port];
+                slots[port] = pdata.slot[port];
         }
     } else if (mode == FREEZE_SAVE) {
         if (data->size != sizeof(PadPluginFreezeData))
