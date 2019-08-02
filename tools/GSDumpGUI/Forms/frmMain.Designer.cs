@@ -97,6 +97,7 @@
             this.txtGSDXDirectory.TabStop = false;
             this.txtGSDXDirectory.Enter += new System.EventHandler(this.txtGSDXDirectory_Enter);
             this.txtGSDXDirectory.Leave += new System.EventHandler(this.txtGSDXDirectory_Leave);
+            this.txtGSDXDirectory.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtGSDXDirectory_KeyDown);
             // 
             // lblDirectory
             // 
@@ -147,6 +148,7 @@
             this.txtDumpsDirectory.TabStop = false;
             this.txtDumpsDirectory.Enter += new System.EventHandler(this.txtDumpsDirectory_Enter);
             this.txtDumpsDirectory.Leave += new System.EventHandler(this.txtDumpsDirectory_Leave);
+            this.txtDumpsDirectory.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtDumpsDirectory_KeyDown);
             // 
             // lstGSDX
             // 
