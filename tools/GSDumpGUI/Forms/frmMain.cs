@@ -494,7 +494,7 @@ namespace GSDumpGUI
 
         private void GSDumpGUI_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Return)
+            if (e.KeyCode == Keys.Return && !txtGSDXDirectory.Focused && !txtDumpsDirectory.Focused)
                 cmdRun_Click(sender, e);
 
             if (e.KeyCode == Keys.F1)
@@ -524,7 +524,22 @@ namespace GSDumpGUI
         private void txtGSDXDirectory_Leave(object sender, EventArgs e)
         {
             string newpath = txtGSDXDirectory.Text;
+            if (!_gsdxPathOld.ToLower().Equals(newpath.ToLower()))
+                txtGSDXDirectory.Text = _gsdxPathOld;
+        }
 
+        private void txtDumpsDirectory_Leave(object sender, EventArgs e)
+        {
+            string newpath = txtDumpsDirectory.Text;
+            if(!_dumpPathOld.ToLower().Equals(newpath.ToLower()))
+                txtDumpsDirectory.Text = _dumpPathOld;
+        }
+
+        private void txtGSDXDirectory_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Return) return;
+
+            string newpath = txtGSDXDirectory.Text;
             if (!String.IsNullOrEmpty(newpath) &&
                 !_gsdxPathOld.ToLower().Equals(newpath.ToLower()) &&
                 Directory.Exists(newpath))
@@ -536,10 +551,11 @@ namespace GSDumpGUI
             }
         }
 
-        private void txtDumpsDirectory_Leave(object sender, EventArgs e)
+        private void txtDumpsDirectory_KeyDown(object sender, KeyEventArgs e)
         {
-            string newpath = txtDumpsDirectory.Text;
+            if (e.KeyCode != Keys.Return) return;
 
+            string newpath = txtDumpsDirectory.Text;
             if (!String.IsNullOrEmpty(newpath) &&
                 !_dumpPathOld.ToLower().Equals(newpath.ToLower()) &&
                 Directory.Exists(newpath))
