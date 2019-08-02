@@ -212,13 +212,24 @@ namespace GSDumpGUI
 
                 GSsetGameCRC(dump.CRC, 0);
 
-                NativeMethods.SetClassLong(hWnd,/*GCL_HICON*/ -14, (uint)Program.hMainIcon.ToInt32());
+                NativeMethods.SetClassLong(hWnd,/*GCL_HICON*/ -14, Program.hMainIcon);
 
                 fixed (byte* freeze = dump.StateData)
                 {
-                    byte[] GSFreez = new byte[8];
-                    Array.Copy(BitConverter.GetBytes(dump.StateData.Length), 0, GSFreez, 0, 4);
-                    Array.Copy(BitConverter.GetBytes(new IntPtr(freeze).ToInt32()), 0, GSFreez, 4, 4);
+                    byte[] GSFreez;
+
+                    if (IntPtr.Size > 4)
+                    {
+                        GSFreez = new byte[16];
+                        Array.Copy(BitConverter.GetBytes((Int64)dump.StateData.Length), 0, GSFreez, 0, 8);
+                        Array.Copy(BitConverter.GetBytes(new IntPtr(freeze).ToInt64()), 0, GSFreez, 8, 8);
+                    }
+                    else
+                    {
+                        GSFreez = new byte[8];
+                        Array.Copy(BitConverter.GetBytes((Int32)dump.StateData.Length), 0, GSFreez, 0, 4);
+                        Array.Copy(BitConverter.GetBytes(new IntPtr(freeze).ToInt32()), 0, GSFreez, 4, 4);
+                    }
 
                     fixed (byte* fr = GSFreez)
                     {
@@ -226,7 +237,7 @@ namespace GSDumpGUI
                         if (ris == -1)
                         {
                             DumpTooOld = true;
-                            return;
+                            Running = false;
                         }
                         GSVSync(1);
 
