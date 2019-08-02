@@ -116,6 +116,8 @@ namespace GSDumpGUI
 
             _availableGsDumps.OnIndexUpdatedEvent += UpdatePreviewImage;
 
+            this.Text += " " + (IntPtr.Size * 8).ToString() + "bits";
+
             if (String.IsNullOrEmpty(Settings.GSDXDir) || !Directory.Exists(Settings.GSDXDir))
                 Settings.GSDXDir = AppDomain.CurrentDomain.BaseDirectory;
 
