@@ -33,55 +33,66 @@ namespace GSDumpGUI
     static public class NativeMethods
     {
         [SuppressUnmanagedCodeSecurityAttribute]
-        [DllImport("kernel32")]
+        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
         public extern static IntPtr LoadLibrary(string lpLibFileName);
 
         [SuppressUnmanagedCodeSecurityAttribute]
-        [DllImport("kernel32")]
+        [DllImport("kernel32", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public extern static bool FreeLibrary(IntPtr hLibModule);
 
         [SuppressUnmanagedCodeSecurityAttribute]
-        [DllImport("kernel32", CharSet = CharSet.Ansi)]
+        [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
         public extern static IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
 
         [SuppressUnmanagedCodeSecurityAttribute]
-        [DllImport("kernel32", CharSet = CharSet.Ansi)]
-        public extern static int SetErrorMode(int Value);
+        [DllImport("kernel32")]
+        public extern static UInt32 SetErrorMode(UInt32 uMode);
 
         [SuppressUnmanagedCodeSecurityAttribute]
-        [DllImport("kernel32", CharSet = CharSet.Ansi)]
-        public extern static int GetLastError();
+        [DllImport("kernel32")]
+        public extern static UInt32 GetLastError();
 
         [SuppressUnmanagedCodeSecurityAttribute]
-        [DllImport("kernel32", CharSet = CharSet.Ansi)]
-        public extern static int WritePrivateProfileString(string lpAppName, string lpKeyName, string lpString, string lpFileName);
-
-        [SuppressUnmanagedCodeSecurityAttribute]
-        [DllImport("user32", CharSet = CharSet.Ansi)]
-        public extern static short GetAsyncKeyState(int key);
-
-        [SuppressUnmanagedCodeSecurityAttribute]
-        [DllImport("user32", CharSet = CharSet.Ansi)]
-        public extern static int SetClassLong(IntPtr HWND, int index, uint newlong);
-
-        [SuppressUnmanagedCodeSecurityAttribute]
-        [DllImport("user32", CharSet = CharSet.Ansi)]
-        public extern static bool IsWindowVisible(IntPtr HWND);
-
-        [SuppressUnmanagedCodeSecurityAttribute]
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+        [DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool PeekMessage(out NativeMessage message, IntPtr hwnd, uint messageFilterMin, uint messageFilterMax, uint flags);
+        public extern static bool WritePrivateProfileString(string lpAppName, string lpKeyName, string lpString, string lpFileName);
 
         [SuppressUnmanagedCodeSecurityAttribute]
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool TranslateMessage(ref NativeMessage message);
+        [DllImport("user32")]
+        public extern static UInt16 GetAsyncKeyState(Int32 vKey);
 
         [SuppressUnmanagedCodeSecurityAttribute]
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+        [DllImport("user32", CharSet = CharSet.Auto, EntryPoint = "SetClassLong")]
+        public extern static UInt32 SetClassLong32(IntPtr hWnd, Int32 index, Int32 dwNewLong);
+
+        [SuppressUnmanagedCodeSecurityAttribute]
+        [DllImport("user32", CharSet = CharSet.Auto, EntryPoint = "SetClassLongPtr")]
+        public extern static UIntPtr SetClassLong64(IntPtr hWnd, Int32 index, IntPtr dwNewLong);
+
+        [SuppressUnmanagedCodeSecurityAttribute]
+        [DllImport("user32")]
+        public extern static bool IsWindowVisible(IntPtr hWnd);
+
+        [SuppressUnmanagedCodeSecurityAttribute]
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool DispatchMessage(ref NativeMessage message);
+        public static extern bool PeekMessage(out NativeMessage lpMsg, IntPtr hWnd, UInt32 wMsgFilterMin, UInt32 wMsgFilterMax, UInt32 wRemoveMsg);
+
+        [SuppressUnmanagedCodeSecurityAttribute]
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool TranslateMessage(ref NativeMessage lpMsg);
+
+        [SuppressUnmanagedCodeSecurityAttribute]
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern UInt32 DispatchMessage(ref NativeMessage lpMsg);
+
+        public static UIntPtr SetClassLong(IntPtr hWnd, Int32 index, IntPtr dwNewLong)
+        {
+            if (IntPtr.Size > 4) return SetClassLong64(hWnd, index, dwNewLong);
+            else return new UIntPtr(SetClassLong32(hWnd, index, dwNewLong.ToInt32()));
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -94,5 +105,4 @@ namespace GSDumpGUI
         public uint time;
         public Point p;
     }
-
 }
