@@ -22,13 +22,11 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Threading;
 using System.IO;
 using System.Diagnostics;
 using System.Linq;
@@ -97,7 +95,9 @@ namespace GSDumpGUI
         private List<FileSystemWatcher> _dllWatcher;
         private List<FileSystemWatcher> _dumpWatcher;
 
-        private ConcurrentQueue<int> _watcherEvents;
+        enum FileChangeEvt { Dll = 1, Dump = 2 };
+        private ConcurrentQueue<FileChangeEvt> _watcherEvents;
+        private System.Windows.Forms.Timer _fileChangesWatchdog;
 
         private string _gsdxPathOld, _dumpPathOld;
 
@@ -136,41 +136,59 @@ namespace GSDumpGUI
 
             _dllWatcher = new List<FileSystemWatcher>();
             _dumpWatcher = new List<FileSystemWatcher>();
-            _watcherEvents = new ConcurrentQueue<int>();
+            _watcherEvents = new ConcurrentQueue<FileChangeEvt>();
 
-            Thread watcherThread = new Thread(ChangesWatchdogThread);
-            watcherThread.Start();
+            _fileChangesWatchdog = new System.Windows.Forms.Timer();
+            _fileChangesWatchdog.Tick += new EventHandler(FileChangesWatchdog);
+            _fileChangesWatchdog.Interval = 1000;
+            _fileChangesWatchdog.Start();
         }
 
-        private void ChangesWatchdogThread()
+        private void DisposeExtra()
         {
-            while (Program.isProgRunning)
+            foreach (FileSystemWatcher w in _dllWatcher)
             {
-                bool dllReload = false;
-                bool dumpReload = false;
-
-                int evt;
-                while (_watcherEvents.TryDequeue(out evt))
-                {
-                    if (evt == 1) dllReload = true;
-                    else if (evt == 2) dumpReload = true;
-                }
-
-                if (dllReload) this.Invoke((MethodInvoker)delegate { ReloadGsdxDlls(); });
-                if (dumpReload) this.Invoke((MethodInvoker)delegate { ReloadGsdxDumps(); });
-
-                Thread.Sleep(1000);
+                w.EnableRaisingEvents = false;
+                w.Dispose();
             }
+
+            foreach (FileSystemWatcher w in _dumpWatcher)
+            {
+                w.EnableRaisingEvents = false;
+                w.Dispose();
+            }
+
+            _dllWatcher.Clear();
+            _dumpWatcher.Clear();
+
+            _fileChangesWatchdog.Stop();
+            _fileChangesWatchdog.Dispose();
+        }
+
+        private void FileChangesWatchdog(object source, EventArgs e)
+        {
+            bool dllReload = false;
+            bool dumpReload = false;
+
+            FileChangeEvt evt;
+            while (_watcherEvents.TryDequeue(out evt))
+            {
+                if (evt == FileChangeEvt.Dll) dllReload = true;
+                else if (evt == FileChangeEvt.Dump) dumpReload = true;
+            }
+
+            if (dllReload) ReloadGsdxDlls();
+            if (dumpReload) ReloadGsdxDumps();
         }
 
         private void OnDllDirChange(object source, FileSystemEventArgs e)
         {
-            _watcherEvents.Enqueue(1);
+            _watcherEvents.Enqueue(FileChangeEvt.Dll);
         }
 
         private void OnDumpDirChange(object source, FileSystemEventArgs e)
         {
-            _watcherEvents.Enqueue(2);
+            _watcherEvents.Enqueue(FileChangeEvt.Dump);
         }
 
         private static void BindListControl<TModel, TElement>(ListControl lb, TModel model, Func<TModel, BindingList<TElement>> collectionAccessor, Expression<Func<TElement, string>> displayTextAccessor, Expression<Func<TModel, int>> selectedIndexAccessor)
