@@ -36,21 +36,33 @@
 
 #if defined(PTW32_STATIC_LIB)
 
+#define PCSX2_FIX 1 // Comment out to restore code to pristine state
+
 #if defined(__MINGW64__) || defined(__MINGW32__) || defined(_MSC_VER)
 
 #include "pthread.h"
 #include "implement.h"
 
+#if !PCSX2_FIX
 static void on_process_init(void)
 {
     pthread_win32_process_attach_np ();
 }
+#endif
 
 static void on_process_exit(void)
 {
     pthread_win32_thread_detach_np  ();
     pthread_win32_process_detach_np ();
 }
+
+#if PCSX2_FIX
+static void on_process_init(void)
+{
+    pthread_win32_process_attach_np();
+    atexit(on_process_exit);
+}
+#endif
 
 #if defined(__MINGW64__) || defined(__MINGW32__)
 # define attribute_section(a) __attribute__((section(a)))
@@ -62,7 +74,9 @@ attribute_section(".ctors") void *gcc_ctor = on_process_init;
 attribute_section(".dtors") void *gcc_dtor = on_process_exit;
 
 attribute_section(".CRT$XCU") void *msc_ctor = on_process_init;
+#if !PCSX2_FIX
 attribute_section(".CRT$XPU") void *msc_dtor = on_process_exit;
+#endif
 
 #endif /* defined(__MINGW64__) || defined(__MINGW32__) || defined(_MSC_VER) */
 
