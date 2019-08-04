@@ -11567,10 +11567,12 @@ Region = PAL-M5
 Serial = SLES-52289
 Name   = MTX Mototrax
 Region = PAL-E
+vuRoundMode = 0 // Fixes glitchy graphics ingame.
 ---------------------------------------------
 Serial = SLES-52290
 Name   = MTX Mototrax
 Region = PAL-F
+vuRoundMode = 0 // Fixes glitchy graphics ingame.
 ---------------------------------------------
 Serial = SLES-52291
 Name   = Countryside Bears
@@ -36355,6 +36357,7 @@ Serial = SLUS-20399
 Name   = MTX Mototrax
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0 // Fixes glitchy graphics ingame.
 ---------------------------------------------
 Serial = SLUS-20400
 Name   = Mission Impossible - Operation Surma
