@@ -1919,12 +1919,16 @@ bool GSRendererHW::OI_SonicUnleashed(GSTexture* rt, GSTexture* ds, GSTextureCach
 	if ((Texture.TBP0 == Frame.TBP0) || (Frame.TBW != 16 && Texture.TBW != 16))
 		return true;
 
+	GL_INS("OI_SonicUnleashed replace draw by a copy");
+
 	GSTextureCache::Target* src = m_tc->LookupTarget(Texture, m_width, m_height, GSTextureCache::RenderTarget, true);
+
+	GSVector2i size = rt->GetSize();
+
 	GSVector4 sRect(0, 0, 1, 1);
-	GSVector4 dRect(0, 0, m_width, m_height);
+	GSVector4 dRect(0, 0, size.x, size.y);
 
 	m_dev->StretchRect(src->m_texture, sRect, rt, dRect, true, true, true, false);
-	GL_INS("OI_SonicUnleashed replace draw by a copy");
 
 	return false;
 }
