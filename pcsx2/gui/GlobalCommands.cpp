@@ -672,7 +672,7 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 		Implementations::Framelimiter_MasterToggle,
 		NULL,
 		NULL,
-		true,
+		false,
 	},
 
 	{	"GSwindow_CycleAspectRatio",
