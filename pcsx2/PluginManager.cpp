@@ -452,7 +452,8 @@ static const LegacyApi_OptMethod s_MethMessOpt_PAD[] =
 // ----------------------------------------------------------------------------
 void CALLBACK CDVD_newDiskCB(void (*callback)()) {}
 
-extern int lastReadSize, lastLSN;
+extern int lastReadSize;
+extern u32 lastLSN;
 static s32 CALLBACK CDVD_getBuffer2(u8* buffer)
 {
 	// TEMP: until I fix all the plugins to use this function style
