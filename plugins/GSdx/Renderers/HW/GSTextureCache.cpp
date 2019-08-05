@@ -1925,7 +1925,7 @@ bool GSTextureCache::Target::Inside(uint32 bp, uint32 bw, uint32 psm, const GSVe
 {
 	uint32 block = GSLocalMemory::m_psm[psm].bn(rect.z - 1, rect.w - 1, bp, bw);  // Valid only for color formats
 
-	return bp > m_TEX0.TBP0 && block <= m_end_block;
+	return bp >= m_TEX0.TBP0 && block <= m_end_block;
 }
 
 // GSTextureCache::SourceMap
