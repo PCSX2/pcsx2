@@ -362,7 +362,7 @@ namespace Implementations
 
 	void Sys_RenderToggle()
 	{
-		if(do_renderswitch == 0)
+		if (do_renderswitch == 0)
 			do_renderswitch = -1;
 	}
 
