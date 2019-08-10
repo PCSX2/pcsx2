@@ -708,7 +708,6 @@ void GSRendererHW::SwSpriteRender()
 	ASSERT(!PRIM->IIP);  // Flat shading method
 	ASSERT(!PRIM->FGE);  // No FOG
 	ASSERT(!PRIM->AA1);  // No antialiasing
-	ASSERT(!PRIM->FST);  // STQ texture coordinates
 	ASSERT(!PRIM->FIX);  // Normal fragment value control
 
 	ASSERT(!m_env.DTHE.DTHE); // No dithering
@@ -728,7 +727,7 @@ void GSRendererHW::SwSpriteRender()
 	// No rasterization required
 	ASSERT(m_vt.m_eq.rgba == 0xffff);
 	ASSERT(m_vt.m_eq.z == 0x1);
-	ASSERT(m_vt.m_eq.q == 0x1);
+	ASSERT(!PRIM->TME || PRIM->FST || m_vt.m_eq.q == 0x1);  // Check Q equality only if texturing enabled and STQ coords used
 
 	bool texture_mapping_enabled = PRIM->TME;
 
