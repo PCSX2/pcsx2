@@ -813,6 +813,8 @@ void GSRendererHW::SwSpriteRender()
 
 	uint8 tex0_tcc = m_context->TEX0.TCC;
 	uint8 alpha_b = m_context->ALPHA.B;
+	uint8 alpha_c = m_context->ALPHA.C;
+	uint8 alpha_fix = m_context->ALPHA.FIX;
 
 	for (int y = 0; y < h; y++, ++sy, ++dy)
 	{
@@ -856,23 +858,27 @@ void GSRendererHW::SwSpriteRender()
 				// Blending
 				ASSERT(m_context->ALPHA.A == 0);
 				ASSERT(alpha_b == 1 || alpha_b == 2);
-				ASSERT(m_context->ALPHA.C == 0);
 				ASSERT(m_context->ALPHA.D == 1);
-				ASSERT(m_context->ALPHA.FIX == 0);
 
-				GSVector4i sc_alpha_vec =
-					sc.yyww()   // 0x00AA00BB00AA00BB00aa00bb00aa00bb
-					.srl32(16)  // 0x000000AA000000AA000000aa000000aa
-					.ps32()     // 0x00AA00AA00aa00aa00AA00AA00aa00aa
-					.xxyy();    // 0x00AA00AA00AA00AA00aa00aa00aa00aa
+				// Flag C
+				GSVector4i sc_alpha_vec;
+
+				if (alpha_c == 2)
+					sc_alpha_vec = GSVector4i(alpha_fix).xxxx().ps32();
+				else
+					sc_alpha_vec = (alpha_c == 0 ? sc : dc0)
+						.yyww()     // 0x00AA00BB00AA00BB00aa00bb00aa00bb
+						.srl32(16)  // 0x000000AA000000AA000000aa000000aa
+						.ps32()     // 0x00AA00AA00aa00aa00AA00AA00aa00aa
+						.xxyy();    // 0x00AA00AA00AA00AA00aa00aa00aa00aa
 
 				switch (alpha_b)
 				{
 				case 1:
-					dc = sc.sub16(dc0).mul16l(sc_alpha_vec).sra16(7).add16(dc0);  // (((Cs - Cd) * As) >> 7) + Cd, must use sra16 due to signed 16 bit values
+					dc = sc.sub16(dc0).mul16l(sc_alpha_vec).sra16(7).add16(dc0);  // (((Cs - Cd) * C) >> 7) + Cd, must use sra16 due to signed 16 bit values
 					break;
 				default:
-					dc = sc.mul16l(sc_alpha_vec).sra16(7).add16(dc0);  // (((Cs - 0) * As) >> 7) + Cd, must use sra16 due to signed 16 bit values
+					dc = sc.mul16l(sc_alpha_vec).sra16(7).add16(dc0);  // (((Cs - 0) * C) >> 7) + Cd, must use sra16 due to signed 16 bit values
 					break;
 				}
 				// dc alpha channels (dc.u16[3], dc.u16[7]) dirty
