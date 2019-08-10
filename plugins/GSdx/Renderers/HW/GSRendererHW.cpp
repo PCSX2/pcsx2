@@ -754,19 +754,12 @@ void GSRendererHW::SwSpriteRender()
 
 	GIFRegTRXREG trxreg;
 
-	if (texture_mapping_enabled)
-	{
-		trxreg.RRW = m_context->TEX0.TW * 4;
-		trxreg.RRH = m_context->TEX0.TH * 4;
-		// Check drawing region
-		ASSERT((GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in)) == GSVector4i(0, 0, trxreg.RRW, trxreg.RRH)).alltrue());
-	}
-	else
-	{
-		GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
-		trxreg.RRW = r.width();
-		trxreg.RRH = r.height();
-	}
+	GSVector4i r = m_r;  // Rectangle of the draw
+	ASSERT(r.x == 0 && r.y == 0);  // No offset
+	ASSERT(!texture_mapping_enabled || (r.z <= (1 << m_context->TEX0.TW)) && (r.w <= (1 << m_context->TEX0.TH)));  // Input texture is big enough, if any
+
+	trxreg.RRW = r.width();
+	trxreg.RRH = r.height();
 
 	// SW rendering code, mainly taken from GSState::Move(), TRXPOS.DIR{X,Y} management excluded
 
