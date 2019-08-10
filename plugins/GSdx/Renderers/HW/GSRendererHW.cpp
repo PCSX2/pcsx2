@@ -811,6 +811,7 @@ void GSRendererHW::SwSpriteRender()
 	bool fb_mask_enabled = m_context->FRAME.FBMSK != 0x0;
 	GSVector4i fb_mask = GSVector4i(m_context->FRAME.FBMSK).u8to16(); // 0x00AA00BB00GG00RR00AA00BB00GG00RR
 
+	uint8 tex0_tfx = m_context->TEX0.TFX;
 	uint8 tex0_tcc = m_context->TEX0.TCC;
 	uint8 alpha_b = m_context->ALPHA.B;
 	uint8 alpha_c = m_context->ALPHA.C;
@@ -833,8 +834,10 @@ void GSRendererHW::SwSpriteRender()
 				sc = GSVector4i::loadl(&s[scol[x]]).u8to16();  // 0x00AA00BB00GG00RR00aa00bb00gg00rr
 
 				// Apply TFX
-				ASSERT(m_context->TEX0.TFX == 0);
-				sc = sc.mul16l(vc).srl16(7).clamp8();  // clamp((sc * vc) >> 7, 0, 255), srl16 is ok because 16 bit values are unsigned
+				ASSERT(tex0_tfx == 0 || tex0_tfx == 1);
+				if (tex0_tfx == 0)
+					sc = sc.mul16l(vc).srl16(7).clamp8();  // clamp((sc * vc) >> 7, 0, 255), srl16 is ok because 16 bit values are unsigned
+
 				if (tex0_tcc == 0)
 					sc = sc.blend(vc, a_mask);
 			}
