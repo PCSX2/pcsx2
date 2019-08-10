@@ -9360,6 +9360,23 @@ Serial = SLES-51214
 Name   = 18 Wheeler - American Pro Trucker
 Region = PAL-Unk
 ---------------------------------------------
+Serial = SLES-51216
+Name   = Harry Potter ja Salaisuuksien Kammio
+Region = PAL-FI
+[patches]
+	// CRC C5473413
+	// This disc has the same CRC as other PAL and NTSC discs.
+	comment=Patch by Prafull
+	// Fixes initial hanging.
+	patch=1,EE,002032bc,word,03e00008
+	// Load game quickly.
+	patch=1,EE,001f704c,word,1000000f
+	// Fixes ingame hang.
+	patch=1,EE,001f70b4,word,1000000f
+	// Fixes flickering graphics (Thanks to Kian Stevens for finding this).
+	patch=1,EE,80000000,word,00000000
+[/patches]
+---------------------------------------------
 Serial = SLES-51217
 Name   = Harry Potter och Hemligheternas Kammare
 Region = PAL-SE
