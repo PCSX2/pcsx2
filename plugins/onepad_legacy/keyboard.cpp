@@ -221,24 +221,16 @@ void PollForX11KeyboardInput()
     XEvent E = {0};
 
     // Keyboard input send by PCSX2
-    while (!ev_fifo.empty())
-    {
-        AnalyzeKeyEvent(ev_fifo.front());
-        pthread_spin_lock(&mutex_KeyEvent);
-        ev_fifo.pop();
-        pthread_spin_unlock(&mutex_KeyEvent);
-    }
+    g_ev_fifo.consume_all(AnalyzeKeyEvent);
 
     // keyboard input
-    while (XPending(GSdsp) > 0)
-    {
+    while (XPending(GSdsp) > 0) {
         XNextEvent(GSdsp, &E);
 
         // Change the format of the structure to be compatible with GSOpen2
         // mode (event come from pcsx2 not X)
         evt.evt = E.type;
-        switch (E.type)
-        {
+        switch (E.type) {
             case MotionNotify:
                 evt.key = (E.xbutton.x & 0xFFFF) | (E.xbutton.y << 16);
                 break;
