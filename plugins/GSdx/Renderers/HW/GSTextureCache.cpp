@@ -58,11 +58,15 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	// isn't enough in custom resolution)
 	// Test: onimusha 3 PAL 60Hz
 	m_temp = (uint8*)_aligned_malloc(9 * 1024 * 1024, 32);
+
+	m_texture_inside_rt_cache.reserve(m_texture_inside_rt_cache_size);
 }
 
 GSTextureCache::~GSTextureCache()
 {
 	RemoveAll();
+
+	m_texture_inside_rt_cache.clear();
 
 	_aligned_free(m_temp);
 }
@@ -262,6 +266,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		// (Simply not doing this code at all makes a lot of previsouly missing stuff show (but breaks pretty much everything
 		// else.)
 
+		bool texture_inside_rt = ShallSearchTextureInsideRt();
+
 		for(auto t : m_dst[RenderTarget]) {
 			if(t->m_used && t->m_dirty.empty()) {
 				// Typical bug (MGS3 blue cloud):
@@ -298,44 +304,93 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 					break;
 
-				} else if (m_texture_inside_rt && psm == PSM_PSMCT32 && bw == 1 && bp_end < t->m_end_block && t->m_TEX0.TBP0 < bp) {
-					// Note bw == 1 until we find a generic formulae below
-					dst = t;
+				} else if (texture_inside_rt && psm == PSM_PSMCT32 && t->m_TEX0.PSM == psm && t->m_TEX0.TBP0 < bp && t->m_end_block >= bp) {
+					// Only PSMCT32 to limit false hits
 
-					uint32 delta = bp - t->m_TEX0.TBP0;
-					uint32 delta_p = delta / 32;
-					uint32 delta_b = delta % 32;
+					// Check if it is possible to hit with valid <x,y> offset on the given Target
+					// Fixes Jak eyes rendering
 
-					// FIXME
-					x_offset = (delta_p % bw) * psm_s.pgs.x;
-					y_offset = (delta_p / bw) * psm_s.pgs.y;
+					bool valid_offset_may_exist = true;
 
-					static int block32_offset_x[32] = {
-						0, 1, 0, 1,
-						2, 3, 2, 3,
-						0, 1, 0, 1,
-						2, 3, 2, 3,
-						4, 5, 4, 5,
-						6, 7, 6, 7,
-						4, 5, 4, 5,
-						6, 7, 6, 7,
-					};
+					// CACHE SEARCH: <x,y> offset
+					for (auto& el : m_texture_inside_rt_cache)
+					{
+						if (el.psm == psm && el.bp == bp && el.bp_end == bp_end && el.bw == bw &&
+							el.t_tex0_tbp0 == t->m_TEX0.TBP0 && el.m_end_block == t->m_end_block)
+						{
+							if (el.has_valid_offset)
+							{
+								// CACHE HIT: <x,y> offset found
+								dst = t;
+								x_offset = el.x_offset;
+								y_offset = el.y_offset;
+							}
+							else
+							{
+								// CACHE HIT: No valid <x,y> offset exists
+								valid_offset_may_exist = false;
+							}
 
-					static int block32_offset_y[32] = {
-						0, 0, 1, 1,
-						0, 0, 1, 1,
-						2, 2, 3, 3,
-						2, 2, 3, 3,
-						0, 0, 1, 1,
-						0, 0, 1, 1,
-						2, 2, 3, 3,
-						2, 2, 3, 3,
-					};
+							break;
+						}
+					}
 
-					x_offset += block32_offset_x[delta_b] * psm_s.bs.x;
-					y_offset += block32_offset_y[delta_b] * psm_s.bs.y;
+					if (dst != nullptr)
+						break;
 
-					GL_INS("WARNING middle of framebuffer 0x%x => 0x%x. Offset %d,%d", t->m_TEX0.TBP0, t->m_end_block, x_offset, y_offset);
+					if (!valid_offset_may_exist)
+						continue;
+
+					// CACHE MISS
+
+					// SWEEP SEARCH: <x,y> offset
+
+					TexInsideRtCacheEntry entry = { psm, bp, bp_end, bw, t->m_TEX0.TBP0, t->m_end_block, false, 0, 0 };
+
+					for (int candidate_x_offset = 0; candidate_x_offset < t->m_valid.z; ++candidate_x_offset)
+					{
+						for (int candidate_y_offset = 0; candidate_y_offset < t->m_valid.w; ++candidate_y_offset)
+						{
+							if (candidate_x_offset == 0 && candidate_y_offset == 0)
+								continue;
+							uint32 candidate_bp = psm_s.bn(candidate_x_offset, candidate_y_offset, t->m_TEX0.TBP0, bw);
+							if (bp == candidate_bp && bp_end <= t->m_end_block)
+							{
+								// SWEEP HIT: <x,y> offset found
+								dst = t;
+								x_offset = candidate_x_offset;
+								y_offset = candidate_y_offset;
+
+								// Add result to cache
+								while (m_texture_inside_rt_cache.size() > m_texture_inside_rt_cache_size)
+								{
+									GL_PERF("TC tex in rt: Size of cache %d too big, clearing it.", m_texture_inside_rt_cache.size());
+									m_texture_inside_rt_cache.clear();
+								}
+								entry.has_valid_offset = true;
+								entry.x_offset = x_offset;
+								entry.y_offset = y_offset;
+								m_texture_inside_rt_cache.emplace_back(entry);
+								GL_CACHE("TC tex in rt: Cached HIT element (size %d), BW: %d, PSM %s, rt 0x%x <%d,%d> + off <%d,%d> -> 0x%x <%d,%d> (END: 0x%x)",
+									m_texture_inside_rt_cache.size(), bw, psm_str(psm), t->m_TEX0.TBP0, t->m_valid.z, t->m_valid.w, x_offset, y_offset, bp, tw, th, bp_end);
+								break;
+							}
+						}
+						if (dst != nullptr)
+							break;
+					}
+					if (dst != nullptr)
+						break;
+
+					// SWEEP MISS: no valid <x,y> offset found
+					while (m_texture_inside_rt_cache.size() > m_texture_inside_rt_cache_size)
+					{
+						GL_PERF("TC tex in rt: Size of cache %d too big, clearing it.", m_texture_inside_rt_cache.size());
+						m_texture_inside_rt_cache.clear();
+					}
+					GL_CACHE("TC tex in rt: Cached MISS element (size %d), BW: %d, PSM %s, rt 0x%x <%d,%d> -/-> 0x%x <%d,%d> (END: 0x%x)",
+						m_texture_inside_rt_cache.size(), bw, psm_str(psm), t->m_TEX0.TBP0, t->m_valid.z, t->m_valid.w, bp, tw, th, bp_end);
+					m_texture_inside_rt_cache.emplace_back(entry);
 				}
 			}
 		}
@@ -426,6 +481,11 @@ void GSTextureCache::ScaleTexture(GSTexture* texture)
 	}
 
 	texture->SetScale(scale_factor);
+}
+
+bool GSTextureCache::ShallSearchTextureInsideRt()
+{
+	return m_texture_inside_rt || (m_renderer->m_game.flags & CRC::Flags::TextureInsideRt);
 }
 
 GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used, uint32 fbmask)
