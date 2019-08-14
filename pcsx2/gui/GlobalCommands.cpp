@@ -35,7 +35,7 @@
 
 // renderswitch - tells GSdx to go into dx9 sw if "renderswitch" is set.
 bool renderswitch = false;
-uint do_renderswitch = 0;
+uint renderswitch_delay = 0;
 
 extern bool switchAR;
 
@@ -362,8 +362,13 @@ namespace Implementations
 
 	void Sys_RenderToggle()
 	{
-		if (do_renderswitch == 0)
-			do_renderswitch = -1;
+		if(renderswitch_delay == 0)
+		{
+			ScopedCoreThreadPause paused_core( new SysExecEvent_SaveSinglePlugin(PluginId_GS) );
+			renderswitch = !renderswitch;
+			paused_core.AllowResume();
+			renderswitch_delay = -1;
+		}
 	}
 
 	void Sys_LoggingToggle()
