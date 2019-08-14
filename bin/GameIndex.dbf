@@ -16721,6 +16721,7 @@ Serial = SLES-54549
 Name   = Crazy Frog Racer 2
 Region = PAL-M5
 Compat = 5
+FPUNegDivHack = 1 // Fixes black fade effects and some overlays texts in the menus.
 ---------------------------------------------
 Serial = SLES-54551
 Name   = Premier Manager 2006-2007
@@ -17253,10 +17254,16 @@ Serial = SLES-54880
 Name   = NBA 2K8
 Region = PAL-M5
 ---------------------------------------------
+Serial = SLES-54883
+Name   = Alone in the Dark
+Region = PAL-I
+EETimingHack = 1 // Fixes game hanging at boot.
+---------------------------------------------
 Serial = SLES-54884
 Name   = Alone in the Dark
 Region = PAL-E
 Compat = 5
+EETimingHack = 1 // Fixes game hanging at boot.
 ---------------------------------------------
 Serial = SLES-54885
 Name   = Moto X Maniac
@@ -17673,6 +17680,7 @@ Region = PAL-M6
 Serial = SLES-55207
 Name   = Alone in the Dark
 Region = PAL-M4
+EETimingHack = 1 // Fixes game hanging at boot.
 ---------------------------------------------
 Serial = SLES-55208
 Name   = The Incredible Hulk
@@ -22214,7 +22222,7 @@ Name   = Houshin Engi 2
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65085
-Name   = Alone in the Dark
+Name   = Alone in the Dark: The New Nightmare
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-65086
@@ -42422,9 +42430,10 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-21634
-Name   = Crazy Frog Racer
+Name   = Crazy Frog Racer 2
 Region = NTSC-U
 Compat = 5
+FPUNegDivHack = 1 // Fixes black fade effects and some overlays texts in the menus.
 ---------------------------------------------
 Serial = SLUS-21635
 Name   = Monster Jam
@@ -42689,7 +42698,7 @@ Serial = SLUS-21690
 Name   = Alone in the Dark
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1
+EETimingHack = 1 // Fixes game hanging at boot.
 ---------------------------------------------
 Serial = SLUS-21691
 Name   = Swashbucklers - Blue vs. Grey
