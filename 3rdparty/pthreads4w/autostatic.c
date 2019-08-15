@@ -73,9 +73,14 @@ static void on_process_init(void)
 attribute_section(".ctors") void *gcc_ctor = on_process_init;
 attribute_section(".dtors") void *gcc_dtor = on_process_exit;
 
-attribute_section(".CRT$XCU") void *msc_ctor = on_process_init;
 #if !PCSX2_FIX
+attribute_section(".CRT$XCU") void *msc_ctor = on_process_init;
 attribute_section(".CRT$XPU") void *msc_dtor = on_process_exit;
+#else
+// MSVC puts all initializers in .CRT$XCU and order of those is not fully deterministic
+// Since the entire point of this is to call on_process_init before any other initializer,
+// move it to .CRT$XCP so it is guaranteed it initializes early
+attribute_section(".CRT$XCP") void *msc_ctor = on_process_init;
 #endif
 
 #endif /* defined(__MINGW64__) || defined(__MINGW32__) || defined(_MSC_VER) */
