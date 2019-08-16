@@ -69,7 +69,8 @@ namespace PboPool {
 
 	char* Map(uint32 size) {
 		char* map;
-		m_size = size;
+		// Note: keep offset aligned for SSE/AVX
+		m_size = (size + 63) & ~0x3F;
 
 		if (m_size > m_pbo_size) {
 			fprintf(stderr, "BUG: PBO too small %u but need %u\n", m_pbo_size, m_size);
@@ -142,8 +143,7 @@ namespace PboPool {
 	}
 
 	void EndTransfer() {
-		// Note: keep offset aligned for SSE/AVX
-		m_offset += (m_size + 63) & ~0x3F;
+		m_offset += m_size;
 	}
 }
 
