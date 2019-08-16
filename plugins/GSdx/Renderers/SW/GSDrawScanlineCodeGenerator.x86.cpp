@@ -1765,7 +1765,7 @@ void GSDrawScanlineCodeGenerator::SampleTextureLOD_SSE()
 			// c[0] = c00 & mask;
 			// c[1] = (c00 >> 8) & mask;
 
-			split16_2x8(xmm5, xmm6, xmm5);
+			split16_2x8(xmm5, xmm6, xmm6);
 		}
 
 		movdqa(xmm0, ptr[m_sel.lcm ? &m_local.gd->lod.f : &m_local.temp.lod.f]);
