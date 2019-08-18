@@ -342,6 +342,7 @@ private:
 	float m_hack_topleft_offset;
 	int m_upscale_multiplier;
 	int m_mipmap;
+	int m_d3d_texsize;
 
 	GSTexture* CreateSurface(int type, int w, int h, int format);
 	GSTexture* FetchSurface(int type, int w, int h, int format);
