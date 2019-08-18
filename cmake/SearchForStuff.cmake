@@ -191,6 +191,9 @@ if(ZLIB_FOUND)
 	include_directories(${ZLIB_INCLUDE_DIRS})
 endif()
 
+find_package(HarfBuzz REQUIRED)
+include_directories(${HARFBUZZ_INCLUDE_DIRS})
+
 #----------------------------------------
 #  Use  project-wide include directories
 #----------------------------------------
