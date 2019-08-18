@@ -226,6 +226,12 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 		return false;
 	}
 
+	// Set maximum texture size limit based on supported feature level.
+	if (level >= D3D_FEATURE_LEVEL_11_0)
+		m_d3d_texsize = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+	else
+		m_d3d_texsize = D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+
 	{	// HACK: check nVIDIA
 		// Note: It can cause issues on several games such as SOTC, Fatal Frame, plus it adds border offset.
 		bool disable_safe_features = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("UserHacks_Disable_Safe_Features");
@@ -638,8 +644,9 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 
 	memset(&desc, 0, sizeof(desc));
 
-	desc.Width = std::max(1, std::min(w, 8192)); // Texture limit for D3D10 min 1, max 8192
-	desc.Height = std::max(1, std::min(h, 8192));
+	// Texture limit for D3D10/11 min 1, max 8192 D3D10, max 16384 D3D11.
+	desc.Width = std::max(1, std::min(w, m_d3d_texsize));
+	desc.Height = std::max(1, std::min(h, m_d3d_texsize));
 	desc.Format = (DXGI_FORMAT)format;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
