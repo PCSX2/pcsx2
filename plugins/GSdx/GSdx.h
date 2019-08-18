@@ -29,9 +29,7 @@ class GSdxApp
 	std::string m_ini;
 	std::string m_section;
 	std::map< std::string, std::string > m_default_configuration;
-#if defined(__unix__)
 	std::map< std::string, std::string > m_configuration_map;
-#endif
 	GSRendererType m_current_renderer_type;
 
 public:
@@ -44,14 +42,12 @@ public:
  	HMODULE GetModuleHandle() {return (HMODULE)GetModuleHandlePtr();}
 #endif
 
-#if defined(__unix__)
 	void BuildConfigurationMap(const char* lpFileName);
 	void ReloadConfig();
 
-	size_t GetPrivateProfileString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName);
-	bool WritePrivateProfileString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName);
-	int GetPrivateProfileInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
-#endif
+	size_t GetIniString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName);
+	bool WriteIniString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName);
+	int GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
 
 	bool LoadResource(int id, std::vector<char>& buff, const char* type = nullptr);
 
