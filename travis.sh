@@ -48,6 +48,7 @@ linux_32_before_install() {
 		libglu1-mesa-dev:i386 \
 		libgtk2.0-dev:i386 \
 		liblzma-dev:i386 \
+		libharfbuzz-dev:i386 \
 		libpango1.0-dev:i386 \
 		libpng12-dev:i386 \
 		libsdl2-dev:i386 \
