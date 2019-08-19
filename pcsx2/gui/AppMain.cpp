@@ -519,7 +519,7 @@ extern uint eecount_on_last_vdec;
 extern bool FMVstarted;
 extern bool EnableFMV;
 extern bool renderswitch;
-extern uint do_renderswitch;
+extern uint renderswitch_delay;
 
 void DoFmvSwitch(bool on)
 {
@@ -535,8 +535,11 @@ void DoFmvSwitch(bool on)
 				viewport->DoResize();
 	}
 
-	if (EmuConfig.Gamefixes.FMVinSoftwareHack)
-		do_renderswitch = -1;
+	if (EmuConfig.Gamefixes.FMVinSoftwareHack) {
+		ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(PluginId_GS));
+		renderswitch = !renderswitch;
+		paused_core.AllowResume();
+	}
 }
 
 void Pcsx2App::LogicalVsync()
@@ -566,13 +569,7 @@ void Pcsx2App::LogicalVsync()
 		}
 	}
 
-	if (do_renderswitch == -1) {
-		ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(PluginId_GS));
-		renderswitch = !renderswitch;
-		paused_core.AllowResume();
-	}
-
-	do_renderswitch >>= 1;
+	renderswitch_delay >>= 1;
 
 	// Only call PADupdate here if we're using GSopen2.  Legacy GSopen plugins have the
 	// GS window belonging to the MTGS thread.
