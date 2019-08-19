@@ -210,10 +210,8 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 			case CRC::HarryPotterATHBP:
 			case CRC::HarryPotterATPOA:
 			case CRC::HarryPotterOOTP:
-			// Disable Automatic mipmapping for Jak games for now, it seems to cause a hard crash.
-			// Issue https://github.com/PCSX2/pcsx2/issues/2916
-			// case CRC::Jak1:
-			// case CRC::Jak3:
+			case CRC::Jak1:
+			case CRC::Jak3:
 			case CRC::LegacyOfKainDefiance:
 			case CRC::NicktoonsUnite:
 			case CRC::ProjectSnowblind:
