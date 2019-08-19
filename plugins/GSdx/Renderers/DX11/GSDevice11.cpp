@@ -638,6 +638,9 @@ void GSDevice11::ClearStencil(GSTexture* t, uint8 c)
 
 GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 {
+	ASSERT(w > 0 && w <= m_d3d_texsize);
+	ASSERT(h > 0 && h <= m_d3d_texsize);
+
 	HRESULT hr;
 
 	D3D11_TEXTURE2D_DESC desc;
