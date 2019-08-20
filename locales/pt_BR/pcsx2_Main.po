@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: pcsx2_Main master\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2019-08-19 22:17-0300\n"
+"PO-Revision-Date: 2019-08-19 22:44-0300\n"
 "Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>; Guilherme Dias "
 "<guilhermedias000@gmail.com>\n"
 "Language-Team: \n"
@@ -2867,11 +2867,11 @@ msgstr "Desativado [padrão]"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:180
 msgid "Skip when on Turbo only (TAB to enable)"
-msgstr "Pular ao usar Turbo somente (TAB para ativar)"
+msgstr "Saltar somente ao usar Turbo (TAB para ativar)"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:184
 msgid "Constant skipping"
-msgstr "Pular constantemente"
+msgstr "Saltar constantemente"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:186
 msgid ""
