@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: pcsx2_Iconized master\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2019-08-19 22:44-0300\n"
+"PO-Revision-Date: 2019-08-20 11:34-0300\n"
 "Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -71,8 +71,8 @@ msgid ""
 "PCSX2 the ability to create the necessary folders itself.  If you do not have elevated rights on this computer, then you will need to switch to User Documents mode (click button below)."
 msgstr ""
 "Por favor, certifique-se de que essas pastas tenham sido criadas e que sua conta de usuário possui permissões de escrita a elas -- ou execute novamente o PCSX2 com permissões elevadas "
-"(administrador), o que deveria permitir ao PCSX2 a habilidade para criar as pastas necessárias. Se você não tem permissões elevadas nesse computador, então você precisará alternar para "
-"o modo de Documentos do Usuário (clique no botão abaixo)."
+"(administrador), o que deveria permitir ao PCSX2 a habilidade para criar as pastas necessárias. Se você não tem permissões elevadas nesse computador, então você precisará alternar para o "
+"modo de Documentos do Usuário (clique no botão abaixo)."
 
 #: gui/Dialogs/ConvertMemoryCardDialog.cpp:66
 msgid "Please note that the resulting file may not actually contain all saves, depending on how many are in the source memory card."
@@ -120,8 +120,7 @@ msgid ""
 "This wizard will help guide you through configuring plugins, memory cards, and BIOS.  It is recommended if this is your first time installing %s that you view the readme and "
 "configuration guide."
 msgstr ""
-"Esse assistente vai guiá-lo nas configurações de plug-ins, cartões de memórias e BIOS. Se for a sua primeira vez instalando o %s, é recomendado que veja o README e o Guia de "
-"configuração."
+"Esse assistente vai guiá-lo nas configurações de plug-ins, cartões de memórias e BIOS. Se for a sua primeira vez instalando o %s, é recomendado que veja o README e o Guia de configuração."
 
 #: gui/Dialogs/FirstTimeWizard.cpp:139
 msgid ""
@@ -157,8 +156,7 @@ msgstr ""
 #: gui/Dialogs/McdConfigDialog.cpp:45
 msgid "(Folder type only) Re-index memory card content every time the running software changes. This prevents the memory card from running out of space for saves."
 msgstr ""
-"(Tipo pasta apenas) Indexa novamente o conteúdo do cartão de memória a cada alteração do software em execução. Isso evita que o cartão de memória de ficar sem espaço para os jogos "
-"salvos."
+"(Tipo pasta apenas) Indexa novamente o conteúdo do cartão de memória a cada alteração do software em execução. Isso evita que o cartão de memória de ficar sem espaço para os jogos salvos."
 
 #: gui/Dialogs/SysConfigDialog.cpp:38
 msgid ""
@@ -258,13 +256,12 @@ msgstr ""
 #: gui/Panels/GSWindowPanel.cpp:80
 msgid "Vsync eliminates screen tearing but typically has a big performance hit. It usually only applies to fullscreen mode, and may not work with all GS plugins."
 msgstr ""
-"A Sincronia Vertical elimina ranhuras na tela, mas tipicamente prejudica em muito a performance. Isso normalmente se aplica ao modo tela cheia, e pode não funcionar com todos plug-ins "
-"GS."
+"A Sincronia Vertical elimina ranhuras na tela, mas tipicamente prejudica em muito a performance. Isso normalmente se aplica ao modo tela cheia, e pode não funcionar com todos plug-ins GS."
 
 #: gui/Panels/GSWindowPanel.cpp:83
 msgid ""
-"Check this to force the mouse cursor invisible inside the GS window; useful if using the mouse as a primary control device for gaming.  By default the mouse auto-hides after 2 seconds "
-"of inactivity."
+"Check this to force the mouse cursor invisible inside the GS window; useful if using the mouse as a primary control device for gaming.  By default the mouse auto-hides after 2 seconds of "
+"inactivity."
 msgstr ""
 "Marque, para forçar o cursor do mouse a ficar oculto dentro da janela do GS; útil se usando o mouse como dispositivo de controle primário para jogar. Por padrão, o mouse se auto-oculta "
 "após 2 segundos de inatividade."
@@ -324,8 +321,8 @@ msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and leave this page empty ('Automatic' means: selectively use specific tested fixes for specific games). Manual "
 "game fixes will NOT increase your performance. In fact they may decrease it."
 msgstr ""
-"É melhor habilitar as 'Correções automáticas de jogos' no menu principal e deixar esta página vazia ('Automáticas' significa: usar seletivamente correções específicas testadas para "
-"jogos específicos). Correções manuais de jogos NÃO aumentarão seu desempenho. Na verdade, eles podem diminuir."
+"É melhor habilitar as 'Correções automáticas de jogos' no menu principal e deixar esta página vazia ('Automáticas' significa: usar seletivamente correções específicas testadas para jogos "
+"específicos). Correções manuais de jogos NÃO aumentarão seu desempenho. Na verdade, eles podem diminuir."
 
 #: gui/Panels/GameFixesPanel.cpp:128
 msgid ""
@@ -363,8 +360,8 @@ msgstr ""
 
 #: gui/Panels/MiscPanelStuff.cpp:39
 msgid ""
-"You can change the preferred default location for PCSX2 user-level documents here (includes memory cards, screenshots, settings, and savestates).  This option only affects Standard "
-"Paths which are set to use the installation default value."
+"You can change the preferred default location for PCSX2 user-level documents here (includes memory cards, screenshots, settings, and savestates).  This option only affects Standard Paths "
+"which are set to use the installation default value."
 msgstr ""
 "Você pode alterar o local padrão preferido para os documentos de nível de usuário do PCSX2 aqui (inclui cartões de memória, capturas de tela, configurações e estados salvos). Essa opção "
 "somente afeta caminhos padrões, os quais são configurados para usar o valor padrão de instalação."
@@ -405,8 +402,8 @@ msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to make a valid selection due to missing plugins or an incomplete install of %s, then press Cancel to close the "
 "Configuration panel."
 msgstr ""
-"Todos plug-ins devem ter seleção válida para %s ser funcionar. Se você não conseguir uma seleção válida por causa de plug-ins faltando ou uma instalação incompleta do %s, então "
-"pressione Cancelar para fechar o painel de Configurações."
+"Todos plug-ins devem ter seleção válida para %s ser funcionar. Se você não conseguir uma seleção válida por causa de plug-ins faltando ou uma instalação incompleta do %s, então pressione "
+"Cancelar para fechar o painel de Configurações."
 
 #: gui/Panels/SpeedhacksPanel.cpp:29
 msgid "50% cyclerate. Significant reduction of CPU requirements. Speedup for very lightweight games, slows down others. FMVs and audio may stutter or skip."
@@ -475,20 +472,20 @@ msgid ""
 "Makes the emulated Emotion Engine skip cycles, allowing VU microprograms to execute at faster intervals. Helps a small subset of games with VU starvation problems, E.g. Shadow of the "
 "Colossus. More often than not this is harmful to performance and causes FPS readouts to be inaccurate."
 msgstr ""
-"Faz os saltos de ciclos da Emotion Engine emulada, permitindo que os microprogramas da VU sejam executados em intervalos mais rápidos. Ajuda um pequeno subconjunto de jogos com "
-"problemas de inanição da VU, por exemplo: 'Shadow of the Colossus'. Mais frequentemente, é prejudicial ao desempenho e faz com que as leituras do Quadros por Segundos sejam imprecisas."
+"Faz os saltos de ciclos da Emotion Engine emulada, permitindo que os microprogramas da VU sejam executados em intervalos mais rápidos. Ajuda um pequeno subconjunto de jogos com problemas "
+"de inanição da VU, por exemplo: 'Shadow of the Colossus'. Mais frequentemente, é prejudicial ao desempenho e faz com que as leituras do Quadros por Segundos sejam imprecisas."
 
 #: gui/Panels/SpeedhacksPanel.cpp:179
 msgid "Updates Status Flags only on blocks which will read them, instead of all the time. This is safe most of the time, and Super VU does something similar by default."
-msgstr "Atualiza flags de estado somente nos blocos que vão ler eles, ao contrário de o tempo todo. Isso é seguro na maioria do tempo, e o Super VU faz coisa semelhante por padrão."
+msgstr "Atualiza sinalizadores de estado somente nos blocos que vão ler eles, ao contrário de o tempo todo. Isso é seguro na maioria do tempo, e o Super VU faz coisa semelhante por padrão."
 
 #: gui/Panels/SpeedhacksPanel.cpp:182
 msgid ""
 "Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with 3 or more cores. This is safe for most games, but a few games are incompatible and may hang. In the case of "
 "GS limited games, it may be a slowdown (especially on dual core CPUs)."
 msgstr ""
-"Executa VU1 em uma thread própria (somente microVU1). Em geral, é uma aceleração em CPUs com 3 ou mais núcleos (\"cores\"). Essa opção é segura para a maioria dos jogos, mas alguns "
-"jogos são incompatíveis e podem travar. No caso de jogos limitados pelo GS, pode ser um atraso (especialmente em CPUs dual core)."
+"Executa VU1 em uma thread própria (somente microVU1). Em geral, é uma aceleração em CPUs com 3 ou mais núcleos (\"cores\"). Essa opção é segura para a maioria dos jogos, mas alguns jogos "
+"são incompatíveis e podem travar. No caso de jogos limitados pelo GS, pode ser um atraso (especialmente em CPUs dual core)."
 
 # "GSが限定されたゲームの場合には、（特に、デュアルコアCPUの場合）スローダウンすることがあります。"
 #: gui/Panels/SpeedhacksPanel.cpp:200
@@ -528,8 +525,8 @@ msgstr "Habilite isso se você achar que a sincronização da thread MTGS está 
 #: vtlb.cpp:835
 msgid "Your system is too low on virtual resources for PCSX2 to run. This can be caused by having a small or disabled swapfile, or by other programs that are hogging resources."
 msgstr ""
-"Seu sistema está com poucos recursos virtuais para executar PCSX2. Isso pode estar sendo causado por ter um arquivo swap pequeno ou desabilitado, ou por haver outros programas "
-"utilizando muito dos recursos."
+"Seu sistema está com poucos recursos virtuais para executar PCSX2. Isso pode estar sendo causado por ter um arquivo swap pequeno ou desabilitado, ou por haver outros programas utilizando "
+"muito dos recursos."
 
 #: x86/sVU_zerorec.cpp:367
 msgid ""
@@ -544,8 +541,8 @@ msgstr ""
 
 #~ msgid ""
 #~ "Enables Vsync when the framerate is exactly at full speed. Should it fall below that, Vsync gets disabled to avoid further performance penalties. Note: This currently only works well "
-#~ "with GSdx as GS plugin and with it configured to use DX10/11 hardware rendering. Any other plugin or rendering mode will either ignore it or produce a black frame that blinks "
-#~ "whenever the mode switches. It also requires Vsync to be enabled."
+#~ "with GSdx as GS plugin and with it configured to use DX10/11 hardware rendering. Any other plugin or rendering mode will either ignore it or produce a black frame that blinks whenever "
+#~ "the mode switches. It also requires Vsync to be enabled."
 #~ msgstr ""
 #~ "Habilita a Sincronia Vertical quando a taxa de quadro está exatamente na velocidade máxima. Abaixo disso, a Sincronia Vertical é desabilitada para evitar problemas de performance. "
 #~ "Nota: Só funciona bem com GSdx como plug-in de GS, estando esse configurado para usar renderização de hardware DX10/11. Qualquer outro plug-in ou modo de renderização vai ignorar a "
