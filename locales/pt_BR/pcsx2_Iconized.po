@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: pcsx2_Iconized master\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2019-08-20 11:34-0300\n"
+"PO-Revision-Date: 2019-08-20 11:48-0300\n"
 "Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -419,7 +419,7 @@ msgstr "75% de taxa de ciclo. Leve redução dos requisitos da CPU. Aceleração
 
 #: gui/Panels/SpeedhacksPanel.cpp:47
 msgid "Default cyclerate. Runs the emulated PS2 Emotion Engine at normal speed."
-msgstr "Taxa de ciclo padrão. Executa a emulação do Emotion Engine do PS2 na velocidade normal."
+msgstr "Taxa de ciclo padrão. Executa a emulação da Emotion Engine do PS2 na velocidade normal."
 
 #: gui/Panels/SpeedhacksPanel.cpp:53
 msgid "130% cyclerate. Moderate increase of CPU requirements. Variable framerate games may have higher internal framerates."
@@ -592,7 +592,7 @@ msgstr ""
 #~ msgstr "Inclui eventos ociosos de processamento e alguns outros usos de eventos incomuns."
 
 #~ msgid "Internal Memorycard Plugin failed to initialize."
-#~ msgstr "Plug-in de  Cartão de Memória interno falhou em inicializar."
+#~ msgstr "Plug-in de Cartão de Memória interno falhou em inicializar."
 
 #~ msgid "It's what I use (the programmer guy)."
 #~ msgstr "É o que eu uso (o programador)."

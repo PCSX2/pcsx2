@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: pcsx2_Main master\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2019-08-20 11:34-0300\n"
+"PO-Revision-Date: 2019-08-20 11:48-0300\n"
 "Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>; Guilherme Dias "
 "<guilhermedias000@gmail.com>\n"
 "Language-Team: \n"
@@ -219,15 +219,15 @@ msgstr ""
 
 #: pcsx2/SourceLog.cpp:106
 msgid "Shows the game developer's logging text (EE processor)"
-msgstr "Exibe  o texto de registro do desenvolvedor do jogo (processador EE)"
+msgstr "Exibe o texto de registro do desenvolvedor do jogo (processador EE)"
 
 #: pcsx2/SourceLog.cpp:111
 msgid "Shows the game developer's logging text (IOP processor)"
-msgstr "Exibe  o texto de registro do desenvolvedor do jogo (processador IOP)"
+msgstr "Exibe o texto de registro do desenvolvedor do jogo (processador IOP)"
 
 #: pcsx2/SourceLog.cpp:116
 msgid "Shows DECI2 debugging logs (EE processor)"
-msgstr "Exibe  os registros de depuração de DECI2 (processador EE)"
+msgstr "Exibe os registros de depuração de DECI2 (processador EE)"
 
 #: pcsx2/SourceLog.cpp:121
 msgid "Shows strings printed to the system output stream."
@@ -814,7 +814,7 @@ msgstr "Desenvolvimento/&Verboso"
 
 #: pcsx2/gui/ConsoleLogger.cpp:445
 msgid "Shows PCSX2 developer logs"
-msgstr "Exibe  registros de desenvolvimento do PCSX2"
+msgstr "Exibe registros de desenvolvimento do PCSX2"
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
 msgid "&CDVD reads"
@@ -822,7 +822,7 @@ msgstr "Leituras de &CDVD"
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
 msgid "Shows disk read activity"
-msgstr "Exibe  atividade de leitura do disco"
+msgstr "Exibe atividade de leitura do disco"
 
 #: pcsx2/gui/ConsoleLogger.cpp:463
 msgid "&Enable all"
