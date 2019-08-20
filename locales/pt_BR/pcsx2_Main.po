@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2019-08-20 12:16-0300\n"
+"PO-Revision-Date: 2019-08-20 12:27-0300\n"
 "Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>; Guilherme Dias "
 "<guilhermedias000@gmail.com>\n"
 "Language-Team: \n"
@@ -2151,7 +2151,7 @@ msgstr "Correção para vídeos do FFX - Corrige má sobreposição de gráficos
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:68
 msgid "EE timing hack - Multi purpose hack. Try if all else fails."
-msgstr "Hack de tempo da EE - hack multipropósito. Tente se tudo mais falhar."
+msgstr "Hack de tempo da EE - Hack multipropósito. Tente se tudo mais falhar."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:73
 msgid "Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."
@@ -2196,7 +2196,7 @@ msgstr "Hack para evitar contantes recompilações do I bit do VU (Scarface The 
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:112
 msgid "VU I bit Hack avoid constant recompilation (Crash Tag Team Racing)"
-msgstr "Hack bit VU I: evita recompilação constante (Crash Tag Team Racing)"
+msgstr "Hack bit VU I - Evita recompilação constante (Crash Tag Team Racing)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:123
 msgid "Enable manual game fixes [Not recommended]"
