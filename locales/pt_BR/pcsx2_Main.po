@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: pcsx2_Main master\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2019-08-19 19:28-0300\n"
+"PO-Revision-Date: 2019-08-19 22:15-0300\n"
 "Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>; Guilherme Dias "
 "<guilhermedias000@gmail.com>\n"
 "Language-Team: \n"
@@ -2770,7 +2770,7 @@ msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
 "Boa aceleração e alta compatibilidade; pode ocasionar gráficos ruins... "
-"[recomendado]"
+"[Recomendado]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid "MTVU (Multi-Threaded microVU1)"
@@ -2798,7 +2798,7 @@ msgid ""
 "[Recommended]"
 msgstr ""
 "Imensa aceleração para alguns jogos, com quase nenhum efeito colateral. "
-"[recomendado]"
+"[Recomendado]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
 msgid "Enable Wait Loop Detection"
@@ -2809,7 +2809,7 @@ msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "Aceleração moderada para alguns jogos, com nenhum efeito colateral conhecido. "
-"[recomendado]"
+"[Recomendado]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
 msgid "Enable fast CDVD"
@@ -2817,7 +2817,7 @@ msgstr "Ativar CDVD rápido"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:197
 msgid "Fast disc access, less loading times. [Not Recommended]"
-msgstr "Acesso rápido ao disco, menor tempo de carregamento. [Não Recomendado]"
+msgstr "Acesso rápido ao disco, menor tempo de carregamento. [Não recomendado]"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:32
 msgid "Disable Framelimiting"
