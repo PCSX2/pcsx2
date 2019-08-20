@@ -1,13 +1,13 @@
 # Brazilian Portuguese Translation for pcsx2 (Main)
-# Copyright (C) 2017 PCSX2 Dev Team
+# Copyright (C) 2019 PCSX2 Dev Team
 # This file is distributed under the same license as the PCSX2 package.
 # Rafael Fontenelle <rffontenelle@gmail.com>, 2011-2017.
 msgid ""
 msgstr ""
-"Project-Id-Version: pcsx2_Main master\n"
+"Project-Id-Version: PCSX2 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2019-08-20 11:48-0300\n"
+"PO-Revision-Date: 2019-08-20 12:16-0300\n"
 "Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>; Guilherme Dias "
 "<guilhermedias000@gmail.com>\n"
 "Language-Team: \n"
@@ -173,7 +173,7 @@ msgstr ""
 
 #: pcsx2/PluginManager.cpp:1489
 msgid "Internal Memorycard Plugin failed to initialize."
-msgstr "O plug-in de cartão de memória interno falhou na inicialização."
+msgstr "O plug-in de Cartão de Memória interno falhou na inicialização."
 
 #: pcsx2/PluginManager.cpp:1882
 msgid "Unloaded Plugin"
@@ -786,7 +786,7 @@ msgstr "&Apagar"
 
 #: pcsx2/gui/ConsoleLogger.cpp:436
 msgid "Clear the log window contents"
-msgstr "Apagar o conteúdo da janela de registros"
+msgstr "Limpa o conteúdo da janela de registros"
 
 #: pcsx2/gui/ConsoleLogger.cpp:438
 msgid "Auto&dock"
@@ -899,7 +899,7 @@ msgstr "Falha na declaração - "
 
 #: pcsx2/gui/Dialogs/BaseConfigurationDialog.cpp:185
 msgid "Saves a snapshot of this settings panel to a PNG file."
-msgstr "Salva uma captura instantânea da imagem do painel de configurações para um arquivo PNG."
+msgstr "Salva uma captura instantânea da tela do painel de configurações para um arquivo PNG."
 
 #: pcsx2/gui/Dialogs/BaseConfigurationDialog.cpp:287
 msgid "Save dialog screenshots to..."
@@ -1274,7 +1274,7 @@ msgstr "Pastas"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:260
 msgid "Language Selector"
-msgstr "Selecionar Idioma"
+msgstr "Seleção de idioma"
 
 #: pcsx2/gui/ExecutorThread.cpp:41
 msgid "Logs events as they are passed to the PS2 virtual machine."
@@ -1314,7 +1314,7 @@ msgstr "Mudar para o compartimento seguinte"
 
 #: pcsx2/gui/GlobalCommands.cpp:639
 msgid "Cycles the current save slot in +1 fashion!"
-msgstr "Altera o compartimento de gravação atual num estilo +1!"
+msgstr "Altera o compartimento do salvamento atual num estilo +1!"
 
 #: pcsx2/gui/GlobalCommands.cpp:645
 msgid "Cycle to prev slot"
@@ -1322,11 +1322,11 @@ msgstr "Mudar para o compartimento anterior"
 
 #: pcsx2/gui/GlobalCommands.cpp:646
 msgid "Cycles the current save slot in -1 fashion!"
-msgstr "Altera o compartimento de gravação atual num estilo -1!"
+msgstr "Altera o compartimento do salvamento atual num estilo -1!"
 
 #: pcsx2/gui/IsoDropTarget.cpp:55
 msgid "Drag and Drop Error"
-msgstr "Erro ao arrastar e soltar"
+msgstr "Erro no arrastar e soltar"
 
 #: pcsx2/gui/IsoDropTarget.cpp:56
 #, c-format
@@ -1435,7 +1435,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:466
 msgid "Enable &Cheats"
-msgstr "Ativar &códigos"
+msgstr "Ativar &trapaças"
 
 #: pcsx2/gui/MainFrame.cpp:469
 msgid "Enable &Widescreen Patches"
@@ -1548,12 +1548,12 @@ msgstr "Multitap &2"
 
 #: pcsx2/gui/MainFrame.cpp:530
 msgid "C&lear all settings..."
-msgstr "&Apagar todas configurações..."
+msgstr "&Limpar todas configurações..."
 
 #: pcsx2/gui/MainFrame.cpp:531
 #, c-format
 msgid "Clears all %s settings and re-runs the startup wizard."
-msgstr "Apaga todas as configurações do %s e reexecuta o assistente de primeiras configurações."
+msgstr "Limpa todas as configurações do %s e reexecuta o assistente de primeiras configurações."
 
 #: pcsx2/gui/MainFrame.cpp:546
 msgid "&About..."
@@ -1589,7 +1589,7 @@ msgstr "Parar gravação"
 
 #: pcsx2/gui/MainFrame.cpp:564
 msgid "Screenshot"
-msgstr "Captura de Tela"
+msgstr "Captura de tela"
 
 #: pcsx2/gui/MainFrame.cpp:569
 msgid "New"
@@ -1621,15 +1621,15 @@ msgstr "Pausa com segurança a emulação e preserva o estado do PS2."
 
 #: pcsx2/gui/MainFrame.cpp:658
 msgid "R&esume"
-msgstr "R&etomar"
+msgstr "&Continuar"
 
 #: pcsx2/gui/MainFrame.cpp:659
 msgid "Resumes the suspended emulation state."
-msgstr "Retoma o estado da emulação suspensa."
+msgstr "Continua o estado da emulação suspensa."
 
 #: pcsx2/gui/MainFrame.cpp:663
 msgid "Pause/Resume"
-msgstr "Pausar/Retomar"
+msgstr "Pausar/Continuar"
 
 #: pcsx2/gui/MainFrame.cpp:664
 msgid "No emulation state is active; cannot suspend or resume."

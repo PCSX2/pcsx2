@@ -1,13 +1,13 @@
 # Brazilian Portuguese Translation for pcsx2 (Iconized)
-# Copyright (C) 2017 PCSX2 Dev Team
+# Copyright (C) 2019 PCSX2 Dev Team
 # This file is distributed under the same license as the PCSX2 package.
 # Rafael Fontenelle <rffontenelle@gmail.com>, 2011-2017.
 msgid ""
 msgstr ""
-"Project-Id-Version: pcsx2_Iconized master\n"
+"Project-Id-Version: PCSX2 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2019-08-20 11:48-0300\n"
+"PO-Revision-Date: 2019-08-20 12:16-0300\n"
 "Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -559,7 +559,7 @@ msgstr ""
 #~ msgstr "Agressivo"
 
 #~ msgid "Aggressive plus"
-#~ msgstr "Agressivo plus"
+#~ msgstr "Muito agressivo"
 
 #~ msgid "Always use this option if you want the safest and surest memory card behavior."
 #~ msgstr "Sempre use essa opção caso você queira o mais seguro e certo dos comportamentos de cartão de memória."
