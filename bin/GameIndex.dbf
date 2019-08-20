@@ -9345,7 +9345,7 @@ Serial = SLES-51203
 Name   = Enter the Matrix
 Region = PAL-M5
 Compat = 5
-EETimingHack = 1
+EETimingHack = 1 // Fixes various VIF errors.
 ---------------------------------------------
 Serial = SLES-51208
 Name   = Rocky
@@ -18484,6 +18484,11 @@ Region = NTSC-K
 	patch=1,EE,0010b894,word,00000000
 	patch=1,EE,0010b7ac,word,00000000
 [/patches]
+---------------------------------------------
+Serial = SLKA-25032
+Name   = Enter the Matrix
+Region = NTSC-K
+EETimingHack = 1 // Fixes various VIF errors.
 ---------------------------------------------
 Serial = SLKA-25033
 Name   = Gregory Horror Show
@@ -31883,7 +31888,7 @@ eeClampMode = 2 // Fixes missing/grey texture or geometry ingame.
 Serial = SLPS-25254
 Name   = Enter the Matrix
 Region = NTSC-J
-EETimingHack = 1
+EETimingHack = 1 // Fixes various VIF errors.
 ---------------------------------------------
 Serial = SLPS-25255
 Name   = Sidewinder V [Premium Flight Box]
@@ -36778,7 +36783,7 @@ Serial = SLUS-20454
 Name   = Enter the Matrix
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1
+EETimingHack = 1 // Fixes various VIF errors.
 ---------------------------------------------
 Serial = SLUS-20455
 Name   = F1 2002
