@@ -2751,11 +2751,11 @@ msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:143
 msgid "EE Cyclerate [Not Recommended]"
-msgstr "Taxa de ciclo do EE [Não Recomendado]"
+msgstr "Taxa de ciclo da EE [Não recomendado]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
 msgid "EE Cycle Skipping [Not Recommended]"
-msgstr "Salto de ciclo do EE [Não Recomendado]"
+msgstr "Salto de ciclo da EE [Não recomendado]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "microVU Hacks"
@@ -2781,7 +2781,7 @@ msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr ""
-"Boa aceleração e alta compatibilidade; pode causar travamento...  [recomendado "
+"Boa aceleração e alta compatibilidade; pode causar travamento...  [Recomendado "
 "para 3 ou mais núcleos]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
