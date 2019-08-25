@@ -35,10 +35,10 @@ static const char* nameFromType(int type)
 
 int InputIsoFile::ReadSync(u8* dst, uint lsn)
 {
-	if (lsn > m_blocks)
+	if (lsn >= m_blocks)
 	{
 		FastFormatUnicode msg;
-		msg.Write("isoFile error: Block index is past the end of file! (%u > %u).", lsn, m_blocks);
+		msg.Write("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
 
 		pxAssertDev(false, msg);
 		Console.Error(msg.c_str());
@@ -50,23 +50,15 @@ int InputIsoFile::ReadSync(u8* dst, uint lsn)
 
 void InputIsoFile::BeginRead2(uint lsn)
 {
-	if (lsn > m_blocks)
+	m_current_lsn = lsn;
+
+	if (lsn >= m_blocks)
 	{
-		FastFormatUnicode msg;
-		msg.Write("isoFile error: Block index is past the end of file! (%u > %u).", lsn, m_blocks);
-
-		pxAssertDev(false, msg);
-		Console.Error(msg.c_str());
-
-		// [TODO] : Throw exception?
-		//  Typically an error like this is bad; indicating an invalid dump or corrupted
-		//  iso file.
-
-		m_current_lsn = -1;
+		// While this usually indicates that the ISO is corrupted, some games do attempt
+		// to read past the end of the disc, so don't error here.
+		DevCon.Warning("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
 		return;
 	}
-	
-	m_current_lsn = lsn;
 
 	if(lsn >= m_read_lsn && lsn < (m_read_lsn+m_read_count))
 	{
@@ -90,12 +82,16 @@ void InputIsoFile::BeginRead2(uint lsn)
 
 int InputIsoFile::FinishRead3(u8* dst, uint mode)
 {
+	// Do nothing for out of bounds disc sector reads. It prevents some games
+	// from hanging (All-Star Baseball 2005, Hello Kitty: Roller Rescue,
+	// Hot Wheels: Beat That! (NTSC), Ratchet & Clank 3 (PAL),
+	// Test Drive: Eve of Destruction, etc.).
+	if (m_current_lsn >= m_blocks)
+		return 0;
+
 	int _offset = 0;
 	int length = 0;
 	int ret = 0;
-
-	if(m_current_lsn < 0)
-		return -1;
 
 	if(m_read_inprogress)
 	{

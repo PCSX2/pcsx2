@@ -56,7 +56,7 @@ static int diskTypeCached = -1;
 
 // used to bridge the gap between the old getBuffer api and the new getBuffer2 api.
 int lastReadSize;
-int lastLSN;		// needed for block dumping
+u32 lastLSN;		// needed for block dumping
 
 // Records last read block length for block dumping
 //static int plsn = 0;
@@ -490,6 +490,12 @@ s32 DoCDVDgetBuffer(u8* buffer)
 
 	if (ret == 0 && blockDumpFile.IsOpened())
 	{
+		cdvdTD td;
+		CDVD->getTD(0, &td);
+
+		if (lastLSN >= td.lsn)
+			return 0;
+
 		if (blockDumpFile.GetBlockSize() == CD_FRAMESIZE_RAW && lastReadSize != 2352)
 		{
 			u8 blockDumpBuffer[CD_FRAMESIZE_RAW];
