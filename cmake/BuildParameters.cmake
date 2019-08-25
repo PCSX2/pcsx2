@@ -306,10 +306,19 @@ set(COMMON_FLAG "-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-bui
 if (DISABLE_SVU)
     set(COMMON_FLAG "${COMMON_FLAG} -DDISABLE_SVU")
 endif()
+
 if(USE_VTUNE)
     set(COMMON_FLAG "${COMMON_FLAG} -DENABLE_VTUNE")
 endif()
+
+# Remove FORTIFY_SOURCE when compiling as debug, because it spams a lot of warnings on clang due to no optimization.
+# Should probably be checked on gcc as well, as the USE_CLANG might not be needed.
+if (USE_CLANG AND CMAKE_BUILD_TYPE MATCHES "Debug")
+set(HARDENING_FLAG "-Wformat -Wformat-security")
+else()
 set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
+endif()
+
 # -Wno-attributes: "always_inline function might not be inlinable" <= real spam (thousand of warnings!!!)
 # -Wno-missing-field-initializers: standard allow to init only the begin of struct/array in static init. Just a silly warning.
 # Note: future GCC (aka GCC 5.1.1) has less false positive so warning could maybe put back
