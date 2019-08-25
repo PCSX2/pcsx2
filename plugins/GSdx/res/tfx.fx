@@ -52,6 +52,7 @@
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
+#define PS_AEM_FMT (PS_FMT & 3)
 
 struct VS_INPUT
 {
@@ -140,205 +141,6 @@ float4 sample_c(float2 uv)
 float4 sample_p(float u)
 {
 	return Palette.Sample(PaletteSampler, u);
-}
-
-float4 fetch_raw_color(int2 xy)
-{
-	return RawTexture.Load(int3(xy, 0));
-}
-
-int fetch_raw_depth(int2 xy)
-{
-	float4 col = RawTexture.Load(int3(xy, 0));
-	return (int)(col.r * exp2(32.0f));
-}
-
-float4 fetch_c(int2 uv)
-{
-	return Texture.Load(int3(uv, 0));
-}
-
-float4 fetch_red(int2 xy)
-{
-	float4 rt;
-
-	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
-	{
-		int depth = (fetch_raw_depth(xy)) & 0xFF;
-		rt = (float4)(depth) / 255.0f;
-	}
-	else
-	{
-		rt = fetch_raw_color(xy);
-	}
-
-	return sample_p(rt.r);
-}
-
-float4 fetch_blue(int2 xy)
-{
-	float4 rt;
-
-	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
-	{
-		int depth = (fetch_raw_depth(xy) >> 16) & 0xFF;
-		rt = (float4)(depth) / 255.0f;
-	}
-	else
-	{
-		rt = fetch_raw_color(xy);
-	}
-
-	return sample_p(rt.b);
-}
-
-float4 fetch_green(int2 xy)
-{
-	float4 rt = fetch_raw_color(xy);
-	return sample_p(rt.g);
-}
-
-float4 fetch_alpha(int2 xy)
-{
-	float4 rt = fetch_raw_color(xy);
-	return sample_p(rt.a);
-}
-
-float4 fetch_rgb(int2 xy)
-{
-	float4 rt = fetch_raw_color(xy);
-	float4 c = float4(sample_p(rt.r).r, sample_p(rt.g).g, sample_p(rt.b).b, 1.0);
-	return c;
-}
-
-float4 fetch_gXbY(int2 xy)
-{
-	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
-	{
-		int depth = fetch_raw_depth(xy);
-		int bg = (depth >> (8 + ChannelShuffle.w)) & 0xFF;
-		return (float4)(bg);
-	}
-	else
-	{
-		int4 rt = (int4)(fetch_raw_color(xy) * 255.0);
-		int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
-		int blue = (rt.b << ChannelShuffle.y) & ChannelShuffle.x;
-		return (float4)(green | blue) / 255.0;
-	}
-}
-
-#define PS_AEM_FMT (PS_FMT & 3)
-
-int2 clamp_wrap_uv_depth(int2 uv)
-{
-	int4 mask = (int4)MskFix << 4;
-	if (PS_WMS == PS_WMT)
-	{
-		if (PS_WMS == 2)
-		{
-			uv = clamp(uv, mask.xy, mask.zw);
-		}
-		else if (PS_WMS == 3)
-		{
-			uv = (uv & mask.xy) | mask.zw;
-		}
-	}
-	else
-	{
-		if (PS_WMS == 2)
-		{
-			uv.x = clamp(uv.x, mask.x, mask.z);
-		}
-		else if (PS_WMS == 3)
-		{
-			uv.x = (uv.x & mask.x) | mask.z;
-		}
-		if (PS_WMT == 2)
-		{
-			uv.y = clamp(uv.y, mask.y, mask.w);
-		}
-		else if (PS_WMT == 3)
-		{
-			uv.y = (uv.y & mask.y) | mask.w;
-		}
-	}
-	return uv;
-}
-
-float4 sample_depth(float2 st, float2 pos)
-{
-	float2 uv_f = (float2)clamp_wrap_uv_depth(int2(st)) * (float2)PS_SCALE_FACTOR * (float2)(1.0f / 16.0f);
-	int2 uv = (int2)uv_f;
-
-	float4 t = (float4)(0.0f);
-
-	if (PS_TALES_OF_ABYSS_HLE == 1)
-	{
-		// Warning: UV can't be used in channel effect
-		int depth = fetch_raw_depth(pos);
-
-		// Convert msb based on the palette
-		t = Palette.Load(int3((depth >> 8) & 0xFF, 0, 0));
-	}
-	else if (PS_URBAN_CHAOS_HLE == 1)
-	{
-		// Depth buffer is read as a RGB5A1 texture. The game try to extract the green channel.
-		// So it will do a first channel trick to extract lsb, value is right-shifted.
-		// Then a new channel trick to extract msb which will shifted to the left.
-		// OpenGL uses a FLOAT32 format for the depth so it requires a couple of conversion.
-		// To be faster both steps (msb&lsb) are done in a single pass.
-
-		// Warning: UV can't be used in channel effect
-		int depth = fetch_raw_depth(pos);
-		
-		// Convert lsb based on the palette
-		t = Palette.Load(int3(depth & 0xFF, 0, 0));
-
-		// Msb is easier
-		float green = (float)((depth >> 8) & 0xFF) * 36.0f;
-		green = min(green, 255.0f);
-		t.g += green / 255.0f;
-	}
-	else if (PS_DEPTH_FMT == 1)
-	{
-		// Based on ps_main11 of convert
-
-		// Convert a FLOAT32 depth texture into a RGBA color texture
-		const float4 bitSh = float4(exp2(24.0f), exp2(16.0f), exp2(8.0f), exp2(0.0f));
-		const float4 bitMsk = float4(0.0, 1.0f / 256.0f, 1.0f / 256.0f, 1.0f / 256.0f);
-
-		float4 res = frac((float4)fetch_c(uv).r * bitSh);
-
-		t = (res - res.xxyz * bitMsk) * 256.0f / 255.0f;
-	}
-	else if (PS_DEPTH_FMT == 2)
-	{
-		// Based on ps_main12 of convert
-
-		// Convert a FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
-		const float4 bitSh = float4(exp2(32.0f), exp2(27.0f), exp2(22.0f), exp2(17.0f));
-		const uint4 bitMsk = uint4(0x1F, 0x1F, 0x1F, 0x1);
-		uint4 color = (uint4)((float4)fetch_c(uv).r * bitSh) & bitMsk;
-
-		t = (float4)color * float4(8.0f, 8.0f, 8.0f, 128.0f);
-	}
-	else if (PS_DEPTH_FMT == 3)
-	{
-		// Convert a RGBA/RGB5A1 color texture into a RGBA/RGB5A1 color texture
-		t = fetch_c(uv);
-	}
-
-	if (PS_AEM_FMT == FMT_24)
-	{
-		t.a = ((PS_AEM == 0) || any(bool3(t.rgb))) ? 255.0f * TA.x : 0.0f;
-	}
-	else if (PS_AEM_FMT == FMT_16)
-	{
-		t.a = t.a >= 128.0f ? 255.0f * TA.y : ((PS_AEM == 0) || any(bool3(t.rgb))) ? 255.0f * TA.x : 0.0f;
-	}
-
-	return t;
 }
 
 float4 clamp_wrap_uv(float4 uv)
@@ -445,6 +247,211 @@ float4x4 sample_4p(float4 u)
 	c[3] = sample_p(u.w);
 
 	return c;
+}
+
+int fetch_raw_depth(int2 xy)
+{
+	float4 col = RawTexture.Load(int3(xy, 0));
+	return (int)(col.r * exp2(32.0f));
+}
+
+float4 fetch_raw_color(int2 xy)
+{
+	return RawTexture.Load(int3(xy, 0));
+}
+
+float4 fetch_c(int2 uv)
+{
+	return Texture.Load(int3(uv, 0));
+}
+
+//////////////////////////////////////////////////////////////////////
+// Depth sampling
+//////////////////////////////////////////////////////////////////////
+
+int2 clamp_wrap_uv_depth(int2 uv)
+{
+	int4 mask = (int4)MskFix << 4;
+	if (PS_WMS == PS_WMT)
+	{
+		if (PS_WMS == 2)
+		{
+			uv = clamp(uv, mask.xy, mask.zw);
+		}
+		else if (PS_WMS == 3)
+		{
+			uv = (uv & mask.xy) | mask.zw;
+		}
+	}
+	else
+	{
+		if (PS_WMS == 2)
+		{
+			uv.x = clamp(uv.x, mask.x, mask.z);
+		}
+		else if (PS_WMS == 3)
+		{
+			uv.x = (uv.x & mask.x) | mask.z;
+		}
+		if (PS_WMT == 2)
+		{
+			uv.y = clamp(uv.y, mask.y, mask.w);
+		}
+		else if (PS_WMT == 3)
+		{
+			uv.y = (uv.y & mask.y) | mask.w;
+		}
+	}
+	return uv;
+}
+
+float4 sample_depth(float2 st, float2 pos)
+{
+	float2 uv_f = (float2)clamp_wrap_uv_depth(int2(st)) * (float2)PS_SCALE_FACTOR * (float2)(1.0f / 16.0f);
+	int2 uv = (int2)uv_f;
+
+	float4 t = (float4)(0.0f);
+
+	if (PS_TALES_OF_ABYSS_HLE == 1)
+	{
+		// Warning: UV can't be used in channel effect
+		int depth = fetch_raw_depth(pos);
+
+		// Convert msb based on the palette
+		t = Palette.Load(int3((depth >> 8) & 0xFF, 0, 0));
+	}
+	else if (PS_URBAN_CHAOS_HLE == 1)
+	{
+		// Depth buffer is read as a RGB5A1 texture. The game try to extract the green channel.
+		// So it will do a first channel trick to extract lsb, value is right-shifted.
+		// Then a new channel trick to extract msb which will shifted to the left.
+		// OpenGL uses a FLOAT32 format for the depth so it requires a couple of conversion.
+		// To be faster both steps (msb&lsb) are done in a single pass.
+
+		// Warning: UV can't be used in channel effect
+		int depth = fetch_raw_depth(pos);
+
+		// Convert lsb based on the palette
+		t = Palette.Load(int3(depth & 0xFF, 0, 0));
+
+		// Msb is easier
+		float green = (float)((depth >> 8) & 0xFF) * 36.0f;
+		green = min(green, 255.0f);
+		t.g += green / 255.0f;
+	}
+	else if (PS_DEPTH_FMT == 1)
+	{
+		// Based on ps_main11 of convert
+
+		// Convert a FLOAT32 depth texture into a RGBA color texture
+		const float4 bitSh = float4(exp2(24.0f), exp2(16.0f), exp2(8.0f), exp2(0.0f));
+		const float4 bitMsk = float4(0.0, 1.0f / 256.0f, 1.0f / 256.0f, 1.0f / 256.0f);
+
+		float4 res = frac((float4)fetch_c(uv).r * bitSh);
+
+		t = (res - res.xxyz * bitMsk) * 256.0f / 255.0f;
+	}
+	else if (PS_DEPTH_FMT == 2)
+	{
+		// Based on ps_main12 of convert
+
+		// Convert a FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
+		const float4 bitSh = float4(exp2(32.0f), exp2(27.0f), exp2(22.0f), exp2(17.0f));
+		const uint4 bitMsk = uint4(0x1F, 0x1F, 0x1F, 0x1);
+		uint4 color = (uint4)((float4)fetch_c(uv).r * bitSh) & bitMsk;
+
+		t = (float4)color * float4(8.0f, 8.0f, 8.0f, 128.0f);
+	}
+	else if (PS_DEPTH_FMT == 3)
+	{
+		// Convert a RGBA/RGB5A1 color texture into a RGBA/RGB5A1 color texture
+		t = fetch_c(uv);
+	}
+
+	if (PS_AEM_FMT == FMT_24)
+	{
+		t.a = ((PS_AEM == 0) || any(bool3(t.rgb))) ? 255.0f * TA.x : 0.0f;
+	}
+	else if (PS_AEM_FMT == FMT_16)
+	{
+		t.a = t.a >= 128.0f ? 255.0f * TA.y : ((PS_AEM == 0) || any(bool3(t.rgb))) ? 255.0f * TA.x : 0.0f;
+	}
+
+	return t;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Fetch a Single Channel
+//////////////////////////////////////////////////////////////////////
+
+float4 fetch_red(int2 xy)
+{
+	float4 rt;
+
+	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
+	{
+		int depth = (fetch_raw_depth(xy)) & 0xFF;
+		rt = (float4)(depth) / 255.0f;
+	}
+	else
+	{
+		rt = fetch_raw_color(xy);
+	}
+
+	return sample_p(rt.r);
+}
+
+float4 fetch_blue(int2 xy)
+{
+	float4 rt;
+
+	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
+	{
+		int depth = (fetch_raw_depth(xy) >> 16) & 0xFF;
+		rt = (float4)(depth) / 255.0f;
+	}
+	else
+	{
+		rt = fetch_raw_color(xy);
+	}
+
+	return sample_p(rt.b);
+}
+
+float4 fetch_green(int2 xy)
+{
+	float4 rt = fetch_raw_color(xy);
+	return sample_p(rt.g);
+}
+
+float4 fetch_alpha(int2 xy)
+{
+	float4 rt = fetch_raw_color(xy);
+	return sample_p(rt.a);
+}
+
+float4 fetch_rgb(int2 xy)
+{
+	float4 rt = fetch_raw_color(xy);
+	float4 c = float4(sample_p(rt.r).r, sample_p(rt.g).g, sample_p(rt.b).b, 1.0);
+	return c;
+}
+
+float4 fetch_gXbY(int2 xy)
+{
+	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
+	{
+		int depth = fetch_raw_depth(xy);
+		int bg = (depth >> (8 + ChannelShuffle.w)) & 0xFF;
+		return (float4)(bg);
+	}
+	else
+	{
+		int4 rt = (int4)(fetch_raw_color(xy) * 255.0);
+		int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
+		int blue = (rt.b << ChannelShuffle.y) & ChannelShuffle.x;
+		return (float4)(green | blue) / 255.0;
+	}
 }
 
 float4 sample_color(float2 st)
@@ -564,22 +571,22 @@ void atst(float4 c)
 	float a = trunc(c.a * 255 + 0.01);
 
 #if 0
-    switch(Uber_ATST) {
-        case 0:
-            break;
-        case 1:
-            if (a > AREF) discard;
-            break;
-        case 2:
-            if (a < AREF) discard;
-            break;
-        case 3:
-            if (abs(a - AREF) > 0.5f) discard;
-            break;
-        case 4:
-            if (abs(a - AREF) < 0.5f) discard;
-            break;
-    }
+	switch(Uber_ATST) {
+		case 0:
+			break;
+		case 1:
+			if (a > AREF) discard;
+			break;
+		case 2:
+			if (a < AREF) discard;
+			break;
+		case 3:
+			if (abs(a - AREF) > 0.5f) discard;
+			break;
+		case 4:
+			if (abs(a - AREF) < 0.5f) discard;
+			break;
+	}
 
 #endif
 
@@ -663,6 +670,112 @@ float4 ps_color(PS_INPUT input)
 	return c;
 }
 
+void ps_fbmask(inout float4 C, float2 pos_xy)
+{
+	if (PS_FBMASK)
+	{
+		float4 rt = RtSampler.Load(int3(pos_xy, 0));
+		uint4 denorm_rt = uint4(rt * 255.0f + 0.5f);
+		uint4 denorm_c = uint4(C * 255.0f + 0.5f);
+		C = float4((denorm_c & ~FbMask) | (denorm_rt & FbMask)) / 255.0f;
+	}
+}
+
+void ps_blend(inout float4 Color, float As, float2 pos_xy)
+{
+	if (SW_BLEND)
+	{
+		float4 RT = RtSampler.Load(int3(pos_xy, 0));
+
+		float3 Cs = trunc(Color.rgb * 255.0f + 0.1f);
+		float3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
+		float3 Cv;
+
+		float Ad = (PS_DFMT == FMT_24) ? 1.0f : (RT.a * 255.0f / 128.0f);
+
+		float3 A = (PS_BLEND_A == 0) ? Cs : ((PS_BLEND_A == 1) ? Cd : (float3)0.0f);
+		float3 B = (PS_BLEND_B == 0) ? Cs : ((PS_BLEND_B == 1) ? Cd : (float3)0.0f);
+		float3 C = (PS_BLEND_C == 0) ? As : ((PS_BLEND_C == 1) ? Ad : Af);
+		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
+
+		Cv = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
+
+		// Standard Clamp
+		if (PS_COLCLIP == 0 && PS_HDR == 0)
+			Cv = clamp(Cv, (float3)0.0f, (float3)255.0f);
+
+		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
+		if (PS_DFMT == FMT_16)
+			Cv = (float3)((int3)Cv & (int3)0xF8);
+		else if (PS_COLCLIP == 1 && PS_HDR == 0)
+			Cv = (float3)((int3)Cv & (int3)0xFF);
+
+		Color.rgb = Cv / 255.0f;
+	}
+}
+
+PS_OUTPUT ps_main(PS_INPUT input)
+{
+	float4 C = ps_color(input);
+
+	PS_OUTPUT output;
+
+	if (PS_SHUFFLE)
+	{
+		uint4 denorm_c = uint4(C * 255.0f + 0.5f);
+		uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
+
+		// Mask will take care of the correct destination
+		if (PS_READ_BA)
+			C.rb = C.bb;
+		else
+			C.rb = C.rr;
+
+		if (PS_READ_BA)
+		{
+			if (denorm_c.a & 0x80u)
+				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
+			else
+				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
+		}
+		else
+		{
+			if (denorm_c.g & 0x80u)
+				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
+			else
+				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
+		}
+	}
+
+	// Must be done before alpha correction
+	float alpha_blend = trunc(C.a * 255.0f + 0.05f) / 128.0f;
+
+	// Alpha correction
+	if (PS_DFMT == FMT_16)
+	{
+		float A_one = 128.0f / 255.0f; // alpha output will be 0x80
+		C.a = PS_FBA ? A_one : step(A_one, C.a) * A_one;
+	}
+	else if ((PS_DFMT == FMT_32) && PS_FBA)
+	{
+		float A_one = 128.0f / 255.0f;
+		if (C.a < A_one) C.a += A_one;
+	}
+
+	ps_blend(C, alpha_blend, input.p.xy);
+
+	ps_fbmask(C, input.p.xy);
+
+	output.c0 = C;
+	output.c1 = (float4)(alpha_blend);
+
+	return output;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Vertex Shader
+//////////////////////////////////////////////////////////////////////
+
 VS_OUTPUT vs_main(VS_INPUT input)
 {
 	if(VS_BPPZ == 1) // 24
@@ -719,6 +832,10 @@ VS_OUTPUT vs_main(VS_INPUT input)
 
 	return output;
 }
+
+//////////////////////////////////////////////////////////////////////
+// Geometry Shader
+//////////////////////////////////////////////////////////////////////
 
 #if GS_PRIM == 0 && GS_POINT == 0
 
@@ -877,102 +994,4 @@ void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
 }
 
 #endif
-
-void ps_blend(inout float4 Color, float As, float2 pos_xy)
-{
-	if (SW_BLEND)
-	{
-		float4 RT = RtSampler.Load(int3(pos_xy, 0));
-
-		float3 Cs = trunc(Color.rgb * 255.0f + 0.1f);
-		float3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
-		float3 Cv;
-
-		float Ad = (PS_DFMT == FMT_24) ? 1.0f : (RT.a * 255.0f / 128.0f);
-
-		float3 A = (PS_BLEND_A == 0) ? Cs : ((PS_BLEND_A == 1) ? Cd : (float3)0.0f);
-		float3 B = (PS_BLEND_B == 0) ? Cs : ((PS_BLEND_B == 1) ? Cd : (float3)0.0f);
-		float3 C = (PS_BLEND_C == 0) ? As : ((PS_BLEND_C == 1) ? Ad : Af);
-		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
-
-		Cv = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
-
-		// Standard Clamp
-		if (PS_COLCLIP == 0 && PS_HDR == 0)
-			Cv = clamp(Cv, (float3)0.0f, (float3)255.0f);
-
-		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
-		if (PS_DFMT == FMT_16)
-			Cv = (float3)((int3)Cv & (int3)0xF8);
-		else if (PS_COLCLIP == 1 && PS_HDR == 0)
-			Cv = (float3)((int3)Cv & (int3)0xFF);
-
-		Color.rgb = Cv / 255.0f;
-	}
-}
-
-PS_OUTPUT ps_main(PS_INPUT input)
-{
-	float4 c = ps_color(input);
-
-	PS_OUTPUT output;
-
-	if (PS_SHUFFLE)
-	{
-		uint4 denorm_c = uint4(c * 255.0f + 0.5f);
-		uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
-
-		// Mask will take care of the correct destination
-		if (PS_READ_BA)
-			c.rb = c.bb;
-		else
-			c.rb = c.rr;
-
-		if (PS_READ_BA)
-		{
-			if (denorm_c.a & 0x80u)
-				c.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
-			else
-				c.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
-		}
-		else
-		{
-			if (denorm_c.g & 0x80u)
-				c.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
-			else
-				c.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
-		}
-	}
-
-	// Must be done before alpha correction
-	float alpha_blend = c.a * 255.0f / 128.0f;
-
-	// Blending
-	ps_blend(c, alpha_blend, input.p.xy);
-
-	// Alpha correction
-	if (PS_DFMT == FMT_16) // 16 bit output
-	{
-		float a = 128.0f / 255; // alpha output will be 0x80
-
-		c.a = PS_FBA ? a : step(128.0f / 255.0f, c.a) * a;
-	}
-	else if ((PS_DFMT == FMT_32) && PS_FBA)
-	{
-		if (c.a < 128.0f / 255.0f) c.a += 128.0f / 255.0f;
-	}
-
-	if (PS_FBMASK)
-	{
-		float4 rt = RtSampler.Load(int3(input.p.xy, 0));
-		uint4 denorm_rt = uint4(rt * 255.0f + 0.5f);
-		uint4 denorm_c = uint4(c * 255.0f + 0.5f);
-		c = float4((denorm_c & ~FbMask) | (denorm_rt & FbMask)) / 255.0f;
-	}
-
-	output.c0 = c;
-	output.c1 = (float4)(alpha_blend);
-
-	return output;
-}
 #endif
