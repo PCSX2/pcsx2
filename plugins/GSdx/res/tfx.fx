@@ -57,7 +57,7 @@
 struct VS_INPUT
 {
 	float2 st : TEXCOORD0;
-	float4 c : COLOR0;
+	uint4 c : COLOR0;
 	float q : TEXCOORD1;
 	uint2 p : POSITION0;
 	uint z : POSITION1;
@@ -318,7 +318,7 @@ float4 sample_depth(float2 st, float2 pos)
 		int depth = fetch_raw_depth(pos);
 
 		// Convert msb based on the palette
-		t = Palette.Load(int3((depth >> 8) & 0xFF, 0, 0));
+		t = Palette.Load(int3((depth >> 8) & 0xFF, 0, 0)) * 255.0f;
 	}
 	else if (PS_URBAN_CHAOS_HLE == 1)
 	{
@@ -332,12 +332,12 @@ float4 sample_depth(float2 st, float2 pos)
 		int depth = fetch_raw_depth(pos);
 
 		// Convert lsb based on the palette
-		t = Palette.Load(int3(depth & 0xFF, 0, 0));
+		t = Palette.Load(int3(depth & 0xFF, 0, 0)) * 255.0f;
 
 		// Msb is easier
 		float green = (float)((depth >> 8) & 0xFF) * 36.0f;
 		green = min(green, 255.0f);
-		t.g += green / 255.0f;
+		t.g += green;
 	}
 	else if (PS_DEPTH_FMT == 1)
 	{
@@ -349,7 +349,7 @@ float4 sample_depth(float2 st, float2 pos)
 
 		float4 res = frac((float4)fetch_c(uv).r * bitSh);
 
-		t = (res - res.xxyz * bitMsk) * 256.0f / 255.0f;
+		t = (res - res.xxyz * bitMsk) * 256.0f;
 	}
 	else if (PS_DEPTH_FMT == 2)
 	{
@@ -365,7 +365,7 @@ float4 sample_depth(float2 st, float2 pos)
 	else if (PS_DEPTH_FMT == 3)
 	{
 		// Convert a RGBA/RGB5A1 color texture into a RGBA/RGB5A1 color texture
-		t = fetch_c(uv);
+		t = fetch_c(uv) * 255.0f;
 	}
 
 	if (PS_AEM_FMT == FMT_24)
@@ -398,7 +398,7 @@ float4 fetch_red(int2 xy)
 		rt = fetch_raw_color(xy);
 	}
 
-	return sample_p(rt.r);
+	return sample_p(rt.r) * 255.0f;
 }
 
 float4 fetch_blue(int2 xy)
@@ -415,26 +415,26 @@ float4 fetch_blue(int2 xy)
 		rt = fetch_raw_color(xy);
 	}
 
-	return sample_p(rt.b);
+	return sample_p(rt.b) * 255.0f;
 }
 
 float4 fetch_green(int2 xy)
 {
 	float4 rt = fetch_raw_color(xy);
-	return sample_p(rt.g);
+	return sample_p(rt.g) * 255.0f;
 }
 
 float4 fetch_alpha(int2 xy)
 {
 	float4 rt = fetch_raw_color(xy);
-	return sample_p(rt.a);
+	return sample_p(rt.a) * 255.0f;
 }
 
 float4 fetch_rgb(int2 xy)
 {
 	float4 rt = fetch_raw_color(xy);
 	float4 c = float4(sample_p(rt.r).r, sample_p(rt.g).g, sample_p(rt.b).b, 1.0);
-	return c;
+	return c * 255.0f;
 }
 
 float4 fetch_gXbY(int2 xy)
@@ -450,7 +450,7 @@ float4 fetch_gXbY(int2 xy)
 		int4 rt = (int4)(fetch_raw_color(xy) * 255.0);
 		int green = (rt.g >> ChannelShuffle.w) & ChannelShuffle.z;
 		int blue = (rt.b << ChannelShuffle.y) & ChannelShuffle.x;
-		return (float4)(green | blue) / 255.0;
+		return (float4)(green | blue);
 	}
 }
 
@@ -476,9 +476,10 @@ float4 sample_color(float2 st)
 		{
 			uv = st.xyxy + HalfTexel;
 			dd = frac(uv.xy * WH.zw);
+
 			if(PS_FST == 0)
 			{
-				dd = clamp(dd, (float2)0.0, (float2)0.9999999);
+				dd = clamp(dd, (float2)0.0f, (float2)0.9999999f);
 			}
 		}
 		else
@@ -517,58 +518,43 @@ float4 sample_color(float2 st)
 		t = c[0];
 	}
 
-	return t;
+	return trunc(t * 255.0f + 0.05f);
 }
 
-float4 tfx(float4 t, float4 c)
+float4 tfx(float4 T, float4 C)
 {
-	if(PS_TFX == 0)
-	{
-		if(PS_TCC)
-		{
-			c = c * t * 255.0f / 128;
-		}
-		else
-		{
-			c.rgb = c.rgb * t.rgb * 255.0f / 128;
-		}
-	}
-	else if(PS_TFX == 1)
-	{
-		if(PS_TCC)
-		{
-			c = t;
-		}
-		else
-		{
-			c.rgb = t.rgb;
-		}
-	}
-	else if(PS_TFX == 2)
-	{
-		c.rgb = c.rgb * t.rgb * 255.0f / 128 + c.a;
+	float4 C_out;
+	float4 FxT = trunc(trunc(C) * T / 128.0f);
 
-		if(PS_TCC)
-		{
-			c.a += t.a;
-		}
-	}
-	else if(PS_TFX == 3)
-	{
-		c.rgb = c.rgb * t.rgb * 255.0f / 128 + c.a;
+#if (PS_TFX == 0)
+	C_out = FxT;
+#elif (PS_TFX == 1)
+	C_out = T;
+#elif (PS_TFX == 2)
+	C_out.rgb = FxT.rgb + C.a;
+	C_out.a = T.a + C.a;
+#elif (PS_TFX == 3)
+	C_out.rgb = FxT.rgb + C.a;
+	C_out.a = T.a;
+#else
+	C_out = C;
+#endif
 
-		if(PS_TCC)
-		{
-			c.a = t.a;
-		}
-	}
+#if (PS_TCC == 0)
+	C_out.a = C.a;
+#endif
 
-	return saturate(c);
+#if (PS_TFX == 0) || (PS_TFX == 2) || (PS_TFX == 3)
+	// Clamp only when it is useful
+	C_out = min(C_out, 255.0f);
+#endif
+
+	return C_out;
 }
 
-void atst(float4 c)
+void atst(float4 C)
 {
-	float a = trunc(c.a * 255 + 0.01);
+	float a = C.a;
 
 #if 0
 	switch(Uber_ATST) {
@@ -639,45 +625,43 @@ float4 ps_color(PS_INPUT input)
 #endif
 
 #if PS_CHANNEL_FETCH == 1
-	float4 t = fetch_red(int2(input.p.xy));
+	float4 T = fetch_red(int2(input.p.xy));
 #elif PS_CHANNEL_FETCH == 2
-	float4 t = fetch_green(int2(input.p.xy));
+	float4 T = fetch_green(int2(input.p.xy));
 #elif PS_CHANNEL_FETCH == 3
-	float4 t = fetch_blue(int2(input.p.xy));
+	float4 T = fetch_blue(int2(input.p.xy));
 #elif PS_CHANNEL_FETCH == 4
-	float4 t = fetch_alpha(int2(input.p.xy));
+	float4 T = fetch_alpha(int2(input.p.xy));
 #elif PS_CHANNEL_FETCH == 5
-	float4 t = fetch_rgb(int2(input.p.xy));
+	float4 T = fetch_rgb(int2(input.p.xy));
 #elif PS_CHANNEL_FETCH == 6
-	float4 t = fetch_gXbY(int2(input.p.xy));
+	float4 T = fetch_gXbY(int2(input.p.xy));
 #elif PS_DEPTH_FMT > 0
-	float4 t = sample_depth(st_int, input.p.xy);
+	float4 T = sample_depth(st_int, input.p.xy);
 #else
-	float4 t = sample_color(st);
+	float4 T = sample_color(st);
 #endif
 
-	float4 c = tfx(t, input.c);
+	float4 C = tfx(T, input.c);
 
-	atst(c);
+	atst(C);
 
-	c = fog(c, input.t.z);
+	C = fog(C, input.t.z);
 
 	if(PS_CLR1) // needed for Cd * (As/Ad/F + 1) blending modes
 	{
-		c.rgb = 1;
+		C.rgb = (float3)255.0f;
 	}
 
-	return c;
+	return C;
 }
 
 void ps_fbmask(inout float4 C, float2 pos_xy)
 {
 	if (PS_FBMASK)
 	{
-		float4 rt = RtSampler.Load(int3(pos_xy, 0));
-		uint4 denorm_rt = uint4(rt * 255.0f + 0.5f);
-		uint4 denorm_c = uint4(C * 255.0f + 0.5f);
-		C = float4((denorm_c & ~FbMask) | (denorm_rt & FbMask)) / 255.0f;
+		float4 RT = trunc(RtSampler.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
+		C = (float4)(((uint4)C & ~FbMask) | ((uint4)RT & FbMask));
 	}
 }
 
@@ -685,13 +669,13 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 {
 	if (SW_BLEND)
 	{
-		float4 RT = RtSampler.Load(int3(pos_xy, 0));
+		float4 RT = trunc(RtSampler.Load(int3(pos_xy, 0)) * 255.0f + 0.1f);
 
-		float3 Cs = trunc(Color.rgb * 255.0f + 0.1f);
-		float3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
+		float Ad = (PS_DFMT == FMT_24) ? 1.0f : RT.a / 128.0f;
+
+		float3 Cd = RT.rgb;
+		float3 Cs = Color.rgb;
 		float3 Cv;
-
-		float Ad = (PS_DFMT == FMT_24) ? 1.0f : (RT.a * 255.0f / 128.0f);
 
 		float3 A = (PS_BLEND_A == 0) ? Cs : ((PS_BLEND_A == 1) ? Cd : (float3)0.0f);
 		float3 B = (PS_BLEND_B == 0) ? Cs : ((PS_BLEND_B == 1) ? Cd : (float3)0.0f);
@@ -710,7 +694,7 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 		else if (PS_COLCLIP == 1 && PS_HDR == 0)
 			Cv = (float3)((int3)Cv & (int3)0xFF);
 
-		Color.rgb = Cv / 255.0f;
+		Color.rgb = Cv;
 	}
 }
 
@@ -722,7 +706,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	if (PS_SHUFFLE)
 	{
-		uint4 denorm_c = uint4(C * 255.0f + 0.5f);
+		uint4 denorm_c = uint4(C);
 		uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
 
 		// Mask will take care of the correct destination
@@ -734,31 +718,31 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (PS_READ_BA)
 		{
 			if (denorm_c.a & 0x80u)
-				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
+				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)));
 			else
-				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
+				C.ga = (float2)(float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)));
 		}
 		else
 		{
 			if (denorm_c.g & 0x80u)
-				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f);
+				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)));
 			else
-				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f);
+				C.ga = (float2)(float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)));
 		}
 	}
 
 	// Must be done before alpha correction
-	float alpha_blend = trunc(C.a * 255.0f + 0.05f) / 128.0f;
+	float alpha_blend = C.a / 128.0f;
 
 	// Alpha correction
 	if (PS_DFMT == FMT_16)
 	{
-		float A_one = 128.0f / 255.0f; // alpha output will be 0x80
+		float A_one = 128.0f; // alpha output will be 0x80
 		C.a = PS_FBA ? A_one : step(A_one, C.a) * A_one;
 	}
 	else if ((PS_DFMT == FMT_32) && PS_FBA)
 	{
-		float A_one = 128.0f / 255.0f;
+		float A_one = 128.0f;
 		if (C.a < A_one) C.a += A_one;
 	}
 
@@ -766,7 +750,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 	ps_fbmask(C, input.p.xy);
 
-	output.c0 = C;
+	output.c0 = C / 255.0f;
 	output.c1 = (float4)(alpha_blend);
 
 	return output;
