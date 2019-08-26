@@ -283,13 +283,13 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* mipmap_label     = left_label("Mipmapping (Insert):");
 	GtkWidget* mipmap_combo_box = CreateComboBoxFromVector(theApp.m_gs_hw_mipmapping, "mipmap_hw");
 
-	GtkWidget* crc_label     = left_label("Automatic CRC Level:");
+	GtkWidget* crc_label     = left_label("CRC Hack Level:");
 	GtkWidget* crc_combo_box = CreateComboBoxFromVector(theApp.m_gs_crc_level, "crc_hack_level");
 
-	GtkWidget* acc_date_label     = left_label("Accurate Date:");
+	GtkWidget* acc_date_label     = left_label("DATE Accuracy:");
 	GtkWidget* acc_date_combo_box = CreateComboBoxFromVector(theApp.m_gs_acc_date_level, "accurate_date");
 
-	GtkWidget* acc_bld_label     = left_label("Accurate Blending:");
+	GtkWidget* acc_bld_label     = left_label("Blending Accuracy:");
 	GtkWidget* acc_bld_combo_box = CreateComboBoxFromVector(theApp.m_gs_acc_blend_level, "accurate_blending_unit");
 
 	// Some helper string
