@@ -55,6 +55,7 @@ private:
 	void OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds); // always on
 
 	bool OI_BigMuthaTruckers(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
+	bool OI_DBZBT2(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_MetalSlug6(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
@@ -67,10 +68,8 @@ private:
 	bool OI_ItadakiStreet(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_JakGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 
-	void OO_DBZBT2();
 	void OO_MajokkoALaMode2();
 
-	bool CU_DBZBT2();
 	bool CU_MajokkoALaMode2();
 	bool CU_TalesOfAbyss();
 
