@@ -764,6 +764,11 @@ void GSRendererHW::SwSpriteRender()
 	bitbltbuf.DBW = m_context->FRAME.FBW;
 	bitbltbuf.DPSM = m_context->FRAME.PSM;
 
+	ASSERT(m_r.x == 0 && m_r.y == 0);  // No rendering region offset
+	ASSERT(!PRIM->TME || (abs(m_vt.m_min.t.x) <= 1e-3 && abs(m_vt.m_min.t.y) <= 1e-3));  // No input texture offset, if any
+	ASSERT(!PRIM->TME || (abs(m_vt.m_max.t.x - m_r.z) <= 1e-3 && abs(m_vt.m_max.t.y - m_r.w) <= 1e-3));  // No input texture min/mag, if any
+	ASSERT(!PRIM->TME || (m_vt.m_max.t.x <= (1 << m_context->TEX0.TW) && m_vt.m_max.t.y <= (1 << m_context->TEX0.TH)));  // No texture UV wrap, if any
+
 	GIFRegTRXPOS trxpos;
 
 	trxpos.DSAX = 0;
@@ -773,12 +778,8 @@ void GSRendererHW::SwSpriteRender()
 
 	GIFRegTRXREG trxreg;
 
-	GSVector4i r = m_r;  // Rectangle of the draw
-	ASSERT(r.x == 0 && r.y == 0);  // No offset
-	ASSERT(!texture_mapping_enabled || (r.z <= (1 << m_context->TEX0.TW)) && (r.w <= (1 << m_context->TEX0.TH)));  // Input texture is big enough, if any
-
-	trxreg.RRW = r.width();
-	trxreg.RRH = r.height();
+	trxreg.RRW = m_r.z;
+	trxreg.RRH = m_r.w;
 
 	// SW rendering code, mainly taken from GSState::Move(), TRXPOS.DIR{X,Y} management excluded
 
