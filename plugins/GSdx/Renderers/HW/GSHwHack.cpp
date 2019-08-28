@@ -72,22 +72,6 @@ bool GSC_Bully(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if((Aggressive || !s_nativeres) && !fi.TME && (fi.FBP == 0x02a00 || fi.FBP == 0x03000) && fi.FPSM == PSM_PSMCT16)
-		{
-			// Character outlines.
-			// Glow/blur effect. Causes ghosting on upscaled resolution.
-			// Don't enable hack on native res if crc is below aggressive.
-			skip = 10;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1462,7 +1446,6 @@ void GSState::SetupCrcHack()
 
 		// Upscaling hacks
 		lut[CRC::Bully] = GSC_Bully;
-		lut[CRC::DBZBT2] = GSC_DBZBT2;
 		lut[CRC::DBZBT3] = GSC_DBZBT3;
 		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
