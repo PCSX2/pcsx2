@@ -723,7 +723,7 @@ float GSRendererHW::alpha1(int L, int X0, int X1)
 void GSRendererHW::SwSpriteRender()
 {
 	// Supported drawing attributes
-	ASSERT(PRIM->PRIM == 4 || PRIM->PRIM == 6);
+	ASSERT(PRIM->PRIM == GS_TRIANGLESTRIP || PRIM->PRIM == GS_SPRITE);
 	ASSERT(!PRIM->IIP);  // Flat shading method
 	ASSERT(!PRIM->FGE);  // No FOG
 	ASSERT(!PRIM->AA1);  // No antialiasing
