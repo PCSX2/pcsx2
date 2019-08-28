@@ -22,6 +22,8 @@
 #include "stdafx.h"
 #include "GSRendererHW.h"
 
+const float GSRendererHW::SSR_UV_TOLERANCE = 1e-3f;
+
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	: m_width(default_rt_size.x)
 	, m_height(default_rt_size.y)
@@ -765,8 +767,8 @@ void GSRendererHW::SwSpriteRender()
 	bitbltbuf.DPSM = m_context->FRAME.PSM;
 
 	ASSERT(m_r.x == 0 && m_r.y == 0);  // No rendering region offset
-	ASSERT(!PRIM->TME || (abs(m_vt.m_min.t.x) <= 1e-3 && abs(m_vt.m_min.t.y) <= 1e-3));  // No input texture offset, if any
-	ASSERT(!PRIM->TME || (abs(m_vt.m_max.t.x - m_r.z) <= 1e-3 && abs(m_vt.m_max.t.y - m_r.w) <= 1e-3));  // No input texture min/mag, if any
+	ASSERT(!PRIM->TME || (abs(m_vt.m_min.t.x) <= SSR_UV_TOLERANCE && abs(m_vt.m_min.t.y) <= SSR_UV_TOLERANCE));  // No input texture offset, if any
+	ASSERT(!PRIM->TME || (abs(m_vt.m_max.t.x - m_r.z) <= SSR_UV_TOLERANCE && abs(m_vt.m_max.t.y - m_r.w) <= SSR_UV_TOLERANCE));  // No input texture min/mag, if any
 	ASSERT(!PRIM->TME || (m_vt.m_max.t.x <= (1 << m_context->TEX0.TW) && m_vt.m_max.t.y <= (1 << m_context->TEX0.TH)));  // No texture UV wrap, if any
 
 	GIFRegTRXPOS trxpos;
@@ -914,6 +916,59 @@ void GSRendererHW::SwSpriteRender()
 			GSVector4i::storel(&d[dcol[x]], dc);
 		}
 	}
+}
+
+bool GSRendererHW::CanUseSwSpriteRender(bool allow_64x64_sprite)
+{
+	bool r_0_0_64_64 = allow_64x64_sprite ? (m_r == GSVector4i(0, 0, 64, 64)).alltrue() : false;
+	if (r_0_0_64_64 && !allow_64x64_sprite)  // Rendering region 64x64 support is enabled via parameter
+		return false;
+	bool r_0_0_16_16 = (m_r == GSVector4i(0, 0, 16, 16)).alltrue();
+	if (!r_0_0_16_16 && !r_0_0_64_64)  // Rendering region is 16x16 or 64x64, without offset
+		return false;
+	if (PRIM->PRIM != GS_SPRITE
+		&& ((PRIM->IIP && m_vt.m_eq.rgba != 0xffff)
+			|| (PRIM->TME && !PRIM->FST && m_vt.m_eq.q != 0x1)
+			|| m_vt.m_eq.z != 0x1))  // No rasterization
+		return false;
+	if (m_vt.m_primclass != GS_TRIANGLE_CLASS && m_vt.m_primclass != GS_SPRITE_CLASS)  // Triangle or sprite class prims
+		return false;
+	if (PRIM->PRIM != GS_TRIANGLESTRIP && PRIM->PRIM != GS_SPRITE)  // Triangle strip or sprite draw
+		return false;
+	if (m_vt.m_primclass == GS_TRIANGLE_CLASS && (PRIM->PRIM != GS_TRIANGLESTRIP || m_vertex.tail != 4))  // If triangle class, strip draw with 4 vertices (two prims, emulating single sprite prim)
+		return false;
+	// TODO If GS_TRIANGLESTRIP draw, check that the draw is axis aligned
+	if (m_vt.m_primclass == GS_SPRITE_CLASS && (PRIM->PRIM != GS_SPRITE || m_vertex.tail != 2))  // If sprite class, sprite draw with 2 vertices (one prim)
+		return false;
+	if (m_context->DepthRead() || m_context->DepthWrite())  // No depth handling
+		return false;
+	if (m_context->FRAME.PSM != PSM_PSMCT32)  // Frame buffer format is 32 bit color
+		return false;
+	if (PRIM->TME)
+	{ 
+		// Texture mapping enabled
+
+		if (m_context->TEX0.PSM != PSM_PSMCT32)  // Input texture format is 32 bit color
+			return false;
+		if (IsMipMapDraw())  // No mipmapping
+			return false;
+		if (abs(m_vt.m_min.t.x) > SSR_UV_TOLERANCE || abs(m_vt.m_min.t.y) > SSR_UV_TOLERANCE)  // No horizontal nor vertical offset
+			return false;
+		if (abs(m_vt.m_max.t.x - m_r.z) > SSR_UV_TOLERANCE || abs(m_vt.m_max.t.y - m_r.w) > SSR_UV_TOLERANCE)  // No texture width or height mag/min
+			return false;
+		int tw = 1 << m_context->TEX0.TW;
+		int th = 1 << m_context->TEX0.TH;
+		if (m_vt.m_max.t.x > tw || m_vt.m_max.t.y > th)  // No UV wrapping
+			return false;
+	}
+	
+	// The draw call is a good candidate for using the SwSpriteRender to replace the GPU draw
+	// However, some draw attributes might not be supported yet by the SwSpriteRender,
+	// so if any bug occurs in using it, enabling debug build would probably
+	// make failing some of the assertions used in the SwSpriteRender to highlight its limitations.
+	// In that case, either the condition can be added here to discard the draw, or the
+	// SwSpriteRender can be improved by adding the missing features.
+	return true;
 }
 
 template <bool linear>
