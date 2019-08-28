@@ -41,6 +41,8 @@ private:
 	bool m_userhacks_enabled_gs_mem_clear;
 	bool m_userHacks_merge_sprite;
 
+	static const float SSR_UV_TOLERANCE;
+
 	#pragma region hacks
 
 	typedef bool (GSRendererHW::*OI_Ptr)(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
@@ -138,6 +140,7 @@ private:
 	float alpha0(int L, int X0, int X1);
 	float alpha1(int L, int X0, int X1);
 	void SwSpriteRender();
+	bool CanUseSwSpriteRender(bool allow_64x64_sprite);
 
 	template <bool linear> void RoundSpriteOffset();
 
