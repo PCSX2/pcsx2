@@ -347,9 +347,6 @@ void GSdxApp::Init()
 	// D3D Blending option
 	m_default_configuration["accurate_blending_unit_d3d11"]               = "1";
 
-	// OpenCL device. Windows only for now.
-	m_default_configuration["ocldev"]                                     = "";
-
 	// PSX option. Not supported on linux.
 	m_default_configuration["dithering"]                                  = "1";
 	m_default_configuration["ModeRefreshRate"]                            = "0";
@@ -391,6 +388,7 @@ void GSdxApp::Init()
 	m_default_configuration["ModeHeight"]                                 = "480";
 	m_default_configuration["ModeWidth"]                                  = "640";
 	m_default_configuration["NTSC_Saturation"]                            = "1";
+	m_default_configuration["ocldev"]                                     = "";
 #ifdef _WIN32
 	m_default_configuration["osd_fontname"]                               = "C:\\Windows\\Fonts\\tahoma.ttf";
 #else
