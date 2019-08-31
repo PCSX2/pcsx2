@@ -444,12 +444,16 @@ CRC::Game CRC::m_games[] =
 	{0x1B3976AB, Jak1, US, TextureInsideRt},
 	{0x472E7699, Jak1, US, TextureInsideRt},
 	{0xEDE4FE64, Jak1, JP, TextureInsideRt}, // Jak x Daxter: Kyuusekai no Isan
+	{0x2A7FD3B4, Jak1, JP, TextureInsideRt}, // Demo, Taikenba
 	{0x2479F4A9, Jak2, EU, TextureInsideRt},
+	{0xF41C1B29, Jak2, EU, TextureInsideRt}, // Demo
 	{0x9184AAF1, Jak2, US, TextureInsideRt},
 	{0xA2034C69, Jak2, US, TextureInsideRt}, // Demo
 	{0x12804727, Jak3, EU, TextureInsideRt},
 	{0xE59E10BF, Jak3, EU, TextureInsideRt},
+	{0xCA68E4D5, Jak3, EU, TextureInsideRt}, // Demo
 	{0x644CFD03, Jak3, US, TextureInsideRt},
+	{0xD401BC20, Jak3, US, TextureInsideRt}, // Demo
 	{0x23F8D35B, Jak3, NoRegion, TextureInsideRt}, // EU Preview, US Internal test build
 	{0xDF659E77, JakX, EU, TextureInsideRt}, // Jak X: Combat Racing
 	{0xC20596DB, JakX, EU, TextureInsideRt}, // Beta Trial Disc, v0.01
