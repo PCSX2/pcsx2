@@ -40,6 +40,7 @@ CRC::Game CRC::m_games[] =
 	{0x6CF94A43, KazokuKeikakuKokoroNoKizuna, JP, PointListPalette},
 	{0xEDAF602D, DuelSaviorDestiny, JP, PointListPalette},
 	{0xA39517AB, FFX, EU, 0},
+	{0x78D83FD5, FFX, EU, 0}, // Demo
 	{0xA39517AE, FFX, FR, 0},
 	{0x941BB7D9, FFX, DE, 0},
 	{0xA39517A9, FFX, IT, 0},
@@ -49,6 +50,7 @@ CRC::Game CRC::m_games[] =
 	{0xEE97DB5B, FFX, RU, 0},
 	{0xAEC495CC, FFX, RU, 0},
 	{0xBB3D833A, FFX, US, 0},
+	{0xF0800C1E, FFX, US, 0}, // Prototype/Beta
 	{0x6A4EFE60, FFX, JP, 0},
 	{0x3866CA7E, FFX, ASIA, 0}, // int.
 	{0x658597E2, FFX, JP, 0}, // int.
