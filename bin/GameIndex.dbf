@@ -111,11 +111,23 @@ DMABusyHack = 1
 eeRoundMode = 0 // Fixes jump issue.
 GIFFIFOHack = 1 // Fixes flickering sprites.
 ---------------------------------------------
+Serial = PAPX-90222
+Name   = Jak x Daxter: Kyuusekai no Isan [Demo, Taikenba]
+Region = NTSC-J
+---------------------------------------------
+Serial = PAPX-90223
+Name   = Jak x Daxter: Kyuusekai no Isan [Demo, Taikenba]
+Region = NTSC-J
+---------------------------------------------
 Serial = PAPX-90512
 Name   = Gran Turismo 4 - Toyota Prius [Trial]
 Region = NTSC-J
 //eeClampMode = 3 // Text in races works
 vuClampMode = 2 // Text in GT mode works
+---------------------------------------------
+Serial = PAPX-90516
+Name   = Jak and Daxter II [Trial]
+Region = NTSC-J
 ---------------------------------------------
 Serial = PBPX-95201
 Name   = Dead or Alive 2
@@ -1092,7 +1104,7 @@ Name   = Red Faction [Demo]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SCED-50614
-Name   = Jak and Daxter - The Precursor Legacy [Demo]
+Name   = Jak and Daxter: The Precursor Legacy [Demo]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SCED-50642
@@ -1127,6 +1139,10 @@ Compat = 5
 	comment=Must enable FPU Negative Div Hack gamefix for Dakar 2 Demo
 [/patches]
 ---------------------------------------------
+Serial = SCED-51700
+Name   = Jak II: Renegade [Demo]
+Region = PAL-Unk
+---------------------------------------------
 Serial = SCED-52049
 Name   = Dog's Life [Demo]
 Region = PAL-Unk
@@ -1141,6 +1157,10 @@ Compat = 5
 Serial = SCED-52818
 Name   = EyeToy - Chat [Light]
 Region = PAL-M11
+---------------------------------------------
+Serial = SCED-52952
+Name   = Jak 3 [Demo]
+Region = PAL-Unk
 ---------------------------------------------
 Serial = SCED-52970
 Name   = SCEE Hits Demo
@@ -1273,7 +1293,7 @@ Name   = Twisted Metal - Black
 Region = PAL-M5
 ---------------------------------------------
 Serial = SCES-50361
-Name   = Jak and Daxter - The Precursor Legacy
+Name   = Jak and Daxter: The Precursor Legacy
 Region = PAL-M6
 Compat = 5
 ---------------------------------------------
@@ -1413,7 +1433,7 @@ Name   = Space Channel 5 - Part 2
 Region = PAL-M5
 ---------------------------------------------
 Serial = SCES-50614
-Name   = Jak & Daxter - The Precursor Legacy
+Name   = Jak and Daxter: The Precursor Legacy
 Region = PAL-Unk
 ---------------------------------------------
 Serial = SCES-50759
@@ -2722,7 +2742,7 @@ Region = PAL-E-HI // Eng & Hindi.
 Compat = 5
 ---------------------------------------------
 Serial = SCES-55510
-Name   = Jak and Dexter - The Lost Frontier
+Name   = Jak and Daxter: The Lost Frontier
 Region = PAL-M12
 ---------------------------------------------
 Serial = SCES-55535
@@ -3388,7 +3408,7 @@ Name   = Legaia 2 - Duel Saga
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-15021
-Name   = Jak & Daxter 2
+Name   = Jak x Daxter: Kyuusekai no Isan
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-15022
@@ -3552,7 +3572,7 @@ Region = NTSC-J
 MemCardFilter = SCPS-15056/SCPS-15037
 ---------------------------------------------
 Serial = SCPS-15057
-Name   = Jak & Daxter 2
+Name   = Jak and Daxter II
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-15058
@@ -3940,7 +3960,7 @@ Name   = Boku no Summer Vacation [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-19210
-Name   = Jack & Dexter [PlayStation 2 The Best]
+Name   = Jak x Daxter: Kyuusekai no Isan [PlayStation 2 The Best]
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-19211
@@ -4175,7 +4195,7 @@ Name   = Vampire Night
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-55004
-Name   = Jack & Dexter - The Precursor Legacy
+Name   = Jak x Daxter: Kyuusekai no Isan
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-55005
@@ -4372,6 +4392,10 @@ Name   = Tekken Tag Tournament
 Region = NTSC-K
 Compat = 5
 ---------------------------------------------
+Serial = SCPS-56003
+Name   = Jak and Daxter: The Precursor Legacy
+Region = NTSC-K
+---------------------------------------------
 Serial = SCPS-56005
 Name   = Gran Turismo Concept 2002 Tokyo-Seoul
 Region = NTSC-K
@@ -4534,7 +4558,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SCUS-97124
-Name   = Jak and Daxter - The Precursor Legacy
+Name   = Jak and Daxter: The Precursor Legacy
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -4717,11 +4741,11 @@ Region = NTSC-U
 EETimingHack = 1 // Fixes flickering textures.
 ---------------------------------------------
 Serial = SCUS-97170
-Name   = Jak and Daxter - The Precursor Legacy [Cingular Wireless Demo]
+Name   = Jak and Daxter: The Precursor Legacy [Cingular Wireless Demo]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97171
-Name   = Jak and Daxter - The Precursor Legacy [PS Underground Demo]
+Name   = Jak and Daxter: The Precursor Legacy [PS Underground Demo]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SCUS-97172
