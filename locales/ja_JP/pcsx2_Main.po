@@ -1,14 +1,14 @@
-# Copyright (C) 2018 PCSX2 Dev Team
+# Copyright (C) 2019 PCSX2 Dev Team
 # This file is distributed under the same license as the PCSX2 package.
 # Original Translation done by DeltaHF.
-# Chromaryu <knight.ryu12@gmail.com>, 2018.
+# Chromaryu <knight.ryu12@gmail.com>, 2019.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.5.0\n"
+"Project-Id-Version: PCSX2 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2019-05-18 00:54+0900\n"
-"PO-Revision-Date: 2019-05-18 01:05+0900\n"
+"POT-Creation-Date: 2019-08-31 11:47+0900\n"
+"PO-Revision-Date: 2019-08-31 12:00+0900\n"
 "Last-Translator: Chromaryu <knight.ryu12@gmail.com>\n"
 "Language-Team: DeltaHF Chromaryu\n"
 "Language: ja_JP\n"
@@ -96,7 +96,7 @@ msgstr "タスク待機状態..."
 msgid "Includes idle event processing and some other uncommon event usages."
 msgstr "アイドルイベント処理およびその他例外イベントを用途に含みます。"
 
-#: pcsx2/CDVD/InputIsoFile.cpp:252
+#: pcsx2/CDVD/InputIsoFile.cpp:248
 msgid "Unrecognized ISO image file format"
 msgstr "認識できないISOイメージファイル形式です"
 
@@ -119,12 +119,12 @@ msgid ""
 "open."
 msgstr "GSプラグインのロード待機中にMTGSスレッドの応答が停止しました。"
 
-#: pcsx2/PluginManager.cpp:708
+#: pcsx2/PluginManager.cpp:709
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
 msgstr "セーブステートをロードできません。破損しているか不完全です。"
 
-#: pcsx2/PluginManager.cpp:719
+#: pcsx2/PluginManager.cpp:720
 #, c-format
 msgid ""
 "%s plugin failed to open.  Your computer may have insufficient resources, or "
@@ -133,7 +133,7 @@ msgstr ""
 "[%s]プラグインがロードに失敗しました。システムのリソースが不足しているか、互"
 "換性の無いハードウェアやドライバーがあります。"
 
-#: pcsx2/PluginManager.cpp:726
+#: pcsx2/PluginManager.cpp:727
 #, c-format
 msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
@@ -142,17 +142,17 @@ msgstr ""
 "[%s]プラグインが初期化に失敗しました。システムのメモリまたはリソースが不足し"
 "ています。"
 
-#: pcsx2/PluginManager.cpp:954
+#: pcsx2/PluginManager.cpp:955
 #, c-format
 msgid "The configured %s plugin file was not found"
 msgstr "設定された[%s]プラグインファイルが見つかりません"
 
-#: pcsx2/PluginManager.cpp:958
+#: pcsx2/PluginManager.cpp:959
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
 msgstr "設定された[%s]プラグインファイルは無効なDLLです。"
 
-#: pcsx2/PluginManager.cpp:975
+#: pcsx2/PluginManager.cpp:976
 #, c-format
 msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
@@ -161,14 +161,14 @@ msgstr ""
 "設定された[%s]プラグインはPCSX2のプラグインではないか、サポートされていない古"
 "いバージョンのプラグインです。"
 
-#: pcsx2/PluginManager.cpp:1009
+#: pcsx2/PluginManager.cpp:1010
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr ""
 "このプラグインではあなたのハードウェアもしくはソフトウェア、ドライバーはサ"
 "ポートされていません。"
 
-#: pcsx2/PluginManager.cpp:1030
+#: pcsx2/PluginManager.cpp:1031
 msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
@@ -176,7 +176,7 @@ msgstr ""
 "設定されたプラグインはPCSX2のプラグインではないか、サポートされていない古い"
 "バージョンのプラグインです。"
 
-#: pcsx2/PluginManager.cpp:1055
+#: pcsx2/PluginManager.cpp:1056
 #, c-format
 msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
@@ -185,11 +185,11 @@ msgstr ""
 "設定された[%s]プラグインはPCSX2のプラグインではないか、サポートされていない古"
 "いバージョンのプラグインです。"
 
-#: pcsx2/PluginManager.cpp:1489
+#: pcsx2/PluginManager.cpp:1490
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "内部メモリーカードプラグインの初期化に失敗しました。"
 
-#: pcsx2/PluginManager.cpp:1882
+#: pcsx2/PluginManager.cpp:1883
 msgid "Unloaded Plugin"
 msgstr "プラグインがロードされていません。"
 
@@ -400,31 +400,31 @@ msgstr ""
 "セーブステートが正常に保存されませんでした。一時ファイルの作成は成功しました"
 "が保存先に移動できませんでした。"
 
-#: pcsx2/gui/AppConfig.cpp:975
+#: pcsx2/gui/AppConfig.cpp:976
 msgid "Safest (No hacks)"
 msgstr "安全（ハックなし)"
 
-#: pcsx2/gui/AppConfig.cpp:976
+#: pcsx2/gui/AppConfig.cpp:977
 msgid "Safe (Default)"
 msgstr "安全（デフォルト）"
 
-#: pcsx2/gui/AppConfig.cpp:977
+#: pcsx2/gui/AppConfig.cpp:978
 msgid "Balanced"
 msgstr "バランス"
 
-#: pcsx2/gui/AppConfig.cpp:978
+#: pcsx2/gui/AppConfig.cpp:979
 msgid "Aggressive"
 msgstr "アクティブ"
 
-#: pcsx2/gui/AppConfig.cpp:979
+#: pcsx2/gui/AppConfig.cpp:980
 msgid "Very Aggressive"
 msgstr "アグレッシブ"
 
-#: pcsx2/gui/AppConfig.cpp:980
+#: pcsx2/gui/AppConfig.cpp:981
 msgid "Mostly Harmful"
 msgstr "ほぼ無益"
 
-#: pcsx2/gui/AppConfig.cpp:1143 pcsx2/gui/AppConfig.cpp:1149
+#: pcsx2/gui/AppConfig.cpp:1144 pcsx2/gui/AppConfig.cpp:1150
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "既存の設定ファイルの上書きに失敗しました。権限がありません。"
 
@@ -670,15 +670,15 @@ msgstr ""
 msgid "%s Commandline Options"
 msgstr "%s　コマンドラインオプション"
 
-#: pcsx2/gui/AppMain.cpp:712
+#: pcsx2/gui/AppMain.cpp:715
 msgid "PCSX2 Unresponsive Thread"
 msgstr "PCSX2 スレッドの応答がありません"
 
-#: pcsx2/gui/AppMain.cpp:719
+#: pcsx2/gui/AppMain.cpp:722
 msgid "Terminate"
 msgstr "終了"
 
-#: pcsx2/gui/AppMain.cpp:1094
+#: pcsx2/gui/AppMain.cpp:1097
 msgid "Executing PS2 Virtual Machine..."
 msgstr "PS2仮想マシン実行中..."
 
@@ -1319,47 +1319,47 @@ msgstr "言語選択"
 msgid "Logs events as they are passed to the PS2 virtual machine."
 msgstr "PS2仮想マシンに送られるイベントのログ"
 
-#: pcsx2/gui/GlobalCommands.cpp:315
+#: pcsx2/gui/GlobalCommands.cpp:316
 msgid "Exit PCSX2?"
 msgstr "PCSX2を終了?"
 
-#: pcsx2/gui/GlobalCommands.cpp:617
+#: pcsx2/gui/GlobalCommands.cpp:622
 msgid "Save state"
 msgstr "セーブステート"
 
-#: pcsx2/gui/GlobalCommands.cpp:618
+#: pcsx2/gui/GlobalCommands.cpp:623
 msgid "Saves the virtual machine state to the current slot."
 msgstr "仮想マシンステートを選択スロットにセーブします"
 
-#: pcsx2/gui/GlobalCommands.cpp:624
+#: pcsx2/gui/GlobalCommands.cpp:629
 msgid "Load state"
 msgstr "ロードステート"
 
-#: pcsx2/gui/GlobalCommands.cpp:625
+#: pcsx2/gui/GlobalCommands.cpp:630
 msgid "Loads a virtual machine state from the current slot."
 msgstr "仮想マシンステートを選択スロットからロードします。"
 
-#: pcsx2/gui/GlobalCommands.cpp:631
+#: pcsx2/gui/GlobalCommands.cpp:636
 msgid "Load State Backup"
 msgstr "ロードバックアップステート"
 
-#: pcsx2/gui/GlobalCommands.cpp:632
+#: pcsx2/gui/GlobalCommands.cpp:637
 msgid "Loads virtual machine state backup for current slot."
 msgstr "仮想マシンステートを選択スロットのバックアップからロードします。"
 
-#: pcsx2/gui/GlobalCommands.cpp:638
+#: pcsx2/gui/GlobalCommands.cpp:643
 msgid "Cycle to next slot"
 msgstr "次のスロットへ進む"
 
-#: pcsx2/gui/GlobalCommands.cpp:639
+#: pcsx2/gui/GlobalCommands.cpp:644
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "現在のセーブスロットから＋１サイクル移動します。"
 
-#: pcsx2/gui/GlobalCommands.cpp:645
+#: pcsx2/gui/GlobalCommands.cpp:650
 msgid "Cycle to prev slot"
 msgstr "前のスロットへ戻る"
 
-#: pcsx2/gui/GlobalCommands.cpp:646
+#: pcsx2/gui/GlobalCommands.cpp:651
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "現在のセーブスロットから－１サイクル移動します。"
 
@@ -2668,7 +2668,7 @@ msgstr ""
 "理由： %s\n"
 "\n"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:718
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:786
 msgid "Completing tasks..."
 msgstr "タスク処理中..."
 
