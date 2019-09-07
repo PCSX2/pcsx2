@@ -41,10 +41,6 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			_("Games that need this hack to boot:\n * Star Ocean 3\n * Radiata Stories\n * Valkyrie Profile 2")
 		},
 		{
-			_("VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"),
-			wxEmptyString
-		},
-		{
 			_("FPU Compare Hack - For Digimon Rumble Arena 2."),
 			wxEmptyString
 		},

@@ -23,8 +23,8 @@
 #include "R5900_Profiler.h"
 
 extern u32 maxrecmem;
-extern u32 pc;			         // recompiler pc (also used by the SuperVU! .. why? (air))
-extern int g_branch;	         // set for branch (also used by the SuperVU! .. why? (air))
+extern u32 pc;			         // recompiler pc 
+extern int g_branch;	         // set for branch
 extern u32 target;		         // branch target
 extern u32 s_nBlockCycles;		// cycles of current block recompiling
 

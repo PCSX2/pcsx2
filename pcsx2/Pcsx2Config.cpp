@@ -316,7 +316,6 @@ void Pcsx2Config::GamefixOptions::Set( GamefixId id, bool enabled )
 	switch(id)
 	{
 		case Fix_VuAddSub:		VuAddSubHack		= enabled;	break;
-		case Fix_VuClipFlag:	VuClipFlagHack		= enabled;	break;
 		case Fix_FpuCompare:	FpuCompareHack		= enabled;	break;
 		case Fix_FpuMultiply:	FpuMulHack			= enabled;	break;
 		case Fix_FpuNegDiv:		FpuNegDivHack		= enabled;	break;
@@ -343,7 +342,6 @@ bool Pcsx2Config::GamefixOptions::Get( GamefixId id ) const
 	switch(id)
 	{
 		case Fix_VuAddSub:		return VuAddSubHack;
-		case Fix_VuClipFlag:	return VuClipFlagHack;
 		case Fix_FpuCompare:	return FpuCompareHack;
 		case Fix_FpuMultiply:	return FpuMulHack;
 		case Fix_FpuNegDiv:		return FpuNegDivHack;
@@ -370,7 +368,6 @@ void Pcsx2Config::GamefixOptions::LoadSave( IniInterface& ini )
 	ScopedIniGroup path( ini, L"Gamefixes" );
 
 	IniBitBool( VuAddSubHack );
-	IniBitBool( VuClipFlagHack );
 	IniBitBool( FpuCompareHack );
 	IniBitBool( FpuMulHack );
 	IniBitBool( FpuNegDivHack );

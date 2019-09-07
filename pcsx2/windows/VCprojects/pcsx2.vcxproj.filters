@@ -296,18 +296,6 @@
     <ClCompile Include="..\..\x86\microVU.cpp">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Lower.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Micro.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Upper.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_zerorec.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\VU0.cpp">
       <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
     </ClCompile>
@@ -918,9 +906,6 @@
     <ClInclude Include="..\..\IopCommon.h">
       <Filter>System\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\NakedAsm.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Plugins.h">
       <Filter>System\Include</Filter>
     </ClInclude>
@@ -971,12 +956,6 @@
     </ClInclude>
     <ClInclude Include="..\..\x86\microVU_Misc.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\x86\sVU_Micro.h">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\x86\sVU_zerorec.h">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClInclude>
     <ClInclude Include="..\..\VUflags.h">
       <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>

@@ -50,9 +50,6 @@
 
 // used in VU recs
 #define PROCESS_VU_UPDATEFLAGS 0x10
-#ifndef DISABLE_SVU
-#define PROCESS_VU_SUPER	0x40 // set if using supervu recompilation
-#endif
 #define PROCESS_VU_COP2		0x80 // simple cop2
 
 #define EEREC_S (((info)>>8)&0xf)
@@ -180,14 +177,6 @@ void _flushXMMregs();
 u8 _hasFreeXMMreg();
 void _freeXMMregs();
 int _getNumXMMwrite();
-#ifndef DISABLE_SVU
-int  _allocVFtoXMMreg(VURegs *VU, int xmmreg, int vfreg, int mode);
-int  _allocACCtoXMMreg(VURegs *VU, int xmmreg, int mode);
-void _addNeededVFtoXMMreg(int vfreg);
-void _addNeededACCtoXMMreg();
-void _deleteVFtoXMMreg(int reg, int vu, int flush);
-#endif
-
 void _signExtendSFtoM(uptr mem);
 
 // returns new index of reg, lower 32 bits already in mmx
