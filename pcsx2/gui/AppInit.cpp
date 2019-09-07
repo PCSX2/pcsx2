@@ -187,7 +187,7 @@ void Pcsx2App::AllocateCoreStuffs()
 #ifndef DISABLE_SVU
 				recOps.EnableVU0	= recOps.EnableVU0 && m_CpuProviders->IsRecAvailable_SuperVU0();
 #else
-				recOps.EnableVU1	= false;
+				recOps.EnableVU0	= false;
 #endif
 			}
 
