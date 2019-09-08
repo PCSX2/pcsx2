@@ -1029,6 +1029,16 @@ Serial = SCAJ-30001
 Name   = Xenosaga Episode I [PlayStation 2 The Best]
 Region = NTSC-Unk
 Compat = 5
+[patches = A3D63039]
+	// Disassembled with love by PSI and pandubz.
+	// The game loads a value from what appears to be an uninitialized memory
+	// address into register v0. A later slti op checks if register v0 is less than
+	// 0x1001. If so, the game branches and continues normally. If greater than or
+	// equal to, the game jumps to an exit function, ultimately exiting to the PS2
+	// BIOS. This patch nops out the instruction that sets v0 to the uninitialized
+	// memory, so it will use the xglJpegEncode return value 0 instead.
+	patch=1,EE,0024D7BC,extended,00000000
+[/patches]
 ---------------------------------------------
 Serial = SCAJ-30002
 Name   = Wild ARMs - Alter Code F
@@ -4351,6 +4361,16 @@ Region = NTSC-J
 Serial = SCPS-55901
 Name   = Xenosaga Episode I - Der Wille zur Macht
 Region = NTSC-J
+[patches = A3D63039]
+	// Disassembled with love by PSI and pandubz.
+	// The game loads a value from what appears to be an uninitialized memory
+	// address into register v0. A later slti op checks if register v0 is less than
+	// 0x1001. If so, the game branches and continues normally. If greater than or
+	// equal to, the game jumps to an exit function, ultimately exiting to the PS2
+	// BIOS. This patch nops out the instruction that sets v0 to the uninitialized
+	// memory, so it will use the xglJpegEncode return value 0 instead.
+	patch=1,EE,0024D7BC,extended,00000000
+[/patches]
 ---------------------------------------------
 Serial = SCPS-55902
 Name   = Gran Turismo - Concept 2002 Tokyo-Geneva
@@ -34408,11 +34428,31 @@ Region = NTSC-J
 Serial = SLPS-29001
 Name   = Xenosaga Episode 1 - Der Wille zur Macht [Premium Box]
 Region = NTSC-J
+[patches = A3D63039]
+	// Disassembled with love by PSI and pandubz.
+	// The game loads a value from what appears to be an uninitialized memory
+	// address into register v0. A later slti op checks if register v0 is less than
+	// 0x1001. If so, the game branches and continues normally. If greater than or
+	// equal to, the game jumps to an exit function, ultimately exiting to the PS2
+	// BIOS. This patch nops out the instruction that sets v0 to the uninitialized
+	// memory, so it will use the xglJpegEncode return value 0 instead.
+	patch=1,EE,0024D7BC,extended,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLPS-29002
 Name   = Xenosaga Episode 1 - Der Wille zur Macht
 Region = NTSC-J
 Compat = 5
+[patches = A3D63039]
+	// Disassembled with love by PSI and pandubz.
+	// The game loads a value from what appears to be an uninitialized memory
+	// address into register v0. A later slti op checks if register v0 is less than
+	// 0x1001. If so, the game branches and continues normally. If greater than or
+	// equal to, the game jumps to an exit function, ultimately exiting to the PS2
+	// BIOS. This patch nops out the instruction that sets v0 to the uninitialized
+	// memory, so it will use the xglJpegEncode return value 0 instead.
+	patch=1,EE,0024D7BC,extended,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLPS-29003
 Name   = Lord of the Rings - The Two Towers [Collector's Box]
@@ -34428,6 +34468,16 @@ vuClampMode = 3 // fix white shiny weapons
 Serial = SLPS-29005
 Name   = Xenosaga Episode 1 - Der Wille zur Macht [Reloaded]
 Region = NTSC-J
+[patches = A3D63039]
+	// Disassembled with love by PSI and pandubz.
+	// The game loads a value from what appears to be an uninitialized memory
+	// address into register v0. A later slti op checks if register v0 is less than
+	// 0x1001. If so, the game branches and continues normally. If greater than or
+	// equal to, the game jumps to an exit function, ultimately exiting to the PS2
+	// BIOS. This patch nops out the instruction that sets v0 to the uninitialized
+	// memory, so it will use the xglJpegEncode return value 0 instead.
+	patch=1,EE,0024D7BC,extended,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLPS-72501
 Name   = Final Fantasy X [Mega Hits]
@@ -34844,6 +34894,16 @@ Region = NTSC-J
 Serial = SLPS-73901
 Name   = Xenosaga Episode 1 - Der Wille zur Macht [PlayStation 2 The Best]
 Region = NTSC-J
+[patches = A3D63039]
+	// Disassembled with love by PSI and pandubz.
+	// The game loads a value from what appears to be an uninitialized memory
+	// address into register v0. A later slti op checks if register v0 is less than
+	// 0x1001. If so, the game branches and continues normally. If greater than or
+	// equal to, the game jumps to an exit function, ultimately exiting to the PS2
+	// BIOS. This patch nops out the instruction that sets v0 to the uninitialized
+	// memory, so it will use the xglJpegEncode return value 0 instead.
+	patch=1,EE,0024D7BC,extended,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20001
 Name   = Tekken Tag Tournament
@@ -36857,6 +36917,16 @@ Serial = SLUS-20469
 Name   = Xenosaga - Episode I - Der Wille zur Macht
 Region = NTSC-U
 Compat = 5
+[patches = 6D1276AB]
+	// Disassembled with love by PSI and pandubz.
+	// The game loads a value from what appears to be an uninitialized memory
+	// address into register v0. A later slti op checks if register v0 is less than
+	// 0x1001. If so, the game branches and continues normally. If greater than or
+	// equal to, the game jumps to an exit function, ultimately exiting to the PS2
+	// BIOS. This patch nops out the instruction that sets v0 to the uninitialized
+	// memory, so it will use the xglJpegEncode return value 0 instead.
+	patch=1,EE,0024de34,extended,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20470
 Name   = EverQuest - Online Adventures
