@@ -48,7 +48,7 @@ if(EGL_API AND EGL_FOUND)
 endif()
 
 
-if(OPENCL_API)
+if(OPENCL_FOUND)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DENABLE_OPENCL)
 endif()
 
