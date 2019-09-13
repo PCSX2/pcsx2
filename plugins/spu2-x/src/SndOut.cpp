@@ -88,7 +88,9 @@ SndOutModule *mods[] =
         DSoundOut,
         WaveOut,
 #endif
+#if defined(_WIN32) || defined(SPU2X_PORTAUDIO)
         PortaudioOut,
+#endif
 #if defined(SPU2X_SDL) || defined(SPU2X_SDL2)
         SDLOut,
 #endif
