@@ -124,9 +124,9 @@
             // Web
             // 
             this.Web.ActivateBrowserOnCreation = false;
-            this.Web.Location = new System.Drawing.Point(143, 124);
+            this.Web.Location = new System.Drawing.Point(3, 34);
             this.Web.Name = "Web";
-            this.Web.Size = new System.Drawing.Size(75, 23);
+            this.Web.Size = new System.Drawing.Size(797, 407);
             this.Web.TabIndex = 9;
             // 
             // frmMain
