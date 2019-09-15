@@ -36,7 +36,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.Web = new CefSharp.WinForms.ChromiumWebBrowser();
+            this.Web = new System.Windows.Forms.WebBrowser();
             this.SuspendLayout();
             // 
             // button1
@@ -123,11 +123,16 @@
             // 
             // Web
             // 
-            this.Web.ActivateBrowserOnCreation = false;
-            this.Web.Location = new System.Drawing.Point(3, 34);
+            this.Web.AllowNavigation = false;
+            this.Web.AllowWebBrowserDrop = false;
+            this.Web.IsWebBrowserContextMenuEnabled = false;
+            this.Web.Location = new System.Drawing.Point(3, 32);
+            this.Web.MinimumSize = new System.Drawing.Size(20, 20);
             this.Web.Name = "Web";
-            this.Web.Size = new System.Drawing.Size(797, 407);
+            this.Web.Size = new System.Drawing.Size(797, 411);
             this.Web.TabIndex = 9;
+            this.Web.Url = new System.Uri("http://buildbot.orphis.net/pcsx2/index.php", System.UriKind.Absolute);
+            this.Web.WebBrowserShortcutsEnabled = false;
             // 
             // frmMain
             // 
@@ -165,7 +170,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label3;
-        private CefSharp.WinForms.ChromiumWebBrowser Web;
+        private System.Windows.Forms.WebBrowser Web;
     }
 }
 
