@@ -637,6 +637,18 @@ void ps_fbmask(inout vec4 C)
 #endif
 }
 
+void ps_dither(inout vec4 C)
+{
+#if PS_DITHER
+    #if PS_DITHER == 2
+    ivec2 fpos = ivec2(gl_FragCoord.xy);
+    #else
+    ivec2 fpos = ivec2(gl_FragCoord.xy / ScalingFactor.x);
+    #endif
+    C.rgb += DitherMatrix[fpos.y&3][fpos.x&3];
+#endif
+}
+
 void ps_blend(inout vec4 Color, float As)
 {
 #if SW_BLEND
@@ -692,7 +704,8 @@ void ps_blend(inout vec4 Color, float As)
     Color.rgb = trunc((A - B) * C + D);
 #endif
 
-    // FIXME dithering
+    // Dithering
+    ps_dither(Color);
 
     // Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0
@@ -840,6 +853,13 @@ void ps_main()
         imageAtomicMin(img_prim_min, ivec2(gl_FragCoord.xy), gl_PrimitiveID);
     }
     return;
+#endif
+
+#if !SW_BLEND && PS_DITHER
+    ps_dither(C);
+    // Dither matrix range is [-4,3] but positive values can cause issues when
+    // software blending is not used or is unavailable.
+    C.rgb -= 3.0;
 #endif
 
     ps_blend(C, alpha_blend);
