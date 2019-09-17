@@ -8602,14 +8602,6 @@ Region = PAL-M5
 Compat = 5
 FPUNegDivHack = 1 // Fixes sky being shown over the 3d.
 EETimingHack = 1 // Flickery videos without it.
-[patches = CB4EBD11]
-	comment=patches by Nachbrenner
-	// Skip Intro Videos.
-	patch=0,EE,00139188,word,10000029
-	// KOSMOS fix.
-	patch=0,EE,00171874,word,00000000 // D1_CHCR
-	patch=0,EE,001718c4,word,00000000 // GS_CSR
-[/patches]
 ---------------------------------------------
 Serial = SLES-50880
 Name   = BMX XXX
