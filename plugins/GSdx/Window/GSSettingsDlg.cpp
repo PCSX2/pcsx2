@@ -553,7 +553,7 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("ShadeBoost_Saturation", m_saturation);
 
 			// FXAA shader
-			theApp.SetConfig("Fxaa", (int)IsDlgButtonChecked(m_hWnd, IDC_FXAA));
+			theApp.SetConfig("fxaa", (int)IsDlgButtonChecked(m_hWnd, IDC_FXAA));
 
 			// Texture Filtering Of Display
 			theApp.SetConfig("linear_present", (int)IsDlgButtonChecked(m_hWnd, IDC_LINEAR_PRESENT));

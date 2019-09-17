@@ -355,7 +355,6 @@ void GSdxApp::Init()
 
 	// PSX option. Not supported on linux.
 	m_default_configuration["dithering"]                                  = "1";
-	m_default_configuration["ModeRefreshRate"]                            = "0";
 	m_default_configuration["scale_x"]                                    = "0";
 	m_default_configuration["scale_y"]                                    = "0";
 	m_default_configuration["windowed"]                                   = "1";
