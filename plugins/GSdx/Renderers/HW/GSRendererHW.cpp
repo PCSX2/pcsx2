@@ -1307,16 +1307,29 @@ void GSRendererHW::Draw()
 	if (m_userhacks_enabled_gs_mem_clear) {
 		// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 		if ((m_vt.m_primclass == GS_SPRITE_CLASS) && !PRIM->TME // Direct write
-				&& (!PRIM->ABE || m_context->ALPHA.IsOpaque()) // No transparency
-				&& (m_context->FRAME.FBMSK == 0) // no color mask
-				&& !m_context->TEST.ATE // no alpha test
-				&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
-				&& (m_vt.m_eq.rgba == 0xFFFF) // constant color write
-				&& m_r.x == 0 && m_r.y == 0) { // Likely full buffer write
+			&& (!PRIM->ABE || m_context->ALPHA.IsOpaque()) // No transparency
+			&& !m_context->TEST.ATE // no alpha test
+			&& (!m_context->TEST.ZTE || m_context->TEST.ZTST == ZTST_ALWAYS) // no depth test
+			&& m_r.x == 0 && m_r.y == 0) { // Likely full buffer write
 
-			OI_GsMemClear();
+			bool no_mask = FRAME.FBMSK == 0x0;
+			no_mask &= m_vt.m_eq.rgba == 0xFFFF;
 
-			OI_DoubleHalfClear(rt_tex, ds_tex);
+			if (no_mask)
+				OI_GsMemClear();
+
+			// forbidden siren
+			// game does a double half clear with 24bit depth
+			// frame write is C32 but masked alpha
+			bool alpha_mask = FRAME.FBMSK == 0xff000000;
+			alpha_mask &= m_vt.m_eq.rgba >> 4 == 0xFFF;
+
+			bool is_compatible = FRAME.PSM == PSM_PSMCT32 && ZBUF.PSM == PSM_PSMZ32 && no_mask;
+			is_compatible |= FRAME.PSM == PSM_PSMCT32 && ZBUF.PSM == PSM_PSMZ24 && alpha_mask;
+			is_compatible |= FRAME.PSM == PSM_PSMCT24 && ZBUF.PSM == PSM_PSMZ24 && (no_mask || alpha_mask);
+
+			if (is_compatible)
+				OI_DoubleHalfClear(rt_tex, ds_tex);
 		}
 	}
 
