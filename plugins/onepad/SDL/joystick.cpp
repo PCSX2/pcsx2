@@ -267,8 +267,9 @@ int JoystickInfo::GetInput(gamePadValues input)
 
     // Handle analog inputs which range from -32k to +32k. Range conversion is handled later in the controller
     if (IsAnalogKey(input)) {
-        int value = SDL_GameControllerGetAxis(m_controller, (SDL_GameControllerAxis)m_pad_to_sdl[input]);
-        value *= k;
+        float f_value = (float)SDL_GameControllerGetAxis(m_controller, (SDL_GameControllerAxis)m_pad_to_sdl[input]);
+        f_value *= k;
+        int value = (int)f_value;
         return (abs(value) > m_deadzone) ? value : 0;
     }
 

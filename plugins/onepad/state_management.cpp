@@ -247,15 +247,16 @@ u8 pad_poll(u8 value)
                 query.response[3] = (buttons >> 8) & 0xFF;
                 query.response[4] = (buttons >> 0) & 0xFF;
 
-                if (pad->mode != MODE_DIGITAL) { // ANALOG || DS2 native
+                //if (pad->mode != MODE_DIGITAL) { // ANALOG || DS2 native
                     query.numBytes = 9;
 
                     query.response[5] = g_key_status.get(query.port, PAD_R_RIGHT);
                     query.response[6] = g_key_status.get(query.port, PAD_R_UP);
                     query.response[7] = g_key_status.get(query.port, PAD_L_RIGHT);
                     query.response[8] = g_key_status.get(query.port, PAD_L_UP);
+                //}
 
-                    if (pad->mode != MODE_ANALOG) { // DS2 native
+                  //  if (pad->mode != MODE_ANALOG) { // DS2 native
                         query.numBytes = 21;
 
                         query.response[9] = !test_bit(buttons, 13) ? g_key_status.get(query.port, PAD_RIGHT) : 0;
@@ -271,8 +272,7 @@ u8 pad_poll(u8 value)
                         query.response[18] = !test_bit(buttons, 3) ? g_key_status.get(query.port, PAD_R1) : 0;
                         query.response[19] = !test_bit(buttons, 0) ? g_key_status.get(query.port, PAD_L2) : 0;
                         query.response[20] = !test_bit(buttons, 1) ? g_key_status.get(query.port, PAD_R2) : 0;
-                    }
-                }
+                    //}
 
 #if 0
 				query.response[3] = b1;
@@ -312,7 +312,7 @@ u8 pad_poll(u8 value)
             }
 
                 query.lastByte = 1;
-                return pad->mode;
+                return MODE_ANALOG;// pad->mode;
 
             case CMD_SET_VREF_PARAM:
                 query.set_final_result(noclue);
