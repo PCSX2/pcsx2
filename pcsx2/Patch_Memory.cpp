@@ -147,7 +147,7 @@ void handle_extended_t(IniPatch *p)
 			}
 			else
 			{
-				if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
+				if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) == 0)
 					PrevCheatType = 0;
 				else
 					PrevCheatType = 0x6001;
