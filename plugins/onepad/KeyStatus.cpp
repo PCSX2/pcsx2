@@ -29,6 +29,9 @@ void KeyStatus::Init()
         m_internal_button_joy[pad] = 0xFFFF;
         m_state_acces[pad] = false;
 
+        m_guide_button[pad] = false;
+        m_guide_button_pressed[pad] = false;
+
         for (int index = 0; index < MAX_KEYS; index++) {
             m_button_pressure[pad][index] = 0xFF;
             m_internal_button_pressure[pad][index] = 0xFF;
@@ -87,6 +90,25 @@ void KeyStatus::release(u32 pad, u32 index)
     } else {
         analog_set(pad, index, m_analog_released_val);
     }
+}
+
+void KeyStatus::pressGuide( u32 pad )
+{
+    m_guide_button_pressed[pad] = true;
+}
+
+void KeyStatus::releaseGuide( u32 pad )
+{
+    if ( m_guide_button_pressed[pad] )
+    {
+        m_guide_button_pressed[pad] = false;
+        m_guide_button[pad] = !m_guide_button[pad];
+    }
+}
+
+bool KeyStatus::getGuide(u32 pad)
+{
+    return m_guide_button[pad];
 }
 
 u16 KeyStatus::get(u32 pad)

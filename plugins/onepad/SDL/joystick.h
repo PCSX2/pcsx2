@@ -54,6 +54,8 @@ public:
 
     size_t GetUniqueIdentifier() final;
 
+    bool GetGuideButton() override;
+
 private:
     SDL_GameController *m_controller;
     SDL_Haptic *m_haptic;

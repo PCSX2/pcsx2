@@ -54,6 +54,9 @@ private:
     bool analog_is_reversed(u32 pad, u32 index);
     u8 analog_merge(u8 kbd, u8 joy);
 
+    bool m_guide_button[GAMEPAD_NUMBER];
+    bool m_guide_button_pressed[GAMEPAD_NUMBER];
+
 public:
     KeyStatus()
         : m_analog_released_val(0x7F)
@@ -67,6 +70,10 @@ public:
 
     void press(u32 pad, u32 index, s32 value = 0xFF);
     void release(u32 pad, u32 index);
+
+    void pressGuide(u32 pad);
+    void releaseGuide(u32 pad);
+    bool getGuide(u32 pad);
 
     u16 get(u32 pad);
     u8 get(u32 pad, u32 index);

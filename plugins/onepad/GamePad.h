@@ -57,6 +57,10 @@ public:
      * Rumble will differ according to type which is either 0(small motor) or 1(big motor)
      */
     virtual void Rumble(unsigned type, unsigned pad) {}
+
+    //Returns true if the user expects the joystict to be analog
+    virtual bool GetGuideButton() { return false; }
+
     /*
      * Safely dispatch to the Rumble method above
      */
