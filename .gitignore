@@ -114,3 +114,4 @@ oprofile_data/
 /pcsx2/windows/VCprojects/GSdx_opengl_debug_sw.txt
 
 /tools/AutoUpdater/packages
+tools/AutoUpdater/pcsx2 Updater/CurrentCommit.txt

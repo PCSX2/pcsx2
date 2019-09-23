@@ -89,6 +89,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "liblzma", "3rdparty\xz\liblzma.vcxproj", "{12728250-16EC-4DC6-94D7-E21DD88947F8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pcsx2 Updater", "tools\AutoUpdater\pcsx2 Updater\pcsx2 Updater.csproj", "{A4B09F34-B2E8-4064-BC9F-2FBEB001648C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1CEFD830-2B76-4596-A4EE-BCD7280A60BD} = {1CEFD830-2B76-4596-A4EE-BCD7280A60BD}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

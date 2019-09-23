@@ -33,7 +33,7 @@
             this.button2 = new System.Windows.Forms.Button();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.button3 = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
+            this.labelVersion = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.Web = new System.Windows.Forms.WebBrowser();
@@ -47,6 +47,7 @@
             this.button1.TabIndex = 1;
             this.button1.Text = "Update Now";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.Button1_Click);
             // 
             // label1
             // 
@@ -88,16 +89,16 @@
             this.button3.Text = "Skip this build";
             this.button3.UseVisualStyleBackColor = true;
             // 
-            // label2
+            // labelVersion
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(590, 3);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(210, 26);
-            this.label2.TabIndex = 6;
-            this.label2.Text = "Current build: v1.5.0-dev-3279-gf2b402b0c\r\nLatest build: v1.5.0-dev-3283-ge2d8992" +
-    "31";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.labelVersion.AutoSize = true;
+            this.labelVersion.Location = new System.Drawing.Point(587, 3);
+            this.labelVersion.Name = "labelVersion";
+            this.labelVersion.Size = new System.Drawing.Size(215, 26);
+            this.labelVersion.TabIndex = 6;
+            this.labelVersion.Text = "Installed build: v1.5.0-dev-3279-gf2b402b0c\r\nLatest build: v1.5.0-dev-3283-ge2d89" +
+    "9231";
+            this.labelVersion.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // comboBox1
             // 
@@ -129,6 +130,7 @@
             this.Web.Location = new System.Drawing.Point(3, 32);
             this.Web.MinimumSize = new System.Drawing.Size(20, 20);
             this.Web.Name = "Web";
+            this.Web.ScriptErrorsSuppressed = true;
             this.Web.Size = new System.Drawing.Size(797, 411);
             this.Web.TabIndex = 9;
             this.Web.Url = new System.Uri("http://buildbot.orphis.net/pcsx2/index.php", System.UriKind.Absolute);
@@ -142,7 +144,7 @@
             this.Controls.Add(this.Web);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.comboBox1);
-            this.Controls.Add(this.label2);
+            this.Controls.Add(this.labelVersion);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.button2);
@@ -167,7 +169,7 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label labelVersion;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.WebBrowser Web;
