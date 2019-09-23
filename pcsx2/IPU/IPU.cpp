@@ -606,15 +606,14 @@ static __ri bool ipuPACK(tIPU_CMD_CSC csc)
 
 	for (;ipu_cmd.index < (int)csc.MBC; ipu_cmd.index++)
 	{
-		for(;ipu_cmd.pos[0] < 8; ipu_cmd.pos[0]++)
+		for(;ipu_cmd.pos[0] < (int)sizeof(macroblock_rgb32) / 8; ipu_cmd.pos[0]++)
 		{
-			if (!getBits64((u8*)&decoder.mb8 + 8 * ipu_cmd.pos[0], 1)) return false;
+			if (!getBits64((u8*)&decoder.rgb32 + 8 * ipu_cmd.pos[0], 1)) return false;
 		}
 
-		ipu_csc(decoder.mb8, decoder.rgb32, 0);
 		ipu_dither(decoder.rgb32, decoder.rgb16, csc.DTE);
 
-		if (csc.OFM) ipu_vq(decoder.rgb16, indx4);
+		if (!csc.OFM) ipu_vq(decoder.rgb16, indx4);
 
 		if (csc.OFM)
 		{
