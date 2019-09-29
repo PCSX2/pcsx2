@@ -351,7 +351,6 @@ Serial = SCAJ-20029
 Name   = R-Type Final
 Region = NTSC-Unk
 Compat = 5
-EETimingHack = 1 // Else serious slowdown due to VIF timing. Can be disabled once timing voodoo is fixed ;)
 ---------------------------------------------
 Serial = SCAJ-20032
 Name   = Mosquito - Let's Go Hawaiian
@@ -1213,7 +1212,6 @@ Serial = SCES-50006
 Name   = Drakan - The Ancients' Gates
 Region = PAL-M5
 Compat = 5
-EETimingHack = 1 // Fixes flickering textures.
 [patches]
 	// 04F9D87F
 	comment=- This gamedisc supports multiple languages through the BIOS configuration.
@@ -2769,7 +2767,6 @@ Region = PAL-G
 Serial = SCES-55573
 Name   = MotorStorm - Arctic Edge
 Region = PAL-M14
-OPHFLagHack = 1
 ---------------------------------------------
 Serial = SCES-55606
 Name   = SingStar Die groten Solokunstler
@@ -2808,7 +2805,6 @@ Serial = SCKA-20009
 Name   = R-Type Final
 Region = NTSC-K
 Compat = 5
-EETimingHack = 1 // Else serious slowdown due to VIF timing. Can be disabled once timing voodoo is fixed ;)
 ---------------------------------------------
 Serial = SCKA-20010
 Name   = Jak II
@@ -4580,7 +4576,6 @@ Serial = SCUS-97128
 Name   = Drakan - The Ancients' Gates
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1 // Fixes flickering textures.
 ---------------------------------------------
 Serial = SCUS-97129
 Name   = Okage - Shadow King
@@ -4739,7 +4734,6 @@ Compat = 5
 Serial = SCUS-97169
 Name   = Drakan - The Ancients' Gates [Demo]
 Region = NTSC-U
-EETimingHack = 1 // Fixes flickering textures.
 ---------------------------------------------
 Serial = SCUS-97170
 Name   = Jak and Daxter: The Precursor Legacy [Cingular Wireless Demo]
@@ -6183,7 +6177,6 @@ Serial = SCUS-97654
 Name   = MotorStorm Arctic Edge
 Region = NTSC-U
 Compat = 5
-OPHFLagHack = 1
 ---------------------------------------------
 Serial = SCUS-97660
 Name   = Singstar Latino
@@ -8852,10 +8845,12 @@ Compat = 5
 Serial = SLES-51013
 Name   = Blade 2
 Region = PAL-E
+GIFFIFOHack = 1 // Fixes flickering HUD. (originally was EE Timing Hack but required since r4821)
 ---------------------------------------------
 Serial = SLES-51014
 Name   = Blade 2
 Region = PAL-F
+GIFFIFOHack = 1 // Fixes flickering HUD. (originally was EE Timing Hack but required since r4821)
 ---------------------------------------------
 Serial = SLES-51017
 Name   = Scooby-Doo! and The Night of 100 Frights
@@ -10685,7 +10680,6 @@ Region = PAL-G
 Serial = SLES-51831
 Name   = Sphinx and The Cursed Mummy
 Region = PAL-M5
-OPHFLagHack = 1
 ---------------------------------------------
 Serial = SLES-51833
 Name   = Premier Manager 2003-2004
@@ -10881,7 +10875,6 @@ Serial = SLES-51890
 Name   = Buffy the Vampire Slayer - Chaos Bleeds
 Region = PAL-M4
 Compat = 5
-OPHFLagHack = 1
 ---------------------------------------------
 Serial = SLES-51893
 Name   = Naval Ops - Warship Gunner
@@ -11016,7 +11009,6 @@ Serial = SLES-51952
 Name   = R-Type Final
 Region = PAL-M3
 Compat = 5
-EETimingHack = 1 // Else serious slowdown due to VIF timing. Can be disabled once timing voodoo is fixed ;)
 ---------------------------------------------
 Serial = SLES-51953
 Name   = FIFA 2004
@@ -11525,7 +11517,7 @@ Compat = 5
 Serial = SLES-52230
 Name   = Muppets Party Cruise
 Region = PAL-Unk
-EETimingHack = 1 // Path 3 masking errors.
+mvuFlagSpeedHack = 0 // Fixes SPS.
 ---------------------------------------------
 Serial = SLES-52237
 Name   = dot Hack - Part 1 - Infection
@@ -11831,7 +11823,6 @@ Serial = SLES-52378
 Name   = Euro Rally Champion
 Region = PAL-M5
 Compat = 5
-EETimingHack = 1 // For dmac errors and so 3d is visible and steady.
 ---------------------------------------------
 Serial = SLES-52379
 Name   = Shrek 2
@@ -18179,7 +18170,6 @@ Compat = 5
 Serial = SLES-55573
 Name   = MotorStorm Arctic Edge
 Region = PAL-M14
-OPHFLagHack = 1
 ---------------------------------------------
 Serial = SLES-55574
 Name   = the Lord of the Rings - Aragorn's Quest
@@ -31122,6 +31112,7 @@ Compat = 5
 Serial = SLPS-25003
 Name   = Evergrace
 Region = NTSC-J
+eeClampMode = 3 // Fixes hanging before going in-game.
 ---------------------------------------------
 Serial = SLPS-25004
 Name   = Kensetsu Juuki Kenka Battle - Buchigire Kongou!!
@@ -31958,7 +31949,6 @@ Serial = SLPS-25247
 Name   = R-Type Final
 Region = NTSC-J
 Compat = 5
-EETimingHack = 1 // Else serious slowdown due to VIF timing. Can be disabled once timing voodoo is fixed ;)
 ---------------------------------------------
 Serial = SLPS-25248
 Name   = Kino no Tabi - The Beautiful World
@@ -34780,7 +34770,6 @@ Serial = SLPS-73244
 Name   = R-Type Final [PlayStation 2 The Best]
 Region = NTSC-J
 Compat = 5
-EETimingHack = 1 // Else serious slowdown due to VIF timing. Can be disabled once timing voodoo is fixed ;)
 ---------------------------------------------
 Serial = SLPS-73245
 Name   = Fatal Frame - Zero [PlayStation 2 The Best]
@@ -36455,7 +36444,7 @@ Serial = SLUS-20360
 Name   = Blade 2
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1 // Only is needed from r4821 and later versions.
+GIFFIFOHack = 1 // Fixes flickering HUD. (originally was EE Timing Hack but required since r4821)
 ---------------------------------------------
 Serial = SLUS-20361
 Name   = Rally Fusion - Race of Champions
@@ -37008,7 +36997,6 @@ Serial = SLUS-20482
 Name   = Sphinx and the Cursed Mummy
 Region = NTSC-U
 Compat = 5
-OPHFLagHack = 1
 ---------------------------------------------
 Serial = SLUS-20483
 Name   = WWE SmackDown! Shut Your Mouth
@@ -37404,8 +37392,6 @@ Serial = SLUS-20566
 Name   = Buffy the Vampire Slayer - Chaos Bleeds
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1 // Garbage in HUD.
-OPHFLagHack = 1
 ---------------------------------------------
 Serial = SLUS-20567
 Name   = P.T.O. IV - Pacific Theater of Operations
@@ -37720,7 +37706,7 @@ Serial = SLUS-20635
 Name   = Muppets Party Cruise, Jim Henson's
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1 // Path 3 masking errors.
+mvuFlagSpeedHack = 0 // Fixes SPS.
 ---------------------------------------------
 Serial = SLUS-20636
 Name   = Suffering, The
@@ -38392,7 +38378,6 @@ Serial = SLUS-20777
 Name   = Obscure
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1 // For hangs/crashes changing scenes.
 ---------------------------------------------
 Serial = SLUS-20779
 Name   = DragonBall Z - Budokai 2
@@ -38402,7 +38387,6 @@ Serial = SLUS-20780
 Name   = R-Type Final
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1 // Else serious slowdown due to VIF timing. Can be disabled once timing voodoo is fixed ;)
 ---------------------------------------------
 Serial = SLUS-20781
 Name   = Karaoke Revolution
