@@ -132,24 +132,20 @@ void ReadSettings()
 // find current API
 #ifdef __linux__
     CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"ALSA");
-    OutputAPI = -1;
-    if (temp == L"ALSA")
-        OutputAPI = 0;
     if (temp == L"OSS")
         OutputAPI = 1;
-    if (temp == L"JACK")
+    else if (temp == L"JACK")
         OutputAPI = 2;
+    else // L"ALSA"
+        OutputAPI = 0;
 #else
     CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"OSS");
-    OutputAPI = -1;
-
-    if (temp == L"OSS")
-        OutputAPI = 0;
+    OutputAPI = 0; // L"OSS"
 #endif
 
 #ifdef __unix__
     CfgReadStr(L"SDL", L"HostApi", temp, L"pulseaudio");
-    SdlOutputAPI = -1;
+    SdlOutputAPI = 0;
 #if SDL_MAJOR_VERSION >= 2
     // YES It sucks ...
     for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
