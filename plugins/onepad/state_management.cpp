@@ -243,55 +243,24 @@ u8 pad_poll(u8 value)
 					b1=b1 & 0x1f;
 #endif
 
-                //Set teh force mode
+                //Force analog changed?
                 force = g_key_status.getGuide( query.port );
                 if ( _forceAnalog[query.port] != force )
                 {
                     _forceAnalog[query.port] = force;
                     pad->rumble_all();
+                    pad->set_mode( force? MODE_ANALOG: MODE_DIGITAL );
                     printf("OnePad transition to %s mode\r\n", force? "Forced Analog": "Normal");
                 }
 
-                uint16_t buttons = g_key_status.get(query.port);
-
                 query.numBytes = 5;
 
+                //Digital button updates
+                uint16_t buttons = g_key_status.get(query.port);
                 query.response[3] = (buttons >> 8) & 0xFF;
                 query.response[4] = (buttons >> 0) & 0xFF;
 
-                //Normal mode
-                if ( !force )
-                {
-                    if (pad->mode != MODE_DIGITAL) { // ANALOG || DS2 native
-                        query.numBytes = 9;
-
-                        query.response[5] = g_key_status.get(query.port, PAD_R_RIGHT);
-                        query.response[6] = g_key_status.get(query.port, PAD_R_UP);
-                        query.response[7] = g_key_status.get(query.port, PAD_L_RIGHT);
-                        query.response[8] = g_key_status.get(query.port, PAD_L_UP);
-
-                        if (pad->mode != MODE_ANALOG) { // DS2 native
-                            query.numBytes = 21;
-
-                            query.response[9] = !test_bit(buttons, 13) ? g_key_status.get(query.port, PAD_RIGHT) : 0;
-                            query.response[10] = !test_bit(buttons, 15) ? g_key_status.get(query.port, PAD_LEFT) : 0;
-                            query.response[11] = !test_bit(buttons, 12) ? g_key_status.get(query.port, PAD_UP) : 0;
-                            query.response[12] = !test_bit(buttons, 14) ? g_key_status.get(query.port, PAD_DOWN) : 0;
-
-                            query.response[13] = !test_bit(buttons, 4) ? g_key_status.get(query.port, PAD_TRIANGLE) : 0;
-                            query.response[14] = !test_bit(buttons, 5) ? g_key_status.get(query.port, PAD_CIRCLE) : 0;
-                            query.response[15] = !test_bit(buttons, 6) ? g_key_status.get(query.port, PAD_CROSS) : 0;
-                            query.response[16] = !test_bit(buttons, 7) ? g_key_status.get(query.port, PAD_SQUARE) : 0;
-                            query.response[17] = !test_bit(buttons, 2) ? g_key_status.get(query.port, PAD_L1) : 0;
-                            query.response[18] = !test_bit(buttons, 3) ? g_key_status.get(query.port, PAD_R1) : 0;
-                            query.response[19] = !test_bit(buttons, 0) ? g_key_status.get(query.port, PAD_L2) : 0;
-                            query.response[20] = !test_bit(buttons, 1) ? g_key_status.get(query.port, PAD_R2) : 0;
-                        }
-                    }
-                }
-                //In force mode, we always store the analog and dialog values
-                else
-                {
+                if (pad->mode != MODE_DIGITAL) { // ANALOG || DS2 native
                     query.numBytes = 9;
 
                     query.response[5] = g_key_status.get(query.port, PAD_R_RIGHT);
@@ -299,23 +268,24 @@ u8 pad_poll(u8 value)
                     query.response[7] = g_key_status.get(query.port, PAD_L_RIGHT);
                     query.response[8] = g_key_status.get(query.port, PAD_L_UP);
 
-                    query.numBytes = 21;
+                    if (pad->mode != MODE_ANALOG) { // DS2 native
+                        query.numBytes = 21;
 
-                    query.response[9] = !test_bit(buttons, 13) ? g_key_status.get(query.port, PAD_RIGHT) : 0;
-                    query.response[10] = !test_bit(buttons, 15) ? g_key_status.get(query.port, PAD_LEFT) : 0;
-                    query.response[11] = !test_bit(buttons, 12) ? g_key_status.get(query.port, PAD_UP) : 0;
-                    query.response[12] = !test_bit(buttons, 14) ? g_key_status.get(query.port, PAD_DOWN) : 0;
+                        query.response[9] = !test_bit(buttons, 13) ? g_key_status.get(query.port, PAD_RIGHT) : 0;
+                        query.response[10] = !test_bit(buttons, 15) ? g_key_status.get(query.port, PAD_LEFT) : 0;
+                        query.response[11] = !test_bit(buttons, 12) ? g_key_status.get(query.port, PAD_UP) : 0;
+                        query.response[12] = !test_bit(buttons, 14) ? g_key_status.get(query.port, PAD_DOWN) : 0;
 
-                    query.response[13] = !test_bit(buttons, 4) ? g_key_status.get(query.port, PAD_TRIANGLE) : 0;
-                    query.response[14] = !test_bit(buttons, 5) ? g_key_status.get(query.port, PAD_CIRCLE) : 0;
-                    query.response[15] = !test_bit(buttons, 6) ? g_key_status.get(query.port, PAD_CROSS) : 0;
-                    query.response[16] = !test_bit(buttons, 7) ? g_key_status.get(query.port, PAD_SQUARE) : 0;
-                    query.response[17] = !test_bit(buttons, 2) ? g_key_status.get(query.port, PAD_L1) : 0;
-                    query.response[18] = !test_bit(buttons, 3) ? g_key_status.get(query.port, PAD_R1) : 0;
-                    query.response[19] = !test_bit(buttons, 0) ? g_key_status.get(query.port, PAD_L2) : 0;
-                    query.response[20] = !test_bit(buttons, 1) ? g_key_status.get(query.port, PAD_R2) : 0;
+                        query.response[13] = !test_bit(buttons, 4) ? g_key_status.get(query.port, PAD_TRIANGLE) : 0;
+                        query.response[14] = !test_bit(buttons, 5) ? g_key_status.get(query.port, PAD_CIRCLE) : 0;
+                        query.response[15] = !test_bit(buttons, 6) ? g_key_status.get(query.port, PAD_CROSS) : 0;
+                        query.response[16] = !test_bit(buttons, 7) ? g_key_status.get(query.port, PAD_SQUARE) : 0;
+                        query.response[17] = !test_bit(buttons, 2) ? g_key_status.get(query.port, PAD_L1) : 0;
+                        query.response[18] = !test_bit(buttons, 3) ? g_key_status.get(query.port, PAD_R1) : 0;
+                        query.response[19] = !test_bit(buttons, 0) ? g_key_status.get(query.port, PAD_L2) : 0;
+                        query.response[20] = !test_bit(buttons, 1) ? g_key_status.get(query.port, PAD_R2) : 0;
+                    }
                 }
-
 #if 0
 				query.response[3] = b1;
 				query.response[4] = b2;
@@ -354,7 +324,7 @@ u8 pad_poll(u8 value)
             }
 
                 query.lastByte = 1;
-                return (!force) ? pad->mode: MODE_ANALOG;
+                return pad->mode;
 
             case CMD_SET_VREF_PARAM:
                 query.set_final_result(noclue);
