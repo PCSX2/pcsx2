@@ -48,20 +48,22 @@
 // see onepad.h for more details about gamepad button id
 
 enum gui_buttons {
-    Analog = PAD_R_LEFT + 1, // Analog button (not yet supported ?)
-    JoyL_config,             // Left Joystick Configuration
+    //Analog = PAD_R_LEFT + 1, // Analog button (not yet supported ?)
+    JoyL_config = MAX_KEYS,  // Left Joystick Configuration
     JoyR_config,             // Right Joystick Configuration
     Gamepad_config,          // Gamepad Configuration
     Set_all,                 // Set all buttons
     Apply,                   // Apply modifications without exit
     Ok,                      // Apply modifications and exit
-    Cancel                   // Exit without apply modificatons
+    Cancel,                  // Exit without apply modificatons
+
+    BUTTONS_LENGTH
 };
 
-#define BUTTONS_LENGTH 32 // numbers of buttons on the gamepad
+//#define BUTTONS_LENGTH 32 // numbers of buttons on the gamepad
 #define UPDATE_TIME 5
 #define DEFAULT_WIDTH 1000
-#define DEFAULT_HEIGHT 740
+#define DEFAULT_HEIGHT 820 //Up from 740 to deal with 4k screens cutting off bottom
 
 class Dialog : public wxDialog
 {

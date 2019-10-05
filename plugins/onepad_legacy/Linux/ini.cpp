@@ -209,18 +209,26 @@ void LoadConfig()
             sprintf(str, "[%d][%d] = 0x%%x\n", pad, key);
             u32 temp = 0;
 
+            //Read in data, but if we fail, reset the file pointer
+            long current = ftell(f);
             if (fscanf(f, str, &temp) == 0)
+            {
+                fseek( f, current, SEEK_SET );
                 temp = 0;
+            }
+
+            //Store the read data
             set_key(pad, key, temp);
             if (temp && pad == 0)
                 have_user_setting = true;
         }
     }
 
+    //We for-loop here because if the file is malformed, we'll hang the whole program
     u32 pad;
     u32 keysym;
     u32 index;
-    while (fscanf(f, "PAD %u:KEYSYM 0x%x = %u\n", &pad, &keysym, &index) != EOF)
+    for ( int i = 0; fscanf(f, "PAD %u:KEYSYM 0x%x = %u\n", &pad, &keysym, &index) != EOF && i < 100; i++ )
     {
         set_keyboard_key(pad & 1, keysym, index);
         if (pad == 0)

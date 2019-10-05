@@ -187,10 +187,10 @@ Dialog::Dialog()
     padding[PAD_SELECT][3] = 34;  // Y
 
     // Analog
-    padding[Analog][0] = 218; // Width
-    padding[Analog][1] = 28;  // Height
-    padding[Analog][2] = 50;  // X
-    padding[Analog][3] = 452; // Y
+    padding[PAD_ANALOG][0] = 218; // Width
+    padding[PAD_ANALOG][1] = 28;  // Height
+    padding[PAD_ANALOG][2] = 50;  // X
+    padding[PAD_ANALOG][3] = 452; // Y
 
     // Left Joystick Configuration
     padding[JoyL_config][0] = 180; // Width
@@ -274,9 +274,6 @@ Dialog::Dialog()
         m_bt_gamepad[i][Cancel]->SetLabel(_T("&Cancel"));
         m_bt_gamepad[i][Apply]->SetLabel(_T("&Apply"));
         m_bt_gamepad[i][Ok]->SetLabel(_T("&Ok"));
-
-        // Disable analog button (not yet supported)
-        m_bt_gamepad[i][Analog]->Disable();
     }
 
     Bind(wxEVT_BUTTON, &Dialog::OnButtonClicked, this);
@@ -312,7 +309,7 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
     wxButton *bt_tmp = (wxButton *)event.GetEventObject(); // get the button object
     int bt_id = bt_tmp->GetId() - wxID_HIGHEST - 1;        // get the real ID
     int gamepad_id = m_tab_gamepad->GetSelection();        // get the tab ID (equivalent to the gamepad id)
-    if (bt_id >= 0 && bt_id <= PAD_R_LEFT)                 // if the button ID is a gamepad button
+    if (bt_id >= 0 && bt_id <= MAX_KEYS )
     {
         bt_tmp->Disable();                                 // switch the button state to "Disable"
         config_key(gamepad_id, bt_id);
@@ -532,7 +529,7 @@ void Dialog::JoystickEvent(wxTimerEvent &event)
                             it = m_map_images[events.jhat.which].find(key);
                             if (it != m_map_images[events.jhat.which].end())
                             {
-                                m_pan_tabs[events.jhat.which]->ShowImg(img_dp_up);
+                                m_pan_tabs[events.jhat.which]->ShowImg(PAD_UP);
                             }
                             break;
                         case SDL_HAT_DOWN:
@@ -540,7 +537,7 @@ void Dialog::JoystickEvent(wxTimerEvent &event)
                             it = m_map_images[events.jhat.which].find(key);
                             if (it != m_map_images[events.jhat.which].end())
                             {
-                                m_pan_tabs[events.jhat.which]->ShowImg(img_dp_bottom);
+                                m_pan_tabs[events.jhat.which]->ShowImg(PAD_DOWN);
                             }
                             break;
                         case SDL_HAT_RIGHT:
@@ -548,7 +545,7 @@ void Dialog::JoystickEvent(wxTimerEvent &event)
                             it = m_map_images[events.jhat.which].find(key);
                             if (it != m_map_images[events.jhat.which].end())
                             {
-                                m_pan_tabs[events.jhat.which]->ShowImg(img_dp_right);
+                                m_pan_tabs[events.jhat.which]->ShowImg(PAD_RIGHT);
                             }
                             break;
                         case SDL_HAT_LEFT:
@@ -556,14 +553,14 @@ void Dialog::JoystickEvent(wxTimerEvent &event)
                             it = m_map_images[events.jhat.which].find(key);
                             if (it != m_map_images[events.jhat.which].end())
                             {
-                                m_pan_tabs[events.jhat.which]->ShowImg(img_dp_left);
+                                m_pan_tabs[events.jhat.which]->ShowImg(PAD_LEFT);
                             }
                             break;
                         case SDL_HAT_CENTERED:
-                            m_pan_tabs[events.jhat.which]->HideImg(img_dp_up);
-                            m_pan_tabs[events.jhat.which]->HideImg(img_dp_bottom);
-                            m_pan_tabs[events.jhat.which]->HideImg(img_dp_right);
-                            m_pan_tabs[events.jhat.which]->HideImg(img_dp_left);
+                            m_pan_tabs[events.jhat.which]->HideImg(PAD_UP);
+                            m_pan_tabs[events.jhat.which]->HideImg(PAD_DOWN);
+                            m_pan_tabs[events.jhat.which]->HideImg(PAD_RIGHT);
+                            m_pan_tabs[events.jhat.which]->HideImg(PAD_LEFT);
                     }
                 }
                 break;

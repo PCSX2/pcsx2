@@ -85,6 +85,7 @@ struct PadFreezeData
 
 class Pad : public PadFreezeData
 {
+    u8 lastMode;
 public:
     // Lilypad store here the state of PC pad
 
@@ -94,6 +95,7 @@ public:
     void reset();
 
     void set_mode(int mode);
+    void set_last_mode();
 
     static void reset_all();
     static void stop_vibrate_all();

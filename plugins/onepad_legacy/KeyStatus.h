@@ -37,9 +37,9 @@ class KeyStatus
 private:
     const u8 m_analog_released_val;
 
-    u16 m_button[GAMEPAD_NUMBER];
-    u16 m_internal_button_kbd[GAMEPAD_NUMBER];
-    u16 m_internal_button_joy[GAMEPAD_NUMBER];
+    u32 m_button[GAMEPAD_NUMBER];
+    u32 m_internal_button_kbd[GAMEPAD_NUMBER];
+    u32 m_internal_button_joy[GAMEPAD_NUMBER];
 
     u8 m_button_pressure[GAMEPAD_NUMBER][MAX_KEYS];
     u8 m_internal_button_pressure[GAMEPAD_NUMBER][MAX_KEYS];
@@ -71,6 +71,7 @@ public:
     u16 get(u32 pad);
     u8 get(u32 pad, u32 index);
 
+    bool get_analog_button(u32 pad);
 
     void commit_status(u32 pad);
 };
