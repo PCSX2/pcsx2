@@ -97,9 +97,9 @@ void KeyStatus::release(u32 pad, u32 index)
     }
 }
 
-u16 KeyStatus::get(u32 pad)
+u32 KeyStatus::get(u32 pad)
 {
-    return (u16)(m_button[pad] & 0xFFFF);
+    return m_button[pad];
 }
 
 void KeyStatus::analog_set(u32 pad, u32 index, u8 value)
@@ -185,11 +185,6 @@ u8 KeyStatus::get(u32 pad, u32 index)
         default:
             return m_button_pressure[pad][index];
     }
-}
-
-bool KeyStatus::get_analog_button(u32 pad)
-{
-    return (m_button[pad] & (1 << PAD_ANALOG)) == 0;
 }
 
 u8 KeyStatus::analog_merge(u8 kbd, u8 joy)

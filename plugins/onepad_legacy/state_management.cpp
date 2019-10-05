@@ -218,8 +218,10 @@ u8 pad_poll(u8 value)
             {
                 query.response[2] = 0x5A;
 
+                uint32_t buttons = key_status->get(query.port);
+
                 //Set the force analog mode
-                bool force = key_status->get_analog_button(query.port);
+                bool force = (buttons & (1 << PAD_ANALOG)) == 0;
                 if ( lastAnalog[query.port] != force )
                 {
                     //The analog button has been pressed and released
@@ -239,7 +241,6 @@ u8 pad_poll(u8 value)
                 query.numBytes = 5;
 
                 //Store the digitial butttons here
-                uint16_t buttons = key_status->get(query.port);
                 query.response[3] = (buttons >> 8) & 0xFF;
                 query.response[4] = (buttons >> 0) & 0xFF;
 

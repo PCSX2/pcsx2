@@ -68,10 +68,8 @@ public:
     void press(u32 pad, u32 index, s32 value = 0xFF);
     void release(u32 pad, u32 index);
 
-    u16 get(u32 pad);
+    u32 get(u32 pad);
     u8 get(u32 pad, u32 index);
-
-    bool get_analog_button(u32 pad);
 
     void commit_status(u32 pad);
 };
