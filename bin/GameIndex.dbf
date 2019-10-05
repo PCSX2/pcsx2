@@ -4457,6 +4457,7 @@ eeClampMode = 3 // Fixes game hang after opening intro.
 Serial = SCUS-90174
 Name   = Toy Story 3 (PlayStation 2 Bundle)
 Region = NTSC-U
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SCUS-94346
 Name   = Singstar Latino
@@ -17701,14 +17702,55 @@ Serial = SLES-55174
 Name   = NHL 08
 Region = PAL-R
 ---------------------------------------------
+Serial = SLES-55184
+Name   = Disney-Pixar WALL-E
+Region = PAL-A
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-55185
+Name   = Disney-Pixar WALL-E
+Region = PAL-UK
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-55186
+Name   = Disney-Pixar WALL-E
+Region = PAL-S-P
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
 Serial = SLES-55187
 Name   = Disney-Pixar WALL-E
 Region = PAL-F-G
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-55188
+Name   = Disney-Pixar WALL-E
+Region = PAL-G
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLES-55191
 Name   = Guitar Hero - Aerosmith
 Region = PAL-E
 vuRoundMode = 0 // Crashes without.
+---------------------------------------------
+Serial = SLES-55193
+Name   = Disney-Pixar WALL-E
+Region = PAL-R
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-55194
+Name   = Disney-Pixar WALL-E
+Region = PAL-SC
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-55195
+Name   = Disney-Pixar WALL-E
+Region = PAL-GR-I
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-55196
+Name   = Disney-Pixar WALL-E
+Region = PAL-PO-CR
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLES-55197
 Name   = Dancing Stage SuperNOVA 2
@@ -18212,6 +18254,7 @@ Serial = SLES-55622
 Name   = Disney-Pixar Toy Story 3
 Region = PAL-M6
 Compat = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLES-55635
 Name   = WWE SmackDown vs. Raw 2011
@@ -42971,6 +43014,7 @@ Serial = SLUS-21736
 Name   = Wall-E
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLUS-21737
 Name   = Riding Star
@@ -43788,6 +43832,7 @@ Compat = 5
 Serial = SLUS-21931
 Name   = Toy Story 3
 Region = NTSC-U
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLUS-21932
 Name   = NCAA Football 11
