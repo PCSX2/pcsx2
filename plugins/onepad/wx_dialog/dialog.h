@@ -61,7 +61,7 @@ enum gui_buttons {
 #define BUTTONS_LENGHT 32 // numbers of buttons on the gamepad
 #define UPDATE_TIME 5
 #define DEFAULT_WIDTH 1000
-#define DEFAULT_HEIGHT 740
+#define DEFAULT_HEIGHT 820
 
 class Dialog : public wxDialog
 {

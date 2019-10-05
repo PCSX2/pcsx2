@@ -228,7 +228,7 @@ void LoadConfig()
     u32 pad;
     u32 keysym;
     u32 index;
-    for ( int i = 0; fscanf(f, "PAD %u:KEYSYM 0x%x = %u\n", &pad, &keysym, &index) != EOF && i < 100; i++ )
+    while ( fscanf(f, "PAD %u:KEYSYM 0x%x = %u\n", &pad, &keysym, &index) == 3 )
     {
         set_keyboard_key(pad & 1, keysym, index);
         if (pad == 0)
