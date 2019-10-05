@@ -148,6 +148,7 @@ JoystickInfo::JoystickInfo(int id)
     m_pad_to_sdl[PAD_R_RIGHT] = SDL_CONTROLLER_AXIS_RIGHTX;
     m_pad_to_sdl[PAD_R_DOWN] = SDL_CONTROLLER_AXIS_RIGHTY;
     m_pad_to_sdl[PAD_R_LEFT] = SDL_CONTROLLER_AXIS_RIGHTX;
+    m_pad_to_sdl[PAD_ANALOG] = SDL_CONTROLLER_BUTTON_GUIDE;
 
     if (SDL_IsGameController(id)) {
         m_controller = SDL_GameControllerOpen(id);
@@ -282,11 +283,6 @@ int JoystickInfo::GetInput(gamePadValues input)
     // Remain buttons
     int value = SDL_GameControllerGetButton(m_controller, (SDL_GameControllerButton)m_pad_to_sdl[input]);
     return value ? 0xFF : 0; // Max pressure
-}
-
-bool JoystickInfo::GetGuideButton()
-{
-    return SDL_GameControllerGetButton(m_controller, SDL_CONTROLLER_BUTTON_GUIDE) != 0;
 }
 
 void JoystickInfo::UpdateGamePadState()

@@ -88,11 +88,6 @@ void PollForJoystickInput(int cpad)
 
     gamePad->UpdateGamePadState();
 
-    if ( gamePad->GetGuideButton() )
-        g_key_status.pressGuide( cpad );
-    else
-        g_key_status.releaseGuide( cpad );
-
     for (int i = 0; i < MAX_KEYS; i++) {
         s32 value = gamePad->GetInput((gamePadValues)i);
         if (value != 0)

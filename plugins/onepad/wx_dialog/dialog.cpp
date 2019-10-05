@@ -345,6 +345,11 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
         joystick_config.ShowModal();
     } else if (bt_id == Set_all) { // If the button ID is equals to the Set_all button ID
         for (int i = 0; i < MAX_KEYS; ++i) {
+            //Skip the analog key, its disabled
+            if ( i == PAD_ANALOG )
+                continue;
+
+            //Get the temp info
             bt_tmp = m_bt_gamepad[gamepad_id][i];
             switch (i) {
                 case PAD_L_UP: // Left joystick (Up) ↑

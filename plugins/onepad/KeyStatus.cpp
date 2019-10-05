@@ -24,13 +24,10 @@
 void KeyStatus::Init()
 {
     for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
-        m_button[pad] = 0xFFFF;
-        m_internal_button_kbd[pad] = 0xFFFF;
-        m_internal_button_joy[pad] = 0xFFFF;
+        m_button[pad] = 0xFFFFFFFF;
+        m_internal_button_kbd[pad] = 0xFFFFFFFF;
+        m_internal_button_joy[pad] = 0xFFFFFFFF;
         m_state_acces[pad] = false;
-
-        m_guide_button[pad] = false;
-        m_guide_button_pressed[pad] = false;
 
         for (int index = 0; index < MAX_KEYS; index++) {
             m_button_pressure[pad][index] = 0xFF;
@@ -92,28 +89,9 @@ void KeyStatus::release(u32 pad, u32 index)
     }
 }
 
-void KeyStatus::pressGuide( u32 pad )
-{
-    m_guide_button_pressed[pad] = true;
-}
-
-void KeyStatus::releaseGuide( u32 pad )
-{
-    if ( m_guide_button_pressed[pad] )
-    {
-        m_guide_button_pressed[pad] = false;
-        m_guide_button[pad] = !m_guide_button[pad];
-    }
-}
-
-bool KeyStatus::getGuide(u32 pad)
-{
-    return m_guide_button[pad];
-}
-
 u16 KeyStatus::get(u32 pad)
 {
-    return m_button[pad];
+    return (u16)(m_button[pad] & 0xFFFF);
 }
 
 void KeyStatus::analog_set(u32 pad, u32 index, u8 value)
@@ -196,6 +174,11 @@ u8 KeyStatus::get(u32 pad, u32 index)
         default:
             return m_button_pressure[pad][index];
     }
+}
+
+bool KeyStatus::get_analog_button(u32 pad)
+{
+    return (m_button[pad] & (1 << PAD_ANALOG)) == 0;
 }
 
 u8 KeyStatus::analog_merge(u8 kbd, u8 joy)
