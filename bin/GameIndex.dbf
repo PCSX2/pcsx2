@@ -14585,11 +14585,51 @@ Serial = SLES-53539
 Name   = Fahrenheit
 Region = PAL-M4
 Compat = 5
+[patches]
+	author=atomic83github
+	// Found with the help of the dev-9 plugin and the PS4 emu.
+	// This is a game bug trigger by a timing issue.
+	// The game have an internal crash reporting system
+	// which rely on a debug server connected to the console.
+	// When the game do an error, it expects the debug server to be connected
+	// to send the crash dump.
+	// But that never happen on PCSX2 as the debug server is not present.
+	// Thus, the game will enter in an infinite loop at the asylum level.
+	// This only happen when certain conditions are meet in the game.
+	// This patch makes the game to exit the loop by cancelling the debug reporting.
+	patch=0,EE,001c5958,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+	patch=0,EE,001c5b6c,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+	patch=0,EE,001c5d24,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+	// The game have no frame pacing system in place.
+	// This causes a massive slowdown in loading screens.
+	// Thankfully, this can be patched out.
+	patch=0,EE,002097b8,word,00000000 // QDT::KCORE::RENDER_CONTEXT::DoSwapStuff(void)+0x1a4
+[/patches]
 ---------------------------------------------
 Serial = SLES-53540
 Name   = Fahrenheit
 Region = PAL-M4
 Compat = 5
+[patches]
+	author=atomic83github
+	// Found with the help of the dev-9 plugin and the PS4 emu.
+	// This is a game bug trigger by a timing issue.
+	// The game have an internal crash reporting system
+	// which rely on a debug server connected to the console.
+	// When the game do an error, it expects the debug server to be connected
+	// to send the crash dump.
+	// But that never happen on PCSX2 as the debug server is not present.
+	// Thus, the game will enter in an infinite loop at the asylum level.
+	// This only happen when certain conditions are meet in the game.
+	// This patch makes the game to exit the loop by cancelling the debug reporting.
+	patch=0,EE,001c5958,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+	patch=0,EE,001c5b6c,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+	patch=0,EE,001c5d24,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+	// The game have no frame pacing system in place.
+	// This causes a massive slowdown in loading screens.
+	// Thankfully, this can be patched out.
+	patch=0,EE,002097b8,word,00000000 // QDT::KCORE::RENDER_CONTEXT::DoSwapStuff(void)+0x1a4
+[/patches]
 ---------------------------------------------
 Serial = SLES-53541
 Name   = Tiger Woods PGA Tour 06
