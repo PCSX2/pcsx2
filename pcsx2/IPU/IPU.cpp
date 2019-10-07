@@ -677,21 +677,6 @@ __fi void ipu_csc(macroblock_8& mb8, macroblock_rgb32& rgb32, int sgn)
 	}
 }
 
-__fi void ipu_dither(const macroblock_rgb32& rgb32, macroblock_rgb16& rgb16, int dte)
-{
-	int i, j;
-	for (i = 0; i < 16; ++i)
-	{
-		for (j = 0; j < 16; ++j)
-		{
-			rgb16.c[i][j].r = rgb32.c[i][j].r >> 3;
-			rgb16.c[i][j].g = rgb32.c[i][j].g >> 3;
-			rgb16.c[i][j].b = rgb32.c[i][j].b >> 3;
-			rgb16.c[i][j].a = rgb32.c[i][j].a == 0x40;
-		}
-	}
-}
-
 __fi void ipu_vq(macroblock_rgb16& rgb16, u8* indx4)
 {
 	Console.Error("IPU: VQ not implemented");
