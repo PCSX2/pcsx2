@@ -886,6 +886,9 @@
     <ClCompile Include="..\..\Recording\VirtualPad.cpp">
       <Filter>Recording\gui</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\IPU\IPUdither.cpp">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
