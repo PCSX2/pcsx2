@@ -613,7 +613,9 @@ void GSRendererDX11::EmulateBlending()
 
 void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 {
-	const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+	// Warning fetch the texture PSM format rather than the context format. The latter could have been corrected in the texture cache for depth.
+	//const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
+	const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[tex->m_TEX0.PSM];
 	const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
 
 	const uint8 wms = m_context->CLAMP.WMS;
