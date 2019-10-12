@@ -68,7 +68,8 @@ static __inline__ __attribute__((always_inline)) unsigned long long xgetbv(unsig
 #endif
 
 // Rotate instruction
-#if defined(__clang__)
+#if defined(__clang__) 
+#if __clang_major__ < 9
 // Seriously what is so complicated to provided this bunch of intrinsics in clangs.
 [[maybe_unused]] static unsigned int _rotr(unsigned int x, int s)
 {
@@ -79,6 +80,7 @@ static __inline__ __attribute__((always_inline)) unsigned long long xgetbv(unsig
 {
     return (x << s) | (x >> (32 - s));
 }
+#endif
 #endif
 
 // Not correctly defined in GCC4.8 and below ! (dunno for VS)

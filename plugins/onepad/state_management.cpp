@@ -41,8 +41,6 @@ static const u8 queryAct[2][7] = {
 QueryInfo query;
 Pad pads[2][4];
 int slots[2] = {0, 0};
-static bool lastAnalog[2] = { false, false };
-static bool forceAnalog[2] = { false, false };
 
 //////////////////////////////////////////////////////////////////////
 // QueryInfo implementation
@@ -81,7 +79,6 @@ u8 QueryInfo::start_poll(int _port)
 
 void Pad::set_mode(int _mode)
 {
-    lastMode = mode;
     mode = _mode;
 
 #if 0
@@ -97,9 +94,9 @@ void Pad::set_mode(int _mode)
 #endif
 }
 
-void Pad::set_last_mode()
+void Pad::toggle_mode()
 {
-    mode = lastMode;
+    mode = mode == MODE_DIGITAL ? MODE_ANALOG : MODE_DIGITAL;
 }
 
 void Pad::set_vibrate(int motor, u8 val)
@@ -119,8 +116,6 @@ void Pad::reset()
 {
     memset(this, 0, sizeof(PadFreezeData));
 
-    //Done on purpose, this sets current and last mode
-    set_mode(MODE_DIGITAL);
     set_mode(MODE_DIGITAL);
     umask[0] = umask[1] = 0xFF;
 
@@ -203,6 +198,14 @@ u8 pad_poll(u8 value)
         query.lastByte++;
         query.currentCommand = value;
 
+        if(!pad->modeLock) {
+            u32 analog = !(g_key_status.get(query.port) & (1 << PAD_ANALOG));
+            if(analog && !pad->analogPressed) {
+                pad->toggle_mode();
+            }
+            pad->analogPressed = analog;
+        }
+
         switch (value) {
             case CMD_CONFIG_MODE:
                 if (pad->config) {
@@ -250,24 +253,6 @@ u8 pad_poll(u8 value)
 					b1=b1 & 0x1f;
 #endif
                 uint32_t buttons = g_key_status.get(query.port);
-
-                //Set the force analog mode
-                bool force = (buttons & (1 << PAD_ANALOG)) == 0;
-                if ( lastAnalog[query.port] != force )
-                {
-                    //The analog button has been pressed and released
-                    if ( !force )
-                    {
-                        forceAnalog[query.port] = !forceAnalog[query.port];
-                        if ( forceAnalog[query.port] )
-                            pad->set_mode( MODE_ANALOG );
-                        else
-                            pad->set_last_mode();
-                        printf("Changed mode to: 0x%02X\n", pad->mode);
-                    }
-
-                    lastAnalog[query.port] = force;
-                }
 
                 query.numBytes = 5;
 
