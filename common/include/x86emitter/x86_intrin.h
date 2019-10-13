@@ -85,7 +85,6 @@ static unsigned int _rotl(unsigned int x, int s)
 
 #pragma clang diagnostic pop
 #endif
-#endif
 
 // Not correctly defined in GCC4.8 and below ! (dunno for VS)
 #ifndef _MM_MK_INSERTPS_NDX
