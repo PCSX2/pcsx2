@@ -605,10 +605,6 @@ bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip)
 			// Multiplayer tested only on Takedown.
 			skip = 4;
 		}
-		else if (fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x033a0) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x02d60 || fi.TBP0 == 0x033a0) && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0x0)
-		{
-			skip = 2; // impact screen
-		}
 	}
 
 	return true;
