@@ -84,47 +84,6 @@ void handle_extended_t(IniPatch *p)
 		break;
 
 	case 0x6000: // 000Xnnnn iiiiiiii
-		if (IterationIncrement == 0x0)
-		{
-			//LastType = ((u32)p->addr & 0x000F0000) >> 16;
-			u32 mem = memRead32(PrevCheatAddr);
-			if ((u32)p->addr < 0x100)
-			{
-				LastType = 0x0;
-				PrevCheatAddr = mem + ((u32)p->addr);
-			}
-			else if ((u32)p->addr < 0x1000)
-			{
-				LastType = 0x1;
-				PrevCheatAddr = mem + ((u32)p->addr * 2);
-			}
-			else
-			{
-				LastType = 0x2;
-				PrevCheatAddr = mem + ((u32)p->addr * 4);
-			}
-
-			// Check if needed to read another pointer
-			PrevCheatType = 0;
-			if (((mem & 0x0FFFFFFF) & 0x3FFFFFFC) != 0)
-			{
-				switch (LastType)
-				{
-				case 0x0:
-					memWrite8(PrevCheatAddr, (u8)p->data & 0xFF);
-					break;
-				case 0x1:
-					memWrite16(PrevCheatAddr, (u16)p->data & 0x0FFFF);
-					break;
-				case 0x2:
-					memWrite32(PrevCheatAddr, (u32)p->data);
-					break;
-				default:
-					break;
-				}
-			}
-		}
-		else
 		{
 			// Get Number of pointers
 			if (((u32)p->addr & 0x0000FFFF) == 0)
