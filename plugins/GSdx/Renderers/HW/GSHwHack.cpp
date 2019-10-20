@@ -64,8 +64,8 @@ bool GSC_Bully(const GSFrameInfo& fi, int& skip)
 		{
 			// ntsc 0x02300, pal 0x02800
 			// Don't enable hack on native res if crc is below aggressive.
-			// skip 9 for pal but maybe 6 is enough, dump looks fine.
-			skip = 6; // Upscaling blur/ghosting
+			// Previous value 6, ntsc didn't like it.
+			skip = 8; // Upscaling blur/ghosting
 		}
 	}
 
