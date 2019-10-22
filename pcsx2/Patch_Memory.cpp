@@ -112,7 +112,7 @@ void handle_extended_t(IniPatch *p)
 				PrevCheatType = 0x6001;
 		}
 	}
-	break;
+		break;
 
 	case 0x6001: // 000Xnnnn iiiiiiii
 	{
