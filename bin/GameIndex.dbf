@@ -9934,7 +9934,6 @@ Name   = Silent Hill 3
 Region = PAL-M5
 MemCardFilter = SLES-51434/SLES-50382/SLES-51156
 vuClampMode = 2 // Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
-FMVinSoftwareHack = 1 // Avoids obscured FMVs due to GS upscaling lines and memory wrapping.
 ---------------------------------------------
 Serial = SLES-51435
 Name   = International Superstar Soccer 3
@@ -22870,7 +22869,6 @@ Region = NTSC-J
 Compat = 5
 MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
 vuClampMode = 2 // Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
-FMVinSoftwareHack = 1 // Avoids obscured FMVs due to GS upscaling lines and memory wrapping.
 ---------------------------------------------
 Serial = SLPM-65260
 Name   = Air Land Force
@@ -24209,7 +24207,6 @@ Name   = Silent Hill 3 [Konami The Best]
 Region = NTSC-J
 MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
 vuClampMode = 2 // Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
-FMVinSoftwareHack = 1 // Avoids obscured FMVs due to GS upscaling lines and memory wrapping.
 ---------------------------------------------
 Serial = SLPM-65623
 Name   = Tantei Gakuen Q: Kiokan no Satsui [Konami The Best]
@@ -25686,7 +25683,6 @@ Name   = Silent Hill 3 [Konami Dendou Collection]
 Region = NTSC-J
 MemCardFilter = SLPM-65257/SLPM-65622/SLPM-66018/SLPM-65051/SLPM-65098/SLPM-65341/SLPM-65631
 vuClampMode = 2 // Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
-FMVinSoftwareHack = 1 // Avoids obscured FMVs due to GS upscaling lines and memory wrapping.
 ---------------------------------------------
 Serial = SLPM-66019
 Name   = Stuntman
@@ -37666,7 +37662,6 @@ Compat = 5
 // reads Silent Hill 2 for easter egg
 MemCardFilter = SLUS-20622/SLUS-20228
 vuClampMode = 2 // Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
-FMVinSoftwareHack = 1 // Avoids obscured FMVs due to GS upscaling lines and memory wrapping.
 ---------------------------------------------
 Serial = SLUS-20623
 Name   = Winning Eleven 6
