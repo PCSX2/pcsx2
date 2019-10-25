@@ -100,6 +100,7 @@ public:
 		Okami,
 		Oneechanbara2Special,
 		Onimusha3,
+		Persona3,
 		PiaCarroteYoukosoGPGakuenPrincess,
 		ProjectSnowblind,
 		Quake3Revolution,
