@@ -514,6 +514,12 @@ CRC::Game CRC::m_games[] =
 	{0x018AC37C, LegacyOfKainDefiance, RU, 0}, // Unofficial RU-version
 	{0x28D09BF9, NicktoonsUnite, US, 0},
 	{0xF25266C4, NicktoonsUnite, EU, 0}, // Nickelodeon SpongeBob SquarePants And Friends Unite
+	{0x7AE1C04B, Persona3, US, 0}, // Regular Version
+	{0x05C3D28F, Persona3, JP, 0},
+	{0x8A557EE5, Persona3, EU, 0},
+	{0x94A82AAA, Persona3, US, 0}, // FES
+	{0x232C7D72, Persona3, JP, 0},
+	{0xF64A6AE5, Persona3, EU, 0},
 	{0x2BDA8ADB, ProjectSnowblind, US, 0},
 	{0xF00CA82B, ProjectSnowblind, EU, 0},
 	{0xF1583665, ProjectSnowblind, EU, 0},

@@ -214,6 +214,7 @@ void GSRendererHW::SetGameCRC(uint32 crc, int options)
 			case CRC::Jak3:
 			case CRC::LegacyOfKainDefiance:
 			case CRC::NicktoonsUnite:
+			case CRC::Persona3:
 			case CRC::ProjectSnowblind:
 			case CRC::Quake3Revolution:
 			case CRC::RatchetAndClank:
