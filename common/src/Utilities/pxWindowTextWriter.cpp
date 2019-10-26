@@ -84,10 +84,8 @@ pxWindowTextWriter &pxWindowTextWriter::MoveY(int ydelta)
     return *this;
 }
 
-void pxWindowTextWriter::_DoWriteLn(const wxChar *msg)
+void pxWindowTextWriter::_DoWriteLn(const wxString &msg)
 {
-    pxAssert(msg);
-
     int tWidth, tHeight;
     m_dc.GetMultiLineTextExtent(msg, &tWidth, &tHeight);
 
@@ -101,11 +99,6 @@ void pxWindowTextWriter::_DoWriteLn(const wxChar *msg)
 
     m_dc.DrawText(msg, dispos);
     m_curpos.y += tHeight + m_leading;
-}
-
-void pxWindowTextWriter::_DoWriteLn(const wxString msg)
-{
-    _DoWriteLn(msg.wc_str());
 }
 
 // Splits incoming multi-line strings into pieces, and dispatches each line individually

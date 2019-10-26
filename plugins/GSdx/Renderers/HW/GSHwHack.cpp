@@ -64,8 +64,8 @@ bool GSC_Bully(const GSFrameInfo& fi, int& skip)
 		{
 			// ntsc 0x02300, pal 0x02800
 			// Don't enable hack on native res if crc is below aggressive.
-			// skip 9 for pal but maybe 6 is enough, dump looks fine.
-			skip = 6; // Upscaling blur/ghosting
+			// Previous value 6, ntsc didn't like it.
+			skip = 8; // Upscaling blur/ghosting
 		}
 	}
 
@@ -604,10 +604,6 @@ bool GSC_BurnoutGames(const GSFrameInfo& fi, int& skip)
 			// Yellow stripes.
 			// Multiplayer tested only on Takedown.
 			skip = 4;
-		}
-		else if (fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x033a0) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x02d60 || fi.TBP0 == 0x033a0) && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0x0)
-		{
-			skip = 2; // impact screen
 		}
 	}
 

@@ -64,7 +64,7 @@ if(CMAKE_CROSSCOMPILING)
     endif()
 else()
     if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-        set(wxWidgets_CONFIG_EXECUTABLE "/usr/local/bin/wxgtk2u-3.0-config")
+        set(wxWidgets_CONFIG_EXECUTABLE "/usr/local/bin/wxgtk3u-3.0-config")
     endif()
     if(EXISTS "/usr/bin/wx-config-3.0")
         set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.0")
@@ -220,7 +220,7 @@ if(GCC_VERSION VERSION_EQUAL "7.0" OR GCC_VERSION VERSION_EQUAL "7.1")
     GCC7_BUG()
 endif()
 
-if(GCC_VERSION GREATER_EQUAL "9.0" AND GCC_VERSION LESS "9.2")
+if((GCC_VERSION VERSION_EQUAL "9.0" OR GCC_VERSION VERSION_GREATER "9.0") AND GCC_VERSION LESS "9.2")
     message(WARNING "
     It looks like you are compiling with 9.0.x or 9.1.x. Using these versions is not recommended,
     as there is a bug known to cause the compiler to segfault while compiling. See patch

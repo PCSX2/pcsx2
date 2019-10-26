@@ -4457,6 +4457,7 @@ eeClampMode = 3 // Fixes game hang after opening intro.
 Serial = SCUS-90174
 Name   = Toy Story 3 (PlayStation 2 Bundle)
 Region = NTSC-U
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SCUS-94346
 Name   = Singstar Latino
@@ -14585,11 +14586,51 @@ Serial = SLES-53539
 Name   = Fahrenheit
 Region = PAL-M4
 Compat = 5
+[patches]
+	author=atomic83github
+	// Found with the help of the dev-9 plugin and the PS4 emu.
+	// This is a game bug trigger by a timing issue.
+	// The game have an internal crash reporting system
+	// which rely on a debug server connected to the console.
+	// When the game do an error, it expects the debug server to be connected
+	// to send the crash dump.
+	// But that never happen on PCSX2 as the debug server is not present.
+	// Thus, the game will enter in an infinite loop at the asylum level.
+	// This only happen when certain conditions are meet in the game.
+	// This patch makes the game to exit the loop by cancelling the debug reporting.
+	patch=0,EE,001c5958,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+	patch=0,EE,001c5b6c,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+	patch=0,EE,001c5d24,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+	// The game have no frame pacing system in place.
+	// This causes a massive slowdown in loading screens.
+	// Thankfully, this can be patched out.
+	patch=0,EE,002097b8,word,00000000 // QDT::KCORE::RENDER_CONTEXT::DoSwapStuff(void)+0x1a4
+[/patches]
 ---------------------------------------------
 Serial = SLES-53540
 Name   = Fahrenheit
 Region = PAL-M4
 Compat = 5
+[patches]
+	author=atomic83github
+	// Found with the help of the dev-9 plugin and the PS4 emu.
+	// This is a game bug trigger by a timing issue.
+	// The game have an internal crash reporting system
+	// which rely on a debug server connected to the console.
+	// When the game do an error, it expects the debug server to be connected
+	// to send the crash dump.
+	// But that never happen on PCSX2 as the debug server is not present.
+	// Thus, the game will enter in an infinite loop at the asylum level.
+	// This only happen when certain conditions are meet in the game.
+	// This patch makes the game to exit the loop by cancelling the debug reporting.
+	patch=0,EE,001c5958,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+	patch=0,EE,001c5b6c,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+	patch=0,EE,001c5d24,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+	// The game have no frame pacing system in place.
+	// This causes a massive slowdown in loading screens.
+	// Thankfully, this can be patched out.
+	patch=0,EE,002097b8,word,00000000 // QDT::KCORE::RENDER_CONTEXT::DoSwapStuff(void)+0x1a4
+[/patches]
 ---------------------------------------------
 Serial = SLES-53541
 Name   = Tiger Woods PGA Tour 06
@@ -17661,14 +17702,55 @@ Serial = SLES-55174
 Name   = NHL 08
 Region = PAL-R
 ---------------------------------------------
+Serial = SLES-55184
+Name   = Disney-Pixar WALL-E
+Region = PAL-A
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-55185
+Name   = Disney-Pixar WALL-E
+Region = PAL-UK
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-55186
+Name   = Disney-Pixar WALL-E
+Region = PAL-S-P
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
 Serial = SLES-55187
 Name   = Disney-Pixar WALL-E
 Region = PAL-F-G
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-55188
+Name   = Disney-Pixar WALL-E
+Region = PAL-G
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLES-55191
 Name   = Guitar Hero - Aerosmith
 Region = PAL-E
 vuRoundMode = 0 // Crashes without.
+---------------------------------------------
+Serial = SLES-55193
+Name   = Disney-Pixar WALL-E
+Region = PAL-R
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-55194
+Name   = Disney-Pixar WALL-E
+Region = PAL-SC
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-55195
+Name   = Disney-Pixar WALL-E
+Region = PAL-GR-I
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
+---------------------------------------------
+Serial = SLES-55196
+Name   = Disney-Pixar WALL-E
+Region = PAL-PO-CR
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLES-55197
 Name   = Dancing Stage SuperNOVA 2
@@ -18172,6 +18254,7 @@ Serial = SLES-55622
 Name   = Disney-Pixar Toy Story 3
 Region = PAL-M6
 Compat = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLES-55635
 Name   = WWE SmackDown vs. Raw 2011
@@ -42931,6 +43014,7 @@ Serial = SLUS-21736
 Name   = Wall-E
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLUS-21737
 Name   = Riding Star
@@ -43748,6 +43832,7 @@ Compat = 5
 Serial = SLUS-21931
 Name   = Toy Story 3
 Region = NTSC-U
+vuRoundMode = 2 // Fixes very minor lines appearing at certain points during the game.
 ---------------------------------------------
 Serial = SLUS-21932
 Name   = NCAA Football 11

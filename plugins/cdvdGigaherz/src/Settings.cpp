@@ -54,10 +54,8 @@ void Settings::Load(const std::string &filename)
     if (!file.is_open())
         return;
 
-    while (!file.eof()) {
-        std::string line;
-        std::getline(file, line);
-
+    std::string line;
+    while (std::getline(file, line)) {
         auto separator = line.find('=');
         if (separator == std::string::npos)
             continue;
