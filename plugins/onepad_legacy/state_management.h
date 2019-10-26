@@ -86,6 +86,7 @@ struct PadFreezeData
 class Pad : public PadFreezeData
 {
 public:
+    u8 analogPressed;
     // Lilypad store here the state of PC pad
 
     void rumble(int port);
@@ -94,6 +95,7 @@ public:
     void reset();
 
     void set_mode(int mode);
+    void toggle_mode();
 
     static void reset_all();
     static void stop_vibrate_all();

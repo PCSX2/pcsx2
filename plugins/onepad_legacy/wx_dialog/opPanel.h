@@ -25,28 +25,12 @@
 #include <wx/wx.h>
 
 #include "EmbeddedImage.h"
+#include <onepad.h>
 
 enum gui_img {
-    img_l2,
-    img_r2,
-    img_l1,
-    img_r1,
-    img_triangle,
-    img_circle,
-    img_cross,
-    img_square,
-    img_select,
-    img_l3,
-    img_r3,
-    img_start,
-    img_dp_up,
-    img_dp_right,
-    img_dp_bottom,
-    img_dp_left,
+    img_background = MAX_KEYS, // background pic
     img_left_cursor,
     img_right_cursor,
-    img_analog,
-    img_background, // background pic
     img_l_arrow_up,
     img_l_arrow_right,
     img_l_arrow_bottom,
@@ -54,10 +38,10 @@ enum gui_img {
     img_r_arrow_up,
     img_r_arrow_right,
     img_r_arrow_bottom,
-    img_r_arrow_left
-};
+    img_r_arrow_left,
 
-#define NB_IMG 28
+    NB_IMG
+};
 
 class opPanel : public wxPanel
 {
