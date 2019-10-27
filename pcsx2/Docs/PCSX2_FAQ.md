@@ -29,47 +29,16 @@ After dumping your PlayStation 2 console's BIOS, you may launch PCSX2, step thro
 
 #### Minimum
 
-##### Operating System
-* Windows 8.1 or newer (32 or 64 bit)
-* Ubuntu/Debian 18.04 or newer, Arch Linux, or other distro (32 or 64 bit)
-
-##### CPU 
-* Supports SSE2
-* [Passmark Single Thread Performance](https://www.cpubenchmark.net/singleThread.html) rating near or greater than 1600
-* Two physical cores, with hyperthreading
-    
-##### GPU 
-* Direct3D11 support
-* OpenGL 3.x support 
-* [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 2000 (GeForce GTX 860m)
-* 2 GB Video Memory
-
-##### RAM 
-* 4 GB
+| Operating System | CPU | GPU | RAM |
+| --- | --- | --- | --- |
+| - Windows 8.1 or newer (32 or 64 bit) <br/> - Ubuntu/Debian 18.04 or newer, Arch Linux, or other distro (32 or 64 bit) | - Supports SSE2 <br/> - [PassMark Single Thread Performance](https://www.cpubenchmark.net/singleThread.html) rating near or greater than 1650 <br/> - Two physical cores, with hyperthreading | - Direct3D11 support <br/> - OpenGL 3.x support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 3000 (GeForce GTX 750) <br/> - 2 GB Video Memory | 4 GB |
 
 #### Recommended 
 
-##### Operating System 
-* Windows 10 (64 bit)
-* Ubuntu/Debian 19.04 or newer, Arch Linux, or other distro (32 or 64 bit)
-
-##### CPU 
-* Supports AVX2
-* [Passmark Single Thread Performance](https://www.cpubenchmark.net/singleThread.html) rating greater than 2100
-* Four physical cores, with or without hyperthreading
-
-##### GPU
-* Direct3D11 support
-* OpenGL 4.5 support
-* For 1080p resolution: 
-    * [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 5000 (GeForce GTX 1050 Ti)
-    * 4 GB Video Memory
-* For 4K resolution:
-    * [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 12000 (GeForce GTX 1070 Ti)
-    * 8 GB Video Memory
-
-##### RAM 
-* 8 GB 
+| Operating System | CPU | GPU | RAM |
+| --- | --- | --- | --- |
+| - Windows 10 (64 bit) <br/> - Ubuntu/Debian 19.04 or newer, Arch Linux, or other distro (64 bit) | - Supports AVX2 <br/> - [PassMark Single Thread Performance](https://www.cpubenchmark.net/singleThread.html) rating near or greater than 2100 <br/> - Four physical cores, with or without hyperthreading | - Direct3D11 support <br/> - OpenGL 4.5 support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 6000 (GeForce GTX 1050 Ti) <br/> - 4 GB Video Memory | 8 GB |
+*Note: Recommended GPU is based on 3x Internal, ~1080p resolution requirements. Higher resolutions will require stronger cards; 6x Internal, ~4K resolution will require a [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 12000 (GeForce GTX 1070 Ti).*
 
 ### How many CPU cores can PCSX2 use?
 By default, PCSX2 uses two cores for emulation. Enabling the MTVU speedhack allows the PS2's VU1 coprocessor to run on a third core, which is safe for most games.
