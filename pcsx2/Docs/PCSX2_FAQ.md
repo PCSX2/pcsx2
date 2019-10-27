@@ -71,7 +71,7 @@ One change to the emulator may fix one game, but cause problems for another. If 
 The PlayStation 2 is a complex console, and this complexity substantially raises the PC requirements to emulate it at full speed, accurately. [This forum thread](https://forums.pcsx2.net/Thread-Why-is-PCSX2-slow) helps explain some of the technical reasons behind it, and our current guidelines for PC requirements are listed above.
 
 ### Where do I get a PS2 BIOS?
-You have to dump the BIOS files from your PlayStation 2 console. There is a BIOS dumper tool [available on the PCSX2 website](https://pcsx2.net/download/releases/tools.html) to do this. 
+You have to dump the BIOS files from your PlayStation 2 console. There is a BIOS dumper tool [available on the PCSX2 website](https://pcsx2.net/download/releases/tools.html) to do this. If you need a guide, check the bottom of this FAQ for links to BIOS guides.
 
 ### Where do I get PS2 games?
 You can use games from your personal collection of discs, purchase them from local stores that resell old games, or look online at sites like eBay or Amazon.
