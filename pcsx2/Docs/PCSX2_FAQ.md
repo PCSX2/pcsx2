@@ -201,9 +201,11 @@ For Linux users running OnePad, PCSX2 will automatically detect and bind control
 ## Useful Links
 
 ### BIOS Dumping Guides 
+* [pgert's guide to BIOS and memory card tools](https://forums.pcsx2.net/Thread-An-orientation-through-some-of-the-PCSX2-BIOS-memcard-tools-Windows?pid=183709#pid183709)
 * [One of the original BIOS dumping guides, originally from ngemu](https://forums.pcsx2.net/Thread-Guide-to-Dumping-Your-PS2-Bios-over-LAN)
 
 ### Memory Card and Save File Guides
+* [pgert's guide to BIOS and memory card tools](https://forums.pcsx2.net/Thread-An-orientation-through-some-of-the-PCSX2-BIOS-memcard-tools-Windows?pid=183709#pid183709)
 * [An older guide on merging GameFAQs saves into PCSX2 memory cards](https://forums.pcsx2.net/Thread-How-to-use-the-myMC-tool-to-import-export-saves-from-PCSX2). Note, while the concepts in this guide are accurate, the MyMC software is old, and probably will not run on your PC without some tinkering.
 * [MyMC+, a newer replacement for the original MyMC referenced in the above guide](https://github.com/thestr4ng3r/mymcplus),
 
