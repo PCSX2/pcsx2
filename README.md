@@ -19,27 +19,23 @@ Development builds are also available from [our website](https://pcsx2.net/downl
 
 | Operating System | CPU | GPU | RAM |
 | --- | --- | --- | --- |
-| - Windows 8.1 or newer (32 or 64 bit) <br/> - Ubuntu/Debian 18.04 or newer, Arch Linux, or other distro (32 or 64 bit) | - Supports SSE2 <br/> - [PassMark Single Thread Performance](https://www.cpubenchmark.net/singleThread.html) rating near or greater than 1650 <br/> - Two physical cores, with hyperthreading | - Direct3D11 support <br/> - OpenGL 3.x support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 3000 (GeForce GTX 750) <br/> - 2 GB Video Memory | 4 GB |
+| - Windows 7 or newer (32 or 64 bit) <br/> - Ubuntu 18.04/Debian or newer, Arch Linux, or other distro (32 or 64 bit) | - Supports SSE2 <br/> - [PassMark Single Thread Performance](https://www.cpubenchmark.net/singleThread.html) rating near or greater than 1600 <br/> - Two physical cores, with hyperthreading | - Direct3D11 support <br/> - OpenGL 3.x support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 3000 (GeForce GTX 750) <br/> - 2 GB Video Memory | 4 GB |
 
 #### Recommended 
 
 | Operating System | CPU | GPU | RAM |
 | --- | --- | --- | --- |
-| - Windows 10 (64 bit) <br/> - Ubuntu/Debian 19.04 or newer, Arch Linux, or other distro (64 bit) | - Supports AVX2 <br/> - [PassMark Single Thread Performance](https://www.cpubenchmark.net/singleThread.html) rating near or greater than 2100 <br/> - Four physical cores, with or without hyperthreading | - Direct3D11 support <br/> - OpenGL 4.5 support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 6000 (GeForce GTX 1050 Ti) <br/> - 4 GB Video Memory | 8 GB |
+| - Windows 10 (64 bit) <br/> - Ubuntu 19.04/Debian or newer, Arch Linux, or other distro (64 bit) | - Supports AVX2 <br/> - [PassMark Single Thread Performance](https://www.cpubenchmark.net/singleThread.html) rating near or greater than 2100 <br/> - Four physical cores, with or without hyperthreading | - Direct3D11 support <br/> - OpenGL 4.5 support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 6000 (GeForce GTX 1050 Ti) <br/> - 4 GB Video Memory | 8 GB |
 *Note: Recommended GPU is based on 3x Internal, ~1080p resolution requirements. Higher resolutions will require stronger cards; 6x Internal, ~4K resolution will require a [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 12000 (GeForce GTX 1070 Ti).*
 
 ## Technical Notes
 
 - You need the [Visual C++ 2019 x86 Redistributables](https://support.microsoft.com/en-us/help/2977003/) to run PCSX2.
-
-- PCSX2 1.4.0 is the last stable version to support Windows XP and Direct3D9. Windows XP is no longer getting updates (including security-related updates), and graphics drivers for Windows XP are older and no longer maintained.
-
+- Windows XP and DirectX 9 support was dropped after stable release 1.4.0
+- Windows 7 support will be dropped after stable release 1.6.0
 - Make sure to update your operating system, drivers, and DirectX (if applicable) to ensure you have the best experience possible. Having a newer GPU is also recommended so you have the latest supported drivers.
-
 - Because of copyright issues, and the complexity of trying to work around it, you need a BIOS dump extracted from a legitimately-owned PS2 console to use the emulator. For more information about the BIOS and how to get it from your console, visit [this page](https://pcsx2.net/config-guide/official-english-pcsx2-configuration-guide.html#Bios).
-
 - PCSX2 mainly takes advantage of 2 CPU cores. As of [this commit](https://github.com/PCSX2/pcsx2/commit/ac9bf45) PCSX2 can now take advantage of more than 2 cores using the MTVU speedhack. This can be a significant speedup on CPUs with 3+ cores, but it may be a slowdown on GS-limited games (or on CPUs with fewer than 2 cores).
-
 - Requirements benchmarks are based on a statistic from the Passmark CPU bench marking software. When we say "STR", we are referring to Passmark's "Single Thread Rating" statistic. You can look up your CPU on [https://cpubenchmark.net](Passmark's website for CPUs) to see how it compares to PCSX2's requirements.
 
 # Screenshots
