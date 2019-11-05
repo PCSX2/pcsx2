@@ -89,7 +89,7 @@ linux_32_script() {
 		..
 
 	# Documentation says 1.5 cores, so 2 or 3 threads should work ok.
-	make -j3 install
+	make -j `nproc` install
 }
 
 
@@ -132,7 +132,7 @@ linux_64_script() {
 		..
 
 	# Documentation says 1.5 cores, so 2 or 3 threads should work ok.
-	make -j3 install
+	make -j `nproc` install
 }
 
 linux_after_success() {
