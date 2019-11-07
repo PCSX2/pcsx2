@@ -139,6 +139,11 @@ linux_after_success() {
 	ccache -s
 }
 
+if [ "${SKIP_TRAVIS_BASH_SCRIPT}" = "1" ]; then
+	echo "travis.sh skipped:smiley:."
+	exit 0
+fi
+
 # Just in case I do manual testing and accidentally insert "rm -rf /"
 case "${1}" in
 before_install|script)

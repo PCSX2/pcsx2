@@ -6,6 +6,9 @@ cache: ccache
 
 dist: xenial
 
+services:
+  - docker
+
 matrix:
   include:
     - env: VERSION=8 BITS=64
@@ -20,6 +23,21 @@ matrix:
     - env: VERSION=3.8 BITS=32
       compiler: clang
       os: linux
+    - name: Fedora 31 - Docker
+      env: SKIP_TRAVIS_BASH_SCRIPT=1
+      script:
+        - docker build --tag pcsx2-fedora --file docker/fedora.Dockerfile .
+        - docker run --rm -it pcsx2-fedora ./build.sh --gtk3
+    - name: Debian 10 (Buster) - Docker
+      env: SKIP_TRAVIS_BASH_SCRIPT=1
+      script:
+        - docker build --tag pcsx2-debian --file docker/debian.Dockerfile .
+        - docker run --rm -it pcsx2-debian ./build.sh --gtk3
+    - name: Ubuntu 18.04 (Bionic) - Docker
+      env: SKIP_TRAVIS_BASH_SCRIPT=1
+      script:
+        - docker build --tag pcsx2-ubuntu --file docker/ubuntu.Dockerfile .
+        - docker run --rm -it pcsx2-ubuntu ./build.sh --gtk3
 
 before_install:
   - ./travis.sh before_install
