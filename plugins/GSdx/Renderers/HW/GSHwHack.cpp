@@ -616,6 +616,9 @@ bool GSC_MidnightClub3(const GSFrameInfo& fi, int& skip)
 	{
 		if(fi.TME && (fi.FBP > 0x01d00 && fi.FBP <= 0x02a00) && fi.FPSM == PSM_PSMCT32 && (fi.FBP >= 0x01600 && fi.FBP < 0x03260) && fi.TPSM == PSM_PSMT8H)
 		{
+			// Vram usage.
+			// Tested: tokyo default cruise.
+			// Move around a bit, stop car, wait as vram goes down, start moving again, vram spike.
 			skip = 1;
 		}
 	}
