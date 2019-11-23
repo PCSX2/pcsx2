@@ -126,8 +126,8 @@ The framelimiter has a few options that allow you to alter the pacing of your ga
 Some settings are greyed out; these are advanced counters that should only be modified by those who understand the effects they have on a game's playback speed and frame pacing.
 
 ### What is the normal speed for a PlayStation 2 game?
-* NTSC games will playback at 59.94 FPS
-* PAL games will playback at 50 FPS
+* NTSC games will play at 59.94 FPS
+* PAL games will play at 50 FPS
 
 These framerates are what the PlayStation 2 console would push to a real TV through its video cable. A game itself, typically, internally generates only half of those frames, and repeats frames to fill the gaps. This is why a "full speed" game may not "feel like 60 FPS". The console's "speed" (meaning AI, sound, physics, *everything*) is tied to the playback framerate, which is what PCSX2 reports as its "FPS". 
 
