@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "App.h"
 #include "AppCommon.h"
+#include "MSWstuff.h"
 
 #include "Dialogs/ModalPopups.h"
 
@@ -34,12 +35,10 @@ using namespace pxSizerFlags;
 Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 	: wxDialogWithHelpers(parent, AddAppName(_("About %s")), pxDialogFlags())
 	, m_bitmap_logo(this, wxID_ANY, wxBitmap(EmbeddedImage<res_Logo>().Get()),
-		wxDefaultPosition, wxDefaultSize
-		)
+		wxDefaultPosition, wxDefaultSize)
 {
 	// Main layout
-
-	SetMinWidth(460);
+	SetMinWidth(MSW_GetDPIScale() * 460);
 
 	*this += m_bitmap_logo | StdCenter();
 

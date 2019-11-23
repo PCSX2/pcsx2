@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "System.h"
 #include "Plugins.h"
+#include "MSWstuff.h"
 
 #include "ModalPopups.h"
 #include "Panels/ConfigurationPanels.h"
@@ -67,7 +68,7 @@ namespace Panels
 Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 	: wxPanelWithHelpers( parent, wxVERTICAL )
 {
-	SetMinWidth( 600 );
+	SetMinWidth( MSW_GetDPIScale() * 600 );
 
 	FastFormatUnicode faqFile;
 #ifndef DOC_DIR_COMPILATION
