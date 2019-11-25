@@ -163,6 +163,7 @@ CRC::Game CRC::m_games[] =
 	{0x5188ABCA, CrashBandicootWoC, US, 0},
 	{0x34E2EEC7, CrashBandicootWoC, RU, 0},
 	{0x3A03D62F, CrashBandicootWoC, EU, 0},
+	{0x35D70452, CrashBandicootWoC, EU, 0},
 	{0x013E349D, ResidentEvil4, US, 0},
 	{0xDBB7A559, ResidentEvil4, US, 0},
 	{0x6BA2F6B9, ResidentEvil4, EU, 0},
