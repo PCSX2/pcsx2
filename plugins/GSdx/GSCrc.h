@@ -111,7 +111,6 @@ public:
 		RatchetAndClank4,
 		RatchetAndClank5,
 		RedDeadRevolver,
-		ResidentEvil4,
 		RickyPontingInternationalCricket,
 		RozenMaidenGebetGarden,
 		SacredBlaze,

@@ -1255,19 +1255,6 @@ bool GSC_RedDeadRevolver(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME && fi.FBP == 0x03100 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ24)
-		{
-			skip = 176; // Removes fog, but no longer required, does offer a decent speed boost.
-		}
-	}
-
-	return true;
-}
-
 bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1538,7 +1525,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFX] = GSC_FFXGames;
 		lut[CRC::FFXII] = GSC_FFXGames;
 		lut[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
-		lut[CRC::ResidentEvil4] = GSC_ResidentEvil4;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
 		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
 		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
