@@ -34,13 +34,15 @@ using namespace pxSizerFlags;
 
 Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 	: wxDialogWithHelpers(parent, AddAppName(_("About %s")), pxDialogFlags())
-	, m_bitmap_logo(this, wxID_ANY, wxBitmap(EmbeddedImage<res_Logo>().Get()),
-		wxDefaultPosition, wxDefaultSize)
 {
-	// Main layout
-	SetMinWidth(MSW_GetDPIScale() * 460);
+	const float scale = MSW_GetDPIScale();
+	SetMinWidth(scale * 460);
 
-	*this += m_bitmap_logo | StdCenter();
+	wxImage img = EmbeddedImage<res_Logo>().Get();
+	img.Rescale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH);
+	auto bitmap_logo = new wxStaticBitmap(this, wxID_ANY, wxBitmap(img));
+
+	*this += bitmap_logo | StdCenter();
 
 #ifdef _WIN32
 	const int padding = 15;
