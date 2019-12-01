@@ -15,7 +15,7 @@ There are a number of ways to help the project, whether it be bug reporting, gam
 
 * Want to make changes to emulator code? [Check out the issue tracker](https://github.com/PCSX2/pcsx2/issues), or [fork the PCSX2 repository and work on your own ideas](https://github.com/PCSX2/pcsx2).
 * Want to patch games? [Check out the cheats and patches forum thread for inspiration](https://forums.pcsx2.net/Thread-Post-your-PCSX2-cheats-patches-here). There are other threads to find as well, [such as those dedicated to 60 FPS patches](https://forums.pcsx2.net/Thread-60-fps-codes) or [widescreen patches](https://forums.pcsx2.net/Thread-PCSX2-Widescreen-Game-Patches).
-* Want to report bugs you have discovered in your games? [Head over to the Bug Reporting section of the PCSX2 forums](https://forums.pcsx2.net/Forum-Bug-reporting).
+* Want to report bugs you have discovered in your games? [Head over to the Bug Reporting section of the PCSX2 forums](https://forums.pcsx2.net/Forum-Bug-reporting). Also check out our [GitHub issue guidelines](https://github.com/PCSX2/pcsx2/wiki/How-to-create-useful-and-valid-issues) for info on how we handle GitHub issues.
 
 ### Is PCSX2 ready to run out-of-the-box?
 No, PCSX2 is not ready to run immediately. First, you must dump your PlayStation 2 console's BIOS using the BIOS dumper. The BIOS dumper is [available on the PCSX2 website](https://pcsx2.net/download/releases/tools.html). 
