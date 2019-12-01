@@ -53,14 +53,6 @@ if(OPENCL_FOUND)
 endif()
 
 set(GSdxSources
-    PSX/GPU.cpp
-    PSX/GPUDrawScanline.cpp
-    PSX/GPUDrawScanlineCodeGenerator.cpp
-    PSX/GPULocalMemory.cpp
-    PSX/GPURenderer.cpp
-    PSX/GPURendererSW.cpp
-    PSX/GPUSetupPrimCodeGenerator.cpp
-    PSX/GPUState.cpp
     GS.cpp
     GSAlignedClass.cpp
     GSBlock.cpp
@@ -154,17 +146,6 @@ set(GSdxHeaders
     GSVector8.h
     GSVector8i.h
     stdafx.h
-    PSX/GPUDrawingEnvironment.h
-    PSX/GPUDrawScanlineCodeGenerator.h
-    PSX/GPUDrawScanline.h
-    PSX/GPU.h
-    PSX/GPULocalMemory.h
-    PSX/GPURenderer.h
-    PSX/GPURendererSW.h
-    PSX/GPUScanlineEnvironment.h
-    PSX/GPUSetupPrimCodeGenerator.h
-    PSX/GPUState.h
-    PSX/GPUVertex.h
     Renderers/Common/GSDevice.h
     Renderers/Common/GSDirtyRect.h
     Renderers/Common/GSFastList.h
@@ -224,7 +205,6 @@ if(Windows)
         Window/GSSettingsDlg.cpp
         Window/GSWndDX.cpp
         Window/GSWndWGL.cpp
-        PSX/GPUSettingsDlg.cpp
         )
 
     LIST(APPEND GSdxHeaders
@@ -234,7 +214,6 @@ if(Windows)
         Renderers/DX11/GSTextureCache11.h
         Window/GSWndDX.h
         Window/GSWndWGL.h
-        PSX/GPUSettingsDlg.h
         resource.h
         targetver.h
         )

@@ -46,17 +46,6 @@
 #define IDC_SWTHREADS                   2063
 #define IDC_SWTHREADS_EDIT              2064
 #define IDC_AUTO_FLUSH_SW               2065
-// PSX:
-#define IDD_GPUCONFIG                   2070
-#define IDC_ASPECTRATIO                 2071
-#define IDC_ASPECTRATIO_TEXT            2072
-#define IDC_DITHERING                   2073
-#define IDC_DITHERING_TEXT              2074
-#define IDC_WINDOWED                    2075
-#define IDC_RESOLUTION                  2076
-#define IDC_RESOLUTION_TEXT             2077
-#define IDC_SCALE                       2078
-#define IDC_SCALE_TEXT                  2079
 // Capture:
 #define IDD_CAPTURE                     2090
 #define IDC_FILENAME                    2091

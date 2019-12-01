@@ -22,7 +22,6 @@
 #include "stdafx.h"
 #include "GSdx.h"
 #include "GS.h"
-#include "PSX/GPU.h"
 #include <fstream>
 
 static void* s_hModule;
@@ -314,29 +313,6 @@ void GSdxApp::Init()
 	m_gs_tv_shaders.push_back(GSSetting(3, "Triangular filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
 
-	// PSX options that start with m_gpu.
-	m_gpu_renderers.push_back(GSSetting(static_cast<int8>(GPURendererType::D3D11_SW), "Direct3D 11", "Software"));
-	m_gpu_renderers.push_back(GSSetting(static_cast<int8>(GPURendererType::NULL_Renderer), "Null", ""));
-
-	m_gpu_filter.push_back(GSSetting(0, "Nearest", ""));
-	m_gpu_filter.push_back(GSSetting(1, "Bilinear (polygons only)", ""));
-	m_gpu_filter.push_back(GSSetting(2, "Bilinear", ""));
-
-	m_gpu_dithering.push_back(GSSetting(0, "Disabled", ""));
-	m_gpu_dithering.push_back(GSSetting(1, "Auto", ""));
-
-	m_gpu_aspectratio.push_back(GSSetting(0, "Stretch", ""));
-	m_gpu_aspectratio.push_back(GSSetting(1, "4:3", ""));
-	m_gpu_aspectratio.push_back(GSSetting(2, "16:9", ""));
-
-	m_gpu_scale.push_back(GSSetting(0 | (0 << 2), "H x 1 - V x 1", ""));
-	m_gpu_scale.push_back(GSSetting(1 | (0 << 2), "H x 2 - V x 1", ""));
-	m_gpu_scale.push_back(GSSetting(0 | (1 << 2), "H x 1 - V x 2", ""));
-	m_gpu_scale.push_back(GSSetting(1 | (1 << 2), "H x 2 - V x 2", ""));
-	m_gpu_scale.push_back(GSSetting(2 | (1 << 2), "H x 4 - V x 2", ""));
-	m_gpu_scale.push_back(GSSetting(1 | (2 << 2), "H x 2 - V x 4", ""));
-	m_gpu_scale.push_back(GSSetting(2 | (2 << 2), "H x 4 - V x 4", ""));
-
 	// Avoid to clutter the ini file with useless options
 #ifdef _WIN32
 	// Per OS option.
@@ -344,15 +320,9 @@ void GSdxApp::Init()
 	m_default_configuration["CaptureFileName"]                            = "";
 	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
 	m_default_configuration["dx_break_on_severity"]                       = "0";
-
+	m_default_configuration["windowed"]                                   = "1";
 	// D3D Blending option
 	m_default_configuration["accurate_blending_unit_d3d11"]               = "1";
-
-	// PSX option. Not supported on linux.
-	m_default_configuration["dithering"]                                  = "1";
-	m_default_configuration["scale_x"]                                    = "0";
-	m_default_configuration["scale_y"]                                    = "0";
-	m_default_configuration["windowed"]                                   = "1";
 #else
 	m_default_configuration["linux_replay"]                               = "1";
 #endif
