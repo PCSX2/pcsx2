@@ -1,6 +1,7 @@
 # PCSX2 Configuration: Windows
 This guide will walk through the initial setup process of PCSX2 and the basics of configuration.
 
+---
 ## First Time Setup
 The first time you launch PCSX2, you will be prompted with a First Time Configuration wizard.
 
@@ -26,28 +27,74 @@ Advanced users may wish to use a different folder for their BIOS, you can do so 
 
 ![PCSX2_First_Time_Configuration_bios.png](PCSX2_First_Time_Configuration_bios.png)
 
+---
 ## Post-Setup Configuration
-PCSX2 has a lot of configuration options relating to the various parts of the PS2 console.
+A large number of games work out-of-the-box on default PCSX2 settings. However, a subset of games require special settings to run, and some games require special settings to be upscaled. This guide will briefly cover some frequent problems and configuration settings to address them. 
 
-### The System menu
-This menu controls core PCSX2 functions such as starting, pausing and stopping emulation, save states, widescreen patches and cheats. 
+### Multi-Threaded VU1 (MTVU)
+The MTVU option is a unique case of a recommended setting that is **not** enabled by default. MTVU boosts performance for PCs with at least 3 cores with almost no consequences for the overwhelming majority of games. However, a small number of high profile games are incompabible with MTVU and will break if it is enabled. For this reason, we do not enable it by default, **but strongly recommend you do so yourself**. If your game fails to boot or has other problems with it enabled, disable it and try again.
 
-![PCSX2_System.png](PCSX2_System.png)
+### Specific game solutions
+Looking for information specific to a single game? Head to the [PCSX2 Wiki](https://wiki.pcsx2.net/Main_Page) and search for your game using the search bar in the top right. Known issues and solutions should be towards the bottom of a game's wiki page.
 
-* Boot ISO (full) - Boot the PS2 BIOS, which will then boot your PS2 game. This is usually the safer boot mode, as it will correctly pass language and time information from the PS2 BIOS to the game, but will take a few seconds longer to go through the PS2 splash screens.
-* Boot ISO (fast) - Directly execute your PS2 game's main executable. This is usually faster, but it will not get any language or time information from your PS2 BIOS, so your game may end up booting in to the wrong language if it has multi-language support, or using an incorrect date and time if the game relies on the PS2's system clock.
-* Run ELF... - Directly execute a PS2 ELF file. If you have a standalone ELF file for the PS2, this is how you can execute it. This is NOT for use with officially released PS2 games.
-* Pause/Resume - While emulation is running, this will pause the emulator or resume it. This is not the same as pausing in-game; this is interrupting the PCSX2 program's emulation and then resuming it.
+### General solutions
+Want some general ideas to try that are not specific to a game? Here are some more commonly known issues and solutions to try. 
+*Note: For some of these issues, multiple solutions are given one after the other. Before moving from one solution to the next, **undo the previous solution**. Stacking multiple fixes on top of each other is usually unnecessary and likely to introduce new issues.*
 
-*About Save States: Save states are dumps of PS2 memory that can be injected back into the emulator. This means you can capture the "state" of the emulator (saving), and then return back to that exact "state" at any time (loading). Because cheats and widescreen patches are also injected into PS2 memory, this means that the state of a cheat or widescreen patch is also preserved inside a save state.*
+#### Grid-like pattern on screen
+Usually this is due to upscaling and causing sprites to misalign. Any fixes will be found in the GSdx Advanced Settings and Hacks:
+`Config > Video (GS) > Plugin Settings > Advanced Settings and Hacks`
+First try the two Round Sprite modes, Half and Full. Then try Align Sprite and Merge Sprite. If all else fails, consider using the Texture Offsets.
 
-* Load state - Load a save state. This will immediately pause emulation, inject the save state's memory into the emulated PS2's memory, and then resume. 
-* Save state - Save a save state. This will immediately pause emulation, dump the emulated PS2's memory into a save state file, and then resume.
-* Backup before save - Enabling this will make PCSX2 backup your previous save state, if you are saving to a slot that is already used. Your old save state will be given a .backup extension, and the new save state will be written normally.
-* Automatic Gamefixes - When enabled, PCSX2 will use its game database to automatically apply any needed gamefixes to a game. The console title bar will display how many, if any, are activated. 
-* Enable Cheats - When enabled, cheats will be read from the configured cheats folder. Cheats are only applied when a game is booted; enabling this while a game is running will have no effect. 
-* Enable Widescreen Patches - When enabled, widescreen patches will be read from the widescreen patch archive (cheats_ws.zip) and cheats_ws folder. Widescreen patches are only applied when a game is booted; enabling this while a game is running will have no effect.
-* Enable Recording Tools - Enable a new set of TAS/Recording tools. For advanced users who want to do Tool Assisted Speedruns.
-* Shutdown - Stops emulation, equivalent to holding the power button down on the PS2.
-* Exit - Closes PCSX2. If emulation is running, it will be stopped.
+#### Outlines on shapes or models are improperly sized/aligned
+Usually this is because of an upscaling hack known formerly as Unscale Point and Line. This is now enabled by default because the overwhelming majority of games work nicely with it or need it, and only a few have problems with it. Navigate to the GSdx Advanced Settings and Hacks:
+`Config > Video (GS) > Plugin Settings > Advanced Settings and Hacks`
+Check the Disable Safe Features box.
 
+#### Ghosting and bloom misalignment
+Upscaling can cause some screen elements, usually but not always bloom effects, to misalign. Navigate to the GSdx Advanced Settings and Hacks:
+`Config > Video (GS) > Plugin Settings > Advanced Settings and Hacks`
+Try the various Half Pixel Offset modes. The further down the list you go, the more aggressive the hack gets. Once you find a mode that properly fixes the ghosting/misalignment, do not push it further. Also note in some games, the further you upscale, the worse the ghosting/misalignment gets. In some of these games, Half Pixel Offset may mitigate the issue, but not be able to fully resolve it.
+
+#### Flickering or improper lightning
+This is usually because of GS blending accuracy. Navigate to the GSdx Advanced Settings and Hacks:
+`Config > Video (GS) > Plugin Settings > Advanced Settings and Hacks`
+Increment Blending Accuracy until the problem goes away. Note, higher Blending Accuracy substantially increases performance requirements.
+
+#### Flickering or improperly shaped shadows
+This can either be a GS or VU problem so solutions will vary wildly by game. 
+
+##### GS
+Navigate to the GSdx Advanced Settings and Hacks:
+`Config > Video (GS) > Plugin Settings > Advanced Settings and Hacks`
+Try checking Disable Safe Features. FIXME: What are some next steps for GS?
+
+##### VU
+Navigate to the VU settings:
+`Config > Emulation Settings > VUs`
+Try different combinations of VU0/VU1 Advanced Recompiler Options. Only change one of them at a time, and keep trying all possible combinations. If none of these work, Restore Defaults and then try changing the Recompiler/Interpreter modes. Only try Interpreter as a last ditch effort.
+
+#### Spikey Polygon Syndrome (SPS)
+SPS is the tendency of world geometry or character models to deform into wildly incorrect shapes, usually resulting in the generation of spikes. This is almost always a VU problem. Navigate to the VU settings:
+`Config > Emulation Settings > VUs`
+Try different combinations of VU0/VU1 Advanced Recompiler Options. Only change one of them at a time, and keep trying all possible combinations. If none of these work, Restore Defaults and then try changing the Recompiler/Interpreter modes. Only try Interpreter as a last ditch effort.
+
+#### Menu items or text overlays missing
+This is usually a VU issue, but can sometimes be an EE issue. Navigate to the VU settings:
+`Config > Emulation Settings > VUs`
+Try different combinations of VU0/VU1 Advanced Recompiler Options. Only change one of them at a time, and keep trying all possible combinations. If none of these work, Restore Defaults and then try changing the Recompiler/Interpreter modes. Only try Interpreter as a last ditch effort. If the issue persists, navigate to the EE settings:
+`Config > Emulation Settings > EE/IOP`
+Try different combinations of EE/FPU Advanced Recompiler Options. Only change one of them at a time, and keep trying all possible combinations. If none of these work, Restore Defaults and then try changing the Recompiler/Interpreter modes. Only try Interpreter or Enable EE Cache as a last ditch effort.
+
+#### AI pathfinding/vision and other behaviors, progress flags not triggering, or world objects missing
+This is usually an EE issue, but can sometimes be a VU issue. Navigate to the EE settings:
+`Config > Emulation Settings > EE/IOP`
+Try different combinations of EE/FPU Advanced Recompiler Options. Only change one of them at a time, and keep trying all possible combinations. If none of these work, Restore Defaults and then try changing the Recompiler/Interpreter modes. Only try Interpreter or Enable EE Cache as a last ditch effort. If the issue persists, navigate to the VU settings:
+`Config > Emulation Settings > VUs`
+Try different combinations of VU0/VU1 Advanced Recompiler Options. Only change one of them at a time, and keep trying all possible combinations. If none of these work, Restore Defaults and then try changing the Recompiler/Interpreter modes. Only try Interpreter as a last ditch effort.
+
+There are some known issues with specific games that are programming level issues rather than configuration level; please check the [PCSX2 Wiki](https://wiki.pcsx2.net/Main_Page) if these solutions do not help.
+
+#### Colored vertical bands appear on screen
+This is an old issue that is believed to be resolved, but there may still be a game or two that this has not been reported on yet. Unfortunately, this is a programming problem and not a configuration problem. If you encounter this, please submit a [bug report on the forums](https://forums.pcsx2.net/Forum-Bug-reporting) or an [issue on GitHub](https://github.com/PCSX2/pcsx2/issues). To remove the color banding, switch GSdx to a Software Renderer using the F9 key or by going in to your GSdx Plugin Settings:
+`Config > Video (GS) > Plugin Settings > Renderer`
