@@ -324,6 +324,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20023
 Name   = Soul Calibur II
 Region = NTSC-Unk
+vuClampMode = 2 // Respawn issues, SPS.
 ---------------------------------------------
 Serial = SCAJ-20024
 Name   = dot Hack Vol.4
@@ -2197,7 +2198,7 @@ Region = PAL-M5
 Compat = 5
 ---------------------------------------------
 Serial = SCES-53312
-Name   = Soul Calibur 3
+Name   = Soul Calibur III
 Region = PAL-M5
 Compat = 5
 vuRoundMode = 3
@@ -2831,10 +2832,10 @@ Region = NTSC-K
 Compat = 5
 ---------------------------------------------
 Serial = SCKA-20016
-Name   = Soul Calibur 2
+Name   = Soul Calibur II
 Region = NTSC-K
 Compat = 5
-vuClampMode = 2 // SPS(Spikey Polygon Syndrome) solution.
+vuClampMode = 2 // Respawn issues, SPS.
 ---------------------------------------------
 Serial = SCKA-20018
 Name   = The Getaway
@@ -10613,6 +10614,7 @@ Serial = SLES-51799
 Name   = Soul Calibur II
 Region = PAL-M5
 Compat = 5
+vuClampMode = 2 // Respawn issues, SPS.
 ---------------------------------------------
 Serial = SLES-51800
 Name   = Smash Cars Racing
@@ -19549,6 +19551,10 @@ Serial = SLPM-61120
 Name   = Drag-on Dragoon 2 - Fuuin no Kurenai [Trial Version]
 Region = NTSC-J
 eeClampMode = 2 // Fixes wrong color on some characters and breakable objects.
+---------------------------------------------
+Serial = SLPM-61133
+Name   = Soul Calibur III [Trial Version]
+Region = NTSC-J
 ---------------------------------------------
 Serial = SLPM-61135
 Name   = Naruto - Narutimett Hero 3 [Trial Version]
@@ -31927,6 +31933,7 @@ Serial = SLPS-25230
 Name   = Soul Calibur II
 Region = NTSC-J
 Compat = 5
+vuClampMode = 2 // Respawn issues, SPS.
 ---------------------------------------------
 Serial = SLPS-25231
 Name   = Myst III - Exile
@@ -37808,9 +37815,10 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SLUS-20643
-Name   = Soul Calibur 2
+Name   = Soul Calibur II
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // Respawn issues, SPS.
 ---------------------------------------------
 Serial = SLUS-20643BD
 Name   = Namco Transmission Demo Disc v1.03 [Soul Calibur II Pack-In]
