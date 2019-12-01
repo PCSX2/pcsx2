@@ -81,21 +81,20 @@ You can use games from your personal collection of discs, purchase them from loc
 Yes. However, some games have speed problems, because unlike the PS2 which would constantly keep the disc spinning, PCSX2 will not do the same to your PC's disc drive. It is recommended to instead dump your games to ISO images. ImgBurn is a popular software to do this with, and we recommend [installing ImgBurn by using Ninite](https://ninite.com) to avoid any issues with the ImgBurn installer.
 
 ### How do I play a game?
-After PCSX2 is set up:
+If you are using an ISO image:
 
 1) Click the CDVD menu
-    * If you are using an ISO image:
-
-        2) Check that "ISO" mode is selected.
-        3) Go to "ISO Selector", then Browse.
-        4) Locate your ISO image.
-        5) Click the System menu, then Boot ISO.
+2) Check that "ISO" mode is selected.
+3) Go to "ISO Selector", then Browse.
+4) Locate your ISO image.
+5) Click the System menu, then Boot ISO.
             
-    * If you are using a disc:
+If you are using a disc:
 
-        2) Check that "Plugin" mode is selected.
-        3) Click "Plugin Menu", then "Plugin Settings". Verify your disc drive shows up in the menu.
-        4) Click the System menu, then Boot CDVD.
+1) Click the CDVD menu
+2) Check that "Plugin" mode is selected.
+3) Click "Plugin Menu", then "Plugin Settings". Verify your disc drive shows up in the menu.
+4) Click the System menu, then Boot CDVD.
 
 ### What is the difference between Full and Fast boot?
 Full boot will launch the PS2 BIOS, which will then launch the game. Some games need this for multi-language settings or times to work.
