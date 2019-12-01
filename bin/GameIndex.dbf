@@ -6707,7 +6707,7 @@ Name   = F1 Racing Championship
 Region = PAL-F-G
 Compat = 2
 [patches = EDD7E0FF]
-	comment=patches by Nachbrenner
+	author=Nachbrenner
 	// Skip Videos.
 	patch=0,EE,0024ddc0,word,24020001
 [/patches]
@@ -6716,6 +6716,12 @@ Serial = SLES-50047
 Name   = F1 Racing Championship
 Region = PAL-M3
 Compat = 5
+[patches = 3063bd41]
+	author=Prafull
+	// Fixes IPU issues causing a hang at loading menu.
+	patch=1,EE,00258e34,word,00000000
+	patch=1,EE,00217484,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-50048
 Name   = Donald Duck - Quack Attack
@@ -29921,6 +29927,12 @@ Region = NTSC-J
 Serial = SLPS-20042
 Name   = F1 Racing Championship
 Region = NTSC-J
+[patches = 32F1FA12]
+	author=Prafull
+	// Fixes IPU issues causing a hang at loading menu.
+	patch=1,EE,00251f94,word,00000000 //0440fffa
+	patch=1,EE,0020e7a4,word,00000000 //1440fffa
+[/patches]
 ---------------------------------------------
 Serial = SLPS-20043
 Name   = Lake Masters Fishing EX
@@ -36491,9 +36503,11 @@ Name   = Knockout Kings 2002
 Region = NTSC-U
 Compat = 5
 [patches = 36FEEE3A]
-	comment=patches by Nachbrenner
-	// Fix DMA loop.
-	patch=0,EE,001d8020,word,1000000f
+	author=Nachbrenner - Prafull
+	// Fixes DMA loop causing Hanging at start of fight.
+	patch=1,EE,001d7fec,word,1000000f
+	patch=1,EE,001d8020,word,1000000f
+	patch=1,EE,001d8074,word,1000000f
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20370
@@ -42349,6 +42363,23 @@ Compat = 5
 Serial = SLUS-21601
 Name   = Sprint Cars 2 - Showdown at Eldora
 Region = NTSC-U
+[patches = 75D13A19]
+	author=Kozarovv
+	// Rearrange COP2 instructions to fix bad mac flag stuff. Fix for bouncing vehicles. 
+	patch=1,EE,0027573c,word,48448800
+	patch=1,EE,00275740,word,309000E0
+	patch=1,EE,00275748,word,4BF0116C
+	patch=1,EE,00275750,word,00908024
+	patch=1,EE,00275754,word,4A0002FF
+	patch=1,EE,00275758,word,4BF019AC
+	patch=1,EE,0027576c,word,48448800
+	patch=1,EE,00275770,word,309000E0
+	patch=1,EE,00275774,word,4BE2896C
+	patch=1,EE,00275778,word,48448800
+	patch=1,EE,0027577c,word,4BE389AC
+	patch=1,EE,00275780,word,4A0002FF
+	patch=1,EE,00275784,word,4A0002FF
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21602
 Name   = Transformers - The Game
