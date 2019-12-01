@@ -32,14 +32,14 @@ After dumping your PlayStation 2 console's BIOS, you may launch PCSX2, step thro
 | Operating System | CPU | GPU | RAM |
 | --- | --- | --- | --- |
 | - Windows 7 or newer (32 or 64 bit) <br/> - Ubuntu 18.04/Debian or newer, Arch Linux, or other distro (32 or 64 bit) | - Supports SSE2 <br/> - [PassMark Single Thread Performance](https://www.cpubenchmark.net/singleThread.html) rating near or greater than 1600 <br/> - Two physical cores, with hyperthreading | - Direct3D11 support <br/> - OpenGL 3.x support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 3000 (GeForce GTX 750) <br/> - 2 GB Video Memory | 4 GB |
-*Note: Recommended Single Thread Performance is based on moderately complex games. Games that pushed the PS2 hardware to its limits will struggle on CPUs at this level. Some release titles and 2D games which underutilized the PS2 hardware may run on CPUs rated as low as 1200.*
+*Note: Recommended Single Thread Performance is based on moderately complex games. Games that pushed the PS2 hardware to its limits will struggle on CPUs at this level. Some release titles and 2D games which underutilized the PS2 hardware may run on CPUs rated as low as 1200. A quick reference for CPU **intensive games**: [Wiki](https://wiki.pcsx2.net/Category:CPU_intensive_games), [Forum](https://forums.pcsx2.net/Thread-LIST-The-Most-CPU-Intensive-Games) and CPU **light** games: [Forum](https://forums.pcsx2.net/Thread-LIST-Games-that-don-t-need-a-strong-CPU-to-emulate)*
 
 #### Recommended 
 
 | Operating System | CPU | GPU | RAM |
 | --- | --- | --- | --- |
 | - Windows 10 (64 bit) <br/> - Ubuntu 19.04/Debian or newer, Arch Linux, or other distro (64 bit) | - Supports AVX2 <br/> - [PassMark Single Thread Performance](https://www.cpubenchmark.net/singleThread.html) rating near or greater than 2100 <br/> - Four physical cores, with or without hyperthreading | - Direct3D11 support <br/> - OpenGL 4.5 support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 6000 (GeForce GTX 1050 Ti) <br/> - 4 GB Video Memory | 8 GB |
-*Note: Recommended GPU is based on 3x Internal, ~1080p resolution requirements. Higher resolutions will require stronger cards; 6x Internal, ~4K resolution will require a [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 12000 (GeForce GTX 1070 Ti).*
+*Note: Recommended GPU is based on 3x Internal, ~1080p resolution requirements. Higher resolutions will require stronger cards; 6x Internal, ~4K resolution will require a [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 12000 (GeForce GTX 1070 Ti). Just like CPU requirements, this is also highly game dependent. A quick reference for GPU **intensive games**:  [Wiki](https://wiki.pcsx2.net/Category:GPU_intensive_games)*
 
 ### How many CPU cores can PCSX2 use?
 By default, PCSX2 uses two cores for emulation. Enabling the MTVU speedhack allows the PS2's VU1 coprocessor to run on a third core, which is safe for most games.
