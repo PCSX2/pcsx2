@@ -102,7 +102,7 @@ protected:
 	bool			m_RestartEmuOnDelete;
 
 	wxStatusBar&	m_statusbar;
-	wxStaticBitmap	m_background;
+	wxStaticBitmap*	m_background;
 
 	wxMenuBar&		m_menubar;
 

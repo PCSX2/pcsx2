@@ -327,7 +327,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	: wxFrame(parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX | wxRESIZE_BORDER) )
 
 	, m_statusbar( *CreateStatusBar(2, 0) )
-	, m_background( this, wxID_ANY, wxGetApp().GetLogoBitmap() )
+	, m_background( new wxStaticBitmap(this, wxID_ANY, wxGetApp().GetLogoBitmap()) )
 
 	// All menu components must be created on the heap!
 
@@ -382,7 +382,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	// The background logo and its window size are different on Windows. Use the
 	// background logo size, which is what it'll eventually be resized to.
-	wxSize backsize(m_background.GetBitmap().GetWidth(), m_background.GetBitmap().GetHeight());
+	wxSize backsize(m_background->GetBitmap().GetWidth(), m_background->GetBitmap().GetHeight());
 
 	wxString wintitle;
 	if( PCSX2_isReleaseVersion )
@@ -416,7 +416,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_statusbar.SetStatusText( wxEmptyString, 0);
 
 	wxBoxSizer& joe( *new wxBoxSizer( wxVERTICAL ) );
-	joe.Add( &m_background );
+	joe.Add( m_background );
 	SetSizerAndFit( &joe );
 	// Makes no sense, but this is needed for the window size to be correct for
 	// 200% DPI on Windows. The SetSizerAndFit is supposed to be doing the exact
