@@ -59,15 +59,5 @@ namespace pcsx2_Updater.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to v1.5.0-dev-3286-g96da10a28
-        ///.
-        /// </summary>
-        internal static string CurrentCommit {
-            get {
-                return ResourceManager.GetString("CurrentCommit", resourceCulture);
-            }
-        }
     }
 }

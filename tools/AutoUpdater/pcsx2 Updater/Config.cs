@@ -20,7 +20,7 @@ namespace pcsx2_Updater
         {
             if(!File.Exists(AppDomain.CurrentDomain.BaseDirectory + @"AutoUpdate.ini"))
             {
-                ini.Write("InstalledPatchName", "0");
+                ini.Write("InstalledPatchName", "unknown0");
                 ini.Write("InstalledPatchDate", "1/1/1970");
                 ini.Write("Enabled", "true");
                 ini.Write("Channel", "Development");

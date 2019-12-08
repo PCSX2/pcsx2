@@ -57,6 +57,7 @@ namespace pcsx2_Updater
             catch (System.Exception Ex)
             {
                 MessageBox.Show("Extracting update failed!\nThe update appears to be corrupted.\n\n"+Ex.ToString(), "Failed to update pcsx2", MessageBoxButtons.OK);
+                Close();
             }
 
             this.Text = "Installing update";

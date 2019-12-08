@@ -43,7 +43,7 @@ namespace pcsx2_Updater
                         Version = match.Groups[2].Value,
                         Author = match.Groups[3].Value,
                         DateTime = Convert.ToDateTime(match.Groups[4].Value),
-                        DownloadUrl = "https://buildbot.orphis.net" + match.Groups[5].Value,
+                        DownloadUrl = "https://buildbot.orphis.net" + match.Groups[5].Value.Replace("&amp;","&"), // Some error on Orphis' site breaks the download urls. Browsers autocorrect it.
                         Description = match.Groups[6].Value
                     };
                     var latest = int.Parse(new string(newupdate.Version.Where(c => char.IsDigit(c)).ToArray()));
