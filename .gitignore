@@ -108,10 +108,10 @@ oprofile_data/
 /tools/bin
 /tools/GSDumpGUI/bin
 /tools/GSDumpGUI/obj
+/tools/AutoUpdater/packages
+/tools/AutoUpdater/pcsx2 Updater/AutoUpdate.ini
+!/tools/AutoUpdater/pcsx2 Updater/7za.*
 .vs
 
 /pcsx2/windows/VCprojects/GSdx_opengl_debug_hw.txt
 /pcsx2/windows/VCprojects/GSdx_opengl_debug_sw.txt
-
-/tools/AutoUpdater/packages
-tools/AutoUpdater/pcsx2 Updater/CurrentCommit.txt

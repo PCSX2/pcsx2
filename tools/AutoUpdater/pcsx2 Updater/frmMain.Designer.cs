@@ -28,66 +28,74 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.button2 = new System.Windows.Forms.Button();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.button3 = new System.Windows.Forms.Button();
+            this.btnUpdate = new System.Windows.Forms.Button();
+            this.labelUpdateIntro = new System.Windows.Forms.Label();
+            this.btnLater = new System.Windows.Forms.Button();
+            this.checkEnabled = new System.Windows.Forms.CheckBox();
+            this.btnSkip = new System.Windows.Forms.Button();
             this.labelVersion = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.cbChannel = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.Web = new System.Windows.Forms.WebBrowser();
+            this.tableUpdates = new System.Windows.Forms.DataGridView();
+            this.Patch = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Author = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DateTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            ((System.ComponentModel.ISupportInitialize)(this.tableUpdates)).BeginInit();
             this.SuspendLayout();
             // 
-            // button1
+            // btnUpdate
             // 
-            this.button1.Location = new System.Drawing.Point(713, 447);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(89, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Update Now";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.Button1_Click);
+            this.btnUpdate.Location = new System.Drawing.Point(713, 447);
+            this.btnUpdate.Name = "btnUpdate";
+            this.btnUpdate.Size = new System.Drawing.Size(89, 23);
+            this.btnUpdate.TabIndex = 1;
+            this.btnUpdate.Text = "Update Now";
+            this.btnUpdate.UseVisualStyleBackColor = true;
+            this.btnUpdate.Click += new System.EventHandler(this.btnUpdate_Click);
             // 
-            // label1
+            // labelUpdateIntro
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(2, 9);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(400, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "A new pre-release build of PCSX2 has been released, the changes are listed below." +
+            this.labelUpdateIntro.AutoSize = true;
+            this.labelUpdateIntro.Location = new System.Drawing.Point(2, 9);
+            this.labelUpdateIntro.Name = "labelUpdateIntro";
+            this.labelUpdateIntro.Size = new System.Drawing.Size(400, 13);
+            this.labelUpdateIntro.TabIndex = 2;
+            this.labelUpdateIntro.Text = "A new pre-release build of PCSX2 has been released, the changes are listed below." +
     "";
             // 
-            // button2
+            // btnLater
             // 
-            this.button2.Location = new System.Drawing.Point(618, 447);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(89, 23);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "Update Later";
-            this.button2.UseVisualStyleBackColor = true;
+            this.btnLater.Location = new System.Drawing.Point(618, 447);
+            this.btnLater.Name = "btnLater";
+            this.btnLater.Size = new System.Drawing.Size(89, 23);
+            this.btnLater.TabIndex = 3;
+            this.btnLater.Text = "Update Later";
+            this.btnLater.UseVisualStyleBackColor = true;
+            this.btnLater.Click += new System.EventHandler(this.BtnLater_Click);
             // 
-            // checkBox1
+            // checkEnabled
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Checked = true;
-            this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox1.Location = new System.Drawing.Point(3, 452);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(267, 17);
-            this.checkBox1.TabIndex = 4;
-            this.checkBox1.Text = "Show this window whenever an update is detected";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkEnabled.AutoSize = true;
+            this.checkEnabled.Checked = true;
+            this.checkEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkEnabled.Location = new System.Drawing.Point(3, 452);
+            this.checkEnabled.Name = "checkEnabled";
+            this.checkEnabled.Size = new System.Drawing.Size(267, 17);
+            this.checkEnabled.TabIndex = 4;
+            this.checkEnabled.Text = "Show this window whenever an update is detected";
+            this.checkEnabled.UseVisualStyleBackColor = true;
+            this.checkEnabled.CheckedChanged += new System.EventHandler(this.CheckEnabled_CheckedChanged);
             // 
-            // button3
+            // btnSkip
             // 
-            this.button3.Location = new System.Drawing.Point(523, 447);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(89, 23);
-            this.button3.TabIndex = 5;
-            this.button3.Text = "Skip this build";
-            this.button3.UseVisualStyleBackColor = true;
+            this.btnSkip.Location = new System.Drawing.Point(523, 447);
+            this.btnSkip.Name = "btnSkip";
+            this.btnSkip.Size = new System.Drawing.Size(89, 23);
+            this.btnSkip.TabIndex = 5;
+            this.btnSkip.Text = "Skip this build";
+            this.btnSkip.UseVisualStyleBackColor = true;
+            this.btnSkip.Click += new System.EventHandler(this.BtnSkip_Click);
             // 
             // labelVersion
             // 
@@ -100,17 +108,18 @@
     "9231";
             this.labelVersion.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
-            // comboBox1
+            // cbChannel
             // 
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "Git Builds",
-            "Public Releases"});
-            this.comboBox1.Location = new System.Drawing.Point(379, 448);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
-            this.comboBox1.TabIndex = 7;
+            this.cbChannel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbChannel.FormattingEnabled = true;
+            this.cbChannel.Items.AddRange(new object[] {
+            "Development",
+            "Stable"});
+            this.cbChannel.Location = new System.Drawing.Point(379, 448);
+            this.cbChannel.Name = "cbChannel";
+            this.cbChannel.Size = new System.Drawing.Size(121, 21);
+            this.cbChannel.TabIndex = 7;
+            this.cbChannel.SelectedIndexChanged += new System.EventHandler(this.CbChannel_SelectedIndexChanged);
             // 
             // label3
             // 
@@ -122,34 +131,67 @@
             this.label3.Text = "Current channel:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
-            // Web
+            // tableUpdates
             // 
-            this.Web.AllowNavigation = false;
-            this.Web.AllowWebBrowserDrop = false;
-            this.Web.IsWebBrowserContextMenuEnabled = false;
-            this.Web.Location = new System.Drawing.Point(3, 32);
-            this.Web.MinimumSize = new System.Drawing.Size(20, 20);
-            this.Web.Name = "Web";
-            this.Web.ScriptErrorsSuppressed = true;
-            this.Web.Size = new System.Drawing.Size(797, 411);
-            this.Web.TabIndex = 9;
-            this.Web.Url = new System.Uri("http://buildbot.orphis.net/pcsx2/index.php", System.UriKind.Absolute);
-            this.Web.WebBrowserShortcutsEnabled = false;
+            this.tableUpdates.AllowUserToAddRows = false;
+            this.tableUpdates.AllowUserToDeleteRows = false;
+            this.tableUpdates.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.tableUpdates.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Patch,
+            this.Author,
+            this.DateTime,
+            this.Description});
+            this.tableUpdates.Location = new System.Drawing.Point(3, 32);
+            this.tableUpdates.MultiSelect = false;
+            this.tableUpdates.Name = "tableUpdates";
+            this.tableUpdates.ReadOnly = true;
+            this.tableUpdates.RowTemplate.ReadOnly = true;
+            this.tableUpdates.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.tableUpdates.ShowEditingIcon = false;
+            this.tableUpdates.Size = new System.Drawing.Size(799, 409);
+            this.tableUpdates.TabIndex = 9;
+            // 
+            // Patch
+            // 
+            this.Patch.HeaderText = "Revision";
+            this.Patch.Name = "Patch";
+            this.Patch.ReadOnly = true;
+            this.Patch.Width = 150;
+            // 
+            // Author
+            // 
+            this.Author.HeaderText = "Author";
+            this.Author.Name = "Author";
+            this.Author.ReadOnly = true;
+            // 
+            // DateTime
+            // 
+            this.DateTime.HeaderText = "Date";
+            this.DateTime.Name = "DateTime";
+            this.DateTime.ReadOnly = true;
+            this.DateTime.Width = 130;
+            // 
+            // Description
+            // 
+            this.Description.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Description.HeaderText = "Description";
+            this.Description.Name = "Description";
+            this.Description.ReadOnly = true;
             // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(804, 473);
-            this.Controls.Add(this.Web);
+            this.Controls.Add(this.tableUpdates);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.cbChannel);
             this.Controls.Add(this.labelVersion);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.checkBox1);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnSkip);
+            this.Controls.Add(this.checkEnabled);
+            this.Controls.Add(this.btnLater);
+            this.Controls.Add(this.labelUpdateIntro);
+            this.Controls.Add(this.btnUpdate);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "frmMain";
             this.ShowIcon = false;
@@ -158,21 +200,26 @@
             this.TopMost = true;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
             this.Load += new System.EventHandler(this.frmMain_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.tableUpdates)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button btnUpdate;
+        private System.Windows.Forms.Label labelUpdateIntro;
+        private System.Windows.Forms.Button btnLater;
+        private System.Windows.Forms.CheckBox checkEnabled;
+        private System.Windows.Forms.Button btnSkip;
         private System.Windows.Forms.Label labelVersion;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox cbChannel;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.WebBrowser Web;
+        private System.Windows.Forms.DataGridView tableUpdates;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Patch;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Author;
+        private System.Windows.Forms.DataGridViewTextBoxColumn DateTime;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Description;
     }
 }
 
