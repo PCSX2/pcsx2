@@ -73,6 +73,7 @@
     <Compile Include="frmMain.Designer.cs">
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="GitHub.cs" />
     <Compile Include="Orphis.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -136,7 +137,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>git describe --tags &gt; "$(ProjectDir)\CurrentCommit.txt"
-exit /B 0</PreBuildEvent>
+    <PreBuildEvent>:: Need to generate the INI file on build</PreBuildEvent>
   </PropertyGroup>
 </Project>

@@ -42,13 +42,14 @@ namespace pcsx2_Updater
                 while (Config.Refresh)
                 {
                     Config.Refresh = false;
+                    UpdateChecker upd;
                     switch (Config.Channel)
                     {
                         case Channels.Development:
-                            UpdateChecker upd = new Orphis();
+                            upd = new Orphis();
                             break;
                         case Channels.Stable:
-                            UpdateChecker upd = new GitHub();
+                            upd = new GitHub();
                             break;
                         default:
                             if (!Config.Silent) MessageBox.Show("Unknown update channel in config!");
