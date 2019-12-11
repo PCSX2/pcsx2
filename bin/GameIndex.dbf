@@ -6506,6 +6506,10 @@ Name   = The Suffering [Demo]
 Region = PAL-E
 ---------------------------------------------
 Serial = SLED-52929
+Name   = Burnout 3: Takedown [Demo]
+Region = PAL-Unk 
+---------------------------------------------
+Serial = SLED-52929
 Name   = Prince of Persia - Warrior Within [Demo]
 Region = PAL-M5
 ---------------------------------------------
@@ -14805,6 +14809,10 @@ Region = PAL-M6
 Serial = SLES-53599
 Name   = The Ultimate Music Quiz
 Region = PAL-M6
+---------------------------------------------
+Serial = SLES-53601
+Name   =  International Cue Club 2
+Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-53614
 Name   = Classic British Motor Racing
