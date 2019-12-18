@@ -2167,10 +2167,6 @@ Name   = Jak X - Combat Racing
 Region = PAL-M7
 // reads Ratchet Gladiator data
 MemCardFilter = SCES-53286/SCES-53285
-[patches = df659e77]
-	comment=patched by Ge-Force
-	patch=1,EE,00275CF7,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SCES-53300
 Name   = SOCOM 3 - U.S. Navy SEALs
@@ -5562,10 +5558,6 @@ Name   = Jak X - Combat Racing
 Region = NTSC-U
 Compat = 5
 MemCardFilter = SCUS-97429/SCUS-97465
-[patches = 3091e6fb]
-	comment=patched by Ge-Force
-	patch=1,EE,00275C67,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SCUS-97430
 Name   = Hot Shots Golf FORE! [Regular Demo]
@@ -5774,11 +5766,6 @@ Serial = SCUS-97488
 Name   = Jak X - Combat Racing [Public Beta v.1]
 Region = NTSC-U
 Compat = 5
-[patches = DA366A53]
-	comment=Patched by Luminar Light
-	// Patch fixes inability to boot.
-	patch=1,EE,00265ACB,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SCUS-97489
 Name   = SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]
@@ -11071,12 +11058,6 @@ EETimingHack = 1	//broken textures
 Serial = SLES-51968
 Name   = Spongebob Squarepants - Battle for Bikini Bottom
 Region = PAL-E
-[patches]
-	// CRC 8570b62d
-	comment=Patch by Prafull
-	// Fixes hang at start.
-	patch=1,EE,001ba624,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLES-51970
 Name   = Spongebob Schwammkopf - Schlacht um Bikini Bottom
@@ -12924,12 +12905,6 @@ Serial = SLES-52812
 Name   = Disney-Pixar's The Incredibles
 Region = PAL-E
 Compat = 5
-[patches = EBDB6E4B]
-	comment=Patch by Prafull
-	// Fixes hanging at loading screen.
-	patch=1,EE,0010ec20,word,00000000
-	comment=- This disc has the same CRC as SLUS-20905, the NTSC-U disc.
-[/patches]
 ---------------------------------------------
 Serial = SLES-52813
 Name   = Incredibles, The
@@ -12947,11 +12922,6 @@ Region = PAL-G
 Serial = SLES-52816
 Name   = Incredibles, The
 Region = PAL-S
-[patches = 197641AA]
-	comment=Patch by Prafull
-	// Fixes hanging at loading screen.
-	patch=1,EE,0010ec20,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLES-52820
 Name   = Incredibles, The
@@ -13108,12 +13078,6 @@ Serial = SLES-52895
 Name   = Spongebob Squarepants - The Movie
 Region = PAL-E
 Compat = 5
-[patches = 536FEB77]
-	comment=Patch by Prafull
-	// Fixes hanging at loading screen.
-	patch=1,EE,0010f3e0,word,00000000
-	comment=- This disc has the same CRC as SLUS-20904, the NTSC-U disc.
-[/patches]
 ---------------------------------------------
 Serial = SLES-52896
 Name   = Spongebob Squarepants - The Movie
@@ -13342,20 +13306,10 @@ Region = PAL-E
 Serial = SLES-52985
 Name   = Spongebob Squarepants - The Movie
 Region = PAL-G
-[patches = B3C11E2D]
-	comment=Patch by Prafull
-	// Fixes hanging at loading screen.
-	patch=1,EE,0010f3e0,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLES-52986
 Name   = Spongebob Squarepants - The Movie
 Region = PAL-S
-[patches = 34DA05D2]
-	comment=Patch by Prafull
-	// Fixes hanging at loading screen.
-	patch=1,EE,0010f3e0,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLES-52988
 Name   = MegaMan X8
@@ -14412,11 +14366,6 @@ Region = PAL-M3
 Serial = SLES-53474
 Name   = Incredibles, The - Rise of the Underminer
 Region = PAL-M3
-[patches = F3AE68FC]
-	comment=Patch by Prafull
-	// Fixes hanging at loading screen.
-	patch=1,EE,001110e0,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLES-53480
 Name   = Harvest Moon - A Wonderful Life [Special Edition]
@@ -32961,12 +32910,6 @@ Region = NTSC-J
 Serial = SLPS-25500
 Name   = namCollection - Namco 50th Anniversary
 Region = NTSC-J
-[patches = D150759B]
-	author=Refraction - PSI
-	// Fixes a non-implemented EE kernel bug
-	// that cause an infinite loop when booting.
-	patch=0,EE,00111C90,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLPS-25501
 Name   = Onmyou Taisenki - Hasha no In
@@ -39038,23 +38981,11 @@ Serial = SLUS-20904
 Name   = SpongeBob Squarepants - The Movie
 Region = NTSC-U
 Compat = 5
-[patches = 536FEB77]
-	comment=Patch by Prafull
-	// Fixes hanging at loading screen.
-	patch=1,EE,0010f3e0,word,00000000
-	comment=- This disc has the same CRC as SLES-52895, the PAL-E disc.
-[/patches]
 ---------------------------------------------
 Serial = SLUS-20905
 Name   = Incredibles, The
 Region = NTSC-U
 Compat = 5
-[patches = EBDB6E4B]
-	comment=Patch by Prafull
-	// Fixes hanging at loading screen.
-	patch=1,EE,0010ec20,word,00000000
-	comment=- This disc has the same CRC as SLES-52812, the PAL-E disc.
-[/patches]
 ---------------------------------------------
 Serial = SLUS-20906
 Name   = Fight Night 2004
@@ -40627,11 +40558,6 @@ Serial = SLUS-21217
 Name   = Incredibles, The - Rise of the Underminers
 Region = NTSC-U
 Compat = 5
-[patches = 6DFE8ED7]
-	comment=Patch by Prafull
-	// Fixes hanging at loading screen.
-	patch=1,EE,001110e0,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLUS-21218
 Name   = Tak - The Great Juju Challenge
@@ -44770,11 +44696,6 @@ Serial = TCES-53286
 Name   = Jak X Beta Trial Code
 Region = PAL-E
 Compat = 5
-[patches = C20596DB]
-	comment=Patched by Luminar Light
-	// Patch fixes inability to boot.
-	patch=1,EE,00265B57,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = TCPS-10058
 Name   = Densha de Go! Shinkansen [with Controller]
