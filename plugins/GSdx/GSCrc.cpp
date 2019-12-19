@@ -340,6 +340,7 @@ CRC::Game CRC::m_games[] =
 	{0x137C792E, StarWarsForceUnleashed, US, 0},
 	{0xCC9BFDE3, StarWarsForceUnleashed, JP, 0},
 	{0xDAF2145C, StarWarsForceUnleashed, EU, 0},
+	{0x87109051, StarWarsForceUnleashed, EU, 0},
 	{0x25FC361B, DevilMayCry3, US, 0}, // SE
 	{0x2F7D8AD5, DevilMayCry3, US, 0},
 	{0x0BED0AF9, DevilMayCry3, US, 0},
