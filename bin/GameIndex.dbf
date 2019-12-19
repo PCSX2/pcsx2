@@ -15136,6 +15136,7 @@ Name   = Castlevania - Curse of Darkness
 Region = PAL-M5
 Compat = 5
 vuClampMode = 0 // SPS with microVU.
+eeClampMode = 2 // Fixes missing blade.
 // Reads Lament of Innocence save for easter egg.
 MemCardFilter = SLES-53755/SLES-52118
 ---------------------------------------------
@@ -19175,6 +19176,7 @@ Name   = Castlevania - Curse of Darkness
 Region = NTSC-K
 Compat = 5
 vuClampMode = 0 // SPS with microVU.
+eeClampMode = 2 // Fixes missing blade.
 MemCardFilter = SLKA-25328/SLKA-25082
 ---------------------------------------------
 Serial = SLKA-25329
@@ -40380,6 +40382,7 @@ Name   = Castlevania - Curse of Darkness
 Region = NTSC-U
 Compat = 5
 vuClampMode = 0 // SPS with microVU.
+eeClampMode = 2 // Fixes missing blade.
 MemCardFilter = SLUS-21168/SLUS-20733
 ---------------------------------------------
 Serial = SLUS-21169
