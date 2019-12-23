@@ -8,6 +8,7 @@ The first time you launch PCSX2, you will be prompted with a First Time Configur
 ### Language Selection
 You may choose to change the UI language of PCSX2 here.
 ![PCSX2_First_Time_Configuration.png](PCSX2_First_Time_Configuration.png)
+*Note: Translations may not be accurate or actively maintained by translators. If you find translation issues and want to fix them yourself, please get into contact with the PCSX2 team by opening a [thread on the PCSX2 forums](https://forums.pcsx2.net/) or an [issue on GitHub](https://github.com/PCSX2/pcsx2/issues).*
 
 ### Plugin Selection
 Most users running on a modern PC will be able to continue normally here without changing any settings.
@@ -32,7 +33,7 @@ Advanced users may wish to use a different folder for their BIOS, you can do so 
 A large number of games work out-of-the-box on default PCSX2 settings. However, a subset of games require special settings to run, and some games require special settings to be upscaled. This guide will briefly cover some frequent problems and configuration settings to address them. 
 
 ### Multi-Threaded VU1 (MTVU)
-The MTVU option is a unique case of a recommended setting that is **not** enabled by default. MTVU boosts performance for PCs with at least 3 cores with almost no consequences for the overwhelming majority of games. However, a small number of high profile games are incompabible with MTVU and will break if it is enabled. For this reason, we do not enable it by default, **but strongly recommend you do so yourself**. If your game fails to boot or has other problems with it enabled, disable it and try again.
+The MTVU option is a unique case of a recommended setting that is **not** enabled by default. MTVU boosts performance for PCs with at least 3 cores with almost no consequences for the overwhelming majority of games. However, a small number of high profile games are incompabible with MTVU and will break if it is enabled. For these reasons, we do not enable it by default, **but strongly recommend you do so yourself**. If your game fails to boot, crashes, stalls, or has other problems with it enabled, disable it and try again.
 
 ### Specific game solutions
 Looking for information specific to a single game? Head to the [PCSX2 Wiki](https://wiki.pcsx2.net/Main_Page) and search for your game using the search bar in the top right. Known issues and solutions should be towards the bottom of a game's wiki page.
@@ -42,12 +43,12 @@ Want some general ideas to try that are not specific to a game? Here are some mo
 *Note: For some of these issues, multiple solutions are given one after the other. Before moving from one solution to the next, **undo the previous solution**. Stacking multiple fixes on top of each other is usually unnecessary and likely to introduce new issues.*
 
 #### Grid-like pattern on screen
-Usually this is due to upscaling and causing sprites to misalign. Any fixes will be found in the GSdx Advanced Settings and Hacks:
+Usually this is due to upscaling, which can cause sprites and 2D textures to misalign. Any fixes will be found in the GSdx Advanced Settings and Hacks:
 `Config > Video (GS) > Plugin Settings > Advanced Settings and Hacks`
-First try the two Round Sprite modes, Half and Full. Then try Align Sprite and Merge Sprite. If all else fails, consider using the Texture Offsets.
+First try the two Round Sprite modes, Half and Full. Then try Align Sprite or Merge Sprite. Then try the Half Pixel Offset modes. If all else fails, consider using the Texture Offsets.
 
 #### Outlines on shapes or models are improperly sized/aligned
-Usually this is because of an upscaling hack known formerly as Unscale Point and Line. This is now enabled by default because the overwhelming majority of games work nicely with it or need it, and only a few have problems with it. Navigate to the GSdx Advanced Settings and Hacks:
+Usually this is because of an upscaling hack known formerly as Unscale Point and Line. This is now enabled by default because the overwhelming majority of games work nicely with it or need it. Navigate to the GSdx Advanced Settings and Hacks:
 `Config > Video (GS) > Plugin Settings > Advanced Settings and Hacks`
 Check the Disable Safe Features box.
 
@@ -57,7 +58,7 @@ Upscaling can cause some screen elements, usually but not always bloom effects, 
 Try the various Half Pixel Offset modes. The further down the list you go, the more aggressive the hack gets. Once you find a mode that properly fixes the ghosting/misalignment, do not push it further. Also note in some games, the further you upscale, the worse the ghosting/misalignment gets. In some of these games, Half Pixel Offset may mitigate the issue, but not be able to fully resolve it.
 
 #### Flickering or improper lightning
-This is usually because of GS blending accuracy. Navigate to the GSdx Advanced Settings and Hacks:
+Sometimes a game uses blending for lighting effects and needs more accuracy for blending to work correctly. Navigate to the GSdx Advanced Settings and Hacks:
 `Config > Video (GS) > Plugin Settings > Advanced Settings and Hacks`
 Increment Blending Accuracy until the problem goes away. Note, higher Blending Accuracy substantially increases performance requirements.
 
