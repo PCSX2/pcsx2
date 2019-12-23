@@ -57,7 +57,6 @@ enum MemoryViewMenuIdentifiers
 	ID_MEMVIEW_COPYVALUE_32,
 	ID_MEMVIEW_COPYVALUE_64,
 	ID_MEMVIEW_COPYVALUE_128,
-	ID_MEMVIEW_DUMP,
 	ID_MEMVIEW_ALIGNWINDOW,
 };
 
@@ -98,8 +97,6 @@ CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
 	menu.Append(ID_MEMVIEW_COPYVALUE_32,		L"Copy Value (32 bit)");
 	menu.Append(ID_MEMVIEW_COPYVALUE_64,		L"Copy Value (64 bit)");
 	menu.Append(ID_MEMVIEW_COPYVALUE_128,		L"Copy Value (128 bit)");
-	menu.Append(ID_MEMVIEW_DUMP,				L"Dump...");
-	menu.Enable(ID_MEMVIEW_DUMP,false);
 	menu.AppendSeparator();
 	menu.AppendCheckItem(ID_MEMVIEW_ALIGNWINDOW, L"Align window to row size");
 	menu.Check(ID_MEMVIEW_ALIGNWINDOW, g_Conf->EmuOptions.Debugger.AlignMemoryWindowStart);
