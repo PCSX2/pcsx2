@@ -30,10 +30,12 @@ Package: pcsx2-unstable
 Architecture: i386
 # -i686 allow to use SSE into libc6
 Depends: ${shlibs:Depends}, ${misc:Depends}, libc6-i686
-# libasound => alsa plugin for pulseaudio
-# libusb    => ps3 controller (and probably others)
+# libasound        => alsa plugin for pulseaudio
+# libusb           => ps3 controller (and probably others)
+# libjack-jackd2-0 => avoid conflicts with portaudio19-dev
 Recommends: libasound2-plugins,
-    libusb-0.1-4
+    libusb-0.1-4,
+    libjack-jackd2-0
 Conflicts: pcsx2
 Description: Playstation 2 emulator
  PCSX2 is a PlayStation 2 emulator for Windows and Linux.
