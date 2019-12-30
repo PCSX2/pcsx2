@@ -347,6 +347,7 @@ static void recCTC2() {
 		case REG_CMSAR1:	// Execute VU1 Micro SubRoutine
 			if (_Rt_) {
 				xMOV(ecx, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+                xSHL(ecx, 3);
 			}
 			else xXOR(ecx, ecx);
 			xFastCall((void*)vu1ExecMicro, ecx);
