@@ -442,6 +442,7 @@ CRC::Game CRC::m_games[] =
 	{0x9C712FF0, Jak1, EU, TextureInsideRt}, // Jak and Daxter: The Precursor Legacy
 	{0x1B3976AB, Jak1, US, TextureInsideRt},
 	{0x472E7699, Jak1, US, TextureInsideRt},
+	{0x96A608C5, Jak1, US, TextureInsideRt}, // Cingular Wireless Demo, PS Underground Demo
 	{0xEDE4FE64, Jak1, JP, TextureInsideRt}, // Jak x Daxter: Kyuusekai no Isan
 	{0x2A7FD3B4, Jak1, JP, TextureInsideRt}, // Demo, Taikenba
 	{0x2479F4A9, Jak2, EU, TextureInsideRt},
@@ -458,6 +459,7 @@ CRC::Game CRC::m_games[] =
 	{0xC20596DB, JakX, EU, TextureInsideRt}, // Beta Trial Disc, v0.01
 	{0x3091E6FB, JakX, US, TextureInsideRt},
 	{0xDA366A53, JakX, US, TextureInsideRt}, // Public Beta v.1
+	{0x7B564230, JakX, US, TextureInsideRt}, // Jak and Daxter Complete Trilogy Demo
 	{0x4653CA3E, HarleyDavidson, US, 0},
 	// Games list for Automatic Mipmapping
 	// Basic mipmapping
@@ -534,6 +536,7 @@ CRC::Game CRC::m_games[] =
 	{0x2F486E6F, RatchetAndClank2, EU, 0},
 	{0x45FE0CC4, RatchetAndClank3, US, 0}, // Up Your Arsenal
 	{0x2A12175A, RatchetAndClank3, US, 0}, // Regular Demo
+	{0xD8EB2C29, RatchetAndClank3, US, 0}, // 1108 Beta
 	{0x64DC6000, RatchetAndClank3, JP, 0}, // Totsugeki! Galactic Rangers
 	{0x17125698, RatchetAndClank3, EU, 0},
 	{0x9BFBCD42, RatchetAndClank4, US, 0}, // Deadlocked
