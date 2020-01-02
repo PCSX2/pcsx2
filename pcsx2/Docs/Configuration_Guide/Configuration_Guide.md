@@ -1,5 +1,7 @@
-# PCSX2 Configuration: Windows
+# PCSX2 First Time Setup and Configuration
 This guide will walk through the initial setup process of PCSX2 and the basics of configuration.
+
+*Note: While this document is using Windows screenshots, you can still follow this guide for Linux.*
 
 ---
 ## First Time Setup
