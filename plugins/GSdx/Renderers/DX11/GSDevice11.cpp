@@ -130,6 +130,7 @@ bool GSDevice11::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)
 bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 {
 	bool nvidia_vendor = false;
+	m_amd_vendor = false;
 
 	if(!__super::Create(wnd))
 	{
@@ -170,6 +171,8 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 				{
 					if (desc.VendorId == 0x10DE)
 						nvidia_vendor = true;
+					else if (desc.VendorId == 0x1002)
+						m_amd_vendor = true;
 
 					adapter = enum_adapter;
 					driver_type = D3D_DRIVER_TYPE_UNKNOWN;

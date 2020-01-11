@@ -186,6 +186,8 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 
 void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel)
 {
+	const bool amd_point_sampler = sel.point_sampler && m_amd_vendor;
+
 	auto i = std::as_const(m_ps).find(sel);
 
 	if(i == m_ps.end())
@@ -207,7 +209,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		sm.AddMacro("PS_FBMASK", sel.fbmask);
 		sm.AddMacro("PS_LTF", sel.ltf);
 		sm.AddMacro("PS_TCOFFSETHACK", sel.tcoffsethack);
-		sm.AddMacro("PS_POINT_SAMPLER", sel.point_sampler);
+		sm.AddMacro("PS_POINT_SAMPLER", amd_point_sampler);
 		sm.AddMacro("PS_SHUFFLE", sel.shuffle);
 		sm.AddMacro("PS_READ_BA", sel.read_ba);
 		sm.AddMacro("PS_CHANNEL_FETCH", sel.channel);
