@@ -1,13 +1,13 @@
-# Copyright (C) 2019 PCSX2 Team
+# Copyright (C) 2020 PCSX2 Team
 # This file is distributed under the same license as the PCSX2 package.
 # Swedish translation for pcsx2 (Iconized).
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 - 190526\n"
+"Project-Id-Version: PCSX2 1.6.0 - 200117\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2019-05-26 03:16+0200\n"
+"POT-Creation-Date: 2020-01-17 12:39+0100\n"
+"PO-Revision-Date: 2020-01-17 13:23+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
 "PCSX2-Svenskt-anv%C3%A4ndargr%C3%A4nssnitt-f%C3%B6r-PCSX2\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: trunk\n"
-"X-Generator: Poedit 2.2.3\n"
+"X-Generator: Poedit 2.2.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
@@ -282,6 +282,23 @@ msgid ""
 "set of games that have unusual performance requirements, but have adverse "
 "effects on most others. Not recommended for underpowered PCs."
 msgstr ""
+"Förinställningarna tillämpar UppsnabbningsTrimningar, några\n"
+" omkompilerarfunktioner, och en del Spelfixar som till vetskap ökar farten.\n"
+"\n"
+"FörinställningsInfo:\n"
+" 1  - Säkrast - Inga UppsnabbningsTrimningar.\n"
+"        Mest tillförlitligt, men möjligen också långsamt.\n"
+" 2  - Säkert - Förval. En del UppsnabbningsTrimningar\n"
+"         som till vetskap ökar farten, med minimala bieffekter.\n"
+" 3  - Balanserat - Kan hjälpa fyrkärniga (quadcore) CPU'er.\n"
+" 4  - Aggresivt - Kan hjälpa lågprestanda CPU'er för lågkrävande spel,\n"
+"         men kan vålla problem i andra sammanhang.\n"
+" 5  - Mycket Aggresivt - Kan hjälpa lågprestanda CPU'er\n"
+"         för lågkrävande spel, men lär vålla problem i andra sammanhang.\n"
+" 6  - Mest Skadligt - Hård tillämpning av UppsnabbningsTrimningar.\n"
+"         Kan hjälpa en mindre del spel med ovanliga prestandakrav,\n"
+"          men har en ogynnsam effekt för de flesta.\n"
+"        Avrådes för lågprestanda PC'er."
 
 #: pcsx2/gui/IsoDropTarget.cpp:28
 msgid ""
@@ -425,7 +442,8 @@ msgid ""
 msgstr ""
 "Markera för att få Muspekaren att döljas då den är i ett GS-fönster;\n"
 " användbart vid brukande av musen som främsta styrmojäng för spelande.\n"
-"Som praxis gömmer sig Muspekaren automatiskt efter 2 sekunders inaktivitet."
+"Som standard gömmer sig Muspekaren automatiskt\n"
+" efter 2 sekunders inaktivitet."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:84
 msgid ""
@@ -433,10 +451,10 @@ msgid ""
 "emulation. You can still toggle fullscreen display at any time using alt-"
 "enter."
 msgstr ""
-"Möjliggör automatiskt lägesbyte till Helskärm då emulering påbörjas eller "
-"återupptas.\n"
-"Ni kan fortfarande växla mellan Helskärm och Inramningsläge genom att trycka "
-"''Alt'' + ''Enter''."
+"Möjliggör automatiskt lägesbyte till Helskärm då emulering\n"
+" påbörjas eller återupptas.\n"
+"Ni kan fortfarande växla mellan Helskärm och Inramningsläge\n"
+" genom att trycka ''Alt'' + ''Enter''."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:87
 msgid ""
@@ -623,33 +641,33 @@ msgstr ""
 "KonfigurationsDialogen."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "50% cyclerate. Significant reduction of CPU requirements. Speedup for very "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
-"50% Cykelgrad. Betydlig minskning av CPU-krav.\n"
+"50% cykelgrad. Betydlig minskning av CPU-krav.\n"
 "Uppsnabbning för mycket lättviktiga spel,\n"
 " maskning för andra.\n"
 "FMV'er och ljud måhända stammar eller överhoppas."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "60% cyclerate. Moderate reduction of CPU requirements. Speedup for "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
-"60% Cykelgrad. Måttlig miskning av CPU-krav.\n"
+"60% cykelgrad. Måttlig miskning av CPU-krav.\n"
 "Uppsnabbning för lättviktiga spel, maskning för andra.\n"
 "FMV'er och ljud måhända stammar eller överhoppas."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "75% cyclerate. Slight reduction of CPU requirements. Speedup for less "
 "demanding games, slows down others."
 msgstr ""
-"75% Cykelgrad. Nätt minskning av CPU-krav.\n"
+"75% cykelgrad. Nätt minskning av CPU-krav.\n"
 "Uppsnabbning för mindre krävande spel,\n"
 " maskning för andra."
 
@@ -661,35 +679,35 @@ msgstr ""
 " PS2'ns EE med normal hastighet."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:53
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "130% cyclerate. Moderate increase of CPU requirements. Variable framerate "
 "games may have higher internal framerates."
 msgstr ""
-"130% Cykelgrad. Måttlig ökning av CPU-krav.\n"
+"130% cykelgrad. Måttlig ökning av CPU-krav.\n"
 "Spel med ombytlig Bildfrekvens får måhända\n"
 " en högre egen Bildfrekvens."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:59
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "180% cyclerate. Significant increase of CPU requirements. Variable framerate "
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
-"180% Cykelgrad. Betydlig ökning av CPU-krav.\n"
+"180% cykelgrad. Betydlig ökning av CPU-krav.\n"
 "Spel med ombytlig Bildfrekvens får en högre\n"
 " egen Bildfrekvens. FMV'er måhända spelas sakta.\n"
 "Kan vålla stabilitetsproblem."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "300% cyclerate. Extreme increase of CPU requirements. Variable framerate "
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
-"300% Cykelgrad. Yttersta ökning av CPU-krav.\n"
+"300% cykelgrad. Yttersta ökning av CPU-krav.\n"
 "Spel med ombytlig Bildfrekvens får en högre\n"
 " egen Bildfrekvens. FMV'er måhända spelas sakta.\n"
 "Kan vålla stabilitetsproblem."

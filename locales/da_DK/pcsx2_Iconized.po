@@ -1,15 +1,15 @@
-# Copyright (C) 2019 PCSX2 Dev Team
+# Copyright (C) 2020 PCSX2 Dev Team
 # This file is distributed under the same license as the pcsx2 package.
 # Danish translation for pcsx2 (Iconized).
 # Jakob5566 <jakob5566@gmail.com>, 2017.
-# pgert <http://forums.pcsx2.net/User-pgert>, 2019.
+# pgert <http://forums.pcsx2.net/User-pgert>, 2020.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.5.0 - 190526\n"
+"Project-Id-Version: PCSX2 1.6.0 - 200115\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2019-05-26 03:16+0200\n"
+"POT-Creation-Date: 2020-01-15 16:14+0100\n"
+"PO-Revision-Date: 2020-01-15 17:05+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: \n"
 "Language: da_DK\n"
@@ -19,7 +19,7 @@ msgstr ""
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: trunk\n"
-"X-Generator: Poedit 2.2.3\n"
+"X-Generator: Poedit 2.2.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
@@ -604,32 +604,32 @@ msgstr ""
 "Konfigurationsguiden."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "50% cyclerate. Significant reduction of CPU requirements. Speedup for very "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
-"50% Cyclusfrekvens. Betydelig mindskning af CPU-krav.\n"
+"50% cyclusfrekvens. Betydelig mindskning af CPU-krav.\n"
 "Fartforøgelse for meget letvigtige spil, nedgang for andre.\n"
 "FMV'er og lyd måske stammer eller overspringes."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "60% cyclerate. Moderate reduction of CPU requirements. Speedup for "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
-"60% Cyclusfrekvens. Moderat mindskning af CPU-krav.\n"
+"60% cyclusfrekvens. Moderat mindskning af CPU-krav.\n"
 "Fartforøgelse for letvigtige spil, nedgang for andre.\n"
 "FMV'er og lyd måske stammer eller overspringes."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "75% cyclerate. Slight reduction of CPU requirements. Speedup for less "
 "demanding games, slows down others."
 msgstr ""
-"75% Cyclusfrekvens. Net mindskning af CPU-krav.\n"
+"75% cyclusfrekvens. Net mindskning af CPU-krav.\n"
 "Fartforøgelse for mindre krævende spil, nedgang for andre."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:47
@@ -640,35 +640,35 @@ msgstr ""
 " PS2'ns EE med normal hastighed."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:53
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "130% cyclerate. Moderate increase of CPU requirements. Variable framerate "
 "games may have higher internal framerates."
 msgstr ""
-"130% Cyclusfrekvens. Moderat øgning af CPU-krav.\n"
+"130% cyclusfrekvens. Moderat øgning af CPU-krav.\n"
 "Spil med vægelsindet billedfrekvens får måske\n"
 " en højere egen billedfrekvens."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:59
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "180% cyclerate. Significant increase of CPU requirements. Variable framerate "
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
-"180% Cyclusfrekvens. Betydelig øgning af CPU-krav.\n"
+"180% cyclusfrekvens. Betydelig øgning af CPU-krav.\n"
 "Spil med vægelsindet billedfrekvens\n"
 " får en højere egen billedfrekvens.\n"
 "FMV'er måske spilles sakte. Kan volde stabilitetsproblemer."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "300% cyclerate. Extreme increase of CPU requirements. Variable framerate "
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
-"300% Cyclusfrekvens. Yderste øgning af CPU-krav.\n"
+"300% cyclusfrekvens. Yderste øgning af CPU-krav.\n"
 "Spil med vægelsindet billedfrekvens\n"
 " får en højere egen billedfrekvens.\n"
 "FMV'er måske spilles sakte. Kan volde stabilitetsproblemer."

@@ -1,13 +1,13 @@
-# Copyright (C) 2019 PCSX2 Team
+# Copyright (C) 2020 PCSX2 Team
 # This file is distributed under the same license as the PCSX2 package.
 # Swedish translation for pcsx2 (Main).
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 - 190526\n"
+"Project-Id-Version: PCSX2 1.6.0 - 200115\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2019-05-26 03:28+0200\n"
+"POT-Creation-Date: 2020-01-15 15:50+0100\n"
+"PO-Revision-Date: 2020-01-15 17:05+0100\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
 "PCSX2-Svenskt-anv%C3%A4ndargr%C3%A4nssnitt-f%C3%B6r-PCSX2\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: trunk\n"
-"X-Generator: Poedit 2.2.3\n"
+"X-Generator: Poedit 2.2.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
@@ -567,14 +567,14 @@ msgstr ""
 "Tryck ''Vidare'' för att använda det förvalskonfigurerade "
 "InsticksProgrammet, eller ''Avbryt'' för att stänga %s."
 
-#: pcsx2/gui/AppInit.cpp:557
-msgid "PCSX2 Error: Hardware Deficiency"
-msgstr "PCSX2 Fel: HårdvaruBristfällighet"
-
 #: pcsx2/gui/AppInit.cpp:557 pcsx2/gui/AppInit.cpp:569
 #, c-format
 msgid "Press OK to close %s."
 msgstr "Tryck ''Vidare'' för att stänga %s."
+
+#: pcsx2/gui/AppInit.cpp:557
+msgid "PCSX2 Error: Hardware Deficiency"
+msgstr "PCSX2 Fel: HårdvaruBristfällighet"
 
 #: pcsx2/gui/AppInit.cpp:570
 #, c-format
@@ -661,13 +661,13 @@ msgid ""
 msgstr ""
 "Varning! SystemInsticksProgram har inte laddats. PCSX2 kan vara oduglig."
 
-#: pcsx2/gui/AppMain.cpp:184 pcsx2/gui/AppMain.cpp:189
-msgid "PS2 BIOS Error"
-msgstr "PS2 BIOS Fel"
-
 #: pcsx2/gui/AppMain.cpp:184
 msgid "Press Ok to go to the BIOS Configuration Panel."
 msgstr "Tryck ''Vidare'' för att gå till BIOS KonfigurationsPanelen."
+
+#: pcsx2/gui/AppMain.cpp:184 pcsx2/gui/AppMain.cpp:189
+msgid "PS2 BIOS Error"
+msgstr "PS2 BIOS Fel"
 
 #: pcsx2/gui/AppMain.cpp:207
 msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
@@ -701,12 +701,12 @@ msgstr ""
 "Välj egenhändigt en ISO vid Uppstart, vilket åsidosätter valet i ISO-listan."
 
 #: pcsx2/gui/AppRes.cpp:48
-msgid "Browse for an ISO that is not in your recent history."
-msgstr "Bläddra efter en ISO som ej är i Er historielista."
-
-#: pcsx2/gui/AppRes.cpp:48
 msgid "Browse..."
 msgstr "Bläddra ..."
+
+#: pcsx2/gui/AppRes.cpp:48
+msgid "Browse for an ISO that is not in your recent history."
+msgstr "Bläddra efter en ISO som ej är i Er historielista."
 
 #: pcsx2/gui/AppUserMode.cpp:92
 msgid "The following folders exist, but are not writable:"
@@ -899,32 +899,30 @@ msgstr "Om %s"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Website"
-msgstr ""
+msgstr "Webställe"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:56
 msgid "Support Forums"
-msgstr ""
+msgstr "Stödforum"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:58
 msgid "GitHub Repository"
-msgstr ""
+msgstr "GitHub's Magasin"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:60
 msgid "License"
-msgstr ""
+msgstr "Licens"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
-#, fuzzy
 msgid "PlayStation 2 Emulator:"
-msgstr "PlayStation®2 emulator"
+msgstr "En PlayStation®2 emulator:"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
 msgid ""
 "Big thanks to everyone who contributed to the project throughout the years."
-msgstr ""
+msgstr "Stort tack till alla som bidragit till projektet genom åren."
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
-#, fuzzy
 msgid "Close"
 msgstr "Stäng"
 
@@ -1012,12 +1010,12 @@ msgid "64MB File"
 msgstr "64MB fil"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
-msgid "Convert this memory card to a folder of individual saves."
-msgstr "Omvandla detta Minneskort till en mapp med individuella sparningar."
-
-#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Folder"
 msgstr "Mapp"
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
+msgid "Convert this memory card to a folder of individual saves."
+msgstr "Omvandla detta Minneskort till en mapp med individuella sparningar."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:179
@@ -1183,13 +1181,13 @@ msgid ""
 msgstr "Detta Minneskort erfodras för PSX-spel. Det stödjes ej av PS2-spel."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
+msgid "Settings"
+msgstr "Inställningar"
+
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
 #, c-format
 msgid "Select a folder for %s settings"
 msgstr "Välj en mapp för %s-inställningar"
-
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
-msgid "Settings"
-msgstr "Inställningar"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:84
 msgid "Language selector"
@@ -2410,15 +2408,15 @@ msgid "Delete memory file?"
 msgstr "Kassera minnesfil?"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
+msgid "Failed: Can only duplicate an existing card."
+msgstr "Misslyckades: Kan endast dubblera ett befintligt kort."
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:721
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:742
 msgid "Duplicate memory card"
 msgstr "Dubblera Minneskort"
-
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
-msgid "Failed: Can only duplicate an existing card."
-msgstr "Misslyckades: Kan endast dubblera ett befintligt kort."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 msgid ""
@@ -2552,20 +2550,20 @@ msgid "Created on"
 msgstr "Skapad den"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:151
-msgid "No"
-msgstr "Nej"
-
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:151
 msgid "Yes"
 msgstr "Ja"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:152
-msgid "PS2"
-msgstr "PS2"
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:151
+msgid "No"
+msgstr "Nej"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:152
 msgid "PSX"
 msgstr "PSX"
+
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:152
+msgid "PS2"
+msgstr "PS2"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:165
 msgid "[-- Unused cards --]"
