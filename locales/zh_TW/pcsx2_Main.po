@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.3.1 1201\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2016-12-31 11:39+0100\n"
+"POT-Creation-Date: 2020-01-15 22:32+1300\n"
 "PO-Revision-Date: 2015-10-05 11:58+0800\n"
 "Last-Translator: 呆丸北拜\n"
 "Language-Team: pcsx2fan\n"
@@ -30,11 +30,11 @@ msgstr "解析錯誤"
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
 msgstr "老兄，不好意思。您電腦的硬體沒有能力運行 PCSX2。"
 
-#: common/src/Utilities/Exceptions.cpp:233
+#: common/src/Utilities/Exceptions.cpp:204
 msgid "Oh noes! Out of memory!"
 msgstr "啊！不！Out of memory！"
 
-#: common/src/Utilities/Exceptions.cpp:248
+#: common/src/Utilities/Exceptions.cpp:219
 msgid ""
 "Virtual memory mapping failure!  Your system may have conflicting device "
 "drivers, services, or may simply have insufficient memory or resources to "
@@ -43,29 +43,29 @@ msgstr ""
 "虛擬記憶體映射失敗！您的系統可能有衝突的硬體驅動程式、服務，或可能只是沒有足"
 "夠的記憶體或資源以滿足 PCSX2 崇高的需求。"
 
-#: common/src/Utilities/Exceptions.cpp:319
+#: common/src/Utilities/Exceptions.cpp:290
 msgid "Path: "
 msgstr "路徑： "
 
-#: common/src/Utilities/Exceptions.cpp:323
+#: common/src/Utilities/Exceptions.cpp:294
 msgid "[Unnamed or unknown]"
 msgstr "【未透露名稱或未知】"
 
-#: common/src/Utilities/Exceptions.cpp:343
+#: common/src/Utilities/Exceptions.cpp:314
 msgid "A file could not be created."
 msgstr "無法建立檔案。"
 
-#: common/src/Utilities/Exceptions.cpp:363
+#: common/src/Utilities/Exceptions.cpp:334
 msgid "File not found."
 msgstr "檔案未找到。"
 
-#: common/src/Utilities/Exceptions.cpp:383
+#: common/src/Utilities/Exceptions.cpp:354
 msgid ""
 "Permission denied while trying to open file, likely due to insufficient user "
 "account rights."
 msgstr "當嘗試開啟檔案時沒有權限，可能是由於使用者帳戶權限不足。"
 
-#: common/src/Utilities/Exceptions.cpp:403
+#: common/src/Utilities/Exceptions.cpp:374
 msgid ""
 "Unexpected end of file or stream encountered.  File is probably truncated or "
 "corrupted."
@@ -87,15 +87,15 @@ msgstr "等待任務完成..."
 msgid "Includes idle event processing and some other uncommon event usages."
 msgstr "包含閒置的事件處理和一些其他不尋常的事件使用。"
 
-#: pcsx2/CDVD/InputIsoFile.cpp:252
+#: pcsx2/CDVD/InputIsoFile.cpp:248
 msgid "Unrecognized ISO image file format"
 msgstr "無法辨識的 ISO 映像檔格式。"
 
-#: pcsx2/Elfheader.cpp:165
+#: pcsx2/Elfheader.cpp:163
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
 msgstr "無法載入 ELF 檔案。檔案可能損壞或不完整。"
 
-#: pcsx2/Elfheader.cpp:167
+#: pcsx2/Elfheader.cpp:165
 msgid ""
 "If loading from an ISO image, this error may be caused by an unsupported ISO "
 "image type or a bug in PCSX2 ISO image support."
@@ -104,18 +104,18 @@ msgstr ""
 "那麼這個錯誤可能由未支援的光碟映像檔類型引起，\n"
 "或者由功能 PCSX2 光碟映像檔支援，它的程式錯誤所引起。"
 
-#: pcsx2/MTGS.cpp:882
+#: pcsx2/MTGS.cpp:877
 msgid ""
 "The MTGS thread has become unresponsive while waiting for the GS plugin to "
 "open."
 msgstr "當等候圖形插件開啟時，多執行緒圖形模式的執行緒停止回應。"
 
-#: pcsx2/PluginManager.cpp:737
+#: pcsx2/PluginManager.cpp:709
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
 msgstr "無法讀取即時存檔，檔案似乎損壞或不完整。"
 
-#: pcsx2/PluginManager.cpp:747
+#: pcsx2/PluginManager.cpp:720
 #, c-format
 msgid ""
 "%s plugin failed to open.  Your computer may have insufficient resources, or "
@@ -124,42 +124,42 @@ msgstr ""
 "開啟【%s】插件失敗。您的電腦可能沒有足夠的資源，\n"
 "或是有不相容的硬體或驅動程式。"
 
-#: pcsx2/PluginManager.cpp:754
+#: pcsx2/PluginManager.cpp:727
 #, c-format
 msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
 "resources needed."
 msgstr "初始化【%s】插件失敗。您的系統可能沒有足夠的記憶體或資源。"
 
-#: pcsx2/PluginManager.cpp:982
+#: pcsx2/PluginManager.cpp:955
 #, c-format
 msgid "The configured %s plugin file was not found"
 msgstr "未找到所選【%s】插件的檔案"
 
-#: pcsx2/PluginManager.cpp:986
+#: pcsx2/PluginManager.cpp:959
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
 msgstr "所選【%s】插件的檔案不是有效的動態連結函式庫"
 
-#: pcsx2/PluginManager.cpp:1003
+#: pcsx2/PluginManager.cpp:976
 #, c-format
 msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
 "unsupported version of PCSX2."
 msgstr "所選擇的 %s 插件不是 PCSX2 的插件，或者是不再支援的舊版 PCSX2 的插件。"
 
-#: pcsx2/PluginManager.cpp:1037
+#: pcsx2/PluginManager.cpp:1010
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr "插件報告不支援您的硬體或軟體 / 驅動程式。"
 
-#: pcsx2/PluginManager.cpp:1058
+#: pcsx2/PluginManager.cpp:1031
 msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
 msgstr "所選擇的插件不是 PCSX2 的插件，或者是不再支援的舊版 PCSX2 的插件。"
 
-#: pcsx2/PluginManager.cpp:1083
+#: pcsx2/PluginManager.cpp:1056
 #, c-format
 msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
@@ -167,15 +167,40 @@ msgid ""
 msgstr ""
 "所選擇的 %s 插件不是有效的 PCSX2 插件，或者是不再支援的舊版 PCSX2 的插件。"
 
-#: pcsx2/PluginManager.cpp:1518
+#: pcsx2/PluginManager.cpp:1490
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "初始化內部記憶卡插件失敗。"
 
-#: pcsx2/PluginManager.cpp:1915
+#: pcsx2/PluginManager.cpp:1883
 msgid "Unloaded Plugin"
 msgstr "未載入的插件"
 
-#: pcsx2/SaveState.cpp:343
+#: pcsx2/Recording/NewRecordingFrame.cpp:24
+#: pcsx2/gui/Debugger/DisassemblyDialog.cpp:227
+msgid "panel"
+msgstr "視窗"
+
+#: pcsx2/Recording/NewRecordingFrame.cpp:29
+msgid "File Path"
+msgstr ""
+
+#: pcsx2/Recording/NewRecordingFrame.cpp:30
+msgid "Author"
+msgstr ""
+
+#: pcsx2/Recording/NewRecordingFrame.cpp:31
+msgid "Record From"
+msgstr ""
+
+#: pcsx2/Recording/NewRecordingFrame.cpp:41
+msgid "Ok"
+msgstr ""
+
+#: pcsx2/Recording/NewRecordingFrame.cpp:42 pcsx2/gui/AppInit.cpp:742
+msgid "Cancel"
+msgstr "取消"
+
+#: pcsx2/SaveState.cpp:340
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
 msgstr "無法讀取即時存檔，檔案版本未知或不支援。"
 
@@ -201,122 +226,134 @@ msgstr "顯示遊戲開發人員的日誌（IOP processor）"
 msgid "Shows DECI2 debugging logs (EE processor)"
 msgstr "顯示 DECI2 偵錯日誌（EE processor）"
 
-#: pcsx2/SourceLog.cpp:145
+#: pcsx2/SourceLog.cpp:121
+msgid "Shows strings printed to the system output stream."
+msgstr ""
+
+#: pcsx2/SourceLog.cpp:127
+msgid "Shows recording related logs and information"
+msgstr ""
+
+#: pcsx2/SourceLog.cpp:132
+msgid "Shows detailed controller input values for port 1, every frame"
+msgstr ""
+
+#: pcsx2/SourceLog.cpp:168
 msgid "SYSCALL and DECI2 activity."
 msgstr "SYSCALL 和 DECI2 的活動。"
 
-#: pcsx2/SourceLog.cpp:151
+#: pcsx2/SourceLog.cpp:174
 msgid "Direct memory accesses to unknown or unmapped EE memory space."
 msgstr "直接記憶體存取至未知或未映射的 EE 記憶體空間。"
 
-#: pcsx2/SourceLog.cpp:157 pcsx2/SourceLog.cpp:276
+#: pcsx2/SourceLog.cpp:180 pcsx2/SourceLog.cpp:299
 msgid "Disasm of executing core instructions (excluding COPs and CACHE)."
 msgstr "執行核心指令集的反組譯（不包含 COP 和 CACHE）。"
 
-#: pcsx2/SourceLog.cpp:163
+#: pcsx2/SourceLog.cpp:186
 msgid "Disasm of COP0 instructions (MMU, cpu and dma status, etc)."
 msgstr "COP0 指令集的反組譯（MMU、cpu 和 dma 的狀態，以及其他）。"
 
-#: pcsx2/SourceLog.cpp:169
+#: pcsx2/SourceLog.cpp:192
 msgid "Disasm of the EE's floating point unit (FPU) only."
 msgstr "僅 EE 浮點運算器的反組譯。"
 
-#: pcsx2/SourceLog.cpp:175
+#: pcsx2/SourceLog.cpp:198
 msgid "Disasm of the EE's VU0macro co-processor instructions."
 msgstr "EE 的 VU0macro 輔助處理器指令集的反組譯。"
 
-#: pcsx2/SourceLog.cpp:181
+#: pcsx2/SourceLog.cpp:204
 msgid "Execution of EE cache instructions."
 msgstr "EE 快取指令集的執行。"
 
-#: pcsx2/SourceLog.cpp:187
+#: pcsx2/SourceLog.cpp:210
 msgid ""
 "All known hardware register accesses (very slow!); not including sub filter "
 "options below."
 msgstr "所有已知的硬體暫存器存取（非常慢！）；不包括下面的分項選項。"
 
-#: pcsx2/SourceLog.cpp:193 pcsx2/SourceLog.cpp:294
+#: pcsx2/SourceLog.cpp:216 pcsx2/SourceLog.cpp:317
 msgid "Logs only unknown, unmapped, or unimplemented register accesses."
 msgstr "僅記錄未知、未映射，或未實現的暫存器存取。"
 
-#: pcsx2/SourceLog.cpp:199 pcsx2/SourceLog.cpp:300
+#: pcsx2/SourceLog.cpp:222 pcsx2/SourceLog.cpp:323
 msgid "Logs only DMA-related registers."
 msgstr "僅記錄 DMA 相關的暫存器。"
 
-#: pcsx2/SourceLog.cpp:205
+#: pcsx2/SourceLog.cpp:228
 msgid "IPU activity: hardware registers, decoding operations, DMA status, etc."
 msgstr "IPU 活動：硬體暫存器、解碼操作、DMA 狀態，以及其他。"
 
-#: pcsx2/SourceLog.cpp:211
+#: pcsx2/SourceLog.cpp:234
 msgid "All GIFtag parse activity; path index, tag type, etc."
 msgstr "全部 GIFtag 解析活動；路徑索引，標籤類型，以及其他。"
 
-#: pcsx2/SourceLog.cpp:217
+#: pcsx2/SourceLog.cpp:240
 msgid "All VIFcode processing; command, tag style, interrupts."
 msgstr "全部 VIFcode 處理；命令，標籤風格，中斷。"
 
-#: pcsx2/SourceLog.cpp:223
+#: pcsx2/SourceLog.cpp:246
 msgid "All processing involved in Path3 Masking"
 msgstr "Path3 Masking 裡面的全部處理"
 
-#: pcsx2/SourceLog.cpp:229
+#: pcsx2/SourceLog.cpp:252
 msgid "Scratchpad's MFIFO activity."
 msgstr "便條式暫存的 MFIFO 活動。"
 
-#: pcsx2/SourceLog.cpp:235
+#: pcsx2/SourceLog.cpp:258
 msgid "Actual data transfer logs, bus right arbitration, stalls, etc."
 msgstr "實際的資料傳輸日誌、匯流排正確的仲裁、停頓，以及其他。"
 
-#: pcsx2/SourceLog.cpp:241
+#: pcsx2/SourceLog.cpp:264
 msgid "Tracks all EE counters events and some counter register activity."
 msgstr "追蹤全部 EE 計數器事件以及一些計數器暫存器活動。"
 
-#: pcsx2/SourceLog.cpp:247
+#: pcsx2/SourceLog.cpp:270
 msgid "Dumps various VIF and VIFcode processing data."
 msgstr "擷取各種各樣的 VIF 和 VIFcode 處理資料。"
 
-#: pcsx2/SourceLog.cpp:253
+#: pcsx2/SourceLog.cpp:276
 msgid "Dumps various GIF and GIFtag parsing data."
 msgstr "擷取各種各樣的 GIF 和 GIFtag 解析資料。"
 
-#: pcsx2/SourceLog.cpp:264
+#: pcsx2/SourceLog.cpp:287
 msgid "SYSCALL and IRX activity."
 msgstr "SYSCALL 和 IRX 的活動。"
 
-#: pcsx2/SourceLog.cpp:270
+#: pcsx2/SourceLog.cpp:293
 msgid "Direct memory accesses to unknown or unmapped IOP memory space."
 msgstr "直接記憶體存取至未知或未映射的 IOP 記憶體空間。"
 
-#: pcsx2/SourceLog.cpp:282
+#: pcsx2/SourceLog.cpp:305
 msgid "Disasm of the IOP's GPU co-processor instructions."
 msgstr "IOP 的 GPU 輔助處理器指令集的反組譯。"
 
-#: pcsx2/SourceLog.cpp:288
+#: pcsx2/SourceLog.cpp:311
 msgid ""
 "All known hardware register accesses, not including the sub-filters below."
 msgstr "所有已知的硬體暫存器存取，不包括下面的分項。"
 
-#: pcsx2/SourceLog.cpp:306
+#: pcsx2/SourceLog.cpp:329
 msgid "Memorycard reads, writes, erases, terminators, and other processing."
 msgstr "記憶卡的讀取、寫入、清除、終結者，以及其他處理。"
 
-#: pcsx2/SourceLog.cpp:312
+#: pcsx2/SourceLog.cpp:335
 msgid "Gamepad activity on the SIO."
 msgstr "SIO 上的遊戲手把活動。"
 
-#: pcsx2/SourceLog.cpp:318
+#: pcsx2/SourceLog.cpp:341
 msgid "Actual DMA event processing and data transfer logs."
 msgstr "實際的直接記憶體存取事件處理和資料傳輸日誌。"
 
-#: pcsx2/SourceLog.cpp:324
+#: pcsx2/SourceLog.cpp:347
 msgid "Tracks all IOP counters events and some counter register activity."
 msgstr "追蹤全部 IOP 計數器事件以及一些計數器暫存器活動。"
 
-#: pcsx2/SourceLog.cpp:330
+#: pcsx2/SourceLog.cpp:353
 msgid "Detailed logging of CDVD hardware."
 msgstr "CDVD 硬體的詳細日誌紀錄。"
 
-#: pcsx2/SourceLog.cpp:336
+#: pcsx2/SourceLog.cpp:359
 #, fuzzy
 msgid "Detailed logging of the Motion (FMV) Decoder hardware unit."
 msgstr "CDVD 硬體的詳細日誌紀錄。"
@@ -331,142 +368,150 @@ msgid ""
 "successfully but could not be moved to its final resting place."
 msgstr "即時存檔未能正確地儲存。成功建立暫存檔，但是無法將其移至目的地。"
 
-#: pcsx2/gui/AppConfig.cpp:978
-msgid "Safest"
-msgstr "最安全"
-
-#: pcsx2/gui/AppConfig.cpp:979
-msgid "Safe (faster)"
+#: pcsx2/gui/AppConfig.cpp:976
+#, fuzzy
+msgid "Safest (No hacks)"
 msgstr "安全（速度更快）"
 
-#: pcsx2/gui/AppConfig.cpp:980
+#: pcsx2/gui/AppConfig.cpp:977
+#, fuzzy
+msgid "Safe (Default)"
+msgstr "（ 正體中文 ）"
+
+#: pcsx2/gui/AppConfig.cpp:978
 msgid "Balanced"
 msgstr "平衡"
 
-#: pcsx2/gui/AppConfig.cpp:981
+#: pcsx2/gui/AppConfig.cpp:979
 msgid "Aggressive"
 msgstr "激進"
 
-#: pcsx2/gui/AppConfig.cpp:982
-msgid "Aggressive plus"
-msgstr "更加激進"
+#: pcsx2/gui/AppConfig.cpp:980
+#, fuzzy
+msgid "Very Aggressive"
+msgstr "激進"
 
-#: pcsx2/gui/AppConfig.cpp:983
+#: pcsx2/gui/AppConfig.cpp:981
 msgid "Mostly Harmful"
 msgstr "基本上有害"
 
-#: pcsx2/gui/AppConfig.cpp:1143 pcsx2/gui/AppConfig.cpp:1149
+#: pcsx2/gui/AppConfig.cpp:1144 pcsx2/gui/AppConfig.cpp:1150
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "覆寫現存的設定檔失敗；沒有權限。"
 
-#: pcsx2/gui/AppCorePlugins.cpp:404
+#: pcsx2/gui/AppCorePlugins.cpp:398
 msgid "Loading PS2 system plugins..."
 msgstr "載入 PS2 系統插件..."
 
-#: pcsx2/gui/AppInit.cpp:51
+#: pcsx2/gui/AppInit.cpp:55
 msgid ""
 "SSE2 extensions are not available.  PCSX2 requires a cpu that supports the "
 "SSE2 instruction set."
 msgstr "SSE2 不可用。PCSX2 要求 CPU 支援 SSE2。"
 
-#: pcsx2/gui/AppInit.cpp:140
+#: pcsx2/gui/AppInit.cpp:155
 msgid "PCSX2 Recompiler Error(s)"
 msgstr "PCSX2 反編譯錯誤"
 
-#: pcsx2/gui/AppInit.cpp:219
+#: pcsx2/gui/AppInit.cpp:234
 msgid "All options are for the current session only and will not be saved.\n"
 msgstr "全部選項僅用於當前的作業並且不會被儲存。\n"
 
-#: pcsx2/gui/AppInit.cpp:229 pcsx2/gui/AppMain.cpp:363
+#: pcsx2/gui/AppInit.cpp:244 pcsx2/gui/AppMain.cpp:368
 msgid "IsoFile"
 msgstr "ISO 檔案"
 
-#: pcsx2/gui/AppInit.cpp:230
+#: pcsx2/gui/AppInit.cpp:245
 msgid "displays this list of command line options"
 msgstr "顯示此命令列選項的列表"
 
-#: pcsx2/gui/AppInit.cpp:231
+#: pcsx2/gui/AppInit.cpp:246
 msgid "forces the program log/console to be visible"
 msgstr "強制程式日誌 / 主控台可見"
 
-#: pcsx2/gui/AppInit.cpp:232
+#: pcsx2/gui/AppInit.cpp:247
 msgid "use fullscreen GS mode"
 msgstr "使用全螢幕模式"
 
-#: pcsx2/gui/AppInit.cpp:233
+#: pcsx2/gui/AppInit.cpp:248
 msgid "use windowed GS mode"
 msgstr "使用視窗模式"
 
-#: pcsx2/gui/AppInit.cpp:235
+#: pcsx2/gui/AppInit.cpp:250
 msgid "disables display of the gui while running games"
 msgstr "運行遊戲時，不顯示模擬器介面"
 
-#: pcsx2/gui/AppInit.cpp:236
+#: pcsx2/gui/AppInit.cpp:251
 msgid "when nogui - prompt before exiting on suspend"
 msgstr ""
 
-#: pcsx2/gui/AppInit.cpp:238
+#: pcsx2/gui/AppInit.cpp:253
 msgid "executes an ELF image"
 msgstr "執行 ELF 映像"
 
-#: pcsx2/gui/AppInit.cpp:239
+#: pcsx2/gui/AppInit.cpp:254
 #, fuzzy
 msgid "executes an IRX image"
 msgstr "執行 ELF 映像"
 
-#: pcsx2/gui/AppInit.cpp:240
+#: pcsx2/gui/AppInit.cpp:255
 #, fuzzy
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
 msgstr "從空的 dvd 托盤啟動；用於進入 PS2 系統選單"
 
-#: pcsx2/gui/AppInit.cpp:241
+#: pcsx2/gui/AppInit.cpp:256
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
 msgstr "從光碟插件啟動（覆寫【ISO 檔案】參數）"
 
-#: pcsx2/gui/AppInit.cpp:243
+#: pcsx2/gui/AppInit.cpp:258
 msgid "disables all speedhacks"
 msgstr "停用全部 speedhacks"
 
-#: pcsx2/gui/AppInit.cpp:244
+#: pcsx2/gui/AppInit.cpp:259
 msgid "use the specified comma or pipe-delimited list of gamefixes."
 msgstr "使用指定的遊戲修正列表以逗號或豎線分隔。"
 
-#: pcsx2/gui/AppInit.cpp:245
+#: pcsx2/gui/AppInit.cpp:260
 msgid "disables fast booting"
 msgstr "停用快速啟動"
 
-#: pcsx2/gui/AppInit.cpp:247
+#: pcsx2/gui/AppInit.cpp:261
+msgid ""
+"passes the specified space-delimited string of launch arguments to the game"
+msgstr ""
+
+#: pcsx2/gui/AppInit.cpp:263
 msgid "changes the configuration file path"
 msgstr "變更設定檔的路徑"
 
-#: pcsx2/gui/AppInit.cpp:248
+#: pcsx2/gui/AppInit.cpp:264
 msgid "specifies the PCSX2 configuration file to use"
 msgstr "指定欲使用的 PCSX2 設定檔"
 
-#: pcsx2/gui/AppInit.cpp:249
+#: pcsx2/gui/AppInit.cpp:265
 #, c-format
 msgid "forces %s to start the First-time Wizard"
 msgstr "強制 %s 啟動首次執行精靈"
 
-#: pcsx2/gui/AppInit.cpp:250
+#: pcsx2/gui/AppInit.cpp:266
 msgid "enables portable mode operation (requires admin/root access)"
 msgstr "可攜式軟體模式（需要管理員權限）"
 
-#: pcsx2/gui/AppInit.cpp:252
+#: pcsx2/gui/AppInit.cpp:268
 msgid "update options to ease profiling (debug)"
 msgstr ""
 
-#: pcsx2/gui/AppInit.cpp:256
+#: pcsx2/gui/AppInit.cpp:272
 #, c-format
 msgid "specify the file to use as the %s plugin"
 msgstr "指定欲使用的檔案作為 %s 插件"
 
-#: pcsx2/gui/AppInit.cpp:306
+#: pcsx2/gui/AppInit.cpp:322
 #, c-format
 msgid "Plugin Override Error - %s"
 msgstr "插件覆寫錯誤 - %s"
 
-#: pcsx2/gui/AppInit.cpp:309
+#: pcsx2/gui/AppInit.cpp:325
 #, c-format
 msgid ""
 "%s Plugin Override Error!  The following file does not exist or is not a "
@@ -476,94 +521,90 @@ msgstr ""
 "%s 插件覆寫錯誤！下列檔案不存在或不是有效的 %s 插件：\n"
 "\n"
 
-#: pcsx2/gui/AppInit.cpp:316
+#: pcsx2/gui/AppInit.cpp:332
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr "按【確定】使用預設所選擇的插件，或按【取消】關閉 %s。"
 
-#: pcsx2/gui/AppInit.cpp:531
+#: pcsx2/gui/AppInit.cpp:557
 msgid "PCSX2 Error: Hardware Deficiency"
 msgstr "PCSX2 錯誤：硬體缺陷"
 
-#: pcsx2/gui/AppInit.cpp:531 pcsx2/gui/AppInit.cpp:543
+#: pcsx2/gui/AppInit.cpp:557 pcsx2/gui/AppInit.cpp:569
 #, c-format
 msgid "Press OK to close %s."
 msgstr "按【確定】關閉 %s。"
 
-#: pcsx2/gui/AppInit.cpp:544
+#: pcsx2/gui/AppInit.cpp:570
 #, c-format
 msgid "%s Critical Error"
 msgstr "%s 嚴重錯誤"
 
-#: pcsx2/gui/AppInit.cpp:714
+#: pcsx2/gui/AppInit.cpp:740
 msgid "OK"
 msgstr "確定"
 
-#: pcsx2/gui/AppInit.cpp:715
+#: pcsx2/gui/AppInit.cpp:741
 msgid "&OK"
 msgstr "確定"
 
-#: pcsx2/gui/AppInit.cpp:716
-msgid "Cancel"
-msgstr "取消"
-
-#: pcsx2/gui/AppInit.cpp:717
+#: pcsx2/gui/AppInit.cpp:743
 msgid "&Cancel"
 msgstr "取消"
 
-#: pcsx2/gui/AppInit.cpp:718
+#: pcsx2/gui/AppInit.cpp:744
 msgid "&Apply"
 msgstr "套用"
 
-#: pcsx2/gui/AppInit.cpp:719
+#: pcsx2/gui/AppInit.cpp:745
 msgid "&Next >"
 msgstr "下一步 >"
 
-#: pcsx2/gui/AppInit.cpp:720
+#: pcsx2/gui/AppInit.cpp:746
 msgid "< &Back"
 msgstr "< 上一步"
 
-#: pcsx2/gui/AppInit.cpp:721
+#: pcsx2/gui/AppInit.cpp:747
 msgid "&Back"
 msgstr "上一步"
 
-#: pcsx2/gui/AppInit.cpp:722
+#: pcsx2/gui/AppInit.cpp:748
 msgid "&Finish"
 msgstr "完成"
 
-#: pcsx2/gui/AppInit.cpp:723
+#: pcsx2/gui/AppInit.cpp:749
 msgid "&Yes"
 msgstr "是"
 
-#: pcsx2/gui/AppInit.cpp:724
+#: pcsx2/gui/AppInit.cpp:750
 msgid "&No"
 msgstr "否"
 
-#: pcsx2/gui/AppInit.cpp:725
+#: pcsx2/gui/AppInit.cpp:751
 msgid "Browse"
 msgstr "瀏覽"
 
-#: pcsx2/gui/AppInit.cpp:726
+#: pcsx2/gui/AppInit.cpp:752
 msgid "&Save"
 msgstr "儲存檔案"
 
-#: pcsx2/gui/AppInit.cpp:727
+#: pcsx2/gui/AppInit.cpp:753
 msgid "Save &As..."
 msgstr "另存新檔..."
 
-#: pcsx2/gui/AppInit.cpp:728
+#: pcsx2/gui/AppInit.cpp:754
 msgid "&Help"
 msgstr "說明"
 
-#: pcsx2/gui/AppInit.cpp:729
+#: pcsx2/gui/AppInit.cpp:755
 msgid "&Home"
 msgstr "家"
 
-#: pcsx2/gui/AppInit.cpp:731
+#: pcsx2/gui/AppInit.cpp:757
 msgid "Show about dialog"
 msgstr "顯示關於視窗"
 
-#: pcsx2/gui/AppMain.cpp:74
+#: pcsx2/gui/AppMain.cpp:79
 msgid ""
 "\n"
 "\n"
@@ -573,79 +614,88 @@ msgstr ""
 "\n"
 "按【確定】開啟插件設定視窗。"
 
-#: pcsx2/gui/AppMain.cpp:131 pcsx2/gui/AppMain.cpp:145
+#: pcsx2/gui/AppMain.cpp:136 pcsx2/gui/AppMain.cpp:150
 msgid ""
 "Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
 msgstr "警告！插件未載入。PCSX2 可能無法使用。"
 
-#: pcsx2/gui/AppMain.cpp:179 pcsx2/gui/AppMain.cpp:184
+#: pcsx2/gui/AppMain.cpp:184 pcsx2/gui/AppMain.cpp:189
 msgid "PS2 BIOS Error"
 msgstr "PS2 BIOS 錯誤"
 
-#: pcsx2/gui/AppMain.cpp:179
+#: pcsx2/gui/AppMain.cpp:184
 msgid "Press Ok to go to the BIOS Configuration Panel."
 msgstr "按【確定】開啟 BIOS 設定視窗。"
 
-#: pcsx2/gui/AppMain.cpp:202
+#: pcsx2/gui/AppMain.cpp:207
 #, fuzzy
 msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
 msgstr "警告！插件未載入。PCSX2 可能無法使用。"
 
-#: pcsx2/gui/AppMain.cpp:375
+#: pcsx2/gui/AppMain.cpp:380
 #, c-format
 msgid "%s Commandline Options"
 msgstr "%s 命令列選項"
 
-#: pcsx2/gui/AppMain.cpp:686
+#: pcsx2/gui/AppMain.cpp:715
 msgid "PCSX2 Unresponsive Thread"
 msgstr "PCSX2 停止回應的執行緒"
 
-#: pcsx2/gui/AppMain.cpp:693
+#: pcsx2/gui/AppMain.cpp:722
 msgid "Terminate"
 msgstr "終止"
 
-#: pcsx2/gui/AppMain.cpp:1061
+#: pcsx2/gui/AppMain.cpp:1097
 msgid "Executing PS2 Virtual Machine..."
 msgstr "正在執行 PS2 虛擬機..."
 
-#: pcsx2/gui/AppRes.cpp:66
+#: pcsx2/gui/AppRes.cpp:46
+msgid "Always ask when booting"
+msgstr ""
+
+#: pcsx2/gui/AppRes.cpp:46
+msgid ""
+"Manually select an ISO upon boot ignoring the selection from recent ISO list."
+msgstr ""
+
+#: pcsx2/gui/AppRes.cpp:48
 #, fuzzy
 msgid "Browse for an ISO that is not in your recent history."
 msgstr "選擇一個不在最近歷史記錄中的遊戲檔"
 
-#: pcsx2/gui/AppRes.cpp:66
+#: pcsx2/gui/AppRes.cpp:48
 msgid "Browse..."
 msgstr "瀏覽..."
 
-#: pcsx2/gui/AppUserMode.cpp:95
+#: pcsx2/gui/AppUserMode.cpp:92
 msgid "The following folders exist, but are not writable:"
 msgstr "下列資料夾存在，但是無法寫入："
 
-#: pcsx2/gui/AppUserMode.cpp:100
+#: pcsx2/gui/AppUserMode.cpp:97
 msgid "The following folders are missing and cannot be created:"
 msgstr "下列資料夾不存在而且無法建立："
 
-#: pcsx2/gui/AppUserMode.cpp:140
+#: pcsx2/gui/AppUserMode.cpp:137
 #, c-format
 msgid "Portable mode error - %s"
 msgstr "可攜式軟體模式出錯 - %s"
 
-#: pcsx2/gui/AppUserMode.cpp:153
+#: pcsx2/gui/AppUserMode.cpp:150
 msgid ""
 "PCSX2 has been installed as a portable application but cannot run due to the "
 "following errors:"
 msgstr "PCSX2 已經被安裝成為可攜式軟體，但由於下列錯誤，無法運行 PCSX2："
 
-#: pcsx2/gui/AppUserMode.cpp:161
+#: pcsx2/gui/AppUserMode.cpp:158
 msgid "Switch to User Documents Mode"
 msgstr "切換至【我的文件】模式"
 
-#: pcsx2/gui/AppUserMode.cpp:174
+#: pcsx2/gui/AppUserMode.cpp:171
 #, c-format
 msgid "%s is switching to local install mode."
 msgstr "%s 正在切換至本地安裝模式。"
 
-#: pcsx2/gui/AppUserMode.cpp:175
+#: pcsx2/gui/AppUserMode.cpp:172
 msgid ""
 "Try to remove the file called \"portable.ini\" from your installation "
 "directory manually."
@@ -659,194 +709,180 @@ msgstr "無法套用新的設定，其中有無效的設定。"
 msgid "Save log question"
 msgstr "儲存日誌的提問"
 
-#: pcsx2/gui/ConsoleLogger.cpp:389
+#: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "&Small"
 msgstr "最小"
 
-#: pcsx2/gui/ConsoleLogger.cpp:389
+#: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "Fits a lot of log in a microcosmically small area."
 msgstr "在同等區域中顯示較多日誌"
 
-#: pcsx2/gui/ConsoleLogger.cpp:391
+#: pcsx2/gui/ConsoleLogger.cpp:419
 msgid "&Normal font"
 msgstr "普通"
 
-#: pcsx2/gui/ConsoleLogger.cpp:391
+#: pcsx2/gui/ConsoleLogger.cpp:419
 msgid "It's what I use (the programmer guy)."
 msgstr "這是 PCSX2 程式設計師們使用的字型大小"
 
-#: pcsx2/gui/ConsoleLogger.cpp:393
+#: pcsx2/gui/ConsoleLogger.cpp:421
 msgid "&Large"
 msgstr "較大"
 
-#: pcsx2/gui/ConsoleLogger.cpp:393
+#: pcsx2/gui/ConsoleLogger.cpp:421
 msgid "Its nice and readable."
 msgstr "令人心曠神怡而且便於閱讀"
 
-#: pcsx2/gui/ConsoleLogger.cpp:395
+#: pcsx2/gui/ConsoleLogger.cpp:423
 msgid "&Huge"
 msgstr "最大"
 
-#: pcsx2/gui/ConsoleLogger.cpp:395
+#: pcsx2/gui/ConsoleLogger.cpp:423
 msgid "In case you have a really high res display."
 msgstr "適用於高螢幕解析度"
 
-#: pcsx2/gui/ConsoleLogger.cpp:399
+#: pcsx2/gui/ConsoleLogger.cpp:427
 msgid "&Light theme"
 msgstr "明亮背景主題（需重啟 PCSX2）"
 
-#: pcsx2/gui/ConsoleLogger.cpp:399
+#: pcsx2/gui/ConsoleLogger.cpp:427
 msgid "Default soft-tone color scheme."
 msgstr "預設的軟色調顏色主題"
 
-#: pcsx2/gui/ConsoleLogger.cpp:400
+#: pcsx2/gui/ConsoleLogger.cpp:428
 msgid "&Dark theme"
 msgstr "暗黑背景主題（需重啟 PCSX2）"
 
-#: pcsx2/gui/ConsoleLogger.cpp:400
+#: pcsx2/gui/ConsoleLogger.cpp:428
 msgid ""
 "Classic black color scheme for people who enjoy having text seared into "
 "their optic nerves."
 msgstr "經典的黑色主題，獻給喜歡讓文字灼燒視神經的人。"
 
-#: pcsx2/gui/ConsoleLogger.cpp:407
+#: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "&Save..."
 msgstr "儲存"
 
-#: pcsx2/gui/ConsoleLogger.cpp:407
+#: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "Save log contents to file"
 msgstr "將日誌內容儲存到檔案中"
 
-#: pcsx2/gui/ConsoleLogger.cpp:408
+#: pcsx2/gui/ConsoleLogger.cpp:436
 msgid "C&lear"
 msgstr "清空"
 
-#: pcsx2/gui/ConsoleLogger.cpp:408
+#: pcsx2/gui/ConsoleLogger.cpp:436
 msgid "Clear the log window contents"
 msgstr "清除日誌視窗中的全部內容"
 
-#: pcsx2/gui/ConsoleLogger.cpp:410
+#: pcsx2/gui/ConsoleLogger.cpp:438
 msgid "Auto&dock"
 msgstr ""
 
-#: pcsx2/gui/ConsoleLogger.cpp:410
+#: pcsx2/gui/ConsoleLogger.cpp:438
 msgid "Dock log window to main PCSX2 window"
 msgstr ""
 
-#: pcsx2/gui/ConsoleLogger.cpp:411
+#: pcsx2/gui/ConsoleLogger.cpp:439
 #, fuzzy
 msgid "&Appearance"
 msgstr "字型"
 
-#: pcsx2/gui/ConsoleLogger.cpp:413
+#: pcsx2/gui/ConsoleLogger.cpp:441
 msgid "&Close"
 msgstr "關閉"
 
-#: pcsx2/gui/ConsoleLogger.cpp:413
+#: pcsx2/gui/ConsoleLogger.cpp:441
 msgid "Close this log window; contents are preserved"
 msgstr "關閉日誌視窗（日誌內容保留）"
 
-#: pcsx2/gui/ConsoleLogger.cpp:417
+#: pcsx2/gui/ConsoleLogger.cpp:445
 msgid "Dev/&Verbose"
 msgstr "開發  /  冗長"
 
-#: pcsx2/gui/ConsoleLogger.cpp:417
+#: pcsx2/gui/ConsoleLogger.cpp:445
 msgid "Shows PCSX2 developer logs"
 msgstr "顯示 PCSX2 開發人員日誌"
 
-#: pcsx2/gui/ConsoleLogger.cpp:418
+#: pcsx2/gui/ConsoleLogger.cpp:446
 #, fuzzy
 msgid "&CDVD reads"
 msgstr "光碟讀取"
 
-#: pcsx2/gui/ConsoleLogger.cpp:418
+#: pcsx2/gui/ConsoleLogger.cpp:446
 msgid "Shows disk read activity"
 msgstr "顯示光碟讀取日誌"
 
-#: pcsx2/gui/ConsoleLogger.cpp:435
+#: pcsx2/gui/ConsoleLogger.cpp:463
 msgid "&Enable all"
 msgstr "啟用全部"
 
-#: pcsx2/gui/ConsoleLogger.cpp:435
+#: pcsx2/gui/ConsoleLogger.cpp:463
 msgid "Enables all log source filters."
 msgstr "啟用全部日誌來源"
 
-#: pcsx2/gui/ConsoleLogger.cpp:436
+#: pcsx2/gui/ConsoleLogger.cpp:464
 msgid "&Disable all"
 msgstr "停用全部"
 
-#: pcsx2/gui/ConsoleLogger.cpp:436
+#: pcsx2/gui/ConsoleLogger.cpp:464
 msgid "Disables all log source filters."
 msgstr "停用全部日誌來源"
 
-#: pcsx2/gui/ConsoleLogger.cpp:437
+#: pcsx2/gui/ConsoleLogger.cpp:465
 msgid "&Restore Default"
 msgstr "還原成預設值"
 
-#: pcsx2/gui/ConsoleLogger.cpp:437
+#: pcsx2/gui/ConsoleLogger.cpp:465
 #, fuzzy
 msgid "Restore default source filters."
 msgstr "啟用全部日誌來源"
 
-#: pcsx2/gui/ConsoleLogger.cpp:439
+#: pcsx2/gui/ConsoleLogger.cpp:467
 msgid "&Log"
 msgstr "日誌"
 
-#: pcsx2/gui/ConsoleLogger.cpp:440
+#: pcsx2/gui/ConsoleLogger.cpp:468
 msgid "&Sources"
 msgstr "來源"
 
-#: pcsx2/gui/Debugger/DisassemblyDialog.cpp:227
-msgid "panel"
-msgstr "視窗"
-
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:35
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:36
 #, c-format
 msgid "About %s"
 msgstr "關於 %s"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
-msgid "Previous versions"
-msgstr "早期版本的開發人員"
+msgid "Website"
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
-msgid "Webmasters"
-msgstr "網站管理員"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:56
+msgid "Support Forums"
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
-msgid "Plugin Specialists"
-msgstr "插件作者"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:58
+msgid "GitHub Repository"
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
-msgid "Special thanks to"
-msgstr "特別感謝"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:60
+msgid "License"
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:75
-msgid "Developers"
-msgstr "開發人員"
-
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
-msgid "Contributors"
-msgstr "有貢獻的人"
-
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:86
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
 #, fuzzy
-msgid "PlayStation 2 Emulator"
+msgid "PlayStation 2 Emulator:"
 msgstr "Playstation 2 模擬器"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:89
-msgid "PCSX2 Official Website and Forums"
-msgstr "PCSX2 官方網站和官方討論區"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
+msgid ""
+"Big thanks to everyone who contributed to the project throughout the years."
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:93
-msgid "PCSX2 Official Git Repository at GitHub"
-msgstr "PCSX2 官方 GitHub"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
+#, fuzzy
+msgid "Close"
+msgstr "關閉"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
-msgid "I've seen enough"
-msgstr "確定"
-
-#: pcsx2/gui/Dialogs/AssertionDialog.cpp:23
+#: pcsx2/gui/Dialogs/AssertionDialog.cpp:24
 msgid "Assertion Failure - "
 msgstr "程式斷言失敗 - "
 
@@ -854,7 +890,7 @@ msgstr "程式斷言失敗 - "
 msgid "Saves a snapshot of this settings panel to a PNG file."
 msgstr "將當前設定視窗的擷圖儲存為 PNG 圖片"
 
-#: pcsx2/gui/Dialogs/BaseConfigurationDialog.cpp:291
+#: pcsx2/gui/Dialogs/BaseConfigurationDialog.cpp:287
 msgid "Save dialog screenshots to..."
 msgstr "儲存設定視窗的螢幕擷圖"
 
@@ -938,8 +974,8 @@ msgid "Folder"
 msgstr "資料夾"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:151
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:815
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:179
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:811
 #, c-format
 msgid "Error (%s)"
 msgstr "錯誤（%s）"
@@ -963,103 +999,103 @@ msgstr ""
 msgid "Create a new memory card"
 msgstr "建立一個新的記憶卡"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:59
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:58
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:73
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:271
 msgid "Create"
 msgstr "新增"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:71
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:72
 msgid "New memory card:"
 msgstr "新記憶卡："
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:72
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:73
 msgid "At folder:    "
 msgstr "位於資料夾：    "
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:75
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:76
 msgid "Select file name: "
 msgstr "給記憶卡取名： "
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:152
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:164
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:179
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:180
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:192
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:207
 msgid "Create memory card"
 msgstr "新增記憶卡"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:163
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:191
 #, fuzzy
 msgid "Error: The directory for the memory card could not be created."
 msgstr "錯誤：無法新增記憶卡。"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:178
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:206
 msgid "Error: The memory card could not be created."
 msgstr "錯誤：無法新增記憶卡。"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:193
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:221
 msgid "Use NTFS compression when creating this card."
 msgstr "對新增的記憶卡啟用 NTFS 壓縮"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:210
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:239
 msgid "8 MB [most compatible]"
 msgstr "8 MB【相容性最好】"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:210
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:239
 msgid ""
 "This is the standard Sony-provisioned size, and is supported by all games "
 "and BIOS versions."
 msgstr "標準的 Sony 提供的大小，所有遊戲和 BIOS 版本都支援。"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:211
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:240
 msgid ""
 "Always use this option if you want the safest and surest memory card "
 "behavior."
 msgstr "如果您想要最安全可靠的記憶卡行為，就一直使用這個選項。"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:214
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:243
 msgid "16 MB"
 msgstr "16 MB"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:214
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:218
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:243
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:247
 msgid ""
 "A typical size for 3rd-party memory cards which should work with most games."
 msgstr "典型的第三方記憶卡的大小，在大多數遊戲中應該能夠正常工作。"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:215
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:219
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:244
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:248
 msgid "16 and 32 MB cards have roughly the same compatibility factor."
 msgstr "16 MB 和 32 MB 記憶卡的相容性係數大致相同。"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:218
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:247
 msgid "32 MB"
 msgstr "32 MB"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:222
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:251
 msgid "64 MB"
 msgstr "64 MB"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:222
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:251
 msgid ""
 "Low compatibility warning: Yes it's very big, but may not work with many "
 "games."
 msgstr "低相容性警告：是的，檔案非常大。但恐怕在許多遊戲中不能正常工作。"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:223
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:252
 msgid ""
 "Use at your own risk.  Erratic memory card behavior is possible (though "
 "unlikely)."
 msgstr "使用者自擔風險。可能出現不確定的記憶卡行為（儘管可能性不大）"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:226
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:255
 msgid "Folder [experimental]"
 msgstr ""
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:226
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:255
 msgid "Store memory card contents in the host filesystem instead of a file."
 msgstr ""
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:227
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:256
 msgid ""
 "Automatically manages memory card contents so that the console only sees "
 "files related to the currently running software. Allows you to drag-and-drop "
@@ -1067,20 +1103,37 @@ msgid ""
 "is still experimental, so use at your own risk!"
 msgstr ""
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:259
+msgid "128 KiB (PSX)"
+msgstr ""
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:259
+#, fuzzy
+msgid ""
+"This is the standard Sony-provisioned size PSX memory card, only compatible "
+"with PSX games."
+msgstr "標準的 Sony 提供的大小，所有遊戲和 BIOS 版本都支援。"
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:260
+msgid ""
+"This memory card is required by PSX games. It is not compatible with PS2 "
+"games."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
 #, c-format
 msgid "Select a folder for %s settings"
 msgstr "選擇一個資料夾用來存放 %s 的設定"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
 msgid "Settings"
 msgstr "設定檔的位置"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:83
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:84
 msgid "Language selector"
 msgstr "選擇語言"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:86
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:87
 msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
@@ -1088,37 +1141,32 @@ msgstr ""
 "僅在需要時變更語言。\n"
 "大部分作業系統只需使用 System Default 即可。"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:92
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:93
 msgid "Welcome to PCSX2!"
 msgstr "歡迎使用 PCSX2！"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:103
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:104
 msgid "Configuration Guides (online)"
 msgstr "配置指南（線上閱讀）"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:107
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:108
 msgid "Readme / FAQ (Offline/PDF)"
 msgstr "讀我檔案 / FAQ（離線瀏覽 PDF 檔）"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:116
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:117
 #, c-format
 msgid "%s First Time Configuration"
 msgstr "%s 首次執行精靈"
 
-#: pcsx2/gui/Dialogs/GameDatabaseDialog.cpp:24
-#, c-format
-msgid "Game database - %s"
-msgstr "遊戲資料庫 - %s"
-
-#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:24
+#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:25
 msgid "Import Existing Settings?"
 msgstr "匯入現有的設定？"
 
-#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:36
+#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:37
 msgid "Import"
 msgstr "匯入"
 
-#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:37
+#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:38
 msgid "Overwrite"
 msgstr "覆寫"
 
@@ -1160,10 +1208,6 @@ msgstr "PCSX2 首次執行精靈"
 msgid "%s is starting from a new or unknown folder and needs to be configured."
 msgstr "%s 從一個新的或未知的資料夾啟動，需要被設定。"
 
-#: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:28
-msgid "PCSX2 Thread is not responding"
-msgstr "PCSX2 執行緒停止回應"
-
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:36
 msgid "Config Overrides Warning"
 msgstr "設定覆寫警告"
@@ -1172,7 +1216,7 @@ msgstr "設定覆寫警告"
 msgid "Components Overrides Warning"
 msgstr "元件覆寫警告"
 
-#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:134
+#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:135
 msgid "Preset:"
 msgstr "載入預先定義的組態："
 
@@ -1222,16 +1266,7 @@ msgstr "BIOS"
 msgid "Folders"
 msgstr "資料夾"
 
-#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:261
-#, c-format
-msgid "Appearance/Themes - %s"
-msgstr "外觀 / 主題 - %s"
-
-#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:268
-msgid "Appearance"
-msgstr "字型"
-
-#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:278
+#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:260
 #, fuzzy
 msgid "Language Selector"
 msgstr "選擇語言"
@@ -1240,66 +1275,49 @@ msgstr "選擇語言"
 msgid "Logs events as they are passed to the PS2 virtual machine."
 msgstr "隨著事件傳遞給 PS2 虛擬機，記錄事件。"
 
-#: pcsx2/gui/ExecutorThread.cpp:430
-msgid "Press Cancel to attempt to cancel the action."
-msgstr "按【取消】嘗試取消動作。"
-
-#: pcsx2/gui/ExecutorThread.cpp:431
-#, c-format
-msgid "Press Terminate to kill %s immediately."
-msgstr "按【終止】立即終止 %s。"
-
-#: pcsx2/gui/ExecutorThread.cpp:434
-msgid "Terminate App"
-msgstr "終止"
-
-#: pcsx2/gui/FrameForGS.cpp:444
-msgid "GS Output is Disabled!"
-msgstr "畫面輸出被停用！"
-
-#: pcsx2/gui/GlobalCommands.cpp:309
+#: pcsx2/gui/GlobalCommands.cpp:316
 msgid "Exit PCSX2?"
 msgstr ""
 
-#: pcsx2/gui/GlobalCommands.cpp:474
+#: pcsx2/gui/GlobalCommands.cpp:622
 #, fuzzy
 msgid "Save state"
 msgstr "即時存檔"
 
-#: pcsx2/gui/GlobalCommands.cpp:475
+#: pcsx2/gui/GlobalCommands.cpp:623
 msgid "Saves the virtual machine state to the current slot."
 msgstr "將虛擬機狀態儲存到當前的即時存檔插槽。"
 
-#: pcsx2/gui/GlobalCommands.cpp:481
+#: pcsx2/gui/GlobalCommands.cpp:629
 #, fuzzy
 msgid "Load state"
 msgstr "即時讀檔"
 
-#: pcsx2/gui/GlobalCommands.cpp:482
+#: pcsx2/gui/GlobalCommands.cpp:630
 msgid "Loads a virtual machine state from the current slot."
 msgstr "從當前的即時存檔插槽讀取虛擬機狀態。"
 
-#: pcsx2/gui/GlobalCommands.cpp:488
+#: pcsx2/gui/GlobalCommands.cpp:636
 msgid "Load State Backup"
 msgstr "讀取狀態備份"
 
-#: pcsx2/gui/GlobalCommands.cpp:489
+#: pcsx2/gui/GlobalCommands.cpp:637
 msgid "Loads virtual machine state backup for current slot."
 msgstr "當前的即時存檔插槽讀取虛擬機狀態備份。"
 
-#: pcsx2/gui/GlobalCommands.cpp:495
+#: pcsx2/gui/GlobalCommands.cpp:643
 msgid "Cycle to next slot"
 msgstr "循環至下一個即時存檔插槽"
 
-#: pcsx2/gui/GlobalCommands.cpp:496
+#: pcsx2/gui/GlobalCommands.cpp:644
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "將當前的即時存檔插槽以 +1 的式樣循環！"
 
-#: pcsx2/gui/GlobalCommands.cpp:502
+#: pcsx2/gui/GlobalCommands.cpp:650
 msgid "Cycle to prev slot"
 msgstr "循環至上一個即時存檔插槽"
 
-#: pcsx2/gui/GlobalCommands.cpp:503
+#: pcsx2/gui/GlobalCommands.cpp:651
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "將當前的即時存檔插槽以 -1 的式樣循環！"
 
@@ -1314,7 +1332,7 @@ msgid ""
 "please, thank you."
 msgstr "拖曳多個檔案至 %s 視窗是一個錯誤。請一次一個檔案，謝謝。"
 
-#: pcsx2/gui/IsoDropTarget.cpp:87 pcsx2/gui/MainMenuClicks.cpp:355
+#: pcsx2/gui/IsoDropTarget.cpp:87 pcsx2/gui/MainMenuClicks.cpp:351
 msgid "Confirm PS2 Reset"
 msgstr "確認重新啟動 PS2"
 
@@ -1332,393 +1350,443 @@ msgstr ""
 msgid "You have dropped the following ISO image into %s:"
 msgstr "您已經拖曳下列 ISO 檔案至 %s："
 
-#: pcsx2/gui/MainFrame.cpp:39
+#: pcsx2/gui/MainFrame.cpp:41
 #, c-format
 msgid "Slot %d"
 msgstr "插槽 %d"
 
-#: pcsx2/gui/MainFrame.cpp:45 pcsx2/gui/Saveslots.cpp:150
+#: pcsx2/gui/MainFrame.cpp:48 pcsx2/gui/Saveslots.cpp:139
 msgid "Backup"
 msgstr "備份"
 
-#: pcsx2/gui/MainFrame.cpp:327
+#: pcsx2/gui/MainFrame.cpp:52
+msgid "File..."
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:349
 msgid "&Show Console"
 msgstr "顯示主控台"
 
-#: pcsx2/gui/MainFrame.cpp:329
+#: pcsx2/gui/MainFrame.cpp:351
 msgid "&Console to Stdio"
 msgstr "顯示主控台至標準輸入輸出"
 
-#: pcsx2/gui/MainFrame.cpp:343
+#: pcsx2/gui/MainFrame.cpp:364
 msgid "&System"
 msgstr "檔案"
 
-#: pcsx2/gui/MainFrame.cpp:344
+#: pcsx2/gui/MainFrame.cpp:365
 msgid "CD&VD"
 msgstr "光碟"
 
-#: pcsx2/gui/MainFrame.cpp:345
+#: pcsx2/gui/MainFrame.cpp:366
 msgid "&Config"
 msgstr "設定"
 
-#: pcsx2/gui/MainFrame.cpp:346
+#: pcsx2/gui/MainFrame.cpp:367
 msgid "&Misc"
 msgstr "其他"
 
-#: pcsx2/gui/MainFrame.cpp:347
+#: pcsx2/gui/MainFrame.cpp:368
 msgid "&Debug"
 msgstr "偵錯"
 
-#: pcsx2/gui/MainFrame.cpp:411 pcsx2/gui/MainFrame.cpp:413
-#: pcsx2/gui/MainFrame.cpp:419
+#: pcsx2/gui/MainFrame.cpp:369
+msgid "&Capture"
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:377 pcsx2/gui/MainMenuClicks.cpp:516
+msgid "&Recording"
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:441 pcsx2/gui/MainFrame.cpp:443
+#: pcsx2/gui/MainFrame.cpp:449
 msgid "Initializing..."
 msgstr "正在初始化..."
 
-#: pcsx2/gui/MainFrame.cpp:415
+#: pcsx2/gui/MainFrame.cpp:445
 msgid "&Run ELF..."
 msgstr "執行 ELF 檔案"
 
-#: pcsx2/gui/MainFrame.cpp:416
+#: pcsx2/gui/MainFrame.cpp:446
 msgid "For running raw PS2 binaries directly"
 msgstr "為了直接執行原始的 PS2 二進位檔案"
 
-#: pcsx2/gui/MainFrame.cpp:425
+#: pcsx2/gui/MainFrame.cpp:455
 msgid "&Load state"
 msgstr "即時讀檔"
 
-#: pcsx2/gui/MainFrame.cpp:426
+#: pcsx2/gui/MainFrame.cpp:456
 msgid "&Save state"
 msgstr "即時存檔"
 
-#: pcsx2/gui/MainFrame.cpp:428
+#: pcsx2/gui/MainFrame.cpp:458
 msgid "&Backup before save"
 msgstr "自動備份即時存檔"
 
-#: pcsx2/gui/MainFrame.cpp:433
+#: pcsx2/gui/MainFrame.cpp:463
 msgid "Automatic &Gamefixes"
 msgstr "自動使用遊戲修正"
 
-#: pcsx2/gui/MainFrame.cpp:434
+#: pcsx2/gui/MainFrame.cpp:464
 msgid "Automatically applies needed Gamefixes to known problematic games"
 msgstr "自動套用所需的遊戲修正給已知有問題的遊戲"
 
-#: pcsx2/gui/MainFrame.cpp:436
+#: pcsx2/gui/MainFrame.cpp:466
 msgid "Enable &Cheats"
 msgstr "啟用作弊"
 
-#: pcsx2/gui/MainFrame.cpp:439
+#: pcsx2/gui/MainFrame.cpp:469
 msgid "Enable &Widescreen Patches"
 msgstr "啟用寬螢幕補丁"
 
-#: pcsx2/gui/MainFrame.cpp:443
+#: pcsx2/gui/MainFrame.cpp:470
+msgid "Enabling Widescreen Patches may occasionally cause issues."
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:473
+msgid "Enable &Recording Tools"
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:478
 msgid "Enable &Host Filesystem"
 msgstr "啟用主機檔案系統"
 
-#: pcsx2/gui/MainFrame.cpp:448
+#: pcsx2/gui/MainFrame.cpp:483
 msgid "Shut&down"
 msgstr "關閉遊戲"
 
-#: pcsx2/gui/MainFrame.cpp:449
+#: pcsx2/gui/MainFrame.cpp:484
 msgid "Wipes all internal VM states and shuts down plugins."
 msgstr "清除所有內部虛擬機狀態並關閉插件"
 
-#: pcsx2/gui/MainFrame.cpp:452
+#: pcsx2/gui/MainFrame.cpp:487
 msgid "E&xit"
 msgstr "離開"
 
-#: pcsx2/gui/MainFrame.cpp:453
+#: pcsx2/gui/MainFrame.cpp:488
 #, c-format
 msgid "Closing %s may be hazardous to your health"
 msgstr "關閉 %s 或許有害健康"
 
-#: pcsx2/gui/MainFrame.cpp:460
+#: pcsx2/gui/MainFrame.cpp:495
 #, fuzzy
 msgid "ISO &Selector"
 msgstr "選擇光碟映像檔"
 
-#: pcsx2/gui/MainFrame.cpp:461
+#: pcsx2/gui/MainFrame.cpp:496
 #, fuzzy
 msgid "Plugin &Menu"
 msgstr "光碟插件"
 
-#: pcsx2/gui/MainFrame.cpp:464
+#: pcsx2/gui/MainFrame.cpp:499
 msgid "&ISO"
 msgstr ""
 
-#: pcsx2/gui/MainFrame.cpp:464
+#: pcsx2/gui/MainFrame.cpp:499
 msgid "Makes the specified ISO image the CDVD source."
 msgstr "使用指定的光碟映像檔作為遊戲來源"
 
-#: pcsx2/gui/MainFrame.cpp:465
+#: pcsx2/gui/MainFrame.cpp:500
 msgid "&Plugin"
 msgstr "使用光碟插件"
 
-#: pcsx2/gui/MainFrame.cpp:465
+#: pcsx2/gui/MainFrame.cpp:500
 msgid "Uses an external plugin as the CDVD source."
 msgstr "使用外部的光碟插件作為遊戲來源"
 
-#: pcsx2/gui/MainFrame.cpp:466
+#: pcsx2/gui/MainFrame.cpp:501
 msgid "&No disc"
 msgstr "無光碟"
 
-#: pcsx2/gui/MainFrame.cpp:466
+#: pcsx2/gui/MainFrame.cpp:501
 msgid "Use this to boot into your virtual PS2's BIOS configuration."
 msgstr "進入 PS2 的 BIOS 設定"
 
-#: pcsx2/gui/MainFrame.cpp:474
+#: pcsx2/gui/MainFrame.cpp:509
 msgid "Emulation &Settings"
 msgstr "模擬器選項"
 
-#: pcsx2/gui/MainFrame.cpp:475
+#: pcsx2/gui/MainFrame.cpp:510
 msgid "&Memory cards"
 msgstr "記憶卡"
 
-#: pcsx2/gui/MainFrame.cpp:476
+#: pcsx2/gui/MainFrame.cpp:511
 msgid "&Plugin/BIOS Selector"
 msgstr "插件 / BIOS"
 
-#: pcsx2/gui/MainFrame.cpp:477
-msgid "&Game Database Editor"
-msgstr "遊戲資料庫編輯器"
-
-#: pcsx2/gui/MainFrame.cpp:483
+#: pcsx2/gui/MainFrame.cpp:515
 msgid "&Video (GS)"
 msgstr "圖形 (GS)"
 
-#: pcsx2/gui/MainFrame.cpp:484
+#: pcsx2/gui/MainFrame.cpp:516
 msgid "&Audio (SPU2)"
 msgstr "聲音 (SPU2)"
 
-#: pcsx2/gui/MainFrame.cpp:485
+#: pcsx2/gui/MainFrame.cpp:517
 msgid "&Controllers (PAD)"
 msgstr "控制器 (PAD)"
 
-#: pcsx2/gui/MainFrame.cpp:486
+#: pcsx2/gui/MainFrame.cpp:518
 msgid "&Dev9"
 msgstr "Dev9"
 
-#: pcsx2/gui/MainFrame.cpp:487
+#: pcsx2/gui/MainFrame.cpp:519
 msgid "&USB"
 msgstr "USB"
 
-#: pcsx2/gui/MainFrame.cpp:488
+#: pcsx2/gui/MainFrame.cpp:520
 msgid "&Firewire"
 msgstr "Firewire"
 
-#: pcsx2/gui/MainFrame.cpp:494
+#: pcsx2/gui/MainFrame.cpp:526
 msgid "Multitap &1"
 msgstr "手把擴充器 1"
 
-#: pcsx2/gui/MainFrame.cpp:495
+#: pcsx2/gui/MainFrame.cpp:527
 msgid "Multitap &2"
 msgstr "手把擴充器 2"
 
-#: pcsx2/gui/MainFrame.cpp:498
+#: pcsx2/gui/MainFrame.cpp:530
 msgid "C&lear all settings..."
 msgstr "清除全部設定"
 
-#: pcsx2/gui/MainFrame.cpp:499
+#: pcsx2/gui/MainFrame.cpp:531
 #, c-format
 msgid "Clears all %s settings and re-runs the startup wizard."
 msgstr "清除全部 %s 設定，重新執行「 首次執行精靈 」"
 
-#: pcsx2/gui/MainFrame.cpp:521
+#: pcsx2/gui/MainFrame.cpp:546
 msgid "&About..."
 msgstr "關於 PCSX2"
 
-#: pcsx2/gui/MainFrame.cpp:526
+#: pcsx2/gui/MainFrame.cpp:551
 msgid "&Open Debug Window..."
 msgstr "開啟偵錯視窗"
 
-#: pcsx2/gui/MainFrame.cpp:529
+#: pcsx2/gui/MainFrame.cpp:554
 msgid "&Logging..."
 msgstr "日誌"
 
-#: pcsx2/gui/MainFrame.cpp:609
+#: pcsx2/gui/MainFrame.cpp:556
+msgid "Create &Blockdump"
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:556
+msgid "Creates a block dump for debugging purposes."
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:560
+#, fuzzy
+msgid "Video"
+msgstr "圖形 (GS)"
+
+#: pcsx2/gui/MainFrame.cpp:561
+msgid "Start Recording"
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:562
+msgid "Stop Recording"
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:564
+#, fuzzy
+msgid "Screenshot"
+msgstr "遊戲擷圖"
+
+#: pcsx2/gui/MainFrame.cpp:569
+msgid "New"
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:570
+msgid "Stop"
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:571
+msgid "Play"
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:573
+msgid "Virtual Pad (Port 1)"
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:574
+msgid "Virtual Pad (Port 2)"
+msgstr ""
+
+#: pcsx2/gui/MainFrame.cpp:649
 msgid "Paus&e"
 msgstr "暫停遊戲"
 
-#: pcsx2/gui/MainFrame.cpp:610
+#: pcsx2/gui/MainFrame.cpp:650
 msgid "Safely pauses emulation and preserves the PS2 state."
 msgstr "安全地暫停模擬並保留 PS2 狀態"
 
-#: pcsx2/gui/MainFrame.cpp:617
+#: pcsx2/gui/MainFrame.cpp:658
 msgid "R&esume"
 msgstr "繼續遊戲"
 
-#: pcsx2/gui/MainFrame.cpp:618
+#: pcsx2/gui/MainFrame.cpp:659
 msgid "Resumes the suspended emulation state."
 msgstr "從暫停的模擬器狀態中恢復遊戲"
 
-#: pcsx2/gui/MainFrame.cpp:622
+#: pcsx2/gui/MainFrame.cpp:663
 msgid "Pause/Resume"
 msgstr "暫停 / 繼續"
 
-#: pcsx2/gui/MainFrame.cpp:623
+#: pcsx2/gui/MainFrame.cpp:664
 msgid "No emulation state is active; cannot suspend or resume."
 msgstr "無現存的模擬器狀態，不能暫停或繼續"
 
-#: pcsx2/gui/MainFrame.cpp:632
-msgid "Res&tart"
-msgstr "重新啟動"
-
-#: pcsx2/gui/MainFrame.cpp:633
-msgid "Simulates hardware reset of the PS2 virtual machine."
-msgstr "模擬 PS2 虛擬機的硬體重置。"
-
-#: pcsx2/gui/MainFrame.cpp:638
-msgid "No emulation state is active; boot something first."
-msgstr "無現存的模擬器狀態，請先啟動些什麼"
-
-#: pcsx2/gui/MainFrame.cpp:655
+#: pcsx2/gui/MainFrame.cpp:682
 msgid "Use fast boot to skip PS2 startup and splash screens"
 msgstr "啟動遊戲時跳過 PS2 的啟動畫面"
 
-#: pcsx2/gui/MainFrame.cpp:660
+#: pcsx2/gui/MainFrame.cpp:687
 #, fuzzy
 msgid "Boot ISO (&fast)"
 msgstr "啟動遊戲（快速）"
 
-#: pcsx2/gui/MainFrame.cpp:663
+#: pcsx2/gui/MainFrame.cpp:690
 msgid "Boot CDVD (&fast)"
 msgstr "啟動遊戲（快速）"
 
-#: pcsx2/gui/MainFrame.cpp:687
+#: pcsx2/gui/MainFrame.cpp:713
 #, fuzzy
 msgid "Boo&t ISO (full)"
 msgstr "啟動遊戲（完整）"
 
-#: pcsx2/gui/MainFrame.cpp:688
+#: pcsx2/gui/MainFrame.cpp:714
 #, fuzzy
 msgid "Boot the VM using the current ISO source media"
 msgstr "啟動遊戲時顯示 PS2 的啟動畫面"
 
-#: pcsx2/gui/MainFrame.cpp:691
+#: pcsx2/gui/MainFrame.cpp:717
 #, fuzzy
 msgid "Boo&t CDVD (full)"
 msgstr "啟動遊戲（完整）"
 
-#: pcsx2/gui/MainFrame.cpp:692
+#: pcsx2/gui/MainFrame.cpp:718
 #, fuzzy
 msgid "Boot the VM using the current CD/DVD source media"
 msgstr "啟動遊戲時顯示 PS2 的啟動畫面"
 
-#: pcsx2/gui/MainFrame.cpp:695
+#: pcsx2/gui/MainFrame.cpp:721
 msgid "Boo&t BIOS"
 msgstr ""
 
-#: pcsx2/gui/MainFrame.cpp:696
+#: pcsx2/gui/MainFrame.cpp:722
 #, fuzzy
 msgid "Boot the VM without any source media"
 msgstr "啟動遊戲時顯示 PS2 的啟動畫面"
 
-#: pcsx2/gui/MainFrame.cpp:777 pcsx2/gui/MainFrame.cpp:812
+#: pcsx2/gui/MainFrame.cpp:803 pcsx2/gui/MainFrame.cpp:838
 msgid "No plugin loaded"
 msgstr "未載入插件"
 
-#: pcsx2/gui/MainFrame.cpp:782
+#: pcsx2/gui/MainFrame.cpp:808
 msgid "&Core GS Settings..."
 msgstr "核心設定"
 
-#: pcsx2/gui/MainFrame.cpp:783
+#: pcsx2/gui/MainFrame.cpp:809
 msgid ""
 "Modify hardware emulation settings regulated by the PCSX2 core virtual "
 "machine."
 msgstr "變更 PCSX2 核心虛擬機控制的硬體模擬設定"
 
-#: pcsx2/gui/MainFrame.cpp:785
+#: pcsx2/gui/MainFrame.cpp:811
 msgid "&Window Settings..."
 msgstr "遊戲視窗"
 
-#: pcsx2/gui/MainFrame.cpp:786
+#: pcsx2/gui/MainFrame.cpp:812
 msgid "Modify window and appearance options, including aspect ratio."
 msgstr "視窗及視窗外觀的選項調節，包括【圖像縱橫比】"
 
-#: pcsx2/gui/MainFrame.cpp:793
+#: pcsx2/gui/MainFrame.cpp:819
 msgid "&Plugin Settings..."
 msgstr "插件設定"
 
-#: pcsx2/gui/MainFrame.cpp:794
+#: pcsx2/gui/MainFrame.cpp:820
 #, c-format
 msgid "Opens the %s plugin's advanced settings dialog."
 msgstr "開啟 %s 插件的設定視窗"
 
-#: pcsx2/gui/MainMenuClicks.cpp:120
+#: pcsx2/gui/MainMenuClicks.cpp:116
 msgid "Reset all settings?"
 msgstr "重設全部設定？"
 
-#: pcsx2/gui/MainMenuClicks.cpp:148
+#: pcsx2/gui/MainMenuClicks.cpp:144
 msgid "Confirm ISO image change"
 msgstr "確認更換光碟映像檔"
 
-#: pcsx2/gui/MainMenuClicks.cpp:154
+#: pcsx2/gui/MainMenuClicks.cpp:150
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
 msgstr "您是想要更換光碟還是啟動新的映像檔 ( 重新啟動遊戲 )？"
 
-#: pcsx2/gui/MainMenuClicks.cpp:156 pcsx2/gui/MainMenuClicks.cpp:202
+#: pcsx2/gui/MainMenuClicks.cpp:152 pcsx2/gui/MainMenuClicks.cpp:198
 msgid "Swap Disc"
 msgstr "更換光碟"
 
-#: pcsx2/gui/MainMenuClicks.cpp:192
+#: pcsx2/gui/MainMenuClicks.cpp:188
 msgid "Confirm CDVD source change"
 msgstr "確認更換光碟"
 
-#: pcsx2/gui/MainMenuClicks.cpp:195
+#: pcsx2/gui/MainMenuClicks.cpp:191
 #, c-format
 msgid "You've selected to switch the CDVD source from %s to %s."
 msgstr "您已經選擇將遊戲來源從【%s】更換到【%s】"
 
-#: pcsx2/gui/MainMenuClicks.cpp:199
+#: pcsx2/gui/MainMenuClicks.cpp:195
 msgid "Do you want to swap discs or boot the new image (system reset)?"
 msgstr "您是想要更換光碟還是啟動新的映像檔 ( 重新啟動遊戲 )？"
 
-#: pcsx2/gui/MainMenuClicks.cpp:271
+#: pcsx2/gui/MainMenuClicks.cpp:267
 #, c-format
 msgid "All Supported (%s)"
 msgstr "所有支援的檔案類型 (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:274
+#: pcsx2/gui/MainMenuClicks.cpp:270
 #, c-format
 msgid "Disc Images (%s)"
 msgstr "光碟映像檔 (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:277
+#: pcsx2/gui/MainMenuClicks.cpp:273
 #, c-format
 msgid "Blockdumps (%s)"
 msgstr "區塊轉存檔 (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:280
+#: pcsx2/gui/MainMenuClicks.cpp:276
 #, c-format
 msgid "Compressed (%s)"
 msgstr "壓縮 (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:283 pcsx2/gui/MainMenuClicks.cpp:304
+#: pcsx2/gui/MainMenuClicks.cpp:279 pcsx2/gui/MainMenuClicks.cpp:300
 msgid "All Files (*.*)"
 msgstr "所有檔案 (*.*)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:286
+#: pcsx2/gui/MainMenuClicks.cpp:282
 msgid "Select disc image, compressed disc image, or block-dump..."
 msgstr ""
 
-#: pcsx2/gui/MainMenuClicks.cpp:303
+#: pcsx2/gui/MainMenuClicks.cpp:299
 msgid "Select ELF file..."
 msgstr "選擇 ELF 檔案"
 
-#: pcsx2/gui/MainMenuClicks.cpp:329
+#: pcsx2/gui/MainMenuClicks.cpp:325
 msgid "ISO file not found!"
 msgstr "未找到光碟映像檔！"
 
-#: pcsx2/gui/MainMenuClicks.cpp:331
+#: pcsx2/gui/MainMenuClicks.cpp:327
 msgid "An error occurred while trying to open the file:"
 msgstr "當嘗試開啟這個檔案時出現錯誤："
 
-#: pcsx2/gui/MainMenuClicks.cpp:332
+#: pcsx2/gui/MainMenuClicks.cpp:328
 msgid ""
 "Error: The configured ISO file does not exist.  Click OK to select a new ISO "
 "source for CDVD."
 msgstr "錯誤：指定的光碟映像檔不存在。按【確定】選擇一個新的光碟映像檔。"
 
-#: pcsx2/gui/MainMenuClicks.cpp:403
+#: pcsx2/gui/MainMenuClicks.cpp:399
 msgid ""
 "You have selected the following ISO image into PCSX2:\n"
 "\n"
@@ -1726,7 +1794,43 @@ msgstr ""
 "您已經選擇以下光碟映像檔：\n"
 "\n"
 
-#: pcsx2/gui/MemoryCardFile.cpp:193
+#: pcsx2/gui/MainMenuClicks.cpp:419
+msgid "Confirm clearing ISO list"
+msgstr ""
+
+#: pcsx2/gui/MainMenuClicks.cpp:420
+msgid ""
+"This will clear the ISO list. If an ISO is running it will remain in the "
+"list. Continue?"
+msgstr ""
+
+#: pcsx2/gui/MainMenuClicks.cpp:504
+msgid ""
+"Please be aware that PCSX2's input recording features are still very much a "
+"work-in-progress.\n"
+"As a result, there may be unforeseen bugs, performance implications and "
+"instability with certain games.\n"
+"\n"
+"These tools are provided as-is and should be enabled under your own "
+"discretion."
+msgstr ""
+
+#: pcsx2/gui/MainMenuClicks.cpp:589
+#, fuzzy
+msgid "Load State"
+msgstr "即時讀檔"
+
+#: pcsx2/gui/MainMenuClicks.cpp:603
+#, fuzzy
+msgid "Save State"
+msgstr "即時存檔"
+
+#: pcsx2/gui/MainMenuClicks.cpp:844
+#, fuzzy
+msgid "Select P2M2 record file."
+msgstr "選擇 ELF 檔案"
+
+#: pcsx2/gui/MemoryCardFile.cpp:196
 #, c-format
 msgid ""
 "Could not create a memory card: \n"
@@ -1739,7 +1843,7 @@ msgstr ""
 "%s\n"
 "\n"
 
-#: pcsx2/gui/MemoryCardFile.cpp:211
+#: pcsx2/gui/MemoryCardFile.cpp:214
 #, c-format
 msgid ""
 "Access denied to memory card: \n"
@@ -1752,19 +1856,19 @@ msgstr ""
 "%s\n"
 "\n"
 
-#: pcsx2/gui/MemoryCardFile.cpp:678
+#: pcsx2/gui/MemoryCardFile.cpp:697
 msgid "File name empty or too short"
 msgstr "檔案名稱是空的或太短"
 
-#: pcsx2/gui/MemoryCardFile.cpp:683
+#: pcsx2/gui/MemoryCardFile.cpp:702
 msgid "File name outside of required directory"
 msgstr "檔案名稱在所要求的資料夾之外"
 
-#: pcsx2/gui/MemoryCardFile.cpp:689 pcsx2/gui/MemoryCardFile.cpp:694
+#: pcsx2/gui/MemoryCardFile.cpp:708 pcsx2/gui/MemoryCardFile.cpp:713
 msgid "File name already exists"
 msgstr "檔案名稱已經存在"
 
-#: pcsx2/gui/MemoryCardFile.cpp:701
+#: pcsx2/gui/MemoryCardFile.cpp:720
 msgid "The Operating-System prevents this file from being created"
 msgstr "作業系統阻止建立這個檔案"
 
@@ -1772,27 +1876,26 @@ msgstr "作業系統阻止建立這個檔案"
 msgid "Cannot apply settings..."
 msgstr "無法套用設定"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:104
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:100
 msgid "BIOS Search Path:"
 msgstr "BIOS 的搜尋路徑："
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:105
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:101
 msgid "Select folder with PS2 BIOS roms"
 msgstr "選擇含有 PS2 BIOS 的資料夾"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:112
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:108
 msgid ""
 "Click the Browse button to select a different folder where PCSX2 will look "
 "for PS2 BIOS roms."
 msgstr "按下【瀏覽】按鈕選擇不同的資料夾"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:114
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:195
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:48
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:110
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:194
 msgid "Refresh list"
 msgstr "重新載入列表"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:116
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:112
 msgid "Select a BIOS rom:"
 msgstr "選擇一個 BIOS："
 
@@ -1886,7 +1989,7 @@ msgid "Interpreter only; provided for diagnostic"
 msgstr "用於診斷"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:226
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:129
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:134 pcsx2/gui/Panels/VideoPanel.cpp:294
 msgid "Restore Defaults"
 msgstr "還原成預設值"
 
@@ -1945,92 +2048,81 @@ msgstr ""
 msgid "Fit to Window/Screen"
 msgstr "延展至視窗 / 螢幕"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:31
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:31 pcsx2/gui/Panels/GSWindowPanel.cpp:38
 msgid "Standard (4:3)"
 msgstr "標準 (4:3)"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:32
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:32 pcsx2/gui/Panels/GSWindowPanel.cpp:39
 msgid "Widescreen (16:9)"
 msgstr "寬螢幕 (16:9)"
 
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:37
+#, fuzzy
+msgid "Off (Default)"
+msgstr "（ 正體中文 ）"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:45
+msgid "Disabled"
+msgstr "已停用"
+
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:46
+#, fuzzy
+msgid "Standard"
+msgstr "標準 (4:3)"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:47
+#, fuzzy
+msgid "Adaptive"
+msgstr "負數"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:67
 msgid "Disable window resize border"
 msgstr "禁止使用視窗邊框調整視窗大小"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:47
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:68
 msgid "Always hide mouse cursor"
 msgstr "總是隱藏滑鼠指標"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:48
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:69
 msgid "Hide window when paused"
 msgstr "模擬器暫停時隱藏遊戲視窗"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:49
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:70
 msgid "Default to fullscreen mode on open"
 msgstr "預設以全螢幕模式進入遊戲"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:50
-msgid "Wait for Vsync on refresh"
-msgstr "重新整理時等待垂直同步"
-
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:51
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:71
 msgid "Double-click toggles fullscreen mode"
 msgstr "滑鼠雙擊遊戲畫面切換全螢幕模式和視窗模式"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:52
-#, fuzzy
-msgid "Switch to 4:3 aspect ratio when an FMV plays"
-msgstr "當播放遊戲動畫時，切換至 GSdx 的軟體渲染模式"
-
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:86
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:102
 msgid "Aspect Ratio:"
 msgstr "圖像縱橫比："
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:88
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:104
+#, fuzzy
+msgid "FMV Aspect Ratio Override:"
+msgstr "圖像縱橫比："
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:106
 msgid "Custom Window Size:"
 msgstr "自訂視窗大小："
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:91
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:109
 msgid "Zoom:"
 msgstr "畫面縮放（以百分數表示）："
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:170
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:115
+#, fuzzy
+msgid "Wait for Vsync on refresh:"
+msgstr "重新整理時等待垂直同步"
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:192
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
 msgstr "無效的視窗維度：【自訂視窗大小】的數值必須是整數！ ＞＿＜"
 
-#: pcsx2/gui/Panels/GameDatabasePanel.cpp:322
-msgid "Search"
-msgstr "搜尋"
-
-#: pcsx2/gui/Panels/GameDatabasePanel.cpp:334
-#, fuzzy
-msgid "Game Database Editor"
-msgstr "遊戲資料庫編輯器"
-
-#: pcsx2/gui/Panels/GameDatabasePanel.cpp:348
-msgid "Name: "
-msgstr ""
-
-#: pcsx2/gui/Panels/GameDatabasePanel.cpp:349
-msgid "Region: "
-msgstr ""
-
-#: pcsx2/gui/Panels/GameDatabasePanel.cpp:350
-msgid "Compatibility: "
-msgstr ""
-
-#: pcsx2/gui/Panels/GameDatabasePanel.cpp:351
-msgid "Comments: "
-msgstr ""
-
-#: pcsx2/gui/Panels/GameDatabasePanel.cpp:352
-#, fuzzy
-msgid "Patches: "
-msgstr "啟用補丁"
-
-#: pcsx2/gui/Panels/GameDatabasePanel.cpp:356
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
 msgid "Gamefixes"
 msgstr "遊戲修正"
@@ -2133,7 +2225,11 @@ msgid ""
 "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
 msgstr ""
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:119
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:112
+msgid "VU I bit Hack avoid constant recompilation (Crash Tag Team Racing)"
+msgstr ""
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:123
 msgid "Enable manual game fixes [Not recommended]"
 msgstr "手動設定遊戲修正【不推薦】"
 
@@ -2148,97 +2244,107 @@ msgid ""
 msgstr "追蹤日誌全部寫入 emulog.txt。隨時按 F10 開啟或關閉追蹤日誌。"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:252
+#, fuzzy
 msgid ""
-"Warning: Enabling trace logs is typically very slow, and is a leading cause "
-"of 'What happened to my FPS?' problems. :)"
+"Warning: Trace logging is typically very slow, and is a leading cause of "
+"'What happened to my FPS?' problems. :)"
 msgstr ""
 "警告：啟用追蹤日誌會令遊戲速度非常慢，而且是「我的 FPS 發生了什麼事？」問題的"
 "最重要的原因。：）"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:188
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:187
 msgid "Select folder with PS2 memory cards"
 msgstr "選擇含有 PS2 記憶卡的資料夾"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:389
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:481
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:388
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:480
 msgid "Eject"
 msgstr "退出"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:390
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:389
 msgid "Duplicate ..."
 msgstr "建立副本"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:391
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:390
 msgid "Rename ..."
 msgstr "重新命名"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:392
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:462
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:492
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:391
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:461
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
 msgid "Create ..."
 msgstr "新增"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:393
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:392
 msgid "Convert ..."
 msgstr "轉換"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:405
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:404
 msgid "Card: "
 msgstr "記憶卡： "
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:463
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:499
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:462
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:500
 msgid "Create a new memory card."
 msgstr "建立一個新的記憶卡"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:477
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:476
 msgid "Rename this memory card ..."
 msgstr "重新命名所選擇的記憶卡"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:481
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:480
 msgid "Insert ..."
 msgstr "插入"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:482
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:481
 msgid "Eject the card from this port"
 msgstr "退出所選擇的記憶卡"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:482
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:481
 msgid "Insert this card to a port ..."
 msgstr "將所選擇的記憶卡插入記憶卡插口"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:486
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:485
 msgid "Create a duplicate of this memory card ..."
 msgstr "建立所選記憶卡的副本"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:492
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:489
+msgid ""
+"Convert this memory card to or from a folder memory card. Creates a "
+"duplicate of the current memory card in the new type.\n"
+"\n"
+"Note: Only available when a memory card is formatted. Not available for PSX "
+"memory cards."
+msgstr ""
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
 msgid "Delete"
 msgstr "刪除"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:495
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:496
 msgid "Permanently delete this memory card from disk (all contents are lost)"
 msgstr "刪除所選擇的記憶卡（失去所有遊戲存檔）"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:497
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:498
 msgid "Create a new memory card and assign it to this Port."
 msgstr "建立一個新的記憶卡"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:687
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:683
 msgid "Delete memory file?"
 msgstr "刪除記憶卡？"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:714
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:725
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:732
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:746
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:721
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:742
 msgid "Duplicate memory card"
 msgstr "建立記憶卡的副本"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:714
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
 msgid "Failed: Can only duplicate an existing card."
 msgstr "失敗：僅能給已經存在的記憶卡建立副本。"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:732
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 msgid ""
 "Select a name for the duplicate\n"
 "( '.ps2' will be added automatically)"
@@ -2246,25 +2352,25 @@ msgstr ""
 "取一個名字給副本記憶卡\n"
 "（.ps2 副檔名會被自動添加）"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:741
 #, c-format
 msgid "Failed: %s"
 msgstr "失敗：%s"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:770
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:766
 msgid "Copy failed!"
 msgstr "複製失敗！"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:777
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
 msgstr "記憶卡『 %s 』的副本是『 %s 』"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:777
 msgid "Success"
 msgstr "成功"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:801
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:797
 #, c-format
 msgid ""
 "Select a new name for the memory card '%s'\n"
@@ -2273,73 +2379,80 @@ msgstr ""
 "取一個新名字給記憶卡『 %s 』\n"
 "（.ps2 副檔名會被自動添加）"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:804
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:816
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:830
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:800
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:812
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:826
 msgid "Rename memory card"
 msgstr "重新命名記憶卡"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:830
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:826
 msgid "Error: Rename could not be completed.\n"
 msgstr "錯誤：重新命名無法完成。\n"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:930
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:926
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:134
 #, c-format
 msgid "Port-%u / Multitap-%u--Port-1"
 msgstr "插口-%u / 手把擴充器-%u--插口-1"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:931
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:927
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:135
 #, c-format
 msgid "             Multitap-%u--Port-%u"
 msgstr "             手把擴充器-%u--插口-%u"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:956
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:952
 msgid "Empty"
 msgstr "空插口"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:962
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:958
 #, c-format
 msgid "Select a target port for '%s'"
 msgstr "選擇一個記憶卡插口用來插入記憶卡『 %s 』"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:963
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:959
 msgid "Insert card"
 msgstr "插入記憶卡"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1024
-msgid "Eject card"
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1019
+#, fuzzy
+msgid "&Eject card"
 msgstr "退出記憶卡"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1024
-msgid "Insert card ..."
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1019
+#, fuzzy
+msgid "&Insert card ..."
 msgstr "插入記憶卡插口"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1025
-msgid "Duplicate card ..."
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1020
+#, fuzzy
+msgid "D&uplicate card ..."
 msgstr "建立記憶卡的副本"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1026
-msgid "Rename card ..."
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1021
+#, fuzzy
+msgid "&Rename card ..."
 msgstr "重新命名記憶卡"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
-msgid "Delete card"
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1022
+#, fuzzy
+msgid "&Delete card"
 msgstr "刪除記憶卡"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1029
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1024
 #, fuzzy
-msgid "Convert card"
+msgid "&Convert card"
 msgstr "插入記憶卡"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1033
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1037
-msgid "Create a new card ..."
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1030
+#, fuzzy
+msgid "&Create a new card ..."
 msgstr "新增記憶卡"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1041
-msgid "Refresh List"
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1035
+#, fuzzy
+msgid "Re&fresh List"
 msgstr "重新載入列表"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:99
@@ -2432,67 +2545,76 @@ msgid "Make this language my default right now!"
 msgstr "立即套用所選擇的語言作為預設語言！"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:38
-msgid "Savestates:"
-msgstr "即時存檔"
+msgid "Cheats:"
+msgstr ""
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:39
-msgid "Select folder for Savestates"
+#, fuzzy
+msgid "Select folder for Cheats"
 msgstr "選擇一個資料夾用來存放即時存檔"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:46
+msgid "Savestates:"
+msgstr "即時存檔"
+
+#: pcsx2/gui/Panels/PathsPanel.cpp:47
+msgid "Select folder for Savestates"
+msgstr "選擇一個資料夾用來存放即時存檔"
+
+#: pcsx2/gui/Panels/PathsPanel.cpp:54
 msgid "Snapshots:"
 msgstr "遊戲擷圖"
 
-#: pcsx2/gui/Panels/PathsPanel.cpp:47
+#: pcsx2/gui/Panels/PathsPanel.cpp:55
 msgid "Select a folder for Snapshots"
 msgstr "選擇一個資料夾用來存放遊戲擷圖"
 
-#: pcsx2/gui/Panels/PathsPanel.cpp:54
+#: pcsx2/gui/Panels/PathsPanel.cpp:62
 msgid "Logs/Dumps:"
 msgstr "日誌 / 轉存"
 
-#: pcsx2/gui/Panels/PathsPanel.cpp:55
+#: pcsx2/gui/Panels/PathsPanel.cpp:63
 msgid "Select a folder for logs/dumps"
 msgstr "選擇一個資料夾用來存放日誌和轉存檔"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:230
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:228
 msgid "Applying settings..."
 msgstr "套用設定..."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:240
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:238
 msgid "Shutdown PS2 virtual machine?"
 msgstr "關閉 PS2 虛擬機？"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:317
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:315
 msgid "I'm givin' her all she's got, Captain!"
 msgstr "我正在給她所有她得到的，船長！"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:319
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:317
 msgid "Enumerating available plugins..."
 msgstr "正在列舉可用的插件..."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:353
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:351
 msgid "Plugins Search Path:"
 msgstr "插件的搜尋路徑："
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:354
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:352
 msgid "Select a folder with PCSX2 plugins"
 msgstr "選擇含有 PCSX2 插件的資料夾"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:367
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:365
 msgid "Configure..."
 msgstr "設定"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:376
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:374
 msgid "Click the Browse button to select a different folder for PCSX2 plugins."
 msgstr "按下【瀏覽】按鈕選擇不同的資料夾"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:475
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:473
 #, c-format
 msgid "Please select a valid plugin for the %s."
 msgstr "請選擇一個有效的【%s】插件。"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:513
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:511
 #, c-format
 msgid ""
 "The selected %s plugin failed to load.\n"
@@ -2505,36 +2627,37 @@ msgstr ""
 "原因：%s\n"
 "\n"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:720
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:786
 msgid "Completing tasks..."
 msgstr "正在完成任務..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:122
 msgid "Enable speedhacks"
 msgstr "啟用速度駭客"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:121
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:126
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr "安全且舒適的狀態就是確保完全停用所有的速度駭客"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:138
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:143
 msgid "EE Cyclerate [Not Recommended]"
 msgstr "EE Cyclerate【不推薦】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:154
-msgid "VU Cycle Stealing [Not Recommended]"
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
+#, fuzzy
+msgid "EE Cycle Skipping [Not Recommended]"
 msgstr "VU Cycle Stealing【不推薦】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "microVU Hacks"
 msgstr "microVU 駭客"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
 msgid "mVU Flag Hack"
 msgstr "mVU Flag Hack"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
@@ -2542,11 +2665,11 @@ msgstr ""
 "圖像變得糟糕...\n"
 "【推薦】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:175
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "MTVU（多執行緒 microVU1）"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
@@ -2555,15 +2678,15 @@ msgstr ""
 "遊戲停止回應...\n"
 "【推薦 3 核或更多核的 CPU 使用】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:187
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid "Other Hacks"
 msgstr "其他駭客"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:189
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
 msgid "Enable INTC Spin Detection"
 msgstr "Enable INTC Spin Detection"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:191
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
@@ -2571,42 +2694,24 @@ msgstr ""
 "對於一些遊戲有巨大的速度提升，\n"
 "幾乎沒有相容性副作用【推薦】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:192
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
 msgid "Enable Wait Loop Detection"
 msgstr "Enable Wait Loop Detection"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:194
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "對於一些遊戲有適度的速度提升，\n"
 "沒有已知的副作用【推薦】"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:195
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
 msgid "Enable fast CDVD"
 msgstr "Enable fast CDVD"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:197
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr "快速讀取光碟，減少載入時間【不推薦】"
-
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:38
-msgid "Themes Search Path:"
-msgstr "主題的搜尋路徑："
-
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:39
-msgid "Select folder containing PCSX2 visual themes"
-msgstr "選擇一個包含 PCSX2 視覺主題的資料夾"
-
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:46
-msgid ""
-"Click the Browse button to select a different folder containing PCSX2 visual "
-"themes."
-msgstr "按下【瀏覽】按鈕選擇一個不同的包含 PCSX2 視覺主題的資料夾。"
-
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:50
-msgid "Select a visual theme:"
-msgstr "選擇視覺主題："
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:32
 msgid "Disable Framelimiting"
@@ -2691,39 +2796,47 @@ msgstr ""
 "僅用於排除多執行緒圖形模式潛在的程式錯誤，\n"
 "因為速度可能非常慢"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:294
-msgid "Disable all GS output"
-msgstr "停止輸出遊戲畫面"
-
-#: pcsx2/gui/Panels/VideoPanel.cpp:295
-msgid ""
-"Completely disables all GS plugin activity; ideal for benchmarking EEcore "
-"components."
-msgstr ""
-"完全停止圖形插件所有的活動；\n"
-"適合用來做 EEcore 的效能測試"
-
-#: pcsx2/gui/Panels/VideoPanel.cpp:310
+#: pcsx2/gui/Panels/VideoPanel.cpp:303
 msgid "Frame Skipping"
 msgstr "跳框"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:313
+#: pcsx2/gui/Panels/VideoPanel.cpp:306
 msgid "Framelimiter"
 msgstr "畫框限制"
 
-#: pcsx2/gui/SysState.cpp:289
-msgid "Cannot load this savestate.  The state is an unsupported version."
-msgstr "無法讀取即時存檔。即時存檔的版本不被支援。"
+#: pcsx2/gui/RecentIsoList.cpp:139
+msgid "Clear ISO list"
+msgstr ""
 
-#: pcsx2/gui/SysState.cpp:296
+#: pcsx2/gui/Saveslots.h:96
+#, fuzzy, c-format
+msgid "Slot %d - Empty"
+msgstr "插槽 %d"
+
+#: pcsx2/gui/Saveslots.h:98
+#, fuzzy, c-format
+msgid "Slot %d - %s %s"
+msgstr "插槽 %d"
+
+#: pcsx2/gui/Saveslots.h:100
+#, c-format
+msgid "Slot %d - Unknown Time"
+msgstr ""
+
+#: pcsx2/gui/Saveslots.h:113
+#, c-format
+msgid "Write time is %s %s."
+msgstr ""
+
+#: pcsx2/gui/SysState.cpp:291 pcsx2/gui/SysState.cpp:298
 msgid "Cannot load this savestate. The state is an unsupported version."
 msgstr "無法讀取即時存檔。即時存檔的版本不被支援。"
 
-#: pcsx2/gui/SysState.cpp:332
+#: pcsx2/gui/SysState.cpp:334
 msgid "There is no active virtual machine state to download or save."
 msgstr "沒有活動中的虛擬機狀態以下載或儲存。"
 
-#: pcsx2/gui/SysState.cpp:526
+#: pcsx2/gui/SysState.cpp:529
 msgid ""
 "This savestate cannot be loaded because it is not a valid gzip archive.  It "
 "may have been created by an older unsupported version of PCSX2, or it may be "
@@ -2732,11 +2845,11 @@ msgstr ""
 "無法讀取即時存檔，因為不是一個有效的 gzip 壓縮檔。\n"
 "即時存檔可能由不再支援的舊版 PCSX2 所建立，或者也可能即時存檔損壞。"
 
-#: pcsx2/gui/SysState.cpp:585
+#: pcsx2/gui/SysState.cpp:588
 msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
 msgstr "這個檔案不是一個有效的 PCSX2 即時存檔。詳情請洽日誌檔案。"
 
-#: pcsx2/gui/SysState.cpp:604
+#: pcsx2/gui/SysState.cpp:607
 msgid ""
 "This savestate cannot be loaded due to missing critical components.  See the "
 "log file for details."
@@ -2746,17 +2859,17 @@ msgstr "由於缺失關鍵元件，無法讀取這個即時存檔。詳情請洽
 msgid " (default)"
 msgstr "（ 正體中文 ）"
 
-#: pcsx2/ps2/BiosTools.cpp:89 pcsx2/ps2/BiosTools.cpp:157
+#: pcsx2/ps2/BiosTools.cpp:90 pcsx2/ps2/BiosTools.cpp:158
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
 msgstr "指定的 BIOS 檔案不是有效的 PS2 BIOS。請重新設定。"
 
-#: pcsx2/ps2/BiosTools.cpp:270
+#: pcsx2/ps2/BiosTools.cpp:271
 msgid ""
 "The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the "
 "configuration has been corrupted.  Please re-configure."
 msgstr "無法載入 PS2 BIOS。未設定 PS2 BIOS，或設定已經損壞。請重新設定。"
 
-#: pcsx2/ps2/BiosTools.cpp:277
+#: pcsx2/ps2/BiosTools.cpp:278
 msgid "The configured BIOS file does not exist.  Please re-configure."
 msgstr "指定的 BIOS 檔案不存在。請重新設定。"
 
@@ -2772,6 +2885,120 @@ msgstr "%s 指令集未找到。R5900-32 反編譯裝置要求 CPU 支援 SSE2�
 msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
 msgstr "%s 指令集未找到。microVU 要求 CPU 支援 SSE2。"
+
+#~ msgid "Safest"
+#~ msgstr "最安全"
+
+#~ msgid "Aggressive plus"
+#~ msgstr "更加激進"
+
+#~ msgid "Previous versions"
+#~ msgstr "早期版本的開發人員"
+
+#~ msgid "Webmasters"
+#~ msgstr "網站管理員"
+
+#~ msgid "Plugin Specialists"
+#~ msgstr "插件作者"
+
+#~ msgid "Special thanks to"
+#~ msgstr "特別感謝"
+
+#~ msgid "Developers"
+#~ msgstr "開發人員"
+
+#~ msgid "Contributors"
+#~ msgstr "有貢獻的人"
+
+#~ msgid "PCSX2 Official Website and Forums"
+#~ msgstr "PCSX2 官方網站和官方討論區"
+
+#~ msgid "PCSX2 Official Git Repository at GitHub"
+#~ msgstr "PCSX2 官方 GitHub"
+
+#~ msgid "I've seen enough"
+#~ msgstr "確定"
+
+#, c-format
+#~ msgid "Game database - %s"
+#~ msgstr "遊戲資料庫 - %s"
+
+#~ msgid "PCSX2 Thread is not responding"
+#~ msgstr "PCSX2 執行緒停止回應"
+
+#, c-format
+#~ msgid "Appearance/Themes - %s"
+#~ msgstr "外觀 / 主題 - %s"
+
+#~ msgid "Appearance"
+#~ msgstr "字型"
+
+#~ msgid "Press Cancel to attempt to cancel the action."
+#~ msgstr "按【取消】嘗試取消動作。"
+
+#, c-format
+#~ msgid "Press Terminate to kill %s immediately."
+#~ msgstr "按【終止】立即終止 %s。"
+
+#~ msgid "Terminate App"
+#~ msgstr "終止"
+
+#~ msgid "GS Output is Disabled!"
+#~ msgstr "畫面輸出被停用！"
+
+#~ msgid "&Game Database Editor"
+#~ msgstr "遊戲資料庫編輯器"
+
+#~ msgid "Res&tart"
+#~ msgstr "重新啟動"
+
+#~ msgid "Simulates hardware reset of the PS2 virtual machine."
+#~ msgstr "模擬 PS2 虛擬機的硬體重置。"
+
+#~ msgid "No emulation state is active; boot something first."
+#~ msgstr "無現存的模擬器狀態，請先啟動些什麼"
+
+#, fuzzy
+#~ msgid "Switch to 4:3 aspect ratio when an FMV plays"
+#~ msgstr "當播放遊戲動畫時，切換至 GSdx 的軟體渲染模式"
+
+#~ msgid "Search"
+#~ msgstr "搜尋"
+
+#, fuzzy
+#~ msgid "Game Database Editor"
+#~ msgstr "遊戲資料庫編輯器"
+
+#, fuzzy
+#~ msgid "Patches: "
+#~ msgstr "啟用補丁"
+
+#~ msgid "Themes Search Path:"
+#~ msgstr "主題的搜尋路徑："
+
+#~ msgid "Select folder containing PCSX2 visual themes"
+#~ msgstr "選擇一個包含 PCSX2 視覺主題的資料夾"
+
+#~ msgid ""
+#~ "Click the Browse button to select a different folder containing PCSX2 "
+#~ "visual themes."
+#~ msgstr "按下【瀏覽】按鈕選擇一個不同的包含 PCSX2 視覺主題的資料夾。"
+
+#~ msgid "Select a visual theme:"
+#~ msgstr "選擇視覺主題："
+
+#~ msgid "Disable all GS output"
+#~ msgstr "停止輸出遊戲畫面"
+
+#~ msgid ""
+#~ "Completely disables all GS plugin activity; ideal for benchmarking EEcore "
+#~ "components."
+#~ msgstr ""
+#~ "完全停止圖形插件所有的活動；\n"
+#~ "適合用來做 EEcore 的效能測試"
+
+#~ msgid "Cannot load this savestate.  The state is an unsupported version."
+#~ msgstr "無法讀取即時存檔。即時存檔的版本不被支援。"
 
 #~ msgid "Always on Top"
 #~ msgstr "視窗總在最前"
@@ -2987,9 +3214,6 @@ msgstr "%s 指令集未找到。microVU 要求 CPU 支援 SSE2。"
 
 #~ msgid "Filename"
 #~ msgstr "檔案名稱"
-
-#~ msgid "Disabled"
-#~ msgstr "已停用"
 
 #~ msgid "Enabled"
 #~ msgstr "已啟用"

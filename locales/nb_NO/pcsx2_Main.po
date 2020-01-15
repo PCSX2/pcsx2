@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.5.0 - 190526\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2019-05-26 01:54+0200\n"
+"POT-Creation-Date: 2020-01-15 22:32+1300\n"
 "PO-Revision-Date: 2019-05-26 03:16+0200\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: \n"
@@ -36,11 +36,11 @@ msgstr "Parsingsfeil"
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
 msgstr "Din maskins maskinvare har ikke mulighet til å kjøre PCSX2. Beklager."
 
-#: common/src/Utilities/Exceptions.cpp:219
+#: common/src/Utilities/Exceptions.cpp:204
 msgid "Oh noes! Out of memory!"
 msgstr "Oi! Da var det tomt for minne!"
 
-#: common/src/Utilities/Exceptions.cpp:234
+#: common/src/Utilities/Exceptions.cpp:219
 msgid ""
 "Virtual memory mapping failure!  Your system may have conflicting device "
 "drivers, services, or may simply have insufficient memory or resources to "
@@ -50,23 +50,23 @@ msgstr ""
 "drivere eller prosesser, eller kanskje bare det er lite minne eller "
 "ressurser som PCSX2 krever en del av."
 
-#: common/src/Utilities/Exceptions.cpp:305
+#: common/src/Utilities/Exceptions.cpp:290
 msgid "Path: "
 msgstr "Filbane: "
 
-#: common/src/Utilities/Exceptions.cpp:309
+#: common/src/Utilities/Exceptions.cpp:294
 msgid "[Unnamed or unknown]"
 msgstr "[Ukjent]"
 
-#: common/src/Utilities/Exceptions.cpp:329
+#: common/src/Utilities/Exceptions.cpp:314
 msgid "A file could not be created."
 msgstr "En fil kunne ikke skapes."
 
-#: common/src/Utilities/Exceptions.cpp:349
+#: common/src/Utilities/Exceptions.cpp:334
 msgid "File not found."
 msgstr "Filen ble ikke funnet."
 
-#: common/src/Utilities/Exceptions.cpp:369
+#: common/src/Utilities/Exceptions.cpp:354
 msgid ""
 "Permission denied while trying to open file, likely due to insufficient user "
 "account rights."
@@ -74,7 +74,7 @@ msgstr ""
 "Tilgangen til filen ble avvist. Antakeligvis så har brukeren din på maskinen "
 "litt lite rettigheter."
 
-#: common/src/Utilities/Exceptions.cpp:389
+#: common/src/Utilities/Exceptions.cpp:374
 msgid ""
 "Unexpected end of file or stream encountered.  File is probably truncated or "
 "corrupted."
@@ -100,7 +100,7 @@ msgstr ""
 "Inkluderer hvilende prosessbehandlinger og noen andre uvanlige "
 "prosessbruksområder."
 
-#: pcsx2/CDVD/InputIsoFile.cpp:252
+#: pcsx2/CDVD/InputIsoFile.cpp:248
 msgid "Unrecognized ISO image file format"
 msgstr "Ukjent ISO-filformat"
 
@@ -126,14 +126,14 @@ msgstr ""
 "MTGS-tråden har stoppet å svare mens den ventet på at GS-tillegget skulle "
 "åpnes."
 
-#: pcsx2/PluginManager.cpp:708
+#: pcsx2/PluginManager.cpp:709
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
 msgstr ""
 "Tilstanden kunne ikke bli lastet inn, siden den ser ut til å være korrumpert "
 "eller ufullstendig."
 
-#: pcsx2/PluginManager.cpp:719
+#: pcsx2/PluginManager.cpp:720
 #, c-format
 msgid ""
 "%s plugin failed to open.  Your computer may have insufficient resources, or "
@@ -142,7 +142,7 @@ msgstr ""
 "%s-tillegget klarte ikke å bli åpnet. Maskinen din kan ha for lite "
 "ressurser, eller inkompatibel maskinvare/drivere."
 
-#: pcsx2/PluginManager.cpp:726
+#: pcsx2/PluginManager.cpp:727
 #, c-format
 msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
@@ -151,17 +151,17 @@ msgstr ""
 "%s-tillegget klarte ikke å starte opp. Maskinen din kan mangle nok minne "
 "eller andre ressurser."
 
-#: pcsx2/PluginManager.cpp:954
+#: pcsx2/PluginManager.cpp:955
 #, c-format
 msgid "The configured %s plugin file was not found"
 msgstr "Den konfigurerte %s-tilleggsfilen ble ikke funnet"
 
-#: pcsx2/PluginManager.cpp:958
+#: pcsx2/PluginManager.cpp:959
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
 msgstr "Den konfigurerte %s-tilleggsfilen er ikke et gyldig dynamisk bibliotek"
 
-#: pcsx2/PluginManager.cpp:975
+#: pcsx2/PluginManager.cpp:976
 #, c-format
 msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
@@ -170,14 +170,14 @@ msgstr ""
 "Det konfigurerte %s-tillegget er ikke et PCSX2-tillegg, eller er fra en en "
 "ustøttet versjon av PCSX2."
 
-#: pcsx2/PluginManager.cpp:1009
+#: pcsx2/PluginManager.cpp:1010
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr ""
 "Dette tillegget melder om at din maskinvare, programvare og/eller drivere "
 "ikke støttes."
 
-#: pcsx2/PluginManager.cpp:1030
+#: pcsx2/PluginManager.cpp:1031
 msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
@@ -185,7 +185,7 @@ msgstr ""
 "Det konfigurerte tillegget er ikke et PCSX2-tillegg, eller er fra en eldre "
 "ustøttet versjon av PCSX2."
 
-#: pcsx2/PluginManager.cpp:1055
+#: pcsx2/PluginManager.cpp:1056
 #, c-format
 msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
@@ -194,11 +194,11 @@ msgstr ""
 "Det konfigurerte %s-tillegget er ikke et gyldig PCSX2-tillegg, eller er fra "
 "en eldre ustøttet versjon av PCSX2."
 
-#: pcsx2/PluginManager.cpp:1489
+#: pcsx2/PluginManager.cpp:1490
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Det interne MinneKortTillegget nektet å starte opp."
 
-#: pcsx2/PluginManager.cpp:1882
+#: pcsx2/PluginManager.cpp:1883
 msgid "Unloaded Plugin"
 msgstr "Frakoblet tillegg"
 
@@ -410,31 +410,31 @@ msgstr ""
 "Lagringsstausen ble ikke korrekt lagret. Den midlertidige filen ble "
 "vellykket skapt, men kunne ikke bli flyttet til sin endelige hvileplass."
 
-#: pcsx2/gui/AppConfig.cpp:975
+#: pcsx2/gui/AppConfig.cpp:976
 msgid "Safest (No hacks)"
 msgstr "Trygt (ingen triks)"
 
-#: pcsx2/gui/AppConfig.cpp:976
+#: pcsx2/gui/AppConfig.cpp:977
 msgid "Safe (Default)"
 msgstr "Av (Standard)"
 
-#: pcsx2/gui/AppConfig.cpp:977
+#: pcsx2/gui/AppConfig.cpp:978
 msgid "Balanced"
 msgstr "Balansert"
 
-#: pcsx2/gui/AppConfig.cpp:978
+#: pcsx2/gui/AppConfig.cpp:979
 msgid "Aggressive"
 msgstr "Aggressiv"
 
-#: pcsx2/gui/AppConfig.cpp:979
+#: pcsx2/gui/AppConfig.cpp:980
 msgid "Very Aggressive"
 msgstr "Meget Aggressiv"
 
-#: pcsx2/gui/AppConfig.cpp:980
+#: pcsx2/gui/AppConfig.cpp:981
 msgid "Mostly Harmful"
 msgstr "Stort sett skadelig"
 
-#: pcsx2/gui/AppConfig.cpp:1143 pcsx2/gui/AppConfig.cpp:1149
+#: pcsx2/gui/AppConfig.cpp:1144 pcsx2/gui/AppConfig.cpp:1150
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr ""
 "Feilet i forsøket på å overskrive innstillingsfilen; tilgangen ble nektet."
@@ -576,14 +576,14 @@ msgstr ""
 "Trykk OK for å bruke det standard konfigurerte tillegget, eller Avbryt for å "
 "stenge ned %s."
 
+#: pcsx2/gui/AppInit.cpp:557
+msgid "PCSX2 Error: Hardware Deficiency"
+msgstr "PCSX2 Feil: Maskinvare mangler"
+
 #: pcsx2/gui/AppInit.cpp:557 pcsx2/gui/AppInit.cpp:569
 #, c-format
 msgid "Press OK to close %s."
 msgstr "Trykk OK for å avslutte %s."
-
-#: pcsx2/gui/AppInit.cpp:557
-msgid "PCSX2 Error: Hardware Deficiency"
-msgstr "PCSX2 Feil: Maskinvare mangler"
 
 #: pcsx2/gui/AppInit.cpp:570
 #, c-format
@@ -671,13 +671,13 @@ msgstr ""
 "Advarsel! Systemtilleggene har ikke blitt lastet inn. PCSX2 kan muligens "
 "ikke fungere."
 
-#: pcsx2/gui/AppMain.cpp:184
-msgid "Press Ok to go to the BIOS Configuration Panel."
-msgstr "Trykk OK for å gå til BIOS konfigurasjonspanelet."
-
 #: pcsx2/gui/AppMain.cpp:184 pcsx2/gui/AppMain.cpp:189
 msgid "PS2 BIOS Error"
 msgstr "PS2 BIOS-Feil"
+
+#: pcsx2/gui/AppMain.cpp:184
+msgid "Press Ok to go to the BIOS Configuration Panel."
+msgstr "Trykk OK for å gå til BIOS konfigurasjonspanelet."
 
 #: pcsx2/gui/AppMain.cpp:207
 msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
@@ -690,15 +690,15 @@ msgstr ""
 msgid "%s Commandline Options"
 msgstr "%s kommandolinjeinnstillinger"
 
-#: pcsx2/gui/AppMain.cpp:712
+#: pcsx2/gui/AppMain.cpp:715
 msgid "PCSX2 Unresponsive Thread"
 msgstr "PCSX2 Tråden har sluttet å reagere"
 
-#: pcsx2/gui/AppMain.cpp:719
+#: pcsx2/gui/AppMain.cpp:722
 msgid "Terminate"
 msgstr "Avslutt"
 
-#: pcsx2/gui/AppMain.cpp:1094
+#: pcsx2/gui/AppMain.cpp:1097
 msgid "Executing PS2 Virtual Machine..."
 msgstr "Eksekverer PS2s virtuelle maskin..."
 
@@ -713,12 +713,12 @@ msgstr ""
 "Velg manuelt en ISO ved oppstart, hvilket tilsidesetter valget i ISO-listen."
 
 #: pcsx2/gui/AppRes.cpp:48
-msgid "Browse..."
-msgstr "Søk ..."
-
-#: pcsx2/gui/AppRes.cpp:48
 msgid "Browse for an ISO that is not in your recent history."
 msgstr "Let etter en ISO som ikke er i din nylige historie."
+
+#: pcsx2/gui/AppRes.cpp:48
+msgid "Browse..."
+msgstr "Søk ..."
 
 #: pcsx2/gui/AppUserMode.cpp:92
 msgid "The following folders exist, but are not writable:"
@@ -903,45 +903,43 @@ msgstr "&Logg"
 msgid "&Sources"
 msgstr "&Kilder"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:35
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:36
 #, c-format
 msgid "About %s"
 msgstr "Om %s"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:67
-msgid "Previous versions"
-msgstr "Tidligere versjoner"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
+msgid "Website"
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
-msgid "Webmasters"
-msgstr "Nettmestre"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:56
+msgid "Support Forums"
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:79
-msgid "Developers"
-msgstr "Utviklere"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:58
+msgid "GitHub Repository"
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:81
-msgid "Contributors"
-msgstr "Bidragsytere"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:60
+msgid "License"
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:90
-msgid "PlayStation 2 Emulator"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
+#, fuzzy
+msgid "PlayStation 2 Emulator:"
 msgstr "PlayStation®2 emulator"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:93
-msgid "PCSX2 Official Website and Forums"
-msgstr "Offisiell PCSX2-nettside og -forum"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
+msgid ""
+"Big thanks to everyone who contributed to the project throughout the years."
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:97
-msgid "PCSX2 Official Git Repository at GitHub"
-msgstr "PCSX2s offisielle kodingslager på GitHub"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
+#, fuzzy
+msgid "Close"
+msgstr "&Lukk"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:102
-msgid "I've seen enough"
-msgstr "Jeg har sett nok"
-
-#: pcsx2/gui/Dialogs/AssertionDialog.cpp:23
+#: pcsx2/gui/Dialogs/AssertionDialog.cpp:24
 msgid "Assertion Failure - "
 msgstr "Antakelse feilet - "
 
@@ -1025,12 +1023,12 @@ msgid "64MB File"
 msgstr "64MB-fil"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
-msgid "Folder"
-msgstr "Mappe"
-
-#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Convert this memory card to a folder of individual saves."
 msgstr "Konverter dette MinneKort til en mappe med individuelle lagrefiler."
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
+msgid "Folder"
+msgstr "Mappe"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:179
@@ -1191,20 +1189,20 @@ msgid ""
 msgstr ""
 "Dette MinneKort kreves av PSX-spill. Det er ikke kompatibelt med PS2-spill."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
-msgid "Settings"
-msgstr "Innstillinger"
-
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
 #, c-format
 msgid "Select a folder for %s settings"
 msgstr "Velg en mappe for %sinnstillinger"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:83
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
+msgid "Settings"
+msgstr "Innstillinger"
+
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:84
 msgid "Language selector"
 msgstr "Språkvelger"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:86
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:87
 msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
@@ -1212,32 +1210,32 @@ msgstr ""
 "Skift språket bare hvis du trenger det.\n"
 "Systemet sin standardinnstilling bør gå greit for de fleste operativsystemer."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:92
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:93
 msgid "Welcome to PCSX2!"
 msgstr "Velkommen til PCSX2!"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:103
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:104
 msgid "Configuration Guides (online)"
 msgstr "Oppsettsanvisninger (Online)"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:107
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:108
 msgid "Readme / FAQ (Offline/PDF)"
 msgstr "Lesmeg / FAQ (Offline/PDF)"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:116
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:117
 #, c-format
 msgid "%s First Time Configuration"
 msgstr "%s førstegangsoppsett"
 
-#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:24
+#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:25
 msgid "Import Existing Settings?"
 msgstr "Importere eksisterende innstillinger?"
 
-#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:36
+#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:37
 msgid "Import"
 msgstr "Importer"
 
-#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:37
+#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:38
 msgid "Overwrite"
 msgstr "Overskriv"
 
@@ -1346,52 +1344,52 @@ msgid "Logs events as they are passed to the PS2 virtual machine."
 msgstr ""
 "Loggfører handlinger etterhvert som de skjer til PS2 sin virtuelle maskin."
 
-#: pcsx2/gui/GlobalCommands.cpp:315
+#: pcsx2/gui/GlobalCommands.cpp:316
 msgid "Exit PCSX2?"
 msgstr "Vil du lukke PCSX2?"
 
-#: pcsx2/gui/GlobalCommands.cpp:617
+#: pcsx2/gui/GlobalCommands.cpp:622
 msgid "Save state"
 msgstr "Lagre tilstand"
 
-#: pcsx2/gui/GlobalCommands.cpp:618
+#: pcsx2/gui/GlobalCommands.cpp:623
 msgid "Saves the virtual machine state to the current slot."
 msgstr ""
 "Lagrer den virtuelle maskinenssikkerhetskopi status til den aktive blokken."
 
-#: pcsx2/gui/GlobalCommands.cpp:624
+#: pcsx2/gui/GlobalCommands.cpp:629
 msgid "Load state"
 msgstr "Last inn tilstand"
 
-#: pcsx2/gui/GlobalCommands.cpp:625
+#: pcsx2/gui/GlobalCommands.cpp:630
 msgid "Loads a virtual machine state from the current slot."
 msgstr ""
 "Laster inn den virtuelle maskinens sikkerhetskopistatus fra den aktive "
 "blokken."
 
-#: pcsx2/gui/GlobalCommands.cpp:631
+#: pcsx2/gui/GlobalCommands.cpp:636
 msgid "Load State Backup"
 msgstr "Last inn statussikkerhetskopi"
 
-#: pcsx2/gui/GlobalCommands.cpp:632
+#: pcsx2/gui/GlobalCommands.cpp:637
 msgid "Loads virtual machine state backup for current slot."
 msgstr ""
 "Laster inn den virtuelle maskinens sikkerhetskopistatus fra den aktive "
 "blokken."
 
-#: pcsx2/gui/GlobalCommands.cpp:638
+#: pcsx2/gui/GlobalCommands.cpp:643
 msgid "Cycle to next slot"
 msgstr "Gå til neste blokk"
 
-#: pcsx2/gui/GlobalCommands.cpp:639
+#: pcsx2/gui/GlobalCommands.cpp:644
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "Sirkulerer den nåværende lagreplassen i en +1-stil!"
 
-#: pcsx2/gui/GlobalCommands.cpp:645
+#: pcsx2/gui/GlobalCommands.cpp:650
 msgid "Cycle to prev slot"
 msgstr "Gå til forrige blokk"
 
-#: pcsx2/gui/GlobalCommands.cpp:646
+#: pcsx2/gui/GlobalCommands.cpp:651
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "Sirkulerer den nåværende lagreplassen i en -1-stil!"
 
@@ -2181,27 +2179,27 @@ msgstr "Åpne i fullskjerm ved oppstart som standard"
 msgid "Double-click toggles fullscreen mode"
 msgstr "Dobbeltklikk aktiverer fullskjermmodus"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:104
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:102
 msgid "Aspect Ratio:"
 msgstr "Bildekvote:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:106
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:104
 msgid "FMV Aspect Ratio Override:"
 msgstr "FMV BildekvoteOverstyrning:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:108
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:106
 msgid "Custom Window Size:"
 msgstr "Valgfri vindusstørrelse:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:111
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:109
 msgid "Zoom:"
 msgstr "Zoom:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:117
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:115
 msgid "Wait for Vsync on refresh:"
 msgstr "Vent på Vsync ved oppdatering:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:194
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:192
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
@@ -2430,15 +2428,15 @@ msgid "Delete memory file?"
 msgstr "Slett minne fil?"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
-msgid "Failed: Can only duplicate an existing card."
-msgstr "Feilet: Kan bare duplisere eksisterende kort."
-
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:721
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:742
 msgid "Duplicate memory card"
 msgstr "Dupliser MinneKort"
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
+msgid "Failed: Can only duplicate an existing card."
+msgstr "Feilet: Kan bare duplisere eksisterende kort."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 msgid ""
@@ -2572,20 +2570,20 @@ msgid "Created on"
 msgstr "Opprettet den"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:151
-msgid "Yes"
-msgstr "Ja"
-
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:151
 msgid "No"
 msgstr "Nei"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:152
-msgid "PSX"
-msgstr "PS1"
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:151
+msgid "Yes"
+msgstr "Ja"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:152
 msgid "PS2"
 msgstr "PS2"
+
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:152
+msgid "PSX"
+msgstr "PS1"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:165
 msgid "[-- Unused cards --]"
@@ -2714,7 +2712,7 @@ msgstr ""
 "Begrunnelse: %s\n"
 "\n"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:718
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:786
 msgid "Completing tasks..."
 msgstr "Fullfører oppgaver..."
 
@@ -2986,6 +2984,27 @@ msgid ""
 msgstr ""
 "%s utvidelser ble ikke funnet. microVU krever en vertsprosessor med SSE2-"
 "utvidelser."
+
+#~ msgid "Previous versions"
+#~ msgstr "Tidligere versjoner"
+
+#~ msgid "Webmasters"
+#~ msgstr "Nettmestre"
+
+#~ msgid "Developers"
+#~ msgstr "Utviklere"
+
+#~ msgid "Contributors"
+#~ msgstr "Bidragsytere"
+
+#~ msgid "PCSX2 Official Website and Forums"
+#~ msgstr "Offisiell PCSX2-nettside og -forum"
+
+#~ msgid "PCSX2 Official Git Repository at GitHub"
+#~ msgstr "PCSX2s offisielle kodingslager på GitHub"
+
+#~ msgid "I've seen enough"
+#~ msgstr "Jeg har sett nok"
 
 #~ msgid "Safest"
 #~ msgstr "Tryggest"
