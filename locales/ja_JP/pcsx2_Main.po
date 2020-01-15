@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2019-08-31 11:47+0900\n"
+"POT-Creation-Date: 2020-01-15 22:32+1300\n"
 "PO-Revision-Date: 2019-08-31 12:00+0900\n"
 "Last-Translator: Chromaryu <knight.ryu12@gmail.com>\n"
 "Language-Team: DeltaHF Chromaryu\n"
@@ -35,11 +35,11 @@ msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
 msgstr ""
 "申し訳ありませんが、このマシンのハードウェア構成ではPCSX2は実行できまん。"
 
-#: common/src/Utilities/Exceptions.cpp:219
+#: common/src/Utilities/Exceptions.cpp:204
 msgid "Oh noes! Out of memory!"
 msgstr "おっと、メモリ不足です！"
 
-#: common/src/Utilities/Exceptions.cpp:234
+#: common/src/Utilities/Exceptions.cpp:219
 msgid ""
 "Virtual memory mapping failure!  Your system may have conflicting device "
 "drivers, services, or may simply have insufficient memory or resources to "
@@ -48,23 +48,23 @@ msgstr ""
 "仮想メモリマッピングエラー。システムに競合しているドライバやサービス、もしく"
 "はPCSX2の高レベルな要求に応えられるメモリやリソースが不足しています。"
 
-#: common/src/Utilities/Exceptions.cpp:305
+#: common/src/Utilities/Exceptions.cpp:290
 msgid "Path: "
 msgstr "パス: "
 
-#: common/src/Utilities/Exceptions.cpp:309
+#: common/src/Utilities/Exceptions.cpp:294
 msgid "[Unnamed or unknown]"
 msgstr "[不明または未知]"
 
-#: common/src/Utilities/Exceptions.cpp:329
+#: common/src/Utilities/Exceptions.cpp:314
 msgid "A file could not be created."
 msgstr "ファイルを作成できません。"
 
-#: common/src/Utilities/Exceptions.cpp:349
+#: common/src/Utilities/Exceptions.cpp:334
 msgid "File not found."
 msgstr "ファイルが見つかりません。"
 
-#: common/src/Utilities/Exceptions.cpp:369
+#: common/src/Utilities/Exceptions.cpp:354
 msgid ""
 "Permission denied while trying to open file, likely due to insufficient user "
 "account rights."
@@ -72,7 +72,7 @@ msgstr ""
 "ファイルのアクセス権がありません。ユーザーアカウント権限が不足していると思わ"
 "れます。"
 
-#: common/src/Utilities/Exceptions.cpp:389
+#: common/src/Utilities/Exceptions.cpp:374
 msgid ""
 "Unexpected end of file or stream encountered.  File is probably truncated or "
 "corrupted."
@@ -557,14 +557,14 @@ msgstr ""
 "OKを押してデフォルトプラグインを使用するか、キャンセルを押して%sを閉じてくだ"
 "さい。"
 
+#: pcsx2/gui/AppInit.cpp:557
+msgid "PCSX2 Error: Hardware Deficiency"
+msgstr "PCSX2エラー: ハードウェア構成が最低基準を満たしていません"
+
 #: pcsx2/gui/AppInit.cpp:557 pcsx2/gui/AppInit.cpp:569
 #, c-format
 msgid "Press OK to close %s."
 msgstr "OKを押して%sを閉じてください。"
-
-#: pcsx2/gui/AppInit.cpp:557
-msgid "PCSX2 Error: Hardware Deficiency"
-msgstr "PCSX2エラー: ハードウェア構成が最低基準を満たしていません"
 
 #: pcsx2/gui/AppInit.cpp:570
 #, c-format
@@ -652,13 +652,13 @@ msgstr ""
 "警告： システムプラグインがロードされませんでした。PCSX2を実行できないかもし"
 "れません。"
 
-#: pcsx2/gui/AppMain.cpp:184
-msgid "Press Ok to go to the BIOS Configuration Panel."
-msgstr "OKを押してBIOS設定画面に移動します。"
-
 #: pcsx2/gui/AppMain.cpp:184 pcsx2/gui/AppMain.cpp:189
 msgid "PS2 BIOS Error"
 msgstr "PS2BIOSエラー"
+
+#: pcsx2/gui/AppMain.cpp:184
+msgid "Press Ok to go to the BIOS Configuration Panel."
+msgstr "OKを押してBIOS設定画面に移動します。"
 
 #: pcsx2/gui/AppMain.cpp:207
 msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
@@ -692,12 +692,12 @@ msgid ""
 msgstr "ISOリストを無視し、起動するISOを手動で選択する。"
 
 #: pcsx2/gui/AppRes.cpp:48
-msgid "Browse..."
-msgstr "参照..."
-
-#: pcsx2/gui/AppRes.cpp:48
 msgid "Browse for an ISO that is not in your recent history."
 msgstr "ヒストリにないISOを参照する"
+
+#: pcsx2/gui/AppRes.cpp:48
+msgid "Browse..."
+msgstr "参照..."
 
 #: pcsx2/gui/AppUserMode.cpp:92
 msgid "The following folders exist, but are not writable:"
@@ -881,45 +881,43 @@ msgstr "ログ"
 msgid "&Sources"
 msgstr "ソース"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:35
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:36
 #, c-format
 msgid "About %s"
 msgstr "%sについて"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:67
-msgid "Previous versions"
-msgstr "以前のバージョン"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
+msgid "Website"
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
-msgid "Webmasters"
-msgstr "ウェブマスター"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:56
+msgid "Support Forums"
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:79
-msgid "Developers"
-msgstr "開発陣"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:58
+msgid "GitHub Repository"
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:81
-msgid "Contributors"
-msgstr "貢献者"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:60
+msgid "License"
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:90
-msgid "PlayStation 2 Emulator"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
+#, fuzzy
+msgid "PlayStation 2 Emulator:"
 msgstr "プレイステーション2 エミュレーター"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:93
-msgid "PCSX2 Official Website and Forums"
-msgstr "PCSX2公式ウェブサイトとフォーラム"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
+msgid ""
+"Big thanks to everyone who contributed to the project throughout the years."
+msgstr ""
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:97
-msgid "PCSX2 Official Git Repository at GitHub"
-msgstr "PCSX2公式Gitリポジトリ - GitHub"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
+#, fuzzy
+msgid "Close"
+msgstr "閉じる"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:102
-msgid "I've seen enough"
-msgstr "十分にみました"
-
-#: pcsx2/gui/Dialogs/AssertionDialog.cpp:23
+#: pcsx2/gui/Dialogs/AssertionDialog.cpp:24
 msgid "Assertion Failure - "
 msgstr "表明違反 - "
 
@@ -1001,12 +999,12 @@ msgid "64MB File"
 msgstr "64MBファイル"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
-msgid "Folder"
-msgstr "フォルダー"
-
-#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Convert this memory card to a folder of individual saves."
 msgstr "このメモリーカードを別々のセーブデータが入ったフォルダに変換"
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
+msgid "Folder"
+msgstr "フォルダー"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:179
@@ -1163,20 +1161,20 @@ msgid ""
 msgstr ""
 "このメモリーカードはPS1専用のメモリーカードで、PS2ゲームには使用できません。"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
-msgid "Settings"
-msgstr "フォルダー設定"
-
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
 #, c-format
 msgid "Select a folder for %s settings"
 msgstr "%s設定の保存先フォルダーを指定してください"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:83
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
+msgid "Settings"
+msgstr "フォルダー設定"
+
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:84
 msgid "Language selector"
 msgstr "言語選択"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:86
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:87
 msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
@@ -1184,32 +1182,32 @@ msgstr ""
 "言語の変更が必要な場合は選択してください。\n"
 "通常は「System Default」のままでかまいません。"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:92
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:93
 msgid "Welcome to PCSX2!"
 msgstr "PCSX2へようこそ！"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:103
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:104
 msgid "Configuration Guides (online)"
 msgstr "設定ガイド集（オンライン）"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:107
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:108
 msgid "Readme / FAQ (Offline/PDF)"
 msgstr "Readme / FAQ（オフライン / PDF）"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:116
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:117
 #, c-format
 msgid "%s First Time Configuration"
 msgstr "%s初回起動設定"
 
-#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:24
+#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:25
 msgid "Import Existing Settings?"
 msgstr "既存の設定をインポートしますか？"
 
-#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:36
+#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:37
 msgid "Import"
 msgstr "インポート"
 
-#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:37
+#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:38
 msgid "Overwrite"
 msgstr "上書き"
 
@@ -2138,27 +2136,27 @@ msgstr "実行時にフルスクリーンにする"
 msgid "Double-click toggles fullscreen mode"
 msgstr "ダブルクリックでフルスクリーンを切り替える"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:104
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:102
 msgid "Aspect Ratio:"
 msgstr "アスペクト比："
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:106
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:104
 msgid "FMV Aspect Ratio Override:"
 msgstr "FMVアスペクト比オーバーライド:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:108
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:106
 msgid "Custom Window Size:"
 msgstr "ウィンドウサイズ指定："
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:111
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:109
 msgid "Zoom:"
 msgstr "ズーム率："
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:117
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:115
 msgid "Wait for Vsync on refresh:"
 msgstr "更新時垂直同期:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:194
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:192
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
@@ -2386,15 +2384,15 @@ msgid "Delete memory file?"
 msgstr "メモリーカードファイルを削除しますか？"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
-msgid "Failed: Can only duplicate an existing card."
-msgstr "失敗：複製元のメモリーカードがありません。"
-
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:721
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:742
 msgid "Duplicate memory card"
 msgstr "メモリーカードの複製"
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
+msgid "Failed: Can only duplicate an existing card."
+msgstr "失敗：複製元のメモリーカードがありません。"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
 msgid ""
@@ -2528,20 +2526,20 @@ msgid "Created on"
 msgstr "作成日時"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:151
-msgid "Yes"
-msgstr "はい"
-
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:151
 msgid "No"
 msgstr "いいえ"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:152
-msgid "PSX"
-msgstr "PS1"
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:151
+msgid "Yes"
+msgstr "はい"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:152
 msgid "PS2"
 msgstr "PS2"
+
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:152
+msgid "PSX"
+msgstr "PS1"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:165
 msgid "[-- Unused cards --]"
@@ -2928,6 +2926,27 @@ msgid ""
 msgstr ""
 "お使いのCPUは %s 拡張命令に対応していません。 microVUは MMX、SSE、およびSSE2 "
 "拡張命令に対応したCPUが必要です。"
+
+#~ msgid "Previous versions"
+#~ msgstr "以前のバージョン"
+
+#~ msgid "Webmasters"
+#~ msgstr "ウェブマスター"
+
+#~ msgid "Developers"
+#~ msgstr "開発陣"
+
+#~ msgid "Contributors"
+#~ msgstr "貢献者"
+
+#~ msgid "PCSX2 Official Website and Forums"
+#~ msgstr "PCSX2公式ウェブサイトとフォーラム"
+
+#~ msgid "PCSX2 Official Git Repository at GitHub"
+#~ msgstr "PCSX2公式Gitリポジトリ - GitHub"
+
+#~ msgid "I've seen enough"
+#~ msgstr "十分にみました"
 
 #~ msgid "Safest"
 #~ msgstr "最も安全"
