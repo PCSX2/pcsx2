@@ -8,17 +8,17 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2017-07-22 14:07+0300\n"
-"Last-Translator: Ceyhun Özgöç <atiamar@hotmail.com>\n"
-"Language-Team: Ceyhun Özgöç (PyramidHead) <atiamar@hotmail.com>\n"
+"PO-Revision-Date: 2020-01-15 17:21+0300\n"
+"Last-Translator: Burak Berk (JudgeJE#6269) <pastlesshelios@gmail.com>\n"
+"Language-Team: Burak Berk (JudgeJE#6269) <pastlesshelios@gmail.com>\n"
 "Language: tr_TR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-Basepath: C:/Users/Ceyhun/Downloads/PCSX2 SVN\n"
-"X-Generator: Poedit 2.0.2\n"
+"X-Poedit-Basepath: C:\Users\Burak\Downloads\pcsx2-master\locales\tr_TR"
+"X-Generator: Poedit 2.2.4\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -27,16 +27,15 @@ msgid ""
 "There is not enough virtual memory available, or necessary virtual memory "
 "mappings have already been reserved by other processes, services, or DLLs."
 msgstr ""
-"Yetersiz sanal bellek miktarı veya gerekli sanal bellek diğer işlemler, "
-"hizmetler ya da DLL'ler tarafından ayrılmış."
+"Kullanılabilir sanal bellek miktarı yeterli değil, veya gerekli sanal bellek "
+"diğer işlemler, hizmetler ya da DLL'ler tarafından ayrılmış."
 
 #: pcsx2/CDVD/CDVD.cpp:2058
-#, fuzzy
 msgid ""
 "Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings."
 msgstr ""
-"NMV/MEC dosyası okunamadı/yazılamadı. BIOS kurulumunuzu veya izin "
-"ayarlarınızı kontrol edin"
+"NMV/MEC dosyası okunamadı/yazılamadı. BIOS kurulumunuzu ve izin ayarlarınızı "
+"kontrol edin."
 
 #: pcsx2/System.cpp:112
 msgid ""
@@ -45,26 +44,26 @@ msgid ""
 "such as a small or disabled swapfile, or by another program that is hogging "
 "a lot of memory."
 msgstr ""
-"Derleyici dahili önbellek için gerekli olan bitişik hafıza miktarını "
-"ayıramıyor. Bu hata takas dosyasının küçük olması ya da devre dışı "
-"bırakılması nedeniyle düşük sanal bellek miktarı olan bilgisayarlarda veya "
-"başka bir programın hafızanın tamamı kullanması nedeniyle olur."
+"Derleyici dahili önbellek için gerekli olan bitişik bellek miktarını "
+"ayıramıyor. Bu hataya sanal bellek miktarının düşük olması, takas dosyasının "
+"küçük olması veya devre dışı bırakılmış olması, ya da çok fazla bellek "
+"kullanan başka bir programın olması neden olabilir."
 
 #: pcsx2/System.cpp:358
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
 msgstr ""
-"PCSX2, PS2 sanal makinesi için gerekli hafızayı ayıramıyor. Arkaplanda "
-"çalışan uygulamaları kapatıp yeniden deneyin."
+"PCSX2, PS2 sanal makinesi için gerekli olan belleği ayıramıyor. Arkaplanda "
+"çalışan ve çok bellek kullanan bazı uygulamaları kapatıp yeniden deneyin."
 
 #: pcsx2/gui/AppInit.cpp:163
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
 msgstr ""
-"Uyarı: Yapılandırılmış bazı PS2 derleyicileri başlatılamadı ve devre dışı "
-"bırakıldı:"
+"Uyarı: Yapılandırılmış PS2 derleyicilerinden bazıları başlatılamadı ve devre "
+"dışı bırakıldı:"
 
 #: pcsx2/gui/AppInit.cpp:221
 msgid ""
@@ -72,7 +71,7 @@ msgid ""
 "improve emulation speed substantially. You may have to manually re-enable "
 "the recompilers listed above, if you resolve the errors."
 msgstr ""
-"Not:  Derleyiciler PCSX2'nin çalışması için gerekli değildir; ancak emülatör "
+"Not: Derleyiciler PCSX2'nin çalışması için gerekli değildir; ancak emülatör "
 "hızını oldukça artırırlar. Sorun ortadan kalktıktan sonra yukarıda "
 "listelenen derleyicileri el ile yeniden etkinleştirmeniz gerekebilir."
 
@@ -106,19 +105,20 @@ msgid ""
 "below)."
 msgstr ""
 "Lütfen bu klasörlerin oluşturulduğundan ve kullanıcı hesabınızına dosya "
-"yazma haklarının verildiğinden emin olun veya PCSX2'ye gerekli klasörleri "
-"oluşturma yetkisi vermek için PCSX2'yi yükseltilmiş (yönetici) haklar ile "
-"tekrar çalıştırın. Bu bilgisayarda yükseltilmiş haklara sahip değilseniz "
-"aşağıdan Kullanıcı Dosyaları moduna geçmeniz gerekir (aşağıdaki düğmeyi "
-"tıklayın)."
+"yazma haklarının verildiğinden emin olun -- veya PCSX2'ye gerekli klasörleri "
+"oluşturma yetkisi vermek için PCSX2'yi yükseltilmiş haklar ile (yönetici "
+"olarak) tekrar çalıştırın. Bu bilgisayarda yükseltilmiş haklara sahip "
+"değilseniz aşağıdan Kullanıcı Dosyaları moduna geçmeniz gerekir (aşağıdaki "
+"düğmeyi tıklayın)."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:66
 msgid ""
 "Please note that the resulting file may not actually contain all saves, "
 "depending on how many are in the source memory card."
 msgstr ""
-"Kaynak hafıza kartında kaçının bulunduğuna bağlı olarak son dosya tüm "
-"kayıtları içermeyebilir."
+"Lütfen unutmayın ki oluşturulacak dosya, bütün kayıt dosyalarını "
+"içermeyebilir. Bu, kaynak olarak kullandığınız hafıza kartında kaç adet "
+"kayıt dosyası olduğuna bağlıdır."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
 msgid ""
@@ -127,7 +127,7 @@ msgid ""
 "responding to input."
 msgstr ""
 "UYARI: Hafıza kartı dönüştürme işlemi biraz zaman alabilir! Dönüştürme "
-"işlemi boyunca emülatör yanıt vermiyor gibi gözükse bile emülatörü "
+"işlemi sırasında emülatör yanıt vermiyor gibi görünse de lütfen emülatörü "
 "kapatmayın."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
@@ -163,7 +163,7 @@ msgid ""
 "This is the folder where PCSX2 saves your settings, including settings "
 "generated by most plugins (some older plugins may not respect this value)."
 msgstr ""
-"Bu klasör PCSX2'nin birçok eklenti tarafından oluşturulan ayarlar da dahil "
+"Bu klasör, PCSX2'nin birçok eklenti tarafından oluşturulan ayarlar da dahil "
 "olmak üzere (bazı daha eski eklentiler bu kurala uymayabilir) ayarlarınızı "
 "kaydettiği klasördür."
 
@@ -175,8 +175,7 @@ msgid ""
 msgstr ""
 "Buradan isteğe bağlı olarak PCSX2 ayarlarınız için bir konum "
 "belirleyebilirsiniz. Seçtiğiniz klasör mevcut PCSX2 ayarları içeriyorsa, "
-"bunları 'İçe Aktar' veya 'Üzerine Yaz' seçeneklerinden birini seçmeniz "
-"istenecektir."
+"size 'İçe Aktar' veya 'Üzerine Yaz' seçenekleri verilecektir."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:97
 #, c-format
@@ -230,8 +229,8 @@ msgid ""
 "Hero)."
 msgstr ""
 "Kayıt konumlarının yüklenmesinden sonra oyunları kart içeriklerini yeniden "
-"dizinlemeleri konusunda zorlayarak hafıza kartı bozulmalarını önler. Tüm "
-"oyunlarla uyumlu olmayabilir (Guitar Hero gibi)."
+"dizinlemeye zorlayarak hafıza kartı bozulmalarını önler. Tüm oyunlarla "
+"uyumlu olmayabilir (Guitar Hero gibi)."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
 msgid ""
@@ -249,7 +248,7 @@ msgid ""
 "configured settings.  These command line options will not be reflected in "
 "the Settings dialog, and will be disabled if you apply any changes here."
 msgstr ""
-"Dikkat! PCSX2'yi yapılandırılmış ayarlarınızı etkileyecek komut satırı "
+"Dikkat! PCSX2'yi yapılandırılmış ayarlarınızı geçersiz kılacak komut satırı "
 "seçenekleriyle çalıştırıyorsunuz. Bu komut satırı seçenekleri doğrudan "
 "Ayarlar penceresine yansıtılmaz ve buradan yapılan herhangi bir değişiklik "
 "komut satırını devre dışı bırakır."
@@ -262,8 +261,8 @@ msgid ""
 "settings changes here."
 msgstr ""
 "Dikkat! PCSX2'yi yapılandırılmış eklenti ve/veya klasör ayarlarınızı "
-"etkileyecek komut satırı seçenekleriyle çalıştırıyorsunuz. Bu komut satırı "
-"seçenekleri doğrudan Ayarlar sekmesine yansıtılmaz ve buradan yapılan "
+"geçersiz kılacak komut satırı seçenekleriyle çalıştırıyorsunuz. Bu komut "
+"satırı seçenekleri doğrudan Ayarlar sekmesine yansıtılmaz ve buradan yapılan "
 "herhangi bir değişiklik komut satırını devre dışı bırakır."
 
 #: pcsx2/gui/IsoDropTarget.cpp:28
@@ -310,7 +309,7 @@ msgstr ""
 #: pcsx2/gui/MemoryCardFolder.h:539
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
-msgstr "(FolderMcd) Hafıza Kartı dolu, öğe eklenemedi: %s"
+msgstr "(FolderMcd) Hafıza Kartı dolu, %s öğesi eklenemedi"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:131
 msgid ""
@@ -347,6 +346,14 @@ msgid ""
 "16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to "
 "correctly display a widescreen 16:9 FMV."
 msgstr ""
+"Kapalı: Geçici en-boy oranı değişimini devre dışı bırakır.\n"
+"\n"
+"4:3: 4:3 en-boy oranında bir video oynatılırken videoyu doğru bir şekilde "
+"göstermek için en-boy oranını geçici olarak 4:3 olacak şekilde ayarlar.\n"
+"\n"
+"16:9: 16:9 en-boy oranında bir video oynatılırken videoyu doğru bir şekilde "
+"göstermek için en-boy oranını geçici olarak 16:9 geniş ekran olacak şekilde "
+"ayarlar."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:75
 msgid ""
@@ -386,8 +393,8 @@ msgid ""
 "if using the mouse as a primary control device for gaming.  By default the "
 "mouse auto-hides after 2 seconds of inactivity."
 msgstr ""
-"Fare imlecinin GS ekranı üzerinde görünmesini istemiyorsanız bunu "
-"etkinleştirin. Özellikle fareyi birincil kontrol cihazı olarak "
+"Fare imlecinin GS penceresi üzerinde görünmesini istemiyorsanız bunu "
+"etkinleştirin. Özellikle fareyi oyunlarda birincil kontrol cihazı olarak "
 "kullanıyorsanız oldukça faydalıdır. Varsayılan olarak 2 saniye boyunca "
 "herhangi bir işlem yapılmadığında fare imleci otomatik olarak gizlenir."
 
@@ -397,8 +404,9 @@ msgid ""
 "emulation. You can still toggle fullscreen display at any time using alt-"
 "enter."
 msgstr ""
-"Emülatör çalıştığında ya da devam ettirildiğinde otomatik olarak tam ekrana "
-"geçişi etkinleştirir. Tam ekrandan çıkmak için Alt+Enter'ı kullanabilirsiniz."
+"Emülatör başlatıldığında veya devam ettirildiğinde otomatik olarak tam ekran "
+"moduna geçişi etkinleştirir. Tam ekran/pencere modu arasında Alt ve Enter "
+"tuşlarına aynı anda basarak istediğiniz zaman geçiş yapabilirsiniz."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:87
 msgid ""
@@ -451,7 +459,6 @@ msgstr ""
 "* Transformers"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:124
-#, fuzzy
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty ('Automatic' means: selectively use specific tested "
@@ -459,10 +466,10 @@ msgid ""
 "performance. In fact they may decrease it."
 msgstr ""
 "Ayarları buradan yapmak yerine bu sayfayı boş bırakıp ana menüden 'Otomatik "
-"oyun düzeltmeleri' seçeneğini etkinleştirmeniz önerilir. ('Otomatik' "
-"kelimesi test edilmiş düzeltmelerin belirli oyunlara doğrudan uygulanması "
-"anlamına gelir). El ile oyun düzeltmeleri performansı ARTIRMAZ. Aksine "
-"azaltabilirler."
+"oyun düzeltmeleri' seçeneğini etkinleştirmeniz önerilir. ('Otomatik': test "
+"edilmiş düzeltmelerin belirli oyunlara doğrudan uygulanması anlamına gelir.) "
+"El ile yapılan oyun düzeltmeleri performansınızı ARTIRMAZ. Aksine azalmasına "
+"neden olabilirler."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:128
 msgid ""
@@ -471,11 +478,12 @@ msgid ""
 "\n"
 "The safest way is to make sure that all game fixes are completely disabled."
 msgstr ""
-"Oyun düzeltmeleri bazı oyunlarda işe yaramayabilir. \n"
+"Oyun düzeltmeleri bazı oyunlarda yanlış emülasyona geçici çözüm "
+"olabilirler. \n"
 "Bunun yanı sıra uyumluluk ya da performans sorunlarına neden olabilirler.\n"
 "\n"
 "En güvenli seçenek tüm oyun düzeltmelerinin tamamen devre dışı "
-"bırakılmasıdır."
+"bırakıldığından emin olmaktır."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:679
 #, c-format
@@ -496,7 +504,7 @@ msgstr ""
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:760
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
-msgstr "Hata: Hedef %s hafıza kartı kullanımda."
+msgstr "Hata: Hedef '%s' hafıza kartı kullanımda."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:36
 msgid ""
@@ -523,7 +531,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
 msgid "This folder is where PCSX2 loads cheats from."
-msgstr ""
+msgstr "Bu klasör PCSX2'nin hile kodlarını içeri aktardığı klasördür."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:48
 msgid ""
@@ -560,11 +568,12 @@ msgid ""
 "\n"
 "Are you sure you want to apply settings now?"
 msgstr ""
-"Dikkat! Eklentileri değiştirdikten sonra PS2 sanal makinesini baştan "
-"başlatmanı gerekir. PCSX2 şu anki konumunuzu kaydetmeyi deneyecek fakat yeni "
-"seçilen eklentiler uyumlu değilse şu anki konumunuzu kaybedeceksiniz.\n"
+"Dikkat! Eklenti değiştirmek PS2 sanal konsolunun resetlenip yeniden "
+"başlatılmasını gerektirir. PCSX2 şu anki konumunuzu kaydetmeyi deneyecek "
+"fakat yeni seçilen eklentiler uyumlu değilse kurtarma başarısız olabilir ve "
+"şu anki konumunuzu kaybedebilirsiniz.\n"
 "\n"
-"Ayarları uygulamak istediğinize emin misiniz?"
+"Ayarları şimdi uygulamak istediğinize emin misiniz?"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:452
 #, c-format
@@ -573,9 +582,10 @@ msgid ""
 "make a valid selection due to missing plugins or an incomplete install of "
 "%s, then press Cancel to close the Configuration panel."
 msgstr ""
-"%s'nin çalışması için tüm eklentilerin seçilmiş olması gerekir. %s "
-"yüklemesinde oluşan bir hata sonucu veya eksik eklentiler nedeniyle seçim "
-"yapamıyorsanız İptal'i tıklayarak Yapılandırma panelini kapatın."
+"%s'nin çalışması için tüm eklentilerin geçerli bir şekilde seçilmiş olması "
+"gerekir. %s yüklemesinde oluşan bir hata sonucu veya eksik eklentiler "
+"nedeniyle seçim yapamıyorsanız İptal'i tıklayarak Yapılandırma panelini "
+"kapatın."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
 #, c-format
@@ -583,6 +593,9 @@ msgid ""
 "50% cyclerate. Significant reduction of CPU requirements. Speedup for very "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
+"%50 işlem döngüsü hızı. CPU gereksinimleri oldukça düşürülür. Çok hafif "
+"oyunları hızlandırır, diğer oyunları yavaşlatır. Videolar ve seste "
+"takılmalar veya atlamalar olabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
 #, c-format
@@ -590,6 +603,9 @@ msgid ""
 "60% cyclerate. Moderate reduction of CPU requirements. Speedup for "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
+"%60 işlem döngüsü hızı. CPU gereksinimleri düşürülür. Hafif oyunları "
+"hızlandırır, diğer oyunları yavaşlatır. Videolar ve seste takılmalar veya "
+"atlamalar olabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
 #, c-format
@@ -597,11 +613,16 @@ msgid ""
 "75% cyclerate. Slight reduction of CPU requirements. Speedup for less "
 "demanding games, slows down others."
 msgstr ""
+"%75 işlem döngüsü hızı. CPU gereksinimleri biraz düşürülür. Donanım "
+"gereksinimleri normalden az olan oyunları hızlandırır, diğer oyunları "
+"yavaşlatır."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:47
 msgid ""
 "Default cyclerate. Runs the emulated PS2 Emotion Engine at normal speed."
 msgstr ""
+"Varsayılan işlem döngüsü hızı. Emülate edilen PS2 Emotion Engine'ini (EE "
+"işlemcisi) normal hızda çalıştırır."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:53
 #, c-format
@@ -609,6 +630,8 @@ msgid ""
 "130% cyclerate. Moderate increase of CPU requirements. Variable framerate "
 "games may have higher internal framerates."
 msgstr ""
+"%130 işlem döngüsü hızı. CPU gereksinimleri artırılır. FPS'i değişken olan "
+"oyunları daha yüksek iç FPS ile çalıştırmanızı sağlayabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:59
 #, c-format
@@ -617,6 +640,9 @@ msgid ""
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
+"%180 işlem döngüsü hızı. CPU gereksinimleri oldukça artırılır. FPS'i "
+"değişken olan oyunlar daha yüksek iç FPS ile çalışır. Videolar yavaş "
+"olabilir. Stabilite sorunlarına yol açabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
 #, c-format
@@ -625,29 +651,40 @@ msgid ""
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
+"%300 işlem döngüsü hızı. CPU gereksinimleri aşırı artırılır. FPS'i değişken "
+"olan oyunlar daha yüksek iç kare hızı ile çalışır. Videolar yavaş olabilir. "
+"Stabilite sorunlarına yol açabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:81
-#, fuzzy
 msgid "Disables EE Cycle Skipping. Most compatible setting."
-msgstr "0 - VU Cycle Stealing'i devre dışı bırakır. En sorunsuz seçenektir!"
+msgstr "EE Cycle Stealing'i devre dışı bırakır. En sorunsuz seçenektir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
 msgid ""
 "Mild EE Cycle Skipping. Mild slow down for most games, but may help some "
 "games with mild VU starvation problems run at full speed."
 msgstr ""
+"Hafif EE Döngüsü Atlanması. Çoğu oyunda hafif bir yavaşlamaya neden olur, "
+"ancak VU kaynak yetersizliği konusunda hafif sıkıntıları olan oyunların tam "
+"hızda çalışmasına yardımcı olabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:93
 msgid ""
 "Moderate EE Cycle Skipping. Slow down for most games, but may help some "
 "games with moderate VU starvation problems run at full speed."
 msgstr ""
+"Orta Seviyede EE Döngüsü Atlanması. Çoğu oyunda yavaşlamaya neden olur, "
+"ancak VU kaynak yetersizliği konusunda sıkıntıları olan oyunların tam hızda "
+"çalışmasına yardımcı olabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:98
 msgid ""
 "Maximum EE Cycle Skipping. Mostly harmful. May help games with significant "
 "VU starvation problems run at full speed."
 msgstr ""
+"Maksimum EE Döngüsü Atlanması. Çoğunlukla zararlıdır. VU kaynak yetersizliği "
+"konusunda çok sıkıntılı olan oyunların tam hızda çalışmasına yardımcı "
+"olabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:123
 msgid ""
@@ -655,8 +692,8 @@ msgid ""
 "audio, and false FPS readings.  When having emulation problems, disable this "
 "panel first."
 msgstr ""
-"Hız Hackleri emülatör genelde emülatör hızını artırır; ancak seste "
-"bozulmalara ve yanlış FPS okumalarına neden olabilir. Oyunlarda sorunlar "
+"Hız Hackleri emülatör genelde emülatör hızını artırır; ancak hatalara, ses "
+"bozulmalarına ve yanlış FPS okumalarına neden olabilir. Oyunlarda sorunlar "
 "yaşarsanız ilk olarak bu paneli devre dışı bırakın."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:149
@@ -666,6 +703,10 @@ msgid ""
 "CPU requirements substantially. Lower values will reduce the CPU load "
 "allowing lightweight games to run full speed on weaker CPUs."
 msgstr ""
+"Emülate edilen Emotion Engine CPU frekansını değiştirir. Yüksek değerler "
+"FPS'i değişken olan oyunlarda FPS'in artmasını sağlayabilir, ancak CPU "
+"gereksinimlerini oldukça artırır. Düşük değerler CPU yükünü azaltarak hafif "
+"oyunların zayıf CPU'larda tam hızda çalışmasını sağlayabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:163
 msgid ""
@@ -674,6 +715,11 @@ msgid ""
 "starvation problems, E.g. Shadow of the Colossus. More often than not this "
 "is harmful to performance and causes FPS readouts to be inaccurate."
 msgstr ""
+"Emülate edilen Emotion Engine CPU'nun döngü atlamasını ve bu şekilde VU "
+"mikroprogramlarının daha hızlı aralıklarla çalışmasını sağlar. VU kaynak "
+"yetersizliği sıkıntısı olan bazı oyunlara yardımcı olur. (Shadow of the "
+"Colossus gibi.) Bu seçenek çoğunlukla performansa zarar verir ve yanlış FPS "
+"okumalarına neden olabilir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
 msgid ""
@@ -693,8 +739,8 @@ msgid ""
 "slowdown (especially on dual core CPUs)."
 msgstr ""
 "VU1'i kendi işlemi altında yürütür (yalnızca microVU1 için geçerlidir). 3 ya "
-"da daha fazla çekirdeği olan işlemcilerde hız artışı sağlar. Birçok oyun "
-"için güvenlidir fakat birkaç oyunla uyumsuz olduğundan donmalar meydana "
+"da daha fazla çekirdeği olan işlemcilerde genelde hız artışı sağlar. Birçok "
+"oyun için güvenlidir fakat birkaç oyunla uyumsuz olduğundan donmalar meydana "
 "gelebilir. GS sınırlı oyunlarda FPS düşebilir (özellikle çift çekirdekli "
 "işlemcilerde)."
 
@@ -704,9 +750,10 @@ msgid ""
 "vsyncs, which includes primarily non-3D RPG titles. Games that do not use "
 "this method of vsync will see little or no speedup from this hack."
 msgstr ""
-"Bu hack en çok özellikle 3D olmayan ve vsync'i beklemek için INTC status'u "
-"kullanan oyunlarla uyumludur. Bu vsync yöntemini kullanmayan oyunlarda hiç "
-"hız artışı görülmez veya çok az bir hız artışı görülür."
+"Bu hack en çok 3D olmayan ve vsync'i beklemek için INTC status'u kullanan "
+"oyunlarla uyumludur, özellikle de 3D olmayan RPG oyunları ile. Bu vsync "
+"yöntemini kullanmayan oyunlarda hiç hız artışı görülmez veya çok az bir hız "
+"artışı görülür."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:203
 msgid ""
@@ -724,13 +771,13 @@ msgstr ""
 "da bir sonraki olayın zamanlamasına ilerlenir."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
-#, fuzzy
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this (often marked as needing 'mode 1' or 'slow DVD')."
 msgstr ""
-"Bilinen sorunlu oyunlar listesini görmek için HDLoader uyumluluk listesine "
-"bakın (Sorunlu oyunlar 'mode1' ya da 'slow DVD' olarak işaretlidir)."
+"Bununla sorunu olduğu bilinen oyunlar listesini görmek için HDLoader "
+"uyumluluk listesine bakın (Sorunlu oyunlar 'mode1' ya da 'slow DVD' "
+"gereksinimi vardır olarak işaretlidir)."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:35
 msgid ""
@@ -764,7 +811,7 @@ msgid ""
 "hogging resources."
 msgstr ""
 "Sistem PCSX2'nin çalışması için yeterli sanal kaynağa sahip değil. Bu hata "
-"takas dosyasının çok küçük boyutlu olması ya da devre dışı bırakılması veya "
+"takas dosyasının çok küçük boyutlu olması ya da devre dışı bırakılması, veya "
 "arkaplanda çalışan uygulamaların hafızanın tamamını kullanması sonucu oluşur."
 
 #: pcsx2/x86/sVU_zerorec.cpp:367
@@ -774,9 +821,9 @@ msgid ""
 "not a critical error, since the sVU rec is obsolete, and you should use "
 "microVU instead anyway. :)"
 msgstr ""
-"Hafıza hatası: SuperVU derleyicisi belirtilen hafıza değerlerini ayıramadığı "
-"için kullanılamıyor. Bu hata sVU zaten eski olduğundan ve onun yerine "
-"microVU kullansanız daha iyi olacağından çok da ciddi değildir. :)"
+"Yetersiz Hafıza(gibi): SuperVU derleyicisi belirtilen hafıza değerlerini "
+"ayıramadığı için kullanılamıyor. Bu hata sVU zaten eski olduğundan ve onun "
+"yerine microVU kullansanız daha iyi olacağından çok da ciddi değildir. :)"
 
 #~ msgid ""
 #~ "Playstation game discs are not supported by PCSX2.  If you want to "
