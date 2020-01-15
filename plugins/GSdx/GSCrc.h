@@ -92,6 +92,7 @@ public:
 		Lamune,
 		LegacyOfKainDefiance,
 		LordOfTheRingsThirdAge,
+		LordOfTheRingsTwoTowers,
 		MajokkoALaMode2,
 		Manhunt2,
 		MetalSlug6,

@@ -313,6 +313,14 @@ CRC::Game CRC::m_games[] =
 	{0xEB198738, LordOfTheRingsThirdAge, US, 0},
 	{0x614F4CF4, LordOfTheRingsThirdAge, EU, 0},
 	{0x37CD4279, LordOfTheRingsThirdAge, KO, 0},
+	{0xDC43F2B8, LordOfTheRingsTwoTowers, EU, 0},
+	{0x9ABF90FB, LordOfTheRingsTwoTowers, ES, 0},
+	{0x5FF407EE, LordOfTheRingsTwoTowers, IT, 0},
+	{0x88F67266, LordOfTheRingsTwoTowers, FR, 0},
+	// {0xC818BEC2, LordOfTheRingsTwoTowers, US, 0}, // Only PAL regions are required, but keep ntsc ones commented just in case.
+	// {0xC0E909E9, LordOfTheRingsTwoTowers, JP, 0},
+	// {0x6898435D, LordOfTheRingsTwoTowers, KO, 0},
+	// {0xDC2F9B98, LordOfTheRingsTwoTowers, CH, 0},
 	{0xE169BAF8, RedDeadRevolver, US, 0},
 	{0xE2E67E23, RedDeadRevolver, EU, 0},
 	{0x87844524, RedDeadRevolver, RU, 0}, // Unofficial RU-version

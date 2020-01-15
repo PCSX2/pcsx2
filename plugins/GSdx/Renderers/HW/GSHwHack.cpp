@@ -481,6 +481,32 @@ bool GSC_TimeSplitters2(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_LordOfTheRingsTwoTowers(const GSFrameInfo& fi, int& skip)
+{
+	// Currently we can't use the TS half bottom fix on PAL regions because we get a height delta bigger than 64.
+	// Needs to be further investigated.
+	if(skip == 0)
+	{
+		if(fi.TME && (fi.FBP == 0x01180 || fi.FBP == 0x01400) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT16)
+		{
+			skip = 1000; // Shadows
+		}
+		else if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.TBP0 == 0x01400 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
+		{
+			skip = 3; // Wall of fog
+		}
+	}
+	else
+	{
+		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && (fi.TBP0 == 0x01180 || fi.TBP0 == 0x01400) && fi.FPSM == PSM_PSMCT32)
+		{
+			skip = 2;
+		}
+	}
+
+	return true;
+}
+
 bool GSC_LordOfTheRingsThirdAge(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1473,6 +1499,7 @@ void GSState::SetupCrcHack()
 
 		// Half Screen bottom issue
 		lut[CRC::DemonStone] = GSC_DemonStone; // Half screen on texture shuffle
+		lut[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
 		lut[CRC::Tekken5] = GSC_Tekken5;
 
 		// Needs testing
