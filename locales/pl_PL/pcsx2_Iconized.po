@@ -5,21 +5,20 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.1.0\n"
+"Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2012-08-13 05:40+0100\n"
-"Last-Translator: Miseru99 <miseru99@hotmail.com>\n"
-"Language-Team: Miseru99 <miseru99@hotmail.com>\n"
-"Language: \n"
+"PO-Revision-Date: 2020-01-16 15:32+0100\n"
+"Last-Translator: mavethee <mitura07@wp.pl>\n"
+"Language-Team: mavethee <mitura07@wp.pl>\n"
+"Language: pl_PL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: G:\\pcsx2-3\\pcsx2\n"
-"X-Poedit-Language: Polish\n"
-"X-Poedit-Country: POLAND\n"
+"X-Poedit-Basepath: G:/pcsx2-3/pcsx2\n"
+"X-Generator: Poedit 2.2.4\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -30,15 +29,16 @@ msgid ""
 msgstr ""
 "Brak wystarczającej pamięci wirtualnej lub potrzebna pamięć wirtualna "
 "została\n"
-"już zarezerwowana przez inny process, usługę lub DLL."
+"już zarezerwowana przez inny proces, usługę lub pliki DLL."
 
 #: pcsx2/CDVD/CDVD.cpp:2058
 msgid ""
 "Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings."
 msgstr ""
+"Niepowodzenie podczas próby odczytania/nadpisania NVM/MEC file. Sprawdź "
+"swoje ustawienie biosu i ustawienia dostępu."
 
 #: pcsx2/System.cpp:112
-#, fuzzy
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
 "internal caches.  This error can be caused by low virtual memory resources, "
@@ -51,7 +51,7 @@ msgstr ""
 "swapfile, lub\n"
 "przez inny program zarezerwujący sporo pamięci. Możesz również spróbować "
 "zredukować\n"
-"standardowy rozmiar cache dla rekompilatorów PCSX2, pod ustawieniami Hosta."
+"standardowy rozmiar cache dla rekompilatorów PCSX2, pod ustawieniami hosta."
 
 #: pcsx2/System.cpp:358
 msgid ""
@@ -68,7 +68,7 @@ msgid ""
 "have been disabled:"
 msgstr ""
 "Uwaga: Niektóre ze skonfigurowanych rekompilatorów zawiodły i zostały "
-"wyłączone."
+"wyłączone:"
 
 #: pcsx2/gui/AppInit.cpp:221
 msgid ""
@@ -89,7 +89,7 @@ msgid ""
 msgstr ""
 "PCSX2 wymaga BIOS'u PS2 do działania. Ze względów prawnych MUSISZ sam "
 "uzyskać BIOS,\n"
-"wydobywając go z własnej konsoli PS2(pożyczanie się nie liczy!). Po "
+"wydobywając go z WŁASNEJ konsoli PS2 (POŻYCZANIE SIĘ NIE LICZY!). Po "
 "szczegóły proszę zapoznaj\n"
 "się z FAQ oraz poradnikami."
 
@@ -99,9 +99,9 @@ msgid ""
 "'Cancel' to attempt to cancel the thread.\n"
 "'Terminate' to quit PCSX2 immediately.\n"
 msgstr ""
-"'Ignoruj' by contynuować aż wątek zacznie odpowiadać.\n"
-"'Anuluj' by spróbować anulować wątek.\n"
-"'Likwiduj' by wezwać Leona Zawodowca i zbawić swój komputer od PCSX2.\n"
+"'Ignoruj', aby kontynuować aż wątek zacznie odpowiadać.\n"
+"'Anuluj', aby spróbować anulować wątek.\n"
+"'Zamknij', aby zamknąć PCSX2 natychmiastowo. \n"
 
 #: pcsx2/gui/AppUserMode.cpp:54
 msgid ""
@@ -125,6 +125,8 @@ msgid ""
 "Please note that the resulting file may not actually contain all saves, "
 "depending on how many are in the source memory card."
 msgstr ""
+"PAMIĘTAJ, że szukany plik może nie zawierać faktycznie WSZYSTKICH zapisów "
+"gry, zależnie od tego jak dużo ich jest na karcie pamięci."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
 msgid ""
@@ -132,22 +134,30 @@ msgid ""
 "emulator during the conversion process, even if the emulator is no longer "
 "responding to input."
 msgstr ""
+"OSTRZEŻENIE: Konwersja karty pamięci może chwilę potrwać! Nie zamykaj "
+"emulatora podczas procesu konwersji, nawet jeśli emulator przestanie "
+"odpowiadać. Bądź cierpliwy."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "Convert this memory card to a standard 8 MB Memory Card .ps2 file."
 msgstr ""
+"Konwertuj tę kartę pamięci na plik .ps2 standardowej karty pamięci o "
+"pojemności 8 MB."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "Convert this memory card to a 16 MB Memory Card .ps2 file."
 msgstr ""
+"Konwertuj tę kartę pamięci na plik .ps2 karty pamięci o pojemności 16 MB."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "Convert this memory card to a 32 MB Memory Card .ps2 file."
 msgstr ""
+"Konwertuj tę kartę pamięci na plik .ps2 karty pamięci o pojemności 32 MB."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
 msgstr ""
+"Konwertuj tę kartę pamięci na plik .ps2 karty pamięci o pojemności 64 MB."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:225
 msgid ""
@@ -239,6 +249,9 @@ msgid ""
 "software changes. This prevents the memory card from running out of space "
 "for saves."
 msgstr ""
+"(Tylko typ folderu) Ponownie indeksuj zawartość karty pamięci za każdym "
+"razem, gdy zmienia się uruchomione oprogramowanie. Zapobiega to wyczerpaniu "
+"się pamięci na karcie pamięci."
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:38
 msgid ""
@@ -326,7 +339,7 @@ msgstr ""
 #: pcsx2/gui/MemoryCardFolder.h:539
 #, c-format
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
-msgstr ""
+msgstr "(FolderMcd) Karta pamięci jest pełna, nie można dodać: %s"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:131
 msgid ""
@@ -351,7 +364,7 @@ msgid ""
 "with PCSX2's current usermode setting. "
 msgstr ""
 "Kiedy zaznaczone, ten katalog automatycznie odzwierciedla standardowy folder "
-"w ustawieniach użytkownika PCSX2."
+"w ustawieniach użytkownika PCSX2. "
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:73
 msgid ""
@@ -363,6 +376,13 @@ msgid ""
 "16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to "
 "correctly display a widescreen 16:9 FMV."
 msgstr ""
+"Wyłączone: Wyłącza tymczasowy przełącznik proporcji ekranu.\n"
+"\n"
+"4:3: Tymczasowo przełącza na proporcje ekranu 4:3 podczas odtwarzania FMV, "
+"aby poprawnie wyświetlić FMV nagrane w 4:3.\n"
+"\n"
+"16: 9: Tymczasowo przełącza na proporcje 16:9 podczas odtwarzania FMV, aby "
+"poprawnie wyświetlić FMV nagrane w 16:9."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:75
 msgid ""
@@ -469,23 +489,19 @@ msgstr ""
 "Transformers"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:124
-#, fuzzy
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty ('Automatic' means: selectively use specific tested "
 "fixes for specific games). Manual game fixes will NOT increase your "
 "performance. In fact they may decrease it."
 msgstr ""
-"Łatki do gier mogą poprawić działanie pewnych tytułów.\n"
-"Mogą też jednak pogorszyć działanie innych.\n"
-"\n"
-"Zaleca się zostawienie 'Automatycznych Poprawek' w głównym menu i "
-"zostawienie tej strony pustej.\n"
-"('Automatyczne' znaczy: wybrane dla sprawdzonych gier, którym poprawia "
-"wydajność/błędy)"
+"Lepiej jest włączyć fukcję `Automatyczne poprawki do gier` w Menu Głównym, "
+"zostawić tą zakładkę pustą.\n"
+"(`Automatycznie` oznacza używanie przetestowanych poprawek do gier).\n"
+"Manualne poprawki do gier nie poprawią wydajności. W gruncie rzeczy, mogą ją "
+"nawet pogorszyć."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:128
-#, fuzzy
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
@@ -522,7 +538,6 @@ msgid "Failed: Destination memory card '%s' is in use."
 msgstr "Porażka: Docelowa Karta Pamięci '%s' w użyciu."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:36
-#, fuzzy
 msgid ""
 "Please select your preferred default location for PCSX2 user-level documents "
 "below (includes memory cards, screenshots, settings, and savestates).  These "
@@ -532,8 +547,8 @@ msgstr ""
 "Proszę wybrać preferowaną lokację dla plików PCSX2 poniżej.\n"
 "(w skład wchodzą karty pamięci, zapisane obrazki, ustawienia oraz zapisy "
 "gier)\n"
-"Lokacja tych katalogów może być w każdym momencie zmieniona w ustawieniach "
-"katalogów."
+"Lokalizację tych katalogów może być w każdym momencie zmieniona w "
+"ustawieniach katalogów."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:39
 msgid ""
@@ -549,7 +564,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
 msgid "This folder is where PCSX2 loads cheats from."
-msgstr ""
+msgstr "W tym folderze PCSX2 ładuje kody."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:48
 msgid ""
@@ -613,6 +628,9 @@ msgid ""
 "50% cyclerate. Significant reduction of CPU requirements. Speedup for very "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
+"50% szybkości cyklu. Znaczne zmniejszenie wymagań procesora. Przyspieszenie "
+"dla bardzo lekkich gier, spowalnia inne. FMV i dźwięk mogą się zacinać lub "
+"przeskakiwać."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
 #, c-format
@@ -620,6 +638,9 @@ msgid ""
 "60% cyclerate. Moderate reduction of CPU requirements. Speedup for "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
+"60% szybkości cyklu. Umiarkowane zmniejszenie wymagań procesora. "
+"Przyspieszenie dla lekkich gier, spowalnia inne. FMV i dźwięk mogą się "
+"zacinać lub przeskakiwać."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
 #, c-format
@@ -627,11 +648,15 @@ msgid ""
 "75% cyclerate. Slight reduction of CPU requirements. Speedup for less "
 "demanding games, slows down others."
 msgstr ""
+"75% szybkości cyklu. Nieznaczne zmniejszenie wymagań procesora. "
+"Przyspieszenie dla mniej wymagających gier, spowalnia inne."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:47
 msgid ""
 "Default cyclerate. Runs the emulated PS2 Emotion Engine at normal speed."
 msgstr ""
+"Domyślna szybkość cyklu. Uruchamia emulowany Emotion Engine PS2 przy "
+"normalnej prędkości."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:53
 #, c-format
@@ -639,6 +664,8 @@ msgid ""
 "130% cyclerate. Moderate increase of CPU requirements. Variable framerate "
 "games may have higher internal framerates."
 msgstr ""
+"130% szybkości cyklu. Umiarkowany wzrost wymagań procesora. Gry ze zmienną "
+"liczbą klatek na sekundę mogą mieć wyższe liczby klatek na sekundę."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:59
 #, c-format
@@ -647,6 +674,9 @@ msgid ""
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
+"180% szybkości cyklu. Znaczny wzrost wymagań procesora. Gry ze zmienną "
+"liczbą klatek na sekundę będą miały wyższe liczby klatek na sekundę. FMV "
+"mogą być wolne. Może powodować problemy ze stabilnością."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
 #, c-format
@@ -655,30 +685,39 @@ msgid ""
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
+"300% szybkości cyklu. Ekstremalny wzrost wymagań procesora. Gry ze zmienną "
+"liczbą klatek na sekundę będą miały wyższe liczby klatek na sekundę. FMV "
+"mogą być wolne. Może powodować problemy ze stabilnością."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:81
-#, fuzzy
 msgid "Disables EE Cycle Skipping. Most compatible setting."
 msgstr ""
-"0 - Deaktywuje podkradanie cykli VU. Najbardziej kompatybilne ustawienie!"
+"0 - Deaktywuje podkradanie cykli VU. Najbardziej kompatybilne ustawienie."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
 msgid ""
 "Mild EE Cycle Skipping. Mild slow down for most games, but may help some "
 "games with mild VU starvation problems run at full speed."
 msgstr ""
+"Łagodne pomijanie cyklu EE. Łagodne spowolnienie w większości gier, ale może "
+"pomóc niektórym z łagodnymi problemami `głodu` VU działać z pełną prędkością."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:93
 msgid ""
 "Moderate EE Cycle Skipping. Slow down for most games, but may help some "
 "games with moderate VU starvation problems run at full speed."
 msgstr ""
+"Umiarkowane pomijanie cyklu EE. Spowalnia w przypadku większości gier, ale "
+"może pomóc niektórym grom z umiarkowanymi problemami `głodu` VU działać z "
+"pełną prędkością."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:98
 msgid ""
 "Maximum EE Cycle Skipping. Mostly harmful. May help games with significant "
 "VU starvation problems run at full speed."
 msgstr ""
+"Maksymalne pomijanie cyklu EE. Głównie szkodliwy. Może pomóc, aby gry z "
+"poważnymi problemami `głodu` VU działały z pełną prędkością."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:123
 msgid ""
@@ -698,6 +737,11 @@ msgid ""
 "CPU requirements substantially. Lower values will reduce the CPU load "
 "allowing lightweight games to run full speed on weaker CPUs."
 msgstr ""
+"Zmienia emulowany zegar procesora Emotion Engine. Wyższe wartości mogą "
+"zwiększyć wewnętrzną liczbę klatek na sekundę w grach ze zmienną liczbą "
+"klatek na sekundę, ale znacznie zwiększą wymagania procesora. Niższe "
+"wartości zmniejszą obciążenie procesora, dzięki czemu lekkie gry będą "
+"działać z pełną prędkością na słabszych procesorach."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:163
 msgid ""
@@ -706,6 +750,11 @@ msgid ""
 "starvation problems, E.g. Shadow of the Colossus. More often than not this "
 "is harmful to performance and causes FPS readouts to be inaccurate."
 msgstr ""
+"Sprawia, że ​​emulowane cykle pomijania Emotion Engine pozwalają "
+"mikroprogramom VU wykonywać się w krótszych odstępach czasu. Pomaga "
+"niewielkiemu zestawowi gier z problemami głodu VU, np. Shadow of the "
+"Colossus. Najczęściej jest to szkodliwe dla wydajności i powoduje, że "
+"odczyty FPS są niedokładne."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
 msgid ""
@@ -759,7 +808,6 @@ msgstr ""
 "dopiero gdy to zdarzenie nastąpi."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
-#, fuzzy
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this (often marked as needing 'mode 1' or 'slow DVD')."
