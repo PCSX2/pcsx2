@@ -37,6 +37,11 @@ const char* dialog_message(int ID, bool* updateText) {
 				" Rendering is smoother but it could generate a few glitches. If upscaling is enabled, this setting is recommended over 'Bilinear Forced'\n\n"
 				"Bilinear Forced:\nAlways enable interpolation. Rendering is smoother but it could generate some glitches.\n\n"
 				"Bilinear PS2:\nUse same mode as the PS2. It is the more accurate option.";
+		case IDC_HALF_SCREEN_TS:
+			return "Control the half-screen fix detection on texture shuffling.\n\n"
+				"Automatic:\nUses an algorithm to automatically enable or disable the detection.\n\n"
+				"Force-Disabled:\nDisables the detection. Will cause visual bugs in many games. It helps Xenosaga games.\n\n"
+				"Force-Enabled:\nAlways enables the detection. Use it when a game has half-screen issues.";
 		case IDC_TRI_FILTER:
 			return "Control the texture tri-filtering of the emulation.\n\n"
 				"None:\nNo extra trilinear filtering.\n\n"

@@ -72,8 +72,8 @@ public:
 	std::vector<GSSetting> m_gs_max_anisotropy;
 	std::vector<GSSetting> m_gs_bifilter;
 	std::vector<GSSetting> m_gs_trifilter;
-	std::vector<GSSetting> m_gs_gl_ext;
 	std::vector<GSSetting> m_gs_hack;
+	std::vector<GSSetting> m_gs_generic_list;
 	std::vector<GSSetting> m_gs_offset_hack;
 	std::vector<GSSetting> m_gs_hw_mipmapping;
 	std::vector<GSSetting> m_gs_crc_level;

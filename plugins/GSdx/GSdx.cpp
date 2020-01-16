@@ -266,9 +266,9 @@ void GSdxApp::Init()
 	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::PS2), "Trilinear", ""));
 	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::Forced), "Trilinear", "Ultra/Slow"));
 
-	m_gs_gl_ext.push_back(GSSetting(-1, "Automatic", "Default"));
-	m_gs_gl_ext.push_back(GSSetting(0,  "Force-Disabled", ""));
-	m_gs_gl_ext.push_back(GSSetting(1,  "Force-Enabled", ""));
+	m_gs_generic_list.push_back(GSSetting(-1, "Automatic", "Default"));
+	m_gs_generic_list.push_back(GSSetting(0, "Force-Disabled", ""));
+	m_gs_generic_list.push_back(GSSetting(1, "Force-Enabled", ""));
 
 	m_gs_hack.push_back(GSSetting(0, "Off", "Default"));
 	m_gs_hack.push_back(GSSetting(1, "Half", ""));
@@ -359,7 +359,6 @@ void GSdxApp::Init()
 #else
 	m_default_configuration["linux_replay"]                               = "1";
 #endif
-
 	m_default_configuration["aa1"]                                        = "0";
 	m_default_configuration["accurate_date"]                              = "1";
 	m_default_configuration["accurate_blending_unit"]                     = "1";
