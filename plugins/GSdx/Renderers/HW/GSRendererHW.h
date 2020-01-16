@@ -34,9 +34,9 @@ private:
 	int m_custom_height;
 	bool m_reset;
 	int m_upscale_multiplier;
+	int m_userhacks_ts_half_bottom;
 
 	bool m_large_framebuffer;
-	bool m_disable_ts_half_bottom;
 	bool m_userhacks_align_sprite_X;
 	bool m_userhacks_enabled_gs_mem_clear;
 	bool m_userHacks_merge_sprite;

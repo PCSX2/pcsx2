@@ -455,6 +455,7 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_Disable_Safe_Features"]            = "0";
 	m_default_configuration["UserHacks_DisablePartialInvalidation"]       = "0";
 	m_default_configuration["UserHacks_CPU_FB_Conversion"]                = "0";
+	m_default_configuration["UserHacks_Half_Bottom_Override"]             = "-1";
 	m_default_configuration["UserHacks_HalfPixelOffset"]                  = "0";
 	m_default_configuration["UserHacks_merge_pp_sprite"]                  = "0";
 	m_default_configuration["UserHacks_round_sprite_offset"]              = "0";
@@ -467,7 +468,6 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
 	m_default_configuration["wrap_gs_mem"]                                = "0";
 	m_default_configuration["vsync"]                                      = "0";
-	m_default_configuration["disable_ts_half_bottom"]                     = "0";
 }
 
 void GSdxApp::ReloadConfig()
