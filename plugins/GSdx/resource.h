@@ -101,6 +101,8 @@
 #define IDC_SKIPDRAWHACKEDIT            2126
 #define IDC_SKIPDRAWOFFSET              2127
 #define IDC_SKIPDRAWOFFSETEDIT          2128
+#define IDC_HALF_SCREEN_TS              2129
+#define IDC_HALF_SCREEN_TS_TEXT         2130
 // Shader:
 #define IDC_SHADEBOOST                  2140
 #define IDC_FXAA                        2141

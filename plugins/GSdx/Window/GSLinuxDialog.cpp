@@ -317,11 +317,11 @@ void populate_hw_table(GtkWidget* hw_table)
 void populate_gl_table(GtkWidget* gl_table)
 {
 	GtkWidget* gl_gs_label = left_label("Geometry Shader:");
-	GtkWidget* gl_gs_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_geometry_shader");
+	GtkWidget* gl_gs_combo = CreateComboBoxFromVector(theApp.m_gs_generic_list, "override_geometry_shader");
 	GtkWidget* gl_ils_label = left_label("Image Load Store:");
-	GtkWidget* gl_ils_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_shader_image_load_store");
+	GtkWidget* gl_ils_combo = CreateComboBoxFromVector(theApp.m_gs_generic_list, "override_GL_ARB_shader_image_load_store");
 	GtkWidget* gl_sps_label = left_label("Sparse Texture:");
-	GtkWidget* gl_sps_combo = CreateComboBoxFromVector(theApp.m_gs_gl_ext, "override_GL_ARB_sparse_texture");
+	GtkWidget* gl_sps_combo = CreateComboBoxFromVector(theApp.m_gs_generic_list, "override_GL_ARB_sparse_texture");
 
 	AddTooltip(gl_gs_label, gl_gs_combo, IDC_GEOMETRY_SHADER_OVERRIDE);
 	AddTooltip(gl_ils_label, gl_ils_combo, IDC_IMAGE_LOAD_STORE);
@@ -462,6 +462,8 @@ void populate_hack_table(GtkWidget* hack_table)
 	GtkWidget* stretch_hack_label  = left_label("Round Sprite:");
 	GtkWidget* trilinear_box       = CreateComboBoxFromVector(theApp.m_gs_trifilter, "UserHacks_TriFilter");
 	GtkWidget* trilinear_label     = left_label("Trilinear Filtering:");
+	GtkWidget* half_screen_ts_box  = CreateComboBoxFromVector(theApp.m_gs_generic_list, "UserHacks_Half_Bottom_Override");
+	GtkWidget* half_screen_ts_label = left_label("Half-screen Fix:");
 
 	// Reuse windows helper string :)
 	AddTooltip(hack_offset_label, IDC_OFFSETHACK);
@@ -485,6 +487,8 @@ void populate_hack_table(GtkWidget* hack_table)
 	AddTooltip(hack_wrap_mem, IDC_MEMORY_WRAPPING);
 	AddTooltip(trilinear_box, IDC_TRI_FILTER);
 	AddTooltip(trilinear_label, IDC_TRI_FILTER);
+	AddTooltip(half_screen_ts_box, IDC_HALF_SCREEN_TS);
+	AddTooltip(half_screen_ts_label, IDC_HALF_SCREEN_TS);
 
 
 	s_table_line = 0;
@@ -495,7 +499,8 @@ void populate_hack_table(GtkWidget* hack_table)
 	InsertWidgetInTable(hack_table , hack_depth_check    , hack_merge_sprite);
 	InsertWidgetInTable(hack_table , hack_safe_features  , preload_gs_check);
 	InsertWidgetInTable(hack_table , hack_fast_inv       , hack_wild_check);
-	// Other upscaling hacks
+	// Other hacks
+	InsertWidgetInTable(hack_table , half_screen_ts_label, half_screen_ts_box);
 	InsertWidgetInTable(hack_table , trilinear_label     , trilinear_box);
 	InsertWidgetInTable(hack_table , hack_offset_label   , hack_offset_box);
 	InsertWidgetInTable(hack_table , stretch_hack_label  , stretch_hack_box );
