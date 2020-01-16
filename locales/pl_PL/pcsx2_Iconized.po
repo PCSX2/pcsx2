@@ -544,10 +544,10 @@ msgid ""
 "folder locations can be overridden at any time using the Plugin/BIOS "
 "Selector panel."
 msgstr ""
-"Proszę wybrać preferowaną lokację dla plików PCSX2 poniżej.\n"
+"Proszę wybrać preferowaną lokalizację dla plików PCSX2 poniżej.\n"
 "(w skład wchodzą karty pamięci, zapisane obrazki, ustawienia oraz zapisy "
 "gier)\n"
-"Lokalizację tych katalogów może być w każdym momencie zmieniona w "
+"Lokalizacja tych katalogów może być w każdym momencie zmieniona w "
 "ustawieniach katalogów."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:39

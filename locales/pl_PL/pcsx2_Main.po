@@ -817,7 +817,7 @@ msgid ""
 "Classic black color scheme for people who enjoy having text seared into "
 "their optic nerves."
 msgstr ""
-"Klasyczny czarny temat kolorów, dla ludzi lubiących gdy tekst wbija im się w "
+"Klasyczny czarny motyw kolorów, dla ludzi lubiących gdy tekst wbija im się w "
 "nerwy wzrokowe."
 
 #: pcsx2/gui/ConsoleLogger.cpp:435
@@ -2671,11 +2671,11 @@ msgstr "Zatwierdź ustawienia..."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:238
 msgid "Shutdown PS2 virtual machine?"
-msgstr "Czy wyłączyć virtualną maszynę PS2?"
+msgstr "Czy wyłączyć wirtualną maszynę PS2?"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:315
 msgid "I'm givin' her all she's got, Captain!"
-msgstr "Daję jej pełną moc Kapitanie!"
+msgstr "Daję jej wszystko co ma do zaoferowania, Kapitanie!"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:317
 msgid "Enumerating available plugins..."
@@ -2925,7 +2925,7 @@ msgstr ""
 #: pcsx2/gui/SysState.cpp:334
 msgid "There is no active virtual machine state to download or save."
 msgstr ""
-"Nie ma aktywnej virtualnej maszyny do ściągnięcia lub zapisu stanu gry."
+"Nie ma aktywnej wirtualnej maszyny do ściągnięcia lub zapisu stanu gry."
 
 #: pcsx2/gui/SysState.cpp:529
 msgid ""
@@ -3033,7 +3033,7 @@ msgstr ""
 
 #, c-format
 #~ msgid "Appearance/Themes - %s"
-#~ msgstr "Wygląd/Tematy - %s"
+#~ msgstr "Wygląd/Motywy - %s"
 
 #~ msgid "Appearance"
 #~ msgstr "Wygląd"
@@ -3071,20 +3071,20 @@ msgstr ""
 #~ msgstr "Edytor Bazy Gier"
 
 #~ msgid "Themes Search Path:"
-#~ msgstr "Ścieżka szukania tematów:"
+#~ msgstr "Ścieżka szukania motywów:"
 
 #~ msgid "Select folder containing PCSX2 visual themes"
-#~ msgstr "Wybierz katalog z tematami graficznymi PCSX2"
+#~ msgstr "Wybierz katalog z motywami graficznymi PCSX2"
 
 #~ msgid ""
 #~ "Click the Browse button to select a different folder containing PCSX2 "
 #~ "visual themes."
 #~ msgstr ""
-#~ "Kliknij na 'Przeglądaj' by wybrać inny katalog zawierający tematy "
+#~ "Kliknij na 'Przeglądaj' by wybrać inny katalog zawierający motywy "
 #~ "graficzne PCSX2."
 
 #~ msgid "Select a visual theme:"
-#~ msgstr "Wybierz temat graficzny:"
+#~ msgstr "Wybierz motyw graficzny:"
 
 #~ msgid "Disable all GS output"
 #~ msgstr "Wyłącz całkowicie wyświetlanie obrazu"
