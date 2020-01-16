@@ -29,7 +29,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_custom_height(1024)
 	, m_reset(false)
 	, m_upscale_multiplier(1)
-	, m_disable_ts_half_bottom(false)
+	, m_userhacks_ts_half_bottom(-1)
 	, m_tc(tc)
 	, m_src(nullptr)
 	, m_userhacks_tcoffset(false)
@@ -42,15 +42,15 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
 	m_large_framebuffer  = theApp.GetConfigB("large_framebuffer");
 	m_accurate_date = theApp.GetConfigI("accurate_date");
-	m_disable_ts_half_bottom = theApp.GetConfigB("disable_ts_half_bottom");
 
 	if (theApp.GetConfigB("UserHacks")) {
 		m_userhacks_enabled_gs_mem_clear = !theApp.GetConfigB("UserHacks_Disable_Safe_Features");
 		m_userHacks_enabled_unscale_ptln = !theApp.GetConfigB("UserHacks_Disable_Safe_Features");
 		m_userhacks_align_sprite_X       = theApp.GetConfigB("UserHacks_align_sprite_X");
+		m_userHacks_merge_sprite         = theApp.GetConfigB("UserHacks_merge_pp_sprite");
+		m_userhacks_ts_half_bottom       = theApp.GetConfigI("UserHacks_Half_Bottom_Override");
 		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
 		m_userHacks_HPO                  = theApp.GetConfigI("UserHacks_HalfPixelOffset");
-		m_userHacks_merge_sprite         = theApp.GetConfigB("UserHacks_merge_pp_sprite");
 		m_userhacks_tcoffset_x           = theApp.GetConfigI("UserHacks_TCOffsetX") / -1000.0f;
 		m_userhacks_tcoffset_y           = theApp.GetConfigI("UserHacks_TCOffsetY") / -1000.0f;
 		m_userhacks_tcoffset             = m_userhacks_tcoffset_x < 0.0f || m_userhacks_tcoffset_y < 0.0f;
@@ -58,9 +58,10 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userhacks_enabled_gs_mem_clear = true;
 		m_userHacks_enabled_unscale_ptln = true;
 		m_userhacks_align_sprite_X       = false;
+		m_userHacks_merge_sprite         = false;
+		m_userhacks_ts_half_bottom       = -1;
 		m_userhacks_round_sprite_offset  = 0;
 		m_userHacks_HPO                  = 0;
-		m_userHacks_merge_sprite         = false;
 	}
 
 	if (!m_upscale_multiplier) { //Custom Resolution
@@ -452,22 +453,39 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 	tex_pos &= 0xFF;
 	read_ba = (tex_pos > 112 && tex_pos < 144);
 
-	// Here's the idea
-	// TS effect is 16 bits but we emulate it on a 32 bits format
-	// Normally this means we need to divide size by 2.
-	//
-	// Some games do two TS effects on each half of the buffer.
-	// This makes a mess for us in the TC because we end up with two targets
-	// when we only want one, thus half screen bug.
-	//
-	// 32bits emulation means we can do the effect once but double the size.
-	// Test cases: Crash Twinsantiy and DBZ BT3
-	int height_delta = m_src->m_valid_rect.height() - m_r.height();
-	// Xenosaga handles the half bottom as an vertex offset instead of a buffer offset which does the effect twice.
-	// Half bottom won't trigger a cache miss that skip the draw because it is still the normal buffer but with a vertices offset.
-	const bool cant_handle_half_bottom_fix = m_game.title == CRC::XenosagaE3;
-	// Test Case: NFS: HP2 splits the effect h:256 and h:192 so 64
-	const bool half_bottom = abs(height_delta) <= 64 && !(m_disable_ts_half_bottom || cant_handle_half_bottom_fix);
+	bool half_bottom = false;
+	switch (m_userhacks_ts_half_bottom) {
+		case 0:
+			// Force Disabled.
+			// Force Disabled will help games such as Xenosaga.
+			// Xenosaga handles the half bottom as an vertex offset instead of a buffer offset which does the effect twice.
+			// Half bottom won't trigger a cache miss that skip the draw because it is still the normal buffer but with a vertices offset.
+			half_bottom = false;
+			break;
+		case 1:
+			// Force Enabled.
+			// Force Enabled will help games such as Superman Shadows of Apokolips, The Lord of the Rings: The Two Towers,
+			// Demon Stone, Midnight Club 3.
+			half_bottom = true;
+			break;
+		case -1:
+		default:
+			// Default, Automatic.
+			// Here's the idea
+			// TS effect is 16 bits but we emulate it on a 32 bits format
+			// Normally this means we need to divide size by 2.
+			//
+			// Some games do two TS effects on each half of the buffer.
+			// This makes a mess for us in the TC because we end up with two targets
+			// when we only want one, thus half screen bug.
+			//
+			// 32bits emulation means we can do the effect once but double the size.
+			// Test cases: Crash Twinsantiy and DBZ BT3
+			const int height_delta = m_src->m_valid_rect.height() - m_r.height();
+			// Test Case: NFS: HP2 splits the effect h:256 and h:192 so 64
+			half_bottom = abs(height_delta) <= 64;
+			break;
+	}
 
 	if (PRIM->FST) {
 		GL_INS("First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
