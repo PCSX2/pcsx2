@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-01-16 14:23+0100\n"
+"PO-Revision-Date: 2020-01-17 10:04+0100\n"
 "Last-Translator: mavethee <mitura07@wp.pl>\n"
 "Language-Team: mavethee <mitura07@wp.pl>\n"
 "Language: pl_PL\n"
@@ -1502,7 +1502,7 @@ msgstr "&Zrób kopię przed zapisem"
 
 #: pcsx2/gui/MainFrame.cpp:463
 msgid "Automatic &Gamefixes"
-msgstr "Automatyczne %poprawki do gier"
+msgstr "Automatyczne &poprawki do gier"
 
 #: pcsx2/gui/MainFrame.cpp:464
 msgid "Automatically applies needed Gamefixes to known problematic games"
@@ -1646,7 +1646,7 @@ msgstr "&Zapisywanie..."
 
 #: pcsx2/gui/MainFrame.cpp:556
 msgid "Create &Blockdump"
-msgstr "Utwórz %Zrzut bloku"
+msgstr "Utwórz &Zrzut bloku"
 
 #: pcsx2/gui/MainFrame.cpp:556
 msgid "Creates a block dump for debugging purposes."
