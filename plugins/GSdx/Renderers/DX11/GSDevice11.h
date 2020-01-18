@@ -461,7 +461,6 @@ private:
 	CComPtr<ID3D11Buffer> m_ps_cb;
 	std::unordered_map<uint32, CComPtr<ID3D11SamplerState>> m_ps_ss;
 	CComPtr<ID3D11SamplerState> m_palette_ss;
-	CComPtr<ID3D11SamplerState> m_rt_ss;
 	std::unordered_map<uint32, CComPtr<ID3D11DepthStencilState>> m_om_dss;
 	std::unordered_map<uint32, CComPtr<ID3D11BlendState>> m_om_bs;
 
