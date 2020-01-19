@@ -77,10 +77,6 @@ bool GSDevice11::CreateTextureFX()
 
 	if(FAILED(hr)) return false;
 
-	hr = m_dev->CreateSamplerState(&sd, &m_rt_ss);
-
-	if(FAILED(hr)) return false;
-
 	// create layout
 
 	VSSelector sel;

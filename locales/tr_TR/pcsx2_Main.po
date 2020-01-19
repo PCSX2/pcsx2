@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-01-15 19:32+0300\n"
+"PO-Revision-Date: 2020-01-17 16:21+0300\n"
 "Last-Translator: Burak Berk (JudgeJE#6269) <pastlesshelios@gmail.com>\n"
 "Language-Team: Burak Berk (JudgeJE#6269) <pastlesshelios@gmail.com>\n"
 "Language: tr_TR\n"
@@ -42,8 +42,8 @@ msgid ""
 "meet PCSX2's lofty needs."
 msgstr ""
 "Sanal hafıza eşleme hatası! Sisteminizde çakışan sürücüler ya da hizmetler "
-"bulunabilir ya da sisteminiz PCSX2'nin gerektirdiği donanım gücünü "
-"karşılayamıyor."
+"bulunabilir, ya da sisteminiz PCSX2'nin gerektirdiği donanım gücünü "
+"karşılayamıyor olabilir."
 
 #: common/src/Utilities/Exceptions.cpp:290
 msgid "Path: "
@@ -75,7 +75,7 @@ msgid ""
 "corrupted."
 msgstr ""
 "Beklenmeyen dosya sonu veya akış hatasıyla karşılaşıldı. Dosya büyük "
-"olasılıkla yarım ya da bozuk."
+"olasılıkla eksik ya da bozuk."
 
 #: common/src/Utilities/ThreadTools.cpp:41
 msgid "Threading activity: start, detach, sync, deletion, etc."
@@ -101,7 +101,7 @@ msgstr "Tanımlanamayan ISO dosyası formatı"
 
 #: pcsx2/Elfheader.cpp:163
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
-msgstr "ELF dosyası yüklenemiyor. Dosya bozuk veya tamamlanmamış olabilir."
+msgstr "ELF dosyası yüklenemiyor. Dosya bozuk veya eksik olabilir."
 
 #: pcsx2/Elfheader.cpp:165
 msgid ""
@@ -209,7 +209,7 @@ msgstr "Kaydı Yapan Kişi"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:31
 msgid "Record From"
-msgstr "Kayıta Başlanacak Zaman"
+msgstr "Kayda Başlanacak Zaman"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:41
 msgid "Ok"
@@ -255,12 +255,12 @@ msgstr "Sistemin çıkış akışına yazdırılmış dizeleri gösterir."
 
 #: pcsx2/SourceLog.cpp:127
 msgid "Shows recording related logs and information"
-msgstr "Kayıta bağlı olan günlükleri ve bilgileri gösterir."
+msgstr "Kayıta bağlı olan günlükleri ve bilgileri gösterir"
 
 #: pcsx2/SourceLog.cpp:132
 msgid "Shows detailed controller input values for port 1, every frame"
 msgstr ""
-"Her karede Port 1 için olan detaylı oyun kolu girdisi değerlerini gösterir."
+"Her karede Port 1 için olan detaylı oyun kolu girdisi değerlerini gösterir"
 
 #: pcsx2/SourceLog.cpp:168
 msgid "SYSCALL and DECI2 activity."
@@ -364,7 +364,8 @@ msgstr "IOP'nin GPU eş-işlemli komutlarının tersine çevrilmesi."
 #: pcsx2/SourceLog.cpp:311
 msgid ""
 "All known hardware register accesses, not including the sub-filters below."
-msgstr "Aşağıda belirtilenler dışındaki tüm bilinen donanım kaydı erişimi."
+msgstr ""
+"Aşağıda belirtilen filtreler dışındaki tüm bilinen donanım kaydı erişimi."
 
 #: pcsx2/SourceLog.cpp:329
 msgid "Memorycard reads, writes, erases, terminators, and other processing."
@@ -1642,7 +1643,7 @@ msgstr "Görüntü"
 
 #: pcsx2/gui/MainFrame.cpp:561
 msgid "Start Recording"
-msgstr "Video Kayıt Etmeye Başla"
+msgstr "Video Kaydetmeye Başla"
 
 #: pcsx2/gui/MainFrame.cpp:562
 msgid "Stop Recording"
@@ -1896,7 +1897,7 @@ msgstr "Konumu kaydet"
 
 #: pcsx2/gui/MainMenuClicks.cpp:844
 msgid "Select P2M2 record file."
-msgstr "P2M2 kayıt dosyası seç"
+msgstr "P2M2 kayıt dosyası seç."
 
 #: pcsx2/gui/MemoryCardFile.cpp:196
 #, c-format
@@ -2281,7 +2282,7 @@ msgstr "FMV oynatılırken GSdx software rendering moduna geç"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:104
 msgid "Preload TLB hack to avoid tlb miss on Goemon"
-msgstr "Geomon'daki eksik TLB sorunun önlemek için TLB hack'ini önyükle"
+msgstr "Goemon'daki eksik TLB sorunun önlemek için TLB hack'ini önyükle"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:108
 msgid ""
@@ -2546,7 +2547,7 @@ msgstr "Son Değiştirme"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:106
 msgid "Created on"
-msgstr "Oluşturulma tarihi:"
+msgstr "Oluşturulma tarihi"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:151
 msgid "No"
@@ -2739,8 +2740,8 @@ msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr ""
-"Hızı oldukça artırır ve uyumluluğu yüksektir; donmalara neden olabilir [3+ "
-"çekirdek için önerilir]"
+"Hızı oldukça artırır ve uyumluluğu yüksektir; donmalara neden olabilir [3 ve "
+"üzeri sayıda çekirdekli işlemciler için önerilir]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid "Other Hacks"
@@ -2869,7 +2870,7 @@ msgstr "Kare Sınırlama"
 
 #: pcsx2/gui/RecentIsoList.cpp:139
 msgid "Clear ISO list"
-msgstr "ISO listesini temizle."
+msgstr "ISO listesini temizle"
 
 #: pcsx2/gui/Saveslots.h:96
 #, c-format
