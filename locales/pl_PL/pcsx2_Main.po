@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-01-17 10:04+0100\n"
+"PO-Revision-Date: 2020-01-20 10:40+0100\n"
 "Last-Translator: mavethee <mitura07@wp.pl>\n"
 "Language-Team: mavethee <mitura07@wp.pl>\n"
 "Language: pl_PL\n"
@@ -1465,7 +1465,7 @@ msgstr "&Różne"
 
 #: pcsx2/gui/MainFrame.cpp:368
 msgid "&Debug"
-msgstr "&Odbugowanie"
+msgstr "&Debugowanie"
 
 #: pcsx2/gui/MainFrame.cpp:369
 msgid "&Capture"
@@ -1531,7 +1531,7 @@ msgstr "Aktywuj &Host Filesystem"
 
 #: pcsx2/gui/MainFrame.cpp:483
 msgid "Shut&down"
-msgstr "Zakończ&emulację"
+msgstr "Zakończ &emulację"
 
 #: pcsx2/gui/MainFrame.cpp:484
 msgid "Wipes all internal VM states and shuts down plugins."
@@ -1548,7 +1548,7 @@ msgstr "Zamyka %s - może poważnie zaszkodzić twojemu zdrowiu!"
 
 #: pcsx2/gui/MainFrame.cpp:495
 msgid "ISO &Selector"
-msgstr "Wybierz&ISO"
+msgstr "Wybierz &ISO"
 
 #: pcsx2/gui/MainFrame.cpp:496
 msgid "Plugin &Menu"
@@ -1580,11 +1580,11 @@ msgstr "Użyj tego by wejść do ustawień BIOS'u swojej wirtualnej PS2."
 
 #: pcsx2/gui/MainFrame.cpp:509
 msgid "Emulation &Settings"
-msgstr "&Ustawienia Emulacji"
+msgstr "&Ustawienia emulacji"
 
 #: pcsx2/gui/MainFrame.cpp:510
 msgid "&Memory cards"
-msgstr "&Karty Pamięci"
+msgstr "&Karty pamięci"
 
 #: pcsx2/gui/MainFrame.cpp:511
 msgid "&Plugin/BIOS Selector"
@@ -1646,7 +1646,7 @@ msgstr "&Zapisywanie..."
 
 #: pcsx2/gui/MainFrame.cpp:556
 msgid "Create &Blockdump"
-msgstr "Utwórz &Zrzut bloku"
+msgstr "Utwórz &zrzut bloku"
 
 #: pcsx2/gui/MainFrame.cpp:556
 msgid "Creates a block dump for debugging purposes."
