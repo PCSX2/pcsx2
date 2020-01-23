@@ -134,27 +134,6 @@ bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_DemonStone(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01400 && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT16)
-		{
-			// Texture shuffle half screen bottom issue.
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32)
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1472,7 +1451,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::BurnoutTakedown] = GSC_BurnoutGames;
 
 		// Half Screen bottom issue
-		lut[CRC::DemonStone] = GSC_DemonStone; // Half screen on texture shuffle
 		lut[CRC::Tekken5] = GSC_Tekken5;
 
 		// Needs testing

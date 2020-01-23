@@ -46,7 +46,6 @@ public:
 		DBZBT2,
 		DBZBT3,
 		DeathByDegreesTekkenNinaWilliams,
-		DemonStone,
 		DestroyAllHumans,
 		DestroyAllHumans2,
 		DevilMayCry3,
