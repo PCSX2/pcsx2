@@ -8,10 +8,10 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-01-25 01:15+0000\n"
-"Last-Translator: mavethee <mitura07@wp.pl>\nManz4rk <stouf@outlook.com>"
-"Language-Team: mavethee <mitura07@wp.pl>\nManz4rk <stouf@outlook.com>"
-"Language: pl_PL\n"
+"PO-Revision-Date: 2020-01-25 12:05+0000\n"
+"Last-Translator: mavethee <mitura07@wp.pl>\n"
+"Manz4rk <stouf@outlook.com>Language-Team: mavethee <mitura07@wp.pl>\n"
+"Manz4rk <stouf@outlook.com>Language: pl_PL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,6 +19,8 @@ msgstr ""
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: G:/pcsx2-3/pcsx2\n"
 "X-Generator: Poedit 2.2.4\n"
+"Language-Team: \n"
+"Language: pl_PL\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -46,7 +48,7 @@ msgid ""
 msgstr ""
 "Niepowodzenie podczas mapowania wirtualnej pamięci! Twój system może mieć "
 "konfliktujące sterowniki urządzeń, usług lub po prostu nie mieć "
-"wystarczającej ilości pamięci by zaspokoić apetyt PCSX2."
+"wystarczającej ilości pamięci, aby zaspokoić apetyt PCSX2."
 
 #: common/src/Utilities/Exceptions.cpp:290
 msgid "Path: "
@@ -497,7 +499,7 @@ msgstr "uruchamia obraz IRX"
 
 #: pcsx2/gui/AppInit.cpp:255
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
-msgstr "załadowuje pustą płytę DVD; użyj by wejść do menu systemowego PS2"
+msgstr "załadowuje pustą płytę DVD; użyj, aby wejść do menu systemowego PS2"
 
 #: pcsx2/gui/AppInit.cpp:256
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
@@ -571,7 +573,7 @@ msgstr ""
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
-"Naciśnij OK aby użyć standardowo skonfigurowanej wtyczki lub Anuluj – by "
+"Naciśnij OK aby użyć standardowo skonfigurowanej wtyczki lub Anuluj – aby "
 "zamknąć %s."
 
 #: pcsx2/gui/AppInit.cpp:557
@@ -1577,7 +1579,7 @@ msgstr "&Brak płyty"
 
 #: pcsx2/gui/MainFrame.cpp:501
 msgid "Use this to boot into your virtual PS2's BIOS configuration."
-msgstr "Użyj, by wejść do ustawień BIOSu swojej wirtualnej PS2."
+msgstr "Użyj, aby wejść do ustawień BIOSu swojej wirtualnej PS2."
 
 #: pcsx2/gui/MainFrame.cpp:509
 msgid "Emulation &Settings"
@@ -1860,7 +1862,7 @@ msgid ""
 "Error: The configured ISO file does not exist.  Click OK to select a new ISO "
 "source for CDVD."
 msgstr ""
-"Błąd: Skonfigurowany plik ISO nie istnieje. Naciśnij „OK” by wybrać nowy "
+"Błąd: Skonfigurowany plik ISO nie istnieje. Naciśnij „OK”, aby wybrać nowy "
 "obraz ISO dla CDVD."
 
 #: pcsx2/gui/MainMenuClicks.cpp:399
@@ -2265,7 +2267,7 @@ msgstr ""
 msgid ""
 "Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."
 msgstr ""
-"Skip MPEG hack - Pomija filmy/animacje by zapobiec zawieszaniu/blokowaniu "
+"Skip MPEG hack - Pomija filmy/animacje, aby zapobiec zawieszaniu/blokowaniu "
 "się gier."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:77
