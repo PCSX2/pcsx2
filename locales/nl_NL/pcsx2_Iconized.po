@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-01-27 14:31+0100\n"
+"PO-Revision-Date: 2020-01-27 15:57+0100\n"
 "Last-Translator: Regis Martens (RedDevilus)\n"
 "Language-Team: \n"
 "Language: nl_NL\n"
@@ -388,7 +388,7 @@ msgstr ""
 "geven.\n"
 "\n"
 "16:9: Schakel tijdelijk naar een beeldverhouding van 16:9 (rechthoek) "
-"terwijl een cutscen (FMV) speelt om een breedbeeld 16:9 cutscene (FMV) "
+"terwijl een cutscene (FMV) speelt om een breedbeeld 16:9 cutscene (FMV) "
 "correct weer te geven."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:75
@@ -459,7 +459,7 @@ msgid ""
 " * Resident Evil: Dead Aim (Causes garbled textures)"
 msgstr ""
 "Bekend om beïnvloeding van volgende spellen:\n"
-" * Digital Devil Saga (Repareert FMV en crashes)\n"
+" * Digital Devil Saga (Repareert Cutscene [FMV] en crashes)\n"
 " * SSX (Repareert slechte graphics en crashes)\n"
 " * Resident Evil: Dead Aim (Veroorzaakt verminkte textures)"
 
@@ -630,7 +630,7 @@ msgid ""
 msgstr ""
 "50% kloksnelheid. Aanzienlijke vermindering van CPU-vereisten. Versnelt zeer "
 "lichtgewichte spellen, maar vertraagt anderen. Cutscenes (FMV) en geluid "
-"kunnen stotteren of worden overgeslaan."
+"kunnen stotteren of worden overgeslagen."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
 #, c-format
@@ -640,7 +640,7 @@ msgid ""
 msgstr ""
 "60% kloksnelheid. Matige vermindering van CPU-vereisten. Versnelt "
 "lichtgewichte spellen, vertraagt anderen. Cutscenes (FMV) en geluid kunnen "
-"stotteren of worden overgeslaan."
+"stotteren of worden overgeslagen."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
 #, c-format
