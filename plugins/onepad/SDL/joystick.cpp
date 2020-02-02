@@ -223,7 +223,8 @@ JoystickInfo::JoystickInfo(int id)
             eid = SDL_HapticNewEffect(m_haptic, &effects[0]);
             if (eid < 0) {
                 fprintf(stderr, "ERROR: Effect is not uploaded! %s\n", SDL_GetError());
-                return;
+                m_haptic = nullptr;
+                break;
             }
         }
     }
