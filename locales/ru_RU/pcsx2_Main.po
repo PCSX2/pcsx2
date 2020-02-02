@@ -52,7 +52,7 @@ msgstr ""
 
 #: common/src/Utilities/Exceptions.cpp:290
 msgid "Path: "
-msgstr "Путь:"
+msgstr "Путь: "
 
 #: common/src/Utilities/Exceptions.cpp:294
 msgid "[Unnamed or unknown]"
@@ -205,11 +205,11 @@ msgstr "Панель"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:29
 msgid "File Path"
-msgstr ""
+msgstr "Путь к файлу"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:30
 msgid "Author"
-msgstr ""
+msgstr "Автор"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:31
 msgid "Record From"
@@ -399,7 +399,7 @@ msgstr "Детализированное логирование CDVD"
 #: pcsx2/SourceLog.cpp:359
 #, fuzzy
 msgid "Detailed logging of the Motion (FMV) Decoder hardware unit."
-msgstr "Детализированное логирование CDVD"
+msgstr ""
 
 #: pcsx2/System.h:224 pcsx2/System.h:225 pcsx2/System.h:226
 msgid "PCSX2 Message"
@@ -835,7 +835,7 @@ msgstr "&Сохранить лог как..."
 
 #: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "Save log contents to file"
-msgstr "Сохраняет содержимое окна в файл."
+msgstr "Сохраняет содержимое окна в файл"
 
 #: pcsx2/gui/ConsoleLogger.cpp:436
 msgid "C&lear"
@@ -843,7 +843,7 @@ msgstr "&Очистить окно"
 
 #: pcsx2/gui/ConsoleLogger.cpp:436
 msgid "Clear the log window contents"
-msgstr "Очищает окно лога."
+msgstr "Очищает окно лога"
 
 #: pcsx2/gui/ConsoleLogger.cpp:438
 msgid "Auto&dock"
@@ -863,7 +863,7 @@ msgstr "&Закрыть"
 
 #: pcsx2/gui/ConsoleLogger.cpp:441
 msgid "Close this log window; contents are preserved"
-msgstr "Закрывает окно лога (содержимое окна сохраняется)."
+msgstr "Закрывает окно лога (содержимое окна сохраняется)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:445
 msgid "Dev/&Verbose"
@@ -921,34 +921,35 @@ msgstr "О программе %s"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Website"
-msgstr ""
+msgstr "Веб-сайт"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:56
 msgid "Support Forums"
-msgstr ""
+msgstr "Форумы поддержки"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:58
 msgid "GitHub Repository"
-msgstr ""
+msgstr "GitHub репозиторий"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:60
 msgid "License"
-msgstr ""
+msgstr "Лицензия"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
 #, fuzzy
 msgid "PlayStation 2 Emulator:"
-msgstr "Эмулятор Playstation 2"
+msgstr "Эмулятор Playstation 2:"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
 msgid ""
 "Big thanks to everyone who contributed to the project throughout the years."
 msgstr ""
+"Большое спасибо всем, кто участвовал в проекте на протяжении многих лет."
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
 #, fuzzy
 msgid "Close"
-msgstr "&Закрыть"
+msgstr "Закрыть"
 
 #: pcsx2/gui/Dialogs/AssertionDialog.cpp:24
 msgid "Assertion Failure - "
@@ -1206,6 +1207,7 @@ msgid ""
 "This memory card is required by PSX games. It is not compatible with PS2 "
 "games."
 msgstr ""
+"Эта карта памяти требуется для игр PSX. Она не совместима с играми PS2."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
 #, c-format
@@ -1456,7 +1458,7 @@ msgstr "Бэкап"
 
 #: pcsx2/gui/MainFrame.cpp:52
 msgid "File..."
-msgstr ""
+msgstr "Файл..."
 
 #: pcsx2/gui/MainFrame.cpp:349
 msgid "&Show Console"
@@ -1488,11 +1490,11 @@ msgstr "&Отладка"
 
 #: pcsx2/gui/MainFrame.cpp:369
 msgid "&Capture"
-msgstr ""
+msgstr "&Снимок"
 
 #: pcsx2/gui/MainFrame.cpp:377 pcsx2/gui/MainMenuClicks.cpp:516
 msgid "&Recording"
-msgstr ""
+msgstr "&Запись"
 
 #: pcsx2/gui/MainFrame.cpp:441 pcsx2/gui/MainFrame.cpp:443
 #: pcsx2/gui/MainFrame.cpp:449
@@ -1675,32 +1677,32 @@ msgstr "Создает Block-дамп для отладки."
 #: pcsx2/gui/MainFrame.cpp:560
 #, fuzzy
 msgid "Video"
-msgstr "&Видео (GS)"
+msgstr "Видео"
 
 #: pcsx2/gui/MainFrame.cpp:561
 msgid "Start Recording"
-msgstr ""
+msgstr "Начать запись"
 
 #: pcsx2/gui/MainFrame.cpp:562
 msgid "Stop Recording"
-msgstr ""
+msgstr "Остановить запись"
 
 #: pcsx2/gui/MainFrame.cpp:564
 #, fuzzy
 msgid "Screenshot"
-msgstr "Скриншоты:"
+msgstr "Скриншот"
 
 #: pcsx2/gui/MainFrame.cpp:569
 msgid "New"
-msgstr ""
+msgstr "Новая запись"
 
 #: pcsx2/gui/MainFrame.cpp:570
 msgid "Stop"
-msgstr ""
+msgstr "Остановить"
 
 #: pcsx2/gui/MainFrame.cpp:571
 msgid "Play"
-msgstr ""
+msgstr "Играть"
 
 #: pcsx2/gui/MainFrame.cpp:573
 msgid "Virtual Pad (Port 1)"
@@ -1752,8 +1754,7 @@ msgstr "Запустить CD/DVD (все этапы)"
 
 #: pcsx2/gui/MainFrame.cpp:714
 msgid "Boot the VM using the current ISO source media"
-msgstr ""
-"Запускает виртуальную машину PS2, используя выбранный DVD-диск или ISO-файл."
+msgstr "Запускает виртуальную машину PS2, используя выбранный ISO-файл."
 
 #: pcsx2/gui/MainFrame.cpp:717
 #, fuzzy
@@ -1763,8 +1764,7 @@ msgstr "Запустить CD/DVD (все этапы)"
 #: pcsx2/gui/MainFrame.cpp:718
 #, fuzzy
 msgid "Boot the VM using the current CD/DVD source media"
-msgstr ""
-"Запускает виртуальную машину PS2, используя выбранный DVD-диск или ISO-файл."
+msgstr "Запускает виртуальную машину PS2, используя выбранный DVD-диск."
 
 #: pcsx2/gui/MainFrame.cpp:721
 msgid "Boo&t BIOS"
@@ -1773,8 +1773,7 @@ msgstr ""
 #: pcsx2/gui/MainFrame.cpp:722
 #, fuzzy
 msgid "Boot the VM without any source media"
-msgstr ""
-"Запускает виртуальную машину PS2, используя выбранный DVD-диск или ISO-файл."
+msgstr "Запускает виртуальную машину PS2, без носителя."
 
 #: pcsx2/gui/MainFrame.cpp:803 pcsx2/gui/MainFrame.cpp:838
 msgid "No plugin loaded"
@@ -1900,13 +1899,14 @@ msgstr "Новый образ для запуска:\n"
 
 #: pcsx2/gui/MainMenuClicks.cpp:419
 msgid "Confirm clearing ISO list"
-msgstr ""
+msgstr "Подтвердить очистку ISO списка"
 
 #: pcsx2/gui/MainMenuClicks.cpp:420
 msgid ""
 "This will clear the ISO list. If an ISO is running it will remain in the "
 "list. Continue?"
 msgstr ""
+"Это очистит список ISO. Если ISO работает, он останется в списке. Продолжить?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:504
 msgid ""
@@ -2100,7 +2100,7 @@ msgstr "Включить кэш EE -  только интерпретатор! (
 msgid "Interpreter only; provided for diagnostic"
 msgstr ""
 "Медленный режим, используйте только для поиска возможных багов IOP-"
-"рекомпилятора."
+"рекомпилятора"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:226
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:134 pcsx2/gui/Panels/VideoPanel.cpp:294
@@ -2149,7 +2149,7 @@ msgstr "Открыть в Проводнике"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:175
 msgid "Open an explorer window to this folder."
-msgstr "Открывает данную папку в Проводнике"
+msgstr "Открывает данную папку в Проводнике."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:266
 msgid "Create folder?"
@@ -2177,7 +2177,7 @@ msgstr "Широкоформатное (16:9)"
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:37
 #, fuzzy
 msgid "Off (Default)"
-msgstr "(по умолчанию)"
+msgstr "Выключено (по умолчанию)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:45
 msgid "Disabled"
@@ -2218,7 +2218,7 @@ msgstr "Соотношение сторон:"
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:104
 #, fuzzy
 msgid "FMV Aspect Ratio Override:"
-msgstr "Соотношение сторон:"
+msgstr ""
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:106
 msgid "Custom Window Size:"
@@ -2344,8 +2344,7 @@ msgstr ""
 #, fuzzy
 msgid "VU I bit Hack avoid constant recompilation (Crash Tag Team Racing)"
 msgstr ""
-"VU I bit Hack во избежание постоянной рекомпиляции (Scarface The World Is "
-"Yours)"
+"VU I bit Hack во избежание постоянной рекомпиляции (Crash Tag Team Racing)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:123
 msgid "Enable manual game fixes [Not recommended]"
@@ -2369,9 +2368,9 @@ msgid ""
 "Warning: Trace logging is typically very slow, and is a leading cause of "
 "'What happened to my FPS?' problems. :)"
 msgstr ""
-"Осторожно: Включение логов трессировки в основном очень замедляет "
-"производительность, и это первая причина всех \"Что слоучилось с моими FPS!!!"
-"\" проблем. :)"
+"Предупреждение: Включение логов трассировки, как правило, снижает "
+"производительность и является основной причиной: Что случилось с моим FPS? "
+"проблемы. :)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:187
 msgid "Select folder with PS2 memory cards"
@@ -2656,7 +2655,7 @@ msgstr ""
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:61
 #, c-format
 msgid "Select a document root for %s"
-msgstr "Выберите основную папку для настроек %s:"
+msgstr "Выберите основную папку для настроек %s"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:125
 msgid "Apply"
@@ -2668,7 +2667,7 @@ msgstr "Устанавливает выбранный язык для интер
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:38
 msgid "Cheats:"
-msgstr ""
+msgstr "Чит-коды:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:39
 #, fuzzy
@@ -2764,12 +2763,12 @@ msgstr "Простое и быстрое включение/отключение
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:143
 msgid "EE Cyclerate [Not Recommended]"
-msgstr "EE Cyclerate [не рекомендуется]"
+msgstr "EE Cyclerate [Не рекомендуется]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
 #, fuzzy
 msgid "EE Cycle Skipping [Not Recommended]"
-msgstr "VU Cycle Stealing [не рекомендуется]"
+msgstr "EE Cycle Skipping [Не рекомендуется]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "microVU Hacks"
@@ -2777,7 +2776,7 @@ msgstr "microVU-хаки"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
 msgid "mVU Flag Hack"
-msgstr "mVU хак флагов"
+msgstr ""
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
 msgid ""
@@ -2860,7 +2859,7 @@ msgstr "Коэффициент ускорения:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:78
 msgid "NTSC Framerate:"
-msgstr "Лимит кадров для NTSC-игр"
+msgstr "Лимит кадров для NTSC-игр:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:81 pcsx2/gui/Panels/VideoPanel.cpp:87
 msgid "FPS"
@@ -2868,7 +2867,7 @@ msgstr "FPS"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:84
 msgid "PAL Framerate:"
-msgstr "Лимит кадров для PAL-игр"
+msgstr "Лимит кадров для PAL-игр:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:156
 msgid ""
@@ -2928,17 +2927,17 @@ msgstr "Лимит кадров"
 
 #: pcsx2/gui/RecentIsoList.cpp:139
 msgid "Clear ISO list"
-msgstr ""
+msgstr "Очистить список ISO"
 
 #: pcsx2/gui/Saveslots.h:96
 #, fuzzy, c-format
 msgid "Slot %d - Empty"
-msgstr "Слот %d"
+msgstr "Слот %d - Пусто"
 
 #: pcsx2/gui/Saveslots.h:98
 #, fuzzy, c-format
 msgid "Slot %d - %s %s"
-msgstr "Слот %d"
+msgstr "Слот %d - %s %s"
 
 #: pcsx2/gui/Saveslots.h:100
 #, c-format
@@ -2987,7 +2986,7 @@ msgstr ""
 
 #: pcsx2/gui/i18n.cpp:63
 msgid " (default)"
-msgstr "(по умолчанию)"
+msgstr " (по умолчанию)"
 
 #: pcsx2/ps2/BiosTools.cpp:90 pcsx2/ps2/BiosTools.cpp:158
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
