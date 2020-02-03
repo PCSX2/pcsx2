@@ -71,6 +71,13 @@ Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 	SetMinWidth( MSW_GetDPIScale() * 600 );
 
 	FastFormatUnicode faqFile;
+#ifndef DOC_DIR_COMPILATION
+	faqFile.Write( L"file:///%s/Docs/PCSX2_FAQ.pdf", WX_STR(InstallFolder.ToString()) );
+#else
+	// Each linux distributions have his rules for path so we give them the possibility to
+	// change it with compilation flags. -- Gregory
+#define xDOC_str(s) DOC_str(s)
+#define DOC_str(s) #s
 	//Runtime Environment Variable for AppImage and others containers:
 	char * val = getenv( "PCSX2_DOC_DIR" );
 	if ( val != NULL )
@@ -79,16 +86,9 @@ Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 	}
 	else
 	{
-#ifndef DOC_DIR_COMPILATION
-		faqFile.Write( L"file:///%s/Docs/PCSX2_FAQ.pdf", WX_STR(InstallFolder.ToString()) );
-#else
-		// Each linux distributions have his rules for path so we give them the possibility to
-		// change it with compilation flags. -- Gregory
-#define xDOC_str(s) DOC_str(s)
-#define DOC_str(s) #s
 		faqFile.Write( L"file://%s/PCSX2_FAQ.pdf", WX_STR(wxDirName(xDOC_str(DOC_DIR_COMPILATION)).ToString()) );
-#endif
 	}
+#endif
 
 	wxStaticBoxSizer& langSel	= *new wxStaticBoxSizer( wxVERTICAL, this, _("Language selector") );
 
