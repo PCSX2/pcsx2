@@ -7,9 +7,8 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-02-02 19:29+0300\n"
-"Last-Translator: Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail "
-"AND_DOT_HERE com>\n"
+"PO-Revision-Date: 2020-02-03 10:17+0300\n"
+"Last-Translator: teorex3AND_DOT_HERE com>\n"
 "Language-Team: Kein <kein-of@yandex.ru>\n"
 "Language: ru_RU\n"
 "MIME-Version: 1.0\n"
@@ -213,11 +212,11 @@ msgstr "Автор"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:31
 msgid "Record From"
-msgstr ""
+msgstr "Запись из"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:41
 msgid "Ok"
-msgstr ""
+msgstr "Ок"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:42 pcsx2/gui/AppInit.cpp:742
 msgid "Cancel"
@@ -255,15 +254,16 @@ msgstr "Показать журнал отладки DECI2 (EE процессо�
 
 #: pcsx2/SourceLog.cpp:121
 msgid "Shows strings printed to the system output stream."
-msgstr ""
+msgstr "Показывает строки, напечатанные в системный поток вывода."
 
 #: pcsx2/SourceLog.cpp:127
 msgid "Shows recording related logs and information"
-msgstr ""
+msgstr "Показывает записи, логи и информацию"
 
 #: pcsx2/SourceLog.cpp:132
 msgid "Shows detailed controller input values for port 1, every frame"
 msgstr ""
+"Показывает подробные значения ввода контроллера для порта 1, каждый кадр"
 
 #: pcsx2/SourceLog.cpp:168
 msgid "SYSCALL and DECI2 activity."
@@ -398,7 +398,7 @@ msgstr "Детализированное логирование CDVD."
 
 #: pcsx2/SourceLog.cpp:359
 msgid "Detailed logging of the Motion (FMV) Decoder hardware unit."
-msgstr ""
+msgstr "Детальный лог аппаратного блока декодера движения (FMV)."
 
 #: pcsx2/System.h:224 pcsx2/System.h:225 pcsx2/System.h:226
 msgid "PCSX2 Message"
@@ -552,7 +552,7 @@ msgstr ""
 
 #: pcsx2/gui/AppInit.cpp:268
 msgid "update options to ease profiling (debug)"
-msgstr ""
+msgstr "обновить параметры для облегчения профилирования (отладка)"
 
 #: pcsx2/gui/AppInit.cpp:272
 #, c-format
@@ -769,7 +769,7 @@ msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:115
 msgid "Save log question"
-msgstr ""
+msgstr "Сохранить лог запросов"
 
 #: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "&Small"
@@ -830,7 +830,7 @@ msgstr "&Сохранить лог как..."
 
 #: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "Save log contents to file"
-msgstr "Сохраняет содержимое окна в файл"
+msgstr "Сохранить содержимое лога в файл"
 
 #: pcsx2/gui/ConsoleLogger.cpp:436
 msgid "C&lear"
@@ -838,7 +838,7 @@ msgstr "&Очистить окно"
 
 #: pcsx2/gui/ConsoleLogger.cpp:436
 msgid "Clear the log window contents"
-msgstr "Очищает окно лога"
+msgstr "Очистить содержимое окна лога"
 
 #: pcsx2/gui/ConsoleLogger.cpp:438
 msgid "Auto&dock"
@@ -870,7 +870,7 @@ msgstr "Отображает подробную отладочную инфор�
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
 msgid "&CDVD reads"
-msgstr "Чтение CDVD"
+msgstr "&Чтение CDVD"
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
 msgid "Shows disk read activity"
@@ -878,19 +878,19 @@ msgstr "Показывает активность чтения диска"
 
 #: pcsx2/gui/ConsoleLogger.cpp:463
 msgid "&Enable all"
-msgstr "Включить все"
+msgstr "&Включить все"
 
 #: pcsx2/gui/ConsoleLogger.cpp:463
 msgid "Enables all log source filters."
-msgstr "Включает все источники логирования."
+msgstr "Включает все фильтры источников лога."
 
 #: pcsx2/gui/ConsoleLogger.cpp:464
 msgid "&Disable all"
-msgstr "Выключить все"
+msgstr "&Выключить все"
 
 #: pcsx2/gui/ConsoleLogger.cpp:464
 msgid "Disables all log source filters."
-msgstr "Отключает все источники логирования."
+msgstr "Отключает все фильтры источников лога."
 
 #: pcsx2/gui/ConsoleLogger.cpp:465
 msgid "&Restore Default"
@@ -898,15 +898,15 @@ msgstr "Восстанавливает настройки по умолчани�
 
 #: pcsx2/gui/ConsoleLogger.cpp:465
 msgid "Restore default source filters."
-msgstr "Восстанавливает все источники логирования по умолчанию."
+msgstr "Восстановите исходные фильтры по умолчанию."
 
 #: pcsx2/gui/ConsoleLogger.cpp:467
 msgid "&Log"
-msgstr "&Файл"
+msgstr "&Лог"
 
 #: pcsx2/gui/ConsoleLogger.cpp:468
 msgid "&Sources"
-msgstr "&Режим"
+msgstr "&Источники"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:36
 #, c-format
@@ -1182,7 +1182,7 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:259
 msgid "128 KiB (PSX)"
-msgstr ""
+msgstr "128 КБ (PSX)"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:259
 msgid ""
@@ -1379,7 +1379,7 @@ msgstr "Загружает быстрое сохранение, ассоциир
 
 #: pcsx2/gui/GlobalCommands.cpp:636
 msgid "Load State Backup"
-msgstr "Загрузить бэкап"
+msgstr "Загрузить бэкап сохранения"
 
 #: pcsx2/gui/GlobalCommands.cpp:637
 msgid "Loads virtual machine state backup for current slot."
@@ -1418,7 +1418,7 @@ msgstr ""
 
 #: pcsx2/gui/IsoDropTarget.cpp:87 pcsx2/gui/MainMenuClicks.cpp:351
 msgid "Confirm PS2 Reset"
-msgstr "Подтвердите сброс"
+msgstr "Подтвердите сброс PS2"
 
 #: pcsx2/gui/IsoDropTarget.cpp:89
 #, c-format
@@ -1527,11 +1527,11 @@ msgstr "Включить широкоэкранные патчи"
 
 #: pcsx2/gui/MainFrame.cpp:470
 msgid "Enabling Widescreen Patches may occasionally cause issues."
-msgstr ""
+msgstr "Включение широкоэкранных патчей может иногда вызывать проблемы."
 
 #: pcsx2/gui/MainFrame.cpp:473
 msgid "Enable &Recording Tools"
-msgstr ""
+msgstr "Включить режим записи"
 
 #: pcsx2/gui/MainFrame.cpp:478
 msgid "Enable &Host Filesystem"
@@ -1592,11 +1592,11 @@ msgstr "Настройки &эмуляции"
 
 #: pcsx2/gui/MainFrame.cpp:510
 msgid "&Memory cards"
-msgstr "&Настройка карт памяти"
+msgstr "&Карты памяти"
 
 #: pcsx2/gui/MainFrame.cpp:511
 msgid "&Plugin/BIOS Selector"
-msgstr "&Настройка плагинов/BIOS"
+msgstr "&Выбор плагинов/BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:515
 msgid "&Video (GS)"
@@ -1689,11 +1689,11 @@ msgstr "Играть"
 
 #: pcsx2/gui/MainFrame.cpp:573
 msgid "Virtual Pad (Port 1)"
-msgstr ""
+msgstr "Виртуальный джойстик (Порт 1)"
 
 #: pcsx2/gui/MainFrame.cpp:574
 msgid "Virtual Pad (Port 2)"
-msgstr ""
+msgstr "Виртуальный джойстик (Порт 2)"
 
 #: pcsx2/gui/MainFrame.cpp:649
 msgid "Paus&e"
@@ -1761,7 +1761,7 @@ msgstr "Плагин не загружен"
 
 #: pcsx2/gui/MainFrame.cpp:808
 msgid "&Core GS Settings..."
-msgstr "Базовые настройки GS..."
+msgstr "Основные настройки GS..."
 
 #: pcsx2/gui/MainFrame.cpp:809
 msgid ""
@@ -1788,7 +1788,7 @@ msgstr "Настройки плагина..."
 #: pcsx2/gui/MainFrame.cpp:820
 #, c-format
 msgid "Opens the %s plugin's advanced settings dialog."
-msgstr "Открывает расширенные настройки текущего %s -плагина."
+msgstr "Открывает расширенные настройки текущего %s плагина."
 
 #: pcsx2/gui/MainMenuClicks.cpp:116
 msgid "Reset all settings?"
@@ -1849,7 +1849,7 @@ msgstr "Все файлы (*.*)"
 
 #: pcsx2/gui/MainMenuClicks.cpp:282
 msgid "Select disc image, compressed disc image, or block-dump..."
-msgstr "Выбор образа диска, сжато образ диска или block-дамп..."
+msgstr "Выберите образ диска, сжатый образ диска или блок-дамп..."
 
 #: pcsx2/gui/MainMenuClicks.cpp:299
 msgid "Select ELF file..."
@@ -1898,6 +1898,13 @@ msgid ""
 "These tools are provided as-is and should be enabled under your own "
 "discretion."
 msgstr ""
+"Помните, что функции режима записи PCSX2 все еще находятся в стадии "
+"разработки.\n"
+"В результате могут быть непредвиденные ошибки, последствия для "
+"производительности и нестабильность в некоторых играх.\n"
+"\n"
+"Эти инструменты предоставляются как есть и должны быть включены по вашему "
+"усмотрению."
 
 #: pcsx2/gui/MainMenuClicks.cpp:589
 msgid "Load State"
@@ -1959,7 +1966,7 @@ msgstr "Невозможно применить настройки..."
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:100
 msgid "BIOS Search Path:"
-msgstr "Искать BIOS-образа в:"
+msgstr "Искать BIOS-образы в:"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:101
 msgid "Select folder with PS2 BIOS roms"
@@ -2193,7 +2200,7 @@ msgstr "Соотношение сторон:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:104
 msgid "FMV Aspect Ratio Override:"
-msgstr ""
+msgstr "Соотношение сторон в FMV заставках:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:106
 msgid "Custom Window Size:"
@@ -2201,7 +2208,7 @@ msgstr "Установка соотношения вручную:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:109
 msgid "Zoom:"
-msgstr "Увеличение:"
+msgstr "Увеличение (Zoom):"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:115
 msgid "Wait for Vsync on refresh:"
@@ -2408,6 +2415,11 @@ msgid ""
 "Note: Only available when a memory card is formatted. Not available for PSX "
 "memory cards."
 msgstr ""
+"Преобразуйте эту карту памяти в или из папки карты памяти. Создает дубликат "
+"текущей карты памяти нового типа.\n"
+"\n"
+"Примечание. Доступно только при форматировании карты памяти. Недоступно для "
+"карт памяти PSX."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
 msgid "Delete"
@@ -2508,45 +2520,37 @@ msgid "Insert card"
 msgstr "Вставить карту"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1019
-#, fuzzy
 msgid "&Eject card"
-msgstr "Изъять карту"
+msgstr "&Изъять карту"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1019
-#, fuzzy
 msgid "&Insert card ..."
-msgstr "Вставить карту..."
+msgstr "&Вставить карту..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1020
-#, fuzzy
 msgid "D&uplicate card ..."
-msgstr "Дублировать карту..."
+msgstr "&Дублировать карту..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1021
-#, fuzzy
 msgid "&Rename card ..."
-msgstr "Переименовать карту..."
+msgstr "&Переименовать карту..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1022
-#, fuzzy
 msgid "&Delete card"
-msgstr "Удалить карту"
+msgstr "&Удалить карту"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1024
-#, fuzzy
 msgid "&Convert card"
-msgstr "Конвертировать карту"
+msgstr "&Конвертировать карту"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1030
-#, fuzzy
 msgid "&Create a new card ..."
-msgstr "Создать новую карту..."
+msgstr "&Создать новую карту..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1035
-#, fuzzy
 msgid "Re&fresh List"
-msgstr "Обновить список"
+msgstr "&Обновить список"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:99
 msgid "PS2 Port"
@@ -2752,8 +2756,8 @@ msgstr ""
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
-"Хорошее ускорение и высокая совместимость. Возможно появление графического "
-"\"мусора\", черного экрана, выпадающих полигонов и т.п. [Рекомендуется]"
+"Хорошее ускорение и высокая совместимость; может вызвать плохую графику ... "
+"[Рекомендуется]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid "MTVU (Multi-Threaded microVU1)"
@@ -2764,9 +2768,8 @@ msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr ""
-"Неплохое ускорение и вполне неплохая совместимость. Возможно появление "
-"графического \"мусора\", черного экрана, выпадающих полигонов и т.п. "
-"[рекомендуется]"
+"Хорошее ускорение и высокая совместимость; может привести к зависанию ... "
+"[Рекомендуется, если у вас 3+ ядра]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid "Other Hacks"
@@ -2782,7 +2785,7 @@ msgid ""
 "[Recommended]"
 msgstr ""
 "Серьезное повышение производительности и почти без каких-либо побочных "
-"эффектов. [рекомендуется]"
+"эффектов. [Рекомендуется]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
 msgid "Enable Wait Loop Detection"
@@ -2793,7 +2796,7 @@ msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "Неплохое ускорение некоторых игр без каких-либо побочных эффектов. "
-"[рекомендуется]"
+"[Рекомендуется]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
 msgid "Enable fast CDVD"
@@ -2801,7 +2804,7 @@ msgstr "Включить быстрый CDVD"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:197
 msgid "Fast disc access, less loading times. [Not Recommended]"
-msgstr "Ускоряет доступ к диску, уменьшает время загрузки. [не рекомендуется]"
+msgstr "Ускоряет доступ к диску, уменьшает время загрузки. [Не рекомендуется]"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:32
 msgid "Disable Framelimiting"
@@ -2816,7 +2819,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:57
 msgid "Base Framerate Adjust:"
-msgstr "Базовое значение:"
+msgstr "Базовая частота кадров:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:63
 msgid "Slow Motion Adjust:"
@@ -2911,12 +2914,12 @@ msgstr "Слот %d - %s %s"
 #: pcsx2/gui/Saveslots.h:100
 #, c-format
 msgid "Slot %d - Unknown Time"
-msgstr ""
+msgstr "Слот %d - Время неизвестно"
 
 #: pcsx2/gui/Saveslots.h:113
 #, c-format
 msgid "Write time is %s %s."
-msgstr ""
+msgstr "Время записи %s %s."
 
 #: pcsx2/gui/SysState.cpp:291 pcsx2/gui/SysState.cpp:298
 msgid "Cannot load this savestate. The state is an unsupported version."
