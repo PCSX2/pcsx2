@@ -173,6 +173,12 @@ namespace PathDefs
 
 	wxDirName GetProgramDataDir()
 	{
+		//Runtime Environment Variable for AppImage and others containers:
+		char * val = getenv( "PCSX2_GAMEINDEX_DIR" );
+		if ( val != NULL )
+		{
+			return wxDirName( xGAMEINDEX_str( std::string(val) ) );
+		}
 #ifndef GAMEINDEX_DIR_COMPILATION
 		return AppRoot();
 #else
@@ -221,6 +227,13 @@ namespace PathDefs
 
 	wxDirName GetPlugins()
 	{
+		//Runtime Environment Variable for AppImage and others containers:
+		char * val = getenv( "PCSX2_PLUGIN_DIR" );
+		if ( val != NULL )
+		{
+			return wxDirName( xPLUGIN_DIR_str( std::string(val) ) );
+		}
+
 		// Each linux distributions have his rules for path so we give them the possibility to
 		// change it with compilation flags. -- Gregory
 #ifndef PLUGIN_DIR_COMPILATION
