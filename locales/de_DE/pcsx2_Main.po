@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-01-31 22:27+0100\n"
+"PO-Revision-Date: 2020-02-04 19:21+0100\n"
 "Last-Translator: XXXBold\n"
 "Language-Team: PCSX2\n"
 "Language: de_DE\n"
@@ -90,7 +90,8 @@ msgstr "Warte auf Task..."
 
 #: common/src/Utilities/wxAppWithHelpers.cpp:35
 msgid "Includes idle event processing and some other uncommon event usages."
-msgstr "Idle Zeit und Anderes."
+msgstr ""
+"Beinhaltet Idle-Eventverarbeitung und einige andere ungewöhnliche Events."
 
 #: pcsx2/CDVD/InputIsoFile.cpp:248
 msgid "Unrecognized ISO image file format"
@@ -99,7 +100,7 @@ msgstr "Unbekanntes ISO Dateiformat"
 #: pcsx2/Elfheader.cpp:163
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
 msgstr ""
-"Die ELF-Datei konnte nicht geladen werden.  Sie ist korrupt oder ungültig."
+"Die ELF-Datei konnte nicht geladen werden.  Sie ist beschädigt oder ungültig."
 
 #: pcsx2/Elfheader.cpp:165
 msgid ""
@@ -113,13 +114,15 @@ msgstr ""
 msgid ""
 "The MTGS thread has become unresponsive while waiting for the GS plugin to "
 "open."
-msgstr "Der MTGS Thread ist eingefroren."
+msgstr ""
+"Der MTGS-Thread ist eingefroren, während auf das Öffnen des GS-Plugins "
+"gewartet wurde."
 
 #: pcsx2/PluginManager.cpp:709
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
 msgstr ""
-"Der Spielstand konnte nicht geladen werden. Er ist korrupt oder "
+"Der Spielstand konnte nicht geladen werden. Er ist beschädigt oder "
 "unvollständig."
 
 #: pcsx2/PluginManager.cpp:720
@@ -138,7 +141,7 @@ msgid ""
 "resources needed."
 msgstr ""
 "%s Plugin konnte nicht initialisiert werden. Dein Computer hat eventuell zu "
-"wenig Ressourcen oder inkompatible Treiber."
+"wenig Speicher oder Resourcen."
 
 #: pcsx2/PluginManager.cpp:955
 #, c-format
@@ -148,7 +151,7 @@ msgstr "Das konfigurierte %s Plugin konnte nicht gefunden werden"
 #: pcsx2/PluginManager.cpp:959
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
-msgstr "Das konfigurierte %s Plugin ist keine gültige DLL Datei"
+msgstr "Das konfigurierte %s Plugin ist keine gültige DLL-Datei"
 
 #: pcsx2/PluginManager.cpp:976
 #, c-format
@@ -156,22 +159,23 @@ msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
 "unsupported version of PCSX2."
 msgstr ""
-"Das konfigurierte %s Plugin ist kein valides PCSX2 Plugin oder für eine alte "
-"Version."
+"Das konfigurierte %s Plugin ist kein gültiges PCSX2 Plugin oder für eine "
+"nicht mehr unterstützte Version."
 
 #: pcsx2/PluginManager.cpp:1010
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr ""
-"Das Plugin meldet, dass deine Hardware oder Software nicht unterstützt wird."
+"Das Plugin meldet, dass deine Hard- oder Software oder Treiber nicht "
+"unterstützt werden."
 
 #: pcsx2/PluginManager.cpp:1031
 msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
 msgstr ""
-"Das konfigurierte %s Plugin ist kein valides PCSX2 Plugin oder für eine alte "
-"Version."
+"Das konfigurierte Plugin ist kein gültiges PCSX2 Plugin oder für eine nicht "
+"mehr unterstützte Version."
 
 #: pcsx2/PluginManager.cpp:1056
 #, c-format
@@ -179,8 +183,8 @@ msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
 "unsupported version of PCSX2."
 msgstr ""
-"Konfiguriertes %s Plugin ist kein valides PCSX2 Plugin oder für eine ältere "
-"Version."
+"Konfigurierte %s Plugin ist kein gültiges PCSX2 Plugin oder für eine nicht "
+"mehr unterstützte Version."
 
 #: pcsx2/PluginManager.cpp:1490
 msgid "Internal Memorycard Plugin failed to initialize."
@@ -223,13 +227,15 @@ msgstr ""
 
 #: pcsx2/SourceLog.cpp:96
 msgid "Dumps detailed information for PS2 executables (ELFs)."
-msgstr "Dumpt detailierte PS2 ELF (Ausführungsdateien) Informationen."
+msgstr "Dumpt detaillierte Informationen zu PS2-ELFs (Ausführungsdateien)."
 
 #: pcsx2/SourceLog.cpp:101
 msgid ""
 "Logs manual protection, split blocks, and other things that might impact "
 "performance."
-msgstr "Logt manuell geschützte und getrennte Blöcke."
+msgstr ""
+"Loggt manuelle Schutzmassnahmen, teilt Blöcke auf, und weitere Operationen, "
+"welche die Performance verschlechtern können."
 
 #: pcsx2/SourceLog.cpp:106
 msgid "Shows the game developer's logging text (EE processor)"
@@ -326,7 +332,7 @@ msgstr "Logs der Datentransfers, Busrechte, Stalls, etc."
 
 #: pcsx2/SourceLog.cpp:264
 msgid "Tracks all EE counters events and some counter register activity."
-msgstr "EE Counters."
+msgstr "Zeichnet alle EE-Zählerevents und einige Registerzähler Aktivität."
 
 #: pcsx2/SourceLog.cpp:270
 msgid "Dumps various VIF and VIFcode processing data."
@@ -351,7 +357,7 @@ msgstr "Disasm of the IOP's GPU co-processor instructions."
 #: pcsx2/SourceLog.cpp:311
 msgid ""
 "All known hardware register accesses, not including the sub-filters below."
-msgstr "Alle bekannten Registerzugriffe, ohne die Optionen tiefer."
+msgstr "Alle bekannten Registerzugriffe, ohne die Filter unterhalb."
 
 #: pcsx2/SourceLog.cpp:329
 msgid "Memorycard reads, writes, erases, terminators, and other processing."
@@ -439,7 +445,7 @@ msgstr "PCSX2 Recompiler Fehler"
 msgid "All options are for the current session only and will not be saved.\n"
 msgstr ""
 "Alle Optionen sind nur für die aktuelle Sitzung und werden nicht "
-"gespeichert. \n"
+"gespeichert.\n"
 
 #: pcsx2/gui/AppInit.cpp:244 pcsx2/gui/AppMain.cpp:368
 msgid "IsoFile"
@@ -481,12 +487,12 @@ msgstr "Führt eine IRX Datei aus"
 #: pcsx2/gui/AppInit.cpp:255
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
 msgstr ""
-"Bootet mit einem leeren DVD Laufwerk. Benutze dies, um in das PS2 Systemmenü "
-"zu gelangen"
+"Startet mit einem leeren DVD Laufwerk. Benutze dies, um in das PS2-"
+"Systemmenü zu gelangen"
 
 #: pcsx2/gui/AppInit.cpp:256
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
-msgstr "Bootet vom CDVD Plugin (override des IsoFile Parameters)"
+msgstr "Startet vom CDVD-Plugin (überschreibt den IsoFile-Parameter)"
 
 #: pcsx2/gui/AppInit.cpp:258
 msgid "disables all speedhacks"
@@ -743,7 +749,7 @@ msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:115
 msgid "Save log question"
-msgstr "Speiche Logfrage"
+msgstr "Log speichern Bestätigung"
 
 #: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "&Small"
@@ -1864,7 +1870,7 @@ msgstr ""
 "Die Funktionen zur Aufzeichnung der Eingabe befinden sich in einem frühen "
 "Entwicklungsstadium\n"
 "Dies kann zu unvorhergesehenen Fehlern, Geschwindigkeitsverlusten und "
-"instabilität in einigen Spielen führen.\n"
+"Instabilität in einigen Spielen führen.\n"
 "\n"
 "Das Verwenden dieser Funktionen erfolgt auf eigene Verantwortung."
 
@@ -2043,7 +2049,7 @@ msgstr "Ziemlich langsam, nur für Diagnosezwecke"
 #: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:226
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:134 pcsx2/gui/Panels/VideoPanel.cpp:294
 msgid "Restore Defaults"
-msgstr "Standardeinstellung"
+msgstr "Standardeinstellungen wiederherstellen"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:186
 msgid ""
@@ -2089,7 +2095,7 @@ msgstr "Öffnet ein Explorerfenster mit diesem Ordner."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:266
 msgid "Create folder?"
-msgstr "Erstelle Ordner?"
+msgstr "Ordner erstellen?"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:267
 #, c-format
@@ -2723,7 +2729,7 @@ msgid ""
 "cores]"
 msgstr ""
 "Guter FPS Anstieg, gute Kompatibilität. Kann zu Hängern führen [empfohlen "
-"für 3+ Kerne]"
+"für 3+ CPU-Kerne]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid "Other Hacks"
@@ -2910,7 +2916,7 @@ msgstr "(Standard)"
 #: pcsx2/ps2/BiosTools.cpp:90 pcsx2/ps2/BiosTools.cpp:158
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
 msgstr ""
-"Die gewählte BIOS-Datei ist kein korrektes PS2 BIOS. Bitte neu konfigurieren."
+"Die gewählte Datei ist kein gültiges PS2-BIOS. Bitte neu konfigurieren."
 
 #: pcsx2/ps2/BiosTools.cpp:271
 msgid ""
@@ -2918,7 +2924,7 @@ msgid ""
 "configuration has been corrupted.  Please re-configure."
 msgstr ""
 "Das PS2 BIOS konnte nicht geladen werden. Entweder wurde das BIOS nicht "
-"konfiguriert oder die Konfiguration ist korrupt. Bitte neu konfigurieren."
+"konfiguriert oder die Konfiguration ist beschädigt. Bitte neu konfigurieren."
 
 #: pcsx2/ps2/BiosTools.cpp:278
 msgid "The configured BIOS file does not exist.  Please re-configure."
