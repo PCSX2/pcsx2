@@ -1,14 +1,14 @@
-# Copyright (C) 2011 PCSX2_Dev_Team
+# Copyright (C) 2020 PCSX2_Dev_Team
 # This file is distributed under the same license as the PCSX2 package.
 # Bukhartsev Dmitriy <bukhartsev.dm@gmail.com>, 2011.
 # Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail AND_DOT_HERE com>, 2016.
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 0.9.9\n"
+"Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2016-01-12 02:25+0300\n"
-"Last-Translator: Bukhartsev Dmitriy <bukhartsev.dm@gmail.com>\n"
+"PO-Revision-Date: 2020-02-04 02:09+0300\n"
+"Last-Translator: teorex3\n"
 "Language-Team: Kein <kein-of@yandex.ru>\n"
 "Language: ru_RU\n"
 "MIME-Version: 1.0\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Poedit-KeywordsList: pxE;pxExpandMsg\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: g:/Internet/SVN/PCSX2\n"
-"X-Generator: Poedit 1.8.4\n"
+"X-Generator: Poedit 2.2.4\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -33,6 +33,8 @@ msgstr ""
 msgid ""
 "Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings."
 msgstr ""
+"Не удалось прочитать/записать файл NVM/MEC. Проверьте настройки BIOS/"
+"настройки разрешений."
 
 #: pcsx2/System.cpp:112
 msgid ""
@@ -63,7 +65,7 @@ msgid ""
 "have been disabled:"
 msgstr ""
 "Внимание: произошла ошибка инициализации некоторых рекомпиляторов PCSX2, они "
-"будут автоматически отключены."
+"будут автоматически отключены:"
 
 #: pcsx2/gui/AppInit.cpp:221
 msgid ""
@@ -82,10 +84,10 @@ msgid ""
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
 "count).  Please consult the FAQs and Guides for further instructions."
 msgstr ""
-"Для работы эмулятора PCSX2 вам нужна *легальная* копия образа BIOS'а из "
-"вашей PS2. Вы не можете использовать образ, скачанный из интернета или "
-"полученный от друзей. Используйте спец-программы для сохранения вашей "
-"собственной копии BIOS'а с вашей консоли."
+"Для запуска PCSX2 требуется BIOS PS2. По легальным причинам вы *должны* "
+"получить BIOS от вашей личной консоли PS2, которой вы владеете "
+"(заимствования не учитываются). Пожалуйста, обратитесь к FAQ и руководствам "
+"для дальнейших инструкций."
 
 #: pcsx2/gui/AppMain.cpp:718
 msgid ""
@@ -183,7 +185,8 @@ msgid ""
 "you view the readme and configuration guide."
 msgstr ""
 "Этот мастер поможет вам пройти через дебри настроек плагинов,  карт памяти и "
-"БИОСа. Строго рекомендуется, если вы впервые производите установку %s, то "
+"БИОСа.\n"
+"Строго рекомендуется, если вы впервые производите установку %s, то "
 "посмотрите FAQ и гайд по конфигурации."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:140
@@ -192,11 +195,11 @@ msgid ""
 "You cannot use a copy obtained from a friend or the Internet.\n"
 "You must dump the BIOS from your *own* Playstation 2 console."
 msgstr ""
-"Для работы эмулятора PCSX2 вам нужна *легальная* копия образа BIOS'а PS2. Вы "
-"не можете использовать образ, скачанный из интернета или полученный от "
-"друзей. Используйте спец-программы для сохранения вашей собственной копии "
-"BIOS'а с вашей консоли. Для более подробной информации обратитесь к "
-"руководству программы."
+"Для работы эмулятора PCSX2 вам нужна *легальная* копия образа BIOS'а PS2.\n"
+"Вы не можете использовать образ, скачанный из интернета или полученный от "
+"друзей.\n"
+"Используйте спец-программы для сохранения вашей собственной копии BIOS'а с "
+"вашей консоли."
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:32
 #, c-format
@@ -354,7 +357,7 @@ msgid ""
 "with PCSX2's current usermode setting. "
 msgstr ""
 "Активируйте данную опцию, если хотите, чтобы PCSX2 создавала соответствующие "
-"папки относительно пути, указанному в настройках пользовательского режима."
+"папки относительно пути, указанному в настройках пользовательского режима. "
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:73
 msgid ""
@@ -379,10 +382,6 @@ msgid ""
 "Keyboard: CTRL + NUMPAD-PLUS: Zoom-In, CTRL + NUMPAD-MINUS: Zoom-Out, CTRL + "
 "NUMPAD-*: Toggle 100/0"
 msgstr ""
-"Устраняет \"излом\" изображения при активной смене картинки на экране, "
-"однако сия роскошь чревата общим понижением производительности. Актуально "
-"лишь при использовании полноэкранного режима и лишь в связке с теми видео-"
-"плагинами, которые его поддерживают."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:78
 msgid ""
@@ -463,18 +462,17 @@ msgstr ""
 "* Transformers"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:124
-#, fuzzy
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty ('Automatic' means: selectively use specific tested "
 "fixes for specific games). Manual game fixes will NOT increase your "
 "performance. In fact they may decrease it."
 msgstr ""
-"Вместо изменения данных настроек лучше всего включить опцию 'Автоматические "
-"исправления в играх' в главном меню и оставить галочки пустыми. "
-"('Автоматические' означает , что определенные настройки будут использоваться "
-"при запуске определенной игры). Ручные исправления НЕ улучшают "
-"производительность, а фактически даже могут ее уменьшить."
+"Вместо этого лучше включить «Автоматическое исправление игры» в главном меню "
+"и оставить эту страницу пустой («Автоматически» означает: выборочно "
+"использовать определенные проверенные исправления для определенных игр). "
+"Ручные исправления игры НЕ повысят вашу производительность. На самом деле "
+"они могут уменьшить ее."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:128
 msgid ""
@@ -493,8 +491,8 @@ msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
 "card will be lost!  Are you absolutely and quite positively sure?"
 msgstr ""
-"Вы действительно хотите удалить отформатированную карту памяти в слоте %s? "
-"Все сохраненные данные на ней будут потеряны!"
+"Вы собираетесь удалить отформатированную карту памяти '%s'. Все данные на "
+"этой карте будут потеряны! Вы уверены?"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:718
 msgid ""
@@ -536,7 +534,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
 msgid "This folder is where PCSX2 loads cheats from."
-msgstr ""
+msgstr "Это папка из которой PCSX2 загружает чит-коды."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:48
 msgid ""
@@ -595,6 +593,8 @@ msgid ""
 "50% cyclerate. Significant reduction of CPU requirements. Speedup for very "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
+"50% cyclerate. Значительное снижение требований к CPU. Ускорение для очень "
+"легких игр, замедляет другие. FMV и аудио могут заикаться или пропускать."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
 #, c-format
@@ -602,6 +602,8 @@ msgid ""
 "60% cyclerate. Moderate reduction of CPU requirements. Speedup for "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
+"60% cyclerate. Умеренное снижение требований к CPU. Ускорение для легких "
+"игр, замедляет другие. FMV и аудио могут заикаться или пропускать."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
 #, c-format
@@ -609,11 +611,15 @@ msgid ""
 "75% cyclerate. Slight reduction of CPU requirements. Speedup for less "
 "demanding games, slows down others."
 msgstr ""
+"75% cyclerate. Незначительное снижение требований к CPU. Ускорение для менее "
+"требовательных игр, замедляет другие."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:47
 msgid ""
 "Default cyclerate. Runs the emulated PS2 Emotion Engine at normal speed."
 msgstr ""
+"Default cyclerate. Запускает эмуляцию PS2 Emotion Engine на нормальной "
+"скорости."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:53
 #, c-format
@@ -621,6 +627,8 @@ msgid ""
 "130% cyclerate. Moderate increase of CPU requirements. Variable framerate "
 "games may have higher internal framerates."
 msgstr ""
+"130% cyclerate. Умеренное повышение требований к CPU. Игры с переменной "
+"частотой кадров могут иметь более высокую внутреннюю частоту кадров."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:59
 #, c-format
@@ -629,6 +637,9 @@ msgid ""
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
+"180% cyclerate. Значительное увеличение требований к CPU. Игры с переменной "
+"частотой кадров будут иметь более высокую внутреннюю частоту кадров. FMV "
+"могут быть медленными. Может вызвать проблемы со стабильностью."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
 #, c-format
@@ -637,13 +648,13 @@ msgid ""
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
+"300% cyclerate. Чрезвычайное повышение требований к CPU. Игры с переменной "
+"частотой кадров будут иметь более высокую внутреннюю частоту кадров. FMV "
+"могут быть медленными. Может вызвать проблемы со стабильностью."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:81
-#, fuzzy
 msgid "Disables EE Cycle Skipping. Most compatible setting."
-msgstr ""
-"0 - VU Cycle Stealing отключен. Наиболее безопасная опция в плане "
-"совместимости."
+msgstr "Отключение EE Cycle Skipping. Наиболее совместимые настройки."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
 msgid ""
@@ -739,7 +750,6 @@ msgstr ""
 "следующему событию или вообще к концу процессорного интервала."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
-#, fuzzy
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this (often marked as needing 'mode 1' or 'slow DVD')."
