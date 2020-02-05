@@ -62,8 +62,8 @@ Upscaling can cause some screen elements, usually but not always bloom effects, 
 Try the various Half Pixel Offset modes. The further down the list you go, the more aggressive the hack gets. Once you find a mode that properly fixes the ghosting/misalignment, do not push it further. Also note in some games, the further you upscale, the worse the ghosting/misalignment gets. In some of these games, Half Pixel Offset may mitigate the issue, but not be able to fully resolve it.
 
 #### Flickering or improper lightning
-Sometimes a game uses blending for lighting effects and needs more accuracy for blending to work correctly. Navigate to the GSdx Advanced Settings and Hacks:
-`Config > Video (GS) > Plugin Settings > Advanced Settings and Hacks`
+Sometimes a game uses blending for lighting effects and needs more accuracy for blending to work correctly. Navigate to the GSdx Plugin Settings:
+`Config > Video (GS) > Plugin Settings`
 Increment Blending Accuracy until the problem goes away. Note, higher Blending Accuracy substantially increases performance requirements.
 
 #### Flickering or improperly shaped shadows
