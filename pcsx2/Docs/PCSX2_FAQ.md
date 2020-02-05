@@ -112,10 +112,7 @@ It will be released when it is ready. Please don't waste your time and ours aski
 ## PCSX2 Configuration
 
 ### How do I configure the emulator? 
-Full-length guides from initial setup to launching a game are on the PCSX2 Wiki:
-***FIXME: Wikis need updated!!!***
-[Windows configuration guide](https://wiki.pcsx2.net/Setting_up_Windows_version)
-[Linux configuration guide](https://wiki.pcsx2.net/Setting_up_Linux_version)
+Refer to the Configuration_Guide.pdf (located in the same folder as this FAQ) for an initial setup guide and solution manual to some common known issues.
 
 ### I see framelimiter options. What are those? Will they boost my FPS?
 The framelimiter has a few options that allow you to alter the pacing of your games. This will directly affect the game's speed itself, NOT your framerate. Useful for speeding through sections of games, or slowing down for precision.

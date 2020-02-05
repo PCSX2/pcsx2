@@ -70,7 +70,7 @@ This can either be a GS or VU problem so solutions will vary wildly by game.
 ##### GS
 Navigate to the GSdx Advanced Settings and Hacks:
 `Config > Video (GS) > Plugin Settings > Advanced Settings and Hacks`
-Try checking Disable Safe Features. FIXME: What are some next steps for GS?
+Try checking Disable Safe Features.
 
 ##### VU
 Navigate to the VU settings:
