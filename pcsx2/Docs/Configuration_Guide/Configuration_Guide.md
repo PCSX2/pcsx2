@@ -9,7 +9,9 @@ The first time you launch PCSX2, you will be prompted with a First Time Configur
 
 ### Language Selection
 You may choose to change the UI language of PCSX2 here.
+
 ![PCSX2_First_Time_Configuration.png](PCSX2_First_Time_Configuration.png)
+
 *Note: Translations may not be accurate or actively maintained by translators. If you find translation issues and want to fix them yourself, please get into contact with the PCSX2 team by opening a [thread on the PCSX2 forums](https://forums.pcsx2.net/) or an [issue on GitHub](https://github.com/PCSX2/pcsx2/issues).*
 
 ### Plugin Selection
