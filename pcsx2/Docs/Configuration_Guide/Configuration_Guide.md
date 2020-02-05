@@ -14,6 +14,8 @@ You may choose to change the UI language of PCSX2 here.
 
 *Note: Translations may not be accurate or actively maintained by translators. If you find translation issues and want to fix them yourself, please get into contact with the PCSX2 team by opening a [thread on the PCSX2 forums](https://forums.pcsx2.net/) or an [issue on GitHub](https://github.com/PCSX2/pcsx2/issues).*
 
+<div class="page"/> <!-- Because PDFs are terrible -->
+
 ### Plugin Selection
 Most users running on a modern PC will be able to continue normally here without changing any settings.
 
@@ -73,6 +75,8 @@ This can either be a GS or VU problem so solutions will vary wildly by game.
 Navigate to the GSdx Advanced Settings and Hacks:
 `Config > Video (GS) > Plugin Settings > Advanced Settings and Hacks`
 Try checking Disable Safe Features.
+
+<div class="page"/> <!-- Because PDFs are terrible -->
 
 ##### VU
 Navigate to the VU settings:

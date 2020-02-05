@@ -1,6 +1,5 @@
 # PCSX2 - Frequently Asked Questions
 
----
 ## About the PCSX2 Project
 
 ### What is the purpose of the PCSX2 project?
@@ -21,6 +20,8 @@ There are a number of ways to help the project, whether it be bug reporting, gam
 No, PCSX2 is not ready to run immediately. First, you must dump your PlayStation 2 console's BIOS using the BIOS dumper. The BIOS dumper is [available on the PCSX2 website](https://pcsx2.net/download/releases/tools.html). 
 
 After dumping your PlayStation 2 console's BIOS, you may launch PCSX2, step through the first time setup wizard, and then begin playing.
+
+<div class="page"/> <!-- Because PDFs are terrible -->
 
 ---
 ## Technical Details of PCSX2
@@ -45,6 +46,8 @@ After dumping your PlayStation 2 console's BIOS, you may launch PCSX2, step thro
 By default, PCSX2 uses two cores for emulation. Enabling the MTVU speedhack allows the PS2's VU1 coprocessor to run on a third core, which is safe for most games.
 
 Software rendering in GSdx can be set to use as many or as few rendering threads as desired. We recommend using no more than 8, or the number of cores (including hyperthreads) that your CPU has, whichever is the lower number.
+
+<div class="page"/> <!-- Because PDFs are terrible -->
 
 ### My CPU isn't being used 100%. Why? 
 The CPU load as reported in software such as Windows' Task Manager is usually a *summation* of CPU usage, across *all* cores. Software can only use the resources of the individual CPU cores it is actually running on, and cannot "borrow" CPU time from other cores.
@@ -73,6 +76,8 @@ The PlayStation 2 is a complex console, and this complexity substantially raises
 
 ### Where do I get a PS2 BIOS?
 You have to dump the BIOS files from your PlayStation 2 console. There is a BIOS dumper tool [available on the PCSX2 website](https://pcsx2.net/download/releases/tools.html) to do this. If you need a guide, check the bottom of this FAQ for links to BIOS guides.
+
+<div class="page"/> <!-- Because PDFs are terrible -->
 
 ### Where do I get PS2 games?
 You can use games from your personal collection of discs, purchase them from local stores that resell old games, or look online at sites like eBay or Amazon.
@@ -108,6 +113,8 @@ Fast boot will directly mount and launch the game without first launching the PS
 ### When will the next version be released? 
 It will be released when it is ready. Please don't waste your time and ours asking when.
 
+<div class="page"/> <!-- Because PDFs are terrible -->
+
 ---
 ## PCSX2 Configuration
 
@@ -134,6 +141,8 @@ Gamefixes are specialized fixes built into PCSX2 for specific games. Gamefixes m
 Most games will not need gamefixes, however if your game is having issues, you can try manually enabling them in Emulation Settings.
 
 Gamefixes are not FPS boosters; more often than not, they will degrade performance slightly.
+
+<div class="page"/> <!-- Because PDFs are terrible -->
 
 ### Are Speedhacks safe? 
 As the name says, speedhacks are hacks to make things faster. They will speed up games, but risk causing stability problems or crashing some games. PCSX2 ships with some speedhacks enabled in the default "Safe" preset. This selection of speedhacks has been reviewed thoroughly and determined to be safe for nearly all games.
@@ -162,6 +171,8 @@ PCSX2's default audio playback mode is Timestretch, which will attempt to stretc
 For Windows users running LilyPad, PCSX2 will ship with XInput bindings already created. This will automatically work with an Xbox One controller or any other XInput controller. Bindings can easily be made for DirectInput controllers, such as Xbox 360 controllers. PS3, PS4, or Switch Pro controllers should be set up using a compatibility software, such as Steam's Big Picture mode. 
 
 For Linux users running OnePad, PCSX2 will automatically detect and bind controls to any recognizable controller. Unfortunately, if your controller is not automatically recognized and bound, your options are limited, as OnePad only allows manual control binding to your keyboard and mouse.
+
+<div class="page"/> <!-- Because PDFs are terrible -->
 
 ---
 ## Useful Links
