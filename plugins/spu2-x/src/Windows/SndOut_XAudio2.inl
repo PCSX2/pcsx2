@@ -250,9 +250,7 @@ private:
     };
 
     HMODULE xAudio2DLL = nullptr;
-#if _WIN32_WINNT >= 0x602
     decltype(&XAudio2Create) pXAudio2Create = nullptr;
-#endif
     CComPtr<IXAudio2> pXAudio2;
     IXAudio2MasteringVoice *pMasteringVoice = nullptr;
     std::unique_ptr<BaseStreamingVoice> m_voiceContext;
@@ -265,10 +263,9 @@ public:
         try {
             HRESULT hr;
 
-#if _WIN32_WINNT >= 0x602
-            xAudio2DLL = LoadLibraryEx(XAUDIO2_DLL, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+            xAudio2DLL = LoadLibraryEx(L"XAudio2_9.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
             if (xAudio2DLL == nullptr)
-                throw std::runtime_error("Could not load " XAUDIO2_DLL_A ". Error code:" + std::to_string(GetLastError()));
+                throw std::runtime_error("Could not load " L"XAudio2_9.dll" ". Error code:" + std::to_string(GetLastError()));
 
             pXAudio2Create = reinterpret_cast<decltype(&XAudio2Create)>(GetProcAddress(xAudio2DLL, "XAudio2Create"));
             if (pXAudio2Create == nullptr)
@@ -276,24 +273,6 @@ public:
 
             if (FAILED(hr = pXAudio2Create(&pXAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
                 throw Exception::XAudio2Error(hr, "Failed to init XAudio2 engine. Error Details:");
-#else
-            // On some systems XAudio2.7 can unload itself and cause PCSX2 to crash.
-            // Maintain an extra library reference so it can't do so. Does not
-            // affect XAudio 2.8+, but that's Win8+. See
-            // http://blogs.msdn.com/b/chuckw/archive/2015/10/09/known-issues-xaudio-2-7.aspx
-            xAudio2DLL = LoadLibrary(IsDebugBuild ? L"XAudioD2_7.dll" : L"XAudio2_7.dll");
-            const UINT32 flags = IsDebugBuild ? XAUDIO2_DEBUG_ENGINE : 0;
-            if (FAILED(hr = XAudio2Create(&pXAudio2, flags)))
-                throw Exception::XAudio2Error(hr,
-                                              "Failed to init XAudio2 engine. XA2 may not be available on your system.\n"
-                                              "Ensure that you have the latest DirectX runtimes installed, or use\n"
-                                              "DirectX / WaveOut drivers instead. Error Details:");
-
-            XAUDIO2_DEVICE_DETAILS deviceDetails;
-            pXAudio2->GetDeviceDetails(0, &deviceDetails);
-            // Any windows driver should support stereo at the software level, I should think!
-            pxAssume(deviceDetails.OutputFormat.Format.nChannels > 1);
-#endif
 
             // Stereo Expansion was planned to grab the currently configured number of
             // Speakers from Windows's audio config.

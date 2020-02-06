@@ -230,6 +230,7 @@
     <None Include="SndOut_XAudio2.inl">
       <Filter>Source Files\Sound Output\Windows</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Spu2-X.rc">
