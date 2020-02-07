@@ -64,6 +64,9 @@ oprofile_data/
 /Backup*
 /UpgradeLog*.htm
 
+# NuGet packages directory
+packages
+
 /bin/**/*.dll
 /bin/**/*.exp
 /bin/**/*.ilk
