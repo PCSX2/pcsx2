@@ -54,11 +54,7 @@ public:
 
 static const double SndOutNormalizer = (double)(1UL << (SndOutVolumeShift + 16));
 
-#if _WIN32_WINNT >= 0x602
 class XAudio2Mod : public SndOutModule
-#else
-class XAudio2_27_Mod : public SndOutModule
-#endif
 {
 private:
     static const int PacketsPerBuffer = 8;
@@ -263,15 +259,15 @@ public:
         try {
             HRESULT hr;
 
-            xAudio2DLL = LoadLibraryEx(L"XAudio2_9.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+            xAudio2DLL = LoadLibrary(L".\\plugins\\xaudio2_9redist.dll");
             if (xAudio2DLL == nullptr)
-                throw std::runtime_error("Could not load " L"XAudio2_9.dll" ". Error code:" + std::to_string(GetLastError()));
+                throw std::runtime_error("Could not load " L"xaudio2_9redist.dll" ". Error code:" + std::to_string(GetLastError()));
 
             pXAudio2Create = reinterpret_cast<decltype(&XAudio2Create)>(GetProcAddress(xAudio2DLL, "XAudio2Create"));
             if (pXAudio2Create == nullptr)
                 throw std::runtime_error("XAudio2Create not found. Error code: " + std::to_string(GetLastError()));
 
-            if (FAILED(hr = pXAudio2Create(&pXAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
+            if (FAILED(hr = pXAudio2Create(&pXAudio2, 0, XAUDIO2_USE_DEFAULT_PROCESSOR)))
                 throw Exception::XAudio2Error(hr, "Failed to init XAudio2 engine. Error Details:");
 
             // Stereo Expansion was planned to grab the currently configured number of
@@ -374,9 +370,7 @@ public:
         if (xAudio2DLL) {
             FreeLibrary(xAudio2DLL);
             xAudio2DLL = nullptr;
-#if _WIN32_WINNT >= 0x602
             pXAudio2Create = nullptr;
-#endif
         }
     }
 
@@ -403,11 +397,7 @@ public:
 
     const wchar_t *GetLongName() const
     {
-#if _WIN32_WINNT >= 0x602
         return L"XAudio 2 (Recommended)";
-#else
-        return L"XAudio 2.7 (Recommended)";
-#endif
     }
 
     void ReadSettings()
@@ -424,8 +414,4 @@ public:
 
 } static XA2;
 
-#if _WIN32_WINNT >= 0x602
 SndOutModule *XAudio2Out = &XA2;
-#else
-SndOutModule *XAudio2_27_Out = &XA2;
-#endif
