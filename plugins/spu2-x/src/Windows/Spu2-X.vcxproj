@@ -146,7 +146,6 @@
     <None Include="..\..\License.txt" />
     <None Include="..\..\spu2-x-sm.bmp" />
     <None Include="packages.config" />
-    <None Include="SndOut_XAudio2.inl" />
     <None Include="Spu2-X.def" />
   </ItemGroup>
   <ItemGroup>
