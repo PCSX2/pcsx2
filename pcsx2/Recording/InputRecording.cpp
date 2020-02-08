@@ -28,19 +28,22 @@
 #include <vector>
 
 
-InputRecording g_InputRecording;
-
 // Tag and save framecount along with savestate
 void SaveStateBase::InputRecordingFreeze()
 {
 	FreezeTag("InputRecording");
 	Freeze(g_FrameCount);
 
+#ifndef DISABLE_RECORDING
 	if (g_FrameCount > 0 && IsLoading())
 	{
 		g_InputRecordingData.AddUndoCount();
 	}
+#endif
 }
+
+#ifndef DISABLE_RECORDING
+InputRecording g_InputRecording;
 
 // Main func for handling controller input data
 // - Called by Sio.cpp::sioWriteController
@@ -231,3 +234,4 @@ bool InputRecording::IsInterruptFrame()
 {
 	return fInterruptFrame;
 }
+#endif

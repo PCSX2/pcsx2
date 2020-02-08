@@ -19,6 +19,7 @@
 #include "InputRecording.h"
 
 
+#ifndef DISABLE_RECORDING
 RecordingInputManager g_RecordingInput;
 
 RecordingInputManager::RecordingInputManager()
@@ -86,3 +87,4 @@ void RecordingInputManager::SetVirtualPadReading(int port, bool read)
 {
 	virtualPad[port] = read;
 }
+#endif
