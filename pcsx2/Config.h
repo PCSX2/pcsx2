@@ -17,6 +17,10 @@
 
 #include "x86emitter/tools.h"
 
+// Disable TAS on release builds, threading issue maybe? It hangs the emu.
+// Linux always hangs, Windows far less but it's still an issue.
+#define DISABLE_RECORDING
+
 class IniInterface;
 
 enum PluginsEnum_t
