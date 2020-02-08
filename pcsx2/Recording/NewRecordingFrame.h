@@ -19,6 +19,7 @@
 #include <wx/filepicker.h>
 
 
+#ifndef DISABLE_RECORDING
 enum MenuIds_New_Recording_Frame
 {
 	MenuIds_New_Recording_Frame_File = 0,
@@ -46,3 +47,4 @@ private:
 	wxButton *m_startRecording;
 	wxButton *m_cancelRecording;
 };
+#endif
