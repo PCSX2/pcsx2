@@ -20,6 +20,7 @@
 #include "Recording/VirtualPad.h"
 #include "Recording/RecordingInputManager.h"
 
+#ifndef DISABLE_RECORDING
 wxBEGIN_EVENT_TABLE(VirtualPad, wxFrame)
 	EVT_CLOSE(VirtualPad::OnClose)
 wxEND_EVENT_TABLE()
@@ -398,3 +399,4 @@ void VirtualPad::DoLayout()
 	SetSizer(container);
 	Layout();
 }
+#endif
