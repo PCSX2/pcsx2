@@ -44,6 +44,8 @@ The MTVU option is a unique case of a recommended setting that is **not** enable
 ### Specific game solutions
 Looking for information specific to a single game? Head to the [PCSX2 Wiki](https://wiki.pcsx2.net/Main_Page) and search for your game using the search bar in the top right. Known issues and solutions should be towards the bottom of a game's wiki page.
 
+<div class="page"/> <!-- Because PDFs are terrible -->
+
 ### General solutions
 Want some general ideas to try that are not specific to a game? Here are some more commonly known issues and solutions to try. 
 *Note: For some of these issues, multiple solutions are given one after the other. Before moving from one solution to the next, **undo the previous solution**. Stacking multiple fixes on top of each other is usually unnecessary and likely to introduce new issues.*
