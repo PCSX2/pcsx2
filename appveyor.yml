@@ -24,6 +24,9 @@ init:
 install:
   - git submodule update --init --recursive
 
+before_build:
+  - nuget restore plugins\spu2-x\src\Windows\packages.config -PackagesDirectory packages
+
 build_script:
   - msbuild buildbot.xml /m /t:%target% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
