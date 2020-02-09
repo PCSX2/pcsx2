@@ -32,7 +32,7 @@ After dumping your PlayStation 2 console's BIOS, you may launch PCSX2, step thro
 
 | Operating System | CPU | GPU | RAM |
 | --- | --- | --- | --- |
-| - Windows 7 or newer (32 or 64 bit) <br/> - Ubuntu 18.04/Debian or newer, Arch Linux, or other distro (32 or 64 bit) | - Supports SSE2 <br/> - [PassMark Single Thread Performance](https://www.cpubenchmark.net/singleThread.html) rating near or greater than 1600 <br/> - Two physical cores, with hyperthreading | - Direct3D11 support <br/> - OpenGL 3.x support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 3000 (GeForce GTX 750) <br/> - 2 GB Video Memory | 4 GB |
+| - Windows 7 or newer (32 or 64 bit) <br/> - Ubuntu 18.04/Debian or newer, Arch Linux, or other distro (32 or 64 bit) | - Supports SSE2 <br/> - [PassMark Single Thread Performance](https://www.cpubenchmark.net/singleThread.html) rating near or greater than 1600 <br/> - Two physical cores, with hyperthreading | - Direct3D10 support <br/> - OpenGL 3.x support <br/> - [PassMark G3D Mark](https://www.videocardbenchmark.net/high_end_gpus.html) rating around 3000 (GeForce GTX 750) <br/> - 2 GB Video Memory | 4 GB |
 *Note: Recommended Single Thread Performance is based on moderately complex games. Games that pushed the PS2 hardware to its limits will struggle on CPUs at this level. Some release titles and 2D games which underutilized the PS2 hardware may run on CPUs rated as low as 1200. A quick reference for CPU **intensive games**: [Wiki](https://wiki.pcsx2.net/Category:CPU_intensive_games), [Forum](https://forums.pcsx2.net/Thread-LIST-The-Most-CPU-Intensive-Games) and CPU **light** games: [Forum](https://forums.pcsx2.net/Thread-LIST-Games-that-don-t-need-a-strong-CPU-to-emulate)*
 
 #### Recommended 
@@ -170,7 +170,7 @@ PCSX2's default audio playback mode is Timestretch, which will attempt to stretc
 ### I have a controller here. Is it supported?
 For Windows users running LilyPad, PCSX2 will ship with XInput bindings already created. This will automatically work with an Xbox One controller or any other XInput controller. Bindings can easily be made for DirectInput controllers, such as Xbox 360 controllers. PS3, PS4, or Switch Pro controllers should be set up using a compatibility software, such as Steam's Big Picture mode. 
 
-For Linux users running OnePad, PCSX2 will automatically detect and bind controls to any recognizable controller. Unfortunately, if your controller is not automatically recognized and bound, your options are limited, as OnePad only allows manual control binding to your keyboard and mouse.
+For Linux users running OnePad, PCSX2 will automatically detect and bind controls to any recognizable controller. If your controller is not automatically detected, you can try using Onepad Legacy to manually bind controls for it. 
 
 <div class="page"/> <!-- Because PDFs are terrible -->
 
