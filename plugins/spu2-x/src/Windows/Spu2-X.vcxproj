@@ -114,9 +114,6 @@
     <ClCompile Include="SndOut_DSound.cpp" />
     <ClCompile Include="SndOut_waveOut.cpp" />
     <ClCompile Include="SndOut_XAudio2.cpp" />
-    <ClCompile Include="SndOut_XAudio2_27.cpp">
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
     <ClCompile Include="..\Linux\Alsa.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
