@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-01-15 22:32+1300\n"
+"POT-Creation-Date: 2020-02-10 17:29+0000\n"
 "PO-Revision-Date: 2020-01-25 12:06+0000\n"
 "Last-Translator: mavethee <mitura07@wp.pl>, Manz4rk <stouf@outlook.com>\n"
 "Language-Team: mavethee <mitura07@wp.pl>, Manz4rk <stouf@outlook.com>\n"
@@ -19,8 +19,6 @@ msgstr ""
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: G:/pcsx2-3/pcsx2\n"
 "X-Generator: Poedit 2.2.4\n"
-"Language-Team: \n"
-"Language: pl_PL\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -187,7 +185,7 @@ msgstr ""
 "lokalizacja zawiera istniejące\n"
 "ustawienia PCSX2, będziesz mógł je importować bądź nadpisać."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:97
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:99
 #, c-format
 msgid ""
 "This wizard will help guide you through configuring plugins, memory cards, "
@@ -199,7 +197,7 @@ msgstr ""
 "Zalecamy zapoznanie się z plikiem README oraz poradnikiem konfiguracji\n"
 "jeśli jest to Twoje pierwsze spotkanie z %s."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:140
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:142
 msgid ""
 "PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\n"
 "You cannot use a copy obtained from a friend or the Internet.\n"

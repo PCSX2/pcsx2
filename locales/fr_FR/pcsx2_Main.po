@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-01-15 22:32+1300\n"
+"POT-Creation-Date: 2020-02-10 17:29+0000\n"
 "PO-Revision-Date: 2016-02-27 09:57+0100\n"
 "Last-Translator: Atomic83\n"
 "Language-Team: Atomic83;goldeng;piorrro33 <odakawoi@yahoo.fr;"
@@ -1214,11 +1214,11 @@ msgstr "Sélectionner un dossier pour les paramètres de %s"
 msgid "Settings"
 msgstr "Paramètres"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:84
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:86
 msgid "Language selector"
 msgstr "Choix de la langue"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:87
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:89
 msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
@@ -1226,19 +1226,21 @@ msgstr ""
 "Ne changez la langue que si vous en avez réellement besoin.\n"
 "Le système par défaut fonctionne bien, la plupart du temps."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:93
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:95
 msgid "Welcome to PCSX2!"
 msgstr "Bienvenue dans PCSX2 !"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:104
-msgid "Configuration Guides (online)"
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:106
+#, fuzzy
+msgid "Configuration Guide"
 msgstr "Guides de configuration (online)"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:108
-msgid "Readme / FAQ (Offline/PDF)"
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
+#, fuzzy
+msgid "Readme / FAQ"
 msgstr "Lisez-moi / FAQ (offline - fichier PDF)"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:117
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
 #, c-format
 msgid "%s First Time Configuration"
 msgstr "Première configuration de %s"

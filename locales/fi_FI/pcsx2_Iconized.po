@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-01-15 22:32+1300\n"
+"POT-Creation-Date: 2020-02-10 17:29+0000\n"
 "PO-Revision-Date: 2012-05-20 13:26+0200\n"
 "Last-Translator: kmartimo <kimmo.martimo@gmail.com>\n"
 "Language-Team: kmartimo <kimmo.martimo@gmail.com>\n"
@@ -171,7 +171,7 @@ msgstr ""
 "sijainnissa on jo olemassaolevia PCSX2-asetuksia, sinulle annetaan "
 "mahdollisuus tuoda tai ylikirjoittaa ne."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:97
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:99
 #, c-format
 msgid ""
 "This wizard will help guide you through configuring plugins, memory cards, "
@@ -182,7 +182,7 @@ msgstr ""
 "konfiguroinnissa.  Jos tämä on ensimmäinen %s-asennuskertasi, on "
 "suositeltua, että luet lueminut-tiedoston ja konfiguraatio-oppaan."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:140
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:142
 msgid ""
 "PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\n"
 "You cannot use a copy obtained from a friend or the Internet.\n"
