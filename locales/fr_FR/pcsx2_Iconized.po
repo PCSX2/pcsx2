@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-01-15 22:32+1300\n"
+"POT-Creation-Date: 2020-02-10 17:29+0000\n"
 "PO-Revision-Date: 2016-02-27 12:58+0100\n"
 "Last-Translator: Atomic83\n"
 "Language-Team: Atomic83;goldeng;piorrro33 <odakawoi@yahoo.fr;"
@@ -175,7 +175,7 @@ msgstr ""
 "fichier de paramétrage existe déjà dans le dossier choisi, vous aurez la "
 "possibilité de les importer ou de les écraser."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:97
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:99
 #, c-format
 msgid ""
 "This wizard will help guide you through configuring plugins, memory cards, "
@@ -187,7 +187,7 @@ msgstr ""
 "installation de %s, de prendre connaissance du readme et des guides de "
 "configuration traduits dans votre langue."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:140
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:142
 msgid ""
 "PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\n"
 "You cannot use a copy obtained from a friend or the Internet.\n"
