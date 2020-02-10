@@ -70,14 +70,16 @@ Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 {
 	SetMinWidth( MSW_GetDPIScale() * 600 );
 
-	FastFormatUnicode faqFile;
+	FastFormatUnicode configFile, faqFile;
 #ifndef DOC_DIR_COMPILATION
+	configFile.Write( L"file:///%s/Docs/Configuration_Guide.pdf", WX_STR(InstallFolder.ToString()) );
 	faqFile.Write( L"file:///%s/Docs/PCSX2_FAQ.pdf", WX_STR(InstallFolder.ToString()) );
 #else
 	// Each linux distributions have his rules for path so we give them the possibility to
 	// change it with compilation flags. -- Gregory
 #define xDOC_str(s) DOC_str(s)
 #define DOC_str(s) #s
+	configFile.Write( L"file://%s/Configuration_Guide.pdf", WX_STR(wxDirName(xDOC_str(DOC_DIR_COMPILATION)).ToString()) );
 	faqFile.Write( L"file://%s/PCSX2_FAQ.pdf", WX_STR(wxDirName(xDOC_str(DOC_DIR_COMPILATION)).ToString()) );
 #endif
 
@@ -101,11 +103,11 @@ Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 	*this += GetCharHeight() * 2;
 
 	*this	+= new wxHyperlinkCtrl( this, wxID_ANY,
-		_("Configuration Guides (online)"), L"https://pcsx2.net/config-guide/official-english-pcsx2-configuration-guide.html"
+		_("Configuration Guide"), configFile.c_str()
 	) | pxCenter.Border( wxALL, 5 );
 		
 	*this	+= new wxHyperlinkCtrl( this, wxID_ANY,
-		_("Readme / FAQ (Offline/PDF)"), faqFile.c_str()
+		_("Readme / FAQ"), faqFile.c_str()
 	) | pxCenter.Border( wxALL, 5 );
 
 }
