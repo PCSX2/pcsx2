@@ -19,8 +19,6 @@ msgstr ""
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: G:/pcsx2-3/pcsx2\n"
 "X-Generator: Poedit 2.2.4\n"
-"Language-Team: \n"
-"Language: pl_PL\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
