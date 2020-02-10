@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-02-10 17:29+0000\n"
+"POT-Creation-Date: 2020-01-15 22:32+1300\n"
 "PO-Revision-Date: 2012-05-23 08:58+0800\n"
 "Last-Translator: \n"
 "Language-Team: kohaku2421 <kohaku2421@gmail.com>\n"
@@ -1184,11 +1184,11 @@ msgstr "Pilih folder untuk tetapan %s"
 msgid "Settings"
 msgstr "Tetapan"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:86
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:84
 msgid "Language selector"
 msgstr "Pilihan Bahasa"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:89
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:87
 msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
@@ -1196,21 +1196,19 @@ msgstr ""
 "Tukar bahasa HANYA bila perlu.\n"
 "System default akan berfungsi dgn baik bagi kebanyakan sistem operasi."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:95
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:93
 msgid "Welcome to PCSX2!"
 msgstr "Selamat datang ke PCSX2!"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:106
-#, fuzzy
-msgid "Configuration Guide"
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:104
+msgid "Configuration Guides (online)"
 msgstr "Panduan Konfigurasi (online)"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
-#, fuzzy
-msgid "Readme / FAQ"
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:108
+msgid "Readme / FAQ (Offline/PDF)"
 msgstr "Readme / FAQ (Offline/PDF)"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:117
 #, c-format
 msgid "%s First Time Configuration"
 msgstr "%s Konfigurasi kali Pertama"

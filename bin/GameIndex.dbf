@@ -111,20 +111,12 @@ DMABusyHack = 1
 eeRoundMode = 0 // Fixes jump issue.
 GIFFIFOHack = 1 // Fixes flickering sprites.
 ---------------------------------------------
-Serial = PAPX-90203
-Name   = Gran Turismo 2000 [Trial]
-Region = NTSC-J
----------------------------------------------
 Serial = PAPX-90222
 Name   = Jak x Daxter: Kyuusekai no Isan [Demo, Taikenba]
 Region = NTSC-J
 ---------------------------------------------
 Serial = PAPX-90223
 Name   = Jak x Daxter: Kyuusekai no Isan [Demo, Taikenba]
-Region = NTSC-J
----------------------------------------------
-Serial = PAPX-90231
-Name   = Kaitou Sly Cooper [Demo, Taikenba]
 Region = NTSC-J
 ---------------------------------------------
 Serial = PAPX-90512
@@ -148,10 +140,6 @@ Compat = 5
 ---------------------------------------------
 Serial = PBPX-95205
 Name   = Playstation 2 - Demo Disc 2000
-Region = PAL-Unk
----------------------------------------------
-Serial = PBPX-95216
-Name   = HDD Utility Disc [Beta]
 Region = PAL-Unk
 ---------------------------------------------
 Serial = PBPX-95503
@@ -180,10 +168,6 @@ Region = NTSC-Unk
 Compat = 5
 //eeClampMode = 3 // Text in races works.
 vuClampMode = 2 // Text in GT mode works.
----------------------------------------------
-Serial = PCPX-96616
-Name   = PrePre 2 Volume 2
-Region = NTSC-J
 ---------------------------------------------
 Serial = PCPX-96649
 Name   = Gran Turismo 4 [Demo]
@@ -406,7 +390,7 @@ Name   = Energy Airforce - Aim Strike!
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20043
-Name   = ChainDive
+Name   = Chain Drive
 Region = NTSC-Unk
 ---------------------------------------------
 Serial = SCAJ-20044
@@ -774,11 +758,6 @@ Region = NTSC-Unk
 Serial = SCAJ-20137
 Name   = Musashiden II - Blademaster
 Region = NTSC-Unk
-vuClampMode = 3 // Fixes White SPS while ingame.
-vuRoundMode = 0 // Fixes red SPS while ingame.
-eeClampMode = 3 // Fixes White SPS while ingame.
-eeRoundMode = 0 // Partially fixes wrong ennemies eye rendering.
-EETimingHack = 1 // Fixes garbled character annimation.
 ---------------------------------------------
 Serial = SCAJ-20138
 Name   = Ape Escape 3
@@ -1139,10 +1118,6 @@ Serial = SCED-50748
 Name   = Official PlayStation 2 Magazine Demo 26
 Region = PAL-M5
 ---------------------------------------------
-Serial = SCED-50781
-Name   = Destruction Derby Arenas [Beta]
-Region = PAL-M5
----------------------------------------------
 Serial = SCED-50907
 Name   = Final Fantasy X [Bonus Disc - Beyond Final Fantasy]
 Region = PAL-Unk
@@ -1155,14 +1130,6 @@ Region = PAL-M5
 ---------------------------------------------
 Serial = SCED-51537
 Name   = Official PlayStation 2 Magazine Demo 37
-Region = PAL-M5
----------------------------------------------
-Serial = SCED-51538
-Name   = Official PlayStation 2 Magazine Demo 38
-Region = PAL-M5
----------------------------------------------
-Serial = SCED-51540
-Name   = Official PlayStation 2 Magazine Demo 39
 Region = PAL-M5
 ---------------------------------------------
 Serial = SCED-51657
@@ -1183,18 +1150,10 @@ Region = PAL-Unk
 Compat = 5
 vuClampMode = 3 // Fixes minor SPS on characters.
 ---------------------------------------------
-Serial = SCED-52355
-Name   = Military Multi Demo
-Region = PAL-Unk
----------------------------------------------
 Serial = SCED-52436
 Name   = Playstation2 UK Demo 7-2004
 Region = PAL-Unk
 Compat = 5
----------------------------------------------
-Serial = SCED-52681
-Name   = Gran Turismo 4 BMW 1 Series [Demo]
-Region = PAL-M11
 ---------------------------------------------
 Serial = SCED-52818
 Name   = EyeToy - Chat [Light]
@@ -1211,10 +1170,6 @@ Region = PAL-M5
 Serial = SCED-53163
 Name   = Official PlayStation 2 Magazine Demo 60
 Region = PAL-M12
----------------------------------------------
-Serial = SCED-53325
-Name   = Official PlayStation 2 Magazine Demo 58
-Region = PAL-M5
 ---------------------------------------------
 Serial = SCES-50000
 Name   = Ridge Racer V
@@ -1743,6 +1698,7 @@ Serial = SCES-51607
 Name   = Ratchet & Clank 2 - Locked & Loaded
 Region = PAL-M5
 Compat = 5
+EETimingHack = 1 // Fixes crash & cinematic after Jammer Array level.
 // reads Ratchet 1 data
 MemCardFilter = SCES-51607/SCES-50916
 ---------------------------------------------
@@ -3594,7 +3550,7 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SCPS-15054
-Name   = ChainDive
+Name   = Chain Drive
 Region = NTSC-J
 ---------------------------------------------
 Serial = SCPS-15055
@@ -5769,15 +5725,6 @@ Compat = 5
 Serial = SCUS-97475
 Name   = SOCOM 3 - U.S. Navy SEALs [Regular Demo]
 Region = NTSC-U
-vuClampMode = 0 // Fixes SPS ingame.
-GIFFIFOHack = 1 // Fixes crashing before going ingame.
-[patches = 314F0905]
-	author=CK1
-	// Remove the need of the VIF Fifo.
-	// Solve a massive slowdown when looking at the sun when ingame.
-	patch=1,EE,0019DC8C,word,00000000
-	patch=1,EE,0019DC80,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SCUS-97478
 Name   = EyeToy - Kinetic
@@ -5796,12 +5743,6 @@ Compat = 5
 Serial = SCUS-97482
 Name   = God of War II - The Colossus Battle [Demo]
 Region = NTSC-U
----------------------------------------------
-Serial = SCUS-97483
-Name   = Gran Turismo 4 MX-5 Edition [Demo]
-Region = NTSC-U
-//eeClampMode = 3 // Text in races works
-vuClampMode = 2 // Text in GT mode works
 ---------------------------------------------
 Serial = SCUS-97484
 Name   = Sly 3 - Honor Among Thieves [E3 Demo]
@@ -6519,10 +6460,6 @@ Name   = Burnout 2 - Point of Impact [Demo]
 Region = PAL-Unk
 vuRoundMode = 1 // Bright lights in cars.
 ---------------------------------------------
-Serial = SLED-51225
-Name   = Rayman 3 [Demo]
-Region = PAL-E
----------------------------------------------
 Serial = SLED-51281
 Name   = Haven - Call of the King [Demo]
 Region = PAL-E
@@ -6558,10 +6495,6 @@ Region = PAL-E
 Serial = SLED-52597
 Name   = Burnout 3 - Takedown [Demo]
 Region = PAL-Unk 
----------------------------------------------
-Serial = SLED-52875
-Name   = Sega Superstars [Demo]
-Region = PAL-E
 ---------------------------------------------
 Serial = SLED-52929
 Name   = Prince of Persia - Warrior Within [Demo]
@@ -7078,11 +7011,6 @@ Compat = 5
 Serial = SLES-50178
 Name   = Oni
 Region = PAL-I
-[patches = 172B6971]
-	author=Nachbrenner
-	// Skip "branch if copro 0 condition false".
-	patch=0,EE,001cef7c,word,00000000 // bc0f $001cef7c
-[/patches]
 ---------------------------------------------
 Serial = SLES-50179
 Name   = Oni
@@ -7469,7 +7397,11 @@ Compat = 5
 Serial = SLES-50355
 Name   = Batman Vengeance
 Region = PAL-M6
-EETimingHack = 1 // Fixes video speed.
+[patches = A6F234C7]
+	comment=Patch by Prafull
+	// Fixes the hang in certain scenarios.
+	patch=1,EE,0049e998,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-50356
 Name   = ESPN International Winter Sports
@@ -7585,16 +7517,10 @@ Serial = SLES-50423
 Name   = F1 2001
 Region = PAL-M4
 Compat = 5
-[patches = 063FF7DB]
-	author=prafull
-	// Skips IPU videos.
-	// Each videos can be called separately
-	// on this game.
-	// This seems like the only way of patching
-	// them all. The issue here is the PCSX2 IPU
-	// do not support well the EA proprietary IPU
-	// Librairy causing hanging in menus.
-	patch=1,EE,001f4d2c,word,00000000
+[patches = 063ff7db]
+	comment=Patch by Shadow Lady.
+	// IPU dma fix.
+	patch=0,EE,003b8680,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLES-50424
@@ -9674,14 +9600,10 @@ Region = PAL-M5 // Voices are in English.
 Serial = SLES-51272
 Name   = Wakeboarding Unleashed
 Region = PAL-E
-vuClampMode = 3 // Fixes water rendering.
-XgKickHack = 1 // Fixes SPS while ingame.
 ---------------------------------------------
 Serial = SLES-51273
 Name   = Wakeboarding Unleashed
 Region = PAL-F
-vuClampMode = 3 // Fixes water rendering.
-XgKickHack = 1 // Fixes SPS while ingame.
 ---------------------------------------------
 Serial = SLES-51282
 Name   = Tiger Woods PGA Tour 2003
@@ -10218,8 +10140,6 @@ Compat = 5
 Serial = SLES-51579
 Name   = Yu-Gi-Oh! - The Duelists of the Roses
 Region = PAL-E
-eeRoundMode = 2 // Partially Fixes battle annimation.
-eeClampMode = 2 // Partially Fixes battle annimation.
 ---------------------------------------------
 Serial = SLES-51580
 Name   = London Racer World Challenge
@@ -10795,9 +10715,6 @@ Serial = SLES-51843
 Name   = Worms 3D
 Region = PAL-M5
 Compat = 5
-[patches]
-	comment=You need to set the EE cycle speed to -1 to be able to load the game.
-[/patches]
 ---------------------------------------------
 Serial = SLES-51845
 Name   = Barbie - Horse Adventure
@@ -12114,8 +12031,6 @@ Region = PAL-M5
 Serial = SLES-52480
 Name   = Yu-Gi-Oh! - The Duelists of the Roses
 Region = PAL-M4
-eeRoundMode = 2 // Partially Fixes battle annimation.
-eeClampMode = 2 // Partially Fixes battle annimation.
 ---------------------------------------------
 Serial = SLES-52481
 Name   = Hot Wheels - Stunt Track Challenge
@@ -14161,10 +14076,6 @@ Serial = SLES-53344
 Name   = Gerrilla Strike
 Region = PAL-E
 ---------------------------------------------
-Serial = SLES-53345
-Name   = Shadow of Ganymede
-Region = PAL-E
----------------------------------------------
 Serial = SLES-53346
 Name   = DragonBall Z - Budokai 3 [Collector's Edition]
 Region = PAL-M5
@@ -14564,11 +14475,6 @@ Region = PAL-E
 Serial = SLES-53521
 Name   = Musashi - Samurai Legend
 Region = PAL-M4
-vuClampMode = 3 // Fixes White SPS while ingame.
-vuRoundMode = 0 // Fixes red SPS while ingame.
-eeClampMode = 3 // Fixes White SPS while ingame.
-eeRoundMode = 0 // Partially fixes wrong ennemies eye rendering.
-EETimingHack = 1 // Fixes garbled character annimation.
 ---------------------------------------------
 Serial = SLES-53523
 Name   = Gun
@@ -16425,16 +16331,6 @@ Name   = Sims 2, The - Pets
 Region = PAL-M11
 Compat = 5
 ---------------------------------------------
-Serial = SLES-54349
-Name   = Superman Returns
-Region = PAL-I
-[patches = E7F7B6BD]
-	author=kozarovv
-	// Use iaddiu instead of FSAND.
-	patch=1,EE,00639ef0,word,10050208
-	patch=1,EE,0063a068,word,10080208
-[/patches]
----------------------------------------------
 Serial = SLES-54350
 Name   = Superman Returns
 Region = PAL-G
@@ -16718,7 +16614,7 @@ Serial = SLES-54466
 Name   = Test Drive Unlimited
 Region = PAL-M4
 Compat = 5
-VIFFIFOHack = 1 // Needed to load the main game properly.
+VIFFIFOHack = 1
 ---------------------------------------------
 Serial = SLES-54467
 Name   = Final Armada
@@ -17042,21 +16938,6 @@ VuAddSubHack = 1
 Serial = SLES-54657
 Name   = Charlotte's Web
 Region = PAL-E
----------------------------------------------
-Serial = SLES-54658
-Name   = Star Wars - The Force Unleashed
-Region = PAL-M5
-[patches = 87109051]
-	author=Kozarovv
-	// Fixes various graphics glitches.
-	// It's a problem which apply to all games made by Khrome studio.
-	// The EE seems to send invalid data to the GS and expect
-	// some kind of unknown behaviour to opperate.
-	// This can be fixed on the GS side but the software render is impossible to fix.
-	// So this patch correct the issue on the EE side.
-	patch=1,EE,0017cb84,word,3464fff0
-	patch=1,EE,0017cb90,word,3463fffc
-[/patches]
 ---------------------------------------------
 Serial = SLES-54659
 Name   = Star Wars - The Force Unleashed
@@ -17539,10 +17420,6 @@ Region = PAL-M5
 Serial = SLES-54958
 Name   = Alan Hansen's Sports Challenge
 Region = PAL-M5
----------------------------------------------
-Serial = SLES-54961
-Name   = World series of poker 2008
-Region = PAL-E
 ---------------------------------------------
 Serial = SLES-54962
 Name   = Guitar Hero III - Legends of Rock
@@ -18455,7 +18332,6 @@ Serial = SLES-82010
 Name   = Metal Gear Solid 2, Document of
 Region = PAL-E
 Compat = 5
-EETimingHack = 1 // Fixes corrupted or missing menu fonts.
 ---------------------------------------------
 Serial = SLES-82011
 Name   = Devil May Cry 2 [Dante Disc]
@@ -19626,10 +19502,6 @@ Name   = Devil May Cry 3 [Trial Version]
 Region = NTSC-J
 eeRoundMode = 0
 ---------------------------------------------
-Serial = SLPM-60254
-Name   = Zettai Zetsumei Toshi 2: Itetsuita Kioku-tachi [Trial A]
-Region = NTSC-J
----------------------------------------------
 Serial = SLPM-60262
 Name   = 10th Anniversary Memorial Save Data [Disc 2]
 Region = NTSC-J
@@ -19637,35 +19509,6 @@ Region = NTSC-J
 Serial = SLPM-60265
 Name   = 10th Anniversary PlayStation & PlayStation 2 All-Soft Catalogue Special SaveData Collection [PS2 Disc]
 Region = NTSC-J
----------------------------------------------
-Serial = SLPM-60273
-Name   = Zettai Zetsumei Toshi 2: Itetsuita Kioku-tachi [Trial B]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-61009
-Name   = Silent Hill 2 (Red Ribbon) [Trial]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-61010
-Name   = Devil May Cry [Trial Version]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-61011
-Name   = Silent Hill 2 (Black Ribbon) [Video Trial]
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-61051
-Name   = Dengeki PS2 D61
-Region = NTSC-J
----------------------------------------------
-Serial = SLPM-61117
-Name   = Musashiden II - Blademaster [Trial]
-Region = NTSC-J
-vuClampMode = 3 // Fixes White SPS while ingame.
-vuRoundMode = 0 // Fixes red SPS while ingame.
-eeClampMode = 3 // Fixes White SPS while ingame.
-eeRoundMode = 0 // Partially fixes wrong ennemies eye rendering.
-EETimingHack = 1 // Fixes garbled character annimation.
 ---------------------------------------------
 Serial = SLPM-61120
 Name   = Drag-on Dragoon 2 - Fuuin no Kurenai [Trial Version]
@@ -22196,15 +22039,9 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SLPM-65002
-Name   = Love/0 Story [Disc1of2]
+Name   = Love/0 Story
 Region = NTSC-J
 Compat = 5
----------------------------------------------
-Serial = SLPM-65003
-Name   = Love/0 Story [Disc2of2]
-Region = NTSC-J
-Compat = 5
-MemCardFilter = SLPM-65002
 ---------------------------------------------
 Serial = SLPM-65004
 Name   = Reiselied - Ephemeral Fantasia
@@ -22375,8 +22212,6 @@ Region = NTSC-J
 Serial = SLPM-65050
 Name   = Yu-Gi-Oh! Shin Duel Monsters 2
 Region = NTSC-J
-eeRoundMode = 2 // Partially Fixes battle annimation.
-eeClampMode = 2 // Partially Fixes battle annimation.
 ---------------------------------------------
 Serial = SLPM-65051
 Name   = Silent Hill 2
@@ -22896,8 +22731,6 @@ Compat = 5
 Serial = SLPM-65222
 Name   = Yu-Gi-Oh! 2 [Konami The Best]
 Region = NTSC-J
-eeRoundMode = 2 // Partially Fixes battle annimation.
-eeClampMode = 2 // Partially Fixes battle annimation.
 ---------------------------------------------
 Serial = SLPM-65223
 Name   = Triange Again
@@ -24461,12 +24294,6 @@ Serial = SLPM-65644
 Name   = Guilty Gear Isuka
 Region = NTSC-J
 ---------------------------------------------
-Serial = SLPM-65647
-Name   = Yu-Gi-Oh! 2 (Konami Dendou Collection)
-Region = NTSC-J
-eeRoundMode = 2 // Partially Fixes battle annimation.
-eeClampMode = 2 // Partially Fixes battle annimation.
----------------------------------------------
 Serial = SLPM-65648
 Name   = Medal of Honor - Frontline [EA Best Hits]
 Region = NTSC-J
@@ -25812,11 +25639,6 @@ Region = NTSC-J
 Serial = SLPM-66008
 Name   = Musashiden II - Blademaster
 Region = NTSC-J
-vuClampMode = 3 // Fixes White SPS while ingame.
-vuRoundMode = 0 // Fixes red SPS while ingame.
-eeClampMode = 3 // Fixes White SPS while ingame.
-eeRoundMode = 0 // Partially fixes wrong ennemies eye rendering.
-EETimingHack = 1 // Fixes garbled character annimation.
 ---------------------------------------------
 Serial = SLPM-66009
 Name   = World Soccer Winning Eleven 9 - Bonus Pack
@@ -30546,11 +30368,6 @@ Compat = 5
 Serial = SLPS-20273
 Name   = Netsu Chu! Pro Baseball 2003
 Region = NTSC-J
-[patches = 34fb1fb7]
-	author=Prafull
-	// Fixes game hanging before going ingame.
-	patch=1,EE,001023d0,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLPS-20279
 Name   = Hissatsu Pachinko Station v7 - Tensei Bakabon 2
@@ -31060,7 +30877,7 @@ Region = NTSC-J
 Compat = 5
 ---------------------------------------------
 Serial = SLPS-20448
-Name   = Karmen Rider classic [Trial]
+Name   = Kamen Rider classic trial
 Region = NTSC-J
 ---------------------------------------------
 Serial = SLPS-20450
@@ -33212,6 +33029,10 @@ Serial = SLPS-25527
 Name   = dot Hack - Fragment
 Region = NTSC-J
 Compat = 5
+EETimingHack = 1
+OPHFlagHack = 1
+DMABusyHack = 1
+SkipMPEGHack = 1
 ---------------------------------------------
 Serial = SLPS-25528
 Name   = Summon Night EX Thesis - Yoake no Tsubasa
@@ -36034,7 +35855,6 @@ Serial = SLUS-20226
 Name   = Batman - Vengeance
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1 // Fixes video speed.
 ---------------------------------------------
 Serial = SLUS-20227
 Name   = Star Trek Voyager - Elite Force
@@ -36196,17 +36016,6 @@ vuClampMode = 3 // Missing geometry with microVU.
 Serial = SLUS-20264
 Name   = F1 2001
 Region = NTSC-U
-[patches = 2870c248]
-	author=Prafull
-	// Skips IPU videos.
-	// Each videos can be called separately
-	// on this game.
-	// This seems like the only way of patching
-	// them all. The issue here is the PCSX2 IPU
-	// do not support well the EA proprietary IPU
-	// Librairy causing hanging in menus.
-	patch=1,EE,001f4d2c,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLUS-20265
 Name   = James Bond 007 - Agent Under Fire
@@ -36699,9 +36508,9 @@ Serial = SLUS-20369
 Name   = Knockout Kings 2002
 Region = NTSC-U
 Compat = 5
-[patches = 36feee3a]
-	author=Prafull
-	// Fixes Hanging at start of fight.
+[patches = 36FEEE3A]
+	author=Nachbrenner - Prafull
+	// Fixes DMA loop causing Hanging at start of fight.
 	patch=1,EE,001d7fec,word,1000000f
 	patch=1,EE,001d8020,word,1000000f
 	patch=1,EE,001d8074,word,1000000f
@@ -36941,8 +36750,6 @@ Serial = SLUS-20418
 Name   = Wakeboarding Unleashed featuring Shaun Murray
 Region = NTSC-U
 Compat = 2
-vuClampMode = 3 // Fixes water rendering.
-XgKickHack = 1 // Fixes SPS while ingame.
 ---------------------------------------------
 Serial = SLUS-20419
 Name   = World Rally Championship
@@ -37381,8 +37188,6 @@ Serial = SLUS-20515
 Name   = Yu-Gi-Oh! The Duelists of the Roses
 Region = NTSC-U
 Compat = 5
-eeRoundMode = 2 // Partially Fixes battle annimation.
-eeClampMode = 2 // Partially Fixes battle annimation.
 ---------------------------------------------
 Serial = SLUS-20516
 Name   = Shrek - Super Party
@@ -39144,9 +38949,6 @@ Serial = SLUS-20894
 Name   = Worms 3D
 Region = NTSC-U
 Compat = 5
-[patches]
-	comment=You need to set the EE cycle speed to -1 to be able to load the game.
-[/patches]
 ---------------------------------------------
 Serial = SLUS-20895
 Name   = Bujingai - The Forsaken City
@@ -39626,11 +39428,6 @@ Serial = SLUS-20983
 Name   = Musashi Samurai Legend
 Region = NTSC-U
 Compat = 5
-vuClampMode = 3 // Fixes White SPS while ingame.
-vuRoundMode = 0 // Fixes red SPS while ingame.
-eeClampMode = 3 // Fixes White SPS while ingame.
-eeRoundMode = 0 // Partially fixes wrong ennemies eye rendering.
-EETimingHack = 1 // Fixes garbled character annimation.
 ---------------------------------------------
 Serial = SLUS-20984
 Name   = Resident Evil Outbreak - File #2
@@ -42196,7 +41993,7 @@ Serial = SLUS-21490
 Name   = Test Drive Unlimited
 Region = NTSC-U
 Compat = 5
-VIFFIFOHack = 1 // Needed to load the main game properly.
+VIFFIFOHack = 1
 ---------------------------------------------
 Serial = SLUS-21491
 Name   = World Series of Poker - Tournament of Champions
@@ -43201,19 +42998,6 @@ Compat = 5
 Serial = SLUS-21729
 Name   = Major League Baseball 2K8
 Region = NTSC-U
-[patches = 0be24520]
-	author=Prafull
-	// Fixes hanging at start.
-	// This hanging problem is common in every 2K
-	// games sport titles.
-	// They all hit the exact same piece of code when crashing.
-	// The game can randomly goes a bit further but it's impossible
-	// to progress in menus without this patch at least.
-	// Note: This issue will only happen if the game
-	// run on the inhouse Visual Concept engine.
-	// My theory is on a deep timing issue.
-	patch=0,EE,003cc1a0,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLUS-21730
 Name   = Jumper
@@ -44012,16 +43796,6 @@ Serial = SLUS-21913
 Name   = Star Wars The Clone Wars: Republic Heroes
 Region = NTSC-U
 Compat = 5
-[patches = 71BA3429]
-	author=Kozarovv
-	// Fixes graphics glitches.
-	// It's a problem which apply to all games made by Khrome studio.
-	// The EE seems to send invalid data to the GS and expect
-	// some kind of unknown behaviour to opperate.
-	// This can be fixed on the GS side but the software render is impossible to fix.
-	// So this patch correct the issue on the EE side.
-	patch=1,EE,00173328,word,3464fffd
-[/patches]
 ---------------------------------------------
 Serial = SLUS-21914
 Name   = NHL 2K10
@@ -44330,10 +44104,6 @@ Serial = SLUS-28064
 Name   = Shin Megami Tensei - Devil Summoner [Trade Demo]
 Region = NTSC-U
 ---------------------------------------------
-Serial = SLUS-28065
-Name   = Odin Sphere [Demo]
-Region = NTSC-U
----------------------------------------------
 Serial = SLUS-29001
 Name   = ESPN Winter Games Snowboarding [Demo]
 Region = NTSC-U
@@ -44353,10 +44123,6 @@ Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-29006
 Name   = MX 2002 - featuring Ricky Carmichael [Demo]
-Region = NTSC-U
----------------------------------------------
-Serial = SLUS-29007
-Name   = Arctic Thunder [Demo]
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-29008
@@ -44864,7 +44630,6 @@ Region = NTSC-U
 Serial = SLUS-29192
 Name   = Test Drive Unlimited [Public Beta Vol.1.0]
 Region = NTSC-U
-VIFFIFOHack = 1 // Needed to load the main game properly.
 ---------------------------------------------
 Serial = SLUS-29193
 Name   = Need for Speed - Carbon [Demo]

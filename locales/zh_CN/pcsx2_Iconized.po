@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.4.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-02-04 20:35+0100\n"
+"POT-Creation-Date: 2020-01-15 22:32+1300\n"
+"PO-Revision-Date: 2017-04-23 21:11+0800\n"
 "Last-Translator: Wei Mingzhi <whistler_wmz@users.sf.net>\n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: pxE;pxExpandMsg\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: pcsx2\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 2.0.1\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -154,7 +154,7 @@ msgstr ""
 "您可以指定一个您的 PCSX2 设置选项所在位置。如果此位置包含已有的 PCSX2 设置，"
 "您可以选择导入或覆盖它们。"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:99
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:97
 #, c-format
 msgid ""
 "This wizard will help guide you through configuring plugins, memory cards, "
@@ -164,15 +164,14 @@ msgstr ""
 "此向导将引导您配置插件、记忆卡及 BIOS。如果您是第一次运行 %s，建议您先查看自"
 "述文件及配置说明。"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:142
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:140
 msgid ""
 "PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\n"
 "You cannot use a copy obtained from a friend or the Internet.\n"
 "You must dump the BIOS from your *own* Playstation 2 console."
 msgstr ""
-"PCSX2 需要一个合法的 PS2 BIOS 副本来运行游戏。\n"
-"使用非法复制或下载的副本为侵权行为。\n"
-"您必须从您自己的 Playstation 2 实机中取得 BIOS。"
+"PCSX2 需要一个合法的 PS2 BIOS 副本来运行游戏。使用非法复制或下载的副本为侵权"
+"行为。您必须从您自己的 Playstation 2 实机中取得 BIOS。"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:32
 #, c-format

@@ -1040,6 +1040,36 @@ bool GSC_SlyGames(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
+bool GSC_XenosagaE3(const GSFrameInfo& fi, int& skip)
+{
+	if(skip == 0)
+	{
+		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK >= 0xEFFFFFFF)
+		{
+			skip = 73; // Animation
+		}
+		else if(fi.TME && fi.FBP ==0x03800 && fi.TBP0 && fi.TPSM ==0  && fi.FBMSK == 0)
+		{
+			skip = 1; // Ghosting
+		}
+		else
+		{
+			if(fi.TME)
+			{
+				// depth textures (bully, mgs3s1 intro, Front Mission 5)
+				if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
+					// General, often problematic post processing
+					(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
+				{
+					skip = 1;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
 bool GSC_Grandia3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1227,36 +1257,6 @@ bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
 		else if(fi.TME && (fi.TBP0 ==0x1400 || fi.TBP0 ==0x1000 ||fi.TBP0 == 0x1200) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
 		{
 			skip = 1; // Eliminate excessive flooding, water and other light and shadow
-		}
-	}
-
-	return true;
-}
-
-bool GSC_XenosagaE3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK >= 0xEFFFFFFF)
-		{
-			skip = 73; // Animation
-		}
-		else if(fi.TME && fi.FBP ==0x03800 && fi.TBP0 && fi.TPSM ==0  && fi.FBMSK == 0)
-		{
-			skip = 1; // Ghosting
-		}
-		else
-		{
-			if(fi.TME)
-			{
-				// depth textures (bully, mgs3s1 intro, Front Mission 5)
-				if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-					// General, often problematic post processing
-					(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-				{
-					skip = 1;
-				}
-			}
 		}
 	}
 
@@ -1486,6 +1486,7 @@ void GSState::SetupCrcHack()
 
 		// Needs testing
 		lut[CRC::Grandia3] = GSC_Grandia3;
+		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 
 		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to Aggressive)
 		// Needs at least Basic Blending,
@@ -1507,7 +1508,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
 		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
 		lut[CRC::SoTC] = GSC_SoTC;
-		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 
 		// Upscaling issues
 		lut[CRC::GodOfWar] = GSC_GodOfWar;

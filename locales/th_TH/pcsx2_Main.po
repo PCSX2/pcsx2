@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-02-10 17:29+0000\n"
+"POT-Creation-Date: 2020-01-15 22:32+1300\n"
 "PO-Revision-Date: 2014-07-21 00:30+0700\n"
 "Last-Translator: blackb1rd <blackb1rd@riseup.net>\n"
 "Language-Team: xyteton <xyteton@hotmail.com>, blackb1rd <blackb1rd@riseup."
@@ -1139,11 +1139,11 @@ msgstr "เลือกโฟลเดอร์สำหรับการตั
 msgid "Settings"
 msgstr "การตั้งค่า"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:86
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:84
 msgid "Language selector"
 msgstr "ตัวใช้เลือกภาษา"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:89
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:87
 msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
@@ -1151,21 +1151,19 @@ msgstr ""
 "เปลี่ยนภาษาเมื่อคุณเห็นว่าจำเป็นเท่านั้น \n"
 "ค่าตั้งต้นของระบบมักจะเหมาะสมแล้วสำหรับแต่ละระบบปฏิบัติการ"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:95
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:93
 msgid "Welcome to PCSX2!"
 msgstr "ยินดีต้อนรับสู่  PCSX2!"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:106
-#, fuzzy
-msgid "Configuration Guide"
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:104
+msgid "Configuration Guides (online)"
 msgstr "แนวทางการกำหนดค่า (ออนไลน์)"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
-#, fuzzy
-msgid "Readme / FAQ"
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:108
+msgid "Readme / FAQ (Offline/PDF)"
 msgstr "Readme / คำถามที่พบบ่อย (ออฟไลน์/PDF)"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:117
 #, c-format
 msgid "%s First Time Configuration"
 msgstr "การกำหนดค่าครั้งแรก %s "

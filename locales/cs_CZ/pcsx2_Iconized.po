@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.9\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-02-10 17:29+0000\n"
+"POT-Creation-Date: 2020-01-15 22:32+1300\n"
 "PO-Revision-Date: 2017-06-30 19:49+0200\n"
 "Last-Translator: Zbyněk Schwarz <zbynek.schwarz@gmail.com>\n"
 "Language-Team: Zbyněk Schwarz\n"
@@ -174,7 +174,7 @@ msgstr ""
 "umístění obsahuje existující nastavení PCSX2, bude Vám dána možnost je "
 "importovat nebo přepsat."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:99
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:97
 #, c-format
 msgid ""
 "This wizard will help guide you through configuring plugins, memory cards, "
@@ -185,7 +185,7 @@ msgstr ""
 "a BIOSu. Je doporučeno, pokud je toto poprvé co instalujete %s, si "
 "prohlédnout 'Přečti mě' a průvodce nastavením."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:142
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:140
 msgid ""
 "PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\n"
 "You cannot use a copy obtained from a friend or the Internet.\n"

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.4.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-02-10 17:29+0000\n"
+"POT-Creation-Date: 2020-01-15 22:32+1300\n"
 "PO-Revision-Date: 2017-04-23 21:05+0800\n"
 "Last-Translator: Wei Mingzhi <whistler_wmz@users.sf.net>\n"
 "Language-Team: \n"
@@ -1122,11 +1122,11 @@ msgstr "选择一个 %s 设置的文件夹"
 msgid "Settings"
 msgstr "设置"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:86
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:84
 msgid "Language selector"
 msgstr "语言选择器"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:89
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:87
 msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
@@ -1134,21 +1134,19 @@ msgstr ""
 "请仅在需要时更换语言。\n"
 "系统默认语言应对大多数操作系统有效。"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:95
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:93
 msgid "Welcome to PCSX2!"
 msgstr "欢迎使用 PCSX2 !"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:106
-#, fuzzy
-msgid "Configuration Guide"
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:104
+msgid "Configuration Guides (online)"
 msgstr "配置说明 (在线)"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
-#, fuzzy
-msgid "Readme / FAQ"
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:108
+msgid "Readme / FAQ (Offline/PDF)"
 msgstr "自述文件 / 常见问题 (离线/PDF)"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:117
 #, c-format
 msgid "%s First Time Configuration"
 msgstr "%s 首次运行向导"

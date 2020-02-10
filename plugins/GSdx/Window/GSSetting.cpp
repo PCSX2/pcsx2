@@ -58,7 +58,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Full:\nFor an optimal experience with Direct3D.\n\n"
 				"Aggressive:\nUse more aggressive CRC hacks.\n"
 				"Removes effects in some games which make the image appear sharper/clearer.\n"
-				"Affected games: AC4, BleachBB, Bully, DBZBT 2 & 3, DeathByDegrees, Evangelion, FF games, FightingBeautyWulong, GOW 1 & 2, Kunoichi, IkkiTousen, Okami, Oneechanbara2, OnimushaDoD, RDRevolver, Simple2000Vol114, SoTC, SMT3, SMTDDS 1 & 2, SteambotChronicles, Tekken5, Ultraman, XenosagaE3, Yakuza 1 & 2.\n";
+				"Affected games: AC4, BleachBB, Bully, DBZBT 2 & 3, DeathByDegrees, Evangelion, FF games, FightingBeautyWulong, GOW 1 & 2, Kunoichi, IkkiTousen, Okami, Oneechanbara2, OnimushaDoD, RDRevolver, Simple2000Vol114, SoTC, SMT3, SMTDDS 1 & 2, SteambotChronicles, Tekken5, Ultraman, Yakuza 1 & 2.\n";
 		case IDC_SKIPDRAWHACK:
 		case IDC_SKIPDRAWHACKEDIT:
 		case IDC_SKIPDRAWOFFSET:
@@ -169,8 +169,8 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Automatic detection is recommended.\n\n"
 				"Note: This option is only supported by GPUs which support at least Direct3D 10.";
 		case IDC_IMAGE_LOAD_STORE:
-			return "Allows advanced atomic operations to speed up DATE Accuracy.\n"
-				"Only disable this if using DATE Accuracy causes (GPU driver) issues.\n\n"
+			return "Allows advanced atomic operations to speed up Accurate Date.\n"
+				"Only disable this if using Accurate Date causes (GPU driver) issues.\n\n"
 				"Note: This option is only supported by GPUs which support at least Direct3D 11.";
 		case IDC_SPARSE_TEXTURE:
 			return "Allows to reduce VRAM usage on the GPU.\n\n"
