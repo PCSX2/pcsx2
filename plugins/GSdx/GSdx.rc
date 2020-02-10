@@ -417,8 +417,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,1,9
- PRODUCTVERSION 1,0,1,9
+ FILEVERSION 1,2,0,0
+ PRODUCTVERSION 1,2,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -436,12 +436,12 @@ BEGIN
             VALUE "Comments", "http://guliverkli.sf.net/"
             VALUE "CompanyName", "Gabest"
             VALUE "FileDescription", "GS plugin for ps2 emulators"
-            VALUE "FileVersion", "1, 0, 1, 9"
+            VALUE "FileVersion", "1, 2, 0, 0"
             VALUE "InternalName", "GSdx.dll"
             VALUE "LegalCopyright", "Copyright (c) 2007-2008 Gabest.  All rights reserved."
             VALUE "OriginalFilename", "GSdx.dll"
             VALUE "ProductName", "GSdx"
-            VALUE "ProductVersion", "1, 0, 1, 9"
+            VALUE "ProductVersion", "1, 2, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
