@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-01-25 12:05+0000\n"
-"Last-Translator: mavethee <mitura07@wp.pl>, Manz4rk <stouf@outlook.com>\n"
+"PO-Revision-Date: 2020-02-11 03:45+0100\n"
+"Last-Translator: RedDevilus\n"
 "Language-Team: mavethee <mitura07@wp.pl>, Manz4rk <stouf@outlook.com>\n"
 "Language: pl_PL\n"
 "MIME-Version: 1.0\n"
@@ -1221,14 +1221,12 @@ msgid "Welcome to PCSX2!"
 msgstr "Witaj w PCSX2!"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:106
-#, fuzzy
 msgid "Configuration Guide"
-msgstr "Poradniki Konfiguracji (Online)"
+msgstr "Poradniki Konfiguracji"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
-#, fuzzy
 msgid "Readme / FAQ"
-msgstr "Readme / FAQ (Offline/PDF)"
+msgstr "Przeczytaj Mnie / Najczęściej Zadawane Pytania"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
 #, c-format
