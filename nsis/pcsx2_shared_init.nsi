@@ -92,7 +92,7 @@ ${NSD_KillTimer} NSD_Timer.Callback
 
 # If the user is running at least Windows 8.1
 # or has no admin rights, don't waste time trying
-# to install the DX and VS2015 runtimes.
+# to install the DX and VS runtimes.
 # (head straight to the first installer section)
 ${If} ${AtLeastWin8.1}
 ${OrIf} $IsAdmin == 0
@@ -100,7 +100,7 @@ Call PreInstall_UsrWait
 SendMessage $HWNDPARENT ${WM_COMMAND} 1 0
 ${EndIf}
 
-# Check if the VC 2015 runtimes are installed
+# Check if the VC runtimes are installed
 ${If} ${RunningX64}
 ReadRegDword $R0 HKLM "SOFTWARE\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" "Installed"
 ${Else}
@@ -113,15 +113,15 @@ ${If} $R0 == "1"
 Goto ExecDxSetup
 ${EndIf}
 
-# Download and install the VC 2015 redistributable from the internet
-${NSD_CreateLabel} 0 45 100% 10u "Downloading Visual C++ 2015 package"
+# Download and install the VC redistributable from the internet
+${NSD_CreateLabel} 0 45 100% 10u "Downloading Visual C++ package"
 Pop $hwnd
-inetc::get "https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe" "$TEMP\vcredist_2015_Update_1_x86.exe" /SILENT /CONNECTTIMEOUT 30 /RECEIVETIMEOUT 30 /END
-    ${NSD_CreateLabel} 0 45 100% 10u "Installing Visual C++ 2015 package"
+inetc::get "https://aka.ms/vs/16/release/VC_redist.x86.exe" "$TEMP\vcredist_Update_x86.exe" /SILENT /CONNECTTIMEOUT 30 /RECEIVETIMEOUT 30 /END
+    ${NSD_CreateLabel} 0 45 100% 10u "Installing Visual C++ package"
     Pop $hwnd
-    ExecWait '"$TEMP\vcredist_2015_Update_1_x86.exe /S"'
+    ExecWait '"$TEMP\vcredist_Update_x86.exe /S"'
     SendMessage $hwnd ${PBM_SETPOS} 40 0
-    Delete "$TEMP\vcredist_2015_Update_1_x86.exe"
+    Delete "$TEMP\vcredist_Update_x86.exe"
 
 
 # Download and install DirectX
