@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-01-17 21:57+0900\n"
+"PO-Revision-Date: 2020-02-11 21:17+0900\n"
 "Last-Translator: Chromaryu <knight.ryu12@gmail.com>\n"
 "Language-Team: DeltaHF Chromaryu\n"
 "Language: ja_JP\n"
@@ -489,7 +489,7 @@ msgstr "空ディスクドライブ起動。PS2のBIOSのシステムメニュ�
 
 #: pcsx2/gui/AppInit.cpp:256
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
-msgstr "CDVDプラグインから起動する（IsoFileパラメータを無視します）"
+msgstr "CDVDプラグインから起動する（IsoFileパラメータを無視する）"
 
 #: pcsx2/gui/AppInit.cpp:258
 msgid "disables all speedhacks"
@@ -1185,14 +1185,12 @@ msgid "Welcome to PCSX2!"
 msgstr "PCSX2へようこそ！"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:106
-#, fuzzy
 msgid "Configuration Guide"
-msgstr "設定ガイド集（オンライン）"
+msgstr "設定ガイド集"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
-#, fuzzy
 msgid "Readme / FAQ"
-msgstr "Readme / FAQ（オフライン / PDF）"
+msgstr "Readme / FAQ"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
 #, c-format
@@ -1315,7 +1313,7 @@ msgstr "言語選択"
 
 #: pcsx2/gui/ExecutorThread.cpp:41
 msgid "Logs events as they are passed to the PS2 virtual machine."
-msgstr "PS2仮想マシンに送られるイベントのログを渡されたままする"
+msgstr "PS2仮想マシンに送られるイベントを渡されたままログをする"
 
 #: pcsx2/gui/GlobalCommands.cpp:316
 msgid "Exit PCSX2?"
