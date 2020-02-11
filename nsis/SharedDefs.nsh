@@ -22,8 +22,6 @@ Name "${APP_NAME}"
 !define APP_FILENAME     "pcsx2"
 !define APP_EXE          "$INSTDIR\${APP_FILENAME}.exe"
 
-!define PCSX2_README     "PCSX2_Readme.pdf"
-!define PCSX2_FAQ        "PCSX2_FAQ.pdf"
 ;===============================
 ; MUI STUFF
 !include "MUI2.nsh"
