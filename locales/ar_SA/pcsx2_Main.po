@@ -1170,7 +1170,7 @@ msgstr "إختر ملف لإعدادات %s"
 msgid "Settings"
 msgstr "الإعدادات"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:84
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:86
 msgid "Language selector"
 msgstr "مختار اللغة"
 
