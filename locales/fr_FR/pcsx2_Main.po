@@ -2,11 +2,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.5.0\n"
+"Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2016-02-27 09:57+0100\n"
-"Last-Translator: Atomic83\n"
+"PO-Revision-Date: 2020-02-11 22:10+0100\n"
+"Last-Translator: RedDevilus\n"
 "Language-Team: Atomic83;goldeng;piorrro33 <odakawoi@yahoo.fr;"
 "piorrro33@outlook.com>\n"
 "Language: fr\n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: trunk\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 2.3\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -70,7 +70,7 @@ msgid ""
 "account rights."
 msgstr ""
 "Vous ne disposez pas des droits suffisants pour ouvrir ce fichier (mauvais "
-"compte d'utilisateur ?)."
+"compte d'utilisateur?)."
 
 #: common/src/Utilities/Exceptions.cpp:374
 msgid ""
@@ -1076,11 +1076,11 @@ msgstr "Nouvelle carte mémoire :"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:73
 msgid "At folder:    "
-msgstr "Dans le dossier :"
+msgstr "Dans le dossier:"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:76
 msgid "Select file name: "
-msgstr "Nom du fichier :"
+msgstr "Nom du fichier:"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:180
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:192
@@ -1231,14 +1231,12 @@ msgid "Welcome to PCSX2!"
 msgstr "Bienvenue dans PCSX2 !"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:106
-#, fuzzy
 msgid "Configuration Guide"
-msgstr "Guides de configuration (online)"
+msgstr "Guide de configuration"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
-#, fuzzy
 msgid "Readme / FAQ"
-msgstr "Lisez-moi / FAQ (offline - fichier PDF)"
+msgstr "Lisez-moi / FAQ"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
 #, c-format
@@ -1367,7 +1365,7 @@ msgstr ""
 
 #: pcsx2/gui/GlobalCommands.cpp:316
 msgid "Exit PCSX2?"
-msgstr "Quitter PCSX2 ?"
+msgstr "Quitter PCSX2?"
 
 #: pcsx2/gui/GlobalCommands.cpp:622
 #, fuzzy
@@ -2171,9 +2169,8 @@ msgid "Widescreen (16:9)"
 msgstr "Écran large (16:9)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:37
-#, fuzzy
 msgid "Off (Default)"
-msgstr " (défaut)"
+msgstr "non-actif(défaut)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:45
 #, fuzzy
@@ -2186,9 +2183,8 @@ msgid "Standard"
 msgstr "Normal (4:3)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:47
-#, fuzzy
 msgid "Adaptive"
-msgstr "Négatif"
+msgstr " Adaptative"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:67
 msgid "Disable window resize border"
@@ -2215,9 +2211,8 @@ msgid "Aspect Ratio:"
 msgstr "Ratio d'aspect :"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:104
-#, fuzzy
 msgid "FMV Aspect Ratio Override:"
-msgstr "Ratio d'aspect :"
+msgstr "Ratio d'aspect:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:106
 msgid "Custom Window Size:"
@@ -2225,7 +2220,7 @@ msgstr "Taille de la fenêtre :"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:109
 msgid "Zoom:"
-msgstr "Zoom :"
+msgstr "Zoom:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:115
 #, fuzzy
@@ -2285,7 +2280,7 @@ msgstr "VU XGkick Hack - Pour le jeu Erementar Gerad."
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:64
 msgid "FFX videos fix - Fixes bad graphics overlay in FFX videos."
 msgstr ""
-"FFX video fix - Corrige les bugs graphiques liés à certaines vidéos du jeu "
+"FFX video fix - Corrige des bugs graphiques liés à certaines vidéos du jeu "
 "FFX."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:68
@@ -2673,13 +2668,12 @@ msgid "Cheats:"
 msgstr ""
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:39
-#, fuzzy
 msgid "Select folder for Cheats"
-msgstr "Choisir un dossier pour les sauvegardes"
+msgstr "Choisir un dossier pour les triches"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:46
 msgid "Savestates:"
-msgstr "Sauvegardes :"
+msgstr "Sauvegardes:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:47
 msgid "Select folder for Savestates"
@@ -2687,7 +2681,7 @@ msgstr "Choisir un dossier pour les sauvegardes"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:54
 msgid "Snapshots:"
-msgstr "Screenshots :"
+msgstr "Screenshots:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:55
 msgid "Select a folder for Snapshots"
@@ -2695,7 +2689,7 @@ msgstr "Choisir un dossier pour les screenshots"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:62
 msgid "Logs/Dumps:"
-msgstr "Rapports / Dumps :"
+msgstr "Rapports / Dumps:"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:63
 msgid "Select a folder for logs/dumps"
@@ -2707,7 +2701,7 @@ msgstr "Application des paramètres..."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:238
 msgid "Shutdown PS2 virtual machine?"
-msgstr "Éteindre la machine virtuelle PS2 ?"
+msgstr "Éteindre la machine virtuelle PS2?"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:315
 msgid "I'm givin' her all she's got, Captain!"
@@ -2931,7 +2925,7 @@ msgstr "Framelimiter"
 
 #: pcsx2/gui/RecentIsoList.cpp:139
 msgid "Clear ISO list"
-msgstr ""
+msgstr "Effacer la liste d'ISO"
 
 #: pcsx2/gui/Saveslots.h:96
 #, fuzzy, c-format

@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-02-04 19:21+0100\n"
+"PO-Revision-Date: 2020-02-12 01:46+0100\n"
 "Last-Translator: XXXBold\n"
 "Language-Team: PCSX2\n"
 "Language: de_DE\n"
@@ -15,7 +15,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;wxLt;pxL\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: ../..\n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Poedit 2.3\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -1201,14 +1201,12 @@ msgid "Welcome to PCSX2!"
 msgstr "Willkommen bei PCSX2!"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:106
-#, fuzzy
 msgid "Configuration Guide"
-msgstr "Konfigurationsratgeber (online)"
+msgstr "Konfigurationsratgeber"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
-#, fuzzy
 msgid "Readme / FAQ"
-msgstr "Readme / FAQ (Offline/PDF)"
+msgstr "Readme / FAQ"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
 #, c-format
