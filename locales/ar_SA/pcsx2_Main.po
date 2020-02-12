@@ -2351,8 +2351,8 @@ msgstr "إنشاء مستنسخ من هذا الكرت"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:489
 msgid ""
-"Convert this memory card to or from a folder memory card. Creates a duplicate "
-"of the current memory card in the new type.\n"
+"Convert this memory card to or from a folder memory card. Creates a "
+"duplicate of the current memory card in the new type.\n"
 "\n"
 "Note: Only available when a memory card is formatted. Not available for PSX "
 "memory cards."
