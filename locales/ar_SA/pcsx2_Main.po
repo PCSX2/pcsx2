@@ -1161,12 +1161,12 @@ msgid ""
 "games."
 msgstr ""
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:50
 #, c-format
 msgid "Select a folder for %s settings"
 msgstr "إختر ملف لإعدادات %s"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:50
 msgid "Settings"
 msgstr "الإعدادات"
 
@@ -1174,7 +1174,7 @@ msgstr "الإعدادات"
 msgid "Language selector"
 msgstr "مختار اللغة"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:87
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:89
 msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
@@ -1182,19 +1182,19 @@ msgstr ""
 "غيّر اللغة فقط إذا كنت تحتاج لذلك \n"
 "الإفتراضية الخاصة بالنظام يجب أن تكون جيدة لمعظم أنظمة التشغيل"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:93
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:95
 msgid "Welcome to PCSX2!"
 msgstr "مرحبا بك في PCSX2"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:104
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:106
 msgid "Configuration Guides (online)"
 msgstr "دليل الضبط"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:108
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
 msgid "Readme / FAQ (Offline/PDF)"
 msgstr "إقرأني / أسئلة يتكرر سؤالها"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:117
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
 #, c-format
 msgid "%s First Time Configuration"
 msgstr "%s معالج الضبط لأول مرّة"
