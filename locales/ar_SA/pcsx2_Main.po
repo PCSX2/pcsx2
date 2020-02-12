@@ -2255,9 +2255,7 @@ msgid "Switch to GSdx software rendering when an FMV plays"
 msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:104
-msgid ""
-"Convert this memory card to or from a folder memory card. Creates a "
-"duplicate of the current memory card in the new type.\n"
+msgid "Preload TLB hack to avoid tlb miss on Goemon"
 msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:108
