@@ -5,11 +5,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.0\n"
+"Project-Id-Version: PCSX2 1.6\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-02-10 17:48+0300\n"
-"Last-Translator: Plubu\n"
+"PO-Revision-Date: 2020-02-12 01:57+0100\n"
+"Last-Translator: RedDevilus\n"
 "Language-Team: Plubu (Plubutusty@gmail.com)\n"
 "Language: ar_001\n"
 "MIME-Version: 1.0\n"
@@ -19,7 +19,7 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: trunk\n"
 "X-Poedit-Bookmarks: 38,39,57,40,41,-1,158,-1,-1,-1\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 2.3\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
@@ -1188,11 +1188,11 @@ msgstr "مرحبا بك في PCSX2"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:104
 msgid "Configuration Guides (online)"
-msgstr "دليل الضبط [ أونلاين ( على النت )]"
+msgstr "دليل الضبط"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:108
 msgid "Readme / FAQ (Offline/PDF)"
-msgstr "إقرأني / أسئلة يتكرر سؤالها [ أوفلاين ( لا تتطلب نت )]"
+msgstr "إقرأني / أسئلة يتكرر سؤالها"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:117
 #, c-format
