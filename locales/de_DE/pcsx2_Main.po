@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-02-11 22:20+0100\n"
+"PO-Revision-Date: 2020-02-12 01:46+0100\n"
 "Last-Translator: RedDevilus\n"
 "Language-Team: PCSX2\n"
 "Language: de_DE\n"
@@ -1206,7 +1206,7 @@ msgstr "Konfigurationsratgeber"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
 msgid "Readme / FAQ"
-msgstr "Readme / FAQ "
+msgstr "Readme / FAQ"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
 #, c-format
