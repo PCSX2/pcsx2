@@ -5,11 +5,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.6\n"
+"Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
 "PO-Revision-Date: 2020-02-12 01:57+0100\n"
-"Last-Translator: RedDevilus\n"
+"Last-Translator: Plubu\n"
 "Language-Team: Plubu (Plubutusty@gmail.com)\n"
 "Language: ar_001\n"
 "MIME-Version: 1.0\n"
@@ -1161,12 +1161,12 @@ msgid ""
 "games."
 msgstr ""
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:50
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
 #, c-format
 msgid "Select a folder for %s settings"
 msgstr "إختر ملف لإعدادات %s"
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:50
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
 msgid "Settings"
 msgstr "الإعدادات"
 
