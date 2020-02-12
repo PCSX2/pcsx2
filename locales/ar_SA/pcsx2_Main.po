@@ -645,7 +645,8 @@ msgstr ""
 "إضغط نعم للذهاب إلى لوحة إعداد الملحقات."
 
 #: pcsx2/gui/AppMain.cpp:136 pcsx2/gui/AppMain.cpp:150
-msgid "Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
+msgid ""
+"Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
 msgstr "تحذير لم يتم تشغيل ملحقات النظام . ربما PCSX2 غير صالح للعمل"
 
 #: pcsx2/gui/AppMain.cpp:184 pcsx2/gui/AppMain.cpp:189
@@ -788,8 +789,8 @@ msgstr "الثيم الأسود"
 
 #: pcsx2/gui/ConsoleLogger.cpp:428
 msgid ""
-"Classic black color scheme for people who enjoy having text seared into their "
-"optic nerves."
+"Classic black color scheme for people who enjoy having text seared into "
+"their optic nerves."
 msgstr ""
 "الأسلوب الكلاسيكي الأسود للناس الذين يستمتعون بالحصول على نص محروق في العصب "
 "البصري "
@@ -1079,14 +1080,15 @@ msgstr "8 MB [الأكثر توافقا]"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:239
 msgid ""
-"This is the standard Sony-provisioned size, and is supported by all games and "
-"BIOS versions."
+"This is the standard Sony-provisioned size, and is supported by all games "
+"and BIOS versions."
 msgstr ""
 "هذا هو الأساس الذي تستخدمه Sony  و هو مدعوم من قبل جميع الألعاب ونسخ الـ BIOS "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:240
 msgid ""
-"Always use this option if you want the safest and surest memory card behavior."
+"Always use this option if you want the safest and surest memory card "
+"behavior."
 msgstr "دائما إستخدم هذا الكرت إذا أردت الكرت الأكثر أماتا و ثقة"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:243
@@ -1139,8 +1141,8 @@ msgstr ""
 msgid ""
 "Automatically manages memory card contents so that the console only sees "
 "files related to the currently running software. Allows you to drag-and-drop "
-"files in and out of the memory card with your standard file explorer. This is "
-"still experimental, so use at your own risk!"
+"files in and out of the memory card with your standard file explorer. This "
+"is still experimental, so use at your own risk!"
 msgstr ""
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:259
@@ -2022,7 +2024,8 @@ msgstr "أيضا بطيء موجود لتشخيص الأخطاء"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:130
 msgid ""
-"Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."
+"Performs just-in-time binary translation of 32-bit MIPS-I machine code to "
+"x86."
 msgstr "يؤدي بوقت مناسب ترجمة من 32-bit MIPS-I  إلى X86"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:154
@@ -2058,7 +2061,8 @@ msgid "superVU Recompiler [legacy]"
 msgstr "وضع معيد الترجمة superVU  ( قديم )"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:193
-msgid "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
+msgid ""
+"Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
 msgstr "مفيد في تشخيص الأخطاء أو مشاكل اللقط في وضع معيد الترجمة microVU"
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:64
@@ -2251,11 +2255,14 @@ msgid "Switch to GSdx software rendering when an FMV plays"
 msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:104
-msgid "Preload TLB hack to avoid tlb miss on Goemon"
+msgid ""
+"Convert this memory card to or from a folder memory card. Creates a "
+"duplicate of the current memory card in the new type.\n"
 msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:108
-msgid "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
+msgid ""
+"VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
 msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:112
