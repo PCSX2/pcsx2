@@ -1189,11 +1189,13 @@ msgid "Welcome to PCSX2!"
 msgstr "مرحبا بك في PCSX2"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:106
-msgid "Configuration Guides (online)"
+#, fuzzy
+msgid "Configuration Guide"
 msgstr "دليل الضبط"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
-msgid "Readme / FAQ (Offline/PDF)"
+#, fuzzy
+msgid "Readme / FAQ"
 msgstr "إقرأني / أسئلة يتكرر سؤالها"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
