@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-02-03 10:17+0300\n"
+"PO-Revision-Date: 2020-02-14 02:18+0300\n"
 "Last-Translator: teorex3\n"
 "Language-Team: Kein <kein-of@yandex.ru>\n"
 "Language: ru_RU\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;wxLt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: g:/Internet/SVN/PCSX2\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 2.3\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -515,7 +515,7 @@ msgstr ""
 
 #: pcsx2/gui/AppInit.cpp:258
 msgid "disables all speedhacks"
-msgstr "отключает все спидхаки"
+msgstr "отключает все speed хаки"
 
 #: pcsx2/gui/AppInit.cpp:259
 msgid "use the specified comma or pipe-delimited list of gamefixes."
@@ -531,6 +531,7 @@ msgstr "отключает быстрый запуск диска/образа"
 msgid ""
 "passes the specified space-delimited string of launch arguments to the game"
 msgstr ""
+"передает в игру указанную строку аргументов запуска, разделенную пробелами"
 
 #: pcsx2/gui/AppInit.cpp:263
 msgid "changes the configuration file path"
@@ -1225,14 +1226,12 @@ msgid "Welcome to PCSX2!"
 msgstr "Добро пожаловать в PCSX2!"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:106
-#, fuzzy
 msgid "Configuration Guide"
-msgstr "Руководство по настройке (онлайн)"
+msgstr "Руководство по настройке"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
-#, fuzzy
 msgid "Readme / FAQ"
-msgstr "Readme и FAQ (оффлайн/ PDF)"
+msgstr ""
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
 #, c-format
@@ -1328,7 +1327,7 @@ msgstr "GS-окно (видео)"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:225
 msgid "Speedhacks"
-msgstr "Спидхаки"
+msgstr "Speed хаки"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:226
 msgid "Game Fixes"
@@ -2330,7 +2329,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:123
 msgid "Enable manual game fixes [Not recommended]"
-msgstr "Включить ручные исправления [не рекомендуется]"
+msgstr "Включить ручные исправления [Не рекомендуется]"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:250
 msgid "Enable Trace Logging"
@@ -2731,7 +2730,7 @@ msgstr "Завершение задач..."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:122
 msgid "Enable speedhacks"
-msgstr "Включить спидхаки"
+msgstr "Включить speed хаки"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:126
 msgid ""
@@ -2740,19 +2739,19 @@ msgstr "Простое и быстрое включение/отключение
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:143
 msgid "EE Cyclerate [Not Recommended]"
-msgstr "EE Cyclerate [Не рекомендуется]"
+msgstr "Скорость цикла EE [Не рекомендуется]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:156
 msgid "EE Cycle Skipping [Not Recommended]"
-msgstr "EE Cycle Skipping [Не рекомендуется]"
+msgstr "Пропуск циклов EE [Не рекомендуется]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "microVU Hacks"
-msgstr ""
+msgstr "microVU Хаки"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
 msgid "mVU Flag Hack"
-msgstr ""
+msgstr "mVU Flag Хак"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
 msgid ""
