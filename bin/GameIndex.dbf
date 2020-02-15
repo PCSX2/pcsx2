@@ -11994,9 +11994,10 @@ Name   = Powerdrome
 Region = PAL-M5
 Compat = 4
 [patches = 52085DF1]
-	//Game takes advantage of the VU's extended float range
-	//This limits it so x86 can handle it
-	comment=VU Float patch by refraction
+	//Game takes advantage of the VU's extended float range.
+	//This limits it so x86 can handle it.
+	author=refraction and PSI
+	comment=VU float patch
 	patch=1,EE,0037A680,word,7e7fffff
 	patch=1,EE,0037A688,word,fe7fffff
 [/patches]
