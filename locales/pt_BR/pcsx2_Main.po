@@ -5,7 +5,7 @@
 # Altieres Lima a Silva <altieres.lima@gmail.com> 2019-2020
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.7.0\n"
+"Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
 "PO-Revision-Date: 2020-20-19 18:49-0300\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit Poedit 2.2.4\n"
+"X-Generator: Poedit 2.2.4\n"
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 

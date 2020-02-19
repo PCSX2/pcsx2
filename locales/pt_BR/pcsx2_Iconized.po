@@ -5,11 +5,11 @@
 # Altieres Lima a Silva <altieres.lima@gmail.com> 2019-2020
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.7.0\n"
+"Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
 "PO-Revision-Date: 2020-20-19 18:26-0300\n"
-"Last-Translator: Altieres Lima a Silva <altieres.lima@gmail.com>; Rafael Fontenelle <rffontenelle@gmail.com>
+"Last-Translator: Altieres Lima a Silva <altieres.lima@gmail.com>; Rafael Fontenelle <rffontenelle@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
