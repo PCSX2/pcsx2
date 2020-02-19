@@ -1,12 +1,13 @@
 # Copyright (C) 2018 PCSX2 Team
 # This file is distributed under the same license as the PACKAGE package.
+# RedDevilus (GitHub and Discord), 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-02-11 22:15+0100\n"
-"Last-Translator: RedDevilus\n"
+"PO-Revision-Date: 2020-02-16 18:44+0100\n"
+"Last-Translator: CaptainTearow\n"
 "Language-Team: Atomic83;goldeng;piorrro33 <odakawoi@yahoo.fr;"
 "piorrro33@outlook.com>\n"
 "Language: fr_FR\n"
@@ -557,7 +558,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
 msgid "This folder is where PCSX2 loads cheats from."
-msgstr "Cette dossier chargez les triches de PCSX2."
+msgstr "PCSX2 charge les triches depuis ce dossier."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:48
 msgid ""

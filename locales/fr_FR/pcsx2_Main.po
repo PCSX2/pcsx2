@@ -1,12 +1,13 @@
 # Copyright (C) 2018 PCSX2 Dev Team
 # This file is distributed under the same license as the PACKAGE package.
+# # RedDevilus (GitHub and Discord), 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-02-11 22:10+0100\n"
-"Last-Translator: RedDevilus\n"
+"PO-Revision-Date: 2020-02-16 18:44+0100\n"
+"Last-Translator: CaptainTearow\n"
 "Language-Team: Atomic83;goldeng;piorrro33 <odakawoi@yahoo.fr;"
 "piorrro33@outlook.com>\n"
 "Language: fr\n"
@@ -70,7 +71,7 @@ msgid ""
 "account rights."
 msgstr ""
 "Vous ne disposez pas des droits suffisants pour ouvrir ce fichier (mauvais "
-"compte d'utilisateur?)."
+"compte d'utilisateur ?)."
 
 #: common/src/Utilities/Exceptions.cpp:374
 msgid ""
@@ -1076,11 +1077,11 @@ msgstr "Nouvelle carte mémoire :"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:73
 msgid "At folder:    "
-msgstr "Dans le dossier:"
+msgstr "Dans le dossier :"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:76
 msgid "Select file name: "
-msgstr "Nom du fichier:"
+msgstr "Nom du fichier :"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:180
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:192
@@ -1365,7 +1366,7 @@ msgstr ""
 
 #: pcsx2/gui/GlobalCommands.cpp:316
 msgid "Exit PCSX2?"
-msgstr "Quitter PCSX2?"
+msgstr "Quitter PCSX2 ?"
 
 #: pcsx2/gui/GlobalCommands.cpp:622
 #, fuzzy
@@ -2170,7 +2171,7 @@ msgstr "Écran large (16:9)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:37
 msgid "Off (Default)"
-msgstr "non-actif(défaut)"
+msgstr "Désactivé (défaut)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:45
 #, fuzzy
@@ -2184,7 +2185,7 @@ msgstr "Normal (4:3)"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 msgid "Adaptive"
-msgstr " Adaptative"
+msgstr "Adaptative"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:67
 msgid "Disable window resize border"
@@ -2212,7 +2213,7 @@ msgstr "Ratio d'aspect :"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:104
 msgid "FMV Aspect Ratio Override:"
-msgstr "Ratio d'aspect:"
+msgstr "Ratio d'aspect :"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:106
 msgid "Custom Window Size:"
@@ -2220,7 +2221,7 @@ msgstr "Taille de la fenêtre :"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:109
 msgid "Zoom:"
-msgstr "Zoom:"
+msgstr "Zoom :"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:115
 #, fuzzy
@@ -2673,7 +2674,7 @@ msgstr "Choisir un dossier pour les triches"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:46
 msgid "Savestates:"
-msgstr "Sauvegardes:"
+msgstr "Sauvegardes :"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:47
 msgid "Select folder for Savestates"
@@ -2681,7 +2682,7 @@ msgstr "Choisir un dossier pour les sauvegardes"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:54
 msgid "Snapshots:"
-msgstr "Screenshots:"
+msgstr "Screenshots :"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:55
 msgid "Select a folder for Snapshots"
@@ -2689,7 +2690,7 @@ msgstr "Choisir un dossier pour les screenshots"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:62
 msgid "Logs/Dumps:"
-msgstr "Rapports / Dumps:"
+msgstr "Rapports / Dumps :"
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:63
 msgid "Select a folder for logs/dumps"
@@ -2701,7 +2702,7 @@ msgstr "Application des paramètres..."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:238
 msgid "Shutdown PS2 virtual machine?"
-msgstr "Éteindre la machine virtuelle PS2?"
+msgstr "Éteindre la machine virtuelle PS2 ?"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:315
 msgid "I'm givin' her all she's got, Captain!"

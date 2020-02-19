@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-02-04 02:09+0300\n"
+"PO-Revision-Date: 2020-02-14 03:52+0300\n"
 "Last-Translator: teorex3\n"
 "Language-Team: Kein <kein-of@yandex.ru>\n"
 "Language: ru_RU\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Poedit-KeywordsList: pxE;pxExpandMsg\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-Basepath: g:/Internet/SVN/PCSX2\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 2.3\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -286,6 +286,23 @@ msgid ""
 "set of games that have unusual performance requirements, but have adverse "
 "effects on most others. Not recommended for underpowered PCs."
 msgstr ""
+"Пресеты применяют speed-хаки, которые могут увеличить скорость на слабых "
+"системах или ускорить игры, которые имеют необычные требования к "
+"производительности. Снимите этот флажок, чтобы применить настройки вручную.\n"
+"\n"
+"1) Безопаснее - Без speed хаков. Самая надежная, но, возможно, медленная "
+"настройка.\n"
+"2) Безопасно - По умолчанию. Несколько известных speed хаков дают ускорение, "
+"с минимальными побочными эффектами.\n"
+"3) Сбалансировано - Может помочь четырехъядерным процессорам.\n"
+"4) Агрессивно - Может помочь слабым процессорам в нетребовательных играх, но "
+"рискует вызвать проблемы в других случаях.\n"
+"5) Очень агрессивно - Может помочь слабым процессорам в нетребовательных "
+"играх, но вызовет проблемы в других случаях.\n"
+"6) В основном вредно - Жесткое применение speed хаков. Может помочь очень "
+"небольшому количеству игр, которые имеют необычные требования к "
+"производительности, но окажет неблагоприятное воздействие на большинство "
+"игр. Не рекомендуется для слабых ПК."
 
 #: pcsx2/gui/IsoDropTarget.cpp:28
 msgid ""
@@ -594,7 +611,8 @@ msgid ""
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
 "50% cyclerate. Значительное снижение требований к CPU. Ускорение для очень "
-"легких игр, замедляет другие. FMV и аудио могут заикаться или пропускать."
+"легких игр, замедляет другие. FMV ролики и аудио могут заикаться или "
+"пропускать кадры."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
 #, c-format
@@ -603,7 +621,8 @@ msgid ""
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
 "60% cyclerate. Умеренное снижение требований к CPU. Ускорение для легких "
-"игр, замедляет другие. FMV и аудио могут заикаться или пропускать."
+"игр, замедляет другие. FMV ролики и аудио могут заикаться или пропускать "
+"кадры."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
 #, c-format
@@ -618,8 +637,8 @@ msgstr ""
 msgid ""
 "Default cyclerate. Runs the emulated PS2 Emotion Engine at normal speed."
 msgstr ""
-"Default cyclerate. Запускает эмуляцию PS2 Emotion Engine на нормальной "
-"скорости."
+"Скорость цикла по умолчанию. Запускает эмуляцию PS2 Emotion Engine на "
+"нормальной скорости."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:53
 #, c-format
@@ -639,7 +658,7 @@ msgid ""
 msgstr ""
 "180% cyclerate. Значительное увеличение требований к CPU. Игры с переменной "
 "частотой кадров будут иметь более высокую внутреннюю частоту кадров. FMV "
-"могут быть медленными. Может вызвать проблемы со стабильностью."
+"ролики могут замедлиться. Может вызвать проблемы со стабильностью."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
 #, c-format
@@ -650,29 +669,35 @@ msgid ""
 msgstr ""
 "300% cyclerate. Чрезвычайное повышение требований к CPU. Игры с переменной "
 "частотой кадров будут иметь более высокую внутреннюю частоту кадров. FMV "
-"могут быть медленными. Может вызвать проблемы со стабильностью."
+"ролики могут замедлиться. Может вызвать проблемы со стабильностью."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:81
 msgid "Disables EE Cycle Skipping. Most compatible setting."
-msgstr "Отключение EE Cycle Skipping. Наиболее совместимые настройки."
+msgstr "Отключение пропуска циклов EE. Наиболее совместимые настройки."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
 msgid ""
 "Mild EE Cycle Skipping. Mild slow down for most games, but may help some "
 "games with mild VU starvation problems run at full speed."
 msgstr ""
+"Лёгкий пропуск циклов EE. Лёгкое замедление для большинства игр, но может "
+"помочь некоторым играм с легкими проблемами VU работать на полной скорости."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:93
 msgid ""
 "Moderate EE Cycle Skipping. Slow down for most games, but may help some "
 "games with moderate VU starvation problems run at full speed."
 msgstr ""
+"Средний пропуск циклов EE. Замедляет большинство игр, но может помочь "
+"некоторым играм со средними проблемами VU работать на полной скорости."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:98
 msgid ""
 "Maximum EE Cycle Skipping. Mostly harmful. May help games with significant "
 "VU starvation problems run at full speed."
 msgstr ""
+"Максимальный пропуск цикла EE. В основном вредно. Может помочь играм со "
+"значительными проблемами VU работать на полной скорости."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:123
 msgid ""
@@ -692,6 +717,11 @@ msgid ""
 "CPU requirements substantially. Lower values will reduce the CPU load "
 "allowing lightweight games to run full speed on weaker CPUs."
 msgstr ""
+"Изменяет тактовую частоту процессора эмулируемого Emotion Engine. Более "
+"высокие значения могут увеличить внутреннюю частоту кадров в играх с "
+"переменной частотой кадров, но значительно увеличат требования к процессору. "
+"Более низкие значения уменьшат нагрузку на процессор, позволяя легким играм "
+"работать на полной скорости на более слабых процессорах."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:163
 msgid ""
@@ -700,6 +730,11 @@ msgid ""
 "starvation problems, E.g. Shadow of the Colossus. More often than not this "
 "is harmful to performance and causes FPS readouts to be inaccurate."
 msgstr ""
+"Позволяет эмулируемому Emotion Engine пропускать циклы, разрешая "
+"микропрограммам VU выполняться с более быстрыми интервалами. Помогает "
+"небольшому количеству игр с проблемами VU, например Shadow of the Colossus. "
+"Чаще всего это вредно для производительности и приводит к неточности "
+"показаний FPS."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
 msgid ""
