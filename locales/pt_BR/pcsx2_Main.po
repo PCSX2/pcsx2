@@ -2,13 +2,14 @@
 # Copyright (C) 2019 PCSX2 Dev Team
 # This file is distributed under the same license as the PCSX2 package.
 # Rafael Fontenelle <rffontenelle@gmail.com>, 2011-2017.
+# Altieres Lima a Silva <altieres.lima@gmail.com> 2019-2020
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2019-08-20 12:27-0300\n"
-"Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>; Guilherme Dias "
+"PO-Revision-Date: 2020-20-19 18:49-0300\n"
+"Last-Translator: Altieres Lima a Silva <altieres.lima@gmail.com>; Rafael Fontenelle <rffontenelle@gmail.com>; Guilherme Dias "
 "<guilhermedias000@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -16,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.8.8\n"
+"X-Generator: Poedit Poedit 2.2.4\n"
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
@@ -425,7 +426,7 @@ msgstr ""
 
 #: pcsx2/gui/AppConfig.cpp:976
 msgid "Safest (No hacks)"
-msgstr "Mais seguro (Sem hacks)"
+msgstr "Totalmente seguro (Sem hacks)"
 
 #: pcsx2/gui/AppConfig.cpp:977
 msgid "Safe (Default)"
@@ -445,7 +446,7 @@ msgstr "Muito agressivo"
 
 #: pcsx2/gui/AppConfig.cpp:981
 msgid "Mostly Harmful"
-msgstr "Prejudicial"
+msgstr "Geralmente prejudicial"
 
 #: pcsx2/gui/AppConfig.cpp:1144 pcsx2/gui/AppConfig.cpp:1150
 msgid "Failed to overwrite existing settings file; permission was denied."
@@ -931,22 +932,21 @@ msgstr "Sobre o %s"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Website"
-msgstr ""
+msgstr "Site"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:56
 msgid "Support Forums"
-msgstr ""
+msgstr "Fóruns de suporte"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:58
 msgid "GitHub Repository"
-msgstr ""
+msgstr "Repositório do GitHub"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:60
 msgid "License"
-msgstr ""
+msgstr "Licença"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
-#, fuzzy
 msgid "PlayStation 2 Emulator:"
 msgstr "Emulador de Playstation 2"
 
@@ -956,7 +956,6 @@ msgid ""
 msgstr ""
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
-#, fuzzy
 msgid "Close"
 msgstr "&Fechar"
 
@@ -1246,14 +1245,12 @@ msgid "Welcome to PCSX2!"
 msgstr "Bem-vindo ao PCSX2!"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:106
-#, fuzzy
 msgid "Configuration Guide"
-msgstr "Guia de configuração (online)"
+msgstr "Guia de configuração"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:110
-#, fuzzy
 msgid "Readme / FAQ"
-msgstr "Leia-me / Perguntas frequentes (offline/PDF)"
+msgstr "Leia-me / Perguntas frequentes"
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:119
 #, c-format

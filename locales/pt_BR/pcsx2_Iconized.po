@@ -2,20 +2,21 @@
 # Copyright (C) 2019 PCSX2 Dev Team
 # This file is distributed under the same license as the PCSX2 package.
 # Rafael Fontenelle <rffontenelle@gmail.com>, 2011-2017.
+# Altieres Lima a Silva <altieres.lima@gmail.com> 2019-2020
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2019-08-20 12:27-0300\n"
-"Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>\n"
+"PO-Revision-Date: 2020-20-19 18:26-0300\n"
+"Last-Translator: Altieres Lima a Silva <altieres.lima@gmail.com>; Rafael Fontenelle <rffontenelle@gmail.com>
 "Language-Team: \n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.8.8\n"
+"X-Generator: Poedit 2.2.4\n"
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
@@ -29,7 +30,7 @@ msgstr ""
 msgid ""
 "Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings."
 msgstr ""
-"Falha ao ler/escrever o arquivo NVM/MEC. Verifique suas configurações BIOS e "
+"Falha ao ler ou escrever o arquivo NVM/MEC. Verifique suas configurações BIOS e "
 "de permissões."
 
 #: pcsx2/System.cpp:112
@@ -284,6 +285,25 @@ msgid ""
 "set of games that have unusual performance requirements, but have adverse "
 "effects on most others. Not recommended for underpowered PCs."
 msgstr ""
+"Estes pré-ajustes aplicam alguns hacks de velocidade que podem melhorar a "
+"velocidade em sistemas mais fracos, ou melhora a velocidade em jogos que "
+"têm requisitos de desempenho mais altos do que o normal. Desative esta "
+"opção para aplicar os ajustes manualmente.\n"
+"\n"
+"1) Totalmente seguro - Sem hacks de velocidade. O mais confiável, mas "
+"possivelmente lento.\n"
+"2) Seguro - Padrão. Alguns hacks que podem melhorar a velocidade, com "
+"pouco ou nenhum efeito prejudicial.\n"
+"3) Balanceado - Pode melhorar o desempenho com CPUs de quatro núcleos.\n"
+"4) Agressivo - Pode melhorar o desempenho com CPUs fracas em jogos "
+"menos exigentes, correndo o risco de provocar problemas em outros jogos.\n"
+"5) Muito agressivo - Pode melhorar o desempenho com CPUs fracas em "
+"jogos pouco exigentes, mas provavelmente provoque problemas em outros "
+"casos.\n"
+"6) Geralmente prejudicial - Severa aplicação de hacks de velocidade. Pode "
+"melhorar o desempenho para um pequeno conjunto de jogos que tem "
+"requisitos de desempenho incomum, mas tem efeitos negativos em quase "
+"todos os demais. Não recomendado para PCs fracos."
 
 #: pcsx2/gui/IsoDropTarget.cpp:28
 msgid ""
@@ -308,11 +328,11 @@ msgstr ""
 "novamente o assistente de primeiras configurações. Você precisará reiniciar "
 "o %s manualmente após esta operação.\n"
 "\n"
-"AVISO!! Clique OK para excluir *TODAS* configurações do %s e forçar "
+"AVISO!! Clique em OK para excluir *TODAS* as configurações do %s e forçar "
 "finalização do aplicativo, perdendo todo progresso da emulação. Você tem "
 "absoluta certeza?\n"
 "\n"
-"(nota: configurações dos plug-ins não serão afetadas)"
+"(Nota: as configurações dos plug-ins não serão afetadas)"
 
 #: pcsx2/gui/MemoryCardFile.cpp:87 pcsx2/gui/MemoryCardFolder.h:534
 #, c-format
@@ -338,7 +358,7 @@ msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
 msgstr ""
-"Por favor selecione uma BIOS válida. Se você não conseguir fazer uma seleção "
+"Por favor, selecione uma BIOS válida. Se você não conseguir fazer uma seleção "
 "válida, então pressione Cancelar para fechar o painel de Configuração."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:112 pcsx2/gui/Panels/CpuPanel.cpp:180
@@ -368,7 +388,7 @@ msgid ""
 "16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to "
 "correctly display a widescreen 16:9 FMV."
 msgstr ""
-"Desligado: Desativa o alternador de proporção de aspecto temporário.\n"
+"Desligado: Desativa a troca de proporção de aspecto temporário.\n"
 "\n"
 "4:3: Muda temporariamente para uma taxa de proporção 4:3 enquanto reproduz "
 "um FMV para exibir corretamente o FMV em 4:3.\n"
@@ -405,8 +425,8 @@ msgid ""
 "plugins."
 msgstr ""
 "A Sincronia Vertical elimina ranhuras na tela, mas tipicamente prejudica em "
-"muito a performance. Isso normalmente se aplica ao modo tela cheia, e pode "
-"não funcionar com todos plug-ins GS."
+"muito a performance. Isso normalmente se aplica ao modo de tela cheia, e pode "
+"não funcionar com todos os plug-ins GS."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:81
 msgid ""
@@ -475,8 +495,8 @@ msgid ""
 " * Transformers"
 msgstr ""
 "Sabe-se que afeta os seguintes jogos:\n"
-"* Test Drive Unlimited\n"
-"* Transformers"
+" * Test Drive Unlimited\n"
+" * Transformers"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:124
 msgid ""
@@ -609,7 +629,7 @@ msgstr ""
 "de Configurações."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "50% cyclerate. Significant reduction of CPU requirements. Speedup for very "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
@@ -619,7 +639,7 @@ msgstr ""
 "ou pular."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "60% cyclerate. Moderate reduction of CPU requirements. Speedup for "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
@@ -629,7 +649,7 @@ msgstr ""
 "pular."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "75% cyclerate. Slight reduction of CPU requirements. Speedup for less "
 "demanding games, slows down others."
@@ -645,7 +665,7 @@ msgstr ""
 "velocidade normal."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:53
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "130% cyclerate. Moderate increase of CPU requirements. Variable framerate "
 "games may have higher internal framerates."
@@ -654,7 +674,7 @@ msgstr ""
 "taxa de quadros variáveis ​​podem ter taxas de quadros internas mais altas."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:59
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "180% cyclerate. Significant increase of CPU requirements. Variable framerate "
 "games will have higher internal framerates. FMVs may be slow. May cause "
@@ -665,7 +685,7 @@ msgstr ""
 "FMVs podem ficar lentos. Pode causar problemas de estabilidade."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "300% cyclerate. Extreme increase of CPU requirements. Variable framerate "
 "games will have higher internal framerates. FMVs may be slow. May cause "
@@ -765,7 +785,6 @@ msgstr ""
 "No caso de jogos limitados pelo GS, pode ser um atraso (especialmente em "
 "CPUs dual core)."
 
-# "GSが限定されたゲームの場合には、（特に、デュアルコアCPUの場合）スローダウンすることがあります。"
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:200
 msgid ""
 "This hack works best for games that use the INTC Status register to wait for "
@@ -833,7 +852,7 @@ msgid ""
 "caused by having a small or disabled swapfile, or by other programs that are "
 "hogging resources."
 msgstr ""
-"Seu sistema está com poucos recursos virtuais para executar PCSX2. Isso pode "
+"Seu sistema está com poucos recursos virtuais para executar o PCSX2. Isso pode "
 "estar sendo causado por ter um arquivo swap pequeno ou desabilitado, ou por "
 "haver outros programas utilizando muito dos recursos."
 
