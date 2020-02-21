@@ -17,34 +17,14 @@ Section "!${APP_NAME} (required)" SEC_CORE
 
     SectionIn RO
 
-  SetOutPath "$INSTDIR"
-    File ..\bin\pcsx2.exe
-    File ..\bin\GameIndex.dbf
-    File ..\bin\cheats_ws.zip
-    File ..\bin\PCSX2_keys.ini.default
-
-  SetOutPath "$INSTDIR\Docs"
-    File ..\bin\docs\*
-
-  SetOutPath "$INSTDIR\Shaders"
-    File ..\bin\shaders\GSdx.fx
-    File ..\bin\shaders\GSdx_FX_Settings.ini
-
-  SetOutPath "$INSTDIR\Plugins"
-    File /nonfatal ..\bin\Plugins\gsdx32-sse2.dll
-    File /nonfatal ..\bin\Plugins\gsdx32-sse4.dll
-    File /nonfatal ..\bin\Plugins\gsdx32-avx2.dll
-    File /nonfatal ..\bin\Plugins\spu2-x.dll
-    File /nonfatal ..\bin\Plugins\cdvdGigaherz.dll
-    File /nonfatal ..\bin\Plugins\lilypad.dll
-    File /nonfatal ..\bin\Plugins\USBnull.dll
-    File /nonfatal ..\bin\Plugins\DEV9null.dll
-    File /nonfatal ..\bin\Plugins\FWnull.dll
+CopyFiles /SILENT "$TEMP\PCSX2_installer_temp" "$INSTDIR"
+CopyFiles /SILENT "$TEMP\PCSX2_installer_temp\Docs" "$INSTDIR"
+CopyFiles /SILENT "$TEMP\PCSX2_installer_temp\Shaders" "$INSTDIR"
+CopyFiles /SILENT "$TEMP\PCSX2_installer_temp\Plugins" "$INSTDIR"
 SectionEnd
 
 Section "Additional Languages" SEC_LANGS
-    SetOutPath $INSTDIR\Langs
-    File /nonfatal /r ..\bin\Langs\*.mo
+CopyFiles /SILENT "$TEMP\PCSX2_installer_temp\Langs" "$INSTDIR"
 SectionEnd
 
 !include "SharedShortcuts.nsh"
