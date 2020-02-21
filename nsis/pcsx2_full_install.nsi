@@ -71,6 +71,7 @@ Section ""
   WriteRegDWORD HKLM "${INSTDIR_REG_KEY}"  "NoModify" 1
   WriteRegDWORD HKLM "${INSTDIR_REG_KEY}"  "NoRepair" 1
   WriteUninstaller "${UNINST_EXE}"
+  RMDir /r "$TEMP\PCSX2_installer_temp"
 SectionEnd
 
 Section "" SID_PCSX2

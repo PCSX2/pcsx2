@@ -93,10 +93,9 @@ ${NSD_KillTimer} NSD_Timer.Callback
 # If the user is running at least Windows 8.1
 # or has no admin rights, don't waste time trying
 # to install the DX and VS runtimes.
-# (head straight to the first installer section)
 ${If} ${AtLeastWin8.1}
 ${OrIf} $IsAdmin == 0
-Call PreInstall_UsrWait
+Goto CopyInstallerFiles
 SendMessage $HWNDPARENT ${WM_COMMAND} 1 0
 ${EndIf}
 
@@ -123,7 +122,6 @@ inetc::get "https://aka.ms/vs/16/release/VC_redist.x86.exe" "$TEMP\vcredist_Upda
     SendMessage $hwnd ${PBM_SETPOS} 40 0
     Delete "$TEMP\vcredist_Update_x86.exe"
 
-
 # Download and install DirectX
 ExecDxSetup:
 ${NSD_CreateLabel} 0 45 100% 10u "Installing DXWebSetup package"
@@ -137,6 +135,38 @@ ExecWait '"$TEMP\dxwebsetup.exe" /Q' $DirectXSetupError
 SendMessage $hwnd ${PBM_SETPOS} 100 0
 Delete "$TEMP\dxwebsetup.exe"
 Sleep 20
+;-----------------------------------------
+; Copy installer files to a temp directory instead of repacking twice (for each installer)
+CopyInstallerFiles:
+    ${NSD_CreateLabel} 0 45 80% 10u "Unpacking files. Maybe it's time to upgrade that computer!"
+  SetOutPath "$TEMP\PCSX2_installer_temp"
+    File ..\bin\pcsx2.exe
+    File ..\bin\GameIndex.dbf
+    File ..\bin\cheats_ws.zip
+    File ..\bin\PCSX2_keys.ini.default
+  SetOutPath "$TEMP\PCSX2_installer_temp\Docs"
+    File ..\bin\docs\*
+
+  SetOutPath "$TEMP\PCSX2_installer_temp\Shaders"
+    File ..\bin\shaders\GSdx.fx
+    File ..\bin\shaders\GSdx_FX_Settings.ini
+
+  SetOutPath "$TEMP\PCSX2_installer_temp\Plugins"
+    File /nonfatal ..\bin\Plugins\gsdx32-sse2.dll
+    File /nonfatal ..\bin\Plugins\gsdx32-sse4.dll
+    File /nonfatal ..\bin\Plugins\gsdx32-avx2.dll
+    File /nonfatal ..\bin\Plugins\spu2-x.dll
+    File /nonfatal ..\bin\Plugins\cdvdGigaherz.dll
+    File /nonfatal ..\bin\Plugins\lilypad.dll
+    File /nonfatal ..\bin\Plugins\USBnull.dll
+    File /nonfatal ..\bin\Plugins\DEV9null.dll
+    File /nonfatal ..\bin\Plugins\FWnull.dll
+
+    SetOutPath "$TEMP\PCSX2_installer_temp\Langs"
+    File /nonfatal /r ..\bin\Langs\*.mo
+    ${NSD_CreateLabel} 0 45 100% 10u "Moving on"
+;-----------------------------------------
+
     Call PreInstall_UsrWait
 SendMessage $HWNDPARENT ${WM_COMMAND} 1 0
 FunctionEnd
@@ -230,12 +260,13 @@ FunctionEnd
 ; The default installation directory for the portable binary.
 InstallDir "$DOCUMENTS\$R8\PCSX2 ${APP_VERSION}"
 
-; Files to be installed are housed here
+; Path references for the core files here
 !include "SharedCore.nsh"
 
 Section "" INST_PORTABLE
 SetOutPath "$INSTDIR"
 File portable.ini
+RMDir /r "$TEMP\PCSX2_installer_temp"
 SectionEnd
 
 Section "" SID_PCSX2
