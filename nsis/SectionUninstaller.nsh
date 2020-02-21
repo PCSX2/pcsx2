@@ -55,7 +55,7 @@ Section "Un.Program and Plugins ${APP_NAME}"
   
   ; Remove shortcuts, if any
   Delete "$DESKTOP\${APP_NAME}.lnk"
-  RMDir /r "$SMPROGRAMS\PCSX2"
+  Delete "$SMPROGRAMS\${APP_NAME}.lnk"
 
   Delete "$INSTDIR\GameIndex.dbf"
   Delete "$INSTDIR\cheats_ws.zip"
