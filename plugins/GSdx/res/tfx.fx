@@ -604,7 +604,7 @@ float4 fog(float4 c, float f)
 {
 	if(PS_FOG)
 	{
-		c.rgb = lerp(FogColor, c.rgb, f);
+		c.rgb = trunc(lerp(FogColor, c.rgb, f));
 	}
 
 	return c;
