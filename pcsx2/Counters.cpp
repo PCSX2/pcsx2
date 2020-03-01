@@ -925,7 +925,7 @@ __fi u16 rcntRead32( u32 mem )
 	// are all fixed to 0, so we always truncate everything in these two pages using a u16
 	// return value! --air
 
-	iswitch( mem ) {
+	iswitch( mem & ~0xf ) {
 	icase(RCNT0_COUNT)	return (u16)rcntRcount(0);
 	icase(RCNT0_MODE)	return (u16)counters[0].modeval;
 	icase(RCNT0_TARGET)	return (u16)counters[0].target;
