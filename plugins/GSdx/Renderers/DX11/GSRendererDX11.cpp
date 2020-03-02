@@ -521,7 +521,7 @@ void GSRendererDX11::EmulateBlending()
 		}
 		else
 		{
-			//Breath of Fire Dragon Quarter triggers this in battles. Graphics are fine though.
+			// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars.
 			//ASSERT(0);
 		}
 	}
