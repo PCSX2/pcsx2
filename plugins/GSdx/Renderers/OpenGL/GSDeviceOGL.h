@@ -487,6 +487,11 @@ private:
 		GLuint timer() { return timer_query[last_query]; }
 	} m_profiler;
 
+	struct {
+		bool fconfig;
+		bool fshader;
+	} m_flog{};
+
 	GLuint m_vs[1<<1];
 	GLuint m_gs[1<<3];
 	GLuint m_ps_ss[1<<7];
