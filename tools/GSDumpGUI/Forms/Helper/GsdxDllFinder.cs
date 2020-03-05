@@ -50,10 +50,10 @@ namespace GSDumpGUI.Forms.Helper
 
                     dll = new GsFile
                     {
-                            DisplayText = availableDll.Name + " | " + wrap.PSEGetLibName(),
+                            DisplayText = availableDll.Name + " | " + wrap.PS2EGetLibName(),
                             File = availableDll
                     };
-                    _logger.Information($"'{availableDll}' correctly identified as '{wrap.PSEGetLibName()}'");
+                    _logger.Information($"'{availableDll}' correctly identified as '{wrap.PS2EGetLibName()}'");
 
                     wrap.Unload();
                 }
