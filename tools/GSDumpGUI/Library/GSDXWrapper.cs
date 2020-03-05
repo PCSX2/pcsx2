@@ -45,7 +45,7 @@ namespace GSDumpGUI
     public delegate   void GSshutdown();
     public delegate   void GSConfigure();
     public delegate   void GSsetBaseMem(IntPtr data);
-    public delegate IntPtr PSEgetLibName();
+    public delegate IntPtr PS2EgetLibName();
     public delegate   void GSinit();
     public delegate UInt32 GSmakeSnapshot(string path);
 
@@ -59,7 +59,7 @@ namespace GSDumpGUI
         static public bool DumpTooOld = false;
 
         private GSConfigure gsConfigure;
-        private PSEgetLibName PsegetLibName;
+        private PS2EgetLibName Ps2egetLibName;
         private GSgifTransfer GSgifTransfer;
         private GSgifTransfer1 GSgifTransfer1;
         private GSgifTransfer2 GSgifTransfer2;
@@ -133,7 +133,7 @@ namespace GSDumpGUI
                         throw new InvalidGSPlugin("");
 
                     gsConfigure = (GSConfigure) Marshal.GetDelegateForFunctionPointer(funcaddrConfig, typeof(GSConfigure));
-                    PsegetLibName = (PSEgetLibName) Marshal.GetDelegateForFunctionPointer(funcaddrLibName, typeof(PSEgetLibName));
+                    Ps2egetLibName = (PS2EgetLibName) Marshal.GetDelegateForFunctionPointer(funcaddrLibName, typeof(PS2EgetLibName));
 
                     this.GSgifTransfer = (GSgifTransfer) Marshal.GetDelegateForFunctionPointer(funcaddrGIF, typeof(GSgifTransfer));
                     this.GSgifTransfer1 = (GSgifTransfer1) Marshal.GetDelegateForFunctionPointer(funcaddrGIF1, typeof(GSgifTransfer1));
@@ -184,11 +184,11 @@ namespace GSDumpGUI
             gsConfigure.Invoke();
         }
 
-        public String PSEGetLibName()
+        public String PS2EGetLibName()
         {
             if (!Loaded)
                 throw new Exception("GSdx is not loaded");
-            return Marshal.PtrToStringAnsi(PsegetLibName.Invoke());
+            return Marshal.PtrToStringAnsi(Ps2egetLibName.Invoke());
         }
 
         public unsafe void Run(GSDump dump, int rendererOverride)
