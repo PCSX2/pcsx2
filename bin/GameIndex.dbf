@@ -6161,6 +6161,15 @@ Serial = SCUS-97621
 Name   = Twisted Metal - Head-On [Extra Twisted Edition]
 Region = NTSC-U
 Compat = 5
+[patches = 3DC2FE45]
+	author=Aced14
+	comment=Fix FMV resolution
+	// FMVs are meant to be letterboxed (640x368 with 40 pixel top/bottom bars).
+	// Without this patch, FMVs are rendered at 720x480 with bars on 3 sides
+	// (40 pixels at the top, 80 on the right, 72 at the bottom).
+	patch=1,EE,0023F954,short,00000280 //240602D0 - FMV horizontal resolution
+	patch=1,EE,0023F958,short,000001C0 //240701E0 - FMV vertical resolution
+[/patches]
 ---------------------------------------------
 Serial = SCUS-97622
 Name   = SingStar 80's [with Microphone]
