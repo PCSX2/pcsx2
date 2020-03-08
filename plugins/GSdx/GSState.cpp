@@ -681,7 +681,7 @@ void GSState::GIFPackedRegHandlerFOG(const GIFPackedReg* RESTRICT r)
 
 void GSState::GIFPackedRegHandlerA_D(const GIFPackedReg* RESTRICT r)
 {
-	(this->*m_fpGIFRegHandlers[r->A_D.ADDR])(&r->r);
+	(this->*m_fpGIFRegHandlers[r->A_D.ADDR & 0x7F])(&r->r);
 }
 
 void GSState::GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r)
@@ -2188,7 +2188,7 @@ template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 
 						do
 						{
-							(this->*m_fpGIFRegHandlers[((GIFPackedReg*)mem)->A_D.ADDR])(&((GIFPackedReg*)mem)->r);
+							(this->*m_fpGIFRegHandlers[((GIFPackedReg*)mem)->A_D.ADDR & 0x7F])(&((GIFPackedReg*)mem)->r);
 
 							mem += sizeof(GIFPackedReg);
 						}
@@ -2241,7 +2241,7 @@ template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 
 				do
 				{
-					(this->*m_fpGIFRegHandlers[path.GetReg()])((GIFReg*)mem);
+					(this->*m_fpGIFRegHandlers[path.GetReg() & 0x7F])((GIFReg*)mem);
 
 					mem += sizeof(GIFReg);
 					size--;
