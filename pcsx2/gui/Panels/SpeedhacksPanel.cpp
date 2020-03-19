@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "App.h"
 #include "ConfigurationPanels.h"
+#include "MSWstuff.h"
 
 using namespace pxSizerFlags;
 
@@ -128,8 +129,8 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	wxPanelWithHelpers* left	= new wxPanelWithHelpers( this, wxVERTICAL );
 	wxPanelWithHelpers* right	= new wxPanelWithHelpers( this, wxVERTICAL );
 
-	left->SetMinWidth( 350 );
-	right->SetMinWidth( 350 );
+	left->SetMinWidth( MSW_GetDPIScale() * 350 );
+	right->SetMinWidth( MSW_GetDPIScale() * 350 );
 
 	m_button_Defaults = new wxButton( right, wxID_DEFAULT, _("Restore Defaults") );
 
