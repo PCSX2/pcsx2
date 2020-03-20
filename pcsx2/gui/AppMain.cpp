@@ -620,7 +620,7 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 #ifndef DISABLE_RECORDING
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			if (g_RecordingControls.HasRecordingStopped())
+			if (g_RecordingControls.IsEmulationAndRecordingPaused())
 			{
 				// When the GSFrame CoreThread is paused, so do is the logical VSync
 				// Meaning that we have to grab the user-input through here to potentially

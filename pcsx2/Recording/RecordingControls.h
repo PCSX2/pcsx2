@@ -20,7 +20,7 @@ class RecordingControls
 public:
 
 	// Movie controls main functions
-	bool HasRecordingStopped();
+	bool IsEmulationAndRecordingPaused();
 	void ResumeCoreThreadIfStarted();
 	void HandleFrameAdvanceAndStop();
 
