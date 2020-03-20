@@ -29,6 +29,7 @@
 #include "Linux/linux.h"
 
 extern Display *GSdsp;
+extern void AnalyzeKeyEvent(keyEvent &evt);
 extern void PollForX11KeyboardInput();
 extern bool PollX11KeyboardMouseEvent(u32 &pkey);
 extern Window GSwin;

@@ -48,6 +48,14 @@ public:
         return m_queue.size();
     }
 
+    T dequeue()
+    {
+        std::lock_guard<std::mutex> guard(m_mtx);
+        T item = m_queue.front();
+        m_queue.pop();
+        return item;
+    }
+
     template <typename F>
     void consume_all(F f)
     {
