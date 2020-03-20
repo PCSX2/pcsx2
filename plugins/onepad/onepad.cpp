@@ -25,6 +25,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include "keyboard.h"
 #include "onepad.h"
 #include "svnrev.h"
 #include "state_management.h"
@@ -332,10 +333,16 @@ PADkeyEvent()
         }
     }
 #endif
-
-    s_event = event;
-    event.evt = 0;
-    event.key = 0;
+    if (g_ev_fifo.size() == 0) {
+        // PAD_LOG("No events in queue, returning empty event\n");
+        s_event = event;
+        event.evt = 0;
+        event.key = 0;
+        return &s_event;
+    }
+    s_event = g_ev_fifo.dequeue();
+    AnalyzeKeyEvent(s_event);
+    // PAD_LOG("Returning Event. Event Type: %d, Key: %d\n", s_event.evt, s_event.key);
     return &s_event;
 }
 
@@ -343,6 +350,9 @@ PADkeyEvent()
 EXPORT_C_(void)
 PADWriteEvent(keyEvent &evt)
 {
+    // if (evt.evt != 6) { // Skip mouse move events for logging
+    //     PAD_LOG("Pushing Event. Event Type: %d, Key: %d\n", evt.evt, evt.key);
+    // }
     g_ev_fifo.push(evt);
 }
 #endif
