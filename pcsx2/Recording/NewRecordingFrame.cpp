@@ -61,7 +61,13 @@ NewRecordingFrame::NewRecordingFrame(wxWindow *parent)
 
 wxString NewRecordingFrame::GetFile() const
 {
-	return m_filePicker->GetPath();
+	wxString path = m_filePicker->GetPath();
+	// wxWidget's removes the extension if it contains wildcards
+	// on wxGTK https://trac.wxwidgets.org/ticket/15285
+	if (!path.EndsWith(".p2m2")) {
+		return wxString::Format("%s.p2m2", path);
+	}
+	return path;
 }
 
 wxString NewRecordingFrame::GetAuthor() const
