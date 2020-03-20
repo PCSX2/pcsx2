@@ -622,7 +622,7 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 		{
 			if (g_RecordingControls.IsEmulationAndRecordingPaused())
 			{
-				// When the GSFrame CoreThread is paused, so do is the logical VSync
+				// When the GSFrame CoreThread is paused, so is the logical VSync
 				// Meaning that we have to grab the user-input through here to potentially
 				// resume emulation.
 				if (const keyEvent* ev = PADkeyEvent() )
