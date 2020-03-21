@@ -261,7 +261,7 @@ msgstr "Mostra i registri di debug DECI2 (processore EE)"
 
 #: pcsx2/SourceLog.cpp:121
 msgid "Shows strings printed to the system output stream."
-msgstr "Mostra le stringhe tracciate nel flusso a uscita del sistema."
+msgstr "Mostra le stringhe inviate sul canale output di sistema."
 
 #: pcsx2/SourceLog.cpp:127
 msgid "Shows recording related logs and information"
@@ -537,8 +537,8 @@ msgstr "disattiva l'avvio veloce"
 msgid ""
 "passes the specified space-delimited string of launch arguments to the game"
 msgstr ""
-"passa la stringa spazialmente delimitata specifica degli argomenti di lancio "
-"nel gioco"
+"passa la stringa specificata di argomenti di lancio delimitata da spazi 
+"al gioco "
 
 #: pcsx2/gui/AppInit.cpp:263
 msgid "changes the configuration file path"
@@ -943,12 +943,12 @@ msgstr "Licenza"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
 msgid "PlayStation 2 Emulator:"
-msgstr "Emulatore per PlayStation 2:"
+msgstr "Emulatore PlayStation 2:"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
 msgid ""
 "Big thanks to everyone who contributed to the project throughout the years."
-msgstr "Ringrazio chiunque abbia contribuito al progetto nel corso degli anni."
+msgstr "Ringrazio di cuore chiunque abbia contribuito al progetto nel corso degli anni."
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
 msgid "Close"
@@ -1203,8 +1203,8 @@ msgid ""
 "This is the standard Sony-provisioned size PSX memory card, only compatible "
 "with PSX games."
 msgstr ""
-"Questa è la dimensione standard prevista da Sony ed è supportata da tutti i "
-"giochi e da tutte le versioni del BIOS."
+"Questa è la memory card PSX con le dimensioni standard previste da Sony, compatibile solo "
+"con i giochi PSX."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:260
 msgid ""
@@ -1923,7 +1923,7 @@ msgid ""
 "These tools are provided as-is and should be enabled under your own "
 "discretion."
 msgstr ""
-"Sia consapevole che le funzioni di registrazione in entrata di PCSX2 sono "
+"Si consapevole che le funzioni di registrazione comandi di PCSX2 sono "
 "perlopiù sperimentali.\n"
 "\vDi conseguenza, potrebbero esserci dei bug imprevisti, implicazioni di "
 "prestazioni e instabilità con certi giochi.\n"
@@ -2440,7 +2440,7 @@ msgid ""
 "Note: Only available when a memory card is formatted. Not available for PSX "
 "memory cards."
 msgstr ""
-"Converti questa memory card a o da una cartella memory card. Crea un "
+"Converti questa memory card da o a una memory card in una cartella. Crea un "
 "doppione delle seguente memory card nel nuovo tipo.\n"
 "\n"
 "Nota: Disponibile solo quando una memory card è formattata. Non disponibile "
@@ -2950,7 +2950,7 @@ msgstr "Slot %d - Tempo Sconosciuto"
 #: pcsx2/gui/Saveslots.h:113
 #, c-format
 msgid "Write time is %s %s."
-msgstr "Tempo scritto è %s %s."
+msgstr "Tempo di scrittura è %s %s."
 
 #: pcsx2/gui/SysState.cpp:291 pcsx2/gui/SysState.cpp:298
 msgid "Cannot load this savestate. The state is an unsupported version."
