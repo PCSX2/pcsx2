@@ -43,7 +43,7 @@ void IPUWorker();
 //u8 PCT[] = {'r', 'I', 'P', 'B', 'D', '-', '-', '-'};		// unused?
 
 // Quantization matrix
-static u16 vqclut[16];				//clut conversion table
+static rgb16_t vqclut[16];			//clut conversion table
 static u8 s_thresh[2];				//thresholds for color conversions
 int coded_block_pattern = 0;
 
@@ -546,23 +546,23 @@ static bool ipuSETVQ(u32 val)
 	    "%02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d\n"
 	    "%02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d\n"
 	    "%02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d\n"
-		"%02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d",
-	    vqclut[0] >> 10, (vqclut[0] >> 5) & 0x1F, vqclut[0] & 0x1F,
-	    vqclut[1] >> 10, (vqclut[1] >> 5) & 0x1F, vqclut[1] & 0x1F,
-	    vqclut[2] >> 10, (vqclut[2] >> 5) & 0x1F, vqclut[2] & 0x1F,
-	    vqclut[3] >> 10, (vqclut[3] >> 5) & 0x1F, vqclut[3] & 0x1F,
-	    vqclut[4] >> 10, (vqclut[4] >> 5) & 0x1F, vqclut[4] & 0x1F,
-	    vqclut[5] >> 10, (vqclut[5] >> 5) & 0x1F, vqclut[5] & 0x1F,
-	    vqclut[6] >> 10, (vqclut[6] >> 5) & 0x1F, vqclut[6] & 0x1F,
-	    vqclut[7] >> 10, (vqclut[7] >> 5) & 0x1F, vqclut[7] & 0x1F,
-	    vqclut[8] >> 10, (vqclut[8] >> 5) & 0x1F, vqclut[8] & 0x1F,
-	    vqclut[9] >> 10, (vqclut[9] >> 5) & 0x1F, vqclut[9] & 0x1F,
-	    vqclut[10] >> 10, (vqclut[10] >> 5) & 0x1F, vqclut[10] & 0x1F,
-	    vqclut[11] >> 10, (vqclut[11] >> 5) & 0x1F, vqclut[11] & 0x1F,
-	    vqclut[12] >> 10, (vqclut[12] >> 5) & 0x1F, vqclut[12] & 0x1F,
-	    vqclut[13] >> 10, (vqclut[13] >> 5) & 0x1F, vqclut[13] & 0x1F,
-	    vqclut[14] >> 10, (vqclut[14] >> 5) & 0x1F, vqclut[14] & 0x1F,
-	    vqclut[15] >> 10, (vqclut[15] >> 5) & 0x1F, vqclut[15] & 0x1F);
+	    "%02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d",
+	    vqclut[0].r, vqclut[0].g, vqclut[0].b,
+	    vqclut[1].r, vqclut[1].g, vqclut[1].b,
+	    vqclut[2].r, vqclut[2].g, vqclut[2].b,
+	    vqclut[3].r, vqclut[3].g, vqclut[3].b,
+	    vqclut[4].r, vqclut[4].g, vqclut[4].b,
+	    vqclut[5].r, vqclut[5].g, vqclut[5].b,
+	    vqclut[6].r, vqclut[6].g, vqclut[6].b,
+	    vqclut[7].r, vqclut[7].g, vqclut[7].b,
+	    vqclut[8].r, vqclut[8].g, vqclut[8].b,
+	    vqclut[9].r, vqclut[9].g, vqclut[9].b,
+	    vqclut[10].r, vqclut[10].g, vqclut[10].b,
+	    vqclut[11].r, vqclut[11].g, vqclut[11].b,
+	    vqclut[12].r, vqclut[12].g, vqclut[12].b,
+	    vqclut[13].r, vqclut[13].g, vqclut[13].b,
+	    vqclut[14].r, vqclut[14].g, vqclut[14].b,
+	    vqclut[15].r, vqclut[15].g, vqclut[15].b);
 
 	return true;
 }
