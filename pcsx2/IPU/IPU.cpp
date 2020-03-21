@@ -679,7 +679,30 @@ __fi void ipu_csc(macroblock_8& mb8, macroblock_rgb32& rgb32, int sgn)
 
 __fi void ipu_vq(macroblock_rgb16& rgb16, u8* indx4)
 {
-	Console.Error("IPU: VQ not implemented");
+	const auto closest_index = [&](int i, int j) {
+		u8 index = 0;
+		int min_distance = std::numeric_limits<int>::max();
+		for (u8 k = 0; k < 16; ++k)
+		{
+			const int dr = rgb16.c[i][j].r - vqclut[k].r;
+			const int dg = rgb16.c[i][j].g - vqclut[k].g;
+			const int db = rgb16.c[i][j].b - vqclut[k].b;
+			const int distance = dr * dr + dg * dg + db * db;
+
+			// XXX: If two distances are the same which index is used?
+			if (min_distance > distance)
+			{
+				index = k;
+				min_distance = distance;
+			}
+		}
+
+		return index;
+	};
+
+	for (int i = 0; i < 16; ++i)
+		for (int j = 0; j < 8; ++j)
+			indx4[i * 8 + j] = closest_index(i, 2 * j + 1) << 4 | closest_index(i, 2 * j);
 }
 
 
