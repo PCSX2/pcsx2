@@ -537,8 +537,7 @@ msgstr "disattiva l'avvio veloce"
 msgid ""
 "passes the specified space-delimited string of launch arguments to the game"
 msgstr ""
-"passa la stringa specificata di argomenti di lancio delimitata da spazi 
-"al gioco "
+"passa la stringa specificata di argomenti di lancio delimitata da spazi al gioco"
 
 #: pcsx2/gui/AppInit.cpp:263
 msgid "changes the configuration file path"
