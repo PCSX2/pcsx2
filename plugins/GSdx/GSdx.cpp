@@ -247,9 +247,6 @@ void GSdxApp::Init()
 	m_gs_upscale_multiplier.push_back(GSSetting(5, "5x Native", "~1620p 3K"));
 	m_gs_upscale_multiplier.push_back(GSSetting(6, "6x Native", "~2160p 4K"));
 	m_gs_upscale_multiplier.push_back(GSSetting(8, "8x Native", "~2880p 5K"));
-#ifndef __unix__
-	m_gs_upscale_multiplier.push_back(GSSetting(0, "Custom", "Not Recommended"));
-#endif
 
 	m_gs_max_anisotropy.push_back(GSSetting(0, "Off", "Default"));
 	m_gs_max_anisotropy.push_back(GSSetting(2, "2x", ""));
