@@ -43023,10 +43023,6 @@ Serial = SLUS-21689
 Name   = Petz - Horsez 2
 Region = NTSC-U
 Compat = 4
-[patches = d0ba28bd]
-	// Fixes game hanging when going ingame.
-	patch=1,EE,002f6d30,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLUS-21690
 Name   = Alone in the Dark
