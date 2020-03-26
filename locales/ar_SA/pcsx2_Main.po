@@ -47,8 +47,8 @@ msgid ""
 "drivers, services, or may simply have insufficient memory or resources to "
 "meet PCSX2's lofty needs."
 msgstr ""
-"فشل في التخطيط الوهمي للذاكرة! ربما النظام الخاص بك يتعارض مع تعاريف "
-"الأجهزة , الخدمات أو ربما ليس لديك ذاكرة كافية أو الموارد تكفي ل PCSX2."
+"فشل في تخطيط الذاكرة الوهمية! ربما النظام الخاص بك يتعارض مع تعاريف "
+"الأجهزة , الخدمات أو ربما ليس لديك ذاكرة كافية أو موارد تكفي ل PCSX2."
 
 #: common/src/Utilities/Exceptions.cpp:290
 msgid "Path: "
@@ -60,7 +60,7 @@ msgstr "[غير مسمى أو غير معروف]"
 
 #: common/src/Utilities/Exceptions.cpp:314
 msgid "A file could not be created."
-msgstr "لم يستطع إنشاء الملف."
+msgstr "لم يتم إنشاء الملف."
 
 #: common/src/Utilities/Exceptions.cpp:334
 msgid "File not found."
@@ -78,7 +78,7 @@ msgstr ""
 msgid ""
 "Unexpected end of file or stream encountered.  File is probably truncated or "
 "corrupted."
-msgstr "نهاية غير متوقعة للملف. الملف على الأغلب فاسد."
+msgstr "نهاية غير متوقعة للملف. الملف على الأغلب تالف."
 
 #: common/src/Utilities/ThreadTools.cpp:41
 msgid "Threading activity: start, detach, sync, deletion, etc."
@@ -102,7 +102,7 @@ msgstr "صيغة ملف الـ ISO غير مدعومة"
 
 #: pcsx2/Elfheader.cpp:163
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
-msgstr "لا يمكن تشغيل ملف ELF. الملف قد يكون فاسد أو غير مكتمل."
+msgstr "لا يمكن تشغيل ملف ELF. الملف قد يكون تالف أو غير مكتمل."
 
 #: pcsx2/Elfheader.cpp:165
 msgid ""
