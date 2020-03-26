@@ -129,7 +129,7 @@ msgid ""
 "%s plugin failed to open.  Your computer may have insufficient resources, or "
 "incompatible hardware/drivers."
 msgstr ""
-"الملحق لم يعمل. ربما كمبوترك موارد غير كافية أو درايف/هاردوير غير متوافق. %s."
+"الملحق فشل بالعمل. نظامك لديه موارد غير كافية أو جهاز/تعريف غير متوافق. %s."
 
 #: pcsx2/PluginManager.cpp:727
 #, c-format
@@ -143,7 +143,7 @@ msgstr ""
 #: pcsx2/PluginManager.cpp:955
 #, c-format
 msgid "The configured %s plugin file was not found"
-msgstr "ملف الملحق %s المضبوط ليس موجودا"
+msgstr "ملف الملحق المضبوط %s ليس موجودا"
 
 #: pcsx2/PluginManager.cpp:959
 #, c-format
@@ -162,7 +162,7 @@ msgstr ""
 #: pcsx2/PluginManager.cpp:1010
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
-msgstr "وصلنا تقرير من الملحق أن الـ \"سوفتوير\" أو التعاريف غير مدعومة."
+msgstr "وصلنا تقرير من الملحق أن الـجهاز أو التعاريف غير مدعومة."
 
 #: pcsx2/PluginManager.cpp:1031
 msgid ""
