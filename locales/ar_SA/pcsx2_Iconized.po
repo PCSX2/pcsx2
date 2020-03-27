@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-03-22 18:47+0100\n"
+"PO-Revision-Date: 2020-03-27 15:37+0300\n"
 "Language: ar_SA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -27,11 +27,13 @@ msgid ""
 "There is not enough virtual memory available, or necessary virtual memory "
 "mappings have already been reserved by other processes, services, or DLLs."
 msgstr ""
+"لا تتوفر ذاكرة افتراضية كافية، أو تم حجز ذاكرة افتراضية ضرورية من قبل عمليات "
+"أو خدمات أو مكتبات DLL أخرى."
 
 #: pcsx2/CDVD/CDVD.cpp:2058
 msgid ""
 "Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings."
-msgstr ""
+msgstr "فشل في قراءة أو كتابة ملف NVM/MEC. تحقق من إعدادات الـBIOS."
 
 #: pcsx2/System.cpp:112
 msgid ""
@@ -40,18 +42,23 @@ msgid ""
 "such as a small or disabled swapfile, or by another program that is hogging "
 "a lot of memory."
 msgstr ""
+"هذا المحول البرمجي لم يستطيع حجز ذاكرة متجاورة مطلوبة للتخزين المؤقت "
+"الداخلي. يمكن أن يحدث هذا الخطأ بسبب انخفاض الذاكرة الافتراضية، مثل ملف "
+"مبادلة صغير أو معطل، أو بسبب برنامج آخر يستخدم الكثير من الذاكرة."
 
 #: pcsx2/System.cpp:358
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
 msgstr ""
+"PCSX2 غير قادر على تخصيص الذاكرة اللازمة للجهاز الافتراضي PS2. أغلق بعض مهام "
+"الخلفية التي تعوق الذاكرة وحاول مرة أخرى."
 
 #: pcsx2/gui/AppInit.cpp:163
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
-msgstr ""
+msgstr "تحذير: فشلت بعض المحولات البرمجية للـ PS2 في التهيئة وتم تعطيلها:"
 
 #: pcsx2/gui/AppInit.cpp:221
 msgid ""

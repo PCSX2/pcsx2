@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-03-27 15:07+0300\n"
+"PO-Revision-Date: 2020-03-27 15:24+0300\n"
 "Last-Translator: RedDevilus\n"
 "Language-Team: Plubu (Plubutusty@gmail.com)\n"
 "Language: ar_001\n"
@@ -2531,7 +2531,6 @@ msgid "Cheats:"
 msgstr ""
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:39
-#, fuzzy
 msgid "Select folder for Cheats"
 msgstr "إختر ملفا لـ \"حفظ الحالة\""
 
