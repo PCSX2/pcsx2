@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-03-22 18:49+0100\n"
+"PO-Revision-Date: 2020-03-27 13:55+0300\n"
 "Last-Translator: RedDevilus\n"
 "Language-Team: Plubu (Plubutusty@gmail.com)\n"
 "Language: ar_001\n"
@@ -35,7 +35,7 @@ msgstr "خطأ تحليلي"
 
 #: common/include/Utilities/Exceptions.h:279
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
-msgstr "إن الهاردوير الخاص بجهازك غير قادر على تشغيل PCSX2 . أسف يا صاحبي ."
+msgstr "إن العتاد الخاص بجهازك غير قادر على تشغيل PCSX2. أسف يا صاحبي."
 
 #: common/src/Utilities/Exceptions.cpp:204
 msgid "Oh noes! Out of memory!"
@@ -47,8 +47,8 @@ msgid ""
 "drivers, services, or may simply have insufficient memory or resources to "
 "meet PCSX2's lofty needs."
 msgstr ""
-"فشل في تخطيط الذاكرة الوهمية! ربما النظام الخاص بك يتعارض مع تعاريف "
-"الأجهزة , الخدمات أو ربما ليس لديك ذاكرة كافية أو موارد تكفي ل PCSX2."
+"فشل في تخطيط الذاكرة الوهمية ! ربما النظام الخاص بك يتعارض مع تعاريف الأجهزة "
+"أو الخدمات أو ربما ليس لديك ذاكرة كافية أو موارد تكفي ل PCSX2."
 
 #: common/src/Utilities/Exceptions.cpp:290
 msgid "Path: "
@@ -71,8 +71,7 @@ msgid ""
 "Permission denied while trying to open file, likely due to insufficient user "
 "account rights."
 msgstr ""
-"لا يوجد صلاحيات كافية لفتح الملف  , على الأغلب بسبب حقوق المستخدم الغير "
-"كافية ."
+"لا يوجد صلاحيات كافية لفتح الملف, على الأغلب بسبب حقوق المستخدم الغير كافية."
 
 #: common/src/Utilities/Exceptions.cpp:374
 msgid ""
@@ -82,19 +81,19 @@ msgstr "نهاية غير متوقعة للملف. الملف على الأغل�
 
 #: common/src/Utilities/ThreadTools.cpp:41
 msgid "Threading activity: start, detach, sync, deletion, etc."
-msgstr "نشاط العملية , بدأ , فصل , تزامن , حذف ,إلخ..."
+msgstr "نشاط العملية: بدأ, فصل, تزامن, حذف, إلخ..."
 
 #: common/src/Utilities/ThreadingDialogs.cpp:30
 msgid "Waiting for tasks..."
-msgstr "في إنتظار مهام ..."
+msgstr "في انتظار مهام ..."
 
 #: common/src/Utilities/ThreadingDialogs.cpp:42
 msgid "Waiting for task..."
-msgstr "في إنتظار مهمة ..."
+msgstr "في انتظار مهمة ..."
 
 #: common/src/Utilities/wxAppWithHelpers.cpp:35
 msgid "Includes idle event processing and some other uncommon event usages."
-msgstr "يتضمن أحداث معالجة خاملة و بعض الإستخدامات الغير شائعة."
+msgstr "يتضمن معالجة أحداث خاملة وبعض الأستخدامات الأخرى للحدث الغير شائعة."
 
 #: pcsx2/CDVD/InputIsoFile.cpp:248
 msgid "Unrecognized ISO image file format"
@@ -137,8 +136,8 @@ msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
 "resources needed."
 msgstr ""
-"فشل الملحق بالقيام بعملية التهيئة. ربما نظامك ليس لديه ذاكرة كافية أو "
-"الموارد اللازمة. %s."
+"فشل الملحق بالقيام بعملية التهيئة. ربما نظامك ليس لديه ذاكرة كافية أو الموارد "
+"اللازمة. %s."
 
 #: pcsx2/PluginManager.cpp:955
 #, c-format
@@ -156,8 +155,8 @@ msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
 "unsupported version of PCSX2."
 msgstr ""
-"الملحق  %s  ليس ملحقا خاصا بـ PCSX2 أو هو لنسخة قديمة غير مدعومة حاليا في "
-"هذه النسخة."
+"الملحق  %s  ليس ملحقا خاصا بـ PCSX2 أو هو لنسخة قديمة غير مدعومة حاليا في هذه "
+"النسخة."
 
 #: pcsx2/PluginManager.cpp:1010
 msgid ""
@@ -177,8 +176,8 @@ msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
 "unsupported version of PCSX2."
 msgstr ""
-"الملحق  %s  ليس ملحقا خاصا بـ PCSX2 أو هو لنسخة قديمة غير مدعومة حاليا في "
-"هذه النسخة."
+"الملحق  %s  ليس ملحقا خاصا بـ PCSX2 أو هو لنسخة قديمة غير مدعومة حاليا في هذه "
+"النسخة."
 
 #: pcsx2/PluginManager.cpp:1490
 msgid "Internal Memorycard Plugin failed to initialize."
@@ -215,8 +214,7 @@ msgstr "إلغاء"
 
 #: pcsx2/SaveState.cpp:340
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
-msgstr ""
-"لا يمكن تشغيل savestate . إنها لنسخة غير معروفة أو غير مدعومة لـ PCSX2."
+msgstr "لا يمكن تشغيل savestate . إنها لنسخة غير معروفة أو غير مدعومة لـ PCSX2."
 
 #: pcsx2/SourceLog.cpp:96
 msgid "Dumps detailed information for PS2 executables (ELFs)."
@@ -343,8 +341,8 @@ msgstr "نشاط IRX و SYSCALL."
 #: pcsx2/SourceLog.cpp:293
 msgid "Direct memory accesses to unknown or unmapped IOP memory space."
 msgstr ""
-"وصول مباشر للذاكرة لمناطق غير معروفة أو غير مخططة من الجزء المخصص لـ  IOP  "
-"من الذاكرة."
+"وصول مباشر للذاكرة لمناطق غير معروفة أو غير مخططة من الجزء المخصص لـ  IOP  من "
+"الذاكرة."
 
 #: pcsx2/SourceLog.cpp:305
 msgid "Disasm of the IOP's GPU co-processor instructions."
@@ -392,8 +390,8 @@ msgid ""
 "The savestate was not properly saved. The temporary file was created "
 "successfully but could not be moved to its final resting place."
 msgstr ""
-"الـ savestate لم تحفظ بشكل لائق . الملف المؤقت أنشئ بنجاح لكن لم يتم نقله "
-"إلى مكان حفظه الأخير."
+"الـ savestate لم تحفظ بشكل لائق . الملف المؤقت أنشئ بنجاح لكن لم يتم نقله إلى "
+"مكان حفظه الأخير."
 
 #: pcsx2/gui/AppConfig.cpp:976
 msgid "Safest (No hacks)"
@@ -639,8 +637,7 @@ msgstr ""
 "إضغط نعم للذهاب إلى لوحة إعداد الملحقات."
 
 #: pcsx2/gui/AppMain.cpp:136 pcsx2/gui/AppMain.cpp:150
-msgid ""
-"Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
+msgid "Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
 msgstr "تحذير لم يتم تشغيل ملحقات النظام . ربما PCSX2 غير صالح للعمل."
 
 #: pcsx2/gui/AppMain.cpp:184 pcsx2/gui/AppMain.cpp:189
@@ -724,8 +721,7 @@ msgid ""
 "Try to remove the file called \"portable.ini\" from your installation "
 "directory manually."
 msgstr ""
-"حاول أن تحذف الملف يسمى \"portable.ini\"من مسار التنصيب بشكل يدوي ( أي "
-"بنفسك )"
+"حاول أن تحذف الملف يسمى \"portable.ini\"من مسار التنصيب بشكل يدوي ( أي بنفسك )"
 
 #: pcsx2/gui/ApplyState.h:53
 msgid "Cannot apply new settings, one of the settings is invalid."
@@ -781,8 +777,8 @@ msgstr "&الثيم الأسود"
 
 #: pcsx2/gui/ConsoleLogger.cpp:428
 msgid ""
-"Classic black color scheme for people who enjoy having text seared into "
-"their optic nerves."
+"Classic black color scheme for people who enjoy having text seared into their "
+"optic nerves."
 msgstr ""
 "الأسلوب الكلاسيكي الأسود للناس الذين يستمتعون بالحصول على نص محروق في العصب "
 "البصري."
@@ -1063,16 +1059,14 @@ msgstr "8 MB [الأكثر توافقا]"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:239
 msgid ""
-"This is the standard Sony-provisioned size, and is supported by all games "
-"and BIOS versions."
+"This is the standard Sony-provisioned size, and is supported by all games and "
+"BIOS versions."
 msgstr ""
-"هذا هو الأساس الذي تستخدمه Sony  و هو مدعوم من قبل جميع الألعاب ونسخ الـ "
-"BIOS."
+"هذا هو الأساس الذي تستخدمه Sony  و هو مدعوم من قبل جميع الألعاب ونسخ الـ BIOS."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:240
 msgid ""
-"Always use this option if you want the safest and surest memory card "
-"behavior."
+"Always use this option if you want the safest and surest memory card behavior."
 msgstr "دائما إستخدم هذا الكرت إذا أردت الكرت الأكثر أماتا و ثقة."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:243
@@ -1125,8 +1119,8 @@ msgstr ""
 msgid ""
 "Automatically manages memory card contents so that the console only sees "
 "files related to the currently running software. Allows you to drag-and-drop "
-"files in and out of the memory card with your standard file explorer. This "
-"is still experimental, so use at your own risk!"
+"files in and out of the memory card with your standard file explorer. This is "
+"still experimental, so use at your own risk!"
 msgstr ""
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:259
@@ -1138,8 +1132,7 @@ msgid ""
 "This is the standard Sony-provisioned size PSX memory card, only compatible "
 "with PSX games."
 msgstr ""
-"هذا هو الأساس الذي تستخدمه Sony  و هو مدعوم من قبل جميع الألعاب ونسخ الـ "
-"BIOS."
+"هذا هو الأساس الذي تستخدمه Sony  و هو مدعوم من قبل جميع الألعاب ونسخ الـ BIOS."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:260
 msgid ""
@@ -1989,8 +1982,7 @@ msgstr "أيضا بطيء موجود لتشخيص الأخطاء."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:130
 msgid ""
-"Performs just-in-time binary translation of 32-bit MIPS-I machine code to "
-"x86."
+"Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."
 msgstr "يؤدي بوقت مناسب ترجمة من 32-bit MIPS-I  إلى X86."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:154
@@ -2026,8 +2018,7 @@ msgid "superVU Recompiler [legacy]"
 msgstr "وضع معيد الترجمة superVU (قديم)."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:193
-msgid ""
-"Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
+msgid "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
 msgstr "مفيد في تشخيص الأخطاء أو مشاكل اللقط في وضع معيد الترجمة microVU."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:64
@@ -2151,8 +2142,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:44
 msgid "VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"
-msgstr ""
-"هاك VU Clip Flag  - لألعاب  Persona ( فقط في وضع معيد الترجمة SuperVU )"
+msgstr "هاك VU Clip Flag  - لألعاب  Persona ( فقط في وضع معيد الترجمة SuperVU )"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:48
 msgid "FPU Compare Hack - For Digimon Rumble Arena 2."
@@ -2218,8 +2208,7 @@ msgid "Preload TLB hack to avoid tlb miss on Goemon"
 msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:108
-msgid ""
-"VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
+msgid "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
 msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:112
@@ -2306,8 +2295,8 @@ msgstr "إنشاء مستنسخ من هذا الكرت ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:489
 msgid ""
-"Convert this memory card to or from a folder memory card. Creates a "
-"duplicate of the current memory card in the new type.\n"
+"Convert this memory card to or from a folder memory card. Creates a duplicate "
+"of the current memory card in the new type.\n"
 "\n"
 "Note: Only available when a memory card is formatted. Not available for PSX "
 "memory cards."
@@ -2517,8 +2506,8 @@ msgid ""
 "This setting may require administration privileges from your operating "
 "system, depending on how your system is configured."
 msgstr ""
-"هذا الإعداد ربما سيتطلب صلاحيات مسؤؤول من قبل نظام النشغيل ( الويندوز ) , "
-"على حسب كيف تم ضبط نظامك."
+"هذا الإعداد ربما سيتطلب صلاحيات مسؤؤول من قبل نظام النشغيل ( الويندوز ) , على "
+"حسب كيف تم ضبط نظامك."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:61
 #, c-format
@@ -2658,8 +2647,8 @@ msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr ""
-"زيادة جيدة في السرعة و توافق عالي , ربما يسبب تجمدات ( تعليقات ) ... ] "
-"مستحسن إذا كان لديك أكثر من 3 أنوية في المعالج ["
+"زيادة جيدة في السرعة و توافق عالي , ربما يسبب تجمدات ( تعليقات ) ... ] مستحسن "
+"إذا كان لديك أكثر من 3 أنوية في المعالج ["
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid "Other Hacks"
@@ -2824,8 +2813,8 @@ msgid ""
 "may have been created by an older unsupported version of PCSX2, or it may be "
 "corrupted."
 msgstr ""
-"لا يمكن قراءة الحالة لأنها ليست أرشيف gzip صالح . ربما تم تكوينها من قبل "
-"نسخة قديمة غير مدعومة من PCSX2  ,  أو ربما نسخة فاسدة."
+"لا يمكن قراءة الحالة لأنها ليست أرشيف gzip صالح . ربما تم تكوينها من قبل نسخة "
+"قديمة غير مدعومة من PCSX2  ,  أو ربما نسخة فاسدة."
 
 #: pcsx2/gui/SysState.cpp:588
 msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
@@ -2863,8 +2852,8 @@ msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
 "SSE2 extensions."
 msgstr ""
-"لم يتم إيجاد أطقمة التعليمات معيد الترجمة R5900-32 يتطلب معالج مع MMX, SSE, "
-"و SSE2 %s."
+"لم يتم إيجاد أطقمة التعليمات معيد الترجمة R5900-32 يتطلب معالج مع MMX, SSE, و "
+"SSE2 %s."
 
 #: pcsx2/x86/microVU.cpp:32
 #, c-format
@@ -2994,8 +2983,7 @@ msgstr ""
 #~ msgstr "إعادة تشغيل الـ CDVD (سريع)"
 
 #~ msgid "Reboot using fast BOOT (skips splash screens)"
-#~ msgstr ""
-#~ "إعادة تشغيل الـ CDVD بإستخدام التشغيل السريع ( يتخطى شاشات الـ PS2 )"
+#~ msgstr "إعادة تشغيل الـ CDVD بإستخدام التشغيل السريع ( يتخطى شاشات الـ PS2 )"
 
 #~ msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
 #~ msgstr ""
