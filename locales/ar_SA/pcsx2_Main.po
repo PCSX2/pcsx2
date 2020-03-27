@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-03-27 13:55+0300\n"
+"PO-Revision-Date: 2020-03-27 15:07+0300\n"
 "Last-Translator: RedDevilus\n"
 "Language-Team: Plubu (Plubutusty@gmail.com)\n"
 "Language: ar_001\n"
@@ -35,7 +35,7 @@ msgstr "خطأ تحليلي"
 
 #: common/include/Utilities/Exceptions.h:279
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
-msgstr "إن العتاد الخاص بجهازك غير قادر على تشغيل PCSX2. أسف يا صاحبي."
+msgstr "إن الهاردوير الخاص بجهازك غير قادر على تشغيل PCSX2. أسف يا صاحبي."
 
 #: common/src/Utilities/Exceptions.cpp:204
 msgid "Oh noes! Out of memory!"
@@ -97,7 +97,7 @@ msgstr "يتضمن معالجة أحداث خاملة وبعض الأستخدا�
 
 #: pcsx2/CDVD/InputIsoFile.cpp:248
 msgid "Unrecognized ISO image file format"
-msgstr "صيغة ملف الـ ISO غير مدعومة"
+msgstr "صيغة ملف الـ ISO هذه غير مدعومة"
 
 #: pcsx2/Elfheader.cpp:163
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
@@ -108,8 +108,8 @@ msgid ""
 "If loading from an ISO image, this error may be caused by an unsupported ISO "
 "image type or a bug in PCSX2 ISO image support."
 msgstr ""
-"إذا تم التشغيل من ملف ISO هذا الخطأ, ربما سببه صيغة الملف ISO غير مدعومة أو "
-"خطأ في دعم ملفات الـ ISO."
+"اذا قمت بتشغيل ملف ISO, فربما سبب هذه المشكله أن صيغة ملف الـ ISO هذه غير "
+"مدعومة أو يوجد خطأ في دعم ملفات الـ ISO."
 
 #: pcsx2/MTGS.cpp:877
 msgid ""
@@ -120,7 +120,7 @@ msgstr "إن عملية MTGS أصبحت لا تستجيب أثناء الإنت�
 #: pcsx2/PluginManager.cpp:709
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
-msgstr "لم يتم قراءة حفظ الحالة , على ما يبدو أنها فاسدة أو غير كاملة."
+msgstr "لم يتم قراءة حفظ الحالة, على ما يبدو أنها تالفة أو غير مكتملة."
 
 #: pcsx2/PluginManager.cpp:720
 #, c-format
@@ -128,7 +128,7 @@ msgid ""
 "%s plugin failed to open.  Your computer may have insufficient resources, or "
 "incompatible hardware/drivers."
 msgstr ""
-"الملحق فشل بالعمل. نظامك لديه موارد غير كافية أو جهاز/تعريف غير متوافق. %s."
+"الملحق %s فشل بالعمل. جهازك لديه موارد غير كافية أو جهاز/تعريف غير متوافق."
 
 #: pcsx2/PluginManager.cpp:727
 #, c-format
@@ -136,18 +136,18 @@ msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
 "resources needed."
 msgstr ""
-"فشل الملحق بالقيام بعملية التهيئة. ربما نظامك ليس لديه ذاكرة كافية أو الموارد "
-"اللازمة. %s."
+"فشل الملحق %s بالقيام بعملية التهيئة. ربما نظامك ليس لديه ذاكرة كافية أو "
+"الموارد اللازمة."
 
 #: pcsx2/PluginManager.cpp:955
 #, c-format
 msgid "The configured %s plugin file was not found"
-msgstr "ملف الملحق المضبوط %s ليس موجودا"
+msgstr "ملف الملحق %s المضبوط ليس موجودا"
 
 #: pcsx2/PluginManager.cpp:959
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
-msgstr "ملف الملحق المضبوط %s ليس مكتبة ديناميكية صالحة"
+msgstr "ملف الملحق %s المضبوط ليس مكتبة ديناميكية صالحة"
 
 #: pcsx2/PluginManager.cpp:976
 #, c-format
@@ -155,8 +155,8 @@ msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
 "unsupported version of PCSX2."
 msgstr ""
-"الملحق  %s  ليس ملحقا خاصا بـ PCSX2 أو هو لنسخة قديمة غير مدعومة حاليا في هذه "
-"النسخة."
+"الملحق %s ليس ملحقا خاصا بـ PCSX2 أو قد يكون لنسخة قديمة غير مدعومة حاليا في "
+"هذه النسخة."
 
 #: pcsx2/PluginManager.cpp:1010
 msgid ""
@@ -168,7 +168,8 @@ msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
 msgstr ""
-"الملحق ليس ملحقا خاصا بـ PCSX2 أو هو لنسخة قديمة غير مدعوم في النسخة الحالية."
+"الملحق ليس ملحقا خاصا بـ PCSX2 أو قد يكون لنسخة قديمة غير مدعوم في النسخة "
+"الحالية."
 
 #: pcsx2/PluginManager.cpp:1056
 #, c-format
@@ -176,12 +177,12 @@ msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
 "unsupported version of PCSX2."
 msgstr ""
-"الملحق  %s  ليس ملحقا خاصا بـ PCSX2 أو هو لنسخة قديمة غير مدعومة حاليا في هذه "
-"النسخة."
+"الملحق %s ليس ملحقا صالح بـ PCSX2 أو قد يكون لنسخة قديمة غير مدعومة حاليا في "
+"هذه النسخة."
 
 #: pcsx2/PluginManager.cpp:1490
 msgid "Internal Memorycard Plugin failed to initialize."
-msgstr "ملحق كروت الذاكرة الخارجي فشل في التهيئة."
+msgstr "ملحق كرت الذاكرة الداخلي فشل في التهيئة."
 
 #: pcsx2/PluginManager.cpp:1883
 msgid "Unloaded Plugin"
@@ -190,23 +191,23 @@ msgstr "ملحق لم يتم تشغيله"
 #: pcsx2/Recording/NewRecordingFrame.cpp:24
 #: pcsx2/gui/Debugger/DisassemblyDialog.cpp:227
 msgid "panel"
-msgstr ""
+msgstr "لوحة"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:29
 msgid "File Path"
-msgstr ""
+msgstr "مسار الملف"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:30
 msgid "Author"
-msgstr ""
+msgstr "المؤلف"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:31
 msgid "Record From"
-msgstr ""
+msgstr "تسجيل من"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:41
 msgid "Ok"
-msgstr ""
+msgstr "حسنا"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:42 pcsx2/gui/AppInit.cpp:742
 msgid "Cancel"
@@ -214,42 +215,41 @@ msgstr "إلغاء"
 
 #: pcsx2/SaveState.cpp:340
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
-msgstr "لا يمكن تشغيل savestate . إنها لنسخة غير معروفة أو غير مدعومة لـ PCSX2."
+msgstr "لا يمكن قراءة حفظ الحالة. إنها لنسخة غير معروفة أو غير مدعومة لـ PCSX2."
 
 #: pcsx2/SourceLog.cpp:96
 msgid "Dumps detailed information for PS2 executables (ELFs)."
-msgstr "يستخرح المعلومات من ملفات ELF."
+msgstr "يستخرح معلومات تفصيلية من ملفات التنفيذية لـ PS2 صيغة (ELF)."
 
 #: pcsx2/SourceLog.cpp:101
 msgid ""
 "Logs manual protection, split blocks, and other things that might impact "
 "performance."
-msgstr ""
-"يسجل الحماية اليدوية , يفصل الـ blocks و أشياء أخرى يمكن أن تقلل من الأداء."
+msgstr "يسجل الحماية اليدوية, يفصل الـكتل وأشياء أخرى يمكن أن تقلل من الأداء."
 
 #: pcsx2/SourceLog.cpp:106
 msgid "Shows the game developer's logging text (EE processor)"
-msgstr "يعرض نص السجل الخاص بمصمم اللعبة ( معالج ال EE )"
+msgstr "يعرض نص السجل الخاص بمصمم اللعبة (معالج الـ EE)"
 
 #: pcsx2/SourceLog.cpp:111
 msgid "Shows the game developer's logging text (IOP processor)"
-msgstr "يعرض نص السجل الخاص بمصمم اللعبة ( معالج ال IOP )"
+msgstr "يعرض نص السجل الخاص بمصمم اللعبة (معالج الـ IOP)"
 
 #: pcsx2/SourceLog.cpp:116
 msgid "Shows DECI2 debugging logs (EE processor)"
-msgstr "يعرض سجلات إكتشاف الأخطاء"
+msgstr "يعرض سجلات إكتشاف الأخطاء الخاصة بـ DECI2 (معالج الـ EE)"
 
 #: pcsx2/SourceLog.cpp:121
 msgid "Shows strings printed to the system output stream."
-msgstr ""
+msgstr "يعرض السلاسل المطبوعة على دفق نظام الإخراج."
 
 #: pcsx2/SourceLog.cpp:127
 msgid "Shows recording related logs and information"
-msgstr ""
+msgstr "يعرض تسجيل السجلات والمعلومات ذات الصلة"
 
 #: pcsx2/SourceLog.cpp:132
 msgid "Shows detailed controller input values for port 1, every frame"
-msgstr ""
+msgstr "يعرض قيم إدخال وحدة التحكم بالتفصيل للمنفذ رقم 1 لكل إطار"
 
 #: pcsx2/SourceLog.cpp:168
 msgid "SYSCALL and DECI2 activity."
@@ -2301,6 +2301,10 @@ msgid ""
 "Note: Only available when a memory card is formatted. Not available for PSX "
 "memory cards."
 msgstr ""
+"حول كرت الذاكرة هذا الى او من مجلد كرت ذاكرة. يقوم بإنشاء نسخة من كرت الذاكرة "
+"الحالي من النوع الجديد.\n"
+"\n"
+"ملاحظة: متوفر فقط عند تهيئة كرت الذاكرة. غير متاح لكروت ذاكرة الـ PSX."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
 msgid "Delete"
@@ -2451,7 +2455,7 @@ msgstr "تم تهيئته ( مفرمت )"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:104
 msgid "Type"
-msgstr ""
+msgstr "نوع"
 
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:105
 msgid "Last Modified"
@@ -2777,27 +2781,27 @@ msgstr "المحد من الفرامات"
 
 #: pcsx2/gui/RecentIsoList.cpp:139
 msgid "Clear ISO list"
-msgstr ""
+msgstr "امسح قائمة الـ ISO"
 
 #: pcsx2/gui/Saveslots.h:96
 #, c-format
 msgid "Slot %d - Empty"
-msgstr "فارغ %d - Empty"
+msgstr "فتحة %d - فارغة"
 
 #: pcsx2/gui/Saveslots.h:98
 #, c-format
 msgid "Slot %d - %s %s"
-msgstr "فراع %d - %s %s"
+msgstr "فتحة %d - %s %s"
 
 #: pcsx2/gui/Saveslots.h:100
 #, c-format
 msgid "Slot %d - Unknown Time"
-msgstr ""
+msgstr "فتحة %d - وقت غير معروف"
 
 #: pcsx2/gui/Saveslots.h:113
 #, c-format
 msgid "Write time is %s %s."
-msgstr ""
+msgstr "وقت الكتابة هو %s %s."
 
 #: pcsx2/gui/SysState.cpp:291 pcsx2/gui/SysState.cpp:298
 msgid "Cannot load this savestate. The state is an unsupported version."
