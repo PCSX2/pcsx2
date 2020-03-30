@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-03-27 15:24+0300\n"
-"Last-Translator: RedDevilus\n"
+"PO-Revision-Date: 2020-03-30 14:58+0300\n"
+"Last-Translator: roxas0zero\n"
 "Language-Team: Plubu (Plubutusty@gmail.com)\n"
 "Language: ar_001\n"
 "MIME-Version: 1.0\n"
@@ -521,7 +521,7 @@ msgstr "تفعيل وضع العمليات المحمولة ( يتطلب صلا�
 
 #: pcsx2/gui/AppInit.cpp:268
 msgid "update options to ease profiling (debug)"
-msgstr ""
+msgstr "حدث الخيارات لتسهيل التنميط (debug)"
 
 #: pcsx2/gui/AppInit.cpp:272
 #, c-format
@@ -671,7 +671,7 @@ msgstr "تنفيذ الجهاز الوهمي لـ PS2..."
 
 #: pcsx2/gui/AppRes.cpp:46
 msgid "Always ask when booting"
-msgstr ""
+msgstr "اسأل دائمًا عند التشغيل"
 
 #: pcsx2/gui/AppRes.cpp:46
 msgid ""
@@ -874,19 +874,19 @@ msgstr "%s حول البرنامج"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Website"
-msgstr ""
+msgstr "موقع الكتروني"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:56
 msgid "Support Forums"
-msgstr ""
+msgstr "منتديات الدعم"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:58
 msgid "GitHub Repository"
-msgstr ""
+msgstr "مستودع GitHub"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:60
 msgid "License"
-msgstr ""
+msgstr "رخصة"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
 msgid "PlayStation 2 Emulator:"
@@ -895,7 +895,7 @@ msgstr "محاكي الـ Playstation 2:"
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
 msgid ""
 "Big thanks to everyone who contributed to the project throughout the years."
-msgstr ""
+msgstr "شكر كبير لكل من ساهم في المشروع على مر السنين."
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
 msgid "Close"
@@ -941,12 +941,12 @@ msgstr "تجاهل"
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:267
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:276
 msgid "Retry"
-msgstr ""
+msgstr "أعد المحاولة"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:270
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:273
 msgid "Abort"
-msgstr ""
+msgstr "إحباط"
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:280
 msgid "Reset"
@@ -954,39 +954,39 @@ msgstr "إعادة تشغيل"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:36
 msgid "Convert a memory card to a different format"
-msgstr ""
+msgstr "تحويل كرت الذاكرة إلى صيغة مختلفة"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:47
 msgid "Convert"
-msgstr ""
+msgstr "تحويل"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:53
 msgid "Convert: "
-msgstr ""
+msgstr "تحويل: "
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:56
 msgid "To: "
-msgstr ""
+msgstr "الى: "
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "8MB File"
-msgstr ""
+msgstr "ملف 8 ميجا بايت"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
 msgid "16MB File"
-msgstr ""
+msgstr "ملف 16 ميجا بايت"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
 msgid "32MB File"
-msgstr ""
+msgstr "ملف 32 ميجا بايت"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
 msgid "64MB File"
-msgstr ""
+msgstr "ملف 64 ميجا بايت"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Convert this memory card to a folder of individual saves."
-msgstr ""
+msgstr "تحويل كرت الذاكرة هذه إلى مجلد حفظ فردي."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Folder"
@@ -1007,11 +1007,11 @@ msgstr "إنشاء كرت ذاكرة"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
 msgid "This target type is not supported!"
-msgstr ""
+msgstr "نوع الهدف هذا غير متوافق !"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:159
 msgid "Memory Card conversion failed for unknown reasons."
-msgstr ""
+msgstr "فشل تحويل كرت الذاكرة لأسباب غير معروفة."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:41
 msgid "Create a new memory card"
@@ -1109,7 +1109,7 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:255
 msgid "Folder [experimental]"
-msgstr ""
+msgstr "مجلد [تجريبي]"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:255
 msgid "Store memory card contents in the host filesystem instead of a file."
@@ -1125,7 +1125,7 @@ msgstr ""
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:259
 msgid "128 KiB (PSX)"
-msgstr ""
+msgstr "128 كيلوبايت (PSX)"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:259
 msgid ""
@@ -1138,7 +1138,7 @@ msgstr ""
 msgid ""
 "This memory card is required by PSX games. It is not compatible with PS2 "
 "games."
-msgstr ""
+msgstr "كرت الذاكرة هذه مطلوبة من قبل ألعاب PSX. وهو غير متوافق مع ألعاب PS2."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
 #, c-format
@@ -1295,7 +1295,7 @@ msgstr "تسجل الأحداث كلما مرّت في ال PS2 الوهميّة
 
 #: pcsx2/gui/GlobalCommands.cpp:316
 msgid "Exit PCSX2?"
-msgstr ""
+msgstr "هل تريد الخروج من PCSX2؟"
 
 #: pcsx2/gui/GlobalCommands.cpp:622
 msgid "Save state"
@@ -1464,7 +1464,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:473
 msgid "Enable &Recording Tools"
-msgstr ""
+msgstr "تمكين أدوات التسجيل"
 
 #: pcsx2/gui/MainFrame.cpp:478
 msgid "Enable &Host Filesystem"
@@ -1590,7 +1590,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:556
 msgid "Creates a block dump for debugging purposes."
-msgstr ""
+msgstr "ينشئ كتلة تفريغ لأغراض التصحيح (debug)."
 
 #: pcsx2/gui/MainFrame.cpp:560
 msgid "Video"
@@ -1598,11 +1598,11 @@ msgstr "الفيديو ( GS )"
 
 #: pcsx2/gui/MainFrame.cpp:561
 msgid "Start Recording"
-msgstr ""
+msgstr "ابدأ التسجيل"
 
 #: pcsx2/gui/MainFrame.cpp:562
 msgid "Stop Recording"
-msgstr ""
+msgstr "أوقف التسجيل"
 
 #: pcsx2/gui/MainFrame.cpp:564
 msgid "Screenshot"
@@ -1610,23 +1610,23 @@ msgstr "اللقطات"
 
 #: pcsx2/gui/MainFrame.cpp:569
 msgid "New"
-msgstr ""
+msgstr "جديد"
 
 #: pcsx2/gui/MainFrame.cpp:570
 msgid "Stop"
-msgstr ""
+msgstr "توقف"
 
 #: pcsx2/gui/MainFrame.cpp:571
 msgid "Play"
-msgstr ""
+msgstr "تشغيل"
 
 #: pcsx2/gui/MainFrame.cpp:573
 msgid "Virtual Pad (Port 1)"
-msgstr ""
+msgstr "لوحة افتراضية (منفذ 1)"
 
 #: pcsx2/gui/MainFrame.cpp:574
 msgid "Virtual Pad (Port 2)"
-msgstr ""
+msgstr "لوحة افتراضية (منفذ 2)"
 
 #: pcsx2/gui/MainFrame.cpp:649
 msgid "Paus&e"
@@ -1682,7 +1682,7 @@ msgstr "تشغيل الـ PS2 مستخدما الـ DVD المحدد أو ملف
 
 #: pcsx2/gui/MainFrame.cpp:721
 msgid "Boo&t BIOS"
-msgstr ""
+msgstr "تشغيل الـ BIOS"
 
 #: pcsx2/gui/MainFrame.cpp:722
 msgid "Boot the VM without any source media"
@@ -1804,7 +1804,7 @@ msgstr ""
 
 #: pcsx2/gui/MainMenuClicks.cpp:419
 msgid "Confirm clearing ISO list"
-msgstr ""
+msgstr "أكد مسح قائمة الـ ISO"
 
 #: pcsx2/gui/MainMenuClicks.cpp:420
 msgid ""
@@ -2528,7 +2528,7 @@ msgstr "إجعل هذه اللغة الإفتراضية ( الأساسية ) ح�
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:38
 msgid "Cheats:"
-msgstr ""
+msgstr "خدع: "
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:39
 msgid "Select folder for Cheats"
