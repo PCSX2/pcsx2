@@ -6,10 +6,8 @@
 !include "SharedDefs.nsh"
 
 RequestExecutionLevel admin
-AllowRootDirInstall true
 
 ; This is the uninstaller name.
-!define UNINSTALL_LOG    "Uninst-pcsx2"
 !define INSTDIR_REG_ROOT "HKLM"
 !define OUTFILE_POSTFIX "include_standard"
 
@@ -17,11 +15,12 @@ AllowRootDirInstall true
 OutFile "pcsx2-${APP_VERSION}-${OUTFILE_POSTFIX}.exe"
 
 ; The default installation directory for the full installer
-InstallDir "$PROGRAMFILES\PCSX2 ${APP_VERSION}"
+InstallDir "$PROGRAMFILES\PCSX2"
 
 !define INSTDIR_REG_KEY  "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_FILENAME}"
 
-!include "AdvUninstLog.nsh"
+!include "StrContains.nsh"
+!include "SectionVersionCheck.nsh"
 
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
@@ -39,13 +38,9 @@ InstallDir "$PROGRAMFILES\PCSX2 ${APP_VERSION}"
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "English"
 
-; This defines the Advanced Uninstaller mode of operation...
-!insertmacro UNATTENDED_UNINSTALL
 
 !include "nsDialogs.nsh"
 !include "ApplyExeProps.nsh"
-!include "StrContains.nsh"
-!include "SectionVersionCheck.nsh"
 
 Section "" 
 Call UninstallPrevious
@@ -64,14 +59,10 @@ Section ""
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayIcon"      "$INSTDIR\pcsx2.exe"
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayVersion"   "${APP_VERSION}"
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "HelpLink"         "https://forums.pcsx2.net"
-  ${GetSize} "$INSTDIR" "/S=0K" $6 $7 $8
-  IntFmt $6 "0x%08X" $6
-  WriteRegDWORD HKLM "${INSTDIR_REG_KEY}"  "EstimatedSize"    "$6"
-  WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "UninstallString"  "${UNINST_EXE}"
+  WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "UninstallString"  "$INSTDIR\Uninst-pcsx2.exe"
   WriteRegDWORD HKLM "${INSTDIR_REG_KEY}"  "NoModify" 1
   WriteRegDWORD HKLM "${INSTDIR_REG_KEY}"  "NoRepair" 1
-  WriteUninstaller "${UNINST_EXE}"
-  RMDir /r "$TEMP\PCSX2_installer_temp"
+  WriteUninstaller "$INSTDIR\Uninst-pcsx2.exe"
 SectionEnd
 
 Section "" SID_PCSX2
