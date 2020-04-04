@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-01-15 22:32+1300\n"
-"PO-Revision-Date: 2020-03-30 14:58+0300\n"
-"Last-Translator: roxas0zero\n"
+"PO-Revision-Date: 2020-04-01 11:56+0300\n"
+"Last-Translator: roxas0zero <roxas0zero@gmail.com>\n"
 "Language-Team: Plubu (Plubutusty@gmail.com)\n"
 "Language: ar_001\n"
 "MIME-Version: 1.0\n"
@@ -215,7 +215,8 @@ msgstr "إلغاء"
 
 #: pcsx2/SaveState.cpp:340
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
-msgstr "لا يمكن قراءة حفظ الحالة. إنها لنسخة غير معروفة أو غير مدعومة لـ PCSX2."
+msgstr ""
+"لا يمكن قراءة حفظ الحالة. إنها لنسخة غير معروفة أو غير مدعومة لـ PCSX2."
 
 #: pcsx2/SourceLog.cpp:96
 msgid "Dumps detailed information for PS2 executables (ELFs)."
@@ -341,8 +342,8 @@ msgstr "نشاط IRX و SYSCALL."
 #: pcsx2/SourceLog.cpp:293
 msgid "Direct memory accesses to unknown or unmapped IOP memory space."
 msgstr ""
-"وصول مباشر للذاكرة لمناطق غير معروفة أو غير مخططة من الجزء المخصص لـ  IOP  من "
-"الذاكرة."
+"وصول مباشر للذاكرة لمناطق غير معروفة أو غير مخططة من الجزء المخصص لـ  IOP  "
+"من الذاكرة."
 
 #: pcsx2/SourceLog.cpp:305
 msgid "Disasm of the IOP's GPU co-processor instructions."
@@ -390,8 +391,8 @@ msgid ""
 "The savestate was not properly saved. The temporary file was created "
 "successfully but could not be moved to its final resting place."
 msgstr ""
-"الـ savestate لم تحفظ بشكل لائق . الملف المؤقت أنشئ بنجاح لكن لم يتم نقله إلى "
-"مكان حفظه الأخير."
+"الـ savestate لم تحفظ بشكل لائق . الملف المؤقت أنشئ بنجاح لكن لم يتم نقله "
+"إلى مكان حفظه الأخير."
 
 #: pcsx2/gui/AppConfig.cpp:976
 msgid "Safest (No hacks)"
@@ -637,7 +638,8 @@ msgstr ""
 "إضغط نعم للذهاب إلى لوحة إعداد الملحقات."
 
 #: pcsx2/gui/AppMain.cpp:136 pcsx2/gui/AppMain.cpp:150
-msgid "Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
+msgid ""
+"Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
 msgstr "تحذير لم يتم تشغيل ملحقات النظام . ربما PCSX2 غير صالح للعمل."
 
 #: pcsx2/gui/AppMain.cpp:184 pcsx2/gui/AppMain.cpp:189
@@ -721,7 +723,8 @@ msgid ""
 "Try to remove the file called \"portable.ini\" from your installation "
 "directory manually."
 msgstr ""
-"حاول أن تحذف الملف يسمى \"portable.ini\"من مسار التنصيب بشكل يدوي ( أي بنفسك )"
+"حاول أن تحذف الملف يسمى \"portable.ini\"من مسار التنصيب بشكل يدوي ( أي "
+"بنفسك )"
 
 #: pcsx2/gui/ApplyState.h:53
 msgid "Cannot apply new settings, one of the settings is invalid."
@@ -777,8 +780,8 @@ msgstr "&الثيم الأسود"
 
 #: pcsx2/gui/ConsoleLogger.cpp:428
 msgid ""
-"Classic black color scheme for people who enjoy having text seared into their "
-"optic nerves."
+"Classic black color scheme for people who enjoy having text seared into "
+"their optic nerves."
 msgstr ""
 "الأسلوب الكلاسيكي الأسود للناس الذين يستمتعون بالحصول على نص محروق في العصب "
 "البصري."
@@ -1059,14 +1062,16 @@ msgstr "8 MB [الأكثر توافقا]"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:239
 msgid ""
-"This is the standard Sony-provisioned size, and is supported by all games and "
-"BIOS versions."
+"This is the standard Sony-provisioned size, and is supported by all games "
+"and BIOS versions."
 msgstr ""
-"هذا هو الأساس الذي تستخدمه Sony  و هو مدعوم من قبل جميع الألعاب ونسخ الـ BIOS."
+"هذا هو الأساس الذي تستخدمه Sony  و هو مدعوم من قبل جميع الألعاب ونسخ الـ "
+"BIOS."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:240
 msgid ""
-"Always use this option if you want the safest and surest memory card behavior."
+"Always use this option if you want the safest and surest memory card "
+"behavior."
 msgstr "دائما إستخدم هذا الكرت إذا أردت الكرت الأكثر أماتا و ثقة."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:243
@@ -1119,8 +1124,8 @@ msgstr ""
 msgid ""
 "Automatically manages memory card contents so that the console only sees "
 "files related to the currently running software. Allows you to drag-and-drop "
-"files in and out of the memory card with your standard file explorer. This is "
-"still experimental, so use at your own risk!"
+"files in and out of the memory card with your standard file explorer. This "
+"is still experimental, so use at your own risk!"
 msgstr ""
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:259
@@ -1132,7 +1137,8 @@ msgid ""
 "This is the standard Sony-provisioned size PSX memory card, only compatible "
 "with PSX games."
 msgstr ""
-"هذا هو الأساس الذي تستخدمه Sony  و هو مدعوم من قبل جميع الألعاب ونسخ الـ BIOS."
+"هذا هو الأساس الذي تستخدمه Sony  و هو مدعوم من قبل جميع الألعاب ونسخ الـ "
+"BIOS."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:260
 msgid ""
@@ -1982,7 +1988,8 @@ msgstr "أيضا بطيء موجود لتشخيص الأخطاء."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:130
 msgid ""
-"Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."
+"Performs just-in-time binary translation of 32-bit MIPS-I machine code to "
+"x86."
 msgstr "يؤدي بوقت مناسب ترجمة من 32-bit MIPS-I  إلى X86."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:154
@@ -2018,7 +2025,8 @@ msgid "superVU Recompiler [legacy]"
 msgstr "وضع معيد الترجمة superVU (قديم)."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:193
-msgid "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
+msgid ""
+"Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
 msgstr "مفيد في تشخيص الأخطاء أو مشاكل اللقط في وضع معيد الترجمة microVU."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:64
@@ -2142,7 +2150,8 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:44
 msgid "VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"
-msgstr "هاك VU Clip Flag  - لألعاب  Persona ( فقط في وضع معيد الترجمة SuperVU )"
+msgstr ""
+"هاك VU Clip Flag  - لألعاب  Persona ( فقط في وضع معيد الترجمة SuperVU )"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:48
 msgid "FPU Compare Hack - For Digimon Rumble Arena 2."
@@ -2208,7 +2217,8 @@ msgid "Preload TLB hack to avoid tlb miss on Goemon"
 msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:108
-msgid "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
+msgid ""
+"VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
 msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:112
@@ -2295,14 +2305,14 @@ msgstr "إنشاء مستنسخ من هذا الكرت ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:489
 msgid ""
-"Convert this memory card to or from a folder memory card. Creates a duplicate "
-"of the current memory card in the new type.\n"
+"Convert this memory card to or from a folder memory card. Creates a "
+"duplicate of the current memory card in the new type.\n"
 "\n"
 "Note: Only available when a memory card is formatted. Not available for PSX "
 "memory cards."
 msgstr ""
-"حول كرت الذاكرة هذا الى او من مجلد كرت ذاكرة. يقوم بإنشاء نسخة من كرت الذاكرة "
-"الحالي من النوع الجديد.\n"
+"حول كرت الذاكرة هذا الى او من مجلد كرت ذاكرة. يقوم بإنشاء نسخة من كرت "
+"الذاكرة الحالي من النوع الجديد.\n"
 "\n"
 "ملاحظة: متوفر فقط عند تهيئة كرت الذاكرة. غير متاح لكروت ذاكرة الـ PSX."
 
@@ -2510,8 +2520,8 @@ msgid ""
 "This setting may require administration privileges from your operating "
 "system, depending on how your system is configured."
 msgstr ""
-"هذا الإعداد ربما سيتطلب صلاحيات مسؤؤول من قبل نظام النشغيل ( الويندوز ) , على "
-"حسب كيف تم ضبط نظامك."
+"هذا الإعداد ربما سيتطلب صلاحيات مسؤؤول من قبل نظام النشغيل ( الويندوز ) , "
+"على حسب كيف تم ضبط نظامك."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:61
 #, c-format
@@ -2650,8 +2660,8 @@ msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr ""
-"زيادة جيدة في السرعة و توافق عالي , ربما يسبب تجمدات ( تعليقات ) ... ] مستحسن "
-"إذا كان لديك أكثر من 3 أنوية في المعالج ["
+"زيادة جيدة في السرعة و توافق عالي , ربما يسبب تجمدات ( تعليقات ) ... ] "
+"مستحسن إذا كان لديك أكثر من 3 أنوية في المعالج ["
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid "Other Hacks"
@@ -2816,8 +2826,8 @@ msgid ""
 "may have been created by an older unsupported version of PCSX2, or it may be "
 "corrupted."
 msgstr ""
-"لا يمكن قراءة الحالة لأنها ليست أرشيف gzip صالح . ربما تم تكوينها من قبل نسخة "
-"قديمة غير مدعومة من PCSX2  ,  أو ربما نسخة فاسدة."
+"لا يمكن قراءة الحالة لأنها ليست أرشيف gzip صالح . ربما تم تكوينها من قبل "
+"نسخة قديمة غير مدعومة من PCSX2  ,  أو ربما نسخة فاسدة."
 
 #: pcsx2/gui/SysState.cpp:588
 msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
@@ -2855,8 +2865,8 @@ msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
 "SSE2 extensions."
 msgstr ""
-"لم يتم إيجاد أطقمة التعليمات معيد الترجمة R5900-32 يتطلب معالج مع MMX, SSE, و "
-"SSE2 %s."
+"لم يتم إيجاد أطقمة التعليمات معيد الترجمة R5900-32 يتطلب معالج مع MMX, SSE, "
+"و SSE2 %s."
 
 #: pcsx2/x86/microVU.cpp:32
 #, c-format
@@ -2986,7 +2996,8 @@ msgstr ""
 #~ msgstr "إعادة تشغيل الـ CDVD (سريع)"
 
 #~ msgid "Reboot using fast BOOT (skips splash screens)"
-#~ msgstr "إعادة تشغيل الـ CDVD بإستخدام التشغيل السريع ( يتخطى شاشات الـ PS2 )"
+#~ msgstr ""
+#~ "إعادة تشغيل الـ CDVD بإستخدام التشغيل السريع ( يتخطى شاشات الـ PS2 )"
 
 #~ msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
 #~ msgstr ""
