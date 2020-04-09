@@ -409,7 +409,7 @@ set(pcsx2LinuxSources
 
 set(pcsx2OSXSources
 	gui/CpuUsageProviderLnx.cpp
-#	Linux/LnxConsolePipe.cpp
+	Linux/LnxConsolePipe.cpp
 #	Linux/LnxKeyCodes.cpp
 	Darwin/DarwinFlatFileReader.cpp
 	)
