@@ -114,7 +114,7 @@ typedef void (APIENTRYP PFNGLTEXTUREPAGECOMMITMENTEXTPROC) (GLuint texture, GLin
 // #define ENABLE_GL_VERSION_4_6 1
 
 // It should be done by ENABLE_GL_VERSION_1_4 but it conflicts with the old gl.h
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
 extern   PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate;
 #endif
 extern   PFNGLTEXTUREPAGECOMMITMENTEXTPROC      glTexturePageCommitmentEXT;

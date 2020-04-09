@@ -217,6 +217,16 @@ if(Windows)
         resource.h
         targetver.h
         )
+elseif(APPLE)
+    LIST(APPEND GSdxSources
+        Window/GSLinuxDialog.cpp
+        Window/GSWndCGL.mm
+        )
+
+    LIST(APPEND GSdxHeaders
+        Window/GSWndCGL.h
+        Window/GSWndCGLShim.h
+        )
 else()
     LIST(APPEND GSdxSources
         Window/GSLinuxDialog.cpp
@@ -256,6 +266,12 @@ endif()
 
 if(OPENCL_FOUND)
     set(GSdxFinalLibs ${GSdxFinalLibs} ${OPENCL_LIBRARIES})
+endif()
+
+if(APPLE)
+    find_library(APPKIT_LIBRARY AppKit)
+    set(GSdxFinalFlags ${GSdxFinalFlags} -fobjc-arc)
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${APPKIT_LIBRARY} -fobjc-link-runtime)
 endif()
 
 set(RESOURCE_FILES

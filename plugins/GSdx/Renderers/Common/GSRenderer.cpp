@@ -21,7 +21,7 @@
 
 #include "stdafx.h"
 #include "GSRenderer.h"
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 #include <X11/keysym.h>
 #endif
 
@@ -566,7 +566,7 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 
 		int step = m_shift_key ? -1 : 1;
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 #define VK_F5 XK_F5
 #define VK_F6 XK_F6
 #define VK_F7 XK_F7
