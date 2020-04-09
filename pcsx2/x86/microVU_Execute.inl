@@ -130,7 +130,11 @@ _mVUt void* __fastcall mVUexecute(u32 startPC, u32 cycles) {
 	mVU.totalCycles = cycles;
 
 	xSetPtr(mVU.prog.x86ptr); // Set x86ptr to where last program left off
-	return mVUsearchProg<vuIndex>(startPC & vuLimit, (uptr)&mVU.prog.lpState); // Find and set correct program
+	void* entryPoint = mVUsearchProg<vuIndex>(startPC & vuLimit, (uptr)&mVU.prog.lpState); // Find and set correct program
+	
+	VUM_LOG("microVU%d: Executing Microprogram %d for %d cycles", vuIndex, mVU.prog.cur->idx, cycles);
+	
+	return entryPoint;
 }
 
 //------------------------------------------------------------------

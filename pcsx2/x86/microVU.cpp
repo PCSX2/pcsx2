@@ -350,10 +350,8 @@ void recMicroVU1::Reset() {
 
 void recMicroVU0::Execute(u32 cycles) {
 	pxAssert(m_Reserved); // please allocate me first! :|
-	
-	if(!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
 
-	VUM_LOG("VU0 Microprogram Index: %d", microVU0.prog.cur->idx);
+	if(!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
 
 	// Sometimes games spin on vu0, so be careful with this value
 	// woody hangs if too high on sVU (untested on mVU)
@@ -368,13 +366,10 @@ void recMicroVU0::Execute(u32 cycles) {
 }
 void recMicroVU1::Execute(u32 cycles) {
 	pxAssert(m_Reserved); // please allocate me first! :|
-	
+
 	if (!THREAD_VU1) {
 		if(!(VU0.VI[REG_VPU_STAT].UL & 0x100)) return;
 	}
-	
-	VUM_LOG("VU1 Microprogram Index: %d", microVU1.prog.cur->idx);
-	
 	((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
 
 	if(microVU1.regs().flags & 0x4)
