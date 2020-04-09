@@ -23,7 +23,7 @@
 #include "GSdx.h"
 #include "GS.h"
 
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
 PFNGLBLENDFUNCSEPARATEPROC glBlendFuncSeparate = NULL;
 #endif
 PFNGLTEXTUREPAGECOMMITMENTEXTPROC glTexturePageCommitmentEXT = NULL;
