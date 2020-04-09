@@ -33,7 +33,7 @@ void GSWndGL::PopulateGlFunction()
 #include "PFN_WND.h"
 
 	// GL1.X mess
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
 	GL_EXT_LOAD(glBlendFuncSeparate);
 #endif
 	GL_EXT_LOAD_OPT(glTexturePageCommitmentEXT);

@@ -155,7 +155,8 @@ void* vmalloc(size_t size, bool code)
 
 	if(code) {
 		prot |= PROT_EXEC;
-#ifdef _M_AMD64
+#if defined(_M_AMD64) && !defined(__APPLE__)
+		// macOS doesn't allow any mappings in the first 4GB of address space
 		flags |= MAP_32BIT;
 #endif
 	}

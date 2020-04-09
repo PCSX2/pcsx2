@@ -43,6 +43,6 @@
 //#define ENABLE_EXTRA_LOG // print extra log
 #endif
 
-#if defined(__unix__) && !(defined(_DEBUG) || defined(_DEVEL))
+#if (defined(__unix__) || defined(__APPLE__)) && !(defined(_DEBUG) || defined(_DEVEL))
 #define DISABLE_PERF_MON // Burn cycle for nothing in release mode
 #endif
