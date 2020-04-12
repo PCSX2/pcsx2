@@ -745,6 +745,13 @@ if(NOT USE_CLANG)
 	endif()
 endif()
 
+if (APPLE)
+	# MacOS defaults to having a maximum protection of the __DATA segment of rw (non-executable)
+	# We have a bunch of page-sized arrays in bss that we use for jit
+	# Obviously not being able to make those arrays executable would be a problem
+	target_link_options(${Output} PRIVATE -Wl,-segprot,__DATA,rwx,rw)
+endif()
+
 if(dev9ghzdrk)
     if(PACKAGE_MODE)
         install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f ${BIN_DIR}/${Output} ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' ${BIN_DIR}/${Output}; set +x\")")
