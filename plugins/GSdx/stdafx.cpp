@@ -155,7 +155,9 @@ void* vmalloc(size_t size, bool code)
 
 	if(code) {
 		prot |= PROT_EXEC;
-#ifdef _M_AMD64
+#if defined(_M_AMD64) && !defined(__APPLE__)
+		// macOS Catalina doesn't allow this
+		// TODO:TKR Why was this required?
 		flags |= MAP_32BIT;
 #endif
 	}

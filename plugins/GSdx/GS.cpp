@@ -291,7 +291,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 			int w = theApp.GetConfigI("ModeWidth");
 			int h = theApp.GetConfigI("ModeHeight");
-#if defined(__unix__) || defined(__APPLE__)
+#if defined(__unix__)
 			void *win_handle = (void*)((uptr*)(dsp)+1);
 #else
 			void *win_handle = *dsp;
