@@ -65,7 +65,7 @@ namespace ReplaceGL {
 
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
 namespace Emulate_DSA {
 	// Texture entry point
 	void APIENTRY BindTextureUnit(GLuint unit, GLuint texture) {
@@ -147,6 +147,9 @@ namespace GLLoader {
 	bool mesa_driver        = false;
 	bool in_replayer        = false;
 	bool buggy_sso_dual_src = false;
+
+	// Missing on macOS
+	bool found_GL_ARB_buffer_storage = false;
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_ARB_clear_texture = false;
@@ -276,12 +279,17 @@ namespace GLLoader {
 			// GL4.1
 			mandatory("GL_ARB_separate_shader_objects");
 			// GL4.2
-			mandatory("GL_ARB_shading_language_420pack");
+			optional("GL_ARB_shading_language_420pack");
 			mandatory("GL_ARB_texture_storage");
 			// GL4.3
-			mandatory("GL_KHR_debug");
+			if (!optional("GL_KHR_debug")) {
+				glObjectLabel = [](GLenum identifier, GLuint name, GLsizei length, const GLchar *label){};
+				glDebugMessageCallback = [](GLDEBUGPROC callback, const void *userParam){};
+				glDebugMessageInsert = [](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *buf){};
+				glDebugMessageControl = [](GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled){};
+			}
 			// GL4.4
-			mandatory("GL_ARB_buffer_storage");
+			found_GL_ARB_buffer_storage = optional("GL_ARB_buffer_storage");
 		}
 
 		// Only for HW renderer
@@ -339,7 +347,7 @@ namespace GLLoader {
 			fprintf_once(stderr, "GL_ARB_texture_barrier is not supported! Blending emulation will not be supported\n");
 		}
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
 		// Thank you Intel for not providing support of basic features on your IGPUs.
 		if (!GLExtension::Has("GL_ARB_direct_state_access")) {
 			Emulate_DSA::Init();
