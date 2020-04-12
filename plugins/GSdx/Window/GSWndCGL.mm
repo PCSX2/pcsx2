@@ -29,6 +29,7 @@
 #include "GSWndCGL.h"
 #include "GSWndCGLShim.h"
 #include <dlfcn.h>
+#include <dispatch/dispatch.h>
 
 std::shared_ptr<GSWndGL> makeGSWndCGL() {
 	return std::make_shared<GSWndCGL>();
@@ -56,14 +57,14 @@ void GSWndCGL::CreateContext(int major, int minor) {
 		0
 	};
 
-	@autoreleasepool {
+	dispatch_sync(dispatch_get_main_queue(), [&]{
 		NSOpenGLPixelFormat *pxformat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
 
 		m_view = [[NSOpenGLView alloc] initWithFrame:[m_NativeWindow contentRectForFrameRect:[m_NativeWindow frame]] pixelFormat:pxformat];
 		[m_NativeWindow setContentView:m_view];
 		[m_view setWantsBestResolutionOpenGLSurface:YES];
 		m_context = CGLRetainContext([[m_view openGLContext] CGLContextObj]);
-	}
+	});
 }
 
 void GSWndCGL::AttachContext() {
@@ -79,7 +80,9 @@ void GSWndCGL::DetachContext() {
 void GSWndCGL::PopulateWndGlFunction() {}
 
 bool GSWndCGL::Attach(void* handle, bool managed) {
-	m_NativeWindow = (__bridge NSWindow*)handle;
+	dispatch_sync(dispatch_get_main_queue(), [&]{
+		m_NativeWindow = [(__bridge NSView*)handle window];
+	});
 	m_managed = managed;
 
 	FullContextInit();
@@ -106,13 +109,13 @@ bool GSWndCGL::Create(const std::string& title, int w, int h) {
 
 	m_managed = true;
 
-	@autoreleasepool {
+	dispatch_sync(dispatch_get_main_queue(), [&]{
 		NSWindowStyleMask style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
 		m_NativeWindow = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, w, h)
 		                                             styleMask:style
 		                                               backing:NSBackingStoreBuffered
 		                                                 defer:NO];
-	}
+	});
 
 	FullContextInit();
 
@@ -136,7 +139,10 @@ void* GSWndCGL::GetDisplay() {
 }
 
 GSVector4i GSWndCGL::GetClientRect() {
-	NSRect rect = [m_view frame];
+	NSRect rect;
+	dispatch_sync(dispatch_get_main_queue(), [&]{
+		rect = [m_view frame];
+	});
 	return GSVector4i(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 }
 
@@ -158,15 +164,21 @@ void GSWndCGL::Flip() {
 }
 
 void GSWndCGL::Show() {
-	[m_NativeWindow makeKeyAndOrderFront:nil];
+	dispatch_sync(dispatch_get_main_queue(), [&]{
+		[m_NativeWindow makeKeyAndOrderFront:nil];
+	});
 }
 
 void GSWndCGL::Hide() {
-	[m_NativeWindow orderOut:nil];
+	dispatch_sync(dispatch_get_main_queue(), [&]{
+		[m_NativeWindow orderOut:nil];
+	});
 }
 
 void GSWndCGL::HideFrame() {
-	[m_NativeWindow setStyleMask:[m_NativeWindow styleMask] & ~NSWindowStyleMaskTitled];
+	dispatch_sync(dispatch_get_main_queue(), [&]{
+		[m_NativeWindow setStyleMask:[m_NativeWindow styleMask] & ~NSWindowStyleMaskTitled];
+	});
 }
 
 #endif // __APPLE__
