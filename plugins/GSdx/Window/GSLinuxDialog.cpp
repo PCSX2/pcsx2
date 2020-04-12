@@ -629,6 +629,11 @@ bool RunLinuxDialog()
 	GtkWidget *dialog;
 	int return_value;
 
+#ifdef __APPLE__
+	// Rest of macOS UI doesn't use GTK so we need to init it now
+	gtk_init(nullptr, nullptr);
+#endif
+
 	/* Create the widgets */
 	dialog = gtk_dialog_new_with_buttons (
 		"GSdx Config",
