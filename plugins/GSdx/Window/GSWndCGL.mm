@@ -141,7 +141,7 @@ void* GSWndCGL::GetDisplay() {
 GSVector4i GSWndCGL::GetClientRect() {
 	NSRect rect;
 	dispatch_sync(dispatch_get_main_queue(), [&]{
-		rect = [m_view frame];
+		rect = [m_view convertRectToBacking:[m_view frame]];
 	});
 	return GSVector4i(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 }
