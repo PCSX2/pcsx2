@@ -300,10 +300,10 @@ void ps_main7()
 vec4 ps_scanlines(uint i)
 {
     vec4 mask[2] =
-    {
+    vec4[](
         vec4(1, 1, 1, 0),
         vec4(0, 0, 0, 0)
-    };
+    );
 
     return sample_c() * clamp((mask[i] + 0.5f), 0.0f, 1.0f);
 }

@@ -80,6 +80,7 @@ GLuint GSShaderOGL::LinkProgram(GLuint vs, GLuint gs, GLuint ps)
 	glLinkProgram(p);
 
 	ValidateProgram(p);
+	SetupUniform(p);
 
 	m_prog_to_delete.push_back(p);
 	m_program[hash] = p;
@@ -142,6 +143,45 @@ void GSShaderOGL::BindPipeline(GLuint pipe)
 		GLState::program = 0;
 		glUseProgram(0);
 	}
+}
+
+void GSShaderOGL::SetUniformBinding(GLuint prog, const GLchar* name, GLuint binding)
+{
+	GLuint index;
+	index = glGetUniformBlockIndex(prog, name);
+	if (index != GL_INVALID_INDEX) {
+		glUniformBlockBinding(prog, index, binding);
+	}
+}
+
+void GSShaderOGL::SetSamplerBinding(GLuint prog, const GLchar* name, GLuint binding)
+{
+	GLint loc = glGetUniformLocation(prog, name);
+	if (loc != -1) {
+		glUniform1i(loc, binding);
+	}
+}
+
+void GSShaderOGL::SetupUniform(GLuint prog)
+{
+	if (GLLoader::found_GL_ARB_shading_language_420pack) return;
+
+	SetUniformBinding(prog, "cb20", 20);
+	SetUniformBinding(prog, "cb21", 21);
+	SetUniformBinding(prog, "cb22", 22);
+
+	SetUniformBinding(prog, "cb10", 10);
+	SetUniformBinding(prog, "cb11", 11);
+	SetUniformBinding(prog, "cb12", 12);
+	SetUniformBinding(prog, "cb13", 13);
+	SetUniformBinding(prog, "cb14", 14);
+	SetUniformBinding(prog, "cb15", 15);
+
+	SetSamplerBinding(prog, "TextureSampler", 0);
+	SetSamplerBinding(prog, "PaletteSampler", 1);
+	SetSamplerBinding(prog, "img_prim_min", 2);
+	SetSamplerBinding(prog, "RtSampler", 3);
+	SetSamplerBinding(prog, "RawTextureSampler", 4);
 }
 
 bool GSShaderOGL::ValidateShader(GLuint s)
@@ -214,8 +254,12 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 {
 	std::string header;
 	header = "#version 330 core\n";
-	// Need GL version 420
-	header += "#extension GL_ARB_shading_language_420pack: require\n";
+	if (GLLoader::found_GL_ARB_shading_language_420pack) {
+		// Need GL version 420
+		header += "#extension GL_ARB_shading_language_420pack: require\n";
+	} else {
+		header += "#define DISABLE_GL42\n";
+	}
 	// Need GL version 410
 	header += "#extension GL_ARB_separate_shader_objects: require\n";
 	if (GLLoader::found_GL_ARB_shader_image_load_store) {
@@ -275,6 +319,7 @@ GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& ent
 	program = glCreateShaderProgramv(type, shader_nb, sources);
 
 	bool status = ValidateProgram(program);
+	SetupUniform(program);
 
 	if (!status) {
 		// print extra info

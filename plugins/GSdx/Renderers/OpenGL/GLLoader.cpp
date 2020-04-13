@@ -150,6 +150,7 @@ namespace GLLoader {
 
 	// Missing on macOS
 	bool found_GL_ARB_buffer_storage = false;
+	bool found_GL_ARB_shading_language_420pack = false;
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_ARB_clear_texture = false;
@@ -279,7 +280,7 @@ namespace GLLoader {
 			// GL4.1
 			mandatory("GL_ARB_separate_shader_objects");
 			// GL4.2
-			optional("GL_ARB_shading_language_420pack");
+			found_GL_ARB_shading_language_420pack = optional("GL_ARB_shading_language_420pack");
 			mandatory("GL_ARB_texture_storage");
 			// GL4.3
 			if (!optional("GL_KHR_debug")) {

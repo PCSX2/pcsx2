@@ -30,6 +30,10 @@ class GSShaderOGL {
 	std::vector<GLuint> m_prog_to_delete;
 	std::vector<GLuint> m_pipe_to_delete;
 
+	void SetUniformBinding(GLuint prog, const GLchar* name, GLuint binding);
+	void SetSamplerBinding(GLuint prog, const GLchar* name, GLuint binding);
+	void SetupUniform(GLuint prog);
+
 	bool ValidateShader(GLuint s);
 	bool ValidateProgram(GLuint p);
 	bool ValidatePipeline(GLuint p);
