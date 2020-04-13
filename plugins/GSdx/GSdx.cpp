@@ -389,6 +389,9 @@ void GSdxApp::Init()
 	m_default_configuration["override_GL_ARB_texture_view"]               = "-1";
 	m_default_configuration["override_GL_ARB_vertex_attrib_binding"]      = "-1";
 	m_default_configuration["override_GL_ARB_texture_barrier"]            = "-1";
+	m_default_configuration["override_GL_KHR_debug"]                      = "-1";
+	m_default_configuration["override_GL_ARB_shading_language_420pack"]   = "-1";
+	m_default_configuration["override_GL_ARB_buffer_storage"]             = "-1";
 	m_default_configuration["paltex"]                                     = "0";
 	m_default_configuration["png_compression_level"]                      = std::to_string(Z_BEST_SPEED);
 	m_default_configuration["preload_frame_with_gs_data"]                 = "0";
