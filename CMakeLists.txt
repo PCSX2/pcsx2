@@ -5,6 +5,7 @@ project(Pcsx2)
 # Bumping up to 3.0 seems reasonable at this point, and will let us modernize
 # things a bit.
 cmake_minimum_required(VERSION 3.0.2)
+cmake_policy(SET CMP0054 NEW)
 
 # Variable to check that people use the good file
 set(TOP_CMAKE_WAS_SOURCED TRUE)
