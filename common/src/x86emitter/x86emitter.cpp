@@ -459,7 +459,7 @@ __emitinline u8 *xGetPtr()
 __emitinline void xAlignPtr(uint bytes)
 {
     // forward align
-    x86Ptr = (u8 *)(((uptr)x86Ptr + bytes - 1) & ~(bytes - 1));
+    x86Ptr = (u8 *)(((uptr)x86Ptr + bytes - 1) & ~(uptr)(bytes - 1));
 }
 
 // Performs best-case alignment for the target CPU, for use prior to starting a new
