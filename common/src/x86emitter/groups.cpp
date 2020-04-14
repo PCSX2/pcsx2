@@ -55,7 +55,7 @@ static void _g1_IndirectImm(G1Type InstType, const xIndirect64orLess &sibdest, i
         if (is_s8(imm))
             xWrite<s8>(imm);
         else
-            sibdest.xWriteImm(imm, false);
+            sibdest.xWriteImm(imm);
     }
 }
 
@@ -92,7 +92,7 @@ static void _g1_EmitOp(G1Type InstType, const xRegisterInt &to, int imm)
             u8 opcode = to.Is8BitOp() ? 0x80 : 0x81;
             xOpWrite(to.GetPrefix16(), opcode, InstType, to);
         }
-        to.xWriteImm(imm, false);
+        to.xWriteImm(imm);
     }
 }
 
@@ -200,7 +200,7 @@ static void _imul_ImmStyle(const xRegisterInt &param1, const SrcType &param2, in
     if (is_s8(imm))
         xWrite8((u8)imm);
     else
-        param1.xWriteImm(imm, false);
+        param1.xWriteImm(imm);
 }
 
 void xImpl_iMul::operator()(const xRegisterInt &from) const { _g3_EmitOp(G3Type_iMUL, from); }
