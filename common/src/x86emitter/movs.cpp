@@ -88,7 +88,7 @@ void xImpl_Mov::operator()(const xRegisterInt &to, const xIndirectVoid &src) con
 void xImpl_Mov::operator()(const xIndirect64orLess &dest, int imm) const
 {
     xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? 0xc6 : 0xc7, 0, dest);
-    dest.xWriteImm(imm);
+    dest.xWriteImm(imm, true);
 }
 
 // preserve_flags  - set to true to disable optimizations which could alter the state of
@@ -101,7 +101,7 @@ void xImpl_Mov::operator()(const xRegisterInt &to, int imm, bool preserve_flags)
         // Note: MOV does not have (reg16/32,imm8) forms.
         u8 opcode = (to.Is8BitOp() ? 0xb0 : 0xb8) | to.Id;
         xOpAccWrite(to.GetPrefix16(), opcode, 0, to);
-        to.xWriteImm(imm);
+        to.xWriteImm(imm, true);
     }
 }
 

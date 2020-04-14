@@ -889,7 +889,7 @@ void xImpl_Test::operator()(const xRegisterInt &to, const xRegisterInt &from) co
 void xImpl_Test::operator()(const xIndirect64orLess &dest, int imm) const
 {
     xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? 0xf6 : 0xf7, 0, dest);
-    dest.xWriteImm(imm);
+    dest.xWriteImm(imm, false);
 }
 
 void xImpl_Test::operator()(const xRegisterInt &to, int imm) const
@@ -899,7 +899,7 @@ void xImpl_Test::operator()(const xRegisterInt &to, int imm) const
     } else {
         xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? 0xf6 : 0xf7, 0, to);
     }
-    to.xWriteImm(imm);
+    to.xWriteImm(imm, false);
 }
 
 void xImpl_BitScan::operator()(const xRegister16or32or64 &to, const xRegister16or32or64 &from) const

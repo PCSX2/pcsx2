@@ -210,7 +210,7 @@ public:
             xWrite8(0x66);
     }
 
-    void xWriteImm(int imm) const
+    void xWriteImm(int imm, bool isMov) const
     {
         switch (GetOperandSize()) {
             case 1:
@@ -223,7 +223,8 @@ public:
                 xWrite32(imm);
                 break;
             case 8:
-                xWrite64(imm);
+                // Only mov's take 64-bit immediates
+                isMov ? xWrite64(imm) : xWrite32(imm);
                 break;
 
                 jNO_DEFAULT
