@@ -223,7 +223,8 @@ public:
                 xWrite32(imm);
                 break;
             case 8:
-                xWrite64(imm);
+                // Only mov's take 64-bit immediates
+                xWrite32(imm);
                 break;
 
                 jNO_DEFAULT
