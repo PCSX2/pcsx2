@@ -203,10 +203,6 @@ static const int __pagesize = PCSX2_PAGESIZE;
 // warnings when a static inlined function isn't used in the scope of a single file (which
 // happens *by design* like all the friggen time >_<)
 
-#if defined(__x86_64__) || defined(_M_AMD64)
-#define __M_X86_64
-#endif
-
 #ifndef __fastcall
 # ifdef __M_X86_64
 #  define __fastcall __attribute__((ms_abi))
