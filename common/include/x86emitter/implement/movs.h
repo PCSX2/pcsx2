@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "Pcsx2Types.h"
-
 // Header: ix86_impl_movs.h -- covers mov, cmov, movsx/movzx, and SETcc (which shares
 // with cmov many similarities).
 
@@ -36,7 +34,7 @@ struct xImpl_Mov
     void operator()(const xIndirectVoid &dest, const xRegisterInt &from) const;
     void operator()(const xRegisterInt &to, const xIndirectVoid &src) const;
     void operator()(const xIndirect64orLess &dest, int imm) const;
-    void operator()(const xRegisterInt &to, sptr imm, bool preserve_flags = false) const;
+    void operator()(const xRegisterInt &to, int imm, bool preserve_flags = false) const;
 
 #if 0
 	template< typename T > __noinline void operator()( const ModSibBase& to, const xImmReg<T>& immOrReg ) const
@@ -71,6 +69,18 @@ struct xImpl_Mov
 	}*/
 #endif
 };
+
+#ifdef __M_X86_64
+// --------------------------------------------------------------------------------------
+//  xImpl_Mov64
+// --------------------------------------------------------------------------------------
+// Mov with 64-bit immediates (only available on 64-bit platforms)
+//
+struct xImpl_Mov64
+{
+    void operator()(const xRegister64 &to, s64 imm, bool preserve_flags = false) const;
+};
+#endif
 
 // --------------------------------------------------------------------------------------
 //  xImpl_CMov

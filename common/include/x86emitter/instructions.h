@@ -57,6 +57,9 @@ extern const xImpl_G1Compare xCMP;
 // flags.
 
 extern const xImpl_Mov xMOV;
+#ifdef __M_X86_64
+extern const xImpl_Mov64 xMOV64;
+#endif
 extern const xImpl_Test xTEST;
 
 extern const xImpl_Group2 xROL, xROR,
