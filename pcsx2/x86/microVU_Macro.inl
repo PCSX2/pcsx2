@@ -373,7 +373,8 @@ static void recCTC2() {
 			// Executing vu0 block here fixes the intro of Ratchet and Clank
 			// sVU's COP2 has a comment that "Donald Duck" needs this too...
 			if (_Rd_) _eeMoveGPRtoM((uptr)&vu0Regs.VI[_Rd_].UL, _Rt_);
-			xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, (uptr)CpuVU0);
+			xLoadFarAddr(arg1reg, CpuVU0);
+			xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
 			break;
 	}
 }

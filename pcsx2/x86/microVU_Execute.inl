@@ -27,8 +27,8 @@ void mVUdispatcherAB(mV) {
 		xScopedStackFrame frame(false, true);
 
 		// __fastcall = The caller has already put the needed parameters in ecx/edx:
-		if (!isVU1)	{ xFastCall((void*)mVUexecuteVU0, ecx, edx); }
-		else		{ xFastCall((void*)mVUexecuteVU1, ecx, edx); }
+		if (!isVU1)	{ xFastCall((void*)mVUexecuteVU0, arg1reg, arg2reg); }
+		else		{ xFastCall((void*)mVUexecuteVU1, arg1reg, arg2reg); }
 
 		// Load VU's MXCSR state
 		xLDMXCSR(g_sseVUMXCSR);
@@ -52,7 +52,7 @@ void mVUdispatcherAB(mV) {
 		xSHUF.PS(xmmPQ, xmmT1, 0); // wzyx = PPQQ
 
 		// Jump to Recompiled Code Block
-		xJMP(eax);
+		xJMP(rax);
 
 		mVU.exitFunct = x86Ptr;
 
@@ -89,7 +89,7 @@ void mVUdispatcherCD(mV) {
 		xMOV(gprF3, ptr32[&mVU.statFlag[3]]);
 
 		// Jump to Recompiled Code Block
-		xJMP(ptr32[&mVU.resumePtrXG]);
+		xJMP(ptrNative[&mVU.resumePtrXG]);
 
 		mVU.exitFunctXG = x86Ptr;
 

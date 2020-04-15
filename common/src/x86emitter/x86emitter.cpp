@@ -130,17 +130,11 @@ const xAddressReg
     r12(12), r13(13),
     r14(14), r15(15);
 
-const xAddressReg
+const xRegister32
     eax(0), ebx(3),
     ecx(1), edx(2),
     esp(4), ebp(5),
-    esi(6), edi(7);
-
-const xRegister32
-    eaxd(0), ebxd(3),
-    ecxd(1), edxd(2),
-    espd(4), ebpd(5),
-    esid(6), edid(7),
+    esi(6), edi(7),
     r8d(8), r9d(9),
     r10d(10), r11d(11),
     r12d(12), r13d(13),
@@ -173,10 +167,10 @@ const xAddressReg
     calleeSavedReg2 = rsi;
 
 const xRegister32
-    arg1regd = ecxd,
-    arg2regd = edxd,
-    calleeSavedReg1d = edid,
-    calleeSavedReg2d = esid;
+    arg1regd = ecx,
+    arg2regd = edx,
+    calleeSavedReg1d = edi,
+    calleeSavedReg2d = esi;
 #else
 const xAddressReg
     arg1reg = rdi,
@@ -187,8 +181,8 @@ const xAddressReg
     calleeSavedReg2 = r13;
 
 const xRegister32
-    arg1regd = edid,
-    arg2regd = esid,
+    arg1regd = edi,
+    arg2regd = esi,
     calleeSavedReg1d = r12d,
     calleeSavedReg2d = r13d;
 #endif
@@ -367,7 +361,7 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info, int extraRIPOffset)
             EmitSibMagic(regfield, (void *)info.Displacement, extraRIPOffset);
             return;
         } else {
-            if (info.Index == ebp && displacement_size == 0)
+            if (info.Index == rbp && displacement_size == 0)
                 displacement_size = 1; // forces [ebp] to be encoded as [ebp+0]!
 
             ModRM(displacement_size, regfield, info.Index.Id & 7);
@@ -385,7 +379,7 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info, int extraRIPOffset)
             xWrite<s32>(info.Displacement);
             return;
         } else {
-            if (info.Base == ebp && displacement_size == 0)
+            if (info.Base == rbp && displacement_size == 0)
                 displacement_size = 1; // forces [ebp] to be encoded as [ebp+0]!
 
             ModRM(displacement_size, regfield, ModRm_UseSib);
@@ -896,7 +890,7 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
         } else {
             if (src.Scale == 0) {
                 if (!preserve_flags) {
-                    if (src.Index == esp) {
+                    if (src.Index == rsp) {
                         // ESP is not encodable as an index (ix86 ignores it), thus:
                         _xMovRtoR(to, sizeMatchedBase); // will do the trick!
                         if (src.Displacement)
@@ -907,7 +901,7 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
                         _g1_EmitOp(G1Type_ADD, to, sizeMatchedIndex);
                         return;
                     }
-                } else if ((src.Index == esp) && (src.Displacement == 0)) {
+                } else if ((src.Index == rsp) && (src.Displacement == 0)) {
                     // special case handling of ESP as Index, which is replaceable with
                     // a single MOV even when preserve_flags is set! :D
 
@@ -935,6 +929,17 @@ __emitinline void xLEA(xRegister16 to, const xIndirectVoid &src, bool preserve_f
 {
     xWrite8(0x66);
     EmitLeaMagic(to, src, preserve_flags);
+}
+
+__emitinline u32* xLEA_Writeback(xAddressReg to)
+{
+#ifdef __M_X86_64
+    xOpWrite(0, 0x8d, to, ptr[(void*)(0xdcdcdcd + (uptr)xGetPtr() + 7)]);
+#else
+    xOpAccWrite(0, 0xb8 | to.Id, 0, to);
+    xWrite32(0xcdcdcdcd);
+#endif
+    return (u32*)xGetPtr() - 1;
 }
 
 // =====================================================================================================
@@ -1145,6 +1150,14 @@ __emitinline void xRestoreReg(const xRegisterSSE &dest)
 
 #endif
 
+static void stackAlign(int offset, bool moveDown) {
+    int needed = (16 - (offset % 16)) % 16;
+    if (moveDown) {
+        needed = -needed;
+    }
+    ALIGN_STACK(needed);
+}
+
 xScopedStackFrame::xScopedStackFrame(bool base_frame, bool save_base_pointer, int offset)
 {
     m_base_frame = base_frame;
@@ -1188,12 +1201,12 @@ xScopedStackFrame::xScopedStackFrame(bool base_frame, bool save_base_pointer, in
 
 #endif
 
-    ALIGN_STACK(-(16 - m_offset % 16));
+    stackAlign(m_offset, true);
 }
 
 xScopedStackFrame::~xScopedStackFrame()
 {
-    ALIGN_STACK(16 - m_offset % 16);
+    stackAlign(m_offset, false);
 
 #ifdef __M_X86_64
 
@@ -1224,6 +1237,49 @@ xScopedStackFrame::~xScopedStackFrame()
     } else if (m_save_base_pointer) {
         xPOP(rbp);
     }
+}
+
+xScopedSavedRegisters::xScopedSavedRegisters(std::initializer_list<std::reference_wrapper<const xAddressReg>> regs)
+    : regs(regs)
+{
+    for (auto reg : regs)
+    {
+        const xAddressReg& regRef = reg;
+        xPUSH(regRef);
+    }
+    stackAlign(regs.size() * wordsize, true);
+}
+
+xScopedSavedRegisters::~xScopedSavedRegisters() {
+    stackAlign(regs.size() * wordsize, false);
+    for (auto it = regs.rbegin(); it < regs.rend(); ++it) {
+        const xAddressReg& regRef = *it;
+        xPOP(regRef);
+    }
+}
+
+xAddressVoid xComplexAddress(const xAddressReg& tmpRegister, void *base, const xAddressVoid& offset) {
+    if ((sptr)base == (s32)(sptr)base) {
+        return offset + base;
+    } else {
+        xLEA(tmpRegister, ptr[base]);
+        return offset + tmpRegister;
+    }
+}
+
+void xLoadFarAddr(const xAddressReg& dst, void *addr) {
+#ifdef __M_X86_64
+    sptr iaddr = (sptr)addr;
+    sptr rip = (sptr)xGetPtr() + 7; // LEA will be 7 bytes
+    sptr disp = iaddr - rip;
+    if (disp == (s32)disp) {
+        xLEA(dst, ptr[addr]);
+    } else {
+        xMOV64(dst, iaddr);
+    }
+#else
+    xMOV(dst, (sptr)addr);
+#endif
 }
 
 } // End namespace x86Emitter

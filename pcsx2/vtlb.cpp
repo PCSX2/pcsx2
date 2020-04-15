@@ -782,7 +782,7 @@ void vtlb_Term()
 	//nothing to do for now
 }
 
-constexpr size_t VMAP_SIZE = sizeof(sptr) * VTLB_VMAP_ITEMS;
+constexpr size_t VMAP_SIZE = sizeof(VTLBVirtual) * VTLB_VMAP_ITEMS;
 
 // Reserves the vtlb core allocation used by various emulation components!
 // [TODO] basemem - request allocating memory at the specified virtual location, which can allow

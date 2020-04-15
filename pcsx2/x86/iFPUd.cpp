@@ -397,9 +397,9 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 
 	if (CHECK_FPUMULHACK)
 	{
-		xMOVD(ecx, xRegisterSSE(sreg));
-		xMOVD(edx, xRegisterSSE(treg));
-		xFastCall((void*)(uptr)&FPU_MUL_HACK, ecx, edx); //returns the hacked result or 0
+		xMOVD(arg1regd, xRegisterSSE(sreg));
+		xMOVD(arg2regd, xRegisterSSE(treg));
+		xFastCall((void*)(uptr)&FPU_MUL_HACK, arg1regd, arg2regd); //returns the hacked result or 0
 		xTEST(eax, eax);
 		noHack = JZ8(0);
 			xMOVDZX(xRegisterSSE(regd), eax);

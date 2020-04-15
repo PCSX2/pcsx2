@@ -178,25 +178,25 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump) {
 		mVUpBlock->jumpCache = new microJumpCache[mProgSize/2];
 	}
 
-	if (isEvilJump)		xMOV(gprT2, ptr32[&mVU.evilBranch]);
-	else				xMOV(gprT2, ptr32[&mVU.branch]);
-	if (doJumpCaching)	xMOV(gprT3, (uptr)mVUpBlock);
-	else				xMOV(gprT3, (uptr)&mVUpBlock->pStateEnd);
+	if (isEvilJump)		xMOV(arg1regd, ptr32[&mVU.evilBranch]);
+	else				xMOV(arg1regd, ptr32[&mVU.branch]);
+	if (doJumpCaching)	xLoadFarAddr(arg2reg, mVUpBlock);
+	else				xLoadFarAddr(arg2reg, &mVUpBlock->pStateEnd);
 
 	if(mVUup.eBit && isEvilJump)// E-bit EvilJump
 	{
 		//Xtreme G 3 does 2 conditional jumps, the first contains an E Bit on the first instruction
 		//So if it is taken, you need to end the program, else you get infinite loops.
 		mVUendProgram(mVU, &mFC, 2);
-		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], gprT2);
+		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], arg1regd);
 		xJMP(mVU.exitFunct);
 	}
 	
-	if (!mVU.index) xFastCall((void*)(void(*)())mVUcompileJIT<0>, gprT2, gprT3); //(u32 startPC, uptr pState)
-	else			xFastCall((void*)(void(*)())mVUcompileJIT<1>, gprT2, gprT3);
+	if (!mVU.index) xFastCall((void*)(void(*)())mVUcompileJIT<0>, arg1reg, arg2reg); //(u32 startPC, uptr pState)
+	else			xFastCall((void*)(void(*)())mVUcompileJIT<1>, arg1reg, arg2reg);
 
 	mVUrestoreRegs(mVU);
-	xJMP(gprT1);  // Jump to rec-code address
+	xJMP(gprT1q);  // Jump to rec-code address
 }
 
 void normBranch(mV, microFlagCycles& mFC) {

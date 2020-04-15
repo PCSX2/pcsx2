@@ -66,6 +66,7 @@ struct xImpl_FastCall
     void operator()(void *f, u32 a1, const xRegister32 &a2) const;
     void operator()(void *f, const xIndirect32 &a1) const;
     void operator()(void *f, u32 a1, u32 a2) const;
+    void operator()(void *f, void *a1) const;
 
 #ifdef __M_X86_64
     void operator()(void *f, const xRegisterLong &a1, const xRegisterLong &a2 = xEmptyReg) const;
