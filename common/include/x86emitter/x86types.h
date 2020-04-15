@@ -646,6 +646,14 @@ extern const xRegister8
     al, dl, bl,
     ah, ch, dh, bh;
 
+extern const xAddressReg
+#ifdef __M_X86_64
+    arg1reg, arg2reg,
+    arg3reg, arg4reg;
+#else
+    arg1reg, arg2reg;
+#endif
+
 // clang-format on
 
 extern const xRegisterCL cl; // I'm special!

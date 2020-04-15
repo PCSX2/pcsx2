@@ -204,11 +204,7 @@ static const int __pagesize = PCSX2_PAGESIZE;
 // happens *by design* like all the friggen time >_<)
 
 #ifndef __fastcall
-# ifdef __M_X86_64
-#  define __fastcall __attribute__((ms_abi))
-# else
-#  define __fastcall __attribute__((fastcall))
-# endif
+#define __fastcall __attribute__((fastcall))
 #endif
 #define _inline __inline__ __attribute__((unused))
 #ifdef NDEBUG

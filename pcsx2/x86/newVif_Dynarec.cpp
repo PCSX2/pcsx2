@@ -220,10 +220,10 @@ void VifUnpackSSE_Dynarec::CompileRoutine() {
 	while (vNum) {
 
 
-		ShiftDisplacementWindow( dstIndirect, ecx );
+		ShiftDisplacementWindow( dstIndirect, arg1reg );
 
 		if(UnpkNoOfIterations == 0)
-			ShiftDisplacementWindow( srcIndirect, edx ); //Don't need to do this otherwise as we arent reading the source.
+			ShiftDisplacementWindow( srcIndirect, arg2reg ); //Don't need to do this otherwise as we arent reading the source.
 
 
 		if (vCL < cycleSize) {
