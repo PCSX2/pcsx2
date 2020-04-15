@@ -61,22 +61,21 @@ static int xpthread_mutex_timedlock(
     int err = 0;
 
     while ((err = pthread_mutex_trylock(mutex)) == EBUSY) {
+        // check if the timeout has expired, gettimeofday() is implemented
+        // efficiently (in userspace) on OSX
+        struct timeval now;
+        gettimeofday(&now, NULL);
+        if (now.tv_sec > abs_timeout->tv_sec
+            || (now.tv_sec == abs_timeout->tv_sec
+                && (u64)now.tv_usec * 1000ULL > (u64)abs_timeout->tv_nsec)) {
+            return ETIMEDOUT;
+        }
+
         // acquiring lock failed, sleep some
         struct timespec ts;
         ts.tv_sec = 0;
         ts.tv_nsec = TIMEDLOCK_EMU_SLEEP_NS;
-        int status;
-        while ((status = nanosleep(&ts, &ts)) == -1)
-            ;
-
-        // check if the timeout has expired, gettimeofday() is implemented
-        // efficiently (in userspace) on OSX
-        struct timeval now;
-        int res = gettimeofday(&now, NULL);
-        if (abs_timeout->tv_sec == 0 || now.tv_sec > abs_timeout->tv_sec ||
-            (u64)now.tv_usec * 1000ULL > (u64)abs_timeout->tv_nsec) {
-            return ETIMEDOUT;
-        }
+        while (nanosleep(&ts, &ts) == -1);
     }
 
     return err;
