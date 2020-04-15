@@ -489,6 +489,7 @@ public:
 #else
 #define xRegisterLong xRegister32
 #endif
+static const int wordsize = sizeof(sptr);
 
 class xAddressReg : public xRegisterLong
 {
@@ -648,14 +649,9 @@ extern const xAddressReg
     r8, r9, r10, r11,
     r12, r13, r14, r15;
 
-extern const xAddressReg
-    eax, ebx, ecx, edx,
-    esi, edi, ebp, esp;
-
-// Temporary registers to aid the move to x86-64
 extern const xRegister32
-    eaxd, ebxd, ecxd, edxd,
-    esid, edid, ebpd, espd,
+     eax,  ebx,  ecx,  edx,
+     esi,  edi,  ebp,  esp,
      r8d,  r9d, r10d, r11d,
     r12d, r13d, r14d, r15d;
 

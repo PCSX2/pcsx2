@@ -236,6 +236,18 @@ __fi void mVUrestoreRegs(microVU& mVU, bool fromMemory = false) {
 	else xMOVAPS(xmmPQ, ptr128[&mVU.xmmBackup[xmmPQ.Id][0]]);
 }
 
+class mVUScopedXMMBackup {
+	microVU& mVU;
+	bool fromMemory;
+public:
+	mVUScopedXMMBackup(microVU& mVU, bool fromMemory): mVU(mVU), fromMemory(fromMemory) {
+		mVUbackupRegs(mVU, fromMemory);
+	}
+	~mVUScopedXMMBackup() {
+		mVUrestoreRegs(mVU, fromMemory);
+	}
+};
+
 _mVUt void __fc mVUprintRegs() {
 	microVU& mVU = mVUx;
 	for(int i = 0; i < 8; i++) {
@@ -274,42 +286,31 @@ static void __fc mVUwaitMTVU() {
 }
 
 // Transforms the Address in gprReg to valid VU0/VU1 Address
-__fi void mVUaddrFix(mV, const x32& gprReg)
+__fi void mVUaddrFix(mV, const xAddressReg& gprReg)
 {
 	if (isVU1) {
-		xAND(gprReg, 0x3ff); // wrap around
-		xSHL(gprReg, 4);
+		xAND(xRegister32(gprReg.Id), 0x3ff); // wrap around
+		xSHL(xRegister32(gprReg.Id), 4);
 	}
 	else {
-		xTEST(gprReg, 0x400);
+		xTEST(xRegister32(gprReg.Id), 0x400);
 		xForwardJNZ8 jmpA;		// if addr & 0x4000, reads VU1's VF regs and VI regs
-			xAND(gprReg, 0xff); // if !(addr & 0x4000), wrap around
+			xAND(xRegister32(gprReg.Id), 0xff); // if !(addr & 0x4000), wrap around
 			xForwardJump32 jmpB;
 		jmpA.SetTarget();
 			if (THREAD_VU1) {
-				mVUbackupRegs(mVU, true);
-				xPUSH(gprT1);
-				xPUSH(gprT2);
-				xPUSH(gprT3);
-				// Align the stackframe (GCC only, since GCC assumes stackframe is always aligned)
-#ifdef __GNUC__
-				xSUB(esp, 4);
-#endif
-				if (IsDevBuild && !isCOP2) {         // Lets see which games do this!
-					xMOV(gprT2, mVU.prog.cur->idx); // Note: Kernel does it via COP2 to initialize VU1!
-					xMOV(gprT3, xPC);               // So we don't spam console, we'll only check micro-mode...
-					xCALL((void*)mVUwarningRegAccess);
+				{
+					mVUScopedXMMBackup mVUSave(mVU, true);
+					xScopedSavedRegisters save {gprT1q, gprT2q, gprT3q};
+					if (IsDevBuild && !isCOP2) {         // Lets see which games do this!
+						xMOV(arg1regd, mVU.prog.cur->idx); // Note: Kernel does it via COP2 to initialize VU1!
+						xMOV(arg2regd, xPC);               // So we don't spam console, we'll only check micro-mode...
+						xFastCall((void*)mVUwarningRegAccess, arg1regd, arg2regd);
+					}
+					xFastCall((void*)mVUwaitMTVU);
 				}
-				xCALL((void*)mVUwaitMTVU);
-#ifdef __GNUC__
-				xADD(esp, 4);
-#endif
-				xPOP (gprT3);
-				xPOP (gprT2);
-				xPOP (gprT1);
-				mVUrestoreRegs(mVU, true);
 			}
-			xAND(gprReg, 0x3f); // ToDo: theres a potential problem if VU0 overrides VU1's VF0/VI0 regs!
+			xAND(xRegister32(gprReg.Id), 0x3f); // ToDo: theres a potential problem if VU0 overrides VU1's VF0/VI0 regs!
 			xADD(gprReg, (u128*)VU1.VF - (u128*)VU0.Mem);
 		jmpB.SetTarget();
 		xSHL(gprReg, 4); // multiply by 16 (shift left by 4)
@@ -568,38 +569,38 @@ void mVUcustomSearch() {
 	memset(mVUsearchXMM, 0xcc, __pagesize);
 	xSetPtr(mVUsearchXMM);
 
-	xMOVAPS  (xmm0, ptr32[ecx]);
-	xPCMP.EQD(xmm0, ptr32[edx]);
-	xMOVAPS  (xmm1, ptr32[ecx + 0x10]);
-	xPCMP.EQD(xmm1, ptr32[edx + 0x10]);
+	xMOVAPS  (xmm0, ptr32[arg1reg]);
+	xPCMP.EQD(xmm0, ptr32[arg2reg]);
+	xMOVAPS  (xmm1, ptr32[arg1reg + 0x10]);
+	xPCMP.EQD(xmm1, ptr32[arg2reg + 0x10]);
 	xPAND	 (xmm0, xmm1);
 
 	xMOVMSKPS(eax, xmm0);
 	xCMP	 (eax, 0xf);
 	xForwardJL8 exitPoint;
 
-	xMOVAPS  (xmm0, ptr32[ecx + 0x20]);
-	xPCMP.EQD(xmm0, ptr32[edx + 0x20]);
-	xMOVAPS	 (xmm1, ptr32[ecx + 0x30]);
-	xPCMP.EQD(xmm1, ptr32[edx + 0x30]);
+	xMOVAPS  (xmm0, ptr32[arg1reg + 0x20]);
+	xPCMP.EQD(xmm0, ptr32[arg2reg + 0x20]);
+	xMOVAPS	 (xmm1, ptr32[arg1reg + 0x30]);
+	xPCMP.EQD(xmm1, ptr32[arg2reg + 0x30]);
 	xPAND	 (xmm0, xmm1);
 
-	xMOVAPS  (xmm2, ptr32[ecx + 0x40]);
-	xPCMP.EQD(xmm2, ptr32[edx + 0x40]);
-	xMOVAPS  (xmm3, ptr32[ecx + 0x50]);
-	xPCMP.EQD(xmm3, ptr32[edx + 0x50]);
+	xMOVAPS  (xmm2, ptr32[arg1reg + 0x40]);
+	xPCMP.EQD(xmm2, ptr32[arg2reg + 0x40]);
+	xMOVAPS  (xmm3, ptr32[arg1reg + 0x50]);
+	xPCMP.EQD(xmm3, ptr32[arg2reg + 0x50]);
 	xPAND	 (xmm2, xmm3);
 
-	xMOVAPS	 (xmm4, ptr32[ecx + 0x60]);
-	xPCMP.EQD(xmm4, ptr32[edx + 0x60]);
-	xMOVAPS	 (xmm5, ptr32[ecx + 0x70]);
-	xPCMP.EQD(xmm5, ptr32[edx + 0x70]);
+	xMOVAPS	 (xmm4, ptr32[arg1reg + 0x60]);
+	xPCMP.EQD(xmm4, ptr32[arg2reg + 0x60]);
+	xMOVAPS	 (xmm5, ptr32[arg1reg + 0x70]);
+	xPCMP.EQD(xmm5, ptr32[arg2reg + 0x70]);
 	xPAND	 (xmm4, xmm5);
 
-	xMOVAPS  (xmm6, ptr32[ecx + 0x80]);
-	xPCMP.EQD(xmm6, ptr32[edx + 0x80]);
-	xMOVAPS  (xmm7, ptr32[ecx + 0x90]);
-	xPCMP.EQD(xmm7, ptr32[edx + 0x90]);
+	xMOVAPS  (xmm6, ptr32[arg1reg + 0x80]);
+	xPCMP.EQD(xmm6, ptr32[arg2reg + 0x80]);
+	xMOVAPS  (xmm7, ptr32[arg1reg + 0x90]);
+	xPCMP.EQD(xmm7, ptr32[arg2reg + 0x90]);
 	xPAND	 (xmm6, xmm7);
 
 	xPAND (xmm0, xmm2);

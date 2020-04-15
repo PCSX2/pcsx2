@@ -104,6 +104,11 @@ void xImpl_FastCall::operator()(void *f, u32 a1, const xRegisterLong &a2) const 
 }
 #endif
 
+void xImpl_FastCall::operator()(void *f, void *a1) const {
+    xLEA(arg1reg, ptr[a1]);
+    (*this)(f, arg1reg, arg2reg);
+}
+
 void xImpl_FastCall::operator()(void *f, u32 a1, const xRegister32 &a2) const {
     if (!a2.IsEmpty()) { xMOV(arg2regd, a2); }
     xMOV(arg1regd, a1);
