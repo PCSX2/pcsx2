@@ -316,6 +316,9 @@ public:
     {
     }
 
+    /// Get a non-wide version of the register (for use with e.g. mov, where `mov eax, 3` and `mov rax, 3` are functionally identical but `mov eax, 3` is shorter)
+    virtual const xRegisterInt& GetNonWide() const = 0;
+
     bool operator==(const xRegisterInt &src) const { return Id == src.Id && (GetOperandSize() == src.GetOperandSize()); }
     bool operator!=(const xRegisterInt &src) const { return !operator==(src); }
 };
@@ -337,7 +340,8 @@ public:
     {
     }
 
-    virtual uint GetOperandSize() const { return 1; }
+    virtual uint GetOperandSize() const override { return 1; }
+    virtual const xRegisterInt& GetNonWide() const override { return *this; }
 
     bool operator==(const xRegister8 &src) const { return Id == src.Id; }
     bool operator!=(const xRegister8 &src) const { return Id != src.Id; }
@@ -357,7 +361,8 @@ public:
     {
     }
 
-    virtual uint GetOperandSize() const { return 2; }
+    virtual uint GetOperandSize() const override { return 2; }
+    virtual const xRegisterInt& GetNonWide() const override { return *this; }
 
     bool operator==(const xRegister16 &src) const { return this->Id == src.Id; }
     bool operator!=(const xRegister16 &src) const { return this->Id != src.Id; }
@@ -377,7 +382,8 @@ public:
     {
     }
 
-    virtual uint GetOperandSize() const { return 4; }
+    virtual uint GetOperandSize() const override { return 4; }
+    virtual const xRegisterInt& GetNonWide() const override { return *this; }
 
     bool operator==(const xRegister32 &src) const { return this->Id == src.Id; }
     bool operator!=(const xRegister32 &src) const { return this->Id != src.Id; }
@@ -387,17 +393,21 @@ class xRegister64 : public xRegisterInt
 {
     typedef xRegisterInt _parent;
 
+    xRegister32 m_nonWide;
 public:
     xRegister64()
         : _parent()
+        , m_nonWide()
     {
     }
     explicit xRegister64(int regId)
         : _parent(regId)
+        , m_nonWide(regId)
     {
     }
 
-    virtual uint GetOperandSize() const { return 8; }
+    virtual uint GetOperandSize() const override { return 8; }
+    virtual const xRegisterInt& GetNonWide() const override { return m_nonWide; }
 
     bool operator==(const xRegister64 &src) const { return this->Id == src.Id; }
     bool operator!=(const xRegister64 &src) const { return this->Id != src.Id; }

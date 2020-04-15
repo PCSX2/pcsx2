@@ -70,6 +70,20 @@ struct xImpl_Mov
 #endif
 };
 
+#ifdef __M_X86_64
+// --------------------------------------------------------------------------------------
+//  xImpl_MovImm64
+// --------------------------------------------------------------------------------------
+// Mov with 64-bit immediates (only available on 64-bit platforms)
+//
+struct xImpl_MovImm64
+{
+    xImpl_MovImm64() {} // Satisfy GCC's whims.
+
+    void operator()(const xRegister64 &to, s64 imm, bool preserve_flags = false) const;
+};
+#endif
+
 // --------------------------------------------------------------------------------------
 //  xImpl_CMov
 // --------------------------------------------------------------------------------------
