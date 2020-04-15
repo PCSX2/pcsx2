@@ -147,6 +147,24 @@ const xRegister8
     ah(4), ch(5),
     dh(6), bh(7);
 
+const xAddressReg
+#ifdef __M_X86_64
+#ifdef _WIN32
+    arg1reg = rcx,
+    arg2reg = rdx,
+    arg3reg = r8,
+    arg4reg = r9;
+#else
+    arg1reg = rdi,
+    arg2reg = rsi,
+    arg3reg = rcx,
+    arg4reg = rdx;
+#endif
+#else
+    arg1reg = ecx,
+    arg2reg = edx;
+#endif
+
 // clang-format on
 
 const xRegisterCL cl;
