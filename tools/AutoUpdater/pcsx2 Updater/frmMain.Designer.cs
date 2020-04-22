@@ -33,7 +33,7 @@
             this.btnLater = new System.Windows.Forms.Button();
             this.checkEnabled = new System.Windows.Forms.CheckBox();
             this.btnSkip = new System.Windows.Forms.Button();
-            this.labelVersion = new System.Windows.Forms.Label();
+            this.labelCurrentBuild = new System.Windows.Forms.Label();
             this.cbChannel = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.tableUpdates = new System.Windows.Forms.DataGridView();
@@ -41,6 +41,7 @@
             this.Author = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DateTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.labelLatestBuild = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.tableUpdates)).BeginInit();
             this.SuspendLayout();
             // 
@@ -97,16 +98,16 @@
             this.btnSkip.UseVisualStyleBackColor = true;
             this.btnSkip.Click += new System.EventHandler(this.BtnSkip_Click);
             // 
-            // labelVersion
+            // labelCurrentBuild
             // 
-            this.labelVersion.AutoSize = true;
-            this.labelVersion.Location = new System.Drawing.Point(587, 3);
-            this.labelVersion.Name = "labelVersion";
-            this.labelVersion.Size = new System.Drawing.Size(215, 26);
-            this.labelVersion.TabIndex = 6;
-            this.labelVersion.Text = "Installed build: v1.5.0-dev-3279-gf2b402b0c\r\nLatest build: v1.5.0-dev-3283-ge2d89" +
-    "9231";
-            this.labelVersion.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.labelCurrentBuild.Location = new System.Drawing.Point(587, 3);
+            this.labelCurrentBuild.Name = "labelCurrentBuild";
+            this.labelCurrentBuild.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.labelCurrentBuild.Size = new System.Drawing.Size(215, 15);
+            this.labelCurrentBuild.TabIndex = 6;
+            this.labelCurrentBuild.Text = "Current build:";
+            this.labelCurrentBuild.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.labelCurrentBuild.UseMnemonic = false;
             // 
             // cbChannel
             // 
@@ -178,15 +179,27 @@
             this.Description.Name = "Description";
             this.Description.ReadOnly = true;
             // 
+            // labelLatestBuild
+            // 
+            this.labelLatestBuild.Location = new System.Drawing.Point(587, 15);
+            this.labelLatestBuild.Name = "labelLatestBuild";
+            this.labelLatestBuild.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.labelLatestBuild.Size = new System.Drawing.Size(215, 15);
+            this.labelLatestBuild.TabIndex = 10;
+            this.labelLatestBuild.Text = "Latest build:";
+            this.labelLatestBuild.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.labelLatestBuild.UseMnemonic = false;
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(804, 473);
+            this.Controls.Add(this.labelLatestBuild);
             this.Controls.Add(this.tableUpdates);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.cbChannel);
-            this.Controls.Add(this.labelVersion);
+            this.Controls.Add(this.labelCurrentBuild);
             this.Controls.Add(this.btnSkip);
             this.Controls.Add(this.checkEnabled);
             this.Controls.Add(this.btnLater);
@@ -212,7 +225,7 @@
         private System.Windows.Forms.Button btnLater;
         private System.Windows.Forms.CheckBox checkEnabled;
         private System.Windows.Forms.Button btnSkip;
-        private System.Windows.Forms.Label labelVersion;
+        private System.Windows.Forms.Label labelCurrentBuild;
         private System.Windows.Forms.ComboBox cbChannel;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.DataGridView tableUpdates;
@@ -220,6 +233,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Author;
         private System.Windows.Forms.DataGridViewTextBoxColumn DateTime;
         private System.Windows.Forms.DataGridViewTextBoxColumn Description;
+        private System.Windows.Forms.Label labelLatestBuild;
     }
 }
 

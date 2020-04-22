@@ -46,10 +46,10 @@ namespace pcsx2_Updater
                     switch (Config.Channel)
                     {
                         case Channels.Development:
-                            upd = new Orphis();
+                            upd = new GitHub();
                             break;
                         case Channels.Stable:
-                            upd = new GitHub();
+                            upd = new GitHub(); // GitHub will delete artifacts after some time, so this is not safe
                             break;
                         default:
                             if (!Config.Silent) MessageBox.Show("Unknown update channel in config!");

@@ -16,7 +16,8 @@ namespace pcsx2_Updater
         public frmMain(Update Current, List<Update> New)
         {
             InitializeComponent();
-            labelVersion.Text = "Installed build: " + Current.Patch + "\rLatest build: " + New[0].Patch;
+            labelCurrentBuild.Text = "Current build: " + Current.Patch;
+            labelLatestBuild.Text = "Latest build: " + New[0].Patch;
             updates = New;
         }
 
@@ -53,7 +54,7 @@ namespace pcsx2_Updater
 
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-            Downloader d = new Downloader(updates[0].DownloadUrl);
+            Downloader d = new Downloader(updates[0]);
             d.ShowDialog();
             if(d.DialogResult == DialogResult.OK)
             {

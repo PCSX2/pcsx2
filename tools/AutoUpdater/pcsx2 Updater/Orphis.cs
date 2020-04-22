@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Data;
 
 namespace pcsx2_Updater
 {
@@ -25,7 +26,9 @@ namespace pcsx2_Updater
          *  5: Download link
          *  6: Patch notes
          */
-        protected override void GetNewVersions()
+
+        private List<Update> updates = new List<Update>();
+        protected override List<Update> GetNewVersions()
         {
             string html = Get(url);
 
@@ -41,15 +44,17 @@ namespace pcsx2_Updater
                     {
                         Patch = match.Groups[1].Value,
                         Version = match.Groups[2].Value,
+                        IsRelease = false,
                         Author = match.Groups[3].Value,
                         DateTime = Convert.ToDateTime(match.Groups[4].Value),
                         DownloadUrl = "https://buildbot.orphis.net" + match.Groups[5].Value.Replace("&amp;","&"), // Some error on Orphis' site breaks the download urls. Browsers autocorrect it.
+                        FileType = "7z",
                         Description = match.Groups[6].Value
                     };
                     var latest = int.Parse(new string(newupdate.Version.Where(c => char.IsDigit(c)).ToArray()));
                     if (latest > current && newupdate.DateTime > Current.DateTime && newupdate.DateTime > Config.SkipBuild)
                     {
-                        Updates.Add(newupdate);
+                        updates.Add(newupdate);
                     }
                     else
                     {
@@ -61,6 +66,7 @@ namespace pcsx2_Updater
             {
                 Console.WriteLine("Unable to parse '"+url+"'!");
             }
+            return updates;
         }
     }
 }

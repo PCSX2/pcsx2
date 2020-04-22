@@ -13,17 +13,15 @@ namespace pcsx2_Updater
     abstract class UpdateChecker
     {
         private const string regexcurrentversion = @"v([\d.]*-dev-[\d]*)";
-        protected Update Current;
-        protected List<Update> Updates = new List<Update>();
+        protected Update Current = new Update()
+        {
+            Patch = Config.InstalledPatchName,
+            Version = Config.InstalledPatchName, // Assumed to be a Stable build number by default
+            DateTime = Config.InstalledPatchDate
+        };
+        public List<Update> Updates;
         public UpdateChecker()
         {
-            Current = new Update()
-            {
-                Patch = Config.InstalledPatchName,
-                Version = Config.InstalledPatchName, // Assumed to be a Stable build number by default
-                DateTime = Config.InstalledPatchDate
-            };
-
             Regex re = new Regex(regexcurrentversion);
             Match result = re.Match(Config.InstalledPatchName);
             if (result.Success)
@@ -31,7 +29,7 @@ namespace pcsx2_Updater
                 Current.Version = result.Groups[0].Value;
             }
 
-            GetNewVersions();
+            Updates = GetNewVersions();
 
             if (Updates.Count > 0)
             {
@@ -45,10 +43,12 @@ namespace pcsx2_Updater
                 Console.WriteLine("No new updates found!");
             }
         }
-        protected abstract void GetNewVersions();
-        protected string Get(string Url)
+        protected abstract List<Update> GetNewVersions();
+        public static string Get(string Url)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
+            request.UserAgent = "request";
+            request.Headers["Authorization"] = "Basic eWlheXM6"; // REMOVE BEFORE COMITTING
             var response = (HttpWebResponse)request.GetResponse();
             if (response.StatusCode == HttpStatusCode.OK)
             {
@@ -75,13 +75,15 @@ namespace pcsx2_Updater
             return "";
         }
     }
-    public struct Update
+    public class Update
     {
         public string Patch;
         public string Version;
+        public bool IsRelease;
         public string Author;
         public DateTime DateTime;
         public string DownloadUrl;
+        public string FileType;
         public string Description;
     }
 }
