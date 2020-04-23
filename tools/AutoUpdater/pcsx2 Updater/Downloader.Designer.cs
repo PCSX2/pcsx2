@@ -39,6 +39,7 @@
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(215, 23);
             this.progressBar.TabIndex = 0;
+            this.progressBar.UseWaitCursor = true;
             // 
             // btnCancel
             // 
@@ -48,15 +49,17 @@
             this.btnCancel.TabIndex = 1;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.UseWaitCursor = true;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // labelstatus
             // 
-            this.labelstatus.AutoSize = true;
             this.labelstatus.Location = new System.Drawing.Point(3, 7);
             this.labelstatus.Name = "labelstatus";
-            this.labelstatus.Size = new System.Drawing.Size(61, 13);
+            this.labelstatus.Size = new System.Drawing.Size(215, 16);
             this.labelstatus.TabIndex = 2;
             this.labelstatus.Text = "Initializing...";
+            this.labelstatus.UseWaitCursor = true;
             // 
             // Downloader
             // 
@@ -75,7 +78,6 @@
             this.TopMost = true;
             this.UseWaitCursor = true;
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 

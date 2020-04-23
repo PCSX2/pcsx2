@@ -13,16 +13,17 @@ namespace pcsx2_Updater
     public partial class frmMain : Form
     {
         private List<Update> updates;
-        public frmMain(Update Current, List<Update> New)
+        public frmMain(List<Update> New)
         {
             InitializeComponent();
-            labelCurrentBuild.Text = "Current build: " + Current.Patch;
-            labelLatestBuild.Text = "Latest build: " + New[0].Patch;
             updates = New;
         }
 
         private void frmMain_Load(object sender, EventArgs e)
         {
+            labelCurrentBuild.Text = "Current build: " + updates.Last().Patch;
+            labelLatestBuild.Text = "Latest build: " + updates[0].Patch;
+
             tableUpdates.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             tableUpdates.Columns[3].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             foreach(Update update in updates)
@@ -46,6 +47,8 @@ namespace pcsx2_Updater
                     labelUpdateIntro.Text = "A new update for PCSX2 is available in the " + Config.Channel.ToString() + " channel.";
                     break;
             }
+
+            tableUpdates_SelectionChanged(sender, e);
         }
         private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -54,12 +57,20 @@ namespace pcsx2_Updater
 
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-            Downloader d = new Downloader(updates[0]);
+            var selection = updates[tableUpdates.CurrentRow.Index];
+
+            if(selection.DownloadUrl == "")
+            {
+                MessageBox.Show("The download link for this particular build has expired! Please pick another one.");
+                return;
+            }
+
+            Downloader d = new Downloader(selection);
             d.ShowDialog();
             if(d.DialogResult == DialogResult.OK)
             {
-                Config.InstalledPatchName = updates[0].Patch;
-                Config.InstalledPatchDate = updates[0].DateTime;
+                Config.InstalledPatchName = selection.Patch;
+                Config.InstalledPatchDate = selection.DateTime;
                 Config.Write();
                 Close();
             }
@@ -84,7 +95,7 @@ namespace pcsx2_Updater
 
         private void BtnSkip_Click(object sender, EventArgs e)
         {
-            Config.SkipBuild = updates[0].DateTime;
+            Config.SkipBuild = updates[tableUpdates.CurrentRow.Index].DateTime;
             Config.Write();
             Close();
         }
@@ -95,6 +106,18 @@ namespace pcsx2_Updater
             {
                 Config.Enabled = checkEnabled.Checked;
                 Config.Write();
+            }
+        }
+
+        private void tableUpdates_SelectionChanged(object sender, EventArgs e)
+        {
+            if(tableUpdates.CurrentRow.Index == tableUpdates.Rows.GetLastRow(DataGridViewElementStates.Visible))
+            {
+                btnUpdate.Enabled = false;
+            }
+            else
+            {
+                btnUpdate.Enabled = true;
             }
         }
     }

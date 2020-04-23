@@ -31,11 +31,21 @@ namespace pcsx2_Updater
 
             Updates = GetNewVersions();
 
+            switch (Config.Channel)
+            {
+                case Channels.Development:
+                    // Keep stable releases listed in the Development channel
+                    break;
+                case Channels.Stable:
+                    Updates = Updates.Where(update => update.IsRelease).ToList();
+                    break;
+            }
+
             if (Updates.Count > 0)
             {
                 Current.Description = "Currently Installed";
                 Updates.Add(Current);
-                Application.Run(new frmMain(Current, Updates));
+                Application.Run(new frmMain(Updates));
             }
             else
             {
@@ -48,7 +58,6 @@ namespace pcsx2_Updater
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
             request.UserAgent = "request";
-            request.Headers["Authorization"] = "Basic eWlheXM6"; // REMOVE BEFORE COMITTING
             var response = (HttpWebResponse)request.GetResponse();
             if (response.StatusCode == HttpStatusCode.OK)
             {

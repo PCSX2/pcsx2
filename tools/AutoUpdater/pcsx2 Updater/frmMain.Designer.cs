@@ -151,6 +151,7 @@
             this.tableUpdates.ShowEditingIcon = false;
             this.tableUpdates.Size = new System.Drawing.Size(799, 409);
             this.tableUpdates.TabIndex = 9;
+            this.tableUpdates.SelectionChanged += new System.EventHandler(this.tableUpdates_SelectionChanged);
             // 
             // Patch
             // 

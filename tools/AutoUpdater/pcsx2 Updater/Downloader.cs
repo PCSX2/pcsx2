@@ -3,15 +3,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Net;
 using System.Windows.Forms;
-using Microsoft.VisualBasic.FileIO;
 
 namespace pcsx2_Updater
 {
@@ -21,11 +16,20 @@ namespace pcsx2_Updater
         private string fileType;
         public Downloader(Update update)
         {
+            // Updater is created
+
+            // Provides a default response of Cancel assuming something fails
             DialogResult = DialogResult.Cancel;
+
+            // Typically %UserProfile%\AppData\Local\Temp
             tempPath = Path.GetTempPath();
+
             fileType = update.FileType;
 
             InitializeComponent();
+
+            if(Directory.Exists(tempPath + @"pcsx2_update"))
+                Directory.Delete(tempPath + @"pcsx2_update", true);
 
             using (WebClient wc = new WebClient())
             {
@@ -44,7 +48,7 @@ namespace pcsx2_Updater
 
         void wc_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
-            labelstatus.Text = "Extracting pcsx2_update.7z...";
+            labelstatus.Text = "Extracting pcsx2_update."+fileType+"...";
             this.Text = "Extracting...";
             progressBar.Style = ProgressBarStyle.Marquee;
             
@@ -64,16 +68,39 @@ namespace pcsx2_Updater
 
             this.Text = "Installing update";
             labelstatus.Text = "Moving extracted files to application folder...";
-            string extractfolder = Directory.GetDirectories(tempPath + @"pcsx2_update\").Where(s => s.StartsWith(tempPath + @"pcsx2_update\pcsx2")).First();
             Console.WriteLine("Installing update to " + AppDomain.CurrentDomain.BaseDirectory + ".");
-            if(File.Exists(extractfolder + @"\AutoUpdate.ini")) // Update existing config, don't overwrite it.
-                File.Delete(extractfolder + @"\AutoUpdate.ini");
-            else // Cope when pcsx2 builds don't include the required config file.
+
+            if(File.Exists(tempPath + @"pcsx2_update\AutoUpdate.ini")) // Update existing config, don't overwrite it.
+                File.Delete(tempPath + @"pcsx2_update\AutoUpdate.ini");
+
+            string origin = tempPath + @"pcsx2_update\";
+            string target = AppDomain.CurrentDomain.BaseDirectory;
+            DirectoryInfo dirInfo = new DirectoryInfo(target);
+            List<String> updateFiles = Directory.GetFiles(origin, "*.*", SearchOption.AllDirectories).ToList();
+
+            foreach (string file in updateFiles)
             {
-                Config.InstalledPatchDate = DateTime.Now;
-                Config.Write();
+                FileInfo newFile = new FileInfo(file);
+                FileInfo oldFile = new FileInfo(dirInfo + "\\" + newFile.FullName.Substring(origin.Length));
+                // to remove name collisions
+                if (!oldFile.Directory.Exists)
+                    oldFile.Directory.Create();
+                else if (oldFile.Exists)
+                    oldFile.Delete();
+                newFile.MoveTo(dirInfo + "\\" + newFile.FullName.Substring(origin.Length));
             }
-            FileSystem.MoveDirectory(extractfolder, AppDomain.CurrentDomain.BaseDirectory);
+
+            /*
+            foreach (string dir in Directory.EnumerateDirectories(tempPath + @"pcsx2_update\"))
+            {
+                FileSystem.MoveDirectory(dir, AppDomain.CurrentDomain.BaseDirectory, true);
+            }
+            foreach (string file in Directory.EnumerateFiles(tempPath + @"pcsx2_update\"))
+            {
+                FileSystem.MoveFile(file, AppDomain.CurrentDomain.BaseDirectory, true);
+            }
+            */
+
             MessageBox.Show("Installed successfully!", "pcsx2 Updater", MessageBoxButtons.OK, MessageBoxIcon.Information);
             Console.WriteLine("PCSX2 has been updated successfully!");
             DialogResult = DialogResult.OK;
@@ -88,7 +115,7 @@ namespace pcsx2_Updater
                 ProcessStartInfo pro = new ProcessStartInfo();
                 pro.WindowStyle = ProcessWindowStyle.Hidden;
                 pro.FileName = @"7za.exe";
-                pro.Arguments = string.Format("x \"{0}\" -y -o\"{1}\"", tempPath + @"pcsx2_update." + fileType, tempPath + @"\pcsx2_update\");
+                pro.Arguments = string.Format("x \"{0}\" -y -o\"{1}\"", tempPath + @"pcsx2_update." + fileType, tempPath + @"pcsx2_update\");
                 Process x = Process.Start(pro);
                 x.WaitForExit();
             }
@@ -104,7 +131,7 @@ namespace pcsx2_Updater
             try
             {
                 Directory.CreateDirectory(tempPath + @"\pcsx2_update\");
-                ZipFile.ExtractToDirectory(tempPath + @"pcsx2_update." + fileType, tempPath + @"\pcsx2_update\");
+                ZipFile.ExtractToDirectory(tempPath + @"pcsx2_update." + fileType, tempPath + @"pcsx2_update\");
             }
             catch(Exception e)
             {
@@ -112,6 +139,11 @@ namespace pcsx2_Updater
                 Console.WriteLine("Failed to extract archive! " + e.ToString());
                 Close();
             }
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            Close();
         }
     }
 }
