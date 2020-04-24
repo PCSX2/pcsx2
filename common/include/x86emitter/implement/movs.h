@@ -72,11 +72,11 @@ struct xImpl_Mov
 
 #ifdef __M_X86_64
 // --------------------------------------------------------------------------------------
-//  xImpl_Mov64
+//  xImpl_MovImm64
 // --------------------------------------------------------------------------------------
 // Mov with 64-bit immediates (only available on 64-bit platforms)
 //
-struct xImpl_Mov64
+struct xImpl_MovImm64
 {
     void operator()(const xRegister64 &to, s64 imm, bool preserve_flags = false) const;
 };

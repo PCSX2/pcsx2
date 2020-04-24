@@ -109,7 +109,7 @@ void xImpl_Mov::operator()(const xRegisterInt &to, int imm, bool preserve_flags)
 const xImpl_Mov xMOV;
 
 #ifdef __M_X86_64
-void xImpl_Mov64::operator()(const xRegister64& to, s64 imm, bool preserve_flags) const
+void xImpl_MovImm64::operator()(const xRegister64& to, s64 imm, bool preserve_flags) const
 {
     if (imm == (s32)imm) {
         xMOV(to, imm, preserve_flags);
@@ -120,7 +120,7 @@ void xImpl_Mov64::operator()(const xRegister64& to, s64 imm, bool preserve_flags
     }
 }
 
-const xImpl_Mov64 xMOV64;
+const xImpl_MovImm64 xMOV64;
 #endif
 
 // --------------------------------------------------------------------------------------
