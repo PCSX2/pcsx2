@@ -277,7 +277,9 @@ void EmitSibMagic(uint regfield, const void *address)
     // Else we will fail out in a spectacular fashion
     sptr displacement = (sptr)address;
 #ifdef __M_X86_64
-    pxAssertDev(displacement >= -0x80000000LL && displacement < 0x80000000LL, "SIB target is too far away, needs an indirect register");
+    // We're generating a rip-relative address
+    displacement -= (sptr)(x86Ptr + sizeof(s32));
+    pxAssertDev(displacement == (s32)displacement, "SIB target is too far away, needs an indirect register");
 #endif
 
     xWrite<s32>((s32)displacement);
@@ -320,6 +322,8 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
                                                        ((info.IsByteSizeDisp()) ? 1 : 2);
 
     pxAssert(!info.Base.IsEmpty() || !info.Index.IsEmpty() || displacement_size == 2);
+    // Displacement is only 64 bits for rip-relative addressing
+    pxAssert(info.Displacement == (s32)info.Displacement || (info.Base.IsEmpty() && info.Index.IsEmpty()));
 
     if (!NeedsSibMagic(info)) {
         // Use ModRm-only encoding, with the rm field holding an index/base register, if
@@ -661,7 +665,7 @@ xIndirectVoid::xIndirectVoid(const xAddressVoid &src)
     Reduce();
 }
 
-xIndirectVoid::xIndirectVoid(s32 disp)
+xIndirectVoid::xIndirectVoid(sptr disp)
 {
     Base = xEmptyReg;
     Index = xEmptyReg;
