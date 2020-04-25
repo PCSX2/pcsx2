@@ -855,11 +855,12 @@ public:
     xAddressReg Base;  // base register (no scale)
     xAddressReg Index; // index reg gets multiplied by the scale
     uint Scale;        // scale applied to the index register, in scale/shift form
-    s32 Displacement;  // offset applied to the Base/Index registers.
+    sptr Displacement; // offset applied to the Base/Index registers.
                        // Displacement is 8/32 bits even on x86_64
+                       // However we need the whole pointer to calculate rip-relative offsets
 
 public:
-    explicit xIndirectVoid(s32 disp);
+    explicit xIndirectVoid(sptr disp);
     explicit xIndirectVoid(const xAddressVoid &src);
     xIndirectVoid(xAddressReg base, xAddressReg index, int scale = 0, s32 displacement = 0);
 
@@ -889,7 +890,7 @@ class xIndirect : public xIndirectVoid
     typedef xIndirectVoid _parent;
 
 public:
-    explicit xIndirect(s32 disp)
+    explicit xIndirect(sptr disp)
         : _parent(disp)
     {
     }
@@ -971,7 +972,7 @@ public:
 protected:
     //xIndirect64orLess( const xAddressVoid& src ) : _parent( src ) {}
 
-    explicit xIndirect64orLess(s32 disp)
+    explicit xIndirect64orLess(sptr disp)
         : _parent(disp)
     {
     }
