@@ -147,7 +147,7 @@ void ReadSettings()
 #endif
 #endif
 
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
     CfgReadStr(L"SDL", L"HostApi", temp, L"pulseaudio");
     SdlOutputAPI = 0;
 #if SDL_MAJOR_VERSION >= 2
@@ -165,7 +165,7 @@ void ReadSettings()
 #ifdef SPU2X_PORTAUDIO
     PortaudioOut->ReadSettings();
 #endif
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
     SDLOut->ReadSettings();
 #endif
     SoundtouchCfg::ReadSettings();
@@ -218,7 +218,7 @@ void WriteSettings()
 #ifdef SPU2X_PORTAUDIO
     PortaudioOut->WriteSettings();
 #endif
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
     SDLOut->WriteSettings();
 #endif
     SoundtouchCfg::WriteSettings();
@@ -235,7 +235,7 @@ void debug_dialog()
     DebugConfig::DisplayDialog();
 }
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 
 // Format the slider with ms.
 static gchar *cb_scale_format_ms(GtkScale *scale, gdouble value)
@@ -269,6 +269,11 @@ static void cb_adjust_latency(GtkComboBox *widget, gpointer data)
 void DisplayDialog()
 {
     int return_value;
+
+#ifdef __APPLE__
+    // Rest of macOS UI doesn't use GTK so we need to init it now
+    gtk_init(nullptr, nullptr);
+#endif
 
     GtkWidget *dialog;
     GtkWidget *main_box;
@@ -334,6 +339,8 @@ void DisplayDialog()
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "0 - ALSA (recommended)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "1 - OSS (legacy)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "2 - JACK");
+#elif defined(__APPLE__)
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "CoreAudio");
 #else
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "OSS");
 #endif
@@ -466,7 +473,11 @@ void DisplayDialog()
 #else
             switch (OutputAPI) {
                 case 0:
+#ifdef __APPLE__
+                    PortaudioOut->SetApiSettings(L"CoreAudio");
+#else
                     PortaudioOut->SetApiSettings(L"OSS");
+#endif
                     break;
                 default:
                     PortaudioOut->SetApiSettings(L"Unknown");

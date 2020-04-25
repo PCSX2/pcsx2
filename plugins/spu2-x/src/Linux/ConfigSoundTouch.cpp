@@ -71,7 +71,7 @@ void WriteSettings()
     CfgWriteInt(L"SOUNDTOUCH", L"OverlapMS", OverlapMS);
 }
 
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
 static GtkWidget *seq_label, *seek_label, *over_label;
 static GtkWidget *seq_slide, *seek_slide, *over_slide;
 
