@@ -407,6 +407,12 @@ else()
     set(GCOV_LIBRARIES "-lgcov")
 endif()
 
+if(USE_CLANG)
+    if(TIMETRACE)
+        set(COMMON_FLAG "${COMMON_FLAG} -ftime-trace ")
+    endif()
+endif()
+
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
 set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG} ${LTO_FLAGS} ${PGO_FLAGS} ${PLUGIN_SUPPORT}")
 # c++ only flags

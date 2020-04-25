@@ -195,6 +195,7 @@ for ARG in "$@"; do
         --clean             ) cleanBuild=1 ;;
         --clean-plugins     ) cleanBuild=2 ;;
         --clang-tidy        ) flags="$flags -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"; clangTidy=1 ; useClang=1;;
+        --ftime-trace       ) flags="$flags -DTIMETRACE=TRUE"; useClang=1;;
         --clang             ) useClang=1 ;;
         --intel             ) useIcc=1 ;;
         --cppcheck          ) cppcheck=1 ;;
@@ -262,6 +263,7 @@ for ARG in "$@"; do
             echo "--cppcheck      : Do a cppcheck analysis. Results can be found in build directory"
             echo "--coverity      : Do a build for coverity"
             echo "--vtune         : Plug GSdx with VTUNE"
+            echo "--ftime-trace   : Analyse build time. Clang only."
 
             exit 1
     esac
