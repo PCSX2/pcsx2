@@ -738,6 +738,13 @@ endif()
 
 add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
 
+if(NOT USE_CLANG)
+	if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.16")
+		message("Using precompiled headers.")
+		target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
+	endif()
+endif()
+
 if(dev9ghzdrk)
     if(PACKAGE_MODE)
         install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f ${BIN_DIR}/${Output} ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' ${BIN_DIR}/${Output}; set +x\")")
