@@ -51,8 +51,21 @@ void SaveStateBase::InputRecordingFreeze()
 #endif
 }
 
-#ifndef DISABLE_RECORDING
 InputRecording g_InputRecording;
+
+InputRecording::InputRecording()
+{
+	// NOTE - No multi-tap support, only two controllers
+	for (int i = 0; i < 2; i++)
+	{
+		padData[i] = new PadData();
+	}
+}
+
+void InputRecording::setVirtualPadPtr(VirtualPad *ptr, int port)
+{
+	virtualPads[port] = ptr;
+}
 
 void InputRecording::RecordingReset()
 {
@@ -98,6 +111,9 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
 	// We do not want to record or save the first two bytes in the data returned from the PAD plugin
 	else if (fInterruptFrame && bufCount >= 3 && frameCounter >= 0 && frameCounter < INT_MAX)
 	{
+        u8 &bufVal = buf[bufCount];
+	    const u16 bufIndex = bufCount - 3;
+
 		// Read or Write
 		if (state == InputRecordingMode::Recording)
 		{
@@ -106,14 +122,53 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
 				inputRecordingData.IncrementUndoCount();
 				incrementUndo = false;
 			}
-			inputRecordingData.WriteKeyBuffer(frameCounter, port, bufCount - 3, buf[bufCount]);
+			inputRecordingData.WriteKeyBuffer(frameCounter, port, bufIndex, buf[bufCount]);
 		}
 		else if (state == InputRecordingMode::Replaying)
 		{
 			u8 tmp = 0;
-			if (inputRecordingData.ReadKeyBuffer(tmp, frameCounter, port, bufCount - 3))
-				buf[bufCount] = tmp;
+			if (inputRecordingData.ReadKeyBuffer(tmp, frameCounter, port, bufIndex))
+            {
+                // Overwrite value originally provided by the PAD plugin
+			    bufVal = tmp;
+			    // Update controller data state for future VirtualPad / logging usage.
+			    padData[port]->UpdateControllerData(bufIndex, bufVal);
+			    if (virtualPads[port] != NULL && virtualPads[port]->IsShown())
+			    {
+				    virtualPads[port]->UpdateControllerData(bufIndex, padData[port]);
+                }
+            }
 		}
+		return;
+	}
+
+	// Update controller data state for future VirtualPad / logging usage.
+	padData[port]->UpdateControllerData(bufIndex, bufVal);
+
+	if (virtualPads[port] != NULL && virtualPads[port]->IsShown())
+	{
+		// If the VirtualPad updated the PadData, we have to update the buffer
+		// before committing it to the recording / sending it to the game
+		if (virtualPads[port]->UpdateControllerData(bufIndex, padData[port]))
+		{
+			bufVal = padData[port]->PollControllerData(bufIndex);
+		}
+	}
+
+	// If we have reached the end of the pad data, log it out
+	if (bufIndex == 17) { // TODO constant for end
+		padData[port]->LogPadData();
+		if (virtualPads[port] != NULL && virtualPads[port]->IsShown())
+		{
+			virtualPads[port]->Redraw();
+		}
+	}
+
+	// Finally, commit the byte to the movie file if we are recording
+	if (state == INPUT_RECORDING_MODE_RECORD)
+	{
+		InputRecordingData.UpdateFrameMax(g_FrameCount);
+		InputRecordingData.WriteKeyBuf(g_FrameCount, port, bufIndex, bufVal);
 	}
 }
 
@@ -340,5 +395,3 @@ wxString InputRecording::resolveGameName()
 	}
 	return !gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso);
 }
-
-#endif
