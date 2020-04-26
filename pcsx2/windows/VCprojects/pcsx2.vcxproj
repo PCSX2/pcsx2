@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -206,14 +206,15 @@
     <ClCompile Include="..\..\ps2\LegacyDmac.cpp" />
     <ClCompile Include="..\..\ps2\pgif.cpp" />
     <ClCompile Include="..\..\Recording\InputRecordingControls.cpp" />
+    <ClCompile Include="..\..\Recording\VirtualPad\VirtualPad.cpp" />
+    <ClCompile Include="..\..\Recording\VirtualPad\VirtualPadData.cpp" />
+    <ClCompile Include="..\..\Recording\VirtualPad\VirtualPadResources.cpp" />
     <ClCompile Include="..\..\ShiftJisToUnicode.cpp" />
     <ClCompile Include="..\..\sif2.cpp" />
     <ClCompile Include="..\..\Recording\InputRecording.cpp" />
     <ClCompile Include="..\..\Recording\NewRecordingFrame.cpp" />
     <ClCompile Include="..\..\Recording\InputRecordingFile.cpp" />
     <ClCompile Include="..\..\Recording\PadData.cpp" />
-    <ClCompile Include="..\..\Recording\RecordingInputManager.cpp" />
-    <ClCompile Include="..\..\Recording\VirtualPad.cpp" />
     <ClCompile Include="..\..\Utilities\FileUtils.cpp" />
     <ClCompile Include="..\..\Dump.cpp" />
     <ClCompile Include="..\..\x86\iMisc.cpp" />
@@ -451,8 +452,9 @@
     <ClInclude Include="..\..\Recording\NewRecordingFrame.h" />
     <ClInclude Include="..\..\Recording\InputRecordingFile.h" />
     <ClInclude Include="..\..\Recording\PadData.h" />
-    <ClInclude Include="..\..\Recording\RecordingInputManager.h" />
-    <ClInclude Include="..\..\Recording\VirtualPad.h" />
+    <ClInclude Include="..\..\Recording\VirtualPad\VirtualPad.h" />
+    <ClInclude Include="..\..\Recording\VirtualPad\VirtualPadData.h" />
+    <ClInclude Include="..\..\Recording\VirtualPad\VirtualPadResources.h" />
     <ClInclude Include="..\..\Utilities\AsciiFile.h" />
     <ClInclude Include="..\..\Elfheader.h" />
     <ClInclude Include="..\..\CDVD\IsoFileFormats.h" />

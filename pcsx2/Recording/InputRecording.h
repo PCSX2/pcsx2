@@ -22,6 +22,8 @@
 class InputRecording
 {
 public:
+	InputRecording();
+    
 	// Save or load PCSX2's global frame counter (g_FrameCount) along with each full/fast boot
 	//
 	// This is to prevent any inaccuracy issues caused by having a different
@@ -85,6 +87,8 @@ public:
 	// Stop the active input recording
 	void Stop();
 
+	void setVirtualPadPtr(VirtualPad *ptr, int port);
+
 private:
 	enum class InputRecordingMode
 	{
@@ -101,8 +105,13 @@ private:
 	s32 frameCounter = 0;
 	bool incrementUndo = false;
 	InputRecordingMode state = InputRecording::InputRecordingMode::NotActive;
-	
+    
+	// Controller Data
+	PadData *padData[2];
 
+	// VirtualPad
+	VirtualPad *virtualPads[2];
+	
 	// Resolve the name and region of the game currently loaded using the GameDB
 	// If the game cannot be found in the DB, the fallback is the ISO filename
 	wxString resolveGameName();
