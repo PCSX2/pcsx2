@@ -6,3 +6,6 @@
 *.props text eol=crlf
 *.vcxproj text eol=crlf
 *.vcxproj.filters text eol=crlf
+
+# Hide generated files for easier pull-request reviewing
+pcsx2/Recording/VirtualPad/img/*.h linguist-generated
