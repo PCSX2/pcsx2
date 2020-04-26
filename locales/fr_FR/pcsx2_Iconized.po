@@ -33,7 +33,7 @@ msgstr ""
 msgid ""
 "Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings."
 msgstr ""
-"Echec d'écriture/lecture du fichier NMV/MEC. Vérifiez vos paramètres/"
+"Echec d'écriture/lecture du fichier NVM/MEC. Vérifiez vos paramètres/"
 "permissions dans votre BIOS."
 
 #: pcsx2/System.cpp:112
