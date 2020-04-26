@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,75 +15,115 @@
 
 #pragma once
 
-#include <map>
-#include <vector>
-
-
-#ifndef DISABLE_RECORDING
-static const int PadDataNormalButtonCount = 16;
-enum PadData_NormalButton
-{
-	PadData_NormalButton_UP,
-	PadData_NormalButton_RIGHT,
-	PadData_NormalButton_LEFT,
-	PadData_NormalButton_DOWN,
-	PadData_NormalButton_CROSS,
-	PadData_NormalButton_CIRCLE,
-	PadData_NormalButton_SQUARE,
-	PadData_NormalButton_TRIANGLE,
-	PadData_NormalButton_L1,
-	PadData_NormalButton_L2,
-	PadData_NormalButton_R1,
-	PadData_NormalButton_R2,
-	PadData_NormalButton_L3,
-	PadData_NormalButton_R3,
-	PadData_NormalButton_SELECT,
-	PadData_NormalButton_START
-};
-
-static const int PadDataAnalogVectorCount = 4;
-enum PadData_AnalogVector
-{
-	PadData_AnalogVector_LEFT_ANALOG_X,
-	PadData_AnalogVector_LEFT_ANALOG_Y,
-	PadData_AnalogVector_RIGHT_ANALOG_X,
-	PadData_AnalogVector_RIGHT_ANALOG_Y
-};
-
-struct PadData
+class PadData
 {
 public:
-	PadData();
-	~PadData() {}
+	/// Constants
+	const u8 PRESSURE_BUTTON_UNPRESSED = 0;
+	const bool BUTTON_PRESSED = true;
+	const bool BUTTON_UNPRESSED = false;
+	const u8 ANALOG_VECTOR_CENTER_POS = 127;
 
-	bool fExistKey = false;
-	u8 buf[2][18];
+	enum class BufferIndex
+	{
+		PressedFlagsGroupOne,
+		PressedFlagsGroupTwo,
+		RightAnalogXVector,
+		RightAnalogYVector,
+		LeftAnalogXVector,
+		LeftAnalogYVector,
+		RightPressure,
+		LeftPressure,
+		UpPressure,
+		DownPressure,
+		TrianglePressure,
+		CirclePressure,
+		CrossPressure,
+		SquarePressure,
+		L1Pressure,
+		R1Pressure,
+		L2Pressure,
+		R2Pressure
+	};
 
-	// Prints controlller data every frame to the Controller Log filter, disabled by default
-	static void LogPadData(u8 port, u16 bufCount, u8 buf[512]);
+	/// Pressure Buttons - 0-255
+	u8 circlePressure = PRESSURE_BUTTON_UNPRESSED;
+	u8 crossPressure = PRESSURE_BUTTON_UNPRESSED;
+	u8 squarePressure = PRESSURE_BUTTON_UNPRESSED;
+	u8 trianglePressure = PRESSURE_BUTTON_UNPRESSED;
+	u8 downPressure = PRESSURE_BUTTON_UNPRESSED;
+	u8 leftPressure = PRESSURE_BUTTON_UNPRESSED;
+	u8 rightPressure = PRESSURE_BUTTON_UNPRESSED;
+	u8 upPressure = PRESSURE_BUTTON_UNPRESSED;
+	u8 l1Pressure = PRESSURE_BUTTON_UNPRESSED;
+	u8 l2Pressure = PRESSURE_BUTTON_UNPRESSED;
+	u8 r1Pressure = PRESSURE_BUTTON_UNPRESSED;
+	u8 r2Pressure = PRESSURE_BUTTON_UNPRESSED;
 
-	// Normal Buttons
-	std::vector<int> GetNormalButtons(int port) const;
-	void SetNormalButtons(int port, std::vector<int> buttons);
+	/// Pressure Button Flags
+	/// NOTE - It shouldn't be possible to depress a button
+	///	while also having no pressure (PAD plugin should default to max pressure).
+	/// But for the sake of completeness, it should be tracked.
+	bool circlePressed = BUTTON_UNPRESSED;
+	bool crossPressed = BUTTON_UNPRESSED;
+	bool squarePressed = BUTTON_UNPRESSED;
+	bool trianglePressed = BUTTON_UNPRESSED;
+	bool downPressed = BUTTON_UNPRESSED;
+	bool leftPressed = BUTTON_UNPRESSED;
+	bool rightPressed = BUTTON_UNPRESSED;
+	bool upPressed = BUTTON_UNPRESSED;
+	bool l1Pressed = BUTTON_UNPRESSED;
+	bool l2Pressed = BUTTON_UNPRESSED;
+	bool r1Pressed = BUTTON_UNPRESSED;
+	bool r2Pressed = BUTTON_UNPRESSED;
 
-	// Analog Vectors
-	// max left/up    : 0
-	// neutral        : 127
-	// max right/down : 255
-	std::vector<int> GetAnalogVectors(int port) const;
-	// max left/up    : 0
-	// neutral        : 127
-	// max right/down : 255
-	void SetAnalogVectors(int port, std::vector<int> vector);
+	/// Normal (un)pressed buttons
+	bool select = BUTTON_UNPRESSED;
+	bool start = BUTTON_UNPRESSED;
+	bool l3 = BUTTON_UNPRESSED;
+	bool r3 = BUTTON_UNPRESSED;
+
+	/// Analog Sticks - 0-255 (127 center)
+	u8 leftAnalogX = ANALOG_VECTOR_CENTER_POS;
+	u8 leftAnalogY = ANALOG_VECTOR_CENTER_POS;
+	u8 rightAnalogX = ANALOG_VECTOR_CENTER_POS;
+	u8 rightAnalogY = ANALOG_VECTOR_CENTER_POS;
+
+	// Given the input buffer and the current index, updates the correct field(s) 
+	void UpdateControllerData(u16 bufIndex, u8 const &bufVal);
+	u8 PollControllerData(u16 bufIndex);
+
+	// Prints current PadData to the Controller Log filter which disabled by default
+	void LogPadData();
 
 private:
-	void SetNormalButton(int port, PadData_NormalButton button, int pressure);
-	int GetNormalButton(int port, PadData_NormalButton button) const;
-	void GetKeyBit(wxByte keybit[2], PadData_NormalButton button) const;
-	int GetPressureByte(PadData_NormalButton button) const;
+	struct ButtonResolver
+	{
+		u8 buttonBitmask;
+	};
 
-	void SetAnalogVector(int port, PadData_AnalogVector vector, int val);
-	int GetAnalogVector(int port, PadData_AnalogVector vector) const;
-	int GetAnalogVectorByte(PadData_AnalogVector vector) const;
+	const ButtonResolver LEFT = ButtonResolver{ 0b10000000 };
+	const ButtonResolver DOWN = ButtonResolver{ 0b01000000 };
+	const ButtonResolver RIGHT = ButtonResolver{ 0b00100000 };
+	const ButtonResolver UP = ButtonResolver{ 0b00010000 };
+	const ButtonResolver START = ButtonResolver{ 0b00001000 };
+	const ButtonResolver R3 = ButtonResolver{ 0b00000100 };
+	const ButtonResolver L3 = ButtonResolver{ 0b00000010 };
+	const ButtonResolver SELECT = ButtonResolver{ 0b00000001 };
+
+	const ButtonResolver SQUARE = ButtonResolver{ 0b10000000 };
+	const ButtonResolver CROSS = ButtonResolver{ 0b01000000 };
+	const ButtonResolver CIRCLE = ButtonResolver{ 0b00100000 };
+	const ButtonResolver TRIANGLE = ButtonResolver{ 0b00010000 };
+	const ButtonResolver R1 = ButtonResolver{ 0b00001000 };
+	const ButtonResolver L1 = ButtonResolver{ 0b00000100 };
+	const ButtonResolver R2 = ButtonResolver{ 0b00000010 };
+	const ButtonResolver L2 = ButtonResolver{ 0b00000001 };
+
+	// Checks and returns if button a is pressed or not
+	bool IsButtonPressed(ButtonResolver buttonResolver, u8 const &bufVal);
+	u8 BitmaskOrZero(bool pressed, ButtonResolver buttonInfo);
+
+	wxString RawPadBytesToString(int start, int end);
 };
 #endif
