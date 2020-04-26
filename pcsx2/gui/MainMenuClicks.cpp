@@ -33,7 +33,7 @@
 #ifndef DISABLE_RECORDING
 #	include "Recording/InputRecording.h"
 #	include "Recording/InputRecordingControls.h"
-#	include "Recording/VirtualPad.h"
+#	include "Recording/VirtualPad/VirtualPad.h"
 #endif
 
 
