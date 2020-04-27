@@ -423,8 +423,9 @@ GSRendererType GSUtil::GetBestRenderer()
 			if (SUCCEEDED(adapter->GetDesc1(&desc)))
 			{
 				D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level();
-				// Check for Nvidia VendorID. Latest OpenGL features need at least DX11 level GPU
-				if (desc.VendorId == 0x10DE && level >= D3D_FEATURE_LEVEL_11_0)
+				// Check for Nvidia VendorID. Latest OpenGL features need at least DX11 level GPU.
+				// Check for Intel VendorID. Latest OpenGL features need at least DX12 level GPU.
+				if ((desc.VendorId == 0x10DE && level >= D3D_FEATURE_LEVEL_11_0) || (desc.VendorId == 0x8086 && level >= D3D_FEATURE_LEVEL_12_0))
 					return GSRendererType::OGL_HW;
 			}
 		}
