@@ -101,7 +101,7 @@ enum gamePadValues {
     PAD_R_LEFT    // Right joystick (Left) ←
 };
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 #include "GamePad.h"
 #endif
 #include "bitwise.h"
