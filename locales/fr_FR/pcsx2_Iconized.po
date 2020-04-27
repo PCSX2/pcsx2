@@ -631,7 +631,7 @@ msgid ""
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
 "50% cyclerate. Réduction significative des exigences liées au CPU. "
-"Amélioration des performances sur des très petits jeux, ralentit les autres. "
+"Amélioration des performances sur des jeux non gourmands, ralentit les autres. "
 "Les cinématiques et les fichiers audios peuvent saccader voire même ne pas "
 "se jouer."
 
@@ -642,8 +642,9 @@ msgid ""
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
 "60% cyclerate. Réduction modérée des exigences liées au CPU. Amélioration "
-"des performances sur des petits jeux, ralentit les autres. Les cinématiques " 
-"et les fichiers audios peuvent saccader voire même ne pas se jouer."
+"des performances sur des jeux peu gourmands, ralentit les autres. " 
+"Les cinématiques et les fichiers audios peuvent saccader voire même " 
+"ne pas se jouer."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
 #, c-format
@@ -679,7 +680,7 @@ msgid ""
 msgstr ""
 "180% cyclerate. Augmentation significative des exigences liées au CPU. Les "
 "jeux ayant un nombre d'images variable bénéficieront d'une augmentation. Les "
-"cinématiques peuvent être lents. Peut causer des problèmes de stabilités."
+"cinématiques peuvent être lentes. Peut causer des problèmes de stabilités."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
 #, c-format
@@ -702,18 +703,27 @@ msgid ""
 "Mild EE Cycle Skipping. Mild slow down for most games, but may help some "
 "games with mild VU starvation problems run at full speed."
 msgstr ""
+"EE Cycle Skipping léger. Léger ralentissement sur la plupart des jeux, "
+"mais peut permettre à des jeux ayant des légers problèmes de VU de "
+"pouvoir être joués à leur vitesse maximale."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:93
 msgid ""
 "Moderate EE Cycle Skipping. Slow down for most games, but may help some "
 "games with moderate VU starvation problems run at full speed."
 msgstr ""
+"EE Cycle Skipping modéré. Ralentissement sur la plupart des jeux, "
+"mais peut permettre à des jeux ayant des problèmes de VU de "
+"pouvoir être joués à leur vitesse maximale."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:98
 msgid ""
 "Maximum EE Cycle Skipping. Mostly harmful. May help games with significant "
 "VU starvation problems run at full speed."
 msgstr ""
+"EE Cycle Skipping maximal. Plutôt mauvais pour l'émulation. Peut permettre "
+"à des jeux ayant des problèmes de VU très importants de pouvoir "
+"être joués à leur vitesse maximale."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:123
 msgid ""
