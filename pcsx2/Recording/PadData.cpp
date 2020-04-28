@@ -15,9 +15,9 @@
 
 #include "PrecompiledHeader.h"
 
-#include "Common.h"
-#include "ConsoleLogger.h"
-#include "PadData.h"
+#include "DebugTools/Debug.h"
+
+#include "Recording/PadData.h"
 
 void PadData::UpdateControllerData(u16 bufIndex, u8 const &bufVal)
 {

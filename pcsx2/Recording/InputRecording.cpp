@@ -15,17 +15,15 @@
 
 #include "PrecompiledHeader.h"
 
+#include <vector>
+
 #include "AppSaveStates.h"
 #include "AppGameDatabase.h"
-#include "Common.h"
+#include "DebugTools/Debug.h"
 #include "Counters.h"
-#include "MemoryTypes.h"
-#include "SaveState.h"
 
 #include "InputRecording.h"
 #include "InputRecordingControls.h"
-
-#include <vector>
 
 
 void SaveStateBase::InputRecordingFreeze()

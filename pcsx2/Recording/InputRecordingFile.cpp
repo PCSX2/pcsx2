@@ -15,13 +15,11 @@
 
 #include "PrecompiledHeader.h"
 
-#include "App.h"
-#include "Common.h"
-#include "Counters.h"
+#include "DebugTools/Debug.h"
 #include "MainFrame.h"
 #include "MemoryTypes.h"
 
-#include "InputRecordingFile.h"
+#include "Recording/InputRecordingFile.h"
 
 #ifndef DISABLE_RECORDING
 
