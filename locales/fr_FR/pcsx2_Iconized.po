@@ -6,8 +6,8 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-02-16 18:44+0100\n"
-"Last-Translator: CaptainTearow\n"
+"PO-Revision-Date: 2020-04-26 17:08+0200\n"
+"Last-Translator: LaneSh4d0w\n"
 "Language-Team: Atomic83;goldeng;piorrro33 <odakawoi@yahoo.fr;"
 "piorrro33@outlook.com>\n"
 "Language: fr_FR\n"
@@ -30,12 +30,11 @@ msgstr ""
 "été réservé par d'autres processus, services ou DLL."
 
 #: pcsx2/CDVD/CDVD.cpp:2058
-#, fuzzy
 msgid ""
 "Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings."
 msgstr ""
-"Echec de l'écriture/lecture du fichier NMV/MEC Vérifiez vos paramètres/"
-"permissions dans votre bios."
+"Echec d'écriture/lecture du fichier NVM/MEC. Vérifiez vos paramètres/"
+"permissions dans votre BIOS."
 
 #: pcsx2/System.cpp:112
 msgid ""
@@ -84,8 +83,8 @@ msgid ""
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
 "count).  Please consult the FAQs and Guides for further instructions."
 msgstr ""
-"PCSX2 nécessite un BIOS PS2 valide. D'un point de vue légal, vous devez "
-"obtenir votre BIOS \n"
+"PCSX2 nécessite un BIOS PS2 valide pour pouvoir fonctionner. D'un point de "
+"vue légal, vous devez obtenir le BIOS \n"
 "à partir de votre PROPRE console (emprunter une console ne satisfait pas ces "
 "exigences).\n"
 "Veuillez consulter la FAQ ou les guides disponibles pour plus de "
@@ -97,9 +96,9 @@ msgid ""
 "'Cancel' to attempt to cancel the thread.\n"
 "'Terminate' to quit PCSX2 immediately.\n"
 msgstr ""
-"Cliquez sur Ignorer pour attendre jusqu'à ce que le processus réponde.\n"
-"Cliquez sur Annuler pour mettre fin au processus.\n"
-"Cliquez sur Terminer pour fermer immédiatement PCSX2.\n"
+"Cliquez sur 'Ignorer' pour attendre jusqu'à ce que le processus réponde.\n"
+"Cliquez sur 'Annuler' pour mettre fin au processus.\n"
+"Cliquez sur 'Terminer' pour fermer immédiatement PCSX2.\n"
 
 #: pcsx2/gui/AppUserMode.cpp:54
 msgid ""
@@ -122,8 +121,8 @@ msgid ""
 "Please note that the resulting file may not actually contain all saves, "
 "depending on how many are in the source memory card."
 msgstr ""
-"Le fichier de sortie pourrait ne pas contenir toutes les sauvegardes, "
-"suivant le nombre qu'il y avait dans la carte mémoire source."
+"Veuillez savoir que le fichier de sortie pourrait ne pas contenir toutes les "
+"sauvegardes, suivant le nombre contenu dans la carte mémoire source."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
 msgid ""
@@ -155,8 +154,9 @@ msgid ""
 "NTFS compression can be changed manually at any time by using file "
 "properties from Windows Explorer."
 msgstr ""
-"La compression NTFS peut être modifiée manuellement depuis l'explorateur "
-"Windows (clic droit sur le fichier, puis \"Propriétés\")."
+"La compression NTFS peut être modifiée manuellement à n'importe quel moment\n"
+"depuis l'explorateur Windows (clic droit sur le fichier, puis \"Propriétés"
+"\")."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:50
 msgid ""
@@ -209,7 +209,7 @@ msgid ""
 "\n"
 "(or press Cancel to select a different settings folder)"
 msgstr ""
-"Des paramètres existants %s ont été trouvés dans le dossier de "
+"Des paramètres existants de %s ont été trouvés dans le dossier de "
 "configuration. Voulez-vous importer ces données ou les remplacer avec les "
 "valeurs par défaut de %s ?\n"
 "\n"
@@ -221,8 +221,9 @@ msgid ""
 "NTFS compression is built-in, fast, and completely reliable; and typically "
 "compresses memory cards very well (this option is highly recommended)."
 msgstr ""
-"La compression NTFS est sûre et rapide : c'est le format le plus adapté pour "
-"les cartes mémoires !"
+"La compression NTFS est intégrée, rapide et entièrement fiable; et compresse "
+"généralement les cartes mémoire très bien (cette option est fortement "
+"recommandée)."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:39
 msgid ""
@@ -230,10 +231,10 @@ msgid ""
 "after loading from savestates.  May not be compatible with all games (Guitar "
 "Hero)."
 msgstr ""
-"Permet d'éviter d'endommager la carte mémoire (fichiers corrompus) en "
-"obligeant les jeux à ré-indexer le contenu présent sur la carte.\n"
+"Permet d'éviter de corrompre la carte mémoire en obligeant les jeux à "
+"réindexer le contenu présent sur la carte.\n"
 "Cette option peut être incompatible avec certains jeux (Guitar Hero, par "
-"exemple) !"
+"exemple)."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
 msgid ""
@@ -374,6 +375,13 @@ msgid ""
 "16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to "
 "correctly display a widescreen 16:9 FMV."
 msgstr ""
+"Off: Désactive temporairement le changement du ratio de l'image.\n"
+"\n"
+"4/3 : Change temporairement le ratio de l'image en 4/3 pendant qu'une "
+"cinématique en 4:3 est joué.\n"
+"\n"
+"16:9 : Change temporairement le ratio de l'image en 16/9 pendant qu'une "
+"cinématique en 16:9 est joué."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:75
 msgid ""
@@ -407,7 +415,7 @@ msgstr ""
 "lors de mouvements horizontaux, mais occasionne également des pertes en "
 "termes de performances. Il vaut mieux ne l'utiliser qu'en mode plein-écran.\n"
 "\n"
-"Attention : Certains plugins vidéo ne fonctionnent pas avec cette option !"
+"Attention, certains plugins vidéo ne fonctionnent pas avec cette option."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:81
 msgid ""
@@ -484,7 +492,6 @@ msgstr ""
 "* Transformers"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:124
-#, fuzzy
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
 "leave this page empty ('Automatic' means: selectively use specific tested "
@@ -492,8 +499,9 @@ msgid ""
 "performance. In fact they may decrease it."
 msgstr ""
 "Il est préférable d'utiliser l'option \"Patchs automatiques\" disponible "
-"dans le menu \"Système\" de l'émulateur plutôt que d'utiliser cette page. "
-"Ces patchs n'augmenteront PAS vos FPS, peut-être même le contraire.\n"
+"dans le menu \"Système\" de l'émulateur plutôt que d'utiliser cette page.\n"
+"Ces patchs n'augmenteront PAS la performance dans le jeu, il se peut que ce "
+"soit même le contraire.\n"
 "(\"Patchs automatiques\" : utilise uniquement le patch associé au jeu émulé)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:128
@@ -558,7 +566,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
 msgid "This folder is where PCSX2 loads cheats from."
-msgstr "PCSX2 charge les triches depuis ce dossier."
+msgstr "PCSX2 charge les codes de triches depuis ce dossier."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:48
 msgid ""
@@ -622,6 +630,10 @@ msgid ""
 "50% cyclerate. Significant reduction of CPU requirements. Speedup for very "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
+"50% cyclerate. Réduction significative des exigences liées au CPU. "
+"Amélioration des performances sur des jeux non gourmands, ralentit les autres. "
+"Les cinématiques et les fichiers audios peuvent saccader voire même ne pas "
+"se jouer."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
 #, c-format
@@ -629,6 +641,10 @@ msgid ""
 "60% cyclerate. Moderate reduction of CPU requirements. Speedup for "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
+"60% cyclerate. Réduction modérée des exigences liées au CPU. Amélioration "
+"des performances sur des jeux peu gourmands, ralentit les autres. " 
+"Les cinématiques et les fichiers audios peuvent saccader voire même " 
+"ne pas se jouer."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
 #, c-format
@@ -636,11 +652,15 @@ msgid ""
 "75% cyclerate. Slight reduction of CPU requirements. Speedup for less "
 "demanding games, slows down others."
 msgstr ""
+"75% cyclerate. Petite réduction des exigences liées au CPU. Amélioration des "
+"performances sur des jeux moins demandeurs, ralentit les autres."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:47
 msgid ""
 "Default cyclerate. Runs the emulated PS2 Emotion Engine at normal speed."
 msgstr ""
+"Nombre de cycles par défaut. Fait tourner le PS2 Emotion Engine à vitesse "
+"normale."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:53
 #, c-format
@@ -648,6 +668,8 @@ msgid ""
 "130% cyclerate. Moderate increase of CPU requirements. Variable framerate "
 "games may have higher internal framerates."
 msgstr ""
+"130% cyclerate. Augmentation modérée des exigences liées au CPU. Les jeux "
+"ayant un nombre d'images variable peuvent bénéficier d'une augmentation."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:59
 #, c-format
@@ -656,6 +678,9 @@ msgid ""
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
+"180% cyclerate. Augmentation significative des exigences liées au CPU. Les "
+"jeux ayant un nombre d'images variable bénéficieront d'une augmentation. Les "
+"cinématiques peuvent être lentes. Peut causer des problèmes de stabilités."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
 #, c-format
@@ -664,30 +689,41 @@ msgid ""
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
+"300% cyclerate. Augmentation extrême des exigences liées au CPU. Les jeux "
+"ayant un nombre d'images par secondes variable bénéficieront d'une "
+"augmentation. Les cinématiques peuvent être lents. Peut causer des "
+"problèmes de stabilité."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:81
-#, fuzzy
 msgid "Disables EE Cycle Skipping. Most compatible setting."
-msgstr ""
-"0 - Désactive le VU Cycle Stealing : compatibilité maximale, évidemment !"
+msgstr "Désactive l'EE Cycle Skipping. Paramètre le plus compatible."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
 msgid ""
 "Mild EE Cycle Skipping. Mild slow down for most games, but may help some "
 "games with mild VU starvation problems run at full speed."
 msgstr ""
+"EE Cycle Skipping léger. Léger ralentissement sur la plupart des jeux, "
+"mais peut permettre à des jeux ayant des légers problèmes de VU de "
+"pouvoir être joués à leur vitesse maximale."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:93
 msgid ""
 "Moderate EE Cycle Skipping. Slow down for most games, but may help some "
 "games with moderate VU starvation problems run at full speed."
 msgstr ""
+"EE Cycle Skipping modéré. Ralentissement sur la plupart des jeux, "
+"mais peut permettre à des jeux ayant des problèmes de VU de "
+"pouvoir être joués à leur vitesse maximale."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:98
 msgid ""
 "Maximum EE Cycle Skipping. Mostly harmful. May help games with significant "
 "VU starvation problems run at full speed."
 msgstr ""
+"EE Cycle Skipping maximal. Plutôt mauvais pour l'émulation. Peut permettre "
+"à des jeux ayant des problèmes de VU très importants de pouvoir "
+"être joués à leur vitesse maximale."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:123
 msgid ""
@@ -763,7 +799,6 @@ msgid ""
 msgstr "Vise surtout l'EE idle loop à l'adresse 0x81FC0 du kernel."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
-#, fuzzy
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this (often marked as needing 'mode 1' or 'slow DVD')."

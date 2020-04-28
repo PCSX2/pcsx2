@@ -6,8 +6,8 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-02-16 18:44+0100\n"
-"Last-Translator: CaptainTearow\n"
+"PO-Revision-Date: 2020-04-26 17:09+0200\n"
+"Last-Translator: LaneSh4d0w\n"
 "Language-Team: Atomic83;goldeng;piorrro33 <odakawoi@yahoo.fr;"
 "piorrro33@outlook.com>\n"
 "Language: fr\n"
@@ -27,7 +27,7 @@ msgstr "Erreur critique."
 
 #: common/include/Utilities/Exceptions.h:255
 msgid "Parse error"
-msgstr "erreur d'analyse"
+msgstr "Erreur d'analyse"
 
 #: common/include/Utilities/Exceptions.h:279
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
@@ -51,7 +51,7 @@ msgstr ""
 
 #: common/src/Utilities/Exceptions.cpp:290
 msgid "Path: "
-msgstr "Chemin d'accès :"
+msgstr "Chemin d'accès : "
 
 #: common/src/Utilities/Exceptions.cpp:294
 msgid "[Unnamed or unknown]"
@@ -97,7 +97,7 @@ msgstr "Inclut certains événements d'usage peu commun."
 
 #: pcsx2/CDVD/InputIsoFile.cpp:248
 msgid "Unrecognized ISO image file format"
-msgstr "Format du fichier ISO non reconnu."
+msgstr "Format du fichier ISO non reconnu"
 
 #: pcsx2/Elfheader.cpp:163
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
@@ -207,19 +207,19 @@ msgstr "panneau"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:29
 msgid "File Path"
-msgstr ""
+msgstr "Chemin du fichier"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:30
 msgid "Author"
-msgstr ""
+msgstr "Auteur"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:31
 msgid "Record From"
-msgstr ""
+msgstr "Enregistrer depuis"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:41
 msgid "Ok"
-msgstr ""
+msgstr "Ok"
 
 #: pcsx2/Recording/NewRecordingFrame.cpp:42 pcsx2/gui/AppInit.cpp:742
 msgid "Cancel"
@@ -500,7 +500,7 @@ msgstr "désactive l'affichage du GUI lorsqu'un jeu est lancé"
 
 #: pcsx2/gui/AppInit.cpp:251
 msgid "when nogui - prompt before exiting on suspend"
-msgstr "Quand nogui est activé - demander avant de quitter si en pause"
+msgstr "quand nogui est activé - demander avant de quitter si en pause"
 
 #: pcsx2/gui/AppInit.cpp:253
 msgid "executes an ELF image"
@@ -588,7 +588,7 @@ msgstr ""
 
 #: pcsx2/gui/AppInit.cpp:557
 msgid "PCSX2 Error: Hardware Deficiency"
-msgstr "Erreur PCSX2 : Hardware."
+msgstr "Erreur PCSX2 : Déficience matérielle"
 
 #: pcsx2/gui/AppInit.cpp:557 pcsx2/gui/AppInit.cpp:569
 #, c-format
@@ -598,7 +598,7 @@ msgstr "Cliquez sur OK pour fermer %s."
 #: pcsx2/gui/AppInit.cpp:570
 #, c-format
 msgid "%s Critical Error"
-msgstr "Erreur critique de %s !"
+msgstr "Erreur critique de %s"
 
 #: pcsx2/gui/AppInit.cpp:740
 msgid "OK"
@@ -662,7 +662,7 @@ msgstr "&Accueil"
 
 #: pcsx2/gui/AppInit.cpp:757
 msgid "Show about dialog"
-msgstr "Ouvre une boîte de dialogue (qui vaut le coup)."
+msgstr "Ouvre une boîte de dialogue (qui vaut le coup)"
 
 #: pcsx2/gui/AppMain.cpp:79
 msgid ""
@@ -722,9 +722,8 @@ msgid ""
 msgstr ""
 
 #: pcsx2/gui/AppRes.cpp:48
-#, fuzzy
 msgid "Browse for an ISO that is not in your recent history."
-msgstr "Trouve un ISO qui n'apparaît pas dans l'historique récent."
+msgstr "Trouver un ISO qui n'apparaît pas dans l'historique récent."
 
 #: pcsx2/gui/AppRes.cpp:48
 msgid "Browse..."
@@ -759,7 +758,7 @@ msgstr "Utiliser le mode User Documents"
 #: pcsx2/gui/AppUserMode.cpp:171
 #, c-format
 msgid "%s is switching to local install mode."
-msgstr "%s utilise à présent le mode d'installation local"
+msgstr "%s utilise à présent le mode d'installation local."
 
 #: pcsx2/gui/AppUserMode.cpp:172
 msgid ""
@@ -827,7 +826,9 @@ msgstr "Thème \"Dark\""
 msgid ""
 "Classic black color scheme for people who enjoy having text seared into "
 "their optic nerves."
-msgstr "Thème \"Classic black\""
+msgstr ""
+"Thème \"Classic Black\" pour les personnes qui aiment avoir le texte gravé "
+"dans leurs nerfs optiques."
 
 #: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "&Save..."
@@ -918,7 +919,7 @@ msgstr "&Sources"
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:36
 #, c-format
 msgid "About %s"
-msgstr "En savoir plus sur %s !"
+msgstr "En savoir plus sur %s"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Website"
@@ -953,7 +954,7 @@ msgstr "&Fermer"
 
 #: pcsx2/gui/Dialogs/AssertionDialog.cpp:24
 msgid "Assertion Failure - "
-msgstr "Assertion Failure -"
+msgstr "Assertion Failure - "
 
 #: pcsx2/gui/Dialogs/BaseConfigurationDialog.cpp:185
 msgid "Saves a snapshot of this settings panel to a PNG file."
@@ -1010,11 +1011,11 @@ msgstr "Convertir"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:53
 msgid "Convert: "
-msgstr "Convertir:"
+msgstr "Convertir: "
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:56
 msgid "To: "
-msgstr "En :"
+msgstr "En: "
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
 msgid "8MB File"
@@ -1034,7 +1035,8 @@ msgstr "Fichier de 64 Mo"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Convert this memory card to a folder of individual saves."
-msgstr "Convertir cette carte mémoire en un dossier "
+msgstr ""
+"Convertir cette carte mémoire en un dossier de sauvegardes individuelles."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Folder"
@@ -1077,11 +1079,11 @@ msgstr "Nouvelle carte mémoire :"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:73
 msgid "At folder:    "
-msgstr "Dans le dossier :"
+msgstr "Dans le dossier :    "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:76
 msgid "Select file name: "
-msgstr "Nom du fichier :"
+msgstr "Nom du fichier : "
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:180
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:192
@@ -1298,11 +1300,11 @@ msgstr "%s est lancé depuis un nouveau dossier et nécessite d'être configuré
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:36
 msgid "Config Overrides Warning"
-msgstr "Attention ! Configuration écrasée !"
+msgstr "Attention ! Configuration écrasée"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:53
 msgid "Components Overrides Warning"
-msgstr "Attention ! Composants remplacés !"
+msgstr "Attention ! Composants remplacés"
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:135
 msgid "Preset:"
@@ -1390,7 +1392,7 @@ msgstr ""
 
 #: pcsx2/gui/GlobalCommands.cpp:636
 msgid "Load State Backup"
-msgstr "Charger le backup."
+msgstr "Charger le backup"
 
 #: pcsx2/gui/GlobalCommands.cpp:637
 msgid "Loads virtual machine state backup for current slot."
@@ -1414,7 +1416,7 @@ msgstr "On passe au slot précédent !"
 
 #: pcsx2/gui/IsoDropTarget.cpp:55
 msgid "Drag and Drop Error"
-msgstr "Erreur du glisser-déposer !"
+msgstr "Erreur du glisser-déposer"
 
 #: pcsx2/gui/IsoDropTarget.cpp:56
 #, c-format
@@ -1503,7 +1505,7 @@ msgstr "Démarrage du ELF..."
 
 #: pcsx2/gui/MainFrame.cpp:446
 msgid "For running raw PS2 binaries directly"
-msgstr "Pour lancer directement des fichiers exécutables binaires."
+msgstr "Pour lancer directement des fichiers PS2"
 
 #: pcsx2/gui/MainFrame.cpp:455
 msgid "&Load state"
@@ -1523,7 +1525,7 @@ msgstr "Patchs automatiques"
 
 #: pcsx2/gui/MainFrame.cpp:464
 msgid "Automatically applies needed Gamefixes to known problematic games"
-msgstr "Applique automatiquement les patchs associés à certains jeux."
+msgstr "Applique automatiquement les patchs associés à certains jeux"
 
 #: pcsx2/gui/MainFrame.cpp:466
 msgid "Enable &Cheats"
@@ -1560,7 +1562,7 @@ msgstr "Quitter"
 #: pcsx2/gui/MainFrame.cpp:488
 #, c-format
 msgid "Closing %s may be hazardous to your health"
-msgstr "Fermer %s est dangereux pour la santé !"
+msgstr "Fermer %s est dangereux pour la santé"
 
 #: pcsx2/gui/MainFrame.cpp:495
 #, fuzzy
@@ -1737,7 +1739,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:682
 msgid "Use fast boot to skip PS2 startup and splash screens"
-msgstr "Démarre le système en sautant les logos PS2/Sony."
+msgstr "Démarre le système en sautant les logos PS2/Sony"
 
 #: pcsx2/gui/MainFrame.cpp:687
 #, fuzzy
@@ -2403,7 +2405,7 @@ msgstr "Convertir ..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:404
 msgid "Card: "
-msgstr "Carte :"
+msgstr "Carte : "
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:462
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:500
@@ -2639,7 +2641,7 @@ msgstr "User Documents (recommandé)"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:46
 msgid "Location: "
-msgstr "Emplacement :"
+msgstr "Emplacement : "
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:50
 msgid "Custom folder:"
@@ -2722,7 +2724,7 @@ msgstr "Choisir le dossier où se trouvent les plugins PCSX2"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:365
 msgid "Configure..."
-msgstr "Configurer"
+msgstr "Configurer…"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:374
 msgid "Click the Browse button to select a different folder for PCSX2 plugins."
