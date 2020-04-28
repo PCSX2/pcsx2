@@ -15,10 +15,9 @@
 
 #pragma once
 
-#include "InputRecordingFile.h"
+#include "Recording/InputRecordingFile.h"
 
 
-#ifndef DISABLE_RECORDING
 class InputRecording
 {
 public:
@@ -118,4 +117,3 @@ private:
 };
 
 extern InputRecording g_InputRecording;
-#endif

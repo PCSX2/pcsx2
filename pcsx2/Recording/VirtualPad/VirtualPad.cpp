@@ -15,34 +15,34 @@
 
 #include "PrecompiledHeader.h"
 
-#include "math.h"
+#include <math.h>
 
 #include "App.h"
-#include "Common.h"
-#include "MSWstuff.h"
+#include "Utilities/EmbeddedImage.h"
+#include "wx/display.h"
+#include "wx/dcbuffer.h"
+#include "wx/spinctrl.h"
 
 #include "Recording/VirtualPad/VirtualPad.h"
 #include "Recording/VirtualPad/VirtualPadResources.h"
 
-#include "Recording/VirtualPad/img/controller.h"
-
 #include "Recording/VirtualPad/img/circlePressed.h"
+#include "Recording/VirtualPad/img/controller.h"
 #include "Recording/VirtualPad/img/crossPressed.h"
-#include "Recording/VirtualPad/img/squarePressed.h"
-#include "Recording/VirtualPad/img/trianglePressed.h"
 #include "Recording/VirtualPad/img/downPressed.h"
-#include "Recording/VirtualPad/img/leftPressed.h"
-#include "Recording/VirtualPad/img/rightPressed.h"
-#include "Recording/VirtualPad/img/upPressed.h"
 #include "Recording/VirtualPad/img/l1Pressed.h"
 #include "Recording/VirtualPad/img/l2Pressed.h"
+#include "Recording/VirtualPad/img/l3Pressed.h"
+#include "Recording/VirtualPad/img/leftPressed.h"
 #include "Recording/VirtualPad/img/r1Pressed.h"
 #include "Recording/VirtualPad/img/r2Pressed.h"
-
-#include "Recording/VirtualPad/img/selectPressed.h"
-#include "Recording/VirtualPad/img/startPressed.h"
-#include "Recording/VirtualPad/img/l3Pressed.h"
 #include "Recording/VirtualPad/img/r3Pressed.h"
+#include "Recording/VirtualPad/img/rightPressed.h"
+#include "Recording/VirtualPad/img/selectPressed.h"
+#include "Recording/VirtualPad/img/squarePressed.h"
+#include "Recording/VirtualPad/img/startPressed.h"
+#include "Recording/VirtualPad/img/trianglePressed.h"
+#include "Recording/VirtualPad/img/upPressed.h"
 
 // TODO - store position of frame in ini file?
 

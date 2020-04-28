@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "Recording/VirtualPad/VirtualPadResources.h"
 #include "Recording/PadData.h"
+#include "Recording/VirtualPad/VirtualPadResources.h"
 
 class VirtualPadData
 {

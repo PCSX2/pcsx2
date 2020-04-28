@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
-*  Copyright (C) 2002-2019  PCSX2 Dev Team
+*  Copyright (C) 2002-2020  PCSX2 Dev Team
 *
 *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
 *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,14 +16,6 @@
 #pragma once
 
 #include <queue>
-
-#include <wx/wx.h>
-#include <wx/tglbtn.h>
-#include <wx/spinctrl.h>
-#include <wx/dcbuffer.h>
-#include <wx/event.h>
-
-#include "Common.h"
 
 struct ImageFile
 {
