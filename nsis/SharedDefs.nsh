@@ -4,6 +4,7 @@
 ; This reduces duplicate code throughout both installers.
 
 ManifestDPIAware true
+Unicode true
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
 
