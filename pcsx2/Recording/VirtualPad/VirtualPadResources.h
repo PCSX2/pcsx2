@@ -21,15 +21,15 @@ struct ImageFile
 {
 	wxBitmap image;
 	wxPoint coords;
-	u32 width;
-	u32 height;
+	u32 width = 0;
+	u32 height = 0;
 };
 
 struct AnalogVector
 {
     // GUI
-    wxSlider *slider;
-    wxSpinCtrl *spinner;
+    wxSlider *slider = 0;
+    wxSpinCtrl *spinner = 0;
 
     u8 val = 127;
 
@@ -46,8 +46,8 @@ struct AnalogPosition
 	wxPoint centerCoords;
 	wxPoint endCoords;
 
-	int lineThickness;
-	int radius;
+	int lineThickness = 0;
+	int radius = 0;
 };
 
 class VirtualPadElement
@@ -59,41 +59,43 @@ public:
     virtual void Render(wxDC &dc) = 0;
 };
 
-class ControllerNormalButton : VirtualPadElement
+class ControllerButton
+{
+public:
+    bool pressed = false;
+    bool widgetUpdateRequired = false;
+    bool isControllerPressBypassed = false;
+    bool prevPressedVal = false;
+
+	bool UpdateButtonData(bool &padDataVal, bool ignoreRealController, bool readOnly);
+};
+
+class ControllerNormalButton : public ControllerButton, VirtualPadElement
 {
 public:
 	/// GUI
 	ImageFile icon;
-	wxCheckBox *pressedBox;
+	wxCheckBox *pressedBox = 0;
 
-	bool pressed = false;
-
-	/// State 
-	bool renderRequired = false;
-	bool isControllerBypassed;
-	bool prevPressedVal;
+	/// State
 
 	void UpdateGuiElement(std::queue<VirtualPadElement *> *renderQueue, bool &clearScreenRequired) override;
     void Render(wxDC &dc) override;
     bool UpdateData(bool &padDataVal, bool ignoreRealController, bool readOnly);
 };
 
-class ControllerPressureButton : VirtualPadElement
+class ControllerPressureButton : public ControllerButton, VirtualPadElement
 {
 public:
 	/// GUI
 	ImageFile icon;
-	wxSpinCtrl *pressureSpinner;
+	wxSpinCtrl *pressureSpinner = 0;
 
-	bool pressed = false;
-	u8 pressure;
+	u8 pressure = 0;
 
 	/// State Management
-	bool renderRequired = false;
-	bool isControllerPressBypassed;
-	bool isControllerPressureBypassed;
-	bool prevPressedVal;
-	u8 prevPressureVal;
+	bool isControllerPressureBypassed = false;
+	u8 prevPressureVal = 0;
 
 	void UpdateGuiElement(std::queue<VirtualPadElement *> *renderQueue, bool &clearScreenRequired) override;
     void Render(wxDC &dc) override;

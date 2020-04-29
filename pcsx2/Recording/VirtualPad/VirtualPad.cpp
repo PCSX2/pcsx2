@@ -19,8 +19,8 @@
 
 #include "App.h"
 #include "Utilities/EmbeddedImage.h"
-#include "wx/display.h"
 #include "wx/dcbuffer.h"
+#include "wx/display.h"
 #include "wx/spinctrl.h"
 
 #include "Recording/VirtualPad/VirtualPad.h"
@@ -44,7 +44,7 @@
 #include "Recording/VirtualPad/img/trianglePressed.h"
 #include "Recording/VirtualPad/img/upPressed.h"
 
-// TODO - store position of frame in ini file?
+// TODO - Store position of frame in an (possibly the main) .ini file
 
 VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, int controllerPort, const wxPoint& pos, const wxSize& size, long style) :
 	wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE)
@@ -56,7 +56,7 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 	// Slight multi-monitor support, will use whatever window pcsx2 is opened with, but won't currently re-init if 
 	// windows are dragged between differing monitors!
     wxDisplay display(wxDisplay::GetFromWindow(this));
-    wxRect screen = display.GetClientArea();
+    const wxRect screen = display.GetClientArea();
     if (screen.height > 1080 && screen.height <= 1440) // 1440p display
     {
         scalingFactor = 0.75;
@@ -71,29 +71,28 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 	// Use the background image's size to define the window size
 	SetClientSize(virtualPadData.background.width, virtualPadData.background.height);
     
-	// TODO - rename to Gui
-	InitPressureButtonGUIElements(virtualPadData.cross, NewBitmap(EmbeddedImage<res_crossPressed>().Get(), wxPoint(968, 498)), this, wxPoint(1062, 660));
-	InitPressureButtonGUIElements(virtualPadData.circle, NewBitmap(EmbeddedImage<res_circlePressed>().Get(), wxPoint(1057, 413)), this, wxPoint(1062, 700));
-	InitPressureButtonGUIElements(virtualPadData.triangle, NewBitmap(EmbeddedImage<res_trianglePressed>().Get(), wxPoint(968, 325)), this, wxPoint(1062, 740));
-	InitPressureButtonGUIElements(virtualPadData.square, NewBitmap(EmbeddedImage<res_squarePressed>().Get(), wxPoint(879, 413)), this, wxPoint(1062, 780));
-	InitPressureButtonGUIElements(virtualPadData.down, NewBitmap(EmbeddedImage<res_downPressed>().Get(), wxPoint(191, 488)), this, wxPoint(199, 660), true);
-	InitPressureButtonGUIElements(virtualPadData.right, NewBitmap(EmbeddedImage<res_rightPressed>().Get(), wxPoint(255, 429)), this, wxPoint(199, 700), true);
-	InitPressureButtonGUIElements(virtualPadData.up, NewBitmap(EmbeddedImage<res_upPressed>().Get(), wxPoint(191, 354)), this, wxPoint(199, 740), true);
-	InitPressureButtonGUIElements(virtualPadData.left, NewBitmap(EmbeddedImage<res_leftPressed>().Get(), wxPoint(115, 429)), this, wxPoint(199, 780), true);
-	InitPressureButtonGUIElements(virtualPadData.l1, NewBitmap(EmbeddedImage<res_l1Pressed>().Get(), wxPoint(166, 8)), this, wxPoint(294, 20));
-	InitPressureButtonGUIElements(virtualPadData.l2, NewBitmap(EmbeddedImage<res_l2Pressed>().Get(), wxPoint(166, 81)), this, wxPoint(294, 100));
-	InitPressureButtonGUIElements(virtualPadData.r1, NewBitmap(EmbeddedImage<res_r1Pressed>().Get(), wxPoint(958, 7)), this, wxPoint(940, 20), true);
-	InitPressureButtonGUIElements(virtualPadData.r2, NewBitmap(EmbeddedImage<res_r2Pressed>().Get(), wxPoint(958, 81)), this, wxPoint(940, 100), true);
+	InitPressureButtonGuiElements(virtualPadData.cross, NewBitmap(EmbeddedImage<res_crossPressed>().Get(), wxPoint(968, 498)), this, wxPoint(1062, 660));
+	InitPressureButtonGuiElements(virtualPadData.circle, NewBitmap(EmbeddedImage<res_circlePressed>().Get(), wxPoint(1057, 413)), this, wxPoint(1062, 700));
+	InitPressureButtonGuiElements(virtualPadData.triangle, NewBitmap(EmbeddedImage<res_trianglePressed>().Get(), wxPoint(968, 325)), this, wxPoint(1062, 740));
+	InitPressureButtonGuiElements(virtualPadData.square, NewBitmap(EmbeddedImage<res_squarePressed>().Get(), wxPoint(879, 413)), this, wxPoint(1062, 780));
+	InitPressureButtonGuiElements(virtualPadData.down, NewBitmap(EmbeddedImage<res_downPressed>().Get(), wxPoint(191, 488)), this, wxPoint(199, 660), true);
+	InitPressureButtonGuiElements(virtualPadData.right, NewBitmap(EmbeddedImage<res_rightPressed>().Get(), wxPoint(255, 429)), this, wxPoint(199, 700), true);
+	InitPressureButtonGuiElements(virtualPadData.up, NewBitmap(EmbeddedImage<res_upPressed>().Get(), wxPoint(191, 354)), this, wxPoint(199, 740), true);
+	InitPressureButtonGuiElements(virtualPadData.left, NewBitmap(EmbeddedImage<res_leftPressed>().Get(), wxPoint(115, 429)), this, wxPoint(199, 780), true);
+	InitPressureButtonGuiElements(virtualPadData.l1, NewBitmap(EmbeddedImage<res_l1Pressed>().Get(), wxPoint(166, 8)), this, wxPoint(294, 20));
+	InitPressureButtonGuiElements(virtualPadData.l2, NewBitmap(EmbeddedImage<res_l2Pressed>().Get(), wxPoint(166, 81)), this, wxPoint(294, 100));
+	InitPressureButtonGuiElements(virtualPadData.r1, NewBitmap(EmbeddedImage<res_r1Pressed>().Get(), wxPoint(958, 7)), this, wxPoint(940, 20), true);
+	InitPressureButtonGuiElements(virtualPadData.r2, NewBitmap(EmbeddedImage<res_r2Pressed>().Get(), wxPoint(958, 81)), this, wxPoint(940, 100), true);
 
-	InitNormalButtonGUIElements(virtualPadData.select, NewBitmap(EmbeddedImage<res_selectPressed>().Get(), wxPoint(473, 441)), this, wxPoint(545, 448));
-	InitNormalButtonGUIElements(virtualPadData.start, NewBitmap(EmbeddedImage<res_startPressed>().Get(), wxPoint(710, 440)), this, wxPoint(675, 448));
-	InitNormalButtonGUIElements(virtualPadData.l3, NewBitmap(EmbeddedImage<res_r3Pressed>().Get(), wxPoint(347, 585)), this, wxPoint(440, 835));
-	InitNormalButtonGUIElements(virtualPadData.r3, NewBitmap(EmbeddedImage<res_l3Pressed>().Get(), wxPoint(750, 585)), this, wxPoint(844, 835));
+	InitNormalButtonGuiElements(virtualPadData.select, NewBitmap(EmbeddedImage<res_selectPressed>().Get(), wxPoint(473, 441)), this, wxPoint(545, 448));
+	InitNormalButtonGuiElements(virtualPadData.start, NewBitmap(EmbeddedImage<res_startPressed>().Get(), wxPoint(710, 440)), this, wxPoint(675, 448));
+	InitNormalButtonGuiElements(virtualPadData.l3, NewBitmap(EmbeddedImage<res_r3Pressed>().Get(), wxPoint(347, 585)), this, wxPoint(440, 835));
+	InitNormalButtonGuiElements(virtualPadData.r3, NewBitmap(EmbeddedImage<res_l3Pressed>().Get(), wxPoint(750, 585)), this, wxPoint(844, 835));
 
 	InitAnalogStickGuiElements(virtualPadData.leftAnalog, this, wxPoint(418, 656), 105, wxPoint(326, 782), wxPoint(545, 568), false, wxPoint(522, 800), wxPoint(522, 760));
 	InitAnalogStickGuiElements(virtualPadData.rightAnalog, this, wxPoint(821, 656), 105, wxPoint(730, 782), wxPoint(672, 568), true, wxPoint(720, 800), wxPoint(720, 760), true);
 
-	ignoreRealControllerBox = new wxCheckBox(this, wxID_ANY, wxEmptyString, NewScaledPoint(605, 256), wxDefaultSize);
+	ignoreRealControllerBox = new wxCheckBox(this, wxID_ANY, wxEmptyString, ScaledPoint(605, 256), wxDefaultSize);
     Bind(wxEVT_CHECKBOX, &VirtualPad::OnIgnoreRealController, this, ignoreRealControllerBox->GetId());
 
 	// Bind Window Events
@@ -117,14 +116,12 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 	SetDoubleBuffered(true);
 }
 
-// TODO - test open/close routine
-
 void VirtualPad::OnClose(wxCloseEvent & event)
 {
 	// Re-bind the Paint event in case this is due to a game being opened/closed
     manualRedrawMode = false;
     Bind(wxEVT_PAINT, &VirtualPad::OnPaint, this);
-	Hide(); // TODO - hide vs closed?
+	Hide();
 }
 
 void VirtualPad::OnMouseEvent(wxMouseEvent &evt)
@@ -209,7 +206,10 @@ void VirtualPad::Render(wxDC &dc)
 		// After some tests, the performance impact is well within reason, and on the hardware renderer modes, is almost non-existant.
 		while (!renderQueue.empty()) {
             VirtualPadElement *element = renderQueue.front();
-            element->Render(bdc);
+            if (element) 
+			{
+                element->Render(bdc);
+            }
             renderQueue.pop();
         }
 	}
@@ -220,34 +220,42 @@ bool VirtualPad::UpdateControllerData(u16 const bufIndex, PadData *padData, bool
 	return virtualPadData.UpdateVirtualPadData(bufIndex, padData, ignoreRealController && !readOnly, readOnly);
 }
 
-void VirtualPad::OnIgnoreRealController(wxCommandEvent &event)
+void VirtualPad::OnIgnoreRealController(wxCommandEvent const &event)
 {
-	wxCheckBox* ignoreButton = (wxCheckBox*) event.GetEventObject();
-	ignoreRealController = ignoreButton->GetValue();
+	const wxCheckBox* ignoreButton = (wxCheckBox*) event.GetEventObject();
+    if (ignoreButton) 
+	{
+        ignoreRealController = ignoreButton->GetValue();
+    }
 }
 
 void VirtualPad::OnNormalButtonPress(wxCommandEvent &event)
 {
-	wxCheckBox* pressedButton = (wxCheckBox*) event.GetEventObject();
+	const wxCheckBox* pressedButton = (wxCheckBox*) event.GetEventObject();
 	ControllerNormalButton *eventBtn = buttonElements[pressedButton->GetId()];
 
-	eventBtn->pressed = pressedButton->GetValue();
+	if (pressedButton) 
+	{
+        eventBtn->pressed = pressedButton->GetValue();
+    }
 
 	// If the real controller is being bypassed, we move on, otherwise we begin bypassing the controller
-	if (!eventBtn->isControllerBypassed) {
-		eventBtn->isControllerBypassed = true;
+	if (!eventBtn->isControllerPressBypassed) {
+        eventBtn->isControllerPressBypassed = true;
 	}
 }
 
 void VirtualPad::OnPressureButtonPressureChange(wxCommandEvent &event)
 {
-	wxSpinCtrl* pressureSpinner = (wxSpinCtrl*) event.GetEventObject();
+	const wxSpinCtrl* pressureSpinner = (wxSpinCtrl*) event.GetEventObject();
 	ControllerPressureButton *eventBtn = pressureElements[pressureSpinner->GetId()];
 
-	eventBtn->pressure = pressureSpinner->GetValue();
+	if (pressureSpinner)
+	{
+        eventBtn->pressure = pressureSpinner->GetValue();
+    }
 	eventBtn->pressed = eventBtn->pressure > 0;
 
-	// If the real controller is being bypassed, we move on, otherwise we begin bypassing the controller
 	if (!eventBtn->isControllerPressureBypassed || !eventBtn->isControllerPressBypassed) {
 		eventBtn->isControllerPressureBypassed = true;
 		eventBtn->isControllerPressBypassed = true;
@@ -256,13 +264,15 @@ void VirtualPad::OnPressureButtonPressureChange(wxCommandEvent &event)
 
 void VirtualPad::OnAnalogSpinnerChange(wxCommandEvent &event)
 {
-	wxSpinCtrl* analogSpinner = (wxSpinCtrl*) event.GetEventObject();
+	const wxSpinCtrl* analogSpinner = (wxSpinCtrl*) event.GetEventObject();
 	AnalogVector *eventVector = analogElements[analogSpinner->GetId()];
 
-	eventVector->val = analogSpinner->GetValue();
+	if (analogSpinner) 
+	{
+        eventVector->val = analogSpinner->GetValue();
+    }
 	eventVector->slider->SetValue(eventVector->val);
 
-	// If the real controller is being bypassed, we move on, otherwise we begin bypassing the controller
 	if (!eventVector->isControllerBypassed) {
 		eventVector->isControllerBypassed = true;
 	}
@@ -270,13 +280,15 @@ void VirtualPad::OnAnalogSpinnerChange(wxCommandEvent &event)
 
 void VirtualPad::OnAnalogSliderChange(wxCommandEvent &event)
 {
-	wxSlider* analogSlider = (wxSlider*) event.GetEventObject();
+	const wxSlider* analogSlider = (wxSlider*) event.GetEventObject();
 	AnalogVector *eventVector = analogElements[analogSlider->GetId()];
 
-	eventVector->val = analogSlider->GetValue();
+	if (analogSlider)
+	{
+        eventVector->val = analogSlider->GetValue();
+    }
 	eventVector->spinner->SetValue(eventVector->val);
 
-	// If the real controller is being bypassed, we move on, otherwise we begin bypassing the controller
 	if (!eventVector->isControllerBypassed) {
 		eventVector->isControllerBypassed = true;
 	}
@@ -284,14 +296,27 @@ void VirtualPad::OnAnalogSliderChange(wxCommandEvent &event)
 
 /// GUI Element Utility Functions
 
-wxPoint VirtualPad::NewScaledPoint(wxPoint point)
+wxPoint VirtualPad::ScaledPoint(wxPoint point, int widgetWidth, bool rightAligned)
 {
-	return wxPoint(point.x * scalingFactor, point.y * scalingFactor);
+	return ScaledPoint(point.x, point.y, widgetWidth, rightAligned);
 }
 
-wxPoint VirtualPad::NewScaledPoint(int x, int y)
+wxPoint VirtualPad::ScaledPoint(int x, int y, int widgetWidth, bool rightAligned)
 {
-	return wxPoint(x * scalingFactor, y * scalingFactor);
+    wxPoint scaledPoint = wxPoint(x * scalingFactor, y * scalingFactor);
+    if (rightAligned) {
+        scaledPoint.x -= widgetWidth * scalingFactor;
+        if (scaledPoint.x < 0) 
+		{
+            scaledPoint.x = 0;
+        }
+	}
+	return scaledPoint;
+}
+
+wxSize VirtualPad::ScaledSize(int x, int y)
+{
+    return wxSize(x * scalingFactor, y * scalingFactor);
 }
 
 ImageFile VirtualPad::NewBitmap(wxImage resource, wxPoint point)
@@ -307,40 +332,26 @@ ImageFile VirtualPad::NewBitmap(float scalingFactor, wxImage resource, wxPoint p
 	image.image = bitmap;
 	image.width = bitmap.GetWidth();
 	image.height = bitmap.GetHeight();
-	image.coords = NewScaledPoint(point);
-
+	image.coords = ScaledPoint(point);
 	return image;
 }
 
-void VirtualPad::InitNormalButtonGUIElements(ControllerNormalButton &button, ImageFile image, wxWindow *parentWindow, wxPoint point)
+void VirtualPad::InitNormalButtonGuiElements(ControllerNormalButton &button, ImageFile image, wxWindow *parentWindow, wxPoint point)
 {
 	button.icon = image;
-	button.pressedBox = new wxCheckBox(parentWindow, wxID_ANY, wxEmptyString, NewScaledPoint(point), wxDefaultSize);
-	button.isControllerBypassed = false;
-	button.prevPressedVal = false;
+	button.pressedBox = new wxCheckBox(parentWindow, wxID_ANY, wxEmptyString, ScaledPoint(point), wxDefaultSize);
 	Bind(wxEVT_CHECKBOX, &VirtualPad::OnNormalButtonPress, this, button.pressedBox->GetId());
 	buttonElements[button.pressedBox->GetId()] = &button;
 }
 
-void VirtualPad::InitPressureButtonGUIElements(ControllerPressureButton &button, ImageFile image, wxWindow *parentWindow, wxPoint point, bool rightAlignedPoint)
+void VirtualPad::InitPressureButtonGuiElements(ControllerPressureButton &button, ImageFile image, wxWindow *parentWindow, wxPoint point, bool rightAlignedPoint)
 {
-	wxPoint scaledPoint = wxPoint(point.x * scalingFactor, point.y * scalingFactor);
-	if (rightAlignedPoint) {
-		scaledPoint.x -= 100 * scalingFactor;
-		if (scaledPoint.x < 0) {
-			scaledPoint.x = 0;
-		}
-	}
-	wxSpinCtrl *spinner = new wxSpinCtrl(parentWindow, wxID_ANY, wxEmptyString, scaledPoint, wxSize(100 * scalingFactor, wxDefaultSize.GetHeight()), wxSP_ARROW_KEYS, 0, 255, 0);
+    const int spinnerWidth = 100;
+	const wxPoint scaledPoint = ScaledPoint(point.x, point.y, spinnerWidth, rightAlignedPoint);
+    wxSpinCtrl *spinner = new wxSpinCtrl(parentWindow, wxID_ANY, wxEmptyString, scaledPoint, ScaledSize(spinnerWidth, wxDefaultSize.GetHeight()), wxSP_ARROW_KEYS, 0, 255, 0);
 
-	// TODO - defaults on the classes' constructor would clean this up
 	button.icon = image;
-	button.prevPressedVal = 0;
 	button.pressureSpinner = spinner;
-	button.isControllerPressBypassed = false;
-	button.isControllerPressureBypassed = false;
-	button.prevPressedVal = false;
-	button.prevPressureVal = 0;
 	Bind(wxEVT_SPINCTRL, &VirtualPad::OnPressureButtonPressureChange, this, button.pressureSpinner->GetId());
 	pressureElements[button.pressureSpinner->GetId()] = &button;
 }
@@ -348,46 +359,31 @@ void VirtualPad::InitPressureButtonGUIElements(ControllerPressureButton &button,
 void VirtualPad::InitAnalogStickGuiElements(AnalogStick &analog, wxWindow *parentWindow, wxPoint centerPoint, int radius, wxPoint xSliderPoint, wxPoint ySliderPoint, bool flipYSlider, wxPoint xSpinnerPoint, wxPoint ySpinnerPoint, bool rightAlignedSpinners)
 {
 	AnalogPosition analogPos = AnalogPosition();
-	analogPos.centerCoords = NewScaledPoint(centerPoint);
-	analogPos.endCoords = NewScaledPoint(centerPoint);
+	analogPos.centerCoords = ScaledPoint(centerPoint);
+	analogPos.endCoords = ScaledPoint(centerPoint);
 	analogPos.radius = radius * scalingFactor;
 	analogPos.lineThickness = 6 * scalingFactor;
 
-	// TODO - make a function to scale wxSize values easier
+	const int spinnerWidth = 90;
+	const wxPoint xSpinnerScaledPoint = ScaledPoint(xSpinnerPoint, spinnerWidth, rightAlignedSpinners);
+    const wxPoint ySpinnerScaledPoint = ScaledPoint(ySpinnerPoint, spinnerWidth, rightAlignedSpinners);
 
-	wxSlider *xSlider = new wxSlider(parentWindow, wxID_ANY, 127, 0, 255, NewScaledPoint(xSliderPoint), wxSize(185 * scalingFactor, 30 * scalingFactor));
-	wxSlider *ySlider = new wxSlider(parentWindow, wxID_ANY, 127, 0, 255, NewScaledPoint(ySliderPoint), wxSize(30 * scalingFactor, 185 * scalingFactor), flipYSlider ? wxSL_LEFT : wxSL_RIGHT);
-
-	// TODO - function to right-align spinners easier
-
-	wxPoint xSpinnerScaledPoint = NewScaledPoint(xSpinnerPoint);
-	wxPoint ySpinnerScaledPoint = NewScaledPoint(ySpinnerPoint);
-	if (rightAlignedSpinners) {
-		xSpinnerScaledPoint.x -= 90 * scalingFactor;
-		if (xSpinnerScaledPoint.x < 0) {
-			xSpinnerScaledPoint.x = 0;
-		}
-
-		ySpinnerScaledPoint.x -= 90 * scalingFactor;
-		if (ySpinnerScaledPoint.x < 0) {
-			ySpinnerScaledPoint.x = 0;
-		}
-	}
-
-	wxSpinCtrl *xSpinner = new wxSpinCtrl(parentWindow, wxID_ANY, wxEmptyString, xSpinnerScaledPoint, wxSize(90 * scalingFactor, wxDefaultSize.GetHeight()), wxSP_ARROW_KEYS, 0, 255, 127);
-	wxSpinCtrl *ySpinner = new wxSpinCtrl(parentWindow, wxID_ANY, wxEmptyString, ySpinnerScaledPoint, wxSize(90 * scalingFactor, wxDefaultSize.GetHeight()), wxSP_ARROW_KEYS, 0, 255, 127);
+	wxSlider *xSlider = new wxSlider(parentWindow, wxID_ANY, 127, 0, 255, ScaledPoint(xSliderPoint), ScaledSize(185, 30));
+    wxSlider *ySlider = new wxSlider(parentWindow, wxID_ANY, 127, 0, 255, ScaledPoint(ySliderPoint), ScaledSize(30, 185), flipYSlider ? wxSL_LEFT : wxSL_RIGHT);
+	wxSpinCtrl *xSpinner = new wxSpinCtrl(parentWindow, wxID_ANY, wxEmptyString, xSpinnerScaledPoint, ScaledSize(90, wxDefaultSize.GetHeight()), wxSP_ARROW_KEYS, 0, 255, 127);
+	wxSpinCtrl *ySpinner = new wxSpinCtrl(parentWindow, wxID_ANY, wxEmptyString, ySpinnerScaledPoint, ScaledSize(90, wxDefaultSize.GetHeight()), wxSP_ARROW_KEYS, 0, 255, 127);
 
 	analog.xVector.slider = xSlider;
 	analog.yVector.slider = ySlider;
 	analog.xVector.spinner = xSpinner;
 	analog.yVector.spinner = ySpinner;
 	analog.positionGraphic = analogPos;
-	Bind(wxEVT_SPINCTRL, &VirtualPad::OnAnalogSpinnerChange, this, analog.xVector.spinner->GetId());
-	Bind(wxEVT_SPINCTRL, &VirtualPad::OnAnalogSpinnerChange, this, analog.yVector.spinner->GetId());
-	Bind(wxEVT_SLIDER, &VirtualPad::OnAnalogSliderChange, this, analog.xVector.slider->GetId());
-	Bind(wxEVT_SLIDER, &VirtualPad::OnAnalogSliderChange, this, analog.yVector.slider->GetId());
-	analogElements[analog.xVector.spinner->GetId()] = &analog.xVector;
-	analogElements[analog.yVector.spinner->GetId()] = &analog.yVector;
-	analogElements[analog.xVector.slider->GetId()] = &analog.xVector;
-	analogElements[analog.yVector.slider->GetId()] = &analog.yVector;
+	Bind(wxEVT_SLIDER, &VirtualPad::OnAnalogSliderChange, this, xSlider->GetId());
+	Bind(wxEVT_SLIDER, &VirtualPad::OnAnalogSliderChange, this, ySlider->GetId());
+    Bind(wxEVT_SPINCTRL, &VirtualPad::OnAnalogSpinnerChange, this, xSpinner->GetId());
+    Bind(wxEVT_SPINCTRL, &VirtualPad::OnAnalogSpinnerChange, this, ySpinner->GetId());
+	analogElements[xSlider->GetId()] = &analog.xVector;
+	analogElements[ySlider->GetId()] = &analog.yVector;
+    analogElements[xSpinner->GetId()] = &analog.xVector;
+    analogElements[ySpinner->GetId()] = &analog.yVector;
 }

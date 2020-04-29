@@ -27,22 +27,22 @@ public:
 	/// Pressure Buttons
 	ControllerPressureButton circle;
 	ControllerPressureButton cross;
-	ControllerPressureButton square;
-	ControllerPressureButton triangle;
 	ControllerPressureButton down;
-	ControllerPressureButton left;
-	ControllerPressureButton right;
-	ControllerPressureButton up;
 	ControllerPressureButton l1;
 	ControllerPressureButton l2;
+	ControllerPressureButton left;
 	ControllerPressureButton r1;
 	ControllerPressureButton r2;
+	ControllerPressureButton right;
+	ControllerPressureButton square;
+	ControllerPressureButton triangle;
+	ControllerPressureButton up;
 
 	/// Normal (un)pressed buttons
-	ControllerNormalButton select;
-	ControllerNormalButton start;
 	ControllerNormalButton l3;
 	ControllerNormalButton r3;
+	ControllerNormalButton select;
+	ControllerNormalButton start;
 
 	/// Analog Sticks
 	AnalogStick leftAnalog;
