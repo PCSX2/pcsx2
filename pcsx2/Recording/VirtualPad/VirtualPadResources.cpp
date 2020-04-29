@@ -124,20 +124,19 @@ void AnalogStick::Render(wxDC &dc)
     analogStick.currentlyRendered = true;
 }
 
-// TODO - duplicate code between this and the pressure button, inheritance should be able to remove it
-bool ControllerNormalButton::UpdateData(bool &padDataVal, bool ignoreRealController, bool readOnly)
+bool ControllerButton::UpdateButtonData(bool &padDataVal, bool ignoreRealController, bool readOnly)
 {
-    ControllerNormalButton &button = *this;
+    ControllerButton &button = *this;
     if (!ignoreRealController) {
         // If controller is being bypassed and controller's state has changed
-        bool bypassedWithChangedState = button.isControllerBypassed && padDataVal != button.prevPressedVal;
+        bool bypassedWithChangedState = button.isControllerPressBypassed && padDataVal != button.prevPressedVal;
         if (bypassedWithChangedState) {
             button.prevPressedVal = padDataVal;
-            button.isControllerBypassed = false;
+            button.isControllerPressBypassed = false;
         }
         // If we aren't bypassing the controller OR the previous condition was met
-        if (bypassedWithChangedState || !button.isControllerBypassed) {
-            button.renderRequired = button.pressed != padDataVal;
+        if (bypassedWithChangedState || !button.isControllerPressBypassed) {
+            button.widgetUpdateRequired = button.pressed != padDataVal;
             button.pressed = padDataVal;
             return false;
         }
@@ -147,24 +146,14 @@ bool ControllerNormalButton::UpdateData(bool &padDataVal, bool ignoreRealControl
     return button.prevPressedVal != button.pressed;
 }
 
+bool ControllerNormalButton::UpdateData(bool &padDataVal, bool ignoreRealController, bool readOnly)
+{
+    return this->UpdateButtonData(padDataVal, ignoreRealController, readOnly);
+}
+
 bool ControllerPressureButton::UpdateData(bool &padDataVal, bool ignoreRealController, bool readOnly)
 {
-    ControllerPressureButton &button = *this;
-    if (!ignoreRealController) {
-        bool bypassedWithChangedState = button.isControllerPressBypassed && padDataVal != button.prevPressedVal;
-        if (bypassedWithChangedState) {
-            button.prevPressedVal = padDataVal;
-            button.isControllerPressBypassed = false;
-        }
-        if (bypassedWithChangedState || !button.isControllerPressBypassed) {
-            button.renderRequired = button.pressed != padDataVal;
-            button.pressed = padDataVal;
-            return false;
-        }
-    }
-    button.prevPressedVal = padDataVal;
-    padDataVal = button.pressed;
-    return button.prevPressedVal != button.pressed;
+    return this->UpdateButtonData(padDataVal, ignoreRealController, readOnly);
 }
 
 bool ControllerPressureButton::UpdateData(u8 &padDataVal, bool ignoreRealController, bool readOnly)
@@ -177,7 +166,7 @@ bool ControllerPressureButton::UpdateData(u8 &padDataVal, bool ignoreRealControl
             button.isControllerPressureBypassed = false;
         }
         if (bypassedWithChangedState || !button.isControllerPressureBypassed) {
-            button.renderRequired = button.pressure != padDataVal;
+            button.widgetUpdateRequired = button.pressure != padDataVal;
             button.pressure = padDataVal;
             return false;
         }
@@ -197,7 +186,7 @@ bool AnalogVector::UpdateData(u8 &padDataVal, bool ignoreRealController, bool re
             vector.isControllerBypassed = false;
         }
         if (bypassedWithChangedState || !vector.isControllerBypassed) {
-            vector.renderRequired = vector.val != padDataVal;
+            vector.widgetUpdateRequired = vector.val != padDataVal;
             vector.val = padDataVal;
             return false;
         }

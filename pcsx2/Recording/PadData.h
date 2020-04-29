@@ -19,10 +19,8 @@ class PadData
 {
 public:
 	/// Constants
-	const u8 PRESSURE_BUTTON_UNPRESSED = 0;
-	const bool BUTTON_PRESSED = true;
-	const bool BUTTON_UNPRESSED = false;
-	const u8 ANALOG_VECTOR_CENTER_POS = 127;
+    static const u8 ANALOG_VECTOR_NEUTRAL = 127;
+    static const u16 END_INDEX_CONTROLLER_BUFFER = 17;
 
 	enum class BufferIndex
 	{
@@ -47,54 +45,53 @@ public:
 	};
 
 	/// Pressure Buttons - 0-255
-	u8 circlePressure = PRESSURE_BUTTON_UNPRESSED;
-	u8 crossPressure = PRESSURE_BUTTON_UNPRESSED;
-	u8 squarePressure = PRESSURE_BUTTON_UNPRESSED;
-	u8 trianglePressure = PRESSURE_BUTTON_UNPRESSED;
-	u8 downPressure = PRESSURE_BUTTON_UNPRESSED;
-	u8 leftPressure = PRESSURE_BUTTON_UNPRESSED;
-	u8 rightPressure = PRESSURE_BUTTON_UNPRESSED;
-	u8 upPressure = PRESSURE_BUTTON_UNPRESSED;
-	u8 l1Pressure = PRESSURE_BUTTON_UNPRESSED;
-	u8 l2Pressure = PRESSURE_BUTTON_UNPRESSED;
-	u8 r1Pressure = PRESSURE_BUTTON_UNPRESSED;
-	u8 r2Pressure = PRESSURE_BUTTON_UNPRESSED;
+	u8 circlePressure = 0;
+	u8 crossPressure = 0;
+	u8 squarePressure = 0;
+	u8 trianglePressure = 0;
+	u8 downPressure = 0;
+	u8 leftPressure = 0;
+	u8 rightPressure = 0;
+	u8 upPressure = 0;
+	u8 l1Pressure = 0;
+	u8 l2Pressure = 0;
+	u8 r1Pressure = 0;
+	u8 r2Pressure = 0;
 
 	/// Pressure Button Flags
-	/// NOTE - It shouldn't be possible to depress a button
-	///	while also having no pressure (PAD plugin should default to max pressure).
+	/// NOTE - It shouldn't be possible to depress a button while also having no pressure
 	/// But for the sake of completeness, it should be tracked.
-	bool circlePressed = BUTTON_UNPRESSED;
-	bool crossPressed = BUTTON_UNPRESSED;
-	bool squarePressed = BUTTON_UNPRESSED;
-	bool trianglePressed = BUTTON_UNPRESSED;
-	bool downPressed = BUTTON_UNPRESSED;
-	bool leftPressed = BUTTON_UNPRESSED;
-	bool rightPressed = BUTTON_UNPRESSED;
-	bool upPressed = BUTTON_UNPRESSED;
-	bool l1Pressed = BUTTON_UNPRESSED;
-	bool l2Pressed = BUTTON_UNPRESSED;
-	bool r1Pressed = BUTTON_UNPRESSED;
-	bool r2Pressed = BUTTON_UNPRESSED;
+	bool circlePressed = false;
+    bool crossPressed = false;
+    bool squarePressed = false;
+    bool trianglePressed = false;
+    bool downPressed = false;
+    bool leftPressed = false;
+    bool rightPressed = false;
+    bool upPressed = false;
+    bool l1Pressed = false;
+    bool l2Pressed = false;
+    bool r1Pressed = false;
+    bool r2Pressed = false;
 
 	/// Normal (un)pressed buttons
-	bool select = BUTTON_UNPRESSED;
-	bool start = BUTTON_UNPRESSED;
-	bool l3 = BUTTON_UNPRESSED;
-	bool r3 = BUTTON_UNPRESSED;
+    bool select = false;
+    bool start = false;
+    bool l3 = false;
+    bool r3 = false;
 
 	/// Analog Sticks - 0-255 (127 center)
-	u8 leftAnalogX = ANALOG_VECTOR_CENTER_POS;
-	u8 leftAnalogY = ANALOG_VECTOR_CENTER_POS;
-	u8 rightAnalogX = ANALOG_VECTOR_CENTER_POS;
-	u8 rightAnalogY = ANALOG_VECTOR_CENTER_POS;
+    u8 leftAnalogX = ANALOG_VECTOR_NEUTRAL;
+    u8 leftAnalogY = ANALOG_VECTOR_NEUTRAL;
+    u8 rightAnalogX = ANALOG_VECTOR_NEUTRAL;
+    u8 rightAnalogY = ANALOG_VECTOR_NEUTRAL;
 
 	// Given the input buffer and the current index, updates the correct field(s) 
 	void UpdateControllerData(u16 bufIndex, u8 const &bufVal);
 	u8 PollControllerData(u16 bufIndex);
 
 	// Prints current PadData to the Controller Log filter which disabled by default
-	void LogPadData();
+    void LogPadData(u8 const &port);
 
 private:
 	struct ButtonResolver

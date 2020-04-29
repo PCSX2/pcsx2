@@ -18,10 +18,10 @@
 #include <map>
 #include <queue>
 
-#include "wx/window.h"
-#include "wx/frame.h"
-#include "wx/checkbox.h"
 #include "Pcsx2Types.h"
+#include "wx/checkbox.h"
+#include "wx/frame.h"
+#include "wx/window.h"
 
 #include "Recording/PadData.h"
 #include "Recording/VirtualPad/VirtualPadData.h"
@@ -37,21 +37,21 @@ public:
 private:
     bool manualRedrawMode = false;
     bool clearScreenRequired = false;
-    void RedrawBackground(wxDC &dc, ImageFile &img);
 
     std::queue<VirtualPadElement*> renderQueue;
 
 	/// GUI Creation Utility Functions
 	float scalingFactor = 1.0;
 
-	wxPoint NewScaledPoint(wxPoint point);
-	wxPoint NewScaledPoint(int x, int y);
+    wxSize ScaledSize(int x, int y);
+    wxPoint ScaledPoint(wxPoint point, int widgetWidth = 0, bool rightAligned = false);
+    wxPoint ScaledPoint(int x, int y, int widgetWidth = 0, bool rightAligned = false);
 
 	ImageFile NewBitmap(wxImage resource, wxPoint point);
 	ImageFile NewBitmap(float scalingFactor, wxImage resource, wxPoint point);
 
-	void InitPressureButtonGUIElements(ControllerPressureButton &button, ImageFile image, wxWindow *parentWindow, wxPoint point, bool rightAlignedPoint = false);
-	void InitNormalButtonGUIElements(ControllerNormalButton &btn, ImageFile image, wxWindow *parentWindow, wxPoint point);
+	void InitPressureButtonGuiElements(ControllerPressureButton &button, ImageFile image, wxWindow *parentWindow, wxPoint point, bool rightAlignedPoint = false);
+	void InitNormalButtonGuiElements(ControllerNormalButton &btn, ImageFile image, wxWindow *parentWindow, wxPoint point);
 	void InitAnalogStickGuiElements(AnalogStick &analog, wxWindow *parentWindow, wxPoint centerPoint, int radius, wxPoint xSliderPoint, wxPoint ySliderPoint, bool flipYSlider, wxPoint xSpinnerPoint, wxPoint ySpinnerPoint, bool rightAlignedSpinners = false);
 
 	/// GUI Elements
@@ -61,7 +61,6 @@ private:
 	std::map<wxWindowID, ControllerNormalButton*> buttonElements;
 	std::map<wxWindowID, ControllerPressureButton*> pressureElements;
 	std::map<wxWindowID, AnalogVector*> analogElements;
-	// TODO - analog stick resolver might need to be a tuple of the slider/spinctrl
 	
 	bool ignoreRealController = false;
 	VirtualPadData virtualPadData;
@@ -75,18 +74,12 @@ private:
 	void OnPaint(wxPaintEvent & evt);
 	void Render(wxDC& dc);
 	void OnClose(wxCloseEvent &event);
-	void OnShow(wxShowEvent &event);
 	void OnMouseEvent(wxMouseEvent &event);
 	void OnFocusEvent(wxFocusEvent &event);
-
-	void UpdateVirtualPadComponent(wxDC &dc, ControllerNormalButton &btn);
-	void UpdateVirtualPadComponent(wxDC &dc, ControllerPressureButton &btn);
-	void DrawImageFile(wxDC &dc, ImageFile &imgFile);
-	void UpdateVirtualPadComponent(wxDC &dc, AnalogStick &analogStick);
 
 	void OnNormalButtonPress(wxCommandEvent &event);
 	void OnPressureButtonPressureChange(wxCommandEvent &event);
 	void OnAnalogSliderChange(wxCommandEvent &event);
 	void OnAnalogSpinnerChange(wxCommandEvent &event);
-	void OnIgnoreRealController(wxCommandEvent &event);
+	void OnIgnoreRealController(wxCommandEvent const &event);
 };

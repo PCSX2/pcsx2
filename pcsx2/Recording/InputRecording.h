@@ -108,7 +108,7 @@ private:
 	// Controller Data
 	PadData *padData[2];
 
-	// VirtualPad
+	// VirtualPads
 	VirtualPad *virtualPads[2];
 	
 	// Resolve the name and region of the game currently loaded using the GameDB

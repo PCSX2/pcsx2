@@ -165,7 +165,7 @@ u8 PadData::PollControllerData(u16 bufIndex)
 bool PadData::IsButtonPressed(ButtonResolver buttonResolver, u8 const &bufVal)
 {
 	// Rather than the flags being SET if the button is pressed, it is the opposite
-	// For example: 0111 1111 with left being the first bit indicates left is pressed.
+	// For example: 0111 1111 with `left` being the first bit indicates `left` is pressed.
 	// So, we are forced to flip the pressed bits with a NOT first
 	return (~bufVal & buttonResolver.buttonBitmask) > 0;
 }
@@ -187,11 +187,15 @@ wxString PadData::RawPadBytesToString(int start, int end)
 	return str;
 }
 
-void PadData::LogPadData() {
+void PadData::LogPadData(u8 const &port) {
 	wxString pressedBytes = RawPadBytesToString(0, 2);
 	wxString rightAnalogBytes = RawPadBytesToString(2, 4);
 	wxString leftAnalogBytes = RawPadBytesToString(4, 6);
 	wxString pressureBytes = RawPadBytesToString(6, 17);
-	controlLog(wxString::Format("[PAD] Raw Bytes: Pressed = [%s], Right Analog = [%s], Left Analog = [%s]\n", pressedBytes, rightAnalogBytes, leftAnalogBytes));
-	controlLog(wxString::Format("[PAD] Raw Bytes: Pressure = [%s]\n", pressureBytes));
+    wxString fullLog =
+        wxString::Format("[PAD %d] Raw Bytes: Pressed = [%s]\n", port + 1, pressedBytes) +
+        wxString::Format("[PAD %d] Raw Bytes: Right Analog = [%s]\n", port + 1, rightAnalogBytes) +
+        wxString::Format("[PAD %d] Raw Bytes: Left Analog = [%s]\n", port + 1, leftAnalogBytes) +
+        wxString::Format("[PAD %d] Raw Bytes: Pressure = [%s]\n", port + 1, pressureBytes);
+	controlLog(fullLog);
 }
