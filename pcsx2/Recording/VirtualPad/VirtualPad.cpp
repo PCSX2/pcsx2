@@ -200,6 +200,13 @@ void VirtualPad::Render(wxDC &dc)
         bdc.DrawBitmap(virtualPadData.background.image, virtualPadData.background.coords, true);
         clearScreenRequired = false;
 
+		// NOTE - there is yet another (and I think final) micro-optimization that can be done:
+		// It can be assumed that if the element has already been drawn to the screen (and not cleared) that we can skip rendering it
+		//
+		// For example - you hold a single button for several frames, it will currently draw that every frame
+		// despite the screen never being cleared, this is not strictly necessary.
+		//
+		// After some tests, the performance impact is well within reason, and on the hardware renderer modes, is almost non-existant.
 		while (!renderQueue.empty()) {
             VirtualPadElement *element = renderQueue.front();
             element->Render(bdc);

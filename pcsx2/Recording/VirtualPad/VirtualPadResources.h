@@ -33,7 +33,7 @@ struct AnalogVector
 
     u8 val = 127;
 
-    bool renderRequired = false;
+    bool widgetUpdateRequired = false;
     bool isControllerBypassed = false;
     u8 prevVal = 127;
 
@@ -53,6 +53,8 @@ struct AnalogPosition
 class VirtualPadElement
 {
 public:
+    bool currentlyRendered = false;
+
     virtual void UpdateGuiElement(std::queue<VirtualPadElement *> *renderQueue, bool &clearScreenRequired) = 0;
     virtual void Render(wxDC &dc) = 0;
 };
