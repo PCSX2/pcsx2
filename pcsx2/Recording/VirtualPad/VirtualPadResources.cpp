@@ -18,31 +18,44 @@
 #include <wx/spinctrl.h>
 
 #include "Recording/VirtualPad/VirtualPadResources.h"
+#include "Recording/PadData.h"
 
 void ControllerNormalButton::UpdateGuiElement(std::queue<VirtualPadElement*> *renderQueue, bool &clearScreenRequired)
 {
     ControllerNormalButton &button = *this;
-    if (button.renderRequired)
+    if (button.widgetUpdateRequired)
 	{
         button.pressedBox->SetValue(button.pressed);
-        clearScreenRequired = true;
 	}
+
     if (button.pressed)
 	{
         renderQueue->push(this);
+    } 
+	else if (button.currentlyRendered) 
+	{
+        button.currentlyRendered = false;
+        clearScreenRequired = true;
 	}
 }
 
 void ControllerPressureButton::UpdateGuiElement(std::queue<VirtualPadElement *> *renderQueue, bool &clearScreenRequired)
 {
     ControllerPressureButton &button = *this;
-    if (button.renderRequired) 
+    if (button.widgetUpdateRequired) 
 	{
         button.pressureSpinner->SetValue(button.pressure);
         clearScreenRequired = true;
     }
-    if (button.pressed) {
+
+    if (button.pressed) 
+	{
         renderQueue->push(this);
+    } 
+	else if (button.currentlyRendered) 
+	{
+        button.currentlyRendered = false;
+        clearScreenRequired = true;
     }
 }
 
@@ -51,23 +64,24 @@ void AnalogStick::UpdateGuiElement(std::queue<VirtualPadElement *> *renderQueue,
     AnalogStick &analogStick = *this;
     // Update the GUI elements that need updating
     // If either vector has changed, we need to redraw the graphics
-    if (analogStick.xVector.renderRequired) 
+    if (analogStick.xVector.widgetUpdateRequired) 
 	{
         analogStick.xVector.slider->SetValue(analogStick.xVector.val);
         analogStick.xVector.spinner->SetValue(analogStick.xVector.val);
-        clearScreenRequired = true;
     }
-    if (analogStick.yVector.renderRequired) 
+    if (analogStick.yVector.widgetUpdateRequired) 
 	{
         analogStick.yVector.slider->SetValue(analogStick.yVector.val);
 		analogStick.yVector.spinner->SetValue(analogStick.yVector.val);
-        clearScreenRequired = true;
     }
-	// TODO constant for neutral position
-	if (!(analogStick.xVector.val == 127 && analogStick.yVector.val == 127))
+    if (!(analogStick.xVector.val == PadData::ANALOG_VECTOR_NEUTRAL && analogStick.yVector.val == PadData::ANALOG_VECTOR_NEUTRAL))
 	{
         renderQueue->push(this);
-	}
+	} 
+	else if (analogStick.currentlyRendered) {
+        analogStick.currentlyRendered = false;
+        clearScreenRequired = true;
+    }
 }
 
 void ControllerNormalButton::Render(wxDC &dc)
@@ -75,6 +89,7 @@ void ControllerNormalButton::Render(wxDC &dc)
     ControllerNormalButton &button = *this;
     ImageFile &img = button.icon;
     dc.DrawBitmap(img.image, img.coords, true);
+    button.currentlyRendered = true;
 }
 
 void ControllerPressureButton::Render(wxDC &dc)
@@ -82,6 +97,7 @@ void ControllerPressureButton::Render(wxDC &dc)
     ControllerPressureButton &button = *this;
     ImageFile &img = button.icon;
     dc.DrawBitmap(img.image, img.coords, true);
+    button.currentlyRendered = true;
 }
 
 void AnalogStick::Render(wxDC &dc)
@@ -105,6 +121,7 @@ void AnalogStick::Render(wxDC &dc)
     dc.DrawLine(analogPos.centerCoords, analogPos.endCoords);
     dc.DrawCircle(analogPos.endCoords, wxCoord(analogPos.lineThickness));
     dc.SetPen(wxNullPen);
+    analogStick.currentlyRendered = true;
 }
 
 // TODO - duplicate code between this and the pressure button, inheritance should be able to remove it

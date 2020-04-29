@@ -18,6 +18,11 @@
 #include <map>
 #include <queue>
 
+#include "wx/window.h"
+#include "wx/frame.h"
+#include "wx/checkbox.h"
+#include "Pcsx2Types.h"
+
 #include "Recording/PadData.h"
 #include "Recording/VirtualPad/VirtualPadData.h"
 
