@@ -21,7 +21,13 @@
 #include "Elfheader.h"
 
 // Uncomment to turn on the new saveslot UI.
-#define USE_NEW_SAVESLOTS_UI
+// Issue with new saveslot UI:
+// There's a callback to the ui to update the savestates gui whenever the recompiler exits.
+// The problem with this is that the recompiler exits a ton,
+// especially when a game boots or on a game with self modifying code like Jak.
+// This causes core to spam the messages system to update the ui,
+// which in turn causes the savestates gui to attempt to perform a bunch of OS i/o.
+//#define USE_NEW_SAVESLOTS_UI
 
 // Uncomment to turn on the extra UI updates *without* the UI.
 //#define USE_SAVESLOT_UI_UPDATES
