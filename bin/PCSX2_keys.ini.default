@@ -32,6 +32,8 @@
 # KP_DELETE KP_EQUAL KP_MULTIPLY KP_ADD KP_SEPARATOR KP_SUBTRACT KP_DECIMAL
 # KP_DIVIDE WINDOWS_LEFT WINDOWS_RIGHT WINDOWS_MENU COMMAND
 
+# To unbind key for preventing accidental pressing type None
+
 # save state: freeze is save state, defrost is load state.
 States_FreezeCurrentSlot          = F1
 States_DefrostCurrentSlot         = F3

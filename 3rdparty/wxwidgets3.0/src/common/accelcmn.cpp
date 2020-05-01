@@ -112,6 +112,7 @@ static const struct wxKeyName
     { WXK_WINDOWS_RIGHT,    /*TRANSLATORS: Name of keyboard key*/ wxTRANSLATE("Windows_Right") },
     { WXK_WINDOWS_MENU,     /*TRANSLATORS: Name of keyboard key*/ wxTRANSLATE("Windows_Menu") },
     { WXK_COMMAND,          /*TRANSLATORS: Name of keyboard key*/ wxTRANSLATE("Command") },
+    { WXK_SPECIAL20,        /*TRANSLATORS: Name of keyboard key*/ wxTRANSLATE("None") },
 };
 
 wxGCC_WARNING_RESTORE(missing-field-initializers)
