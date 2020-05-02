@@ -147,6 +147,7 @@ protected:
 
 	virtual void OnResumeReady();
 	virtual void OnPause();
+	virtual void OnPauseDebug();
 	virtual void OnResumeInThread( bool IsSuspended );
 	virtual void OnSuspendInThread();
 	virtual void OnCleanupInThread();

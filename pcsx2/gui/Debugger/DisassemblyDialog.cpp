@@ -611,9 +611,10 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 
 		if (debugMode)
 		{
-			wxBusyInfo wait("Please wait, Reading ELF functions");
-			reset();
-			wait.~wxBusyInfo();
+			{
+				wxBusyInfo wait("Please wait, Reading ELF functions");
+				reset();
+			}
 			CBreakPoints::ClearTemporaryBreakPoints();
 			breakRunButton->SetLabel(L"Run");
 
