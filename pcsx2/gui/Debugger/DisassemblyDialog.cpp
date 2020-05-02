@@ -556,6 +556,9 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		onBreakpointClick(evt);
 	} else if (type == debEVT_MAPLOADED)
 	{
+		wxBusyInfo wait("Please wait, Reloading ELF functions");
+		eeTab->clearSymbolMap();
+		iopTab->clearSymbolMap();
 		eeTab->reloadSymbolMap();
 		iopTab->reloadSymbolMap();
 	} else if (type == debEVT_STEPOUT)
