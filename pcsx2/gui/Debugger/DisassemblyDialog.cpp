@@ -128,19 +128,29 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 
 	mainSizer->Layout();
 
+	symbolCount = 0;
+
 	lastCycles = 0;
 	loadCycles();
 }
 
+void CpuTabPage::clearSymbolMap()
+{
+	symbolCount = 0;
+	functionList->Clear();
+}
+
 void CpuTabPage::reloadSymbolMap()
 {
-	functionList->Clear();
-
-	auto funcs = symbolMap.GetAllSymbols(ST_FUNCTION);
-	for (size_t i = 0; i < funcs.size(); i++)
+	if (!symbolCount)
 	{
-		wxString name = wxString(funcs[i].name.c_str(),wxConvUTF8);
-		functionList->Append(name,(void*)funcs[i].address);
+		auto funcs = symbolMap.GetAllSymbols(ST_FUNCTION);
+		symbolCount = funcs.size();
+		for (size_t i = 0; i < funcs.size(); i++)
+		{
+			wxString name = wxString(funcs[i].name.c_str(), wxConvUTF8);
+			functionList->Append(name, (void*)funcs[i].address);
+		}
 	}
 }
 
@@ -576,8 +586,14 @@ void DisassemblyDialog::update()
 void DisassemblyDialog::reset()
 {
 	eeTab->getDisassembly()->clearFunctions();
-	eeTab->reloadSymbolMap();
+	eeTab->clearSymbolMap();
 	iopTab->getDisassembly()->clearFunctions();
+	iopTab->clearSymbolMap();
+}
+
+void DisassemblyDialog::populate()
+{
+	eeTab->reloadSymbolMap();
 	iopTab->reloadSymbolMap();
 }
 
@@ -614,7 +630,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 				if (!CBreakPoints::GetBreakpointTriggered())
 				{
 					wxBusyInfo wait("Please wait, Reading ELF functions");
-					reset();
+					populate();
 				}
 			CBreakPoints::ClearTemporaryBreakPoints();
 			breakRunButton->SetLabel(L"Run");
