@@ -69,16 +69,17 @@ private:
     std::map<wxWindowID, AnalogVector *> analogElements;
 
 	/// Event Listeners
-	void OnEraseBackground(wxEraseEvent& event);
-	void OnPaint(wxPaintEvent & evt);
-	void Render(wxDC& dc);
 	void OnClose(wxCloseEvent &event);
+    void OnIconize(wxIconizeEvent &event);
+	void OnEraseBackground(wxEraseEvent &event);
+	void OnPaint(wxPaintEvent &event);
+	void Render(wxDC &dc);
 
-	void OnNormalButtonPress(wxCommandEvent &event);
-	void OnPressureButtonPressureChange(wxCommandEvent &event);
 	void OnAnalogSliderChange(wxCommandEvent &event);
 	void OnAnalogSpinnerChange(wxCommandEvent &event);
 	void OnIgnoreRealController(wxCommandEvent const &event);
+	void OnNormalButtonPress(wxCommandEvent &event);
+	void OnPressureButtonPressureChange(wxCommandEvent &event);
 
 	/// GUI Creation Utility Functions
     float scalingFactor = 1.0;

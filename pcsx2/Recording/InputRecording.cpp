@@ -156,7 +156,8 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
     if (bufIndex == PadData::END_INDEX_CONTROLLER_BUFFER) {
 		padData[port]->LogPadData(port);
 		// As well as re-render the virtual pad UI, if applicable
-		if (virtualPads[port] && virtualPads[port]->IsShown())
+		// - Don't render if it's minimized
+        if (virtualPads[port] && virtualPads[port]->IsShown() && !virtualPads[port]->IsIconized())
 		{
 			virtualPads[port]->Redraw();
 		}
