@@ -21,7 +21,7 @@
 
 void PadData::UpdateControllerData(u16 bufIndex, u8 const &bufVal)
 {
-	BufferIndex index = static_cast<BufferIndex>(bufIndex);
+	const BufferIndex index = static_cast<BufferIndex>(bufIndex);
 	switch (index)
 	{
 	case BufferIndex::PressedFlagsGroupOne:
