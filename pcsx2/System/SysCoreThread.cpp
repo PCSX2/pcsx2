@@ -233,7 +233,7 @@ void SysCoreThread::GameStartingInThread()
 
 	MIPSAnalyst::ScanForFunctions(ElfTextRange.first,ElfTextRange.first+ElfTextRange.second,true);
 	symbolMap.UpdateActiveSymbols();
-	sApp.PostAppMethod(&Pcsx2App::resetDebugger);
+	//sApp.PostAppMethod(&Pcsx2App::resetDebugger);
 
 	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
 #ifdef USE_SAVESLOT_UI_UPDATES

@@ -22,6 +22,7 @@
 #include "DebugTools/MipsStackWalk.h"
 #include "BreakpointWindow.h"
 #include "PathDefs.h"
+#include "wx/busyinfo.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -610,6 +611,9 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 
 		if (debugMode)
 		{
+			wxBusyInfo wait("Please wait, Reading ELF functions");
+			reset();
+			wait.~wxBusyInfo();
 			CBreakPoints::ClearTemporaryBreakPoints();
 			breakRunButton->SetLabel(L"Run");
 
