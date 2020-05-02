@@ -98,10 +98,12 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 	// Bind Window Events
     Bind(wxEVT_ERASE_BACKGROUND, &VirtualPad::OnEraseBackground, this);
     Bind(wxEVT_CLOSE_WINDOW, &VirtualPad::OnClose, this);
+    Bind(wxEVT_ICONIZE, &VirtualPad::OnIconize, this);
 	// Temporary Paint event handler so the window displays properly before the controller-interrupt routine takes over with manual drawing.
 	// The reason for this is in order to minimize the performance impact, we need total control over when render is called
 	// Windows redraws the window _alot_ otherwise which leads to major performance problems (when GS is using the software renderer)
     Bind(wxEVT_PAINT, &VirtualPad::OnPaint, this);
+    // DevCon.WriteLn("Paint Event Bound");
 
 	// Finalize layout
 	SetIcons(wxGetApp().GetIconBundle());
@@ -113,32 +115,40 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 	SetDoubleBuffered(true);
 }
 
-void VirtualPad::OnClose(wxCloseEvent & event)
+void VirtualPad::OnClose(wxCloseEvent &event)
 {
 	// Re-bind the Paint event in case this is due to a game being opened/closed
     manualRedrawMode = false;
     Bind(wxEVT_PAINT, &VirtualPad::OnPaint, this);
+    // DevCon.WriteLn("Paint Event Bound");
 	Hide();
 }
 
-void VirtualPad::OnEraseBackground(wxEraseEvent& event)
+void VirtualPad::OnIconize(wxIconizeEvent &event)
+{
+    if (event.IsIconized()) 
+	{
+        manualRedrawMode = false;
+        Bind(wxEVT_PAINT, &VirtualPad::OnPaint, this);
+        // DevCon.WriteLn("Paint Event Bound");
+    }
+}
+
+void VirtualPad::OnEraseBackground(wxEraseEvent &event)
 {
 	// Intentionally Empty
 	// See - https://wiki.wxwidgets.org/Flicker-Free_Drawing
 }
 
-void VirtualPad::OnPaint(wxPaintEvent &evt)
+void VirtualPad::OnPaint(wxPaintEvent &event)
 {
+    // DevCon.WriteLn("Paint Event Called");
 	wxPaintDC dc(this);
 	Render(dc);
 }
 
 void VirtualPad::Redraw()
 {
-    if (!manualRedrawMode) {
-        Unbind(wxEVT_PAINT, &VirtualPad::OnPaint, this);
-        manualRedrawMode = true;
-	}
 	wxClientDC dc(this);
 	Render(dc);
 }
@@ -177,6 +187,13 @@ void VirtualPad::Render(wxDC &dc)
         bdc.SetBrush(wxNullBrush);
         bdc.DrawBitmap(virtualPadData.background.image, virtualPadData.background.coords, true);
         clearScreenRequired = false;
+
+		// Switch to Manual Rendering once the first user action on the VirtualPad is taken
+		if (!manualRedrawMode && !renderQueue.empty()) {
+            // DevCon.WriteLn("Paint Event Unbound");
+            Unbind(wxEVT_PAINT, &VirtualPad::OnPaint, this);
+            manualRedrawMode = true;
+        }
 
 		// NOTE - there is yet another (and I think final) micro-optimization that can be done:
 		// It can be assumed that if the element has already been drawn to the screen (and not cleared) that we can skip rendering it

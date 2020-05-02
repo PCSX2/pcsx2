@@ -221,7 +221,7 @@ bool ControllerPressureButton::UpdateData(u8 &padDataVal, bool ignoreRealControl
     }
     button.prevPressureVal = padDataVal;
     padDataVal = button.pressure;
-    return button.prevPressedVal != button.pressure;
+    return button.prevPressureVal != button.pressure;
 }
 
 bool AnalogVector::UpdateData(u8 &padDataVal, bool ignoreRealController, bool readOnly)
