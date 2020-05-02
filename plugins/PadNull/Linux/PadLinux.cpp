@@ -16,6 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 #include <gdk/gdkx.h>
+#include <gtk/gtk.h>
 #include "PadLinux.h"
 
 Display *GSdsp;
