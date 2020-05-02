@@ -114,6 +114,7 @@ public:
 	virtual void Resume();
 	virtual void Pause(bool debug = false);
 	virtual void PauseSelf();
+	virtual void PauseSelfDebug();
 
 protected:
 	virtual void OnStart();
