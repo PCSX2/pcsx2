@@ -86,7 +86,7 @@ public:
 	// Stop the active input recording
 	void Stop();
 
-	void setVirtualPadPtr(VirtualPad *ptr, int port);
+	void SetVirtualPadPtr(VirtualPad *ptr, int const port);
 
 private:
 	enum class InputRecordingMode

@@ -54,13 +54,11 @@ InputRecording g_InputRecording;
 InputRecording::InputRecording()
 {
 	// NOTE - No multi-tap support, only two controllers
-	for (int i = 0; i < 2; i++)
-	{
-		padData[i] = new PadData();
-	}
+    padData[CONTROLLER_PORT_ONE] = new PadData();
+    padData[CONTROLLER_PORT_TWO] = new PadData();
 }
 
-void InputRecording::setVirtualPadPtr(VirtualPad *ptr, int port)
+void InputRecording::SetVirtualPadPtr(VirtualPad *ptr, int const port)
 {
 	virtualPads[port] = ptr;
 }
@@ -147,7 +145,8 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
 	{
 		// If the VirtualPad updated the PadData, we have to update the buffer
 		// before committing it to the recording / sending it to the game
-		if (virtualPads[port]->UpdateControllerData(bufIndex, padData[port]))
+		// - Do not do this if we are in replay mode!
+        if (virtualPads[port]->UpdateControllerData(bufIndex, padData[port]) && state != INPUT_RECORDING_MODE_REPLAY)
 		{
 			bufVal = padData[port]->PollControllerData(bufIndex);
 		}
@@ -156,6 +155,7 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
 	// If we have reached the end of the pad data, log it out
     if (bufIndex == PadData::END_INDEX_CONTROLLER_BUFFER) {
 		padData[port]->LogPadData(port);
+		// As well as re-render the virtual pad UI, if applicable
 		if (virtualPads[port] && virtualPads[port]->IsShown())
 		{
 			virtualPads[port]->Redraw();

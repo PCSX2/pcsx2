@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "Pcsx2Types.h"
+
 #include "Recording/PadData.h"
 #include "Recording/VirtualPad/VirtualPadResources.h"
 
@@ -48,6 +50,10 @@ public:
 	AnalogStick leftAnalog;
 	AnalogStick rightAnalog;
 
-	// Given the input buffer and the current index, updates the correct field(s) 
+	// Given the input buffer and the current index, updates the respective field(s) within this object
+	// Additionally overwrites the PadData object under the following criteria:
+	// - If ignoreRealController is true (and readOnly is false) PadData will always be updated
+	// - else if the VirtualPad has overwritten the value, and the real controller has not changed since that moment in time
+	// returns a boolean to indicate if it has updated the PadData
 	bool UpdateVirtualPadData(u16 bufIndex, PadData *padData, bool ignoreRealController = false, bool readOnly = false);
 };
