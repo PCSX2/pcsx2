@@ -724,7 +724,6 @@ void GSRendererHW::SwSpriteRender()
 {
 	// Supported drawing attributes
 	ASSERT(PRIM->PRIM == GS_TRIANGLESTRIP || PRIM->PRIM == GS_SPRITE);
-	ASSERT(!PRIM->IIP);  // Flat shading method
 	ASSERT(!PRIM->FGE);  // No FOG
 	ASSERT(!PRIM->AA1);  // No antialiasing
 	ASSERT(!PRIM->FIX);  // Normal fragment value control
@@ -744,9 +743,10 @@ void GSRendererHW::SwSpriteRender()
 	ASSERT(m_context->FRAME.PSM == PSM_PSMCT32);
 
 	// No rasterization required
-	ASSERT(m_vt.m_eq.rgba == 0xffff);
-	ASSERT(m_vt.m_eq.z == 0x1);
-	ASSERT(!PRIM->TME || PRIM->FST || m_vt.m_eq.q == 0x1);  // Check Q equality only if texturing enabled and STQ coords used
+	ASSERT(PRIM->PRIM == GS_SPRITE
+		|| ((PRIM->IIP || m_vt.m_eq.rgba == 0xffff)
+			&& m_vt.m_eq.z == 0x1
+			&& (!PRIM->TME || PRIM->FST || m_vt.m_eq.q == 0x1)));  // Check Q equality only if texturing enabled and STQ coords used
 
 	bool texture_mapping_enabled = PRIM->TME;
 
@@ -804,8 +804,9 @@ void GSRendererHW::SwSpriteRender()
 
 	bool alpha_blending_enabled = PRIM->ABE;
 
-	GSVector4i vc = m_vt.m_min.c;  // 0x000000AA000000BB000000GG000000RR
-	vc = vc.ps32();                // 0x00AA00BB00GG00RR00AA00BB00GG00RR
+	const GSVertex& v = m_vertex.buff[m_index.buff[m_index.tail - 1]];  // Last vertex.
+	const GSVector4i vc = GSVector4i(v.RGBAQ.R, v.RGBAQ.G, v.RGBAQ.B, v.RGBAQ.A)  // 0x000000AA000000BB000000GG000000RR
+							.ps32();  // 0x00AA00BB00GG00RR00AA00BB00GG00RR
 
 	GSVector4i a_mask = GSVector4i::xff000000().u8to16();  // 0x00FF00000000000000FF000000000000
 
