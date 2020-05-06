@@ -115,7 +115,7 @@ void ExecuteVU(int idx)
 	}
 	else if((vifX.cmd & 0x7f) == 0x14 || (vifX.cmd & 0x7f) == 0x15)
 	{
-		vuExecMicro(idx, (u16)(vifXRegs.code) << 3);
+		vuExecMicro(idx, (u16)(vifXRegs.code));
 		vifX.cmd = 0;
 		vifX.pass = 0;
 	}
@@ -343,7 +343,7 @@ vifOp(vifCode_MSCAL) {
 
 		if(!vifX.waitforvu)
 		{
-			vuExecMicro(idx, (u16)(vifXRegs.code) << 3); 
+			vuExecMicro(idx, (u16)(vifXRegs.code)); 
 			vifX.cmd = 0;
 			vifX.pass = 0;
 			if(GetVifX.vifpacketsize > 1)
@@ -374,7 +374,7 @@ vifOp(vifCode_MSCALF) {
 		}
 		if(!vifX.waitforvu)
 		{
-			vuExecMicro(idx, (u16)(vifXRegs.code) << 3);
+			vuExecMicro(idx, (u16)(vifXRegs.code));
 			vifX.cmd = 0;
 			vifX.pass = 0;
 			vifExecQueue(idx);
