@@ -4666,8 +4666,6 @@ void recSuperVU1::SetCacheReserve( uint reserveInMegs ) const
 void recSuperVU1::Execute(u32 cycles)
 {
 	if ((VU0.VI[REG_VPU_STAT].UL & 0x100) == 0) return;
-	pxAssert( (VU1.VI[REG_TPC].UL&7) == 0 );
-
 	// [TODO] Debugging pre- and post- hooks?
 
 	VU1.VI[REG_TPC].UL <<= 3;
