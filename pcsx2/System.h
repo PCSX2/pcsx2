@@ -54,6 +54,7 @@ namespace HostMemoryMap
 	static const uptr VIF1rec	= 0x58000000;
 	static const uptr mVU0rec	= 0x5C000000;
 	static const uptr mVU1rec	= 0x60000000;
+	static const uptr codegenAccessibleMemory = 0x64000000;
 #else
 	// PS2 main memory, SPR, and ROMs
 	static const uptr EEmem		= 0x20000000;
@@ -81,8 +82,10 @@ namespace HostMemoryMap
 
 	// microVU0 recompiler code cache area (64mb)
 	static const uptr mVU1rec	= 0x40000000;
-#endif
 
+	// Codegen-accessible static memory (4kb, x86-64 only)
+	static const uptr codegenAccessibleMemory = 0x44000000;
+#endif
 }
 
 // --------------------------------------------------------------------------------------

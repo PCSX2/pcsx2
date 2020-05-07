@@ -32,7 +32,8 @@ __aligned16 nVifCall	nVifUpk[(2*2*16)  *4];
 // This is used by the interpreted SSE unpacks only.  Recompiled SSE unpacks
 // and the interpreted C unpacks use the vif.MaskRow/MaskCol members directly.
 //  [MaskNumber][CycleNumber][Vector]
-__aligned16 u32			nVifMask[3][4][4] = {0};
+static __aligned16 u32			_nVifMask[3][4][4] = {0};
+CodegenAccessible<decltype(_nVifMask)> nVifMask = _nVifMask;
 
 // Number of bytes of data in the source stream needed for each vector.
 // [equivalent to ((32 >> VL) * (VN+1)) / 8]
