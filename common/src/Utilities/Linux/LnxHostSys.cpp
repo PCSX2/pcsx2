@@ -157,6 +157,15 @@ void *HostSys::MmapReservePtr(void *base, size_t size)
     return mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 }
 
+#ifdef __APPLE__
+static void * MmapReservePtrFixed(void *base, size_t size)
+{
+    PageSizeAssertionTest(size);
+
+    return mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+}
+#endif
+
 bool HostSys::MmapCommitPtr(void *base, size_t size, const PageProtectionMode &mode)
 {
     // In linux, reserved memory is automatically committed when its permissions are
@@ -187,8 +196,14 @@ void HostSys::MmapResetPtr(void *base, size_t size)
     // PCSX2 anyway, since MmapReset is only called when the ps2vm is suspended; so that
     // pretty well stops all PCSX2 threads anyway).
 
+#ifdef __APPLE__
+    // On macOS the OS seems to ignore our location request anyways sometimes
+    // Use MAP_FIXED instead
+    void *result = MmapReservePtrFixed(base, size);
+#else
     Munmap(base, size);
     void *result = MmapReservePtr(base, size);
+#endif
 
     pxAssertRel((uptr)result == (uptr)base, pxsFmt(
                                                 "Virtual memory decommit failed: memory at 0x%08X -> 0x%08X could not be remapped.  "
