@@ -16,7 +16,7 @@
 #pragma once
 
 static const int PCSX2_VersionHi	= 1;
-static const int PCSX2_VersionMid	= 5;
+static const int PCSX2_VersionMid	= 7;
 static const int PCSX2_VersionLo	= 0;
 static const bool PCSX2_isReleaseVersion = 0;
 
