@@ -156,6 +156,7 @@ namespace GLLoader {
 	bool found_GL_ARB_buffer_storage = false;
 	bool found_GL_ARB_shading_language_420pack = false;
 	bool found_GL_ARB_copy_image = false;
+	bool found_GL_ARB_clip_control = false;
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_ARB_clear_texture = false;
@@ -291,7 +292,7 @@ namespace GLLoader {
 		// Only for HW renderer
 		if (theApp.GetCurrentRendererType() == GSRendererType::OGL_HW) {
 			found_GL_ARB_copy_image = optional("GL_ARB_copy_image");
-			mandatory("GL_ARB_clip_control");
+			found_GL_ARB_clip_control = optional("GL_ARB_clip_control");
 		}
 
 		// Extra
