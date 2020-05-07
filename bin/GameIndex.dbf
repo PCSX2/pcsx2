@@ -7333,6 +7333,15 @@ Compat = 4
 Serial = SLES-50267
 Name   = CART Fury Championship Racing
 Region = PAL-M5
+[patches = 2547FF67]
+	author=Nachbrenner
+	// Skip PSX2_Mpeg_PlayFile__FPc.
+	patch=0,EE,00107a00,word,03e00008
+	patch=0,EE,00107a04,word,24020001
+	// Skip SuperSync__Fi.
+	patch=0,EE,00100eb0,word,03e00008
+	patch=0,EE,00100eb4,word,24020001
+[/patches]
 ---------------------------------------------
 Serial = SLES-50268
 Name   = SpyHunter
@@ -35645,7 +35654,7 @@ Name   = CART Fury - Championship Racing
 Region = NTSC-U
 Compat = 5
 [patches = 116154AD]
-	comment=patches by Nachbrenner
+	author=Nachbrenner
 	// Skip PSX2_Mpeg_PlayFile__FPc.
 	patch=0,EE,00107a00,word,03e00008
 	patch=0,EE,00107a04,word,24020001
