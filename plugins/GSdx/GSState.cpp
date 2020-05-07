@@ -329,6 +329,7 @@ void GSState::ResetHandlers()
 
 	m_fpGIFRegHandlers[GIF_A_D_REG_PRIM] = &GSState::GIFRegHandlerPRIM;
 	m_fpGIFRegHandlers[GIF_A_D_REG_RGBAQ] = &GSState::GIFRegHandlerRGBAQ;
+	m_fpGIFRegHandlers[GIF_A_D_REG_RGBAQ + 0x10] = &GSState::GIFRegHandlerRGBAQ;
 	m_fpGIFRegHandlers[GIF_A_D_REG_ST] = &GSState::GIFRegHandlerST;
 	m_fpGIFRegHandlers[GIF_A_D_REG_UV] = m_userhacks_wildhack ? &GSState::GIFRegHandlerUV_Hack : &GSState::GIFRegHandlerUV;
 	m_fpGIFRegHandlers[GIF_A_D_REG_TEX0_1] = &GSState::GIFRegHandlerTEX0<0>;
