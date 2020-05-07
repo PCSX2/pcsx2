@@ -15977,6 +15977,7 @@ Name   = Let's Make a Soccer Team!
 Region = PAL-M5
 Compat = 5
 eeClampMode = 3 // Makes the game to correctly register left and right Dpad button input.
+MemCardFilter = SLES-54151/SLES-54153 // Enables import of players from completed career saves.
 ---------------------------------------------
 Serial = SLES-54152
 Name   = Ant Bully, The
@@ -15985,6 +15986,7 @@ Region = PAL-M5
 Serial = SLES-54153
 Name   = Virtua Pro Football
 Region = PAL-M5
+MemCardFilter = SLES-54153/SLES-54151 // Enables import of teams.
 ---------------------------------------------
 Serial = SLES-54154
 Name   = D-Unit Drift Racing
@@ -26950,6 +26952,7 @@ Serial = SLPM-66316
 Name   = Pro Soccer Club o Tsukurou! Europe Championship
 Region = NTSC-J
 eeClampMode = 3 // Makes the game to correctly register left and right Dpad button input.
+MemCardFilter = SLPM-66316/SLPM-66324/SLPM-66442 // Enables import of players from completed career saves.
 ---------------------------------------------
 Serial = SLPM-66317
 Name   = Capcom Classics Collection Vol.1
@@ -26983,6 +26986,7 @@ Region = NTSC-J
 Serial = SLPM-66324
 Name   = World Football Climax
 Region = NTSC-J
+MemCardFilter = SLPM-66324/SLPM-66316/SLPM-66442 // SLPM-66316 enables import of teams.
 ---------------------------------------------
 Serial = SLPM-66325
 Name   = Castlevania - Lament of Innocence [Konami Palace Selection]
@@ -27375,6 +27379,11 @@ Region = NTSC-J
 Serial = SLPM-66441
 Name   = Oookuki
 Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66442
+Name = World Football Climax
+Region = NTSC-J
+MemCardFilter = SLPM-66442/SLPM-66316/SLPM-66324 // SLPM-66316 enables import of teams.
 ---------------------------------------------
 Serial = SLPM-66443
 Name   = FIFA Street 2
