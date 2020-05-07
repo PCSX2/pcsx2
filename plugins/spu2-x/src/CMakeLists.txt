@@ -45,7 +45,6 @@ set(spu2xSources
     RegTable.cpp
     Reverb.cpp
     SndOut.cpp
-    SndOut_Portaudio.cpp
     SndOut_SDL.cpp
     spu2freeze.cpp
     Spu2replay.cpp
@@ -111,7 +110,6 @@ else()
     include_directories(Linux)
 endif()
 
-
 set(spu2xFinalSources
     ${spu2xSources}
     ${spu2xHeaders}
@@ -121,10 +119,25 @@ set(spu2xFinalSources
 set(spu2xFinalLibs
     Utilities_NO_TLS
     ${ALSA_LIBRARIES}
-    ${PORTAUDIO_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${SOUNDTOUCH_LIBRARIES}
 )
+
+if (PORTAUDIO_FOUND)
+    set(spu2xFinalFlags
+        ${spu2xFinalFlags}
+        "-DSPU2X_PORTAUDIO"
+    )
+
+    LIST(APPEND spu2xFinalSources
+         SndOut_Portaudio.cpp
+    )
+
+    set(spu2xFinalLibs
+        ${spu2xFinalLibs}
+        ${PORTAUDIO_LIBRARIES}
+    )
+endif()
 
 if (SDL2_API)
     set(spu2xFinalLibs

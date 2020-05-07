@@ -76,7 +76,9 @@ bool _visual_debug_enabled = false; // windows only feature
 u32 OutputModule = 0;
 int SndOutLatencyMS = 300;
 int SynchMode = 0; // Time Stretch, Async or Disabled
+#ifdef SPU2X_PORTAUDIO
 static u32 OutputAPI = 0;
+#endif
 static u32 SdlOutputAPI = 0;
 
 int numSpeakers = 0;
@@ -122,7 +124,7 @@ void ReadSettings()
 
     wxString temp;
 
-#if SDL_MAJOR_VERSION >= 2
+#if SDL_MAJOR_VERSION >= 2 || !defined(SPU2X_PORTAUDIO)
     CfgReadStr(L"OUTPUT", L"Output_Module", temp, SDLOut->GetIdent());
 #else
     CfgReadStr(L"OUTPUT", L"Output_Module", temp, PortaudioOut->GetIdent());
@@ -130,6 +132,7 @@ void ReadSettings()
     OutputModule = FindOutputModuleById(temp.c_str()); // find the driver index of this module
 
 // find current API
+#ifdef SPU2X_PORTAUDIO
 #ifdef __linux__
     CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"ALSA");
     if (temp == L"OSS")
@@ -141,6 +144,7 @@ void ReadSettings()
 #else
     CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"OSS");
     OutputAPI = 0; // L"OSS"
+#endif
 #endif
 
 #ifdef __unix__
@@ -158,7 +162,9 @@ void ReadSettings()
     SndOutLatencyMS = CfgReadInt(L"OUTPUT", L"Latency", 300);
     SynchMode = CfgReadInt(L"OUTPUT", L"Synch_Mode", 0);
 
+#ifdef SPU2X_PORTAUDIO
     PortaudioOut->ReadSettings();
+#endif
 #ifdef __unix__
     SDLOut->ReadSettings();
 #endif
@@ -209,7 +215,9 @@ void WriteSettings()
     CfgWriteInt(L"OUTPUT", L"Synch_Mode", SynchMode);
     CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
 
+#ifdef SPU2X_PORTAUDIO
     PortaudioOut->WriteSettings();
+#endif
 #ifdef __unix__
     SDLOut->WriteSettings();
 #endif
@@ -273,7 +281,9 @@ void DisplayDialog()
 
     GtkWidget *output_frame, *output_box;
     GtkWidget *mod_label, *mod_box;
+#ifdef SPU2X_PORTAUDIO
     GtkWidget *api_label, *api_box;
+#endif
 #if SDL_MAJOR_VERSION >= 2
     GtkWidget *sdl_api_label, *sdl_api_box;
 #endif
@@ -309,11 +319,14 @@ void DisplayDialog()
     mod_label = gtk_label_new("Module:");
     mod_box = gtk_combo_box_text_new();
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "0 - No Sound (Emulate SPU2 only)");
+#ifdef SPU2X_PORTAUDIO
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "1 - PortAudio (Cross-platform)");
+#endif
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "2 - SDL Audio (Recommended for PulseAudio)");
     //gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "3 - Alsa (probably doesn't work)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(mod_box), OutputModule);
 
+#ifdef SPU2X_PORTAUDIO
     api_label = gtk_label_new("PortAudio API:");
     api_box = gtk_combo_box_text_new();
 #ifdef __linux__
@@ -325,6 +338,7 @@ void DisplayDialog()
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "OSS");
 #endif
     gtk_combo_box_set_active(GTK_COMBO_BOX(api_box), OutputAPI);
+#endif
 
 #if SDL_MAJOR_VERSION >= 2
     sdl_api_label = gtk_label_new("SDL API:");
@@ -383,8 +397,10 @@ void DisplayDialog()
 
     gtk_container_add(GTK_CONTAINER(output_box), mod_label);
     gtk_container_add(GTK_CONTAINER(output_box), mod_box);
+#ifdef SPU2X_PORTAUDIO
     gtk_container_add(GTK_CONTAINER(output_box), api_label);
     gtk_container_add(GTK_CONTAINER(output_box), api_box);
+#endif
 #if SDL_MAJOR_VERSION >= 2
     gtk_container_add(GTK_CONTAINER(output_box), sdl_api_label);
     gtk_container_add(GTK_CONTAINER(output_box), sdl_api_box);
@@ -430,6 +446,7 @@ void DisplayDialog()
         if (gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box)) != -1)
             OutputModule = gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box));
 
+#ifdef SPU2X_PORTAUDIO
         if (gtk_combo_box_get_active(GTK_COMBO_BOX(api_box)) != -1) {
             OutputAPI = gtk_combo_box_get_active(GTK_COMBO_BOX(api_box));
 #ifdef __linux__
@@ -456,6 +473,7 @@ void DisplayDialog()
             }
 #endif
         }
+#endif
 
 #if SDL_MAJOR_VERSION >= 2
         if (gtk_combo_box_get_active(GTK_COMBO_BOX(sdl_api_box)) != -1) {
