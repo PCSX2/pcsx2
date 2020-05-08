@@ -195,8 +195,8 @@ endif()
 
 find_package(HarfBuzz)
 
-if(HARFBUZZ_FOUND)
-include_directories(${HARFBUZZ_INCLUDE_DIRS})
+if(HarfBuzz_FOUND)
+include_directories(${HarfBuzz_INCLUDE_DIRS})
 endif()
 
 #----------------------------------------
