@@ -270,16 +270,20 @@ static __fi void SibSB(u32 ss, u32 index, u32 base)
 
 void EmitSibMagic(uint regfield, const void *address)
 {
-    ModRM(0, regfield, ModRm_UseDisp32);
-
-    // SIB encoding only supports 32bit offsets, even on x86_64
-    // We must make sure that the displacement is within the 32bit range
-    // Else we will fail out in a spectacular fashion
     sptr displacement = (sptr)address;
-#ifdef __M_X86_64
-    // We're generating a rip-relative address
-    displacement -= (sptr)(x86Ptr + sizeof(s32));
-    pxAssertDev(displacement == (s32)displacement, "SIB target is too far away, needs an indirect register");
+#ifndef __M_X86_64
+    ModRM(0, regfield, ModRm_UseDisp32);
+#else
+    sptr ripRelative = (sptr)address - ((sptr)x86Ptr + sizeof(s8) + sizeof(s32));
+    // Can we use a rip-relative address?  (Prefer this over eiz because it's a byte shorter)
+    if (ripRelative == (s32)ripRelative) {
+        ModRM(0, regfield, ModRm_UseDisp32);
+        displacement = ripRelative;
+    } else {
+        pxAssertDev(displacement == (s32)displacement, "SIB target is too far away, needs an indirect register");
+        ModRM(0, regfield, ModRm_UseSib);
+        SibSB(0, ModRm_EIZ, ModRm_UseDisp32);
+    }
 #endif
 
     xWrite<s32>((s32)displacement);

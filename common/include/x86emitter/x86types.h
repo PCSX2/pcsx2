@@ -181,6 +181,7 @@ enum SSE2_ComparisonType {
 
 static const int ModRm_UseSib = 4;    // same index value as ESP (used in RM field)
 static const int ModRm_UseDisp32 = 5; // same index value as EBP (used in Mod field)
+static const int ModRm_EIZ = 4;       // same index value as ESP (used in Sib Index field)
 
 extern void xSetPtr(void *ptr);
 extern void xAlignPtr(uint bytes);
