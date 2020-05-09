@@ -47,11 +47,6 @@ u64 GetPhysicalMemory()
     return status.ullTotalPhys;
 }
 
-// Windows SDK 7 provides this but previous ones do not, so roll our own in those cases:
-#ifndef VER_SUITE_WH_SERVER
-#define VER_SUITE_WH_SERVER 0x00008000
-#endif
-
 typedef void(WINAPI *PGNSI)(LPSYSTEM_INFO);
 typedef BOOL(WINAPI *PGPI)(DWORD, DWORD, DWORD, DWORD, PDWORD);
 
@@ -108,7 +103,7 @@ wxString GetOSVersionString()
     else
         GetSystemInfo(&si);
 
-    if (VER_PLATFORM_WIN32_NT != osvi.dwPlatformId || osvi.dwMajorVersion <= 5)
+    if (VER_PLATFORM_WIN32_NT != osvi.dwPlatformId || osvi.dwMajorVersion <= 5 || (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion <= 2))
         return L"Unsupported Operating System!";
 
     retval += L"Microsoft ";
@@ -157,10 +152,7 @@ wxString GetOSVersionString()
         }
     }
 
-    if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion > 1) {
-        if (osvi.dwMinorVersion == 2)
-            retval += (osvi.wProductType == VER_NT_WORKSTATION) ? L"Windows 8 " : L"Windows Server 2012 ";
-
+    if (osvi.dwMajorVersion == 6) {
         if (osvi.dwMinorVersion == 3)
             retval += (osvi.wProductType == VER_NT_WORKSTATION) ? L"Windows 8.1 " : L"Windows Server 2012 R2 ";
 
@@ -202,74 +194,7 @@ wxString GetOSVersionString()
         }
     }
 
-    if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion <= 1) {
-        if (osvi.dwMinorVersion == 0)
-            retval += (osvi.wProductType == VER_NT_WORKSTATION) ? L"Windows Vista " : L"Windows Server 2008 ";
-
-        if (osvi.dwMinorVersion == 1)
-            retval += (osvi.wProductType == VER_NT_WORKSTATION) ? L"Windows 7 " : L"Windows Server 2008 R2 ";
-
-        pGPI = (PGPI)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetProductInfo");
-
-        pGPI(osvi.dwMajorVersion, osvi.dwMinorVersion, 0, 0, &dwType);
-
-        switch (dwType) {
-            case PRODUCT_ULTIMATE:
-                retval += L"Ultimate Edition";
-                break;
-            case PRODUCT_HOME_PREMIUM:
-                retval += L"Home Premium Edition";
-                break;
-            case PRODUCT_HOME_BASIC:
-                retval += L"Home Basic Edition";
-                break;
-            case PRODUCT_ENTERPRISE:
-                retval += L"Enterprise Edition";
-                break;
-            case PRODUCT_BUSINESS:
-                retval += L"Business Edition";
-                break;
-            case PRODUCT_STARTER:
-                retval += L"Starter Edition";
-                break;
-            case PRODUCT_CLUSTER_SERVER:
-                retval += L"Cluster Server Edition";
-                break;
-            case PRODUCT_DATACENTER_SERVER:
-                retval += L"Datacenter Edition";
-                break;
-            case PRODUCT_DATACENTER_SERVER_CORE:
-                retval += L"Datacenter Edition (core installation)";
-                break;
-            case PRODUCT_ENTERPRISE_SERVER:
-                retval += L"Enterprise Edition";
-                break;
-            case PRODUCT_ENTERPRISE_SERVER_CORE:
-                retval += L"Enterprise Edition (core installation)";
-                break;
-            case PRODUCT_SMALLBUSINESS_SERVER:
-                retval += L"Small Business Server";
-                break;
-            case PRODUCT_SMALLBUSINESS_SERVER_PREMIUM:
-                retval += L"Small Business Server Premium Edition";
-                break;
-            case PRODUCT_STANDARD_SERVER:
-                retval += L"Standard Edition";
-                break;
-            case PRODUCT_STANDARD_SERVER_CORE:
-                retval += L"Standard Edition (core installation)";
-                break;
-            case PRODUCT_WEB_SERVER:
-                retval += L"Web Server Edition";
-                break;
-        }
-    }
-
-    // Include service pack (if any) and build number.
-
-    if (_tcslen(osvi.szCSDVersion) > 0)
-        retval += (wxString)L" " + osvi.szCSDVersion;
-
+    // Include build number.
     retval += wxsFormat(L" (build %d)", osvi.dwBuildNumber);
 
     if (osvi.dwMajorVersion >= 6) {
