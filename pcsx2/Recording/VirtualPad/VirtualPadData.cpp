@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#ifndef DISABLE_RECORDING
+
 #include "Recording/VirtualPad/VirtualPadData.h"
 
 bool VirtualPadData::UpdateVirtualPadData(u16 bufIndex, PadData *padData, bool ignoreRealController, bool readOnly)

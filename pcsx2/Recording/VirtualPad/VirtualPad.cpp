@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#ifndef DISABLE_RECORDING
+
 #include <math.h>
 
 #include "App.h"
@@ -244,13 +246,13 @@ void VirtualPad::enablePadElements(bool enable)
 
 void VirtualPad::SetReadOnlyMode()
 {
-    enablePadElements(true);
+    enablePadElements(false);
     readOnlyMode = true;
 }
 
 void VirtualPad::ClearReadOnlyMode()
 {
-    enablePadElements(false);
+    enablePadElements(true);
     readOnlyMode = false;
 }
 

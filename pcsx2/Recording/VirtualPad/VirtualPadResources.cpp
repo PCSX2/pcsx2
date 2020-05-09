@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#ifndef DISABLE_RECORDING
+
 #include <wx/spinctrl.h>
 
 #include "Recording/VirtualPad/VirtualPadResources.h"

@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#ifndef DISABLE_RECORDING
+
 #include "DebugTools/Debug.h"
 
 #include "Recording/PadData.h"

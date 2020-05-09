@@ -476,25 +476,54 @@ set(pcsx2RDebugHeaders
 	RDebug/deci2_ttyp.h)
 
 # Recording sources
+set(rec_src "Recording")
+set(rec_vp_src "${rec_src}/VirtualPad")
 set(pcsx2RecordingSources
-	Recording/InputRecording.cpp
-	Recording/InputRecordingControls.cpp
-	Recording/InputRecordingFile.cpp
-	Recording/NewRecordingFrame.cpp
-	Recording/PadData.cpp
-	Recording/RecordingInputManager.cpp
-	Recording/VirtualPad.cpp
+	${rec_src}/InputRecording.cpp
+    ${rec_src}/InputRecordingControls.cpp
+	${rec_src}/InputRecordingFile.cpp
+	${rec_src}/NewRecordingFrame.cpp
+	${rec_src}/PadData.cpp
+	${rec_vp_src}/VirtualPad.cpp
+	${rec_vp_src}/VirtualPadData.cpp
+	${rec_vp_src}/VirtualPadResources.cpp
 )
 
 # Recording headers
 set(pcsx2RecordingHeaders
-	Recording/InputRecording.h
-	Recording/InputRecordingControls.h
-	Recording/InputRecordingFile.h
-	Recording/NewRecordingFrame.h
-	Recording/PadData.h
-	Recording/RecordingInputManager.h
-	Recording/VirtualPad.h
+	${rec_src}/InputRecording.h
+    ${rec_src}/InputRecordingControls.h
+	${rec_src}/InputRecordingFile.h
+	${rec_src}/NewRecordingFrame.h
+	${rec_src}/PadData.h
+	${rec_vp_src}/VirtualPad.h
+	${rec_vp_src}/VirtualPadData.h
+	${rec_vp_src}/VirtualPadResources.h
+)
+
+# Warning: the declaration of the .h are mandatory in case of resources files. It will ensure the creation
+# from the bin2cpp tools at the good moment (ie .h must be created before the pcsx2 compilation)
+# Recording - VirtualPad resources headers
+set(res_rec_vp_bin "${CMAKE_BINARY_DIR}/pcsx2/Recording/VirtualPad/img")
+set(res_rec_vp_src "${CMAKE_SOURCE_DIR}/pcsx2/Recording/VirtualPad/img")
+set(pcsx2RecordingVirtualPadResources
+	${res_rec_vp_bin}/circlePressed.h
+	${res_rec_vp_bin}/controller.h
+	${res_rec_vp_bin}/crossPressed.h
+	${res_rec_vp_bin}/downPressed.h
+	${res_rec_vp_bin}/l1Pressed.h
+	${res_rec_vp_bin}/l2Pressed.h
+	${res_rec_vp_bin}/l3Pressed.h
+	${res_rec_vp_bin}/leftPressed.h
+	${res_rec_vp_bin}/r1Pressed.h
+	${res_rec_vp_bin}/r2Pressed.h
+	${res_rec_vp_bin}/r3Pressed.h
+	${res_rec_vp_bin}/rightPressed.h
+	${res_rec_vp_bin}/selectPressed.h
+	${res_rec_vp_bin}/squarePressed.h
+	${res_rec_vp_bin}/startPressed.h
+	${res_rec_vp_bin}/trianglePressed.h
+	${res_rec_vp_bin}/upPressed.h
 )
 
 # System sources
@@ -631,6 +660,7 @@ set(Common
 	${pcsx2ps2Headers}
 	${pcsx2RecordingSources}
 	${pcsx2RecordingHeaders}
+	${pcsx2RecordingVirtualPadResources}
 	${pcsx2SystemSources}
 	${pcsx2SystemHeaders}
 	${pcsx2UtilitiesSources}
@@ -726,6 +756,15 @@ foreach(res_file IN ITEMS
         ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
         ConfigIcon_Paths ConfigIcon_Plugins ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
     add_custom_command(OUTPUT  "${res_bin}/${res_file}.h" COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_src}/${res_file}.png" "${res_bin}/${res_file}" )
+endforeach()
+
+### Generate Recording resource files
+file(MAKE_DIRECTORY ${res_rec_vp_bin})
+
+foreach(res_file IN ITEMS
+				circlePressed controller crossPressed downPressed l1Pressed l2Pressed l3Pressed leftPressed
+				r1Pressed r2Pressed r3Pressed rightPressed selectPressed squarePressed startPressed trianglePressed upPressed)
+    add_custom_command(OUTPUT  "${res_rec_vp_bin}/${res_file}.h" COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_rec_vp_src}/${res_file}.png" "${res_rec_vp_bin}/${res_file}" )
 endforeach()
 
 if(USE_VTUNE)
