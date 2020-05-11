@@ -41,7 +41,6 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
 	m_large_framebuffer  = theApp.GetConfigB("large_framebuffer");
 	m_accurate_date = theApp.GetConfigI("accurate_date");
-	m_dithering = theApp.GetConfigI("dithering_ps2"); // 0 off, 1 auto, 2 auto no scale
 
 	if (theApp.GetConfigB("UserHacks")) {
 		m_userhacks_enabled_gs_mem_clear = !theApp.GetConfigB("UserHacks_Disable_Safe_Features");
