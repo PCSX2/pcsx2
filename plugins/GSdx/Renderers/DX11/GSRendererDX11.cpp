@@ -496,7 +496,7 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 
 void GSRendererDX11::EmulateBlending()
 {
-	// Partial port of OGL SW blending. Currently only works for accumulation and no barrier blend.
+	// Partial port of OGL SW blending. Currently only works for accumulation and non recursive blend.
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
 	bool sw_blending         = false;
 
@@ -532,15 +532,15 @@ void GSRendererDX11::EmulateBlending()
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
 	const bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
 
-	// Blending doesn't require barrier
-	const bool no_barrier_blend = !!(blend_flag & BLEND_NO_BAR);
+	// Blending doesn't require sampling of the rt
+	const bool blend_non_recursive = !!(blend_flag & BLEND_NO_REC);
 
 	switch (m_sw_blending)
 	{
 		case ACC_BLEND_HIGH_D3D11:
 		case ACC_BLEND_MEDIUM_D3D11:
 		case ACC_BLEND_BASIC_D3D11:
-			sw_blending |= accumulation_blend || no_barrier_blend;
+			sw_blending |= accumulation_blend || blend_non_recursive;
 			// fall through
 		default: break;
 	}
@@ -549,7 +549,7 @@ void GSRendererDX11::EmulateBlending()
 	if (m_env.COLCLAMP.CLAMP == 0)
 	{
 		// fprintf(stderr, "%d: COLCLIP Info (Blending: %d/%d/%d/%d)\n", s_n, ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
-		if (no_barrier_blend)
+		if (blend_non_recursive)
 		{
 			// The fastest algo that requires a single pass
 			// fprintf(stderr, "%d: COLCLIP Free mode ENABLED\n", s_n);
@@ -598,8 +598,8 @@ void GSRendererDX11::EmulateBlending()
 			// Disable HW blending
 			m_om_bsel.abe = 0;
 
-			// Only BLEND_NO_BAR should hit this code path for now
-			ASSERT(no_barrier_blend);
+			// Only BLEND_NO_REC should hit this code path for now
+			ASSERT(blend_non_recursive);
 		}
 
 		// Require the fix alpha vlaue

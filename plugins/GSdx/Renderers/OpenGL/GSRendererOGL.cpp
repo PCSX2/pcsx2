@@ -486,15 +486,15 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 	const int blend_flag = m_dev->GetBlendFlags(blend_index);
 
 	// SW Blend is (nearly) free. Let's use it.
-	const bool impossible_or_free_blend = (blend_flag & (BLEND_NO_BAR|BLEND_A_MAX|BLEND_ACCU)) // Blend doesn't requires the costly barrier
+	const bool impossible_or_free_blend = (blend_flag & (BLEND_NO_REC|BLEND_A_MAX|BLEND_ACCU)) // Blend doesn't requires the costly barrier
 		|| (m_prim_overlap == PRIM_OVERLAP_NO) // Blend can be done in a single draw
 		|| (m_require_full_barrier);           // Another effect (for example fbmask) already requires a full barrier
 
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
 	bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
 
-	// Blending doesn't require barrier
-	const bool no_barrier_blend = !!(blend_flag & BLEND_NO_BAR);
+	// Blending doesn't require barrier, or sampling of the rt
+	const bool blend_non_recursive = !!(blend_flag & BLEND_NO_REC);
 
 	// Warning no break on purpose
 	// Note: the "fall through" comments tell gcc not to complain about not having breaks.
@@ -532,7 +532,7 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 		// Safe FBMASK, avoid hitting accumulation mode on 16bit,
 		// fixes shadows in Superman shadows of Apokolips.
 		const bool sw_fbmask_colclip = !m_require_one_barrier && m_ps_sel.fbmask;
-		const bool free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || no_barrier_blend || sw_fbmask_colclip;
+		const bool free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || blend_non_recursive || sw_fbmask_colclip;
 		GL_INS("COLCLIP Info (Blending: %d/%d/%d/%d, SW FBMASK: %d, OVERLAP: %d)",
 			ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D, sw_fbmask_colclip, m_prim_overlap);
 		if (free_colclip) {
@@ -592,7 +592,7 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 			// Disable HW blending
 			dev->OMSetBlendState();
 
-			m_require_full_barrier |= !no_barrier_blend;
+			m_require_full_barrier |= !blend_non_recursive;
 		}
 
 		// Require the fix alpha vlaue
