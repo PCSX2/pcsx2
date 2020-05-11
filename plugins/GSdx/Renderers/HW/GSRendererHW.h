@@ -158,7 +158,6 @@ protected:
 
 	int m_accurate_date;
 	int m_sw_blending;
-	int m_dithering;
 
 	bool m_channel_shuffle;
 
