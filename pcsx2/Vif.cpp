@@ -229,7 +229,6 @@ __fi void vif1FBRST(u32 value) {
 		//   just stoppin the VIF (linuz).
 		vif1Regs.stat.VSS = true;
 		vif1Regs.stat.VPS = VPS_IDLE;
-		cpuRegs.interrupt &= ~((1 << 1) | (1 << 10)); //Stop all vif1 DMA's
 		vif1.vifstalled.enabled = VifStallEnable(vif1ch);
 		vif1.vifstalled.value = VIF_IRQ_STALL;
 	}
