@@ -1063,7 +1063,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 			bool mipmap = IsMipMapActive();
 
-			GIFRegTEX0 TEX0 = m_context->GetSizeFixedTEX0(s_n, m_vt.m_min.t.xyxy(m_vt.m_max.t), m_vt.IsLinear(), mipmap);
+			GIFRegTEX0 TEX0 = m_context->GetSizeFixedTEX0(m_vt.m_min.t.xyxy(m_vt.m_max.t), m_vt.IsLinear(), mipmap);
 
 			GSVector4i r;
 
