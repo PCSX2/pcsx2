@@ -70,7 +70,6 @@ public:
 	GSVector2i GetInternalResolution();
 	void SetAspectRatio(int aspect) {m_aspectratio = aspect;}
 	void SetVSync(int vsync);
-	virtual void SetExclusive(bool isExcl) {}
 
 	virtual bool BeginCapture();
 	virtual void EndCapture();

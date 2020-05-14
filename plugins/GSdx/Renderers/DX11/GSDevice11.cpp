@@ -463,14 +463,6 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	m_dev->CreateBlendState(&blend, &m_date.bs);
 
-	// Exclusive/Fullscreen flip, issued for legacy (managed) windows only.  GSopen2 style
-	// emulators will issue the flip themselves later on.
-
-	if(m_wnd->IsManaged())
-	{
-		SetExclusive(!theApp.GetConfigB("windowed"));
-	}
-
 	GSVector2i tex_font = m_osd.get_texture_font_size();
 
 	m_font = std::unique_ptr<GSTexture>(
@@ -505,28 +497,6 @@ bool GSDevice11::Reset(int w, int h)
 	}
 
 	return true;
-}
-
-void GSDevice11::SetExclusive(bool isExcl)
-{
-	if(!m_swapchain) return;
-
-	// TODO : Support for alternative display modes, by finishing this code below:
-	//  Video mode info should be pulled form config/ini.
-
-	/*DXGI_MODE_DESC desc;
-	memset(&desc, 0, sizeof(desc));
-	desc.RefreshRate = 0;		// must be zero for best results.
-
-	m_swapchain->ResizeTarget(&desc);
-	*/
-
-	HRESULT hr = m_swapchain->SetFullscreenState(isExcl, NULL);
-
-	if(hr == DXGI_ERROR_NOT_CURRENTLY_AVAILABLE)
-	{
-		fprintf(stderr, "(GSdx10) SetExclusive(%s) failed; request unavailable.", isExcl ? "true" : "false");
-	}
 }
 
 void GSDevice11::SetVSync(int vsync)
