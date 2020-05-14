@@ -500,7 +500,6 @@ public:
 	void DrawPrimitive() final;
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count) final;
-	void Dispatch(uint32 x, uint32 y, uint32 z);
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) final;
 	void ClearRenderTarget(GSTexture* t, uint32 c) final;

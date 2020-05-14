@@ -612,11 +612,6 @@ void GSDevice11::DrawIndexedPrimitive(int offset, int count)
 	AfterDraw();
 }
 
-void GSDevice11::Dispatch(uint32 x, uint32 y, uint32 z)
-{
-	m_ctx->Dispatch(x, y, z);
-}
-
 void GSDevice11::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
 	if (!t) return;
