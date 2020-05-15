@@ -2215,6 +2215,7 @@ MemCardFilter = SCES-53286/SCES-53285
 Serial = SCES-53300
 Name   = SOCOM 3 - U.S. Navy SEALs
 Region = PAL-M5
+vuClampMode = 0 // Fixes SPS ingame.
 ---------------------------------------------
 Serial = SCES-53304
 Name   = Buzz! The Music Quiz
@@ -2615,6 +2616,8 @@ Serial = SCES-54477
 Name   = Socom US Navy Seals - Combined Assault
 Region = PAL-M5
 Compat = 5
+vuRoundMode = 0 // Fixes dissapearing characters
+vuClampMode = 2 // Fixes SPS ingame
 ---------------------------------------------
 Serial = SCES-54497
 Name   = Buzz! Le Mega Quiz
@@ -3059,6 +3062,7 @@ Compat = 5
 Serial = SCKA-20064
 Name   = SOCOM 3 - U.S. Navy SEALs
 Region = NTSC-K
+vuClampMode = 0 // Fixes SPS ingame.
 ---------------------------------------------
 Serial = SCKA-20069
 Name   = Siren 2
@@ -4682,6 +4686,32 @@ Serial = SCUS-97142
 Name   = Primal - Civilization Is Only Skin Deep
 Region = NTSC-U
 Compat = 5
+[patches = FCD89DC3]
+	author=Raziel I.C.H.I. Znot
+	comment=Performance fix
+	//PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
+	//so the game will wait endlessly in a wait loop until COP2 gets around to
+	//setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
+	//VU0 side, remove wait loop
+	patch=1,EE,0040F110,word,8000033c
+	patch=1,EE,0040F128,word,8000033c
+	patch=1,EE,0040F168,word,8000033c
+	patch=1,EE,0040F180,word,8000033c
+	//duplicate, not sure that it's used, but patched anyway
+	patch=1,EE,0040F720,word,8000033c
+	patch=1,EE,0040F738,word,8000033c
+	patch=1,EE,0040F778,word,8000033c
+	patch=1,EE,0040F790,word,8000033c
+	//EE side, rearrange and clean code so VU0 receives all data at once
+	patch=1,EE,00399B14,word,00000000
+	patch=1,EE,00399B58,word,48A44800
+	patch=1,EE,00399B5C,word,4A00D839
+	patch=1,EE,00399B60,word,00000000
+	patch=1,EE,00399BA4,word,00000000
+	patch=1,EE,00399C10,word,48A44800
+	patch=1,EE,00399C14,word,4A00D839
+	patch=1,EE,00399C18,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SCUS-97144
 Name   = PlayStation Underground 5.1
@@ -5765,6 +5795,14 @@ Serial = SCUS-97474
 Name   = SOCOM 3 - U.S. Navy SEALs
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0 // Fixes SPS ingame.
+[patches = 75ED4282]
+	author=CK1
+	// Remove the need of the VIF Fifo.
+	// Solve a massive slowdown when looking at the sun when ingame.
+	patch=1,EE,0019eb40,word,00000000
+	patch=1,EE,0019eb4c,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SCUS-97475
 Name   = SOCOM 3 - U.S. Navy SEALs [Regular Demo]
@@ -5829,6 +5867,7 @@ Compat = 5
 Serial = SCUS-97489
 Name   = SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]
 Region = NTSC-U
+vuClampMode = 0 // Fixes SPS ingame.
 ---------------------------------------------
 Serial = SCUS-97490
 Name   = Rogue Galaxy
@@ -6020,6 +6059,8 @@ Serial = SCUS-97545
 Name   = SOCOM - U.S. Navy SEALs - Combined Assault
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0 // Fixes dissapearing characters
+vuClampMode = 2 // Fixes SPS ingame
 ---------------------------------------------
 Serial = SCUS-97548
 Name   = Ape Escape 3 [Demo]
@@ -6049,6 +6090,8 @@ Compat = 5
 Serial = SCUS-97560
 Name   = SOCOM - U.S. Navy SEALs - Combined Assault [Demo]
 Region = NTSC-U
+vuRoundMode = 0 // Fixes dissapearing characters
+vuClampMode = 2 // Fixes SPS ingame
 ---------------------------------------------
 Serial = SCUS-97564
 Name   = Jampack Demo Disc Vol.15 [T-Rated]
@@ -7333,6 +7376,15 @@ Compat = 4
 Serial = SLES-50267
 Name   = CART Fury Championship Racing
 Region = PAL-M5
+[patches = 2547FF67]
+	author=Nachbrenner
+	// Skip PSX2_Mpeg_PlayFile__FPc.
+	patch=0,EE,00107a00,word,03e00008
+	patch=0,EE,00107a04,word,24020001
+	// Skip SuperSync__Fi.
+	patch=0,EE,00100eb0,word,03e00008
+	patch=0,EE,00100eb4,word,24020001
+[/patches]
 ---------------------------------------------
 Serial = SLES-50268
 Name   = SpyHunter
@@ -10595,11 +10647,27 @@ vuRoundMode = 0 // Crashes without.
 Serial = SLES-51753
 Name   = True Crime - Streets of L.A.
 Region = PAL-E
+[patches = C96245F4]
+	author=PSI
+	// Due to an edge case with SIF0 DMA that isn't handled properly in PCSX2
+	// the game accidentally resets DVD streams, which causes it to crash.
+	// This patch forces the streaming module to use different buffers
+	// which prevents the DVD streams from being cleared.
+	patch=1,EE,00480640,word,10000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-51754
 Name   = True Crime - Streets of L.A.
 Region = PAL-M5
 Compat = 3
+[patches = 6B9AEA0D]
+	author=PSI
+	// Due to an edge case with SIF0 DMA that isn't handled properly in PCSX2
+	// the game accidentally resets DVD streams, which causes it to crash.
+	// This patch forces the streaming module to use different buffers
+	// which prevents the DVD streams from being cleared.
+	patch=1,EE,00480DB0,word,10000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-51755
 Name   = Disney-Pixar's Finding Nemo
@@ -11954,11 +12022,12 @@ Region = PAL-E
 Serial = SLES-52394
 Name   = UFEA Euro 2004
 Region = PAL-E
+vuClampMode = 3 // Fixes dissapearing ball and black box issues.
 ---------------------------------------------
 Serial = SLES-52395
 Name   = UFEA Euro 2004
 Region = PAL-F-G
-vuClampMode = 2 // Fixes black box issues everywhere ingame.
+vuClampMode = 3 // Fixes dissapearing ball and black box issues.
 ---------------------------------------------
 Serial = SLES-52396
 Name   = Euro 2004
@@ -14086,6 +14155,7 @@ Region = PAL-M5
 Serial = SLES-53300
 Name   = SOCOM 3 - U.S. Navy SEALs
 Region = PAL-Unk
+vuClampMode = 0 // Fixes SPS ingame.
 ---------------------------------------------
 Serial = SLES-53301
 Name   = Bomberman Hardball
@@ -15490,6 +15560,7 @@ Region = PAL-M10
 Serial = SLES-53904
 Name   = DT Racer
 Region = PAL-M5
+GIFFIFOHack = 1 //Fixes corrupted graphics in the menus
 ---------------------------------------------
 Serial = SLES-53906
 Name   = 50cent - Bulletproof
@@ -15977,6 +16048,7 @@ Name   = Let's Make a Soccer Team!
 Region = PAL-M5
 Compat = 5
 eeClampMode = 3 // Makes the game to correctly register left and right Dpad button input.
+MemCardFilter = SLES-54151/SLES-54153 // Enables import of players from completed career saves.
 ---------------------------------------------
 Serial = SLES-54152
 Name   = Ant Bully, The
@@ -15985,6 +16057,7 @@ Region = PAL-M5
 Serial = SLES-54153
 Name   = Virtua Pro Football
 Region = PAL-M5
+MemCardFilter = SLES-54153/SLES-54151 // Enables import of teams.
 ---------------------------------------------
 Serial = SLES-54154
 Name   = D-Unit Drift Racing
@@ -26950,6 +27023,7 @@ Serial = SLPM-66316
 Name   = Pro Soccer Club o Tsukurou! Europe Championship
 Region = NTSC-J
 eeClampMode = 3 // Makes the game to correctly register left and right Dpad button input.
+MemCardFilter = SLPM-66316/SLPM-66324/SLPM-66442 // Enables import of players from completed career saves.
 ---------------------------------------------
 Serial = SLPM-66317
 Name   = Capcom Classics Collection Vol.1
@@ -26983,6 +27057,7 @@ Region = NTSC-J
 Serial = SLPM-66324
 Name   = World Football Climax
 Region = NTSC-J
+MemCardFilter = SLPM-66324/SLPM-66316/SLPM-66442 // SLPM-66316 enables import of teams.
 ---------------------------------------------
 Serial = SLPM-66325
 Name   = Castlevania - Lament of Innocence [Konami Palace Selection]
@@ -27375,6 +27450,11 @@ Region = NTSC-J
 Serial = SLPM-66441
 Name   = Oookuki
 Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-66442
+Name = World Football Climax
+Region = NTSC-J
+MemCardFilter = SLPM-66442/SLPM-66316/SLPM-66324 // SLPM-66316 enables import of teams.
 ---------------------------------------------
 Serial = SLPM-66443
 Name   = FIFA Street 2
@@ -35636,7 +35716,7 @@ Name   = CART Fury - Championship Racing
 Region = NTSC-U
 Compat = 5
 [patches = 116154AD]
-	comment=patches by Nachbrenner
+	author=Nachbrenner
 	// Skip PSX2_Mpeg_PlayFile__FPc.
 	patch=0,EE,00107a00,word,03e00008
 	patch=0,EE,00107a04,word,24020001
@@ -39690,6 +39770,32 @@ Serial = SLUS-20993
 Name   = Ghosthunter
 Region = NTSC-U
 Compat = 5
+[patches = 29C7DA54]
+	author=Raziel I.C.H.I. Znot
+	comment=Performance fix
+	//PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
+	//so the game will wait endlessly in a wait loop until COP2 gets around to
+	//setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
+	//VU0 side, remove wait loop
+	patch=1,EE,00461C68,word,8000033c
+	patch=1,EE,00461C80,word,8000033c
+	patch=1,EE,00461CC0,word,8000033c
+	patch=1,EE,00461CD8,word,8000033c
+	//duplicate, not sure that it's used, but patched anyway
+	patch=1,EE,00463118,word,8000033c
+	patch=1,EE,00463130,word,8000033c
+	patch=1,EE,00463170,word,8000033c
+	patch=1,EE,00463188,word,8000033c
+	//EE side, rearrange and clean code so VU0 receives all data at once
+	patch=1,EE,003F8544,word,00000000
+	patch=1,EE,003F8588,word,48A44800
+	patch=1,EE,003F858C,word,4A00D839
+	patch=1,EE,003F8590,word,00000000
+	patch=1,EE,003F85D4,word,00000000
+	patch=1,EE,003F8640,word,48A44800
+	patch=1,EE,003F8644,word,4A00D839
+	patch=1,EE,003F8648,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20994
 Name   = Full Metal Alchemist and The Broken Angel
@@ -40187,6 +40293,7 @@ Serial = SLUS-21095
 Name   = DT Racer
 Region = NTSC-U
 Compat = 5
+GIFFIFOHack = 1 //Fixes corrupted graphics in the menus
 ---------------------------------------------
 Serial = SLUS-21096
 Name   = Ape Escape - Pumped & Primed
@@ -41060,6 +41167,16 @@ Serial = SLUS-21268
 Name   = 24 - The Game
 Region = NTSC-U
 Compat = 5
+[patches = f1c7201e]
+	author=Prafull
+	//Fix slow and choppy gameplay
+	patch=1,EE,004155a8,word,48a44800
+	patch=1,EE,004155ac,word,48c02800
+	patch=1,EE,004155b0,word,4a00d839
+	patch=1,EE,00415660,word,48a44800
+	patch=1,EE,00415664,word,48c02800
+	patch=1,EE,00415668,word,4a00d839
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21269
 Name   = Bully
@@ -43023,10 +43140,6 @@ Serial = SLUS-21689
 Name   = Petz - Horsez 2
 Region = NTSC-U
 Compat = 4
-[patches = d0ba28bd]
-	// Fixes game hanging when going ingame.
-	patch=1,EE,002f6d30,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLUS-21690
 Name   = Alone in the Dark

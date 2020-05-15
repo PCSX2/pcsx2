@@ -384,6 +384,7 @@ set(pcsx2GuiResources
 set(pcsx2IPUSources
 	IPU/IPU.cpp
 	IPU/IPU_Fifo.cpp
+	IPU/IPUdither.cpp
 	IPU/IPUdma.cpp
 	IPU/mpeg2lib/Idct.cpp
 	IPU/mpeg2lib/Mpeg.cpp
@@ -517,7 +518,6 @@ set(pcsx2WindowsSources
 	gui/CpuUsageProviderMSW.cpp
 	windows/cheats/browser.cpp
 	windows/cheats/cheats.cpp
-	windows/DwmSetup.cpp
 	windows/FlatFileReaderWindows.cpp
 	windows/Optimus.cpp
 	windows/PatchBrowser.cpp
@@ -737,6 +737,13 @@ if(USE_VTUNE)
 endif()
 
 add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
+
+if(NOT USE_CLANG)
+	if(COMMAND target_precompile_headers)
+		message("Using precompiled headers.")
+		target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
+	endif()
+endif()
 
 if(dev9ghzdrk)
     if(PACKAGE_MODE)

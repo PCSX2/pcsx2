@@ -476,11 +476,6 @@ protected:
 
 	void CleanupEvent()
 	{
-#ifdef USE_NEW_SAVESLOTS_UI
-		// I have a feeling this doesn't need to be here, so I'm commenting this out for the moment.
-		// I'll remove it if it doesn't cause other issues.
-		//UI_UpdateSysControls();
-#endif
 	}
 };
 

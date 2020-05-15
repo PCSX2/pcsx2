@@ -195,6 +195,7 @@ for ARG in "$@"; do
         --clean             ) cleanBuild=1 ;;
         --clean-plugins     ) cleanBuild=2 ;;
         --clang-tidy        ) flags="$flags -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"; clangTidy=1 ; useClang=1;;
+        --ftime-trace       ) flags="$flags -DTIMETRACE=TRUE"; useClang=1;;
         --clang             ) useClang=1 ;;
         --intel             ) useIcc=1 ;;
         --cppcheck          ) cppcheck=1 ;;
@@ -213,6 +214,7 @@ for ARG in "$@"; do
         --pgo-optimize      ) flags="$flags -DUSE_PGO_OPTIMIZE=TRUE" ;;
         --pgo-generate      ) flags="$flags -DUSE_PGO_GENERATE=TRUE" ;;
         --no-dev9ghzdrk     ) flags="$flags -DDISABLE_DEV9GHZDRK=TRUE" ;;
+        --no-portaudio      ) flags="$flags -DPORTAUDIO_API=FALSE" ;;
         --no-simd           ) flags="$flags -DDISABLE_ADVANCE_SIMD=TRUE" ;;
         --no-trans          ) flags="$flags -DNO_TRANSLATION=TRUE" ;;
         --cross-multilib    ) flags="$flags -DCMAKE_TOOLCHAIN_FILE=$toolfile"; useCross=1; ;;
@@ -244,7 +246,8 @@ for ARG in "$@"; do
             echo
             echo "** Distribution Compatibilities **"
             echo "--sdl12         : Build with SDL1.2 (requires if wx is linked against SDL1.2)"
-	    echo "--no-dev9ghzdrk : Skip dev9ghzdrk. (Avoids needing escalated privileges to build.)"
+            echo "--no-dev9ghzdrk : Skip dev9ghzdrk. (Avoids needing escalated privileges to build.)"
+            echo "--no-portaudio  : Skip portaudio for spu2x."
             echo
             echo "** Expert Developer option **"
             echo "--gtk3          : replace GTK2 by GTK3"
@@ -262,6 +265,7 @@ for ARG in "$@"; do
             echo "--cppcheck      : Do a cppcheck analysis. Results can be found in build directory"
             echo "--coverity      : Do a build for coverity"
             echo "--vtune         : Plug GSdx with VTUNE"
+            echo "--ftime-trace   : Analyse build time. Clang only."
 
             exit 1
     esac

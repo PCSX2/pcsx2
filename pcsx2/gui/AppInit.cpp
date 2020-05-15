@@ -490,9 +490,6 @@ bool Pcsx2App::OnInit()
 		InitDefaultGlobalAccelerators();
 		delete wxLog::SetActiveTarget( new pxLogConsole() );
 
-#ifdef __WXMSW__
-		pxDwm_Load();
-#endif
 		SysExecutorThread.Start();
 		DetectCpuAndUserMode();
 
@@ -656,10 +653,6 @@ void Pcsx2App::CleanupOnExit()
 		Console.Indent().Error( ex.FormatDiagnosticMessage() );
 	}
 
-#ifdef __WXMSW__
-	pxDwm_Unload();
-#endif
-	
 	// Notice: deleting the plugin manager (unloading plugins) here causes Lilypad to crash,
 	// likely due to some pending message in the queue that references lilypad procs.
 	// We don't need to unload plugins anyway tho -- shutdown is plenty safe enough for

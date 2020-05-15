@@ -84,6 +84,7 @@
     <Compile Include="Forms\frmMain.Designer.cs">
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\Helper\ExtensionMethods.cs" />
     <Compile Include="Forms\Helper\FolderWithFallBackFinder.cs" />
     <Compile Include="Forms\Helper\GsDumpFinder.cs" />
     <Compile Include="Forms\Helper\GsdxDllFinder.cs" />

@@ -103,6 +103,7 @@ public:
 
 		GSVector4 TC_OffsetHack;
 		GSVector4 Af;
+		GSVector4 DitherMatrix[4];
 
 		PSConstantBuffer()
 		{
@@ -115,6 +116,11 @@ public:
 			ChannelShuffle = GSVector4i::zero();
 			FbMask = GSVector4i::zero();
 			Af = GSVector4::zero();
+
+			DitherMatrix[0] = GSVector4::zero();
+			DitherMatrix[1] = GSVector4::zero();
+			DitherMatrix[2] = GSVector4::zero();
+			DitherMatrix[3] = GSVector4::zero();
 		}
 
 		__forceinline bool Update(const PSConstantBuffer* cb)
@@ -123,7 +129,8 @@ public:
 			GSVector4i* b = (GSVector4i*)cb;
 
 			if(!((a[0] == b[0]) /*& (a[1] == b1)*/ & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5]) &
-				(a[6] == b[6]) & (a[7] == b[7]) & (a[9] == b[9])).alltrue()) // if WH matches HalfTexel does too
+				(a[6] == b[6]) & (a[7] == b[7]) & (a[9] == b[9]) & // if WH matches HalfTexel does too
+				(a[10] == b[10]) & (a[11] == b[11]) & (a[12] == b[12]) & (a[13] == b[13])).alltrue())
 			{
 				a[0] = b[0];
 				a[1] = b[1];
@@ -134,6 +141,11 @@ public:
 				a[6] = b[6];
 				a[7] = b[7];
 				a[9] = b[9];
+
+				a[10] = b[10];
+				a[11] = b[11];
+				a[12] = b[12];
+				a[13] = b[13];
 
 				return true;
 			}
@@ -211,16 +223,20 @@ public:
 				uint32 fbmask:1;
 
 				// Blend and Colclip
+				uint32 hdr:1;
 				uint32 blend_a:2;
-				uint32 blend_b:2;
-				uint32 blend_c:2;
+				uint32 blend_b:2; // bit30/31
+				uint32 blend_c:2; // bit0
 				uint32 blend_d:2;
 				uint32 clr1:1;
-				uint32 hdr:1;
+
 				uint32 colclip:1;
 
 				// Others ways to fetch the texture
 				uint32 channel:3;
+
+				// Dithering
+				uint32 dither:2;
 
 				// Hack
 				uint32 tcoffsethack:1;
@@ -229,7 +245,7 @@ public:
 				uint32 point_sampler:1;
 				uint32 invalid_tex0:1; // Lupin the 3rd
 
-				uint32 _free:18;
+				uint32 _free:16;
 			};
 
 			uint64 key;
@@ -495,12 +511,9 @@ public:
 	void Flip();
 	void SetVSync(int vsync) final;
 
-	void SetExclusive(bool isExcl);
-
 	void DrawPrimitive() final;
 	void DrawIndexedPrimitive();
 	void DrawIndexedPrimitive(int offset, int count) final;
-	void Dispatch(uint32 x, uint32 y, uint32 z);
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) final;
 	void ClearRenderTarget(GSTexture* t, uint32 c) final;

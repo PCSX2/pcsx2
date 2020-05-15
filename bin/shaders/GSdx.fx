@@ -2088,6 +2088,7 @@ float4 DitherPass(float4 color, float2 texcoord)
                            [PX BORDER CODE SECTION]
 ------------------------------------------------------------------------------*/
 
+#if PX_BORDER == 1
 float4 BorderPass(float4 colorInput, float2 tex)
 {
     float3 border_color_float = BorderColor / 255.0;
@@ -2104,8 +2105,8 @@ float4 BorderPass(float4 colorInput, float2 tex)
     #endif
 
     return colorInput;
-
 }
+#endif
 
 /*------------------------------------------------------------------------------
                            [LOTTES CRT CODE SECTION]

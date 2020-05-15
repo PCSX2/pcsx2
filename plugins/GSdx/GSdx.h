@@ -81,12 +81,6 @@ public:
 	std::vector<GSSetting> m_gs_acc_blend_level;
 	std::vector<GSSetting> m_gs_acc_blend_level_d3d11;
 	std::vector<GSSetting> m_gs_tv_shaders;
-
-	std::vector<GSSetting> m_gpu_renderers;
-	std::vector<GSSetting> m_gpu_filter;
-	std::vector<GSSetting> m_gpu_dithering;
-	std::vector<GSSetting> m_gpu_aspectratio;
-	std::vector<GSSetting> m_gpu_scale;
 };
 
 struct GSDXError {};

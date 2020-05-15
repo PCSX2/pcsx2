@@ -224,9 +224,9 @@ __fi void vif0Interrupt()
 	if (!vif0.done)
 	{
 
-		if (!(dmacRegs.ctrl.DMAE))
+		if (!(dmacRegs.ctrl.DMAE) || vif0Regs.stat.VSS) //Stopped or DMA Disabled
 		{
-			Console.WriteLn("vif0 dma masked");
+			//Console.WriteLn("vif0 dma masked");
 			return;
 		}
 

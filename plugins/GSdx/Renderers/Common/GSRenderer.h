@@ -38,6 +38,7 @@ class GSRenderer : public GSState
 	bool m_control_key;
 
 protected:
+	int m_dithering;
 	int m_interlace;
 	int m_aspectratio;
 	int m_vsync;
@@ -70,7 +71,6 @@ public:
 	GSVector2i GetInternalResolution();
 	void SetAspectRatio(int aspect) {m_aspectratio = aspect;}
 	void SetVSync(int vsync);
-	virtual void SetExclusive(bool isExcl) {}
 
 	virtual bool BeginCapture();
 	virtual void EndCapture();
