@@ -27,23 +27,18 @@
 #define IDC_LARGE_FB                    2031
 #define IDC_UPSCALE_MULTIPLIER          2032
 #define IDC_UPSCALE_MULTIPLIER_TEXT     2033
-#define IDC_CUSTOM_TEXT                 2034
-#define IDC_RESX                        2035
-#define IDC_RESX_EDIT                   2036
-#define IDC_RESY                        2037
-#define IDC_RESY_EDIT                   2038
-#define IDC_AFCOMBO_TEXT                2039
-#define IDC_AFCOMBO                     2040
-#define IDC_MIPMAP_HW                   2041
-#define IDC_MIPMAP_HW_TEXT              2042
-#define IDC_CRC_LEVEL                   2043
-#define IDC_CRC_LEVEL_TEXT              2044
-#define IDC_HACKS_ENABLED               2045
-#define IDC_ACCURATE_DATE               2046
-#define IDC_ACCURATE_DATE_TEXT          2047
-#define IDC_ACCURATE_BLEND_UNIT         2048
-#define IDC_ACCURATE_BLEND_UNIT_D3D11   2049
-#define IDC_ACCURATE_BLEND_UNIT_TEXT    2050
+#define IDC_AFCOMBO_TEXT                2034
+#define IDC_AFCOMBO                     2035
+#define IDC_MIPMAP_HW                   2036
+#define IDC_MIPMAP_HW_TEXT              2037
+#define IDC_CRC_LEVEL                   2038
+#define IDC_CRC_LEVEL_TEXT              2039
+#define IDC_HACKS_ENABLED               2040
+#define IDC_ACCURATE_DATE               2041
+#define IDC_ACCURATE_DATE_TEXT          2042
+#define IDC_ACCURATE_BLEND_UNIT         2043
+#define IDC_ACCURATE_BLEND_UNIT_D3D11   2044
+#define IDC_ACCURATE_BLEND_UNIT_TEXT    2045
 // Software Renderer Settings:
 #define IDC_MIPMAP_SW                   2060
 #define IDC_AA1                         2061
@@ -51,17 +46,6 @@
 #define IDC_SWTHREADS                   2063
 #define IDC_SWTHREADS_EDIT              2064
 #define IDC_AUTO_FLUSH_SW               2065
-// PSX:
-#define IDD_GPUCONFIG                   2070
-#define IDC_ASPECTRATIO                 2071
-#define IDC_ASPECTRATIO_TEXT            2072
-#define IDC_DITHERING                   2073
-#define IDC_DITHERING_TEXT              2074
-#define IDC_WINDOWED                    2075
-#define IDC_RESOLUTION                  2076
-#define IDC_RESOLUTION_TEXT             2077
-#define IDC_SCALE                       2078
-#define IDC_SCALE_TEXT                  2079
 // Capture:
 #define IDD_CAPTURE                     2090
 #define IDC_FILENAME                    2091

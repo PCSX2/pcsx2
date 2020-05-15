@@ -1,12 +1,12 @@
-# Copyright (C) 2014 PCSX2 Team
+ # Copyright (C) 2014 PCSX2 Team
 # This file is distributed under the same license as the PCSX2 package.
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.5.0\n"
+"Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2017-12-10 11:38+0100\n"
-"Last-Translator: Leucos\n"
+"POT-Creation-Date: 2020-03-16 22:48+0100\n"
+"PO-Revision-Date: 2020-03-16 22:48+0100\n"
+"Last-Translator: StarFang208\n"
 "Language-Team: Leucos <http://forums.pcsx2.net/User-Leucos>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
@@ -15,7 +15,7 @@ msgstr ""
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: ../..\n"
-"X-Generator: Poedit 2.0.5\n"
+"X-Generator: Poedit 2.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
@@ -284,6 +284,24 @@ msgid ""
 "set of games that have unusual performance requirements, but have adverse "
 "effects on most others. Not recommended for underpowered PCs."
 msgstr ""
+"I preset applicano alcuni hack di velocità che possono aumentare la "
+"velocità sui sistemi sottodimensionati o velocizzare i giochi che hanno "
+"requisiti di prestazioni insoliti. Deselezionare questa casella per "
+"applicare le impostazioni manualmente.\n"
+"\n"
+"1) Più sicuro - Nessuna speed hack. Impostazione più affidabile, ma "
+"possibilmente lenta.\n"
+"2) Sicuro - Predefinito. Alcuni hack noti per fornire un aumento di velocità, " 
+"con nessuno o quasi effetto collaterale.\n"
+"3) Bilanciato - Può essere d'aiuto su/con CPU quad core"
+"4) Aggressivo - Può aiutare CPU sottodimensionate su giochi meno impegnativi, "
+"ma rischia di causare problemi in altri casi.\n"
+"5) Molto aggressivo - Può aiutare cpu sottopotenziate su giochi meno "
+"impegnativi, ma c'è la possibilità possa causare problemi in altri casi.\n"
+"6) Dannoso - Impiego a tappetto di speed hack. Può aiutare "
+"un piccolo numero di giochi che hanno requisiti di potenza insoliti, ma "
+"hanno effetti negativi sulla maggior parte degli altri. Non consigliato per "
+"i PC sottodimensionati."
 
 #: pcsx2/gui/IsoDropTarget.cpp:28
 msgid ""
@@ -356,7 +374,7 @@ msgid ""
 "with PCSX2's current usermode setting. "
 msgstr ""
 "Se spuntata, l'impostazione della cartella rifletterà automaticamente "
-"l'impostazione predefinita associata alla modalità utente scelta in PCSX2."
+"l'impostazione predefinita associata alla modalità utente scelta in PCSX2. "
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:73
 msgid ""
@@ -368,6 +386,13 @@ msgid ""
 "16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to "
 "correctly display a widescreen 16:9 FMV."
 msgstr ""
+"Disattivato: disabilita l'opzione delle proporzioni temporanee.\n"
+"\n"
+"4:3: Passa brevemente ad un rapporto di aspetto 4:3 mentre viene riprodotto un FMV "
+"per visualizzarlo correttamente in 4:3.\n"
+"\n"
+"16:9: Passare brevemente ad un rapporto di aspetto 16:9 mentre viene riprodotto un FMV "
+"per visualizzarlo correttamente in widescreen 16:9."
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:75
 msgid ""
@@ -525,7 +550,7 @@ msgstr ""
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:760
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
-msgstr "Fallita! La memory card di destinazione '%s' è in uso"
+msgstr "Fallita: la memory card di destinazione '%s' è in uso."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:36
 msgid ""
@@ -553,7 +578,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
 msgid "This folder is where PCSX2 loads cheats from."
-msgstr ""
+msgstr "Questa è la cartella da dove PCSX2 carica i trucchi."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:48
 msgid ""
@@ -612,11 +637,14 @@ msgstr ""
 "per chiudere il pannello di configurazione."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "50% cyclerate. Significant reduction of CPU requirements. Speedup for very "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
+"50% cicli di  macchina. Riduzione significativa dei requisiti della CPU. "
+"Accelera i giochi molto leggeri, rallenta gli altri. FMV e audio "
+"possono andare a scatti o saltare."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
 #, c-format
@@ -624,6 +652,9 @@ msgid ""
 "60% cyclerate. Moderate reduction of CPU requirements. Speedup for "
 "lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
+"60% cicli di  macchina. Riduzione moderata dei requisiti della CPU. "
+"Accelerazione per i giochi leggeri, rallenta gli altri. FMV e audio possono "
+"andare a scatti o saltare."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
 #, c-format
@@ -631,11 +662,15 @@ msgid ""
 "75% cyclerate. Slight reduction of CPU requirements. Speedup for less "
 "demanding games, slows down others."
 msgstr ""
+"75% cicli di  macchina. Lieve riduzione dei requisiti della CPU. "
+"Accelerazione per i giochi meno impegnativi, rallenta gli altri."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:47
 msgid ""
 "Default cyclerate. Runs the emulated PS2 Emotion Engine at normal speed."
 msgstr ""
+"Cicli di  macchina predefiniti. Esegue l'Emotion Engine emulato dalla PS2 "
+"a velocità normale."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:53
 #, c-format
@@ -643,6 +678,8 @@ msgid ""
 "130% cyclerate. Moderate increase of CPU requirements. Variable framerate "
 "games may have higher internal framerates."
 msgstr ""
+"130% cicli di  macchina. Aumento moderato dei requisiti della CPU. I giochi "
+"con framerate variabili possono avere framerate interni più alti."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:59
 #, c-format
@@ -651,6 +688,9 @@ msgid ""
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
+"180% cicli di  macchina. Aumento significativo dei requisiti della CPU. I "
+"giochi con framerate variabili avranno framerate interni più alti. Gli FMV "
+"possono essere lenti. Può causare problemi di stabilità."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
 #, c-format
@@ -659,31 +699,41 @@ msgid ""
 "games will have higher internal framerates. FMVs may be slow. May cause "
 "stability problems."
 msgstr ""
+"300% cicli di  macchina. Aumento estremo dei requisiti della CPU. I giochi "
+"con framerate variabili avranno framerate interni più alti. Gli FMV "
+"possono essere lenti. Può causare problemi di stabilità."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:81
-#, fuzzy
 msgid "Disables EE Cycle Skipping. Most compatible setting."
 msgstr ""
 "0 - Disabilita il VU Cycle Stealing.\n"
-"È l'impostazione più compatibile!"
+"È l'impostazione più compatibile."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
 msgid ""
 "Mild EE Cycle Skipping. Mild slow down for most games, but may help some "
 "games with mild VU starvation problems run at full speed."
 msgstr ""
+"Salto di ciclo EE lieve. Rallenta lievemente la maggior parte dei giochi, ma potrebbe  "
+"aiutarne alcuni leggermente limitati dalla VU ad andare a piena "
+"velocità."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:93
 msgid ""
 "Moderate EE Cycle Skipping. Slow down for most games, but may help some "
 "games with moderate VU starvation problems run at full speed."
 msgstr ""
+"Salto di ciclo EE moderato. Rallenta la maggior parte dei giochi, ma potrebbe "
+"aiutarne alcuni moderatamente limitati dalla VU ad andare a piena "
+"velocità."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:98
 msgid ""
 "Maximum EE Cycle Skipping. Mostly harmful. May help games with significant "
 "VU starvation problems run at full speed."
 msgstr ""
+"Salto di ciclo EE massimo. Perlopiù nocivo. Potrebbe aiutare giochi con "
+"notevoli problemi di mancanza della VU ad andare a piena velocità."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:123
 msgid ""
@@ -691,7 +741,7 @@ msgid ""
 "audio, and false FPS readings.  When having emulation problems, disable this "
 "panel first."
 msgstr ""
-"Generalmente gli SpeedHack consentono di migliorare la velocità "
+"Generalmente gli speed hack consentono di migliorare la velocità "
 "dell'emulazione, ma possono causare glitch, audio corrotto e rilevazioni FPS "
 "non corrette. Se hai problemi di emulazione, per prima cosa disattiva le "
 "opzioni in questo pannello."
@@ -703,6 +753,11 @@ msgid ""
 "CPU requirements substantially. Lower values will reduce the CPU load "
 "allowing lightweight games to run full speed on weaker CPUs."
 msgstr ""
+"Modifica il clock della CPU Emotion Engine emulata. Valori più alti "
+"potrebbero aumentare il framerate interno in giochi con framerate variabili, "
+"ma i requisiti di CPU aumenteranno notevolmente. Valori più bassi ridurranno il "
+"carico di CPU consentendo di eseguire giochi leggeri su CPU deboli "
+"alla massima velocità."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:163
 msgid ""
@@ -711,6 +766,11 @@ msgid ""
 "starvation problems, E.g. Shadow of the Colossus. More often than not this "
 "is harmful to performance and causes FPS readouts to be inaccurate."
 msgstr ""
+"Fai saltare cicli di frequenza all'emulazione dell'Emotion Engine, "
+"permettendo ai programmi VU di eseguire ad intervalli più rapidi. Agevola una "
+"piccola fetta di giochi con problemi di mancanza di VU, es. Shadow of the "
+"Colossus. Più delle volte è nocivo alle prestazione e causa la lettura di "
+"FPS di essere imprecisa."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
 msgid ""
@@ -758,21 +818,20 @@ msgid ""
 "timeslice, whichever comes first."
 msgstr ""
 "L'obiettivo principale è l'idle loop (ciclo per inattività) dell'EE "
-"nell'indirizzo 0x81FC0 nel kernel; questo hack prova a rilevare i cicli i "
+"nell'indirizzo 0x81FC0 nel kernel; questa hack prova a rilevare i cicli i "
 "cui corpi mantengono uno stato macchina uguale per ogni iterazione fino a "
 "quando un evento scatena l'emulazione di un'altra unità. Dopo una sola "
 "iterazione di questo tipo di ciclo, l'elaborazione passa all'evento "
 "successivo o alla fine del tempo riservato al processore, quale venga prima."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
-#, fuzzy
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
 "this (often marked as needing 'mode 1' or 'slow DVD')."
 msgstr ""
 "Consulta la lista compatibilità di HDLoader per sapere quali giochi hanno "
-"problemi \n"
-"con questo SpeedHack (spesso indicati con 'mode 1' o 'slow DVD' necessario)."
+"problemi con questo Speedhack(spesso indicati col requisito "
+"di 'mode 1' o 'slow DVD'). "
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:35
 msgid ""
@@ -860,7 +919,7 @@ msgstr ""
 #~ "\n"
 #~ "--> Uncheck to modify settings manually (with current preset as base)"
 #~ msgstr ""
-#~ "Le Preimpostazioni applicano SpeedHack, alcune opzioni dei ricompilatori "
+#~ "Le Preimpostazioni applicano speed hack, alcune opzioni dei ricompilatori "
 #~ "ed alcuni GameFix per aumentare la velocità.\n"
 #~ "Importanti GameFix noti saranno applicati automaticamente.\n"
 #~ "\n"

@@ -114,9 +114,6 @@
     <ClCompile Include="SndOut_DSound.cpp" />
     <ClCompile Include="SndOut_waveOut.cpp" />
     <ClCompile Include="SndOut_XAudio2.cpp" />
-    <ClCompile Include="SndOut_XAudio2_27.cpp">
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
     <ClCompile Include="..\Linux\Alsa.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -148,7 +145,6 @@
     <None Include="..\..\LGPL.txt" />
     <None Include="..\..\License.txt" />
     <None Include="..\..\spu2-x-sm.bmp" />
-    <None Include="SndOut_XAudio2.inl" />
     <None Include="Spu2-X.def" />
   </ItemGroup>
   <ItemGroup>

@@ -123,13 +123,7 @@ void CFC2() {
 	}
 	if (_Rt_ == 0) return;
 	
-	if (_Fs_ == REG_TPC) {
-		// For explanation why this is needed here please refer to 
-		// recCFC2() definded in microVU_Macro.inl
-		cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL >> 3;
-	} else {
-		cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL;
-	}
+	cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL;
 
 	if(VU0.VI[_Fs_].UL & 0x80000000)
 		cpuRegs.GPR.r[_Rt_].UL[1] = 0xffffffff;
@@ -167,7 +161,7 @@ void CTC2() {
 			break;
 		case REG_CMSAR1: // REG_CMSAR1
 			if (!(VU0.VI[REG_VPU_STAT].UL & 0x100) ) {
-				vu1ExecMicro(cpuRegs.GPR.r[_Rt_].US[0] * 8);	// Execute VU1 Micro SubRoutine
+				vu1ExecMicro(cpuRegs.GPR.r[_Rt_].US[0]);	// Execute VU1 Micro SubRoutine
 				vif1VUFinish();
 			}
 			break;

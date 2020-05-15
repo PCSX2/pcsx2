@@ -22,6 +22,7 @@
 #include "DebugTools/MipsStackWalk.h"
 #include "BreakpointWindow.h"
 #include "PathDefs.h"
+#include "wx/busyinfo.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -127,19 +128,29 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 
 	mainSizer->Layout();
 
+	symbolCount = 0;
+
 	lastCycles = 0;
 	loadCycles();
 }
 
+void CpuTabPage::clearSymbolMap()
+{
+	symbolCount = 0;
+	functionList->Clear();
+}
+
 void CpuTabPage::reloadSymbolMap()
 {
-	functionList->Clear();
-
-	auto funcs = symbolMap.GetAllSymbols(ST_FUNCTION);
-	for (size_t i = 0; i < funcs.size(); i++)
+	if (!symbolCount)
 	{
-		wxString name = wxString(funcs[i].name.c_str(),wxConvUTF8);
-		functionList->Append(name,(void*)funcs[i].address);
+		auto funcs = symbolMap.GetAllSymbols(ST_FUNCTION);
+		symbolCount = funcs.size();
+		for (size_t i = 0; i < funcs.size(); i++)
+		{
+			wxString name = wxString(funcs[i].name.c_str(), wxConvUTF8);
+			functionList->Append(name, (void*)funcs[i].address);
+		}
 	}
 }
 
@@ -545,6 +556,9 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		onBreakpointClick(evt);
 	} else if (type == debEVT_MAPLOADED)
 	{
+		wxBusyInfo wait("Please wait, Reloading ELF functions");
+		eeTab->clearSymbolMap();
+		iopTab->clearSymbolMap();
 		eeTab->reloadSymbolMap();
 		iopTab->reloadSymbolMap();
 	} else if (type == debEVT_STEPOUT)
@@ -575,8 +589,14 @@ void DisassemblyDialog::update()
 void DisassemblyDialog::reset()
 {
 	eeTab->getDisassembly()->clearFunctions();
-	eeTab->reloadSymbolMap();
+	eeTab->clearSymbolMap();
 	iopTab->getDisassembly()->clearFunctions();
+	iopTab->clearSymbolMap();
+}
+
+void DisassemblyDialog::populate()
+{
+	eeTab->reloadSymbolMap();
 	iopTab->reloadSymbolMap();
 }
 
@@ -610,6 +630,11 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 
 		if (debugMode)
 		{
+				if (!CBreakPoints::GetBreakpointTriggered())
+				{
+					wxBusyInfo wait("Please wait, Reading ELF functions");
+					populate();
+				}
 			CBreakPoints::ClearTemporaryBreakPoints();
 			breakRunButton->SetLabel(L"Run");
 

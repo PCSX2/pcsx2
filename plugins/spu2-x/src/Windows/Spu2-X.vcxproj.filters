@@ -144,9 +144,6 @@
     <ClCompile Include="SndOut_waveOut.cpp">
       <Filter>Source Files\Sound Output\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="SndOut_XAudio2_27.cpp">
-      <Filter>Source Files\Sound Output\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="..\Linux\Alsa.cpp">
       <Filter>Source Files\Sound Output\Linux</Filter>
     </ClCompile>
@@ -226,9 +223,6 @@
     </None>
     <None Include="Spu2-X.def">
       <Filter>Resources</Filter>
-    </None>
-    <None Include="SndOut_XAudio2.inl">
-      <Filter>Source Files\Sound Output\Windows</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
