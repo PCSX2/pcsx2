@@ -4685,7 +4685,10 @@ Compat = 5
 [patches = FCD89DC3]
 	author=Raziel I.C.H.I. Znot
 	comment=Performance fix
-	//microcode, remove wait loop
+	//PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
+	//so the game will wait endlessly in a wait loop until COP2 gets around to
+	//setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
+	//VU0 side, remove wait loop
 	patch=1,EE,0040F110,word,8000033c
 	patch=1,EE,0040F128,word,8000033c
 	patch=1,EE,0040F168,word,8000033c
@@ -4695,7 +4698,7 @@ Compat = 5
 	patch=1,EE,0040F738,word,8000033c
 	patch=1,EE,0040F778,word,8000033c
 	patch=1,EE,0040F790,word,8000033c
-	//EE code, rearrange code so VU code receives all data at once
+	//EE side, rearrange and clean code so VU0 receives all data at once
 	patch=1,EE,00399B14,word,00000000
 	patch=1,EE,00399B58,word,48A44800
 	patch=1,EE,00399B5C,word,4A00D839
@@ -39734,7 +39737,10 @@ Compat = 5
 [patches = 29C7DA54]
 	author=Raziel I.C.H.I. Znot
 	comment=Performance fix
-	//microcode, remove wait loop
+	//PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
+	//so the game will wait endlessly in a wait loop until COP2 gets around to
+	//setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
+	//VU0 side, remove wait loop
 	patch=1,EE,00461C68,word,8000033c
 	patch=1,EE,00461C80,word,8000033c
 	patch=1,EE,00461CC0,word,8000033c
@@ -39744,7 +39750,7 @@ Compat = 5
 	patch=1,EE,00463130,word,8000033c
 	patch=1,EE,00463170,word,8000033c
 	patch=1,EE,00463188,word,8000033c
-	//EE code, rearrange code so VU code receives all data at once
+	//EE side, rearrange and clean code so VU0 receives all data at once
 	patch=1,EE,003F8544,word,00000000
 	patch=1,EE,003F8588,word,48A44800
 	patch=1,EE,003F858C,word,4A00D839
