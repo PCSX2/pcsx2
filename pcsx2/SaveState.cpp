@@ -78,7 +78,6 @@ void SaveStateBase::Init( SafeArray<u8>* memblock )
 	m_memory	= memblock;
 	m_version	= g_SaveVersion;
 	m_idx		= 0;
-	m_DidBios	= false;
 }
 
 void SaveStateBase::PrepBlock( int size )

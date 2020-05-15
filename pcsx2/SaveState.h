@@ -46,8 +46,6 @@ protected:
 
 	int m_idx;			// current read/write index of the allocation
 
-	bool m_DidBios;
-
 public:
 	SaveStateBase( VmStateBuffer& memblock );
 	SaveStateBase( VmStateBuffer* memblock );
