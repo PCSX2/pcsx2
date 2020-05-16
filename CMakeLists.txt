@@ -31,6 +31,7 @@ include(SearchForStuff)
 include(SelectPcsx2Plugins)
 
 # Must be done after SearchForStuff
+get_git_version_info()
 write_svnrev_h()
 
 if(NOT NO_TRANSLATION)
