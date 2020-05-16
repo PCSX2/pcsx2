@@ -468,3 +468,14 @@ if(CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE)
         message(WARNING "GTK3 is highly experimental besides it requires a wxWidget built with __WXGTK3__ support !!!")
     endif()
 endif()
+
+
+#-------------------------------------------------------------------------------
+# MacOS-specific things
+#-------------------------------------------------------------------------------
+
+# CMake defaults the suffix for modules to .so on macOS but wx tells us that the
+# extension is .dylib (so that's what we search for)
+if(APPLE)
+    set(CMAKE_SHARED_MODULE_SUFFIX ".dylib")
+endif()
