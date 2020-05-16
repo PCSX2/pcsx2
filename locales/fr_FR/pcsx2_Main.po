@@ -1,6 +1,7 @@
 # Copyright (C) 2018 PCSX2 Dev Team
 # This file is distributed under the same license as the PACKAGE package.
 # # RedDevilus (GitHub and Discord), 2020.
+# Shadix Aced (LaneSh4d0w), upon review of many persons, May 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 1.7.0\n"
@@ -348,7 +349,7 @@ msgstr "Bloc-note de l'activité MFIFO."
 msgid "Actual data transfer logs, bus right arbitration, stalls, etc."
 msgstr ""
 "Données réelles des transferts de rapports, arbitrage réel du bus, "
-"stabulation, etc."
+"blocages, etc."
 
 #: pcsx2/SourceLog.cpp:264
 msgid "Tracks all EE counters events and some counter register activity."
@@ -2312,7 +2313,7 @@ msgstr "Simuler la lecture VIF1 FIFO (permet d'accélérer les chargements)."
 msgid ""
 "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD and Spy Hunter loading hang."
 msgstr ""
-"Retarder les stabulations VIF1 (VIF1 FIFO) - Pour le HUD de SOCOM2 et la "
+"Retarder les blocages VIF1 (VIF1 FIFO) - Pour le HUD de SOCOM2 et la "
 "coupure pendant le chargement de Spy Hunter."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
