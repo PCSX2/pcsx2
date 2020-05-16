@@ -114,6 +114,14 @@ macro(add_pcsx2_plugin lib srcs libs flags)
     else(PACKAGE_MODE)
         install(TARGETS ${lib} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
     endif(PACKAGE_MODE)
+    if (APPLE)
+        # Copy to app bundle
+        add_custom_command(TARGET ${lib} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PCSX2>/plugins"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:${lib}>" "$<TARGET_FILE_DIR:PCSX2>/plugins/"
+        )
+        add_dependencies(pcsx2-postprocess-bundle ${lib})
+    endif()
 endmacro(add_pcsx2_plugin)
 
 macro(add_pcsx2_lib lib srcs libs flags)
