@@ -115,7 +115,7 @@ msgid ""
 "image type or a bug in PCSX2 ISO image support."
 msgstr ""
 "Si cette erreur se produit à la suite du montage d'une image ISO, c'est que "
-"le format semble ne pas être pris en charge par PCSX2, ou bien d'un bug lié "
+"le format semble ne pas être pris en charge par PCSX2, ou bien il s'agit d'un bug lié "
 "à celui-ci."
 
 #: pcsx2/MTGS.cpp:877
