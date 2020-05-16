@@ -379,7 +379,7 @@ msgstr "/DISASM des instructions du co-processeur GPU IOP."
 msgid ""
 "All known hardware register accesses, not including the sub-filters below."
 msgstr ""
-"Accès des registres hardware connus, à l'exception des sous-filtres ci-"
+"Accès à tous les registres hardware connus, à l'exception des sous-filtres ci-"
 "dessous."
 
 #: pcsx2/SourceLog.cpp:329
