@@ -185,7 +185,7 @@ msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
 msgstr ""
-"Le plugin configuré n'est pas un plugin PCSX2, ou pour une version trop "
+"Le plugin configuré n'est pas un plugin PCSX2, ou conçu pour une version trop "
 "ancienne."
 
 #: pcsx2/PluginManager.cpp:1056
