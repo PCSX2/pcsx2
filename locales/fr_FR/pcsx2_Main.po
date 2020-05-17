@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-05-16 19:13+0200\n"
+"PO-Revision-Date: 2020-05-17 17:48+0200\n"
 "Last-Translator: LaneSh4d0w\n"
 "Language-Team: Atomic83;goldeng;piorrro33 <odakawoi@yahoo.fr;"
 "piorrro33@outlook.com>\n"
@@ -116,8 +116,8 @@ msgid ""
 "image type or a bug in PCSX2 ISO image support."
 msgstr ""
 "Si cette erreur se produit à la suite du montage d'une image ISO, c'est que "
-"le format semble ne pas être pris en charge par PCSX2, ou bien il s'agit d'un bug lié "
-"à celui-ci."
+"le format semble ne pas être pris en charge par PCSX2, ou bien il s'agit "
+"d'un bug lié à celui-ci."
 
 #: pcsx2/MTGS.cpp:877
 msgid ""
@@ -186,8 +186,8 @@ msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
 msgstr ""
-"Le plugin configuré n'est pas un plugin PCSX2, ou conçu pour une version trop "
-"ancienne."
+"Le plugin configuré n'est pas un plugin PCSX2, ou conçu pour une version "
+"trop ancienne."
 
 #: pcsx2/PluginManager.cpp:1056
 #, c-format
@@ -348,8 +348,8 @@ msgstr "Bloc-note de l'activité MFIFO."
 #: pcsx2/SourceLog.cpp:258
 msgid "Actual data transfer logs, bus right arbitration, stalls, etc."
 msgstr ""
-"Données réelles des transferts de rapports, arbitrage réel du bus, "
-"blocages, etc."
+"Données réelles des transferts de rapports, arbitrage réel du bus, blocages, "
+"etc."
 
 #: pcsx2/SourceLog.cpp:264
 msgid "Tracks all EE counters events and some counter register activity."
@@ -380,8 +380,8 @@ msgstr "/DISASM des instructions du co-processeur GPU IOP."
 msgid ""
 "All known hardware register accesses, not including the sub-filters below."
 msgstr ""
-"Accès à tous les registres hardware connus, à l'exception des sous-filtres ci-"
-"dessous."
+"Accès à tous les registres hardware connus, à l'exception des sous-filtres "
+"ci-dessous."
 
 #: pcsx2/SourceLog.cpp:329
 msgid "Memorycard reads, writes, erases, terminators, and other processing."
@@ -1560,7 +1560,7 @@ msgstr "Coupe toutes les opérations en cours et réinitialise les plugins."
 
 #: pcsx2/gui/MainFrame.cpp:487
 msgid "E&xit"
-msgstr "Quitter"
+msgstr "&Quitter"
 
 #: pcsx2/gui/MainFrame.cpp:488
 #, c-format
@@ -1602,7 +1602,7 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:509
 msgid "Emulation &Settings"
-msgstr "Paramètres &d'émulation"
+msgstr "&Paramètres d'émulation"
 
 #: pcsx2/gui/MainFrame.cpp:510
 msgid "&Memory cards"
@@ -1661,7 +1661,7 @@ msgstr "&À propos de..."
 
 #: pcsx2/gui/MainFrame.cpp:551
 msgid "&Open Debug Window..."
-msgstr "Ouvrir la &fenêtre de debug..."
+msgstr "Ouvrir la &fenêtre de débogage..."
 
 #: pcsx2/gui/MainFrame.cpp:554
 msgid "&Logging..."
@@ -1717,11 +1717,11 @@ msgstr ""
 
 #: pcsx2/gui/MainFrame.cpp:650
 msgid "Safely pauses emulation and preserves the PS2 state."
-msgstr "Met l'émulation en pause et préserve son bon fonctionnement."
+msgstr "Met l'émulation en pause et préserve l'état de la PS2."
 
 #: pcsx2/gui/MainFrame.cpp:658
 msgid "R&esume"
-msgstr "R&eprendre le jeu"
+msgstr "&Reprendre le jeu"
 
 #: pcsx2/gui/MainFrame.cpp:659
 msgid "Resumes the suspended emulation state."
@@ -1779,7 +1779,7 @@ msgstr "Aucun plugin chargé"
 
 #: pcsx2/gui/MainFrame.cpp:808
 msgid "&Core GS Settings..."
-msgstr "Paramètres du &Coeur GS..."
+msgstr "Paramètres du &cœur GS..."
 
 #: pcsx2/gui/MainFrame.cpp:809
 msgid ""
@@ -2181,7 +2181,7 @@ msgstr "Désactivé"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:46
 msgid "Standard"
-msgstr "Standard"
+msgstr ""
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:47
 msgid "Adaptive"
@@ -2233,7 +2233,7 @@ msgid ""
 ">_<"
 msgstr ""
 "Dimensions de la fenêtre invalides : une résolution ne peut pas contenir "
-"autre chose que des chiffres, banane !"
+"autre chose que des chiffres! >_<"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
 msgid "Gamefixes"
@@ -2313,8 +2313,8 @@ msgstr "Simuler la lecture VIF1 FIFO (permet d'accélérer les chargements)."
 msgid ""
 "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD and Spy Hunter loading hang."
 msgstr ""
-"Retarder les blocages VIF1 (VIF1 FIFO) - Pour le HUD de SOCOM2 et la "
-"coupure pendant le chargement de Spy Hunter."
+"Retarder les blocages VIF1 (VIF1 FIFO) - Pour le HUD de SOCOM2 et la coupure "
+"pendant le chargement de Spy Hunter."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
 msgid ""
@@ -2717,7 +2717,7 @@ msgstr "Choisir le dossier contenant les plugins PCSX2"
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:365
 msgid "Configure..."
-msgstr "Configurer…"
+msgstr "Configurer..."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:374
 msgid "Click the Browse button to select a different folder for PCSX2 plugins."
