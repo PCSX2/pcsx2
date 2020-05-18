@@ -1657,6 +1657,16 @@ Serial = SCES-51135
 Name   = Primal
 Region = PAL-M5
 Compat = 5 // With GSdx, SW-mode only.
+[patches = dcc4eeea]
+	author=Prafull
+	//Fix slow and choppy gameplay 
+	patch=1,EE,00399cb0,word,48a44800
+	patch=1,EE,00399cb4,word,48c02800
+	patch=1,EE,00399cb8,word,4a00d839
+	patch=1,EE,00399d68,word,48a44800
+	patch=1,EE,00399d6c,word,48c02800
+	patch=1,EE,00399d70,word,4a00d839
+[/patches]
 ---------------------------------------------
 Serial = SCES-51159
 Name   = The Getaway
@@ -1712,6 +1722,16 @@ Serial = SCES-51463
 Name   = Ghosthunter
 Region = PAL-M6
 Compat = 5
+[patches = 3bd85da4]
+	author=Prafull
+	//Fix slow and choppy gameplay 
+	patch=1,EE,003f4e58,word,48a44800
+	patch=1,EE,003f4e5c,word,48c02800
+	patch=1,EE,003f4e60,word,4a00d839
+	patch=1,EE,003f4f10,word,48a44800
+	patch=1,EE,003f4f14,word,48c02800
+	patch=1,EE,003f4f18,word,4a00d839
+[/patches]
 ---------------------------------------------
 Serial = SCES-51480
 Name   = Twisted Metal - Black - Online
@@ -5137,6 +5157,13 @@ Serial = SCUS-97258
 Name   = Amplitude
 Region = NTSC-U
 Compat = 5
+[patches = 2f7b4db8]
+	author=Prafull
+	//fix SPS on characters
+	patch=1,EE,00215e00,word,48228000
+	patch=1,EE,00215e04,word,48236000
+	patch=1,EE,00215e08,word,4a0055b8
+[/patches]
 ---------------------------------------------
 Serial = SCUS-97259
 Name   = NHL FaceOff 2003 [Demo]
@@ -8637,6 +8664,11 @@ Region = PAL-G
 Serial = SLES-50848
 Name   = Speed Kings
 Region = PAL-M5
+[patches = 4c133d9d]
+	author=Prafull
+	//Fixes hang before going ingame
+	patch=1,EE,0022ee34,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-50849
 Name   = Urban Freestyle Soccer
@@ -9780,6 +9812,17 @@ Serial = SLES-51292
 Name   = Savage Skies
 Region = PAL-M5
 Compat = 4 // This game needs the EE cache to work which is only supported in "interpreter" mode.
+[patches = 9fccacb5]
+	author=PSI
+	//The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
+	//The second function causes stack corruption as it allocates over the buffer, which is still transferring data.
+	//This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache.
+	//This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP.
+	patch=0,EE,00164974,word,4100ffff
+	patch=0,EE,00164978,word,00000000
+	patch=0,EE,0016497c,word,03e00008
+	patch=0,EE,00164980,word,27bd0030
+[/patches]
 ---------------------------------------------
 Serial = SLES-51294
 Name   = XIII
@@ -16957,6 +17000,22 @@ Region = PAL-E
 // Reads data from DDS1.
 MemCardFilter = SLES-54555/SLES-53458
 ---------------------------------------------
+Serial = SLES-54559
+Name   = Free Running
+Region = PAL-E
+[patches = d6a0a3ef]
+	author=Prafull
+	//fix character falling through floor
+	patch=1,EE,001b1d1c,word,48428800
+	patch=1,EE,001b1d20,word,4be228ec
+	patch=1,EE,001b1d24,word,4a0002ff
+	patch=1,EE,001b1d28,word,4a0002ff
+	patch=1,EE,001de5c0,word,48428800
+	patch=1,EE,001de5c4,word,4be3696c
+	patch=1,EE,001de5c8,word,4a0002ff
+	patch=1,EE,001de5cc,word,4a0002ff
+[/patches]
+---------------------------------------------
 Serial = SLES-54560
 Name   = Alpine Ski Racing 2007
 Region = PAL-Unk
@@ -19710,6 +19769,15 @@ eeRoundMode = 0
 Serial = SLPM-60254
 Name   = Zettai Zetsumei Toshi 2: Itetsuita Kioku-tachi [Trial A]
 Region = NTSC-J
+---------------------------------------------
+Serial = SLPM-60256
+Name   = Dengeki D73 demo
+Region = NTSC-J
+[patches = 5AB6A399]
+	author=someother1ne
+	//Fixes hang before going ingame
+	patch=1,EE,003a5f78,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLPM-60262
 Name   = 10th Anniversary Memorial Save Data [Disc 2]
@@ -36840,6 +36908,14 @@ Compat = 5
 Serial = SLUS-20378
 Name   = Salt Lake 2002
 Region = NTSC-U
+[patches = 466d1c13]
+	author=Prafull
+	//Fix ingame texture problems
+	patch=1,EE,001af778,word,daa70010
+	patch=1,EE,001af77c,word,4a000038
+	patch=1,EE,001af84c,word,daa70010
+	patch=1,EE,001af850,word,4a000038
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20379
 Name   = Dark Angel - James Cameron's
@@ -37089,6 +37165,17 @@ Serial = SLUS-20430
 Name   = Savage Skies
 Region = NTSC-U
 Compat = 5 // This game needs the EE cache to work which is only supported in "interpreter" mode.
+[patches = d195b670]
+	author=PSI
+	//The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
+	//The second function causes stack corruption as it allocates over the buffer, which is still transferring data.
+	//This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache.
+	//This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP.
+	patch=0,EE,00161a1c,word,4100ffff
+	patch=0,EE,00161a20,word,00000000
+	patch=0,EE,00161a24,word,03e00008
+	patch=0,EE,00161a28,word,27bd0030
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20431
 Name   = Wreckless - The Yakuza Missions
@@ -37810,6 +37897,11 @@ Serial = SLUS-20584
 Name   = Speed Kings
 Region = NTSC-U
 Compat = 3
+[patches = c90920fc]
+	author=Prafull
+	//Fixes hang before going ingame
+	patch=1,EE,0022b4a4,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20585
 Name   = Powerpuff Girls, The - Relish Rampage
@@ -40992,6 +41084,11 @@ Serial = SLUS-21234
 Name   = NHL 2K6
 Region = NTSC-U
 Compat = 2
+[patches = 87007AB7]
+	author=Prafull
+	//Avoid hang at start
+	patch=1,EE,003fd608,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21235
 Name   = MLB 2k6
@@ -43499,6 +43596,11 @@ Serial = SLUS-21763
 Name   = NHL 2K9
 Region = NTSC-U
 Compat = 2
+[patches = 29fdcbf7]
+	author=Prafull
+	//Avoid hang at start
+	patch=1,EE,00431848,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21764
 Name   = Cake Mania - Baker's Challenge
