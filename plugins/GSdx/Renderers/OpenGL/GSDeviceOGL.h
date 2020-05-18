@@ -490,6 +490,8 @@ private:
 	struct {
 		bool fconfig;
 		bool fshader;
+		bool fcheck_once;
+		bool fbad_compile;
 	} m_flog{};
 
 	GLuint m_vs[1<<1];

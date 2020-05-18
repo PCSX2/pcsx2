@@ -1529,9 +1529,9 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 {
 	// Lazy compile
 	if (!m_shaderfx.ps) {
-		if (!GLLoader::found_GL_ARB_gpu_shader5) { // GL4.0 extension
+		// GL4.0 extension
+		if (!GLLoader::found_GL_ARB_gpu_shader5 || m_flog.fbad_compile)
 			return;
-		}
 
 		std::string   config_name(theApp.GetConfigS("shaderfx_conf"));
 		std::ifstream fconfig(config_name);
@@ -1560,6 +1560,19 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 
 		m_shaderfx.cb = new GSUniformBufferOGL("eFX UBO", g_fx_cb_index, sizeof(ExternalFXConstantBuffer));
 		GLuint ps = m_shader->Compile("Extra", "ps_main", GL_FRAGMENT_SHADER, shader.str().c_str(), config.str());
+
+		// Checking compile status is costly so check it only once.
+		if (!m_flog.fcheck_once) {
+			GLint status = 0;
+			m_flog.fcheck_once = true;
+			glGetProgramiv(ps, GL_LINK_STATUS, &status);
+			if (status == GL_FALSE) {
+				m_flog.fbad_compile = true;
+				fprintf(stderr, "GSdx: failed to compile external post-processing shader.\n");
+				return;
+			}
+		}
+
 		m_shaderfx.ps = m_shader->LinkPipeline("eFX pipie", m_convert.vs, 0, ps);
 	}
 
