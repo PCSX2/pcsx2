@@ -1660,7 +1660,7 @@ Compat = 5 // With GSdx, SW-mode only.
 vuRoundMode = 0 // Fix SPS
 [patches = dcc4eeea]
 	author=Prafull
-	//Fix slow and choppy gameplay 
+	// Fix slow and choppy gameplay 
 	patch=1,EE,00399cb0,word,48a44800
 	patch=1,EE,00399cb4,word,48c02800
 	patch=1,EE,00399cb8,word,4a00d839
@@ -1725,8 +1725,8 @@ Region = PAL-M6
 Compat = 5
 [patches = 3bd85da4]
 	author=Prafull
-	//Fix slow and choppy gameplay
-	//Fixed by rearranging cop2 instructions
+	// Fix slow and choppy gameplay
+	// Fixed by rearranging cop2 instructions
 	patch=1,EE,003f4e58,word,48a44800
 	patch=1,EE,003f4e5c,word,48c02800
 	patch=1,EE,003f4e60,word,4a00d839
@@ -5164,7 +5164,7 @@ Region = NTSC-U
 Compat = 5
 [patches = 2f7b4db8]
 	author=Prafull
-	//fix SPS on characters
+	// Fix SPS on characters
 	patch=1,EE,00215e00,word,48228000
 	patch=1,EE,00215e04,word,48236000
 	patch=1,EE,00215e08,word,4a0055b8
@@ -8673,7 +8673,7 @@ Name   = Speed Kings
 Region = PAL-M5
 [patches = 4c133d9d]
 	author=Prafull
-	//Fixes hang before going ingame
+	// Fixes hang before going ingame
 	patch=1,EE,0022ee34,word,00000000
 [/patches]
 ---------------------------------------------
@@ -9821,10 +9821,10 @@ Region = PAL-M5
 Compat = 4 // This game needs the EE cache to work which is only supported in "interpreter" mode.
 [patches = 9fccacb5]
 	author=PSI
-	//The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
-	//The second function causes stack corruption as it allocates over the buffer, which is still transferring data.
-	//This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache.
-	//This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP.
+	// The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
+	// The second function causes stack corruption as it allocates over the buffer, which is still transferring data.
+	// This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache.
+	// This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP.
 	patch=0,EE,00164974,word,4100ffff
 	patch=0,EE,00164978,word,00000000
 	patch=0,EE,0016497c,word,03e00008
@@ -15619,7 +15619,7 @@ Region = PAL-M10
 Serial = SLES-53904
 Name   = DT Racer
 Region = PAL-M5
-GIFFIFOHack = 1 //Fixes corrupted graphics in the menus
+GIFFIFOHack = 1 // Fixes corrupted graphics in the menus
 ---------------------------------------------
 Serial = SLES-53906
 Name   = 50cent - Bulletproof
@@ -17021,8 +17021,8 @@ Name   = Free Running
 Region = PAL-E
 [patches = d6a0a3ef]
 	author=Prafull
-	//fix character falling through floor
-	//Fixed by rearranging cop2 instructions
+	// Fix character falling through floor
+	// Fixed by rearranging cop2 instructions
 	patch=1,EE,001b1d1c,word,48428800
 	patch=1,EE,001b1d20,word,4be228ec
 	patch=1,EE,001b1d24,word,4a0002ff
@@ -19792,7 +19792,7 @@ Name   = Dengeki D73 demo
 Region = NTSC-J
 [patches = 5AB6A399]
 	author=someother1ne
-	//Fixes hang before going ingame for neo contra demo
+	// Fixes hang before going ingame for neo contra demo
 	patch=1,EE,003a5f78,word,00000000
 [/patches]
 ---------------------------------------------
@@ -36450,8 +36450,8 @@ Region = NTSC-U
 Compat = 4
 [patches = 12BCE532]
 	author=Prafull
-	//Fix slow and choppy gameplay 
-	//Fixed by rearranging cop2 instructions
+	// Fix slow and choppy gameplay 
+	// Fixed by rearranging cop2 instructions
 	patch=1,EE,002aaa58,word,48488800
 	patch=1,EE,002aaa80,word,4a0203bd
 [/patches]
@@ -36928,8 +36928,8 @@ Name   = Salt Lake 2002
 Region = NTSC-U
 [patches = 466d1c13]
 	author=Prafull
-	//Fix ingame texture problems
-	//Fixed by rearranging cop2 instructions
+	// Fix ingame texture problems
+	// Fixed by rearranging cop2 instructions
 	patch=1,EE,001af778,word,daa70010
 	patch=1,EE,001af77c,word,4a000038
 	patch=1,EE,001af84c,word,daa70010
@@ -37186,10 +37186,10 @@ Region = NTSC-U
 Compat = 5 // This game needs the EE cache to work which is only supported in "interpreter" mode.
 [patches = d195b670]
 	author=PSI
-	//The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
-	//The second function causes stack corruption as it allocates over the buffer, which is still transferring data.
-	//This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache.
-	//This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP.
+	// The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
+	// The second function causes stack corruption as it allocates over the buffer, which is still transferring data.
+	// This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache.
+	// This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP.
 	patch=0,EE,00161a1c,word,4100ffff
 	patch=0,EE,00161a20,word,00000000
 	patch=0,EE,00161a24,word,03e00008
@@ -37918,7 +37918,7 @@ Region = NTSC-U
 Compat = 3
 [patches = c90920fc]
 	author=Prafull
-	//Fixes hang before going ingame
+	// Fixes hang before going ingame
 	patch=1,EE,0022b4a4,word,00000000
 [/patches]
 ---------------------------------------------
@@ -41105,7 +41105,7 @@ Region = NTSC-U
 Compat = 2
 [patches = 87007AB7]
 	author=Prafull
-	//Avoid hang at start
+	// Avoid hang at start
 	patch=1,EE,003fd608,word,00000000
 [/patches]
 ---------------------------------------------
@@ -41291,8 +41291,8 @@ Region = NTSC-U
 Compat = 5
 [patches = f1c7201e]
 	author=Prafull
-	//Fix slow and choppy gameplay
-	//Fixed by rearranging cop2 instructions
+	// Fix slow and choppy gameplay
+	// Fixed by rearranging cop2 instructions
 	patch=1,EE,004155a8,word,48a44800
 	patch=1,EE,004155ac,word,48c02800
 	patch=1,EE,004155b0,word,4a00d839
@@ -43618,7 +43618,7 @@ Region = NTSC-U
 Compat = 2
 [patches = 29fdcbf7]
 	author=Prafull
-	//Avoid hang at start
+	// Avoid hang at start
 	patch=1,EE,00431848,word,00000000
 [/patches]
 ---------------------------------------------
