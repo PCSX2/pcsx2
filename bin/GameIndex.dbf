@@ -36363,6 +36363,12 @@ Serial = SLUS-20278
 Name   = Yanya Caballista - City Skater
 Region = NTSC-U
 Compat = 4
+[patches = 12BCE532]
+	author=Prafull
+	//Fix slow and choppy gameplay 
+	patch=1,EE,002aaa58,word,48488800
+	patch=1,EE,002aaa80,word,4a0203bd
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20279
 Name   = X-Men - Next Dimension
