@@ -5584,7 +5584,7 @@ Compat = 5
 Serial = SCUS-97409
 Name   = Gretzky NHL 2005
 Region = NTSC-U
-eeRoundMode = 0 // Fix ingame hang
+eeRoundMode = 2 // Fix ingame hang
 ---------------------------------------------
 Serial = SCUS-97410
 Name   = Jampack Demo Disc Vol.10 [T-Rated]
