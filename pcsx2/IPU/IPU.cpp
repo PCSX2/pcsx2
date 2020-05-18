@@ -47,8 +47,7 @@ static rgb16_t vqclut[16];			//clut conversion table
 static u8 s_thresh[2];				//thresholds for color conversions
 int coded_block_pattern = 0;
 
-
-u8 indx4[16*16/2];
+alignas(16) static u8 indx4[16*16/2];
 
 uint eecount_on_last_vdec = 0;
 bool FMVstarted = false;
