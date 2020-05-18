@@ -60,8 +60,10 @@ void GSWndCGL::CreateContext(int major, int minor) {
 	dispatch_sync(dispatch_get_main_queue(), [&]{
 		NSOpenGLPixelFormat *pxformat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
 
-		m_view = [[NSOpenGLView alloc] initWithFrame:[m_NativeWindow contentRectForFrameRect:[m_NativeWindow frame]] pixelFormat:pxformat];
-		[m_NativeWindow setContentView:m_view];
+		m_view = [[NSOpenGLView alloc] initWithFrame:[[m_NativeWindow contentView] frame] pixelFormat:pxformat];
+		// Note: Don't replace the window's contentView because this window might be from wx, in which case replacing its contentView would break wx things
+		[[m_NativeWindow contentView] addSubview:m_view];
+
 		[m_view setWantsBestResolutionOpenGLSurface:YES];
 		m_context = CGLRetainContext([[m_view openGLContext] CGLContextObj]);
 	});
@@ -96,7 +98,11 @@ void GSWndCGL::Detach() {
 		CGLReleaseContext(m_context);
 		m_context = nil;
 	}
+	dispatch_sync(dispatch_get_main_queue(), [&]{
+		[m_view removeFromSuperview];
+	});
 	m_view = nil;
+	m_NativeWindow = nil;
 }
 
 bool GSWndCGL::Create(const std::string& title, int w, int h) {
