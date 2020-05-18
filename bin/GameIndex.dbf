@@ -19792,7 +19792,7 @@ Name   = Dengeki D73 demo
 Region = NTSC-J
 [patches = 5AB6A399]
 	author=someother1ne
-	//Fixes hang before going ingame
+	//Fixes hang before going ingame for neo contra demo
 	patch=1,EE,003a5f78,word,00000000
 [/patches]
 ---------------------------------------------
