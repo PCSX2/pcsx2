@@ -1657,6 +1657,7 @@ Serial = SCES-51135
 Name   = Primal
 Region = PAL-M5
 Compat = 5 // With GSdx, SW-mode only.
+vuRoundMode = 0 // Fix SPS
 [patches = dcc4eeea]
 	author=Prafull
 	//Fix slow and choppy gameplay 
@@ -1822,6 +1823,7 @@ XgKickHack = 1 // SPS.
 Serial = SCES-51685
 Name   = Primal
 Region = PAL-E-R
+vuRoundMode = 0 // Fix SPS (probably needs patch later)
 ---------------------------------------------
 Serial = SCES-51706
 Name   = Amplitude
@@ -4706,6 +4708,7 @@ Serial = SCUS-97142
 Name   = Primal - Civilization Is Only Skin Deep
 Region = NTSC-U
 Compat = 5
+vuRoundMode = 0 // Fix SPS
 [patches = FCD89DC3]
 	author=Raziel I.C.H.I. Znot
 	comment=Performance fix
@@ -5037,6 +5040,7 @@ Region = NTSC-U
 Serial = SCUS-97225
 Name   = Primal [Demo]
 Region = NTSC-U
+vuRoundMode = 0 // Fix SPS
 ---------------------------------------------
 Serial = SCUS-97226
 Name   = NCAA GameBreaker 2003 [Demo]
@@ -5579,6 +5583,7 @@ Compat = 5
 Serial = SCUS-97409
 Name   = Gretzky NHL 2005
 Region = NTSC-U
+eeRoundMode = 0 // Fix ingame hang
 ---------------------------------------------
 Serial = SCUS-97410
 Name   = Jampack Demo Disc Vol.10 [T-Rated]
