@@ -1725,7 +1725,8 @@ Region = PAL-M6
 Compat = 5
 [patches = 3bd85da4]
 	author=Prafull
-	//Fix slow and choppy gameplay 
+	//Fix slow and choppy gameplay
+	//Fixed by rearranging cop2 instructions
 	patch=1,EE,003f4e58,word,48a44800
 	patch=1,EE,003f4e5c,word,48c02800
 	patch=1,EE,003f4e60,word,4a00d839
@@ -8502,6 +8503,7 @@ Region = PAL-S
 Serial = SLES-50809
 Name   = Next Generation Tennis 2003
 Region = PAL-M6
+vuClampMode = 3
 ---------------------------------------------
 Serial = SLES-50812
 Name   = Spider-Man
@@ -10296,6 +10298,7 @@ vuClampMode = 3
 	author=Prafull
 	//Fixes ingame sps problem
 	//Also requires vu clamping extra or higher
+	//Fixed by rearranging cop2 instructions
 	patch=1,EE,0013f1f0,word,d9100010
 	patch=1,EE,0013f1f4,word,4a000038
 [/patches]
@@ -17019,6 +17022,7 @@ Region = PAL-E
 [patches = d6a0a3ef]
 	author=Prafull
 	//fix character falling through floor
+	//Fixed by rearranging cop2 instructions
 	patch=1,EE,001b1d1c,word,48428800
 	patch=1,EE,001b1d20,word,4be228ec
 	patch=1,EE,001b1d24,word,4a0002ff
@@ -36447,6 +36451,7 @@ Compat = 4
 [patches = 12BCE532]
 	author=Prafull
 	//Fix slow and choppy gameplay 
+	//Fixed by rearranging cop2 instructions
 	patch=1,EE,002aaa58,word,48488800
 	patch=1,EE,002aaa80,word,4a0203bd
 [/patches]
@@ -36924,6 +36929,7 @@ Region = NTSC-U
 [patches = 466d1c13]
 	author=Prafull
 	//Fix ingame texture problems
+	//Fixed by rearranging cop2 instructions
 	patch=1,EE,001af778,word,daa70010
 	patch=1,EE,001af77c,word,4a000038
 	patch=1,EE,001af84c,word,daa70010
@@ -41286,6 +41292,7 @@ Compat = 5
 [patches = f1c7201e]
 	author=Prafull
 	//Fix slow and choppy gameplay
+	//Fixed by rearranging cop2 instructions
 	patch=1,EE,004155a8,word,48a44800
 	patch=1,EE,004155ac,word,48c02800
 	patch=1,EE,004155b0,word,4a00d839
