@@ -10286,6 +10286,14 @@ Region = PAL-Unk
 Serial = SLES-51547
 Name   = Next Generation Tennis 2003
 Region = PAL-M5
+vuClampMode = 3
+[patches = 393e3efa]
+	author=Prafull
+	//Fixes ingame sps problem
+	//Also requires vu clamping extra or higher
+	patch=1,EE,0013f1f0,word,d9100010
+	patch=1,EE,0013f1f4,word,4a000038
+[/patches]
 ---------------------------------------------
 Serial = SLES-51548
 Name   = This is Football
