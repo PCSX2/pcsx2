@@ -207,6 +207,18 @@ void GSRendererOGL::EmulateZbuffer()
 
 void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 {
+	// Optimization idea: 
+	// Monster hunter does SW FBMASK on almost every draw per frame
+	// on red channel with a draw split of over 1k in many situations.
+	// Idea is to use Unsafe path when draw split is above 500 on Basic Blending.
+	// SW Path above 500 will be active on High Blending.
+	bool fbmask_large_splitdraw = false;
+	if (PRIM->ABE && m_sw_blending && m_sw_blending < ACC_BLEND_HIGH) { // Run the code only when needed.
+		const size_t nb_vertex = GSUtil::GetClassVertexCount(m_vt.m_primclass);
+		const size_t draw_split_calc = m_index.tail / nb_vertex;
+		fbmask_large_splitdraw = draw_split_calc > 500;
+	}
+
 	// Uncomment to disable texture shuffle emulation.
 	// m_texture_shuffle = false;
 
@@ -229,10 +241,10 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
 		const uint32& m = m_context->FRAME.FBMSK;
-		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
+		const uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
 		// FIXME GSVector will be nice here
-		uint8 rg_mask = fbmask & 0xFF;
-		uint8 ba_mask = (fbmask >> 8) & 0xFF;
+		const uint8 rg_mask = fbmask & 0xFF;
+		const uint8 ba_mask = (fbmask >> 8) & 0xFF;
 		m_om_csel.wrgba = 0;
 
 		// 2 Select the new mask (Please someone put SSE here)
@@ -267,7 +279,7 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 			ps_cb.FbMask.a = ba_mask;
 
 			// No blending so hit unsafe path.
-			if (!PRIM->ABE) {
+			if (!PRIM->ABE || fbmask_large_splitdraw) {
 				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on tex shuffle", fbmask);
 				m_require_one_barrier = true;
 			} else {
@@ -282,8 +294,8 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 		m_ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
 		GSVector4i fbmask_v = GSVector4i::load((int)m_context->FRAME.FBMSK);
-		int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
-		int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
+		const int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
+		const int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
 
 		m_om_csel.wrgba = ~ff_fbmask; // Enable channel if at least 1 bit is 0
 
@@ -311,14 +323,14 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 			   have been invalidated before subsequent Draws are executed.
 			 */
 			// No blending so hit unsafe path.
-			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7)) {
-				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
-						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
+			if (!PRIM->ABE || fbmask_large_splitdraw || !(~ff_fbmask & ~zero_fbmask & 0x7)) {
+				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format",
+					m_context->FRAME.FBMSK, m_ps_sel.dfmt == 2 ? 16 : 32);
 				m_require_one_barrier = true;
 			} else {
 				// The safe and accurate path (but slow)
-				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
-						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
+				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format",
+					m_context->FRAME.FBMSK, m_ps_sel.dfmt == 2 ? 16 : 32);
 				m_require_full_barrier = true;
 			}
 		}
