@@ -207,6 +207,19 @@ void GSRendererOGL::EmulateZbuffer()
 
 void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 {
+	// Optimization idea: 
+	// Monster Hunter does SW FBMASK on almost every draw per frame
+	// on red channel with a draw split of over 1k in many situations.
+	// Idea is to disable fbmask when draw split is above 500 on Basic Blending.
+	// Resume old behavior/work on High Blending.
+	bool fbmask_large_splitdraw = false;
+	const size_t nb_vertex = GSUtil::GetClassVertexCount(m_vt.m_primclass);
+	const size_t splitdraw_calc = m_index.tail / nb_vertex;
+	constexpr int splitdraw_limit = 500;
+	if (m_sw_blending && m_sw_blending < ACC_BLEND_HIGH) { // Run the code only when needed.
+		fbmask_large_splitdraw = splitdraw_calc > splitdraw_limit;
+	}
+
 	// Uncomment to disable texture shuffle emulation.
 	// m_texture_shuffle = false;
 
@@ -229,10 +242,10 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
 		const uint32& m = m_context->FRAME.FBMSK;
-		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
+		const uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
 		// FIXME GSVector will be nice here
-		uint8 rg_mask = fbmask & 0xFF;
-		uint8 ba_mask = (fbmask >> 8) & 0xFF;
+		const uint8 rg_mask = fbmask & 0xFF;
+		const uint8 ba_mask = (fbmask >> 8) & 0xFF;
 		m_om_csel.wrgba = 0;
 
 		// 2 Select the new mask (Please someone put SSE here)
@@ -270,9 +283,13 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 			if (!PRIM->ABE) {
 				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on tex shuffle", fbmask);
 				m_require_one_barrier = true;
-			} else {
+			} else if (!fbmask_large_splitdraw) {
 				GL_INS("FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
 				m_require_full_barrier = true;
+			} else {
+				GL_INS("ERROR: FBMASK SW split draw too large (%d > %d) fb_mask:%x on tex shuffle",
+					splitdraw_calc, splitdraw_limit, fbmask);
+				m_ps_sel.fbmask = 0;
 			}
 		} else {
 			m_ps_sel.fbmask = 0;
@@ -282,8 +299,8 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 		m_ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
 		GSVector4i fbmask_v = GSVector4i::load((int)m_context->FRAME.FBMSK);
-		int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
-		int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
+		const int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
+		const int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
 
 		m_om_csel.wrgba = ~ff_fbmask; // Enable channel if at least 1 bit is 0
 
@@ -312,14 +329,19 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 			 */
 			// No blending so hit unsafe path.
 			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7)) {
-				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
-						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
+				GL_INS("FBMASK Unsafe SW emulated fb_mask:%x on %d bits format",
+					m_context->FRAME.FBMSK, m_ps_sel.dfmt == 2 ? 16 : 32);
 				m_require_one_barrier = true;
-			} else {
+			} else if (!fbmask_large_splitdraw) {
 				// The safe and accurate path (but slow)
-				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format", m_context->FRAME.FBMSK,
-						(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);
+				GL_INS("FBMASK SW emulated fb_mask:%x on %d bits format",
+					m_context->FRAME.FBMSK, m_ps_sel.dfmt == 2 ? 16 : 32);
 				m_require_full_barrier = true;
+			} else {
+				// SW Fbmask will be disabled on large split draw on lower than High Blending.
+				GL_INS("ERROR: FBMASK SW split draw too large (%d > %d) fb_mask:%x on %d bits format",
+					splitdraw_calc, splitdraw_limit, m_context->FRAME.FBMSK, m_ps_sel.dfmt == 2 ? 16 : 32);
+				m_ps_sel.fbmask = 0;
 			}
 		}
 	}
