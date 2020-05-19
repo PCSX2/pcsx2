@@ -1,5 +1,5 @@
 ***PCSX2 version:***
-``(For example, stable build v1.4.0 (or) development builds v1.5.xxx)``
+``(For example, stable build v1.6.0 (or) development builds v1.7.0-dev-xxx)``
 
 - **Notes**:
   - It's preferred to only report bugs which are present on the [latest development builds](https://pcsx2.net/download/development.html).
@@ -14,7 +14,7 @@
 ***Plugins used:***
 ``(Relevant/Non-default settings of GS/PAD/SPU2/CDVD/USB plugins)``
 
-- **Note**: In case the issue is a graphical problem with the GSDX plugin, please provide basic information like ``Renderer/Internal resolution/CRC Hack level/Other relevant options`` which were used to reproduce the issue. Additionally, providing a [GS dump](https://forums.pcsx2.net/Thread-How-to-create-a-proper-GS-dump) of the issue would also be helpful.
+- **Note**: In case the issue is a graphical problem with the GSdx plugin, please provide basic information like ``Renderer/Internal resolution/CRC Hack level/Other relevant options`` which were used to reproduce the issue. Additionally, providing a [GS dump](https://forums.pcsx2.net/Thread-How-to-create-a-proper-GS-dump) of the issue would also be helpful.
 
 ***Description of the issue:***
 ``(What's the problem? - Screenshots showing the issue if applicable)``
