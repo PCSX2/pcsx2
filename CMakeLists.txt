@@ -7,7 +7,7 @@ project(Pcsx2)
 #
 # Setting it to a range tells it that it supports the features on the newer
 # versions as well, avoiding setting policies.
-cmake_minimum_required(VERSION 3.0.2...3.17)
+cmake_minimum_required(VERSION 3.3.0...3.17)
 
 # Variable to check that people use the good file
 set(TOP_CMAKE_WAS_SOURCED TRUE)
