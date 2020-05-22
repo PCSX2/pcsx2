@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-03-16 22:49+0100\n"
-"PO-Revision-Date: 2020-03-16 22:49+0100\n"
+"PO-Revision-Date: 2020-05-22 17:58+0200\n"
 "Last-Translator: StarFang208\n"
 "Language-Team: Leucos <http://forums.pcsx2.net/User-Leucos>\n"
 "Language: it_IT\n"
@@ -15,7 +15,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: ../..\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 2.3.1\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
@@ -30,8 +30,7 @@ msgstr "Errore d'interpretazione"
 
 #: common/include/Utilities/Exceptions.h:279
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
-msgstr ""
-"L'hardware del tuo sistema non è in grado di eseguire PCSX2. Ci spiace."
+msgstr "L'hardware del tuo sistema non è in grado di eseguire PCSX2. Ci spiace."
 
 #: common/src/Utilities/Exceptions.cpp:204
 msgid "Oh noes! Out of memory!"
@@ -39,13 +38,12 @@ msgstr "O no! Memoria esaurita!"
 
 #: common/src/Utilities/Exceptions.cpp:219
 msgid ""
-"Virtual memory mapping failure!  Your system may have conflicting device "
-"drivers, services, or may simply have insufficient memory or resources to "
-"meet PCSX2's lofty needs."
+"Virtual memory mapping failure!  Your system may have conflicting device drivers, "
+"services, or may simply have insufficient memory or resources to meet PCSX2's lofty needs."
 msgstr ""
-"Mappatura della memoria virtuale fallita! Il sistema potrebbe avere driver "
-"di periferica o servizi in conflitto, o semplicemente potrebbe non avere "
-"memoria sufficiente per le nobili necessità di PCSX2."
+"Mappatura della memoria virtuale fallita! Il sistema potrebbe avere driver di periferica "
+"o servizi in conflitto, o semplicemente potrebbe non avere memoria sufficiente per le "
+"nobili necessità di PCSX2."
 
 #: common/src/Utilities/Exceptions.cpp:290
 msgid "Path: "
@@ -65,24 +63,21 @@ msgstr "File non trovato."
 
 #: common/src/Utilities/Exceptions.cpp:354
 msgid ""
-"Permission denied while trying to open file, likely due to insufficient user "
-"account rights."
+"Permission denied while trying to open file, likely due to insufficient user account "
+"rights."
 msgstr ""
-"Permesso negato nel tentativo di aprire il file, probabilmente causato un "
-"utenza con diritti non sufficienti."
+"Permesso negato nel tentativo di aprire il file, probabilmente causato un utenza con "
+"diritti non sufficienti."
 
 #: common/src/Utilities/Exceptions.cpp:374
 msgid ""
-"Unexpected end of file or stream encountered.  File is probably truncated or "
-"corrupted."
+"Unexpected end of file or stream encountered.  File is probably truncated or corrupted."
 msgstr ""
-"Fine inattesa del file o del flusso dati. Il file è probabilmente troncato o "
-"corrotto."
+"Fine inattesa del file o del flusso dati. Il file è probabilmente troncato o corrotto."
 
 #: common/src/Utilities/ThreadTools.cpp:41
 msgid "Threading activity: start, detach, sync, deletion, etc."
-msgstr ""
-"Attività dei thread: avvio, distacco, sincronizzazione, cancellazione, ecc."
+msgstr "Attività dei thread: avvio, distacco, sincronizzazione, cancellazione, ecc."
 
 #: common/src/Utilities/ThreadingDialogs.cpp:30
 msgid "Waiting for tasks..."
@@ -95,8 +90,8 @@ msgstr "In attesa del completamento dell'operazione..."
 #: common/src/Utilities/wxAppWithHelpers.cpp:35
 msgid "Includes idle event processing and some other uncommon event usages."
 msgstr ""
-"Include la processazione degli eventi d'inattività ed alcuni altri utilizzi "
-"non comuni di eventi."
+"Include la processazione degli eventi d'inattività ed alcuni altri utilizzi non comuni di "
+"eventi."
 
 #: pcsx2/CDVD/InputIsoFile.cpp:248
 msgid "Unrecognized ISO image file format"
@@ -105,50 +100,45 @@ msgstr "Formato file immagine ISO non riconosciuto"
 #: pcsx2/Elfheader.cpp:163
 msgid "Cannot load ELF binary image.  The file may be corrupt or incomplete."
 msgstr ""
-"Impossibile caricare l'immagine binaria ELF. Il file potrebbe essere "
-"corrotto o incompleto."
+"Impossibile caricare l'immagine binaria ELF. Il file potrebbe essere corrotto o "
+"incompleto."
 
 #: pcsx2/Elfheader.cpp:165
 msgid ""
-"If loading from an ISO image, this error may be caused by an unsupported ISO "
-"image type or a bug in PCSX2 ISO image support."
+"If loading from an ISO image, this error may be caused by an unsupported ISO image type "
+"or a bug in PCSX2 ISO image support."
 msgstr ""
-"Se si sta caricando da un'immagine ISO, questo errore potrebbe essere "
-"causato da un tipo di immagine ISO non supportato o da un bug nel supporto "
-"immagini ISO di PCSX2."
+"Se si sta caricando da un'immagine ISO, questo errore potrebbe essere causato da un tipo "
+"di immagine ISO non supportato o da un bug nel supporto immagini ISO di PCSX2."
 
 #: pcsx2/MTGS.cpp:877
-msgid ""
-"The MTGS thread has become unresponsive while waiting for the GS plugin to "
-"open."
+msgid "The MTGS thread has become unresponsive while waiting for the GS plugin to open."
 msgstr ""
-"Durante l'attesa per l'apertura del plugin GS il thread MTGS ha smesso di "
-"rispondere."
+"Durante l'attesa per l'apertura del plugin GS il thread MTGS ha smesso di rispondere."
 
 #: pcsx2/PluginManager.cpp:709
-msgid ""
-"The savestate cannot be loaded, as it appears to be corrupt or incomplete."
+msgid "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
 msgstr ""
-"Il salvataggio di stato non può essere caricato, in quanto pare essere "
-"corrotto o incompleto."
+"Il salvataggio di stato non può essere caricato, in quanto pare essere corrotto o "
+"incompleto."
 
 #: pcsx2/PluginManager.cpp:720
 #, c-format
 msgid ""
-"%s plugin failed to open.  Your computer may have insufficient resources, or "
-"incompatible hardware/drivers."
+"%s plugin failed to open.  Your computer may have insufficient resources, or incompatible "
+"hardware/drivers."
 msgstr ""
-"Non è stato possibile avviare il plugin %s. Il computer potrebbe non "
-"possedere risorse sufficienti o avere driver/hardware incompatibili."
+"Non è stato possibile avviare il plugin %s. Il computer potrebbe non possedere risorse "
+"sufficienti o avere driver/hardware incompatibili."
 
 #: pcsx2/PluginManager.cpp:727
 #, c-format
 msgid ""
-"%s plugin failed to initialize.  Your system may have insufficient memory or "
-"resources needed."
+"%s plugin failed to initialize.  Your system may have insufficient memory or resources "
+"needed."
 msgstr ""
-"Non è stato possibile inizializzare il plugin %s. Il sistema potrebbe non "
-"disporre della memoria sufficiente o delle risorse richieste."
+"Non è stato possibile inizializzare il plugin %s. Il sistema potrebbe non disporre della "
+"memoria sufficiente o delle risorse richieste."
 
 #: pcsx2/PluginManager.cpp:955
 #, c-format
@@ -158,40 +148,36 @@ msgstr "Non è stato possibile trovare il file del plugin %s configurato"
 #: pcsx2/PluginManager.cpp:959
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
-msgstr ""
-"Il plugin %s configurato non è una libreria di collegamento dinamico valida"
+msgstr "Il plugin %s configurato non è una libreria di collegamento dinamico valida"
 
 #: pcsx2/PluginManager.cpp:976
 #, c-format
 msgid ""
-"The configured %s plugin is not a PCSX2 plugin, or is for an older "
-"unsupported version of PCSX2."
+"The configured %s plugin is not a PCSX2 plugin, or is for an older unsupported version of "
+"PCSX2."
 msgstr ""
-"Il plugin %s configurato non è un plugin di PCSX2 o è realizzato per una "
-"versione precedente di PCSX2 e non più supportata."
+"Il plugin %s configurato non è un plugin di PCSX2 o è realizzato per una versione "
+"precedente di PCSX2 e non più supportata."
 
 #: pcsx2/PluginManager.cpp:1010
-msgid ""
-"The plugin reports that your hardware or software/drivers are not supported."
-msgstr ""
-"Il plugin riporta che l'hardware, il software o i driver non sono supportati."
+msgid "The plugin reports that your hardware or software/drivers are not supported."
+msgstr "Il plugin riporta che l'hardware, il software o i driver non sono supportati."
 
 #: pcsx2/PluginManager.cpp:1031
 msgid ""
-"Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
-"version of PCSX2."
+"Configured plugin is not a PCSX2 plugin, or is for an older unsupported version of PCSX2."
 msgstr ""
-"Il plugin configurato non è un plugin di PCSX2 o è realizzato per una "
-"versione di PCSX2 precedente e non più supportata."
+"Il plugin configurato non è un plugin di PCSX2 o è realizzato per una versione di PCSX2 "
+"precedente e non più supportata."
 
 #: pcsx2/PluginManager.cpp:1056
 #, c-format
 msgid ""
-"Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
-"unsupported version of PCSX2."
+"Configured %s plugin is not a valid PCSX2 plugin, or is for an older unsupported version "
+"of PCSX2."
 msgstr ""
-"Il plugin %s configurato non è un plugin di PCSX2 valido o è realizzato per "
-"una versione di PCSX2 precedente e non più supportata."
+"Il plugin %s configurato non è un plugin di PCSX2 valido o è realizzato per una versione "
+"di PCSX2 precedente e non più supportata."
 
 #: pcsx2/PluginManager.cpp:1490
 msgid "Internal Memorycard Plugin failed to initialize."
@@ -201,8 +187,7 @@ msgstr "Non è stato possibile inizializzare il plugin Memory Card interno."
 msgid "Unloaded Plugin"
 msgstr "Plugin Scaricato"
 
-#: pcsx2/Recording/NewRecordingFrame.cpp:24
-#: pcsx2/gui/Debugger/DisassemblyDialog.cpp:227
+#: pcsx2/Recording/NewRecordingFrame.cpp:24 pcsx2/gui/Debugger/DisassemblyDialog.cpp:227
 msgid "panel"
 msgstr "pannello"
 
@@ -229,31 +214,27 @@ msgstr "Annulla"
 #: pcsx2/SaveState.cpp:340
 msgid "Cannot load savestate.  It is of an unknown or unsupported version."
 msgstr ""
-"Impossibile caricare il salvataggio di stato. La sua versione è sconosciuta "
-"o non supportata."
+"Impossibile caricare il salvataggio di stato. La sua versione è sconosciuta o non "
+"supportata."
 
 #: pcsx2/SourceLog.cpp:96
 msgid "Dumps detailed information for PS2 executables (ELFs)."
-msgstr ""
-"Mostra un Dump con informazioni dettagliate per gli eseguibili PS2 (ELF)."
+msgstr "Mostra un Dump con informazioni dettagliate per gli eseguibili PS2 (ELF)."
 
 #: pcsx2/SourceLog.cpp:101
 msgid ""
-"Logs manual protection, split blocks, and other things that might impact "
-"performance."
+"Logs manual protection, split blocks, and other things that might impact performance."
 msgstr ""
-"Mostra il registro relativo a protezioni manuali, blocchi separati ed altre "
-"cose che potrebbero avere un impatto sulle prestazioni."
+"Mostra il registro relativo a protezioni manuali, blocchi separati ed altre cose che "
+"potrebbero avere un impatto sulle prestazioni."
 
 #: pcsx2/SourceLog.cpp:106
 msgid "Shows the game developer's logging text (EE processor)"
-msgstr ""
-"Mostra i messaggi di registro dello sviluppatore del gioco (processore EE)"
+msgstr "Mostra i messaggi di registro dello sviluppatore del gioco (processore EE)"
 
 #: pcsx2/SourceLog.cpp:111
 msgid "Shows the game developer's logging text (IOP processor)"
-msgstr ""
-"Mostra i messaggi di registro dello sviluppatore del gioco (processore IOP)"
+msgstr "Mostra i messaggi di registro dello sviluppatore del gioco (processore IOP)"
 
 #: pcsx2/SourceLog.cpp:116
 msgid "Shows DECI2 debugging logs (EE processor)"
@@ -270,8 +251,7 @@ msgstr "Mostra i registri e le informazioni legate alla registrazione"
 #: pcsx2/SourceLog.cpp:132
 msgid "Shows detailed controller input values for port 1, every frame"
 msgstr ""
-"Mostra i valori dettagliati dell'input del controller per l'ingresso 1, ogni "
-"fotogramma"
+"Mostra i valori dettagliati dell'input del controller per l'ingresso 1, ogni fotogramma"
 
 #: pcsx2/SourceLog.cpp:168
 msgid "SYSCALL and DECI2 activity."
@@ -280,8 +260,7 @@ msgstr "Attività SYSCALL e DECI2."
 #: pcsx2/SourceLog.cpp:174
 msgid "Direct memory accesses to unknown or unmapped EE memory space."
 msgstr ""
-"Accessi diretti alla memoria verso spazi di memoria dell'EE sconosciuti o "
-"non mappati."
+"Accessi diretti alla memoria verso spazi di memoria dell'EE sconosciuti o non mappati."
 
 #: pcsx2/SourceLog.cpp:180 pcsx2/SourceLog.cpp:299
 msgid "Disasm of executing core instructions (excluding COPs and CACHE)."
@@ -305,17 +284,16 @@ msgstr "Esecuzione delle istruzioni cache dell'EE."
 
 #: pcsx2/SourceLog.cpp:210
 msgid ""
-"All known hardware register accesses (very slow!); not including sub filter "
-"options below."
+"All known hardware register accesses (very slow!); not including sub filter options below."
 msgstr ""
-"Tutti gli accessi conosciuti ai registri hardware (molto lento!); ad "
-"esclusione delle opzioni di filtro sotto indicate."
+"Tutti gli accessi conosciuti ai registri hardware (molto lento!); ad esclusione delle "
+"opzioni di filtro sotto indicate."
 
 #: pcsx2/SourceLog.cpp:216 pcsx2/SourceLog.cpp:317
 msgid "Logs only unknown, unmapped, or unimplemented register accesses."
 msgstr ""
-"Mostra nel registro solo gli accessi a registri sconosciuti, non mappati o "
-"non implementati."
+"Mostra nel registro solo gli accessi a registri sconosciuti, non mappati o non "
+"implementati."
 
 #: pcsx2/SourceLog.cpp:222 pcsx2/SourceLog.cpp:323
 msgid "Logs only DMA-related registers."
@@ -323,8 +301,7 @@ msgstr "Mostra nel registro solo i registri relativi al DMA."
 
 #: pcsx2/SourceLog.cpp:228
 msgid "IPU activity: hardware registers, decoding operations, DMA status, etc."
-msgstr ""
-"Attività IPU: registri hardware, operazioni di decodifica, stato DMA, ecc."
+msgstr "Attività IPU: registri hardware, operazioni di decodifica, stato DMA, ecc."
 
 #: pcsx2/SourceLog.cpp:234
 msgid "All GIFtag parse activity; path index, tag type, etc."
@@ -345,13 +322,11 @@ msgstr "Attività MFIFO di Scratchpad."
 #: pcsx2/SourceLog.cpp:258
 msgid "Actual data transfer logs, bus right arbitration, stalls, etc."
 msgstr ""
-"Registri correnti del trasferimento dati, negoziazione privilegi del bus, "
-"stalli, ecc."
+"Registri correnti del trasferimento dati, negoziazione privilegi del bus, stalli, ecc."
 
 #: pcsx2/SourceLog.cpp:264
 msgid "Tracks all EE counters events and some counter register activity."
-msgstr ""
-"Traccia tutti i contatori dell'EE ed alcune attività del registro contatore."
+msgstr "Traccia tutti i contatori dell'EE ed alcune attività del registro contatore."
 
 #: pcsx2/SourceLog.cpp:270
 msgid "Dumps various VIF and VIFcode processing data."
@@ -368,25 +343,22 @@ msgstr "Attività SYSCALL e IRX."
 #: pcsx2/SourceLog.cpp:293
 msgid "Direct memory accesses to unknown or unmapped IOP memory space."
 msgstr ""
-"Accessi diretti alla memoria in spazi di memoria dell'IOP sconosciuti o non "
-"mappati."
+"Accessi diretti alla memoria in spazi di memoria dell'IOP sconosciuti o non mappati."
 
 #: pcsx2/SourceLog.cpp:305
 msgid "Disasm of the IOP's GPU co-processor instructions."
 msgstr "Disasm delle istruzioni del co-processore GPU dell'IOP."
 
 #: pcsx2/SourceLog.cpp:311
-msgid ""
-"All known hardware register accesses, not including the sub-filters below."
+msgid "All known hardware register accesses, not including the sub-filters below."
 msgstr ""
-"Tutti gli accessi conosciuti al registro hardware, ad esclusione dei filtri "
-"sotto indicati."
+"Tutti gli accessi conosciuti al registro hardware, ad esclusione dei filtri sotto "
+"indicati."
 
 #: pcsx2/SourceLog.cpp:329
 msgid "Memorycard reads, writes, erases, terminators, and other processing."
 msgstr ""
-"Letture, scritture, cancellazioni, terminazioni ed altri processi delle "
-"Memory Card."
+"Letture, scritture, cancellazioni, terminazioni ed altri processi delle Memory Card."
 
 #: pcsx2/SourceLog.cpp:335
 msgid "Gamepad activity on the SIO."
@@ -394,14 +366,12 @@ msgstr "Attività del Gamepad nel SIO."
 
 #: pcsx2/SourceLog.cpp:341
 msgid "Actual DMA event processing and data transfer logs."
-msgstr ""
-"Registri correnti del trasferimento dati e del processing degli eventi DMA."
+msgstr "Registri correnti del trasferimento dati e del processing degli eventi DMA."
 
 #: pcsx2/SourceLog.cpp:347
 msgid "Tracks all IOP counters events and some counter register activity."
 msgstr ""
-"Traccia tutti gli eventi dei contatori IOP ed alcune attività del registro "
-"contatore."
+"Traccia tutti gli eventi dei contatori IOP ed alcune attività del registro contatore."
 
 #: pcsx2/SourceLog.cpp:353
 msgid "Detailed logging of CDVD hardware."
@@ -417,12 +387,11 @@ msgstr "PCSX2 - Messaggio"
 
 #: pcsx2/ZipTools/thread_gzip.cpp:85
 msgid ""
-"The savestate was not properly saved. The temporary file was created "
-"successfully but could not be moved to its final resting place."
+"The savestate was not properly saved. The temporary file was created successfully but "
+"could not be moved to its final resting place."
 msgstr ""
-"Il salvataggio di stato non è stato salvato correttamente. Il file "
-"temporaneo è stato creato con successo ma non è stato possibile spostarlo "
-"nel suo ultimo luogo di riposo."
+"Il salvataggio di stato non è stato salvato correttamente. Il file temporaneo è stato "
+"creato con successo ma non è stato possibile spostarlo nel suo ultimo luogo di riposo."
 
 #: pcsx2/gui/AppConfig.cpp:976
 msgid "Safest (No hacks)"
@@ -450,8 +419,7 @@ msgstr "Per lo più dannosa"
 
 #: pcsx2/gui/AppConfig.cpp:1144 pcsx2/gui/AppConfig.cpp:1150
 msgid "Failed to overwrite existing settings file; permission was denied."
-msgstr ""
-"Impossibile sovrascrivere il file impostazioni esistente: permesso negato."
+msgstr "Impossibile sovrascrivere il file impostazioni esistente: permesso negato."
 
 #: pcsx2/gui/AppCorePlugins.cpp:398
 msgid "Loading PS2 system plugins..."
@@ -459,11 +427,11 @@ msgstr "Caricamento dei plugin di sistema PS2..."
 
 #: pcsx2/gui/AppInit.cpp:55
 msgid ""
-"SSE2 extensions are not available.  PCSX2 requires a cpu that supports the "
-"SSE2 instruction set."
+"SSE2 extensions are not available.  PCSX2 requires a cpu that supports the SSE2 "
+"instruction set."
 msgstr ""
-"Le estensioni SSE2 non sono disponibili. PCSX2 richiede una CPU che supporti "
-"il set di istruzioni SSE2."
+"Le estensioni SSE2 non sono disponibili. PCSX2 richiede una CPU che supporti il set di "
+"istruzioni SSE2."
 
 #: pcsx2/gui/AppInit.cpp:155
 msgid "PCSX2 Recompiler Error(s)"
@@ -471,9 +439,7 @@ msgstr "Errore(i) del ricompilatore di PCSX2"
 
 #: pcsx2/gui/AppInit.cpp:234
 msgid "All options are for the current session only and will not be saved.\n"
-msgstr ""
-"Tutte le opzioni valgono solo per la sessione corrente e non saranno "
-"salvate.\n"
+msgstr "Tutte le opzioni valgono solo per la sessione corrente e non saranno salvate.\n"
 
 #: pcsx2/gui/AppInit.cpp:244 pcsx2/gui/AppMain.cpp:368
 msgid "IsoFile"
@@ -513,9 +479,7 @@ msgstr "esegue un'immagine IRX"
 
 #: pcsx2/gui/AppInit.cpp:255
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
-msgstr ""
-"avvia con il lettore DVD vuoto; da usare per entrare nel menu di sistema "
-"della PS2"
+msgstr "avvia con il lettore DVD vuoto; da usare per entrare nel menu di sistema della PS2"
 
 #: pcsx2/gui/AppInit.cpp:256
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
@@ -534,10 +498,8 @@ msgid "disables fast booting"
 msgstr "disattiva l'avvio veloce"
 
 #: pcsx2/gui/AppInit.cpp:261
-msgid ""
-"passes the specified space-delimited string of launch arguments to the game"
-msgstr ""
-"passa la stringa specificata di argomenti di lancio delimitata da spazi al gioco"
+msgid "passes the specified space-delimited string of launch arguments to the game"
+msgstr "passa la stringa specificata di argomenti di lancio delimitata da spazi al gioco"
 
 #: pcsx2/gui/AppInit.cpp:263
 msgid "changes the configuration file path"
@@ -554,8 +516,7 @@ msgstr "forza %s ad avviare la procedura guidata del primo avvio"
 
 #: pcsx2/gui/AppInit.cpp:266
 msgid "enables portable mode operation (requires admin/root access)"
-msgstr ""
-"abilita la modalità portatile (richiede accesso come amministratore/root)"
+msgstr "abilita la modalità portatile (richiede accesso come amministratore/root)"
 
 #: pcsx2/gui/AppInit.cpp:268
 msgid "update options to ease profiling (debug)"
@@ -574,20 +535,18 @@ msgstr "Impossibile sovrascrivere l'impostazione del plugin - %s"
 #: pcsx2/gui/AppInit.cpp:325
 #, c-format
 msgid ""
-"%s Plugin Override Error!  The following file does not exist or is not a "
-"valid %s plugin:\n"
+"%s Plugin Override Error!  The following file does not exist or is not a valid %s "
+"plugin:\n"
 "\n"
 msgstr ""
-"Impossibile sovrascrivere l'impostazione del plugin %s! Il file seguente non "
-"esiste o non è un plugin %s valido:\n"
+"Impossibile sovrascrivere l'impostazione del plugin %s! Il file seguente non esiste o non "
+"è un plugin %s valido:\n"
 "\n"
 
 #: pcsx2/gui/AppInit.cpp:332
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
-msgstr ""
-"Premi OK per usare il plugin configurato predefinito, o Annulla per chiudere "
-"%s."
+msgstr "Premi OK per usare il plugin configurato predefinito, o Annulla per chiudere %s."
 
 #: pcsx2/gui/AppInit.cpp:557 pcsx2/gui/AppInit.cpp:569
 #, c-format
@@ -678,11 +637,10 @@ msgstr ""
 "Premi OK per aprire il Pannello di Configurazione dei Plugin."
 
 #: pcsx2/gui/AppMain.cpp:136 pcsx2/gui/AppMain.cpp:150
-msgid ""
-"Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
+msgid "Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
 msgstr ""
-"Attenzione! I plugin di sistema non sono stati caricati. PCSX2 potrebbe "
-"essere inutilizzabile."
+"Attenzione! I plugin di sistema non sono stati caricati. PCSX2 potrebbe essere "
+"inutilizzabile."
 
 #: pcsx2/gui/AppMain.cpp:184
 msgid "Press Ok to go to the BIOS Configuration Panel."
@@ -694,9 +652,7 @@ msgstr "Errore del BIOS PS2"
 
 #: pcsx2/gui/AppMain.cpp:207
 msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
-msgstr ""
-"Attenzione! Non è stato selezionato un BIOS valido. PCSX2 potrebbe non "
-"funzionare."
+msgstr "Attenzione! Non è stato selezionato un BIOS valido. PCSX2 potrebbe non funzionare."
 
 #: pcsx2/gui/AppMain.cpp:380
 #, c-format
@@ -720,11 +676,9 @@ msgid "Always ask when booting"
 msgstr "Chiedi sempre all'avvio"
 
 #: pcsx2/gui/AppRes.cpp:46
-msgid ""
-"Manually select an ISO upon boot ignoring the selection from recent ISO list."
+msgid "Manually select an ISO upon boot ignoring the selection from recent ISO list."
 msgstr ""
-"Seleziona manualmente una ISO all'avvio, ignorando la selezione dalla lista "
-"ISO recenti."
+"Seleziona manualmente una ISO all'avvio, ignorando la selezione dalla lista ISO recenti."
 
 #: pcsx2/gui/AppRes.cpp:48
 msgid "Browse..."
@@ -736,8 +690,7 @@ msgstr "Sfoglia le cartelle per una ISO non presente tra quelle recenti."
 
 #: pcsx2/gui/AppUserMode.cpp:92
 msgid "The following folders exist, but are not writable:"
-msgstr ""
-"Le seguenti cartelle sono presenti, ma non si hanno i permessi di scrittura:"
+msgstr "Le seguenti cartelle sono presenti, ma non si hanno i permessi di scrittura:"
 
 #: pcsx2/gui/AppUserMode.cpp:97
 msgid "The following folders are missing and cannot be created:"
@@ -750,11 +703,11 @@ msgstr "Errore modalità portatile - %s"
 
 #: pcsx2/gui/AppUserMode.cpp:150
 msgid ""
-"PCSX2 has been installed as a portable application but cannot run due to the "
-"following errors:"
+"PCSX2 has been installed as a portable application but cannot run due to the following "
+"errors:"
 msgstr ""
-"PCSX2 è stato installato come un'applicazione portatile ma non può essere "
-"avviato a causa dei seguenti errori:"
+"PCSX2 è stato installato come un'applicazione portatile ma non può essere avviato a causa "
+"dei seguenti errori:"
 
 #: pcsx2/gui/AppUserMode.cpp:158
 msgid "Switch to User Documents Mode"
@@ -767,17 +720,14 @@ msgstr "%s sta cambiando la modalità d'installazione in Installazione Locale."
 
 #: pcsx2/gui/AppUserMode.cpp:172
 msgid ""
-"Try to remove the file called \"portable.ini\" from your installation "
-"directory manually."
+"Try to remove the file called \"portable.ini\" from your installation directory manually."
 msgstr ""
-"Prova ad eliminare manualmente il file chiamato \"portable.ini\" dalla tua "
-"cartella d'installazione."
+"Prova ad eliminare manualmente il file chiamato \"portable.ini\" dalla tua cartella "
+"d'installazione."
 
 #: pcsx2/gui/ApplyState.h:53
 msgid "Cannot apply new settings, one of the settings is invalid."
-msgstr ""
-"Impossibile applicare le nuove impostazioni, una delle impostazioni non è "
-"valida."
+msgstr "Impossibile applicare le nuove impostazioni, una delle impostazioni non è valida."
 
 #: pcsx2/gui/ConsoleLogger.cpp:115
 msgid "Save log question"
@@ -829,11 +779,11 @@ msgstr "Tema scuro"
 
 #: pcsx2/gui/ConsoleLogger.cpp:428
 msgid ""
-"Classic black color scheme for people who enjoy having text seared into "
-"their optic nerves."
+"Classic black color scheme for people who enjoy having text seared into their optic "
+"nerves."
 msgstr ""
-"Schema classico a colore nero, per la gente che si diverte ad avere il testo "
-"marchiato a fuoco nei propri nervi ottici."
+"Schema classico a colore nero, per la gente che si diverte ad avere il testo marchiato a "
+"fuoco nei propri nervi ottici."
 
 #: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "&Save..."
@@ -945,8 +895,7 @@ msgid "PlayStation 2 Emulator:"
 msgstr "Emulatore PlayStation 2:"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
-msgid ""
-"Big thanks to everyone who contributed to the project throughout the years."
+msgid "Big thanks to everyone who contributed to the project throughout the years."
 msgstr "Ringrazio di cuore chiunque abbia contribuito al progetto nel corso degli anni."
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
@@ -971,19 +920,18 @@ msgstr "Non mostrare nuovamente questa finestra."
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:201
 msgid ""
-"Disables this popup and whatever response you select here will be "
-"automatically used from now on."
+"Disables this popup and whatever response you select here will be automatically used from "
+"now on."
 msgstr ""
-"Disattiva questo popup, la risposta che sarà selezionata ora sarà "
-"automaticamente utilizzata le volte successive."
+"Disattiva questo popup, la risposta che sarà selezionata ora sarà automaticamente "
+"utilizzata le volte successive."
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:203
 msgid ""
-"The popup will not be shown again.  This setting can be undone from the "
-"settings panels."
+"The popup will not be shown again.  This setting can be undone from the settings panels."
 msgstr ""
-"Il popup non sarà mostrato nuovamente. Questa impostazione può essere "
-"cambiata dai pannelli impostazioni."
+"Il popup non sarà mostrato nuovamente. Questa impostazione può essere cambiata dai "
+"pannelli impostazioni."
 
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:249
 #: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:294
@@ -1042,8 +990,7 @@ msgstr "Cartella"
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
 msgid "Convert this memory card to a folder of individual saves."
-msgstr ""
-"Converte questa memory card in una cartella con salvataggi in file singoli."
+msgstr "Converte questa memory card in una cartella con salvataggi in file singoli."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:179
@@ -1070,8 +1017,7 @@ msgstr "La conversione della memory card è fallita per ragioni sconosciute."
 msgid "Create a new memory card"
 msgstr "Creazione di una nuova memory card"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:58
-#: pcsx2/gui/Panels/DirPickerPanel.cpp:73
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:58 pcsx2/gui/Panels/DirPickerPanel.cpp:73
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:271
 msgid "Create"
 msgstr "Crea"
@@ -1112,19 +1058,16 @@ msgstr "8 MiB [la più compatibile]"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:239
 msgid ""
-"This is the standard Sony-provisioned size, and is supported by all games "
-"and BIOS versions."
+"This is the standard Sony-provisioned size, and is supported by all games and BIOS "
+"versions."
 msgstr ""
-"È la dimensione standard prevista da Sony ed è supportata da tutti i giochi "
-"e da tutte le versioni del BIOS."
+"È la dimensione standard prevista da Sony ed è supportata da tutti i giochi e da tutte le "
+"versioni del BIOS."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:240
-msgid ""
-"Always use this option if you want the safest and surest memory card "
-"behavior."
+msgid "Always use this option if you want the safest and surest memory card behavior."
 msgstr ""
-"Usa sempre questa opzione se desideri il comportamento delle memory card più "
-"affidabile."
+"Usa sempre questa opzione se desideri il comportamento delle memory card più affidabile."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:243
 msgid "16 MB"
@@ -1132,18 +1075,15 @@ msgstr "16 MiB"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:243
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:247
-msgid ""
-"A typical size for 3rd-party memory cards which should work with most games."
+msgid "A typical size for 3rd-party memory cards which should work with most games."
 msgstr ""
-"Una delle dimensioni tipiche delle memory card prodotte da terze parti, "
-"dovrebbe funzionare con la maggior parte dei giochi."
+"Una delle dimensioni tipiche delle memory card prodotte da terze parti, dovrebbe "
+"funzionare con la maggior parte dei giochi."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:244
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:248
 msgid "16 and 32 MB cards have roughly the same compatibility factor."
-msgstr ""
-"Le memory card da 16 e 32 MiB hanno grosso modo lo stesso grado di "
-"compatibilità."
+msgstr "Le memory card da 16 e 32 MiB hanno grosso modo lo stesso grado di compatibilità."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:247
 msgid "32 MB"
@@ -1154,20 +1094,15 @@ msgid "64 MB"
 msgstr "64 MiB"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:251
-msgid ""
-"Low compatibility warning: Yes it's very big, but may not work with many "
-"games."
+msgid "Low compatibility warning: Yes it's very big, but may not work with many games."
 msgstr ""
-"Avviso di bassa compatibilità: Di certo è molto grande ma potrebbe non "
-"funzionare in parecchi giochi."
+"Avviso di bassa compatibilità: Di certo è molto grande ma potrebbe non funzionare in "
+"parecchi giochi."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:252
-msgid ""
-"Use at your own risk.  Erratic memory card behavior is possible (though "
-"unlikely)."
+msgid "Use at your own risk.  Erratic memory card behavior is possible (though unlikely)."
 msgstr ""
-"Utilizzala a tuo rischio e pericolo. È possibile che la memory card si "
-"comporti \n"
+"Utilizzala a tuo rischio e pericolo. È possibile che la memory card si comporti \n"
 "in modo imprevedibile (anche se non è un'eventualità così probabile)."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:255
@@ -1176,22 +1111,19 @@ msgstr "Cartella [sperimentale]"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:255
 msgid "Store memory card contents in the host filesystem instead of a file."
-msgstr ""
-"Salva i contenuti della memory card nel filesystem dell'host invece che in "
-"un file."
+msgstr "Salva i contenuti della memory card nel filesystem dell'host invece che in un file."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:256
 msgid ""
-"Automatically manages memory card contents so that the console only sees "
-"files related to the currently running software. Allows you to drag-and-drop "
-"files in and out of the memory card with your standard file explorer. This "
-"is still experimental, so use at your own risk!"
+"Automatically manages memory card contents so that the console only sees files related to "
+"the currently running software. Allows you to drag-and-drop files in and out of the "
+"memory card with your standard file explorer. This is still experimental, so use at your "
+"own risk!"
 msgstr ""
-"Gestione automatica del contenuto della memory card in modo che la console "
-"veda i soli file collegati al software in esecuzione. Ti permette di "
-"trascinare e rilasciare i file all'interno della memory card dal normale "
-"File Explorer. È una funzionalità ancora sperimentale, quindi usala a tuo "
-"rischio!"
+"Gestione automatica del contenuto della memory card in modo che la console veda i soli "
+"file collegati al software in esecuzione. Ti permette di trascinare e rilasciare i file "
+"all'interno della memory card dal normale File Explorer. È una funzionalità ancora "
+"sperimentale, quindi usala a tuo rischio!"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:259
 msgid "128 KiB (PSX)"
@@ -1199,19 +1131,15 @@ msgstr "128 KiB (PSX)"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:259
 msgid ""
-"This is the standard Sony-provisioned size PSX memory card, only compatible "
-"with PSX games."
+"This is the standard Sony-provisioned size PSX memory card, only compatible with PSX "
+"games."
 msgstr ""
 "Questa è la memory card PSX con le dimensioni standard previste da Sony, compatibile solo "
 "con i giochi PSX."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:260
-msgid ""
-"This memory card is required by PSX games. It is not compatible with PS2 "
-"games."
-msgstr ""
-"Questa memory card è richiesta dai giochi PSX. Non è compatibile con i "
-"giochi PS2."
+msgid "This memory card is required by PSX games. It is not compatible with PS2 games."
+msgstr "Questa memory card è richiesta dai giochi PSX. Non è compatibile con i giochi PS2."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:48
 msgid "Settings"
@@ -1231,8 +1159,8 @@ msgid ""
 "Change the language only if you need to.\n"
 "The system default should be fine for most operating systems."
 msgstr ""
-"Modifica la lingua solo se necessario. L'impostazione predefinita dovrebbe "
-"andare bene per la maggior parte dei sistemi operativi."
+"Modifica la lingua solo se necessario. L'impostazione predefinita dovrebbe andare bene "
+"per la maggior parte dei sistemi operativi."
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:95
 msgid "Welcome to PCSX2!"
@@ -1269,9 +1197,7 @@ msgstr "Registri di traccia"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:38
 msgid "Auto-eject memory cards when loading savestates"
-msgstr ""
-"Espelli automaticamente le memory card quando si carica un salvataggio di "
-"stato"
+msgstr "Espelli automaticamente le memory card quando si carica un salvataggio di stato"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
 msgid "Automatically manage saves based on running game"
@@ -1283,8 +1209,7 @@ msgstr "Gestore Memory Card"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:116
 msgid "Drag cards to or from PS2-ports"
-msgstr ""
-"Trascina le memory card dalle o sulle porte PS2 per inserirle/espellerle"
+msgstr "Trascina le memory card dalle o sulle porte PS2 per inserirle/espellerle"
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:117
 msgid ""
@@ -1292,8 +1217,8 @@ msgid ""
 "Note: Duplicate/Rename/Create/Delete will NOT be reverted with 'Cancel'."
 msgstr ""
 "\n"
-"Attenzione: I comandi Copia/Rinomina/Crea/Elimina NON saranno annullati "
-"facendo clic su 'Annulla'."
+"Attenzione: I comandi Copia/Rinomina/Crea/Elimina NON saranno annullati facendo clic su "
+"'Annulla'."
 
 #: pcsx2/gui/Dialogs/PickUserModeDialog.cpp:24
 msgid "PCSX2 First Time configuration"
@@ -1303,8 +1228,7 @@ msgstr "Configurazione del primo avvio di PCSX2"
 #, c-format
 msgid "%s is starting from a new or unknown folder and needs to be configured."
 msgstr ""
-"%s è stato avviato da un percorso nuovo o sconosciuto e necessita di essere "
-"configurato."
+"%s è stato avviato da un percorso nuovo o sconosciuto e necessita di essere configurato."
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:36
 msgid "Config Overrides Warning"
@@ -1370,9 +1294,7 @@ msgstr "Selettore Lingua"
 
 #: pcsx2/gui/ExecutorThread.cpp:41
 msgid "Logs events as they are passed to the PS2 virtual machine."
-msgstr ""
-"Mostra il registro degli eventi che sono trasmessi alla macchina virtuale "
-"PS2."
+msgstr "Mostra il registro degli eventi che sono trasmessi alla macchina virtuale PS2."
 
 #: pcsx2/gui/GlobalCommands.cpp:316
 msgid "Exit PCSX2?"
@@ -1401,8 +1323,7 @@ msgstr "Carica stato dal backup"
 #: pcsx2/gui/GlobalCommands.cpp:637
 msgid "Loads virtual machine state backup for current slot."
 msgstr ""
-"Carica lo stato della macchina virtuale dalla copia di sicurezza dello slot "
-"corrente."
+"Carica lo stato della macchina virtuale dalla copia di sicurezza dello slot corrente."
 
 #: pcsx2/gui/GlobalCommands.cpp:643
 msgid "Cycle to next slot"
@@ -1427,11 +1348,10 @@ msgstr "Errore di Trascina e Rilascia"
 #: pcsx2/gui/IsoDropTarget.cpp:56
 #, c-format
 msgid ""
-"It is an error to drop multiple files onto a %s window.  One at a time "
-"please, thank you."
+"It is an error to drop multiple files onto a %s window.  One at a time please, thank you."
 msgstr ""
-"È un errore rilasciare più file su di una finestra di %s. Uno alla volta per "
-"favore, grazie."
+"È un errore rilasciare più file su di una finestra di %s. Uno alla volta per favore, "
+"grazie."
 
 #: pcsx2/gui/IsoDropTarget.cpp:87 pcsx2/gui/MainMenuClicks.cpp:351
 msgid "Confirm PS2 Reset"
@@ -1494,14 +1414,13 @@ msgstr "&Debug"
 
 #: pcsx2/gui/MainFrame.cpp:369
 msgid "&Capture"
-msgstr "&Capttura"
+msgstr "&Cattura"
 
 #: pcsx2/gui/MainFrame.cpp:377 pcsx2/gui/MainMenuClicks.cpp:516
 msgid "&Recording"
 msgstr "&Registrazione"
 
-#: pcsx2/gui/MainFrame.cpp:441 pcsx2/gui/MainFrame.cpp:443
-#: pcsx2/gui/MainFrame.cpp:449
+#: pcsx2/gui/MainFrame.cpp:441 pcsx2/gui/MainFrame.cpp:443 pcsx2/gui/MainFrame.cpp:449
 msgid "Initializing..."
 msgstr "Inizializzazione..."
 
@@ -1531,8 +1450,7 @@ msgstr "&GameFix automatici"
 
 #: pcsx2/gui/MainFrame.cpp:464
 msgid "Automatically applies needed Gamefixes to known problematic games"
-msgstr ""
-"Applica automaticamente i GameFix necessari ai giochi problematici già noti"
+msgstr "Applica automaticamente i GameFix necessari ai giochi problematici già noti"
 
 #: pcsx2/gui/MainFrame.cpp:466
 msgid "Enable &Cheats"
@@ -1544,8 +1462,7 @@ msgstr "Abilita le Patch &Widescreen"
 
 #: pcsx2/gui/MainFrame.cpp:470
 msgid "Enabling Widescreen Patches may occasionally cause issues."
-msgstr ""
-"Abilitare le patch Widescreen potrebbe occasionalmente causare dei problemi."
+msgstr "Abilitare le patch Widescreen potrebbe occasionalmente causare dei problemi."
 
 #: pcsx2/gui/MainFrame.cpp:473
 msgid "Enable &Recording Tools"
@@ -1602,9 +1519,7 @@ msgstr "&Nessun disco"
 
 #: pcsx2/gui/MainFrame.cpp:501
 msgid "Use this to boot into your virtual PS2's BIOS configuration."
-msgstr ""
-"Usa questa opzione per avviare la configurazione del BIOS della tua PS2 "
-"virtuale."
+msgstr "Usa questa opzione per avviare la configurazione del BIOS della tua PS2 virtuale."
 
 #: pcsx2/gui/MainFrame.cpp:509
 msgid "Emulation &Settings"
@@ -1658,8 +1573,7 @@ msgstr "Cance&lla tutte le impostazioni..."
 #, c-format
 msgid "Clears all %s settings and re-runs the startup wizard."
 msgstr ""
-"Cancella tutte le impostazioni di %s e riesegue la procedura guidata del "
-"primo avvio."
+"Cancella tutte le impostazioni di %s e riesegue la procedura guidata del primo avvio."
 
 #: pcsx2/gui/MainFrame.cpp:546
 msgid "&About..."
@@ -1723,8 +1637,7 @@ msgstr "Pa&usa"
 
 #: pcsx2/gui/MainFrame.cpp:650
 msgid "Safely pauses emulation and preserves the PS2 state."
-msgstr ""
-"Mette correttamente in pausa l'emulazione mantenendo lo stato della PS2."
+msgstr "Mette correttamente in pausa l'emulazione mantenendo lo stato della PS2."
 
 #: pcsx2/gui/MainFrame.cpp:658
 msgid "R&esume"
@@ -1787,12 +1700,10 @@ msgid "&Core GS Settings..."
 msgstr "Impostazioni &Core GS..."
 
 #: pcsx2/gui/MainFrame.cpp:809
-msgid ""
-"Modify hardware emulation settings regulated by the PCSX2 core virtual "
-"machine."
+msgid "Modify hardware emulation settings regulated by the PCSX2 core virtual machine."
 msgstr ""
-"Modifica le impostazioni dell'emulazione hardware controllate dalla macchina "
-"virtuale core di PCSX2."
+"Modifica le impostazioni dell'emulazione hardware controllate dalla macchina virtuale "
+"core di PCSX2."
 
 #: pcsx2/gui/MainFrame.cpp:811
 msgid "&Window Settings..."
@@ -1809,8 +1720,7 @@ msgstr "Impostazioni &plugin..."
 #: pcsx2/gui/MainFrame.cpp:820
 #, c-format
 msgid "Opens the %s plugin's advanced settings dialog."
-msgstr ""
-"Apre la finestra di dialogo con le impostazioni avanzate del plugin %s."
+msgstr "Apre la finestra di dialogo con le impostazioni avanzate del plugin %s."
 
 #: pcsx2/gui/MainMenuClicks.cpp:116
 msgid "Reset all settings?"
@@ -1822,9 +1732,7 @@ msgstr "Conferma cambio immagine ISO"
 
 #: pcsx2/gui/MainMenuClicks.cpp:150
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
-msgstr ""
-"Desideri cambiare disco o avviare la nuova immagine (tramite reset del "
-"sistema)?"
+msgstr "Desideri cambiare disco o avviare la nuova immagine (tramite reset del sistema)?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:152 pcsx2/gui/MainMenuClicks.cpp:198
 msgid "Swap Disc"
@@ -1841,8 +1749,7 @@ msgstr "Hai richiesto di cambiare l'origine del CDVD da %s a %s."
 
 #: pcsx2/gui/MainMenuClicks.cpp:195
 msgid "Do you want to swap discs or boot the new image (system reset)?"
-msgstr ""
-"Desideri cambiare disco o avviare la nuova immagine (reset del sistema)?"
+msgstr "Desideri cambiare disco o avviare la nuova immagine (reset del sistema)?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:267
 #, c-format
@@ -1886,11 +1793,11 @@ msgstr "Si è verificato un errore al tentativo di aprire il file:"
 
 #: pcsx2/gui/MainMenuClicks.cpp:328
 msgid ""
-"Error: The configured ISO file does not exist.  Click OK to select a new ISO "
-"source for CDVD."
+"Error: The configured ISO file does not exist.  Click OK to select a new ISO source for "
+"CDVD."
 msgstr ""
-"Errore: Il file ISO configurato non esiste. Fai clic su OK per selezionare "
-"una nuova origine ISO per il CDVD."
+"Errore: Il file ISO configurato non esiste. Fai clic su OK per selezionare una nuova "
+"origine ISO per il CDVD."
 
 #: pcsx2/gui/MainMenuClicks.cpp:399
 msgid ""
@@ -1906,29 +1813,27 @@ msgstr "Conferma cancellazione lista ISO"
 
 #: pcsx2/gui/MainMenuClicks.cpp:420
 msgid ""
-"This will clear the ISO list. If an ISO is running it will remain in the "
-"list. Continue?"
+"This will clear the ISO list. If an ISO is running it will remain in the list. Continue?"
 msgstr ""
-"La lista ISO sarà cancellata. La ISO correntemente in esecuzione resterà "
-"comunque nella lista. Continuare?"
+"La lista ISO sarà cancellata. La ISO correntemente in esecuzione resterà comunque nella "
+"lista. Continuare?"
 
 #: pcsx2/gui/MainMenuClicks.cpp:504
 msgid ""
-"Please be aware that PCSX2's input recording features are still very much a "
-"work-in-progress.\n"
-"As a result, there may be unforeseen bugs, performance implications and "
-"instability with certain games.\n"
+"Please be aware that PCSX2's input recording features are still very much a work-in-"
+"progress.\n"
+"As a result, there may be unforeseen bugs, performance implications and instability with "
+"certain games.\n"
 "\n"
-"These tools are provided as-is and should be enabled under your own "
-"discretion."
+"These tools are provided as-is and should be enabled under your own discretion."
 msgstr ""
-"Si consapevole che le funzioni di registrazione comandi di PCSX2 sono "
-"perlopiù sperimentali.\n"
-"\vDi conseguenza, potrebbero esserci dei bug imprevisti, implicazioni di "
-"prestazioni e instabilità con certi giochi.\n"
+"Si consapevole che le funzioni di registrazione comandi di PCSX2 sono perlopiù "
+"sperimentali.\n"
+"\vDi conseguenza, potrebbero esserci dei bug imprevisti, implicazioni di prestazioni e "
+"instabilità con certi giochi.\n"
 "\n"
-"Questi strumenti sono forniti cosi come sono e dovrebbero essere abilitati "
-"con discrezione."
+"Questi strumenti sono forniti cosi come sono e dovrebbero essere abilitati con "
+"discrezione."
 
 #: pcsx2/gui/MainMenuClicks.cpp:589
 msgid "Load State"
@@ -1998,14 +1903,13 @@ msgstr "Seleziona la cartella contenente le ROM del BIOS PS2"
 
 #: pcsx2/gui/Panels/BiosSelectorPanel.cpp:108
 msgid ""
-"Click the Browse button to select a different folder where PCSX2 will look "
-"for PS2 BIOS roms."
+"Click the Browse button to select a different folder where PCSX2 will look for PS2 BIOS "
+"roms."
 msgstr ""
-"Fai clic sul pulsante Sfoglia per scegliere una cartella differente dove "
-"PCSX2 cercherà le ROM del BIOS PS2."
+"Fai clic sul pulsante Sfoglia per scegliere una cartella differente dove PCSX2 cercherà "
+"le ROM del BIOS PS2."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:110
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:194
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:110 pcsx2/gui/Panels/MemoryCardListPanel.cpp:194
 msgid "Refresh list"
 msgstr "Aggiorna lista"
 
@@ -2079,24 +1983,17 @@ msgid "Recompiler"
 msgstr "Ricompilatore"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:121
-msgid ""
-"Performs just-in-time binary translation of 64-bit MIPS-IV machine code to "
-"x86."
+msgid "Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86."
 msgstr ""
-"Esegue una traduzione binaria sul momento del codice macchina 64-bit MIPS-IV "
-"in x86."
+"Esegue una traduzione binaria sul momento del codice macchina 64-bit MIPS-IV in x86."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:127
 msgid "Pretty slow; provided for diagnostic purposes only."
 msgstr "Decisamente lento, disponibile solo per effettuare test."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:130
-msgid ""
-"Performs just-in-time binary translation of 32-bit MIPS-I machine code to "
-"x86."
-msgstr ""
-"Esegue una traduzione binaria sul momento del codice macchina 32-bit MIPS-I "
-"in x86."
+msgid "Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."
+msgstr "Esegue una traduzione binaria sul momento del codice macchina 32-bit MIPS-I in x86."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:154
 msgid "Enable EE Cache (Slower)"
@@ -2112,33 +2009,26 @@ msgid "Restore Defaults"
 msgstr "Ripristina predefinite"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:186
-msgid ""
-"Vector Unit Interpreter. Slow and not very compatible. Only use for "
-"diagnostics."
-msgstr ""
-"Interprete Vector Unit. Lento e non molto compatibile. Da utilizzare solo "
-"per test."
+msgid "Vector Unit Interpreter. Slow and not very compatible. Only use for diagnostics."
+msgstr "Interprete Vector Unit. Lento e non molto compatibile. Da utilizzare solo per test."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:188
 msgid "microVU Recompiler"
-msgstr "Ricompilatore microVU."
+msgstr "Ricompilatore microVU"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:189
-msgid ""
-"New Vector Unit recompiler with much improved compatibility. Recommended."
+msgid "New Vector Unit recompiler with much improved compatibility. Recommended."
 msgstr ""
-"Nuovo ricompilatore delle Vector Unit con compatibilità decisamente "
-"migliorata. Consigliato."
+"Nuovo ricompilatore delle Vector Unit con compatibilità decisamente migliorata. "
+"Consigliato."
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:192
 msgid "superVU Recompiler [legacy]"
-msgstr "Ricompilatore superVU [precedente]."
+msgstr "Ricompilatore superVU [precedente]"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:193
-msgid ""
-"Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
-msgstr ""
-"Utile per rilevare bug o problemi di clamping nel nuovo ricompilatore mVU."
+msgid "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
+msgstr "Utile per rilevare bug o problemi di clamping nel nuovo ricompilatore mVU."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:64
 msgid "Path does not exist"
@@ -2234,12 +2124,10 @@ msgid "Wait for Vsync on refresh:"
 msgstr "Attendi sincronia verticale:"
 
 #: pcsx2/gui/Panels/GSWindowPanel.cpp:192
-msgid ""
-"Invalid window dimensions specified: Size cannot contain non-numeric digits! "
-">_<"
+msgid "Invalid window dimensions specified: Size cannot contain non-numeric digits! >_<"
 msgstr ""
-"Le dimensioni della finestra specificate non sono valide: le dimensioni non "
-"possono contenere valori non numerici! >_<"
+"Le dimensioni della finestra specificate non sono valide: le dimensioni non possono "
+"contenere valori non numerici! >_<"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
 msgid "Gamefixes"
@@ -2264,8 +2152,7 @@ msgstr ""
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:44
 msgid "VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"
 msgstr ""
-"VU Clip Flag Hack - Per i giochi della serie Persona (solo per il "
-"ricompilatore superVU!)"
+"VU Clip Flag Hack - Per i giochi della serie Persona (solo per il ricompilatore superVU!)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:48
 msgid "FPU Compare Hack - For Digimon Rumble Arena 2."
@@ -2285,26 +2172,19 @@ msgstr "VU XGkick Hack - Per Erementar Gerad."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:64
 msgid "FFX videos fix - Fixes bad graphics overlay in FFX videos."
-msgstr ""
-"FFX video fix - Corregge i problemi grafici negli overlay dei video in FFX."
+msgstr "FFX video fix - Corregge i problemi grafici negli overlay dei video in FFX."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:68
 msgid "EE timing hack - Multi purpose hack. Try if all else fails."
-msgstr ""
-"EE timing hack - Hack multiscopo. Provalo se tutto il resto non funziona."
+msgstr "EE timing hack - Hack multiscopo. Provalo se tutto il resto non funziona."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:73
-msgid ""
-"Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."
-msgstr ""
-"Skip MPEG hack - Salta i video/FMV presenti nei giochi per evitare stalli/"
-"blocchi."
+msgid "Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."
+msgstr "Skip MPEG hack - Salta i video/FMV presenti nei giochi per evitare stalli/blocchi."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:77
 msgid "OPH Flag hack - Try if your game freezes showing the same frame."
-msgstr ""
-"OPH Flag hack - Provalo se il tuo gioco si blocca mostrando lo stesso "
-"fotogramma."
+msgstr "OPH Flag hack - Provalo se il tuo gioco si blocca mostrando lo stesso fotogramma."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:82
 msgid "Ignore DMAC writes when it is busy."
@@ -2312,23 +2192,19 @@ msgstr "Ignora le scritture DMAC quando è occupato."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:87
 msgid "Simulate VIF1 FIFO read ahead. Fixes slow loading games."
-msgstr ""
-"Simula il read ahead FIFO di VIF1. Corregge i giochi con caricamenti lenti."
+msgstr "Simula il read ahead FIFO di VIF1. Corregge i giochi con caricamenti lenti."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:92
-msgid ""
-"Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD and Spy Hunter loading hang."
+msgid "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD and Spy Hunter loading hang."
 msgstr ""
-"Ritarda le pause di VIF1 (VIF1 FIFO) - Per l'HUD di SOCOM 2 e il blocco del "
-"caricamento di Spy Hunter."
+"Ritarda le pause di VIF1 (VIF1 FIFO) - Per l'HUD di SOCOM 2 e il blocco del caricamento "
+"di Spy Hunter."
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
-msgid ""
-"Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ "
-"Hero)"
+msgid "Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ Hero)"
 msgstr ""
-"Abilita il FIFO di GIF (più lento ma necessario per Hotwheels, Wallace and "
-"Gromit, DJ Hero)"
+"Abilita il FIFO di GIF (più lento ma necessario per Hotwheels, Wallace and Gromit, DJ "
+"Hero)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:100
 msgid "Switch to GSdx software rendering when an FMV plays"
@@ -2339,16 +2215,12 @@ msgid "Preload TLB hack to avoid tlb miss on Goemon"
 msgstr "Hack di precaricamento TLB per evitare TLB miss in Goemon"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:108
-msgid ""
-"VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
-msgstr ""
-"Hack bit I della VU evita la continua ricompilazione (Scarface The World Is "
-"Yours)"
+msgid "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
+msgstr "Hack bit I della VU evita la continua ricompilazione (Scarface The World Is Yours)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:112
 msgid "VU I bit Hack avoid constant recompilation (Crash Tag Team Racing)"
-msgstr ""
-"Hack bit I della VU evita la continua ricompilazione (Crash Tag Team Racing)"
+msgstr "Hack bit I della VU evita la continua ricompilazione (Crash Tag Team Racing)"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:123
 msgid "Enable manual game fixes [Not recommended]"
@@ -2360,27 +2232,24 @@ msgstr "Abilita i registri di traccia"
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:251
 msgid ""
-"Trace logs are all written to emulog.txt.  Toggle trace logging at any time "
-"using F10."
+"Trace logs are all written to emulog.txt.  Toggle trace logging at any time using F10."
 msgstr ""
-"I registri di traccia sono tutti salvati in emulog.txt. Attiva/Disattiva i "
-"registri di traccia utilizzando F10."
+"I registri di traccia sono tutti salvati in emulog.txt. Attiva/Disattiva i registri di "
+"traccia utilizzando F10."
 
 #: pcsx2/gui/Panels/LogOptionsPanels.cpp:252
 msgid ""
-"Warning: Trace logging is typically very slow, and is a leading cause of "
-"'What happened to my FPS?' problems. :)"
+"Warning: Trace logging is typically very slow, and is a leading cause of 'What happened "
+"to my FPS?' problems. :)"
 msgstr ""
-"Attenzione: abilitare i registri di traccia porta ad una forte perdita di "
-"prestazioni ed è una delle principali cause della domanda 'Cos'è successo ai "
-"miei FPS?' :)"
+"Attenzione: abilitare i registri di traccia porta ad una forte perdita di prestazioni ed "
+"è una delle principali cause della domanda 'Cos'è successo ai miei FPS?' :)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:187
 msgid "Select folder with PS2 memory cards"
 msgstr "Seleziona la cartella contenente le memory card della PS2"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:388
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:480
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:388 pcsx2/gui/Panels/MemoryCardListPanel.cpp:480
 msgid "Eject"
 msgstr "Espelli"
 
@@ -2392,8 +2261,7 @@ msgstr "Copia..."
 msgid "Rename ..."
 msgstr "Rinomina..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:391
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:461
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:391 pcsx2/gui/Panels/MemoryCardListPanel.cpp:461
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
 msgid "Create ..."
 msgstr "Crea..."
@@ -2406,8 +2274,7 @@ msgstr "Converti..."
 msgid "Card: "
 msgstr "Memory card: "
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:462
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:500
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:462 pcsx2/gui/Panels/MemoryCardListPanel.cpp:500
 msgid "Create a new memory card."
 msgstr "Crea nuova memory card."
 
@@ -2433,17 +2300,16 @@ msgstr "Crea una copia della memory card selezionata..."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:489
 msgid ""
-"Convert this memory card to or from a folder memory card. Creates a "
-"duplicate of the current memory card in the new type.\n"
+"Convert this memory card to or from a folder memory card. Creates a duplicate of the "
+"current memory card in the new type.\n"
 "\n"
-"Note: Only available when a memory card is formatted. Not available for PSX "
-"memory cards."
+"Note: Only available when a memory card is formatted. Not available for PSX memory cards."
 msgstr ""
-"Converti questa memory card da o a una memory card in una cartella. Crea un "
-"doppione delle seguente memory card nel nuovo tipo.\n"
+"Converti questa memory card da o a una memory card in una cartella. Crea un doppione "
+"delle seguente memory card nel nuovo tipo.\n"
 "\n"
-"Nota: Disponibile solo quando una memory card è formattata. Non disponibile "
-"per le memory card della PSX."
+"Nota: Disponibile solo quando una memory card è formattata. Non disponibile per le memory "
+"card della PSX."
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:493
 msgid "Delete"
@@ -2452,8 +2318,7 @@ msgstr "Elimina"
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:496
 msgid "Permanently delete this memory card from disk (all contents are lost)"
 msgstr ""
-"Elimina permanentemente questa memory card dal disco (tutti i contenuti "
-"saranno perduti)"
+"Elimina permanentemente questa memory card dal disco (tutti i contenuti saranno perduti)"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:498
 msgid "Create a new memory card and assign it to this Port."
@@ -2467,10 +2332,8 @@ msgstr "Eliminare il file della memory card?"
 msgid "Failed: Can only duplicate an existing card."
 msgstr "Fallita: Si possono copiare solo memory card esistenti."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:721
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:742
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:710 pcsx2/gui/Panels/MemoryCardListPanel.cpp:721
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:728 pcsx2/gui/Panels/MemoryCardListPanel.cpp:742
 msgid "Duplicate memory card"
 msgstr "Copia memory card"
 
@@ -2509,8 +2372,7 @@ msgstr ""
 "Scrivi un nuovo nome della memory card '%s'\n"
 "('.ps2' sarà aggiunto automaticamente)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:800
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:812
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:800 pcsx2/gui/Panels/MemoryCardListPanel.cpp:812
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:826
 msgid "Rename memory card"
 msgstr "Rinomina memory card"
@@ -2519,14 +2381,12 @@ msgstr "Rinomina memory card"
 msgid "Error: Rename could not be completed.\n"
 msgstr "Errore: Non è stato possibile completare la rinomina.\n"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:926
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:134
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:926 pcsx2/gui/Panels/MemoryCardListView.cpp:134
 #, c-format
 msgid "Port-%u / Multitap-%u--Port-1"
 msgstr "Porta-%u / Multitap-%u--Porta-1"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:927
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:135
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:927 pcsx2/gui/Panels/MemoryCardListView.cpp:135
 #, c-format
 msgid "             Multitap-%u--Port-%u"
 msgstr "               Multitap-%u--Porta-%u"
@@ -2647,11 +2507,11 @@ msgstr "Cartella personalizzata:"
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:52
 msgid ""
-"This setting may require administration privileges from your operating "
-"system, depending on how your system is configured."
+"This setting may require administration privileges from your operating system, depending "
+"on how your system is configured."
 msgstr ""
-"Questa impostazione potrebbe richiedere privilegi amministrativi dal tuo "
-"sistema operativo a seconda della configurazione del tuo sistema."
+"Questa impostazione potrebbe richiedere privilegi amministrativi dal tuo sistema "
+"operativo a seconda della configurazione del tuo sistema."
 
 #: pcsx2/gui/Panels/MiscPanelStuff.cpp:61
 #, c-format
@@ -2729,8 +2589,7 @@ msgstr "Configura..."
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:374
 msgid "Click the Browse button to select a different folder for PCSX2 plugins."
 msgstr ""
-"Fai clic sul pulsante Sfoglia per scegliere una cartella differente per i "
-"plugin di PCSX2."
+"Fai clic sul pulsante Sfoglia per scegliere una cartella differente per i plugin di PCSX2."
 
 #: pcsx2/gui/Panels/PluginSelectorPanel.cpp:473
 #, c-format
@@ -2759,11 +2618,9 @@ msgid "Enable speedhacks"
 msgstr "Attiva gli SpeedHack"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:126
-msgid ""
-"A safe and easy way to make sure that all speedhacks are completely disabled."
+msgid "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr ""
-"Un modo facile per assicurarsi che tutti gli SpeedHack siano completamente "
-"disattivati."
+"Un modo facile per assicurarsi che tutti gli SpeedHack siano completamente disattivati."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:143
 msgid "EE Cyclerate [Not Recommended]"
@@ -2775,30 +2632,27 @@ msgstr "EE Cycle Skipping [non consigliato]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "microVU Hacks"
-msgstr "Hack di microVU."
+msgstr "Hack di microVU"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
 msgid "mVU Flag Hack"
 msgstr "microVU Flag Hack"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:174
-msgid ""
-"Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
+msgid "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
-"Buon aumento di velocità ed elevata compatibilità. Può causare problemi "
-"nella grafica... [consigliato]"
+"Buon aumento di velocità ed elevata compatibilità. Può causare problemi nella grafica... "
+"[consigliato]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr "MTVU (microVU1 multi-threaded)"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:177
-msgid ""
-"Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
-"cores]"
+msgid "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ cores]"
 msgstr ""
-"Buon aumento di velocità ed elevata compatibilità. Può causare stalli nei "
-"giochi... [consigliato, solo se possiedi 3 o più core]"
+"Buon aumento di velocità ed elevata compatibilità. Può causare stalli nei giochi... "
+"[consigliato, solo se possiedi 3 o più core]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
 msgid "Other Hacks"
@@ -2810,22 +2664,20 @@ msgstr "Attiva rilevamento Spin INTC (INTC Spin Detection)"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:191
 msgid ""
-"Huge speedup for some games, with almost no compatibility side effects. "
-"[Recommended]"
+"Huge speedup for some games, with almost no compatibility side effects. [Recommended]"
 msgstr ""
-"Grande aumento di velocità per alcuni giochi, con quasi nessun effetto "
-"negativo sulla compatibilità. [consigliato]"
+"Grande aumento di velocità per alcuni giochi, con quasi nessun effetto negativo sulla "
+"compatibilità. [consigliato]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
 msgid "Enable Wait Loop Detection"
 msgstr "Attiva rilevamento ciclo d'attesa (Wait Loop Detection)"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:194
-msgid ""
-"Moderate speedup for some games, with no known side effects. [Recommended]"
+msgid "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
-"Aumento di velocità moderato per alcuni giochi, nessun effetto collaterale "
-"noto. [consigliato]"
+"Aumento di velocità moderato per alcuni giochi, nessun effetto collaterale noto. "
+"[consigliato]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
 msgid "Enable fast CDVD"
@@ -2833,16 +2685,14 @@ msgstr "Attiva CDVD veloce (fast CDVD)"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:197
 msgid "Fast disc access, less loading times. [Not Recommended]"
-msgstr ""
-"Accesso rapido al disco, tempi di caricamento inferiori. [non consigliato]"
+msgstr "Accesso rapido al disco, tempi di caricamento inferiori. [non consigliato]"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:32
 msgid "Disable Framelimiting"
 msgstr "Disattiva il Limitatore Fotogrammi"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:33
-msgid ""
-"Useful for running benchmarks. Toggle this option in-game by pressing F4."
+msgid "Useful for running benchmarks. Toggle this option in-game by pressing F4."
 msgstr ""
 "Utile per eseguire dei benchmark.\n"
 "Attiva/Disattiva questa opzione premendo F4."
@@ -2873,11 +2723,11 @@ msgstr "Frequenza fotogrammi PAL:"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:156
 msgid ""
-"Error while parsing either NTSC or PAL framerate settings.  Settings must be "
-"valid floating point numerics."
+"Error while parsing either NTSC or PAL framerate settings.  Settings must be valid "
+"floating point numerics."
 msgstr ""
-"Errore nell'interpretazione dell'impostazione della frequenza dei fotogrammi "
-"PAL o NTSC. L'impostazione deve avere un valore numerico con virgola valido."
+"Errore nell'interpretazione dell'impostazione della frequenza dei fotogrammi PAL o NTSC. "
+"L'impostazione deve avere un valore numerico con virgola valido."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:176
 msgid "Disabled [default]"
@@ -2893,8 +2743,8 @@ msgstr "Salto costante"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:186
 msgid ""
-"Normal and Turbo limit rates skip frames.  Slow motion mode will still "
-"disable frameskipping."
+"Normal and Turbo limit rates skip frames.  Slow motion mode will still disable "
+"frameskipping."
 msgstr ""
 "In modalità Normale e Turbo i fotogrammi saranno saltati. Nella modalità\n"
 "Rallentatore il salto dei fotogrammi sarà comunque disattivato."
@@ -2912,12 +2762,8 @@ msgid "Use Synchronized MTGS"
 msgstr "Usa MTGS sincronizzato"
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:291
-msgid ""
-"For troubleshooting potential bugs in the MTGS only, as it is potentially "
-"very slow."
-msgstr ""
-"Solo per rilevare eventuali bug nel MTGS, dato che potenzialmente è molto "
-"lento."
+msgid "For troubleshooting potential bugs in the MTGS only, as it is potentially very slow."
+msgstr "Solo per rilevare eventuali bug nel MTGS, dato che potenzialmente è molto lento."
 
 #: pcsx2/gui/Panels/VideoPanel.cpp:303
 msgid "Frame Skipping"
@@ -2954,8 +2800,7 @@ msgstr "Tempo di scrittura è %s %s."
 #: pcsx2/gui/SysState.cpp:291 pcsx2/gui/SysState.cpp:298
 msgid "Cannot load this savestate. The state is an unsupported version."
 msgstr ""
-"Impossibile caricare questo salvataggio di stato. Versione salvataggio non "
-"supportata."
+"Impossibile caricare questo salvataggio di stato. Versione salvataggio non supportata."
 
 #: pcsx2/gui/SysState.cpp:334
 msgid "There is no active virtual machine state to download or save."
@@ -2963,27 +2808,26 @@ msgstr "Non c'è nessuno stato macchina virtuale attivo da scaricare o salvare."
 
 #: pcsx2/gui/SysState.cpp:529
 msgid ""
-"This savestate cannot be loaded because it is not a valid gzip archive.  It "
-"may have been created by an older unsupported version of PCSX2, or it may be "
-"corrupted."
+"This savestate cannot be loaded because it is not a valid gzip archive.  It may have been "
+"created by an older unsupported version of PCSX2, or it may be corrupted."
 msgstr ""
-"Questo salvataggio di stato non può essere caricato perché non è un archivio "
-"gzip valido.  Potrebbe essere stato creato da una versione di PCSX2 "
-"precedente e non più compatibile, o potrebbe essere corrotto."
+"Questo salvataggio di stato non può essere caricato perché non è un archivio gzip "
+"valido.  Potrebbe essere stato creato da una versione di PCSX2 precedente e non più "
+"compatibile, o potrebbe essere corrotto."
 
 #: pcsx2/gui/SysState.cpp:588
 msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
 msgstr ""
-"Questo non è un salvataggio di stato di PCSX2 valido.  Controlla il file di "
-"registro per i dettagli."
+"Questo non è un salvataggio di stato di PCSX2 valido.  Controlla il file di registro per "
+"i dettagli."
 
 #: pcsx2/gui/SysState.cpp:607
 msgid ""
-"This savestate cannot be loaded due to missing critical components.  See the "
-"log file for details."
+"This savestate cannot be loaded due to missing critical components.  See the log file for "
+"details."
 msgstr ""
-"Questo salvataggio di stato non può essere caricato a causa di componenti "
-"critici mancanti.  Controlla il file di registro per i dettagli."
+"Questo salvataggio di stato non può essere caricato a causa di componenti critici "
+"mancanti.  Controlla il file di registro per i dettagli."
 
 #: pcsx2/gui/i18n.cpp:63
 msgid " (default)"
@@ -2992,38 +2836,35 @@ msgstr " (predefinito)"
 #: pcsx2/ps2/BiosTools.cpp:90 pcsx2/ps2/BiosTools.cpp:158
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
 msgstr ""
-"Il BIOS selezionato nelle impostazioni non è un BIOS di PS2 valido.  "
-"Configuralo nuovamente, per favore."
+"Il BIOS selezionato nelle impostazioni non è un BIOS di PS2 valido.  Configuralo "
+"nuovamente, per favore."
 
 #: pcsx2/ps2/BiosTools.cpp:271
 msgid ""
-"The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the "
-"configuration has been corrupted.  Please re-configure."
+"The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the configuration "
+"has been corrupted.  Please re-configure."
 msgstr ""
-"Non è stato possibile caricare il BIOS PS2.  Il BIOS non è stato configurato "
-"o la configurazione si è corrotta.  Configuralo nuovamente, per favore."
+"Non è stato possibile caricare il BIOS PS2.  Il BIOS non è stato configurato o la "
+"configurazione si è corrotta.  Configuralo nuovamente, per favore."
 
 #: pcsx2/ps2/BiosTools.cpp:278
 msgid "The configured BIOS file does not exist.  Please re-configure."
-msgstr ""
-"Il file del BIOS configurato non esiste. Configuralo nuovamente, per favore."
+msgstr "Il file del BIOS configurato non esiste. Configuralo nuovamente, per favore."
 
 #: pcsx2/x86/ix86-32/iR5900-32.cpp:472
 #, c-format
 msgid ""
-"%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
-"SSE2 extensions."
+"%s Extensions not found.  The R5900-32 recompiler requires a host CPU with SSE2 "
+"extensions."
 msgstr ""
-"Estensioni %s non trovate.  Il ricompilatore R5900-32 richiede una CPU del "
-"sistema host con estensioni SSE2."
+"Estensioni %s non trovate.  Il ricompilatore R5900-32 richiede una CPU del sistema host "
+"con estensioni SSE2."
 
 #: pcsx2/x86/microVU.cpp:32
 #, c-format
-msgid ""
-"%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
+msgid "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
 msgstr ""
-"Estensioni %s non trovate.  microVU richiede una CPU del sistema host con "
-"estensioni SSE2."
+"Estensioni %s non trovate.  microVU richiede una CPU del sistema host con estensioni SSE2."
 
 #~ msgid "Safest"
 #~ msgstr "Sicura +"
@@ -3096,8 +2937,7 @@ msgstr ""
 #~ msgstr "Disabilita tutto l'output GS"
 
 #~ msgid ""
-#~ "Completely disables all GS plugin activity; ideal for benchmarking EEcore "
-#~ "components."
+#~ "Completely disables all GS plugin activity; ideal for benchmarking EEcore components."
 #~ msgstr ""
-#~ "Disattiva completamente l'attività del plugin GS; ideale per fare un "
-#~ "benchmark dei componenti EEcore."
+#~ "Disattiva completamente l'attività del plugin GS; ideale per fare un benchmark dei "
+#~ "componenti EEcore."
