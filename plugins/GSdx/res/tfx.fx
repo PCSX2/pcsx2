@@ -787,7 +787,8 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 VS_OUTPUT vs_main(VS_INPUT input)
 {
-	input.z &= DepthMask;
+	// Clamp to depth mask, gs doesn't wrap
+	input.z = min(input.z, DepthMask);
 
 	VS_OUTPUT output;
 
