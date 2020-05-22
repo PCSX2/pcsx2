@@ -234,7 +234,6 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 		default:
 			break;
 	}
-	
 
 	// Uncomment to disable texture shuffle emulation.
 	// m_texture_shuffle = false;
@@ -254,10 +253,10 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
 		const uint32& m = m_context->FRAME.FBMSK;
-		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
+		const uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
 		// FIXME GSVector will be nice here
-		uint8 rg_mask = fbmask & 0xFF;
-		uint8 ba_mask = (fbmask >> 8) & 0xFF;
+		const uint8 rg_mask = fbmask & 0xFF;
+		const uint8 ba_mask = (fbmask >> 8) & 0xFF;
 		m_om_bsel.wrgba = 0;
 
 		// 2 Select the new mask (Please someone put SSE here)
@@ -312,8 +311,8 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 		m_ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
 		GSVector4i fbmask_v = GSVector4i::load((int)m_context->FRAME.FBMSK);
-		int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
-		int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
+		const int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
+		const int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
 
 		m_om_bsel.wrgba = ~ff_fbmask; // Enable channel if at least 1 bit is 0
 
@@ -329,8 +328,8 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 			// it will work. Masked bit will be constant and normally the same everywhere
 			// RT/FS output/Cached value.
 
-			/*fprintf(stderr, "%d: FBMASK Unsafe SW emulated fb_mask:%x on %d bits format\n", s_n, m_context->FRAME.FBMSK,
-				(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 2) ? 16 : 32);*/
+			/*fprintf(stderr, "%d: FBMASK Unsafe SW emulated fb_mask:%x on %d bits format\n",
+				s_n, m_context->FRAME.FBMSK, m_ps_sel.dfmt == 2 ? 16 : 32);*/
 			m_bind_rtsample = true;
 		}
 	}
