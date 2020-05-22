@@ -42,11 +42,14 @@ public:
 		GSVector4 VertexOffset;
 		GSVector4 Texture_Scale_Offset;
 
+		GSVector2i DepthMask;
+
 		VSConstantBuffer()
 		{
-			VertexScale = GSVector4::zero();
-			VertexOffset = GSVector4::zero();
+			VertexScale          = GSVector4::zero();
+			VertexOffset         = GSVector4::zero();
 			Texture_Scale_Offset = GSVector4::zero();
+			DepthMask            = GSVector2i(0);
 		}
 
 		__forceinline bool Update(const VSConstantBuffer* cb)
@@ -74,11 +77,10 @@ public:
 		{
 			struct
 			{
-				uint32 bppz:2;
 				uint32 tme:1;
 				uint32 fst:1;
 
-				uint32 _free:28;
+				uint32 _free:30;
 			};
 
 			uint32 key;

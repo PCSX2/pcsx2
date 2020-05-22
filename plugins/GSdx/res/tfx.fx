@@ -4,8 +4,7 @@
 #define FMT_24 1
 #define FMT_16 2
 
-#ifndef VS_BPPZ
-#define VS_BPPZ 0
+#ifndef VS_TME
 #define VS_TME 1
 #define VS_FST 1
 #endif
@@ -100,6 +99,8 @@ cbuffer cb0
 	float4 VertexScale;
 	float4 VertexOffset;
 	float4 Texture_Scale_Offset;
+	uint DepthMask;
+	uint3 _pad_cb0;
 };
 
 cbuffer cb1
@@ -786,14 +787,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 
 VS_OUTPUT vs_main(VS_INPUT input)
 {
-	if(VS_BPPZ == 1) // 24
-	{
-		input.z = input.z & 0xffffff;
-	}
-	else if(VS_BPPZ == 2) // 16
-	{
-		input.z = input.z & 0xffff;
-	}
+	input.z &= DepthMask;
 
 	VS_OUTPUT output;
 

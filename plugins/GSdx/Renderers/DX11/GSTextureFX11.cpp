@@ -101,7 +101,6 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 	{
 		ShaderMacro sm(m_shader.model);
 
-		sm.AddMacro("VS_BPPZ", sel.bppz);
 		sm.AddMacro("VS_TME", sel.tme);
 		sm.AddMacro("VS_FST", sel.fst);
 
