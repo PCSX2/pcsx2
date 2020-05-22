@@ -176,6 +176,7 @@ void GSRendererDX11::EmulateZbuffer()
 	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
 	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
 	// We are probably receiving bad coordinates from VU1 in these cases.
+	vs_cb.DepthMask = GSVector2i(0xFFFFFFFF, 0xFFFFFFFF);
 
 	if (m_om_dssel.ztst >= ZTST_ALWAYS && m_om_dssel.zwe && (m_context->ZBUF.PSM != PSM_PSMZ32))
 	{
@@ -188,6 +189,7 @@ void GSRendererDX11::EmulateZbuffer()
 #ifdef _DEBUG
 				fprintf(stdout, "%d: Bad Z size on %s buffers\n", s_n, psm_str(m_context->ZBUF.PSM));
 #endif
+				vs_cb.DepthMask = GSVector2i(max_z, max_z);
 				m_om_dssel.ztst = ZTST_ALWAYS;
 			}
 		}
