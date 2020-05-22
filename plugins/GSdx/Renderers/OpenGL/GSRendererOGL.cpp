@@ -183,7 +183,7 @@ void GSRendererOGL::EmulateZbuffer()
 	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
 	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
 	// We are probably receiving bad coordinates from VU1 in these cases.
-	vs_cb.DepthMask = GSVector2i(0xFFFFFFFF, 0xFFFFFFFF);
+	vs_cb.DepthMask = GSVector2i(max_z, max_z);
 
 	if (m_om_dssel.ztst >= ZTST_ALWAYS && m_om_dssel.zwe && (m_context->ZBUF.PSM != PSM_PSMZ32)) {
 		if (m_vt.m_max.p.z > max_z) {
@@ -191,7 +191,6 @@ void GSRendererOGL::EmulateZbuffer()
 			// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
 			if (m_vt.m_min.p.z > max_z) {
 				GL_DBG("Bad Z size (%f %f) on %s buffers", m_vt.m_min.p.z, m_vt.m_max.p.z, psm_str(m_context->ZBUF.PSM));
-				vs_cb.DepthMask = GSVector2i(max_z, max_z);
 				m_om_dssel.ztst = ZTST_ALWAYS;
 			}
 		}
