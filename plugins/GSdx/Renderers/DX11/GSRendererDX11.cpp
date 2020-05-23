@@ -178,22 +178,6 @@ void GSRendererDX11::EmulateZbuffer()
 	// We are probably receiving bad coordinates from VU1 in these cases.
 	vs_cb.DepthMask = GSVector2i(max_z, max_z);
 
-	if (m_om_dssel.ztst >= ZTST_ALWAYS && m_om_dssel.zwe && (m_context->ZBUF.PSM != PSM_PSMZ32))
-	{
-		if (m_vt.m_max.p.z > max_z)
-		{
-			ASSERT(m_vt.m_min.p.z > max_z); // sfex capcom logo
-			// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
-			if (m_vt.m_min.p.z > max_z)
-			{
-#ifdef _DEBUG
-				fprintf(stdout, "%d: Bad Z size on %s buffers\n", s_n, psm_str(m_context->ZBUF.PSM));
-#endif
-				m_om_dssel.ztst = ZTST_ALWAYS;
-			}
-		}
-	}
-
 	GSVertex* v = &m_vertex.buff[0];
 	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
 	if (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z && v[0].XYZ.Z == max_z)
