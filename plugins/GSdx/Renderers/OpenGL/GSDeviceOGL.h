@@ -117,15 +117,15 @@ public:
 
 		GSVector4 TextureOffset;
 
-		GSVector2i DepthMask;
 		GSVector2 PointSize;
+		GSVector2i MaxDepth;
 
 		VSConstantBuffer()
 		{
 			Vertex_Scale_Offset = GSVector4::zero();
 			TextureOffset       = GSVector4::zero();
-			DepthMask           = GSVector2i(0);
 			PointSize           = GSVector2(0);
+			MaxDepth            = GSVector2i(0);
 		}
 
 		__forceinline bool Update(const VSConstantBuffer* cb)
