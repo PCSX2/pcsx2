@@ -78,7 +78,6 @@ public:
 		HauntingGround,
 		ICO,
 		IkkiTousen,
-		ItadakiStreet,
 		JackieChanAdv,
 		Jak1,
 		Jak2,

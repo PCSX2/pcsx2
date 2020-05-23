@@ -448,7 +448,6 @@ CRC::Game CRC::m_games[] =
 	{0XE1BF5DCA, SuperManReturns, US, 0},
 	{0XE8F7BAB6, SuperManReturns, EU, 0},
 	{0x06A7506A, SacredBlaze, JP, 0},
-	{0x4CE7FB04, ItadakiStreet, JP, 0},
 	{0x9C712FF0, Jak1, EU, TextureInsideRt}, // Jak and Daxter: The Precursor Legacy
 	{0x1B3976AB, Jak1, US, TextureInsideRt},
 	{0x472E7699, Jak1, US, TextureInsideRt},

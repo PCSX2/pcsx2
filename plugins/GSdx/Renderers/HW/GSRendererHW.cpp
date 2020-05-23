@@ -1484,7 +1484,6 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::StarWarsForceUnleashed, CRC::RegionCount, &GSRendererHW::OI_StarWarsForceUnleashed));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ItadakiStreet, CRC::RegionCount, &GSRendererHW::OI_ItadakiStreet));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak2, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::JakX, CRC::RegionCount, &GSRendererHW::OI_JakGames));
@@ -2080,32 +2079,6 @@ bool GSRendererHW::OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::
 		if(ds)
 			ds->Commit(); // Don't bother to save few MB for a single game
 		m_dev->ClearDepth(ds);
-	}
-
-	return true;
-}
-
-bool GSRendererHW::OI_ItadakiStreet(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	if (m_context->TEST.ATST == ATST_NOTEQUAL && m_context->TEST.AREF == 0) {
-		// It is also broken on the SW renderer. Issue appears because fragment alpha is 0
-		// I suspect the game expect low value of alpha, and due to bad rounding on the core
-		// you have wrongly 0.
-		// Otherwise some draws calls are empty (all pixels are discarded).
-		// It fixes missing element on the board
-
-		GL_INS("OI_ItadakiStreetSpecial disable alpha test");
-		m_context->TEST.ATST = ATST_ALWAYS;
-
-#if 0 // Not enough
-		uint32 dummy_fm;
-		uint32 dummy_zm;
-
-		if (!TryAlphaTest(dummy_fm, dummy_zm)) {
-			GL_INS("OI_ItadakiStreetSpecial disable alpha test");
-			m_context->TEST.ATST = ATST_ALWAYS;
-		}
-#endif
 	}
 
 	return true;
