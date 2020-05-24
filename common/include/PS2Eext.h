@@ -215,8 +215,8 @@ static void SysMessage(const char *fmt, ...)
     if (msg[strlen(msg) - 1] == '\n')
         msg[strlen(msg) - 1] = 0;
 
-    wxMessageDialog *dial = new wxMessageDialog(NULL, msg, wxT("Info"), wxOK);
-    dial->ShowModal();
+    wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+    dialog.ShowModal();
 }
 
 #define ENTRY_POINT /* We don't need no stinkin' entry point! */
