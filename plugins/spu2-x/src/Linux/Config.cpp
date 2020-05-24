@@ -23,6 +23,9 @@
 #include <SDL.h>
 #include <SDL_audio.h>
 #endif
+#ifdef __APPLE__
+#include <dispatch/dispatch.h>
+#endif
 
 #ifdef PCSX2_DEVBUILD
 static const int LATENCY_MAX = 3000;
@@ -147,7 +150,7 @@ void ReadSettings()
 #endif
 #endif
 
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
     CfgReadStr(L"SDL", L"HostApi", temp, L"pulseaudio");
     SdlOutputAPI = 0;
 #if SDL_MAJOR_VERSION >= 2
@@ -165,7 +168,7 @@ void ReadSettings()
 #ifdef SPU2X_PORTAUDIO
     PortaudioOut->ReadSettings();
 #endif
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
     SDLOut->ReadSettings();
 #endif
     SoundtouchCfg::ReadSettings();
@@ -218,7 +221,7 @@ void WriteSettings()
 #ifdef SPU2X_PORTAUDIO
     PortaudioOut->WriteSettings();
 #endif
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
     SDLOut->WriteSettings();
 #endif
     SoundtouchCfg::WriteSettings();
@@ -235,7 +238,7 @@ void debug_dialog()
     DebugConfig::DisplayDialog();
 }
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 
 // Format the slider with ms.
 static gchar *cb_scale_format_ms(GtkScale *scale, gdouble value)
@@ -334,6 +337,8 @@ void DisplayDialog()
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "0 - ALSA (recommended)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "1 - OSS (legacy)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "2 - JACK");
+#elif defined(__APPLE__)
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "CoreAudio");
 #else
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "OSS");
 #endif
@@ -466,7 +471,11 @@ void DisplayDialog()
 #else
             switch (OutputAPI) {
                 case 0:
+#ifdef __APPLE__
+                    PortaudioOut->SetApiSettings(L"CoreAudio");
+#else
                     PortaudioOut->SetApiSettings(L"OSS");
+#endif
                     break;
                 default:
                     PortaudioOut->SetApiSettings(L"Unknown");
@@ -499,10 +508,23 @@ void DisplayDialog()
 
 void configure()
 {
+#ifdef __APPLE__
+    // Rest of macOS UI doesn't use GTK so we need to init it now
+    gtk_init(nullptr, nullptr);
+    // GTK expects us to be using its event loop, rather than Cocoa's
+    // If we call its stuff right now, it'll attempt to drain a static autorelease pool that was already drained by Cocoa (see https://github.com/GNOME/gtk/blob/8c1072fad1cb6a2e292fce2441b4a571f173ce0f/gdk/quartz/gdkeventloop-quartz.c#L640-L646)
+    // We can convince it that touching that pool would be unsafe by running all GTK calls within a CFRunLoop
+    // (Blocks submitted to the main queue by dispatch_async are run by its CFRunLoop)
+    dispatch_async(dispatch_get_main_queue(), ^{
+#endif
     initIni();
     ReadSettings();
     DisplayDialog();
     WriteSettings();
     delete spuConfig;
     spuConfig = NULL;
+#ifdef __APPLE__
+    // End of `dispatch_async(...` above
+    });
+#endif
 }

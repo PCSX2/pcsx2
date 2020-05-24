@@ -77,6 +77,11 @@ if(PACKAGE_MODE)
     add_definitions(-DPLUGIN_DIR_COMPILATION=${PLUGIN_DIR} -DGAMEINDEX_DIR_COMPILATION=${GAMEINDEX_DIR} -DDOC_DIR_COMPILATION=${DOC_DIR})
 endif()
 
+if(APPLE)
+    option(OSX_USE_DEFAULT_SEARCH_PATH "Don't prioritize system library paths" OFF)
+    option(SKIP_POSTPROCESS_BUNDLE "Skip postprocessing bundle for redistributability" OFF)
+endif()
+
 #-------------------------------------------------------------------------------
 # Compiler extra
 #-------------------------------------------------------------------------------
@@ -467,4 +472,34 @@ if(CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE)
     if (GTK3_API)
         message(WARNING "GTK3 is highly experimental besides it requires a wxWidget built with __WXGTK3__ support !!!")
     endif()
+endif()
+
+
+#-------------------------------------------------------------------------------
+# MacOS-specific things
+#-------------------------------------------------------------------------------
+
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
+
+# CMake defaults the suffix for modules to .so on macOS but wx tells us that the
+# extension is .dylib (so that's what we search for)
+if(APPLE)
+    set(CMAKE_SHARED_MODULE_SUFFIX ".dylib")
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    if(NOT OSX_USE_DEFAULT_SEARCH_PATH)
+        # Hack up the path to prioritize the path to built-in OS libraries to
+        # increase the chance of not depending on a bunch of copies of them
+        # installed by MacPorts, Fink, Homebrew, etc, and ending up copying
+        # them into the bundle.  Since we depend on libraries which are not 
+        # part of OS X (wx, etc.), however, don't remove the default path 
+        # entirely.  This is still kinda evil, since it defeats the user's 
+        # path settings...
+        # See http://www.cmake.org/cmake/help/v3.0/command/find_program.html
+        list(APPEND CMAKE_PREFIX_PATH "/usr")
+    endif()
+
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-dead_strip,-dead_strip_dylibs")
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-dead_strip,-dead_strip_dylibs")
 endif()

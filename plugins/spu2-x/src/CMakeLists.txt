@@ -20,7 +20,7 @@ set(CommonFlags
 
 # plugin name
 set(Output spu2x-2.0.0)
-if (UNIX AND NOT APPLE)
+if (UNIX)
 	if (SDL2_API)
 		set(spu2xFinalFlags "-DSPU2X_SDL2" ${CommonFlags})
 	else()

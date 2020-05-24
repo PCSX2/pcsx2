@@ -245,9 +245,10 @@ else()
 endif()
 
 # old version of the plugin that still supports SDL1
-if(wxWidgets_FOUND AND GTKn_FOUND AND SDLn_FOUND AND X11_FOUND)
+# Was never ported to macOS
+if(wxWidgets_FOUND AND GTKn_FOUND AND SDLn_FOUND AND X11_FOUND AND NOT APPLE)
 	set(onepad_legacy TRUE)
-elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad_legacy")
+elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad_legacy" OR APPLE)
 	set(onepad_legacy FALSE)
 else()
 	set(onepad_legacy FALSE)
