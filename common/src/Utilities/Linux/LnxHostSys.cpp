@@ -86,7 +86,12 @@ void _platform_InstallSignalHandler()
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_SIGINFO;
     sa.sa_sigaction = SysPageFaultSignalFilter;
+#ifdef __APPLE__
+    // MacOS uses SIGBUS for memory permission violations
+    sigaction(SIGBUS, &sa, NULL);
+#else
     sigaction(SIGSEGV, &sa, NULL);
+#endif
 }
 
 static __ri void PageSizeAssertionTest(size_t size)

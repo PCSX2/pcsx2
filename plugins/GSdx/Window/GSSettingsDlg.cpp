@@ -139,12 +139,6 @@ void GSSettingsDlg::OnInit()
 	// Hacks
 	CheckDlgButton(m_hWnd, IDC_HACKS_ENABLED, theApp.GetConfigB("UserHacks"));
 
-	SendMessage(GetDlgItem(m_hWnd, IDC_RESX), UDM_SETRANGE, 0, MAKELPARAM(8192, 256));
-	SendMessage(GetDlgItem(m_hWnd, IDC_RESX), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("resx"), 0));
-
-	SendMessage(GetDlgItem(m_hWnd, IDC_RESY), UDM_SETRANGE, 0, MAKELPARAM(8192, 256));
-	SendMessage(GetDlgItem(m_hWnd, IDC_RESY), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("resy"), 0));
-
 	SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_SETRANGE, 0, MAKELPARAM(16, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("extrathreads"), 0));
 
@@ -292,8 +286,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 			// The LOWORD returned by UDM_GETPOS automatically restricts the value to its input range.
 			theApp.SetConfig("extrathreads", LOWORD(SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_GETPOS, 0, 0)));
-			theApp.SetConfig("resx", LOWORD(SendMessage(GetDlgItem(m_hWnd, IDC_RESX), UDM_GETPOS, 0, 0)));
-			theApp.SetConfig("resy", LOWORD(SendMessage(GetDlgItem(m_hWnd, IDC_RESY), UDM_GETPOS, 0, 0)));
 		}
 		break;
 	}
@@ -378,11 +370,6 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_LARGE_FB), integer_scaling > 1 && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL_TEXT), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX), hw && !integer_scaling);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESX_EDIT), hw && !integer_scaling);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY), hw && !integer_scaling);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_RESY_EDIT), hw && !integer_scaling);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_CUSTOM_TEXT), hw && !integer_scaling);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw);

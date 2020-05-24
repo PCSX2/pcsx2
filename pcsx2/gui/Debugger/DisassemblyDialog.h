@@ -54,6 +54,7 @@ public:
 	void showMemoryView() { setBottomTabPage(memory); };
 	void loadCycles();
 	void reloadSymbolMap();
+	void clearSymbolMap();
 	u32 getStepOutAddress();
 
 	void listBoxHandler(wxCommandEvent& event);
@@ -74,6 +75,7 @@ private:
 	ThreadList* threadList;
 	StackFramesList* stackFrames;
 	u32 lastCycles;
+	u32 symbolCount;
 };
 
 class DisassemblyDialog : public wxFrame
@@ -87,6 +89,7 @@ public:
 	
 	void update();
 	void reset();
+	void populate();
 	void setDebugMode(bool debugMode, bool switchPC);
 	
 #ifdef _WIN32

@@ -27,9 +27,6 @@
 #include "AppCoreThread.h"
 #include "RecentIsoList.h"
 
-//Purely to make sure the saveslot define comes through. Remove if it gets removed.
-#include "Saveslots.h"
-
 #ifndef DISABLE_RECORDING
 #	include "Recording/VirtualPad.h"
 #	include "Recording/NewRecordingFrame.h"

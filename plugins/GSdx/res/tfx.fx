@@ -49,6 +49,7 @@
 #define PS_BLEND_B 0
 #define PS_BLEND_C 0
 #define PS_BLEND_D 0
+#define PS_DITHER 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -116,6 +117,7 @@ cbuffer cb1
 	float4 TC_OffsetHack;
 	float Af;
 	float3 _pad;
+	float4x4 DitherMatrix;
 };
 
 cbuffer cb2
@@ -665,6 +667,18 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 	}
 }
 
+void ps_dither(inout float3 C, float2 pos_xy)
+{
+#if PS_DITHER
+	#if PS_DITHER == 2
+	int2 fpos = int2(pos_xy);
+	#else
+	int2 fpos = int2(pos_xy / (float)PS_SCALE_FACTOR);
+	#endif
+	C += DitherMatrix[fpos.y&3][fpos.x&3];
+#endif
+}
+
 void ps_blend(inout float4 Color, float As, float2 pos_xy)
 {
 	if (SW_BLEND)
@@ -683,6 +697,9 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
 
 		Cv = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
+
+		// Dithering
+		ps_dither(Cv, pos_xy);
 
 		// Standard Clamp
 		if (PS_COLCLIP == 0 && PS_HDR == 0)
@@ -746,6 +763,13 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (C.a < A_one) C.a += A_one;
 	}
 
+#if !SW_BLEND && PS_DITHER
+	ps_dither(C.rgb, input.p.xy);
+	// Dither matrix range is [-4,3] but positive values can cause issues when
+	// software blending is not used or is unavailable.
+	C.rgb -= 3.0;
+#endif
+	
 	ps_blend(C, alpha_blend, input.p.xy);
 
 	ps_fbmask(C, input.p.xy);

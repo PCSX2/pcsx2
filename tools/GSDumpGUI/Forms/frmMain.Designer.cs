@@ -219,6 +219,7 @@
             this.txtLog.Size = new System.Drawing.Size(430, 160);
             this.txtLog.TabIndex = 13;
             this.txtLog.TabStop = false;
+            this.txtLog.EnableContextMenu();
             // 
             // lblLog
             // 
@@ -364,6 +365,7 @@
             this.txtIntLog.Size = new System.Drawing.Size(411, 160);
             this.txtIntLog.TabIndex = 24;
             this.txtIntLog.TabStop = false;
+            this.txtIntLog.EnableContextMenu();
             // 
             // lblDebugger
             // 

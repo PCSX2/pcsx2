@@ -205,6 +205,7 @@ void InterpVU0::Step()
 
 void InterpVU0::Execute(u32 cycles)
 {
+	VU0.VI[REG_TPC].UL <<= 3;
 	for (int i = (int)cycles; i > 0 ; i--) {
 		if (!(VU0.VI[REG_VPU_STAT].UL & 0x1)) {
 			if (VU0.branch || VU0.ebit) {
@@ -214,5 +215,6 @@ void InterpVU0::Execute(u32 cycles)
 		}
 		vu0Exec(&VU0);
 	}
+	VU0.VI[REG_TPC].UL >>= 3;
 }
 

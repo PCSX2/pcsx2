@@ -105,7 +105,9 @@ endif()
 if(OPENCL_API)
     check_lib(OPENCL OpenCL CL/cl.hpp)
 endif()
-check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
+if(PORTAUDIO_API)
+    check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
+endif()
 check_lib(SOUNDTOUCH SoundTouch soundtouch/SoundTouch.h)
 
 if(SDL2_API)
@@ -193,8 +195,8 @@ endif()
 
 find_package(HarfBuzz)
 
-if(HARFBUZZ_FOUND)
-include_directories(${HARFBUZZ_INCLUDE_DIRS})
+if(HarfBuzz_FOUND)
+include_directories(${HarfBuzz_INCLUDE_DIRS})
 endif()
 
 #----------------------------------------

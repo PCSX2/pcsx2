@@ -19,7 +19,3 @@
 extern void MSW_SetWindowAfter( WXWidget hwnd, WXWidget hwndAfter );
 extern void MSW_OutputDebugString( const wxString& text );
 extern float MSW_GetDPIScale();
-
-extern void pxDwm_Load();
-extern void pxDwm_Unload();
-extern void pxDwm_SetPresentParams( WXWidget wnd );

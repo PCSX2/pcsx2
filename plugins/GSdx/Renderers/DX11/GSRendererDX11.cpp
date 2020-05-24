@@ -496,7 +496,7 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 
 void GSRendererDX11::EmulateBlending()
 {
-	// Partial port of OGL SW blending. Currently only works for accumulation blend.
+	// Partial port of OGL SW blending. Currently only works for accumulation and non recursive blend.
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
 	bool sw_blending         = false;
 
@@ -521,48 +521,50 @@ void GSRendererDX11::EmulateBlending()
 		}
 		else
 		{
-			//Breath of Fire Dragon Quarter triggers this in battles. Graphics are fine though.
+			// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars.
 			//ASSERT(0);
 		}
 	}
 
-	uint8 blend_index  = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
-	int blend_flag = m_dev->GetBlendFlags(blend_index);
-
-	// SW free blend.
-	bool free_blend = !!(blend_flag & (BLEND_NO_BAR|BLEND_ACCU));
+	const uint8 blend_index  = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
+	const int blend_flag = m_dev->GetBlendFlags(blend_index);
 
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
-	bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
+	const bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
+
+	// Blending doesn't require sampling of the rt
+	const bool blend_non_recursive = !!(blend_flag & BLEND_NO_REC);
 
 	switch (m_sw_blending)
 	{
 		case ACC_BLEND_HIGH_D3D11:
 		case ACC_BLEND_MEDIUM_D3D11:
 		case ACC_BLEND_BASIC_D3D11:
-			sw_blending |= free_blend;
+			sw_blending |= accumulation_blend || blend_non_recursive;
 			// fall through
 		default: break;
 	}
 
+	// Color clip
 	if (m_env.COLCLAMP.CLAMP == 0)
 	{
-		if (accumulation_blend)
+		// fprintf(stderr, "%d: COLCLIP Info (Blending: %d/%d/%d/%d)\n", s_n, ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
+		if (blend_non_recursive)
 		{
-			// fprintf(stderr, "%d: COLCLIP HDR mode with accumulation blend\n", s_n);
+			// The fastest algo that requires a single pass
+			// fprintf(stderr, "%d: COLCLIP Free mode ENABLED\n", s_n);
+			m_ps_sel.colclip = 1;
+			sw_blending = true;
+		}
+		else if (accumulation_blend)
+		{
+			// fprintf(stderr, "%d: COLCLIP Fast HDR mode ENABLED\n", s_n);
 			sw_blending = true;
 			m_ps_sel.hdr = 1;
 		}
-		else if (sw_blending)
-		{
-			// So far only BLEND_NO_BAR should hit this path, it's faster than standard HDR algo.
-			// Note: Isolate the code to BLEND_NO_BAR if other blending conditions are added.
-			// fprintf(stderr, "%d: COLCLIP SW ENABLED (blending is %d/%d/%d/%d)\n", s_n, ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
-			m_ps_sel.colclip = 1;
-		}
 		else
 		{
-			// fprintf(stderr, "%d: COLCLIP HDR mode\n", s_n);
+			// fprintf(stderr, "%d: COLCLIP HDR mode ENABLED\n", s_n);
 			m_ps_sel.hdr = 1;
 		}
 	}
@@ -594,8 +596,10 @@ void GSRendererDX11::EmulateBlending()
 		else
 		{
 			// Disable HW blending
-			// Only BLEND_NO_BAR should hit this code path for now.
 			m_om_bsel.abe = 0;
+
+			// Only BLEND_NO_REC should hit this code path for now
+			ASSERT(blend_non_recursive);
 		}
 
 		// Require the fix alpha vlaue
@@ -982,6 +986,16 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	}
 
 	m_ps_sel.fba = m_context->FBA.FBA;
+	m_ps_sel.dither = m_dithering > 0 && m_ps_sel.dfmt == 2 && m_env.DTHE.DTHE;
+
+	if(m_ps_sel.dither)
+	{
+		m_ps_sel.dither = m_dithering;
+		ps_cb.DitherMatrix[0] = GSVector4(m_env.DIMX.DM00, m_env.DIMX.DM10, m_env.DIMX.DM20, m_env.DIMX.DM30);
+		ps_cb.DitherMatrix[1] = GSVector4(m_env.DIMX.DM01, m_env.DIMX.DM11, m_env.DIMX.DM21, m_env.DIMX.DM31);
+		ps_cb.DitherMatrix[2] = GSVector4(m_env.DIMX.DM02, m_env.DIMX.DM12, m_env.DIMX.DM22, m_env.DIMX.DM32);
+		ps_cb.DitherMatrix[3] = GSVector4(m_env.DIMX.DM03, m_env.DIMX.DM13, m_env.DIMX.DM23, m_env.DIMX.DM33);
+	}
 
 	if (PRIM->FGE)
 	{

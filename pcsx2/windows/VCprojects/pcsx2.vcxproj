@@ -179,6 +179,7 @@
     <ClCompile Include="..\..\gui\Panels\MemoryCardListView.cpp" />
     <ClCompile Include="..\..\IopGte.cpp" />
     <ClCompile Include="..\..\IPU\IPUdma.cpp" />
+    <ClCompile Include="..\..\IPU\IPUdither.cpp" />
     <ClCompile Include="..\..\Linux\LnxConsolePipe.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -394,7 +395,6 @@
     <ClCompile Include="..\..\gui\Panels\PluginSelectorPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\SpeedhacksPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\VideoPanel.cpp" />
-    <ClCompile Include="..\DwmSetup.cpp" />
     <ClCompile Include="..\WinCompressNTFS.cpp" />
     <ClCompile Include="..\WinConsolePipe.cpp" />
     <ClCompile Include="..\..\Linux\LnxKeyCodes.cpp">

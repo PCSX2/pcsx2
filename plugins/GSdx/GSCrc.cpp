@@ -411,6 +411,7 @@ CRC::Game CRC::m_games[] =
 	{0xFFDE85E9, ShinOnimusha, US, 0},
 	{0xE21404E2, GetaWay, US, 0},
 	{0x458485EF, GetaWay, EU, 0},
+	{0x5DFBE144, GetaWay, EU, 0},
 	{0xE78971DF, GetaWayBlackMonday, US, 0},
 	{0x342D97FA, GetaWayBlackMonday, US, 0}, // Demo
 	{0xE8C0AD1A, GetaWayBlackMonday, JP, 0},

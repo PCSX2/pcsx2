@@ -23,6 +23,9 @@
 #include <SDL.h>
 #include <SDL_audio.h>
 #endif
+#ifdef __APPLE__
+#include <dispatch/dispatch.h>
+#endif
 
 #ifdef PCSX2_DEVBUILD
 static const int LATENCY_MAX = 3000;
@@ -76,7 +79,9 @@ bool _visual_debug_enabled = false; // windows only feature
 u32 OutputModule = 0;
 int SndOutLatencyMS = 300;
 int SynchMode = 0; // Time Stretch, Async or Disabled
+#ifdef SPU2X_PORTAUDIO
 static u32 OutputAPI = 0;
+#endif
 static u32 SdlOutputAPI = 0;
 
 int numSpeakers = 0;
@@ -122,7 +127,7 @@ void ReadSettings()
 
     wxString temp;
 
-#if SDL_MAJOR_VERSION >= 2
+#if SDL_MAJOR_VERSION >= 2 || !defined(SPU2X_PORTAUDIO)
     CfgReadStr(L"OUTPUT", L"Output_Module", temp, SDLOut->GetIdent());
 #else
     CfgReadStr(L"OUTPUT", L"Output_Module", temp, PortaudioOut->GetIdent());
@@ -130,6 +135,7 @@ void ReadSettings()
     OutputModule = FindOutputModuleById(temp.c_str()); // find the driver index of this module
 
 // find current API
+#ifdef SPU2X_PORTAUDIO
 #ifdef __linux__
     CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"ALSA");
     if (temp == L"OSS")
@@ -142,8 +148,9 @@ void ReadSettings()
     CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"OSS");
     OutputAPI = 0; // L"OSS"
 #endif
+#endif
 
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
     CfgReadStr(L"SDL", L"HostApi", temp, L"pulseaudio");
     SdlOutputAPI = 0;
 #if SDL_MAJOR_VERSION >= 2
@@ -158,8 +165,10 @@ void ReadSettings()
     SndOutLatencyMS = CfgReadInt(L"OUTPUT", L"Latency", 300);
     SynchMode = CfgReadInt(L"OUTPUT", L"Synch_Mode", 0);
 
+#ifdef SPU2X_PORTAUDIO
     PortaudioOut->ReadSettings();
-#ifdef __unix__
+#endif
+#if defined(__unix__) || defined(__APPLE__)
     SDLOut->ReadSettings();
 #endif
     SoundtouchCfg::ReadSettings();
@@ -209,8 +218,10 @@ void WriteSettings()
     CfgWriteInt(L"OUTPUT", L"Synch_Mode", SynchMode);
     CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
 
+#ifdef SPU2X_PORTAUDIO
     PortaudioOut->WriteSettings();
-#ifdef __unix__
+#endif
+#if defined(__unix__) || defined(__APPLE__)
     SDLOut->WriteSettings();
 #endif
     SoundtouchCfg::WriteSettings();
@@ -227,7 +238,7 @@ void debug_dialog()
     DebugConfig::DisplayDialog();
 }
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 
 // Format the slider with ms.
 static gchar *cb_scale_format_ms(GtkScale *scale, gdouble value)
@@ -273,7 +284,9 @@ void DisplayDialog()
 
     GtkWidget *output_frame, *output_box;
     GtkWidget *mod_label, *mod_box;
+#ifdef SPU2X_PORTAUDIO
     GtkWidget *api_label, *api_box;
+#endif
 #if SDL_MAJOR_VERSION >= 2
     GtkWidget *sdl_api_label, *sdl_api_box;
 #endif
@@ -309,11 +322,14 @@ void DisplayDialog()
     mod_label = gtk_label_new("Module:");
     mod_box = gtk_combo_box_text_new();
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "0 - No Sound (Emulate SPU2 only)");
+#ifdef SPU2X_PORTAUDIO
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "1 - PortAudio (Cross-platform)");
+#endif
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "2 - SDL Audio (Recommended for PulseAudio)");
     //gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "3 - Alsa (probably doesn't work)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(mod_box), OutputModule);
 
+#ifdef SPU2X_PORTAUDIO
     api_label = gtk_label_new("PortAudio API:");
     api_box = gtk_combo_box_text_new();
 #ifdef __linux__
@@ -321,10 +337,13 @@ void DisplayDialog()
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "0 - ALSA (recommended)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "1 - OSS (legacy)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "2 - JACK");
+#elif defined(__APPLE__)
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "CoreAudio");
 #else
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "OSS");
 #endif
     gtk_combo_box_set_active(GTK_COMBO_BOX(api_box), OutputAPI);
+#endif
 
 #if SDL_MAJOR_VERSION >= 2
     sdl_api_label = gtk_label_new("SDL API:");
@@ -383,8 +402,10 @@ void DisplayDialog()
 
     gtk_container_add(GTK_CONTAINER(output_box), mod_label);
     gtk_container_add(GTK_CONTAINER(output_box), mod_box);
+#ifdef SPU2X_PORTAUDIO
     gtk_container_add(GTK_CONTAINER(output_box), api_label);
     gtk_container_add(GTK_CONTAINER(output_box), api_box);
+#endif
 #if SDL_MAJOR_VERSION >= 2
     gtk_container_add(GTK_CONTAINER(output_box), sdl_api_label);
     gtk_container_add(GTK_CONTAINER(output_box), sdl_api_box);
@@ -430,6 +451,7 @@ void DisplayDialog()
         if (gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box)) != -1)
             OutputModule = gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box));
 
+#ifdef SPU2X_PORTAUDIO
         if (gtk_combo_box_get_active(GTK_COMBO_BOX(api_box)) != -1) {
             OutputAPI = gtk_combo_box_get_active(GTK_COMBO_BOX(api_box));
 #ifdef __linux__
@@ -449,13 +471,18 @@ void DisplayDialog()
 #else
             switch (OutputAPI) {
                 case 0:
+#ifdef __APPLE__
+                    PortaudioOut->SetApiSettings(L"CoreAudio");
+#else
                     PortaudioOut->SetApiSettings(L"OSS");
+#endif
                     break;
                 default:
                     PortaudioOut->SetApiSettings(L"Unknown");
             }
 #endif
         }
+#endif
 
 #if SDL_MAJOR_VERSION >= 2
         if (gtk_combo_box_get_active(GTK_COMBO_BOX(sdl_api_box)) != -1) {
@@ -481,10 +508,23 @@ void DisplayDialog()
 
 void configure()
 {
+#ifdef __APPLE__
+    // Rest of macOS UI doesn't use GTK so we need to init it now
+    gtk_init(nullptr, nullptr);
+    // GTK expects us to be using its event loop, rather than Cocoa's
+    // If we call its stuff right now, it'll attempt to drain a static autorelease pool that was already drained by Cocoa (see https://github.com/GNOME/gtk/blob/8c1072fad1cb6a2e292fce2441b4a571f173ce0f/gdk/quartz/gdkeventloop-quartz.c#L640-L646)
+    // We can convince it that touching that pool would be unsafe by running all GTK calls within a CFRunLoop
+    // (Blocks submitted to the main queue by dispatch_async are run by its CFRunLoop)
+    dispatch_async(dispatch_get_main_queue(), ^{
+#endif
     initIni();
     ReadSettings();
     DisplayDialog();
     WriteSettings();
     delete spuConfig;
     spuConfig = NULL;
+#ifdef __APPLE__
+    // End of `dispatch_async(...` above
+    });
+#endif
 }

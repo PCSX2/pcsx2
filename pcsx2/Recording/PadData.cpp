@@ -20,6 +20,7 @@
 #include "PadData.h"
 
 
+#ifndef DISABLE_RECORDING
 PadData::PadData()
 {
 	// TODO - multi-tap support eventually?
@@ -330,3 +331,4 @@ int PadData::GetAnalogVectorByte(PadData_AnalogVector vector) const
 			return -1;
 	}
 }
+#endif

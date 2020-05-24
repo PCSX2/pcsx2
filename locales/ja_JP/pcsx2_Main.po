@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.6.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-02-11 21:17+0900\n"
+"PO-Revision-Date: 2020-05-01 13:25+0900\n"
 "Last-Translator: Chromaryu <knight.ryu12@gmail.com>\n"
 "Language-Team: DeltaHF Chromaryu\n"
 "Language: ja_JP\n"
@@ -18,7 +18,7 @@ msgstr ""
 "X-Poedit-KeywordsList: ;_;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: ../..\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 2.3\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
@@ -747,7 +747,7 @@ msgstr "ログのセーブ"
 
 #: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "&Small"
-msgstr "小"
+msgstr "小(&S)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "Fits a lot of log in a microcosmically small area."
@@ -755,7 +755,7 @@ msgstr "沢山のログを蚤より果てしなく小さなエリアに収めら
 
 #: pcsx2/gui/ConsoleLogger.cpp:419
 msgid "&Normal font"
-msgstr "中"
+msgstr "中(&N)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:419
 msgid "It's what I use (the programmer guy)."
@@ -763,7 +763,7 @@ msgstr "私が使ってる奴だ（byプログラマの人）。"
 
 #: pcsx2/gui/ConsoleLogger.cpp:421
 msgid "&Large"
-msgstr "大"
+msgstr "大(&L)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:421
 msgid "Its nice and readable."
@@ -771,7 +771,7 @@ msgstr "きれいで読みやすい。"
 
 #: pcsx2/gui/ConsoleLogger.cpp:423
 msgid "&Huge"
-msgstr "特大"
+msgstr "特大(&H)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:423
 msgid "In case you have a really high res display."
@@ -779,7 +779,7 @@ msgstr "超高解像度ディスプレイを持っている人用。"
 
 #: pcsx2/gui/ConsoleLogger.cpp:427
 msgid "&Light theme"
-msgstr "ライトテーマ"
+msgstr "ライトテーマ(&L)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:427
 msgid "Default soft-tone color scheme."
@@ -787,7 +787,7 @@ msgstr "デフォルトのソフトトーンカラースキーム。"
 
 #: pcsx2/gui/ConsoleLogger.cpp:428
 msgid "&Dark theme"
-msgstr "ダークテーマ"
+msgstr "ダークテーマ(&D)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:428
 msgid ""
@@ -799,7 +799,7 @@ msgstr ""
 
 #: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "&Save..."
-msgstr "保存..."
+msgstr "保存...(&S)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "Save log contents to file"
@@ -807,7 +807,7 @@ msgstr "ログ内容をファイルに保存"
 
 #: pcsx2/gui/ConsoleLogger.cpp:436
 msgid "C&lear"
-msgstr "クリア"
+msgstr "クリア(&l)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:436
 msgid "Clear the log window contents"
@@ -815,7 +815,7 @@ msgstr "ログウィンドウの内容をクリア"
 
 #: pcsx2/gui/ConsoleLogger.cpp:438
 msgid "Auto&dock"
-msgstr "オートドック"
+msgstr "オートドック(&d)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:438
 msgid "Dock log window to main PCSX2 window"
@@ -823,11 +823,11 @@ msgstr "PCSX2のウインドウにログウィンドウをドック"
 
 #: pcsx2/gui/ConsoleLogger.cpp:439
 msgid "&Appearance"
-msgstr "外観テーマ"
+msgstr "外観テーマ(&A)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:441
 msgid "&Close"
-msgstr "閉じる"
+msgstr "閉じる(&C)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:441
 msgid "Close this log window; contents are preserved"
@@ -835,7 +835,7 @@ msgstr "ログウィンドウを閉じる (内容は保たれます)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:445
 msgid "Dev/&Verbose"
-msgstr "開発者用詳細表示"
+msgstr "開発者用詳細表示(&V)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:445
 msgid "Shows PCSX2 developer logs"
@@ -843,7 +843,7 @@ msgstr "PCSX2開発者用ログを表示"
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
 msgid "&CDVD reads"
-msgstr "CDVD読み込み"
+msgstr "CDVD読み込み(&C)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:446
 msgid "Shows disk read activity"
@@ -851,7 +851,7 @@ msgstr "ディスク読み込みアクティビティを表示"
 
 #: pcsx2/gui/ConsoleLogger.cpp:463
 msgid "&Enable all"
-msgstr "全て有効化"
+msgstr "全て有効化(&E)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:463
 msgid "Enables all log source filters."
@@ -859,7 +859,7 @@ msgstr "全てのログソースフィルタを有効にします。"
 
 #: pcsx2/gui/ConsoleLogger.cpp:464
 msgid "&Disable all"
-msgstr "全て無効化"
+msgstr "全て無効化(&D)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:464
 msgid "Disables all log source filters."
@@ -867,7 +867,7 @@ msgstr "全てのログソースフィルタを無効にします。"
 
 #: pcsx2/gui/ConsoleLogger.cpp:465
 msgid "&Restore Default"
-msgstr "デフォルトに戻す"
+msgstr "デフォルトに戻す(&R)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:465
 msgid "Restore default source filters."
@@ -875,11 +875,11 @@ msgstr "全てのログソースフィルタを有効にします。"
 
 #: pcsx2/gui/ConsoleLogger.cpp:467
 msgid "&Log"
-msgstr "ログ"
+msgstr "ログ(&L)"
 
 #: pcsx2/gui/ConsoleLogger.cpp:468
 msgid "&Sources"
-msgstr "ソース"
+msgstr "ソース(&S)"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:36
 #, c-format
@@ -1037,7 +1037,7 @@ msgstr "作成"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:72
 msgid "New memory card:"
-msgstr "新規メモリーカード："
+msgstr "新規メモリーカード:"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:73
 msgid "At folder:    "
@@ -1055,11 +1055,11 @@ msgstr "メモリーカードの作成"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:191
 msgid "Error: The directory for the memory card could not be created."
-msgstr "エラー：メモリーカード用のディレクトリの作成ができませんでした。"
+msgstr "エラー:メモリーカード用のディレクトリの作成ができませんでした。"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:206
 msgid "Error: The memory card could not be created."
-msgstr "エラー：メモリーカードの作成ができませんでした。"
+msgstr "エラー:メモリーカードの作成ができませんでした。"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:221
 msgid "Use NTFS compression when creating this card."
@@ -1405,11 +1405,11 @@ msgstr "ファイル..."
 
 #: pcsx2/gui/MainFrame.cpp:349
 msgid "&Show Console"
-msgstr "コンソールを表示"
+msgstr "コンソールを表示(&S)"
 
 #: pcsx2/gui/MainFrame.cpp:351
 msgid "&Console to Stdio"
-msgstr "コンソールから標準入出力へ"
+msgstr "コンソールから標準入出力へ(&C)"
 
 #: pcsx2/gui/MainFrame.cpp:364
 msgid "&System"
@@ -1502,7 +1502,7 @@ msgstr "内部仮想マシンを停止し、プラグインを終了します。
 
 #: pcsx2/gui/MainFrame.cpp:487
 msgid "E&xit"
-msgstr "終了 (&x)"
+msgstr "終了(&x)"
 
 #: pcsx2/gui/MainFrame.cpp:488
 #, c-format
@@ -1515,11 +1515,11 @@ msgstr "ISOセレクター(&S)"
 
 #: pcsx2/gui/MainFrame.cpp:496
 msgid "Plugin &Menu"
-msgstr "プラグイン&Menu"
+msgstr "プラグインメニュー(&M)"
 
 #: pcsx2/gui/MainFrame.cpp:499
 msgid "&ISO"
-msgstr "&ISO"
+msgstr "ISO(&I)"
 
 #: pcsx2/gui/MainFrame.cpp:499
 msgid "Makes the specified ISO image the CDVD source."
@@ -1571,7 +1571,7 @@ msgstr "ハードディスク (Dev9) (&D)"
 
 #: pcsx2/gui/MainFrame.cpp:519
 msgid "&USB"
-msgstr "&USB"
+msgstr "USB(&U)"
 
 #: pcsx2/gui/MainFrame.cpp:520
 msgid "&Firewire"
@@ -1600,7 +1600,7 @@ msgstr "PCSX2について (&A)"
 
 #: pcsx2/gui/MainFrame.cpp:551
 msgid "&Open Debug Window..."
-msgstr "デバッグウィンドウを開く (%O)"
+msgstr "デバッグウィンドウを開く (&O)"
 
 #: pcsx2/gui/MainFrame.cpp:554
 msgid "&Logging..."
@@ -1681,11 +1681,11 @@ msgstr "急速起動でPS2の起動画面をスキップします"
 
 #: pcsx2/gui/MainFrame.cpp:687
 msgid "Boot ISO (&fast)"
-msgstr "ISO起動 (急速)"
+msgstr "ISO起動 (急速) (&f)"
 
 #: pcsx2/gui/MainFrame.cpp:690
 msgid "Boot CDVD (&fast)"
-msgstr "CDVD起動 (急速)"
+msgstr "CDVD起動 (急速) (&f)"
 
 #: pcsx2/gui/MainFrame.cpp:713
 msgid "Boo&t ISO (full)"
@@ -1717,7 +1717,7 @@ msgstr "プラグインがロードされていません"
 
 #: pcsx2/gui/MainFrame.cpp:808
 msgid "&Core GS Settings..."
-msgstr "GSコア設定..."
+msgstr "GSコア設定...(&C)"
 
 #: pcsx2/gui/MainFrame.cpp:809
 msgid ""
@@ -1727,7 +1727,7 @@ msgstr "仮想マシンで制御されるハードウェアエミュレーショ
 
 #: pcsx2/gui/MainFrame.cpp:811
 msgid "&Window Settings..."
-msgstr "GSウィンドウ設定..."
+msgstr "GSウィンドウ設定...(&W)"
 
 #: pcsx2/gui/MainFrame.cpp:812
 msgid "Modify window and appearance options, including aspect ratio."

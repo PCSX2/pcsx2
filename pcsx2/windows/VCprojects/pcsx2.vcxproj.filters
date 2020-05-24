@@ -716,9 +716,6 @@
     <ClCompile Include="..\..\gui\Panels\VideoPanel.cpp">
       <Filter>AppHost\Panels</Filter>
     </ClCompile>
-    <ClCompile Include="..\DwmSetup.cpp">
-      <Filter>AppHost\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="..\WinCompressNTFS.cpp">
       <Filter>AppHost\Win32</Filter>
     </ClCompile>
@@ -888,6 +885,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Recording\VirtualPad.cpp">
       <Filter>Recording\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IPU\IPUdither.cpp">
+      <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

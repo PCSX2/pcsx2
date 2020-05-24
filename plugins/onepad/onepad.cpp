@@ -184,7 +184,7 @@ PADopen(void *pDsp)
 
     g_ev_fifo.reset();
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
     GamePad::EnumerateGamePads(s_vgamePad);
 #endif
     return _PADopen(pDsp);

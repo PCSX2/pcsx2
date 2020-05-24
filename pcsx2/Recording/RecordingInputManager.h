@@ -18,6 +18,7 @@
 #include "PadData.h"
 
 
+#ifndef DISABLE_RECORDING
 class RecordingInputManager
 {
 public:
@@ -36,3 +37,4 @@ protected:
 };
 
 extern RecordingInputManager g_RecordingInput;
+#endif

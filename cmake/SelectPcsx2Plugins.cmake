@@ -7,7 +7,7 @@ set(msg_dep_cdvdgiga    "check these libraries -> gtk2, libudev")
 set(msg_dep_zerogs      "check these libraries -> glew, opengl, X11, nvidia-cg-toolkit (>=2.1)")
 set(msg_dep_gsdx        "check these libraries -> opengl, png (>=1.2), zlib (>=1.2.4), X11, liblzma")
 set(msg_dep_onepad      "check these libraries -> sdl2, X11, gtk2")
-set(msg_dep_spu2x       "check these libraries -> soundtouch (>=1.5), alsa, portaudio (>=1.9), sdl (>=1.2) pcsx2 common libs")
+set(msg_dep_spu2x       "check these libraries -> soundtouch (>=1.5), alsa, portaudio (optional, >=1.9), sdl (>=1.2), pcsx2 common libs")
 set(msg_dep_zerospu2    "check these libraries -> soundtouch (>=1.5), alsa")
 set(msg_dep_dev         "check these libraries -> gtk2, pcap, libxml2")
 if(GLSL_API)
@@ -245,9 +245,10 @@ else()
 endif()
 
 # old version of the plugin that still supports SDL1
-if(wxWidgets_FOUND AND GTKn_FOUND AND SDLn_FOUND AND X11_FOUND)
+# Was never ported to macOS
+if(wxWidgets_FOUND AND GTKn_FOUND AND SDLn_FOUND AND X11_FOUND AND NOT APPLE)
 	set(onepad_legacy TRUE)
-elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad_legacy")
+elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad_legacy" OR APPLE)
 	set(onepad_legacy FALSE)
 else()
 	set(onepad_legacy FALSE)
@@ -267,12 +268,13 @@ endif()
 #			spu2-x
 #---------------------------------------
 # requires: -SoundTouch
-#			-ALSA
-#           -Portaudio
+#           -ALSA
 #           -SDL
 #           -common_libs
+#
+# optional: -Portaudio
 #---------------------------------------
-if((PORTAUDIO_FOUND AND SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
+if((SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
 	AND ((Linux AND ALSA_FOUND) OR (UNIX AND NOT Linux)))
 	set(spu2-x TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
@@ -287,8 +289,8 @@ endif()
 #			zerospu2
 #---------------------------------------
 # requires: -SoundTouch
-#			-ALSA
-#			-PortAudio
+#           -ALSA
+#           -PortAudio
 #---------------------------------------
 if(EXTRA_PLUGINS)
     if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerospu2" AND SOUNDTOUCH_FOUND AND ALSA_FOUND)

@@ -78,7 +78,6 @@ void SaveStateBase::Init( SafeArray<u8>* memblock )
 	m_memory	= memblock;
 	m_version	= g_SaveVersion;
 	m_idx		= 0;
-	m_DidBios	= false;
 }
 
 void SaveStateBase::PrepBlock( int size )
@@ -320,42 +319,4 @@ void memLoadingState::FreezeMem( void* data, int size )
 	const u8* const src = m_memory->GetPtr(m_idx);
 	m_idx += size;
 	memcpy( data, src, size );
-}
-
-// --------------------------------------------------------------------------------------
-//  SaveState Exception Messages
-// --------------------------------------------------------------------------------------
-
-wxString Exception::UnsupportedStateVersion::FormatDiagnosticMessage() const
-{
-	// Note: no stacktrace needed for this one...
-	return pxsFmt( L"Unknown or unsupported savestate version: 0x%x", Version );
-}
-
-wxString Exception::UnsupportedStateVersion::FormatDisplayMessage() const
-{
-	// m_message_user contains a recoverable savestate error which is helpful to the user.
-	return
-		m_message_user + L"\n\n" +
-		pxsFmt( _("Cannot load savestate.  It is of an unknown or unsupported version."), Version );
-}
-
-wxString Exception::StateCrcMismatch::FormatDiagnosticMessage() const
-{
-	// Note: no stacktrace needed for this one...
-	return pxsFmt(
-		L"Game/CDVD does not match the savestate CRC.\n"
-		L"\tCdvd CRC: 0x%X\n\tGame CRC: 0x%X\n",
-		Crc_Savestate, Crc_Cdvd
-	);
-}
-
-wxString Exception::StateCrcMismatch::FormatDisplayMessage() const
-{
-	return
-		m_message_user + L"\n\n" +
-		pxsFmt(
-			L"Savestate game/crc mismatch. Cdvd CRC: 0x%X Game CRC: 0x%X\n",
-			Crc_Savestate, Crc_Cdvd
-		);
 }

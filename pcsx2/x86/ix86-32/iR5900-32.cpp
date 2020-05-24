@@ -519,7 +519,7 @@ static void recAlloc()
 	for (int i = 0; i < 0x10000; i++)
 		recLUT_SetPage(recLUT, 0, 0, 0, i, 0);
 
-	for ( int i = 0x0000; i < 0x0200; i++ )
+	for ( int i = 0x0000; i < Ps2MemSize::MainRam / 0x10000; i++ )
 	{
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x0000, i, i);
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x2000, i, i);
@@ -1148,7 +1148,7 @@ void dynarecCheckBreakpoint()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
-	GetCoreThread().PauseSelf();
+	GetCoreThread().PauseSelfDebug();
 	recExitExecution();
 }
 
@@ -1159,7 +1159,7 @@ void dynarecMemcheck()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
-	GetCoreThread().PauseSelf();
+	GetCoreThread().PauseSelfDebug();
 	recExitExecution();
 }
 

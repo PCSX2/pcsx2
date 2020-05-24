@@ -49,6 +49,7 @@ GSRenderer::GSRenderer()
 	m_fxaa        = theApp.GetConfigB("fxaa");
 	m_shaderfx    = theApp.GetConfigB("shaderfx");
 	m_shadeboost  = theApp.GetConfigB("ShadeBoost");
+	m_dithering   = theApp.GetConfigI("dithering_ps2"); // 0 off, 1 auto, 2 auto no scale
 }
 
 GSRenderer::~GSRenderer()
@@ -572,6 +573,7 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 #define VK_DELETE XK_Delete
 #define VK_INSERT XK_Insert
 #define VK_PRIOR XK_Prior
+#define VK_NEXT XK_Next
 #define VK_HOME XK_Home
 #endif
 
@@ -610,6 +612,11 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 			m_shaderfx = !m_shaderfx;
 			theApp.SetConfig("shaderfx", m_shaderfx);
 			printf("GSdx: External post-processing is now %s.\n", m_shaderfx ? "enabled" : "disabled");
+			return;
+		case VK_NEXT: // As requested by Prafull, to be removed later
+			char dither_msg[3][16] = {"disabled", "auto", "auto unscaled"};
+			m_dithering = (m_dithering+1)%3;
+			printf("GSdx: Dithering is now %s.\n", dither_msg[m_dithering]);
 			return;
 		}
 

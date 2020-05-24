@@ -24,13 +24,15 @@
 
 #include "onepad.h"
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 
-extern Display *GSdsp;
 extern void AnalyzeKeyEvent(keyEvent &evt);
-extern void PollForX11KeyboardInput();
-extern bool PollX11KeyboardMouseEvent(u32 &pkey);
+extern void UpdateKeyboardInput();
+extern bool PollForNewKeyboardKeys(u32 &pkey);
+#ifndef __APPLE__
+extern Display *GSdsp;
 extern Window GSwin;
+#endif
 
 #else
 

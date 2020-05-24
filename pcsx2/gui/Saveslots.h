@@ -19,6 +19,8 @@
 #include "PS2Edefs.h"
 #include "System.h"
 #include "Elfheader.h"
+#include "App.h"
+#include <array>
 
 // Uncomment to turn on the new saveslot UI.
 #define USE_NEW_SAVESLOTS_UI
@@ -37,6 +39,7 @@
 #endif
 
 extern wxString DiscSerial;
+static const int StateSlotsCount = 10;
 
 class Saveslot
 {
@@ -47,17 +50,9 @@ public:
 	u32 crc;
 	wxString serialName;
 	bool menu_update, invalid_cache;
+	int load_item_id, save_item_id;
 
-	Saveslot()
-	{
-		slot_num = 0;
-		empty = true;
-		updated = wxInvalidDateTime;
-		crc = 0;
-		serialName = L"";
-		menu_update = false;
-		invalid_cache = true;
-	}
+	Saveslot() = delete;
 
 	Saveslot(int i)
 	{
@@ -68,6 +63,8 @@ public:
 		serialName =  L"";
 		menu_update = false;
 		invalid_cache = true;
+		load_item_id = MenuId_State_Load01 + i + 1;
+		save_item_id = MenuId_State_Save01 + i + 1;
 	}
 
 	bool isUsed()
@@ -115,9 +112,21 @@ public:
 		//if (isUsed())
 		//	Console.WriteLn(wxsFormat(_("The disk has a file on it dated %s %s."), GetTimestamp().FormatDate(), GetTimestamp().FormatTime()));
 	}
+
+	void Used()
+	{
+		// Update the saveslot cache with the new saveslot, and give it the current timestamp, 
+		// Because we aren't going to be able to get the real timestamp from disk right now.
+		empty = false;
+		updated = wxDateTime::Now();
+		crc = ElfCRC;
+
+		// Update the slot next time we run through the UI update.
+		menu_update = true;
+	}
 };
 
-extern Saveslot saveslot_cache[10];
+extern std::array<Saveslot,10> saveslot_cache;
 extern void States_DefrostCurrentSlotBackup();
 extern void States_DefrostCurrentSlot();
 extern void States_FreezeCurrentSlot();

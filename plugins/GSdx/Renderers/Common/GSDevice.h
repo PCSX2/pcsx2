@@ -119,7 +119,7 @@ enum HWBlendFlags
 	// A couple of flag to determine the blending behavior
 	BLEND_A_MAX  = 0x100, // Impossible blending uses coeff bigger than 1
 	BLEND_C_CLR  = 0x200, // Clear color blending (use directly the destination color as blending factor)
-	BLEND_NO_BAR = 0x400, // Doesn't require sampling of the RT as a texture
+	BLEND_NO_REC = 0x400, // Doesn't require sampling of the RT as a texture
 	BLEND_ACCU   = 0x800, // Allow to use a mix of SW and HW blending to keep the best of the 2 worlds
 };
 

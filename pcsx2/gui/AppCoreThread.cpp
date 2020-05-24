@@ -210,7 +210,13 @@ void AppCoreThread::OnResumeReady()
 
 void AppCoreThread::OnPause()
 {
-	sApp.PostAppMethod( &Pcsx2App::enterDebugMode );
+	//sApp.PostAppMethod( &Pcsx2App::enterDebugMode );
+	_parent::OnPause();
+}
+
+void AppCoreThread::OnPauseDebug()
+{
+	sApp.PostAppMethod(&Pcsx2App::enterDebugMode);
 	_parent::OnPause();
 }
 
