@@ -126,7 +126,7 @@ run_clangtidy()
     compile_json=compile_commands.json
     cpp_list=cpp_file.txt
     summary=clang_tidy_summary.txt
-    grep '"file"' $compile_json | sed -e 's/"//g' -e 's/^\s*file\s*:\s*//' | grep -v "aVUzerorec.S" | sort -u  > $cpp_list
+    grep '"file"' $compile_json | sed -e 's/"//g' -e 's/^\s*file\s*:\s*//' | sort -u  > $cpp_list
 
     # EXAMPLE
     #
