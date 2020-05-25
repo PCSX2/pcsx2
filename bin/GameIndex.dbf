@@ -56,7 +56,6 @@
 -- Game Fixes (gameFixName = 1)
 ---------------------------------------------
 -- VuAddSubHack      = 1 // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
--- VuClipFlagHack    = 1 // Persona games, maybe others. It's to do with the VU clip flag (sVU-only).
 -- FpuCompareHack    = 1 // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
 -- FpuMulHack        = 1 // Tales of Destiny hangs.
 -- FpuNegDivHack     = 1 // Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
@@ -3125,7 +3124,6 @@ Region = NTSC-K
 Serial = SCKA-20099
 Name   = Persona 3
 Region = NTSC-K
-VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SCKA-20101
 Name   = Seiken Densetsu 4 (Dawn of Mana)
@@ -3139,7 +3137,6 @@ Region = NTSC-K
 Serial = SCKA-20109
 Name   = Persona 3 FES [Independent Starting Version]
 Region = NTSC-K
-VuClipFlagHack = 1
 MemCardFilter = SCKA-20109/SCKA-20099
 ---------------------------------------------
 Serial = SCKA-20114
@@ -3158,7 +3155,6 @@ Serial = SCKA-20132
 Name   = Shin Megami Tensei: Persona 4
 Region = NTSC-K
 Compat = 5
-VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SCKA-24008
 Name   = SOCOM - U.S. Navy SEALs
@@ -17695,7 +17691,6 @@ Serial = SLES-55018
 Name   = Shin Megami Tensei: Persona 3
 Region = PAL-E
 Compat = 5
-VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLES-55019
 Name   = Ratchet & Clank - Size Matters
@@ -18081,7 +18076,6 @@ Compat = 5
 Serial = SLES-55354
 Name   = Shin Megami Tensei: Persona 3 FES
 Region = PAL-E
-VuClipFlagHack = 1
 MemCardFilter = SLES-55354/SLES-55018
 ---------------------------------------------
 Serial = SLES-55355
@@ -18233,7 +18227,6 @@ Region = PAL-M5
 Serial = SLES-55474
 Name   = Shin Megami Tensei: Persona 4
 Region = PAL-E
-VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLES-55476
 Name   = Scooby-Doo! First Frights
@@ -27428,7 +27421,6 @@ Serial = SLPM-66445
 Name   = Persona 3
 Region = NTSC-J
 Compat = 5
-VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLPM-66446
 Name   = Beat Down - Fists of Vengeance [CapKore]
@@ -28359,13 +28351,11 @@ Region = NTSC-J
 Serial = SLPM-66689
 Name   = Persona 3 FES [Append Edition]
 Region = NTSC-J
-VuClipFlagHack = 1
 MemCardFilter = SLPM-66445/SLPM-66689/SLPM-66690
 ---------------------------------------------
 Serial = SLPM-66690
 Name   = Persona 3 FES [Independent Starting Version]
 Region = NTSC-J
-VuClipFlagHack = 1
 MemCardFilter = SLPM-66445/SLPM-66689/SLPM-66690
 ---------------------------------------------
 Serial = SLPM-66691
@@ -29447,7 +29437,6 @@ Serial = SLPM-66978
 Name   = Persona 4 [Konami-style Special Edition]
 Region = NTSC-J
 Compat = 5
-VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLPM-66987
 Name   = Kowloon Youma Gakuen Ki [Best Version]
@@ -29923,12 +29912,10 @@ Serial = SLPM-74277
 Name   = Persona 3 FES [PlayStation 2 The Best]
 Region = NTSC-J
 Compat = 5
-VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLPM-74278
 Name   = Persona 4 [PlayStation 2 The Best]
 Region = NTSC-J
-VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLPM-74286
 Name   = Shin Sangoku Musou 5 Special [PlayStation 2 The Best]
@@ -42478,7 +42465,6 @@ Serial = SLUS-21569
 Name   = Shin Megami Tensei: Persona 3
 Region = NTSC-U
 Compat = 5
-VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLUS-21570
 Name   = Heatseeker
@@ -42748,7 +42734,6 @@ Serial = SLUS-21621
 Name   = Shin Megami Tensei: Persona 3 FES
 Region = NTSC-U
 Compat = 5
-VuClipFlagHack = 1
 MemCardFilter = SLUS-21621/SLUS-21569
 ---------------------------------------------
 Serial = SLUS-21622
@@ -43525,13 +43510,11 @@ Serial = SLUS-21782
 Name   = Shin Megami Tensei: Persona 4
 Region = NTSC-U
 Compat = 5
-VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLUS-21782B
 Name   = Shin Megami Tensei: Persona 4
 Region = NTSC-U
 Compat = 5
-VuClipFlagHack = 1
 ---------------------------------------------
 Serial = SLUS-21783
 Name   = Space Chimps

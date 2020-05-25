@@ -573,10 +573,6 @@ void recSWC1()
 
 void recLQC2()
 {
-#ifndef DISABLE_SVU
-	_deleteVFtoXMMreg(_Ft_, 0, 2);
-#endif
-
 	if (_Rt_)
 		xMOV(edx, (uptr)&VU0.VF[_Ft_].UD[0]);
 	else
@@ -606,10 +602,6 @@ void recLQC2()
 
 void recSQC2()
 {
-#ifndef DISABLE_SVU
-	_deleteVFtoXMMreg(_Ft_, 0, 1); //Want to flush it but not clear it
-#endif
-
 	xMOV(edx, (uptr)&VU0.VF[_Ft_].UD[0]);
 
 	if (GPR_IS_CONST1(_Rs_))

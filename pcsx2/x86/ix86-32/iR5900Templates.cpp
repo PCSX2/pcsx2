@@ -25,11 +25,6 @@
 #include "VU.h"
 #include "VUmicro.h"
 
-#ifndef DISABLE_SVU
-#include "sVU_Micro.h"
-#include "sVU_zerorec.h"
-#endif
-
 #include "vtlb.h"
 
 using namespace x86Emitter;

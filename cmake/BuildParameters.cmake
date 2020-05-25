@@ -20,7 +20,6 @@
 #-------------------------------------------------------------------------------
 # Misc option
 #-------------------------------------------------------------------------------
-option(DISABLE_SVU "Disable superVU (don't use it)")
 option(DISABLE_BUILD_DATE "Disable including the binary compile date")
 
 if(DISABLE_BUILD_DATE OR openSUSE)
@@ -222,11 +221,6 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
         endif()
     endif()
 
-    # Don't bother porting SuperVU
-    if (NOT Linux)
-        set(DISABLE_SVU TRUE)
-    endif()
-
     add_definitions(-D_ARCH_32=1 -D_M_X86=1 -D_M_X86_32=1)
     set(_ARCH_32 1)
     set(_M_X86 1)
@@ -234,9 +228,6 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
 elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
     # x86_64 requires -fPIC
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-    # SuperVU will not be ported
-    set(DISABLE_SVU TRUE)
 
     if(NOT DEFINED ARCH_FLAG)
         if (DISABLE_ADVANCE_SIMD)
@@ -309,9 +300,6 @@ option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 # Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
 # Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
 set(COMMON_FLAG "-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse")
-if (DISABLE_SVU)
-    set(COMMON_FLAG "${COMMON_FLAG} -DDISABLE_SVU")
-endif()
 
 if(USE_VTUNE)
     set(COMMON_FLAG "${COMMON_FLAG} -DENABLE_VTUNE")

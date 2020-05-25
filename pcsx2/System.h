@@ -41,11 +41,6 @@ class RecompiledCodeReserve;
 
 namespace HostMemoryMap
 {
-	// superVU is OLD SCHOOL, and it requires its allocation to be in the lower 256mb
-	// of the virtual memory space. (8mb each)
-	static const uptr sVU0rec	= _256mb - (_8mb*3);
-	static const uptr sVU1rec	= _256mb - (_8mb*2);
-
 #ifdef ASAN_WORKAROUND
 	// address sanitizer uses a shadow memory to monitor the state of the memory. Shadow is computed
 	// as S = (M >> 3) + 0x20000000. So PCSX2 can't use 0x20000000 to 0x3FFFFFFF... Just add another
@@ -141,9 +136,6 @@ public:
 	virtual ~SysCpuProviderPack();
 
 	void ApplyConfig() const;
-#ifndef DISABLE_SVU
-	BaseVUmicroCPU* getVUprovider(int whichProvider, int vuIndex) const;
-#endif
 
 	bool HadSomeFailures( const Pcsx2Config::RecompilerOptions& recOpts ) const;
 
@@ -157,11 +149,6 @@ public:
 	bool IsRecAvailable_MicroVU1() const;
 	BaseException* GetException_MicroVU0() const;
 	BaseException* GetException_MicroVU1() const;
-
-	bool IsRecAvailable_SuperVU0() const;
-	bool IsRecAvailable_SuperVU1() const;
-	BaseException* GetException_SuperVU0() const;
-	BaseException* GetException_SuperVU1() const;
 
 protected:
 	void CleanupMess() noexcept;
