@@ -43,9 +43,6 @@
     <Filter Include="System\Ps2\EmotionEngine\VU\Dynarec\microVU">
       <UniqueIdentifier>{a210a307-e8bf-4bbc-8770-e720cc7fc953}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Ps2\EmotionEngine\VU\Dynarec\Super VU">
-      <UniqueIdentifier>{f9ec43a5-e1d5-4b0b-831a-eed6947e8552}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\Ps2\EmotionEngine\VU\Interpreter">
       <UniqueIdentifier>{e14056ea-b126-4e5b-94e0-3ce09463970b}</UniqueIdentifier>
     </Filter>
