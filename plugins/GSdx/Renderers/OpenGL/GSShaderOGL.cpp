@@ -158,7 +158,7 @@ void GSShaderOGL::SetSamplerBinding(GLuint prog, const GLchar* name, GLuint bind
 {
 	GLint loc = glGetUniformLocation(prog, name);
 	if (loc != -1) {
-		glUniform1i(loc, binding);
+		glProgramUniform1i(prog, loc, binding);
 	}
 }
 
