@@ -197,6 +197,11 @@ void GSRendererOGL::EmulateZbuffer()
 		}
 	}
 
+	if (!GLLoader::found_GL_ARB_clip_control) {
+		// With (-1, 1) depth, we don't have the spare precision to be using 32-bit depth for everything
+		vs_cb.DepthMask = GSVector2i(max_z, max_z);
+	}
+
 	GSVertex* v = &m_vertex.buff[0];
 	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
 	if (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z && v[0].XYZ.Z == max_z) {

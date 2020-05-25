@@ -20,7 +20,7 @@ out SHADER
     flat vec4 fc;
 } VSout;
 
-#ifndef NEG_ONE_TO_ONE_DEPTH_AND_LOGZ
+#ifdef ZERO_TO_ONE_DEPTH
 const float exp_min32 = exp2(-32.0f);
 #endif
 
@@ -57,10 +57,10 @@ void vs_main()
     p.xy = vec2(i_p) - vec2(0.05f, 0.05f);
     p.xy = p.xy * VertexScale - VertexOffset;
     p.w = 1.0f;
-#ifdef NEG_ONE_TO_ONE_DEPTH_AND_LOGZ
-    p.z = max(0.0f, log2(float(z))) / 31.0f - 1.0f;
-#else
+#ifdef ZERO_TO_ONE_DEPTH
     p.z = float(z) * exp_min32;
+#else
+    p.z = float(z) * (2/float(DepthMask)) - 1.0f;
 #endif
 
     gl_Position = p;
