@@ -34791,14 +34791,6 @@ vuClampMode = 3 // fix white shiny weapons
 Serial = SLPS-29005
 Name   = Xenosaga Episode 1 - Der Wille zur Macht [Reloaded]
 Region = NTSC-J
-[patches = A3D63039]
-	// Reduces JPEG quality to its minimum for save file thumbnails. This prevents
-	// the game from calling its own exit function, which was strangely its safety
-	// mechanism for when a captured thumbnail exceeded 4 KB in size. 
-	comment=Save Point Crash Prevention
-	author=pandubz, PSI, turtleli
-	patch=1,EE,20285f48,extended,24040000
-[/patches]
 ---------------------------------------------
 Serial = SLPS-72501
 Name   = Final Fantasy X [Mega Hits]
