@@ -594,7 +594,6 @@ void CtrlDisassemblyView::calculatePixelPositions()
 	pixelPositions.arrowsStart = pixelPositions.argumentsStart + 30*charWidth;
 }
 
-
 void CtrlDisassemblyView::followBranch()
 {
 	DisassemblyLineInfo line = DisassemblyLineInfo();
@@ -650,7 +649,6 @@ void CtrlDisassemblyView::assembleOpcode(u32 address, std::string defaultText)
 		wxMessageBox( wxString(errorText.c_str(),wxConvUTF8), L"Error.", wxICON_ERROR);
 	}
 }
-
 
 void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 {
@@ -780,6 +778,9 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 		}
 	case ID_DISASM_ASSEMBLE:
 		assembleOpcode(curAddress, disassembleCurAddress());
+		break;
+	case ID_DISASM_TOGGLEBREAKPOINT:
+		toggleBreakpoint(true);
 		break;
 	default:
 		wxMessageBox( L"Unimplemented.",  L"Unimplemented.", wxICON_INFORMATION);
