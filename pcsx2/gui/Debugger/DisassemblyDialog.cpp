@@ -267,6 +267,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	breakpointButton = new wxButton( panel, wxID_ANY, L"Breakpoint" );
 	Bind(wxEVT_BUTTON, &DisassemblyDialog::onBreakpointClick, this, breakpointButton->GetId());
 	topRowSizer->Add(breakpointButton);
+
 	topSizer->Add(topRowSizer,0,wxLEFT|wxRIGHT|wxTOP,3);
 
 	// create middle part of the window
