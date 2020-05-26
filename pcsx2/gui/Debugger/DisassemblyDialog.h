@@ -99,12 +99,13 @@ public:
 	wxDECLARE_EVENT_TABLE();
 protected:
 	void onBreakRunClicked(wxCommandEvent& evt);
+	void onResetClick(wxCommandEvent& evt);
 	void onStepOverClicked(wxCommandEvent& evt);
 	void onStepIntoClicked(wxCommandEvent& evt);
 	void onStepOutClicked(wxCommandEvent& evt);
 	void onDebuggerEvent(wxCommandEvent& evt);
 	void onPageChanging(wxCommandEvent& evt);
-	void onBreakpointClick(wxCommandEvent& evt);
+	void onBreakpointClick(wxCommandEvent& evt);	
 	void onSizeEvent(wxSizeEvent& event);
 	void onClose(wxCloseEvent& evt);
 	void stepOver();
@@ -119,6 +120,7 @@ private:
 
 	wxBoxSizer* topSizer;
 	wxButton* breakRunButton;
+	wxButton* resetButton;
 	wxButton* stepIntoButton;
 	wxButton* stepOverButton;
 	wxButton* stepOutButton;

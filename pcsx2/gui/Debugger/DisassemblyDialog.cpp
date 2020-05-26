@@ -243,7 +243,11 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 
 	breakRunButton = new wxButton(panel, wxID_ANY, L"Run");
 	Bind(wxEVT_BUTTON, &DisassemblyDialog::onBreakRunClicked, this, breakRunButton->GetId());
-	topRowSizer->Add(breakRunButton,0,wxRIGHT,8);
+	topRowSizer->Add(breakRunButton,0,wxRIGHT,2);
+
+	resetButton = new wxButton(panel, wxID_ANY, L"Reset");
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onResetClick,this,resetButton->GetId());
+	topRowSizer->Add(resetButton,0,wxRIGHT,8);
 
 	stepIntoButton = new wxButton( panel, wxID_ANY, L"Step Into" );
 	stepIntoButton->Enable(false);
@@ -263,7 +267,6 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	breakpointButton = new wxButton( panel, wxID_ANY, L"Breakpoint" );
 	Bind(wxEVT_BUTTON, &DisassemblyDialog::onBreakpointClick, this, breakpointButton->GetId());
 	topRowSizer->Add(breakpointButton);
-
 	topSizer->Add(topRowSizer,0,wxLEFT|wxRIGHT|wxTOP,3);
 
 	// create middle part of the window
@@ -342,6 +345,12 @@ void DisassemblyDialog::onBreakRunClicked(wxCommandEvent& evt)
 		r5900Debug.pauseCpu();
 		gotoPc();
 	}
+}
+
+void DisassemblyDialog::onResetClick(wxCommandEvent& evt)
+{
+	g_Conf->EmuOptions.UseBOOT2Injection = true;t
+	sApp.SysExecute();
 }
 
 void DisassemblyDialog::onStepOverClicked(wxCommandEvent& evt)
