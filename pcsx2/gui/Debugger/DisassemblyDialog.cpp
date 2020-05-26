@@ -350,7 +350,7 @@ void DisassemblyDialog::onBreakRunClicked(wxCommandEvent& evt)
 
 void DisassemblyDialog::onResetClick(wxCommandEvent& evt)
 {
-	g_Conf->EmuOptions.UseBOOT2Injection = true;t
+	g_Conf->EmuOptions.UseBOOT2Injection = true;
 	sApp.SysExecute();
 }
 
