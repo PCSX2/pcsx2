@@ -105,7 +105,7 @@ protected:
 	void onStepOutClicked(wxCommandEvent& evt);
 	void onDebuggerEvent(wxCommandEvent& evt);
 	void onPageChanging(wxCommandEvent& evt);
-	void onBreakpointClick(wxCommandEvent& evt);	
+	void onBreakpointClick(wxCommandEvent& evt);
 	void onSizeEvent(wxSizeEvent& event);
 	void onClose(wxCloseEvent& evt);
 	void stepOver();
