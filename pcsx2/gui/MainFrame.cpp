@@ -803,22 +803,22 @@ void PerPluginMenuInfo::Populate( PluginsEnum_t pid )
 	MyMenu.Append( GetPluginMenuId_Name(PluginId), _("No plugin loaded") )->Enable( false );
 	MyMenu.AppendSeparator();
 
-	// Populate options from the plugin here.
-
-	MyMenu.Append( GetPluginMenuId_Settings(PluginId), _("&Plugin Settings..."),
-		wxsFormat( _("Opens the %s plugin's advanced settings dialog."), tbl_PluginInfo[pid].GetShortname().c_str() )
-	);
-
 	if( PluginId == PluginId_GS )
 	{
-		MyMenu.AppendSeparator();
-
 		MyMenu.Append( MenuId_Video_CoreSettings, _("&Core GS Settings..."),
 			_("Modify hardware emulation settings regulated by the PCSX2 core virtual machine.") );
 
 		MyMenu.Append( MenuId_Video_WindowSettings, _("&Window Settings..."),
 			_("Modify window and appearance options, including aspect ratio.") );
+
+		MyMenu.AppendSeparator();
 	}
+
+	// Populate options from the plugin here.
+
+	MyMenu.Append( GetPluginMenuId_Settings(PluginId), _("&Plugin Settings..."),
+		wxsFormat( _("Opens the %s plugin's advanced settings dialog."), tbl_PluginInfo[pid].GetShortname().c_str() )
+	);
 }
 
 // deletes menu items belonging to (created by) the plugin.  Leaves menu items created
