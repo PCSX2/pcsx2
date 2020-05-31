@@ -85,6 +85,9 @@ static void _vu1Exec(VURegs* VU)
 		_vu1ExecUpper(VU, ptr);
 
 		VU->VI[REG_I].UL = ptr[0];
+		//Lower not used, set to 0 to fill in the FMAC stall gap
+		//Could probably get away with just running upper stalls, but lets not tempt fate.
+		memset(&lregs, 0, sizeof(lregs));		
 	} else {
 		VU->code = ptr[0];
 		VU1regs_LOWER_OPCODE[VU->code >> 25](&lregs);
@@ -152,7 +155,7 @@ static void _vu1Exec(VURegs* VU)
 		if (VU->branch-- == 1) {
 			VU->VI[REG_TPC].UL = VU->branchpc;
 
-			if(VU->takedelaybranch == true)
+			if(VU->takedelaybranch)
 			{				
 				VU->branch = 2;
 				//DevCon.Warning("VU1 - Branch/Jump in Delay Slot");			
@@ -195,7 +198,7 @@ void InterpVU1::Reset() {
 	vu1Thread.WaitVU();
 }
 
-void InterpVU1::Shutdown() throw() {
+void InterpVU1::Shutdown() noexcept {
 	vu1Thread.WaitVU();
 }
 
@@ -207,7 +210,8 @@ void InterpVU1::Step()
 
 void InterpVU1::Execute(u32 cycles)
 {
-	for (int i = (int)cycles; i > 0 ; i--) {
+	VU1.VI[REG_TPC].UL <<= 3;
+	for (int i = (int)cycles; i > 0; i--) {
 		if (!(VU0.VI[REG_VPU_STAT].UL & 0x100)) {
 			if (VU1.branch || VU1.ebit) {
 				Step(); // run branch delay slot?
@@ -216,5 +220,6 @@ void InterpVU1::Execute(u32 cycles)
 		}
 		Step();
 	}
+	VU1.VI[REG_TPC].UL >>= 3;
 }
 

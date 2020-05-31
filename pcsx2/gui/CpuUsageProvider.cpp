@@ -18,7 +18,7 @@
 #include "CpuUsageProvider.h"
 #include "System.h"
 
-#ifndef __linux__
+#ifndef __POSIX__
 #include "SysThreads.h"
 #endif
 

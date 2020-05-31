@@ -17,28 +17,28 @@
 
 #pragma once
 
-template< typename FloatType >
+template <typename FloatType>
 struct LowPassFilter
 {
-	FloatType	coef[9];
-	FloatType	d[4];
+    FloatType coef[9];
+    FloatType d[4];
 
-	LowPassFilter( FloatType freq, FloatType srate );
-	FloatType sample( FloatType inval );
+    LowPassFilter(FloatType freq, FloatType srate);
+    FloatType sample(FloatType inval);
 };
 
 struct LowPassFilter32
 {
-	LowPassFilter<float> impl_lpf;
+    LowPassFilter<float> impl_lpf;
 
-	LowPassFilter32( float freq, float srate );
-	float sample( float inval );
+    LowPassFilter32(float freq, float srate);
+    float sample(float inval);
 };
 
 struct LowPassFilter64
 {
-	LowPassFilter<double> impl_lpf;
+    LowPassFilter<double> impl_lpf;
 
-	LowPassFilter64( double freq, double srate );
-	double sample( double inval );
+    LowPassFilter64(double freq, double srate);
+    double sample(double inval);
 };

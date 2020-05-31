@@ -19,28 +19,39 @@
 #include "InputManager.h"
 
 #include "DeviceEnumerator.h"
+#ifdef _WIN32
 #include "WindowsMessaging.h"
 #include "DirectInput.h"
-#include "KeyboardHook.h"
 #include "RawInput.h"
-#include "XInput.h"
+#include "XInputEnum.h"
 #include "HidDevice.h"
 #include "DualShock3.h"
+#endif
 
-void EnumDevices(int hideDXXinput) {
-	// Needed for enumeration of some device types.
-	dm->ReleaseInput();
-	InputDeviceManager *oldDm = dm;
-	dm = new InputDeviceManager();
+#ifdef __linux__
+#include "Linux/KeyboardMouse.h"
+#include "Linux/JoyEvdev.h"
+#endif
 
-	EnumHookDevices();
-	EnumWindowsMessagingDevices();
-	EnumRawInputDevices();
-	EnumDualShock3s();
-	EnumXInputDevices();
-	EnumDirectInputDevices(hideDXXinput);
+void EnumDevices(int hideDXXinput)
+{
+    // Needed for enumeration of some device types.
+    dm->ReleaseInput();
+    InputDeviceManager *oldDm = dm;
+    dm = new InputDeviceManager();
 
-	dm->CopyBindings(oldDm->numDevices, oldDm->devices);
+#ifdef _MSC_VER
+    EnumWindowsMessagingDevices();
+    EnumRawInputDevices();
+    EnumDualShock3s();
+    EnumXInputDevices();
+    EnumDirectInputDevices(hideDXXinput);
+#else
+    EnumLnx();
+    EnumJoystickEvdev();
+#endif
 
-	delete oldDm;
+    dm->CopyBindings(oldDm->numDevices, oldDm->devices);
+
+    delete oldDm;
 }

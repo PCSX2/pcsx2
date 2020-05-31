@@ -57,7 +57,8 @@ const BiosDebugInformation* CurrentBiosInformation;
 const BiosDebugInformation biosVersions[] = {
 	// USA     v02.00(14/06/2004)  Console
 	{ 0x00000200, 0xD778DB8D, 0x8001a640 },
-
+	// Europe  v02.00(14/06/2004)
+	{ 0x00000200, 0X9C7B59D3, 0x8001a640 },
 };
 
 // --------------------------------------------------------------------------------------
@@ -155,7 +156,7 @@ static void LoadBiosVersion( pxInputStream& fp, u32& version, wxString& descript
 		throw Exception::BadStream( fp.GetStreamName() )
 			.SetDiagMsg(L"BIOS version check failed: 'ROMDIR' tag could not be found.")
 			.SetUserMsg(_("The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."));
-	
+
 	wxFileOffset fileSize = fp.Length();
 	if (fileSize < (int)fileOffset)
 	{
@@ -190,7 +191,7 @@ template< size_t _size >
 static void LoadExtraRom( const wxChar* ext, u8 (&dest)[_size] )
 {
 	wxString Bios1;
-	s64 filesize;
+	s64 filesize = 0;
 
 	// Try first a basic extension concatenation (normally results in something like name.bin.rom1)
 	const wxString Bios( g_Conf->FullpathToBios() );
@@ -211,7 +212,7 @@ static void LoadExtraRom( const wxChar* ext, u8 (&dest)[_size] )
 
 		wxFile fp( Bios1 );
 		fp.Read( dest, std::min<s64>( _size, filesize ) );
-		
+
 		// Checksum for ROM1, ROM2, EROM?  Rama says no, Gigaherz says yes.  I'm not sure either way.  --air
 		//ChecksumIt( BiosChecksum, dest );
 	}
@@ -224,6 +225,26 @@ static void LoadExtraRom( const wxChar* ext, u8 (&dest)[_size] )
 		Console.Warning(L"BIOS Warning: %s could not be read (permission denied?)", ext);
 		Console.Indent().WriteLn(L"Details: %s", WX_STR(ex.FormatDiagnosticMessage()));
 		Console.Indent().WriteLn(L"File size: %llu", filesize);
+	}
+}
+
+static void LoadIrx( const wxString& filename, u8* dest )
+{
+	s64 filesize = 0;
+	try
+	{
+		wxFile irx(filename);
+		if( (filesize=Path::GetFileSize( filename ) ) <= 0 ) {
+			Console.Warning(L"IRX Warning: %s could not be read", WX_STR(filename));
+			return;
+		}
+
+		irx.Read( dest, filesize );
+	}
+	catch (Exception::BadStream& ex)
+	{
+		Console.Warning(L"IRX Warning: %s could not be read", WX_STR(filename));
+		Console.Indent().WriteLn(L"Details: %s", WX_STR(ex.FormatDiagnosticMessage()));
 	}
 }
 
@@ -260,14 +281,14 @@ void LoadBIOS()
 		BiosChecksum = 0;
 
 		wxString biosZone;
-		wxFFile fp( Bios );
+		wxFFile fp( Bios , "rb");
 		fp.Read( eeMem->ROM, std::min<s64>( Ps2MemSize::Rom, filesize ) );
 
 		ChecksumIt( BiosChecksum, eeMem->ROM );
 
 		pxInputStream memfp( Bios, new wxMemoryInputStream( eeMem->ROM, sizeof(eeMem->ROM) ) );
 		LoadBiosVersion( memfp, BiosVersion, BiosDescription, biosZone );
-		
+
 		Console.SetTitle( pxsFmt( L"Running BIOS (%s v%u.%u)",
 			WX_STR(biosZone), BiosVersion >> 8, BiosVersion & 0xff
 		));
@@ -278,8 +299,11 @@ void LoadBIOS()
 		LoadExtraRom( L"rom2", eeMem->ROM2 );
 		LoadExtraRom( L"erom", eeMem->EROM );
 
+		if (g_Conf->CurrentIRX.Length() > 3)
+			LoadIrx(g_Conf->CurrentIRX, &eeMem->ROM[0x3C0000]);
+
 		CurrentBiosInformation = NULL;
-		for (int i = 0; i < sizeof(biosVersions)/sizeof(biosVersions[0]); i++)
+		for (size_t i = 0; i < sizeof(biosVersions)/sizeof(biosVersions[0]); i++)
 		{
 			if (biosVersions[i].biosChecksum == BiosChecksum && biosVersions[i].biosVersion == BiosVersion)
 			{
@@ -302,7 +326,7 @@ bool IsBIOS(const wxString& filename, wxString& description)
 {
 	wxFileName Bios( g_Conf->Folders.Bios + filename );
 	pxInputStream inway( filename, new wxFFileInputStream( filename ) );
-	
+
 	if (!inway.IsOk()) return false;
 	// FPS2BIOS is smaller and of variable size
 	//if (inway.Length() < 512*1024) return false;

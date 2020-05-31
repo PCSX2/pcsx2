@@ -22,31 +22,12 @@
 // FreeBSD/OsX need something far more complicated (apparently)
 void x86capabilities::CountLogicalCores()
 {
-	// Note : GetCPUCount uses sysconf( _SC_NPROCESSORS_ONLN ) internally, which can return 1
-	// if sysconf info isn't available (a long standing linux bug).  There are no fallbacks or
-	// alternatives, apparently.
-	LogicalCores = wxThread::GetCPUCount();
-}
-
-bool CanEmitShit()
-{
-	// In Linux I'm pretty sure TLS always works, none of the funny business that Windows
-	// has involving DLLs. >_<
-	return true;
-}
-
-bool CanTestInstructionSets()
-{
-	// Not implemented yet for linux.  (see cpudetect_internal.h for details)
-	return false;
-}
-
-bool _test_instruction( void* pfnCall )
-{
-	// Not implemented yet for linux.  (see cpudetect_internal.h for details)
-	return false;
+    // Note : GetCPUCount uses sysconf( _SC_NPROCESSORS_ONLN ) internally, which can return 1
+    // if sysconf info isn't available (a long standing linux bug).  There are no fallbacks or
+    // alternatives, apparently.
+    LogicalCores = wxThread::GetCPUCount();
 }
 
 // Not implemented yet for linux (see cpudetect_internal.h for details)
-SingleCoreAffinity::SingleCoreAffinity() {}
-SingleCoreAffinity::~SingleCoreAffinity() throw() {}
+SingleCoreAffinity::SingleCoreAffinity() = default;
+SingleCoreAffinity::~SingleCoreAffinity() = default;

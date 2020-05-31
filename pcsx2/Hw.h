@@ -80,7 +80,9 @@ namespace EEMemoryMap
 	static const uint SIO_Start			= 0x1000F100;
 	static const uint SIO_End			= 0x1000F200;
 	static const uint SBUS_Start		= 0x1000F200;
-	static const uint SBUS_End			= 0x1000F400;
+	static const uint SBUS_End			= 0x1000F300;
+	static const uint SBUS_PS1_Start	= 0x1000F300;
+	static const uint SBUS_PS1_End		= 0x1000F400;
 
 	// MCH area --  Really not sure what this area is.  Information is lacking.
 	static const uint MCH_Start			= 0x1000F400;
@@ -231,12 +233,10 @@ enum EERegisterAddresses
 	D3_CHCR			=	0x1000B000,
 	D3_MADR			=	0x1000B010,
 	D3_QWC			=	0x1000B020,
-	D3_TADR			=	0x1000B030,
 
 	fromIPU_CHCR	=	0x1000B000,
 	fromIPU_MADR	=	0x1000B010,
 	fromIPU_QWC		=	0x1000B020,
-	fromIPU_TADR	=	0x1000B030,
 
 //toIPU
 	D4_CHCR			=	0x1000B400,
@@ -277,23 +277,24 @@ enum EERegisterAddresses
 	SIF2_CHCR		=	0x1000C800,
 	SIF2_MADR		=	0x1000C810,
 	SIF2_QWC		=	0x1000C820,
-	SIF2_TADR		=	0x1000C830,
 
 //fromSPR
 	D8_CHCR			=	0x1000D000,
 	D8_MADR			=	0x1000D010,
 	D8_QWC			=	0x1000D020,
+	D8_SADR			=	0x1000D080,
 
 	fromSPR_CHCR	=	0x1000D000,
 	fromSPR_MADR	=	0x1000D010,
 	fromSPR_QWC		=	0x1000D020,
-	fromSPR_TADR	=	0x1000D030,
 	fromSPR_SADR	=	0x1000D080,
 
 //toSPR
 	D9_CHCR			=	0x1000D400,
-	D9_MADR			=	0x1000D010,
-	D9_QWC			=	0x1000D020,
+	D9_MADR			=	0x1000D410,
+	D9_QWC			=	0x1000D420,
+	D9_TADR			=	0x1000D430,
+	D9_SADR			=	0x1000D480,
 
 	toSPR_CHCR		=	0x1000D400,
 	toSPR_MADR		=	0x1000D410,
@@ -330,7 +331,7 @@ enum EERegisterAddresses
 	SBUS_F250		=	0x1000F250,
 	SBUS_F260		=	0x1000F260,
 	SBUS_F300		=	0x1000F300,
-	SBUS_F380 =			0x1000F380,
+	SBUS_F380		=	0x1000F380,
 
 	MCH_RICM		=	0x1000F430,
 	MCH_DRD			=	0x1000F440,

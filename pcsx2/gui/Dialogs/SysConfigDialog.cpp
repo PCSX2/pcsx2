@@ -75,7 +75,7 @@ void Dialogs::SysConfigDialog::UpdateGuiForPreset ( int presetIndex, bool preset
 	//Console.WriteLn("Applying config to Gui: preset #%d, presets enabled: %s", presetIndex, presetsEnabled?"true":"false");
 
 	AppConfig preset = *g_Conf;
-	preset.IsOkApplyPreset( presetIndex );	//apply a preset to a copy of g_Conf.
+	preset.IsOkApplyPreset( presetIndex, false );	//apply a preset to a copy of g_Conf.
 	preset.EnablePresets = presetsEnabled;	//override IsOkApplyPreset (which always applies/enabled) to actual required state
 	
 	//update the config panels of SysConfigDialog to reflect the preset.
@@ -125,16 +125,16 @@ void Dialogs::SysConfigDialog::AddPresetsControl()
 		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL /*| wxSL_AUTOTICKS | wxSL_LABELS */);
 	m_slider_presets->SetMinSize(wxSize(100,25));
 
+	const wchar_t* presetTooltip = pxEt(L"Presets apply some speed hacks that may boost speed on underpowered systems, or speed up games that have unusual performance requirements. Uncheck this box to apply settings manually.\n\n1) Safest - No speed hacks. Most reliable, but possibly slow setting.\n2) Safe - Default. A few speed hacks known to provide boosts, with minimal to no side effects.\n3) Balanced - May help quad core CPUs.\n4) Aggressive - May help underpowered CPUs on less demanding games, but risks causing problems in other cases.\n5) Very Aggressive - May help underpowered CPUs on less demanding games, but is likely to cause problems in other cases.\n6) Mostly Harmful - Harsh application of speed hacks. May help a very small set of games that have unusual performance requirements, but have adverse effects on most others. Not recommended for underpowered PCs.");
+
 	m_slider_presets->SetToolTip(
-		pxEt( L"The Presets apply speed hacks, some recompiler options and some game fixes known to boost speed.\nKnown important game fixes will be applied automatically.\n\nPresets info:\n1 -     The most accurate emulation but also the slowest.\n3 --> Tries to balance speed with compatibility.\n4 -     Some more aggressive hacks.\n6 -     Too many hacks which will probably slow down most games.\n"
-			)
+		presetTooltip
 	);
 	m_slider_presets->Enable(g_Conf->EnablePresets);
 
 	m_check_presets = new pxCheckBox( this, _("Preset:"), 0);
 	m_check_presets->SetToolTip(
-		pxEt( L"The Presets apply speed hacks, some recompiler options and some game fixes known to boost speed.\nKnown important game fixes will be applied automatically.\n\n--> Uncheck to modify settings manually (with current preset as base)"
-			)
+		presetTooltip
 	);
 	m_check_presets->SetValue(!!g_Conf->EnablePresets);
 	//Console.WriteLn("--> SysConfigDialog::AddPresetsControl: EnablePresets: %s", g_Conf->EnablePresets?"true":"false");
@@ -147,7 +147,7 @@ void Dialogs::SysConfigDialog::AddPresetsControl()
 	m_msg_preset->Bold();
 	
 	//I'm unable to do without the next 2 rows.. what am I missing?
-	m_msg_preset->SetMinWidth(150);
+	m_msg_preset->SetMinWidth(250);
 	m_msg_preset->Unwrapped();
 
 
@@ -157,9 +157,9 @@ void Dialogs::SysConfigDialog::AddPresetsControl()
 	*m_extraButtonSizer += 5;
 	*m_extraButtonSizer += m_msg_preset     | pxMiddle;
 
-	Connect( m_slider_presets->GetId(),	wxEVT_SCROLL_THUMBTRACK,		wxScrollEventHandler( Dialogs::SysConfigDialog::Preset_Scroll ) );
-	Connect( m_slider_presets->GetId(),	wxEVT_SCROLL_CHANGED,			wxScrollEventHandler( Dialogs::SysConfigDialog::Preset_Scroll ) );
-	Connect( m_check_presets->GetId(), 	wxEVT_COMMAND_CHECKBOX_CLICKED,	wxCommandEventHandler( Dialogs::SysConfigDialog::Presets_Toggled ) );
+	Bind(wxEVT_SCROLL_THUMBTRACK, &Dialogs::SysConfigDialog::Preset_Scroll, this, m_slider_presets->GetId());
+	Bind(wxEVT_SCROLL_CHANGED, &Dialogs::SysConfigDialog::Preset_Scroll, this, m_slider_presets->GetId());
+	Bind(wxEVT_CHECKBOX, &Dialogs::SysConfigDialog::Presets_Toggled, this, m_check_presets->GetId());
 }
 
 
@@ -229,12 +229,14 @@ Dialogs::SysConfigDialog::SysConfigDialog(wxWindow* parent)
 	AddOkCancel();
 	AddPresetsControl();
 
+	SetSizerAndFit(GetSizer());
+
 	if( wxGetApp().Overrides.HasCustomHacks() )
 		wxGetApp().PostMethod( CheckHacksOverrides );
 }
 
 Dialogs::ComponentsConfigDialog::ComponentsConfigDialog(wxWindow* parent)
-	: BaseConfigurationDialog( parent, AddAppName(_("Components Selectors - %s")),  650 )
+	: BaseConfigurationDialog( parent, AddAppName(_("Components Selectors - %s")),  750 )
 {
 	ScopedBusyCursor busy( Cursor_ReallyBusy );
 
@@ -248,48 +250,25 @@ Dialogs::ComponentsConfigDialog::ComponentsConfigDialog(wxWindow* parent)
 	AddListbook();
 	AddOkCancel();
 
+	SetSizerAndFit(GetSizer());
+
 	if( wxGetApp().Overrides.HasPluginsOverride() )
 		wxGetApp().PostMethod( CheckPluginsOverrides );
 }
 
-
-Dialogs::InterfaceConfigDialog::InterfaceConfigDialog(wxWindow *parent)
-	: BaseConfigurationDialog( parent, AddAppName(_("Appearance/Themes - %s")), 400 )
+Dialogs::InterfaceLanguageDialog::InterfaceLanguageDialog(wxWindow* parent)
+	: BaseConfigurationDialog(parent, _("Language Selector"), 400)
 {
-	ScopedBusyCursor busy( Cursor_ReallyBusy );
+	*this += 5;
 
-	CreateListbook( wxGetApp().GetImgList_Config() );
-	const AppImageIds::ConfigIds& cfgid( wxGetApp().GetImgId().Config );
+	// Keep this in English - same as the menu item.
+	*this += Heading(L"Language switch will only affect newly opened windows.\n");
+	*this += Heading(L"Full change will not apply until PCSX2 is restarted.");
+	*this += new Panels::LanguageSelectionPanel(this, false) | StdCenter();
 
-	AddPage<AppearanceThemesPanel>	( pxL("Appearance"),	cfgid.Appearance );
-
-	AddListbook();
 	AddOkCancel();
 
-	//*this += new Panels::LanguageSelectionPanel( this ) | pxCenter;
-	//wxDialogWithHelpers::AddOkCancel( NULL, false );
-}
-
-// ------------------------------------------------------------------------
-Panels::AppearanceThemesPanel::AppearanceThemesPanel( wxWindow* parent )
-	: BaseApplicableConfigPanel( parent )
-{
-
-}
-
-AppearanceThemesPanel::~AppearanceThemesPanel() throw()
-{
-
-}
-
-void AppearanceThemesPanel::Apply()
-{
-
-}
-
-void AppearanceThemesPanel::AppStatusEvent_OnSettingsApplied()
-{
-
+	SetSizerAndFit(GetSizer());
 }
 
 bool g_ConfigPanelChanged = false;

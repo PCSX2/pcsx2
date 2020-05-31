@@ -22,6 +22,7 @@ using namespace x86Emitter;
 
 #include <deque>
 #include <algorithm>
+#include <memory>
 #include "Common.h"
 #include "VU.h"
 #include "MTVU.h"
@@ -34,6 +35,7 @@ using namespace x86Emitter;
 #include "microVU_Misc.h"
 #include "microVU_IR.h"
 #include "microVU_Profiler.h"
+#include "Utilities/Perf.h"
 
 struct microBlockLink {
 	microBlock		block;
@@ -92,7 +94,7 @@ public:
 				blockEnd = blockList = newBlock;
 			}
 
-			memcpy_const(&newBlock->block, pBlock, sizeof(microBlock));
+			memcpy(&newBlock->block, pBlock, sizeof(microBlock));
 			thisBlock =  &newBlock->block;
 		}
 		return thisBlock;
@@ -192,10 +194,10 @@ struct microVU {
 	u32 progMemMask;	// VU Micro Memory Size (in u32's)
 	u32 cacheSize;		// VU Cache Size
 
-	microProgManager			prog;		// Micro Program Data
-	microProfiler               profiler;   // Opcode Profiler
-	ScopedPtr<microRegAlloc>	regAlloc;	// Reg Alloc Class
-	ScopedPtr<AsciiFile>		logFile;	// Log File Pointer
+	microProgManager				prog;		// Micro Program Data
+	microProfiler					profiler;   // Opcode Profiler
+	std::unique_ptr<microRegAlloc>	regAlloc;	// Reg Alloc Class
+	std::unique_ptr<AsciiFile>		logFile;	// Log File Pointer
 
 	RecompiledCodeReserve* cache_reserve;
 	u8*		cache;		  // Dynarec Cache Start (where we will start writing the recompiled code to)

@@ -54,11 +54,11 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		}
 		//Run any pending XGKick, providing we've got to it.
 		if (mVUinfo.doXGKICK && xPC >= mVUinfo.XGKICKPC) {
-			mVU_XGKICK_DELAY(mVU, true);
+			mVU_XGKICK_DELAY(mVU);
 		}
 		if (doEarlyExit(mVU)) {
-			if (!isVU1) xCALL(mVU0clearlpStateJIT);
-			else		xCALL(mVU1clearlpStateJIT);
+			if (!isVU1) xFastCall((void*)mVU0clearlpStateJIT);
+			else		xFastCall((void*)mVU1clearlpStateJIT);
 		}
 	}
 
@@ -113,13 +113,13 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 			mVUdivSet(mVU);
 		}
 		if (mVUinfo.doXGKICK) {
-			mVU_XGKICK_DELAY(mVU, true);
+			mVU_XGKICK_DELAY(mVU);
 		}
 		if (doEarlyExit(mVU)) {
 			if (!isVU1)
-				xCALL(mVU0clearlpStateJIT);
+				xFastCall((void*)mVU0clearlpStateJIT);
 			else
-				xCALL(mVU1clearlpStateJIT);
+				xFastCall((void*)mVU1clearlpStateJIT);
 		}
 	}
 
@@ -170,7 +170,7 @@ void normBranchCompile(microVU& mVU, u32 branchPC) {
 }
 
 void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump) {
-	memcpy_const(&mVUpBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
+	memcpy(&mVUpBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
 	mVUsetupBranch(mVU, mFC);
 	mVUbackupRegs(mVU);
 
@@ -192,8 +192,8 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump) {
 		xJMP(mVU.exitFunct);
 	}
 	
-	if (!mVU.index) xCALL(mVUcompileJIT<0>); //(u32 startPC, uptr pState)
-	else			xCALL(mVUcompileJIT<1>);
+	if (!mVU.index) xFastCall((void*)(void(*)())mVUcompileJIT<0>, gprT2, gprT3); //(u32 startPC, uptr pState)
+	else			xFastCall((void*)(void(*)())mVUcompileJIT<1>, gprT2, gprT3);
 
 	mVUrestoreRegs(mVU);
 	xJMP(gprT1);  // Jump to rec-code address
@@ -209,7 +209,7 @@ void normBranch(mV, microFlagCycles& mFC) {
 		xForwardJump32 eJMP(Jcc_Zero);
 		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x200 : 0x2));
 		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
-		iPC = branchAddr/4;
+		iPC = branchAddr(mVU)/4;
 		mVUDTendProgram(mVU, &mFC, 1);
 		eJMP.SetTarget();
 		iPC = tempPC;		
@@ -221,7 +221,7 @@ void normBranch(mV, microFlagCycles& mFC) {
 		xForwardJump32 eJMP(Jcc_Zero);
 		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x400 : 0x4));
 		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
-		iPC = branchAddr/4;
+		iPC = branchAddr(mVU)/4;
 		mVUDTendProgram(mVU, &mFC, 1);
 		eJMP.SetTarget();
 		iPC = tempPC;	
@@ -230,14 +230,14 @@ void normBranch(mV, microFlagCycles& mFC) {
 		if(mVUlow.badBranch) 
 			DevCon.Warning("End on evil Unconditional branch! - Not implemented! - If game broken report to PCSX2 Team"); 
 		
-		iPC = branchAddr/4; 
+		iPC = branchAddr(mVU)/4; 
 		mVUendProgram(mVU, &mFC, 1); 
 		return; 
 	}
 	
 	if(mVUlow.badBranch)
 	{
-		u32 badBranchAddr = branchAddr+8;
+		u32 badBranchAddr = branchAddr(mVU)+8;
 		incPC(3);
 		if(mVUlow.branch == 2 || mVUlow.branch == 10)	//Delay slot branch needs linking
 		{
@@ -252,7 +252,7 @@ void normBranch(mV, microFlagCycles& mFC) {
 	
 	// Normal Branch
 	mVUsetupBranch(mVU, mFC);
-	normBranchCompile(mVU, branchAddr);
+	normBranchCompile(mVU, branchAddr(mVU));
 }
 
 //Messy handler warning!!
@@ -262,11 +262,10 @@ void normBranch(mV, microFlagCycles& mFC) {
 void condJumpProcessingEvil(mV, microFlagCycles& mFC, int JMPcc) {
 
 	u32 bPC = iPC-1; // mVUcompile can modify iPC, mVUpBlock, and mVUregs so back them up
-	microBlock* pBlock = mVUpBlock;
 	u32 badBranchAddr;
 	iPC = bPC-2;
 	setCode();
-	badBranchAddr = branchAddr;
+	badBranchAddr = branchAddr(mVU);
 
 	xCMP(ptr16[&mVU.branch], 0);
 	
@@ -308,16 +307,16 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
 		mVUDTendProgram(mVU, &mFC, 2);
 		xCMP(ptr16[&mVU.branch], 0);
-		xForwardJump8 tJMP((JccComparisonType)JMPcc);
+		xForwardJump32 tJMP(xInvertCond((JccComparisonType)JMPcc));
 			incPC(4); // Set PC to First instruction of Non-Taken Side
 			xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 			xJMP(mVU.exitFunct);
-		eJMP.SetTarget();
+		tJMP.SetTarget();
 		incPC(-4); // Go Back to Branch Opcode to get branchAddr
-		iPC = branchAddr/4;
+		iPC = branchAddr(mVU)/4;
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 		xJMP(mVU.exitFunct);
-		tJMP.SetTarget();
+		eJMP.SetTarget();
 		iPC = tempPC;	
 	}
 	if (mVUup.dBit && doDBitHandling) 
@@ -329,13 +328,13 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
 		mVUDTendProgram(mVU, &mFC, 2);
 		xCMP(ptr16[&mVU.branch], 0);
-		xForwardJump8 dJMP((JccComparisonType)JMPcc);
+		xForwardJump32 dJMP(xInvertCond((JccComparisonType)JMPcc));
 			incPC(4); // Set PC to First instruction of Non-Taken Side
 			xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 			xJMP(mVU.exitFunct);
 		dJMP.SetTarget();
 		incPC(-4); // Go Back to Branch Opcode to get branchAddr
-		iPC = branchAddr/4;
+		iPC = branchAddr(mVU)/4;
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 		xJMP(mVU.exitFunct);
 		eJMP.SetTarget();
@@ -349,13 +348,13 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		
 		incPC(3);
 		mVUendProgram(mVU, &mFC, 2);
-		xForwardJump8 eJMP((JccComparisonType)JMPcc);
+		xForwardJump32 eJMP(xInvertCond((JccComparisonType)JMPcc));
 			incPC(1); // Set PC to First instruction of Non-Taken Side
 			xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 			xJMP(mVU.exitFunct);
-		eJMP.SetTarget();
+			eJMP.SetTarget();
 		incPC(-4); // Go Back to Branch Opcode to get branchAddr
-		iPC = branchAddr/4;
+		iPC = branchAddr(mVU)/4;
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 		xJMP(mVU.exitFunct);
 		return;
@@ -380,20 +379,20 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		if (bBlock)	{ // Branch non-taken has already been compiled
 			xJcc(xInvertCond((JccComparisonType)JMPcc), bBlock->x86ptrStart);
 			incPC(-3); // Go back to branch opcode (to get branch imm addr)
-			normBranchCompile(mVU, branchAddr);
+			normBranchCompile(mVU, branchAddr(mVU));
 		}
 		else { 
 			s32* ajmp = xJcc32((JccComparisonType)JMPcc); 
 			u32 bPC = iPC; // mVUcompile can modify iPC, mVUpBlock, and mVUregs so back them up
 			microBlock* pBlock = mVUpBlock;
-			memcpy_const(&pBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
+			memcpy(&pBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
 
 			incPC2(1);  // Get PC for branch not-taken
 			mVUcompile(mVU, xPC, (uptr)&mVUregs);
 
 			iPC = bPC;
 			incPC(-3); // Go back to branch opcode (to get branch imm addr)
-			uptr jumpAddr = (uptr)mVUblockFetch(mVU, branchAddr, (uptr)&pBlock->pStateEnd);
+			uptr jumpAddr = (uptr)mVUblockFetch(mVU, branchAddr(mVU), (uptr)&pBlock->pStateEnd);
 			*ajmp = (jumpAddr - ((uptr)ajmp + 4));
 		}
 	}

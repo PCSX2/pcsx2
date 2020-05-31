@@ -49,37 +49,3 @@
 // once most code is no longer dependent on them.
 #include "legacy_types.h"
 #include "legacy_instructions.h"
-
-// --------------------------------------------------------------------------------------
-//  CallAddress Macros -- An Optimization work-around hack!
-// --------------------------------------------------------------------------------------
-// MSVC 2008 fails to optimize direct invocation of static recompiled code buffers, instead
-// insisting on "mov eax, immaddr; call eax".  Likewise, GCC fails to optimize it also, unless
-// the typecast is explicitly inlined.  These macros account for these problems.
-//
-// But it turns out that MSVC is quite capable of optimising important code out of existance
-// if we use these macros in our PGO builds, so it's better just to live with the inefficient call.
-
-#ifdef _MSC_HAS_FIXED_INLINE_ASM_PGO
-
-#	define CallAddress( ptr ) \
-		__asm{ call offset ptr }
-
-#	define FastCallAddress( ptr, param1 ) \
-		__asm{ __asm mov ecx, param1 __asm call offset ptr }
-
-#	define FastCallAddress2( ptr, param1, param2 ) \
-		__asm{ __asm mov ecx, param1 __asm mov edx, param2 __asm call offset ptr }
-
-#else
-
-#	define CallAddress( ptr ) \
-		( (void (*)()) &(ptr)[0] )()
-
-#	define FastCallAddress( ptr, param1 ) \
-		( (void (*)( int )) &(ptr)[0] )( param1 )
-
-#	define FastCallAddress2( ptr, param1, param2 ) \
-		( (void (*)( int, int )) &(ptr)[0] )( param1, param2 )
-
-#endif

@@ -1,5 +1,5 @@
 /*  LilyPad - Pad plugin for PS2 Emulator
- *  Copyright (C) 2002-2014  PCSX2 Dev Team/ChickenLiver
+ *  Copyright (C) 2002-2017  PCSX2 Dev Team/ChickenLiver
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the
  *  terms of the GNU Lesser General Public License as published by the Free
@@ -20,73 +20,67 @@
 
 extern u8 ps2e;
 
-enum PadType {
-	DisabledPad,
-	Dualshock2Pad,
-	GuitarPad
+extern const wchar_t *padTypes[numPadTypes];
+
+struct PadConfig
+{
+    PadType type;
+    u8 autoAnalog;
 };
 
-struct PadConfig {
-	PadType type;
-	u8 autoAnalog;
-};
-
-struct GeneralConfig {
+struct GeneralConfig
+{
 public:
-	PadConfig padConfigs[2][4];
+    PadConfig padConfigs[2][4];
 
-	u8 closeHacks;
+    int deviceSelect[2][4];
 
-	DeviceAPI keyboardApi;
-	DeviceAPI mouseApi;
+    u8 closeHack;
 
-	// Derived value, calculated by GetInput().
-	u8 ignoreKeys;
+    DeviceAPI keyboardApi;
+    DeviceAPI mouseApi;
 
-	union {
-		struct {
-			u8 forceHide;
-			u8 mouseUnfocus;
-			u8 background;
-			u8 multipleBinding;
+    // Derived value, calculated by GetInput().
+    u8 configureOnBind;
+    bool bind;
 
-			struct {
-				u8 directInput;
-				u8 xInput;
-				u8 dualShock3;
-			} gameApis;
+    bool specialInputs[2][4];
 
-			u8 multitap[2];
+    union
+    {
+        struct
+        {
+            u8 forceHide;
+            u8 mouseUnfocus;
+            u8 background;
+            u8 multipleBinding;
 
-			u8 escapeFullscreenHack;
-			u8 disableScreenSaver;
-			u8 debug;
+            struct
+            {
+                u8 directInput;
+                u8 xInput;
+                u8 dualShock3;
+            } gameApis;
 
-			u8 saveStateTitle;
-			u8 GH2;
-			u8 turboKeyHack;
+            u8 multitap[2];
 
-			u8 vistaVolume;
-		};
-		u8 bools[1];
-	};
+            u8 escapeFullscreenHack;
+            u8 disableScreenSaver;
+            u8 debug;
 
-	int volume;
+            u8 saveStateTitle;
+            u8 GH2;
+        };
+        u8 bools[15];
+    };
 
-	// Unlike the others, not a changeable value.
-	DWORD osVersion;
-
-	wchar_t lastSaveConfigPath[MAX_PATH+1];
-	wchar_t lastSaveConfigFileName[MAX_PATH+1];
+    wchar_t lastSaveConfigPath[MAX_PATH + 1];
+    wchar_t lastSaveConfigFileName[MAX_PATH + 1];
 };
 
 extern GeneralConfig config;
 
 void UnloadConfigs();
-
-void AddIgnore(LPARAM k);
-
-void SetVolume(int volume);
 
 int LoadSettings(int force = 0, wchar_t *file = 0);
 

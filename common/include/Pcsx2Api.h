@@ -33,66 +33,73 @@
 #define NEW_PLUGIN_APIS
 
 #ifdef _MSC_VER
-#define EXPORT_C(type) extern "C" __declspec(dllexport) type CALLBACK
+#define EXPORT_C(type) extern "C" type CALLBACK
 #else
-#define EXPORT_C(type) extern "C" __attribute__((externally_visible,visibility("default"))) type
+#define EXPORT_C(type) extern "C" __attribute__((externally_visible, visibility("default"))) type
 #endif
 
-EXPORT_C(u32) PS2EgetLibType(void);
-EXPORT_C(u32) PS2EgetLibVersion2(u32 type);
-EXPORT_C(char*) PS2EgetLibName(void);
+EXPORT_C(u32)
+PS2EgetLibType(void);
+EXPORT_C(u32)
+PS2EgetLibVersion2(u32 type);
+EXPORT_C(char *)
+PS2EgetLibName(void);
 
 // Extended functions.
 
 // allows the plugin to see the whole configuration when started up.
 // Intended for them to get the ini and plugin paths, but could allow for other things as well.
-EXPORT_C_(void) PS2EpassConfig(PcsxConfig Config);
+EXPORT_C_(void)
+PS2EpassConfig(PcsxConfig Config);
 
 // Alternately, this function serves the same purpose, but would work for emulators outside
 // of pcsx2.
-EXPORT_C_(void) PS2EpassIniPath(const char *path);
+EXPORT_C_(void)
+PS2EpassIniPath(const char *path);
 
 // PS2EgetLibType returns (may be OR'd)
 enum {
-PS2E_LT_GS =  0x01,
-PS2E_LT_PAD = 0x02,		// -=[ OBSOLETE ]=-
-PS2E_LT_SPU2 = 0x04,
-PS2E_LT_CDVD = 0x08,
-PS2E_LT_DEV9 = 0x10,
-PS2E_LT_USB = 0x20,
-PS2E_LT_FW =  0x40,
-PS2E_LT_SIO = 0x80
+    PS2E_LT_GS = 0x01,
+    PS2E_LT_PAD = 0x02, // -=[ OBSOLETE ]=-
+    PS2E_LT_SPU2 = 0x04,
+    PS2E_LT_CDVD = 0x08,
+    PS2E_LT_DEV9 = 0x10,
+    PS2E_LT_USB = 0x20,
+    PS2E_LT_FW = 0x40,
+    PS2E_LT_SIO = 0x80
 } PluginLibType;
 
 // PS2EgetLibVersion2 (high 16 bits)
 enum {
-PS2E_GS_VERSION =  0x0006,
-PS2E_PAD_VERSION  = 0x0002,	// -=[ OBSOLETE ]=-
-PS2E_SPU2_VERSION = 0x0005,
-PS2E_CDVD_VERSION = 0x0005,
-PS2E_DEV9_VERSION = 0x0003,
-PS2E_USB_VERSION = 0x0003,
-PS2E_FW_VERSION =  0x0002,
-PS2E_SIO_VERSION = 0x0001
+    PS2E_GS_VERSION = 0x0006,
+    PS2E_PAD_VERSION = 0x0002, // -=[ OBSOLETE ]=-
+    PS2E_SPU2_VERSION = 0x0005,
+    PS2E_CDVD_VERSION = 0x0005,
+    PS2E_DEV9_VERSION = 0x0003,
+    PS2E_USB_VERSION = 0x0003,
+    PS2E_FW_VERSION = 0x0002,
+    PS2E_SIO_VERSION = 0x0001
 } PluginLibVersion;
 
 // freeze modes:
 enum {
-FREEZE_LOAD = 0,
-FREEZE_SAVE = 1,
-FREEZE_SIZE = 2
+    FREEZE_LOAD = 0,
+    FREEZE_SAVE = 1,
+    FREEZE_SIZE = 2
 } FreezeModes;
 
-typedef struct _GSdriverInfo {
-	char name[8];
-	void *common;
+typedef struct _GSdriverInfo
+{
+    char name[8];
+    void *common;
 } GSdriverInfo;
 
 #ifdef _MSC_VER
-typedef struct _winInfo { // unsupported values must be set to zero
-	HWND hWnd;
-	HMENU hMenu;
-	HWND hStatusWnd;
+typedef struct _winInfo
+{ // unsupported values must be set to zero
+    HWND hWnd;
+    HMENU hMenu;
+    HWND hStatusWnd;
 } winInfo;
 #endif
 

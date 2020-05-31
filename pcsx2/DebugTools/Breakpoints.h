@@ -36,14 +36,15 @@ struct BreakPointCond
 	u32 Evaluate()
 	{
 		u64 result;
-		if (debug->parseExpression(expression,result) == false || result == 0) return 0;
+		if (!debug->parseExpression(expression,result) || result == 0) return 0;
 		return 1;
 	}
 };
 
 struct BreakPoint
 {
-	BreakPoint() : hasCond(false) {}
+	BreakPoint() : addr(0), enabled(false), temporary(false), hasCond(false)
+	{}
 
 	u32	addr;
 	bool enabled;
@@ -140,6 +141,7 @@ public:
 
 	static const std::vector<MemCheck> GetMemChecks();
 	static const std::vector<BreakPoint> GetBreakpoints();
+	static size_t GetNumMemchecks() { return memChecks_.size(); }
 
 	static void Update(u32 addr = 0);
 

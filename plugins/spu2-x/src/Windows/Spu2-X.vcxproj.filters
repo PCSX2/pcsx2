@@ -103,9 +103,6 @@
     <ClInclude Include="Dialogs.h">
       <Filter>Source Files\GUI\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="Hyperlinks.h">
-      <Filter>Source Files\GUI\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="WinConfig.h">
       <Filter>Source Files\GUI\Windows</Filter>
     </ClInclude>
@@ -147,9 +144,6 @@
     <ClCompile Include="SndOut_waveOut.cpp">
       <Filter>Source Files\Sound Output\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="SndOut_XAudio2.cpp">
-      <Filter>Source Files\Sound Output\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="..\Linux\Alsa.cpp">
       <Filter>Source Files\Sound Output\Linux</Filter>
     </ClCompile>
@@ -189,9 +183,6 @@
     <ClCompile Include="..\Linux\Dialogs.cpp">
       <Filter>Source Files\GUI\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="AboutBox.cpp">
-      <Filter>Source Files\GUI\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="CfgHelpers.cpp">
       <Filter>Source Files\GUI\Windows</Filter>
     </ClCompile>
@@ -202,9 +193,6 @@
       <Filter>Source Files\GUI\Windows</Filter>
     </ClCompile>
     <ClCompile Include="ConfigSoundtouch.cpp">
-      <Filter>Source Files\GUI\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Hyperlinks.cpp">
       <Filter>Source Files\GUI\Windows</Filter>
     </ClCompile>
     <ClCompile Include="RealtimeDebugger.cpp">
@@ -219,6 +207,9 @@
     <ClCompile Include="..\DplIIdecoder.cpp">
       <Filter>Source Files\Sound Output</Filter>
     </ClCompile>
+    <ClCompile Include="SndOut_XAudio2.cpp">
+      <Filter>Source Files\Sound Output\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LGPL.txt">
@@ -227,13 +218,7 @@
     <None Include="..\..\License.txt">
       <Filter>Documents</Filter>
     </None>
-    <None Include="..\..\Website.txt">
-      <Filter>Documents</Filter>
-    </None>
     <None Include="..\..\spu2-x-sm.bmp">
-      <Filter>Resources</Filter>
-    </None>
-    <None Include="..\..\spu2-x.bmp">
       <Filter>Resources</Filter>
     </None>
     <None Include="Spu2-X.def">

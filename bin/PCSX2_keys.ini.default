@@ -1,0 +1,111 @@
+# IMPORTANT: PCSX2 only looks for PCSX2_keys.ini at the inis folder.
+# You should first copy PCSX2_keys.ini.default to the inis folder, then
+# rename it to PCSX2_keys.ini, and then edit it.
+
+# Important: keys which are defined at the input plugin (LilyPad) will override
+# shortcuts at this file.
+
+# IMPORTANT: GSdx has fixed shortcuts. Make sure your shortcuts don't conflict.
+# Also, they will affect GSdx also when alt/ctrl/shift are pressed, so it's
+# best to completely avoid them at this file. GSdx uses:
+# F5      - Deinterlace modes
+# F7      - Internal "TV-like" shaders
+# PAGE_UP - FXAA antialiasing (HW and SW)
+# DELETE  - Software Antialiasing (AA1)
+# HOME    - FX shader
+# INSERT  - Software mipmapping
+
+# -----------------------------------------------------------------------------
+# The KB shortcuts can be a normal key (e.g. f or ] etc) or a combination of
+# ALT/SHIFT/CTRL and a key, separated with a - or + (e.g. m or alt+ctrl+m or
+# alt-F12). Number (key) pad names start with KP_ (e.g. KP_0 to KP_9, KP_ADD).
+
+# Note: If the Dev console source is enabled, keypresses (including with Alt
+# etc) will be printed to the console and could be copied to PCSX2_keys.ini .
+
+# List of special key names (beyond KP_0 to KP_9 and normal keys):
+# DEL DELETE BACK INS INSERT ENTER RETURN PGUP PGDN LEFT RIGHT UP DOWN HOME END
+# SPACE TAB ESC ESCAPE CANCEL CLEAR MENU PAUSE CAPITAL SELECT PRINT EXECUTE
+# SNAPSHOT HELP ADD SEPARATOR SUBTRACT DECIMAL DIVIDE NUM_LOCK SCROLL_LOCK
+# PAGEUP PAGEDOWN KP_SPACE KP_TAB KP_ENTER KP_HOME KP_LEFT KP_UP KP_RIGHT
+# KP_DOWN KP_PRIOR KP_PAGEUP KP_NEXT KP_PAGEDOWN KP_END KP_BEGIN KP_INSERT
+# KP_DELETE KP_EQUAL KP_MULTIPLY KP_ADD KP_SEPARATOR KP_SUBTRACT KP_DECIMAL
+# KP_DIVIDE WINDOWS_LEFT WINDOWS_RIGHT WINDOWS_MENU COMMAND
+
+# save state: freeze is save state, defrost is load state.
+States_FreezeCurrentSlot          = F1
+States_DefrostCurrentSlot         = F3
+States_DefrostCurrentSlotBackup   = Shift-F3
+States_CycleSlotForward           = F2
+States_CycleSlotBackward          = Shift-F2
+
+Frameskip_Toggle                  = Shift-F4
+Framelimiter_TurboToggle          = TAB
+Framelimiter_SlomoToggle          = Shift-TAB
+Framelimiter_MasterToggle         = F4
+
+FullscreenToggle                  = Alt-ENTER
+
+# Note: toggles suspend, but can resume only if the GS window is not set to hide
+# when paused (Emu options -> GS window), and when the GS window is focused.
+Sys_SuspendResume                 = ESC
+
+# Screenshot. Note: must not include shift or ctrl. With these held - it will
+# create debug GS dump. The two other shortcuts will be added automatically.
+Sys_TakeSnapshot                  = F8
+
+# Hardware/software rendering toggle
+Sys_RenderswitchToggle            = F9
+
+Sys_LoggingToggle                 = F10
+# The FreezeGS function is currently disabled internally.
+Sys_FreezeGS                      = F11
+Sys_RecordingToggle               = F12
+
+GSwindow_CycleAspectRatio         = F6
+
+# Whole picture zoom in/out
+GSwindow_ZoomIn                   = Ctrl-KP_ADD
+GSwindow_ZoomOut                  = Ctrl-KP_SUBTRACT
+GSwindow_ZoomToggle               = Ctrl-KP_MULTIPLY
+
+# Vertical stretch/squash
+GSwindow_ZoomInY                  = Alt-Ctrl-KP_ADD
+GSwindow_ZoomOutY                 = Alt-Ctrl-KP_SUBTRACT
+GSwindow_ZoomResetY               = Alt-Ctrl-KP_MULTIPLY
+
+# Move the whole image
+GSwindow_OffsetYminus             = Alt-Ctrl-UP
+GSwindow_OffsetYplus              = Alt-Ctrl-DOWN
+GSwindow_OffsetXminus             = Alt-Ctrl-LEFT
+GSwindow_OffsetXplus              = Alt-Ctrl-RIGHT
+GSwindow_OffsetReset              = Alt-Ctrl-KP_DIVIDE
+
+# Recording Bindings
+# Note - These are disabled if 'System > Enable Recording Tools' is disabled
+FrameAdvance                      =	SPACE
+TogglePause                       =	Shift-P
+InputRecordingModeToggle          =	Shift-R
+
+# Save State Management
+# Note - These are disabled if 'System > Enable Recording Tools' is disabled
+States_SaveSlot0                  =	Shift-KP_0
+States_SaveSlot1                  =	Shift-KP_1
+States_SaveSlot2                  =	Shift-KP_2
+States_SaveSlot3                  =	Shift-KP_3
+States_SaveSlot4                  =	Shift-KP_4
+States_SaveSlot5                  =	Shift-KP_5
+States_SaveSlot6                  =	Shift-KP_6
+States_SaveSlot7                  =	Shift-KP_7
+States_SaveSlot8                  =	Shift-KP_8
+States_SaveSlot9                  =	Shift-KP_9
+States_LoadSlot0                  =	KP_0
+States_LoadSlot1                  =	KP_1
+States_LoadSlot2                  =	KP_2
+States_LoadSlot3                  =	KP_3
+States_LoadSlot4                  =	KP_4
+States_LoadSlot5                  =	KP_5
+States_LoadSlot6                  =	KP_6
+States_LoadSlot7                  =	KP_7
+States_LoadSlot8                  =	KP_8
+States_LoadSlot9                  =	KP_9

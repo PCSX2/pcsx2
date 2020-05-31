@@ -15,93 +15,94 @@
  * along with SPU2-X.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- #include "Dialogs.h"
- #include <wx/fileconf.h>
+#include "Dialogs.h"
+#include <wx/fileconf.h>
 
- wxFileConfig *spuConfig = NULL;
- wxString path(L"~/.pcsx2/inis/spu2-x.ini");
- bool pathSet = false;
+wxFileConfig *spuConfig = NULL;
+wxString path(L"~/.pcsx2/inis/spu2-x.ini");
+bool pathSet = false;
 
 void initIni()
 {
-	if (spuConfig == NULL) spuConfig = new wxFileConfig(L"", L"", path, L"", wxCONFIG_USE_LOCAL_FILE);
+    if (spuConfig == NULL)
+        spuConfig = new wxFileConfig(L"", L"", path, L"", wxCONFIG_USE_LOCAL_FILE);
 }
 
-void setIni(const wchar_t* Section)
- {
-	initIni();
-	spuConfig->SetPath(wxsFormat(L"/%s", Section));
- }
-
-void CfgSetSettingsDir(const char* dir)
+void setIni(const wchar_t *Section)
 {
-	FileLog("CfgSetSettingsDir(%s)\n", dir);
-	path = wxString::FromAscii(dir) + L"/spu2-x.ini";
-	pathSet = true;
+    initIni();
+    spuConfig->SetPath(wxsFormat(L"/%s", Section));
 }
 
-void CfgWriteBool(const wchar_t* Section, const wchar_t* Name, bool Value)
+void CfgSetSettingsDir(const char *dir)
 {
-	setIni(Section);
-	spuConfig->Write(Name, Value);
+    FileLog("CfgSetSettingsDir(%s)\n", dir);
+    path = wxString::FromUTF8(dir) + L"/spu2-x.ini";
+    pathSet = true;
 }
 
-void CfgWriteInt(const wchar_t* Section, const wchar_t* Name, int Value)
+void CfgWriteBool(const wchar_t *Section, const wchar_t *Name, bool Value)
 {
-	setIni(Section);
-	spuConfig->Write(Name, Value);
+    setIni(Section);
+    spuConfig->Write(Name, Value);
 }
 
-void CfgWriteFloat(const wchar_t* Section, const wchar_t* Name, float Value)
+void CfgWriteInt(const wchar_t *Section, const wchar_t *Name, int Value)
 {
-	setIni(Section);
-	spuConfig->Write(Name, (double)Value);
+    setIni(Section);
+    spuConfig->Write(Name, Value);
 }
 
-void CfgWriteStr(const wchar_t* Section, const wchar_t* Name, const wxString& Data)
+void CfgWriteFloat(const wchar_t *Section, const wchar_t *Name, float Value)
 {
-	setIni(Section);
-	spuConfig->Write(Name, Data);
+    setIni(Section);
+    spuConfig->Write(Name, (double)Value);
 }
 
-bool CfgReadBool(const wchar_t *Section,const wchar_t* Name, bool Default)
+void CfgWriteStr(const wchar_t *Section, const wchar_t *Name, const wxString &Data)
 {
-	bool ret;
-
-	setIni(Section);
-	spuConfig->Read(Name, &ret, Default);
-
-	return ret;
+    setIni(Section);
+    spuConfig->Write(Name, Data);
 }
 
-int CfgReadInt(const wchar_t* Section, const wchar_t* Name,int Default)
+bool CfgReadBool(const wchar_t *Section, const wchar_t *Name, bool Default)
 {
-	int ret;
+    bool ret;
 
-	setIni(Section);
-	spuConfig->Read(Name, &ret, Default);
+    setIni(Section);
+    spuConfig->Read(Name, &ret, Default);
 
-	return ret;
+    return ret;
 }
 
-float CfgReadFloat(const wchar_t* Section, const wchar_t* Name, float Default)
+int CfgReadInt(const wchar_t *Section, const wchar_t *Name, int Default)
 {
-	double ret;
+    int ret;
 
-	setIni(Section);
-	spuConfig->Read(Name, &ret, (double)Default);
+    setIni(Section);
+    spuConfig->Read(Name, &ret, Default);
 
-	return (float)ret;
+    return ret;
 }
 
-void CfgReadStr(const wchar_t* Section, const wchar_t* Name, wchar_t* Data, int DataSize, const wchar_t* Default)
+float CfgReadFloat(const wchar_t *Section, const wchar_t *Name, float Default)
 {
-	setIni(Section);
-	wcscpy(Data, spuConfig->Read(Name, Default).wc_str());
+    double ret;
+
+    setIni(Section);
+    spuConfig->Read(Name, &ret, (double)Default);
+
+    return (float)ret;
 }
 
-void CfgReadStr(const wchar_t* Section, const wchar_t* Name, wxString& Data, const wchar_t* Default)
+void CfgReadStr(const wchar_t *Section, const wchar_t *Name, wchar_t *Data, int DataSize, const wchar_t *Default)
 {
-	setIni(Section);
-	Data = spuConfig->Read(Name, Default);
+    setIni(Section);
+    wcscpy(Data, spuConfig->Read(Name, Default).wc_str());
+}
+
+void CfgReadStr(const wchar_t *Section, const wchar_t *Name, wxString &Data, const wchar_t *Default)
+{
+    setIni(Section);
+    Data = spuConfig->Read(Name, Default);
 }

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -25,28 +25,29 @@
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\..\common\vsprops\CodeGen_Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
@@ -54,7 +55,6 @@
     <Import Project="..\..\..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\..\..\common\vsprops\plugin_svnroot.props" />
     <Import Project="..\..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\..\common\vsprops\3rdpartyDeps.props" />
@@ -78,7 +78,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectRootDir)\;$(ProjectRootDir)\ZeroGSShaders\;$(ProjectRootDir)\Win32;$(SvnRootDir)\3rdparty\libjpeg;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CG_INC_PATH);$(ProjectRootDir)\;$(ProjectRootDir)\ZeroGSShaders\;$(ProjectRootDir)\Win32;$(SvnRootDir)\3rdparty\libjpeg;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_USRDLL;__i386__;ZEROGS_DEVBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
@@ -88,21 +88,23 @@
     <Link>
       <AdditionalDependencies>winmm.lib;Vfw32.lib;cg.lib;cgGL.lib;opengl32.lib;Comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>..\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CG_LIB_PATH);..\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\zerogs.def</ModuleDefinitionFile>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectRootDir)\;$(ProjectRootDir)\ZeroGSShaders\;$(ProjectRootDir)\Win32;$(SvnRootDir)\3rdparty\libjpeg;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CG_INC_PATH);$(ProjectRootDir)\;$(ProjectRootDir)\ZeroGSShaders\;$(ProjectRootDir)\Win32;$(SvnRootDir)\3rdparty\libjpeg;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_USRDLL;ZEROGS_DEVBUILD;_DEBUG;__i386__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;Vfw32.lib;cg.lib;cgGL.lib;opengl32.lib;Comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>..\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CG_LIB_PATH);..\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\zerogs.def</ModuleDefinitionFile>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -115,7 +117,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectRootDir)\;$(ProjectRootDir)\ZeroGSShaders\;$(ProjectRootDir)\Win32;$(SvnRootDir)\3rdparty\libjpeg;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CG_INC_PATH);$(ProjectRootDir)\;$(ProjectRootDir)\ZeroGSShaders\;$(ProjectRootDir)\Win32;$(SvnRootDir)\3rdparty\libjpeg;$(SvnRootDir)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_USRDLL;__i386__;ZEROGS_SSE2;RELEASE_TO_PUBLIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
@@ -127,10 +129,11 @@
     <Link>
       <AdditionalDependencies>winmm.lib;Vfw32.lib;cg.lib;cgGL.lib;opengl32.lib;Comctl32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>..\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CG_LIB_PATH);..\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\zerogs.def</ModuleDefinitionFile>
       <ImportLibrary>
       </ImportLibrary>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -233,37 +236,17 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\3rdparty\w32pthreads\pthreads.vcxproj">
-      <Project>{26511268-2902-4997-8421-ecd7055f9e28}</Project>
-      <Private>true</Private>
+    <ProjectReference Include="..\..\..\..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">
+      <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\3rdparty\w32pthreads\pthreads_lib.vcxproj">
-      <Project>{7e9b2be7-cec3-4f14-847b-0ab8d562fb86}</Project>
-      <Private>true</Private>
+    <ProjectReference Include="..\..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_base.vcxproj">
+      <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\3rdparty\wxWidgets\build\msw\wx_base.vcxproj">
-      <Project>{48ad7e0a-25b1-4974-a1e3-03f8c438d34f}</Project>
-      <Private>true</Private>
+    <ProjectReference Include="..\..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_core.vcxproj">
+      <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\3rdparty\wxWidgets\build\msw\wx_core.vcxproj">
-      <Project>{0318ba30-ef48-441a-9e10-dc85efae39f0}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
     <ProjectReference Include="..\..\..\..\3rdparty\zlib\zlib.vcxproj">
       <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
@@ -285,4 +268,4 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-</Project>
+</Project>

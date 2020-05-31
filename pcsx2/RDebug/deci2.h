@@ -52,7 +52,6 @@ struct DECI2_DBGP_BRK{
 
 extern DECI2_DBGP_BRK	ebrk[32], ibrk[32];
 extern s32 ebrk_count, ibrk_count;
-extern volatile long runStatus;
 extern s32 runCode, runCount;
 
 extern Threading::Semaphore* runEvent;

@@ -33,7 +33,7 @@ EventListener_CoreThread::EventListener_CoreThread()
 	wxGetApp().AddListener( this );
 }
 
-EventListener_CoreThread::~EventListener_CoreThread() throw()
+EventListener_CoreThread::~EventListener_CoreThread()
 {
 	wxGetApp().RemoveListener( this );
 }
@@ -59,7 +59,7 @@ EventListener_Plugins::EventListener_Plugins()
 	wxGetApp().AddListener( this );
 }
 
-EventListener_Plugins::~EventListener_Plugins() throw()
+EventListener_Plugins::~EventListener_Plugins()
 {
 	wxGetApp().RemoveListener( this );
 }
@@ -86,7 +86,7 @@ EventListener_AppStatus::EventListener_AppStatus()
 	wxGetApp().AddListener( this );
 }
 
-EventListener_AppStatus::~EventListener_AppStatus() throw()
+EventListener_AppStatus::~EventListener_AppStatus()
 {
 	wxGetApp().RemoveListener( this );
 }
@@ -132,19 +132,19 @@ void Pcsx2App::DispatchEvent( CoreThreadStatus evt )
 {
 	switch( evt )
 	{
-		// FIXME what to do for this case
-		// case CoreThread_Indeterminate:
+		case CoreThread_Indeterminate:
+			break;
 
 		case CoreThread_Started:
 		case CoreThread_Reset:
 		case CoreThread_Stopped:
 			FpsManager.Reset();
-		break;
+			break;
 
 		case CoreThread_Resumed:
 		case CoreThread_Suspended:
 			FpsManager.Resume();
-		break;
+			break;
 	}
 
 	// Clear the sticky key statuses, because hell knows what'll change while the PAD

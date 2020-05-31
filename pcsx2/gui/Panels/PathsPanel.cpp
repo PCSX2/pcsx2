@@ -34,6 +34,14 @@ Panels::StandardPathsPanel::StandardPathsPanel( wxWindow* parent )
 	: BasePathsPanel( parent )
 {
 	*this += BetweenFolderSpace;
+	*this += (new DirPickerPanel( this, FolderId_Cheats,
+		_("Cheats:"),
+		_("Select folder for Cheats") ))->
+		SetToolTip( pxEt( L"This folder is where PCSX2 loads cheats from."
+		)
+	) | SubGroup();
+
+	*this += BetweenFolderSpace;
 	*this += (new DirPickerPanel( this, FolderId_Savestates,
 		_("Savestates:"),
 		_("Select folder for Savestates") ))->

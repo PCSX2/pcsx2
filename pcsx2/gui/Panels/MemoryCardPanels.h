@@ -40,6 +40,7 @@ struct McdSlotItem
 {
 	int			Slot;			//0-7: internal slot. -1: unrelated to an internal slot (the rest of the files at the folder).
 	bool		IsPresent;		//Whether or not a file is associated with this item (true/false when 0<=Slot<=7. Always true when Slot==-1)
+	MemoryCardType Type;		//The implementation used for this memory card
 	
 	//Only meaningful when IsPresent==true (a file exists for this item):
 	wxFileName	Filename;		// full pathname
@@ -61,11 +62,14 @@ struct McdSlotItem
 
 	McdSlotItem()
 	{
-		Slot		= -1;
+		Slot = -1;
+		SizeInMB = 0;
+		Type = MemoryCard_None;
 		
 		IsPSX = false;
 		IsPresent = false;
 		IsEnabled = false;
+		IsFormatted = false;
 	}
 
 };
@@ -98,20 +102,17 @@ class BaseMcdListView : public wxListView
 protected:
 	IMcdList*		m_CardProvider;
 
-	// specifies the target of a drag&drop operation
-	int				m_TargetedItem;
-
 public:
 	void (*m_externHandler)(void);
 	void setExternHandler(void (*f)(void)){m_externHandler=f;};
 	void OnChanged(wxEvent& evt){if (m_externHandler) m_externHandler(); evt.Skip();}
 
-	virtual ~BaseMcdListView() throw() { }
+	virtual ~BaseMcdListView() = default;
 	BaseMcdListView( wxWindow* parent )
 		: _parent( parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL | wxLC_VIRTUAL )
 	{
 		m_externHandler=NULL;
-		Connect( this->GetId(),				wxEVT_LEFT_UP, wxEventHandler(BaseMcdListView::OnChanged));
+		Bind(wxEVT_LEFT_UP, &BaseMcdListView::OnChanged, this, this->GetId());
 
 		m_CardProvider = NULL;
 	}
@@ -123,7 +124,6 @@ public:
 	virtual const ListViewColumnInfo& GetDefaultColumnInfo( uint idx ) const=0;
 
 	virtual IMcdList& GetMcdProvider();
-	virtual void SetTargetedItem( int sel );
 };
 
 // --------------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ class MemoryCardListView_Simple : public BaseMcdListView
 	typedef BaseMcdListView _parent;
 
 public:
-	virtual ~MemoryCardListView_Simple() throw() { }
+	virtual ~MemoryCardListView_Simple() = default;
 	MemoryCardListView_Simple( wxWindow* parent );
 
 	void CreateColumns();
@@ -182,7 +182,7 @@ namespace Panels
 		}
 
 	public:
-		virtual ~BaseMcdListPanel() throw() {}
+		virtual ~BaseMcdListPanel() = default;
 		BaseMcdListPanel( wxWindow* parent );
 
 		void CreateLayout();
@@ -211,6 +211,8 @@ namespace Panels
 		
 		// Doubles as Create and Delete buttons
 		wxButton*		m_button_Create;
+
+		wxButton*		m_button_Convert;
 		
 		// Doubles as Mount and Unmount buttons ("Enable"/"Disable" port)
 //		wxButton*		m_button_Mount;
@@ -220,7 +222,7 @@ namespace Panels
 
 
 	public:
-		virtual ~MemoryCardListPanel_Simple() throw();
+		virtual ~MemoryCardListPanel_Simple();
 		MemoryCardListPanel_Simple( wxWindow* parent );
 
 		void UpdateUI();
@@ -236,6 +238,7 @@ namespace Panels
 
 	protected:
 		void OnCreateOrDeleteCard(wxCommandEvent& evt);
+		void OnConvertCard(wxCommandEvent& evt);
 		void OnMountCard(wxCommandEvent& evt);
 //		void OnRelocateCard(wxCommandEvent& evt);
 		void OnRenameFile(wxCommandEvent& evt);
@@ -269,6 +272,7 @@ namespace Panels
 
 		virtual void UiRenameCard( McdSlotItem& card );
 		virtual void UiCreateNewCard( McdSlotItem& card );
+		virtual void UiConvertCard( McdSlotItem& card );
 		virtual void UiDeleteCard( McdSlotItem& card );
 		virtual void UiAssignUnassignFile( McdSlotItem& card );
 		
@@ -284,13 +288,14 @@ namespace Panels
 	protected:
 		//pxCheckBox*		m_check_Multitap[2];
 		pxCheckBox*		m_check_Ejection;
+		pxCheckBox*		m_folderAutoIndex;
 
 		//moved to the system menu, just below "Save State"
 		//pxCheckBox*		m_check_SavestateBackup;
 
 	public:
 		McdConfigPanel_Toggles( wxWindow* parent );
-		virtual ~McdConfigPanel_Toggles() throw() { }
+		virtual ~McdConfigPanel_Toggles() = default;
 		void Apply();
 
 	protected:

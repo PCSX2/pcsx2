@@ -25,7 +25,7 @@ u32 g_vif0Cycles = 0;
 // because its vif stalling not the EE core...
 __fi void vif0FLUSH()
 {
-	if(vif0Regs.stat.VEW == true)
+	if(vif0Regs.stat.VEW)
 	{
 		vif0.waitforvu = true;
 		vif0.vifstalled.enabled = VifStallEnable(vif0ch);
@@ -146,12 +146,12 @@ __fi void vif0VUFinish()
 	}
 	vif0Regs.stat.VEW = false;
 	VIF_LOG("VU0 finished");
-	if(vif0.waitforvu == true)
+	if(vif0.waitforvu)
 	{
 		vif0.waitforvu = false;
 		ExecuteVU(0);
 		//Make sure VIF0 isnt already scheduled to spin.
-		if(!(cpuRegs.interrupt & 0x1) && vif0ch.chcr.STR == true && !vif0Regs.stat.INT)
+		if(!(cpuRegs.interrupt & 0x1) && vif0ch.chcr.STR && !vif0Regs.stat.INT)
 			vif0Interrupt();
 	}
 	//DevCon.Warning("VU0 state cleared");
@@ -167,7 +167,7 @@ __fi void vif0Interrupt()
 
 	if (!(vif0ch.chcr.STR)) Console.WriteLn("vif0 running when CHCR == %x", vif0ch.chcr._u32);
 
-	if (vif0.irq && vif0.tag.size == 0 && vif0.cmd == 0)
+	if (vif0.irq && vif0.vifstalled.enabled && vif0.vifstalled.value == VIF_IRQ_STALL)
 	{
 		vif0Regs.stat.INT = true;
 		
@@ -194,7 +194,7 @@ __fi void vif0Interrupt()
 		}
 	}
 
-	if(vif0.waitforvu == true)
+	if(vif0.waitforvu)
 	{
 		//DevCon.Warning("Waiting on VU0");
 		//CPU_INT(DMAC_VIF0, 16);
@@ -206,7 +206,7 @@ __fi void vif0Interrupt()
 	//Must go after the Stall, incase it's still in progress, GTC africa likes to see it still transferring.
 	if (vif0.cmd) 
 	{
-		if(vif0.done == true && vif0ch.qwc == 0)	vif0Regs.stat.VPS = VPS_WAITING;
+		if(vif0.done && vif0ch.qwc == 0)	vif0Regs.stat.VPS = VPS_WAITING;
 	}
 	else		 
 	{
@@ -224,9 +224,9 @@ __fi void vif0Interrupt()
 	if (!vif0.done)
 	{
 
-		if (!(dmacRegs.ctrl.DMAE))
+		if (!(dmacRegs.ctrl.DMAE) || vif0Regs.stat.VSS) //Stopped or DMA Disabled
 		{
-			Console.WriteLn("vif0 dma masked");
+			//Console.WriteLn("vif0 dma masked");
 			return;
 		}
 
@@ -251,7 +251,7 @@ __fi void vif0Interrupt()
 	vif0Regs.stat.FQC = std::min((u16)0x8, vif0ch.qwc);
 	vif0.vifstalled.enabled = false;
 	vif0.irqoffset.enabled = false;
-	if(vif0.queued_program == true) vifExecQueue(0);
+	if(vif0.queued_program) vifExecQueue(0);
 	g_vif0Cycles = 0;
 	hwDmacIrq(DMAC_VIF0);
 	vif0Regs.stat.FQC = 0;
@@ -286,7 +286,7 @@ void dmaVIF0()
 		{
 			vif0.dmamode = VIF_NORMAL_FROM_MEM_MODE;
 
-			if (vif0.irqoffset.enabled == true && vif0.done == false) DevCon.Warning("Warning! VIF0 starting a Normal transfer with vif offset set (Possible force stop?)");
+			if (vif0.irqoffset.enabled && !vif0.done) DevCon.Warning("Warning! VIF0 starting a Normal transfer with vif offset set (Possible force stop?)");
 			vif0.done = true;
 		}
 
@@ -294,7 +294,7 @@ void dmaVIF0()
 	}
 	else
 	{
-		if (vif0.irqoffset.enabled == true && vif0.done == false) DevCon.Warning("Warning! VIF0 starting a new Chain transfer with vif offset set (Possible force stop?)");
+		if (vif0.irqoffset.enabled && !vif0.done) DevCon.Warning("Warning! VIF0 starting a new Chain transfer with vif offset set (Possible force stop?)");
 		vif0.dmamode = VIF_CHAIN_MODE;
 		vif0.done = false;
 		vif0.inprogress &= ~0x1;

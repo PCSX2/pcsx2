@@ -16,8 +16,10 @@
 #include "PrecompiledHeader.h"
 #include "Utilities/SafeArray.inl"
 #include <wx/file.h>
+#include <wx/dir.h>
+#include <wx/stopwatch.h>
 
-#include "MemoryCardFile.h"
+#include <chrono>
 
 // IMPORTANT!  If this gets a macro redefinition error it means PluginCallbacks.h is included
 // in a global-scope header, and that's a BAD THING.  Include it only into modules that need
@@ -26,17 +28,22 @@
 struct Component_FileMcd;
 #define PS2E_THISPTR Component_FileMcd*
 
+#include "MemoryCardFile.h"
+#include "MemoryCardFolder.h"
+
 #include "System.h"
 #include "AppConfig.h"
 
 #include "svnrev.h"
 
+#include "ConsoleLogger.h"
+
 #include <wx/ffile.h>
+#include <map>
 
 static const int MCD_SIZE	= 1024 *  8  * 16;		// Legacy PSX card default size
 
 static const int MC2_MBSIZE	= 1024 * 528 * 2;		// Size of a single megabyte of card data
-static const int MC2_SIZE	= MC2_MBSIZE * 8;		// PS2 card default size (8MB)
 
 // --------------------------------------------------------------------------------------
 //  FileMemoryCard
@@ -55,7 +62,7 @@ protected:
 
 public:
 	FileMemoryCard();
-	virtual ~FileMemoryCard() throw() {}
+	virtual ~FileMemoryCard() = default;
 
 	void Lock();
 	void Unlock();
@@ -139,6 +146,7 @@ wxString FileMcd_GetDefaultName(uint slot)
 FileMemoryCard::FileMemoryCard()
 {
 	memset8<0xff>( m_effeffs );
+	m_chkaddr = 0;
 }
 
 void FileMemoryCard::Open()
@@ -167,7 +175,12 @@ void FileMemoryCard::Open()
 			cont = true;
 		}
 
-		Console.WriteLn( cont ? Color_Gray : Color_Green, L"McdSlot %u: " + str, slot );
+		if ( g_Conf->Mcd[slot].Type != MemoryCardType::MemoryCard_File ) {
+			str = L"[is not memcard file]";
+			cont = true;
+		}
+
+		Console.WriteLn( cont ? Color_Gray : Color_Green, L"McdSlot %u [File]: " + str, slot );
 		if( cont ) continue;
 
 		const wxULongLong fsz = fname.GetSize();
@@ -349,7 +362,23 @@ s32 FileMemoryCard::Save( uint slot, const u8 *src, u32 adr, int size )
 	}
 
 	if( !Seek(mcfp, adr) ) return 0;
-	return mcfp.Write( m_currentdata.GetPtr(), size ) != 0;
+
+	int status = mcfp.Write( m_currentdata.GetPtr(), size );
+
+	if( status ) {
+		static auto last = std::chrono::time_point<std::chrono::system_clock>();
+
+		std::chrono::duration<float> elapsed = std::chrono::system_clock::now() - last;
+		if(elapsed > std::chrono::seconds(5)) {
+			wxString name, ext;
+			wxFileName::SplitPath(m_file[slot].GetName(), NULL, NULL, &name, &ext);
+			OSDlog( Color_StrongYellow, false, "Memory Card %s written.", (const char *)(name + "." + ext).c_str() );
+			last = std::chrono::system_clock::now();
+		}
+		return 1;
+	}
+
+	return 0;
 }
 
 s32 FileMemoryCard::EraseBlock( uint slot, u32 adr )
@@ -403,8 +432,9 @@ u64 FileMemoryCard::GetCRC( uint slot )
 
 struct Component_FileMcd
 {
-	PS2E_ComponentAPI_Mcd	api;	// callbacks the plugin provides back to the emulator
-	FileMemoryCard			impl;	// class-based implementations we refer to when API is invoked
+	PS2E_ComponentAPI_Mcd      api;  // callbacks the plugin provides back to the emulator
+	FileMemoryCard             impl; // class-based implementations we refer to when API is invoked
+	FolderMemoryCardAggregator implFolder;
 
 	Component_FileMcd();
 };
@@ -418,47 +448,152 @@ uint FileMcd_ConvertToSlot( uint port, uint slot )
 
 static void PS2E_CALLBACK FileMcd_EmuOpen( PS2E_THISPTR thisptr, const PS2E_SessionInfo *session )
 {
+	// detect inserted memory card types
+	for ( uint slot = 0; slot < 8; ++slot ) {
+		if ( g_Conf->Mcd[slot].Enabled ) {
+			MemoryCardType type = MemoryCardType::MemoryCard_File; // default to file if we can't find anything at the path so it gets auto-generated
+
+			const wxString path = g_Conf->FullpathToMcd( slot );
+			if ( wxFileExists( path ) ) {
+				type = MemoryCardType::MemoryCard_File;
+			} else if ( wxDirExists( path ) ) {
+				type = MemoryCardType::MemoryCard_Folder;
+			}
+
+			g_Conf->Mcd[slot].Type = type;
+		}
+	}
+
 	thisptr->impl.Open();
+	thisptr->implFolder.SetFiltering( g_Conf->EmuOptions.McdFolderAutoManage );
+	thisptr->implFolder.Open();
 }
 
 static void PS2E_CALLBACK FileMcd_EmuClose( PS2E_THISPTR thisptr )
 {
+	thisptr->implFolder.Close();
 	thisptr->impl.Close();
 }
 
 static s32 PS2E_CALLBACK FileMcd_IsPresent( PS2E_THISPTR thisptr, uint port, uint slot )
 {
-	return thisptr->impl.IsPresent( FileMcd_ConvertToSlot( port, slot ) );
+	const uint combinedSlot = FileMcd_ConvertToSlot( port, slot );
+	switch ( g_Conf->Mcd[combinedSlot].Type ) {
+	case MemoryCardType::MemoryCard_File:
+		return thisptr->impl.IsPresent( combinedSlot );
+	case MemoryCardType::MemoryCard_Folder:
+		return thisptr->implFolder.IsPresent( combinedSlot );
+	default:
+		return false;
+	}
 }
 
 static void PS2E_CALLBACK FileMcd_GetSizeInfo( PS2E_THISPTR thisptr, uint port, uint slot, PS2E_McdSizeInfo* outways )
 {
-	thisptr->impl.GetSizeInfo( FileMcd_ConvertToSlot( port, slot ), *outways );
+	const uint combinedSlot = FileMcd_ConvertToSlot( port, slot );
+	switch ( g_Conf->Mcd[combinedSlot].Type ) {
+	case MemoryCardType::MemoryCard_File:
+		thisptr->impl.GetSizeInfo( combinedSlot, *outways );
+		break;
+	case MemoryCardType::MemoryCard_Folder:
+		thisptr->implFolder.GetSizeInfo( combinedSlot, *outways );
+		break;
+	default:
+		return;
+	}
 }
 
 static bool PS2E_CALLBACK FileMcd_IsPSX( PS2E_THISPTR thisptr, uint port, uint slot )
 {
-	return thisptr->impl.IsPSX( FileMcd_ConvertToSlot( port, slot ) );
+	const uint combinedSlot = FileMcd_ConvertToSlot( port, slot );
+	switch ( g_Conf->Mcd[combinedSlot].Type ) {
+	case MemoryCardType::MemoryCard_File:
+		return thisptr->impl.IsPSX( combinedSlot );
+	case MemoryCardType::MemoryCard_Folder:
+		return thisptr->implFolder.IsPSX( combinedSlot );
+	default:
+		return false;
+	}
 }
 
 static s32 PS2E_CALLBACK FileMcd_Read( PS2E_THISPTR thisptr, uint port, uint slot, u8 *dest, u32 adr, int size )
 {
-	return thisptr->impl.Read( FileMcd_ConvertToSlot( port, slot ), dest, adr, size );
+	const uint combinedSlot = FileMcd_ConvertToSlot( port, slot );
+	switch ( g_Conf->Mcd[combinedSlot].Type ) {
+	case MemoryCardType::MemoryCard_File:
+		return thisptr->impl.Read( combinedSlot, dest, adr, size );
+	case MemoryCardType::MemoryCard_Folder:
+		return thisptr->implFolder.Read( combinedSlot, dest, adr, size );
+	default:
+		return 0;
+	}
 }
 
 static s32 PS2E_CALLBACK FileMcd_Save( PS2E_THISPTR thisptr, uint port, uint slot, const u8 *src, u32 adr, int size )
 {
-	return thisptr->impl.Save( FileMcd_ConvertToSlot( port, slot ), src, adr, size );
+	const uint combinedSlot = FileMcd_ConvertToSlot( port, slot );
+	switch ( g_Conf->Mcd[combinedSlot].Type ) {
+	case MemoryCardType::MemoryCard_File:
+		return thisptr->impl.Save( combinedSlot, src, adr, size );
+	case MemoryCardType::MemoryCard_Folder:
+		return thisptr->implFolder.Save( combinedSlot, src, adr, size );
+	default:
+		return 0;
+	}
 }
 
 static s32 PS2E_CALLBACK FileMcd_EraseBlock( PS2E_THISPTR thisptr, uint port, uint slot, u32 adr )
 {
-	return thisptr->impl.EraseBlock( FileMcd_ConvertToSlot( port, slot ), adr );
+	const uint combinedSlot = FileMcd_ConvertToSlot( port, slot );
+	switch ( g_Conf->Mcd[combinedSlot].Type ) {
+	case MemoryCardType::MemoryCard_File:
+		return thisptr->impl.EraseBlock( combinedSlot, adr );
+	case MemoryCardType::MemoryCard_Folder:
+		return thisptr->implFolder.EraseBlock( combinedSlot, adr );
+	default:
+		return 0;
+	}
 }
 
 static u64 PS2E_CALLBACK FileMcd_GetCRC( PS2E_THISPTR thisptr, uint port, uint slot )
 {
-	return thisptr->impl.GetCRC( FileMcd_ConvertToSlot( port, slot ) );
+	const uint combinedSlot = FileMcd_ConvertToSlot( port, slot );
+	switch ( g_Conf->Mcd[combinedSlot].Type ) {
+	case MemoryCardType::MemoryCard_File:
+		return thisptr->impl.GetCRC( combinedSlot );
+	case MemoryCardType::MemoryCard_Folder:
+		return thisptr->implFolder.GetCRC( combinedSlot );
+	default:
+		return 0;
+	}
+}
+
+static void PS2E_CALLBACK FileMcd_NextFrame( PS2E_THISPTR thisptr, uint port, uint slot ) {
+	const uint combinedSlot = FileMcd_ConvertToSlot( port, slot );
+	switch ( g_Conf->Mcd[combinedSlot].Type ) {
+	//case MemoryCardType::MemoryCard_File:
+	//	thisptr->impl.NextFrame( combinedSlot );
+	//	break;
+	case MemoryCardType::MemoryCard_Folder:
+		thisptr->implFolder.NextFrame( combinedSlot );
+		break;
+	default:
+		return;
+	}
+}
+
+static bool PS2E_CALLBACK FileMcd_ReIndex( PS2E_THISPTR thisptr, uint port, uint slot, const wxString& filter ) {
+	const uint combinedSlot = FileMcd_ConvertToSlot( port, slot );
+	switch ( g_Conf->Mcd[combinedSlot].Type ) {
+	//case MemoryCardType::MemoryCard_File:
+	//	return thisptr->impl.ReIndex( combinedSlot, filter );
+	//	break;
+	case MemoryCardType::MemoryCard_Folder:
+		return thisptr->implFolder.ReIndex( combinedSlot, g_Conf->EmuOptions.McdFolderAutoManage, filter );
+		break;
+	default:
+		return false;
+	}
 }
 
 Component_FileMcd::Component_FileMcd()
@@ -475,6 +610,8 @@ Component_FileMcd::Component_FileMcd()
 	api.McdSave			= FileMcd_Save;
 	api.McdEraseBlock	= FileMcd_EraseBlock;
 	api.McdGetCRC		= FileMcd_GetCRC;
+	api.McdNextFrame    = FileMcd_NextFrame;
+	api.McdReIndex      = FileMcd_ReIndex;
 }
 
 
@@ -547,32 +684,6 @@ extern "C" const PS2E_LibraryAPI* FileMcd_InitAPI( const PS2E_EmulatorInfo* emui
 	return &FileMcd_Library;
 }
 
-// --------------------------------------------------------------------------------------
-//  Currently Unused Superblock Header Struct
-// --------------------------------------------------------------------------------------
-// (provided for reference purposes)
-
-struct superblock
-{
-	char magic[28]; 			// 0x00
-	char version[12]; 			// 0x1c
-	u16 page_len; 				// 0x28
-	u16 pages_per_cluster;	 	// 0x2a
-	u16 pages_per_block;		// 0x2c
-	u16 unused; 				// 0x2e
-	u32 clusters_per_card;	 	// 0x30
-	u32 alloc_offset; 			// 0x34
-	u32 alloc_end; 				// 0x38
-	u32 rootdir_cluster;		// 0x3c
-	u32 backup_block1;			// 0x40
-	u32 backup_block2;			// 0x44
-	u32 ifc_list[32]; 			// 0x50
-	u32 bad_block_list[32]; 	// 0xd0
-	u8 card_type; 				// 0x150
-	u8 card_flags; 				// 0x151
-};
-
-
 //Tests if a string is a valid name for a new file within a specified directory.
 //returns true if:
 //     - the file name has a minimum length of minNumCharacters chars (default is 5 chars: at least 1 char + '.' + 3-chars extension)
@@ -595,6 +706,11 @@ bool isValidNewFilename( wxString filenameStringToTest, wxDirName atBasePath, wx
 	if ( wxFileExists( (atBasePath + wxFileName(filenameStringToTest)).GetFullPath() ))
 	{
 		out_errorMessage = _("File name already exists");
+		return false;
+	}
+	if ( wxDirExists( (atBasePath + wxFileName(filenameStringToTest)).GetFullPath() ))
+	{
+		out_errorMessage = _( "File name already exists" );
 		return false;
 	}
 

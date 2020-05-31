@@ -26,7 +26,7 @@
 #define USBdefs
 #include "PS2Edefs.h"
 
-#ifdef __WIN32__
+#ifdef _WIN32
 #	include <windows.h>
 #	include <windowsx.h>
 #else

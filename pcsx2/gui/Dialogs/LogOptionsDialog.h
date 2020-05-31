@@ -27,7 +27,7 @@ class LogOptionsDialog : public BaseConfigurationDialog
 {
 public:
 	LogOptionsDialog( wxWindow* parent=NULL );
-	virtual ~LogOptionsDialog() throw() { }
+	virtual ~LogOptionsDialog() = default;
 
 	static wxString GetNameStatic() { return L"TraceLogSettings"; }
 	wxString GetDialogName() const { return GetNameStatic(); }

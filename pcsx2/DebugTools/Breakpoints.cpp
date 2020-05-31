@@ -45,7 +45,14 @@ u32 __fastcall standardizeBreakpointAddress(u32 addr)
 	return addr;
 }
 
-MemCheck::MemCheck()
+MemCheck::MemCheck() :
+	start(0),
+	end(0),
+	cond(MEMCHECK_READWRITE),
+	result(MEMCHECK_BOTH),
+	lastPC(0),
+	lastAddr(0),
+	lastSize(0)
 {
 	numHits = 0;
 }
@@ -146,6 +153,10 @@ size_t CBreakPoints::FindMemCheck(u32 start, u32 end)
 bool CBreakPoints::IsAddressBreakPoint(u32 addr)
 {
 	size_t bp = FindBreakpoint(addr);
+	if (bp != INVALID_BREAKPOINT && breakPoints_[bp].enabled)
+		return true;
+	// Check again for overlapping temp breakpoint
+	bp = FindBreakpoint(addr, true, true);
 	return bp != INVALID_BREAKPOINT && breakPoints_[bp].enabled;
 }
 
@@ -257,7 +268,12 @@ void CBreakPoints::ChangeBreakPointRemoveCond(u32 addr)
 
 BreakPointCond *CBreakPoints::GetBreakPointCondition(u32 addr)
 {
-	size_t bp = FindBreakpoint(addr, true, false);
+	size_t bp = FindBreakpoint(addr, true, true);
+	//temp breakpoints are unconditional
+	if (bp != INVALID_BREAKPOINT)
+		return NULL;
+
+	bp = FindBreakpoint(addr, true, false);
 	if (bp != INVALID_BREAKPOINT && breakPoints_[bp].hasCond)
 		return &breakPoints_[bp].cond;
 	return NULL;
@@ -372,19 +388,20 @@ const std::vector<BreakPoint> CBreakPoints::GetBreakpoints()
 void CBreakPoints::Update(u32 addr)
 {
 	bool resume = false;
-	if (r5900Debug.isCpuPaused() == false)
+	if (!r5900Debug.isCpuPaused())
 	{
 		r5900Debug.pauseCpu();
 		resume = true;
 	}
-	
+
 //	if (addr != 0)
 //		Cpu->Clear(addr-4,8);
 //	else
 		SysClearExecutionCache();
-	
+
 	if (resume)
 		r5900Debug.resumeCpu();
-
-	wxGetApp().GetDisassemblyPtr()->update();
+	auto disassembly_window = wxGetApp().GetDisassemblyPtr();
+	if (disassembly_window) // make sure that valid pointer is recieved to prevent potential NULL dereference.
+		disassembly_window->update();
 }

@@ -1,24 +1,25 @@
 ﻿/*
-* Copyright (c) 2009 Ferreri Alessio
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-* 
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-* THE SOFTWARE.
-*/
+ * Copyright (C) 2009-2011 Ferreri Alessio
+ * Copyright (C) 2009-2018 PCSX2 Dev Team
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 using System;
 using System.Collections.Generic;
@@ -40,10 +41,6 @@ namespace TCPLibrary.Core
         /// Socket maintaining the connection.
         /// </summary>
         private TcpListener _socket;
-        /// <summary>
-        /// Port to which the server will listen.
-        /// </summary>
-        private Int32 _port;
         /// <summary>
         /// Whether the server is enabled or not.
         /// </summary>
@@ -131,13 +128,11 @@ namespace TCPLibrary.Core
         /// <exception cref="TCPLibrary.Core.ServerAttivoException" />
         public Int32 Port
         {
-            get { return _port; }
-            set
+            get
             {
-                if (Enabled == false)
-                    _port = value;
-                else
-                    throw new ArgumentException("Impossibile eseguire l'operazione a server attivo");
+                if (Enabled)
+                    return ((IPEndPoint) _socket.LocalEndpoint).Port;
+                throw new NotSupportedException("Server is not running and hence has no port.");
             }
         }
 
@@ -211,10 +206,10 @@ namespace TCPLibrary.Core
         /// </summary>
         protected virtual void ActivateServer()
         {
-            _socket = new TcpListener(IPAddress.Any, Port);
+            _socket = new TcpListener(IPAddress.Any, 0);
             _socket.Start(ConnectionBackLog);
             Thread thd = new Thread(new ThreadStart(MainThread));
-            thd.Name = "Server on port " + Port.ToString();
+            thd.Name = "Server on port " + ((IPEndPoint) _socket.LocalEndpoint).Port;
             thd.IsBackground = true;
             thd.Start();
             _enabled = true;
@@ -248,7 +243,6 @@ namespace TCPLibrary.Core
         public Server()
         {
             _clients = new List<ClientS>();
-            _port = 0;
             _connectionbacklog = 0;
             _enabled = false;
         }

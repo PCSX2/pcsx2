@@ -1,0 +1,883 @@
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>
+PlayStation 2 Memory Card File System
+</title>
+</head>
+<body>
+<h1>
+PlayStation 2 Memory Card File System
+</h1>
+<div style="clear: both">
+<h2>By 
+<a href="https://plus.google.com/101505960668383360394/?rel=author">
+Ross Ridge
+</a>
+</h2>
+<h2>Public Domain</h2>
+</div>
+<div style="clear: both">
+<p>
+This document is a description of the file system layout as used on
+PlayStation 2 memory cards.  It's based on the research I did while
+writing <a href="http://www.csclub.uwaterloo.ca/%7Erridge/mymc">mymc</a>,
+a utility for working with PS2 memory card images.  This document
+tries to be comprehensive an accurate, but some details may be
+missing, misleading or just plain wrong.  At lot of assumptions had to
+be made during my research, and it's hard know to what exactly Sony
+intended in every case.  All most all of the names for structures,
+fields and flags were made up by me.  Nothing in this document should
+be considered official. 
+</p>
+<p>
+For brevity, unused fields and flag bits are omitted from the tables.
+In most cases unused fields or flags should be assumed to be either
+reserved or padding and set to zero when writing.  In particular,
+you'll need to pad out the structures to the length given at the top
+of the table.  All values are stored on the card using the
+little-endian byte order.
+</p>
+</div>
+<div style="clear: both">
+<h2>NAND Flash Memory Basics</h2>
+
+<div style="float: right; padding: 1em 0 1em 1em; width: 40%">
+<h3>Glossary</h3>
+
+
+<p>A number of terms are used in this document that you may not
+familiar with or are different from other sources describing PS2
+memory cards, so I've created short glossary.
+</p>
+
+<dl>
+
+<dt>block</dt>
+<dd>See "erase block".</dd>
+
+<dt>cluster</dt>
+<dd>The unit of allocation used in the file system.  A cluster 
+is one or more pages in size.</dd>
+
+<dt>ECC</dt>
+<dd>Error correcting code.  A means of encoding data so that random
+bit errors can be detected and corrected.</dd>
+
+<dt>erase block</dt>
+<dd>The basic erasable unit on a memory card.</dd>
+
+<dt><code style="font-family: monospace">half</code></dt>
+<dd>A two byte unsigned half-word value.</dd>
+
+<dt>page</dt>
+<dd>The basic addressable unit on a memory card.  Corresponds to page
+on the flash device used in the memory card, and is analogous
+to a sector on hard disk.</dd>
+
+<dt>programming</dt>
+<dd>The operation of changing erased bits on a flash device from 1 to 0.</dd>
+
+<dt>superblock</dt>
+<dd>The first page on the memory card where important information
+about the structure of the file system is kept.</dd>
+
+<dt><code style="font-family: monospace">word</code></dt>
+<dd>A four byte unsigned word value.</dd>
+
+</dl>
+</div>
+
+<p>Since PlayStation 2 (PS2) memory cards use NAND Flash it's helpful to
+   understand some of the basics about this kind of memory works.
+   Flash is a non-volatile form of memory that can be electrically
+   erased and reprogrammed.  Since it's non-volatile, meaning it
+   doesn't need power to retain data, and reprogramable, meaning the
+   data stored can be changed, it's the ideal form memory to use in
+   memory card.  However, flash memory does have number of limitations
+   which affect how the PS2 uses its memory cards.
+</p>
+<p>One of the limitations is a relatively slow random access time.
+   While much faster than hard disk, NAND flash is much slower than
+   RAM at reading random bytes in memory.  Reading the first byte of
+   data from a flash device takes about 25 microseconds.  Fortunately,
+   reading on sequentially is much faster.  After the first
+   byte is read, each subsequent byte takes only about 50 nanoseconds
+   to read.  For this reason NAND flash memory is organized in to pages,
+   similar to how a hard drive is organized into sectors.
+   For example, with the TC58V64AFT, a flash device used in PS2 memory cards,
+   an entire 528 byte page can be read at a sustained 10 Mb/s
+   transfer rate.  By comparison, the transfer rate for reading random
+   bytes is much slower, only 40kb/s. <em>Because the serial bus the
+   PS2 uses to talk to memory cards isn't capable of 10 Mb/s, actual
+   transfer rates will be slower.</em>
+</p>
+<p>The biggest limitation of flash devices is how they're written.
+   Instead changing bits of memory to 0 or 1 depending on the data
+   being written, flash memory can only change a bit from 1 to 0.
+   Once a bit of memory has been changed to 0, it can't be changed
+   back to 1 except by erasing it.  Erasing is an operation that sets
+   an entire range of memory, called an erase block, to all 1s.  Once
+   a block is erased, it can be written through an operation called
+   programming which changes 1 bits to 0 bits.  Since an erase block
+   is made up of a number of pages, this makes writing a more
+   complicated operation than it would be on a hard disk.  In order to
+   write a single page to a flash device you need to erase to the
+   block that the page belongs to.  However, since that will erase all
+   the pages that belong to that block, not just the page being
+   written, you first need to read in all of the other pages that are
+   going to be erased.  After the block is erased you then can program
+   the erase block with the contents of the page you're trying to
+   write and along with the content of all the other pages.
+   <em>Some flash devices work the other way, erasing sets the block
+   to all 0s while programming changes 0s to 1s.</em>
+</p>
+<p>Another limitation is that flash memory isn't as reliable as RAM
+   memory.  A flash device will typically have a certain number of bad
+   blocks when it ships from the factory, and it's possible for
+   defects to appear in the media as it used.  Also, a block can
+   eventually "wear out" after a few hundred thousand program/erase
+   cycles.  For this reason each page is divided into two parts, a
+   data area a spare area.  The data area is used to store ordinary
+   data, while the much smaller spare area is for software defined
+   error-correcting codes (ECC), wear leveling, bad block remapping,
+   and other functions meant to deal with defects in the media.  
+</p>
+
+<p>The flash devices used in PS2 memory cards have a 528 byte page
+   size.  This is divided into a 512 byte data area and 16 byte spare
+   area.  The spare area is used to store 12 bytes of ECC data, with
+   the remaining 4 bytes left unused.  Erase blocks are 16 pages long.
+   The are 16384 pages, for a total combined raw data area capacity
+   8,388,608 bytes.
+</p>
+ 
+</div>
+<div style="clear: both">
+<h2>File System Organization</h2>
+
+<div style="float: right; padding: 1em 0 1em 1em">
+<h3>Standard Memory<br>
+Card Layout</h3>
+<table>
+<colgroup></colgroup>
+<colgroup align="center" valign="middle"></colgroup>
+<tbody><tr valign="top">
+<td><code>0x0000</code></td>
+<td rowspan="1" style="border: black solid thin" valign="middle">Superblock</td>
+</tr>
+<tr valign="top">
+<td><code>0x0001</code></td>
+<td rowspan="2" style="border: black solid thin" valign="middle">Unused</td>
+</tr>
+<tr><td>&nbsp;</td></tr>
+<tr valign="top">
+<td><code>0x0010</code></td>
+<td rowspan="1" style="border: black solid thin" valign="middle">Indirect FAT Table</td>
+</tr>
+<tr valign="top">
+<td><code>0x0012</code></td>
+<td rowspan="4" style="border: black solid thin" valign="middle">FAT Table</td>
+</tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr valign="top">
+<td><code>0x0052</code></td>
+<td rowspan="20" style="border: black solid thin" valign="middle">Allocatable Clusters</td>
+</tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr valign="top">
+<td><code>0x3ED2</code></td>
+<td rowspan="6" style="border: black solid thin" valign="middle">Reserved Clusters</td>
+</tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr valign="top">
+<td><code>0x3FE0</code></td>
+<td rowspan="2" style="border: black solid thin" valign="middle">Backup Block 2</td>
+</tr>
+<tr><td>&nbsp;</td></tr>
+<tr valign="top">
+<td><code>0x3FF0</code></td>
+<td rowspan="2" style="border: black solid thin" valign="middle">Backup Block 1</td>
+</tr>
+<tr valign="bottom">
+<td><code>0x3FFF</code></td>
+</tr>
+</tbody></table>
+</div>
+
+<p>The PS2 memory card file system has a fairly simple design, with
+   some allowances made for the limitations of flash memory.  Its
+   overall structure is similar to the well known MS-DOS FAT file
+   system.  It uses a file allocation table (FAT) to keep track of
+   allocated space and a hierarchical directory system where all of
+   a file's metadata is stored in its directory entry.  Like the FAT file
+   system, which groups disk sectors into clusters, the PS2 memory
+   card file system groups flash memory pages in to clusters.  On
+   standard PS2 memory cards, the cluster size 1024 bytes, or 2 pages
+   long.
+</p>
+<div>
+<h3>The Superblock</h3>
+<p>The key to the PS2 memory card file system is the superblock.
+   Located in the first page of the memory, this is the only part of
+   the file system with a fixed location. <em>While some things like
+   the do end up in fixed locations on standard 8M memory cards, you
+   shouldn't rely on this.</em>
+</p>
+
+<table rules="all">
+<caption>Superblock (340 bytes)</caption>
+<colgroup span="4" valign="top"></colgroup>
+<colgroup span="1" valign="top"></colgroup>
+<tbody><tr><th>Offset</th><th>Name</th><th>Type</th><th>Default</th>
+<th>Description</th></tr>
+<tr>
+<td nowrap="nowrap"><code>0x00</code></td>
+<td nowrap="nowrap"><code>magic</code></td>
+<td nowrap="nowrap"><code>byte[28]</code></td>
+<td nowrap="nowrap"><code>-</code></td>
+<td>Identifies the card as being formatted.
+Set to the ASCII string "<code style="font-family: monospace">Sony PS2 Memory Card Format </code>".
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x1C</code></td>
+<td nowrap="nowrap"><code>version</code></td>
+<td nowrap="nowrap"><code>byte﻿[12]</code></td>
+<td nowrap="nowrap"><code>1.X.0.0</code></td>
+<td>Version number of the format used.
+
+<br><em>Version 1.2 indicates full support for <code style="font-family: monospace">bad_block_list</code>.
+</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x28</code></td>
+<td nowrap="nowrap"><code>page_len</code></td>
+<td nowrap="nowrap"><code>half</code></td>
+<td nowrap="nowrap"><code>512</code></td>
+<td>Size in bytes of a memory card page.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x2A</code></td>
+<td nowrap="nowrap"><code>pages_per_cluster</code></td>
+<td nowrap="nowrap"><code>half</code></td>
+<td nowrap="nowrap"><code>2</code></td>
+<td>The number of pages in a cluster.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x2C</code></td>
+<td nowrap="nowrap"><code>pages_per_block</code></td>
+<td nowrap="nowrap"><code>half</code></td>
+<td nowrap="nowrap"><code>16</code></td>
+<td>The number of pages in an erase block.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x2E</code></td>
+<td nowrap="nowrap"><code>-</code></td>
+<td nowrap="nowrap"><code>half</code></td>
+<td nowrap="nowrap"><code>0xFF00</code></td>
+<td><em>Doesn't seem to be used</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x30</code></td>
+<td nowrap="nowrap"><code>clusters_per_card</code></td>
+<td nowrap="nowrap"><code>word</code></td>
+<td nowrap="nowrap"><code>8192</code></td>
+<td>The total size of the card in clusters.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x34</code></td>
+<td nowrap="nowrap"><code>alloc_offset</code></td>
+<td nowrap="nowrap"><code>word</code></td>
+<td nowrap="nowrap"><code>41</code></td>
+<td>Cluster offset of the first allocatable cluster.  Cluster values
+in the FAT and directory entries are relative to this.
+
+<br><em>This is the cluster immediately after the FAT</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x38</code></td>
+<td nowrap="nowrap"><code>alloc_end</code></td>
+<td nowrap="nowrap"><code>word</code></td>
+<td nowrap="nowrap"><code>8135</code></td>
+<td>The cluster after the highest allocatable cluster.  Relative to 
+<code style="font-family: monospace">alloc_offset</code>.
+
+<br><em>Not used.</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x3C</code></td>
+<td nowrap="nowrap"><code>rootdir_cluster</code></td>
+<td nowrap="nowrap"><code>word</code></td>
+<td nowrap="nowrap"><code>0</code></td>
+<td>First cluster of the root directory.  Relative to 
+<code style="font-family: monospace">alloc_offset</code>.
+
+<br><em>Must be zero.</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x40</code></td>
+<td nowrap="nowrap"><code>backup_block1</code></td>
+<td nowrap="nowrap"><code>word</code></td>
+<td nowrap="nowrap"><code>1023</code></td>
+<td>Erase block used as a backup area during programming.
+
+<br><em>Normally the the last block on the card, it may have a different value
+if that block was found to be bad.</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x44</code></td>
+<td nowrap="nowrap"><code>backup_block2</code></td>
+<td nowrap="nowrap"><code>word</code></td>
+<td nowrap="nowrap"><code>1022</code></td>
+<td>This block should be erased to all ones.
+
+<br><em>Normally the the second last block on the card.</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x50</code></td>
+<td nowrap="nowrap"><code>ifc_list</code></td>
+<td nowrap="nowrap"><code>word[32]</code></td>
+<td nowrap="nowrap"><code>8</code></td>
+<td>List of indirect FAT clusters.
+
+<br><em>On a standard 8M card there's only one indirect FAT cluster.</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0xD0</code></td>
+<td nowrap="nowrap"><code>bad_block_list</code></td>
+<td nowrap="nowrap"><code>word[32]</code></td>
+<td nowrap="nowrap"><code>-1</code></td>
+<td>List of erase blocks that have errors and shouldn't be used.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x150</code></td>
+<td nowrap="nowrap"><code>card_type</code></td>
+<td nowrap="nowrap"><code>byte</code></td>
+<td nowrap="nowrap"><code>2</code></td>
+<td>Memory card type.
+
+<br><em>Must be 2, indicating that this is a PS2 memory card.</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x151</code></td>
+<td nowrap="nowrap"><code>card_flags</code></td>
+<td nowrap="nowrap"><code>byte</code></td>
+<td nowrap="nowrap"><code>0x52</code></td>
+<td>Physical characteristics of the memory card.
+<br></td>
+</tr>
+</tbody></table>
+
+<div style="float: right; padding: 1em 0 1em 1em; width: 40%">
+<table rules="all">
+<caption>Card Flags</caption>
+<colgroup span="2" valign="top"></colgroup>
+<colgroup span="1" valign="top"></colgroup>
+<tbody><tr><th>Mask</th><th>Name</th><th>Description</th></tr>
+<tr>
+<td nowrap="nowrap"><code>0x01</code></td>
+<td nowrap="nowrap"><code>CF_USE_ECC</code></td>
+<td>Card supports ECC.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x08</code></td>
+<td nowrap="nowrap"><code>CF_BAD_BLOCK</code></td>
+<td>Card may have bad blocks.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x10</code></td>
+<td nowrap="nowrap"><code>CF_ERASE_ZEROES</code></td>
+<td>Erased blocks have all bits set to zero.
+<br></td>
+</tr>
+</tbody></table>
+</div>
+
+<p>Most of the fields in the superblock should be self-explanatory.
+   The fields <code style="font-family: monospace">page_len</code>, <code style="font-family: monospace">pages_per_cluster</code>,
+   <code style="font-family: monospace">pages_per_block,</code> and <code style="font-family: monospace">clusters_per_card</code> define the
+   basic geometry of the file system.  The FAT can be accessed using
+   <code style="font-family: monospace">ifc_list</code> and <code style="font-family: monospace">rootdir_cluster</code> gives the first cluster
+   of the root directory.  Cluster offsets in FAT and directory
+   entries are all relative to <code style="font-family: monospace">alloc_offset</code>
+</p>
+
+<p>File systems ment to be compatible with the PS2's memory card
+   drivers have a fairly restricted set of geometry options.  The
+   field <code style="font-family: monospace">page_size</code> can be either 512 or 1024.  If the page size
+   is 512 then <code style="font-family: monospace">pages_per_cluster</code> can either be 1 or 2,
+   otherwise it can only be 1.  The limit on <code style="font-family: monospace">pages_per_block</code> is
+   16.  There doesn't seem to be any upper limit on
+   <code style="font-family: monospace">clusters_per_card</code>, however because of the size of <code style="font-family: monospace">ifc_list</code>
+   there can be no more than 8,388,608 allocatable clusters.
+   While the clusters the make up the FAT can be located anywhere, the
+   value of <code style="font-family: monospace">rootdir_cluster</code> must be 0, indicating that the first
+   allocatable cluster is the first cluster of the root directory.
+</p>
+
+</div>
+
+<div>
+<h3>File Allocation Table</h3>
+
+<p>The file allocation table is used for keeping track of which
+   clusters are in use and form a linked-list of the clusters that
+   belong to each file.  Each entry in the table is a 32-bit value.
+   If the the cluster corresponding to the entry is free then the most
+   significant bit will be clear.  Otherwise, it will be set and the
+   lower 31-bits of the value are the index of the next cluster in the
+   file.  These indexes are relative to <code style="font-family: monospace">alloc_offset</code> given in
+   the superblock.  A value of <code style="font-family: monospace">0xFFFFFFFF</code> indicates that this
+   entry is the last cluster in the file.
+</p>
+<p>Unlike the MS-DOS FAT file system, the table isn't required to to
+   be in single contiguous range of clusters.  Instead a system of
+   double-indirect indexing is used that allows the clusters that make
+   up the file allocation table to be scattered across file system.
+   The <code style="font-family: monospace">ifc_list</code> in the superblock contains a table 32-bit
+   cluster indexes (relative to the start of the card).  The entries
+   in the <code style="font-family: monospace">ifc_list</code> point to the clusters that make up the
+   indirect table.  The indirect table is also a table 32-bit cluster
+   indexes and these indexes point to the clusters that make up the
+   file allocation table.
+</p>
+<p>So assuming a cluster size of 1024, code to access an entry in the
+   FAT might look something like this:
+</p>
+<p style="margin-left: 4em"><code style="font-family: monospace">
+fat_offset = fat_index % 256 
+<br>
+indirect_index  = fat_index / 256 
+<br>
+indirect_offset = indirect_index  % 256
+<br>
+dbl_indirect_index = indirect_index / 256
+<br>
+indirect_cluster_num = superblock.ifc_table[dbl_indirect_index]
+<br>
+indirect_cluster = read_cluster(indirect_cluster_num)
+<br>
+fat_cluster_num = indirect_cluster[indirect_offset]
+<br>
+fat_cluster = read_cluster(fat_cluster_num)
+<br>
+entry = fat_cluster[fat_offset]
+</code></p>
+</div>
+
+<div>
+<h3>Directories</h3>
+<p>Directories are for the most part like regular files, except that they
+   contain directory entries rather than data.  The root directory is
+   as its name suggests, the root of the card's hierarchical directory
+   structure.  The first cluster of the root directory is given in the
+   <code style="font-family: monospace">rootdir_cluster</code> field of the superblock, and subsequent clusters
+   (if any) can be found by following chain of linked clusters in the FAT.
+</p>
+
+<div style="float: right; padding: 1em 0 1em 1em; width: 50%">
+<table rules="all">
+<caption>Directory Entry Mode Flags</caption>
+<colgroup span="2" valign="top"></colgroup>
+<colgroup span="1" valign="top"></colgroup>
+<tbody><tr><th>Mask</th><th>Name</th><th>Description</th></tr>
+<tr>
+<td nowrap="nowrap"><code>0x0001</code></td>
+<td nowrap="nowrap"><code>DF_READ</code></td>
+<td>Read permission.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x0002</code></td>
+<td nowrap="nowrap"><code>DF_WRITE</code></td>
+<td>Write permission.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x0004</code></td>
+<td nowrap="nowrap"><code>DF_EXECUTE</code></td>
+<td>Execute permission.
+
+<br><em>Unused</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x0008</code></td>
+<td nowrap="nowrap"><code>DF_PROTECTED</code></td>
+<td>Directory is copy protected.
+
+<br><em>Meaningful only to the browser.</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x0010</code></td>
+<td nowrap="nowrap"><code>DF_FILE</code></td>
+<td>Regular file.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x0020</code></td>
+<td nowrap="nowrap"><code>DF_DIRECTORY</code></td>
+<td>Directory.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x0040</code></td>
+<td nowrap="nowrap"><code>-</code></td>
+<td><em>Used internally to create directories.</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x0080</code></td>
+<td nowrap="nowrap"><code>-</code></td>
+<td><em>Copied?</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x0100</code></td>
+<td nowrap="nowrap"><code>-</code></td>
+<td>-<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x0200</code></td>
+<td nowrap="nowrap"><code>O_CREAT</code></td>
+<td><em>Used to create files.</em></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x0400</code></td>
+<td nowrap="nowrap"><code>DF_0400</code></td>
+<td>Set when files and directories are created,
+otherwise ignored.<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x0800</code></td>
+<td nowrap="nowrap"><code>DF_POCKETSTN</code></td>
+<td>PocketStation application save file.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x1000</code></td>
+<td nowrap="nowrap"><code>DF_PSX</code></td>
+<td>PlayStation save file.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x2000</code></td>
+<td nowrap="nowrap"><code>DF_HIDDEN</code></td>
+<td>File is hidden.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x4000</code></td>
+<td nowrap="nowrap"><code>-</code></td>
+<td>-<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x8000</code></td>
+<td nowrap="nowrap"><code>DF_EXISTS</code></td>
+<td>This entry is in use.
+If this flag is clear, then the file or directory has been deleted.
+<br></td>
+</tr>
+</tbody></table>
+</div>
+<table rules="all">
+<caption>Directory Entry (512 bytes)</caption>
+<colgroup span="3" valign="top"></colgroup>
+<colgroup span="1" valign="top"></colgroup>
+<tbody><tr><th>Offset</th><th>Name</th><th>Type</th><th>Description</th></tr>
+<tr>
+<td nowrap="nowrap"><code>0x00</code></td>
+<td nowrap="nowrap"><code>mode</code></td>
+<td nowrap="nowrap"><code>half</code></td> 
+<td>See directory mode table.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x04</code></td>
+<td nowrap="nowrap"><code>length</code></td>
+<td nowrap="nowrap"><code>word</code></td> 
+<td>Length in bytes if a file, or entries if a directory.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x08</code></td>
+<td nowrap="nowrap"><code>created</code></td>
+<td nowrap="nowrap"><code>byte[8]</code></td> 
+<td>Creation time.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x10</code></td>
+<td nowrap="nowrap"><code>cluster</code></td>
+<td nowrap="nowrap"><code>word</code></td> 
+<td>First cluster of the file, or <code style="font-family: monospace">0xFFFFFFFF</code> for an empty file.
+In "." entries this the first cluster of this directory's parent
+directory instead.
+Relative to <code style="font-family: monospace">alloc_offset</code>.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x14</code></td>
+<td nowrap="nowrap"><code>dir_entry</code></td>
+<td nowrap="nowrap"><code>word</code></td> 
+<td>Only in "." entries.  Entry of this directory
+in its parent's directory.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x18</code></td>
+<td nowrap="nowrap"><code>modified</code></td>
+<td nowrap="nowrap"><code>byte[8]</code></td> 
+<td>Modification time.
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x20</code></td>
+<td nowrap="nowrap"><code>attr</code></td>
+<td nowrap="nowrap"><code>word</code></td> 
+<td>User defined attribute
+<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x40</code></td>
+<td nowrap="nowrap"><code>name</code></td>
+<td nowrap="nowrap"><code>byte[32]</code></td> 
+<td>Zero terminated name for this directory entry.
+
+<br></td>
+</tr>
+</tbody></table>
+
+<p>The first two directory entries in any directory are always two
+   dummy entries named "." and "..", in that order.  In path names,
+   these two directory entries represent the current directory and the
+   parent directory, as they do in Unix, but they serve different
+   purposes in the file system.  The first directory entry, the "."
+   entry, is used to store a link to the parent directory.  The second
+   entry serves no purpose except as a place holder.  The fields these
+   entries do not reflect state of the directories that they are
+   supposed to refer to.  The <code style="font-family: monospace">length</code> and <code style="font-family: monospace">cluster</code> fields
+   are always set 0 and the <code style="font-family: monospace">modified</code> time never changes.
+
+</p>
+
+<p>The first directory entry in the root directory is special case.
+   It fills the role of the root directory's own directory entry.
+   Unlike the "." entry in other directories, the fields in this entry
+   are used and reflect the state of the root directory.  In
+   particular, the <code style="font-family: monospace">length</code> field contains the number of
+   directory entries root directory.  The exception is the
+   <code style="font-family: monospace">cluster</code> field which isn't used.
+</p>
+
+<div style="float: right; padding: 1em 0 1em 1em">    
+<table rules="all">
+<caption>Time of Day (8 bytes)</caption>
+<colgroup span="3" valign="top"></colgroup>
+<colgroup span="1" valign="top"></colgroup>
+<tbody><tr><th>Offset</th><th>Name</th><th>Type</th><th>Description</th></tr>
+<tr>
+<td nowrap="nowrap"><code>0x01</code></td>
+<td nowrap="nowrap"><code>sec</code></td>
+<td nowrap="nowrap"><code>byte</code></td>
+<td>seconds<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x02</code></td>
+<td nowrap="nowrap"><code>min</code></td>
+<td nowrap="nowrap"><code>byte</code></td>
+<td>minutes<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x03</code></td>
+<td nowrap="nowrap"><code>hour</code></td>
+<td nowrap="nowrap"><code>byte</code></td>
+<td>hours<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x04</code></td>
+<td nowrap="nowrap"><code>day</code></td>
+<td nowrap="nowrap"><code>byte</code></td>
+<td>day of the month<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x05</code></td>
+<td nowrap="nowrap"><code>month</code></td>
+<td nowrap="nowrap"><code>byte</code></td>
+<td>month (1-12)<br></td>
+</tr>
+<tr>
+<td nowrap="nowrap"><code>0x06</code></td>
+<td nowrap="nowrap"><code>year</code></td>
+<td nowrap="nowrap"><code>word</code></td>
+<td>year<br></td>
+</tr>
+</tbody></table>
+</div>
+
+<p>The <code style="font-family: monospace">created</code> and <code style="font-family: monospace">modified</code> fields use the time format
+   given in the Time of Day table.  All time stamps use the Japan
+   timezone (+9 UTC), regardless of the timezone the PS2 console was
+   configured to use.  A four digit year used.
+</p>
+
+<p>Most of the mode flags don't serve any purpose in the structure of
+   the file system and only have meaning to higher level software,
+   like the PS2 browser.  The <code style="font-family: monospace">DF_PSX</code> flag indicates that file
+   was copied from a PSX memory card.  If the <code style="font-family: monospace">DF_POCKETSTN</code> flag
+   is set as well, the file is a PocketStation application file copied
+   from a PocketStation.  
+</p>
+
+<p>Each directory entry is a massive 512 bytes long, so only two
+   entries fit in each 1024 cluster.  The unused bytes at the end of
+   directory could be used for a longer name, but normally names are
+   truncated to only 32 bytes.  File names are case sensitive, and the
+   characters "<code style="font-family: monospace">?</code>", "<code style="font-family: monospace">*</code>", and "<code style="font-family: monospace">/</code>" along with all
+   ASCII control characters are illegal in files.
+</p>
+
+</div>
+
+</div>
+<div style="clear: both">
+<h2>Error Management</h2>
+
+<p>A number of strategies are employed in the file system to handle
+   errors are likely to occur when using memory cards.  
+</p>
+
+<div>
+<h3>Error Correction Code</h3>
+
+<p>The first line defence is the use of error correcting codes to deal
+   with any defects in the card's flash media.  The 512 byte data area
+   of each page is divided into 128 byte long chunks and for each
+   chunk a simple 20-bit Hamming code is calculated.  This code allows
+   a single bit error in a chunk to be both detected and corrected.  A
+   total of three bytes are used to store this 20-bit Hamming code.
+   The first byte contains the column (or bit-wise) parity bits, with
+   the even groups in the lower nibble and the odd groups in the upper
+   nibble.  The second and third bytes contain the even and odd groups
+   respectively for the line (or byte-wise) parity bits.  The three
+   ECC bytes for each of the four 128-byte chunks of a page are stored
+   in order in the page's spare area.
+</p>
+</div>
+
+<div>
+<h3>Backup Blocks</h3>
+
+<p>Two complete erase blocks are reserved to deal with the possibility
+   of the memory card being removed by the user when data is being
+   saved.  Since writing a single cluster to card requires erasing and
+   reprogramming the entire erase block the cluster belongs to, a
+   failure during programming could destroy more then just data being
+   written.  The two backup blocks are used to ensure the an program
+   operation completes atomically.  Either programming completes
+   successfully and no data is lost, or the erase block being
+   programmed is left unchanged and only the new data being written is
+   lost.
+</p>
+<p>Before programming an erase block, both <code style="font-family: monospace">backup_block1</code> and
+   <code style="font-family: monospace">backup_block2</code> are erase.  Then <code style="font-family: monospace">backup_block1</code>
+   programmed with a backup copy of the new data for block, and the
+   number of the erase block being programmed is written at the start
+   of the <code style="font-family: monospace">backup_block2</code>.  The erase block being programmed is
+   then erased and programmed.  Finally, <code style="font-family: monospace">backup_block2</code> is erased.
+</p>
+<p>Recovery from failed program operation caused by removal of the
+   memory card is implemented whenever a memory card is inserted into
+   the PS2.  First <code style="font-family: monospace">backup_block2</code> is checked, if it's in a
+   erased state then the last programming operation completed
+   successfully and nothing else is done.  If it's not erased, then
+   programming is assumed to have not been completed.  The contents of
+   <code style="font-family: monospace">backup_block1</code> are then copied to the erase block given in
+   the first word of <code style="font-family: monospace">backup_block2</code>.  Then <code style="font-family: monospace">backup_block2</code>
+   is erased.
+</p>
+</div>
+
+<div>
+<h3>Bad Sector List</h3>
+<p>The last defence against errors is a list of bad erase blocks kept
+   in the superblock.  If any part of an erase block is found to be
+   defective it can be added to <code style="font-family: monospace">bad_block_list</code>.  No new
+   clusters in this block should be allocated, however clusters
+   already allocated in the block can still continue to be used.
+</p>
+</div>
+
+<div>
+<h3>Reserved Clusters</h3>
+<p>The standard PS2 memory card drivers artificially reduce the number
+   allocatable clusters by rounding the number down to the nearest
+   1000s clusters.  Since clusters in blocks in the
+   <code style="font-family: monospace">bad_block_list</code> don't count as against the limit, this
+   effectively creates a range of reserved replacement clusters.  As
+   blocks are marked as bad, clusters in reserved range become
+   available and so the apparent capacity of the memory card remains
+   the same.  <em>This was probably implemented so that memory cards
+   shipped with varying numbers of bad blocks would all appear to have
+   the same amount of free space in the PS2 browser.</em>
+</p>
+</div>
+
+</div>
+<div style="clear: both">
+<h2>See Also</h2>
+
+<div>
+<h3>NAND Flash Memory</h3>
+
+Micron: <a href="http://download.micron.com/pdf/technotes/nand/tn2919.pdf">NAND Flash 101: An Introduction to NAND Flash and How to Design It In 
+       to Your Next Product</a><br>
+
+Wikipedia: <a href="http://en.wikipedia.org/wiki/Flash_memory">Flash memory</a><br>
+
+</div>
+
+<div>
+<h3>Error Correction Codes</h3>
+
+STMicroelectronics: <a href="http://www.st.com/stonline/products/literature/an/10123.htm">Error Correction Code in Single Level Cell NAND Flash memories</a><br>
+
+Micron: <a href="http://download.micron.com/pdf/technotes/nand/tn2908.pdf">Hamming Codes for NAND Flash Memories</a><br>
+
+Hanimar: <a href="http://www.oocities.com/siliconvalley/station/8269/sma02/sma02.html#ECC">Sample code for calculating ECC values in C</a><br>
+
+</div>
+
+
+</div>
+
+
+</body></html>

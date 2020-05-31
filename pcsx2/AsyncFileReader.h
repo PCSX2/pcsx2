@@ -15,17 +15,20 @@
 
 #pragma once
 
-#ifdef WIN32
+#ifdef _WIN32
 #	include <Windows.h>
 #	undef Yield
-#else
+#elif defined(__linux__)
 #	include <libaio.h>
+#elif defined(__POSIX__)
+#	include <aio.h>
 #endif
+#include <memory>
 
 class AsyncFileReader
 {
 protected:
-	AsyncFileReader() : m_dataoffset(0) {}
+	AsyncFileReader() : m_dataoffset(0), m_blocksize(0) {}
 
 	wxString m_filename;
 
@@ -62,7 +65,7 @@ class FlatFileReader : public AsyncFileReader
 {
 	DeclareNoncopyableObject( FlatFileReader );
 
-#ifdef WIN32
+#ifdef _WIN32
 	HANDLE hOverlappedFile;
 
 	OVERLAPPED asyncOperationContext;
@@ -70,9 +73,13 @@ class FlatFileReader : public AsyncFileReader
 	HANDLE hEvent;
 
 	bool asyncInProgress;
-#else
+#elif defined(__linux__)
 	int m_fd; // FIXME don't know if overlap as an equivalent on linux
 	io_context_t m_aio_context;
+#elif defined(__POSIX__)
+	int m_fd; // TODO OSX don't know if overlap as an equivalent on OSX
+	struct aiocb m_aiocb;
+	bool m_read_in_progress;
 #endif
 
 	bool shareWrite;
@@ -95,22 +102,6 @@ public:
 
 	virtual void SetBlockSize(uint bytes) { m_blocksize = bytes; }
 	virtual void SetDataOffset(int bytes) { m_dataoffset = bytes; }
-};
-
-// Factory - creates an AsyncFileReader derived instance which can read a compressed file
-class CompressedFileReader {
-public:
-	// Checks if any of the available compressed file handlers can open this
-	static bool DetectCompressed(AsyncFileReader* pReader);
-
-	// fileName is only used to choose the compressed reader.
-	// If no matching handler is found then an arbitrary handlers will be returned.
-	// The returned instance still needs ->Open(filename) before usage.
-	// Open(filename) may still fail.
-	static AsyncFileReader* GetNewReader(const wxString& fileName);
-
-private:
-	virtual ~CompressedFileReader() = 0;
 };
 
 class MultipartFileReader : public AsyncFileReader
@@ -158,12 +149,12 @@ class BlockdumpFileReader : public AsyncFileReader
 	wxFileInputStream* m_file;
 
 	// total number of blocks in the ISO image (including all parts)
-	u32			m_blocks;
-	s32			m_blockofs;
+	u32 m_blocks;
+	s32 m_blockofs;
 
 	// index table
-	ScopedArray<u32>	m_dtable;
-	int					m_dtablesize;
+	std::unique_ptr<u32[]> m_dtable;
+	int m_dtablesize;
 
 	int m_lresult;
 

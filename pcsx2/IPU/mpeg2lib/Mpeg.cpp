@@ -255,6 +255,7 @@ int get_macroblock_address_increment()
 				DUMPBITS(11);
 				return 0xb0022;
 			}
+			// Fall through
 
 		default:
 			return 0;//error
@@ -334,11 +335,11 @@ static __fi int get_chroma_dc_dct_diff()
 	return dc_diff;
 }
 
-#define SATURATE(val)					\
-do {							\
-	 if (((u32)(val + 2048) > 4095))	\
-	val = (((s32)val) >> 31) ^ 2047;			\
-} while (0)
+static __fi void SATURATE(int& val)
+{
+	if ((u32)(val + 2048) > 4095)
+		val = (val >> 31) ^ 2047;
+}
 
 static bool get_intra_block()
 {
@@ -434,6 +435,7 @@ static bool get_intra_block()
 			ipu_cmd.pos[4] = 0;
 			return true;
 		}
+		// Fall through
 
 	  case 1:
 	  {
@@ -586,6 +588,7 @@ static bool get_non_intra_block(int * last)
 				ipu_cmd.pos[4] = 0;
 				return true;
 			}
+			// Fall through
 
 		case 1:
 			if (!GETWORD())
@@ -704,6 +707,7 @@ __fi bool mpeg2sliceIDEC()
 
 		ipuRegs.top = 0;
 		ipuRegs.ctrl.ECD = 0;
+		// Fall through
 
 	case 1:
 		ipu_cmd.pos[0] = 1;
@@ -711,6 +715,7 @@ __fi bool mpeg2sliceIDEC()
 		{
 			return false;
 		}
+		// Fall through
 
 	case 2:
 		ipu_cmd.pos[0] = 2;
@@ -736,6 +741,7 @@ __fi bool mpeg2sliceIDEC()
 				decoder.coded_block_pattern = 0x3F;//all 6 blocks
 				memzero_sse_a(mb8);
 				memzero_sse_a(rgb32);
+				// Fall through
 
 			case 1:
 				ipu_cmd.pos[1] = 1;
@@ -760,30 +766,40 @@ __fi bool mpeg2sliceIDEC()
 						ipu_cmd.pos[2] = 1;
 						return false;
 					}
+					// Fall through
+
 				case 2:
 					if (!slice_intra_DCT(0, (u8*)mb8.Y + 8, DCT_stride, ipu_cmd.pos[2] == 2))
 					{
 						ipu_cmd.pos[2] = 2;
 						return false;
 					}
+					// Fall through
+
 				case 3:
 					if (!slice_intra_DCT(0, (u8*)mb8.Y + DCT_offset, DCT_stride, ipu_cmd.pos[2] == 3))
 					{
 						ipu_cmd.pos[2] = 3;
 						return false;
 					}
+					// Fall through
+
 				case 4:
 					if (!slice_intra_DCT(0, (u8*)mb8.Y + DCT_offset + 8, DCT_stride, ipu_cmd.pos[2] == 4))
 					{
 						ipu_cmd.pos[2] = 4;
 						return false;
 					}
+					// Fall through
+
 				case 5:
 					if (!slice_intra_DCT(1, (u8*)mb8.Cb, decoder_stride >> 1, ipu_cmd.pos[2] == 5))
 					{
 						ipu_cmd.pos[2] = 5;
 						return false;
 					}
+					// Fall through
+
 				case 6:
 					if (!slice_intra_DCT(2, (u8*)mb8.Cr, decoder_stride >> 1, ipu_cmd.pos[2] == 6))
 					{
@@ -805,6 +821,7 @@ __fi bool mpeg2sliceIDEC()
 					ipu_dither(rgb32, rgb16, decoder.dte);
 					decoder.SetOutputTo(rgb16);
 				}
+				// Fall through
 
 			case 2:
 			{
@@ -822,7 +839,8 @@ __fi bool mpeg2sliceIDEC()
 
 				mbaCount = 0;
 			}
-			
+			// Fall through
+
 			case 3:
 				while (1)
 				{
@@ -847,7 +865,7 @@ __fi bool mpeg2sliceIDEC()
 					{
 						case 8:		/* macroblock_escape */
 							mbaCount += 33;
-							/* pass through */
+							// Fall through
 
 						case 15:	/* macroblock_stuffing (MPEG1 only) */
 							DUMPBITS(11);
@@ -869,6 +887,7 @@ __fi bool mpeg2sliceIDEC()
 					decoder.dc_dct_pred[1] =
 					decoder.dc_dct_pred[2] = 128 << decoder.intra_dc_precision;
 				}
+				// Fall through
 
 			case 4:
 				if (!GETWORD())
@@ -876,7 +895,6 @@ __fi bool mpeg2sliceIDEC()
 					ipu_cmd.pos[1] = 4;
 					return false;
 				}
-
 				break;
 
 			jNO_DEFAULT;
@@ -885,9 +903,11 @@ __fi bool mpeg2sliceIDEC()
 			ipu_cmd.pos[1] = 0;
 			ipu_cmd.pos[2] = 0;
 		}
+		// Fall through
 
 finish_idec:
 		finishmpeg2sliceIDEC();
+		// Fall through
 
 	case 3:
 	{
@@ -904,6 +924,7 @@ finish_idec:
 			ipuRegs.ctrl.SCD = 1;
 		}
 	}
+	// Fall through
 
 	case 4:
 		if (!getBits32((u8*)&ipuRegs.top, 0))
@@ -942,12 +963,15 @@ __fi bool mpeg2_slice()
 		ipuRegs.top = 0;
 		memzero_sse_a(mb8);
 		memzero_sse_a(mb16);
+		// Fall through 
+
 	case 1:
 		if (!bitstream_init())
 		{
 			ipu_cmd.pos[0] = 1;
 			return false;
 		}
+		// Fall through
 
 	case 2:
 		ipu_cmd.pos[0] = 2;
@@ -969,36 +993,48 @@ __fi bool mpeg2_slice()
 			{
 			case 0:
 				decoder.coded_block_pattern = 0x3F;
+				// Fall through
+
 			case 1:
 				if (!slice_intra_DCT(0, (u8*)mb8.Y, DCT_stride, ipu_cmd.pos[1] == 1))
 				{
 					ipu_cmd.pos[1] = 1;
 					return false;
 				}
+				// Fall through
+
 			case 2:
 				if (!slice_intra_DCT(0, (u8*)mb8.Y + 8, DCT_stride, ipu_cmd.pos[1] == 2))
 				{
 					ipu_cmd.pos[1] = 2;
 					return false;
 				}
+				// Fall through
+
 			case 3:
 				if (!slice_intra_DCT(0, (u8*)mb8.Y + DCT_offset, DCT_stride, ipu_cmd.pos[1] == 3))
 				{
 					ipu_cmd.pos[1] = 3;
 					return false;
 				}
+				// Fall through
+
 			case 4:
 				if (!slice_intra_DCT(0, (u8*)mb8.Y + DCT_offset + 8, DCT_stride, ipu_cmd.pos[1] == 4))
 				{
 					ipu_cmd.pos[1] = 4;
 					return false;
 				}
+				// Fall through
+
 			case 5:
 				if (!slice_intra_DCT(1, (u8*)mb8.Cb, decoder_stride >> 1, ipu_cmd.pos[1] == 5))
 				{
 					ipu_cmd.pos[1] = 5;
 					return false;
 				}
+				// Fall through
+
 			case 6:
 				if (!slice_intra_DCT(2, (u8*)mb8.Cr, decoder_stride >> 1, ipu_cmd.pos[1] == 6))
 				{
@@ -1044,6 +1080,8 @@ __fi bool mpeg2_slice()
 				{
 				case 0:
 					decoder.coded_block_pattern = get_coded_block_pattern();  // max 9bits
+					// Fall through
+
 				case 1:
 					if (decoder.coded_block_pattern & 0x20)
 					{
@@ -1053,6 +1091,8 @@ __fi bool mpeg2_slice()
 							return false;
 						}
 					}
+					// Fall through
+
 				case 2:
 					if (decoder.coded_block_pattern & 0x10)
 					{
@@ -1062,6 +1102,8 @@ __fi bool mpeg2_slice()
 							return false;
 						}
 					}
+					// Fall through
+					
 				case 3:
 					if (decoder.coded_block_pattern & 0x08)
 					{
@@ -1071,6 +1113,8 @@ __fi bool mpeg2_slice()
 							return false;
 						}
 					}
+					// Fall through
+					
 				case 4:
 					if (decoder.coded_block_pattern & 0x04)
 					{
@@ -1080,6 +1124,8 @@ __fi bool mpeg2_slice()
 							return false;
 						}
 					}
+					// Fall through
+					
 				case 5:
 					if (decoder.coded_block_pattern & 0x2)
 					{
@@ -1089,6 +1135,8 @@ __fi bool mpeg2_slice()
 							return false;
 						}
 					}
+					// Fall through
+					
 				case 6:
 					if (decoder.coded_block_pattern & 0x1)
 					{
@@ -1110,6 +1158,7 @@ __fi bool mpeg2_slice()
 		coded_block_pattern = decoder.coded_block_pattern;
 
 		decoder.SetOutputTo(mb16);
+		// Fall through
 
 	case 3:
 	{
@@ -1127,6 +1176,7 @@ __fi bool mpeg2_slice()
 
 		mbaCount = 0;
 	}
+	// Fall through
 	
 	case 4:
 	{
@@ -1143,6 +1193,7 @@ __fi bool mpeg2_slice()
 			ipuRegs.ctrl.SCD = 1;
 		}
 	}
+	// Fall through
 	
 	case 5:
 		if (!getBits32((u8*)&ipuRegs.top, 0))

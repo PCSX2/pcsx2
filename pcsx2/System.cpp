@@ -18,14 +18,14 @@
 #include "IopCommon.h"
 #include "VUmicro.h"
 #include "newVif.h"
-
-#include "SamplProf.h"
+#include "MTVU.h"
 
 #include "Elfheader.h"
 
 #include "System/RecTypes.h"
 
 #include "Utilities/MemsetFast.inl"
+#include "Utilities/Perf.h"
 
 
 // --------------------------------------------------------------------------------------
@@ -36,16 +36,12 @@
 // Parameters:
 //   name - a nice long name that accurately describes the contents of this reserve.
 RecompiledCodeReserve::RecompiledCodeReserve( const wxString& name, uint defCommit )
-	: BaseVmReserveListener( name )
+	: VirtualMemoryReserve( name, defCommit )
 {
-	m_blocksize		= (1024 * 128) / __pagesize;
 	m_prot_mode		= PageAccess_Any();
-	m_def_commit	= defCommit / __pagesize;
-	
-	m_profiler_registered = false;
 }
 
-RecompiledCodeReserve::~RecompiledCodeReserve() throw()
+RecompiledCodeReserve::~RecompiledCodeReserve()
 {
 	_termProfiler();
 }
@@ -53,28 +49,47 @@ RecompiledCodeReserve::~RecompiledCodeReserve() throw()
 void RecompiledCodeReserve::_registerProfiler()
 {
 	if (m_profiler_name.IsEmpty() || !IsOk()) return;
-	ProfilerRegisterSource( m_profiler_name, m_baseptr, GetReserveSizeInBytes() );
-	m_profiler_registered = true;
+
+	Perf::any.map((uptr)m_baseptr, GetReserveSizeInBytes(), m_profiler_name.ToUTF8());
 }
 
 void RecompiledCodeReserve::_termProfiler()
 {
-	if (m_profiler_registered)
-		ProfilerTerminateSource( m_profiler_name );
-}
-
-uint RecompiledCodeReserve::_calcDefaultCommitInBlocks() const
-{
-	return (m_def_commit + m_blocksize - 1) / m_blocksize;
 }
 
 void* RecompiledCodeReserve::Reserve( size_t size, uptr base, uptr upper_bounds )
 {
 	if (!_parent::Reserve(size, base, upper_bounds)) return NULL;
+
+	Commit();
+
 	_registerProfiler();
+
 	return m_baseptr;
 }
 
+void RecompiledCodeReserve::Reset()
+{
+	_parent::Reset();
+
+	Commit();
+}
+
+bool RecompiledCodeReserve::Commit()
+{
+	bool status = _parent::Commit();
+
+	if (IsDevBuild && m_baseptr)
+	{
+		// Clear the recompiled code block to 0xcc (INT3) -- this helps disasm tools show
+		// the assembly dump more cleanly.  We don't clear the block on Release builds since
+		// it can add a noticeable amount of overhead to large block recompilations.
+
+		memset(m_baseptr, 0xCC, m_pages_commited * __pagesize);
+	}
+
+	return status;
+}
 
 // Sets the abbreviated name used by the profiler.  Name should be under 10 characters long.
 // After a name has been set, a profiler source will be automatically registered and cleared
@@ -86,25 +101,7 @@ RecompiledCodeReserve& RecompiledCodeReserve::SetProfilerName( const wxString& s
 	return *this;
 }
 
-void RecompiledCodeReserve::DoCommitAndProtect( uptr page )
-{
-	CommitBlocks(page, (m_pages_commited || !m_def_commit) ? 1 : _calcDefaultCommitInBlocks() );
-}
-
-void RecompiledCodeReserve::OnCommittedBlock( void* block )
-{
-	if (IsDevBuild)
-	{
-		// Clear the recompiled code block to 0xcc (INT3) -- this helps disasm tools show
-		// the assembly dump more cleanly.  We don't clear the block on Release builds since
-		// it can add a noticeable amount of overhead to large block recompilations.
-
-		memset_sse_a<0xcc>( block, m_blocksize * __pagesize );
-	}
-}
-
-// This error message is shared by R5900, R3000, and microVU recompilers.  It is not used by the
-// SuperVU recompiler, since it has its own customized message.
+// This error message is shared by R5900, R3000, and microVU recompilers.
 void RecompiledCodeReserve::ThrowIfNotOk() const
 {
 	if (IsOk()) return;
@@ -194,14 +191,20 @@ void SysLogMachineCaps()
 {
 	if ( !PCSX2_isReleaseVersion )
 	{
-		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld %s - compiled on " __DATE__,
-			PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
+		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld %s"
+#ifndef DISABLE_BUILD_DATE
+			"- compiled on " __DATE__
+#endif
+			, PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
 			SVN_REV, SVN_MODS ? "(modded)" : ""
 			);
 	}
 	else { // shorter release version string
-		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld - compiled on " __DATE__,
-			PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
+		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld"
+#ifndef DISABLE_BUILD_DATE
+			"- compiled on " __DATE__
+#endif
+			, PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
 			SVN_REV );
 	}
 
@@ -223,7 +226,7 @@ void SysLogMachineCaps()
 	Console.Indent().WriteLn(
 		L"CPU name         =  %s\n"
 		L"Vendor/Model     =  %s (stepping %02X)\n"
-		L"CPU speed        =  %u.%03u ghz (%u logical thread%s)\n"
+		L"CPU speed        =  %u.%03u ghz (%u logical thread%ls)\n"
 		L"x86PType         =  %s\n"
 		L"x86Flags         =  %08x %08x\n"
 		L"x86EFlags        =  %08x",
@@ -246,11 +249,9 @@ void SysLogMachineCaps()
 	if( x86caps.hasStreamingSIMD4Extensions )		features[0].Add( L"SSE4.1" );
 	if( x86caps.hasStreamingSIMD4Extensions2 )		features[0].Add( L"SSE4.2" );
 	if( x86caps.hasAVX )							features[0].Add( L"AVX" );
+	if( x86caps.hasAVX2 )							features[0].Add( L"AVX2" );
 	if( x86caps.hasFMA)								features[0].Add( L"FMA" );
 
-	if( x86caps.hasMultimediaExtensionsExt )		features[1].Add( L"MMX2  " );
-	if( x86caps.has3DNOWInstructionExtensions )		features[1].Add( L"3DNOW " );
-	if( x86caps.has3DNOWInstructionExtensionsExt )	features[1].Add( L"3DNOW2" );
 	if( x86caps.hasStreamingSIMD4ExtensionsA )		features[1].Add( L"SSE4a " );
 
 	const wxString result[2] =
@@ -260,7 +261,11 @@ void SysLogMachineCaps()
 	};
 
 	Console.WriteLn( Color_StrongBlack,	L"x86 Features Detected:" );
-	Console.Indent().WriteLn( result[0] + (result[1].IsEmpty() ? L"" : (L"\n" + result[1])) );
+    Console.Indent().WriteLn(result[0] + (result[1].IsEmpty() ? L"" : (L"\n" + result[1])));
+#ifdef __M_X86_64
+    Console.Indent().WriteLn("Pcsx2 was compiled as 64-bits, which is unsupported and breaks all recompilers.");
+#endif
+
 	Console.Newline();
 }
 
@@ -268,19 +273,19 @@ template< typename CpuType >
 class CpuInitializer
 {
 public:
-	ScopedPtr<CpuType>			MyCpu;
-	ScopedExcept	ExThrown;
-	
+	std::unique_ptr<CpuType> MyCpu;
+	ScopedExcept ExThrown;
+
 	CpuInitializer();
-	virtual ~CpuInitializer() throw();
+	virtual ~CpuInitializer();
 
 	bool IsAvailable() const
 	{
 		return !!MyCpu;
 	}
 
-	CpuType* GetPtr() { return MyCpu.GetPtr(); }
-	const CpuType* GetPtr() const { return MyCpu.GetPtr(); }
+	CpuType* GetPtr() { return MyCpu.get(); }
+	const CpuType* GetPtr() const { return MyCpu.get(); }
 
 	operator CpuType*() { return GetPtr(); }
 	operator const CpuType*() const { return GetPtr(); }
@@ -295,28 +300,31 @@ template< typename CpuType >
 CpuInitializer< CpuType >::CpuInitializer()
 {
 	try {
-		MyCpu = new CpuType();
+		MyCpu = std::make_unique<CpuType>();
 		MyCpu->Reserve();
 	}
 	catch( Exception::RuntimeError& ex )
 	{
 		Console.Error( L"CPU provider error:\n\t" + ex.FormatDiagnosticMessage() );
-		MyCpu = NULL;
-		ExThrown = ex.Clone();
+		MyCpu = nullptr;
+		ExThrown = ScopedExcept(ex.Clone());
 	}
 	catch( std::runtime_error& ex )
 	{
 		Console.Error( L"CPU provider error (STL Exception)\n\tDetails:" + fromUTF8( ex.what() ) );
-		MyCpu = NULL;
-		ExThrown = new Exception::RuntimeError(ex);
+		MyCpu = nullptr;
+		ExThrown = ScopedExcept(new Exception::RuntimeError(ex));
 	}
 }
 
 template< typename CpuType >
-CpuInitializer< CpuType >::~CpuInitializer() throw()
+CpuInitializer< CpuType >::~CpuInitializer()
 {
-	if (MyCpu)
-		MyCpu->Shutdown();
+	try {
+		if (MyCpu)
+			MyCpu->Shutdown();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 // --------------------------------------------------------------------------------------
@@ -325,11 +333,6 @@ CpuInitializer< CpuType >::~CpuInitializer() throw()
 class CpuInitializerSet
 {
 public:
-	// Note: Allocate sVU first -- it's the most picky.
-
-	CpuInitializer<recSuperVU0>		superVU0;
-	CpuInitializer<recSuperVU1>		superVU1;
-
 	CpuInitializer<recMicroVU0>		microVU0;
 	CpuInitializer<recMicroVU1>		microVU1;
 
@@ -338,7 +341,7 @@ public:
 
 public:
 	CpuInitializerSet() {}
-	virtual ~CpuInitializerSet() throw() {}
+	virtual ~CpuInitializerSet() = default;
 };
 
 
@@ -356,9 +359,12 @@ SysMainMemory::SysMainMemory()
 {
 }
 
-SysMainMemory::~SysMainMemory() throw()
+SysMainMemory::~SysMainMemory()
 {
-	ReleaseAll();
+	try {
+		ReleaseAll();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 void SysMainMemory::ReserveAll()
@@ -371,9 +377,6 @@ void SysMainMemory::ReserveAll()
 	m_ee.Reserve();
 	m_iop.Reserve();
 	m_vu.Reserve();
-	
-	reserveNewVif(0);
-	reserveNewVif(1);
 }
 
 void SysMainMemory::CommitAll()
@@ -411,13 +414,19 @@ void SysMainMemory::DecommitAll()
 	Console.WriteLn( Color_Blue, "Decommitting host memory for virtual systems..." );
 	ConsoleIndentScope indent(1);
 
+	// On linux, the MTVU isn't empty and the thread still uses the m_ee/m_vu memory
+	vu1Thread.WaitVU();
+	// The EE thread must be stopped here command mustn't be send
+	// to the ring. Let's call it an extra safety valve :)
+	vu1Thread.Reset();
+
 	m_ee.Decommit();
 	m_iop.Decommit();
 	m_vu.Decommit();
 
 	closeNewVif(0);
 	closeNewVif(1);
-	
+
 	vtlb_Core_Free();
 }
 
@@ -449,14 +458,14 @@ SysCpuProviderPack::SysCpuProviderPack()
 	Console.WriteLn( Color_StrongBlue, "Reserving memory for recompilers..." );
 	ConsoleIndentScope indent(1);
 
-	CpuProviders = new CpuInitializerSet();
+	CpuProviders = std::make_unique<CpuInitializerSet>();
 
 	try {
 		recCpu.Reserve();
 	}
 	catch( Exception::RuntimeError& ex )
 	{
-		m_RecExceptionEE = ex.Clone();
+		m_RecExceptionEE = ScopedExcept(ex.Clone());
 		Console.Error( L"EE Recompiler Reservation Failed:\n" + ex.FormatDiagnosticMessage() );
 		recCpu.Shutdown();
 	}
@@ -466,7 +475,7 @@ SysCpuProviderPack::SysCpuProviderPack()
 	}
 	catch( Exception::RuntimeError& ex )
 	{
-		m_RecExceptionIOP = ex.Clone();
+		m_RecExceptionIOP = ScopedExcept(ex.Clone());
 		Console.Error( L"IOP Recompiler Reservation Failed:\n" + ex.FormatDiagnosticMessage() );
 		psxRec.Shutdown();
 	}
@@ -482,16 +491,10 @@ SysCpuProviderPack::SysCpuProviderPack()
 
 bool SysCpuProviderPack::IsRecAvailable_MicroVU0() const { return CpuProviders->microVU0.IsAvailable(); }
 bool SysCpuProviderPack::IsRecAvailable_MicroVU1() const { return CpuProviders->microVU1.IsAvailable(); }
-BaseException* SysCpuProviderPack::GetException_MicroVU0() const { return CpuProviders->microVU0.ExThrown; }
-BaseException* SysCpuProviderPack::GetException_MicroVU1() const { return CpuProviders->microVU1.ExThrown; }
+BaseException* SysCpuProviderPack::GetException_MicroVU0() const { return CpuProviders->microVU0.ExThrown.get(); }
+BaseException* SysCpuProviderPack::GetException_MicroVU1() const { return CpuProviders->microVU1.ExThrown.get(); }
 
-bool SysCpuProviderPack::IsRecAvailable_SuperVU0() const { return CpuProviders->superVU0.IsAvailable(); }
-bool SysCpuProviderPack::IsRecAvailable_SuperVU1() const { return CpuProviders->superVU1.IsAvailable(); }
-BaseException* SysCpuProviderPack::GetException_SuperVU0() const { return CpuProviders->superVU0.ExThrown; }
-BaseException* SysCpuProviderPack::GetException_SuperVU1() const { return CpuProviders->superVU1.ExThrown; }
-
-
-void SysCpuProviderPack::CleanupMess() throw()
+void SysCpuProviderPack::CleanupMess() noexcept
 {
 	try
 	{
@@ -507,7 +510,7 @@ void SysCpuProviderPack::CleanupMess() throw()
 	DESTRUCTOR_CATCHALL
 }
 
-SysCpuProviderPack::~SysCpuProviderPack() throw()
+SysCpuProviderPack::~SysCpuProviderPack()
 {
 	CleanupMess();
 }
@@ -516,10 +519,9 @@ bool SysCpuProviderPack::HadSomeFailures( const Pcsx2Config::RecompilerOptions& 
 {
 	return	(recOpts.EnableEE && !IsRecAvailable_EE()) ||
 			(recOpts.EnableIOP && !IsRecAvailable_IOP()) ||
-			(recOpts.EnableVU0 && recOpts.UseMicroVU0 && !IsRecAvailable_MicroVU0()) ||
-			(recOpts.EnableVU1 && recOpts.UseMicroVU0 && !IsRecAvailable_MicroVU1()) ||
-			(recOpts.EnableVU0 && !recOpts.UseMicroVU0 && !IsRecAvailable_SuperVU0()) ||
-			(recOpts.EnableVU1 && !recOpts.UseMicroVU1 && !IsRecAvailable_SuperVU1());
+			(recOpts.EnableVU0 && !IsRecAvailable_MicroVU0()) ||
+			(recOpts.EnableVU1 && !IsRecAvailable_MicroVU1())
+			;
 
 }
 
@@ -535,20 +537,10 @@ void SysCpuProviderPack::ApplyConfig() const
 	CpuVU1 = CpuProviders->interpVU1;
 
 	if( EmuConfig.Cpu.Recompiler.EnableVU0 )
-		CpuVU0 = EmuConfig.Cpu.Recompiler.UseMicroVU0 ? (BaseVUmicroCPU*)CpuProviders->microVU0 : (BaseVUmicroCPU*)CpuProviders->superVU0;
+		CpuVU0 = (BaseVUmicroCPU*)CpuProviders->microVU0;
 
 	if( EmuConfig.Cpu.Recompiler.EnableVU1 )
-		CpuVU1 = EmuConfig.Cpu.Recompiler.UseMicroVU1 ? (BaseVUmicroCPU*)CpuProviders->microVU1 : (BaseVUmicroCPU*)CpuProviders->superVU1;
-}
-
-// This is a semi-hacky function for convenience
-BaseVUmicroCPU* SysCpuProviderPack::getVUprovider(int whichProvider, int vuIndex) const {
-	switch (whichProvider) {
-		case 0: return vuIndex ? (BaseVUmicroCPU*)CpuProviders->interpVU1 : (BaseVUmicroCPU*)CpuProviders->interpVU0;
-		case 1: return vuIndex ? (BaseVUmicroCPU*)CpuProviders->superVU1  : (BaseVUmicroCPU*)CpuProviders->superVU0;
-		case 2: return vuIndex ? (BaseVUmicroCPU*)CpuProviders->microVU1  : (BaseVUmicroCPU*)CpuProviders->microVU0;
-	}
-	return NULL;
+		CpuVU1 = (BaseVUmicroCPU*)CpuProviders->microVU1;
 }
 
 // Resets all PS2 cpu execution caches, which does not affect that actual PS2 state/condition.
@@ -608,20 +600,26 @@ u8* SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller)
 	return Mem;
 }
 
+wxString SysGetBiosDiscID()
+{
+	// FIXME: we should return a serial based on
+	// the BIOS being run (either a checksum of the BIOS roms, and/or a string based on BIOS
+	// region and revision).
+
+	return wxEmptyString;
+}
+
 // This function always returns a valid DiscID -- using the Sony serial when possible, and
 // falling back on the CRC checksum of the ELF binary if the PS2 software being run is
 // homebrew or some other serial-less item.
 wxString SysGetDiscID()
 {
 	if( !DiscSerial.IsEmpty() ) return DiscSerial;
-	
+
 	if( !ElfCRC )
 	{
-		// FIXME: system is currently running the BIOS, so it should return a serial based on
-		// the BIOS being run (either a checksum of the BIOS roms, and/or a string based on BIOS
-		// region and revision).
-		
-		return wxEmptyString;
+		// system is currently running the BIOS
+		return SysGetBiosDiscID();
 	}
 
 	return pxsFmt( L"%08x", ElfCRC );

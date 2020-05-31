@@ -131,7 +131,7 @@ struct __aligned16 VURegs {
 	u32 cycle;
 	u32 flags;
 
-	// Current opcode being interpreted or recompiled (this var is used by Interps and superVU
+	// Current opcode being interpreted or recompiled (this var is used by Interps
 	// but not microVU.  Would like to have it local to their respective classes... someday)
 	u32 code;
 
@@ -142,7 +142,7 @@ struct __aligned16 VURegs {
 	u32 delaybranchpc;
 	bool takedelaybranch;
 
-	// MAC/Status flags -- these are used by interpreters and superVU, but are kind of hacky
+	// MAC/Status flags -- these are used by interpreters but are kind of hacky
 	// and shouldn't be relied on for any useful/valid info.  Would like to move them out of
 	// this struct eventually.
 	u32 macflag;

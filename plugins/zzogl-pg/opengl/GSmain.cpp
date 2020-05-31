@@ -97,9 +97,9 @@ EXPORT_C_(u32) PS2EgetLibType()
 	return PS2E_LT_GS;
 }
 
-EXPORT_C_(char*) PS2EgetLibName()
+EXPORT_C_(const char*) PS2EgetLibName()
 {
-	return (char*) libraryName;
+	return libraryName;
 }
 
 EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)
@@ -282,7 +282,7 @@ __forceinline void InitMisc()
 	ResetRegs();
 }
 
-EXPORT_C_(s32) GSopen(void *pDsp, char *Title, int multithread)
+EXPORT_C_(s32) GSopen(void *pDsp, const char *Title, int multithread)
 {
 	FUNCLOG
 

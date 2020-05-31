@@ -20,6 +20,7 @@
 #include "Threading.h"
 #include "wxGuiTools.h"
 #include "pxEvents.h"
+#include "AppTrait.h"
 
 using namespace Threading;
 
@@ -31,10 +32,10 @@ class pxSynchronousCommandEvent;
 
 class ConsoleLogSource_App : public ConsoleLogSource
 {
-	typedef ConsoleLogSource _parent;
+    typedef ConsoleLogSource _parent;
 
 public:
-	ConsoleLogSource_App();
+    ConsoleLogSource_App();
 };
 
 extern ConsoleLogSource_App pxConLog_App;
@@ -48,98 +49,97 @@ extern ConsoleLogSource_App pxConLog_App;
 class ModalButtonPanel : public wxPanelWithHelpers
 {
 public:
-	ModalButtonPanel( wxWindow* window, const MsgButtons& buttons );
-	virtual ~ModalButtonPanel() throw() { }
+    ModalButtonPanel(wxWindow *window, const MsgButtons &buttons);
+    virtual ~ModalButtonPanel() = default;
 
-	virtual void AddActionButton( wxWindowID id );
-	virtual void AddCustomButton( wxWindowID id, const wxString& label );
+    virtual void AddActionButton(wxWindowID id);
+    virtual void AddCustomButton(wxWindowID id, const wxString &label);
 
-	virtual void OnActionButtonClicked( wxCommandEvent& evt );
+    virtual void OnActionButtonClicked(wxCommandEvent &evt);
 };
 
-#ifdef _MSC_VER
-	typedef std::list< wxEvent*, WXObjectAllocator(wxEvent*) > wxEventList;
-#else
-	typedef std::list< wxEvent* > wxEventList;
-#endif
+typedef std::list<wxEvent *> wxEventList;
 
 // --------------------------------------------------------------------------------------
 //  wxAppWithHelpers
 // --------------------------------------------------------------------------------------
 class wxAppWithHelpers : public wxApp
 {
-	typedef wxApp _parent;
-	
-	DECLARE_DYNAMIC_CLASS(wxAppWithHelpers)
+    typedef wxApp _parent;
+
+    wxDECLARE_DYNAMIC_CLASS(wxAppWithHelpers);
 
 protected:
-	wxEventList					m_IdleEventQueue;
-	Threading::MutexRecursive	m_IdleEventMutex;
-	wxTimer						m_IdleEventTimer;
+    wxEventList m_IdleEventQueue;
+    Threading::MutexRecursive m_IdleEventMutex;
+    wxTimer m_IdleEventTimer;
 
 public:
-	wxAppWithHelpers();
-	virtual ~wxAppWithHelpers() {}
+    wxAppWithHelpers();
+    virtual ~wxAppWithHelpers() {}
 
-	void CleanUp();
-	
-	void DeleteObject( BaseDeletableObject& obj );
-	void DeleteObject( BaseDeletableObject* obj )
-	{
-		if( obj == NULL ) return;
-		DeleteObject( *obj );
-	}
+    wxAppTraits *CreateTraits();
 
-	void DeleteThread( Threading::pxThread& obj );
-	void DeleteThread( Threading::pxThread* obj )
-	{
-		if( obj == NULL ) return;
-		DeleteThread( *obj );
-	}
+    void CleanUp();
 
-	void PostCommand( void* clientData, int evtType, int intParam=0, long longParam=0, const wxString& stringParam=wxEmptyString );
-	void PostCommand( int evtType, int intParam=0, long longParam=0, const wxString& stringParam=wxEmptyString );
-	void PostMethod( FnType_Void* method );
-	void PostIdleMethod( FnType_Void* method );
-	void ProcessMethod( FnType_Void* method );
+    void DeleteObject(BaseDeletableObject &obj);
+    void DeleteObject(BaseDeletableObject *obj)
+    {
+        if (obj == NULL)
+            return;
+        DeleteObject(*obj);
+    }
 
-	bool Rpc_TryInvoke( FnType_Void* method );
-	bool Rpc_TryInvokeAsync( FnType_Void* method );
+    void DeleteThread(Threading::pxThread &obj);
+    void DeleteThread(Threading::pxThread *obj)
+    {
+        if (obj == NULL)
+            return;
+        DeleteThread(*obj);
+    }
 
-	sptr ProcessCommand( void* clientData, int evtType, int intParam=0, long longParam=0, const wxString& stringParam=wxEmptyString );
-	sptr ProcessCommand( int evtType, int intParam=0, long longParam=0, const wxString& stringParam=wxEmptyString );
+    void PostCommand(void *clientData, int evtType, int intParam = 0, long longParam = 0, const wxString &stringParam = wxEmptyString);
+    void PostCommand(int evtType, int intParam = 0, long longParam = 0, const wxString &stringParam = wxEmptyString);
+    void PostMethod(FnType_Void *method);
+    void PostIdleMethod(FnType_Void *method);
+    void ProcessMethod(FnType_Void *method);
 
-	void ProcessAction( pxActionEvent& evt );
-	void PostAction( const pxActionEvent& evt );
+    bool Rpc_TryInvoke(FnType_Void *method);
+    bool Rpc_TryInvokeAsync(FnType_Void *method);
 
-	void Ping();
-	bool OnInit();
-	//int  OnExit();
+    sptr ProcessCommand(void *clientData, int evtType, int intParam = 0, long longParam = 0, const wxString &stringParam = wxEmptyString);
+    sptr ProcessCommand(int evtType, int intParam = 0, long longParam = 0, const wxString &stringParam = wxEmptyString);
 
-	void AddIdleEvent( const wxEvent& evt );
+    void ProcessAction(pxActionEvent &evt);
+    void PostAction(const pxActionEvent &evt);
 
-	void PostEvent( const wxEvent& evt );
-	bool ProcessEvent( wxEvent& evt );
-	bool ProcessEvent( wxEvent* evt );
-	
-	bool ProcessEvent( pxActionEvent& evt );
-	bool ProcessEvent( pxActionEvent* evt );
+    void Ping();
+    bool OnInit();
+    //int  OnExit();
+
+    void AddIdleEvent(const wxEvent &evt);
+
+    void PostEvent(const wxEvent &evt);
+    bool ProcessEvent(wxEvent &evt);
+    bool ProcessEvent(wxEvent *evt);
+
+    bool ProcessEvent(pxActionEvent &evt);
+    bool ProcessEvent(pxActionEvent *evt);
 
 protected:
-	void IdleEventDispatcher( const wxChar* action=wxEmptyString );
+    void IdleEventDispatcher(const wxChar *action = wxEmptyString);
 
-	void OnIdleEvent( wxIdleEvent& evt );
-	void OnStartIdleEventTimer( wxEvent& evt );
-	void OnIdleEventTimeout( wxTimerEvent& evt );
-	void OnDeleteObject( wxCommandEvent& evt );
-	void OnDeleteThread( wxCommandEvent& evt );
-	void OnSynchronousCommand( pxSynchronousCommandEvent& evt );
-	void OnInvokeAction( pxActionEvent& evt );
-
+    void OnIdleEvent(wxIdleEvent &evt);
+    void OnStartIdleEventTimer(wxCommandEvent &evt);
+    void OnIdleEventTimeout(wxTimerEvent &evt);
+    void OnDeleteObject(wxCommandEvent &evt);
+    void OnDeleteThread(wxCommandEvent &evt);
+    void OnSynchronousCommand(pxSynchronousCommandEvent &evt);
+    void OnInvokeAction(pxActionEvent &evt);
 };
 
 namespace Msgbox
 {
-	extern int	ShowModal( BaseMessageBoxEvent& evt );
-	extern int	ShowModal( const wxString& title, const wxString& content, const MsgButtons& buttons );
+extern int ShowModal(BaseMessageBoxEvent &evt);
+extern int ShowModal(const wxString &title, const wxString &content, const MsgButtons &buttons);
 }

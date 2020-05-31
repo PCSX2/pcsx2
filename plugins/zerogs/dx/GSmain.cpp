@@ -105,7 +105,7 @@ u32 CALLBACK PS2EgetLibType() {
 	return PS2E_LT_GS;
 }
 
-char* CALLBACK PS2EgetLibName() {
+const char* CALLBACK PS2EgetLibName() {
 	return libraryName;
 }
 
@@ -358,7 +358,7 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	return DefWindowProc( hWnd, msg, wParam, lParam );
 }
 
-s32 CALLBACK GSopen(void *pDsp, char *Title, int multithread) {
+s32 CALLBACK GSopen(void *pDsp, const char *Title, int multithread) {
 
 	g_GSMultiThreaded = multithread;
 

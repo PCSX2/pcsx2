@@ -3,38 +3,12 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     message(FATAL_ERROR "
     You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
-endif(NOT TOP_CMAKE_WAS_SOURCED)
+endif()
 
 
 # plugin name
 set(Output zerospu2)
-
-set(CommonFlags
-    -Wall
-    )
-
-set(OptimizationFlags
-    -O2
-    -DNDEBUG
-    )
-
-# Debug - Build
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-	# add defines
-    add_definitions(${CommonFlags} -g)
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
-
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
+set(zerospu2FinalFlags "")
 
 # zerospu2 sources
 set(zerospu2Sources
@@ -82,35 +56,24 @@ set(zerospu2WindowsHeaders
 	Targets/dsound51.h)
 
 # add additional include directories
-include_directories(.
-					Linux
-					Targets)
+include_directories(Linux Targets)
 
-# add library
-add_library(${Output} SHARED
-			${zerospu2Sources}
-			${zerospu2Headers}
-			${zerospu2LinuxSources}
-			${zerospu2LinuxHeaders})
+set(zerospu2FinalSources
+	${zerospu2Sources}
+	${zerospu2Headers}
+	${zerospu2LinuxSources}
+	${zerospu2LinuxHeaders}
+)
 
-# link target with ALSA
-target_link_libraries(${Output} ${ALSA_LIBRARIES})
+set(zerospu2FinalLibs
+	${ALSA_LIBRARIES}
+	# PortAudio would go here.
+	${SOUNDTOUCH_LIBRARIES}
+)
 
 if(PORTAUDIO_FOUND)
 	# link target with PortAudio
 	#target_link_libraries(${Output} ${PORTAUDIO_LIBRARIES})
 endif(PORTAUDIO_FOUND)
 
-# link target with SoundTouch
-target_link_libraries(${Output} ${SOUNDTOUCH_LIBRARIES})
-
-# User flags options
-if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
-endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-
-if(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
-else(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
-endif(PACKAGE_MODE)
+add_pcsx2_plugin(${Output} "${zerospu2FinalSources}" "${zerospu2FinalLibs}" "${zerospu2FinalFlags}")

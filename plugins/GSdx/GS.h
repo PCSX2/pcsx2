@@ -21,12 +21,13 @@
 
 #pragma once
 
-#define PLUGIN_VERSION 16
+#define PLUGIN_VERSION 0
 
-#define VM_SIZE 4194304
-#define PAGE_SIZE 8192
-#define BLOCK_SIZE 256
-#define COLUMN_SIZE 64
+#define VM_SIZE 4194304u
+#define HALF_VM_SIZE (VM_SIZE / 2u)
+#define PAGE_SIZE 8192u
+#define BLOCK_SIZE 256u
+#define COLUMN_SIZE 64u
 
 #define MAX_PAGES (VM_SIZE / PAGE_SIZE)
 #define MAX_BLOCKS (VM_SIZE / BLOCK_SIZE)
@@ -160,6 +161,7 @@ enum GS_PSM
 	PSM_PSMCT24		= 1,  // 0000-0001
 	PSM_PSMCT16		= 2,  // 0000-0010
 	PSM_PSMCT16S	= 10, // 0000-1010
+	PSM_PSGPU24     = 18, // 0001-0010
 	PSM_PSMT8		= 19, // 0001-0011
 	PSM_PSMT4		= 20, // 0001-0100
 	PSM_PSMT8H		= 27, // 0001-1011
@@ -215,6 +217,38 @@ enum GS_AFAIL
 	AFAIL_ZB_ONLY	= 2,
 	AFAIL_RGB_ONLY	= 3,
 };
+
+enum class GS_MIN_FILTER : uint8_t
+{
+	Nearest                = 0,
+	Linear                 = 1,
+	Nearest_Mipmap_Nearest = 2,
+	Nearest_Mipmap_Linear  = 3,
+	Linear_Mipmap_Nearest  = 4,
+	Linear_Mipmap_Linear   = 5,
+};
+
+enum class GSRendererType : int8_t
+{
+	Undefined = -1,
+	DX1011_HW = 3,
+	DX1011_SW,
+	Null = 11,
+	OGL_HW,
+	OGL_SW,
+	DX1011_OpenCL = 15,
+	OGL_OpenCL = 17,
+
+#ifdef _WIN32
+	Default = Undefined
+#else
+	// Use ogl renderer as default otherwise it crash at startup
+	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
+	Default = OGL_HW
+#endif
+
+};
+
 
 #define REG32(name) \
 union name			\
@@ -474,8 +508,12 @@ REG64_(GSReg, SYNCH2)
 REG_END
 
 REG64_(GSReg, SYNCV)
-	uint64 _DUMMY;
-	// TODO
+	uint32 VFP:10; // Vertical Front Porchinterval (?s)
+	uint32 VFPE:10; // Vertical Front Porchinterval End (?s)
+	uint32 VBP:12; // Vertical Back Porchinterval (?s)
+	uint32 VBPE:10; // Vertical Back Porchinterval End (?s)
+	uint32 VDP:11; // Vertical Differential Phase
+	uint32 VS:11; // Vertical Synchronization Timing
 REG_END
 
 REG64_SET(GSReg)
@@ -523,6 +561,7 @@ REG_END2
 	// opaque => output will be Cs/As
 	__forceinline bool IsOpaque() const {return ((A == B || (C == 2 && FIX == 0)) && D == 0) || (A == 0 && B == D && C == 2 && FIX == 0x80);}
 	__forceinline bool IsOpaque(int amin, int amax) const {return ((A == B || amax == 0) && D == 0) || (A == 0 && B == D && amin == 0x80 && amax == 0x80);}
+	__forceinline bool IsCd() { return (A == B) && (D == 1);}
 REG_END2
 
 REG64_(GIFReg, BITBLTBUF)
@@ -1075,7 +1114,7 @@ REG128_SET(GIFPackedReg)
 	GIFPackedNOP	NOP;
 REG_SET_END
 
-__aligned(struct, 32) GIFPath
+struct alignas(32) GIFPath
 {
 	GIFTag tag;
 	uint32 nloop;
@@ -1198,10 +1237,10 @@ struct GSPrivRegSet
 			GSRegSYNCV		SYNCV;
 			uint64			_pad7;
 			struct {
-			GSRegDISPFB		DISPFB;
-			uint64			_pad1;
-			GSRegDISPLAY	DISPLAY;
-			uint64			_pad2;
+				GSRegDISPFB		DISPFB;
+				uint64			_pad1;
+				GSRegDISPLAY	DISPLAY;
+				uint64			_pad2;
 			} DISP[2];
 			GSRegEXTBUF		EXTBUF;
 			uint64			_pad8;
@@ -1234,6 +1273,131 @@ struct GSPrivRegSet
 
 		uint8 _pad17[0x1000];
 	};
+
+	void Dump(FILE* fp)
+	{
+		for(int i = 0; i < 2; i++)
+		{
+			if (!fp) return;
+
+			if(i == 0 && !PMODE.EN1) continue;
+			if(i == 1 && !PMODE.EN2) continue;
+
+			fprintf(fp, "DISPFB[%d] BP=%05x BW=%u PSM=%u DBX=%u DBY=%u\n",
+					i,
+					DISP[i].DISPFB.Block(),
+					DISP[i].DISPFB.FBW,
+					DISP[i].DISPFB.PSM,
+					DISP[i].DISPFB.DBX,
+					DISP[i].DISPFB.DBY
+				   );
+
+			fprintf(fp, "DISPLAY[%d] DX=%u DY=%u DW=%u DH=%u MAGH=%u MAGV=%u\n",
+					i,
+					DISP[i].DISPLAY.DX,
+					DISP[i].DISPLAY.DY,
+					DISP[i].DISPLAY.DW,
+					DISP[i].DISPLAY.DH,
+					DISP[i].DISPLAY.MAGH,
+					DISP[i].DISPLAY.MAGV
+				   );
+		}
+
+		fprintf(fp, "PMODE EN1=%u EN2=%u CRTMD=%u MMOD=%u AMOD=%u SLBG=%u ALP=%u\n",
+				PMODE.EN1,
+				PMODE.EN2,
+				PMODE.CRTMD,
+				PMODE.MMOD,
+				PMODE.AMOD,
+				PMODE.SLBG,
+				PMODE.ALP
+			   );
+
+		fprintf(fp, "SMODE1 CLKSEL=%u CMOD=%u EX=%u GCONT=%u LC=%u NVCK=%u PCK2=%u PEHS=%u PEVS=%u PHS=%u PRST=%u PVS=%u RC=%u SINT=%u SLCK=%u SLCK2=%u SPML=%u T1248=%u VCKSEL=%u VHP=%u XPCK=%u\n",
+				SMODE1.CLKSEL,
+				SMODE1.CMOD,
+				SMODE1.EX,
+				SMODE1.GCONT,
+				SMODE1.LC,
+				SMODE1.NVCK,
+				SMODE1.PCK2,
+				SMODE1.PEHS,
+				SMODE1.PEVS,
+				SMODE1.PHS,
+				SMODE1.PRST,
+				SMODE1.PVS,
+				SMODE1.RC,
+				SMODE1.SINT,
+				SMODE1.SLCK,
+				SMODE1.SLCK2,
+				SMODE1.SPML,
+				SMODE1.T1248,
+				SMODE1.VCKSEL,
+				SMODE1.VHP,
+				SMODE1.XPCK
+					);
+
+		fprintf(fp, "SMODE2 INT=%u FFMD=%u DPMS=%u\n",
+				SMODE2.INT,
+				SMODE2.FFMD,
+				SMODE2.DPMS
+			   );
+
+		fprintf(fp, "SRFSH %08x_%08x\n",
+				SRFSH.u32[0],
+				SRFSH.u32[1]
+			   );
+
+		fprintf(fp, "SYNCH1 %08x_%08x\n",
+				SYNCH1.u32[0],
+				SYNCH1.u32[1]
+			   );
+
+		fprintf(fp, "SYNCH2 %08x_%08x\n",
+				SYNCH2.u32[0],
+				SYNCH2.u32[1]
+			   );
+
+		fprintf(fp, "SYNCV VBP=%u VBPE=%u VDP=%u VFP=%u VFPE=%u VS=%u\n",
+				SYNCV.VBP,
+				SYNCV.VBPE,
+				SYNCV.VDP,
+				SYNCV.VFP,
+				SYNCV.VFPE,
+				SYNCV.VS
+			   );
+
+		fprintf(fp, "CSR %08x_%08x\n",
+				CSR.u32[0],
+				CSR.u32[1]
+			   );
+
+		fprintf(fp, "BGCOLOR B=%u G=%u R=%u\n",
+				BGCOLOR.B,
+				BGCOLOR.G,
+				BGCOLOR.R
+			   );
+
+		fprintf(fp, "EXTBUF BP=0x%x BW=%u FBIN=%u WFFMD=%u EMODA=%u EMODC=%u WDX=%u WDY=%u\n",
+				EXTBUF.EXBP, EXTBUF.EXBW, EXTBUF.FBIN, EXTBUF.WFFMD,
+				EXTBUF.EMODA, EXTBUF.EMODC, EXTBUF.WDX, EXTBUF.WDY
+			   );
+
+		fprintf(fp, "EXTDATA SX=%u SY=%u SMPH=%u SMPV=%u WW=%u WH=%u\n",
+				EXTDATA.SX, EXTDATA.SY, EXTDATA.SMPH, EXTDATA.SMPV, EXTDATA.WW, EXTDATA.WH
+			   );
+
+		fprintf(fp, "EXTWRITE EN=%u\n", EXTWRITE.WRITE);
+	}
+
+	void Dump(const std::string& filename)
+	{
+		FILE* fp = fopen(filename.c_str(), "wt");
+		if (fp) {
+			Dump(fp);
+			fclose(fp);
+		}
+	}
 };
 
 #pragma pack(pop)
@@ -1245,3 +1409,54 @@ enum {FREEZE_LOAD=0, FREEZE_SAVE=1, FREEZE_SIZE=2};
 struct GSFreezeData {int size; uint8* data;};
 
 enum stateType {ST_WRITE, ST_TRANSFER, ST_VSYNC};
+
+enum class GSVideoMode : uint8
+{
+	Unknown,
+	NTSC,
+	PAL,
+	VESA,
+	SDTV_480P,
+	HDTV_720P,
+	HDTV_1080I
+};
+
+// Ordering was done to keep compatibility with older ini file.
+enum class BiFiltering : uint8
+{
+	Nearest,
+	Forced,
+	PS2,
+	Forced_But_Sprite,
+};
+
+enum class TriFiltering : uint8
+{
+	None,
+	PS2,
+	Forced,
+};
+
+enum class HWMipmapLevel : int
+{
+	Automatic = -1,
+	Off,
+	Basic,
+	Full
+};
+
+enum class CRCHackLevel : int8
+{
+	Automatic = -1,
+	None,
+	Minimum,
+	Partial,
+	Full,
+	Aggressive
+};
+
+#ifdef ENABLE_ACCURATE_BUFFER_EMULATION
+const GSVector2i default_rt_size(2048, 2048);
+#else
+const GSVector2i default_rt_size(1280, 1024);
+#endif

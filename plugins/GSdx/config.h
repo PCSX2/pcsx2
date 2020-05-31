@@ -22,7 +22,8 @@
 #pragma once
 
 //#define ENABLE_VTUNE
-
+//#define ENABLE_PCRTC_DEBUG
+//#define ENABLE_ACCURATE_BUFFER_EMULATION
 #define ENABLE_JIT_RASTERIZER
 
 #define EXTERNAL_SHADER_LOADING 1
@@ -38,10 +39,19 @@
 
 //#define DISABLE_DATE
 
-#if defined(_DEBUG) || defined(_DEVEL)
-#define ENABLE_OGL_DEBUG   // Create a debug context and check opengl command status. Allow also to dump various textures/states.
-#endif
-//#define ENABLE_OGL_DEBUG_MEM_BW // compute the quantity of data transfered (debug purpose)
 
-// Output stencil to a color buffer
-//#define ENABLE_OGL_STENCIL_DEBUG
+#if !defined(NDEBUG) || defined(_DEBUG) || defined(_DEVEL)
+#define ENABLE_OGL_DEBUG   // Create a debug context and check opengl command status. Allow also to dump various textures/states.
+//#define ENABLE_OGL_DEBUG_FENCE
+//#define ENABLE_OGL_DEBUG_MEM_BW // compute the quantity of data transfered (debug purpose)
+//#define ENABLE_TRACE_REG // print GS reg write
+//#define ENABLE_EXTRA_LOG // print extra log
+#endif
+
+#if defined(__unix__) && !(defined(_DEBUG) || defined(_DEVEL))
+#define DISABLE_PERF_MON // Burn cycle for nothing in release mode
+#endif
+
+#ifdef _WIN32
+//#define ENABLE_OPENCL
+#endif

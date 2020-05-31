@@ -15,9 +15,7 @@
 
 #pragma once
 
-// Let's enable this to free the IOP event handler of some considerable load.
-// Games are highly unlikely to need timed IRQ's for PAD and MemoryCard handling anyway (rama).
-#define SIO_INLINE_IRQS
+#include "MemoryCardFile.h"
 
 struct _mcd
 {
@@ -80,6 +78,14 @@ struct _mcd
 	{
 		return SysPlugins.McdGetCRC(port, slot);
 	}
+
+	void NextFrame() {
+		SysPlugins.McdNextFrame( port, slot );
+	}
+
+	bool ReIndex(const wxString& filter = L"") {
+		return SysPlugins.McdReIndex( port, slot, filter );
+	}
 };
 
 struct _sio
@@ -92,7 +98,7 @@ struct _sio
 	u32 count;     // old_sio remnant
 	u32 packetsize;// old_sio remnant
 
-	u8 buf[256];
+	u8 buf[512];
 	u8 ret; // default return value;
 	u8 cmd; // command backup
 
@@ -115,5 +121,9 @@ extern u8 sioRead8();
 extern void sioWrite8(u8 value);
 extern void sioWriteCtrl16(u16 value);
 extern void sioInterrupt();
-extern void InitializeSIO(u8 value);
+extern void sioInterruptR();
 extern void SetForceMcdEjectTimeoutNow();
+extern void ClearMcdEjectTimeoutNow();
+extern void sioStatRead();
+extern void sioSetGameSerial(const wxString& serial);
+extern void sioNextFrame();

@@ -36,23 +36,23 @@ extern bool _MemDump;
 extern bool _RegDump;
 extern bool _visual_debug_enabled;
 
-static __forceinline bool MsgToConsole()	{ return _MsgToConsole & DebugEnabled; }
+static __forceinline bool MsgToConsole() { return _MsgToConsole & DebugEnabled; }
 
-static __forceinline bool MsgKeyOnOff()		{ return _MsgKeyOnOff & MsgToConsole(); }
-static __forceinline bool MsgVoiceOff()		{ return _MsgVoiceOff & MsgToConsole(); }
-static __forceinline bool MsgDMA()			{ return _MsgDMA & MsgToConsole(); }
-static __forceinline bool MsgAutoDMA()		{ return _MsgAutoDMA & MsgToConsole(); }
-static __forceinline bool MsgOverruns()		{ return _MsgOverruns & MsgToConsole(); }
-static __forceinline bool MsgCache()		{ return _MsgCache & MsgToConsole(); }
+static __forceinline bool MsgKeyOnOff() { return _MsgKeyOnOff & MsgToConsole(); }
+static __forceinline bool MsgVoiceOff() { return _MsgVoiceOff & MsgToConsole(); }
+static __forceinline bool MsgDMA() { return _MsgDMA & MsgToConsole(); }
+static __forceinline bool MsgAutoDMA() { return _MsgAutoDMA & MsgToConsole(); }
+static __forceinline bool MsgOverruns() { return _MsgOverruns & MsgToConsole(); }
+static __forceinline bool MsgCache() { return _MsgCache & MsgToConsole(); }
 
-static __forceinline bool AccessLog()		{ return _AccessLog & DebugEnabled; }
-static __forceinline bool DMALog()			{ return _DMALog & DebugEnabled; }
-static __forceinline bool WaveLog()			{ return _WaveLog & DebugEnabled; }
+static __forceinline bool AccessLog() { return _AccessLog & DebugEnabled; }
+static __forceinline bool DMALog() { return _DMALog & DebugEnabled; }
+static __forceinline bool WaveLog() { return _WaveLog & DebugEnabled; }
 
-static __forceinline bool CoresDump()		{ return _CoresDump & DebugEnabled; }
-static __forceinline bool MemDump()			{ return _MemDump & DebugEnabled; }
-static __forceinline bool RegDump()			{ return _RegDump & DebugEnabled; }
-static __forceinline bool VisualDebug()		{ return _visual_debug_enabled & DebugEnabled; }
+static __forceinline bool CoresDump() { return _CoresDump & DebugEnabled; }
+static __forceinline bool MemDump() { return _MemDump & DebugEnabled; }
+static __forceinline bool RegDump() { return _RegDump & DebugEnabled; }
+static __forceinline bool VisualDebug() { return _visual_debug_enabled & DebugEnabled; }
 
 extern wxString AccessLogFileName;
 extern wxString DMA4LogFileName;
@@ -83,16 +83,16 @@ extern u32 OutputModule;
 extern int SndOutLatencyMS;
 extern int SynchMode;
 
-#ifndef __linux__
+#ifndef __POSIX__
 extern wchar_t dspPlugin[];
-extern int  dspPluginModule;
+extern int dspPluginModule;
 
-extern bool	dspPluginEnabled;
+extern bool dspPluginEnabled;
 #endif
 
 namespace SoundtouchCfg
 {
-	extern void ApplySettings( soundtouch::SoundTouch& sndtouch );
+extern void ApplySettings(soundtouch::SoundTouch &sndtouch);
 }
 
 //////
@@ -100,4 +100,3 @@ namespace SoundtouchCfg
 extern void ReadSettings();
 extern void WriteSettings();
 extern void configure();
-extern void AboutBox();

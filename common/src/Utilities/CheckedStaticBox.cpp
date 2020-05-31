@@ -16,62 +16,62 @@
 #include "PrecompiledHeader.h"
 #include "CheckedStaticBox.h"
 
-CheckedStaticBox::CheckedStaticBox( wxWindow* parent, int orientation, const wxString& title )
-	: wxPanelWithHelpers( parent, wxVERTICAL )
-	, ThisSizer( *new wxStaticBoxSizer( orientation, this ) )
-	, ThisToggle( *new wxCheckBox( this, wxID_ANY, title, wxPoint( 8, 0 ) ) )
+CheckedStaticBox::CheckedStaticBox(wxWindow *parent, int orientation, const wxString &title)
+    : wxPanelWithHelpers(parent, wxVERTICAL)
+    , ThisSizer(*new wxStaticBoxSizer(orientation, this))
+    , ThisToggle(*new wxCheckBox(this, wxID_ANY, title, wxPoint(8, 0)))
 {
-	*this += ThisToggle;
-	*this += ThisSizer | pxExpand;
+    *this += ThisToggle;
+    *this += ThisSizer | pxExpand;
 
-	// Ensure that the right-side of the static group box isn't too cozy:
-	SetMinWidth( ThisToggle.GetSize().GetWidth() + 32 );
+    // Ensure that the right-side of the static group box isn't too cozy:
+    SetMinWidth(ThisToggle.GetSize().GetWidth() + 32);
 
-	Connect( ThisToggle.GetId(), wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( CheckedStaticBox::MainToggle_Click ) );
+    Bind(wxEVT_CHECKBOX, &CheckedStaticBox::MainToggle_Click, this, ThisToggle.GetId());
 }
 
 // Event handler for click events for the main checkbox (default behavior: enables/disables all child controls)
 // This function can be overridden to implement custom handling of check enable/disable behavior.
-void CheckedStaticBox::MainToggle_Click( wxCommandEvent& evt )
+void CheckedStaticBox::MainToggle_Click(wxCommandEvent &evt)
 {
-	SetValue( evt.IsChecked() );
+    SetValue(evt.IsChecked());
+    evt.Skip();
 }
 
 // Sets the main checkbox status, and enables/disables all child controls
 // bound to the StaticBox accordingly.
-void CheckedStaticBox::SetValue( bool val )
+void CheckedStaticBox::SetValue(bool val)
 {
-	wxWindowList& list = GetChildren();
+    wxWindowList &list = GetChildren();
 
-	for( wxWindowList::iterator iter = list.begin(); iter != list.end(); ++iter)
-	{
-		wxWindow *current = *iter;
-		if( current != &ThisToggle )
-			current->Enable( val );
-	}
-	ThisToggle.SetValue( val );
+    for (wxWindowList::iterator iter = list.begin(); iter != list.end(); ++iter) {
+        wxWindow *current = *iter;
+        if (current != &ThisToggle)
+            current->Enable(IsEnabled() && val);
+    }
+    ThisToggle.SetValue(val);
 }
 
 bool CheckedStaticBox::GetValue() const
 {
-	return ThisToggle.GetValue();
+    return ThisToggle.GetValue();
 }
 
 // This override is here so to only enable the children if both the main toggle and
 // the enable request are true.  If not, disable them!
-bool CheckedStaticBox::Enable( bool enable )
+bool CheckedStaticBox::Enable(bool enable)
 {
-	if (!_parent::Enable(enable)) return false;
+    if (!_parent::Enable(enable))
+        return false;
 
-	bool val = enable && ThisToggle.GetValue();
-	wxWindowList& list = GetChildren();
+    bool val = enable && ThisToggle.GetValue();
+    wxWindowList &list = GetChildren();
 
-	for( wxWindowList::iterator iter = list.begin(); iter != list.end(); ++iter)
-	{
-		wxWindow *current = *iter;
-		if( current != &ThisToggle )
-			current->Enable( val );
-	}
+    for (wxWindowList::iterator iter = list.begin(); iter != list.end(); ++iter) {
+        wxWindow *current = *iter;
+        if (current != &ThisToggle)
+            current->Enable(val);
+    }
 
-	return true;
+    return true;
 }

@@ -21,18 +21,45 @@
 
 #include "stdafx.h"
 #include "GSCapture.h"
+#include "GSPng.h"
+#include "GSUtil.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
+
+class CPinInfo : public PIN_INFO {
+public:
+	CPinInfo() { pFilter = NULL; }
+	~CPinInfo() { if (pFilter) pFilter->Release(); }
+};
+
+class CFilterInfo : public FILTER_INFO {
+public:
+	CFilterInfo() { pGraph = NULL; }
+	~CFilterInfo() { if (pGraph) pGraph->Release(); }
+};
+
+#define BeginEnumFilters(pFilterGraph, pEnumFilters, pBaseFilter) \
+	{CComPtr<IEnumFilters> pEnumFilters; \
+	if(pFilterGraph && SUCCEEDED(pFilterGraph->EnumFilters(&pEnumFilters))) \
+	{ \
+		for(CComPtr<IBaseFilter> pBaseFilter; S_OK == pEnumFilters->Next(1, &pBaseFilter, 0); pBaseFilter = NULL) \
+		{ \
+
+#define EndEnumFilters }}}
+
+#define BeginEnumPins(pBaseFilter, pEnumPins, pPin) \
+	{CComPtr<IEnumPins> pEnumPins; \
+	if(pBaseFilter && SUCCEEDED(pBaseFilter->EnumPins(&pEnumPins))) \
+	{ \
+		for(CComPtr<IPin> pPin; S_OK == pEnumPins->Next(1, &pPin, 0); pPin = NULL) \
+		{ \
+
+#define EndEnumPins }}}
 
 //
 // GSSource
 //
-
-#ifdef __INTEL_COMPILER
 interface __declspec(uuid("59C193BB-C520-41F3-BC1D-E245B80A86FA"))
-#else
-[uuid("59C193BB-C520-41F3-BC1D-E245B80A86FA")] interface
-#endif
 IGSSource : public IUnknown
 {
 	STDMETHOD(DeliverNewSegment)() PURE;
@@ -40,11 +67,7 @@ IGSSource : public IUnknown
 	STDMETHOD(DeliverEOS)() PURE;
 };
 
-#ifdef __INTEL_COMPILER
 class __declspec(uuid("F8BB6F4F-0965-4ED4-BA74-C6A01E6E6C77"))
-#else
-[uuid("F8BB6F4F-0965-4ED4-BA74-C6A01E6E6C77")] class
-#endif
 GSSource : public CBaseFilter, private CCritSec, public IGSSource
 {
 	GSVector2i m_size;
@@ -61,7 +84,7 @@ GSSource : public CBaseFilter, private CCritSec, public IGSSource
 	class GSSourceOutputPin : public CBaseOutputPin
 	{
 		GSVector2i m_size;
-		vector<CMediaType> m_mts;
+		std::vector<CMediaType> m_mts;
 
 	public:
 		GSSourceOutputPin(const GSVector2i& size, REFERENCE_TIME atpf, CBaseFilter* pFilter, CCritSec* pLock, HRESULT& hr, int colorspace)
@@ -135,9 +158,9 @@ GSSource : public CBaseFilter, private CCritSec, public IGSSource
 
 	    HRESULT CheckMediaType(const CMediaType* pmt)
 		{
-			for(vector<CMediaType>::iterator i = m_mts.begin(); i != m_mts.end(); i++)
+			for(const auto &mt : m_mts)
 			{
-				if(i->majortype == pmt->majortype && i->subtype == pmt->subtype)
+				if(mt.majortype == pmt->majortype && mt.subtype == pmt->subtype)
 				{
 					return S_OK;
 				}
@@ -339,15 +362,6 @@ public:
 	}
 };
 
-#define BeginEnumPins(pBaseFilter, pEnumPins, pPin) \
-	{CComPtr<IEnumPins> pEnumPins; \
-	if(pBaseFilter && SUCCEEDED(pBaseFilter->EnumPins(&pEnumPins))) \
-	{ \
-		for(CComPtr<IPin> pPin; S_OK == pEnumPins->Next(1, &pPin, 0); pPin = NULL) \
-		{ \
-
-#define EndEnumPins }}}
-
 static IPin* GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION dir)
 {
 	if(!pBF) return(NULL);
@@ -375,8 +389,14 @@ static IPin* GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION dir)
 //
 
 GSCapture::GSCapture()
-	: m_capturing(false)
+	: m_capturing(false), m_frame(0)
+	  , m_out_dir("/tmp/GSdx_Capture") // FIXME Later add an option
 {
+	m_out_dir = theApp.GetConfigS("capture_out_dir");
+	m_threads = theApp.GetConfigI("capture_threads");
+#if defined(__unix__)
+	m_compression_level = theApp.GetConfigI("png_compression_level");
+#endif
 }
 
 GSCapture::~GSCapture()
@@ -384,15 +404,16 @@ GSCapture::~GSCapture()
 	EndCapture();
 }
 
-bool GSCapture::BeginCapture(float fps)
+bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float aspect)
 {
-	GSAutoLock lock(this);
+	printf("Recommended resolution: %d x %d, DAR for muxing: %.4f\n", recommendedResolution.x, recommendedResolution.y, aspect);
+	std::lock_guard<std::recursive_mutex> lock(m_lock);
 
 	ASSERT(fps != 0);
 
 	EndCapture();
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	GSCaptureDlg dlg;
 
@@ -401,7 +422,7 @@ bool GSCapture::BeginCapture(float fps)
 	m_size.x = (dlg.m_width + 7) & ~7;
 	m_size.y = (dlg.m_height + 7) & ~7;
 
-	wstring fn(dlg.m_filename.begin(), dlg.m_filename.end());
+	std::wstring fn{dlg.m_filename.begin(), dlg.m_filename.end()};
 
 	//
 
@@ -446,8 +467,8 @@ bool GSCapture::BeginCapture(float fps)
 	{
 		CFilterInfo fi;
 		pBF->QueryFilterInfo(&fi);
-		wstring s(fi.achName);
-		printf("Filter [%p]: %s\n", pBF.p, string(s.begin(), s.end()).c_str());
+		std::wstring s{fi.achName};
+		printf("Filter [%p]: %s\n", pBF.p, std::string{s.begin(), s.end()}.c_str());
 
 		BeginEnumPins(pBF, pEP, pPin)
 		{
@@ -456,13 +477,8 @@ bool GSCapture::BeginCapture(float fps)
 
 			CPinInfo pi;
 			pPin->QueryPinInfo(&pi);
-			wstring s(pi.achName);
-			printf("- Pin [%p - %p]: %s (%s)\n", pPin.p, pPinTo.p, string(s.begin(), s.end()).c_str(), pi.dir ? "out" : "in");
-
-			BeginEnumMediaTypes(pPin, pEMT, pmt)
-			{
-			}
-			EndEnumMediaTypes(pmt)
+			std::wstring s{pi.achName};
+			printf("- Pin [%p - %p]: %s (%s)\n", pPin.p, pPinTo.p, std::string{s.begin(), s.end()}.c_str(), pi.dir ? "out" : "in");
 		}
 		EndEnumPins
 	}
@@ -472,6 +488,19 @@ bool GSCapture::BeginCapture(float fps)
 
 	CComQIPtr<IGSSource>(m_src)->DeliverNewSegment();
 
+#elif defined(__unix__)
+	// Note I think it doesn't support multiple depth creation
+	GSmkdir(m_out_dir.c_str());
+
+	// Really cheap recording
+	m_frame = 0;
+	// Add option !!!
+	m_size.x = theApp.GetConfigI("CaptureWidth");
+	m_size.y = theApp.GetConfigI("CaptureHeight");
+
+	for(int i = 0; i < m_threads; i++) {
+		m_workers.push_back(std::unique_ptr<GSPng::Worker>(new GSPng::Worker(&GSPng::Process)));
+	}
 #endif
 
 	m_capturing = true;
@@ -481,7 +510,7 @@ bool GSCapture::BeginCapture(float fps)
 
 bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 {
-	GSAutoLock lock(this);
+	std::lock_guard<std::recursive_mutex> lock(m_lock);
 
 	if(bits == NULL || pitch == 0)
 	{
@@ -490,7 +519,7 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 		return false;
 	}
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	if(m_src)
 	{
@@ -499,6 +528,14 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 		return true;
 	}
 
+#elif defined(__unix__)
+
+	std::string out_file = m_out_dir + format("/frame.%010d.png", m_frame);
+	//GSPng::Save(GSPng::RGB_PNG, out_file, (uint8*)bits, m_size.x, m_size.y, pitch, m_compression_level);
+	m_workers[m_frame%m_threads]->Push(std::make_shared<GSPng::Transaction>(GSPng::RGB_PNG, out_file, static_cast<const uint8*>(bits), m_size.x, m_size.y, pitch, m_compression_level));
+
+	m_frame++;
+
 #endif
 
 	return false;
@@ -506,9 +543,9 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 
 bool GSCapture::EndCapture()
 {
-	GSAutoLock lock(this);
+	std::lock_guard<std::recursive_mutex> lock(m_lock);
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	if(m_src)
 	{
@@ -523,6 +560,11 @@ bool GSCapture::EndCapture()
 
 		m_graph = NULL;
 	}
+
+#elif defined(__unix__)
+	m_workers.clear();
+
+	m_frame = 0;
 
 #endif
 

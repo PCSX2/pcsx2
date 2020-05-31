@@ -18,6 +18,8 @@
 #include "CDVD.h"
 #include "wx/wfstream.h"
 #include "AsyncFileReader.h"
+#include "CompressedFileReader.h"
+#include <memory>
 
 enum isoType
 {
@@ -46,8 +48,7 @@ protected:
 	wxString	m_filename;
 	AsyncFileReader*	m_reader;
 
-	s32 		m_current_lsn;
-	uint		m_current_count;
+	u32 		m_current_lsn;
 
 	isoType		m_type;
 	u32			m_flags;
@@ -66,7 +67,7 @@ protected:
 	
 public:	
 	InputIsoFile();
-	virtual ~InputIsoFile() throw();
+	virtual ~InputIsoFile();
 
 	bool IsOpened() const;
 	
@@ -112,18 +113,17 @@ protected:
 	// total number of blocks in the ISO image (including all parts)
 	u32			m_blocks;
 
-	// dtable / dtablesize are used when reading blockdumps
-	ScopedArray<u32>	m_dtable;
-	int					m_dtablesize;
+	// dtable is used when reading blockdumps
+	std::vector<u32> m_dtable;
 
-	ScopedPtr<wxFileOutputStream>	m_outstream;
+	std::unique_ptr<wxFileOutputStream>	m_outstream;
 		
 public:	
 	OutputIsoFile();
-	virtual ~OutputIsoFile() throw();
+	virtual ~OutputIsoFile();
 
 	bool IsOpened() const;
-	
+	u32 GetBlockSize() const;
 	
 	const wxString& GetFilename() const
 	{

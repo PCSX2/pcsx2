@@ -26,7 +26,7 @@ std::pair<u32,u32> ElfTextRange;
 wxString LastELF;
 
 // All of ElfObjects functions.
-ElfObject::ElfObject(const wxString& srcfile, IsoFile isofile)
+ElfObject::ElfObject(const wxString& srcfile, IsoFile& isofile)
 	: data( wxULongLong(isofile.getLength()).GetLo(), L"ELF headers" )
 	, proghead( NULL )
 	, secthead( NULL )
@@ -138,7 +138,7 @@ std::pair<u32,u32> ElfObject::getTextRange()
 	return std::make_pair(0,0);
 }
 
-void ElfObject::readIso(IsoFile file)
+void ElfObject::readIso(IsoFile& file)
 {
 	int rsize = file.read(data.GetPtr(), data.GetSizeInBytes());
 	if (rsize < data.GetSizeInBytes()) throw Exception::EndOfStream(filename);
@@ -147,10 +147,8 @@ void ElfObject::readIso(IsoFile file)
 void ElfObject::readFile()
 {
 	int rsize = 0;
-	FILE *f;
-
-	f = fopen( filename.ToUTF8(), "rb" );
-	if (f == NULL) Exception::FileNotFound( filename );
+	FILE *f = wxFopen( filename, "rb" );
+	if (f == NULL) throw Exception::FileNotFound( filename );
 
 	fseek(f, 0, SEEK_SET);
 	rsize = fread(data.GetPtr(), 1, data.GetSizeInBytes(), f);
@@ -323,8 +321,8 @@ int GetPS2ElfName( wxString& name )
 			const ParsedAssignmentString parts( original );
 
 			if( parts.lvalue.IsEmpty() && parts.rvalue.IsEmpty() ) continue;
-			if( parts.rvalue.IsEmpty() )
-			{
+			if( parts.rvalue.IsEmpty() && file.getLength() != file.getSeekPos() )
+			{ // Some games have a character on the last line of the file, don't print the error in those cases.
 				Console.Warning( "(SYSTEM.CNF) Unusual or malformed entry in SYSTEM.CNF ignored:" );
 				Console.Indent().WriteLn( original );
 				continue;

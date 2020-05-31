@@ -6,92 +6,22 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif(NOT TOP_CMAKE_WAS_SOURCED)
 
 
-# library name
 set(Output x86emitter)
 
-# set common flags
-set(CommonFlags 
-	-fno-strict-aliasing
+set(CommonFlags
     )
 
-# set optimization flags
-set(OptimizationFlags
-	-falign-functions
-	-falign-jumps
-	-falign-labels
-	-falign-loops
-	-fcaller-saves
-	-fcprop-registers
-	-fcrossjumping
-	-fcse-follow-jumps
-	-fcse-skip-blocks
-	-fdefer-pop
-	-fdelete-null-pointer-checks
-	-fgcse
-	-fgcse-lm
-	-fif-conversion
-	-fif-conversion2
-	-fmerge-constants
-	-foptimize-sibling-calls
-	-fpeephole2
-	-fregmove
-	-freorder-blocks
-	-freorder-functions 
-	-frerun-cse-after-loop
-	-fsched-interblock
-	-fsched-spec
-	-fstrict-overflow
-	-fthread-jumps
-	-ftree-ccp
-	-ftree-ch
-	-ftree-copyrename
-	-ftree-dce
-	-ftree-dominator-opts
-	-ftree-fre
-	-ftree-lrs
-	-ftree-pre
-	-ftree-sra
-	-ftree-ter
-	-ftree-vrp
-	-funit-at-a-time)
-
-#Clang doesn't support a few common flags that GCC does.
-if(NOT USE_CLANG)
-	add_definitions(${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
-endif(NOT USE_CLANG)
-
-# Debug - Build
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-	# add defines
-	add_definitions(${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG)
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-
-	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD)
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
-
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-	
-	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
+set(x86emitterFinalFlags ${CommonFlags})
 
 # variable with all sources of this library
 set(x86emitterSources
-	../../include/x86emitter/inlines.inl
-	3dnow.cpp
+	bmi.cpp
 	cpudetect.cpp
 	fpu.cpp
 	groups.cpp
 	jmp.cpp
 	legacy.cpp
 	legacy_sse.cpp
-	LnxCpuDetect.cpp
 	movs.cpp
 	PrecompiledHeader.cpp
 	simd.cpp
@@ -120,20 +50,26 @@ set(x86emitterHeaders
 	../../include/x86emitter/legacy_instructions.h
 	../../include/x86emitter/legacy_internal.h
 	../../include/x86emitter/legacy_types.h
-	../../include/x86emitter/macros.h
-	../../include/x86emitter/sse_helpers.h
 	../../include/x86emitter/tools.h
 	../../include/x86emitter/x86emitter.h
 	../../include/x86emitter/x86types.h
-	PrecompiledHeader.h)
+	PrecompiledHeader.h
+	cpudetect_internal.h
+	)
 
-# add library
-add_library(${Output} STATIC ${x86emitterSources} ${x86emitterHeaders})
+if(Windows)
+	LIST(APPEND x86emitterSources WinCpuDetect.cpp)
+else()
+	LIST(APPEND x86emitterSources LnxCpuDetect.cpp)
+endif()
 
-# link target with wx
-target_link_libraries(${Output} ${wxWidgets_LIBRARIES})
+set(x86emitterFinalSources
+	${x86emitterSources}
+	${x86emitterHeaders}
+)
 
-# User flags options
-if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
-endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+set(x86emitterFinalLibs
+	${wxWidgets_LIBRARIES}
+)
+
+add_pcsx2_lib(${Output} "${x86emitterFinalSources}" "${x86emitterFinalLibs}" "${x86emitterFinalFlags}")

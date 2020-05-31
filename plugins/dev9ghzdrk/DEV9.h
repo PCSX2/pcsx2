@@ -17,6 +17,7 @@
 #define __DEV9_H__
 
 #include <stdio.h>
+#include <string>
 #ifndef EXTERN 
 #define EXTERN  extern
 #endif
@@ -25,9 +26,10 @@
 //#define _WIN32_WINNT 0x0500
 
 #include "PS2Edefs.h"
+#include "PS2Eext.h"
 #include "net.h"
 
-#ifdef __WIN32__
+#ifdef _WIN32
 
 #define usleep(x)	Sleep(x / 1000)
 #include <windows.h>
@@ -42,12 +44,12 @@
 
 #endif
 
-#define DEV9_LOG_ENABLE
+//#define DEV9_LOG_ENABLE
 
 #ifdef DEV9_LOG_ENABLE
 #define DEV9_LOG __Log
 #else
-#define DEV9_LOG(...) ()
+#define DEV9_LOG(...)
 #endif
 
 void rx_process(NetPacket* pk);
@@ -125,7 +127,10 @@ void _DEV9close();
 EXTERN  DEV9callback DEV9irq;
 //void DEV9thread();
 
-EXTERN  FILE *dev9Log;
+EXTERN  PluginLog DEV9Log;
+//Yes these are meant to be a lowercase extern
+extern  std::string s_strIniPath;
+extern  std::string s_strLogPath;
 void __Log(char *fmt, ...);
 
 void SysMessage(char *fmt, ...);
@@ -633,12 +638,17 @@ static flash_info_t devices[] = {
 
 #define FLASH_REGSIZE			0x20
 
-void CALLBACK FLASHinit();
-u32  CALLBACK FLASHread32(u32 addr, int size);
-void CALLBACK FLASHwrite32(u32 addr, u32 value, int size);
+EXPORT_C_(void)
+FLASHinit();
+EXPORT_C_(u32)
+ FLASHread32(u32 addr, int size);
+EXPORT_C_(void)
+FLASHwrite32(u32 addr, u32 value, int size);
 void _DEV9irq(int cause, int cycles);
 
 int emu_printf(const char *fmt, ...);
 
+#ifdef _WIN32
 #pragma warning(error:4013)
+#endif
 #endif

@@ -15,7 +15,8 @@
 
 #pragma once
 #include <vector>
-#include "net.h"
+#include <string>
+#include "..\net.h"
 using namespace std;
 
 struct tap_adapter
@@ -31,6 +32,7 @@ class TAPAdapter : public NetAdapter
 public:
 	TAPAdapter();
 	virtual bool blocks();
+	virtual bool isInitialised();
 	//gets a packet.rv :true success
 	virtual bool recv(NetPacket* pkt);
 	//sends the packet and deletes it when done (if successful).rv :true success

@@ -16,12 +16,13 @@
 #pragma once
 
 #include "AppEventListeners.h"
+#include <memory>
 
 class BaseCpuUsageProvider
 {
 public:
 	BaseCpuUsageProvider() {}
-	virtual ~BaseCpuUsageProvider() throw() {}
+	virtual ~BaseCpuUsageProvider() = default;
 
 	virtual bool IsImplemented() const=0;
 	virtual void UpdateStats()=0;
@@ -35,11 +36,11 @@ public:
 class CpuUsageProvider : public BaseCpuUsageProvider
 {
 protected:
-	ScopedPtr<BaseCpuUsageProvider>		m_Implementation;
+	std::unique_ptr<BaseCpuUsageProvider> m_Implementation;
 
 public:
 	CpuUsageProvider();
-	virtual ~CpuUsageProvider() throw();
+	virtual ~CpuUsageProvider();
 
 	virtual bool IsImplemented() const	{ return m_Implementation->IsImplemented(); }
 	virtual void UpdateStats()			{ m_Implementation->UpdateStats(); }
@@ -76,7 +77,7 @@ protected:
 
 public:
 	DefaultCpuUsageProvider();
-	virtual ~DefaultCpuUsageProvider() throw() {}
+	virtual ~DefaultCpuUsageProvider() = default;
 
 	bool IsImplemented() const;
 	void Reset();

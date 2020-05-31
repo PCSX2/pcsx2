@@ -74,8 +74,9 @@ void Panels::BaseAdvancedCpuOptions::OnRestoreDefaults(wxCommandEvent& evt)
 
 void Panels::BaseAdvancedCpuOptions::RestoreDefaults()
 {
-	m_RoundModePanel->SetSelection( 3 );		// Roundmode chop
-	m_ClampModePanel->SetSelection( 1 );		// clamp mode normal
+	AppConfig def;               // created with default values
+	def.EnablePresets = false;   // disable presets otherwise it'll disable some widgets
+	ApplyConfigToGui(def);
 }
 
 Panels::AdvancedOptionsFPU::AdvancedOptionsFPU( wxWindow* parent )
@@ -108,7 +109,7 @@ Panels::AdvancedOptionsVU::AdvancedOptionsVU( wxWindow* parent )
 Panels::CpuPanelEE::CpuPanelEE( wxWindow* parent )
 	: BaseApplicableConfigPanel_SpecificConfig( parent )
 {
-	*this	+= Text( pxE( L"Notice: Most games are fine with the default options. ")
+	*this	+= Text( pxE(L"Notice: Most games are fine with the default options.")
 	) | StdExpand();
 
 	const RadioPanelItem tbl_CpuTypes_EE[] =
@@ -166,9 +167,11 @@ Panels::CpuPanelEE::CpuPanelEE( wxWindow* parent )
 	*this	+= (m_advancedOptsFpu = new AdvancedOptionsFPU( this ))	| StdExpand();
 
 	*this	+= 12;
-	*this	+= new wxButton( this, wxID_DEFAULT, _("Restore Defaults"))  | StdButton();
+	m_button_RestoreDefaults = new wxButton(this, wxID_DEFAULT, _("Restore Defaults"));
+	*this += m_button_RestoreDefaults | StdButton();
 
-	Connect( wxID_DEFAULT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CpuPanelEE::OnRestoreDefaults ) );
+	Bind(wxEVT_BUTTON, &CpuPanelEE::OnRestoreDefaults, this, wxID_DEFAULT);
+	Bind(wxEVT_RADIOBUTTON, &CpuPanelEE::EECache_Event, this);
 }
 
 Panels::CpuPanelVU::CpuPanelVU( wxWindow* parent )
@@ -183,10 +186,7 @@ Panels::CpuPanelVU::CpuPanelVU( wxWindow* parent )
 		.SetToolTip(_("Vector Unit Interpreter. Slow and not very compatible. Only use for diagnostics.")),
 
 		RadioPanelItem(_("microVU Recompiler"))
-		.SetToolTip(_("New Vector Unit recompiler with much improved compatibility. Recommended.")),
-
-		RadioPanelItem(_("superVU Recompiler [legacy]"))
-		.SetToolTip(_("Useful for diagnosing bugs or clamping issues in the new mVU recompiler."))
+		.SetToolTip(_("New Vector Unit recompiler with much improved compatibility. Recommended."))
 	};
 
 	m_panel_VU0 = &(new pxRadioPanel( this, tbl_CpuTypes_VU ))	->SetDefaultItem( 1 );
@@ -218,9 +218,10 @@ Panels::CpuPanelVU::CpuPanelVU( wxWindow* parent )
 	*this	+= ( m_advancedOptsVu=new AdvancedOptionsVU( this ))	| StdExpand();
 
 	*this	+= 12;
-	*this	+= new wxButton( this, wxID_DEFAULT, _("Restore Defaults") ) | StdButton();
+	m_button_RestoreDefaults = new wxButton(this, wxID_DEFAULT, _("Restore Defaults"));
+	*this += m_button_RestoreDefaults | StdButton();
 
-	Connect( wxID_DEFAULT, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( CpuPanelVU::OnRestoreDefaults ) );
+	Bind(wxEVT_BUTTON, &CpuPanelVU::OnRestoreDefaults, this, wxID_DEFAULT);
 }
 
 void Panels::CpuPanelEE::Apply()
@@ -228,7 +229,7 @@ void Panels::CpuPanelEE::Apply()
 	Pcsx2Config::RecompilerOptions& recOps( g_Conf->EmuOptions.Cpu.Recompiler );
 	recOps.EnableEE		  = !!m_panel_RecEE->GetSelection();
 	recOps.EnableIOP	  = !!m_panel_RecIOP->GetSelection();
-	recOps.EnableEECache  = m_check_EECacheEnable	->GetValue();
+	recOps.EnableEECache  = m_check_EECacheEnable->GetValue();
 }
 
 void Panels::CpuPanelEE::AppStatusEvent_OnSettingsApplied()
@@ -236,9 +237,8 @@ void Panels::CpuPanelEE::AppStatusEvent_OnSettingsApplied()
 	ApplyConfigToGui( *g_Conf );
 }
 
-void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags ){
-	m_panel_RecEE->Enable(true);
-
+void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags )
+{
 	const Pcsx2Config::RecompilerOptions& recOps( configToApply.EmuOptions.Cpu.Recompiler );
 	m_panel_RecEE->SetSelection( (int)recOps.EnableEE );
 	m_panel_RecIOP->SetSelection( (int)recOps.EnableIOP );
@@ -246,9 +246,10 @@ void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags )
 	m_panel_RecEE->Enable(!configToApply.EnablePresets);
 	m_panel_RecIOP->Enable(!configToApply.EnablePresets);
 
-	m_check_EECacheEnable ->SetValue(recOps.EnableEECache);
-
-	this->Enable(!configToApply.EnablePresets);
+	//EECache option is exclusive to the EE Interpreter.
+	m_check_EECacheEnable->SetValue(recOps.EnableEECache);
+	m_check_EECacheEnable->Enable(!configToApply.EnablePresets && m_panel_RecEE->GetSelection() == 0);
+	m_button_RestoreDefaults->Enable(!configToApply.EnablePresets);
 
 	if( flags & AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE )
 	{
@@ -258,8 +259,9 @@ void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags )
 
 void Panels::CpuPanelEE::OnRestoreDefaults(wxCommandEvent &evt)
 {
-	m_panel_RecEE->SetSelection( m_panel_RecEE->GetButton(1)->IsEnabled() ? 1 : 0 );
-	m_panel_RecIOP->SetSelection( m_panel_RecIOP->GetButton(1)->IsEnabled() ? 1 : 0 );
+	AppConfig def;               // created with default values
+	def.EnablePresets = false;   // disable presets otherwise it'll disable some widgets
+	ApplyConfigToGui(def);
 
 	if( BaseAdvancedCpuOptions* opts = (BaseAdvancedCpuOptions*)FindWindowByName(L"AdvancedOptionsFPU") )
 		opts->RestoreDefaults();
@@ -273,9 +275,6 @@ void Panels::CpuPanelVU::Apply()
 	Pcsx2Config::RecompilerOptions& recOps( g_Conf->EmuOptions.Cpu.Recompiler );
 	recOps.EnableVU0	= m_panel_VU0->GetSelection() > 0;
 	recOps.EnableVU1	= m_panel_VU1->GetSelection() > 0;
-
-	recOps.UseMicroVU0	= m_panel_VU0->GetSelection() == 1;
-	recOps.UseMicroVU1	= m_panel_VU1->GetSelection() == 1;
 }
 
 void Panels::CpuPanelVU::AppStatusEvent_OnSettingsApplied()
@@ -285,29 +284,12 @@ void Panels::CpuPanelVU::AppStatusEvent_OnSettingsApplied()
 
 void Panels::CpuPanelVU::ApplyConfigToGui( AppConfig& configToApply, int flags )
 {
-	m_panel_VU0->Enable(true);
-	m_panel_VU1->Enable(true);
-
-	m_panel_VU0->EnableItem( 1, true);
-	m_panel_VU0->EnableItem( 2, true);
-
-	m_panel_VU1->EnableItem( 1, true);
-	m_panel_VU1->EnableItem( 2, true);
-
 	Pcsx2Config::RecompilerOptions& recOps( configToApply.EmuOptions.Cpu.Recompiler );
-	if( recOps.UseMicroVU0 )
-		m_panel_VU0->SetSelection( recOps.EnableVU0 ? 1 : 0 );
-	else
-		m_panel_VU0->SetSelection( recOps.EnableVU0 ? 2 : 0 );
-
-	if( recOps.UseMicroVU1 )
-		m_panel_VU1->SetSelection( recOps.EnableVU1 ? 1 : 0 );
-	else
-		m_panel_VU1->SetSelection( recOps.EnableVU1 ? 2 : 0 );
-
-	this->Enable(!configToApply.EnablePresets);
+	m_panel_VU0->SetSelection( recOps.EnableVU0 ? 1 : 0 );
+	m_panel_VU1->SetSelection( recOps.EnableVU1 ? 1 : 0 );
 	m_panel_VU0->Enable(!configToApply.EnablePresets);
 	m_panel_VU1->Enable(!configToApply.EnablePresets);
+	m_button_RestoreDefaults->Enable(!configToApply.EnablePresets);
 
 	if ( flags & AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE )
 	{
@@ -318,8 +300,9 @@ void Panels::CpuPanelVU::ApplyConfigToGui( AppConfig& configToApply, int flags )
 
 void Panels::CpuPanelVU::OnRestoreDefaults(wxCommandEvent &evt)
 {
-	m_panel_VU0->SetSelection( m_panel_VU0->GetButton(1)->IsEnabled() ? 1 : 0 );
-	m_panel_VU1->SetSelection( m_panel_VU1->GetButton(1)->IsEnabled() ? 1 : 0 );
+	AppConfig def;               // created with default values
+	def.EnablePresets = false;   // disable presets otherwise it'll disable some widgets
+	ApplyConfigToGui(def);
 
 	if( BaseAdvancedCpuOptions* opts = (BaseAdvancedCpuOptions*)FindWindowByName(L"AdvancedOptionsVU") )
 		opts->RestoreDefaults();
@@ -406,4 +389,10 @@ void Panels::AdvancedOptionsVU::ApplyConfigToGui( AppConfig& configToApply, int 
 	else								m_ClampModePanel->SetSelection( 0 );
 
 	this->Enable(!configToApply.EnablePresets);
+}
+
+void Panels::CpuPanelEE::EECache_Event(wxCommandEvent& event)
+{
+	m_check_EECacheEnable->Enable(m_panel_RecEE->GetSelection() == 0);
+	event.Skip();
 }

@@ -41,11 +41,6 @@ class RecompiledCodeReserve;
 
 namespace HostMemoryMap
 {
-	// superVU is OLD SCHOOL, and it requires its allocation to be in the lower 256mb
-	// of the virtual memory space. (8mb each)
-	static const uptr sVU0rec	= _256mb - (_8mb*3);
-	static const uptr sVU1rec	= _256mb - (_8mb*2);
-
 #ifdef ASAN_WORKAROUND
 	// address sanitizer uses a shadow memory to monitor the state of the memory. Shadow is computed
 	// as S = (M >> 3) + 0x20000000. So PCSX2 can't use 0x20000000 to 0x3FFFFFFF... Just add another
@@ -87,23 +82,23 @@ namespace HostMemoryMap
 	// microVU0 recompiler code cache area (64mb)
 	static const uptr mVU1rec	= 0x40000000;
 #endif
-	
+
 }
 
 // --------------------------------------------------------------------------------------
 //  SysMainMemory
 // --------------------------------------------------------------------------------------
-// This class provides the main memory for the virtual machines.  
+// This class provides the main memory for the virtual machines.
 class SysMainMemory
 {
 protected:
 	eeMemoryReserve			m_ee;
 	iopMemoryReserve		m_iop;
 	vuMemoryReserve			m_vu;
-	
+
 public:
 	SysMainMemory();
-	virtual ~SysMainMemory() throw();
+	virtual ~SysMainMemory();
 
 	virtual void ReserveAll();
 	virtual void CommitAll();
@@ -119,10 +114,10 @@ class SysAllocVM
 {
 public:
 	SysAllocVM();
-	virtual ~SysAllocVM() throw();
+	virtual ~SysAllocVM();
 
 protected:
-	void CleanupMess() throw();
+	void CleanupMess() noexcept;
 };
 
 // --------------------------------------------------------------------------------------
@@ -135,34 +130,28 @@ protected:
 	ScopedExcept m_RecExceptionIOP;
 
 public:
-	ScopedPtr<CpuInitializerSet> CpuProviders;
+	std::unique_ptr<CpuInitializerSet> CpuProviders;
 
 	SysCpuProviderPack();
-	virtual ~SysCpuProviderPack() throw();
+	virtual ~SysCpuProviderPack();
 
 	void ApplyConfig() const;
-	BaseVUmicroCPU* getVUprovider(int whichProvider, int vuIndex) const;
 
 	bool HadSomeFailures( const Pcsx2Config::RecompilerOptions& recOpts ) const;
 
 	bool IsRecAvailable_EE() const		{ return !m_RecExceptionEE; }
 	bool IsRecAvailable_IOP() const		{ return !m_RecExceptionIOP; }
 
-	BaseException* GetException_EE() const	{ return m_RecExceptionEE; }
-	BaseException* GetException_IOP() const	{ return m_RecExceptionIOP; }
+	BaseException* GetException_EE() const	{ return m_RecExceptionEE.get(); }
+	BaseException* GetException_IOP() const	{ return m_RecExceptionIOP.get(); }
 
 	bool IsRecAvailable_MicroVU0() const;
 	bool IsRecAvailable_MicroVU1() const;
 	BaseException* GetException_MicroVU0() const;
 	BaseException* GetException_MicroVU1() const;
 
-	bool IsRecAvailable_SuperVU0() const;
-	bool IsRecAvailable_SuperVU1() const;
-	BaseException* GetException_SuperVU0() const;
-	BaseException* GetException_SuperVU1() const;
-
 protected:
-	void CleanupMess() throw();
+	void CleanupMess() noexcept;
 };
 
 // GetCpuProviders - this function is not implemented by PCSX2 core -- it must be
@@ -177,6 +166,7 @@ extern u8 *SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller="Unnam
 extern void vSyncDebugStuff( uint frame );
 extern void NTFS_CompressFile( const wxString& file, bool compressStatus=true );
 
+extern wxString SysGetBiosDiscID();
 extern wxString SysGetDiscID();
 
 extern SysMainMemory& GetVmMemory();

@@ -78,7 +78,6 @@ void SaveStateBase::Init( SafeArray<u8>* memblock )
 	m_memory	= memblock;
 	m_version	= g_SaveVersion;
 	m_idx		= 0;
-	m_DidBios	= false;
 }
 
 void SaveStateBase::PrepBlock( int size )
@@ -126,7 +125,7 @@ SaveStateBase& SaveStateBase::FreezeBios()
 	pxToUTF8 utf8(BiosDescription);
 
 	memzero( biosdesc );
-	memcpy_fast( biosdesc, utf8, std::min( sizeof(biosdesc), utf8.Length() ) );
+	memcpy( biosdesc, utf8, std::min( sizeof(biosdesc), utf8.Length() ) );
 	
 	Freeze( bioscheck );
 	Freeze( biosdesc );
@@ -220,9 +219,6 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	FreezeTag( "IOP-Subsystems" );
 	FreezeMem(iopMem->Sif, sizeof(iopMem->Sif));		// iop's sif memory (not really needed, but oh well)
 
-#ifdef ENABLE_NEW_IOPDMA
-	iopDmacFreeze();
-#endif
 	psxRcntFreeze();
 	sioFreeze();
 	sio2Freeze();
@@ -232,6 +228,8 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	// technically this is HLE BIOS territory, but we don't have enough such stuff
 	// to merit an HLE Bios sub-section... yet.
 	deci2Freeze();
+
+	InputRecordingFreeze();
 
 	if( IsLoading() )
 		PostLoadPrep();
@@ -282,7 +280,7 @@ void memSavingState::FreezeMem( void* data, int size )
 	if (!size) return;
 
 	m_memory->MakeRoomFor( m_idx + size );
-	memcpy_fast( m_memory->GetPtr(m_idx), data, size );
+	memcpy( m_memory->GetPtr(m_idx), data, size );
 	m_idx += size;
 }
 
@@ -315,50 +313,10 @@ memLoadingState::memLoadingState( const SafeArray<u8>* load_from )
 {
 }
 
-memLoadingState::~memLoadingState() throw() { }
-
 // Loading of state data from a memory buffer...
 void memLoadingState::FreezeMem( void* data, int size )
 {
 	const u8* const src = m_memory->GetPtr(m_idx);
 	m_idx += size;
-	memcpy_fast( data, src, size );
-}
-
-// --------------------------------------------------------------------------------------
-//  SaveState Exception Messages
-// --------------------------------------------------------------------------------------
-
-wxString Exception::UnsupportedStateVersion::FormatDiagnosticMessage() const
-{
-	// Note: no stacktrace needed for this one...
-	return pxsFmt( L"Unknown or unsupported savestate version: 0x%x", Version );
-}
-
-wxString Exception::UnsupportedStateVersion::FormatDisplayMessage() const
-{
-	// m_message_user contains a recoverable savestate error which is helpful to the user.
-	return
-		m_message_user + L"\n\n" +
-		pxsFmt( _("Cannot load savestate.  It is of an unknown or unsupported version."), Version );
-}
-
-wxString Exception::StateCrcMismatch::FormatDiagnosticMessage() const
-{
-	// Note: no stacktrace needed for this one...
-	return pxsFmt(
-		L"Game/CDVD does not match the savestate CRC.\n"
-		L"\tCdvd CRC: 0x%X\n\tGame CRC: 0x%X\n",
-		Crc_Savestate, Crc_Cdvd
-	);
-}
-
-wxString Exception::StateCrcMismatch::FormatDisplayMessage() const
-{
-	return
-		m_message_user + L"\n\n" +
-		pxsFmt(
-			L"Savestate game/crc mismatch. Cdvd CRC: 0x%X Game CRC: 0x%X\n",
-			Crc_Savestate, Crc_Cdvd
-		);
+	memcpy( data, src, size );
 }

@@ -17,17 +17,14 @@
 #define __IR5900_H__
 
 #include "x86emitter/x86emitter.h"
-#include "x86emitter/sse_helpers.h"
 #include "R5900.h"
 #include "VU.h"
 #include "iCore.h"
-
-extern u32 pc;
-extern int branch;
+#include "R5900_Profiler.h"
 
 extern u32 maxrecmem;
-extern u32 pc;			         // recompiler pc (also used by the SuperVU! .. why? (air))
-extern int branch;		         // set for branch (also used by the SuperVU! .. why? (air))
+extern u32 pc;			         // recompiler pc 
+extern int g_branch;	         // set for branch
 extern u32 target;		         // branch target
 extern u32 s_nBlockCycles;		// cycles of current block recompiling
 
@@ -106,8 +103,8 @@ extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
 u32* _eeGetConstReg(int reg);
 
 // finds where the GPR is stored and moves lower 32 bits to EAX
-void _eeMoveGPRtoR(x86IntRegType to, int fromgpr);
-void _eeMoveGPRtoM(u32 to, int fromgpr);
+void _eeMoveGPRtoR(const x86Emitter::xRegisterLong& to, int fromgpr);
+void _eeMoveGPRtoM(uptr to, int fromgpr);
 void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr);
 void eeSignExtendTo(int gpr, bool onlyupper=false);
 
@@ -136,12 +133,14 @@ typedef void (*R5900FNPTR_INFO)(int info);
 #define EERECOMPILE_CODE0(fn, xmminfo) \
 void rec##fn(void) \
 { \
+	EE::Profiler.EmitOp(eeOpcode::fn); \
 	eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, xmminfo); \
 }
 
 #define EERECOMPILE_CODEX(codename, fn) \
 void rec##fn(void) \
 { \
+	EE::Profiler.EmitOp(eeOpcode::fn); \
 	codename(rec##fn##_const, rec##fn##_); \
 }
 

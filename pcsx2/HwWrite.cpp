@@ -22,6 +22,9 @@
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
 
+#include "ps2/pgif.h"
+#include "R3000A.h"
+
 using namespace R5900;
 
 // Shift the middle 8 bits (bits 4-12) into the lower 8 bits.
@@ -47,7 +50,8 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 #if PSX_EXTRALOGS
 	if ((mem & 0x1000ff00) == 0x1000f300) DevCon.Warning("32bit Write to SIF Register %x value %x", mem, value);
 	//if ((mem & 0x1000ff00) == 0x1000f200) DevCon.Warning("Write to SIF Register %x value %x", mem, value);
-#endif	
+#endif
+
 	switch (page)
 	{
 		case 0x00:	if (!rcntWrite32<0x00>(mem, value)) return;	break;
@@ -131,7 +135,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 		case 0x0e:
 			if (!dmacWrite32<page>(mem, value)) return;
 		break;
-		
+
 		case 0x0f:
 		{
 			switch( HELPSWITCH(mem) )
@@ -172,7 +176,16 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 					psHu32(mem) &= ~value;
 				return;
 
-				mcase(SBUS_F240):
+				mcase(SBUS_F240) :
+					//if (value & (1 << 19)) // switch hardware into psx mode. Doesn't work for some reason, still needs this to be in cdvdWrite14?
+					//{
+					//	u32 cycle = psxRegs.cycle;
+					//	//pgifInit();
+					//	psxHwReset();
+					//	psxHu32(0x1f801450) = 0x8;
+					//	psxHu32(0x1f801078) = 1;
+					//	psxRegs.cycle = cycle;
+					//}
 					if(!(value & 0x100))
 						psHu32(mem) &= ~0x100;
 					else
@@ -180,9 +193,14 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 				return;
 
 				mcase(SBUS_F260):
-					psHu32(mem) = 0;
+#if PSX_EXTRALOGS
+					DevCon.Warning("Write  SBUS_F260  %x ", psHu32(SBUS_F260));
+#endif
+					psHu32(mem) = value;
 				return;
 
+				// TODO: psx handling is done in the default case. Keep the code until we decide if we decide which interface to use (sif2/Pgif dma)
+#if 0
 				mcase(SBUS_F300) :
 					psxHu32(0x1f801814) = value;
 				/*
@@ -211,6 +229,8 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 				mcase(SBUS_F380) :
 					psHu32(mem) = value;
 				return;
+#endif
+
 				mcase(MCH_RICM)://MCH_RICM: x:4|SA:12|x:5|SDEV:1|SOP:4|SBC:1|SDEV:5
 					if ((((value >> 16) & 0xFFF) == 0x21) && (((value >> 6) & 0xF) == 1) && (((psHu32(0xf440) >> 7) & 1) == 0))//INIT & SRP=0
 						rdram_sdevid = 0;	// if SIO repeater is cleared, reset sdevid
@@ -224,6 +244,14 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 
 				mcase(DMAC_ENABLEW):
 					if (!dmacWrite32<0x0f>(DMAC_ENABLEW, value)) return;
+				break;
+
+				default:
+					// TODO: psx add the real address in a sbus mcase
+					if (((mem & 0x1FFFFFFF) >= EEMemoryMap::SBUS_PS1_Start) && ((mem & 0x1FFFFFFF) < EEMemoryMap::SBUS_PS1_End)) {
+						PGIFw((mem & 0x1FFFFFFF), value);
+						return;
+					}
 
 				//mcase(SIO_ISR):
 				//mcase(0x1000f410):
@@ -231,10 +259,10 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 				// (unhandled so fall through to default)
 
 			}
-		}	
+		}
 		break;
 	}
-	
+
 	psHu32(mem) = value;
 }
 
@@ -423,8 +451,15 @@ void __fastcall _hwWrite128(u32 mem, const mem128_t* srcval)
 
 				//WriteFIFO_IPUout(srcval);
 			}
-				
+
 		return;
+
+		case 0x0F:
+			// todo: psx mode: this is new
+			if (((mem & 0x1FFFFFFF) >= EEMemoryMap::SBUS_PS1_Start) && ((mem & 0x1FFFFFFF) < EEMemoryMap::SBUS_PS1_End)) {
+				PGIFwQword((mem & 0x1FFFFFFF), (void*)srcval);
+				return;
+			}
 
 		default: break;
 	}

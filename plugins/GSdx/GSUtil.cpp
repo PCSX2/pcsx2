@@ -20,73 +20,77 @@
  */
 
 #include "stdafx.h"
-#include "GS.h"
 #include "GSUtil.h"
-#include "xbyak/xbyak_util.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
+#include "Renderers/DX11/GSDevice11.h"
+#include <VersionHelpers.h>
 #include "svnrev.h"
 #else
 #define SVN_REV 0
 #define SVN_MODS 0
 #endif
 
+Xbyak::util::Cpu g_cpu;
+
 const char* GSUtil::GetLibName()
 {
-	// TODO: critsec
+	// The following ifdef mess is courtesy of "static string str;"
+	// being optimised by GCC to be unusable by older CPUs. Enjoy!
+	static char name[255];
 
-	static string str;
+#if _M_SSE < 0x501
+	const char* sw_sse = g_cpu.has(Xbyak::util::Cpu::tAVX) ? "AVX" :
+		g_cpu.has(Xbyak::util::Cpu::tSSE41) ? "SSE41" :
+		g_cpu.has(Xbyak::util::Cpu::tSSSE3) ? "SSSE3" : "SSE2";
+#endif
 
-	if(str.empty())
-	{
-		str = "GSdx";
+	snprintf(name, sizeof(name), "GSdx "
 
-		#ifdef _WINDOWS
-		str += format(" %lld", SVN_REV);
-		if(SVN_MODS) str += "m";
-		#endif
+#ifdef _WIN32
+		"%lld "
+#endif
+#ifdef _M_AMD64
+		"64-bit "
+#endif
+#ifdef __INTEL_COMPILER
+		"(Intel C++ %d.%02d %s/%s)",
+#elif _MSC_VER
+		"(MSVC %d.%02d %s/%s)",
+#elif __clang__
+		"(clang %d.%d.%d %s/%s)",
+#elif __GNUC__
+		"(GCC %d.%d.%d %s/%s)",
+#else
+		"(%s/%s)",
+#endif
+#ifdef _WIN32
+		SVN_REV,
+#endif
+#ifdef __INTEL_COMPILER
+		__INTEL_COMPILER / 100, __INTEL_COMPILER % 100,
+#elif _MSC_VER
+		_MSC_VER / 100, _MSC_VER % 100,
+#elif __clang__
+		__clang_major__, __clang_minor__, __clang_patchlevel__,
+#elif __GNUC__
+		__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__,
+#endif
 
-		#ifdef _M_AMD64
-		str += " 64-bit";
-		#endif
+#if _M_SSE >= 0x501
+		"AVX2", "AVX2"
+#elif _M_SSE >= 0x500
+		"AVX", sw_sse
+#elif _M_SSE >= 0x401
+		"SSE4.1", sw_sse
+#elif _M_SSE >= 0x301
+		"SSSE3", sw_sse
+#elif _M_SSE >= 0x200
+		"SSE2", sw_sse
+#endif
+	);
 
-		list<string> sl;
-
-		// TODO: linux (gcc)
-
-		#ifdef __INTEL_COMPILER
-		sl.push_back(format("Intel C++ %d.%02d", __INTEL_COMPILER / 100, __INTEL_COMPILER % 100));
-		#elif _MSC_VER
-		sl.push_back(format("MSVC %d.%02d", _MSC_VER / 100, _MSC_VER % 100));
-		#elif __GNUC__
-		sl.push_back(format("GCC %d.%d.%d", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__));
-		#endif
-
-		#if _M_SSE >= 0x501
-		sl.push_back("AVX2");
-		#elif _M_SSE >= 0x500
-		sl.push_back("AVX");
-		#elif _M_SSE >= 0x402
-		sl.push_back("SSE42");
-		#elif _M_SSE >= 0x401
-		sl.push_back("SSE41");
-		#elif _M_SSE >= 0x301
-		sl.push_back("SSSE3");
-		#elif _M_SSE >= 0x200
-		sl.push_back("SSE2");
-		#elif _M_SSE >= 0x100
-		sl.push_back("SSE");
-		#endif
-
-		for(list<string>::iterator i = sl.begin(); i != sl.end(); )
-		{
-			if(i == sl.begin()) str += " (";
-			str += *i;
-			str += ++i != sl.end() ? ", " : ")";
-		}
-	}
-
-	return str.c_str();
+	return name;
 }
 
 static class GSUtilMaps
@@ -94,10 +98,12 @@ static class GSUtilMaps
 public:
 	uint8 PrimClassField[8];
 	uint8 VertexCountField[8];
+	uint8 ClassVertexCountField[4];
 	uint32 CompatibleBitsField[64][2];
 	uint32 SharedBitsField[64][2];
 
-	GSUtilMaps()
+	// Defer init to avoid AVX2 illegal instructions
+	void Init()
 	{
 		PrimClassField[GS_POINTLIST] = GS_POINT_CLASS;
 		PrimClassField[GS_LINELIST] = GS_LINE_CLASS;
@@ -116,6 +122,11 @@ public:
 		VertexCountField[GS_TRIANGLEFAN] = 3;
 		VertexCountField[GS_SPRITE] = 2;
 		VertexCountField[GS_INVALID] = 1;
+
+		ClassVertexCountField[GS_POINT_CLASS] = 1;
+		ClassVertexCountField[GS_LINE_CLASS] = 2;
+		ClassVertexCountField[GS_TRIANGLE_CLASS] = 3;
+		ClassVertexCountField[GS_SPRITE_CLASS] = 2;
 
 		memset(CompatibleBitsField, 0, sizeof(CompatibleBitsField));
 
@@ -153,6 +164,11 @@ public:
 
 } s_maps;
 
+void GSUtil::Init()
+{
+	s_maps.Init();
+}
+
 GS_PRIM_CLASS GSUtil::GetPrimClass(uint32 prim)
 {
 	return (GS_PRIM_CLASS)s_maps.PrimClassField[prim];
@@ -161,6 +177,11 @@ GS_PRIM_CLASS GSUtil::GetPrimClass(uint32 prim)
 int GSUtil::GetVertexCount(uint32 prim)
 {
 	return s_maps.VertexCountField[prim];
+}
+
+int GSUtil::GetClassVertexCount(uint32 primclass)
+{
+	return s_maps.ClassVertexCountField[primclass];
 }
 
 const uint32* GSUtil::HasSharedBitsPtr(uint32 dpsm)
@@ -190,72 +211,152 @@ bool GSUtil::HasCompatibleBits(uint32 spsm, uint32 dpsm)
 
 bool GSUtil::CheckSSE()
 {
-	Xbyak::util::Cpu cpu;
-	Xbyak::util::Cpu::Type type;
+	bool status = true;
 
-	#if _M_SSE >= 0x500
-	type = Xbyak::util::Cpu::tAVX;
-	#elif _M_SSE >= 0x402
-	type = Xbyak::util::Cpu::tSSE42;
-	#elif _M_SSE >= 0x401
-	type = Xbyak::util::Cpu::tSSE41;
-	#elif _M_SSE >= 0x301
-	type = Xbyak::util::Cpu::tSSSE3;
-	#elif _M_SSE >= 0x200
-	type = Xbyak::util::Cpu::tSSE2;
-	#endif
+	struct ISA {
+		Xbyak::util::Cpu::Type type;
+		const char* name;
+	};
 
-	if(!cpu.has(type))
-	{
-		fprintf(stderr, "This CPU does not support SSE %d.%02d", _M_SSE >> 8, _M_SSE & 0xff);
+	ISA checks[] = {
+		{Xbyak::util::Cpu::tSSE2, "SSE2"},
+#if _M_SSE >= 0x301
+		{Xbyak::util::Cpu::tSSSE3, "SSSE3"},
+#endif
+#if _M_SSE >= 0x401
+		{Xbyak::util::Cpu::tSSE41, "SSE41"},
+#endif
+#if _M_SSE >= 0x500
+		{Xbyak::util::Cpu::tAVX, "AVX1"},
+#endif
+#if _M_SSE >= 0x501
+		{Xbyak::util::Cpu::tAVX2, "AVX2"},
+		{Xbyak::util::Cpu::tBMI1, "BMI1"},
+		{Xbyak::util::Cpu::tBMI2, "BMI2"},
+#endif
+	};
 
-		return false;
+	for (size_t i = 0; i < countof(checks); i++) {
+		if(!g_cpu.has(checks[i].type)) {
+			fprintf(stderr, "This CPU does not support %s\n", checks[i].name);
+
+			status = false;
+		}
 	}
 
-	return true;
+	return status;
 }
 
-#ifdef _WINDOWS
+CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
+{
+	return type == GSRendererType::OGL_HW ? CRCHackLevel::Partial : CRCHackLevel::Full;
+}
+
+#define OCL_PROGRAM_VERSION 3
+
+#ifdef ENABLE_OPENCL
+void GSUtil::GetDeviceDescs(std::list<OCLDeviceDesc>& dl)
+{
+	dl.clear();
+
+	try
+	{
+		std::vector<cl::Platform> platforms;
+
+		cl::Platform::get(&platforms);
+
+		for(auto& p : platforms)
+		{
+			std::string platform_vendor = p.getInfo<CL_PLATFORM_VENDOR>();
+
+			std::vector<cl::Device> ds;
+
+			p.getDevices(CL_DEVICE_TYPE_ALL, &ds);
+
+			for(auto& device : ds)
+			{
+				std::string type;
+
+				switch(device.getInfo<CL_DEVICE_TYPE>())
+				{
+				case CL_DEVICE_TYPE_GPU: type = "GPU"; break;
+				case CL_DEVICE_TYPE_CPU: type = "CPU"; break;
+				}
+
+				if(type.empty()) continue;
+
+				std::string version = device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
+
+				int major = 0;
+				int minor = 0;
+
+				if(!type.empty() && sscanf(version.c_str(), "OpenCL C %d.%d", &major, &minor) == 2 && major == 1 && minor >= 1 || major > 1)
+				{
+					OCLDeviceDesc desc;
+
+					desc.device = device;
+					desc.name = GetDeviceUniqueName(device);
+					desc.version = major * 100 + minor * 10;
+
+					desc.tmppath = GStempdir() + "/" + desc.name;
+
+					GSmkdir(desc.tmppath.c_str());
+
+					desc.tmppath += "/" + std::to_string(OCL_PROGRAM_VERSION);
+
+					GSmkdir(desc.tmppath.c_str());
+
+					dl.push_back(desc);
+				}
+			}
+		}
+	}
+	catch(cl::Error err)
+	{
+		printf("%s (%d)\n", err.what(), err.err());
+	}
+}
+
+std::string GSUtil::GetDeviceUniqueName(cl::Device& device)
+{
+	std::string vendor = device.getInfo<CL_DEVICE_VENDOR>();
+	std::string name = device.getInfo<CL_DEVICE_NAME>();
+	std::string version = device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
+
+	std::string type;
+
+	switch(device.getInfo<CL_DEVICE_TYPE>())
+	{
+	case CL_DEVICE_TYPE_GPU: type = "GPU"; break;
+	case CL_DEVICE_TYPE_CPU: type = "CPU"; break;
+	}
+
+	version.erase(version.find_last_not_of(' ') + 1);
+
+	return vendor + " " + name + " " + version + " " + type;
+}
+#endif
+
+#ifdef _WIN32
 
 bool GSUtil::CheckDirectX()
 {
-	OSVERSIONINFOEX version;
-	memset(&version, 0, sizeof(version));
-	version.dwOSVersionInfoSize = sizeof(version);
-
-	if(GetVersionEx((OSVERSIONINFO*)&version))
+	if (GSDevice11::LoadD3DCompiler())
 	{
-		printf("Windows %d.%d.%d", version.dwMajorVersion, version.dwMinorVersion, version.dwBuildNumber);
+		GSDevice11::FreeD3DCompiler();
+		return true;
+	}
 
-		if(version.wServicePackMajor > 0)
+	// User's system is likely broken if it fails and is Windows 8.1 or greater.
+	if (!IsWindows8Point1OrGreater())
+	{
+		printf("Cannot find d3dcompiler_43.dll\n");
+		if (MessageBox(nullptr, TEXT("You need to update some DirectX libraries, would you like to do it now?"), TEXT("GSdx"), MB_YESNO) == IDYES)
 		{
-			printf(" (%s %d.%d)", version.szCSDVersion, version.wServicePackMajor, version.wServicePackMinor);
+			ShellExecute(nullptr, TEXT("open"), TEXT("https://www.microsoft.com/en-us/download/details.aspx?id=8109"), nullptr, nullptr, SW_SHOWNORMAL);
 		}
-
-		printf("\n");
 	}
-
-	string d3dx9_dll = format("d3dx9_%d.dll", D3DX_SDK_VERSION);
-
-	if(HINSTANCE hDll = LoadLibrary(d3dx9_dll.c_str()))
-	{
-		FreeLibrary(hDll);
-	}
-	else
-	{
-		printf("Cannot find %s\n", d3dx9_dll.c_str());
-
-		if(MessageBox(NULL, "You need to update some directx libraries, would you like to do it now?", "GSdx", MB_YESNO) == IDYES)
-		{
-			const char* url = "http://www.microsoft.com/downloads/details.aspx?FamilyId=2DA43D38-DB71-4C1B-BC6A-9B6652CD92A3";
-
-			ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
-		}
-
-		return false;
-	}
-
-	return true;
+	return false;
 }
 
 // ---------------------------------------------------------------------------------
@@ -310,4 +411,81 @@ D3D_FEATURE_LEVEL GSUtil::CheckDirect3D11Level(IDXGIAdapter *adapter, D3D_DRIVER
 	return SUCCEEDED(hr) ? level : (D3D_FEATURE_LEVEL)0;
 }
 
+GSRendererType GSUtil::GetBestRenderer()
+{
+	CComPtr<IDXGIFactory1> dxgi_factory;
+	if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory))))
+	{
+		CComPtr<IDXGIAdapter1> adapter;
+		if (SUCCEEDED(dxgi_factory->EnumAdapters1(0, &adapter)))
+		{
+			DXGI_ADAPTER_DESC1 desc;
+			if (SUCCEEDED(adapter->GetDesc1(&desc)))
+			{
+				D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level();
+				// Check for Nvidia VendorID. Latest OpenGL features need at least DX11 level GPU
+				if (desc.VendorId == 0x10DE && level >= D3D_FEATURE_LEVEL_11_0)
+					return GSRendererType::OGL_HW;
+			}
+		}
+	}
+	return GSRendererType::DX1011_HW;
+}
+
 #endif
+
+void GSmkdir(const char* dir)
+{
+#ifdef _WIN32
+	if (!CreateDirectory(dir, nullptr)) {
+		DWORD errorID = ::GetLastError();
+		if (errorID != ERROR_ALREADY_EXISTS) {
+			fprintf(stderr, "Failed to create directory: %s error %u\n", dir, errorID);
+		}
+	}
+#else
+	int err = mkdir(dir, 0777);
+	if (!err && errno != EEXIST)
+		fprintf(stderr, "Failed to create directory: %s\n", dir);
+#endif
+}
+
+std::string GStempdir()
+{
+#ifdef _WIN32
+	char path[MAX_PATH + 1];
+	GetTempPath(MAX_PATH, path);
+	return {path};
+#else
+	return "/tmp";
+#endif
+}
+
+const char* psm_str(int psm)
+{
+	switch(psm) {
+		// Normal color
+		case PSM_PSMCT32:  return "C_32";
+		case PSM_PSMCT24:  return "C_24";
+		case PSM_PSMCT16:  return "C_16";
+		case PSM_PSMCT16S: return "C_16S";
+
+		// Palette color
+		case PSM_PSMT8:    return "P_8";
+		case PSM_PSMT4:    return "P_4";
+		case PSM_PSMT8H:   return "P_8H";
+		case PSM_PSMT4HL:  return "P_4HL";
+		case PSM_PSMT4HH:  return "P_4HH";
+
+		// Depth
+		case PSM_PSMZ32:   return "Z_32";
+		case PSM_PSMZ24:   return "Z_24";
+		case PSM_PSMZ16:   return "Z_16";
+		case PSM_PSMZ16S:  return "Z_16S";
+
+		case PSM_PSGPU24:     return "PS24";
+
+		default:break;
+	}
+	return "BAD_PSM";
+}

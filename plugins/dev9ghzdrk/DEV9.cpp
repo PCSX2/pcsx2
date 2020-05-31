@@ -17,13 +17,21 @@
 #define WINVER 0x0600
 #define _WIN32_WINNT 0x0600
 
+#ifdef _WIN32
 #include <winsock2.h>
+#include <Winioctl.h>
+#include <windows.h>
+#elif defined(__linux__)
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <err.h>
+#endif
+
+
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <Winioctl.h>
-#include <fcntl.h>
-#include <windows.h>
 #include <stdarg.h>
 #define EXTERN 
 #include "DEV9.h"
@@ -32,13 +40,33 @@
 #include "smap.h"
 #include "ata.h"
 
-#ifdef __WIN32__
+#ifdef _WIN32
 #pragma warning(disable:4244)
 
 HINSTANCE hInst=NULL;
 #endif
 
 //#define HDD_48BIT
+
+#if defined(__i386__) && !defined(_WIN32)
+
+static __inline__ unsigned long long GetTickCount(void)
+{
+	unsigned long long int x;
+	__asm__ volatile ("rdtsc" : "=A" (x));
+	return x;
+}
+
+#elif defined(__x86_64__) && !defined(_WIN32)
+
+static __inline__ unsigned long long GetTickCount(void)
+{
+	unsigned hi, lo;
+	__asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
+	return ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );
+}
+
+#endif
 
 u8 eeprom[] = {
 	//0x6D, 0x76, 0x63, 0x61, 0x31, 0x30, 0x08, 0x01,
@@ -56,32 +84,47 @@ u32 *iopPC;
 
 const unsigned char version  = PS2E_DEV9_VERSION;
 const unsigned char revision = 0;
-const unsigned char build    = 3;    // increase that with each version
+const unsigned char build    = 4;    // increase that with each version
 
 
-static char *libraryName     = "GiGaHeRz's DEV9 Driver"
+static const char *libraryName     = "GiGaHeRz's DEV9 Driver"
 #ifdef _DEBUG
 	"(debug)"
 #endif
 ;
 
+#ifdef _WIN32
 HANDLE hEeprom;
 HANDLE mapping;
+#else
+int hEeprom;
+int mapping;
+#endif
 
-u32 CALLBACK PS2EgetLibType() {
+EXPORT_C_(u32)
+PS2EgetLibType() {
 	return PS2E_LT_DEV9;
 }
 
-char* CALLBACK PS2EgetLibName() {
+EXPORT_C_(const char*)
+PS2EgetLibName() {
 	return libraryName;
 }
 
-u32 CALLBACK PS2EgetLibVersion2(u32 type) {
+EXPORT_C_(u32)
+PS2EgetLibVersion2(u32 type) {
 	return (version<<16) | (revision<<8) | build;
 }
 
+
+std::string s_strIniPath = "inis";
+std::string s_strLogPath = "logs";
 // Warning: The below log function is SLOW. Better fix it before attempting to use it.
+#ifdef _DEBUG
+int Log = 1;
+#else
 int Log = 0;
+#endif
 
 void __Log(char *fmt, ...) {
 	if (!Log) return;
@@ -94,26 +137,32 @@ void __Log(char *fmt, ...) {
 
 	if(iopPC!=NULL)
 	{
-		fprintf(dev9Log,"[%10d + %4d, IOP PC = %08x] ",nticks,nticks-ticks,*iopPC);
+		DEV9Log.Write("[%10d + %4d, IOP PC = %08x] ", nticks, nticks - ticks, *iopPC);
 	}
 	else
 	{
-		fprintf(dev9Log,"[%10d + %4d] ",nticks,nticks-ticks);
+		DEV9Log.Write( "[%10d + %4d] ", nticks, nticks - ticks);
 	}
 	ticks=nticks;
 
 	va_start(list, fmt);
-	vfprintf(dev9Log, fmt, list);
+	DEV9Log.Write(fmt, list);
 	va_end(list);
 }
 
+void LogInit()
+{
+	const std::string LogFile(s_strLogPath + "/dev9Log.txt");
+	DEV9Log.WriteToFile = true;
+	DEV9Log.Open(LogFile);
+}
 
-s32 CALLBACK DEV9init() 
+EXPORT_C_(s32)
+DEV9init()
 {
 
 #ifdef DEV9_LOG_ENABLE
-	dev9Log = fopen("logs/dev9Log.txt", "w");
-	setvbuf(dev9Log, NULL,  _IONBF, 0);
+	LogInit();
 	DEV9_LOG("DEV9init\n");
 #endif
 	memset(&dev9, 0, sizeof(dev9));
@@ -123,6 +172,7 @@ s32 CALLBACK DEV9init()
 
 	FLASHinit();
 
+#ifdef _WIN32
 	hEeprom = CreateFile(
 	  "eeprom.dat",
 	  GENERIC_READ|GENERIC_WRITE,
@@ -148,6 +198,7 @@ s32 CALLBACK DEV9init()
 		else
 		{
 			dev9.eeprom = (u16*)MapViewOfFile(mapping,FILE_MAP_WRITE,0,0,0);
+
 			if(dev9.eeprom==NULL)
 			{
 				CloseHandle(mapping);
@@ -156,19 +207,34 @@ s32 CALLBACK DEV9init()
 			}
 		}
 	}
+#else
+	hEeprom = open("eeprom.dat", O_RDWR, 0);
 
-
+	if(-1 == hEeprom)
 	{
-		int rxbi;
+		dev9.eeprom=(u16*)eeprom;
+	}
+	else
+	{
+			dev9.eeprom = (u16*)mmap(NULL, 64, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, hEeprom, 0);
 
-		for(rxbi=0;rxbi<(SMAP_BD_SIZE/8);rxbi++)
-		{
-			smap_bd_t *pbd = (smap_bd_t *)&dev9.dev9R[SMAP_BD_RX_BASE & 0xffff];
-			pbd = &pbd[rxbi];
+			if(dev9.eeprom==NULL)
+			{
+				close(hEeprom);
+				dev9.eeprom=(u16*)eeprom;
+			}
+	}
+#endif
 
-			pbd->ctrl_stat = SMAP_BD_RX_EMPTY;
-			pbd->length = 0;
-		}
+	int rxbi;
+
+	for(rxbi=0;rxbi<(SMAP_BD_SIZE/8);rxbi++)
+	{
+		smap_bd_t *pbd = (smap_bd_t *)&dev9.dev9R[SMAP_BD_RX_BASE & 0xffff];
+		pbd = &pbd[rxbi];
+
+		pbd->ctrl_stat = SMAP_BD_RX_EMPTY;
+		pbd->length = 0;
 	}
 
 	DEV9_LOG("DEV9init ok\n");
@@ -176,14 +242,16 @@ s32 CALLBACK DEV9init()
 	return 0;
 }
 
-void CALLBACK DEV9shutdown() {
+EXPORT_C_(void)
+DEV9shutdown() {
 	DEV9_LOG("DEV9shutdown\n");
 #ifdef DEV9_LOG_ENABLE
-	fclose(dev9Log);
+	DEV9Log.Close();
 #endif
 }
 
-s32 CALLBACK DEV9open(void *pDsp) 
+EXPORT_C_(s32)
+DEV9open(void *pDsp)
 {
 	DEV9_LOG("DEV9open\n");
 	LoadConf();
@@ -198,7 +266,8 @@ s32 CALLBACK DEV9open(void *pDsp)
 	return _DEV9open();
 }
 
-void CALLBACK DEV9close() 
+EXPORT_C_(void)
+DEV9close()
 {
 	DEV9_LOG("DEV9close\n");
 #ifdef ENABLE_ATA
@@ -207,7 +276,8 @@ void CALLBACK DEV9close()
 	_DEV9close();
 }
 
-int CALLBACK _DEV9irqHandler(void)
+EXPORT_C_(int)
+_DEV9irqHandler(void)
 {
 	//dev9Ru16(SPD_R_INTR_STAT)|= dev9.irqcause;
 	DEV9_LOG("_DEV9irqHandler %x, %x\n", dev9.irqcause, dev9Ru16(SPD_R_INTR_MASK));
@@ -216,7 +286,8 @@ int CALLBACK _DEV9irqHandler(void)
 	return 0;
 }
 
-DEV9handler CALLBACK DEV9irqHandler(void) {
+EXPORT_C_(DEV9handler)
+DEV9irqHandler(void) {
 	return (DEV9handler)_DEV9irqHandler;
 }
 
@@ -233,7 +304,11 @@ void _DEV9irq(int cause, int cycles)
 }
 
 
-u8  CALLBACK DEV9read8(u32 addr) {
+EXPORT_C_(u8)
+ DEV9read8(u32 addr) {
+	if (!config.ethEnable & !config.hddEnable)
+		return 0;
+
 	u8 hard;
 	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
 	{
@@ -297,8 +372,12 @@ u8  CALLBACK DEV9read8(u32 addr) {
 	return hard;
 }
 
-u16 CALLBACK DEV9read16(u32 addr)
+EXPORT_C_(u16)
+DEV9read16(u32 addr)
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return 0;
+
 	u16 hard;
 	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
 	{
@@ -359,8 +438,12 @@ u16 CALLBACK DEV9read16(u32 addr)
 	return hard;
 }
 
-u32 CALLBACK DEV9read32(u32 addr)
+EXPORT_C_(u32)
+DEV9read32(u32 addr)
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return 0;
+
 	u32 hard;
 	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
 	{
@@ -375,9 +458,9 @@ u32 CALLBACK DEV9read32(u32 addr)
 		//smap
 		return smap_read32(addr);
 	}
-	switch (addr) {
+//	switch (addr) {
 
-		default:
+//		default:
 			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE))) {
 				return (u32)FLASHread32(addr, 4);
 			}
@@ -385,14 +468,18 @@ u32 CALLBACK DEV9read32(u32 addr)
 			hard = dev9Ru32(addr); 
 			DEV9_LOG("*Unknown 32bit read at address %lx value %x\n", addr, hard);
 			return hard;
-	}
+//	}
 
-	DEV9_LOG("*Known 32bit read at address %lx: %lx\n", addr, hard);
-	return hard;
+//	DEV9_LOG("*Known 32bit read at address %lx: %lx\n", addr, hard);
+//	return hard;
 }
 
-void CALLBACK DEV9write8(u32 addr,  u8 value) 
+EXPORT_C_(void)
+DEV9write8(u32 addr,  u8 value)
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return;
+
 	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
 	{
 #ifdef ENABLE_ATA
@@ -498,8 +585,12 @@ void CALLBACK DEV9write8(u32 addr,  u8 value)
 	DEV9_LOG("*Known 8bit write at address %lx value %x\n", addr, value);
 }
 
-void CALLBACK DEV9write16(u32 addr, u16 value) 
+EXPORT_C_(void)
+DEV9write16(u32 addr, u16 value)
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return;
+
 	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
 	{
 #ifdef ENABLE_ATA
@@ -538,8 +629,12 @@ void CALLBACK DEV9write16(u32 addr, u16 value)
 	DEV9_LOG("*Known 16bit write at address %lx value %x\n", addr, value);
 }
 
-void CALLBACK DEV9write32(u32 addr, u32 value) 
+EXPORT_C_(void)
+DEV9write32(u32 addr, u32 value)
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return;
+
 	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
 	{
 #ifdef ENABLE_ATA
@@ -572,8 +667,12 @@ void CALLBACK DEV9write32(u32 addr, u32 value)
 	DEV9_LOG("*Known 32bit write at address %lx value %lx\n", addr, value);
 }
 
-void CALLBACK DEV9readDMA8Mem(u32 *pMem, int size) 
+EXPORT_C_(void)
+DEV9readDMA8Mem(u32 *pMem, int size)
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return;
+
 	DEV9_LOG("*DEV9readDMA8Mem: size %x\n", size);
 	emu_printf("rDMA\n");
 	
@@ -583,8 +682,12 @@ void CALLBACK DEV9readDMA8Mem(u32 *pMem, int size)
 #endif
 }
 
-void CALLBACK DEV9writeDMA8Mem(u32* pMem, int size) 
+EXPORT_C_(void)
+DEV9writeDMA8Mem(u32* pMem, int size)
 {
+	if (!config.ethEnable & !config.hddEnable)
+		return;
+
 	DEV9_LOG("*DEV9writeDMA8Mem: size %x\n", size);
 	emu_printf("wDMA\n");
 	
@@ -596,24 +699,43 @@ void CALLBACK DEV9writeDMA8Mem(u32* pMem, int size)
 
 
 //plugin interface
-void CALLBACK DEV9irqCallback(void (*callback)(int cycles)) {
+EXPORT_C_(void)
+DEV9irqCallback(void (*callback)(int cycles)) {
 	DEV9irq = callback;
 }
 
+EXPORT_C_(void)
+DEV9async(u32 cycles)
+{
+	smap_async(cycles);
+}
 
 // extended funcs
 
-s32  CALLBACK DEV9test() {
+EXPORT_C_(s32)
+ DEV9test() {
 	return 0;
 }
 
-void CALLBACK DEV9setSettingsDir(const char* dir)
+EXPORT_C_(void)
+DEV9setSettingsDir(const char* dir)
 {
 	// Grab the ini directory.
 	// TODO: Use
-    // s_strIniPath = (dir == NULL) ? "inis" : dir;
+    s_strIniPath = (dir == NULL) ? "inis" : dir;
 }
 
+EXPORT_C_(void)
+DEV9setLogDir(const char* dir)
+{
+	// Get the path to the log directory.
+	s_strLogPath = (dir == NULL) ? "logs" : dir;
+
+	// Reload the log file after updated the path
+	// Currently dosn't change winPcap log directories post DEV9open()
+	DEV9Log.Close();
+	LogInit();
+}
 
 int emu_printf(const char *fmt, ...)
 {

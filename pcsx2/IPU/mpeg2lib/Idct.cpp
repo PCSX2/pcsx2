@@ -38,8 +38,6 @@
 #define W5 1609 /* 2048*sqrt (2)*cos (5*pi/16) */
 #define W6 1108 /* 2048*sqrt (2)*cos (6*pi/16) */
 #define W7 565  /* 2048*sqrt (2)*cos (7*pi/16) */
-#define clp(val,res)	res = (val < 0) ? 0 : ((val > 255) ? 255 : val);
-#define clp2(val,res)	res = (val < -255) ? -255 : ((val > 255) ? 255 : val);
 
 /*
  * In legal streams, the IDCT output should be between -384 and +384.
@@ -51,20 +49,17 @@ static __aligned16 u8 clip_lut[1024];
 
 #define CLIP(i) ((clip_lut+384)[(i)])
 
+static __fi void BUTTERFLY(int& t0, int& t1, int w0, int w1, int d0, int d1)
+{
 #if 0
-#define BUTTERFLY(t0,t1,W0,W1,d0,d1)	\
-do {					\
-    t0 = W0*d0 + W1*d1;			\
-    t1 = W0*d1 - W1*d0;			\
-} while (0)
+    t0 = w0*d0 + w1*d1;
+    t1 = w0*d1 - w1*d0;
 #else
-#define BUTTERFLY(t0,t1,W0,W1,d0,d1)	\
-do {					\
-    int tmp = W0 * (d0 + d1);		\
-    t0 = tmp + (W1 - W0) * d1;		\
-    t1 = tmp - (W1 + W0) * d0;		\
-} while (0)
+    int tmp = w0 * (d0 + d1);
+    t0 = tmp + (w1 - w0) * d1;
+    t1 = tmp - (w1 + w0) * d0;
 #endif
+}
 
 static __fi void idct_row (s16 * const block)
 {

@@ -23,9 +23,6 @@
 
 using namespace x86Emitter;
 
-#define aMax(x, y) std::max(x,y)
-#define aMin(x, y) std::min(x,y)
-
 // newVif_HashBucket.h uses this typedef, so it has to be declared first.
 typedef u32  (__fastcall *nVifCall)(void*, const void*);
 typedef void (__fastcall *nVifrecCall)(uptr dest, uptr src);
@@ -55,48 +52,24 @@ _vifT extern void  dVifUnpack  (const u8* data, bool isFill);
 #define xmmRow  xmm6
 #define xmmTemp xmm7
 
-// nVifBlock - Ordered for Hashing; the 'num' field and the lower 6 bits of upkType are
-//             used as the hash bucket selector.
-struct __aligned16 nVifBlock {
-	u8   num;		// [00] Num  Field
-	u8   upkType;	// [01] Unpack Type [usn*1:mask*1:upk*4]
-	u8   mode;		// [02] Mode Field
-	u8   cl;		// [03] CL   Field
-	u32  mask;		// [04] Mask Field
-	u8   wl;		// [08] WL   Field
-	u8   aligned;   // [09] Packet Alignment
-	u8	 padding[2];// [10] through [11]
-	uptr startPtr;	// [12] Start Ptr of RecGen Code
-}; // 16 bytes
-
-#define _hSize 0x4000 // [usn*1:mask*1:upk*4:num*8] hash...
-#define _cmpS  (sizeof(nVifBlock) - (4))
-#define _tParams nVifBlock, _hSize, _cmpS
 struct nVifStruct {
-
-	__aligned16 nVifBlock   block;
-
 	// Buffer for partial transfers (should always be first to ensure alignment)
 	// Maximum buffer size is 256 (vifRegs.Num max range) * 16 (quadword)
 	__aligned16 u8			buffer[256*16];
 	u32						bSize;			// Size of 'buffer'
-	u32						bPtr;
-
-	uint					recReserveSizeMB;	// reserve size, in megabytes.
-	RecompiledCodeReserve*	recReserve;
-	u8*						recWritePtr;		// current write pos into the reserve
-
-	HashBucket<_tParams>*	vifBlocks;		// Vif Blocks
-	int						numBlocks;		// # of Blocks Recompiled
 
 	// VIF0 or VIF1 - provided for debugging helpfulness only, and is generally unused.
 	// (templates are used for most or all VIF indexing)
 	u32						idx;
 
-	nVifStruct();
+	RecompiledCodeReserve*	recReserve;
+	u8*						recWritePtr;		// current write pos into the reserve
+
+	HashBucket				vifBlocks;		// Vif Blocks
+
+	nVifStruct() = default;
 };
 
-extern void reserveNewVif(int idx);
 extern void closeNewVif(int idx);
 extern void resetNewVif(int idx);
 extern void releaseNewVif(int idx);

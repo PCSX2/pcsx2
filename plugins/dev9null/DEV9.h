@@ -25,30 +25,19 @@
 #include "PS2Edefs.h"
 #include "PS2Eext.h"
 
-typedef struct {
-  s32 Log;
-} Config;
-
-extern Config conf;
-
 extern const unsigned char version;
 extern const unsigned char revision;
 extern const unsigned char build;
 extern const unsigned int minor;
 
-void SaveConfig();
-void LoadConfig();
-
 extern void (*DEV9irq)(int);
 
 extern __aligned16 s8 dev9regs[0x10000];
-#define dev9Rs8(mem)	dev9regs[(mem) & 0xffff]
-#define dev9Rs16(mem)	(*(s16*)&dev9regs[(mem) & 0xffff])
-#define dev9Rs32(mem)	(*(s32*)&dev9regs[(mem) & 0xffff])
-#define dev9Ru8(mem)	(*(u8*) &dev9regs[(mem) & 0xffff])
-#define dev9Ru16(mem)	(*(u16*)&dev9regs[(mem) & 0xffff])
-#define dev9Ru32(mem)	(*(u32*)&dev9regs[(mem) & 0xffff])
-
-extern void setLoggingState();
+#define dev9Rs8(mem) dev9regs[(mem)&0xffff]
+#define dev9Rs16(mem) (*(s16 *)&dev9regs[(mem)&0xffff])
+#define dev9Rs32(mem) (*(s32 *)&dev9regs[(mem)&0xffff])
+#define dev9Ru8(mem) (*(u8 *)&dev9regs[(mem)&0xffff])
+#define dev9Ru16(mem) (*(u16 *)&dev9regs[(mem)&0xffff])
+#define dev9Ru32(mem) (*(u32 *)&dev9regs[(mem)&0xffff])
 
 #endif

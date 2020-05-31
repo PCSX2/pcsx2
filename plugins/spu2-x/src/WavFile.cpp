@@ -16,7 +16,7 @@
  * along with SPU2-X.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Note the file is mostly a copy paste of the WavFile.h from SoundTouch library. It was 
+// Note the file is mostly a copy paste of the WavFile.h from SoundTouch library. It was
 // shrunken to support only output 16 bits wav files
 
 #include <stdio.h>
@@ -32,7 +32,7 @@ using namespace std;
 
 static const char riffStr[] = "RIFF";
 static const char waveStr[] = "WAVE";
-static const char fmtStr[]  = "fmt ";
+static const char fmtStr[] = "fmt ";
 static const char dataStr[] = "data";
 
 //////////////////////////////////////////////////////////////////////////////
@@ -44,8 +44,7 @@ WavOutFile::WavOutFile(const char *fileName, int sampleRate, int bits, int chann
 {
     bytesWritten = 0;
     fptr = fopen(fileName, "wb");
-    if (fptr == NULL) 
-    {
+    if (fptr == NULL) {
         string msg = "Error : Unable to open file \"";
         msg += fileName;
         msg += "\" for writing.";
@@ -60,9 +59,10 @@ WavOutFile::WavOutFile(const char *fileName, int sampleRate, int bits, int chann
 
 WavOutFile::~WavOutFile()
 {
-    finishHeader();
-    if (fptr) fclose(fptr);
-    fptr = NULL;
+    if (fptr) {
+        finishHeader();
+        fclose(fptr);
+    }
 }
 
 
@@ -120,8 +120,7 @@ void WavOutFile::writeHeader()
     // write the supplemented header in the beginning of the file
     fseek(fptr, 0, SEEK_SET);
     res = fwrite(&header, sizeof(header), 1, fptr);
-    if (res != 1)
-    {
+    if (res != 1) {
         throw runtime_error("Error while writing to a wav file.");
     }
 
@@ -137,12 +136,12 @@ void WavOutFile::write(const short *buffer, int numElems)
     // 16bit format & 16 bit samples
 
     assert(header.format.bits_per_sample == 16);
-    if (numElems < 1) return;   // nothing to do
+    if (numElems < 1)
+        return; // nothing to do
 
     res = fwrite(buffer, 2, numElems, fptr);
 
-    if (res != numElems) 
-    {
+    if (res != numElems) {
         throw runtime_error("Error while writing to a wav file.");
     }
     bytesWritten += 2 * numElems;

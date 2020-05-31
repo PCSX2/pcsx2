@@ -23,47 +23,23 @@
 #define __linux__
 #endif
 
+// make sure __POSIX__ is defined for all systems where we assume POSIX
+// compliance
+#if defined(__linux__) || defined(__APPLE__) || defined(__unix__) || defined(__CYGWIN__) || defined(__LINUX__)
+#if !defined(__POSIX__)
+#define __POSIX__ 1
+#endif
+#endif
+
 #include "Pcsx2Types.h"
 
-#ifdef _MSC_VER
-#	include <intrin.h>
-extern "C" unsigned __int64 __xgetbv(int);
-#else
-#	include <intrin_x86.h>
-#endif
+#include "x86emitter/x86_intrin.h"
 
 // Renamed ARRAYSIZE to ArraySize -- looks nice and gets rid of Windows.h conflicts (air)
 // Notes: I'd have used ARRAY_SIZE instead but ran into cross-platform lib conflicts with
 // that as well.  >_<
 #ifndef ArraySize
-#	define ArraySize(x) (sizeof(x)/sizeof((x)[0]))
-#endif
-
-// --------------------------------------------------------------------------------------
-// jASSUME - give hints to the optimizer  [obsolete, use pxAssume() instead]
-// --------------------------------------------------------------------------------------
-//  This is primarily useful for the default case switch optimizer, which enables VC to
-//  generate more compact switches.
-//
-// Note: When using the PCSX2 Utilities library, this is deprecated.  Use pxAssert instead,
-//  which itself optimizes to an __assume() hint in release mode builds.
-//
-#ifndef jASSUME
-#	ifdef NDEBUG
-#		define jBREAKPOINT() ((void) 0)
-#		ifdef _MSC_VER
-#			define jASSUME(exp) (__assume(exp))
-#		else
-#			define jASSUME(exp) do { if(!(exp)) __builtin_unreachable(); } while(0)
-#		endif
-#	else
-#		define jBREAKPOINT() __debugbreak();
-#		ifdef wxASSERT
-#			define jASSUME(exp) wxASSERT(exp)
-#		else
-#			define jASSUME(exp) do { if(!(exp)) jBREAKPOINT(); } while(0)
-#		endif
-#	endif
+#define ArraySize(x) (sizeof(x) / sizeof((x)[0]))
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -75,49 +51,51 @@ extern "C" unsigned __int64 __xgetbv(int);
 // some tight loops it will likely make debug builds unusably slow.
 //
 #ifdef __cplusplus
-#	ifdef PCSX2_DEVBUILD
-		static const bool IsDevBuild = true;
-#	else
-		static const bool IsDevBuild = false;
-#	endif
-
-#	ifdef PCSX2_DEBUG
-		static const bool IsDebugBuild = true;
-#	else
-		static const bool IsDebugBuild = false;
-#	endif
-
+#ifdef PCSX2_DEVBUILD
+static const bool IsDevBuild = true;
 #else
-
-#	ifdef PCSX2_DEVBUILD
-		static const u8 IsDevBuild = 1;
-#	else
-		static const u8 IsDevBuild = 0;
-#	endif
-
-#	ifdef PCSX2_DEBUG
-		static const u8 IsDebugBuild = 1;
-#	else
-		static const u8 IsDebugBuild = 0;
-#	endif
+static const bool IsDevBuild = false;
 #endif
 
 #ifdef PCSX2_DEBUG
-#	define pxDebugCode(code)		code
+static const bool IsDebugBuild = true;
 #else
-#	define pxDebugCode(code)
+static const bool IsDebugBuild = false;
+#endif
+
+#else
+
+#ifdef PCSX2_DEVBUILD
+static const u8 IsDevBuild = 1;
+#else
+static const u8 IsDevBuild = 0;
+#endif
+
+#ifdef PCSX2_DEBUG
+static const u8 IsDebugBuild = 1;
+#else
+static const u8 IsDebugBuild = 0;
+#endif
+#endif
+
+#ifdef PCSX2_DEBUG
+#define pxDebugCode(code) code
+#else
+#define pxDebugCode(code)
 #endif
 
 #ifdef PCSX2_DEVBUILD
-#	define pxDevelCode(code)		code
+#define pxDevelCode(code) code
 #else
-#	define pxDevelCode(code)
+#define pxDevelCode(code)
 #endif
 
-#if !defined(PCSX2_DEBUG) && !defined(PCSX2_DEVEL)
-#	define pxReleaseCode(code)
+#if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
+#define pxReleaseCode(code)
+#define pxNonReleaseCode(code) code
 #else
-#	define pxReleaseCode(code)		code
+#define pxReleaseCode(code) code
+#define pxNonReleaseCode(code)
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -138,8 +116,8 @@ extern "C" unsigned __int64 __xgetbv(int);
 
 // Defines the memory page size for the target platform at compilation.  All supported platforms
 // (which means Intel only right now) have a 4k granularity.
-#define PCSX2_PAGESIZE		0x1000
-static const int __pagesize	= PCSX2_PAGESIZE;
+#define PCSX2_PAGESIZE 0x1000
+static const int __pagesize = PCSX2_PAGESIZE;
 
 // --------------------------------------------------------------------------------------
 // Structure Packing (__packed)
@@ -176,27 +154,26 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 
 // This is the 2005/earlier compatible packing define, which must be used in conjunction
 // with #ifdef _MSC_VER/#pragma pack() directives (ugly).
-#	define __packed
+#define __packed
 
-#	define __aligned(alig)	__declspec(align(alig))
-#	define __aligned16		__declspec(align(16))
-#	define __aligned32		__declspec(align(32))
-#	define __pagealigned	__declspec(align(PCSX2_PAGESIZE))
+#define __aligned(alig) __declspec(align(alig))
+#define __aligned16 __declspec(align(16))
+#define __aligned32 __declspec(align(32))
+#define __pagealigned __declspec(align(PCSX2_PAGESIZE))
 
-	// Deprecated; use __align instead.
-#	define PCSX2_ALIGNED(alig,x)		__declspec(align(alig)) x
-#	define PCSX2_ALIGNED_EXTERN(alig,x)	extern __declspec(align(alig)) x
-#	define PCSX2_ALIGNED16(x)			__declspec(align(16)) x
-#	define PCSX2_ALIGNED16_EXTERN(x)	extern __declspec(align(16)) x
+// Deprecated; use __align instead.
+#define PCSX2_ALIGNED(alig, x) __declspec(align(alig)) x
+#define PCSX2_ALIGNED_EXTERN(alig, x) extern __declspec(align(alig)) x
+#define PCSX2_ALIGNED16(x) __declspec(align(16)) x
+#define PCSX2_ALIGNED16_EXTERN(x) extern __declspec(align(16)) x
 
-#	define __noinline		__declspec(noinline)
-#	define __threadlocal	__declspec(thread)
+#define __noinline __declspec(noinline)
 
 // Don't know if there are Visual C++ equivalents of these.
-#	define likely(x)		(!!(x))
-#	define unlikely(x)		(!!(x))
+#define likely(x) (!!(x))
+#define unlikely(x) (!!(x))
 
-#	define CALLBACK		   __stdcall
+#define CALLBACK __stdcall
 
 #else
 
@@ -204,36 +181,42 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 //  GCC / Intel Compilers Section
 // --------------------------------------------------------------------------------------
 
-#	define __packed			__attribute__((packed))
+#ifndef __packed
+#define __packed __attribute__((packed))
+#endif
+#ifndef __aligned
+#define __aligned(alig) __attribute__((aligned(alig)))
+#endif
+#define __aligned16 __attribute__((aligned(16)))
+#define __aligned32 __attribute__((aligned(32)))
+#define __pagealigned __attribute__((aligned(PCSX2_PAGESIZE)))
+// Deprecated; use __align instead.
+#define PCSX2_ALIGNED(alig, x) x __attribute((aligned(alig)))
+#define PCSX2_ALIGNED16(x) x __attribute((aligned(16)))
+#define PCSX2_ALIGNED_EXTERN(alig, x) extern x __attribute((aligned(alig)))
+#define PCSX2_ALIGNED16_EXTERN(x) extern x __attribute((aligned(16)))
 
-#	define __aligned(alig)	__attribute__((aligned(alig)))
-#	define __aligned16		__attribute__((aligned(16)))
-#	define __aligned32		__attribute__((aligned(32)))
-#	define __pagealigned	__attribute__((aligned(PCSX2_PAGESIZE)))
-	// Deprecated; use __align instead.
-#	define PCSX2_ALIGNED(alig,x) x __attribute((aligned(alig)))
-#	define PCSX2_ALIGNED16(x) x __attribute((aligned(16)))
-#	define PCSX2_ALIGNED_EXTERN(alig,x) extern x __attribute((aligned(alig)))
-#	define PCSX2_ALIGNED16_EXTERN(x) extern x __attribute((aligned(16)))
-
-#	define __assume(cond)	((void)0)	// GCC has no equivalent for __assume
-#	define CALLBACK			__attribute__((stdcall))
+#define __assume(cond) ((void)0) // GCC has no equivalent for __assume
+#define CALLBACK __attribute__((stdcall))
 
 // Inlining note: GCC needs ((unused)) attributes defined on inlined functions to suppress
 // warnings when a static inlined function isn't used in the scope of a single file (which
 // happens *by design* like all the friggen time >_<)
 
-#	define __fastcall		__attribute__((fastcall))
-#	define _inline			__inline__ __attribute__((unused))
-#	ifdef NDEBUG
-#		define __forceinline	__attribute__((always_inline,unused))
-#	else
-#		define __forceinline	__attribute__((unused))
-#	endif
-#	define __noinline		__attribute__((noinline))
-#	define __threadlocal	__thread
-#	define likely(x)		__builtin_expect(!!(x), 1)
-#	define unlikely(x)		__builtin_expect(!!(x), 0)
+#ifndef __fastcall
+#define __fastcall __attribute__((fastcall))
+#endif
+#define _inline __inline__ __attribute__((unused))
+#ifdef NDEBUG
+#define __forceinline __attribute__((always_inline, unused))
+#else
+#define __forceinline __attribute__((unused))
+#endif
+#ifndef __noinline
+#define __noinline __attribute__((noinline))
+#endif
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -248,13 +231,17 @@ static const int __pagesize	= PCSX2_PAGESIZE;
 // environment.
 //
 #ifdef PCSX2_DEVBUILD
-#	define __releaseinline
+#define __releaseinline
 #else
-#	define __releaseinline __forceinline
+#define __releaseinline __forceinline
 #endif
 
-#define __ri	__releaseinline
-#define __fi	__forceinline
-#define __fc	__fastcall
+#define __ri __releaseinline
+#define __fi __forceinline
+#define __fc __fastcall
 
+#endif
+
+#if defined(__x86_64__) || defined(_M_AMD64)
+#define __M_X86_64
 #endif

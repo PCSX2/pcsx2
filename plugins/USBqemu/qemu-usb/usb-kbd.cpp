@@ -616,7 +616,7 @@ static const uint8_t qemu_keyboard_hid_report_descriptor[] = {
 static int usb_keyboard_poll(USBKeyboardState *s, uint8_t *buf, int len)
 {
 	static unsigned char keys[256];
-    int i,l;
+    int l;
 
     if (!s->keyboard_grabbed) {
 		//qemu_add_keyboard_event_handler(usb_keyboard_event, s, 0);

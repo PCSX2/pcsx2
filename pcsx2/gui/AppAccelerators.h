@@ -100,8 +100,6 @@ struct GlobalCommandDescriptor
 	const wxChar*	Tooltip;			// text displayed in toolbar tooltips and menu status bars.
 
 	bool			AlsoApplyToGui;		// Indicates that the GUI should be updated if possible.
-
-	int				ToolbarIconId;		// not implemented yet, leave 0 for now.
 };
 
 // --------------------------------------------------------------------------------------
@@ -115,7 +113,7 @@ protected:
 
 public:
 	using _parent::operator[];
-	virtual ~CommandDictionary() throw();
+	virtual ~CommandDictionary() = default;
 };
 
 // --------------------------------------------------------------------------------------
@@ -130,6 +128,6 @@ protected:
 public:
 	using _parent::operator[];
 
-	virtual ~AcceleratorDictionary() throw();
+	virtual ~AcceleratorDictionary() = default;
 	void Map( const KeyAcceleratorCode& acode, const char *searchfor );
 };

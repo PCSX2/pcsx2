@@ -1,0 +1,3 @@
+[submodule "3rdparty/xz/xz"]
+	path = 3rdparty/xz/xz
+	url = https://github.com/PCSX2/xz.git

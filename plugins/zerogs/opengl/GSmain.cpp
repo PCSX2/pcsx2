@@ -97,7 +97,7 @@ u32 CALLBACK PS2EgetLibType() {
 	return PS2E_LT_GS;
 }
 
-char* CALLBACK PS2EgetLibName() {
+const char* CALLBACK PS2EgetLibName() {
 	return libraryName;
 }
 

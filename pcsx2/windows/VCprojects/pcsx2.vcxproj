@@ -1,189 +1,74 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Devel|Win32">
       <Configuration>Devel</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel|x64">
+      <Configuration>Devel</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>pcsx2</ProjectName>
     <ProjectGuid>{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}</ProjectGuid>
-    <RootNamespace>pcsx2</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+  <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>Unicode</CharacterSet>
-    <WholeProgramOptimization>false</WholeProgramOptimization>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
+    <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
     <Import Project="vsprops\common.props" />
     <Import Project="..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\common\vsprops\pthreads.props" />
-    <Import Project="..\..\..\common\vsprops\CodeGen_Release.props" />
-    <Import Project="..\..\..\common\vsprops\wxWidgetsGui.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="vsprops\common.props" />
-    <Import Project="..\..\..\common\vsprops\BaseProperties.props" />
-    <Import Project="..\..\..\common\vsprops\3rdpartyDeps.props" />
-    <Import Project="vsprops\devbuild.props" />
-    <Import Project="..\..\..\common\vsprops\pthreads.props" />
-    <Import Project="..\..\..\common\vsprops\CodeGen_Devel.props" />
-    <Import Project="..\..\..\common\vsprops\IncrementalLinking.props" />
-    <Import Project="..\..\..\common\vsprops\wxWidgetsGui.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="vsprops\common.props" />
-    <Import Project="..\..\..\common\vsprops\BaseProperties.props" />
-    <Import Project="..\..\..\common\vsprops\3rdpartyDeps.props" />
-    <Import Project="..\..\..\common\vsprops\pthreads.props" />
-    <Import Project="vsprops\devbuild.props" />
-    <Import Project="..\..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Project="..\..\..\common\vsprops\IncrementalLinking.props" />
-    <Import Project="..\..\..\common\vsprops\wxWidgetsGui.props" />
+    <Import Condition="$(Configuration.Contains(Debug))" Project="..\..\..\common\vsprops\CodeGen_Debug.props" />
+    <Import Condition="$(Configuration.Contains(Devel))" Project="..\..\..\common\vsprops\CodeGen_Devel.props" />
+    <Import Condition="$(Configuration.Contains(Release))" Project="..\..\..\common\vsprops\CodeGen_Release.props" />
+    <Import Condition="!$(Configuration.Contains(Release))" Project="..\..\..\common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'" />
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">$(ProjectName)-dev</TargetName>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Midl>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MkTypLibCompatible>true</MkTypLibCompatible>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <TargetEnvironment>Win32</TargetEnvironment>
-      <TypeLibraryName>.\Debug/pcsx2.tlb</TypeLibraryName>
-    </Midl>
+  <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
-      <CompileAs>CompileAsCpp</CompileAs>
+      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>zlib-dbg.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)$(ProjectName)-dbg.exe</OutputFile>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-    <Midl>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MkTypLibCompatible>true</MkTypLibCompatible>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <TargetEnvironment>Win32</TargetEnvironment>
-      <TypeLibraryName>.\Release/pcsx2.tlb</TypeLibraryName>
-    </Midl>
-    <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ExceptionHandling>Async</ExceptionHandling>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
-      <WarningLevel>Level3</WarningLevel>
-      <CompileAs>CompileAsCpp</CompileAs>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>zlib-dev.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Midl>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MkTypLibCompatible>true</MkTypLibCompatible>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <TargetEnvironment>Win32</TargetEnvironment>
-      <TypeLibraryName>.\Release/pcsx2.tlb</TypeLibraryName>
-    </Midl>
-    <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ExceptionHandling>Async</ExceptionHandling>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
-      <CompileAs>CompileAsCpp</CompileAs>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <LargeAddressAware>Yes</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Appearance.png">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\Breakpoint_Active.png">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\Breakpoint_Inactive.png">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-    </CustomBuild>
-    <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp" />
-    <ClCompile Include="..\..\gui\Debugger\DebuggerLists.cpp" />
-    <None Include="..\..\gui\Debugger\DebuggerLists.h" />
     <None Include="..\..\Utilities\folderdesc.txt" />
     <None Include="..\..\Docs\License.txt" />
-    <None Include="..\..\x86\aVUzerorec.S" />
     <None Include="..\..\x86\microVU_Alloc.inl" />
     <None Include="..\..\x86\microVU_Analyze.inl" />
     <None Include="..\..\x86\microVU_Branch.inl" />
@@ -199,229 +84,72 @@
     <None Include="..\..\x86\microVU_Upper.inl" />
     <None Include="..\..\gui\Dialogs\BaseConfigurationDialog.inl" />
     <CustomBuild Include="..\..\gui\Resources\AppIcon16.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\AppIcon32.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\AppIcon64.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\BackgroundLogo.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ButtonIcon_Camera.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Cpu.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Gamefixes.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_MemoryCard.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Paths.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Plugins.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Speedhacks.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Video.png">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\Dualshock.jpg">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmd.exe /c "%(RootDir)%(Directory)\bin2cpp.cmd" %(Filename)%(Extension)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)\%(Filename).h</Outputs>
+    <CustomBuild Include="..\..\gui\Resources\Logo.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\gui\Resources\Breakpoint_Active.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\gui\Resources\Breakpoint_Inactive.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\CDVD\BlockdumpFileReader.cpp" />
+    <ClCompile Include="..\..\CDVD\ChunksCache.cpp" />
+    <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp" />
+    <ClCompile Include="..\..\CDVD\CsoFileReader.cpp" />
+    <ClCompile Include="..\..\CDVD\GzippedFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\OutputIsoFile.cpp" />
     <ClCompile Include="..\..\DebugTools\Breakpoints.cpp" />
     <ClCompile Include="..\..\DebugTools\DebugInterface.cpp" />
@@ -431,6 +159,7 @@
     <ClCompile Include="..\..\DebugTools\MIPSAnalyst.cpp" />
     <ClCompile Include="..\..\DebugTools\MipsAssembler.cpp" />
     <ClCompile Include="..\..\DebugTools\MipsAssemblerTables.cpp" />
+    <ClCompile Include="..\..\DebugTools\MipsStackWalk.cpp" />
     <ClCompile Include="..\..\DebugTools\SymbolMap.cpp" />
     <ClCompile Include="..\..\GameDatabase.cpp" />
     <ClCompile Include="..\..\Gif_Logger.cpp" />
@@ -442,30 +171,41 @@
     <ClCompile Include="..\..\gui\Debugger\CtrlMemView.cpp" />
     <ClCompile Include="..\..\gui\Debugger\CtrlRegisterList.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DebugEvents.cpp" />
+    <ClCompile Include="..\..\gui\Debugger\DebuggerLists.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DisassemblyDialog.cpp" />
-    <ClCompile Include="..\..\gui\Dialogs\GameDatabaseDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\McdConfigDialog.cpp" />
-    <ClCompile Include="..\..\gui\Panels\GameDatabasePanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\MemoryCardListView.cpp" />
+    <ClCompile Include="..\..\IopGte.cpp" />
     <ClCompile Include="..\..\IPU\IPUdma.cpp" />
+    <ClCompile Include="..\..\IPU\IPUdither.cpp" />
+    <ClCompile Include="..\..\Linux\LnxConsolePipe.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Mdec.cpp" />
     <ClCompile Include="..\..\MultipartFileReader.cpp" />
     <ClCompile Include="..\..\Patch.cpp" />
     <ClCompile Include="..\..\Patch_Memory.cpp" />
     <ClCompile Include="..\..\PrecompiledHeader.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\ps2\Iop\PsxBios.cpp" />
     <ClCompile Include="..\..\ps2\LegacyDmac.cpp" />
+    <ClCompile Include="..\..\ps2\pgif.cpp" />
     <ClCompile Include="..\..\ShiftJisToUnicode.cpp" />
     <ClCompile Include="..\..\sif2.cpp" />
+    <ClCompile Include="..\..\Recording\InputRecording.cpp" />
+    <ClCompile Include="..\..\Recording\NewRecordingFrame.cpp" />
+    <ClCompile Include="..\..\Recording\InputRecordingFile.cpp" />
+    <ClCompile Include="..\..\Recording\RecordingControls.cpp" />
+    <ClCompile Include="..\..\Recording\PadData.cpp" />
+    <ClCompile Include="..\..\Recording\RecordingInputManager.cpp" />
+    <ClCompile Include="..\..\Recording\VirtualPad.cpp" />
     <ClCompile Include="..\..\Utilities\FileUtils.cpp" />
     <ClCompile Include="..\..\Dump.cpp" />
     <ClCompile Include="..\..\x86\iMisc.cpp" />
     <ClCompile Include="..\..\Pcsx2Config.cpp" />
     <ClCompile Include="..\..\PluginManager.cpp" />
     <ClCompile Include="..\FlatFileReaderWindows.cpp" />
-    <ClCompile Include="..\SamplProf.cpp" />
     <ClCompile Include="..\..\SaveState.cpp" />
     <ClCompile Include="..\..\SourceLog.cpp" />
     <ClCompile Include="..\..\System\SysCoreThread.cpp" />
@@ -487,12 +227,7 @@
     <ClCompile Include="..\..\MTVU.cpp" />
     <ClCompile Include="..\..\VUmicro.cpp" />
     <ClCompile Include="..\..\VUmicroMem.cpp" />
-    <ClCompile Include="..\..\x86\iVU1micro.cpp" />
     <ClCompile Include="..\..\x86\microVU.cpp" />
-    <ClCompile Include="..\..\x86\sVU_Lower.cpp" />
-    <ClCompile Include="..\..\x86\sVU_Micro.cpp" />
-    <ClCompile Include="..\..\x86\sVU_Upper.cpp" />
-    <ClCompile Include="..\..\x86\sVU_zerorec.cpp" />
     <ClCompile Include="..\..\VU0.cpp" />
     <ClCompile Include="..\..\VU0micro.cpp" />
     <ClCompile Include="..\..\VU0microInterp.cpp" />
@@ -544,6 +279,7 @@
     <ClCompile Include="..\..\IopDma.cpp" />
     <ClCompile Include="..\..\IopIrq.cpp" />
     <ClCompile Include="..\..\IopMem.cpp" />
+    <ClCompile Include="..\WinKeyCodes.cpp" />
     <ClCompile Include="IopSif.cpp" />
     <ClCompile Include="..\..\IopSio2.cpp" />
     <ClCompile Include="..\..\R3000A.cpp" />
@@ -559,22 +295,8 @@
     <ClCompile Include="..\..\CDVD\CDVD.cpp" />
     <ClCompile Include="..\..\CDVD\CDVDaccess.cpp" />
     <ClCompile Include="..\..\CDVD\CDVDisoReader.cpp" />
-    <ClCompile Include="..\..\Ipu\IPU.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Ipu\IPU_Fifo.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="..\..\Ipu\IPU.cpp" />
+    <ClCompile Include="..\..\Ipu\IPU_Fifo.cpp" />
     <ClCompile Include="..\..\Ipu\yuv2rgb.cpp" />
     <ClCompile Include="..\..\Ipu\mpeg2lib\Idct.cpp" />
     <ClCompile Include="..\..\Ipu\mpeg2lib\Mpeg.cpp" />
@@ -586,38 +308,25 @@
     <ClCompile Include="..\..\DebugTools\DisVU0Micro.cpp" />
     <ClCompile Include="..\..\DebugTools\DisVU1Micro.cpp" />
     <ClCompile Include="..\..\rdebug\deci2.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\rdebug\deci2_dbgp.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\rdebug\deci2_dcmp.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\rdebug\deci2_iloadp.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\rdebug\deci2_netmp.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\rdebug\deci2_ttyp.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\x86\ix86-32\iCore-32.cpp" />
     <ClCompile Include="..\..\x86\iCore.cpp" />
-    <ClCompile Include="..\WinSysExec.cpp" />
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFile.cpp" />
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFS.cpp" />
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFSCDVD.cpp" />
@@ -632,9 +341,7 @@
     <ClCompile Include="..\..\gui\ConsoleLogger.cpp" />
     <ClCompile Include="..\..\gui\CpuUsageProvider.cpp" />
     <ClCompile Include="..\..\gui\CpuUsageProviderLnx.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\gui\CpuUsageProviderMSW.cpp" />
     <ClCompile Include="..\..\gui\ExecutorThread.cpp" />
@@ -645,24 +352,22 @@
     <ClCompile Include="..\..\gui\MainFrame.cpp" />
     <ClCompile Include="..\..\gui\MainMenuClicks.cpp" />
     <ClCompile Include="..\..\gui\MemoryCardFile.cpp" />
+    <ClCompile Include="..\..\gui\MemoryCardFolder.cpp" />
     <ClCompile Include="..\..\gui\MessageBoxes.cpp" />
     <ClCompile Include="..\..\gui\MSWstuff.cpp" />
-    <ClCompile Include="..\..\gui\pxLogTextCtrl.cpp" />
     <ClCompile Include="..\..\gui\RecentIsoList.cpp" />
     <ClCompile Include="..\..\gui\UpdateUI.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\AboutBoxDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\AssertionDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\BaseConfigurationDialog.cpp" />
-    <ClCompile Include="..\..\gui\Dialogs\BiosSelectorDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\ConfirmationDialogs.cpp" />
+    <ClCompile Include="..\..\gui\Dialogs\ConvertMemoryCardDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\CreateMemoryCardDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\FirstTimeWizard.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\ImportSettingsDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\LogOptionsDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\PickUserModeDialog.cpp" />
-    <ClCompile Include="..\..\gui\Dialogs\StuckThreadDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\SysConfigDialog.cpp" />
-    <ClCompile Include="..\..\gui\Panels\AudioPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\BaseApplicableConfigPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\BiosSelectorPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\CpuPanel.cpp" />
@@ -676,39 +381,30 @@
     <ClCompile Include="..\..\gui\Panels\PluginSelectorPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\SpeedhacksPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\VideoPanel.cpp" />
-    <ClCompile Include="..\DwmSetup.cpp" />
     <ClCompile Include="..\WinCompressNTFS.cpp" />
     <ClCompile Include="..\WinConsolePipe.cpp" />
     <ClCompile Include="..\..\Linux\LnxKeyCodes.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\cheats\browser.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\Win32.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)win32.pch</PrecompiledHeaderOutputFile>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">..\Win32.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">$(IntDir)win32.pch</PrecompiledHeaderOutputFile>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\cheats\cheats.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\Win32.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)win32.pch</PrecompiledHeaderOutputFile>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">..\Win32.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">$(IntDir)win32.pch</PrecompiledHeaderOutputFile>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\gui\Saveslots.cpp" />
     <ClCompile Include="..\..\gui\SysState.cpp" />
     <ClCompile Include="..\..\ZipTools\thread_gzip.cpp" />
     <ClCompile Include="..\..\ZipTools\thread_lzma.cpp" />
+    <ClCompile Include="..\Optimus.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\AsyncFileReader.h" />
+    <ClInclude Include="..\..\CDVD\ChunksCache.h" />
+    <ClInclude Include="..\..\CDVD\CompressedFileReader.h" />
+    <ClInclude Include="..\..\CDVD\CompressedFileReaderUtils.h" />
+    <ClInclude Include="..\..\CDVD\CsoFileReader.h" />
+    <ClInclude Include="..\..\CDVD\GzippedFileReader.h" />
     <ClInclude Include="..\..\CDVD\zlib_indexed.h" />
     <ClInclude Include="..\..\DebugTools\Breakpoints.h" />
     <ClInclude Include="..\..\DebugTools\DebugInterface.h" />
@@ -718,20 +414,33 @@
     <ClInclude Include="..\..\DebugTools\MIPSAnalyst.h" />
     <ClInclude Include="..\..\DebugTools\MipsAssembler.h" />
     <ClInclude Include="..\..\DebugTools\MipsAssemblerTables.h" />
+    <ClInclude Include="..\..\DebugTools\MipsStackWalk.h" />
     <ClInclude Include="..\..\DebugTools\SymbolMap.h" />
     <ClInclude Include="..\..\GameDatabase.h" />
     <ClInclude Include="..\..\Gif_Unit.h" />
     <ClInclude Include="..\..\gui\AppGameDatabase.h" />
+    <ClInclude Include="..\..\gui\Saveslots.h" />
     <ClInclude Include="..\..\gui\Debugger\BreakpointWindow.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlDisassemblyView.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlMemView.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlRegisterList.h" />
     <ClInclude Include="..\..\gui\Debugger\DebugEvents.h" />
+    <ClInclude Include="..\..\gui\Debugger\DebuggerLists.h" />
     <ClInclude Include="..\..\gui\Debugger\DisassemblyDialog.h" />
     <ClInclude Include="..\..\gui\Panels\MemoryCardPanels.h" />
+    <ClInclude Include="..\..\IopGte.h" />
     <ClInclude Include="..\..\IPU\IPUdma.h" />
+    <ClInclude Include="..\..\Mdec.h" />
     <ClInclude Include="..\..\Patch.h" />
     <ClInclude Include="..\..\PrecompiledHeader.h" />
+    <ClInclude Include="..\..\ps2\pgif.h" />
+    <ClInclude Include="..\..\Recording\InputRecording.h" />
+    <ClInclude Include="..\..\Recording\NewRecordingFrame.h" />
+    <ClInclude Include="..\..\Recording\InputRecordingFile.h" />
+    <ClInclude Include="..\..\Recording\RecordingControls.h" />
+    <ClInclude Include="..\..\Recording\PadData.h" />
+    <ClInclude Include="..\..\Recording\RecordingInputManager.h" />
+    <ClInclude Include="..\..\Recording\VirtualPad.h" />
     <ClInclude Include="..\..\Utilities\AsciiFile.h" />
     <ClInclude Include="..\..\Elfheader.h" />
     <ClInclude Include="..\..\CDVD\IsoFileFormats.h" />
@@ -739,9 +448,7 @@
     <ClInclude Include="..\..\Config.h" />
     <ClInclude Include="..\..\Dump.h" />
     <ClInclude Include="..\..\IopCommon.h" />
-    <ClInclude Include="..\..\NakedAsm.h" />
     <ClInclude Include="..\..\Plugins.h" />
-    <ClInclude Include="..\..\SamplProf.h" />
     <ClInclude Include="..\..\SaveState.h" />
     <ClInclude Include="..\..\System.h" />
     <ClInclude Include="..\..\System\SysThreads.h" />
@@ -759,9 +466,7 @@
     <ClInclude Include="..\..\x86\microVU_IR.h" />
     <ClInclude Include="..\..\x86\microVU_Misc.h" />
     <ClInclude Include="..\..\x86\microVU_Profiler.h" />
-    <ClInclude Include="..\..\x86\sVU_Debug.h" />
-    <ClInclude Include="..\..\x86\sVU_Micro.h" />
-    <ClInclude Include="..\..\x86\sVU_zerorec.h" />
+    <ClInclude Include="..\..\x86\R5900_Profiler.h" />
     <ClInclude Include="..\..\VUflags.h" />
     <ClInclude Include="..\..\VUops.h" />
     <ClInclude Include="..\..\Sif.h" />
@@ -815,39 +520,25 @@
     <ClInclude Include="..\..\DebugTools\DisVUmicro.h" />
     <ClInclude Include="..\..\DebugTools\DisVUops.h" />
     <CustomBuildStep Include="..\..\rdebug\deci2.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </CustomBuildStep>
     <CustomBuildStep Include="..\..\rdebug\deci2_dbgp.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </CustomBuildStep>
     <CustomBuildStep Include="..\..\rdebug\deci2_dcmp.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </CustomBuildStep>
     <CustomBuildStep Include="..\..\rdebug\deci2_drfp.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </CustomBuildStep>
     <CustomBuildStep Include="..\..\rdebug\deci2_iloadp.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </CustomBuildStep>
     <CustomBuildStep Include="..\..\rdebug\deci2_netmp.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </CustomBuildStep>
     <CustomBuildStep Include="..\..\rdebug\deci2_ttyp.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </CustomBuildStep>
     <ClInclude Include="..\..\x86\BaseblockEx.h" />
     <ClInclude Include="..\..\ps2\BiosTools.h" />
@@ -876,7 +567,6 @@
     <ClInclude Include="..\..\gui\AppSaveStates.h" />
     <ClInclude Include="..\..\gui\ConsoleLogger.h" />
     <ClInclude Include="..\..\gui\CpuUsageProvider.h" />
-    <ClInclude Include="..\..\gui\Resources\EmbeddedImage.h" />
     <ClInclude Include="..\..\gui\GSFrame.h" />
     <ClInclude Include="..\..\gui\IsoDropTarget.h" />
     <ClInclude Include="..\..\gui\MainFrame.h" />
@@ -886,33 +576,24 @@
     <ClInclude Include="..\..\ZipTools\ThreadedZipTools.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\..\3rdparty\wxWidgets\include\wx\msw\wx.rc">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SvnRootDir)\common\include;$(SvnRootDir)\3rdparty\wxWidgets\include;$(SvnRootDir)\3rdparty\wxWidgets\lib\vc_lib\mswd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">$(SvnRootDir)\common\include;$(SvnRootDir)\3rdparty\wxWidgets\include;$(SvnRootDir)\3rdparty\wxWidgets\lib\vc_lib\mswd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SvnRootDir)\common\include;$(SvnRootDir)\3rdparty\wxWidgets\include;$(SvnRootDir)\3rdparty\wxWidgets\lib\vc_lib\mswd;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    <ResourceCompile Include="..\..\..\3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\wxwidgets3.0\$(PlatformName);$(SolutionDir)3rdparty\wxwidgets3.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <ResourceCompile Include="..\wxResources.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\3rdparty\w32pthreads\pthreads.vcxproj">
-      <Project>{26511268-2902-4997-8421-ecd7055f9e28}</Project>
+    <ProjectReference Include="..\..\..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">
+      <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\w32pthreads\pthreads_lib.vcxproj">
-      <Project>{7e9b2be7-cec3-4f14-847b-0ab8d562fb86}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_adv.vcxproj">
+      <Project>{24c45343-fd20-5c92-81c1-35a2ae841e79}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\wxWidgets\build\msw\wx_adv.vcxproj">
-      <Project>{0e231fb1-f3c9-4724-accb-de8bcb3c089e}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_base.vcxproj">
+      <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\wxWidgets\build\msw\wx_base.vcxproj">
-      <Project>{48ad7e0a-25b1-4974-a1e3-03f8c438d34f}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\wxWidgets\build\msw\wx_core.vcxproj">
-      <Project>{0318ba30-ef48-441a-9e10-dc85efae39f0}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_core.vcxproj">
+      <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\zlib\zlib.vcxproj">
       <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
@@ -931,8 +612,9 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="..\PCSX2.manifest" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

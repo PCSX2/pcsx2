@@ -46,8 +46,8 @@ __ri void vifExecQueue(int idx)
 	if (!idx) startcycles = VU0.cycle;
 	else      startcycles = VU1.cycle;
 
-	if (!idx) vu0ExecMicro(GetVifX.queued_pc);
-	else	  vu1ExecMicro(GetVifX.queued_pc);
+	if (!idx) vu0ExecMicro(vif0.queued_pc);
+	else	  vu1ExecMicro(vif1.queued_pc);
 
 	///NOTE: Shadowman 2 has SPS with this, uncommenting the correct code fixes it
 	if (!idx) { startcycles = ((VU0.cycle-startcycles) + ( vif0ch.qwc - (vif0.vifpacketsize >> 2) )); CPU_INT(VIF_VU0_FINISH, 1/*startcycles * BIAS*/); }
@@ -100,6 +100,7 @@ static __fi void vuExecMicro(int idx, u32 addr) {
 
 	GetVifX.queued_program = true;
 	GetVifX.queued_pc = addr;
+	GetVifX.unpackcalls = 0;
 }
 
 void ExecuteVU(int idx)
@@ -114,7 +115,7 @@ void ExecuteVU(int idx)
 	}
 	else if((vifX.cmd & 0x7f) == 0x14 || (vifX.cmd & 0x7f) == 0x15)
 	{
-		vuExecMicro(idx, (u16)(vifXRegs.code) << 3);
+		vuExecMicro(idx, (u16)(vifXRegs.code));
 		vifX.cmd = 0;
 		vifX.pass = 0;
 	}
@@ -142,7 +143,7 @@ template<int idx> __fi int _vifCode_Direct(int pass, const u8* data, bool isDire
 	pass2 {
 		const char* name = isDirectHL ? "DirectHL" : "Direct";
 		GIF_TRANSFER_TYPE tranType = isDirectHL ? GIF_TRANS_DIRECTHL : GIF_TRANS_DIRECT;
-		uint size = aMin(vif1.vifpacketsize, vif1.tag.size) * 4; // Get size in bytes
+		uint size = std::min(vif1.vifpacketsize, vif1.tag.size) * 4; // Get size in bytes
 		uint ret  = gifUnit.TransferGSPacketData(tranType, (u8*)data, size);
 
 		vif1.tag.size    -= ret/4; // Convert to u32's
@@ -181,7 +182,7 @@ vifOp(vifCode_DirectHL) {
 
 vifOp(vifCode_Flush) {
 	vif1Only();
-	vifStruct& vifX = GetVifX;
+	//vifStruct& vifX = GetVifX;
 	pass1or2 {
 		bool p1or2 = (gifRegs.stat.APATH != 0 && gifRegs.stat.APATH != 3);
 		vif1Regs.stat.VGW = false;
@@ -203,7 +204,7 @@ vifOp(vifCode_Flush) {
 
 vifOp(vifCode_FlushA) {
 	vif1Only();
-	vifStruct& vifX = GetVifX;
+	//vifStruct& vifX = GetVifX;
 	pass1or2 {
 		//Gif_Path& p3      = gifUnit.gifPath[GIF_PATH_3];
 		u32       gifBusy   = gifUnit.checkPaths(1,1,1) || (gifRegs.stat.APATH != 0);
@@ -219,29 +220,7 @@ vifOp(vifCode_FlushA) {
 			vif1.vifstalled.value = VIF_TIMING_BREAK;
 			return 0;
 			
-			//gifUnit.PrintInfo();
-			/*if (p3.state != GIF_PATH_IDLE && !p1or2) { // Only path 3 left...
-				GUNIT_WARN("Vif FlushA - Getting path3 to finish!");
-				if (gifUnit.lastTranType == GIF_TRANS_FIFO
-				&&  p3.state != GIF_PATH_IDLE && !p3.hasDataRemaining()) { 
-					//p3.state= GIF_PATH_IDLE; // Does any game need this anymore?
-					DevCon.Warning("Vif FlushA - path3 has no more data, but didn't EOP");
-				}
-
-				if (p3.state != GIF_PATH_IDLE) {
-					doStall = true; // If path3 still isn't finished...
-				}
-			}
-			else doStall = true;*/
 		}
-		/*if (doStall) {
-			vif1Regs.stat.VGW = true;
-			vifX.vifstalled.enabled   = VifStallEnable(vifXch);
-			vifX.vifstalled.value = VIF_TIMING_BREAK;
-			return 0;
-		}
-		else*/ 
-		//Didn't need to stall!
 		vif1.cmd = 0;
 		vif1.pass = 0;
 	}
@@ -278,7 +257,8 @@ vifOp(vifCode_Mark) {
 static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 	VURegs& VUx = idx ? VU1 : VU0;
 	vifStruct& vifX = GetVifX;
-	pxAssert(VUx.Micro > 0);
+	u16 vuMemSize = idx ? 0x4000 : 0x1000;
+	pxAssert(VUx.Micro);
 
 	vifExecQueue(idx);
 
@@ -290,15 +270,15 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 	
 
 	// Don't forget the Unsigned designator for these checks
-	if((addr + size *4) > (idx ? 0x4000U : 0x1000U))
+	if((addr + size *4) > vuMemSize)
 	{
 		//DevCon.Warning("Handling split MPG");
-		if (!idx)  CpuVU0->Clear(addr, (idx ? 0x4000 : 0x1000) - addr);
-		else	   CpuVU1->Clear(addr, (idx ? 0x4000 : 0x1000) - addr);
+		if (!idx)  CpuVU0->Clear(addr, vuMemSize - addr);
+		else	   CpuVU1->Clear(addr, vuMemSize - addr);
 		
-		memcpy_fast(VUx.Micro + addr, data, (idx ? 0x4000 : 0x1000) - addr);
-		size -= ((idx ? 0x4000 : 0x1000) - addr) / 4;
-		memcpy_fast(VUx.Micro, data, size);
+		memcpy(VUx.Micro + addr, data, vuMemSize - addr);
+		size -= (vuMemSize - addr) / 4;
+		memcpy(VUx.Micro, data, size);
 
 		vifX.tag.addr = size * 4;
 	}
@@ -310,7 +290,7 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 		// Clear VU memory before writing!
 		if (!idx)  CpuVU0->Clear(addr, size*4);
 		else	   CpuVU1->Clear(addr, size*4);
-		memcpy_fast(VUx.Micro + addr, data, size*4); //from tests, memcpy is 1fps faster on Grandia 3 than memcpy_fast
+		memcpy(VUx.Micro + addr, data, size*4); //from tests, memcpy is 1fps faster on Grandia 3 than memcpy
 
 		vifX.tag.addr   +=   size * 4;
 	}
@@ -319,13 +299,12 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 vifOp(vifCode_MPG) {
 	vifStruct& vifX = GetVifX;
 	pass1 {
-		bool   bProgramExists = false;
 		int    vifNum =  (u8)(vifXRegs.code >> 16);
 		vifX.tag.addr = (u16)(vifXRegs.code <<  3) & (idx ? 0x3fff : 0xfff);
 		vifX.tag.size = vifNum ? (vifNum*2) : 512;
 		vifFlush(idx);
 
-		if(vifX.vifstalled.enabled == true) return 0;
+		if(vifX.vifstalled.enabled) return 0;
 		else
 		{
 			vifX.pass = 1;
@@ -362,9 +341,9 @@ vifOp(vifCode_MSCAL) {
 	pass1 { 
 		vifFlush(idx); 
 
-		if(vifX.waitforvu == false)
+		if(!vifX.waitforvu)
 		{
-			vuExecMicro(idx, (u16)(vifXRegs.code) << 3); 
+			vuExecMicro(idx, (u16)(vifXRegs.code)); 
 			vifX.cmd = 0;
 			vifX.pass = 0;
 			if(GetVifX.vifpacketsize > 1)
@@ -372,6 +351,7 @@ vifOp(vifCode_MSCAL) {
 				//Warship Gunner 2 has a rather big dislike for the delays
 				if(((data[1] >> 24) & 0x60) == 0x60) // Immediate following Unpack
 				{ 
+					//Snowblind games only use MSCAL, so other MS kicks force the program directly.
 					vifExecQueue(idx);
 				}
 			}
@@ -392,11 +372,12 @@ vifOp(vifCode_MSCALF) {
 			vifX.vifstalled.enabled   = VifStallEnable(vifXch);
 			vifX.vifstalled.value = VIF_TIMING_BREAK;
 		}
-		if(vifX.waitforvu == false)
+		if(!vifX.waitforvu)
 		{
-			vuExecMicro(idx, (u16)(vifXRegs.code) << 3);
+			vuExecMicro(idx, (u16)(vifXRegs.code));
 			vifX.cmd = 0;
 			vifX.pass = 0;
+			vifExecQueue(idx);
 		}
 	}
 	pass3 { VifCodeLog("MSCALF"); }
@@ -407,11 +388,18 @@ vifOp(vifCode_MSCNT) {
 	vifStruct& vifX = GetVifX;
 	pass1 { 
 		vifFlush(idx); 
-		if(vifX.waitforvu == false)
+		if(!vifX.waitforvu)
 		{
 			vuExecMicro(idx, -1);
 			vifX.cmd = 0;
 			vifX.pass = 0;
+			if (GetVifX.vifpacketsize > 1)
+			{
+				if (((data[1] >> 24) & 0x60) == 0x60) // Immediate following Unpack
+				{
+					vifExecQueue(idx);
+				}
+			}
 		}
 	}
 	pass3 { VifCodeLog("MSCNT"); }
@@ -424,12 +412,11 @@ vifOp(vifCode_MskPath3) {
 	pass1 {		
 		vif1Regs.mskpath3 = (vif1Regs.code >> 15) & 0x1;
 		gifRegs.stat.M3P  = (vif1Regs.code >> 15) & 0x1;
-		GUNIT_LOG("Vif1 - MskPath3 [p3 = %s]", vif1Regs.mskpath3 ? "disabled" : "enabled");
+		GUNIT_LOG("Vif1 - MskPath3 [p3 = %s]", vif1Regs.mskpath3 ? "masked" : "enabled");
 		if(!vif1Regs.mskpath3) {
-			//if(!gifUnit.gifPath[GIF_PATH_3].isDone() || gifRegs.stat.P3Q || gifRegs.stat.IP3) {
-				GUNIT_WARN("Path3 triggering!");
-				gifInterrupt();
-			//}
+			GUNIT_WARN("Path3 triggering!");
+			if(CHECK_GIFFIFOHACK)gif_fifo.read(false);
+			else gifInterrupt();
 		}
 		vif1.cmd = 0;
 		vif1.pass = 0;
@@ -446,14 +433,14 @@ vifOp(vifCode_Nop) {
 
 		//If the top bit was set to interrupt, we don't want it to take commands from a bad code if it's interpreted as a nop by us.
 		//Onimusha - Blade Warriors
-		if ((vifXRegs.code & 0x80000000) && (vifXRegs.code & 0xFF0000) != 0)
+		if ((vifXRegs.code & 0x80000000) && (vifXRegs.code & 0xFF0000) != 0 && vifXch.qwc > 0 /*Not tag*/)
 		{
 			GetVifX.irq = 0;
 		}
 
 		if (GetVifX.vifpacketsize > 1)
 		{
-			if(((data[1] >> 24) & 0x7f) == 0x6) //is mskpath3 next
+			if(((data[1] >> 24) & 0x7f) == 0x6 && (data[1] & 0x1)) //is mskpath3 next
 			{ 
 				GetVifX.vifstalled.enabled   = VifStallEnable(vifXch);
 				GetVifX.vifstalled.value = VIF_TIMING_BREAK;
@@ -508,9 +495,9 @@ template<int idx> static __fi int _vifCode_STColRow(const u32* data, u32* pmem2)
 	pxAssume(ret > 0);
 
 	switch (ret) {
-		case 4: pmem2[3] = data[3];
-		case 3: pmem2[2] = data[2];
-		case 2: pmem2[1] = data[1];
+		case 4: pmem2[3] = data[3]; // Fall through
+		case 3: pmem2[2] = data[2]; // Fall through
+		case 2: pmem2[1] = data[1]; // Fall through
 		case 1: pmem2[0] = data[0];
 				break;
 		jNO_DEFAULT

@@ -47,12 +47,15 @@ protected:
 	int m_firstIdForMenuItems_or_wxID_ANY;
 
 	wxMenuItem* m_Separator;
+	wxMenuItem* m_ClearSeparator;
+	wxMenuItem* m_Clear;
 
 public:
 	RecentIsoManager( wxMenu* menu , int firstIdForMenuItems_or_wxID_ANY );
-	virtual ~RecentIsoManager() throw();
+	virtual ~RecentIsoManager();
 
 	void RemoveAllFromMenu();
+	void EnableItems(bool display);
 	void Repopulate();
 	void Clear();
 	void Add( const wxString& src );
@@ -72,10 +75,10 @@ protected:
 // --------------------------------------------------------------------------------------
 struct RecentIsoList
 {
-	ScopedPtr<RecentIsoManager>		Manager;
-	ScopedPtr<wxMenu>				Menu;
+	std::unique_ptr<RecentIsoManager>		Manager;
+	std::unique_ptr<wxMenu>				Menu;
 
 	RecentIsoList(int firstIdForMenuItems_or_wxID_ANY);
-	virtual ~RecentIsoList() throw() { }
+	virtual ~RecentIsoList() = default;
 };
 

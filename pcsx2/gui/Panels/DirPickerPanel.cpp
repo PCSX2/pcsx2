@@ -157,7 +157,7 @@ void Panels::DirPickerPanel::InitForRegisteredMode( const wxString& normalized, 
 		pxSetToolTip( m_checkCtrl, pxEt( L"When checked this folder will automatically reflect the default associated with PCSX2's current usermode setting. " )
 		);
 
-		Connect( m_checkCtrl->GetId(),	wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( DirPickerPanel::UseDefaultPath_Click ) );
+		Bind(wxEVT_CHECKBOX, &DirPickerPanel::UseDefaultPath_Click, this, m_checkCtrl->GetId());
 	}
 
 	// Force the Dir Picker to use a text control.  This isn't standard on Linux/GTK but it's much
@@ -173,7 +173,7 @@ void Panels::DirPickerPanel::InitForRegisteredMode( const wxString& normalized, 
 
 	wxButton* b_explore( new wxButton( this, wxID_ANY, _("Open in Explorer") ) );
 	pxSetToolTip( b_explore, _("Open an explorer window to this folder.") );
-	Connect( b_explore->GetId(),	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( DirPickerPanel::Explore_Click ) );
+	Bind(wxEVT_BUTTON, &DirPickerPanel::Explore_Click, this, b_explore->GetId());
 #endif
 
 	if (isCompact)

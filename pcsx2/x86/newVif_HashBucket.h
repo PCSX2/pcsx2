@@ -13,85 +13,122 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "xmmintrin.h"
 #pragma once
 
-// Create some typecast operators for SIMD operations.  For some reason MSVC needs a
-// handle/reference typecast to avoid error.  GCC (and presumably other compilers)
-// generate an error if the handle/ref is used.  Honestly neither makes sense, since
-// both typecasts should be perfectly valid >_<.  --air
-#ifdef _MSC_VER
-#	define cast_m128		__m128&
-#	define cast_m128i		__m128i&
-#	define cast_m128d		__m128d&
-#else // defined(__GNUC__)
-#	define cast_m128		__m128
-#	define cast_m128i		__m128i
-#	define cast_m128d		__m128d
-#endif
+#include <array>
 
-template< typename T >
-struct SizeChain
-{
-	int Size;
-	T*  Chain;
-};
+// nVifBlock - Ordered for Hashing; the 'num' and 'upkType' fields are
+//             used as the hash bucket selector.
+union nVifBlock {
+	// Warning: order depends on the newVifDynaRec code
+	struct {
+		u8 num;			// [00] Num Field
+		u8 upkType; 	// [01] Unpack Type [usn1:mask1:upk*4]
+		u16 length; 	// [02] Extra: pre computed Length
+		u32 mask;		// [04] Mask Field
+		u8 mode;		// [08] Mode Field
+		u8 aligned; 	// [09] Packet Alignment
+		u8 cl;			// [10] CL Field
+		u8 wl;			// [11] WL Field
+		uptr startPtr;	// [12] Start Ptr of RecGen Code
+	};
+
+	struct {
+		u16 hash_key;
+		u16 _pad0;
+		u32 key0;
+		u32 key1;
+		uptr value;
+	};
+
+}; // 16 bytes
+
+// 0x4000 is enough but 0x10000 allow
+// * to skip the compare value of the first double world in lookup
+// * to use a 16 bits move instead of an 'and' mask to compute the hashed key
+#define hSize 0x10000 // [usn*1:mask*1:upk*4:num*8] hash...
 
 // HashBucket is a container which uses a built-in hash function
-// to perform quick searches.
-// T is a struct data type (note: size must be in multiples of 16 bytes!)
-// hSize determines the number of buckets HashBucket will use for sorting.
-// cmpSize is the size of data to consider 2 structs equal (see find())
+// to perform quick searches. It is designed around the nVifBlock structure
+//
 // The hash function is determined by taking the first bytes of data and
 // performing a modulus the size of hSize. So the most diverse-data should
 // be in the first bytes of the struct. (hence why nVifBlock is specifically sorted)
-template<typename T, int hSize, int cmpSize>
 class HashBucket {
 protected:
-	SizeChain<T> mBucket[hSize];
+	std::array<nVifBlock*, hSize> m_bucket;
 
 public:
 	HashBucket() {
-		for (int i = 0; i < hSize; i++) {
-			mBucket[i].Chain	= NULL;
-			mBucket[i].Size		= 0;
+		m_bucket.fill(nullptr);
+	}
+
+	~HashBucket() { clear(); }
+
+	__fi nVifBlock* find(const nVifBlock& dataPtr) {
+		nVifBlock* chainpos = m_bucket[dataPtr.hash_key];
+
+		while (true) {
+			if (chainpos->key0 == dataPtr.key0 && chainpos->key1 == dataPtr.key1)
+				return chainpos;
+
+			if (chainpos->startPtr == 0)
+				return nullptr;
+
+			chainpos++;
 		}
 	}
-	virtual ~HashBucket() throw() { clear(); }
-	int quickFind(u32 data) {
-		return mBucket[data % hSize].Size;
-	}
-	__fi T* find(T* dataPtr) {
-		u32 d = *((u32*)dataPtr);
-		const SizeChain<T>& bucket( mBucket[d % hSize] );
 
-		const __m128i* endpos = (__m128i*)&bucket.Chain[bucket.Size];
-		const __m128i data128( _mm_load_si128((__m128i*)dataPtr) );
+	void add(const nVifBlock& dataPtr) {
+		u32 b = dataPtr.hash_key;
 
-		for( const __m128i* chainpos = (__m128i*)bucket.Chain; chainpos<endpos; ++chainpos ) {
-			// This inline SSE code is generally faster than using emitter code, since it inlines nicely. --air
-			int result = _mm_movemask_ps( (cast_m128) _mm_cmpeq_epi32( data128, _mm_load_si128(chainpos) ) );
-			if( (result&0x7) == 0x7 ) return (T*)chainpos;
+		u32 size = bucket_size( dataPtr );
 
-		}
-		if( bucket.Size > 3 ) DevCon.Warning( "recVifUnpk: Bucket 0x%04x has %d micro-programs", d % hSize, bucket.Size );
-		return NULL;
-	}
-	__fi void add(const T& dataPtr) {
-		u32 d = (u32&)dataPtr;
-		SizeChain<T>& bucket( mBucket[d % hSize] );
-
-		if( bucket.Chain = (T*)_aligned_realloc( bucket.Chain, sizeof(T)*(bucket.Size+1), 16), bucket.Chain==NULL ) {
+		// Warning there is an extra +1 due to the empty cell
+		// Performance note: 64B align to reduce cache miss penalty in `find`
+		if( (m_bucket[b] = (nVifBlock*)pcsx2_aligned_realloc( m_bucket[b], sizeof(nVifBlock)*(size+2), 64, sizeof(nVifBlock)*(size+1) )) == NULL ) {
 			throw Exception::OutOfMemory(
-				wxsFormat(L"HashBucket Chain (bucket size=%d)", bucket.Size+1)
+				wxsFormat(L"HashBucket Chain (bucket size=%d)", size+2)
 			);
 		}
-		memcpy_const(&bucket.Chain[bucket.Size++], &dataPtr, sizeof(T));
+
+		// Replace the empty cell by the new block and create a new empty cell
+		memcpy(&m_bucket[b][size++], &dataPtr, sizeof(nVifBlock));
+		memset(&m_bucket[b][size], 0, sizeof(nVifBlock));
+
+		if( size > 3 ) DevCon.Warning( "recVifUnpk: Bucket 0x%04x has %d micro-programs", b, size );
 	}
+
+	u32 bucket_size(const nVifBlock& dataPtr) {
+		nVifBlock* chainpos = m_bucket[dataPtr.hash_key];
+
+		u32 size = 0;
+
+		while (chainpos->startPtr != 0) {
+			size++;
+			chainpos++;
+		}
+
+		return size;
+	}
+
 	void clear() {
-		for (int i = 0; i < hSize; i++) {
-			safe_aligned_free(mBucket[i].Chain);
-			mBucket[i].Size = 0;
+		for (auto& bucket : m_bucket)
+			safe_aligned_free(bucket);
+	}
+
+	void reset() {
+		clear();
+
+		// Allocate an empty cell for all buckets
+		for (auto& bucket : m_bucket) {
+			if( (bucket = (nVifBlock*)_aligned_malloc( sizeof(nVifBlock), 64 )) == nullptr ) {
+				throw Exception::OutOfMemory(
+						wxsFormat(L"HashBucket Chain (bucket size=%d)", 1)
+						);
+			}
+
+			memset(bucket, 0, sizeof(nVifBlock));
 		}
 	}
 };

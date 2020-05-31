@@ -49,7 +49,7 @@ protected:
 
 public:
 	CpuUsageProviderMSW();
-	virtual ~CpuUsageProviderMSW() throw();
+	virtual ~CpuUsageProviderMSW();
 
 	bool IsImplemented() const;
 	void UpdateStats();
@@ -156,7 +156,7 @@ CpuUsageProviderMSW::CpuUsageProviderMSW()
 	}*/
 }
 
-CpuUsageProviderMSW::~CpuUsageProviderMSW() throw()
+CpuUsageProviderMSW::~CpuUsageProviderMSW()
 {
 	//CoUninitialize();
 }
@@ -282,6 +282,6 @@ CpuUsageProvider::CpuUsageProvider() :
 {
 }
 
-CpuUsageProvider::~CpuUsageProvider() throw()
+CpuUsageProvider::~CpuUsageProvider()
 {
 }

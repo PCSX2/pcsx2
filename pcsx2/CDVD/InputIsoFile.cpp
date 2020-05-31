@@ -35,10 +35,10 @@ static const char* nameFromType(int type)
 
 int InputIsoFile::ReadSync(u8* dst, uint lsn)
 {
-	if (lsn > m_blocks)
+	if (lsn >= m_blocks)
 	{
 		FastFormatUnicode msg;
-		msg.Write("isoFile error: Block index is past the end of file! (%u > %u).", lsn, m_blocks);
+		msg.Write("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
 
 		pxAssertDev(false, msg);
 		Console.Error(msg.c_str());
@@ -50,23 +50,15 @@ int InputIsoFile::ReadSync(u8* dst, uint lsn)
 
 void InputIsoFile::BeginRead2(uint lsn)
 {
-	if (lsn > m_blocks)
+	m_current_lsn = lsn;
+
+	if (lsn >= m_blocks)
 	{
-		FastFormatUnicode msg;
-		msg.Write("isoFile error: Block index is past the end of file! (%u > %u).", lsn, m_blocks);
-
-		pxAssertDev(false, msg);
-		Console.Error(msg.c_str());
-
-		// [TODO] : Throw exception?
-		//  Typically an error like this is bad; indicating an invalid dump or corrupted
-		//  iso file.
-
-		m_current_lsn = -1;
+		// While this usually indicates that the ISO is corrupted, some games do attempt
+		// to read past the end of the disc, so don't error here.
+		DevCon.Warning("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
 		return;
 	}
-	
-	m_current_lsn = lsn;
 
 	if(lsn >= m_read_lsn && lsn < (m_read_lsn+m_read_count))
 	{
@@ -90,11 +82,16 @@ void InputIsoFile::BeginRead2(uint lsn)
 
 int InputIsoFile::FinishRead3(u8* dst, uint mode)
 {
-	int _offset, length;
-	int ret = 0;
+	// Do nothing for out of bounds disc sector reads. It prevents some games
+	// from hanging (All-Star Baseball 2005, Hello Kitty: Roller Rescue,
+	// Hot Wheels: Beat That! (NTSC), Ratchet & Clank 3 (PAL),
+	// Test Drive: Eve of Destruction, etc.).
+	if (m_current_lsn >= m_blocks)
+		return 0;
 
-	if(m_current_lsn < 0)
-		return -1;
+	int _offset = 0;
+	int length = 0;
+	int ret = 0;
 
 	if(m_read_inprogress)
 	{
@@ -145,7 +142,7 @@ int InputIsoFile::FinishRead3(u8* dst, uint mode)
 	length = end - _offset;
 
 	uint read_offset = (m_current_lsn - m_read_lsn) * m_blocksize;
-	memcpy_fast(dst + diff, m_readbuffer + ndiff + read_offset, length);
+	memcpy(dst + diff, m_readbuffer + ndiff + read_offset, length);
 	
 	if (m_type == ISOTYPE_CD && diff >= 12)
 	{
@@ -161,7 +158,7 @@ InputIsoFile::InputIsoFile()
 	_init();
 }
 
-InputIsoFile::~InputIsoFile() throw()
+InputIsoFile::~InputIsoFile()
 {
 	Close();
 }
@@ -178,7 +175,10 @@ void InputIsoFile::_init()
 	
 	m_read_inprogress = false;
 	m_read_count = 0;
+	ReadUnit = 0;
+	m_current_lsn = -1;
 	m_read_lsn = -1;
+	m_reader = NULL;
 }
 
 // Tests the specified filename to see if it is a supported ISO type.  This function typically
@@ -200,20 +200,34 @@ bool InputIsoFile::Open( const wxString& srcfile, bool testOnly )
 {
 	Close();
 	m_filename = srcfile;
-	
-	// Allow write sharing of the iso based on the ini settings.
-	// Mostly useful for romhacking, where the disc is frequently
-	// changed and the emulator would block modifications
-	m_reader = new FlatFileReader(EmuConfig.CdvdShareWrite);
+	m_reader = NULL;
+
+	bool isBlockdump = false;
+	bool isCompressed = false;
+
+	// First try using a compressed reader.  If it works, go with it.
+	m_reader = CompressedFileReader::GetNewReader(m_filename);
+	isCompressed = m_reader != NULL;
+
+	// If it wasn't compressed, let's open it has a FlatFileReader. 
+	if (!isCompressed)
+	{
+		// Allow write sharing of the iso based on the ini settings.
+		// Mostly useful for romhacking, where the disc is frequently
+		// changed and the emulator would block modifications
+		m_reader = new FlatFileReader(EmuConfig.CdvdShareWrite);
+	}
+
 	m_reader->Open(m_filename);
 
-	bool isBlockdump, isCompressed = false;
-	if(isBlockdump = BlockdumpFileReader::DetectBlockdump(m_reader))
+	// It might actually be a blockdump file.
+	// Check that before continuing with the FlatFileReader.
+	isBlockdump = BlockdumpFileReader::DetectBlockdump(m_reader);
+	if (isBlockdump)
 	{
 		delete m_reader;
 
-		BlockdumpFileReader *bdr = new BlockdumpFileReader();;
-
+		BlockdumpFileReader *bdr = new BlockdumpFileReader();
 		bdr->Open(m_filename);
 
 		m_blockofs = bdr->GetBlockOffset();
@@ -221,11 +235,7 @@ bool InputIsoFile::Open( const wxString& srcfile, bool testOnly )
 
 		m_reader = bdr;
 
-		ReadUnit = 1;		
-	} else if (isCompressed = CompressedFileReader::DetectCompressed(m_reader)) {
-		delete m_reader;
-		m_reader = CompressedFileReader::GetNewReader(m_filename);
-		m_reader->Open(m_filename);
+		ReadUnit = 1;
 	}
 
 	bool detected = Detect();

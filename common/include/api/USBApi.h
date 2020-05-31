@@ -32,34 +32,53 @@
 #include "Pcsx2Api.h"
 
 typedef void (*USBcallback)(int cycles);
-typedef int  (*USBhandler)(void);
+typedef int (*USBhandler)(void);
 
 // Basic functions.
-EXPORT_C_(s32) USBinit();
+EXPORT_C_(s32)
+USBinit();
 // pDisplay normally is passed a handle to the GS plugins window.
-EXPORT_C_(s32) USBopen(void *pDisplay);
-EXPORT_C_(void) USBclose();
-EXPORT_C_(void) USBshutdown();
-EXPORT_C_(u8) USBread8(u32 addr);
-EXPORT_C_(u16) USBread16(u32 addr);
-EXPORT_C_(u32) USBread32(u32 addr);
-EXPORT_C_(void) USBwrite8(u32 addr,  u8 value);
-EXPORT_C_(void) USBwrite16(u32 addr, u16 value);
-EXPORT_C_(void) USBwrite32(u32 addr, u32 value);
-EXPORT_C_(void) USBasync(u32 cycles);
+EXPORT_C_(s32)
+USBopen(void *pDisplay);
+EXPORT_C_(void)
+USBclose();
+EXPORT_C_(void)
+USBshutdown();
+EXPORT_C_(u8)
+USBread8(u32 addr);
+EXPORT_C_(u16)
+USBread16(u32 addr);
+EXPORT_C_(u32)
+USBread32(u32 addr);
+EXPORT_C_(void)
+USBwrite8(u32 addr, u8 value);
+EXPORT_C_(void)
+USBwrite16(u32 addr, u16 value);
+EXPORT_C_(void)
+USBwrite32(u32 addr, u32 value);
+EXPORT_C_(void)
+USBasync(u32 cycles);
 
 // cycles = IOP cycles before calling callback,
 // if callback returns 1 the irq is triggered, else not
-EXPORT_C_(void) USBirqCallback(USBcallback callback);
-EXPORT_C_(USBhandler) USBirqHandler(void);
-EXPORT_C_(void) USBsetRAM(void *mem);
+EXPORT_C_(void)
+USBirqCallback(USBcallback callback);
+EXPORT_C_(USBhandler)
+USBirqHandler(void);
+EXPORT_C_(void)
+USBsetRAM(void *mem);
 
 // Extended functions
 
-EXPORT_C_(void) USBkeyEvent(keyEvent *ev);
-EXPORT_C_(s32) USBfreeze(u8 mode, freezeData *data);
-EXPORT_C_(void) USBconfigure();
-EXPORT_C_(void) USBabout();
-EXPORT_C_(s32) USBtest();
+EXPORT_C_(void)
+USBkeyEvent(keyEvent *ev);
+EXPORT_C_(s32)
+USBfreeze(u8 mode, freezeData *data);
+EXPORT_C_(void)
+USBconfigure();
+EXPORT_C_(void)
+USBabout();
+EXPORT_C_(s32)
+USBtest();
 
 #endif // __USBAPI_H__

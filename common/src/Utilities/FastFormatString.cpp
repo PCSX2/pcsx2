@@ -14,12 +14,8 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Threading.h"
 
-#include "TlsVariable.inl"
 #include "SafeArray.inl"
-
-using namespace Threading;
 
 // Implement some very commonly used SafeArray types here
 // (done here for lack of a better place)
@@ -28,205 +24,97 @@ template class SafeArray<char>;
 template class SafeArray<wchar_t>;
 template class SafeArray<u8>;
 
-template class SafeAlignedArray<char,16>;
-template class SafeAlignedArray<wchar_t,16>;
-template class SafeAlignedArray<u8,16>;
+template class SafeAlignedArray<char, 16>;
+template class SafeAlignedArray<wchar_t, 16>;
+template class SafeAlignedArray<u8, 16>;
 
 // Sanity check: truncate strings if they exceed 512k in length.  Anything like that
 // is either a bug or really horrible code that needs to be stopped before it causes
 // system deadlock.
 static const int MaxFormattedStringLength = 0x80000;
 
-typedef ScopedAlignedAlloc<char,16> CharBufferType;
-
-// --------------------------------------------------------------------------------------
-//  FastFormatBuffers
-// --------------------------------------------------------------------------------------
-// This class provides a series of pre-allocated thread-local buffers for use by string
-// formatting tools.  These buffers are handed out in round-robin style and require *no*
-// thread sync objects and avoid multi-thread contention completely -- allowing multiple
-// threads to format complicated strings concurrently with maximum efficiency.
-//
-class FastFormatBuffers
+static
+#ifndef __linux__
+    __ri
+#endif
+    void
+    format_that_ascii_mess(CharBufferType &buffer, uint writepos, const char *fmt, va_list argptr)
 {
-	DeclareNoncopyableObject(FastFormatBuffers);
+    va_list args;
+    while (true) {
+        int size = buffer.GetLength();
 
-protected:
-	typedef char CharType;
-	typedef CharBufferType BufferType;
+        va_copy(args, argptr);
+        int len = vsnprintf(buffer.GetPtr(writepos), size - writepos, fmt, args);
+        va_end(args);
 
-	static const uint BufferCount = 6;
+        // some implementations of vsnprintf() don't NUL terminate
+        // the string if there is not enough space for it so
+        // always do it manually
+        buffer[size - 1] = '\0';
 
-	BufferType		m_buffers[BufferCount];
-	uint			m_curslot;
+        if (size >= MaxFormattedStringLength)
+            break;
 
-public:
-	FastFormatBuffers()
-	{
-		// This protects against potential recursive calls to our formatter, by forcing those
-		// calls to use a dynamic buffer for formatting.
-		m_curslot = BufferCount;
+        // vsnprintf() may return either -1 (traditional Unix behavior) or the
+        // total number of characters which would have been written if the
+        // buffer were large enough (newer standards such as Unix98)
 
-		for (uint i=0; i<BufferCount; ++i)
-		{
-			m_buffers[i].Alloc(512);
-		}
+        if (len < 0)
+            len = size + (size / 4);
 
-		m_curslot = 0;
-	}
+        len += writepos;
+        if (len < size)
+            break;
+        buffer.Resize(len + 128);
+    };
 
-	virtual ~FastFormatBuffers() throw()
-	{
-		pxAssumeDev(m_curslot==0,
-			wxsFormat(L"Dangling %s formatting buffer detected!",
-				(sizeof(CharType)==1) ? L"UTF8/Ascii" : L"Wide-char"
-			)
-		);
-	}
-
-	bool HasFreeBuffer() const
-	{
-		return m_curslot < BufferCount-1;
-	}
-
-	BufferType& GrabBuffer()
-	{
-		++m_curslot;
-		pxAssert(m_curslot < BufferCount);
-		return m_buffers[m_curslot];
-	}
-
-	void ReleaseBuffer()
-	{
-		--m_curslot;
-		pxAssert(m_curslot < BufferCount);
-	}
-
-	BufferType& operator[](uint i)
-	{
-		IndexBoundsAssume( ((sizeof(CharType)==1) ? L"Ascii Formatting Buffer" : L"Unicode Formatting Buffer"), i, BufferCount );
-		return m_buffers[i];
-	}
-};
-
-// --------------------------------------------------------------------------------------
-//  GlobalBufferManager
-// --------------------------------------------------------------------------------------
-// This local-scope class is needed in order to safely deal with C++ initializing and destroying
-// global objects in arbitrary order.  The initbit is updated by the object when constructed and
-// destroyed; code using this class provides its own statically-initialized boolean (which MUST
-// default to false!) and then sets the boolean to true to indicate the object is ready for use.
-//
-template< typename T >
-class GlobalBufferManager
-{
-public:
-	bool&		initbit;
-	T			instance;
-
-	GlobalBufferManager( bool& globalBoolean )
-		: initbit( globalBoolean )
-	{
-		initbit = true;
-	}
-	
-	~GlobalBufferManager() throw()
-	{
-		initbit = false;
-		instance.Dispose();
-	}
-
-	T& Get()
-	{
-		return instance;
-	}
-
-	operator T&()
-	{
-		return instance;
-	}
-};
-
-static bool buffer_is_avail = false;
-static GlobalBufferManager< BaseTlsVariable< FastFormatBuffers > > m_buffer_tls(buffer_is_avail);
-
-//static __ri void format_that_ascii_mess( SafeArray<char>& buffer, uint writepos, const char* fmt, va_list argptr )
-static __ri void format_that_ascii_mess( CharBufferType& buffer, uint writepos, const char* fmt, va_list argptr )
-{
-	while( true )
-	{
-		int size = buffer.GetLength();
-		int len = vsnprintf(buffer.GetPtr(writepos), size-writepos, fmt, argptr);
-
-		// some implementations of vsnprintf() don't NUL terminate
-		// the string if there is not enough space for it so
-		// always do it manually
-		buffer[size-1] = '\0';
-
-		if (size >= MaxFormattedStringLength) break;
-
-		// vsnprintf() may return either -1 (traditional Unix behavior) or the
-		// total number of characters which would have been written if the
-		// buffer were large enough (newer standards such as Unix98)
-
-		if (len < 0)
-			len = size + (size/4);
-
-		len += writepos;
-		if (len < size) break;
-		buffer.Resize( len + 128 );
-	};
-
-	// performing an assertion or log of a truncated string is unsafe, so let's not; even
-	// though it'd be kinda nice if we did.
+    // performing an assertion or log of a truncated string is unsafe, so let's not; even
+    // though it'd be kinda nice if we did.
 }
 
 // returns the length of the formatted string, in characters (wxChars).
-static __ri uint format_that_unicode_mess( CharBufferType& buffer, uint writepos, const wxChar* fmt, va_list argptr)
+static
+#ifndef __linux__
+    __ri
+#endif
+        uint
+        format_that_unicode_mess(CharBufferType &buffer, uint writepos, const wxChar *fmt, va_list argptr)
 {
-	while( true )
-	{
-		int size = buffer.GetLength() / sizeof(wxChar);
-		int len = wxVsnprintf((wxChar*)buffer.GetPtr(writepos*sizeof(wxChar)), size-writepos, fmt, argptr);
+    va_list args;
+    while (true) {
+        int size = buffer.GetLength() / sizeof(wxChar);
 
-		// some implementations of vsnprintf() don't NUL terminate
-		// the string if there is not enough space for it so
-		// always do it manually
-		((wxChar*)buffer.GetPtr())[size-1] = L'\0';
+        va_copy(args, argptr);
+        int len = wxVsnprintf((wxChar *)buffer.GetPtr(writepos * sizeof(wxChar)), size - writepos, fmt, args);
+        va_end(args);
 
-		if( size >= MaxFormattedStringLength ) return size-1;
+        // some implementations of vsnprintf() don't NUL terminate
+        // the string if there is not enough space for it so
+        // always do it manually
+        ((wxChar *)buffer.GetPtr())[size - 1] = L'\0';
 
-		// vsnprintf() may return either -1 (traditional Unix behavior) or the
-		// total number of characters which would have been written if the
-		// buffer were large enough (newer standards such as Unix98)
+        if (size >= MaxFormattedStringLength)
+            return size - 1;
 
-		if (len < 0)
-			len = size + (size/4);
+        // vsnprintf() may return either -1 (traditional Unix behavior) or the
+        // total number of characters which would have been written if the
+        // buffer were large enough (newer standards such as Unix98)
 
-		len += writepos;
-		if (len < size) return len;
-		buffer.Resize( (len + 128) * sizeof(wxChar) );
-	};
+        if (len < 0)
+            len = size + (size / 4);
 
-	// performing an assertion or log of a truncated string is unsafe, so let's not; even
-	// though it'd be kinda nice if we did.
+        len += writepos;
+        if (len < size)
+            return len;
+        buffer.Resize((len + 128) * sizeof(wxChar));
+    };
 
-	pxAssume( false );
-	return 0;		// unreachable.
-}
+    // performing an assertion or log of a truncated string is unsafe, so let's not; even
+    // though it'd be kinda nice if we did.
 
-CharBufferType* GetFormatBuffer( bool& deleteDest )
-{
-	deleteDest = false;
-	if (buffer_is_avail)
-	{
-		if (m_buffer_tls.Get()->HasFreeBuffer())
-			return &m_buffer_tls.Get()->GrabBuffer();
-	}
-
-	deleteDest = true;
-
-	return new CharBufferType(2048);
+    pxAssume(false);
+    return 0; // unreachable.
 }
 
 // --------------------------------------------------------------------------------------
@@ -239,134 +127,124 @@ CharBufferType* GetFormatBuffer( bool& deleteDest )
 // this class nicely in its current state. --air
 
 FastFormatUnicode::FastFormatUnicode()
+    : m_dest(2048)
 {
-	m_dest = GetFormatBuffer(m_deleteDest);
-	Clear();
-}
-
-FastFormatUnicode::~FastFormatUnicode() throw()
-{
-	if (m_deleteDest)
-		delete m_dest;
-	else
-		m_buffer_tls.Get()->ReleaseBuffer();
+    Clear();
 }
 
 void FastFormatUnicode::Clear()
 {
-	m_Length = 0;
-	((wxChar*)m_dest->GetPtr())[0] = 0;
+    m_Length = 0;
+    ((wxChar *)m_dest.GetPtr())[0] = 0;
 }
 
-FastFormatUnicode& FastFormatUnicode::WriteV( const char* fmt, va_list argptr )
+FastFormatUnicode &FastFormatUnicode::WriteV(const char *fmt, va_list argptr)
 {
-	wxString converted( fromUTF8(FastFormatAscii().WriteV( fmt, argptr )) );
+    wxString converted(fromUTF8(FastFormatAscii().WriteV(fmt, argptr)));
 
-	const uint inspos = m_Length;
-	const uint convLen = converted.Length();
-	m_dest->MakeRoomFor((inspos + convLen + 64) * sizeof(wxChar));
-	memcpy_fast( &((wxChar*)m_dest->GetPtr())[inspos], converted.wc_str(), (convLen+1)*sizeof(wxChar) );
-	m_Length += convLen;
+    const uint inspos = m_Length;
+    const uint convLen = converted.Length();
+    m_dest.MakeRoomFor((inspos + convLen + 64) * sizeof(wxChar));
+    memcpy(&((wxChar *)m_dest.GetPtr())[inspos], converted.wc_str(), (convLen + 1) * sizeof(wxChar));
+    m_Length += convLen;
 
-	return *this;
+    return *this;
 }
 
-FastFormatUnicode& FastFormatUnicode::WriteV( const wxChar* fmt, va_list argptr )
+FastFormatUnicode &FastFormatUnicode::WriteV(const wxChar *fmt, va_list argptr)
 {
-	m_Length = format_that_unicode_mess( *m_dest, m_Length, fmt, argptr );
-	return *this;
+    m_Length = format_that_unicode_mess(m_dest, m_Length, fmt, argptr);
+    return *this;
 }
 
-FastFormatUnicode& FastFormatUnicode::Write( const char* fmt, ... )
+FastFormatUnicode &FastFormatUnicode::Write(const char *fmt, ...)
 {
-	va_list list;
-	va_start(list, fmt);
-	WriteV(fmt,list);
-	va_end(list);
-	return *this;
+    va_list list;
+    va_start(list, fmt);
+    WriteV(fmt, list);
+    va_end(list);
+    return *this;
 }
 
-FastFormatUnicode& FastFormatUnicode::Write( const wxChar* fmt, ... )
+FastFormatUnicode &FastFormatUnicode::Write(const wxChar *fmt, ...)
 {
-	va_list list;
-	va_start(list, fmt);
-	WriteV(fmt,list);
-	va_end(list);
-	return *this;
+    va_list list;
+    va_start(list, fmt);
+    WriteV(fmt, list);
+    va_end(list);
+    return *this;
 }
 
-#if wxMAJOR_VERSION >= 3
-FastFormatUnicode& FastFormatUnicode::Write( const wxString fmt, ... )
+FastFormatUnicode &FastFormatUnicode::Write(const wxString fmt, ...)
 {
-	va_list list;
-	va_start(list, fmt);
-	WriteV(fmt.wx_str(),list);
-	va_end(list);
-	return *this;
+    va_list list;
+    va_start(list, fmt);
+    WriteV(fmt.wx_str(), list);
+    va_end(list);
+    return *this;
 }
-#endif
 
 bool FastFormatUnicode::IsEmpty() const
 {
-	return ((wxChar&)(*m_dest)[0]) == 0;
+    return ((wxChar &)m_dest[0]) == 0;
 }
 
-FastFormatUnicode& FastFormatUnicode::ToUpper()
+FastFormatUnicode &FastFormatUnicode::ToUpper()
 {
-	wxChar* ch = (wxChar*)m_dest->GetPtr();
-	for ( uint i=0; i<m_Length; ++i, ++ch )
-		*ch = (wxChar)wxToupper(*ch);
+    wxChar *ch = (wxChar *)m_dest.GetPtr();
+    for (uint i = 0; i < m_Length; ++i, ++ch)
+        *ch = (wxChar)wxToupper(*ch);
 
-	return *this;
+    return *this;
 }
 
-FastFormatUnicode& FastFormatUnicode::ToLower()
+FastFormatUnicode &FastFormatUnicode::ToLower()
 {
-	wxChar* ch = (wxChar*)m_dest->GetPtr();
-	for ( uint i=0; i<m_Length; ++i, ++ch )
-		*ch = (wxChar)wxTolower(*ch);
+    wxChar *ch = (wxChar *)m_dest.GetPtr();
+    for (uint i = 0; i < m_Length; ++i, ++ch)
+        *ch = (wxChar)wxTolower(*ch);
 
-	return *this;
+    return *this;
 }
 
-FastFormatUnicode& FastFormatUnicode::operator+=(const char* psz )
+FastFormatUnicode &FastFormatUnicode::operator+=(const char *psz)
 {
-	Write( L"%s", WX_STR(fromUTF8(psz)) );
-	return *this;
+    Write(L"%s", WX_STR(fromUTF8(psz)));
+    return *this;
 }
 
-wxString& operator+=(wxString& str1, const FastFormatUnicode& str2)
+wxString &operator+=(wxString &str1, const FastFormatUnicode &str2)
 {
-	str1.Append(str2.c_str(), str2.Length());
-	return str1;
+    str1.Append(str2.c_str(), str2.Length());
+    return str1;
 }
 
-wxString operator+(const wxString& str1, const FastFormatUnicode& str2)
+wxString operator+(const wxString &str1, const FastFormatUnicode &str2)
 {
-	wxString s = str1;
-	s += str2;
-	return s;
+    wxString s = str1;
+    s += str2;
+    return s;
 }
 
-wxString operator+(const wxChar* str1, const FastFormatUnicode& str2)
+wxString operator+(const wxChar *str1, const FastFormatUnicode &str2)
 {
-	wxString s = str1;
-	s += str2;
-	return s;
+    wxString s = str1;
+    s += str2;
+    return s;
 }
 
-wxString operator+(const FastFormatUnicode& str1, const wxString& str2)
+wxString operator+(const FastFormatUnicode &str1, const wxString &str2)
 {
-	wxString s = str1;
-	s += str2;
-	return s;
+    wxString s = str1;
+    s += str2;
+    return s;
 }
 
-wxString operator+(const FastFormatUnicode& str1, const wxChar* str2)
+wxString operator+(const FastFormatUnicode &str1, const wxChar *str2)
 {
-	wxString s = str1;
-	s += str2;
-	return s;
+    wxString s = str1;
+    s += str2;
+    return s;
 }
 
 
@@ -374,46 +252,38 @@ wxString operator+(const FastFormatUnicode& str1, const wxChar* str2)
 //  FastFormatAscii  (implementations)
 // --------------------------------------------------------------------------------------
 FastFormatAscii::FastFormatAscii()
+    : m_dest(2048)
 {
-	m_dest = GetFormatBuffer(m_deleteDest);
-	Clear();
-}
-
-FastFormatAscii::~FastFormatAscii() throw()
-{
-	if (m_deleteDest)
-		delete m_dest;
-	else
-		m_buffer_tls.Get()->ReleaseBuffer();
+    Clear();
 }
 
 void FastFormatAscii::Clear()
 {
-	m_dest->GetPtr()[0] = 0;
+    m_dest.GetPtr()[0] = 0;
 }
 
 const wxString FastFormatAscii::GetString() const
 {
-	return fromAscii(m_dest->GetPtr());
+    return fromAscii(m_dest.GetPtr());
 }
 
-FastFormatAscii& FastFormatAscii::WriteV( const char* fmt, va_list argptr )
+FastFormatAscii &FastFormatAscii::WriteV(const char *fmt, va_list argptr)
 {
-	format_that_ascii_mess( *m_dest, strlen(m_dest->GetPtr()), fmt, argptr );
-	return *this;
+    format_that_ascii_mess(m_dest, strlen(m_dest.GetPtr()), fmt, argptr);
+    return *this;
 }
 
-FastFormatAscii& FastFormatAscii::Write( const char* fmt, ... )
+FastFormatAscii &FastFormatAscii::Write(const char *fmt, ...)
 {
-	va_list list;
-	va_start(list, fmt);
-	WriteV(fmt,list);
-	va_end(list);
-	return *this;
+    va_list list;
+    va_start(list, fmt);
+    WriteV(fmt, list);
+    va_end(list);
+    return *this;
 }
 
 
 bool FastFormatAscii::IsEmpty() const
 {
-	return (*m_dest)[0] == 0;
+    return m_dest[0] == 0;
 }

@@ -63,7 +63,7 @@ public:
 	};
 
 protected:
-	volatile ExecutionMode	m_ExecMode;
+	std::atomic<ExecutionMode>	m_ExecMode;
 
 	// This lock is used to avoid simultaneous requests to Suspend/Resume/Pause from
 	// contending threads.
@@ -71,7 +71,7 @@ protected:
 
 	// Used to wake up the thread from sleeping when it's in a suspended state.
 	Semaphore			m_sem_Resume;
-	
+
 	// Used to synchronize inline changes from paused to suspended status.
 	Semaphore			m_sem_ChangingExecMode;
 
@@ -79,10 +79,10 @@ protected:
 	// Issue a Wait against this mutex for performing actions that require the thread
 	// to be suspended.
 	Mutex				m_RunningLock;
-	
+
 public:
 	explicit SysThreadBase();
-	virtual ~SysThreadBase() throw();
+	virtual ~SysThreadBase() = default;
 
 	// Thread safety for IsOpen / IsClosed: The execution mode can change at any time on
 	// any thread, so the actual status may have already changed by the time this function
@@ -99,7 +99,7 @@ public:
 
 	bool IsClosing() const
 	{
-		return !IsRunning() || (m_ExecMode <= ExecMode_Closed) || (m_ExecMode == ExecMode_Closing); 
+		return !IsRunning() || (m_ExecMode <= ExecMode_Closed) || (m_ExecMode == ExecMode_Closing);
 	}
 
 	bool HasPendingStateChangeRequest() const
@@ -107,13 +107,14 @@ public:
 		return m_ExecMode >= ExecMode_Closing;
 	}
 
-	ExecutionMode GetExecutionMode() const { return m_ExecMode; }
+	ExecutionMode GetExecutionMode() const { return m_ExecMode.load(); }
 	Mutex& ExecutionModeMutex() { return m_ExecModeMutex; }
 
 	virtual void Suspend( bool isBlocking = true );
 	virtual void Resume();
-	virtual void Pause();
+	virtual void Pause(bool debug = false);
 	virtual void PauseSelf();
+	virtual void PauseSelfDebug();
 
 protected:
 	virtual void OnStart();
@@ -123,6 +124,7 @@ protected:
 	// Resume() has a lot of checks and balances to prevent re-entrance and race conditions.
 	virtual void OnResumeReady() {}
 	virtual void OnPause() {}
+	virtual void OnPauseDebug() {}
 
 	virtual bool StateCheckInThread();
 	virtual void OnCleanupInThread();
@@ -172,15 +174,15 @@ protected:
 	// true anytime between plugins being initialized and plugins being shutdown.  Gets
 	// set false when plugins are shutdown, the corethread is canceled, or when an error
 	// occurs while trying to upload a new state into the VM.
-	volatile bool	m_hasActiveMachine;
+	std::atomic<bool> m_hasActiveMachine;
 
 	wxString		m_elf_override;
-	
+
 	SSE_MXCSR		m_mxcsr_saved;
 
 public:
 	explicit SysCoreThread();
-	virtual ~SysCoreThread() throw();
+	virtual ~SysCoreThread();
 
 	bool HasPendingStateChangeRequest() const;
 
@@ -198,10 +200,10 @@ public:
 	virtual void UploadStateCopy( const VmStateBuffer& copy );
 
 	virtual bool HasActiveMachine() const { return m_hasActiveMachine; }
-	
+
 	virtual const wxString& GetElfOverride() const { return m_elf_override; }
 	virtual void SetElfOverride( const wxString& elf );
-	
+
 protected:
 	void _reset_stuff_as_needed();
 
@@ -234,7 +236,7 @@ public:
 
 public:
 	IEventListener_SysState() {}
-	virtual ~IEventListener_SysState() throw() {}
+	virtual ~IEventListener_SysState() = default;
 
 	virtual void DispatchEvent( const SysStateUnlockedParams& status )
 	{

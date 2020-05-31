@@ -17,6 +17,15 @@
 
 #include "Pcsx2Defs.h"
 
+enum Syscall : u8
+{
+	SetGsCrt = 2,
+	SetVTLBRefillHandler = 13,
+	sysPrintOut = 117,
+	sceSifSetDma = 119,
+	Deci2Call = 124
+};
+
 // TODO : Move these into the OpcodeTables namespace
 extern  void (*Int_COP2PrintTable[32])();
 extern  void (*Int_COP2BC2PrintTable[32])();

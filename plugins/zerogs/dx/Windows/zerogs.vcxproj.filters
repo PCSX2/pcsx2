@@ -24,9 +24,6 @@
     <ClCompile Include="..\Mem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\memcpy_amd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\Regs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -20,44 +20,43 @@ HWND GShwnd = NULL;
 
 LRESULT CALLBACK MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    switch(msg)
-    {
+    switch (msg) {
         case WM_CLOSE:
             DestroyWindow(hwnd);
-        break;
+            break;
         case WM_DESTROY:
             PostQuitMessage(0);
-        break;
+            break;
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
     }
     return 0;
 }
 
-int GSOpenWindow(void *pDsp, char *Title)
+int GSOpenWindow(void *pDsp, const char *Title)
 {
-	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
-					GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
-					"PS2EMU_GSNULL", NULL };
-	RegisterClassEx( &wc );
+    WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
+                     GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
+                     "PS2EMU_GSNULL", NULL};
+    RegisterClassEx(&wc);
 
-	GShwnd = CreateWindowEx( WS_EX_CLIENTEDGE, "PS2EMU_GSNULL", Title,
-        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 240, 120, NULL, NULL, wc.hInstance, NULL);
+    GShwnd = CreateWindowEx(WS_EX_CLIENTEDGE, "PS2EMU_GSNULL", Title,
+                            WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 240, 120, NULL, NULL, wc.hInstance, NULL);
 
-	if(GShwnd == NULL)
-	{
-		GSLog::WriteLn("Failed to create window. Exiting...");
-		return -1;
-	}
+    if (GShwnd == NULL) {
+        GSLog::WriteLn("Failed to create window. Exiting...");
+        return -1;
+    }
 
-	if( pDsp != NULL ) *(uptr*)pDsp = (uptr)GShwnd;
+    if (pDsp != NULL)
+        *(uptr *)pDsp = (uptr)GShwnd;
 
-	return 0;
+    return 0;
 }
 
 void GSCloseWindow()
 {
-	DestroyWindow( GShwnd );
+    DestroyWindow(GShwnd);
 }
 
 void GSProcessMessages()
@@ -67,9 +66,4 @@ void GSProcessMessages()
 // GSkeyEvent gets called when there is a keyEvent from the PAD plugin
 void HandleKeyEvent(keyEvent *ev)
 {
-}
-
-EXPORT_C_(s32) GSsetWindowInfo(winInfo *info)
-{
-	return 0;
 }

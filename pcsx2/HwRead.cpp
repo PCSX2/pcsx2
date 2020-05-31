@@ -21,6 +21,8 @@
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
 
+#include "ps2/pgif.h"
+
 using namespace R5900;
 
 static __fi void IntCHackCheck()
@@ -30,10 +32,6 @@ static __fi void IntCHackCheck()
 	s32 diff = g_nextEventCycle - cpuRegs.cycle;
 	if( diff > 0 ) cpuRegs.cycle = g_nextEventCycle;
 }
-
-int shift = 0;
-static const uint HwF_VerboseConLog	= 1<<0;
-static const uint HwF_IntcStatHack	= 1<<1;	// used for Reads only.
 
 template< uint page > void __fastcall _hwRead128(u32 mem, mem128_t* result );
 
@@ -92,8 +90,13 @@ mem32_t __fastcall _hwRead32(u32 mem)
 				return psHu32(INTC_STAT);
 			}
 
-			
-				
+			// todo: psx mode: this is new
+			if (((mem & 0x1FFFFFFF) >= EEMemoryMap::SBUS_PS1_Start) && ((mem & 0x1FFFFFFF) < EEMemoryMap::SBUS_PS1_End)) {
+				return PGIFr((mem & 0x1FFFFFFF));
+			}
+
+			// WARNING: this code is never executed anymore due to previous condition.
+			// It requires investigation of what to do.
 			if ((mem & 0x1000ff00) == 0x1000f300)
 			{
 				int ret = 0;
@@ -139,14 +142,21 @@ mem32_t __fastcall _hwRead32(u32 mem)
 			switch( mem )
 			{
 				case SIO_ISR:
-				case SBUS_F260:
+
 				case 0x1000f410:
 				case MCH_RICM:
 					return 0;
 
 				case SBUS_F240:
+#if PSX_EXTRALOGS
+					DevCon.Warning("Read  SBUS_F240  %x ", psHu32(SBUS_F240));
+#endif
 					return psHu32(SBUS_F240) | 0xF0000102;
-
+				case SBUS_F260:
+#if PSX_EXTRALOGS
+					DevCon.Warning("Read  SBUS_F260  %x ", psHu32(SBUS_F260));
+#endif
+					return psHu32(SBUS_F260);
 				case MCH_DRD:
 					if( !((psHu32(MCH_RICM) >> 6) & 0xF) )
 					{
@@ -185,14 +195,14 @@ mem32_t __fastcall _hwRead32(u32 mem)
 	if(mem == (D1_CHCR + 0x10) && CHECK_VIFFIFOHACK) 
 		return psHu32(mem) + (vif1ch.qwc * 16);
 
-	if((mem == GIF_CHCR) && !vif1ch.chcr.STR && gifRegs.stat.M3P && gifRegs.stat.APATH != 3)
+	/*if((mem == GIF_CHCR) && !vif1ch.chcr.STR && gifRegs.stat.M3P && gifRegs.stat.APATH != 3)
 	{
 		//Hack for Wallace and Gromit Curse Project Zoo - Enabled the mask, then starts a new
 		//GIF DMA, the mask never comes off and it won't proceed until this is unset.
 		//Unsetting it works too but messes up other PATH3 games.
 		//If STR is already unset, it won't make the slightest difference.
 		return (psHu32(mem) & ~0x100);
-	}
+	}*/
 	return psHu32(mem);
 }
 
@@ -225,7 +235,7 @@ mem8_t __fastcall _hwRead8(u32 mem)
 template< uint page >
 mem8_t __fastcall hwRead8(u32 mem)
 {
-	mem8_t ret8 = _hwRead8<0x0f>(mem);
+	mem8_t ret8 = _hwRead8<page>(mem);
 	eeHwTraceLog( mem, ret8, true );
 	return ret8;
 }
@@ -347,6 +357,14 @@ void __fastcall _hwRead128(u32 mem, mem128_t* result )
 			ZeroQWC( result );
 		break;
 		case 0x0F:
+			// todo: psx mode: this is new
+			if (((mem & 0x1FFFFFFF) >= EEMemoryMap::SBUS_PS1_Start) && ((mem & 0x1FFFFFFF) < EEMemoryMap::SBUS_PS1_End)) {
+				PGIFrQword((mem & 0x1FFFFFFF), result);
+				return;
+			}
+
+			// WARNING: this code is never executed anymore due to previous condition.
+			// It requires investigation of what to do.
 			if ((mem & 0xffffff00) == 0x1000f300)
 			{
 				DevCon.Warning("128bit read from %x wibble", mem);

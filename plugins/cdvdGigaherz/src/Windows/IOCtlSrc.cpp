@@ -1,4 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2016  PCSX2 Dev Team
  *  Copyright (C) 2002-2014 David Quintana [gigaherz]
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
@@ -13,728 +14,285 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600
 #include "../CDVD.h"
-#pragma warning(disable:4200)
-#pragma pack(1)
+
 #include <winioctl.h>
-#include "rosddk/ntddcdvd.h"
-#include "rosddk/ntddcdrm.h"
-#include "rosddk/ntddscsi.h"
-#pragma warning(default:4200)
-#include <stddef.h>
+#include <ntddcdvd.h>
+#include <ntddcdrm.h>
+// "typedef ignored" warning will disappear once we move to the Windows 10 SDK.
+#pragma warning(push)
+#pragma warning(disable : 4091)
+#include <ntddscsi.h>
+#pragma warning(pop)
 
-template<class T>
-bool ApiErrorCheck(T t,T okValue,bool cmpEq)
+#include <cstddef>
+#include <cstdlib>
+#include <array>
+#include <stdexcept>
+
+IOCtlSrc::IOCtlSrc(decltype(m_filename) filename)
+    : m_filename(filename)
 {
-	bool cond=(t==okValue);
-
-	if(!cmpEq) cond=!cond;
-
-	if(!cond)
-	{
-		static char buff[1024];
-		DWORD ec = GetLastError();
-		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,NULL,ec,0,buff,1023,NULL);
-		MessageBoxEx(0,buff,"ERROR?!",MB_OK,0);
-	}
-	return cond;
-}
-
-#if FALSE
-typedef struct {
-  SCSI_PASS_THROUGH_DIRECT spt;
-  ULONG Filler;
-  UCHAR ucSenseBuf[32];
-} SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER, *PSCSI_PASS_THROUGH_DIRECT_WITH_BUFFER;
-
-SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER sptIOCTL;         // global read bufs
-
-char szBuf[1024];
-
-PSCSI_ADDRESS pSA;
-
-DWORD SendIoCtlScsiCommand(HANDLE hDevice, u8 direction,
-						   u8  cdbLength,  u8*   cdb,
-						   u32 dataLength, void* dataBuffer
-						   )
-{
-	DWORD dwRet;
-
-	memset(szBuf,0,1024);
-
-	pSA=(PSCSI_ADDRESS)szBuf;
-	pSA->Length=sizeof(SCSI_ADDRESS);
-
-	if(!DeviceIoControl(hDevice,IOCTL_SCSI_GET_ADDRESS,NULL,
-						0,pSA,sizeof(SCSI_ADDRESS),
-						&dwRet,NULL))
-	{
-		return -1;
-	}
-
-	memset(&sptIOCTL,0,sizeof(sptIOCTL));
-
-	sptIOCTL.spt.Length             = sizeof(SCSI_PASS_THROUGH_DIRECT);
-	sptIOCTL.spt.TimeOutValue       = 60;
-	sptIOCTL.spt.SenseInfoLength    = 14;
-	sptIOCTL.spt.SenseInfoOffset    = offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER, ucSenseBuf);
-
-	sptIOCTL.spt.PathId				= pSA->PortNumber;
-	sptIOCTL.spt.TargetId           = pSA->TargetId;
-	sptIOCTL.spt.Lun                = pSA->Lun;
-
-	sptIOCTL.spt.DataIn             = (direction>0)?SCSI_IOCTL_DATA_IN:((direction<0)?SCSI_IOCTL_DATA_OUT:SCSI_IOCTL_DATA_UNSPECIFIED);
-	sptIOCTL.spt.DataTransferLength = dataLength;
-	sptIOCTL.spt.DataBuffer         = dataBuffer;
-
-	sptIOCTL.spt.CdbLength          = cdbLength;
-	memcpy(sptIOCTL.spt.Cdb,cdb,cdbLength);
-
-	DWORD code = DeviceIoControl(hDevice,
-					IOCTL_SCSI_PASS_THROUGH_DIRECT,
-					&sptIOCTL,sizeof(sptIOCTL),
-					&sptIOCTL,sizeof(sptIOCTL),
-					&dwRet,NULL);
-	ApiErrorCheck<DWORD>(code,0,false);
-	return code;
-}
-
-//0x00 = PHYSICAL STRUCTURE
-DWORD ScsiReadStructure(HANDLE hDevice, u32 layer, u32 format, u32 buffer_length, void* buffer)
-{
-	u8 cdb[12]={0};
-
-
-	cdb[0]     = 0xAD;
-	/*
-	cdb[2]     = (unsigned char)((addr >> 24) & 0xFF);
-	cdb[3]     = (unsigned char)((addr >> 16) & 0xFF);
-	cdb[4]     = (unsigned char)((addr >> 8) & 0xFF);
-	cdb[5]     = (unsigned char)(addr & 0xFF);
-	*/
-	cdb[6]     = layer;
-	cdb[7]     = format;
-	cdb[8]     = (unsigned char)((buffer_length>>8) & 0xFF);
-	cdb[9]     = (unsigned char)((buffer_length) & 0xFF);
-
-	return SendIoCtlScsiCommand(hDevice, 1, 12, cdb, buffer_length, buffer);
-}
-
-
-DWORD ScsiReadBE_2(HANDLE hDevice, u32 addr, u32 count, u8* buffer)
-{
-	u8 cdb[12]={0};
-
-	cdb[0]     = 0xBE;
-	cdb[2]     = (unsigned char)((addr >> 24) & 0xFF);
-	cdb[3]     = (unsigned char)((addr >> 16) & 0xFF);
-	cdb[4]     = (unsigned char)((addr >> 8) & 0xFF);
-	cdb[5]     = (unsigned char)(addr & 0xFF);
-	cdb[8]     = count;
-	cdb[9]     = 0xF8;
-	cdb[10]    = 0x2;
-
-	return SendIoCtlScsiCommand(hDevice, 1, 12, cdb, 2352, buffer);
-}
-
-DWORD ScsiRead10(HANDLE hDevice, u32 addr, u32 count, u8* buffer)
-{
-	u8 cdb[10]={0};
-
-	cdb[0]     = 0x28;
-	//cdb[1]     = lun<<5;
-	cdb[2]     = (unsigned char)((addr >> 24) & 0xFF);
-	cdb[3]     = (unsigned char)((addr >> 16) & 0xFF);
-	cdb[4]     = (unsigned char)((addr >> 8) & 0xFF);
-	cdb[5]     = (unsigned char)(addr & 0xFF);
-	cdb[8]     = count;
-
-	return SendIoCtlScsiCommand(hDevice, 1, 10, cdb, 2352, buffer);
-}
-
-DWORD ScsiReadTOC(HANDLE hDevice, u32 addr, u8* buffer, bool use_msf)
-{
-	u8 cdb[12]={0};
-
-	cdb[0]     = 0x43;
-	cdb[7]     = 0x03;
-	cdb[8]     = 0x24;
-
-	if(use_msf) cdb[1]=2;
-
-	return SendIoCtlScsiCommand(hDevice, 1, 10, cdb, 2352, buffer);
-}
-
-s32 IOCtlSrc::GetSectorCount()
-{
-	DWORD size;
-
-	LARGE_INTEGER li;
-	int plain_sectors = 0;
-
-	if(GetFileSizeEx(device,&li))
-	{
-		return li.QuadPart / 2048;
-	}
-
-	GET_LENGTH_INFORMATION info;
-	if(DeviceIoControl(device, IOCTL_DISK_GET_LENGTH_INFO, NULL, 0, &info, sizeof(info), &size, NULL))
-	{
-		return info.Length.QuadPart / 2048;
-	}
-
-	CDROM_READ_TOC_EX tocrq={0};
-
-	tocrq.Format = CDROM_READ_TOC_EX_FORMAT_FULL_TOC;
-	tocrq.Msf=1;
-	tocrq.SessionTrack=1;
-
-	CDROM_TOC_FULL_TOC_DATA *ftd=(CDROM_TOC_FULL_TOC_DATA*)sectorbuffer;
-
-	if(DeviceIoControl(device,IOCTL_CDROM_READ_TOC_EX,&tocrq,sizeof(tocrq),ftd, 2048, &size, NULL))
-	{
-		for(int i=0;i<101;i++)
-		{
-			if(ftd->Descriptors[i].Point==0xa2)
-			{
-				if(ftd->Descriptors[i].SessionNumber==ftd->LastCompleteSession)
-				{
-					int min=ftd->Descriptors[i].Msf[0];
-					int sec=ftd->Descriptors[i].Msf[1];
-					int frm=ftd->Descriptors[i].Msf[2];
-
-					return MSF_TO_LBA(min,sec,frm);
-				}
-			}
-		}
-	}
-
-	int sectors1=-1;
-
-	if(ScsiReadStructure(device,0,DvdPhysicalDescriptor, sizeof(dld), &dld)!=0)
-	{
-		if(dld.ld.EndLayerZeroSector>0) // OTP?
-		{
-			sectors1 = dld.ld.EndLayerZeroSector - dld.ld.StartingDataSector;
-		}
-		else //PTP or single layer
-		{
-			sectors1 = dld.ld.EndDataSector - dld.ld.StartingDataSector;
-		}
-
-		if(ScsiReadStructure(device,1,DvdPhysicalDescriptor, sizeof(dld), &dld)!=0)
-		{
-			// PTP second layer
-			//sectors1 += dld.ld.EndDataSector - dld.ld.StartingDataSector;
-			if(dld.ld.EndLayerZeroSector>0) // OTP?
-			{
-				sectors1 += dld.ld.EndLayerZeroSector - dld.ld.StartingDataSector;
-			}
-			else //PTP
-			{
-				sectors1 += dld.ld.EndDataSector - dld.ld.StartingDataSector;
-			}
-		}
-
-		return sectors1;
-	}
-
-	return -1;
-}
-
-s32 IOCtlSrc::GetLayerBreakAddress()
-{
-	DWORD size;
-	if(ScsiReadStructure(device,0,DvdPhysicalDescriptor, sizeof(dld), &dld)!=0)
-	{
-		if(dld.ld.EndLayerZeroSector>0) // OTP?
-		{
-			return dld.ld.EndLayerZeroSector - dld.ld.StartingDataSector;
-		}
-		else //PTP or single layer
-		{
-			u32 s1 = dld.ld.EndDataSector - dld.ld.StartingDataSector;
-
-			if(ScsiReadStructure(device,1,DvdPhysicalDescriptor, sizeof(dld), &dld)!=0)
-			{
-				//PTP
-				return s1;
-			}
-
-			// single layer
-			return 0;
-		}
-	}
-
-	return -1;
-}
-#endif
-
-#define RETURN(v) {OpenOK=v; return;}
-
-s32 IOCtlSrc::Reopen()
-{
-	if(device!=INVALID_HANDLE_VALUE)
-	{
-		DWORD size;
-		DeviceIoControl(device,IOCTL_DVD_END_SESSION,&sessID,sizeof(DVD_SESSION_ID),NULL,0,&size, NULL);
-		CloseHandle(device);
-	}
-
-	DWORD share = FILE_SHARE_READ;
-	DWORD flags = FILE_ATTRIBUTE_READONLY | FILE_FLAG_SEQUENTIAL_SCAN;
-	DWORD size;
-
-	OpenOK = false;
-
-	device = CreateFile(fName, GENERIC_READ|GENERIC_WRITE|FILE_READ_ATTRIBUTES, share, NULL, OPEN_EXISTING, flags, 0);
-	if(device==INVALID_HANDLE_VALUE)
-	{
-		device = CreateFile(fName, GENERIC_READ|FILE_READ_ATTRIBUTES, share, NULL, OPEN_EXISTING, flags, 0);
-		if(device==INVALID_HANDLE_VALUE)
-			return -1;
-	}
-
-	sessID=0;
-	DeviceIoControl(device,IOCTL_DVD_START_SESSION,NULL,0,&sessID,sizeof(DVD_SESSION_ID), &size, NULL);
-
-	tocCached = false;
-	mediaTypeCached = false;
-	discSizeCached = false;
-	layerBreakCached = false;
-
-	OpenOK=true;
-	return 0;
-}
-
-IOCtlSrc::IOCtlSrc(const char* fileName)
-{
-	device=INVALID_HANDLE_VALUE;
-
-	strcpy_s(fName,256,fileName);
-
-	Reopen();
-	SetSpindleSpeed(false);
+    if (!Reopen())
+        throw std::runtime_error(" * CDVD: Error opening source.\n");
 }
 
 IOCtlSrc::~IOCtlSrc()
 {
-	if(OpenOK)
-	{
-		SetSpindleSpeed( true );
-		DWORD size;
-		DeviceIoControl(device,IOCTL_DVD_END_SESSION,&sessID,sizeof(DVD_SESSION_ID),NULL,0,&size, NULL);
-
-		CloseHandle(device);
-	}
+    if (m_device != INVALID_HANDLE_VALUE) {
+        SetSpindleSpeed(true);
+        CloseHandle(m_device);
+    }
 }
 
-struct mycrap
+// If a new disc is inserted, ReadFile will fail unless the device is closed
+// and reopened.
+bool IOCtlSrc::Reopen()
 {
-	DWORD shit;
-	DVD_LAYER_DESCRIPTOR ld;
-};
+    if (m_device != INVALID_HANDLE_VALUE)
+        CloseHandle(m_device);
 
-DVD_READ_STRUCTURE dvdrs;
-mycrap dld;
-DISK_GEOMETRY dg;
-CDROM_READ_TOC_EX tocrq={0};
+    // SPTI only works if the device is opened with GENERIC_WRITE access.
+    m_device = CreateFile(m_filename.c_str(), GENERIC_READ | GENERIC_WRITE,
+                          FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+                          FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
+    if (m_device == INVALID_HANDLE_VALUE)
+        return false;
 
-s32 IOCtlSrc::GetSectorCount()
-{
-	DWORD size;
+    DWORD unused;
+    // Required to read from layer 1 of Dual layer DVDs
+    DeviceIoControl(m_device, FSCTL_ALLOW_EXTENDED_DASD_IO, nullptr, 0, nullptr,
+                    0, &unused, nullptr);
 
-	LARGE_INTEGER li;
-	int plain_sectors = 0;
+    if (ReadDVDInfo() || ReadCDInfo())
+        SetSpindleSpeed(false);
 
-	if(discSizeCached)
-		return discSize;
-
-	if(GetFileSizeEx(device,&li))
-	{
-		discSizeCached = true;
-		discSize = (s32)(li.QuadPart / 2048);
-		return discSize;
-	}
-
-	GET_LENGTH_INFORMATION info;
-	if(DeviceIoControl(device, IOCTL_DISK_GET_LENGTH_INFO, NULL, 0, &info, sizeof(info), &size, NULL))
-	{
-		discSizeCached = true;
-		discSize = (s32)(info.Length.QuadPart / 2048);
-		return discSize;
-	}
-
-	memset(&tocrq,0,sizeof(CDROM_READ_TOC_EX));
-	tocrq.Format = CDROM_READ_TOC_EX_FORMAT_FULL_TOC;
-	tocrq.Msf=1;
-	tocrq.SessionTrack=1;
-
-	CDROM_TOC_FULL_TOC_DATA *ftd=(CDROM_TOC_FULL_TOC_DATA*)sectorbuffer;
-
-	if(DeviceIoControl(device,IOCTL_CDROM_READ_TOC_EX,&tocrq,sizeof(tocrq),ftd, 2048, &size, NULL))
-	{
-		for(int i=0;i<101;i++)
-		{
-			if(ftd->Descriptors[i].Point==0xa2)
-			{
-				if(ftd->Descriptors[i].SessionNumber==ftd->LastCompleteSession)
-				{
-					int min=ftd->Descriptors[i].Msf[0];
-					int sec=ftd->Descriptors[i].Msf[1];
-					int frm=ftd->Descriptors[i].Msf[2];
-
-					discSizeCached = true;
-					discSize = (s32)MSF_TO_LBA(min,sec,frm);
-					return discSize;
-				}
-			}
-		}
-	}
-
-	int sectors1=-1;
-
-	dvdrs.BlockByteOffset.QuadPart=0;
-	dvdrs.Format=DvdPhysicalDescriptor;
-	dvdrs.SessionId=sessID;
-	dvdrs.LayerNumber=0;
-	if(DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
-	{
-		if(dld.ld.EndLayerZeroSector>0) // OTP?
-		{
-			sectors1 = dld.ld.EndLayerZeroSector - dld.ld.StartingDataSector;
-		}
-		else //PTP or single layer
-		{
-			sectors1 = dld.ld.EndDataSector - dld.ld.StartingDataSector;
-		}
-		dvdrs.BlockByteOffset.QuadPart=0;
-		dvdrs.Format=DvdPhysicalDescriptor;
-		dvdrs.SessionId=sessID;
-		dvdrs.LayerNumber=1;
-		if(DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
-		{
-			// PTP second layer
-			//sectors1 += dld.ld.EndDataSector - dld.ld.StartingDataSector;
-			if(dld.ld.EndLayerZeroSector>0) // OTP?
-			{
-				sectors1 += dld.ld.EndLayerZeroSector - dld.ld.StartingDataSector;
-			}
-			else //PTP
-			{
-				sectors1 += dld.ld.EndDataSector - dld.ld.StartingDataSector;
-			}
-		}
-
-		discSizeCached = true;
-		discSize = sectors1;
-		return discSize;
-	}
-
-	return -1;
+    return true;
 }
 
-s32 IOCtlSrc::GetLayerBreakAddress()
+void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) const
 {
-	DWORD size;
-	DWORD code;
+    // IOCTL_CDROM_SET_SPEED issues a SET CD SPEED command. So 0xFFFF should be
+    // equivalent to "optimal performance".
+    // 1x DVD-ROM and CD-ROM speeds are respectively 1385 KB/s and 150KB/s.
+    // The PS2 can do 4x DVD-ROM and 24x CD-ROM speeds (5540KB/s and 3600KB/s).
+    // TODO: What speed? Performance seems smoother with a lower speed (less
+    // time required to get up to speed).
+    const USHORT speed = restore_defaults ? 0xFFFF : GetMediaType() >= 0 ? 5540 : 3600;
+    CDROM_SET_SPEED s{CdromSetSpeed, speed, speed, CdromDefaultRotation};
 
-	if(GetMediaType()<0)
-		return -1;
-
-	if(layerBreakCached)
-		return layerBreak;
-
-	dvdrs.BlockByteOffset.QuadPart=0;
-	dvdrs.Format=DvdPhysicalDescriptor;
-	dvdrs.SessionId=sessID;
-	dvdrs.LayerNumber=0;
-	if(code=DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
-	{
-		if(dld.ld.EndLayerZeroSector>0) // OTP?
-		{
-			layerBreakCached = true;
-			layerBreak = dld.ld.EndLayerZeroSector - dld.ld.StartingDataSector;
-			return layerBreak;
-		}
-		else //PTP or single layer
-		{
-			u32 s1 = dld.ld.EndDataSector - dld.ld.StartingDataSector;
-
-			dvdrs.BlockByteOffset.QuadPart=0;
-			dvdrs.Format=DvdPhysicalDescriptor;
-			dvdrs.SessionId=sessID;
-			dvdrs.LayerNumber=1;
-
-			if(DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
-			{
-				//PTP
-				layerBreakCached = true;
-				layerBreak = s1;
-				return layerBreak;
-			}
-
-			// single layer
-			layerBreakCached = true;
-			layerBreak = 0;
-			return layerBreak;
-		}
-	}
-
-	//if not a cd, and fails, assume single layer
-	return 0;
+    DWORD unused;
+    if (DeviceIoControl(m_device, IOCTL_CDROM_SET_SPEED, &s, sizeof(s),
+                        nullptr, 0, &unused, nullptr)) {
+        if (!restore_defaults)
+            printf(" * CDVD: setSpindleSpeed success (%uKB/s)\n", speed);
+    } else {
+        printf(" * CDVD: setSpindleSpeed failed!\n");
+    }
 }
 
-void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) { 
-	
-	DWORD dontcare;
-	int speed = 0;
-	
-	if (GetMediaType() < 0 ) speed = 4800; // CD-ROM to ~32x (PS2 has 24x (3600 KB/s))
-	else speed = 11080;	// DVD-ROM to  ~8x (PS2 has 4x (5540 KB/s))
-	
-	if (!restore_defaults) {
-		CDROM_SET_SPEED s;
-		s.RequestType = CdromSetSpeed;
-		s.RotationControl = CdromDefaultRotation;
-		s.ReadSpeed = speed;
-		s.WriteSpeed = speed;
-
-		if (DeviceIoControl(device,
-			IOCTL_CDROM_SET_SPEED,	//operation to perform
-			&s, sizeof(s),	//no input buffer
-			NULL, 0,	//output buffer
-			&dontcare,	//#bytes returned
-			(LPOVERLAPPED)NULL))	//synchronous I/O == 0)
-		{
-			printf(" * CDVD: setSpindleSpeed success (%dKB/s)\n", speed);
-		}
-		else
-		{
-			printf(" * CDVD: setSpindleSpeed failed! \n");
-		}
-	}
-	else {
-		CDROM_SET_SPEED s;
-		s.RequestType = CdromSetSpeed;
-		s.RotationControl = CdromDefaultRotation;
-		s.ReadSpeed = 0xffff; // maximum ?
-		s.WriteSpeed = 0xffff;
-
-		DeviceIoControl(device,
-			IOCTL_CDROM_SET_SPEED,	//operation to perform
-			&s, sizeof(s),	//no input buffer
-			NULL, 0,	//output buffer
-			&dontcare,	//#bytes returned
-			(LPOVERLAPPED)NULL);	//synchronous I/O == 0)
-	}
+u32 IOCtlSrc::GetSectorCount() const
+{
+    return m_sectors;
 }
 
-s32 IOCtlSrc::GetMediaType()
+u32 IOCtlSrc::GetLayerBreakAddress() const
 {
-	DWORD size;
-	DWORD code;
-
-	if(mediaTypeCached)
-		return mediaType;
-
-	memset(&tocrq,0,sizeof(CDROM_READ_TOC_EX));
-	tocrq.Format = CDROM_READ_TOC_EX_FORMAT_FULL_TOC;
-	tocrq.Msf=1;
-	tocrq.SessionTrack=1;
-
-	CDROM_TOC_FULL_TOC_DATA *ftd=(CDROM_TOC_FULL_TOC_DATA*)sectorbuffer;
-
-	if(DeviceIoControl(device,IOCTL_CDROM_READ_TOC_EX,&tocrq,sizeof(tocrq),ftd, 2048, &size, NULL))
-	{
-		mediaTypeCached = true;
-		mediaType = -1;
-		return mediaType;
-	}
-
-	dvdrs.BlockByteOffset.QuadPart=0;
-	dvdrs.Format=DvdPhysicalDescriptor;
-	dvdrs.SessionId=sessID;
-	dvdrs.LayerNumber=0;
-	if(code=DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
-	{
-		if(dld.ld.EndLayerZeroSector>0) // OTP?
-		{
-			mediaTypeCached = true;
-			mediaType = 2;
-			return mediaType;
-		}
-		else //PTP or single layer
-		{
-			u32 s1 = dld.ld.EndDataSector - dld.ld.StartingDataSector;
-
-			dvdrs.BlockByteOffset.QuadPart=0;
-			dvdrs.Format=DvdPhysicalDescriptor;
-			dvdrs.SessionId=sessID;
-			dvdrs.LayerNumber=1;
-
-			if(DeviceIoControl(device,IOCTL_DVD_READ_STRUCTURE,&dvdrs,sizeof(dvdrs),&dld, sizeof(dld), &size, NULL)!=0)
-			{
-				//PTP
-				mediaTypeCached = true;
-				mediaType = 2;
-				return mediaType;
-			}
-
-			// single layer
-			mediaTypeCached = true;
-			mediaType = 0;
-			return mediaType;
-		}
-	}
-
-	//if not a cd, and fails, assume single layer
-	mediaTypeCached = true;
-	mediaType = 0;
-	return mediaType;
+    return m_layer_break;
 }
 
-s32 IOCtlSrc::ReadTOC(char *toc,int msize)
+s32 IOCtlSrc::GetMediaType() const
 {
-	DWORD size=0;
-
-	if(GetMediaType()>=0)
-		return -1;
-
-	if(!tocCached)
-	{
-		memset(&tocrq,0,sizeof(CDROM_READ_TOC_EX));
-		tocrq.Format = CDROM_READ_TOC_EX_FORMAT_FULL_TOC;
-		tocrq.Msf=1;
-		tocrq.SessionTrack=1;
-
-		CDROM_TOC_FULL_TOC_DATA *ftd=(CDROM_TOC_FULL_TOC_DATA*)tocCacheData;
-
-		if(!OpenOK) return -1;
-
-		int code = DeviceIoControl(device,IOCTL_CDROM_READ_TOC_EX,&tocrq,sizeof(tocrq),tocCacheData, 2048, &size, NULL);
-
-		if(code==0)
-			return -1;
-
-		tocCached = true;
-	}
-
-	memcpy(toc,tocCacheData,min(2048,msize));
-
-	return 0;
+    return m_media_type;
 }
 
-s32 IOCtlSrc::ReadSectors2048(u32 sector, u32 count, char *buffer)
+const std::vector<toc_entry> &IOCtlSrc::ReadTOC() const
 {
-	RAW_READ_INFO rri;
-
-	DWORD size=0;
-
-	if(!OpenOK) return -1;
-
-	rri.DiskOffset.QuadPart=sector*(u64)2048;
-	rri.SectorCount=count;
-
-	//fall back to standard reading
-	if(SetFilePointer(device,rri.DiskOffset.LowPart,&rri.DiskOffset.HighPart,FILE_BEGIN)==-1)
-	{
-		if(GetLastError()!=0)
-			return -1;
-	}
-
-	if(ReadFile(device,buffer,2048*count,&size,NULL)==0)
-	{
-		return -1;
-	}
-
-	if(size!=(2048*count))
-	{
-		return -1;
-	}
-
-	return 0;
+    return m_toc;
 }
 
-
-s32 IOCtlSrc::ReadSectors2352(u32 sector, u32 count, char *buffer)
+bool IOCtlSrc::ReadSectors2048(u32 sector, u32 count, u8 *buffer) const
 {
-	RAW_READ_INFO rri;
+    std::lock_guard<std::mutex> guard(m_lock);
+    LARGE_INTEGER offset;
+    offset.QuadPart = sector * 2048ULL;
 
-	DWORD size=0;
+    if (!SetFilePointerEx(m_device, offset, nullptr, FILE_BEGIN)) {
+        fprintf(stderr, " * CDVD SetFilePointerEx failed: sector %u: error %u\n",
+                sector, GetLastError());
+        return false;
+    }
 
-	if(!OpenOK) return -1;
+    const DWORD bytes_to_read = 2048 * count;
+    DWORD bytes_read;
+    if (ReadFile(m_device, buffer, bytes_to_read, &bytes_read, nullptr)) {
+        if (bytes_read == bytes_to_read)
+            return true;
+        fprintf(stderr, " * CDVD ReadFile: sectors %u-%u: %u bytes read, %u bytes expected\n",
+                sector, sector + count - 1, bytes_read, bytes_to_read);
+    } else {
+        fprintf(stderr, " * CDVD ReadFile failed: sectors %u-%u: error %u\n",
+                sector, sector + count - 1, GetLastError());
+    }
 
-	rri.DiskOffset.QuadPart=sector*(u64)2048;
-	rri.SectorCount=count;
-
-	rri.TrackMode=(TRACK_MODE_TYPE)last_read_mode;
-	if(DeviceIoControl(device,IOCTL_CDROM_RAW_READ,&rri,sizeof(rri),buffer, 2352*count, &size, NULL)==0)
-	{
-		rri.TrackMode = XAForm2;
-		printf(" * CDVD: CD-ROM read mode change\n");
-		printf(" * CDVD: Trying XAForm2\n");
-		if(DeviceIoControl(device,IOCTL_CDROM_RAW_READ,&rri,sizeof(rri),buffer, 2352*count, &size, NULL)==0)
-		{
-			rri.TrackMode = YellowMode2;
-			printf(" * CDVD: Trying YellowMode2\n");
-			if(DeviceIoControl(device,IOCTL_CDROM_RAW_READ,&rri,sizeof(rri),buffer, 2352*count, &size, NULL)==0)
-			{
-				rri.TrackMode = CDDA;
-				printf(" * CDVD: Trying CDDA\n");
-				if(DeviceIoControl(device,IOCTL_CDROM_RAW_READ,&rri,sizeof(rri),buffer, 2352*count, &size, NULL)==0)
-				{
-					printf(" * CDVD: Failed to read this CD-ROM with error code: %d\n", GetLastError());
-					return -1;
-				}
-			}
-		}
-	}
-
-	last_read_mode=rri.TrackMode;
-
-	if(size!=(2352*count))
-	{
-		return -1;
-	}
-
-	return 0;
+    return false;
 }
 
-s32 IOCtlSrc::DiscChanged()
+bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8 *buffer) const
 {
-	DWORD size=0;
+    struct sptdinfo
+    {
+        SCSI_PASS_THROUGH_DIRECT info;
+        char sense_buffer[20];
+    } sptd{};
 
-	if(!OpenOK) return -1;
+    // READ CD command
+    sptd.info.Cdb[0] = 0xBE;
+    // Don't care about sector type.
+    sptd.info.Cdb[1] = 0;
+    // Number of sectors to read
+    sptd.info.Cdb[6] = 0;
+    sptd.info.Cdb[7] = 0;
+    sptd.info.Cdb[8] = 1;
+    // Sync + all headers + user data + EDC/ECC. Excludes C2 + subchannel
+    sptd.info.Cdb[9] = 0xF8;
+    sptd.info.Cdb[10] = 0;
+    sptd.info.Cdb[11] = 0;
 
-	int ret = DeviceIoControl(device,IOCTL_STORAGE_CHECK_VERIFY,NULL,0,NULL,0, &size, NULL);
+    sptd.info.CdbLength = 12;
+    sptd.info.Length = sizeof(SCSI_PASS_THROUGH_DIRECT);
+    sptd.info.DataIn = SCSI_IOCTL_DATA_IN;
+    sptd.info.SenseInfoOffset = offsetof(sptdinfo, sense_buffer);
+    sptd.info.TimeOutValue = 5;
 
-	if(ret==0)
-	{
-		tocCached = false;
-		mediaTypeCached = false;
-		discSizeCached = false;
-		layerBreakCached = false;
+    // Read sectors one by one to avoid reading data from 2 tracks of different
+    // types in the same read (which will fail).
+    for (u32 n = 0; n < count; ++n) {
+        u32 current_sector = sector + n;
+        sptd.info.Cdb[2] = (current_sector >> 24) & 0xFF;
+        sptd.info.Cdb[3] = (current_sector >> 16) & 0xFF;
+        sptd.info.Cdb[4] = (current_sector >> 8) & 0xFF;
+        sptd.info.Cdb[5] = current_sector & 0xFF;
+        sptd.info.DataTransferLength = 2352;
+        sptd.info.DataBuffer = buffer + 2352 * n;
+        sptd.info.SenseInfoLength = sizeof(sptd.sense_buffer);
 
-		if(sessID!=0)
-		{
-			DeviceIoControl(device,IOCTL_DVD_END_SESSION,&sessID,sizeof(DVD_SESSION_ID),NULL,0,&size, NULL);
-			sessID=0;
-		}
-		return 1;
-	}
+        DWORD unused;
+        if (DeviceIoControl(m_device, IOCTL_SCSI_PASS_THROUGH_DIRECT, &sptd,
+                            sizeof(sptd), &sptd, sizeof(sptd), &unused, nullptr)) {
+            if (sptd.info.DataTransferLength == 2352)
+                continue;
+        }
+        printf(" * CDVD: SPTI failed reading sector %u; SENSE %u -", current_sector, sptd.info.SenseInfoLength);
+        for (const auto &c : sptd.sense_buffer)
+            printf(" %02X", c);
+        putchar('\n');
+        return false;
+    }
 
-	if(sessID==0)
-	{
-		DeviceIoControl(device,IOCTL_DVD_START_SESSION,NULL,0,&sessID,sizeof(DVD_SESSION_ID), &size, NULL);
-	}
-
-	return 0;
+    return true;
 }
 
-s32 IOCtlSrc::IsOK()
+bool IOCtlSrc::ReadDVDInfo()
 {
-	return OpenOK;
+    DWORD unused;
+    // 4 bytes header + 18 bytes layer descriptor - Technically you only need
+    // to read 17 bytes of the layer descriptor since bytes 17-2047 is for
+    // media specific information. However, Windows requires you to read at
+    // least 18 bytes of the layer descriptor or else the ioctl will fail. The
+    // media specific information seems to be empty, so there's no point reading
+    // any more than that.
+    std::array<u8, 22> buffer;
+    DVD_READ_STRUCTURE dvdrs{{0}, DvdPhysicalDescriptor, 0, 0};
+
+    if (!DeviceIoControl(m_device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs),
+                         buffer.data(), buffer.size(), &unused, nullptr))
+        return false;
+
+    auto &layer = *reinterpret_cast<DVD_LAYER_DESCRIPTOR *>(
+        reinterpret_cast<DVD_DESCRIPTOR_HEADER *>(buffer.data())->Data);
+
+    u32 start_sector = _byteswap_ulong(layer.StartingDataSector);
+    u32 end_sector = _byteswap_ulong(layer.EndDataSector);
+
+    if (layer.NumberOfLayers == 0) {
+        // Single layer
+        m_media_type = 0;
+        m_layer_break = 0;
+        m_sectors = end_sector - start_sector + 1;
+    } else if (layer.TrackPath == 0) {
+        // Dual layer, Parallel Track Path
+        dvdrs.LayerNumber = 1;
+        if (!DeviceIoControl(m_device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs),
+                             buffer.data(), buffer.size(), &unused, nullptr))
+            return false;
+        u32 layer1_start_sector = _byteswap_ulong(layer.StartingDataSector);
+        u32 layer1_end_sector = _byteswap_ulong(layer.EndDataSector);
+
+        m_media_type = 1;
+        m_layer_break = end_sector - start_sector;
+        m_sectors = end_sector - start_sector + 1 + layer1_end_sector - layer1_start_sector + 1;
+    } else {
+        // Dual layer, Opposite Track Path
+        u32 end_sector_layer0 = _byteswap_ulong(layer.EndLayerZeroSector);
+        m_media_type = 2;
+        m_layer_break = end_sector_layer0 - start_sector;
+        m_sectors = end_sector_layer0 - start_sector + 1 + end_sector - (~end_sector_layer0 & 0xFFFFFFU) + 1;
+    }
+
+    return true;
+}
+
+bool IOCtlSrc::ReadCDInfo()
+{
+    DWORD unused;
+    CDROM_READ_TOC_EX toc_ex{};
+    toc_ex.Format = CDROM_READ_TOC_EX_FORMAT_TOC;
+    toc_ex.Msf = 0;
+    toc_ex.SessionTrack = 1;
+
+    CDROM_TOC toc;
+    if (!DeviceIoControl(m_device, IOCTL_CDROM_READ_TOC_EX, &toc_ex,
+                         sizeof(toc_ex), &toc, sizeof(toc), &unused, nullptr))
+        return false;
+
+    m_toc.clear();
+    size_t track_count = ((toc.Length[0] << 8) + toc.Length[1] - 2) / sizeof(TRACK_DATA);
+    for (size_t n = 0; n < track_count; ++n) {
+        TRACK_DATA &track = toc.TrackData[n];
+        // Exclude the lead-out track descriptor.
+        if (track.TrackNumber == 0xAA)
+            continue;
+        u32 lba = (track.Address[1] << 16) + (track.Address[2] << 8) + track.Address[3];
+        m_toc.push_back({lba, track.TrackNumber, track.Adr, track.Control});
+    }
+
+    GET_LENGTH_INFORMATION info;
+    if (!DeviceIoControl(m_device, IOCTL_DISK_GET_LENGTH_INFO, nullptr, 0, &info,
+                         sizeof(info), &unused, nullptr))
+        return false;
+
+    m_sectors = static_cast<u32>(info.Length.QuadPart / 2048);
+    m_media_type = -1;
+
+    return true;
+}
+
+bool IOCtlSrc::DiscReady()
+{
+    if (m_device == INVALID_HANDLE_VALUE)
+        return false;
+
+    DWORD unused;
+    if (DeviceIoControl(m_device, IOCTL_STORAGE_CHECK_VERIFY, nullptr, 0,
+                        nullptr, 0, &unused, nullptr)) {
+        if (!m_sectors)
+            Reopen();
+    } else {
+        m_sectors = 0;
+        m_layer_break = 0;
+        m_media_type = 0;
+    }
+
+    return !!m_sectors;
 }

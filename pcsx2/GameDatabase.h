@@ -17,22 +17,27 @@
 
 //#include "Common.h"
 #include "AppConfig.h"
-#include "Utilities/HashMap.h"
 
+// _Target_ is defined by R300A.h and R5900.h and the definition leaks to here.
+// The problem, at least with Visual Studio 2019 on Windows,
+// is that unordered_map includes xhash which uses _Target_ as a template
+// parameter. Unless we undef it here, the build breaks with a cryptic error message.
+#undef _Target_
 #include <unordered_map>
 #include <wx/wfstream.h>
 
 struct	key_pair;
 struct	Game_Data;
 
-class StringHashNoCase
+struct StringHash
 {
-public:
-	StringHashNoCase() {}
-
-	HashTools::hash_key_t operator()( const wxString& src ) const
+	std::size_t operator()( const wxString& src ) const
 	{
-		return HashTools::Hash( (const char *)src.Lower().wc_str(), src.length() * sizeof( wxChar ) );
+#ifdef _WIN32
+		return std::hash<std::wstring>{}(src.ToStdWstring());
+#else
+		return std::hash<std::string>{}({src.utf8_str()});
+#endif
 	}
 };
 
@@ -60,35 +65,11 @@ struct key_pair {
 	bool IsOk() const {
 		return !key.IsEmpty();
 	}
-
-	wxString toString() const {
-		if (key[0] == '[') {
-			pxAssertDev( key.EndsWith(L"]"), "Malformed multiline key detected: missing end bracket!" );
-
-			// Terminating tag must be written without the "rvalue" -- in the form of:
-			//   [/patches]
-			// Use Mid() to strip off the left and right side brackets.
-			wxString midLine(key.Mid(1, key.Length()-2));
-			wxString keyLvalue(midLine.BeforeFirst(L'=').Trim(true).Trim(false));
-
-			return wxsFormat( L"%s\n%s[/%s]\n",
-				key.c_str(), value.c_str(), keyLvalue.c_str()
-			);
-		}
-		else {
-			// Note: 6 char padding on the l-value makes things look nicer.
-			return wxsFormat(L"%-6s = %s\n", key.c_str(), value.c_str() );
-		}
-	
-	}
 };
 
 // --------------------------------------------------------------------------------------
 //  Game_Data
 // --------------------------------------------------------------------------------------
-// This container is more or less required to be a simple struct (POD classification) --
-// no virtuals and no inheritance.  This is because it is used in a std::vector, so POD
-// makes things... smoother.
 struct Game_Data
 {
 	wxString		id;				// Serial Identification Code
@@ -108,65 +89,37 @@ struct Game_Data
 		kList.clear();
 	}
 
-	bool keyExists(const wxChar* key) const;
-	void deleteKey(const wxChar* key);
-	wxString getString(const wxChar* key) const;
+	bool keyExists(const wxString& key) const;
+	wxString getString(const wxString& key) const;
 	void writeString(const wxString& key, const wxString& value);
-	void writeBool(const wxString& key, bool value);
 
 	bool IsOk() const {
 		return !id.IsEmpty();
 	}
 
-	bool sectionExists(const wxChar* key, const wxString& value) const {
-		return keyExists(wxsFormat(L"[%s%s%s]", key, value.IsEmpty() ? L"" : L" = ", WX_STR(value)));
+	bool sectionExists(const wxString& key, const wxString& value) const {
+		return keyExists("[" + key + (value.empty() ? "" : " = ") + value + "]");
 	}
 
-	wxString getSection(const wxChar* key, const wxString& value) const {
-		return getString(wxsFormat(L"[%s%s%s]", key, value.IsEmpty() ? L"" : L" = ", WX_STR(value)).wx_str());
+	wxString getSection(const wxString& key, const wxString& value) const {
+		return getString("[" + key + (value.empty() ? "" : " = ") + value + "]");
 	}
 
 	// Gets an integer representation of the 'value' for the given key
-	int getInt(const wxChar* key) const {
-		return wxStrtoul(getString(key), NULL, 0);
+	int getInt(const wxString& key) const {
+		unsigned long val;
+		getString(key).ToULong(&val);
+		return val;
 	}
 
 	// Gets a u8 representation of the 'value' for the given key
-	u8 getU8(const wxChar* key) const {
+	u8 getU8(const wxString& key) const {
 		return (u8)wxAtoi(getString(key));
 	}
 
 	// Gets a bool representation of the 'value' for the given key
-	bool getBool(const wxChar* key) const {
-		return !!wxAtoi(getString(key));
-	}
-
-	bool keyExists(const char* key) const {
-		return keyExists(fromUTF8(key).wx_str());
-	}
-
-	bool keyExists(const wxString& key) const {
-		return keyExists(key.wx_str());
-	}
-
-	wxString getString(const char* key) const {
-		return getString(fromUTF8(key).wx_str());
-	}
-
-	int getInt(const char* key) const {
-		return getInt(fromUTF8(key).wx_str());
-	}
-
-	u8 getU8(const char* key) const {
-		return getU8(fromUTF8(key).wx_str());
-	}
-
-	bool getBool(const char* key) const {
-		return getBool(fromUTF8(key).wx_str());
-	}
-
 	bool getBool(const wxString& key) const {
-		return getBool(key.wx_str());
+		return !!wxAtoi(getString(key));
 	}
 };
 
@@ -176,42 +129,33 @@ struct Game_Data
 class IGameDatabase
 {
 public:
-	virtual ~IGameDatabase() throw() {}
+	virtual ~IGameDatabase() = default;
 
 	virtual wxString getBaseKey() const=0;
 	virtual bool findGame(Game_Data& dest, const wxString& id)=0;
 	virtual Game_Data* createNewGame( const wxString& id )=0;
-	virtual void updateGame(const Game_Data& game)=0;
 };
 
-typedef std::unordered_map<wxString, Game_Data*, StringHashNoCase> GameDataHash;
+using GameDataHash = std::unordered_map<wxString, Game_Data, StringHash>;
 
 // --------------------------------------------------------------------------------------
 //  BaseGameDatabaseImpl 
 // --------------------------------------------------------------------------------------
-// [TODO] Create a version of this that uses google hashsets; should be several magnitudes
-// faster that way.
 class BaseGameDatabaseImpl : public IGameDatabase
 {
 protected:
 	GameDataHash	gHash;			// hash table of game serials matched to their gList indexes!
 	wxString		m_baseKey;
 
-	std::vector<Game_Data*>	m_BlockTable;
-	uint					m_BlockTableWritePos;
-	int						m_CurBlockWritePos;
-	int						m_GamesPerBlock;
-
 public:
 	BaseGameDatabaseImpl();
-	virtual ~BaseGameDatabaseImpl() throw();
+	virtual ~BaseGameDatabaseImpl() = default;
 
 	wxString getBaseKey() const { return m_baseKey; }
 	void setBaseKey( const wxString& key ) { m_baseKey = key; }
 
 	bool findGame(Game_Data& dest, const wxString& id);
 	Game_Data* createNewGame( const wxString& id );
-	void updateGame(const Game_Data& game);
 };
 
 extern IGameDatabase* AppHost_GetGameDatabase();

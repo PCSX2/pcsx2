@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "System.h"
 #include "Plugins.h"
+#include "MSWstuff.h"
 
 #include "ModalPopups.h"
 #include "Panels/ConfigurationPanels.h"
@@ -26,7 +27,7 @@
 using namespace Panels;
 using namespace pxSizerFlags;
 
-IMPLEMENT_DYNAMIC_CLASS(ApplicableWizardPage, wxWizardPageSimple)
+wxIMPLEMENT_DYNAMIC_CLASS(ApplicableWizardPage, wxWizardPageSimple);
 
 ApplicableWizardPage::ApplicableWizardPage( wxWizard* parent, wxWizardPage* prev, wxWizardPage* next, const wxBitmap& bitmap )
 	: wxWizardPageSimple( parent, prev, next, bitmap )
@@ -60,18 +61,27 @@ namespace Panels
 	{
 	public:
 		FirstTimeIntroPanel( wxWindow* parent );
-		virtual ~FirstTimeIntroPanel() throw() {}
+		virtual ~FirstTimeIntroPanel() = default;
 	};
 }
 
 Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 	: wxPanelWithHelpers( parent, wxVERTICAL )
 {
-	SetMinWidth( 600 );
+	SetMinWidth( MSW_GetDPIScale() * 600 );
 
-	FastFormatUnicode faqFile;
-	faqFile.Write( L"file:///%s/Docs/PCSX2_FAQ.pdf",
-		WX_STR(InstallFolder.ToString()) );
+	FastFormatUnicode configFile, faqFile;
+#ifndef DOC_DIR_COMPILATION
+	configFile.Write( L"file:///%s/Docs/Configuration_Guide.pdf", WX_STR(InstallFolder.ToString()) );
+	faqFile.Write( L"file:///%s/Docs/PCSX2_FAQ.pdf", WX_STR(InstallFolder.ToString()) );
+#else
+	// Each linux distributions have his rules for path so we give them the possibility to
+	// change it with compilation flags. -- Gregory
+#define xDOC_str(s) DOC_str(s)
+#define DOC_str(s) #s
+	configFile.Write( L"file://%s/Configuration_Guide.pdf", WX_STR(wxDirName(xDOC_str(DOC_DIR_COMPILATION)).ToString()) );
+	faqFile.Write( L"file://%s/PCSX2_FAQ.pdf", WX_STR(wxDirName(xDOC_str(DOC_DIR_COMPILATION)).ToString()) );
+#endif
 
 	wxStaticBoxSizer& langSel	= *new wxStaticBoxSizer( wxVERTICAL, this, _("Language selector") );
 
@@ -93,11 +103,11 @@ Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 	*this += GetCharHeight() * 2;
 
 	*this	+= new wxHyperlinkCtrl( this, wxID_ANY,
-		_("Configuration Guides (online)"), L"http://www.pcsx2.net/guide.php"
+		_("Configuration Guide"), configFile.c_str()
 	) | pxCenter.Border( wxALL, 5 );
 		
 	*this	+= new wxHyperlinkCtrl( this, wxID_ANY,
-		_("Readme / FAQ (Offline/PDF)"), faqFile.c_str()
+		_("Readme / FAQ"), faqFile.c_str()
 	) | pxCenter.Border( wxALL, 5 );
 
 }
@@ -149,16 +159,11 @@ FirstTimeWizard::FirstTimeWizard( wxWindow* parent )
 	// this doesn't descent from wxDialogWithHelpers, so we need to explicitly
 	// fit and center it. :(
 
-	Connect( wxEVT_WIZARD_PAGE_CHANGED,				wxWizardEventHandler	(FirstTimeWizard::OnPageChanged) );
-	Connect( wxEVT_WIZARD_PAGE_CHANGING,			wxWizardEventHandler	(FirstTimeWizard::OnPageChanging) );
-	Connect( wxEVT_COMMAND_LISTBOX_DOUBLECLICKED,	wxCommandEventHandler	(FirstTimeWizard::OnDoubleClicked) );
+	Bind(wxEVT_WIZARD_PAGE_CHANGED, &FirstTimeWizard::OnPageChanged, this);
+	Bind(wxEVT_WIZARD_PAGE_CHANGING, &FirstTimeWizard::OnPageChanging, this);
+	Bind(wxEVT_LISTBOX_DCLICK, &FirstTimeWizard::OnDoubleClicked, this);
 
-	Connect( pxID_RestartWizard,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( FirstTimeWizard::OnRestartWizard ) );
-}
-
-FirstTimeWizard::~FirstTimeWizard() throw()
-{
-
+	Bind(wxEVT_BUTTON, &FirstTimeWizard::OnRestartWizard, this, pxID_RestartWizard);
 }
 
 void FirstTimeWizard::OnRestartWizard( wxCommandEvent& evt )
@@ -184,7 +189,7 @@ void FirstTimeWizard::OnDoubleClicked( wxCommandEvent& evt )
 	wxWindow* forwardButton = FindWindow( wxID_FORWARD );
 	if( forwardButton == NULL ) return;
 
-	wxCommandEvent nextpg( wxEVT_COMMAND_BUTTON_CLICKED, wxID_FORWARD );
+	wxCommandEvent nextpg( wxEVT_BUTTON, wxID_FORWARD );
 	nextpg.SetEventObject( forwardButton );
 	forwardButton->GetEventHandler()->ProcessEvent( nextpg );
 }

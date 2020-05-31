@@ -23,7 +23,7 @@
 
 class GSCodeBuffer
 {
-	list<void*> m_buffers;
+	std::vector<void*> m_buffers;
 	size_t m_blocksize;
 	size_t m_pos, m_reserved;
 	uint8* m_ptr;

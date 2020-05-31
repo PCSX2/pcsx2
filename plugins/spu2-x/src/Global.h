@@ -20,6 +20,8 @@
 
 #define NOMINMAX
 
+extern bool psxmode;
+
 struct StereoOut16;
 struct StereoOut32;
 struct StereoOutFloat;
@@ -28,7 +30,7 @@ struct V_Core;
 
 namespace soundtouch
 {
-	class SoundTouch;
+class SoundTouch;
 }
 
 #include <assert.h>
@@ -45,8 +47,8 @@ namespace soundtouch
 
 namespace VersionInfo
 {
-	static const u8 Release  = 2;
-	static const u8 Revision = 0;	// increase that with each version
+static const u8 Release = 2;
+static const u8 Revision = 0; // increase that with each version
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -56,19 +58,23 @@ namespace VersionInfo
 #undef min
 #undef max
 
-template< typename T >
-static __forceinline void Clampify( T& src, T min, T max )
+template <typename T>
+static __forceinline void Clampify(T &src, T min, T max)
 {
-	src = std::min( std::max( src, min ), max );
+    src = std::min(std::max(src, min), max);
 }
 
-template< typename T >
-static __forceinline T GetClamped( T src, T min, T max )
+template <typename T>
+static __forceinline T GetClamped(T src, T min, T max)
 {
-	return std::min( std::max( src, min ), max );
+    return std::min(std::max(src, min), max);
 }
 
+#ifdef __WXMAC__
+#include "PS2Eext.h"
+#else
 extern void SysMessage(const char *fmt, ...);
+#endif
 extern void SysMessage(const wchar_t *fmt, ...);
 
 //////////////////////////////////////////////////////////////
@@ -77,13 +83,13 @@ extern void SysMessage(const wchar_t *fmt, ...);
 //   Abbreviated macros for dev/debug only consoles and msgboxes.
 
 #ifdef PCSX2_DEVBUILD
-#	define DevMsg MsgBox
+#define DevMsg MsgBox
 #else
-#	define DevMsg
+#define DevMsg
 #endif
 
 #ifdef PCSX2_DEVBUILD
-#	define SPU2_LOG
+#define SPU2_LOG
 #endif
 
 // Uncomment to enable debug keys on numpad (0 to 5)

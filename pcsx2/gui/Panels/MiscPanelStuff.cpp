@@ -21,6 +21,7 @@
 
 #include "ps2/BiosTools.h"
 
+#include <memory>
 #include <wx/stdpaths.h>
 
 using namespace Dialogs;
@@ -64,7 +65,7 @@ Panels::DocsFolderPickerPanel::DocsFolderPickerPanel( wxWindow* parent, bool isF
 	*this	+= m_dirpicker_custom	| pxExpand.Border( wxLEFT, StdPadding + m_radio_UserMode->GetIndentation() );
 	*this	+= 4;
 
-	Connect( wxEVT_COMMAND_RADIOBUTTON_SELECTED, wxCommandEventHandler(DocsFolderPickerPanel::OnRadioChanged) );
+	Bind(wxEVT_RADIOBUTTON, &DocsFolderPickerPanel::OnRadioChanged, this);
 }
 
 DocsModeType Panels::DocsFolderPickerPanel::GetDocsMode() const
@@ -100,31 +101,35 @@ void Panels::DocsFolderPickerPanel::OnRadioChanged( wxCommandEvent& evt )
 // --------------------------------------------------------------------------------------
 //  LanguageSelectionPanel
 // --------------------------------------------------------------------------------------
-Panels::LanguageSelectionPanel::LanguageSelectionPanel( wxWindow* parent )
+Panels::LanguageSelectionPanel::LanguageSelectionPanel( wxWindow* parent, bool showApply )
 	: BaseApplicableConfigPanel( parent, wxHORIZONTAL )
 {
 	m_picker = NULL;
 	i18n_EnumeratePackages( m_langs );
 
 	int size = m_langs.size();
-	ScopedArray<wxString> compiled( size );
+	std::unique_ptr<wxString[]> compiled( new wxString[size] );
 
 	for( int i=0; i<size; ++i )
 		compiled[i].Printf( L"%s", m_langs[i].englishName.c_str() );
 
 	m_picker = new wxComboBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-		size, compiled.GetPtr(), wxCB_READONLY | wxCB_SORT );
-
-	wxButton* applyButton = new wxButton( this, pxID_RestartWizard, _("Apply") );
-	applyButton->SetToolTip(_("Make this language my default right now!"));
+		size, compiled.get(), wxCB_READONLY);
 
 	*this	+= 5;
 	*this	+= m_picker | pxSizerFlags::StdSpace();
 	*this	+= 5;
-	*this	+= applyButton | pxSizerFlags::StdSpace();
-	*this	+= 5;
 
-	Connect( pxID_RestartWizard,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( LanguageSelectionPanel::OnApplyLanguage_Clicked ) );
+	if (showApply)
+	{
+		wxButton* applyButton = new wxButton( this, pxID_RestartWizard, _("Apply") );
+		applyButton->SetToolTip(_("Make this language my default right now!"));
+
+		*this += applyButton | pxSizerFlags::StdSpace();
+		*this += 5;
+	}
+
+	Bind(wxEVT_BUTTON, &LanguageSelectionPanel::OnApplyLanguage_Clicked, this, pxID_RestartWizard);
 
 	m_picker->SetSelection( 0 );		// always default to System Default
 }

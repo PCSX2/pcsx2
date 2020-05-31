@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2018  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "ConfigurationDialog.h"
 #include "System.h"
+#include "MSWstuff.h"
 
 #include "MemoryCardFile.h"
 //#include <wx/filepicker.h>
@@ -41,8 +42,7 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 	, m_mcdpath( mcdpath )
 	, m_mcdfile( suggested_mcdfileName )//suggested_and_result_mcdfileName.IsEmpty() ? g_Conf->Mcd[slot].Filename.GetFullName()
 {
-
-	SetMinWidth( 472 );
+	SetMinWidth( 472 * MSW_GetDPIScale());
 	//m_filepicker	= NULL;
 
 	CreateControls();
@@ -53,12 +53,13 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 	//      Sizers and Layout
 	// ----------------------------
 
-	if( m_radio_CardSize ) m_radio_CardSize->Realize();
 
 	wxBoxSizer& s_buttons( *new wxBoxSizer(wxHORIZONTAL) );
 	s_buttons += new wxButton( this, wxID_OK, _("Create") )	| pxProportion(2);
 	s_buttons += pxStretchSpacer(3);
 	s_buttons += new wxButton( this, wxID_CANCEL )			| pxProportion(2);
+	if (m_radio_CardType)
+		m_radio_CardType->Realize();
 
 	wxBoxSizer& s_padding( *new wxBoxSizer(wxVERTICAL) );
 
@@ -72,29 +73,30 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 		s_padding += Heading( wxString(_("At folder:    ")) + (m_mcdpath + m_mcdfile).GetPath() ).Unwrapped()	| StdExpand();
 
 		wxBoxSizer& s_filename( *new wxBoxSizer(wxHORIZONTAL) );
-		s_filename += Heading( _("Select file name: ")).SetMinWidth(150);
-		m_text_filenameInput->SetMinSize(wxSize(150,20));
+		s_filename += Heading( _("Select file name: ")).Unwrapped().Align(wxALIGN_RIGHT) | pxProportion(1);
 		m_text_filenameInput->SetValue ((m_mcdpath + m_mcdfile).GetName());
-		s_filename += m_text_filenameInput;
-		s_filename += Heading( L".ps2" );
-
-		s_padding += s_filename | wxALIGN_LEFT;
-
+		s_filename += m_text_filenameInput | pxProportion(2);
+		s_filename += m_mcd_Extension | pxProportion(1);
+		s_padding += s_filename | StdExpand();
 	}
 
-	s_padding += m_radio_CardSize			| StdExpand();
-	#ifdef __WXMSW__
-	if( m_check_CompressNTFS )
-		s_padding += m_check_CompressNTFS	| StdExpand();
-	#endif
+	s_padding += m_radio_CardType | StdExpand();
+#ifdef __WXMSW__
+	if (m_check_CompressNTFS)
+		s_padding += m_check_CompressNTFS | StdExpand();
+#endif
 
-	s_padding += 12;
-	s_padding += s_buttons	| StdCenter();
+
+	s_padding += s_buttons | StdCenter();
 
 	*this += s_padding | StdExpand();
 
-	Connect( wxID_OK,							wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( CreateMemoryCardDialog::OnOk_Click ) );
-	Connect( m_text_filenameInput->GetId(),		wxEVT_COMMAND_TEXT_ENTER,		wxCommandEventHandler( CreateMemoryCardDialog::OnOk_Click ) );
+	Bind(wxEVT_BUTTON, &CreateMemoryCardDialog::OnOk_Click, this, wxID_OK);
+	Bind(wxEVT_TEXT_ENTER, &CreateMemoryCardDialog::OnOk_Click, this, m_text_filenameInput->GetId());
+	Bind(wxEVT_RADIOBUTTON, &CreateMemoryCardDialog::OnRadioChanged, this);
+
+	// ...Typical solution to everything? Or are we doing something weird?
+	SetSizerAndFit(GetSizer());
 
 	m_text_filenameInput->SetFocus();
 	m_text_filenameInput->SelectAll();
@@ -108,27 +110,54 @@ wxDirName Dialogs::CreateMemoryCardDialog::GetPathToMcds() const
 // When this GUI is moved into the FileMemoryCard plugin (where it eventually belongs),
 // this function will be removed and the MemoryCardFile::Create() function will be used
 // instead.
-bool Dialogs::CreateMemoryCardDialog::CreateIt( const wxString& mcdFile, uint sizeInMB )
+bool Dialogs::CreateMemoryCardDialog::CreateIt( const wxString& mcdFile, uint sizeInMB, bool isPSX )
 {
 	//int enc[16] = {0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0,0,0,0};
 
-	u8	m_effeffs[528*16];
-	memset8<0xff>( m_effeffs );
+	// PS2 Memory Card
+	u8	m_effeffs[528 * 16];
+	memset8<0xff>(m_effeffs);
 
-	Console.WriteLn( L"(FileMcd) Creating new %uMB memory card: '%s'", sizeInMB, WX_STR(mcdFile) );
+	// PSX Memory Card; 8192 is the size in bytes of a single block of a PSX memory card (8 KiB).
+	u8 m_effeffs_psx[8192];
+	memset8<0xff>(m_effeffs_psx);
+
+	// Since isPSX will have a default false state, it makes more sense to check "not PSX" first
+	if (!isPSX) {
+		Console.WriteLn(L"(FileMcd) Creating new PS2 %uMB memory card: '%s'", sizeInMB, WX_STR(mcdFile));
+	}
+	else {
+		Console.WriteLn(L"(FileMcd) Creating new PSX 128 KiB memory card: '%s'", WX_STR(mcdFile));
+	}
 
 	wxFFile fp( mcdFile, L"wb" );
 	if( !fp.IsOpened() ) return false;
 
 	static const int MC2_MBSIZE	= 1024 * 528 * 2;		// Size of a single megabyte of card data
 
-	for( uint i=0; i<(MC2_MBSIZE*sizeInMB)/sizeof(m_effeffs); i++ )
-	{
-		if( fp.Write( m_effeffs, sizeof(m_effeffs) ) == 0 )
-			return false;
+	if (!isPSX) {
+		for (uint i = 0; i<(MC2_MBSIZE*sizeInMB) / sizeof(m_effeffs); i++) {
+			if (fp.Write(m_effeffs, sizeof(m_effeffs)) == 0) {
+				return false;
+			}
+		}
+	} else {
+		// PSX cards consist of 16 blocks, each 8 KiB in size.
+		for (uint i = 0; i < 16; i++) {
+			if (fp.Write(m_effeffs_psx, sizeof(m_effeffs_psx)) == 0) {
+				return false;
+			}
+		}
 	}
 
 	return true;
+}
+
+void Dialogs::CreateMemoryCardDialog::OnRadioChanged(wxCommandEvent& evt)
+{
+	evt.Skip();
+
+	m_mcd_Extension->SetLabel(m_radio_CardType->SelectedItem().SomeInt == 1 ? L".mcr" : L".ps2");
 }
 
 void Dialogs::CreateMemoryCardDialog::OnOk_Click( wxCommandEvent& evt )
@@ -140,7 +169,8 @@ void Dialogs::CreateMemoryCardDialog::OnOk_Click( wxCommandEvent& evt )
 	g_Conf->McdCompressNTFS = m_check_CompressNTFS->GetValue();
 #endif
 	result_createdMcdFilename=L"_INVALID_FILE_NAME_";
-	wxString composedName = m_text_filenameInput->GetValue().Trim() + L".ps2";
+
+	wxString composedName = m_text_filenameInput->GetValue().Trim() + (m_radio_CardType->SelectedItem().SomeInt == 1 ? L".mcr" : L".ps2");
 
 	wxString errMsg;
 	if( !isValidNewFilename(composedName, m_mcdpath, errMsg, 5) )
@@ -153,17 +183,31 @@ void Dialogs::CreateMemoryCardDialog::OnOk_Click( wxCommandEvent& evt )
 		return;
 	}
 
-	wxString fullPath=(m_mcdpath + composedName).GetFullPath();
-	if( !CreateIt(
-		fullPath,
-		m_radio_CardSize	? m_radio_CardSize->SelectedItem().SomeInt	: 8
-	) )
-	{
-		Msgbox::Alert(
-			_("Error: The memory card could not be created."),
-			_("Create memory card")
-		);
-		return;
+	wxString fullPath = ( m_mcdpath + composedName ).GetFullPath();
+	if (m_radio_CardType && m_radio_CardType->SelectedItem().SomeInt == 0) {
+		// user selected to create a folder memory card
+		if ( !wxFileName::Mkdir( fullPath ) ) {
+			Msgbox::Alert(
+				_( "Error: The directory for the memory card could not be created." ),
+				_( "Create memory card" )
+			);
+		} else {
+			// also create an empty superblock so we can recognize memory card folders based on if they have a superblock
+			wxFFile superblock( wxFileName( fullPath, L"_pcsx2_superblock" ).GetFullPath(), L"wb" );
+			superblock.Close();
+		}
+	} else {
+		// otherwise create a file
+		if (!CreateIt(
+				fullPath,
+				m_radio_CardType ? m_radio_CardType->SelectedItem().SomeInt : 8,
+				m_radio_CardType->SelectedItem().SomeInt == 1)) {
+			Msgbox::Alert(
+				_( "Error: The memory card could not be created." ),
+				_( "Create memory card" )
+				);
+			return;
+		}
 	}
 
 	result_createdMcdFilename = composedName;
@@ -172,7 +216,7 @@ void Dialogs::CreateMemoryCardDialog::OnOk_Click( wxCommandEvent& evt )
 
 void Dialogs::CreateMemoryCardDialog::CreateControls()
 {
-	#ifdef __WXMSW__
+#ifdef __WXMSW__
 	m_check_CompressNTFS = new pxCheckBox( this,
 		_("Use NTFS compression when creating this card."),
 		GetMsg_McdNtfsCompress()
@@ -185,11 +229,12 @@ void Dialogs::CreateMemoryCardDialog::CreateControls()
 	// Initial value of the checkbox is saved between calls to the dialog box.  If the user checks
 	// the option, it remains checked for future dialog.  If the user unchecks it, ditto.
 	m_check_CompressNTFS->SetValue( g_Conf->McdCompressNTFS );
-	#endif
+#endif
 
-	m_text_filenameInput = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	m_text_filenameInput = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	m_mcd_Extension = new wxStaticText(this, wxID_ANY, L".ps2");
 
-	const RadioPanelItem tbl_CardSizes[] =
+	const RadioPanelItem tbl_CardTypes[] =
 	{
 		RadioPanelItem(_("8 MB [most compatible]"), _("This is the standard Sony-provisioned size, and is supported by all games and BIOS versions."))
 		.	SetToolTip(_t("Always use this option if you want the safest and surest memory card behavior."))
@@ -205,10 +250,18 @@ void Dialogs::CreateMemoryCardDialog::CreateControls()
 
 		RadioPanelItem(_("64 MB"), _("Low compatibility warning: Yes it's very big, but may not work with many games."))
 		.	SetToolTip(_t("Use at your own risk.  Erratic memory card behavior is possible (though unlikely)."))
-		.	SetInt(64)
+		.	SetInt(64),
+
+		RadioPanelItem(_("Folder [experimental]"), _("Store memory card contents in the host filesystem instead of a file."))
+		.	SetToolTip(_t("Automatically manages memory card contents so that the console only sees files related to the currently running software. Allows you to drag-and-drop files in and out of the memory card with your standard file explorer. This is still experimental, so use at your own risk!"))
+		.	SetInt(0),
+
+		RadioPanelItem(_("128 KiB (PSX)"), _("This is the standard Sony-provisioned size PSX memory card, only compatible with PSX games."))
+		.	SetToolTip(_t("This memory card is required by PSX games. It is not compatible with PS2 games."))
+		.	SetInt(1)
 	};
 
-	m_radio_CardSize = new pxRadioPanel( this, tbl_CardSizes );
-	m_radio_CardSize->SetDefaultItem(0);
+	m_radio_CardType = new pxRadioPanel(this, tbl_CardTypes);
+	m_radio_CardType->SetDefaultItem(0);
 }
 

@@ -19,6 +19,7 @@
 #include "System/SysThreads.h"
 #include "Gif.h"
 
+extern Fixed100 GetVerticalFrequency();
 extern __aligned16 u8 g_RealGSMem[Ps2MemSize::GSregs];
 
 enum CSR_FifoState
@@ -173,12 +174,12 @@ union tGS_IMR
     struct
     {
         u32 _reserved1	: 8;
-        u32 SIGMSK		: 1;
-        u32 FINISHMSK	: 1;
-        u32 HSMSK		: 1;
-        u32 VSMSK		: 1;
-        u32 EDWMSK		: 1;
-        u32 _undefined	: 2; // Should both be set to 1.
+        u32 SIGMSK		: 1; // Signal evevnt interrupt mask
+        u32 FINISHMSK	: 1; // Finish event interrupt mask
+        u32 HSMSK		: 1; // HSync interrupt mask
+        u32 VSMSK		: 1; // VSync interrupt mask
+        u32 EDWMSK		: 1; // Rectangle write termination interrupt mask
+        u32 _undefined	: 2; // undefined bits should be set to 1.
         u32 _reserved2	: 17;
     };
     u32 _u32;
@@ -199,6 +200,42 @@ union tGS_IMR
 };
 
 // --------------------------------------------------------------------------------------
+//  GSRegSMODE1
+// --------------------------------------------------------------------------------------
+// Previously, the union was used to get the CMOD bit of the SMODE1 register
+// Commenting it out as it's unused right now. (Might potentially be useful in the future)
+//union GSRegSMODE1
+//{
+//	struct
+//	{
+//		u32 RC : 3;
+//		u32 LC : 7;
+//		u32 T1248 : 2;
+//		u32 SLCK : 1;
+//		u32 CMOD : 2;
+//		u32 EX : 1;
+//		u32 PRST : 1;
+//		u32 SINT : 1;
+//		u32 XPCK : 1;
+//		u32 PCK2 : 2;
+//		u32 SPML : 4;
+//		u32 GCONT : 1;
+//		u32 PHS : 1;
+//		u32 PVS : 1;
+//		u32 PEHS : 1;
+//		u32 PEVS : 1;
+//		u32 CLKSEL : 2;
+//		u32 NVCK : 1;
+//		u32 SLCK2 : 1;
+//		u32 VCKSEL : 2;
+//		u32 VHP : 1;
+//		u32 _PAD1 : 27;
+//	};
+//
+//	u64 SMODE1;
+//};
+
+// --------------------------------------------------------------------------------------
 //  GSRegSIGBLID
 // --------------------------------------------------------------------------------------
 struct GSRegSIGBLID
@@ -211,20 +248,29 @@ struct GSRegSIGBLID
 #define PS2GS_BASE(mem) (PS2MEM_GS+(mem&0x13ff))
 
 #define CSRreg		((tGS_CSR&)*(PS2MEM_GS+0x1000))
-#define GSIMRregs	((tGS_IMR&)*(PS2MEM_GS+0x1010))
 
 #define GSCSRr		((u32&)*(PS2MEM_GS+0x1000))
-#define GSIMR		((u32&)*(PS2MEM_GS+0x1010))
+#define GSIMR		((tGS_IMR&)*(PS2MEM_GS+0x1010))
 #define GSSIGLBLID	((GSRegSIGBLID&)*(PS2MEM_GS+0x1080))
 
-enum GS_RegionMode
+enum class GS_VideoMode : int
 {
-	Region_NTSC,
-	Region_PAL,
-	Region_NTSC_PROGRESSIVE
+	Uninitialized,
+	Unknown,
+	NTSC,
+	PAL,
+	VESA,
+	SDTV_480P,
+	SDTV_576P,
+	HDTV_720P,
+	HDTV_1080I,
+	HDTV_1080P,
+	DVD_NTSC,
+	DVD_PAL
 };
 
-extern GS_RegionMode gsRegionMode;
+extern GS_VideoMode gsVideoMode;
+extern bool gsIsInterlaced;
 
 /////////////////////////////////////////////////////////////////////////////
 // MTGS Threaded Class Declaration
@@ -267,15 +313,16 @@ class SysMtgsThread : public SysThreadBase
 
 public:
 	// note: when m_ReadPos == m_WritePos, the fifo is empty
-	__aligned(4) uint m_ReadPos;	// cur pos gs is reading from
-	__aligned(4) uint m_WritePos;	// cur pos ee thread is writing to
+	// Threading info: m_ReadPos is updated by the MTGS thread. m_WritePos is updated by the EE thread
+	std::atomic<unsigned int> m_ReadPos;  // cur pos gs is reading from
+	std::atomic<unsigned int> m_WritePos; // cur pos ee thread is writing to
 
-	volatile bool	m_RingBufferIsBusy;
-	volatile u32	m_SignalRingEnable;
-	volatile s32	m_SignalRingPosition;
+	std::atomic<bool>	m_RingBufferIsBusy;
+	std::atomic<bool>	m_SignalRingEnable;
+	std::atomic<int>	m_SignalRingPosition;
 
-	volatile s32	m_QueuedFrameCount;
-	volatile u32	m_VsyncSignalListener;
+	std::atomic<int>	m_QueuedFrameCount;
+	std::atomic<bool>	m_VsyncSignalListener;
 
 	Mutex			m_mtx_RingBufferBusy;  // Is obtained while processing ring-buffer data
 	Mutex			m_mtx_RingBufferBusy2; // This one gets released on semaXGkick waiting...
@@ -291,8 +338,8 @@ public:
 	// has more than one command in it when the thread is kicked.
 	int				m_CopyDataTally;
 
-	Semaphore		m_sem_OpenDone;
-	volatile bool	m_PluginOpened;
+	Semaphore			m_sem_OpenDone;
+	std::atomic<bool>	m_PluginOpened;
 
 	// These vars maintain instance data for sending Data Packets.
 	// Only one data packet can be constructed and uploaded at a time.
@@ -307,7 +354,7 @@ public:
 
 public:
 	SysMtgsThread();
-	virtual ~SysMtgsThread() throw();
+	virtual ~SysMtgsThread();
 
 	// Waits for the GS to empty out the entire ring buffer contents.
 	void WaitGS(bool syncRegs=true, bool weakWait=false, bool isMTVU=false);
@@ -363,10 +410,11 @@ extern s32 gsOpen();
 extern void gsClose();
 extern void gsReset();
 extern void gsOnModeChanged( Fixed100 framerate, u32 newTickrate );
-extern void gsSetRegionMode( GS_RegionMode isPal );
+extern void gsSetVideoMode( GS_VideoMode mode );
 extern void gsResetFrameSkip();
 extern void gsPostVsyncStart();
 extern void gsFrameSkip();
+extern void gsUpdateFrequency( Pcsx2Config& config );
 
 // Some functions shared by both the GS and MTGS
 extern void _gs_ResetFrameskip();
@@ -442,27 +490,27 @@ extern __aligned(32) MTGS_BufferedData RingBuffer;
 inline void MemCopy_WrappedDest( const u128* src, u128* destBase, uint& destStart, uint destSize, uint len ) {
 	uint endpos = destStart + len;
 	if ( endpos < destSize ) {
-		memcpy_qwc(&destBase[destStart], src, len );
+		memcpy(&destBase[destStart], src, len*16);
 		destStart += len;
 	}
 	else {
 		uint firstcopylen = destSize - destStart;
-		memcpy_qwc(&destBase[destStart], src, firstcopylen );
+		memcpy(&destBase[destStart], src, firstcopylen*16);
 		destStart = endpos % destSize;
-		memcpy_qwc(destBase, src+firstcopylen, destStart );
+		memcpy(destBase, src+firstcopylen, destStart*16);
 	}
 }
 
 inline void MemCopy_WrappedSrc( const u128* srcBase, uint& srcStart, uint srcSize, u128* dest, uint len ) {
 	uint endpos = srcStart + len;
 	if ( endpos < srcSize ) {
-		memcpy_qwc(dest, &srcBase[srcStart], len );
+		memcpy(dest, &srcBase[srcStart], len*16);
 		srcStart += len;
 	}
 	else {
 		uint firstcopylen = srcSize - srcStart;
-		memcpy_qwc(dest, &srcBase[srcStart], firstcopylen );
+		memcpy(dest, &srcBase[srcStart], firstcopylen*16);
 		srcStart = endpos % srcSize;
-		memcpy_qwc(dest+firstcopylen, srcBase, srcStart );
+		memcpy(dest+firstcopylen, srcBase, srcStart*16);
 	}
 }

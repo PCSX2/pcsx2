@@ -41,9 +41,11 @@
 #include <stdexcept>
 #include <vector>
 #include <list>
+#include <stack>
 #include <cstring>		// string.h under c++
 #include <cstdio>		// stdio.h under c++
 #include <cstdlib>
+#include <cinttypes>	// Printf format
 
 // ... and include some ANSI/POSIX C libs that are useful too, just for good measure.
 // (these compile lightning fast with or without PCH, but they never change so
@@ -73,7 +75,6 @@ typedef int BOOL;
 
 #include "Utilities/FixedPointTypes.h"
 #include "Utilities/wxBaseTools.h"
-#include "Utilities/ScopedPtr.h"
 #include "Utilities/Path.h"
 #include "Utilities/Console.h"
 #include "Utilities/MemcpyFast.h"
@@ -96,13 +97,7 @@ typedef FnType_Void* Fnptr_Void;
 
 #else	// must be GCC or Clang
 
-#	include <sys/types.h>
-#	include <sys/timeb.h>
-
-// Definitions added Feb 16, 2006 by efp
-#	ifndef __declspec
-#		define __declspec(x)
-#	endif
+#include <sys/types.h>
 
 #endif
 

@@ -23,6 +23,8 @@
 
 #include "Elfheader.h"
 
+#include "../DebugTools/Breakpoints.h"
+
 #include <float.h>
 
 using namespace R5900;		// for OPCODE and OpcodeImpl
@@ -43,36 +45,144 @@ static void debugI()
 	if( cpuRegs.GPR.n.r0.UD[0] || cpuRegs.GPR.n.r0.UD[1] ) Console.Error("R0 is not zero!!!!");
 }
 
-//long int runs=0;
+
+void intBreakpoint(bool memcheck)
+{
+	u32 pc = cpuRegs.pc;
+ 	if (CBreakPoints::CheckSkipFirst(pc) != 0)
+		return;
+
+	if (!memcheck)
+	{
+		auto cond = CBreakPoints::GetBreakPointCondition(pc);
+		if (cond && !cond->Evaluate())
+			return;
+	}
+
+	CBreakPoints::SetBreakpointTriggered(true);
+	GetCoreThread().PauseSelfDebug();
+	throw Exception::ExitCpuExecute();
+}
+
+void intMemcheck(u32 op, u32 bits, bool store)
+{
+	// compute accessed address
+	u32 start = cpuRegs.GPR.r[(op >> 21) & 0x1F].UD[0];
+	if ((s16)op != 0)
+		start += (s16)op;
+	if (bits == 128)
+		start &= ~0x0F;
+
+	start = standardizeBreakpointAddress(start);
+	u32 end = start + bits/8;
+	
+	auto checks = CBreakPoints::GetMemChecks();
+	for (size_t i = 0; i < checks.size(); i++)
+	{
+		auto& check = checks[i];
+
+		if (check.result == 0)
+			continue;
+		if ((check.cond & MEMCHECK_WRITE) == 0 && store)
+			continue;
+		if ((check.cond & MEMCHECK_READ) == 0 && !store)
+			continue;
+
+		if (start < check.end && check.start < end)
+			intBreakpoint(true);
+	}
+}
+
+void intCheckMemcheck()
+{
+	u32 pc = cpuRegs.pc;
+	int needed = isMemcheckNeeded(pc);
+	if (needed == 0)
+		return;
+
+	u32 op = memRead32(needed == 2 ? pc+4 : pc);
+	const OPCODE& opcode = GetInstruction(op);
+
+	bool store = (opcode.flags & IS_STORE) != 0;
+	switch (opcode.flags & MEMTYPE_MASK)
+	{
+	case MEMTYPE_BYTE:
+		intMemcheck(op,8,store);
+		break;
+	case MEMTYPE_HALF:
+		intMemcheck(op,16,store);
+		break;
+	case MEMTYPE_WORD:
+		intMemcheck(op,32,store);
+		break;
+	case MEMTYPE_DWORD:
+		intMemcheck(op,64,store);
+		break;
+	case MEMTYPE_QWORD:
+		intMemcheck(op,128,store);
+		break;
+	}
+}
 
 static void execI()
 {
-	cpuRegs.code = memRead32( cpuRegs.pc );
+	// execI is called for every instruction so it must remains as light as possible.
+	// If you enable the next define, Interpreter will be much slower (around
+	// ~4fps on 3.9GHz Haswell vs ~8fps (even 10fps on dev build))
+	// Extra note: due to some cycle count issue PCSX2's internal debugger is
+	// not yet usable with the interpreter
+//#define EXTRA_DEBUG
+#ifdef EXTRA_DEBUG
+	// check if any breakpoints or memchecks are triggered by this instruction
+	if (isBreakpointNeeded(cpuRegs.pc))
+		intBreakpoint(false);
+
+	intCheckMemcheck();
+#endif
+
+	u32 pc = cpuRegs.pc;
+	// We need to increase the pc before executing the memRead32. An exception could appears
+	// and it expects the PC counter to be pre-incremented
+	cpuRegs.pc += 4;
+
+	// interprete instruction
+	cpuRegs.code = memRead32( pc );
+	// Honestly I think this code is useless nowadays.
+#ifdef EXTRA_DEBUG
 	if( IsDebugBuild )
 		debugI();
+#endif
 
 	const OPCODE& opcode = GetCurrentInstruction();
+#if 0
+	static long int runs = 0;
 	//use this to find out what opcodes your game uses. very slow! (rama)
-	//runs++;
-	//if (runs > 1599999999){ //leave some time to startup the testgame
-	//	if (opcode.Name[0] == 'L') { //find all opcodes beginning with "L"
-	//		Console.WriteLn ("Load %s", opcode.Name);
-	//	}
-	//}
+	runs++;
+	if (runs > 1599999999){ //leave some time to startup the testgame
+		if (opcode.Name[0] == 'L') { //find all opcodes beginning with "L"
+			Console.WriteLn ("Load %s", opcode.Name);
+		}
+	}
+#endif
 
-	// Another method of instruction dumping:
-	/*if( cpuRegs.cycle > 0x4f24d714 )
-	{
-		//CPU_LOG( "%s", disR5900Current.getCString());
+#if 0
+	static long int print_me = 0;
+	// Based on cycle
+	// if( cpuRegs.cycle > 0x4f24d714 )
+	// Or dump from a particular PC (useful to debug handler/syscall)
+	if (pc == 0x80000000) {
+		print_me = 2000;
+	}
+	if (print_me) {
+		print_me--;
 		disOut.clear();
-		opcode.disasm( disOut );
-		disOut += '\n';
+		disR5900Fasm(disOut, cpuRegs.code, pc);
 		CPU_LOG( disOut.c_str() );
-	}*/
+	}
+#endif
 
 
 	cpuBlockCycles += opcode.cycles;
-	cpuRegs.pc += 4;
 
 	opcode.interpret();
 }
@@ -144,6 +254,11 @@ void J()
 
 void JAL()
 {
+	// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
+	if (EmuConfig.Gamefixes.GoemonTlbHack) {
+		if (_JumpTarget_ == 0x3563b8)
+			GoemonUnloadTlb(cpuRegs.GPR.n.a0.UL[0]);
+	}
 	_SetLink(31);
 	doBranch(_JumpTarget_);
 }
@@ -184,10 +299,9 @@ void BGEZ()    // Branch if Rs >= 0
 
 void BGEZAL() // Branch if Rs >= 0 and link
 {
-
+	_SetLink(31);
 	if (cpuRegs.GPR.r[_Rs_].SD[0] >= 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 }
@@ -218,9 +332,9 @@ void BLTZ()    // Branch if Rs <  0
 
 void BLTZAL()  // Branch if Rs <  0 and link
 {
+	_SetLink(31);
 	if (cpuRegs.GPR.r[_Rs_].SD[0] < 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 }
@@ -311,10 +425,9 @@ void BGEZL()     // Branch if Rs >= 0
 
 void BLTZALL()   // Branch if Rs <  0 and link
 {
-
+	_SetLink(31);
 	if(cpuRegs.GPR.r[_Rs_].SD[0] < 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 	else
@@ -326,10 +439,9 @@ void BLTZALL()   // Branch if Rs <  0 and link
 
 void BGEZALL()   // Branch if Rs >= 0 and link
 {
-
+	_SetLink(31);
 	if(cpuRegs.GPR.r[_Rs_].SD[0] >= 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 	else
@@ -345,9 +457,11 @@ void BGEZALL()   // Branch if Rs >= 0 and link
 *********************************************************/
 void JR()
 {
-	// 0x33ad48 is the return address of the function that populate the TLB cache
-	if (cpuRegs.GPR.r[_Rs_].UL[0] == 0x33ad48 && EmuConfig.Gamefixes.GoemonTlbHack) {
-		GoemonPreloadTlb();
+	// 0x33ad48 and 0x35060c are the return address of the function (0x356250) that populate the TLB cache
+	if (EmuConfig.Gamefixes.GoemonTlbHack) {
+		u32 add = cpuRegs.GPR.r[_Rs_].UL[0];
+		if (add == 0x33ad48 || add == 0x35060c)
+			GoemonPreloadTlb();
 	}
 	doBranch(cpuRegs.GPR.r[_Rs_].UL[0]);
 }
@@ -392,23 +506,76 @@ static void intEventTest()
 
 static void intExecute()
 {
-	try {
-		if (g_SkipBiosHack) {
-			do
-				execI();
-			while (cpuRegs.pc != EELOAD_START);
-			eeloadReplaceOSDSYS();
+	bool instruction_was_cancelled;
+	enum ExecuteState {
+		RESET,
+		GAME_LOADING,
+		GAME_RUNNING
+	};
+	ExecuteState state = RESET;
+	do {
+		instruction_was_cancelled = false;
+		try {
+			// The execution was splited in three parts so it is easier to
+			// resume it after a cancelled instruction.
+			switch (state) {
+				case RESET:
+					do
+						execI();
+					while (cpuRegs.pc != (g_eeloadMain ? g_eeloadMain : EELOAD_START));
+					if (cpuRegs.pc == EELOAD_START)
+					{
+						// The EELOAD _start function is the same across all BIOS versions afaik
+						u32 mainjump = memRead32(EELOAD_START + 0x9c);
+						if (mainjump >> 26 == 3) // JAL
+							g_eeloadMain = ((EELOAD_START + 0xa0) & 0xf0000000U) | (mainjump << 2 & 0x0fffffffU);
+					}
+					else if (cpuRegs.pc == g_eeloadMain)
+					{
+						eeloadHook();
+						if (g_SkipBiosHack)
+						{
+							// See comments on this code in iR5900-32.cpp's recRecompile()
+							u32 typeAexecjump = memRead32(EELOAD_START + 0x470);
+							u32 typeBexecjump = memRead32(EELOAD_START + 0x5B0);
+							u32 typeCexecjump = memRead32(EELOAD_START + 0x618);
+							u32 typeDexecjump = memRead32(EELOAD_START + 0x600);
+							if ((typeBexecjump >> 26 == 3) || (typeCexecjump >> 26 == 3) || (typeDexecjump >> 26 == 3)) // JAL to 0x822B8
+								g_eeloadExec = EELOAD_START + 0x2B8;
+							else if (typeAexecjump >> 26 == 3) // JAL to 0x82170
+								g_eeloadExec = EELOAD_START + 0x170;
+							else
+								Console.WriteLn("intExecute: Could not enable launch arguments for fast boot mode; unidentified BIOS version! Please report this to the PCSX2 developers.");
+						}
+					}
+					else if (cpuRegs.pc == g_eeloadExec)
+						eeloadHook2();
+
+					if (g_GameLoading)
+						state = GAME_LOADING;
+					else
+						break;
+
+				case GAME_LOADING:
+					if (ElfEntry != 0xFFFFFFFF) {
+						do
+							execI();
+						while (cpuRegs.pc != ElfEntry);
+						eeGameStarting();
+					}
+					state = GAME_RUNNING;
+
+				case GAME_RUNNING:
+					while (true)
+						execI();
+			}
 		}
-		if (ElfEntry != 0xFFFFFFFF) {
-			do
-				execI();
-			while (cpuRegs.pc != ElfEntry);
-			eeGameStarting();
-		} else {
-			while (true)
-				execI();
-		}
-	} catch( Exception::ExitCpuExecute& ) { }
+		catch( Exception::ExitCpuExecute& ) { }
+		catch( Exception::CancelInstruction& ) { instruction_was_cancelled = true; }
+
+		// For example a tlb miss will throw an exception. Cpu must be resumed
+		// to execute the handler
+	} while (instruction_was_cancelled);
 }
 
 static void intCheckExecutionState()

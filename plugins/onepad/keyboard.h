@@ -19,28 +19,26 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
- #ifndef __KEYBOARD_H__
- #define __KEYBOARD_H__
+#ifndef __KEYBOARD_H__
+#define __KEYBOARD_H__
 
 #include "onepad.h"
 
-#ifdef __linux__
+#if defined(__unix__) || defined(__APPLE__)
 
-#include "Linux/linux.h"
-
+extern void UpdateKeyboardInput();
+extern bool PollForNewKeyboardKeys(u32 &pkey);
+#ifndef __APPLE__
 extern Display *GSdsp;
-extern void PollForX11KeyboardInput(int pad);
-extern bool PollX11KeyboardMouseEvent(u32 &pkey);
 extern Window GSwin;
+#endif
 
 #else
 
-extern char* KeysymToChar(int keysym);
+extern char *KeysymToChar(int keysym);
 extern WNDPROC GSwndProc;
 extern HWND GShwnd;
 
 #endif
-
-extern void SetAutoRepeat(bool autorep);
 
 #endif

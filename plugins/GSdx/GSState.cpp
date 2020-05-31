@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2007-2009 Gabest
+ *	Copyright (C) 2007-2016 Gabest
  *	http://www.gabest.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -22,8 +22,11 @@
 #include "stdafx.h"
 #include "GSState.h"
 #include "GSdx.h"
+#include "GSUtil.h"
 
 //#define Offset_ST  // Fixes Persona3 mini map alignment which is off even in software rendering
+
+int GSState::s_n = 0;
 
 GSState::GSState()
 	: m_version(6)
@@ -31,6 +34,9 @@ GSState::GSState()
 	, m_irq(NULL)
 	, m_path3hack(0)
 	, m_init_read_fifo_supported(false)
+	, m_gsc(NULL)
+	, m_skip(0)
+	, m_skip_offset(0)
 	, m_q(1.0f)
 	, m_texflush(true)
 	, m_vt(this)
@@ -39,17 +45,54 @@ GSState::GSState()
 	, m_options(0)
 	, m_frameskip(0)
 {
-	m_nativeres = !!theApp.GetConfig("nativeres", 1);
+	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
+	// Let's keep it disabled to ease debug.
+	m_nativeres             = theApp.GetConfigI("upscale_multiplier") == 1 || GLLoader::in_replayer;
+	m_mipmap                = theApp.GetConfigI("mipmap");
+	m_NTSC_Saturation       = theApp.GetConfigB("NTSC_Saturation");
+	m_clut_load_before_draw = theApp.GetConfigB("clut_load_before_draw");
+	if (theApp.GetConfigB("UserHacks"))
+	{
+		m_userhacks_auto_flush      = theApp.GetConfigB("UserHacks_AutoFlush");
+		m_userhacks_wildhack        = theApp.GetConfigB("UserHacks_WildHack");
+		m_userhacks_skipdraw        = theApp.GetConfigI("UserHacks_SkipDraw");
+		m_userhacks_skipdraw_offset = theApp.GetConfigI("UserHacks_SkipDraw_Offset");
+	}
+	else
+	{
+		m_userhacks_auto_flush      = false;
+		m_userhacks_wildhack        = false;
+		m_userhacks_skipdraw        = 0;
+		m_userhacks_skipdraw_offset = 0;
+	}
 
 	s_n = 0;
-	s_dump = !!theApp.GetConfig("dump", 0);
-	s_save = !!theApp.GetConfig("save", 0);
-	s_savez = !!theApp.GetConfig("savez", 0);
-	s_saven = theApp.GetConfig("saven", 0);
+	s_dump  = theApp.GetConfigB("dump");
+	s_save  = theApp.GetConfigB("save");
+	s_savet = theApp.GetConfigB("savet");
+	s_savez = theApp.GetConfigB("savez");
+	s_savef = theApp.GetConfigB("savef");
+	s_saven = theApp.GetConfigI("saven");
+	s_savel = theApp.GetConfigI("savel");
+	m_dump_root = "";
+#if defined(__unix__)
+	if (s_dump) {
+		GSmkdir(root_hw.c_str());
+		GSmkdir(root_sw.c_str());
+	}
+#endif
 
-	UserHacks_AggressiveCRC = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_AggressiveCRC", 0) : 0;
-	UserHacks_DisableCrcHacks = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig( "UserHacks_DisableCrcHacks", 0 ) : 0;
-	UserHacks_WildHack = !!theApp.GetConfig("UserHacks", 0) ? theApp.GetConfig("UserHacks_WildHack", 0) : 0;
+	//s_dump = 1;
+	//s_save = 1;
+	//s_savez = 1;
+	//s_savet = 1;
+	//s_savef = 1;
+	//s_saven = 0;
+	//s_savel = 0;
+
+	m_crc_hack_level = theApp.GetConfigT<CRCHackLevel>("crc_hack_level");
+	if (m_crc_hack_level == CRCHackLevel::Automatic)
+		m_crc_hack_level = GSUtil::GetRecommendedCRCHackLevel(theApp.GetCurrentRendererType());
 
 	memset(&m_v, 0, sizeof(m_v));
 	memset(&m_vertex, 0, sizeof(m_vertex));
@@ -238,7 +281,7 @@ void GSState::ResetHandlers()
 	m_fpGIFPackedRegHandlers[GIF_REG_PRIM] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerPRIM;
 	m_fpGIFPackedRegHandlers[GIF_REG_RGBA] = &GSState::GIFPackedRegHandlerRGBA;
 	m_fpGIFPackedRegHandlers[GIF_REG_STQ] = &GSState::GIFPackedRegHandlerSTQ;
-	m_fpGIFPackedRegHandlers[GIF_REG_UV] = !UserHacks_WildHack ? &GSState::GIFPackedRegHandlerUV : &GSState::GIFPackedRegHandlerUV_Hack;
+	m_fpGIFPackedRegHandlers[GIF_REG_UV] = m_userhacks_wildhack ? &GSState::GIFPackedRegHandlerUV_Hack : &GSState::GIFPackedRegHandlerUV;
 	m_fpGIFPackedRegHandlers[GIF_REG_TEX0_1] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerTEX0<0>;
 	m_fpGIFPackedRegHandlers[GIF_REG_TEX0_2] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerTEX0<1>;
 	m_fpGIFPackedRegHandlers[GIF_REG_CLAMP_1] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerCLAMP<0>;
@@ -247,26 +290,37 @@ void GSState::ResetHandlers()
 	m_fpGIFPackedRegHandlers[GIF_REG_A_D] = &GSState::GIFPackedRegHandlerA_D;
 	m_fpGIFPackedRegHandlers[GIF_REG_NOP] = &GSState::GIFPackedRegHandlerNOP;
 
-	#define SetHandlerXYZ(P) \
-		m_fpGIFPackedRegHandlerXYZ[P][0] = &GSState::GIFPackedRegHandlerXYZF2<P, 0>; \
-		m_fpGIFPackedRegHandlerXYZ[P][1] = &GSState::GIFPackedRegHandlerXYZF2<P, 1>; \
-		m_fpGIFPackedRegHandlerXYZ[P][2] = &GSState::GIFPackedRegHandlerXYZ2<P, 0>; \
-		m_fpGIFPackedRegHandlerXYZ[P][3] = &GSState::GIFPackedRegHandlerXYZ2<P, 1>; \
-		m_fpGIFRegHandlerXYZ[P][0] = &GSState::GIFRegHandlerXYZF2<P, 0>; \
-		m_fpGIFRegHandlerXYZ[P][1] = &GSState::GIFRegHandlerXYZF2<P, 1>; \
-		m_fpGIFRegHandlerXYZ[P][2] = &GSState::GIFRegHandlerXYZ2<P, 0>; \
-		m_fpGIFRegHandlerXYZ[P][3] = &GSState::GIFRegHandlerXYZ2<P, 1>; \
-		m_fpGIFPackedRegHandlerSTQRGBAXYZF2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZF2<P>; \
-		m_fpGIFPackedRegHandlerSTQRGBAXYZ2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZ2<P>; \
+	#define SetHandlerXYZ(P, auto_flush) \
+		m_fpGIFPackedRegHandlerXYZ[P][0] = &GSState::GIFPackedRegHandlerXYZF2<P, 0, auto_flush>; \
+		m_fpGIFPackedRegHandlerXYZ[P][1] = &GSState::GIFPackedRegHandlerXYZF2<P, 1, auto_flush>; \
+		m_fpGIFPackedRegHandlerXYZ[P][2] = &GSState::GIFPackedRegHandlerXYZ2<P, 0, auto_flush>; \
+		m_fpGIFPackedRegHandlerXYZ[P][3] = &GSState::GIFPackedRegHandlerXYZ2<P, 1, auto_flush>; \
+		m_fpGIFRegHandlerXYZ[P][0] = &GSState::GIFRegHandlerXYZF2<P, 0, auto_flush>; \
+		m_fpGIFRegHandlerXYZ[P][1] = &GSState::GIFRegHandlerXYZF2<P, 1, auto_flush>; \
+		m_fpGIFRegHandlerXYZ[P][2] = &GSState::GIFRegHandlerXYZ2<P, 0, auto_flush>; \
+		m_fpGIFRegHandlerXYZ[P][3] = &GSState::GIFRegHandlerXYZ2<P, 1, auto_flush>; \
+		m_fpGIFPackedRegHandlerSTQRGBAXYZF2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZF2<P, auto_flush>; \
+		m_fpGIFPackedRegHandlerSTQRGBAXYZ2[P] = &GSState::GIFPackedRegHandlerSTQRGBAXYZ2<P, auto_flush>; \
 
-	SetHandlerXYZ(GS_POINTLIST);
-	SetHandlerXYZ(GS_LINELIST);
-	SetHandlerXYZ(GS_LINESTRIP);
-	SetHandlerXYZ(GS_TRIANGLELIST);
-	SetHandlerXYZ(GS_TRIANGLESTRIP);
-	SetHandlerXYZ(GS_TRIANGLEFAN);
-	SetHandlerXYZ(GS_SPRITE);
-	SetHandlerXYZ(GS_INVALID);
+	if (m_userhacks_auto_flush) {
+		SetHandlerXYZ(GS_POINTLIST, true);
+		SetHandlerXYZ(GS_LINELIST, true);
+		SetHandlerXYZ(GS_LINESTRIP, true);
+		SetHandlerXYZ(GS_TRIANGLELIST, true);
+		SetHandlerXYZ(GS_TRIANGLESTRIP, true);
+		SetHandlerXYZ(GS_TRIANGLEFAN, true);
+		SetHandlerXYZ(GS_SPRITE, true);
+		SetHandlerXYZ(GS_INVALID, true);
+	} else {
+		SetHandlerXYZ(GS_POINTLIST, false);
+		SetHandlerXYZ(GS_LINELIST, false);
+		SetHandlerXYZ(GS_LINESTRIP, false);
+		SetHandlerXYZ(GS_TRIANGLELIST, false);
+		SetHandlerXYZ(GS_TRIANGLESTRIP, false);
+		SetHandlerXYZ(GS_TRIANGLEFAN, false);
+		SetHandlerXYZ(GS_SPRITE, false);
+		SetHandlerXYZ(GS_INVALID, false);
+	}
 
 	for(size_t i = 0; i < countof(m_fpGIFRegHandlers); i++)
 	{
@@ -275,8 +329,9 @@ void GSState::ResetHandlers()
 
 	m_fpGIFRegHandlers[GIF_A_D_REG_PRIM] = &GSState::GIFRegHandlerPRIM;
 	m_fpGIFRegHandlers[GIF_A_D_REG_RGBAQ] = &GSState::GIFRegHandlerRGBAQ;
+	m_fpGIFRegHandlers[GIF_A_D_REG_RGBAQ + 0x10] = &GSState::GIFRegHandlerRGBAQ;
 	m_fpGIFRegHandlers[GIF_A_D_REG_ST] = &GSState::GIFRegHandlerST;
-	m_fpGIFRegHandlers[GIF_A_D_REG_UV] = !UserHacks_WildHack ? &GSState::GIFRegHandlerUV : &GSState::GIFRegHandlerUV_Hack;
+	m_fpGIFRegHandlers[GIF_A_D_REG_UV] = m_userhacks_wildhack ? &GSState::GIFRegHandlerUV_Hack : &GSState::GIFRegHandlerUV;
 	m_fpGIFRegHandlers[GIF_A_D_REG_TEX0_1] = &GSState::GIFRegHandlerTEX0<0>;
 	m_fpGIFRegHandlers[GIF_A_D_REG_TEX0_2] = &GSState::GIFRegHandlerTEX0<1>;
 	m_fpGIFRegHandlers[GIF_A_D_REG_CLAMP_1] = &GSState::GIFRegHandlerCLAMP<0>;
@@ -325,117 +380,196 @@ void GSState::ResetHandlers()
 	SetMultithreaded(m_mt);
 }
 
+bool GSState::isinterlaced()
+{
+	return !!m_regs->SMODE2.INT;
+}
+
+GSVideoMode GSState::GetVideoMode()
+{
+	// TODO: Get confirmation of videomode from SYSCALL ? not necessary but would be nice.
+	// Other videomodes can't be detected on the plugin side without the help of the data from core
+	// You can only identify a limited number of video modes based on the info from CRTC registers.
+
+	GSVideoMode videomode = GSVideoMode::Unknown;
+	uint8 Colorburst = m_regs->SMODE1.CMOD; // Subcarrier frequency
+	uint8 PLL_Divider = m_regs->SMODE1.LC; // Phased lock loop divider
+
+	switch (Colorburst)
+	{
+	case 0:
+		if (isinterlaced() && PLL_Divider == 22)
+			videomode = GSVideoMode::HDTV_1080I;
+
+		else if (!isinterlaced() && PLL_Divider == 22)
+			videomode = GSVideoMode::HDTV_720P;
+
+		else if (!isinterlaced() && PLL_Divider == 32)
+			videomode = GSVideoMode::SDTV_480P; // TODO: 576P will also be reported as 480P, find some way to differeniate.
+
+		else
+			videomode = GSVideoMode::VESA;
+		break;
+
+	case 2:
+		videomode = GSVideoMode::NTSC; break;
+
+	case 3:
+		videomode = GSVideoMode::PAL; break;
+	}
+
+	return videomode;
+}
+
+// There are some cases where the PS2 seems to saturate the output circuit size when the developer requests for a higher
+// unsupported value with respect to the current video mode via the DISP registers, the following function handles such cases.
+// NOTE: This function is totally hacky as there are no documents related to saturation of output dimensions, function is
+// generally just based on technical and intellectual guesses.
+void GSState::SaturateOutputSize(GSVector4i& r)
+{
+	const GSVideoMode videomode = GetVideoMode();
+
+	//Some games (such as Pool Paradise) use alternate line reading and provide a massive height which is really half.
+	if (r.height() > 640 && (videomode == GSVideoMode::NTSC || videomode == GSVideoMode::PAL))
+	{
+		r.bottom = r.top + (r.height() / 2);
+		return;
+	}
+
+	//  Limit games to standard NTSC resolutions. games with 512X512 (PAL resolution) on NTSC video mode produces black border on the bottom.
+	//  512 X 448 is the resolution generally used by NTSC, saturating the height value seems to get rid of the black borders.
+	//  Though it's quite a bad hack as it affects binaries which are patched to run on a non-native video mode.
+	const bool interlaced_field = m_regs->SMODE2.INT && !m_regs->SMODE2.FFMD;
+	const bool single_frame_output = m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && (m_regs->PMODE.EN1 ^ m_regs->PMODE.EN2);
+	const bool unsupported_output_size = r.height() > 448 && r.width() < 640;
+	if (m_NTSC_Saturation && videomode == GSVideoMode::NTSC && (interlaced_field || single_frame_output) && unsupported_output_size)
+	{
+		r.bottom = r.top + 448;
+	}
+}
+
 GSVector4i GSState::GetDisplayRect(int i)
 {
-	if(i < 0) i = IsEnabled(1) ? 1 : 0;
+	if (!IsEnabled(0) && !IsEnabled(1))
+		return GSVector4i(0);
 
-	GSVector4i r;
+	// If no specific context is requested then pass the merged rectangle as return value
+	if (i == -1)
+	{
+		if (m_regs->PMODE.EN1 & m_regs->PMODE.EN2)
+		{
+			GSVector4i r[2] = { GetDisplayRect(0), GetDisplayRect(1) };
+			GSVector4i r_intersect = r[0].rintersect(r[1]);
+			GSVector4i r_union = r[0].runion_ordered(r[1]);
 
-	r.left = m_regs->DISP[i].DISPLAY.DX / (m_regs->DISP[i].DISPLAY.MAGH + 1);
-	r.top = m_regs->DISP[i].DISPLAY.DY / (m_regs->DISP[i].DISPLAY.MAGV + 1);
-	r.right = r.left + (m_regs->DISP[i].DISPLAY.DW + 1) / (m_regs->DISP[i].DISPLAY.MAGH + 1);
-	r.bottom = r.top + (m_regs->DISP[i].DISPLAY.DH + 1) / (m_regs->DISP[i].DISPLAY.MAGV + 1);
+			// If the conditions for passing the merged rectangle is unsatisfied, then
+			// pass the rectangle with the bigger size.
+			bool can_be_merged = !r_intersect.width() || !r_intersect.height() || r_intersect.xyxy().eq(r_union.xyxy());
+			return (can_be_merged) ? r_union : r[r[1].rarea() > r[0].rarea()];
+		}
+		i = m_regs->PMODE.EN2;
+	}
 
-	return r;
+	GSVector2i magnification (m_regs->DISP[i].DISPLAY.MAGH + 1, m_regs->DISP[i].DISPLAY.MAGV + 1);
+	int width = (m_regs->DISP[i].DISPLAY.DW + 1) / magnification.x;
+	int height = (m_regs->DISP[i].DISPLAY.DH + 1) / magnification.y;
+
+	// Set up the display rectangle based on the values obtained from DISPLAY registers
+	GSVector4i rectangle;
+	rectangle.left = m_regs->DISP[i].DISPLAY.DX / magnification.x;
+	rectangle.top = m_regs->DISP[i].DISPLAY.DY / magnification.y;
+	rectangle.right = rectangle.left + width;
+	rectangle.bottom = rectangle.top + height;
+
+	SaturateOutputSize(rectangle);
+	return rectangle;
 }
 
-// There's a problem when games expand/shrink and relocate the visible area since GSdx doesn't support
-// moving the output area. (Disgaea 2 intro FMV when upscaling is used, also those games hackfixed below.)
 GSVector4i GSState::GetFrameRect(int i)
 {
-	if(i < 0) i = IsEnabled(1) ? 1 : 0;
+	// If no specific context is requested then pass the merged rectangle as return value
+	if (i == -1)
+		return GetFrameRect(0).runion(GetFrameRect(1));
 
-	GSVector4i r = GetDisplayRect(i);
+	GSVector4i rectangle = GetDisplayRect(i);
 
-	int w = r.width();
-	int h = r.height();
+	int w = rectangle.width();
+	int h = rectangle.height();
 
-	//Fixme: These games have an extra black bar at bottom of screen
-	if((m_game.title == CRC::DevilMayCry3 || m_game.title == CRC::SkyGunner) && (m_game.region == CRC::US || m_game.region == CRC::JP))
-	{
-		h = 448; //
-	}
-	
-	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1) h >>= 1;
+	if (isinterlaced() && m_regs->SMODE2.FFMD && h > 1)
+		h >>= 1;
 
-	//Breaks Disgaea2 FMV borders
-	r.left = m_regs->DISP[i].DISPFB.DBX;
-	r.top = m_regs->DISP[i].DISPFB.DBY;
-	r.right = r.left + w;
-	r.bottom = r.top + h;
-	
-	/*static GSVector4i old_r = (GSVector4i) 0;
-	if ((old_r.left != r.left) || (old_r.right != r.right) || (old_r.top != r.top) || (old_r.right != r.right)){
-		printf("w %d  h %d  left %d  top %d  right %d  bottom %d\n",w,h,r.left,r.top,r.right,r.bottom);
-	}
-	old_r = r;*/
+	rectangle.left = m_regs->DISP[i].DISPFB.DBX;
+	rectangle.top = m_regs->DISP[i].DISPFB.DBY;
+	rectangle.right = rectangle.left + w;
+	rectangle.bottom = rectangle.top + h;
 
-	return r;
+#ifdef ENABLE_PCRTC_DEBUG
+	static GSVector4i old_r[2] = { GSVector4i(0), GSVector4i(0) };
+	if (!old_r[i].eq(rectangle))
+		printf("Frame rectangle [%d] update!\nwidth: %d  height: %d  left: %d  top: %d  right: %d  bottom: %d\n",
+			i,w,h, rectangle.left, rectangle.top, rectangle.right, rectangle.bottom);
+	old_r[i] = rectangle;
+#endif
+
+	return rectangle;
 }
 
-GSVector2i GSState::GetDeviceSize(int i)
+int GSState::GetFramebufferHeight()
 {
-	// TODO: return (m_regs->SMODE1.CMOD & 1) ? GSVector2i(640, 576) : GSVector2i(640, 480);
+	// Framebuffer height is 11 bits max according to GS user manual
+	const int height_limit = (1 << 11);
+	const GSVector4i output[2] = { GetFrameRect(0), GetFrameRect(1) };
+	const GSVector4i merged_output = output[0].runion(output[1]);
 
-	// TODO: other params of SMODE1 should affect the true device display size
+	int max_height = std::max(output[0].height(), output[1].height());
+	// DBY isn't an offset to the frame memory but rather an offset to read output circuit inside
+	// the frame memory, hence the top offset should also be calculated for the total height of the
+	// frame memory. Also we need to wrap the value only when we're dealing with values with range of the
+	// frame memory (offset + read output circuit height, IOW bottom of merged_output)
+	int frame_memory_height = std::max(max_height, merged_output.bottom % height_limit);
 
-	// TODO2: pal games at 60Hz
+	if (frame_memory_height > 1024)
+		GL_PERF("Massive framebuffer height detected! (height:%d)", frame_memory_height);
 
-	if(i < 0) i = IsEnabled(1) ? 1 : 0;
-
-	GSVector4i r = GetDisplayRect(i);
-
-	int w = r.width();
-	int h = r.height();
-
-	/*if(h == 2 * 416 || h == 2 * 448 || h == 2 * 512)
-	{
-		h /= 2;
-	}
-	else
-	{
-		h = (m_regs->SMODE1.CMOD & 1) ? 512 : 448;
-	}*/
-
-	//Fixme : Just slightly better than the hack above
-	if(m_regs->SMODE2.INT && m_regs->SMODE2.FFMD && h > 1)
-	{
-		if (IsEnabled(0) || IsEnabled(1))
-		{
-			h >>= 1;
-		}
-	}
-
-	//Fixme: These games elude the code above, worked with the old hack
-	else if(m_game.title == CRC::SilentHill2 || m_game.title == CRC::SilentHill3)
-	{
-		h /= 2; 
-	}
-
-	return GSVector2i(w, h);
-
+	return frame_memory_height;
 }
 
 bool GSState::IsEnabled(int i)
 {
 	ASSERT(i >= 0 && i < 2);
 
-	if(i == 0 && m_regs->PMODE.EN1)
+	if ((i == 0 && m_regs->PMODE.EN1) || (i == 1 && m_regs->PMODE.EN2))
 	{
-		return m_regs->DISP[0].DISPLAY.DW || m_regs->DISP[0].DISPLAY.DH;
-	}
-	else if(i == 1 && m_regs->PMODE.EN2)
-	{
-		return m_regs->DISP[1].DISPLAY.DW || m_regs->DISP[1].DISPLAY.DH;
+		return m_regs->DISP[i].DISPLAY.DW && m_regs->DISP[i].DISPLAY.DH;
 	}
 
 	return false;
 }
 
-float GSState::GetFPS()
+float GSState::GetTvRefreshRate()
 {
-	float base_rate = ((m_regs->SMODE1.CMOD & 1) ? 25 : (30/1.001f));
-	return base_rate * (m_regs->SMODE2.INT ? 2 : 1);
+	float vertical_frequency = 0;
+	GSVideoMode videomode = GetVideoMode();
+
+	//TODO: Check vertical frequencies for VESA video modes, old ones were untested.
+
+	switch (videomode)
+	{
+	case GSVideoMode::NTSC: case GSVideoMode::SDTV_480P:
+		vertical_frequency = (60 / 1.001f); break;
+
+	case GSVideoMode::PAL:
+		vertical_frequency = 50; break;
+
+	case GSVideoMode::HDTV_720P: case GSVideoMode::HDTV_1080I:
+		vertical_frequency = 60; break;
+
+	default:
+		ASSERT(videomode != GSVideoMode::Unknown);
+	}
+
+	return vertical_frequency;
 }
 
 // GIFPackedRegHandler*
@@ -472,10 +606,16 @@ void GSState::GIFPackedRegHandlerSTQ(const GIFPackedReg* RESTRICT r)
 
 	GSVector4i::storel(&m_v.ST, st);
 
-	q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero()); // character shadow in Vexx, q = 0 (st also 0 on the first 16 vertices), setting it to 1.0f to avoid div by zero later
-	
-	*(int*)&m_q = GSVector4i::store(q); 
-	
+	// character shadow in Vexx, q = 0 (st also 0 on the first 16 vertices), setting it to 1.0f to avoid div by zero later
+	q = q.blend8(GSVector4i::cast(GSVector4::m_one), q == GSVector4i::zero());
+	// Suikoden 4 creates some nan for Q. Let's avoid undefined behavior (See GIFRegHandlerRGBAQ)
+	q = GSVector4i::cast(GSVector4::cast(q).replace_nan(GSVector4::m_max));
+
+	GSVector4::store(&m_q, GSVector4::cast(q));
+
+	ASSERT(!std::isnan(m_v.ST.S)); // See GIFRegHandlerRGBAQ
+	ASSERT(!std::isnan(m_v.ST.T)); // See GIFRegHandlerRGBAQ
+
 #ifdef Offset_ST
 	GIFRegTEX0 TEX0 = m_context->TEX0;
 	m_v.ST.S -= 0.02f * m_q / (1 << TEX0.TW);
@@ -496,10 +636,10 @@ void GSState::GIFPackedRegHandlerUV_Hack(const GIFPackedReg* RESTRICT r)
 
 	m_v.UV = (uint32)GSVector4i::store(v.ps32(v));
 
-    isPackedUV_HackFlag = true;
+	m_isPackedUV_HackFlag = true;
 }
 
-template<uint32 prim, uint32 adc>
+template<uint32 prim, uint32 adc, bool auto_flush>
 void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 {
 	/*
@@ -515,10 +655,10 @@ void GSState::GIFPackedRegHandlerXYZF2(const GIFPackedReg* RESTRICT r)
 
 	m_v.m[1] = xy.upl32(zf);
 
-	VertexKick<prim>(adc ? 1 : r->XYZF2.Skip());
+	VertexKick<prim, auto_flush>(adc ? 1 : r->XYZF2.Skip());
 }
 
-template<uint32 prim, uint32 adc>
+template<uint32 prim, uint32 adc, bool auto_flush>
 void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 {
 /*
@@ -532,7 +672,7 @@ void GSState::GIFPackedRegHandlerXYZ2(const GIFPackedReg* RESTRICT r)
 
 	m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV));
 
-	VertexKick<prim>(adc ? 1 : r->XYZ2.Skip());
+	VertexKick<prim, auto_flush>(adc ? 1 : r->XYZ2.Skip());
 }
 
 void GSState::GIFPackedRegHandlerFOG(const GIFPackedReg* RESTRICT r)
@@ -542,14 +682,14 @@ void GSState::GIFPackedRegHandlerFOG(const GIFPackedReg* RESTRICT r)
 
 void GSState::GIFPackedRegHandlerA_D(const GIFPackedReg* RESTRICT r)
 {
-	(this->*m_fpGIFRegHandlers[r->A_D.ADDR])(&r->r);
+	(this->*m_fpGIFRegHandlers[r->A_D.ADDR & 0x7F])(&r->r);
 }
 
 void GSState::GIFPackedRegHandlerNOP(const GIFPackedReg* RESTRICT r)
 {
 }
 
-template<uint32 prim>
+template<uint32 prim, bool auto_flush>
 void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, uint32 size)
 {
 	ASSERT(size > 0 && size % 3 == 0);
@@ -578,7 +718,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, ui
 
 		m_v.m[1] = xy.upl32(zf); // TODO: only store the last one
 
-		VertexKick<prim>(r[2].XYZF2.Skip());
+		VertexKick<prim, auto_flush>(r[2].XYZF2.Skip());
 
 		r += 3;
 	}
@@ -586,7 +726,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, ui
 	m_q = r[-3].STQ.Q; // remember the last one, STQ outputs this to the temp Q each time
 }
 
-template<uint32 prim>
+template<uint32 prim, bool auto_flush>
 void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, uint32 size)
 {
 	ASSERT(size > 0 && size % 3 == 0);
@@ -614,7 +754,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, uin
 
 		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV)); // TODO: only store the last one
 
-		VertexKick<prim>(r[2].XYZ2.Skip());
+		VertexKick<prim, auto_flush>(r[2].XYZ2.Skip());
 
 		r += 3;
 	}
@@ -677,14 +817,22 @@ void GSState::GIFRegHandlerRGBAQ(const GIFReg* RESTRICT r)
 {
 	GSVector4i rgbaq = (GSVector4i)r->RGBAQ;
 
-	rgbaq = rgbaq.upl32(rgbaq.blend8(GSVector4i::cast(GSVector4::m_one), rgbaq == GSVector4i::zero()).yyyy()); // see GIFPackedRegHandlerSTQ
+	GSVector4i q = rgbaq.blend8(GSVector4i::cast(GSVector4::m_one), rgbaq == GSVector4i::zero()).yyyy(); // see GIFPackedRegHandlerSTQ
 
-	m_v.RGBAQ = rgbaq;
+	// Silent Hill output a nan in Q to emulate the flash light. Unfortunately it
+	// breaks GSVertexTrace code that rely on min/max.
+
+	q = GSVector4i::cast(GSVector4::cast(q).replace_nan(GSVector4::m_max));
+
+	m_v.RGBAQ = rgbaq.upl32(q);
 }
 
 void GSState::GIFRegHandlerST(const GIFReg* RESTRICT r)
 {
 	m_v.ST = (GSVector4i)r->ST;
+
+	ASSERT(!std::isnan(m_v.ST.S)); // See GIFRegHandlerRGBAQ
+	ASSERT(!std::isnan(m_v.ST.T)); // See GIFRegHandlerRGBAQ
 
 #ifdef Offset_ST
 	GIFRegTEX0 TEX0 = m_context->TEX0;
@@ -695,17 +843,17 @@ void GSState::GIFRegHandlerST(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerUV(const GIFReg* RESTRICT r)
 {
-    m_v.UV = r->UV.u32[0] & 0x3fff3fff;
+	m_v.UV = r->UV.u32[0] & 0x3fff3fff;
 }
 
 void GSState::GIFRegHandlerUV_Hack(const GIFReg* RESTRICT r)
 {
-    m_v.UV = r->UV.u32[0] & 0x3fff3fff;
+	m_v.UV = r->UV.u32[0] & 0x3fff3fff;
 
-    isPackedUV_HackFlag = false;
+	m_isPackedUV_HackFlag = false;
 }
 
-template<uint32 prim, uint32 adc>
+template<uint32 prim, uint32 adc, bool auto_flush>
 void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 {
 /*
@@ -727,23 +875,33 @@ void GSState::GIFRegHandlerXYZF2(const GIFReg* RESTRICT r)
 	
 	m_v.m[1] = xyz.upl64(uvf);
 
-	VertexKick<prim>(adc);
+	VertexKick<prim, auto_flush>(adc);
 }
 
-template<uint32 prim, uint32 adc>
+template<uint32 prim, uint32 adc, bool auto_flush>
 void GSState::GIFRegHandlerXYZ2(const GIFReg* RESTRICT r)
 {
 	// m_v.XYZ = (GSVector4i)r->XYZ;
 
 	m_v.m[1] = GSVector4i::load(&r->XYZ, &m_v.UV);
 
-	VertexKick<prim>(adc);
+	VertexKick<prim, auto_flush>(adc);
 }
 
 template<int i> void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 {
-	// even if TEX0 did not change, a new palette may have been uploaded and will overwrite the currently queued for drawing
+	GL_REG("Apply TEX0_%d = 0x%x_%x", i, TEX0.u32[1], TEX0.u32[0]);
 
+	// Handle invalid PSM here
+	switch (TEX0.PSM) {
+		case 3:
+			TEX0.PSM = PSM_PSMT8; // International Star Soccer (menu)
+			break;
+		default:
+			break;
+	}
+
+	// even if TEX0 did not change, a new palette may have been uploaded and will overwrite the currently queued for drawing
 	bool wt = m_mem.m_clut.WriteTest(TEX0, m_env.TEXCLUT);
 
 	// clut loading already covered with WriteTest, for drawing only have to check CPSM and CSA (MGS3 intro skybox would be drawn piece by piece without this)
@@ -817,6 +975,7 @@ template<int i> void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 
 template<int i> void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 {
+	GL_REG("TEX0_%d = 0x%x_%x", i, r->u32[1], r->u32[0]);
 	GIFRegTEX0 TEX0 = r->TEX0;
 
 	int tw = (int)TEX0.TW;
@@ -847,7 +1006,7 @@ template<int i> void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 
 	if((TEX0.TBW & 1) && (TEX0.PSM == PSM_PSMT8 || TEX0.PSM == PSM_PSMT4))
 	{
-		ASSERT(TEX0.TBW == 1); // TODO
+		ASSERT(TEX0.TBW == 1); // TODO // Bouken Jidai Katsugeki Goemon
 
 		TEX0.TBW &= ~1; // GS User 2.6
 	}
@@ -898,6 +1057,7 @@ template<int i> void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::GIFRegHandlerCLAMP(const GIFReg* RESTRICT r)
 {
+	GL_REG("CLAMP_%d = 0x%x_%x", i, r->u32[1], r->u32[0]);
 	if(PRIM->CTXT == i && r->CLAMP != m_env.CTXT[i].CLAMP)
 	{
 		Flush();
@@ -917,6 +1077,7 @@ void GSState::GIFRegHandlerNOP(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::GIFRegHandlerTEX1(const GIFReg* RESTRICT r)
 {
+	GL_REG("TEX1_%d = 0x%x_%x", i, r->u32[1], r->u32[0]);
 	if(PRIM->CTXT == i && r->TEX1 != m_env.CTXT[i].TEX1)
 	{
 		Flush();
@@ -927,6 +1088,7 @@ template<int i> void GSState::GIFRegHandlerTEX1(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::GIFRegHandlerTEX2(const GIFReg* RESTRICT r)
 {
+	GL_REG("TEX2_%d = 0x%x_%x", i, r->u32[1], r->u32[0]);
 	// m_env.CTXT[i].TEX2 = r->TEX2; // not used
 
 	// TEX2 is a masked write to TEX0, for performing CLUT swaps (palette swaps).
@@ -946,6 +1108,7 @@ template<int i> void GSState::GIFRegHandlerTEX2(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::GIFRegHandlerXYOFFSET(const GIFReg* RESTRICT r)
 {
+	GL_REG("XYOFFSET_%d = 0x%x_%x", i, r->u32[1], r->u32[0]);
 	GSVector4i o = (GSVector4i)r->XYOFFSET & GSVector4i::x0000ffff();
 
 	if(!o.eq(m_env.CTXT[i].XYOFFSET))
@@ -962,6 +1125,7 @@ template<int i> void GSState::GIFRegHandlerXYOFFSET(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerPRMODECONT(const GIFReg* RESTRICT r)
 {
+	GL_REG("PRMODECONT = 0x%x_%x", r->u32[1], r->u32[0]);
 	if(r->PRMODECONT != m_env.PRMODECONT)
 	{
 		Flush();
@@ -980,6 +1144,7 @@ void GSState::GIFRegHandlerPRMODECONT(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerPRMODE(const GIFReg* RESTRICT r)
 {
+	GL_REG("PRMODE = 0x%x_%x", r->u32[1], r->u32[0]);
 	if(!m_env.PRMODECONT.AC)
 	{
 		Flush();
@@ -996,6 +1161,7 @@ void GSState::GIFRegHandlerPRMODE(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerTEXCLUT(const GIFReg* RESTRICT r)
 {
+	GL_REG("TEXCLUT = 0x%x_%x", r->u32[1], r->u32[0]);
 	if(r->TEXCLUT != m_env.TEXCLUT)
 	{
 		Flush();
@@ -1016,6 +1182,7 @@ void GSState::GIFRegHandlerSCANMSK(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::GIFRegHandlerMIPTBP1(const GIFReg* RESTRICT r)
 {
+	GL_REG("MIPTBP1_%d = 0x%x_%x", i, r->u32[1], r->u32[0]);
 	if(PRIM->CTXT == i && r->MIPTBP1 != m_env.CTXT[i].MIPTBP1)
 	{
 		Flush();
@@ -1026,6 +1193,7 @@ template<int i> void GSState::GIFRegHandlerMIPTBP1(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::GIFRegHandlerMIPTBP2(const GIFReg* RESTRICT r)
 {
+	GL_REG("MIPTBP2_%d = 0x%x_%x", i, r->u32[1], r->u32[0]);
 	if(PRIM->CTXT == i && r->MIPTBP2 != m_env.CTXT[i].MIPTBP2)
 	{
 		Flush();
@@ -1036,6 +1204,7 @@ template<int i> void GSState::GIFRegHandlerMIPTBP2(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerTEXA(const GIFReg* RESTRICT r)
 {
+	GL_REG("TEXA = 0x%x_%x", r->u32[1], r->u32[0]);
 	if(r->TEXA != m_env.TEXA)
 	{
 		Flush();
@@ -1046,6 +1215,7 @@ void GSState::GIFRegHandlerTEXA(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerFOGCOL(const GIFReg* RESTRICT r)
 {
+	GL_REG("FOGCOL = 0x%x_%x", r->u32[1], r->u32[0]);
 	if(r->FOGCOL != m_env.FOGCOL)
 	{
 		Flush();
@@ -1056,6 +1226,7 @@ void GSState::GIFRegHandlerFOGCOL(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 {
+	GL_REG("TEXFLUSH = 0x%x_%x", r->u32[1], r->u32[0]);
 	m_texflush = true;
 }
 
@@ -1169,6 +1340,7 @@ template<int i> void GSState::GIFRegHandlerFBA(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 {
+	GL_REG("FRAME_%d = 0x%x_%x", i, r->u32[1], r->u32[0]);
 	if(PRIM->CTXT == i && r->FRAME != m_env.CTXT[i].FRAME)
 	{
 		Flush();
@@ -1181,8 +1353,29 @@ template<int i> void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 		m_env.CTXT[i].offset.fzb = m_mem.GetPixelOffset(r->FRAME, m_env.CTXT[i].ZBUF);
 		m_env.CTXT[i].offset.fzb4 = m_mem.GetPixelOffset4(r->FRAME, m_env.CTXT[i].ZBUF);
 	}
-	
+
 	m_env.CTXT[i].FRAME = (GSVector4i)r->FRAME;
+
+	switch (m_env.CTXT[i].FRAME.PSM) {
+		case PSM_PSMT8H:
+			// Berserk uses the format to only update the alpha channel
+			GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT8H by PSM_PSMCT32/0x00FF_FFFF");
+			m_env.CTXT[i].FRAME.PSM = PSM_PSMCT32;
+			m_env.CTXT[i].FRAME.FBMSK = 0x00FFFFFF;
+			break;
+		case PSM_PSMT4HH: // Not tested. Based on PSM_PSMT8H behavior
+			GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT4HH by PSM_PSMCT32/0x0FFF_FFFF");
+			m_env.CTXT[i].FRAME.PSM = PSM_PSMCT32;
+			m_env.CTXT[i].FRAME.FBMSK = 0x0FFFFFFF;
+			break;
+		case PSM_PSMT4HL: // Not tested. Based on PSM_PSMT8H behavior
+			GL_INS("CORRECT FRAME FORMAT replaces PSM_PSMT4HL by PSM_PSMCT32/0xF0FF_FFFF");
+			m_env.CTXT[i].FRAME.PSM = PSM_PSMCT32;
+			m_env.CTXT[i].FRAME.FBMSK = 0xF0FFFFFF;
+			break;
+		default:
+			break;
+	}
 
 #ifdef DISABLE_BITMASKING
 	m_env.CTXT[i].FRAME.FBMSK = GSVector4i::store(GSVector4i::load((int)m_env.CTXT[i].FRAME.FBMSK).eq8(GSVector4i::xffffffff()));
@@ -1191,6 +1384,7 @@ template<int i> void GSState::GIFRegHandlerFRAME(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::GIFRegHandlerZBUF(const GIFReg* RESTRICT r)
 {
+	GL_REG("ZBUF_%d = 0x%x_%x", i, r->u32[1], r->u32[0]);
 	GIFRegZBUF ZBUF = r->ZBUF;
 
 	if(ZBUF.u32[0] == 0)
@@ -1229,6 +1423,7 @@ template<int i> void GSState::GIFRegHandlerZBUF(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerBITBLTBUF(const GIFReg* RESTRICT r)
 {
+	GL_REG("BITBLTBUF = 0x%x_%x", r->u32[1], r->u32[0]);
 	if(r->BITBLTBUF != m_env.BITBLTBUF)
 	{
 		FlushWrite();
@@ -1249,6 +1444,7 @@ void GSState::GIFRegHandlerBITBLTBUF(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerTRXPOS(const GIFReg* RESTRICT r)
 {
+	GL_REG("TRXPOS = 0x%x_%x", r->u32[1], r->u32[0]);
 	if(r->TRXPOS != m_env.TRXPOS)
 	{
 		FlushWrite();
@@ -1259,6 +1455,7 @@ void GSState::GIFRegHandlerTRXPOS(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerTRXREG(const GIFReg* RESTRICT r)
 {
+	GL_REG("TRXREG = 0x%x_%x", r->u32[1], r->u32[0]);
 	if(r->TRXREG != m_env.TRXREG)
 	{
 		FlushWrite();
@@ -1269,6 +1466,7 @@ void GSState::GIFRegHandlerTRXREG(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 {
+	GL_REG("TRXDIR = 0x%x_%x", r->u32[1], r->u32[0]);
 	Flush();
 
 	m_env.TRXDIR = (GSVector4i)r->TRXDIR;
@@ -1276,10 +1474,10 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 	switch(m_env.TRXDIR.XDIR)
 	{
 	case 0: // host -> local
-		m_tr.Init(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY);
+		m_tr.Init(m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.BITBLTBUF);
 		break;
 	case 1: // local -> host
-		m_tr.Init(m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY);
+		m_tr.Init(m_env.TRXPOS.SSAX, m_env.TRXPOS.SSAY, m_env.BITBLTBUF);
 		break;
 	case 2: // local -> local
 		Move();
@@ -1294,6 +1492,7 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerHWREG(const GIFReg* RESTRICT r)
 {
+	GL_REG("HWREG = 0x%x_%x", r->u32[1], r->u32[0]);
 	ASSERT(m_env.TRXDIR.XDIR == 0); // host => local
 
 	Write((uint8*)r, 8); // haunting ground
@@ -1301,6 +1500,7 @@ void GSState::GIFRegHandlerHWREG(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerSIGNAL(const GIFReg* RESTRICT r)
 {
+	GL_REG("SIGNAL = 0x%x_%x", r->u32[1], r->u32[0]);
 	m_regs->SIGLBLID.SIGID = (m_regs->SIGLBLID.SIGID & ~r->SIGNAL.IDMSK) | (r->SIGNAL.ID & r->SIGNAL.IDMSK);
 
 	if(m_regs->CSR.wSIGNAL) m_regs->CSR.rSIGNAL = 1;
@@ -1309,12 +1509,14 @@ void GSState::GIFRegHandlerSIGNAL(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerFINISH(const GIFReg* RESTRICT r)
 {
+	GL_REG("FINISH = 0x%x_%x", r->u32[1], r->u32[0]);
 	if(m_regs->CSR.wFINISH) m_regs->CSR.rFINISH = 1;
 	if(!m_regs->IMR.FINISHMSK && m_irq) m_irq();
 }
 
 void GSState::GIFRegHandlerLABEL(const GIFReg* RESTRICT r)
 {
+	GL_REG("LABEL = 0x%x_%x", r->u32[1], r->u32[0]);
 	m_regs->SIGLBLID.LBLID = (m_regs->SIGLBLID.LBLID & ~r->LABEL.IDMSK) | (r->LABEL.ID & r->LABEL.IDMSK);
 }
 
@@ -1341,7 +1543,7 @@ void GSState::FlushWrite()
 	r.bottom = r.top + m_env.TRXREG.RRH;
 
 	InvalidateVideoMem(m_env.BITBLTBUF, r);
-	
+
 	//int y = m_tr.y;
 
 	GSLocalMemory::writeImage wi = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM].wi;
@@ -1364,7 +1566,7 @@ void GSState::FlushWrite()
 	*/
 /*
 	static int n = 0;
-	string s;
+	std::string s;
 	s = format("c:\\temp1\\[%04d]_%05x_%d_%d_%d_%d_%d_%d.bmp",
 		n++, (int)m_env.BITBLTBUF.DBP, (int)m_env.BITBLTBUF.DBW, (int)m_env.BITBLTBUF.DPSM,
 		r.left, r.top, r.right, r.bottom);
@@ -1376,7 +1578,19 @@ void GSState::FlushPrim()
 {
 	if(m_index.tail > 0)
 	{
+		GL_REG("FlushPrim ctxt %d", PRIM->CTXT);
+
+		// Some games (Harley Davidson/Virtua Fighter) do dirty trick with multiple contexts cluts
+		// In doubt, always reload the clut before a draw.
+		// Note: perf impact is likely slow enough as WriteTest will likely be false.
+		if (m_clut_load_before_draw) {
+			if (m_mem.m_clut.WriteTest(m_context->TEX0, m_env.TEXCLUT)) {
+				m_mem.m_clut.Write(m_context->TEX0, m_env.TEXCLUT);
+			}
+		}
+
 		GSVertex buff[2];
+		s_n++;
 
 		size_t head = m_vertex.head;
 		size_t tail = m_vertex.tail;
@@ -1407,20 +1621,59 @@ void GSState::FlushPrim()
 			default:
 				__assume(0);
 			}
-				
-			ASSERT(unused < GSUtil::GetVertexCount(PRIM->PRIM));
+
+			ASSERT((int)unused < GSUtil::GetVertexCount(PRIM->PRIM));
 		}
+
+#ifdef ENABLE_OGL_DEBUG
+		// Validate PSM format
+		switch (m_context->TEX0.PSM) {
+			case PSM_PSMCT32:
+			case PSM_PSMCT24:
+			case PSM_PSMCT16:
+			case PSM_PSMCT16S:
+			case PSM_PSMT8:
+			case PSM_PSMT4:
+			case PSM_PSMT8H:
+			case PSM_PSMT4HL:
+			case PSM_PSMT4HH:
+			case PSM_PSMZ32:
+			case PSM_PSMZ24:
+			case PSM_PSMZ16:
+			case PSM_PSMZ16S:
+				break;
+			default:
+				fprintf(stderr, "%d:INVALID PSM 0x%x !!!\n", s_n, m_context->TEX0.PSM);
+				break;
+		}
+#endif
 
 		if(GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt < 3 && GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt < 3)
 		{
-			// FIXME: berserk fpsm = 27 (8H)
+			m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
-			m_vt.Update(m_vertex.buff, m_index.buff, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
+			m_context->SaveReg();
 
-			Draw();
+			try {
+				Draw();
+			} catch (GSDXRecoverableError&) {
+				// could be an unsupported draw call
+			} catch (const std::bad_alloc& e) {
+				// Texture Out Of Memory
+				PurgePool();
+				fprintf(stderr, "GSDX OUT OF MEMORY\n");
+			}
+
+			m_context->RestoreReg();
 
 			m_perfmon.Put(GSPerfMon::Draw, 1);
 			m_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
+		}
+		else
+		{
+#ifdef ENABLE_OGL_DEBUG
+			fprintf(stderr, "%d:Skip draw call due to invalid format %x/%x\n", s_n, m_context->FRAME.PSM, m_context->ZBUF.PSM);
+#endif
 		}
 
 		m_index.tail = 0;
@@ -1449,16 +1702,44 @@ void GSState::Write(const uint8* mem, int len)
 	int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
 
-	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM];
+	GIFRegBITBLTBUF& blit = m_tr.m_blit;
+	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[blit.DPSM];
 
-	// printf("Write len=%d DBP=%05x DBW=%d DPSM=%d DSAX=%d DSAY=%d RRW=%d RRH=%d\n", len, m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM, m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.TRXREG.RRW, m_env.TRXREG.RRH);
+	/*
+	 *  The game uses a resolution of 512x244. RT is located at 0x700 and depth at 0x0
+	 *
+	 * #Bug number 1. (bad top bar)
+	 * The game saves the depth buffer in the EE but with a resolution of
+	 * 512x255. So it is ending to 0x7F8, ouch it saves the top of the RT too.
+	 *
+	 * #Bug number 2. (darker screen)
+	 * The game will restore the previously saved buffer at position 0x0 to
+	 * 0x7F8.  Because of the extra RT pixels, GSdx will partialy invalidate
+	 * the texture located at 0x700. Next access will generate a cache miss
+	 *
+	 * The no-solution: instead to handle garbage (aka RT) at the end of the
+	 * depth buffer. Let's reduce the size of the transfer
+	 */
+	if (m_game.title == CRC::SMTNocturne) {
+		if (blit.DBP == 0 && blit.DPSM == PSM_PSMZ32 && w == 512 && h > 224) {
+			h = 224;
+			m_env.TRXREG.RRH = 224;
+		}
+	}
+
+	// printf("Write len=%d DBP=%05x DBW=%d DPSM=%d DSAX=%d DSAY=%d RRW=%d RRH=%d\n", len, blit.DBP, blit.DBW, blit.DPSM, m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, m_env.TRXREG.RRW, m_env.TRXREG.RRH);
 
 	if(!m_tr.Update(w, h, psm.trbpp, len))
 	{
 		return;
 	}
 
-	if(PRIM->TME && (m_env.BITBLTBUF.DBP == m_context->TEX0.TBP0 || m_env.BITBLTBUF.DBP == m_context->TEX0.CBP)) // TODO: hmmmm
+	GL_CACHE("Write! ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d)",
+		blit.DBP, blit.DBW, psm_str(blit.DPSM),
+		m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
+		m_env.TRXPOS.DSAX, m_env.TRXPOS.DSAY, w, h);
+
+	if(PRIM->TME && (blit.DBP == m_context->TEX0.TBP0 || blit.DBP == m_context->TEX0.CBP)) // TODO: hmmmm
 	{
 		FlushPrim();
 	}
@@ -1476,9 +1757,9 @@ void GSState::Write(const uint8* mem, int len)
 		r.right = r.left + m_env.TRXREG.RRW;
 		r.bottom = r.top + m_env.TRXREG.RRH;
 
-		InvalidateVideoMem(m_env.BITBLTBUF, r);
+		InvalidateVideoMem(blit, r);
 
-		(m_mem.*psm.wi)(m_tr.x, m_tr.y, mem, m_tr.total, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
+		(m_mem.*psm.wi)(m_tr.x, m_tr.y, mem, m_tr.total, blit, m_env.TRXPOS, m_env.TRXREG);
 
 		m_tr.start = m_tr.end = m_tr.total;
 
@@ -1486,11 +1767,11 @@ void GSState::Write(const uint8* mem, int len)
 
 		/*
 		static int n = 0;
-		string s;
+		std::string s;
 		s = format("c:\\temp1\\[%04d]_%05x_%d_%d_%d_%d_%d_%d.bmp",
-			n++, (int)m_env.BITBLTBUF.DBP, (int)m_env.BITBLTBUF.DBW, (int)m_env.BITBLTBUF.DPSM,
+			n++, (int)blit.DBP, (int)blit.DBW, (int)blit.DPSM,
 			r.left, r.top, r.right, r.bottom);
-		m_mem.SaveBMP(s, m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM, r.right, r.bottom);
+		m_mem.SaveBMP(s, blit.DBP, blit.DBW, blit.DPSM, r.right, r.bottom);
 		*/
 	}
 	else
@@ -1543,22 +1824,35 @@ void GSState::Read(uint8* mem, int len)
 	int sy = m_env.TRXPOS.SSAY;
 	int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
+	GSVector4i r(sx, sy, sx + w, sy + h);
 
-	// printf("Read len=%d SBP=%05x SBW=%d SPSM=%d SSAX=%d SSAY=%d RRW=%d RRH=%d\n", len, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM, sx, sy, w, h);
+	// Function is called from the EE thread. Unforunately gl stuff can only be used from a single thread (AKA MTGS)
+	if (GLLoader::in_replayer) {
+		GL_CACHE("Read! len=%d SBP=%05x SBW=%d SPSM=%s SSAX=%d SSAY=%d RRW=%d RRH=%d",
+				len, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, psm_str(m_env.BITBLTBUF.SPSM), sx, sy, w, h);
+	}
 
 	if(!m_tr.Update(w, h, GSLocalMemory::m_psm[m_env.BITBLTBUF.SPSM].trbpp, len))
 	{
 		return;
 	}
 
-	if (!m_init_read_fifo_supported) {
+	if(!m_init_read_fifo_supported)
+	{
 		if(m_tr.x == sx && m_tr.y == sy)
 		{
-			InvalidateLocalMem(m_env.BITBLTBUF, GSVector4i(sx, sy, sx + w, sy + h));
+			InvalidateLocalMem(m_env.BITBLTBUF, r);
 		}
 	}
 
 	m_mem.ReadImageX(m_tr.x, m_tr.y, mem, len, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
+
+	if(s_dump && s_save && s_n >= s_saven) {
+		std::string s = m_dump_root + format("%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
+				s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM,
+				r.left, r.top, r.right, r.bottom);
+		m_mem.SaveBMP(s, m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM, r.right, r.bottom);
+	}
 }
 
 void GSState::Move()
@@ -1572,6 +1866,12 @@ void GSState::Move()
 	int dy = m_env.TRXPOS.DSAY;
 	int w = m_env.TRXREG.RRW;
 	int h = m_env.TRXREG.RRH;
+
+	GL_CACHE("Move! 0x%x W:%d F:%s => 0x%x W:%d F:%s (DIR %d%d), sPos(%d %d) dPos(%d %d) size(%d %d)",
+		m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, psm_str(m_env.BITBLTBUF.SPSM),
+		m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, psm_str(m_env.BITBLTBUF.DPSM),
+		m_env.TRXPOS.DIRX, m_env.TRXPOS.DIRY,
+		sx, sy, dx, dy, w, h);
 
 	InvalidateLocalMem(m_env.BITBLTBUF, GSVector4i(sx, sy, sx + w, sy + h));
 	InvalidateVideoMem(m_env.BITBLTBUF, GSVector4i(dx, dy, dx + w, dy + h));
@@ -1797,7 +2097,7 @@ void GSState::ReadFIFO(uint8* mem, int size)
 
 	if(m_dump)
 	{
-		m_dump.ReadFIFO(size);
+		m_dump->ReadFIFO(size);
 	}
 }
 
@@ -1805,8 +2105,6 @@ template void GSState::Transfer<0>(const uint8* mem, uint32 size);
 template void GSState::Transfer<1>(const uint8* mem, uint32 size);
 template void GSState::Transfer<2>(const uint8* mem, uint32 size);
 template void GSState::Transfer<3>(const uint8* mem, uint32 size);
-
-static hash_map<uint64, uint64> s_tags;
 
 template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 {
@@ -1821,16 +2119,6 @@ template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 		if(path.nloop == 0)
 		{
 			path.SetTag(mem);
-
-			if(0)
-			{
-				GIFTag* t = (GIFTag*)mem;
-				uint64 hash;
-				if(t->NREG < 8) hash = t->u32[2] & ((1 << t->NREG * 4) - 1);
-				else if(t->NREG < 16) {hash = t->u32[2]; ((uint32*)&hash)[1] = t->u32[3] & ((1 << (t->NREG - 8) * 4) - 1);}
-				else hash = t->u64[1];
-				s_tags[hash] += path.nloop * path.nreg;
-			}
 
 			mem += sizeof(GIFTag);
 			size--;
@@ -1901,7 +2189,7 @@ template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 
 						do
 						{
-							(this->*m_fpGIFRegHandlers[((GIFPackedReg*)mem)->A_D.ADDR])(&((GIFPackedReg*)mem)->r);
+							(this->*m_fpGIFRegHandlers[((GIFPackedReg*)mem)->A_D.ADDR & 0x7F])(&((GIFPackedReg*)mem)->r);
 
 							mem += sizeof(GIFPackedReg);
 						}
@@ -1954,7 +2242,7 @@ template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 
 				do
 				{
-					(this->*m_fpGIFRegHandlers[path.GetReg()])((GIFReg*)mem);
+					(this->*m_fpGIFRegHandlers[path.GetReg() & 0x7F])((GIFReg*)mem);
 
 					mem += sizeof(GIFReg);
 					size--;
@@ -1979,7 +2267,7 @@ template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 			case GIF_FLG_IMAGE:
 
 				{
-					int len = (int)min(size, path.nloop);
+					int len = (int)std::min(size, path.nloop);
 
 					//ASSERT(!(len&3));
 
@@ -2028,7 +2316,7 @@ template<int index> void GSState::Transfer(const uint8* mem, uint32 size)
 
 	if(m_dump && mem > start)
 	{
-		m_dump.Transfer(index, start, mem - start);
+		m_dump->Transfer(index, start, mem - start);
 	}
 
 	if(index == 0)
@@ -2193,6 +2481,12 @@ int GSState::Defrost(const GSFreezeData* fd)
 	ReadState(&m_env.TRXPOS, data);
 	ReadState(&m_env.TRXREG, data);
 	ReadState(&m_env.TRXREG, data); // obsolete
+	// Technically this value ought to be saved like m_tr.x/y (break
+	// compatibility) but so far only a single game (Motocross Mania) really
+	// depends on this value (i.e != BITBLTBUF) Savestates are likely done at
+	// VSYNC, so not in the middle of a texture transfer, therefore register
+	// will be set again properly
+	m_tr.m_blit = m_env.BITBLTBUF;
 
 	for(int i = 0; i < 2; i++)
 	{
@@ -2271,13 +2565,25 @@ void GSState::SetGameCRC(uint32 crc, int options)
 {
 	m_crc = crc;
 	m_options = options;
-	m_game = CRC::Lookup(UserHacks_DisableCrcHacks ? 0 : crc);
+	m_game = CRC::Lookup(m_crc_hack_level != CRCHackLevel::None ? crc : 0);
+	SetupCrcHack();
+
+	// Until we find a solution that work for all games.
+	// (if  a solution does exist)
+	if (m_game.title == CRC::HarleyDavidson) {
+		m_clut_load_before_draw = true;
+	}
 }
 
 //
 
 void GSState::UpdateContext()
 {
+	bool ctx_switch = (m_context != &m_env.CTXT[PRIM->CTXT]);
+	if (ctx_switch) {
+		GL_REG("Context Switch %d", PRIM->CTXT);
+	}
+
 	m_context = &m_env.CTXT[PRIM->CTXT];
 
 	UpdateScissor();
@@ -2289,7 +2595,7 @@ void GSState::UpdateScissor()
 	m_ofxy = m_context->scissor.ofxy;
 }
 
-void GSState::UpdateVertexKick() 
+void GSState::UpdateVertexKick()
 {
 	if(m_frameskip) return;
 
@@ -2316,20 +2622,20 @@ void GSState::GrowVertexBuffer()
 	GSVertex* vertex = (GSVertex*)_aligned_malloc(sizeof(GSVertex) * maxcount, 32);
 	uint32* index = (uint32*)_aligned_malloc(sizeof(uint32) * maxcount * 3, 32); // worst case is slightly less than vertex number * 3
 
-	if (!vertex || !index)
+	if(vertex == NULL || index == NULL)
 	{
-		printf("GSdx: failed to allocate %d bytes for verticles and %d for indices.\n", sizeof(GSVertex) * maxcount, sizeof(uint32) * maxcount * 3);
+		printf("GSdx: failed to allocate %d bytes for verticles and %d for indices.\n", (int)sizeof(GSVertex) * maxcount, (int)sizeof(uint32) * maxcount * 3);
 		throw GSDXError();
 	}
 
-	if (m_vertex.buff != NULL)
+	if(m_vertex.buff != NULL)
 	{
 		memcpy(vertex, m_vertex.buff, sizeof(GSVertex) * m_vertex.tail);
 
 		_aligned_free(m_vertex.buff);
 	}
 
-	if (m_index.buff != NULL)
+	if(m_index.buff != NULL)
 	{
 		memcpy(index, m_index.buff, sizeof(uint32) * m_index.tail);
 		
@@ -2341,7 +2647,7 @@ void GSState::GrowVertexBuffer()
 	m_index.buff = index;
 }
 
-template<uint32 prim> 
+template<uint32 prim, bool auto_flush>
 __forceinline void GSState::VertexKick(uint32 skip)
 {
 	ASSERT(m_vertex.tail < m_vertex.maxcount + 3);
@@ -2437,6 +2743,8 @@ __forceinline void GSState::VertexKick(uint32 skip)
 		case GS_TRIANGLESTRIP:
 		case GS_TRIANGLEFAN:
 		case GS_SPRITE:
+			// FIXME: GREG I don't understand the purpose of the m_nativeres check
+			// It impacts badly the number of draw call in the HW renderer.
 			test |= m_nativeres ? pmin.eq16(pmax).zwzwl() : pmin.eq16(pmax);
 			break;
 		default:
@@ -2574,10 +2882,15 @@ __forceinline void GSState::VertexKick(uint32 skip)
 	default:
 		__assume(0);
 	}
+
+	if (auto_flush && PRIM->TME && (m_context->FRAME.Block() == m_context->TEX0.TBP0))
+		FlushPrim();
 }
 
 void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFRegCLAMP& CLAMP, bool linear)
 {
+	// TODO: some of the +1s can be removed if linear == false
+
 	int tw = TEX0.TW;
 	int th = TEX0.TH;
 
@@ -2648,6 +2961,7 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 		int mask = 0;
 
 		// See commented code below for the meaning of mask
+
 		if(wms == CLAMP_REPEAT || wmt == CLAMP_REPEAT)
 		{
 			u = uv & GSVector4i::xffffffff().srl32(32 - tw);
@@ -2667,8 +2981,8 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 			// This commented code cannot be used directly because it needs uv before the intersection
 			/*if (uv_.x >> tw == uv_.z >> tw)
 			{
-				vr.x = max(vr.x, (uv_.x & ((1 << tw) - 1)));
-				vr.z = min(vr.z, (uv_.z & ((1 << tw) - 1)) + 1);
+				vr.x = std::max(vr.x, (uv_.x & ((1 << tw) - 1)));
+				vr.z = std::min(vr.z, (uv_.z & ((1 << tw) - 1)) + 1);
 			}*/
 			if(mask & 0x000f) {if(vr.x < u.x) vr.x = u.x; if(vr.z > u.z + 1) vr.z = u.z + 1;}
 			break;
@@ -2719,6 +3033,7 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 
 	// This really shouldn't happen now except with the clamping region set entirely outside the texture,
 	// special handling should be written for that case.
+
 	if(vr.rempty())
 	{
 		// NOTE: this can happen when texcoords are all outside the texture or clamping area is zero, but we can't 
@@ -2726,6 +3041,7 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 		// examples: 
 		// - THPS (no visible problems)
 		// - NFSMW (strange rectangles on screen, might be unrelated)
+		// - Lupin 3rd (huge problems, textures sizes seem to be randomly specified)
 
 		vr = (vr + GSVector4i(-1, +1).xxyy()).rintersect(tr);
 	}
@@ -2758,8 +3074,8 @@ void GSState::GetAlphaMinMax()
 			a.w = env.TEXA.TA0;
 			break;
 		case 2:
-			a.y = env.TEXA.AEM ? 0 : min(env.TEXA.TA0, env.TEXA.TA1);
-			a.w = max(env.TEXA.TA0, env.TEXA.TA1);
+			a.y = env.TEXA.AEM ? 0 : std::min(env.TEXA.TA0, env.TEXA.TA1);
+			a.w = std::max(env.TEXA.TA0, env.TEXA.TA1);
 			break;
 		case 3:
 			m_mem.m_clut.GetAlphaMinMax32(a.y, a.w);
@@ -2802,24 +3118,49 @@ void GSState::GetAlphaMinMax()
 
 bool GSState::TryAlphaTest(uint32& fm, uint32& zm)
 {
-	const GSDrawingContext* context = m_context;
+	// Shortcut for the easy case
+	if(m_context->TEST.ATST == ATST_ALWAYS)
+		return true;
+
+	// Alpha test can only control the write of some channels. If channels are already masked
+	// the alpha test is therefore a nop.
+	switch (m_context->TEST.AFAIL) {
+		case AFAIL_KEEP:
+			break;
+
+		case AFAIL_FB_ONLY:
+			if (zm == 0xFFFFFFFF)
+				return true;
+
+			break;
+
+		case AFAIL_ZB_ONLY:
+			if (fm == 0xFFFFFFFF)
+				return true;
+
+			break;
+
+		case AFAIL_RGB_ONLY:
+			if (zm == 0xFFFFFFFF && ((fm & 0xFF000000) == 0xFF000000 || GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt == 1))
+				return true;
+	}
 
 	bool pass = true;
 
-	if(context->TEST.ATST == ATST_NEVER)
+	if(m_context->TEST.ATST == ATST_NEVER)
 	{
-		pass = false;
+		pass = false; // Shortcut to avoid GetAlphaMinMax below
 	}
-	else if(context->TEST.ATST != ATST_ALWAYS)
+	else
 	{
 		GetAlphaMinMax();
 
 		int amin = m_vt.m_alpha.min;
 		int amax = m_vt.m_alpha.max;
 
-		int aref = context->TEST.AREF;
+		int aref = m_context->TEST.AREF;
 
-		switch(context->TEST.ATST)
+		switch(m_context->TEST.ATST)
 		{
 		case ATST_NEVER:
 			pass = false;
@@ -2864,7 +3205,7 @@ bool GSState::TryAlphaTest(uint32& fm, uint32& zm)
 
 	if(!pass)
 	{
-		switch(context->TEST.AFAIL)
+		switch(m_context->TEST.AFAIL)
 		{
 		case AFAIL_KEEP: fm = zm = 0xffffffff; break;
 		case AFAIL_FB_ONLY: zm = 0xffffffff; break;
@@ -2918,11 +3259,79 @@ bool GSState::IsOpaque()
 	return context->ALPHA.IsOpaque(amin, amax);
 }
 
+bool GSState::IsMipMapDraw()
+{
+	return m_context->TEX1.MXL > 0 && m_context->TEX1.MMIN >= 2 && m_context->TEX1.MMIN <= 5 && m_vt.m_lod.y > 0;
+}
+
+bool GSState::IsMipMapActive()
+{
+	return m_mipmap && IsMipMapDraw();
+}
+
+GIFRegTEX0 GSState::GetTex0Layer(uint32 lod)
+{
+	// Shortcut
+	if (lod == 0) {
+		return m_context->TEX0;
+	}
+
+	GIFRegTEX0 TEX0 = m_context->TEX0;
+
+	switch(lod)
+	{
+		case 1:
+			TEX0.TBP0 = m_context->MIPTBP1.TBP1;
+			TEX0.TBW = m_context->MIPTBP1.TBW1;
+			break;
+		case 2:
+			TEX0.TBP0 = m_context->MIPTBP1.TBP2;
+			TEX0.TBW = m_context->MIPTBP1.TBW2;
+			break;
+		case 3:
+			TEX0.TBP0 = m_context->MIPTBP1.TBP3;
+			TEX0.TBW = m_context->MIPTBP1.TBW3;
+			break;
+		case 4:
+			TEX0.TBP0 = m_context->MIPTBP2.TBP4;
+			TEX0.TBW = m_context->MIPTBP2.TBW4;
+			break;
+		case 5:
+			TEX0.TBP0 = m_context->MIPTBP2.TBP5;
+			TEX0.TBW = m_context->MIPTBP2.TBW5;
+			break;
+		case 6:
+			TEX0.TBP0 = m_context->MIPTBP2.TBP6;
+			TEX0.TBW = m_context->MIPTBP2.TBW6;
+			break;
+		default:
+			fprintf(stderr, "GetTex0Layer bad parameter. Fix your code!\n");
+			lod = 6;
+			TEX0.TBP0 = m_context->MIPTBP2.TBP6;
+			TEX0.TBW = m_context->MIPTBP2.TBW6;
+	}
+
+	// Correct the texture size
+	if (TEX0.TH <= lod) {
+		TEX0.TH = 1;
+	} else {
+		TEX0.TH -= lod;
+	}
+	if (TEX0.TW <= lod) {
+		TEX0.TW = 1;
+	} else {
+		TEX0.TW -= lod;
+	}
+
+	return TEX0;
+}
+
 // GSTransferBuffer
 
 GSState::GSTransferBuffer::GSTransferBuffer()
 {
 	x = y = 0;
+	overflow = false;
 	start = end = total = 0;
 	buff = (uint8*)_aligned_malloc(1024 * 1024 * 4, 32);
 }
@@ -2932,11 +3341,12 @@ GSState::GSTransferBuffer::~GSTransferBuffer()
 	_aligned_free(buff);
 }
 
-void GSState::GSTransferBuffer::Init(int tx, int ty)
+void GSState::GSTransferBuffer::Init(int tx, int ty, const GIFRegBITBLTBUF& blit)
 {
 	x = tx;
 	y = ty;
 	total = 0;
+	m_blit = blit;
 }
 
 bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
@@ -2963,2533 +3373,4 @@ bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
 	}
 
 	return len > 0;
-}
-
-// hacks
-
-struct GSFrameInfo
-{
-	uint32 FBP;
-	uint32 FPSM;
-	uint32 FBMSK;
-	uint32 TBP0;
-	uint32 TPSM;
-	uint32 TZTST;
-	bool TME;
-};
-
-typedef bool (*GetSkipCount)(const GSFrameInfo& fi, int& skip);
-CRC::Region g_crc_region = CRC::NoRegion;
-int g_aggressive = 0;
-
-bool GSC_Okami(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03800 && fi.TPSM == PSM_PSMT4)
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_MetalGearSolid3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x02000 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 1000; // 76, 79
-		}
-		else if(fi.TME && fi.FBP == 0x02800 && fi.FPSM == PSM_PSMCT24 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1000; // 69
-		}
-	}
-	else
-	{
-		if(!fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32)
-		{
-			skip = 0;
-		}
-		else if(!fi.TME && fi.FBP == fi.TBP0 && fi.TBP0 == 0x2000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT24)
-		{
-			if(g_crc_region == CRC::US || g_crc_region == CRC::JP || g_crc_region == CRC::KO)
-			{
-				skip = 119;	//ntsc
-			}
-			else
-			{
-				skip = 136;	//pal
-			}
-		}
-	}
-
-	return true;
-}
-
-bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && /*fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 &&*/ (fi.TBP0 == 0x01c00 || fi.TBP0 == 0x02000) && fi.TPSM == PSM_PSMZ16)
-		{
-			skip = 26; //27
-		}
-		else if(!fi.TME && (fi.FBP == 0x02a00 || fi.FBP == 0x03000) && fi.FPSM == PSM_PSMCT16)
-		{
-			skip = 10;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01c00 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x00e00 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMT8H)
-		{
-			//not needed anymore?
-			//skip = 24; // blur
-		}
-		else if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
-		{
-			if(fi.FBMSK == 0x00000)
-			{
-				skip = 28; // outline
-			}
-			if(fi.FBMSK == 0x00FFFFFF)
-			{
-				skip = 1;
-			}
-		}
-		else if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMZ16)
-		{
-			skip = 5;
-		}
-		else if(fi.TME && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03f00 && fi.TPSM == PSM_PSMCT32)
-		{
-			if (fi.FBP == 0x03400)
-			{
-				skip = 1;	//PAL
-			}
-			if(fi.FBP == 0x02e00)
-			{
-				skip = 3;	//NTSC
-			}
-		}
-	}
-
-    return true;
-}
-
-bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x00500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00f00 && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 2; // blur
-		}
-	}
-
-	return true;
-}
-
-bool GSC_Bully(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01180) && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01180) && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.FPSM == fi.TPSM)
-		{
-			return false; // allowed
-		}
-
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01180) && fi.FPSM == PSM_PSMCT16S && fi.TBP0 == 0x02300 && fi.TPSM == PSM_PSMZ16S)
-		{
-			skip = 6;
-		}
-	}
-	else
-	{
-		if(!fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01180) && fi.FPSM == PSM_PSMCT32)
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_BullyCC(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01180) && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01180) && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.FPSM == fi.TPSM)
-		{
-			return false; // allowed
-		}
-
-		if(!fi.TME && fi.FBP == 0x02800 && fi.FPSM == PSM_PSMCT24)
-		{
-			skip = 9;
-		}
-	}
-
-	return true;
-}
-bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
-{
-            // Not needed anymore? What did it fix anyway? (rama)
-    if(skip == 0)
-    {
-            if(g_aggressive && fi.TME /*&& fi.FBP == 0x03d80*/ && fi.FPSM == 0 && fi.TBP0 == 0x03fc0 && fi.TPSM == 1)
-            {
-                    skip = 48;	//removes sky bloom
-            }
-            /*
-            if(fi.TME && fi.FBP == 0x02b80 && fi.FPSM == PSM_PSMCT24 && fi.TBP0 == 0x01e80 && fi.TPSM == PSM_PSMCT24)
-            {
-                    skip = 9;
-            }
-            else if(fi.TME && fi.FBP == 0x01c00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03800 && fi.TPSM == PSM_PSMCT32)
-            {
-                    skip = 8;
-            }
-            else if(fi.TME && fi.FBP == 0x01e80 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03880 && fi.TPSM == PSM_PSMCT32)
-            {
-                    skip = 8;
-            }*/
-    }
-
-
-     
-
-
-	return true;
-}
-
-bool GSC_OnePieceGrandAdventure(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x02d00 && fi.FPSM == PSM_PSMCT16 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x00e00 || fi.TBP0 == 0x00f00) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 4;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_OnePieceGrandBattle(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x02d00 && fi.FPSM == PSM_PSMCT16 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x00f00) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 4;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_ICO(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x00800 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03d00 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 3;
-		}
-		else if(fi.TME && fi.FBP == 0x00800 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x02800 && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 1;
-		}
-		else if( g_aggressive && fi.TME && fi.FBP == 0x0800 && (fi.TBP0 == 0x2800 || fi.TBP0 ==0x2c00) && fi.TPSM ==0  && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.TBP0 == 0x00800 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_GT4(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP >= 0x02f00 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01180 /*|| fi.TBP0 == 0x01a40*/) && fi.TPSM == PSM_PSMT8) //TBP0 0x1a40 progressive
-		{
-			skip = 770;	//ntsc, progressive 1540
-		}
-		if(g_crc_region == CRC::EU && fi.TME && fi.FBP >= 0x03400 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01400 ) && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 880;	//pal
-		}
-		else if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01400) && fi.FPSM == PSM_PSMCT24 && fi.TBP0 >= 0x03420 && fi.TPSM == PSM_PSMT8)
-		{
-			// TODO: removes gfx from where it is not supposed to (garage)
-			// skip = 58;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_GT3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP >= 0x02de0 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01180) && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 770;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_GTConcept(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP >= 0x03420 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01400) && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 880;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_WildArms4(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x03100 && fi.FPSM == PSM_PSMZ32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ32)
-		{
-			skip = 100;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x02a00 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_WildArms5(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x03100 && fi.FPSM == PSM_PSMZ32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ32)
-		{
-			skip = 100;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x02a00 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_Manhunt2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x03c20 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x01400 && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 640;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_CrashBandicootWoC(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00) && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x008c0 || fi.TBP0 == 0x00a00) && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.FPSM == fi.TPSM)
-		{
-			return false; // allowed
-		}
-
-		if(fi.TME && (fi.FBP == 0x01e40 || fi.FBP == 0x02200)  && fi.FPSM == PSM_PSMZ24 && (fi.TBP0 == 0x01180 || fi.TBP0 == 0x01400) && fi.TPSM == PSM_PSMZ24)
-		{
-			skip = 42;
-		}
-	}
-	else
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00) && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03c00 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 0;
-		}
-		else if(!fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00))
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_ResidentEvil4(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x03100 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ24)
-		{
-			skip = 176;
-		}
-		else if(fi.TME && fi.FBP ==0x03100 && (fi.TBP0==0x2a00 ||fi.TBP0==0x3480) && fi.TPSM ==0  && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SacredBlaze(const GSFrameInfo& fi, int& skip)
-{
-	//Fix Sacred Blaze rendering glitches
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP==0x0000 || fi.FBP==0x0e00) && (fi.TBP0==0x2880 || fi.TBP0==0x2a80 ) && fi.FPSM==fi.TPSM && fi.TPSM == PSM_PSMCT32 && fi.TPSM ==0 && fi.FBMSK == 0x0)
-		{
-			skip = 1;
-		}
-	}
-	return true;
-}
-
-bool GSC_Spartan(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(g_crc_region == CRC::NoRegion &&fi.TME && fi.FBP == 0x02000 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 107;
-		}
-		if(g_crc_region == CRC::JP && fi.TME && fi.FBP == 0x02180 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x2180 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 3;
-		}
-		else
-		{
-				if(fi.TME)
-				{
-					// depth textures (bully, mgs3s1 intro, Front Mission 5)
-					if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-						// General, often problematic post processing
-						(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-					{
-						skip = 1;
-					}
-				}
-		}
-	}
-
-	return true;
-}
-
-bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x02a00 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01600 && fi.TPSM == PSM_PSMZ24)
-		{
-			skip = 71; // clouds (z, 16-bit)
-		}
-		else if(fi.TME && fi.FBP == 0x02900 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 28; // blur
-		}
-	}
-
-	return true;
-}
-
-bool GSC_Drakengard2(const GSFrameInfo& fi, int& skip)
-{
-	// Below hack breaks the GUI
-	
-	/*if(skip == 0)
-	{
-		if(g_crc_region == CRC::CH && fi.TME && fi.FBP == 0x026c0  && fi.TBP0 == 0x00a00 && fi.FPSM ==2)
-		{
-			skip =34;
-		}
-		if((g_crc_region == CRC::US || g_crc_region == CRC::EU) && fi.TME && fi.FBP == 0x026c0 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00a00 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 64;
-		}
-	}*/
-
-	return true;
-}
-
-bool GSC_Tekken5(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x02d80 || fi.FBP == 0x02ea0 || fi.FBP == 0x03620) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 95;
-		}
-		else if(fi.TME && (fi.FBP == 0x02bc0 || fi.FBP == 0x02be0 || fi.FBP == 0x02d00) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 2;
-		}
-		else if(fi.TME)
-		{
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-				{
-					skip = 24;
-				}
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x00a80 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
-		{
-			skip = 1000; // shadow (result is broken without depth copy, also includes 16 bit)
-		}
-		else if(fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
-		{
-			skip = 11; // blur
-		}
-	}
-	else if(skip > 7)
-	{
-		if(fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00700 && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 7; // the last steps of shadow drawing
-		}
-	}
-
-	return true;
-}
-
-bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			skip = 1000;
-		}
-		else if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0xff000000)
-		{
-			skip = 1; // blur
-		}
-		else if(fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8 && ((fi.TZTST == 2 && fi.FBMSK == 0x00FFFFFF) || (fi.TZTST == 1 && fi.FBMSK == 0x00FFFFFF) || (fi.TZTST == 3 && fi.FBMSK == 0xFF000000)))
-		{
-			skip = 1; // wall of fog
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16)
-		{
-			skip = 3;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME)
-		{
-			if( fi.FBP == 0x00100 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00100 && fi.TPSM == PSM_PSMCT16 // ntsc
-				|| fi.FBP == 0x02100 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x02100 && fi.TPSM == PSM_PSMCT16) // pal
-			{
-				skip = 1000; // shadows
-			}
-			if((fi.FBP == 0x00100 || fi.FBP == 0x02100) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 & 0x03000) == 0x03000
-				&& (fi.TPSM == PSM_PSMT8 || fi.TPSM == PSM_PSMT4)
-				&& ((fi.TZTST == 2 && fi.FBMSK == 0x00FFFFFF) || (fi.TZTST == 1 && fi.FBMSK == 0x00FFFFFF) || (fi.TZTST == 3 && fi.FBMSK == 0xFF000000)))
-			{
-					skip = 1; // wall of fog
-			}
-			else if(g_aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x1300 ) && (fi.TBP0 ==0x0F00 || fi.TBP0 ==0x1300 || fi.TBP0==0x2b00)) // || fi.FBP == 0x0100
-			{
-				skip = 1; // global haze/halo
-			}
-			else if(g_aggressive && fi.TPSM == PSM_PSMCT24 && fi.TME && (fi.FBP ==0x0100 ) && (fi.TBP0==0x2b00 || fi.TBP0==0x2e80)) //480P 2e80 
-			{
-				skip = 1; // water effect and water vertical lines
-			}
-		}
-	}
-	else
-	{
-		if(fi.TME && (fi.FBP == 0x00100 || fi.FBP == 0x02100) && fi.FPSM == PSM_PSMCT16)
-		{
-			skip = 3;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_GiTS(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01400 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x02e40 && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 1315;
-		}
-	}
-	else
-	{
-	}
-
-	return true;
-}
-
-bool GSC_Onimusha3(const GSFrameInfo& fi, int& skip)
-{
-	if(fi.TME /*&& (fi.FBP == 0x00000 || fi.FBP == 0x00700)*/ && (fi.TBP0 == 0x01180 || fi.TBP0 == 0x00e00 || fi.TBP0 == 0x01000 || fi.TBP0 == 0x01200) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
-	{
-		skip = 1;
-	}
-
-	return true;
-}
-
-bool GSC_TalesOfAbyss(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00) && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMT8) // copies the z buffer to the alpha channel of the fb
-		{
-			skip = 1000;
-		}
-		else if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00) && (fi.TBP0 == 0x03560 || fi.TBP0 == 0x038e0) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.TPSM != PSM_PSMT8)
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SonicUnleashed(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FPSM == PSM_PSMCT16S && fi.TBP0 == 0x00000 && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 1000; // shadow
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x00000 && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMCT16S)
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SimpsonsGame(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03000 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 100;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 2;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_Genji(const GSFrameInfo& fi, int& skip)
-{
-	if( !skip && fi.TME && (fi.FBP == 0x700 || fi.FBP == 0x0) && fi.TBP0 == 0x1500 && fi.TPSM )
-		skip=1;
-
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00e00 && fi.TPSM == PSM_PSMZ16)
-		{
-			skip = 6;
-		}	
-		else if(fi.TPSM == PSM_PSMCT24 && fi.TME ==0x0001 && fi.TBP0==fi.FBP)
-		{
-			skip = 1;
-		}
-		else if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-	}
-	else
-	{
-	}
-
-	return true;
-}
-
-bool GSC_StarOcean3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
-		{
-			skip = 1000; //
-		}
-	}
-	else
-	{
-		if(!(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH))
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_ValkyrieProfile2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		/*if(fi.TME && (fi.FBP == 0x018c0 || fi.FBP == 0x02180) && fi.FPSM == fi.TPSM && fi.TBP0 >= 0x03200 && fi.TPSM == PSM_PSMCT32)	//NTSC only, !(fi.TBP0 == 0x03580 || fi.TBP0 == 0x03960)
-		{
-			skip = 1;	//red garbage in lost forest, removes other effects...
-		}
-		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			skip = 1; // //garbage in cutscenes, doesn't remove completely, better use "Alpha Hack"
-        }*/
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
-		{
-			skip = 1000; //
-		}
-	}
-	else
-	{
-		if(!(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH))
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_RadiataStories(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-        {
-			skip = 1;
-        }
-		else if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
-		{
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if(!(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH))
-		{
-			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_HauntingGround(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16S && fi.FBMSK == 0x03FFF)
-		{
-			skip = 1;
-		}
-		else if(fi.TME && fi.FBP == 0x3000 && fi.TBP0 == 0x3380)
-		{
-			skip = 1; // bloom
-		}
-		else if(fi.TME && (fi.FBP ==0x2200) && (fi.TBP0 ==0x3a80) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-		else if(fi.FBP ==0x2200 && fi.TBP0==0x3000 && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-		else if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-
-	return true;
-}
-
-bool GSC_EvangelionJo(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.TBP0 == 0x2BC0 || (fi.FBP == 0 || fi.FBP == 0x1180) && (fi.FPSM | fi.TPSM) == 0)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SuikodenTactics(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if( !fi.TME && fi.TPSM == PSM_PSMT8H && fi.FPSM == 0 &&
-			fi.FBMSK == 0x0FF000000 && fi.TBP0 == 0 && GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM))
-		{
-			skip = 4;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_CaptainTsubasa(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x1C00 && !fi.FBMSK)
-			{
-				skip = 1;
-			}
-	}
-	return true;
-}
-
-bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01180)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_NarutimateAccel(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0 && (fi.FPSM | fi.TPSM) == 0)
-			{
-				skip = 105;
-			}
-		else if(!fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0x1E00 && fi.FPSM == 0 && fi.TPSM == 49 && fi.FBMSK == 0xFF000000)
-			{
-				skip = 1;
-			}
-	}
-	else
-	{
-		if(fi.FBP == 0 && fi.TBP0 == 0x3800 && fi.TME && (fi.FPSM | fi.TPSM) == 0)
-		{
-			skip = 1;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_Naruto(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0 && (fi.FPSM | fi.TPSM) == 0)
-			{
-				skip = 105;
-			}
-		else if(!fi.TME && fi.FBP == 0x3800 && fi.TBP0 == 0x1E00 && fi.FPSM == 0 && fi.TPSM == 49 && fi.FBMSK == 0xFF000000)
-			{
-				skip = 0;
-			}
-	}
-	else
-	{
-		if(fi.FBP == 0 && fi.TBP0 == 0x3800 && fi.TME && (fi.FPSM | fi.TPSM) == 0)
-		{
-			skip = 1;
-		}
-	}
-	
-	return true;
-}
-
-
-bool GSC_EternalPoison(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TPSM == PSM_PSMCT16S && fi.TBP0 == 0x3200)
-		{
-			skip = 1;
-		}
-	}
-	return true;
-}
-
-bool GSC_LegoBatman(const GSFrameInfo& fi, int& skip)
-{
-	if(g_aggressive && skip == 0)
-	{
-		if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x00000)
-		{
-			skip = 3;
-		}
-	}
-	return true;
-}
-
-bool GSC_SakuraTaisen(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(!fi.TME && (fi.FBP == 0x0 || fi.FBP == 0x1180) && (fi.TBP0!=0x3fc0 && fi.TBP0!=0x3c9a && fi.TBP0 !=0x3dec /*fi.TBP0 ==0x38d0 || fi.TBP0==0x3912 ||fi.TBP0==0x3bdc ||fi.TBP0==0x3ab3 ||fi.TBP0<=0x3a92*/) && fi.FPSM == PSM_PSMCT32 && (fi.TPSM == PSM_PSMT8 || fi.TPSM == PSM_PSMT4) && (fi.FBMSK == 0x00FFFFFF || !fi.FBMSK))
-		{
-			skip = 0; //3dec 3fc0 3c9a
-		}
-		if(!fi.TME && (fi.FBP | fi.TBP0) !=0 && (fi.FBP | fi.TBP0) !=0x1180 && (fi.FBP | fi.TBP0) !=0x3be0 && (fi.FBP | fi.TBP0) !=0x3c80 && fi.TBP0!=0x3c9a  && (fi.FBP | fi.TBP0) !=0x3d80 && fi.TBP0 !=0x3dec&& fi.FPSM == PSM_PSMCT32 && (fi.FBMSK==0))
-		{
-			skip =0; //3dec 3fc0 3c9a
-		}
-		if(!fi.TME && (fi.FBP | fi.TBP0) !=0 && (fi.FBP | fi.TBP0) !=0x1180 && (fi.FBP | fi.TBP0) !=0x3be0 && (fi.FBP | fi.TBP0) !=0x3c80 && (fi.FBP | fi.TBP0) !=0x3d80 && fi.TBP0!=0x3c9a && fi.TBP0 !=0x3de && fi.FPSM == PSM_PSMCT32 && (fi.FBMSK==0))
-		{
-			skip =1; //3dec 3fc0 3c9a
-		}
-		else if(fi.TME && (fi.FBP == 0 || fi.FBP == 0x1180) && fi.TBP0 == 0x35B8 && fi.TPSM == PSM_PSMT4)
-		{
-			skip = 1;
-		}
-		else
-		{
-			if(!fi.TME && (fi.FBP | fi.TBP0) ==0x38d0 && fi.FPSM == PSM_PSMCT32 )
-			{
-				skip = 1; //3dec 3fc0 3c9a
-			}
-		}
-	}
-
-	return true;
-}
-
-bool GSC_Tenchu(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			skip = 3; 
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_Sly3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00700 || fi.FBP == 0x00a80 || fi.FBP == 0x00e00) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x00700 || fi.TBP0 == 0x00a80 || fi.TBP0 == 0x00e00) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			skip = 3;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_Sly2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME &&  (fi.FBP == 0x00000 || fi.FBP == 0x00700 || fi.FBP == 0x00800) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			skip = 3;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_ShadowofRome(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.FBP && fi.TPSM == PSM_PSMT8H && ( fi.FBMSK ==0x00FFFFFF))
-		{
-			skip =1;
-		}
-		else if(fi.TME ==0x0001 && (fi.TBP0==0x1300 || fi.TBP0==0x0f00) && fi.FBMSK>=0xFFFFFF)
-		{
-			skip = 1;
-		}		
-		else if(fi.TME && (fi.FBP >=0x0) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 ==0x0160 ||fi.TBP0==0x01e0 || fi.TBP0<=0x0800) && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 1;
-		}
-		else if(fi.TME && (fi.TBP0==0x0700) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
-		{
-			skip = 1;
-		} 
-	}
-	
-	return true;
-}
-
-bool GSC_FFXII(const GSFrameInfo& fi, int& skip)
-{
-	if(g_aggressive && skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-	return true;
-}
-
-bool GSC_FFX2(const GSFrameInfo& fi, int& skip)
-{
-	if(g_aggressive && skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-	return true;
-}
-
-bool GSC_FFX(const GSFrameInfo& fi, int& skip)
-{
-	if(g_aggressive && skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-	return true;
-}
-
-bool GSC_ArctheLad(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		/*if(fi.TPSM == PSM_PSMT8H && fi.FBMSK >= 0xFFFFFFF)
-		{
-			skip = 1;
-		}*/
-	}
-	return true;
-}
-
-bool GSC_DemonStone(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01400 && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32)
-		{
-			skip = 2;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00a00) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 3;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_TimeSplitters2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x00e00 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0x0FF000000)
-		{
-			skip = 1;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_ReZ(const GSFrameInfo& fi, int& skip)
-{
-	//not needed anymore
-	/*if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x00a00) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; 
-		}
-	}*/
-
-	return true;
-}
-
-bool GSC_LordOfTheRingsTwoTowers(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x01180 || fi.FBP == 0x01400) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 1000;//shadows
-		}
-		else if(fi.TME && fi.TPSM == PSM_PSMZ16 && fi.TBP0 == 0x01400 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			skip = 3;	//wall of fog
-		}
-	}
-	else
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x01000) && (fi.TBP0 == 0x01180 || fi.TBP0 == 0x01400) && fi.FPSM == PSM_PSMCT32)
-		{
-			skip = 2;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_LordOfTheRingsThirdAge(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(!fi.TME && fi.FBP == 0x03000 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4 && fi.FBMSK == 0xFF000000)
-		{
-			skip = 1000;	//shadows
-		}
-	}
-	else
-	{
-		if (fi.TME && (fi.FBP == 0x0 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03000 && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 1;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_RedDeadRevolver(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(!fi.TME && (fi.FBP == 0x02420 || fi.FBP == 0x025e0) && fi.FPSM == PSM_PSMCT24)
-		{
-			skip = 1200;
-		}
-		else if(fi.TME && (fi.FBP == 0x00800 || fi.FBP == 0x009c0) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x01600 || fi.TBP0 == 0x017c0) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 2;	//filter
-		}
-		else if(fi.FBP == 0x03700 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 2;	//blur
-		}
-	}
-	else
-	{
-		if(fi.TME && (fi.FBP == 0x00800 || fi.FBP == 0x009c0) && fi.FPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_HeavyMetalThunder(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x03100 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMZ32)
-		{
-			skip = 100;
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == 0x00e00 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x02a00 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01180 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03fc0 && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_Castlevania(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0 && fi.TBP0 && fi.TPSM == 10 && fi.FBMSK == 0xFFFFFF)
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_Black(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME /*&& (fi.FBP == 0x00000 || fi.FBP == 0x008c0)*/ && fi.FPSM == PSM_PSMCT16 && (fi.TBP0 == 0x01a40 || fi.TBP0 == 0x01b80 || fi.TBP0 == 0x030c0) && fi.TPSM == PSM_PSMZ16 || (GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)))
-		{
-			skip = 5;
-		}
-	}
-	else
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x008c0 || fi.FBP == 0x0a00 ) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4)
-		{
-			skip = 0;
-		}
-		else if(!fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 0;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_CrashNburn(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-
-	return true;
-}
-
-bool GSC_TombRaider(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01000 && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; 
-		}
-	}
-	return true;
-}
-
-bool GSC_TombRaiderLegend(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01000 && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2b60 ||fi.TBP0 == 0x2b80 || fi.TBP0 == 0x2E60 ||fi.TBP0 ==0x3020 ||fi.TBP0 == 0x3200 || fi.TBP0 == 0x3320))
-		{
-			skip = 1;
-		}
-		else if(fi.TPSM == PSM_PSMCT32 && (fi.TPSM | fi.FBP)==0x2fa0 && (fi.TBP0==0x2bc0 ) && fi.FBMSK ==0)  
-		{
-			skip = 2;
-		}
-		
-		
-	}// ||fi.TBP0 ==0x2F00
-
-	return true;
-}
-
-bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01000 && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2B60 /*|| fi.TBP0 == 0x2EFF || fi.TBP0 ==0x2F00 || fi.TBP0 == 0x3020*/ || fi.TBP0 >= 0x2C01 && fi.TBP0!=0x3029 && fi.TBP0!=0x302d))
-		{
-			skip = 1;
-		}
-		else if(fi.TPSM == PSM_PSMCT32 && (fi.TPSM | fi.FBP)==0x2c00 && (fi.TBP0 ==0x0ee0) && fi.FBMSK ==0)  
-		{
-			skip = 2;
-		}
-		/*else if(fi.TPSM == PSM_PSMCT16 && (fi.TPSM | fi.FBP)>=0x0 && (fi.TBP0 >=0x0) && fi.FBMSK ==0)  
-		{
-			skip = 600;
-		}*/
-	}
-
-	return true;
-}
-
-bool GSC_SSX3(const GSFrameInfo& fi, int& skip)
-{
-	if(g_aggressive && skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-
-	return true;
-}
-
-bool GSC_FFVIIDoC(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01c00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x02c00 && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 1;
-		}
-		if(!fi.TME && fi.FBP == 0x01c00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x01c00 && fi.TPSM == PSM_PSMCT24)
-		{
-			//skip = 1;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_DevilMayCry3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-
-		if(fi.TME && fi.FBP == 0x01800 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x01000 && fi.TPSM == PSM_PSMZ16)
-		{
-			skip = 32;
-		}
-		if(fi.TME && fi.FBP == 0x01800 && fi.FPSM == PSM_PSMZ32 && fi.TBP0 == 0x0800 && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 16;
-		}
-		if(fi.TME && fi.FBP == 0x01800 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x0 && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 24;
-		}
-	}
-	
-	return true;
-}
-
-
-bool GSC_StarWarsForceUnleashed(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x038a0 || fi.FBP == 0x03ae0) && fi.FPSM == fi.TPSM && fi.TBP0 == 0x02300 && fi.TPSM == PSM_PSMZ24)
-		{
-			skip = 1000;	//9, shadows
-		}
-	}
-	else
-	{
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x034a0 || fi.TBP0 == 0x36e0) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 2;	
-		}
-
-	}
-	
-	return true;
-}
-
-bool GSC_StarWarsBattlefront(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP > 0x0 && fi.FBP < 0x01000) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 > 0x02000 && fi.TBP0 < 0x03000) && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 1;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_StarWarsBattlefront2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP > 0x01000 && fi.FBP < 0x02000) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 > 0x0 && fi.TBP0 < 0x01000) && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 1;
-		}
-		if(fi.TME && (fi.FBP > 0x01000 && fi.FBP < 0x02000) && fi.FPSM == PSM_PSMZ32 && (fi.TBP0 > 0x0 && fi.TBP0 < 0x01000) && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 1;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_BlackHawkDown(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x00800 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x01800 && fi.TPSM == PSM_PSMZ16)
-		{
-			skip = 2;	//wall of fog
-		}
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 5;	//night filter
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_Burnout(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x01dc0 || fi.FBP == 0x02200) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x01dc0 || fi.TBP0 == 0x02200) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 4;
-		}
-		else if(fi.TME && fi.FPSM == PSM_PSMCT16 && fi.TPSM == PSM_PSMZ16)	//fog
-		{
-			if(fi.FBP == 0x00a00 && fi.TBP0 == 0x01e00)	
-			{
-				skip = 4; //pal
-			}
-			if(fi.FBP == 0x008c0 && fi.TBP0 == 0x01a40)
-			{
-				skip = 3; //ntsc
-			}
-		}
-		else if (fi.TME && (fi.FBP == 0x02d60 || fi.FBP == 0x033a0) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x02d60 || fi.TBP0 == 0x033a0) && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0x0)
-		{
-			skip = 2; //impact screen
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_MidnightClub3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP > 0x01d00 && fi.FBP <= 0x02a00) && fi.FPSM == PSM_PSMCT32 && (fi.FBP >= 0x01600 && fi.FBP < 0x03260) && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 1;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_SpyroNewBeginning(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x034a0 && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 2;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_SpyroEternalNight(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x034a0 ||fi.TBP0 == 0x035a0 || fi.TBP0 == 0x036e0) && fi.TPSM == PSM_PSMCT16)
-		{
-			skip = 2;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x3f80 || fi.FBP == 0x03fa0) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 3; //3, 9
-		}
-		if(fi.TME && fi.FBP == 0x3800 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMZ32)
-		{
-			skip = 2;
-		}
-		if(fi.TME && fi.FBP && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x3d80)
-		{
-			skip = 1;
-		}	
-		if(fi.TME && fi.FBP ==0x1c00 && (fi.TBP0==0x2e80 ||fi.TBP0==0x2d80) && fi.TPSM ==0  && fi.FBMSK == 0xff000000)
-		{
-			skip = 1;
-		}	
-		if(!fi.TME && fi.FBP ==0x2a00 && (fi.TBP0==0x1C00 ) && fi.TPSM ==0  && fi.FBMSK == 0x00FFFFFF)
-		{
-			skip = 1;
-		}
-	}
-		
-	return true;
-}
-
-bool GSC_NanoBreaker(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x0 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x03800 || fi.TBP0 == 0x03900) && fi.TPSM == PSM_PSMCT16S)
-		{
-			skip = 2;
-		}
-	}
-		
-	return true;
-}
-
-bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(!fi.TME && (fi.FBP == 0x0 || fi.FBP == 0x00700 || fi.FBP == 0x00800) && fi.FPSM == PSM_PSMCT32 && fi.FBMSK == 0x00FFFFFF)
-		{
-			skip = 3;
-		}
-		if(fi.TME && (fi.FBP ==0x0700 || fi.FBP==0) && fi.TBP0==0x0e00 && fi.TPSM ==0  && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 1;
-			}
-		}
-	}
-	else
-	{
-		if(fi.TME && (fi.FBP == 0x0e00) && fi.FPSM == PSM_PSMCT32 && fi.FBMSK == 0xFF000000)
-		{
-			skip = 0;
-		}
-	}
-		
-	return true;
-}
-
-bool GSC_Yakuza(const GSFrameInfo& fi, int& skip)
-{
-	if(1
-		&& !skip
-		&& !fi.TME
-		&& (0
-			|| fi.FBP == 0x1c20 && fi.TBP0 == 0xe00		//ntsc (EU and US DVDs)
-			|| fi.FBP == 0x1e20 && fi.TBP0 == 0x1000	//pal1
-			|| fi.FBP == 0x1620 && fi.TBP0 == 0x800		//pal2
-		)
-		&& fi.TPSM == PSM_PSMZ24
-		&& fi.FPSM == PSM_PSMCT32
-		/*
-		&& fi.FBMSK	==0xffffff
-		&& fi.TZTST
-		&& !GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)
-		*/
-	)
-	{
-		skip=3;
-	}
-	return true;
-}
-
-bool GSC_Yakuza2(const GSFrameInfo& fi, int& skip)
-{
-	if(1
-		&& !skip
-		&& !fi.TME
-		&& (0
-			|| fi.FBP == 0x1c20 && fi.TBP0 == 0xe00		//ntsc (EU DVD)
-			|| fi.FBP == 0x1e20 && fi.TBP0 == 0x1000	//pal1
-			|| fi.FBP == 0x1620 && fi.TBP0 == 0x800		//pal2
-		)
-		&& fi.TPSM == PSM_PSMZ24
-		&& fi.FPSM == PSM_PSMCT32
-		/*
-		&& fi.FBMSK	==0xffffff
-		&& fi.TZTST
-		&& !GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)
-		*/
-	)
-	{
-		skip=17;
-	}
-	return true;
-}
-
-bool GSC_SkyGunner(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-
-		if(!fi.TME && !(fi.FBP == 0x0 || fi.FBP == 0x00800 || fi.FBP == 0x008c0 || fi.FBP == 0x03e00) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x0 || fi.TBP0 == 0x01800) && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; //Huge Vram usage
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_JamesBondEverythingOrNothing(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-
-		if(fi.TME && (fi.FBP < 0x02000 && !(fi.FBP == 0x0 || fi.FBP == 0x00e00)) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 > 0x01c00 && fi.TBP0 < 0x03000) && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 1; //Huge Vram usage
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-			if(fi.TME  && fi.TPSM == PSM_PSMCT16S  && (fi.FBMSK >= 0x6FFFFFFF || fi.FBMSK ==0) )
-			{
-				skip = 1000;
-			}
-			else if(fi.TME  && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0xFF000000)
-			{
-				skip = 2;
- 			}
-			else if((fi.FBP | fi.TBP0)&& fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x3FFF)
-			{
-				skip = 1000;
-			}
-			
-	}
-	else 		
-	{
-			if(!fi.TME && fi.TPSM == PSM_PSMCT32  && fi.FBP==0x1180 && fi.TBP0==0x1180 && (fi.FBMSK ==0))
-			{
-				skip = 0; //
-			}
-			if(fi.TME && fi.TPSM == PSM_PSMT4  && fi.FBP && (fi.TBP0!=0x3753))
-			{
-				skip = 0; //
-			}
-			if(fi.TME && fi.TPSM == PSM_PSMT8H && fi.FBP ==0x22e0 && fi.TBP0 ==0x36e0 )
-			{
-				skip = 0; //
-			}
-			if(!fi.TME  && fi.TPSM == PSM_PSMT8H && fi.FBP ==0x22e0 )
-			{
-				skip = 0; //
-			}
-			if(fi.TME  && fi.TPSM == PSM_PSMT8 && (fi.FBP==0x1180 || fi.FBP==0) && (fi.TBP0 !=0x3764 && fi.TBP0!=0x370f))
-			{
-				skip = 0; //
-			}
-			if(fi.TME && fi.TPSM == PSM_PSMCT16S && (fi.FBP==0x1180 ))
-			{
-				skip = 2; //
-			}
-			
-	}
-	
-	return true;
-}
-
-bool GSC_ShinOnimusha(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		
-		if(fi.TME && fi.FBP == 0x001000 && (fi.TBP0 ==0 || fi.TBP0 == 0x0800) && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0x00FFFFFF)
-		{
-			skip = 0;
-		}		
-		else if(fi.TPSM == PSM_PSMCT24 && fi.TME && fi.FBP == 0x01000) // || fi.FBP == 0x00000
-		{
-			skip = 28; //28 30 56 64 
-		}
-		else if(fi.FBP && fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0xFFFFFF)
-		{
-			skip = 0; //24 33 40 9
-		}
-		else if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0xFF000000)
-		{
-			skip = 1;
-		}
-		else if(fi.TME && (fi.TBP0 ==0x1400 || fi.TBP0 ==0x1000 ||fi.TBP0 == 0x1200) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
-		{
-			skip = 1;
-		}
-		
-	}
-	
-	return true;
-}
-
-bool GSC_XE3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK >= 0xEFFFFFFF)
-		{
-			skip = 73;
-		}
-		else if(fi.TME && fi.FBP ==0x03800 && fi.TBP0 && fi.TPSM ==0  && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-		/*else if(fi.TPSM ==0x00000 && PSM_PSMCT24 && fi.TME && fi.FBP == 0x03800)
-		{
-			skip = 1 ;
-		}*/
-		/*else if(fi.TME ==0  && (fi.FBP ==0 ) && fi.FPSM == PSM_PSMCT32 && ( fi.TPSM == PSM_PSMT8 || fi.TPSM == PSM_PSMT4) && (fi.FBMSK == 0x00FFFFFF || fi.FBMSK == 0xFF000000))
-		{
-			skip = 1;
-		}*/
-		else
-		{
-				if(fi.TME)
-				{
-					// depth textures (bully, mgs3s1 intro, Front Mission 5)
-					if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-						// General, often problematic post processing
-						(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-					{
-						skip = 1;
-					}
-				}
-		}
-	}
-	return true;
-}
-
-bool GSC_GetaWay(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if((fi.FBP ==0 || fi.FBP ==0x1180)&& fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME==0 && fi.FBP != fi.TBP0 && fi.TBP0 && fi.FBMSK == 0x00FFFFFF)
-		{
-			skip = 3;
-		}
-		else if(fi.TME==0 && fi.FBP == fi.TBP0 && (fi.TBP0 ==0x1200 ||fi.TBP0 ==0x1180 ||fi.TBP0 ==0) && fi.FBMSK == 0x00FFFFFF)
-		{
-			skip = 3;
-		}	
-		else if(fi.TME && (fi.FBP ==0 || fi.FBP ==0x1180) && fi.FPSM == PSM_PSMCT32 && fi.TBP0 ==0x3F3F && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.TBP0 ==0x0700 || fi.TBP0 ==0x0a80) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_TouristTrophy(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP >= 0x02f00 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x01180) && fi.TPSM == PSM_PSMT8) 
-		{
-			skip = 770;	
-		}
-		if(fi.TME && fi.FBP >= 0x02de0 && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 ==0 || fi.TBP0==0x1a40 ||fi.TBP0 ==0x2300) && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 770; //480P
-		}
-	}
-
-	return true;
-}
-
-bool GSC_GTASanAndreas(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP ==0x0a00 || fi.FBP ==0x08c0) && (fi.TBP0 ==0x1b80 || fi.TBP0 ==0x1a40) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_FrontMission5(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-		if(fi.TME && (fi.FBP ==0x1000) && (fi.TBP0 ==0x2e00 || fi.TBP0 ==0x3200) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; //fi.TBP0 ==0x1f00
-		}
-	}
-
-	return true;
-}
-
-bool GSC_GodHand(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP ==0x0) && (fi.TBP0 ==0x2800) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_KnightsOfTheTemple2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
-		{
-			skip = 1;
-		}
-		else if(fi.TPSM ==0x00000 && PSM_PSMCT24 && fi.TME && (fi.FBP ==0x3400 ||fi.FBP==0x3a00))
-		{
-			skip = 1 ;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_UltramanFightingEvolution(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP==0x2a00 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x1c00 && fi.TPSM == PSM_PSMZ24)
-		{
-			skip = 5; // blur
-		}
-	}
-
-	return true;
-}
-
-bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP ==0 ) && fi.TBP0==0x34a0 && (fi.TPSM == PSM_PSMCT32))
-		{
-			skip = 1;
-		}
-		else if((fi.FBP ==0x3500)&& fi.TPSM == PSM_PSMT8 && fi.FBMSK == 0xFFFF00FF)
-		{
-			skip = 4;
-		}
-	}
-	if(fi.TME)
-		{
-			if((fi.FBP | fi.TBP0 | fi.FPSM | fi.TPSM) && (fi.FBMSK == 0x00FFFFFF ))
-			{
-				skip = 1;
-			}
-		}
-	return true;
-}
-
-bool GSC_AlpineRacer3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(!fi.TME && fi.FBP == 0 && fi.TBP0>=0 && (fi.TPSM >= 0 ) && (fi.FBMSK ==0x0001 ||fi.FBMSK == 0x00FFFFFF))
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_HummerBadlands(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP ==0x0a00) && (fi.TBP0 ==0x03200 || fi.TBP0==0x3700) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_SengokuBasara(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME  && (fi.TBP0==0x1800 ) && fi.FBMSK==0xFF000000)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_Grandia3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP ==0x0 || fi.FBP ==0x0e00) && (fi.TBP0 ==0x2a00 ||fi.TBP0==0x0e00 ||fi.TBP0==0) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1;
-		}
-	}
-	
-
-	return true;
-}
-
-bool GSC_FinalFightStreetwise(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(!fi.TME && (fi.FBP == 0 || fi.FBP == 0x08c0) && fi.FPSM == PSM_PSMCT32 && (fi.TPSM == PSM_PSMT8 || fi.TPSM == PSM_PSMT4) && fi.FBMSK == 0x00FFFFFF)
-		{
-			skip = 3;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_TalesofSymphonia(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP >= 0) && fi.FPSM == PSM_PSMCT32 && (fi.TBP0 == 0x2bc0 || fi.TBP0 <= 0x0200) && (fi.FBMSK==0xFF000000 ||fi.FBMSK==0x00FFFFFF))
-		{
-			skip = 1; //fi.FBMSK==0
-		}
-		if(fi.TME  && (fi.TBP0==0x1180 || fi.TBP0==0x1a40 || fi.TBP0==0x2300) && fi.FBMSK>=0xFF000000)
-		{
-			skip = 1;
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_SoulCalibur2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 2;
-			}
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_SoulCalibur3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = 2;
-			}
-		}
-	}
-	
-	return true;
-}
-
-bool GSC_Simple2000Vol114(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{	
-		if(fi.TME==0 && (fi.FBP==0x1500) && (fi.TBP0==0x2c97 || fi.TBP0==0x2ace || fi.TBP0==0x03d0 || fi.TBP0==0x2448) && (fi.FBMSK == 0x0000))
-		{
-			skip = 1;
-		}
-		if(fi.TME && (fi.FBP==0x0e00) && (fi.TBP0==0x1000) && (fi.FBMSK == 0x0000))
-		{
-			skip = 1;
-		}
-	}
-	return true;
-}
-bool GSC_UrbanReign(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP==0x0000 && fi.TBP0==0x3980 && fi.FPSM==fi.TPSM && fi.TPSM == PSM_PSMCT32 && fi.TPSM ==0  && fi.FBMSK == 0x0)
-		{
-			skip = 1;
-		}
-	}
-	return true;
-}
-
-bool GSC_SteambotChronicles(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		// Author: miseru99 on forums.pcsx2.net
-		if(fi.TME && fi.TPSM == PSM_PSMCT16S)
-		{
-			if(fi.FBP == 0x1180)
-			{
-				skip=1;//1 deletes some of the glitched effects
-			}
-			else if(fi.FBP == 0)
-			{
-				skip=100;//deletes most others(too high deletes the buggy sea completely;c, too low causes glitches to be visible)
-			}
-			else if(g_aggressive && fi.FBP != 0)//Agressive CRC
-			{
-				skip=19;//"speedhack", makes the game very light, vaporized water can disappear when not looked at directly, possibly some interface still, other value to try: 6 breaks menu background, possibly nothing(?) during gameplay, but it's slower, hence not much of a speedhack anymore
-			}
-		}
-	}
-	return true;
-}
-
-#ifdef ENABLE_DYNAMIC_CRC_HACK
-
-#include <sys/stat.h>
-/***************************************************************************
-	AutoReloadLibrary : Automatically reloads a dll if the file was modified.
-		Uses a temporary copy of the watched dll such that the original
-		can be modified while the copy is loaded and used.
-
-	NOTE: The API is not platform specific, but current implementation is Win32.
-***************************************************************************/
-class AutoReloadLibrary
-{
-private:
-	string	m_dllPath, m_loadedDllPath;
-	DWORD	m_minMsBetweenProbes;
-	time_t	m_lastFileModification;
-	DWORD	m_lastProbe;
-	HMODULE	m_library;
-
-	string	GetTempName()
-	{
-		string result = m_loadedDllPath + ".tmp"; //default name
-		TCHAR tmpPath[MAX_PATH], tmpName[MAX_PATH];
-		DWORD ret = GetTempPath(MAX_PATH, tmpPath);
-		if(ret && ret <= MAX_PATH && GetTempFileName(tmpPath, TEXT("GSdx"), 0, tmpName))
-			result = tmpName;
-
-		return result;
-	};
-
-	void	UnloadLib()
-	{
-		if( !m_library )
-			return;
-
-		FreeLibrary( m_library );
-		m_library = NULL;
-
-		// If can't delete (might happen when GSdx closes), schedule delete on reboot
-		if(!DeleteFile( m_loadedDllPath.c_str() ) )
-			MoveFileEx( m_loadedDllPath.c_str(), NULL, MOVEFILE_DELAY_UNTIL_REBOOT );
-	}
-
-public:
-	AutoReloadLibrary( const string dllPath, const int minMsBetweenProbes=100 )
-		: m_minMsBetweenProbes( minMsBetweenProbes )
-		, m_dllPath( dllPath )
-		, m_lastFileModification( 0 )
-		, m_lastProbe( 0 )
-		, m_library( 0 )
-	{};
-
-	~AutoReloadLibrary(){ UnloadLib();	};
-
-	// If timeout has ellapsed, probe the dll for change, and reload if it was changed.
-	// If it returns true, then the dll was freed/reloaded, and any symbol addresse previously obtained is now invalid and needs to be re-obtained.
-	// Overhead is very low when when probe timeout has not ellapsed, and especially if current timestamp is supplied as argument.
-	// Note: there's no relation between the file modification date and currentMs value, so it need'nt neccessarily be an actual timestamp.
-	// Note: isChanged is guarenteed to return true at least once
-	//       (even if the file doesn't exist, at which case the following GetSymbolAddress will return NULL)
-	bool isChanged( const DWORD currentMs=0 )
-	{
-		DWORD current = currentMs? currentMs : GetTickCount();
-		if( current >= m_lastProbe && ( current - m_lastProbe ) < m_minMsBetweenProbes )
-			return false;
-
-		bool firstTime = !m_lastProbe;
-		m_lastProbe = current;
-
-		struct stat s;
-		if( stat( m_dllPath.c_str(), &s ) )
-		{	
-			// File doesn't exist or other error, unload dll
-			bool wasLoaded = m_library?true:false;
-			UnloadLib();	
-			return firstTime || wasLoaded;	// Changed if previously loaded or the first time accessing this method (and file doesn't exist)
-		}
-
-		if( m_lastFileModification == s.st_mtime )
-			return false;
-		m_lastFileModification = s.st_mtime;
-
-		// File modified, reload
-		UnloadLib();
-
-		if( !CopyFile( m_dllPath.c_str(), ( m_loadedDllPath = GetTempName() ).c_str(), false ) )
-			return true;
-
-		m_library = LoadLibrary( m_loadedDllPath.c_str() );
-		return true;
-	};
-
-	// Return value is NULL if the dll isn't loaded (failure or doesn't exist) or if the symbol isn't found.
-	void* GetSymbolAddress( const char* name ){ return m_library? GetProcAddress( m_library, name ) : NULL; };
-};
-
-
-// Use DynamicCrcHack function from a dll which can be modified while GSdx/PCSX2 is running.
-// return value is true if the call succeeded or false otherwise (If the hack could not be invoked: no dll/function/etc).
-// result contains the result of the hack call.
-
-typedef uint32 (__cdecl* DynaHackType)(uint32, uint32, uint32, uint32, uint32, uint32, uint32, int32*, uint32, int32);
-typedef uint32 (__cdecl* DynaHackType2)(uint32, uint32, uint32, uint32, uint32, uint32, uint32, int32*, uint32, int32, uint32); // Also accept CRC
-
-bool IsInvokedDynamicCrcHack( GSFrameInfo &fi, int& skip, int region, bool &result, uint32 crc )
-{
-	static AutoReloadLibrary dll( DYNA_DLL_PATH );
-	static DynaHackType dllFunc = NULL;
-	static DynaHackType2 dllFunc2 = NULL;
-
-	if( dll.isChanged() )
-	{
-		dllFunc  = (DynaHackType)dll.GetSymbolAddress( "DynamicCrcHack" );
-		dllFunc2 = (DynaHackType2)dll.GetSymbolAddress( "DynamicCrcHack2" );
-		printf( "GSdx: Dynamic CRC-hacks%s: %s\n", 
-			((dllFunc && !dllFunc2)?" [Old dynaDLL - No CRC support]":""),
-			dllFunc? "Loaded OK        (-> overriding internal hacks)" :
-					 "Not available    (-> using internal hacks)");
-	}
-	
-	if( !dllFunc2 && !dllFunc )
-		return false;
-	
-	int32	skip32 = skip;
-	bool	hasSharedBits = GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM);
-	if(dllFunc2)
-		result	= dllFunc2( fi.FBP, fi.FPSM, fi.FBMSK, fi.TBP0, fi.TPSM, fi.TZTST, (uint32)fi.TME, &skip32, (uint32)region, (uint32)(hasSharedBits?1:0), crc )?true:false;
-	else
-		result	= dllFunc( fi.FBP, fi.FPSM, fi.FBMSK, fi.TBP0, fi.TPSM, fi.TZTST, (uint32)fi.TME, &skip32, (uint32)region, (uint32)(hasSharedBits?1:0) )?true:false;
-	skip	= skip32;
-
-	return true;
-}
-
-#endif
-
-bool GSState::IsBadFrame(int& skip, int UserHacks_SkipDraw)
-{
-	GSFrameInfo fi;
-
-	fi.FBP = m_context->FRAME.Block();
-	fi.FPSM = m_context->FRAME.PSM;
-	fi.FBMSK = m_context->FRAME.FBMSK;
-	fi.TME = PRIM->TME;
-	fi.TBP0 = m_context->TEX0.TBP0;
-	fi.TPSM = m_context->TEX0.PSM;
-	fi.TZTST = m_context->TEST.ZTST;
-
-	static GetSkipCount map[CRC::TitleCount];
-	static bool inited = false;
-
-	if(!inited)
-	{
-		inited = true;
-
-		memset(map, 0, sizeof(map));
-
-		map[CRC::Okami] = GSC_Okami;
-		map[CRC::MetalGearSolid3] = GSC_MetalGearSolid3;
-		map[CRC::DBZBT2] = GSC_DBZBT2;
-		map[CRC::DBZBT3] = GSC_DBZBT3;
-		map[CRC::SFEX3] = GSC_SFEX3;
-		map[CRC::Bully] = GSC_Bully;
-		map[CRC::BullyCC] = GSC_BullyCC;
-		map[CRC::SoTC] = GSC_SoTC;
-		map[CRC::OnePieceGrandAdventure] = GSC_OnePieceGrandAdventure;
-		map[CRC::OnePieceGrandBattle] = GSC_OnePieceGrandBattle;
-		map[CRC::ICO] = GSC_ICO;
-		map[CRC::GT4] = GSC_GT4;
-		map[CRC::GT3] = GSC_GT3;
-		map[CRC::GTConcept] = GSC_GTConcept;
-		map[CRC::WildArms4] = GSC_WildArms4;
-		map[CRC::WildArms5] = GSC_WildArms5;
-		map[CRC::Manhunt2] = GSC_Manhunt2;
-		map[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
-		map[CRC::ResidentEvil4] = GSC_ResidentEvil4;
-		map[CRC::Spartan] = GSC_Spartan;
-		map[CRC::AceCombat4] = GSC_AceCombat4;
-		map[CRC::Drakengard2] = GSC_Drakengard2;
-		map[CRC::Tekken5] = GSC_Tekken5;
-		map[CRC::IkkiTousen] = GSC_IkkiTousen;
-		map[CRC::GodOfWar] = GSC_GodOfWar;
-		map[CRC::GodOfWar2] = GSC_GodOfWar2;
-		map[CRC::GiTS] = GSC_GiTS;
-		map[CRC::Onimusha3] = GSC_Onimusha3;
-		map[CRC::TalesOfAbyss] = GSC_TalesOfAbyss;
-		map[CRC::SonicUnleashed] = GSC_SonicUnleashed;
-		map[CRC::SimpsonsGame] = GSC_SimpsonsGame;
-		map[CRC::Genji] = GSC_Genji;
-		map[CRC::StarOcean3] = GSC_StarOcean3;
-		map[CRC::ValkyrieProfile2] = GSC_ValkyrieProfile2;
-		map[CRC::RadiataStories] = GSC_RadiataStories;
-		map[CRC::HauntingGround] = GSC_HauntingGround;
-		map[CRC::EvangelionJo] = GSC_EvangelionJo;
-		map[CRC::SuikodenTactics] = GSC_SuikodenTactics;
-		map[CRC::CaptainTsubasa] = GSC_CaptainTsubasa;
-		map[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
-		map[CRC::NarutimateAccel] = GSC_NarutimateAccel;
-		map[CRC::Naruto] = GSC_Naruto;
-		map[CRC::EternalPoison] = GSC_EternalPoison;
-		map[CRC::LegoBatman] = GSC_LegoBatman;
-		map[CRC::SakuraTaisen] = GSC_SakuraTaisen;
-		map[CRC::TenchuWoH] = GSC_Tenchu;
-		map[CRC::TenchuFS] = GSC_Tenchu;
-		map[CRC::Sly3] = GSC_Sly3;
-		map[CRC::Sly2] = GSC_Sly2;
-		map[CRC::ShadowofRome] = GSC_ShadowofRome;
-		map[CRC::FFXII] = GSC_FFXII;
-		map[CRC::FFX2] = GSC_FFX2;
-		map[CRC::FFX] = GSC_FFX;
-		map[CRC::ArctheLad] = GSC_ArctheLad;
-		map[CRC::DemonStone] = GSC_DemonStone;
-		map[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
-		map[CRC::TimeSplitters2] = GSC_TimeSplitters2;
-		map[CRC::ReZ] = GSC_ReZ;
-		map[CRC::LordOfTheRingsTwoTowers] = GSC_LordOfTheRingsTwoTowers;
-		map[CRC::LordOfTheRingsThirdAge] = GSC_LordOfTheRingsThirdAge;
-		map[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
-		map[CRC::HeavyMetalThunder] = GSC_HeavyMetalThunder;
-		map[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
-		map[CRC::CastlevaniaCoD] = GSC_Castlevania;
-		map[CRC::CastlevaniaLoI] = GSC_Castlevania;
-		map[CRC::CrashNburn] = GSC_CrashNburn;
-		map[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
-		map[CRC::TombRaiderAnniversary] = GSC_TombRaider;
-		map[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
-		map[CRC::SSX3] = GSC_SSX3;
-		map[CRC::Black] = GSC_Black;
-		map[CRC::FFVIIDoC] = GSC_FFVIIDoC;
-		map[CRC::StarWarsForceUnleashed] = GSC_StarWarsForceUnleashed;
-		map[CRC::StarWarsBattlefront] = GSC_StarWarsBattlefront;
-		map[CRC::StarWarsBattlefront2] = GSC_StarWarsBattlefront2;
-		map[CRC::BlackHawkDown] = GSC_BlackHawkDown;
-		map[CRC::DevilMayCry3] = GSC_DevilMayCry3;
-		map[CRC::BurnoutTakedown] = GSC_Burnout;
-		map[CRC::BurnoutRevenge] = GSC_Burnout;
-		map[CRC::BurnoutDominator] = GSC_Burnout;
-		map[CRC::MidnightClub3] = GSC_MidnightClub3;
-		map[CRC::SpyroNewBeginning] = GSC_SpyroNewBeginning;
-		map[CRC::SpyroEternalNight] = GSC_SpyroEternalNight;
-		map[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
-		map[CRC::NanoBreaker] = GSC_NanoBreaker;
-		map[CRC::Kunoichi] = GSC_Kunoichi;
-		map[CRC::Yakuza] = GSC_Yakuza;
-		map[CRC::Yakuza2] = GSC_Yakuza2;
-		map[CRC::SkyGunner] = GSC_SkyGunner;
-		map[CRC::JamesBondEverythingOrNothing] = GSC_JamesBondEverythingOrNothing;
-		map[CRC::ZettaiZetsumeiToshi2] = GSC_ZettaiZetsumeiToshi2;
-		map[CRC::ShinOnimusha] = GSC_ShinOnimusha;
-		map[CRC::XE3] = GSC_XE3;
-		map[CRC::GetaWay] = GSC_GetaWay;
-		map[CRC::GetaWayBlackMonday] = GSC_GetaWay;
-		map[CRC::SakuraWarsSoLongMyLove] = GSC_SakuraWarsSoLongMyLove;
-		map[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
-		map[CRC::TouristTrophy] = GSC_TouristTrophy;
-		map[CRC::GTASanAndreas] = GSC_GTASanAndreas;
-		map[CRC::FrontMission5] = GSC_FrontMission5;
-		map[CRC::GodHand] = GSC_GodHand;
-		map[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
-		map[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
-		map[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams;
-		map[CRC::AlpineRacer3] = GSC_AlpineRacer3;
-		map[CRC::HummerBadlands] = GSC_HummerBadlands;
-		map[CRC::SengokuBasara] = GSC_SengokuBasara;
-		map[CRC::Grandia3] = GSC_Grandia3;
-		map[CRC::FinalFightStreetwise] = GSC_FinalFightStreetwise;
-		map[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
-		map[CRC::SoulCalibur2] = GSC_SoulCalibur2;
-		map[CRC::SoulCalibur3] = GSC_SoulCalibur3;
-		map[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
-		map[CRC::UrbanReign] = GSC_UrbanReign;
-		map[CRC::SteambotChronicles] = GSC_SteambotChronicles;
-		map[CRC::SacredBlaze] = GSC_SacredBlaze;
-	}
-
-	// TODO: just set gsc in SetGameCRC once
-
-	GetSkipCount gsc = map[m_game.title];
-	g_crc_region = m_game.region;
-	g_aggressive = UserHacks_AggressiveCRC;
-
-#ifdef ENABLE_DYNAMIC_CRC_HACK
-	bool res=false; if(IsInvokedDynamicCrcHack(fi, skip, g_crc_region, res, m_crc)){ if( !res ) return false;	} else
-#endif
-	if(gsc && !gsc(fi, skip))
-	{
-		return false;
-	}
-
-	if(skip == 0 && (UserHacks_SkipDraw > 0) )
-	{
-		if(fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if( (fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)) )
-			{
-				skip = UserHacks_SkipDraw;
-			}
-		}
-	}
-	// Mimic old GSdx behavior (skipping all depth textures with a skip value of 1), to avoid floods of bug reports
-	// that games are broken, when the user hasn't found the skiphack yet. (God of War, sigh...)
-	else if (skip == 0)
-	{
-		if(fi.TME)
-		{
-			if(fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S)
-			{
-				skip = 1;
-			}
-		}
-	}
-
-	if(skip > 0)
-	{
-		skip--;
-
-		return true;
-	}
-
-	return false;
 }

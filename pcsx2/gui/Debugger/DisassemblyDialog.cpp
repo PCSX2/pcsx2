@@ -19,30 +19,35 @@
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
 #include "DebugTools/Breakpoints.h"
+#include "DebugTools/MipsStackWalk.h"
 #include "BreakpointWindow.h"
 #include "PathDefs.h"
+#include "wx/busyinfo.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <Windows.h>
 #endif
 
-BEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
+wxBEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_SETSTATUSBARTEXT, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_UPDATELAYOUT, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINMEMORYVIEW, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_REFERENCEMEMORYVIEW, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_RUNTOPOS, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINDISASM, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_STEPOVER, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_STEPINTO, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_STEPOUT, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_UPDATE, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_BREAKPOINTWINDOW, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_MAPLOADED, DisassemblyDialog::onDebuggerEvent )
+   EVT_SIZE(DisassemblyDialog::onSizeEvent)
    EVT_CLOSE( DisassemblyDialog::onClose )
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
-BEGIN_EVENT_TABLE(CpuTabPage, wxPanel)
+wxBEGIN_EVENT_TABLE(CpuTabPage, wxPanel)
 	EVT_LISTBOX_DCLICK( wxID_ANY, CpuTabPage::listBoxHandler)
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 DebuggerHelpDialog::DebuggerHelpDialog(wxWindow* parent)
 	: wxDialog(parent,wxID_ANY,L"Help")
@@ -109,29 +114,43 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	bottomTabs->AddPage(breakpointList,L"Breakpoints");
 	
 	threadList = NULL;
+	stackFrames = NULL;
 	if (cpu == &r5900Debug)
 	{
 		threadList = new ThreadList(bottomTabs,cpu);
 		bottomTabs->AddPage(threadList,L"Threads");
+
+		stackFrames = new StackFramesList(bottomTabs,cpu,disassembly);
+		bottomTabs->AddPage(stackFrames,L"Stack frames");
 	}
 
 	mainSizer->Add(bottomTabs,1,wxEXPAND);
 
 	mainSizer->Layout();
 
+	symbolCount = 0;
+
 	lastCycles = 0;
 	loadCycles();
 }
 
+void CpuTabPage::clearSymbolMap()
+{
+	symbolCount = 0;
+	functionList->Clear();
+}
+
 void CpuTabPage::reloadSymbolMap()
 {
-	functionList->Clear();
-
-	auto funcs = symbolMap.GetAllSymbols(ST_FUNCTION);
-	for (size_t i = 0; i < funcs.size(); i++)
+	if (!symbolCount)
 	{
-		wxString name = wxString(funcs[i].name.c_str(),wxConvUTF8);
-		functionList->Append(name,(void*)funcs[i].address);
+		auto funcs = symbolMap.GetAllSymbols(ST_FUNCTION);
+		symbolCount = funcs.size();
+		for (size_t i = 0; i < funcs.size(); i++)
+		{
+			wxString name = wxString(funcs[i].name.c_str(), wxConvUTF8);
+			functionList->Append(name, (void*)funcs[i].address);
+		}
 	}
 }
 
@@ -170,9 +189,14 @@ void CpuTabPage::update()
 {
 	breakpointList->reloadBreakpoints();
 
-	if (threadList != NULL)
+	if (threadList != NULL && cpu->isAlive())
+	{
 		threadList->reloadThreads();
 
+		EEThread thread = threadList->getRunningThread();
+		if (thread.tid != -1)
+			stackFrames->loadStackFrames(thread);
+	}
 	Refresh();
 }
 
@@ -186,10 +210,28 @@ void CpuTabPage::loadCycles()
 	lastCycles = cycles;
 }
 
+u32 CpuTabPage::getStepOutAddress()
+{
+	if (threadList == NULL)
+		return (u32)-1;
+
+	EEThread currentThread = threadList->getRunningThread();
+	std::vector<MipsStackWalk::StackFrame> frames =
+		MipsStackWalk::Walk(cpu,cpu->getPC(),cpu->getRegister(0,31),cpu->getRegister(0,29),
+			currentThread.data.entry_init,currentThread.data.stack);
+
+	if (frames.size() < 2)
+		return (u32)-1;
+
+	return frames[1].pc;
+}
+
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	wxFrame( parent, wxID_ANY, L"Debugger", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU ),
 	currentCpu(NULL)
 {
+	int width = g_Conf->EmuOptions.Debugger.WindowWidth;
+	int height = g_Conf->EmuOptions.Debugger.WindowHeight;
 
 	topSizer = new wxBoxSizer( wxVERTICAL );
 	wxPanel *panel = new wxPanel(this, wxID_ANY, 
@@ -200,37 +242,38 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	wxBoxSizer* topRowSizer = new wxBoxSizer(wxHORIZONTAL);
 
 	breakRunButton = new wxButton(panel, wxID_ANY, L"Run");
-	Connect(breakRunButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DisassemblyDialog::onBreakRunClicked));
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onBreakRunClicked, this, breakRunButton->GetId());
 	topRowSizer->Add(breakRunButton,0,wxRIGHT,8);
 
 	stepIntoButton = new wxButton( panel, wxID_ANY, L"Step Into" );
 	stepIntoButton->Enable(false);
-	Connect( stepIntoButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onStepIntoClicked ) );
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onStepIntoClicked, this, stepIntoButton->GetId());
 	topRowSizer->Add(stepIntoButton,0,wxBOTTOM,2);
 
 	stepOverButton = new wxButton( panel, wxID_ANY, L"Step Over" );
 	stepOverButton->Enable(false);
-	Connect( stepOverButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onStepOverClicked ) );
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onStepOverClicked, this, stepOverButton->GetId());
 	topRowSizer->Add(stepOverButton);
 	
 	stepOutButton = new wxButton( panel, wxID_ANY, L"Step Out" );
 	stepOutButton->Enable(false);
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onStepOutClicked, this, stepOutButton->GetId());
 	topRowSizer->Add(stepOutButton,0,wxRIGHT,8);
 	
 	breakpointButton = new wxButton( panel, wxID_ANY, L"Breakpoint" );
-	Connect( breakpointButton->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( DisassemblyDialog::onBreakpointClick ) );
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onBreakpointClick, this, breakpointButton->GetId());
 	topRowSizer->Add(breakpointButton);
 
 	topSizer->Add(topRowSizer,0,wxLEFT|wxRIGHT|wxTOP,3);
 
 	// create middle part of the window
-	wxNotebook* middleBook = new wxNotebook(panel,wxID_ANY);  
+	middleBook = new wxNotebook(panel,wxID_ANY);  
 	middleBook->SetBackgroundColour(wxColour(0xFFF0F0F0));
 	eeTab = new CpuTabPage(middleBook,&r5900Debug);
 	iopTab = new CpuTabPage(middleBook,&r3000Debug);
 	middleBook->AddPage(eeTab,L"R5900");
 	middleBook->AddPage(iopTab,L"R3000");
-	Connect(middleBook->GetId(),wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED,wxCommandEventHandler( DisassemblyDialog::onPageChanging));
+	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &DisassemblyDialog::onPageChanging, this, middleBook->GetId());
 	topSizer->Add(middleBook,3,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,3);
 	currentCpu = eeTab;
 
@@ -239,10 +282,24 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	SetMinSize(wxSize(1000,600));
 	panel->GetSizer()->Fit(this);
 
+	if (width != 0 && height != 0)
+		SetSize(width,height);
+
 	setDebugMode(true,true);
 }
 
-#ifdef WIN32
+void DisassemblyDialog::onSizeEvent(wxSizeEvent& event)
+{
+	if (event.GetEventType() == wxEVT_SIZE)
+	{
+		g_Conf->EmuOptions.Debugger.WindowWidth = event.GetSize().x;
+		g_Conf->EmuOptions.Debugger.WindowHeight = event.GetSize().y;
+	}
+
+	event.Skip();
+}
+
+#ifdef _WIN32
 WXLRESULT DisassemblyDialog::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)
 {
 	switch (nMsg)
@@ -297,6 +354,11 @@ void DisassemblyDialog::onStepIntoClicked(wxCommandEvent& evt)
 	stepInto();
 }
 
+void DisassemblyDialog::onStepOutClicked(wxCommandEvent& evt)
+{
+	stepOut();
+}
+
 void DisassemblyDialog::onPageChanging(wxCommandEvent& evt)
 {
 	wxNotebook* notebook = (wxNotebook*)wxWindow::FindWindowById(evt.GetId());
@@ -336,7 +398,7 @@ void DisassemblyDialog::stepOver()
 	u32 breakpointAddress = currentPc+disassembly->getInstructionSizeAt(currentPc);
 	if (info.isBranch)
 	{
-		if (info.isConditional == false)
+		if (!info.isConditional)
 		{
 			if (info.isLinkedBranch)	// jal, jalr
 			{
@@ -383,7 +445,7 @@ void DisassemblyDialog::stepInto()
 	u32 breakpointAddress = currentPc+disassembly->getInstructionSizeAt(currentPc);
 	if (info.isBranch)
 	{
-		if (info.isConditional == false)
+		if (!info.isConditional)
 		{
 			breakpointAddress = info.branchTarget;
 		} else {
@@ -404,6 +466,20 @@ void DisassemblyDialog::stepInto()
 	r5900Debug.resumeCpu();
 }
 
+void DisassemblyDialog::stepOut()
+{
+	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused() || currentCpu == NULL)
+		return;
+	// If the current PC is on a breakpoint, the user doesn't want to do nothing.
+	CBreakPoints::SetSkipFirst(r5900Debug.getPC());
+
+	u32 addr = currentCpu->getStepOutAddress();
+	if (addr == (u32)-1)
+		return;
+
+	CBreakPoints::AddBreakPoint(addr,true);
+	r5900Debug.resumeCpu();
+}
 
 void DisassemblyDialog::onBreakpointClick(wxCommandEvent& evt)
 {
@@ -424,7 +500,7 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	if (type == debEVT_SETSTATUSBARTEXT)
 	{
 		DebugInterface* cpu = reinterpret_cast<DebugInterface*>(evt.GetClientData());
-		if (cpu != NULL && cpu == currentCpu->getCpu())
+		if (cpu != NULL && currentCpu != NULL && cpu == currentCpu->getCpu())
 			GetStatusBar()->SetLabel(evt.GetString());
 	} else if (type == debEVT_UPDATELAYOUT)
 	{
@@ -437,8 +513,15 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		if (currentCpu != NULL)
 		{
 			currentCpu->showMemoryView();
-			currentCpu->getMemoryView()->gotoAddress(evt.GetInt());
+
+			currentCpu->getMemoryView()->gotoAddress(evt.GetInt(), true);
 			currentCpu->getDisassembly()->SetFocus();
+		}
+	} else if (type == debEVT_REFERENCEMEMORYVIEW)
+	{
+		if (currentCpu != NULL)
+		{
+			currentCpu->getMemoryView()->updateReference(evt.GetInt());
 		}
 	} else if (type == debEVT_RUNTOPOS)
 	{
@@ -473,8 +556,15 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		onBreakpointClick(evt);
 	} else if (type == debEVT_MAPLOADED)
 	{
+		wxBusyInfo wait("Please wait, Reloading ELF functions");
+		eeTab->clearSymbolMap();
+		iopTab->clearSymbolMap();
 		eeTab->reloadSymbolMap();
 		iopTab->reloadSymbolMap();
+	} else if (type == debEVT_STEPOUT)
+	{
+		if (currentCpu != NULL)
+			stepOut();
 	}
 }
 
@@ -499,8 +589,14 @@ void DisassemblyDialog::update()
 void DisassemblyDialog::reset()
 {
 	eeTab->getDisassembly()->clearFunctions();
-	eeTab->reloadSymbolMap();
+	eeTab->clearSymbolMap();
 	iopTab->getDisassembly()->clearFunctions();
+	iopTab->clearSymbolMap();
+}
+
+void DisassemblyDialog::populate()
+{
+	eeTab->reloadSymbolMap();
 	iopTab->reloadSymbolMap();
 }
 
@@ -519,13 +615,32 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 
 	if (running)
 	{
+		if (currentCpu == NULL)
+		{
+			wxWindow* currentPage = middleBook->GetCurrentPage();
+
+			if (currentPage == eeTab)
+				currentCpu = eeTab;
+			else if (currentPage == iopTab)
+				currentCpu = iopTab;
+
+			if (currentCpu != NULL)
+				currentCpu->update();
+		}
+
 		if (debugMode)
 		{
+				if (!CBreakPoints::GetBreakpointTriggered())
+				{
+					wxBusyInfo wait("Please wait, Reading ELF functions");
+					populate();
+				}
 			CBreakPoints::ClearTemporaryBreakPoints();
 			breakRunButton->SetLabel(L"Run");
 
 			stepOverButton->Enable(true);
 			stepIntoButton->Enable(true);
+			stepOutButton->Enable(currentCpu == eeTab);
 
 			if (switchPC || CBreakPoints::GetBreakpointTriggered())
 				gotoPc();
@@ -535,6 +650,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 				if (currentCpu != NULL)
 					currentCpu->getDisassembly()->SetFocus();
 				CBreakPoints::SetBreakpointTriggered(false);
+				CBreakPoints::SetSkipFirst(0);
 			}
 
 			if (currentCpu != NULL)
@@ -546,6 +662,12 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 			stepOverButton->Enable(false);
 			stepOutButton->Enable(false);
 		}
+	} else {
+		breakRunButton->SetLabel(L"Run");
+		stepIntoButton->Enable(false);
+		stepOverButton->Enable(false);
+		stepOutButton->Enable(false);
+		currentCpu = NULL;
 	}
 
 	update();

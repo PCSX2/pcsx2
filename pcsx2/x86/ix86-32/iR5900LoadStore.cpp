@@ -26,9 +26,6 @@ using namespace x86Emitter;
 #define REC_STORES
 #define REC_LOADS
 
-// Implemented at the bottom of the module:
-void SetFastMemory(int bSetFast);
-
 namespace R5900 {
 namespace Dynarec {
 namespace OpcodeImpl {
@@ -83,10 +80,10 @@ void _eeOnLoadWrite(u32 reg)
 	if( regt >= 0 ) {
 		if( xmmregs[regt].mode & MODE_WRITE ) {
 			if( reg != _Rs_ ) {
-				SSE2_PUNPCKHQDQ_XMM_to_XMM(regt, regt);
-				SSE2_MOVQ_XMM_to_M64((uptr)&cpuRegs.GPR.r[reg].UL[2], regt);
+				xPUNPCK.HQDQ(xRegisterSSE(regt), xRegisterSSE(regt));
+				xMOVQ(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
 			}
-			else SSE_MOVHPS_XMM_to_M64((uptr)&cpuRegs.GPR.r[reg].UL[2], regt);
+			else xMOVH.PS(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
 		}
 		xmmregs[regt].inuse = 0;
 	}
@@ -95,11 +92,6 @@ void _eeOnLoadWrite(u32 reg)
 using namespace Interpreter::OpcodeImpl;
 
 __aligned16 u32 dummyValue[4];
-
-void SetFastMemory(int bSetFast)
-{
-	// nothing
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -129,7 +121,7 @@ void recLoad64( u32 bits, bool sign )
 	else
 	{
 		// Load ECX with the source memory address that we're reading from.
-		_eeMoveGPRtoR(ECX, _Rs_);
+		_eeMoveGPRtoR(ecx, _Rs_);
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 		if (bits == 128)		// force 16 byte alignment on 128 bit reads
@@ -163,9 +155,9 @@ void recLoad32( u32 bits, bool sign )
 	else
 	{
 		// Load ECX with the source memory address that we're reading from.
-		_eeMoveGPRtoR(ECX, _Rs_);
+		_eeMoveGPRtoR(ecx, _Rs_);
 		if (_Imm_ != 0)
-			ADD32ItoR( ECX, _Imm_ );
+			xADD(ecx, _Imm_ );
 
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
@@ -202,7 +194,7 @@ void recStore(u32 bits)
 
         if (bits < 64)
         {
-                _eeMoveGPRtoR(EDX, _Rt_);
+                _eeMoveGPRtoR(edx, _Rt_);
         }
         else if (bits == 128 || bits == 64)
         {
@@ -223,7 +215,7 @@ void recStore(u32 bits)
         }
         else
         {
-                _eeMoveGPRtoR(ECX, _Rs_);
+                _eeMoveGPRtoR(ecx, _Rs_);
                 if (_Imm_ != 0)
                         xADD(ecx, _Imm_);
                 if (bits == 128)
@@ -238,20 +230,20 @@ void recStore(u32 bits)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-void recLB()  { recLoad32(8,true); }
-void recLBU() { recLoad32(8,false); }
-void recLH()  { recLoad32(16,true); }
-void recLHU() { recLoad32(16,false); }
-void recLW()  { recLoad32(32,true); }
-void recLWU() { recLoad32(32,false); }
-void recLD()  { recLoad64(64,false); }
-void recLQ()  { recLoad64(128,false); }
+void recLB()  { recLoad32(8,true);    EE::Profiler.EmitOp(eeOpcode::LB);}
+void recLBU() { recLoad32(8,false);   EE::Profiler.EmitOp(eeOpcode::LBU);}
+void recLH()  { recLoad32(16,true);   EE::Profiler.EmitOp(eeOpcode::LH);}
+void recLHU() { recLoad32(16,false);  EE::Profiler.EmitOp(eeOpcode::LHU);}
+void recLW()  { recLoad32(32,true);   EE::Profiler.EmitOp(eeOpcode::LW);}
+void recLWU() { recLoad32(32,false);  EE::Profiler.EmitOp(eeOpcode::LWU);}
+void recLD()  { recLoad64(64,false);  EE::Profiler.EmitOp(eeOpcode::LD);}
+void recLQ()  { recLoad64(128,false); EE::Profiler.EmitOp(eeOpcode::LQ);}
 
-void recSB()  { recStore(8); }
-void recSH()  { recStore(16); }
-void recSW()  { recStore(32); }
-void recSQ()  { recStore(128); }
-void recSD()  { recStore(64); }
+void recSB()  { recStore(8);   EE::Profiler.EmitOp(eeOpcode::SB);}
+void recSH()  { recStore(16);  EE::Profiler.EmitOp(eeOpcode::SH);}
+void recSW()  { recStore(32);  EE::Profiler.EmitOp(eeOpcode::SW);}
+void recSQ()  { recStore(128); EE::Profiler.EmitOp(eeOpcode::SQ);}
+void recSD()  { recStore(64);  EE::Profiler.EmitOp(eeOpcode::SD);}
 
 ////////////////////////////////////////////////////
 
@@ -261,7 +253,7 @@ void recLWL()
 	iFlushCall(FLUSH_FULLVTLB);
 	_deleteEEreg(_Rt_, 1);
 
-	_eeMoveGPRtoR(ECX, _Rs_);
+	_eeMoveGPRtoR(ecx, _Rs_);
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 
@@ -298,6 +290,8 @@ void recLWL()
 
 	recCall(LWL);
 #endif
+
+	EE::Profiler.EmitOp(eeOpcode::LWL);
 }
 
 ////////////////////////////////////////////////////
@@ -307,7 +301,7 @@ void recLWR()
 	iFlushCall(FLUSH_FULLVTLB);
 	_deleteEEreg(_Rt_, 1);
 
-	_eeMoveGPRtoR(ECX, _Rs_);
+	_eeMoveGPRtoR(ecx, _Rs_);
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 
@@ -347,6 +341,8 @@ void recLWR()
 
 	recCall(LWR);
 #endif
+
+	EE::Profiler.EmitOp(eeOpcode::LWR);
 }
 
 ////////////////////////////////////////////////////
@@ -355,7 +351,7 @@ void recSWL()
 #ifdef REC_STORES
 	iFlushCall(FLUSH_FULLVTLB);
 
-	_eeMoveGPRtoR(ECX, _Rs_);
+	_eeMoveGPRtoR(ecx, _Rs_);
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 
@@ -378,12 +374,12 @@ void recSWL()
 		// mask write and OR -> edx
 		xMOV(ecx, 24);
 		xSUB(ecx, edi);
-		_eeMoveGPRtoR(EAX, _Rt_);
+		_eeMoveGPRtoR(eax, _Rt_);
 		xSHR(eax, cl);
 		xOR(edx, eax);
 	}
 
-	_eeMoveGPRtoR(ECX, _Rs_);
+	_eeMoveGPRtoR(ecx, _Rs_);
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 	xAND(ecx, ~3);
@@ -395,6 +391,8 @@ void recSWL()
 	_deleteEEreg(_Rt_, 1);
 	recCall(SWL);
 #endif
+
+	EE::Profiler.EmitOp(eeOpcode::SWL);
 }
 
 ////////////////////////////////////////////////////
@@ -403,7 +401,7 @@ void recSWR()
 #ifdef REC_STORES
 	iFlushCall(FLUSH_FULLVTLB);
 
-	_eeMoveGPRtoR(ECX, _Rs_);
+	_eeMoveGPRtoR(ecx, _Rs_);
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 
@@ -426,12 +424,12 @@ void recSWR()
 	{
 		// mask write and OR -> edx
 		xMOV(ecx, edi);
-		_eeMoveGPRtoR(EAX, _Rt_);
+		_eeMoveGPRtoR(eax, _Rt_);
 		xSHL(eax, cl);
 		xOR(edx, eax);
 	}
 
-	_eeMoveGPRtoR(ECX, _Rs_);
+	_eeMoveGPRtoR(ecx, _Rs_);
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 	xAND(ecx, ~3);
@@ -443,6 +441,8 @@ void recSWR()
 	_deleteEEreg(_Rt_, 1);
 	recCall(SWR);
 #endif
+
+	EE::Profiler.EmitOp(eeOpcode::SWR);
 }
 
 ////////////////////////////////////////////////////
@@ -452,6 +452,8 @@ void recLDL()
 	_deleteEEreg(_Rs_, 1);
 	_deleteEEreg(_Rt_, 1);
 	recCall(LDL);
+
+	EE::Profiler.EmitOp(eeOpcode::LDL);
 }
 
 ////////////////////////////////////////////////////
@@ -461,6 +463,8 @@ void recLDR()
 	_deleteEEreg(_Rs_, 1);
 	_deleteEEreg(_Rt_, 1);
 	recCall(LDR);
+
+	EE::Profiler.EmitOp(eeOpcode::LDR);
 }
 
 ////////////////////////////////////////////////////
@@ -471,6 +475,8 @@ void recSDL()
 	_deleteEEreg(_Rs_, 1);
 	_deleteEEreg(_Rt_, 1);
 	recCall(SDL);
+
+	EE::Profiler.EmitOp(eeOpcode::SDL);
 }
 
 ////////////////////////////////////////////////////
@@ -480,6 +486,8 @@ void recSDR()
 	_deleteEEreg(_Rs_, 1);
 	_deleteEEreg(_Rt_, 1);
 	recCall(SDR);
+
+	EE::Profiler.EmitOp(eeOpcode::SDR);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -492,6 +500,9 @@ void recSDR()
 
 void recLWC1()
 {
+#ifndef FPU_RECOMPILE
+	recCall(::R5900::Interpreter::OpcodeImpl::LWC1);
+#else
 	_deleteFPtoXMMreg(_Rt_, 2);
 
 	if (GPR_IS_CONST1(_Rs_))
@@ -501,7 +512,7 @@ void recLWC1()
 	}
 	else
 	{
-		_eeMoveGPRtoR(ECX, _Rs_);
+		_eeMoveGPRtoR(ecx, _Rs_);
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 
@@ -511,12 +522,18 @@ void recLWC1()
 	}
 
 	xMOV(ptr32[&fpuRegs.fpr[_Rt_].UL], eax);
+
+	EE::Profiler.EmitOp(eeOpcode::LWC1);
+#endif
 }
 
-////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
 
 void recSWC1()
 {
+#ifndef FPU_RECOMPILE
+	recCall(::R5900::Interpreter::OpcodeImpl::SWC1);
+#else
 	_deleteFPtoXMMreg(_Rt_, 1);
 
 	xMOV(edx, ptr32[&fpuRegs.fpr[_Rt_].UL] );
@@ -528,7 +545,7 @@ void recSWC1()
 	}
 	else
 	{
-		_eeMoveGPRtoR(ECX, _Rs_);
+		_eeMoveGPRtoR(ecx, _Rs_);
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 
@@ -536,6 +553,9 @@ void recSWC1()
 
 		vtlb_DynGenWrite(32);
 	}
+
+	EE::Profiler.EmitOp(eeOpcode::SWC1);
+#endif
 }
 
 ////////////////////////////////////////////////////
@@ -553,8 +573,6 @@ void recSWC1()
 
 void recLQC2()
 {
-	_deleteVFtoXMMreg(_Ft_, 0, 2);
-
 	if (_Rt_)
 		xMOV(edx, (uptr)&VU0.VF[_Ft_].UD[0]);
 	else
@@ -568,7 +586,7 @@ void recLQC2()
 	}
 	else
 	{
-		_eeMoveGPRtoR(ECX, _Rs_);
+		_eeMoveGPRtoR(ecx, _Rs_);
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 
@@ -576,14 +594,14 @@ void recLQC2()
 
 		vtlb_DynGenRead64(128);
 	}
+
+	EE::Profiler.EmitOp(eeOpcode::LQC2);
 }
 
 ////////////////////////////////////////////////////
 
 void recSQC2()
 {
-	_deleteVFtoXMMreg(_Ft_, 0, 1); //Want to flush it but not clear it
-
 	xMOV(edx, (uptr)&VU0.VF[_Ft_].UD[0]);
 
 	if (GPR_IS_CONST1(_Rs_))
@@ -593,7 +611,7 @@ void recSQC2()
 	}
 	else
 	{
-		_eeMoveGPRtoR(ECX, _Rs_);
+		_eeMoveGPRtoR(ecx, _Rs_);
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 
@@ -601,6 +619,8 @@ void recSQC2()
 
 		vtlb_DynGenWrite(128);
 	}
+
+	EE::Profiler.EmitOp(eeOpcode::SQC2);
 }
 
 #endif
@@ -609,5 +629,3 @@ void recSQC2()
 
 using namespace R5900::Dynarec;
 using namespace R5900::Dynarec::OpcodeImpl;
-
-void SetFastMemory(int bSetFast) {}

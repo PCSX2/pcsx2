@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Terminal=false
+Type=Application
+Name=PCSX2
+GenericName=PlayStation 2 Emulator
+GenericName[zh_CN]=PlayStation 2 模拟器
+Comment=Sony PlayStation 2 emulator
+Comment[ru]=Эмулятор Sony PlayStation 2
+Comment[zh_CN]=索尼 PlayStation 2 模拟器
+Exec=env GDK_BACKEND=x11 __GL_THREADED_OPTIMIZATIONS=1 mesa_glthread=true MESA_NO_ERROR=1 PCSX2
+Icon=PCSX2
+Keywords=game;emulator;
+Categories=@PCSX2_MENU_CATEGORIES@

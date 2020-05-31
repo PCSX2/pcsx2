@@ -1,3 +1,18 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2014-2014  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "PrecompiledHeader.h"
 #include "MipsAssembler.h"
 
@@ -168,13 +183,13 @@ bool MipsAssembleOpcode(const char* line, DebugInterface* cpu, u32 address, u32&
 	SplitLine(line,name,args);
 
 	CMipsInstruction opcode(cpu);
-	if (cpu == NULL || opcode.Load(name,args,(int)address) == false)
+	if (cpu == NULL || !opcode.Load(name,args,(int)address))
 	{
 		errorText = opcode.getErrorMessage();
 		return false;
 	}
 
-	if (opcode.Validate() == false)
+	if (!opcode.Validate())
 	{
 		errorText = "Parameter failure.";
 		return false;
@@ -341,20 +356,22 @@ bool MipsCheckImmediate(const char* Source, DebugInterface* cpu, int& dest, int&
 	RetLen = SourceLen;
 
 	PostfixExpression postfix;
-	if (cpu->initExpression(Buffer,postfix) == false)
+	if (!cpu->initExpression(Buffer,postfix))
 		return false;
 
 	u64 value;
-	if (cpu->parseExpression(postfix,value) == false)
+	if (!cpu->parseExpression(postfix,value))
 		return false;
 
 	dest = (int) value;
 	return true;
 }
 
-CMipsInstruction::CMipsInstruction(DebugInterface* cpu)
+CMipsInstruction::CMipsInstruction(DebugInterface* cpu) :
+	Opcode(), NoCheckError(false), Loaded(false), RamPos(0),
+	registers(), immediateType(MIPS_NOIMMEDIATE), immediate(),
+	vfpuSize(0), encoding(0), error()
 {
-	Loaded = false;
 	this->cpu = cpu;
 }
 
@@ -377,9 +394,9 @@ bool CMipsInstruction::Load(const char* Name, const char* Params, int RamPos)
 		if ((MipsOpcodes[z].flags & MO_FPU) && !(arch.flags & MO_FPU))
 			continue;
 
-		if (parseOpcode(MipsOpcodes[z],Name) == true)
+		if (parseOpcode(MipsOpcodes[z],Name))
 		{
-			if (LoadEncoding(MipsOpcodes[z],Params) == true)
+			if (LoadEncoding(MipsOpcodes[z],Params))
 			{
 				Loaded = true;
 				return true;
@@ -388,9 +405,9 @@ bool CMipsInstruction::Load(const char* Name, const char* Params, int RamPos)
 		}
 	}
 
-	if (NoCheckError == false)
+	if (!NoCheckError)
 	{
-		if (paramfail == true)
+		if (paramfail)
 		{
 			error = "Parameter failure.";
 		} else {
@@ -438,16 +455,15 @@ bool CMipsInstruction::parseOpcode(const tMipsOpcode& SourceOpcode, const char* 
 			break;
 		}
 	}
-	
-	if (*Line != 0)	return false;	// there's something else, bad
-	return true;
+
+	// there's something else, bad
+	return (*Line == 0);
 }
 
 bool CMipsInstruction::LoadEncoding(const tMipsOpcode& SourceOpcode, const char* Line)
 {
 	int RetLen;
-	bool Immediate = false;
-	
+
 	immediateType = MIPS_NOIMMEDIATE;
 	registers.reset();
 
@@ -460,7 +476,6 @@ bool CMipsInstruction::LoadEncoding(const tMipsOpcode& SourceOpcode, const char*
 	}
 
 	const char* SourceEncoding = SourceOpcode.encoding;
-	const char* OriginalLine = Line;
 
 	while (*Line == ' ' || *Line == '\t') Line++;
 
@@ -474,32 +489,32 @@ bool CMipsInstruction::LoadEncoding(const tMipsOpcode& SourceOpcode, const char*
 			switch (*SourceEncoding)
 			{
 			case 'T':	// float reg
-				if (MipsGetFloatRegister(Line,RetLen,registers.frt) == false) return false;
+				if (!MipsGetFloatRegister(Line,RetLen,registers.frt)) return false;
 				Line += RetLen;
 				SourceEncoding++;
 				break;
 			case 'D':	// float reg
-				if (MipsGetFloatRegister(Line,RetLen,registers.frd) == false) return false;
+				if (!MipsGetFloatRegister(Line,RetLen,registers.frd)) return false;
 				Line += RetLen;
 				SourceEncoding++;
 				break;
 			case 'S':	// float reg
-				if (MipsGetFloatRegister(Line,RetLen,registers.frs) == false) return false;
+				if (!MipsGetFloatRegister(Line,RetLen,registers.frs)) return false;
 				Line += RetLen;
 				SourceEncoding++;
 				break;
 			case 't':
-				if (MipsGetRegister(Line,RetLen,registers.grt) == false) return false;
+				if (!MipsGetRegister(Line,RetLen,registers.grt)) return false;
 				Line += RetLen;
 				SourceEncoding++;
 				break;
 			case 'd':
-				if (MipsGetRegister(Line,RetLen,registers.grd) == false) return false;
+				if (!MipsGetRegister(Line,RetLen,registers.grd)) return false;
 				Line += RetLen;
 				SourceEncoding++;
 				break;
 			case 's':
-				if (MipsGetRegister(Line,RetLen,registers.grs) == false) return false;
+				if (!MipsGetRegister(Line,RetLen,registers.grs)) return false;
 				Line += RetLen;
 				SourceEncoding++;
 				break;
@@ -507,15 +522,15 @@ bool CMipsInstruction::LoadEncoding(const tMipsOpcode& SourceOpcode, const char*
 				switch (*(SourceEncoding+1))
 				{
 				case 's':
-					if (MipsGetPs2VectorRegister(Line,RetLen,registers.ps2vrs) == false) return false;
+					if (!MipsGetPs2VectorRegister(Line,RetLen,registers.ps2vrs)) return false;
 					Line += RetLen;
 					break;
 				case 't':
-					if (MipsGetPs2VectorRegister(Line,RetLen,registers.ps2vrt) == false) return false;
+					if (!MipsGetPs2VectorRegister(Line,RetLen,registers.ps2vrt)) return false;
 					Line += RetLen;
 					break;
 				case 'd':
-					if (MipsGetPs2VectorRegister(Line,RetLen,registers.ps2vrd) == false) return false;
+					if (!MipsGetPs2VectorRegister(Line,RetLen,registers.ps2vrd)) return false;
 					Line += RetLen;
 					break;
 				default:
@@ -524,25 +539,25 @@ bool CMipsInstruction::LoadEncoding(const tMipsOpcode& SourceOpcode, const char*
 				SourceEncoding += 2;
 				break;
 			case 'a':	// 5 bit immediate
-				if (MipsCheckImmediate(Line,cpu,immediate.originalValue,RetLen) == false) return false;
+				if (!MipsCheckImmediate(Line,cpu,immediate.originalValue,RetLen)) return false;
 				immediateType = MIPS_IMMEDIATE5;
 				Line += RetLen;
 				SourceEncoding++;
 				break;
 			case 'i':	// 16 bit immediate
-				if (MipsCheckImmediate(Line,cpu,immediate.originalValue,RetLen) == false) return false;
+				if (!MipsCheckImmediate(Line,cpu,immediate.originalValue,RetLen)) return false;
 				immediateType = MIPS_IMMEDIATE16;
 				Line += RetLen;
 				SourceEncoding++;
 				break;
 			case 'b':	// 20 bit immediate
-				if (MipsCheckImmediate(Line,cpu,immediate.originalValue,RetLen) == false) return false;
+				if (!MipsCheckImmediate(Line,cpu,immediate.originalValue,RetLen)) return false;
 				immediateType = MIPS_IMMEDIATE20;
 				Line += RetLen;
 				SourceEncoding++;
 				break;
 			case 'I':	// 32 bit immediate
-				if (MipsCheckImmediate(Line,cpu,immediate.originalValue,RetLen) == false) return false;
+				if (!MipsCheckImmediate(Line,cpu,immediate.originalValue,RetLen)) return false;
 				immediateType = MIPS_IMMEDIATE26;
 				Line += RetLen;
 				SourceEncoding++;
@@ -676,6 +691,8 @@ void CMipsInstruction::encodeNormal()
 
 	switch (immediateType)
 	{
+	case MIPS_NOIMMEDIATE:
+		break;
 	case MIPS_IMMEDIATE5:
 	case MIPS_IMMEDIATE20:
 		encoding |= immediate.value << 6;

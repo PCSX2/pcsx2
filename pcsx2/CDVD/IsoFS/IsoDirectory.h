@@ -31,7 +31,7 @@ public:
 public:
 	IsoDirectory(SectorSource& r);
 	IsoDirectory(SectorSource& r, IsoFileDescriptor directoryEntry);
-	virtual ~IsoDirectory() throw();
+	virtual ~IsoDirectory() = default;
 
 	wxString FStype_ToString() const;
 	SectorSource& GetReader() const { return internalReader; }

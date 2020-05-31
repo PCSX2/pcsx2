@@ -44,7 +44,7 @@ public:
 		m_ownerid = window->GetId();
 	}
 
-	virtual ~DroppedTooManyFiles() throw() { }
+	virtual ~DroppedTooManyFiles() = default;
 	virtual DroppedTooManyFiles *Clone() const { return new DroppedTooManyFiles(*this); }
 
 protected:
@@ -73,7 +73,7 @@ public:
 		m_ownerid = window->GetId();
 	}
 
-	virtual ~DroppedElf() throw() { }
+	virtual ~DroppedElf() = default;
 	virtual DroppedElf *Clone() const { return new DroppedElf(*this); }
 
 protected:
@@ -122,7 +122,7 @@ public:
 		m_ownerid = window->GetId();
 	}
 
-	virtual ~DroppedIso() throw() { }
+	virtual ~DroppedIso() = default;
 	virtual DroppedIso *Clone() const { return new DroppedIso(*this); }
 
 protected:

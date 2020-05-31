@@ -6,65 +6,53 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif()
 
 
-# plugin name
-set(Output GSdx-0.1.16)
+# plugin name (no version number to ease future version bump and bisect)
+set(Output GSdx)
 
 set(CommonFlags
-    -D_LINUX
     -fno-operator-names # because Xbyak uses and()/xor()/or()/not() function
-    -mfpmath=sse
-    #-Wstrict-aliasing # Allow to track strict aliasing issue.
-    -std=c++0x
-    -fno-strict-aliasing
     -Wno-unknown-pragmas
     -Wno-parentheses
     -Wunused-variable # __dummy variable need to be investigated
     )
 
-set(OptimizationFlags
-    -O2
-    -DNDEBUG
+# The next two need to be looked at, but spam really badly in gcc 8.
+# Largely class alignment in GSDevice.h and memcpy in GSVector*.h.
+if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
+    set(CommonFlags
+	    ${CommonFlags}
+        -Wno-class-memaccess
+        -Wno-packed-not-aligned
     )
-
-#Clang doesn't support a few common flags that GCC does.
-if(NOT USE_CLANG AND _M_X86_32)
-	add_definitions(${CommonFlags} -mpreferred-stack-boundary=2)
 endif()
 
-# Debug - Build
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_definitions(${CommonFlags} -D_DEBUG -g -Wall)
+if(USE_ICC)
+    set(CommonFlags "${CommonFlags} -restrict")
 endif()
 
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-    add_definitions(${CommonFlags} ${OptimizationFlags} -D_DEVEL -g)
-endif()
+set(GSdxFinalFlags ${CommonFlags})
 
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-    add_definitions(${CommonFlags} ${OptimizationFlags} -W)
+if(CMAKE_COMPILER_IS_GNUCXX)
+	# Newer version default to a correct ABI
+	if (${GCC_VERSION} VERSION_LESS "5.1")
+		set(GSdxFinalFlags ${GSdxFinalFlags} -fabi-version=6)
+	endif()
 endif()
 
 if(XDG_STD)
-    add_definitions(-DXDG_STD)
+    set(GSdxFinalFlags ${GSdxFinalFlags} -DXDG_STD)
 endif()
 
-if(GLES_API AND GLESV2_FOUND)
-    add_definitions(-DENABLE_GLES)
+if(EGL_API AND EGL_FOUND)
+    set(GSdxFinalFlags ${GSdxFinalFlags} -DEGL_SUPPORTED)
+endif()
+
+
+if(OPENCL_FOUND)
+    set(GSdxFinalFlags ${GSdxFinalFlags} -DENABLE_OPENCL)
 endif()
 
 set(GSdxSources
-    GLLoader.cpp
-    GLState.cpp
-    GPU.cpp
-    GPUDrawScanline.cpp
-    GPUDrawScanlineCodeGenerator.cpp
-    GPULocalMemory.cpp
-    GPURenderer.cpp
-    GPURendererSW.cpp
-    GPUSetupPrimCodeGenerator.cpp
-    GPUState.cpp
     GS.cpp
     GSAlignedClass.cpp
     GSBlock.cpp
@@ -72,172 +60,238 @@ set(GSdxSources
     GSClut.cpp
     GSCodeBuffer.cpp
     GSCrc.cpp
-    GSDevice.cpp
-    GSDeviceOGL.cpp
-	GSDeviceSW.cpp
-    GSDeviceNull.cpp
-    GSDirtyRect.cpp
-    GSDrawScanline.cpp
-    GSDrawScanlineCodeGenerator.cpp
-    GSDrawScanlineCodeGenerator.x86.avx.cpp
-    GSDrawScanlineCodeGenerator.x64.cpp
-    GSDrawScanlineCodeGenerator.x86.cpp
-    GSDrawScanlineCodeGenerator.x64.avx.cpp
+    GSDrawingContext.cpp
     GSDump.cpp
-    GSFunctionMap.cpp
-    GSLinuxDialog.cpp
     GSLocalMemory.cpp
+    GSLzma.cpp
     GSPerfMon.cpp
-    GSRasterizer.cpp
-    GSRenderer.cpp
-    GSRendererHW.cpp
-    GSRendererNull.cpp
-    GSRendererOGL.cpp
-    GSRendererSW.cpp
-    GSSetting.cpp
-    GSSetupPrimCodeGenerator.cpp
-    GSSetupPrimCodeGenerator.x86.avx.cpp
-    GSSetupPrimCodeGenerator.x64.avx.cpp
-    GSSetupPrimCodeGenerator.x86.cpp
-    GSSetupPrimCodeGenerator.x64.cpp
-    GSShaderOGL.cpp
+    GSPng.cpp
     GSState.cpp
     GSTables.cpp
-    GSTexture.cpp
-    GSTextureCache.cpp
-    GSTextureCacheSW.cpp
-    GSTextureCacheOGL.cpp
-    GSTextureFXOGL.cpp
-    GSTextureOGL.cpp
-    GSTextureNull.cpp
-	GSTextureSW.cpp
-    GSThread.cpp
     GSUtil.cpp
     GSVector.cpp
-    GSVertexTrace.cpp
-    GSWnd.cpp
-    GSWndOGL.cpp
-    GSWndEGL.cpp
     GSdx.cpp
+    GSdxResources.cpp
     stdafx.cpp
+    Renderers/Common/GSDevice.cpp
+    Renderers/Common/GSDirtyRect.cpp
+    Renderers/Common/GSFunctionMap.cpp
+    Renderers/Common/GSOsdManager.cpp
+    Renderers/Common/GSRenderer.cpp
+    Renderers/Common/GSTexture.cpp
+    Renderers/Common/GSVertexTrace.cpp
+    Renderers/Null/GSDeviceNull.cpp
+    Renderers/Null/GSRendererNull.cpp
+    Renderers/Null/GSTextureNull.cpp
+    Renderers/HW/GSHwHack.cpp
+    Renderers/HW/GSRendererHW.cpp
+    Renderers/HW/GSTextureCache.cpp
+    Renderers/SW/GSDrawScanline.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.x64.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx2.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.x86.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx.cpp
+    Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx2.cpp
+    Renderers/SW/GSRasterizer.cpp
+    Renderers/SW/GSRendererSW.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.x64.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.x64.avx.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.x64.avx2.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.x86.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.x86.avx.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.x86.avx2.cpp
+    Renderers/SW/GSTextureCacheSW.cpp
+    Renderers/SW/GSTextureSW.cpp
+    Renderers/OpenGL/GLLoader.cpp
+    Renderers/OpenGL/GLState.cpp
+    Renderers/OpenGL/GSDeviceOGL.cpp
+    Renderers/OpenGL/GSRendererOGL.cpp
+    Renderers/OpenGL/GSShaderOGL.cpp
+    Renderers/OpenGL/GSTextureCacheOGL.cpp
+    Renderers/OpenGL/GSTextureOGL.cpp
+    Renderers/OpenCL/GSRendererCL.cpp
+    Window/GSSetting.cpp
+    Window/GSWnd.cpp
     )
 
 set(GSdxHeaders
-    GPU.h
-    GPUDrawScanline.h
-    GPUDrawScanlineCodeGenerator.h
-    GPUDrawingEnvironment.h
-    GPULocalMemory.h
-    GPURenderer.h
-    GPURendererSW.h
-    GPUScanlineEnvironment.h
-    GPUSetupPrimCodeGenerator.h
-    GPUState.h
-    GPUVertex.h
-    GS.h
+    config.h
     GSAlignedClass.h
     GSBlock.h
     GSCapture.h
     GSClut.h
     GSCodeBuffer.h
     GSCrc.h
-    GSDevice.h
-    GSDeviceOGL.h
-    GSDeviceNull.h
-    GSDirtyRect.h
-    GSDrawScanline.h
-    GSDrawScanlineCodeGenerator.h
     GSDrawingContext.h
     GSDrawingEnvironment.h
     GSDump.h
-    GSFunctionMap.h
-    GSLinuxLogo.h
+    GSdx.h
+    GSdxResources.h
+    GS.h
     GSLocalMemory.h
+    GSLzma.h
     GSPerfMon.h
-    GSRasterizer.h
-    GSRenderer.h
-    GSRendererNull.h
-    GSRendererSW.h
-    GSRendererHW.h
-    GSRendererOGL.h
-    GSScanlineEnvironment.h
-    GSSetting.h
-    GSSetupPrimCodeGenerator.h
+    GSPng.h
     GSState.h
     GSTables.h
-    GSTexture.h
-    GSTextureCache.h
-    GSTextureCacheSW.h
-    GSTextureCacheOGL.h
-    GSTextureNull.h
+    GSThread_CXX11.h
     GSThread.h
     GSUtil.h
     GSVector.h
-    GSVertex.h
-    GSVertexHW.h
-    GSVertexList.h
-    GSVertexSW.h
-    GSVertexTrace.h
-    GSWnd.h
-    GSWndOGL.h
-    GSWndEGL.h
-    GSdx.h
-    res/glsl_source.h
+    GSVector4.h
+    GSVector4i.h
+    GSVector8.h
+    GSVector8i.h
     stdafx.h
+    Renderers/Common/GSDevice.h
+    Renderers/Common/GSDirtyRect.h
+    Renderers/Common/GSFastList.h
+    Renderers/Common/GSFunctionMap.h
+    Renderers/Common/GSOsdManager.h
+    Renderers/Common/GSRenderer.h
+    Renderers/Common/GSTexture.h
+    Renderers/Common/GSVertex.h
+    Renderers/Common/GSVertexList.h
+    Renderers/Common/GSVertexTrace.h
+    Renderers/Null/GSDeviceNull.h
+    Renderers/Null/GSRendererNull.h
+    Renderers/Null/GSTextureNull.h
+    Renderers/HW/GSRendererHW.h
+    Renderers/HW/GSTextureCache.h
+    Renderers/HW/GSVertexHW.h
+    Renderers/SW/GSDrawScanlineCodeGenerator.h
+    Renderers/SW/GSDrawScanline.h
+    Renderers/SW/GSRasterizer.h
+    Renderers/SW/GSRendererSW.h
+    Renderers/SW/GSScanlineEnvironment.h
+    Renderers/SW/GSSetupPrimCodeGenerator.h
+    Renderers/SW/GSTextureCacheSW.h
+    Renderers/SW/GSTextureSW.h
+    Renderers/SW/GSVertexSW.h
+    Renderers/OpenGL/GLLoader.h
+    Renderers/OpenGL/GLState.h
+    Renderers/OpenGL/GSDeviceOGL.h
+    Renderers/OpenGL/GSRendererOGL.h
+    Renderers/OpenGL/GSShaderOGL.h
+    Renderers/OpenGL/GSTextureCacheOGL.h
+    Renderers/OpenGL/GSTextureOGL.h
+    Renderers/OpenGL/GSUniformBufferOGL.h
+    Renderers/OpenGL/GSVertexArrayOGL.h
+    Renderers/OpenCL/GSRendererCL.h
+    Window/GSCaptureDlg.h
+    Window/GSDialog.h
+    Window/GSSetting.h
+    Window/GSSettingsDlg.h
+    Window/GSWnd.h
     xbyak/xbyak.h
-    xbyak/xbyak_bin2hex.h
     xbyak/xbyak_mnemonic.h
     xbyak/xbyak_util.h
     )
 
-include_directories(.)
+if(Windows)
+    LIST(APPEND GSdxSources
+        Renderers/DX11/GSDevice11.cpp
+        Window/GSDialog.cpp
+        Renderers/DX11/GSRendererDX11.cpp
+        Renderers/DX11/GSTexture11.cpp
+        Renderers/DX11/GSTextureCache11.cpp
+        Renderers/DX11/GSTextureFX11.cpp
+        GSVertexList.cpp
+        Renderers/SW/GSVertexSW.cpp
+        Window/GSCaptureDlg.cpp
+        Window/GSSettingsDlg.cpp
+        Window/GSWndDX.cpp
+        Window/GSWndWGL.cpp
+        )
 
-# Generate Glsl header file. Protect with REBUILD_SHADER to avoid build-dependency on PERL
-if (REBUILD_SHADER)
-    add_custom_command(OUTPUT res/glsl_source.h COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/glsl2h.pl)
-endif()
-
-add_library(${Output} SHARED ${GSdxSources} ${GSdxHeaders})
-
-target_link_libraries(${Output} ${X11_LIBRARIES})
-
-if(GLES_API AND GLESV2_FOUND)
-    target_link_libraries(${Output} ${GLESV2_LIBRARIES})
+    LIST(APPEND GSdxHeaders
+        Renderers/DX11/GSDevice11.h
+        Renderers/DX11/GSRendererDX11.h
+        Renderers/DX11/GSTexture11.h
+        Renderers/DX11/GSTextureCache11.h
+        Window/GSWndDX.h
+        Window/GSWndWGL.h
+        resource.h
+        targetver.h
+        )
 else()
-    target_link_libraries(${Output} ${OPENGL_LIBRARIES})
+    LIST(APPEND GSdxSources
+        Window/GSLinuxDialog.cpp
+        Window/GSWndOGL.cpp
+        Window/GSWndEGL.cpp
+        )
+
+    LIST(APPEND GSdxHeaders
+        Window/GSWndEGL.h
+        Window/GSWndOGL.h
+        )
 endif()
 
-target_link_libraries(${Output} ${EGL_LIBRARIES})
 
-if(Linux)
-	target_link_libraries(${Output} ${GTK2_LIBRARIES})
-endif(Linux)
+set(GSdxFinalSources
+    ${GSdxSources}
+    ${GSdxHeaders}
+)
 
-if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
-endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+set(GSdxFinalLibs
+    ${X11_LIBRARIES}
+    ${OPENGL_LIBRARIES}
+    ${GTK2_LIBRARIES}
+    ${LIBC_LIBRARIES}
+    ${PNG_LIBRARIES}
+    ${FREETYPE_LIBRARIES}
+    ${LIBLZMA_LIBRARIES}
+)
 
-if(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
-else(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
-endif(PACKAGE_MODE)
+if(EGL_API AND EGL_FOUND)
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${EGL_LIBRARIES} ${X11_XCB_LIBRARIES})
+endif()
+
+if(USE_VTUNE)
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${VTUNE_LIBRARIES})
+endif()
+
+if(OPENCL_FOUND)
+    set(GSdxFinalLibs ${GSdxFinalLibs} ${OPENCL_LIBRARIES})
+endif()
+
+set(RESOURCE_FILES
+    res/logo-ogl.bmp
+    res/fxaa.fx
+    res/tfx.cl
+    res/glsl/common_header.glsl
+    res/glsl/convert.glsl
+    res/glsl/interlace.glsl
+    res/glsl/merge.glsl
+    res/glsl/shadeboost.glsl
+    res/glsl/tfx_fs.glsl
+    res/glsl/tfx_vgs.glsl)
+
+add_custom_glib_res("GSdxResources" "gsdx-res.xml" "GSdx_res" ${RESOURCE_FILES})
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+if(BUILTIN_GS)
+    add_pcsx2_lib(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
+else()
+    if (DISABLE_ADVANCE_SIMD)
+        # Don't append -SSE2 on the first build to keep same name as SIMD build
+        add_pcsx2_plugin("${Output}" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
+        add_pcsx2_plugin("${Output}-SSE4" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags} -mssse3 -msse4 -msse4.1")
+        add_pcsx2_plugin("${Output}-AVX2" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags} -mavx -mavx2 -mbmi -mbmi2")
+    else()
+        add_pcsx2_plugin(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
+    endif()
+endif()
 
 ################################### Replay Loader
 if(BUILD_REPLAY_LOADERS)
-	set(Replay pcsx2_GSReplayLoader)
-
-	add_executable(${Replay} linux_replay.cpp)
-
-    target_link_libraries(${Replay} ${LIBC_LIBRARIES})
-
-	if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-	    target_link_libraries(${Replay} "${USER_CMAKE_LD_FLAGS}")
-	endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-
-	if(PACKAGE_MODE)
-	    install(TARGETS ${Replay} DESTINATION bin)
-	else(PACKAGE_MODE)
-	    install(TARGETS ${Replay} DESTINATION ${CMAKE_SOURCE_DIR}/bin)
-	endif(PACKAGE_MODE)
+    set(Replay pcsx2_GSReplayLoader)
+    set(GSdxReplayLoaderFinalSources
+        linux_replay.cpp
+    )
+    add_pcsx2_executable(${Replay} "${GSdxReplayLoaderFinalSources}" "${LIBC_LIBRARIES}" "${GSdxFinalFlags}")
 endif(BUILD_REPLAY_LOADERS)

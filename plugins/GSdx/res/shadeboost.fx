@@ -13,7 +13,7 @@ float4 ContrastSaturationBrightness(float4 color) // Ported to HLSL
 	const float brt = SB_BRIGHTNESS / 50.0;
 	const float con = SB_CONTRAST / 50.0;
 	
-	// Increase or decrease theese values to adjust r, g and b color channels seperately
+	// Increase or decrease these values to adjust r, g and b color channels separately
 	const float AvgLumR = 0.5;
 	const float AvgLumG = 0.5;
 	const float AvgLumB = 0.5;
@@ -29,8 +29,6 @@ float4 ContrastSaturationBrightness(float4 color) // Ported to HLSL
 	color.rgb = conColor;	
 	return color;
 }
-
-#if SHADER_MODEL >= 0x400
 
 Texture2D Texture;
 SamplerState Sampler;
@@ -52,25 +50,4 @@ float4 ps_main(PS_INPUT input) : SV_Target0
 	return ContrastSaturationBrightness(c);
 }
 
-
-#elif SHADER_MODEL <= 0x300
-
-sampler Texture : register(s0);
-
-float4 g_params[1];
-
-#define BGColor	(g_params[0])
-
-struct PS_INPUT
-{
-	float2 t : TEXCOORD0;
-};
-
-float4 ps_main(PS_INPUT input) : COLOR
-{
-	float4 c = tex2D(Texture, input.t);
-	return ContrastSaturationBrightness(c);
-}
-
-#endif
 #endif

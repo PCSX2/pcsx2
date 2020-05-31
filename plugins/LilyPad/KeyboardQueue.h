@@ -24,3 +24,9 @@ int GetQueuedKeyEvent(keyEvent *event);
 
 // Cleans up as well as clears queue.
 void ClearKeyQueue();
+
+#ifdef __linux__
+void R_QueueKeyEvent(const keyEvent &event);
+int R_GetQueuedKeyEvent(keyEvent *event);
+void R_ClearKeyQueue();
+#endif

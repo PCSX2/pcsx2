@@ -49,7 +49,7 @@ protected:
 	Threading::Mutex*			m_mtx_resume;
 
 public:
-	virtual ~BaseSysExecEvent_ScopedCore() throw() {}
+	virtual ~BaseSysExecEvent_ScopedCore() = default;
 
 	BaseSysExecEvent_ScopedCore& SetResumeStates( SynchronousActionState* sync, Threading::Mutex* mutex )
 	{
@@ -87,7 +87,7 @@ class SysExecEvent_CoreThreadClose : public BaseSysExecEvent_ScopedCore
 public:
 	wxString GetEventName() const { return L"CloseCoreThread"; }
 
-	virtual ~SysExecEvent_CoreThreadClose() throw() {}
+	virtual ~SysExecEvent_CoreThreadClose() = default;
 	SysExecEvent_CoreThreadClose* Clone() const { return new SysExecEvent_CoreThreadClose( *this ); }
 	
 	SysExecEvent_CoreThreadClose( SynchronousActionState* sync=NULL, SynchronousActionState* resume_sync=NULL, Threading::Mutex* mtx_resume=NULL )
@@ -105,7 +105,7 @@ class SysExecEvent_CoreThreadPause : public BaseSysExecEvent_ScopedCore
 public:
 	wxString GetEventName() const { return L"PauseCoreThread"; }
 
-	virtual ~SysExecEvent_CoreThreadPause() throw() {}
+	virtual ~SysExecEvent_CoreThreadPause() = default;
 	SysExecEvent_CoreThreadPause* Clone() const { return new SysExecEvent_CoreThreadPause( *this ); }
 	
 	SysExecEvent_CoreThreadPause( SynchronousActionState* sync=NULL, SynchronousActionState* resume_sync=NULL, Threading::Mutex* mtx_resume=NULL )
@@ -123,12 +123,12 @@ class AppCoreThread : public SysCoreThread
 	typedef SysCoreThread _parent;
 
 protected:
-	volatile bool m_resetCdvd;
-	
+	std::atomic<bool> m_resetCdvd;
+
 public:
 	AppCoreThread();
-	virtual ~AppCoreThread() throw();
-	
+	virtual ~AppCoreThread();
+
 	void ResetCdvd() { m_resetCdvd = true; }
 
 	virtual void Suspend( bool isBlocking=false );
@@ -147,6 +147,7 @@ protected:
 
 	virtual void OnResumeReady();
 	virtual void OnPause();
+	virtual void OnPauseDebug();
 	virtual void OnResumeInThread( bool IsSuspended );
 	virtual void OnSuspendInThread();
 	virtual void OnCleanupInThread();
@@ -165,7 +166,7 @@ protected:
 	IScopedCoreThread() {}
 
 public:
-	virtual ~IScopedCoreThread() throw() {};
+	virtual ~IScopedCoreThread() = default;;
 	virtual void AllowResume()=0;
 	virtual void DisallowResume()=0;
 };
@@ -185,7 +186,7 @@ protected:
 	BaseScopedCoreThread();
 
 public:
-	virtual ~BaseScopedCoreThread() throw()=0;
+	virtual ~BaseScopedCoreThread() =0;
 	virtual void AllowResume();
 	virtual void DisallowResume();
 
@@ -220,7 +221,7 @@ class ScopedCoreThreadClose : public BaseScopedCoreThread
 
 public:
 	ScopedCoreThreadClose();
-	virtual ~ScopedCoreThreadClose() throw();
+	virtual ~ScopedCoreThreadClose();
 
 	void LoadPlugins();
 };
@@ -231,17 +232,17 @@ struct ScopedCoreThreadPause : public BaseScopedCoreThread
 
 public:
 	ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse_me=NULL );
-	virtual ~ScopedCoreThreadPause() throw();
+	virtual ~ScopedCoreThreadPause();
 };
 
 struct ScopedCoreThreadPopup : public IScopedCoreThread
 {
 protected:
-	ScopedPtr<BaseScopedCoreThread>		m_scoped_core;
+	std::unique_ptr<BaseScopedCoreThread>		m_scoped_core;
 
 public:
 	ScopedCoreThreadPopup();
-	virtual ~ScopedCoreThreadPopup() throw() {}
+	virtual ~ScopedCoreThreadPopup() = default;
 
 	virtual void AllowResume();
 	virtual void DisallowResume();

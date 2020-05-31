@@ -3,105 +3,143 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     message(FATAL_ERROR "
     You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
-endif(NOT TOP_CMAKE_WAS_SOURCED)
-
-
-# plugin name
-set(Output onepad-1.1.0)
-
-set(CommonFlags
-    -fvisibility=hidden
-    -Wall
-    -std=c++0x
-    )
-
-set(OptimizationFlags
-    -O2
-    -DNDEBUG
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_definitions(${CommonFlags} -g)
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-	add_definitions(${CommonFlags} ${OptimizationFlags})
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
-
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-	add_definitions(${CommonFlags} ${OptimizationFlags})
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
-
-if (SDL2_API)
-    add_definitions(-DONEPAD_SDL2)
 endif()
 
+set(compiled_images "${CMAKE_BINARY_DIR}/plugins/onepad/ImgHeader")
+set(image_sources "${CMAKE_SOURCE_DIR}/plugins/onepad/Img")
+set(linux_sources "Linux")
+set(linux_headers "Linux")
+set(wx_sources "wx_dialog")
+set(wx_headers "wx_dialog")
+
+set(onepadGuiResources
+    ${compiled_images}/analog.h
+    ${compiled_images}/circle.h
+    ${compiled_images}/cross.h
+    ${compiled_images}/dp_bottom.h
+    ${compiled_images}/dp_left.h
+    ${compiled_images}/dp_right.h
+    ${compiled_images}/dp_up.h
+    ${compiled_images}/dualshock2.h
+    ${compiled_images}/joystick_cursor.h
+    ${compiled_images}/l1.h
+    ${compiled_images}/r1.h
+    ${compiled_images}/l2.h
+    ${compiled_images}/r2.h
+    ${compiled_images}/l3.h
+    ${compiled_images}/r3.h
+    ${compiled_images}/select.h
+    ${compiled_images}/square.h
+    ${compiled_images}/start.h
+    ${compiled_images}/triangle.h
+    ${compiled_images}/arrow_up.h
+    ${compiled_images}/arrow_bottom.h
+    ${compiled_images}/arrow_left.h
+    ${compiled_images}/arrow_right.h
+    )
+
+# plugin name
+set(Output onepad)
+
+set(onepadFinalFlags
+    -fvisibility=hidden
+    -Wall
+    -Wno-parentheses
+    )
+    
 # onepad sources
 set(onepadSources
-	controller.cpp
-	joystick.cpp
-	keyboard.cpp
+    controller.cpp
+    GamePad.cpp
+    SDL/joystick.cpp
+    keyboard.cpp
     KeyStatus.cpp
-	onepad.cpp)
+    onepad.cpp
+    resources.cpp
+    state_management.cpp)
 
 # onepad headers
 set(onepadHeaders
-	bitwise.h
-	controller.h
-	joystick.h
-	keyboard.h
+    bitwise.h
+    controller.h
+    GamePad.h
+    SDL/joystick.h
+    keyboard.h
     KeyStatus.h
-	onepad.h)
+    onepad.h
+    resources.h
+    state_management.h)
 
+# onepad wx sources
+set(onepadwxSources
+    ${wx_sources}/dialog.cpp
+    ${wx_sources}/opPanel.cpp
+    ${wx_sources}/GamepadConfiguration.cpp
+    ${wx_headers}/JoystickConfiguration.cpp)
+
+# onepad wx headers
+set(onepadwxHeaders
+    ${wx_headers}/opPanel.h
+    ${wx_headers}/GamepadConfiguration.h
+    ${wx_headers}/JoystickConfiguration.h)
+    
 # onepad Linux sources
 set(onepadLinuxSources
-	Linux/ini.cpp
-	Linux/dialog.cpp
-	Linux/linux.cpp)
+    ${linux_sources}/ini.cpp
+    ${linux_sources}/linux.cpp)
 
 # onepad Linux headers
-set(onepadLinuxHeaders
-	Linux/linux.h)
+set(onepadLinuxHeaders)
 
 # onepad Windows sources
-set(onepadWindowsSources
-	)
+set(onepadWindowsSources)
 
 # onepad Windows headers
-set(onepadWindowsHeaders
-	)
+set(onepadWindowsHeaders)
 
-# add additional include directories
-include_directories(.)
+set(onepadFinalLibs ${SDL2_LIBRARIES})
+add_definitions(-DSDL_BUILD)
 
-# add library
-add_library(${Output} SHARED
-			${onepadSources}
-			${onepadHeaders}
-			${onepadLinuxSources}
-			${onepadLinuxHeaders})
+set(onepadFinalLibs
+    ${onepadFinalLibs}
+    ${wxWidgets_LIBRARIES}
+    ${GTK2_LIBRARIES}
+    ${X11_LIBRARIES}
+)
 
-if (SDL2_API)
-    target_link_libraries(${Output} ${SDL2_LIBRARY})
+set(onepadFinalSources
+    ${onepadSources}
+    ${onepadHeaders}
+    ${onepadwxSources}
+    ${onepadwxHeaders}
+    ${onepadLinuxSources}
+    ${onepadLinuxHeaders}
+    ${onepadGuiResources}
+)
+
+include_directories(
+    ${CMAKE_BINARY_DIR}/plugins/onepad/
+)
+
+### Generate the resources files
+file(MAKE_DIRECTORY ${compiled_images})
+
+foreach(result_file IN ITEMS
+        analog circle cross dp_bottom dp_left dp_right dp_up dualshock2
+        joystick_cursor l1 r1 l2 r2 l3 r3 select square start triangle arrow_up
+        arrow_bottom arrow_left arrow_right)
+    add_custom_command(
+        OUTPUT  "${compiled_images}/${result_file}.h"
+        COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${image_sources}/${result_file}.png" "${compiled_images}/${result_file}" )
+endforeach()
+
+set(RESOURCE_FILES res/game_controller_db.txt)
+
+add_custom_glib_res("resources" "onepad-res.xml" "onepad_res" ${RESOURCE_FILES})
+
+
+if(BUILTIN_PAD)
+    add_pcsx2_lib(${Output} "${onepadFinalSources}" "${onepadFinalLibs}" "${onepadFinalFlags}")
 else()
-    target_link_libraries(${Output} ${SDL_LIBRARY})
+    add_pcsx2_plugin(${Output} "${onepadFinalSources}" "${onepadFinalLibs}" "${onepadFinalFlags}")
 endif()
-
-if(Linux)
-	# link target with gtk2
-	target_link_libraries(${Output} ${GTK2_LIBRARIES})
-endif(Linux)
-
-# link target with X11
-target_link_libraries(${Output} ${X11_LIBRARIES})
-
-# User flags options
-if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
-endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-
-if(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${PLUGIN_DIR})
-else(PACKAGE_MODE)
-    install(TARGETS ${Output} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
-endif(PACKAGE_MODE)

@@ -27,7 +27,7 @@
 
 #include "config.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 #include "targetver.h"
 
@@ -37,17 +37,29 @@
 #include <commctrl.h>
 #include <commdlg.h>
 #include <shellapi.h>
+#include <d3dcompiler.h>
 #include <d3d11.h>
-#include <d3dx11.h>
-#include <d3d9.h>
-#include <d3dx9.h>
 #include <comutil.h>
-#include "../../common/include/comptr.h"
+#include <atlcomcli.h>
 
-#define D3DCOLORWRITEENABLE_RGBA (D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA)
-#define D3D11_SHADER_MACRO D3D10_SHADER_MACRO
-#define ID3D11Blob ID3D10Blob
+#else
 
+#include <fcntl.h>
+
+#endif
+
+#include <PluginCompatibility.h>
+
+#ifdef ENABLE_OPENCL
+
+#define CL_USE_DEPRECATED_OPENCL_1_1_APIS
+#define __CL_ENABLE_EXCEPTIONS
+#include <CL/cl.hpp>
+
+#endif
+
+#ifdef __x86_64__
+#define _M_AMD64
 #endif
 
 // put these into vc9/common7/ide/usertype.dat to have them highlighted
@@ -60,125 +72,83 @@ typedef unsigned int uint32;
 typedef signed int int32;
 typedef unsigned long long uint64;
 typedef signed long long int64;
-#ifdef __x86_64__
+#ifdef _M_AMD64
 typedef uint64 uptr;
 #else
 typedef uint32 uptr;
 #endif
 
+
+// xbyak compatibilities
+typedef int64 sint64;
+#define MIE_INTEGER_TYPE_DEFINED
+#define XBYAK_ENABLE_OMITTED_OPERAND
+
 // stdc
 
-#include <stddef.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <math.h>
-#include <float.h>
-#include <time.h>
-#include <limits.h>
+#include <cstddef>
+#include <cstdio>
+#include <cstdarg>
+#include <cstdlib>
+#include <cmath>
+#include <cfloat>
+#include <ctime>
+#include <climits>
+#include <cstring>
+#include <cassert>
+
+#if __GNUC__ > 5 || ( __GNUC__ == 5 && __GNUC_MINOR__ >= 4 )
+#include <codecvt>
+#include <locale>
+#endif
 
 #include <complex>
-#include <cstring>
 #include <string>
+#include <array>
 #include <vector>
 #include <list>
 #include <map>
 #include <set>
 #include <queue>
 #include <algorithm>
-
-using namespace std;
-
+#include <thread>
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
+#include <functional>
 #include <memory>
+#include <bitset>
 
-#ifdef _WINDOWS
+#include <zlib.h>
+
+#include <unordered_map>
+#include <unordered_set>
+
+#ifdef _WIN32
 
 	// Note use GL/glcorearb.h on the future
+	// Requirements:
+	//	* Update GSWndWGL::GetProcAddress to query 1.0 and 1.1 symbols
+	//	* define all ENABLE_GL_VERSION_1_*
 	#include <GL/gl.h>
 	#include <GL/glext.h>
 	#include <GL/wglext.h>
-	#include "GLLoader.h"
-
-	#include <hash_map>
-	#include <hash_set>
-
-	using namespace stdext;
-
-	// hashing algoritms at: http://www.cris.com/~Ttwang/tech/inthash.htm
-	// default hash_compare does ldiv and other crazy stuff to reduce speed
-
-	template<> class hash_compare<uint32>
-	{
-	public:
-		enum {bucket_size = 1};
-
-		size_t operator()(uint32 key) const
-		{
-			key += ~(key << 15);
-			key ^= (key >> 10);
-			key += (key << 3);
-			key ^= (key >> 6);
-			key += ~(key << 11);
-			key ^= (key >> 16);
-
-			return (size_t)key;
-		}
-
-		bool operator()(uint32 a, uint32 b) const
-		{
-			return a < b;
-		}
-	};
-
-	template<> class hash_compare<uint64>
-	{
-	public:
-		enum {bucket_size = 1};
-
-		size_t operator()(uint64 key) const
-		{
-			key += ~(key << 32);
-			key ^= (key >> 22);
-			key += ~(key << 13);
-			key ^= (key >> 8);
-			key += (key << 3);
-			key ^= (key >> 15);
-			key += ~(key << 27);
-			key ^= (key >> 31);
-
-			return (size_t)key;
-		}
-
-		bool operator()(uint64 a, uint64 b) const
-		{
-			return a < b;
-		}
-	};
-
-	#define vsnprintf _vsnprintf
-	#define snprintf _snprintf
+	#include "Renderers/OpenGL/GLLoader.h"
 
 	#define DIRECTORY_SEPARATOR '\\'
 
 #else
 
-	#define hash_map map
-	#define hash_set set
-
-	//#include <ext/hash_map>
-	//#include <ext/hash_set>
-
-#ifdef ENABLE_GLES
-	#include <GLES3/gl3.h>
-	#include <GLES3/gl3ext.h>
-#else
 	// Note use GL/glcorearb.h on the future
+	// Requirements:
+	//	* Drop GLX that still include gl.h...
+	//	  EGL/OGL status on AMD GPU pro driver is unknown
+	//	* define all ENABLE_GL_VERSION_1_*
 	#include <GL/gl.h>
 	#include <GL/glext.h>
-#endif
-	#include "GLLoader.h"
+	#include "Renderers/OpenGL/GLLoader.h"
 
-	//using namespace __gnu_cxx;
+	#include <sys/stat.h> // mkdir
 
 	#define DIRECTORY_SEPARATOR '/'
 
@@ -186,42 +156,40 @@ using namespace std;
 
 #ifdef _MSC_VER
 
-    #define __aligned(t, n) __declspec(align(n)) t
-
-    #define EXPORT_C_(type) extern "C" __declspec(dllexport) type __stdcall
+    #define EXPORT_C_(type) extern "C" type __stdcall
     #define EXPORT_C EXPORT_C_(void)
+
+    #define ALIGN_STACK(n) alignas(n) int dummy__;
 
 #else
 
-    #define __aligned(t, n) t __attribute__((aligned(n)))
-    #define __fastcall __attribute__((fastcall))
+    #ifndef __fastcall
+        #define __fastcall __attribute__((fastcall))
+    #endif
 
     #define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
     #define EXPORT_C EXPORT_C_(void)
 
     #ifdef __GNUC__
-
-        #include "assert.h"
         #define __forceinline __inline__ __attribute__((always_inline,unused))
         // #define __forceinline __inline__ __attribute__((__always_inline__,__gnu_inline__))
         #define __assume(c) do { if (!(c)) __builtin_unreachable(); } while(0)
 
+        // GCC removes the variable as dead code and generates some warnings.
+        // Stack is automatically realigned due to SSE/AVX operations
+        #define ALIGN_STACK(n) (void)0;
+
+    #else
+
+        // TODO Check clang behavior
+        #define ALIGN_STACK(n) alignas(n) int dummy__;
+
     #endif
+
 
 #endif
 
-extern string format(const char* fmt, ...);
-
-struct delete_object {template<class T> void operator()(T& p) {delete p;}};
-struct delete_first {template<class T> void operator()(T& p) {delete p.first;}};
-struct delete_second {template<class T> void operator()(T& p) {delete p.second;}};
-struct aligned_free_object {template<class T> void operator()(T& p) {_aligned_free(p);}};
-struct aligned_free_first {template<class T> void operator()(T& p) {_aligned_free(p.first);}};
-struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_free(p.second);}};
-
 #define countof(a) (sizeof(a) / sizeof(a[0]))
-
-#define ALIGN_STACK(n) __aligned(int, n) __dummy;
 
 #ifndef RESTRICT
 
@@ -245,26 +213,50 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 
 #endif
 
-#if defined(_DEBUG) //&& defined(_MSC_VER)
+#define ASSERT assert
 
-	#include <assert.h>
-	#define ASSERT assert
-
-#else
-
-	#define ASSERT(exp) ((void)0)
-
-#endif
-
-#ifdef __x86_64__
-
-	#define _M_AMD64
-
+#ifdef _M_AMD64
+	// Yeah let use mips naming ;)
+	#ifdef _WIN64
+	#define a0 rcx
+	#define a1 rdx
+	#define a2 r8
+	#define a3 r9
+	#define t0 rdi
+	#define t1 rsi
+	#else
+	#define a0 rdi
+	#define a1 rsi
+	#define a2 rdx
+	#define a3 rcx
+	#define t0 r8
+	#define t1 r9
+	#endif
 #endif
 
 // sse
+#if defined(__GNUC__)
 
-#if !defined(_M_SSE) && (!defined(_WINDOWS) || defined(_M_AMD64) || defined(_M_IX86_FP) && _M_IX86_FP >= 2)
+// Convert gcc see define into GSdx (windows) define
+#if defined(__AVX2__)
+	#if defined(__x86_64__)
+		#define _M_SSE 0x500 // TODO
+	#else
+		#define _M_SSE 0x501
+	#endif
+#elif defined(__AVX__)
+	#define _M_SSE 0x500
+#elif defined(__SSE4_1__)
+	#define _M_SSE 0x401
+#elif defined(__SSSE3__)
+	#define _M_SSE 0x301
+#elif defined(__SSE2__)
+	#define _M_SSE 0x200
+#endif
+
+#endif
+
+#if !defined(_M_SSE) && (!defined(_WIN32) || defined(_M_AMD64) || defined(_M_IX86_FP) && _M_IX86_FP >= 2)
 
 	#define _M_SSE 0x200
 
@@ -322,100 +314,33 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 #undef abs
 
 #if !defined(_MSC_VER)
-
 	#if defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
 
 	#define _aligned_malloc(size, a) aligned_alloc(a, size)
-	static inline void _aligned_free(void* p) { free(p); }
 
-	#elif !defined(HAVE_ALIGNED_MALLOC)
+	#else
 
 	extern void* _aligned_malloc(size_t size, size_t alignment);
-	extern void _aligned_free(void* p);
 
 	#endif
 
+	static inline void _aligned_free(void* p) {
+		free(p);
+	}
+
 	// http://svn.reactos.org/svn/reactos/trunk/reactos/include/crt/mingw32/intrin_x86.h?view=markup
 
-	__forceinline unsigned char _BitScanForward(unsigned long* const Index, const unsigned long Mask)
+	__forceinline int _BitScanForward(unsigned long* const Index, const unsigned long Mask)
 	{
-		__asm__("bsfl %k[Mask], %k[Index]" : [Index] "=r" (*Index) : [Mask] "mr" (Mask));
-		
+#if defined(__GCC_ASM_FLAG_OUTPUTS__) && 0
+		// Need GCC6 to test the code validity
+		int flag;
+		__asm__("bsfl %k[Mask], %k[Index]" : [Index] "=r" (*Index), "=@ccz" (flag) : [Mask] "mr" (Mask));
+		return flag;
+#else
+		__asm__("bsfl %k[Mask], %k[Index]" : [Index] "=r" (*Index) : [Mask] "mr" (Mask) : "cc");
 		return Mask ? 1 : 0;
-	}
-
-	__forceinline unsigned char _interlockedbittestandreset(volatile long* a, const long b)
-	{
-		unsigned char retval;
-		
-		__asm__("lock; btrl %k[b], %[a]; setb %b[retval]" : [retval] "=q" (retval), [a] "+m" (*a) : [b] "Ir" (b) : "memory");
-		
-		return retval;
-	}
-
-	__forceinline unsigned char _interlockedbittestandset(volatile long* a, const long b)
-	{
-		unsigned char retval;
-		
-		__asm__("lock; btsl %k[b], %[a]; setc %b[retval]" : [retval] "=q" (retval), [a] "+m" (*a) : [b] "Ir" (b) : "memory");
-		
-		return retval;
-	}
-
-	__forceinline long _InterlockedCompareExchange(volatile long* const Destination, const long Exchange, const long Comperand)
-	{
-		long retval = Comperand;
-		
-		__asm__("lock; cmpxchgl %k[Exchange], %[Destination]" : [retval] "+a" (retval) : [Destination] "m" (*Destination), [Exchange] "q" (Exchange): "memory");
-		
-		return retval;
-	}
-
-	__forceinline long _InterlockedExchange(volatile long* const Target, const long Value)
-	{
-		long retval = Value;
-		
-		__asm__("xchgl %[retval], %[Target]" : [retval] "+r" (retval) : [Target] "m" (*Target) : "memory");
-
-		return retval;
-	}
-
-	__forceinline long _InterlockedExchangeAdd(volatile long* const Addend, const long Value)
-	{
-		long retval = Value;
-		
-		__asm__("lock; xaddl %[retval], %[Addend]" : [retval] "+r" (retval) : [Addend] "m" (*Addend) : "memory");
-		
-		return retval;
-	}
-	
-	__forceinline short _InterlockedExchangeAdd16(volatile short* const Addend, const short Value)
-	{
-		short retval = Value;
-		
-		__asm__("lock; xaddw %[retval], %[Addend]" : [retval] "+r" (retval) : [Addend] "m" (*Addend) : "memory");
-		
-		return retval;
-	}
-
-	__forceinline long _InterlockedDecrement(volatile long* const lpAddend)
-	{
-		return _InterlockedExchangeAdd(lpAddend, -1) - 1;
-	}
-	
-	__forceinline long _InterlockedIncrement(volatile long* const lpAddend)
-	{
-		return _InterlockedExchangeAdd(lpAddend, 1) + 1;
-	}
-	
-	__forceinline short _InterlockedDecrement16(volatile short* const lpAddend)
-	{
-		return _InterlockedExchangeAdd16(lpAddend, -1) - 1;
-	}
-	
-	__forceinline short _InterlockedIncrement16(volatile short* const lpAddend)
-	{
-		return _InterlockedExchangeAdd16(lpAddend, 1) + 1;
+#endif
 	}
 
 	#ifdef __GNUC__
@@ -441,17 +366,70 @@ struct aligned_free_second {template<class T> void operator()(T& p) {_aligned_fr
 
 #endif
 
+extern std::string format(const char* fmt, ...);
+
 extern void* vmalloc(size_t size, bool code);
 extern void vmfree(void* ptr, size_t size);
 
-#ifdef _WINDOWS
+extern void* fifo_alloc(size_t size, size_t repeat);
+extern void fifo_free(void* ptr, size_t size, size_t repeat);
 
-	#ifdef ENABLE_VTUNE
+#ifdef ENABLE_VTUNE
 
-	#include <JITProfiling.h>
+	#include "jitprofiling.h"
+
+	#ifdef _WIN32
 
 	#pragma comment(lib, "jitprofiling.lib")
 
 	#endif
 
 #endif
+
+// Note: GL messages are present in common code, so in all renderers.
+
+#define GL_INSERT(type, code, sev, ...) \
+	do if (glDebugMessageInsert) glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, type, code, sev, -1, format(__VA_ARGS__).c_str()); while(0);
+
+#if defined(_DEBUG)
+#define GL_CACHE(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xFEAD, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+#else
+#define GL_CACHE(...) (void)(0);
+#endif
+
+#if defined(ENABLE_TRACE_REG) && defined(_DEBUG)
+#define GL_REG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xB0B0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+#else
+#define GL_REG(...) (void)(0);
+#endif
+
+#if defined(ENABLE_EXTRA_LOG) && defined(_DEBUG)
+#define GL_DBG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xD0D0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+#else
+#define GL_DBG(...) (void)(0);
+#endif
+
+#if defined(ENABLE_OGL_DEBUG)
+struct GLAutoPop {
+	~GLAutoPop() {
+		if (glPopDebugGroup)
+			glPopDebugGroup();
+	}
+};
+
+#define GL_PUSH_(...)	do if (glPushDebugGroup) glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str()); while(0);
+#define GL_PUSH(...)	do if (glPushDebugGroup) glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str()); while(0); GLAutoPop gl_auto_pop;
+#define GL_POP()        do if (glPopDebugGroup) glPopDebugGroup(); while(0);
+#define GL_INS(...)		GL_INSERT(GL_DEBUG_TYPE_ERROR, 0xDEAD, GL_DEBUG_SEVERITY_MEDIUM, __VA_ARGS__)
+#define GL_PERF(...)	GL_INSERT(GL_DEBUG_TYPE_PERFORMANCE, 0xFEE1, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+#else
+#define GL_PUSH_(...) (void)(0);
+#define GL_PUSH(...) (void)(0);
+#define GL_POP()     (void)(0);
+#define GL_INS(...)  (void)(0);
+#define GL_PERF(...) (void)(0);
+#endif
+
+// Helper path to dump texture
+extern const std::string root_sw;
+extern const std::string root_hw;

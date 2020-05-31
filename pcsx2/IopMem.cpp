@@ -16,6 +16,7 @@
 
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
+#include "ps2/pgif.h" // for PSX kernel TTY in iopMemWrite32
 
 uptr *psxMemWLUT = NULL;
 const uptr *psxMemRLUT = NULL;
@@ -60,7 +61,7 @@ void iopMemoryReserve::Reset()
 
 	DbgCon.WriteLn("IOP resetting main memory...");
 
-	memzero_ptr<0x2000 * sizeof(uptr) * 2>( psxMemWLUT );	// clears both allocations, RLUT and WLUT
+	memset(psxMemWLUT, 0, 0x2000 * sizeof(uptr) * 2);	// clears both allocations, RLUT and WLUT
 
 	// Trick!  We're accessing RLUT here through WLUT, since it's the non-const pointer.
 	// So the ones with a 0x2000 prefixed are RLUT tables.
@@ -488,4 +489,15 @@ void __fastcall iopMemWrite32(u32 mem, u32 value)
 			}
 		}
 	}
+}
+
+std::string iopMemReadString(u32 mem, int maxlen)
+{
+    std::string ret;
+    char c;
+
+    while ((c = iopMemRead8(mem++)) && maxlen--)
+        ret.push_back(c);
+
+    return ret;
 }

@@ -18,12 +18,14 @@
 #include "IopMem.h"
 
 static const u32
-	HW_USB_START	= 0x1f801600,
-	HW_USB_END		= 0x1f801700,
-	HW_FW_START		= 0x1f808400,
-	HW_FW_END		= 0x1f808550,	// end addr for FW is a guess...
-	HW_SPU2_START	= 0x1f801c00,
-	HW_SPU2_END		= 0x1f801e00;
+	HW_PS1_GPU_START = 0x1F8010A0,
+	HW_PS1_GPU_END   = 0x1F8010B0,
+	HW_USB_START	 = 0x1f801600,
+	HW_USB_END		 = 0x1f801700,
+	HW_FW_START		 = 0x1f808400,
+	HW_FW_END		 = 0x1f808550,	// end addr for FW is a guess...
+	HW_SPU2_START	 = 0x1f801c00,
+	HW_SPU2_END		 = 0x1f801e00;
 
 static const u32
 	HW_SSBUS_SPD_ADDR	= 0x1f801000,
@@ -192,11 +194,6 @@ enum IOPCountRegs
 	} \
 }
 
-#ifdef ENABLE_NEW_IOPDMA
-#define DmaExecNew(n) IopDmaStart(n);
-#define DmaExecNew2(n) IopDmaStart(n);
-#endif
-
 struct dma_mbc
 {
 	u32 madr;
@@ -310,19 +307,18 @@ static dma_mbc&		hw_dma12	= (dma_mbc&) iopHw[0x1550];
 
 enum IopEventId
 {
-	IopEvt_SIFhack = 1	// The SIF likes to fall asleep and never wake up.  This sends intermittent SBUS flags to rewake it.
-,   IopEvt_SIF2 = 2
-,	IopEvt_Cdvd = 5		// General Cdvd commands (Seek, Standby, Break, etc)
-,	IopEvt_SIF0 = 9
-,	IopEvt_SIF1 = 10
-,	IopEvt_Dma11 = 11
-,	IopEvt_Dma12 = 12
-,	IopEvt_SIO = 16
-,	IopEvt_Cdrom = 17
-,	IopEvt_CdromRead = 18
-,	IopEvt_CdvdRead = 19
-,	IopEvt_DEV9 = 20
-,	IopEvt_USB = 21
+	IopEvt_SIF2,
+	IopEvt_Cdvd,		// General Cdvd commands (Seek, Standby, Break, etc)
+	IopEvt_SIF0,
+	IopEvt_SIF1,
+	IopEvt_Dma11,
+	IopEvt_Dma12,
+	IopEvt_SIO,
+	IopEvt_Cdrom,
+	IopEvt_CdromRead,
+	IopEvt_CdvdRead,
+	IopEvt_DEV9,
+	IopEvt_USB,
 };
 
 extern void PSX_INT( IopEventId n, s32 ecycle);

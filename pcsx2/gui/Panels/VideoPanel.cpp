@@ -29,17 +29,15 @@ using namespace pxSizerFlags;
 Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	: BaseApplicableConfigPanel_SpecificConfig( parent )
 {
-	SetMinWidth( 280 );
-
 	m_check_LimiterDisable = new pxCheckBox( this, _("Disable Framelimiting"),
 		_("Useful for running benchmarks. Toggle this option in-game by pressing F4.") );
 
 	m_check_LimiterDisable->SetToolTip( pxEt( L"Note that when Framelimiting is disabled, Turbo and SlowMotion modes will not be available either."
 	) );
 
-	pxFitToDigits( m_spin_NominalPct	= new wxSpinCtrl( this ), 6 );
-	pxFitToDigits( m_spin_SlomoPct		= new wxSpinCtrl( this ), 6 );
-	pxFitToDigits( m_spin_TurboPct		= new wxSpinCtrl( this ), 6 );
+	m_spin_NominalPct = new wxSpinCtrl(this);
+	m_spin_SlomoPct = new wxSpinCtrl(this);
+	m_spin_TurboPct = new wxSpinCtrl(this);
 
 	m_text_BaseNtsc		= CreateNumericalTextCtrl( this, 7 );
 	m_text_BasePal		= CreateNumericalTextCtrl( this, 7 );
@@ -51,7 +49,7 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	// ------------------------------------------------------------
 	// Sizers and Layouts
 
-	*this += m_check_LimiterDisable;
+	*this += m_check_LimiterDisable | StdExpand();
 
 	wxFlexGridSizer& s_spins( *new wxFlexGridSizer( 5 ) );
 	s_spins.AddGrowableCol( 0 );
@@ -74,12 +72,6 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	s_spins	+= Label(L"%" )							| StdExpand();
 	s_spins	+= 5;
 
-	s_spins	+= 15;
-	s_spins	+= 15;
-	s_spins	+= 15;
-	s_spins	+= 15;
-	s_spins	+= 15;
-
 	wxFlexGridSizer& s_fps( *new wxFlexGridSizer( 5 ) );
 	s_fps.AddGrowableCol( 0 );
 
@@ -96,6 +88,7 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	s_fps	+= 5;
 
 	*this	+= s_spins	| pxExpand;
+	*this	+= 5;
 	*this	+= s_fps	| pxExpand;
 
 	AppStatusEvent_OnSettingsApplied();
@@ -108,7 +101,6 @@ void Panels::FramelimiterPanel::AppStatusEvent_OnSettingsApplied()
 
 void Panels::FramelimiterPanel::ApplyConfigToGui( AppConfig& configToApply, int flags )
 {
-	const AppConfig::GSWindowOptions& appwin( configToApply.GSWindow );
 	const AppConfig::FramerateOptions& appfps( configToApply.Framerate );
 	const Pcsx2Config::GSOptions& gsconf( configToApply.EmuOptions.GS );
 
@@ -165,6 +157,10 @@ void Panels::FramelimiterPanel::Apply()
 	}
 
 	appfps.SanityCheck();
+
+	// If the user has a command line override specified, we need to disable it
+	// so that their changes take effect
+	wxGetApp().Overrides.ProfilingMode = false;
 }
 
 // --------------------------------------------------------------------------------------
@@ -174,8 +170,6 @@ void Panels::FramelimiterPanel::Apply()
 Panels::FrameSkipPanel::FrameSkipPanel( wxWindow* parent )
 	: BaseApplicableConfigPanel_SpecificConfig( parent )
 {
-	SetMinWidth( 350 );
-
 	const RadioPanelItem FrameskipOptions[] =
 	{
 		RadioPanelItem(
@@ -196,8 +190,8 @@ Panels::FrameSkipPanel::FrameSkipPanel( wxWindow* parent )
 	m_radio_SkipMode = new pxRadioPanel( this, FrameskipOptions );
 	m_radio_SkipMode->Realize();
 
-	pxFitToDigits( m_spin_FramesToDraw	= new wxSpinCtrl( this ), 6 );
-	pxFitToDigits( m_spin_FramesToSkip	= new wxSpinCtrl( this ), 6 );
+	m_spin_FramesToDraw = new wxSpinCtrl(this);
+	m_spin_FramesToSkip = new wxSpinCtrl(this);
 
 	// Set tooltips for spinners.
 
@@ -240,10 +234,12 @@ void Panels::FrameSkipPanel::ApplyConfigToGui( AppConfig& configToApply, int fla
 	const AppConfig::FramerateOptions& appfps( configToApply.Framerate );
 	const Pcsx2Config::GSOptions& gsconf( configToApply.EmuOptions.GS );
 
-	m_radio_SkipMode	->SetSelection( appfps.SkipOnLimit ? 2 : (appfps.SkipOnTurbo ? 1 : 0) );
+	m_radio_SkipMode->SetSelection( appfps.SkipOnLimit ? 2 : (appfps.SkipOnTurbo ? 1 : 0) );
 
-	m_spin_FramesToDraw	->SetValue( gsconf.FramesToDraw );
-	m_spin_FramesToSkip	->SetValue( gsconf.FramesToSkip );
+	m_spin_FramesToDraw->SetValue( gsconf.FramesToDraw );
+	m_spin_FramesToDraw->Enable(!configToApply.EnablePresets);
+	m_spin_FramesToSkip->SetValue( gsconf.FramesToSkip );
+	m_spin_FramesToSkip->Enable(!configToApply.EnablePresets);
 
 	this->Enable(!configToApply.EnablePresets);
 }
@@ -295,17 +291,10 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 		_t("For troubleshooting potential bugs in the MTGS only, as it is potentially very slow.")
 	);
 
-	m_check_DisableOutput = new pxCheckBox( left, _("Disable all GS output"),
-		_t("Completely disables all GS plugin activity; ideal for benchmarking EEcore components.")
-	);
+	m_restore_defaults = new wxButton(right, wxID_DEFAULT, _("Restore Defaults"));
 
 	m_check_SynchronousGS->SetToolTip( pxEt( L"Enable this if you think MTGS thread sync is causing crashes or graphical errors.")
 	) ;
-
-	m_check_DisableOutput->SetToolTip( pxEt( L"Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This option is best used in conjunction with savestates: save a state at an ideal scene, enable this option, and re-load the savestate.\n\nWarning: This option can be enabled on-the-fly but typically cannot be disabled on-the-fly (video will typically be garbage)."
-	) );
-
-	m_check_DisableOutput->Hide(); // Band-aid fix since currently broken
 
 	//GSWindowSettingsPanel* winpan = new GSWindowSettingsPanel( left );
 	//winpan->AddFrame(_("Display/Window"));
@@ -322,18 +311,30 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 
 	*right		+= m_span		| pxExpand;
 	*right		+= 5;
+	*right		+= m_restore_defaults | StdButton();
 
 	*left		+= m_fpan		| pxExpand;
 	*left		+= 5;
-	*left		+= m_check_SynchronousGS;
-	*left		+= m_check_DisableOutput;
+	*left		+= m_check_SynchronousGS | StdExpand();
 
 	*s_table	+= left		| StdExpand();
 	*s_table	+= right	| StdExpand();
 
 	*this		+= s_table	| pxExpand;
 
+	Bind(wxEVT_BUTTON, &VideoPanel::Defaults_Click, this, wxID_DEFAULT);
 	AppStatusEvent_OnSettingsApplied();
+}
+
+void Panels::VideoPanel::Defaults_Click(wxCommandEvent& evt)
+{
+	AppConfig config = *g_Conf;
+	config.EmuOptions.GS = Pcsx2Config::GSOptions();
+	config.Framerate = AppConfig::FramerateOptions();
+	VideoPanel::ApplyConfigToGui(config);
+	m_fpan->ApplyConfigToGui(config);
+	m_span->ApplyConfigToGui(config);
+	evt.Skip();
 }
 
 void Panels::VideoPanel::OnOpenWindowSettings( wxCommandEvent& evt )
@@ -346,7 +347,6 @@ void Panels::VideoPanel::OnOpenWindowSettings( wxCommandEvent& evt )
 void Panels::VideoPanel::Apply()
 {
 	g_Conf->EmuOptions.GS.SynchronousMTGS	= m_check_SynchronousGS->GetValue();
-	g_Conf->EmuOptions.GS.DisableOutput		= m_check_DisableOutput->GetValue();
 }
 
 void Panels::VideoPanel::AppStatusEvent_OnSettingsApplied()
@@ -357,15 +357,15 @@ void Panels::VideoPanel::AppStatusEvent_OnSettingsApplied()
 void Panels::VideoPanel::ApplyConfigToGui( AppConfig& configToApply, int flags ){
 	
 	m_check_SynchronousGS->SetValue( configToApply.EmuOptions.GS.SynchronousMTGS );
-	m_check_DisableOutput->SetValue( configToApply.EmuOptions.GS.DisableOutput );
 
 	m_check_SynchronousGS->Enable(!configToApply.EnablePresets);
-	m_check_DisableOutput->Enable(!configToApply.EnablePresets);
 
 	if( flags & AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE )
 	{
 		m_span->ApplyConfigToGui( configToApply, true );
 		m_fpan->ApplyConfigToGui( configToApply, true );
 	}
+
+	Layout();
 }
 

@@ -20,28 +20,27 @@ Display *display;
 int screen;
 GtkScrolledWindow *win;
 
-int GSOpenWindow(void *pDsp, char *Title)
+int GSOpenWindow(void *pDsp, const char *Title)
 {
-	display = XOpenDisplay(0);
-	screen = DefaultScreen(display);
+    display = XOpenDisplay(0);
+    screen = DefaultScreen(display);
 
-	if (pDsp != NULL)
-		*(Display**)pDsp = display;
-	else
-		return -1;
+    if (pDsp != NULL)
+        *(Display **)pDsp = display;
+    else
+        return -1;
 
-	return 0;
+    return 0;
 }
 
 int GSOpenWindow2(void *pDsp, u32 flags)
 {
-    GtkWidget *widget;
-	if (pDsp != NULL)
-		win = *(GtkScrolledWindow**)pDsp;
-	else
-		return -1;
+    if (pDsp != NULL)
+        win = *(GtkScrolledWindow **)pDsp;
+    else
+        return -1;
 
-	return 0;
+    return 0;
 }
 
 void GSCloseWindow()
@@ -52,67 +51,62 @@ void GSCloseWindow()
 
 void GSProcessMessages()
 {
-	if ( GSKeyEvent )
-		{
-		int myKeyEvent = GSKeyEvent;
-		bool myShift = GSShift;
-		GSKeyEvent = 0;
+    if (GSKeyEvent) {
+        int myKeyEvent = GSKeyEvent;
+        bool myShift = GSShift;
+        GSKeyEvent = 0;
 
-		switch ( myKeyEvent )
-		{
-			case XK_F5:
-			 	OnKeyboardF5(myShift);
-				break;
-			case XK_F6:
-				OnKeyboardF6(myShift);
-				break;
-			case XK_F7:
-				OnKeyboardF7(myShift);
-				break;
-			case XK_F9:
-				OnKeyboardF9(myShift);
-				break;
-		}
-	}
+        switch (myKeyEvent) {
+            case XK_F5:
+                OnKeyboardF5(myShift);
+                break;
+            case XK_F6:
+                OnKeyboardF6(myShift);
+                break;
+            case XK_F7:
+                OnKeyboardF7(myShift);
+                break;
+            case XK_F9:
+                OnKeyboardF9(myShift);
+                break;
+        }
+    }
 }
 
 
 void HandleKeyEvent(keyEvent *ev)
 {
-	switch(ev->evt)
-	{
-		case KEYPRESS:
-			switch(ev->key)
-			{
-				case XK_F5:
-				case XK_F6:
-				case XK_F7:
-				case XK_F9:
-					GSKeyEvent = ev->key ;
-					break;
-				case XK_Escape:
-					break;
-				case XK_Shift_L:
-				case XK_Shift_R:
-					GSShift = true;
-					break;
-				case XK_Alt_L:
-				case XK_Alt_R:
-					GSAlt = true;
-					break;
-			}
-			break;
-		case KEYRELEASE:
-			switch(ev->key)
-			{
-				case XK_Shift_L:
-				case XK_Shift_R:
-					GSShift = false;
-					break;
-				case XK_Alt_L:
-				case XK_Alt_R:
-					GSAlt = false;
-					break;
-			}
-	}
+    switch (ev->evt) {
+        case KEYPRESS:
+            switch (ev->key) {
+                case XK_F5:
+                case XK_F6:
+                case XK_F7:
+                case XK_F9:
+                    GSKeyEvent = ev->key;
+                    break;
+                case XK_Escape:
+                    break;
+                case XK_Shift_L:
+                case XK_Shift_R:
+                    GSShift = true;
+                    break;
+                case XK_Alt_L:
+                case XK_Alt_R:
+                    GSAlt = true;
+                    break;
+            }
+            break;
+        case KEYRELEASE:
+            switch (ev->key) {
+                case XK_Shift_L:
+                case XK_Shift_R:
+                    GSShift = false;
+                    break;
+                case XK_Alt_L:
+                case XK_Alt_R:
+                    GSAlt = false;
+                    break;
+            }
+    }
 }

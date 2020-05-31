@@ -25,7 +25,7 @@ u32 g_vif1Cycles = 0;
 
 __fi void vif1FLUSH()
 {
-	if(vif1Regs.stat.VEW == true)
+	if(vif1Regs.stat.VEW)
 	{
 		vif1.waitforvu = true;
 		vif1.vifstalled.enabled = VifStallEnable(vif1ch);
@@ -54,8 +54,8 @@ void vif1TransferToMemory()
 	// completely and execute the transfer there-after.
 	//Console.Warning("Real QWC %x", vif1ch.qwc);
 	const u32   size = std::min(vif1.GSLastDownloadSize, (u32)vif1ch.qwc);
-	const u128* pMemEnd  = vif1.GSLastDownloadSize + pMem;
-	
+	//const u128* pMemEnd  = vif1.GSLastDownloadSize + pMem;
+
 	if (size) {
 		// Checking if any crazy game does a partial
 		// gs primitive and then does a gs download...
@@ -73,29 +73,39 @@ void vif1TransferToMemory()
 		GetMTGS().WaitGS(false); // wait without reg sync
 	}
 	GSreadFIFO2((u64*)pMem, size);
-	pMem += size;
+//	pMem += size;
 
-	if(pMem < pMemEnd) {
-		//DevCon.Warning("GS Transfer < VIF QWC, Clearing end of space");
-		
-		__m128 zeroreg = _mm_setzero_ps();
-		do {
-			_mm_store_ps((float*)pMem, zeroreg);
-		} while (++pMem < pMemEnd);
-	}
+	//Some games such as Alex Ferguson's Player Manager 2001 reads less than GSLastDownloadSize by VIF then reads the remainder by FIFO
+	//Clearing the memory is clearing memory it shouldn't be and kills it.
+	//The only scenario where this could be used is the transfer size really is less than QWC, not the other way around as it was doing
+	//That said, I think this is pointless and a waste of cycles and could cause more problems than good. We will alert this situation below anyway.
+	/*if (vif1.GSLastDownloadSize < vif1ch.qwc) {
+		if (pMem < pMemEnd) {
+			DevCon.Warning("GS Transfer < VIF QWC, Clearing end of space GST %x QWC %x", vif1.GSLastDownloadSize, (u32)vif1ch.qwc);
 
-	g_vif1Cycles += vif1ch.qwc * 2;
-	vif1ch.madr += vif1ch.qwc * 16; // mgs3 scene changes
+			__m128 zeroreg = _mm_setzero_ps();
+			do {
+				_mm_store_ps((float*)pMem, zeroreg);
+			} while (++pMem < pMemEnd);
+		}
+	}*/
+
+	g_vif1Cycles += size * 2;
+	vif1ch.madr += size * 16; // mgs3 scene changes
 	if (vif1.GSLastDownloadSize >= vif1ch.qwc) {
 		vif1.GSLastDownloadSize -= vif1ch.qwc;
 		vif1Regs.stat.FQC = std::min((u32)16, vif1.GSLastDownloadSize);
+		vif1ch.qwc = 0;
 	}
 	else {
 		vif1Regs.stat.FQC = 0;
+		vif1ch.qwc -= vif1.GSLastDownloadSize;
 		vif1.GSLastDownloadSize = 0;
+		//This could be potentially bad and cause hangs. I guess we will find out.
+		DevCon.Warning("QWC left on VIF FIFO Reverse");
 	}
 
-	vif1ch.qwc = 0;
+	
 }
 
 bool _VIF1chain()
@@ -245,12 +255,12 @@ __fi void vif1VUFinish()
 		}
 
 	}
-	if(vif1.waitforvu == true)
+	if(vif1.waitforvu)
 	{
 		vif1.waitforvu = false;
 		ExecuteVU(1);
 		//Check if VIF is already scheduled to interrupt, if it's waiting, kick it :P
-		if((cpuRegs.interrupt & (1<<DMAC_VIF1 | 1 << DMAC_MFIFO_VIF)) == 0 && vif1ch.chcr.STR == true && !vif1Regs.stat.INT)
+		if((cpuRegs.interrupt & (1<<DMAC_VIF1 | 1 << DMAC_MFIFO_VIF)) == 0 && vif1ch.chcr.STR && !vif1Regs.stat.INT)
 		{
 			if(dmacRegs.ctrl.MFD == MFD_VIF1)
 				vifMFIFOInterrupt();
@@ -303,7 +313,7 @@ __fi void vif1Interrupt()
 		//Simulated GS transfer time done, clear the flags
 	}
 	
-	if(vif1.waitforvu == true)
+	if(vif1.waitforvu)
 	{
 		//DevCon.Warning("Waiting on VU1");
 		//CPU_INT(DMAC_VIF1, 16);
@@ -311,7 +321,7 @@ __fi void vif1Interrupt()
 	}
 	if (!vif1ch.chcr.STR) Console.WriteLn("Vif1 running when CHCR == %x", vif1ch.chcr._u32);
 
-	if (vif1.irq && vif1.tag.size == 0 &&vif1.cmd == 0)
+	if (vif1.irq && vif1.vifstalled.enabled && vif1.vifstalled.value == VIF_IRQ_STALL)
 	{
 		VIF_LOG("VIF IRQ Firing");
 		vif1Regs.stat.INT = true;
@@ -366,9 +376,9 @@ __fi void vif1Interrupt()
     if (!vif1.done)
     {
 
-            if (!(dmacRegs.ctrl.DMAE))
+            if (!(dmacRegs.ctrl.DMAE) || vif1Regs.stat.VSS) //Stopped or DMA Disabled
             {
-                    Console.WriteLn("vif1 dma masked");
+                    //Console.WriteLn("vif1 dma masked");
                     return;
             }
 
@@ -402,7 +412,7 @@ __fi void vif1Interrupt()
 	vif1ch.chcr.STR = false;
 	vif1.vifstalled.enabled = false;
 	vif1.irqoffset.enabled = false;
-	if(vif1.queued_program == true) vifExecQueue(1);
+	if(vif1.queued_program) vifExecQueue(1);
 	g_vif1Cycles = 0;
 	DMA_LOG("VIF1 DMA End");
 	hwDmacIrq(DMAC_VIF1);
@@ -453,7 +463,7 @@ void dmaVIF1()
 			else
 				vif1.dmamode = VIF_NORMAL_TO_MEM_MODE;
 
-			if(vif1.irqoffset.enabled == true && vif1.done == false) DevCon.Warning("Warning! VIF1 starting a Normal transfer with vif offset set (Possible force stop?)");
+			if(vif1.irqoffset.enabled && !vif1.done) DevCon.Warning("Warning! VIF1 starting a Normal transfer with vif offset set (Possible force stop?)");
 			vif1.done = true;
 		}
 
@@ -461,7 +471,7 @@ void dmaVIF1()
 	}
 	else
 	{
-		if(vif1.irqoffset.enabled == true && vif1.done == false) DevCon.Warning("Warning! VIF1 starting a new Chain transfer with vif offset set (Possible force stop?)");
+		if(vif1.irqoffset.enabled && !vif1.done) DevCon.Warning("Warning! VIF1 starting a new Chain transfer with vif offset set (Possible force stop?)");
 		vif1.dmamode = VIF_CHAIN_MODE;
 		vif1.done = false;
 		vif1.inprogress &= ~0x1;

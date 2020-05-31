@@ -11,7 +11,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SvnRootDir)\common\include\$(ProjectName);$(SvnRootDir)\common\include;$(SvnRootDir)\3rdparty\wxWidgets\include;$(SvnRootDir)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SvnRootDir)\common\include\$(ProjectName);$(SvnRootDir)\common\include;$(SvnRootDir)\3rdparty\wxwidgets3.0\include;$(SvnRootDir)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>__WIN32__;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StructMemberAlignment>16Bytes</StructMemberAlignment>
       <FunctionLevelLinking>true</FunctionLevelLinking>

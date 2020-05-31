@@ -17,6 +17,7 @@
 
 #include <wx/dynlib.h>
 #include <wx/dir.h>
+#include <memory>
 
 #include "App.h"
 #include "AppSaveStates.h"
@@ -39,20 +40,17 @@ static const bool DisableThreading =
 using namespace pxSizerFlags;
 using namespace Threading;
 
-BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE(pxEvt_EnumeratedNext, -1)
-	DECLARE_EVENT_TYPE(pxEvt_EnumerationFinished, -1)
-	DECLARE_EVENT_TYPE(pxEVT_ShowStatusBar, -1)
-END_DECLARE_EVENT_TYPES()
 
-DEFINE_EVENT_TYPE(pxEvt_EnumeratedNext);
-DEFINE_EVENT_TYPE(pxEvt_EnumerationFinished);
-DEFINE_EVENT_TYPE(pxEVT_ShowStatusBar);
+wxDECLARE_EVENT(pxEvt_EnumeratedNext, wxCommandEvent);
+wxDECLARE_EVENT(pxEvt_EnumerationFinished, wxCommandEvent);
+wxDECLARE_EVENT(pxEVT_ShowStatusBar, wxCommandEvent);
+
+wxDEFINE_EVENT(pxEvt_EnumeratedNext, wxCommandEvent);
+wxDEFINE_EVENT(pxEvt_EnumerationFinished, wxCommandEvent);
+wxDEFINE_EVENT(pxEVT_ShowStatusBar, wxCommandEvent);
 
 typedef s32		(CALLBACK* TestFnptr)();
 typedef void	(CALLBACK* ConfigureFnptr)();
-
-static const wxString failed_separator( L"--------   Unsupported Plugins  --------" );
 
 namespace Exception
 {
@@ -98,7 +96,7 @@ public:
 		: m_plugpath( plugpath )
 	{
 		if( !m_plugin.Load( m_plugpath ) )
-			throw Exception::BadStream( m_plugpath ).SetBothMsgs(L"File is not a valid dynamic library.");
+			throw Exception::BadStream();
 
 		wxDoNotLogInThisScope please;
 		m_GetLibType		= (_PS2EgetLibType)m_plugin.GetSymbol( L"PS2EgetLibType" );
@@ -152,7 +150,7 @@ public:
 // --------------------------------------------------------------------------------------
 class ApplyPluginsDialog : public WaitForTaskDialog
 {
-	DECLARE_DYNAMIC_CLASS_NO_COPY(ApplyPluginsDialog)
+	wxDECLARE_DYNAMIC_CLASS_NO_COPY(ApplyPluginsDialog);
 
 	typedef wxDialogWithHelpers _parent;
 
@@ -161,7 +159,7 @@ protected:
 
 public:
 	ApplyPluginsDialog( BaseApplicableConfigPanel* panel=NULL );
-	virtual ~ApplyPluginsDialog() throw() {}
+	virtual ~ApplyPluginsDialog() = default;
 
 	BaseApplicableConfigPanel* GetApplicableConfigPanel() const { return m_panel; }
 };
@@ -184,7 +182,7 @@ public:
 		m_owner = owner;
 	}
 
-	virtual ~ApplyOverValidStateEvent() throw() { }
+	virtual ~ApplyOverValidStateEvent() = default;
 	virtual ApplyOverValidStateEvent *Clone() const { return new ApplyOverValidStateEvent(*this); }
 
 protected:
@@ -205,7 +203,7 @@ protected:
 public:
 	wxString GetEventName() const { return L"PluginSelectorPanel::ApplyPlugins"; }
 
-	virtual ~SysExecEvent_ApplyPlugins() throw() {}
+	virtual ~SysExecEvent_ApplyPlugins() = default;
 	SysExecEvent_ApplyPlugins* Clone() const { return new SysExecEvent_ApplyPlugins( *this ); }
 
 	SysExecEvent_ApplyPlugins( ApplyPluginsDialog* parent, SynchronousActionState& sync )
@@ -224,10 +222,10 @@ protected:
 // --------------------------------------------------------------------------------------
 //  ApplyPluginsDialog Implementations
 // --------------------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC_CLASS(ApplyPluginsDialog, WaitForTaskDialog)
+wxIMPLEMENT_DYNAMIC_CLASS(ApplyPluginsDialog, WaitForTaskDialog);
 
 ApplyPluginsDialog::ApplyPluginsDialog( BaseApplicableConfigPanel* panel )
-	: WaitForTaskDialog( _("Applying settings...") )
+: WaitForTaskDialog(_("Applying settings...")), m_panel(NULL)
 {
 	GetSysExecutorThread().PostEvent( new SysExecEvent_ApplyPlugins( this, m_sync ) );
 }
@@ -256,7 +254,7 @@ void SysExecEvent_ApplyPlugins::InvokeEvent()
 {
 	ScopedCoreThreadPause paused_core;
 
-	ScopedPtr< VmStateBuffer > buffer;
+	std::unique_ptr<VmStateBuffer> buffer;
 	
 	if( SysHasValidState() )
 	{
@@ -268,7 +266,8 @@ void SysExecEvent_ApplyPlugins::InvokeEvent()
 		// FIXME : We only actually have to save plugins here, except the recovery code
 		// in SysCoreThread isn't quite set up yet to handle that (I think...) --air
 
-		memSavingState saveme( *(buffer.Reassign(new VmStateBuffer(L"StateBuffer_ApplyNewPlugins"))) );
+		buffer.reset(new VmStateBuffer(L"StateBuffer_ApplyNewPlugins"));
+		memSavingState saveme(buffer.get());
 		
 		saveme.FreezeAll();
 	}
@@ -428,17 +427,17 @@ Panels::PluginSelectorPanel::PluginSelectorPanel( wxWindow* parent )
 	// refresh button used for diagnostics... (don't think there's a point to having one otherwise) --air
 	//wxButton* refresh = new wxButton( this, wxID_ANY, L"Refresh" );
 	//s_main.Add( refresh );
-	//Connect( refresh->GetId(), wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( PluginSelectorPanel::OnRefresh ) );
+	//Bind(wxEVT_BUTTON, &PluginSelectorPanel::OnRefresh, this, refresh->GetId());
 
-	Connect( pxEvt_EnumeratedNext,				wxCommandEventHandler( PluginSelectorPanel::OnProgress ) );
-	Connect( pxEvt_EnumerationFinished,			wxCommandEventHandler( PluginSelectorPanel::OnEnumComplete ) );
-	Connect( pxEVT_ShowStatusBar,				wxCommandEventHandler( PluginSelectorPanel::OnShowStatusBar ) );
-	Connect( wxEVT_COMMAND_COMBOBOX_SELECTED,	wxCommandEventHandler( PluginSelectorPanel::OnPluginSelected ) );
+	Bind(pxEvt_EnumeratedNext, &PluginSelectorPanel::OnProgress, this);
+	Bind(pxEvt_EnumerationFinished, &PluginSelectorPanel::OnEnumComplete, this);
+	Bind(pxEVT_ShowStatusBar, &PluginSelectorPanel::OnShowStatusBar, this);
+	Bind(wxEVT_COMBOBOX, &PluginSelectorPanel::OnPluginSelected, this);
 
-	Connect( ButtonId_Configure, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( PluginSelectorPanel::OnConfigure_Clicked ) );
+	Bind(wxEVT_BUTTON, &PluginSelectorPanel::OnConfigure_Clicked, this, ButtonId_Configure);
 }
 
-Panels::PluginSelectorPanel::~PluginSelectorPanel() throw()
+Panels::PluginSelectorPanel::~PluginSelectorPanel()
 {
 	CancelRefresh();		// in case the enumeration thread is currently refreshing...
 }
@@ -546,7 +545,7 @@ void Panels::PluginSelectorPanel::DoRefresh()
 	wxCommandEvent evt( pxEVT_ShowStatusBar );
 	GetEventHandler()->AddPendingEvent( evt );
 
-	m_EnumeratorThread.Delete() = new EnumThread( *this );
+	m_EnumeratorThread.reset(new EnumThread(*this));
 
 	if( DisableThreading )
 		m_EnumeratorThread->DoNextPlugin( 0 );
@@ -563,11 +562,11 @@ bool Panels::PluginSelectorPanel::ValidateEnumerationStatus()
 	// re-enumerate plugins, and if anything changed then we need to wipe
 	// the contents of the combo boxes and re-enumerate everything.
 
-	// Impl Note: ScopedPtr used so that resources get cleaned up if an exception
+	// Impl Note: unique_ptr used so that resources get cleaned up if an exception
 	// occurs during file enumeration.
-	ScopedPtr<wxArrayString> pluginlist( new wxArrayString() );
+	std::unique_ptr<wxArrayString> pluginlist(new wxArrayString());
 
-	int pluggers = EnumeratePluginsInFolder( m_ComponentBoxes->GetPluginsPath(), pluginlist );
+	int pluggers = EnumeratePluginsInFolder(m_ComponentBoxes->GetPluginsPath(), pluginlist.get());
 
 	if( !m_FileList || (*pluginlist != *m_FileList) )
 		validated = false;
@@ -578,9 +577,9 @@ bool Panels::PluginSelectorPanel::ValidateEnumerationStatus()
 		return validated;
 	}
 
-	m_FileList.SwapPtr( pluginlist );
+	m_FileList.swap(pluginlist);
 
-	// set the gague length a little shorter than the plugin count.  2 reasons:
+	// set the gauge length a little shorter than the plugin count.  2 reasons:
 	//  * some of the plugins might be duds.
 	//  * on high end machines and Win7, the statusbar lags a lot and never gets to 100% before being hidden.
 	
@@ -642,20 +641,16 @@ void Panels::PluginSelectorPanel::OnConfigure_Clicked( wxCommandEvent& evt )
 		ScopedCoreThreadPause paused_core( new SysExecEvent_SaveSinglePlugin(pid) );
 		if (!CorePlugins.AreLoaded())
 		{
-			typedef void	(CALLBACK* SetDirFnptr)( const char* dir );
-
-			if( SetDirFnptr func = (SetDirFnptr)dynlib.GetSymbol( tbl_PluginInfo[pid].GetShortname() + L"setSettingsDir" ) )
-			{
-				func( GetSettingsFolder().ToString().mb_str(wxConvFile) );
-			}
-
-			if( SetDirFnptr func = (SetDirFnptr)dynlib.GetSymbol( tbl_PluginInfo[pid].GetShortname() + L"setLogDir" ) )
-			{
-				func( GetLogFolder().ToString().mb_str(wxConvFile) );
-			}
+			CorePlugins.Load(pid, filename);
+			CorePlugins.SendLogFolder();
+			CorePlugins.SendSettingsFolder();
+			configfunc();
+			CorePlugins.Unload(pid);
 		}
-
-		configfunc();
+		else
+		{
+			configfunc();
+		}
 	}
 }
 
@@ -674,7 +669,9 @@ void Panels::PluginSelectorPanel::OnEnumComplete( wxCommandEvent& evt )
 	//  (for now we just force it to selection zero if nothing's selected)
 
 	int emptyBoxes = 0;
-	const PluginInfo* pi = tbl_PluginInfo; do
+	const PluginInfo* pi = tbl_PluginInfo;
+
+	do
 	{
 		const PluginsEnum_t pid = pi->id;
 		if( m_ComponentBoxes->Get(pid).GetCount() <= 0 )
@@ -682,7 +679,73 @@ void Panels::PluginSelectorPanel::OnEnumComplete( wxCommandEvent& evt )
 
 		else if( m_ComponentBoxes->Get(pid).GetSelection() == wxNOT_FOUND )
 		{
-			m_ComponentBoxes->Get(pid).SetSelection( 0 );
+			if (pid == PluginId_GS)
+			{
+				int count = (int)m_ComponentBoxes->Get(pid).GetCount();
+
+				int index_avx2 = -1;
+				int index_sse4 = -1;
+				int index_sse2 = -1;
+
+				for( int i = 0; i < count; i++ )
+				{
+					auto str = m_ComponentBoxes->Get(pid).GetString( i );
+					
+					if( x86caps.hasAVX2 && str.Contains("AVX2") ) index_avx2 = i;
+					if( x86caps.hasStreamingSIMD4Extensions && str.Contains("SSE4") ) index_sse4 = i;
+					if( str.Contains("SSE2") ) index_sse2 = i;
+				}
+
+				if( index_avx2 >= 0 ) m_ComponentBoxes->Get(pid).SetSelection( index_avx2 );
+				else if( index_sse4 >= 0 ) m_ComponentBoxes->Get(pid).SetSelection( index_sse4 );
+				else if( index_sse2 >= 0 ) m_ComponentBoxes->Get(pid).SetSelection( index_sse2 );
+				else m_ComponentBoxes->Get(pid).SetSelection( 0 );
+			}
+			else if (pid == PluginId_PAD)
+			{
+				int count = (int)m_ComponentBoxes->Get(pid).GetCount();
+
+				int index_lilypad = -1;
+				int index_onepad = -1;
+				int index_onepad_legacy = -1;
+
+				for( int i = 0; i < count; i++ )
+				{
+					auto str = m_ComponentBoxes->Get(pid).GetString(i).Lower();
+
+					if (str.Contains("lilypad")) index_lilypad = i;
+					if (str.Contains("onepad"))
+					{
+						if (str.Contains("legacy"))
+							index_onepad_legacy = i;
+						else
+							index_onepad = i;
+					}
+				}
+
+				#ifdef _WIN32
+					if (index_lilypad >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_lilypad);
+					/* else if (index_onepad >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_onepad);
+					else if (index_onepad_legacy >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_onepad_legacy); */
+					else
+						m_ComponentBoxes->Get(pid).SetSelection(0);
+				#else
+					if (index_onepad >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_onepad);
+					else if (index_onepad_legacy >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_onepad_legacy);
+					else if (index_lilypad >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_lilypad);
+					else
+						m_ComponentBoxes->Get(pid).SetSelection(0);
+				#endif
+			}
+			else
+				m_ComponentBoxes->Get(pid).SetSelection( 0 );
+
 			m_ComponentBoxes->GetConfigButton(pid).Enable( !CorePlugins.AreLoaded() );
 		}
 	} while( ++pi, pi->shortname != NULL );
@@ -703,7 +766,7 @@ void Panels::PluginSelectorPanel::OnProgress( wxCommandEvent& evt )
 
 	// The thread can get canceled and replaced with a new thread, which means all
 	// pending messages should be ignored.
-	if( m_EnumeratorThread != (EnumThread*)evt.GetClientData() ) return;
+	if (m_EnumeratorThread.get() != (EnumThread*)evt.GetClientData()) return;
 
 	const size_t evtidx = evt.GetExtraLong();
 
@@ -724,11 +787,6 @@ void Panels::PluginSelectorPanel::OnProgress( wxCommandEvent& evt )
 	);
 
 	EnumeratedPluginInfo& result( m_EnumeratorThread->Results[evtidx] );
-
-	if( result.TypeMask == 0 )
-	{
-		Console.Error( L"Some kinda plugin failure: " + (*m_FileList)[evtidx] );
-	}
 
 	const PluginInfo* pi = tbl_PluginInfo; do
 	{
@@ -759,11 +817,10 @@ void Panels::PluginSelectorPanel::OnProgress( wxCommandEvent& evt )
 
 Panels::PluginSelectorPanel::EnumThread::EnumThread( PluginSelectorPanel& master )
 	: pxThread()
-	, Results( master.FileCount(), L"PluginSelectorResults" )
+	, Results( master.FileCount() )
 	, m_master( master )
 	, m_hourglass( Cursor_KindaBusy )
 {
-	Results.MatchLengthToAllocatedSize();
 }
 
 void Panels::PluginSelectorPanel::EnumThread::DoNextPlugin( int curidx )
@@ -789,9 +846,14 @@ void Panels::PluginSelectorPanel::EnumThread::DoNextPlugin( int curidx )
 			}
 		} while( ++pi, pi->shortname != NULL );
 	}
-	catch( Exception::BadStream& ex )
+	catch (Exception::NotEnumerablePlugin& ex)
 	{
-		Console.Warning( ex.FormatDiagnosticMessage() );
+		Console.Warning(ex.FormatDiagnosticMessage());
+	}
+	// wx3.0 provides an error message if the library fails to load - we don't
+	// need to provide one ourselves
+	catch (Exception::BadStream&)
+	{
 	}
 
 	wxCommandEvent yay( pxEvt_EnumeratedNext );

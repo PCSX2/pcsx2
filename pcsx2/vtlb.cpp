@@ -339,7 +339,9 @@ static void GoemonTlbMissDebug()
 
 	for (u32 i = 0; i < 150; i++) {
 		if (tlb[i].valid == 0x1 && tlb[i].low_add != tlb[i].high_add)
-			DevCon.WriteLn("Entry %d is valid. From V:0x%8.8x to V:0x%8.8x (P:0x%8.8x)", i, tlb[i].low_add, tlb[i].high_add, tlb[i].physical_add);
+			DevCon.WriteLn("GoemonTlbMissDebug: Entry %d is valid. Key %x. From V:0x%8.8x to V:0x%8.8x (P:0x%8.8x)", i, tlb[i].key, tlb[i].low_add, tlb[i].high_add, tlb[i].physical_add);
+		else if (tlb[i].low_add != tlb[i].high_add)
+			DevCon.WriteLn("GoemonTlbMissDebug: Entry %d is invalid. Key %x. From V:0x%8.8x to V:0x%8.8x (P:0x%8.8x)", i, tlb[i].key, tlb[i].low_add, tlb[i].high_add, tlb[i].physical_add);
 	}
 }
 
@@ -356,9 +358,36 @@ void __fastcall GoemonPreloadTlb()
 			u32 paddr = tlb[i].physical_add;
 
 			if ((uptr)vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] == POINTER_SIGN_BIT) {
-				DevCon.WriteLn("Preload TLB[%d]: From V:0x%8.8x to P:0x%8.8x (%d pages)", i, vaddr, paddr, size >> VTLB_PAGE_BITS);
+				DevCon.WriteLn("GoemonPreloadTlb: Entry %d. Key %x. From V:0x%8.8x to P:0x%8.8x (%d pages)", i, tlb[i].key, vaddr, paddr, size >> VTLB_PAGE_BITS);
 				vtlb_VMap(           vaddr , paddr, size);
 				vtlb_VMap(0x20000000|vaddr , paddr, size);
+			}
+		}
+	}
+}
+
+void __fastcall GoemonUnloadTlb(u32 key)
+{
+	// 0x3d5580 is the address of the TLB cache table
+	GoemonTlb* tlb = (GoemonTlb*)&eeMem->Main[0x3d5580];
+	for (u32 i = 0; i < 150; i++) {
+		if (tlb[i].key == key) {
+			if (tlb[i].valid == 0x1) {
+				u32 size  = tlb[i].high_add - tlb[i].low_add;
+				u32 vaddr = tlb[i].low_add;
+				DevCon.WriteLn("GoemonUnloadTlb: Entry %d. Key %x. From V:0x%8.8x to V:0x%8.8x (%d pages)", i, tlb[i].key, vaddr, vaddr+size, size >> VTLB_PAGE_BITS);
+
+				vtlb_VMapUnmap(           vaddr , size);
+				vtlb_VMapUnmap(0x20000000|vaddr , size);
+
+				// Unmap the tlb in game cache table
+				// Note: Game copy FEFEFEFE for others data
+				tlb[i].valid    = 0;
+				tlb[i].key      = 0xFEFEFEFE;
+				tlb[i].low_add  = 0xFEFEFEFE;
+				tlb[i].high_add = 0xFEFEFEFE;
+			} else {
+				DevCon.Error("GoemonUnloadTlb: Entry %d is not valid. Key %x", i, tlb[i].key);
 			}
 		}
 	}
@@ -376,15 +405,12 @@ static __ri void vtlb_Miss(u32 addr,u32 mode)
 			cpuTlbMissW(addr, cpuRegs.branch);
 		else
 			cpuTlbMissR(addr, cpuRegs.branch);
+
+		// Exception handled. Current instruction need to be stopped
+		throw Exception::CancelInstruction();
 	}
 
-	// The exception terminate the program on linux which is very annoying
-	// Just disable it for the moment
-#ifdef __linux__
-	if (0)
-#else
 	if( IsDevBuild )
-#endif
 		Cpu->ThrowCpuException( R5900Exception::TLBMiss( addr, !!mode ) );
 	else
 	{
@@ -411,19 +437,29 @@ static __ri void vtlb_BusError(u32 addr,u32 mode)
 		Console.Error( R5900Exception::TLBMiss( addr, !!mode ).FormatMessage() );
 }
 
-#define _tmpl(ret) template<typename OperandType, u32 saddr> ret __fastcall
+template<typename OperandType, u32 saddr>
+OperandType __fastcall vtlbUnmappedVReadSm(u32 addr)					{ vtlb_Miss(addr|saddr,0); return 0; }
 
-_tmpl(OperandType) vtlbUnmappedVReadSm(u32 addr)					{ vtlb_Miss(addr|saddr,0); return 0; }
-_tmpl(void) vtlbUnmappedVReadLg(u32 addr,OperandType* data)			{ vtlb_Miss(addr|saddr,0); }
-_tmpl(void) vtlbUnmappedVWriteSm(u32 addr,OperandType data)			{ vtlb_Miss(addr|saddr,1); }
-_tmpl(void) vtlbUnmappedVWriteLg(u32 addr,const OperandType* data)	{ vtlb_Miss(addr|saddr,1); }
+template<typename OperandType, u32 saddr>
+void __fastcall vtlbUnmappedVReadLg(u32 addr,OperandType* data)			{ vtlb_Miss(addr|saddr,0); }
 
-_tmpl(OperandType) vtlbUnmappedPReadSm(u32 addr)					{ vtlb_BusError(addr|saddr,0); return 0; }
-_tmpl(void) vtlbUnmappedPReadLg(u32 addr,OperandType* data)			{ vtlb_BusError(addr|saddr,0); }
-_tmpl(void) vtlbUnmappedPWriteSm(u32 addr,OperandType data)			{ vtlb_BusError(addr|saddr,1); }
-_tmpl(void) vtlbUnmappedPWriteLg(u32 addr,const OperandType* data)	{ vtlb_BusError(addr|saddr,1); }
+template<typename OperandType, u32 saddr>
+void __fastcall vtlbUnmappedVWriteSm(u32 addr,OperandType data)			{ vtlb_Miss(addr|saddr,1); }
 
-#undef _tmpl
+template<typename OperandType, u32 saddr>
+void __fastcall vtlbUnmappedVWriteLg(u32 addr,const OperandType* data)	{ vtlb_Miss(addr|saddr,1); }
+
+template<typename OperandType, u32 saddr>
+OperandType __fastcall vtlbUnmappedPReadSm(u32 addr)					{ vtlb_BusError(addr|saddr,0); return 0; }
+
+template<typename OperandType, u32 saddr>
+void __fastcall vtlbUnmappedPReadLg(u32 addr,OperandType* data)			{ vtlb_BusError(addr|saddr,0); }
+
+template<typename OperandType, u32 saddr>
+void __fastcall vtlbUnmappedPWriteSm(u32 addr,OperandType data)			{ vtlb_BusError(addr|saddr,1); }
+
+template<typename OperandType, u32 saddr>
+void __fastcall vtlbUnmappedPWriteLg(u32 addr,const OperandType* data)	{ vtlb_BusError(addr|saddr,1); }
 
 // --------------------------------------------------------------------------------------
 //  VTLB mapping errors
@@ -484,7 +520,6 @@ static void __fastcall vtlbDefaultPhyWrite128(u32 addr,const mem128_t* data)
 {
 	pxFailDev(pxsFmt("(VTLB) Attempted write128 to unmapped physical address @ 0x%08X.", addr));
 }
-#undef _tmpl
 
 // ===========================================================================================
 //  VTLB Public API -- Init/Term/RegisterHandler stuff 
@@ -807,11 +842,6 @@ VtlbMemoryReserve::VtlbMemoryReserve( const wxString& name, size_t size )
 	: m_reserve( name, size )
 {
 	m_reserve.SetPageAccessOnCommit( PageAccess_ReadWrite() );
-}
-
-void VtlbMemoryReserve::SetBaseAddr( uptr newaddr )
-{
-	m_reserve.SetBaseAddr( newaddr );
 }
 
 void VtlbMemoryReserve::Reserve( sptr hostptr )

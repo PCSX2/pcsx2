@@ -41,10 +41,6 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			_("Games that need this hack to boot:\n * Star Ocean 3\n * Radiata Stories\n * Valkyrie Profile 2")
 		},
 		{
-			_("VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"),
-			wxEmptyString
-		},
-		{
 			_("FPU Compare Hack - For Digimon Rumble Arena 2."),
 			wxEmptyString
 		},
@@ -89,20 +85,28 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			)
 		},
 		{
-			_("Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD & Spy Hunter loading hang."),
+			_("Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD and Spy Hunter loading hang."),
 			wxEmptyString
 		},
 		{
-			_("Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"),
+			_("Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ Hero)"),
 			wxEmptyString
 		},
 		{
-			_("Switch to GSdx software rendering when a FMV plays"),
+			_("Switch to GSdx software rendering when an FMV plays"),
 			wxEmptyString
 		},
 		{
 			_("Preload TLB hack to avoid tlb miss on Goemon"),
 			wxEmptyString
+		},
+		{
+			_("VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"),
+			wxEmptyString
+		},
+        {
+			_("VU I bit Hack avoid constant recompilation (Crash Tag Team Racing)"),
+             wxEmptyString
 		}
 	};
 
@@ -113,7 +117,7 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 	}
 
 	m_check_Enable = new pxCheckBox( this, _("Enable manual game fixes [Not recommended]"),
-		pxE( L"It's better to enable 'Automatic game fixes' at the main menu instead, and leave this page empty. ('Automatic' means: selectively use specific tested fixes for specific games)"
+		pxE( L"It's better to enable 'Automatic game fixes' at the main menu instead, and leave this page empty ('Automatic' means: selectively use specific tested fixes for specific games). Manual game fixes will NOT increase your performance. In fact they may decrease it."
 		)
 	);
 
@@ -123,8 +127,7 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 	*this	+= m_check_Enable	| StdExpand();
 	*this	+= groupSizer		| pxCenter;
 
-
-	Connect( m_check_Enable->GetId(), wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( GameFixesPanel::OnEnable_Toggled ) );
+	Bind(wxEVT_CHECKBOX, &GameFixesPanel::OnEnable_Toggled, this, m_check_Enable->GetId());
 
 	EnableStuff();
 }
@@ -143,9 +146,11 @@ void Panels::GameFixesPanel::Apply()
 
 void Panels::GameFixesPanel::EnableStuff( AppConfig* configToUse )
 {
-	if( !configToUse ) configToUse = g_Conf;
+	if (!configToUse) configToUse = g_Conf.get();
 	for (GamefixId i=GamefixId_FIRST; i < pxEnumEnd; ++i)
 		m_checkbox[i]->Enable(m_check_Enable->GetValue() && !configToUse->EnablePresets);
+
+	Layout();
 }
 
 void Panels::GameFixesPanel::OnEnable_Toggled( wxCommandEvent& evt )

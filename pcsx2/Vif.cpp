@@ -83,7 +83,7 @@ __fi void vif0FBRST(u32 value) {
 		u128 SaveCol;
 		u128 SaveRow;
 
-	//	if(vif0ch.chcr.STR == true) DevCon.Warning("FBRST While Vif0 active");
+	//	if(vif0ch.chcr.STR) DevCon.Warning("FBRST While Vif0 active");
 		//Must Preserve Row/Col registers! (Downhill Domination for testing)
 		SaveCol._u64[0] = vif0.MaskCol._u64[0];
 		SaveCol._u64[1] = vif0.MaskCol._u64[1];
@@ -140,15 +140,10 @@ __fi void vif0FBRST(u32 value) {
 		vif0Regs.stat.clear_flags(VIF0_STAT_VSS | VIF0_STAT_VFS | VIF0_STAT_VIS |
 				    VIF0_STAT_INT | VIF0_STAT_ER0 | VIF0_STAT_ER1);
 		if (cancel)
-		{
-			if (vif0.vifstalled.enabled && vif0.vifstalled.value == VIF_IRQ_STALL)
-			{				
+		{			
 				g_vif0Cycles = 0;
-
 				// loop necessary for spiderman
-				//vif0ch.chcr.STR = true;
 				 if(vif0ch.chcr.STR) CPU_INT(DMAC_VIF0, 0); // Gets the timing right - Flatout
-			}
 		}
 	}
 }
@@ -160,7 +155,7 @@ __fi void vif1FBRST(u32 value) {
 	{
 		u128 SaveCol;
 		u128 SaveRow;
-		//if(vif1ch.chcr.STR == true) DevCon.Warning("FBRST While Vif1 active");
+		//if(vif1ch.chcr.STR) DevCon.Warning("FBRST While Vif1 active");
 		//Must Preserve Row/Col registers! (Downhill Domination for testing) - Really shouldnt be part of the vifstruct.
 		SaveCol._u64[0] = vif1.MaskCol._u64[0];
 		SaveCol._u64[1] = vif1.MaskCol._u64[1];
@@ -200,15 +195,7 @@ __fi void vif1FBRST(u32 value) {
 				if(gifUnit.checkPaths(1,0,1)) gifUnit.Execute(false, true);
 			}
 		}
-		
-#if USE_OLD_GIF == 1 // ...
-		if(vif1Regs.mskpath3 == 1 && GSTransferStatus.PTH3 == STOPPED_MODE && gifch.chcr.STR == true) {
-			DevCon.Warning("VIF Path3 Resume on FBRST MSK = %x", vif1Regs.mskpath3);
-			gifInterrupt();
-			vif1Regs.mskpath3 = false;
-			gifRegs.stat.M3P  = false;
-		}
-#endif
+
 		GUNIT_WARN(Color_Red, "VIF FBRST Reset MSK = %x", vif1Regs.mskpath3);
 		vif1Regs.mskpath3 = false;
 		gifRegs.stat.M3P  = 0;
@@ -242,7 +229,6 @@ __fi void vif1FBRST(u32 value) {
 		//   just stoppin the VIF (linuz).
 		vif1Regs.stat.VSS = true;
 		vif1Regs.stat.VPS = VPS_IDLE;
-		cpuRegs.interrupt &= ~((1 << 1) | (1 << 10)); //Stop all vif1 DMA's
 		vif1.vifstalled.enabled = VifStallEnable(vif1ch);
 		vif1.vifstalled.value = VIF_IRQ_STALL;
 	}
@@ -250,7 +236,7 @@ __fi void vif1FBRST(u32 value) {
 	if (FBRST(value).STC) // Cancel Vif Stall.
 	{
 		bool cancel = false;
-
+		//DevCon.Warning("Cancel stall. Stat = %x", vif1Regs.stat._u32);
 		/* Cancel stall, first check if there is a stall to cancel, and then clear VIF1_STAT VSS|VFS|VIS|INT|ER0|ER1 bits */
 		if (vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
 		{
@@ -262,27 +248,25 @@ __fi void vif1FBRST(u32 value) {
 
 		if (cancel)
 		{
-			if (vif1.vifstalled.enabled && vif1.vifstalled.value == VIF_IRQ_STALL)
-			{
 				g_vif1Cycles = 0;
 				// loop necessary for spiderman
 				switch(dmacRegs.ctrl.MFD)
 				{
 				    case MFD_VIF1:
                         //Console.WriteLn("MFIFO Stall");
-                        if(vif1ch.chcr.STR == true) CPU_INT(DMAC_MFIFO_VIF, 0);
+						//MFIFO active and not empty
+                        if(vif1ch.chcr.STR) CPU_INT(DMAC_MFIFO_VIF, 0);
                         break;
 
                     case NO_MFD:
                     case MFD_RESERVED:
                     case MFD_GIF: // Wonder if this should be with VIF?
                         // Gets the timing right - Flatout
-                        if(vif1ch.chcr.STR == true) CPU_INT(DMAC_VIF1, 0);
+                        if(vif1ch.chcr.STR) CPU_INT(DMAC_VIF1, 0);
                         break;
 				}
 
 				//vif1ch.chcr.STR = true;
-			}
 		}
 	}
 }
@@ -292,9 +276,11 @@ __fi void vif1STAT(u32 value) {
 
 	/* Only FDR bit is writable, so mask the rest */
 	if ((vif1Regs.stat.FDR) ^ ((tVIF_STAT&)value).FDR) {
+		bool isStalled = false;
 		// different so can't be stalled
 		if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS)) {
-			DevCon.WriteLn("changing dir when vif1 fifo stalled done = %x qwc = %x", vif1.done, vif1ch.qwc);		
+			DbgCon.WriteLn("changing dir when vif1 fifo stalled done = %x qwc = %x stat = %x", vif1.done, vif1ch.qwc, vif1Regs.stat._u32);
+			isStalled = true;
 		}
 
 		//Hack!! Hotwheels seems to leave 1QW in the fifo and expect the DMA to be ready for a reverse FIFO
@@ -302,8 +288,10 @@ __fi void vif1STAT(u32 value) {
 		//Hotwheels had this in the "direction when stalled" area, however Sled Storm seems to keep an eye on the dma
 		//position, as we clear it and set it to the end well before the interrupt, the game assumes it's finished,
 		//then proceeds to reverse the dma before we have even done it ourselves. So lets just make sure VIF is ready :)
-		vif1ch.chcr.STR = false;
-		cpuRegs.interrupt &= ~((1 << DMAC_VIF1) | (1 << DMAC_MFIFO_VIF));
+		if (vif1ch.qwc > 0 || isStalled == false){
+			vif1ch.chcr.STR = false;
+			cpuRegs.interrupt &= ~((1 << DMAC_VIF1) | (1 << DMAC_MFIFO_VIF));
+		}
 		//This is actually more important for our handling, else the DMA for reverse fifo doesnt start properly.
 	}
 
@@ -327,6 +315,7 @@ __fi void vif1STAT(u32 value) {
 		//Sometimes the value from the GS is bigger than vif wanted, so it just sets it back and cancels it.
 		//Other times it can read it off ;)
 		vif1Regs.stat.FQC = 0;
+		if (vif1ch.chcr.STR) CPU_INT(DMAC_VIF1, 0);
 	}
 }
 

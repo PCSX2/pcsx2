@@ -50,7 +50,6 @@
 
 // used in VU recs
 #define PROCESS_VU_UPDATEFLAGS 0x10
-#define PROCESS_VU_SUPER	0x40 // set if using supervu recompilation
 #define PROCESS_VU_COP2		0x80 // simple cop2
 
 #define EEREC_S (((info)>>8)&0xf)
@@ -119,11 +118,12 @@ extern _x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
 uptr _x86GetAddr(int type, int reg);
 void _initX86regs();
 int  _getFreeX86reg(int mode);
-int  _allocX86reg(int x86reg, int type, int reg, int mode);
+int  _allocX86reg(x86Emitter::xRegisterLong x86reg, int type, int reg, int mode);
 void _deleteX86reg(int type, int reg, int flush);
 int _checkX86reg(int type, int reg, int mode);
 void _addNeededX86reg(int type, int reg);
 void _clearNeededX86regs();
+void _freeX86reg(const x86Emitter::xRegisterLong& x86reg);
 void _freeX86reg(int x86reg);
 void _freeX86regs();
 void _flushCachedRegs();
@@ -135,17 +135,17 @@ void _flushConstReg(int reg);
 
 #define XMM_CONV_VU(VU) (VU==&VU1)
 
-#define XMMTYPE_TEMP	0 // has to be 0
-#define XMMTYPE_VFREG	1
-#define XMMTYPE_ACC		2
-#define XMMTYPE_FPREG	3
-#define XMMTYPE_FPACC	4
-#define XMMTYPE_GPRREG	5
+#define XMMTYPE_TEMP    0 // has to be 0
+#define XMMTYPE_VFREG   1
+#define XMMTYPE_ACC     2
+#define XMMTYPE_FPREG   3
+#define XMMTYPE_FPACC   4
+#define XMMTYPE_GPRREG  5
 
 // lo and hi regs
-#define XMMGPR_LO	33
-#define XMMGPR_HI	32
-#define XMMFPU_ACC	32
+#define XMMGPR_LO       33
+#define XMMGPR_HI       32
+#define XMMFPU_ACC      32
 
 struct _xmmregs {
 	u8 inuse;
@@ -160,19 +160,14 @@ struct _xmmregs {
 void _initXMMregs();
 int  _getFreeXMMreg();
 int  _allocTempXMMreg(XMMSSEType type, int xmmreg);
-int  _allocVFtoXMMreg(VURegs *VU, int xmmreg, int vfreg, int mode);
 int  _allocFPtoXMMreg(int xmmreg, int fpreg, int mode);
 int  _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode);
-int  _allocACCtoXMMreg(VURegs *VU, int xmmreg, int mode);
 int  _allocFPACCtoXMMreg(int xmmreg, int mode);
 int  _checkXMMreg(int type, int reg, int mode);
-void _addNeededVFtoXMMreg(int vfreg);
-void _addNeededACCtoXMMreg();
 void _addNeededFPtoXMMreg(int fpreg);
 void _addNeededFPACCtoXMMreg();
 void _addNeededGPRtoXMMreg(int gprreg);
 void _clearNeededXMMregs();
-void _deleteVFtoXMMreg(int reg, int vu, int flush);
 //void _deleteACCtoXMMreg(int vu, int flush);
 void _deleteGPRtoXMMreg(int reg, int flush);
 void _deleteFPtoXMMreg(int reg, int flush);
@@ -182,17 +177,28 @@ void _flushXMMregs();
 u8 _hasFreeXMMreg();
 void _freeXMMregs();
 int _getNumXMMwrite();
-
-void _signExtendSFtoM(u32 mem);
+void _signExtendSFtoM(uptr mem);
 
 // returns new index of reg, lower 32 bits already in mmx
 // shift is used when the data is in the top bits of the mmx reg to begin with
 // a negative shift is for sign extension
-int _signExtendXMMtoM(u32 to, x86SSERegType from, int candestroy); // returns true if reg destroyed
+int _signExtendXMMtoM(uptr to, x86SSERegType from, int candestroy); // returns true if reg destroyed
 
 //////////////////////
 // Instruction Info //
 //////////////////////
+// Liveness information for the noobs :)
+// Let's take I instructions that read from RN register set and write to
+// WN register set.
+// 1/ EEINST_USED will be set in register N of instruction I1, if and only if RN or WN is used in the insruction I2 with I2 >= I1.
+// In others words, it will be set on [I0, ILast] with ILast the last instruction that use the register.
+// 2/ EEINST_LASTUSE will be set in register N the last instruction that use the register.
+// Note: EEINST_USED will be cleared after EEINST_LASTUSE
+// My guess: both variable allow to detect register that can be flushed for free
+//
+// 3/ EEINST_LIVE* is cleared when register is written. And set again when register is read.
+// My guess: the purpose is to detect the usage hole in the flow
+
 #define EEINST_LIVE0	1	// if var is ever used (read or write)
 #define EEINST_LIVE2	4	// if cur var's next 64 bits are needed
 #define EEINST_LASTUSE	8	// if var isn't written/read anymore
@@ -216,8 +222,6 @@ struct EEINST
 	// valid if info & EEINSTINFO_COP2
 	int cycle; // cycle of inst (at offset from block)
 	_VURegsNum vuregs;
-
-	u8 numpeeps; // number of peephole optimizations
 };
 
 extern EEINST* g_pCurInstInfo; // info for the cur instruction
@@ -226,7 +230,7 @@ extern void _recClearInst(EEINST* pinst);
 // returns the number of insts + 1 until written (0 if not written)
 extern u32 _recIsRegWritten(EEINST* pinst, int size, u8 xmmtype, u8 reg);
 // returns the number of insts + 1 until used (0 if not used)
-extern u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg);
+//extern u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg);
 extern void _recFillRegister(EEINST& pinst, int type, int reg, int write);
 
 static __fi bool EEINST_ISLIVE64(u32 reg)	{ return !!(g_pCurInstInfo->regs[reg] & (EEINST_LIVE0)); }
@@ -253,77 +257,6 @@ int _allocCheckFPUtoXMM(EEINST* pinst, int fpureg, int mode);
 // allocates only if later insts use this register
 int _allocCheckGPRtoX86(EEINST* pinst, int gprreg, int mode);
 
-////////////////////////////////////////////////////////////////////////////////
-//   MMX (64-bit) Register Allocation Tools
-
-#define FPU_STATE 0
-#define MMX_STATE 1
-
-void SetMMXstate();
-void SetFPUstate();
-
-// max is 0x7f, when 0x80 is set, need to flush reg
-//#define MMX_GET_CACHE(ptr, index) ((u8*)ptr)[index]
-//#define MMX_SET_CACHE(ptr, ind3, ind2, ind1, ind0) ((u32*)ptr)[0] = (ind3<<24)|(ind2<<16)|(ind1<<8)|ind0;
-#define MMX_GPR 0
-#define MMX_HI	XMMGPR_HI
-#define MMX_LO	XMMGPR_LO
-#define MMX_FPUACC 34
-#define MMX_FPU	64
-#define MMX_COP0 96
-#define MMX_TEMP 0x7f
-
-static __fi bool MMX_IS32BITS(s32 x)
-{
-	return (((x >= MMX_FPU) && (x < MMX_COP0 + 32)) || (x == MMX_FPUACC));
-}
-
-static __fi bool MMX_ISGPR(s32 x)
-{
-	return ((x >= MMX_GPR) && (x < MMX_GPR + 34));
-}
-
-static __fi bool MMX_ISGPR(u32 x)
-{
-	return (x < MMX_GPR + 34);
-}
-
-struct _mmxregs {
-	u8 inuse;
-	u8 reg; // value of 0 - not used
-	u8 mode;
-	u8 needed;
-	u16 counter;
-};
-
-void _initMMXregs();
-int  _getFreeMMXreg();
-int  _allocMMXreg(int MMXreg, int reg, int mode);
-void _addNeededMMXreg(int reg);
-int _checkMMXreg(int reg, int mode);
-void _clearNeededMMXregs();
-void _deleteMMXreg(int reg, int flush);
-void _freeMMXreg(u32 mmxreg);
-void _moveMMXreg(int mmxreg); // instead of freeing, moves it to a diff location
-void _flushMMXregs();
-u8 _hasFreeMMXreg();
-void _freeMMXregs();
-int _getNumMMXwrite();
-
-int _signExtendMtoMMX(x86MMXRegType to, u32 mem);
-int _signExtendGPRMMXtoMMX(x86MMXRegType to, u32 gprreg, x86MMXRegType from, u32 gprfromreg);
-int _allocCheckGPRtoMMX(EEINST* pinst, int reg, int mode);
-
-// returns new index of reg, lower 32 bits already in mmx
-// shift is used when the data is in the top bits of the mmx reg to begin with
-// a negative shift is for sign extension
-extern int _signExtendGPRtoMMX(x86MMXRegType to, u32 gprreg, int shift);
-
-extern _mmxregs mmxregs[iREGCNT_MMX], s_saveMMXregs[iREGCNT_MMX];
-extern u16 x86FpuState;
-
-// extern void iDumpRegisters(u32 startpc, u32 temp);
-
 //////////////////////////////////////////////////////////////////////////
 // iFlushCall / _psxFlushCall Parameters
 
@@ -342,8 +275,6 @@ extern u16 x86FpuState;
 #define FLUSH_CACHED_REGS	0x001
 #define FLUSH_FLUSH_XMM		0x002
 #define FLUSH_FREE_XMM		0x004	// both flushes and frees
-#define FLUSH_FLUSH_MMX		0x008
-#define FLUSH_FREE_MMX		0x010	// both flushes and frees
 #define FLUSH_FLUSH_ALLX86	0x020	// flush x86
 #define FLUSH_FREE_TEMPX86	0x040	// flush and free temporary x86 regs
 #define FLUSH_FREE_ALLX86	0x080	// free all x86 regs
@@ -357,30 +288,9 @@ extern u16 x86FpuState;
 #define FLUSH_INTERPRETER	0xfff
 #define FLUSH_FULLVTLB FLUSH_NOCONST
 
-// no freeing, used when callee won't destroy mmx/xmm regs
-#define FLUSH_NODESTROY (FLUSH_CACHED_REGS|FLUSH_FLUSH_XMM|FLUSH_FLUSH_MMX|FLUSH_FLUSH_ALLX86)
+// no freeing, used when callee won't destroy xmm regs
+#define FLUSH_NODESTROY (FLUSH_CACHED_REGS|FLUSH_FLUSH_XMM|FLUSH_FLUSH_ALLX86)
 // used when regs aren't going to be changed be callee
-#define FLUSH_NOCONST	(FLUSH_FREE_XMM|FLUSH_FREE_MMX|FLUSH_FREE_TEMPX86)
-
-
-//////////////////////////////////////////////////////////////////////////
-// Utility Functions -- that should probably be part of the Emitter.
-
-// op = 0, and
-// op = 1, or
-// op = 2, xor
-// op = 3, nor (the 32bit versoins only do OR)
-extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
-extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
-
-extern void LogicalOp32RtoM(uptr to, x86IntRegType from, int op);
-extern void LogicalOp32MtoR(x86IntRegType to, uptr from, int op);
-extern void LogicalOp32ItoR(x86IntRegType to, u32 from, int op);
-extern void LogicalOp32ItoM(uptr to, u32 from, int op);
-
-#ifdef ARITHMETICIMM_RECOMPILE
-extern void LogicalOpRtoR(x86MMXRegType to, x86MMXRegType from, int op);
-extern void LogicalOpMtoR(x86MMXRegType to, u32 from, int op);
-#endif
+#define FLUSH_NOCONST	(FLUSH_FREE_XMM|FLUSH_FREE_TEMPX86)
 
 #endif

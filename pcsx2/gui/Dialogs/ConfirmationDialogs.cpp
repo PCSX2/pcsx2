@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "System.h"
 #include "App.h"
+#include "MSWstuff.h"
 
 #include "ModalPopups.h"
 #include "Utilities/StringHelpers.h"
@@ -143,10 +144,11 @@ void MsgButtons::SetBestFocus( wxWindow* dialog ) const
 
 wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButtons& buttons )
 {
-	if( confirmDlg.GetMinWidth() <= 0 ) confirmDlg.SetMinWidth( 400 );
+	if( confirmDlg.GetMinWidth() <= 0 ) confirmDlg.SetMinWidth( 400 * MSW_GetDPIScale());
 
 	confirmDlg += new ModalButtonPanel( &confirmDlg, buttons ) | pxCenter.Border( wxTOP, 8 );
 	buttons.SetBestFocus( confirmDlg );
+	confirmDlg.SetSizerAndFit(confirmDlg.GetSizer());
 	return confirmDlg.ShowModal();
 }
 
@@ -204,7 +206,7 @@ wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButton
 
 	int modalResult = pxIssueConfirmation( confirmDlg, buttons );
 
-	if( cfg != NULL )
+	if( modalResult != wxID_CANCEL && cfg != NULL )
 	{
 		wxString cfgResult = ResultToString( modalResult, buttons );
 		if( DisablerCtrl->IsChecked() && !cfgResult.IsEmpty() )
@@ -262,16 +264,16 @@ ModalButtonPanel::ModalButtonPanel( wxWindow* parent, const MsgButtons& buttons 
 
 #ifdef __WXGTK__
 	if( buttons.HasRetry() )
-		AddActionButton( wxID_RETRY );
+		AddCustomButton( wxID_RETRY,  _("Retry") );
 
 	if( buttons.HasAbort() )
-		AddActionButton( wxID_ABORT );
+		AddCustomButton( wxID_ABORT, _("Abort") );
 #else
 	if( buttons.HasAbort() )
-		AddActionButton( wxID_ABORT );
+		AddCustomButton( wxID_ABORT, _("Abort") );
 
 	if( buttons.HasRetry() )
-		AddActionButton( wxID_RETRY );
+		AddCustomButton( wxID_RETRY,  _("Retry") );
 #endif
 
 	if( buttons.HasReset() )
@@ -298,16 +300,17 @@ ModalButtonPanel::ModalButtonPanel( wxWindow* parent, const MsgButtons& buttons 
 
 void ModalButtonPanel::OnActionButtonClicked( wxCommandEvent& evt )
 {
-	evt.Skip();
 	wxWindow* toplevel = wxGetTopLevelParent( this );
 	if( wxDialog* dialog = wxDynamicCast( toplevel, wxDialog ) )
 		dialog->EndModal( evt.GetId() );
+	// If the dialog doesn't close, and you're using it for a modeless dialog - hint:
+	// read the name of the class. ;)
 }
 
 void ModalButtonPanel::AddCustomButton( wxWindowID id, const wxString& label )
 {
 	*this += new wxButton( this, id, label ) | StdButton().Proportion(6);
-	Connect( id, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ModalButtonPanel::OnActionButtonClicked ) );
+	Bind(wxEVT_BUTTON, &ModalButtonPanel::OnActionButtonClicked, this, id);
 }
 
 // This is for buttons that are defined internally by wxWidgets, such as wxID_CANCEL, wxID_ABORT, etc.
@@ -315,6 +318,5 @@ void ModalButtonPanel::AddCustomButton( wxWindowID id, const wxString& label )
 void ModalButtonPanel::AddActionButton( wxWindowID id )
 {
 	*this += new wxButton( this, id ) | StdButton().Proportion(6);
-	Connect( id, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ModalButtonPanel::OnActionButtonClicked ) );
+	Bind(wxEVT_BUTTON, &ModalButtonPanel::OnActionButtonClicked, this, id);
 }
-

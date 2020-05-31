@@ -35,11 +35,6 @@
 #define _Fs_ _Rd_
 #define _Fd_ _Sa_
 
-#define _X (cpuRegs.code>>24) & 0x1
-#define _Y (cpuRegs.code>>23) & 0x1
-#define _Z (cpuRegs.code>>22) & 0x1
-#define _W (cpuRegs.code>>21) & 0x1
-
 #define _Fsf_ ((cpuRegs.code >> 21) & 0x03)
 #define _Ftf_ ((cpuRegs.code >> 23) & 0x03)
 
@@ -127,7 +122,9 @@ void CFC2() {
 		_vu0WaitMicro();
 	}
 	if (_Rt_ == 0) return;
+	
 	cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL;
+
 	if(VU0.VI[_Fs_].UL & 0x80000000)
 		cpuRegs.GPR.r[_Rt_].UL[1] = 0xffffffff;
 	else

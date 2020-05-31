@@ -60,6 +60,7 @@ static __ri void writeXYZW(u32 offnum, u32 &dest, u32 data) {
 			switch (mode) {
 				case 1:  dest = data + vif.MaskRow._u32[offnum]; break;
 				case 2:  dest = setVifRow(vif, offnum, vif.MaskRow._u32[offnum] + data); break;
+				case 3:  dest = setVifRow(vif, offnum, data); break;
 				default: dest = data; break;
 			}
 			break;
@@ -165,18 +166,20 @@ static void __fastcall UNPACK_V4_5(u32 *dest, const u32* src)
 	UnpackFuncSet( V4, idx, mode, u, 1 ), NULL,  \
 	UnpackFuncSet( V4, idx, mode, u, 1 ), UnpackV4_5set(idx, 1)
 
-__aligned16 const UNPACKFUNCTYPE VIFfuncTable[2][3][4 * 4 * 2 * 2] =
+__aligned16 const UNPACKFUNCTYPE VIFfuncTable[2][4][4 * 4 * 2 * 2] =
 {
 	{
 		{ UnpackModeSet(0,0) },
 		{ UnpackModeSet(0,1) },
-		{ UnpackModeSet(0,2) }
+		{ UnpackModeSet(0,2) },
+		{ UnpackModeSet(0,3) }
 	},
 
 	{
 		{ UnpackModeSet(1,0) },
 		{ UnpackModeSet(1,1) },
-		{ UnpackModeSet(1,2) }
+		{ UnpackModeSet(1,2) },
+		{ UnpackModeSet(1,3) }
 	}
 };
 
@@ -188,13 +191,12 @@ _vifT void vifUnpackSetup(const u32 *data) {
 
 	vifStruct& vifX = GetVifX;
 
-	if ((vifXRegs.cycle.wl == 0) && (vifXRegs.cycle.wl < vifXRegs.cycle.cl)) {
-        //DevCon.WriteLn("Vif%d CL %d, WL %d Mode %x Mask %x Num %x", idx, vifXRegs.cycle.cl, vifXRegs.cycle.wl, vifXRegs.mode, vifXRegs.mask, (vifXRegs.code >> 16) & 0xff);
-		vifX.cmd = 0;
-        return; // Skipping write and 0 write-cycles, so do nothing!
-	}
-
+	GetVifX.unpackcalls++;
 	
+	if (GetVifX.unpackcalls > 3)
+	{
+		vifExecQueue(idx);
+	}
 	//if (!idx) vif0FLUSH(); // Only VU0?
 
 	vifX.usn   = (vifXRegs.code >> 14) & 0x01;
@@ -212,12 +214,14 @@ _vifT void vifUnpackSetup(const u32 *data) {
 
 	const u8& gsize = nVifT[vifX.cmd & 0x0f];
 
-	if (vifXRegs.cycle.wl <= vifXRegs.cycle.cl) {
+	uint wl = vifXRegs.cycle.wl ? vifXRegs.cycle.wl : 256;
+
+	if (wl <= vifXRegs.cycle.cl) { //Skipping write
 		vifX.tag.size = ((vifNum * gsize) + 3) / 4;
 	}
-	else {
-		int n = vifXRegs.cycle.cl * (vifNum / vifXRegs.cycle.wl) +
-		        _limit(vifNum % vifXRegs.cycle.wl, vifXRegs.cycle.cl);
+	else { //Filling write
+		int n = vifXRegs.cycle.cl * (vifNum / wl) +
+		        _limit(vifNum % wl, vifXRegs.cycle.cl);
 
 		vifX.tag.size = ((n * gsize) + 3) >> 2;
 	}
@@ -226,11 +230,18 @@ _vifT void vifUnpackSetup(const u32 *data) {
 	if (idx && ((addr>>15)&1)) addr += vif1Regs.tops;
 	vifX.tag.addr = (addr<<4) & (idx ? 0x3ff0 : 0xff0);
 
-	VIF_LOG("Unpack VIF%x, QWC %x tagsize %x", idx, vifNum, vif0.tag.size);
+	VIF_LOG("Unpack VIF%x, QWC %x tagsize %x", idx, vifNum, vifX.tag.size);
 
 	vifX.cl			 = 0;
 	vifX.tag.cmd	 = vifX.cmd;
 	GetVifX.pass	 = 1;
+
+	//Ugh things are never easy.
+	//Alright, in most cases with V2 and V3 we only need to know if its offset 32bits.
+	//However in V3-16 if the data it requires ends on a QW boundary of the source data
+	//the W vector becomes 0, so we need to know how far through the current QW the data begins
+	vifX.start_aligned = 4-((vifX.vifpacketsize-1) & 0x3);
+	//DevCon.Warning("Aligned %d packetsize at data start %d", vifX.start_aligned, vifX.vifpacketsize - 1);
 }
 
 template void vifUnpackSetup<0>(const u32 *data);

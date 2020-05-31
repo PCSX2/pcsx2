@@ -19,16 +19,19 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "joystick.h"
+#include "GamePad.h"
 #include "onepad.h"
 #include "keyboard.h"
+#include "state_management.h"
 
 #include <string.h>
 #include <gtk/gtk.h>
-#include "linux.h"
+#include "wx_dialog/dialog.h"
 
+#ifndef __APPLE__
 Display *GSdsp;
-Window	GSwin;
+Window GSwin;
+#endif
 
 void SysMessage(const char *fmt, ...)
 {
@@ -39,146 +42,107 @@ void SysMessage(const char *fmt, ...)
     vsprintf(msg, fmt, list);
     va_end(list);
 
-    if (msg[strlen(msg)-1] == '\n') msg[strlen(msg)-1] = 0;
+    if (msg[strlen(msg) - 1] == '\n')
+        msg[strlen(msg) - 1] = 0;
 
     GtkWidget *dialog;
-    dialog = gtk_message_dialog_new (NULL,
-                                     GTK_DIALOG_DESTROY_WITH_PARENT,
-                                     GTK_MESSAGE_INFO,
-                                     GTK_BUTTONS_OK,
-                                     "%s", msg);
-    gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
+    dialog = gtk_message_dialog_new(NULL,
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_INFO,
+                                    GTK_BUTTONS_OK,
+                                    "%s", msg);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
 }
 
-EXPORT_C_(void) PADabout()
+EXPORT_C_(void)
+PADabout()
 {
-	SysMessage("OnePad is a rewrite of Zerofrog's ZeroPad, done by arcum42.");
+    SysMessage("OnePad is a rewrite of Zerofrog's ZeroPad, done by arcum42.");
 }
 
-EXPORT_C_(s32) PADtest()
+EXPORT_C_(s32)
+PADtest()
 {
-	return 0;
+    return 0;
 }
 
-s32  _PADopen(void *pDsp)
+s32 _PADopen(void *pDsp)
 {
-	GSdsp = *(Display**)pDsp;
-	GSwin = (Window)*(((u32*)pDsp)+1);
+#ifndef __APPLE__
+    GSdsp = *(Display **)pDsp;
+    GSwin = (Window) * (((u32 *)pDsp) + 1);
+#endif
 
-    SetAutoRepeat(false);
-	return 0;
+    return 0;
 }
 
 void _PADclose()
 {
-	SetAutoRepeat(true);
-
-	vector<JoystickInfo*>::iterator it = s_vjoysticks.begin();
-
-	// Delete everything in the vector vjoysticks.
-	while (it != s_vjoysticks.end())
-	{
-		delete *it;
-		it ++;
-	}
-
-	s_vjoysticks.clear();
+    s_vgamePad.clear();
 }
 
 void PollForJoystickInput(int cpad)
 {
-	int joyid = conf->get_joyid(cpad);
-	if (!JoystickIdWithinBounds(joyid)) return;
+    int index = GamePad::uid_to_index(cpad);
+    if (index < 0)
+        return;
 
-	SDL_JoystickUpdate();
-	for (int i = 0; i < MAX_KEYS; i++)
-	{
-		JoystickInfo* pjoy = s_vjoysticks[joyid];
+    auto &gamePad = s_vgamePad[index];
 
-		switch (type_of_joykey(cpad, i))
-		{
-			case PAD_JOYBUTTONS:
-				{
+    gamePad->UpdateGamePadState();
 
-					int value = SDL_JoystickGetButton((pjoy)->GetJoy(), key_to_button(cpad, i));
-					if (value)
-						key_status->press(cpad, i);
-					else
-						key_status->release(cpad, i);
-
-					break;
-				}
-			case PAD_HAT:
-				{
-					int value = SDL_JoystickGetHat((pjoy)->GetJoy(), key_to_axis(cpad, i));
-
-					// key_to_hat_dir and SDL_JoystickGetHat are a 4 bits bitmap, one for each directions. Only 1 bit can be high for
-					// key_to_hat_dir. SDL_JoystickGetHat handles diagonal too (2 bits) so you must check the intersection
-					// '&' not only equality '=='. -- Gregory
-					if (key_to_hat_dir(cpad, i) & value)
-						key_status->press(cpad, i);
-					else
-						key_status->release(cpad, i);
-
-					break;
-				}
-			case PAD_AXIS:
-				{
-					int value = pjoy->GetAxisFromKey(cpad, i);
-					bool sign = key_to_axis_sign(cpad, i);
-					bool full_axis = key_to_axis_type(cpad, i);
-
-					if (IsAnalogKey(i)) {
-						if (abs(value) > pjoy->GetDeadzone())
-							key_status->press(cpad, i, value);
-						else
-							key_status->release(cpad, i);
-
-					} else {
-						if (full_axis) {
-							value += 0x8000;
-							if (value > pjoy->GetDeadzone())
-								key_status->press(cpad, i, min(value/256 , 0xFF));
-							else
-								key_status->release(cpad, i);
-
-						} else {
-							if (sign && (-value > pjoy->GetDeadzone()))
-								key_status->press(cpad, i, min(-value /128, 0xFF));
-							else if (!sign && (value > pjoy->GetDeadzone()))
-								key_status->press(cpad, i, min(value /128, 0xFF));
-							else
-								key_status->release(cpad, i);
-						}
-					}
-				}
-			default: break;
-		}
-	}
+    for (int i = 0; i < MAX_KEYS; i++) {
+        s32 value = gamePad->GetInput((gamePadValues)i);
+        if (value != 0)
+            g_key_status.press(cpad, i, value);
+        else
+            g_key_status.release(cpad, i);
+    }
 }
 
-EXPORT_C_(void) PADupdate(int pad)
+EXPORT_C_(void)
+PADupdate(int pad)
 {
-	// Actually PADupdate is always call with pad == 0. So you need to update both
-	// pads -- Gregory
-	for (int cpad = 0; cpad < 2; cpad++) {
-		// Poll keyboard/mouse event
-		key_status->keyboard_state_acces(cpad);
-		PollForX11KeyboardInput(cpad);
+#ifndef __APPLE__
+    // Gamepad inputs don't count as an activity. Therefore screensaver will
+    // be fired after a couple of minute.
+    // Emulate an user activity
+    static int count = 0;
+    count++;
+    if ((count & 0xFFF) == 0) {
+        // 1 call every 4096 Vsync is enough
+        XResetScreenSaver(GSdsp);
+    }
+#endif
 
-		// Get joystick state
-		key_status->joystick_state_acces(cpad);
-		PollForJoystickInput(cpad);
+    // Actually PADupdate is always call with pad == 0. So you need to update both
+    // pads -- Gregory
 
-		key_status->commit_status(cpad);
-	}
+    // Poll keyboard/mouse event. There is currently no way to separate pad0 from pad1 event.
+    // So we will populate both pad in the same time
+    for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
+        g_key_status.keyboard_state_acces(cpad);
+    }
+    UpdateKeyboardInput();
+
+    // Get joystick state + Commit
+    for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
+        g_key_status.joystick_state_acces(cpad);
+
+        PollForJoystickInput(cpad);
+
+        g_key_status.commit_status(cpad);
+    }
+
+    Pad::rumble_all();
 }
 
-EXPORT_C_(void) PADconfigure()
+EXPORT_C_(void)
+PADconfigure()
 {
-	LoadConfig();
+    LoadConfig();
 
-	DisplayDialog();
-	return;
+    DisplayDialog();
+    return;
 }

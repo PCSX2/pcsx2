@@ -21,165 +21,171 @@
 #include <wx/window.h>
 
 const pxAlignmentType
-	pxCentre		= { pxAlignmentType::Center },	// Horizontal centered alignment
-	pxCenter		= pxCentre,
-	pxMiddle		= { pxAlignmentType::Middle },	// vertical centered alignment
+    pxCentre = {pxAlignmentType::Center}, // Horizontal centered alignment
+    pxCenter = pxCentre,
+    pxMiddle = {pxAlignmentType::Middle}, // vertical centered alignment
 
-	pxAlignLeft		= { pxAlignmentType::Left },
-	pxAlignRight	= { pxAlignmentType::Right },
-	pxAlignTop		= { pxAlignmentType::Top },
-	pxAlignBottom	= { pxAlignmentType::Bottom };
+    pxAlignLeft = {pxAlignmentType::Left},
+    pxAlignRight = {pxAlignmentType::Right},
+    pxAlignTop = {pxAlignmentType::Top},
+    pxAlignBottom = {pxAlignmentType::Bottom};
 
 const pxStretchType
-	pxShrink		= { pxStretchType::Shrink },
-	pxExpand		= { pxStretchType::Expand },
-	pxShaped		= { pxStretchType::Shaped },
-	pxReserveHidden	= { pxStretchType::ReserveHidden },
-	pxFixedMinimum	= { pxStretchType::FixedMinimum };
+    pxShrink = {pxStretchType::Shrink},
+    pxExpand = {pxStretchType::Expand},
+    pxShaped = {pxStretchType::Shaped},
+    pxReserveHidden = {pxStretchType::ReserveHidden},
+    pxFixedMinimum = {pxStretchType::FixedMinimum};
 
-wxSizerFlags pxAlignmentType::Apply( wxSizerFlags flags ) const
+wxSizerFlags pxAlignmentType::Apply(wxSizerFlags flags) const
 {
-	switch( intval )
-	{
-		case Centre:
-			flags.Align( flags.GetFlags() | wxALIGN_CENTRE_HORIZONTAL );
-		break;
+    switch (intval) {
+        case Centre:
+            flags.Align(flags.GetFlags() | wxALIGN_CENTRE_HORIZONTAL);
+            break;
 
-		case Middle:
-			flags.Align( flags.GetFlags() | wxALIGN_CENTRE_VERTICAL );
-		break;
+        case Middle:
+            flags.Align(flags.GetFlags() | wxALIGN_CENTRE_VERTICAL);
+            break;
 
-		case Left:
-			flags.Left();
-		break;
+        case Left:
+            flags.Left();
+            break;
 
-		case Right:
-			flags.Right();
-		break;
+        case Right:
+            flags.Right();
+            break;
 
-		case Top:
-			flags.Top();
-		break;
+        case Top:
+            flags.Top();
+            break;
 
-		case Bottom:
-			flags.Bottom();
-		break;
-	}
-	return flags;
+        case Bottom:
+            flags.Bottom();
+            break;
+    }
+    return flags;
 }
 
-wxSizerFlags pxStretchType::Apply( wxSizerFlags flags ) const
+wxSizerFlags pxStretchType::Apply(wxSizerFlags flags) const
 {
-	switch( intval )
-	{
-		case Shrink:
-			//pxFail( "wxSHRINK is an ignored stretch flag." );
-		break;
+    switch (intval) {
+        case Shrink:
+            //pxFail( "wxSHRINK is an ignored stretch flag." );
+            break;
 
-		case Expand:
-			flags.Expand();
-		break;
+        case Expand:
+            flags.Expand();
+            break;
 
-		case Shaped:
-			flags.Shaped();
-		break;
+        case Shaped:
+            flags.Shaped();
+            break;
 
-		case ReserveHidden:
-			flags.ReserveSpaceEvenIfHidden();
-		break;
+        case ReserveHidden:
+            flags.ReserveSpaceEvenIfHidden();
+            break;
 
-		case FixedMinimum:
-			flags.FixedMinSize();
-			break;
+        case FixedMinimum:
+            flags.FixedMinSize();
+            break;
 
-		//case Tile:
-		//	pxAssert( "pxTile is an unsupported stretch tag (ignored)." );
-		//break;
-	}
-	return flags;
+            //case Tile:
+            //	pxAssert( "pxTile is an unsupported stretch tag (ignored)." );
+            //break;
+    }
+    return flags;
 }
 
-wxSizerFlags operator& ( const wxSizerFlags& _flgs, const wxSizerFlags& _flgs2 )
+wxSizerFlags operator&(const wxSizerFlags &_flgs, const wxSizerFlags &_flgs2)
 {
-	//return align.Apply( _flgs );
-	wxSizerFlags retval;
+    //return align.Apply( _flgs );
+    wxSizerFlags retval;
 
-	uint allflags = (_flgs.GetFlags() | _flgs2.GetFlags());
+    uint allflags = (_flgs.GetFlags() | _flgs2.GetFlags());
 
-	retval.Align( allflags & wxALIGN_MASK );
-	if( allflags & wxEXPAND ) retval.Expand();
-	if( allflags & wxSHAPED ) retval.Shaped();
-	if( allflags & wxFIXED_MINSIZE ) retval.FixedMinSize();
-	if( allflags & wxRESERVE_SPACE_EVEN_IF_HIDDEN ) retval.ReserveSpaceEvenIfHidden();
+    retval.Align(allflags & wxALIGN_MASK);
+    if (allflags & wxEXPAND)
+        retval.Expand();
+    if (allflags & wxSHAPED)
+        retval.Shaped();
+    if (allflags & wxFIXED_MINSIZE)
+        retval.FixedMinSize();
+    if (allflags & wxRESERVE_SPACE_EVEN_IF_HIDDEN)
+        retval.ReserveSpaceEvenIfHidden();
 
-	// Compounding borders is probably a fair approach:
-	retval.Border( allflags & wxALL, _flgs.GetBorderInPixels() + _flgs2.GetBorderInPixels() );
+    // Compounding borders is probably a fair approach:
+    retval.Border(allflags & wxALL, _flgs.GetBorderInPixels() + _flgs2.GetBorderInPixels());
 
-	// Compounding proportions works as well, I figure.
-	retval.Proportion( _flgs.GetProportion() + _flgs2.GetProportion() );
+    // Compounding proportions works as well, I figure.
+    retval.Proportion(_flgs.GetProportion() + _flgs2.GetProportion());
 
-	return retval;
+    return retval;
 }
 
 // ----------------------------------------------------------------------------
 // Reference/Handle versions!
 
-void operator+=( wxSizer& target, wxWindow* src )
+void operator+=(wxSizer &target, wxWindow *src)
 {
-	target.Add( src );
+    target.Add(src);
 }
 
-void operator+=( wxSizer& target, wxSizer* src )
+void operator+=(wxSizer &target, wxSizer *src)
 {
-	target.Add( src );
+    target.Add(src);
 }
 
-void operator+=( wxSizer& target, wxWindow& src )
+void operator+=(wxSizer &target, wxWindow &src)
 {
-	target.Add( &src );
+    target.Add(&src);
 }
 
-void operator+=( wxSizer& target, wxSizer& src )
+void operator+=(wxSizer &target, wxSizer &src)
 {
-	target.Add( &src );
+    target.Add(&src);
 }
 
-void operator+=( wxSizer& target, int spacer )
+void operator+=(wxSizer &target, int spacer)
 {
-	target.AddSpacer( spacer );
+    target.AddSpacer(spacer);
 }
 
-void operator+=( wxSizer& target, const pxStretchSpacer& spacer )
+void operator+=(wxSizer &target, const pxStretchSpacer &spacer)
 {
-	target.AddStretchSpacer( spacer.proportion );
+    target.AddStretchSpacer(spacer.proportion);
 }
 
-void operator+=( wxWindow& target, int spacer )
+void operator+=(wxWindow &target, int spacer)
 {
-	if( !pxAssert( target.GetSizer() != NULL ) ) return;
-	target.GetSizer()->AddSpacer( spacer );
+    if (!pxAssert(target.GetSizer() != NULL))
+        return;
+    target.GetSizer()->AddSpacer(spacer);
 }
 
-void operator+=( wxWindow& target, const pxStretchSpacer& spacer )
+void operator+=(wxWindow &target, const pxStretchSpacer &spacer)
 {
-	if( !pxAssert( target.GetSizer() != NULL ) ) return;
-	target.GetSizer()->AddStretchSpacer( spacer.proportion );
+    if (!pxAssert(target.GetSizer() != NULL))
+        return;
+    target.GetSizer()->AddStretchSpacer(spacer.proportion);
 }
 
 // ----------------------------------------------------------------------------
 // Pointer versions!  (note that C++ requires one of the two operator params be a
 // "poper" object type (non-pointer), so that's why there's only a couple of these.
 
-void operator+=( wxSizer* target, wxWindow& src )
+void operator+=(wxSizer *target, wxWindow &src)
 {
-	if( !pxAssert( target != NULL ) ) return;
-	target->Add( &src );
+    if (!pxAssert(target != NULL))
+        return;
+    target->Add(&src);
 }
 
-void operator+=( wxSizer* target, wxSizer& src )
+void operator+=(wxSizer *target, wxSizer &src)
 {
-	if( !pxAssert( target != NULL ) ) return;
-	target->Add( &src );
+    if (!pxAssert(target != NULL))
+        return;
+    target->Add(&src);
 }
 
 // ----------------------------------------------------------------------------
@@ -187,14 +193,14 @@ void operator+=( wxSizer* target, wxSizer& src )
 // Returns FALSE if the window position is considered invalid, which means that it's title
 // bar is most likely not easily grabble.  Such a window should be moved to a valid or
 // default position.
-bool pxIsValidWindowPosition( const wxWindow& window, const wxPoint& windowPos )
+bool pxIsValidWindowPosition(const wxWindow &window, const wxPoint &windowPos)
 {
-	// The height of the window is only revlevant to the height of a title bar, which is
-	// all we need visible for the user to be able to drag the window into view.  But
-	// there's no way to get that info from wx, so we'll just have to guesstimate...
+    // The height of the window is only revlevant to the height of a title bar, which is
+    // all we need visible for the user to be able to drag the window into view.  But
+    // there's no way to get that info from wx, so we'll just have to guesstimate...
 
-	wxSize sizeMatters( window.GetSize().GetWidth(), 32 );		// if some gui has 32 pixels of undraggable title bar, the user deserves to suffer.
-	return wxGetDisplayArea().Contains( wxRect( windowPos, sizeMatters ) );
+    wxSize sizeMatters(window.GetSize().GetWidth(), 32); // if some gui has 32 pixels of undraggable title bar, the user deserves to suffer.
+    return wxGetDisplayArea().Contains(wxRect(windowPos, sizeMatters));
 }
 
 // Retrieves the area of the screen, which can be used to enforce a valid zone for
@@ -202,7 +208,7 @@ bool pxIsValidWindowPosition( const wxWindow& window, const wxPoint& windowPos )
 // is the resolution of the desktop).
 wxRect wxGetDisplayArea()
 {
-	return wxRect( wxPoint(), wxGetDisplaySize() );
+    return wxRect(wxPoint(), wxGetDisplaySize());
 }
 
 // --------------------------------------------------------------------------------------
@@ -218,17 +224,17 @@ wxRect wxGetDisplayArea()
 //
 wxSizerFlags pxSizerFlags::StdSpace()
 {
-	return wxSizerFlags().Border( wxALL, StdPadding );
+    return wxSizerFlags().Border(wxALL, StdPadding);
 }
 
 wxSizerFlags pxSizerFlags::StdCenter()
 {
-	return wxSizerFlags().Align( wxALIGN_CENTER ).DoubleBorder();
+    return wxSizerFlags().Align(wxALIGN_CENTER).DoubleBorder();
 }
 
 wxSizerFlags pxSizerFlags::StdExpand()
 {
-	return StdSpace().Expand();
+    return StdSpace().Expand();
 }
 
 // A good sizer flags setting for top-level static boxes or top-level picture boxes.
@@ -236,7 +242,7 @@ wxSizerFlags pxSizerFlags::StdExpand()
 // manually by using a spacer.
 wxSizerFlags pxSizerFlags::TopLevelBox()
 {
-	return pxBorder( wxLEFT | wxBOTTOM | wxRIGHT, StdPadding ).Expand();
+    return pxBorder(wxLEFT | wxBOTTOM | wxRIGHT, StdPadding).Expand();
 }
 
 // Flags intended for use on grouped StaticBox controls.  These flags are ideal for
@@ -245,9 +251,9 @@ wxSizerFlags pxSizerFlags::TopLevelBox()
 // "tight").
 wxSizerFlags pxSizerFlags::SubGroup()
 {
-	// Groups look better with a slightly smaller margin than standard.
-	// (basically this accounts for the group's frame)
-	return pxBorder( wxLEFT | wxBOTTOM | wxRIGHT, StdPadding-2 ).Expand();
+    // Groups look better with a slightly smaller margin than standard.
+    // (basically this accounts for the group's frame)
+    return pxBorder(wxLEFT | wxBOTTOM | wxRIGHT, StdPadding - 2).Expand();
 }
 
 // This force-aligns the std button sizer to the right, where (at least) us win32 platform
@@ -255,12 +261,20 @@ wxSizerFlags pxSizerFlags::SubGroup()
 // just because it's *not* where win32 sticks it.  Too bad!
 wxSizerFlags pxSizerFlags::StdButton()
 {
-	return pxBorder().Align( wxALIGN_RIGHT );
+    return pxBorder().Align(wxALIGN_RIGHT);
 }
 
 wxSizerFlags pxSizerFlags::Checkbox()
 {
-	return StdExpand();
+    return StdExpand();
+}
+
+void pxSizerFlags::SetBestPadding()
+{
+    if (wxSystemSettings::GetMetric(wxSYS_SCREEN_X) > 1024 && wxSystemSettings::GetMetric(wxSYS_SCREEN_Y) > 864)
+        StdPadding = 4;
+    else
+        StdPadding = 1;
 }
 
 // --------------------------------------------------------------------------------------
@@ -269,43 +283,44 @@ wxSizerFlags pxSizerFlags::Checkbox()
 
 static bool is_cjk_char(const uint ch)
 {
-	/**
+    /**
 	 * You can check these range at http://unicode.org/charts/
 	 * see the "East Asian Scripts" part.
 	 * Notice that not all characters in that part is still in use today, so don't list them all here.
 	 */
 
-	// FIXME: add range from Japanese-specific and Korean-specific section if you know the
-	// characters are used today.
+    // FIXME: add range from Japanese-specific and Korean-specific section if you know the
+    // characters are used today.
 
-	if (ch < 0x2e80) return false; // shortcut for common non-CJK
+    if (ch < 0x2e80)
+        return false; // shortcut for common non-CJK
 
-	return
-		// Han Ideographs: all except Supplement
-		(ch >= 0x4e00 && ch < 0x9fcf) ||
-		(ch >= 0x3400 && ch < 0x4dbf) ||
-		(ch >= 0x20000 && ch < 0x2a6df) ||
-		(ch >= 0xf900 && ch < 0xfaff) ||
-		(ch >= 0x3190 && ch < 0x319f) ||
+    return
+        // Han Ideographs: all except Supplement
+        (ch >= 0x4e00 && ch < 0x9fcf) ||
+        (ch >= 0x3400 && ch < 0x4dbf) ||
+        (ch >= 0x20000 && ch < 0x2a6df) ||
+        (ch >= 0xf900 && ch < 0xfaff) ||
+        (ch >= 0x3190 && ch < 0x319f) ||
 
-		// Radicals: all except Ideographic Description
-		(ch >= 0x2e80 && ch < 0x2eff) ||
-		(ch >= 0x2f00 && ch < 0x2fdf) ||
-		(ch >= 0x31c0 && ch < 0x31ef) ||
+        // Radicals: all except Ideographic Description
+        (ch >= 0x2e80 && ch < 0x2eff) ||
+        (ch >= 0x2f00 && ch < 0x2fdf) ||
+        (ch >= 0x31c0 && ch < 0x31ef) ||
 
-		// Chinese-specific: Bopomofo
-		(ch >= 0x3000 && ch < 0x303f) ||
+        // Chinese-specific: Bopomofo
+        (ch >= 0x3000 && ch < 0x303f) ||
 
-		// Japanese-specific: Halfwidth Katakana
-		(ch >= 0xff00 && ch < 0xffef) ||
+        // Japanese-specific: Halfwidth Katakana
+        (ch >= 0xff00 && ch < 0xffef) ||
 
-		// Japanese-specific: Hiragana, Katakana
-		(ch >= 0x3040 && ch <= 0x309f) ||
-		(ch >= 0x30a0 && ch <= 0x30ff) ||
+        // Japanese-specific: Hiragana, Katakana
+        (ch >= 0x3040 && ch <= 0x309f) ||
+        (ch >= 0x30a0 && ch <= 0x30ff) ||
 
-		// Korean-specific: Hangul Syllables, Halfwidth Jamo
-		(ch >= 0xac00 && ch < 0xd7af) ||
-		(ch >= 0xff00 && ch < 0xffef);
+        // Korean-specific: Hangul Syllables, Halfwidth Jamo
+        (ch >= 0xac00 && ch < 0xd7af) ||
+        (ch >= 0xff00 && ch < 0xffef);
 }
 
 /*
@@ -325,119 +340,112 @@ static bool is_cjk_char(const uint ch)
  */
 static bool no_break_after(const uint ch)
 {
-	switch( ch )
-	{
-		/**
-		 * don't break after these Japanese/Chinese characters
-		 */
-		case 0x2018: case 0x201c: case 0x3008: case 0x300a:
-		case 0x300c: case 0x300e: case 0x3010: case 0x3014:
-		case 0x3016: case 0x301a: case 0x301d:
-		case 0xff08: case 0xff3b: case 0xff5b:
+    // clang-format off
+    switch (ch) {
+        /**
+         * don't break after these Japanese/Chinese characters
+         */
+        case 0x2018: case 0x201c: case 0x3008: case 0x300a:
+        case 0x300c: case 0x300e: case 0x3010: case 0x3014:
+        case 0x3016: case 0x301a: case 0x301d:
+        case 0xff08: case 0xff3b: case 0xff5b:
 
-		/**
-		 * FIXME don't break after these Korean characters
-		 */
+            /**
+             * FIXME don't break after these Korean characters
+             */
 
-			return true;
-	}
+            return true;
+    }
+    // clang-format on
 
-	return false;
+    return false;
 }
 
 static bool no_break_before(const uint ch)
 {
-	switch(ch)
-	{
-		/**
-		 * don't break before these Japanese characters
-		 */
-		case 0x2019: case 0x201d: case 0x2026: case 0x3001: case 0x3002:
-		case 0x3005: case 0x3009: case 0x300b: case 0x300d: case 0x300f:
-		case 0x301c: case 0x3011: case 0x3015: case 0x3017: case 0x301b:
-		case 0x301e: case 0x3041: case 0x3043: case 0x3045:
-		case 0x3047: case 0x3049: case 0x3063: case 0x3083: case 0x3085:
-		case 0x3087: case 0x308e: case 0x309d: case 0x309e: case 0x30a1:
-		case 0x30a3: case 0x30a5: case 0x30a7: case 0x30a9: case 0x30c3:
-		case 0x30e3: case 0x30e5: case 0x30e7: case 0x30ee: case 0x30f5:
-		case 0x30f6: case 0x30fb: case 0x30fc: case 0x30fd: case 0x30fe:
-		case 0xff01: case 0xff09: case 0xff0c: case 0xff0d: case 0xff0e: case 0xff1a:
-		case 0xff1b: case 0xff1f: case 0xff3d: case 0xff5d: case 0xff64: case 0xff65: 
+    // clang-format off
+    switch (ch) {
+        /**
+         * don't break before these Japanese characters
+         */
+        case 0x2019: case 0x201d: case 0x2026: case 0x3001: case 0x3002:
+        case 0x3005: case 0x3009: case 0x300b: case 0x300d: case 0x300f:
+        case 0x301c: case 0x3011: case 0x3015: case 0x3017: case 0x301b:
+        case 0x301e: case 0x3041: case 0x3043: case 0x3045:
+        case 0x3047: case 0x3049: case 0x3063: case 0x3083: case 0x3085:
+        case 0x3087: case 0x308e: case 0x309d: case 0x309e: case 0x30a1:
+        case 0x30a3: case 0x30a5: case 0x30a7: case 0x30a9: case 0x30c3:
+        case 0x30e3: case 0x30e5: case 0x30e7: case 0x30ee: case 0x30f5:
+        case 0x30f6: case 0x30fb: case 0x30fc: case 0x30fd: case 0x30fe:
+        case 0xff01: case 0xff09: case 0xff0c: case 0xff0d: case 0xff0e: case 0xff1a:
+        case 0xff1b: case 0xff1f: case 0xff3d: case 0xff5d: case 0xff64: case 0xff65:
 
-		/**
-		 * FIXME don't break before these Korean characters
-		 */
+            /**
+             * FIXME don't break before these Korean characters
+             */
 
-		/**
-		 * don't break before these Chinese characters
-		 * contains
-		 *   many Chinese punctuations that should not start a line
-		 *   and right side of different kinds of brackets, quotes
-		 */
-		
-		
-			return true;
-	}
-	return false;
+            /**
+             * don't break before these Chinese characters
+             * contains
+             *   many Chinese punctuations that should not start a line
+             *   and right side of different kinds of brackets, quotes
+             */
+
+            return true;
+    }
+    // clang-format on
+
+    return false;
 }
 
-pxTextWrapperBase& pxTextWrapperBase::Wrap( const wxWindow& win, const wxString& text, int widthMax )
+pxTextWrapperBase &pxTextWrapperBase::Wrap(const wxWindow &win, const wxString &text, int widthMax)
 {
-	if( text.IsEmpty() ) return *this;
+    if (text.empty())
+        return *this;
 
-    const wxChar *lastSpace = NULL;
     bool wasWrapped = false;
 
     wxString line;
-    line.Alloc( text.Length()+12 );
+    line.reserve(text.length() + 12);
 
-    const wxChar* lineStart = text.wc_str();
-    for ( const wxChar *p = lineStart; ; p++ )
-    {
-        if ( IsStartOfNewLine() )
-        {
+    wxString::const_iterator lastSpace = text.end();
+    wxString::const_iterator lineStart = text.begin();
+    for (wxString::const_iterator p = lineStart;; ++p) {
+        if (IsStartOfNewLine()) {
             OnNewLine();
 
-            lastSpace = NULL;
+            lastSpace = text.end();
             lineStart = p;
 
-			if(wasWrapped)
-				line = m_indent;
-			else
-				line.clear();
+            if (wasWrapped)
+                line = m_indent;
+            else
+                line.clear();
         }
 
-        if ( *p == L'\n' || *p == L'\0' )
-        {
-			wasWrapped = false;
+        if (p == text.end() || *p == L'\n') {
+            wasWrapped = false;
             DoOutputLine(line);
 
-            if ( *p == L'\0' )
+            if (p == text.end())
                 break;
-        }
-        else // not EOL
-        {
-			if (is_cjk_char(*p))
-			{
-				if (!no_break_before(*p))
-				{
-					if (p == lineStart || !no_break_after(*(p-1)))
-						lastSpace = p;
-				}
-			}
-			else if ( *p == L' ' || *p == L',' || *p == L'/' )
+        } else { // not EOL
+            if (is_cjk_char(*p)) {
+                if (!no_break_before(*p)) {
+                    if (p == lineStart || !no_break_after(*(p - 1)))
+                        lastSpace = p;
+                }
+            } else if (*p == L' ' || *p == L',' || *p == L'/')
                 lastSpace = p;
 
             line += *p;
 
-            if ( widthMax >= 0 && lastSpace )
-            {
+            if (widthMax >= 0 && lastSpace != text.end()) {
                 int width;
                 win.GetTextExtent(line, &width, NULL);
 
-                if ( width > widthMax )
-                {
-					wasWrapped = true;
+                if (width > widthMax) {
+                    wasWrapped = true;
 
                     // remove the last word from this line
                     line.erase(lastSpace - lineStart, p + 1 - lineStart);
@@ -447,9 +455,8 @@ pxTextWrapperBase& pxTextWrapperBase::Wrap( const wxWindow& win, const wxString&
                     // output yet
                     p = lastSpace;
 
-					if ( *p != L' ' )
-                       p--;
-
+                    if (*p != L' ')
+                        p--;
                 }
             }
             //else: no wrapping at all or impossible to wrap
@@ -459,11 +466,11 @@ pxTextWrapperBase& pxTextWrapperBase::Wrap( const wxWindow& win, const wxString&
     return *this;
 }
 
-void pxTextWrapperBase::DoOutputLine(const wxString& line)
+void pxTextWrapperBase::DoOutputLine(const wxString &line)
 {
-	OnOutputLine(line);
-	m_linecount++;
-	m_eol = true;
+    OnOutputLine(line);
+    m_linecount++;
+    m_eol = true;
 }
 
 // this function is a destructive inspector: when it returns true it also
@@ -471,151 +478,150 @@ void pxTextWrapperBase::DoOutputLine(const wxString& line)
 // more
 bool pxTextWrapperBase::IsStartOfNewLine()
 {
-	if ( !m_eol )
-		return false;
+    if (!m_eol)
+        return false;
 
-	m_eol = false;
-	return true;
+    m_eol = false;
+    return true;
 }
 
-pxTextWrapper& pxTextWrapper::Wrap( const wxWindow& win, const wxString& text, int widthMax )
+pxTextWrapper &pxTextWrapper::Wrap(const wxWindow &win, const wxString &text, int widthMax)
 {
-	_parent::Wrap( win, text, widthMax );
-	return *this;
+    _parent::Wrap(win, text, widthMax);
+    return *this;
 }
 
-pxTextWrapper& pxTextWrapper::Wrap( const wxWindow* win, const wxString& text, int widthMax )
+pxTextWrapper &pxTextWrapper::Wrap(const wxWindow *win, const wxString &text, int widthMax)
 {
-	if( win ) _parent::Wrap( *win, text, widthMax );
-	return *this;
+    if (win)
+        _parent::Wrap(*win, text, widthMax);
+    return *this;
 }
 
-void pxTextWrapper::OnOutputLine(const wxString& line)
+void pxTextWrapper::OnOutputLine(const wxString &line)
 {
-	m_text += line;
+    m_text += line;
 }
 
 void pxTextWrapper::OnNewLine()
 {
-	m_text += L'\n';
+    m_text += L'\n';
 }
 
 // --------------------------------------------------------------------------------------
 //  ScopedBusyCursor  (implementations)
 // --------------------------------------------------------------------------------------
 
-std::stack<BusyCursorType>	ScopedBusyCursor::m_cursorStack;
-BusyCursorType				ScopedBusyCursor::m_defBusyType;
+std::stack<BusyCursorType> ScopedBusyCursor::m_cursorStack;
+BusyCursorType ScopedBusyCursor::m_defBusyType;
 
-ScopedBusyCursor::ScopedBusyCursor( BusyCursorType busytype )
+ScopedBusyCursor::ScopedBusyCursor(BusyCursorType busytype)
 {
-	pxAssert( wxTheApp != NULL );
+    pxAssert(wxTheApp != NULL);
 
-	BusyCursorType curtype = Cursor_NotBusy;
-	if( !m_cursorStack.empty() )
-		curtype = m_cursorStack.top();
+    BusyCursorType curtype = Cursor_NotBusy;
+    if (!m_cursorStack.empty())
+        curtype = m_cursorStack.top();
 
-	if( curtype < busytype )
-		SetManualBusyCursor( curtype=busytype );
+    if (curtype < busytype)
+        SetManualBusyCursor(curtype = busytype);
 
-	m_cursorStack.push( curtype );
+    m_cursorStack.push(curtype);
 }
 
-ScopedBusyCursor::~ScopedBusyCursor() throw()
+ScopedBusyCursor::~ScopedBusyCursor()
 {
-	if( !pxAssert( wxTheApp != NULL ) ) return;
+    if (!pxAssert(wxTheApp != NULL))
+        return;
 
-	if( !pxAssert( !m_cursorStack.empty() ) )
-	{
-		SetManualBusyCursor( m_defBusyType );
-		return;
-	}
+    if (!pxAssert(!m_cursorStack.empty())) {
+        SetManualBusyCursor(m_defBusyType);
+        return;
+    }
 
-	BusyCursorType curtype = m_cursorStack.top();
-	m_cursorStack.pop();
+    BusyCursorType curtype = m_cursorStack.top();
+    m_cursorStack.pop();
 
-	if( m_cursorStack.empty() )
-		SetManualBusyCursor( m_defBusyType );
-	else if( m_cursorStack.top() != curtype )
-		SetManualBusyCursor( m_cursorStack.top() );
+    if (m_cursorStack.empty())
+        SetManualBusyCursor(m_defBusyType);
+    else if (m_cursorStack.top() != curtype)
+        SetManualBusyCursor(m_cursorStack.top());
 }
 
-void ScopedBusyCursor::SetDefault( BusyCursorType busytype )
+void ScopedBusyCursor::SetDefault(BusyCursorType busytype)
 {
-	if( busytype == m_defBusyType ) return;
-	m_defBusyType = busytype;
+    if (busytype == m_defBusyType)
+        return;
+    m_defBusyType = busytype;
 
-	if( m_cursorStack.empty() )
-		SetManualBusyCursor( busytype );
+    if (m_cursorStack.empty())
+        SetManualBusyCursor(busytype);
 }
 
-void ScopedBusyCursor::SetManualBusyCursor( BusyCursorType busytype )
+void ScopedBusyCursor::SetManualBusyCursor(BusyCursorType busytype)
 {
-	switch( busytype )
-	{
-		case Cursor_NotBusy:	wxSetCursor( wxNullCursor ); break;
-		case Cursor_KindaBusy:	wxSetCursor( StockCursors.GetArrowWait() ); break;
-		case Cursor_ReallyBusy:	wxSetCursor( *wxHOURGLASS_CURSOR ); break;
-	}
+    switch (busytype) {
+        case Cursor_NotBusy:
+            wxSetCursor(wxNullCursor);
+            break;
+        case Cursor_KindaBusy:
+            wxSetCursor(StockCursors.GetArrowWait());
+            break;
+        case Cursor_ReallyBusy:
+            wxSetCursor(*wxHOURGLASS_CURSOR);
+            break;
+    }
 }
 
-const wxCursor& MoreStockCursors::GetArrowWait()
+const wxCursor &MoreStockCursors::GetArrowWait()
 {
-	if( !m_arrowWait )
-		m_arrowWait = new wxCursor( wxCURSOR_ARROWWAIT );
-	return *m_arrowWait;
+    if (!m_arrowWait)
+        m_arrowWait = std::make_unique<wxCursor>(wxCURSOR_ARROWWAIT);
+    return *m_arrowWait;
 }
 
 MoreStockCursors StockCursors;
 
 // --------------------------------------------------------------------------------------
-//  pxFormatToolTipText / pxSetToolTip
+//  pxSetToolTip
 // --------------------------------------------------------------------------------------
-// This is the preferred way to assign tooltips to wxWindow-based objects, as it performs the
-// necessary text wrapping on platforms that need it.  On windows tooltips are wrapped at 600
-// pixels, or 66% of the screen width, whichever is smaller.  GTK and MAC perform internal
-// wrapping, so this function does a regular assignment there.
+// This is the preferred way to assign tooltips to wxWidgets-based objects. On Windows it
+// extends the tooltip time to the maximum possible. GTK seems to have indefinite
+// tooltips, I don't know about OS X.
 
-wxString pxFormatToolTipText( wxWindow* wind, const wxString& src )
+void pxSetToolTip(wxWindow *wind, const wxString &src)
 {
-	// Windows needs manual tooltip word wrapping (sigh).
-	// GTK and Mac are a wee bit more clever (except in GTK tooltips don't show at all
-	// half the time because of some other bug .. sigh)
+    if (wind == NULL)
+        return; // Silently ignore nulls
+    wind->SetToolTip(src);
 
+// Make tooltips show for as long as possible on Windows. Linux (GTK) can
+// show tooltips indefinitely.
 #ifdef __WXMSW__
-	if( wind == NULL ) return src;		// Silently ignore nulls
-	int whee = wxGetDisplaySize().GetWidth() * 0.75;
-	return pxTextWrapper().Wrap( *wind, src, std::min( whee, 600 ) ).GetResult();
-#else
-	return src;
+    wind->GetToolTip()->SetAutoPop(32767);
 #endif
 }
 
-void pxSetToolTip( wxWindow* wind, const wxString& src )
+void pxSetToolTip(wxWindow &wind, const wxString &src)
 {
-	if( wind == NULL ) return;		// Silently ignore nulls
-	wind->SetToolTip( pxFormatToolTipText(wind, src) );
-}
-
-void pxSetToolTip( wxWindow& wind, const wxString& src )
-{
-	pxSetToolTip( &wind, src );
+    pxSetToolTip(&wind, src);
 }
 
 
-wxFont pxGetFixedFont( int ptsize, int weight )
+wxFont pxGetFixedFont(int ptsize, wxFontWeight weight, bool underline)
 {
-	return wxFont(
-		ptsize, wxMODERN, wxNORMAL, weight, false
+    return wxFont(
+        ptsize, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, weight, underline
 #ifdef __WXMSW__
-		,L"Lucida Console"		// better than courier new (win32 only)
+        ,
+        L"Lucida Console" // better than courier new (win32 only)
 #endif
-	);
+        );
 }
 
 
 wxString pxGetAppName()
 {
-	pxAssert( wxTheApp );
-	return wxTheApp->GetAppName();
+    pxAssert(wxTheApp);
+    return wxTheApp->GetAppName();
 }

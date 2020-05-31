@@ -31,19 +31,10 @@ using x86Emitter::xWrite64;
 #include "legacy_types.h"
 #include "legacy_instructions.h"
 
-#define MEMADDR(addr, oplen)	(addr)
+#define MEMADDR(addr, oplen) (addr)
 
-#define Rex(w,r,x,b) assert(0)
-#define RexR(w, reg) assert( !(w || (reg)>=8) )
-#define RexB(w, base) assert( !(w || (base)>=8) )
-#define RexRB(w, reg, base) assert( !(w || (reg) >= 8 || (base)>=8) )
-#define RexRXB(w, reg, index, base) assert( !(w || (reg) >= 8 || (index) >= 8 || (base) >= 8) )
-
-#define _MM_MK_INSERTPS_NDX(srcField, dstField, zeroMask) (((srcField)<<6) | ((dstField)<<4) | (zeroMask))
-
-extern void ModRM( uint mod, uint reg, uint rm );
-extern void SibSB( uint ss, uint index, uint base );
-extern void SET8R( int cc, int to );
-extern u8*  J8Rel( int cc, int to );
-extern u32* J32Rel( int cc, u32 to );
-
+extern void ModRM(uint mod, uint reg, uint rm);
+extern void SibSB(uint ss, uint index, uint base);
+extern void SET8R(int cc, int to);
+extern u8 *J8Rel(int cc, int to);
+extern u32 *J32Rel(int cc, u32 to);

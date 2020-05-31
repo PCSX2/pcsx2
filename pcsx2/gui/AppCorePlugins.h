@@ -31,8 +31,8 @@ class AppCorePlugins : public SysCorePlugins
 	typedef SysCorePlugins _parent;
 
 public:
-	AppCorePlugins();
-	virtual ~AppCorePlugins() throw();
+	AppCorePlugins() = default;
+	virtual ~AppCorePlugins() = default;
 
 	void Load( const wxString (&folders)[PluginId_Count] );
 	void Load( PluginsEnum_t pid, const wxString& srcfile );
@@ -43,7 +43,7 @@ public:
 	void Init( PluginsEnum_t pid );
 	void Shutdown( PluginsEnum_t pid );
 	bool Shutdown();
-	void Close();	
+	void Close();
 	void Open();
 
 protected:

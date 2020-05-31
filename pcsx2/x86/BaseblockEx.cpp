@@ -45,6 +45,7 @@ int BaseBlocks::LastIndex(u32 startpc) const
 	return imin;
 }
 
+#if 0
 BASEBLOCKEX* BaseBlocks::GetByX86(uptr ip)
 {
 	if (0 == blocks.size())
@@ -67,6 +68,7 @@ BASEBLOCKEX* BaseBlocks::GetByX86(uptr ip)
 
 	return &blocks[imin];
 }
+#endif
 
 void BaseBlocks::Link(u32 pc, s32* jumpptr)
 {

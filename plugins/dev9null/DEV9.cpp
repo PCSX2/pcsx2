@@ -32,14 +32,12 @@ using namespace std;
 
 #include "DEV9.h"
 #include "svnrev.h"
+#include "null/config.inl"
 
-const unsigned char version  = PS2E_DEV9_VERSION;
+const unsigned char version = PS2E_DEV9_VERSION;
 const unsigned char revision = 0;
-const unsigned char build = 5;    // increase that with each version
+const unsigned char build = 5; // increase that with each version
 
-#ifdef _MSC_VER
-#define snprintf sprintf_s
-#endif
 static char libraryName[256];
 
 // Our IRQ call.
@@ -48,266 +46,288 @@ void (*DEV9irq)(int);
 __aligned16 s8 dev9regs[0x10000];
 
 string s_strIniPath = "inis";
-string s_strLogPath="logs";
+string s_strLogPath = "logs";
 
-PluginLog Dev9Log;
-Config conf;
+EXPORT_C_(void)
+DEV9configure()
+{
+    const std::string ini_path = s_strIniPath + "/Dev9null.ini";
+    LoadConfig(ini_path);
+    ConfigureLogging();
+    SaveConfig(ini_path);
+}
 
 void LogInit()
 {
-	const std::string LogFile(s_strLogPath + "/dev9null.log");
-	setLoggingState();
-	Dev9Log.Open(LogFile);
+    const std::string LogFile(s_strLogPath + "/dev9null.log");
+    g_plugin_log.Open(LogFile);
 }
 
-EXPORT_C_(void)  DEV9setLogDir(const char* dir)
+EXPORT_C_(void)
+DEV9setLogDir(const char *dir)
 {
-	// Get the path to the log directory.
-	s_strLogPath = (dir==NULL) ? "logs" : dir;
-	
-	// Reload the log file after updated the path
-	Dev9Log.Close();
-	LogInit();
+    // Get the path to the log directory.
+    s_strLogPath = (dir == NULL) ? "logs" : dir;
+
+    // Reload the log file after updated the path
+    g_plugin_log.Close();
+    LogInit();
 }
 
-EXPORT_C_(u32) PS2EgetLibType()
+EXPORT_C_(u32)
+PS2EgetLibType()
 {
-	return PS2E_LT_DEV9;
+    return PS2E_LT_DEV9;
 }
 
-EXPORT_C_(char*) PS2EgetLibName()
+EXPORT_C_(const char *)
+PS2EgetLibName()
 {
-	snprintf( libraryName, 255, "DEV9null Driver %lld%s",SVN_REV,	SVN_MODS ? "m" : "");
-	return libraryName;	
+    snprintf(libraryName, 255, "DEV9null Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");
+    return libraryName;
 }
 
-EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)
+EXPORT_C_(u32)
+PS2EgetLibVersion2(u32 type)
 {
-	return (version<<16) | (revision<<8) | build;
+    return (version << 16) | (revision << 8) | build;
 }
 
-EXPORT_C_(s32) DEV9init()
+EXPORT_C_(s32)
+DEV9init()
 {
-	LoadConfig();
-	setLoggingState();
-	LogInit();
-	Dev9Log.WriteLn("dev9null plugin version %d,%d", revision, build);
-	Dev9Log.WriteLn("Initializing dev9null");
-	// Initialize anything that needs to be initialized.
-	memset(dev9regs, 0, sizeof(dev9regs));
-	return 0;
+    LoadConfig(s_strIniPath + "/Dev9null.ini");
+    LogInit();
+    g_plugin_log.WriteLn("dev9null plugin version %d,%d", revision, build);
+    g_plugin_log.WriteLn("Initializing dev9null");
+    // Initialize anything that needs to be initialized.
+    memset(dev9regs, 0, sizeof(dev9regs));
+    return 0;
 }
 
-EXPORT_C_(void) DEV9shutdown()
+EXPORT_C_(void)
+DEV9shutdown()
 {
-	Dev9Log.WriteLn("Shutting down Dev9null.");
-	Dev9Log.Close();
+    g_plugin_log.WriteLn("Shutting down Dev9null.");
+    g_plugin_log.Close();
 }
 
-EXPORT_C_(s32) DEV9open(void *pDsp)
+EXPORT_C_(s32)
+DEV9open(void *pDsp)
 {
-	Dev9Log.WriteLn("Opening Dev9null.");
-	// Get anything ready we need to. Opening and creating hard
-	// drive files, for example.
-	return 0;
+    g_plugin_log.WriteLn("Opening Dev9null.");
+    // Get anything ready we need to. Opening and creating hard
+    // drive files, for example.
+    return 0;
 }
 
-EXPORT_C_(void) DEV9close()
+EXPORT_C_(void)
+DEV9close()
 {
-	Dev9Log.WriteLn("Closing Dev9null.");
-	// Close files opened.
+    g_plugin_log.WriteLn("Closing Dev9null.");
+    // Close files opened.
 }
 
-EXPORT_C_(u8) DEV9read8(u32 addr)
+EXPORT_C_(u8)
+DEV9read8(u32 addr)
 {
     u8 value = 0;
 
-    switch(addr)
-    {
-//        case 0x1F80146E:		// DEV9 hardware type (0x32 for an expansion bay)
-        case 0x10000038: /*value = dev9Ru8(addr);*/ break; // We need to have at least one case to avoid warnings.
+    switch (addr) {
+        //        case 0x1F80146E:		// DEV9 hardware type (0x32 for an expansion bay)
+        case 0x10000038: /*value = dev9Ru8(addr);*/
+            break;       // We need to have at least one case to avoid warnings.
         default:
             //value = dev9Ru8(addr);
-            Dev9Log.WriteLn("*Unknown 8 bit read at address %lx", addr);
+            g_plugin_log.WriteLn("*Unknown 8 bit read at address %lx", addr);
             break;
     }
-	return value;
+    return value;
 }
 
-EXPORT_C_(u16) DEV9read16(u32 addr)
+EXPORT_C_(u16)
+DEV9read16(u32 addr)
 {
     u16 value = 0;
 
-    switch(addr)
-    {
-		// Addresses you may want to catch here include:
-//			case 0x1F80146E:		// DEV9 hardware type (0x32 for an expansion bay)
-//			case 0x10000002:		// The Smart Chip revision. Should be 0x11
-//			case 0x10000004:		// More type info: bit 0 - smap; bit 1 - hd; bit 5 - flash
-//			case 0x1000000E:		// Similar to the last; bit 1 should be set if a hd is hooked up.
-//			case 0x10000028:			// intr_stat
-//			case 0x10000038:			// hard drives seem to like reading and writing the max dma size per transfer here.
-//			case 0x1000002A:			// intr_mask
-//			case 0x10000040:			// pio_data
-//			case 0x10000044:			// nsector
-//			case 0x10000046:			// sector
-//			case 0x10000048:			// lcyl
-//			case 0x1000004A:			// hcyl
-//			case 0x1000004C:			// select
-//			case 0x1000004E:			// status
-//			case 0x1000005C:			// status
-//			case 0x10000064:			// if_ctrl
-        case 0x10000038: /*value = dev9Ru16(addr);*/ break;
+    switch (addr) {
+        // Addresses you may want to catch here include:
+        //			case 0x1F80146E:		// DEV9 hardware type (0x32 for an expansion bay)
+        //			case 0x10000002:		// The Smart Chip revision. Should be 0x11
+        //			case 0x10000004:		// More type info: bit 0 - smap; bit 1 - hd; bit 5 - flash
+        //			case 0x1000000E:		// Similar to the last; bit 1 should be set if a hd is hooked up.
+        //			case 0x10000028:			// intr_stat
+        //			case 0x10000038:			// hard drives seem to like reading and writing the max dma size per transfer here.
+        //			case 0x1000002A:			// intr_mask
+        //			case 0x10000040:			// pio_data
+        //			case 0x10000044:			// nsector
+        //			case 0x10000046:			// sector
+        //			case 0x10000048:			// lcyl
+        //			case 0x1000004A:			// hcyl
+        //			case 0x1000004C:			// select
+        //			case 0x1000004E:			// status
+        //			case 0x1000005C:			// status
+        //			case 0x10000064:			// if_ctrl
+        case 0x10000038: /*value = dev9Ru16(addr);*/
+            break;
         default:
             //value = dev9Ru16(addr);
-            Dev9Log.WriteLn("*Unknown 16 bit read at address %lx", addr);
+            g_plugin_log.WriteLn("*Unknown 16 bit read at address %lx", addr);
             break;
     }
 
-	return value;
+    return value;
 }
 
-EXPORT_C_(u32 ) DEV9read32(u32 addr)
+EXPORT_C_(u32)
+DEV9read32(u32 addr)
 {
     u32 value = 0;
 
-    switch(addr)
-    {
-        case 0x10000038: /*value = dev9Ru32(addr);*/ break;
+    switch (addr) {
+        case 0x10000038: /*value = dev9Ru32(addr);*/
+            break;
         default:
             //value = dev9Ru32(addr);
-            Dev9Log.WriteLn("*Unknown 32 bit read at address %lx", addr);
-          break;
+            g_plugin_log.WriteLn("*Unknown 32 bit read at address %lx", addr);
+            break;
     }
 
-	return value;
+    return value;
 }
 
-EXPORT_C_(void) DEV9write8(u32 addr,  u8 value)
+EXPORT_C_(void)
+DEV9write8(u32 addr, u8 value)
 {
-    switch(addr)
-    {
-        case 0x10000038: /*dev9Ru8(addr) = value;*/ break;
+    switch (addr) {
+        case 0x10000038: /*dev9Ru8(addr) = value;*/
+            break;
         default:
-			Dev9Log.WriteLn("*Unknown 8 bit write; address %lx = %x", addr, value);
-			//dev9Ru8(addr) = value;
-          break;
+            g_plugin_log.WriteLn("*Unknown 8 bit write; address %lx = %x", addr, value);
+            //dev9Ru8(addr) = value;
+            break;
     }
 }
 
-EXPORT_C_(void) DEV9write16(u32 addr, u16 value)
+EXPORT_C_(void)
+DEV9write16(u32 addr, u16 value)
 {
-    switch(addr)
-    {
-    	// Remember that list on DEV9read16? You'll want to write to a
-    	// lot of them, too.
-        case 0x10000038: /*dev9Ru16(addr) = value;*/ break;
+    switch (addr) {
+        // Remember that list on DEV9read16? You'll want to write to a
+        // lot of them, too.
+        case 0x10000038: /*dev9Ru16(addr) = value;*/
+            break;
         default:
-			Dev9Log.WriteLn("*Unknown 16 bit write; address %lx = %x", addr, value);
+            g_plugin_log.WriteLn("*Unknown 16 bit write; address %lx = %x", addr, value);
             //dev9Ru16(addr) = value;
-          break;
+            break;
     }
 }
 
-EXPORT_C_(void) DEV9write32(u32 addr, u32 value)
+EXPORT_C_(void)
+DEV9write32(u32 addr, u32 value)
 {
-    switch(addr)
-    {
-        case 0x10000038: /*dev9Ru32(addr) = value;*/ break;
+    switch (addr) {
+        case 0x10000038: /*dev9Ru32(addr) = value;*/
+            break;
         default:
-			Dev9Log.WriteLn("*Unknown 32 bit write; address %lx = %x", addr, value);
+            g_plugin_log.WriteLn("*Unknown 32 bit write; address %lx = %x", addr, value);
             //dev9Ru32(addr) = value;
-          break;
+            break;
     }
 }
 
-//#ifdef ENABLE_NEW_IOPDMA_DEV9
-EXPORT_C_(s32) DEV9dmaRead(s32 channel, u32* data, u32 bytesLeft, u32* bytesProcessed)
+EXPORT_C_(s32)
+DEV9dmaRead(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed)
 {
-	// You'll want to put your own DMA8 reading code here.
-	// Time to interact with your fake (or real) hardware.
-	Dev9Log.WriteLn("Reading DMA8 Mem.");
-	*bytesProcessed = bytesLeft;
-	return 0;
+    // You'll want to put your own DMA8 reading code here.
+    // Time to interact with your fake (or real) hardware.
+    g_plugin_log.WriteLn("Reading DMA8 Mem.");
+    *bytesProcessed = bytesLeft;
+    return 0;
 }
 
-EXPORT_C_(s32) DEV9dmaWrite(s32 channel, u32* data, u32 bytesLeft, u32* bytesProcessed)
+EXPORT_C_(s32)
+DEV9dmaWrite(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed)
 {
-	// See above.
-	Dev9Log.WriteLn("Writing DMA8 Mem.");
-	*bytesProcessed = bytesLeft;
-	return 0;
+    // See above.
+    g_plugin_log.WriteLn("Writing DMA8 Mem.");
+    *bytesProcessed = bytesLeft;
+    return 0;
 }
 
-EXPORT_C_(void) DEV9dmaInterrupt(s32 channel)
+EXPORT_C_(void)
+DEV9dmaInterrupt(s32 channel)
 {
-	// See above.
-}
-//#else
-EXPORT_C_(void) DEV9readDMA8Mem(u32 *pMem, int size)
-{
-	// You'll want to put your own DMA8 reading code here.
-	// Time to interact with your fake (or real) hardware.
-	Dev9Log.WriteLn("Reading DMA8 Mem.");
+    // See above.
 }
 
-EXPORT_C_(void) DEV9writeDMA8Mem(u32* pMem, int size)
+EXPORT_C_(void)
+DEV9readDMA8Mem(u32 *pMem, int size)
 {
-	// See above.
-	Dev9Log.WriteLn("Writing DMA8 Mem.");
+    // You'll want to put your own DMA8 reading code here.
+    // Time to interact with your fake (or real) hardware.
+    g_plugin_log.WriteLn("Reading DMA8 Mem.");
 }
-//#endif
 
-EXPORT_C_(void) DEV9irqCallback(DEV9callback callback)
+EXPORT_C_(void)
+DEV9writeDMA8Mem(u32 *pMem, int size)
 {
-	// Setting our callback. You will call it with DEV9irq(cycles),
-	// Where cycles is the number of cycles till the irq is triggered.
-	DEV9irq = callback;
+    // See above.
+    g_plugin_log.WriteLn("Writing DMA8 Mem.");
+}
+
+EXPORT_C_(void)
+DEV9irqCallback(DEV9callback callback)
+{
+    // Setting our callback. You will call it with DEV9irq(cycles),
+    // Where cycles is the number of cycles till the irq is triggered.
+    DEV9irq = callback;
 }
 
 int _DEV9irqHandler(void)
 {
-	// And this gets called when the irq is triggered.
-	return 0;
+    // And this gets called when the irq is triggered.
+    return 0;
 }
 
-EXPORT_C_(DEV9handler) DEV9irqHandler(void)
+EXPORT_C_(DEV9handler)
+DEV9irqHandler(void)
 {
-	// Pass it to pcsx2.
-	return (DEV9handler)_DEV9irqHandler;
+    // Pass it to pcsx2.
+    return (DEV9handler)_DEV9irqHandler;
 }
 
-EXPORT_C_(void) DEV9setSettingsDir(const char* dir)
+EXPORT_C_(void)
+DEV9setSettingsDir(const char *dir)
 {
-	// Grab the ini directory.
+    // Grab the ini directory.
     s_strIniPath = (dir == NULL) ? "inis" : dir;
 }
 
 // extended funcs
 
-EXPORT_C_(s32) DEV9test()
+EXPORT_C_(s32)
+DEV9test()
 {
-	return 0;
+    return 0;
 }
 
-EXPORT_C_(s32) DEV9freeze(int mode, freezeData *data)
+EXPORT_C_(s32)
+DEV9freeze(int mode, freezeData *data)
 {
-	// This should store or retrieve any information, for if emulation
-	// gets suspended, or for savestates.
-	switch(mode)
-	{
-		case FREEZE_LOAD:
-			// Load previously saved data.
-			break;
-		case FREEZE_SAVE:
-			// Save data.
-			break;
-		case FREEZE_SIZE:
-			// return the size of the data.
-			break;
-	}
-	return 0;
+    // This should store or retrieve any information, for if emulation
+    // gets suspended, or for savestates.
+    switch (mode) {
+        case FREEZE_LOAD:
+            // Load previously saved data.
+            break;
+        case FREEZE_SAVE:
+            // Save data.
+            break;
+        case FREEZE_SIZE:
+            // return the size of the data.
+            break;
+    }
+    return 0;
 }
-
-/* For operating systems that need an entry point for a dll/library, here it is. Defined in PS2Eext.h. */
-ENTRY_POINT;

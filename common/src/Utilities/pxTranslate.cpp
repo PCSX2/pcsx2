@@ -15,23 +15,18 @@
 
 #include "PrecompiledHeader.h"
 
-bool pxIsEnglish( int id )
+bool pxIsEnglish(int id)
 {
-	return ( id == wxLANGUAGE_ENGLISH || id == wxLANGUAGE_ENGLISH_US );
+    return (id == wxLANGUAGE_ENGLISH || id == wxLANGUAGE_ENGLISH_US);
 }
 
 // --------------------------------------------------------------------------------------
 //  pxExpandMsg  -- an Iconized Text Translator
 //  Was replaced by a standard implementation of wxGetTranslation
 // --------------------------------------------------------------------------------------
-const wxChar* __fastcall pxExpandMsg( const wxChar* englishContent )
+const wxChar *__fastcall pxExpandMsg(const wxChar *englishContent)
 {
-#if wxMAJOR_VERSION >= 3
-	wxString translation = wxGetTranslation( englishContent );
-	return translation.wc_str();
-#else
-	return wxGetTranslation( englishContent );
-#endif
+    return wxGetTranslation(englishContent).wc_str();
 }
 
 // ------------------------------------------------------------------------
@@ -40,20 +35,14 @@ const wxChar* __fastcall pxExpandMsg( const wxChar* englishContent )
 // if the string seems too long for gettext lookups.  Longer complicated strings should
 // usually be implemented used the pxMsgExpand system instead.
 //
-const wxChar* __fastcall pxGetTranslation( const wxChar* message )
+const wxChar *__fastcall pxGetTranslation(const wxChar *message)
 {
-	if( IsDevBuild )
-	{
-		if( wxStrlen( message ) > 128 )
-		{
-			Console.Warning( "pxGetTranslation: Long message detected, maybe use pxE() instead?" );
-			Console.WriteLn( Color_Green, L"Message: %s", message );
-		}
-	}
-#if wxMAJOR_VERSION >= 3
-	wxString translation = wxGetTranslation( message );
-	return translation.wc_str();
-#else
-	return wxGetTranslation( message );
-#endif
+    if (IsDevBuild) {
+        if (wxStrlen(message) > 128) {
+            Console.Warning("pxGetTranslation: Long message detected, maybe use pxE() instead?");
+            Console.WriteLn(Color_Green, L"Message: %s", message);
+        }
+    }
+
+    return wxGetTranslation(message).wc_str();
 }

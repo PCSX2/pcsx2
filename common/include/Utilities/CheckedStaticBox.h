@@ -19,19 +19,19 @@
 
 class CheckedStaticBox : public wxPanelWithHelpers
 {
-	typedef wxPanelWithHelpers _parent;
+    typedef wxPanelWithHelpers _parent;
 
 public:
-	wxBoxSizer& ThisSizer;		// Boxsizer which holds all child items.
-	wxCheckBox& ThisToggle;		// toggle which can enable/disable all child controls
+    wxBoxSizer &ThisSizer;  // Boxsizer which holds all child items.
+    wxCheckBox &ThisToggle; // toggle which can enable/disable all child controls
 
 public:
-	CheckedStaticBox( wxWindow* parent, int orientation, const wxString& title=wxEmptyString );
+    CheckedStaticBox(wxWindow *parent, int orientation, const wxString &title = wxEmptyString);
 
-	void SetValue( bool val );
-	bool GetValue() const;
-	bool Enable( bool enable = true );
-	
+    void SetValue(bool val);
+    bool GetValue() const;
+    bool Enable(bool enable = true);
+
 public:
-	virtual void MainToggle_Click( wxCommandEvent& evt );
+    virtual void MainToggle_Click(wxCommandEvent &evt);
 };

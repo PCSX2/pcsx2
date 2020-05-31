@@ -1,0 +1,41 @@
+include(FindPkgConfig OPTIONAL)
+
+macro(_internal_message msg)
+	message("${msg}")
+endmacro()
+
+macro(check_lib var lib)
+	set(_arg_list ${ARGN})
+
+	if(PKG_CONFIG_FOUND AND NOT ${var}_FOUND AND NOT CMAKE_CROSSCOMPILING)
+		string(TOLOWER ${lib} lower_lib)
+		pkg_search_module(${var} QUIET ${lower_lib})
+	endif()
+
+	if(${var}_FOUND)
+		include_directories(${${var}_INCLUDE_DIRS})
+		# Make sure include directories for headers found using find_path below
+		# are re-added when reconfiguring
+		include_directories(${${var}_INCLUDE})
+		_internal_message("-- ${var} found pkg")
+	else()
+        find_library(${var}_LIBRARIES ${lib})
+		if(_arg_list)
+			find_path(${var}_INCLUDE ${_arg_list})
+		else()
+			set(${var}_INCLUDE FALSE)
+		endif()
+
+        if(${var}_LIBRARIES AND ${var}_INCLUDE)
+            include_directories(${${var}_INCLUDE})
+            _internal_message("-- ${var} found")
+            set(${var}_FOUND 1 CACHE INTERNAL "")
+        elseif(${var}_LIBRARIES)
+            _internal_message("-- ${var} not found (miss include)")
+        elseif(${var}_INCLUDE)
+            _internal_message("-- ${var} not found (miss lib)")
+        else()
+            _internal_message("-- ${var} not found")
+        endif()
+	endif()
+endmacro()

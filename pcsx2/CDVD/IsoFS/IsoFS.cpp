@@ -18,6 +18,7 @@
 
 #include "IsoFS.h"
 #include "IsoFile.h"
+#include <memory>
 
 //////////////////////////////////////////////////////////////////////////
 // IsoDirectory
@@ -105,11 +106,8 @@ IsoDirectory::IsoDirectory(SectorSource& r)
 IsoDirectory::IsoDirectory(SectorSource& r, IsoFileDescriptor directoryEntry)
 	: internalReader(r)
 {
+	m_fstype = FStype_ISO9660;
 	Init(directoryEntry);
-}
-
-IsoDirectory::~IsoDirectory() throw()
-{
 }
 
 void IsoDirectory::Init(const IsoFileDescriptor& directoryEntry)
@@ -171,7 +169,7 @@ IsoFileDescriptor IsoDirectory::FindFile(const wxString& filePath) const
 	wxFileName parts( filePath, wxPATH_DOS );
 	IsoFileDescriptor info;
 	const IsoDirectory* dir = this;
-	ScopedPtr<IsoDirectory> deleteme;
+	std::unique_ptr<IsoDirectory> deleteme;
 
 	// walk through path ("." and ".." entries are in the directories themselves, so even if the
 	// path included . and/or .., it still works)
@@ -181,7 +179,8 @@ IsoFileDescriptor IsoDirectory::FindFile(const wxString& filePath) const
 		info = dir->GetEntry(parts.GetDirs()[i]);
 		if(info.IsFile()) throw Exception::FileNotFound( filePath );
 
-		dir = deleteme = new IsoDirectory(internalReader, info);
+		deleteme.reset(new IsoDirectory(internalReader, info));
+		dir = deleteme.get();
 	}
 
 	if( !parts.GetFullName().IsEmpty() )
@@ -209,9 +208,10 @@ u32 IsoDirectory::GetFileSize( const wxString& filePath ) const
 
 IsoFileDescriptor::IsoFileDescriptor()
 {
-	lba = 0;
-	size = 0;
+	lba   = 0;
+	size  = 0;
 	flags = 0;
+	memset(&date, 0, sizeof(date));
 }
 
 IsoFileDescriptor::IsoFileDescriptor(const u8* data, int length)

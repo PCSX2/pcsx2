@@ -1,3 +1,18 @@
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2014-2014  PCSX2 Dev Team
+ *
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "PrecompiledHeader.h"
 #include "MipsAssemblerTables.h"
 
@@ -37,10 +52,10 @@ const tMipsOpcode MipsOpcodes[] = {
 //  hi |-------|-------|-------|-------|-------|-------|-------|-------|
 //		*1 = SPECIAL	*2 = REGIMM		*3 = COP0		*4 = COP1
 	{ "j",		"I",			MIPS_OP(0x02), 			MA_MIPS1,	MO_IPCA|MO_DELAY|MO_NODELAYSLOT },
-	{ "b",		"I",			MIPS_OP(0x02), 			MA_MIPS1,	MO_IPCA|MO_DELAY|MO_NODELAYSLOT },
 	{ "jal",	"I",			MIPS_OP(0x03),			MA_MIPS1,	MO_IPCA|MO_DELAY|MO_NODELAYSLOT },
 	{ "beq",	"s,t,i",		MIPS_OP(0x04),			MA_MIPS1,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
 	{ "beqz",	"s,i",			MIPS_OP(0x04),			MA_MIPS1,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
+	{ "b",		"i",			MIPS_OP(0x04), 			MA_MIPS1,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
 	{ "bne",	"s,t,i",		MIPS_OP(0x05),			MA_MIPS1,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
 	{ "bnez",	"s,i",			MIPS_OP(0x05),			MA_MIPS1,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
 	{ "blez",	"s,i",			MIPS_OP(0x06),			MA_MIPS1,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },

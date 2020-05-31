@@ -26,23 +26,18 @@
 
 #include <wx/textfile.h>
 
-BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE(pxEvt_LogWrite, -1)
-	DECLARE_EVENT_TYPE(pxEvt_SetTitleText, -1)
-	DECLARE_EVENT_TYPE(pxEvt_FlushQueue, -1)
-END_DECLARE_EVENT_TYPES()
+wxDECLARE_EVENT(pxEvt_SetTitleText, wxCommandEvent);
+wxDECLARE_EVENT(pxEvt_FlushQueue, wxCommandEvent);
 
-DEFINE_EVENT_TYPE(pxEvt_LogWrite)
-DEFINE_EVENT_TYPE(pxEvt_SetTitleText)
-DEFINE_EVENT_TYPE(pxEvt_DockConsole)
-DEFINE_EVENT_TYPE(pxEvt_FlushQueue)
+wxDEFINE_EVENT(pxEvt_SetTitleText, wxCommandEvent);
+wxDEFINE_EVENT(pxEvt_FlushQueue, wxCommandEvent);
 
 // C++ requires abstract destructors to exist, even though they're abstract.
-PipeRedirectionBase::~PipeRedirectionBase() throw() {}
+PipeRedirectionBase::~PipeRedirectionBase() = default;
 
 // ----------------------------------------------------------------------------
 //
-void pxLogConsole::DoLog( wxLogLevel level, const wxChar *szString, time_t t )
+void pxLogConsole::DoLogRecord(wxLogLevel level, const wxString &message, const wxLogRecordInfo &info)
 {
 	switch ( level )
 	{
@@ -51,7 +46,7 @@ void pxLogConsole::DoLog( wxLogLevel level, const wxChar *szString, time_t t )
 		{
 			wxString str;
 			TimeStamp( &str );
-			MSW_OutputDebugString( str + szString + L"\n" );
+			MSW_OutputDebugString( str + message + L"\n" );
 		}
 		break;
 
@@ -70,15 +65,15 @@ void pxLogConsole::DoLog( wxLogLevel level, const wxChar *szString, time_t t )
 			// fallthrough!
 
 		case wxLOG_Message:
-			Console.WriteLn( L"[wx] %ls", szString );
+			Console.WriteLn( L"[wx] %s", WX_STR(message));
 		break;
 
 		case wxLOG_Error:
-			Console.Error( L"[wx] %ls", szString );
+			Console.Error(L"[wx] %s", WX_STR(message));
 		break;
 
 		case wxLOG_Warning:
-			Console.Warning( L"[wx] %ls", szString );
+			Console.Warning(L"[wx] %s", WX_STR(message));
 		break;
 	}
 }
@@ -150,49 +145,21 @@ static bool OpenLogFile(wxFile& file, wxString& filename, wxWindow *parent)
 //   (actual font used is the system-selected fixed-width font)
 //
 ConsoleLogFrame::ColorArray::ColorArray( int fontsize )
-	: m_table( ConsoleColors_Count )
 {
-	Create( fontsize );
+	SetFont( fontsize );
 }
 
-ConsoleLogFrame::ColorArray::~ColorArray() throw()
-{
-	Cleanup();
-}
-
-void ConsoleLogFrame::ColorArray::Create( int fontsize )
+void ConsoleLogFrame::ColorArray::SetFont( int fontsize )
 {
 	const wxFont fixed( pxGetFixedFont( fontsize ) );
-	const wxFont fixedB( pxGetFixedFont( fontsize+1, wxBOLD ) );
-
-	//const wxFont fixed( fontsize, wxMODERN, wxNORMAL, wxNORMAL );
-	//const wxFont fixedB( fontsize, wxMODERN, wxNORMAL, wxBOLD );
+	const wxFont fixedB( pxGetFixedFont( fontsize+1, wxFONTWEIGHT_BOLD ) );
 
 	// Standard R, G, B format:
-	new (&m_table[Color_Default])		wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Black])			wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Red])			wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Green])			wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Blue])			wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Magenta])		wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Orange])		wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Gray])			wxTextAttr( wxNullColour, wxNullColour, fixed );
+	for (size_t i = 0; i < Color_StrongBlack; ++i)
+		m_table[i].SetFont(fixed);
 
-	new (&m_table[Color_Cyan])			wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_Yellow])		wxTextAttr( wxNullColour, wxNullColour, fixed );
-	new (&m_table[Color_White])			wxTextAttr( wxNullColour, wxNullColour, fixed );
-
-	new (&m_table[Color_StrongBlack])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongRed])		wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongGreen])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongBlue])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongMagenta])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongOrange])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongGray])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-
-	new (&m_table[Color_StrongCyan])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongYellow])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
-	new (&m_table[Color_StrongWhite])	wxTextAttr( wxNullColour, wxNullColour, fixedB );
+	for (size_t i = Color_StrongBlack; i < ConsoleColors_Count; ++i)
+		m_table[i].SetFont(fixedB);
 
 	SetColorScheme_Light();
 }
@@ -253,15 +220,6 @@ void ConsoleLogFrame::ColorArray::SetColorScheme_Light()
 	m_table[Color_StrongWhite]	.SetTextColour(wxColor( 160, 160, 160 ));
 }
 
-void ConsoleLogFrame::ColorArray::Cleanup()
-{
-	// The contents of m_table were created with placement new, and must be
-	// disposed of manually:
-
-	for( int i=0; i<ConsoleColors_Count; ++i )
-		m_table[i].~wxTextAttr();
-}
-
 // fixme - not implemented yet.
 void ConsoleLogFrame::ColorArray::SetFont( const wxFont& font )
 {
@@ -269,10 +227,9 @@ void ConsoleLogFrame::ColorArray::SetFont( const wxFont& font )
 	//	m_table[i].SetFont( font );
 }
 
-void ConsoleLogFrame::ColorArray::SetFont( int fontsize )
+u32 ConsoleLogFrame::ColorArray::GetRGBA( const ConsoleColors color )
 {
-	Cleanup();
-	Create( fontsize );
+	return m_table[color].GetTextColour().GetRGBA();
 }
 
 enum MenuIDs_t
@@ -285,9 +242,12 @@ enum MenuIDs_t
 	MenuId_ColorScheme_Light = 0x20,
 	MenuId_ColorScheme_Dark,
 
+	MenuId_AutoDock,
+
 	MenuId_LogSource_EnableAll = 0x30,
 	MenuId_LogSource_DisableAll,
 	MenuId_LogSource_Devel,
+	MenuId_LogSource_SetDefault,
 	MenuId_LogSource_CDVD_Info,
 
 	MenuId_LogSource_Start = 0x100
@@ -310,7 +270,7 @@ public:
 		WindowPtr = pxTheApp.m_ptr_ProgramLog;
 	}
 
-	virtual ~ScopedLogLock() throw() {}
+	virtual ~ScopedLogLock() = default;
 
 	bool HasWindow() const
 	{
@@ -321,6 +281,22 @@ public:
 	{
 		return *WindowPtr;
 	}
+};
+
+enum MenuId_LogSources_Offset
+{
+	MenuId_LogSources_Offset_eeConsole = 0,
+	MenuId_LogSources_Offset_iopConsole,
+	MenuId_LogSources_Offset_eeRecPerf,
+
+	MenuId_LogSources_Offset_ELF = 4,
+
+	MenuId_LogSources_Offset_Event = 6,
+	MenuId_LogSources_Offset_Thread,
+	MenuId_LogSources_Offset_sysoutConsole,
+
+	MenuId_LogSources_Offset_recordingConsole = 10,
+	MenuId_LogSources_Offset_controlInfo
 };
 
 // WARNING ConsoleLogSources & ConLogDefaults must have the same size
@@ -334,6 +310,12 @@ static ConsoleLogSource* const ConLogSources[] =
 	NULL,
 	(ConsoleLogSource*)&pxConLog_Event,
 	(ConsoleLogSource*)&pxConLog_Thread,
+	(ConsoleLogSource*)&SysConsole.sysoutConsole,
+	NULL,
+#ifndef DISABLE_RECORDING
+	(ConsoleLogSource*)&SysConsole.recordingConsole,
+	(ConsoleLogSource*)&SysConsole.controlInfo,
+#endif
 };
 
 // WARNING ConsoleLogSources & ConLogDefaults must have the same size
@@ -346,8 +328,21 @@ static const bool ConLogDefaults[] =
 	false,
 	false,
 	false,
+	false,
+	false,
+#ifndef DISABLE_RECORDING
+	false,
+	false,
+#endif
 	false
 };
+
+// Typically on startup (or during first time wizard when choosing "import"), the
+// settings are loaded from ini and if the ini doesn't exist then from ConLogDefaults,
+// but during first time wizard when choosing "overwrite", the first action is "save",
+// which ends up saving before applying ConLogDefaults, therefore all conlog sources
+// are saved as disabled. ConLogInitialized is used to detect and avoid this issue.
+static bool ConLogInitialized = false;
 
 void ConLog_LoadSaveSettings( IniInterface& ini )
 {
@@ -360,11 +355,15 @@ void ConLog_LoadSaveSettings( IniInterface& ini )
 	{
 		if (ConsoleLogSource* log = ConLogSources[i])
 		{
+			// IsSaving() is for clarity only, since log->Enabled initial value is ignored when loading.
+			if (ini.IsSaving() && !ConLogInitialized)
+				log->Enabled = ConLogDefaults[i];
 			ini.Entry( log->GetCategory() + L"." + log->GetShortName(), log->Enabled, ConLogDefaults[i] );
 		}
 	}
-}
 
+	ConLogInitialized = true;
+}
 
 // --------------------------------------------------------------------------------------
 //  ConsoleLogFrame  (implementations)
@@ -372,7 +371,8 @@ void ConLog_LoadSaveSettings( IniInterface& ini )
 ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, AppConfig::ConsoleLogOptions& options )
 	: wxFrame(parent, wxID_ANY, title)
 	, m_conf( options )
-	, m_TextCtrl( *new pxLogTextCtrl(this) )
+	, m_TextCtrl( *new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+		wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_NOHIDESEL) )
 	, m_timer_FlushUnlocker( this )
 	, m_ColorTable( options.FontSize )
 
@@ -414,34 +414,36 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	// create Appearance menu and submenus
 
-	menuFontSizes.Append( MenuId_FontSize_Small,	_("Small"),	_t("Fits a lot of log in a microcosmically small area."),
+	menuFontSizes.Append( MenuId_FontSize_Small,	_("&Small"),	_t("Fits a lot of log in a microcosmically small area."),
 		wxITEM_RADIO )->Check( options.FontSize == 7 );
-	menuFontSizes.Append( MenuId_FontSize_Normal,	_("Normal"),_t("It's what I use (the programmer guy)."),
+	menuFontSizes.Append( MenuId_FontSize_Normal,	_("&Normal font"),_t("It's what I use (the programmer guy)."),
 		wxITEM_RADIO )->Check( options.FontSize == 8 );
-	menuFontSizes.Append( MenuId_FontSize_Large,	_("Large"),	_t("Its nice and readable."),
+	menuFontSizes.Append( MenuId_FontSize_Large,	_("&Large"),	_t("Its nice and readable."),
 		wxITEM_RADIO )->Check( options.FontSize == 10 );
-	menuFontSizes.Append( MenuId_FontSize_Huge,		_("Huge"),	_t("In case you have a really high res display."),
+	menuFontSizes.Append( MenuId_FontSize_Huge,		_("&Huge"),	_t("In case you have a really high res display."),
 		wxITEM_RADIO )->Check( options.FontSize == 12 );
 
 	menuFontSizes.AppendSeparator();
-	menuFontSizes.Append( MenuId_ColorScheme_Light,	_("Light theme"),	_t("Default soft-tone color scheme."), wxITEM_RADIO );
-	menuFontSizes.Append( MenuId_ColorScheme_Dark,	_("Dark theme"),	_t("Classic black color scheme for people who enjoy having text seared into their optic nerves."), wxITEM_RADIO );
+	menuFontSizes.Append( MenuId_ColorScheme_Light,	_("&Light theme"),	_t("Default soft-tone color scheme."), wxITEM_RADIO );
+	menuFontSizes.Append( MenuId_ColorScheme_Dark,	_("&Dark theme"),	_t("Classic black color scheme for people who enjoy having text seared into their optic nerves."), wxITEM_RADIO );
 
-	menuAppear.AppendSeparator();
-	menuAppear.Append( wxID_ANY, _("Always on Top"),
-		_t("When checked the log window will be visible over other foreground windows."), wxITEM_CHECK );
+	// The "Always on Top" option currently doesn't work
+	//menuAppear.AppendSeparator();
+	//menuAppear.Append( wxID_ANY, _("Always on Top"),
+	//	_t("When checked the log window will be visible over other foreground windows."), wxITEM_CHECK );
 
 	menuLog.Append(wxID_SAVE,	_("&Save..."),		_("Save log contents to file"));
 	menuLog.Append(wxID_CLEAR,	_("C&lear"),		_("Clear the log window contents"));
 	menuLog.AppendSeparator();
-	menuLog.AppendSubMenu( &menuAppear, _("Appearance") );
+	menuLog.AppendCheckItem(MenuId_AutoDock, _("Auto&dock"), _("Dock log window to main PCSX2 window"))->Check(m_conf.AutoDock);
+	menuLog.AppendSubMenu( &menuAppear, _("&Appearance") );
 	menuLog.AppendSeparator();
 	menuLog.Append(wxID_CLOSE,	_("&Close"),		_("Close this log window; contents are preserved"));
 
 	// Source Selection/Toggle menu
 
-	menuSources.Append( MenuId_LogSource_Devel, _("Dev/Verbose"), _("Shows PCSX2 developer logs"), wxITEM_CHECK );
-	menuSources.Append( MenuId_LogSource_CDVD_Info, _("CDVD reads"), _("Shows disk read activity"), wxITEM_CHECK );
+	menuSources.Append( MenuId_LogSource_Devel, _("Dev/&Verbose"), _("Shows PCSX2 developer logs"), wxITEM_CHECK );
+	menuSources.Append( MenuId_LogSource_CDVD_Info, _("&CDVD reads"), _("Shows disk read activity"), wxITEM_CHECK );
 	
 	menuSources.AppendSeparator();
 
@@ -451,15 +453,16 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 		if (const BaseTraceLogSource* log = ConLogSources[i])
 		{
 			menuSources.Append( MenuId_LogSource_Start+i, log->GetName(), log->GetDescription(), wxITEM_CHECK );
-			Connect( MenuId_LogSource_Start+i, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ConsoleLogFrame::OnToggleSource));
+			Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleSource, this, MenuId_LogSource_Start + i);
 		}
 		else
 			menuSources.AppendSeparator();
 	}
 
 	menuSources.AppendSeparator();
-	menuSources.Append( MenuId_LogSource_EnableAll,		_("Enable all"),	_("Enables all log source filters.") );
-	menuSources.Append( MenuId_LogSource_DisableAll,	_("Disable all"),	_("Disables all log source filters.") );
+	menuSources.Append( MenuId_LogSource_EnableAll,		_("&Enable all"),	_("Enables all log source filters.") );
+	menuSources.Append( MenuId_LogSource_DisableAll,	_("&Disable all"),	_("Disables all log source filters.") );
+	menuSources.Append( MenuId_LogSource_SetDefault,	_("&Restore Default"), _("Restore default source filters.") );
 
 	pMenuBar->Append(&menuLog,		_("&Log"));
 	pMenuBar->Append(&menuSources,	_("&Sources"));
@@ -472,29 +475,31 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	// Bind Events:
 
-	Connect( wxID_OPEN,  wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ConsoleLogFrame::OnOpen)  );
-	Connect( wxID_CLOSE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ConsoleLogFrame::OnClose) );
-	Connect( wxID_SAVE,  wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ConsoleLogFrame::OnSave)  );
-	Connect( wxID_CLEAR, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ConsoleLogFrame::OnClear) );
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnOpen, this, wxID_OPEN);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnClose, this, wxID_CLOSE);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnSave, this, wxID_SAVE);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnClear, this, wxID_CLEAR);
 
-	Connect( MenuId_FontSize_Small,		MenuId_FontSize_Huge,		wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnFontSize ) );
-	Connect( MenuId_ColorScheme_Light,	MenuId_ColorScheme_Dark,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnToggleTheme ) );
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnFontSize, this, MenuId_FontSize_Small, MenuId_FontSize_Huge);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleTheme, this, MenuId_ColorScheme_Light, MenuId_ColorScheme_Dark);
 
-	Connect( MenuId_LogSource_Devel,		wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnToggleSource ) );
-	Connect( MenuId_LogSource_CDVD_Info,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnToggleCDVDInfo ) );
-	Connect( MenuId_LogSource_EnableAll,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnEnableAllLogging ) );
-	Connect( MenuId_LogSource_DisableAll,	wxEVT_COMMAND_MENU_SELECTED,	wxCommandEventHandler( ConsoleLogFrame::OnDisableAllLogging ) );
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnAutoDock, this, MenuId_AutoDock);
 
-	Connect( wxEVT_CLOSE_WINDOW,	wxCloseEventHandler			(ConsoleLogFrame::OnCloseWindow) );
-	Connect( wxEVT_MOVE,			wxMoveEventHandler			(ConsoleLogFrame::OnMoveAround) );
-	Connect( wxEVT_SIZE,			wxSizeEventHandler			(ConsoleLogFrame::OnResize) );
-	Connect( wxEVT_ACTIVATE,		wxActivateEventHandler		(ConsoleLogFrame::OnActivate) );
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleSource, this, MenuId_LogSource_Devel);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleCDVDInfo, this, MenuId_LogSource_CDVD_Info);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnEnableAllLogging, this, MenuId_LogSource_EnableAll);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnDisableAllLogging, this, MenuId_LogSource_DisableAll);
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnSetDefaultLogging, this, MenuId_LogSource_SetDefault);
 
-	Connect( pxEvt_SetTitleText,	wxCommandEventHandler	(ConsoleLogFrame::OnSetTitle) );
-	Connect( pxEvt_DockConsole,		wxCommandEventHandler	(ConsoleLogFrame::OnDockedMove) );
-	Connect( pxEvt_FlushQueue,		wxCommandEventHandler	(ConsoleLogFrame::OnFlushEvent) );
+	Bind(wxEVT_CLOSE_WINDOW, &ConsoleLogFrame::OnCloseWindow, this);
+	Bind(wxEVT_MOVE, &ConsoleLogFrame::OnMoveAround, this);
+	Bind(wxEVT_SIZE, &ConsoleLogFrame::OnResize, this);
+	Bind(wxEVT_ACTIVATE, &ConsoleLogFrame::OnActivate, this);
 
-	Connect( m_timer_FlushUnlocker.GetId(),	wxEVT_TIMER,	wxTimerEventHandler	(ConsoleLogFrame::OnFlushUnlockerTimer) );
+	Bind(pxEvt_SetTitleText, &ConsoleLogFrame::OnSetTitle, this);
+	Bind(pxEvt_FlushQueue, &ConsoleLogFrame::OnFlushEvent, this);
+
+	Bind(wxEVT_TIMER, &ConsoleLogFrame::OnFlushUnlockerTimer, this, m_timer_FlushUnlocker.GetId());
 
 	if( m_threadlogger != NULL )
 		m_threadlogger->Start();
@@ -525,6 +530,9 @@ void ConsoleLogFrame::OnEnableAllLogging(wxCommandEvent& evt)
 		if (ConsoleLogSource* log = ConLogSources[i])
 			log->Enabled = true;
 	}
+	DevConWriterEnabled = true;
+	// Safe to change - it's read only in the core thread and only affects log output.
+	const_cast<Pcsx2Config&>(EmuConfig).CdvdVerboseReads = g_Conf->EmuOptions.CdvdVerboseReads = true;
 
 	OnLoggingChanged();
 	evt.Skip();
@@ -538,6 +546,25 @@ void ConsoleLogFrame::OnDisableAllLogging(wxCommandEvent& evt)
 		if (ConsoleLogSource* log = ConLogSources[i])
 			log->Enabled = false;
 	}
+	DevConWriterEnabled = false;
+	// Safe to change - it's read only in the core thread and only affects log output.
+	const_cast<Pcsx2Config&>(EmuConfig).CdvdVerboseReads = g_Conf->EmuOptions.CdvdVerboseReads = false;
+
+	OnLoggingChanged();
+	evt.Skip();
+}
+
+void ConsoleLogFrame::OnSetDefaultLogging(wxCommandEvent& evt)
+{
+	uint srcnt = ArraySize(ConLogSources);
+	for (uint i = 0; i<srcnt; ++i)
+	{
+		if (ConsoleLogSource* log = ConLogSources[i])
+			log->Enabled = ConLogDefaults[i];
+	}
+	DevConWriterEnabled = false;
+	// Safe to change - it's read only in the core thread and only affects log output.
+	const_cast<Pcsx2Config&>(EmuConfig).CdvdVerboseReads = g_Conf->EmuOptions.CdvdVerboseReads = false;
 
 	OnLoggingChanged();
 	evt.Skip();
@@ -560,7 +587,16 @@ void ConsoleLogFrame::OnLoggingChanged()
 		{
 			GetMenuBar()->Check( MenuId_LogSource_Start+i, log->IsActive() );
 		}
+#ifndef DISABLE_RECORDING
+		GetMenuBar()->Enable( MenuId_LogSource_Start + MenuId_LogSources_Offset_recordingConsole, g_Conf->EmuOptions.EnableRecordingTools);
+		GetMenuBar()->Enable( MenuId_LogSource_Start + MenuId_LogSources_Offset_controlInfo, g_Conf->EmuOptions.EnableRecordingTools);
+#endif
 	}
+}
+
+void ConsoleLogFrame::UpdateLogList()
+{
+	OnLoggingChanged();
 }
 
 // Implementation note:  Calls SetColor and Write( text ).  Override those virtuals
@@ -584,7 +620,7 @@ bool ConsoleLogFrame::Write( ConsoleColors color, const wxString& text )
 
 	int endpos = m_CurQueuePos + text.Length();
 	m_QueueBuffer.MakeRoomFor( endpos + 1 );		// and the null!!
-	memcpy_fast( &m_QueueBuffer[m_CurQueuePos], text.wc_str(), sizeof(wxChar) * text.Length() );
+	memcpy( &m_QueueBuffer[m_CurQueuePos], text.wc_str(), sizeof(wxChar) * text.Length() );
 	m_CurQueuePos = endpos;
 
 	// this NULL may be overwritten if the next message sent doesn't perform a color change.
@@ -649,23 +685,12 @@ bool ConsoleLogFrame::Newline()
 	return Write( Color_Current, L"\n" );
 }
 
-void ConsoleLogFrame::DockedMove()
-{
-	SetPosition( m_conf.DisplayPosition );
-}
-
 // =================================================================================
 //  Section : Event Handlers
 //    * Misc Window Events (Move, Resize,etc)
 //    * Menu Events
 //    * Logging Events
 // =================================================================================
-
-// Special event received from a window we're docked against.
-void ConsoleLogFrame::OnDockedMove( wxCommandEvent& event )
-{
-	DockedMove();
-}
 
 void ConsoleLogFrame::OnMoveAround( wxMoveEvent& evt )
 {
@@ -687,13 +712,15 @@ void ConsoleLogFrame::OnMoveAround( wxMoveEvent& evt )
 			m_conf.AutoDock = true;
 		}
 	}
-	m_conf.DisplayPosition = GetPosition();
+	if (!IsMaximized())
+		m_conf.DisplayPosition = GetPosition();
 	evt.Skip();
 }
 
 void ConsoleLogFrame::OnResize( wxSizeEvent& evt )
 {
-	m_conf.DisplaySize = GetSize();
+	if (!IsMaximized())
+		m_conf.DisplaySize = GetSize();
 	evt.Skip();
 }
 
@@ -730,10 +757,9 @@ void ConsoleLogFrame::OnCloseWindow(wxCloseEvent& event)
 		// instead of closing just hide the window to be able to Show() it later
 		Show( false );
 
-		// Can't do this via a Connect() on the MainFrame because Close events are not commands,
-		// and thus do not propagate up/down the event chain.
-		if( wxWindow* main = GetParent() )
-			wxStaticCast( main, MainEmuFrame )->OnLogBoxHidden();
+		// In the nogui case there might not be a Main frame window.
+		if (MainEmuFrame* mainframe = GetMainFramePtr())
+			mainframe->OnLogBoxHidden();
 	}
 	else
 	{
@@ -877,6 +903,13 @@ void ConsoleLogFrame::OnFontSize( wxCommandEvent& evt )
 	// it hardly matters being a once-in-a-bluemoon action).
 }
 
+void ConsoleLogFrame::OnAutoDock(wxCommandEvent& evt)
+{
+	if (auto menuBar = GetMenuBar())
+		m_conf.AutoDock = menuBar->IsChecked(MenuId_AutoDock);
+	evt.Skip();
+}
+
 // ----------------------------------------------------------------------------
 //  Logging Events (typically received from Console class interfaces)
 // ----------------------------------------------------------------------------
@@ -915,7 +948,10 @@ void ConsoleLogFrame::DoFlushEvent( bool isPending )
 		} while( --m_WaitingThreadsForFlush > 0 );
 
 		int count = m_sem_QueueFlushed.Count();
-		while( count < 0 ) m_sem_QueueFlushed.Post();
+		while( count < 0 ) {
+			m_sem_QueueFlushed.Post();
+			count = m_sem_QueueFlushed.Count();
+		}
 	}
 
 	m_pendingFlushMsg = isPending;
@@ -991,8 +1027,6 @@ void ConsoleLogFrame::DoFlushQueue()
 
 	if( len > 64 ) m_TextCtrl.Thaw();
 
-	m_TextCtrl.ConcludeIssue();
-
 	m_QueueColorSection.Clear();
 	m_CurQueuePos		= 0;
 }
@@ -1019,11 +1053,11 @@ void Pcsx2App::ProgramLog_PostEvent( wxEvent& evt )
 
 static void __concall ConsoleToFile_Newline()
 {
-#ifdef __linux__
+#if defined(__unix__)
 	if ((g_Conf) && (g_Conf->EmuOptions.ConsoleToStdio)) ConsoleWriter_Stdout.Newline();
 #endif
 
-#ifdef __linux__
+#if defined(__unix__)
 	fputc( '\n', emuLog );
 #else
 	fputs( "\r\n", emuLog );
@@ -1032,7 +1066,7 @@ static void __concall ConsoleToFile_Newline()
 
 static void __concall ConsoleToFile_DoWrite( const wxString& fmt )
 {
-#ifdef __linux__
+#if defined(__unix__)
 	if ((g_Conf) && (g_Conf->EmuOptions.ConsoleToStdio)) ConsoleWriter_Stdout.WriteRaw(fmt);
 #endif
 
@@ -1166,16 +1200,16 @@ void Pcsx2App::EnableAllLogging()
 
 	if( emuLog )
 	{
-		if( !m_StdoutRedirHandle ) m_StdoutRedirHandle = NewPipeRedir(stdout);
-		if( !m_StderrRedirHandle ) m_StderrRedirHandle = NewPipeRedir(stderr);
+		if( !m_StdoutRedirHandle ) m_StdoutRedirHandle = std::unique_ptr<PipeRedirectionBase>(NewPipeRedir(stdout));
+		if( !m_StderrRedirHandle ) m_StderrRedirHandle = std::unique_ptr<PipeRedirectionBase>(NewPipeRedir(stderr));
 		newHandler = logBoxOpen ? (IConsoleWriter*)&ConsoleWriter_WindowAndFile : (IConsoleWriter*)&ConsoleWriter_File;
 	}
 	else
 	{
 		if( logBoxOpen )
 		{
-			if( !m_StdoutRedirHandle ) m_StdoutRedirHandle = NewPipeRedir(stdout);
-			if( !m_StderrRedirHandle ) m_StderrRedirHandle = NewPipeRedir(stderr);
+			if (!m_StdoutRedirHandle) m_StdoutRedirHandle = std::unique_ptr<PipeRedirectionBase>(NewPipeRedir(stdout));
+			if (!m_StderrRedirHandle) m_StderrRedirHandle = std::unique_ptr<PipeRedirectionBase>(NewPipeRedir(stderr));
 			newHandler = &ConsoleWriter_Window;
 		}
 		else
@@ -1211,3 +1245,19 @@ void Pcsx2App::DisableWindowLogging() const
 	AffinityAssert_AllowFrom_MainUI();
 	Console_SetActiveHandler( (emuLog!=NULL) ? (IConsoleWriter&)ConsoleWriter_File : (IConsoleWriter&)ConsoleWriter_Stdout );
 }
+
+void OSDlog(ConsoleColors color, bool console, const std::string& str)
+{
+	if (GSosdLog)
+		GSosdLog(str.c_str(), wxGetApp().GetProgramLog()->GetRGBA(color));
+
+	if (console)
+		Console.WriteLn(color, str.c_str());
+}
+
+void OSDmonitor(ConsoleColors color, const std::string key, const std::string value) {
+	if(!GSosdMonitor) return;
+
+	GSosdMonitor(wxString(key).utf8_str(), wxString(value).utf8_str(), wxGetApp().GetProgramLog()->GetRGBA(color));
+}
+

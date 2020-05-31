@@ -16,6 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 #include <gdk/gdkx.h>
+#include <gtk/gtk.h>
 #include "PadLinux.h"
 
 Display *GSdsp;
@@ -23,70 +24,65 @@ int autoRepeatMode;
 
 void _PadUpdate(int pad)
 {
-	XEvent evt;
-	KeySym key;
+    XEvent evt;
+    KeySym key;
 
-	// keyboard input
-	while (XPending(GSdsp) > 0)
-	{
-		XNextEvent(GSdsp, &evt);
-		switch (evt.type)
-		{
-			case KeyPress:
-				key = XLookupKeysym((XKeyEvent *) &evt, 0);
+    // keyboard input
+    while (XPending(GSdsp) > 0) {
+        XNextEvent(GSdsp, &evt);
+        switch (evt.type) {
+            case KeyPress:
+                key = XLookupKeysym((XKeyEvent *)&evt, 0);
 
-				// Add code to check if it's one of the keys we configured here on a real pda plugin..
+                // Add code to check if it's one of the keys we configured here on a real pda plugin..
 
-				event.evt = KEYPRESS;
-				event.key = key;
-				break;
+                event.evt = KEYPRESS;
+                event.key = key;
+                break;
 
-			case KeyRelease:
-				key = XLookupKeysym((XKeyEvent *) &evt, 0);
+            case KeyRelease:
+                key = XLookupKeysym((XKeyEvent *)&evt, 0);
 
-				// Add code to check if it's one of the keys we configured here on a real pda plugin..
+                // Add code to check if it's one of the keys we configured here on a real pda plugin..
 
-				event.evt = KEYRELEASE;
-				event.key = key;
-				break;
+                event.evt = KEYRELEASE;
+                event.key = key;
+                break;
 
-			case FocusIn:
-				XAutoRepeatOff(GSdsp);
-				break;
+            case FocusIn:
+                XAutoRepeatOff(GSdsp);
+                break;
 
-			case FocusOut:
-				XAutoRepeatOn(GSdsp);
-				break;
-		}
-	}
+            case FocusOut:
+                XAutoRepeatOn(GSdsp);
+                break;
+        }
+    }
 }
 
-s32  _PADOpen(void *pDsp)
+s32 _PADOpen(void *pDsp)
 {
-	
+
     GtkScrolledWindow *win;
 
-    win = *(GtkScrolledWindow**) pDsp;
+    win = *(GtkScrolledWindow **)pDsp;
 
-	if (GTK_IS_WIDGET(win))
-	{
-	    // Since we have a GtkScrolledWindow, for now we'll grab whatever display
-	    // comes along instead. Later, we can fiddle with this, but I'm not sure the
-	    // best way to get a Display* out of a GtkScrolledWindow. A GtkWindow I might
-	    // be able to manage... --arcum42
+    if (GTK_IS_WIDGET(win)) {
+        // Since we have a GtkScrolledWindow, for now we'll grab whatever display
+        // comes along instead. Later, we can fiddle with this, but I'm not sure the
+        // best way to get a Display* out of a GtkScrolledWindow. A GtkWindow I might
+        // be able to manage... --arcum42
         GSdsp = GDK_DISPLAY_XDISPLAY(gdk_display_get_default());
-	}
-	else
-	{
-        GSdsp = *(Display**)pDsp;
-	}
-	
-	XAutoRepeatOff(GSdsp);
+    } else {
+        GSdsp = *(Display **)pDsp;
+    }
 
-	return 0;
+    XAutoRepeatOff(GSdsp);
+
+    return 0;
 }
 
-void  _PADClose()
+void _PADClose()
 {
-	XAutoRepeatOn(GSdsp);
+    XAutoRepeatOn(GSdsp);
 }

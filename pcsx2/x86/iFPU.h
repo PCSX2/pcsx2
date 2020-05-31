@@ -16,6 +16,9 @@
 #ifndef __IFPU_H__
 #define __IFPU_H__
 
+extern const __aligned16 u32 g_minvals[4];
+extern const __aligned16 u32 g_maxvals[4];
+
 namespace R5900 {
 namespace Dynarec {
 

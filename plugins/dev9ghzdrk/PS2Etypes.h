@@ -17,7 +17,7 @@
 #define __PS2ETYPES_H__
 
 // Basic types
-#if defined(__WIN32__)
+#if defined(_WIN32)
 
 typedef __int8  s8;
 typedef __int16 s16;

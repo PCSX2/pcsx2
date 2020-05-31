@@ -193,7 +193,7 @@ ExpressionOpcodeType getExpressionOpcode(const char* str, int& ReturnLen, Expres
 
 	for (int i = 0; i < EXOP_NUMBER; i++)
 	{
-		if (ExpressionOpcodes[i].sign == true &&
+		if (ExpressionOpcodes[i].sign &&
 			(LastOpcode == EXOP_NUMBER || LastOpcode == EXOP_BRACKETR)) continue;
 
 		int len = ExpressionOpcodes[i].len;
@@ -213,15 +213,10 @@ ExpressionOpcodeType getExpressionOpcode(const char* str, int& ReturnLen, Expres
 
 bool isAlphaNum(char c)
 {
-	if ((c >= '0' && c <= '9') ||
+	return ((c >= '0' && c <= '9') ||
 		(c >= 'A' && c <= 'Z') ||
 		(c >= 'a' && c <= 'z') ||
-		c == '@' || c == '_' || c == '$' || c == '.')
-	{
-		return true;
-	} else {
-		return false;
-	}
+		c == '@' || c == '_' || c == '$' || c == '.');
 }
 
 bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, PostfixExpression& dest)
@@ -256,9 +251,9 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 
 			u64 value;
 			bool isFloat = false;
-			if (parseFloat(subStr,subPos,value) == true)
+			if (parseFloat(subStr,subPos,value))
 				isFloat = true;
-			else if (parseNumber(subStr,16,subPos,value) == false)
+			else if (!parseNumber(subStr,16,subPos,value))
 			{
 				sprintf(expressionError,"Invalid number \"%s\"",subStr);
 				return false;
@@ -275,14 +270,14 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 			subStr[subPos] = 0;
 
 			u64 value;
-			if (funcs->parseReference(subStr,value) == true)
+			if (funcs->parseReference(subStr,value))
 			{
 				dest.push_back(ExpressionPair(EXCOMM_REF,value));
 				lastOpcode = EXOP_NUMBER;
 				continue;
 			}
 
-			if (funcs->parseSymbol(subStr,value) == true)
+			if (funcs->parseSymbol(subStr,value))
 			{
 				dest.push_back(ExpressionPair(EXCOMM_CONST,value));
 				lastOpcode = EXOP_NUMBER;
@@ -340,7 +335,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 				type = EXOP_NUMBER;
 				break;
 			default:
-				if (opcodeStack.empty() == false)
+				if (!opcodeStack.empty())
 				{
 					int CurrentPriority = ExpressionOpcodes[type].Priority;
 					while (!opcodeStack.empty())
@@ -413,8 +408,8 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 	size_t num = 0;
 	u64 opcode;
 	std::vector<u64> valueStack;
-	u64 arg[5];
-	float fArg[5];
+	u64 arg[5] = {0};
+	float fArg[5] = {0};
 	bool useFloat = false;
 
 	while (num < exp.size())
@@ -457,7 +452,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 				}
 
 				u64 val;
-				if(funcs->getMemoryValue(arg[1],arg[0],val,expressionError) == false)
+				if(!funcs->getMemoryValue(arg[1],arg[0],val,expressionError))
 				{
 					return false;
 				}
@@ -466,7 +461,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 			case EXOP_MEM:
 				{
 					u64 val;
-					if (funcs->getMemoryValue(arg[0],4,val,expressionError) == false)
+					if (!funcs->getMemoryValue(arg[0],4,val,expressionError))
 					{
 						return false;
 					}
@@ -598,7 +593,7 @@ bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs,
 bool parseExpression(char* exp, IExpressionFunctions* funcs, u64& dest)
 {
 	PostfixExpression postfix;
-	if (initPostfixExpression(exp,funcs,postfix) == false) return false;
+	if (!initPostfixExpression(exp,funcs,postfix)) return false;
 	return parsePostfixExpression(postfix,funcs,dest);
 }
 

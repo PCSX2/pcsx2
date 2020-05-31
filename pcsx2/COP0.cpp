@@ -16,6 +16,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
+#include "COP0.h"
 
 u32 s_iLastCOP0Cycle = 0;
 u32 s_iLastPERFCycle[2] = { 0, 0 };
@@ -232,8 +233,9 @@ void MapTLB(int i)
 	u32 mask, addr;
 	u32 saddr, eaddr;
 
-	DbgCon.WriteLn("MAP TLB %d: 0x%08X-> [0x%08X 0x%08X] S=0x%08X G=%d ASID=%d Mask=0x%03X EntryLo0 PFN=%x EntryLo0 Cache=%x EntryLo1 PFN=%x EntryLo1 Cache=%x VPN2=%x",
-		i, tlb[i].VPN2, tlb[i].PFN0, tlb[i].PFN1, tlb[i].S, tlb[i].G, tlb[i].ASID, tlb[i].Mask, tlb[i].EntryLo0 >> 6, (tlb[i].EntryLo0 & 0x38) >> 3, tlb[i].EntryLo1 >> 6, (tlb[i].EntryLo1 & 0x38) >> 3, tlb[i].VPN2);
+	COP0_LOG("MAP TLB %d: 0x%08X-> [0x%08X 0x%08X] S=%d G=%d ASID=%d Mask=0x%03X EntryLo0 PFN=%x EntryLo0 Cache=%x EntryLo1 PFN=%x EntryLo1 Cache=%x VPN2=%x",
+		i, tlb[i].VPN2, tlb[i].PFN0, tlb[i].PFN1, tlb[i].S >> 31, tlb[i].G, tlb[i].ASID,
+		tlb[i].Mask, tlb[i].EntryLo0 >> 6, (tlb[i].EntryLo0 & 0x38) >> 3, tlb[i].EntryLo1 >> 6, (tlb[i].EntryLo1 & 0x38) >> 3, tlb[i].VPN2);
 
 	if (tlb[i].S)
 	{
@@ -333,7 +335,7 @@ namespace OpcodeImpl {
 namespace COP0 {
 
 void TLBR() {
-	DevCon.Warning("COP0_TLBR %d:%x,%x,%x,%x\n",
+	COP0_LOG("COP0_TLBR %d:%x,%x,%x,%x",
 			cpuRegs.CP0.n.Index,   cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
 
@@ -350,7 +352,7 @@ void TLBWI() {
 
 	//if (j > 48) return;
 
-DbgCon.Warning("COP0_TLBWI %d:%x,%x,%x,%x\n",
+	COP0_LOG("COP0_TLBWI %d:%x,%x,%x,%x",
 			cpuRegs.CP0.n.Index,    cpuRegs.CP0.n.PageMask, cpuRegs.CP0.n.EntryHi,
 			cpuRegs.CP0.n.EntryLo0, cpuRegs.CP0.n.EntryLo1);
 
@@ -420,28 +422,26 @@ void MFC0()
 		break;
 
 		case 25:
-		    switch(_Imm_ & 0x3F)
-		    {
-			    case 0:		// MFPS  [LSB is clear]
-					cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pccr.val;
-				break;
-
-			    case 1:		// MFPC [LSB is set] - read PCR0
-					COP0_UpdatePCCR();
-                    cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pcr0;
-				break;
-
-			    case 3:		// MFPC [LSB is set] - read PCR1
-					COP0_UpdatePCCR();
-					cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pcr1;
-				break;
-		    }
+			if (0 == (_Imm_ & 1)) // MFPS, register value ignored
+			{
+				cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pccr.val;
+			}
+			else if (0 == (_Imm_ & 2)) // MFPC 0, only LSB of register matters
+			{
+				COP0_UpdatePCCR();
+				cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pcr0;
+			}
+			else // MFPC 1
+			{
+				COP0_UpdatePCCR();
+				cpuRegs.GPR.r[_Rt_].SD[0] = (s32)cpuRegs.PERF.n.pcr1;
+			}
 		    /*Console.WriteLn("MFC0 PCCR = %x PCR0 = %x PCR1 = %x IMM= %x",  params
 		    cpuRegs.PERF.n.pccr, cpuRegs.PERF.n.pcr0, cpuRegs.PERF.n.pcr1, _Imm_ & 0x3F);*/
 		break;
 
 		case 24:
-			Console.WriteLn("MFC0 Breakpoint debug Registers code = %x", cpuRegs.code & 0x3FF);
+			COP0_LOG("MFC0 Breakpoint debug Registers code = %x", cpuRegs.code & 0x3FF);
 		break;
 
 		case 9:
@@ -473,30 +473,30 @@ void MTC0()
 		break;
 
 		case 24:
-			Console.WriteLn("MTC0 Breakpoint debug Registers code = %x", cpuRegs.code & 0x3FF);
+			COP0_LOG("MTC0 Breakpoint debug Registers code = %x", cpuRegs.code & 0x3FF);
 		break;
 
 		case 25:
 			/*if(bExecBIOS == FALSE && _Rd_ == 25) Console.WriteLn("MTC0 PCCR = %x PCR0 = %x PCR1 = %x IMM= %x", params
 				cpuRegs.PERF.n.pccr, cpuRegs.PERF.n.pcr0, cpuRegs.PERF.n.pcr1, _Imm_ & 0x3F);*/
-			switch(_Imm_ & 0x3F)
+			if (0 == (_Imm_ & 1)) // MTPS
 			{
-				case 0:		// MTPS  [LSB is clear]
-					// Updates PCRs and sets the PCCR.
-					COP0_UpdatePCCR();
-					cpuRegs.PERF.n.pccr.val = cpuRegs.GPR.r[_Rt_].UL[0];
-					COP0_DiagnosticPCCR();
-				break;
-
-				case 1:		// MTPC [LSB is set] - set PCR0
-					cpuRegs.PERF.n.pcr0 = cpuRegs.GPR.r[_Rt_].UL[0];
-					s_iLastPERFCycle[0] = cpuRegs.cycle;
-				break;
-
-				case 3:		// MTPC [LSB is set] - set PCR0
-					cpuRegs.PERF.n.pcr1 = cpuRegs.GPR.r[_Rt_].UL[0];
-					s_iLastPERFCycle[1] = cpuRegs.cycle;
-				break;
+				if (0 != (_Imm_ & 0x3E)) // only effective when the register is 0
+					break;
+				// Updates PCRs and sets the PCCR.
+				COP0_UpdatePCCR();
+				cpuRegs.PERF.n.pccr.val = cpuRegs.GPR.r[_Rt_].UL[0];
+				COP0_DiagnosticPCCR();
+			}
+			else if (0 == (_Imm_ & 2)) // MTPC 0, only LSB of register matters
+			{
+				cpuRegs.PERF.n.pcr0 = cpuRegs.GPR.r[_Rt_].UL[0];
+				s_iLastPERFCycle[0] = cpuRegs.cycle;
+			}
+			else // MTPC 1
+			{
+				cpuRegs.PERF.n.pcr1 = cpuRegs.GPR.r[_Rt_].UL[0];
+				s_iLastPERFCycle[1] = cpuRegs.cycle;
 			}
 		break;
 
@@ -507,7 +507,7 @@ void MTC0()
 }
 
 int CPCOND0() {
-	return ((dmacRegs.stat.CIS | ~dmacRegs.pcr.CPC) == 0x3ff);
+	return (((dmacRegs.stat.CIS | ~dmacRegs.pcr.CPC) & 0x3FF) == 0x3ff);
 }
 
 //#define CPCOND0	1
@@ -536,6 +536,24 @@ void BC0TL() {
 }
 
 void ERET() {
+#ifdef ENABLE_VTUNE
+	// Allow to stop vtune in a predictable way to compare runs
+	// Of course, the limit will depend on the game.
+	const u32 million = 1000 * 1000;
+	static u32 vtune = 0;
+	vtune++;
+
+	// quick_exit vs exit: quick_exit won't call static storage destructor (OS will manage). It helps
+	// avoiding the race condition between threads destruction.
+	if (vtune > 30 * million) {
+		Console.WriteLn("VTUNE: quick_exit");
+		std::quick_exit(EXIT_SUCCESS);
+	} else if (!(vtune % million)) {
+		Console.WriteLn("VTUNE: ERET was called %uM times", vtune/million);
+	}
+
+#endif
+
 	if (cpuRegs.CP0.n.Status.b.ERL) {
 		cpuRegs.pc = cpuRegs.CP0.n.ErrorEPC;
 		cpuRegs.CP0.n.Status.b.ERL = 0;

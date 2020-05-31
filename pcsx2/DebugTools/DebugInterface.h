@@ -58,6 +58,7 @@ public:
 	bool isCpuPaused();
 	void pauseCpu();
 	void resumeCpu();
+	char *stringFromPointer(u32 p);
 };
 
 class R5900DebugInterface: public DebugInterface

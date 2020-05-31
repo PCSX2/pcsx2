@@ -20,6 +20,7 @@
 #define IOP_EIO		5
 #define IOP_ENOMEM	12
 #define IOP_EACCES	13
+#define IOP_ENODEV	19
 #define IOP_EISDIR	21
 #define IOP_EMFILE	24
 #define IOP_EROFS	30
@@ -38,7 +39,10 @@
 
 class IOManFile {
 public:
-	// int open(IOManFile **file, char *name, s32 flags, u16 mode);
+	static int open(IOManFile **file, const std::string &path, s32 flags, u16 mode)
+	{
+		return -IOP_ENODEV;
+	}
 
 	virtual void close() = 0;
 
@@ -59,12 +63,13 @@ typedef void (*irxDEBUG)();
 
 namespace R3000A
 {
-	const char* irxImportLibname(u32 entrypc);
-	const char* irxImportFuncname(const char libname[8], u16 index);
-	irxHLE irxImportHLE(const char libname[8], u16 index);
-	irxDEBUG irxImportDebug(const char libname[8], u16 index);
-	void __fastcall irxImportLog(const char libname[8], u16 index, const char *funcname);
-	int __fastcall irxImportExec(const char libname[8], u16 index);
+	u32 irxImportTableAddr(u32 entrypc);
+	const char* irxImportFuncname(const std::string &libname, u16 index);
+	irxHLE irxImportHLE(const std::string &libnam, u16 index);
+	irxDEBUG irxImportDebug(const std::string & libname, u16 index);
+	void irxImportLog(const std::string &libnameptr, u16 index, const char *funcname);
+	void __fastcall irxImportLog_rec(u32 import_table, u16 index, const char *funcname);
+	int irxImportExec(u32 import_table, u16 index);
 
 	namespace ioman
 	{

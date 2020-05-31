@@ -100,7 +100,7 @@ protected:
 
 public:
 	VtlbMemoryReserve( const wxString& name, size_t size );
-	virtual ~VtlbMemoryReserve() throw()
+	virtual ~VtlbMemoryReserve()
 	{
 		m_reserve.Release();
 	}
@@ -111,8 +111,7 @@ public:
 	virtual void Commit();
 	virtual void Reset();
 	virtual void Decommit();
-	virtual void SetBaseAddr( uptr newaddr );
-	
+
 	bool IsCommitted() const;
 };
 
@@ -125,7 +124,7 @@ class eeMemoryReserve : public VtlbMemoryReserve
 
 public:
 	eeMemoryReserve();
-	virtual ~eeMemoryReserve() throw()
+	virtual ~eeMemoryReserve()
 	{
 		Release();
 	}
@@ -146,7 +145,7 @@ class iopMemoryReserve : public VtlbMemoryReserve
 
 public:
 	iopMemoryReserve();
-	virtual ~iopMemoryReserve() throw()
+	virtual ~iopMemoryReserve()
 	{
 		Release();
 	}
@@ -167,7 +166,7 @@ class vuMemoryReserve : public VtlbMemoryReserve
 
 public:
 	vuMemoryReserve();
-	virtual ~vuMemoryReserve() throw()
+	virtual ~vuMemoryReserve()
 	{
 		Release();
 	}
@@ -208,6 +207,7 @@ namespace vtlb_private
 		MapData()
 		{
 			vmap = NULL;
+			ppmap = NULL;
 		}
 	};
 
@@ -225,6 +225,6 @@ struct GoemonTlb {
 	u32 physical_add;
 	u32 unk3; // likely the size
 	u32 high_add;
-	u32 unk4;
+	u32 key; // uniq number attached to an allocation
 	u32 unk5;
 };

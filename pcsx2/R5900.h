@@ -26,6 +26,7 @@ class BaseR5900Exception;
 
 extern bool g_SkipBiosHack;
 extern bool g_GameStarted;
+extern bool g_GameLoading;
 
 namespace Exception
 {
@@ -36,6 +37,18 @@ namespace Exception
 	{
 	public:
 		explicit ExitCpuExecute() { }
+	};
+
+	class CancelInstruction
+	{
+	public:
+		explicit CancelInstruction() { }
+	};
+
+	class FailedToAllocateRegister
+	{
+	public:
+		explicit FailedToAllocateRegister() { }
 	};
 }
 
@@ -166,7 +179,7 @@ union GPR_reg64 {
 	u64 UD[1];      //64 bits
 	s64 SD[1];
 	u32 UL[2];
-	s32 SL[3];
+	s32 SL[2];
 	u16 US[4];
 	s16 SS[4];
 	u8  UC[8];
@@ -260,9 +273,11 @@ const u32 EEKERNEL_START	= 0;
 const u32 EENULL_START		= 0x81FC0;
 const u32 EELOAD_START		= 0x82000;
 const u32 EELOAD_SIZE		= 0x20000; // overestimate for searching
+extern u32 g_eeloadMain, g_eeloadExec;
 
 extern void __fastcall eeGameStarting();
-extern void __fastcall eeloadReplaceOSDSYS();
+extern void __fastcall eeloadHook();
+extern void __fastcall eeloadHook2();
 
 // --------------------------------------------------------------------------------------
 //  R5900cpu
@@ -424,6 +439,7 @@ extern void cpuTlbMissW(u32 addr, u32 bd);
 extern void cpuTestHwInts();
 extern void cpuClearInt(uint n);
 extern void __fastcall GoemonPreloadTlb();
+extern void __fastcall GoemonUnloadTlb(u32 key);
 
 extern void cpuSetNextEvent( u32 startCycle, s32 delta );
 extern void cpuSetNextEventDelta( s32 delta );
@@ -435,6 +451,10 @@ extern void _cpuEventTest_Shared();		// for internal use by the Dynarecs and Int
 extern void cpuTestINTCInts();
 extern void cpuTestDMACInts();
 extern void cpuTestTIMRInts();
+
+// breakpoint code shared between interpreter and recompiler
+int isMemcheckNeeded(u32 pc);
+int isBreakpointNeeded(u32 addr);
 
 ////////////////////////////////////////////////////////////////////
 // Exception Codes

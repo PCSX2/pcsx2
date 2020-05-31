@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "App.h"
 #include "AppCoreThread.h"
 #include "RecentIsoList.h"
 #include "IsoDropTarget.h"
@@ -34,17 +35,19 @@ RecentIsoManager::RecentIsoManager( wxMenu* menu, int firstIdForMenuItems_or_wxI
 	, m_firstIdForMenuItems_or_wxID_ANY ( firstIdForMenuItems_or_wxID_ANY )
 {
 	m_cursel	= 0;
-	m_Separator	= NULL;
+	m_Separator	= nullptr;
+	m_ClearSeparator = nullptr;
+	m_Clear = nullptr;
 
 	IniLoader loader;
 	LoadListFrom(loader);
 
-	Connect( wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(RecentIsoManager::OnChangedSelection) );
+	Bind(wxEVT_MENU, &RecentIsoManager::OnChangedSelection, this);
 }
 
-RecentIsoManager::~RecentIsoManager() throw()
+RecentIsoManager::~RecentIsoManager()
 {
-	Disconnect( wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(RecentIsoManager::OnChangedSelection) );
+	Unbind(wxEVT_MENU, &RecentIsoManager::OnChangedSelection, this);
 }
 
 void RecentIsoManager::OnChangedSelection( wxCommandEvent& evt )
@@ -55,7 +58,7 @@ void RecentIsoManager::OnChangedSelection( wxCommandEvent& evt )
 	{
 		if( (m_Items[i].ItemPtr != NULL) && (m_Items[i].ItemPtr->GetId() == evt.GetId()) ) break;
 	}
-	
+
 	if( i >= m_Items.size() )
 	{
 		evt.Skip();
@@ -65,7 +68,7 @@ void RecentIsoManager::OnChangedSelection( wxCommandEvent& evt )
 	// Actually there is no change on the selection so the event can be skip
 	// Note: It also avoids a deadlock which appears when the core thread is already paused
 	// and ScopedCoreThreadPopup try to stop the thread (GSOpen1 code path)
-	if( (g_Conf->CdvdSource == CDVDsrc_Iso) && (m_Items[i].Filename == g_Conf->CurrentIso) )
+	if( (g_Conf->CdvdSource == CDVD_SourceType::Iso) && (m_Items[i].Filename == g_Conf->CurrentIso) )
 	{
 		evt.Skip();
 		return;
@@ -76,13 +79,7 @@ void RecentIsoManager::OnChangedSelection( wxCommandEvent& evt )
 
 	ScopedCoreThreadPopup stopped_core;
 
-#ifdef __linux__
-	// Likely not what was intended, but it compiles for the moment...
-	SwapOrReset_Iso( NULL, stopped_core, m_Items[i].Filename, GetMsg_IsoImageChanged());
-#else
-	// Getting a window from the menu?
 	SwapOrReset_Iso( m_Menu->GetWindow(), stopped_core, m_Items[i].Filename, GetMsg_IsoImageChanged());
-#endif
 
 	stopped_core.AllowResume();
 }
@@ -100,10 +97,22 @@ void RecentIsoManager::RemoveAllFromMenu()
 		curitem.ItemPtr = NULL;
 	}
 	
-	if( m_Separator != NULL )
+	if( m_Separator != nullptr )
 	{
 		m_Menu->Destroy( m_Separator );
-		m_Separator = NULL;
+		m_Separator = nullptr;
+	}
+
+	if ( m_ClearSeparator != nullptr )
+	{
+		m_Menu->Destroy( m_ClearSeparator );
+		m_ClearSeparator = nullptr;
+	}
+
+	if ( m_Clear != nullptr )
+	{
+		m_Menu->Destroy( m_Clear );
+		m_Clear = nullptr;
 	}
 }
 
@@ -120,24 +129,14 @@ void RecentIsoManager::Repopulate()
 	if( cnt <= 0 ) return;
 
 	m_Separator = m_Menu->AppendSeparator();
-	
-	// From arcum's comment on r5141
-	// What was happening is that when all the radio button menu items in a group are deleted, 
-	// wxwidgets deletes the group, but when you start adding radio menu items again, 
-	// it trys to add them to a group that doesn't exist. Since the group doesn't exist, 
-	// it starts a new group, but it also spews a couple warnings about it in Linux.
-#ifdef __linux__
-	// FIXME is it still useful on v3
-#if wxMAJOR_VERSION >= 3
-	m_Menu->Remove( m_Menu->Append( -1, "dummy" ) );
-#else
-	m_Menu->Remove( m_Menu->Append( -1 ) );
-#endif
-#endif
+
 	//Note: the internal recent iso list (m_Items) has the most recent item last (also at the INI file)
 	//  but the menu is composed in reverse order such that the most recent item appears at the top.
 	for( int i=cnt-1; i>=0; --i )
 		InsertIntoMenu( i );
+
+	m_ClearSeparator = m_Menu->AppendSeparator();
+	m_Clear = m_Menu->Append(MenuIdentifiers::MenuId_IsoClear, _("Clear ISO list"));
 }
 
 void RecentIsoManager::Add( const wxString& src )
@@ -184,19 +183,27 @@ void RecentIsoManager::InsertIntoMenu( int id )
 {
 	if( m_Menu == NULL ) return;
 	RecentItem& curitem( m_Items[id] );
-	
+
 	int wxid=wxID_ANY;
 	if (this->m_firstIdForMenuItems_or_wxID_ANY != wxID_ANY)
 		wxid = this->m_firstIdForMenuItems_or_wxID_ANY + id;
 
-	curitem.ItemPtr = m_Menu->AppendRadioItem( wxid, Path::GetFilename(curitem.Filename), curitem.Filename );
-	bool exists = wxFileExists( curitem.Filename );
+	wxString filename = Path::GetFilename(curitem.Filename);
+	// & is used to specify the keyboard shortcut key in menu labels. && must
+	// be used to display an &.
+	filename.Replace("&", "&&", true);
 
-	if( m_cursel == id && exists )
-		curitem.ItemPtr->Check();
+	curitem.ItemPtr = m_Menu->AppendRadioItem( wxid, filename, curitem.Filename );
+	curitem.ItemPtr->Enable(wxFileExists(curitem.Filename) && !g_Conf->AskOnBoot);
+}
 
-	if ( !exists )
-		curitem.ItemPtr->Enable( false );
+void RecentIsoManager::EnableItems(bool display)
+{
+	for (const auto& list : m_Items)
+	{
+		// Files which don't exist still need to be grayed out.
+		list.ItemPtr->Enable(display && wxFileExists(list.Filename));
+	}
 }
 
 void RecentIsoManager::LoadListFrom( IniInterface& ini )
@@ -245,7 +252,7 @@ void RecentIsoManager::AppStatusEvent_OnUiSettingsLoadSave( const AppSettingsEve
 			wxFileName item_filename = wxFileName(m_Items[i].Filename);
 			ini.Entry( pxsFmt( L"Filename%02d", i ),  item_filename, wxFileName(L""), IsPortable());
 		}
-		
+
 		ini.GetConfig().SetRecordDefaults( true );
 	}
 	else

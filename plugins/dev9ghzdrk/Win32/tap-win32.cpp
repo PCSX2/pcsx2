@@ -381,6 +381,10 @@ bool TAPAdapter::blocks()
 {
 	return true;	//we use blocking io
 }
+bool TAPAdapter::isInitialised()
+{
+	return (htap != NULL);
+}
 u8 broadcast_adddrrrr[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 //gets a packet.rv :true success
 bool TAPAdapter::recv(NetPacket* pkt)

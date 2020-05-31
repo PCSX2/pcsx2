@@ -15,7 +15,6 @@
 
 #pragma once
 
-#define USE_OLD_GIF 0
 #define COPY_GS_PACKET_TO_MTGS 0
 #define PRINT_GIF_PACKET 0
 
@@ -88,10 +87,35 @@ enum GIF_REG {
 
 enum gifstate_t {
 	GIF_STATE_READY = 0,
-	GIF_STATE_STALL = 1,
-	GIF_STATE_DONE  = 2,
 	GIF_STATE_EMPTY = 0x10
 };
+
+struct gifStruct {
+	int  gifstate;
+	bool gspath3done;
+
+	u32 gscycles;
+	u32 prevcycles;
+	u32 mfifocycles;
+	u32 gifqwc;
+	bool gifmfifoirq;
+};
+
+extern __aligned16 gifStruct gif;
+
+struct GIF_Fifo
+{
+	unsigned int data[64]; //16 QW FIFO
+	unsigned int readdata[64]; //16 QW Inline for reading
+	int readpos, writepos;
+
+	int write(u32* pMem, int size);
+	int read(bool calledFromDMA = false);
+
+	void init();
+};
+
+extern GIF_Fifo gif_fifo;
 
 union tGIF_CTRL
 {
@@ -287,5 +311,6 @@ extern void gifInterrupt();
 extern int _GIFchain();
 extern void GIFdma();
 extern void dmaGIF();
-extern void mfifoGIFtransfer(int qwc);
+extern void mfifoGIFtransfer();
 extern void gifMFIFOInterrupt();
+extern void clearFIFOstuff(bool full);

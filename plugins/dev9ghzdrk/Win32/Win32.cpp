@@ -18,12 +18,12 @@
 #include <windows.h>
 #include <windowsx.h>
 
-#include "Config.h"
+#include "..\Config.h"
 #include "resource.h"
 #include "..\DEV9.h"
 #include "pcap.h"
-#include "pcap_io.h"
-#include "net.h"
+#include "..\pcap_io.h"
+#include "..\net.h"
 #include "tap.h"
 
 extern HINSTANCE hInst;
@@ -37,7 +37,7 @@ void SysMessage(char *fmt, ...) {
 	va_start(list,fmt);
 	vsprintf(tmp,fmt,list);
 	va_end(list);
-	MessageBox(0, tmp, "Dev9linuz Msg", 0);
+	MessageBox(0, tmp, "Dev9 Msg", 0);
 }
 
 void OnInitDialog(HWND hW) {
@@ -48,22 +48,18 @@ void OnInitDialog(HWND hW) {
 
 	ComboBox_AddString(GetDlgItem(hW, IDC_BAYTYPE), "Expansion");
 	ComboBox_AddString(GetDlgItem(hW, IDC_BAYTYPE), "PC Card");
-	for (int j=0;j<2;j++)
-	{
 	for (int i=0; i<pcap_io_get_dev_num(); i++) {
-		dev = pcap_io_get_dev_desc(i,j);
+		dev = pcap_io_get_dev_desc(i);
 		int itm=ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), dev);
-		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV),itm,strdup(pcap_io_get_dev_name(i,j)));
-		if (strcmp(pcap_io_get_dev_name(i,j), config.Eth) == 0) {
+		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV),itm,_strdup(pcap_io_get_dev_name(i)));
+		if (strcmp(pcap_io_get_dev_name(i), config.Eth) == 0) {
 			ComboBox_SetCurSel(GetDlgItem(hW, IDC_ETHDEV), itm);
 		}
 	}
-	}
 	vector<tap_adapter> * al=GetTapAdapters();
 	for (size_t i=0; i<al->size(); i++) {
-		
 		int itm=ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), al[0][i].name.c_str());
-		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV),itm,strdup( al[0][i].guid.c_str()));
+		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV),itm,_strdup( al[0][i].guid.c_str()));
 		if (strcmp(al[0][i].guid.c_str(), config.Eth) == 0) {
 			ComboBox_SetCurSel(GetDlgItem(hW, IDC_ETHDEV), itm);
 		}
@@ -77,8 +73,30 @@ void OnInitDialog(HWND hW) {
 
 void OnOk(HWND hW) {
 	int i = ComboBox_GetCurSel(GetDlgItem(hW, IDC_ETHDEV));
-	char* ptr=(char*)ComboBox_GetItemData(GetDlgItem(hW, IDC_ETHDEV),i);
-	strcpy(config.Eth, ptr);
+	if (i == -1)
+	{
+		//adapter not selected
+		if ( Button_GetCheck(GetDlgItem(hW, IDC_ETHENABLED)))
+		{
+			//Trying to use an ethernet without
+			//selected adapter, we can't have that
+			SysMessage("Please select an ethernet adapter");
+			return;
+		}
+		else
+		{
+			//user not planning on using
+			//ethernet anyway
+			strcpy(config.Eth, ETH_DEF);
+		}
+	}
+	else
+	{
+		//adapter is selected
+		char* ptr = (char*)ComboBox_GetItemData(GetDlgItem(hW, IDC_ETHDEV), i);
+		strcpy(config.Eth, ptr);
+	}
+
 	Edit_GetText(GetDlgItem(hW, IDC_HDDFILE), config.Hdd, 256);
 
 	config.ethEnable = Button_GetCheck(GetDlgItem(hW, IDC_ETHENABLED));
@@ -90,7 +108,7 @@ void OnOk(HWND hW) {
 }
 
 BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	
+
 	switch(uMsg) {
 		case WM_INITDIALOG:
 			OnInitDialog(hW);
@@ -124,23 +142,25 @@ BOOL CALLBACK AboutDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	return FALSE;
 }
 
-void CALLBACK DEV9configure() {
+EXPORT_C_(void)
+DEV9configure() {
     DialogBox(hInst,
               MAKEINTRESOURCE(IDD_CONFIG),
-              GetActiveWindow(),  
-             (DLGPROC)ConfigureDlgProc); 
+              GetActiveWindow(),
+             (DLGPROC)ConfigureDlgProc);
 		//SysMessage("Nothing to Configure");
 }
 
-void CALLBACK DEV9about() {
+EXPORT_C_(void)
+DEV9about() {
     DialogBox(hInst,
               MAKEINTRESOURCE(IDD_ABOUT),
-              GetActiveWindow(),  
+              GetActiveWindow(),
               (DLGPROC)AboutDlgProc);
 }
 
 BOOL APIENTRY DllMain(HANDLE hModule,                  // DLL INIT
-                      DWORD  dwReason, 
+                      DWORD  dwReason,
                       LPVOID lpReserved) {
 	hInst = (HINSTANCE)hModule;
 	return TRUE;                                          // very quick :)
@@ -153,18 +173,17 @@ UINT DEV9ThreadProc() {
 }*/
 NetAdapter* GetNetAdapter()
 {
-	if(config.Eth[0]=='p')
+	NetAdapter* na;
+	na = (config.Eth[0]=='t') ? static_cast<NetAdapter*>(new TAPAdapter()) : static_cast<NetAdapter*>(new PCAPAdapter());
+
+	if (!na->isInitialised())
 	{
-		return new PCAPAdapter();
-	}
-	else if (config.Eth[0]=='t')
-	{
-		return new TAPAdapter();
-	}
-	else
+		delete na;
 		return 0;
+	}
+	return na;
 }
-s32  _DEV9open() 
+s32  _DEV9open()
 {
 	//handleDEV9Thread = CreateThread (NULL, 0, (LPTHREAD_START_ROUTINE) DEV9ThreadProc, &dwThrdParam, CREATE_SUSPENDED, &dwThreadId);
 	//SetThreadPriority(handleDEV9Thread,THREAD_PRIORITY_HIGHEST);
@@ -173,6 +192,7 @@ s32  _DEV9open()
 	if (!na)
 	{
 		emu_printf("Failed to GetNetAdapter()\n");
+		config.ethEnable = false;
 	}
 	else
 	{

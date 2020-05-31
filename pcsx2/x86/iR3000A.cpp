@@ -33,9 +33,9 @@
 #include "IopCommon.h"
 #include "iCore.h"
 
-#include "NakedAsm.h"
 #include "AppConfig.h"
 
+#include "Utilities/Perf.h"
 
 using namespace x86Emitter;
 
@@ -48,7 +48,7 @@ u32 s_psxrecblocks[] = {0};
 uptr psxRecLUT[0x10000];
 uptr psxhwLUT[0x10000];
 
-#define HWADDR(mem) (psxhwLUT[mem >> 16] + (mem))
+static __fi u32 HWADDR(u32 mem) { return psxhwLUT[mem >> 16] + mem; }
 
 static RecompiledCodeReserve* recMem = NULL;
 
@@ -100,8 +100,6 @@ static u32 psxdump = 0;
 
 static void __fastcall iopRecRecompile( const u32 startpc );
 
-static u32 s_store_ebp, s_store_esp;
-
 // Recompiled code buffer for EE recompiler dispatchers!
 static u8 __pagealigned iopRecDispatchers[__pagesize];
 
@@ -119,50 +117,6 @@ static void recEventTest()
 	_cpuEventTest_Shared();
 }
 
-// parameters:
-//   espORebp - 0 for ESP, or 1 for EBP.
-//   regval   - current value of the register at the time the fault was detected (predates the
-//      stackframe setup code in this function)
-static void __fastcall StackFrameCheckFailed( int espORebp, int regval )
-{
-	pxFailDev( pxsFmt( L"(R3000A Recompiler Stackframe) Sanity check failed on %ls\n\tCurrent=%d; Saved=%d",
-		(espORebp==0) ? L"ESP" : L"EBP", regval, (espORebp==0) ? s_store_esp : s_store_ebp )
-	);
-
-	// Note: The recompiler will attempt to recover ESP and EBP after returning from this function,
-	// so typically selecting Continue/Ignore/Cancel for this assertion should allow PCSX2 to con-
-	// tinue to run with some degree of stability.
-}
-
-static void _DynGen_StackFrameCheck()
-{
-	if( !IsDevBuild ) return;
-
-	// --------- EBP Here -----------
-
-	xCMP( ebp, ptr[&s_store_ebp] );
-	xForwardJE8 skipassert_ebp;
-
-	xMOV( ecx, 1 );					// 1 specifies EBP
-	xMOV( edx, ebp );
-	xCALL( StackFrameCheckFailed );
-	xMOV( ebp, ptr[&s_store_ebp] );		// half-hearted frame recovery attempt!
-
-	skipassert_ebp.SetTarget();
-
-	// --------- ESP There -----------
-
-	xCMP( esp, ptr[&s_store_esp] );
-	xForwardJE8 skipassert_esp;
-
-	xXOR( ecx, ecx );				// 0 specifies ESP
-	xMOV( edx, esp );
-	xCALL( StackFrameCheckFailed );
-	xMOV( esp, ptr[&s_store_esp] );		// half-hearted frame recovery attempt!
-
-	skipassert_esp.SetTarget();
-}
-
 // The address for all cleared blocks.  It recompiles the current pc and then
 // dispatches to the recompiled block address.
 static DynGenFunc* _DynGen_JITCompile()
@@ -170,10 +124,8 @@ static DynGenFunc* _DynGen_JITCompile()
 	pxAssertMsg( iopDispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
 
 	u8* retval = xGetPtr();
-	_DynGen_StackFrameCheck();
 
-	xMOV( ecx, ptr[&psxRegs.pc] );
-	xCALL( iopRecRecompile );
+	xFastCall((void*)iopRecRecompile, ptr[&psxRegs.pc] );
 
 	xMOV( eax, ptr[&psxRegs.pc] );
 	xMOV( ebx, eax );
@@ -187,7 +139,7 @@ static DynGenFunc* _DynGen_JITCompile()
 static DynGenFunc* _DynGen_JITCompileInBlock()
 {
 	u8* retval = xGetPtr();
-	xJMP( iopJITCompile );
+	xJMP( (void*)iopJITCompile );
 	return (DynGenFunc*)retval;
 }
 
@@ -195,7 +147,6 @@ static DynGenFunc* _DynGen_JITCompileInBlock()
 static DynGenFunc* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr();
-	_DynGen_StackFrameCheck();
 
 	xMOV( eax, ptr[&psxRegs.pc] );
 	xMOV( ebx, eax );
@@ -209,128 +160,25 @@ static DynGenFunc* _DynGen_DispatcherReg()
 // --------------------------------------------------------------------------------------
 //  EnterRecompiledCode  - dynamic compilation stub!
 // --------------------------------------------------------------------------------------
-
-// In Release Builds this literally generates the following code:
-//   push edi
-//   push esi
-//   push ebx
-//   jmp DispatcherReg
-//   pop ebx
-//   pop esi
-//   pop edi
-//
-// See notes on why this works in both GCC (aligned stack!) and other compilers (not-so-
-// aligned stack!).  In debug/dev builds the code gen is more complicated, as it constructs
-// ebp stackframe mess, which allows for a complete backtrace from debug breakpoints (yay).
-//
-// Also, if you set PCSX2_IOP_FORCED_ALIGN_STACK to 1, the codegen for MSVC becomes slightly
-// more complicated since it has to perform a full stack alignment on entry.
-//
-
-#if defined(__GNUG__) || defined(__DARWIN__)
-#	define PCSX2_ASSUME_ALIGNED_STACK		1
-#else
-#	define PCSX2_ASSUME_ALIGNED_STACK		0
-#endif
-
-// Set to 0 for a speedup in release builds.
-// [doesn't apply to GCC/Mac, which must always align]
-#define PCSX2_IOP_FORCED_ALIGN_STACK		0 //1
-
-
-// For overriding stackframe generation options in Debug builds (possibly useful for troubleshooting)
-// Typically this value should be the same as IsDevBuild.
-static const bool GenerateStackFrame = IsDevBuild;
-
 static DynGenFunc* _DynGen_EnterRecompiledCode()
 {
-	u8* retval = xGetPtr();
-
-	bool allocatedStack = GenerateStackFrame || PCSX2_IOP_FORCED_ALIGN_STACK;
-
 	// Optimization: The IOP never uses stack-based parameter invocation, so we can avoid
 	// allocating any room on the stack for it (which is important since the IOP's entry
 	// code gets invoked quite a lot).
 
-	if( allocatedStack )
-	{
-		xPUSH( ebp );
-		xMOV( ebp, esp );
-		xAND( esp, -0x10 );
+	u8* retval = xGetPtr();
 
-		xSUB( esp, 0x20 );
+	{ // Properly scope the frame prologue/epilogue
+#ifdef ENABLE_VTUNE
+		xScopedStackFrame frame(true);
+#else
+		xScopedStackFrame frame(IsDevBuild);
+#endif
 
-		xMOV( ptr[ebp-12], edi );
-		xMOV( ptr[ebp-8], esi );
-		xMOV( ptr[ebp-4], ebx );
-	}
-	else
-	{
-		// GCC Compiler:
-		//   The frame pointer coming in from the EE's event test can be safely assumed to be
-		//   aligned, since GCC always aligns stackframes.  While handy in x86-64, where CALL + PUSH EBP
-		//   results in a neatly realigned stack on entry to every function, unfortunately in x86-32
-		//   this is usually worthless because CALL+PUSH leaves us 8 byte aligned instead (fail).  So
-		//   we have to do the usual set of stackframe alignments and simulated callstack mess
-		//   *regardless*.
+		xJMP((void*)iopDispatcherReg);
 
-		// MSVC/Intel compilers:
-		//   The PCSX2_IOP_FORCED_ALIGN_STACK setting is 0, so we don't care.  Just push regs like
-		//   the good old days!  (stack alignment will be indeterminate)
-
-		xPUSH( edi );
-		xPUSH( esi );
-		xPUSH( ebx );
-
-		allocatedStack = false;
-	}
-
-	uptr* imm = NULL;
-	if( allocatedStack )
-	{
-		if( GenerateStackFrame )
-		{
-			// Simulate a CALL function by pushing the call address and EBP onto the stack.
-			// This retains proper stacktrace and stack unwinding (handy in devbuilds!)
-
-			xMOV( ptr32[esp+0x0c], 0xffeeff );
-			imm = (uptr*)(xGetPtr()-4);
-
-			// This part simulates the "normal" stackframe prep of "push ebp, mov ebp, esp"
-			xMOV( ptr32[esp+0x08], ebp );
-			xLEA( ebp, ptr32[esp+0x08] );
-		}
-	}
-
-	if( IsDevBuild )
-	{
-		xMOV( ptr[&s_store_esp], esp );
-		xMOV( ptr[&s_store_ebp], ebp );
-	}
-
-	xJMP( iopDispatcherReg );
-	if( imm != NULL )
-		*imm = (uptr)xGetPtr();
-
-	// ----------------------
-	// ---->  Cleanup!  ---->
-
-	iopExitRecompiledCode = (DynGenFunc*)xGetPtr();
-
-	if( allocatedStack )
-	{
-		// pop the nested "simulated call" stackframe, if needed:
-		if( GenerateStackFrame ) xLEAVE();
-		xMOV( edi, ptr[ebp-12] );
-		xMOV( esi, ptr[ebp-8] );
-		xMOV( ebx, ptr[ebp-4] );
-		xLEAVE();
-	}
-	else
-	{
-		xPOP( ebx );
-		xPOP( esi );
-		xPOP( edi );
+		// Save an exit point
+		iopExitRecompiledCode = (DynGenFunc*)xGetPtr();
 	}
 
 	xRET();
@@ -344,14 +192,14 @@ static void _DynGen_Dispatchers()
 	HostSys::MemProtectStatic( iopRecDispatchers, PageAccess_ReadWrite() );
 
 	// clear the buffer to 0xcc (easier debugging).
-	memset_8<0xcc,__pagesize>( iopRecDispatchers );
+	memset( iopRecDispatchers, 0xcc, __pagesize);
 
 	xSetPtr( iopRecDispatchers );
 
 	// Place the EventTest and DispatcherReg stuff at the top, because they get called the
 	// most and stand to benefit from strong alignment and direct referencing.
 	iopDispatcherEvent = (DynGenFunc*)xGetPtr();
-	xCALL( recEventTest );
+	xFastCall((void*)recEventTest );
 	iopDispatcherReg	= _DynGen_DispatcherReg();
 
 	iopJITCompile			= _DynGen_JITCompile();
@@ -361,6 +209,8 @@ static void _DynGen_Dispatchers()
 	HostSys::MemProtectStatic( iopRecDispatchers, PageAccess_ExecOnly() );
 
 	recBlocks.SetJITCompile( iopJITCompile );
+
+	Perf::any.map((uptr)&iopRecDispatchers, 4096, "IOP Dispatcher");
 }
 
 ////////////////////////////////////////////////////
@@ -380,9 +230,11 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 	wxString filename( Path::Combine( g_Conf->Folders.Logs, wxsFormat( L"psxdump%.8X.txt", startpc ) ) );
 	AsciiFile f( filename, L"w" );
 
-	/*for ( i = startpc; i < s_nEndBlock; i += 4 ) {
-		f.Printf("%s\n", disR3000Fasm( iopMemRead32( i ), i ) );
-	}*/
+	f.Printf("Dump PSX register data: 0x%x\n\n", (uptr)&psxRegs);
+
+	for ( i = startpc; i < s_nEndBlock; i += 4 ) {
+		f.Printf("%s\n", disR3000AF( iopMemRead32( i ), i ) );
+	}
 
 	// write the instruction info
 	f.Printf("\n\nlive0 - %x, lastuse - %x used - %x\n", EEINST_LIVE0, EEINST_LASTUSE, EEINST_USED);
@@ -421,21 +273,20 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 		}
 		f.Printf("\n");
 	}
+	f.Close();
 
 #ifdef __linux__
-	char command[256];
 	// dump the asm
 	{
 		AsciiFile f2( L"mydump1", L"w" );
 		f2.Write( ptr, (uptr)x86Ptr - (uptr)ptr );
 	}
-	wxCharBuffer buf( filename.ToUTF8() );
-	const char* filenamea = buf.data();
-	sprintf( command, "objdump -D --target=binary --architecture=i386 -M intel mydump1 | cat %s - > tempdump", filenamea );
-	system( command );
-    sprintf( command, "mv tempdump %s", filenamea );
-    system( command );
-    //f = fopen( filename.c_str(), "a+" );
+
+	int status = std::system( wxsFormat( L"objdump -D -b binary -mi386 -M intel --no-show-raw-insn %s >> %s; rm %s",
+				"mydump1", WX_STR(filename), "mydump1").mb_str() );
+
+	if (!WIFEXITED(status))
+		Console.Error("IOP dump didn't terminate normally");
 #endif
 }
 
@@ -485,7 +336,7 @@ int _psxFlushUnusedConstReg()
 			!_recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-psxpc)/4, XMMTYPE_GPRREG, i) ) {
 
 			// check if will be written in the future
-			MOV32ItoM((uptr)&psxRegs.GPR.r[i], g_psxConstRegs[i]);
+			xMOV(ptr32[&psxRegs.GPR.r[i]], g_psxConstRegs[i]);
 			g_psxFlushedConstReg |= 1<<i;
 			return 1;
 		}
@@ -502,7 +353,7 @@ void _psxFlushCachedRegs()
 void _psxFlushConstReg(int reg)
 {
 	if( PSX_IS_CONST1( reg ) && !(g_psxFlushedConstReg&(1<<reg)) ) {
-		MOV32ItoM((uptr)&psxRegs.GPR.r[reg], g_psxConstRegs[reg]);
+		xMOV(ptr32[&psxRegs.GPR.r[reg]], g_psxConstRegs[reg]);
 		g_psxFlushedConstReg |= (1<<reg);
 	}
 }
@@ -518,7 +369,7 @@ void _psxFlushConstRegs()
 		if( g_psxHasConstReg & (1<<i) ) {
 
 			if( !(g_psxFlushedConstReg&(1<<i)) ) {
-				MOV32ItoM((uptr)&psxRegs.GPR.r[i], g_psxConstRegs[i]);
+				xMOV(ptr32[&psxRegs.GPR.r[i]], g_psxConstRegs[i]);
 				g_psxFlushedConstReg |= 1<<i;
 			}
 
@@ -539,44 +390,48 @@ void _psxDeleteReg(int reg, int flush)
 	_deleteX86reg(X86TYPE_PSX, reg, flush ? 0 : 2);
 }
 
-void _psxMoveGPRtoR(x86IntRegType to, int fromgpr)
+void _psxMoveGPRtoR(const xRegisterLong& to, int fromgpr)
 {
 	if( PSX_IS_CONST1(fromgpr) )
-		MOV32ItoR( to, g_psxConstRegs[fromgpr] );
+		xMOV(to, g_psxConstRegs[fromgpr] );
 	else {
 		// check x86
-		MOV32MtoR(to, (uptr)&psxRegs.GPR.r[ fromgpr ] );
+		xMOV(to, ptr[&psxRegs.GPR.r[ fromgpr ] ]);
 	}
 }
 
-void _psxMoveGPRtoM(u32 to, int fromgpr)
+#if 0
+void _psxMoveGPRtoM(uptr to, int fromgpr)
 {
 	if( PSX_IS_CONST1(fromgpr) )
-		MOV32ItoM( to, g_psxConstRegs[fromgpr] );
+		xMOV(ptr32[(u32*)(to)], g_psxConstRegs[fromgpr] );
 	else {
 		// check x86
-		MOV32MtoR(EAX, (uptr)&psxRegs.GPR.r[ fromgpr ] );
-		MOV32RtoM(to, EAX );
+		xMOV(eax, ptr[&psxRegs.GPR.r[ fromgpr ] ]);
+		xMOV(ptr[(void*)(to)], eax);
 	}
 }
+#endif
 
+#if 0
 void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr)
 {
 	if( PSX_IS_CONST1(fromgpr) )
-		MOV32ItoRm( to, g_psxConstRegs[fromgpr] );
+		xMOV(ptr32[xAddressReg(to)], g_psxConstRegs[fromgpr] );
 	else {
 		// check x86
-		MOV32MtoR(EAX, (uptr)&psxRegs.GPR.r[ fromgpr ] );
-		MOV32RtoRm(to, EAX );
+		xMOV(eax, ptr[&psxRegs.GPR.r[ fromgpr ] ]);
+		xMOV(ptr[xAddressReg(to)], eax);
 	}
 }
+#endif
 
 void _psxFlushCall(int flushtype)
 {
 	// x86-32 ABI : These registers are not preserved across calls:
-	_freeX86reg( EAX );
-	_freeX86reg( ECX );
-	_freeX86reg( EDX );
+	_freeX86reg( eax );
+	_freeX86reg( ecx );
+	_freeX86reg( edx );
 
 	if( flushtype & FLUSH_CACHED_REGS )
 		_psxFlushConstRegs();
@@ -649,39 +504,53 @@ void psxRecompileCodeConst0(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 	PSX_DEL_CONST(_Rd_);
 }
 
+static void psxRecompileIrxImport()
+{
+	u32 import_table = irxImportTableAddr(psxpc - 4);
+	u16 index = psxRegs.code & 0xffff;
+	if (!import_table)
+		return;
+
+	const std::string libname = iopMemReadString(import_table + 12, 8);
+
+	irxHLE hle = irxImportHLE(libname, index);
+#ifdef PCSX2_DEVBUILD
+	const irxDEBUG debug = irxImportDebug(libname, index);
+	const char* funcname = irxImportFuncname(libname, index);
+#else
+	const irxDEBUG debug = 0;
+	const char *funcname = nullptr;
+#endif
+
+	if (!hle && !debug && (!SysTraceActive(IOP.Bios) || !funcname))
+		return;
+
+	xMOV(ptr32[&psxRegs.code], psxRegs.code);
+	xMOV(ptr32[&psxRegs.pc], psxpc);
+	_psxFlushCall(FLUSH_NODESTROY);
+
+	if (SysTraceActive(IOP.Bios)) {
+		xPUSH((uptr)funcname);
+		xFastCall((void *)irxImportLog_rec, import_table, index);
+	}
+
+	if (debug)
+		xFastCall((void *)debug);
+
+	if (hle) {
+		xFastCall((void *)hle);
+		xTEST(eax, eax);
+		xJNZ(iopDispatcherReg);
+	}
+}
+
 // rt = rs op imm16
 void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 {
     if ( ! _Rt_ ) {
 		// check for iop module import table magic
-        if (psxRegs.code >> 16 == 0x2400) {
-			MOV32ItoM( (uptr)&psxRegs.code, psxRegs.code );
-			MOV32ItoM( (uptr)&psxRegs.pc, psxpc );
-			_psxFlushCall(FLUSH_NODESTROY);
-
-			const char *libname = irxImportLibname(psxpc);
-			u16 index = psxRegs.code & 0xffff;
-#ifdef PCSX2_DEVBUILD
-			const char *funcname = irxImportFuncname(libname, index);
-			irxDEBUG debug = irxImportDebug(libname, index);
-
-			if (SysTraceActive(IOP.Bios)) {
-				xMOV(ecx, (uptr)libname);
-				xMOV(edx, index);
-				xPUSH((uptr)funcname);
-				xCALL(irxImportLog);
-			}
-
-			if (debug)
-				xCALL(debug);
-#endif
-			irxHLE hle = irxImportHLE(libname, index);
-			if (hle) {
-				xCALL(hle);
-				xCMP(eax, 0);
-				xJNE(iopDispatcherReg);
-			}
-		}
+		if (psxRegs.code >> 16 == 0x2400)
+			psxRecompileIrxImport();
         return;
     }
 
@@ -757,7 +626,7 @@ static const uint m_recBlockAllocSize =
 
 static void recReserveCache()
 {
-	if (!recMem) recMem = new RecompiledCodeReserve(L"R3000A Recompiler Cache", _1mb * 2);
+	if (!recMem) recMem = new RecompiledCodeReserve(L"R3000A Recompiler Cache", _8mb);
 	recMem->SetProfilerName("IOPrec");
 
 	while (!recMem->IsOk())
@@ -811,6 +680,8 @@ static void recAlloc()
 void recResetIOP()
 {
 	DevCon.WriteLn( "iR3000A Recompiler reset." );
+
+	Perf::iop.reset();
 
 	recAlloc();
 	recMem->Reset();
@@ -868,6 +739,9 @@ static void recShutdown()
 
 	safe_free( s_pInstCache );
 	s_nInstCacheSize = 0;
+
+	// FIXME Warning thread unsafe
+	Perf::dump();
 }
 
 static void iopClearRecLUT(BASEBLOCK* base, int count)
@@ -979,22 +853,22 @@ void psxSetBranchReg(u32 reg)
 	psxbranch = 1;
 
 	if( reg != 0xffffffff ) {
-		_allocX86reg(ESI, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-		_psxMoveGPRtoR(ESI, reg);
+		_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		_psxMoveGPRtoR(esi, reg);
 
 		psxRecompileNextInstruction(1);
 
-		if( x86regs[ESI].inuse ) {
-			pxAssert( x86regs[ESI].type == X86TYPE_PCWRITEBACK );
-			MOV32RtoM((uptr)&psxRegs.pc, ESI);
-			x86regs[ESI].inuse = 0;
+		if( x86regs[esi.GetId()].inuse ) {
+			pxAssert( x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
+			xMOV(ptr[&psxRegs.pc], esi);
+			x86regs[esi.GetId()].inuse = 0;
 			#ifdef PCSX2_DEBUG
 			xOR( esi, esi );
 			#endif
 		}
 		else {
-			MOV32MtoR(EAX, (uptr)&g_recWriteback);
-			MOV32RtoM((uptr)&psxRegs.pc, EAX);
+			xMOV(eax, ptr[&g_recWriteback]);
+			xMOV(ptr[&psxRegs.pc], eax);
 
 			#ifdef PCSX2_DEBUG
 			xOR( eax, eax );
@@ -1020,7 +894,7 @@ void psxSetBranchImm( u32 imm )
 	pxAssert( imm );
 
 	// end the current block
-	MOV32ItoM( (uptr)&psxRegs.pc, imm );
+	xMOV(ptr32[&psxRegs.pc], imm );
 	_psxFlushCall(FLUSH_EVERYTHING);
 	iPsxBranchTest(imm, imm <= psxpc);
 
@@ -1052,7 +926,7 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		xSUB(ptr32[&iopCycleEE], eax);
 		xJLE(iopExitRecompiledCode);
 
-		xCALL(iopEventTest);
+		xFastCall((void*)iopEventTest);
 
 		if( newpc != 0xffffffff )
 		{
@@ -1074,7 +948,7 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		xSUB(eax, ptr32[&g_iopNextEventCycle]);
 		xForwardJS<u8> nointerruptpending;
 
-		xCALL(iopEventTest);
+		xFastCall((void*)iopEventTest);
 
 		if( newpc != 0xffffffff ) {
 			xCMP(ptr32[&psxRegs.pc], newpc);
@@ -1105,19 +979,19 @@ static void checkcodefn()
 
 void rpsxSYSCALL()
 {
-	MOV32ItoM( (uptr)&psxRegs.code, psxRegs.code );
-	MOV32ItoM((uptr)&psxRegs.pc, psxpc - 4);
+	xMOV(ptr32[&psxRegs.code], psxRegs.code );
+	xMOV(ptr32[&psxRegs.pc], psxpc - 4);
 	_psxFlushCall(FLUSH_NODESTROY);
 
-	xMOV( ecx, 0x20 );			// exception code
-	xMOV( edx, psxbranch==1 );	// branch delay slot?
-	xCALL( psxException );
+	//xMOV( ecx, 0x20 );			// exception code
+	//xMOV( edx, psxbranch==1 );	// branch delay slot?
+	xFastCall((void*)psxException, 0x20, psxbranch == 1 );
 
-	CMP32ItoM((uptr)&psxRegs.pc, psxpc-4);
+	xCMP(ptr32[&psxRegs.pc], psxpc-4);
 	j8Ptr[0] = JE8(0);
 
-	ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
-	SUB32ItoM((uptr)&iopCycleEE, psxScaleBlockCycles()*8 );
+	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles() );
+	xSUB(ptr32[&iopCycleEE], psxScaleBlockCycles()*8 );
 	JMP32((uptr)iopDispatcherReg - ( (uptr)x86Ptr + 5 ));
 
 	// jump target for skipping blockCycle updates
@@ -1128,18 +1002,18 @@ void rpsxSYSCALL()
 
 void rpsxBREAK()
 {
-	MOV32ItoM( (uptr)&psxRegs.code, psxRegs.code );
-	MOV32ItoM((uptr)&psxRegs.pc, psxpc - 4);
+	xMOV(ptr32[&psxRegs.code], psxRegs.code );
+	xMOV(ptr32[&psxRegs.pc], psxpc - 4);
 	_psxFlushCall(FLUSH_NODESTROY);
 
-	xMOV( ecx, 0x24 );			// exception code
-	xMOV( edx, psxbranch==1 );	// branch delay slot?
-	xCALL( psxException );
+	//xMOV( ecx, 0x24 );			// exception code
+	//xMOV( edx, psxbranch==1 );	// branch delay slot?
+	xFastCall((void*)psxException, 0x24, psxbranch == 1 );
 
-	CMP32ItoM((uptr)&psxRegs.pc, psxpc-4);
+	xCMP(ptr32[&psxRegs.pc], psxpc-4);
 	j8Ptr[0] = JE8(0);
-	ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
-	SUB32ItoM((uptr)&iopCycleEE, psxScaleBlockCycles()*8 );
+	xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles() );
+	xSUB(ptr32[&iopCycleEE], psxScaleBlockCycles()*8 );
 	JMP32((uptr)iopDispatcherReg - ( (uptr)x86Ptr + 5 ));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1148,13 +1022,13 @@ void rpsxBREAK()
 
 void psxRecompileNextInstruction(int delayslot)
 {
-	static u8 s_bFlushReg = 1;
-
 	// pblock isn't used elsewhere in this function.
 	//BASEBLOCK* pblock = PSX_GETBLOCK(psxpc);
 
-	if( IsDebugBuild )
-		MOV32ItoR(EAX, psxpc);
+	if( IsDebugBuild ) {
+		xNOP();
+		xMOV(eax, psxpc);
+	}
 
 	psxRegs.code = iopMemRead32( psxpc );
 	s_psxBlockCycles++;
@@ -1165,14 +1039,6 @@ void psxRecompileNextInstruction(int delayslot)
 	g_iopCyclePenalty = 0;
 	rpsxBSC[ psxRegs.code >> 26 ]();
 	s_psxBlockCycles += g_iopCyclePenalty;
-
-	if( !delayslot ) {
-		if( s_bFlushReg ) {
-			//_psxFlushUnusedConstReg();
-		}
-		else s_bFlushReg = 1;
-	}
-	else s_bFlushReg = 1;
 
 	_clearNeededX86regs();
 }
@@ -1206,6 +1072,14 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 {
 	u32 i;
 	u32 willbranch3 = 0;
+
+	// Inject IRX hack
+	if (startpc == 0x1630 && g_Conf->CurrentIRX.Length() > 3) {
+		if (iopMemRead32(0x20018) == 0x1F) {
+			// FIXME do I need to increase the module count (0x1F -> 0x20)
+			iopMemWrite32(0x20094, 0xbffc0000);
+		}
+	}
 
 	if( IsDebugBuild && (psxdump & 4) )
 	{
@@ -1245,10 +1119,15 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 
 	_initX86regs();
 
+	if ((psxHu32(HW_ICFG) & 8) && (HWADDR(startpc) == 0xa0 || HWADDR(startpc) == 0xb0 || HWADDR(startpc) == 0xc0)) {
+		xFastCall((void*)psxBiosCall);
+		xTEST(al, al);
+		xJNZ(iopDispatcherReg);
+	}
+
 	if( IsDebugBuild )
 	{
-		xMOV(ecx, psxpc);
-		xCALL(PreBlockCheck);
+		xFastCall((void*)PreBlockCheck, psxpc);
 	}
 
 	// go until the next branch
@@ -1354,8 +1233,8 @@ StartRecomp:
 	if( IsDebugBuild )
 	{
 		for(i = 0; i < ArraySize(s_psxrecblocks); ++i) {
-		if( startpc == s_psxrecblocks[i] ) {
-			iIopDumpBlock(startpc, recPtr);
+			if( startpc == s_psxrecblocks[i] ) {
+				iIopDumpBlock(startpc, recPtr);
 			}
 		}
 
@@ -1393,14 +1272,14 @@ StartRecomp:
 		if( psxbranch ) pxAssert( !willbranch3 );
 		else
 		{
-			ADD32ItoM((uptr)&psxRegs.cycle, psxScaleBlockCycles() );
-			SUB32ItoM((uptr)&iopCycleEE, psxScaleBlockCycles()*8 );
+			xADD(ptr32[&psxRegs.cycle], psxScaleBlockCycles() );
+			xSUB(ptr32[&iopCycleEE], psxScaleBlockCycles()*8 );
 		}
 
 		if (willbranch3 || !psxbranch) {
 			pxAssert( psxpc == s_nEndBlock );
 			_psxFlushCall(FLUSH_EVERYTHING);
-			MOV32ItoM((uptr)&psxRegs.pc, psxpc);
+			xMOV(ptr32[&psxRegs.pc], psxpc);
 			recBlocks.Link(HWADDR(s_nEndBlock), xJcc32() );
 			psxbranch = 3;
 		}
@@ -1410,6 +1289,8 @@ StartRecomp:
 
 	pxAssert(xGetPtr() - recPtr < _64kb);
 	s_pCurBlockEx->x86size = xGetPtr() - recPtr;
+
+	Perf::iop.map(s_pCurBlockEx->fnptr, s_pCurBlockEx->x86size, s_pCurBlockEx->startpc);
 
 	recPtr = xGetPtr();
 

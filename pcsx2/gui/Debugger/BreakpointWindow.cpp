@@ -13,29 +13,14 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "PrecompiledHeader.h"
 #include "BreakpointWindow.h"
 
 
-BEGIN_EVENT_TABLE(BreakpointWindow, wxDialog)
+wxBEGIN_EVENT_TABLE(BreakpointWindow, wxDialog)
 	EVT_RADIOBUTTON(wxID_ANY, BreakpointWindow::onRadioChange)
 	EVT_BUTTON(wxID_OK, BreakpointWindow::onButtonOk)
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 
 BreakpointWindow::BreakpointWindow( wxWindow* parent, DebugInterface* _cpu )
@@ -260,7 +245,7 @@ bool BreakpointWindow::fetchDialogData()
 
 	// parse address
 	wxCharBuffer addressText = editAddress->GetValue().ToUTF8();
-	if (cpu->initExpression(addressText,exp) == false)
+	if (!cpu->initExpression(addressText,exp))
 	{
 		swprintf(errorMessage,512,L"Invalid expression \"%s\".",editAddress->GetValue().wchar_str().data());
 		wxMessageBox(errorMessage,L"Error",wxICON_ERROR);
@@ -268,7 +253,7 @@ bool BreakpointWindow::fetchDialogData()
 	}
 
 	u64 value;
-	if (cpu->parseExpression(exp,value) == false)
+	if (!cpu->parseExpression(exp,value))
 	{
 		swprintf(errorMessage,512,L"Invalid expression \"%s\".",editAddress->GetValue().wchar_str().data());
 		wxMessageBox(errorMessage,L"Error",wxICON_ERROR);
@@ -280,14 +265,14 @@ bool BreakpointWindow::fetchDialogData()
 	{
 		// parse size
 		wxCharBuffer sizeText = editSize->GetValue().ToUTF8();
-		if (cpu->initExpression(sizeText,exp) == false)
+		if (!cpu->initExpression(sizeText,exp))
 		{
 			swprintf(errorMessage,512,L"Invalid expression \"%s\".",editSize->GetValue().wchar_str().data());
 			wxMessageBox(errorMessage,L"Error",wxICON_ERROR);
 			return false;
 		}
 
-		if (cpu->parseExpression(exp,value) == false)
+		if (!cpu->parseExpression(exp,value))
 		{
 			swprintf(errorMessage,512,L"Invalid expression \"%s\".",editSize->GetValue().wchar_str().data());
 			wxMessageBox(errorMessage,L"Error",wxICON_ERROR);
@@ -304,7 +289,7 @@ bool BreakpointWindow::fetchDialogData()
 	compiledCondition.clear();
 	if (condition[0] != 0)
 	{
-		if (cpu->initExpression(condition,compiledCondition) == false)
+		if (!cpu->initExpression(condition,compiledCondition))
 		{
 			swprintf(errorMessage,512,L"Invalid expression \"%s\".",editCondition->GetValue().wchar_str().data());
 			wxMessageBox(errorMessage,L"Error",wxICON_ERROR);
@@ -317,7 +302,7 @@ bool BreakpointWindow::fetchDialogData()
 
 void BreakpointWindow::onButtonOk(wxCommandEvent& evt)
 {
-	if (fetchDialogData() == true)
+	if (fetchDialogData())
 		evt.Skip();
 }
 
@@ -354,7 +339,7 @@ void BreakpointWindow::addBreakpoint()
 			CBreakPoints::ChangeBreakPointAddCond(address,cond);
 		}
 
-		if (enabled == false)
+		if (!enabled)
 		{
 			CBreakPoints::ChangeBreakPoint(address,false);
 		}

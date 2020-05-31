@@ -1,5 +1,5 @@
 /* infback.c -- inflate using a call-back interface
- * Copyright (C) 1995-2011 Mark Adler
+ * Copyright (C) 1995-2016 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -61,7 +61,7 @@ int stream_size;
     Tracev((stderr, "inflate: allocated\n"));
     strm->state = (struct internal_state FAR *)state;
     state->dmax = 32768U;
-    state->wbits = windowBits;
+    state->wbits = (uInt)windowBits;
     state->wsize = 1U << windowBits;
     state->window = window;
     state->wnext = 0;
@@ -255,7 +255,7 @@ out_func out;
 void FAR *out_desc;
 {
     struct inflate_state FAR *state;
-    unsigned char FAR *next;    /* next input */
+    z_const unsigned char FAR *next;    /* next input */
     unsigned char FAR *put;     /* next output */
     unsigned have, left;        /* available input and output */
     unsigned long hold;         /* bit buffer */

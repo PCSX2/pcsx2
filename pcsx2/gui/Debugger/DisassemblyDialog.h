@@ -23,12 +23,23 @@
 #include "CtrlMemView.h"
 #include "DebugEvents.h"
 #include "DebuggerLists.h"
+#include "../MSWstuff.h"
 
 class DebuggerHelpDialog: public wxDialog
 {
 public:
 	DebuggerHelpDialog(wxWindow* parent);
 };
+
+inline int getDebugFontWidth()
+{
+	return (int) ceil(g_Conf->EmuOptions.Debugger.FontWidth*MSW_GetDPIScale());
+}
+
+inline int getDebugFontHeight()
+{
+	return (int)ceil(g_Conf->EmuOptions.Debugger.FontHeight*MSW_GetDPIScale());
+}
 
 class CpuTabPage: public wxPanel
 {
@@ -43,9 +54,11 @@ public:
 	void showMemoryView() { setBottomTabPage(memory); };
 	void loadCycles();
 	void reloadSymbolMap();
+	void clearSymbolMap();
+	u32 getStepOutAddress();
 
 	void listBoxHandler(wxCommandEvent& event);
-	DECLARE_EVENT_TABLE()
+	wxDECLARE_EVENT_TABLE();
 private:
 	void setBottomTabPage(wxWindow* win);
 	void postEvent(wxEventType type, int value);
@@ -60,45 +73,51 @@ private:
 	BreakpointList* breakpointList;
 	wxStaticText* cyclesText;
 	ThreadList* threadList;
+	StackFramesList* stackFrames;
 	u32 lastCycles;
+	u32 symbolCount;
 };
 
 class DisassemblyDialog : public wxFrame
 {
 public:
 	DisassemblyDialog( wxWindow* parent=NULL );
-	virtual ~DisassemblyDialog() throw() {}
+	virtual ~DisassemblyDialog() = default;
 
 	static wxString GetNameStatic() { return L"DisassemblyDialog"; }
 	wxString GetDialogName() const { return GetNameStatic(); }
 	
 	void update();
 	void reset();
+	void populate();
 	void setDebugMode(bool debugMode, bool switchPC);
 	
-#ifdef WIN32
+#ifdef _WIN32
 	WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
 #endif
 
-	DECLARE_EVENT_TABLE()
+	wxDECLARE_EVENT_TABLE();
 protected:
 	void onBreakRunClicked(wxCommandEvent& evt);
 	void onStepOverClicked(wxCommandEvent& evt);
 	void onStepIntoClicked(wxCommandEvent& evt);
+	void onStepOutClicked(wxCommandEvent& evt);
 	void onDebuggerEvent(wxCommandEvent& evt);
 	void onPageChanging(wxCommandEvent& evt);
 	void onBreakpointClick(wxCommandEvent& evt);
+	void onSizeEvent(wxSizeEvent& event);
 	void onClose(wxCloseEvent& evt);
 	void stepOver();
 	void stepInto();
+	void stepOut();
 	void gotoPc();
 private:
 	CpuTabPage* eeTab;
 	CpuTabPage* iopTab;
 	CpuTabPage* currentCpu;
+	wxNotebook* middleBook;
 
 	wxBoxSizer* topSizer;
-	wxStatusBar* statusBar;
 	wxButton* breakRunButton;
 	wxButton* stepIntoButton;
 	wxButton* stepOverButton;

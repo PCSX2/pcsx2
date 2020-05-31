@@ -176,19 +176,21 @@ static __ri void __fastcall _vuFMACAdd(VURegs * VU, int reg, int xyzw) {
 		if (VU->fmac[i].enable == 1) continue;
 		break;
 	}
-	//if (i==8) Console.Error("*PCSX2*: error , out of fmacs %d", VU->cycle);
 
+	if (i < 8) {
+		VUM_LOG("adding FMAC pipe[%d]; xyzw=%x", i, xyzw);
 
-	VUM_LOG("adding FMAC pipe[%d]; xyzw=%x", i, xyzw);
-
-	VU->fmac[i].enable = 1;
-	VU->fmac[i].sCycle = VU->cycle;
-	VU->fmac[i].Cycle = 3;
-	VU->fmac[i].reg = reg;
-	VU->fmac[i].xyzw = xyzw;
-	VU->fmac[i].macflag = VU->macflag;
-	VU->fmac[i].statusflag = VU->statusflag;
-	VU->fmac[i].clipflag = VU->clipflag;
+		VU->fmac[i].enable = 1;
+		VU->fmac[i].sCycle = VU->cycle;
+		VU->fmac[i].Cycle = 3;
+		VU->fmac[i].reg = reg;
+		VU->fmac[i].xyzw = xyzw;
+		VU->fmac[i].macflag = VU->macflag;
+		VU->fmac[i].statusflag = VU->statusflag;
+		VU->fmac[i].clipflag = VU->clipflag;
+	} else {
+		//Console.Error("*PCSX2*: error , out of fmacs %d", VU->cycle);
+	}
 }
 
 static __ri void __fastcall _vuFDIVAdd(VURegs * VU, int cycles) {
@@ -2238,7 +2240,7 @@ static __ri void _vuRegs##OP(const VURegs* VU, _VURegsNum *VUregsn) { \
 	VUregsn->VFr0xyzw= _XYZW; \
 	VUregsn->VFread1 = 0; \
 	VUregsn->VIwrite = 0; \
-	VUregsn->VIread  = (1 << REG_I)|(ACC?(1<<REG_ACC_FLAG):0)|GET_VF0_FLAG(_Fs_); \
+	VUregsn->VIread  = (1 << REG_I)|((ACC)?(1<<REG_ACC_FLAG):0)|GET_VF0_FLAG(_Fs_); \
 }
 
 #define VUREGS_FDFSQ(OP, ACC) \
@@ -2250,7 +2252,7 @@ static __ri void _vuRegs##OP(const VURegs* VU, _VURegsNum *VUregsn) { \
 	VUregsn->VFr0xyzw= _XYZW; \
 	VUregsn->VFread1 = 0; \
 	VUregsn->VIwrite = 0; \
-	VUregsn->VIread  = (1 << REG_Q)|(ACC?(1<<REG_ACC_FLAG):0)|GET_VF0_FLAG(_Fs_); \
+	VUregsn->VIread  = (1 << REG_Q)|((ACC)?(1<<REG_ACC_FLAG):0)|GET_VF0_FLAG(_Fs_); \
 }
 
 #define VUREGS_FDFSFT(OP, ACC) \
@@ -2263,7 +2265,7 @@ static __ri void _vuRegs##OP(const VURegs* VU, _VURegsNum *VUregsn) { \
 	VUregsn->VFread1 = _Ft_; \
 	VUregsn->VFr1xyzw= _XYZW; \
 	VUregsn->VIwrite = 0; \
-	VUregsn->VIread  = (ACC?(1<<REG_ACC_FLAG):0)|GET_VF0_FLAG(_Fs_)|GET_VF0_FLAG(_Ft_); \
+	VUregsn->VIread  = ((ACC)?(1<<REG_ACC_FLAG):0)|GET_VF0_FLAG(_Fs_)|GET_VF0_FLAG(_Ft_); \
 }
 
 #define VUREGS_FDFSFTxyzw(OP, xyzw, ACC) \
@@ -2276,7 +2278,7 @@ static __ri void _vuRegs##OP(const VURegs* VU, _VURegsNum *VUregsn) { \
 	VUregsn->VFread1 = _Ft_; \
 	VUregsn->VFr1xyzw= xyzw; \
 	VUregsn->VIwrite = 0; \
-	VUregsn->VIread  = (ACC?(1<<REG_ACC_FLAG):0)|GET_VF0_FLAG(_Fs_)|GET_VF0_FLAG(_Ft_); \
+	VUregsn->VIread  = ((ACC)?(1<<REG_ACC_FLAG):0)|GET_VF0_FLAG(_Fs_)|GET_VF0_FLAG(_Ft_); \
 }
 
 #define VUREGS_FDFSFTx(OP, ACC) VUREGS_FDFSFTxyzw(OP, 8, ACC)
@@ -2294,7 +2296,7 @@ static __ri void _vuRegs##OP(const VURegs* VU, _VURegsNum *VUregsn) { \
 	VUregsn->VFr0xyzw= _XYZW; \
 	VUregsn->VFread1 = 0; \
 	VUregsn->VIwrite = (1<<REG_ACC_FLAG); \
-	VUregsn->VIread  = (1 << REG_I)|GET_VF0_FLAG(_Fs_)|((readacc||_XYZW!=15)?(1<<REG_ACC_FLAG):0); \
+	VUregsn->VIread  = (1 << REG_I)|GET_VF0_FLAG(_Fs_)|(((readacc)||_XYZW!=15)?(1<<REG_ACC_FLAG):0); \
 }
 
 #define VUREGS_ACCFSQ(OP, readacc) \
@@ -2306,7 +2308,7 @@ static __ri void _vuRegs##OP(const VURegs* VU, _VURegsNum *VUregsn) { \
 	VUregsn->VFr0xyzw= _XYZW; \
 	VUregsn->VFread1 = 0; \
 	VUregsn->VIwrite = (1<<REG_ACC_FLAG); \
-	VUregsn->VIread  = (1 << REG_Q)|GET_VF0_FLAG(_Fs_)|((readacc||_XYZW!=15)?(1<<REG_ACC_FLAG):0); \
+	VUregsn->VIread  = (1 << REG_Q)|GET_VF0_FLAG(_Fs_)|(((readacc)||_XYZW!=15)?(1<<REG_ACC_FLAG):0); \
 }
 
 #define VUREGS_ACCFSFT(OP, readacc) \
@@ -2319,7 +2321,7 @@ static __ri void _vuRegs##OP(const VURegs* VU, _VURegsNum *VUregsn) { \
 	VUregsn->VFread1 = _Ft_; \
 	VUregsn->VFr1xyzw= _XYZW; \
 	VUregsn->VIwrite = (1<<REG_ACC_FLAG); \
-	VUregsn->VIread  = GET_VF0_FLAG(_Fs_)|GET_VF0_FLAG(_Ft_)|((readacc||_XYZW!=15)?(1<<REG_ACC_FLAG):0); \
+	VUregsn->VIread  = GET_VF0_FLAG(_Fs_)|GET_VF0_FLAG(_Ft_)|(((readacc)||_XYZW!=15)?(1<<REG_ACC_FLAG):0); \
 }
 
 #define VUREGS_ACCFSFTxyzw(OP, xyzw, readacc) \
@@ -2332,7 +2334,7 @@ static __ri void _vuRegs##OP(const VURegs* VU, _VURegsNum *VUregsn) { \
 	VUregsn->VFread1 = _Ft_; \
 	VUregsn->VFr1xyzw= xyzw; \
 	VUregsn->VIwrite = (1<<REG_ACC_FLAG); \
-	VUregsn->VIread  = GET_VF0_FLAG(_Fs_)|GET_VF0_FLAG(_Ft_)|((readacc||_XYZW!=15)?(1<<REG_ACC_FLAG):0); \
+	VUregsn->VIread  = GET_VF0_FLAG(_Fs_)|GET_VF0_FLAG(_Ft_)|(((readacc)||_XYZW!=15)?(1<<REG_ACC_FLAG):0); \
 }
 
 #define VUREGS_ACCFSFTx(OP, readacc) VUREGS_ACCFSFTxyzw(OP, 8, readacc)
@@ -2435,27 +2437,27 @@ VUREGS_ACCFSFTw(SUBAw, 0);
 
 #define VUREGS_FDFSFTxyzw_MUL(OP, ACC, xyzw) \
 static __ri void _vuRegs##OP(const VURegs* VU, _VURegsNum *VUregsn) { \
-	if( _Ft_ == 0 && xyzw > 1 && _XYZW == 0xf ) { /* resetting to 0 */ \
+	if( _Ft_ == 0 && (xyzw) > 1 && _XYZW == 0xf ) { /* resetting to 0 */ \
 		VUregsn->pipe = VUPIPE_FMAC; \
-		VUregsn->VFwrite = ACC?0:_Fd_; \
+		VUregsn->VFwrite = (ACC)?0:_Fd_; \
 		VUregsn->VFwxyzw = _XYZW; \
 		VUregsn->VFread0 = 0; \
 		VUregsn->VFr0xyzw= _XYZW; \
 		VUregsn->VFread1 = 0; \
 		VUregsn->VFr1xyzw= xyzw; \
-		VUregsn->VIwrite = (ACC?(1<<REG_ACC_FLAG):0); \
-		VUregsn->VIread  = (ACC&&(_XYZW!=15))?(1<<REG_ACC_FLAG):0; \
+		VUregsn->VIwrite = ((ACC)?(1<<REG_ACC_FLAG):0); \
+		VUregsn->VIread  = ((ACC)&&(_XYZW!=15))?(1<<REG_ACC_FLAG):0; \
 	} \
 	else { \
 		VUregsn->pipe = VUPIPE_FMAC; \
-		VUregsn->VFwrite = ACC?0:_Fd_; \
+		VUregsn->VFwrite = (ACC)?0:_Fd_; \
 		VUregsn->VFwxyzw = _XYZW; \
 		VUregsn->VFread0 = _Fs_; \
 		VUregsn->VFr0xyzw= _XYZW; \
 		VUregsn->VFread1 = _Ft_; \
 		VUregsn->VFr1xyzw= xyzw; \
-		VUregsn->VIwrite = (ACC?(1<<REG_ACC_FLAG):0); \
-		VUregsn->VIread  = GET_VF0_FLAG(_Fs_)|((ACC&&(_XYZW!=15))?(1<<REG_ACC_FLAG):0); \
+		VUregsn->VIwrite = ((ACC)?(1<<REG_ACC_FLAG):0); \
+		VUregsn->VIread  = GET_VF0_FLAG(_Fs_)|(((ACC)&&(_XYZW!=15))?(1<<REG_ACC_FLAG):0); \
 	} \
 }
 

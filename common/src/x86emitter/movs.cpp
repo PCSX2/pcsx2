@@ -32,101 +32,77 @@
 #include "internal.h"
 #include "implement/helpers.h"
 
-namespace x86Emitter {
-
-void _xMovRtoR( const xRegisterInt& to, const xRegisterInt& from )
+namespace x86Emitter
 {
-	pxAssert( to.GetOperandSize() == from.GetOperandSize() );
 
-	if( to == from ) return;	// ignore redundant MOVs.
+void _xMovRtoR(const xRegisterInt &to, const xRegisterInt &from)
+{
+    pxAssert(to.GetOperandSize() == from.GetOperandSize());
 
-	from.prefix16();
-	xWrite8( from.Is8BitOp() ? 0x88 : 0x89 );
-	EmitSibMagic( from, to );
+    if (to == from)
+        return; // ignore redundant MOVs.
+
+    xOpWrite(from.GetPrefix16(), from.Is8BitOp() ? 0x88 : 0x89, from, to);
 }
 
-void xImpl_Mov::operator()( const xRegister8& to, const xRegister8& from ) const
+void xImpl_Mov::operator()(const xRegisterInt &to, const xRegisterInt &from) const
 {
-	if( to == from ) return;	// ignore redundant MOVs.
-	xWrite8( 0x88 );
-	EmitSibMagic( from, to );
+    // FIXME WTF?
+    _xMovRtoR(to, from);
 }
 
-void xImpl_Mov::operator()( const xRegister16& to, const xRegister16& from ) const
+void xImpl_Mov::operator()(const xIndirectVoid &dest, const xRegisterInt &from) const
 {
-	if( to == from ) return;	// ignore redundant MOVs.
-	from.prefix16();
-	xWrite8( 0x89 );
-	EmitSibMagic( from, to );
+    // mov eax has a special from when writing directly to a DISP32 address
+    // (sans any register index/base registers).
+
+    if (from.IsAccumulator() && dest.Index.IsEmpty() && dest.Base.IsEmpty()) {
+// FIXME: in 64 bits, it could be 8B whereas Displacement is limited to 4B normally
+#ifdef __M_X86_64
+        pxAssert(0);
+#endif
+        xOpAccWrite(from.GetPrefix16(), from.Is8BitOp() ? 0xa2 : 0xa3, from.Id, dest);
+        xWrite32(dest.Displacement);
+    } else {
+        xOpWrite(from.GetPrefix16(), from.Is8BitOp() ? 0x88 : 0x89, from.Id, dest);
+    }
 }
 
-void xImpl_Mov::operator()( const xRegister32& to, const xRegister32& from ) const
+void xImpl_Mov::operator()(const xRegisterInt &to, const xIndirectVoid &src) const
 {
-	if( to == from ) return;	// ignore redundant MOVs.
-	xWrite8( 0x89 );
-	EmitSibMagic( from, to );
+    // mov eax has a special from when reading directly from a DISP32 address
+    // (sans any register index/base registers).
+
+    if (to.IsAccumulator() && src.Index.IsEmpty() && src.Base.IsEmpty()) {
+// FIXME: in 64 bits, it could be 8B whereas Displacement is limited to 4B normally
+#ifdef __M_X86_64
+        pxAssert(0);
+#endif
+        xOpAccWrite(to.GetPrefix16(), to.Is8BitOp() ? 0xa0 : 0xa1, to, src);
+        xWrite32(src.Displacement);
+    } else {
+        xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? 0x8a : 0x8b, to, src);
+    }
 }
 
-void xImpl_Mov::operator()( const xIndirectVoid& dest, const xRegisterInt& from ) const
+void xImpl_Mov::operator()(const xIndirect64orLess &dest, int imm) const
 {
-	from.prefix16();
-
-	// mov eax has a special from when writing directly to a DISP32 address
-	// (sans any register index/base registers).
-
-	if( from.IsAccumulator() && dest.Index.IsEmpty() && dest.Base.IsEmpty() )
-	{
-		xWrite8( from.Is8BitOp() ? 0xa2 : 0xa3 );
-		xWrite32( dest.Displacement );
-	}
-	else
-	{
-		xWrite8( from.Is8BitOp() ? 0x88 : 0x89 );
-		EmitSibMagic( from.Id, dest );
-	}
-}
-
-void xImpl_Mov::operator()( const xRegisterInt& to, const xIndirectVoid& src ) const
-{
-	to.prefix16();
-
-	// mov eax has a special from when reading directly from a DISP32 address
-	// (sans any register index/base registers).
-
-	if( to.IsAccumulator() && src.Index.IsEmpty() && src.Base.IsEmpty() )
-	{
-		xWrite8( to.Is8BitOp() ? 0xa0 : 0xa1 );
-		xWrite32( src.Displacement );
-	}
-	else
-	{
-		xWrite8( to.Is8BitOp() ? 0x8a : 0x8b );
-		EmitSibMagic( to, src );
-	}
-}
-
-void xImpl_Mov::operator()( const xIndirect32orLess& dest, int imm ) const
-{
-	dest.prefix16();
-	xWrite8( dest.Is8BitOp() ? 0xc6 : 0xc7 );
-	EmitSibMagic( 0, dest );
-	dest.xWriteImm( imm );
+    xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? 0xc6 : 0xc7, 0, dest);
+    dest.xWriteImm(imm);
 }
 
 // preserve_flags  - set to true to disable optimizations which could alter the state of
 //   the flags (namely replacing mov reg,0 with xor).
-void xImpl_Mov::operator()( const xRegisterInt& to, int imm, bool preserve_flags ) const
+void xImpl_Mov::operator()(const xRegisterInt &to, int imm, bool preserve_flags) const
 {
-	if( !preserve_flags && (imm == 0) )
-		_g1_EmitOp( G1Type_XOR, to, to );
-	else
-	{
-		// Note: MOV does not have (reg16/32,imm8) forms.
-
-		to.prefix16();
-		xWrite8( (to.Is8BitOp() ? 0xb0 : 0xb8) | to.Id );
-		to.xWriteImm( imm );
-	}
+    if (!preserve_flags && (imm == 0))
+        _g1_EmitOp(G1Type_XOR, to, to);
+    else {
+        // Note: MOV does not have (reg16/32,imm8) forms.
+        u8 opcode = (to.Is8BitOp() ? 0xb0 : 0xb8) | to.Id;
+        xOpAccWrite(to.GetPrefix16(), opcode, 0, to);
+        to.xWriteImm(imm);
+    }
 }
 
 const xImpl_Mov xMOV;
@@ -135,66 +111,70 @@ const xImpl_Mov xMOV;
 //  CMOVcc
 // --------------------------------------------------------------------------------------
 
-#define ccSane()	pxAssertDev( ccType >= 0 && ccType <= 0x0f, "Invalid comparison type specifier." )
+#define ccSane() pxAssertDev(ccType >= 0 && ccType <= 0x0f, "Invalid comparison type specifier.")
 
 // Macro useful for trapping unwanted use of EBP.
 //#define EbpAssert() pxAssert( to != ebp )
 #define EbpAssert()
 
 
-void xCMOV( JccComparisonType ccType, const xRegister32& to, const xRegister32& from )		{ ccSane(); xOpWrite0F( 0x40 | ccType, to, from ); }
-void xCMOV( JccComparisonType ccType, const xRegister32& to, const xIndirectVoid& sibsrc )		{ ccSane(); xOpWrite0F( 0x40 | ccType, to, sibsrc ); }
-//void xCMOV( JccComparisonType ccType, const xDirectOrIndirect32& to, const xDirectOrIndirect32& from ) const { ccSane(); _DoI_helpermess( *this, to, from ); }	// too.. lazy.. to fix.
 
-void xCMOV( JccComparisonType ccType, const xRegister16& to, const xRegister16& from )		{ ccSane(); xOpWrite0F( 0x66, 0x40 | ccType, to, from ); }
-void xCMOV( JccComparisonType ccType, const xRegister16& to, const xIndirectVoid& sibsrc )		{ ccSane(); xOpWrite0F( 0x66, 0x40 | ccType, to, sibsrc ); }
-//void xCMOV( JccComparisonType ccType, const xDirectOrIndirect16& to, const xDirectOrIndirect16& from ) const { ccSane(); _DoI_helpermess( *this, to, from ); }
+void xImpl_CMov::operator()(const xRegister16or32or64 &to, const xRegister16or32or64 &from) const
+{
+    pxAssert(to->GetOperandSize() == from->GetOperandSize());
+    ccSane();
+    xOpWrite0F(to->GetPrefix16(), 0x40 | ccType, to, from);
+}
 
-void xSET( JccComparisonType ccType, const xRegister8& to )		{ ccSane(); xOpWrite0F( 0x90 | ccType, 0, to ); }
-void xSET( JccComparisonType ccType, const xIndirect8& dest )		{ ccSane(); xOpWrite0F( 0x90 | ccType, 0, dest ); }
-
-void xImpl_CMov::operator()( const xRegister32& to, const xRegister32& from ) const					{ ccSane(); xOpWrite0F( 0x40 | ccType, to, from ); }
-void xImpl_CMov::operator()( const xRegister32& to, const xIndirectVoid& sibsrc ) const				{ ccSane(); xOpWrite0F( 0x40 | ccType, to, sibsrc ); }
-void xImpl_CMov::operator()( const xRegister16& to, const xRegister16& from ) const					{ ccSane(); xOpWrite0F( 0x66, 0x40 | ccType, to, from ); }
-void xImpl_CMov::operator()( const xRegister16& to, const xIndirectVoid& sibsrc ) const				{ ccSane(); xOpWrite0F( 0x66, 0x40 | ccType, to, sibsrc ); }
+void xImpl_CMov::operator()(const xRegister16or32or64 &to, const xIndirectVoid &sibsrc) const
+{
+    ccSane();
+    xOpWrite0F(to->GetPrefix16(), 0x40 | ccType, to, sibsrc);
+}
 
 //void xImpl_CMov::operator()( const xDirectOrIndirect32& to, const xDirectOrIndirect32& from ) const { ccSane(); _DoI_helpermess( *this, to, from ); }
 //void xImpl_CMov::operator()( const xDirectOrIndirect16& to, const xDirectOrIndirect16& from ) const { ccSane(); _DoI_helpermess( *this, to, from ); }
 
-void xImpl_Set::operator()( const xRegister8& to ) const				{ ccSane(); xOpWrite0F( 0x90 | ccType, 0, to ); }
-void xImpl_Set::operator()( const xIndirect8& dest ) const					{ ccSane(); xOpWrite0F( 0x90 | ccType, 0, dest ); }
+void xImpl_Set::operator()(const xRegister8 &to) const
+{
+    ccSane();
+    xOpWrite0F(0x90 | ccType, 0, to);
+}
+void xImpl_Set::operator()(const xIndirect8 &dest) const
+{
+    ccSane();
+    xOpWrite0F(0x90 | ccType, 0, dest);
+}
 //void xImpl_Set::operator()( const xDirectOrIndirect8& dest ) const		{ ccSane(); _DoI_helpermess( *this, dest ); }
 
-void xImpl_MovExtend::operator()( const xRegister16or32& to, const xRegister8& from ) const
+void xImpl_MovExtend::operator()(const xRegister16or32or64 &to, const xRegister8 &from) const
 {
-	EbpAssert();
-	xOpWrite0F(
-		( to->GetOperandSize() == 2 ) ? 0x66 : 0,
-		SignExtend ? 0xbe : 0xb6,
-		to, from
-	);
+    EbpAssert();
+    xOpWrite0F(
+        (to->GetOperandSize() == 2) ? 0x66 : 0,
+        SignExtend ? 0xbe : 0xb6,
+        to, from);
 }
 
-void xImpl_MovExtend::operator()( const xRegister16or32& to, const xIndirect8& sibsrc ) const
+void xImpl_MovExtend::operator()(const xRegister16or32or64 &to, const xIndirect8 &sibsrc) const
 {
-	EbpAssert();
-	xOpWrite0F(
-		( to->GetOperandSize() == 2 ) ? 0x66 : 0,
-		SignExtend ? 0xbe : 0xb6,
-		to, sibsrc
-	);
+    EbpAssert();
+    xOpWrite0F(
+        (to->GetOperandSize() == 2) ? 0x66 : 0,
+        SignExtend ? 0xbe : 0xb6,
+        to, sibsrc);
 }
 
-void xImpl_MovExtend::operator()( const xRegister32& to, const xRegister16& from ) const
+void xImpl_MovExtend::operator()(const xRegister32or64 &to, const xRegister16 &from) const
 {
-	EbpAssert();
-	xOpWrite0F( SignExtend ? 0xbf : 0xb7, to, from );
+    EbpAssert();
+    xOpWrite0F(SignExtend ? 0xbf : 0xb7, to, from);
 }
 
-void xImpl_MovExtend::operator()( const xRegister32& to, const xIndirect16& sibsrc ) const
+void xImpl_MovExtend::operator()(const xRegister32or64 &to, const xIndirect16 &sibsrc) const
 {
-	EbpAssert();
-	xOpWrite0F( SignExtend ? 0xbf : 0xb7, to, sibsrc );
+    EbpAssert();
+    xOpWrite0F(SignExtend ? 0xbf : 0xb7, to, sibsrc);
 }
 
 #if 0
@@ -211,58 +191,58 @@ void xImpl_MovExtend::operator()( const xRegister16or32& to, const xDirectOrIndi
 }
 #endif
 
-const xImpl_MovExtend xMOVSX = { true };
-const xImpl_MovExtend xMOVZX = { false };
+const xImpl_MovExtend xMOVSX = {true};
+const xImpl_MovExtend xMOVZX = {false};
 
-const xImpl_CMov	xCMOVA	= { Jcc_Above };
-const xImpl_CMov	xCMOVAE	= { Jcc_AboveOrEqual };
-const xImpl_CMov	xCMOVB	= { Jcc_Below };
-const xImpl_CMov	xCMOVBE	= { Jcc_BelowOrEqual };
+const xImpl_CMov xCMOVA = {Jcc_Above};
+const xImpl_CMov xCMOVAE = {Jcc_AboveOrEqual};
+const xImpl_CMov xCMOVB = {Jcc_Below};
+const xImpl_CMov xCMOVBE = {Jcc_BelowOrEqual};
 
-const xImpl_CMov	xCMOVG	= { Jcc_Greater };
-const xImpl_CMov	xCMOVGE	= { Jcc_GreaterOrEqual };
-const xImpl_CMov	xCMOVL	= { Jcc_Less };
-const xImpl_CMov	xCMOVLE	= { Jcc_LessOrEqual };
+const xImpl_CMov xCMOVG = {Jcc_Greater};
+const xImpl_CMov xCMOVGE = {Jcc_GreaterOrEqual};
+const xImpl_CMov xCMOVL = {Jcc_Less};
+const xImpl_CMov xCMOVLE = {Jcc_LessOrEqual};
 
-const xImpl_CMov	xCMOVZ	= { Jcc_Zero };
-const xImpl_CMov	xCMOVE	= { Jcc_Equal };
-const xImpl_CMov	xCMOVNZ	= { Jcc_NotZero };
-const xImpl_CMov	xCMOVNE	= { Jcc_NotEqual };
+const xImpl_CMov xCMOVZ = {Jcc_Zero};
+const xImpl_CMov xCMOVE = {Jcc_Equal};
+const xImpl_CMov xCMOVNZ = {Jcc_NotZero};
+const xImpl_CMov xCMOVNE = {Jcc_NotEqual};
 
-const xImpl_CMov	xCMOVO	= { Jcc_Overflow };
-const xImpl_CMov	xCMOVNO	= { Jcc_NotOverflow };
-const xImpl_CMov	xCMOVC	= { Jcc_Carry };
-const xImpl_CMov	xCMOVNC	= { Jcc_NotCarry };
+const xImpl_CMov xCMOVO = {Jcc_Overflow};
+const xImpl_CMov xCMOVNO = {Jcc_NotOverflow};
+const xImpl_CMov xCMOVC = {Jcc_Carry};
+const xImpl_CMov xCMOVNC = {Jcc_NotCarry};
 
-const xImpl_CMov	xCMOVS	= { Jcc_Signed };
-const xImpl_CMov	xCMOVNS	= { Jcc_Unsigned };
-const xImpl_CMov	xCMOVPE	= { Jcc_ParityEven };
-const xImpl_CMov	xCMOVPO	= { Jcc_ParityOdd };
+const xImpl_CMov xCMOVS = {Jcc_Signed};
+const xImpl_CMov xCMOVNS = {Jcc_Unsigned};
+const xImpl_CMov xCMOVPE = {Jcc_ParityEven};
+const xImpl_CMov xCMOVPO = {Jcc_ParityOdd};
 
 
-const xImpl_Set		xSETA	= { Jcc_Above };
-const xImpl_Set		xSETAE	= { Jcc_AboveOrEqual };
-const xImpl_Set		xSETB	= { Jcc_Below };
-const xImpl_Set		xSETBE	= { Jcc_BelowOrEqual };
+const xImpl_Set xSETA = {Jcc_Above};
+const xImpl_Set xSETAE = {Jcc_AboveOrEqual};
+const xImpl_Set xSETB = {Jcc_Below};
+const xImpl_Set xSETBE = {Jcc_BelowOrEqual};
 
-const xImpl_Set		xSETG	= { Jcc_Greater };
-const xImpl_Set		xSETGE	= { Jcc_GreaterOrEqual };
-const xImpl_Set		xSETL	= { Jcc_Less };
-const xImpl_Set		xSETLE	= { Jcc_LessOrEqual };
+const xImpl_Set xSETG = {Jcc_Greater};
+const xImpl_Set xSETGE = {Jcc_GreaterOrEqual};
+const xImpl_Set xSETL = {Jcc_Less};
+const xImpl_Set xSETLE = {Jcc_LessOrEqual};
 
-const xImpl_Set		xSETZ	= { Jcc_Zero };
-const xImpl_Set		xSETE	= { Jcc_Equal };
-const xImpl_Set		xSETNZ	= { Jcc_NotZero };
-const xImpl_Set		xSETNE	= { Jcc_NotEqual };
+const xImpl_Set xSETZ = {Jcc_Zero};
+const xImpl_Set xSETE = {Jcc_Equal};
+const xImpl_Set xSETNZ = {Jcc_NotZero};
+const xImpl_Set xSETNE = {Jcc_NotEqual};
 
-const xImpl_Set		xSETO	= { Jcc_Overflow };
-const xImpl_Set		xSETNO	= { Jcc_NotOverflow };
-const xImpl_Set		xSETC	= { Jcc_Carry };
-const xImpl_Set		xSETNC	= { Jcc_NotCarry };
+const xImpl_Set xSETO = {Jcc_Overflow};
+const xImpl_Set xSETNO = {Jcc_NotOverflow};
+const xImpl_Set xSETC = {Jcc_Carry};
+const xImpl_Set xSETNC = {Jcc_NotCarry};
 
-const xImpl_Set		xSETS	= { Jcc_Signed };
-const xImpl_Set		xSETNS	= { Jcc_Unsigned };
-const xImpl_Set		xSETPE	= { Jcc_ParityEven };
-const xImpl_Set		xSETPO	= { Jcc_ParityOdd };
+const xImpl_Set xSETS = {Jcc_Signed};
+const xImpl_Set xSETNS = {Jcc_Unsigned};
+const xImpl_Set xSETPE = {Jcc_ParityEven};
+const xImpl_Set xSETPO = {Jcc_ParityOdd};
 
-}	// end namespace x86Emitter
+} // end namespace x86Emitter

@@ -113,7 +113,7 @@ u32 CALLBACK PS2EgetLibType() {
 	return PS2E_LT_USB;
 }
 
-char* CALLBACK PS2EgetLibName() 
+const char* CALLBACK PS2EgetLibName()
 {
 	InitLibraryName();
 	return libraryName;
@@ -266,8 +266,8 @@ s32 CALLBACK USBfreeze(int mode, freezeData *data) {
 
 		usbd = *(USBfreezeData*)data->data;
 		usbd.freezeID[9] = 0;
-		usbd.cycles = clocks;
-		usbd.remaining = remaining;
+		usbd.cycles = static_cast<int>(clocks);
+		usbd.remaining = static_cast<int>(remaining);
 		
 		if( strcmp(usbd.freezeID, USBfreezeID) != 0)
 		{

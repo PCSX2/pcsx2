@@ -23,8 +23,8 @@
 #include "Pcsx2Defs.h"
 
 #include <stdexcept>
-#include <cstring>		// string.h under c++
-#include <cstdio>		// stdio.h under c++
+#include <cstring> // string.h under c++
+#include <cstdio>  // stdio.h under c++
 #include <cstdlib>
 
 #include "Utilities/Console.h"
@@ -33,4 +33,3 @@
 #include "Utilities/MemcpyFast.h"
 
 #endif
-

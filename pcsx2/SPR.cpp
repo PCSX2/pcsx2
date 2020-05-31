@@ -20,8 +20,6 @@
 #include "VUmicro.h"
 #include "MTVU.h"
 
-extern void mfifoGIFtransfer(int);
-
 static bool spr0finished = false;
 static bool spr1finished = false;
 static bool spr0lastqwc = false;
@@ -34,10 +32,10 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 	{
 		if (madr < 0x11004000)
 		{
-			if(isWrite == true) 
+			if(isWrite)
 			{
 				DbgCon.Warning("scratch pad clearing vu0");
-			
+
 				CpuVU0->Clear(madr&0xfff, qwc * 16);
 			}
 
@@ -47,8 +45,8 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 			}
 		}
 		else if (madr >= 0x11008000 && madr < 0x1100c000)
-		{			
-			if(isWrite == true) 
+		{
+			if(isWrite)
 			{
 				DbgCon.Warning("scratch pad clearing vu1");
 
@@ -63,6 +61,36 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 				DevCon.Warning("Warning! SPR%d Crossing in to VU0 Mem Mirror address! Start MADR = %x, End MADR = %x", isWrite ? 0 : 1, madr, madr + (qwc * 16));
 			}
 		}
+	}
+}
+
+static void memcpy_to_spr(u32 dst, u8* src, size_t size)
+{
+	dst &= _16kb - 1;
+
+	if (dst + size >= _16kb) {
+		size_t end = _16kb - dst;
+		memcpy(&psSu128(dst), src, end);
+
+		src += end;
+		memcpy(&psSu128(0)  , src, size - end);
+	} else {
+		memcpy(&psSu128(dst), src, size);
+	}
+}
+
+static void memcpy_from_spr(u8* dst, u32 src, size_t size)
+{
+	src &= _16kb - 1;
+
+	if (src + size >= _16kb) {
+		size_t end = _16kb - src;
+		memcpy(dst, &psSu128(src), end);
+
+		dst += end;
+		memcpy(dst, &psSu128(0)  , size - end);
+	} else {
+		memcpy(dst, &psSu128(src), size);
 	}
 }
 
@@ -87,28 +115,30 @@ int  _SPR0chain()
 			spr0ch.madr += partialqwc << 4;
 			spr0ch.madr = dmacRegs.rbor.ADDR + (spr0ch.madr & dmacRegs.rbsr.RMSK);
 			spr0ch.sadr += partialqwc << 4;
+			spr0ch.sadr &= 0x3FFF; // Limited to 16K
 			spr0ch.qwc -= partialqwc;
-			
+
 			spr0finished = true;
 	}
 	else
 	{
-			
+
 			//Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
 			//the cycle delay out of the way before the end.
 			partialqwc = spr0ch.qwc;
-			memcpy_qwc(pMem, &psSu128(spr0ch.sadr), partialqwc);
+			memcpy_from_spr((u8*)pMem, spr0ch.sadr, partialqwc*16);
 
 			// clear VU mem also!
 			TestClearVUs(spr0ch.madr, partialqwc, true);
 
 			spr0ch.madr += partialqwc << 4;
 			spr0ch.sadr += partialqwc << 4;
+			spr0ch.sadr &= 0x3FFF; // Limited to 16K
 			spr0ch.qwc -= partialqwc;
 
 	}
 
-	
+
 
 	return (partialqwc); // bus is 1/2 the ee speed
 }
@@ -151,10 +181,11 @@ void _SPR0interleave()
 			case MFD_RESERVED:
 				// clear VU mem also!
 				TestClearVUs(spr0ch.madr, spr0ch.qwc, true);
-				memcpy_qwc(pMem, &psSu128(spr0ch.sadr), spr0ch.qwc);
+				memcpy_from_spr((u8*)pMem, spr0ch.sadr, spr0ch.qwc*16);
 				break;
  		}
 		spr0ch.sadr += spr0ch.qwc * 16;
+		spr0ch.sadr &= 0x3FFF; // Limited to 16K
 		spr0ch.madr += (sqwc + spr0ch.qwc) * 16;
 	}
 
@@ -175,7 +206,7 @@ static __fi void _dmaSPR0()
 		{
 			if (dmacRegs.ctrl.STS == STS_fromSPR)   // STS == fromSPR
 			{
-				Console.WriteLn("SPR stall control Normal not implemented");
+				DevCon.Warning("SPR stall control Normal not implemented");
 			}
 			SPR0chain();
 			spr0finished = true;
@@ -194,6 +225,7 @@ static __fi void _dmaSPR0()
 			// Destination Chain Mode
 			ptag = (tDMA_TAG*)&psSu32(spr0ch.sadr);
 			spr0ch.sadr += 16;
+			spr0ch.sadr &= 0x3FFF; // Limited to 16K
 
 			spr0ch.unsafeTransfer(ptag);
 
@@ -251,8 +283,8 @@ static __fi void _dmaSPR0()
 
 void SPRFROMinterrupt()
 {
-	
-	if (!spr0finished || spr0ch.qwc > 0) 
+
+	if (!spr0finished || spr0ch.qwc > 0)
 	{
 		_dmaSPR0();
 
@@ -263,20 +295,12 @@ void SPRFROMinterrupt()
 			switch (dmacRegs.ctrl.MFD)
 			{
 				case MFD_VIF1: // Most common case.
-				{
-					if ((spr0ch.madr & ~dmacRegs.rbsr.RMSK) != dmacRegs.rbor.ADDR) Console.WriteLn("VIF MFIFO Write outside MFIFO area");
-					spr0ch.madr = dmacRegs.rbor.ADDR + (spr0ch.madr & dmacRegs.rbsr.RMSK);
-					//Console.WriteLn("mfifoVIF1transfer %x madr %x, tadr %x", vif1ch.chcr._u32, vif1ch.madr, vif1ch.tadr);
-					mfifoVIF1transfer(mfifotransferred);
-					mfifotransferred = 0;
-					break;
-				}
 				case MFD_GIF:
 				{
 					if ((spr0ch.madr & ~dmacRegs.rbsr.RMSK) != dmacRegs.rbor.ADDR) Console.WriteLn("GIF MFIFO Write outside MFIFO area");
 					spr0ch.madr = dmacRegs.rbor.ADDR + (spr0ch.madr & dmacRegs.rbsr.RMSK);
 					//Console.WriteLn("mfifoGIFtransfer %x madr %x, tadr %x", gif->chcr._u32, gif->madr, gif->tadr);
-					mfifoGIFtransfer(mfifotransferred);
+					hwMFIFOResume(mfifotransferred);
 					mfifotransferred = 0;
 					break;
 				}
@@ -284,7 +308,7 @@ void SPRFROMinterrupt()
 					break;
 			}
 		}
-		
+
 		return;
 	}
 
@@ -300,10 +324,10 @@ void dmaSPR0()   // fromSPR
 	SPR_LOG("dmaSPR0 chcr = %lx, madr = %lx, qwc  = %lx, sadr = %lx",
 	        spr0ch.chcr._u32, spr0ch.madr, spr0ch.qwc, spr0ch.sadr);
 
-	
+
 	spr0finished = false; //Init
 
-	if(spr0ch.chcr.MOD == CHAIN_MODE && spr0ch.qwc > 0) 
+	if(spr0ch.chcr.MOD == CHAIN_MODE && spr0ch.qwc > 0)
 	{
 		//DevCon.Warning(L"SPR0 QWC on Chain " + spr0ch.chcr.desc());
 		if (spr0ch.chcr.tag().ID == TAG_END) // but not TAG_REFE?
@@ -322,8 +346,9 @@ __fi static void SPR1transfer(const void* data, int qwc)
 		TestClearVUs(spr1ch.madr, spr1ch.qwc, false);
 	}
 
-	memcpy_qwc(&psSu128(spr1ch.sadr), data, qwc);
+	memcpy_to_spr(spr1ch.sadr, (u8*)data, qwc*16);
 	spr1ch.sadr += qwc * 16;
+	spr1ch.sadr &= 0x3FFF; // Limited to 16K
 }
 
 
@@ -346,19 +371,19 @@ int  _SPR1chain()
 	spr1ch.qwc -= partialqwc;
 
 	hwDmacSrcTadrInc(spr1ch);
-	
+
 	return (partialqwc);
 }
 
 __fi void SPR1chain()
 {
 	int cycles = 0;
-	if(!CHECK_IPUWAITHACK) 
+	if(!CHECK_IPUWAITHACK)
 	{
 		cycles =  _SPR1chain() * BIAS;
 		CPU_INT(DMAC_TO_SPR, cycles);
 	}
-	else 
+	else
 	{
 		 _SPR1chain();
 		CPU_INT(DMAC_TO_SPR, 8);
@@ -381,8 +406,9 @@ void _SPR1interleave()
 		spr1ch.qwc = std::min(tqwc, qwc);
 		qwc -= spr1ch.qwc;
 		pMem = SPRdmaGetAddr(spr1ch.madr, false);
-		memcpy_qwc(&psSu128(spr1ch.sadr), pMem, spr1ch.qwc);
+		memcpy_to_spr(spr1ch.sadr, (u8*)pMem, spr1ch.qwc*16);
 		spr1ch.sadr += spr1ch.qwc * 16;
+		spr1ch.sadr &= 0x3FFF; // Limited to 16K
 		spr1ch.madr += (sqwc + spr1ch.qwc) * 16;
 	}
 
@@ -465,10 +491,10 @@ void dmaSPR1()   // toSPR
 	        "        tadr = 0x%x, sadr = 0x%x",
 	        spr1ch.chcr._u32, spr1ch.madr, spr1ch.qwc,
 	        spr1ch.tadr, spr1ch.sadr);
-	
+
 	spr1finished = false; //Init
-	
-	if(spr1ch.chcr.MOD == CHAIN_MODE && spr1ch.qwc > 0) 
+
+	if(spr1ch.chcr.MOD == CHAIN_MODE && spr1ch.qwc > 0)
 	{
 		//DevCon.Warning(L"SPR1 QWC on Chain " + spr1ch.chcr.desc());
 		if ((spr1ch.chcr.tag().ID == TAG_END) || (spr1ch.chcr.tag().ID == TAG_REFE) || (spr1ch.chcr.tag().IRQ && spr1ch.chcr.TIE))

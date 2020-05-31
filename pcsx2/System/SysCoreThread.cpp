@@ -29,13 +29,13 @@
 #include "../DebugTools/SymbolMap.h"
 
 #include "Utilities/PageFaultSource.h"
-#include "Utilities/TlsVariable.inl"
+#include "Utilities/Threading.h"
 
 #ifdef __WXMSW__
 #	include <wx/msw/wrapwin.h>
 #endif
 
-#include <xmmintrin.h>
+#include "x86emitter/x86_intrin.h"
 
 // --------------------------------------------------------------------------------------
 //  SysCoreThread *External Thread* Implementations
@@ -53,9 +53,12 @@ SysCoreThread::SysCoreThread()
 	m_hasActiveMachine		= false;
 }
 
-SysCoreThread::~SysCoreThread() throw()
+SysCoreThread::~SysCoreThread()
 {
-	SysCoreThread::Cancel();
+	try {
+		SysCoreThread::Cancel();
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 void SysCoreThread::Cancel( bool isBlocking )
@@ -67,10 +70,7 @@ void SysCoreThread::Cancel( bool isBlocking )
 bool SysCoreThread::Cancel( const wxTimeSpan& span )
 {
 	m_hasActiveMachine = false;
-	if( _parent::Cancel( span ) )
-		return true;
-
-	return false;
+	return _parent::Cancel( span );
 }
 
 void SysCoreThread::OnStart()
@@ -131,6 +131,7 @@ void SysCoreThread::Reset()
 	GetVmMemory().DecommitAll();
 	SysClearExecutionCache();
 	sApp.PostAppMethod( &Pcsx2App::leaveDebugMode );
+	g_FrameCount = 0;
 }
 
 
@@ -143,7 +144,7 @@ void SysCoreThread::ApplySettings( const Pcsx2Config& src )
 	if( src == EmuConfig ) return;
 
 	if( !pxAssertDev( IsPaused(), "CoreThread is not paused; settings cannot be applied." ) ) return;
-	
+
 	m_resetRecompilers		= ( src.Cpu != EmuConfig.Cpu ) || ( src.Gamefixes != EmuConfig.Gamefixes ) || ( src.Speedhacks != EmuConfig.Speedhacks );
 	m_resetProfilers		= ( src.Profiler != EmuConfig.Profiler );
 	m_resetVsyncTimers		= ( src.GS != EmuConfig.GS );
@@ -193,6 +194,8 @@ void SysCoreThread::_reset_stuff_as_needed()
 
 		m_resetVirtualMachine	= false;
 		m_resetVsyncTimers		= false;
+
+		ForgetLoadedPatches();
 	}
 
 	if( m_resetVsyncTimers )
@@ -221,9 +224,7 @@ void SysCoreThread::DoCpuReset()
 //
 void SysCoreThread::VsyncInThread()
 {
-	if (EmuConfig.EnablePatches) ApplyPatch();
-	if (EmuConfig.EnableCheats)  ApplyCheat();
-	if (EmuConfig.EnableWideScreenPatches)  ApplyCheat();
+	ApplyLoadedPatches(PPT_CONTINUOUSLY);
 }
 
 void SysCoreThread::GameStartingInThread()
@@ -234,8 +235,10 @@ void SysCoreThread::GameStartingInThread()
 	symbolMap.UpdateActiveSymbols();
 	sApp.PostAppMethod(&Pcsx2App::resetDebugger);
 
-	if (EmuConfig.EnablePatches) ApplyPatch(0);
-	if (EmuConfig.EnableCheats)  ApplyCheat(0);
+	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
+#ifdef USE_SAVESLOT_UI_UPDATES
+	UI_UpdateSysControls();
+#endif
 }
 
 bool SysCoreThread::StateCheckInThread()

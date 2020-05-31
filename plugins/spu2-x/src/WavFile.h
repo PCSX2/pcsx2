@@ -16,7 +16,7 @@
  * along with SPU2-X.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Note the file is mostly a copy paste of the WavFile.h from SoundTouch library. It was 
+// Note the file is mostly a copy paste of the WavFile.h from SoundTouch library. It was
 // shrunken to support only output 16 bits wav files
 
 #ifndef WAVFILE_H
@@ -26,44 +26,44 @@
 
 #ifndef uint
 typedef unsigned int uint;
-#endif           
+#endif
 
 
 /// WAV audio file 'riff' section header
-typedef struct 
+typedef struct
 {
     char riff_char[4];
-    int  package_len;
+    int package_len;
     char wave[4];
 } WavRiff;
 
 /// WAV audio file 'format' section header
-typedef struct 
+typedef struct
 {
-    char  fmt[4];
-    int   format_len;
+    char fmt[4];
+    int format_len;
     short fixed;
     short channel_number;
-    int   sample_rate;
-    int   byte_rate;
+    int sample_rate;
+    int byte_rate;
     short byte_per_sample;
     short bits_per_sample;
 } WavFormat;
 
 /// WAV audio file 'data' section header
-typedef struct 
+typedef struct
 {
-    char  data_field[4];
-    uint  data_len;
+    char data_field[4];
+    uint data_len;
 } WavData;
 
 
 /// WAV audio file header
-typedef struct 
+typedef struct
 {
-    WavRiff   riff;
+    WavRiff riff;
     WavFormat format;
-    WavData   data;
+    WavData data;
 } WavHeader;
 
 
@@ -91,12 +91,12 @@ private:
     void writeHeader();
 
 public:
-    /// Constructor: Creates a new WAV file. Throws a 'runtime_error' exception 
+    /// Constructor: Creates a new WAV file. Throws a 'runtime_error' exception
     /// if file creation fails.
-    WavOutFile(const char *fileName,    ///< Filename
-               int sampleRate,          ///< Sample rate (e.g. 44100 etc)
-               int bits,                ///< Bits per sample (8 or 16 bits)
-               int channels             ///< Number of channels (1=mono, 2=stereo)
+    WavOutFile(const char *fileName, ///< Filename
+               int sampleRate,       ///< Sample rate (e.g. 44100 etc)
+               int bits,             ///< Bits per sample (8 or 16 bits)
+               int channels          ///< Number of channels (1=mono, 2=stereo)
                );
 
     /// Destructor: Finalizes & closes the WAV file.
@@ -104,10 +104,9 @@ public:
 
     /// Write data to WAV file. Throws a 'runtime_error' exception if writing to
     /// file fails.
-    void write(const short *buffer,     ///< Pointer to sample data buffer.
-               int numElems             ///< How many array items are to be written to file.
+    void write(const short *buffer, ///< Pointer to sample data buffer.
+               int numElems         ///< How many array items are to be written to file.
                );
-
 };
 
 #endif

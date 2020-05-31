@@ -20,7 +20,7 @@
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 
-extern int GSOpenWindow(void *pDsp, char *Title);
+extern int GSOpenWindow(void *pDsp, const char *Title);
 extern int GSOpenWindow2(void *pDsp, u32 flags);
 extern void GSCloseWindow();
 extern void GSProcessMessages();

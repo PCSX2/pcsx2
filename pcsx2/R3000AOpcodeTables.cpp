@@ -71,14 +71,31 @@ void psxSLTU() 	{ if (!_Rd_) return; _rRd_ = _u32(_rRs_) < _u32(_rRt_); }	// Rd 
 * Format:  OP rs, rt                                     *
 *********************************************************/
 void psxDIV() {
-	if (_rRt_ != 0) {
+	if (_rRt_ == 0) {
+		// Division by 0
+		_rLo_ = _i32(_rRs_) < 0 ? 1 : 0xFFFFFFFFu;
+		_rHi_ = _rRs_;
+
+	} else if (_rRs_ == 0x80000000u && _rRt_ == 0xFFFFFFFFu) {
+		// x86 overflow
+		_rLo_ = 0x80000000u;
+		_rHi_ = 0;
+
+	} else {
+		// Normal behavior
 		_rLo_ = _i32(_rRs_) / _i32(_rRt_);
 		_rHi_ = _i32(_rRs_) % _i32(_rRt_);
 	}
 }
 
 void psxDIVU() {
-	if (_rRt_ != 0) {
+	if (_rRt_ == 0) {
+		// Division by 0
+		_rLo_ = 0xFFFFFFFFu;
+		_rHi_ = _rRs_;
+
+	} else {
+		// Normal behavior
 		_rLo_ = _rRs_ / _rRt_;
 		_rHi_ = _rRs_ % _rRt_;
 	}
@@ -311,20 +328,27 @@ void psxCOP0() {
 	psxCP0[_Rs_]();
 }
 
+void psxCOP2() {
+	psxCP2[_Funct_]();
+}
 
-void (*psxBSC[64])() = {
+void psxBASIC() {
+	psxCP2BSC[_Rs_]();
+}
+
+void(*psxBSC[64])() = {
 	psxSPECIAL, psxREGIMM, psxJ   , psxJAL  , psxBEQ , psxBNE , psxBLEZ, psxBGTZ, //7
 	psxADDI   , psxADDIU , psxSLTI, psxSLTIU, psxANDI, psxORI , psxXORI, psxLUI , //15
-	psxCOP0   , psxNULL  , psxNULL, psxNULL , psxNULL, psxNULL, psxNULL, psxNULL, //23
+	psxCOP0   , psxNULL  , psxCOP2, psxNULL , psxNULL, psxNULL, psxNULL, psxNULL, //23
 	psxNULL   , psxNULL  , psxNULL, psxNULL , psxNULL, psxNULL, psxNULL, psxNULL, //31
 	psxLB     , psxLH    , psxLWL , psxLW   , psxLBU , psxLHU , psxLWR , psxNULL, //39
 	psxSB     , psxSH    , psxSWL , psxSW   , psxNULL, psxNULL, psxSWR , psxNULL, //47
-	psxNULL   , psxNULL  , psxNULL, psxNULL , psxNULL, psxNULL, psxNULL, psxNULL, //55
-	psxNULL   , psxNULL  , psxNULL, psxNULL  , psxNULL, psxNULL, psxNULL, psxNULL //63
+	psxNULL   , psxNULL  , gteLWC2, psxNULL , psxNULL, psxNULL, psxNULL, psxNULL, //55
+	psxNULL   , psxNULL  , gteSWC2, psxNULL  , psxNULL, psxNULL, psxNULL, psxNULL //63
 };
 
 
-void (*psxSPC[64])() = {
+void(*psxSPC[64])() = {
 	psxSLL , psxNULL , psxSRL , psxSRA , psxSLLV   , psxNULL , psxSRLV, psxSRAV,
 	psxJR  , psxJALR , psxNULL, psxNULL, psxSYSCALL, psxBREAK, psxNULL, psxNULL,
 	psxMFHI, psxMTHI , psxMFLO, psxMTLO, psxNULL   , psxNULL , psxNULL, psxNULL,
@@ -335,16 +359,34 @@ void (*psxSPC[64])() = {
 	psxNULL, psxNULL , psxNULL, psxNULL, psxNULL   , psxNULL , psxNULL, psxNULL
 };
 
-void (*psxREG[32])() = {
+void(*psxREG[32])() = {
 	psxBLTZ  , psxBGEZ  , psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
 	psxNULL  , psxNULL  , psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
 	psxBLTZAL, psxBGEZAL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
 	psxNULL  , psxNULL  , psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL
 };
 
-void (*psxCP0[32])() = {
+void(*psxCP0[32])() = {
 	psxMFC0, psxNULL, psxCFC0, psxNULL, psxMTC0, psxNULL, psxCTC0, psxNULL,
 	psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
 	psxRFE , psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
+	psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL
+};
+
+void (*psxCP2[64])() = {
+	psxBASIC, gteRTPS , psxNULL , psxNULL, psxNULL, psxNULL , gteNCLIP, psxNULL, // 00
+	psxNULL , psxNULL , psxNULL , psxNULL, gteOP  , psxNULL , psxNULL , psxNULL, // 08
+	gteDPCS , gteINTPL, gteMVMVA, gteNCDS, gteCDP , psxNULL , gteNCDT , psxNULL, // 10
+	psxNULL , psxNULL , psxNULL , gteNCCS, gteCC  , psxNULL , gteNCS  , psxNULL, // 18
+	gteNCT  , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 20
+	gteSQR  , gteDCPL , gteDPCT , psxNULL, psxNULL, gteAVSZ3, gteAVSZ4, psxNULL, // 28 
+	gteRTPT , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 30
+	psxNULL , psxNULL , psxNULL , psxNULL, psxNULL, gteGPF  , gteGPL  , gteNCCT  // 38
+};
+
+void(*psxCP2BSC[32])() = {
+	gteMFC2, psxNULL, gteCFC2, psxNULL, gteMTC2, psxNULL, gteCTC2, psxNULL,
+	psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
+	psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
 	psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL
 };

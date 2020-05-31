@@ -16,6 +16,7 @@
 
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
+#include "App.h" // For host irx injection hack
 
 using namespace R3000A;
 
@@ -39,9 +40,9 @@ void psxBGEZ()         // Branch if Rs >= 0
 
 void psxBGEZAL()   // Branch if Rs >= 0 and link
 {
+	_SetLink(31);
 	if (_i32(_rRs_) >= 0)
 	{
-		_SetLink(31);
 		doBranch(_BranchTarget_);
 	}
 }
@@ -62,9 +63,9 @@ void psxBLTZ()          // Branch if Rs <  0
 
 void psxBLTZAL()    // Branch if Rs <  0 and link
 {
+	_SetLink(31);
 	if (_i32(_rRs_) < 0)
 		{
-			_SetLink(31);
 			doBranch(_BranchTarget_);
 		}
 }
@@ -92,7 +93,7 @@ void psxJ()
 {
 	// check for iop module import table magic
 	u32 delayslot = iopMemRead32(psxRegs.pc);
-	if (delayslot >> 16 == 0x2400 && irxImportExec(irxImportLibname(psxRegs.pc), delayslot & 0xffff))
+	if (delayslot >> 16 == 0x2400 && irxImportExec(irxImportTableAddr(psxRegs.pc), delayslot & 0xffff))
 		return;
 
 	doBranch(_JumpTarget_);
@@ -127,17 +128,32 @@ void psxJALR()
 
 static __fi void execI()
 {
+	// Inject IRX hack
+	if (psxRegs.pc == 0x1630 && g_Conf->CurrentIRX.Length() > 3) {
+		if (iopMemRead32(0x20018) == 0x1F) {
+			// FIXME do I need to increase the module count (0x1F -> 0x20)
+			iopMemWrite32(0x20094, 0xbffc0000);
+		}
+	}
+
 	psxRegs.code = iopMemRead32(psxRegs.pc);
 
 		PSXCPU_LOG("%s", disR3000AF(psxRegs.code, psxRegs.pc));
 
 	psxRegs.pc+= 4;
 	psxRegs.cycle++;
-	iopCycleEE-=8;
-
+	
+	if ((psxHu32(HW_ICFG) & (1 << 3)))
+	{
+		//One of the Iop to EE delta clocks to be set in PS1 mode.
+		iopCycleEE-=9;
+	}
+	else
+	{   //default ps2 mode value
+		iopCycleEE-=8;
+	}
 	psxBSC[psxRegs.code >> 26]();
 }
-
 
 static void doBranch(s32 tar) {
 	branch2 = iopIsDelaySlot = true;
@@ -170,6 +186,9 @@ static s32 intExecuteBlock( s32 eeCycles )
 	iopCycleEE = eeCycles;
 
 	while (iopCycleEE > 0){
+		if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
+			psxBiosCall();
+
 		branch2 = 0;
 		while (!branch2) {
 			execI();

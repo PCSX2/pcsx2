@@ -63,26 +63,15 @@ inline u64 GetMicroTime()
 #endif
 }
 
-#if !defined(_MSC_VER) && !defined(HAVE_ALIGNED_MALLOC)
-
-#include <assert.h>
-
+#if !defined(_MSC_VER)
 // declare linux equivalents (alignment must be power of 2 (1,2,4...2^15)
-static __forceinline void* pcsx2_aligned_malloc(size_t size, size_t alignment) {
-	assert(alignment <= 0x8000);
-	uptr r = (uptr)malloc(size + --alignment + 2);
-	uptr o = (r + 2 + alignment) & ~(uptr)alignment;
-	if (!r) return NULL;
-	((u16*)o)[-1] = (u16)(o-r);
-	return (void*)o;
+static __forceinline void* _aligned_malloc(size_t size, size_t alignment) {
+	void *result=0;
+	posix_memalign(&result, alignment, size);
+	return result;
 }
 
-static __forceinline void pcsx2_aligned_free(void* p) {
-	if (!p) return;
-	free((void*)((uptr)p-((u16*)p)[-1]));
+static __forceinline void _aligned_free(void* p) {
+	free(p);
 }
-
-
-#define _aligned_malloc pcsx2_aligned_malloc
-#define _aligned_free pcsx2_aligned_free
 #endif

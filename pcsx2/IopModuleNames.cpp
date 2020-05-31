@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define MODULE(n) if (!strncmp(libname, #n, 8)) switch (index) {
+#define MODULE(n) if (#n == libname) switch (index) {
 #define END_MODULE }
 #define EXPORT(i, n) case (i): return #n;
 

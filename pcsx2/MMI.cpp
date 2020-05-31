@@ -16,6 +16,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
+#include "Utilities/MathUtils.h"
 
 namespace R5900 {
 namespace Interpreter {
@@ -145,30 +146,13 @@ namespace MMI {
 
 //*****************MMI OPCODES*********************************
 
-static __fi void _PLZCW(int n)
-{
-	// This function counts the number of "like" bits in the source register, starting
-	// with the MSB and working its way down, and returns the result MINUS ONE.
-	// So 0xff00 would return 7, not 8.
-
-	int c = 0;
-	s32 i = cpuRegs.GPR.r[_Rs_].SL[n];
-
-	// Negate the source based on the sign bit.  This allows us to use a simple
-	// unified bit test of the MSB for either condition.
-	if( i >= 0 ) i = ~i;
-
-	// shift first, compare, then increment.  This excludes the sign bit from our final count.
-	while( i <<= 1, i < 0 ) c++;
-
-	cpuRegs.GPR.r[_Rd_].UL[n] = c;
-}
-
 void PLZCW() {
-    if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
-	_PLZCW (0);
-	_PLZCW (1);
+	// Return the leading sign bits, excluding the original bit
+	cpuRegs.GPR.r[_Rd_].UL[0] = count_leading_sign_bits(cpuRegs.GPR.r[_Rs_].SL[0]) - 1;
+	cpuRegs.GPR.r[_Rd_].UL[1] = count_leading_sign_bits(cpuRegs.GPR.r[_Rs_].SL[1]) - 1;
 }
 
 __fi void PMFHL_CLAMP(u16& dst, s32 src)
@@ -199,18 +183,20 @@ void PMFHL() {
 		case 0x02: // SLW
 			{
 				s64 TempS64 = ((u64)cpuRegs.HI.UL[0] << 32) | (u64)cpuRegs.LO.UL[0];
+											
 				if (TempS64 >= 0x000000007fffffffLL) {
 					cpuRegs.GPR.r[_Rd_].UD[0] = 0x000000007fffffffLL;
-				} else if (TempS64 <= 0xffffffff80000000LL) {
+				} else if (TempS64 <= -0x80000000LL) {
 					cpuRegs.GPR.r[_Rd_].UD[0] = 0xffffffff80000000LL;
 				} else {
 					cpuRegs.GPR.r[_Rd_].UD[0] = (s64)cpuRegs.LO.SL[0];
 				}
 
 				TempS64 = ((u64)cpuRegs.HI.UL[2] << 32) | (u64)cpuRegs.LO.UL[2];
+
 				if (TempS64 >= 0x000000007fffffffLL) {
 					cpuRegs.GPR.r[_Rd_].UD[1] = 0x000000007fffffffLL;
-				} else if (TempS64 <= 0xffffffff80000000LL) {
+				} else if (TempS64 <= -0x80000000LL) {
 					cpuRegs.GPR.r[_Rd_].UD[1] = 0xffffffff80000000LL;
 				} else {
 					cpuRegs.GPR.r[_Rd_].UD[1] = (s64)cpuRegs.LO.SL[2];
@@ -1046,8 +1032,12 @@ void QFSRV() {				// JayteeMaster: changed a bit to avoid screw up
 			*/
 			Rd.UD[0] = cpuRegs.GPR.r[_Rt_].UD[1] >> (sa_amt - 64);
 			Rd.UD[1] = cpuRegs.GPR.r[_Rs_].UD[0] >> (sa_amt - 64);
-			Rd.UD[0]|= cpuRegs.GPR.r[_Rs_].UD[0] << (128 - sa_amt);
-			Rd.UD[1]|= cpuRegs.GPR.r[_Rs_].UD[1] << (128 - sa_amt);
+			if (sa_amt != 64) {
+				// A 64 bit shift is equivalent to a 0 bit shift because value is masked
+				// on 6 bits
+				Rd.UD[0]|= cpuRegs.GPR.r[_Rs_].UD[0] << (128u - sa_amt);
+				Rd.UD[1]|= cpuRegs.GPR.r[_Rs_].UD[1] << (128u - sa_amt);
+			}
 			cpuRegs.GPR.r[_Rd_] = Rd;
 		}
 	}
@@ -1059,13 +1049,27 @@ void QFSRV() {				// JayteeMaster: changed a bit to avoid screw up
 
 static __fi void _PMADDW(int dd, int ss)
 {
-	s64 temp = (s64)((s64)cpuRegs.LO.SL[ss] | ((s64)cpuRegs.HI.SL[ss] << 32)) +
-			   ((s64)cpuRegs.GPR.r[_Rs_].SL[ss] * (s64)cpuRegs.GPR.r[_Rt_].SL[ss]);
+	s64 temp = ((s64)cpuRegs.GPR.r[_Rs_].SL[ss] * (s64)cpuRegs.GPR.r[_Rt_].SL[ss]);
+	s64 temp2 = temp + ((s64)cpuRegs.HI.SL[ss] << 32);
 
-	cpuRegs.LO.SD[dd] = (s32)(temp & 0xffffffff);
-	cpuRegs.HI.SD[dd] = (s32)(temp >> 32);
+	//Playstation 2 division voodoo, for some reason only the lower half is affected
+	if (ss == 0)
+	{
+		if (((cpuRegs.GPR.r[_Rt_].SL[ss] & 0x7FFFFFFF) == 0 || (cpuRegs.GPR.r[_Rt_].SL[ss] & 0x7FFFFFFF) == 0x7FFFFFFF) &&
+			cpuRegs.GPR.r[_Rs_].SL[ss] != cpuRegs.GPR.r[_Rt_].SL[ss])
+			temp2 += 0x70000000;
+	}
+	//Multiplication error on the PS2 causes this not to be exactly >> 32 (off by 1)
+	temp2 = (s32)(temp2 / 4294967295);
 
-	if (_Rd_) cpuRegs.GPR.r[_Rd_].SD[dd] = temp;
+	cpuRegs.LO.SD[dd] = (s32)(temp & 0xffffffff) + cpuRegs.LO.SL[ss];
+	cpuRegs.HI.SD[dd] = (s32)temp2;
+
+	if (_Rd_)
+	{
+		cpuRegs.GPR.r[_Rd_].UL[dd * 2] = cpuRegs.LO.UL[dd * 2];
+		cpuRegs.GPR.r[_Rd_].UL[(dd * 2) + 1] = cpuRegs.HI.UL[dd * 2];
+	}
 }
 
 void PMADDW() {
@@ -1093,13 +1097,20 @@ void PSRLVW() {
 
 __fi void  _PMSUBW(int dd, int ss)
 {
-	s64 temp = (s64)((s64)cpuRegs.LO.SL[ss] | ((s64)cpuRegs.HI.SL[ss] << 32)) -
-			   ((s64)cpuRegs.GPR.r[_Rs_].SL[ss] * (s64)cpuRegs.GPR.r[_Rt_].SL[ss]);
+	s64 temp = ((s64)cpuRegs.GPR.r[_Rs_].SL[ss] * (s64)cpuRegs.GPR.r[_Rt_].SL[ss]);
+	s64 temp2 = ((s64)cpuRegs.HI.SL[ss] << 32) - temp;
 
-	cpuRegs.LO.SD[dd] = (s32)(temp & 0xffffffff);
-	cpuRegs.HI.SD[dd] = (s32)(temp >> 32);
+	//Multiplication error on the PS2 causes this not to be exactly >> 32 (off by 1)
+	temp2 = (s32)(temp2 / 4294967295);
 
-	if (_Rd_) cpuRegs.GPR.r[_Rd_].SD[dd] = temp;
+	cpuRegs.LO.SD[dd] = cpuRegs.LO.SL[ss] - (s32)(temp & 0xffffffff);
+	cpuRegs.HI.SD[dd] = (s32)temp2;
+
+	if (_Rd_)
+	{
+		cpuRegs.GPR.r[_Rd_].UL[dd * 2] = cpuRegs.LO.UL[dd * 2];
+		cpuRegs.GPR.r[_Rd_].UL[(dd * 2) + 1] = cpuRegs.HI.UL[dd * 2];
+	}
 }
 
 void PMSUBW() {
@@ -1311,28 +1322,28 @@ void PMSUBH() {			// JayteeMaster: changed a bit to avoid screw up
 }
 
 // JayteeMaster: changed a bit to avoid screw up
-static __fi void _PHMSBH_LO(int dd, int n, int rdd)
+static __fi void _PHMSBH_LO(int dd, int n)
 {
 	s32 firsttemp =        (s32)cpuRegs.GPR.r[_Rs_].SS[n+1] * (s32)cpuRegs.GPR.r[_Rt_].SS[n+1];
 	s32 temp = firsttemp - (s32)cpuRegs.GPR.r[_Rs_].SS[n]   * (s32)cpuRegs.GPR.r[_Rt_].SS[n];
 
 	cpuRegs.LO.UL[dd] = temp;
-	cpuRegs.LO.UL[dd+1] = ~firsttemp;
+	cpuRegs.LO.UL[dd+1] = ~firsttemp;  // undocumented behaviour
 }
-static __fi void _PHMSBH_HI(int dd, int n, int rdd)
+static __fi void _PHMSBH_HI(int dd, int n)
 {
 	s32 firsttemp =        (s32)cpuRegs.GPR.r[_Rs_].SS[n+1] * (s32)cpuRegs.GPR.r[_Rt_].SS[n+1];
 	s32 temp = firsttemp - (s32)cpuRegs.GPR.r[_Rs_].SS[n]   * (s32)cpuRegs.GPR.r[_Rt_].SS[n];
 
 	cpuRegs.HI.UL[dd] = temp;
-	cpuRegs.HI.UL[dd+1] = ~firsttemp;
+	cpuRegs.HI.UL[dd+1] = ~firsttemp;  // undocumented behaviour
 }
 
 void PHMSBH() {		// JayteeMaster: changed a bit to avoid screw up
-	_PHMSBH_LO(0, 0, 0);
-	_PHMSBH_HI(0, 2, 1);
-	_PHMSBH_LO(2, 4, 2);
-	_PHMSBH_HI(2, 6, 3);
+	_PHMSBH_LO(0, 0);
+	_PHMSBH_HI(0, 2);
+	_PHMSBH_LO(2, 4);
+	_PHMSBH_HI(2, 6);
 	if (_Rd_) {
 		cpuRegs.GPR.r[_Rd_].UL[0] = cpuRegs.LO.UL[0];
 		cpuRegs.GPR.r[_Rd_].UL[1] = cpuRegs.HI.UL[0];

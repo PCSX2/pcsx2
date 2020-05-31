@@ -32,37 +32,56 @@
 #include "Pcsx2Api.h"
 
 typedef void (*DEV9callback)(int cycles);
-typedef int  (*DEV9handler)(void);
+typedef int (*DEV9handler)(void);
 
 // Basic functions.
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
 // If you want to use them, need to save and restore current ones
-EXPORT_C_(s32) DEV9init();
+EXPORT_C_(s32)
+DEV9init();
 
 // pDisplay normally is passed a handle to the GS plugins window.
-EXPORT_C_(s32) DEV9open(void *pDisplay);
-EXPORT_C_(void) DEV9close();
-EXPORT_C_(void) DEV9shutdown();
-EXPORT_C_(u8) DEV9read8(u32 addr);
-EXPORT_C_(u16) DEV9read16(u32 addr);
-EXPORT_C_(u32) DEV9read32(u32 addr);
-EXPORT_C_(void) DEV9write8(u32 addr,  u8 value);
-EXPORT_C_(void) DEV9write16(u32 addr, u16 value);
-EXPORT_C_(void) DEV9write32(u32 addr, u32 value);
-EXPORT_C_(void) DEV9readDMA8Mem(u32 *pMem, int size);
-EXPORT_C_(void) DEV9writeDMA8Mem(u32 *pMem, int size);
+EXPORT_C_(s32)
+DEV9open(void *pDisplay);
+EXPORT_C_(void)
+DEV9close();
+EXPORT_C_(void)
+DEV9shutdown();
+EXPORT_C_(u8)
+DEV9read8(u32 addr);
+EXPORT_C_(u16)
+DEV9read16(u32 addr);
+EXPORT_C_(u32)
+DEV9read32(u32 addr);
+EXPORT_C_(void)
+DEV9write8(u32 addr, u8 value);
+EXPORT_C_(void)
+DEV9write16(u32 addr, u16 value);
+EXPORT_C_(void)
+DEV9write32(u32 addr, u32 value);
+EXPORT_C_(void)
+DEV9readDMA8Mem(u32 *pMem, int size);
+EXPORT_C_(void)
+DEV9writeDMA8Mem(u32 *pMem, int size);
 
 // cycles = IOP cycles before calling callback,
 // if callback returns 1 the irq is triggered, else not
-EXPORT_C_(void) DEV9irqCallback(DEV9callback callback);
-EXPORT_C_(DEV9handler) DEV9irqHandler(void);
+EXPORT_C_(void)
+DEV9irqCallback(DEV9callback callback);
+EXPORT_C_(DEV9handler)
+DEV9irqHandler(void);
 
 // Extended functions
 
-EXPORT_C_(void) DEV9keyEvent(keyEvent *ev);
-EXPORT_C_(s32) DEV9freeze(u8 mode, freezeData *data);
-EXPORT_C_(void) DEV9configure();
-EXPORT_C_(void) DEV9about();
-EXPORT_C_(s32)  DEV9test();
+EXPORT_C_(void)
+DEV9keyEvent(keyEvent *ev);
+EXPORT_C_(s32)
+DEV9freeze(u8 mode, freezeData *data);
+EXPORT_C_(void)
+DEV9configure();
+EXPORT_C_(void)
+DEV9about();
+EXPORT_C_(s32)
+DEV9test();
 
 #endif // __DEV9API_H__

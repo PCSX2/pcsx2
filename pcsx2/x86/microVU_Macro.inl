@@ -232,7 +232,7 @@ INTERPRETATE_COP2_FUNC(CALLMSR);
 void _setupBranchTest(u32*(jmpType)(u32), bool isLikely) {
 	printCOP2("COP2 Branch");
 	_eeFlushAllUnused();
-	TEST32ItoM((uptr)&vif1Regs.stat._u32, 0x4);
+	xTEST(ptr32[&vif1Regs.stat._u32], 0x4);
 	//TEST32ItoM((uptr)&VU0.VI[REG_VPU_STAT].UL, 0x100);
 	recDoBranchImm(jmpType(0), isLikely);
 }
@@ -249,15 +249,15 @@ void recBC2TL() { _setupBranchTest(JZ32,  true);  }
 void COP2_Interlock(bool mBitSync) {
 	if (cpuRegs.code & 1) {
 		iFlushCall(FLUSH_EVERYTHING | FLUSH_PC);
-		if (mBitSync) xCALL(_vu0WaitMicro);
-		else		  xCALL(_vu0FinishMicro);
+		if (mBitSync) xFastCall((void*)_vu0WaitMicro);
+		else		  xFastCall((void*)_vu0FinishMicro);
 	}
 }
 
 void TEST_FBRST_RESET(FnType_Void* resetFunct, int vuIndex) {
 	xTEST(eax, (vuIndex) ? 0x200 : 0x002);
 	xForwardJZ8 skip;
-		xCALL(resetFunct);
+		xFastCall((void*)resetFunct);
 		xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	skip.SetTarget();
 }
@@ -275,6 +275,43 @@ static void recCFC2() {
 		mVUallocSFLAGc(eax, gprF0, 0);
 	}
 	else xMOV(eax, ptr32[&vu0Regs.VI[_Rd_].UL]);
+
+	if (_Rd_ == REG_TPC) { // Divide TPC register value by 8 during copying
+		// Ok, this deserves an explanation.
+		// Accoring to the official PS2 VU0 coding manual there are 3 ways to execute a micro subroutine on VU0
+		// one of which is using the VCALLMSR intruction.
+		// The manual requires putting the address of the micro subroutine
+		// into the CMSAR0 register divided by 8 using the CTC2 command before executing VCALLMSR.
+		// Many games (for instance, 24: The Game, GTA LCS, GTA VCS and FFXII) do in fact use this way, 
+		// they diligently put the address of the micro subroutine into a separate register (v0, v1 etc), divide it by 8
+		// and move it to CMSAR0 by calling the CTC2 command.
+	
+		// However, there are also at least 2 confirmed games (R Racing Evolution, Street Fighter EX3) 
+		// that execute a piece of code to run a micro subroutine on VU0 like this:
+		// 
+		// ...
+		// cfc2	t4, TPC
+		// ctc2	t4, CMSAR0
+		// callmsr
+		// ...
+		//
+		// Interestingly enough there is no division by 8 but it works fine in these 2 mentioned games.
+		// It means the division operation is implicit.
+		// Homebrew tests for the real PS2 have shown that in fact the instruction "cfc2 t4, TPC" ends up with values that are not always divisible by 8.
+
+		// There are 2 possibilities: either the CFC2 instruction divides the value of the TPC (which is the Program Counter register
+		// for micro subroutines) by 8 itself during copying or the TPC register always works with addresses already divided by 8.
+		// The latter seems less possible because the Program Counter register by definition holds the memory address of the instruction.
+		// In addition, PCSX2 already implements TPC as an instruction pointer so we'll assume that division by 8 
+		// is done by CFC2 while working with the TPC register.
+		// (fixes R Racing Evolution and Street Fighter EX3)
+		
+		//xSHR(eax, 3);
+
+		//Update Refraction - Don't need to do this anymore as addresses are fed in divided by 8 always.
+		//Games such at The Incredible Hulk will read VU1's TPC from VU0 (which will already be multiplied by 8) then try to use CMSAR1 (which will also multiply by 8)
+		//So everything is now fed in without multiplication
+	}
 
 	// FixMe: Should R-Reg have upper 9 bits 0?
 	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
@@ -316,8 +353,8 @@ static void recCTC2() {
 				xMOV(ecx, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 			}
 			else xXOR(ecx, ecx);
-			xCALL(vu1ExecMicro);
-			xCALL(vif1VUFinish);
+			xFastCall((void*)vu1ExecMicro, ecx);
+			xFastCall((void*)vif1VUFinish);
 			break;
 		case REG_FBRST:
 			if (!_Rt_) { 
@@ -336,8 +373,7 @@ static void recCTC2() {
 			// Executing vu0 block here fixes the intro of Ratchet and Clank
 			// sVU's COP2 has a comment that "Donald Duck" needs this too...
 			if (_Rd_) _eeMoveGPRtoM((uptr)&vu0Regs.VI[_Rd_].UL, _Rt_);
-			xMOV(ecx, (uptr)CpuVU0);
-			xCALL(BaseVUmicroCPU::ExecuteBlockJIT);
+			xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, (uptr)CpuVU0);
 			break;
 	}
 }

@@ -153,8 +153,8 @@ mVUop(mVU_RSQRT) {
 #define EATANhelper(addr) {				\
 	SSE_MULSS(mVU, t2, Fs);				\
 	SSE_MULSS(mVU, t2, Fs);				\
-	xMOVAPS       (t1, t2);				\
-	xMUL.SS       (t1, ptr32[addr]);	\
+	xMOVAPS	   (t1, t2);				\
+	xMUL.SS	   (t1, ptr32[addr]);	\
 	SSE_ADDSS(mVU, PQ, t1);				\
 }
 
@@ -182,7 +182,7 @@ mVUop(mVU_EATAN) {
 		const xmm& t2 = mVU.regAlloc->allocReg();
 		xPSHUF.D(xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
 		xMOVSS (xmmPQ, Fs);
-		xSUB.SS(Fs,    ptr32[mVUglob.one]);
+		xSUB.SS(Fs,	ptr32[mVUglob.one]);
 		xADD.SS(xmmPQ, ptr32[mVUglob.one]);
 		SSE_DIVSS(mVU, Fs, xmmPQ);
 		mVU_EATAN_(mVU, xmmPQ, Fs, t1, t2);
@@ -238,8 +238,8 @@ mVUop(mVU_EATANxz) {
 
 #define eexpHelper(addr) {				\
 	SSE_MULSS(mVU, t2, Fs);				\
-	xMOVAPS       (t1, t2);				\
-	xMUL.SS       (t1, ptr32[addr]);	\
+	xMOVAPS	   (t1, t2);				\
+	xMUL.SS	   (t1, ptr32[addr]);	\
 	SSE_ADDSS(mVU, xmmPQ, t1);			\
 }
 
@@ -253,22 +253,22 @@ mVUop(mVU_EEXP) {
 		xMOVSS  (xmmPQ, Fs);
 		xMUL.SS (xmmPQ, ptr32[mVUglob.E1]);
 		xADD.SS (xmmPQ, ptr32[mVUglob.one]);
-		xMOVAPS       (t1, Fs);
+		xMOVAPS	   (t1, Fs);
 		SSE_MULSS(mVU, t1, Fs);
-		xMOVAPS       (t2, t1);
-		xMUL.SS       (t1, ptr32[mVUglob.E2]);
+		xMOVAPS	   (t2, t1);
+		xMUL.SS	   (t1, ptr32[mVUglob.E2]);
 		SSE_ADDSS(mVU, xmmPQ, t1);
 		eexpHelper(&mVUglob.E3);
 		eexpHelper(&mVUglob.E4);
 		eexpHelper(&mVUglob.E5);
 		SSE_MULSS(mVU, t2, Fs);
-		xMUL.SS       (t2, ptr32[mVUglob.E6]);
+		xMUL.SS	   (t2, ptr32[mVUglob.E6]);
 		SSE_ADDSS(mVU, xmmPQ, t2);
 		SSE_MULSS(mVU, xmmPQ, xmmPQ);
 		SSE_MULSS(mVU, xmmPQ, xmmPQ);
-		xMOVSSZX      (t2, ptr32[mVUglob.one]);
+		xMOVSSZX	  (t2, ptr32[mVUglob.one]);
 		SSE_DIVSS(mVU, t2, xmmPQ);
-		xMOVSS        (xmmPQ, t2);
+		xMOVSS		(xmmPQ, t2);
 		xPSHUF.D(xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.regAlloc->clearNeeded(t1);
@@ -285,12 +285,12 @@ static __fi void mVU_sumXYZ(mV, const xmm& PQ, const xmm& Fs) {
 		xMOVSS(PQ, Fs);
 	}
 	else {
-		SSE_MULPS(mVU, Fs, Fs);       // wzyx ^ 2
-		xMOVSS        (PQ, Fs);		  // x ^ 2
-		xPSHUF.D      (Fs, Fs, 0xe1); // wzyx -> wzxy
-		SSE_ADDSS(mVU, PQ, Fs);       // x ^ 2 + y ^ 2
-		xPSHUF.D      (Fs, Fs, 0xd2); // wzxy -> wxyz
-		SSE_ADDSS(mVU, PQ, Fs);       // x ^ 2 + y ^ 2 + z ^ 2
+		SSE_MULPS(mVU, Fs, Fs);	   // wzyx ^ 2
+		xMOVSS		(PQ, Fs);		  // x ^ 2
+		xPSHUF.D	  (Fs, Fs, 0xe1); // wzyx -> wzxy
+		SSE_ADDSS(mVU, PQ, Fs);	   // x ^ 2 + y ^ 2
+		xPSHUF.D	  (Fs, Fs, 0xd2); // wzxy -> wxyz
+		SSE_ADDSS(mVU, PQ, Fs);	   // x ^ 2 + y ^ 2 + z ^ 2
 	}
 }
 
@@ -298,10 +298,10 @@ mVUop(mVU_ELENG) {
 	pass1 { mVUanalyzeEFU2(mVU, _Fs_, 18); }
 	pass2 {
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
-		xPSHUF.D       (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
+		xPSHUF.D	   (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
 		mVU_sumXYZ(mVU, xmmPQ, Fs);
-		xSQRT.SS       (xmmPQ, xmmPQ);
-		xPSHUF.D       (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
+		xSQRT.SS	   (xmmPQ, xmmPQ);
+		xPSHUF.D	   (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.profiler.EmitOp(opELENG);
 	}
@@ -312,12 +312,12 @@ mVUop(mVU_ERCPR) {
 	pass1 { mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 12); }
 	pass2 {
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, (1 << (3 - _Fsf_)));
-		xPSHUF.D      (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
-		xMOVSS        (xmmPQ, Fs);
-		xMOVSSZX      (Fs, ptr32[mVUglob.one]);
+		xPSHUF.D	  (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
+		xMOVSS		(xmmPQ, Fs);
+		xMOVSSZX	  (Fs, ptr32[mVUglob.one]);
 		SSE_DIVSS(mVU, Fs, xmmPQ);
-		xMOVSS        (xmmPQ, Fs);
-		xPSHUF.D      (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
+		xMOVSS		(xmmPQ, Fs);
+		xPSHUF.D	  (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.profiler.EmitOp(opERCPR);
 	}
@@ -328,13 +328,13 @@ mVUop(mVU_ERLENG) {
 	pass1 { mVUanalyzeEFU2(mVU, _Fs_, 24); }
 	pass2 {
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
-		xPSHUF.D       (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
+		xPSHUF.D	   (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
 		mVU_sumXYZ(mVU, xmmPQ, Fs);
-		xSQRT.SS       (xmmPQ, xmmPQ);
-		xMOVSSZX       (Fs, ptr32[mVUglob.one]);
+		xSQRT.SS	   (xmmPQ, xmmPQ);
+		xMOVSSZX	   (Fs, ptr32[mVUglob.one]);
 		SSE_DIVSS (mVU, Fs, xmmPQ);
-		xMOVSS         (xmmPQ, Fs);
-		xPSHUF.D       (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
+		xMOVSS		 (xmmPQ, Fs);
+		xPSHUF.D	   (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.profiler.EmitOp(opERLENG);
 	}
@@ -345,12 +345,12 @@ mVUop(mVU_ERSADD) {
 	pass1 { mVUanalyzeEFU2(mVU, _Fs_, 18); }
 	pass2 {
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
-		xPSHUF.D       (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
+		xPSHUF.D	   (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
 		mVU_sumXYZ(mVU, xmmPQ, Fs);
-		xMOVSSZX       (Fs, ptr32[mVUglob.one]);
+		xMOVSSZX	   (Fs, ptr32[mVUglob.one]);
 		SSE_DIVSS (mVU, Fs, xmmPQ);
-		xMOVSS         (xmmPQ, Fs);
-		xPSHUF.D       (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
+		xMOVSS		 (xmmPQ, Fs);
+		xPSHUF.D	   (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.profiler.EmitOp(opERSADD);
 	}
@@ -361,13 +361,13 @@ mVUop(mVU_ERSQRT) {
 	pass1 { mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 18); }
 	pass2 {
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, (1 << (3 - _Fsf_)));
-		xPSHUF.D      (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
-		xAND.PS       (Fs, ptr128[mVUglob.absclip]);
-		xSQRT.SS      (xmmPQ, Fs);
-		xMOVSSZX      (Fs, ptr32[mVUglob.one]);
+		xPSHUF.D	  (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
+		xAND.PS	   (Fs, ptr128[mVUglob.absclip]);
+		xSQRT.SS	  (xmmPQ, Fs);
+		xMOVSSZX	  (Fs, ptr32[mVUglob.one]);
 		SSE_DIVSS(mVU, Fs, xmmPQ);
-		xMOVSS        (xmmPQ, Fs);
-		xPSHUF.D      (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
+		xMOVSS		(xmmPQ, Fs);
+		xPSHUF.D	  (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.profiler.EmitOp(opERSQRT);
 	}
@@ -393,29 +393,29 @@ mVUop(mVU_ESIN) {
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, (1 << (3 - _Fsf_)));
 		const xmm& t1 = mVU.regAlloc->allocReg();
 		const xmm& t2 = mVU.regAlloc->allocReg();
-		xPSHUF.D      (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
-		xMOVSS        (xmmPQ, Fs); // pq = X
-		SSE_MULSS(mVU, Fs, Fs);    // fs = X^2
-		xMOVAPS       (t1, Fs);    // t1 = X^2
+		xPSHUF.D	  (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
+		xMOVSS		(xmmPQ, Fs); // pq = X
+		SSE_MULSS(mVU, Fs, Fs);	// fs = X^2
+		xMOVAPS	   (t1, Fs);	// t1 = X^2
 		SSE_MULSS(mVU, Fs, xmmPQ); // fs = X^3
-		xMOVAPS       (t2, Fs);    // t2 = X^3
-		xMUL.SS       (Fs, ptr32[mVUglob.S2]); // fs = s2 * X^3
+		xMOVAPS	   (t2, Fs);	// t2 = X^3
+		xMUL.SS	   (Fs, ptr32[mVUglob.S2]); // fs = s2 * X^3
 		SSE_ADDSS(mVU, xmmPQ, Fs); // pq = X + s2 * X^3
 
-		SSE_MULSS(mVU, t2, t1);    // t2 = X^3 * X^2
-		xMOVAPS       (Fs, t2);    // fs = X^5
-		xMUL.SS       (Fs, ptr32[mVUglob.S3]); // ps = s3 * X^5
+		SSE_MULSS(mVU, t2, t1);	// t2 = X^3 * X^2
+		xMOVAPS	   (Fs, t2);	// fs = X^5
+		xMUL.SS	   (Fs, ptr32[mVUglob.S3]); // ps = s3 * X^5
 		SSE_ADDSS(mVU, xmmPQ, Fs); // pq = X + s2 * X^3 + s3 * X^5
 
-		SSE_MULSS(mVU, t2, t1);    // t2 = X^5 * X^2
-		xMOVAPS       (Fs, t2);    // fs = X^7
-		xMUL.SS       (Fs, ptr32[mVUglob.S4]); // fs = s4 * X^7
+		SSE_MULSS(mVU, t2, t1);	// t2 = X^5 * X^2
+		xMOVAPS	   (Fs, t2);	// fs = X^7
+		xMUL.SS	   (Fs, ptr32[mVUglob.S4]); // fs = s4 * X^7
 		SSE_ADDSS(mVU, xmmPQ, Fs); // pq = X + s2 * X^3 + s3 * X^5 + s4 * X^7
 
-		SSE_MULSS(mVU, t2, t1);    // t2 = X^7 * X^2
-		xMUL.SS       (t2, ptr32[mVUglob.S5]); // t2 = s5 * X^9
+		SSE_MULSS(mVU, t2, t1);	// t2 = X^7 * X^2
+		xMUL.SS	   (t2, ptr32[mVUglob.S5]); // t2 = s5 * X^9
 		SSE_ADDSS(mVU, xmmPQ, t2); // pq = X + s2 * X^3 + s3 * X^5 + s4 * X^7 + s5 * X^9
-		xPSHUF.D      (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
+		xPSHUF.D	  (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.regAlloc->clearNeeded(t1);
 		mVU.regAlloc->clearNeeded(t2);
@@ -443,13 +443,13 @@ mVUop(mVU_ESUM) {
 	pass2 {
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
 		const xmm& t1 = mVU.regAlloc->allocReg();
-		xPSHUF.D      (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
-		xPSHUF.D      (t1, Fs, 0x1b);
+		xPSHUF.D	  (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
+		xPSHUF.D	  (t1, Fs, 0x1b);
 		SSE_ADDPS(mVU, Fs, t1);
-		xPSHUF.D      (t1, Fs, 0x01);
+		xPSHUF.D	  (t1, Fs, 0x01);
 		SSE_ADDSS(mVU, Fs, t1);
-		xMOVSS        (xmmPQ, Fs);
-		xPSHUF.D      (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
+		xMOVSS		(xmmPQ, Fs);
+		xPSHUF.D	  (xmmPQ, xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.regAlloc->clearNeeded(t1);
 		mVU.profiler.EmitOp(opESUM);
@@ -842,15 +842,14 @@ mVUop(mVU_ILW) {
 	}
 	pass2 {
 		xAddressVoid ptr(mVU.regs().Mem + offsetSS);
-		if (_Is_) {
-			mVUallocVIa(mVU, gprT2, _Is_);
-			xADD(gprT2, _Imm11_);
-			mVUaddrFix (mVU, gprT2);
-			ptr += gprT2;
-		}
-		else {
-			ptr += getVUmem(_Imm11_);
-		}
+
+		mVUallocVIa(mVU, gprT2, _Is_);
+		if (!_Is_)
+			xXOR(gprT2, gprT2);
+		xADD(gprT2, _Imm11_);
+		mVUaddrFix (mVU, gprT2);
+		ptr += gprT2;
+
 		xMOVZX(gprT1, ptr16[ptr]);
 		mVUallocVIb(mVU, gprT1, _It_);
 		mVU.profiler.EmitOp(opILW);
@@ -891,14 +890,14 @@ mVUop(mVU_ISW) {
 	}
 	pass2 {
 		xAddressVoid ptr(mVU.regs().Mem);
-		if (_Is_) {
-			mVUallocVIa(mVU, gprT2, _Is_);
-			xADD(gprT2, _Imm11_);
-			mVUaddrFix (mVU, gprT2);
-			ptr += gprT2;
-		}
-		else
-			ptr += getVUmem(_Imm11_);
+		
+		mVUallocVIa(mVU, gprT2, _Is_);
+		if (!_Is_)
+			xXOR(gprT2, gprT2);
+		xADD(gprT2, _Imm11_);
+		mVUaddrFix (mVU, gprT2);
+		ptr += gprT2;
+
 		mVUallocVIa(mVU, gprT1, _It_);
 		if (_X) xMOV(ptr32[ptr], gprT1);
 		if (_Y) xMOV(ptr32[ptr+4], gprT1);
@@ -938,14 +937,13 @@ mVUop(mVU_LQ) {
 	pass1 { mVUanalyzeLQ(mVU, _Ft_, _Is_, false); }
 	pass2 {
 		xAddressVoid ptr(mVU.regs().Mem);
-		if (_Is_) {
-			mVUallocVIa(mVU, gprT2, _Is_);
-			xADD(gprT2, _Imm11_);
-			mVUaddrFix(mVU, gprT2);
-			ptr += gprT2;
-		}
-		else
-			ptr += getVUmem(_Imm11_);
+		mVUallocVIa(mVU, gprT2, _Is_);
+        if (!_Is_)
+            xXOR(gprT2, gprT2);
+		xADD(gprT2, _Imm11_);
+		mVUaddrFix(mVU, gprT2);
+		ptr += gprT2;
+
 		const xmm& Ft = mVU.regAlloc->allocReg(-1, _Ft_, _X_Y_Z_W);
 		mVUloadReg(Ft, ptr, _X_Y_Z_W);
 		mVU.regAlloc->clearNeeded(Ft);
@@ -1006,14 +1004,14 @@ mVUop(mVU_SQ) {
 	pass1 { mVUanalyzeSQ(mVU, _Fs_, _It_, false); }
 	pass2 {
 		xAddressVoid ptr(mVU.regs().Mem);
-		if (_It_) {
-			mVUallocVIa(mVU, gprT2, _It_);
-			xADD(gprT2, _Imm11_);
-			mVUaddrFix(mVU, gprT2);
-			ptr += gprT2;
-		}
-		else
-			ptr += getVUmem(_Imm11_);
+
+		mVUallocVIa(mVU, gprT2, _It_);
+        if (!_It_)
+            xXOR(gprT2, gprT2);
+		xADD(gprT2, _Imm11_);
+		mVUaddrFix(mVU, gprT2);
+		ptr += gprT2;
+
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
 		mVUsaveReg(Fs, ptr, _X_Y_Z_W, 1);
 		mVU.regAlloc->clearNeeded(Fs);
@@ -1212,28 +1210,22 @@ void __fastcall mVU_XGKICK_(u32 addr) {
 	}
 }
 
-static __fi void mVU_XGKICK_DELAY(mV, bool memVI) {
+static __fi void mVU_XGKICK_DELAY(mV) {
 	mVUbackupRegs(mVU);
 #if 0 // XGkick Break - ToDo: Change "SomeGifPathValue" to w/e needs to be tested
 	xTEST (ptr32[&SomeGifPathValue], 1); // If '1', breaks execution
 	xMOV  (ptr32[&mVU.resumePtrXG], (uptr)xGetPtr() + 10 + 6);
 	xJcc32(Jcc_NotZero, (uptr)mVU.exitFunctXG - ((uptr)xGetPtr()+6));
 #endif
-	if (memVI)	xMOV(gprT2, ptr32[&mVU.VIxgkick]);
-	else		mVUallocVIa(mVU, gprT2, _Is_);
-	xCALL(mVU_XGKICK_);
+	xFastCall(mVU_XGKICK_, ptr32[&mVU.VIxgkick]);
 	mVUrestoreRegs(mVU);
 }
 
 mVUop(mVU_XGKICK) {
 	pass1 { mVUanalyzeXGkick(mVU, _Is_, mVU_XGKICK_CYCLES); }
 	pass2 {
-		if (!mVU_XGKICK_CYCLES) {
-			mVU_XGKICK_DELAY(mVU, false);
-			return;
-		}
-		else if (mVUinfo.doXGKICK) {
-			mVU_XGKICK_DELAY(mVU, true);
+		if (mVUinfo.doXGKICK) { // check for XGkick Transfer
+			mVU_XGKICK_DELAY(mVU);
 			mVUinfo.doXGKICK = false;
 		}
 
@@ -1249,8 +1241,15 @@ mVUop(mVU_XGKICK) {
 //------------------------------------------------------------------
 
 void setBranchA(mP, int x, int _x_) {
+	bool isBranchDelaySlot = false;
+
+	incPC(-2);
+	if (mVUlow.branch)
+		isBranchDelaySlot = true;
+	incPC(2);
+
 	pass1 {
-		if (_Imm11_ == 1 && !_x_) {
+		if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot) {
 			DevCon.WriteLn(Color_Green, "microVU%d: Branch Optimization", mVU.index);
 			mVUlow.isNOP = true;
 			return;
@@ -1258,15 +1257,15 @@ void setBranchA(mP, int x, int _x_) {
 		mVUbranch	  = x;
 		mVUlow.branch = x;
 	}
-	pass2 { if (_Imm11_ == 1 && !_x_) { return; } mVUbranch = x; }
+	pass2 { if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot) { return; } mVUbranch = x; }
 	pass3 { mVUbranch = x; }
-	pass4 { if (_Imm11_ == 1 && !_x_) { return; } mVUbranch = x; }
+	pass4 { if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot) { return; } mVUbranch = x; }
 }
 
 void condEvilBranch(mV, int JMPcc) {
 	if (mVUlow.badBranch) {
 		xMOV(ptr32[&mVU.branch], gprT1);
-		xMOV(ptr32[&mVU.badBranch], branchAddrN);
+		xMOV(ptr32[&mVU.badBranch], branchAddrN(mVU));
 
 		xCMP(gprT1b, 0);
 		xForwardJump8 cJMP((JccComparisonType)JMPcc);
@@ -1276,7 +1275,7 @@ void condEvilBranch(mV, int JMPcc) {
 		cJMP.SetTarget();
 		return;
 	}
-	xMOV(ptr32[&mVU.evilBranch], branchAddr);
+	xMOV(ptr32[&mVU.evilBranch], branchAddr(mVU));
 	xCMP(gprT1b, 0);
 	xForwardJump8 cJMP((JccComparisonType)JMPcc);
 		xMOV(gprT1, ptr32[&mVU.badBranch]); // Branch Not Taken
@@ -1291,11 +1290,11 @@ mVUop(mVU_B) {
 	setBranchA(mX, 1, 0);
 	pass1 { mVUanalyzeNormBranch(mVU, 0, false); }
 	pass2 {
-		if (mVUlow.badBranch)  { xMOV(ptr32[&mVU.badBranch],  branchAddrN); }
-		if (mVUlow.evilBranch) { xMOV(ptr32[&mVU.evilBranch], branchAddr); }
+		if (mVUlow.badBranch)  { xMOV(ptr32[&mVU.badBranch],  branchAddrN(mVU)); }
+		if (mVUlow.evilBranch) { xMOV(ptr32[&mVU.evilBranch], branchAddr(mVU)); }
 		mVU.profiler.EmitOp(opB);
 	}
-	pass3 { mVUlog("B [<a href=\"#addr%04x\">%04x</a>]", branchAddr, branchAddr); }
+	pass3 { mVUlog("B [<a href=\"#addr%04x\">%04x</a>]", branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_BAL) {
@@ -1308,11 +1307,11 @@ mVUop(mVU_BAL) {
 			mVUallocVIb(mVU, gprT1, _It_);
 		}
 
-		if (mVUlow.badBranch)  { xMOV(ptr32[&mVU.badBranch],  branchAddrN); }
-		if (mVUlow.evilBranch) { xMOV(ptr32[&mVU.evilBranch], branchAddr);}
+		if (mVUlow.badBranch)  { xMOV(ptr32[&mVU.badBranch],  branchAddrN(mVU)); }
+		if (mVUlow.evilBranch) { xMOV(ptr32[&mVU.evilBranch], branchAddr(mVU));}
 		mVU.profiler.EmitOp(opBAL);
 	}
-	pass3 { mVUlog("BAL vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, branchAddr, branchAddr); }
+	pass3 { mVUlog("BAL vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_IBEQ) {
@@ -1329,7 +1328,7 @@ mVUop(mVU_IBEQ) {
 		else				condEvilBranch(mVU, Jcc_Equal);
 		mVU.profiler.EmitOp(opIBEQ);
 	}
-	pass3 { mVUlog("IBEQ vi%02d, vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, _Fs_, branchAddr, branchAddr); }
+	pass3 { mVUlog("IBEQ vi%02d, vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, _Fs_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_IBGEZ) {
@@ -1342,7 +1341,7 @@ mVUop(mVU_IBGEZ) {
 		else					condEvilBranch(mVU, Jcc_GreaterOrEqual);
 		mVU.profiler.EmitOp(opIBGEZ);
 	}
-	pass3 { mVUlog("IBGEZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr, branchAddr); }
+	pass3 { mVUlog("IBGEZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_IBGTZ) {
@@ -1355,7 +1354,7 @@ mVUop(mVU_IBGTZ) {
 		else					condEvilBranch(mVU, Jcc_Greater);
 		mVU.profiler.EmitOp(opIBGTZ);
 	}
-	pass3 { mVUlog("IBGTZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr, branchAddr); }
+	pass3 { mVUlog("IBGTZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_IBLEZ) {
@@ -1368,7 +1367,7 @@ mVUop(mVU_IBLEZ) {
 		else					condEvilBranch(mVU, Jcc_LessOrEqual);
 		mVU.profiler.EmitOp(opIBLEZ);
 	}
-	pass3 { mVUlog("IBLEZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr, branchAddr); }
+	pass3 { mVUlog("IBLEZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_IBLTZ) {
@@ -1381,7 +1380,7 @@ mVUop(mVU_IBLTZ) {
 		else					condEvilBranch(mVU, Jcc_Less);
 		mVU.profiler.EmitOp(opIBLTZ);
 	}
-	pass3 { mVUlog("IBLTZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr, branchAddr); }
+	pass3 { mVUlog("IBLTZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_IBNE) {
@@ -1398,7 +1397,7 @@ mVUop(mVU_IBNE) {
 		else				condEvilBranch(mVU, Jcc_NotEqual);
 		mVU.profiler.EmitOp(opIBNE);
 	}
-	pass3 { mVUlog("IBNE vi%02d, vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, _Fs_, branchAddr, branchAddr); }
+	pass3 { mVUlog("IBNE vi%02d, vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, _Fs_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 void normJumpPass2(mV) {

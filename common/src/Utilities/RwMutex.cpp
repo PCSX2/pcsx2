@@ -21,92 +21,95 @@
 // --------------------------------------------------------------------------------------
 Threading::RwMutex::RwMutex()
 {
-	pthread_rwlock_init( &m_rwlock, NULL );
+    pthread_rwlock_init(&m_rwlock, NULL);
 }
 
-Threading::RwMutex::~RwMutex() throw()
+Threading::RwMutex::~RwMutex()
 {
-	pthread_rwlock_destroy( &m_rwlock );
+    pthread_rwlock_destroy(&m_rwlock);
 }
 
 void Threading::RwMutex::AcquireRead()
 {
-	pthread_rwlock_rdlock( &m_rwlock );
+    pthread_rwlock_rdlock(&m_rwlock);
 }
 
 void Threading::RwMutex::AcquireWrite()
 {
-	pthread_rwlock_wrlock( &m_rwlock );
+    pthread_rwlock_wrlock(&m_rwlock);
 }
 
 bool Threading::RwMutex::TryAcquireRead()
 {
-	return pthread_rwlock_tryrdlock( &m_rwlock ) != EBUSY;
+    return pthread_rwlock_tryrdlock(&m_rwlock) != EBUSY;
 }
 
 bool Threading::RwMutex::TryAcquireWrite()
 {
-	return pthread_rwlock_trywrlock( &m_rwlock ) != EBUSY;
+    return pthread_rwlock_trywrlock(&m_rwlock) != EBUSY;
 }
 
 void Threading::RwMutex::Release()
 {
-	pthread_rwlock_unlock( &m_rwlock );
+    pthread_rwlock_unlock(&m_rwlock);
 }
 
 // --------------------------------------------------------------------------------------
-//  
+//
 // --------------------------------------------------------------------------------------
-Threading::BaseScopedReadWriteLock::~BaseScopedReadWriteLock() throw()
+Threading::BaseScopedReadWriteLock::~BaseScopedReadWriteLock()
 {
-	if( m_IsLocked )
-		m_lock.Release();
+    if (m_IsLocked)
+        m_lock.Release();
 }
 
 // Provides manual unlocking of a scoped lock prior to object destruction.
 void Threading::BaseScopedReadWriteLock::Release()
 {
-	if( !m_IsLocked ) return;
-	m_IsLocked = false;
-	m_lock.Release();
+    if (!m_IsLocked)
+        return;
+    m_IsLocked = false;
+    m_lock.Release();
 }
 
 // --------------------------------------------------------------------------------------
 //  ScopedReadLock / ScopedWriteLock
 // --------------------------------------------------------------------------------------
-Threading::ScopedReadLock::ScopedReadLock( RwMutex& locker )
-	: BaseScopedReadWriteLock( locker )
+Threading::ScopedReadLock::ScopedReadLock(RwMutex &locker)
+    : BaseScopedReadWriteLock(locker)
 {
-	m_IsLocked = true;
-	m_lock.AcquireRead();
+    m_IsLocked = true;
+    m_lock.AcquireRead();
 }
 
 // provides manual locking of a scoped lock, to re-lock after a manual unlocking.
 void Threading::ScopedReadLock::Acquire()
 {
-	if( m_IsLocked ) return;
-	m_lock.AcquireRead();
-	m_IsLocked = true;
+    if (m_IsLocked)
+        return;
+    m_lock.AcquireRead();
+    m_IsLocked = true;
 }
 
-Threading::ScopedWriteLock::ScopedWriteLock( RwMutex& locker )
-	: BaseScopedReadWriteLock( locker )
+Threading::ScopedWriteLock::ScopedWriteLock(RwMutex &locker)
+    : BaseScopedReadWriteLock(locker)
 {
-	m_IsLocked = true;
-	m_lock.AcquireWrite();
+    m_IsLocked = true;
+    m_lock.AcquireWrite();
 }
 
 // provides manual locking of a scoped lock, to re-lock after a manual unlocking.
 void Threading::ScopedWriteLock::Acquire()
 {
-	if( m_IsLocked ) return;
-	m_lock.AcquireWrite();
-	m_IsLocked = true;
+    if (m_IsLocked)
+        return;
+    m_lock.AcquireWrite();
+    m_IsLocked = true;
 }
 
 // Special constructor used by ScopedTryLock
-Threading::ScopedWriteLock::ScopedWriteLock( RwMutex& locker, bool isTryLock )
-	: BaseScopedReadWriteLock( locker )
+Threading::ScopedWriteLock::ScopedWriteLock(RwMutex &locker, bool isTryLock)
+    : BaseScopedReadWriteLock(locker)
 {
-	//m_IsLocked = isTryLock ? m_lock.TryAcquireWrite() : false;
+    //m_IsLocked = isTryLock ? m_lock.TryAcquireWrite() : false;
 }

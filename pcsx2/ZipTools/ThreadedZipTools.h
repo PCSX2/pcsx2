@@ -39,7 +39,7 @@ public:
 		m_datasize	= 0;
 	}
 
-	virtual ~ArchiveEntry() throw() {}
+	virtual ~ArchiveEntry() = default;
 
 	ArchiveEntry& SetDataIndex( uptr idx )
 	{
@@ -79,32 +79,32 @@ class ArchiveEntryList
 	DeclareNoncopyableObject( ArchiveEntryList );
 
 protected:
-	std::vector<ArchiveEntry>		m_list;
-	ScopedPtr<ArchiveDataBuffer>	m_data;
+	std::vector<ArchiveEntry> m_list;
+	std::unique_ptr<ArchiveDataBuffer> m_data;
 
 public:
-	virtual ~ArchiveEntryList() throw() {}
+	virtual ~ArchiveEntryList() = default;
 
 	ArchiveEntryList() {}
 
 	ArchiveEntryList( ArchiveDataBuffer* data )
+		: m_data(data)
 	{
-		m_data = data;
 	}
 
 	ArchiveEntryList( ArchiveDataBuffer& data )
+		: m_data(&data)
 	{
-		m_data = &data;
 	}
 	
 	const VmStateBuffer* GetBuffer() const
 	{
-		return m_data;
+		return m_data.get();
 	}
 
 	VmStateBuffer* GetBuffer()
 	{
-		return m_data;
+		return m_data.get();
 	}
 	
 	u8* GetPtr( uint idx )
@@ -155,7 +155,7 @@ protected:
 	wxString						m_final_filename;
 
 public:
-	virtual ~BaseCompressThread() throw();
+	virtual ~BaseCompressThread();
 
 	BaseCompressThread& SetSource( ArchiveEntryList* srcdata )
 	{
@@ -198,6 +198,8 @@ public:
 protected:
 	BaseCompressThread()
 	{
+		m_gzfp				= NULL;
+		m_src_list			= NULL;
 		m_PendingSaveFlag	= false;
 	}
 

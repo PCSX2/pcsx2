@@ -21,6 +21,7 @@
 #include "GS.h"
 #include "Gif_Unit.h"
 #include "Counters.h"
+#include "GSFrame.h"
 
 using namespace Threading;
 using namespace R5900;
@@ -32,15 +33,13 @@ void gsOnModeChanged( Fixed100 framerate, u32 newTickrate )
 	GetMTGS().SendSimplePacket( GS_RINGTYPE_MODECHANGE, framerate.Raw, newTickrate, 0 );
 }
 
-bool			gsIsInterlaced	= false;
-GS_RegionMode	gsRegionMode	= Region_NTSC;
 
-
-void gsSetRegionMode( GS_RegionMode region )
+void gsSetVideoMode(GS_VideoMode mode )
 {
-	if( gsRegionMode == region ) return;
+	if( gsVideoMode == mode )
+		return;
 
-	gsRegionMode = region;
+	gsVideoMode = mode;
 	UpdateVSyncRate();
 }
 
@@ -54,34 +53,39 @@ void gsReset()
 	memzero(g_RealGSMem);
 
 	CSRreg.Reset();
-	GSIMR = 0x7f00;
+	GSIMR.reset();
+}
+
+void gsUpdateFrequency(Pcsx2Config& config)
+{
+	switch (g_LimiterMode)
+	{
+	case LimiterModeType::Limit_Nominal:
+		config.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
+		break;
+	case LimiterModeType::Limit_Slomo:
+		config.GS.LimitScalar = g_Conf->Framerate.SlomoScalar;
+		break;
+	case LimiterModeType::Limit_Turbo:
+		config.GS.LimitScalar = g_Conf->Framerate.TurboScalar;
+		break;
+	default:
+		pxAssert("Unknown framelimiter mode!");
+	}
+	UpdateVSyncRate();
 }
 
 static __fi void gsCSRwrite( const tGS_CSR& csr )
 {
 	if (csr.RESET) {
-#if USE_OLD_GIF == 1 // ...
-		// perform a soft reset -- which is a clearing of all GIFpaths -- and fall back to doing
-		// a full reset if the plugin doesn't support soft resets.
-
-		if (GSgifSoftReset != NULL) {
-			GIFPath_Clear( GIF_PATH_1 );
-			GIFPath_Clear( GIF_PATH_2 );
-			GIFPath_Clear( GIF_PATH_3 );
-		}
-		else GetMTGS().SendSimplePacket( GS_RINGTYPE_RESET, 0, 0, 0 );
-
-		SIGNAL_IMR_Pending = false;
-#else
 		GUNIT_WARN("GUNIT_WARN: csr.RESET");
 		//Console.Warning( "csr.RESET" );
 		//gifUnit.Reset(true); // Don't think gif should be reset...
 		gifUnit.gsSIGNAL.queued = false;
 		GetMTGS().SendSimplePacket(GS_RINGTYPE_RESET, 0, 0, 0);
-#endif
 
 		CSRreg.Reset();
-		GSIMR = 0x7F00;			//This is bits 14-8 thats all that should be 1
+		GSIMR.reset();
 	}
 
 	if(csr.FLUSH)
@@ -100,7 +104,7 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 			GSSIGLBLID.SIGID = (GSSIGLBLID.SIGID & ~gifUnit.gsSIGNAL.data[1])
 				        | (gifUnit.gsSIGNAL.data[0]&gifUnit.gsSIGNAL.data[1]);
 
-			if (!(GSIMR&0x100)) gsIrq();
+			if (!GSIMR.SIGMSK) gsIrq();
 			CSRreg.SIGNAL  = true; // Just to be sure :p
 		}
 		else CSRreg.SIGNAL = false;
@@ -108,7 +112,10 @@ static __fi void gsCSRwrite( const tGS_CSR& csr )
 		gifUnit.Execute(false, true); // Resume paused transfers
 	}
 	
-	if(csr.FINISH)	CSRreg.FINISH	= false;
+	if (csr.FINISH)	{
+		CSRreg.FINISH = false; 
+		gifUnit.gsFINISH.gsFINISHFired = false; //Clear the previously fired FINISH (YS, Indiecar 2005, MGS3)
+	}
 	if(csr.HSINT)	CSRreg.HSINT	= false;
 	if(csr.VSINT)	CSRreg.VSINT	= false;
 	if(csr.EDWINT)	CSRreg.EDWINT	= false;
@@ -118,10 +125,10 @@ static __fi void IMRwrite(u32 value)
 {
 	GUNIT_LOG("IMRwrite()");
 
-	if (CSRreg.GetInterruptMask() & (~value & GSIMR) >> 8)
+	if (CSRreg.GetInterruptMask() & (~value & GSIMR._u32) >> 8)
 		gsIrq();
 
-	GSIMR = (value & 0x1f00)|0x6000;
+	GSIMR._u32 = (value & 0x1f00)|0x6000;
 }
 
 __fi void gsWrite8(u32 mem, u8 value)
@@ -152,33 +159,12 @@ __fi void gsWrite8(u32 mem, u8 value)
 	GIF_LOG("GS write 8 at %8.8lx with data %8.8lx", mem, value);
 }
 
-static void _gsSMODEwrite( u32 mem, u32 value )
-{
-	switch (mem)
-	{
-	case GS_SMODE1:
-		if ( (value & 0x6000) == 0x6000 ) 
-			gsSetRegionMode( Region_PAL );
-		else if (value & 0x400000 || value & 0x200000) 
-			gsSetRegionMode( Region_NTSC_PROGRESSIVE );
-		else
-			gsSetRegionMode( Region_NTSC );
-		break;
-
-	case GS_SMODE2:
-		gsIsInterlaced = (value & 0x1);
-		break;
-	}
-}
-
 //////////////////////////////////////////////////////////////////////////
 // GS Write 16 bit
 
 __fi void gsWrite16(u32 mem, u16 value)
 {
 	GIF_LOG("GS write 16 at %8.8lx with data %8.8lx", mem, value);
-
-	_gsSMODEwrite( mem, value );
 
 	switch (mem)
 	{
@@ -209,8 +195,6 @@ __fi void gsWrite32(u32 mem, u32 value)
 	pxAssume( (mem & 3) == 0 );
 	GIF_LOG("GS write 32 at %8.8lx with data %8.8lx", mem, value);
 
-	_gsSMODEwrite( mem, value );
-
 	switch (mem)
 	{
 		case GS_CSR:
@@ -239,7 +223,6 @@ void __fastcall gsWrite64_generic( u32 mem, const mem64_t* value )
 void __fastcall gsWrite64_page_00( u32 mem, const mem64_t* value )
 {
 	gsWrite64_generic( mem, value );
-	_gsSMODEwrite( mem, (u32)value[0] );
 }
 
 void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
@@ -291,7 +274,6 @@ void __fastcall gsWrite64_page_01( u32 mem, const mem64_t* value )
 void __fastcall gsWrite128_page_00( u32 mem, const mem128_t* value )
 {
 	gsWrite128_generic( mem, value );
-	_gsSMODEwrite( mem, (u32)value[0] );
 }
 
 void __fastcall gsWrite128_page_01( u32 mem, const mem128_t* value )
@@ -433,5 +415,5 @@ void gsResetFrameSkip()
 void SaveStateBase::gsFreeze()
 {
 	FreezeMem(PS2MEM_GS, 0x2000);
-	Freeze(gsRegionMode);
+	Freeze(gsVideoMode);
 }

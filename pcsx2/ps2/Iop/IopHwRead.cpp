@@ -20,6 +20,9 @@
 #include "Sio.h"
 #include "CDVD/CdRom.h"
 
+#include "ps2/pgif.h"
+#include "Mdec.h"
+
 namespace IopMemory
 {
 using namespace Internal;
@@ -36,7 +39,12 @@ mem8_t __fastcall iopHwRead8_Page1( u32 addr )
 	mem8_t ret;		// using a return var can be helpful in debugging.
 	switch( masked_addr )
 	{
-		mcase(HW_SIO_DATA): ret = sioRead8(); break;
+		mcase(HW_SIO_DATA) :
+			// 1F801040h 1/4  JOY_DATA Joypad/Memory Card Data (R/W)
+			// psxmode: documentation suggests a valid 8 bit read and the rest of the 32 bit register is unclear.
+			// todo: check this and compare with the HW_SIO_DATA read around line 245 as well.
+			ret = sioRead8();
+		break;
 
 		// for use of serial port ignore for now
 		//case 0x50: ret = serial_read8(); break;
@@ -85,7 +93,8 @@ mem8_t __fastcall iopHwRead8_Page3( u32 addr )
 
 	mem8_t ret;
 	if( addr == 0x1f803100 )	// PS/EE/IOP conf related
-		ret = 0x10; // Dram 2M
+		//ret = 0x10; // Dram 2M
+		ret = 0xFF; //all high bus is the corect default state for CEX PS2!
 	else
 		ret = psxHu8( addr );
 
@@ -110,7 +119,6 @@ mem8_t __fastcall iopHwRead8_Page8( u32 addr )
 	IopHwTraceLog<mem8_t>( addr, ret, true );
 	return ret;
 }
-
 //////////////////////////////////////////////////////////////////////////////////////////
 //
 template< typename T >
@@ -126,7 +134,7 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 	);
 
 	u32 masked_addr = pgmsk( addr );
-	T ret;
+	T ret = 0;
 
 	// ------------------------------------------------------------------------
 	// Counters, 16-bit varieties!
@@ -148,14 +156,14 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 				// should it do the logic for both 16 and 32, or not do logic at all?
 
 				psxCounters[cntidx].mode &= ~0x1800;
-				psxCounters[cntidx].mode |= 0x400;
 			break;
 
 			case 0x8:
 				ret = psxCounters[cntidx].target;
 			break;
-
+			
 			default:
+				DevCon.Warning("Unknown 16bit counter read %x", addr);
 				ret = psxHu32(addr);
 			break;
 		}
@@ -184,7 +192,6 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 				// should it do the logic for both 16 and 32, or not do logic at all?
 
 				psxCounters[cntidx].mode &= ~0x1800;
-				psxCounters[cntidx].mode |= 0x400;
 			break;
 
 			case 0x8:
@@ -196,6 +203,7 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			break;
 
 			default:
+				DevCon.Warning("Unknown 32bit counter read %x", addr);
 				ret = psxHu32(addr);
 			break;
 		}
@@ -216,14 +224,25 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			ret = SPU2read( addr );
 		else
 		{
-			DbgCon.Warning( "HwRead32 from SPU2? @ 0x%08X .. What manner of trickery is this?!", addr );
+			DevCon.Warning( "HwRead32 from SPU2? @ 0x%08X .. What manner of trickery is this?!", addr );
 			ret = psxHu32(addr);
 		}
 	}
+	// ------------------------------------------------------------------------
+	// PS1 GPU access
+	//
+	else if( (masked_addr >= pgmsk(HW_PS1_GPU_START)) && (masked_addr < pgmsk(HW_PS1_GPU_END)) )
+	{
+		// todo: psx mode: this is new
+		if( sizeof(T) == 2 )
+			DevCon.Warning( "HwRead16 from PS1 GPU? @ 0x%08X .. What manner of trickery is this?!", addr );
+
+		pxAssert(sizeof(T) == 4);
+
+		ret = psxDma2GpuR(addr);
+	}
 	else
 	{
-		u32 sif2fifosize = sif2.fifo.size;
-
 		switch( masked_addr )
 		{
 			// ------------------------------------------------------------------------
@@ -239,6 +258,8 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 
 			mcase(HW_SIO_STAT):
 				ret = sio.StatReg;
+				sioStatRead();
+				// Console.WriteLn( "SIO0 Read STAT %02X INT_STAT= %08X IOPpc= %08X " , ret, psxHu32(0x1070), psxRegs.pc);
 			break;
 
 			mcase(HW_SIO_MODE):
@@ -279,19 +300,11 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			// Soon-to-be outdated SPU2 DMA hack (spu2 manages its own DMA MADR).
 			//
 			mcase(0x1f8010C0):
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-				ret = psxHu32(addr);
-#else
 				ret = SPU2ReadMemAddr(0);
-#endif
 			break;
 
 			mcase(0x1f801500):
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-				ret = psxHu32(addr);
-#else
 				ret = SPU2ReadMemAddr(1);
-#endif
 			break;
 
 			// ------------------------------------------------------------------------
@@ -303,51 +316,26 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			break;
 
 			mcase(HW_PS1_GPU_DATA) :
-				ret = psxHu32(addr);
+				ret = psxGPUr(addr);
+				//ret = psxHu32(addr); // old
 				DevCon.Warning("GPU Data Read %x", ret);
 			break;
 			
 			mcase(HW_PS1_GPU_STATUS) :
-				//ret = psxHu32(addr);
-				/*if (sif2fifosize == 0x8) psxHu32(0x1f801814) &= ~(3 << 25);
-				else psxHu32(0x1f801814) |= (3 << 25);*/
-				/*switch ((psxHu32(HW_PS1_GPU_STATUS) >> 29) & 0x3)
-				{
-					case 0x0:
-						//DevCon.Warning("Set DMA Mode OFF");
-						psxHu32(HW_PS1_GPU_STATUS) &= ~0x2000000;
-						break;
-					case 0x1:
-						//DevCon.Warning("Set DMA Mode FIFO");
-						psxHu32(HW_PS1_GPU_STATUS) |= 0x2000000;
-						break;
-					case 0x2:
-						//DevCon.Warning("Set DMA Mode CPU->GPU");
-						psxHu32(HW_PS1_GPU_STATUS) = (psxHu32(HW_PS1_GPU_STATUS) & ~0x2000000) | ((psxHu32(HW_PS1_GPU_STATUS) & 0x10000000) >> 3);
-						break;
-					case 0x3:
-						//DevCon.Warning("Set DMA Mode GPUREAD->CPU");
-						psxHu32(HW_PS1_GPU_STATUS) = (psxHu32(HW_PS1_GPU_STATUS) & ~0x2000000) | ((psxHu32(HW_PS1_GPU_STATUS) & 0x8000000) >> 2);
-						break;
-				}*/
-				ret = psxHu32(addr); //Idle & Ready to recieve command.
-				//psxHu32(addr) = psHu32(0x1000f300);
-#if PSX_EXTRALOGS
-			DevCon.Warning("GPU Status Read %x Sif fifo size %x", ret, sif2fifosize);
-#endif
-				//ret = -1; // fake alive GPU :p
+				ret = psxGPUr(addr);
 			break;
 			
 			mcase (0x1f801820): // MDEC
-				ret = psxHu32(addr);
+				// ret = psxHu32(addr); // old
+				ret = mdecRead0();
 #if PSX_EXTRALOGS
 				DevCon.Warning("MDEC 1820 Read %x", ret);
 #endif
 			break;
 			
 			mcase (0x1f801824): // MDEC
-				
-				ret = psxHu32(addr);
+				//ret = psxHu32(addr); // old
+				ret = mdecRead1();
 #if PSX_EXTRALOGS
 			DevCon.Warning("MDEC 1824 Read %x", ret);
 #endif
@@ -463,12 +451,15 @@ mem32_t __fastcall iopHwRead32_Page8( u32 addr )
 				// 4-byte FIFO input?
 				// The old IOP system just ignored it, so that's what we do here.  I've included commented code
 				// for treating it as a 16/32 bit write though [which is what the SIO does, for example).
-				mcase(HW_SIO2_FIFO):
+				mcase(HW_SIO2_FIFO) :
 					//ret = sio2_fifoOut();
 					//ret |= sio2_fifoOut() << 8;
 					//ret |= sio2_fifoOut() << 16;
 					//ret |= sio2_fifoOut() << 24;
 				//break;
+					DevCon.Warning("HW_SIO2_FIFO read");
+					ret = psxHu32(addr);
+				break;
 
 				default:
 					ret = psxHu32(addr);

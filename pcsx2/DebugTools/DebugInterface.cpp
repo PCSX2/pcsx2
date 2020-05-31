@@ -32,7 +32,7 @@ extern AppCoreThread CoreThread;
 R5900DebugInterface r5900Debug;
 R3000DebugInterface r3000Debug;
 
-#ifdef WIN32
+#ifdef _WIN32
 #define strcasecmp stricmp
 #endif
 
@@ -174,7 +174,7 @@ void DebugInterface::pauseCpu()
 {
 	SysCoreThread& core = GetCoreThread();
 	if (!core.IsPaused())
-		core.Pause();
+		core.Pause(true);
 }
 
 void DebugInterface::resumeCpu()
@@ -182,6 +182,37 @@ void DebugInterface::resumeCpu()
 	SysCoreThread& core = GetCoreThread();
 	if (core.IsPaused())
 		core.Resume();
+}
+
+
+char* DebugInterface::stringFromPointer(u32 p)
+{
+	const int BUFFER_LEN = 25;
+	static char buf[BUFFER_LEN] = { 0 };
+
+	if (!isValidAddress(p))
+		return NULL;
+
+	try {
+		for (u32 i = 0; i < BUFFER_LEN; i++) {
+			char c = read8(p + i);
+			buf[i] = c;
+
+			if (c == 0) {
+				return i > 0 ? buf : NULL;
+			}
+			else if (c < 0x20 || c >= 0x7f) {
+				// non printable character
+				return NULL;
+			}
+		}
+	}
+	catch (Exception::Ps2Generic&) {
+		return NULL;
+	}
+	buf[BUFFER_LEN - 1] = 0;
+	buf[BUFFER_LEN - 2] = '~';
+	return buf;
 }
 
 bool DebugInterface::initExpression(const char* exp, PostfixExpression& dest)
@@ -317,9 +348,10 @@ int R5900DebugInterface::getRegisterCount(int cat)
 	case EECAT_CP0:
 	case EECAT_FPR:
 	case EECAT_FCR:
-	case EECAT_VU0F:
 	case EECAT_VU0I:
 		return 32;
+	case EECAT_VU0F:
+		return 33;  // 32 + ACC
 	default:
 		return 0;
 	}
@@ -364,7 +396,13 @@ const char* R5900DebugInterface::getRegisterName(int cat, int num)
 	case EECAT_FCR:
 		return R5900::COP1_REG_FCR[num];
 	case EECAT_VU0F:
-		return R5900::COP2_REG_FP[num];
+		switch (num)
+		{
+		case 32:	// ACC
+			return "ACC";
+		default:
+			return R5900::COP2_REG_FP[num];
+		}
 	case EECAT_VU0I:
 		return R5900::COP2_REG_CTL[num];
 	default:
@@ -404,13 +442,21 @@ u128 R5900DebugInterface::getRegister(int cat, int num)
 		result = u128::From32(fpuRegs.fprc[num]);
 		break;
 	case EECAT_VU0F:
-		result = VU1.VF[num].UQ;
+		switch (num)
+		{
+		case 32:	// ACC
+			result = VU0.ACC.UQ;
+			break;
+		default:
+			result = VU0.VF[num].UQ;
+			break;
+		}
 		break;
 	case EECAT_VU0I:
-		result = u128::From32(VU1.VI[num].UL);
+		result = u128::From32(VU0.VI[num].UL);
 		break;
 	default:
-		result.From32(0);
+		result = u128::From32(0);
 		break;
 	}
 
@@ -488,10 +534,18 @@ void R5900DebugInterface::setRegister(int cat, int num, u128 newValue)
 		fpuRegs.fprc[num] = newValue._u32[0];
 		break;
 	case EECAT_VU0F:
-		VU1.VF[num].UQ = newValue;
+		switch (num)
+		{
+		case 32:	// ACC
+			VU0.ACC.UQ = newValue;
+			break;
+		default:
+			VU0.VF[num].UQ = newValue;
+			break;
+		}
 		break;
 	case EECAT_VU0I:
-		VU1.VI[num].UL = newValue._u32[0];
+		VU0.VI[num].UL = newValue._u32[0];
 		break;
 	default:
 		break;
@@ -509,32 +563,60 @@ std::string R5900DebugInterface::disasm(u32 address, bool simplify)
 
 bool R5900DebugInterface::isValidAddress(u32 addr)
 {
-	// ee can't access the first part of memory.
-	if (addr < 0x80000)
-		return false;
-
-	if (addr >= 0xFFFF8000)
-		return true;
-
-	addr &= 0x7FFFFFFF;
+	u32 lopart = addr & 0xfFFffFF;
 
 	// get rid of ee ram mirrors
-	if ((addr >> 28) == 2 || (addr >> 28) == 3)
-		addr &= ~(0xF << 28);
-	
-	// registers
-	if (addr >= 0x10000000 && addr < 0x10010000)
-		return true;
-	if (addr >= 0x12000000 && addr < 0x12001100)
-		return true;
+	switch (addr >> 28)
+	{
+	case 0:
+	case 2:
+		// case 3: throw exception (not mapped ?)
+		// [ 0000_8000 - 01FF_FFFF ] RAM
+		// [ 2000_8000 - 21FF_FFFF ] RAM MIRROR
+		// [ 3000_8000 - 31FF_FFFF ] RAM MIRROR
+		if (lopart >= 0x80000 && lopart <= 0x1ffFFff)
+			return !!vtlb_GetPhyPtr(lopart);
+		break;
+	case 1:
+		// [ 1000_0000 - 1000_CFFF ] EE register
+		if (lopart <= 0xcfff)
+			return true;
 
-	// scratchpad
-	if (addr >= 0x70000000 && addr < 0x70004000)
-		return true;
+		// [ 1100_0000 - 1100_FFFF ] VU mem
+		if (lopart >= 0x1000000 && lopart <= 0x100FFff)
+			return true;
 
-	return !(addr & 0x40000000) && vtlb_GetPhyPtr(addr & 0x1FFFFFFF) != NULL;
+		// [ 1200_0000 - 1200_FFFF ] GS regs
+		if (lopart >= 0x2000000 && lopart <= 0x20010ff)
+			return true;
+
+		// [ 1E00_0000 - 1FFF_FFFF ] ROM
+		// if (lopart >= 0xe000000)
+		// 	return true; throw exception (not mapped ?)
+		break;
+	case 7:
+		// [ 7000_0000 - 7000_3FFF ] Scratchpad
+		if (lopart <= 0x3fff)
+			return true;
+		break;
+	case 8:
+	case 9:
+	case 0xA:
+	case 0xB:
+		// [ 8000_0000 - BFFF_FFFF ] kernel
+		// We only need to access the EE kernel (which is 1 MB large)
+		if (lopart < 0x100000)
+			return true;
+		break;
+	case 0xF:
+		// [ 8000_0000 - BFFF_FFFF ] IOP or kernel stack
+		if (lopart >= 0xfff8000)
+			return true;
+		break;
+	}
+
+	return false;
 }
-
 
 u32 R5900DebugInterface::getCycles()
 {

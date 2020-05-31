@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "App.h"
+#include <memory>
 
 using namespace pxSizerFlags;
 
@@ -36,7 +37,7 @@ ConsoleLogSource_Event::ConsoleLogSource_Event()
 {
 	static const TraceLogDescriptor myDesc =
 	{
-		L"SysEvents",	L"SysVM Control Events",
+		L"SysEvents",	L"S&ysVM Control Events",
 		pxLt("Logs events as they are passed to the PS2 virtual machine."),
 	};
 	
@@ -147,7 +148,7 @@ void SysExecEvent::_DoInvokeEvent()
 // Posts an empty result to the invoking context/thread of this message, if one exists.
 // If the invoking thread posted the event in non-blocking fashion then no action is
 // taken.
-void SysExecEvent::PostResult() const 
+void SysExecEvent::PostResult() const
 {
 	if( m_sync ) m_sync->PostResult();
 }
@@ -155,10 +156,9 @@ void SysExecEvent::PostResult() const
 // --------------------------------------------------------------------------------------
 //  pxEvtQueue Implementations
 // --------------------------------------------------------------------------------------
-pxEvtQueue::pxEvtQueue()
+pxEvtQueue::pxEvtQueue() :
+	m_OwnerThreadId(), m_Quitting(false), m_qpc_Start(0)
 {
-	AtomicExchange( m_Quitting, false );
-	m_qpc_Start = 0;
 }
 
 // Puts the event queue into Shutdown mode, which does *not* immediately stop nor cancel
@@ -170,7 +170,7 @@ pxEvtQueue::pxEvtQueue()
 void pxEvtQueue::ShutdownQueue()
 {
 	if( m_Quitting ) return;
-	AtomicExchange( m_Quitting, true );
+	m_Quitting = true;
 	m_wakeup.Post();
 }
 
@@ -182,7 +182,7 @@ struct ScopedThreadCancelDisable
 		pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &oldstate );
 	}
 	
-	~ScopedThreadCancelDisable() throw()
+	~ScopedThreadCancelDisable()
 	{
 		int oldstate;
 		pthread_setcancelstate( PTHREAD_CANCEL_ENABLE, &oldstate );
@@ -197,7 +197,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
     pxEvtList::iterator node;
     while( node = list.begin(), node != list.end() )
     {
-        ScopedPtr<SysExecEvent> deleteMe(*node);
+        std::unique_ptr<SysExecEvent> deleteMe(*node);
 
 		list.erase( node );
 		if( !m_Quitting || deleteMe->IsCriticalEvent() )
@@ -210,7 +210,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
 
 			synclock.Release();
 
-			pxEvtLog.Write( this, deleteMe, wxsFormat(L"Executing... [%s]%s",
+			pxEvtLog.Write( this, deleteMe.get(), wxsFormat(L"Executing... [%s]%s",
 				deleteMe->AllowCancelOnExit() ? L"Cancelable" : L"Noncancelable", isIdle ? L"(Idle)" : wxEmptyString).wc_str()
 			);
 
@@ -223,7 +223,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
 			}
 
 			u64 qpc_end = GetCPUTicks();
-			pxEvtLog.Write( this, deleteMe, wxsFormat(L"Event completed in %ums",
+			pxEvtLog.Write( this, deleteMe.get(), wxsFormat(L"Event completed in %ums",
 				(u32)(((qpc_end-m_qpc_Start)*1000) / GetTickFrequency())).wc_str()
 			);
 
@@ -232,7 +232,7 @@ void pxEvtQueue::ProcessEvents( pxEvtList& list, bool isIdle )
 		}
 		else
 		{
-			pxEvtLog.Write( this, deleteMe, L"Skipping Event: %s" );
+			pxEvtLog.Write( this, deleteMe.get(), L"Skipping Event: %s" );
 			deleteMe->PostResult();
 		}
 	}
@@ -263,7 +263,7 @@ void pxEvtQueue::AddPendingEvent( SysExecEvent& evt )
 //
 void pxEvtQueue::PostEvent( SysExecEvent* evt )
 {
-	ScopedPtr<SysExecEvent> sevt( evt );
+	std::unique_ptr<SysExecEvent> sevt(evt);
 	if( !sevt ) return;
 
 	if( m_Quitting )
@@ -276,7 +276,7 @@ void pxEvtQueue::PostEvent( SysExecEvent* evt )
 	
 	pxEvtLog.Write( this, evt, pxsFmt(L"Posting event! (pending=%d, idle=%d)", m_pendingEvents.size(), m_idleEvents.size()) );
 
-	m_pendingEvents.push_back( sevt.DetachPtr() );
+	m_pendingEvents.push_back( sevt.release() );
 	if( m_pendingEvents.size() == 1)
 		m_wakeup.Post();
 }
@@ -300,7 +300,7 @@ void pxEvtQueue::PostIdleEvent( SysExecEvent* evt )
 
 	pxEvtLog.Write( this, evt, pxsFmt(L"Posting event! (pending=%d, idle=%d) [idle]", m_pendingEvents.size(), m_idleEvents.size()) );
 
-	if( m_pendingEvents.size() == 0)
+	if( m_pendingEvents.empty() )
 	{
 		m_pendingEvents.push_back( evt );
 		m_wakeup.Post();
@@ -340,7 +340,7 @@ void pxEvtQueue::ProcessEvent( SysExecEvent* evt )
 	}
 	else
 	{
-		ScopedPtr<SysExecEvent> deleteMe( evt );
+		std::unique_ptr<SysExecEvent> deleteMe(evt);
 		deleteMe->_DoInvokeEvent();
 	}
 }
@@ -392,69 +392,11 @@ void pxEvtQueue::SetActiveThread()
 }
 
 // --------------------------------------------------------------------------------------
-//  WaitingForThreadedTaskDialog
-// --------------------------------------------------------------------------------------
-// Note: currently unused (legacy code).  May be utilized at a later date, so I'm leaving
-// it in (for now!)
-//
-class WaitingForThreadedTaskDialog
-	: public wxDialogWithHelpers
-{
-private:
-	typedef wxDialogWithHelpers _parent;
-
-protected:
-	pxThread*	m_thread;
-	
-public:
-	WaitingForThreadedTaskDialog( pxThread* thr, wxWindow* parent, const wxString& title, const wxString& content );
-	virtual ~WaitingForThreadedTaskDialog() throw() {}
-
-protected:
-	void OnCancel_Clicked( wxCommandEvent& evt );
-	void OnTerminateApp_Clicked( wxCommandEvent& evt );
-};
-
-// --------------------------------------------------------------------------------------
-//  WaitingForThreadedTaskDialog Implementations
-// --------------------------------------------------------------------------------------
-WaitingForThreadedTaskDialog::WaitingForThreadedTaskDialog( pxThread* thr, wxWindow* parent, const wxString& title, const wxString& content )
-	: wxDialogWithHelpers( parent, title )
-{
-	SetMinWidth( 500 );
-
-	m_thread		= thr;
-	
-	*this += Text( content )	| StdExpand();
-	*this += 15;
-	*this += Heading(_("Press Cancel to attempt to cancel the action."));
-	*this += Heading(AddAppName(_("Press Terminate to kill %s immediately.")));
-	
-	*this += new wxButton( this, wxID_CANCEL );
-	*this += new wxButton( this, wxID_ANY, _("Terminate App") );
-}
-
-void WaitingForThreadedTaskDialog::OnCancel_Clicked( wxCommandEvent& evt )
-{
-	evt.Skip();
-	if( !m_thread ) return;
-	m_thread->Cancel( false );
-	
-	if( wxWindow* cancel = FindWindowById( wxID_CANCEL ) ) cancel->Disable();
-}
-
-void WaitingForThreadedTaskDialog::OnTerminateApp_Clicked( wxCommandEvent& evt )
-{
-	// (note: SIGTERM is a "handled" kill that performs shutdown stuff, which typically just crashes anyway)
-	wxKill( wxGetProcessId(), wxSIGKILL );
-}
-
-// --------------------------------------------------------------------------------------
 //  ExecutorThread Implementations
 // --------------------------------------------------------------------------------------
-ExecutorThread::ExecutorThread( pxEvtQueue* evthandler )
+ExecutorThread::ExecutorThread(pxEvtQueue* evthandler)
+	: m_EvtHandler(evthandler)
 {
-	m_EvtHandler = evthandler;
 }
 
 bool ExecutorThread::IsRunning() const
@@ -507,7 +449,7 @@ void ExecutorThread::ProcessEvent( SysExecEvent* evt )
 		m_EvtHandler->ProcessEvent( evt );
 	else
 	{
-		ScopedPtr<SysExecEvent> deleteMe( evt );
+		std::unique_ptr<SysExecEvent> deleteMe(evt);
 		deleteMe->_DoInvokeEvent();
 	}
 }

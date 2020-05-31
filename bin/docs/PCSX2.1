@@ -1,0 +1,189 @@
+.\" Copyright 2002-2017 PCSX2 Dev Team
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 3 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, see
+.\" http://www.gnu.org/licenses.
+.Dd January 10, 2017
+.Dt PCSX2 1
+.Os
+.Sh NAME
+.Nm PCSX2
+.Nd PlayStation(R)2 Console Emulator
+.Sh SYNOPSIS
+.Nm
+.Op Fl h
+.Op Fl \-cfg Ns = Ns Ar file
+.Op Fl \-cfgpath Ns = Ns Ar path
+.Op Fl \-console
+.Op Fl \-forcewiz
+.Op Fl \-portable
+.Op Fl \-profiling
+.Op Fl \-elf Ns = Ns Ar file
+.Op Fl \-irx Ns = Ns Ar file
+.Op Fl \-nogui
+.Op Fl \-noguiprompt
+.Op Fl \-nodisc
+.Op Fl \-usecd
+.Op Fl \-fullscreen
+.Op Fl \-windowed
+.Op Fl \-nohacks
+.Op Fl \-fullboot
+.Op Fl \-gamefixes Ns = Ns Ar string
+.Op Fl \-gs Ns = Ns Ar file
+.Op Fl \-pad Ns = Ns Ar file
+.Op Fl \-spu2 Ns = Ns Ar file
+.Op Fl \-cdvd Ns = Ns Ar file
+.Op Fl \-usb Ns = Ns Ar file
+.Op Fl \-fw Ns = Ns Ar file
+.Op Fl \-dev9 Ns = Ns Ar file
+.Op Ar iso
+.Sh DESCRIPTION
+.Nm
+is an open-source PlayStation 2 (AKA PS2) emulator.
+Its purpose is to emulate the PS2 hardware, using a combination of MIPS CPU
+interpreters, recompilers and a virtual machine that manages hardware states and
+PS2 memory.
+This allows you to play PS2 games on your PC, with many additional features and
+benefits.
+.Sh GENERAL OPTIONS
+.Bl -tag -width Ds
+.It Fl h, Fl \-help
+Displays the list of available command line options.
+.It Fl \-cfg Ns = Ns Ar file
+Uses
+.Ar file
+instead of PCSX2_vm.ini as the configuration file.
+It does not affect plugins.
+.It Fl \-cfgpath Ns = Ns Ar path
+Specifies
+.Ar path
+as the configuration file path.
+It affects both
+.Nm
+and the plugins.
+.It Fl \-console
+Forces the program log to be visible.
+.It Fl \-forcewiz
+Forces the First-Time Wizard to run.
+.It Fl \-portable
+Runs
+.Nm
+in portable mode.
+.It Fl \-profiling
+Makes it easier to use profiling tools.
+.El
+.Sh AUTO-RUN OPTIONS
+.Bl -tag -width Ds
+.It Ar iso
+Loads and runs
+.Ar iso
+at startup using the
+.Nm
+internal ISO loader.
+.It Fl \-elf Ns = Ns Ar file
+Executes
+.Ar file
+as an ELF image.
+.It Fl \-irx Ns = Ns Ar file
+Executes
+.Ar file
+as an IRX image.
+.It Fl \-nogui
+Disables display of the GUI while running games.
+.Nm
+will terminate when the game window is closed.
+.It Fl \-noguiprompt
+Prompt before exiting when
+.Fl \-nogui
+is used.
+.It Fl \-nodisc
+Boots with an empty DVD tray.
+Use this to boot into the PS2 system menu.
+.It Fl \-usecd
+Boots using the configured CDVD plugin instead of booting
+.Ar iso Ns .
+.It Fl \-fullscreen
+Runs the game in fullscreen mode.
+.It Fl \-windowed
+Runs the game in windowed mode.
+.El
+.Sh COMPATIBILITY OPTIONS
+.Bl -tag -width Ds
+.It Fl \-nohacks
+Disables all speedhacks.
+.It Fl \-fullboot
+Disables the fast boot feature.
+.It Fl \-gamefixes= Ns Ar string
+Enable specific gamefixes for this session.
+.Ar string
+is a comma-separated list of gamefixes.
+.Pp
+Valid gamefixes: VuAddSub, VuClipFlag, FpuCompare, FpuMul, FpuNegDiv, XGKick,
+IpuWait, EETiming, SkipMpeg, OPHFlag, DMABusy,VIFFIFO, VIF1Stall, GIFFIFO,
+FMVinSoftware, GoemonTlb, ScarfaceIbit.
+.El
+.Sh PLUGIN OVERRIDES
+.Bl -tag -width Ds
+.It Fl \-gs Ns = Ns Ar file
+Uses
+.Ar file
+as the GS plugin.
+.It Fl \-pad Ns = Ns Ar file
+Uses
+.Ar file
+as the PAD plugin.
+.It Fl \-spu2 Ns = Ns Ar file
+Uses
+.Ar file
+as the SPU2 plugin.
+.It Fl \-cdvd Ns = Ns Ar file
+Uses
+.Ar file
+as the CDVD plugin.
+.It Fl \-usb Ns = Ns Ar file
+Uses
+.Ar file
+as the USB plugin.
+.It Fl \-fw Ns = Ns Ar file
+Uses
+.Ar file
+as the FW plugin.
+.It Fl \-dev9 Ns = Ns Ar file
+Uses
+.Ar file
+as the DEV9 plugin.
+.El
+.Sh FILES
+.Bl -tag -width Ds
+.It $XDG_CONFIG_DIR/PCSX2 or $HOME/PCSX2
+User configuration and data directory.
+.El
+.Sh AUTHORS
+.An PCSX2 Dev Team and many other contributors
+.Sh BUGS
+Bugs can be reported by submitting an issue at the
+.Lk https://github.com/PCSX2/pcsx2/issues "PCSX2 Github issue tracker" Ns .
+.Sh PCSX2 RELATED WEBSITES
+.Bl -bullet
+.It
+.Lk http://github.com/PCSX2/pcsx2 "PCSX2 git repository"
+.It
+.Lk http://pcsx2.net "PCSX2 website"
+.It
+.Lk http://forums.pcsx2.net "PCSX2 forums"
+.El

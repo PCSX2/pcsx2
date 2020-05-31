@@ -23,11 +23,11 @@ typedef struct _keyEvent keyEvent;
 #include "Pcsx2Defs.h"
 
 #ifdef _WIN32
-#	include "Windows/GSwin.h"
+#include "Windows/GSwin.h"
 #endif
 
 #ifdef __linux__
-#	include "Linux/GSLinux.h"
+#include "Linux/GSLinux.h"
 #endif
 
 #define GSdefs
@@ -40,7 +40,7 @@ typedef struct _keyEvent keyEvent;
 #ifdef _MSC_VER
 #define EXPORT_C_(type) extern "C" type CALLBACK
 #else
-#define EXPORT_C_(type) extern "C" __attribute__((externally_visible,visibility("default"))) type
+#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
 #endif
 
 //#define GS_LOG GSLog::Log
@@ -51,22 +51,22 @@ extern const unsigned char build;
 
 typedef struct
 {
-	int Log;
-	bool path3;
+    int Log;
+    bool path3;
 } Config;
 
 typedef struct
 {
-	u32 CSRw;
-	pathInfo path[4];
-	bool Path3transfer;
-	float q;
-	u32 imageTransfer;
-	int MultiThreaded;
-	int nPath3Hack;
-	
-	GIFReg regs;
-	GIFCTXTReg ctxt_regs[2];
+    u32 CSRw;
+    pathInfo path[4];
+    bool Path3transfer;
+    float q;
+    u32 imageTransfer;
+    int MultiThreaded;
+    int nPath3Hack;
+
+    GIFReg regs;
+    GIFCTXTReg ctxt_regs[2];
 } GSVars;
 
 extern GSVars gs;
@@ -79,12 +79,12 @@ extern void (*GSirq)();
 
 namespace GSLog
 {
-	extern bool Open();
-	extern void Close();
-	extern void Log(char *fmt, ...);
-	extern void Message(char *fmt, ...);
-	extern void Print(const char *fmt, ...);
-	extern void WriteLn(const char *fmt, ...);
+extern bool Open();
+extern void Close();
+extern void Log(const char *fmt, ...);
+extern void Message(const char *fmt, ...);
+extern void Print(const char *fmt, ...);
+extern void WriteLn(const char *fmt, ...);
 };
 
 extern void SaveConfig();

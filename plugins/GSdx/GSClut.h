@@ -28,8 +28,12 @@
 
 class GSLocalMemory;
 
-__aligned(class, 32) GSClut : public GSAlignedClass<32>
+class alignas(32) GSClut : public GSAlignedClass<32>
 {
+	static GSVector4i m_bm;
+	static GSVector4i m_gm;
+	static GSVector4i m_rm;
+
 	GSLocalMemory* m_mem;
 
 	uint32 m_CBP[2];
@@ -37,7 +41,7 @@ __aligned(class, 32) GSClut : public GSAlignedClass<32>
 	uint32* m_buff32;
 	uint64* m_buff64;
 
-	__aligned(struct, 32) WriteState
+	struct alignas(32) WriteState
 	{
 		GIFRegTEX0 TEX0;
 		GIFRegTEXCLUT TEXCLUT;
@@ -45,7 +49,7 @@ __aligned(class, 32) GSClut : public GSAlignedClass<32>
 		bool IsDirty(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	} m_write;
 
-	__aligned(struct, 32) ReadState
+	struct alignas(32) ReadState
 	{
 		GIFRegTEX0 TEX0;
 		GIFRegTEXA TEXA;
@@ -79,27 +83,30 @@ __aligned(class, 32) GSClut : public GSAlignedClass<32>
 	static void WriteCLUT_T16_I4_CSM1(const uint16* RESTRICT src, uint16* RESTRICT clut);
 	static void ReadCLUT_T32_I8(const uint16* RESTRICT clut, uint32* RESTRICT dst);
 	static void ReadCLUT_T32_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst);
-	static void ReadCLUT_T32_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst32, uint64* RESTRICT dst64);
-	static void ReadCLUT_T16_I8(const uint16* RESTRICT clut, uint32* RESTRICT dst);
-	static void ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst);
-	static void ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst32, uint64* RESTRICT dst64);
+	//static void ReadCLUT_T32_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst32, uint64* RESTRICT dst64);
+	//static void ReadCLUT_T16_I8(const uint16* RESTRICT clut, uint32* RESTRICT dst);
+	//static void ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst);
+	//static void ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst32, uint64* RESTRICT dst64);
 	static void ExpandCLUT64_T32_I8(const uint32* RESTRICT src, uint64* RESTRICT dst);
 	static void ExpandCLUT64_T32(const GSVector4i& hi, const GSVector4i& lo0, const GSVector4i& lo1, const GSVector4i& lo2, const GSVector4i& lo3, GSVector4i* dst);
 	static void ExpandCLUT64_T32(const GSVector4i& hi, const GSVector4i& lo, GSVector4i* dst);
-	static void ExpandCLUT64_T16_I8(const uint32* RESTRICT src, uint64* RESTRICT dst);
+	//static void ExpandCLUT64_T16_I8(const uint32* RESTRICT src, uint64* RESTRICT dst);
 	static void ExpandCLUT64_T16(const GSVector4i& hi, const GSVector4i& lo0, const GSVector4i& lo1, const GSVector4i& lo2, const GSVector4i& lo3, GSVector4i* dst);
 	static void ExpandCLUT64_T16(const GSVector4i& hi, const GSVector4i& lo, GSVector4i* dst);
 
 	static void Expand16(const uint16* RESTRICT src, uint32* RESTRICT dst, int w, const GIFRegTEXA& TEXA);
 
 public:
+	static void InitVectors();
+
 	GSClut(GSLocalMemory* mem);
 	virtual ~GSClut();
 
 	void Invalidate();
+	void Invalidate(uint32 block);
 	bool WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	void Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
-	void Read(const GIFRegTEX0& TEX0);
+	//void Read(const GIFRegTEX0& TEX0);
 	void Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
 	void GetAlphaMinMax32(int& amin, int& amax);
 

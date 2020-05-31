@@ -20,19 +20,19 @@
 
 SymbolMap symbolMap;
 
-#ifdef WIN32
+#ifdef _WIN32
 #define strcasecmp stricmp
 #endif
 
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof(*(x)))
 
 void SymbolMap::SortSymbols() {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	AssignFunctionIndices();
 }
 
 void SymbolMap::Clear() {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	functions.clear();
 	labels.clear();
 	data.clear();
@@ -45,8 +45,8 @@ void SymbolMap::Clear() {
 
 
 bool SymbolMap::LoadNocashSym(const char *filename) {
-	Threading::ScopedLock guard(lock_);
-	FILE *f = fopen(filename, "r");
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
+	FILE *f = wxFopen(filename, "r");
 	if (!f)
 		return false;
 
@@ -103,7 +103,7 @@ bool SymbolMap::LoadNocashSym(const char *filename) {
 }
 
 SymbolType SymbolMap::GetSymbolType(u32 address) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	if (activeFunctions.find(address) != activeFunctions.end())
 		return ST_FUNCTION;
 	if (activeData.find(address) != activeData.end())
@@ -156,7 +156,7 @@ bool SymbolMap::GetSymbolInfo(SymbolInfo *info, u32 address, SymbolType symmask)
 }
 
 u32 SymbolMap::GetNextSymbolAddress(u32 address, SymbolType symmask) {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	const auto functionEntry = symmask & ST_FUNCTION ? activeFunctions.upper_bound(address) : activeFunctions.end();
 	const auto dataEntry = symmask & ST_DATA ? activeData.upper_bound(address) : activeData.end();
 
@@ -173,7 +173,7 @@ u32 SymbolMap::GetNextSymbolAddress(u32 address, SymbolType symmask) {
 }
 
 std::string SymbolMap::GetDescription(unsigned int address) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	const char* labelName = NULL;
 
 	u32 funcStart = GetFunctionStart(address);
@@ -197,7 +197,7 @@ std::vector<SymbolEntry> SymbolMap::GetAllSymbols(SymbolType symmask) {
 	std::vector<SymbolEntry> result;
 
 	if (symmask & ST_FUNCTION) {
-		Threading::ScopedLock guard(lock_);
+		std::lock_guard<std::recursive_mutex> guard(m_lock);
 		for (auto it = activeFunctions.begin(); it != activeFunctions.end(); it++) {
 			SymbolEntry entry;
 			entry.address = it->first;
@@ -210,7 +210,7 @@ std::vector<SymbolEntry> SymbolMap::GetAllSymbols(SymbolType symmask) {
 	}
 
 	if (symmask & ST_DATA) {
-		Threading::ScopedLock guard(lock_);
+		std::lock_guard<std::recursive_mutex> guard(m_lock);
 		for (auto it = activeData.begin(); it != activeData.end(); it++) {
 			SymbolEntry entry;
 			entry.address = it->first;
@@ -226,7 +226,7 @@ std::vector<SymbolEntry> SymbolMap::GetAllSymbols(SymbolType symmask) {
 }
 
 void SymbolMap::AddModule(const char *name, u32 address, u32 size) {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 
 	for (auto it = modules.begin(), end = modules.end(); it != end; ++it) {
 		if (!strcmp(it->name, name)) {
@@ -241,6 +241,7 @@ void SymbolMap::AddModule(const char *name, u32 address, u32 size) {
 
 	ModuleEntry mod;
 	strncpy(mod.name, name, ARRAY_SIZE(mod.name));
+	mod.name[ARRAY_SIZE(mod.name) - 1] = 0;
 	mod.start = address;
 	mod.size = size;
 	mod.index = (int)modules.size() + 1;
@@ -251,13 +252,13 @@ void SymbolMap::AddModule(const char *name, u32 address, u32 size) {
 }
 
 void SymbolMap::UnloadModule(u32 address, u32 size) {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	activeModuleEnds.erase(address + size);
 	UpdateActiveSymbols();
 }
 
 u32 SymbolMap::GetModuleRelativeAddr(u32 address, int moduleIndex) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	if (moduleIndex == -1) {
 		moduleIndex = GetModuleIndex(address);
 	}
@@ -271,7 +272,7 @@ u32 SymbolMap::GetModuleRelativeAddr(u32 address, int moduleIndex) const {
 }
 
 u32 SymbolMap::GetModuleAbsoluteAddr(u32 relative, int moduleIndex) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	for (auto it = modules.begin(), end = modules.end(); it != end; ++it) {
 		if (it->index == moduleIndex) {
 			return it->start + relative;
@@ -281,7 +282,7 @@ u32 SymbolMap::GetModuleAbsoluteAddr(u32 relative, int moduleIndex) const {
 }
 
 int SymbolMap::GetModuleIndex(u32 address) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	auto iter = activeModuleEnds.upper_bound(address);
 	if (iter == activeModuleEnds.end())
 		return -1;
@@ -293,7 +294,7 @@ bool SymbolMap::IsModuleActive(int moduleIndex) const {
 		return true;
 	}
 
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	for (auto it = activeModuleEnds.begin(), end = activeModuleEnds.end(); it != end; ++it) {
 		if (it->second.index == moduleIndex) {
 			return true;
@@ -303,7 +304,7 @@ bool SymbolMap::IsModuleActive(int moduleIndex) const {
 }
 
 std::vector<LoadedModuleInfo> SymbolMap::getAllModules() const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 
 	std::vector<LoadedModuleInfo> result;
 	for (size_t i = 0; i < modules.size(); i++) {
@@ -322,7 +323,7 @@ std::vector<LoadedModuleInfo> SymbolMap::getAllModules() const {
 }
 
 void SymbolMap::AddFunction(const char* name, u32 address, u32 size, int moduleIndex) {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 
 	if (moduleIndex == -1) {
 		moduleIndex = GetModuleIndex(address);
@@ -340,11 +341,8 @@ void SymbolMap::AddFunction(const char* name, u32 address, u32 size, int moduleI
 	if (existing != functions.end()) {
 		existing->second.size = size;
 		if (existing->second.module != moduleIndex) {
-			FunctionEntry func = existing->second;
-			func.start = relAddress;
-			func.module = moduleIndex;
-			functions.erase(existing);
-			functions[symbolKey] = func;
+			existing->second.start = relAddress;
+			existing->second.module = moduleIndex;
 		}
 
 		// Refresh the active item if it exists.
@@ -370,7 +368,7 @@ void SymbolMap::AddFunction(const char* name, u32 address, u32 size, int moduleI
 }
 
 u32 SymbolMap::GetFunctionStart(u32 address) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	auto it = activeFunctions.upper_bound(address);
 	if (it == activeFunctions.end()) {
 		// check last element
@@ -397,7 +395,7 @@ u32 SymbolMap::GetFunctionStart(u32 address) const {
 }
 
 u32 SymbolMap::GetFunctionSize(u32 startAddress) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	auto it = activeFunctions.find(startAddress);
 	if (it == activeFunctions.end())
 		return INVALID_ADDRESS;
@@ -406,7 +404,7 @@ u32 SymbolMap::GetFunctionSize(u32 startAddress) const {
 }
 
 int SymbolMap::GetFunctionNum(u32 address) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	u32 start = GetFunctionStart(address);
 	if (start == INVALID_ADDRESS)
 		return INVALID_ADDRESS;
@@ -419,7 +417,7 @@ int SymbolMap::GetFunctionNum(u32 address) const {
 }
 
 void SymbolMap::AssignFunctionIndices() {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	int index = 0;
 	for (auto mod = activeModuleEnds.begin(), modend = activeModuleEnds.end(); mod != modend; ++mod) {
 		int moduleIndex = mod->second.index;
@@ -433,7 +431,7 @@ void SymbolMap::AssignFunctionIndices() {
 
 void SymbolMap::UpdateActiveSymbols() {
 	// return;   (slow in debug mode)
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	std::map<int, u32> activeModuleIndexes;
 	for (auto it = activeModuleEnds.begin(), end = activeModuleEnds.end(); it != end; ++it) {
 		activeModuleIndexes[it->second.index] = it->second.start;
@@ -474,7 +472,7 @@ void SymbolMap::UpdateActiveSymbols() {
 }
 
 bool SymbolMap::SetFunctionSize(u32 startAddress, u32 newSize) {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 
 	auto funcInfo = activeFunctions.find(startAddress);
 	if (funcInfo != activeFunctions.end()) {
@@ -491,7 +489,7 @@ bool SymbolMap::SetFunctionSize(u32 startAddress, u32 newSize) {
 }
 
 bool SymbolMap::RemoveFunction(u32 startAddress, bool removeName) {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 
 	auto it = activeFunctions.find(startAddress);
 	if (it == activeFunctions.end())
@@ -520,7 +518,7 @@ bool SymbolMap::RemoveFunction(u32 startAddress, bool removeName) {
 }
 
 void SymbolMap::AddLabel(const char* name, u32 address, int moduleIndex) {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 
 	if (moduleIndex == -1) {
 		moduleIndex = GetModuleIndex(address);
@@ -539,11 +537,8 @@ void SymbolMap::AddLabel(const char* name, u32 address, int moduleIndex) {
 		// We leave an existing label alone, rather than overwriting.
 		// But we'll still upgrade it to the correct module / relative address.
 		if (existing->second.module != moduleIndex) {
-			LabelEntry label = existing->second;
-			label.addr = relAddress;
-			label.module = moduleIndex;
-			labels.erase(existing);
-			labels[symbolKey] = label;
+			existing->second.addr = relAddress;
+			existing->second.module = moduleIndex;
 
 			// Refresh the active item if it exists.
 			auto active = activeLabels.find(address);
@@ -567,7 +562,7 @@ void SymbolMap::AddLabel(const char* name, u32 address, int moduleIndex) {
 }
 
 void SymbolMap::SetLabelName(const char* name, u32 address, bool updateImmediately) {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	auto labelInfo = activeLabels.find(address);
 	if (labelInfo == activeLabels.end()) {
 		AddLabel(name, address);
@@ -575,8 +570,8 @@ void SymbolMap::SetLabelName(const char* name, u32 address, bool updateImmediate
 		auto symbolKey = std::make_pair(labelInfo->second.module, labelInfo->second.addr);
 		auto label = labels.find(symbolKey);
 		if (label != labels.end()) {
-			strcpy(label->second.name,name);
-			label->second.name[127] = 0;
+			strncpy(label->second.name, name, ARRAY_SIZE(label->second.name));
+			label->second.name[ARRAY_SIZE(label->second.name) - 1] = 0;
 
 			// Allow the caller to skip this as it causes extreme startup slowdown
 			// when this gets called for every function identified by the function replacement code.
@@ -588,7 +583,7 @@ void SymbolMap::SetLabelName(const char* name, u32 address, bool updateImmediate
 }
 
 const char *SymbolMap::GetLabelName(u32 address) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	auto it = activeLabels.find(address);
 	if (it == activeLabels.end())
 		return NULL;
@@ -597,7 +592,7 @@ const char *SymbolMap::GetLabelName(u32 address) const {
 }
 
 const char *SymbolMap::GetLabelNameRel(u32 relAddress, int moduleIndex) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	auto it = labels.find(std::make_pair(moduleIndex, relAddress));
 	if (it == labels.end())
 		return NULL;
@@ -606,7 +601,7 @@ const char *SymbolMap::GetLabelNameRel(u32 relAddress, int moduleIndex) const {
 }
 
 std::string SymbolMap::GetLabelString(u32 address) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	const char *label = GetLabelName(address);
 	if (label == NULL)
 		return "";
@@ -614,7 +609,7 @@ std::string SymbolMap::GetLabelString(u32 address) const {
 }
 
 bool SymbolMap::GetLabelValue(const char* name, u32& dest) {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	for (auto it = activeLabels.begin(); it != activeLabels.end(); it++) {
 		if (strcasecmp(name, it->second.name) == 0) {
 			dest = it->first;
@@ -626,7 +621,7 @@ bool SymbolMap::GetLabelValue(const char* name, u32& dest) {
 }
 
 void SymbolMap::AddData(u32 address, u32 size, DataType type, int moduleIndex) {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 
 	if (moduleIndex == -1) {
 		moduleIndex = GetModuleIndex(address);
@@ -645,11 +640,8 @@ void SymbolMap::AddData(u32 address, u32 size, DataType type, int moduleIndex) {
 		existing->second.size = size;
 		existing->second.type = type;
 		if (existing->second.module != moduleIndex) {
-			DataEntry entry = existing->second;
-			entry.module = moduleIndex;
-			entry.start = relAddress;
-			data.erase(existing);
-			data[symbolKey] = entry;
+			existing->second.module = moduleIndex;
+			existing->second.start = relAddress;
 		}
 
 		// Refresh the active item if it exists.
@@ -673,7 +665,7 @@ void SymbolMap::AddData(u32 address, u32 size, DataType type, int moduleIndex) {
 }
 
 u32 SymbolMap::GetDataStart(u32 address) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	auto it = activeData.upper_bound(address);
 	if (it == activeData.end())
 	{
@@ -703,7 +695,7 @@ u32 SymbolMap::GetDataStart(u32 address) const {
 }
 
 u32 SymbolMap::GetDataSize(u32 startAddress) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	auto it = activeData.find(startAddress);
 	if (it == activeData.end())
 		return INVALID_ADDRESS;
@@ -711,7 +703,7 @@ u32 SymbolMap::GetDataSize(u32 startAddress) const {
 }
 
 DataType SymbolMap::GetDataType(u32 startAddress) const {
-	Threading::ScopedLock guard(lock_);
+	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	auto it = activeData.find(startAddress);
 	if (it == activeData.end())
 		return DATATYPE_NONE;

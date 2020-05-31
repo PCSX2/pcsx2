@@ -18,253 +18,270 @@
 using namespace std;
 #include "svnrev.h"
 #include "USB.h"
-string s_strIniPath="inis";
-string s_strLogPath="logs";
+#include "null/config.inl"
 
-const unsigned char version  = PS2E_USB_VERSION;
+string s_strIniPath = "inis";
+string s_strLogPath = "logs";
+
+const unsigned char version = PS2E_USB_VERSION;
 const unsigned char revision = 0;
-const unsigned char build    = 7;    // increase that with each version
+const unsigned char build = 7; // increase that with each version
 
-#ifdef _MSC_VER
-#define snprintf sprintf_s
-#endif
 static char libraryName[256];
 
 USBcallback USBirq;
-Config conf;
-PluginLog USBLog;
 
 s8 *usbregs, *ram;
 
+EXPORT_C_(void)
+USBconfigure()
+{
+    const std::string ini_path = s_strIniPath + "/USBnull.ini";
+    LoadConfig(ini_path);
+    ConfigureLogging();
+    SaveConfig(ini_path);
+}
+
 void LogInit()
 {
-	const std::string LogFile(s_strLogPath + "/USBnull.log");
-	setLoggingState();
-	USBLog.Open(LogFile);
+    const std::string LogFile(s_strLogPath + "/USBnull.log");
+    g_plugin_log.Open(LogFile);
 }
 
-EXPORT_C_(void)  USBsetLogDir(const char* dir)
+EXPORT_C_(void)
+USBsetLogDir(const char *dir)
 {
-	// Get the path to the log directory.
-	s_strLogPath = (dir==NULL) ? "logs" : dir;
-	
-	// Reload the log file after updated the path
-	USBLog.Close();
-	LogInit();
+    // Get the path to the log directory.
+    s_strLogPath = (dir == NULL) ? "logs" : dir;
+
+    // Reload the log file after updated the path
+    g_plugin_log.Close();
+    LogInit();
 }
 
-EXPORT_C_(u32) PS2EgetLibType()
+EXPORT_C_(u32)
+PS2EgetLibType()
 {
-	return PS2E_LT_USB;
+    return PS2E_LT_USB;
 }
 
-EXPORT_C_(char*) PS2EgetLibName()
+EXPORT_C_(const char *)
+PS2EgetLibName()
 {
-	snprintf( libraryName, 255, "USBnull Driver %lld%s",SVN_REV,	SVN_MODS ? "m" : "");
-	return libraryName;	
+    snprintf(libraryName, 255, "USBnull Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");
+    return libraryName;
 }
 
-EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)
+EXPORT_C_(u32)
+PS2EgetLibVersion2(u32 type)
 {
-	return (version << 16) | (revision << 8) | build;
+    return (version << 16) | (revision << 8) | build;
 }
 
-EXPORT_C_(s32) USBinit()
+EXPORT_C_(s32)
+USBinit()
 {
-	LoadConfig();
-	LogInit();
-	USBLog.WriteLn("USBnull plugin version %d,%d", revision, build);
-	USBLog.WriteLn("Initializing USBnull");
+    LoadConfig(s_strIniPath + "/USBnull.ini");
+    LogInit();
+    g_plugin_log.WriteLn("USBnull plugin version %d,%d", revision, build);
+    g_plugin_log.WriteLn("Initializing USBnull");
 
-	// Initialize memory structures here.
-	usbregs = (s8*)calloc(0x10000, 1);
+    // Initialize memory structures here.
+    usbregs = (s8 *)calloc(0x10000, 1);
 
-	if (usbregs == NULL)
-	{
-		USBLog.Message("Error allocating memory");
-		return -1;
-	}
+    if (usbregs == NULL) {
+        g_plugin_log.Message("Error allocating memory");
+        return -1;
+    }
 
-	return 0;
+    return 0;
 }
 
-EXPORT_C_(void) USBshutdown()
+EXPORT_C_(void)
+USBshutdown()
 {
-	// Yes, we close things in the Shutdown routine, and
-	// don't do anything in the close routine.
-	USBLog.Close();
-	
-	free(usbregs);
-	usbregs = NULL;
+    // Yes, we close things in the Shutdown routine, and
+    // don't do anything in the close routine.
+    g_plugin_log.Close();
+
+    free(usbregs);
+    usbregs = NULL;
 }
 
-EXPORT_C_(s32) USBopen(void *pDsp)
+EXPORT_C_(s32)
+USBopen(void *pDsp)
 {
-	USBLog.WriteLn("Opening USBnull.");
+    g_plugin_log.WriteLn("Opening USBnull.");
 
-	// Take care of anything else we need on opening, other then initialization.
-	return 0;
+    // Take care of anything else we need on opening, other then initialization.
+    return 0;
 }
 
-EXPORT_C_(void) USBclose()
+EXPORT_C_(void)
+USBclose()
 {
-	USBLog.WriteLn("Closing USBnull.");
+    g_plugin_log.WriteLn("Closing USBnull.");
 }
 
 // Note: actually uncommenting the read/write functions I provided here
 // caused uLauncher.elf to hang on startup, so careful when experimenting.
-EXPORT_C_(u8) USBread8(u32 addr)
+EXPORT_C_(u8)
+USBread8(u32 addr)
 {
-	u8 value = 0;
+    u8 value = 0;
 
-	switch(addr)
-	{
-		// Handle any appropriate addresses here.
-		case 0x1f801600:
-			USBLog.WriteLn("(USBnull) 8 bit read at address %lx", addr);
-		break;
+    switch (addr) {
+        // Handle any appropriate addresses here.
+        case 0x1f801600:
+            g_plugin_log.WriteLn("(USBnull) 8 bit read at address %lx", addr);
+            break;
 
-		default:
-			//value = usbRu8(addr);
-			USBLog.WriteLn("*(USBnull) 8 bit read at address %lx", addr);
-			break;
-	}
-	return value;
+        default:
+            //value = usbRu8(addr);
+            g_plugin_log.WriteLn("*(USBnull) 8 bit read at address %lx", addr);
+            break;
+    }
+    return value;
 }
 
-EXPORT_C_(u16) USBread16(u32 addr)
+EXPORT_C_(u16)
+USBread16(u32 addr)
 {
-	u16 value = 0;
+    u16 value = 0;
 
-	switch(addr)
-	{
-		// Handle any appropriate addresses here.
-		case 0x1f801600:
-			USBLog.WriteLn("(USBnull) 16 bit read at address %lx", addr);
-		break;
+    switch (addr) {
+        // Handle any appropriate addresses here.
+        case 0x1f801600:
+            g_plugin_log.WriteLn("(USBnull) 16 bit read at address %lx", addr);
+            break;
 
-		default:
-			//value = usbRu16(addr);
-			USBLog.WriteLn("(USBnull) 16 bit read at address %lx", addr);
-	}
-	return value;
+        default:
+            //value = usbRu16(addr);
+            g_plugin_log.WriteLn("(USBnull) 16 bit read at address %lx", addr);
+    }
+    return value;
 }
 
-EXPORT_C_(u32) USBread32(u32 addr)
+EXPORT_C_(u32)
+USBread32(u32 addr)
 {
-	u32 value = 0;
+    u32 value = 0;
 
-	switch(addr)
-	{
-		// Handle any appropriate addresses here.
-		case 0x1f801600:
-			USBLog.WriteLn("(USBnull) 32 bit read at address %lx", addr);
-		break;
+    switch (addr) {
+        // Handle any appropriate addresses here.
+        case 0x1f801600:
+            g_plugin_log.WriteLn("(USBnull) 32 bit read at address %lx", addr);
+            break;
 
-		default:
-			//value = usbRu32(addr);
-			USBLog.WriteLn("(USBnull) 32 bit read at address %lx", addr);
-	}
-	return value;
+        default:
+            //value = usbRu32(addr);
+            g_plugin_log.WriteLn("(USBnull) 32 bit read at address %lx", addr);
+    }
+    return value;
 }
 
-EXPORT_C_(void) USBwrite8(u32 addr,  u8 value)
+EXPORT_C_(void)
+USBwrite8(u32 addr, u8 value)
 {
-	switch(addr)
-	{
-		// Handle any appropriate addresses here.
-		case 0x1f801600:
-			USBLog.WriteLn("(USBnull) 8 bit write at address %lx value %x", addr, value);
-		break;
+    switch (addr) {
+        // Handle any appropriate addresses here.
+        case 0x1f801600:
+            g_plugin_log.WriteLn("(USBnull) 8 bit write at address %lx value %x", addr, value);
+            break;
 
-		default:
-			//usbRu8(addr) = value;
-			USBLog.WriteLn("(USBnull) 8 bit write at address %lx value %x", addr, value);
-	}
+        default:
+            //usbRu8(addr) = value;
+            g_plugin_log.WriteLn("(USBnull) 8 bit write at address %lx value %x", addr, value);
+    }
 }
 
-EXPORT_C_(void) USBwrite16(u32 addr, u16 value)
+EXPORT_C_(void)
+USBwrite16(u32 addr, u16 value)
 {
-	switch(addr)
-	{
-		// Handle any appropriate addresses here.
-		case 0x1f801600:
-			USBLog.WriteLn("(USBnull) 16 bit write at address %lx value %x", addr, value);
-		break;
+    switch (addr) {
+        // Handle any appropriate addresses here.
+        case 0x1f801600:
+            g_plugin_log.WriteLn("(USBnull) 16 bit write at address %lx value %x", addr, value);
+            break;
 
-		default:
-			//usbRu16(addr) = value;
-			USBLog.WriteLn("(USBnull) 16 bit write at address %lx value %x", addr, value);
-	}
+        default:
+            //usbRu16(addr) = value;
+            g_plugin_log.WriteLn("(USBnull) 16 bit write at address %lx value %x", addr, value);
+    }
 }
 
-EXPORT_C_(void) USBwrite32(u32 addr, u32 value)
+EXPORT_C_(void)
+USBwrite32(u32 addr, u32 value)
 {
-	switch(addr)
-	{
-		// Handle any appropriate addresses here.
-		case 0x1f801600:
-			USBLog.WriteLn("(USBnull) 16 bit write at address %lx value %x", addr, value);
-		break;
+    switch (addr) {
+        // Handle any appropriate addresses here.
+        case 0x1f801600:
+            g_plugin_log.WriteLn("(USBnull) 16 bit write at address %lx value %x", addr, value);
+            break;
 
-		default:
-			//usbRu32(addr) = value;
-			USBLog.WriteLn("(USBnull) 32 bit write at address %lx value %x", addr, value);
-	}
+        default:
+            //usbRu32(addr) = value;
+            g_plugin_log.WriteLn("(USBnull) 32 bit write at address %lx value %x", addr, value);
+    }
 }
 
-EXPORT_C_(void) USBirqCallback(USBcallback callback)
+EXPORT_C_(void)
+USBirqCallback(USBcallback callback)
 {
-	// Register USBirq, so we can trigger an interrupt with it later.
-	// It will be called as USBirq(cycles); where cycles is the number
-	// of cycles before the irq is triggered.
-	USBirq = callback;
+    // Register USBirq, so we can trigger an interrupt with it later.
+    // It will be called as USBirq(cycles); where cycles is the number
+    // of cycles before the irq is triggered.
+    USBirq = callback;
 }
 
-EXPORT_C_(int) _USBirqHandler(void)
+EXPORT_C_(int)
+_USBirqHandler(void)
 {
-	// This is our USB irq handler, so if an interrupt gets triggered,
-	// deal with it here.
-	return 0;
+    // This is our USB irq handler, so if an interrupt gets triggered,
+    // deal with it here.
+    return 0;
 }
 
-EXPORT_C_(USBhandler) USBirqHandler(void)
+EXPORT_C_(USBhandler)
+USBirqHandler(void)
 {
-	// Pass our handler to pcsx2.
-	return (USBhandler)_USBirqHandler;
+    // Pass our handler to pcsx2.
+    return (USBhandler)_USBirqHandler;
 }
 
-EXPORT_C_(void) USBsetRAM(void *mem)
+EXPORT_C_(void)
+USBsetRAM(void *mem)
 {
-	ram = (s8*)mem;
-	USBLog.WriteLn("*Setting ram.");
+    ram = (s8 *)mem;
+    g_plugin_log.WriteLn("*Setting ram.");
 }
 
-EXPORT_C_(void) USBsetSettingsDir(const char* dir)
+EXPORT_C_(void)
+USBsetSettingsDir(const char *dir)
 {
-	// Get the path to the ini directory.
-    s_strIniPath = (dir==NULL) ? "inis" : dir;
+    // Get the path to the ini directory.
+    s_strIniPath = (dir == NULL) ? "inis" : dir;
 }
 
 // extended funcs
 
-EXPORT_C_(s32) USBfreeze(int mode, freezeData *data)
+EXPORT_C_(s32)
+USBfreeze(int mode, freezeData *data)
 {
-	// This should store or retrieve any information, for if emulation
-	// gets suspended, or for savestates.
-	switch(mode)
-	{
-		case FREEZE_LOAD:
-			// Load previously saved data.
-			break;
-		case FREEZE_SAVE:
-			// Save data.
-			break;
-		case FREEZE_SIZE:
-			// return the size of the data.
-			break;
-	}
-	return 0;
+    // This should store or retrieve any information, for if emulation
+    // gets suspended, or for savestates.
+    switch (mode) {
+        case FREEZE_LOAD:
+            // Load previously saved data.
+            break;
+        case FREEZE_SAVE:
+            // Save data.
+            break;
+        case FREEZE_SIZE:
+            // return the size of the data.
+            break;
+    }
+    return 0;
 }
 
 /*EXPORT_C_(void) USBasync(u32 cycles)
@@ -272,11 +289,9 @@ EXPORT_C_(s32) USBfreeze(int mode, freezeData *data)
 	// Optional function: Called in IopCounter.cpp.
 }*/
 
-EXPORT_C_(s32) USBtest()
+EXPORT_C_(s32)
+USBtest()
 {
-	// 0 if the plugin works, non-0 if it doesn't.
-	return 0;
+    // 0 if the plugin works, non-0 if it doesn't.
+    return 0;
 }
-
-/* For operating systems that need an entry point for a dll/library, here it is. Defined in PS2Eext.h. */
-ENTRY_POINT;

@@ -22,56 +22,58 @@
 //  EventSource< template EvtType >
 // --------------------------------------------------------------------------------------
 
-template< typename ListenerType >
+template <typename ListenerType>
 class EventSource
 {
 public:
-	typedef typename ListenerType::EvtParams		EvtParams;
-	typedef typename std::list< ListenerType* >		ListenerList;
-	typedef typename ListenerList::iterator			ListenerIterator;
+    typedef typename ListenerType::EvtParams EvtParams;
+    typedef typename std::list<ListenerType *> ListenerList;
+    typedef typename ListenerList::iterator ListenerIterator;
 
 protected:
-	typedef typename ListenerList::const_iterator	ConstIterator;
+    typedef typename ListenerList::const_iterator ConstIterator;
 
-	ListenerList	m_listeners;
+    ListenerList m_listeners;
 
-	// This is a cached copy of the listener list used to handle standard dispatching, which
-	// allows for self-modification of the EventSource's listener list by the listeners.
-	// Translation: The dispatcher uses this copy instead, to avoid iterator invalidation.
-	ListenerList	m_cache_copy;
-	bool			m_cache_valid;
+    // This is a cached copy of the listener list used to handle standard dispatching, which
+    // allows for self-modification of the EventSource's listener list by the listeners.
+    // Translation: The dispatcher uses this copy instead, to avoid iterator invalidation.
+    ListenerList m_cache_copy;
+    bool m_cache_valid;
 
-	Threading::Mutex m_listeners_lock;
+    Threading::Mutex m_listeners_lock;
 
 public:
-	EventSource()
-	{
-		m_cache_valid = false;
-	}
+    EventSource()
+    {
+        m_cache_valid = false;
+    }
 
-	virtual ~EventSource() throw() {}
+    virtual ~EventSource() = default;
 
-	virtual ListenerIterator Add( ListenerType& listener );
-	virtual void Remove( ListenerType& listener );
-	virtual void Remove( const ListenerIterator& listenerHandle );
+    virtual ListenerIterator Add(ListenerType &listener);
+    virtual void Remove(ListenerType &listener);
+    virtual void Remove(const ListenerIterator &listenerHandle);
 
-	void Add( ListenerType* listener )
-	{
-		if( listener == NULL ) return;
-		Add( *listener );
-	}
+    void Add(ListenerType *listener)
+    {
+        if (listener == NULL)
+            return;
+        Add(*listener);
+    }
 
-	void Remove( ListenerType* listener )
-	{
-		if( listener == NULL ) return;
-		Remove( *listener );
-	}
+    void Remove(ListenerType *listener)
+    {
+        if (listener == NULL)
+            return;
+        Remove(*listener);
+    }
 
-	void Dispatch( const EvtParams& params );
+    void Dispatch(const EvtParams &params);
 
 protected:
-	virtual ListenerIterator _AddFast_without_lock( ListenerType& listener );
-	virtual void _DispatchRaw( ListenerIterator iter, const ListenerIterator& iend, const EvtParams& params );
+    virtual ListenerIterator _AddFast_without_lock(ListenerType &listener);
+    virtual void _DispatchRaw(ListenerIterator iter, const ListenerIterator &iend, const EvtParams &params);
 };
 
 // --------------------------------------------------------------------------------------
@@ -80,13 +82,13 @@ protected:
 // This class is used as a base interface for EventListeners.  It allows the listeners to do
 // customized dispatching of several event types into "user friendly" function overrides.
 //
-template< typename EvtParams >
+template <typename EvtParams>
 class IEventDispatcher
 {
 protected:
-	IEventDispatcher() {}
+    IEventDispatcher() {}
 
 public:
-	virtual ~IEventDispatcher() throw() {}
-	virtual void DispatchEvent( const EvtParams& params )=0;
+    virtual ~IEventDispatcher() = default;
+    virtual void DispatchEvent(const EvtParams &params) = 0;
 };

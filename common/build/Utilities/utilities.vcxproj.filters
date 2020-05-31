@@ -23,9 +23,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Utilities\AlignedMalloc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utilities\CheckedStaticBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -35,13 +32,13 @@
     <ClCompile Include="..\..\src\Utilities\Exceptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Utilities\HashTools.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utilities\x86\MemcpyFast.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Utilities\PathUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utilities\Perf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Utilities\PrecompiledHeader.cpp">
@@ -57,9 +54,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Utilities\StringHelpers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Utilities\vssprintf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Utilities\wxAppWithHelpers.cpp">
@@ -122,13 +116,13 @@
     <ClCompile Include="..\..\src\Utilities\pxWindowTextWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utilities\AlignedMalloc.cpp">
+      <Filter>Source Files\Linux</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\include\Utilities\EventSource.inl">
       <Filter>Header Files</Filter>
-    </None>
-    <None Include="..\..\include\Utilities\TlsVariable.inl">
-      <Filter>Header Files\Threading</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -136,6 +130,9 @@
       <Filter>Source Files\Threading</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Utilities\Assertions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\Utilities\boost_spsc_queue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Utilities\CheckedStaticBox.h">
@@ -159,13 +156,10 @@
     <ClInclude Include="..\..\include\Utilities\General.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Utilities\HashMap.h">
+    <ClInclude Include="..\..\include\Utilities\MathUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\intrin_x86.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\Utilities\lnx_memzero.h">
+    <ClInclude Include="..\..\include\Utilities\MakeUnique.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Utilities\MemcpyFast.h">
@@ -195,13 +189,7 @@
     <ClInclude Include="..\..\include\Utilities\SafeArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Utilities\ScopedPtr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\Utilities\StringHelpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\Utilities\win_memzero.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Utilities\wxAppWithHelpers.h">
@@ -222,10 +210,11 @@
     <ClInclude Include="..\..\include\Utilities\RwMutex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuildStep Include="..\..\src\Utilities\x86\MemcpyFast.S">
-      <Filter>Source Files\Linux</Filter>
-    </CustomBuildStep>
+    <ClInclude Include="..\..\include\Utilities\ScopedAlloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\Utilities\EmbeddedImage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

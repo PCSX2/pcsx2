@@ -18,9 +18,13 @@
 #include "PrecompiledHeader.h"
 #include "microVU.h"
 
+#include "Utilities/Perf.h"
+
 //------------------------------------------------------------------
 // Micro VU - Main Functions
 //------------------------------------------------------------------
+static u8 __pagealigned vu0_RecDispatchers[mVUdispCacheSize];
+static u8 __pagealigned vu1_RecDispatchers[mVUdispCacheSize];
 
 static __fi void mVUthrowHardwareDeficiency(const wxChar* extFail, int vuIndex) {
 	throw Exception::HardwareDeficiency()
@@ -30,7 +34,7 @@ static __fi void mVUthrowHardwareDeficiency(const wxChar* extFail, int vuIndex) 
 
 void mVUreserveCache(microVU& mVU) {
 
-	mVU.cache_reserve = new RecompiledCodeReserve(pxsFmt("Micro VU%u Recompiler Cache", mVU.index));
+	mVU.cache_reserve = new RecompiledCodeReserve(pxsFmt("Micro VU%u Recompiler Cache", mVU.index), _16mb);
 	mVU.cache_reserve->SetProfilerName(pxsFmt("mVU%urec", mVU.index));
 	
 	mVU.cache = mVU.index ?
@@ -61,11 +65,10 @@ void mVUinit(microVU& mVU, uint vuIndex) {
 
 	mVUreserveCache(mVU);
 
-	mVU.dispCache = SysMmapEx(0, mVUdispCacheSize, 0,(mVU.index ?  "Micro VU1 Dispatcher" :  "Micro VU0 Dispatcher"));
-	if (!mVU.dispCache) throw Exception::OutOfMemory (mVU.index ? L"Micro VU1 Dispatcher" : L"Micro VU0 Dispatcher");
-	memset(mVU.dispCache, 0xcc, mVUdispCacheSize);
+	if (vuIndex) mVU.dispCache = vu1_RecDispatchers;
+	else mVU.dispCache = vu0_RecDispatchers;
 
-	mVU.regAlloc = new microRegAlloc(mVU.index);
+	mVU.regAlloc.reset(new microRegAlloc(mVU.index));
 }
 
 // Resets Rec Data
@@ -73,12 +76,13 @@ void mVUreset(microVU& mVU, bool resetReserve) {
 
 	// Restore reserve to uncommitted state
 	if (resetReserve) mVU.cache_reserve->Reset();
-	
+
+	HostSys::MemProtect(mVU.dispCache, mVUdispCacheSize, PageAccess_ReadWrite());
+	memset(mVU.dispCache, 0xcc, mVUdispCacheSize);
+
 	x86SetPtr(mVU.dispCache);
-	mVUdispatcherA(mVU);
-	mVUdispatcherB(mVU);
-	mVUdispatcherC(mVU);
-	mVUdispatcherD(mVU);
+	mVUdispatcherAB(mVU);
+	mVUdispatcherCD(mVU);
 	mVUemitSearch();
 
 	// Clear All Program Data
@@ -113,13 +117,17 @@ void mVUreset(microVU& mVU, bool resetReserve) {
 		mVU.prog.quick[i].block = NULL;
 		mVU.prog.quick[i].prog  = NULL;
 	}
+
+	HostSys::MemProtect(mVU.dispCache, mVUdispCacheSize, PageAccess_ExecOnly());
+
+	if (mVU.index) Perf::any.map((uptr)&mVU.dispCache, mVUdispCacheSize, "mVU1 Dispatcher");
+	else           Perf::any.map((uptr)&mVU.dispCache, mVUdispCacheSize, "mVU0 Dispatcher");
 }
 
 // Free Allocated Resources
 void mVUclose(microVU& mVU) {
 
 	safe_delete  (mVU.cache_reserve);
-	SafeSysMunmap(mVU.dispCache, mVUdispCacheSize);
 
 	// Delete Programs and Block Managers
 	for (u32 i = 0; i < (mVU.progSize / 2); i++) {
@@ -165,7 +173,7 @@ __ri void mVUdeleteProg(microVU& mVU, microProgram*& prog) {
 // Creates a new Micro Program
 __ri microProgram* mVUcreateProg(microVU& mVU, int startPC) {
 	microProgram* prog = (microProgram*)_aligned_malloc(sizeof(microProgram), 64);
-	memzero_ptr<sizeof(microProgram)>(prog);
+	memset(prog, 0, sizeof(microProgram));
 	prog->idx     = mVU.prog.total++;
 	prog->ranges  = new std::deque<microRange>();
 	prog->startPC = startPC;
@@ -181,23 +189,27 @@ __ri microProgram* mVUcreateProg(microVU& mVU, int startPC) {
 
 // Caches Micro Program
 __ri void mVUcacheProg(microVU& mVU, microProgram& prog) {
-	if (!mVU.index)	memcpy_const(prog.data, mVU.regs().Micro, 0x1000);
-	else			memcpy_const(prog.data, mVU.regs().Micro, 0x4000);
+	if (!mVU.index)	memcpy(prog.data, mVU.regs().Micro, 0x1000);
+	else			memcpy(prog.data, mVU.regs().Micro, 0x4000);
 	mVUdumpProg(mVU, prog);
 }
 
 // Generate Hash for partial program based on compiled ranges...
 u64 mVUrangesHash(microVU& mVU, microProgram& prog) {
-	u32 hash[2] = {0, 0};
+	union {
+		u64 v64;
+		u32 v32[2];
+	} hash = {0};
+
 	std::deque<microRange>::const_iterator it(prog.ranges->begin());
 	for ( ; it != prog.ranges->end(); ++it) {
 		if((it[0].start<0)||(it[0].end<0))  { DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, it[0].start, it[0].end); }
 		for(int i = it[0].start/4; i < it[0].end/4; i++) {
-			hash[0] -= prog.data[i];
-			hash[1] ^= prog.data[i];
+			hash.v32[0] -= prog.data[i];
+			hash.v32[1] ^= prog.data[i];
 		}
 	}
-	return *(u64*)hash;
+	return hash.v64;
 }
 
 // Prints the ratio of unique programs to total programs
@@ -250,7 +262,27 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState) {
 	if(!quick.prog) { // If null, we need to search for new program
 		std::deque<microProgram*>::iterator it(list->begin());
 		for ( ; it != list->end(); ++it) {
-			if (mVUcmpProg(mVU, *it[0], 0)) {
+			bool b = mVUcmpProg(mVU, *it[0], 0);
+			if (EmuConfig.Gamefixes.ScarfaceIbit) {
+				if (isVU1 && ((((u32*)mVU.regs().Micro)[startPC / 4 + 1]) == 0x80200118) &&
+						     ((((u32*)mVU.regs().Micro)[startPC / 4 + 3]) == 0x81000062)) {
+					b = true;
+					mVU.prog.cleared = 0;
+					mVU.prog.cur = it[0];
+					mVU.prog.isSame = 1;
+				}
+            } else if (EmuConfig.Gamefixes.CrashTagTeamRacingIbit) {
+				// Crash tag team tends to make changes to the I register settings in the addresses 0x2bd0 - 0x3ff8
+				// so detect when the code is only changed in this region and don't recompile. Use the same Scarface hack
+				// to access the new I regsiter settings (Look at doIbit() in microVU_Compile.inl
+                if (isVU1 && (memcmp_mmx((u8 *)(it[0]->data), (u8 *)(mVU.regs().Micro), 0x2bd0) == 0)) {
+                    b = true;
+                    mVU.prog.cleared = 0;
+                    mVU.prog.cur = it[0];
+                    mVU.prog.isSame = 1;
+                }
+            }
+			if (b) {
 				quick.block = it[0]->block[startPC/8];
 				quick.prog  = it[0];
 				list->erase(it);
@@ -281,26 +313,26 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState) {
 //------------------------------------------------------------------
 recMicroVU0::recMicroVU0()		  { m_Idx = 0; IsInterpreter = false; }
 recMicroVU1::recMicroVU1()		  { m_Idx = 1; IsInterpreter = false; }
-void recMicroVU0::Vsync() throw() { mVUvsyncUpdate(microVU0); }
-void recMicroVU1::Vsync() throw() { mVUvsyncUpdate(microVU1); }
+void recMicroVU0::Vsync() noexcept { mVUvsyncUpdate(microVU0); }
+void recMicroVU1::Vsync() noexcept { mVUvsyncUpdate(microVU1); }
 
 void recMicroVU0::Reserve() {
-	if (AtomicExchange(m_Reserved, 1) == 0)
+	if (m_Reserved.exchange(1) == 0)
 		mVUinit(microVU0, 0);
 }
 void recMicroVU1::Reserve() {
-	if (AtomicExchange(m_Reserved, 1) == 0) {
+	if (m_Reserved.exchange(1) == 0) {
 		mVUinit(microVU1, 1);
 		vu1Thread.Start();
 	}
 }
 
-void recMicroVU0::Shutdown() throw() {
-	if (AtomicExchange(m_Reserved, 0) == 1)
+void recMicroVU0::Shutdown() noexcept {
+	if (m_Reserved.exchange(0) == 1)
 		mVUclose(microVU0);
 }
-void recMicroVU1::Shutdown() throw() {
-	if (AtomicExchange(m_Reserved, 0) == 1) {
+void recMicroVU1::Shutdown() noexcept {
+	if (m_Reserved.exchange(0) == 1) {
 		vu1Thread.WaitVU();
 		mVUclose(microVU1);
 	}
@@ -320,12 +352,12 @@ void recMicroVU0::Execute(u32 cycles) {
 	pxAssert(m_Reserved); // please allocate me first! :|
 
 	if(!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
-
+	VU0.VI[REG_TPC].UL <<= 3;
 	// Sometimes games spin on vu0, so be careful with this value
 	// woody hangs if too high on sVU (untested on mVU)
 	// Edit: Need to test this again, if anyone ever has a "Woody" game :p
 	((mVUrecCall)microVU0.startFunct)(VU0.VI[REG_TPC].UL, cycles);
-
+	VU0.VI[REG_TPC].UL >>= 3;
 	if(microVU0.regs().flags & 0x4)
 	{
 		microVU0.regs().flags &= ~0x4;
@@ -338,8 +370,9 @@ void recMicroVU1::Execute(u32 cycles) {
 	if (!THREAD_VU1) {
 		if(!(VU0.VI[REG_VPU_STAT].UL & 0x100)) return;
 	}
+	VU1.VI[REG_TPC].UL <<= 3;
 	((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
-
+	VU1.VI[REG_TPC].UL >>= 3;
 	if(microVU1.regs().flags & 0x4)
 	{
 		microVU1.regs().flags &= ~0x4;

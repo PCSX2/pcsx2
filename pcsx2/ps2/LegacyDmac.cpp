@@ -270,7 +270,12 @@ static __ri void DmaExec( void (*func)(), u32 mem, u32 value )
 	//Final Fantasy XII sets the DMA Mode to 3 which doesn't exist. On some channels (like SPR) this will break logic completely. so lets assume they mean chain.
 	if (reg.chcr.MOD == 0x3)
 	{
-		DevCon.Warning(L"%s CHCR.MOD set to 3, assuming 1 (chain)", ChcrName(mem));
+		static bool warned; //Check if the warning has already been output to console, to prevent constant spam.
+		if (!warned)
+		{
+			DevCon.Warning(L"%s CHCR.MOD set to 3, assuming 1 (chain)", ChcrName(mem));
+			warned = true;
+		}
 		reg.chcr.MOD = 0x1;
 	}
 	if (reg.chcr.STR && dmacRegs.ctrl.DMAE && !psHu8(DMAC_ENABLER+2))
@@ -369,13 +374,41 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			return false;
 		}
 
+		icase(fromSPR_MADR)
+		{
+			// SPR bit is fixed at 0 for this channel
+			psHu32(mem) = value & 0x7FFFFFFF;
+			return false;
+		}
+
+		icase(toSPR_MADR)
+		{
+			// SPR bit is fixed at 0 for this channel
+			psHu32(mem) = value & 0x7FFFFFFF;
+			return false;
+		}
+
+		icase(fromSPR_SADR)
+		{
+			// Address must be QW aligned and fit in the 16K range of SPR
+			psHu32(mem) = value & 0x3FF0;
+			return false;
+		}
+
+		icase(toSPR_SADR)
+		{
+			// Address must be QW aligned and fit in the 16K range of SPR
+			psHu32(mem) = value & 0x3FF0;
+			return false;
+		}
+
 		icase(D9_CHCR) // dma9 - toSPR
 		{
 			DMA_LOG("SPR1dma EXECUTE (toSPR), value=0x%x", value);
 			DmaExec(dmaSPR1, mem, value);
 			return false;
 		}
-			
+
 		icase(DMAC_CTRL)
 		{
 			u32 oldvalue = psHu32(mem);
@@ -415,6 +448,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			cpuTestDMACInts();
 			return false;
 		}
+
 		icase(DMAC_STAT)
 		{
 			HW_LOG("DMAC_STAT Write 32bit %x", value);
@@ -446,8 +480,8 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 	// DMA Writes are invalid to everything except the STR on CHCR when it is busy
 	// There's timing problems with many games. Gamefix time!
 	if( CHECK_DMABUSYHACK && (mem & 0xf0) )
-	{	
-		if((psHu32(mem & ~0xff) & 0x100) && dmacRegs.ctrl.DMAE && !psHu8(DMAC_ENABLER+2)) 
+	{
+		if((psHu32(mem & ~0xff) & 0x100) && dmacRegs.ctrl.DMAE && !psHu8(DMAC_ENABLER+2))
 		{
 			DevCon.Warning("Gamefix: Write to DMA addr %x while STR is busy! Ignoring", mem);
 			return false;

@@ -155,7 +155,7 @@ static void _vu0Exec(VURegs* VU)
 		if (VU->branch-- == 1) {
 			VU->VI[REG_TPC].UL = VU->branchpc;
 
-			if(VU->takedelaybranch == true)
+			if(VU->takedelaybranch)
 			{				
 				VU->branch = 2;
 				DevCon.Warning("VU0 - Branch/Jump in Delay Slot");			
@@ -205,6 +205,7 @@ void InterpVU0::Step()
 
 void InterpVU0::Execute(u32 cycles)
 {
+	VU0.VI[REG_TPC].UL <<= 3;
 	for (int i = (int)cycles; i > 0 ; i--) {
 		if (!(VU0.VI[REG_VPU_STAT].UL & 0x1)) {
 			if (VU0.branch || VU0.ebit) {
@@ -214,5 +215,6 @@ void InterpVU0::Execute(u32 cycles)
 		}
 		vu0Exec(&VU0);
 	}
+	VU0.VI[REG_TPC].UL >>= 3;
 }
 

@@ -134,7 +134,9 @@ static __fi bool ProcessIOPTag()
 
 	// We're only copying the first 24 bits.  Bits 30 and 31 (checked below) are Stop/IRQ bits.
 	hw_dma9.madr = sif0data & 0xFFFFFF;
-	sif0.iop.counter = sif0words;
+	if (sif0words > 0xFFFFC) DevCon.Warning("SIF0 Overrun %x", sif0words);
+	//Maximum transfer amount 1mb-16 also masking out top part which is a "Mode" cache stuff, we don't care :)
+	sif0.iop.counter = sif0words & 0xFFFFC;
 
 	// IOP tags have an IRQ bit and an End of Transfer bit:
 	if (sif0tag.IRQ  || (sif0tag.ID & 4)) sif0.iop.end = true;
@@ -180,7 +182,7 @@ static __fi void EndIOP()
 // Handle the EE transfer.
 static __fi void HandleEETransfer()
 {
-	if(sif0ch.chcr.STR == false)
+	if(!sif0ch.chcr.STR)
 	{
 		//DevCon.Warning("Replacement for irq prevention hack EE SIF0");
 		sif0.ee.end = false;
@@ -304,7 +306,7 @@ __fi void SIF0Dma()
 
 		if (sif0.iop.busy)
 		{
-			if(sif0.fifo.sif_free() > 0 || (sif0.iop.end == true && sif0.iop.counter == 0)) 
+			if(sif0.fifo.sif_free() > 0 || (sif0.iop.end && sif0.iop.counter == 0))
 			{
 				BusyCheck++;
 				HandleIOPTransfer();
@@ -312,7 +314,7 @@ __fi void SIF0Dma()
 		}
 		if (sif0.ee.busy)
 		{
-			if(sif0.fifo.size >= 4 || (sif0.ee.end == true && sif0ch.qwc == 0)) 
+			if(sif0.fifo.size >= 4 || (sif0.ee.end && sif0ch.qwc == 0))
 			{
 				BusyCheck++;
 				HandleEETransfer();

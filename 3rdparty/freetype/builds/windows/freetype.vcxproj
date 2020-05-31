@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
+    <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)3rdparty\DefaultProjectRootDir.props" />
+    <Import Project="$(SolutionDir)3rdparty\3rdparty.props" />
+    <Import Condition="$(Configuration.Contains(Debug))" Project="$(SolutionDir)common\vsprops\CodeGen_Debug.props" />
+    <Import Condition="$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\CodeGen_Release.props" />
+    <Import Condition="!$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\IncrementalLinking.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..\include;$(SolutionDir)3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions Condition="!$(Configuration.Contains(Debug))">_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;FT2_BUILD_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(Configuration.Contains(Debug))">_CRT_SECURE_NO_WARNINGS;FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level4</WarningLevel>
+      <DisableSpecificWarnings>4001</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <TargetMachine Condition="'$(Platform)'=='Win32'">MachineX86</TargetMachine>
+      <TargetMachine Condition="'$(Platform)'=='x64'">MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\autofit\autofit.c" />
+    <ClCompile Include="..\..\src\bdf\bdf.c" />
+    <ClCompile Include="..\..\src\cff\cff.c" />
+    <ClCompile Include="..\..\src\base\ftbase.c" />
+    <ClCompile Include="..\..\src\base\ftbitmap.c" />
+    <ClCompile Include="..\..\src\cache\ftcache.c" />
+    <ClCompile Include="ftdebug.c" />
+    <ClCompile Include="..\..\src\base\ftfstype.c" />
+    <ClCompile Include="..\..\src\base\ftgasp.c" />
+    <ClCompile Include="..\..\src\base\ftglyph.c" />
+    <ClCompile Include="..\..\src\gzip\ftgzip.c" />
+    <ClCompile Include="..\..\src\base\ftinit.c" />
+    <ClCompile Include="..\..\src\lzw\ftlzw.c" />
+    <ClCompile Include="..\..\src\base\ftstroke.c" />
+    <ClCompile Include="..\..\src\base\ftsystem.c" />
+    <ClCompile Include="..\..\src\smooth\smooth.c" />
+    <ClCompile Include="..\..\src\base\ftbbox.c" />
+    <ClCompile Include="..\..\src\base\ftfntfmt.c" />
+    <ClCompile Include="..\..\src\base\ftmm.c" />
+    <ClCompile Include="..\..\src\base\ftpfr.c" />
+    <ClCompile Include="..\..\src\base\ftsynth.c" />
+    <ClCompile Include="..\..\src\base\fttype1.c" />
+    <ClCompile Include="..\..\src\base\ftwinfnt.c" />
+    <ClCompile Include="..\..\src\base\ftlcdfil.c" />
+    <ClCompile Include="..\..\src\base\ftgxval.c" />
+    <ClCompile Include="..\..\src\base\ftotval.c" />
+    <ClCompile Include="..\..\src\base\ftpatent.c" />
+    <ClCompile Include="..\..\src\pcf\pcf.c" />
+    <ClCompile Include="..\..\src\pfr\pfr.c" />
+    <ClCompile Include="..\..\src\psaux\psaux.c" />
+    <ClCompile Include="..\..\src\pshinter\pshinter.c" />
+    <ClCompile Include="..\..\src\psnames\psmodule.c" />
+    <ClCompile Include="..\..\src\raster\raster.c" />
+    <ClCompile Include="..\..\src\sfnt\sfnt.c" />
+    <ClCompile Include="..\..\src\truetype\truetype.c" />
+    <ClCompile Include="..\..\src\type1\type1.c" />
+    <ClCompile Include="..\..\src\cid\type1cid.c" />
+    <ClCompile Include="..\..\src\type42\type42.c" />
+    <ClCompile Include="..\..\src\winfonts\winfnt.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\ft2build.h" />
+    <ClInclude Include="..\..\include\freetype\config\ftconfig.h" />
+    <ClInclude Include="..\..\include\freetype\config\ftheader.h" />
+    <ClInclude Include="..\..\include\freetype\config\ftmodule.h" />
+    <ClInclude Include="..\..\include\freetype\config\ftoption.h" />
+    <ClInclude Include="..\..\include\freetype\config\ftstdlib.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\zlib\zlib.vcxproj">
+      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

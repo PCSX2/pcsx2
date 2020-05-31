@@ -27,7 +27,7 @@ protected:
 	wxWindow* m_WindowBound;
 
 public:
-	virtual ~IsoDropTarget() throw() { }
+	virtual ~IsoDropTarget() = default;
 	IsoDropTarget( wxWindow* parent ) : wxFileDropTarget()
 	{
 		m_WindowBound = parent;

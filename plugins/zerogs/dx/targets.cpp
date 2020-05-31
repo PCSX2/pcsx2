@@ -2026,7 +2026,7 @@ ZeroGS::CMemoryTarget* ZeroGS::CMemoryTargetMngr::GetMemoryTarget(const tex0Info
 		targ->clut.resize(clutsize);
 
 		if( tex0.cpsm <= 1 ) { // 32 bit
-			memcpy_amd(&targ->clut[0], ZeroGS::g_pbyGSClut+nClutOffset, clutsize);
+			memcpy(&targ->clut[0], ZeroGS::g_pbyGSClut+nClutOffset, clutsize);
 		}
 		else {
 			u16* pClutBuffer = (u16*)(ZeroGS::g_pbyGSClut + nClutOffset);
@@ -2110,7 +2110,7 @@ ZeroGS::CMemoryTarget* ZeroGS::CMemoryTargetMngr::GetMemoryTarget(const tex0Info
 			targ->memory->ref = 1;
 		}
 
-		memcpy_amd(targ->memory->ptr, ZeroGS::g_pbyGSMemory + 4 * GPU_TEXWIDTH * targ->realy, 4 * GPU_TEXWIDTH * targ->height);
+		memcpy(targ->memory->ptr, ZeroGS::g_pbyGSMemory + 4 * GPU_TEXWIDTH * targ->realy, 4 * GPU_TEXWIDTH * targ->height);
 
 		u8* psrc = (u8*)(ZeroGS::g_pbyGSMemory + 4 * GPU_TEXWIDTH * targ->realy);
 
@@ -2136,7 +2136,7 @@ ZeroGS::CMemoryTarget* ZeroGS::CMemoryTargetMngr::GetMemoryTarget(const tex0Info
 				targ->memory->ref = 1;
 			}
 
-			memcpy_amd(targ->memory->ptr, ZeroGS::g_pbyGSMemory + 4 * GPU_TEXWIDTH * targ->realy, 4 * GPU_TEXWIDTH * targ->height);
+			memcpy(targ->memory->ptr, ZeroGS::g_pbyGSMemory + 4 * GPU_TEXWIDTH * targ->realy, 4 * GPU_TEXWIDTH * targ->height);
 
 			// needs to be 8 bit, use xmm for unpacking
 			u16* dst = (u16*)lock.pBits;
@@ -2219,7 +2219,7 @@ Z16Loop:
 				targ->memory = NULL;
 			}
 
-			memcpy_amd(lock.pBits, ZeroGS::g_pbyGSMemory + 4 * GPU_TEXWIDTH * targ->realy, 4 * GPU_TEXWIDTH * targ->height );
+			memcpy(lock.pBits, ZeroGS::g_pbyGSMemory + 4 * GPU_TEXWIDTH * targ->realy, 4 * GPU_TEXWIDTH * targ->height );
 		}
 	}
 

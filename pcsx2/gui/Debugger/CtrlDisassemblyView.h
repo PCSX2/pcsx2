@@ -30,7 +30,7 @@ public:
 	void scrollbarEvent(wxScrollWinEvent& evt);
 	void sizeEvent(wxSizeEvent& evt);
 	void focusEvent(wxFocusEvent& evt) { Refresh(); };
-#ifdef WIN32
+#ifdef _WIN32
 	WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
 #endif
 
@@ -49,7 +49,7 @@ public:
 	void gotoAddress(u32 addr);
 	void gotoPc() { gotoAddress(cpu->getPC()); };
 	void scrollStepping(u32 newPc);
-	DECLARE_EVENT_TABLE()
+	wxDECLARE_EVENT_TABLE();
 private:
 	void drawBranchLine(wxDC& dc, std::map<u32,int>& addressPositions, BranchLine& line);
 	void render(wxDC& dc);
@@ -61,6 +61,7 @@ private:
 	void toggleBreakpoint(bool toggleEnabled);
 	void updateStatusBarText();
 	std::string disassembleRange(u32 start, u32 size);
+	std::string disassembleCurAddress();
 	void copyInstructions(u32 startAddr, u32 endAddr, bool withDisasm);
 	void disassembleToFile();
 	void editBreakpoint();

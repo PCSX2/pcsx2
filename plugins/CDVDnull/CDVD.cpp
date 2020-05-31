@@ -27,102 +27,122 @@ const unsigned char version = PS2E_CDVD_VERSION;
 const unsigned char revision = 0;
 const unsigned char build = 6;
 
-EXPORT_C_(char*) PS2EgetLibName()
+EXPORT_C_(const char *)
+PS2EgetLibName()
 {
-	snprintf( libraryName, 255, "CDVDnull Driver %lld%s",SVN_REV,	SVN_MODS ? "m" : "");
-	return libraryName;	
+    snprintf(libraryName, 255, "CDVDnull Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");
+    return libraryName;
 }
 
-EXPORT_C_(u32) PS2EgetLibType()
+EXPORT_C_(u32)
+PS2EgetLibType()
 {
-	return PS2E_LT_CDVD;
+    return PS2E_LT_CDVD;
 }
 
-EXPORT_C_(u32) CALLBACK PS2EgetLibVersion2(u32 type)
+EXPORT_C_(u32)
+CALLBACK PS2EgetLibVersion2(u32 type)
 {
-	return (version << 16) | (revision << 8) | build;
+    return (version << 16) | (revision << 8) | build;
 }
 
-EXPORT_C_(s32) CDVDinit()
+EXPORT_C_(s32)
+CDVDinit()
 {
-	return 0;
+    return 0;
 }
 
-EXPORT_C_(s32) CDVDopen(const char* pTitle)
+EXPORT_C_(s32)
+CDVDopen(const char *pTitle)
 {
-	return 0;
+    return 0;
 }
 
-EXPORT_C_(void) CDVDclose()
+EXPORT_C_(void)
+CDVDclose()
 {
 }
 
-EXPORT_C_(void) CDVDshutdown()
+EXPORT_C_(void)
+CDVDshutdown()
 {
 }
 
-EXPORT_C_(s32) CDVDreadTrack(u32 lsn, int mode)
+EXPORT_C_(s32)
+CDVDreadTrack(u32 lsn, int mode)
 {
-	return -1;
+    return -1;
 }
 
 // return can be NULL (for async modes)
-EXPORT_C_(u8*) CDVDgetBuffer()
+EXPORT_C_(u8 *)
+CDVDgetBuffer()
 {
-	return NULL;
+    return NULL;
 }
 
-EXPORT_C_(s32) CDVDreadSubQ(u32 lsn, cdvdSubQ* subq)
+EXPORT_C_(s32)
+CDVDreadSubQ(u32 lsn, cdvdSubQ *subq)
 {
-	return -1;
+    return -1;
 }
 
-EXPORT_C_(s32) CDVDgetTN(cdvdTN *Buffer)
+EXPORT_C_(s32)
+CDVDgetTN(cdvdTN *Buffer)
 {
-	return -1;
+    return -1;
 }
 
-EXPORT_C_(s32) CDVDgetTD(u8 Track, cdvdTD *Buffer)
+EXPORT_C_(s32)
+CDVDgetTD(u8 Track, cdvdTD *Buffer)
 {
-	return -1;
+    return -1;
 }
 
-EXPORT_C_(s32) CDVDgetTOC(void* toc)
+EXPORT_C_(s32)
+CDVDgetTOC(void *toc)
 {
-	return -1;
+    return -1;
 }
 
-EXPORT_C_(s32) CDVDgetDiskType()
+EXPORT_C_(s32)
+CDVDgetDiskType()
 {
-	return CDVD_TYPE_NODISC;
+    return CDVD_TYPE_NODISC;
 }
 
-EXPORT_C_(s32) CDVDgetTrayStatus()
+EXPORT_C_(s32)
+CDVDgetTrayStatus()
 {
-	return CDVD_TRAY_CLOSE;
+    return CDVD_TRAY_CLOSE;
 }
 
-EXPORT_C_(s32) CDVDctrlTrayOpen()
+EXPORT_C_(s32)
+CDVDctrlTrayOpen()
 {
-	return 0;
+    return 0;
 }
 
-EXPORT_C_(s32) CDVDctrlTrayClose()
+EXPORT_C_(s32)
+CDVDctrlTrayClose()
 {
-	return 0;
+    return 0;
 }
 
-EXPORT_C_(void) CDVDconfigure()
+EXPORT_C_(void)
+CDVDconfigure()
 {
-	SysMessage("Nothing to Configure");
+    SysMessage("Nothing to Configure");
 }
 
-EXPORT_C_(void) CDVDabout()
+EXPORT_C_(void)
+CDVDabout()
 {
-	SysMessage("%s %d.%d", "CDVDnull Driver", revision, build);
+    SysMessage("%s %d.%d", "CDVDnull Driver", revision, build);
 }
 
-EXPORT_C_(s32) CDVDtest()
+EXPORT_C_(s32)
+CDVDtest()
 {
-	return 0;
+    return 0;
 }

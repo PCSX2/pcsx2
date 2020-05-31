@@ -34,7 +34,7 @@ OutputIsoFile::OutputIsoFile()
 	_init();
 }
 
-OutputIsoFile::~OutputIsoFile() throw()
+OutputIsoFile::~OutputIsoFile()
 {
 	Close();
 }
@@ -47,9 +47,6 @@ void OutputIsoFile::_init()
 	m_blockofs		= 0;
 	m_blocksize		= 0;
 	m_blocks		= 0;
-
-	m_dtable		= 0;
-	m_dtablesize	= 0;
 }
 
 void OutputIsoFile::Create(const wxString& filename, int version)
@@ -62,7 +59,7 @@ void OutputIsoFile::Create(const wxString& filename, int version)
 	m_blockofs	= 24;
 	m_blocksize	= 2048;
 
-	m_outstream = new wxFileOutputStream( m_filename );
+	m_outstream = std::make_unique<wxFileOutputStream>(m_filename);
 	pxStream_OpenCheck( *m_outstream, m_filename, L"writing" );
 
 	Console.WriteLn("isoFile create ok: %s ", WX_STR(m_filename));
@@ -93,12 +90,10 @@ void OutputIsoFile::WriteSector(const u8* src, uint lsn)
 	if (m_version == 2)
 	{	
 		// Find and ignore blocks that have already been dumped:
-		for (int i=0; i<m_dtablesize; ++i)
-		{
-			if (m_dtable[i] == lsn) return;
-		}
+		if (std::any_of(std::begin(m_dtable), std::end(m_dtable), [=](const u32 entry) {return entry == lsn;}))
+			return;
 
-		m_dtable[m_dtablesize++] = lsn;
+		m_dtable.push_back(lsn);
 
 		WriteValue<u32>( lsn );
 	}
@@ -114,7 +109,7 @@ void OutputIsoFile::WriteSector(const u8* src, uint lsn)
 
 void OutputIsoFile::Close()
 {
-	m_dtable.Delete();
+	m_dtable.clear();
 
 	_init();
 }
@@ -137,4 +132,9 @@ void OutputIsoFile::WriteBuffer( const void* src, size_t size )
 bool OutputIsoFile::IsOpened() const
 {
 	return m_outstream && m_outstream->IsOk();
+}
+
+u32 OutputIsoFile::GetBlockSize() const
+{
+	return m_blocksize;
 }

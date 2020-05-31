@@ -15,18 +15,18 @@
 
 #pragma once
 
-namespace x86Emitter {
-
-enum G2Type
+namespace x86Emitter
 {
-	G2Type_ROL=0,
-	G2Type_ROR,
-	G2Type_RCL,
-	G2Type_RCR,
-	G2Type_SHL,
-	G2Type_SHR,
-	G2Type_Unused,
-	G2Type_SAR
+
+enum G2Type {
+    G2Type_ROL = 0,
+    G2Type_ROR,
+    G2Type_RCL,
+    G2Type_RCR,
+    G2Type_SHL,
+    G2Type_SHR,
+    G2Type_Unused,
+    G2Type_SAR
 };
 
 // --------------------------------------------------------------------------------------
@@ -38,12 +38,12 @@ enum G2Type
 //
 struct xImpl_Group2
 {
-	G2Type InstType;
+    G2Type InstType;
 
-	void operator()( const xRegisterInt& to, const xRegisterCL& from ) const;
-	void operator()( const xIndirect32orLess& to, const xRegisterCL& from ) const;
-	void operator()( const xRegisterInt& to, u8 imm ) const;
-	void operator()( const xIndirect32orLess& to, u8 imm ) const;
+    void operator()(const xRegisterInt &to, const xRegisterCL &from) const;
+    void operator()(const xIndirect64orLess &to, const xRegisterCL &from) const;
+    void operator()(const xRegisterInt &to, u8 imm) const;
+    void operator()(const xIndirect64orLess &to, u8 imm) const;
 
 #if 0
 	// ------------------------------------------------------------------------

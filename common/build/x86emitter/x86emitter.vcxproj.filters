@@ -27,9 +27,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\x86emitter\3dnow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\x86emitter\cpudetect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -66,6 +63,9 @@
     <ClCompile Include="..\..\src\x86emitter\WinCpuDetect.cpp">
       <Filter>Source Files\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\x86emitter\bmi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\x86emitter\cpudetect_internal.h">
@@ -86,13 +86,7 @@
     <ClInclude Include="..\..\include\x86emitter\legacy_types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\x86emitter\macros.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\x86emitter\PrecompiledHeader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\x86emitter\sse_helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\x86emitter\tools.h">
@@ -149,10 +143,8 @@
     <ClInclude Include="..\..\include\x86emitter\implement\simd_shufflepack.h">
       <Filter>Header Files\Implement_Simd</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\include\x86emitter\inlines.inl">
-      <Filter>Header Files</Filter>
-    </None>
+    <ClInclude Include="..\..\include\x86emitter\implement\bmi.h">
+      <Filter>Header Files\Implement</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

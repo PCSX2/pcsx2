@@ -17,6 +17,7 @@
 
 #include "AppCommon.h"
 #include "ApplyState.h"
+#include <memory>
 
 namespace Panels
 {
@@ -28,8 +29,8 @@ namespace Panels
 		wxStaticBoxSizer*	m_miscGroup;
 
 	public:
-		BaseCpuLogOptionsPanel( wxWindow* parent, const wxString& title, wxOrientation orient=wxVERTICAL )
-			: CheckedStaticBox( parent, orient, title ) {}
+		BaseCpuLogOptionsPanel(wxWindow* parent, const wxString& title, wxOrientation orient = wxVERTICAL)
+			: CheckedStaticBox(parent, orient, title), m_miscGroup(NULL){}
 
 		virtual wxStaticBoxSizer* GetMiscGroup() const { return m_miscGroup; }
 		virtual CheckedStaticBox* GetStaticBox( const wxString& subgroup ) const=0;
@@ -44,7 +45,7 @@ namespace Panels
 
 	public:
 		eeLogOptionsPanel( LogOptionsPanel* parent );
-		virtual ~eeLogOptionsPanel() throw() {}
+		virtual ~eeLogOptionsPanel() = default;
 
 		CheckedStaticBox* GetStaticBox( const wxString& subgroup ) const;
 
@@ -62,7 +63,7 @@ namespace Panels
 
 	public:
 		iopLogOptionsPanel( LogOptionsPanel* parent );
-		virtual ~iopLogOptionsPanel() throw() {}
+		virtual ~iopLogOptionsPanel() = default;
 
 		CheckedStaticBox* GetStaticBox( const wxString& subgroup ) const;
 
@@ -75,15 +76,15 @@ namespace Panels
 	protected:
 		eeLogOptionsPanel*	m_eeSection;
 		iopLogOptionsPanel*	m_iopSection;
-		bool				m_IsDirty;		// any settings modified since last apply will flag this "true"
+		wxStaticBoxSizer*	m_miscSection;
 
 		pxCheckBox*			m_masterEnabler;
 
-		ScopedArray<pxCheckBox*> m_checks;
+		std::unique_ptr<pxCheckBox*[]> m_checks;
 
 	public:
 		LogOptionsPanel( wxWindow* parent );
-		virtual ~LogOptionsPanel() throw() {}
+		virtual ~LogOptionsPanel() = default;
 
 		void AppStatusEvent_OnSettingsApplied();
 		void OnUpdateEnableAll();

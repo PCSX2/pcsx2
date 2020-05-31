@@ -71,18 +71,6 @@ static const __aligned16 Fnptr_VifUnpackLoop UnpackLoopTable[2][2][2] = {
 };
 // ----------------------------------------------------------------------------
 
-nVifStruct::nVifStruct()
-{
-	vifBlocks	=  NULL;
-	numBlocks	=  0;
-
-	recReserveSizeMB = 8;
-}
-
-void reserveNewVif(int idx)
-{
-}
-
 void resetNewVif(int idx)
 {
 	// Safety Reset : Reassign all VIF structure info, just in case the VU1 pointers have
@@ -111,13 +99,14 @@ _vifT int nVifUnpack(const u8* data) {
 	vifStruct&    vif     = GetVifX;
 	VIFregisters& vifRegs = vifXRegs;
 
-	const uint ret    = aMin(vif.vifpacketsize, vif.tag.size);
-	const bool isFill = (vifRegs.cycle.cl < vifRegs.cycle.wl);
+	const uint wl     = vifRegs.cycle.wl ? vifRegs.cycle.wl : 256;
+	const uint ret    = std::min(vif.vifpacketsize, vif.tag.size);
+	const bool isFill = (vifRegs.cycle.cl < wl);
 	s32		   size   = ret << 2;
-
+	
 	if (ret == vif.tag.size) { // Full Transfer
 		if (v.bSize) { // Last transfer was partial
-			memcpy_aligned(&v.buffer[v.bSize], data, size);
+			memcpy(&v.buffer[v.bSize], data, size);
 			v.bSize		+= size;
 			size        = v.bSize;
 			data		= v.buffer;
@@ -131,7 +120,7 @@ _vifT int nVifUnpack(const u8* data) {
 			if (newVifDynaRec)	dVifUnpack<idx>(data, isFill);
 			else			   _nVifUnpack(idx, data, vifRegs.mode, isFill);
 		}
-		else vu1Thread.VifUnpack(vif, vifRegs, (u8*)data, size);
+		else vu1Thread.VifUnpack(vif, vifRegs, (u8*)data, (size + 4) & ~0x3);
 
 		vif.pass		= 0;
 		vif.tag.size	= 0;
@@ -140,7 +129,7 @@ _vifT int nVifUnpack(const u8* data) {
 		v.bSize			= 0;
 	}
 	else { // Partial Transfer
-		memcpy_aligned(&v.buffer[v.bSize], data, size);
+		memcpy(&v.buffer[v.bSize], data, size);
 		v.bSize		 += size;
 		vif.tag.size -= ret;
 
@@ -164,14 +153,8 @@ _vifT int nVifUnpack(const u8* data) {
 				--vifRegs.num;
 				++vif.cl;
 
-				if (isFill) {
-					if (vif.cl <= vifRegs.cycle.cl)			size -= vSize;
-					else if (vif.cl == vifRegs.cycle.wl)	vif.cl = 0;
-				}
-				else {
-					size -= vSize;
-					if (vif.cl >= vifRegs.cycle.wl) vif.cl = 0;
-				}
+				if (vif.cl <= vifRegs.cycle.cl)			size -= vSize;
+				else if (vif.cl == vifRegs.cycle.wl)	vif.cl = 0;
 			}
 			DevCon.Warning("Fill!! Partial num left = %x, guessed %x", vifRegs.num, guessedsize);
 		}
@@ -258,7 +241,7 @@ __ri void __fastcall _nVifUnpackLoop(const u8* data) {
 	const UNPACKFUNCTYPE ft = VIFfuncTable[idx][doMode ? vifRegs.mode : 0][ ((usn*2*16) + upkNum) ];
 
 	pxAssume (vif.cl == 0);
-	pxAssume (vifRegs.cycle.wl > 0);
+	//pxAssume (vifRegs.cycle.wl > 0);
 
 	do {
 		u8* dest = getVUptr(idx, vif.tag.addr);
@@ -269,7 +252,7 @@ __ri void __fastcall _nVifUnpackLoop(const u8* data) {
 		}
 		else {
 			//DevCon.WriteLn("SSE Unpack!");
-			uint cl3 = aMin(vif.cl,3);
+			uint cl3 = std::min(vif.cl, 3);
 			fnbase[cl3](dest, data);
 		}
 

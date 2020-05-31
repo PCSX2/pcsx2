@@ -20,190 +20,113 @@
  */
 
 #include <string.h>
-#include <gtk/gtk.h>
 
-#include "joystick.h"
+#include "GamePad.h"
 #include "keyboard.h"
 #include "onepad.h"
-#include "linux.h"
 
 extern std::string s_strIniPath;
 
-string KeyName(int pad, int key, int keysym)
-{
-	string tmp;
-	tmp.resize(28);
-
-	if (keysym) {
-		if (keysym < 10) {
-			// mouse
-			switch (keysym) {
-				case 1: sprintf(&tmp[0], "Mouse Left"); break;
-				case 2: sprintf(&tmp[0], "Mouse Middle"); break;
-				case 3: sprintf(&tmp[0], "Mouse Right"); break;
-				default: // Use only number for extra button
-						sprintf(&tmp[0], "Mouse %d", keysym);
-			}
-		} else {
-			// keyboard
-			char* pstr = XKeysymToString(keysym);
-			if (pstr != NULL) tmp = pstr;
-		}
-	} else {
-		// joystick
-		KeyType k = type_of_joykey(pad, key);
-		switch (k)
-		{
-			case PAD_JOYBUTTONS:
-				{
-					int button = key_to_button(pad, key);
-					sprintf(&tmp[0], "JBut %d", button);
-					break;
-				}
-			case PAD_AXIS:
-				{
-					if (key_to_axis_type(pad,key))
-						sprintf(&tmp[0], "JAxis %d Full", key_to_axis(pad, key));
-					else
-						sprintf(&tmp[0], "JAxis %d Half%s", key_to_axis(pad, key), key_to_axis_sign(pad, key) ? "-" : "+");
-					break;
-				}
-			case PAD_HAT:
-				{
-					int axis = key_to_axis(pad, key);
-					switch(key_to_hat_dir(pad, key))
-					{
-						case SDL_HAT_UP:
-							sprintf(&tmp[0], "JPOVU-%d", axis);
-							break;
-
-						case SDL_HAT_RIGHT:
-							sprintf(&tmp[0], "JPOVR-%d", axis);
-							break;
-
-						case SDL_HAT_DOWN:
-							sprintf(&tmp[0], "JPOVD-%d", axis);
-							break;
-
-						case SDL_HAT_LEFT:
-							sprintf(&tmp[0], "JPOVL-%d", axis);
-							break;
-					}
-					break;
-				}
-			default: break;
-		}
-	}
-
-	return tmp;
-}
-
 void DefaultKeyboardValues()
 {
-	set_keyboad_key(0, XK_a, PAD_L2);
-	set_keyboad_key(0, XK_semicolon, PAD_R2);
-	set_keyboad_key(0, XK_w, PAD_L1);
-	set_keyboad_key(0, XK_p, PAD_R1);
-	set_keyboad_key(0, XK_i, PAD_TRIANGLE);
-	set_keyboad_key(0, XK_l, PAD_CIRCLE);
-	set_keyboad_key(0, XK_k, PAD_CROSS);
-	set_keyboad_key(0, XK_j, PAD_SQUARE);
-	set_keyboad_key(0, XK_v, PAD_SELECT);
-	set_keyboad_key(0, XK_n, PAD_START);
-	set_keyboad_key(0, XK_e, PAD_UP);
-	set_keyboad_key(0, XK_f, PAD_RIGHT);
-	set_keyboad_key(0, XK_d, PAD_DOWN);
-	set_keyboad_key(0, XK_s, PAD_LEFT);
+    set_keyboard_key(0, XK_a, PAD_L2);
+    set_keyboard_key(0, XK_semicolon, PAD_R2);
+    set_keyboard_key(0, XK_w, PAD_L1);
+    set_keyboard_key(0, XK_p, PAD_R1);
+    set_keyboard_key(0, XK_i, PAD_TRIANGLE);
+    set_keyboard_key(0, XK_l, PAD_CIRCLE);
+    set_keyboard_key(0, XK_k, PAD_CROSS);
+    set_keyboard_key(0, XK_j, PAD_SQUARE);
+    set_keyboard_key(0, XK_v, PAD_SELECT);
+    set_keyboard_key(0, XK_n, PAD_START);
+    set_keyboard_key(0, XK_e, PAD_UP);
+    set_keyboard_key(0, XK_f, PAD_RIGHT);
+    set_keyboard_key(0, XK_d, PAD_DOWN);
+    set_keyboard_key(0, XK_s, PAD_LEFT);
 }
 
 void SaveConfig()
 {
-	FILE *f;
+    FILE *f;
 
-	const std::string iniFile(s_strIniPath + "OnePAD.ini");
-	f = fopen(iniFile.c_str(), "w");
-	if (f == NULL)
-	{
-		printf("OnePAD: failed to save ini %s\n", iniFile.c_str());
-		return;
-	}
+    const std::string iniFile(s_strIniPath + "OnePAD2.ini");
+    f = fopen(iniFile.c_str(), "w");
+    if (f == NULL) {
+        printf("OnePAD: failed to save ini %s\n", iniFile.c_str());
+        return;
+    }
 
-	fprintf(f, "log = %d\n", conf->log);
-	fprintf(f, "options = %d\n", conf->options);
-	fprintf(f, "mouse_sensibility = %d\n", conf->sensibility);
-	fprintf(f, "joy_pad_map = %d\n", conf->joyid_map);
-	fprintf(f, "ff_intensity = %d\n", conf->ff_intensity);
+    fprintf(f, "first_time_wizard = %d\n", g_conf.ftw);
+    fprintf(f, "log = %d\n", g_conf.log);
+    fprintf(f, "options = %d\n", g_conf.packed_options);
+    fprintf(f, "mouse_sensibility = %d\n", g_conf.get_sensibility());
+    fprintf(f, "ff_intensity = %d\n", g_conf.get_ff_intensity());
+    fprintf(f, "uid[0] = %zu\n", g_conf.get_joy_uid(0));
+    fprintf(f, "uid[1] = %zu\n", g_conf.get_joy_uid(1));
 
-	for (int pad = 0; pad < 2; pad++)
-	{
-		for (int key = 0; key < MAX_KEYS; key++)
-		{
-			fprintf(f, "[%d][%d] = 0x%x\n", pad, key, get_key(pad,key));
-		}
-	}
+    for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
+        for (auto const &it : g_conf.keysym_map[pad])
+            fprintf(f, "PAD %d:KEYSYM 0x%x = %d\n", pad, it.first, it.second);
 
-	map<u32,u32>::iterator it;
-	for (int pad = 0; pad < 2 ; pad++)
-		for (it = conf->keysym_map[pad].begin(); it != conf->keysym_map[pad].end(); ++it)
-				fprintf(f, "PAD %d:KEYSYM 0x%x = %d\n", pad, it->first, it->second);
+    for (auto const &it : g_conf.sdl2_mapping)
+        fprintf(f, "SDL2 = %s\n", it.c_str());
 
-	fclose(f);
+    fclose(f);
 }
 
 void LoadConfig()
 {
-	FILE *f;
-	char str[256];
-	bool have_user_setting = false;
+    FILE *f;
+    bool have_user_setting = false;
 
-	if (!conf)
-		conf = new PADconf;
+    g_conf.init();
 
-	conf->init();
+    const std::string iniFile(s_strIniPath + "OnePAD2.ini");
+    f = fopen(iniFile.c_str(), "r");
+    if (f == NULL) {
+        printf("OnePAD: failed to load ini %s\n", iniFile.c_str());
+        SaveConfig(); //save and return
+        return;
+    }
 
-	const std::string iniFile(s_strIniPath + "OnePAD.ini");
-	f = fopen(iniFile.c_str(), "r");
-	if (f == NULL)
-	{
-		printf("OnePAD: failed to load ini %s\n", iniFile.c_str());
-		SaveConfig(); //save and return
-		return;
-	}
+    u32 value;
 
-	u32 value;
-	if (fscanf(f, "log = %d\n", &value) == 0) return;
-	conf->log = value;
-	if (fscanf(f, "options = %d\n", &value) == 0) return;
-	conf->options = value;
-	if (fscanf(f, "mouse_sensibility = %d\n", &value) == 0) return;
-	conf->sensibility = value;
-	if (fscanf(f, "joy_pad_map = %d\n", &value) == 0) return;
-	conf->joyid_map = value;
-	if (fscanf(f, "ff_intensity = %d\n", &value) == 0) return;
-	conf->ff_intensity = value;
+    if (fscanf(f, "first_time_wizard = %u\n", &value) == 1)
+        g_conf.ftw = value;
 
-	for (int pad = 0; pad < 2; pad++)
-	{
-		for (int key = 0; key < MAX_KEYS; key++)
-		{
-			sprintf(str, "[%d][%d] = 0x%%x\n", pad, key);
-			u32 temp = 0;
+    if (fscanf(f, "log = %u\n", &value) == 1)
+        g_conf.log = value;
 
-			if (fscanf(f, str, &temp) == 0) temp = 0;
-			set_key(pad, key, temp);
-			if (temp && pad == 0) have_user_setting = true;
-		}
-	}
+    if (fscanf(f, "options = %u\n", &value) == 1)
+        g_conf.packed_options = value;
 
-	u32 pad;
-	u32 keysym;
-	u32 index;
-	while( fscanf(f, "PAD %d:KEYSYM 0x%x = %d\n", &pad, &keysym, &index) != EOF ) {
-		set_keyboad_key(pad, keysym, index);
-		if(pad == 0) have_user_setting = true;
-	}
+    if (fscanf(f, "mouse_sensibility = %u\n", &value) == 1)
+        g_conf.set_sensibility(value);
 
-	fclose(f);
+    if (fscanf(f, "ff_intensity = %u\n", &value) == 1)
+        g_conf.set_ff_intensity(value);
 
-	if (!have_user_setting) DefaultKeyboardValues();
+    size_t uid;
+    if (fscanf(f, "uid[0] = %zu\n", &uid) == 1)
+        g_conf.set_joy_uid(0, uid);
+    if (fscanf(f, "uid[1] = %zu\n", &uid) == 1)
+        g_conf.set_joy_uid(1, uid);
+
+    u32 pad;
+    u32 keysym;
+    u32 index;
+    while (fscanf(f, "PAD %u:KEYSYM 0x%x = %u\n", &pad, &keysym, &index) == 3) {
+        set_keyboard_key(pad & 1, keysym, index);
+        if (pad == 0)
+            have_user_setting = true;
+    }
+
+    char sdl2[512];
+    while (fscanf(f, "SDL2 = %511[^\n]\n", sdl2) == 1)
+        g_conf.sdl2_mapping.push_back(std::string(sdl2));
+
+    if (!have_user_setting)
+        DefaultKeyboardValues();
+
+    fclose(f);
 }

@@ -22,27 +22,21 @@
 #include "ModalPopups.h"
 #include "Panels/ConfigurationPanels.h"
 
-#include "Resources/EmbeddedImage.h"
-#include "Resources/ButtonIcon_Camera.h"
-
 #include <wx/artprov.h>
 #include <wx/filepicker.h>
 #include <wx/listbook.h>
 #include <wx/spinctrl.h>
 
-DEFINE_EVENT_TYPE( pxEvt_ApplySettings )
-DEFINE_EVENT_TYPE( pxEvt_SetSettingsPage )
-DEFINE_EVENT_TYPE( pxEvt_SomethingChanged )
+wxDEFINE_EVENT(pxEvt_ApplySettings, wxCommandEvent);
+wxDEFINE_EVENT(pxEvt_SetSettingsPage, wxCommandEvent);
+wxDEFINE_EVENT(pxEvt_SomethingChanged, wxCommandEvent);
 
 using namespace Panels;
 
 // configure the orientation of the listbox based on the platform
+// For now, they're all on the left.
+static const int s_orient = wxLB_LEFT;
 
-#if defined(__WXMAC__) || defined(__WXMSW__)
-	static const int s_orient = wxBK_TOP;
-#else
-	static const int s_orient = wxBK_LEFT;
-#endif
 
 class ScopedOkButtonDisabler
 {
@@ -79,7 +73,7 @@ public:
 		m_apply = m_ok = m_cancel = NULL;
 	}
 
-	virtual ~ScopedOkButtonDisabler() throw()
+	virtual ~ScopedOkButtonDisabler()
 	{
 		if (m_apply)	m_apply	->Enable();
 		if (m_ok)		m_ok	->Enable();
@@ -92,7 +86,7 @@ public:
 // --------------------------------------------------------------------------------------
 //  BaseApplicableDialog  (implementations)
 // --------------------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC_CLASS(BaseApplicableDialog, wxDialogWithHelpers)
+wxIMPLEMENT_DYNAMIC_CLASS(BaseApplicableDialog, wxDialogWithHelpers);
 
 BaseApplicableDialog::BaseApplicableDialog( wxWindow* parent, const wxString& title, const pxDialogCreationFlags& cflags )
 	: wxDialogWithHelpers( parent, title, cflags.MinWidth(425).Minimize() )
@@ -100,7 +94,7 @@ BaseApplicableDialog::BaseApplicableDialog( wxWindow* parent, const wxString& ti
 	Init();
 }
 
-BaseApplicableDialog::~BaseApplicableDialog() throw()
+BaseApplicableDialog::~BaseApplicableDialog()
 {
 	m_ApplyState.DoCleanup();
 }
@@ -114,7 +108,7 @@ wxString BaseApplicableDialog::GetDialogName() const
 
 void BaseApplicableDialog::Init()
 {
-	Connect( pxEvt_ApplySettings,	wxCommandEventHandler	(BaseApplicableDialog::OnSettingsApplied) );
+	Bind(pxEvt_ApplySettings, &BaseApplicableDialog::OnSettingsApplied, this);
 
 	wxCommandEvent applyEvent( pxEvt_ApplySettings );
 	applyEvent.SetId( GetId() );
@@ -135,40 +129,37 @@ void BaseApplicableDialog::OnSettingsApplied( wxCommandEvent& evt )
 Dialogs::BaseConfigurationDialog::BaseConfigurationDialog( wxWindow* parent, const wxString& title, int idealWidth )
 	: _parent( parent, title )
 {
-	SetMinWidth( idealWidth );
+	float scale = MSW_GetDPIScale();
+
+	SetMinWidth( scale * idealWidth );
 	m_listbook = NULL;
 	m_allowApplyActivation = true;
 
-	Connect( wxID_OK,		wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( BaseConfigurationDialog::OnOk_Click ) );
-	Connect( wxID_CANCEL,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( BaseConfigurationDialog::OnCancel_Click ) );
-	Connect( wxID_APPLY,	wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( BaseConfigurationDialog::OnApply_Click ) );
-	Connect( wxID_SAVE,		wxEVT_COMMAND_BUTTON_CLICKED,	wxCommandEventHandler( BaseConfigurationDialog::OnScreenshot_Click ) );
+	Bind(wxEVT_BUTTON, &BaseConfigurationDialog::OnOk_Click, this, wxID_OK);
+	Bind(wxEVT_BUTTON, &BaseConfigurationDialog::OnCancel_Click, this, wxID_CANCEL);
+	Bind(wxEVT_BUTTON, &BaseConfigurationDialog::OnApply_Click, this, wxID_APPLY);
+	Bind(wxEVT_BUTTON, &BaseConfigurationDialog::OnScreenshot_Click, this, wxID_SAVE);
 
-	Connect(				wxEVT_CLOSE_WINDOW,				wxCloseEventHandler(BaseConfigurationDialog::OnCloseWindow) );
-
-	Connect( pxEvt_SetSettingsPage, wxCommandEventHandler( BaseConfigurationDialog::OnSetSettingsPage ) );
+	Bind(pxEvt_SetSettingsPage, &BaseConfigurationDialog::OnSetSettingsPage, this);
 
 	// ----------------------------------------------------------------------------
 	// Bind a variety of standard "something probably changed" events.  If the user invokes
 	// any of these, we'll automatically de-gray the Apply button for this dialog box. :)
 
-	#define ConnectSomethingChanged( command ) \
-		Connect( wxEVT_COMMAND_##command,	wxCommandEventHandler( BaseConfigurationDialog::OnSomethingChanged ) );
+	Bind(wxEVT_TEXT, &BaseConfigurationDialog::OnSomethingChanged, this);
+	Bind(wxEVT_TEXT_ENTER, &BaseConfigurationDialog::OnSomethingChanged, this);
 
-	ConnectSomethingChanged( TEXT_UPDATED );
-	ConnectSomethingChanged( TEXT_ENTER );
+	Bind(wxEVT_RADIOBUTTON, &BaseConfigurationDialog::OnSomethingChanged, this);
+	Bind(wxEVT_COMBOBOX, &BaseConfigurationDialog::OnSomethingChanged, this);
+	Bind(wxEVT_CHECKBOX, &BaseConfigurationDialog::OnSomethingChanged, this);
+	Bind(wxEVT_BUTTON, &BaseConfigurationDialog::OnSomethingChanged, this);
+	Bind(wxEVT_CHOICE, &BaseConfigurationDialog::OnSomethingChanged, this);
+	Bind(wxEVT_LISTBOX, &BaseConfigurationDialog::OnSomethingChanged, this);
+	Bind(wxEVT_SPINCTRL, &BaseConfigurationDialog::OnSomethingChanged, this);
+	Bind(wxEVT_SLIDER, &BaseConfigurationDialog::OnSomethingChanged, this);
+	Bind(wxEVT_DIRPICKER_CHANGED, &BaseConfigurationDialog::OnSomethingChanged, this);
 
-	ConnectSomethingChanged( RADIOBUTTON_SELECTED );
-	ConnectSomethingChanged( COMBOBOX_SELECTED );
-	ConnectSomethingChanged( CHECKBOX_CLICKED );
-	ConnectSomethingChanged( BUTTON_CLICKED );
-	ConnectSomethingChanged( CHOICE_SELECTED );
-	ConnectSomethingChanged( LISTBOX_SELECTED );
-	ConnectSomethingChanged( SPINCTRL_UPDATED );
-	ConnectSomethingChanged( SLIDER_UPDATED );
-	ConnectSomethingChanged( DIRPICKER_CHANGED );
-
-	Connect( pxEvt_SomethingChanged, wxCommandEventHandler( BaseConfigurationDialog::OnSomethingChanged ) );
+	Bind(pxEvt_SomethingChanged, &BaseConfigurationDialog::OnSomethingChanged, this);
 }
 
 void Dialogs::BaseConfigurationDialog::AddListbook( wxSizer* sizer )
@@ -190,14 +181,10 @@ void Dialogs::BaseConfigurationDialog::AddOkCancel( wxSizer* sizer )
 	if( wxWindow* apply = FindWindow( wxID_APPLY ) ) apply->Disable();
 	SomethingChanged_StateModified_IsChanged();
 
-	wxBitmapButton& screenshotButton( *new wxBitmapButton( this, wxID_SAVE, EmbeddedImage<res_ButtonIcon_Camera>().Get() ) );
+	wxBitmapButton& screenshotButton(*new wxBitmapButton(this, wxID_SAVE, wxGetApp().GetScreenshotBitmap()));
 	screenshotButton.SetToolTip( _("Saves a snapshot of this settings panel to a PNG file.") );
 
 	*m_extraButtonSizer += screenshotButton|pxMiddle;
-}
-
-Dialogs::BaseConfigurationDialog::~BaseConfigurationDialog() throw()
-{
 }
 
 void Dialogs::BaseConfigurationDialog::OnSetSettingsPage( wxCommandEvent& evt )
@@ -229,14 +216,6 @@ void Dialogs::BaseConfigurationDialog::OnSomethingChanged( wxCommandEvent& evt )
 	if ((evt.GetId() != wxID_OK) && (evt.GetId() != wxID_CANCEL) && (evt.GetId() != wxID_APPLY))
 		SomethingChanged();
 }
-
-
-void Dialogs::BaseConfigurationDialog::OnCloseWindow( wxCloseEvent& evt )
-{
-	if( !IsModal() ) Destroy();
-	evt.Skip();
-}
-
 
 void Dialogs::BaseConfigurationDialog::AllowApplyActivation( bool allow )
 {
@@ -280,7 +259,6 @@ void Dialogs::BaseConfigurationDialog::OnApply_Click( wxCommandEvent& evt )
 	SomethingChanged_StateModified_IsChanged();
 }
 
-//avih: FIXME: ? for some reason, this OnCancel_Click is called twice when clicking cancel or closing the dialog (Jake's code?).
 void Dialogs::BaseConfigurationDialog::OnCancel_Click( wxCommandEvent& evt )
 {
 	//same as for Ok/Apply: let SysConfigDialog clean-up the presets and derivatives (menu system) if needed.
@@ -312,12 +290,15 @@ void Dialogs::BaseConfigurationDialog::OnScreenshot_Click( wxCommandEvent& evt )
 	if( !filename.IsEmpty() )
 	{
 		ScopedBusyCursor busy( Cursor_ReallyBusy );
+#ifdef __WXMSW__
+		// HACK: This works around an actual wx3.0 bug at the cost of icon
+		// quality. See http://trac.wxwidgets.org/ticket/14403 .
+		wxImage image = memBmp.ConvertToImage();
+		if (image.HasAlpha())
+			image.ClearAlpha();
+		image.SaveFile( filename, wxBITMAP_TYPE_PNG );
+#else
 		memBmp.SaveFile( filename, wxBITMAP_TYPE_PNG );
+#endif
 	}
-}
-
-void Dialogs::BaseConfigurationDialog::OnSettingsApplied( wxCommandEvent& evt )
-{
-	evt.Skip();
-	MSW_ListView_SetIconSpacing( m_listbook, GetClientSize().GetWidth() );
 }

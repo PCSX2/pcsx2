@@ -3,14 +3,13 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     message(FATAL_ERROR "
     You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
-endif(NOT TOP_CMAKE_WAS_SOURCED)
+endif()
 
 
 # plugin name
 set(Output zzogl-shader)
 
 set(CommonFlags
-    -pthread
     -DZEROGS_SSE2
     -fno-strict-aliasing
     -Wstrict-aliasing # Allow to track strict aliasing issue.
@@ -18,47 +17,32 @@ set(CommonFlags
     -DNVIDIA_CG_API
     )
 
-set(OptimizationFlags
-    -O2
-    -DNDEBUG
-    )
-
-# Debug - Build
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    # add defines
-    add_definitions(${CommonFlags} -g -Wall -D_DEBUG)
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-    # add defines
-    add_definitions(${CommonFlags} ${OptimizationFlags} -g -W -DZEROGS_DEVBUILD)
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
-
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-    # add defines
-    add_definitions(${CommonFlags} ${OptimizationFlags} -W)
+    set(zerogsshadersFinalFlags
+        ${CommonFlags} -D_DEBUG
+    )
+elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
+    set(zerogsshadersFinalFlags
+        ${CommonFlags} -g -W -DZEROGS_DEVBUILD
+    )
+elseif(CMAKE_BUILD_TYPE STREQUAL Release)
+    set(zerogsshadersFinalFlags
+        ${CommonFlags} -W
+    )
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
-include_directories(.)
+set(zerogsshadersFinalSources
+    zerogsshaders.cpp
+    zpipe.cpp
+)
 
-# add library
-add_executable(${Output} zerogsshaders.cpp zpipe.cpp)
+set(zerogsshadersFinalLibs
+    ${ZLIB_LIBRARIES}
+    ${CG_LIBRARIES}
+    ${OPENGL_LIBRARIES}
+)
 
-# link target with zlib
-target_link_libraries(${Output} ${ZLIB_LIBRARIES})
-
-# link target with Cg
-target_link_libraries(${Output} ${CG_LIBRARIES})
-
-# link target with opengl
-target_link_libraries(${Output} ${OPENGL_LIBRARIES})
-
-# User flags options
-if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-    target_link_libraries(${Output} "${USER_CMAKE_LD_FLAGS}")
-endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
+add_pcsx2_executable(${Output} "${zerogsshadersFinalSources}" "${zerogsshadersFinalLibs}" "${zerogsshadersFinalFlags}")
 
 # Now build the shader
 add_custom_command(TARGET ${Output} POST_BUILD

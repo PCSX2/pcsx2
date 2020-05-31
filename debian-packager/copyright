@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: PCSX2
-Source: http://code.google.com/p/pcsx2/source
+Source: https://github.com/PCSX2/pcsx2
 
 Files: debian/*
 Copyright:
@@ -23,10 +23,6 @@ License: LGPL-2.1+
 Files: plugins/zzogl-pg/opengl/glprocs.*
 Copyright: 1991-2000 Silicon Graphics, Inc
 License: SGI FREE SOFTWARE LICENSE B 2.0
-
-Files: common/include/intrin_x86.h
-Copyright: 2006 KJK::Hyperion <hackbunny@reactos.com>
-License: Expat
 
 Files: common/src/Utilities/vssprintf.cpp
 Copyright: 2002 Michael Ringgaard
@@ -110,25 +106,6 @@ License: SGI FREE SOFTWARE LICENSE B 2.0
  not be used in advertising or otherwise to promote the sale, use or other
  dealings in this Software without prior written authorization from Silicon
  Graphics, Inc.
-
-License: Expat
- Permission is hereby granted, free of charge, to any person obtaining a copy of
- this software and associated documentation files (the "Software"), to deal in
- the Software without restriction, including without limitation the rights to
- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
- of the Software, and to permit persons to whom the Software is furnished to do
- so, subject to the following conditions:
- .
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
- .
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- SOFTWARE.
 
 License: BSD-3-Clause
  Redistribution and use in source and binary forms, with or without

@@ -15,8 +15,8 @@
  * along with SPU2-X.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- #ifndef __LINUX_H__
- #define __LINUX_H__
+#ifndef __LINUX_H__
+#define __LINUX_H__
 
 #include <assert.h>
 #include <stdlib.h>
@@ -32,11 +32,11 @@
 extern int AlsaSetupSound();
 extern void AlsaRemoveSound();
 extern int AlsaSoundGetBytesBuffered();
-extern void AlsaSoundFeedVoiceData(unsigned char* pSound,long lBytes);
+extern void AlsaSoundFeedVoiceData(unsigned char *pSound, long lBytes);
 
 extern int SetupSound();
 extern void RemoveSound();
 extern int SoundGetBytesBuffered();
-extern void SoundFeedVoiceData(unsigned char* pSound,long lBytes);
+extern void SoundFeedVoiceData(unsigned char *pSound, long lBytes);
 
 #endif // __LINUX_H__

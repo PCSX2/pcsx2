@@ -5,35 +5,26 @@
       <UniqueIdentifier>{c03fe088-95f7-4235-a796-5fe044914fb5}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
     </Filter>
-    <Filter Include="Source Files\Reader Modules">
-      <UniqueIdentifier>{1dc55077-7d7a-4951-8841-26d21ff1513b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{6c12b075-7b05-42ce-8628-c668f325f4ce}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
-    </Filter>
-    <Filter Include="Header Files\rosddk">
-      <UniqueIdentifier>{48ccf9e7-ebd6-41ff-bf33-0e964046bb00}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{a80698fd-3734-41c4-b7e8-6b96b34633e0}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
+    <Filter Include="Source Files\Windows">
+      <UniqueIdentifier>{a0a8deec-63fd-4ef5-b815-d6c9ff3d80e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Linux">
+      <UniqueIdentifier>{102507ff-fef0-4989-9bcb-4fa14a0b7595}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GTK">
+      <UniqueIdentifier>{2054202d-299a-4cbf-8f4f-282bfe79a98e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\CDVD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\FileStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IOCtlSrc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ReaderModules.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ReadThread.cpp">
@@ -42,37 +33,34 @@
     <ClCompile Include="..\TocStuff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\PlainIso.cpp">
-      <Filter>Source Files\Reader Modules</Filter>
+    <ClCompile Include="..\Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Unix\LinuxIOCtlSrc.cpp">
+      <Filter>Source Files\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCtlSrc.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="config.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Unix\LinuxConfig.cpp">
+      <Filter>Source Files\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Unix\GtkGui.cpp">
+      <Filter>Source Files\GTK</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CDVD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\FileStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ReaderModules.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\SectorConverters.h">
+    <ClInclude Include="..\Settings.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rosddk\ntddcdrm.h">
-      <Filter>Header Files\rosddk</Filter>
-    </ClInclude>
-    <ClInclude Include="rosddk\ntddcdvd.h">
-      <Filter>Header Files\rosddk</Filter>
-    </ClInclude>
-    <ClInclude Include="rosddk\ntddscsi.h">
-      <Filter>Header Files\rosddk</Filter>
-    </ClInclude>
-    <ClInclude Include="rosddk\ntddstor.h">
-      <Filter>Header Files\rosddk</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -16,21 +16,23 @@
 #include "PrecompiledHeader.h"
 #include "DebugEvents.h"
 
-DEFINE_LOCAL_EVENT_TYPE( debEVT_SETSTATUSBARTEXT )
-DEFINE_LOCAL_EVENT_TYPE( debEVT_UPDATELAYOUT )
-DEFINE_LOCAL_EVENT_TYPE( debEVT_GOTOINMEMORYVIEW )
-DEFINE_LOCAL_EVENT_TYPE( debEVT_GOTOINDISASM )
-DEFINE_LOCAL_EVENT_TYPE( debEVT_RUNTOPOS )
-DEFINE_LOCAL_EVENT_TYPE( debEVT_MAPLOADED )
-DEFINE_LOCAL_EVENT_TYPE( debEVT_STEPOVER )
-DEFINE_LOCAL_EVENT_TYPE( debEVT_STEPINTO )
-DEFINE_LOCAL_EVENT_TYPE( debEVT_UPDATE )
-DEFINE_LOCAL_EVENT_TYPE( debEVT_BREAKPOINTWINDOW )
+wxDEFINE_EVENT(debEVT_SETSTATUSBARTEXT, wxCommandEvent);
+wxDEFINE_EVENT(debEVT_UPDATELAYOUT, wxCommandEvent);
+wxDEFINE_EVENT(debEVT_GOTOINMEMORYVIEW, wxCommandEvent);
+wxDEFINE_EVENT(debEVT_REFERENCEMEMORYVIEW, wxCommandEvent);
+wxDEFINE_EVENT(debEVT_GOTOINDISASM, wxCommandEvent);
+wxDEFINE_EVENT(debEVT_RUNTOPOS, wxCommandEvent);
+wxDEFINE_EVENT(debEVT_MAPLOADED, wxCommandEvent);
+wxDEFINE_EVENT(debEVT_STEPOVER, wxCommandEvent);
+wxDEFINE_EVENT(debEVT_STEPINTO, wxCommandEvent);
+wxDEFINE_EVENT(debEVT_STEPOUT, wxCommandEvent);
+wxDEFINE_EVENT(debEVT_UPDATE, wxCommandEvent);
+wxDEFINE_EVENT(debEVT_BREAKPOINTWINDOW, wxCommandEvent);
 
 bool parseExpression(const char* exp, DebugInterface* cpu, u64& dest)
 {
 	PostfixExpression postfix;
-	if (cpu->initExpression(exp,postfix) == false) return false;
+	if (!cpu->initExpression(exp,postfix)) return false;
 	return cpu->parseExpression(postfix,dest);
 }
 
@@ -46,7 +48,7 @@ bool executeExpressionWindow(wxWindow* parent, DebugInterface* cpu, u64& dest, c
 		return false;
 
 	wxCharBuffer expression = result.ToUTF8();
-	if (parseExpression(expression, cpu, dest) == false)
+	if (!parseExpression(expression, cpu, dest))
 	{
 		displayExpressionError(parent);
 		return false;

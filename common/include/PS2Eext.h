@@ -20,27 +20,41 @@
 #include <string>
 #include <cstdarg>
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
 #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>
 
 #define EXPORT_C_(type) extern "C" type CALLBACK
-#else
-#include <gtk/gtk.h>
-#include <cstring>
 
-#define EXPORT_C_(type) extern "C" __attribute__((externally_visible,visibility("default"))) type
+#elif defined(__unix__)
+
+#include <cstring>
+#include <wx/msgdlg.h>
+
+#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
+
+#else
+
+#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
+
 #endif
 
+#include <PluginCompatibility.h>
 //#include "PS2Edefs.h"
 
+#if !defined(_MSC_VER) || !defined(UNICODE)
 static void SysMessage(const char *fmt, ...);
 static void __forceinline PluginNullConfigure(std::string desc, s32 &log);
-static void __forceinline PluginNullAbout(const char *aboutText);
+#else
+static void SysMessage(const wchar_t *fmt, ...);
+static void __forceinline PluginNullConfigure(std::wstring desc, s32 &log);
+#endif
 
-enum FileMode
-{
+enum FileMode {
     READ_FILE = 0,
     WRITE_FILE
 };
@@ -52,11 +66,10 @@ struct PluginLog
 
     bool Open(std::string logname)
     {
-        LogFile = fopen(logname.c_str(), "w");
+        LogFile = px_fopen(logname, "w");
 
-        if (LogFile)
-        {
-            setvbuf(LogFile, NULL,  _IONBF, 0);
+        if (LogFile) {
+            setvbuf(LogFile, NULL, _IONBF, 0);
             return true;
         }
         return false;
@@ -72,37 +85,50 @@ struct PluginLog
 
     void Write(const char *fmt, ...)
     {
+        if (LogFile == NULL)
+            return;
+
         va_list list;
-
-        if (LogFile == NULL) return;
-
-        va_start(list, fmt);
-        if (WriteToFile) vfprintf(LogFile, fmt, list);
-        if (WriteToConsole) vfprintf(stdout, fmt, list);
-        va_end(list);
+        if (WriteToFile) {
+            va_start(list, fmt);
+            vfprintf(LogFile, fmt, list);
+            va_end(list);
+        }
+        if (WriteToConsole) {
+            va_start(list, fmt);
+            vfprintf(stdout, fmt, list);
+            va_end(list);
+        }
     }
 
     void WriteLn(const char *fmt, ...)
     {
+        if (LogFile == NULL)
+            return;
+
         va_list list;
-
-        if (LogFile == NULL) return;
-
-        va_start(list, fmt);
-        if (WriteToFile) vfprintf(LogFile, fmt, list);
-        if (WriteToConsole) vfprintf(stdout, fmt, list);
-        va_end(list);
-
-        if (WriteToFile) fprintf(LogFile, "\n");
-        if (WriteToConsole) fprintf(stdout, "\n");
+        if (WriteToFile) {
+            va_start(list, fmt);
+            vfprintf(LogFile, fmt, list);
+            va_end(list);
+            fprintf(LogFile, "\n");
+        }
+        if (WriteToConsole) {
+            va_start(list, fmt);
+            vfprintf(stdout, fmt, list);
+            va_end(list);
+            fprintf(stdout, "\n");
+        }
     }
 
+#if !defined(_MSC_VER) || !defined(UNICODE)
     void Message(const char *fmt, ...)
     {
         va_list list;
         char buf[256];
 
-        if (LogFile == NULL) return;
+        if (LogFile == NULL)
+            return;
 
         va_start(list, fmt);
         vsprintf(buf, fmt, list);
@@ -110,6 +136,22 @@ struct PluginLog
 
         SysMessage(buf);
     }
+#else
+    void Message(const wchar_t *fmt, ...)
+    {
+        va_list list;
+        wchar_t buf[256];
+
+        if (LogFile == NULL)
+            return;
+
+        va_start(list, fmt);
+        vswprintf(buf, 256, fmt, list);
+        va_end(list);
+
+        SysMessage(buf);
+    }
+#endif
 };
 
 struct PluginConf
@@ -119,16 +161,14 @@ struct PluginConf
 
     bool Open(std::string name, FileMode mode = READ_FILE)
     {
-        if (mode == READ_FILE)
-        {
-            ConfFile = fopen(name.c_str(), "r");
-        }
-        else
-        {
-            ConfFile = fopen(name.c_str(), "w");
+        if (mode == READ_FILE) {
+            ConfFile = px_fopen(name, "r");
+        } else {
+            ConfFile = px_fopen(name, "w");
         }
 
-        if (ConfFile == NULL) return false;
+        if (ConfFile == NULL)
+            return false;
 
         return true;
     }
@@ -141,14 +181,14 @@ struct PluginConf
         }
     }
 
-    int ReadInt(const std::string& item, int defval)
+    int ReadInt(const std::string &item, int defval)
     {
         int value = defval;
         std::string buf = item + " = %d\n";
 
         if (ConfFile)
-			if (fscanf(ConfFile, buf.c_str(), &value) < 0)
-				SysMessage("Somethings got wrong when option was read\n");
+            if (fscanf(ConfFile, buf.c_str(), &value) < 0)
+                fprintf(stderr, "Error reading %s\n", item.c_str());
 
         return value;
     }
@@ -157,11 +197,32 @@ struct PluginConf
     {
         std::string buf = item + " = %d\n";
 
-        if (ConfFile) fprintf(ConfFile, buf.c_str(), value);
+        if (ConfFile)
+            fprintf(ConfFile, buf.c_str(), value);
     }
 };
 
-#ifdef __linux__
+#if defined(__unix__)
+static void SysMessage(const char *fmt, ...)
+{
+    va_list list;
+    char msg[512];
+
+    va_start(list, fmt);
+    vsprintf(msg, fmt, list);
+    va_end(list);
+
+    if (msg[strlen(msg) - 1] == '\n')
+        msg[strlen(msg) - 1] = 0;
+
+    wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+    dialog.ShowModal();
+}
+
+#define ENTRY_POINT /* We don't need no stinkin' entry point! */
+
+
+#elif defined(__WXMAC__) || defined(__APPLE__)
 
 static void SysMessage(const char *fmt, ...)
 {
@@ -172,101 +233,88 @@ static void SysMessage(const char *fmt, ...)
     vsprintf(msg, fmt, list);
     va_end(list);
 
-    if (msg[strlen(msg)-1] == '\n') msg[strlen(msg)-1] = 0;
+    if (msg[strlen(msg) - 1] == '\n')
+        msg[strlen(msg) - 1] = 0;
 
-    GtkWidget *dialog;
-    dialog = gtk_message_dialog_new (NULL,
-                                     GTK_DIALOG_DESTROY_WITH_PARENT,
-                                     GTK_MESSAGE_INFO,
-                                     GTK_BUTTONS_OK,
-                                     "%s", msg);
-    gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
+    // TODO OSX can we use WX MessageBox here or should Cocoa MessageBox used?
 }
 
-static bool loggingValue = false;
-
-static void __forceinline set_logging(GtkToggleButton *check)
+static void SysMessage(const wchar_t *fmt, ...)
 {
-	loggingValue = gtk_toggle_button_get_active(check);
-}
+    va_list list;
+    wchar_t msg[512];
 
-static void __forceinline send_ok(GtkDialog *dialog)
-{
-	int ret = (loggingValue) ? 1 : 0;
-	gtk_dialog_response (dialog, ret);
+    va_start(list, fmt);
+    //vsprintf(msg, fmt, list);
+    va_end(list);
+
+    // TODO OSX can we use WX MessageBox here or should Cocoa MessageBox used?
 }
 
 static void __forceinline PluginNullConfigure(std::string desc, int &log)
 {
-    GtkWidget *dialog, *label, *okay_button, *check_box;
-
-    /* Create the widgets */
-    dialog = gtk_dialog_new();
-    label = gtk_label_new (desc.c_str());
-    okay_button = gtk_button_new_with_label("Ok");
-    check_box = gtk_check_button_new_with_label("Logging");
-
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_box), (log != 0));
-
-    /* Ensure that the dialog box is destroyed when the user clicks ok, and that we get the check box value. */
-    g_signal_connect_swapped(GTK_OBJECT (okay_button), "clicked", G_CALLBACK(send_ok), dialog);
-    g_signal_connect_swapped(GTK_OBJECT (check_box), "toggled", G_CALLBACK(set_logging), check_box);
-
-    /* Add all our widgets, and show everything we've added to the dialog. */
-    gtk_container_add (GTK_CONTAINER (gtk_dialog_get_action_area(GTK_DIALOG(dialog))), okay_button);
-    gtk_container_add (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG(dialog))), label);
-    gtk_container_add (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG(dialog))), check_box);
-    gtk_widget_show_all (dialog);
-
-    log = gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
+    SysMessage("This space is intentionally left blank.");
 }
 
-static void __forceinline PluginNullAbout(const char *aboutText)
-{
-    SysMessage(aboutText);
-}
+#define ENTRY_POINT /* We don't need no stinkin' entry point! */ // TODO OSX WTF is this anyway?
 
-#define ENTRY_POINT /* We don't need no stinkin' entry point! */
 
 #else
 
-#define usleep(x)	Sleep(x / 1000)
+#define usleep(x) Sleep(x / 1000)
+
+#ifndef UNICODE
 
 static void __forceinline SysMessage(const char *fmt, ...)
 {
     va_list list;
     char tmp[512];
-    va_start(list,fmt);
-    vsprintf(tmp,fmt,list);
+    va_start(list, fmt);
+    vsprintf(tmp, fmt, list);
     va_end(list);
-    MessageBox( GetActiveWindow(), tmp, "Message", MB_SETFOREGROUND | MB_OK );
+    MessageBox(GetActiveWindow(), tmp, "Message", MB_SETFOREGROUND | MB_OK);
 }
 
 static void __forceinline PluginNullConfigure(std::string desc, s32 &log)
 {
-	/* To do: Write a dialog box that displays a dialog box with the text in desc,
+    /* To do: Write a dialog box that displays a dialog box with the text in desc,
 	   and a check box that says "Logging", checked if log !=0, and set log to
 	   1 if it is checked on return, and 0 if it isn't. */
-    SysMessage("This space intentionally left blank.");
+    SysMessage("This space is intentionally left blank.");
 }
 
-static void __forceinline PluginNullAbout(const char *aboutText)
+#else
+
+static void __forceinline SysMessage(const wchar_t *fmt, ...)
 {
-    SysMessage(aboutText);
+    va_list list;
+    wchar_t tmp[512];
+    va_start(list, fmt);
+    vswprintf(tmp, 512, fmt, list);
+    va_end(list);
+    MessageBox(GetActiveWindow(), tmp, L"Message", MB_SETFOREGROUND | MB_OK);
 }
 
-#define ENTRY_POINT \
-HINSTANCE hInst; \
-\
-BOOL APIENTRY DllMain(HANDLE hModule,                  /* DLL INIT*/ \
-                      DWORD  dwReason, \
-                      LPVOID lpReserved) \
-{	\
-    hInst = (HINSTANCE)hModule; \
-    return TRUE;                                          /* very quick :)*/ \
+static void __forceinline PluginNullConfigure(std::string desc, s32 &log)
+{
+    /* To do: Write a dialog box that displays a dialog box with the text in desc,
+	and a check box that says "Logging", checked if log !=0, and set log to
+	1 if it is checked on return, and 0 if it isn't. */
+    SysMessage(L"This space is intentionally left blank.");
 }
+
+#endif
+
+#define ENTRY_POINT                                     \
+    HINSTANCE hInst;                                    \
+                                                        \
+    BOOL APIENTRY DllMain(HANDLE hModule, /* DLL INIT*/ \
+                          DWORD dwReason,               \
+                          LPVOID lpReserved)            \
+    {                                                   \
+        hInst = (HINSTANCE)hModule;                     \
+        return TRUE; /* very quick :)*/                 \
+    }
 
 #endif
 #endif // PS2EEXT_H_INCLUDED

@@ -22,14 +22,17 @@
 #include "wx/wfstream.h"
 
 
-BaseCompressThread::~BaseCompressThread() throw()
+BaseCompressThread::~BaseCompressThread()
 {
-	_parent::Cancel();
-	if( m_PendingSaveFlag )
-	{
-		wxGetApp().ClearPendingSave();
-		m_PendingSaveFlag = false;
+	try {
+		_parent::Cancel();
+		if( m_PendingSaveFlag )
+		{
+			wxGetApp().ClearPendingSave();
+			m_PendingSaveFlag = false;
+		}
 	}
+	DESTRUCTOR_CATCHALL
 }
 
 void BaseCompressThread::SetPendingSave()

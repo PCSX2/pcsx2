@@ -14,61 +14,61 @@
  */
 
 #include "PrecompiledHeader.h"
-#include <wx/gdicmn.h>		// for wxPoint/wxRect stuff
+#include <wx/gdicmn.h> // for wxPoint/wxRect stuff
 
-__fi wxString fromUTF8( const char* src )
+__fi wxString fromUTF8(const char *src)
 {
-	// IMPORTANT:  We cannot use wxString::FromUTF8 because it *stupidly* relies on a C++ global instance of
-	// wxMBConvUTF8().  C++ initializes and destroys these globals at random, so any object constructor or
-	// destructor that attempts to do logging may crash the app (either during startup or during exit) unless
-	// we use a LOCAL instance of wxMBConvUTF8(). --air
+    // IMPORTANT:  We cannot use wxString::FromUTF8 because it *stupidly* relies on a C++ global instance of
+    // wxMBConvUTF8().  C++ initializes and destroys these globals at random, so any object constructor or
+    // destructor that attempts to do logging may crash the app (either during startup or during exit) unless
+    // we use a LOCAL instance of wxMBConvUTF8(). --air
 
-	// Performance?  No worries.  wxMBConvUTF8() is virtually free.  Initializing a stack copy of the class
-	// is just as efficient as passing a pointer to a pre-instanced global. (which makes me wonder wh wxWidgets
-	// uses the stupid globals in the first place!)  --air
+    // Performance?  No worries.  wxMBConvUTF8() is virtually free.  Initializing a stack copy of the class
+    // is just as efficient as passing a pointer to a pre-instanced global. (which makes me wonder wh wxWidgets
+    // uses the stupid globals in the first place!)  --air
 
-	return wxString( src, wxMBConvUTF8() );
+    return wxString(src, wxMBConvUTF8());
 }
 
-__fi wxString fromAscii( const char* src )
+__fi wxString fromAscii(const char *src)
 {
-	return wxString::FromAscii( src );
+    return wxString::FromAscii(src);
 }
 
 wxString u128::ToString() const
 {
-	return pxsFmt( L"0x%08X.%08X.%08X.%08X", _u32[0], _u32[1], _u32[2], _u32[3] );
+    return pxsFmt(L"0x%08X.%08X.%08X.%08X", _u32[0], _u32[1], _u32[2], _u32[3]);
 }
 
 wxString u128::ToString64() const
 {
-	return pxsFmt( L"0x%08X%08X.%08X%08X", _u32[0], _u32[1], _u32[2], _u32[3] );
+    return pxsFmt(L"0x%08X%08X.%08X%08X", _u32[0], _u32[1], _u32[2], _u32[3]);
 }
 
 wxString u128::ToString8() const
 {
-	FastFormatUnicode result;
-	result.Write( L"0x%02X.%02X", _u8[0], _u8[1] );
-	for (uint i=2; i<16; i+=2)
-		result.Write( L".%02X.%02X", _u8[i], _u8[i+1] );
-	return result;
+    FastFormatUnicode result;
+    result.Write(L"0x%02X.%02X", _u8[0], _u8[1]);
+    for (uint i = 2; i < 16; i += 2)
+        result.Write(L".%02X.%02X", _u8[i], _u8[i + 1]);
+    return result;
 }
 
-void u128::WriteTo( FastFormatAscii& dest ) const
+void u128::WriteTo(FastFormatAscii &dest) const
 {
-	dest.Write( "0x%08X.%08X.%08X.%08X", _u32[0], _u32[1], _u32[2], _u32[3] );
+    dest.Write("0x%08X.%08X.%08X.%08X", _u32[0], _u32[1], _u32[2], _u32[3]);
 }
 
-void u128::WriteTo64( FastFormatAscii& dest ) const
+void u128::WriteTo64(FastFormatAscii &dest) const
 {
-	dest.Write( "0x%08X%08X.%08X%08X", _u32[0], _u32[1], _u32[2], _u32[3] );
+    dest.Write("0x%08X%08X.%08X%08X", _u32[0], _u32[1], _u32[2], _u32[3]);
 }
 
-void u128::WriteTo8( FastFormatAscii& dest ) const
+void u128::WriteTo8(FastFormatAscii &dest) const
 {
-	dest.Write( "0x%02X.%02X", _u8[0], _u8[1] );
-	for (uint i=2; i<16; i+=2)
-		dest.Write( ".%02X.%02X", _u8[i], _u8[i+1] );
+    dest.Write("0x%02X.%02X", _u8[0], _u8[1]);
+    for (uint i = 2; i < 16; i += 2)
+        dest.Write(".%02X.%02X", _u8[i], _u8[i + 1]);
 }
 
 // Splits a string into parts and adds the parts into the given SafeList.
@@ -77,11 +77,11 @@ void u128::WriteTo8( FastFormatAscii& dest ) const
 //
 // Note: wxWidgets 2.9 / 3.0 has a wxSplit function, but we're using 2.8 so I had to make
 // my own.
-void SplitString( wxArrayString& dest, const wxString& src, const wxString& delims, wxStringTokenizerMode mode )
+void SplitString(wxArrayString &dest, const wxString &src, const wxString &delims, wxStringTokenizerMode mode)
 {
-	wxStringTokenizer parts( src, delims, mode );
-	while( parts.HasMoreTokens() )
-		dest.Add( parts.GetNextToken() );
+    wxStringTokenizer parts(src, delims, mode);
+    while (parts.HasMoreTokens())
+        dest.Add(parts.GetNextToken());
 }
 
 // Joins a list of strings into one larger string, using the given string concatenation
@@ -90,32 +90,32 @@ void SplitString( wxArrayString& dest, const wxString& src, const wxString& deli
 //
 // Note: wxWidgets 2.9 / 3.0 has a wxJoin function, but we're using 2.8 so I had to make
 // my own.
-wxString JoinString( const wxArrayString& src, const wxString& separator )
+wxString JoinString(const wxArrayString &src, const wxString &separator)
 {
-	wxString dest;
-	for( int i=0, len=src.GetCount(); i<len; ++i )
-	{
-		if( src[i].IsEmpty() ) continue;
-		if( !dest.IsEmpty() )
-			dest += separator;
-		dest += src[i];
-	}
-	return dest;
+    wxString dest;
+    for (int i = 0, len = src.GetCount(); i < len; ++i) {
+        if (src[i].IsEmpty())
+            continue;
+        if (!dest.IsEmpty())
+            dest += separator;
+        dest += src[i];
+    }
+    return dest;
 }
 
-wxString JoinString( const wxChar** src, const wxString& separator )
+wxString JoinString(const wxChar **src, const wxString &separator)
 {
-	wxString dest;
-	while( *src != NULL )
-	{
-		if( *src[0] == 0 ) continue;
+    wxString dest;
+    while (*src != NULL) {
+        if (*src[0] == 0)
+            continue;
 
-		if( !dest.IsEmpty() )
-			dest += separator;
-		dest += *src;
-		++src;
-	}
-	return dest;
+        if (!dest.IsEmpty())
+            dest += separator;
+        dest += *src;
+        ++src;
+    }
+    return dest;
 }
 
 
@@ -125,13 +125,13 @@ wxString JoinString( const wxChar** src, const wxString& separator )
 //
 // This, so far, include types such as wxPoint, wxRect, and wxSize.
 //
-template< typename T >
-T Parse( const wxString& src, const wxString& separators=L",")
+template <typename T>
+T Parse(const wxString &src, const wxString &separators = L",")
 {
-	T retval;
-	if( !TryParse( retval, src, separators ) )
-		throw Exception::ParseError( "Parse failure on call to " + fromUTF8(__WXFUNCTION__) + ": " + src );
-	return retval;
+    T retval;
+    if (!TryParse(retval, src, separators))
+        throw Exception::ParseError("Parse failure on call to " + fromUTF8(__WXFUNCTION__) + ": " + src);
+    return retval;
 }
 
 
@@ -140,98 +140,104 @@ T Parse( const wxString& src, const wxString& separators=L",")
 // --------------------------------------------------------------------------------------
 
 // Converts a wxPoint into a comma-delimited string!
-wxString ToString( const wxPoint& src, const wxString& separator )
+wxString ToString(const wxPoint &src, const wxString &separator)
 {
-	return wxString() << src.x << separator << src.y;
+    return wxString() << src.x << separator << src.y;
 }
 
-wxString ToString( const wxSize& src, const wxString& separator )
+wxString ToString(const wxSize &src, const wxString &separator)
 {
-	return wxString() << src.GetWidth() << separator << src.GetHeight();
+    return wxString() << src.GetWidth() << separator << src.GetHeight();
 }
 
 // Converts a wxRect into a comma-delimited string!
 // Example: 32,64,128,5
-wxString ToString( const wxRect& src, const wxString& separator )
+wxString ToString(const wxRect &src, const wxString &separator)
 {
-	return ToString( src.GetLeftTop(), separator ) << separator << ToString( src.GetSize(), separator );
+    return ToString(src.GetLeftTop(), separator) << separator << ToString(src.GetSize(), separator);
 }
 
 // --------------------------------------------------------------------------------------
 //  Parse helpers for wxString!
 // --------------------------------------------------------------------------------------
 
-bool TryParse( wxPoint& dest, wxStringTokenizer& parts )
+bool TryParse(wxPoint &dest, wxStringTokenizer &parts)
 {
-	long result[2];
+    long result[2];
 
-	if( !parts.HasMoreTokens() || !parts.GetNextToken().ToLong( &result[0] ) ) return false;
-	if( !parts.HasMoreTokens() || !parts.GetNextToken().ToLong( &result[1] ) ) return false;
-	dest.x = result[0];
-	dest.y = result[1];
+    if (!parts.HasMoreTokens() || !parts.GetNextToken().ToLong(&result[0]))
+        return false;
+    if (!parts.HasMoreTokens() || !parts.GetNextToken().ToLong(&result[1]))
+        return false;
+    dest.x = result[0];
+    dest.y = result[1];
 
-	return true;
+    return true;
 }
 
-bool TryParse( wxSize& dest, wxStringTokenizer& parts )
+bool TryParse(wxSize &dest, wxStringTokenizer &parts)
 {
-	long result[2];
+    long result[2];
 
-	if( !parts.HasMoreTokens() || !parts.GetNextToken().ToLong( &result[0] ) ) return false;
-	if( !parts.HasMoreTokens() || !parts.GetNextToken().ToLong( &result[1] ) ) return false;
-	dest.SetWidth( result[0] );
-	dest.SetHeight( result[1] );
+    if (!parts.HasMoreTokens() || !parts.GetNextToken().ToLong(&result[0]))
+        return false;
+    if (!parts.HasMoreTokens() || !parts.GetNextToken().ToLong(&result[1]))
+        return false;
+    dest.SetWidth(result[0]);
+    dest.SetHeight(result[1]);
 
-	return true;
+    return true;
 }
 
 // Tries to parse the given string into a wxPoint value at 'dest.'  If the parse fails, the
 // method aborts and returns false.
-bool TryParse( wxPoint& dest, const wxString& src, const wxPoint& defval, const wxString& separators )
+bool TryParse(wxPoint &dest, const wxString &src, const wxPoint &defval, const wxString &separators)
 {
-	dest = defval;
-	wxStringTokenizer parts( src, separators );
-	return TryParse( dest, parts );
+    dest = defval;
+    wxStringTokenizer parts(src, separators);
+    return TryParse(dest, parts);
 }
 
-bool TryParse( wxSize& dest, const wxString& src, const wxSize& defval, const wxString& separators )
+bool TryParse(wxSize &dest, const wxString &src, const wxSize &defval, const wxString &separators)
 {
-	dest = defval;
-	wxStringTokenizer parts( src, separators );
-	return TryParse( dest, parts );
+    dest = defval;
+    wxStringTokenizer parts(src, separators);
+    return TryParse(dest, parts);
 }
 
-bool TryParse( wxRect& dest, const wxString& src, const wxRect& defval, const wxString& separators )
+bool TryParse(wxRect &dest, const wxString &src, const wxRect &defval, const wxString &separators)
 {
-	dest = defval;
+    dest = defval;
 
-	wxStringTokenizer parts( src, separators );
+    wxStringTokenizer parts(src, separators);
 
-	wxPoint point;
-	wxSize size;
+    wxPoint point;
+    wxSize size;
 
-	if( !TryParse( point, parts ) ) return false;
-	if( !TryParse( size, parts ) ) return false;
+    if (!TryParse(point, parts))
+        return false;
+    if (!TryParse(size, parts))
+        return false;
 
-	dest = wxRect( point, size );
-	return true;
+    dest = wxRect(point, size);
+    return true;
 }
 
 // returns TRUE if the parse is valid, or FALSE if it's a comment.
-bool pxParseAssignmentString( const wxString& src, wxString& ldest, wxString& rdest )
+bool pxParseAssignmentString(const wxString &src, wxString &ldest, wxString &rdest)
 {
-	if( src.StartsWith(L"--") || src.StartsWith( L"//" ) || src.StartsWith( L";" ) )
-		return false;
+    if (src.StartsWith(L"--") || src.StartsWith(L"//") || src.StartsWith(L";"))
+        return false;
 
-	ldest = src.BeforeFirst(L'=').Trim(true).Trim(false);
-	rdest = src.AfterFirst(L'=').Trim(true).Trim(false);
-	
-	return true;
+    ldest = src.BeforeFirst(L'=').Trim(true).Trim(false);
+    rdest = src.AfterFirst(L'=').Trim(true).Trim(false);
+
+    return true;
 }
 
-ParsedAssignmentString::ParsedAssignmentString( const wxString& src )
+ParsedAssignmentString::ParsedAssignmentString(const wxString &src)
 {
-	IsComment = pxParseAssignmentString( src, lvalue, rvalue );
+    IsComment = pxParseAssignmentString(src, lvalue, rvalue);
 }
 
 // Performs a cross-platform puts operation, which adds CRs to naked LFs on Win32 platforms,
@@ -242,40 +248,37 @@ ParsedAssignmentString::ParsedAssignmentString( const wxString& src )
 // from incoming data.  Mac platforms may need an implementation of their own that converts
 // newlines to CRs...?
 //
-void px_fputs( FILE* fp, const char* src )
+void px_fputs(FILE *fp, const char *src)
 {
-	if( fp == NULL ) return;
+    if (fp == NULL)
+        return;
 
 #ifdef _WIN32
-	// Windows needs CR's partnered with all newlines, or else notepad.exe can't view
-	// the stupid logfile.  Best way is to write one char at a time.. >_<
+    // Windows needs CR's partnered with all newlines, or else notepad.exe can't view
+    // the stupid logfile.  Best way is to write one char at a time.. >_<
 
-	const char* curchar = src;
-	bool prevcr = false;
-	while( *curchar != 0 )
-	{
-		if( *curchar == '\r' )
-		{
-			prevcr = true;
-		}
-		else
-		{
-			// Only write a CR/LF pair if the current LF is not prefixed nor
-			// post-fixed by a CR.
-			if( *curchar == '\n' && !prevcr && (*(curchar+1) != '\r') )
-				fputs( "\r\n", fp );
-			else
-				fputc( *curchar, fp );
+    const char *curchar = src;
+    bool prevcr = false;
+    while (*curchar != 0) {
+        if (*curchar == '\r') {
+            prevcr = true;
+        } else {
+            // Only write a CR/LF pair if the current LF is not prefixed nor
+            // post-fixed by a CR.
+            if (*curchar == '\n' && !prevcr && (*(curchar + 1) != '\r'))
+                fputs("\r\n", fp);
+            else
+                fputc(*curchar, fp);
 
-			prevcr = false;
-		}
-		++curchar;
-	}
+            prevcr = false;
+        }
+        ++curchar;
+    }
 
 #else
-	// Linux is happy with plain old LFs.  Not sure about Macs... does OSX still
-	// go by the old school Mac style of using Crs only?
+    // Linux is happy with plain old LFs.  Not sure about Macs... does OSX still
+    // go by the old school Mac style of using Crs only?
 
-	fputs( src, fp );	// fputs does not do automatic newlines, so it's ok!
+    fputs(src, fp); // fputs does not do automatic newlines, so it's ok!
 #endif
 }

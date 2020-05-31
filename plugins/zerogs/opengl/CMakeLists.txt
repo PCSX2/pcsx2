@@ -4,11 +4,8 @@
 set(Output zerogs)
 
 set(CommonFlags
-    -Wall
-    )
-
-set(OptimizationFlags
-    -O2
+	-Wall
+	-Wno-parentheses
     )
 
 # Debug - Build
@@ -20,13 +17,13 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
+	add_definitions(${CommonFlags} -fvisibility=hidden)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	add_definitions(${CommonFlags} ${OptimizationFlags})
+	add_definitions(${CommonFlags} -fvisibility=hidden)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # zerogs sources
@@ -36,7 +33,6 @@ set(zerogsSources
 	GSmain.cpp
 	GLWinX11.cpp
 	Mem.cpp
-	memcpy_amd.cpp
 	rasterfont.cpp
 	Regs.cpp
 	targets.cpp

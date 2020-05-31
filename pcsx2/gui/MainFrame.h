@@ -47,24 +47,14 @@ protected:
 	// A list of menu items belonging to this plugin's menu.
 	MenuItemAddonList	m_PluginMenuItems;
 
-	// Base index for inserting items, usually points to the position
-	// after the heading entry and separator.
-	int					m_InsertIndexBase;
-
-	// Current index for inserting menu items; increments with each item
-	// added by a plugin.
-	int					m_InsertIndexCur;
-
 public:
-	PluginsEnum_t		PluginId;
 	wxMenu&				MyMenu;
+	PluginsEnum_t		PluginId;
 
 public:
-	PerPluginMenuInfo() : MyMenu( *new wxMenu() )
-	{
-	}
+	PerPluginMenuInfo() : MyMenu(*new wxMenu()), PluginId (PluginId_Count) {}
 
-	virtual ~PerPluginMenuInfo() throw();
+	virtual ~PerPluginMenuInfo() = default;
 
 	void Populate( PluginsEnum_t pid );
 	void OnUnloaded();
@@ -90,7 +80,7 @@ public:
 		m_menu_cmd = menu_command;
 	}
 	
-	virtual ~InvokeMenuCommand_OnSysStateUnlocked() throw() {}
+	virtual ~InvokeMenuCommand_OnSysStateUnlocked() = default;
 
 	virtual void SaveStateAction_OnCreateFinished()
 	{
@@ -112,7 +102,7 @@ protected:
 	bool			m_RestartEmuOnDelete;
 
 	wxStatusBar&	m_statusbar;
-	wxStaticBitmap	m_background;
+	wxStaticBitmap*	m_background;
 
 	wxMenuBar&		m_menubar;
 
@@ -122,13 +112,25 @@ protected:
 	wxMenu&			m_menuMisc;
 	wxMenu&			m_menuDebug;
 
+	wxMenu&			m_menuCapture;
+	wxMenu&			m_submenuVideoCapture;
+
+#ifndef DISABLE_RECORDING
+	wxMenu&			m_menuRecording;
+#endif
+
 	wxMenu&			m_LoadStatesSubmenu;
 	wxMenu&			m_SaveStatesSubmenu;
 
+	wxMenuItem*		m_menuItem_RecentIsoMenu;
 	wxMenuItem&		m_MenuItem_Console;
+#if defined(__unix__)
 	wxMenuItem&		m_MenuItem_Console_Stdio;
+#endif
 
 	PerPluginMenuInfo	m_PluginMenuPacks[PluginId_Count];
+
+	bool			m_capturingVideo;
 
 	virtual void DispatchEvent( const PluginEventType& plugin_evt );
 	virtual void DispatchEvent( const CoreThreadStatus& status );
@@ -136,7 +138,7 @@ protected:
 
 public:
 	MainEmuFrame(wxWindow* parent, const wxString& title);
-	virtual ~MainEmuFrame() throw();
+	virtual ~MainEmuFrame();
 
 	void OnLogBoxHidden();
 
@@ -144,12 +146,14 @@ public:
 	void UpdateIsoSrcSelection();
 	void RemoveCdvdMenu();
 	void EnableMenuItem( int id, bool enable );
+	void SetMenuItemLabel(int id, wxString str);
 	void EnableCdvdPluginSubmenu(bool isEnable = true);
 	
 	bool Destroy();
 
-	void ApplyConfigToGui( AppConfig& configToApply, int flags=0 ); //flags are: AppConfig::APPLY_CONFIG_FROM_PRESET and (currently unused) AppConfig::APPLY_CONFIG_MANUALLY PROPAGATE
+	void ApplyConfigToGui(AppConfig& configToApply, int flags = 0);
 	void CommitPreset_noTrigger();
+	void AppendKeycodeNamesToMenuOptions();
 
 protected:
 	void DoGiveHelp(const wxString& text, bool show);
@@ -167,18 +171,20 @@ protected:
 
 	void Menu_SysSettings_Click(wxCommandEvent &event);
 	void Menu_McdSettings_Click(wxCommandEvent &event);
-	void Menu_GameDatabase_Click(wxCommandEvent &event);
 	void Menu_WindowSettings_Click(wxCommandEvent &event);
 	void Menu_GSSettings_Click(wxCommandEvent &event);
 	void Menu_SelectPluginsBios_Click(wxCommandEvent &event);
-	void Menu_Language_Click(wxCommandEvent &event);
 	void Menu_ResetAllSettings_Click(wxCommandEvent &event);
 
 	void Menu_IsoBrowse_Click(wxCommandEvent &event);
+	void Menu_IsoClear_Click(wxCommandEvent &event);
 	void Menu_EnableBackupStates_Click(wxCommandEvent &event);
 	void Menu_EnablePatches_Click(wxCommandEvent &event);
 	void Menu_EnableCheats_Click(wxCommandEvent &event);
 	void Menu_EnableWideScreenPatches_Click(wxCommandEvent &event);
+#ifndef DISABLE_RECORDING
+	void Menu_EnableRecordingTools_Click(wxCommandEvent &event);
+#endif
 	void Menu_EnableHostFs_Click(wxCommandEvent &event);
 
 	void Menu_BootCdvd_Click(wxCommandEvent &event);
@@ -187,12 +193,11 @@ protected:
 	void Menu_CdvdSource_Click(wxCommandEvent &event);
 	void Menu_LoadStates_Click(wxCommandEvent &event);
 	void Menu_SaveStates_Click(wxCommandEvent &event);
-	void Menu_LoadStateOther_Click(wxCommandEvent &event);
-	void Menu_SaveStateOther_Click(wxCommandEvent &event);
+	void Menu_LoadStateFromFile_Click(wxCommandEvent &event);
+	void Menu_SaveStateToFile_Click(wxCommandEvent &event);
 	void Menu_Exit_Click(wxCommandEvent &event);
 
 	void Menu_SuspendResume_Click(wxCommandEvent &event);
-	void Menu_SysReset_Click(wxCommandEvent &event);
 	void Menu_SysShutdown_Click(wxCommandEvent &event);
 
 	void Menu_ConfigPlugin_Click(wxCommandEvent &event);
@@ -202,11 +207,25 @@ protected:
 	void Menu_Debug_Open_Click(wxCommandEvent &event);
 	void Menu_Debug_MemoryDump_Click(wxCommandEvent &event);
 	void Menu_Debug_Logging_Click(wxCommandEvent &event);
+	void Menu_Debug_CreateBlockdump_Click(wxCommandEvent &event);
+	void Menu_Ask_On_Boot_Click(wxCommandEvent &event);
 
 	void Menu_ShowConsole(wxCommandEvent &event);
 	void Menu_ChangeLang(wxCommandEvent &event);
 	void Menu_ShowConsole_Stdio(wxCommandEvent &event);
 	void Menu_ShowAboutBox(wxCommandEvent &event);
+
+	void Menu_Capture_Video_Record_Click(wxCommandEvent &event);
+	void Menu_Capture_Video_Stop_Click(wxCommandEvent &event);
+	void VideoCaptureUpdate();
+	void Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent &event);
+
+#ifndef DISABLE_RECORDING
+	void Menu_Recording_New_Click(wxCommandEvent &event);
+	void Menu_Recording_Play_Click(wxCommandEvent &event);
+	void Menu_Recording_Stop_Click(wxCommandEvent &event);
+	void Menu_Recording_VirtualPad_Open_Click(wxCommandEvent &event);
+#endif
 
 	void _DoBootCdvd();
 	bool _DoSelectIsoBrowser( wxString& dest );
@@ -217,8 +236,6 @@ protected:
 // ------------------------------------------------------------------------
 
 	wxMenu* MakeStatesSubMenu( int baseid, int loadBackupId=-1 ) const;
-	wxMenu* MakeStatesMenu();
-	wxMenu* MakeLanguagesMenu() const;
 
 	void ConnectMenus();
 

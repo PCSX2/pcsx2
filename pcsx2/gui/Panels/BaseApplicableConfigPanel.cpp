@@ -28,9 +28,9 @@ using namespace Dialogs;
 // on dialog destruction.  It asserts if the ApplyList hasn't been cleaned up
 // and then cleans it up forcefully.
 //
-void ApplyStateStruct::DoCleanup() throw()
+void ApplyStateStruct::DoCleanup() noexcept
 {
-	pxAssertMsg( PanelList.size() != 0, L"PanelList list hasn't been cleaned up." );
+	pxAssertMsg( !PanelList.empty(), L"PanelList list hasn't been cleaned up." );
 	PanelList.clear();
 	ParentBook = NULL;
 }
@@ -147,7 +147,7 @@ IApplyState* BaseApplicableConfigPanel::FindApplyStateManager() const
 	return NULL;
 }
 
-BaseApplicableConfigPanel::~BaseApplicableConfigPanel() throw()
+BaseApplicableConfigPanel::~BaseApplicableConfigPanel()
 {
 	if( IApplyState* iapp = FindApplyStateManager() )
 		iapp->GetApplyState().PanelList.remove( this );
@@ -180,8 +180,8 @@ void BaseApplicableConfigPanel::Init()
 	// is immediate, and depends on the platform for how it "works", and thus
 	// useless.  Solution: Create our own! :)
 
-	//Connect( wxEVT_CREATE,	wxWindowCreateEventHandler	(BaseApplicableConfigPanel::OnCreateWindow) );
-	Connect( pxEvt_ApplySettings,	wxCommandEventHandler	(BaseApplicableConfigPanel::OnSettingsApplied) );
+	//Bind( wxEVT_CREATE, &BaseApplicableConfigPanel::OnCreateWindow, this);
+	Bind(pxEvt_ApplySettings, &BaseApplicableConfigPanel::OnSettingsApplied, this);
 
 	if( IApplyState* iapp = FindApplyStateManager() )
 	{

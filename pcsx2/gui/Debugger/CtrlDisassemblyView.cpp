@@ -23,6 +23,7 @@
 #include "BreakpointWindow.h"
 #include "AppConfig.h"
 #include "System.h"
+#include "DisassemblyDialog.h"
 
 #include <wx/mstream.h>
 #include <wx/clipbrd.h>
@@ -31,7 +32,7 @@
 #include "Resources/Breakpoint_Active.h"
 #include "Resources/Breakpoint_Inactive.h"
 
-BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
+wxBEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_PAINT(CtrlDisassemblyView::paintEvent)
 	EVT_MOUSEWHEEL(CtrlDisassemblyView::mouseEvent)
 	EVT_LEFT_DOWN(CtrlDisassemblyView::mouseEvent)
@@ -48,7 +49,7 @@ BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_SIZE(CtrlDisassemblyView::sizeEvent)
 	EVT_SET_FOCUS(CtrlDisassemblyView::focusEvent)
 	EVT_KILL_FOCUS(CtrlDisassemblyView::focusEvent)
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 enum DisassemblyMenuIdentifiers
 {
@@ -126,7 +127,7 @@ public:
 		textControl->SetFocus();
 		textControl->SetFocusFromKbd();
 	}
-	wxString getText() { return textControl->GetLabel(); }
+	wxString getText() { return textControl->GetValue(); }
 
 private:
 	NonAutoSelectTextCtrl* textControl;
@@ -147,8 +148,8 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 {
 	manager.setCpu(cpu);
 	windowStart = 0x100000;
-	rowHeight = g_Conf->EmuOptions.Debugger.FontHeight+2;
-	charWidth = g_Conf->EmuOptions.Debugger.FontWidth;
+	rowHeight = getDebugFontHeight()+2;
+	charWidth = getDebugFontWidth();
 	displaySymbols = true;
 	visibleRows = 1;
 
@@ -172,7 +173,7 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	menu.Append(ID_DISASM_ADDFUNCTION,				L"Add Function Here");
 	menu.Append(ID_DISASM_RENAMEFUNCTION,			L"Rename Function");
 	menu.Append(ID_DISASM_REMOVEFUNCTION,			L"Remove Function");
-	menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&CtrlDisassemblyView::onPopupClick, NULL, this);
+	menu.Bind(wxEVT_MENU, &CtrlDisassemblyView::onPopupClick, this);
 
 	SetScrollbar(wxVERTICAL,100,1,201,true);
 	SetDoubleBuffered(true);
@@ -180,7 +181,7 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	setCurAddress(windowStart);
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 WXLRESULT CtrlDisassemblyView::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)
 {
 	switch (nMsg)
@@ -200,7 +201,7 @@ WXLRESULT CtrlDisassemblyView::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPA
 
 void CtrlDisassemblyView::scanFunctions()
 {
-	if (cpu->isAlive() == false)
+	if (!cpu->isAlive())
 		return;
 
 	manager.analyze(windowStart,manager.getNthNextAddress(windowStart,visibleRows)-windowStart);
@@ -382,7 +383,7 @@ int getBackgroundColor(unsigned int address)
 std::set<std::string> CtrlDisassemblyView::getSelectedLineArguments() {
 	std::set<std::string> args;
 
-	DisassemblyLineInfo line;
+	DisassemblyLineInfo line = DisassemblyLineInfo();
 	for (u32 addr = selectRangeStart; addr < selectRangeEnd; addr += 4) {
 		manager.getLine(addr, displaySymbols, line);
 		size_t p = 0, nextp = line.params.find(',');
@@ -471,31 +472,25 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	if (!cpu->isAlive())
 		return;
 
-	#ifdef WIN32
-	wxFont font = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
-	wxFont boldFont = wxFont(wxSize(charWidth,rowHeight-2),wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD,false,L"Lucida Console");
-	#else
-	wxFont font = wxFont(8,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_NORMAL,false,L"Lucida Console");
+	wxFont font = pxGetFixedFont(8);
+	wxFont boldFont = pxGetFixedFont(8, wxFONTWEIGHT_BOLD);
 	font.SetPixelSize(wxSize(charWidth,rowHeight-2));
-	wxFont boldFont = wxFont(8,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD,false,L"Lucida Console");
 	boldFont.SetPixelSize(wxSize(charWidth,rowHeight-2));
-	#endif
 
 	bool hasFocus = wxWindow::FindFocus() == this;
-	
+
 	std::map<u32,int> addressPositions;
 
 	unsigned int address = windowStart;
 
 	const std::set<std::string> currentArguments = getSelectedLineArguments();
-	DisassemblyLineInfo line;
+	DisassemblyLineInfo line = DisassemblyLineInfo();
 	for (int i = 0; i < visibleRows+1; i++)
 	{
 		manager.getLine(address,displaySymbols,line);
-		
+
 		int rowY1 = rowHeight*i;
-		int rowY2 = rowHeight*(i+1);
-		
+
 		addressPositions[address] = rowY1;
 
 		wxColor backgroundColor = wxColor(getBackgroundColor(address));
@@ -602,7 +597,7 @@ void CtrlDisassemblyView::calculatePixelPositions()
 
 void CtrlDisassemblyView::followBranch()
 {
-	DisassemblyLineInfo line;
+	DisassemblyLineInfo line = DisassemblyLineInfo();
 	manager.getLine(curAddress,true,line);
 
 	if (line.type == DISTYPE_OPCODE || line.type == DISTYPE_MACRO)
@@ -627,7 +622,7 @@ void CtrlDisassemblyView::assembleOpcode(u32 address, std::string defaultText)
 {
 	u32 encoded;
 
-	if (cpu->isCpuPaused() == false)
+	if (!cpu->isCpuPaused())
 	{
 		wxMessageBox( L"Cannot change code while the core is running",  L"Error.", wxICON_ERROR);
 		return;
@@ -642,7 +637,7 @@ void CtrlDisassemblyView::assembleOpcode(u32 address, std::string defaultText)
 	wxString op = entry.getText();
 	std::string errorText;
 	bool result = MipsAssembleOpcode(op.To8BitData(),cpu,address,encoded,errorText);
-	if (result == true)
+	if (result)
 	{
 		SysClearExecutionCache();
 		cpu->write32(address,encoded);
@@ -784,7 +779,7 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 			break;
 		}
 	case ID_DISASM_ASSEMBLE:
-		assembleOpcode(curAddress,"");
+		assembleOpcode(curAddress, disassembleCurAddress());
 		break;
 	default:
 		wxMessageBox( L"Unimplemented.",  L"Unimplemented.", wxICON_INFORMATION);
@@ -823,10 +818,11 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 		case 'G':
 			{
 				u64 addr;
-				if (executeExpressionWindow(this,cpu,addr) == false)
+				if (!executeExpressionWindow(this,cpu,addr))
 					return;
 				gotoAddress(addr);
 			}
+			break;
 		default:
 			evt.Skip();
 			break;
@@ -889,11 +885,17 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 			}
 			scanFunctions();
 			break;
+		case WXK_F8:
+			postEvent(debEVT_STEPOUT,0);
+			break;
 		case WXK_F10:
 			postEvent(debEVT_STEPOVER,0);
 			return;
 		case WXK_F11:
-			postEvent(debEVT_STEPINTO,0);
+			if (evt.ShiftDown())
+				postEvent(debEVT_STEPOUT,0);
+			else
+				postEvent(debEVT_STEPINTO,0);
 			return;
 		default:
 			evt.Skip();
@@ -958,7 +960,7 @@ void CtrlDisassemblyView::toggleBreakpoint(bool toggleEnabled)
 void CtrlDisassemblyView::updateStatusBarText()
 {
 	char text[512];
-	DisassemblyLineInfo line;
+	DisassemblyLineInfo line = DisassemblyLineInfo();
 	manager.getLine(curAddress,true,line);
 	
 	text[0] = 0;
@@ -1014,13 +1016,13 @@ void CtrlDisassemblyView::updateStatusBarText()
 							data = cpu->read64(line.info.dataAddress);
 						}
 
-						sprintf(text,"[%08X] = %016llX",line.info.dataAddress,data);
+						sprintf(text,"[%08X] = %016" PRIX64,line.info.dataAddress,data);
 						break;
 					}
 				case 16:
 					{
 						__aligned16 u128 data = cpu->read128(line.info.dataAddress);
-						sprintf(text,"[%08X] = %016llX%016llX",line.info.dataAddress,data._u64[1],data._u64[0]);
+						sprintf(text,"[%08X] = %016" PRIX64 "%016" PRIX64,line.info.dataAddress,data._u64[1],data._u64[0]);
 						break;
 					}
 				}
@@ -1167,7 +1169,7 @@ std::string CtrlDisassemblyView::disassembleRange(u32 start, u32 size)
 
 	u32 disAddress = start;
 	bool previousLabel = true;
-	DisassemblyLineInfo line;
+	DisassemblyLineInfo line = DisassemblyLineInfo();
 	while (disAddress < start+size)
 	{
 		char addressText[64],buffer[512];
@@ -1204,6 +1206,13 @@ std::string CtrlDisassemblyView::disassembleRange(u32 start, u32 size)
 	return result;
 }
 
+std::string CtrlDisassemblyView::disassembleCurAddress()
+{
+	DisassemblyLineInfo line = DisassemblyLineInfo();
+	manager.getLine(curAddress, displaySymbols, line);
+	return line.name + (line.params.length() > 0 ? " " + line.params : "");
+}
+
 void CtrlDisassemblyView::copyInstructions(u32 startAddr, u32 endAddr, bool withDisasm)
 {
 	if (!wxTheClipboard->Open())
@@ -1212,14 +1221,14 @@ void CtrlDisassemblyView::copyInstructions(u32 startAddr, u32 endAddr, bool with
 		return;
 	}
 
-	if (withDisasm == false)
+	if (!withDisasm)
 	{
 		int instructionSize = 4;
 		int count = (endAddr - startAddr) / instructionSize;
 		int space = count * 32;
 		char *temp = new char[space];
 
-		char *p = temp, *end = temp + space;
+		char *p = temp;
 		for (u32 pos = startAddr; pos < endAddr; pos += instructionSize)
 		{
 			p += sprintf(p, "%08X", cpu->read32(pos));
@@ -1285,7 +1294,7 @@ void CtrlDisassemblyView::editBreakpoint()
 
 void CtrlDisassemblyView::getOpcodeText(u32 address, char* dest)
 {
-	DisassemblyLineInfo line;
+	DisassemblyLineInfo line = DisassemblyLineInfo();
 	address = manager.getStartAddress(address);
 	manager.getLine(address,displaySymbols,line);
 	sprintf(dest,"%s  %s",line.name.c_str(),line.params.c_str());

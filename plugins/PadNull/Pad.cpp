@@ -21,148 +21,164 @@ using namespace std;
 #include "svnrev.h"
 #include "Pad.h"
 
-const u8 version  = PS2E_PAD_VERSION;
+const u8 version = PS2E_PAD_VERSION;
 const u8 revision = 0;
-const u8 build    = 1;    // increase that with each version
+const u8 build = 1; // increase that with each version
 
 #ifdef _MSC_VER
 #define snprintf sprintf_s
 #endif
 static char libraryName[256];
-string s_strIniPath="inis";
-string s_strLogPath="logs";
+string s_strIniPath = "inis";
+string s_strLogPath = "logs";
 
 FILE *padLog;
 Config conf;
 keyEvent event;
 static keyEvent s_event;
 
-EXPORT_C_(u32) PS2EgetLibType()
+EXPORT_C_(u32)
+PS2EgetLibType()
 {
-	return PS2E_LT_PAD;
+    return PS2E_LT_PAD;
 }
 
-EXPORT_C_(char*) PS2EgetLibName()
+EXPORT_C_(const char *)
+PS2EgetLibName()
 {
-	snprintf( libraryName, 255, "Padnull Driver %lld%s",SVN_REV, SVN_MODS ? "m" : "");
-	return libraryName;	
+    snprintf(libraryName, 255, "Padnull Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");
+    return libraryName;
 }
 
-EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)
+EXPORT_C_(u32)
+PS2EgetLibVersion2(u32 type)
 {
-	return (version<<16) | (revision<<8) | build;
+    return (version << 16) | (revision << 8) | build;
 }
 
 void __Log(const char *fmt, ...)
 {
-	va_list list;
+    va_list list;
 
-	if (padLog == NULL) return;
-	va_start(list, fmt);
-	vfprintf(padLog, fmt, list);
-	va_end(list);
+    if (padLog == NULL)
+        return;
+    va_start(list, fmt);
+    vfprintf(padLog, fmt, list);
+    va_end(list);
 }
 
 void __LogToConsole(const char *fmt, ...)
 {
-	va_list list;
+    va_list list;
 
-	va_start(list, fmt);
+    va_start(list, fmt);
 
-	if (padLog != NULL) vfprintf(padLog, fmt, list);
+    if (padLog != NULL)
+        vfprintf(padLog, fmt, list);
 
-	printf("PadNull: ");
-	vprintf(fmt, list);
-	va_end(list);
+    printf("PadNull: ");
+    vprintf(fmt, list);
+    va_end(list);
 }
 
-EXPORT_C_(void) PADsetSettingsDir(const char* dir)
+EXPORT_C_(void)
+PADsetSettingsDir(const char *dir)
 {
-	s_strIniPath = (dir == NULL) ? "inis" : dir;
+    s_strIniPath = (dir == NULL) ? "inis" : dir;
 }
 
-bool OpenLog() {
+bool OpenLog()
+{
     bool result = true;
 #ifdef PAD_LOG
-    if(padLog) return result;
+    if (padLog)
+        return result;
 
     const std::string LogFile(s_strLogPath + "/padnull.log");
 
     padLog = fopen(LogFile.c_str(), "w");
     if (padLog != NULL)
-        setvbuf(padLog, NULL,  _IONBF, 0);
+        setvbuf(padLog, NULL, _IONBF, 0);
     else {
-        SysMessage("Can't create log file %s\n", LogFile.c_str());
+        fprintf(stderr, "Can't create log file %s\n", LogFile.c_str());
         result = false;
     }
-	PAD_LOG("PADinit\n");
+    PAD_LOG("PADinit\n");
 #endif
     return result;
 }
 
-EXPORT_C_(void) PADsetLogDir(const char* dir)
+EXPORT_C_(void)
+PADsetLogDir(const char *dir)
 {
-	// Get the path to the log directory.
-	s_strLogPath = (dir==NULL) ? "logs" : dir;
+    // Get the path to the log directory.
+    s_strLogPath = (dir == NULL) ? "logs" : dir;
 
-	// Reload the log file after updated the path
-	if (padLog) {
+    // Reload the log file after updated the path
+    if (padLog) {
         fclose(padLog);
         padLog = NULL;
     }
     OpenLog();
 }
 
-EXPORT_C_(s32) PADinit(u32 flags)
+EXPORT_C_(s32)
+PADinit(u32 flags)
 {
-	LoadConfig();
+    LoadConfig();
 
     OpenLog();
 
-	return 0;
+    return 0;
 }
 
-EXPORT_C_(void) PADshutdown()
+EXPORT_C_(void)
+PADshutdown()
 {
 #ifdef PAD_LOG
-	if (padLog)
-	{
-		fclose(padLog);
-		padLog = NULL;
-	}
+    if (padLog) {
+        fclose(padLog);
+        padLog = NULL;
+    }
 #endif
 }
 
-EXPORT_C_(s32) PADopen(void *pDsp)
+EXPORT_C_(s32)
+PADopen(void *pDsp)
 {
-	memset(&event, 0, sizeof(event));
+    memset(&event, 0, sizeof(event));
 
-	return _PADOpen(pDsp);
+    return _PADOpen(pDsp);
 }
 
-EXPORT_C_(void) PADclose()
+EXPORT_C_(void)
+PADclose()
 {
-	_PADClose();
+    _PADClose();
 }
 
 // PADkeyEvent is called every vsync (return NULL if no event)
-EXPORT_C_(keyEvent*) PADkeyEvent()
+EXPORT_C_(keyEvent *)
+PADkeyEvent()
 {
 
-	s_event = event;
-	event.evt = 0;
+    s_event = event;
+    event.evt = 0;
+    event.key = 0;
 
-	return &s_event;
+    return &s_event;
 }
 
-EXPORT_C_(u8) PADstartPoll(int pad)
+EXPORT_C_(u8)
+PADstartPoll(int pad)
 {
-	return 0;
+    return 0;
 }
 
-EXPORT_C_(u8) PADpoll(u8 value)
+EXPORT_C_(u8)
+PADpoll(u8 value)
 {
-	return 0;
+    return 0;
 }
 
 // call to give a hint to the PAD plugin to query for the keyboard state. A
@@ -172,29 +188,34 @@ EXPORT_C_(u8) PADpoll(u8 value)
 // the window (and input). Note that PADupdate can be called from a different
 // thread than the other functions, so mutex or other multithreading primitives
 // have to be added to maintain data integrity.
-EXPORT_C_(u32) PADquery()
+EXPORT_C_(u32)
+PADquery()
 // returns: 1 if supported pad1
 //			2 if supported pad2
 //			3 if both are supported
 {
-	return 3;
+    return 3;
 }
 
-EXPORT_C_(void) PADupdate(int pad)
+EXPORT_C_(void)
+PADupdate(int pad)
 {
-	_PadUpdate(pad);
+    _PadUpdate(pad);
 }
 
-EXPORT_C_(void) PADgsDriverInfo(GSdriverInfo *info)
+EXPORT_C_(void)
+PADgsDriverInfo(GSdriverInfo *info)
 {
 }
 
-EXPORT_C_(s32) PADfreeze(int mode, freezeData *data)
+EXPORT_C_(s32)
+PADfreeze(int mode, freezeData *data)
 {
-	return 0;
+    return 0;
 }
 
-EXPORT_C_(s32) PADtest()
+EXPORT_C_(s32)
+PADtest()
 {
-	return 0;
+    return 0;
 }

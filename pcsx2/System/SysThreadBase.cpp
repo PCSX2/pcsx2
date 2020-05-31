@@ -29,10 +29,6 @@ SysThreadBase::SysThreadBase() :
 {
 }
 
-SysThreadBase::~SysThreadBase() throw()
-{
-}
-
 void SysThreadBase::Start()
 {
 	_parent::Start();
@@ -91,11 +87,10 @@ void SysThreadBase::Suspend( bool isBlocking )
 	{
 		ScopedLock locker( m_ExecModeMutex );
 
-		switch( m_ExecMode )
+		switch( m_ExecMode.load() )
 		{
-			// FIXME what to do for this case
-			// case ExecMode_NoThreadYet:
-
+			// Invalid thread state, nothing to suspend
+			case ExecMode_NoThreadYet:
 			// Check again -- status could have changed since above.
 			case ExecMode_Closed: return;
 
@@ -129,7 +124,7 @@ void SysThreadBase::Suspend( bool isBlocking )
 //   The previous suspension state; true if the thread was running or false if it was
 //   closed, not running, or paused.
 //
-void SysThreadBase::Pause()
+void SysThreadBase::Pause(bool debug)
 {
 	if( IsSelf() || !IsRunning() ) return;
 
@@ -148,7 +143,10 @@ void SysThreadBase::Pause()
 
 		pxAssertDev( m_ExecMode == ExecMode_Pausing, "ExecMode should be nothing other than Pausing..." );
 
-		OnPause();
+		if (debug)
+			OnPauseDebug();
+		else
+			OnPause();
 		m_sem_event.Post();
 	}
 
@@ -166,6 +164,21 @@ void SysThreadBase::PauseSelf()
 			m_ExecMode = ExecMode_Pausing;
 		
 		OnPause();
+		m_sem_event.Post();
+	}
+}
+
+void SysThreadBase::PauseSelfDebug()
+{
+	if (!IsSelf() || !IsRunning()) return;
+
+	{
+		ScopedLock locker(m_ExecModeMutex);
+
+		if (m_ExecMode == ExecMode_Opened)
+			m_ExecMode = ExecMode_Pausing;
+
+		OnPauseDebug();
 		m_sem_event.Post();
 	}
 }
@@ -197,7 +210,7 @@ void SysThreadBase::Resume()
 	// sanity checks against m_ExecMode/m_Running status, and if something doesn't feel
 	// right, we should abort; the user may have canceled the action before it even finished.
 
-	switch( m_ExecMode )
+	switch( m_ExecMode.load() )
 	{
 		case ExecMode_Opened: return;
 
@@ -268,7 +281,7 @@ void SysThreadBase::OnResumeInThread( bool isSuspended ) {}
 //   continued execution unimpeded.
 bool SysThreadBase::StateCheckInThread()
 {
-	switch( m_ExecMode )
+	switch( m_ExecMode.load() )
 	{
 
 	#ifdef PCSX2_DEVBUILD		// optimize out handlers for these cases in release builds.
@@ -315,7 +328,7 @@ bool SysThreadBase::StateCheckInThread()
 			m_ExecMode = ExecMode_Closed;
 			m_RunningLock.Release();
 		}
-		// fallthrough...
+		// Fall through
 
 		case ExecMode_Closed:
 			while( m_ExecMode == ExecMode_Closed )

@@ -16,165 +16,121 @@
 #ifndef __CDVD_H__
 #define __CDVD_H__
 
+#if defined(_WIN32)
+#define _WIN32_WINNT 0x0600
+#define NOMINMAX
 #include <windows.h>
-#include <stdio.h>
+#endif
+
+#include <cstdio>
+#include <cstring>
+#include <algorithm>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
 
 #define CDVDdefs
 #include <PS2Edefs.h>
+#include "Settings.h"
 
-typedef struct _track
+struct track
 {
-	u32 start_lba;
-	u32 length;
-	u32 type;
-} track;
+    u32 start_lba;
+    u8 type;
+};
 
-extern int strack;
-extern int etrack;
+extern u8 strack;
+extern u8 etrack;
 extern track tracks[100];
 
 extern int curDiskType;
 extern int curTrayStatus;
 
-typedef struct _toc_entry {
-    UCHAR SessionNumber;
-    UCHAR Control      : 4;
-    UCHAR Adr          : 4;
-    UCHAR Reserved1;
-    UCHAR Point;
-    UCHAR MsfExtra[3];
-    UCHAR Zero;
-    UCHAR Msf[3];
-} toc_entry;
-
-typedef struct _toc_data
+struct toc_entry
 {
-    UCHAR Length[2];
-    UCHAR FirstCompleteSession;
-    UCHAR LastCompleteSession;
-
-    toc_entry Descriptors[255];
-} toc_data;
-
-extern toc_data cdtoc;
-
-class Source //abstract class as base for source modules
-{
-	Source(Source&);
-public:
-	Source(){};
-
-	//virtual destructor
-	virtual ~Source()
-	{
-	}
-
-	//virtual members
-	virtual s32 GetSectorCount()=0;
-	virtual s32 ReadTOC(char *toc,int size)=0;
-	virtual s32 ReadSectors2048(u32 sector, u32 count, char *buffer)=0;
-	virtual s32 ReadSectors2352(u32 sector, u32 count, char *buffer)=0;
-	virtual s32 GetLayerBreakAddress()=0;
-
-	virtual s32 GetMediaType()=0;
-
-	virtual s32 IsOK()=0;
-	virtual s32 Reopen()=0;
-
-	virtual s32 DiscChanged()=0;
+    u32 lba;
+    u8 track;
+    u8 adr : 4;
+    u8 control : 4;
 };
 
-class IOCtlSrc: public Source
+class IOCtlSrc
 {
-	IOCtlSrc(IOCtlSrc&);
+    IOCtlSrc(const IOCtlSrc &) = delete;
+    IOCtlSrc &operator=(const IOCtlSrc &) = delete;
 
-	HANDLE device;
+#if defined(_WIN32)
+    HANDLE m_device = INVALID_HANDLE_VALUE;
+    std::wstring m_filename;
+    mutable std::mutex m_lock;
+#else
+    int m_device = -1;
+    std::string m_filename;
+#endif
 
-	bool OpenOK;
+    s32 m_media_type = 0;
+    u32 m_sectors = 0;
+    u32 m_layer_break = 0;
+    std::vector<toc_entry> m_toc;
 
-	s32 last_read_mode;
-
-	s32 last_sector_count;
-
-	char sectorbuffer[32*2048];
-
-	char fName[256];
-
-	DWORD sessID;
-
-	bool tocCached;
-	char tocCacheData[2048];
-
-	bool mediaTypeCached;
-	int  mediaType;
-
-	bool discSizeCached;
-	s32  discSize;
-
-	bool layerBreakCached;
-	s32  layerBreak;
+    bool ReadDVDInfo();
+    bool ReadCDInfo();
+    bool Reopen();
 
 public:
-	IOCtlSrc(const char* fileName);
+    IOCtlSrc(decltype(m_filename) filename);
+    ~IOCtlSrc();
 
-	//virtual destructor
-	virtual ~IOCtlSrc();
-
-	//virtual members
-	virtual s32 GetSectorCount();
-	virtual s32 ReadTOC(char *toc,int size);
-	virtual s32 ReadSectors2048(u32 sector, u32 count, char *buffer);
-	virtual s32 ReadSectors2352(u32 sector, u32 count, char *buffer);
-	virtual s32 GetLayerBreakAddress();
-
-	virtual s32 GetMediaType();
-	virtual void SetSpindleSpeed(bool restore_defaults);
-
-	virtual s32 IsOK();
-	virtual s32 Reopen();
-
-	virtual s32 DiscChanged();
+    u32 GetSectorCount() const;
+    const std::vector<toc_entry> &ReadTOC() const;
+    bool ReadSectors2048(u32 sector, u32 count, u8 *buffer) const;
+    bool ReadSectors2352(u32 sector, u32 count, u8 *buffer) const;
+    u32 GetLayerBreakAddress() const;
+    s32 GetMediaType() const;
+    void SetSpindleSpeed(bool restore_defaults) const;
+    bool DiscReady();
 };
 
-extern Source *src;
-
-Source* TryLoaders(const char* fileName);
-
-int FindDiskType();
+extern std::unique_ptr<IOCtlSrc> src;
 
 void configure();
 
-extern char source_drive;
-extern char source_file[];
-
-extern HINSTANCE hinst;
-
-#define MSF_TO_LBA(m,s,f) ((m*60+s)*75+f-150)
-
-s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer);
-
-s32 cdvdGetMediaType();
-
 void ReadSettings();
 void WriteSettings();
-void CfgSetSettingsDir( const char* dir );
+#if defined(_WIN32)
+std::wstring GetValidDrive();
+#else
+std::string GetValidDrive();
+#endif
 
-extern char csrc[];
-extern bool cdvd_is_open;
-extern bool cdvdKeepAlive_is_open;
+extern Settings g_settings;
+
 extern bool disc_has_changed;
 extern bool weAreInNewDiskCB;
 
 extern void (*newDiscCB)();
 
-s32 cdvdStartThread();
+bool cdvdStartThread();
 void cdvdStopThread();
-s32 cdvdRequestSector(u32 sector, s32 mode);
-s32 cdvdRequestComplete();
-char* cdvdGetSector(s32 sector, s32 mode);
-s32 cdvdDirectReadSector(s32 first, s32 mode, char *buffer);
+void cdvdRequestSector(u32 sector, s32 mode);
+u8 *cdvdGetSector(u32 sector, s32 mode);
+s32 cdvdDirectReadSector(u32 sector, s32 mode, u8 *buffer);
 s32 cdvdGetMediaType();
 s32 cdvdRefreshData();
-s32 cdvdParseTOC();
+void cdvdParseTOC();
 
+inline void lba_to_msf(s32 lba, u8 *m, u8 *s, u8 *f)
+{
+    lba += 150;
+    *m = static_cast<u8>(lba / (60 * 75));
+    *s = static_cast<u8>((lba / 75) % 60);
+    *f = static_cast<u8>(lba % 75);
+}
+
+#if defined(_WIN32)
+#define EXPORT
+#else
+#define EXPORT extern "C" __attribute__((stdcall, externally_visible, visibility("default")))
+#endif
 #endif /* __CDVD_H__ */

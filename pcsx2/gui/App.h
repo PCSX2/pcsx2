@@ -19,12 +19,18 @@
 
 #include <wx/fileconf.h>
 #include <wx/apptrait.h>
+#include <memory>
 
 #include "pxEventThread.h"
 
 #include "AppCommon.h"
 #include "AppCoreThread.h"
 #include "RecentIsoList.h"
+
+#ifndef DISABLE_RECORDING
+#	include "Recording/VirtualPad.h"
+#	include "Recording/NewRecordingFrame.h"
+#endif
 
 class DisassemblyDialog;
 
@@ -34,11 +40,7 @@ class DisassemblyDialog;
 typedef void FnType_OnThreadComplete(const wxCommandEvent& evt);
 typedef void (Pcsx2App::*FnPtr_Pcsx2App)();
 
-BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE( pxEvt_LoadPluginsComplete, -1 )
-	DECLARE_EVENT_TYPE( pxEvt_LogicalVsync, -1 )
-	DECLARE_EVENT_TYPE( pxEvt_ThreadTaskTimeout_SysExec, -1 )
-END_DECLARE_EVENT_TYPES()
+wxDECLARE_EVENT(pxEvt_SetSettingsPage, wxCommandEvent);
 
 // This is used when the GS plugin is handling its own window.  Messages from the PAD
 // are piped through to an app-level message handler, which dispatches them through
@@ -66,6 +68,19 @@ static const bool CloseViewportWithPlugins = false;
 // All Menu Options for the Main Window! :D
 // ------------------------------------------------------------------------
 
+enum TopLevelMenuIndices
+{
+	TopLevelMenu_System = 0,
+	TopLevelMenu_Cdvd,
+	TopLevelMenu_Config,
+	TopLevelMenu_Misc,
+	TopLevelMenu_Debug,
+	TopLevelMenu_Capture,
+#ifndef DISABLE_RECORDING
+	TopLevelMenu_Recording,
+#endif
+};
+
 enum MenuIdentifiers
 {
 	// Main Menu Section
@@ -87,9 +102,10 @@ enum MenuIdentifiers
 	MenuId_Src_Plugin,
 	MenuId_Src_NoDisc,
 	MenuId_Boot_Iso,			// Opens submenu with Iso browser, and recent isos.
-	MenuId_IsoSelector,			// Contains a submenu of selectable "favorite" isos
 	MenuId_RecentIsos_reservedStart,
 	MenuId_IsoBrowse = MenuId_RecentIsos_reservedStart + 100,			// Open dialog, runs selected iso.
+	MenuId_IsoClear,
+	MenuId_Ask_On_Booting,
 	MenuId_Boot_CDVD,
 	MenuId_Boot_CDVD2,
 	MenuId_Boot_ELF,
@@ -97,7 +113,6 @@ enum MenuIdentifiers
 
 
 	MenuId_Sys_SuspendResume,	// suspends/resumes active emulation, retains plugin states
-	MenuId_Sys_Restart,			// Issues a complete VM reset (wipes preserved states)
 	MenuId_Sys_Shutdown,		// Closes virtual machine, shuts down plugins, wipes states.
 	MenuId_Sys_LoadStates,		// Opens load states submenu
 	MenuId_Sys_SaveStates,		// Opens save states submenu
@@ -105,14 +120,16 @@ enum MenuIdentifiers
 	MenuId_EnablePatches,
 	MenuId_EnableCheats,
 	MenuId_EnableWideScreenPatches,
+	MenuId_EnableRecordingTools,
+	MenuId_EnableLuaTools,
 	MenuId_EnableHostFs,
 
 	MenuId_State_Load,
-	MenuId_State_LoadOther,
+	MenuId_State_LoadFromFile,
 	MenuId_State_Load01,		// first of many load slots
 	MenuId_State_LoadBackup = MenuId_State_Load01+20,
 	MenuId_State_Save,
-	MenuId_State_SaveOther,
+	MenuId_State_SaveToFile,
 	MenuId_State_Save01,		// first of many save slots
 
 	MenuId_State_EndSlotSection = MenuId_State_Save01+20,
@@ -121,7 +138,6 @@ enum MenuIdentifiers
 	MenuId_Config_SysSettings,
 	MenuId_Config_McdSettings,
 	MenuId_Config_AppSettings,
-	MenuId_Config_GameDatabase,
 	MenuId_Config_BIOS,
 	MenuId_Config_Language,
 
@@ -151,8 +167,6 @@ enum MenuIdentifiers
 	MenuId_Video_WindowSettings,
 
 	// Miscellaneous Menu!  (Misc)
-	MenuId_Website,				// Visit our awesome website!
-	MenuId_Profiler,			// Enable profiler
 	MenuId_Console,				// Enable console
 	MenuId_ChangeLang,			// Change language (resets first time wizard to show on next start)
 	MenuId_Console_Stdio,		// Enable Stdio
@@ -161,7 +175,26 @@ enum MenuIdentifiers
 	MenuId_Debug_Open,			// opens the debugger window / starts a debug session
 	MenuId_Debug_MemoryDump,
 	MenuId_Debug_Logging,		// dialog for selection additional log options
+	MenuId_Debug_CreateBlockdump,
 	MenuId_Config_ResetAll,
+
+	// Capture Subsection
+	MenuId_Capture_Video,
+	MenuId_Capture_Video_Record,
+	MenuId_Capture_Video_Stop,
+	MenuId_Capture_Screenshot,
+
+#ifndef DISABLE_RECORDING
+	// Recording Subsection
+	MenuId_Recording_New,
+	MenuId_Recording_Play,
+	MenuId_Recording_Stop,
+	MenuId_Recording_Editor,
+	MenuId_Recording_VirtualPad_Port0,
+	MenuId_Recording_VirtualPad_Port1,
+	MenuId_Recording_Conversions,
+#endif
+
 };
 
 namespace Exception
@@ -196,15 +229,14 @@ struct AppImageIds
 			Gamefixes,
 			MemoryCard,
 			Video,
-			Cpu,
-			Appearance;
+			Cpu;
 
 		ConfigIds()
 		{
 			Paths		= Plugins		=
 			Speedhacks	= Gamefixes		=
 			Video		= Cpu			= 
-			MemoryCard	= Appearance	= -1;
+			MemoryCard	= -1;
 		}
 	} Config;
 
@@ -219,10 +251,12 @@ struct AppImageIds
 
 		ToolbarIds()
 		{
-			Settings	= Play	=
-			PluginVideo	=
-			PluginAudio	=
-			PluginPad	= -1;
+			Settings    = -1;
+			Play        = -1;
+			Resume      = -1;
+			PluginVideo = -1;
+			PluginAudio = -1;
+			PluginPad   = -1;
 		}
 	} Toolbars;
 };
@@ -238,14 +272,15 @@ class pxAppResources
 public:
 	AppImageIds					ImageId;
 
-	ScopedPtr<wxImageList>		ConfigImages;
-	ScopedPtr<wxImageList>		ToolbarImages;
-	ScopedPtr<wxIconBundle>		IconBundle;
-	ScopedPtr<wxBitmap>			Bitmap_Logo;
-	ScopedPtr<AppGameDatabase>	GameDB;
+	std::unique_ptr<wxImageList>		ConfigImages;
+	std::unique_ptr<wxImageList>		ToolbarImages;
+	std::unique_ptr<wxIconBundle>		IconBundle;
+	std::unique_ptr<wxBitmap>			Bitmap_Logo;
+	std::unique_ptr<wxBitmap>			ScreenshotBitmap;
+	std::unique_ptr<AppGameDatabase>	GameDB;
 
 	pxAppResources();
-	virtual ~pxAppResources() throw();
+	virtual ~pxAppResources();
 };
 
 // --------------------------------------------------------------------------------------
@@ -261,11 +296,9 @@ protected:
 	int m_fpsqueue_writepos;
 	uint m_initpause;
 
-	uint m_FrameCounter;
-
 public:
 	FramerateManager() { Reset(); }
-	virtual ~FramerateManager() throw() {}
+	virtual ~FramerateManager() = default;
 
 	void Reset();
 	void Resume();
@@ -288,11 +321,17 @@ public:
 	// is set to ISO.
 	wxString		IsoFile;
 
+	wxString		ElfFile;
+
+	wxString		GameLaunchArgs;
+
 	// Specifies the CDVD source type to use when AutoRunning
 	CDVD_SourceType CdvdSource;
 
 	// Indicates if PCSX2 should autorun the configured CDVD source and/or ISO file.
 	bool			SysAutoRun;
+	bool			SysAutoRunElf;
+	bool			SysAutoRunIrx;
 
 	StartupOptions()
 	{
@@ -301,7 +340,9 @@ public:
 		PortableMode			= false;
 		NoFastBoot				= false;
 		SysAutoRun				= false;
-		CdvdSource				= CDVDsrc_NoDisc;
+		SysAutoRunElf			= false;
+		SysAutoRunIrx			= false;
+		CdvdSource				= CDVD_SourceType::NoDisc;
 	}
 };
 
@@ -320,6 +361,7 @@ public:
 	wxFileName		VmSettingsFile;
 
 	bool			DisableSpeedhacks;
+	bool			ProfilingMode;
 
 	// Note that gamefixes in this array should only be honored if the
 	// "HasCustomGamefixes" boolean is also enabled.
@@ -334,6 +376,7 @@ public:
 		DisableSpeedhacks		= false;
 		ApplyCustomGamefixes	= false;
 		GsWindowMode			= GsWinMode_Unspecified;
+		ProfilingMode			= false;
 	}
 	
 	// Returns TRUE if either speedhacks or gamefixes are being overridden.
@@ -360,31 +403,6 @@ public:
 
 		return false;
 	}
-};
-
-// --------------------------------------------------------------------------------------
-//  Pcsx2AppTraits
-// --------------------------------------------------------------------------------------
-// Overrides and customizes some default wxWidgets behaviors.  This class is instanized by
-// calls to Pcsx2App::CreateTraits(), which is called from wxWidgets as-needed.  wxWidgets
-// does cache an instance of the traits, so the object construction need not be trivial
-// (translation: it can be complicated-ish -- it won't affect performance).
-//
-class Pcsx2AppTraits : public wxGUIAppTraits
-{
-	typedef wxGUIAppTraits _parent;
-
-public:
-	virtual ~Pcsx2AppTraits() {}
-	wxMessageOutput* CreateMessageOutput();
-
-#ifdef wxUSE_STDPATHS
-#if wxMAJOR_VERSION < 3
-	wxStandardPathsBase& GetStandardPaths();
-#else
-	wxStandardPaths& GetStandardPaths();
-#endif
-#endif
 };
 
 // =====================================================================================================
@@ -471,45 +489,54 @@ public:
 	void DispatchUiSettingsEvent( IniInterface& ini );
 	void DispatchVmSettingsEvent( IniInterface& ini );
 
+	bool HasGUI() { return m_UseGUI; };
+	bool ExitPromptWithNoGUI() { return m_NoGuiExitPrompt; };
+
 	// ----------------------------------------------------------------------------
 protected:
 	int								m_PendingSaves;
 	bool							m_ScheduledTermination;
 	bool							m_UseGUI;
+	bool							m_NoGuiExitPrompt;
 
 	Threading::Mutex				m_mtx_Resources;
 	Threading::Mutex				m_mtx_LoadingGameDB;
 
 public:
 	FramerateManager				FpsManager;
-	ScopedPtr<CommandDictionary>	GlobalCommands;
-	ScopedPtr<AcceleratorDictionary> GlobalAccels;
+	std::unique_ptr<CommandDictionary> GlobalCommands;
+	std::unique_ptr<AcceleratorDictionary> GlobalAccels;
 
 	StartupOptions					Startup;
 	CommandlineOverrides			Overrides;
 
-	ScopedPtr<wxTimer>				m_timer_Termination;
+	std::unique_ptr<wxTimer> m_timer_Termination;
 
 protected:
-	ScopedPtr<PipeRedirectionBase>	m_StdoutRedirHandle;
-	ScopedPtr<PipeRedirectionBase>	m_StderrRedirHandle;
+	std::unique_ptr<PipeRedirectionBase> m_StdoutRedirHandle;
+	std::unique_ptr<PipeRedirectionBase> m_StderrRedirHandle;
 
-	ScopedPtr<RecentIsoList>		m_RecentIsoList;
-	ScopedPtr<pxAppResources>		m_Resources;
+	std::unique_ptr<RecentIsoList> m_RecentIsoList;
+	std::unique_ptr<pxAppResources> m_Resources;
 
 public:
 	// Executor Thread for complex VM/System tasks.  This thread is used to execute such tasks
 	// in parallel to the main message pump, to allow the main pump to run without fear of
 	// blocked threads stalling the GUI.
 	ExecutorThread					SysExecutorThread;
-	ScopedPtr<SysCpuProviderPack>	m_CpuProviders;
-	ScopedPtr<SysMainMemory>	m_VmReserve;
+	std::unique_ptr<SysCpuProviderPack> m_CpuProviders;
+	std::unique_ptr<SysMainMemory> m_VmReserve;
 
 protected:
 	wxWindowID			m_id_MainFrame;
 	wxWindowID			m_id_GsFrame;
 	wxWindowID			m_id_ProgramLogBox;
 	wxWindowID			m_id_Disassembler;
+
+#ifndef DISABLE_RECORDING
+	wxWindowID			m_id_VirtualPad[2];
+	wxWindowID			m_id_NewRecordingFrame;
+#endif
 
 	wxKeyEvent			m_kevt;
 
@@ -533,8 +560,13 @@ public:
 
 	GSFrame*			GetGsFramePtr() const		{ return (GSFrame*)wxWindow::FindWindowById( m_id_GsFrame ); }
 	MainEmuFrame*		GetMainFramePtr() const		{ return (MainEmuFrame*)wxWindow::FindWindowById( m_id_MainFrame ); }
-	DisassemblyDialog*	GetDisassemblyPtr() const	{ return m_id_Disassembler ? (DisassemblyDialog*)wxWindow::FindWindowById( m_id_Disassembler ) : NULL; }
-	
+	DisassemblyDialog*	GetDisassemblyPtr() const	{ return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
+
+#ifndef DISABLE_RECORDING
+	VirtualPad*			GetVirtualPadPtr(int port) const	{ return (VirtualPad*)wxWindow::FindWindowById(m_id_VirtualPad[port]); }
+	NewRecordingFrame*	GetNewRecordingFramePtr() const		{ return (NewRecordingFrame*)wxWindow::FindWindowById(m_id_NewRecordingFrame); }
+#endif
+
 	void enterDebugMode();
 	void leaveDebugMode();
 	void resetDebugger();
@@ -580,6 +612,7 @@ public:
 	pxAppResources&		GetResourceCache();
 	const wxIconBundle&	GetIconBundle();
 	const wxBitmap&		GetLogoBitmap();
+	const wxBitmap&		GetScreenshotBitmap();
 	wxImageList&		GetImgList_Config();
 	wxImageList&		GetImgList_Toolbars();
 
@@ -630,7 +663,13 @@ protected:
 	void CleanupOnExit();
 	void OpenWizardConsole();
 	void PadKeyDispatch( const keyEvent& ev );
-	
+
+#ifndef DISABLE_RECORDING 
+public:
+	void Recording_PadKeyDispatch(const keyEvent& ev) { PadKeyDispatch(ev); }
+#endif 
+
+protected:
 	void HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event) const;
 	void HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event);
 
@@ -655,7 +694,7 @@ protected:
 };
 
 
-DECLARE_APP(Pcsx2App)
+wxDECLARE_APP(Pcsx2App);
 
 // --------------------------------------------------------------------------------------
 //  s* macros!  ['s' stands for 'shortcut']
@@ -709,6 +748,42 @@ wxWindow* AppOpenDialog( wxWindow* parent=NULL )
 	return window;
 }
 
+// --------------------------------------------------------------------------------------
+//  AppOpenModalDialog
+// --------------------------------------------------------------------------------------
+// Returns the ID of the button used to close the dialog.
+//
+template<typename DialogType>
+int AppOpenModalDialog(wxString panel_name, wxWindow* parent = NULL)
+{
+	if (wxWindow* window = wxFindWindowByName(L"Dialog:" + DialogType::GetNameStatic()))
+	{
+		window->SetFocus();
+		if (wxDialog* dialog = wxDynamicCast(window, wxDialog))
+		{
+			// Switch to the requested panel.
+			if (panel_name != wxEmptyString) {
+				wxCommandEvent evt(pxEvt_SetSettingsPage);
+				evt.SetString(panel_name);
+				dialog->GetEventHandler()->ProcessEvent(evt);
+			}
+
+			// It's legal to call ShowModal on a non-modal dialog, therefore making
+			// it modal in nature for the needs of whatever other thread of action wants
+			// to block against it:
+			if (!dialog->IsModal())
+			{
+				int result = dialog->ShowModal();
+				dialog->Destroy();
+				return result;
+			}
+		}
+		pxFailDev("Can only show wxDialog class windows as modal!");
+		return wxID_CANCEL;
+	} else
+		return DialogType(parent).ShowModal();
+}
+
 extern pxDoAssertFnType AppDoAssert;
 
 // --------------------------------------------------------------------------------------
@@ -741,7 +816,6 @@ extern void UI_EnableStateActions();
 extern void UI_DisableSysActions();
 extern void UI_EnableSysActions();
 
-extern void UI_DisableSysReset();
 extern void UI_DisableSysShutdown();
 
 

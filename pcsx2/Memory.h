@@ -21,7 +21,7 @@
 
 #include "vtlb.h"
 
-#include <xmmintrin.h>
+#include "x86emitter/x86_intrin.h"
 
 // [TODO] This *could* be replaced with an assignment operator on u128 that implicitly
 // uses _mm_store and _mm_load internally.  However, there are alignment concerns --
@@ -116,7 +116,15 @@ extern void memBindConditionalHandlers();
 
 extern void memMapVUmicro();
 
-extern int mmap_GetRamPageInfo( u32 paddr );
+enum vtlb_ProtectionMode
+{
+	ProtMode_None = 0,		// page is 'unaccounted' -- neither protected nor unprotected
+	ProtMode_Write,			// page is under write protection (exception handler)
+	ProtMode_Manual,		// page is under manual protection (self-checked at execution)
+	ProtMode_NotRequired	// page doesn't require any protection
+};
+
+extern vtlb_ProtectionMode mmap_GetRamPageInfo( u32 paddr );
 extern void mmap_MarkCountedRamPage( u32 paddr );
 extern void mmap_ResetBlockTracking();
 

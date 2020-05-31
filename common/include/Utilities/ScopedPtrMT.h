@@ -22,122 +22,119 @@ using Threading::ScopedLock;
 //  ScopedPtrMT
 // --------------------------------------------------------------------------------------
 
-template< typename T >
+template <typename T>
 class ScopedPtrMT
 {
-	DeclareNoncopyableObject(ScopedPtrMT);
-
-	typedef T* TPtr;
+    DeclareNoncopyableObject(ScopedPtrMT);
 
 protected:
-	volatile TPtr		m_ptr;
-	Threading::Mutex	m_mtx;
+    std::atomic<T *> m_ptr;
+    Threading::Mutex m_mtx;
 
 public:
-	typedef T element_type;
+    typedef T element_type;
 
-	wxEXPLICIT ScopedPtrMT(T * ptr = NULL)
-	{
-		m_ptr = ptr;
-	}
+    wxEXPLICIT ScopedPtrMT(T *ptr = nullptr)
+    {
+        m_ptr = ptr;
+    }
 
-	~ScopedPtrMT() throw() { _Delete_unlocked(); }
+    ~ScopedPtrMT() { _Delete_unlocked(); }
 
-	ScopedPtrMT& Reassign(T * ptr = NULL)
-	{
-		TPtr doh = (TPtr)Threading::AtomicExchangePointer( m_ptr, ptr );
-		if ( ptr != doh ) delete doh;
-		return *this;
-	}
+    ScopedPtrMT &Reassign(T *ptr = nullptr)
+    {
+        T *doh = m_ptr.exchange(ptr);
+        if (ptr != doh)
+            delete doh;
+        return *this;
+    }
 
-	ScopedPtrMT& Delete() throw()
-	{
-		ScopedLock lock( m_mtx );
-		_Delete_unlocked();
-	}
-	
-	// Removes the pointer from scoped management, but does not delete!
-	// (ScopedPtr will be NULL after this method)
-	T *DetachPtr()
-	{
-		ScopedLock lock( m_mtx );
+    ScopedPtrMT &Delete() noexcept
+    {
+        ScopedLock lock(m_mtx);
+        _Delete_unlocked();
+    }
 
-		T *ptr = m_ptr;
-		m_ptr = NULL;
-		return ptr;
-	}
+    // Removes the pointer from scoped management, but does not delete!
+    // (ScopedPtr will be nullptr after this method)
+    T *DetachPtr()
+    {
+        ScopedLock lock(m_mtx);
 
-	// Returns the managed pointer.  Can return NULL as a valid result if the ScopedPtrMT
-	// has no object in management.
-	T* GetPtr() const
-	{
-		return m_ptr;
-	}
+        return m_ptr.exchange(nullptr);
+    }
 
-	void SwapPtr(ScopedPtrMT& other)
-	{
-		ScopedLock lock( m_mtx );
-		T * const tmp = other.m_ptr;
-		other.m_ptr = m_ptr;
-		m_ptr = tmp;
-	}
+    // Returns the managed pointer.  Can return nullptr as a valid result if the ScopedPtrMT
+    // has no object in management.
+    T *GetPtr() const
+    {
+        return m_ptr;
+    }
 
-	// ----------------------------------------------------------------------------
-	//  ScopedPtrMT Operators
-	// ----------------------------------------------------------------------------
-	// I've decided to use the ATL's approach to pointer validity tests, opposed to
-	// the wx/boost approach (which uses some bizarre member method pointer crap, and can't
-	// allow the T* implicit casting.
+    void SwapPtr(ScopedPtrMT &other)
+    {
+        ScopedLock lock(m_mtx);
+        m_ptr.exchange(other.m_ptr.exchange(m_ptr.load()));
+        T *const tmp = other.m_ptr;
+        other.m_ptr = m_ptr;
+        m_ptr = tmp;
+    }
 
-	bool operator!() const throw()
-	{
-		return m_ptr == NULL;
-	}
+    // ----------------------------------------------------------------------------
+    //  ScopedPtrMT Operators
+    // ----------------------------------------------------------------------------
+    // I've decided to use the ATL's approach to pointer validity tests, opposed to
+    // the wx/boost approach (which uses some bizarre member method pointer crap, and can't
+    // allow the T* implicit casting.
 
-	// Equality
-	bool operator==(T* pT) const throw()
-	{
-		return m_ptr == pT;
-	}
+    bool operator!() const noexcept
+    {
+        return m_ptr.load() == nullptr;
+    }
 
-	// Inequality
-	bool operator!=(T* pT) const  throw()
-	{
-		return !operator==(pT);
-	}
+    // Equality
+    bool operator==(T *pT) const noexcept
+    {
+        return m_ptr == pT;
+    }
 
-	// Convenient assignment operator.  ScopedPtrMT = NULL will issue an automatic deletion
-	// of the managed pointer.
-	ScopedPtrMT& operator=( T* src )
-	{
-		return Reassign( src );
-	}
+    // Inequality
+    bool operator!=(T *pT) const noexcept
+    {
+        return !operator==(pT);
+    }
 
-	#if 0
+    // Convenient assignment operator.  ScopedPtrMT = nullptr will issue an automatic deletion
+    // of the managed pointer.
+    ScopedPtrMT &operator=(T *src)
+    {
+        return Reassign(src);
+    }
+
+#if 0
 	operator T*() const
 	{
 		return m_ptr;
 	}
 
 	// Dereference operator, returns a handle to the managed pointer.
-	// Generates a debug assertion if the object is NULL!
+	// Generates a debug assertion if the object is nullptr!
 	T& operator*() const
 	{
-		pxAssert(m_ptr != NULL);
+		pxAssert(m_ptr != nullptr);
 		return *m_ptr;
 	}
 
 	T* operator->() const
 	{
-		pxAssert(m_ptr != NULL);
+		pxAssert(m_ptr != nullptr);
 		return m_ptr;
 	}
-	#endif
+#endif
 
 protected:
-	void _Delete_unlocked() throw()
-	{
-		delete m_ptr;
-		m_ptr = NULL;
-	}
+    void _Delete_unlocked() noexcept
+    {
+        delete m_ptr.exchange(nullptr);
+    }
 };

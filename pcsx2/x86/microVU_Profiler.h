@@ -113,10 +113,10 @@ struct microProfiler {
 		progCount++;
 		if ((progCount % progLimit) == 0) {
 			u64 total = 0;
-			vector< pair<u32, u32> > v;
+			std::vector< std::pair<u32, u32> > v;
 			for(int i = 0; i < opLastOpcode; i++) {
 				total += opStats[i];
-				v.push_back(make_pair(opStats[i], i));
+				v.push_back(std::make_pair(opStats[i], i));
 			}
 			std::sort   (v.begin(), v.end());
 			std::reverse(v.begin(), v.end());
@@ -125,7 +125,7 @@ struct microProfiler {
 			for(u32 i = 0; i < v.size(); i++) {
 				u64    count = v[i].first;
 				double stat  = (double)count / dTotal * 100.0;
-				string str   = microOpcodeName[v[i].second];
+				std::string str = microOpcodeName[v[i].second];
 				str.resize(8, ' ');
 				DevCon.WriteLn("%s - [%3.4f%%][count=%u]",
 					str.c_str(), stat, (u32)count);
