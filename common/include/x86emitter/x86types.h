@@ -15,6 +15,130 @@
 
 #pragma once
 
+#define x86_Opcode_ADD_Eb_Gb        0x00
+#define x86_Opcode_TWOBYTE          0x0f
+#define x86_Opcode_ADC_Eb_Gb        0x10
+#define x86_Opcode_ADC_Ev_Gv        0x11
+#define x86_Opcode_SUB_Gv_Ev        0x2b
+#define x86_Opcode_CMP_Eb_Gb        0x38
+#define x86_Opcode_INC_eAX          0x40
+#define x86_Opcode_DEC_eAX          0x48
+#define x86_Opcode_PUSH_eAX         0x50
+#define x86_Opcode_POP_eAX          0x58
+#define x86_Opcode_OPSIZE           0x66
+#define x86_Opcode_PUSH_Iv          0x68
+#define x86_Opcode_IMUL_Gv_Ev_Iv    0x69
+#define x86_Opcode_IMUL_Gv_Ev_Ib    0x6b
+#define x86_Opcode_OUTSB_DX_Xb      0x6e
+#define x86_Opcode_OUTSW_DX_Xv      0x6f
+#define x86_Opcode_JO_Jb            0x70
+#define x86_Opcode_JNB_Jb           0x73
+#define x86_Opcode_JNO_Jb           0x71
+#define x86_Opcode_JB_Jb            0x72
+#define x86_Opcode_JZ_Jb            0x74
+#define x86_Opcode_JNZ_Jb           0x75
+#define x86_Opcode_JBE_Jb           0x76
+#define x86_Opcode_JA_Jb            0x77
+#define x86_Opcode_JS_Jb            0x78
+#define x86_Opcode_JNS_Jb           0x79
+#define x86_Opcode_JP_Jb            0x7a
+#define x86_Opcode_JNP_Jb           0x7b
+#define x86_Opcode_JL_Jb            0x7c
+#define x86_Opcode_JNL_Jb           0x7d
+#define x86_Opcode_JLE_Jb           0x7e
+#define x86_Opcode_JNLE_Jb          0x7f
+#define x86_Opcode_ADD_Eb_Ib        0x80
+#define x86_Opcode_ADD_Ev_Iv        0x81
+#define x86_Opcode_SUB_Eb_Ib        0x82
+#define x86_Opcode_SUB_Ev_Ib        0x83
+#define x86_Opcode_TEST_Eb_Gb       0x84
+#define x86_Opcode_TEST_Ev_Gv       0x85
+#define x86_Opcode_MOV_Eb_Gb        0x88
+#define x86_Opcode_MOV_Ev_Gv        0x89
+#define x86_Opcode_MOV_Gb_Eb        0x8a
+#define x86_Opcode_MOV_Gv_Ev        0x8b
+#define x86_Opcode_MOV_Ew_Sw        0x8C
+#define x86_Opcode_LEA_Gv_M         0x8d
+#define x86_Opcode_POP_Ev           0x8f
+#define x86_Opcode_NOP              0x90
+#define x86_Opcode_CBW              0x98
+#define x86_Opcode_CWD              0x99
+#define x86_Opcode_PUSHF_Fv         0x9c
+#define x86_Opcode_POPF_Fv          0x9d
+#define x86_Opcode_SAHF             0x9e
+#define x86_Opcode_LAHF             0x9f
+#define x86_Opcode_MOV_AL_Ob        0xa0
+#define x86_Opcode_MOV_eAX_Ov       0xa1
+#define x86_Opcode_MOV_Ob_AL        0xa2
+#define x86_Opcode_MOV_Ov_eAX       0xa3
+#define x86_Opcode_TEST_AL_Ib       0xa8
+#define x86_Opcode_TEST_eAX_Iv      0xa9
+#define x86_Opcode_SCASB_AL_Yb      0xae
+#define x86_Opcode_SCASW_eAX_Yv     0xaf
+#define x86_Opcode_MOV_AL_Ib        0xb0
+#define x86_Opcode_MOV_eSI_Iv       0xbe
+#define x86_Opcode_MOV_DH_Ib        0xb6
+#define x86_Opcode_MOV_BH_Ib        0xb7
+#define x86_Opcode_MOV_eAX_Iv       0xb8
+#define x86_Opcode_MOV_eDX_Iv       0xba
+#define x86_Opcode_MOV_eDI_Iv       0xbf
+#define x86_Opcode_NB2_Eb_Ib        0xc0
+#define x86_Opcode_NB2_Ev_Ib        0xc1
+#define x86_Opcode_RETN_Iw          0xc2
+#define x86_Opcode_RETN             0xc3
+#define x86_Opcode_LES_Gv_Mp        0xc4
+#define x86_Opcode_LDS_Gv_Mp        0xc5
+#define x86_Opcode_MOV_Eb_Ib        0xc6
+#define x86_Opcode_MOV_Ev_Iv        0xc7
+#define x86_Opcode_ENTER_IwIb       0xc8
+#define x86_Opcode_LEAVE            0xc9
+#define x86_Opcode_INT3             0xcc
+#define x86_Opcode_INT_Ib           0xcd
+#define x86_Opcode_INTO             0xce
+#define x86_Opcode_NB2_Eb1          0xd0
+#define x86_Opcode_NB2_Ev1          0xd1
+#define x86_Opcode_NB2_Eb_CL        0xd2
+#define x86_Opcode_NB2_Ev_CL        0xd3
+#define x86_Opcode_SALC             0xd6
+#define x86_Opcode_XLAT             0xd7
+#define x86_Opcode_ESC0             0xd8
+#define x86_Opcode_ESC1             0xd9
+#define x86_Opcode_ESC4             0xdc
+#define x86_Opcode_LOOPNZ_Jb        0xe0
+#define x86_Opcode_OUT_Ib eAX       0xe7
+#define x86_Opcode_CALL_Jz          0xe8
+#define x86_Opcode_JMP_Jz           0xe9
+#define x86_Opcode_JMP_Jb           0xeb
+#define x86_Opcode_REPNE            0xf2
+#define x86_Opcode_REP              0xf3
+#define x86_Opcode_NB3_Eb           0xf6
+#define x86_Opcode_NB3_Ev           0xf7
+#define x86_Opcode_CLC              0xf8
+#define x86_Opcode_STC              0xf9
+#define x86_Opcode_CLI              0xfa
+#define x86_Opcode_NB4_INC_DEC      0xfe
+#define x86_Opcode_NB5_INC_DEC      0xff
+
+/*
+0x0f00
+0x0f3a
+0x0f66
+0x153a
+0x173a
+0x213a
+0x2a38
+0xe8d9
+0x9866
+0xc0d9
+0xc8d9
+0xd8dd
+0xead9
+0xf0d9
+0xf3d9
+0xfcd9
+0xfdd9
+0xfed9 */
+
 #ifdef __M_X86_64
 static const uint iREGCNT_XMM = 16;
 static const uint iREGCNT_GPR = 16;

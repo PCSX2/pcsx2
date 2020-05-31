@@ -45,11 +45,11 @@ namespace x86Emitter
 static void _g1_IndirectImm(G1Type InstType, const xIndirect64orLess &sibdest, int imm)
 {
     if (sibdest.Is8BitOp()) {
-        xOpWrite(sibdest.GetPrefix16(), 0x80, InstType, sibdest);
+        xOpWrite(sibdest.GetPrefix16(), x86_Opcode_ADD_Eb_Ib, InstType, sibdest);
 
         xWrite<s8>(imm);
     } else {
-        u8 opcode = is_s8(imm) ? 0x83 : 0x81;
+        u8 opcode = is_s8(imm) ? x86_Opcode_SUB_Ev_Ib : x86_Opcode_ADD_Ev_Iv;
         xOpWrite(sibdest.GetPrefix16(), opcode, InstType, sibdest);
 
         if (is_s8(imm))
@@ -82,14 +82,14 @@ static void _g1_EmitOp(G1Type InstType, const xRegisterInt &to, const xIndirectV
 static void _g1_EmitOp(G1Type InstType, const xRegisterInt &to, int imm)
 {
     if (!to.Is8BitOp() && is_s8(imm)) {
-        xOpWrite(to.GetPrefix16(), 0x83, InstType, to);
+        xOpWrite(to.GetPrefix16(), x86_Opcode_SUB_Ev_Ib, InstType, to);
         xWrite<s8>(imm);
     } else {
         if (to.IsAccumulator()) {
             u8 opcode = (to.Is8BitOp() ? 4 : 5) | (InstType << 3);
             xOpAccWrite(to.GetPrefix16(), opcode, InstType, to);
         } else {
-            u8 opcode = to.Is8BitOp() ? 0x80 : 0x81;
+            u8 opcode = to.Is8BitOp() ? x86_Opcode_ADD_Eb_Ib : x86_Opcode_ADD_Ev_Iv;
             xOpWrite(to.GetPrefix16(), opcode, InstType, to);
         }
         to.xWriteImm(imm);
@@ -125,7 +125,7 @@ const xImpl_Group1 xSBB = {G1Type_SBB};
 
 void xImpl_Group2::operator()(const xRegisterInt &to, const xRegisterCL & /* from */) const
 {
-    xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? 0xd2 : 0xd3, InstType, to);
+    xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? x86_Opcode_NB2_Eb_CL : x86_Opcode_NB2_Ev_CL, InstType, to);
 }
 
 void xImpl_Group2::operator()(const xRegisterInt &to, u8 imm) const
@@ -135,16 +135,16 @@ void xImpl_Group2::operator()(const xRegisterInt &to, u8 imm) const
 
     if (imm == 1) {
         // special encoding of 1's
-        xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? 0xd0 : 0xd1, InstType, to);
+        xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? x86_Opcode_NB2_Eb1 : x86_Opcode_NB2_Ev1, InstType, to);
     } else {
-        xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? 0xc0 : 0xc1, InstType, to);
+        xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? x86_Opcode_NB2_Eb_Ib : x86_Opcode_NB2_Ev_Ib, InstType, to);
         xWrite8(imm);
     }
 }
 
 void xImpl_Group2::operator()(const xIndirect64orLess &sibdest, const xRegisterCL & /* from */) const
 {
-    xOpWrite(sibdest.GetPrefix16(), sibdest.Is8BitOp() ? 0xd2 : 0xd3, InstType, sibdest);
+    xOpWrite(sibdest.GetPrefix16(), sibdest.Is8BitOp() ? x86_Opcode_NB2_Eb_CL : x86_Opcode_NB2_Ev_CL, InstType, sibdest);
 }
 
 void xImpl_Group2::operator()(const xIndirect64orLess &sibdest, u8 imm) const
@@ -154,9 +154,9 @@ void xImpl_Group2::operator()(const xIndirect64orLess &sibdest, u8 imm) const
 
     if (imm == 1) {
         // special encoding of 1's
-        xOpWrite(sibdest.GetPrefix16(), sibdest.Is8BitOp() ? 0xd0 : 0xd1, InstType, sibdest);
+        xOpWrite(sibdest.GetPrefix16(), sibdest.Is8BitOp() ? x86_Opcode_NB2_Eb1 : x86_Opcode_NB2_Ev1, InstType, sibdest);
     } else {
-        xOpWrite(sibdest.GetPrefix16(), sibdest.Is8BitOp() ? 0xc0 : 0xc1, InstType, sibdest);
+        xOpWrite(sibdest.GetPrefix16(), sibdest.Is8BitOp() ? x86_Opcode_NB2_Eb_Ib : x86_Opcode_NB2_Ev_Ib, InstType, sibdest);
         xWrite8(imm);
     }
 }
@@ -176,12 +176,12 @@ const xImpl_Group2 xSAR = {G2Type_SAR};
 
 static void _g3_EmitOp(G3Type InstType, const xRegisterInt &from)
 {
-    xOpWrite(from.GetPrefix16(), from.Is8BitOp() ? 0xf6 : 0xf7, InstType, from);
+    xOpWrite(from.GetPrefix16(), from.Is8BitOp() ? x86_Opcode_NB3_Eb : x86_Opcode_NB3_Ev, InstType, from);
 }
 
 static void _g3_EmitOp(G3Type InstType, const xIndirect64orLess &from)
 {
-    xOpWrite(from.GetPrefix16(), from.Is8BitOp() ? 0xf6 : 0xf7, InstType, from);
+    xOpWrite(from.GetPrefix16(), from.Is8BitOp() ? x86_Opcode_NB3_Eb : x86_Opcode_NB3_Ev, InstType, from);
 }
 
 void xImpl_Group3::operator()(const xRegisterInt &from) const { _g3_EmitOp(InstType, from); }
@@ -195,7 +195,7 @@ static void _imul_ImmStyle(const xRegisterInt &param1, const SrcType &param2, in
 {
     pxAssert(param1.GetOperandSize() == param2.GetOperandSize());
 
-    xOpWrite0F(param1.GetPrefix16(), is_s8(imm) ? 0x6b : 0x69, param1, param2);
+    xOpWrite0F(param1.GetPrefix16(), is_s8(imm) ? x86_Opcode_IMUL_Gv_Ev_Ib : x86_Opcode_IMUL_Gv_Ev_Iv, param1, param2);
 
     if (is_s8(imm))
         xWrite8((u8)imm);

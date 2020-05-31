@@ -995,7 +995,7 @@ void rpsxJALR()
 	}
 	#ifdef PCSX2_DEBUG
 	xForwardJNZ8 skipAssert;
-	xWrite8( 0xcc );
+	xWrite8( x86_Opcode_INT3 );
 	skipAssert.SetTarget();
 	#endif
 

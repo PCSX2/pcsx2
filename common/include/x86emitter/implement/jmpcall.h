@@ -41,7 +41,7 @@ struct xImpl_JmpCall
             // always 5 bytes (16 bit calls are bad mojo, so no bother to do special logic).
 
             sptr dest = (sptr)func - ((sptr)xGetPtr() + 5);
-            xWrite8(0xe8);
+            xWrite8(x86_Opcode_CALL_Jz);
             xWrite32(dest);
         }
     }

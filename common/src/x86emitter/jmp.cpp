@@ -34,8 +34,8 @@
 namespace x86Emitter
 {
 
-void xImpl_JmpCall::operator()(const xRegisterInt &absreg) const { xOpWrite(0, 0xff, isJmp ? 4 : 2, absreg); }
-void xImpl_JmpCall::operator()(const xIndirect64orLess &src) const { xOpWrite(0, 0xff, isJmp ? 4 : 2, src); }
+void xImpl_JmpCall::operator()(const xRegisterInt &absreg) const { xOpWrite(0, x86_Opcode_NB5_INC_DEC, isJmp ? 4 : 2, absreg); }
+void xImpl_JmpCall::operator()(const xIndirect64orLess &src) const { xOpWrite(0, x86_Opcode_NB5_INC_DEC, isJmp ? 4 : 2, src); }
 
 const xImpl_JmpCall xJMP = {true};
 const xImpl_JmpCall xCALL = {false};
@@ -78,7 +78,7 @@ xSmartJump::~xSmartJump()
 __emitinline s32 *xJcc32(JccComparisonType comparison, s32 displacement)
 {
     if (comparison == Jcc_Unconditional)
-        xWrite8(0xe9);
+        xWrite8(x86_Opcode_JMP_Jz);
     else {
         xWrite8(0x0f);
         xWrite8(0x80 | comparison);
@@ -154,10 +154,10 @@ xForwardJumpBase::xForwardJumpBase(uint opsize, JccComparisonType cctype)
         xWrite8((cctype == Jcc_Unconditional) ? 0xeb : (0x70 | cctype));
     else {
         if (cctype == Jcc_Unconditional)
-            xWrite8(0xe9);
+            xWrite8(x86_Opcode_JMP_Jz);
         else {
-            xWrite8(0x0f);
-            xWrite8(0x80 | cctype);
+            xWrite8(x86_Opcode_TWOBYTE);
+            xWrite8(x86_Opcode_ADD_Eb_Ib | cctype);
         }
     }
 

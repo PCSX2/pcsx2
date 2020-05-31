@@ -75,7 +75,7 @@ emitterT u16 *J16Rel(int cc, u32 to)
 
 emitterT u32 *J32Rel(int cc, u32 to)
 {
-    xWrite8(0x0F);
+    xWrite8(x86_Opcode_TWOBYTE);
     xWrite8(cc);
     xWrite32(to);
     return (u32 *)(x86Ptr - 4);
@@ -157,7 +157,7 @@ emitterT void x86Align(int bytes)
 /* jmp rel8 */
 emitterT u8 *JMP8(u8 to)
 {
-    xWrite8(0xEB);
+    xWrite8(x86_Opcode_JMP_Jb);
     xWrite8(to);
     return x86Ptr - 1;
 }
@@ -166,7 +166,7 @@ emitterT u8 *JMP8(u8 to)
 emitterT u32 *JMP32(uptr to)
 {
     assert((sptr)to <= 0x7fffffff && (sptr)to >= -0x7fffffff);
-    xWrite8(0xE9);
+    xWrite8(x86_Opcode_JMP_Jz );
     xWrite32(to);
     return (u32 *)(x86Ptr - 4);
 }
@@ -174,49 +174,49 @@ emitterT u32 *JMP32(uptr to)
 /* jp rel8 */
 emitterT u8 *JP8(u8 to)
 {
-    return J8Rel(0x7A, to);
+    return J8Rel(x86_Opcode_JP_Jb, to);
 }
 
 /* jnp rel8 */
 emitterT u8 *JNP8(u8 to)
 {
-    return J8Rel(0x7B, to);
+    return J8Rel(x86_Opcode_JNP_Jb, to);
 }
 
 /* je rel8 */
 emitterT u8 *JE8(u8 to)
 {
-    return J8Rel(0x74, to);
+    return J8Rel(x86_Opcode_JZ_Jb, to);
 }
 
 /* jz rel8 */
 emitterT u8 *JZ8(u8 to)
 {
-    return J8Rel(0x74, to);
+    return J8Rel(x86_Opcode_JZ_Jb, to);
 }
 
 /* js rel8 */
 emitterT u8 *JS8(u8 to)
 {
-    return J8Rel(0x78, to);
+    return J8Rel(x86_Opcode_JS_Jb, to);
 }
 
 /* jns rel8 */
 emitterT u8 *JNS8(u8 to)
 {
-    return J8Rel(0x79, to);
+    return J8Rel(x86_Opcode_JNS_Jb, to);
 }
 
 /* jg rel8 */
 emitterT u8 *JG8(u8 to)
 {
-    return J8Rel(0x7F, to);
+    return J8Rel(x86_Opcode_JNLE_Jb, to);
 }
 
 /* jge rel8 */
 emitterT u8 *JGE8(u8 to)
 {
-    return J8Rel(0x7D, to);
+    return J8Rel(x86_Opcode_JNL_Jb, to);
 }
 
 /* jl rel8 */
@@ -281,72 +281,72 @@ emitterT u8 *JNGE8(u8 to)
 /* jnl rel8 */
 emitterT u8 *JNL8(u8 to)
 {
-    return J8Rel(0x7D, to);
+    return J8Rel(x86_Opcode_JNL_Jb, to);
 }
 
 /* jnle rel8 */
 emitterT u8 *JNLE8(u8 to)
 {
-    return J8Rel(0x7F, to);
+    return J8Rel(x86_Opcode_JNLE_Jb, to);
 }
 
 /* jo rel8 */
 emitterT u8 *JO8(u8 to)
 {
-    return J8Rel(0x70, to);
+    return J8Rel(x86_Opcode_JO_Jb, to);
 }
 
 /* jno rel8 */
 emitterT u8 *JNO8(u8 to)
 {
-    return J8Rel(0x71, to);
+    return J8Rel(x86_Opcode_JNO_Jb, to);
 }
 // jb rel32
 emitterT u32 *JB32(u32 to)
 {
-    return J32Rel(0x82, to);
+    return J32Rel(x86_Opcode_SUB_Eb_Ib, to);
 }
 
 /* je rel32 */
 emitterT u32 *JE32(u32 to)
 {
-    return J32Rel(0x84, to);
+    return J32Rel(x86_Opcode_TEST_Eb_Gb, to);
 }
 
 /* jz rel32 */
 emitterT u32 *JZ32(u32 to)
 {
-    return J32Rel(0x84, to);
+    return J32Rel(x86_Opcode_TEST_Eb_Gb, to);
 }
 
 /* js rel32 */
 emitterT u32 *JS32(u32 to)
 {
-    return J32Rel(0x88, to);
+    return J32Rel(x86_Opcode_MOV_Eb_Gb, to);
 }
 
 /* jns rel32 */
 emitterT u32 *JNS32(u32 to)
 {
-    return J32Rel(0x89, to);
+    return J32Rel(x86_Opcode_MOV_Ev_Gv, to);
 }
 
 /* jg rel32 */
 emitterT u32 *JG32(u32 to)
 {
-    return J32Rel(0x8F, to);
+    return J32Rel(x86_Opcode_POP_Ev, to);
 }
 
 /* jge rel32 */
 emitterT u32 *JGE32(u32 to)
 {
-    return J32Rel(0x8D, to);
+    return J32Rel(x86_Opcode_LEA_Gv_M, to);
 }
 
 /* jl rel32 */
 emitterT u32 *JL32(u32 to)
 {
-    return J32Rel(0x8C, to);
+    return J32Rel(x86_Opcode_MOV_Ew_Sw, to);
 }
 
 /* jle rel32 */
@@ -388,29 +388,29 @@ emitterT u32 *JNG32(u32 to)
 /* jnge rel32 */
 emitterT u32 *JNGE32(u32 to)
 {
-    return J32Rel(0x8C, to);
+    return J32Rel(x86_Opcode_MOV_Ew_Sw, to);
 }
 
 /* jnl rel32 */
 emitterT u32 *JNL32(u32 to)
 {
-    return J32Rel(0x8D, to);
+    return J32Rel(x86_Opcode_LEA_Gv_M, to);
 }
 
 /* jnle rel32 */
 emitterT u32 *JNLE32(u32 to)
 {
-    return J32Rel(0x8F, to);
+    return J32Rel(x86_Opcode_POP_Ev, to);
 }
 
 /* jo rel32 */
 emitterT u32 *JO32(u32 to)
 {
-    return J32Rel(0x80, to);
+    return J32Rel(x86_Opcode_ADD_Eb_Ib, to);
 }
 
 /* jno rel32 */
 emitterT u32 *JNO32(u32 to)
 {
-    return J32Rel(0x81, to);
+    return J32Rel(x86_Opcode_ADD_Ev_Iv, to);
 }
