@@ -105,7 +105,7 @@
 #define x86_Opcode_ESC1             0xd9
 #define x86_Opcode_ESC4             0xdc
 #define x86_Opcode_LOOPNZ_Jb        0xe0
-#define x86_Opcode_OUT_Ib eAX       0xe7
+#define x86_Opcode_OUT_Ib_eAX       0xe7
 #define x86_Opcode_CALL_Jz          0xe8
 #define x86_Opcode_JMP_Jz           0xe9
 #define x86_Opcode_JMP_Jb           0xeb
