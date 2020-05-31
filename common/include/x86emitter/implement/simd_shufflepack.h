@@ -69,20 +69,20 @@ struct xImplSimd_PShuffle
 
 	// Copies doublewords from src and inserts them into dest at dword locations selected
 	// with the order operand (8 bit immediate).
-	void D( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm ) const	{ xOpWrite0F( 0x66, 0x70, to, from, imm ); }
-	void D( const xRegisterSSE& to, const xIndirectVoid& from, u8 imm ) const		{ xOpWrite0F( 0x66, 0x70, to, from, imm ); }
+	void D( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm ) const	{ xOpWrite0F( x86_Opcode_OPSIZE, x86_Opcode_JO_Jb, to, from, imm ); }
+	void D( const xRegisterSSE& to, const xIndirectVoid& from, u8 imm ) const		{ xOpWrite0F( x86_Opcode_OPSIZE, x86_Opcode_JO_Jb, to, from, imm ); }
 
 	// Copies words from the low quadword of src and inserts them into the low quadword
 	// of dest at word locations selected with the order operand (8 bit immediate).
 	// The high quadword of src is copied to the high quadword of dest.
-	void LW( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm ) const	{ xOpWrite0F( 0xf2, 0x70, to, from, imm ); }
-	void LW( const xRegisterSSE& to, const xIndirectVoid& from, u8 imm ) const		{ xOpWrite0F( 0xf2, 0x70, to, from, imm ); }
+	void LW( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm ) const	{ xOpWrite0F( x86_Opcode_REPNE , x86_Opcode_JO_Jb, to, from, imm ); }
+	void LW( const xRegisterSSE& to, const xIndirectVoid& from, u8 imm ) const		{ xOpWrite0F( x86_Opcode_REPNE , x86_Opcode_JO_Jb, to, from, imm ); }
 
 	// Copies words from the high quadword of src and inserts them into the high quadword
 	// of dest at word locations selected with the order operand (8 bit immediate).
 	// The low quadword of src is copied to the low quadword of dest.
-	void HW( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm ) const	{ xOpWrite0F( 0xf3, 0x70, to, from, imm ); }
-	void HW( const xRegisterSSE& to, const xIndirectVoid& from, u8 imm ) const		{ xOpWrite0F( 0xf3, 0x70, to, from, imm ); }
+	void HW( const xRegisterSSE& to, const xRegisterSSE& from, u8 imm ) const	{ xOpWrite0F( x86_Opcode_REP, x86_Opcode_JO_Jb, to, from, imm ); }
+	void HW( const xRegisterSSE& to, const xIndirectVoid& from, u8 imm ) const		{ xOpWrite0F( x86_Opcode_REP, x86_Opcode_JO_Jb, to, from, imm ); }
 
 	// [sSSE-3] Performs in-place shuffles of bytes in dest according to the shuffle
 	// control mask in src.  If the most significant bit (bit[7]) of each byte of the
@@ -91,8 +91,8 @@ struct xImplSimd_PShuffle
 	// byte in dest. The value of each index is the least significant 4 bits (128-bit
 	// operation) or 3 bits (64-bit operation) of the shuffle control byte.
 	//
-	void B( const xRegisterSSE& to, const xRegisterSSE& from ) const	{ OpWriteSSE( 0x66, 0x0038 ); }
-	void B( const xRegisterSSE& to, const xIndirectVoid& from ) const		{ OpWriteSSE( 0x66, 0x0038 ); }
+	void B( const xRegisterSSE& to, const xRegisterSSE& from ) const	{ OpWriteSSE( x86_Opcode_OPSIZE, x86_Opcode_CMP_Eb_Gb ); }
+	void B( const xRegisterSSE& to, const xIndirectVoid& from ) const		{ OpWriteSSE( x86_Opcode_OPSIZE, x86_Opcode_CMP_Eb_Gb ); }
 #endif
 };
 

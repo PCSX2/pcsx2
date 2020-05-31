@@ -22,7 +22,7 @@
 /* fld m32 to fpu reg stack */
 emitterT void FLD32(u32 from)
 {
-    xWrite8(0xD9);
+    xWrite8(x86_Opcode_ESC1);
     ModRM(0, 0x0, DISP32);
     xWrite32(MEMADDR(from, 4));
 }
@@ -35,7 +35,7 @@ emitterT void FLDL2E() { xWrite16(0xead9); }
 /* fstp m32 from fpu reg stack */
 emitterT void FSTP32(u32 to)
 {
-    xWrite8(0xD9);
+    xWrite8(x86_Opcode_ESC1);
     ModRM(0, 0x3, DISP32);
     xWrite32(MEMADDR(to, 4));
 }
@@ -53,21 +53,21 @@ emitterT void FSIN(void) { xWrite16(0xfed9); }
 /* fadd ST(0) to fpu reg stack ST(src) */
 emitterT void FADD320toR(x86IntRegType src)
 {
-    xWrite8(0xDC);
-    xWrite8(0xC0 + src);
+    xWrite8(x86_Opcode_ESC4);
+    xWrite8(x86_Opcode_NB2_Eb_Ib + src);
 }
 
 /* fsub ST(src) to fpu reg stack ST(0) */
 emitterT void FSUB32Rto0(x86IntRegType src)
 {
-    xWrite8(0xD8);
-    xWrite8(0xE0 + src);
+    xWrite8(x86_Opcode_ESC0);
+    xWrite8(x86_Opcode_LOOPNZ_Jb + src);
 }
 
 /* fmul m32 to fpu reg stack */
 emitterT void FMUL32(u32 from)
 {
-    xWrite8(0xD8);
+    xWrite8(x86_Opcode_ESC0);
     ModRM(0, 0x1, DISP32);
     xWrite32(MEMADDR(from, 4));
 }

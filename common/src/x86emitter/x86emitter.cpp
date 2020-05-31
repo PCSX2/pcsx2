@@ -492,7 +492,7 @@ __emitinline void xAdvancePtr(uint bytes)
     if (IsDevBuild) {
         // common debugger courtesy: advance with INT3 as filler.
         for (uint i = 0; i < bytes; i++)
-            xWrite8(0xcc);
+            xWrite8(x86_Opcode_INT3);
     } else
         x86Ptr += bytes;
 }
@@ -798,7 +798,7 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
                 // note: no need to do ebp+0 check since we encode all 0 displacements as
                 // register assignments above (via MOV)
 
-                xWrite8(0x8d);
+                xWrite8(x86_Opcode_LEA_Gv_M);
                 ModRM(displacement_size, to.Id, src.Index.Id);
             }
         }
@@ -816,7 +816,7 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
                 xSHL(to, src.Scale);
                 return;
             }
-            xWrite8(0x8d);
+            xWrite8(x86_Opcode_LEA_Gv_M);
             ModRM(0, to.Id, ModRm_UseSib);
             SibSB(src.Scale, src.Index.Id, ModRm_UseDisp32);
             xWrite32(src.Displacement);
@@ -847,7 +847,7 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
             if (src.Base == ebp && displacement_size == 0)
                 displacement_size = 1; // forces [ebp] to be encoded as [ebp+0]!
 
-            xWrite8(0x8d);
+            xWrite8(x86_Opcode_LEA_Gv_M);
             ModRM(displacement_size, to.Id, ModRm_UseSib);
             SibSB(src.Scale, src.Index.Id, src.Base.Id);
         }
@@ -873,7 +873,7 @@ __emitinline void xLEA(xRegister32 to, const xIndirectVoid &src, bool preserve_f
 
 __emitinline void xLEA(xRegister16 to, const xIndirectVoid &src, bool preserve_flags)
 {
-    xWrite8(0x66);
+    xWrite8(x86_Opcode_OPSIZE);
     EmitLeaMagic(to, src, preserve_flags);
 }
 
@@ -883,21 +883,21 @@ __emitinline void xLEA(xRegister16 to, const xIndirectVoid &src, bool preserve_f
 void xImpl_Test::operator()(const xRegisterInt &to, const xRegisterInt &from) const
 {
     pxAssert(to.GetOperandSize() == from.GetOperandSize());
-    xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? 0x84 : 0x85, from, to);
+    xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? x86_Opcode_TEST_Eb_Gb : x86_Opcode_TEST_Ev_Gv, from, to);
 }
 
 void xImpl_Test::operator()(const xIndirect64orLess &dest, int imm) const
 {
-    xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? 0xf6 : 0xf7, 0, dest);
+    xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? x86_Opcode_NB3_Eb : x86_Opcode_NB3_Ev, 0, dest);
     dest.xWriteImm(imm);
 }
 
 void xImpl_Test::operator()(const xRegisterInt &to, int imm) const
 {
     if (to.IsAccumulator()) {
-        xOpAccWrite(to.GetPrefix16(), to.Is8BitOp() ? 0xa8 : 0xa9, 0, to);
+        xOpAccWrite(to.GetPrefix16(), to.Is8BitOp() ? x86_Opcode_TEST_AL_Ib : x86_Opcode_TEST_eAX_Iv, 0, to);
     } else {
-        xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? 0xf6 : 0xf7, 0, to);
+        xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? x86_Opcode_NB3_Eb : x86_Opcode_NB3_Ev, 0, to);
     }
     to.xWriteImm(imm);
 }
@@ -916,21 +916,21 @@ void xImpl_IncDec::operator()(const xRegisterInt &to) const
 {
     if (to.Is8BitOp()) {
         u8 regfield = isDec ? 1 : 0;
-        xOpWrite(to.GetPrefix16(), 0xfe, regfield, to);
+        xOpWrite(to.GetPrefix16(), x86_Opcode_NB4_INC_DEC, regfield, to);
     } else {
 #ifdef __M_X86_64
         pxAssertMsg(0, "Single Byte INC/DEC aren't valid in 64 bits."
                        "You need to use the ModR/M form (FF/0 FF/1 opcodes)");
 #endif
         to.prefix16();
-        xWrite8((isDec ? 0x48 : 0x40) | to.Id);
+        xWrite8((isDec ? x86_Opcode_DEC_eAX : x86_Opcode_INC_eAX) | to.Id);
     }
 }
 
 void xImpl_IncDec::operator()(const xIndirect64orLess &to) const
 {
     to.prefix16();
-    xWrite8(to.Is8BitOp() ? 0xfe : 0xff);
+    xWrite8(to.Is8BitOp() ? x86_Opcode_NB4_INC_DEC : x86_Opcode_NB5_INC_DEC);
     EmitSibMagic(isDec ? 1 : 0, to);
 }
 
@@ -977,66 +977,66 @@ const xImpl_DwordShift xSHRD = {0xac};
 
 __emitinline void xPOP(const xIndirectVoid &from)
 {
-    xWrite8(0x8f);
+    xWrite8(x86_Opcode_POP_Ev);
     EmitSibMagic(0, from);
 }
 
 __emitinline void xPUSH(const xIndirectVoid &from)
 {
-    xWrite8(0xff);
+    xWrite8(x86_Opcode_NB5_INC_DEC);
     EmitSibMagic(6, from);
 }
 
-__fi void xPOP(xRegister32or64 from) { xWrite8(0x58 | from->Id); }
+__fi void xPOP(xRegister32or64 from) { xWrite8(x86_Opcode_POP_eAX | from->Id); }
 
 __fi void xPUSH(u32 imm)
 {
-    xWrite8(0x68);
+    xWrite8(x86_Opcode_PUSH_Iv);
     xWrite32(imm);
 }
-__fi void xPUSH(xRegister32or64 from) { xWrite8(0x50 | from->Id); }
+__fi void xPUSH(xRegister32or64 from) { xWrite8(x86_Opcode_PUSH_eAX | from->Id); }
 
 // pushes the EFLAGS register onto the stack
-__fi void xPUSHFD() { xWrite8(0x9C); }
+__fi void xPUSHFD() { xWrite8(x86_Opcode_PUSHF_Fv); }
 // pops the EFLAGS register from the stack
-__fi void xPOPFD() { xWrite8(0x9D); }
+__fi void xPOPFD() { xWrite8(x86_Opcode_POPF_Fv); }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
 
-__fi void xLEAVE() { xWrite8(0xC9); }
-__fi void xRET() { xWrite8(0xC3); }
-__fi void xCBW() { xWrite16(0x9866); }
-__fi void xCWD() { xWrite8(0x98); }
-__fi void xCDQ() { xWrite8(0x99); }
-__fi void xCWDE() { xWrite8(0x98); }
+__fi void xLEAVE() { xWrite8(x86_Opcode_LEAVE ); }
+__fi void xRET() { xWrite8(x86_Opcode_RETN); }
+__fi void xCBW() { xWrite16((x86_Opcode_CBW << 16) | 0x66); }
+__fi void xCWD() { xWrite8(x86_Opcode_CBW); } 
+__fi void xCDQ() { xWrite8(x86_Opcode_CWD); }
+__fi void xCWDE() { xWrite8(x86_Opcode_CBW); }
 
-__fi void xLAHF() { xWrite8(0x9f); }
-__fi void xSAHF() { xWrite8(0x9e); }
+__fi void xLAHF() { xWrite8(x86_Opcode_LAHF); }
+__fi void xSAHF() { xWrite8(x86_Opcode_SAHF); }
 
-__fi void xSTC() { xWrite8(0xF9); }
-__fi void xCLC() { xWrite8(0xF8); }
+__fi void xSTC() { xWrite8(x86_Opcode_STC); }
+__fi void xCLC() { xWrite8(x86_Opcode_CLC); }
 
 // NOP 1-byte
-__fi void xNOP() { xWrite8(0x90); }
+__fi void xNOP() { xWrite8(x86_Opcode_NOP); }
 
 __fi void xINT(u8 imm)
 {
     if (imm == 3)
-        xWrite8(0xcc);
+        xWrite8(x86_Opcode_INT3);
     else {
-        xWrite8(0xcd);
+        xWrite8(x86_Opcode_INT_Ib);
         xWrite8(imm);
     }
 }
 
-__fi void xINTO() { xWrite8(0xce); }
+__fi void xINTO() { xWrite8(x86_Opcode_INTO); }
 
 __emitinline void xBSWAP(const xRegister32or64 &to)
 {
-    xWrite8(0x0F);
-    xWrite8(0xC8 | to->Id);
+    xWrite8(x86_Opcode_TWOBYTE);
+    xWrite8(x86_Opcode_ENTER_IwIb | to->Id);
 }
 
 static __aligned16 u64 xmm_data[iREGCNT_XMM * 2];

@@ -114,7 +114,7 @@ __emitinline void SimdPrefix(u8 prefix, u16 opcode)
         }
     } else {
         if (is16BitOpcode) {
-            xWrite8(0x0f);
+            xWrite8(x86_Opcode_TWOBYTE);
             xWrite16(opcode);
         } else
             xWrite16((opcode << 8) | 0x0f);

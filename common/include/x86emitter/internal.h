@@ -134,7 +134,7 @@ __emitinline void xOpWriteC5(u8 prefix, u8 opcode, const T1 &param1, const T2 &p
                          prefix == 0xF3 ? 2 :
                                           prefix == 0x66 ? 1 : 0;
 
-    xWrite8(0xC5);
+    xWrite8(x86_Opcode_LDS_Gv_Mp);
     xWrite8(nR | nv | L | p);
     xWrite8(opcode);
     EmitSibMagic(param1, param3);
@@ -173,7 +173,7 @@ __emitinline void xOpWriteC4(u8 prefix, u8 mb_prefix, u8 opcode, const T1 &param
         mb_prefix == 0x3A ? 3 :
                             mb_prefix == 0x38 ? 2 : 1;
 
-    xWrite8(0xC4);
+    xWrite8(x86_Opcode_LES_Gv_Mp);
     xWrite8(nR | nX | nB | m);
     xWrite8(W | nv | L | p);
     xWrite8(opcode);
