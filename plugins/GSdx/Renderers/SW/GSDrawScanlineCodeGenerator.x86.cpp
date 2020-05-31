@@ -640,7 +640,7 @@ void GSDrawScanlineCodeGenerator::TestZ_SSE(const Xmm& temp1, const Xmm& temp2)
 			cvttps2dq(xmm0, xmm0);
 		}
 
-		//Clamp Z to ZPSM_FMT_MAX
+		// Clamp Z to ZPSM_FMT_MAX
 		pcmpeqd(temp1, temp1);
 		psrld(temp1, (uint8)((m_sel.zpsm & 0x3) * 8));
 		pminsd(xmm0, temp1);
@@ -2417,7 +2417,7 @@ void GSDrawScanlineCodeGenerator::WriteZBuf_SSE()
 		blend8(xmm1, xmm7);
 	}
 
-	//Clamp Z to ZPSM_FMT_MAX
+	// Clamp Z to ZPSM_FMT_MAX
 	pcmpeqd(xmm7, xmm7);
 	psrld(xmm7, (uint8)((m_sel.zpsm & 0x3) * 8));
 	pminsd(xmm1, xmm7);

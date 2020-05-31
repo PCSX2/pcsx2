@@ -635,7 +635,7 @@ void GSDrawScanlineCodeGenerator::TestZ_AVX(const Xmm& temp1, const Xmm& temp2)
 			vcvttps2dq(xmm0, xmm0);
 		}
 
-		//Clamp Z to ZPSM_FMT_MAX
+		// Clamp Z to ZPSM_FMT_MAX
 		vpcmpeqd(temp1, temp1);
 		vpsrld(temp1, (uint8)((m_sel.zpsm & 0x3) * 8));
 		vpminsd(xmm0, temp1);
@@ -2383,7 +2383,7 @@ void GSDrawScanlineCodeGenerator::WriteZBuf_AVX()
 		vpblendvb(xmm1, ptr[&m_local.temp.zd], xmm4);
 	}
 
-	//Clamp Z to ZPSM_FMT_MAX
+	// Clamp Z to ZPSM_FMT_MAX
 	vpcmpeqd(xmm7, xmm7);
 	vpsrld(xmm7, (uint8)((m_sel.zpsm & 0x3) * 8));
 	vpminsd(xmm1, xmm7);

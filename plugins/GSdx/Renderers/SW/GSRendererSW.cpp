@@ -389,7 +389,7 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 
 			xyzuvf = xyzuvf.xyzw().min_u32(z_max);
 			t = t.insert32<1, 3>(GSVector4::cast(xyzuvf));
-			
+
 			#else
 
 			z = std::min(z, z_max);
