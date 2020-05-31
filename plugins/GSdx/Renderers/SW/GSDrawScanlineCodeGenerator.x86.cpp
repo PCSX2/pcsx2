@@ -640,6 +640,11 @@ void GSDrawScanlineCodeGenerator::TestZ_SSE(const Xmm& temp1, const Xmm& temp2)
 			cvttps2dq(xmm0, xmm0);
 		}
 
+		//Clamp Z to ZPSM_FMT_MAX
+		pcmpeqd(temp1, temp1);
+		psrld(temp1, (uint8)((m_sel.zpsm & 0x3) * 8));
+		pminsd(xmm0, temp1);
+
 		if(m_sel.zwrite)
 		{
 			movdqa(ptr[&m_local.temp.zs], xmm0);
@@ -2411,6 +2416,11 @@ void GSDrawScanlineCodeGenerator::WriteZBuf_SSE()
 		movdqa(xmm7, ptr[&m_local.temp.zd]);
 		blend8(xmm1, xmm7);
 	}
+
+	//Clamp Z to ZPSM_FMT_MAX
+	pcmpeqd(xmm7, xmm7);
+	psrld(xmm7, (uint8)((m_sel.zpsm & 0x3) * 8));
+	pminsd(xmm1, xmm7);
 
 	bool fast = m_sel.ztest ? m_sel.zpsm < 2 : m_sel.zpsm == 0 && m_sel.notest;
 

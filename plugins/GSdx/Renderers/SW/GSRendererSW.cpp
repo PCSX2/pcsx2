@@ -287,6 +287,42 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 	GSVector4i off = (GSVector4i)m_context->XYOFFSET;
 	GSVector4 tsize = GSVector4(0x10000 << m_context->TEX0.TW, 0x10000 << m_context->TEX0.TH, 1, 0);
 
+	#if _M_SSE >= 0x401
+
+	GSVector4i z_max;
+
+	switch (m_context->ZBUF.PSM)
+	{
+	case 0:
+		z_max = GSVector4i::xffffffff();
+		break;
+	case 1:
+		z_max = GSVector4i::x00ffffff();
+		break;
+	default:
+		z_max = GSVector4i::x0000ffff();
+		break;
+	}
+
+	#else
+
+	uint32_t z_max;
+
+	switch (m_context->ZBUF.PSM)
+	{
+	case 0:
+		z_max = 0xffffffff;
+		break;
+	case 1:
+		z_max = 0x00ffffff;
+		break;
+	default:
+		z_max = 0x0000ffff;
+		break;
+	}
+
+	#endif
+
 	for(int i = (int)m_vertex.next; i > 0; i--, src++, dst++)
 	{
 		GSVector4 stcq = GSVector4::load<true>(&src->m[0]); // s t rgba q
@@ -351,10 +387,12 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 		{
 			#if _M_SSE >= 0x401
 
+			xyzuvf = xyzuvf.xyzw().min_u32(z_max);
 			t = t.insert32<1, 3>(GSVector4::cast(xyzuvf));
-
+			
 			#else
 
+			z = std::min(z, z_max);
 			t = t.insert32<0, 3>(GSVector4::cast(GSVector4i::load(z)));
 
 			#endif
