@@ -27,9 +27,9 @@ vuMemoryReserve::vuMemoryReserve()
 {
 }
 
-void vuMemoryReserve::Reserve()
+void vuMemoryReserve::Reserve(VirtualMemoryManagerPtr allocator)
 {
-	_parent::Reserve(HostMemoryMap::VUmem);
+	_parent::Reserve(std::move(allocator), HostMemoryMap::VUmemOffset);
 	//_parent::Reserve(EmuConfig.HostMemMap.VUmem);
 
 	u8* curpos = m_reserve.GetPtr();
@@ -39,10 +39,8 @@ void vuMemoryReserve::Reserve()
 	VU1.Mem		= curpos; curpos += VU1_MEMSIZE;
 }
 
-void vuMemoryReserve::Release()
+vuMemoryReserve::~vuMemoryReserve()
 {
-	_parent::Release();
-
 	VU0.Micro	= VU0.Mem	= NULL;
 	VU1.Micro	= VU1.Mem	= NULL;
 }

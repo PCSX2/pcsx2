@@ -38,8 +38,8 @@ void mVUreserveCache(microVU& mVU) {
 	mVU.cache_reserve->SetProfilerName(pxsFmt("mVU%urec", mVU.index));
 	
 	mVU.cache = mVU.index ?
-		(u8*)mVU.cache_reserve->Reserve(mVU.cacheSize * _1mb, HostMemoryMap::mVU1rec):
-		(u8*)mVU.cache_reserve->Reserve(mVU.cacheSize * _1mb, HostMemoryMap::mVU0rec);
+		(u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU1recOffset, mVU.cacheSize * _1mb):
+		(u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU0recOffset, mVU.cacheSize * _1mb);
 
 	mVU.cache_reserve->ThrowIfNotOk();
 }
