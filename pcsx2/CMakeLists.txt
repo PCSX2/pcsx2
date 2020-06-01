@@ -14,11 +14,9 @@ endif()
 
 set(CommonFlags
     -fno-strict-aliasing
-    -Wno-parentheses
     -Wstrict-aliasing # Allow to track strict aliasing issue.
-    -Wno-char-subscripts # only impact svu which is deprecated
+    -Wno-parentheses
     -Wno-missing-braces
-    #-Wno-ignored-attributes # don't remember why I put here but it is pure C option, therefore it complains for nothings on cpp files
     -DWX_PRECOMP
 	)
 
