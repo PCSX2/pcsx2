@@ -638,9 +638,12 @@ void GSDrawScanlineCodeGenerator::TestZ(const Ymm& temp1, const Ymm& temp2)
 		}
 
 		// Clamp Z to ZPSM_FMT_MAX
-		vpcmpeqd(temp1, temp1);
-		vpsrld(temp1, (uint8)((m_sel.zpsm & 0x3) * 8));
-		vpminsd(ymm0, temp1);
+		if (m_sel.zclamp)
+		{
+			vpcmpeqd(temp1, temp1);
+			vpsrld(temp1, (uint8)((m_sel.zpsm & 0x3) * 8));
+			vpminsd(ymm0, temp1);
+		}
 
 		if(m_sel.zwrite)
 		{
@@ -2380,9 +2383,12 @@ void GSDrawScanlineCodeGenerator::WriteZBuf()
 	}
 
 	// Clamp Z to ZPSM_FMT_MAX
-	vpcmpeqd(ymm7, ymm7);
-	vpsrld(ymm7, (uint8)((m_sel.zpsm & 0x3) * 8));
-	vpminsd(ymm1, ymm7);
+	if (m_sel.zclamp)
+	{
+		vpcmpeqd(ymm7, ymm7);
+		vpsrld(ymm7, (uint8)((m_sel.zpsm & 0x3) * 8));
+		vpminsd(ymm1, ymm7);
+	}
 
 	if(m_sel.ztest && m_sel.zpsm < 2)
 	{

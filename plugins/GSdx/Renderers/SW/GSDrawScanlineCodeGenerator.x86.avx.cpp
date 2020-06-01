@@ -636,9 +636,12 @@ void GSDrawScanlineCodeGenerator::TestZ_AVX(const Xmm& temp1, const Xmm& temp2)
 		}
 
 		// Clamp Z to ZPSM_FMT_MAX
-		vpcmpeqd(temp1, temp1);
-		vpsrld(temp1, (uint8)((m_sel.zpsm & 0x3) * 8));
-		vpminsd(xmm0, temp1);
+		if (m_sel.zclamp)
+		{
+			vpcmpeqd(temp1, temp1);
+			vpsrld(temp1, (uint8)((m_sel.zpsm & 0x3) * 8));
+			vpminsd(xmm0, temp1);
+		}
 
 		if(m_sel.zwrite)
 		{
@@ -2384,9 +2387,12 @@ void GSDrawScanlineCodeGenerator::WriteZBuf_AVX()
 	}
 
 	// Clamp Z to ZPSM_FMT_MAX
-	vpcmpeqd(xmm7, xmm7);
-	vpsrld(xmm7, (uint8)((m_sel.zpsm & 0x3) * 8));
-	vpminsd(xmm1, xmm7);
+	if (m_sel.zclamp)
+	{
+		vpcmpeqd(xmm7, xmm7);
+		vpsrld(xmm7, (uint8)((m_sel.zpsm & 0x3) * 8));
+		vpminsd(xmm1, xmm7);
+	}
 
 	bool fast = m_sel.ztest ? m_sel.zpsm < 2 : m_sel.zpsm == 0 && m_sel.notest;
 
