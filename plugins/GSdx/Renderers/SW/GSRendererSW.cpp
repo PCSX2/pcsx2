@@ -289,37 +289,11 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 
 	#if _M_SSE >= 0x401
 
-	GSVector4i z_max;
-
-	switch (m_context->ZBUF.PSM)
-	{
-		case PSM_PSMZ32:
-			z_max = GSVector4i::xffffffff();
-			break;
-		case PSM_PSMZ24:
-			z_max = GSVector4i::x00ffffff();
-			break;
-		default:
-			z_max = GSVector4i::x0000ffff();
-			break;
-	}
+	GSVector4i z_max = GSVector4i::xffffffff().srl32(GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt * 8);
 
 	#else
 
-	uint32_t z_max;
-
-	switch (m_context->ZBUF.PSM)
-	{
-		case PSM_PSMZ32:
-			z_max = 0xffffffff;
-			break;
-		case PSM_PSMZ24:
-			z_max = 0x00ffffff;
-			break;
-		default:
-			z_max = 0x0000ffff;
-			break;
-	}
+	uint32_t z_max = 0xffffffff >> (GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt * 8);
 
 	#endif
 
@@ -1364,20 +1338,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 	if(zwrite || ztest)
 	{
-		uint32_t z_max;
-
-		switch (context->ZBUF.PSM)
-		{
-			case PSM_PSMZ32:
-				z_max = 0xffffffff;
-				break;
-			case PSM_PSMZ24:
-				z_max = 0x00ffffff;
-				break;
-			default:
-				z_max = 0x0000ffff;
-				break;
-		}
+		uint32_t z_max = 0xffffffff >> (GSLocalMemory::m_psm[context->ZBUF.PSM].fmt * 8);
 
 		gd.sel.zpsm = GSLocalMemory::m_psm[context->ZBUF.PSM].fmt;
 		gd.sel.ztst = ztest ? context->TEST.ZTST : (int)ZTST_ALWAYS;
