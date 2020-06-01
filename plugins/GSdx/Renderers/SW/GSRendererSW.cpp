@@ -1371,7 +1371,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 			case PSM_PSMZ32:
 				z_max = 0xffffffff;
 				break;
-			case 1:
+			case PSM_PSMZ24:
 				z_max = 0x00ffffff;
 				break;
 			default:
