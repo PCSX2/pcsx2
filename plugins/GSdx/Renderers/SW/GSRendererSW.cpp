@@ -293,10 +293,10 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 
 	switch (m_context->ZBUF.PSM)
 	{
-		case 0:
+		case PSM_PSMZ32:
 			z_max = GSVector4i::xffffffff();
 			break;
-		case 1:
+		case PSM_PSMZ24:
 			z_max = GSVector4i::x00ffffff();
 			break;
 		default:
@@ -310,10 +310,10 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 
 	switch (m_context->ZBUF.PSM)
 	{
-		case 0:
+		case PSM_PSMZ32:
 			z_max = 0xffffffff;
 			break;
-		case 1:
+		case PSM_PSMZ24:
 			z_max = 0x00ffffff;
 			break;
 		default:
@@ -1366,9 +1366,9 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	{
 		uint32_t z_max;
 
-		switch (GSLocalMemory::m_psm[context->ZBUF.PSM].fmt)
+		switch (context->ZBUF.PSM)
 		{
-			case 0:
+			case PSM_PSMZ32:
 				z_max = 0xffffffff;
 				break;
 			case 1:
