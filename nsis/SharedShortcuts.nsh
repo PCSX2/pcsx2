@@ -1,13 +1,15 @@
 Section "Start Menu Shortcuts" SEC_STARTMENU
-
-  ; CreateShortCut gets the working directory from OutPath
-  SetOutPath "$INSTDIR"
-  CreateShortCut "$SMPROGRAMS\${APP_NAME}.lnk"                "${APP_EXE}"         ""    "${APP_EXE}"       0
+  ${If} $option_startMenu == 1
+    ; CreateShortCut gets the working directory from OutPath
+    SetOutPath "$INSTDIR"
+    CreateShortCut "$SMPROGRAMS\${APP_NAME}.lnk"                "${APP_EXE}"         ""    "${APP_EXE}"       0
+  ${EndIf}
 SectionEnd
 
 Section "Desktop Shortcut" SEC_DESKTOP
-
-  ; CreateShortCut gets the working directory from OutPath
-  SetOutPath "$INSTDIR"
-  CreateShortCut "$DESKTOP\${APP_NAME}.lnk"            "${APP_EXE}"      "" "${APP_EXE}"     0 "" "" "A Playstation 2 Emulator"
+  ${If} $option_desktop == 1
+    ; CreateShortCut gets the working directory from OutPath
+    SetOutPath "$INSTDIR"
+    CreateShortCut "$DESKTOP\${APP_NAME}.lnk"            "${APP_EXE}"      "" "${APP_EXE}"     0 "" "" "A Playstation 2 Emulator"
+  ${EndIf}
 SectionEnd
