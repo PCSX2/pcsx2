@@ -100,13 +100,8 @@ protected:
 
 public:
 	VtlbMemoryReserve( const wxString& name, size_t size );
-	virtual ~VtlbMemoryReserve()
-	{
-		m_reserve.Release();
-	}
 
-	void Reserve( sptr hostptr );
-	virtual void Release();
+	void Reserve( VirtualMemoryManagerPtr allocator, sptr offset );
 
 	virtual void Commit();
 	virtual void Reset();
@@ -124,16 +119,12 @@ class eeMemoryReserve : public VtlbMemoryReserve
 
 public:
 	eeMemoryReserve();
-	virtual ~eeMemoryReserve()
-	{
-		Release();
-	}
+	~eeMemoryReserve();
 
-	void Reserve();
-	void Commit();
-	void Decommit();
-	void Reset();
-	void Release();
+	void Reserve(VirtualMemoryManagerPtr allocator);
+	void Commit() override;
+	void Decommit() override;
+	void Reset() override;
 };
 
 // --------------------------------------------------------------------------------------
@@ -145,16 +136,11 @@ class iopMemoryReserve : public VtlbMemoryReserve
 
 public:
 	iopMemoryReserve();
-	virtual ~iopMemoryReserve()
-	{
-		Release();
-	}
 
-	void Reserve();
-	void Commit();
-	void Decommit();
-	void Release();
-	void Reset();
+	void Reserve(VirtualMemoryManagerPtr allocator);
+	void Commit() override;
+	void Decommit() override;
+	void Reset() override;
 };
 
 // --------------------------------------------------------------------------------------
@@ -166,15 +152,11 @@ class vuMemoryReserve : public VtlbMemoryReserve
 
 public:
 	vuMemoryReserve();
-	virtual ~vuMemoryReserve()
-	{
-		Release();
-	}
+	~vuMemoryReserve();
 
-	void Reserve();
-	void Release();
+	void Reserve(VirtualMemoryManagerPtr allocator);
 
-	void Reset();
+	void Reset() override;
 };
 
 namespace vtlb_private

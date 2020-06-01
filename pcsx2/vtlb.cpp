@@ -844,9 +844,9 @@ VtlbMemoryReserve::VtlbMemoryReserve( const wxString& name, size_t size )
 	m_reserve.SetPageAccessOnCommit( PageAccess_ReadWrite() );
 }
 
-void VtlbMemoryReserve::Reserve( sptr hostptr )
+void VtlbMemoryReserve::Reserve( VirtualMemoryManagerPtr allocator, sptr offset )
 {
-	if (!m_reserve.ReserveAt( hostptr ))
+	if (!m_reserve.Reserve( std::move(allocator), offset ))
 	{
 		throw Exception::OutOfMemory( m_reserve.GetName() )
 			.SetDiagMsg(L"Vtlb memory could not be reserved.")
@@ -874,11 +874,6 @@ void VtlbMemoryReserve::Reset()
 void VtlbMemoryReserve::Decommit()
 {
 	m_reserve.Reset();
-}
-
-void VtlbMemoryReserve::Release()
-{
-	m_reserve.Release();
 }
 
 bool VtlbMemoryReserve::IsCommitted() const
