@@ -387,7 +387,7 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 		{
 			#if _M_SSE >= 0x401
 
-			xyzuvf = xyzuvf.xyzw().min_u32(z_max);
+			xyzuvf = xyzuvf.min_u32(z_max);
 			t = t.insert32<1, 3>(GSVector4::cast(xyzuvf));
 
 			#else
