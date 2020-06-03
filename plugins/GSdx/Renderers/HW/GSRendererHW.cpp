@@ -809,7 +809,7 @@ void GSRendererHW::SwSpriteRender()
 	GSVector4i a_mask = GSVector4i::xff000000().u8to16();  // 0x00FF00000000000000FF000000000000
 
 	bool fb_mask_enabled = m_context->FRAME.FBMSK != 0x0;
-	GSVector4i fb_mask = GSVector4i(m_context->FRAME.FBMSK).xxxx(); // 0x????????????????MMMMMMMMMMMMMMMM
+	GSVector4i fb_mask = GSVector4i(m_context->FRAME.FBMSK).u8to16(); // 0x00AA00BB00GG00RR00AA00BB00GG00RR
 
 	uint8 tex0_tcc = m_context->TEX0.TCC;
 	uint8 alpha_b = m_context->ALPHA.B;
