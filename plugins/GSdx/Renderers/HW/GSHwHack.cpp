@@ -294,16 +294,6 @@ bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Onimusha3(const GSFrameInfo& fi, int& skip)
-{
-	if(fi.TME /*&& (fi.FBP == 0x00000 || fi.FBP == 0x00700)*/ && (fi.TBP0 == 0x01180 || fi.TBP0 == 0x00e00 || fi.TBP0 == 0x01000 || fi.TBP0 == 0x01200) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
-	{
-		skip = 1;
-	}
-
-	return true;
-}
-
 bool GSC_Genji(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -529,28 +519,6 @@ bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip)
 		else if(fi.TPSM == PSM_PSMCT32 && (fi.TPSM | fi.FBP)==0x2c00 && (fi.TBP0 ==0x0ee0) && fi.FBMSK ==0)
 		{
 			skip = 2; // Underwater black screen
-		}
-	}
-
-	return true;
-}
-
-bool GSC_DevilMayCry3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01800 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x01000 && fi.TPSM == PSM_PSMZ16)
-		{
-			// Texture shuffle/depth not handled properly.
-			skip = 32;
-		}
-		if(fi.TME && fi.FBP == 0x01800 && fi.FPSM == PSM_PSMZ32 && fi.TBP0 == 0x0800 && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 16;
-		}
-		if(fi.TME && fi.FBP == 0x01800 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x0 && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 24;
 		}
 	}
 
@@ -1396,13 +1364,11 @@ void GSState::SetupCrcHack()
 
 	if (Dx_and_OGL) {
 		lut[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
-		lut[CRC::DevilMayCry3] = GSC_DevilMayCry3;
 		lut[CRC::GodHand] = GSC_GodHand;
 		lut[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
 		lut[CRC::Kunoichi] = GSC_Kunoichi;
 		lut[CRC::Manhunt2] = GSC_Manhunt2;
 		lut[CRC::MidnightClub3] = GSC_MidnightClub3;
-		lut[CRC::Onimusha3] = GSC_Onimusha3;
 		lut[CRC::SacredBlaze] = GSC_SacredBlaze;
 		lut[CRC::SakuraTaisen] = GSC_SakuraTaisen;
 		lut[CRC::SakuraWarsSoLongMyLove] = GSC_SakuraWarsSoLongMyLove;
