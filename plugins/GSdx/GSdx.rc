@@ -119,10 +119,9 @@ BEGIN
     // Rendering Hacks:
     GROUPBOX        "Rendering Hacks",IDC_STATIC,7,7,196,114,0,WS_EX_TRANSPARENT
     // Column one - HW Hacks
-    CONTROL         "Alpha Stencil",IDC_ALPHASTENCIL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,19,57,8
-    CONTROL         "Auto Flush",IDC_AUTO_FLUSH_HW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,32,55,8
-    CONTROL         "Disable Depth Emulation",IDC_TC_DEPTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,45,92,8
-    CONTROL         "Disable Safe Features",IDC_SAFE_FEATURES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,58,85,8
+    CONTROL         "Auto Flush",IDC_AUTO_FLUSH_HW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,19,55,8
+    CONTROL         "Disable Depth Emulation",IDC_TC_DEPTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,32,92,8
+    CONTROL         "Disable Safe Features",IDC_SAFE_FEATURES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,45,85,8
     // Column two - HW hacks
     CONTROL         "Fast Texture Invalidation",IDC_FAST_TC_INV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,106,19,93,8
     CONTROL         "Frame Buffer Conversion",IDC_CPU_FB_CONVERSION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,106,32,93,8

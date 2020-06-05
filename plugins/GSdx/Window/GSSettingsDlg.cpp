@@ -616,7 +616,6 @@ void GSHacksDlg::OnInit()
 	bool native = upscaling_multiplier == 1;
 
 	CheckDlgButton(m_hWnd, IDC_WILDHACK, theApp.GetConfigB("UserHacks_WildHack"));
-	CheckDlgButton(m_hWnd, IDC_ALPHASTENCIL, theApp.GetConfigB("UserHacks_AlphaStencil"));
 	CheckDlgButton(m_hWnd, IDC_PRELOAD_GS, theApp.GetConfigB("preload_frame_with_gs_data"));
 	CheckDlgButton(m_hWnd, IDC_ALIGN_SPRITE, theApp.GetConfigB("UserHacks_align_sprite_X"));
 	CheckDlgButton(m_hWnd, IDC_TC_DEPTH, theApp.GetConfigB("UserHacks_DisableDepthSupport"));
@@ -674,9 +673,6 @@ void GSHacksDlg::OnInit()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TCOFFSETY), hwhacks);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TCOFFSETY2), hwhacks);
 
-	// Direct3D-only hacks:
-	EnableWindow(GetDlgItem(m_hWnd, IDC_ALPHASTENCIL), !ogl);
-
 	// OpenGL-only hacks:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER), hwhacks && ogl);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_TRI_FILTER_TEXT), hwhacks && ogl);
@@ -704,7 +700,6 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_SKIPDRAWOFFSET);
 	AddTooltip(IDC_OFFSETHACK);
 	AddTooltip(IDC_WILDHACK);
-	AddTooltip(IDC_ALPHASTENCIL);
 	AddTooltip(IDC_ALIGN_SPRITE);
 	AddTooltip(IDC_ROUND_SPRITE);
 	AddTooltip(IDC_TCOFFSETX);
@@ -813,7 +808,6 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_SkipDraw", skipdraw);
 
 			theApp.SetConfig("UserHacks_WildHack", (int)IsDlgButtonChecked(m_hWnd, IDC_WILDHACK));
-			theApp.SetConfig("UserHacks_AlphaStencil", (int)IsDlgButtonChecked(m_hWnd, IDC_ALPHASTENCIL));
 			theApp.SetConfig("preload_frame_with_gs_data", (int)IsDlgButtonChecked(m_hWnd, IDC_PRELOAD_GS));
 			theApp.SetConfig("UserHacks_align_sprite_X", (int)IsDlgButtonChecked(m_hWnd, IDC_ALIGN_SPRITE));
 			theApp.SetConfig("UserHacks_DisableDepthSupport", (int)IsDlgButtonChecked(m_hWnd, IDC_TC_DEPTH));
