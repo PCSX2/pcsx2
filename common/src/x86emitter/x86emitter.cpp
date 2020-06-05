@@ -282,7 +282,7 @@ void EmitSibMagic(uint regfield, const void *address)
     } else {
         pxAssertDev(displacement == (s32)displacement, "SIB target is too far away, needs an indirect register");
         ModRM(0, regfield, ModRm_UseSib);
-        SibSB(0, ModRm_EIZ, ModRm_UseDisp32);
+        SibSB(0, Sib_EIZ, Sib_UseDisp32);
     }
 #endif
 
@@ -353,7 +353,7 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
 
         if (info.Base.IsEmpty()) {
             ModRM(0, regfield, ModRm_UseSib);
-            SibSB(info.Scale, info.Index.Id, ModRm_UseDisp32);
+            SibSB(info.Scale, info.Index.Id, Sib_UseDisp32);
             xWrite<s32>(info.Displacement);
             return;
         } else {
@@ -844,7 +844,7 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
             }
             xWrite8(0x8d);
             ModRM(0, to.Id, ModRm_UseSib);
-            SibSB(src.Scale, src.Index.Id, ModRm_UseDisp32);
+            SibSB(src.Scale, src.Index.Id, Sib_UseDisp32);
             xWrite32(src.Displacement);
             return;
         } else {
