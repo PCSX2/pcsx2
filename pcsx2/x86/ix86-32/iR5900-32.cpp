@@ -85,7 +85,6 @@ static BASEBLOCK *recROM = NULL;		// and here
 static BASEBLOCK *recROM1 = NULL;		// also here
 static BASEBLOCK *recROM2 = NULL;       // also here
 
-
 static BaseBlocks recBlocks;
 static u8* recPtr = NULL;
 static u32 *recConstBufPtr = NULL;
@@ -518,7 +517,6 @@ static void recAlloc()
 	recROM		= basepos; basepos += (Ps2MemSize::Rom / 4);
 	recROM1		= basepos; basepos += (Ps2MemSize::Rom1 / 4);
 	recROM2     = basepos; basepos += (Ps2MemSize::Rom2 / 4);
-
 
 	for (int i = 0; i < 0x10000; i++)
 		recLUT_SetPage(recLUT, 0, 0, 0, i, 0);
