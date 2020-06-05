@@ -517,7 +517,7 @@ static void recAlloc()
 	recRAM		= basepos; basepos += (Ps2MemSize::MainRam / 4);
 	recROM		= basepos; basepos += (Ps2MemSize::Rom / 4);
 	recROM1		= basepos; basepos += (Ps2MemSize::Rom1 / 4);
-    recROM2     = basepos; basepos += (Ps2MemSize::Rom2 / 4);
+	recROM2     = basepos; basepos += (Ps2MemSize::Rom2 / 4);
 
 
 	for (int i = 0; i < 0x10000; i++)
@@ -549,11 +549,12 @@ static void recAlloc()
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0xa000, i, i - 0x1e00);
 	}
 
-	for (int i = 0x1e40; i < 0x1e48; i++) {
-        recLUT_SetPage(recLUT, hwLUT, recROM2, 0x0000, i, i - 0x1e40);
-        recLUT_SetPage(recLUT, hwLUT, recROM2, 0x8000, i, i - 0x1e40);
-        recLUT_SetPage(recLUT, hwLUT, recROM2, 0xa000, i, i - 0x1e40);
-    }
+	for (int i = 0x1e40; i < 0x1e48; i++) 
+	{
+		recLUT_SetPage(recLUT, hwLUT, recROM2, 0x0000, i, i - 0x1e40);
+		recLUT_SetPage(recLUT, hwLUT, recROM2, 0x8000, i, i - 0x1e40);
+		recLUT_SetPage(recLUT, hwLUT, recROM2, 0xa000, i, i - 0x1e40);
+	}
 
     if( recConstBuf == NULL )
 		recConstBuf = (u32*) _aligned_malloc( RECCONSTBUF_SIZE * sizeof(*recConstBuf), 16 );
