@@ -287,6 +287,16 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 	GSVector4i off = (GSVector4i)m_context->XYOFFSET;
 	GSVector4 tsize = GSVector4(0x10000 << m_context->TEX0.TW, 0x10000 << m_context->TEX0.TH, 1, 0);
 
+	#if _M_SSE >= 0x401
+
+	GSVector4i z_max = GSVector4i::xffffffff().srl32(GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt * 8);
+
+	#else
+
+	uint32_t z_max = 0xffffffff >> (GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt * 8);
+
+	#endif
+
 	for(int i = (int)m_vertex.next; i > 0; i--, src++, dst++)
 	{
 		GSVector4 stcq = GSVector4::load<true>(&src->m[0]); // s t rgba q
@@ -351,10 +361,12 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 		{
 			#if _M_SSE >= 0x401
 
+			xyzuvf = xyzuvf.min_u32(z_max);
 			t = t.insert32<1, 3>(GSVector4::cast(xyzuvf));
 
 			#else
 
+			z = std::min(z, z_max);
 			t = t.insert32<0, 3>(GSVector4::cast(GSVector4i::load(z)));
 
 			#endif
@@ -1326,9 +1338,12 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 	if(zwrite || ztest)
 	{
+		uint32_t z_max = 0xffffffff >> (GSLocalMemory::m_psm[context->ZBUF.PSM].fmt * 8);
+
 		gd.sel.zpsm = GSLocalMemory::m_psm[context->ZBUF.PSM].fmt;
 		gd.sel.ztst = ztest ? context->TEST.ZTST : (int)ZTST_ALWAYS;
 		gd.sel.zoverflow = (uint32)GSVector4i(m_vt.m_max.p).z == 0x80000000U;
+		gd.sel.zclamp = (uint32)GSVector4i(m_vt.m_max.p).z > z_max;
 	}
 
 	#if _M_SSE >= 0x501

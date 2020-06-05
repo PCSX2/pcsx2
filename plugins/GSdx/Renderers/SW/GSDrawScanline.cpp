@@ -587,6 +587,9 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 						zdo -= GSVector8i::x80000000();
 					}
 
+					if (sel.zclamp)
+						zso = zso.min_u32(GSVector8i::xffffffff().srl32(sel.zpsm * 8));
+
 					switch(sel.ztst)
 					{
 					case ZTST_GEQUAL: test |= zso < zdo; break;
@@ -1219,6 +1222,9 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 					zs = zs.blend8(zd, zm);
 				}
 
+				if (sel.zclamp)
+					zs = zs.min_u32(GSVector8i::xffffffff().srl32(sel.zpsm * 8));
+
 				bool fast = sel.ztest ? sel.zpsm < 2 : sel.zpsm == 0 && sel.notest;
 
 				if(sel.notest)
@@ -1694,6 +1700,16 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 					{
 						zso -= GSVector4i::x80000000();
 						zdo -= GSVector4i::x80000000();
+					}
+
+					if (sel.zclamp)
+					{
+						const unsigned int z_max = 0xffffffff >> (sel.zpsm * 8);
+
+						zso.u32[0] = std::min(z_max, zso.u32[0]);
+						zso.u32[1] = std::min(z_max, zso.u32[1]);
+						zso.u32[2] = std::min(z_max, zso.u32[2]);
+						zso.u32[3] = std::min(z_max, zso.u32[3]);
 					}
 
 					switch(sel.ztst)
@@ -2331,6 +2347,16 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 				if(sel.ztest && sel.zpsm < 2)
 				{
 					zs = zs.blend8(zd, zm);
+				}
+
+				if (sel.zclamp)
+				{
+					const unsigned int z_max = 0xffffffff >> (sel.zpsm * 8);
+
+					zs.u32[0] = std::min(z_max, zs.u32[0]);
+					zs.u32[1] = std::min(z_max, zs.u32[1]);
+					zs.u32[2] = std::min(z_max, zs.u32[2]);
+					zs.u32[3] = std::min(z_max, zs.u32[3]);
 				}
 
 				bool fast = sel.ztest ? sel.zpsm < 2 : sel.zpsm == 0 && sel.notest;

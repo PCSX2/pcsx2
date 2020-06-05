@@ -55,19 +55,20 @@ union GSScanlineSelector
 		uint32 zwrite:1; // 35
 		uint32 ztest:1; // 36
 		uint32 zoverflow:1; // 37 (z max >= 0x80000000)
-		uint32 wms:2; // 38
-		uint32 wmt:2; // 40
-		uint32 datm:1; // 42
-		uint32 colclamp:1; // 43
-		uint32 fba:1; // 44
-		uint32 dthe:1; // 45
-		uint32 prim:2; // 46
+		uint32 zclamp:1; // 38
+		uint32 wms:2; // 39
+		uint32 wmt:2; // 41
+		uint32 datm:1; // 43
+		uint32 colclamp:1; // 44
+		uint32 fba:1; // 45
+		uint32 dthe:1; // 46
+		uint32 prim:2; // 47
 
-		uint32 edge:1; // 48
-		uint32 tw:3; // 49 (encodes values between 3 -> 10, texture cache makes sure it is at least 3)
-		uint32 lcm:1; // 52
-		uint32 mmin:2; // 53
-		uint32 notest:1; // 54 (no ztest, no atest, no date, no scissor test, and horizontally aligned to 4 pixels)
+		uint32 edge:1; // 49
+		uint32 tw:3; // 50 (encodes values between 3 -> 10, texture cache makes sure it is at least 3)
+		uint32 lcm:1; // 53
+		uint32 mmin:2; // 54
+		uint32 notest:1; // 55 (no ztest, no atest, no date, no scissor test, and horizontally aligned to 4 pixels)
 		// TODO: 1D texture flag? could save 2 texture reads and 4 lerps with bilinear, and also the texture coordinate clamp/wrap code in one direction
 
 		uint32 breakpoint:1; // Insert a trap to stop the program, helpful to stop debugger on a program
