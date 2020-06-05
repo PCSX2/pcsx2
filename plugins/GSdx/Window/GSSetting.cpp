@@ -202,9 +202,6 @@ const char* dialog_message(int ID, bool* updateText) {
 				"It will amplify RAM/VRAM spikes. Other games might be affected as well.";
 		// Windows only options.
 #ifdef _WIN32
-		case IDC_ALPHASTENCIL:
-			return "Improves shadows/transparency rendering in games such as Amagami.\n\n"
-				"Note: It will break transparency rendering in many games, avoid using it.";
 		case IDC_ACCURATE_BLEND_UNIT_D3D11:
 			return "Control the accuracy level of the GS blending unit emulation.\n\n"
 				"None:\nFast but introduces various rendering issues.\n"
