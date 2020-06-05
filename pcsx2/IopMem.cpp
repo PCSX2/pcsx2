@@ -96,9 +96,10 @@ void iopMemoryReserve::Reset()
 		psxMemWLUT[i + 0x2000 + 0x1e00] = (uptr)&eeMem->ROM1[i << 16];
 	}
 
-	for (int i = 0; i < 0x0008; i++) {
-        psxMemWLUT[i + 0x2000 + 0x1e40] = (uptr)&eeMem->ROM2[i << 16];
-    }
+	for (int i = 0; i < 0x0008; i++) 
+	{
+		psxMemWLUT[i + 0x2000 + 0x1e40] = (uptr)&eeMem->ROM2[i << 16];
+	}
 
 	// sif!! (which is read only? (air))
 	psxMemWLUT[0x2000 + 0x1d00] = (uptr)iopMem->Sif;
