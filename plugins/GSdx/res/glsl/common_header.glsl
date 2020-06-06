@@ -95,6 +95,9 @@ layout(std140, binding = 21) uniform cb21
     vec2 TextureScale;
     vec2 TC_OffsetHack;
 
+	float MaxDepthPS;
+	vec3 pad_cb21;
+
     mat4 DitherMatrix;
 };
 #endif

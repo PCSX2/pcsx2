@@ -163,12 +163,25 @@ void GSRendererDX11::EmulateZbuffer()
 	// Clamping is done after rasterization.
 	const uint32 max_z = 0xFFFFFFFF >> (GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt * 8);
 	const bool clamp_z = (uint32)(GSVector4i(m_vt.m_max.p).z) > max_z;
+
 	vs_cb.MaxDepth = GSVector2i(0xFFFFFFFF);
+	ps_cb.Af_MaxDepth.y = 1.0f;
+	m_ps_sel.zclamp = 0;
+
 	if (clamp_z)
 	{
-		// FIXME: Do z clamping for sprites on vs, triangles on ps.
-		vs_cb.MaxDepth = GSVector2i(max_z);
+		if (m_vt.m_primclass == GS_SPRITE_CLASS || m_vt.m_primclass == GS_POINT_CLASS)
+		{
+			vs_cb.MaxDepth = GSVector2i(max_z);
+		}
+		else
+		{
+			ps_cb.Af_MaxDepth.y = max_z * ldexpf(1, -32);
+			m_ps_sel.zclamp = 1;
+		}
 	}
+
+	
 
 	GSVertex* v = &m_vertex.buff[0];
 	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
@@ -581,7 +594,7 @@ void GSRendererDX11::EmulateBlending()
 
 		// Require the fix alpha vlaue
 		if (ALPHA.C == 2)
-			ps_cb.Af.x = (float)ALPHA.FIX / 128.0f;
+			ps_cb.Af_MaxDepth.x = (float)ALPHA.FIX / 128.0f;
 	}
 	else
 	{

@@ -877,6 +877,10 @@ void ps_main()
 // #endif
     SV_Target0 = C / 255.0f;
     SV_Target1 = vec4(alpha_blend);
+
+#if PS_ZCLAMP
+	gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
+#endif 
 }
 
 #endif
