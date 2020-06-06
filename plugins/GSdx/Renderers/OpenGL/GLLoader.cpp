@@ -315,7 +315,7 @@ namespace GLLoader {
 					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
 		}
 
-		if (vendor_id_intel && !GLExtension::Has("GL_ARB_texture_barrier") && !GLExtension::Has("GL_ARB_direct_state_access")) {
+		if (vendor_id_intel && (!GLExtension::Has("GL_ARB_texture_barrier") || !GLExtension::Has("GL_ARB_direct_state_access"))) {
 			// Assume that driver support is good when texture barrier and DSA is supported, disable the log then.
 			fprintf_once(stderr, "The OpenGL renderer is inefficient on Intel GPUs due to an inefficient driver.\n"
 					"Check out the link below for further information.\n"
