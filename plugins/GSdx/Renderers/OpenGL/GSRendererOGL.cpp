@@ -525,7 +525,7 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 		// fixes shadows in Superman shadows of Apokolips.
 		const bool sw_fbmask_colclip = !m_require_one_barrier && m_ps_sel.fbmask;
 		const bool free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || blend_non_recursive || sw_fbmask_colclip;
-		GL_INS("COLCLIP Info (Blending: %d/%d/%d/%d, SW FBMASK: %d, OVERLAP: %d)",
+		GL_DBG("COLCLIP Info (Blending: %d/%d/%d/%d, SW FBMASK: %d, OVERLAP: %d)",
 			ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D, sw_fbmask_colclip, m_prim_overlap);
 		if (free_colclip) {
 			// The fastest algo that requires a single pass
@@ -1213,7 +1213,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (m_ps_sel.dither)
 	{
-		GL_INS("DITHERING mode ENABLED (%d)", m_dithering);
+		GL_DBG("DITHERING mode ENABLED (%d)", m_dithering);
 
 		m_ps_sel.dither = m_dithering;
 		ps_cb.DitherMatrix[0] = GSVector4(m_env.DIMX.DM00, m_env.DIMX.DM01, m_env.DIMX.DM02, m_env.DIMX.DM03);
