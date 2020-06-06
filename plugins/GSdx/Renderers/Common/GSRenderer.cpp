@@ -222,7 +222,7 @@ bool GSRenderer::Merge(int field)
 			off.x = tex[i]->GetScale().x * frame_diff.x;
 		}
 
-		if(display_diff.y >= 4) // Shouldn't this be >= 2?
+		if(display_diff.y) // Shouldn't this be >= 2?
 		{
 			off.y = tex[i]->GetScale().y * display_diff.y;
 
@@ -231,10 +231,10 @@ bool GSRenderer::Merge(int field)
 				off.y /= 2;
 			}
 		}
-		else if(display_diff.y != frame_diff.y)
-		{
-			off.y = tex[i]->GetScale().y * frame_diff.y;
-		}
+		//else if(display_diff.y != frame_diff.y)
+		//{
+		//	off.y = tex[i]->GetScale().y * frame_diff.y;
+		//}
 
 		dst[i] = GSVector4(off).xyxy() + scale * GSVector4(r.rsize());
 

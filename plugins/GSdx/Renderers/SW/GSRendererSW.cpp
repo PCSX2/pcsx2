@@ -398,6 +398,7 @@ void GSRendererSW::Draw()
 	sd->vertex_count = m_vertex.next;
 	sd->index = (uint32*)(sd->buff + sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1));
 	sd->index_count = m_index.tail;
+	sd->scanline_mask = m_env.SCANMSK.MSK;
 
 	// skip per pixel division if q is constant.
 	// Optimize the division by 1 with a nop. It also means that GS_SPRITE_CLASS must be processed when !m_vt.m_eq.q.
