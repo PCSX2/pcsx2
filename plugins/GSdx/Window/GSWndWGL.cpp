@@ -120,7 +120,7 @@ void GSWndWGL::CreateContext(int major, int minor)
 		win_error("Failed to create a 3.x context with compatible flags");
 
 	m_context = context30;
-	fprintf(stderr, "3.x GL context successfully created\n");
+	fprintf(stdout, "3.x GL context successfully created\n");
 }
 
 void GSWndWGL::AttachContext()
