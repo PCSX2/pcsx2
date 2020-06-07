@@ -97,12 +97,16 @@ else()
         Linux/ConfigDebug.cpp
         Linux/ConfigSoundTouch.cpp
         Linux/Dialogs.cpp
+        wx/wxConfig.cpp
+        wx/wxConfigDebug.cpp
+        wx/wxConfigSoundtouch.cpp
         )
 
     LIST(APPEND spu2xHeaders
         Linux/Alsa.h
         Linux/Config.h
         Linux/Dialogs.h
+        wx/wxConfig.h
         )
 
     include_directories(Linux)

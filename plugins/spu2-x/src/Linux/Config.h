@@ -87,6 +87,20 @@ extern int dspPluginModule;
 extern bool dspPluginEnabled;
 extern int SynchMode;
 
+#ifdef SPU2X_PORTAUDIO
+extern u32 OutputAPI;
+#endif
+extern u32 SdlOutputAPI;
+
+#ifdef PCSX2_DEVBUILD
+const int LATENCY_MAX = 3000;
+#else
+const int LATENCY_MAX = 750;
+#endif
+
+const int LATENCY_MIN = 3;
+const int LATENCY_MIN_TIMESTRETCH = 15;
+
 namespace SoundtouchCfg
 {
 void ReadSettings();
@@ -96,6 +110,8 @@ void DisplayDialog();
 
 void ReadSettings();
 void WriteSettings();
+void DisplayDialog();
+
 void configure();
 extern wxFileConfig *spuConfig;
 extern bool pathSet;
