@@ -33,11 +33,16 @@ class Dialog : public wxDialog
 
     wxArrayString m_interpolation, m_module, m_portaudio, m_sdl, m_sync;
     wxChoice *m_inter_select, *m_module_select, *m_portaudio_select, *m_sdl_select, *m_sync_select;
+    wxStaticText *m_portaudio_text, *m_sdl_text;
 
+    wxCheckBox *effect_check, *dealias_check, *debug_check;
     wxSlider *m_latency_slider, *m_volume_slider;
-
+    wxButton *launch_debug_dialog, *launch_adv_dialog;
 public:
     Dialog();
-    void InitDialog();
-    //void show();
+    void Display();
+    void ResetToValues();
+    void SaveValues();
+    void Reconfigure();
+    void CallReconfigure(wxCommandEvent &event);
 };

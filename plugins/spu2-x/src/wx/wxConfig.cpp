@@ -50,18 +50,17 @@ Dialog::Dialog(): wxDialog(nullptr, wxID_ANY, "SPU2-X Config", wxDefaultPosition
     m_interpolation.Add("Catmull-Rom (PS2-like/slow)");
 
     m_inter_select = new wxChoice(m_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_interpolation);
-    m_inter_select->SetSelection(Interpolation);
 
-    wxCheckBox *effect_check = new wxCheckBox(m_panel, wxID_ANY, "Disable Effects Processing");
-    wxCheckBox *dealias_check = new wxCheckBox(m_panel, wxID_ANY, "Use the de-alias filter(Overemphasizes the highs)");
+    effect_check = new wxCheckBox(m_panel, wxID_ANY, "Disable Effects Processing");
+    dealias_check = new wxCheckBox(m_panel, wxID_ANY, "Use the de-alias filter(Overemphasizes the highs)");
 
     m_mix_box->Add(m_inter_select);
     m_mix_box->Add(effect_check);
     m_mix_box->Add(dealias_check);
 
     // Debug Settings
-    wxCheckBox *debug_check = new wxCheckBox(m_panel, wxID_ANY, "Enable Debug Options");
-    wxButton *launch_debug_dialog = new wxButton(m_panel, wxID_ANY, "Configure...");
+    debug_check = new wxCheckBox(m_panel, wxID_ANY, "Enable Debug Options");
+    launch_debug_dialog = new wxButton(m_panel, wxID_ANY, "Configure...");
 
     m_debug_box->Add(debug_check);
     m_debug_box->Add(launch_debug_dialog);
@@ -75,11 +74,11 @@ Dialog::Dialog(): wxDialog(nullptr, wxID_ANY, "SPU2-X Config", wxDefaultPosition
     m_module.Add("SDL Audio (Recommended for PulseAudio)");
     //m_module.Add("Alsa (probably doesn't work)");
     m_module_select = new wxChoice(m_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_module);
-    m_module_select->SetSelection(OutputModule);
     m_output_box->Add(m_module_select);
 
     // Portaudio
-    m_portaudio_box->Add(new wxStaticText(m_panel, wxID_ANY, "Portaudio API"));
+    m_portaudio_text = new wxStaticText(m_panel, wxID_ANY, "Portaudio API");
+    m_portaudio_box->Add(m_portaudio_text);
     #ifdef __linux__
     m_portaudio.Add("ALSA (recommended)");
     m_portaudio.Add("OSS (legacy)");
@@ -90,17 +89,16 @@ Dialog::Dialog(): wxDialog(nullptr, wxID_ANY, "SPU2-X Config", wxDefaultPosition
     m_portaudio.Add("OSS");
     #endif
     m_portaudio_select = new wxChoice(m_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_portaudio);
-    m_portaudio_select->SetSelection(OutputAPI);
     m_portaudio_box->Add(m_portaudio_select);
 
     // SDL
-    m_sdl_box->Add(new wxStaticText(m_panel, wxID_ANY, "SDL API"));
+    m_sdl_text = new wxStaticText(m_panel, wxID_ANY, "SDL API");
+    m_sdl_box->Add(m_sdl_text);
 
     for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i)
         m_sdl.Add(SDL_GetAudioDriver(i));
 
     m_sdl_select = new wxChoice(m_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_sdl);
-    m_sdl_select->SetSelection(SdlOutputAPI);
     m_sdl_box->Add(m_sdl_select);
 
     m_output_box->Add(m_portaudio_box, wxSizerFlags().Expand());
@@ -112,7 +110,6 @@ Dialog::Dialog(): wxDialog(nullptr, wxID_ANY, "SPU2-X Config", wxDefaultPosition
     m_sync.Add("Async Mix (Breaks some games!)");
     m_sync.Add("None (Audio can skip.)");
     m_sync_select = new wxChoice(m_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_sync);
-    m_sync_select->SetSelection(SynchMode);
     m_right_box->Add(m_sync_select, wxSizerFlags().Expand());
 
     // Latency Slider
@@ -129,24 +126,108 @@ Dialog::Dialog(): wxDialog(nullptr, wxID_ANY, "SPU2-X Config", wxDefaultPosition
     m_volume_box->Add(m_volume_slider, wxSizerFlags().Expand());
     m_right_box->Add(m_volume_box, wxSizerFlags().Expand());
 
-    wxButton *launch_adv_dialog = new wxButton(m_panel, wxID_ANY, "Advanced...");
+    launch_adv_dialog = new wxButton(m_panel, wxID_ANY, "Advanced...");
     m_right_box->Add(launch_adv_dialog);
 
     m_top_box->Add(m_left_box, wxSizerFlags().Expand());
     m_top_box->Add(m_right_box, wxSizerFlags().Expand());
 
     m_panel->SetSizerAndFit(m_top_box);
+
+    // Bind(wxEVT_BUTTON, &Dialog::OnButtonClicked, this);
+    Bind(wxEVT_CHOICE, &Dialog::CallReconfigure, this);
+    Bind(wxEVT_CHECKBOX, &Dialog::CallReconfigure, this);
 }
 
-void Dialog::InitDialog()
+
+void Dialog::Reconfigure()
 {
+    const int mod = m_module_select->GetCurrentSelection();
+
+    switch(mod)
+    {
+        case 0:
+            m_portaudio_text->Hide();
+            m_portaudio_select->Hide();
+
+            m_sdl_text->Hide();
+            m_sdl_select->Hide();
+            break;
+
+        case 1:
+            m_portaudio_text->Show();
+            m_portaudio_select->Show();
+
+            m_sdl_text->Hide();
+            m_sdl_select->Hide();
+            break;
+
+        case 2:
+            m_portaudio_text->Hide();
+            m_portaudio_select->Hide();
+
+            m_sdl_text->Show();
+            m_sdl_select->Show();
+            break;
+
+        default:
+            m_portaudio_text->Hide();
+            m_portaudio_select->Hide();
+
+            m_sdl_text->Hide();
+            m_sdl_select->Hide();
+            break;
+    }
+    m_right_box->Layout();
+
+    if (debug_check->GetValue())
+        launch_debug_dialog->Enable();
+    else
+        launch_debug_dialog->Disable();
+}
+
+void Dialog::CallReconfigure(wxCommandEvent &event)
+{
+    Reconfigure();
+}
+
+void Dialog::ResetToValues()
+{
+    m_inter_select->SetSelection(Interpolation);
+    m_module_select->SetSelection(OutputModule);
+    m_portaudio_select->SetSelection(OutputAPI);
+    m_sdl_select->SetSelection(SdlOutputAPI);
+    m_sync_select->SetSelection(SynchMode);
+
+    effect_check->SetValue(EffectsDisabled);
+    dealias_check->SetValue(postprocess_filter_dealias);
+    debug_check->SetValue(DebugEnabled);
+
+    m_volume_slider->SetValue(FinalVolume * 100);
+    m_latency_slider->SetValue(SndOutLatencyMS);
+    Reconfigure();
+}
+
+void Dialog::SaveValues()
+{
+    Interpolation = m_inter_select->GetSelection();
+    OutputModule = m_module_select->GetSelection();
+    OutputAPI = m_portaudio_select->GetSelection();
+    SdlOutputAPI = m_sdl_select->GetSelection();
+    SynchMode = m_sync_select->GetSelection();
+
+    EffectsDisabled = effect_check->GetValue();
+    postprocess_filter_dealias = dealias_check->GetValue();
+    DebugEnabled = debug_check->GetValue();
+
+    FinalVolume = m_volume_slider->GetValue() / 100.0;
+    SndOutLatencyMS = m_latency_slider->GetValue();
 }
 
 // Main
-void DisplayDialog()
+void Dialog::Display()
 {
-    Dialog dialog;
-
-    dialog.InitDialog();
-    dialog.ShowModal();
+    ResetToValues();
+    ShowModal();
+    SaveValues();
 }

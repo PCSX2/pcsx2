@@ -22,6 +22,7 @@
 #ifdef __unix__
 #include <SDL.h>
 #include <SDL_audio.h>
+#include "wx/wxConfig.h"
 #endif
 #ifdef __APPLE__
 #include <dispatch/dispatch.h>
@@ -240,9 +241,11 @@ void configure()
     // (Blocks submitted to the main queue by dispatch_async are run by its CFRunLoop)
     dispatch_async(dispatch_get_main_queue(), ^{
 #endif
+    Dialog dialog;
+
     initIni();
     ReadSettings();
-    DisplayDialog();
+    dialog.Display();
     WriteSettings();
     delete spuConfig;
     spuConfig = nullptr;
