@@ -37,6 +37,7 @@ namespace x86Emitter
 
 void _xMovRtoR(const xRegisterInt &to, const xRegisterInt &from)
 {
+    //printf("jc mov 1\n");
     pxAssert(to.GetOperandSize() == from.GetOperandSize());
 
     if (to == from)
@@ -48,53 +49,65 @@ void _xMovRtoR(const xRegisterInt &to, const xRegisterInt &from)
 void xImpl_Mov::operator()(const xRegisterInt &to, const xRegisterInt &from) const
 {
     // FIXME WTF?
+    //printf("jc mov 2\n");
     _xMovRtoR(to, from);
 }
 
 void xImpl_Mov::operator()(const xIndirectVoid &dest, const xRegisterInt &from) const
 {
+    //printf("jc mov 3\n");
     // mov eax has a special from when writing directly to a DISP32 address
     // (sans any register index/base registers).
 
     if (from.IsAccumulator() && dest.Index.IsEmpty() && dest.Base.IsEmpty()) {
-// FIXME: in 64 bits, it could be 8B whereas Displacement is limited to 4B normally
-#ifdef __M_X86_64
-        pxAssert(0);
-#endif
+
         xOpAccWrite(from.GetPrefix16(), from.Is8BitOp() ? x86_Opcode_MOV_Ob_AL : x86_Opcode_MOV_Ov_eAX, from.Id, dest);
-        xWrite32(dest.Displacement);
+        #ifdef __M_X86_64
+          xWrite64(dest.Displacement);
+        #else
+          xWrite32(dest.Displacement);
+        #endif
     } else {
         xOpWrite(from.GetPrefix16(), from.Is8BitOp() ? x86_Opcode_MOV_Eb_Gb  : x86_Opcode_MOV_Ev_Gv, from.Id, dest);
     }
 }
 
+
+
 void xImpl_Mov::operator()(const xRegisterInt &to, const xIndirectVoid &src) const
+
 {
+    //printf("jc mov 5\n");
     // mov eax has a special from when reading directly from a DISP32 address
     // (sans any register index/base registers).
 
     if (to.IsAccumulator() && src.Index.IsEmpty() && src.Base.IsEmpty()) {
-// FIXME: in 64 bits, it could be 8B whereas Displacement is limited to 4B normally
-#ifdef __M_X86_64
-        pxAssert(0);
-#endif
+
         xOpAccWrite(to.GetPrefix16(), to.Is8BitOp() ? x86_Opcode_MOV_AL_Ob : x86_Opcode_MOV_eAX_Ov, to, src);
-        xWrite32(src.Displacement);
+        #ifdef __M_X86_64
+        //printf("jc move 5 sizeof(src.Displacement) = %i, src.Displacement=0x%lx\n",sizeof(src.Displacement),src.Displacement);
+          xWrite64(src.Displacement);
+        #else
+          xWrite32(src.Displacement);
+        #endif
     } else {
+        //printf("jc move 5 xOpWrite\n");
         xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? x86_Opcode_MOV_Gb_Eb : x86_Opcode_MOV_Gv_Ev, to, src);
     }
 }
 
 void xImpl_Mov::operator()(const xIndirect64orLess &dest, int imm) const
 {
+    //printf("jc mov 6\n");
     xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? x86_Opcode_MOV_Eb_Ib : x86_Opcode_MOV_Ev_Iv, 0, dest);
     dest.xWriteImm(imm);
 }
 
 // preserve_flags  - set to true to disable optimizations which could alter the state of
 //   the flags (namely replacing mov reg,0 with xor).
-void xImpl_Mov::operator()(const xRegisterInt &to, int imm, bool preserve_flags) const
+void xImpl_Mov::operator()(const xRegisterInt &to, sptr imm, bool preserve_flags) const
 {
+    //printf("jc mov 7\n");
     if (!preserve_flags && (imm == 0))
         _g1_EmitOp(G1Type_XOR, to, to);
     else {
