@@ -130,6 +130,9 @@ static DynGenFunc* _DynGen_JITCompile()
 	xMOV( eax, ptr[&psxRegs.pc] );
 	xMOV( ebx, eax );
 	xSHR( eax, 16 );
+    #ifdef __M_X86_64
+      #warning "JC: fix me, see iR5900-32.cpp"
+    #endif
 	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
 	xJMP( ptr32[ecx+ebx] );
 
@@ -146,11 +149,15 @@ static DynGenFunc* _DynGen_JITCompileInBlock()
 // called when jumping to variable pc address
 static DynGenFunc* _DynGen_DispatcherReg()
 {
+    printf("jc iR3000A.cpp static DynGenFunc* _DynGen_DispatcherReg()\n");
 	u8* retval = xGetPtr();
 
 	xMOV( eax, ptr[&psxRegs.pc] );
 	xMOV( ebx, eax );
 	xSHR( eax, 16 );
+    #ifdef __M_X86_64
+      #warning "JC: fix me, see iR5900-32.cpp"
+    #endif
 	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
 	xJMP( ptr32[ecx+ebx] );
 
@@ -169,6 +176,7 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	u8* retval = xGetPtr();
 
 	{ // Properly scope the frame prologue/epilogue
+        
 #ifdef ENABLE_VTUNE
 		xScopedStackFrame frame(true);
 #else
