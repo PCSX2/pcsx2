@@ -220,11 +220,6 @@ void WriteSettings()
     DebugConfig::WriteSettings();
 }
 
-void advanced_dialog()
-{
-    SoundtouchCfg::DisplayDialog();
-}
-
 void configure()
 {
 #ifdef __APPLE__

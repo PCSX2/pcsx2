@@ -98,7 +98,6 @@ else()
         Linux/ConfigSoundTouch.cpp
         Linux/Dialogs.cpp
         wx/wxConfig.cpp
-        wx/wxConfigSoundtouch.cpp
         )
 
     LIST(APPEND spu2xHeaders

@@ -18,10 +18,6 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
-#if defined(__unix__)
-#include <gtk/gtk.h>
-#endif
-
 #include <string>
 #include <wx/fileconf.h>
 
@@ -105,7 +101,6 @@ namespace SoundtouchCfg
 {
 void ReadSettings();
 void WriteSettings();
-void DisplayDialog();
 }; // namespace SoundtouchCfg
 
 void ReadSettings();

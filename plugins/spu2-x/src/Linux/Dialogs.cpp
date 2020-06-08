@@ -21,7 +21,7 @@
 #include <cstring>
 
 #if defined(__unix__)
-#include <gtk/gtk.h>
+#include <wx/wx.h>
 
 void SysMessage(const char *fmt, ...)
 {
@@ -35,14 +35,8 @@ void SysMessage(const char *fmt, ...)
     if (msg[strlen(msg) - 1] == '\n')
         msg[strlen(msg) - 1] = 0;
 
-    GtkWidget *dialog;
-    dialog = gtk_message_dialog_new(NULL,
-                                    GTK_DIALOG_DESTROY_WITH_PARENT,
-                                    GTK_MESSAGE_INFO,
-                                    GTK_BUTTONS_OK,
-                                    "%s", msg);
-    gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
+    wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+    dialog.ShowModal();
 }
 
 void SysMessage(const wchar_t *fmt, ...)
@@ -53,14 +47,8 @@ void SysMessage(const wchar_t *fmt, ...)
     msg.PrintfV(fmt, list);
     va_end(list);
 
-    GtkWidget *dialog;
-    dialog = gtk_message_dialog_new(NULL,
-                                    GTK_DIALOG_DESTROY_WITH_PARENT,
-                                    GTK_MESSAGE_INFO,
-                                    GTK_BUTTONS_OK,
-                                    "%s", msg.ToUTF8().data());
-    gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
+    wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+    dialog.ShowModal();
 }
 #endif
 

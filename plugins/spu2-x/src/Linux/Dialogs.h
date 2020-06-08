@@ -20,7 +20,6 @@
 
 #include "../Global.h"
 #include "../Config.h"
-#include "Utilities/gtkGuiTools.h"
 
 namespace DebugConfig
 {
