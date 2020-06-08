@@ -99,6 +99,19 @@ const int LATENCY_MIN_TIMESTRETCH = 15;
 
 namespace SoundtouchCfg
 {
+extern const int SequenceLen_Min;
+extern const int SequenceLen_Max;
+
+extern const int SeekWindow_Min;
+extern const int SeekWindow_Max;
+
+extern const int Overlap_Min;
+extern const int Overlap_Max;
+
+extern int SequenceLenMS;
+extern int SeekWindowMS;
+extern int OverlapMS;
+
 void ReadSettings();
 void WriteSettings();
 }; // namespace SoundtouchCfg
