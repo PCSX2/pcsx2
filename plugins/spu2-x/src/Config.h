@@ -92,7 +92,22 @@ extern bool dspPluginEnabled;
 
 namespace SoundtouchCfg
 {
+extern const int SequenceLen_Min;
+extern const int SequenceLen_Max;
+
+extern const int SeekWindow_Min;
+extern const int SeekWindow_Max;
+
+extern const int Overlap_Min;
+extern const int Overlap_Max;
+
+extern int SequenceLenMS;
+extern int SeekWindowMS;
+extern int OverlapMS;
+
 extern void ApplySettings(soundtouch::SoundTouch &sndtouch);
+extern void WriteSettings();
+extern void ReadSettings();
 }
 
 //////

@@ -24,6 +24,27 @@
 #include <SDL_audio.h>
 #include "Linux/Config.h"
 #endif
+namespace SoundtouchCfg
+{
+class AdvDialog : public wxDialog
+{
+    wxPanel *m_panel;
+    wxBoxSizer *m_adv_box, *m_babble_box;
+
+    wxButton *reset_button;
+    wxStaticText *m_adv_text, *m_adv_text2, *m_adv_text3;
+    wxSlider *seq_slider, *seek_slider, *overlap_slider;
+    wxStaticBoxSizer *seq_box, *seek_box, *overlap_box;
+
+public:
+    AdvDialog();
+    void Display();
+    void LoadValues();
+    void SaveValues();
+    void Reset();
+    void CallReset(wxCommandEvent &event);
+};
+}; // namespace SoundtouchCfg
 
 class DebugDialog : public wxDialog
 {
@@ -60,7 +81,8 @@ class Dialog : public wxDialog
     wxSlider *m_latency_slider, *m_volume_slider;
     wxButton *launch_debug_dialog, *launch_adv_dialog;
 
-    DebugDialog debug;
+    DebugDialog debug_dialog;
+    SoundtouchCfg::AdvDialog adv_dialog;
 
 public:
     Dialog();

@@ -35,7 +35,7 @@ Dialog::Dialog()
     m_output_box = new wxStaticBoxSizer(wxVERTICAL, m_panel, "Output Settings");
 
     // Mixing Settings
-    m_mix_box->Add(new wxStaticText(m_panel, wxID_ANY, "Interpolation"));
+    m_mix_box->Add(new wxStaticText(m_panel, wxID_ANY, "Interpolation"), wxSizerFlags().Centre());
 
     m_interpolation.Add("Nearest (Fastest/bad quality)");
     m_interpolation.Add("Linear (Simple/okay sound)");
@@ -48,9 +48,9 @@ Dialog::Dialog()
     effect_check = new wxCheckBox(m_panel, wxID_ANY, "Disable Effects Processing (Speedup)");
     dealias_check = new wxCheckBox(m_panel, wxID_ANY, "Use the de-alias filter (Overemphasizes the highs)");
 
-    m_mix_box->Add(m_inter_select);
-    m_mix_box->Add(effect_check);
-    m_mix_box->Add(dealias_check);
+    m_mix_box->Add(m_inter_select, wxSizerFlags().Centre());
+    m_mix_box->Add(effect_check, wxSizerFlags().Centre());
+    m_mix_box->Add(dealias_check, wxSizerFlags().Centre());
 
     // Debug Settings
     debug_check = new wxCheckBox(m_panel, wxID_ANY, "Enable Debug Options");
@@ -62,16 +62,16 @@ Dialog::Dialog()
     // Output Settings
 
     // Module
-    m_output_box->Add(new wxStaticText(m_panel, wxID_ANY, "Module"));
+    m_output_box->Add(new wxStaticText(m_panel, wxID_ANY, "Module"), wxSizerFlags().Centre());
     m_module.Add("No Sound (Emulate SPU2 only)");
     m_module.Add("PortAudio (Cross-platform)");
     m_module.Add("SDL Audio (Recommended for PulseAudio)");
     m_module_select = new wxChoice(m_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_module);
-    m_output_box->Add(m_module_select);
+    m_output_box->Add(m_module_select, wxSizerFlags().Centre());
 
     // Portaudio
     m_portaudio_text = new wxStaticText(m_panel, wxID_ANY, "Portaudio API");
-    m_portaudio_box->Add(m_portaudio_text);
+    m_portaudio_box->Add(m_portaudio_text, wxSizerFlags().Centre());
 #ifdef __linux__
     m_portaudio.Add("ALSA (recommended)");
     m_portaudio.Add("OSS (legacy)");
@@ -82,17 +82,17 @@ Dialog::Dialog()
     m_portaudio.Add("OSS");
 #endif
     m_portaudio_select = new wxChoice(m_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_portaudio);
-    m_portaudio_box->Add(m_portaudio_select);
+    m_portaudio_box->Add(m_portaudio_select, wxSizerFlags().Centre());
 
     // SDL
     m_sdl_text = new wxStaticText(m_panel, wxID_ANY, "SDL API");
-    m_sdl_box->Add(m_sdl_text);
+    m_sdl_box->Add(m_sdl_text, wxSizerFlags().Centre());
 
     for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i)
         m_sdl.Add(SDL_GetAudioDriver(i));
 
     m_sdl_select = new wxChoice(m_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_sdl);
-    m_sdl_box->Add(m_sdl_select);
+    m_sdl_box->Add(m_sdl_select, wxSizerFlags().Centre());
 
     m_output_box->Add(m_portaudio_box, wxSizerFlags().Expand());
     m_output_box->Add(m_sdl_box, wxSizerFlags().Expand());
@@ -103,14 +103,14 @@ Dialog::Dialog()
     m_sync.Add("Async Mix (Breaks some games!)");
     m_sync.Add("None (Audio can skip.)");
     m_sync_select = new wxChoice(m_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_sync);
-    m_sync_box->Add(m_sync_select, wxSizerFlags().Expand());
+    m_sync_box->Add(m_sync_select, wxSizerFlags().Centre());
 
     launch_adv_dialog = new wxButton(m_panel, wxID_ANY, "Advanced...");
     m_sync_box->Add(launch_adv_dialog);
 
     m_left_box->Add(m_output_box, wxSizerFlags().Expand());
     m_left_box->Add(m_mix_box, wxSizerFlags().Expand());
-    m_left_box->Add(m_sync_box, wxSizerFlags().Expand());
+    m_left_box->Add(m_sync_box, wxSizerFlags().Expand().Border(wxALL, 5));
 
     // Latency Slider
     const int min_latency = SynchMode == 0 ? LATENCY_MIN_TIMESTRETCH : LATENCY_MIN;
@@ -152,8 +152,7 @@ void Dialog::Reconfigure()
 {
     const int mod = m_module_select->GetCurrentSelection();
 
-    switch (mod)
-    {
+    switch (mod) {
         case 0:
             m_portaudio_text->Hide();
             m_portaudio_select->Hide();
@@ -198,7 +197,6 @@ void Dialog::Reconfigure()
         launch_adv_dialog->Enable();
     else
         launch_adv_dialog->Disable();
-
 }
 
 void Dialog::CallReconfigure(wxCommandEvent &event)
@@ -211,11 +209,11 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
     wxButton *bt = (wxButton *)event.GetEventObject();
 
     if (bt == launch_debug_dialog) {
-        debug.Display();
+        debug_dialog.Display();
     }
 
     if (bt == launch_adv_dialog) {
-        printf("Advanced button!\n");
+        adv_dialog.Display();
     }
 }
 
@@ -234,7 +232,7 @@ void Dialog::ResetToValues()
 
     m_volume_slider->SetValue(FinalVolume * 100);
     m_latency_slider->SetValue(SndOutLatencyMS);
-    
+
     Reconfigure();
 }
 
@@ -317,17 +315,14 @@ DebugDialog::DebugDialog()
 
 void DebugDialog::Reconfigure()
 {
-    if (show_check->GetValue())
-    {
+    if (show_check->GetValue()) {
         _MsgKeyOnOff = key_check->Enable();
         _MsgVoiceOff = voice_check->Enable();
         _MsgDMA = dma_check->Enable();
         _MsgAutoDMA = autodma_check->Enable();
         _MsgOverruns = buffer_check->Enable();
         _MsgCache = adpcm_check->Enable();
-    }
-    else
-    {
+    } else {
         _MsgKeyOnOff = key_check->Disable();
         _MsgVoiceOff = voice_check->Disable();
         _MsgDMA = dma_check->Disable();
@@ -381,10 +376,95 @@ void DebugDialog::SaveValues()
     _RegDump = register_check->GetValue();
 }
 
-// Main
 void DebugDialog::Display()
 {
     ResetToValues();
     ShowModal();
     SaveValues();
+    WriteSettings();
 }
+namespace SoundtouchCfg
+{
+AdvDialog::AdvDialog()
+    : wxDialog(nullptr, wxID_ANY, "SPU2-X Soundtouch Config", wxDefaultPosition, wxSize(260, 470))
+{
+    m_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    m_adv_box = new wxBoxSizer(wxVERTICAL);
+    m_babble_box = new wxBoxSizer(wxVERTICAL);
+
+    m_adv_text = new wxStaticText(m_panel, wxID_ANY, "These are advanced configuration options for fine tuning time stretching behavior.", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END | wxALIGN_CENTRE_HORIZONTAL);
+    m_adv_text2 = new wxStaticText(m_panel, wxID_ANY, "Larger values are better for slowdown, while smaller values are better for speedup (more then 60 fps.).", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END | wxALIGN_CENTRE_HORIZONTAL);
+    m_adv_text3 = new wxStaticText(m_panel, wxID_ANY, "All options are in microseconds.", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END | wxALIGN_CENTRE_HORIZONTAL);
+
+    m_adv_text->Wrap(200);
+    m_adv_text2->Wrap(200);
+    m_adv_text2->Wrap(200);
+
+    m_babble_box->Add(m_adv_text, wxSizerFlags().Expand().Border(wxALL, 5).Centre());
+    m_babble_box->Add(m_adv_text2, wxSizerFlags().Expand().Border(wxALL, 5).Centre());
+    m_babble_box->Add(m_adv_text3, wxSizerFlags().Expand().Border(wxALL, 5).Centre());
+
+    m_adv_box->Add(m_babble_box, wxSizerFlags().Expand().Centre());
+
+    reset_button = new wxButton(m_panel, wxID_ANY, "Reset To Defaults");
+    m_adv_box->Add(reset_button, wxSizerFlags().Expand().Centre().Border(wxALL, 5));
+
+    // Volume Slider
+    seq_box = new wxStaticBoxSizer(wxVERTICAL, m_panel, "Sequence Length");
+    seq_slider = new wxSlider(m_panel, wxID_ANY, SoundtouchCfg::SequenceLenMS, SoundtouchCfg::SequenceLen_Min, SoundtouchCfg::SequenceLen_Max, wxDefaultPosition, wxDefaultSize, wxSL_LABELS);
+    seq_box->Add(seq_slider, wxSizerFlags().Expand());
+    m_adv_box->Add(seq_box, wxSizerFlags().Expand().Centre().Border(wxALL, 5));
+
+    // Volume Slider
+    seek_box = new wxStaticBoxSizer(wxVERTICAL, m_panel, "Seek Window Size");
+    seek_slider = new wxSlider(m_panel, wxID_ANY, SoundtouchCfg::SeekWindowMS, SoundtouchCfg::SeekWindow_Min, SoundtouchCfg::SeekWindow_Max, wxDefaultPosition, wxDefaultSize, wxSL_LABELS);
+    seek_box->Add(seek_slider, wxSizerFlags().Expand());
+    m_adv_box->Add(seek_box, wxSizerFlags().Expand().Centre().Border(wxALL, 5));
+
+    // Volume Slider
+    overlap_box = new wxStaticBoxSizer(wxVERTICAL, m_panel, "Overlap");
+    overlap_slider = new wxSlider(m_panel, wxID_ANY, SoundtouchCfg::OverlapMS, SoundtouchCfg::Overlap_Min, SoundtouchCfg::Overlap_Max, wxDefaultPosition, wxDefaultSize, wxSL_LABELS);
+    overlap_box->Add(overlap_slider, wxSizerFlags().Expand().Centre());
+    m_adv_box->Add(overlap_box, wxSizerFlags().Expand().Centre().Border(wxALL, 5));
+
+    m_panel->SetSizerAndFit(m_adv_box);
+    Bind(wxEVT_BUTTON, &AdvDialog::CallReset, this);
+}
+
+void AdvDialog::Reset()
+{
+    printf("Resetting!\n");
+    seq_slider->SetValue(30);
+    seek_slider->SetValue(20);
+    overlap_slider->SetValue(10);
+}
+
+void AdvDialog::CallReset(wxCommandEvent &event)
+{
+    Reset();
+}
+
+void AdvDialog::LoadValues()
+{
+    SoundtouchCfg::ReadSettings();
+    seq_slider->SetValue(SoundtouchCfg::SequenceLenMS);
+    seek_slider->SetValue(SoundtouchCfg::SeekWindowMS);
+    overlap_slider->SetValue(SoundtouchCfg::OverlapMS);
+}
+
+void AdvDialog::SaveValues()
+{
+    SoundtouchCfg::SequenceLenMS = seq_slider->GetValue();
+    SoundtouchCfg::SeekWindowMS = seek_slider->GetValue();
+    SoundtouchCfg::OverlapMS = overlap_slider->GetValue();
+    SoundtouchCfg::WriteSettings();
+}
+
+void AdvDialog::Display()
+{
+    LoadValues();
+    ShowModal();
+    SaveValues();
+}
+}; // namespace SoundtouchCfg
