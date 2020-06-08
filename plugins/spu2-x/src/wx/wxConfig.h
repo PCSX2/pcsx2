@@ -17,6 +17,7 @@
 
 #include <wx/wx.h>
 #include <wx/panel.h>
+#include <wx/wrapsizer.h>
 
 #ifdef __unix__
 #include <SDL.h>
@@ -24,20 +25,43 @@
 #include "Linux/Config.h"
 #endif
 
+class DebugDialog : public wxDialog
+{
+    wxPanel *m_panel;
+    wxBoxSizer *m_debug_box;
+    wxBoxSizer *m_together_box;
+    wxStaticBoxSizer *m_console_box, *m_log_only_box, *dump_box;
+    wxCheckBox *show_check;
+    wxCheckBox *key_check, *voice_check, *dma_check, *autodma_check, *buffer_check, *adpcm_check;
+    wxCheckBox *dma_actions_check, *dma_writes_check, *auto_output_check;
+    wxCheckBox *core_voice_check, *memory_check, *register_check;
+
+public:
+    DebugDialog();
+    void Display();
+    void ResetToValues();
+    void SaveValues();
+    void Reconfigure();
+    void CallReconfigure(wxCommandEvent &event);
+};
+
 class Dialog : public wxDialog
 {
     wxPanel *m_panel;
     wxBoxSizer *m_top_box, *m_left_box, *m_right_box;
     wxBoxSizer *m_portaudio_box, *m_sdl_box;
-    wxStaticBoxSizer *m_mix_box, *m_debug_box, *m_output_box, *m_volume_box, *m_latency_box;
+    wxStaticBoxSizer *m_mix_box, *m_debug_box, *m_output_box, *m_volume_box, *m_latency_box, *m_sync_box;
 
-    wxArrayString m_interpolation, m_module, m_portaudio, m_sdl, m_sync;
-    wxChoice *m_inter_select, *m_module_select, *m_portaudio_select, *m_sdl_select, *m_sync_select;
+    wxArrayString m_interpolation, m_module, m_portaudio, m_sdl, m_sync, m_audio;
+    wxChoice *m_inter_select, *m_module_select, *m_portaudio_select, *m_sdl_select, *m_sync_select, *m_audio_select;
     wxStaticText *m_portaudio_text, *m_sdl_text;
 
     wxCheckBox *effect_check, *dealias_check, *debug_check;
     wxSlider *m_latency_slider, *m_volume_slider;
     wxButton *launch_debug_dialog, *launch_adv_dialog;
+
+    DebugDialog debug;
+
 public:
     Dialog();
     void Display();
@@ -45,4 +69,5 @@ public:
     void SaveValues();
     void Reconfigure();
     void CallReconfigure(wxCommandEvent &event);
+    void OnButtonClicked(wxCommandEvent &event);
 };

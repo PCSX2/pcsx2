@@ -225,11 +225,6 @@ void advanced_dialog()
     SoundtouchCfg::DisplayDialog();
 }
 
-void debug_dialog()
-{
-    DebugConfig::DisplayDialog();
-}
-
 void configure()
 {
 #ifdef __APPLE__
