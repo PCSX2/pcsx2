@@ -8377,6 +8377,10 @@ Name   = Donald Duck Phantomias Platyrhynchos Kineticus
 Region = PAL-M5
 Compat = 5
 ---------------------------------------------
+Serial = SLES-50776
+Name   = Slam Tennis
+Region = PAL-M5
+---------------------------------------------
 Serial = SLES-50777
 Name   = Battle Engine Aquila
 Region = PAL-M5
