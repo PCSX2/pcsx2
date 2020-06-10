@@ -131,7 +131,7 @@ static DynGenFunc* _DynGen_JITCompile()
 	xMOV( ebx, eax );
 	xSHR( eax, 16 );
     #ifdef __M_X86_64
-      #warning "JC: fix me, see iR5900-32.cpp"
+      //#warning "JC: fix me, see iR5900-32.cpp"
     #endif
 	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
 	xJMP( ptr32[ecx+ebx] );
@@ -156,7 +156,7 @@ static DynGenFunc* _DynGen_DispatcherReg()
 	xMOV( ebx, eax );
 	xSHR( eax, 16 );
     #ifdef __M_X86_64
-      #warning "JC: fix me, see iR5900-32.cpp"
+      //#warning "JC: fix me, see iR5900-32.cpp"
     #endif
 	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
 	xJMP( ptr32[ecx+ebx] );

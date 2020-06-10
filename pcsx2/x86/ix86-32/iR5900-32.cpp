@@ -345,14 +345,16 @@ static DynGenFunc* _DynGen_JITCompile()
 
 	u8* retval = xGetAlignedCallTarget();
 
-
-#warning "JC: modified"
 	xFastCall((void*)recRecompile, ptr[&cpuRegs.pc] );
 	xMOV( eax, ptr[&cpuRegs.pc] );
 	xMOV( ebx, eax );
 	xSHR( eax, 16 );
     
-    xSHL( eax, 2 ); // 3 on x64 (8-byte alignment)
+    #ifdef __M_X86_64
+      xSHL( eax, 3 );
+    #else
+      xSHL( eax, 2 );
+    #endif
     xMOV( ecx, eax );
     xMOV( eax, (sptr)recLUT);
     xADD( ecx, eax );
@@ -379,11 +381,17 @@ static DynGenFunc* _DynGen_DispatcherReg()
     xMOV( ebx, eax );
     xSHR( eax, 16 );
     
-    xSHL( eax, 2 );  // 3 on x64 (8-byte alignment)
+    #ifdef __M_X86_64
+      xSHL( eax, 3 );
+    #else
+      xSHL( eax, 2 );
+    #endif
     xMOV( ecx, eax );
     xMOV( eax, (sptr)recLUT); 
     xADD( ecx, eax );
     xMOV( ecx, ptr[ecx] );
+    xMOV( eax, (sptr)0x800000000); 
+    xSUB( ecx, eax );
     
     //---- xJMP( ptr32[ecx+ebx] ) in single operations for debugging
     xADD( ecx, ebx );

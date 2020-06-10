@@ -237,7 +237,11 @@ static void recLUT_SetPage(uptr reclut[0x10000], uptr hwlut[0x10000],
 	uint page = pagebase + pageidx;
 
 	pxAssert( page < 0x10000 );
-	reclut[page] = (uptr)&mapbase[(mappage - page) << 14];
+    #ifdef __M_X86_64
+      reclut[page] = (uptr)&mapbase[(mappage - page) << 13];
+    #else
+	  reclut[page] = (uptr)&mapbase[(mappage - page) << 14];
+    #endif
 	if (hwlut)
 		hwlut[page] = 0u - (pagebase << 16);
 }
