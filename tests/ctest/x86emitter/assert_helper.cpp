@@ -16,6 +16,10 @@
 #include <gtest/gtest.h>
 #include <x86emitter.h>
 
+thread_local const char *currentTest;
+
 void pxOnAssert(const DiagnosticOrigin &origin, const wxString &msg) {
-	FAIL() << "Assertion failed: " << msg << "\n(at " << origin.srcfile << ":" << origin.line << ")";
+	FAIL() << "Assertion failed: " << msg
+		<< "\n  at " << origin.srcfile << ":" << origin.line << ""
+		<< "\n  when trying to assemble " << currentTest;
 }

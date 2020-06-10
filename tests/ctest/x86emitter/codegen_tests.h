@@ -23,6 +23,8 @@ struct CodegenTest {
 	const char* expected;
 };
 
+extern thread_local const char *currentTest;
+
 using namespace x86Emitter;
 
 #ifdef __M_X86_64
@@ -51,6 +53,7 @@ void runCodegenTests(const CodegenTest(&tests)[Count]) {
 
 	for (const auto& test : tests) {
 		if (!test.expected) continue;
+		currentTest = test.description;
 		xSetPtr(code);
 		test.exec();
 		char *strPtr = str;
