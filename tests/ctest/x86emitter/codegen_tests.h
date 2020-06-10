@@ -18,7 +18,7 @@
 #include <cstdio>
 
 struct CodegenTest {
-	void (*exec)();
+	void (*exec)(void *base);
 	const char* description;
 	const char* expected;
 };
@@ -35,11 +35,11 @@ using namespace x86Emitter;
 
 // Use null to skip, empty string to expect no output
 #ifdef __M_X86_64
-#define CODEGEN_TEST(command, expected32, expected64) (CodegenTest){ []{ command; }, #command, expected64 }
+#define CODEGEN_TEST(command, expected32, expected64) (CodegenTest){ [](void *base){ command; }, #command, expected64 }
 #define CODEGEN_TEST_64(command, expected) CODEGEN_TEST(command, nullptr, expected)
 #define CODEGEN_TEST_32(command, expected) CODEGEN_TEST(return, expected, nullptr)
 #else
-#define CODEGEN_TEST(command, expected32, expected64) (CodegenTest){ []{ command; }, #command, expected32 }
+#define CODEGEN_TEST(command, expected32, expected64) (CodegenTest){ [](void *base){ command; }, #command, expected32 }
 #define CODEGEN_TEST_64(command, expected) CODEGEN_TEST(return, nullptr, expected)
 #define CODEGEN_TEST_32(command, expected) CODEGEN_TEST(command, expected, nullptr)
 #endif
@@ -55,7 +55,7 @@ void runCodegenTests(const CodegenTest(&tests)[Count]) {
 		if (!test.expected) continue;
 		currentTest = test.description;
 		xSetPtr(code);
-		test.exec();
+		test.exec(code);
 		char *strPtr = str;
 		for (u8* ptr = code; ptr < xGetPtr(); ptr++) {
 			sprintf(strPtr, "%02x ", *ptr);

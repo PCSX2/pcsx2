@@ -58,6 +58,8 @@ TEST(CodegenTests, PUSHTest)
 		CODEGEN_TEST_64(xPUSH(ptrNative[r9*4+3+r8]), "43 ff 74 88 03"),
 		CODEGEN_TEST_64(xPUSH(ptrNative[r8*4+3+rax]), "42 ff 74 80 03"),
 		CODEGEN_TEST_BOTH(xPUSH(ptrNative[rax*8+0x1234+rbx]), "ff b4 c3 34 12 00 00"),
+		CODEGEN_TEST_64(xPUSH(ptrNative[base]), "ff 35 fa ff ff ff"),
+		CODEGEN_TEST(xPUSH(ptrNative[(void*)0x1234]), "ff 35 34 12 00 00", "ff 34 25 34 12 00 00"),
 	});
 }
 
@@ -73,5 +75,7 @@ TEST(CodegenTests, POPTest)
 		CODEGEN_TEST_64(xPOP(ptrNative[r9*4+3+r8]), "43 8f 44 88 03"),
 		CODEGEN_TEST_64(xPOP(ptrNative[r8*4+3+rax]), "42 8f 44 80 03"),
 		CODEGEN_TEST_BOTH(xPOP(ptrNative[rax*8+0x1234+rbx]), "8f 84 c3 34 12 00 00"),
+		CODEGEN_TEST_64(xPOP(ptrNative[base]), "8f 05 fa ff ff ff"),
+		CODEGEN_TEST(xPOP(ptrNative[(void*)0x1234]), "8f 05 34 12 00 00", "8f 04 25 34 12 00 00"),
 	});
 }
