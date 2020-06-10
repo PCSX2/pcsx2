@@ -260,7 +260,7 @@ void EmitSibMagic(uint regfield, const void *address)
     // Else we will fail out in a spectacular fashion
     sptr displacement = (sptr)address;
 #ifdef __M_X86_64
-#warning "JC: brute force debugging"
+//#warning "JC: brute force debugging"
     //pxAssertDev(displacement >= -0x80000000LL && displacement < 0x80000000LL, "SIB target is too far away, needs an indirect register");
 #endif
 
