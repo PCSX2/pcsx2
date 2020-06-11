@@ -22,13 +22,14 @@
 #define xMOV64(regX, loc)	xMOVUPS(regX, loc)
 #define xMOV128(regX, loc)	xMOVUPS(regX, loc)
 
-static const __aligned16 u32 SSEXYZWMask[4][4] =
+static const __aligned16 u32 _SSEXYZWMask[4][4] =
 {
 	{0xffffffff, 0xffffffff, 0xffffffff, 0x00000000},
 	{0xffffffff, 0xffffffff, 0x00000000, 0xffffffff},
 	{0xffffffff, 0x00000000, 0xffffffff, 0xffffffff},
 	{0x00000000, 0xffffffff, 0xffffffff, 0xffffffff}
 };
+static CodegenAccessible<decltype(_SSEXYZWMask)> SSEXYZWMask = _SSEXYZWMask;
 
 //static __pagealigned u8 nVifUpkExec[__pagesize*4];
 static RecompiledCodeReserve* nVifUpkExec = NULL;
@@ -63,8 +64,8 @@ VifUnpackSSE_Base::VifUnpackSSE_Base()
 	, UnpkLoopIteration(0)
 	, UnpkNoOfIterations(0)
 	, IsAligned(0)
-	, dstIndirect(ecx)		// parameter 1 of __fastcall
-	, srcIndirect(edx)		// parameter 2 of __fastcall
+	, dstIndirect(arg1reg)
+	, srcIndirect(arg2reg)
 	, workReg( xmm1 )
 	, destReg( xmm0 )
 {
@@ -418,13 +419,16 @@ static void nVifGen(int usn, int mask, int curCycle) {
 
 void VifUnpackSSE_Init()
 {
+	HostSys::MakeCodegenAccessible(SSEXYZWMask);
+	HostSys::MakeCodegenAccessible(nVifMask);
+
 	if (nVifUpkExec) return;
 
 	DevCon.WriteLn( "Generating SSE-optimized unpacking functions for VIF interpreters..." );
 
 	nVifUpkExec = new RecompiledCodeReserve(L"VIF SSE-optimized Unpacking Functions", _64kb);
 	nVifUpkExec->SetProfilerName("iVIF-SSE");
-	nVifUpkExec->Reserve( _64kb );
+	nVifUpkExec->Reserve(GetVmMemory().BumpAllocator(), _64kb);
 
 	nVifUpkExec->ThrowIfNotOk();
 

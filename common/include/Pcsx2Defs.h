@@ -241,7 +241,3 @@ static const int __pagesize = PCSX2_PAGESIZE;
 #define __fc __fastcall
 
 #endif
-
-#if defined(__x86_64__) || defined(_M_AMD64)
-#define __M_X86_64
-#endif

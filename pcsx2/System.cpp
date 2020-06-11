@@ -57,9 +57,9 @@ void RecompiledCodeReserve::_termProfiler()
 {
 }
 
-void* RecompiledCodeReserve::Reserve( size_t size, uptr base, uptr upper_bounds )
+void* RecompiledCodeReserve::Assign( VirtualMemoryManagerPtr allocator, void *baseptr, size_t size )
 {
-	if (!_parent::Reserve(size, base, upper_bounds)) return NULL;
+	if (!_parent::Assign(std::move(allocator), baseptr, size)) return NULL;
 
 	Commit();
 
@@ -112,6 +112,39 @@ void RecompiledCodeReserve::ThrowIfNotOk() const
 		));
 }
 
+#ifdef __M_X86_64
+static sptr CodegenAccessibleMemory = 0;
+static std::atomic<sptr> CodegenAccessibleMemoryNext{0};
+static sptr CodegenAccessibleMemoryEnd = 0;
+
+void *HostSys::detail::MakeCodegenAccessible(void *ptr, sptr size)
+{
+	// Don't do anything if the pointer is already in codegen-accessible memory
+	if ((sptr)ptr >= CodegenAccessibleMemory && (sptr)ptr < CodegenAccessibleMemoryEnd) {
+		return ptr;
+	}
+
+	if (!CodegenAccessibleMemoryNext.load(std::memory_order_relaxed)) {
+		const sptr sectionsize = __pagesize;
+		auto tmp = (sptr)GetVmMemory().BumpAllocator().Alloc(sectionsize);
+		HostSys::MmapCommit(tmp, sectionsize, PageProtectionMode().Read().Write());
+		sptr expected = 0;
+		if (CodegenAccessibleMemoryNext.compare_exchange_strong(expected, tmp, std::memory_order_relaxed)) {
+			CodegenAccessibleMemory = tmp;
+			CodegenAccessibleMemoryEnd = tmp + sectionsize;
+		} else {
+			HostSys::MmapReset(tmp, sectionsize);
+		}
+	}
+
+	// Align to 32 bytes
+	void *ret = (void *)CodegenAccessibleMemoryNext.fetch_add(size + 0x1f & ~0x1f, std::memory_order_relaxed);
+	pxAssertDev((sptr)ret + size < CodegenAccessibleMemoryEnd,
+		"Ran out of space for codegen accessible memory, need to increase size");
+	memcpy(ret, ptr, size);
+	return ret;
+}
+#endif
 
 void SysOutOfMemory_EmergencyResponse(uptr blocksize)
 {
@@ -352,11 +385,29 @@ static wxString GetMemoryErrorVM()
 	);
 }
 
+namespace HostMemoryMap {
+	// For debuggers
+	uptr EEmem, IOPmem, VUmem, EErec, IOPrec, VIF0rec, VIF1rec, mVU0rec, mVU1rec, bumpAllocator;
+}
+
 // --------------------------------------------------------------------------------------
 //  SysReserveVM  (implementations)
 // --------------------------------------------------------------------------------------
 SysMainMemory::SysMainMemory()
+	: m_mainMemory(std::make_shared<VirtualMemoryManager>("Main Memory Manager", HostMemoryMap::Base, HostMemoryMap::Size))
+	, m_bumpAllocator(m_mainMemory, HostMemoryMap::bumpAllocatorOffset, HostMemoryMap::Size - HostMemoryMap::bumpAllocatorOffset)
 {
+	uptr base = (uptr)MainMemory()->GetBase();
+	HostMemoryMap::EEmem   = base + HostMemoryMap::EEmemOffset;
+	HostMemoryMap::IOPmem  = base + HostMemoryMap::IOPmemOffset;
+	HostMemoryMap::VUmem   = base + HostMemoryMap::VUmemOffset;
+	HostMemoryMap::EErec   = base + HostMemoryMap::EErecOffset;
+	HostMemoryMap::IOPrec  = base + HostMemoryMap::IOPrecOffset;
+	HostMemoryMap::VIF0rec = base + HostMemoryMap::VIF0recOffset;
+	HostMemoryMap::VIF1rec = base + HostMemoryMap::VIF1recOffset;
+	HostMemoryMap::mVU0rec = base + HostMemoryMap::mVU0recOffset;
+	HostMemoryMap::mVU1rec = base + HostMemoryMap::mVU1recOffset;
+	HostMemoryMap::bumpAllocator = base + HostMemoryMap::bumpAllocatorOffset;
 }
 
 SysMainMemory::~SysMainMemory()
@@ -374,9 +425,9 @@ void SysMainMemory::ReserveAll()
 	DevCon.WriteLn( Color_StrongBlue, "Mapping host memory for virtual systems..." );
 	ConsoleIndentScope indent(1);
 
-	m_ee.Reserve();
-	m_iop.Reserve();
-	m_vu.Reserve();
+	m_ee.Reserve(MainMemory());
+	m_iop.Reserve(MainMemory());
+	m_vu.Reserve(MainMemory());
 }
 
 void SysMainMemory::CommitAll()

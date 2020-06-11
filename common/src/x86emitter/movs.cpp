@@ -37,7 +37,6 @@ namespace x86Emitter
 
 void _xMovRtoR(const xRegisterInt &to, const xRegisterInt &from)
 {
-    //printf("jc mov 1\n");
     pxAssert(to.GetOperandSize() == from.GetOperandSize());
 
     if (to == from)
@@ -49,13 +48,11 @@ void _xMovRtoR(const xRegisterInt &to, const xRegisterInt &from)
 void xImpl_Mov::operator()(const xRegisterInt &to, const xRegisterInt &from) const
 {
     // FIXME WTF?
-    //printf("jc mov 2\n");
     _xMovRtoR(to, from);
 }
 
 void xImpl_Mov::operator()(const xIndirectVoid &dest, const xRegisterInt &from) const
 {
-    //printf("jc mov 3\n");
     // mov eax has a special from when writing directly to a DISP32 address
     // (sans any register index/base registers).
 
@@ -72,12 +69,8 @@ void xImpl_Mov::operator()(const xIndirectVoid &dest, const xRegisterInt &from) 
     }
 }
 
-
-
 void xImpl_Mov::operator()(const xRegisterInt &to, const xIndirectVoid &src) const
-
 {
-    //printf("jc mov 5\n");
     // mov eax has a special from when reading directly from a DISP32 address
     // (sans any register index/base registers).
 
@@ -85,20 +78,17 @@ void xImpl_Mov::operator()(const xRegisterInt &to, const xIndirectVoid &src) con
 
         xOpAccWrite(to.GetPrefix16(), to.Is8BitOp() ? x86_Opcode_MOV_AL_Ob : x86_Opcode_MOV_eAX_Ov, to, src);
         #ifdef __M_X86_64
-        //printf("jc move 5 sizeof(src.Displacement) = %i, src.Displacement=0x%lx\n",sizeof(src.Displacement),src.Displacement);
           xWrite64(src.Displacement);
         #else
           xWrite32(src.Displacement);
         #endif
     } else {
-        //printf("jc move 5 xOpWrite\n");
         xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? x86_Opcode_MOV_Gb_Eb : x86_Opcode_MOV_Gv_Ev, to, src);
     }
 }
 
 void xImpl_Mov::operator()(const xIndirect64orLess &dest, int imm) const
 {
-    //printf("jc mov 6\n");
     xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? x86_Opcode_MOV_Eb_Ib : x86_Opcode_MOV_Ev_Iv, 0, dest);
     dest.xWriteImm(imm);
 }
@@ -107,7 +97,6 @@ void xImpl_Mov::operator()(const xIndirect64orLess &dest, int imm) const
 //   the flags (namely replacing mov reg,0 with xor).
 void xImpl_Mov::operator()(const xRegisterInt &to, sptr imm, bool preserve_flags) const
 {
-    //printf("jc mov 7\n");
     if (!preserve_flags && (imm == 0))
         _g1_EmitOp(G1Type_XOR, to, to);
     else {
@@ -119,6 +108,21 @@ void xImpl_Mov::operator()(const xRegisterInt &to, sptr imm, bool preserve_flags
 }
 
 const xImpl_Mov xMOV;
+
+#ifdef __M_X86_64
+void xImpl_MovImm64::operator()(const xRegister64& to, s64 imm, bool preserve_flags) const
+{
+    if (imm == (s32)imm) {
+        xMOV(to, imm, preserve_flags);
+    } else {
+        u8 opcode = 0xb8 | to.Id;
+        xOpAccWrite(to.GetPrefix16(), opcode, 0, to);
+        xWrite64(imm);
+    }
+}
+
+const xImpl_MovImm64 xMOV64;
+#endif
 
 // --------------------------------------------------------------------------------------
 //  CMOVcc
