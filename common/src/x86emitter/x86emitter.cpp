@@ -147,6 +147,24 @@ const xRegister8
     ah(4), ch(5),
     dh(6), bh(7);
 
+const xAddressReg
+#ifdef __M_X86_64
+#ifdef _WIN32
+    arg1reg = rcx,
+    arg2reg = rdx,
+    arg3reg = r8,
+    arg4reg = r9;
+#else
+    arg1reg = rdi,
+    arg2reg = rsi,
+    arg3reg = rcx,
+    arg4reg = rdx;
+#endif
+#else
+    arg1reg = ecx,
+    arg2reg = edx;
+#endif
+
 // clang-format on
 
 const xRegisterCL cl;
@@ -252,16 +270,20 @@ static __fi void SibSB(u32 ss, u32 index, u32 base)
 
 void EmitSibMagic(uint regfield, const void *address)
 {
-    //printf("jc (1) void EmitSibMagic(uint regfield, const void *address) ModRM(0, regfield, ModRm_UseDisp32); \n");
-    ModRM(0, regfield, ModRm_UseDisp32);
-
-    // SIB encoding only supports 32bit offsets, even on x86_64
-    // We must make sure that the displacement is within the 32bit range
-    // Else we will fail out in a spectacular fashion
     sptr displacement = (sptr)address;
-#ifdef __M_X86_64
-//#warning "JC: brute force debugging"
-    //pxAssertDev(displacement >= -0x80000000LL && displacement < 0x80000000LL, "SIB target is too far away, needs an indirect register");
+#ifndef __M_X86_64
+    ModRM(0, regfield, ModRm_UseDisp32);
+#else
+    sptr ripRelative = (sptr)address - ((sptr)x86Ptr + sizeof(s8) + sizeof(s32));
+    // Can we use a rip-relative address?  (Prefer this over eiz because it's a byte shorter)
+    if (ripRelative == (s32)ripRelative) {
+        ModRM(0, regfield, ModRm_UseDisp32);
+        displacement = ripRelative;
+    } else {
+        pxAssertDev(displacement == (s32)displacement, "SIB target is too far away, needs an indirect register");
+        ModRM(0, regfield, ModRm_UseSib);
+        SibSB(0, Sib_EIZ, Sib_UseDisp32);
+    }
 #endif
 
     xWrite<s32>((s32)displacement);
@@ -297,7 +319,6 @@ static __fi bool NeedsSibMagic(const xIndirectVoid &info)
 //
 void EmitSibMagic(uint regfield, const xIndirectVoid &info)
 {
-    //printf("jc (2) void EmitSibMagic(uint regfield %i, const xIndirectVoid &info)\n",regfield);
     // 3 bits also on x86_64 (so max is 8)
     // We might need to mask it on x86_64
     pxAssertDev(regfield < 8, "Invalid x86 register identifier.");
@@ -305,9 +326,11 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
                                                        ((info.IsByteSizeDisp()) ? 1 : 2);
 
     pxAssert(!info.Base.IsEmpty() || !info.Index.IsEmpty() || displacement_size == 2);
+    // Displacement is only 64 bits for rip-relative addressing
+    //#warning "JC: brute-force debugging"
+    //pxAssert(info.Displacement == (s32)info.Displacement || (info.Base.IsEmpty() && info.Index.IsEmpty()));
 
     if (!NeedsSibMagic(info)) {
-        //printf("jc (2) void EmitSibMagic if (!NeedsSibMagic(info)) \n");
         // Use ModRm-only encoding, with the rm field holding an index/base register, if
         // one has been specified.  If neither register is specified then use Disp32 form,
         // which is encoded as "EBP w/o displacement" (which is why EBP must always be
@@ -323,7 +346,6 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
             ModRM(displacement_size, regfield, info.Index.Id);
         }
     } else {
-        //printf("jc (2) void EmitSibMagic else \n");
         // In order to encode "just" index*scale (and no base), we have to encode
         // it as a special [index*scale + displacement] form, which is done by
         // specifying EBP as the base register and setting the displacement field
@@ -332,7 +354,7 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
 
         if (info.Base.IsEmpty()) {
             ModRM(0, regfield, ModRm_UseSib);
-            SibSB(info.Scale, info.Index.Id, ModRm_UseDisp32);
+            SibSB(info.Scale, info.Index.Id, Sib_UseDisp32);
             xWrite<s32>(info.Displacement);
             return;
         } else {
@@ -356,25 +378,21 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
 // instructions taking a form of [reg,reg].
 void EmitSibMagic(uint reg1, const xRegisterBase &reg2)
 {
-    //printf("jc (3) void EmitSibMagic(uint reg1, const xRegisterBase &reg2  Mod_Direct %i << 6) | (reg1 %i << 3) | reg2.Id %i )\n",Mod_Direct,reg1,reg2.Id);
     xWrite8((Mod_Direct << 6) | (reg1 << 3) | reg2.Id);
 }
 
 void EmitSibMagic(const xRegisterBase &reg1, const xRegisterBase &reg2)
 {
-    //printf("jc (4) void EmitSibMagic(const xRegisterBase &reg1, const xRegisterBase &reg2)\n");
     xWrite8((Mod_Direct << 6) | (reg1.Id << 3) | reg2.Id);
 }
 
 void EmitSibMagic(const xRegisterBase &reg1, const void *src)
 {
-    //printf("jc (5) void EmitSibMagic(const xRegisterBase &reg1, const void *src)\n");
     EmitSibMagic(reg1.Id, src);
 }
 
 void EmitSibMagic(const xRegisterBase &reg1, const xIndirectVoid &sib)
 {
-    //printf("jc (6) void EmitSibMagic(const xRegisterBase &reg1 %i, const xIndirectVoid &sib)\n",reg1.Id);
     EmitSibMagic(reg1.Id, sib);
 }
 
@@ -382,7 +400,6 @@ void EmitSibMagic(const xRegisterBase &reg1, const xIndirectVoid &sib)
 __emitinline static void EmitRex(bool w, bool r, bool x, bool b)
 {
 #ifdef __M_X86_64
-    //printf("jc (1) void EmitRex(bool w, bool r, bool x, bool b) \n");
     u8 rex = 0x40 | (w << 3) | (r << 2) | (x << 1) | b;
     if (rex != 0x40)
         xWrite8(rex);
@@ -401,7 +418,6 @@ void EmitRex(uint regfield, const void *address)
 
 void EmitRex(uint regfield, const xIndirectVoid &info)
 {
-    //printf("jc (2) void EmitRex(uint regfield, const xIndirectVoid &info) \n");
     bool w = info.Base.IsWide();
     bool r = false;
     bool x = false;
@@ -411,7 +427,6 @@ void EmitRex(uint regfield, const xIndirectVoid &info)
 
 void EmitRex(uint reg1, const xRegisterBase &reg2)
 {
-    //printf("jc (3) void EmitRex(uint reg1, const xRegisterBase &reg2) \n");
     bool w = reg2.IsWide();
     bool r = false;
     bool x = false;
@@ -421,7 +436,6 @@ void EmitRex(uint reg1, const xRegisterBase &reg2)
 
 void EmitRex(const xRegisterBase &reg1, const xRegisterBase &reg2)
 {
-    //printf("jc (4) void EmitRex(const xRegisterBase &reg1, const xRegisterBase &reg2) \n");
     bool w = reg1.IsWide();
     bool r = reg1.IsExtended();
     bool x = false;
@@ -441,7 +455,6 @@ void EmitRex(const xRegisterBase &reg1, const void *src)
 
 void EmitRex(const xRegisterBase &reg1, const xIndirectVoid &sib)
 {
-    //printf("jc (5) void EmitRex(const xRegisterBase &reg1, const xIndirectVoid &sib) \n");
     bool w = reg1.IsWide();
     bool r = reg1.IsExtended();
     bool x = sib.Index.IsExtended();
@@ -459,7 +472,6 @@ void EmitRex(const xRegisterBase &reg1, const xIndirectVoid &sib)
 // a need to change the storage class system for the x86Ptr 'under the hood.'
 __emitinline void xSetPtr(void *ptr)
 {
-    //printf("jc void xSetPtr(void *ptr) ptr = 0x%lx\n",(unsigned long)ptr);
     x86Ptr = (u8 *)ptr;
 }
 
@@ -780,7 +792,6 @@ xIndirectVoid &xIndirectVoid::Add(sptr imm)
 //
 static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool preserve_flags)
 {
-    //printf("jc void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool preserve_flags)\n");
     int displacement_size = (src.Displacement == 0) ? 0 :
                                                       ((src.IsByteSizeDisp()) ? 1 : 2);
 
@@ -829,7 +840,7 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
             }
             xWrite8(x86_Opcode_LEA_Gv_M);
             ModRM(0, to.Id, ModRm_UseSib);
-            SibSB(src.Scale, src.Index.Id, ModRm_UseDisp32);
+            SibSB(src.Scale, src.Index.Id, Sib_UseDisp32);
             xWrite32(src.Displacement);
             return;
         } else {
@@ -1095,7 +1106,6 @@ xScopedStackFrame::xScopedStackFrame(bool base_frame, bool save_base_pointer, in
     // Note rbp can surely be optimized in 64 bits
     if (m_base_frame) {
         xPUSH(rbp);
-        //printf("jc xScopedStackFrame::xScopedStackFrame(bool base_frame, bool save_base_pointer, int offset)\n");
         xMOV(rbp, rsp);
         m_offset += 8;
     } else if (m_save_base_pointer) {

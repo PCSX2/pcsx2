@@ -252,7 +252,6 @@ int Pcsx2Config::GSOptions::GetVsync() const
 const wxChar *const tbl_GamefixNames[] =
 {
 	L"VuAddSub",
-	L"VuClipFlag",
 	L"FpuCompare",
 	L"FpuMul",
 	L"FpuNegDiv",

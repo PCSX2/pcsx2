@@ -346,21 +346,26 @@ static DynGenFunc* _DynGen_JITCompile()
 	u8* retval = xGetAlignedCallTarget();
 
 	xFastCall((void*)recRecompile, ptr[&cpuRegs.pc] );
-	xMOV( eax, ptr[&cpuRegs.pc] );
-	xMOV( ebx, eax );
-	xSHR( eax, 16 );
+    
+    xMOV( eax, ptr[&cpuRegs.pc]);    
+    xMOV( ebx, eax );
+    xSHR( eax, 16 );
     
     #ifdef __M_X86_64
       xSHL( eax, 3 );
+      xMOV( ecx, eax );
+      xMOV( eax, (uptr)recLUT); 
+      xADD( ecx, eax );
+      xMOV( ecx, ptr[ecx] );
+      xMOV( eax, (uptr)0x800000000); 
+      xSUB( ecx, eax );
+      xADD( ecx, ebx );
+      xMOV( ecx, ptr[ecx] );
+      xJMP( ecx );
     #else
-      xSHL( eax, 2 );
+      xMOV( ecx, ptr[recLUT + (eax*4)] );
+      xJMP( ptr32[ecx+ebx] );
     #endif
-    xMOV( ecx, eax );
-    xMOV( eax, (sptr)recLUT);
-    xADD( ecx, eax );
-    xMOV( ecx, ptr[ecx] );
-	
-	xJMP( ptr32[ecx+ebx] );
 
 	return (DynGenFunc*)retval;
 }
@@ -383,22 +388,19 @@ static DynGenFunc* _DynGen_DispatcherReg()
     
     #ifdef __M_X86_64
       xSHL( eax, 3 );
+      xMOV( ecx, eax );
+      xMOV( eax, (uptr)recLUT); 
+      xADD( ecx, eax );
+      xMOV( ecx, ptr[ecx] );
+      xMOV( eax, (uptr)0x800000000); 
+      xSUB( ecx, eax );
+      xADD( ecx, ebx );
+      xMOV( ecx, ptr[ecx] );
+      xJMP( ecx );
     #else
-      xSHL( eax, 2 );
+      xMOV( ecx, ptr[recLUT + (eax*4)] );
+      xJMP( ptr32[ecx+ebx] );
     #endif
-    xMOV( ecx, eax );
-    xMOV( eax, (sptr)recLUT); 
-    xADD( ecx, eax );
-    xMOV( ecx, ptr[ecx] );
-    xMOV( eax, (sptr)0x800000000); 
-    xSUB( ecx, eax );
-    
-    //---- xJMP( ptr32[ecx+ebx] ) in single operations for debugging
-    xADD( ecx, ebx );
-    xMOV( ecx, ptr[ecx] );
-    xJMP( ecx );
-    //----
-    xJMP( ptr32[ecx+ebx] );
 
     return (DynGenFunc*)retval;
 }
@@ -419,7 +421,6 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	u8* retval = xGetAlignedCallTarget();
 
 	{ // Properly scope the frame prologue/epilogue
-
 #ifdef ENABLE_VTUNE
 		xScopedStackFrame frame(true);
 #else
@@ -465,7 +466,6 @@ static void _DynGen_Dispatchers()
 
 	// Place the EventTest and DispatcherReg stuff at the top, because they get called the
 	// most and stand to benefit from strong alignment and direct referencing.
-
 	DispatcherEvent = _DynGen_DispatcherEvent();
 	DispatcherReg	= _DynGen_DispatcherReg();
 
@@ -507,7 +507,7 @@ static void recReserveCache()
 
 	while (!recMem->IsOk())
 	{
-		if (recMem->Reserve( m_ConfiguredCacheReserve * _1mb, HostMemoryMap::EErec ) != NULL) break;
+		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::EErecOffset, m_ConfiguredCacheReserve * _1mb) != NULL) break;
 
 		// If it failed, then try again (if possible):
 		if (m_ConfiguredCacheReserve < 16) break;
@@ -609,7 +609,7 @@ static int g_patchesNeedRedo = 0;
 ////////////////////////////////////////////////////
 static void recResetRaw()
 {
-    Perf::ee.reset();
+	Perf::ee.reset();
 
 	EE::Profiler.Reset();
 
@@ -621,7 +621,6 @@ static void recResetRaw()
 	Console.WriteLn( Color_StrongBlack, "EE/iR5900-32 Recompiler Reset" );
 
 	recMem->Reset();
-    
 	ClearRecLUT((BASEBLOCK*)recLutReserve_RAM, recLutSize);
 	memset(recRAMCopy, 0, Ps2MemSize::MainRam);
 
@@ -670,6 +669,7 @@ static void recResetEE()
 		eeRecNeedsReset = true;
 		return;
 	}
+
 	recResetRaw();
 }
 
@@ -743,7 +743,7 @@ static void recExecute()
 		// in Windows, where SEH lets us safely kill a thread from anywhere we want.  This is bad
 		// in Linux, which cannot have a C++ exception cross the recompiler.  Hence the changing
 		// of the cancelstate here!
-        //printf("jc   *****    BYE BYE    ***** EnterRecompiledCode = 0x%lx\n",(unsigned long) EnterRecompiledCode);
+
 		pthread_setcancelstate( PTHREAD_CANCEL_DISABLE, &oldstate );
 		EnterRecompiledCode();
 
@@ -1661,6 +1661,7 @@ static void __fastcall recRecompile( const u32 startpc )
 		Console.WriteLn("EE recompiler stack reset");
 		eeRecNeedsReset = true;
 	}
+
 	if (eeRecNeedsReset) recResetRaw();
 
 	xSetPtr( recPtr );
@@ -1680,6 +1681,7 @@ static void __fastcall recRecompile( const u32 startpc )
 	s_pCurBlockEx = recBlocks.New(HWADDR(startpc), (uptr)recPtr);
 
 	pxAssert(s_pCurBlockEx);
+
 	if (HWADDR(startpc) == EELOAD_START)
 	{
 		// The EELOAD _start function is the same across all BIOS versions

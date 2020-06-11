@@ -121,22 +121,33 @@ static void recEventTest()
 // dispatches to the recompiled block address.
 static DynGenFunc* _DynGen_JITCompile()
 {
-	pxAssertMsg( iopDispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
+    pxAssertMsg( iopDispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
 
-	u8* retval = xGetPtr();
+    u8* retval = xGetPtr();
 
-	xFastCall((void*)iopRecRecompile, ptr[&psxRegs.pc] );
-
-	xMOV( eax, ptr[&psxRegs.pc] );
-	xMOV( ebx, eax );
-	xSHR( eax, 16 );
+    xFastCall((void*)iopRecRecompile, ptr[&psxRegs.pc] );
+    
+    xMOV( eax, ptr[&psxRegs.pc]);
+    xMOV( ebx, eax );
+    xSHR( eax, 16 );
+    
     #ifdef __M_X86_64
-      //#warning "JC: fix me, see iR5900-32.cpp"
+      xSHL( eax, 3 );
+      xMOV( ecx, eax );
+      xMOV( eax, (uptr)psxRecLUT); 
+      xADD( ecx, eax );
+      xMOV( ecx, ptr[ecx] );
+      xMOV( eax, (uptr)0x800000000); 
+      xSUB( ecx, eax );
+      xADD( ecx, ebx );
+      xMOV( ecx, ptr[ecx] );
+      xJMP( ecx );
+    #else
+      xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
+      xJMP( ptr32[ecx+ebx] );
     #endif
-	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
-	xJMP( ptr32[ecx+ebx] );
 
-	return (DynGenFunc*)retval;
+    return (DynGenFunc*)retval;
 }
 
 static DynGenFunc* _DynGen_JITCompileInBlock()
@@ -149,17 +160,26 @@ static DynGenFunc* _DynGen_JITCompileInBlock()
 // called when jumping to variable pc address
 static DynGenFunc* _DynGen_DispatcherReg()
 {
-    printf("jc iR3000A.cpp static DynGenFunc* _DynGen_DispatcherReg()\n");
 	u8* retval = xGetPtr();
 
 	xMOV( eax, ptr[&psxRegs.pc] );
 	xMOV( ebx, eax );
 	xSHR( eax, 16 );
     #ifdef __M_X86_64
-      //#warning "JC: fix me, see iR5900-32.cpp"
+      xSHL( eax, 3 );
+      xMOV( ecx, eax );
+      xMOV( eax, (uptr)psxRecLUT); 
+      xADD( ecx, eax );
+      xMOV( ecx, ptr[ecx] );
+      xMOV( eax, (uptr)0x800000000); 
+      xSUB( ecx, eax );
+      xADD( ecx, ebx );
+      xMOV( ecx, ptr[ecx] );
+      xJMP( ecx );
+    #else
+	  xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
+	  xJMP( ptr32[ecx+ebx] );
     #endif
-	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
-	xJMP( ptr32[ecx+ebx] );
 
 	return (DynGenFunc*)retval;
 }
@@ -176,7 +196,6 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 	u8* retval = xGetPtr();
 
 	{ // Properly scope the frame prologue/epilogue
-        
 #ifdef ENABLE_VTUNE
 		xScopedStackFrame frame(true);
 #else
@@ -639,7 +658,7 @@ static void recReserveCache()
 
 	while (!recMem->IsOk())
 	{
-		if (recMem->Reserve( m_ConfiguredCacheReserve * _1mb, HostMemoryMap::IOPrec ) != NULL) break;
+		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::IOPrecOffset, m_ConfiguredCacheReserve * _1mb) != NULL) break;
 
 		// If it failed, then try again (if possible):
 		if (m_ConfiguredCacheReserve < 4) break;
