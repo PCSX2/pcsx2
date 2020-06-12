@@ -640,6 +640,13 @@ extern const xAddressReg
     eax, ebx, ecx, edx,
     esi, edi, ebp, esp;
 
+// Temporary registers to aid the move to x86-64
+extern const xRegister32
+    eaxd, ebxd, ecxd, edxd,
+    esid, edid, ebpd, espd,
+     r8d,  r9d, r10d, r11d,
+    r12d, r13d, r14d, r15d;
+
 extern const xRegister16
     ax, bx, cx, dx,
     si, di, bp, sp;
@@ -936,6 +943,11 @@ typedef xIndirect<u64> xIndirect64;
 typedef xIndirect<u32> xIndirect32;
 typedef xIndirect<u16> xIndirect16;
 typedef xIndirect<u8> xIndirect8;
+#ifdef __M_X86_64
+typedef xIndirect<u64> xIndirectNative;
+#else
+typedef xIndirect<u32> xIndirectNative;
+#endif
 
 // --------------------------------------------------------------------------------------
 //  xIndirect64orLess  -  base class 64, 32, 16, and 8 bit operand types
@@ -1017,6 +1029,7 @@ public:
 // ptr[] - use this form for instructions which can resolve the address operand size from
 // the other register operand sizes.
 extern const xAddressIndexer<xIndirectVoid> ptr;
+extern const xAddressIndexer<xIndirectNative> ptrNative;
 extern const xAddressIndexer<xIndirect128> ptr128;
 extern const xAddressIndexer<xIndirect64> ptr64;
 extern const xAddressIndexer<xIndirect32> ptr32;

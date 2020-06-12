@@ -97,6 +97,7 @@ __fi void xWrite64(u64 val)
 // objects be initialized even though they have no actual variable members).
 
 const xAddressIndexer<xIndirectVoid> ptr = {};
+const xAddressIndexer<xIndirectNative> ptrNative = {};
 const xAddressIndexer<xIndirect128> ptr128 = {};
 const xAddressIndexer<xIndirect64> ptr64 = {};
 const xAddressIndexer<xIndirect32> ptr32 = {};
@@ -134,6 +135,16 @@ const xAddressReg
     ecx(1), edx(2),
     esp(4), ebp(5),
     esi(6), edi(7);
+
+const xRegister32
+    eaxd(0), ebxd(3),
+    ecxd(1), edxd(2),
+    espd(4), ebpd(5),
+    esid(6), edid(7),
+    r8d(8), r9d(9),
+    r10d(10), r11d(11),
+    r12d(12), r13d(13),
+    r14d(14), r15d(15);
 
 const xRegister16
     ax(0), bx(3),

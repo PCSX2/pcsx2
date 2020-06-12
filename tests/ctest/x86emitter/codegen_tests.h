@@ -27,12 +27,6 @@ extern thread_local const char *currentTest;
 
 using namespace x86Emitter;
 
-#ifdef __M_X86_64
-#define ptrNative ptr64
-#else
-#define ptrNative ptr32
-#endif
-
 // Use null to skip, empty string to expect no output
 #ifdef __M_X86_64
 #define CODEGEN_TEST(command, expected32, expected64) (CodegenTest){ [](void *base){ command; }, #command, expected64 }
