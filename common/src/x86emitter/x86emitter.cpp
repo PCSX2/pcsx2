@@ -353,7 +353,7 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
             if (info.Index == ebp && displacement_size == 0)
                 displacement_size = 1; // forces [ebp] to be encoded as [ebp+0]!
 
-            ModRM(displacement_size, regfield, info.Index.Id);
+            ModRM(displacement_size, regfield, info.Index.Id & 7);
         }
     } else {
         // In order to encode "just" index*scale (and no base), we have to encode
@@ -372,7 +372,7 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
                 displacement_size = 1; // forces [ebp] to be encoded as [ebp+0]!
 
             ModRM(displacement_size, regfield, ModRm_UseSib);
-            SibSB(info.Scale, info.Index.Id, info.Base.Id);
+            SibSB(info.Scale, info.Index.Id & 7, info.Base.Id & 7);
         }
     }
 
@@ -388,22 +388,22 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
 // instructions taking a form of [reg,reg].
 void EmitSibMagic(uint reg1, const xRegisterBase &reg2)
 {
-    xWrite8((Mod_Direct << 6) | (reg1 << 3) | reg2.Id);
+    xWrite8((Mod_Direct << 6) | (reg1 << 3) | (reg2.Id & 7));
 }
 
 void EmitSibMagic(const xRegisterBase &reg1, const xRegisterBase &reg2)
 {
-    xWrite8((Mod_Direct << 6) | (reg1.Id << 3) | reg2.Id);
+    xWrite8((Mod_Direct << 6) | ((reg1.Id & 7) << 3) | (reg2.Id & 7));
 }
 
 void EmitSibMagic(const xRegisterBase &reg1, const void *src)
 {
-    EmitSibMagic(reg1.Id, src);
+    EmitSibMagic(reg1.Id & 7, src);
 }
 
 void EmitSibMagic(const xRegisterBase &reg1, const xIndirectVoid &sib)
 {
-    EmitSibMagic(reg1.Id, sib);
+    EmitSibMagic(reg1.Id & 7, sib);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -469,6 +469,10 @@ void EmitRex(const xRegisterBase &reg1, const xIndirectVoid &sib)
     bool r = reg1.IsExtended();
     bool x = sib.Index.IsExtended();
     bool b = sib.Base.IsExtended();
+    if (!NeedsSibMagic(sib)) {
+        b = x;
+        x = false;
+    }
     EmitRex(w, r, x, b);
 }
 

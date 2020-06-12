@@ -880,6 +880,7 @@ public:
     bool IsMem() const { return true; }
     bool IsReg() const { return false; }
     bool IsExtended() const { return false; } // Non sense but ease template
+    bool IsWide() const { return GetOperandSize() == 8; }
 
     operator xAddressVoid()
     {

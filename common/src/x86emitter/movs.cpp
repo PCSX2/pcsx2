@@ -61,10 +61,10 @@ void xImpl_Mov::operator()(const xIndirectVoid &dest, const xRegisterInt &from) 
 #ifdef __M_X86_64
         pxAssert(0);
 #endif
-        xOpAccWrite(from.GetPrefix16(), from.Is8BitOp() ? 0xa2 : 0xa3, from.Id, dest);
+        xOpAccWrite(from.GetPrefix16(), from.Is8BitOp() ? 0xa2 : 0xa3, from, dest);
         xWrite32(dest.Displacement);
     } else {
-        xOpWrite(from.GetPrefix16(), from.Is8BitOp() ? 0x88 : 0x89, from.Id, dest);
+        xOpWrite(from.GetPrefix16(), from.Is8BitOp() ? 0x88 : 0x89, from, dest);
     }
 }
 
@@ -111,7 +111,7 @@ const xImpl_Mov xMOV;
 #ifdef __M_X86_64
 void xImpl_MovImm64::operator()(const xRegister64& to, s64 imm, bool preserve_flags) const
 {
-    if (imm == (s32)imm) {
+    if (imm == (u32)imm) {
         xMOV(to, imm, preserve_flags);
     } else {
         u8 opcode = 0xb8 | to.Id;
