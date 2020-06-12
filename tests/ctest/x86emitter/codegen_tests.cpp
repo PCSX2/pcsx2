@@ -79,3 +79,64 @@ TEST(CodegenTests, POPTest)
 		CODEGEN_TEST(xPOP(ptrNative[(void*)0x1234]), "8f 05 34 12 00 00", "8f 04 25 34 12 00 00"),
 	});
 }
+
+TEST(CodegenTests, MathTest)
+{
+	runCodegenTests({
+		CODEGEN_TEST_64(xADD(r8, r9), "4d 01 c8"),
+		CODEGEN_TEST_64(xADD(r8, 0x12), "49 83 c0 12"),
+		CODEGEN_TEST_64(xADD(rax, 0x1234), "48 05 34 12 00 00"),
+		CODEGEN_TEST_BOTH(xADD(eaxd, ebxd), "01 d8"),
+		CODEGEN_TEST_BOTH(xADD(eaxd, 0x1234), "05 34 12 00 00"),
+		CODEGEN_TEST_64(xADD(r8, ptrNative[r10*4+3+r9]), "4f 03 44 91 03"),
+		CODEGEN_TEST_64(xADD(ptrNative[r9*4+3+r8], r10), "4f 01 44 8a 03"),
+		CODEGEN_TEST_BOTH(xADD(eaxd, ptr32[rbx*4+3+rcx]), "03 44 99 03"),
+		CODEGEN_TEST_BOTH(xADD(ptr32[rax*4+3+rbx], ecxd), "01 4c 83 03"),
+		CODEGEN_TEST_64(xSUB(r8, 0x12), "49 83 e8 12"),
+		CODEGEN_TEST_64(xSUB(rax, 0x1234), "48 2d 34 12 00 00"),
+		CODEGEN_TEST_BOTH(xSUB(eaxd, ptr32[rcx*4+rax]), "2b 04 88"),
+		CODEGEN_TEST_64(xMUL(ptr32[base]), "f7 2d fa ff ff ff"),
+		CODEGEN_TEST(xMUL(ptr32[(void*)0x1234]), "f7 2d 34 12 00 00", "f7 2c 25 34 12 00 00"),
+		CODEGEN_TEST_BOTH(xDIV(ecxd), "f7 f9")
+	});
+}
+
+TEST(CodegenTests, BitwiseTest)
+{
+	runCodegenTests({
+		CODEGEN_TEST_64(xSHR(r8, cl), "49 d3 e8"),
+		CODEGEN_TEST_64(xSHR(rax, cl), "48 d3 e8"),
+		CODEGEN_TEST_BOTH(xSHR(ecxd, cl), "d3 e9"),
+		CODEGEN_TEST_64(xSAR(r8, 1), "49 d1 f8"),
+		CODEGEN_TEST_64(xSAR(rax, 60), "48 c1 f8 3c"),
+		CODEGEN_TEST_BOTH(xSAR(eaxd, 30), "c1 f8 1e"),
+		CODEGEN_TEST_BOTH(xSHL(ebxd, 30), "c1 e3 1e"),
+		CODEGEN_TEST_64(xAND(r8, r9), "4d 21 c8"),
+		CODEGEN_TEST_64(xXOR(rax, ptrNative[r10]), "49 33 02"),
+		CODEGEN_TEST_BOTH(xOR(esid, ptr32[rax+rbx]), "0b 34 18"),
+		CODEGEN_TEST_64(xNOT(r8), "49 f7 d0"),
+		CODEGEN_TEST_64(xNOT(ptrNative[rax]), "48 f7 10"),
+		CODEGEN_TEST_BOTH(xNOT(ptr32[rbx]), "f7 13"),
+	});
+}
+
+TEST(CodegenTests, JmpTest)
+{
+	runCodegenTests({
+		CODEGEN_TEST_64(xJMP(r8), "41 ff e0"),
+		CODEGEN_TEST_BOTH(xJMP(rdi), "ff e7"),
+		CODEGEN_TEST_BOTH(xJMP(ptrNative[rax]), "ff 20"),
+		CODEGEN_TEST_BOTH(xJA(base), "77 fe"),
+		CODEGEN_TEST_BOTH(xJB((char*)base - 0xFFFF), "0f 82 fb ff fe ff"),
+	});
+}
+
+TEST(CodegenTests, SSETest)
+{
+	runCodegenTests({
+		CODEGEN_TEST_BOTH(xMOVAPS(xmm0, xmm1), "0f 28 c1"),
+		CODEGEN_TEST_64(xMOVUPS(xmm8, xmm9), "45 0f 10 c1"),
+		CODEGEN_TEST_BOTH(xBLEND.PS(xmm0, xmm1, 0x55), "66 0f 3a 0c c1 55"),
+		CODEGEN_TEST_64(xBLEND.PD(xmm8, xmm9, 0xaa), "66 45 0f 3a 0d c1 aa"),
+	});
+}
