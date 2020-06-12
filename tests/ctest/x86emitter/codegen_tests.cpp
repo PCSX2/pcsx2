@@ -87,7 +87,7 @@ TEST(CodegenTests, MathTest)
 	CODEGEN_TEST_BOTH(xADD(eaxd, ebxd), "01 d8");
 	CODEGEN_TEST_BOTH(xADD(eaxd, 0x1234), "05 34 12 00 00");
 	CODEGEN_TEST_64(xADD(r8, ptrNative[r10*4+3+r9]), "4f 03 44 91 03");
-	CODEGEN_TEST_64(xADD(ptrNative[r9*4+3+r8], r10), "4f 01 44 8a 03");
+	CODEGEN_TEST_64(xADD(ptrNative[r9*4+3+r8], r10), "4f 01 54 88 03");
 	CODEGEN_TEST_BOTH(xADD(eaxd, ptr32[rbx*4+3+rcx]), "03 44 99 03");
 	CODEGEN_TEST_BOTH(xADD(ptr32[rax*4+3+rbx], ecxd), "01 4c 83 03");
 	CODEGEN_TEST_64(xSUB(r8, 0x12), "49 83 e8 12");
@@ -127,7 +127,9 @@ TEST(CodegenTests, JmpTest)
 TEST(CodegenTests, SSETest)
 {
 	CODEGEN_TEST_BOTH(xMOVAPS(xmm0, xmm1), "0f 28 c1");
-	CODEGEN_TEST_64(xMOVUPS(xmm8, xmm9), "45 0f 10 c1");
+	CODEGEN_TEST_64(xMOVAPS(xmm8, xmm9), "45 0f 28 c1");
+	CODEGEN_TEST_64(xMOVUPS(xmm8, ptr128[r8+r9]), "47 0f 10 04 08");
+	CODEGEN_TEST_64(xMOVAPS(ptr128[rax+r9], xmm8), "46 0f 29 04 08");
 	CODEGEN_TEST_BOTH(xBLEND.PS(xmm0, xmm1, 0x55), "66 0f 3a 0c c1 55");
 	CODEGEN_TEST_64(xBLEND.PD(xmm8, xmm9, 0xaa), "66 45 0f 3a 0d c1 aa");
 }
