@@ -476,6 +476,29 @@ void EmitRex(const xRegisterBase &reg1, const xIndirectVoid &sib)
     EmitRex(w, r, x, b);
 }
 
+// For use by instructions that are implicitly wide
+void EmitRexImplicitlyWide(const xRegisterBase &reg)
+{
+    bool w = false;
+    bool r = false;
+    bool x = false;
+    bool b = reg.IsExtended();
+    EmitRex(w, r, x, b);
+}
+
+void EmitRexImplicitlyWide(const xIndirectVoid &sib)
+{
+    bool w = false;
+    bool r = false;
+    bool x = sib.Index.IsExtended();
+    bool b = sib.Base.IsExtended();
+    if (!NeedsSibMagic(sib)) {
+        b = x;
+        x = false;
+    }
+    EmitRex(w, r, x, b);
+}
+
 
 // --------------------------------------------------------------------------------------
 //  xSetPtr / xAlignPtr / xGetPtr / xAdvancePtr
@@ -1018,24 +1041,37 @@ const xImpl_DwordShift xSHRD = {0xac};
 
 __emitinline void xPOP(const xIndirectVoid &from)
 {
+    EmitRexImplicitlyWide(from);
     xWrite8(0x8f);
     EmitSibMagic(0, from);
 }
 
 __emitinline void xPUSH(const xIndirectVoid &from)
 {
+    EmitRexImplicitlyWide(from);
     xWrite8(0xff);
     EmitSibMagic(6, from);
 }
 
-__fi void xPOP(xRegister32or64 from) { xWrite8(0x58 | from->Id); }
+__fi void xPOP(xRegister32or64 from) {
+    EmitRexImplicitlyWide(from);
+    xWrite8(0x58 | (from->Id & 7));
+}
 
 __fi void xPUSH(u32 imm)
 {
-    xWrite8(0x68);
-    xWrite32(imm);
+    if (is_s8(imm)) {
+        xWrite8(0x6a);
+        xWrite8(imm);
+    } else {
+        xWrite8(0x68);
+        xWrite32(imm);
+    }
 }
-__fi void xPUSH(xRegister32or64 from) { xWrite8(0x50 | from->Id); }
+__fi void xPUSH(xRegister32or64 from) {
+    EmitRexImplicitlyWide(from);
+    xWrite8(0x50 | (from->Id & 7));
+}
 
 // pushes the EFLAGS register onto the stack
 __fi void xPUSHFD() { xWrite8(0x9C); }

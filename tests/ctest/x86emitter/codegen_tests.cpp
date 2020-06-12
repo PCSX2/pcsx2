@@ -52,7 +52,7 @@ TEST(CodegenTests, PUSHTest)
 	CODEGEN_TEST_BOTH(xPUSH(rax), "50");
 	CODEGEN_TEST_64(xPUSH(r8), "41 50");
 	CODEGEN_TEST_BOTH(xPUSH(0x1234), "68 34 12 00 00");
-	CODEGEN_TEST_BOTH(xPUSH(0x12), "68 12 00 00 00"); // TODO: Maybe we should generate "6a 12"
+	CODEGEN_TEST_BOTH(xPUSH(0x12), "6a 12");
 	CODEGEN_TEST_BOTH(xPUSH(ptrNative[rax]), "ff 30");
 	CODEGEN_TEST_64(xPUSH(ptrNative[r8]), "41 ff 30");
 	CODEGEN_TEST_BOTH(xPUSH(ptrNative[rax*2+3+rbx]), "ff 74 43 03");
