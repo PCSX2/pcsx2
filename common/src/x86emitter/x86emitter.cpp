@@ -428,7 +428,7 @@ void EmitRex(uint regfield, const void *address)
 
 void EmitRex(uint regfield, const xIndirectVoid &info)
 {
-    bool w = info.Base.IsWide();
+    bool w = info.IsWide();
     bool r = false;
     bool x = false;
     bool b = info.IsExtended();
