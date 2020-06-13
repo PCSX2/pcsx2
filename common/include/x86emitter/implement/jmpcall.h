@@ -45,6 +45,7 @@ struct xImpl_JmpCall
             // always 5 bytes (16 bit calls are bad mojo, so no bother to do special logic).
 
             sptr dest = (sptr)func - ((sptr)xGetPtr() + 5);
+            pxAssertMsg(dest == (s32)dest, "Indirect jump is too far, must use a register!");
             xWrite8(0xe8);
             xWrite32(dest);
         }
@@ -60,109 +61,40 @@ struct xImpl_FastCall
 // FIXME: current 64 bits is mostly a copy/past potentially it would require to push/pop
 // some registers. But I think it is enough to handle the first call.
 
+    void operator()(void *f, const xRegisterLong &a1 = xEmptyReg, const xRegisterLong &a2 = xEmptyReg) const;
 
-// Type unsafety is nice
+    void operator()(void *f, u32 a1, const xRegisterLong &a2) const;
+    void operator()(void *f, const xIndirect32 &a1) const;
 #ifdef __M_X86_64
-
-#define XFASTCALL \
-    xCALL(f);
-
-#define XFASTCALL1 \
-    xMOV(rdi, a1); \
-    xCALL(f);
-
-#define XFASTCALL2 \
-    xMOV(rdi, a1); \
-    xMOV(rsi, a2); \
-    xCALL(f);
-
-#else
-
-#define XFASTCALL \
-    xCALL(f);
-
-#define XFASTCALL1 \
-    xMOV(ecx, a1); \
-    xCALL(f);
-
-#define XFASTCALL2 \
-    xMOV(ecx, a1); \
-    xMOV(edx, a2); \
-    xCALL(f);
-
+    [[deprecated]] // Switch to xIndirect32, as the size of this isn't obvious
 #endif
+    void operator()(void *f, const xIndirectVoid &a1) const;
+    void operator()(void *f, u32 a1, u32 a2) const;
 
-    void operator()(void *f, const xRegisterLong &a1 = xEmptyReg, const xRegisterLong &a2 = xEmptyReg) const
+    template <typename T>
+    __fi void operator()(T *func, u32 a1, const xRegisterLong &a2 = xEmptyReg) const
     {
-        if (a1.IsEmpty()) {
-            XFASTCALL;
-        } else if (a2.IsEmpty()) {
-            XFASTCALL1;
-        } else {
-            XFASTCALL2;
-        }
+        (*this)((void *)func, a1, a2);
     }
 
     template <typename T>
-    __fi void operator()(T *func, u32 a1, const xRegisterLong &a2) const
+    __fi void operator()(T *func, const xIndirect32 &a1) const
     {
-        void *f = (void *)func;
-
-        XFASTCALL2;
-    }
-
-    template <typename T>
-    __fi void operator()(T *func, const xIndirectVoid &a1) const
-    {
-        void *f = (void *)func;
-
-        XFASTCALL1;
+        (*this)((void*)func, a1);
     }
 
     template <typename T>
     __fi void operator()(T *func, u32 a1, u32 a2) const
     {
-        void *f = (void *)func;
-
-        XFASTCALL2;
-    }
-
-    template <typename T>
-    __fi void operator()(T *func, u32 a1) const
-    {
-        void *f = (void *)func;
-
-        XFASTCALL1;
+        (*this)((void*)func, a1, a2);
     }
 
 #ifdef __M_X86_64
     [[deprecated]] // Switch to xIndirectNative
-    void operator()(const xIndirect32 &f, const xRegisterLong &a1 = xEmptyReg, const xRegisterLong &a2 = xEmptyReg) const
-    {
-        if (a1.IsEmpty()) {
-            XFASTCALL;
-        } else if (a2.IsEmpty()) {
-            XFASTCALL1;
-        } else {
-            XFASTCALL2;
-        }
-    }
+    void operator()(const xIndirect32 &f, const xRegisterLong &a1 = xEmptyReg, const xRegisterLong &a2 = xEmptyReg) const;
 #endif
 
-    void operator()(const xIndirectNative &f, const xRegisterLong &a1 = xEmptyReg, const xRegisterLong &a2 = xEmptyReg) const
-    {
-        if (a1.IsEmpty()) {
-            XFASTCALL;
-        } else if (a2.IsEmpty()) {
-            XFASTCALL1;
-        } else {
-            XFASTCALL2;
-        }
-    }
-
-#undef XFASTCALL
-#undef XFASTCALL1
-#undef XFASTCALL2
+    void operator()(const xIndirectNative &f, const xRegisterLong &a1 = xEmptyReg, const xRegisterLong &a2 = xEmptyReg) const;
 };
 
 } // End namespace x86Emitter

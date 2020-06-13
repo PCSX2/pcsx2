@@ -51,6 +51,59 @@ void xImpl_JmpCall::operator()(const xIndirect32 &absreg) const {
 const xImpl_JmpCall xJMP = {true};
 const xImpl_JmpCall xCALL = {false};
 
+static void prepareRegsForFastcall(const xRegisterLong &a1, const xRegisterLong &a2) {
+    if (!a1.IsEmpty()) {
+        xMOV(arg1reg, a1);
+        if (!a2.IsEmpty()) {
+            xMOV(arg2reg, a2);
+        }
+    }
+}
+
+void xImpl_FastCall::operator()(void *f, const xRegisterLong &a1, const xRegisterLong &a2) const {
+    prepareRegsForFastcall(a1, a2);
+    uptr disp = ((uptr)xGetPtr() + 5) - (uptr)f;
+    if ((sptr)disp == (s32)disp) {
+        xCALL(f);
+    } else {
+        xMOV(rax, ptrNative[f]);
+        xCALL(rax);
+    }
+}
+
+void xImpl_FastCall::operator()(void *f, u32 a1, const xRegisterLong &a2) const {
+    xMOV(arg1reg, a1);
+    (*this)(f, arg1reg, a2);
+}
+
+void xImpl_FastCall::operator()(void *f, const xIndirect32 &a1) const {
+    xMOV(arg1reg.GetNonWide(), a1);
+    (*this)(f, arg1reg);
+}
+
+void xImpl_FastCall::operator()(void *f, const xIndirectVoid &a1) const {
+    xMOV(arg1reg.GetNonWide(), a1);
+    (*this)(f, arg1reg);
+}
+
+void xImpl_FastCall::operator()(void *f, u32 a1, u32 a2) const {
+    xMOV(arg1reg, a1);
+    xMOV(arg2reg, a2);
+    (*this)(f, arg1reg, arg2reg);
+}
+
+#ifdef __M_X86_64
+void xImpl_FastCall::operator()(const xIndirect32 &f, const xRegisterLong &a1, const xRegisterLong &a2) const {
+    prepareRegsForFastcall(a1, a2);
+    xCALL(f);
+}
+#endif
+
+void xImpl_FastCall::operator()(const xIndirectNative &f, const xRegisterLong &a1, const xRegisterLong &a2) const {
+    prepareRegsForFastcall(a1, a2);
+    xCALL(f);
+}
+
 const xImpl_FastCall xFastCall = {};
 
 void xSmartJump::SetTarget()
