@@ -14753,6 +14753,7 @@ Serial = SLES-53541
 Name   = Tiger Woods PGA Tour 06
 Region = PAL-M4
 vuClampMode = 2 // fix black textures on characters
+SkipMPEGHack = 1 // Fixes hang after EA intro (IPU).
 ---------------------------------------------
 Serial = SLES-53542
 Name   = Shadow the Hedgehog
@@ -26545,6 +26546,7 @@ Serial = SLPM-66191
 Name   = Tiger Woods PGA Tour 06
 Region = NTSC-J
 vuClampMode = 2 // Fixes black textures on characters.
+SkipMPEGHack = 1 // Fixes hang after EA intro (IPU).
 ---------------------------------------------
 Serial = SLPM-66192
 Name   = Izumo 2
@@ -41124,6 +41126,7 @@ Name   = Tiger Woods PGA Tour 06
 Region = NTSC-U
 Compat = 5
 vuClampMode = 2 // fix black textures on characters
+SkipMPEGHack = 1 // Fixes hang after EA intro (IPU).
 ---------------------------------------------
 Serial = SLUS-21265
 Name   = Sims 2, The
