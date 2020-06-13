@@ -132,13 +132,12 @@ static DynGenFunc* _DynGen_JITCompile()
     xSHR( eax, 16 );
     
     #ifdef __M_X86_64
+      xSHL( ebx, 1 );
       xSHL( eax, 3 );
       xMOV( ecx, eax );
       xMOV( eax, (uptr)psxRecLUT); 
       xADD( ecx, eax );
       xMOV( ecx, ptr[ecx] );
-      xMOV( eax, (uptr)0x800000000); 
-      xSUB( ecx, eax );
       xADD( ecx, ebx );
       xMOV( ecx, ptr[ecx] );
       xJMP( ecx );
@@ -166,13 +165,12 @@ static DynGenFunc* _DynGen_DispatcherReg()
 	xMOV( ebx, eax );
 	xSHR( eax, 16 );
     #ifdef __M_X86_64
+      xSHL( ebx, 1 );
       xSHL( eax, 3 );
       xMOV( ecx, eax );
       xMOV( eax, (uptr)psxRecLUT); 
       xADD( ecx, eax );
       xMOV( ecx, ptr[ecx] );
-      xMOV( eax, (uptr)0x800000000); 
-      xSUB( ecx, eax );
       xADD( ecx, ebx );
       xMOV( ecx, ptr[ecx] );
       xJMP( ecx );
