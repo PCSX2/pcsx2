@@ -347,18 +347,19 @@ static DynGenFunc* _DynGen_JITCompile()
 
 	xFastCall((void*)recRecompile, ptr[&cpuRegs.pc] );
     
+    // uptr* fp = reclut[ pc >> 16] + pc*sizeof(uptr)/4;
+    // jump fp[0];
     xMOV( eax, ptr[&cpuRegs.pc]);    
     xMOV( ebx, eax );
     xSHR( eax, 16 );
     
     #ifdef __M_X86_64
+      xSHL( ebx, 1 );
       xSHL( eax, 3 );
       xMOV( ecx, eax );
       xMOV( eax, (uptr)recLUT); 
       xADD( ecx, eax );
       xMOV( ecx, ptr[ecx] );
-      xMOV( eax, (uptr)0x800000000); 
-      xSUB( ecx, eax );
       xADD( ecx, ebx );
       xMOV( ecx, ptr[ecx] );
       xJMP( ecx );
@@ -381,23 +382,26 @@ static DynGenFunc* _DynGen_JITCompileInBlock()
 static DynGenFunc* _DynGen_DispatcherReg()
 {
     u8* retval = xGetPtr();        // fallthrough target, can't align it!
+    
+    // see PC_GETBLOCK for C equivalent
+    // uptr* fp = reclut[ pc >> 16] + pc*sizeof(uptr)/4;
+    // jump fp[0]; 
 
-    xMOV( eax, ptr[&cpuRegs.pc]);    
-    xMOV( ebx, eax );
-    xSHR( eax, 16 );
+    xMOV( eax, ptr[&cpuRegs.pc]);  // Load the PS2 PC into eax  
+    xMOV( ebx, eax );              // ... and ebx
+    xSHR( eax, 16 );               // recLUT is a 2-level page table. First get the top 16 bits = page
     
     #ifdef __M_X86_64
-      xSHL( eax, 3 );
-      xMOV( ecx, eax );
-      xMOV( eax, (uptr)recLUT); 
-      xADD( ecx, eax );
-      xMOV( ecx, ptr[ecx] );
-      xMOV( eax, (uptr)0x800000000); 
-      xSUB( ecx, eax );
-      xADD( ecx, ebx );
-      xMOV( ecx, ptr[ecx] );
-      xJMP( ecx );
-    #else
+      xSHL( ebx, 1 );               // addresses in recLutReserve_RAM advance twice as much as pc under x64
+      xSHL( eax, 3 );               // align for 8-byte: &recLUT[page] = recLUT+8*page
+      xMOV( ecx, eax );             
+      xMOV( eax, (uptr)recLUT);     // get pointer to recLUT
+      xADD( ecx, eax );             // recLUT + page
+      xMOV( ecx, ptr[ecx] );        // (recLUT + pc)[0]: retrieve 1st look-up table value
+      xADD( ecx, ebx );             // reclut[ pc >> 16] + pc*sizeof(uptr)/4
+      xMOV( ecx, ptr[ecx] );        // retrieve function pointer from 2nd table recLutReserve_RAM
+      xJMP( ecx );                  // ... and jump to this function
+    #else  
       xMOV( ecx, ptr[recLUT + (eax*4)] );
       xJMP( ptr32[ecx+ebx] );
     #endif
