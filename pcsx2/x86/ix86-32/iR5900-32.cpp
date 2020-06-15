@@ -356,13 +356,13 @@ static DynGenFunc* _DynGen_JITCompile()
     #ifdef __M_X86_64
       xSHL( ebx, 1 );
       xSHL( eax, 3 );
-      xMOV( ecx, eax );
-      xMOV( eax, (uptr)recLUT); 
-      xADD( ecx, eax );
-      xMOV( ecx, ptr[ecx] );
-      xADD( ecx, ebx );
-      xMOV( ecx, ptr[ecx] );
-      xJMP( ecx );
+      xMOV( rcx, eax );
+      xMOV( rax, (uptr)recLUT); 
+      xADD( rcx, rax );
+      xMOV( rcx, ptr[ecx] );
+      xADD( rcx, ebx );
+      xMOV( rcx, ptr[rcx] );
+      xJMP( rcx );
     #else
       xMOV( ecx, ptr[recLUT + (eax*4)] );
       xJMP( ptr32[ecx+ebx] );
@@ -387,20 +387,20 @@ static DynGenFunc* _DynGen_DispatcherReg()
     // uptr* fp = reclut[ pc >> 16] + pc*sizeof(uptr)/4;
     // jump fp[0]; 
 
-    xMOV( eax, ptr[&cpuRegs.pc]);  // Load the PS2 PC into eax  
+    xMOV( eax, ptr[&cpuRegs.pc]);  // Load the 32-bit PS2 PC into eax  
     xMOV( ebx, eax );              // ... and ebx
     xSHR( eax, 16 );               // recLUT is a 2-level page table. First get the top 16 bits = page
     
     #ifdef __M_X86_64
       xSHL( ebx, 1 );               // addresses in recLutReserve_RAM advance twice as much as pc under x64
       xSHL( eax, 3 );               // align for 8-byte: &recLUT[page] = recLUT+8*page
-      xMOV( ecx, eax );             
-      xMOV( eax, (uptr)recLUT);     // get pointer to recLUT
-      xADD( ecx, eax );             // recLUT + page
-      xMOV( ecx, ptr[ecx] );        // (recLUT + pc)[0]: retrieve 1st look-up table value
-      xADD( ecx, ebx );             // reclut[ pc >> 16] + pc*sizeof(uptr)/4
-      xMOV( ecx, ptr[ecx] );        // retrieve function pointer from 2nd table recLutReserve_RAM
-      xJMP( ecx );                  // ... and jump to this function
+      xMOV( rcx, eax );             
+      xMOV( rax, (uptr)recLUT);     // get pointer to recLUT
+      xADD( rcx, rax );             // recLUT + page
+      xMOV( rcx, ptr[rcx] );        // (recLUT + pc)[0]: retrieve 1st look-up table value
+      xADD( rcx, ebx );             // reclut[ pc >> 16] + pc*sizeof(uptr)/4 (64-bit value + 32-bit value)
+      xMOV( rcx, ptr[rcx] );        // retrieve function pointer from 2nd table recLutReserve_RAM
+      xJMP( rcx );                  // ... and jump to this function
     #else  
       xMOV( ecx, ptr[recLUT + (eax*4)] );
       xJMP( ptr32[ecx+ebx] );
@@ -931,7 +931,12 @@ void SetBranchImm( u32 imm )
 
 	// end the current block
 	iFlushCall(FLUSH_EVERYTHING);
-	xMOV(ptr32[&cpuRegs.pc], imm);
+    #ifdef __M_X86_64
+      xMOV(eax, imm);
+      xMOV(ptr[&cpuRegs.pc], eax);
+	#else
+      xMOV(ptr32[&cpuRegs.pc], imm);
+    #endif
 	iBranchTest(imm);
 }
 
@@ -1079,14 +1084,25 @@ static void iBranchTest(u32 newpc)
 		xMOV(eax, ptr[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles());
 		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
-		xSUB(eax, ptr[&g_nextEventCycle]);
+		#ifdef __M_X86_64
+			xMOV(ebx,eax);
+			xMOV(eax, ptr[&g_nextEventCycle]);
+			xSUB(ebx, eax);
+			xMOV(eax,ebx);
+		#else
+			xSUB(eax, ptr[&g_nextEventCycle]);
+		#endif
 
 		if (newpc == 0xffffffff)
 			xJS( DispatcherReg );
 		else
 			recBlocks.Link(HWADDR(newpc), xJcc32(Jcc_Signed));
-
-		xJMP( (void*)DispatcherEvent );
+		#ifdef __M_X86_64
+			xMOV( rax, (uptr)DispatcherEvent );
+			xJMP( rax );
+		#else
+			xJMP( (void*)DispatcherEvent );
+        #endif
 	}
 }
 

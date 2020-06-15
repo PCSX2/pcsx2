@@ -291,7 +291,7 @@ void EmitSibMagic(uint regfield, const void *address)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // returns TRUE if this instruction requires SIB to be encoded, or FALSE if the
-// instruction ca be encoded as ModRm alone.
+// instruction can be encoded as ModRm alone.
 static __fi bool NeedsSibMagic(const xIndirectVoid &info)
 {
     // no registers? no sibs!
