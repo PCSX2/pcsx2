@@ -162,14 +162,28 @@ void recSLTI_const()
 
 void recSLTI_(int info)
 {
-	// test silent hill if modding
+    
+    #ifdef __M_X86_64
+      xMOV( eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
+      xCMP( eax, _Imm_ >= 0 ? 0 : 0xffffffff);
+    #else
+      xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], _Imm_ >= 0 ? 0 : 0xffffffff);
+    #endif
+    
+    // test silent hill if modding
 	xMOV(eax, 1);
-
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], _Imm_ >= 0 ? 0 : 0xffffffff);
+    
 	j8Ptr[0] = JL8( 0 );
 	j8Ptr[2] = JG8( 0 );
-
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], (s32)_Imm_ );
+    
+    #ifdef __M_X86_64
+      xMOV( eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
+      xCMP( eax, (s32)_Imm_ );
+      // test silent hill if modding
+      xMOV(eax, 1);
+    #else
+      xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], (s32)_Imm_ );
+    #endif
 	j8Ptr[1] = JB8(0);
 
 	x86SetJ8(j8Ptr[2]);
@@ -179,7 +193,12 @@ void recSLTI_(int info)
 	x86SetJ8(j8Ptr[1]);
 
 	xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], 0 );
+    #ifdef __M_X86_64
+      xMOV(eax, 0);
+      xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], eax );
+    #else
+      xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], 0 );
+    #endif
 }
 
 EERECOMPILE_CODEX(eeRecompileCode1, SLTI);

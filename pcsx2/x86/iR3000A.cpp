@@ -134,13 +134,13 @@ static DynGenFunc* _DynGen_JITCompile()
     #ifdef __M_X86_64
       xSHL( ebx, 1 );
       xSHL( eax, 3 );
-      xMOV( ecx, eax );
-      xMOV( eax, (uptr)psxRecLUT); 
-      xADD( ecx, eax );
-      xMOV( ecx, ptr[ecx] );
-      xADD( ecx, ebx );
-      xMOV( ecx, ptr[ecx] );
-      xJMP( ecx );
+      xMOV( rcx, eax );
+      xMOV( rax, (uptr)psxRecLUT); 
+      xADD( rcx, rax );
+      xMOV( rcx, ptr[rcx] );
+      xADD( rcx, ebx );
+      xMOV( rcx, ptr[rcx] );
+      xJMP( rcx );
     #else
       xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
       xJMP( ptr32[ecx+ebx] );
@@ -167,13 +167,13 @@ static DynGenFunc* _DynGen_DispatcherReg()
     #ifdef __M_X86_64
       xSHL( ebx, 1 );
       xSHL( eax, 3 );
-      xMOV( ecx, eax );
-      xMOV( eax, (uptr)psxRecLUT); 
-      xADD( ecx, eax );
-      xMOV( ecx, ptr[ecx] );
-      xADD( ecx, ebx );
-      xMOV( ecx, ptr[ecx] );
-      xJMP( ecx );
+      xMOV( rcx, eax );
+      xMOV( rax, (uptr)psxRecLUT); 
+      xADD( rcx, rax );
+      xMOV( rcx, ptr[rcx] );
+      xADD( rcx, ebx );
+      xMOV( rcx, ptr[rcx] );
+      xJMP( rcx );
     #else
 	  xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
 	  xJMP( ptr32[ecx+ebx] );

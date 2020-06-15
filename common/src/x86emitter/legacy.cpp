@@ -222,60 +222,60 @@ emitterT u8 *JGE8(u8 to)
 /* jl rel8 */
 emitterT u8 *JL8(u8 to)
 {
-    return J8Rel(0x7C, to);
+    return J8Rel(x86_Opcode_JL_Jb, to);
 }
 
 /* ja rel8 */
 emitterT u8 *JA8(u8 to)
 {
-    return J8Rel(0x77, to);
+    return J8Rel(x86_Opcode_JA_Jb, to);
 }
 
 emitterT u8 *JAE8(u8 to)
 {
-    return J8Rel(0x73, to);
+    return J8Rel(x86_Opcode_JNB_Jb, to);
 }
 
 /* jb rel8 */
 emitterT u8 *JB8(u8 to)
 {
-    return J8Rel(0x72, to);
+    return J8Rel(x86_Opcode_JB_Jb, to);
 }
 
 /* jbe rel8 */
 emitterT u8 *JBE8(u8 to)
 {
-    return J8Rel(0x76, to);
+    return J8Rel(x86_Opcode_JBE_Jb, to);
 }
 
 /* jle rel8 */
 emitterT u8 *JLE8(u8 to)
 {
-    return J8Rel(0x7E, to);
+    return J8Rel(x86_Opcode_JLE_Jb, to);
 }
 
 /* jne rel8 */
 emitterT u8 *JNE8(u8 to)
 {
-    return J8Rel(0x75, to);
+    return J8Rel(x86_Opcode_JNZ_Jb, to);
 }
 
 /* jnz rel8 */
 emitterT u8 *JNZ8(u8 to)
 {
-    return J8Rel(0x75, to);
+    return J8Rel(x86_Opcode_JNZ_Jb, to);
 }
 
 /* jng rel8 */
 emitterT u8 *JNG8(u8 to)
 {
-    return J8Rel(0x7E, to);
+    return J8Rel(x86_Opcode_JLE_Jb, to);
 }
 
 /* jnge rel8 */
 emitterT u8 *JNGE8(u8 to)
 {
-    return J8Rel(0x7C, to);
+    return J8Rel(x86_Opcode_JL_Jb, to);
 }
 
 /* jnl rel8 */
