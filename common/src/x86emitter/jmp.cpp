@@ -103,25 +103,25 @@ void xImpl_FastCall::operator()(void *f, u32 a1, const xRegisterLong &a2) const 
 #endif
 
 void xImpl_FastCall::operator()(void *f, u32 a1, const xRegister32 &a2) const {
-    xMOV(xRegister32(arg2reg.Id), a2);
-    xMOV(xRegister32(arg1reg.Id), a1);
-    (*this)(f, xRegister32(arg1reg.Id), xRegister32(arg2reg.Id));
+    xMOV(arg2regd, a2);
+    xMOV(arg1regd, a1);
+    (*this)(f, arg1regd, arg2regd);
 }
 
 void xImpl_FastCall::operator()(void *f, const xIndirect32 &a1) const {
-    xMOV(xRegister32(arg1reg.Id), a1);
-    (*this)(f, xRegister32(arg1reg.Id));
+    xMOV(arg1regd, a1);
+    (*this)(f, arg1regd);
 }
 
 void xImpl_FastCall::operator()(void *f, const xIndirectVoid &a1) const {
-    xMOV(xRegister32(arg1reg.Id), a1);
-    (*this)(f, xRegister32(arg1reg.Id));
+    xMOV(arg1regd, a1);
+    (*this)(f, arg1regd);
 }
 
 void xImpl_FastCall::operator()(void *f, u32 a1, u32 a2) const {
-    xMOV(xRegister32(arg1reg.Id), a1);
-    xMOV(xRegister32(arg2reg.Id), a2);
-    (*this)(f, xRegister32(arg1reg.Id), xRegister32(arg2reg.Id));
+    xMOV(arg1regd, a1);
+    xMOV(arg2regd, a2);
+    (*this)(f, arg1regd, arg2regd);
 }
 
 #ifdef __M_X86_64

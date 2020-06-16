@@ -158,22 +158,30 @@ const xRegister8
     ah(4), ch(5),
     dh(6), bh(7);
 
+#if defined(_WIN32) || !defined(__M_X86_64)
 const xAddressReg
-#ifdef __M_X86_64
-#ifdef _WIN32
     arg1reg = rcx,
     arg2reg = rdx,
-    arg3reg = r8,
-    arg4reg = r9;
+    calleeSavedReg1 = rdi,
+    calleeSavedReg2 = rsi;
+
+const xRegister32
+    arg1regd = ecxd,
+    arg2regd = edxd,
+    calleeSavedReg1d = edid,
+    calleeSavedReg2d = esid;
 #else
+const xAddressReg
     arg1reg = rdi,
     arg2reg = rsi,
-    arg3reg = rcx,
-    arg4reg = rdx;
-#endif
-#else
-    arg1reg = ecx,
-    arg2reg = edx;
+    calleeSavedReg1 = r12,
+    calleeSavedReg2 = r13;
+
+const xRegister32
+    arg1regd = edid,
+    arg2regd = esid,
+    calleeSavedReg1d = r12d,
+    calleeSavedReg2d = r13d;
 #endif
 
 // clang-format on

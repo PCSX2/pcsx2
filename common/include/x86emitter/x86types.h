@@ -661,12 +661,16 @@ extern const xRegister8
     ah, ch, dh, bh;
 
 extern const xAddressReg
-#ifdef __M_X86_64
     arg1reg, arg2reg,
-    arg3reg, arg4reg;
-#else
-    arg1reg, arg2reg;
-#endif
+    calleeSavedReg1,
+    calleeSavedReg2;
+
+
+extern const xRegister32
+    arg1regd, arg2regd,
+    calleeSavedReg1d,
+    calleeSavedReg2d;
+
 
 // clang-format on
 
