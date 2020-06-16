@@ -430,8 +430,12 @@ void EmitRex(uint regfield, const xIndirectVoid &info)
 {
     bool w = info.IsWide();
     bool r = false;
-    bool x = false;
-    bool b = info.IsExtended();
+	bool x = info.Index.IsExtended();
+	bool b = info.Base.IsExtended();
+	if (!NeedsSibMagic(info)) {
+		b = x;
+		x = false;
+	}
     EmitRex(w, r, x, b);
 }
 
@@ -839,7 +843,11 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
 
     // See EmitSibMagic for commenting on SIB encoding.
 
-    if (!NeedsSibMagic(src)) {
+    // We should allow native-sized addressing regs (e.g. lea eax, [rax])
+    const xRegisterInt& sizeMatchedIndex = to.IsWide() ? src.Index : src.Index.GetNonWide();
+    const xRegisterInt& sizeMatchedBase = to.IsWide() ? src.Base : src.Base.GetNonWide();
+
+    if (!NeedsSibMagic(src) && src.Displacement == (s32)src.Displacement) {
         // LEA Land: means we have either 1-register encoding or just an offset.
         // offset is encodable as an immediate MOV, and a register is encodable
         // as a register MOV.
@@ -847,24 +855,17 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
         if (src.Index.IsEmpty()) {
             xMOV(to, src.Displacement);
             return;
-        } else if (displacement_size == 0) {
-            _xMovRtoR(to, src.Index);
+        }
+        else if (displacement_size == 0) {
+            _xMovRtoR(to, sizeMatchedIndex);
             return;
-        } else {
-            if (!preserve_flags) {
-                // encode as MOV and ADD combo.  Make sure to use the immediate on the
-                // ADD since it can encode as an 8-bit sign-extended value.
+        } else if (!preserve_flags) {
+            // encode as MOV and ADD combo.  Make sure to use the immediate on the
+            // ADD since it can encode as an 8-bit sign-extended value.
 
-                _xMovRtoR(to, src.Index);
-                xADD(to, src.Displacement);
-                return;
-            } else {
-                // note: no need to do ebp+0 check since we encode all 0 displacements as
-                // register assignments above (via MOV)
-
-                xWrite8(0x8d);
-                ModRM(displacement_size, to.Id, src.Index.Id);
-            }
+            _xMovRtoR(to, sizeMatchedIndex);
+            xADD(to, src.Displacement);
+            return;
         }
     } else {
         if (src.Base.IsEmpty()) {
@@ -880,49 +881,32 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
                 xSHL(to, src.Scale);
                 return;
             }
-            xWrite8(0x8d);
-            ModRM(0, to.Id, ModRm_UseSib);
-            SibSB(src.Scale, src.Index.Id, Sib_UseDisp32);
-            xWrite32(src.Displacement);
-            return;
         } else {
             if (src.Scale == 0) {
                 if (!preserve_flags) {
                     if (src.Index == esp) {
                         // ESP is not encodable as an index (ix86 ignores it), thus:
-                        _xMovRtoR(to, src.Base); // will do the trick!
+                        _xMovRtoR(to, sizeMatchedBase); // will do the trick!
                         if (src.Displacement)
                             xADD(to, src.Displacement);
                         return;
                     } else if (src.Displacement == 0) {
-                        _xMovRtoR(to, src.Base);
-                        _g1_EmitOp(G1Type_ADD, to, src.Index);
+                        _xMovRtoR(to, sizeMatchedBase);
+                        _g1_EmitOp(G1Type_ADD, to, sizeMatchedIndex);
                         return;
                     }
                 } else if ((src.Index == esp) && (src.Displacement == 0)) {
                     // special case handling of ESP as Index, which is replaceable with
                     // a single MOV even when preserve_flags is set! :D
 
-                    _xMovRtoR(to, src.Base);
+                    _xMovRtoR(to, sizeMatchedBase);
                     return;
                 }
             }
-
-            if (src.Base == ebp && displacement_size == 0)
-                displacement_size = 1; // forces [ebp] to be encoded as [ebp+0]!
-
-            xWrite8(0x8d);
-            ModRM(displacement_size, to.Id, ModRm_UseSib);
-            SibSB(src.Scale, src.Index.Id, src.Base.Id);
         }
     }
 
-    if (displacement_size != 0) {
-        if (displacement_size == 1)
-            xWrite<s8>(src.Displacement);
-        else
-            xWrite<s32>(src.Displacement);
-    }
+    xOpWrite(0, 0x8d, to, src);
 }
 
 __emitinline void xLEA(xRegister64 to, const xIndirectVoid &src, bool preserve_flags)

@@ -43,8 +43,26 @@ TEST(CodegenTests, MOVTest)
 	CODEGEN_TEST_BOTH(xMOV(ptr32[rbx*4+3+rax], ecxd), "89 4c 98 03");
 	CODEGEN_TEST_64(xMOV(r8, ptrNative[r10*4+3+r9]), "4f 8b 44 91 03");
 	CODEGEN_TEST_64(xMOV(ptrNative[r9*4+3+r8], r10), "4f 89 54 88 03");
+	CODEGEN_TEST_64(xMOV(ptrNative[r8], 0), "49 c7 00 00 00 00 00");
+	CODEGEN_TEST_BOTH(xMOV(ptr32[rax], 0), "c7 00 00 00 00 00");
+	CODEGEN_TEST_BOTH(xMOV(ptr32[rbx*4+3+rax], -1), "c7 44 98 03 ff ff ff ff");
+	CODEGEN_TEST_64(xMOV(rax, 0xffffffff), "b8 ff ff ff ff");
+	CODEGEN_TEST_64(xMOV(r8, -1), "49 c7 c0 ff ff ff ff");
 	CODEGEN_TEST_64(xMOV64(rax, 0x1234567890), "48 b8 90 78 56 34 12 00 00 00");
 	CODEGEN_TEST_64(xMOV64(r8, 0x1234567890), "49 b8 90 78 56 34 12 00 00 00");
+}
+
+TEST(CodegenTests, LEATest)
+{
+	CODEGEN_TEST_64(xLEA(rax, ptr[rcx]), "48 89 c8"); // Converted to mov rax, rcx
+	CODEGEN_TEST_BOTH(xLEA(eaxd, ptr[rcx]), "89 c8"); // Converted to mov eax, ecx
+	CODEGEN_TEST_64(xLEA(rax, ptr[r8]), "4c 89 c0"); // Converted to mov rax, r8
+	CODEGEN_TEST_64(xLEA(r8, ptr[r9]), "4d 89 c8"); // Converted to mov r8, r9
+	CODEGEN_TEST_64(xLEA(rax, ptr[rbx*4+3+rcx]), "48 8d 44 99 03");
+	CODEGEN_TEST_BOTH(xLEA(eaxd, ptr32[rbx*4+3+rcx]), "8d 44 99 03");
+	CODEGEN_TEST_64(xLEA(r8, ptr[r10*4+3+r9]), "4f 8d 44 91 03");
+	CODEGEN_TEST_64(xLEA(r8, ptr[base]), "4c 8d 05 f9 ff ff ff");
+	CODEGEN_TEST_BOTH(xLEA(rax, ptr[(void*)0x1234]), "b8 34 12 00 00"); // Converted to mov rax, 0x1234
 }
 
 TEST(CodegenTests, PUSHTest)
