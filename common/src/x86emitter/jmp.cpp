@@ -51,25 +51,26 @@ void xImpl_JmpCall::operator()(const xIndirect32 &absreg) const {
 const xImpl_JmpCall xJMP = {true};
 const xImpl_JmpCall xCALL = {false};
 
-static void prepareRegsForFastcall(const xRegister32 &a1, const xRegister32 &a2) {
-    if (!a1.IsEmpty()) {
-        xMOV(xRegister32(arg1reg.Id), a1);
-        if (!a2.IsEmpty()) {
-            xMOV(xRegister32(arg2reg.Id), a2);
-        }
-    }
-}
 
-#ifdef __M_X86_64
-static void prepareRegsForFastcall(const xRegisterLong &a1, const xRegisterLong &a2) {
-    if (!a1.IsEmpty()) {
-        xMOV(arg1reg, a1);
+template <typename Reg1, typename Reg2>
+void prepareRegsForFastcall(const Reg1 &a1, const Reg2 &a2) {
+    if (a1.IsEmpty()) return;
+
+    // Make sure we don't mess up if someone tries to fastcall with a1 in arg2reg and a2 in arg1reg
+    if (a2.Id != arg1reg.Id) {
+        xMOV(Reg1(arg1reg.Id), a1);
         if (!a2.IsEmpty()) {
-            xMOV(arg2reg, a2);
+            xMOV(Reg2(arg2reg.Id), a2);
         }
+    } else if (a1.Id != arg2reg.Id) {
+        xMOV(Reg2(arg2reg.Id), a2);
+        xMOV(Reg1(arg1reg.Id), a1);
+    } else {
+        xPUSH(a1);
+        xMOV(Reg2(arg2reg.Id), a2);
+        xPOP(Reg1(arg1reg.Id));
     }
 }
-#endif
 
 void xImpl_FastCall::operator()(void *f, const xRegister32 &a1, const xRegister32 &a2) const {
     prepareRegsForFastcall(a1, a2);
@@ -95,14 +96,16 @@ void xImpl_FastCall::operator()(void *f, const xRegisterLong &a1, const xRegiste
 }
 
 void xImpl_FastCall::operator()(void *f, u32 a1, const xRegisterLong &a2) const {
+    xMOV(arg2reg, a2);
     xMOV(arg1reg, a1);
-    (*this)(f, arg1reg, a2);
+    (*this)(f, arg1reg, arg2reg);
 }
 #endif
 
 void xImpl_FastCall::operator()(void *f, u32 a1, const xRegister32 &a2) const {
+    xMOV(xRegister32(arg2reg.Id), a2);
     xMOV(xRegister32(arg1reg.Id), a1);
-    (*this)(f, xRegister32(arg1reg.Id), a2);
+    (*this)(f, xRegister32(arg1reg.Id), xRegister32(arg2reg.Id));
 }
 
 void xImpl_FastCall::operator()(void *f, const xIndirect32 &a1) const {
