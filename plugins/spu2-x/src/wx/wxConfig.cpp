@@ -159,52 +159,38 @@ Dialog::~Dialog()
 void Dialog::Reconfigure()
 {
     const int mod = m_module_select->GetCurrentSelection();
+    bool show_portaudio = false, show_sdl = false;
 
     switch (mod) {
         case 0:
-            m_portaudio_text->Hide();
-            m_portaudio_select->Hide();
-
-            m_sdl_text->Hide();
-            m_sdl_select->Hide();
+            show_portaudio = false;
+            show_sdl = false;
             break;
 
         case 1:
-            m_portaudio_text->Show();
-            m_portaudio_select->Show();
-
-            m_sdl_text->Hide();
-            m_sdl_select->Hide();
+            show_portaudio = true;
+            show_sdl = false;
             break;
 
         case 2:
-            m_portaudio_text->Hide();
-            m_portaudio_select->Hide();
-
-            m_sdl_text->Show();
-            m_sdl_select->Show();
+            show_portaudio = false;
+            show_sdl = true;
             break;
 
         default:
-            m_portaudio_text->Hide();
-            m_portaudio_select->Hide();
-
-            m_sdl_text->Hide();
-            m_sdl_select->Hide();
+            show_portaudio = false;
+            show_sdl = false;
             break;
     }
+    m_output_box->Show(m_portaudio_box, show_portaudio, true);
+    m_output_box->Show(m_sdl_box, show_sdl, true);
 
-    m_right_box->Layout();
+    // Recalculating both of these accounts for if neither was showing initially.
+    m_top_box->Layout();
+    m_panel->SetSizerAndFit(m_top_box);
 
-    if (debug_check->GetValue())
-        launch_debug_dialog->Enable();
-    else
-        launch_debug_dialog->Disable();
-
-    if (m_sync_select->GetCurrentSelection() == 0)
-        launch_adv_dialog->Enable();
-    else
-        launch_adv_dialog->Disable();
+    launch_debug_dialog->Enable(debug_check->GetValue());
+    launch_adv_dialog->Enable(m_sync_select->GetCurrentSelection() == 0);
 }
 
 void Dialog::CallReconfigure(wxCommandEvent &event)
@@ -216,14 +202,14 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
 {
     wxButton *bt = (wxButton *)event.GetEventObject();
 
-    if (bt == launch_debug_dialog) 
+    if (bt == launch_debug_dialog)
     {
         auto debug_dialog = new DebugDialog;
         debug_dialog->Display();
         wxDELETE(debug_dialog);
     }
 
-    if (bt == launch_adv_dialog) 
+    if (bt == launch_adv_dialog)
     {
         auto adv_dialog = new SoundtouchCfg::AdvDialog;
         adv_dialog->Display();
