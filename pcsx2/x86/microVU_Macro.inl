@@ -263,7 +263,7 @@ void TEST_FBRST_RESET(FnType_Void* resetFunct, int vuIndex) {
 }
 
 static void recCFC2() {
-
+/*
 	printCOP2("CFC2");
 
 	COP2_Interlock(false);
@@ -323,11 +323,11 @@ static void recCFC2() {
 	else xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
 
 	// FixMe: I think this is needed, but not sure how it works
-	_eeOnWriteReg(_Rt_, 1);
+	_eeOnWriteReg(_Rt_, 1);*/
 }
 
 static void recCTC2() {
-
+/*
 	printCOP2("CTC2");
 	COP2_Interlock(1);
 	if (!_Rd_) return;
@@ -375,7 +375,7 @@ static void recCTC2() {
 			if (_Rd_) _eeMoveGPRtoM((uptr)&vu0Regs.VI[_Rd_].UL, _Rt_);
 			xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, (uptr)CpuVU0);
 			break;
-	}
+	}*/
 }
 
 static void recQMFC2() {

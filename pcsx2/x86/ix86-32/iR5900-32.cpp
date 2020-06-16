@@ -891,8 +891,13 @@ void SetBranchReg( u32 reg )
 //				xMOV(ptr[&cpuRegs.pc], eax);
 //			}
 //		}
-		_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-		_eeMoveGPRtoR(esi, reg);
+        #ifdef __M_X86_64
+		  _allocX86reg(rsi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		  _eeMoveGPRtoR(rsi, reg);
+        #else
+          _allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		  _eeMoveGPRtoR(esi, reg);
+        #endif
 
 		if (EmuConfig.Gamefixes.GoemonTlbHack) {
 			xMOV(ecx, esi);
@@ -965,10 +970,16 @@ void LoadBranchState()
 
 void iFlushCall(int flushtype)
 {
-	// Free registers that are not saved across function calls (x86-32 ABI):
-	_freeX86reg(eax);
-	_freeX86reg(ecx);
-	_freeX86reg(edx);
+    // Free registers that are not saved across function calls (x86-32 ABI):
+    #ifdef __M_X86_64
+      _freeX86reg(rax);
+	  _freeX86reg(rcx);
+	  _freeX86reg(rdx);
+    #else
+      _freeX86reg(eax);
+	  _freeX86reg(ecx);
+	  _freeX86reg(edx);
+    #endif
 
 	if ((flushtype & FLUSH_PC) && !g_cpuFlushedPC) {
 		xMOV(ptr32[&cpuRegs.pc], pc);
@@ -1228,13 +1239,21 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	iFlushCall(FLUSH_EVERYTHING|FLUSH_PC);
 
 	// compute accessed address
-	_eeMoveGPRtoR(ecx, (op >> 21) & 0x1F);
+    #ifdef __M_X86_64
+	  _eeMoveGPRtoR(rcx, (op >> 21) & 0x1F);
+    #else
+      _eeMoveGPRtoR(ecx, (op >> 21) & 0x1F);
+    #endif
 	if ((s16)op != 0)
 		xADD(ecx, (s16)op);
 	if (bits == 128)
 		xAND(ecx, ~0x0F);
 
-	xFastCall((void*)standardizeBreakpointAddress, ecx);
+    #ifdef __M_X86_64
+	  xFastCall((void*)standardizeBreakpointAddress, rcx);
+    #else
+      xFastCall((void*)standardizeBreakpointAddress, ecx);
+    #endif
 	xMOV(ecx,eax);
 	xMOV(edx,eax);
 	xADD(edx,bits/8);
@@ -1265,7 +1284,11 @@ void recMemcheck(u32 op, u32 bits, bool store)
 		// hit the breakpoint
 		if (checks[i].result & MEMCHECK_LOG) {
 			xMOV(edx, store);
-			xFastCall((void*)dynarecMemLogcheck, ecx, edx);
+            #ifdef __M_X86_64
+			  xFastCall((void*)dynarecMemLogcheck, rcx, rdx);
+            #else
+              xFastCall((void*)dynarecMemLogcheck, ecx, edx);
+            #endif
 		}
 		if (checks[i].result & MEMCHECK_BREAK) {
 			xFastCall((void*)dynarecMemcheck);

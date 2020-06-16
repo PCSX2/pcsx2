@@ -327,7 +327,11 @@ FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED|XMMINFO_READS);
 //------------------------------------------------------------------
 void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they are floats
 {
-	int tempecx = _allocX86reg(ecx, X86TYPE_TEMP, 0, 0); //receives regd
+    #ifdef __M_X86_64
+	  int tempecx = _allocX86reg(rcx, X86TYPE_TEMP, 0, 0); //receives regd
+    #else
+      int tempecx = _allocX86reg(ecx, X86TYPE_TEMP, 0, 0); //receives regd
+    #endif
 	int temp2 = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0); //receives regt
 	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt
 
@@ -399,7 +403,11 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 	{
 		xMOVD(ecx, xRegisterSSE(sreg));
 		xMOVD(edx, xRegisterSSE(treg));
-		xFastCall((void*)(uptr)&FPU_MUL_HACK, ecx, edx); //returns the hacked result or 0
+        #ifdef __M_X86_64
+		  xFastCall((void*)(uptr)&FPU_MUL_HACK, rcx, rdx); //returns the hacked result or 0
+        #else
+          xFastCall((void*)(uptr)&FPU_MUL_HACK, ecx, edx); //returns the hacked result or 0
+        #endif
 		xTEST(eax, eax);
 		noHack = JZ8(0);
 			xMOVDZX(xRegisterSSE(regd), eax);

@@ -103,8 +103,13 @@ void recJALR()
 	EE::Profiler.EmitOp(eeOpcode::JALR);
 
 	int newpc = pc + 4;
-	_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-	_eeMoveGPRtoR(esi, _Rs_);
+    #ifdef __M_X86_64
+	  _allocX86reg(rsi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+	  _eeMoveGPRtoR(rsi, _Rs_);
+    #else
+	  _allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+	  _eeMoveGPRtoR(esi, _Rs_);
+    #endif
 
 	if (EmuConfig.Gamefixes.GoemonTlbHack) {
 		xMOV(ecx, esi);

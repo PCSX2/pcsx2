@@ -266,8 +266,13 @@ void recMTC0()
 		{
 			case 12:
 				iFlushCall(FLUSH_INTERPRETER);
-				_eeMoveGPRtoR(ecx, _Rt_);
-				xFastCall((void*)WriteCP0Status, ecx );
+                #ifdef __M_X86_64
+				  _eeMoveGPRtoR(rcx, _Rt_);
+				  xFastCall((void*)WriteCP0Status, rcx );
+                #else
+				  _eeMoveGPRtoR(ecx, _Rt_);
+				  xFastCall((void*)WriteCP0Status, ecx );
+                #endif
 			break;
 
 			case 9:

@@ -454,9 +454,15 @@ void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr)
 void _psxFlushCall(int flushtype)
 {
 	// x86-32 ABI : These registers are not preserved across calls:
-	_freeX86reg( eax );
-	_freeX86reg( ecx );
-	_freeX86reg( edx );
+    #ifdef __M_X86_64
+	  _freeX86reg( rax );
+	  _freeX86reg( rcx );
+	  _freeX86reg( rdx );
+    #else
+	  _freeX86reg( eax );
+	  _freeX86reg( ecx );
+	  _freeX86reg( edx );
+    #endif
 
 	if( flushtype & FLUSH_CACHED_REGS )
 		_psxFlushConstRegs();
@@ -878,8 +884,14 @@ void psxSetBranchReg(u32 reg)
 	psxbranch = 1;
 
 	if( reg != 0xffffffff ) {
-		_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-		_psxMoveGPRtoR(esi, reg);
+        #ifdef __M_X86_64
+		  _allocX86reg(rsi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+          _psxMoveGPRtoR(rsi, reg);
+        #else
+          _allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+          _psxMoveGPRtoR(esi, reg);
+        #endif
+		
 
 		psxRecompileNextInstruction(1);
 

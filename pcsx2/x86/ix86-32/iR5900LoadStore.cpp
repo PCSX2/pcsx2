@@ -120,8 +120,13 @@ void recLoad64( u32 bits, bool sign )
 	}
 	else
 	{
-		// Load ECX with the source memory address that we're reading from.
-		_eeMoveGPRtoR(ecx, _Rs_);
+        #ifdef __M_X86_64
+		  // Load RCX with the source memory address that we're reading from.
+		  _eeMoveGPRtoR(rcx, _Rs_);
+        #else
+          // Load ECX with the source memory address that we're reading from.
+		  _eeMoveGPRtoR(ecx, _Rs_);
+        #endif
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 		if (bits == 128)		// force 16 byte alignment on 128 bit reads
@@ -154,8 +159,13 @@ void recLoad32( u32 bits, bool sign )
 	}
 	else
 	{
-		// Load ECX with the source memory address that we're reading from.
-		_eeMoveGPRtoR(ecx, _Rs_);
+        #ifdef __M_X86_64
+		  // Load ECX with the source memory address that we're reading from.
+		  _eeMoveGPRtoR(rcx, _Rs_);
+        #else
+          // Load ECX with the source memory address that we're reading from.
+		  _eeMoveGPRtoR(ecx, _Rs_);
+        #endif
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_ );
 
@@ -194,7 +204,11 @@ void recStore(u32 bits)
 
         if (bits < 64)
         {
+            #ifdef __M_X86_64
+                _eeMoveGPRtoR(rdx, _Rt_);
+            #else
                 _eeMoveGPRtoR(edx, _Rt_);
+            #endif
         }
         else if (bits == 128 || bits == 64)
         {
@@ -215,7 +229,11 @@ void recStore(u32 bits)
         }
         else
         {
+            #ifdef __M_X86_64
+                _eeMoveGPRtoR(rcx, _Rs_);
+            #else
                 _eeMoveGPRtoR(ecx, _Rs_);
+            #endif
                 if (_Imm_ != 0)
                         xADD(ecx, _Imm_);
                 if (bits == 128)
@@ -253,7 +271,11 @@ void recLWL()
 	iFlushCall(FLUSH_FULLVTLB);
 	_deleteEEreg(_Rt_, 1);
 
-	_eeMoveGPRtoR(ecx, _Rs_);
+    #ifdef __M_X86_64
+	  _eeMoveGPRtoR(rcx, _Rs_);
+    #else
+      _eeMoveGPRtoR(ecx, _Rs_);
+    #endif
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 
@@ -301,7 +323,11 @@ void recLWR()
 	iFlushCall(FLUSH_FULLVTLB);
 	_deleteEEreg(_Rt_, 1);
 
-	_eeMoveGPRtoR(ecx, _Rs_);
+    #ifdef __M_X86_64
+	  _eeMoveGPRtoR(rcx, _Rs_);
+    #else
+      _eeMoveGPRtoR(ecx, _Rs_);
+    #endif
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 
@@ -351,7 +377,11 @@ void recSWL()
 #ifdef REC_STORES
 	iFlushCall(FLUSH_FULLVTLB);
 
-	_eeMoveGPRtoR(ecx, _Rs_);
+    #ifdef __M_X86_64
+	  _eeMoveGPRtoR(rcx, _Rs_);
+    #else
+      _eeMoveGPRtoR(ecx, _Rs_);
+    #endif
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 
@@ -374,12 +404,20 @@ void recSWL()
 		// mask write and OR -> edx
 		xMOV(ecx, 24);
 		xSUB(ecx, edi);
-		_eeMoveGPRtoR(eax, _Rt_);
+        #ifdef __M_X86_64
+		  _eeMoveGPRtoR(rax, _Rt_);
+        #else
+          _eeMoveGPRtoR(eax, _Rt_);
+        #endif
 		xSHR(eax, cl);
 		xOR(edx, eax);
 	}
 
-	_eeMoveGPRtoR(ecx, _Rs_);
+    #ifdef __M_X86_64
+        _eeMoveGPRtoR(rcx, _Rs_);
+    #else
+        _eeMoveGPRtoR(ecx, _Rs_);
+    #endif
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 	xAND(ecx, ~3);
@@ -401,7 +439,11 @@ void recSWR()
 #ifdef REC_STORES
 	iFlushCall(FLUSH_FULLVTLB);
 
-	_eeMoveGPRtoR(ecx, _Rs_);
+    #ifdef __M_X86_64
+      _eeMoveGPRtoR(rcx, _Rs_);
+    #else
+      _eeMoveGPRtoR(ecx, _Rs_);
+    #endif
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 
@@ -424,12 +466,20 @@ void recSWR()
 	{
 		// mask write and OR -> edx
 		xMOV(ecx, edi);
-		_eeMoveGPRtoR(eax, _Rt_);
+        #ifdef __M_X86_64
+		  _eeMoveGPRtoR(rax, _Rt_);
+        #else
+          _eeMoveGPRtoR(eax, _Rt_);
+        #endif
 		xSHL(eax, cl);
 		xOR(edx, eax);
 	}
 
-	_eeMoveGPRtoR(ecx, _Rs_);
+    #ifdef __M_X86_64
+	  _eeMoveGPRtoR(rcx, _Rs_);
+    #else
+      _eeMoveGPRtoR(ecx, _Rs_);
+    #endif
 	if (_Imm_ != 0)
 		xADD(ecx, _Imm_);
 	xAND(ecx, ~3);
@@ -512,7 +562,11 @@ void recLWC1()
 	}
 	else
 	{
-		_eeMoveGPRtoR(ecx, _Rs_);
+        #ifdef __M_X86_64
+		  _eeMoveGPRtoR(rcx, _Rs_);
+        #else
+		  _eeMoveGPRtoR(ecx, _Rs_);
+        #endif
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 
@@ -545,7 +599,11 @@ void recSWC1()
 	}
 	else
 	{
-		_eeMoveGPRtoR(ecx, _Rs_);
+        #ifdef __M_X86_64
+		  _eeMoveGPRtoR(rcx, _Rs_);
+        #else
+          _eeMoveGPRtoR(ecx, _Rs_);
+        #endif
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 
@@ -586,7 +644,11 @@ void recLQC2()
 	}
 	else
 	{
-		_eeMoveGPRtoR(ecx, _Rs_);
+        #ifdef __M_X86_64
+		  _eeMoveGPRtoR(rcx, _Rs_);
+        #else
+          _eeMoveGPRtoR(ecx, _Rs_);
+        #endif
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 
@@ -611,7 +673,11 @@ void recSQC2()
 	}
 	else
 	{
-		_eeMoveGPRtoR(ecx, _Rs_);
+        #ifdef __M_X86_64
+		  _eeMoveGPRtoR(rcx, _Rs_);
+        #else
+          _eeMoveGPRtoR(ecx, _Rs_);
+        #endif
 		if (_Imm_ != 0)
 			xADD(ecx, _Imm_);
 

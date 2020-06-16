@@ -132,7 +132,11 @@ void recMTSAB()
 		xMOV(ptr32[&cpuRegs.sa], ((g_cpuConstRegs[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)));
 	}
 	else {
-		_eeMoveGPRtoR(eax, _Rs_);
+        #ifdef __M_X86_64
+		  _eeMoveGPRtoR(rax, _Rs_);
+        #else
+          _eeMoveGPRtoR(eax, _Rs_);
+        #endif
 		xAND(eax, 0xF);
 		xXOR(eax, _Imm_&0xf);
 		xMOV(ptr[&cpuRegs.sa], eax);
@@ -145,7 +149,11 @@ void recMTSAH()
 		xMOV(ptr32[&cpuRegs.sa], ((g_cpuConstRegs[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 1);
 	}
 	else {
-		_eeMoveGPRtoR(eax, _Rs_);
+        #ifdef __M_X86_64
+		  _eeMoveGPRtoR(rax, _Rs_);
+        #else
+          _eeMoveGPRtoR(eax, _Rs_);
+        #endif
 		xAND(eax, 0x7);
 		xXOR(eax, _Imm_&0x7);
 		xSHL(eax, 1);
