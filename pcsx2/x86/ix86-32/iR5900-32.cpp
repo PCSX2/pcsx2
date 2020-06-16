@@ -347,23 +347,24 @@ static DynGenFunc* _DynGen_JITCompile()
 
 	xFastCall((void*)recRecompile, ptr[&cpuRegs.pc] );
     
-    // uptr* fp = reclut[ pc >> 16] + pc*sizeof(uptr)/4;
-    // jump fp[0];
-    xMOV( eax, ptr[&cpuRegs.pc]);    
-    xMOV( ebx, eax );
-    xSHR( eax, 16 );
-    
     #ifdef __M_X86_64
-      xSHL( ebx, 1 );
-      xSHL( eax, 3 );
-      xMOV( rcx, eax );
-      xMOV( rax, (uptr)recLUT); 
+      xMOV( rax, 0 );
+      xMOV( eax, ptr[&cpuRegs.pc]);
+      xMOV( rbx, rax );
+      xSHR( rax, 16 );
+      xSHL( rbx, 1 );
+      xSHL( rax, 3 );
+      xMOV( rcx, rax );
+      xMOV64( rax, (uptr)recLUT);
       xADD( rcx, rax );
-      xMOV( rcx, ptr[ecx] );
-      xADD( rcx, ebx );
+      xMOV( rcx, ptr[rcx] );
+      xADD( rcx, rbx );
       xMOV( rcx, ptr[rcx] );
       xJMP( rcx );
     #else
+      xMOV( eax, ptr[&cpuRegs.pc]);
+      xMOV( ebx, eax );
+      xSHR( eax, 16 );
       xMOV( ecx, ptr[recLUT + (eax*4)] );
       xJMP( ptr32[ecx+ebx] );
     #endif
@@ -387,21 +388,24 @@ static DynGenFunc* _DynGen_DispatcherReg()
     // uptr* fp = reclut[ pc >> 16] + pc*sizeof(uptr)/4;
     // jump fp[0]; 
 
-    xMOV( eax, ptr[&cpuRegs.pc]);  // Load the 32-bit PS2 PC into eax  
-    xMOV( ebx, eax );              // ... and ebx
-    xSHR( eax, 16 );               // recLUT is a 2-level page table. First get the top 16 bits = page
-    
     #ifdef __M_X86_64
-      xSHL( ebx, 1 );               // addresses in recLutReserve_RAM advance twice as much as pc under x64
-      xSHL( eax, 3 );               // align for 8-byte: &recLUT[page] = recLUT+8*page
-      xMOV( rcx, eax );             
-      xMOV( rax, (uptr)recLUT);     // get pointer to recLUT
+      xMOV( rax, 0 );               // reset rax
+      xMOV( eax, ptr[&cpuRegs.pc]); // load the 32-bit PS2 PC into eax (lower 32 bits of rax)
+      xMOV( rbx, rax );             // load the 32-bit PS2 PC into rbx
+      xSHR( rax, 16 );              // recLUT is a 2-level page table. First get the top 16 bits = page
+      xSHL( rbx, 1 );               // addresses in recLutReserve_RAM advance twice as much as pc under x64
+      xSHL( rax, 3 );               // align for 8-byte: &recLUT[page] = recLUT+8*page
+      xMOV( rcx, rax );             
+      xMOV64( rax, (uptr)recLUT);     // get pointer to recLUT
       xADD( rcx, rax );             // recLUT + page
       xMOV( rcx, ptr[rcx] );        // (recLUT + pc)[0]: retrieve 1st look-up table value
-      xADD( rcx, ebx );             // reclut[ pc >> 16] + pc*sizeof(uptr)/4 (64-bit value + 32-bit value)
+      xADD( rcx, rbx );             // reclut[ pc >> 16] + pc*sizeof(uptr)/4 (64-bit value + 32-bit value)
       xMOV( rcx, ptr[rcx] );        // retrieve function pointer from 2nd table recLutReserve_RAM
       xJMP( rcx );                  // ... and jump to this function
     #else  
+      xMOV( eax, ptr[&cpuRegs.pc]);  // Load the 32-bit PS2 PC into eax  
+      xMOV( ebx, eax );              // ... and ebx
+      xSHR( eax, 16 );               // recLUT is a 2-level page table. First get the top 16 bits = page
       xMOV( ecx, ptr[recLUT + (eax*4)] );
       xJMP( ptr32[ecx+ebx] );
     #endif
