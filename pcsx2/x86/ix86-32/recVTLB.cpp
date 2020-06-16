@@ -375,10 +375,10 @@ void vtlb_DynGenRead64_Const( u32 bits, u32 addr_const )
 {
 	EE::Profiler.EmitConstMem(addr_const);
 
-	u32 vmv_ptr = vtlbdata.vmap[addr_const>>VTLB_PAGE_BITS];
-	s32 ppf = addr_const + vmv_ptr;
-	if( ppf >= 0 )
+	auto vmv = vtlbdata.vmap[addr_const>>VTLB_PAGE_BITS];
+	if( !vmv.isHandler(addr_const) )
 	{
+		auto ppf = vmv.assumeHandlerGetPAddr(addr_const);
 		switch( bits )
 		{
 			case 64:
@@ -395,8 +395,7 @@ void vtlb_DynGenRead64_Const( u32 bits, u32 addr_const )
 	else
 	{
 		// has to: translate, find function, call function
-		u32 handler = (u8)vmv_ptr;
-		u32 paddr = ppf - handler + 0x80000000;
+		u32 paddr = vmv.assumeHandlerGetPAddr(addr_const);
 
 		int szidx = 0;
 		switch( bits )
@@ -406,7 +405,7 @@ void vtlb_DynGenRead64_Const( u32 bits, u32 addr_const )
 		}
 
 		iFlushCall(FLUSH_FULLVTLB);
-		xFastCall( vtlbdata.RWFT[szidx][0][handler], paddr );
+		xFastCall( vmv.assumeHandlerGetRaw(szidx, 0), paddr );
 	}
 }
 
@@ -422,10 +421,10 @@ void vtlb_DynGenRead32_Const( u32 bits, bool sign, u32 addr_const )
 {
 	EE::Profiler.EmitConstMem(addr_const);
 
-	u32 vmv_ptr = vtlbdata.vmap[addr_const>>VTLB_PAGE_BITS];
-	s32 ppf = addr_const + vmv_ptr;
-	if( ppf >= 0 )
+	auto vmv = vtlbdata.vmap[addr_const>>VTLB_PAGE_BITS];
+	if( !vmv.isHandler(addr_const) )
 	{
+		auto ppf = vmv.assumePtr(addr_const);
 		switch( bits )
 		{
 			case 8:
@@ -450,8 +449,7 @@ void vtlb_DynGenRead32_Const( u32 bits, bool sign, u32 addr_const )
 	else
 	{
 		// has to: translate, find function, call function
-		u32 handler = (u8)vmv_ptr;
-		u32 paddr = ppf - handler + 0x80000000;
+		u32 paddr = vmv.assumeHandlerGetPAddr(addr_const);
 
 		int szidx = 0;
 		switch( bits )
@@ -469,7 +467,7 @@ void vtlb_DynGenRead32_Const( u32 bits, bool sign, u32 addr_const )
 		else
 		{
 			iFlushCall(FLUSH_FULLVTLB);
-			xFastCall( vtlbdata.RWFT[szidx][0][handler], paddr );
+			xFastCall( vmv.assumeHandlerGetRaw(szidx, false), paddr );
 
 			// perform sign extension on the result:
 
@@ -513,10 +511,10 @@ void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const )
 {
 	EE::Profiler.EmitConstMem(addr_const);
 
-	u32 vmv_ptr = vtlbdata.vmap[addr_const>>VTLB_PAGE_BITS];
-	s32 ppf = addr_const + vmv_ptr;
-	if( ppf >= 0 )
+	auto vmv = vtlbdata.vmap[addr_const>>VTLB_PAGE_BITS];
+	if( !vmv.isHandler(addr_const) )
 	{
+		auto ppf = vmv.assumePtr(addr_const);
 		switch(bits)
 		{
 			//8 , 16, 32 : data on EDX
@@ -545,8 +543,7 @@ void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const )
 	else
 	{
 		// has to: translate, find function, call function
-		u32 handler = (u8)vmv_ptr;
-		u32 paddr = ppf - handler + 0x80000000;
+		u32 paddr = vmv.assumeHandlerGetPAddr(addr_const);
 
 		int szidx = 0;
 		switch( bits )
@@ -559,7 +556,7 @@ void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const )
 		}
 
 		iFlushCall(FLUSH_FULLVTLB);
-		xFastCall( vtlbdata.RWFT[szidx][1][handler], paddr, edx );
+		xFastCall( vmv.assumeHandlerGetRaw(szidx, true), paddr, edx );
 	}
 }
 
