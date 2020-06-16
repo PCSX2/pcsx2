@@ -153,7 +153,11 @@ namespace vtlb_private
 
 		xMOV( eax, ecx );
 		xSHR( eax, VTLB_PAGE_BITS );
-		xMOV( eax, ptr[(eax*4) + vtlbdata.vmap] );
+        #ifdef __M_X86_64
+		  xMOV( eax, ptr[(rax*4) + vtlbdata.vmap] );
+        #else
+          xMOV( eax, ptr[(eax*4) + vtlbdata.vmap] );
+        #endif
 		xMOV( ebx, 0xcdcdcdcd );
 		uptr* writeback = ((uptr*)xGetPtr()) - 1;
 		xADD( ecx, eax );
@@ -282,7 +286,11 @@ static void DynGen_IndirectTlbDispatcher( int mode, int bits, bool sign )
 
 	// jump to the indirect handler, which is a __fastcall C++ function.
 	// [ecx is address, edx is data]
-	xFastCall(ptr32[(eax*4) + vtlbdata.RWFT[bits][mode]], ecx, edx);
+    #ifdef __M_X86_64
+	  xFastCall(ptr32[(rax*4) + vtlbdata.RWFT[bits][mode]], rcx, rdx);
+    #else
+      xFastCall(ptr32[(eax*4) + vtlbdata.RWFT[bits][mode]], ecx, edx);
+    #endif
 
 	if (!mode)
 	{
@@ -559,7 +567,11 @@ void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const )
 		}
 
 		iFlushCall(FLUSH_FULLVTLB);
-		xFastCall( vtlbdata.RWFT[szidx][1][handler], paddr, edx );
+        #ifdef __M_X86_64
+		  xFastCall( vtlbdata.RWFT[szidx][1][handler], paddr, rdx );
+        #else
+          xFastCall( vtlbdata.RWFT[szidx][1][handler], paddr, edx );
+        #endif
 	}
 }
 
@@ -574,7 +586,11 @@ void vtlb_DynV2P()
 	xAND(ecx, VTLB_PAGE_MASK); // vaddr & VTLB_PAGE_MASK
 
 	xSHR(eax, VTLB_PAGE_BITS);
-	xMOV(eax, ptr[(eax*4) + vtlbdata.ppmap]); //vtlbdata.ppmap[vaddr>>VTLB_PAGE_BITS];
+    #ifdef __M_X86_64
+	  xMOV(rax, ptr[(rax*4) + vtlbdata.ppmap]); //vtlbdata.ppmap[vaddr>>VTLB_PAGE_BITS];
+    #else
+      xMOV(eax, ptr[(eax*4) + vtlbdata.ppmap]); //vtlbdata.ppmap[vaddr>>VTLB_PAGE_BITS];
+    #endif
 
 	xOR(eax, ecx);
 }

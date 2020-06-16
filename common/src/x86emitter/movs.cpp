@@ -95,7 +95,7 @@ void xImpl_Mov::operator()(const xIndirect64orLess &dest, int imm) const
 
 // preserve_flags  - set to true to disable optimizations which could alter the state of
 //   the flags (namely replacing mov reg,0 with xor).
-void xImpl_Mov::operator()(const xRegisterInt &to, sptr imm, bool preserve_flags) const
+void xImpl_Mov::operator()(const xRegisterInt &to, int imm, bool preserve_flags) const
 {
     if (!preserve_flags && (imm == 0))
         _g1_EmitOp(G1Type_XOR, to, to);

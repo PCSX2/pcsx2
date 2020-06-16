@@ -243,7 +243,11 @@ int _allocX86reg(xRegisterLong x86reg, int type, int reg, int mode)
 {
 	uint i;
 	pxAssertDev( reg >= 0 && reg < 32, "Register index out of bounds." );
-	pxAssertDev( x86reg != esp && x86reg != ebp, "Allocation of ESP/EBP is not allowed!" );
+    #ifdef __M_X86_64
+	  pxAssertDev( x86reg != rsp && x86reg != rbp, "Allocation of RSP/RBP is not allowed!" );
+    #else
+      pxAssertDev( x86reg != esp && x86reg != ebp, "Allocation of ESP/EBP is not allowed!" );
+    #endif
 
 	// don't alloc EAX and ESP,EBP if MODE_NOFRAME
 	int oldmode = mode;

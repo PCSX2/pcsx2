@@ -1500,7 +1500,11 @@ void recQFSRV()
 		int info = eeRecompileCodeXMM(XMMINFO_WRITED);
 
 		xMOV(eax, ptr32[&cpuRegs.sa]);
-		xMOVDQU(xRegisterSSE(EEREC_D), ptr32[eax + &cpuRegs.GPR.r[_Rt_]]);
+        #ifdef __M_X86_64
+		  xMOVDQU(xRegisterSSE(EEREC_D), ptr32[rax + &cpuRegs.GPR.r[_Rt_]]);
+        #else
+          xMOVDQU(xRegisterSSE(EEREC_D), ptr32[eax + &cpuRegs.GPR.r[_Rt_]]);
+        #endif
 		return;
 	}
 		
@@ -1509,7 +1513,11 @@ void recQFSRV()
 	xMOV(eax, ptr32[&cpuRegs.sa]);
 	xMOVDQA(ptr32[&tempqw[0]], xRegisterSSE(EEREC_T));
 	xMOVDQA(ptr32[&tempqw[4]], xRegisterSSE(EEREC_S));
-	xMOVDQU(xRegisterSSE(EEREC_D), ptr32[eax + &tempqw]);
+    #ifdef __M_X86_64
+	  xMOVDQU(xRegisterSSE(EEREC_D), ptr32[rax + &tempqw]);
+    #else
+      xMOVDQU(xRegisterSSE(EEREC_D), ptr32[eax + &tempqw]);
+    #endif
 
 	_clearNeededXMMregs();
 }

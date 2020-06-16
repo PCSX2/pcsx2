@@ -172,7 +172,7 @@ void recSLTI_(int info)
     
     // test silent hill if modding
 	xMOV(eax, 1);
-    
+
 	j8Ptr[0] = JL8( 0 );
 	j8Ptr[2] = JG8( 0 );
     

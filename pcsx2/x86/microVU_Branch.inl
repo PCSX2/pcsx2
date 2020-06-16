@@ -29,7 +29,7 @@ void mVU0clearlpStateJIT() { if (!microVU0.prog.cleared) memzero(microVU0.prog.l
 void mVU1clearlpStateJIT() { if (!microVU1.prog.cleared) memzero(microVU1.prog.lpState); }
 
 void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
-
+/*
 	int fStatus = getLastFlagInst(mVUpBlock->pState, mFC->xStatus, 0, isEbit);
 	int fMac	= getLastFlagInst(mVUpBlock->pState, mFC->xMac,    1, isEbit);
 	int fClip	= getLastFlagInst(mVUpBlock->pState, mFC->xClip,   2, isEbit);
@@ -41,8 +41,8 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	mVU.regAlloc->TDwritebackAll(); //Writing back ok, invalidating early kills the rec, so don't do it :P
 
 	if (isEbit) {
-		/*memzero(mVUinfo);
-		memzero(mVUregsTemp);*/
+		//memzero(mVUinfo);
+		//memzero(mVUregsTemp);
 		mVUincCycles(mVU, 100); // Ensures Valid P/Q instances (And sets all cycle data to 0)
 		mVUcycles -= 100;
 		qInst = mVU.q;
@@ -89,10 +89,11 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		xJMP(mVU.exitFunct);
 	}
 	memcpy(&mVUregs, &stateBackup, sizeof(mVUregs)); //Restore the state for the rest of the recompile
+    */
 }
 
 void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
-
+/*
 	int fStatus = getLastFlagInst(mVUpBlock->pState, mFC->xStatus, 0, isEbit);
 	int fMac	= getLastFlagInst(mVUpBlock->pState, mFC->xMac,    1, isEbit);
 	int fClip	= getLastFlagInst(mVUpBlock->pState, mFC->xClip,   2, isEbit);
@@ -148,7 +149,7 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	if (isEbit != 2) { // Save PC, and Jump to Exit Point
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 		xJMP(mVU.exitFunct);
-	}
+	}*/
 }
 
 // Recompiles Code for Proper Flags and Q/P regs on Block Linkings
@@ -170,7 +171,7 @@ void normBranchCompile(microVU& mVU, u32 branchPC) {
 }
 
 void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump) {
-	memcpy(&mVUpBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
+/*	memcpy(&mVUpBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
 	mVUsetupBranch(mVU, mFC);
 	mVUbackupRegs(mVU);
 
@@ -196,11 +197,11 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump) {
 	else			xFastCall((void*)(void(*)())mVUcompileJIT<1>, gprT2, gprT3);
 
 	mVUrestoreRegs(mVU);
-	xJMP(gprT1);  // Jump to rec-code address
+	xJMP(gprT1);  // Jump to rec-code address*/
 }
 
 void normBranch(mV, microFlagCycles& mFC) {
-
+/*
 	// E-bit or T-Bit or D-Bit Branch
 	if (mVUup.dBit && doDBitHandling) 
 	{
@@ -252,7 +253,7 @@ void normBranch(mV, microFlagCycles& mFC) {
 	
 	// Normal Branch
 	mVUsetupBranch(mVU, mFC);
-	normBranchCompile(mVU, branchAddr(mVU));
+	normBranchCompile(mVU, branchAddr(mVU));*/
 }
 
 //Messy handler warning!!
@@ -260,7 +261,7 @@ void normBranch(mV, microFlagCycles& mFC) {
 //Doesn't seem to work properly, even if the link is made to the correct address, so we do it manually instead.
 //Normally EvilBlock handles all this stuff, but something to do with conditionals and links don't quite work right :/
 void condJumpProcessingEvil(mV, microFlagCycles& mFC, int JMPcc) {
-
+/*
 	u32 bPC = iPC-1; // mVUcompile can modify iPC, mVUpBlock, and mVUregs so back them up
 	u32 badBranchAddr;
 	iPC = bPC-2;
@@ -293,10 +294,10 @@ void condJumpProcessingEvil(mV, microFlagCycles& mFC, int JMPcc) {
 	mVUallocVIb(mVU, gprT3, _It_);
 		
 	normJumpCompile(mVU, mFC, true); //Compile evil branch, just in time!
-
+*/
 }
 void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
-	mVUsetupBranch(mVU, mFC);
+/*	mVUsetupBranch(mVU, mFC);
 	
 	if (mVUup.tBit)
 	{
@@ -395,10 +396,11 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 			uptr jumpAddr = (uptr)mVUblockFetch(mVU, branchAddr(mVU), (uptr)&pBlock->pStateEnd);
 			*ajmp = (jumpAddr - ((uptr)ajmp + 4));
 		}
-	}
+	}*/
 }
 
 void normJump(mV, microFlagCycles& mFC) {
+/*
 	if (mVUlow.constJump.isValid) { // Jump Address is Constant
 		if (mVUup.eBit) { // E-bit Jump
 			iPC = (mVUlow.constJump.regValue*2) & (mVU.progMemMask);
@@ -458,5 +460,5 @@ void normJump(mV, microFlagCycles& mFC) {
 	}
 	else {
 		normJumpCompile(mVU, mFC, false);
-	}
+	}*/
 }

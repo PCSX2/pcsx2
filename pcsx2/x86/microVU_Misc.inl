@@ -49,14 +49,15 @@ void mVUloadIreg(const xmm& reg, int xyzw, VURegs* vuRegs)
 // Modifies the Source Reg!
 void mVUsaveReg(const xmm& reg, xAddressVoid ptr, int xyzw, bool modXYZW)
 {
-	/*xMOVAPS(xmmT2, ptr128[ptr]);
-	if (modXYZW && (xyzw == 8 || xyzw == 4 || xyzw == 2 || xyzw == 1)) {
-		mVUunpack_xyzw(reg, reg, 0);
-	}
-	mVUmergeRegs(xmmT2, reg, xyzw);
+/*
+	//xMOVAPS(xmmT2, ptr128[ptr]);
+	//if (modXYZW && (xyzw == 8 || xyzw == 4 || xyzw == 2 || xyzw == 1)) {
+	//	mVUunpack_xyzw(reg, reg, 0);
+	//}
+	//mVUmergeRegs(xmmT2, reg, xyzw);
 
-	xMOVAPS(ptr128[ptr], xmmT2);
-	return;*/
+	//xMOVAPS(ptr128[ptr], xmmT2);
+	//return;
 
 	switch ( xyzw ) {
 		case 5:		if (x86caps.hasStreamingSIMD4Extensions) {
@@ -139,7 +140,7 @@ void mVUsaveReg(const xmm& reg, xAddressVoid ptr, int xyzw, bool modXYZW)
 		case 12:	xMOVL.PS(ptr64[ptr], reg);	 break; // XY
 		case 3:		xMOVH.PS(ptr64[ptr+8], reg); break; // ZW
 		default:	xMOVAPS(ptr128[ptr], reg);	 break; // XYZW
-	}
+	}*/
 }
 
 // Modifies the Source Reg! (ToDo: Optimize modXYZW = 1 cases)
@@ -333,6 +334,7 @@ static const __aligned16 SSEMasks sseMasks =
 // Warning: Modifies t1 and t2
 void MIN_MAX_PS(microVU& mVU, const xmm& to, const xmm& from, const xmm& t1in, const xmm& t2in, bool min)
 {
+/*
 	const xmm& t1 = t1in.IsEmpty() ? mVU.regAlloc->allocReg() : t1in;
 	const xmm& t2 = t2in.IsEmpty() ? mVU.regAlloc->allocReg() : t2in;
 
@@ -380,7 +382,7 @@ void MIN_MAX_PS(microVU& mVU, const xmm& to, const xmm& from, const xmm& t1in, c
 	}
 
 	if (t1 != t1in) mVU.regAlloc->clearNeeded(t1);
-	if (t2 != t2in) mVU.regAlloc->clearNeeded(t2);
+	if (t2 != t2in) mVU.regAlloc->clearNeeded(t2);*/
 }
 
 // Warning: Modifies to's upper 3 vectors, and t1
@@ -402,6 +404,7 @@ void MIN_MAX_SS(mV, const xmm& to, const xmm& from, const xmm& t1in, bool min)
 // Warning: Modifies all vectors in 'to' and 'from', and Modifies t1in
 void ADD_SS_Single_Guard_Bit(microVU& mVU, const xmm& to, const xmm& from, const xmm& t1in)
 {
+/*
 	const xmm& t1 = t1in.IsEmpty() ? mVU.regAlloc->allocReg() : t1in;
 
 	xMOVD(eax, to);
@@ -452,6 +455,7 @@ void ADD_SS_Single_Guard_Bit(microVU& mVU, const xmm& to, const xmm& from, const
 
 	xADD.SS(to, from);
 	if (t1 != t1in) mVU.regAlloc->clearNeeded(t1);
+    */
 }
 
 // Turns out only this is needed to get TriAce games booting with mVU
@@ -564,6 +568,7 @@ __pagealigned u8 mVUsearchXMM[__pagesize];
 // Generates a custom optimized block-search function
 // Note: Structs must be 16-byte aligned! (GCC doesn't guarantee this)
 void mVUcustomSearch() {
+/*
 	HostSys::MemProtectStatic(mVUsearchXMM, PageAccess_ReadWrite());
 	memset(mVUsearchXMM, 0xcc, __pagesize);
 	xSetPtr(mVUsearchXMM);
@@ -610,4 +615,5 @@ void mVUcustomSearch() {
 	exitPoint.SetTarget();
 	xRET();
 	HostSys::MemProtectStatic(mVUsearchXMM, PageAccess_ExecOnly());
+    */
 }

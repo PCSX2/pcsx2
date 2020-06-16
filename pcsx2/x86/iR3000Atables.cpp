@@ -641,7 +641,11 @@ static void rpsxLB()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall((void*)iopMemRead8, ecx );		// returns value in EAX
+    #ifdef __M_X86_64
+	  xFastCall((void*)iopMemRead8, rcx );		// returns value in RAX
+    #else
+      xFastCall((void*)iopMemRead8, ecx );		// returns value in EAX
+    #endif
 	if (_Rt_) {
 		xMOVSX(eax, al);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -657,7 +661,11 @@ static void rpsxLBU()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall((void*)iopMemRead8, ecx );		// returns value in EAX
+    #ifdef __M_X86_64
+	  xFastCall((void*)iopMemRead8, rcx );		// returns value in RAX
+    #else
+      xFastCall((void*)iopMemRead8, ecx );		// returns value in EAX
+    #endif
 	if (_Rt_) {
 		xMOVZX(eax, al);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -673,7 +681,11 @@ static void rpsxLH()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall((void*)iopMemRead16, ecx );		// returns value in EAX
+    #ifdef __M_X86_64
+	  xFastCall((void*)iopMemRead16, rcx );		// returns value in RAX
+    #else
+      xFastCall((void*)iopMemRead16, ecx );		// returns value in EAX
+    #endif
 	if (_Rt_) {
 		xMOVSX(eax, ax);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -689,7 +701,11 @@ static void rpsxLHU()
 
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall((void*)iopMemRead16, ecx );		// returns value in EAX
+    #ifdef __M_X86_64
+	  xFastCall((void*)iopMemRead16, rcx );		// returns value in RAX
+    #else
+      xFastCall((void*)iopMemRead16, ecx );		// returns value in EAX
+    #endif
 	if (_Rt_) {
 		xMOVZX(eax, ax);
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
@@ -710,7 +726,11 @@ static void rpsxLW()
 	xTEST(ecx, 0x10000000);
 	j8Ptr[0] = JZ8(0);
 
-	xFastCall((void*)iopMemRead32, ecx );		// returns value in EAX
+    #ifdef __M_X86_64
+	  xFastCall((void*)iopMemRead32, rcx );		// returns value in RAX
+    #else
+      xFastCall((void*)iopMemRead32, ecx );		// returns value in EAX
+    #endif
 	if (_Rt_) {
 		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
 	}
@@ -738,7 +758,11 @@ static void rpsxSB()
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
 	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall((void*)iopMemWrite8, ecx, edx );
+    #ifdef __M_X86_64
+	  xFastCall((void*)iopMemWrite8, rcx, rdx );
+    #else
+      xFastCall((void*)iopMemWrite8, ecx, edx );
+    #endif
 }
 
 static void rpsxSH()
@@ -749,7 +773,11 @@ static void rpsxSH()
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
 	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall((void*)iopMemWrite16, ecx, edx );
+    #ifdef __M_X86_64
+	  xFastCall((void*)iopMemWrite16, rcx, rdx );
+    #else
+      xFastCall((void*)iopMemWrite16, ecx, edx );
+    #endif
 }
 
 static void rpsxSW()
@@ -760,7 +788,11 @@ static void rpsxSW()
 	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
 	if (_Imm_) xADD(ecx, _Imm_);
 	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall((void*)iopMemWrite32, ecx, edx );
+    #ifdef __M_X86_64
+	  xFastCall((void*)iopMemWrite32, rcx, rdx );
+    #else
+      xFastCall((void*)iopMemWrite32, ecx, edx );
+    #endif
 }
 
 //// SLL
@@ -965,8 +997,13 @@ void rpsxJR()
 void rpsxJALR()
 {
 	// jalr Rs
-	_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-	_psxMoveGPRtoR(esi, _Rs_);
+    #ifdef __M_X86_64
+	  _allocX86reg(rsi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+	  _psxMoveGPRtoR(rsi, _Rs_);
+    #else
+      _allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+	  _psxMoveGPRtoR(esi, _Rs_);
+    #endif
 
 	if ( _Rd_ )
 	{

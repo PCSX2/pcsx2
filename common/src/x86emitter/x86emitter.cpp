@@ -129,7 +129,12 @@ const xAddressReg
     r12(12), r13(13),
     r14(14), r15(15);
 
+
+#ifdef __M_X86_64
+const xRegister32
+#else
 const xAddressReg
+#endif
     eax(0), ebx(3),
     ecx(1), edx(2),
     esp(4), ebp(5),
@@ -327,8 +332,7 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
 
     pxAssert(!info.Base.IsEmpty() || !info.Index.IsEmpty() || displacement_size == 2);
     // Displacement is only 64 bits for rip-relative addressing
-    //#warning "JC: brute-force debugging"
-    //pxAssert(info.Displacement == (s32)info.Displacement || (info.Base.IsEmpty() && info.Index.IsEmpty()));
+    pxAssert(info.Displacement == (s32)info.Displacement || (info.Base.IsEmpty() && info.Index.IsEmpty()));
 
     if (!NeedsSibMagic(info)) {
         // Use ModRm-only encoding, with the rm field holding an index/base register, if
@@ -340,7 +344,11 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
             EmitSibMagic(regfield, (void *)info.Displacement);
             return;
         } else {
-            if (info.Index == ebp && displacement_size == 0)
+            #ifdef __M_X86_64
+              if (info.Index == rbp && displacement_size == 0)
+            #else
+              if (info.Index == ebp && displacement_size == 0)
+            #endif
                 displacement_size = 1; // forces [ebp] to be encoded as [ebp+0]!
 
             ModRM(displacement_size, regfield, info.Index.Id);
@@ -358,7 +366,11 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
             xWrite<s32>(info.Displacement);
             return;
         } else {
-            if (info.Base == ebp && displacement_size == 0)
+            #ifdef __M_X86_64
+              if (info.Base == rbp && displacement_size == 0)
+            #else
+              if (info.Base == ebp && displacement_size == 0)
+            #endif
                 displacement_size = 1; // forces [ebp] to be encoded as [ebp+0]!
 
             ModRM(displacement_size, regfield, ModRm_UseSib);
@@ -533,7 +545,7 @@ xAddressVoid xAddressReg::operator+(const xAddressReg &right) const
     return xAddressVoid(*this, right);
 }
 
-xAddressVoid xAddressReg::operator+(sptr right) const
+xAddressVoid xAddressReg::operator+(s32 right) const
 {
     pxAssertMsg(Id != -1, "Uninitialized x86 register.");
     return xAddressVoid(*this, right);
@@ -545,7 +557,7 @@ xAddressVoid xAddressReg::operator+(const void *right) const
     return xAddressVoid(*this, (sptr)right);
 }
 
-xAddressVoid xAddressReg::operator-(sptr right) const
+xAddressVoid xAddressReg::operator-(s32 right) const
 {
     pxAssertMsg(Id != -1, "Uninitialized x86 register.");
     return xAddressVoid(*this, -right);
@@ -574,7 +586,7 @@ xAddressVoid xAddressReg::operator<<(u32 shift) const
 //  xAddressVoid  (method implementations)
 // --------------------------------------------------------------------------------------
 
-xAddressVoid::xAddressVoid(const xAddressReg &base, const xAddressReg &index, int factor, sptr displacement)
+xAddressVoid::xAddressVoid(const xAddressReg &base, const xAddressReg &index, int factor, s32 displacement)
 {
     Base = base;
     Index = index;
@@ -585,7 +597,7 @@ xAddressVoid::xAddressVoid(const xAddressReg &base, const xAddressReg &index, in
     pxAssertMsg(index.Id != xRegId_Invalid, "Uninitialized x86 register.");
 }
 
-xAddressVoid::xAddressVoid(const xAddressReg &index, sptr displacement)
+xAddressVoid::xAddressVoid(const xAddressReg &index, s32 displacement)
 {
     Base = xEmptyReg;
     Index = index;
@@ -595,7 +607,7 @@ xAddressVoid::xAddressVoid(const xAddressReg &index, sptr displacement)
     pxAssertMsg(index.Id != xRegId_Invalid, "Uninitialized x86 register.");
 }
 
-xAddressVoid::xAddressVoid(sptr displacement)
+xAddressVoid::xAddressVoid(s32 displacement)
 {
     Base = xEmptyReg;
     Index = xEmptyReg;
@@ -608,7 +620,12 @@ xAddressVoid::xAddressVoid(const void *displacement)
     Base = xEmptyReg;
     Index = xEmptyReg;
     Factor = 0;
-    Displacement = (sptr)displacement;
+#ifdef __M_X86_64
+    pxAssert(0);
+//Displacement = (s32)displacement;
+#else
+    Displacement = (s32)displacement;
+#endif
 }
 
 xAddressVoid &xAddressVoid::Add(const xAddressReg &src)
@@ -675,7 +692,7 @@ xIndirectVoid::xIndirectVoid(sptr disp)
     // no reduction necessary :D
 }
 
-xIndirectVoid::xIndirectVoid(xAddressReg base, xAddressReg index, int scale, sptr displacement)
+xIndirectVoid::xIndirectVoid(xAddressReg base, xAddressReg index, int scale, s32 displacement)
 {
     Base = base;
     Index = index;
@@ -776,7 +793,7 @@ uint xIndirectVoid::GetOperandSize() const
     return 0;
 }
 
-xIndirectVoid &xIndirectVoid::Add(sptr imm)
+xIndirectVoid &xIndirectVoid::Add(s32 imm)
 {
     Displacement += imm;
     return *this;
@@ -846,7 +863,11 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
         } else {
             if (src.Scale == 0) {
                 if (!preserve_flags) {
-                    if (src.Index == esp) {
+                    #ifdef __M_X86_64
+                      if (src.Index == rsp) {
+                    #else
+                      if (src.Index == esp) {
+                    #endif
                         // ESP is not encodable as an index (ix86 ignores it), thus:
                         _xMovRtoR(to, src.Base); // will do the trick!
                         if (src.Displacement)
@@ -857,7 +878,11 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
                         _g1_EmitOp(G1Type_ADD, to, src.Index);
                         return;
                     }
-                } else if ((src.Index == esp) && (src.Displacement == 0)) {
+                #ifdef __M_X86_64    
+                  } else if ((src.Index == rsp) && (src.Displacement == 0)) {
+                #else
+                  } else if ((src.Index == esp) && (src.Displacement == 0)) {
+                #endif
                     // special case handling of ESP as Index, which is replaceable with
                     // a single MOV even when preserve_flags is set! :D
 
@@ -865,8 +890,11 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
                     return;
                 }
             }
-
-            if (src.Base == ebp && displacement_size == 0)
+            #ifdef __M_X86_64
+              if (src.Base == rbp && displacement_size == 0)
+            #else
+              if (src.Base == ebp && displacement_size == 0)
+            #endif
                 displacement_size = 1; // forces [ebp] to be encoded as [ebp+0]!
 
             xWrite8(x86_Opcode_LEA_Gv_M);
@@ -879,7 +907,7 @@ static void EmitLeaMagic(const xRegisterInt &to, const xIndirectVoid &src, bool 
         if (displacement_size == 1)
             xWrite<s8>(src.Displacement);
         else
-            xWrite<sptr>(src.Displacement);
+            xWrite<s32>(src.Displacement);
     }
 }
 

@@ -176,7 +176,11 @@ void recMTHILO(int hi)
 				xMOV(ptr32[(u32*)(addrhilo+4)], g_cpuConstRegs[_Rs_].UL[1] );
 			}
 			else {
-				_eeMoveGPRtoR(ecx, _Rs_);
+                #ifdef __M_X86_64
+				  _eeMoveGPRtoR(rcx, _Rs_);
+                #else
+                  _eeMoveGPRtoR(ecx, _Rs_);
+                #endif
 				_flushEEreg(_Rs_);
 				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
 				xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);

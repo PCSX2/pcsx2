@@ -252,16 +252,16 @@ __fi void mVUsetFlags(mV, microFlagCycles& mFC) {
 			   xPC, mVUregs.fullFlags0, (u32)mVUregs.fullFlags1);
 	}
 }
-
+/*
 #define getFlagReg2(x)	((bStatus[0] == x) ? getFlagReg(x) : gprT1)
 #define getFlagReg3(x)	((gFlag == x) ? gprT1 : getFlagReg(x))
 #define getFlagReg4(x)	((gFlag == x) ? gprT1 : gprT2)
 #define shuffleMac		((bMac [3]<<6)|(bMac [2]<<4)|(bMac [1]<<2)|bMac [0])
 #define shuffleClip		((bClip[3]<<6)|(bClip[2]<<4)|(bClip[1]<<2)|bClip[0])
-
+*/
 // Recompiles Code for Proper Flags on Block Linkings
 __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
-
+/*
 	if (mVUregs.flagInfo & 1) {
 		if (mVUregs.needExactMatch) DevCon.Error("mVU ERROR!!!");
 	}
@@ -325,7 +325,7 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
 		xMOVAPS(xmmT2, ptr128[mVU.clipFlag]);
 		xSHUF.PS(xmmT2, xmmT2, shuffleClip);
 		xMOVAPS(ptr128[mVU.clipFlag], xmmT2);
-	}
+	}*/
 }
 
 #define shortBranch() {											\
