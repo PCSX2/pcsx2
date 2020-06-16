@@ -127,23 +127,26 @@ static DynGenFunc* _DynGen_JITCompile()
 
     xFastCall((void*)iopRecRecompile, ptr[&psxRegs.pc] );
     
-    xMOV( eax, ptr[&psxRegs.pc]);
-    xMOV( ebx, eax );
-    xSHR( eax, 16 );
-    
     #ifdef __M_X86_64
-      xSHL( ebx, 1 );
-      xSHL( eax, 3 );
-      xMOV( rcx, eax );
-      xMOV( rax, (uptr)psxRecLUT); 
+      xMOV( rax, 0 );
+      xMOV( eax, ptr[&cpuRegs.pc] );
+	  xMOV( rbx, rax );
+	  xSHR( rax, 16 );
+      xSHL( rbx, 1 );
+      xSHL( rax, 3 );
+      xMOV( rcx, rax );
+      xMOV64( rax, (uptr)psxRecLUT); 
       xADD( rcx, rax );
       xMOV( rcx, ptr[rcx] );
-      xADD( rcx, ebx );
+      xADD( rcx, rbx );
       xMOV( rcx, ptr[rcx] );
       xJMP( rcx );
     #else
-      xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
-      xJMP( ptr32[ecx+ebx] );
+      xMOV( eax, ptr[&psxRegs.pc] );
+	  xMOV( ebx, eax );
+	  xSHR( eax, 16 );
+	  xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
+	  xJMP( ptr32[ecx+ebx] );
     #endif
 
     return (DynGenFunc*)retval;
@@ -161,20 +164,24 @@ static DynGenFunc* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr();
 
-	xMOV( eax, ptr[&psxRegs.pc] );
-	xMOV( ebx, eax );
-	xSHR( eax, 16 );
     #ifdef __M_X86_64
-      xSHL( ebx, 1 );
-      xSHL( eax, 3 );
-      xMOV( rcx, eax );
-      xMOV( rax, (uptr)psxRecLUT); 
+      xMOV( rax, 0 );
+      xMOV( eax, ptr[&cpuRegs.pc] );
+	  xMOV( rbx, rax );
+	  xSHR( rax, 16 );
+      xSHL( rbx, 1 );
+      xSHL( rax, 3 );
+      xMOV( rcx, rax );
+      xMOV64( rax, (uptr)psxRecLUT); 
       xADD( rcx, rax );
       xMOV( rcx, ptr[rcx] );
-      xADD( rcx, ebx );
+      xADD( rcx, rbx );
       xMOV( rcx, ptr[rcx] );
       xJMP( rcx );
     #else
+      xMOV( eax, ptr[&psxRegs.pc] );
+	  xMOV( ebx, eax );
+	  xSHR( eax, 16 );
 	  xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
 	  xJMP( ptr32[ecx+ebx] );
     #endif

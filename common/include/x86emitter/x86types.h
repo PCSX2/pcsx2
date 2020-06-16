@@ -984,9 +984,9 @@ public:
     xAddressReg Base;  // base register (no scale)
     xAddressReg Index; // index reg gets multiplied by the scale
     uint Scale;        // scale applied to the index register, in scale/shift form
-    
-    s32 Displacement;   // offset applied to the Base/Index registers.
-                        // Displacement is 8/32 bits
+    sptr Displacement; // offset applied to the Base/Index registers.
+                       // Displacement is 8/32 bits even on x86_64
+                       // However we need the whole pointer to calculate rip-relative offsets
 
 public:
     explicit xIndirectVoid(sptr disp);
