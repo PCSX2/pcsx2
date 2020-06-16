@@ -2193,60 +2193,13 @@ bool GSRendererHW::OI_ItadakiStreet(GSTexture* rt, GSTexture* ds, GSTextureCache
 
 bool GSRendererHW::OI_JakGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
-	GSVector4i r_p = GSVector4i(0, 0, 16, 16);
-
-	if (!(r == r_p).alltrue())
+	if (!CanUseSwSpriteRender(false))
 		return true;
 
-	// Rendering 16x16 palette
+	// Render 16x16 palette via CPU.
+	SwSpriteRender();
 
-	if (m_vt.m_eq.rgba != 0xffff || m_vt.m_eq.z != 0x1 || m_vt.m_eq.q != 0x1)
-		return true;
-
-	// No rasterization
-
-	if (m_context->DepthRead() || m_context->DepthWrite())
-		return true;
-
-	// No depth handling
-
-	// Game is clearing palette content.
-	// Jak X does a constant RGBA color write to clear palette prior to actual rendering 
-	// that is not being handled correctly, most likely due to TC issue, so let's bypass
-	// GPU render and TC and clear GS memory directly instead
-	bool palette_clear = PRIM->PRIM == 6
-		&& !PRIM->IIP
-		&& !PRIM->TME
-		&& !PRIM->FGE
-		&& !PRIM->ABE
-		&& !PRIM->AA1
-		&& !PRIM->FST
-		&& !PRIM->FIX
-		&& m_context->FRAME.FBMSK == 0x0
-		&& m_context->FRAME.FBW == 1
-		&& m_context->FRAME.PSM == PSM_PSMCT32
-		;
-
-	// Game is rendering directly to palette.
-	// Cannot perform GPU render to FB as reading back is both slow and clashes with
-	// texture inside FB reading needed for correct eye rendering,
-	// so perform CPU rendering instead and skip draw.
-	bool palette_render = !PRIM->FST
-		&& PRIM->TME
-		&& m_context->TEX0.TBW == 1
-		&& m_context->TEX0.TW == 4
-		&& m_context->TEX0.TH == 4
-		&& m_context->TEX0.PSM == PSM_PSMCT32
-		;
-
-	if (palette_clear || palette_render)
-	{
-		SwSpriteRender();
-		return false; // skip current draw
-	}
-
-	return true;
+	return false;  // Skip current draw.
 }
 
 // OO (others output?) hacks: invalidate extra local memory after the draw call
