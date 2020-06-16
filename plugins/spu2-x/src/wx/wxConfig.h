@@ -28,7 +28,7 @@ namespace SoundtouchCfg
 {
 class AdvDialog : public wxDialog
 {
-    wxPanel *m_panel;
+    wxPanel *m_adv_panel;
     wxBoxSizer *m_adv_box, *m_babble_box;
 
     wxButton *reset_button;
@@ -38,6 +38,7 @@ class AdvDialog : public wxDialog
 
 public:
     AdvDialog();
+    ~AdvDialog();
     void Display();
     void LoadValues();
     void SaveValues();
@@ -48,8 +49,8 @@ public:
 
 class DebugDialog : public wxDialog
 {
-    wxPanel *m_panel;
-    wxBoxSizer *m_debug_box;
+    wxPanel *m_debug_panel;
+    wxBoxSizer *m_debug_top_box;
     wxBoxSizer *m_together_box;
     wxStaticBoxSizer *m_console_box, *m_log_only_box, *dump_box;
     wxCheckBox *show_check;
@@ -59,6 +60,7 @@ class DebugDialog : public wxDialog
 
 public:
     DebugDialog();
+    ~DebugDialog();
     void Display();
     void ResetToValues();
     void SaveValues();
@@ -70,7 +72,7 @@ class Dialog : public wxDialog
 {
     wxPanel *m_panel;
     wxBoxSizer *m_top_box, *m_left_box, *m_right_box;
-    wxBoxSizer *m_portaudio_box, *m_sdl_box;
+    wxBoxSizer *m_portaudio_box, *m_sdl_box, *m_audio_box;
     wxStaticBoxSizer *m_mix_box, *m_debug_box, *m_output_box, *m_volume_box, *m_latency_box, *m_sync_box;
 
     wxArrayString m_interpolation, m_module, m_portaudio, m_sdl, m_sync, m_audio;
@@ -81,11 +83,9 @@ class Dialog : public wxDialog
     wxSlider *m_latency_slider, *m_volume_slider;
     wxButton *launch_debug_dialog, *launch_adv_dialog;
 
-    DebugDialog debug_dialog;
-    SoundtouchCfg::AdvDialog adv_dialog;
-
 public:
     Dialog();
+    ~Dialog();
     void Display();
     void ResetToValues();
     void SaveValues();

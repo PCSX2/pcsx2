@@ -219,12 +219,13 @@ void WriteSettings()
 
 void configure()
 {
-    Dialog dialog;
+    auto *dialog = new Dialog;
 
     initIni();
     ReadSettings();
-    dialog.Display();
+    dialog->Display();
     WriteSettings();
     delete spuConfig;
     spuConfig = nullptr;
+    wxDELETE(dialog);
 }
