@@ -100,9 +100,13 @@ TEST(CodegenTests, POPTest)
 
 TEST(CodegenTests, MathTest)
 {
+	CODEGEN_TEST(xINC(eaxd), "40", "ff c0");
+	CODEGEN_TEST(xDEC(rax), "48", "48 ff c8");
+	CODEGEN_TEST_64(xINC(r8), "49 ff c0");
 	CODEGEN_TEST_64(xADD(r8, r9), "4d 01 c8");
 	CODEGEN_TEST_64(xADD(r8, 0x12), "49 83 c0 12");
 	CODEGEN_TEST_64(xADD(rax, 0x1234), "48 05 34 12 00 00");
+	CODEGEN_TEST_64(xADD(ptr32[base], -0x60), "83 05 f9 ff ff ff a0");
 	CODEGEN_TEST_BOTH(xADD(eaxd, ebxd), "01 d8");
 	CODEGEN_TEST_BOTH(xADD(eaxd, 0x1234), "05 34 12 00 00");
 	CODEGEN_TEST_64(xADD(r8, ptrNative[r10*4+3+r9]), "4f 03 44 91 03");

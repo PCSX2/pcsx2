@@ -212,9 +212,20 @@ public:
             xWrite8(0x66);
     }
 
+    int GetImmSize() const {
+        switch (GetOperandSize()) {
+            case 1: return 1;
+            case 2: return 2;
+            case 4: return 4;
+            case 8: return 4; // Only mov's take 64-bit immediates
+                jNO_DEFAULT
+        }
+        return 0;
+    }
+
     void xWriteImm(int imm) const
     {
-        switch (GetOperandSize()) {
+        switch (GetImmSize()) {
             case 1:
                 xWrite8(imm);
                 break;
@@ -222,10 +233,6 @@ public:
                 xWrite16(imm);
                 break;
             case 4:
-                xWrite32(imm);
-                break;
-            case 8:
-                // Only mov's take 64-bit immediates
                 xWrite32(imm);
                 break;
 

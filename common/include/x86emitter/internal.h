@@ -48,8 +48,8 @@ inline void xWrite(T val)
     x86Ptr += sizeof(T);
 }
 
-template <typename T1, typename T2>
-__emitinline void xOpWrite(u8 prefix, u8 opcode, const T1 &param1, const T2 &param2)
+template <typename T1, typename T2, typename ...T3>
+__emitinline void xOpWrite(u8 prefix, u8 opcode, const T1 &param1, const T2 &param2, T3... extraRIPOffset)
 {
     if (prefix != 0)
         xWrite8(prefix);
@@ -57,7 +57,7 @@ __emitinline void xOpWrite(u8 prefix, u8 opcode, const T1 &param1, const T2 &par
 
     xWrite8(opcode);
 
-    EmitSibMagic(param1, param2);
+    EmitSibMagic(param1, param2, extraRIPOffset...);
 }
 
 template <typename T1, typename T2>
