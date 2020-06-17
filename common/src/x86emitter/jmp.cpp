@@ -30,6 +30,7 @@
 
 #include "PrecompiledHeader.h"
 #include "internal.h"
+#include "legacy_internal.h"
 
 namespace x86Emitter
 {
@@ -87,7 +88,43 @@ __emitinline s32 *xJcc32(JccComparisonType comparison, s32 displacement)
 
     return ((s32 *)xGetPtr()) - 1;
 }
+#ifdef __M_X86_64
+// ------------------------------------------------------------------------
+// Emits a conditional 64-bit jump and
+// returns a pointer to where the 64-bit absolute address 
+// for the jump destination needs to be written
+__emitinline s64 *xJcc64(JccComparisonType comparison, uptr imm)
+{
+    u8*  j8Ptr[32];
+    s64* returnValue;
+    if (comparison == Jcc_Unconditional)
+    {
+        // jump to placeholder
+        xMOV64( rax, 0xbadf00dbeefbabe );
+        returnValue = ((s64 *)xGetPtr()) - 1;
+        xJMP( rax );
+    }
+    else if (comparison == Jcc_Signed)
+    {
+        // continue if not signed
+        j8Ptr[ 0 ] = JNS8( 0 ); 
+        // jump if signed to placeholder
+        xMOV64( rax, 0xbadf00dbeefbabe );
+        returnValue = ((s64 *)xGetPtr()) - 1;
+        xJMP( rax );
+        // continue here
+        x86SetJ8( j8Ptr[0] );
+    }
+    else
+    {
+        pxAssert(0);
+        returnValue = 0;
+    }
+    
 
+    return returnValue;
+}
+#endif
 // ------------------------------------------------------------------------
 // Emits a 32 bit jump, and returns a pointer to the 8 bit displacement.
 // (displacements should be assigned relative to the end of the jump instruction,

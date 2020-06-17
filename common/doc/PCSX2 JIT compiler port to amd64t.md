@@ -1,6 +1,8 @@
 # PS2 JIT compiler port from i386/32bit to x86_64 code
 
 PCSX2 has 6 recompilers:
+* microVU0
+* mircoVU1
 * R5900-32	: EE RISC processor ("Emotion Engine")
 * R3000A 	: I/O processor
 * VIF0 Unpack  : Vector Unit Interface 0
@@ -43,6 +45,7 @@ Central files:
 * /pcsx2/x86/iCore.cpp
 * pcsx2/x86/ix86-32/iR5900-32.cpp: initialization of recLUT and recLutReserve_RAM, recompilation code
 * common/src/x86emitter/x86emitter.cpp
+
 Questions to resolve:
 * Which instructions have to be ported? --> SIB 32bit does not have a corresponding 64-bit equivalent
 * Which modules are affected?
@@ -151,3 +154,69 @@ u                       = recLutReserve_RAM + 64MB + 8*0xffffFFFFD0100000;
 --> recLUT[0xbfc0] + (0xbfc00000 << 1) = recLutReserve_RAM+ 64MB
 
 ```
+
+
+|// i386 address | i386 jitted assembler | x64 address | x64 jitted assembler |
+| ------------------------- | ------------------------- | ------------------------- | ------------------------- |
+   0x30000000|  nop|   0x210000000|  nop
+   0x30000001|  mov    0x58b7e82c,%eax|   0x210000001|  movabs 0x555557e05b0c,%eax
+   0x30000006|  cltd   |   0x21000000a|  cltd   
+   0x30000007|  mov    %eax,0x58b7e770|   0x21000000b|  movabs %rax,0x555557e05a54
+   0x3000000c|  mov    %edx,0x58b7e774|   0x210000015|  mov    %edx,%eax
+-|-|   0x210000017|  movabs %rax,0x555557e05a50
+   0x30000012|  nop|   0x210000021|  nop
+   0x30000013|  nop|   0x210000022|  nop
+-|-|   0x210000023|  movabs 0x555557e05a54,%eax
+   0x30000014|  cmpl   $0x0,0x58b7e774|   0x21000002c|  cmp    $0x0,%eax
+   0x3000001b|  mov    $0x1,%eax|   0x21000002f|  mov    $0x1,%eax
+   0x30000020|  jl     0x3000002f|   0x210000034|  jl     0x21000004d
+   0x30000022|  jg     0x3000002d|   0x210000036|  jg     0x21000004b
+-|-|   0x210000038|  movabs 0x555557e05a50,%eax
+   0x30000024|  cmpl   $0x59,0x58b7e770|   0x210000041|  cmp    $0x59,%eax
+-|-|   0x210000044|  mov    $0x1,%eax
+   0x3000002b|  jb     0x3000002f|   0x210000049|  jb     0x21000004d
+   0x3000002d|  xor    %eax,%eax|   0x21000004b|  xor    %eax,%eax
+   0x3000002f|  mov    %eax,0x58b7e5e0|   0x21000004d|  movabs %rax,0x555557e058c0
+-|-|   0x210000057|  xor    %eax,%eax
+   0x30000034|  movl   $0x0,0x58b7e5e4|   0x210000059|  movabs %rax,0x555557e058c4
+   0x3000003e|  nop|   0x210000063|  nop
+-|-|   0x210000064|  movabs 0x555557e058c0,%eax
+-|-|   0x21000006d|  mov    %eax,%ebx
+-|-|   0x21000006f|  movabs 0x5555580fc120,%eax
+   0x3000003f|  cmpl   $0x0,0x58b7e5e0|   0x210000078|  cmp    %ebx,%eax
+   0x30000046|  jne    0x30000055|   0x21000007a|  jne    0x210000098
+-|-|   0x21000007c|  movabs 0x555557e058c4,%eax
+-|-|   0x210000085|  mov    %eax,%ebx
+-|-|   0x210000087|  movabs 0x5555580fc124,%eax
+   0x30000048|  cmpl   $0x0,0x58b7e5e4|   0x210000090|  cmp    %ebx,%eax
+   0x3000004f|  je     0x3000007e|   0x210000092|  je     0x2100000e9
+   0x30000055|  nop|   0x210000098|  nop
+   0x30000056|  movl   $0xbfc00024,0x58b7e878|   0x210000099|  mov    $0xbfc00024,%eax
+   0x30000060|  mov    0x58b7e990,%eax|   0x21000009e|  movabs %rax,0x555557e05b58
+-|-|   0x2100000a8|  movabs 0x555557e05c70,%eax
+   0x30000065|  add    $0xb,%eax|   0x2100000b1|  add    $0xb,%eax
+   0x30000068|  mov    %eax,0x58b7e990|   0x2100000b4|  movabs %rax,0x555557e05c70
+-|-|   0x2100000be|  mov    %eax,%ebx
+-|-|   0x2100000c0|  movabs 0x555557e04de0,%eax
+   0x3000006d|  sub    0x58b7db40,%eax|   0x2100000c9|  sub    %eax,%ebx
+-|-|   0x2100000cb|  mov    %ebx,%eax
+   0x30000073|  js     0x58d79019 <_ZL16eeRecDispatchers+25>|   0x2100000cd|  jns    0x2100000dc // skip next two if not signed
+-|-|   0x2100000cf|  movabs $0x555348102f62,%rax
+-|-|   0x2100000d9|  rex.W jmpq *%rax
+   0x30000079|  jmp    0x58d79000 <_ZL16eeRecDispatchers>|   0x2100000dc|  movabs $0x555558103000,%rax
+-|-|   0x2100000e6|  rex.W jmpq *%rax
+   0x3000007e|  nop|   0x2100000e9|  nop
+   0x3000007f|  movl   $0xbfc00014,0x58b7e878|   0x2100000ea|  mov    $0xbfc00014,%eax
+   0x30000089|  mov    0x58b7e990,%eax|   0x2100000ef|  movabs %rax,0x555557e05b58
+-|-|   0x2100000f9|  movabs 0x555557e05c70,%eax
+   0x3000008e|  add    $0xb,%eax|   0x210000102|  add    $0xb,%eax
+   0x30000091|  mov    %eax,0x58b7e990|   0x210000105|  movabs %rax,0x555557e05c70
+-|-|   0x21000010f|  mov    %eax,%ebx
+-|-|   0x210000111|  movabs 0x555557e04de0,%eax
+   0x30000096|  sub    0x58b7db40,%eax|   0x21000011a|  sub    %eax,%ebx
+-|-|   0x21000011c|  mov    %ebx,%eax
+   0x3000009c|  js     0x58d79019 <_ZL16eeRecDispatchers+25>|   0x21000011e|  jns    0x21000012d // skip next two if not signed
+-|-|   0x210000120|  movabs $0x555348102f11,%rax
+-|-|   0x21000012a|  rex.W jmpq *%rax
+   0x300000a2|  jmp    0x58d79000 <_ZL16eeRecDispatchers>|   0x21000012d|  movabs $0x555558103000,%rax
+-|-|   0x210000137|  rex.W jmpq *%rax

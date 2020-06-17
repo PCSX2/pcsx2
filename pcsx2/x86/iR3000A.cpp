@@ -941,8 +941,13 @@ void psxSetBranchImm( u32 imm )
 	xMOV(ptr32[&psxRegs.pc], imm );
 	_psxFlushCall(FLUSH_EVERYTHING);
 	iPsxBranchTest(imm, imm <= psxpc);
-
-	recBlocks.Link(HWADDR(imm), xJcc32());
+    
+    #ifdef __M_X86_64
+      recBlocks.Link(HWADDR(imm), xJcc64());
+    #else
+      recBlocks.Link(HWADDR(imm), xJcc32());
+    #endif
+    
 }
 
 static __fi u32 psxScaleBlockCycles()
@@ -1324,7 +1329,12 @@ StartRecomp:
 			pxAssert( psxpc == s_nEndBlock );
 			_psxFlushCall(FLUSH_EVERYTHING);
 			xMOV(ptr32[&psxRegs.pc], psxpc);
-			recBlocks.Link(HWADDR(s_nEndBlock), xJcc32() );
+            #ifdef __M_X86_64
+              recBlocks.Link(HWADDR(s_nEndBlock), xJcc64() );
+            #else
+              recBlocks.Link(HWADDR(s_nEndBlock), xJcc32() );
+            #endif
+			
 			psxbranch = 3;
 		}
 	}

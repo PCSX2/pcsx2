@@ -1109,15 +1109,23 @@ static void iBranchTest(u32 newpc)
 		#endif
 
 		if (newpc == 0xffffffff)
+		{
 			xJS( DispatcherReg );
+		}
 		else
-			recBlocks.Link(HWADDR(newpc), xJcc32(Jcc_Signed));
+		{
+			#ifdef __M_X86_64
+				recBlocks.Link(HWADDR(newpc), xJcc64(Jcc_Signed));
+			#else
+				recBlocks.Link(HWADDR(newpc), xJcc32(Jcc_Signed));
+			#endif
+		}
 		#ifdef __M_X86_64
-			xMOV( rax, (uptr)DispatcherEvent );
+			xMOV64( rax, (uptr)DispatcherEvent );
 			xJMP( rax );
 		#else
 			xJMP( (void*)DispatcherEvent );
-        #endif
+		#endif
 	}
 }
 
@@ -2165,7 +2173,11 @@ StartRecomp:
 			{
 				xMOV( ptr32[&cpuRegs.pc], pc );
 				xADD( ptr32[&cpuRegs.cycle], scaleblockcycles() );
-				recBlocks.Link( HWADDR(pc), xJcc32() );
+                #ifdef __M_X86_64
+                  recBlocks.Link( HWADDR(pc), xJcc64() );
+                #else
+                  recBlocks.Link( HWADDR(pc), xJcc32() );
+                #endif
 			}
 		}
 	}
