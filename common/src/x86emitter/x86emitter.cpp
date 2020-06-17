@@ -162,6 +162,13 @@ const xRegister8
 const xAddressReg
     arg1reg = rcx,
     arg2reg = rdx,
+#ifdef __M_X86_64
+    arg3reg = r8,
+    arg4reg = r9
+#else
+    arg3reg = xRegisterEmpty(),
+    arg4reg = xRegisterEmpty(),
+#endif
     calleeSavedReg1 = rdi,
     calleeSavedReg2 = rsi;
 
@@ -174,6 +181,8 @@ const xRegister32
 const xAddressReg
     arg1reg = rdi,
     arg2reg = rsi,
+    arg3reg = rdx,
+    arg4reg = rcx,
     calleeSavedReg1 = r12,
     calleeSavedReg2 = r13;
 
@@ -582,7 +591,7 @@ xAddressVoid xAddressReg::operator+(const xAddressReg &right) const
     return xAddressVoid(*this, right);
 }
 
-xAddressVoid xAddressReg::operator+(s32 right) const
+xAddressVoid xAddressReg::operator+(sptr right) const
 {
     pxAssertMsg(Id != -1, "Uninitialized x86 register.");
     return xAddressVoid(*this, right);
@@ -594,7 +603,7 @@ xAddressVoid xAddressReg::operator+(const void *right) const
     return xAddressVoid(*this, (sptr)right);
 }
 
-xAddressVoid xAddressReg::operator-(s32 right) const
+xAddressVoid xAddressReg::operator-(sptr right) const
 {
     pxAssertMsg(Id != -1, "Uninitialized x86 register.");
     return xAddressVoid(*this, -right);
@@ -623,7 +632,7 @@ xAddressVoid xAddressReg::operator<<(u32 shift) const
 //  xAddressVoid  (method implementations)
 // --------------------------------------------------------------------------------------
 
-xAddressVoid::xAddressVoid(const xAddressReg &base, const xAddressReg &index, int factor, s32 displacement)
+xAddressVoid::xAddressVoid(const xAddressReg &base, const xAddressReg &index, int factor, sptr displacement)
 {
     Base = base;
     Index = index;
@@ -634,7 +643,7 @@ xAddressVoid::xAddressVoid(const xAddressReg &base, const xAddressReg &index, in
     pxAssertMsg(index.Id != xRegId_Invalid, "Uninitialized x86 register.");
 }
 
-xAddressVoid::xAddressVoid(const xAddressReg &index, s32 displacement)
+xAddressVoid::xAddressVoid(const xAddressReg &index, sptr displacement)
 {
     Base = xEmptyReg;
     Index = index;
@@ -644,7 +653,7 @@ xAddressVoid::xAddressVoid(const xAddressReg &index, s32 displacement)
     pxAssertMsg(index.Id != xRegId_Invalid, "Uninitialized x86 register.");
 }
 
-xAddressVoid::xAddressVoid(s32 displacement)
+xAddressVoid::xAddressVoid(sptr displacement)
 {
     Base = xEmptyReg;
     Index = xEmptyReg;
@@ -657,12 +666,7 @@ xAddressVoid::xAddressVoid(const void *displacement)
     Base = xEmptyReg;
     Index = xEmptyReg;
     Factor = 0;
-#ifdef __M_X86_64
-    pxAssert(0);
-//Displacement = (s32)displacement;
-#else
-    Displacement = (s32)displacement;
-#endif
+    Displacement = (sptr)displacement;
 }
 
 xAddressVoid &xAddressVoid::Add(const xAddressReg &src)
@@ -729,7 +733,7 @@ xIndirectVoid::xIndirectVoid(sptr disp)
     // no reduction necessary :D
 }
 
-xIndirectVoid::xIndirectVoid(xAddressReg base, xAddressReg index, int scale, s32 displacement)
+xIndirectVoid::xIndirectVoid(xAddressReg base, xAddressReg index, int scale, sptr displacement)
 {
     Base = base;
     Index = index;
@@ -830,7 +834,7 @@ uint xIndirectVoid::GetOperandSize() const
     return 0;
 }
 
-xIndirectVoid &xIndirectVoid::Add(s32 imm)
+xIndirectVoid &xIndirectVoid::Add(sptr imm)
 {
     Displacement += imm;
     return *this;
