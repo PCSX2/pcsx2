@@ -40,7 +40,9 @@ void xImpl_JmpCall::operator()(const xAddressReg &absreg) const {
 }
 void xImpl_JmpCall::operator()(const xIndirectNative &src) const {
     // Jumps are always wide and don't need the rex.W
-    xOpWrite(0, 0xff, isJmp ? 4 : 2, xIndirect32(src.Base, src.Index, src.Scale, src.Displacement));
+    EmitRex(0, xIndirect32(src.Base, src.Index, 1, 0));
+    xWrite8(0xff);
+    EmitSibMagic(isJmp ? 4 : 2, src);
 }
 #ifdef __M_X86_64
 void xImpl_JmpCall::operator()(const xIndirect32 &absreg) const {

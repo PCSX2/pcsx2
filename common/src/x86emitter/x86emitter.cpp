@@ -296,13 +296,13 @@ static __fi void SibSB(u32 ss, u32 index, u32 base)
     xWrite8((ss << 6) | (index << 3) | base);
 }
 
-void EmitSibMagic(uint regfield, const void *address)
+void EmitSibMagic(uint regfield, const void *address, int extraRIPOffset)
 {
     sptr displacement = (sptr)address;
 #ifndef __M_X86_64
     ModRM(0, regfield, ModRm_UseDisp32);
 #else
-    sptr ripRelative = (sptr)address - ((sptr)x86Ptr + sizeof(s8) + sizeof(s32));
+    sptr ripRelative = (sptr)address - ((sptr)x86Ptr + sizeof(s8) + sizeof(s32) + extraRIPOffset);
     // Can we use a rip-relative address?  (Prefer this over eiz because it's a byte shorter)
     if (ripRelative == (s32)ripRelative) {
         ModRM(0, regfield, ModRm_UseDisp32);
@@ -345,7 +345,7 @@ static __fi bool NeedsSibMagic(const xIndirectVoid &info)
 // regfield - register field to be written to the ModRm.  This is either a register specifier
 //   or an opcode extension.  In either case, the instruction determines the value for us.
 //
-void EmitSibMagic(uint regfield, const xIndirectVoid &info)
+void EmitSibMagic(uint regfield, const xIndirectVoid &info, int extraRIPOffset)
 {
     // 3 bits also on x86_64 (so max is 8)
     // We might need to mask it on x86_64
@@ -364,7 +364,7 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info)
         // encoded *with* a displacement of 0, if it would otherwise not have one).
 
         if (info.Index.IsEmpty()) {
-            EmitSibMagic(regfield, (void *)info.Displacement);
+            EmitSibMagic(regfield, (void *)info.Displacement, extraRIPOffset);
             return;
         } else {
             if (info.Index == ebp && displacement_size == 0)

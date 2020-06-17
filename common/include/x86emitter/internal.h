@@ -25,8 +25,8 @@ namespace x86Emitter
 #define OpWriteSSE(pre, op) xOpWrite0F(pre, op, to, from)
 
 extern void SimdPrefix(u8 prefix, u16 opcode);
-extern void EmitSibMagic(uint regfield, const void *address);
-extern void EmitSibMagic(uint regfield, const xIndirectVoid &info);
+extern void EmitSibMagic(uint regfield, const void *address, int extraRIPOffset = 0);
+extern void EmitSibMagic(uint regfield, const xIndirectVoid &info, int extraRIPOffset = 0);
 extern void EmitSibMagic(uint reg1, const xRegisterBase &reg2);
 extern void EmitSibMagic(const xRegisterBase &reg1, const xRegisterBase &reg2);
 extern void EmitSibMagic(const xRegisterBase &reg1, const void *src);

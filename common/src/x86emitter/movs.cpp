@@ -103,7 +103,12 @@ void xImpl_Mov::operator()(const xIndirect64orLess &dest, sptr imm) const
         default:
             pxAssertMsg(0, "Bad indirect size!");
     }
-    xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? 0xc6 : 0xc7, 0, dest);
+    u8 prefix = dest.GetPrefix16();
+    if (prefix != 0)
+        xWrite8(prefix);
+    EmitRex(0, dest);
+    xWrite8(dest.Is8BitOp() ? 0xc6 : 0xc7);
+    EmitSibMagic(0, dest, 4);
     dest.xWriteImm(imm);
 }
 
