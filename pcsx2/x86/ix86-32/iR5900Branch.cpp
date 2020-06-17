@@ -136,7 +136,7 @@ void recSetBranchEQ(int info, int bne, int process)
                 #ifdef __M_X86_64
                   xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
                   xMOV(ebx,eax);
-                  xMOV(eax, ptr[(void*)g_cpuConstRegs[_Rs_].UL[0] ]);
+                  xMOV(eax, ptr[&g_cpuConstRegs[_Rs_].UL[0] ]);
                   xCMP(eax, ebx);
                 #else
                   xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], g_cpuConstRegs[_Rs_].UL[0] );
@@ -146,7 +146,7 @@ void recSetBranchEQ(int info, int bne, int process)
                 #ifdef __M_X86_64
                   xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
                   xMOV(ebx,eax);
-                  xMOV(eax, ptr[(void*)g_cpuConstRegs[_Rs_].UL[1] ]);
+                  xMOV(eax, ptr[&g_cpuConstRegs[_Rs_].UL[1] ]);
                   xCMP(eax, ebx);
                 #else
                   xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], g_cpuConstRegs[_Rs_].UL[1] );
@@ -157,7 +157,7 @@ void recSetBranchEQ(int info, int bne, int process)
                 #ifdef __M_X86_64
                   xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
                   xMOV(ebx,eax);
-                  xMOV(eax, ptr[(void*)g_cpuConstRegs[_Rt_].UL[0] ]);
+                  xMOV(eax, ptr[&g_cpuConstRegs[_Rt_].UL[0] ]);
                   xCMP(eax, ebx);
                 #else
                   xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], g_cpuConstRegs[_Rt_].UL[0] );
@@ -167,7 +167,7 @@ void recSetBranchEQ(int info, int bne, int process)
                 #ifdef __M_X86_64
                   xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
                   xMOV(ebx,eax);
-                  xMOV(eax, ptr[(void*)g_cpuConstRegs[_Rt_].UL[1] ]);
+                  xMOV(eax, ptr[&g_cpuConstRegs[_Rt_].UL[1] ]);
                   xCMP(eax, ebx);
                 #else
                   xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], g_cpuConstRegs[_Rt_].UL[1] );
