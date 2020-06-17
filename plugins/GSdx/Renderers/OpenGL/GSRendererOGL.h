@@ -33,12 +33,6 @@ class GSRendererOGL final : public GSRendererHW
 		PRIM_OVERLAP_NO
 	};
 
-	enum ACC_DATE {
-		ACC_DATE_NONE = 0,
-		ACC_DATE_FAST = 1,
-		ACC_DATE_FULL = 2
-	};
-
 	enum ACC_BLEND {
 		ACC_BLEND_NONE   = 0,
 		ACC_BLEND_BASIC  = 1,

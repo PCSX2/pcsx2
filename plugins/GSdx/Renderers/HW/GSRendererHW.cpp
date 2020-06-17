@@ -42,7 +42,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_mipmap = theApp.GetConfigI("mipmap_hw");
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
 	m_large_framebuffer  = theApp.GetConfigB("large_framebuffer");
-	m_accurate_date = theApp.GetConfigI("accurate_date");
+	m_accurate_date      = static_cast<AccurateDate>(theApp.GetConfigI("accurate_date"));
 
 	if (theApp.GetConfigB("UserHacks")) {
 		m_userhacks_enabled_gs_mem_clear = !theApp.GetConfigB("UserHacks_Disable_Safe_Features");

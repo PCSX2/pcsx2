@@ -866,7 +866,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 			}
 			else
 			{
-				if (m_accurate_date)
+				if (m_accurate_date == AccurateDate::Fast || m_accurate_date == AccurateDate::Full)
 				{
 					// fprintf(stderr, "%d: Fast Accurate DATE with alpha %d-%d\n", s_n, m_vt.m_alpha.min, m_vt.m_alpha.max);
 					DATE_one = true;

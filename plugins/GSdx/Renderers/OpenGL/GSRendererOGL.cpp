@@ -1081,7 +1081,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				DATE = false;
 			} else {
 				switch (m_accurate_date) {
-					case ACC_DATE_FULL:
+					case AccurateDate::Full:
 						GL_PERF("Full Accurate DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 						if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture) {
 							DATE_GL42 = true;
@@ -1091,11 +1091,11 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 							DATE = false;
 						}
 						break;
-					case ACC_DATE_FAST:
+					case AccurateDate::Fast:
 						GL_PERF("Fast Accurate DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 						DATE_one = true;
 						break;
-					case ACC_DATE_NONE:
+					case AccurateDate::None:
 					default:
 						GL_PERF("Inaccurate DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 						break;

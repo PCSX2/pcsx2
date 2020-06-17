@@ -1455,6 +1455,13 @@ enum class CRCHackLevel : int8
 	Aggressive
 };
 
+enum class AccurateDate : uint8
+{
+	None,
+	Fast,
+	Full
+};
+
 #ifdef ENABLE_ACCURATE_BUFFER_EMULATION
 const GSVector2i default_rt_size(2048, 2048);
 #else
