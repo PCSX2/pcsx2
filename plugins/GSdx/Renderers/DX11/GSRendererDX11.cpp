@@ -838,9 +838,10 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	{
 		if (m_texture_shuffle)
 		{
-			// DATE case not supported yet so keep using the old method.
-			// Leave the check in to make sure other DATE cases are triggered correctly.
+			// Advanced case not yet supported, use DATE_one on Full level, might help some games.
 			// fprintf(stderr, "%d: DATE with texture shuffle\n", s_n);
+			if (m_accurate_date == AccurateDate::Full)
+				DATE_one = true;
 		}
 		else if (m_om_bsel.wa && !m_context->TEST.ATE)
 		{
@@ -860,9 +861,11 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 			}
 			else if ((m_vt.m_primclass == GS_SPRITE_CLASS /*&& m_drawlist.size() < 50*/) || (m_index.tail < 100))
 			{
-				// DATE case not supported yet so keep using the old method.
-				// Leave the check in to make sure other DATE cases are triggered correctly.
+				// Advanced case not yet supported, use DATE_one on Full level, might help some games.
+				// Amagami will break with DATE_one case tho.
 				// fprintf(stderr, "%d: Slow DATE with alpha %d-%d not supported\n", s_n, m_vt.m_alpha.min, m_vt.m_alpha.max);
+				if (m_accurate_date == AccurateDate::Full)
+					DATE_one = true;
 			}
 			else
 			{
