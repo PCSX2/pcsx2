@@ -98,14 +98,14 @@ void xImpl_FastCall::operator()(void *f, const xRegisterLong &a1, const xRegiste
 }
 
 void xImpl_FastCall::operator()(void *f, u32 a1, const xRegisterLong &a2) const {
-    xMOV(arg2reg, a2);
+    if (!a2.IsEmpty()) { xMOV(arg2reg, a2); }
     xMOV(arg1reg, a1);
     (*this)(f, arg1reg, arg2reg);
 }
 #endif
 
 void xImpl_FastCall::operator()(void *f, u32 a1, const xRegister32 &a2) const {
-    xMOV(arg2regd, a2);
+    if (!a2.IsEmpty()) { xMOV(arg2regd, a2); }
     xMOV(arg1regd, a1);
     (*this)(f, arg1regd, arg2regd);
 }
