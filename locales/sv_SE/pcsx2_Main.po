@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.7.0 - 200519\n"
+"Project-Id-Version: PCSX2 1.7.0 - 200618\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-05-19 19:54+0200\n"
-"PO-Revision-Date: 2020-05-19 19:56+0200\n"
+"POT-Creation-Date: 2020-06-18 00:12+0200\n"
+"PO-Revision-Date: 2020-06-18 23:20+0200\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
 "PCSX2-Svenskt-anv%C3%A4ndargr%C3%A4nssnitt-f%C3%B6r-PCSX2\n"
@@ -221,15 +221,9 @@ msgstr "Inspela från"
 msgid "Ok"
 msgstr "Ok"
 
-#: pcsx2/Recording/NewRecordingFrame.cpp:43 pcsx2/gui/AppInit.cpp:735
+#: pcsx2/Recording/NewRecordingFrame.cpp:43 pcsx2/gui/AppInit.cpp:711
 msgid "Cancel"
 msgstr "Avbryt"
-
-#: pcsx2/SaveState.cpp:340
-msgid "Cannot load savestate.  It is of an unknown or unsupported version."
-msgstr ""
-"Kan ej ladda Sparpunkten eftersom den är av en okänd eller ostödjandes "
-"version."
 
 #: pcsx2/SourceLog.cpp:96
 msgid "Dumps detailed information for PS2 executables (ELFs)."
@@ -390,7 +384,7 @@ msgstr "Detaljerad loggning av CDVD-hårdvara."
 msgid "Detailed logging of the Motion (FMV) Decoder hardware unit."
 msgstr "Detaljerad loggning av Rörelse (FMV) Avkodarens hårdvaruenhet."
 
-#: pcsx2/System.h:224 pcsx2/System.h:225 pcsx2/System.h:226
+#: pcsx2/System.h:211 pcsx2/System.h:212 pcsx2/System.h:213
 msgid "PCSX2 Message"
 msgstr "PCSX2 Meddelande"
 
@@ -448,108 +442,108 @@ msgstr ""
 msgid "PCSX2 Recompiler Error(s)"
 msgstr "PCSX2 OmkompilerarFel"
 
-#: pcsx2/gui/AppInit.cpp:234
+#: pcsx2/gui/AppInit.cpp:210
 msgid "All options are for the current session only and will not be saved.\n"
 msgstr ""
 "Alla valmöjligheter gäller endast för den nuvarande sessionen och kommer "
 "inte att sparas.\n"
 
-#: pcsx2/gui/AppInit.cpp:244 pcsx2/gui/AppMain.cpp:368
+#: pcsx2/gui/AppInit.cpp:220 pcsx2/gui/AppMain.cpp:368
 msgid "IsoFile"
 msgstr "ISO-fil"
 
-#: pcsx2/gui/AppInit.cpp:245
+#: pcsx2/gui/AppInit.cpp:221
 msgid "displays this list of command line options"
 msgstr "uppvisar listan av instruktionsmöjligheter"
 
-#: pcsx2/gui/AppInit.cpp:246
+#: pcsx2/gui/AppInit.cpp:222
 msgid "forces the program log/console to be visible"
 msgstr "tvingar programmets logg/konsol att uppenbara sig"
 
-#: pcsx2/gui/AppInit.cpp:247
+#: pcsx2/gui/AppInit.cpp:223
 msgid "use fullscreen GS mode"
 msgstr "använd Helskärms GS-läge"
 
-#: pcsx2/gui/AppInit.cpp:248
+#: pcsx2/gui/AppInit.cpp:224
 msgid "use windowed GS mode"
 msgstr "använd Inramat GS-läge"
 
-#: pcsx2/gui/AppInit.cpp:250
+#: pcsx2/gui/AppInit.cpp:226
 msgid "disables display of the gui while running games"
 msgstr "spärrar uppvisning av GUI medans spel körs"
 
-#: pcsx2/gui/AppInit.cpp:251
+#: pcsx2/gui/AppInit.cpp:227
 msgid "when nogui - prompt before exiting on suspend"
 msgstr "med ingen GUI - anmärk innan utträde"
 
-#: pcsx2/gui/AppInit.cpp:253
+#: pcsx2/gui/AppInit.cpp:229
 msgid "executes an ELF image"
 msgstr "kör en ELF-binär"
 
-#: pcsx2/gui/AppInit.cpp:254
+#: pcsx2/gui/AppInit.cpp:230
 msgid "executes an IRX image"
 msgstr "kör en IRX-avbild"
 
-#: pcsx2/gui/AppInit.cpp:255
+#: pcsx2/gui/AppInit.cpp:231
 msgid "boots an empty DVD tray; use to enter the PS2 system menu"
 msgstr "kör igång en tom DVD-tråg; använd för att åtkomma PS2's SystemMeny"
 
-#: pcsx2/gui/AppInit.cpp:256
+#: pcsx2/gui/AppInit.cpp:232
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
 msgstr ""
 "kör igång genom CDVD-InsticksProgrammet (åsidosätter ISO-fil parameter)"
 
-#: pcsx2/gui/AppInit.cpp:258
+#: pcsx2/gui/AppInit.cpp:234
 msgid "disables all speedhacks"
 msgstr "spärrar alla UppsnabbningsTrimningar"
 
-#: pcsx2/gui/AppInit.cpp:259
+#: pcsx2/gui/AppInit.cpp:235
 msgid "use the specified comma or pipe-delimited list of gamefixes."
 msgstr "använd den angivna komma/linje avgränsande listan av Spelfixar."
 
-#: pcsx2/gui/AppInit.cpp:260
+#: pcsx2/gui/AppInit.cpp:236
 msgid "disables fast booting"
 msgstr "spärrar Snabbkörning"
 
-#: pcsx2/gui/AppInit.cpp:261
+#: pcsx2/gui/AppInit.cpp:237
 msgid ""
 "passes the specified space-delimited string of launch arguments to the game"
 msgstr ""
 "skickar den angivna mellanslags-avgränsade strängen med lanseringsargument "
 "till spelet"
 
-#: pcsx2/gui/AppInit.cpp:263
+#: pcsx2/gui/AppInit.cpp:239
 msgid "changes the configuration file path"
 msgstr "ändrar KonfigurationfilsVägen"
 
-#: pcsx2/gui/AppInit.cpp:264
+#: pcsx2/gui/AppInit.cpp:240
 msgid "specifies the PCSX2 configuration file to use"
 msgstr "anger PCSX2-KonfigurationsFilen att använda"
 
-#: pcsx2/gui/AppInit.cpp:265
+#: pcsx2/gui/AppInit.cpp:241
 #, c-format
 msgid "forces %s to start the First-time Wizard"
 msgstr "tvingar %s att köra KonfigurationsDialogen"
 
-#: pcsx2/gui/AppInit.cpp:266
+#: pcsx2/gui/AppInit.cpp:242
 msgid "enables portable mode operation (requires admin/root access)"
 msgstr "möjliggör flyttbart-läge procedur (kräver AdministarörsBehörighet)"
 
-#: pcsx2/gui/AppInit.cpp:268
+#: pcsx2/gui/AppInit.cpp:244
 msgid "update options to ease profiling (debug)"
 msgstr "uppdateringsmöjligheter för att underlätta profilering (felsökning)"
 
-#: pcsx2/gui/AppInit.cpp:272
+#: pcsx2/gui/AppInit.cpp:248
 #, c-format
 msgid "specify the file to use as the %s plugin"
 msgstr "ange filen att använda som %s's InsticksProgram"
 
-#: pcsx2/gui/AppInit.cpp:322
+#: pcsx2/gui/AppInit.cpp:298
 #, c-format
 msgid "Plugin Override Error - %s"
 msgstr "Insticks Åsidosättande Fel - %s"
 
-#: pcsx2/gui/AppInit.cpp:325
+#: pcsx2/gui/AppInit.cpp:301
 #, c-format
 msgid ""
 "%s Plugin Override Error!  The following file does not exist or is not a "
@@ -560,88 +554,88 @@ msgstr ""
 " eller är icke ett giltligt %s-InsticksProgram:\n"
 "\n"
 
-#: pcsx2/gui/AppInit.cpp:332
+#: pcsx2/gui/AppInit.cpp:308
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
 "Tryck ''Vidare'' för att använda det förvalskonfigurerade "
 "InsticksProgrammet, eller ''Avbryt'' för att stänga %s."
 
-#: pcsx2/gui/AppInit.cpp:554 pcsx2/gui/AppInit.cpp:566
+#: pcsx2/gui/AppInit.cpp:530 pcsx2/gui/AppInit.cpp:542
 #, c-format
 msgid "Press OK to close %s."
 msgstr "Tryck ''Vidare'' för att stänga %s."
 
-#: pcsx2/gui/AppInit.cpp:554
+#: pcsx2/gui/AppInit.cpp:530
 msgid "PCSX2 Error: Hardware Deficiency"
-msgstr "PCSX2 Fel: HårdvaruBristfällighet"
+msgstr "PCSX2 Fel: Hårdvaran är bristfällig"
 
-#: pcsx2/gui/AppInit.cpp:567
+#: pcsx2/gui/AppInit.cpp:543
 #, c-format
 msgid "%s Critical Error"
 msgstr "%s Kritiskt Fel"
 
-#: pcsx2/gui/AppInit.cpp:733
+#: pcsx2/gui/AppInit.cpp:709
 msgid "OK"
 msgstr "Vidare"
 
-#: pcsx2/gui/AppInit.cpp:734
+#: pcsx2/gui/AppInit.cpp:710
 msgid "&OK"
 msgstr "Vidare"
 
-#: pcsx2/gui/AppInit.cpp:736
+#: pcsx2/gui/AppInit.cpp:712
 msgid "&Cancel"
 msgstr "Avbryt"
 
-#: pcsx2/gui/AppInit.cpp:737
+#: pcsx2/gui/AppInit.cpp:713
 msgid "&Apply"
 msgstr "Tillämpa"
 
-#: pcsx2/gui/AppInit.cpp:738
+#: pcsx2/gui/AppInit.cpp:714
 msgid "&Next >"
 msgstr "Nästa >"
 
-#: pcsx2/gui/AppInit.cpp:739
+#: pcsx2/gui/AppInit.cpp:715
 msgid "< &Back"
 msgstr "< Tillbaka"
 
-#: pcsx2/gui/AppInit.cpp:740
+#: pcsx2/gui/AppInit.cpp:716
 msgid "&Back"
 msgstr "Tillbaka"
 
-#: pcsx2/gui/AppInit.cpp:741
+#: pcsx2/gui/AppInit.cpp:717
 msgid "&Finish"
 msgstr "Slutför"
 
-#: pcsx2/gui/AppInit.cpp:742
+#: pcsx2/gui/AppInit.cpp:718
 msgid "&Yes"
 msgstr "Ja"
 
-#: pcsx2/gui/AppInit.cpp:743
+#: pcsx2/gui/AppInit.cpp:719
 msgid "&No"
 msgstr "Nej"
 
-#: pcsx2/gui/AppInit.cpp:744
+#: pcsx2/gui/AppInit.cpp:720
 msgid "Browse"
 msgstr "Bläddra"
 
-#: pcsx2/gui/AppInit.cpp:745
+#: pcsx2/gui/AppInit.cpp:721
 msgid "&Save"
 msgstr "Spara"
 
-#: pcsx2/gui/AppInit.cpp:746
+#: pcsx2/gui/AppInit.cpp:722
 msgid "Save &As..."
 msgstr "Spara som ..."
 
-#: pcsx2/gui/AppInit.cpp:747
+#: pcsx2/gui/AppInit.cpp:723
 msgid "&Help"
 msgstr "Hjälp"
 
-#: pcsx2/gui/AppInit.cpp:748
+#: pcsx2/gui/AppInit.cpp:724
 msgid "&Home"
 msgstr "Hem"
 
-#: pcsx2/gui/AppInit.cpp:750
+#: pcsx2/gui/AppInit.cpp:726
 msgid "Show about dialog"
 msgstr "InfoDialog om PCSX2"
 
@@ -706,7 +700,7 @@ msgstr "Bläddra ..."
 
 #: pcsx2/gui/AppRes.cpp:48
 msgid "Browse for an ISO that is not in your recent history."
-msgstr "Bläddra efter en ISO som ej är i Er historielista."
+msgstr "Bläddra efter en ISO som ej är i Er historiklista."
 
 #: pcsx2/gui/AppUserMode.cpp:92
 msgid "The following folders exist, but are not writable:"
@@ -899,7 +893,7 @@ msgstr "Om %s"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Website"
-msgstr "Webställe"
+msgstr "Webplats"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:56
 msgid "Support Forums"
@@ -915,7 +909,7 @@ msgstr "Licens"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
 msgid "PlayStation 2 Emulator:"
-msgstr "En PlayStation®2 emulator:"
+msgstr "PlayStation®2 emulator:"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
 msgid ""
@@ -1504,7 +1498,7 @@ msgstr "Möjliggör Bredbildsfixar"
 
 #: pcsx2/gui/MainFrame.cpp:470
 msgid "Enabling Widescreen Patches may occasionally cause issues."
-msgstr "Att möjliggöra Bredbildsfixar kan måhända vålla problem."
+msgstr "Att möjliggöra Bredbildsfixar kan måhända orsaka problem."
 
 #: pcsx2/gui/MainFrame.cpp:473
 msgid "Enable &Recording Tools"
@@ -1737,19 +1731,10 @@ msgid "No plugin loaded"
 msgstr "Inget InsticksProgram laddat"
 
 #: pcsx2/gui/MainFrame.cpp:808
-msgid "&Plugin Settings..."
-msgstr "InsticksInställningar ..."
-
-#: pcsx2/gui/MainFrame.cpp:809
-#, c-format
-msgid "Opens the %s plugin's advanced settings dialog."
-msgstr "Öppnar %s-InsticksProgrammets fördjupande InställningsDialog."
-
-#: pcsx2/gui/MainFrame.cpp:816
 msgid "&Core GS Settings..."
 msgstr "Kärn GS-inställningar ..."
 
-#: pcsx2/gui/MainFrame.cpp:817
+#: pcsx2/gui/MainFrame.cpp:809
 msgid ""
 "Modify hardware emulation settings regulated by the PCSX2 core virtual "
 "machine."
@@ -1757,13 +1742,22 @@ msgstr ""
 "Ändra HårdvaruEmuleringsInställningar reglerade av PCSX2's kärn Virtuella "
 "Maskin."
 
-#: pcsx2/gui/MainFrame.cpp:819
+#: pcsx2/gui/MainFrame.cpp:811
 msgid "&Window Settings..."
 msgstr "FönsterInställningar ..."
 
-#: pcsx2/gui/MainFrame.cpp:820
+#: pcsx2/gui/MainFrame.cpp:812
 msgid "Modify window and appearance options, including aspect ratio."
 msgstr "Ändra fönster och UtseendeTillämpningar, däribland Bildkvot."
+
+#: pcsx2/gui/MainFrame.cpp:819
+msgid "&Plugin Settings..."
+msgstr "InsticksInställningar ..."
+
+#: pcsx2/gui/MainFrame.cpp:820
+#, c-format
+msgid "Opens the %s plugin's advanced settings dialog."
+msgstr "Öppnar %s-InsticksProgrammets fördjupande InställningsDialog."
 
 #: pcsx2/gui/MainMenuClicks.cpp:116
 msgid "Reset all settings?"
@@ -2057,7 +2051,7 @@ msgstr "Möjliggör EE-förråd (Långsammare)"
 msgid "Interpreter only; provided for diagnostic"
 msgstr "Endast tolkare; tillhandahålls för Diagnostiksyften"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:226
+#: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:221
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:134 pcsx2/gui/Panels/VideoPanel.cpp:294
 msgid "Restore Defaults"
 msgstr "Återställ Förval"
@@ -2081,17 +2075,6 @@ msgid ""
 msgstr ""
 "Ny VU-omkompilerare med mycket\n"
 " förbättrad förenlighet. [Anrådes]"
-
-#: pcsx2/gui/Panels/CpuPanel.cpp:192
-msgid "superVU Recompiler [legacy]"
-msgstr "superVU (sVU) Omkompilerare [legat]"
-
-#: pcsx2/gui/Panels/CpuPanel.cpp:193
-msgid ""
-"Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
-msgstr ""
-"Användbar för att diagnostisera fel eller blockningsproblem\n"
-" i den nya mVU-omkompileraren."
 
 #: pcsx2/gui/Panels/DirPickerPanel.cpp:64
 msgid "Path does not exist"
@@ -2215,63 +2198,58 @@ msgstr ""
 " * ''Valkyrie Profile 2''"
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:44
-msgid "VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"
-msgstr ""
-"VU Klipp Flagg trim - för ''Persona'' spel (endast superVU-omkompilerare)."
-
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:48
 msgid "FPU Compare Hack - For Digimon Rumble Arena 2."
 msgstr "FPU JämförelseTrim - för ''Digimon Rumble Arena 2''."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:52
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:48
 msgid "FPU Multiply Hack - For Tales of Destiny."
 msgstr "FPU MultiplikationsTrim - för ''Tales of Destiny''."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:56
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:52
 msgid "FPU Negative Div Hack - For Gundam games."
 msgstr "FPU Negativ Division trim - för ''Gundam'' spel."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:60
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:56
 msgid "VU XGkick Hack - For Erementar Gerad."
 msgstr "VU XGkick trim - för ''Erementar Gerad''."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:64
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:60
 msgid "FFX videos fix - Fixes bad graphics overlay in FFX videos."
 msgstr "FFX videofix - löser dålig grafiköverdragning för FFX-videor."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:68
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:64
 msgid "EE timing hack - Multi purpose hack. Try if all else fails."
 msgstr "EE TidsTrim - en flersyftes trimning. Försök om allt annat misslyckas."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:73
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:69
 msgid ""
 "Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."
 msgstr ""
 "Hoppa över MPEG trim - hoppar över FMV-videor i spel för att undgå att de "
 "strular/fryses."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:77
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:73
 msgid "OPH Flag hack - Try if your game freezes showing the same frame."
 msgstr ""
 "OPH Flagg trim - Försök ifall Ert spel strular/fryser sig, visandes samma "
 "bild."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:82
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:78
 msgid "Ignore DMAC writes when it is busy."
 msgstr "Förbise DMAC-skrivningar då denna är upptagen."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:87
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:83
 msgid "Simulate VIF1 FIFO read ahead. Fixes slow loading games."
 msgstr "Simulera ''VIF1 FIFO läs vidare'' - åtgärdar långsamt laddande spel."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:92
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:88
 msgid ""
 "Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD and Spy Hunter loading hang."
 msgstr ""
 "Försena VIF1-uppehåll (VIF1 FIFO) - För HUD i ''SOCOM 2'' och laddningsstrul "
 "i ''Spy Hunter''."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:96
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:92
 msgid ""
 "Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ "
 "Hero)"
@@ -2279,27 +2257,27 @@ msgstr ""
 "Möjliggör GIF FIFO (långsammare men behövs för ''Hotwheels'', ''Wallace and "
 "Gromit'' samt ''DJ Hero'')."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:100
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:96
 msgid "Switch to GSdx software rendering when an FMV plays"
 msgstr "Växla till GSdx MjukvaruFramställning då FMV'er spelas"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:104
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:100
 msgid "Preload TLB hack to avoid tlb miss on Goemon"
 msgstr "Förladda TLB trim för att undvika TLB fel hos ''Goemon''"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:108
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:104
 msgid ""
 "VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
 msgstr ""
 "VU I bit trim - undvik ständig omkompilering (''Scarface - The World Is "
 "Yours'')."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:112
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:108
 msgid "VU I bit Hack avoid constant recompilation (Crash Tag Team Racing)"
 msgstr ""
 "VU I bit trim - undvik ständig omkompilering (''Crash Tag Team Racing'')."
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:123
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:119
 msgid "Enable manual game fixes [Not recommended]"
 msgstr "Möjliggör Egna Spelfixar [Avrådes]"
 
@@ -2733,7 +2711,7 @@ msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
 msgstr ""
 "Bra uppsnabbning och hög förenlighet;\n"
-" kan vålla dålig grafik ... [Anrådes]"
+" kan orsaka dålig grafik ... [Anrådes]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 msgid "MTVU (Multi-Threaded microVU1)"
@@ -2744,7 +2722,7 @@ msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
 "cores]"
 msgstr ""
-"Bra uppsnabbning och hög förenlighet; kan vålla\n"
+"Bra uppsnabbning och hög förenlighet; kan orsaka\n"
 " att det strular sig ... [Anrådes för 3+ kärnor]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:188
@@ -2964,6 +2942,24 @@ msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
 msgstr ""
 "%s-utökningar ej funna. microVU kräver en värd-CPU med SSE2-utökningar."
+
+#~ msgid "Cannot load savestate.  It is of an unknown or unsupported version."
+#~ msgstr ""
+#~ "Kan ej ladda Sparpunkten eftersom den är av en okänd eller ostödjandes "
+#~ "version."
+
+#~ msgid "superVU Recompiler [legacy]"
+#~ msgstr "superVU (sVU) Omkompilerare [legat]"
+
+#~ msgid ""
+#~ "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
+#~ msgstr ""
+#~ "Användbar för att diagnostisera fel eller blockningsproblem\n"
+#~ " i den nya mVU-omkompileraren."
+
+#~ msgid "VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"
+#~ msgstr ""
+#~ "VU Klipp Flagg trim - för ''Persona'' spel (endast superVU-omkompilerare)."
 
 #~ msgid "Previous versions"
 #~ msgstr "Föregående versioner"
