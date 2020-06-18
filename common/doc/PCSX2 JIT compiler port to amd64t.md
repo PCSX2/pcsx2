@@ -1,8 +1,6 @@
 # PS2 JIT compiler port from i386/32bit to x86_64 code
 
 PCSX2 has 6 recompilers:
-* microVU0
-* mircoVU1
 * R5900-32	: EE RISC processor ("Emotion Engine")
 * R3000A 	: I/O processor
 * VIF0 Unpack  : Vector Unit Interface 0
@@ -158,65 +156,66 @@ u                       = recLutReserve_RAM + 64MB + 8*0xffffFFFFD0100000;
 
 |// i386 address | i386 jitted assembler | x64 address | x64 jitted assembler |
 | ------------------------- | ------------------------- | ------------------------- | ------------------------- |
-   0x30000000|  nop|   0x210000000|  nop
+0x30000000|  nop|0x210000000|  nop
    0x30000001|  mov    0x58b7e82c,%eax|   0x210000001|  movabs 0x555557e05b0c,%eax
    0x30000006|  cltd   |   0x21000000a|  cltd   
-   0x30000007|  mov    %eax,0x58b7e770|   0x21000000b|  movabs %rax,0x555557e05a54
-   0x3000000c|  mov    %edx,0x58b7e774|   0x210000015|  mov    %edx,%eax
--|-|   0x210000017|  movabs %rax,0x555557e05a50
-   0x30000012|  nop|   0x210000021|  nop
-   0x30000013|  nop|   0x210000022|  nop
--|-|   0x210000023|  movabs 0x555557e05a54,%eax
-   0x30000014|  cmpl   $0x0,0x58b7e774|   0x21000002c|  cmp    $0x0,%eax
-   0x3000001b|  mov    $0x1,%eax|   0x21000002f|  mov    $0x1,%eax
-   0x30000020|  jl     0x3000002f|   0x210000034|  jl     0x21000004d
-   0x30000022|  jg     0x3000002d|   0x210000036|  jg     0x21000004b
--|-|   0x210000038|  movabs 0x555557e05a50,%eax
-   0x30000024|  cmpl   $0x59,0x58b7e770|   0x210000041|  cmp    $0x59,%eax
--|-|   0x210000044|  mov    $0x1,%eax
-   0x3000002b|  jb     0x3000002f|   0x210000049|  jb     0x21000004d
-   0x3000002d|  xor    %eax,%eax|   0x21000004b|  xor    %eax,%eax
-   0x3000002f|  mov    %eax,0x58b7e5e0|   0x21000004d|  movabs %rax,0x555557e058c0
--|-|   0x210000057|  xor    %eax,%eax
-   0x30000034|  movl   $0x0,0x58b7e5e4|   0x210000059|  movabs %rax,0x555557e058c4
-   0x3000003e|  nop|   0x210000063|  nop
--|-|   0x210000064|  movabs 0x555557e058c0,%eax
--|-|   0x21000006d|  mov    %eax,%ebx
--|-|   0x21000006f|  movabs 0x5555580fc120,%eax
-   0x3000003f|  cmpl   $0x0,0x58b7e5e0|   0x210000078|  cmp    %ebx,%eax
-   0x30000046|  jne    0x30000055|   0x21000007a|  jne    0x210000098
--|-|   0x21000007c|  movabs 0x555557e058c4,%eax
--|-|   0x210000085|  mov    %eax,%ebx
--|-|   0x210000087|  movabs 0x5555580fc124,%eax
-   0x30000048|  cmpl   $0x0,0x58b7e5e4|   0x210000090|  cmp    %ebx,%eax
-   0x3000004f|  je     0x3000007e|   0x210000092|  je     0x2100000e9
-   0x30000055|  nop|   0x210000098|  nop
-   0x30000056|  movl   $0xbfc00024,0x58b7e878|   0x210000099|  mov    $0xbfc00024,%eax
-   0x30000060|  mov    0x58b7e990,%eax|   0x21000009e|  movabs %rax,0x555557e05b58
--|-|   0x2100000a8|  movabs 0x555557e05c70,%eax
-   0x30000065|  add    $0xb,%eax|   0x2100000b1|  add    $0xb,%eax
-   0x30000068|  mov    %eax,0x58b7e990|   0x2100000b4|  movabs %rax,0x555557e05c70
--|-|   0x2100000be|  mov    %eax,%ebx
--|-|   0x2100000c0|  movabs 0x555557e04de0,%eax
-   0x3000006d|  sub    0x58b7db40,%eax|   0x2100000c9|  sub    %eax,%ebx
--|-|   0x2100000cb|  mov    %ebx,%eax
-   0x30000073|  js     0x58d79019 <_ZL16eeRecDispatchers+25>|   0x2100000cd|  jns    0x2100000dc // skip next two if not signed
--|-|   0x2100000cf|  movabs $0x555348102f62,%rax
--|-|   0x2100000d9|  rex.W jmpq *%rax
-   0x30000079|  jmp    0x58d79000 <_ZL16eeRecDispatchers>|   0x2100000dc|  movabs $0x555558103000,%rax
--|-|   0x2100000e6|  rex.W jmpq *%rax
-   0x3000007e|  nop|   0x2100000e9|  nop
-   0x3000007f|  movl   $0xbfc00014,0x58b7e878|   0x2100000ea|  mov    $0xbfc00014,%eax
-   0x30000089|  mov    0x58b7e990,%eax|   0x2100000ef|  movabs %rax,0x555557e05b58
--|-|   0x2100000f9|  movabs 0x555557e05c70,%eax
-   0x3000008e|  add    $0xb,%eax|   0x210000102|  add    $0xb,%eax
-   0x30000091|  mov    %eax,0x58b7e990|   0x210000105|  movabs %rax,0x555557e05c70
--|-|   0x21000010f|  mov    %eax,%ebx
--|-|   0x210000111|  movabs 0x555557e04de0,%eax
-   0x30000096|  sub    0x58b7db40,%eax|   0x21000011a|  sub    %eax,%ebx
--|-|   0x21000011c|  mov    %ebx,%eax
-   0x3000009c|  js     0x58d79019 <_ZL16eeRecDispatchers+25>|   0x21000011e|  jns    0x21000012d // skip next two if not signed
--|-|   0x210000120|  movabs $0x555348102f11,%rax
--|-|   0x21000012a|  rex.W jmpq *%rax
-   0x300000a2|  jmp    0x58d79000 <_ZL16eeRecDispatchers>|   0x21000012d|  movabs $0x555558103000,%rax
--|-|   0x210000137|  rex.W jmpq *%rax
+   0x30000007|  mov    %eax,0x58b7e770|   0x21000000b|  movabs %eax,0x555557e05a54
+   0x3000000c|  mov    %edx,0x58b7e774|   0x210000014|  mov    %edx,%eax
+-|-|   0x210000016|  movabs %eax,0x555557e05a50
+   0x30000012|  nop|   0x21000001f|  nop
+   0x30000013|  nop|   0x210000020|  nop
+-|-|   0x210000021|  movabs 0x555557e05a54,%eax
+   0x30000014|  cmpl   $0x0,0x58b7e774|   0x21000002a|  cmp    $0x0,%eax
+   0x3000001b|  mov    $0x1,%eax|   0x21000002d|  mov    $0x1,%eax
+   0x30000020|  jl     0x3000002f|   0x210000032|  jl     0x21000004b
+   0x30000022|  jg     0x3000002d|   0x210000034|  jg     0x210000049
+-|-|   0x210000036|  movabs 0x555557e05a50,%eax
+   0x30000024|  cmpl   $0x59,0x58b7e770|   0x21000003f|  cmp    $0x59,%eax
+-|-|   0x210000042|  mov    $0x1,%eax
+   0x3000002b|  jb     0x3000002f|   0x210000047|  jb     0x21000004b
+   0x3000002d|  xor    %eax,%eax|   0x210000049|  xor    %eax,%eax
+   0x3000002f|  mov    %eax,0x58b7e5e0|   0x21000004b|  movabs %eax,0x555557e058c0
+-|-|   0x210000054|  xor    %eax,%eax
+   0x30000034|  movl   $0x0,0x58b7e5e4|   0x210000056|  movabs %eax,0x555557e058c4
+   0x3000003e|  nop|   0x21000005f|  nop
+-|-|   0x210000060|  movabs 0x555557e058c0,%eax
+-|-|   0x210000069|  mov    %eax,%ebx
+-|-|   0x21000006b|  movabs 0x5555580fc120,%eax
+   0x3000003f|  cmpl   $0x0,0x58b7e5e0|   0x210000074|  cmp    %ebx,%eax
+   0x30000046|  jne    0x30000055|   0x210000076|  jne    0x210000094
+-|-|   0x210000078|  movabs 0x555557e058c4,%eax
+-|-|   0x210000081|  mov    %eax,%ebx
+-|-|   0x210000083|  movabs 0x5555580fc124,%eax
+   0x30000048|  cmpl   $0x0,0x58b7e5e4|   0x21000008c|  cmp    %ebx,%eax
+   0x3000004f|  je     0x3000007e|   0x21000008e|  je     0x2100000e3
+   0x30000055|  nop|   0x210000094|  nop
+   0x30000056|  movl   $0xbfc00024,0x58b7e878|   0x210000095|  mov    $0xbfc00024,%eax
+   0x30000060|  mov    0x58b7e990,%eax|   0x21000009a|  movabs %eax,0x555557e05b58
+-|-|   0x2100000a3|  movabs 0x555557e05c70,%eax
+   0x30000065|  add    $0xb,%eax|   0x2100000ac|  add    $0xb,%eax
+   0x30000068|  mov    %eax,0x58b7e990|   0x2100000af|  movabs %eax,0x555557e05c70
+-|-|   0x2100000b8|  mov    %eax,%ebx
+-|-|   0x2100000ba|  movabs 0x555557e04de0,%eax
+   0x3000006d|  sub    0x58b7db40,%eax|   0x2100000c3|  sub    %eax,%ebx
+-|-|   0x2100000c5|  mov    %ebx,%eax
+-|-|   0x2100000c7|  jns    0x2100000d6 //skip next two if not signed
+-|-|   0x2100000c9|  movabs $0x55555810303b,%rax
+   0x30000073|  js     0x58d79019 <_ZL16eeRecDispatchers+25>|   0x2100000d3|  rex.W jmpq *%rax
+-|-|   0x2100000d6|  movabs $0x555558103000,%rax
+   0x30000079|  jmp    0x58d79000 <_ZL16eeRecDispatchers>|   0x2100000e0|  rex.W jmpq *%rax
+   0x3000007e|  nop|   0x2100000e3|  nop
+   0x3000007f|  movl   $0xbfc00014,0x58b7e878|   0x2100000e4|  mov    $0xbfc00014,%eax
+   0x30000089|  mov    0x58b7e990,%eax|   0x2100000e9|  movabs %eax,0x555557e05b58
+-|-|   0x2100000f2|  movabs 0x555557e05c70,%eax
+   0x3000008e|  add    $0xb,%eax|   0x2100000fb|  add    $0xb,%eax
+   0x30000091|  mov    %eax,0x58b7e990|   0x2100000fe|  movabs %eax,0x555557e05c70
+-|-|   0x210000107|  mov    %eax,%ebx
+-|-|   0x210000109|  movabs 0x555557e04de0,%eax
+   0x30000096|  sub    0x58b7db40,%eax|   0x210000112|  sub    %eax,%ebx
+-|-|   0x210000114|  mov    %ebx,%eax
+-|-|   0x210000116|  jns    0x210000125 //skip next two if not signed
+-|-|   0x210000118|  movabs $0x55555810303b,%rax
+   0x3000009c|  js     0x58d79019 <_ZL16eeRecDispatchers+25>|   0x210000122|  rex.W jmpq *%rax
+-|-|   0x210000125|  movabs $0x555558103000,%rax
+   0x300000a2|  jmp    0x58d79000 <_ZL16eeRecDispatchers>|   0x21000012f|  rex.W jmpq *%rax
+

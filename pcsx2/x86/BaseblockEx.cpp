@@ -74,9 +74,25 @@ void BaseBlocks::Link(u32 pc, sptr* jumpptr)
 {
 	BASEBLOCKEX *targetblock = Get(pc);
 	if (targetblock && targetblock->startpc == pc)
-		*jumpptr = (sptr)(targetblock->fnptr - (sptr)(jumpptr + 1));
+	{
+		#ifdef __M_X86_64
+		  // return absolute
+		  *jumpptr = (sptr)(targetblock->fnptr);
+		#else
+		  // return 32-bit displacement
+		  *jumpptr = (sptr)(targetblock->fnptr - (sptr)(jumpptr + 1));
+		#endif
+	}
 	else
-		*jumpptr = (sptr)(recompiler - (sptr)(jumpptr + 1));
+	{
+		#ifdef __M_X86_64
+		  // return absolute
+		  *jumpptr = (sptr)(recompiler);
+		#else
+		  // return 32-bit displacement
+		  *jumpptr = (sptr)(recompiler - (sptr)(jumpptr + 1));
+		#endif
+	}
 	links.insert(std::pair<u32, uptr>(pc, (uptr)jumpptr));
 }
 

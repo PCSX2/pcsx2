@@ -61,11 +61,12 @@ __emitinline void xOpWrite(u8 prefix, u8 opcode, const T1 &param1, const T2 &par
 }
 
 template <typename T1, typename T2>
-__emitinline void xOpAccWrite(u8 prefix, u8 opcode, const T1 &param1, const T2 &param2)
+__emitinline void xOpAccWrite(u8 prefix, u8 opcode, const T1 &param1, const T2 &param2, bool tryToEmitRex = true)
 {
     if (prefix != 0)
         xWrite8(prefix);
-    EmitRex(param1, param2);
+    if (tryToEmitRex)
+        EmitRex(param1, param2);
 
     xWrite8(opcode);
 }
