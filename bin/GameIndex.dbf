@@ -9070,6 +9070,7 @@ Region = PAL-E
 Serial = SLES-51060
 Name   = Butt Ugly Martians
 Region = PAL-M5
+vuClampMode = 0 // Fix SPS.
 ---------------------------------------------
 Serial = SLES-51061
 Name   = Grand Theft Auto - Vice City
@@ -37503,6 +37504,7 @@ Serial = SLUS-20527
 Name   = Butt Ugly Martians - Zoom or Doom!
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0 // Fix SPS.
 ---------------------------------------------
 Serial = SLUS-20528
 Name   = Zapper - One Wicked Cricket
