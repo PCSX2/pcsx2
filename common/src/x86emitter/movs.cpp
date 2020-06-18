@@ -58,7 +58,7 @@ void xImpl_Mov::operator()(const xIndirectVoid &dest, const xRegisterInt &from) 
 
     if (from.IsAccumulator() && dest.Index.IsEmpty() && dest.Base.IsEmpty()) {
 
-        xOpAccWrite(from.GetPrefix16(), from.Is8BitOp() ? x86_Opcode_MOV_Ob_AL : x86_Opcode_MOV_Ov_eAX, from.Id, dest);
+        xOpAccWrite(from.GetPrefix16(), from.Is8BitOp() ? x86_Opcode_MOV_Ob_AL : x86_Opcode_MOV_Ov_eAX, from.Id, dest,from.IsWide());
         #ifdef __M_X86_64
           xWrite64(dest.Displacement);
         #else
