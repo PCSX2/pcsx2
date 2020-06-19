@@ -177,14 +177,14 @@ void GSRendererOGL::EmulateZbuffer()
 	const bool clamp_z = (uint32)(GSVector4i(m_vt.m_max.p).z) > max_z;
 
 	vs_cb.MaxDepth = GSVector2i(0xFFFFFFFF);
-	ps_cb.MaxDepth = GSVector4(1.0f);
+	ps_cb.MaxDepth = GSVector4(0.0f, 0.0f, 0.0f, 1.0f);
 	m_ps_sel.zclamp = 0;
 
 	if (clamp_z) {
 		if (m_vt.m_primclass == GS_SPRITE_CLASS || m_vt.m_primclass == GS_POINT_CLASS) {
 			vs_cb.MaxDepth = GSVector2i(max_z);
 		} else {
-			ps_cb.MaxDepth = GSVector4(max_z * ldexpf(1, -32));
+			ps_cb.MaxDepth = GSVector4(0.0f, 0.0f, 0.0f, max_z * ldexpf(1, -32));
 			m_ps_sel.zclamp = 1;
 		}
 	}
