@@ -1142,10 +1142,10 @@ xScopedStackFrame::xScopedStackFrame(bool base_frame, bool save_base_pointer, in
     }
 
     xPUSH(rbx);
-    xPUSH(r12);
-    xPUSH(r13);
+    /*xPUSH(r12); // disabled because emitted code incorrect
+    xPUSH(r13);   // not used anyways
     xPUSH(r14);
-    xPUSH(r15);
+    xPUSH(r15);*/
     m_offset += 40;
 
 #else
@@ -1180,10 +1180,10 @@ xScopedStackFrame::~xScopedStackFrame()
 #ifdef __M_X86_64
 
     // Restore the register context
-    xPOP(r15);
+    /*xPOP(r15);
     xPOP(r14);
     xPOP(r13);
-    xPOP(r12);
+    xPOP(r12);*/
     xPOP(rbx);
 
     // Destroy the frame

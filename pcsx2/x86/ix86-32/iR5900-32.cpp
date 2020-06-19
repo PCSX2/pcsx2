@@ -75,7 +75,7 @@ static const int RECCONSTBUF_SIZE = 16384 * 2; // 64 bit consts in 32 bit units
 static RecompiledCodeReserve* recMem = NULL;
 static u8* recRAMCopy = NULL;
 static u8* recLutReserve_RAM = NULL;
-static const size_t recLutSize = Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1;
+static const size_t recLutSize = (((Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK));
 
 static uptr m_ConfiguredCacheReserve = 64;
 
@@ -496,7 +496,7 @@ static void _DynGen_Dispatchers()
 
 static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 {
-	for (int i = 0; i < memsize/4; i++)
+	for (int i = 0; i < memsize/sizeof(BASEBLOCK); i++)
 		base[i].SetFnptr((uptr)JITCompile);
 }
 
@@ -544,11 +544,7 @@ static void recAlloc()
 
 	if (!recRAM)
 	{
-        #ifdef __M_X86_64 
-		  recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize*2, 4096);
-        #else
-          recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
-        #endif
+        recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
 	}
 
 	BASEBLOCK* basepos = (BASEBLOCK*)recLutReserve_RAM;

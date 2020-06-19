@@ -115,6 +115,28 @@ __emitinline s64 *xJcc64(JccComparisonType comparison, uptr imm)
         // continue here
         x86SetJ8( j8Ptr[0] );
     }
+    else if (comparison == Jcc_LessOrEqual)
+    {
+        // continue if greater
+        j8Ptr[ 0 ] = JG8( 0 ); 
+        // jump if less or equal to placeholder
+        xMOV64( rax, 0xbadf00dbeefbabe );
+        returnValue = ((s64 *)xGetPtr()) - 1;
+        xJMP( rax );
+        // continue here
+        x86SetJ8( j8Ptr[0] );
+    }
+    else if (comparison == Jcc_NotEqual)
+    {
+        // continue if equal
+        j8Ptr[ 0 ] = JE8( 0 ); 
+        // jump if not equal to placeholder
+        xMOV64( rax, 0xbadf00dbeefbabe );
+        returnValue = ((s64 *)xGetPtr()) - 1;
+        xJMP( rax );
+        // continue here
+        x86SetJ8( j8Ptr[0] );
+    }
     else
     {
         pxAssert(0);
@@ -154,21 +176,31 @@ __emitinline void xJccKnownTarget(JccComparisonType comparison, const void *targ
     if (slideForward) {
         pxAssertDev(displacement8 >= 0, "Used slideForward on a backward jump; nothing to slide!");
     }
-
+#ifdef __M_X86_64
+    if (is_s8(displacement8))
+        xJcc8(comparison, displacement8);
+    else if (displacement8 == (s32)displacement8) {
+        // Perform a 32 bit jump
+        s32 *bah = xJcc32(comparison);
+        sptr distance = (sptr)target - (sptr)xGetPtr();
+        *bah = (s32)distance;
+    }
+    else {
+        // Perform a 64 bit jump
+        s64 *bah = xJcc64(comparison);
+        sptr distance = (sptr)target - (sptr)xGetPtr();
+        *bah = (s64)distance;
+    }
+#else
     if (is_s8(displacement8))
         xJcc8(comparison, displacement8);
     else {
         // Perform a 32 bit jump instead. :(
         s32 *bah = xJcc32(comparison);
         sptr distance = (sptr)target - (sptr)xGetPtr();
-
-#ifdef __M_X86_64
-        // This assert won't physically happen on x86 targets
-        pxAssertDev(distance >= -0x80000000LL && distance < 0x80000000LL, "Jump target is too far away, needs an indirect register");
-#endif
-
         *bah = (s32)distance;
     }
+#endif
 }
 
 // Low-level jump instruction!  Specify a comparison type and a target in void* form, and

@@ -938,7 +938,12 @@ void psxSetBranchImm( u32 imm )
 	pxAssert( imm );
 
 	// end the current block
-	xMOV(ptr32[&psxRegs.pc], imm );
+	#ifdef __M_X86_64
+	  xMOV( eax, imm);
+	  xMOV(ptr[&psxRegs.pc], eax );
+	#else
+	  xMOV(ptr32[&psxRegs.pc], imm );
+	#endif
 	_psxFlushCall(FLUSH_EVERYTHING);
 	iPsxBranchTest(imm, imm <= psxpc);
     
@@ -984,28 +989,49 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		}
 	}
 	else
-	{
-		xMOV(eax, ptr32[&psxRegs.cycle]);
-		xADD(eax, blockCycles);
-		xMOV(ptr32[&psxRegs.cycle], eax); // update cycles
+    {
+        xMOV(eax, ptr[&psxRegs.cycle]);
+        xADD(eax, blockCycles);
 
-		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
-		xSUB(ptr32[&iopCycleEE], blockCycles*8);
-		xJLE(iopExitRecompiledCode);
+        // jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
+        
+        #ifdef __M_X86_64
+          xMOV(ptr[&psxRegs.cycle], eax); // update cycles
+          xMOV(ebx, blockCycles*8 );
+          xSUB(eax, ebx);
+          xMOV(ptr[&iopCycleEE], eax);
+          xJLE(iopExitRecompiledCode);
 
-		// check if an event is pending
-		xSUB(eax, ptr32[&g_iopNextEventCycle]);
-		xForwardJS<u8> nointerruptpending;
+          // check if an event is pending
+          xMOV(ebx, eax);
+          xMOV(eax, ptr[&g_iopNextEventCycle]);
+          xSUB(ebx, eax);
+        #else
+          xMOV(ptr32[&psxRegs.cycle], eax); // update cycles
+          xSUB(ptr32[&iopCycleEE], blockCycles*8);
+          xJLE(iopExitRecompiledCode);
 
-		xFastCall((void*)iopEventTest);
+          // check if an event is pending
+          xSUB(eax, ptr32[&g_iopNextEventCycle]);
+        #endif
 
-		if( newpc != 0xffffffff ) {
-			xCMP(ptr32[&psxRegs.pc], newpc);
-			xJNE(iopDispatcherReg);
-		}
+        xForwardJS<u8> nointerruptpending;
 
-		nointerruptpending.SetTarget();
-	}
+        xFastCall((void*)iopEventTest);
+
+        if( newpc != 0xffffffff ) {
+          #ifdef __M_X86_64
+            xMOV( eax, ptr[&psxRegs.pc]);
+            xMOV( ebx, newpc);
+            xCMP( eax, ebx);
+          #else
+            xCMP(ptr32[&psxRegs.pc], newpc);
+          #endif
+          xJNE(iopDispatcherReg);
+        }
+
+        nointerruptpending.SetTarget();
+    }
 }
 
 #if 0
