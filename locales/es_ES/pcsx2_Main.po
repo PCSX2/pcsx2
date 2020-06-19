@@ -5,7 +5,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.6.0\n"
+"Project-Id-Version: PCSX2 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
 "PO-Revision-Date: 2020-06-19 13:56+0200\n"
@@ -1922,7 +1922,6 @@ msgstr ""
 "Esas herramientas se ofrecen tal cual y solo deben activarse bajo tu propio "
 "riesgo."
 
-# :pcsx2/gui/MainMenuClicks.cpp:589
 #: pcsx2/gui/MainMenuClicks.cpp:589
 msgid "Load State"
 msgstr "Cargar guardado rápido"
