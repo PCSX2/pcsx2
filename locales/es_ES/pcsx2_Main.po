@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PCSX2 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-02-10 17:29+0000\n"
-"PO-Revision-Date: 2020-06-19 13:56+0200\n"
+"PO-Revision-Date: 2020-06-19 20:29+0200\n"
 "Last-Translator: Víctor González Fraile <victor.gonfraile@hotmail.es>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -2521,7 +2521,7 @@ msgstr "Puerto %u / Multitap %u--Puerto 1"
 #: pcsx2/gui/Panels/MemoryCardListView.cpp:135
 #, c-format
 msgid "             Multitap-%u--Port-%u"
-msgstr "       Multitap %u--Puerto %u"
+msgstr "             Multitap %u--Puerto %u"
 
 #: pcsx2/gui/Panels/MemoryCardListPanel.cpp:952
 msgid "Empty"
