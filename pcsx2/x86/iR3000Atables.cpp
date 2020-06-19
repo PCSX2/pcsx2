@@ -95,7 +95,12 @@ void rpsxSLTI_const()
 void rpsxSLTconst(int info, int dreg, int sreg, int imm)
 {
 	xXOR(eax, eax);
-    xCMP(ptr32[&psxRegs.GPR.r[sreg]], imm);
+    #ifdef __M_X86_64
+      xMOV( eax, ptr[&psxRegs.GPR.r[sreg]]);
+      xCMP( eax, imm);
+    #else
+      xCMP(ptr32[&psxRegs.GPR.r[sreg]], imm);
+    #endif
     xSETL(al);
 	xMOV(ptr[&psxRegs.GPR.r[dreg]], eax);
 }
@@ -113,7 +118,12 @@ void rpsxSLTIU_const()
 void rpsxSLTUconst(int info, int dreg, int sreg, int imm)
 {
 	xXOR(eax, eax);
-	xCMP(ptr32[&psxRegs.GPR.r[sreg]], imm);
+    #ifdef __M_X86_64
+      xMOV( eax, ptr[&psxRegs.GPR.r[sreg]]);
+	  xCMP( eax, imm);
+    #else
+      xCMP(ptr32[&psxRegs.GPR.r[sreg]], imm);
+    #endif
     xSETB(al);
 	xMOV(ptr[&psxRegs.GPR.r[dreg]], eax);
 }
@@ -1045,11 +1055,25 @@ static u32* s_pbranchjmp;
 void rpsxSetBranchEQ(int info, int process)
 {
 	if( process & PROCESS_CONSTS ) {
-		xCMP(ptr32[&psxRegs.GPR.r[ _Rt_ ]], g_psxConstRegs[_Rs_] );
+        #ifdef __M_X86_64
+          xMOV( eax, ptr[&psxRegs.GPR.r[ _Rt_ ]]);
+          xMOV( ebx, eax );
+          xMOV( eax, ptr[&g_psxConstRegs[_Rs_]]);
+          xCMP( eax, ebx );
+        #else
+		  xCMP(ptr32[&psxRegs.GPR.r[ _Rt_ ]], g_psxConstRegs[_Rs_] );
+        #endif
 		s_pbranchjmp = JNE32( 0 );
 	}
 	else if( process & PROCESS_CONSTT ) {
-		xCMP(ptr32[&psxRegs.GPR.r[ _Rs_ ]], g_psxConstRegs[_Rt_] );
+        #ifdef __M_X86_64
+          xMOV( eax, ptr[&psxRegs.GPR.r[ _Rs_ ]]);
+          xMOV( ebx, eax );
+          xMOV( eax, ptr[&g_psxConstRegs[_Rt_]]);
+          xCMP( eax, ebx );
+        #else
+          xCMP(ptr32[&psxRegs.GPR.r[ _Rs_ ]], g_psxConstRegs[_Rt_] );
+        #endif
 		s_pbranchjmp = JNE32( 0 );
 	}
 	else {
