@@ -129,7 +129,7 @@ static DynGenFunc* _DynGen_JITCompile()
     
     #ifdef __M_X86_64
       xMOV( rax, 0 );
-      xMOV( eax, ptr[&cpuRegs.pc] );
+      xMOV( eax, ptr[&psxRegs.pc] );
 	  xMOV( rbx, rax );
 	  xSHR( rax, 16 );
       xSHL( rbx, 1 );
@@ -166,7 +166,7 @@ static DynGenFunc* _DynGen_DispatcherReg()
 
     #ifdef __M_X86_64
       xMOV( rax, 0 );
-      xMOV( eax, ptr[&cpuRegs.pc] );
+      xMOV( eax, ptr[&psxRegs.pc] );
 	  xMOV( rbx, rax );
 	  xSHR( rax, 16 );
       xSHL( rbx, 1 );
