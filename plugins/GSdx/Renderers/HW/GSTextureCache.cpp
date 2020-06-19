@@ -161,6 +161,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		src->m_from_target_TEX0 = dst->m_TEX0;
 		src->m_32_bits_fmt = dst->m_32_bits_fmt;
 		src->m_valid_rect = dst->m_valid;
+		src->m_end_block = dst->m_end_block;
 
 		// Insert the texture in the hash set to keep track of it. But don't bother with
 		// texture cache list. It means that a new Source is created everytime we need it.
@@ -865,9 +866,10 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				else
 				{
 					// render target used as input texture
-					// TODO
-
 					b |= bp == s->m_from_target_TEX0.TBP0;
+
+					if (!b)
+						b = s->Overlaps(bp, bw, psm, rect);
 
 					if(b)
 					{
@@ -1222,6 +1224,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_from_target = dst->m_texture;
 		src->m_from_target_TEX0 = dst->m_TEX0;
 		src->m_texture->SetScale(scale);
+		src->m_end_block = dst->m_end_block;
 
 		if (psm.pal > 0) {
 			// Attach palette for GPU texture conversion
@@ -1248,6 +1251,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_target = true;
 		src->m_from_target = dst->m_texture;
 		src->m_from_target_TEX0 = dst->m_TEX0;
+		src->m_end_block = dst->m_end_block;
 
 		// Even if we sample the framebuffer directly we might need the palette
 		// to handle the format conversion on GPU
@@ -1281,6 +1285,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_from_target = dst->m_texture;
 		src->m_from_target_TEX0 = dst->m_TEX0;
 		src->m_valid_rect = dst->m_valid;
+		src->m_end_block = dst->m_end_block;
 
 		dst->Update();
 
@@ -1586,6 +1591,7 @@ GSTextureCache::Surface::Surface(GSRenderer* r, uint8* temp)
 	, m_temp(temp)
 	, m_32_bits_fmt(false)
 	, m_shared_texture(false)
+	, m_end_block(0)
 {
 	m_TEX0.TBP0 = 0x3fff;
 }
@@ -1601,6 +1607,21 @@ GSTextureCache::Surface::~Surface()
 void GSTextureCache::Surface::UpdateAge()
 {
 	m_age = 0;
+}
+
+bool GSTextureCache::Surface::Inside(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect)
+{
+	// Valid only for color formats.
+	uint32 const end_block = GSLocalMemory::m_psm[psm].bn(rect.z - 1, rect.w - 1, bp, bw);
+	return bp >= m_TEX0.TBP0 && end_block <= m_end_block;
+}
+
+bool GSTextureCache::Surface::Overlaps(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect)
+{
+	// Valid only for color formats.
+	uint32 const end_block = GSLocalMemory::m_psm[psm].bn(rect.z - 1, rect.w - 1, bp, bw);
+	return (m_TEX0.TBP0 <= bp        && bp        <= m_end_block)
+		|| (m_TEX0.TBP0 <= end_block && end_block <= m_end_block);
 }
 
 // GSTextureCache::Source
@@ -1877,7 +1898,6 @@ GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* tem
 	, m_type(-1)
 	, m_used(false)
 	, m_depth_supported(depth_supported)
-	, m_end_block(0)
 {
 	m_TEX0 = TEX0;
 	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].trbpp != 16);
@@ -1987,13 +2007,6 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW);  // Valid only for color formats
 
 	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
-}
-
-bool GSTextureCache::Target::Inside(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect)
-{
-	uint32 block = GSLocalMemory::m_psm[psm].bn(rect.z - 1, rect.w - 1, bp, bw);  // Valid only for color formats
-
-	return bp >= m_TEX0.TBP0 && block <= m_end_block;
 }
 
 // GSTextureCache::SourceMap

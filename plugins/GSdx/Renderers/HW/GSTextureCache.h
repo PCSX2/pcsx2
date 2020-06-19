@@ -43,12 +43,15 @@ public:
 		uint8* m_temp;
 		bool m_32_bits_fmt; // Allow to detect the casting of 32 bits as 16 bits texture
 		bool m_shared_texture;
+		uint32 m_end_block;  // Hint of the surface area.
 
 	public:
 		Surface(GSRenderer* r, uint8* temp);
 		virtual ~Surface();
 
 		void UpdateAge();
+		bool Inside(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect);
+		bool Overlaps(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect);
 	};
 
 	struct PaletteKey {
@@ -138,13 +141,11 @@ public:
 		GSVector4i m_valid;
 		bool m_depth_supported;
 		bool m_dirty_alpha;
-		uint32 m_end_block; // Hint of the target area
 
 	public:
 		Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* temp, bool depth_supported);
 
 		void UpdateValidity(const GSVector4i& rect);
-		bool Inside(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect);
 
 		void Update();
 	};
