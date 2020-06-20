@@ -279,13 +279,16 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				//
 				// Solution: consider the RT as 32 bits if the alpha was used in the past
 				uint32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
+				const bool is_indexed_format = psm == PSM_PSMT4 || psm == PSM_PSMT8;
 
-				if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t_psm)) {
+				if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t_psm)
+					&& (!is_indexed_format || t->m_end_block == bp_end))  // Avoid fishy false positives.
+				{
 					// It is a complex to convert the code in shader. As a reference, let's do it on the CPU, it will be slow but
 					// 1/ it just works :)
 					// 2/ even with upscaling
 					// 3/ for both Direct3D and OpenGL
-					if (m_cpu_fb_conversion && (psm == PSM_PSMT4 || psm == PSM_PSMT8))
+					if (m_cpu_fb_conversion && is_indexed_format)
 						// Forces 4-bit and 8-bit frame buffer conversion to be done on the CPU instead of the GPU, but performance will be slower.
 						// There is no dedicated shader to handle 4-bit conversion (Stuntman has been confirmed to use 4-bit).
 						// Direct3D10/11 and OpenGL support 8-bit fb conversion but don't render some corner cases properly (Harry Potter games).
