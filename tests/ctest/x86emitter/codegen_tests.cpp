@@ -155,4 +155,5 @@ TEST(CodegenTests, SSETest)
 	CODEGEN_TEST_64(xMOVAPS(ptr128[rax+r9], xmm8), "46 0f 29 04 08");
 	CODEGEN_TEST_BOTH(xBLEND.PS(xmm0, xmm1, 0x55), "66 0f 3a 0c c1 55");
 	CODEGEN_TEST_64(xBLEND.PD(xmm8, xmm9, 0xaa), "66 45 0f 3a 0d c1 aa");
+	CODEGEN_TEST_64(xEXTRACTPS(ptr32[base], xmm1, 2), "66 0f 3a 17 0d f6 ff ff ff 02");
 }

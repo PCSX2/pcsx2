@@ -403,24 +403,24 @@ void EmitSibMagic(uint regfield, const xIndirectVoid &info, int extraRIPOffset)
 
 // Writes a ModRM byte for "Direct" register access forms, which is used for all
 // instructions taking a form of [reg,reg].
-void EmitSibMagic(uint reg1, const xRegisterBase &reg2)
+void EmitSibMagic(uint reg1, const xRegisterBase &reg2, int)
 {
     xWrite8((Mod_Direct << 6) | (reg1 << 3) | (reg2.Id & 7));
 }
 
-void EmitSibMagic(const xRegisterBase &reg1, const xRegisterBase &reg2)
+void EmitSibMagic(const xRegisterBase &reg1, const xRegisterBase &reg2, int)
 {
     xWrite8((Mod_Direct << 6) | ((reg1.Id & 7) << 3) | (reg2.Id & 7));
 }
 
-void EmitSibMagic(const xRegisterBase &reg1, const void *src)
+void EmitSibMagic(const xRegisterBase &reg1, const void *src, int extraRIPOffset)
 {
-    EmitSibMagic(reg1.Id & 7, src);
+    EmitSibMagic(reg1.Id & 7, src, extraRIPOffset);
 }
 
-void EmitSibMagic(const xRegisterBase &reg1, const xIndirectVoid &sib)
+void EmitSibMagic(const xRegisterBase &reg1, const xIndirectVoid &sib, int extraRIPOffset)
 {
-    EmitSibMagic(reg1.Id & 7, sib);
+    EmitSibMagic(reg1.Id & 7, sib, extraRIPOffset);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
