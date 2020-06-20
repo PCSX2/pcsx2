@@ -134,9 +134,9 @@ void recSetBranchEQ(int info, int bne, int process)
         if( bne ) {
             if( process & PROCESS_CONSTS ) {
                 #ifdef __M_X86_64
-                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-                  xMOV(ebx,eax);
                   xMOV(eax, ptr[&g_cpuConstRegs[_Rs_].UL[0] ]);
+                  xMOV(ebx,eax);
+                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
                   xCMP(eax, ebx);
                 #else
                   xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], g_cpuConstRegs[_Rs_].UL[0] );
@@ -144,9 +144,9 @@ void recSetBranchEQ(int info, int bne, int process)
                 j8Ptr[ 0 ] = JNE8( 0 );
 
                 #ifdef __M_X86_64
-                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
-                  xMOV(ebx,eax);
                   xMOV(eax, ptr[&g_cpuConstRegs[_Rs_].UL[1] ]);
+                  xMOV(ebx,eax);
+                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
                   xCMP(eax, ebx);
                 #else
                   xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], g_cpuConstRegs[_Rs_].UL[1] );
@@ -155,9 +155,9 @@ void recSetBranchEQ(int info, int bne, int process)
             }
             else if( process & PROCESS_CONSTT ) {
                 #ifdef __M_X86_64
-                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-                  xMOV(ebx,eax);
                   xMOV(eax, ptr[&g_cpuConstRegs[_Rt_].UL[0] ]);
+                  xMOV(ebx,eax);
+                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
                   xCMP(eax, ebx);
                 #else
                   xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], g_cpuConstRegs[_Rt_].UL[0] );
@@ -165,9 +165,9 @@ void recSetBranchEQ(int info, int bne, int process)
                 j8Ptr[ 0 ] = JNE8( 0 );
 
                 #ifdef __M_X86_64
-                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
-                  xMOV(ebx,eax);
                   xMOV(eax, ptr[&g_cpuConstRegs[_Rt_].UL[1] ]);
+                  xMOV(ebx,eax);
+                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
                   xCMP(eax, ebx);
                 #else
                   xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], g_cpuConstRegs[_Rt_].UL[1] );
@@ -179,7 +179,7 @@ void recSetBranchEQ(int info, int bne, int process)
                 #ifdef __M_X86_64
                   xMOV(ebx,eax);
                   xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-                  xCMP(eax, ebx);
+                  xCMP(ebx, eax);
                 #else
                   xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
                 #endif
@@ -189,7 +189,7 @@ void recSetBranchEQ(int info, int bne, int process)
                 #ifdef __M_X86_64
                   xMOV(ebx,eax);
                   xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
-                  xCMP(eax, ebx);
+                  xCMP(ebx, eax);
                 #else
                   xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
                 #endif

@@ -201,9 +201,9 @@ void recMFC0()
 	xMOV(eax, ptr[&cpuRegs.CP0.r[ _Rd_ ]]);
 	xCDQ();
     #ifdef __M_X86_64
-      xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[1]], eax);
-      xMOV(eax, edx);
       xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+      xMOV(eax, edx);
+      xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[1]], eax);
     #else
       xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
       xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
