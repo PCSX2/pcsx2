@@ -39,26 +39,30 @@ void SaveStateBase::InputRecordingFreeze()
 	Freeze(g_FrameCount);
 
 #ifndef DISABLE_RECORDING
-	// Explicitly set the frame change tracking variable as to not
-	// detect loading a savestate as a frame being drawn
-	g_InputRecordingControls.SetFrameCountTracker(g_FrameCount);
-	// Loading a save-state is an asynchronous task, if we are playing a recording
-	// that starts from a savestate (not power-on) and the starting (pcsx2 internal) frame
-	// marker has not been set (which comes from the save-state), we initialize it.
-	// TODO - get rid of the -1
-	if (g_InputRecording.GetStartingFrame() == -1 && g_InputRecording.GetInputRecordingData().FromCurrentFrame()) {
-		g_InputRecording.SetStartingFrame(g_FrameCount);
-		// TODO - make a function of my own to simplify working with the logging macros
-		recordingConLog(wxString::Format(L"[REC]: Internal Starting Frame: %d\n", g_InputRecording.GetStartingFrame()));
-	}
-	// Otherwise the starting savestate has been loaded and if loaded a save-state while recording the movie
-	// it is an undo operation that needs to be tracked.
-	else if (g_InputRecording.RecordingActive() && IsLoading())
+	if (g_InputRecording.IsRecordingActive())
 	{
-		g_InputRecording.GetInputRecordingData().AddUndoCount();
-		// Reloading a save-state means the internal recording frame counter may need to be adjusted
-		// Since we persist the g_FrameCount of the beginning of the movie, we can use it to recalculate it
-		g_InputRecording.SetFrameCounter(g_FrameCount - (g_InputRecording.GetStartingFrame()));
+		// Explicitly set the frame change tracking variable as to not
+		// detect loading a savestate as a frame being drawn
+		g_InputRecordingControls.SetFrameCountTracker(g_FrameCount);
+
+		// Loading a save-state is an asynchronous task, if we are playing a recording
+		// that starts from a savestate (not power-on) and the starting (pcsx2 internal) frame
+		// marker has not been set (which comes from the save-state), we initialize it.
+		if (!g_InputRecording.LoadedInitialSavestate() && g_InputRecording.GetInputRecordingData().FromCurrentFrame()) {
+			g_InputRecording.SetStartingFrame(g_FrameCount);
+			g_InputRecording.InitialSavestateLoaded();
+			// TODO - make a function of my own to simplify working with the logging macros
+			recordingConLog(wxString::Format(L"[REC]: Internal Starting Frame: %d\n", g_InputRecording.GetStartingFrame()));
+		}
+
+		// Otherwise the starting savestate has been loaded and if loaded a save-state while recording the movie
+		// it is an undo operation that needs to be tracked.
+		else if (IsLoading()) {
+			g_InputRecording.GetInputRecordingData().AddUndoCount();
+			// Reloading a save-state means the internal recording frame counter may need to be adjusted
+			// Since we persist the g_FrameCount of the beginning of the movie, we can use it to recalculate it
+			g_InputRecording.SetFrameCounter(g_FrameCount - (g_InputRecording.GetStartingFrame()));
+		}
 	}
 #endif
 }
@@ -157,14 +161,19 @@ bool InputRecording::IsInterruptFrame()
 	return fInterruptFrame;
 }
 
-bool InputRecording::IsRecordingReplaying()
-{
-	return RecordingActive() && state == InputRecordingMode::Replaying;
-}
-
-bool InputRecording::RecordingActive()
+bool InputRecording::IsRecordingActive()
 {
 	return state != InputRecordingMode::NoneActive;
+}
+
+bool InputRecording::LoadedInitialSavestate()
+{
+	return loadedInitialSavestate;
+}
+
+bool InputRecording::IsRecordingReplaying()
+{
+	return IsRecordingActive() && state == InputRecordingMode::Replaying;
 }
 
 wxString InputRecording::RecordingModeTitleSegment()
@@ -206,6 +215,11 @@ void InputRecording::SetFrameCounter(u32 newFrameCounter)
 	}
 }
 
+void InputRecording::InitialSavestateLoaded()
+{
+	loadedInitialSavestate = true;
+}
+
 void InputRecording::SetStartingFrame(u32 newStartingFrame)
 {
 	startingFrame = newStartingFrame;
@@ -215,7 +229,8 @@ void InputRecording::Stop()
 {
 	// Reset the frame counter when starting a new recording
 	frameCounter = 0;
-	startingFrame = -1;
+	startingFrame = 0;
+	loadedInitialSavestate = false;
 	state = InputRecordingMode::NoneActive;
 	if (inputRecordingData.Close())
 	{
