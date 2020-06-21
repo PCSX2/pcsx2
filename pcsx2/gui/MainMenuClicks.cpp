@@ -32,7 +32,7 @@
 
 #ifndef DISABLE_RECORDING
 #	include "Recording/InputRecording.h"
-#   include "Recording/InputRecordingControls.h"
+#	include "Recording/InputRecordingControls.h"
 #	include "Recording/VirtualPad.h"
 #endif
 
@@ -473,7 +473,6 @@ void MainEmuFrame::Menu_EnableBackupStates_Click( wxCommandEvent& )
 	//  (1st save after the toggle keeps the old pre-toggle value)..
 	//  wonder what that means for all the other menu checkboxes which only use AppSaveSettings... (avih)
 	AppApplySettings();
-	
 	AppSaveSettings();
 }
 
@@ -530,7 +529,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 	else
 	{
 		//Properly close any currently loaded recording file before disabling
-		if (g_InputRecording.RecordingActive())
+		if (g_InputRecording.IsRecordingActive())
 			Menu_Recording_Stop_Click(event);
 		GetMenuBar()->Remove(TopLevelMenu_InputRecording);
 		// Always turn controller logs off, but never turn it on by default
@@ -876,16 +875,16 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 	const bool initiallyPaused = g_InputRecordingControls.IsRecordingPaused();
 	if (!initiallyPaused)
 		g_InputRecordingControls.PauseImmediately();
-	NewRecordingFrame* NewRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
-	if (NewRecordingFrame)
+	NewRecordingFrame* newRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
+	if (newRecordingFrame)
 	{
-		if (NewRecordingFrame->ShowModal() == wxID_CANCEL)
+		if (newRecordingFrame->ShowModal() == wxID_CANCEL)
 		{
 			if (!initiallyPaused)
 				g_InputRecordingControls.Resume();
 			return;
 		}
-		if (!g_InputRecording.Create(NewRecordingFrame->GetFile(), !NewRecordingFrame->GetFrom(), NewRecordingFrame->GetAuthor()))
+		if (!g_InputRecording.Create(newRecordingFrame->GetFile(), !newRecordingFrame->GetFrom(), newRecordingFrame->GetAuthor()))
 		{
 			if (!initiallyPaused)
 				g_InputRecordingControls.Resume();
@@ -913,7 +912,7 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent &event)
 	}
 
 	wxString path = openFileDialog.GetPath();
-	const bool recordingLoaded = g_InputRecording.RecordingActive();
+	const bool recordingLoaded = g_InputRecording.IsRecordingActive();
 	if (!g_InputRecording.Play(path))
 	{
 		if (recordingLoaded)

@@ -41,8 +41,15 @@ public:
 	bool IsInterruptFrame();
 
 	// If there is currently an input recording being played back or actively being recorded
-	bool RecordingActive();
-    bool IsRecordingReplaying();
+	bool IsRecordingActive();
+
+	// Whether or not the recording's initial save state has yet to be loaded or saved and 
+	// the rest of the recording can be initialized
+	// This is not applicable to recordings from a "power-on" state
+	bool IsSavestateInitializing();
+
+	// If there is currently an input recording being played back
+	bool IsRecordingReplaying();
 
 	// String representation of the current recording mode to be interpolated into the title
 	wxString RecordingModeTitleSegment();
@@ -50,8 +57,12 @@ public:
 	// Switches between recording and replaying the active input recording file
 	void RecordModeToggle();
 
+	// Mark the recording's initial savestate as having been loaded or saved successfully
+	void SavestateInitialized();
+
 	// Set the running frame counter for the input recording to an arbitrary value
 	void SetFrameCounter(u32 newFrameCounter);
+
 	// Store the starting internal PCSX2 g_FrameCount value
 	void SetStartingFrame(u32 newStartingFrame);
 	
@@ -65,18 +76,20 @@ public:
 	void Stop();
 
 private:
-	enum class InputRecordingMode {
+	enum class InputRecordingMode
+	{
 		NoneActive,
 		Recording,
 		Replaying,
 	};
 
+	// DEPRECATED: Slated for removal 
 	bool fInterruptFrame = false;
-
 	InputRecordingFile inputRecordingData;
+	bool savestateInitializing = false;
+	u32 startingFrame = 0;
 	InputRecordingMode state = InputRecording::InputRecordingMode::NoneActive;
 	u32 frameCounter = 0;
-    u32 startingFrame = -1;
 
 	// Resolve the name and region of the game currently loaded using the GameDB
 	// If the game cannot be found in the DB, the fallback is the ISO filename
