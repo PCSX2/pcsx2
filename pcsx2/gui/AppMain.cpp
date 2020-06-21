@@ -32,7 +32,7 @@
 #include "Debugger/DisassemblyDialog.h"
 
 #ifndef DISABLE_RECORDING
-#	include "Recording/RecordingControls.h"
+#	include "Recording/InputRecordingControls.h"
 #	include "Recording/InputRecording.h"
 #endif
 
@@ -620,7 +620,7 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 #ifndef DISABLE_RECORDING
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			if (g_RecordingControls.IsEmulationAndRecordingPaused())
+			if (g_InputRecordingControls.IsRecordingPaused())
 			{
 				// When the GSFrame CoreThread is paused, so is the logical VSync
 				// Meaning that we have to grab the user-input through here to potentially
@@ -633,7 +633,7 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 					}
 				}
 			}
-			g_RecordingControls.ResumeCoreThreadIfStarted();
+			g_InputRecordingControls.ResumeCoreThreadIfStarted();
 		}
 #endif
 		(handler->*func)(event);
@@ -1059,7 +1059,7 @@ void Pcsx2App::OnProgramLogClosed( wxWindowID id )
 void Pcsx2App::OnMainFrameClosed( wxWindowID id )
 {
 #ifndef DISABLE_RECORDING
-	if (g_InputRecording.GetModeState() == INPUT_RECORDING_MODE_NONE)
+	if (g_InputRecording.RecordingActive())
 	{
 		g_InputRecording.Stop();
 	}

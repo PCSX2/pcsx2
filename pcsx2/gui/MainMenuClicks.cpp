@@ -32,9 +32,8 @@
 
 #ifndef DISABLE_RECORDING
 #	include "Recording/InputRecording.h"
-#	include "Recording/RecordingControls.h"
+#   include "Recording/InputRecordingControls.h"
 #	include "Recording/VirtualPad.h"
-#	include "Recording/RecordingControls.h"
 #endif
 
 
@@ -531,7 +530,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 	else
 	{
 		//Properly close any currently loaded recording file before disabling
-		if (g_InputRecording.GetModeState() != INPUT_RECORDING_MODE_NONE)
+		if (g_InputRecording.RecordingActive())
 			Menu_Recording_Stop_Click(event);
 		GetMenuBar()->Remove(TopLevelMenu_InputRecording);
 		// Always turn controller logs off, but never turn it on by default
@@ -544,8 +543,8 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 				viewport->InitDefaultAccelerators();
 			}
 		}
-		if (g_RecordingControls.IsEmulationAndRecordingPaused())
-			g_RecordingControls.Unpause();
+		if (g_InputRecordingControls.IsRecordingPaused())
+			g_InputRecordingControls.Resume();
 	}
 
 	g_Conf->EmuOptions.EnableRecordingTools = checked;
@@ -690,11 +689,11 @@ void MainEmuFrame::Menu_ConfigPlugin_Click(wxCommandEvent& event)
 		// If the CoreThread is paused prior to opening the PAD plugin settings then when the settings 
 		// are closed the PAD will not re-open. To avoid this, we resume emulation prior to the plugins 
 		// configuration handler doing so.
-		if (g_Conf->EmuOptions.EnableRecordingTools && g_RecordingControls.IsEmulationAndRecordingPaused())
+		if (g_Conf->EmuOptions.EnableRecordingTools && g_InputRecordingControls.IsRecordingPaused())
 		{
-			g_RecordingControls.Unpause();
+			g_InputRecordingControls.Resume();
 			GetCorePlugins().Configure(pid);
-			g_RecordingControls.Pause();
+			g_InputRecordingControls.Pause();
 		}
 		else
 			GetCorePlugins().Configure(pid);
@@ -874,53 +873,53 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent & eve
 #ifndef DISABLE_RECORDING
 void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 {
-	const bool initiallyPaused = g_RecordingControls.IsEmulationAndRecordingPaused();
+	const bool initiallyPaused = g_InputRecordingControls.IsRecordingPaused();
 	if (!initiallyPaused)
-		g_RecordingControls.Pause();
+		g_InputRecordingControls.PauseImmediately();
 	NewRecordingFrame* NewRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
 	if (NewRecordingFrame)
 	{
 		if (NewRecordingFrame->ShowModal() == wxID_CANCEL)
 		{
 			if (!initiallyPaused)
-				g_RecordingControls.Unpause();
+				g_InputRecordingControls.Resume();
 			return;
 		}
 		if (!g_InputRecording.Create(NewRecordingFrame->GetFile(), !NewRecordingFrame->GetFrom(), NewRecordingFrame->GetAuthor()))
 		{
 			if (!initiallyPaused)
-				g_RecordingControls.Unpause();
+				g_InputRecordingControls.Resume();
 			return;
 		}
 	}
 	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
 	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
-	if (!g_InputRecordingData.FromSaveState())
-		g_RecordingControls.Unpause();
+	if (!g_InputRecording.GetInputRecordingData().FromSaveState())
+		g_InputRecordingControls.Resume();
 }
 
 void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent &event)
 {
-	const bool initiallyPaused = g_RecordingControls.IsEmulationAndRecordingPaused();
+	const bool initiallyPaused = g_InputRecordingControls.IsRecordingPaused();
 	if (!initiallyPaused)
-		g_RecordingControls.Pause();
+		g_InputRecordingControls.PauseImmediately();
 	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
 		L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
 	if (openFileDialog.ShowModal() == wxID_CANCEL)
 	{
 		if (!initiallyPaused)
-			g_RecordingControls.Unpause();
+			g_InputRecordingControls.Resume();
 		return;
 	}
 
 	wxString path = openFileDialog.GetPath();
-	const bool recordingLoaded = g_InputRecording.GetModeState() != INPUT_RECORDING_MODE_NONE;
+	const bool recordingLoaded = g_InputRecording.RecordingActive();
 	if (!g_InputRecording.Play(path))
 	{
 		if (recordingLoaded)
 			Menu_Recording_Stop_Click(event);
 		if (!initiallyPaused)
-			g_RecordingControls.Unpause();
+			g_InputRecordingControls.Resume();
 		return;
 	}
 	if (!recordingLoaded)
@@ -928,7 +927,7 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent &event)
 		m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
 		m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
 	}
-	g_RecordingControls.Unpause();
+	g_InputRecordingControls.Resume();
 }
 
 void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent &event)

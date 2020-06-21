@@ -33,7 +33,7 @@
 #include "Sio.h"
 
 #ifndef DISABLE_RECORDING
-#	include "Recording/RecordingControls.h"
+#	include "Recording/InputRecordingControls.h"
 #endif
 
 using namespace Threading;
@@ -588,7 +588,7 @@ __fi void rcntUpdate_vSync()
 #ifndef DISABLE_RECORDING
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			g_RecordingControls.HandleFrameAdvanceAndStop();
+			g_InputRecordingControls.HandleFrameAdvanceAndPausing();
 		}
 #endif
 		VSyncStart(vsyncCounter.sCycle);

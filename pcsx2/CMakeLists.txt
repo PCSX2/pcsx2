@@ -463,10 +463,10 @@ set(pcsx2RDebugHeaders
 # Recording sources
 set(pcsx2RecordingSources
 	Recording/InputRecording.cpp
+	Recording/InputRecordingControls.cpp
 	Recording/InputRecordingFile.cpp
 	Recording/NewRecordingFrame.cpp
 	Recording/PadData.cpp
-	Recording/RecordingControls.cpp
 	Recording/RecordingInputManager.cpp
 	Recording/VirtualPad.cpp
 )
@@ -474,10 +474,10 @@ set(pcsx2RecordingSources
 # Recording headers
 set(pcsx2RecordingHeaders
 	Recording/InputRecording.h
+	Recording/InputRecordingControls.h
 	Recording/InputRecordingFile.h
 	Recording/NewRecordingFrame.h
 	Recording/PadData.h
-	Recording/RecordingControls.h
 	Recording/RecordingInputManager.h
 	Recording/VirtualPad.h
 )
