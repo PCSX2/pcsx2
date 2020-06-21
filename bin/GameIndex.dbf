@@ -650,6 +650,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20109
 Name   = Ratchet & Clank 3 - Up your Arsenal
 Region = NTSC-Unk
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCAJ-20110
 Name   = Dragon Quest VIII - Sora to Daichi to Norowareshi Himegimi
@@ -1744,7 +1745,9 @@ Serial = SCES-51607
 Name   = Ratchet & Clank 2 - Locked & Loaded
 Region = PAL-M5
 Compat = 5
-// Reads Ratchet 1 data.
+// EETimingHack = 1 // Fixes crash & cinematic after Jammer Array level.
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
+// reads Ratchet 1 data
 MemCardFilter = SCES-51607/SCES-50916
 ---------------------------------------------
 Serial = SCES-51608
@@ -2016,7 +2019,8 @@ Serial = SCES-52456
 Name   = Ratchet & Clank 3
 Region = PAL-M5
 Compat = 5
-// Reads Ratchet 1 & 2 data.
+// reads Ratchet 1 & 2 data
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 MemCardFilter = SCES-52456/SCES-51607/SCES-50916
 ---------------------------------------------
 Serial = SCES-52460
@@ -2862,6 +2866,7 @@ Serial = SCKA-20011
 Name   = Ratchet & Clank 2
 Region = NTSC-K
 MemCardFilter = SCKA-20011/SCKA-20120
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCKA-20012
 Name   = Ark the Lad - jeongryeongui Hwanghon
@@ -2961,6 +2966,7 @@ Serial = SCKA-20037
 Name   = Ratchet & Clank 3
 Region = NTSC-K
 MemCardFilter = SCKA-20037/SCKA-20011/SCKA-20120
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCKA-20038
 Name   = Time Crisis - Crisis Zone
@@ -3612,6 +3618,7 @@ Serial = SCPS-15056
 Name   = Ratchet & Clank 2
 Region = NTSC-J
 MemCardFilter = SCPS-15056/SCPS-15037
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCPS-15057
 Name   = Jak and Daxter II
@@ -3730,6 +3737,7 @@ Serial = SCPS-15084
 Name   = Ratchet & Clank 3
 Region = NTSC-J
 MemCardFilter = SCPS-15084/SCPS-15056/SCPS-15037
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCPS-15085
 Name   = Kenran Butousai
@@ -4043,6 +4051,7 @@ Region = NTSC-J
 Serial = SCPS-19302
 Name   = Ratchet & Clank 2 [PlayStation 2 The Best]
 Region = NTSC-J
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCPS-19303
 Name   = Boku no Natsuyasumi 2 [PlayStation 2 The Best]
@@ -4074,6 +4083,7 @@ Region = NTSC-J
 Serial = SCPS-19309
 Name   = Ratchet & Clank 3 - Up Your Arsenal [PlayStation 2 The Best]
 Region = NTSC-J
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCPS-19310
 Name   = Ratchet & Clank [PlayStation 2 The Best]
@@ -4103,6 +4113,7 @@ Region = NTSC-J
 Serial = SCPS-19317
 Name   = Ratchet & Clank 2 - Going Commando [PlayStation 2 The Best]
 Region = NTSC-J
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCPS-19318
 Name   = Genji - Dawn of the Samurai [PlayStation 2 The Best]
@@ -5187,6 +5198,7 @@ Serial = SCUS-97268
 Name   = Ratchet & Clank - Going Commando
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 MemCardFilter = SCUS-97268/SCUS-97199
 ---------------------------------------------
 Serial = SCUS-97269
@@ -5292,10 +5304,12 @@ Region = NTSC-U
 Serial = SCUS-97322
 Name   = Ratchet & Clank 2 - Going Commando [Regular Demo]
 Region = NTSC-U
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCUS-97323
 Name   = Ratchet & Clank 2 - Going Commando [Retail Employees Demo]
 Region = NTSC-U
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCUS-97324
 Name   = Kiosk Demo Disc 2.11
@@ -5396,6 +5410,7 @@ Serial = SCUS-97353
 Name   = Ratchet & Clank - Up Your Arsenal
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 MemCardFilter = SCUS-97353/SCUS-97268/SCUS-97199
 ---------------------------------------------
 Serial = SCUS-97355
@@ -5477,6 +5492,7 @@ Region = NTSC-U
 Serial = SCUS-97381
 Name   = Ratchet & Clank 2 - Going Commando [GameStop Demo]
 Region = NTSC-U
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCUS-97382
 Name   = NBA Shootout 2004 [Demo]
@@ -5564,6 +5580,7 @@ Region = NTSC-U
 Serial = SCUS-97411
 Name   = Ratchet & Clank - Up Your Arsenal [Regular Demo]
 Region = NTSC-U
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCUS-97412
 Name   = Jak 3 [Demo]
@@ -5572,6 +5589,7 @@ Region = NTSC-U
 Serial = SCUS-97413
 Name   = Ratchet & Clank - Up Your Arsenal [Public Beta v1.0]
 Region = NTSC-U
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCUS-97414
 Name   = EyeToy - AntiGrav
@@ -5956,6 +5974,7 @@ MemCardFilter = SCUS-97512/SCUS-97102
 Serial = SCUS-97513
 Name   = Ratchet & Clank - Going Commando [Greatest Hits]
 Region = NTSC-U
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCUS-97514
 Name   = ATV Off-Road Fury 3 [Greatest Hits]
@@ -5977,6 +5996,7 @@ vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graph
 Serial = SCUS-97518
 Name   = Ratchet & Clank - Up Your Arsenal [Greatest Hits]
 Region = NTSC-U
+vuClampMode = 2 // Fixes Shadow issues with transparency and geometry.
 ---------------------------------------------
 Serial = SCUS-97519
 Name   = Sly 2 - Band of Thieves [Greatest Hits]
