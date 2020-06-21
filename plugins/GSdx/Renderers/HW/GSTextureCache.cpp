@@ -2112,8 +2112,8 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 				}
 			}
 		}
-
-	while (m_surface_offset_cache.size() > S_SURFACE_OFFSET_CACHE_MAX_SIZE)
+	// Clear cache if size too big.
+	while (m_surface_offset_cache.size() + 1 > S_SURFACE_OFFSET_CACHE_MAX_SIZE)
 	{
 		GL_PERF("TC comp surf off: Size of cache %d too big, clearing it.", m_surface_offset_cache.size());
 		m_surface_offset_cache.clear();
