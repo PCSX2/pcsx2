@@ -320,7 +320,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					sok.surf_max_valid_z = t->m_valid.z;
 					sok.surf_m_end_block = t->m_end_block;
 					sok.surf_tex0_tbp0 = t->m_TEX0.TBP0;
-					const SurfaceOffset so = ComputeSurfaceOffset(sok, false);
+					const SurfaceOffset so = ComputeSurfaceOffset(sok);
 					if (so.is_valid_offset)
 					{
 						dst = t;
@@ -866,40 +866,18 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				const SurfaceOffset so = ComputeSurfaceWriteOffset(off, r, t);
 				if (so.is_valid_offset)
 				{
-					GL_CACHE("TC: Dirty After Target(%s) %d (0x%x)", to_string(type),
+					GL_CACHE("TC: Dirty After Target(%s) %d (0x%x->0x%x) pos(%d,%d => %d,%d) bw:%u",
+						to_string(type),
 						t->m_texture ? t->m_texture->GetID() : 0,
-						t->m_TEX0.TBP0);
+						t->m_TEX0.TBP0, t->m_end_block,
+						so.offset.x, so.offset.y, so.offset.z, so.offset.w,
+						bw
+					);
 					// TODO: do not add this rect above too
 					t->m_dirty.push_back(GSDirtyRect(so.offset, psm));
 					t->m_TEX0.TBW = bw;
 					continue;
 				}
-
-				// FIXME: this code "fixes" black FMV issue with rule of rose.
-#if 1
-				// Greg: I'm not sure the 'bw' equality is required but it won't hurt too much
-				//
-				// Ben 10 Alien Force : Vilgax Attacks uses a small temporary target for multiple textures (different bw)
-				// It is too complex to handle, and purpose of the code was to handle FMV (large bw). So let's skip small
-				// (128 pixels) target
-				if (bw > 2 && t->m_TEX0.TBW == bw && t->Inside(bp, bw, psm, rect) && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM)) {
-					uint32 rowsize = bw * 8192u;
-					uint32 offset = (uint32)((bp - t->m_TEX0.TBP0) * 256);
-
-					if(rowsize > 0 && offset % rowsize == 0) {
-						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
-
-						GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x->0x%x) pos(%d,%d => %d,%d) bw:%u", to_string(type),
-								t->m_texture ? t->m_texture->GetID() : 0,
-								t->m_TEX0.TBP0, t->m_end_block,
-								r.left, r.top + y, r.right, r.bottom + y, bw);
-
-						t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm));
-						t->m_TEX0.TBW = bw;
-						continue;
-					}
-				}
-#endif
 			}
 		}
 	}
@@ -2040,84 +2018,88 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceWriteOffset(GSOffset
 	if (!off || !t)
 		return { false, false, GSVector4i(0, 0, 0, 0) };
 	SurfaceOffsetKey sok;
+	const GSLocalMemory::psm_t& write_psm_s = GSLocalMemory::m_psm[t->m_TEX0.PSM];
+	const GSLocalMemory::psm_t& target_psm_s = GSLocalMemory::m_psm[off->psm];
 	const bool write_before_target = off->bp < t->m_TEX0.TBP0;
 	if (write_before_target)
 	{  // Search offset from write to target.
-		sok.req_psm = t->m_TEX0.PSM;
+		GL_CACHE("TC comp surf write off: searching offset from write BP 0x%x to target BP 0x%x.",
+			off->bp, t->m_TEX0.TBP0);
+		sok.req_psm = off->psm;
 		sok.req_bp = t->m_TEX0.TBP0;
-		sok.req_bw = t->m_TEX0.TBW;
+		sok.req_bw = std::max<uint32>(1u, off->bw);
 		sok.req_bp_end = t->m_end_block;
 		sok.surf_tex0_tbp0 = off->bp;
-		const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[off->psm];
-		sok.surf_m_end_block = psm_s.bn(r.z - 1, r.w - 1, sok.surf_tex0_tbp0, off->bw);
+		sok.surf_m_end_block = write_psm_s.bn(r.z - 1, r.w - 1, sok.surf_tex0_tbp0, sok.req_bw);
 		sok.surf_max_valid_z = r.z;
 		sok.surf_max_valid_w = r.w;
 	}
 	else
 	{  // Search offset from target to write.
+		GL_CACHE("TC comp surf write off: searching offset from target BP 0x%x to write BP 0x%x.",
+			t->m_TEX0.TBP0, off->bp);
 		sok.req_psm = off->psm;
 		sok.req_bp = off->bp;
-		sok.req_bw = off->bw;
-		const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[sok.req_psm];
-		sok.req_bp_end = psm_s.bn(r.z - 1, r.w - 1, sok.req_bp, sok.req_bw);
+		sok.req_bw = std::max<uint32>(1u, off->bw);
+		sok.req_bp_end = target_psm_s.bn(r.z - 1, r.w - 1, sok.req_bp, sok.req_bw);
 		sok.surf_tex0_tbp0 = t->m_TEX0.TBP0;
 		sok.surf_m_end_block = t->m_end_block;
 		sok.surf_max_valid_z = t->m_valid.z;
 		sok.surf_max_valid_w = t->m_valid.w;
 	}
-	SurfaceOffset so = ComputeSurfaceOffset(sok, true);
-	if (write_before_target)
-		so.offset = GSVector4i(0, 0, so.offset.width(), so.offset.height());
+	const SurfaceOffset so = ComputeSurfaceOffset(sok);
 	return so;
 }
 
-GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const SurfaceOffsetKey& sok, bool compute_zw)
+GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const SurfaceOffsetKey& sok)
 {
 	if (sok.req_bp > sok.surf_m_end_block || sok.req_bp_end < sok.surf_tex0_tbp0)
 		return { false, false, GSVector4i(0, 0, 0, 0) };  // No overlap, early return.
 	auto it = m_surface_offset_cache.find(sok);
 	if (it != m_surface_offset_cache.end())
-	{
-		const SurfaceOffset t_so = it->second;
-		if (compute_zw && !t_so.computed_zw)
-			m_surface_offset_cache.erase(it);  // False cache HIT, missing zw offset.
-		else
-			return t_so;  // Cache HIT.
-	}
+		return it->second;  // Cache HIT.
 	
 	// Cache MISS.
 	// Sweep search for a valid <x,y> offset.
 	SurfaceOffset so = { false, false, GSVector4i(0, 0, 0, 0) };
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[sok.req_psm];
-	int surf_max_valid_z = static_cast<int>(sok.surf_max_valid_z);
-	int surf_max_valid_w = static_cast<int>(sok.surf_max_valid_w);
+	const int surf_max_valid_z = static_cast<int>(sok.surf_max_valid_z);
+	const int surf_max_valid_w = static_cast<int>(sok.surf_max_valid_w);
+	GL_CACHE("TC comp surf off: sweep search <x,y> offset such that BP 0x%x (END 0x%x, Valid <z=%d,w=%d>) + OFF <x,y> = 0x%x.",
+		sok.surf_tex0_tbp0, sok.surf_m_end_block, sok.surf_max_valid_z, sok.surf_max_valid_w, sok.req_bp);
 	for (so.offset.x = 0; so.offset.x < surf_max_valid_z; so.offset.x += psm_s.bs.x)
 	{
 		for (so.offset.y = 0; so.offset.y < surf_max_valid_w; so.offset.y += psm_s.bs.y)
 		{
 			const uint32 candidate_bp = psm_s.bn(so.offset.x, so.offset.y, sok.surf_tex0_tbp0, sok.req_bw);
+			// GL_PERF("TC comp surf off: comparing candidate 0x%x with 0x%x (OFF <%d, %d>)", candidate_bp, sok.req_bp, so.offset.x, so.offset.y);
 			if (sok.req_bp == candidate_bp)
 			{
 				// Sweep search HIT: <x,y> offset found.
 				so.is_valid_offset = true;
-				if (compute_zw)
+				// Sweep search <z,w> offset.
+				for (so.offset.z = so.offset.x + psm_s.bs.x - 1; so.offset.z <= surf_max_valid_z; so.offset.z += psm_s.bs.x)
 				{
-					// Sweep search <z,w> offset.
-					for (so.offset.z = so.offset.x; so.offset.z <= surf_max_valid_z; so.offset.z += psm_s.bs.x)
+					for (so.offset.w = so.offset.y + psm_s.bs.y - 1; so.offset.w <= surf_max_valid_w; so.offset.w += psm_s.bs.y)
 					{
-						for (so.offset.w = so.offset.y; so.offset.w <= surf_max_valid_w; so.offset.w += psm_s.bs.y)
+						const uint32 candidate_bp_end = psm_s.bn(so.offset.z, so.offset.w, sok.surf_tex0_tbp0, sok.req_bw);
+						if (sok.req_bp_end == candidate_bp_end)
 						{
-							const uint32 candidate_bp_end = psm_s.bn(so.offset.z, so.offset.w, sok.surf_tex0_tbp0, sok.req_bw);
-							if (sok.req_bp_end == candidate_bp_end)
-							{
-								so.computed_zw = true;  // Sweep search HIT: <z,w> offset found.
-								break;
-							}
-						}
-						if (so.computed_zw)
+							so.computed_zw = true;  // Sweep search HIT: <z,w> offset found.
+							++so.offset.z;
+							++so.offset.w;
 							break;
+						}
 					}
-					so.computed_zw = true;  // Sweep search MISS: assume max possible <z,w> offset is valid.
+					if (so.computed_zw)
+						break;
+				}
+				if (!so.computed_zw)
+				{
+					// Sweep search MISS: assume max possible <z,w> offset is valid.
+					so.offset.z = surf_max_valid_z;
+					so.offset.w = surf_max_valid_w;
+					so.computed_zw = true;
 				}
 				break;
 			}
@@ -2136,14 +2118,14 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 	m_surface_offset_cache.emplace(std::make_pair(sok, so));
 	if (so.is_valid_offset)
 	{
-		GL_CACHE("TC comp surf off: Cached HIT element (size %d), BW: %d, PSM %s, rt 0x%x <%d,%d> + off <%d,%d> -> 0x%x (END: 0x%x)",
-			m_surface_offset_cache.size(), sok.req_bw, psm_str(sok.req_psm), sok.surf_tex0_tbp0, sok.surf_max_valid_z, sok.surf_max_valid_w, so.offset.x, so.offset.y, sok.req_bp, sok.req_bp_end);
+		GL_CACHE("TC comp surf off: Cached HIT element (size %d), BW: %d, PSM %s, BP 0x%x (END 0x%x) + OFF <%d,%d => %d,%d> -> 0x%x (END: 0x%x)",
+			m_surface_offset_cache.size(), sok.req_bw, psm_str(sok.req_psm), sok.surf_tex0_tbp0, sok.surf_m_end_block, so.offset.x, so.offset.y, so.offset.z, so.offset.w, sok.req_bp, sok.req_bp_end);
 	}
 	else
 	{
 		// Sweep MISS: no valid <x,y> offset found.
-		GL_CACHE("TC comp surf off: Cached MISS element (size %d), BW: %d, PSM %s, rt 0x%x <%d,%d> -/-> 0x%x (END: 0x%x)",
-			m_surface_offset_cache.size(), sok.req_bw, psm_str(sok.req_psm), sok.surf_tex0_tbp0, sok.surf_max_valid_z, sok.surf_max_valid_w, sok.req_bp, sok.req_bp_end);
+		GL_CACHE("TC comp surf off: Cached MISS element (size %d), BW: %d, PSM %s, BP 0x%x (END 0x%x) -/-> 0x%x (END: 0x%x)",
+			m_surface_offset_cache.size(), sok.req_bw, psm_str(sok.req_psm), sok.surf_tex0_tbp0, sok.surf_m_end_block, sok.req_bp, sok.req_bp_end);
 	}
 	return so;
 }
