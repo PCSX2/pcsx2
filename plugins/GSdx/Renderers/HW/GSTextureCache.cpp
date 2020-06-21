@@ -931,9 +931,9 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 					uint32 rowsize = bw * 8192;
 					uint32 offset = (uint32)((t->m_TEX0.TBP0 - bp) * 256);
 
-					if(rowsize > 0 && offset % rowsize == 0)
+					if(rowsize > 0 && (offset % rowsize == 0 || rowsize % offset == 0))
 					{
-						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
+						int y = GSLocalMemory::m_psm[psm].pgs.y * static_cast<float>(offset / rowsize);
 
 						if(r.bottom > y)
 						{
