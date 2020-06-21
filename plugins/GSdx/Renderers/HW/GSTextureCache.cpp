@@ -2090,8 +2090,9 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[sok.req_psm];
 	int surf_max_valid_z = static_cast<int>(sok.surf_max_valid_z);
 	int surf_max_valid_w = static_cast<int>(sok.surf_max_valid_w);
-	for (so.offset.x = 0; !so.is_valid_offset && so.offset.x < surf_max_valid_z; so.offset.x += psm_s.bs.x)
-		for (so.offset.y = 0; !so.is_valid_offset && so.offset.y < surf_max_valid_w; so.offset.y += psm_s.bs.y)
+	for (so.offset.x = 0; so.offset.x < surf_max_valid_z; so.offset.x += psm_s.bs.x)
+	{
+		for (so.offset.y = 0; so.offset.y < surf_max_valid_w; so.offset.y += psm_s.bs.y)
 		{
 			const uint32 candidate_bp = psm_s.bn(so.offset.x, so.offset.y, sok.surf_tex0_tbp0, sok.req_bw);
 			if (sok.req_bp == candidate_bp)
@@ -2101,17 +2102,28 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 				if (compute_zw)
 				{
 					// Sweep search <z,w> offset.
-					for (so.offset.z = so.offset.x; !so.computed_zw && so.offset.z <= surf_max_valid_z; so.offset.z += psm_s.bs.x)
-						for (so.offset.w = so.offset.y; !so.computed_zw && so.offset.w <= surf_max_valid_w; so.offset.w += psm_s.bs.y)
+					for (so.offset.z = so.offset.x; so.offset.z <= surf_max_valid_z; so.offset.z += psm_s.bs.x)
+					{
+						for (so.offset.w = so.offset.y; so.offset.w <= surf_max_valid_w; so.offset.w += psm_s.bs.y)
 						{
 							const uint32 candidate_bp_end = psm_s.bn(so.offset.z, so.offset.w, sok.surf_tex0_tbp0, sok.req_bw);
 							if (sok.req_bp_end == candidate_bp_end)
+							{
 								so.computed_zw = true;  // Sweep search HIT: <z,w> offset found.
+								break;
+							}
 						}
+						if (so.computed_zw)
+							break;
+					}
 					so.computed_zw = true;  // Sweep search MISS: assume max possible <z,w> offset is valid.
 				}
+				break;
 			}
 		}
+		if (so.is_valid_offset)
+			break;
+	}
 	// Clear cache if size too big.
 	while (m_surface_offset_cache.size() + 1 > S_SURFACE_OFFSET_CACHE_MAX_SIZE)
 	{
