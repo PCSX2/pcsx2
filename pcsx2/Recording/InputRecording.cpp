@@ -150,23 +150,8 @@ void InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 		InputRecordingData.GetHeader().SetAuthor(authorName);
 	}
 	// Set Game Name
-	// Code loosely taken from AppCoreThread.cpp to resolve the Game Name
-	// Fallback is ISO name
-	wxString gameName;
-	const wxString gameKey(SysGetDiscID());
-	if (!gameKey.IsEmpty())
-	{
-		if (IGameDatabase* GameDB = AppHost_GetGameDatabase())
-		{
-			Game_Data game;
-			if (GameDB->findGame(game, gameKey))
-			{
-				gameName = game.getString("Name");
-				gameName += L" (" + game.getString("Region") + L")";
-			}
-		}
-	}
-	InputRecordingData.GetHeader().SetGameName(!gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso));
+	InputRecordingData.GetHeader().SetGameName(resolveGameName());
+	// Write header contents
 	InputRecordingData.WriteHeader();
 	state = INPUT_RECORDING_MODE_RECORD;
 	recordingConLog(wxString::Format(L"[REC]: Started new recording - [%s]\n", FileName));
@@ -194,19 +179,36 @@ void InputRecording::Play(wxString FileName, bool fromSaveState)
 	// Check author name
 	if (!g_Conf->CurrentIso.IsEmpty())
 	{
-		if (Path::GetFilename(g_Conf->CurrentIso) != InputRecordingData.GetHeader().gameName)
+		if (resolveGameName() != InputRecordingData.GetHeader().gameName)
 		{
-			recordingConLog(L"[REC]: Information on CD in Movie file is Different.\n");
+			recordingConLog(L"[REC]: Recording was possibly recorded on a different game.\n");
 		}
 	}
 	state = INPUT_RECORDING_MODE_REPLAY;
 	recordingConLog(wxString::Format(L"[REC]: Replaying movie - [%s]\n", FileName));
 	recordingConLog(wxString::Format(L"[REC]: PCSX2 Version Used: %s\n", InputRecordingData.GetHeader().emu));
 	recordingConLog(wxString::Format(L"[REC]: Recording File Version: %d\n", InputRecordingData.GetHeader().version));
-	recordingConLog(wxString::Format(L"[REC]: Associated Game Name / ISO Filename: %s\n", InputRecordingData.GetHeader().gameName));
+	recordingConLog(wxString::Format(L"[REC]: Associated Game Name or ISO Filename: %s\n", InputRecordingData.GetHeader().gameName));
 	recordingConLog(wxString::Format(L"[REC]: Author: %s\n", InputRecordingData.GetHeader().author));
 	recordingConLog(wxString::Format(L"[REC]: MaxFrame: %d\n", InputRecordingData.GetMaxFrame()));
 	recordingConLog(wxString::Format(L"[REC]: UndoCount: %d\n", InputRecordingData.GetUndoCount()));
+}
+
+wxString InputRecording::resolveGameName()
+{
+	// Code loosely taken from AppCoreThread::_ApplySettings to resolve the Game Name
+	wxString gameName;
+	const wxString gameKey(SysGetDiscID());
+	if (!gameKey.IsEmpty()) {
+		if (IGameDatabase *GameDB = AppHost_GetGameDatabase()) {
+			Game_Data game;
+			if (GameDB->findGame(game, gameKey)) {
+				gameName = game.getString("Name");
+				gameName += L" (" + game.getString("Region") + L")";
+			}
+		}
+	}
+	return !gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso);
 }
 
 // Keybind Handler - Toggle between recording input and not

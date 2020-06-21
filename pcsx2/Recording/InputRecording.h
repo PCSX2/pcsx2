@@ -48,6 +48,9 @@ private:
 	InputRecordingFile InputRecordingData;
 	INPUT_RECORDING_MODE state = INPUT_RECORDING_MODE_NONE;
 	bool fInterruptFrame = false;
+	// Resolve the name and region of the game currently loaded using the GameDB
+	// If the game cannot be found in the DB, the fallback is the ISO filename
+	wxString resolveGameName();
 };
 
 extern InputRecording g_InputRecording;
