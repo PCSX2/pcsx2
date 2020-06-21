@@ -201,7 +201,6 @@ public:
 	struct SurfaceOffset
 	{
 		bool is_valid_offset;
-		bool computed_zw;
 		GSVector4i offset;
 	};
 

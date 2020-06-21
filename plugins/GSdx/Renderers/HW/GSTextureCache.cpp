@@ -2016,15 +2016,13 @@ void GSTextureCache::AttachPaletteToSource(Source* s, uint16 pal, bool need_gs_t
 GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceWriteOffset(GSOffset* off, const GSVector4i& r, Target* t)
 {
 	if (!off || !t)
-		return { false, false, GSVector4i(0, 0, 0, 0) };
+		return { false, GSVector4i(0, 0, 0, 0) };
 	SurfaceOffsetKey sok;
 	const GSLocalMemory::psm_t& write_psm_s = GSLocalMemory::m_psm[t->m_TEX0.PSM];
 	const GSLocalMemory::psm_t& target_psm_s = GSLocalMemory::m_psm[off->psm];
 	const bool write_before_target = off->bp < t->m_TEX0.TBP0;
 	if (write_before_target)
 	{  // Search offset from write to target.
-		GL_CACHE("TC comp surf write off: searching offset from write BP 0x%x to target BP 0x%x.",
-			off->bp, t->m_TEX0.TBP0);
 		sok.req_psm = off->psm;
 		sok.req_bp = t->m_TEX0.TBP0;
 		sok.req_bw = std::max<uint32>(1u, off->bw);
@@ -2036,8 +2034,6 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceWriteOffset(GSOffset
 	}
 	else
 	{  // Search offset from target to write.
-		GL_CACHE("TC comp surf write off: searching offset from target BP 0x%x to write BP 0x%x.",
-			t->m_TEX0.TBP0, off->bp);
 		sok.req_psm = off->psm;
 		sok.req_bp = off->bp;
 		sok.req_bw = std::max<uint32>(1u, off->bw);
@@ -2047,6 +2043,11 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceWriteOffset(GSOffset
 		sok.surf_max_valid_z = t->m_valid.z;
 		sok.surf_max_valid_w = t->m_valid.w;
 	}
+	GL_CACHE("TC comp surf write off: searching offset from %s (0x%x => 0x%x) to %s (0x%x => 0x%x).",
+		write_before_target ? "write" : "target",
+		sok.surf_tex0_tbp0, sok.surf_m_end_block,
+		write_before_target ? "target" : "write",
+		sok.req_bp, sok.req_bp_end);
 	const SurfaceOffset so = ComputeSurfaceOffset(sok);
 	return so;
 }
@@ -2054,14 +2055,14 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceWriteOffset(GSOffset
 GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const SurfaceOffsetKey& sok)
 {
 	if (sok.req_bp > sok.surf_m_end_block || sok.req_bp_end < sok.surf_tex0_tbp0)
-		return { false, false, GSVector4i(0, 0, 0, 0) };  // No overlap, early return.
+		return { false, GSVector4i(0, 0, 0, 0) };  // No overlap, early return.
 	auto it = m_surface_offset_cache.find(sok);
 	if (it != m_surface_offset_cache.end())
 		return it->second;  // Cache HIT.
 	
 	// Cache MISS.
 	// Sweep search for a valid <x,y> offset.
-	SurfaceOffset so = { false, false, GSVector4i(0, 0, 0, 0) };
+	SurfaceOffset so = { false, GSVector4i(0, 0, 0, 0) };
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[sok.req_psm];
 	const int surf_max_valid_z = static_cast<int>(sok.surf_max_valid_z);
 	const int surf_max_valid_w = static_cast<int>(sok.surf_max_valid_w);
@@ -2078,6 +2079,7 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 				// Sweep search HIT: <x,y> offset found.
 				so.is_valid_offset = true;
 				// Sweep search <z,w> offset.
+				bool computed_zw = false;
 				for (so.offset.z = so.offset.x + psm_s.bs.x - 1; so.offset.z <= surf_max_valid_z; so.offset.z += psm_s.bs.x)
 				{
 					for (so.offset.w = so.offset.y + psm_s.bs.y - 1; so.offset.w <= surf_max_valid_w; so.offset.w += psm_s.bs.y)
@@ -2085,21 +2087,20 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 						const uint32 candidate_bp_end = psm_s.bn(so.offset.z, so.offset.w, sok.surf_tex0_tbp0, sok.req_bw);
 						if (sok.req_bp_end == candidate_bp_end)
 						{
-							so.computed_zw = true;  // Sweep search HIT: <z,w> offset found.
+							computed_zw = true;  // Sweep search HIT: <z,w> offset found.
 							++so.offset.z;
 							++so.offset.w;
 							break;
 						}
 					}
-					if (so.computed_zw)
+					if (computed_zw)
 						break;
 				}
-				if (!so.computed_zw)
+				if (!computed_zw)
 				{
 					// Sweep search MISS: assume max possible <z,w> offset is valid.
 					so.offset.z = surf_max_valid_z;
 					so.offset.w = surf_max_valid_w;
-					so.computed_zw = true;
 				}
 				break;
 			}
@@ -2107,8 +2108,6 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 		if (so.is_valid_offset)
 			break;
 	}
-	if (!so.is_valid_offset)
-		so.computed_zw = true;
 	// Clear cache if size too big.
 	while (m_surface_offset_cache.size() + 1 > S_SURFACE_OFFSET_CACHE_MAX_SIZE)
 	{
