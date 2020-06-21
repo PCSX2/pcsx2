@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -46,8 +46,8 @@ bool InputRecordingFile::Open(const wxString path, bool fNewOpen, bool fromSaveS
 	if (fNewOpen)
 	{
 		mode = L"wb+";
-		MaxFrame = 0;
-		UndoCount = 0;
+		totalFrames = 0;
+		undoCount = 0;
 		header.Init();
 	}
 	recordingFile = wxFopen(path, mode);
@@ -177,7 +177,7 @@ bool InputRecordingFile::DeletePadData(unsigned long frame)
 		return false;
 	}
 
-	for (unsigned long i = frame; i < MaxFrame - 1; i++)
+	for (unsigned long i = frame; i < totalFrames - 1; i++)
 	{
 		long seek1 = GetBlockSeekPoint(i+1) + RecordingBlockHeaderSize;
 		long seek2 = GetBlockSeekPoint(i) + RecordingBlockHeaderSize;
@@ -198,7 +198,7 @@ bool InputRecordingFile::DeletePadData(unsigned long frame)
 			return false;
 		}
 	}
-	MaxFrame--;
+	totalFrames--;
 	WriteMaxFrame();
 	fflush(recordingFile);
 
@@ -212,7 +212,7 @@ bool InputRecordingFile::InsertPadData(unsigned long frame, const PadData& key)
 		return false;
 	}
 
-	for (unsigned long i = MaxFrame - 1; i >= frame; i--)
+	for (unsigned long i = totalFrames - 1; i >= frame; i--)
 	{
 		long seek1 = GetBlockSeekPoint(i) + RecordingBlockHeaderSize;
 		long seek2 = GetBlockSeekPoint(i+1) + RecordingBlockHeaderSize;
@@ -241,7 +241,7 @@ bool InputRecordingFile::InsertPadData(unsigned long frame, const PadData& key)
 		recordingConLog(wxString::Format("[REC]: Error encountered when writing to file: Expected %d bytes, wrote %d instead.\n", RecordingBlockDataSize, rSize));
 		return false;
 	}
-	MaxFrame++;
+	totalFrames++;
 	WriteMaxFrame();
 	fflush(recordingFile);
 
@@ -279,8 +279,8 @@ bool InputRecordingFile::ReadHeaderAndCheck()
 	}
 	rewind(recordingFile);
 	if (fread(&header, sizeof(InputRecordingHeader), 1, recordingFile) != 1
-		|| fread(&MaxFrame, 4, 1, recordingFile) != 1
-		|| fread(&UndoCount, 4, 1, recordingFile) != 1
+		|| fread(&totalFrames, 4, 1, recordingFile) != 1
+		|| fread(&undoCount, 4, 1, recordingFile) != 1
 		|| fread(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1)
 	{
 		return false;
@@ -330,7 +330,7 @@ bool InputRecordingFile::WriteMaxFrame()
 		return false;
 	}
 	fseek(recordingFile, RecordingSeekpointFrameMax, SEEK_SET);
-	if (fwrite(&MaxFrame, 4, 1, recordingFile) != 1)
+	if (fwrite(&totalFrames, 4, 1, recordingFile) != 1)
 	{
 		return false;
 	}
@@ -339,24 +339,24 @@ bool InputRecordingFile::WriteMaxFrame()
 
 void InputRecordingFile::UpdateFrameMax(unsigned long frame)
 {
-	if (recordingFile == NULL || MaxFrame >= frame)
+	if (recordingFile == NULL || totalFrames >= frame)
 	{
 		return;
 	}
-	MaxFrame = frame;
+	totalFrames = frame;
 	fseek(recordingFile, RecordingSeekpointFrameMax, SEEK_SET);
-	fwrite(&MaxFrame, 4, 1, recordingFile);
+	fwrite(&totalFrames, 4, 1, recordingFile);
 }
 
 void InputRecordingFile::AddUndoCount()
 {
-	UndoCount++;
+	undoCount++;
 	if (recordingFile == NULL)
 	{
 		return;
 	}
 	fseek(recordingFile, RecordingSeekpointUndoCount, SEEK_SET);
-	fwrite(&UndoCount, 4, 1, recordingFile);
+	fwrite(&undoCount, 4, 1, recordingFile);
 }
 
 void InputRecordingHeader::SetAuthor(wxString _author)
@@ -385,16 +385,20 @@ InputRecordingHeader& InputRecordingFile::GetHeader()
 
 unsigned long& InputRecordingFile::GetMaxFrame()
 {
-	return MaxFrame;
+	return totalFrames;
 }
 
 unsigned long& InputRecordingFile::GetUndoCount()
 {
-	return UndoCount;
+	return undoCount;
 }
 
 const wxString & InputRecordingFile::GetFilename()
 {
 	return filename;
+}
+bool InputRecordingFile::FromCurrentFrame()
+{
+	return savestate.fromSavestate;
 }
 #endif

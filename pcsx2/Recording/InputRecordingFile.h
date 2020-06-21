@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -23,6 +23,7 @@
 struct InputRecordingHeader
 {
 	u8 version = 1;
+	// TODO - initialize the header properly, this number has drifted at this point
 	char emu[50] = "PCSX2-1.5.X";
 	char author[255] = "";
 	char gameName[255] = "";
@@ -65,6 +66,7 @@ public:
 	unsigned long& GetMaxFrame();
 	unsigned long& GetUndoCount();
 	const wxString & GetFilename();
+	bool FromCurrentFrame();
 
 	bool WriteHeader();
 	bool WriteMaxFrame();
@@ -73,6 +75,8 @@ public:
 	bool ReadHeaderAndCheck();
 	void UpdateFrameMax(unsigned long frame);
 	void AddUndoCount();
+
+	unsigned long recordingFrameCounter = 0;
 
 private:
 	static const int RecordingSavestateHeaderSize = sizeof(bool);
@@ -91,7 +95,9 @@ private:
 	// Header
 	InputRecordingHeader header;
 	InputRecordingSavestate savestate;
-	unsigned long MaxFrame = 0;
-	unsigned long UndoCount = 0;
+
+	// An unsigned 32-bit frame limit is equivalent to 2.25 years of continuous 60fps footage
+	unsigned long totalFrames = 0;
+	unsigned long undoCount = 0;
 };
 #endif
