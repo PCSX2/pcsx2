@@ -141,6 +141,9 @@ void InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 	{
 		return;
 	}
+	// Set emulator version
+	InputRecordingData.GetHeader().SetEmulatorVersion();
+
 	// Set author name
 	if (!authorName.IsEmpty())
 	{
@@ -198,6 +201,7 @@ void InputRecording::Play(wxString FileName, bool fromSaveState)
 	}
 	state = INPUT_RECORDING_MODE_REPLAY;
 	recordingConLog(wxString::Format(L"[REC]: Replaying movie - [%s]\n", FileName));
+	recordingConLog(wxString::Format(L"[REC]: PCSX2 Version Used: %s\n", InputRecordingData.GetHeader().emu));
 	recordingConLog(wxString::Format(L"[REC]: Recording File Version: %d\n", InputRecordingData.GetHeader().version));
 	recordingConLog(wxString::Format(L"[REC]: Associated Game Name / ISO Filename: %s\n", InputRecordingData.GetHeader().gameName));
 	recordingConLog(wxString::Format(L"[REC]: Author: %s\n", InputRecordingData.GetHeader().author));

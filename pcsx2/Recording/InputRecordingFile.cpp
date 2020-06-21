@@ -359,6 +359,14 @@ void InputRecordingFile::AddUndoCount()
 	fwrite(&UndoCount, 4, 1, recordingFile);
 }
 
+void InputRecordingHeader::SetEmulatorVersion()
+{
+	wxString emuVersion = wxString::Format("%s-%d.%d.%d", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
+	int max = ArraySize(emu) - 1;
+	strncpy(emu, emuVersion.c_str(), max);
+	emu[max] = 0;
+}
+
 void InputRecordingHeader::SetAuthor(wxString _author)
 {
 	int max = ArraySize(author) - 1;

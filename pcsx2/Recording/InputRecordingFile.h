@@ -23,11 +23,12 @@
 struct InputRecordingHeader
 {
 	u8 version = 1;
-	char emu[50] = "PCSX2-1.5.X";
+	char emu[50] = "";
 	char author[255] = "";
 	char gameName[255] = "";
 
 public:
+	void SetEmulatorVersion();
 	void SetAuthor(wxString author);
 	void SetGameName(wxString cdrom);
 	void Init();
