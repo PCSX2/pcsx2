@@ -320,7 +320,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					sok.surf_max_valid_z = t->m_valid.z;
 					sok.surf_m_end_block = t->m_end_block;
 					sok.surf_tex0_tbp0 = t->m_TEX0.TBP0;
-					SurfaceOffset so = ComputeSurfaceOffset(sok, false);
+					const SurfaceOffset so = ComputeSurfaceOffset(sok, false);
 					if (so.is_valid_offset)
 					{
 						dst = t;
@@ -862,7 +862,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 
 			// GH: Try to detect texture write that will overlap with a target buffer
 			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM)) {
-				SurfaceOffset so = ComputeSurfaceWriteOffset(off, r, t);
+				const SurfaceOffset so = ComputeSurfaceWriteOffset(off, r, t);
 				if (so.is_valid_offset)
 				{
 					GL_CACHE("TC: Dirty After Target(%s) %d (0x%x)", to_string(type),
@@ -2039,7 +2039,7 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceWriteOffset(GSOffset
 	if (!off || !t)
 		return { false, false, GSVector4i(0, 0, 0, 0) };
 	SurfaceOffsetKey sok;
-	bool write_before_target = off->bp < t->m_TEX0.TBP0;
+	const bool write_before_target = off->bp < t->m_TEX0.TBP0;
 	if (write_before_target)
 	{  // Search offset from write to target.
 		sok.req_psm = t->m_TEX0.PSM;
