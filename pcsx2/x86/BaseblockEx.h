@@ -219,7 +219,7 @@ public:
 		blocks.erase(first, last + 1);
 	}
 
-	void Link(u32 pc, sptr* jumpptr);
+	void Link(u32 pc, s32* jumpptr);
 
 	__fi void Reset()
 	{

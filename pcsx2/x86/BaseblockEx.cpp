@@ -70,29 +70,13 @@ BASEBLOCKEX* BaseBlocks::GetByX86(uptr ip)
 }
 #endif
 
-void BaseBlocks::Link(u32 pc, sptr* jumpptr)
+void BaseBlocks::Link(u32 pc, s32* jumpptr)
 {
 	BASEBLOCKEX *targetblock = Get(pc);
 	if (targetblock && targetblock->startpc == pc)
-	{
-		#ifdef __M_X86_64
-		  // return absolute
-		  *jumpptr = (sptr)(targetblock->fnptr);
-		#else
-		  // return 32-bit displacement
-		  *jumpptr = (sptr)(targetblock->fnptr - (sptr)(jumpptr + 1));
-		#endif
-	}
+		*jumpptr = (s32)(targetblock->fnptr - (sptr)(jumpptr + 1));
 	else
-	{
-		#ifdef __M_X86_64
-		  // return absolute
-		  *jumpptr = (sptr)(recompiler);
-		#else
-		  // return 32-bit displacement
-		  *jumpptr = (sptr)(recompiler - (sptr)(jumpptr + 1));
-		#endif
-	}
+		*jumpptr = (s32)(recompiler - (sptr)(jumpptr + 1));
 	links.insert(std::pair<u32, uptr>(pc, (uptr)jumpptr));
 }
 

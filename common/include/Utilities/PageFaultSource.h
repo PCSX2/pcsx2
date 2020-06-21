@@ -243,6 +243,14 @@ public:
         size = GetSize(size);
         return Assign(allocator.GetAllocator(), allocator.Alloc(size), size);
     }
+    
+    void *Reserve(u8 * basepointer, size_t size = 0)
+    {
+            m_defsize = size;
+            m_baseptr = (void *)basepointer;
+            m_pages_reserved = size / __pagesize;
+            return m_baseptr;
+    }
 
     virtual void Reset();
     virtual void Release();

@@ -37,6 +37,31 @@
 
 #include "Utilities/Perf.h"
 
+#define s_uptr sizeof(uptr)
+static const uint m_recBlockAllocSize = (((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK));
+__aligned16 psxRegisters psxRegs;
+static u8 __pagealigned memReserve_iR3000A[_128mb];
+
+//uptr psxRecLUT[0x10000];
+static uptr* psxRecLUT = (uptr*)memReserve_iR3000A;
+#define s00 _64kb*s_uptr
+
+//uptr psxhwLUT[0x10000];
+static uptr* psxhwLUT  = (uptr*)((uptr)memReserve_iR3000A+s00);
+#define s01 _64kb*s_uptr
+
+// m_recBlockAlloc = (u8*)_aligned_malloc( m_recBlockAllocSize, 4096 );
+static u8* m_recBlockAlloc = (u8*)((uptr)memReserve_iR3000A+s00+s01);
+#define s02 m_recBlockAllocSize
+
+// Recompiled code buffer for EE recompiler dispatchers
+static u8* iopRecDispatchers = (u8*)((uptr)memReserve_iR3000A+s00+s01+s02);
+#define s03 (uptr)__pagesize
+
+//static RecompiledCodeReserve* recMem;
+#define s04 (uptr)_8mb
+
+
 using namespace x86Emitter;
 
 extern u32 g_iopNextEventCycle;
@@ -44,9 +69,6 @@ extern void psxBREAK();
 
 u32 g_psxMaxRecMem = 0;
 u32 s_psxrecblocks[] = {0};
-
-uptr psxRecLUT[0x10000];
-uptr psxhwLUT[0x10000];
 
 static __fi u32 HWADDR(u32 mem) { return psxhwLUT[mem >> 16] + mem; }
 
@@ -99,9 +121,6 @@ static u32 psxdump = 0;
 // =====================================================================================================
 
 static void __fastcall iopRecRecompile( const u32 startpc );
-
-// Recompiled code buffer for EE recompiler dispatchers!
-static u8 __pagealigned iopRecDispatchers[__pagesize];
 
 typedef void DynGenFunc();
 
@@ -221,7 +240,7 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 static void _DynGen_Dispatchers()
 {
 	// In case init gets called multiple times:
-	HostSys::MemProtectStatic( iopRecDispatchers, PageAccess_ReadWrite() );
+	HostSys::MemProtect( iopRecDispatchers, s03, PageAccess_ReadWrite() );
 
 	// clear the buffer to 0xcc (easier debugging).
 	memset( iopRecDispatchers, 0xcc, __pagesize);
@@ -238,7 +257,7 @@ static void _DynGen_Dispatchers()
 	iopJITCompileInBlock	= _DynGen_JITCompileInBlock();
 	iopEnterRecompiledCode	= _DynGen_EnterRecompiledCode();
 
-	HostSys::MemProtectStatic( iopRecDispatchers, PageAccess_ExecOnly() );
+	HostSys::MemProtect( iopRecDispatchers, s03, PageAccess_ExecOnly() );
 
 	recBlocks.SetJITCompile( iopJITCompile );
 
@@ -657,10 +676,6 @@ void psxRecompileCodeConst3(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 }
 
 static uptr m_ConfiguredCacheReserve = 32;
-static u8* m_recBlockAlloc = NULL;
-
-static const uint m_recBlockAllocSize =
-	(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK));
 
 static void recReserveCache()
 {
@@ -669,7 +684,7 @@ static void recReserveCache()
 
 	while (!recMem->IsOk())
 	{
-		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::IOPrecOffset, m_ConfiguredCacheReserve * _1mb) != NULL) break;
+        if (recMem->Reserve( (u8*)((uptr)memReserve_iR3000A+s00+s01+s02+s03) , s04) != NULL) break;
 
 		// If it failed, then try again (if possible):
 		if (m_ConfiguredCacheReserve < 4) break;
@@ -947,11 +962,7 @@ void psxSetBranchImm( u32 imm )
 	_psxFlushCall(FLUSH_EVERYTHING);
 	iPsxBranchTest(imm, imm <= psxpc);
     
-    #ifdef __M_X86_64
-      recBlocks.Link(HWADDR(imm), xJcc64());
-    #else
-      recBlocks.Link(HWADDR(imm), xJcc32());
-    #endif
+    recBlocks.Link(HWADDR(imm), xJcc32());
     
 }
 
@@ -1097,6 +1108,7 @@ void rpsxBREAK()
 
 void psxRecompileNextInstruction(int delayslot)
 {
+    printf("jc iR3000A-32 psxRecompileNextInstruction\n");
 	// pblock isn't used elsewhere in this function.
 	//BASEBLOCK* pblock = PSX_GETBLOCK(psxpc);
 
@@ -1355,11 +1367,7 @@ StartRecomp:
 			pxAssert( psxpc == s_nEndBlock );
 			_psxFlushCall(FLUSH_EVERYTHING);
 			xMOV(ptr32[&psxRegs.pc], psxpc);
-            #ifdef __M_X86_64
-              recBlocks.Link(HWADDR(s_nEndBlock), xJcc64() );
-            #else
-              recBlocks.Link(HWADDR(s_nEndBlock), xJcc32() );
-            #endif
+            recBlocks.Link(HWADDR(s_nEndBlock), xJcc32() );
 			
 			psxbranch = 3;
 		}

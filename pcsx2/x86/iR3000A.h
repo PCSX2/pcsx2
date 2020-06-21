@@ -32,8 +32,6 @@ static const int psxInstCycles_Load = 0;
 #define PSX_HI XMMGPR_HI
 #define PSX_LO XMMGPR_LO
 
-extern uptr psxRecLUT[];
-
 u8 _psxLoadWritesRs(u32 tempcode);
 u8 _psxIsLoadStore(u32 tempcode);
 
