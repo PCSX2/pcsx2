@@ -2125,6 +2125,8 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 		if (so.is_valid_offset)
 			break;
 	}
+	if (!so.is_valid_offset)
+		so.computed_zw = true;
 	// Clear cache if size too big.
 	while (m_surface_offset_cache.size() + 1 > S_SURFACE_OFFSET_CACHE_MAX_SIZE)
 	{
