@@ -417,7 +417,7 @@ void GSPanel::DirectKeyCommand( wxKeyEvent& evt )
 void GSPanel::UpdateScreensaver()
 {
 	bool prevent = g_Conf->GSWindow.DisableScreenSaver
-	               && m_HasFocus && m_coreRunning;
+				   && m_HasFocus && m_coreRunning;
 	ScreensaverAllow(!prevent);
 }
 
@@ -724,25 +724,15 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 #ifndef DISABLE_RECORDING
 	wxString title;
 	wxString movieMode;
-	switch (g_InputRecording.GetModeState())
+	if (g_InputRecording.RecordingActive()) 
 	{
-		case INPUT_RECORDING_MODE_RECORD:
-			movieMode = "Recording";
-			title = templates.RecordingTemplate;
-			break;
-		case INPUT_RECORDING_MODE_REPLAY:
-			movieMode = "Replaying";
-			title = templates.RecordingTemplate;
-			break;
-		case INPUT_RECORDING_MODE_NONE:
-			movieMode = "No movie";
-			title = templates.TitleTemplate;
-			break;
+		title = templates.RecordingTemplate;
+		title.Replace(L"${frame}", pxsFmt(L"%d", g_InputRecording.GetFrameCounter() + 1)); // zero based
+		title.Replace(L"${maxFrame}", pxsFmt(L"%d", g_InputRecording.GetInputRecordingData().GetMaxFrame() + 1)); // zero based
+		title.Replace(L"${mode}", g_InputRecording.RecordingModeTitleSegment());
+	} else {
+		title = templates.TitleTemplate;
 	}
-
-	title.Replace(L"${frame}", pxsFmt(L"%d", g_FrameCount));
-	title.Replace(L"${maxFrame}", pxsFmt(L"%d", g_InputRecording.GetInputRecordingData().GetMaxFrame()));
-	title.Replace(L"${mode}", movieMode);
 #else
 	wxString title = templates.TitleTemplate;
 #endif
