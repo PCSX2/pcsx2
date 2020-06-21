@@ -1059,7 +1059,7 @@ void Pcsx2App::OnProgramLogClosed( wxWindowID id )
 void Pcsx2App::OnMainFrameClosed( wxWindowID id )
 {
 #ifndef DISABLE_RECORDING
-	if (g_InputRecording.RecordingActive())
+	if (g_InputRecording.IsRecordingActive())
 	{
 		g_InputRecording.Stop();
 	}

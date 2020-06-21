@@ -156,7 +156,7 @@ bool InputRecordingFile::OpenNew(const wxString path, bool fromSavestate)
 		sApp.SysExecute();
 		return true;
 	}
-	return open(path, true);
+	return false;
 }
 
 bool InputRecordingFile::OpenExisting(const wxString path)
