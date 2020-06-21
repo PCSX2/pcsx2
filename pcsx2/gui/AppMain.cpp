@@ -32,7 +32,7 @@
 #include "Debugger/DisassemblyDialog.h"
 
 #ifndef DISABLE_RECORDING
-#	include "Recording/RecordingControls.h"
+#	include "Recording/InputRecordingControls.h"
 #	include "Recording/InputRecording.h"
 #endif
 
@@ -620,7 +620,7 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 #ifndef DISABLE_RECORDING
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			if (g_RecordingControls.HasRecordingStopped())
+			if (g_InputRecordingControls.IsRecordingPaused())
 			{
 				// While stopping, GSFrame key event also stops, so get key input from here
 				// Along with that, you can not use the shortcut keys set in GSFrame
@@ -634,7 +634,7 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 					}
 				}
 			}
-			g_RecordingControls.ResumeCoreThreadIfStarted();
+			g_InputRecordingControls.ResumeCoreThreadIfStarted();
 		}
 #endif
 		(handler->*func)(event);

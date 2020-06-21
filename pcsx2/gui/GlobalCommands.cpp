@@ -23,7 +23,7 @@
 #include "AppSaveStates.h"
 
 #ifndef DISABLE_RECORDING
-#	include "Recording/RecordingControls.h"
+#	include "Recording/InputRecordingControls.h"
 #	include "Recording/InputRecording.h"
 #endif
 
@@ -473,7 +473,7 @@ namespace Implementations
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			g_RecordingControls.FrameAdvance();
+			g_InputRecordingControls.FrameAdvance();
 		}
 	}
 
@@ -481,7 +481,7 @@ namespace Implementations
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			g_RecordingControls.TogglePause();
+			g_InputRecordingControls.TogglePause();
 		}
 	}
 
