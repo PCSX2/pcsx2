@@ -186,17 +186,31 @@ public:
 		void RemoveAt(Source* s);
 	};
 
-	struct TexInsideRtCacheEntry
+	struct SurfaceOffsetKey
 	{
-		uint32 psm;
-		uint32 bp;
-		uint32 bp_end;
-		uint32 bw;
-		uint32 t_tex0_tbp0;
-		uint32 m_end_block;
-		bool has_valid_offset;
-		int x_offset;
-		int y_offset;
+		uint32 req_psm;
+		uint32 req_bp;
+		uint32 req_bp_end;
+		uint32 req_bw;
+		uint32 surf_tex0_tbp0;
+		uint32 surf_max_valid_z;
+		uint32 surf_max_valid_w;
+		uint32 surf_m_end_block;
+	};
+
+	struct SurfaceOffset
+	{
+		bool is_valid_offset;
+		bool computed_zw;
+		GSVector4i offset;
+	};
+
+	struct SurfaceOffsetKeyHash {
+		std::size_t operator()(const SurfaceOffsetKey& key) const;
+	};
+
+	struct SurfaceOffsetKeyEqual {
+		bool operator()(const SurfaceOffsetKey& lhs, const SurfaceOffsetKey& rhs) const;
 	};
 
 protected:
@@ -213,8 +227,8 @@ protected:
 	static bool m_disable_partial_invalidation;
 	bool m_texture_inside_rt;
 	static bool m_wrap_gs_mem;
-	uint8 m_texture_inside_rt_cache_size = 255;
-	std::vector<TexInsideRtCacheEntry> m_texture_inside_rt_cache;
+	constexpr static size_t S_SURFACE_OFFSET_CACHE_MAX_SIZE = 65536;
+	std::unordered_map<SurfaceOffsetKey, SurfaceOffset, SurfaceOffsetKeyHash, SurfaceOffsetKeyEqual> m_surface_offset_cache;
 
 	virtual Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0);
 	virtual Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type);
@@ -256,4 +270,6 @@ public:
 	void PrintMemoryUsage();
 
 	void AttachPaletteToSource(Source* s, uint16 pal, bool need_gs_texture);
+	SurfaceOffset ComputeSurfaceWriteOffset(GSOffset* off, const GSVector4i& r, Target* t);
+	SurfaceOffset ComputeSurfaceOffset(const SurfaceOffsetKey& sok, bool compute_zw);
 };
