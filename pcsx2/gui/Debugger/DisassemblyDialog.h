@@ -102,12 +102,15 @@ protected:
 	void onDebuggerEvent(wxCommandEvent& evt);
 	void onPageChanging(wxCommandEvent& evt);
 	void onBreakpointClicked(wxCommandEvent& evt);
+	void onGoToDisassemblyAddressFieldEntered(wxCommandEvent& evt);
+	void onGoToMemoryAddressFieldEntered(wxCommandEvent& evt);
 	void onSizeEvent(wxSizeEvent& event);
 	void onClose(wxCloseEvent& evt);
 	void stepOver();
 	void stepInto();
 	void stepOut();
 	void gotoPc();
+
 private:
 	CpuTabPage* eeTab;
 	CpuTabPage* iopTab;
@@ -115,5 +118,14 @@ private:
 	wxNotebook* middleBook;
 
 	wxBoxSizer* topSizer;
-	wxButton *breakRunButton, *stepIntoButton, *stepOverButton, *stepOutButton, *breakpointButton, *helpButton;
+	wxButton* breakRunButton;
+	wxButton* stepIntoButton;
+	wxButton* stepOverButton;
+	wxButton* stepOutButton;
+	wxButton* breakpointButton;
+	wxButton* helpButton;
+
+	wxTextCtrl* goToDisassemblyAddressField;
+	wxTextCtrl* goToMemoryAddressField;
+	void gotoAddress(wxString fieldText, bool disasmAddress);
 };

@@ -266,9 +266,21 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	Bind(wxEVT_BUTTON, &DisassemblyDialog::onBreakpointClicked, this, breakpointButton->GetId());
 	topRowSizer->Add(breakpointButton);
 
-	helpButton = new wxButton( panel, wxID_ANY, L"Help");
+	helpButton = new wxButton(panel, wxID_ANY, L"Help");
 	Bind(wxEVT_BUTTON, &DisassemblyDialog::onHelpClicked, this, helpButton->GetId());
-	topRowSizer->Add(helpButton);
+	topRowSizer->Add(helpButton, 0, wxRIGHT, 8);
+
+	goToDisassemblyAddressField = new wxTextCtrl(panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	goToDisassemblyAddressField->SetHint("Go to Address in Disassembly");
+	goToDisassemblyAddressField->SetMinSize(wxSize(goToDisassemblyAddressField->GetTextExtent("Go to Address in Disassembly   ").GetWidth(), wxDefaultSize.GetHeight()));
+	Bind(wxEVT_TEXT_ENTER, &DisassemblyDialog::onGoToDisassemblyAddressFieldEntered, this, goToDisassemblyAddressField->GetId());
+	topRowSizer->Add(goToDisassemblyAddressField, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+
+	goToMemoryAddressField = new wxTextCtrl(panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	goToMemoryAddressField->SetHint("Go to Address in Memory");
+	goToMemoryAddressField->SetMinSize(wxSize(goToMemoryAddressField->GetTextExtent("Go to Address in Memory   ").GetWidth(), wxDefaultSize.GetHeight()));
+	Bind(wxEVT_TEXT_ENTER, &DisassemblyDialog::onGoToMemoryAddressFieldEntered, this, goToMemoryAddressField->GetId());
+	topRowSizer->Add(goToMemoryAddressField, 0, wxALIGN_CENTER_VERTICAL, 0);
 
 	topSizer->Add(topRowSizer, 0, wxLEFT | wxRIGHT | wxTOP, 3);
 
@@ -469,6 +481,30 @@ void DisassemblyDialog::onBreakpointClicked(wxCommandEvent& evt)
 	}
 }
 
+void DisassemblyDialog::onGoToDisassemblyAddressFieldEntered(wxCommandEvent& evt)
+{
+	if (currentCpu == NULL)
+	{
+		return;
+	}
+
+	wxTextCtrl* textField = (wxTextCtrl*)evt.GetEventObject();
+	wxString fieldText = textField->GetValue();
+	gotoAddress(fieldText, true);
+}
+
+void DisassemblyDialog::onGoToMemoryAddressFieldEntered(wxCommandEvent& evt)
+{
+	if (currentCpu == NULL)
+	{
+		return;
+	}
+
+	wxTextCtrl* textField = (wxTextCtrl*)evt.GetEventObject();
+	wxString fieldText = textField->GetValue();
+	gotoAddress(fieldText, false);
+}
+
 void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 {
 	wxEventType type = evt.GetEventType();
@@ -568,13 +604,12 @@ void DisassemblyDialog::update()
 {
 	if (currentCpu != NULL)
 	{
-		stepOverButton->Enable(true);
-		breakpointButton->Enable(true);
 		currentCpu->update();
-	} else {
-		stepOverButton->Enable(false);
-		breakpointButton->Enable(false);
 	}
+	stepOverButton->Enable(currentCpu != NULL);
+	breakpointButton->Enable(currentCpu != NULL);
+	goToDisassemblyAddressField->Enable(currentCpu != NULL);
+	goToMemoryAddressField->Enable(currentCpu != NULL);
 }
 
 void DisassemblyDialog::reset()
@@ -595,6 +630,39 @@ void DisassemblyDialog::gotoPc()
 {
 	eeTab->getDisassembly()->gotoPc();
 	iopTab->getDisassembly()->gotoPc();
+}
+
+void DisassemblyDialog::gotoAddress(wxString fieldText, bool disasmAddress)
+{
+	if (currentCpu == NULL)
+	{
+		return;
+	}
+
+	// parse address
+	wxCharBuffer addressText = fieldText.ToUTF8();
+	PostfixExpression exp;
+	wchar_t errorMessage[512];
+	if (!currentCpu->getCpu()->initExpression(addressText, exp))
+	{
+		swprintf(errorMessage, 512, L"Invalid Address \"%s\".", fieldText.wchar_str().data());
+		wxMessageBox(errorMessage, L"Error", wxICON_ERROR);
+		return;
+	}
+
+	u64 value;
+	if (!currentCpu->getCpu()->parseExpression(exp, value))
+	{
+		swprintf(errorMessage, 512, L"Invalid Address \"%s\".", fieldText.wchar_str().data());
+		wxMessageBox(errorMessage, L"Error", wxICON_ERROR);
+		return;
+	}
+	const u32 address = value;
+	// Fire event
+	wxCommandEvent event(disasmAddress ? debEVT_GOTOINDISASM : debEVT_GOTOINMEMORYVIEW, GetId());
+	event.SetEventObject(this);
+	event.SetInt(address);
+	wxPostEvent(this, event);
 }
 
 void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
