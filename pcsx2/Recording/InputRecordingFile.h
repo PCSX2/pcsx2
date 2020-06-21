@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -82,6 +82,8 @@ public:
 	// Writes the current frame's input data to the file so it can be replayed
 	bool WriteKeyBuffer(const uint &frame, const uint port, const uint bufIndex, const u8 &buf);
 
+	unsigned long recordingFrameCounter = 0;
+
 private:
 	static const int controllerPortsSupported = 2;
 	static const int controllerInputBytes = 18;
@@ -99,6 +101,8 @@ private:
 	wxString filename = "";
 	FILE * recordingFile = NULL;
 	InputRecordingSavestate savestate;
+
+	// An unsigned 32-bit frame limit is equivalent to 2.25 years of continuous 60fps footage
 	unsigned long totalFrames = 0;
 	unsigned long undoCount = 0;
 
@@ -106,6 +110,5 @@ private:
 	long getRecordingBlockSeekPoint(const long& frame);
 	bool open(const wxString path, bool newRecording);
 	bool verifyRecordingFileHeader();
-	bool writeSaveState();
 };
 #endif

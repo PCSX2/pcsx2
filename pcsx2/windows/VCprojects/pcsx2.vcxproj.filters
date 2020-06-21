@@ -847,9 +847,6 @@
     <ClCompile Include="..\..\Recording\PadData.cpp">
       <Filter>Recording</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Recording\RecordingControls.cpp">
-      <Filter>Recording</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Recording\RecordingInputManager.cpp">
       <Filter>Recording</Filter>
     </ClCompile>
@@ -861,6 +858,9 @@
     </ClCompile>
     <ClCompile Include="..\..\IPU\IPUdither.cpp">
       <Filter>System\Ps2\IPU</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\InputRecordingControls.cpp">
+      <Filter>Recording</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1299,9 +1299,6 @@
     <ClInclude Include="..\..\Recording\PadData.h">
       <Filter>Recording</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Recording\RecordingControls.h">
-      <Filter>Recording</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Recording\RecordingInputManager.h">
       <Filter>Recording</Filter>
     </ClInclude>
@@ -1310,6 +1307,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Recording\VirtualPad.h">
       <Filter>Recording\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\InputRecordingControls.h">
+      <Filter>Recording</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

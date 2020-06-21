@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -258,21 +258,6 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 		recordingConLog(wxString::Format("[REC]: Input recording file is not a supported version - %d\n", header.version));
 		return false;
 	}
-	return true;
-}
-
-bool InputRecordingFile::writeSaveState() {
-	if (recordingFile == NULL)
-	{
-		return false;
-	}
-
-	fseek(recordingFile, seekpointSaveStateHeader, SEEK_SET);
-	if (fwrite(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1)
-	{
-		return false;
-	}
-
 	return true;
 }
 #endif
