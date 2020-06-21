@@ -36,10 +36,15 @@ void mVUreserveCache(microVU& mVU) {
 
 	mVU.cache_reserve = new RecompiledCodeReserve(pxsFmt("Micro VU%u Recompiler Cache", mVU.index), _16mb);
 	mVU.cache_reserve->SetProfilerName(pxsFmt("mVU%urec", mVU.index));
-	
+
+	uptr requestedSize = mVU.cacheSize * _1mb;
+	uptr actualSize = mVU.index ? sizeof(HostMemoryMap::mVU1rec) : sizeof(HostMemoryMap::mVU0rec);
+	pxAssert(requestedSize <= actualSize);
+	uptr sizeToUse = std::min(requestedSize, actualSize);
+
 	mVU.cache = mVU.index ?
-		(u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU1recOffset, mVU.cacheSize * _1mb):
-		(u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU0recOffset, mVU.cacheSize * _1mb);
+		(u8*)mVU.cache_reserve->Assign((void*)HostMemoryMap::mVU1rec, sizeToUse):
+		(u8*)mVU.cache_reserve->Assign((void*)HostMemoryMap::mVU0rec, sizeToUse);
 
 	mVU.cache_reserve->ThrowIfNotOk();
 }
