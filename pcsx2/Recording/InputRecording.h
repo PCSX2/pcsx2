@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -19,38 +19,64 @@
 
 
 #ifndef DISABLE_RECORDING
-enum INPUT_RECORDING_MODE
-{
-	INPUT_RECORDING_MODE_NONE,
-	INPUT_RECORDING_MODE_RECORD,
-	INPUT_RECORDING_MODE_REPLAY,
-};
-
 class InputRecording
 {
 public:
-	InputRecording() {}
-	~InputRecording(){}
+	// Main handler for ingesting input data and either saving it to the recording file (recording)
+	// or mutating it to the contents of the recording file (replaying)
+	void ControllerInterrupt(u8 &data, u8 &port, u16 &BufCount, u8 buf[]);
 
-	void ControllerInterrupt(u8 &data, u8 &port, u16 & BufCount, u8 buf[]);
+	// The running frame counter for the input recording
+	u32 GetFrameCounter();
 
-	void RecordModeToggle();
+	InputRecordingFile &GetInputRecordingData();
 
-	INPUT_RECORDING_MODE GetModeState();
-	InputRecordingFile & GetInputRecordingData();
+	// The internal PCSX2 g_FrameCount value on the first frame of the recording
+	u32 GetStartingFrame();
+
+	void IncrementFrameCounter();
+
+	// DEPRECATED: Slated for removal 
+	// If the current frame contains controller / input data
 	bool IsInterruptFrame();
 
-	void Stop();
+	// If there is currently an input recording being played back or actively being recorded
+	bool RecordingActive();
+    bool IsRecordingReplaying();
+
+	// String representation of the current recording mode to be interpolated into the title
+	wxString RecordingModeTitleSegment();
+
+	// Switches between recording and replaying the active input recording file
+	void RecordModeToggle();
+
+	// Set the running frame counter for the input recording to an arbitrary value
+	void SetFrameCounter(u32 newFrameCounter);
+	// Store the starting internal PCSX2 g_FrameCount value
+	void SetStartingFrame(u32 newStartingFrame);
+	
+	/// Functions called from GUI
+
+	// Create a new input recording file
 	void Create(wxString filename, bool fromSaveState, wxString authorName);
+	// Play an existing input recording from a file
 	void Play(wxString filename, bool fromSaveState);
+	// Stop the active input recording
+	void Stop();
 
 private:
-	InputRecordingFile InputRecordingData;
-	INPUT_RECORDING_MODE state = INPUT_RECORDING_MODE_NONE;
+	enum class InputRecordingMode {
+		NoneActive,
+		Recording,
+		Replaying,
+	};
+
 	bool fInterruptFrame = false;
+	InputRecordingFile inputRecordingData;
+	InputRecordingMode state = InputRecording::InputRecordingMode::NoneActive;
+	u32 frameCounter = 0;
+    u32 startingFrame = -1;
 };
 
 extern InputRecording g_InputRecording;
-static InputRecordingFile& g_InputRecordingData = g_InputRecording.GetInputRecordingData();
-static InputRecordingHeader& g_InputRecordingHeader = g_InputRecording.GetInputRecordingData().GetHeader();
 #endif

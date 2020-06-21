@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -23,31 +23,51 @@
 #include "SaveState.h"
 
 #include "InputRecording.h"
-#include "Recording/RecordingControls.h"
+#include "InputRecordingControls.h"
 
 #include <vector>
 
 
-// Tag and save framecount along with savestate
+// Save or load PCSX2's global frame counter (g_FrameCount) along with each savestate
+//
+// This is to prevent any inaccuracy issues caused by having a different
+// internal emulation frame count than what it was at the beginning of the
+// original recording
 void SaveStateBase::InputRecordingFreeze()
 {
 	FreezeTag("InputRecording");
 	Freeze(g_FrameCount);
 
 #ifndef DISABLE_RECORDING
-	if (g_FrameCount > 0 && IsLoading())
+	// Explicitly set the frame change tracking variable as to not
+	// detect loading a savestate as a frame being drawn
+	g_InputRecordingControls.SetFrameCountTracker(g_FrameCount);
+	// Loading a save-state is an asynchronous task, if we are playing a recording
+	// that starts from a savestate (not power-on) and the starting (pcsx2 internal) frame
+	// marker has not been set (which comes from the save-state), we initialize it.
+	// TODO - get rid of the -1
+	if (g_InputRecording.GetStartingFrame() == -1 && g_InputRecording.GetInputRecordingData().FromCurrentFrame()) {
+		g_InputRecording.SetStartingFrame(g_FrameCount);
+		// TODO - make a function of my own to simplify working with the logging macros
+		recordingConLog(wxString::Format(L"[REC]: Internal Starting Frame: %d\n", g_InputRecording.GetStartingFrame()));
+	}
+	// Otherwise the starting savestate has been loaded and if loaded a save-state while recording the movie
+	// it is an undo operation that needs to be tracked.
+	else if (g_InputRecording.RecordingActive() && IsLoading())
 	{
-		g_InputRecordingData.AddUndoCount();
+		g_InputRecording.GetInputRecordingData().AddUndoCount();
+		// Reloading a save-state means the internal recording frame counter may need to be adjusted
+		// Since we persist the g_FrameCount of the beginning of the movie, we can use it to recalculate it
+		g_InputRecording.SetFrameCounter(g_FrameCount - (g_InputRecording.GetStartingFrame()));
 	}
 #endif
 }
 
 #ifndef DISABLE_RECORDING
+
 InputRecording g_InputRecording;
 
-// Main func for handling controller input data
-// - Called by Sio.cpp::sioWriteController
-void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 & bufCount, u8 buf[])
+void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 buf[])
 {
 	// TODO - Multi-Tap Support
 	// Only examine controllers 1 / 2
@@ -72,7 +92,7 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 & bufCount, u8 
 			return;
 		}
 	}
-	else if ( bufCount == 2 )
+	else if (bufCount == 2)
 	{
 		/*
 			See - LilyPad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1194
@@ -87,64 +107,143 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 & bufCount, u8 
 		}
 	}
 
-	if (!fInterruptFrame
-		|| state == INPUT_RECORDING_MODE_NONE
-		// We do not want to record or save the first two
-		// bytes in the data returned from LilyPad
-		|| bufCount < 3)
+	// We do not want to record or save the first two bytes in the data returned from the PAD plugin
+	if (!fInterruptFrame || state == InputRecordingMode::NoneActive || bufCount < 3)
 	{
 		return;
 	}
 
 	// Read or Write
 	const u8 &nowBuf = buf[bufCount];
-	if (state == INPUT_RECORDING_MODE_RECORD)
+	if (state == InputRecordingMode::Recording)
 	{
-		InputRecordingData.UpdateFrameMax(g_FrameCount);
-		InputRecordingData.WriteKeyBuf(g_FrameCount, port, bufCount - 3, nowBuf);
+		inputRecordingData.WriteKeyBuf(frameCounter, port, bufCount - 3, nowBuf);
 	}
-	else if (state == INPUT_RECORDING_MODE_REPLAY)
+	else if (state == InputRecordingMode::Replaying)
 	{
-		if (InputRecordingData.GetMaxFrame() <= g_FrameCount)
-		{
-			// Pause the emulation but the movie is not closed
-			g_RecordingControls.Pause();
-			return;
-		}
 		u8 tmp = 0;
-		if (InputRecordingData.ReadKeyBuf(tmp, g_FrameCount, port, bufCount - 3))
+		if (inputRecordingData.ReadKeyBuf(tmp, frameCounter, port, bufCount - 3))
 		{
 			buf[bufCount] = tmp;
 		}
 	}
 }
 
+u32 InputRecording::GetFrameCounter()
+{
+	return frameCounter;
+}
 
-// GUI Handler - Stop recording
+InputRecordingFile &InputRecording::GetInputRecordingData()
+{
+	return inputRecordingData;
+}
+
+u32 InputRecording::GetStartingFrame()
+{
+	return startingFrame;
+}
+
+void InputRecording::IncrementFrameCounter()
+{
+	frameCounter++;
+	if (state == InputRecordingMode::Recording) {
+		GetInputRecordingData().UpdateFrameMax(frameCounter);
+	}
+}
+
+bool InputRecording::IsInterruptFrame()
+{
+	return fInterruptFrame;
+}
+
+bool InputRecording::IsRecordingReplaying()
+{
+	return RecordingActive() && state == InputRecordingMode::Replaying;
+}
+
+bool InputRecording::RecordingActive()
+{
+	return state != InputRecordingMode::NoneActive;
+}
+
+wxString InputRecording::RecordingModeTitleSegment()
+{
+	switch (state)
+	{
+		case InputRecordingMode::Recording:
+			return wxString("Recording");
+			break;
+		case InputRecordingMode::Replaying:
+			return wxString("Replaying");
+			break;
+		default:
+			return wxString("No Movie");
+			break;
+	}
+}
+
+void InputRecording::RecordModeToggle()
+{
+	if (state == InputRecordingMode::Replaying)
+	{
+		state = InputRecordingMode::Recording;
+		recordingConLog("[REC]: Record mode ON.\n");
+	}
+	else if (state == InputRecordingMode::Recording)
+	{
+		state = InputRecordingMode::Replaying;
+		recordingConLog("[REC]: Replay mode ON.\n");
+	}
+}
+
+void InputRecording::SetFrameCounter(u32 newFrameCounter)
+{
+	frameCounter = newFrameCounter;
+	if (state == InputRecordingMode::Recording)
+	{
+		GetInputRecordingData().UpdateFrameMax(frameCounter);
+	}
+}
+
+void InputRecording::SetStartingFrame(u32 newStartingFrame)
+{
+	startingFrame = newStartingFrame;
+}
+
 void InputRecording::Stop()
 {
-	state = INPUT_RECORDING_MODE_NONE;
-	if (InputRecordingData.Close())
+	// Reset the frame counter when starting a new recording
+	frameCounter = 0;
+	startingFrame = -1;
+	state = InputRecordingMode::NoneActive;
+	if (inputRecordingData.Close())
 	{
 		recordingConLog(L"[REC]: InputRecording Recording Stopped.\n");
 	}
 }
 
-// GUI Handler - Start recording
 void InputRecording::Create(wxString FileName, bool fromSaveState, wxString authorName)
 {
-	g_RecordingControls.Pause();
 	Stop();
+	// TODO - there needs to be a more sophisticated way to pause emulation
+	// When CoreThread.PauseSelf is called, it does not pause immediately, and can take 1 or 2 frames to actually pause emulation
+	// there are ways to correct this behaviour (can write my own logic to track when emulation is truly paused, but this is it's own issue to solve
+	//
+	// The current workaround is to pause when the "New" option is selected which in the vast majority of cases means
+	// that emulation will be paused by the time the recording is actually started
+	// This pause remains here to ensure it's been done.
+	g_InputRecordingControls.PauseImmediately();
 
 	// create
-	if (!InputRecordingData.Open(FileName, true, fromSaveState))
+	if (!inputRecordingData.Open(FileName, true, fromSaveState))
 	{
 		return;
 	}
 	// Set author name
 	if (!authorName.IsEmpty())
 	{
-		InputRecordingData.GetHeader().SetAuthor(authorName);
+		inputRecordingData.GetHeader().SetAuthor(authorName);
 	}
 	// Set Game Name
 	// Code loosely taken from AppCoreThread.cpp to resolve the Game Name
@@ -163,75 +262,49 @@ void InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 			}
 		}
 	}
-	InputRecordingData.GetHeader().SetGameName(!gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso));
-	InputRecordingData.WriteHeader();
-	state = INPUT_RECORDING_MODE_RECORD;
+	inputRecordingData.GetHeader().SetGameName(!gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso));
+	inputRecordingData.WriteHeader();
+	state = InputRecordingMode::Recording;
 	recordingConLog(wxString::Format(L"[REC]: Started new recording - [%s]\n", FileName));
-
-	// In every case, we reset the g_FrameCount
-	g_FrameCount = 0;
 }
 
-// GUI Handler - Play a recording
 void InputRecording::Play(wxString FileName, bool fromSaveState)
 {
-	g_RecordingControls.Pause();
 	Stop();
+	// TODO - there needs to be a more sophisticated way to pause emulation
+	// When CoreThread.PauseSelf is called, it does not pause immediately, and can take 1 or 2 frames to actually pause emulation
+	// there are ways to correct this behaviour (can write my own logic to track when emulation is truly paused, but this is it's own issue to solve
+	//
+	// The current workaround is to pause when the "Play" option is selected which in the vast majority of cases means
+	// that emulation will be paused by the time the recording is actually started
+	// This pause remains here to ensure it's been done.
+	g_InputRecordingControls.PauseImmediately();
 
-	if (!InputRecordingData.Open(FileName, false, false))
+	if (!inputRecordingData.Open(FileName, false, false))
 	{
 		return;
 	}
-	if (!InputRecordingData.ReadHeaderAndCheck())
+	if (!inputRecordingData.ReadHeaderAndCheck())
 	{
 		recordingConLog(L"[REC]: This file is not a correct InputRecording file.\n");
-		InputRecordingData.Close();
+		inputRecordingData.Close();
 		return;
 	}
 	// Check author name
 	if (!g_Conf->CurrentIso.IsEmpty())
 	{
-		if (Path::GetFilename(g_Conf->CurrentIso) != InputRecordingData.GetHeader().gameName)
+		if (Path::GetFilename(g_Conf->CurrentIso) != inputRecordingData.GetHeader().gameName)
 		{
 			recordingConLog(L"[REC]: Information on CD in Movie file is Different.\n");
 		}
 	}
-	state = INPUT_RECORDING_MODE_REPLAY;
+	state = InputRecordingMode::Replaying;
 	recordingConLog(wxString::Format(L"[REC]: Replaying movie - [%s]\n", FileName));
-	recordingConLog(wxString::Format(L"[REC]: Recording File Version: %d\n", InputRecordingData.GetHeader().version));
-	recordingConLog(wxString::Format(L"[REC]: Associated Game Name / ISO Filename: %s\n", InputRecordingData.GetHeader().gameName));
-	recordingConLog(wxString::Format(L"[REC]: Author: %s\n", InputRecordingData.GetHeader().author));
-	recordingConLog(wxString::Format(L"[REC]: MaxFrame: %d\n", InputRecordingData.GetMaxFrame()));
-	recordingConLog(wxString::Format(L"[REC]: UndoCount: %d\n", InputRecordingData.GetUndoCount()));
+	recordingConLog(wxString::Format(L"[REC]: Recording File Version: %d\n", inputRecordingData.GetHeader().version));
+	recordingConLog(wxString::Format(L"[REC]: Associated Game Name / ISO Filename: %s\n", inputRecordingData.GetHeader().gameName));
+	recordingConLog(wxString::Format(L"[REC]: Author: %s\n", inputRecordingData.GetHeader().author));
+	recordingConLog(wxString::Format(L"[REC]: Total Frames: %d\n", inputRecordingData.GetMaxFrame()));
+	recordingConLog(wxString::Format(L"[REC]: Undo Count: %d\n", inputRecordingData.GetUndoCount()));
 }
 
-// Keybind Handler - Toggle between recording input and not
-void InputRecording::RecordModeToggle()
-{
-	if (state == INPUT_RECORDING_MODE_REPLAY)
-	{
-		state = INPUT_RECORDING_MODE_RECORD;
-		recordingConLog("[REC]: Record mode ON.\n");
-	}
-	else if (state == INPUT_RECORDING_MODE_RECORD)
-	{
-		state = INPUT_RECORDING_MODE_REPLAY;
-		recordingConLog("[REC]: Replay mode ON.\n");
-	}
-}
-
-INPUT_RECORDING_MODE InputRecording::GetModeState()
-{
-	return state;
-}
-
-InputRecordingFile & InputRecording::GetInputRecordingData()
-{
-	return InputRecordingData;
-}
-
-bool InputRecording::IsInterruptFrame()
-{
-	return fInterruptFrame;
-}
 #endif
