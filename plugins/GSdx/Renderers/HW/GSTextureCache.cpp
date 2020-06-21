@@ -861,7 +861,8 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 			}
 
 			// GH: Try to detect texture write that will overlap with a target buffer
-			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM)) {
+			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM))
+			{
 				const SurfaceOffset so = ComputeSurfaceWriteOffset(off, r, t);
 				if (so.is_valid_offset)
 				{
