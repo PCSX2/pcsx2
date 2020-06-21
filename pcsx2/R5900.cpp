@@ -43,9 +43,7 @@ using namespace R5900;	// for R5900 disasm tools
 s32 EEsCycle;		// used to sync the IOP to the EE
 u32 EEoCycle;
 
-__aligned16 cpuRegisters cpuRegs;
-__aligned16 fpuRegisters fpuRegs;
-__aligned16 tlbs tlb[48];
+
 R5900cpu *Cpu = NULL;
 
 bool g_SkipBiosHack; // set at boot if the skip bios hack is on, reset before the game has started

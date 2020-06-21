@@ -31,7 +31,7 @@ protected:
 	wxString	m_profiler_name;
 
 public:
-	RecompiledCodeReserve( const wxString& name=wxEmptyString, uint defCommit = 0 );
+	RecompiledCodeReserve( const wxString& name=wxEmptyString, uint defCommit = 0);
 	virtual ~RecompiledCodeReserve();
 
 	virtual void* Assign( VirtualMemoryManagerPtr allocator, void *baseptr, size_t size ) override;

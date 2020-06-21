@@ -44,14 +44,46 @@
 #include "Utilities/Perf.h"
 
 
+#define s_uptr sizeof(uptr)
+
+static const size_t recLutSize = (((Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK));
+
+__aligned16 cpuRegisters cpuRegs;
+__aligned16 fpuRegisters fpuRegs;
+__aligned16 tlbs tlb[48];
+//recLUT:       0x0   -   64kB
+//
+static u8 __pagealigned memReserve_iR5900A[_128mb];
+
+//static __aligned16 uptr recLUT[_64kb];
+static uptr* recLUT = (uptr*)memReserve_iR5900A;
+#define s00 _64kb*s_uptr
+
+//static __aligned16 uptr hwLUT[_64kb];
+static uptr* hwLUT  = (uptr*)((uptr)memReserve_iR5900A+s00);
+#define s01 _64kb*s_uptr
+
+// recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
+static u8* recLutReserve_RAM = (u8*)((uptr)memReserve_iR5900A+s00+s01);
+#define s02 recLutSize
+
+// Recompiled code buffer for EE recompiler dispatchers
+static u8* eeRecDispatchers = (u8*)((uptr)memReserve_iR5900A+s00+s01+s02);
+#define s03 (uptr)__pagesize
+
+static RecompiledCodeReserve* recMem;
+#define s04 (uptr)_16mb
+
+//recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
+static u8* recRAMCopy = (u8*)memReserve_iR5900A+s00+s01+s02+s03+s04;
+#define s05 Ps2MemSize::MainRam
+
 using namespace x86Emitter;
 using namespace R5900;
 
 #define PC_GETBLOCK(x) PC_GETBLOCK_(x, recLUT)
 
 u32 maxrecmem = 0;
-static __aligned16 uptr recLUT[_64kb];
-static __aligned16 uptr hwLUT[_64kb];
 
 static __fi u32 HWADDR(u32 mem) { return hwLUT[mem >> 16] + mem; }
 
@@ -71,11 +103,6 @@ eeProfiler EE::Profiler;
 
 #define X86
 static const int RECCONSTBUF_SIZE = 16384 * 2; // 64 bit consts in 32 bit units
-
-static RecompiledCodeReserve* recMem = NULL;
-static u8* recRAMCopy = NULL;
-static u8* recLutReserve_RAM = NULL;
-static const size_t recLutSize = (((Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK));
 
 static uptr m_ConfiguredCacheReserve = 64;
 
@@ -318,9 +345,6 @@ static void __fastcall recRecompile( const u32 startpc );
 static void __fastcall dyna_block_discard(u32 start,u32 sz);
 static void __fastcall dyna_page_reset(u32 start,u32 sz);
 
-// Recompiled code buffer for EE recompiler dispatchers!
-static u8 __pagealigned eeRecDispatchers[__pagesize];
-
 typedef void DynGenFunc();
 
 static DynGenFunc* DispatcherEvent		= NULL;
@@ -465,7 +489,7 @@ static DynGenFunc* _DynGen_DispatchPageReset()
 static void _DynGen_Dispatchers()
 {
 	// In case init gets called multiple times:
-	HostSys::MemProtectStatic( eeRecDispatchers, PageAccess_ReadWrite() );
+	HostSys::MemProtect( eeRecDispatchers, s03, PageAccess_ReadWrite() );
 
 	// clear the buffer to 0xcc (easier debugging).
 	memset( eeRecDispatchers, x86_Opcode_INT3, __pagesize);
@@ -483,7 +507,7 @@ static void _DynGen_Dispatchers()
 	DispatchBlockDiscard = _DynGen_DispatchBlockDiscard();
 	DispatchPageReset    = _DynGen_DispatchPageReset();
 
-	HostSys::MemProtectStatic( eeRecDispatchers, PageAccess_ExecOnly() );
+	HostSys::MemProtect( eeRecDispatchers, s03, PageAccess_ExecOnly() );
 
 	recBlocks.SetJITCompile( JITCompile );
 
@@ -515,7 +539,7 @@ static void recReserveCache()
 
 	while (!recMem->IsOk())
 	{
-		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::EErecOffset, m_ConfiguredCacheReserve * _1mb) != NULL) break;
+		if (recMem->Reserve( (u8*)((uptr)memReserve_iR5900A+s00+s01+s02+s03) , s04) != NULL) break;
 
 		// If it failed, then try again (if possible):
 		if (m_ConfiguredCacheReserve < 16) break;
@@ -542,7 +566,7 @@ static void recAlloc()
 		recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
 	}
 
-	if (!recRAM)
+	if (!recLutReserve_RAM)
 	{
         recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
 	}
@@ -1110,18 +1134,9 @@ static void iBranchTest(u32 newpc)
 		}
 		else
 		{
-			#ifdef __M_X86_64
-				recBlocks.Link(HWADDR(newpc), xJcc64(Jcc_Signed));
-			#else
-				recBlocks.Link(HWADDR(newpc), xJcc32(Jcc_Signed));
-			#endif
+			recBlocks.Link(HWADDR(newpc), xJcc32(Jcc_Signed));
 		}
-		#ifdef __M_X86_64
-			xMOV64( rax, (uptr)DispatcherEvent );
-			xJMP( rax );
-		#else
-			xJMP( (void*)DispatcherEvent );
-		#endif
+		xJMP( (void*)DispatcherEvent );
 	}
 }
 
@@ -2169,11 +2184,7 @@ StartRecomp:
 			{
 				xMOV( ptr32[&cpuRegs.pc], pc );
 				xADD( ptr32[&cpuRegs.cycle], scaleblockcycles() );
-                #ifdef __M_X86_64
-                  recBlocks.Link( HWADDR(pc), xJcc64() );
-                #else
-                  recBlocks.Link( HWADDR(pc), xJcc32() );
-                #endif
+                recBlocks.Link( HWADDR(pc), xJcc32() );
 			}
 		}
 	}
