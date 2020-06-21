@@ -811,12 +811,14 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent & eve
 void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 {
 	g_InputRecording.Stop();
+    g_InputRecordingControls.PauseImmediately();
 
 	NewRecordingFrame* NewRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
 	if (NewRecordingFrame)
 	{
 		if (NewRecordingFrame->ShowModal() == wxID_CANCEL)
 		{
+            g_InputRecordingControls.Resume();
 			return;
 		}
 		// From Current Frame
@@ -842,10 +844,13 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent &event)
 {
 	g_InputRecording.Stop();
+    g_InputRecordingControls.PauseImmediately();
+
 	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
 		L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
 	if (openFileDialog.ShowModal() == wxID_CANCEL)
 	{
+        g_InputRecordingControls.Resume();
 		return;
 	}
 
