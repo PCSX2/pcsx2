@@ -28,7 +28,6 @@ namespace SoundtouchCfg
 {
 class AdvDialog : public wxDialog
 {
-    wxPanel *m_adv_panel;
     wxBoxSizer *m_adv_box, *m_babble_box;
 
     wxButton *reset_button;
@@ -49,7 +48,6 @@ public:
 
 class DebugDialog : public wxDialog
 {
-    wxPanel *m_debug_panel;
     wxBoxSizer *m_debug_top_box;
     wxBoxSizer *m_together_box;
     wxStaticBoxSizer *m_console_box, *m_log_only_box, *dump_box;
@@ -70,7 +68,6 @@ public:
 
 class Dialog : public wxDialog
 {
-    wxPanel *m_panel;
     wxBoxSizer *m_top_box, *m_left_box, *m_right_box;
     wxBoxSizer *m_portaudio_box, *m_sdl_box, *m_audio_box;
     wxStaticBoxSizer *m_mix_box, *m_debug_box, *m_output_box, *m_volume_box, *m_latency_box, *m_sync_box;
