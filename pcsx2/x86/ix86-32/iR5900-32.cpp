@@ -42,18 +42,22 @@
 
 #include "Utilities/MemsetFast.inl"
 #include "Utilities/Perf.h"
+#include "vtlb.h"
 
 
 #define s_uptr sizeof(uptr)
+#define IR5900A_MEM_SIZE _256mb
 
 static const size_t recLutSize = (((Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK));
 
 __aligned16 cpuRegisters cpuRegs;
 __aligned16 fpuRegisters fpuRegs;
 __aligned16 tlbs tlb[48];
-//recLUT:       0x0   -   64kB
-//
-static u8 __pagealigned memReserve_iR5900A[_128mb];
+namespace vtlb_private
+{
+    __aligned(64) MapData vtlbdata;
+}
+static u8 __pagealigned memReserve_iR5900A[IR5900A_MEM_SIZE];
 
 //static __aligned16 uptr recLUT[_64kb];
 static uptr* recLUT = (uptr*)memReserve_iR5900A;
@@ -69,14 +73,17 @@ static u8* recLutReserve_RAM = (u8*)((uptr)memReserve_iR5900A+s00+s01);
 
 // Recompiled code buffer for EE recompiler dispatchers
 static u8* eeRecDispatchers = (u8*)((uptr)memReserve_iR5900A+s00+s01+s02);
-#define s03 (uptr)__pagesize
+#define s03 _16kb*s_uptr
 
 static RecompiledCodeReserve* recMem;
-#define s04 (uptr)_16mb
+#define s04 _4mb*s_uptr
 
 //recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
 static u8* recRAMCopy = (u8*)memReserve_iR5900A+s00+s01+s02+s03+s04;
 #define s05 Ps2MemSize::MainRam
+
+volatile u8* m_IndirectDispatchers = (u8*)memReserve_iR5900A+s00+s01+s02+s03+s04+s05;
+#define s06 _64kb*s_uptr
 
 using namespace x86Emitter;
 using namespace R5900;
@@ -534,7 +541,7 @@ static void recThrowHardwareDeficiency( const wxChar* extFail )
 
 static void recReserveCache()
 {
-	if (!recMem) recMem = new RecompiledCodeReserve(L"R5900-32 Recompiler Cache", _16mb);
+	if (!recMem) recMem = new RecompiledCodeReserve(L"R5900-32 Recompiler Cache", s04);
 	recMem->SetProfilerName("EErec");
 
 	while (!recMem->IsOk())
@@ -561,6 +568,11 @@ static void recReserve()
 
 static void recAlloc()
 {
+    if (s00+s01+s02+s03+s04+s05 > IR5900A_MEM_SIZE)
+    {
+        pxAssert(0); // static mem allocation changed
+    }
+    
 	if (!recRAMCopy)
 	{
 		recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
@@ -1119,14 +1131,9 @@ static void iBranchTest(u32 newpc)
 		xMOV(eax, ptr[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles());
 		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
-		#ifdef __M_X86_64
-			xMOV(ebx,eax);
-			xMOV(eax, ptr[&g_nextEventCycle]);
-			xSUB(ebx, eax);
-			xMOV(eax,ebx);
-		#else
-			xSUB(eax, ptr[&g_nextEventCycle]);
-		#endif
+
+        xSUB(eax, ptr[&g_nextEventCycle]);
+
 
 		if (newpc == 0xffffffff)
 		{
@@ -1362,7 +1369,7 @@ void encodeMemcheck()
 }
 
 void recompileNextInstruction(int delayslot)
-{
+{    
 	u32 i;
 	int count;
 

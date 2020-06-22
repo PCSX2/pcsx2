@@ -213,7 +213,11 @@ void recStore(u32 bits)
         else if (bits == 128 || bits == 64)
         {
                 _flushEEreg(_Rt_);          // flush register to mem
-                xMOV(edx, (uptr)&cpuRegs.GPR.r[_Rt_].UL[0]);
+                #ifdef __M_X86_64
+                  xMOV64(rdx, (uptr)&cpuRegs.GPR.r[_Rt_].UL[0]);
+                #else
+                  xMOV(edx, (uptr)&cpuRegs.GPR.r[_Rt_].UL[0]);
+                #endif
         }
 
         // Load ECX with the destination address, or issue a direct optimized write

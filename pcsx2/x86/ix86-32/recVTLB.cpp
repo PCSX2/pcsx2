@@ -238,7 +238,7 @@ namespace vtlb_private
 // If it were smaller than a page we'd end up allowing execution rights on some
 // other vars additionally (bad!).
 //
-static __pagealigned u8 m_IndirectDispatchers[__pagesize];
+extern __pagealigned u8* m_IndirectDispatchers;
 
 // ------------------------------------------------------------------------
 // mode        - 0 for read, 1 for write!
@@ -290,7 +290,10 @@ static void DynGen_IndirectTlbDispatcher( int mode, int bits, bool sign )
 	// jump to the indirect handler, which is a __fastcall C++ function.
 	// [ecx is address, edx is data]
     #ifdef __M_X86_64
-	  xFastCall(ptr32[(rax*4) + vtlbdata.RWFT[bits][mode]], rcx, rdx);
+	  xSHL( rax, 3);
+	  xMOV64( rbx, (uptr)vtlbdata.RWFT[bits][mode]);
+	  xMOV( rax, ptr[rax+rbx] );
+      xCALL(rax);
     #else
       xFastCall(ptr32[(eax*4) + vtlbdata.RWFT[bits][mode]], ecx, edx);
     #endif
@@ -326,7 +329,7 @@ void vtlb_dynarec_init()
 	hasBeenCalled = true;
 
 	// In case init gets called multiple times:
-	HostSys::MemProtectStatic( m_IndirectDispatchers, PageAccess_ReadWrite() );
+	HostSys::MemProtect( m_IndirectDispatchers, _64kb*sizeof(uptr), PageAccess_ReadWrite() );
 
 	// clear the buffer to 0xcc (easier debugging).
 	memset( m_IndirectDispatchers, 0xcc, __pagesize);
@@ -344,7 +347,7 @@ void vtlb_dynarec_init()
 		}
 	}
 
-	HostSys::MemProtectStatic( m_IndirectDispatchers, PageAccess_ExecOnly() );
+	HostSys::MemProtect( m_IndirectDispatchers, _64kb*sizeof(uptr), PageAccess_ExecOnly() );
 
 	Perf::any.map((uptr)m_IndirectDispatchers, __pagesize, "TLB Dispatcher");
 }

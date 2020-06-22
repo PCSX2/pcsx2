@@ -242,6 +242,8 @@ static const sptr _128kb = _1kb * 128;
 static const sptr _256kb = _1kb * 256;
 
 static const s64 _1mb = 1024 * 1024;
+static const s64 _2mb = _1mb * 2;
+static const s64 _4mb = _1mb * 4;
 static const s64 _8mb = _1mb * 8;
 static const s64 _16mb = _1mb * 16;
 static const s64 _32mb = _1mb * 32;

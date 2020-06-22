@@ -56,10 +56,10 @@ static u8* m_recBlockAlloc = (u8*)((uptr)memReserve_iR3000A+s00+s01);
 
 // Recompiled code buffer for EE recompiler dispatchers
 static u8* iopRecDispatchers = (u8*)((uptr)memReserve_iR3000A+s00+s01+s02);
-#define s03 (uptr)__pagesize
+#define s03 _16kb*s_uptr
 
 //static RecompiledCodeReserve* recMem;
-#define s04 (uptr)_8mb
+#define s04 _2mb*s_uptr
 
 
 using namespace x86Emitter;
@@ -1108,7 +1108,6 @@ void rpsxBREAK()
 
 void psxRecompileNextInstruction(int delayslot)
 {
-    printf("jc iR3000A-32 psxRecompileNextInstruction\n");
 	// pblock isn't used elsewhere in this function.
 	//BASEBLOCK* pblock = PSX_GETBLOCK(psxpc);
 
