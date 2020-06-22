@@ -43,13 +43,7 @@ using namespace vtlb_private;
 
 #define verify pxAssert
 
-namespace vtlb_private
-{
-	__aligned(64) MapData vtlbdata;
-}
-
 static vtlbHandler vtlbHandlerCount = 0;
-
 static vtlbHandler DefaultPhyHandler;
 static vtlbHandler UnmappedVirtHandler0;
 static vtlbHandler UnmappedVirtHandler1;

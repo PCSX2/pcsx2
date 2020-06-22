@@ -89,8 +89,9 @@ void xImpl_Mov::operator()(const xRegisterInt &to, const xIndirectVoid &src) con
 
 void xImpl_Mov::operator()(const xIndirect64orLess &dest, int imm) const
 {
-    xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? x86_Opcode_MOV_Eb_Ib : x86_Opcode_MOV_Ev_Iv, 0, dest);
-    dest.xWriteImm(imm);
+    
+    xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? x86_Opcode_MOV_Eb_Ib : x86_Opcode_MOV_Ev_Iv, 0, dest-4);
+    xWrite32(imm);
 }
 
 // preserve_flags  - set to true to disable optimizations which could alter the state of
