@@ -19,7 +19,7 @@
 #include "wxConfig.h"
 
 Dialog::Dialog()
-    : wxDialog(nullptr, wxID_ANY, "SPU2-X Config", wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER)
+    : wxDialog(nullptr, wxID_ANY, "SPU2-X Config", wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
 {
     m_top_box = new wxBoxSizer(wxHORIZONTAL);
     m_left_box = new wxBoxSizer(wxVERTICAL);
@@ -259,7 +259,7 @@ void Dialog::Display()
 
 // Debug dialog box
 DebugDialog::DebugDialog()
-    : wxDialog(nullptr, wxID_ANY, "SPU2-X Debug", wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER)
+    : wxDialog(nullptr, wxID_ANY, "SPU2-X Debug", wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
 {
     m_debug_top_box = new wxBoxSizer(wxHORIZONTAL);
     m_together_box = new wxBoxSizer(wxVERTICAL);
@@ -291,7 +291,7 @@ DebugDialog::DebugDialog()
     m_log_only_box->Add(auto_output_check);
 
     dump_box = new wxStaticBoxSizer(wxVERTICAL, this, "Dump on Close");
-    core_voice_check = new wxCheckBox(this, wxID_ANY, "Core & Voice Stats");
+    core_voice_check = new wxCheckBox(this, wxID_ANY, "Core && Voice Stats");
     memory_check = new wxCheckBox(this, wxID_ANY, "Memory Contents");
     register_check = new wxCheckBox(this, wxID_ANY, "Register Data");
     dump_box->Add(core_voice_check);
@@ -384,7 +384,7 @@ void DebugDialog::Display()
 namespace SoundtouchCfg
 {
 AdvDialog::AdvDialog()
-    : wxDialog(nullptr, wxID_ANY, "Soundtouch Config", wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER)
+    : wxDialog(nullptr, wxID_ANY, "Soundtouch Config", wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
 {
     m_adv_box = new wxBoxSizer(wxVERTICAL);
     m_babble_box = new wxBoxSizer(wxVERTICAL);
