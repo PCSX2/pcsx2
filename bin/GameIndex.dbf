@@ -1658,6 +1658,21 @@ Name   = Primal
 Region = PAL-M5
 Compat = 5 // With GSdx, SW-mode only.
 vuRoundMode = 0 // Fixes SPS.
+[patches = dcc4eeea]
+	author=Prafull
+	// Fix slow and choppy gameplay.
+	// PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
+	// so the game will wait endlessly in a wait loop until COP2 gets around to
+	// setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
+	// VU0 side, remove wait loop.
+	// Fixed by rearranging COP2 instructions.
+	patch=1,EE,00399cb0,word,48a44800
+	patch=1,EE,00399cb4,word,48c02800
+	patch=1,EE,00399cb8,word,4a00d839
+	patch=1,EE,00399d68,word,48a44800
+	patch=1,EE,00399d6c,word,48c02800
+	patch=1,EE,00399d70,word,4a00d839
+[/patches]
 ---------------------------------------------
 Serial = SCES-51159
 Name   = The Getaway
@@ -1713,6 +1728,21 @@ Serial = SCES-51463
 Name   = Ghosthunter
 Region = PAL-M6
 Compat = 5
+[patches = 3bd85da4]
+	author=Prafull
+	// Fix slow and choppy gameplay.
+	// PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
+	// so the game will wait endlessly in a wait loop until COP2 gets around to
+	// setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
+	// VU0 side, remove wait loop
+	// Fixed by rearranging COP2 instructions
+	patch=1,EE,003f4e58,word,48a44800
+	patch=1,EE,003f4e5c,word,48c02800
+	patch=1,EE,003f4e60,word,4a00d839
+	patch=1,EE,003f4f10,word,48a44800
+	patch=1,EE,003f4f14,word,48c02800
+	patch=1,EE,003f4f18,word,4a00d839
+[/patches]
 ---------------------------------------------
 Serial = SCES-51480
 Name   = Twisted Metal - Black - Online
@@ -1804,6 +1834,22 @@ Serial = SCES-51685
 Name   = Primal
 Region = PAL-E-R
 vuRoundMode = 0 // Fixes SPS.
+vuRoundMode = 0 // Fix SPS.
+[patches = E7ABDDC7]
+	author=Prafull
+	// Fix slow and choppy gameplay.
+	// PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
+	// so the game will wait endlessly in a wait loop until COP2 gets around to
+	// setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
+	// VU0 side, remove wait loop
+	// Fixed by rearranging COP2 instructions
+	patch=1,EE,00399e68,word,48a44800
+	patch=1,EE,00399e6c,word,48c02800
+	patch=1,EE,00399e70,word,4a00d839
+	patch=1,EE,00399f20,word,48a44800
+	patch=1,EE,00399f24,word,48c02800
+	patch=1,EE,00399f28,word,4a00d839
+[/patches]
 ---------------------------------------------
 Serial = SCES-51706
 Name   = Amplitude
@@ -5140,6 +5186,14 @@ Serial = SCUS-97258
 Name   = Amplitude
 Region = NTSC-U
 Compat = 5
+[patches = 2f7b4db8]
+	author=Prafull
+	// Fix SPS on characters.
+	// Fixed by rearranging COP2 instructions.
+	patch=1,EE,00215e00,word,48228000
+	patch=1,EE,00215e04,word,48236000
+	patch=1,EE,00215e08,word,4a0055b8
+[/patches]
 ---------------------------------------------
 Serial = SCUS-97259
 Name   = NHL FaceOff 2003 [Demo]
@@ -5800,12 +5854,18 @@ Name   = SOCOM 3 - U.S. Navy SEALs
 Region = NTSC-U
 Compat = 5
 vuClampMode = 0 // Fixes SPS ingame.
+[patches = 75ED4282]
+	author=CK1
+	// Remove the need of the VIF Fifo.
+	// Solve a massive slowdown when looking at the sun when ingame.
+	patch=1,EE,0019eb40,word,00000000
+	patch=1,EE,0019eb4c,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SCUS-97475
 Name   = SOCOM 3 - U.S. Navy SEALs [Regular Demo]
 Region = NTSC-U
 vuClampMode = 0 // Fixes SPS ingame.
-GIFFIFOHack = 1 // Fixes crashing before going ingame.
 [patches = 314F0905]
 	author=CK1
 	// Remove the need of the VIF Fifo.
@@ -8227,11 +8287,12 @@ Region = PAL-M5
 Serial = SLES-50713
 Name   = Freaky Flyers
 Region = PAL-E
-vuRoundMode = 1 // Fixes some bad effects.
 [patches = 6E62DE7B]
-	// Fixes hanging problem.
-	patch=1,EE,00132bd0,word,00000000
-	patch=1,EE,00132c88,word,00000000
+	author=Prafull
+	// Fix hanging problem & SPS.
+	// Snow effect has to be removed for this fix (needs accurate emulation).
+	// Fixed by rearranging COP2 instructions.
+	patch=1,EE,00214aec,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLES-50714
@@ -9613,6 +9674,10 @@ Compat = 5
 	comment=- Language & widescreen selection is done through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
 	comment=- Full boot is recommended anyway for this gamedisc to avoid textproblems.
+	author=Prafull
+	// Fix ingame SPS by interchanging vclipw.xyz vf5, vf5w with cfc2.
+	patch=1,EE,001db3a0,word,48489000
+	patch=1,EE,001db3a4,word,4bc529ff
 [/patches]
 ---------------------------------------------
 Serial = SLES-51229
@@ -9783,6 +9848,17 @@ Serial = SLES-51292
 Name   = Savage Skies
 Region = PAL-M5
 Compat = 4 // This game needs the EE cache to work which is only supported in "interpreter" mode.
+[patches = 9fccacb5]
+	author=PSI
+	// The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
+	// The second function causes stack corruption as it allocates over the buffer, which is still transferring data.
+	// This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache.
+	// This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP.
+	patch=0,EE,00164974,word,4100ffff
+	patch=0,EE,00164978,word,00000000
+	patch=0,EE,0016497c,word,03e00008
+	patch=0,EE,00164980,word,27bd0030
+[/patches]
 ---------------------------------------------
 Serial = SLES-51294
 Name   = XIII
@@ -10247,6 +10323,14 @@ Serial = SLES-51547
 Name   = Next Generation Tennis 2003
 Region = PAL-M5
 vuClampMode = 3 // Fixes SPS menus, also needed for patch.
+[patches = 393e3efa]
+	author=Prafull
+	// Fixes ingame SPS.
+	// Also requires vu clamping extra or higher.
+	// Fixed by rearranging COP2 instructions.
+	patch=1,EE,0013f1f0,word,d9100010
+	patch=1,EE,0013f1f4,word,4a000038
+[/patches]
 ---------------------------------------------
 Serial = SLES-51548
 Name   = This is Football
@@ -10651,11 +10735,27 @@ vuRoundMode = 0 // Crashes without.
 Serial = SLES-51753
 Name   = True Crime - Streets of L.A.
 Region = PAL-E
+[patches = C96245F4]
+	author=PSI
+	// Due to an edge case with SIF0 DMA that isn't handled properly in PCSX2
+	// the game accidentally resets DVD streams, which causes it to crash.
+	// This patch forces the streaming module to use different buffers
+	// which prevents the DVD streams from being cleared.
+	patch=1,EE,00480640,word,10000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-51754
 Name   = True Crime - Streets of L.A.
 Region = PAL-M5
 Compat = 3
+[patches = 6B9AEA0D]
+	author=PSI
+	// Due to an edge case with SIF0 DMA that isn't handled properly in PCSX2
+	// the game accidentally resets DVD streams, which causes it to crash.
+	// This patch forces the streaming module to use different buffers
+	// which prevents the DVD streams from being cleared.
+	patch=1,EE,00480DB0,word,10000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-51755
 Name   = Disney-Pixar's Finding Nemo
@@ -16950,6 +17050,20 @@ MemCardFilter = SLES-54555/SLES-53458
 Serial = SLES-54559
 Name   = Free Running
 Region = PAL-E
+[patches = d6a0a3ef]
+	author=Prafull
+	// Fix character falling through floor.
+	// Fixed by rearranging COP2 instructions.
+	// Bad syncro between COP2 and VU0 (bottleneck for PCSX2).
+	patch=1,EE,001b1d1c,word,48428800
+	patch=1,EE,001b1d20,word,4be228ec
+	patch=1,EE,001b1d24,word,4a0002ff
+	patch=1,EE,001b1d28,word,4a0002ff
+	patch=1,EE,001de5c0,word,48428800
+	patch=1,EE,001de5c4,word,4be3696c
+	patch=1,EE,001de5c8,word,4a0002ff
+	patch=1,EE,001de5cc,word,4a0002ff
+[/patches]
 ---------------------------------------------
 Serial = SLES-54560
 Name   = Alpine Ski Racing 2007
@@ -36343,6 +36457,13 @@ Serial = SLUS-20278
 Name   = Yanya Caballista - City Skater
 Region = NTSC-U
 Compat = 4
+[patches = 12BCE532]
+	author=Prafull
+	// Fix slow and choppy gameplay.
+	// Fixed by rearranging COP2 instructions.
+	patch=1,EE,002aaa58,word,48488800
+	patch=1,EE,002aaa80,word,4a0203bd
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20279
 Name   = X-Men - Next Dimension
@@ -36374,9 +36495,11 @@ Region = NTSC-U
 Compat = 4
 vuRoundMode = 1 // Fixes some bad effects.
 [patches = 9d1ba44d]
-	// Fixes hanging problem.
-	patch=1,EE,001323d0,word,00000000
-	patch=1,EE,00132488,word,00000000
+	author=Prafull
+	// Fix hanging problem & SPS.
+	// Snow effect has to be removed for this fix (and that needs accurate emulation).
+	// Fixed by rearranging COP2 instructions.
+	patch=1,EE,002131bc,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20285
@@ -36814,6 +36937,15 @@ Compat = 5
 Serial = SLUS-20378
 Name   = Salt Lake 2002
 Region = NTSC-U
+[patches = 466d1c13]
+	author=Prafull
+	// Fix ingame texture problems.
+	// Fixed by rearranging COP2 instructions.
+	patch=1,EE,001af778,word,daa70010
+	patch=1,EE,001af77c,word,4a000038
+	patch=1,EE,001af84c,word,daa70010
+	patch=1,EE,001af850,word,4a000038
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20379
 Name   = Dark Angel - James Cameron's
@@ -37063,6 +37195,17 @@ Serial = SLUS-20430
 Name   = Savage Skies
 Region = NTSC-U
 Compat = 5 // This game needs the EE cache to work which is only supported in "interpreter" mode.
+[patches = d195b670]
+	author=PSI
+	// The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
+	// The second function causes stack corruption as it allocates over the buffer, which is still transferring data.
+	// This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache.
+	// This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP.
+	patch=0,EE,00161a1c,word,4100ffff
+	patch=0,EE,00161a20,word,00000000
+	patch=0,EE,00161a24,word,03e00008
+	patch=0,EE,00161a28,word,27bd0030
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20431
 Name   = Wreckless - The Yakuza Missions
@@ -37227,6 +37370,12 @@ Serial = SLUS-20467
 Name   = Tomb Raider - The Angel of Darkness
 Region = NTSC-U
 Compat = 5
+[patches = 3baebcc3]
+	author=Prafull
+	// Fix ingame SPS by interchanging vclipw.xyz vf5, vf5w with cfc2.
+	patch=1,EE,001d90e0,word,48489000
+	patch=1,EE,001d90e4,word,4bc529ff
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20468
 Name   = Dynasty Tactics
@@ -40968,6 +41117,11 @@ Serial = SLUS-21234
 Name   = NHL 2K6
 Region = NTSC-U
 Compat = 2
+[patches = 87007AB7]
+	author=Prafull
+	// Avoid hang at start.
+	patch=1,EE,003fd608,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21235
 Name   = MLB 2k6
@@ -41150,6 +41304,21 @@ Serial = SLUS-21268
 Name   = 24 - The Game
 Region = NTSC-U
 Compat = 5
+[patches = f1c7201e]
+	author=Prafull
+	// Fix slow and choppy gameplay.
+	// PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
+	// so the game will wait endlessly in a wait loop until COP2 gets around to
+	// setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
+	// VU0 side, remove wait loop.
+	// Fixed by rearranging COP2 instructions.
+	patch=1,EE,004155a8,word,48a44800
+	patch=1,EE,004155ac,word,48c02800
+	patch=1,EE,004155b0,word,4a00d839
+	patch=1,EE,00415660,word,48a44800
+	patch=1,EE,00415664,word,48c02800
+	patch=1,EE,00415668,word,4a00d839
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21269
 Name   = Bully
@@ -41378,12 +41547,8 @@ Compat = 4
 EETimingHack = 1 // Needed to going ingame.
 [patches = f73488d5]
 	comment=Patch by Prafull
-	// Ingame freeze fix.
-	patch=1,EE,00291df8,word,00000000
-	patch=1,EE,002bebe8,word,00000000
-	patch=1,EE,00291150,word,00000000
-	patch=1,EE,00291dcc,word,00000000
-	patch=1,EE,00296750,word,00000000
+	// Fixes random hangs when going ingame.
+	patch=1,EE,00296368,word,00000000
 [/patches]
 ---------------------------------------------
 Serial = SLUS-21315
@@ -43464,6 +43629,11 @@ Serial = SLUS-21763
 Name   = NHL 2K9
 Region = NTSC-U
 Compat = 2
+[patches = 29fdcbf7]
+	author=Prafull
+	// Avoid hang at start.
+	patch=1,EE,00431848,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21764
 Name   = Cake Mania - Baker's Challenge
