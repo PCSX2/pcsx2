@@ -154,16 +154,16 @@ namespace vtlb_private
 		xMOV( eax, ecx );
 		xSHR( eax, VTLB_PAGE_BITS );
 		#ifdef __M_X86_64
-		  xSHL( rax, 3);
-		  xMOV64( rbx, (uptr)vtlbdata.vmap);
-		  xMOV( eax, ptr[rax+rbx] );
+		  xMOV( rax, ptr[rax*8 + vtlbdata.vmap] );
 		  xMOV( rbx, 0xbaadf00dbeefbabe );
+		  uptr* writeback = ((uptr*)xGetPtr()) - 1;
+		  xADD( rcx, rax );
 		#else
 		  xMOV( eax, ptr[(eax*4) + vtlbdata.vmap] );
 		  xMOV( ebx, 0xcdcdcdcd );
+		  uptr* writeback = ((uptr*)xGetPtr()) - 1;
+		  xADD( ecx, eax );
 		#endif
-		uptr* writeback = ((uptr*)xGetPtr()) - 1;
-		xADD( ecx, eax );
 
 		return writeback;
 	}

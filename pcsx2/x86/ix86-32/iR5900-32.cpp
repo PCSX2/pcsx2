@@ -49,14 +49,12 @@
 #define IR5900A_MEM_SIZE _256mb
 
 static const size_t recLutSize = (((Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK));
+static const size_t recRAMCopySize = (((Ps2MemSize::MainRam) / 4) * sizeof(BASEBLOCK));
 
 __aligned16 cpuRegisters cpuRegs;
 __aligned16 fpuRegisters fpuRegs;
 __aligned16 tlbs tlb[48];
-namespace vtlb_private
-{
-    __aligned(64) MapData vtlbdata;
-}
+__aligned(64) MapData vtlbdata;
 static u8 __pagealigned memReserve_iR5900A[IR5900A_MEM_SIZE];
 
 //static __aligned16 uptr recLUT[_64kb];
@@ -80,7 +78,7 @@ static RecompiledCodeReserve* recMem;
 
 //recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
 static u8* recRAMCopy = (u8*)memReserve_iR5900A+s00+s01+s02+s03+s04;
-#define s05 Ps2MemSize::MainRam
+#define s05 recRAMCopySize
 
 volatile u8* m_IndirectDispatchers = (u8*)memReserve_iR5900A+s00+s01+s02+s03+s04+s05;
 #define s06 _64kb*s_uptr
@@ -527,7 +525,7 @@ static void _DynGen_Dispatchers()
 
 static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 {
-	for (int i = 0; i < memsize/sizeof(BASEBLOCK); i++)
+	for (u32 i = 0; i < memsize/sizeof(BASEBLOCK); i++)
 		base[i].SetFnptr((uptr)JITCompile);
 }
 
@@ -591,7 +589,7 @@ static void recAlloc()
 	for (int i = 0; i < 0x10000; i++)
 		recLUT_SetPage(recLUT, 0, 0, 0, i, 0);
 
-	for ( int i = 0x0000; i < Ps2MemSize::MainRam / 0x10000; i++ )
+	for ( u32 i = 0x0000; i < Ps2MemSize::MainRam / 0x10000; i++ )
 	{
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x0000, i, i);
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x2000, i, i);
@@ -1369,7 +1367,7 @@ void encodeMemcheck()
 }
 
 void recompileNextInstruction(int delayslot)
-{    
+{
 	u32 i;
 	int count;
 
