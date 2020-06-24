@@ -39,49 +39,11 @@
 #	include <csetjmp>
 #endif
 
+#include "EmuCmp.h"
 
 #include "Utilities/MemsetFast.inl"
 #include "Utilities/Perf.h"
-#include "vtlb.h"
 
-
-#define s_uptr sizeof(uptr)
-#define IR5900A_MEM_SIZE _256mb
-
-static const size_t recLutSize = (((Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK));
-static const size_t recRAMCopySize = (((Ps2MemSize::MainRam) / 4) * sizeof(BASEBLOCK));
-
-__aligned16 cpuRegisters cpuRegs;
-__aligned16 fpuRegisters fpuRegs;
-__aligned16 tlbs tlb[48];
-__aligned(64) MapData vtlbdata;
-static u8 __pagealigned memReserve_iR5900A[IR5900A_MEM_SIZE];
-
-//static __aligned16 uptr recLUT[_64kb];
-static uptr* recLUT = (uptr*)memReserve_iR5900A;
-#define s00 _64kb*s_uptr
-
-//static __aligned16 uptr hwLUT[_64kb];
-static uptr* hwLUT  = (uptr*)((uptr)memReserve_iR5900A+s00);
-#define s01 _64kb*s_uptr
-
-// recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
-static u8* recLutReserve_RAM = (u8*)((uptr)memReserve_iR5900A+s00+s01);
-#define s02 recLutSize
-
-// Recompiled code buffer for EE recompiler dispatchers
-static u8* eeRecDispatchers = (u8*)((uptr)memReserve_iR5900A+s00+s01+s02);
-#define s03 _16kb*s_uptr
-
-static RecompiledCodeReserve* recMem;
-#define s04 _4mb*s_uptr
-
-//recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
-static u8* recRAMCopy = (u8*)memReserve_iR5900A+s00+s01+s02+s03+s04;
-#define s05 recRAMCopySize
-
-volatile u8* m_IndirectDispatchers = (u8*)memReserve_iR5900A+s00+s01+s02+s03+s04+s05;
-#define s06 _64kb*s_uptr
 
 using namespace x86Emitter;
 using namespace R5900;
@@ -89,6 +51,8 @@ using namespace R5900;
 #define PC_GETBLOCK(x) PC_GETBLOCK_(x, recLUT)
 
 u32 maxrecmem = 0;
+static __aligned16 uptr recLUT[_64kb];
+static __aligned16 u32 hwLUT[_64kb];
 
 static __fi u32 HWADDR(u32 mem) { return hwLUT[mem >> 16] + mem; }
 
@@ -108,6 +72,11 @@ eeProfiler EE::Profiler;
 
 #define X86
 static const int RECCONSTBUF_SIZE = 16384 * 2; // 64 bit consts in 32 bit units
+
+static RecompiledCodeReserve* recMem = NULL;
+static u8* recRAMCopy = NULL;
+static u8* recLutReserve_RAM = NULL;
+static const size_t recLutSize = (Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) * wordsize / 4;
 
 static uptr m_ConfiguredCacheReserve = 64;
 
@@ -184,7 +153,7 @@ u32* _eeGetConstReg(int reg)
 	return &cpuRegs.GPR.r[ reg ].UL[0];
 }
 
-void _eeMoveGPRtoR(const xRegisterLong& to, int fromgpr)
+void _eeMoveGPRtoR(const xRegister32& to, int fromgpr)
 {
 	if( fromgpr == 0 )
 		xXOR(to, to);	// zero register should use xor, thanks --air
@@ -202,6 +171,11 @@ void _eeMoveGPRtoR(const xRegisterLong& to, int fromgpr)
 	}
 }
 
+void _eeMoveGPRtoR(const xRegisterLong& to, int fromgpr)
+{
+	_eeMoveGPRtoR(xRegister32(to.Id), fromgpr);
+}
+
 void _eeMoveGPRtoM(uptr to, int fromgpr)
 {
 	if( GPR_IS_CONST1(fromgpr) )
@@ -213,8 +187,8 @@ void _eeMoveGPRtoM(uptr to, int fromgpr)
 			xMOVSS(ptr[(void*)(to)], xRegisterSSE(mmreg));
 		}
 		else {
-			xMOV(eax, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
-			xMOV(ptr[(void*)(to)], eax);
+			xMOV(eaxd, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
+			xMOV(ptr[(void*)(to)], eaxd);
 		}
 	}
 }
@@ -230,18 +204,19 @@ void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr)
 			xMOVSS(ptr[xAddressReg(to)], xRegisterSSE(mmreg));
 		}
 		else {
-			xMOV(eax, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
-			xMOV(ptr[xAddressReg(to)], eax);
+			xMOV(eaxd, ptr[&cpuRegs.GPR.r[ fromgpr ].UL[ 0 ] ]);
+			xMOV(ptr[xAddressReg(to)], eaxd);
 		}
 	}
 }
 
 void eeSignExtendTo(int gpr, bool onlyupper)
 {
+	// TODO: Use 64-bit registers (cdqe) on x86-64
 	xCDQ();
 	if (!onlyupper)
-		xMOV(ptr32[&cpuRegs.GPR.r[gpr].UL[0]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[gpr].UL[1]], edx);
+		xMOV(ptr32[&cpuRegs.GPR.r[gpr].UL[0]], eaxd);
+	xMOV(ptr32[&cpuRegs.GPR.r[gpr].UL[1]], edxd);
 }
 
 int _flushXMMunused()
@@ -329,8 +304,8 @@ void recBranchCall( void (*func)() )
 	// In order to make sure a branch test is performed, the nextBranchCycle is set
 	// to the current cpu cycle.
 
-	xMOV(eax, ptr[&cpuRegs.cycle ]);
-	xMOV(ptr[&g_nextEventCycle], eax);
+	xMOV(eaxd, ptr[&cpuRegs.cycle ]);
+	xMOV(ptr[&g_nextEventCycle], eaxd);
 
 	recCall(func);
 	g_branch = 2;
@@ -349,6 +324,9 @@ void recCall( void (*func)() )
 static void __fastcall recRecompile( const u32 startpc );
 static void __fastcall dyna_block_discard(u32 start,u32 sz);
 static void __fastcall dyna_page_reset(u32 start,u32 sz);
+
+// Recompiled code buffer for EE recompiler dispatchers!
+static u8 __pagealigned eeRecDispatchers[__pagesize];
 
 typedef void DynGenFunc();
 
@@ -374,29 +352,17 @@ static DynGenFunc* _DynGen_JITCompile()
 
 	u8* retval = xGetAlignedCallTarget();
 
-	xFastCall((void*)recRecompile, ptr[&cpuRegs.pc] );
-    
-    #ifdef __M_X86_64
-      xMOV( rax, 0 );
-      xMOV( eax, ptr[&cpuRegs.pc]);
-      xMOV( rbx, rax );
-      xSHR( rax, 16 );
-      xSHL( rbx, 1 );
-      xSHL( rax, 3 );
-      xMOV( rcx, rax );
-      xMOV64( rax, (uptr)recLUT);
-      xADD( rcx, rax );
-      xMOV( rcx, ptr[rcx] );
-      xADD( rcx, rbx );
-      xMOV( rcx, ptr[rcx] );
-      xJMP( rcx );
-    #else
-      xMOV( eax, ptr[&cpuRegs.pc]);
-      xMOV( ebx, eax );
-      xSHR( eax, 16 );
-      xMOV( ecx, ptr[recLUT + (eax*4)] );
-      xJMP( ptr32[ecx+ebx] );
-    #endif
+	xFastCall((void*)recRecompile, ptr32[&cpuRegs.pc] );
+
+	// C equivalent:
+	// u32 addr = cpuRegs.pc;
+	// void(**base)() = (void(**)())recLUT[addr >> 16];
+	// base[addr >> 2]();
+	xMOV( eaxd, ptr[&cpuRegs.pc] );
+	xMOV( ebxd, eaxd );
+	xSHR( eaxd, 16 );
+	xMOV( rcx, ptrNative[xComplexAddress(rcx, recLUT, rax*wordsize)] );
+	xJMP( ptrNative[rbx*(wordsize/4) + rcx] );
 
 	return (DynGenFunc*)retval;
 }
@@ -411,35 +377,19 @@ static DynGenFunc* _DynGen_JITCompileInBlock()
 // called when jumping to variable pc address
 static DynGenFunc* _DynGen_DispatcherReg()
 {
-    u8* retval = xGetPtr();        // fallthrough target, can't align it!
-    
-    // see PC_GETBLOCK for C equivalent
-    // uptr* fp = reclut[ pc >> 16] + pc*sizeof(uptr)/4;
-    // jump fp[0]; 
+	u8* retval = xGetPtr();		// fallthrough target, can't align it!
 
-    #ifdef __M_X86_64
-      xMOV( rax, 0 );               // reset rax
-      xMOV( eax, ptr[&cpuRegs.pc]); // load the 32-bit PS2 PC into eax (lower 32 bits of rax)
-      xMOV( rbx, rax );             // load the 32-bit PS2 PC into rbx
-      xSHR( rax, 16 );              // recLUT is a 2-level page table. First get the top 16 bits = page
-      xSHL( rbx, 1 );               // addresses in recLutReserve_RAM advance twice as much as pc under x64
-      xSHL( rax, 3 );               // align for 8-byte: &recLUT[page] = recLUT+8*page
-      xMOV( rcx, rax );             
-      xMOV64( rax, (uptr)recLUT);     // get pointer to recLUT
-      xADD( rcx, rax );             // recLUT + page
-      xMOV( rcx, ptr[rcx] );        // (recLUT + pc)[0]: retrieve 1st look-up table value
-      xADD( rcx, rbx );             // reclut[ pc >> 16] + pc*sizeof(uptr)/4 (64-bit value + 32-bit value)
-      xMOV( rcx, ptr[rcx] );        // retrieve function pointer from 2nd table recLutReserve_RAM
-      xJMP( rcx );                  // ... and jump to this function
-    #else  
-      xMOV( eax, ptr[&cpuRegs.pc]);  // Load the 32-bit PS2 PC into eax  
-      xMOV( ebx, eax );              // ... and ebx
-      xSHR( eax, 16 );               // recLUT is a 2-level page table. First get the top 16 bits = page
-      xMOV( ecx, ptr[recLUT + (eax*4)] );
-      xJMP( ptr32[ecx+ebx] );
-    #endif
+	// C equivalent:
+	// u32 addr = cpuRegs.pc;
+	// void(**base)() = (void(**)())recLUT[addr >> 16];
+	// base[addr >> 2]();
+	xMOV( eaxd, ptr[&cpuRegs.pc] );
+	xMOV( ebxd, eaxd );
+	xSHR( eaxd, 16 );
+	xMOV( rcx, ptrNative[xComplexAddress(rcx, recLUT, rax*wordsize)] );
+	xJMP( ptrNative[rbx*(wordsize/4) + rcx] );
 
-    return (DynGenFunc*)retval;
+	return (DynGenFunc*)retval;
 }
 
 static DynGenFunc* _DynGen_DispatcherEvent()
@@ -494,7 +444,7 @@ static DynGenFunc* _DynGen_DispatchPageReset()
 static void _DynGen_Dispatchers()
 {
 	// In case init gets called multiple times:
-	HostSys::MemProtect( eeRecDispatchers, s03, PageAccess_ReadWrite() );
+	HostSys::MemProtectStatic( eeRecDispatchers, PageAccess_ReadWrite() );
 
 	// clear the buffer to 0xcc (easier debugging).
 	memset( eeRecDispatchers, x86_Opcode_INT3, __pagesize);
@@ -512,7 +462,7 @@ static void _DynGen_Dispatchers()
 	DispatchBlockDiscard = _DynGen_DispatchBlockDiscard();
 	DispatchPageReset    = _DynGen_DispatchPageReset();
 
-	HostSys::MemProtect( eeRecDispatchers, s03, PageAccess_ExecOnly() );
+	HostSys::MemProtectStatic( eeRecDispatchers, PageAccess_ExecOnly() );
 
 	recBlocks.SetJITCompile( JITCompile );
 
@@ -525,7 +475,7 @@ static void _DynGen_Dispatchers()
 
 static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 {
-	for (u32 i = 0; i < memsize/sizeof(BASEBLOCK); i++)
+	for (int i = 0; i < memsize/(int)sizeof(uptr); i++)
 		base[i].SetFnptr((uptr)JITCompile);
 }
 
@@ -539,12 +489,15 @@ static void recThrowHardwareDeficiency( const wxChar* extFail )
 
 static void recReserveCache()
 {
-	if (!recMem) recMem = new RecompiledCodeReserve(L"R5900-32 Recompiler Cache", s04);
+	if (!recMem) recMem = new RecompiledCodeReserve(L"R5900-32 Recompiler Cache", _16mb);
 	recMem->SetProfilerName("EErec");
 
 	while (!recMem->IsOk())
 	{
-		if (recMem->Reserve( (u8*)((uptr)memReserve_iR5900A+s00+s01+s02+s03) , s04) != NULL) break;
+		sptr requestedSize = m_ConfiguredCacheReserve * _1mb;
+		sptr actualSize = sizeof(HostMemoryMap::EErec);
+		pxAssert(requestedSize <= actualSize);
+		if (recMem->Assign((void*)HostMemoryMap::EErec, std::min(requestedSize, actualSize)) != NULL) break;
 
 		// If it failed, then try again (if possible):
 		if (m_ConfiguredCacheReserve < 16) break;
@@ -566,11 +519,6 @@ static void recReserve()
 
 static void recAlloc()
 {
-    if (s00+s01+s02+s03+s04+s05 > IR5900A_MEM_SIZE)
-    {
-        pxAssert(0); // static mem allocation changed
-    }
-    
 	if (!recRAMCopy)
 	{
 		recRAMCopy = (u8*)_aligned_malloc(Ps2MemSize::MainRam, 4096);
@@ -578,7 +526,7 @@ static void recAlloc()
 
 	if (!recLutReserve_RAM)
 	{
-        recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
+		recLutReserve_RAM = (u8*)_aligned_malloc(recLutSize, 4096);
 	}
 
 	BASEBLOCK* basepos = (BASEBLOCK*)recLutReserve_RAM;
@@ -925,30 +873,25 @@ void SetBranchReg( u32 reg )
 //				xMOV(ptr[&cpuRegs.pc], eax);
 //			}
 //		}
-        #ifdef __M_X86_64
-		  _allocX86reg(rsi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-		  _eeMoveGPRtoR(rsi, reg);
-        #else
-          _allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-		  _eeMoveGPRtoR(esi, reg);
-        #endif
+		_allocX86reg(calleeSavedReg2d, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		_eeMoveGPRtoR(calleeSavedReg2d, reg);
 
 		if (EmuConfig.Gamefixes.GoemonTlbHack) {
-			xMOV(ecx, esi);
+			xMOV(ecxd, calleeSavedReg2d);
 			vtlb_DynV2P();
-			xMOV(esi, eax);
+			xMOV(calleeSavedReg2d, eaxd);
 		}
 
 		recompileNextInstruction(1);
 
-		if( x86regs[esi.GetId()].inuse ) {
-			pxAssert( x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
-			xMOV(ptr[&cpuRegs.pc], esi);
-			x86regs[esi.GetId()].inuse = 0;
+		if( x86regs[calleeSavedReg2d.GetId()].inuse ) {
+			pxAssert( x86regs[calleeSavedReg2d.GetId()].type == X86TYPE_PCWRITEBACK );
+			xMOV(ptr[&cpuRegs.pc], calleeSavedReg2d);
+			x86regs[calleeSavedReg2d.GetId()].inuse = 0;
 		}
 		else {
-			xMOV(eax, ptr[&g_recWriteback]);
-			xMOV(ptr[&cpuRegs.pc], eax);
+			xMOV(eaxd, ptr[&g_recWriteback]);
+			xMOV(ptr[&cpuRegs.pc], eaxd);
 		}
 	}
 
@@ -970,12 +913,7 @@ void SetBranchImm( u32 imm )
 
 	// end the current block
 	iFlushCall(FLUSH_EVERYTHING);
-    #ifdef __M_X86_64
-      xMOV(eax, imm);
-      xMOV(ptr[&cpuRegs.pc], eax);
-	#else
-      xMOV(ptr32[&cpuRegs.pc], imm);
-    #endif
+	xMOV(ptr32[&cpuRegs.pc], imm);
 	iBranchTest(imm);
 }
 
@@ -1004,16 +942,10 @@ void LoadBranchState()
 
 void iFlushCall(int flushtype)
 {
-    // Free registers that are not saved across function calls (x86-32 ABI):
-    #ifdef __M_X86_64
-      _freeX86reg(rax);
-	  _freeX86reg(rcx);
-	  _freeX86reg(rdx);
-    #else
-      _freeX86reg(eax);
-	  _freeX86reg(ecx);
-	  _freeX86reg(edx);
-    #endif
+	// Free registers that are not saved across function calls (x86-32 ABI):
+	_freeX86reg(eaxd);
+	_freeX86reg(ecxd);
+	_freeX86reg(edxd);
 
 	if ((flushtype & FLUSH_PC) && !g_cpuFlushedPC) {
 		xMOV(ptr32[&cpuRegs.pc], pc);
@@ -1114,33 +1046,35 @@ static void iBranchTest(u32 newpc)
 	//    cpuRegs.cycle += blockcycles;
 	//    if( cpuRegs.cycle > g_nextEventCycle ) { DoEvents(); }
 
+	if (EmuCmp::mode != EmuCmp::Config::Mode::Off
+		&& EmuCmp::granularity == EmuCmp::Config::Granularity::BasicBlock)
+	{
+		iFlushCall(FLUSH_FREE_XMM);
+		xFastCall((void*)EmuCmp::cmpR5900, cpuRegs.pc);
+	}
+
 	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && newpc == s_branchTo)
 	{
-		xMOV(eax, ptr32[&g_nextEventCycle]);
+		xMOV(eaxd, ptr32[&g_nextEventCycle]);
 		xADD(ptr32[&cpuRegs.cycle], scaleblockcycles());
-		xCMP(eax, ptr32[&cpuRegs.cycle]);
-		xCMOVS(eax, ptr32[&cpuRegs.cycle]);
-		xMOV(ptr32[&cpuRegs.cycle], eax);
+		xCMP(eaxd, ptr32[&cpuRegs.cycle]);
+		xCMOVS(eaxd, ptr32[&cpuRegs.cycle]);
+		xMOV(ptr32[&cpuRegs.cycle], eaxd);
 
 		xJMP( (void*)DispatcherEvent );
 	}
 	else
 	{
-		xMOV(eax, ptr[&cpuRegs.cycle]);
-		xADD(eax, scaleblockcycles());
-		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
-
-        xSUB(eax, ptr[&g_nextEventCycle]);
-
+		xMOV(eaxd, ptr[&cpuRegs.cycle]);
+		xADD(eaxd, scaleblockcycles());
+		xMOV(ptr[&cpuRegs.cycle], eaxd); // update cycles
+		xSUB(eaxd, ptr[&g_nextEventCycle]);
 
 		if (newpc == 0xffffffff)
-		{
 			xJS( DispatcherReg );
-		}
 		else
-		{
 			recBlocks.Link(HWADDR(newpc), xJcc32(Jcc_Signed));
-		}
+
 		xJMP( (void*)DispatcherEvent );
 	}
 }
@@ -1267,24 +1201,16 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	iFlushCall(FLUSH_EVERYTHING|FLUSH_PC);
 
 	// compute accessed address
-    #ifdef __M_X86_64
-	  _eeMoveGPRtoR(rcx, (op >> 21) & 0x1F);
-    #else
-      _eeMoveGPRtoR(ecx, (op >> 21) & 0x1F);
-    #endif
+	_eeMoveGPRtoR(ecxd, (op >> 21) & 0x1F);
 	if ((s16)op != 0)
-		xADD(ecx, (s16)op);
+		xADD(ecxd, (s16)op);
 	if (bits == 128)
-		xAND(ecx, ~0x0F);
+		xAND(ecxd, ~0x0F);
 
-    #ifdef __M_X86_64
-	  xFastCall((void*)standardizeBreakpointAddress, rcx);
-    #else
-      xFastCall((void*)standardizeBreakpointAddress, ecx);
-    #endif
-	xMOV(ecx,eax);
-	xMOV(edx,eax);
-	xADD(edx,bits/8);
+	xFastCall((void*)standardizeBreakpointAddress, ecxd);
+	xMOV(ecxd,eaxd);
+	xMOV(edxd,eaxd);
+	xADD(edxd,bits/8);
 
 	// ecx = access address
 	// edx = access address+size
@@ -1301,22 +1227,18 @@ void recMemcheck(u32 op, u32 bits, bool store)
 
 		// logic: memAddress < bpEnd && bpStart < memAddress+memSize
 
-		xMOV(eax,standardizeBreakpointAddress(checks[i].end));
-		xCMP(ecx,eax);				// address < end
+		xMOV(eaxd,standardizeBreakpointAddress(checks[i].end));
+		xCMP(ecxd,eaxd);				// address < end
 		xForwardJGE8 next1;			// if address >= end then goto next1
 
-		xMOV(eax,standardizeBreakpointAddress(checks[i].start));
-		xCMP(eax,edx);				// start < address+size
+		xMOV(eaxd,standardizeBreakpointAddress(checks[i].start));
+		xCMP(eaxd,edxd);				// start < address+size
 		xForwardJGE8 next2;			// if start >= address+size then goto next2
 
 		// hit the breakpoint
 		if (checks[i].result & MEMCHECK_LOG) {
-			xMOV(edx, store);
-            #ifdef __M_X86_64
-			  xFastCall((void*)dynarecMemLogcheck, rcx, rdx);
-            #else
-              xFastCall((void*)dynarecMemLogcheck, ecx, edx);
-            #endif
+			xMOV(edxd, store);
+			xFastCall((void*)dynarecMemLogcheck, ecxd, edxd);
 		}
 		if (checks[i].result & MEMCHECK_BREAK) {
 			xFastCall((void*)dynarecMemcheck);
@@ -1385,7 +1307,14 @@ void recompileNextInstruction(int delayslot)
 	if( IsDevBuild )
 		xNOP();
 	if( IsDebugBuild )
-		xMOV(eax, pc);
+		xMOV(eaxd, pc);
+
+	if (EmuCmp::mode != EmuCmp::Config::Mode::Off
+		&& EmuCmp::granularity == EmuCmp::Config::Granularity::Instruction)
+	{
+		iFlushCall(FLUSH_FREE_XMM);
+		xFastCall((void*)EmuCmp::cmpR5900, pc);
+	}
 
 	cpuRegs.code = *(int *)s_pCode;
 
@@ -1619,8 +1548,8 @@ static void memory_protect_recompiled_code(u32 startpc, u32 size)
 			break;
 
         case ProtMode_Manual:
-			xMOV( ecx, inpage_ptr );
-			xMOV( edx, inpage_sz / 4 );
+			xMOV( arg1regd, inpage_ptr );
+			xMOV( arg2regd, inpage_sz / 4 );
 			//xMOV( eax, startpc );		// uncomment this to access startpc (as eax) in dyna_block_discard
 
 			u32 lpc = inpage_ptr;
@@ -1692,8 +1621,8 @@ bool skipMPEG_By_Pattern(u32 sPC) {
 		if (memRead32(sPC+8) != p2) return 0;
 		xMOV(ptr32[&cpuRegs.GPR.n.v0.UL[0]], 1);
 		xMOV(ptr32[&cpuRegs.GPR.n.v0.UL[1]], 0);
-		xMOV(eax, ptr32[&cpuRegs.GPR.n.ra.UL[0]]);
-		xMOV(ptr32[&cpuRegs.pc], eax);
+		xMOV(eaxd, ptr32[&cpuRegs.GPR.n.ra.UL[0]]);
+		xMOV(ptr32[&cpuRegs.pc], eaxd);
 		iBranchTest();
 		g_branch = 1;
 		pc = s_nEndBlock;
@@ -1831,7 +1760,7 @@ static void __fastcall recRecompile( const u32 startpc )
 			// Game will unmap some virtual addresses. If a constant address were hardcoded in the block, we would be in a bad situation.
 			eeRecNeedsReset = true;
 			// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
-			xFastCall((void*)GoemonUnloadTlb, ptr[&cpuRegs.GPR.n.a0.UL[0]]);
+			xFastCall((void*)GoemonUnloadTlb, ptr32[&cpuRegs.GPR.n.a0.UL[0]]);
 		}
 	}
 
@@ -2189,7 +2118,7 @@ StartRecomp:
 			{
 				xMOV( ptr32[&cpuRegs.pc], pc );
 				xADD( ptr32[&cpuRegs.cycle], scaleblockcycles() );
-                recBlocks.Link( HWADDR(pc), xJcc32() );
+				recBlocks.Link( HWADDR(pc), xJcc32() );
 			}
 		}
 	}

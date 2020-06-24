@@ -61,7 +61,7 @@ void recWritebackHILO(int info, int writed, int upper)
 	u8 testlive = upper?EEINST_LIVE2:EEINST_LIVE0;
 
 	if( g_pCurInstInfo->regs[XMMGPR_HI] & testlive )
-		xMOV(ecx, edx);
+		xMOV(ecxd, edxd);
 
 	if( g_pCurInstInfo->regs[XMMGPR_LO] & testlive ) {
 
@@ -76,8 +76,8 @@ void recWritebackHILO(int info, int writed, int upper)
 		}
 
 		xCDQ();
-		xMOV(ptr[(void*)(loaddr)], eax);
-		xMOV(ptr[(void*)(loaddr+4)], edx);
+		xMOV(ptr[(void*)(loaddr)], eaxd);
+		xMOV(ptr[(void*)(loaddr+4)], edxd);
 		savedlo = 1;
 	}
 
@@ -99,8 +99,8 @@ void recWritebackHILO(int info, int writed, int upper)
 			_deleteEEreg(_Rd_, 0);
 
 			if( !savedlo ) xCDQ();
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eaxd);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edxd);
 		}
 	}
 
@@ -115,9 +115,9 @@ void recWritebackHILO(int info, int writed, int upper)
 			reghi = -1;
 		}
 
-		xMOV(ptr[(void*)(hiaddr)], ecx);
-		xSAR(ecx, 31);
-		xMOV(ptr[(void*)(hiaddr+4)], ecx);
+		xMOV(ptr[(void*)(hiaddr)], ecxd);
+		xSAR(ecxd, 31);
+		xMOV(ptr[(void*)(hiaddr+4)], ecxd);
 	}
 }
 
@@ -174,15 +174,15 @@ void recMULTUsuper(int info, int upper, int process);
 void recMULTsuper(int info, int upper, int process)
 {
 	if( process & PROCESS_CONSTS ) {
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rs_].UL[0] );
 		xMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	}
 	else if( process & PROCESS_CONSTT) {
-		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rt_].UL[0] );
 		xMUL(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 	}
 	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 		xMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	}
 
@@ -218,15 +218,15 @@ void recMULTU_const()
 void recMULTUsuper(int info, int upper, int process)
 {
 	if( process & PROCESS_CONSTS ) {
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rs_].UL[0] );
 		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	}
 	else if( process & PROCESS_CONSTT) {
-		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rt_].UL[0] );
 		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 	}
 	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	}
 
@@ -332,52 +332,52 @@ void recDIV_const()
 void recDIVsuper(int info, int sign, int upper, int process)
 {
 	if( process & PROCESS_CONSTT )
-		xMOV(ecx, g_cpuConstRegs[_Rt_].UL[0] );
+		xMOV(ecxd, g_cpuConstRegs[_Rt_].UL[0] );
 	else
-		xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+		xMOV(ecxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 
 	if( process & PROCESS_CONSTS )
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rs_].UL[0] );
 	else
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 
 	u8 *end1;
 	if (sign)  //test for overflow (x86 will just throw an exception)
 	{
-		xCMP(eax, 0x80000000 );
+		xCMP(eaxd, 0x80000000 );
 		u8 *cont1 = JNE8(0);
-		xCMP(ecx, 0xffffffff );
+		xCMP(ecxd, 0xffffffff );
 		u8 *cont2 = JNE8(0);
 		//overflow case:
-		xXOR(edx, edx); //EAX remains 0x80000000
+		xXOR(edxd, edxd); //EAX remains 0x80000000
 		end1 = JMP8(0);
 
 		x86SetJ8(cont1);
 		x86SetJ8(cont2);
 	}
 
-	xCMP(ecx, 0 );
+	xCMP(ecxd, 0 );
 	u8 *cont3 = JNE8(0);
 	//divide by zero
-	xMOV(edx, eax);
+	xMOV(edxd, eaxd);
 	if (sign) //set EAX to (EAX < 0)?1:-1
 	{
-		xSAR(eax, 31 ); //(EAX < 0)?-1:0
-		xSHL(eax, 1 ); //(EAX < 0)?-2:0
-		xNOT(eax); //(EAX < 0)?1:-1
+		xSAR(eaxd, 31 ); //(EAX < 0)?-1:0
+		xSHL(eaxd, 1 ); //(EAX < 0)?-2:0
+		xNOT(eaxd); //(EAX < 0)?1:-1
 	}
 	else
-		xMOV(eax, 0xffffffff );
+		xMOV(eaxd, 0xffffffff );
 	u8 *end2 = JMP8(0);
 
 	x86SetJ8(cont3);
 	if( sign ) {
 		xCDQ();
-		xDIV(ecx);
+		xDIV(ecxd);
 	}
 	else {
-		xXOR(edx, edx);
-		xUDIV(ecx);
+		xXOR(edxd, edxd);
+		xUDIV(ecxd);
 	}
 
 	if (sign) x86SetJ8( end1 );
@@ -495,25 +495,25 @@ void recMADD()
 		_deleteEEreg(XMMGPR_HI, 1);
 
 		// dadd
-		xMOV(eax, ptr[&cpuRegs.LO.UL[ 0 ] ]);
-		xMOV(ecx, ptr[&cpuRegs.HI.UL[ 0 ] ]);
-		xADD(eax, (u32)result&0xffffffff );
-		xADC(ecx, (u32)(result>>32) );
+		xMOV(eaxd, ptr[&cpuRegs.LO.UL[ 0 ] ]);
+		xMOV(ecxd, ptr[&cpuRegs.HI.UL[ 0 ] ]);
+		xADD(eaxd, (u32)result&0xffffffff );
+		xADC(ecxd, (u32)(result>>32) );
 		xCDQ();
 		if( _Rd_) {
 			_eeOnWriteReg(_Rd_, 1);
 			_deleteEEreg(_Rd_, 0);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eaxd);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edxd);
 		}
 
-		xMOV(ptr[&cpuRegs.LO.UL[0]], eax);
-		xMOV(ptr[&cpuRegs.LO.UL[1]], edx);
+		xMOV(ptr[&cpuRegs.LO.UL[0]], eaxd);
+		xMOV(ptr[&cpuRegs.LO.UL[1]], edxd);
 
-		xMOV(ptr[&cpuRegs.HI.UL[0]], ecx);
-		xMOV(eax, ecx);
+		xMOV(ptr[&cpuRegs.HI.UL[0]], ecxd);
+		xMOV(eaxd, ecxd);
 		xCDQ();
-		xMOV(ptr[&cpuRegs.HI.UL[1]], edx);
+		xMOV(ptr[&cpuRegs.HI.UL[1]], edxd);
 		return;
 	}
 
@@ -523,36 +523,36 @@ void recMADD()
 	_deleteGPRtoXMMreg(_Rt_, 1);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rs_].UL[0] );
 		xMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	}
 	else if ( GPR_IS_CONST1(_Rt_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rt_].UL[0] );
 		xMUL(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 	}
 	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 		xMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	}
 
-	xMOV(ecx, edx);
-	xADD(eax, ptr[&cpuRegs.LO.UL[0] ]);
-	xADC(ecx, ptr[&cpuRegs.HI.UL[0] ]);
+	xMOV(ecxd, edxd);
+	xADD(eaxd, ptr[&cpuRegs.LO.UL[0] ]);
+	xADC(ecxd, ptr[&cpuRegs.HI.UL[0] ]);
 	xCDQ();
 	if( _Rd_ ) {
 		_eeOnWriteReg(_Rd_, 1);
 		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eaxd);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edxd);
 	}
 
-	xMOV(ptr[&cpuRegs.LO.UL[0]], eax);
-	xMOV(ptr[&cpuRegs.LO.UL[1]], edx);
+	xMOV(ptr[&cpuRegs.LO.UL[0]], eaxd);
+	xMOV(ptr[&cpuRegs.LO.UL[1]], edxd);
 
-	xMOV(ptr[&cpuRegs.HI.UL[0]], ecx);
-	xMOV(eax, ecx);
+	xMOV(ptr[&cpuRegs.HI.UL[0]], ecxd);
+	xMOV(eaxd, ecxd);
 	xCDQ();
-	xMOV(ptr[&cpuRegs.HI.UL[1]], edx);
+	xMOV(ptr[&cpuRegs.HI.UL[1]], edxd);
 }
 
 //static PCSX2_ALIGNED16(u32 s_MaddMask[]) = { 0x80000000, 0, 0x80000000, 0 };
@@ -565,25 +565,25 @@ void recMADDU()
 		_deleteEEreg(XMMGPR_HI, 1);
 
 		// dadd
-		xMOV(eax, ptr[&cpuRegs.LO.UL[ 0 ] ]);
-		xMOV(ecx, ptr[&cpuRegs.HI.UL[ 0 ] ]);
-		xADD(eax, (u32)result&0xffffffff );
-		xADC(ecx, (u32)(result>>32) );
+		xMOV(eaxd, ptr[&cpuRegs.LO.UL[ 0 ] ]);
+		xMOV(ecxd, ptr[&cpuRegs.HI.UL[ 0 ] ]);
+		xADD(eaxd, (u32)result&0xffffffff );
+		xADC(ecxd, (u32)(result>>32) );
 		xCDQ();
 		if( _Rd_) {
 			_eeOnWriteReg(_Rd_, 1);
 			_deleteEEreg(_Rd_, 0);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eaxd);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edxd);
 		}
 
-		xMOV(ptr[&cpuRegs.LO.UL[0]], eax);
-		xMOV(ptr[&cpuRegs.LO.UL[1]], edx);
+		xMOV(ptr[&cpuRegs.LO.UL[0]], eaxd);
+		xMOV(ptr[&cpuRegs.LO.UL[1]], edxd);
 
-		xMOV(ptr[&cpuRegs.HI.UL[0]], ecx);
-		xMOV(eax, ecx);
+		xMOV(ptr[&cpuRegs.HI.UL[0]], ecxd);
+		xMOV(eaxd, ecxd);
 		xCDQ();
-		xMOV(ptr[&cpuRegs.HI.UL[1]], edx);
+		xMOV(ptr[&cpuRegs.HI.UL[1]], edxd);
 		return;
 	}
 
@@ -593,36 +593,36 @@ void recMADDU()
 	_deleteGPRtoXMMreg(_Rt_, 1);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rs_].UL[0] );
 		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	}
 	else if ( GPR_IS_CONST1(_Rt_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rt_].UL[0] );
 		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 	}
 	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	}
 
-	xMOV(ecx, edx);
-	xADD(eax, ptr[&cpuRegs.LO.UL[0] ]);
-	xADC(ecx, ptr[&cpuRegs.HI.UL[0] ]);
+	xMOV(ecxd, edxd);
+	xADD(eaxd, ptr[&cpuRegs.LO.UL[0] ]);
+	xADC(ecxd, ptr[&cpuRegs.HI.UL[0] ]);
 	xCDQ();
 	if( _Rd_ ) {
 		_eeOnWriteReg(_Rd_, 1);
 		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eaxd);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edxd);
 	}
 
-	xMOV(ptr[&cpuRegs.LO.UL[0]], eax);
-	xMOV(ptr[&cpuRegs.LO.UL[1]], edx);
+	xMOV(ptr[&cpuRegs.LO.UL[0]], eaxd);
+	xMOV(ptr[&cpuRegs.LO.UL[1]], edxd);
 
-	xMOV(ptr[&cpuRegs.HI.UL[0]], ecx);
-	xMOV(eax, ecx);
+	xMOV(ptr[&cpuRegs.HI.UL[0]], ecxd);
+	xMOV(eaxd, ecxd);
 	xCDQ();
-	xMOV(ptr[&cpuRegs.HI.UL[1]], edx);
+	xMOV(ptr[&cpuRegs.HI.UL[1]], edxd);
 }
 
 void recMADD1()
@@ -633,25 +633,25 @@ void recMADD1()
 		_deleteEEreg(XMMGPR_HI, 1);
 
 		// dadd
-		xMOV(eax, ptr[&cpuRegs.LO.UL[ 2 ] ]);
-		xMOV(ecx, ptr[&cpuRegs.HI.UL[ 2 ] ]);
-		xADD(eax, (u32)result&0xffffffff );
-		xADC(ecx, (u32)(result>>32) );
+		xMOV(eaxd, ptr[&cpuRegs.LO.UL[ 2 ] ]);
+		xMOV(ecxd, ptr[&cpuRegs.HI.UL[ 2 ] ]);
+		xADD(eaxd, (u32)result&0xffffffff );
+		xADC(ecxd, (u32)(result>>32) );
 		xCDQ();
 		if( _Rd_) {
 			_eeOnWriteReg(_Rd_, 1);
 			_deleteEEreg(_Rd_, 0);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eaxd);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edxd);
 		}
 
-		xMOV(ptr[&cpuRegs.LO.UL[2]], eax);
-		xMOV(ptr[&cpuRegs.LO.UL[3]], edx);
+		xMOV(ptr[&cpuRegs.LO.UL[2]], eaxd);
+		xMOV(ptr[&cpuRegs.LO.UL[3]], edxd);
 
-		xMOV(ptr[&cpuRegs.HI.UL[2]], ecx);
-		xMOV(eax, ecx);
+		xMOV(ptr[&cpuRegs.HI.UL[2]], ecxd);
+		xMOV(eaxd, ecxd);
 		xCDQ();
-		xMOV(ptr[&cpuRegs.HI.UL[3]], edx);
+		xMOV(ptr[&cpuRegs.HI.UL[3]], edxd);
 		return;
 	}
 
@@ -661,36 +661,36 @@ void recMADD1()
 	_deleteGPRtoXMMreg(_Rt_, 1);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rs_].UL[0] );
 		xMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	}
 	else if ( GPR_IS_CONST1(_Rt_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rt_].UL[0] );
 		xMUL(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 	}
 	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 		xMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	}
 
-	xMOV(ecx, edx);
-	xADD(eax, ptr[&cpuRegs.LO.UL[2] ]);
-	xADC(ecx, ptr[&cpuRegs.HI.UL[2] ]);
+	xMOV(ecxd, edxd);
+	xADD(eaxd, ptr[&cpuRegs.LO.UL[2] ]);
+	xADC(ecxd, ptr[&cpuRegs.HI.UL[2] ]);
 	xCDQ();
 	if( _Rd_ ) {
 		_eeOnWriteReg(_Rd_, 1);
 		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eaxd);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edxd);
 	}
 
-	xMOV(ptr[&cpuRegs.LO.UL[2]], eax);
-	xMOV(ptr[&cpuRegs.LO.UL[3]], edx);
+	xMOV(ptr[&cpuRegs.LO.UL[2]], eaxd);
+	xMOV(ptr[&cpuRegs.LO.UL[3]], edxd);
 
-	xMOV(ptr[&cpuRegs.HI.UL[2]], ecx);
-	xMOV(eax, ecx);
+	xMOV(ptr[&cpuRegs.HI.UL[2]], ecxd);
+	xMOV(eaxd, ecxd);
 	xCDQ();
-	xMOV(ptr[&cpuRegs.HI.UL[3]], edx);
+	xMOV(ptr[&cpuRegs.HI.UL[3]], edxd);
 }
 
 //static PCSX2_ALIGNED16(u32 s_MaddMask[]) = { 0x80000000, 0, 0x80000000, 0 };
@@ -703,25 +703,25 @@ void recMADDU1()
 		_deleteEEreg(XMMGPR_HI, 1);
 
 		// dadd
-		xMOV(eax, ptr[&cpuRegs.LO.UL[ 2 ] ]);
-		xMOV(ecx, ptr[&cpuRegs.HI.UL[ 2 ] ]);
-		xADD(eax, (u32)result&0xffffffff );
-		xADC(ecx, (u32)(result>>32) );
+		xMOV(eaxd, ptr[&cpuRegs.LO.UL[ 2 ] ]);
+		xMOV(ecxd, ptr[&cpuRegs.HI.UL[ 2 ] ]);
+		xADD(eaxd, (u32)result&0xffffffff );
+		xADC(ecxd, (u32)(result>>32) );
 		xCDQ();
 		if( _Rd_) {
 			_eeOnWriteReg(_Rd_, 1);
 			_deleteEEreg(_Rd_, 0);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eaxd);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edxd);
 		}
 
-		xMOV(ptr[&cpuRegs.LO.UL[2]], eax);
-		xMOV(ptr[&cpuRegs.LO.UL[3]], edx);
+		xMOV(ptr[&cpuRegs.LO.UL[2]], eaxd);
+		xMOV(ptr[&cpuRegs.LO.UL[3]], edxd);
 
-		xMOV(ptr[&cpuRegs.HI.UL[2]], ecx);
-		xMOV(eax, ecx);
+		xMOV(ptr[&cpuRegs.HI.UL[2]], ecxd);
+		xMOV(eaxd, ecxd);
 		xCDQ();
-		xMOV(ptr[&cpuRegs.HI.UL[3]], edx);
+		xMOV(ptr[&cpuRegs.HI.UL[3]], edxd);
 		return;
 	}
 
@@ -731,36 +731,36 @@ void recMADDU1()
 	_deleteGPRtoXMMreg(_Rt_, 1);
 
 	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rs_].UL[0] );
 		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	}
 	else if ( GPR_IS_CONST1(_Rt_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
+		xMOV(eaxd, g_cpuConstRegs[_Rt_].UL[0] );
 		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 	}
 	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 	}
 
-	xMOV(ecx, edx);
-	xADD(eax, ptr[&cpuRegs.LO.UL[2] ]);
-	xADC(ecx, ptr[&cpuRegs.HI.UL[2] ]);
+	xMOV(ecxd, edxd);
+	xADD(eaxd, ptr[&cpuRegs.LO.UL[2] ]);
+	xADC(ecxd, ptr[&cpuRegs.HI.UL[2] ]);
 	xCDQ();
 	if( _Rd_ ) {
 		_eeOnWriteReg(_Rd_, 1);
 		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eaxd);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edxd);
 	}
 
-	xMOV(ptr[&cpuRegs.LO.UL[2]], eax);
-	xMOV(ptr[&cpuRegs.LO.UL[3]], edx);
+	xMOV(ptr[&cpuRegs.LO.UL[2]], eaxd);
+	xMOV(ptr[&cpuRegs.LO.UL[3]], edxd);
 
-	xMOV(ptr[&cpuRegs.HI.UL[2]], ecx);
-	xMOV(eax, ecx);
+	xMOV(ptr[&cpuRegs.HI.UL[2]], ecxd);
+	xMOV(eaxd, ecxd);
 	xCDQ();
-	xMOV(ptr[&cpuRegs.HI.UL[3]], edx);
+	xMOV(ptr[&cpuRegs.HI.UL[3]], edxd);
 }
 
 

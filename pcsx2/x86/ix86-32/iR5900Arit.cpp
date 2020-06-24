@@ -67,9 +67,9 @@ void recADD_constv(int info, int creg, u32 vreg)
 
 	s32 cval = g_cpuConstRegs[creg].SL[0];
 
-	xMOV(eax, ptr32[&cpuRegs.GPR.r[vreg].SL[0]]);
+	xMOV(eaxd, ptr32[&cpuRegs.GPR.r[vreg].SL[0]]);
 	if (cval)
-		xADD(eax, cval);
+		xADD(eaxd, cval);
 	eeSignExtendTo(_Rd_, _Rd_ == vreg && !cval);
 }
 
@@ -90,11 +90,11 @@ void recADD_(int info)
 {
 	pxAssert( !(info&PROCESS_EE_XMM) );
 
-	xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rs_].SL[0]]);
+	xMOV(eaxd, ptr32[&cpuRegs.GPR.r[_Rs_].SL[0]]);
 	if (_Rs_ == _Rt_)
-		xADD(eax, eax);
+		xADD(eaxd, eaxd);
 	else
-		xADD(eax, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
+		xADD(eaxd, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
 	eeSignExtendTo(_Rd_);
 }
 
@@ -124,14 +124,14 @@ void recDADD_constv(int info, int creg, u32 vreg)
 		xADD(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], cval.SL[0]);
 		xADC(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], cval.SL[1]);
 	} else {
-		xMOV(eax, ptr32[&cpuRegs.GPR.r[vreg].SL[0]]);
-		xMOV(edx, ptr32[&cpuRegs.GPR.r[vreg].SL[1]]);
+		xMOV(eaxd, ptr32[&cpuRegs.GPR.r[vreg].SL[0]]);
+		xMOV(edxd, ptr32[&cpuRegs.GPR.r[vreg].SL[1]]);
 		if (cval.SD[0]) {
-			xADD(eax, cval.SL[0]);
-			xADC(edx, cval.SL[1]);
+			xADD(eaxd, cval.SL[0]);
+			xADC(edxd, cval.SL[1]);
 		}
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
+		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eaxd);
+		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edxd);
 	}
 }
 
@@ -153,30 +153,30 @@ void recDADD_(int info)
 	if (_Rd_ == _Rt_)
 		rs = _Rt_, rt = _Rs_;
 
-	xMOV(eax, ptr32[&cpuRegs.GPR.r[rt].SL[0]]);
+	xMOV(eaxd, ptr32[&cpuRegs.GPR.r[rt].SL[0]]);
 
 	if (_Rd_ == _Rs_ && _Rs_ == _Rt_) {
-		xSHLD(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], eax, 1);
+		xSHLD(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], eaxd, 1);
 		xSHL(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], 1);
 		return;
 	}
 
-	xMOV(edx, ptr32[&cpuRegs.GPR.r[rt].SL[1]]);
+	xMOV(edxd, ptr32[&cpuRegs.GPR.r[rt].SL[1]]);
 
 	if (_Rd_ == rs) {
-		xADD(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-		xADC(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
+		xADD(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eaxd);
+		xADC(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edxd);
 		return;
 	} else if (rs == rt) {
-		xADD(eax, eax);
-		xADC(edx, edx);
+		xADD(eaxd, eaxd);
+		xADC(edxd, edxd);
 	} else {
-		xADD(eax, ptr32[&cpuRegs.GPR.r[rs].SL[0]]);
-		xADC(edx, ptr32[&cpuRegs.GPR.r[rs].SL[1]]);
+		xADD(eaxd, ptr32[&cpuRegs.GPR.r[rs].SL[0]]);
+		xADC(edxd, ptr32[&cpuRegs.GPR.r[rs].SL[1]]);
 	}
 
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
+	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eaxd);
+	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edxd);
 }
 
 EERECOMPILE_CODE0(DADD, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
@@ -200,8 +200,8 @@ void recSUB_consts(int info)
 
 	s32 sval = g_cpuConstRegs[_Rs_].SL[0];
 
-	xMOV(eax, sval);
-	xSUB(eax, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
+	xMOV(eaxd, sval);
+	xSUB(eaxd, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
 	eeSignExtendTo(_Rd_);
 }
 
@@ -211,9 +211,9 @@ void recSUB_constt(int info)
 
 	s32 tval = g_cpuConstRegs[_Rt_].SL[0];
 
-	xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rs_].SL[0]]);
+	xMOV(eaxd, ptr32[&cpuRegs.GPR.r[_Rs_].SL[0]]);
 	if (tval)
-		xSUB(eax, tval);
+		xSUB(eaxd, tval);
 	eeSignExtendTo(_Rd_, _Rd_ == _Rs_ && !tval);
 }
 
@@ -227,8 +227,8 @@ void recSUB_(int info)
 		return;
 	}
 
-	xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rs_].SL[0]]);
-	xSUB(eax, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
+	xMOV(eaxd, ptr32[&cpuRegs.GPR.r[_Rs_].SL[0]]);
+	xSUB(eaxd, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
 	eeSignExtendTo(_Rd_);
 }
 
@@ -248,6 +248,7 @@ void recDSUB_const()
 
 void recDSUB_consts(int info)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info&PROCESS_EE_XMM) );
 
 	GPR_reg64 sval = g_cpuConstRegs[_Rs_];
@@ -264,18 +265,19 @@ void recDSUB_consts(int info)
 		xNEG(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]]);
 		return;
 	} else {
-		xMOV(eax, sval.SL[0]);
-		xMOV(edx, sval.SL[1]);
+		xMOV(eaxd, sval.SL[0]);
+		xMOV(edxd, sval.SL[1]);
 	}
 
-	xSUB(eax, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
-	xSBB(edx, ptr32[&cpuRegs.GPR.r[_Rt_].SL[1]]);
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
+	xSUB(eaxd, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
+	xSBB(edxd, ptr32[&cpuRegs.GPR.r[_Rt_].SL[1]]);
+	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eaxd);
+	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edxd);
 }
 
 void recDSUB_constt(int info)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info&PROCESS_EE_XMM) );
 
 	GPR_reg64 tval = g_cpuConstRegs[_Rt_];
@@ -284,36 +286,37 @@ void recDSUB_constt(int info)
 		xSUB(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], tval.SL[0]);
 		xSBB(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], tval.SL[1]);
 	} else {
-		xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rs_].SL[0]]);
-		xMOV(edx, ptr32[&cpuRegs.GPR.r[_Rs_].SL[1]]);
+		xMOV(eaxd, ptr32[&cpuRegs.GPR.r[_Rs_].SL[0]]);
+		xMOV(edxd, ptr32[&cpuRegs.GPR.r[_Rs_].SL[1]]);
 		if (tval.SD[0]) {
-			xSUB(eax, tval.SL[0]);
-			xSBB(edx, tval.SL[1]);
+			xSUB(eaxd, tval.SL[0]);
+			xSBB(edxd, tval.SL[1]);
 		}
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
+		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eaxd);
+		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edxd);
 	}
 }
 
 void recDSUB_(int info)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info&PROCESS_EE_XMM) );
 
 	if (_Rs_ == _Rt_) {
 		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], 0);
 		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], 0);
 	} else if (_Rd_ == _Rs_) {
-		xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
-		xMOV(edx, ptr32[&cpuRegs.GPR.r[_Rt_].SL[1]]);
-		xSUB(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-		xSBB(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
+		xMOV(eaxd, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
+		xMOV(edxd, ptr32[&cpuRegs.GPR.r[_Rt_].SL[1]]);
+		xSUB(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eaxd);
+		xSBB(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edxd);
 	} else {
-		xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rs_].SL[0]]);
-		xMOV(edx, ptr32[&cpuRegs.GPR.r[_Rs_].SL[1]]);
-		xSUB(eax, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
-		xSBB(edx, ptr32[&cpuRegs.GPR.r[_Rt_].SL[1]]);
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eax);
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edx);
+		xMOV(eaxd, ptr32[&cpuRegs.GPR.r[_Rs_].SL[0]]);
+		xMOV(edxd, ptr32[&cpuRegs.GPR.r[_Rs_].SL[1]]);
+		xSUB(eaxd, ptr32[&cpuRegs.GPR.r[_Rt_].SL[0]]);
+		xSBB(edxd, ptr32[&cpuRegs.GPR.r[_Rt_].SL[1]]);
+		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[0]], eaxd);
+		xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].SL[1]], edxd);
 	}
 }
 
@@ -333,6 +336,7 @@ void recAND_const()
 
 void recAND_constv(int info, int creg, u32 vreg)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
 	GPR_reg64 cval = g_cpuConstRegs[creg];
@@ -344,10 +348,10 @@ void recAND_constv(int info, int creg, u32 vreg)
 			if (cval.SL[i] != -1)
 				xAND(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], cval.UL[i]);
 		} else {
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
+			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
 			if (cval.SL[i] != -1)
-				xAND(eax, cval.UL[i]);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+				xAND(eaxd, cval.UL[i]);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eaxd);
 		}
 	}
 }
@@ -364,6 +368,7 @@ void recAND_constt(int info)
 
 void recAND_(int info)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
 	u32 rs = _Rs_, rt = _Rt_;
@@ -374,13 +379,13 @@ void recAND_(int info)
 		if (_Rd_ == rs) {
 			if (rs == rt)
 				continue;
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xAND(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
+			xAND(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eaxd);
 		} else {
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
+			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
 			if (rs != rt)
-				xAND(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+				xAND(eaxd, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eaxd);
 		}
 	}
 }
@@ -395,6 +400,7 @@ void recOR_const()
 
 void recOR_constv(int info, int creg, u32 vreg)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
 	GPR_reg64 cval = g_cpuConstRegs[creg];
@@ -406,10 +412,10 @@ void recOR_constv(int info, int creg, u32 vreg)
 			if (cval.UL[i])
 				xOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], cval.UL[i]);
 		} else {
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
+			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
 			if (cval.UL[i])
-				xOR(eax, cval.UL[i]);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+				xOR(eaxd, cval.UL[i]);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eaxd);
 		}
 	}
 }
@@ -426,6 +432,7 @@ void recOR_constt(int info)
 
 void recOR_(int info)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
 	u32 rs = _Rs_, rt = _Rt_;
@@ -436,13 +443,13 @@ void recOR_(int info)
 		if (_Rd_ == rs) {
 			if (rs == rt)
 				continue;
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
+			xOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eaxd);
 		} else {
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
+			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
 			if (rs != rt)
-				xOR(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+				xOR(eaxd, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eaxd);
 		}
 	}
 }
@@ -457,6 +464,7 @@ void recXOR_const()
 
 void recXOR_constv(int info, int creg, u32 vreg)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
 	GPR_reg64 cval = g_cpuConstRegs[creg];
@@ -466,10 +474,10 @@ void recXOR_constv(int info, int creg, u32 vreg)
 			if (cval.UL[i])
 				xXOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], cval.UL[i]);
 		} else {
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
+			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
 			if (cval.UL[i])
-				xXOR(eax, cval.UL[i]);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+				xXOR(eaxd, cval.UL[i]);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eaxd);
 		}
 	}
 }
@@ -486,6 +494,7 @@ void recXOR_constt(int info)
 
 void recXOR_(int info)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
 	u32 rs = _Rs_, rt = _Rt_;
@@ -496,12 +505,12 @@ void recXOR_(int info)
 		if (rs == rt) {
 			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], 0);
 		} else if (_Rd_ == rs) {
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xXOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
+			xXOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eaxd);
 		} else {
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
-			xXOR(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
+			xXOR(eaxd, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eaxd);
 		}
 	}
 }
@@ -516,6 +525,7 @@ void recNOR_const()
 
 void recNOR_constv(int info, int creg, u32 vreg)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
 	GPR_reg64 cval = g_cpuConstRegs[creg];
@@ -526,11 +536,11 @@ void recNOR_constv(int info, int creg, u32 vreg)
 				xOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], cval.UL[i]);
 			xNOT(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]]);
 		} else {
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
+			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
 			if (cval.UL[i])
-				xOR(eax, cval.UL[i]);
-			xNOT(eax);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+				xOR(eaxd, cval.UL[i]);
+			xNOT(eaxd);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eaxd);
 		}
 	}
 }
@@ -547,6 +557,7 @@ void recNOR_constt(int info)
 
 void recNOR_(int info)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
 	u32 rs = _Rs_, rt = _Rt_;
@@ -559,15 +570,15 @@ void recNOR_(int info)
 				xNOT(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]]);
 				continue;
 			}
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
+			xOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eaxd);
 			xNOT(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]]);
 		} else {
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
+			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
 			if (rs != rt)
-				xOR(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xNOT(eax);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+				xOR(eaxd, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
+			xNOT(eaxd);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eaxd);
 		}
 	}
 }
@@ -582,11 +593,13 @@ void recSLT_const()
 
 void recSLTs_const(int info, int sign, int st)
 {
+	// TODO: Use 64-bit math on x86-64
+	// TODO: Try cmov on x86-64
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
 	GPR_reg64 cval = g_cpuConstRegs[st ? _Rt_ : _Rs_];
 
-	xMOV(eax, 1);
+	xMOV(eaxd, 1);
 
 	xCMP(ptr32[&cpuRegs.GPR.r[st ? _Rs_ : _Rt_].UL[1]], cval.UL[1]);
 	xForwardJump8 pass1(st ? (sign ? Jcc_Less : Jcc_Below) : (sign ? Jcc_Greater : Jcc_Above));
@@ -596,37 +609,39 @@ void recSLTs_const(int info, int sign, int st)
 		xForwardJump8 pass2(st ? Jcc_Below : Jcc_Above);
 
 		fail.SetTarget();
-		xMOV(eax, 0);
+		xMOV(eaxd, 0);
 		pass2.SetTarget();
 	}
 	pass1.SetTarget();
 
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[0]], eaxd);
 	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[1]], 0);
 }
 
 void recSLTs_(int info, int sign)
 {
+	// TODO: Use 64-bit math on x86-64
+	// TODO: Try cmov on x86-64
 	pxAssert( !(info & PROCESS_EE_XMM) );
 
-	xMOV(eax, 1);
+	xMOV(eaxd, 1);
 
-	xMOV(edx, ptr32[&cpuRegs.GPR.r[_Rs_].UL[1]]);
-	xCMP(edx, ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]]);
+	xMOV(edxd, ptr32[&cpuRegs.GPR.r[_Rs_].UL[1]]);
+	xCMP(edxd, ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]]);
 	xForwardJump8 pass1(sign ? Jcc_Less : Jcc_Below);
 	xForwardJump8 fail(sign ? Jcc_Greater : Jcc_Above);
 	{
-		xMOV(edx, ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-		xCMP(edx, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+		xMOV(edxd, ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+		xCMP(edxd, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 		xForwardJump8 pass2(Jcc_Below);
 
 		fail.SetTarget();
-		xMOV(eax, 0);
+		xMOV(eaxd, 0);
 		pass2.SetTarget();
 	}
 	pass1.SetTarget();
 
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[0]], eaxd);
 	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[1]], 0);
 }
 

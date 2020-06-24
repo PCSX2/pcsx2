@@ -174,6 +174,7 @@ void _flushConstReg(int reg)
 
 void _flushConstRegs()
 {
+	// TODO: Use 64-bit ops on x86-64
 	s32 zero_cnt = 0, minusone_cnt = 0;
 	s32 eaxval = 1; // 0, -1
 	u32 done[4] = {0, 0, 0, 0};
@@ -188,11 +189,11 @@ void _flushConstRegs()
 		if (g_cpuConstRegs[i].SL[j] != 0) continue;
 
 		if (eaxval != 0) {
-			xXOR(eax, eax);
+			xXOR(eaxd, eaxd);
 			eaxval = 0;
 		}
 
-		xMOV(ptr[&cpuRegs.GPR.r[i].SL[j]], eax);
+		xMOV(ptr[&cpuRegs.GPR.r[i].SL[j]], eaxd);
 		done[j] |= 1<<i;
 		zero_cnt++;
 	}
@@ -204,15 +205,15 @@ void _flushConstRegs()
 		if (g_cpuConstRegs[i].SL[j] != -1) continue;
 
 		if (eaxval > 0) {
-			xXOR(eax, eax);
+			xXOR(eaxd, eaxd);
 			eaxval = 0;
 		}
 		if (eaxval == 0) {
-			xNOT(eax);
+			xNOT(eaxd);
 			eaxval = -1;
 		}
 
-		xMOV(ptr[&cpuRegs.GPR.r[i].SL[j]], eax);
+		xMOV(ptr[&cpuRegs.GPR.r[i].SL[j]], eaxd);
 		done[j + 2] |= 1<<i;
 		minusone_cnt++;
 	}
@@ -239,15 +240,21 @@ void _flushConstRegs()
 	}
 }
 
-int _allocX86reg(xRegisterLong x86reg, int type, int reg, int mode)
+int _allocX86reg(xRegisterEmpty x86reg, int type, int reg, int mode)
+{
+	return _allocX86reg(xRegister32(x86reg), type, reg, mode);
+}
+
+int _allocX86reg(xRegister64 x86reg, int type, int reg, int mode)
+{
+	return _allocX86reg(xRegister32(x86reg.Id), type, reg, mode);
+}
+
+int _allocX86reg(xRegister32 x86reg, int type, int reg, int mode)
 {
 	uint i;
 	pxAssertDev( reg >= 0 && reg < 32, "Register index out of bounds." );
-    #ifdef __M_X86_64
-	  pxAssertDev( x86reg != rsp && x86reg != rbp, "Allocation of RSP/RBP is not allowed!" );
-    #else
-      pxAssertDev( x86reg != esp && x86reg != ebp, "Allocation of ESP/EBP is not allowed!" );
-    #endif
+	pxAssertDev( x86reg != espd && x86reg != ebpd, "Allocation of ESP/EBP is not allowed!" );
 
 	// don't alloc EAX and ESP,EBP if MODE_NOFRAME
 	int oldmode = mode;
@@ -317,7 +324,7 @@ int _allocX86reg(xRegisterLong x86reg, int type, int reg, int mode)
 	}
 
 	if (x86reg.IsEmpty())
-		x86reg = xRegisterLong(_getFreeX86reg(oldmode));
+		x86reg = xRegister32(_getFreeX86reg(oldmode));
 	else
 		_freeX86reg(x86reg);
 
@@ -444,7 +451,7 @@ void _deleteX86reg(int type, int reg, int flush)
 }
 
 // Temporary solution to support eax/ebx... type
-void _freeX86reg(const x86Emitter::xRegisterLong& x86reg)
+void _freeX86reg(const x86Emitter::xRegister32& x86reg)
 {
 	_freeX86reg(x86reg.GetId());
 }
@@ -479,5 +486,5 @@ void _signExtendSFtoM(uptr mem)
 	xLAHF();
 	xSAR(ax, 15);
 	xCWDE();
-	xMOV(ptr[(void*)(mem)], eax);
+	xMOV(ptr[(void*)(mem)], eaxd);
 }

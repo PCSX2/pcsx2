@@ -37,31 +37,6 @@
 
 #include "Utilities/Perf.h"
 
-#define s_uptr sizeof(uptr)
-static const uint m_recBlockAllocSize = (((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK));
-__aligned16 psxRegisters psxRegs;
-static u8 __pagealigned memReserve_iR3000A[_128mb];
-
-//uptr psxRecLUT[0x10000];
-static uptr* psxRecLUT = (uptr*)memReserve_iR3000A;
-#define s00 _64kb*s_uptr
-
-//uptr psxhwLUT[0x10000];
-static uptr* psxhwLUT  = (uptr*)((uptr)memReserve_iR3000A+s00);
-#define s01 _64kb*s_uptr
-
-// m_recBlockAlloc = (u8*)_aligned_malloc( m_recBlockAllocSize, 4096 );
-static u8* m_recBlockAlloc = (u8*)((uptr)memReserve_iR3000A+s00+s01);
-#define s02 m_recBlockAllocSize
-
-// Recompiled code buffer for EE recompiler dispatchers
-static u8* iopRecDispatchers = (u8*)((uptr)memReserve_iR3000A+s00+s01+s02);
-#define s03 _16kb*s_uptr
-
-//static RecompiledCodeReserve* recMem;
-#define s04 _2mb*s_uptr
-
-
 using namespace x86Emitter;
 
 extern u32 g_iopNextEventCycle;
@@ -69,6 +44,9 @@ extern void psxBREAK();
 
 u32 g_psxMaxRecMem = 0;
 u32 s_psxrecblocks[] = {0};
+
+uptr psxRecLUT[0x10000];
+u32 psxhwLUT[0x10000];
 
 static __fi u32 HWADDR(u32 mem) { return psxhwLUT[mem >> 16] + mem; }
 
@@ -122,6 +100,9 @@ static u32 psxdump = 0;
 
 static void __fastcall iopRecRecompile( const u32 startpc );
 
+// Recompiled code buffer for EE recompiler dispatchers!
+static u8 __pagealigned iopRecDispatchers[__pagesize];
+
 typedef void DynGenFunc();
 
 static DynGenFunc* iopDispatcherEvent		= NULL;
@@ -140,35 +121,19 @@ static void recEventTest()
 // dispatches to the recompiled block address.
 static DynGenFunc* _DynGen_JITCompile()
 {
-    pxAssertMsg( iopDispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
+	pxAssertMsg( iopDispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
 
-    u8* retval = xGetPtr();
+	u8* retval = xGetPtr();
 
-    xFastCall((void*)iopRecRecompile, ptr[&psxRegs.pc] );
-    
-    #ifdef __M_X86_64
-      xMOV( rax, 0 );
-      xMOV( eax, ptr[&psxRegs.pc] );
-	  xMOV( rbx, rax );
-	  xSHR( rax, 16 );
-      xSHL( rbx, 1 );
-      xSHL( rax, 3 );
-      xMOV( rcx, rax );
-      xMOV64( rax, (uptr)psxRecLUT); 
-      xADD( rcx, rax );
-      xMOV( rcx, ptr[rcx] );
-      xADD( rcx, rbx );
-      xMOV( rcx, ptr[rcx] );
-      xJMP( rcx );
-    #else
-      xMOV( eax, ptr[&psxRegs.pc] );
-	  xMOV( ebx, eax );
-	  xSHR( eax, 16 );
-	  xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
-	  xJMP( ptr32[ecx+ebx] );
-    #endif
+	xFastCall((void*)iopRecRecompile, ptr32[&psxRegs.pc] );
 
-    return (DynGenFunc*)retval;
+	xMOV( eax, ptr[&psxRegs.pc] );
+	xMOV( ebx, eax );
+	xSHR( eax, 16 );
+	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
+	xJMP( ptr32[ecx+ebx] );
+
+	return (DynGenFunc*)retval;
 }
 
 static DynGenFunc* _DynGen_JITCompileInBlock()
@@ -183,27 +148,11 @@ static DynGenFunc* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr();
 
-    #ifdef __M_X86_64
-      xMOV( rax, 0 );
-      xMOV( eax, ptr[&psxRegs.pc] );
-	  xMOV( rbx, rax );
-	  xSHR( rax, 16 );
-      xSHL( rbx, 1 );
-      xSHL( rax, 3 );
-      xMOV( rcx, rax );
-      xMOV64( rax, (uptr)psxRecLUT); 
-      xADD( rcx, rax );
-      xMOV( rcx, ptr[rcx] );
-      xADD( rcx, rbx );
-      xMOV( rcx, ptr[rcx] );
-      xJMP( rcx );
-    #else
-      xMOV( eax, ptr[&psxRegs.pc] );
-	  xMOV( ebx, eax );
-	  xSHR( eax, 16 );
-	  xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
-	  xJMP( ptr32[ecx+ebx] );
-    #endif
+	xMOV( eax, ptr[&psxRegs.pc] );
+	xMOV( ebx, eax );
+	xSHR( eax, 16 );
+	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
+	xJMP( ptr32[ecx+ebx] );
 
 	return (DynGenFunc*)retval;
 }
@@ -240,7 +189,7 @@ static DynGenFunc* _DynGen_EnterRecompiledCode()
 static void _DynGen_Dispatchers()
 {
 	// In case init gets called multiple times:
-	HostSys::MemProtect( iopRecDispatchers, s03, PageAccess_ReadWrite() );
+	HostSys::MemProtectStatic( iopRecDispatchers, PageAccess_ReadWrite() );
 
 	// clear the buffer to 0xcc (easier debugging).
 	memset( iopRecDispatchers, 0xcc, __pagesize);
@@ -257,7 +206,7 @@ static void _DynGen_Dispatchers()
 	iopJITCompileInBlock	= _DynGen_JITCompileInBlock();
 	iopEnterRecompiledCode	= _DynGen_EnterRecompiledCode();
 
-	HostSys::MemProtect( iopRecDispatchers, s03, PageAccess_ExecOnly() );
+	HostSys::MemProtectStatic( iopRecDispatchers, PageAccess_ExecOnly() );
 
 	recBlocks.SetJITCompile( iopJITCompile );
 
@@ -480,15 +429,9 @@ void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr)
 void _psxFlushCall(int flushtype)
 {
 	// x86-32 ABI : These registers are not preserved across calls:
-    #ifdef __M_X86_64
-	  _freeX86reg( rax );
-	  _freeX86reg( rcx );
-	  _freeX86reg( rdx );
-    #else
-	  _freeX86reg( eax );
-	  _freeX86reg( ecx );
-	  _freeX86reg( edx );
-    #endif
+	_freeX86reg( eaxd );
+	_freeX86reg( ecxd );
+	_freeX86reg( edxd );
 
 	if( flushtype & FLUSH_CACHED_REGS )
 		_psxFlushConstRegs();
@@ -676,6 +619,10 @@ void psxRecompileCodeConst3(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 }
 
 static uptr m_ConfiguredCacheReserve = 32;
+static u8* m_recBlockAlloc = NULL;
+
+static const uint m_recBlockAllocSize =
+	(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK));
 
 static void recReserveCache()
 {
@@ -684,7 +631,10 @@ static void recReserveCache()
 
 	while (!recMem->IsOk())
 	{
-        if (recMem->Reserve( (u8*)((uptr)memReserve_iR3000A+s00+s01+s02+s03) , s04) != NULL) break;
+		uptr requestedSize = m_ConfiguredCacheReserve * _1mb;
+		uptr actualSize = sizeof(HostMemoryMap::IOPrec);
+		pxAssert(requestedSize <= actualSize);
+		if (recMem->Assign((void*)HostMemoryMap::IOPrec, std::min(requestedSize, actualSize)) != NULL) break;
 
 		// If it failed, then try again (if possible):
 		if (m_ConfiguredCacheReserve < 4) break;
@@ -906,14 +856,8 @@ void psxSetBranchReg(u32 reg)
 	psxbranch = 1;
 
 	if( reg != 0xffffffff ) {
-        #ifdef __M_X86_64
-		  _allocX86reg(rsi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-          _psxMoveGPRtoR(rsi, reg);
-        #else
-          _allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-          _psxMoveGPRtoR(esi, reg);
-        #endif
-		
+		_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		_psxMoveGPRtoR(esi, reg);
 
 		psxRecompileNextInstruction(1);
 
@@ -936,7 +880,7 @@ void psxSetBranchReg(u32 reg)
 
 		#ifdef PCSX2_DEBUG
 		xForwardJNZ8 skipAssert;
-		xWrite8( x86_Opcode_INT3 );
+		xWrite8( 0xcc );
 		skipAssert.SetTarget();
 		#endif
 	}
@@ -953,17 +897,11 @@ void psxSetBranchImm( u32 imm )
 	pxAssert( imm );
 
 	// end the current block
-	#ifdef __M_X86_64
-	  xMOV( eax, imm);
-	  xMOV(ptr[&psxRegs.pc], eax );
-	#else
-	  xMOV(ptr32[&psxRegs.pc], imm );
-	#endif
+	xMOV(ptr32[&psxRegs.pc], imm );
 	_psxFlushCall(FLUSH_EVERYTHING);
 	iPsxBranchTest(imm, imm <= psxpc);
-    
-    recBlocks.Link(HWADDR(imm), xJcc32());
-    
+
+	recBlocks.Link(HWADDR(imm), xJcc32());
 }
 
 static __fi u32 psxScaleBlockCycles()
@@ -1000,49 +938,28 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 		}
 	}
 	else
-    {
-        xMOV(eax, ptr[&psxRegs.cycle]);
-        xADD(eax, blockCycles);
+	{
+		xMOV(eax, ptr32[&psxRegs.cycle]);
+		xADD(eax, blockCycles);
+		xMOV(ptr32[&psxRegs.cycle], eax); // update cycles
 
-        // jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
-        
-        #ifdef __M_X86_64
-          xMOV(ptr[&psxRegs.cycle], eax); // update cycles
-          xMOV(ebx, blockCycles*8 );
-          xSUB(eax, ebx);
-          xMOV(ptr[&iopCycleEE], eax);
-          xJLE(iopExitRecompiledCode);
+		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
+		xSUB(ptr32[&iopCycleEE], blockCycles*8);
+		xJLE(iopExitRecompiledCode);
 
-          // check if an event is pending
-          xMOV(ebx, eax);
-          xMOV(eax, ptr[&g_iopNextEventCycle]);
-          xSUB(ebx, eax);
-        #else
-          xMOV(ptr32[&psxRegs.cycle], eax); // update cycles
-          xSUB(ptr32[&iopCycleEE], blockCycles*8);
-          xJLE(iopExitRecompiledCode);
+		// check if an event is pending
+		xSUB(eax, ptr32[&g_iopNextEventCycle]);
+		xForwardJS<u8> nointerruptpending;
 
-          // check if an event is pending
-          xSUB(eax, ptr32[&g_iopNextEventCycle]);
-        #endif
+		xFastCall((void*)iopEventTest);
 
-        xForwardJS<u8> nointerruptpending;
+		if( newpc != 0xffffffff ) {
+			xCMP(ptr32[&psxRegs.pc], newpc);
+			xJNE(iopDispatcherReg);
+		}
 
-        xFastCall((void*)iopEventTest);
-
-        if( newpc != 0xffffffff ) {
-          #ifdef __M_X86_64
-            xMOV( eax, ptr[&psxRegs.pc]);
-            xMOV( ebx, newpc);
-            xCMP( eax, ebx);
-          #else
-            xCMP(ptr32[&psxRegs.pc], newpc);
-          #endif
-          xJNE(iopDispatcherReg);
-        }
-
-        nointerruptpending.SetTarget();
-    }
+		nointerruptpending.SetTarget();
+	}
 }
 
 #if 0
@@ -1366,8 +1283,7 @@ StartRecomp:
 			pxAssert( psxpc == s_nEndBlock );
 			_psxFlushCall(FLUSH_EVERYTHING);
 			xMOV(ptr32[&psxRegs.pc], psxpc);
-            recBlocks.Link(HWADDR(s_nEndBlock), xJcc32() );
-			
+			recBlocks.Link(HWADDR(s_nEndBlock), xJcc32() );
 			psxbranch = 3;
 		}
 	}

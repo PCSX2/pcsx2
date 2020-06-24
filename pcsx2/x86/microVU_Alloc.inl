@@ -24,10 +24,10 @@
 //------------------------------------------------------------------
 
 __fi static const x32& getFlagReg(uint fInst)
-{/*
+{
 	static const x32* const gprFlags[4] = { &gprF0, &gprF1, &gprF2, &gprF3 };
 	pxAssert(fInst < 4);
-	return *gprFlags[fInst];*/
+	return *gprFlags[fInst];
 }
 
 __fi void setBitSFLAG(const x32& reg, const x32& regT, int bitTest, int bitSet)
@@ -72,19 +72,19 @@ __ri void mVUallocSFLAGc(const x32& reg, const x32& regT, int fInstance)
 
 // Denormalizes Status Flag
 __ri void mVUallocSFLAGd(u32* memAddr) {
-	xMOV(edx, ptr32[memAddr]);
-	xMOV(eax, edx);
-	xSHR(eax, 3);
-	xAND(eax, 0x18);
+	xMOV(edxd, ptr32[memAddr]);
+	xMOV(eaxd, edxd);
+	xSHR(eaxd, 3);
+	xAND(eaxd, 0x18);
 
-	xMOV(ecx, edx);
-	xSHL(ecx, 11);
-	xAND(ecx, 0x1800);
-	xOR (eax, ecx);
+	xMOV(ecxd, edxd);
+	xSHL(ecxd, 11);
+	xAND(ecxd, 0x1800);
+	xOR (eaxd, ecxd);
 
-	xSHL(edx, 14);
-	xAND(edx, 0x3cf0000);
-	xOR (eax, edx);
+	xSHL(edxd, 14);
+	xAND(edxd, 0x3cf0000);
+	xOR (eaxd, edxd);
 }
 
 __fi void mVUallocMFLAGa(mV, const x32& reg, int fInstance)

@@ -423,6 +423,8 @@ struct Pcsx2Config
 				ShowDebuggerOnStart	:1;
 			bool
 				AlignMemoryWindowStart :1;
+			bool
+				EmuCmpCorrections :1;
 		BITFIELD_END
 
 		u8 FontWidth;
@@ -430,6 +432,8 @@ struct Pcsx2Config
 		u32 WindowWidth;
 		u32 WindowHeight;
 		u32 MemoryViewBytesPerRow;
+		wxString EmuCmpHost;
+		u8 EmuCmpGranularity; // See EmuCmp.h for valid values
 
 		DebugOptions();
 		void LoadSave( IniInterface& conf );

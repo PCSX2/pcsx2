@@ -35,6 +35,19 @@ typedef  void __fastcall vtlbMemW32FP(u32 addr,mem32_t data);
 typedef  void __fastcall vtlbMemW64FP(u32 addr,const mem64_t* data);
 typedef  void __fastcall vtlbMemW128FP(u32 addr,const mem128_t* data);
 
+template <size_t Width, bool Write> struct vtlbMemFP;
+
+template<> struct vtlbMemFP<  8, false> { typedef vtlbMemR8FP   fn; static const uptr Index = 0; };
+template<> struct vtlbMemFP< 16, false> { typedef vtlbMemR16FP  fn; static const uptr Index = 1; };
+template<> struct vtlbMemFP< 32, false> { typedef vtlbMemR32FP  fn; static const uptr Index = 2; };
+template<> struct vtlbMemFP< 64, false> { typedef vtlbMemR64FP  fn; static const uptr Index = 3; };
+template<> struct vtlbMemFP<128, false> { typedef vtlbMemR128FP fn; static const uptr Index = 4; };
+template<> struct vtlbMemFP<  8,  true> { typedef vtlbMemW8FP   fn; static const uptr Index = 0; };
+template<> struct vtlbMemFP< 16,  true> { typedef vtlbMemW16FP  fn; static const uptr Index = 1; };
+template<> struct vtlbMemFP< 32,  true> { typedef vtlbMemW32FP  fn; static const uptr Index = 2; };
+template<> struct vtlbMemFP< 64,  true> { typedef vtlbMemW64FP  fn; static const uptr Index = 3; };
+template<> struct vtlbMemFP<128,  true> { typedef vtlbMemW128FP fn; static const uptr Index = 4; };
+
 typedef u32 vtlbHandler;
 
 extern void vtlb_Core_Alloc();
@@ -98,10 +111,17 @@ class VtlbMemoryReserve
 protected:
 	VirtualMemoryReserve	m_reserve;
 
+	virtual bool IsSizeOK(size_t size) { return true; }
+	virtual void DidAssign(void *mem) {}
 public:
-	VtlbMemoryReserve( const wxString& name, size_t size );
+	VtlbMemoryReserve( const wxString& name );
 
-	void Reserve( VirtualMemoryManagerPtr allocator, sptr offset );
+	void Assign( void *ptr, size_t size );
+
+	template <typename T, typename = typename std::enable_if<std::is_trivial<T>::value>::type>
+	void Assign(T& t) {
+		Assign((void*)&t, sizeof(T));
+	}
 
 	virtual void Commit();
 	virtual void Reset();
@@ -117,11 +137,11 @@ class eeMemoryReserve : public VtlbMemoryReserve
 {
 	typedef VtlbMemoryReserve _parent;
 
+	bool IsSizeOK(size_t size) override;
 public:
 	eeMemoryReserve();
 	~eeMemoryReserve();
 
-	void Reserve(VirtualMemoryManagerPtr allocator);
 	void Commit() override;
 	void Decommit() override;
 	void Reset() override;
@@ -134,10 +154,10 @@ class iopMemoryReserve : public VtlbMemoryReserve
 {
 	typedef VtlbMemoryReserve _parent;
 
+	bool IsSizeOK(size_t size) override;
 public:
 	iopMemoryReserve();
 
-	void Reserve(VirtualMemoryManagerPtr allocator);
 	void Commit() override;
 	void Decommit() override;
 	void Reset() override;
@@ -150,20 +170,17 @@ class vuMemoryReserve : public VtlbMemoryReserve
 {
 	typedef VtlbMemoryReserve _parent;
 
+	bool IsSizeOK(size_t size) override;
+	void DidAssign(void *mem) override;
 public:
 	vuMemoryReserve();
 	~vuMemoryReserve();
-
-	void Reserve(VirtualMemoryManagerPtr allocator);
 
 	void Reset() override;
 };
 
 namespace vtlb_private
 {
-
-}
-
 	static const uint VTLB_PAGE_BITS = 12;
 	static const uint VTLB_PAGE_MASK = 4095;
 	static const uint VTLB_PAGE_SIZE = 4096;
@@ -176,6 +193,59 @@ namespace vtlb_private
 
 	static const uptr POINTER_SIGN_BIT = 1ULL << (sizeof(uptr) * 8 - 1);
 
+	struct VTLBPhysical
+	{
+	private:
+		sptr value;
+		explicit VTLBPhysical(sptr value): value(value) { }
+	public:
+		VTLBPhysical(): value(0) {}
+		/// Create from a pointer to raw memory
+		static VTLBPhysical fromPointer(void *ptr) { return fromPointer((sptr)ptr); }
+		/// Create from an integer representing a pointer to raw memory
+		static VTLBPhysical fromPointer(sptr ptr);
+		/// Create from a handler and address
+		static VTLBPhysical fromHandler(vtlbHandler handler);
+
+		/// Get the raw value held by the entry
+		uptr raw() const { return value; }
+		/// Returns whether or not this entry is a handler
+		bool isHandler() const { return value < 0; }
+		/// Assumes the entry is a pointer, giving back its value
+		uptr assumePtr() const { return value; }
+		/// Assumes the entry is a handler, and gets the raw handler ID
+		u8 assumeHandler() const { return value; }
+	};
+
+	struct VTLBVirtual
+	{
+	private:
+		uptr value;
+		explicit VTLBVirtual(uptr value): value(value) { }
+	public:
+		VTLBVirtual(): value(0) {}
+		VTLBVirtual(VTLBPhysical phys, u32 paddr, u32 vaddr);
+		static VTLBVirtual fromPointer(uptr ptr, u32 vaddr) {
+			return VTLBVirtual(VTLBPhysical::fromPointer(ptr), 0, vaddr);
+		}
+
+		/// Get the raw value held by the entry
+		uptr raw() const { return value; }
+		/// Returns whether or not this entry is a handler
+		bool isHandler(u32 vaddr) const { return (sptr)(value + vaddr) < 0; }
+		/// Assumes the entry is a pointer, giving back its value
+		uptr assumePtr(u32 vaddr) const { return value + vaddr; }
+		/// Assumes the entry is a handler, and gets the raw handler ID
+		u8 assumeHandlerGetID() const { return value; }
+		/// Assumes the entry is a handler, and gets the physical address
+		u32 assumeHandlerGetPAddr(u32 vaddr) const { return (value + vaddr - assumeHandlerGetID()) & ~POINTER_SIGN_BIT; }
+		/// Assumes the entry is a handler, returning it as a void*
+		void *assumeHandlerGetRaw(int index, bool write) const;
+		/// Assumes the entry is a handler, returning it
+		template <size_t Width, bool Write>
+		typename vtlbMemFP<Width, Write>::fn *assumeHandler() const;
+	};
+
 	struct MapData
 	{
 		// first indexer -- 8/16/32/64/128 bit tables [values 0-4]
@@ -183,9 +253,9 @@ namespace vtlb_private
 		// third indexer -- 128 possible handlers!
 		void* RWFT[5][2][VTLB_HANDLER_ITEMS];
 
-		sptr pmap[VTLB_PMAP_ITEMS]; //512KB // PS2 physical to x86 physical
+		VTLBPhysical pmap[VTLB_PMAP_ITEMS]; //512KB // PS2 physical to x86 physical
 
-		sptr* vmap;                //4MB (allocated by vtlb_init) // PS2 virtual to x86 physical
+		VTLBVirtual* vmap;                //4MB (allocated by vtlb_init) // PS2 virtual to x86 physical
 
 		u32* ppmap;               //4MB (allocated by vtlb_init) // PS2 virtual to PS2 physical
 
@@ -197,6 +267,19 @@ namespace vtlb_private
 	};
 
 	extern __aligned(64) MapData vtlbdata;
+
+	inline void *VTLBVirtual::assumeHandlerGetRaw(int index, bool write) const
+	{
+		return vtlbdata.RWFT[index][write][assumeHandlerGetID()];
+	}
+
+	template <size_t Width, bool Write>
+	typename vtlbMemFP<Width, Write>::fn *VTLBVirtual::assumeHandler() const
+	{
+		using FP = vtlbMemFP<Width, Write>;
+		return (typename FP::fn *)assumeHandlerGetRaw(FP::Index, Write);
+	}
+}
 
 // --------------------------------------------------------------------------------------
 //  Goemon game fix

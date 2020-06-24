@@ -336,9 +336,20 @@ public:
             xWrite8(0x66);
     }
 
-    void xWriteImm(uptr imm) const
-    {
+    int GetImmSize() const {
         switch (GetOperandSize()) {
+            case 1: return 1;
+            case 2: return 2;
+            case 4: return 4;
+            case 8: return 4; // Only mov's take 64-bit immediates
+                jNO_DEFAULT
+        }
+        return 0;
+    }
+
+    void xWriteImm(int imm) const
+    {
+        switch (GetImmSize()) {
             case 1:
                 xWrite8(imm);
                 break;
@@ -347,9 +358,6 @@ public:
                 break;
             case 4:
                 xWrite32(imm);
-                break;
-            case 8:
-                xWrite64(imm);
                 break;
 
                 jNO_DEFAULT
@@ -605,6 +613,7 @@ public:
 #else
 #define xRegisterLong xRegister32
 #endif
+static const int wordsize = sizeof(sptr);
 
 class xAddressReg : public xRegisterLong
 {
@@ -634,9 +643,9 @@ public:
     bool IsStackPointer() const { return Id == 4; }
 
     xAddressVoid operator+(const xAddressReg &right) const;
-    xAddressVoid operator+(s32 right) const;
+    xAddressVoid operator+(sptr right) const;
     xAddressVoid operator+(const void *right) const;
-    xAddressVoid operator-(s32 right) const;
+    xAddressVoid operator-(sptr right) const;
     xAddressVoid operator-(const void *right) const;
     xAddressVoid operator*(int factor) const;
     xAddressVoid operator<<(u32 shift) const;
@@ -656,6 +665,11 @@ struct xRegisterEmpty
     operator xRegister16() const
     {
         return xRegister16(xRegId_Empty);
+    }
+
+    operator xRegister32() const
+    {
+        return xRegister32(xRegId_Empty);
     }
 
     operator xRegisterSSE() const
@@ -759,13 +773,16 @@ extern const xAddressReg
     r8, r9, r10, r11,
     r12, r13, r14, r15;
 
-#ifdef __M_X86_64
-extern const xRegister32
-#else
 extern const xAddressReg
-#endif
     eax, ebx, ecx, edx,
     esi, edi, ebp, esp;
+
+// Temporary registers to aid the move to x86-64
+extern const xRegister32
+    eaxd, ebxd, ecxd, edxd,
+    esid, edid, ebpd, espd,
+     r8d,  r9d, r10d, r11d,
+    r12d, r13d, r14d, r15d;
 
 extern const xRegister16
     ax, bx, cx, dx,
@@ -776,12 +793,17 @@ extern const xRegister8
     ah, ch, dh, bh;
 
 extern const xAddressReg
-#ifdef __M_X86_64
     arg1reg, arg2reg,
-    arg3reg, arg4reg;
-#else
-    arg1reg, arg2reg;
-#endif
+    arg3reg, arg4reg,
+    calleeSavedReg1,
+    calleeSavedReg2;
+
+
+extern const xRegister32
+    arg1regd, arg2regd,
+    calleeSavedReg1d,
+    calleeSavedReg2d;
+
 
 // clang-format on
 
@@ -809,19 +831,19 @@ public:
     xAddressReg Base;  // base register (no scale)
     xAddressReg Index; // index reg gets multiplied by the scale
     int Factor;        // scale applied to the index register, in factor form (not a shift!)
-    s32 Displacement;  // address displacement // 4B max even on 64 bits
+    sptr Displacement;  // address displacement // 4B max even on 64 bits but keep rest for assertions
 
 public:
-    xAddressVoid(const xAddressReg &base, const xAddressReg &index, int factor = 1, s32 displacement = 0);
+    xAddressVoid(const xAddressReg &base, const xAddressReg &index, int factor = 1, sptr displacement = 0);
 
-    xAddressVoid(const xAddressReg &index, int displacement = 0);
+    xAddressVoid(const xAddressReg &index, sptr displacement = 0);
     explicit xAddressVoid(const void *displacement);
-    explicit xAddressVoid(s32 displacement = 0);
+    explicit xAddressVoid(sptr displacement = 0);
 
 public:
     bool IsByteSizeDisp() const { return is_s8(Displacement); }
 
-    xAddressVoid &Add(s32 imm)
+    xAddressVoid &Add(sptr imm)
     {
         Displacement += imm;
         return *this;
@@ -832,13 +854,13 @@ public:
 
     __fi xAddressVoid operator+(const xAddressReg &right) const { return xAddressVoid(*this).Add(right); }
     __fi xAddressVoid operator+(const xAddressVoid &right) const { return xAddressVoid(*this).Add(right); }
-    __fi xAddressVoid operator+(s32 imm) const { return xAddressVoid(*this).Add(imm); }
-    __fi xAddressVoid operator-(s32 imm) const { return xAddressVoid(*this).Add(-imm); }
+    __fi xAddressVoid operator+(sptr imm) const { return xAddressVoid(*this).Add(imm); }
+    __fi xAddressVoid operator-(sptr imm) const { return xAddressVoid(*this).Add(-imm); }
     __fi xAddressVoid operator+(const void *addr) const { return xAddressVoid(*this).Add((uptr)addr); }
 
     __fi void operator+=(const xAddressReg &right) { Add(right); }
-    __fi void operator+=(s32 imm) { Add(imm); }
-    __fi void operator-=(s32 imm) { Add(-imm); }
+    __fi void operator+=(sptr imm) { Add(imm); }
+    __fi void operator-=(sptr imm) { Add(-imm); }
 };
 
 // --------------------------------------------------------------------------------------
@@ -850,7 +872,7 @@ class xAddressInfo : public xAddressVoid
     typedef xAddressVoid _parent;
 
 public:
-    xAddressInfo(const xAddressReg &base, const xAddressReg &index, int factor = 1, s32 displacement = 0)
+    xAddressInfo(const xAddressReg &base, const xAddressReg &index, int factor = 1, sptr displacement = 0)
         : _parent(base, index, factor, displacement)
     {
     }
@@ -858,17 +880,17 @@ public:
     /*xAddressInfo( const xAddressVoid& src )
 			: _parent( src ) {}*/
 
-    explicit xAddressInfo(const xAddressReg &index, int displacement = 0)
+    explicit xAddressInfo(const xAddressReg &index, sptr displacement = 0)
         : _parent(index, displacement)
     {
     }
 
-    explicit xAddressInfo(s32 displacement = 0)
+    explicit xAddressInfo(sptr displacement = 0)
         : _parent(displacement)
     {
     }
 
-    static xAddressInfo<BaseType> FromIndexReg(const xAddressReg &index, int scale = 0, s32 displacement = 0);
+    static xAddressInfo<BaseType> FromIndexReg(const xAddressReg &index, int scale = 0, sptr displacement = 0);
 
 public:
     using _parent::operator+=;
@@ -876,7 +898,7 @@ public:
 
     bool IsByteSizeDisp() const { return is_s8(Displacement); }
 
-    xAddressInfo<BaseType> &Add(s32 imm)
+    xAddressInfo<BaseType> &Add(sptr imm)
     {
         Displacement += imm;
         return *this;
@@ -895,8 +917,8 @@ public:
 
     __fi xAddressInfo<BaseType> operator+(const xAddressReg &right) const { return xAddressInfo(*this).Add(right); }
     __fi xAddressInfo<BaseType> operator+(const xAddressInfo<BaseType> &right) const { return xAddressInfo(*this).Add(right); }
-    __fi xAddressInfo<BaseType> operator+(s32 imm) const { return xAddressInfo(*this).Add(imm); }
-    __fi xAddressInfo<BaseType> operator-(s32 imm) const { return xAddressInfo(*this).Add(-imm); }
+    __fi xAddressInfo<BaseType> operator+(sptr imm) const { return xAddressInfo(*this).Add(imm); }
+    __fi xAddressInfo<BaseType> operator-(sptr imm) const { return xAddressInfo(*this).Add(-imm); }
     __fi xAddressInfo<BaseType> operator+(const void *addr) const { return xAddressInfo(*this).Add((uptr)addr); }
 
     __fi void operator+=(const xAddressInfo<BaseType> &right) { Add(right); }
@@ -913,7 +935,7 @@ static __fi xAddressVoid operator+(const void *addr, const xAddressVoid &right)
     return right + addr;
 }
 
-static __fi xAddressVoid operator+(s32 addr, const xAddressVoid &right)
+static __fi xAddressVoid operator+(sptr addr, const xAddressVoid &right)
 {
     return right + addr;
 }
@@ -926,7 +948,7 @@ static __fi xAddressInfo<OperandType> operator+(const void *addr, const xAddress
 }
 
 template <typename OperandType>
-static __fi xAddressInfo<OperandType> operator+(s32 addr, const xAddressInfo<OperandType> &right)
+static __fi xAddressInfo<OperandType> operator+(sptr addr, const xAddressInfo<OperandType> &right)
 {
     return right + addr;
 }
@@ -991,23 +1013,24 @@ public:
 public:
     explicit xIndirectVoid(sptr disp);
     explicit xIndirectVoid(const xAddressVoid &src);
-    xIndirectVoid(xAddressReg base, xAddressReg index, int scale = 0, s32 displacement = 0);
+    xIndirectVoid(xAddressReg base, xAddressReg index, int scale = 0, sptr displacement = 0);
 
     virtual uint GetOperandSize() const;
-    xIndirectVoid &Add(s32 imm);
+    xIndirectVoid &Add(sptr imm);
 
     bool IsByteSizeDisp() const { return is_s8(Displacement); }
     bool IsMem() const { return true; }
     bool IsReg() const { return false; }
     bool IsExtended() const { return false; } // Non sense but ease template
+    bool IsWide() const { return GetOperandSize() == 8; }
 
     operator xAddressVoid()
     {
         return xAddressVoid(Base, Index, Scale, Displacement);
     }
 
-    __fi xIndirectVoid operator+(const s32 imm) const { return xIndirectVoid(*this).Add(imm); }
-    __fi xIndirectVoid operator-(const s32 imm) const { return xIndirectVoid(*this).Add(-imm); }
+    __fi xIndirectVoid operator+(const sptr imm) const { return xIndirectVoid(*this).Add(imm); }
+    __fi xIndirectVoid operator-(const sptr imm) const { return xIndirectVoid(*this).Add(-imm); }
 
 protected:
     void Reduce();
@@ -1027,21 +1050,21 @@ public:
         : _parent(src)
     {
     }
-    xIndirect(xAddressReg base, xAddressReg index, int scale = 0, s32 displacement = 0)
+    xIndirect(xAddressReg base, xAddressReg index, int scale = 0, sptr displacement = 0)
         : _parent(base, index, scale, displacement)
     {
     }
 
     virtual uint GetOperandSize() const { return sizeof(OperandType); }
 
-    xIndirect<OperandType> &Add(s32 imm)
+    xIndirect<OperandType> &Add(sptr imm)
     {
         Displacement += imm;
         return *this;
     }
 
-    __fi xIndirect<OperandType> operator+(const s32 imm) const { return xIndirect(*this).Add(imm); }
-    __fi xIndirect<OperandType> operator-(const s32 imm) const { return xIndirect(*this).Add(-imm); }
+    __fi xIndirect<OperandType> operator+(const sptr imm) const { return xIndirect(*this).Add(imm); }
+    __fi xIndirect<OperandType> operator-(const sptr imm) const { return xIndirect(*this).Add(-imm); }
 
     bool operator==(const xIndirect<OperandType> &src) const
     {
@@ -1063,6 +1086,11 @@ typedef xIndirect<u64> xIndirect64;
 typedef xIndirect<u32> xIndirect32;
 typedef xIndirect<u16> xIndirect16;
 typedef xIndirect<u8> xIndirect8;
+#ifdef __M_X86_64
+typedef xIndirect<u64> xIndirectNative;
+#else
+typedef xIndirect<u32> xIndirectNative;
+#endif
 
 // --------------------------------------------------------------------------------------
 //  xIndirect64orLess  -  base class 64, 32, 16, and 8 bit operand types
@@ -1105,7 +1133,7 @@ protected:
         : _parent(disp)
     {
     }
-    xIndirect64orLess(xAddressReg base, xAddressReg index, int scale = 0, s32 displacement = 0)
+    xIndirect64orLess(xAddressReg base, xAddressReg index, int scale = 0, sptr displacement = 0)
         : _parent(base, index, scale, displacement)
     {
     }
@@ -1144,6 +1172,7 @@ public:
 // ptr[] - use this form for instructions which can resolve the address operand size from
 // the other register operand sizes.
 extern const xAddressIndexer<xIndirectVoid> ptr;
+extern const xAddressIndexer<xIndirectNative> ptrNative;
 extern const xAddressIndexer<xIndirect128> ptr128;
 extern const xAddressIndexer<xIndirect64> ptr64;
 extern const xAddressIndexer<xIndirect32> ptr32;
@@ -1314,7 +1343,7 @@ static __fi xAddressVoid operator+(const void *addr, const xAddressReg &reg)
     return reg + (sptr)addr;
 }
 
-static __fi xAddressVoid operator+(s32 addr, const xAddressReg &reg)
+static __fi xAddressVoid operator+(sptr addr, const xAddressReg &reg)
 {
     return reg + (sptr)addr;
 }

@@ -117,7 +117,7 @@ void recSetBranchEQ(int info, int bne, int process)
 			if( t0reg != EEREC_S && t0reg != EEREC_T ) _freeXMMreg(t0reg);
 		}
 
-		xMOVMSKPS(eax, xRegisterSSE(t0reg));
+		xMOVMSKPS(eaxd, xRegisterSSE(t0reg));
 
 		_eeFlushAllUnused();
 
@@ -131,102 +131,62 @@ void recSetBranchEQ(int info, int bne, int process)
 
 		_eeFlushAllUnused();
 
-        if( bne ) {
-            if( process & PROCESS_CONSTS ) {
-                #ifdef __M_X86_64
-                  xMOV(eax, ptr[&g_cpuConstRegs[_Rs_].UL[0] ]);
-                  xMOV(ebx,eax);
-                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-                  xCMP(eax, ebx);
-                #else
-                  xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], g_cpuConstRegs[_Rs_].UL[0] );
-                #endif
-                j8Ptr[ 0 ] = JNE8( 0 );
+		if( bne ) {
+			if( process & PROCESS_CONSTS ) {
+				xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], g_cpuConstRegs[_Rs_].UL[0] );
+				j8Ptr[ 0 ] = JNE8( 0 );
 
-                #ifdef __M_X86_64
-                  xMOV(eax, ptr[&g_cpuConstRegs[_Rs_].UL[1] ]);
-                  xMOV(ebx,eax);
-                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
-                  xCMP(eax, ebx);
-                #else
-                  xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], g_cpuConstRegs[_Rs_].UL[1] );
-                #endif
-                j32Ptr[ 1 ] = JE32( 0 );
-            }
-            else if( process & PROCESS_CONSTT ) {
-                #ifdef __M_X86_64
-                  xMOV(eax, ptr[&g_cpuConstRegs[_Rt_].UL[0] ]);
-                  xMOV(ebx,eax);
-                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-                  xCMP(eax, ebx);
-                #else
-                  xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], g_cpuConstRegs[_Rt_].UL[0] );
-                #endif
-                j8Ptr[ 0 ] = JNE8( 0 );
+				xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], g_cpuConstRegs[_Rs_].UL[1] );
+				j32Ptr[ 1 ] = JE32( 0 );
+			}
+			else if( process & PROCESS_CONSTT ) {
+				xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], g_cpuConstRegs[_Rt_].UL[0] );
+				j8Ptr[ 0 ] = JNE8( 0 );
 
-                #ifdef __M_X86_64
-                  xMOV(eax, ptr[&g_cpuConstRegs[_Rt_].UL[1] ]);
-                  xMOV(ebx,eax);
-                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
-                  xCMP(eax, ebx);
-                #else
-                  xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], g_cpuConstRegs[_Rt_].UL[1] );
-                #endif
-                j32Ptr[ 1 ] = JE32( 0 );
-            }
-            else {
-                xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-                #ifdef __M_X86_64
-                  xMOV(ebx,eax);
-                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-                  xCMP(ebx, eax);
-                #else
-                  xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-                #endif
-                j8Ptr[ 0 ] = JNE8( 0 );
+				xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], g_cpuConstRegs[_Rt_].UL[1] );
+				j32Ptr[ 1 ] = JE32( 0 );
+			}
+			else {
+				xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+				xCMP(eaxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+				j8Ptr[ 0 ] = JNE8( 0 );
 
-                xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
-                #ifdef __M_X86_64
-                  xMOV(ebx,eax);
-                  xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
-                  xCMP(ebx, eax);
-                #else
-                  xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
-                #endif
-                j32Ptr[ 1 ] = JE32( 0 );
-            }
+				xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
+				xCMP(eaxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
+				j32Ptr[ 1 ] = JE32( 0 );
+			}
 
-            x86SetJ8( j8Ptr[0] );
-        }
-        else {
-            // beq
-            if( process & PROCESS_CONSTS ) {
-                xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], g_cpuConstRegs[_Rs_].UL[0] );
-                j32Ptr[ 0 ] = JNE32( 0 );
+			x86SetJ8( j8Ptr[0] );
+		}
+		else {
+			// beq
+			if( process & PROCESS_CONSTS ) {
+				xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], g_cpuConstRegs[_Rs_].UL[0] );
+				j32Ptr[ 0 ] = JNE32( 0 );
 
-                xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], g_cpuConstRegs[_Rs_].UL[1] );
-                j32Ptr[ 1 ] = JNE32( 0 );
-            }
-            else if( process & PROCESS_CONSTT ) {
-                xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], g_cpuConstRegs[_Rt_].UL[0] );
-                j32Ptr[ 0 ] = JNE32( 0 );
+				xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], g_cpuConstRegs[_Rs_].UL[1] );
+				j32Ptr[ 1 ] = JNE32( 0 );
+			}
+			else if( process & PROCESS_CONSTT ) {
+				xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], g_cpuConstRegs[_Rt_].UL[0] );
+				j32Ptr[ 0 ] = JNE32( 0 );
 
-                xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], g_cpuConstRegs[_Rt_].UL[1] );
-                j32Ptr[ 1 ] = JNE32( 0 );
-            }
-            else {
-                xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-                xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-                j32Ptr[ 0 ] = JNE32( 0 );
+				xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], g_cpuConstRegs[_Rt_].UL[1] );
+				j32Ptr[ 1 ] = JNE32( 0 );
+			}
+			else {
+				xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+				xCMP(eaxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+				j32Ptr[ 0 ] = JNE32( 0 );
 
-                xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
-                xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
-                j32Ptr[ 1 ] = JNE32( 0 );
-            }
-        }
-    }
+				xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
+				xCMP(eaxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
+				j32Ptr[ 1 ] = JNE32( 0 );
+			}
+		}
+	}
 
-    _clearNeededXMMregs();
+	_clearNeededXMMregs();
 }
 
 void recSetBranchL(int ltz)
@@ -234,7 +194,7 @@ void recSetBranchL(int ltz)
 	int regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
 
 	if( regs >= 0 ) {
-		xMOVMSKPS(eax, xRegisterSSE(regs));
+		xMOVMSKPS(eaxd, xRegisterSSE(regs));
 
 		_eeFlushAllUnused();
 

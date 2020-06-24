@@ -125,20 +125,20 @@ void recCFC1(void)
 	_eeOnWriteReg(_Rt_, 1);
 
 	if (_Fs_ >= 16)
-		xMOV(eax, ptr[&fpuRegs.fprc[31] ]);
+		xMOV(eaxd, ptr[&fpuRegs.fprc[31] ]);
 	else
-		xMOV(eax, ptr[&fpuRegs.fprc[0] ]);
+		xMOV(eaxd, ptr[&fpuRegs.fprc[0] ]);
 	_deleteEEreg(_Rt_, 0);
 
 	if (_Fs_ >= 16)
 	{
-		xAND(eax, 0x0083c078); //remove always-zero bits
-		xOR(eax, 0x01000001); //set always-one bits
+		xAND(eaxd, 0x0083c078); //remove always-zero bits
+		xOR(eaxd, 0x01000001); //set always-one bits
 	}
 
 	xCDQ( );
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eaxd);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edxd);
 }
 
 void recCTC1()
@@ -163,8 +163,8 @@ void recCTC1()
 		{
 			_deleteGPRtoXMMreg(_Rt_, 1);
 
-			xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-			xMOV(ptr[&fpuRegs.fprc[ _Fs_ ]], eax);
+			xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+			xMOV(ptr[&fpuRegs.fprc[ _Fs_ ]], eaxd);
 		}
 	}
 }
@@ -204,11 +204,11 @@ void recMFC1()
 		}
 
 		_deleteEEreg(_Rt_, 0);
-		xMOV(eax, ptr[&fpuRegs.fpr[ _Fs_ ].UL ]);
+		xMOV(eaxd, ptr[&fpuRegs.fpr[ _Fs_ ].UL ]);
 
 		xCDQ( );
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eaxd);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edxd);
 	}
 }
 
@@ -259,8 +259,8 @@ void recMTC1()
 			}
 			else
 			{
-				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
-				xMOV(ptr[&fpuRegs.fpr[ _Fs_ ].UL], eax);
+				xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
+				xMOV(ptr[&fpuRegs.fpr[ _Fs_ ].UL], eaxd);
 			}
 		}
 	}
@@ -395,11 +395,7 @@ FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED|XMMINFO_READS);
 //------------------------------------------------------------------
 void FPU_ADD_SUB(int regd, int regt, int issub)
 {
-    #ifdef __M_X86_64
-	  int tempecx = _allocX86reg(rcx, X86TYPE_TEMP, 0, 0); //receives regd
-    #else
-      int tempecx = _allocX86reg(ecx, X86TYPE_TEMP, 0, 0); //receives regd
-    #endif
+	int tempecx = _allocX86reg(ecxd, X86TYPE_TEMP, 0, 0); //receives regd
 	int temp2 = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0); //receives regt
 	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt
 
@@ -514,16 +510,12 @@ void FPU_MUL(int regd, int regt, bool reverseOperands)
 
 	if (CHECK_FPUMULHACK)
 	{
-		xMOVD(ecx, xRegisterSSE(reverseOperands ? regt : regd));
-		xMOVD(edx, xRegisterSSE(reverseOperands ? regd : regt));
-        #ifdef __M_X86_64
-		  xFastCall((void*)(uptr)&FPU_MUL_HACK, rcx, rdx); //returns the hacked result or 0
-        #else
-          xFastCall((void*)(uptr)&FPU_MUL_HACK, ecx, edx); //returns the hacked result or 0
-        #endif
-		xTEST(eax, eax);
+		xMOVD(ecxd, xRegisterSSE(reverseOperands ? regt : regd));
+		xMOVD(edxd, xRegisterSSE(reverseOperands ? regd : regt));
+		xFastCall((void*)(uptr)&FPU_MUL_HACK, ecxd, edxd); //returns the hacked result or 0
+		xTEST(eaxd, eaxd);
 		noHack = JZ8(0);
-			xMOVDZX(xRegisterSSE(regd), eax);
+			xMOVDZX(xRegisterSSE(regd), eaxd);
 			endMul = JMP8(0);
 		x86SetJ8(noHack);
 	}
@@ -639,8 +631,8 @@ static void _setupBranchTest()
 	// (fpuRegs.fprc[31] & 0x00800000)
 	// BC2F checks if the statement is false, BC2T checks if the statement is true.
 
-	xMOV(eax, ptr[&fpuRegs.fprc[31]]);
-	xTEST(eax, FPUflagC);
+	xMOV(eaxd, ptr[&fpuRegs.fprc[31]]);
+	xTEST(eaxd, FPUflagC);
 }
 
 void recBC1F()
@@ -931,27 +923,27 @@ void recCVT_W()
 	if( regs >= 0 )
 	{
 		if (CHECK_FPU_EXTRA_OVERFLOW) fpuFloat2(regs);
-		xCVTTSS2SI(eax, xRegisterSSE(regs));
-		xMOVMSKPS(edx, xRegisterSSE(regs));	//extract the signs
-		xAND(edx, 1);				//keep only LSB
+		xCVTTSS2SI(eaxd, xRegisterSSE(regs));
+		xMOVMSKPS(edxd, xRegisterSSE(regs));	//extract the signs
+		xAND(edxd, 1);				//keep only LSB
 	}
 	else
 	{
-		xCVTTSS2SI(eax, ptr32[&fpuRegs.fpr[ _Fs_ ]]);
-		xMOV(edx, ptr[&fpuRegs.fpr[ _Fs_ ]]);
-		xSHR(edx, 31);	//mov sign to lsb
+		xCVTTSS2SI(eaxd, ptr32[&fpuRegs.fpr[ _Fs_ ]]);
+		xMOV(edxd, ptr[&fpuRegs.fpr[ _Fs_ ]]);
+		xSHR(edxd, 31);	//mov sign to lsb
 	}
 
 	//kill register allocation for dst because we write directly to fpuRegs.fpr[_Fd_]
 	_deleteFPtoXMMreg(_Fd_, 2);
 
-	xADD(edx, 0x7FFFFFFF);	//0x7FFFFFFF if positive, 0x8000 0000 if negative
+	xADD(edxd, 0x7FFFFFFF);	//0x7FFFFFFF if positive, 0x8000 0000 if negative
 
-	xCMP(eax, 0x80000000);	//If the result is indefinitive
-	xCMOVE(eax, edx);		//Saturate it
+	xCMP(eaxd, 0x80000000);	//If the result is indefinitive
+	xCMOVE(eaxd, edxd);		//Saturate it
 
 	//Write the result
-	xMOV(ptr[&fpuRegs.fpr[_Fd_]], eax);
+	xMOV(ptr[&fpuRegs.fpr[_Fd_]], eaxd);
 }
 //------------------------------------------------------------------
 

@@ -48,6 +48,8 @@ bool iopEventAction = false;
 
 bool iopEventTestIsActive = false;
 
+__aligned16 psxRegisters psxRegs;
+
 void psxReset()
 {
 	memzero(psxRegs);

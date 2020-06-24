@@ -711,8 +711,8 @@ __fi void xMOVNTPS(const xIndirectVoid &to, const xRegisterSSE &from) { xOpWrite
 
 // ------------------------------------------------------------------------
 
-__fi void xMOVMSKPS(const xRegister32or64 &to, const xRegisterSSE &from) { xOpWrite0F(0x50, to, from); }
-__fi void xMOVMSKPD(const xRegister32or64 &to, const xRegisterSSE &from) { xOpWrite0F(0x66, 0x50, to, from, true); }
+__fi void xMOVMSKPS(const xRegister32 &to, const xRegisterSSE &from) { xOpWrite0F(0x50, to, from); }
+__fi void xMOVMSKPD(const xRegister32 &to, const xRegisterSSE &from) { xOpWrite0F(0x66, 0x50, to, from, true); }
 
 // xMASKMOV:
 // Selectively write bytes from mm1/xmm1 to memory location using the byte mask in mm2/xmm2.
