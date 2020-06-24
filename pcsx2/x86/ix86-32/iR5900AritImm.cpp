@@ -61,10 +61,10 @@ void recADDI_(int info)
 
 	if ( _Rt_ == _Rs_ ) {
 		#ifdef __M_X86_64
-          s64 imm64 = _Imm_;
-          xMOV( eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
-          xADD( rax, imm64);
-          xMOV( ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], rax);
+		  s64 imm64 = _Imm_;
+		  xMOV( rax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
+		  xADD( rax, imm64);
+		  xMOV( ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], rax);
 		#else
 		  // must perform the ADD unconditionally, to maintain flags status:
 		  xADD(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _Imm_);

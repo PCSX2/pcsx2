@@ -161,6 +161,9 @@ public:
 
 namespace vtlb_private
 {
+
+}
+
 	static const uint VTLB_PAGE_BITS = 12;
 	static const uint VTLB_PAGE_MASK = 4095;
 	static const uint VTLB_PAGE_SIZE = 4096;
@@ -194,7 +197,6 @@ namespace vtlb_private
 	};
 
 	extern __aligned(64) MapData vtlbdata;
-}
 
 // --------------------------------------------------------------------------------------
 //  Goemon game fix
