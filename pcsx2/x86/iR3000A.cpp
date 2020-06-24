@@ -127,11 +127,11 @@ static DynGenFunc* _DynGen_JITCompile()
 
 	xFastCall((void*)iopRecRecompile, ptr32[&psxRegs.pc] );
 
-	xMOV( eax, ptr[&psxRegs.pc] );
-	xMOV( ebx, eax );
-	xSHR( eax, 16 );
-	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
-	xJMP( ptr32[ecx+ebx] );
+	xMOV( eaxd, ptr[&psxRegs.pc] );
+	xMOV( ebxd, eaxd );
+	xSHR( eaxd, 16 );
+	xMOV( rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax*wordsize)] );
+	xJMP( ptrNative[rbx*(wordsize/4) + rcx] );
 
 	return (DynGenFunc*)retval;
 }
@@ -148,11 +148,11 @@ static DynGenFunc* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr();
 
-	xMOV( eax, ptr[&psxRegs.pc] );
-	xMOV( ebx, eax );
-	xSHR( eax, 16 );
-	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
-	xJMP( ptr32[ecx+ebx] );
+	xMOV( eaxd, ptr[&psxRegs.pc] );
+	xMOV( ebxd, eaxd );
+	xSHR( eaxd, 16 );
+	xMOV( rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax*wordsize)] );
+	xJMP( ptrNative[rbx*(wordsize/4) + rcx] );
 
 	return (DynGenFunc*)retval;
 }
