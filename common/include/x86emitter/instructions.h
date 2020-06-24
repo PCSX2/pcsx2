@@ -57,9 +57,7 @@ extern const xImpl_G1Compare xCMP;
 // flags.
 
 extern const xImpl_Mov xMOV;
-#ifdef __M_X86_64
 extern const xImpl_MovImm64 xMOV64;
-#endif
 extern const xImpl_Test xTEST;
 
 extern const xImpl_Group2 xROL, xROR,
@@ -199,12 +197,26 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
+/// Helper object to save some temporary registers before the call
+class xScopedSavedRegisters
+{
+    std::initializer_list<std::reference_wrapper<const xAddressReg>> regs;
+public:
+    xScopedSavedRegisters(std::initializer_list<std::reference_wrapper<const xAddressReg>> regs);
+    ~xScopedSavedRegisters();
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/// Helper function to calculate base+offset taking into account the limitations of x86-64's RIP-relative addressing
+/// (Will either return `base+offset` or LEA `base` into `tmpRegister` and return `tmpRegister+offset`)
+xAddressVoid xComplexAddress(const xAddressReg& tmpRegister, void *base, const xAddressVoid& offset);
+
+//////////////////////////////////////////////////////////////////////////////////////////
 // JMP / Jcc Instructions!
 
 extern void xJcc(JccComparisonType comparison, const void *target);
 extern s8 *xJcc8(JccComparisonType comparison = Jcc_Unconditional, s8 displacement = 0);
 extern s32 *xJcc32(JccComparisonType comparison = Jcc_Unconditional, s32 displacement = 0);
-extern s64 *xJcc64(JccComparisonType comparison = Jcc_Unconditional, uptr imm = 0);
 
 // ------------------------------------------------------------------------
 // Conditional jumps to fixed targets.
@@ -446,8 +458,8 @@ extern void xMOVNTDQA(const xIndirectVoid &to, const xRegisterSSE &from);
 extern void xMOVNTPD(const xIndirectVoid &to, const xRegisterSSE &from);
 extern void xMOVNTPS(const xIndirectVoid &to, const xRegisterSSE &from);
 
-extern void xMOVMSKPS(const xRegister32or64 &to, const xRegisterSSE &from);
-extern void xMOVMSKPD(const xRegister32or64 &to, const xRegisterSSE &from);
+extern void xMOVMSKPS(const xRegister32 &to, const xRegisterSSE &from);
+extern void xMOVMSKPD(const xRegister32 &to, const xRegisterSSE &from);
 
 extern void xMASKMOV(const xRegisterSSE &to, const xRegisterSSE &from);
 extern void xPMOVMSKB(const xRegister32or64 &to, const xRegisterSSE &from);

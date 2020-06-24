@@ -154,7 +154,7 @@ union CP0regs {
 	u32 r[32];
 };
 
-struct cpuRegisters {
+struct alignas(16) cpuRegisters {
 	GPRregs GPR;		// GPR regs
 	// NOTE: don't change order since recompiler uses it
 	GPR_reg HI;

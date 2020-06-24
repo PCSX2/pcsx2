@@ -21,7 +21,6 @@
 
 // Generates the code for entering/exit recompiled blocks
 void mVUdispatcherAB(mV) {
-/*
 	mVU.startFunct = x86Ptr;
 
 	{
@@ -70,7 +69,6 @@ void mVUdispatcherAB(mV) {
 
 	pxAssertDev(xGetPtr() < (mVU.dispCache + mVUdispCacheSize),
 			"microVU: Dispatcher generation exceeded reserved cache area!");
-*/
 }
 
 // Generates the code for resuming/exit xgkick

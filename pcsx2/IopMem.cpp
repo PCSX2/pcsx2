@@ -29,14 +29,12 @@ __pagealigned u8 iopHw[Ps2MemSize::IopHardware];
 //  iopMemoryReserve
 // --------------------------------------------------------------------------------------
 iopMemoryReserve::iopMemoryReserve()
-	: _parent( L"IOP Main Memory (2mb)", sizeof(*iopMem) )
+	: _parent( L"IOP Main Memory (2mb)")
 {
 }
 
-void iopMemoryReserve::Reserve(VirtualMemoryManagerPtr allocator)
-{
-	_parent::Reserve(std::move(allocator), HostMemoryMap::IOPmemOffset);
-	//_parent::Reserve(EmuConfig.HostMap.IOP);
+bool iopMemoryReserve::IsSizeOK(size_t size) {
+	return size >= sizeof(*iopMem);
 }
 
 void iopMemoryReserve::Commit()

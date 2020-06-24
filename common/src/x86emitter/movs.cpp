@@ -56,16 +56,15 @@ void xImpl_Mov::operator()(const xIndirectVoid &dest, const xRegisterInt &from) 
     // mov eax has a special from when writing directly to a DISP32 address
     // (sans any register index/base registers).
 
+#ifndef __M_X86_64
+    // Note: On x86-64 this is an immediate 64-bit address, which is larger than the equivalent rip offset instr
     if (from.IsAccumulator() && dest.Index.IsEmpty() && dest.Base.IsEmpty()) {
-
-        xOpAccWrite(from.GetPrefix16(), from.Is8BitOp() ? x86_Opcode_MOV_Ob_AL : x86_Opcode_MOV_Ov_eAX, from.Id, dest,from.IsWide());
-        #ifdef __M_X86_64
-          xWrite64(dest.Displacement);
-        #else
-          xWrite32(dest.Displacement);
-        #endif
-    } else {
-        xOpWrite(from.GetPrefix16(), from.Is8BitOp() ? x86_Opcode_MOV_Eb_Gb  : x86_Opcode_MOV_Ev_Gv, from.Id, dest);
+        xOpAccWrite(from.GetPrefix16(), from.Is8BitOp() ? 0xa2 : 0xa3, from, dest);
+        xWrite32(dest.Displacement);
+    } else
+#endif
+    {
+        xOpWrite(from.GetPrefix16(), from.Is8BitOp() ? 0x88 : 0x89, from, dest);
     }
 }
 
@@ -74,49 +73,79 @@ void xImpl_Mov::operator()(const xRegisterInt &to, const xIndirectVoid &src) con
     // mov eax has a special from when reading directly from a DISP32 address
     // (sans any register index/base registers).
 
+#ifndef __M_X86_64
+    // Note: On x86-64 this is an immediate 64-bit address, which is larger than the equivalent rip offset instr
     if (to.IsAccumulator() && src.Index.IsEmpty() && src.Base.IsEmpty()) {
-
-        xOpAccWrite(to.GetPrefix16(), to.Is8BitOp() ? x86_Opcode_MOV_AL_Ob : x86_Opcode_MOV_eAX_Ov, to, src);
-        #ifdef __M_X86_64
-          xWrite64(src.Displacement);
-        #else
-          xWrite32(src.Displacement);
-        #endif
-    } else {
-        xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? x86_Opcode_MOV_Gb_Eb : x86_Opcode_MOV_Gv_Ev, to, src);
+        xOpAccWrite(to.GetPrefix16(), to.Is8BitOp() ? 0xa0 : 0xa1, to, src);
+        xWrite32(src.Displacement);
+    } else
+#endif
+    {
+        xOpWrite(to.GetPrefix16(), to.Is8BitOp() ? 0x8a : 0x8b, to, src);
     }
 }
 
-void xImpl_Mov::operator()(const xIndirect64orLess &dest, int imm) const
+void xImpl_Mov::operator()(const xIndirect64orLess &dest, sptr imm) const
 {
-    #ifdef __M_X86_64
-      xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? x86_Opcode_MOV_Eb_Ib : x86_Opcode_MOV_Ev_Iv, 0, dest-4);
-    #else
-      xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? x86_Opcode_MOV_Eb_Ib : x86_Opcode_MOV_Ev_Iv, 0, dest);
-    #endif
-    xWrite32(imm);
+    switch (dest.GetOperandSize()) {
+        case 1:
+            pxAssertMsg(imm == (s8)imm || imm == (u8)imm, "Immediate won't fit!");
+            break;
+        case 2:
+            pxAssertMsg(imm == (s16)imm || imm == (u16)imm, "Immediate won't fit!");
+            break;
+        case 4:
+            pxAssertMsg(imm == (s32)imm || imm == (u32)imm, "Immediate won't fit!");
+            break;
+        case 8:
+            pxAssertMsg(imm == (s32)imm, "Immediate won't fit in immediate slot, go through a register!");
+            break;
+        default:
+            pxAssertMsg(0, "Bad indirect size!");
+    }
+    xOpWrite(dest.GetPrefix16(), dest.Is8BitOp() ? 0xc6 : 0xc7, 0, dest, dest.GetImmSize());
+    dest.xWriteImm(imm);
 }
 
 // preserve_flags  - set to true to disable optimizations which could alter the state of
 //   the flags (namely replacing mov reg,0 with xor).
-void xImpl_Mov::operator()(const xRegisterInt &to, int imm, bool preserve_flags) const
+void xImpl_Mov::operator()(const xRegisterInt &to, sptr imm, bool preserve_flags) const
 {
-    if (!preserve_flags && (imm == 0))
-        _g1_EmitOp(G1Type_XOR, to, to);
-    else {
+    switch (to.GetOperandSize()) {
+        case 1:
+            pxAssertMsg(imm == (s8)imm || imm == (u8)imm, "Immediate won't fit!");
+            break;
+        case 2:
+            pxAssertMsg(imm == (s16)imm || imm == (u16)imm, "Immediate won't fit!");
+            break;
+        case 4:
+            pxAssertMsg(imm == (s32)imm || imm == (u32)imm, "Immediate won't fit!");
+            break;
+        case 8:
+            pxAssertMsg(imm == (s32)imm || imm == (u32)imm, "Immediate won't fit in immediate slot, use mov64 or lea!");
+            break;
+        default:
+            pxAssertMsg(0, "Bad indirect size!");
+    }
+    const xRegisterInt& to_ = to.GetNonWide();
+    if (!preserve_flags && (imm == 0)) {
+        _g1_EmitOp(G1Type_XOR, to_, to_);
+    } else if (imm == (u32)imm || !to.IsWide()) {
         // Note: MOV does not have (reg16/32,imm8) forms.
-        u8 opcode = (to.Is8BitOp() ? x86_Opcode_MOV_AL_Ib : x86_Opcode_MOV_eAX_Iv) | to.Id;
-        xOpAccWrite(to.GetPrefix16(), opcode, 0, to);
+        u8 opcode = (to_.Is8BitOp() ? 0xb0 : 0xb8) | to_.Id;
+        xOpAccWrite(to_.GetPrefix16(), opcode, 0, to_);
+        to_.xWriteImm(imm);
+    } else {
+        xOpWrite(to.GetPrefix16(), 0xc7, 0, to);
         to.xWriteImm(imm);
     }
 }
 
 const xImpl_Mov xMOV;
 
-#ifdef __M_X86_64
 void xImpl_MovImm64::operator()(const xRegister64& to, s64 imm, bool preserve_flags) const
 {
-    if (imm == (s32)imm) {
+    if (imm == (u32)imm || imm == (s32)imm) {
         xMOV(to, imm, preserve_flags);
     } else {
         u8 opcode = 0xb8 | to.Id;
@@ -126,7 +155,6 @@ void xImpl_MovImm64::operator()(const xRegister64& to, s64 imm, bool preserve_fl
 }
 
 const xImpl_MovImm64 xMOV64;
-#endif
 
 // --------------------------------------------------------------------------------------
 //  CMOVcc

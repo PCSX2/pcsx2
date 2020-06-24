@@ -49,15 +49,14 @@ void mVUloadIreg(const xmm& reg, int xyzw, VURegs* vuRegs)
 // Modifies the Source Reg!
 void mVUsaveReg(const xmm& reg, xAddressVoid ptr, int xyzw, bool modXYZW)
 {
-/*
-	//xMOVAPS(xmmT2, ptr128[ptr]);
-	//if (modXYZW && (xyzw == 8 || xyzw == 4 || xyzw == 2 || xyzw == 1)) {
-	//	mVUunpack_xyzw(reg, reg, 0);
-	//}
-	//mVUmergeRegs(xmmT2, reg, xyzw);
+	/*xMOVAPS(xmmT2, ptr128[ptr]);
+	if (modXYZW && (xyzw == 8 || xyzw == 4 || xyzw == 2 || xyzw == 1)) {
+		mVUunpack_xyzw(reg, reg, 0);
+	}
+	mVUmergeRegs(xmmT2, reg, xyzw);
 
-	//xMOVAPS(ptr128[ptr], xmmT2);
-	//return;
+	xMOVAPS(ptr128[ptr], xmmT2);
+	return;*/
 
 	switch ( xyzw ) {
 		case 5:		if (x86caps.hasStreamingSIMD4Extensions) {
@@ -140,7 +139,7 @@ void mVUsaveReg(const xmm& reg, xAddressVoid ptr, int xyzw, bool modXYZW)
 		case 12:	xMOVL.PS(ptr64[ptr], reg);	 break; // XY
 		case 3:		xMOVH.PS(ptr64[ptr+8], reg); break; // ZW
 		default:	xMOVAPS(ptr128[ptr], reg);	 break; // XYZW
-	}*/
+	}
 }
 
 // Modifies the Source Reg! (ToDo: Optimize modXYZW = 1 cases)
@@ -237,6 +236,18 @@ __fi void mVUrestoreRegs(microVU& mVU, bool fromMemory = false) {
 	else xMOVAPS(xmmPQ, ptr128[&mVU.xmmBackup[xmmPQ.Id][0]]);
 }
 
+class mVUScopedXMMBackup {
+	microVU& mVU;
+	bool fromMemory;
+public:
+	mVUScopedXMMBackup(microVU& mVU, bool fromMemory): mVU(mVU), fromMemory(fromMemory) {
+		mVUbackupRegs(mVU, fromMemory);
+	}
+	~mVUScopedXMMBackup() {
+		mVUrestoreRegs(mVU, fromMemory);
+	}
+};
+
 _mVUt void __fc mVUprintRegs() {
 	microVU& mVU = mVUx;
 	for(int i = 0; i < 8; i++) {
@@ -275,42 +286,31 @@ static void __fc mVUwaitMTVU() {
 }
 
 // Transforms the Address in gprReg to valid VU0/VU1 Address
-__fi void mVUaddrFix(mV, const x32& gprReg)
+__fi void mVUaddrFix(mV, const xAddressReg& gprReg)
 {
 	if (isVU1) {
-		xAND(gprReg, 0x3ff); // wrap around
-		xSHL(gprReg, 4);
+		xAND(xRegister32(gprReg.Id), 0x3ff); // wrap around
+		xSHL(xRegister32(gprReg.Id), 4);
 	}
 	else {
-		xTEST(gprReg, 0x400);
+		xTEST(xRegister32(gprReg.Id), 0x400);
 		xForwardJNZ8 jmpA;		// if addr & 0x4000, reads VU1's VF regs and VI regs
-			xAND(gprReg, 0xff); // if !(addr & 0x4000), wrap around
+			xAND(xRegister32(gprReg.Id), 0xff); // if !(addr & 0x4000), wrap around
 			xForwardJump32 jmpB;
 		jmpA.SetTarget();
 			if (THREAD_VU1) {
-				mVUbackupRegs(mVU, true);
-				xPUSH(gprT1);
-				xPUSH(gprT2);
-				xPUSH(gprT3);
-				// Align the stackframe (GCC only, since GCC assumes stackframe is always aligned)
-#ifdef __GNUC__
-				xSUB(esp, 4);
-#endif
-				if (IsDevBuild && !isCOP2) {         // Lets see which games do this!
-					xMOV(gprT2, mVU.prog.cur->idx); // Note: Kernel does it via COP2 to initialize VU1!
-					xMOV(gprT3, xPC);               // So we don't spam console, we'll only check micro-mode...
-					xCALL((void*)mVUwarningRegAccess);
+				{
+					mVUScopedXMMBackup mVUSave(mVU, true);
+					xScopedSavedRegisters save {gprT1q, gprT2q, gprT3q};
+					if (IsDevBuild && !isCOP2) {         // Lets see which games do this!
+						xMOV(arg1regd, mVU.prog.cur->idx); // Note: Kernel does it via COP2 to initialize VU1!
+						xMOV(arg2regd, xPC);               // So we don't spam console, we'll only check micro-mode...
+						xFastCall((void*)mVUwarningRegAccess, arg1regd, arg2regd);
+					}
+					xFastCall((void*)mVUwaitMTVU);
 				}
-				xCALL((void*)mVUwaitMTVU);
-#ifdef __GNUC__
-				xADD(esp, 4);
-#endif
-				xPOP (gprT3);
-				xPOP (gprT2);
-				xPOP (gprT1);
-				mVUrestoreRegs(mVU, true);
 			}
-			xAND(gprReg, 0x3f); // ToDo: theres a potential problem if VU0 overrides VU1's VF0/VI0 regs!
+			xAND(xRegister32(gprReg.Id), 0x3f); // ToDo: theres a potential problem if VU0 overrides VU1's VF0/VI0 regs!
 			xADD(gprReg, (u128*)VU1.VF - (u128*)VU0.Mem);
 		jmpB.SetTarget();
 		xSHL(gprReg, 4); // multiply by 16 (shift left by 4)
@@ -334,7 +334,6 @@ static const __aligned16 SSEMasks sseMasks =
 // Warning: Modifies t1 and t2
 void MIN_MAX_PS(microVU& mVU, const xmm& to, const xmm& from, const xmm& t1in, const xmm& t2in, bool min)
 {
-/*
 	const xmm& t1 = t1in.IsEmpty() ? mVU.regAlloc->allocReg() : t1in;
 	const xmm& t2 = t2in.IsEmpty() ? mVU.regAlloc->allocReg() : t2in;
 
@@ -382,7 +381,7 @@ void MIN_MAX_PS(microVU& mVU, const xmm& to, const xmm& from, const xmm& t1in, c
 	}
 
 	if (t1 != t1in) mVU.regAlloc->clearNeeded(t1);
-	if (t2 != t2in) mVU.regAlloc->clearNeeded(t2);*/
+	if (t2 != t2in) mVU.regAlloc->clearNeeded(t2);
 }
 
 // Warning: Modifies to's upper 3 vectors, and t1
@@ -404,7 +403,6 @@ void MIN_MAX_SS(mV, const xmm& to, const xmm& from, const xmm& t1in, bool min)
 // Warning: Modifies all vectors in 'to' and 'from', and Modifies t1in
 void ADD_SS_Single_Guard_Bit(microVU& mVU, const xmm& to, const xmm& from, const xmm& t1in)
 {
-/*
 	const xmm& t1 = t1in.IsEmpty() ? mVU.regAlloc->allocReg() : t1in;
 
 	xMOVD(eax, to);
@@ -455,7 +453,6 @@ void ADD_SS_Single_Guard_Bit(microVU& mVU, const xmm& to, const xmm& from, const
 
 	xADD.SS(to, from);
 	if (t1 != t1in) mVU.regAlloc->clearNeeded(t1);
-    */
 }
 
 // Turns out only this is needed to get TriAce games booting with mVU
@@ -568,7 +565,6 @@ __pagealigned u8 mVUsearchXMM[__pagesize];
 // Generates a custom optimized block-search function
 // Note: Structs must be 16-byte aligned! (GCC doesn't guarantee this)
 void mVUcustomSearch() {
-/*
 	HostSys::MemProtectStatic(mVUsearchXMM, PageAccess_ReadWrite());
 	memset(mVUsearchXMM, 0xcc, __pagesize);
 	xSetPtr(mVUsearchXMM);
@@ -579,7 +575,7 @@ void mVUcustomSearch() {
 	xPCMP.EQD(xmm1, ptr32[edx + 0x10]);
 	xPAND	 (xmm0, xmm1);
 
-	xMOVMSKPS(eax, xmm0);
+	xMOVMSKPS(eaxd, xmm0);
 	xCMP	 (eax, 0xf);
 	xForwardJL8 exitPoint;
 
@@ -610,10 +606,9 @@ void mVUcustomSearch() {
 	xPAND (xmm0, xmm2);
 	xPAND (xmm4, xmm6);
 	xPAND (xmm0, xmm4);
-	xMOVMSKPS(eax, xmm0);
+	xMOVMSKPS(eaxd, xmm0);
 
 	exitPoint.SetTarget();
 	xRET();
 	HostSys::MemProtectStatic(mVUsearchXMM, PageAccess_ExecOnly());
-    */
 }

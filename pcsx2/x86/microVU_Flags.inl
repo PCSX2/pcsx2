@@ -252,16 +252,16 @@ __fi void mVUsetFlags(mV, microFlagCycles& mFC) {
 			   xPC, mVUregs.fullFlags0, (u32)mVUregs.fullFlags1);
 	}
 }
-/*
+
 #define getFlagReg2(x)	((bStatus[0] == x) ? getFlagReg(x) : gprT1)
 #define getFlagReg3(x)	((gFlag == x) ? gprT1 : getFlagReg(x))
 #define getFlagReg4(x)	((gFlag == x) ? gprT1 : gprT2)
 #define shuffleMac		((bMac [3]<<6)|(bMac [2]<<4)|(bMac [1]<<2)|bMac [0])
 #define shuffleClip		((bClip[3]<<6)|(bClip[2]<<4)|(bClip[1]<<2)|bClip[0])
-*/
+
 // Recompiles Code for Proper Flags on Block Linkings
 __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
-/*
+
 	if (mVUregs.flagInfo & 1) {
 		if (mVUregs.needExactMatch) DevCon.Error("mVU ERROR!!!");
 	}
@@ -283,7 +283,7 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
 			xMOV(gprF3,  getFlagReg(bStatus[3]));
 		}
 		else if (sortRegs == 2) {
-			xMOV(gprT1,	 getFlagReg (bStatus[3])); 
+			xMOV(gprT1,	 getFlagReg (bStatus[3]));
 			xMOV(gprF0,  getFlagReg (bStatus[0]));
 			xMOV(gprF1,  getFlagReg2(bStatus[1]));
 			xMOV(gprF2,  getFlagReg2(bStatus[2]));
@@ -291,7 +291,7 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
 		}
 		else if (sortRegs == 3) {
 			int gFlag = (bStatus[0] == bStatus[1]) ? bStatus[2] : bStatus[1];
-			xMOV(gprT1,	 getFlagReg (gFlag)); 
+			xMOV(gprT1,	 getFlagReg (gFlag));
 			xMOV(gprT2,	 getFlagReg (bStatus[3]));
 			xMOV(gprF0,  getFlagReg (bStatus[0]));
 			xMOV(gprF1,  getFlagReg3(bStatus[1]));
@@ -299,12 +299,12 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
 			xMOV(gprF3,  gprT2);
 		}
 		else {
-			xMOV(gprT1,  getFlagReg(bStatus[0])); 
+			xMOV(gprT1,  getFlagReg(bStatus[0]));
 			xMOV(gprT2,  getFlagReg(bStatus[1]));
 			xMOV(gprT3,  getFlagReg(bStatus[2]));
 			xMOV(gprF3,  getFlagReg(bStatus[3]));
 			xMOV(gprF0,  gprT1);
-			xMOV(gprF1,  gprT2); 
+			xMOV(gprF1,  gprT2);
 			xMOV(gprF2,  gprT3);
 		}
 	}
@@ -325,7 +325,7 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
 		xMOVAPS(xmmT2, ptr128[mVU.clipFlag]);
 		xSHUF.PS(xmmT2, xmmT2, shuffleClip);
 		xMOVAPS(ptr128[mVU.clipFlag], xmmT2);
-	}*/
+	}
 }
 
 #define shortBranch() {											\

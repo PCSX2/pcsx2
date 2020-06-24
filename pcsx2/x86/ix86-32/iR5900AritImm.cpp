@@ -57,28 +57,22 @@ void recADDI_const( void )
 
 void recADDI_(int info)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info&PROCESS_EE_XMM) );
 
 	if ( _Rt_ == _Rs_ ) {
-		#ifdef __M_X86_64
-		  s64 imm64 = _Imm_;
-		  xMOV( rax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
-		  xADD( rax, imm64);
-		  xMOV( ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], rax);
-		#else
-		  // must perform the ADD unconditionally, to maintain flags status:
-		  xADD(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _Imm_);
-		  _signExtendSFtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]);
-		#endif
+		// must perform the ADD unconditionally, to maintain flags status:
+		xADD(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _Imm_);
+		_signExtendSFtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]);
 	}
 	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 
-		if ( _Imm_ != 0 ) xADD(eax, _Imm_ );
+		if ( _Imm_ != 0 ) xADD(eaxd, _Imm_ );
 
 		xCDQ( );
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eaxd);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edxd);
 	}
 }
 
@@ -98,6 +92,7 @@ void recDADDI_const()
 
 void recDADDI_(int info)
 {
+	// TODO: Use 64-bit math on x86-64
 	pxAssert( !(info&PROCESS_EE_XMM) );
 
 	if( _Rt_ == _Rs_ ) {
@@ -105,19 +100,19 @@ void recDADDI_(int info)
 		xADC(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], _Imm_<0?0xffffffff:0);
 	}
 	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 
-		xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
+		xMOV(edxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
 
 		if ( _Imm_ != 0 )
 		{
-			xADD(eax, _Imm_ );
-			xADC(edx, _Imm_ < 0?0xffffffff:0);
+			xADD(eaxd, _Imm_ );
+			xADC(edxd, _Imm_ < 0?0xffffffff:0);
 		}
 
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eaxd);
 
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
+		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edxd);
 	}
 }
 
@@ -140,7 +135,8 @@ extern u32 s_sltone;
 
 void recSLTIU_(int info)
 {
-	xMOV(eax, 1);
+	// TODO: Use 64-bit math on x86-64
+	xMOV(eaxd, 1);
 
 	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], _Imm_ >= 0 ? 0 : 0xffffffff);
 	j8Ptr[0] = JB8( 0 );
@@ -150,12 +146,12 @@ void recSLTIU_(int info)
 	j8Ptr[1] = JB8(0);
 
 	x86SetJ8(j8Ptr[2]);
-	xXOR(eax, eax);
+	xXOR(eaxd, eaxd);
 
 	x86SetJ8(j8Ptr[0]);
 	x86SetJ8(j8Ptr[1]);
 
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
+	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eaxd);
 	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], 0 );
 }
 
@@ -169,43 +165,25 @@ void recSLTI_const()
 
 void recSLTI_(int info)
 {
-    
-    #ifdef __M_X86_64
-      xMOV( eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
-      xCMP( eax, _Imm_ >= 0 ? 0 : 0xffffffff);
-    #else
-      xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], _Imm_ >= 0 ? 0 : 0xffffffff);
-    #endif
-    
-    // test silent hill if modding
-	xMOV(eax, 1);
+	// TODO: Use 64-bit math on x86-64
+	// test silent hill if modding
+	xMOV(eaxd, 1);
 
+	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], _Imm_ >= 0 ? 0 : 0xffffffff);
 	j8Ptr[0] = JL8( 0 );
 	j8Ptr[2] = JG8( 0 );
-    
-    #ifdef __M_X86_64
-      xMOV( eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
-      xCMP( eax, (s32)_Imm_ );
-      // test silent hill if modding
-      xMOV(eax, 1);
-    #else
-      xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], (s32)_Imm_ );
-    #endif
+
+	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], (s32)_Imm_ );
 	j8Ptr[1] = JB8(0);
 
 	x86SetJ8(j8Ptr[2]);
-	xXOR(eax, eax);
+	xXOR(eaxd, eaxd);
 
 	x86SetJ8(j8Ptr[0]);
 	x86SetJ8(j8Ptr[1]);
 
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-    #ifdef __M_X86_64
-      xMOV(eax, 0);
-      xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], eax );
-    #else
-      xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], 0 );
-    #endif
+	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eaxd);
+	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], 0 );
 }
 
 EERECOMPILE_CODEX(eeRecompileCode1, SLTI);
@@ -218,6 +196,7 @@ void recANDI_const()
 
 void recLogicalOpI(int info, int op)
 {
+	// TODO: Use 64-bit math on x86-64
 	if ( _ImmU_ != 0 )
 	{
 		if( _Rt_ == _Rs_ ) {
@@ -229,20 +208,20 @@ void recLogicalOpI(int info, int op)
 			}
 		}
 		else {
-			xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+			xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
 			if( op != 0 )
-				xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
+				xMOV(edxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
 
 			switch(op) {
-				case 0: xAND(eax, _ImmU_); break;
-				case 1: xOR(eax, _ImmU_); break;
-				case 2: xXOR(eax, _ImmU_); break;
+				case 0: xAND(eaxd, _ImmU_); break;
+				case 1: xOR(eaxd, _ImmU_); break;
+				case 2: xXOR(eaxd, _ImmU_); break;
 				default: pxAssert(0);
 			}
 
 			if( op != 0 )
-				xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
+				xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edxd);
+			xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eaxd);
 		}
 
 		if( op == 0 ) {
@@ -257,10 +236,10 @@ void recLogicalOpI(int info, int op)
 		}
 		else {
 			if( _Rt_ != _Rs_ ) {
-				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-				xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
-				xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-				xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
+				xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+				xMOV(edxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
+				xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eaxd);
+				xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edxd);
 			}
 		}
 	}

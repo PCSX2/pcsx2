@@ -23,16 +23,16 @@ __aligned16 VURegs vuRegs[2];
 
 
 vuMemoryReserve::vuMemoryReserve()
-	: _parent( L"VU0/1 on-chip memory", VU1_PROGSIZE + VU1_MEMSIZE + VU0_PROGSIZE + VU0_MEMSIZE )
+	: _parent( L"VU0/1 on-chip memory" )
 {
 }
 
-void vuMemoryReserve::Reserve(VirtualMemoryManagerPtr allocator)
-{
-	_parent::Reserve(std::move(allocator), HostMemoryMap::VUmemOffset);
-	//_parent::Reserve(EmuConfig.HostMemMap.VUmem);
+bool vuMemoryReserve::IsSizeOK(size_t size) {
+	return size >= VU1_PROGSIZE + VU1_MEMSIZE + VU0_PROGSIZE + VU0_MEMSIZE;
+}
 
-	u8* curpos = m_reserve.GetPtr();
+void vuMemoryReserve::DidAssign(void *mem) {
+	u8* curpos = (u8*)mem;
 	VU0.Micro	= curpos; curpos += VU0_PROGSIZE;
 	VU0.Mem		= curpos; curpos += VU0_MEMSIZE;
 	VU1.Micro	= curpos; curpos += VU1_PROGSIZE;

@@ -18,7 +18,7 @@
 using namespace x86Emitter;
 
 typedef xRegisterSSE xmm;
-typedef xRegisterLong x32;
+typedef xRegister32 x32;
 
 struct microVU;
 
@@ -142,17 +142,20 @@ static const char branchSTR[16][8] = {
 #define xmmT7  xmm6 // Used for regAlloc
 #define xmmPQ  xmm7 // Holds the Value and Backup Values of P and Q regs
 
-#define gprT1  eax // eax - Temp Reg
-#define gprT2  ecx // ecx - Temp Reg
-#define gprT3  edx // edx - Temp Reg
+#define gprT1 eaxd // eax - Temp Reg
+#define gprT2 ecxd // ecx - Temp Reg
+#define gprT3 edxd // edx - Temp Reg
+#define gprT1q rax // eax - Temp Reg
+#define gprT2q rcx // ecx - Temp Reg
+#define gprT3q rdx // edx - Temp Reg
 #define gprT1b ax  // Low 16-bit of gprT1 (eax)
 #define gprT2b cx  // Low 16-bit of gprT2 (ecx)
 #define gprT3b dx  // Low 16-bit of gprT3 (edx)
 
-#define gprF0  ebx // Status Flag 0
-#define gprF1  ebp // Status Flag 1
-#define gprF2  esi // Status Flag 2
-#define gprF3  edi // Status Flag 3
+#define gprF0  ebxd // Status Flag 0
+#define gprF1  ebpd // Status Flag 1
+#define gprF2  esid // Status Flag 2
+#define gprF3  edid // Status Flag 3
 
 // Function Params
 #define mP microVU& mVU, int recPass

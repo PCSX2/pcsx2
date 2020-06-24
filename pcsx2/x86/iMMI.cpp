@@ -78,10 +78,10 @@ void recPLZCW()
 	_eeOnWriteReg(_Rd_, 0);
 
 	if( (regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
-		xMOVD(eax, xRegisterSSE(regs));
+		xMOVD(eaxd, xRegisterSSE(regs));
 	}
 	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
+		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
 	}
 
 	_deleteEEreg(_Rd_, 0);
@@ -96,44 +96,44 @@ void recPLZCW()
 
 	// --- first word ---
 
-	xMOV(ecx, 31);
-	xTEST(eax, eax);		// TEST sets the sign flag accordingly.
+	xMOV(ecxd, 31);
+	xTEST(eaxd, eaxd);		// TEST sets the sign flag accordingly.
 	u8* label_notSigned = JNS8(0);
-	xNOT(eax);
+	xNOT(eaxd);
 	x86SetJ8(label_notSigned);
 
-	xBSR(eax, eax);
+	xBSR(eaxd, eaxd);
 	u8* label_Zeroed = JZ8(0);	// If BSR sets the ZF, eax is "trash"
-	xSUB(ecx, eax);
-	xDEC(ecx);			// PS2 doesn't count the first bit
+	xSUB(ecxd, eaxd);
+	xDEC(ecxd);			// PS2 doesn't count the first bit
 
 	x86SetJ8(label_Zeroed);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], ecx);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], ecxd);
 
 	// second word
 
 	if( regs >= 0) {
 		xPSHUF.D(xRegisterSSE(regs&0xf), xRegisterSSE(regs&0xf), 0xe1);
-		xMOVD(eax, xRegisterSSE(regs&0xf));
+		xMOVD(eaxd, xRegisterSSE(regs&0xf));
 		xPSHUF.D(xRegisterSSE(regs&0xf), xRegisterSSE(regs&0xf), 0xe1);
 	}
 	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
+		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
 	}
 
-	xMOV(ecx, 31);
-	xTEST(eax, eax);		// TEST sets the sign flag accordingly.
+	xMOV(ecxd, 31);
+	xTEST(eaxd, eaxd);		// TEST sets the sign flag accordingly.
 	label_notSigned = JNS8(0);
-	xNOT(eax);
+	xNOT(eaxd);
 	x86SetJ8(label_notSigned);
 
-	xBSR(eax, eax);
+	xBSR(eaxd, eaxd);
 	label_Zeroed = JZ8(0);	// If BSR sets the ZF, eax is "trash"
-	xSUB(ecx, eax);
-	xDEC(ecx);			// PS2 doesn't count the first bit
+	xSUB(ecxd, eaxd);
+	xDEC(ecxd);			// PS2 doesn't count the first bit
 
 	x86SetJ8(label_Zeroed);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], ecx);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], ecxd);
 
 	GPR_DEL_CONST(_Rd_);
 }
@@ -1499,25 +1499,19 @@ void recQFSRV()
 		_flushEEreg(_Rt_);
 		int info = eeRecompileCodeXMM(XMMINFO_WRITED);
 
-		xMOV(eax, ptr32[&cpuRegs.sa]);
-        #ifdef __M_X86_64
-		  xMOVDQU(xRegisterSSE(EEREC_D), ptr32[rax + &cpuRegs.GPR.r[_Rt_]]);
-        #else
-          xMOVDQU(xRegisterSSE(EEREC_D), ptr32[eax + &cpuRegs.GPR.r[_Rt_]]);
-        #endif
+		xMOV(eaxd, ptr32[&cpuRegs.sa]);
+		xLEA(rcx, ptr[&cpuRegs.GPR.r[_Rt_]]);
+		xMOVDQU(xRegisterSSE(EEREC_D), ptr32[rax + rcx]);
 		return;
 	}
 		
 	int info = eeRecompileCodeXMM( XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED );
 
-	xMOV(eax, ptr32[&cpuRegs.sa]);
-	xMOVDQA(ptr32[&tempqw[0]], xRegisterSSE(EEREC_T));
-	xMOVDQA(ptr32[&tempqw[4]], xRegisterSSE(EEREC_S));
-    #ifdef __M_X86_64
-	  xMOVDQU(xRegisterSSE(EEREC_D), ptr32[rax + &tempqw]);
-    #else
-      xMOVDQU(xRegisterSSE(EEREC_D), ptr32[eax + &tempqw]);
-    #endif
+	xMOV(eaxd, ptr32[&cpuRegs.sa]);
+	xLEA(rcx, ptr[tempqw]);
+	xMOVDQA(ptr32[rcx], xRegisterSSE(EEREC_T));
+	xMOVDQA(ptr32[rcx+16], xRegisterSSE(EEREC_S));
+	xMOVDQU(xRegisterSSE(EEREC_D), ptr32[rax + rcx]);
 
 	_clearNeededXMMregs();
 }

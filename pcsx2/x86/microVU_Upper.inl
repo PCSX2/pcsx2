@@ -24,7 +24,7 @@
 #define SHIFT_XYZW(gprReg)	{ if (_XYZW_SS && modXYZW && !_W) { xSHL(gprReg, ADD_XYZW); } }
 
 // Note: If modXYZW is true, then it adjusts XYZW for Single Scalar operations
-static void mVUupdateFlags(mV, const xmm& reg, const xmm& regT1in = xEmptyReg, const xmm& regT2in = xEmptyReg, bool modXYZW = 1) {/*
+static void mVUupdateFlags(mV, const xmm& reg, const xmm& regT1in = xEmptyReg, const xmm& regT2in = xEmptyReg, bool modXYZW = 1) {
 	const x32&  mReg   = gprT1;
 	const x32&  sReg   = getFlagReg(sFLAG.write);
 	bool regT1b = regT1in.IsEmpty(), regT2b = false;
@@ -78,7 +78,7 @@ static void mVUupdateFlags(mV, const xmm& reg, const xmm& regT1in = xEmptyReg, c
 		}
 	}
 	if (regT1b) mVU.regAlloc->clearNeeded(regT1);
-	if (regT2b) mVU.regAlloc->clearNeeded(regT2);*/
+	if (regT2b) mVU.regAlloc->clearNeeded(regT2);
 }
 
 //------------------------------------------------------------------
@@ -406,7 +406,7 @@ static void mVU_ITOFx(mP, const float* addr, microOpcode opEnum) {
 }
 
 // Clip Opcode
-mVUop(mVU_CLIP) {/*
+mVUop(mVU_CLIP) {
 	pass1 { mVUanalyzeFMAC4(mVU, _Fs_, _Ft_); }
 	pass2 {
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, 0xf);
@@ -444,7 +444,7 @@ mVUop(mVU_CLIP) {/*
 		mVU.regAlloc->clearNeeded(t1);
 		mVU.profiler.EmitOp(opCLIP);
 	}
-	pass3 { mVUlog("CLIP"); mVUlogCLIP(); }*/
+	pass3 { mVUlog("CLIP"); mVUlogCLIP(); }
 }
 
 //------------------------------------------------------------------
