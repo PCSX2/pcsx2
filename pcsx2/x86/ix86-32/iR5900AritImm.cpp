@@ -62,9 +62,12 @@ void recADDI_(int info)
 
 	if ( _Rt_ == _Rs_ ) {
 		#ifdef __M_X86_64
-		  s64 imm64 = _Imm_;
+		  s64 imm64 = ((s64)_Imm_)<<32;
 		  xMOV( eaxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
-		  xADD( rax, imm64);
+		  xSHL( rax, 32 );
+		  xMOV64( rbx, imm64);
+		  xADD( rax, rbx);
+		  xSAR( rax, 32 );
 		  xMOV( ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], rax);
 		#else
 		  // must perform the ADD unconditionally, to maintain flags status:
