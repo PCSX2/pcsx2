@@ -287,6 +287,14 @@ bool InputRecordingFile::ReadHeaderAndCheck()
 	}
 	if (savestate.fromSavestate)
 	{
+		if (!CoreThread.IsOpen())
+		{
+			recordingConLog(L"[REC]: Game is not open, aborting playing input recording which starts on a save-state.\n");
+			Close();
+			// TODO - this function does too much, it should only check the header, not also load the save-state
+			// but that should be saved for the refactor of this file.
+			return false;
+		}
 		FILE* ssFileCheck = wxFopen(filename + "_SaveState.p2s", "r");
 		if (ssFileCheck == NULL)
 		{
