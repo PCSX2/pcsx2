@@ -61,9 +61,16 @@ void recADDI_(int info)
 	pxAssert( !(info&PROCESS_EE_XMM) );
 
 	if ( _Rt_ == _Rs_ ) {
-		// must perform the ADD unconditionally, to maintain flags status:
-		xADD(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _Imm_);
-		_signExtendSFtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]);
+		#ifdef __M_X86_64
+		  s64 imm64 = _Imm_;
+		  xMOV( eaxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
+		  xADD( rax, imm64);
+		  xMOV( ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], rax);
+		#else
+		  // must perform the ADD unconditionally, to maintain flags status:
+		  xADD(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _Imm_);
+		  _signExtendSFtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]);
+		#endif
 	}
 	else {
 		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
