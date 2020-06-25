@@ -850,8 +850,11 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent &event)
 
 	wxString path = openFileDialog.GetPath();
 	g_InputRecording.Play(path, true);
-	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
-	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
+	if (g_InputRecording.GetModeState() != INPUT_RECORDING_MODE_NONE)
+	{
+		m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
+		m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
+	}
 }
 
 void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent &event)
