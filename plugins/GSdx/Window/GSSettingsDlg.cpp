@@ -81,7 +81,7 @@ std::vector<GSSettingsDlg::Adapter> GSSettingsDlg::EnumerateD3D11Adapters()
 
 		D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level(adapter, D3D_DRIVER_TYPE_UNKNOWN);
 
-		int size = WideCharToMultiByte(CP_ACP, 0, desc.Description, sizeof(desc.Description), nullptr, 0, nullptr, nullptr);
+		const int size = WideCharToMultiByte(CP_ACP, 0, desc.Description, sizeof(desc.Description), nullptr, 0, nullptr, nullptr);
 		std::vector<char> buf(size);
 		WideCharToMultiByte(CP_ACP, 0, desc.Description, sizeof(desc.Description), buf.data(), size, nullptr, nullptr);
 		adapters.push_back({buf.data(), GSAdapter(desc), level});
@@ -206,6 +206,10 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 					adapter_id = (*m_current_adapters)[data].id;
 				GSHacksDlg().DoModal();
 			}
+			break;
+		case IDC_SWTHREADS_EDIT:
+			if (code == EN_CHANGE)
+				UpdateControls();
 			break;
 		case IDOK:
 		{
@@ -339,15 +343,18 @@ void GSSettingsDlg::UpdateControls()
 
 	if(ComboBoxGetSelData(IDC_RENDERER, i))
 	{
-		GSRendererType renderer = static_cast<GSRendererType>(i);
+		const GSRendererType renderer = static_cast<GSRendererType>(i);
 
-		bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL;
-		bool ogl = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::OGL_SW || renderer == GSRendererType::OGL_OpenCL;
+		const bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL;
+		const bool ogl = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::OGL_SW || renderer == GSRendererType::OGL_OpenCL;
 
-		bool hw =  renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::OGL_HW;
-		bool sw =  renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::OGL_SW;
-		bool ocl = renderer == GSRendererType::DX1011_OpenCL || renderer == GSRendererType::OGL_OpenCL;
-		bool null = renderer == GSRendererType::Null;
+		const bool hw =  renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::OGL_HW;
+		const bool sw =  renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::OGL_SW;
+		const bool ocl = renderer == GSRendererType::DX1011_OpenCL || renderer == GSRendererType::OGL_OpenCL;
+		const bool null = renderer == GSRendererType::Null;
+
+		const int sw_threads = SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_GETPOS, 0, 0);
+		SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_SETPOS, 0, MAKELPARAM(sw_threads, 0));
 
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGO11), dx11 ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_NULL), null ? SW_SHOW : SW_HIDE);
@@ -363,7 +370,6 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_INTERLACE_TEXT), !null);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER), !null);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER_TEXT), !null);
-
 
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW_TEXT), hw);
@@ -406,7 +412,6 @@ void GSSettingsDlg::UpdateControls()
 		// Shader Configuration
 		EnableWindow(GetDlgItem(m_hWnd, IDC_SHADEBUTTON), !null);
 	}
-
 }
 
 // Shader Configuration Dialog
@@ -465,8 +470,8 @@ void GSShaderDlg::UpdateControls()
 	SetDlgItemText(m_hWnd, IDC_CONTRAST_VALUE, text);
 
 	// Shader Settings
-	bool external_shader_selected = IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX) == BST_CHECKED;
-	bool shadeboost_selected = IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST) == BST_CHECKED;
+	const bool external_shader_selected = IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX) == BST_CHECKED;
+	const bool shadeboost_selected = IsDlgButtonChecked(m_hWnd, IDC_SHADEBOOST) == BST_CHECKED;
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER), shadeboost_selected);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER), shadeboost_selected);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER), shadeboost_selected);
@@ -521,7 +526,7 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_COMMAND:
 	{
-		int id = LOWORD(wParam);
+		const int id = LOWORD(wParam);
 
 		switch(id)
 		{
@@ -549,9 +554,9 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("shaderfx", (int)IsDlgButtonChecked(m_hWnd, IDC_SHADER_FX));
 
 			// External FX Shader(OpenGL)
-			int shader_fx_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXTLENGTH, 0, 0);
-			int shader_fx_conf_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXTLENGTH, 0, 0);
-			int length = std::max(shader_fx_length, shader_fx_conf_length) + 1;
+			const int shader_fx_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXTLENGTH, 0, 0);
+			const int shader_fx_conf_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXTLENGTH, 0, 0);
+			const int length = std::max(shader_fx_length, shader_fx_conf_length) + 1;
 			std::unique_ptr<char[]> buffer(new char[length]);
 
 			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer.get());
@@ -607,13 +612,13 @@ void GSHacksDlg::OnInit()
 {
 	HWND hwnd_renderer = GetDlgItem(GetParent(m_hWnd), IDC_RENDERER);
 	HWND hwnd_upscaling = GetDlgItem(GetParent(m_hWnd), IDC_UPSCALE_MULTIPLIER);
-	GSRendererType renderer = static_cast<GSRendererType>(SendMessage(hwnd_renderer, CB_GETITEMDATA, SendMessage(hwnd_renderer, CB_GETCURSEL, 0, 0), 0));
-	unsigned short upscaling_multiplier = static_cast<unsigned short>(SendMessage(hwnd_upscaling, CB_GETITEMDATA, SendMessage(hwnd_upscaling, CB_GETCURSEL, 0, 0), 0));
+	const GSRendererType renderer = static_cast<GSRendererType>(SendMessage(hwnd_renderer, CB_GETITEMDATA, SendMessage(hwnd_renderer, CB_GETCURSEL, 0, 0), 0));
+	const unsigned short upscaling_multiplier = static_cast<unsigned short>(SendMessage(hwnd_upscaling, CB_GETITEMDATA, SendMessage(hwnd_upscaling, CB_GETCURSEL, 0, 0), 0));
 
 	// It can only be accessed with a HW renderer, so this is sufficient.
-	bool hwhacks = IsDlgButtonChecked(GetParent(m_hWnd), IDC_HACKS_ENABLED) == BST_CHECKED;
-	bool ogl = renderer == GSRendererType::OGL_HW;
-	bool native = upscaling_multiplier == 1;
+	const bool hwhacks = IsDlgButtonChecked(GetParent(m_hWnd), IDC_HACKS_ENABLED) == BST_CHECKED;
+	const bool ogl = renderer == GSRendererType::OGL_HW;
+	const bool native = upscaling_multiplier == 1;
 
 	CheckDlgButton(m_hWnd, IDC_WILDHACK, theApp.GetConfigB("UserHacks_WildHack"));
 	CheckDlgButton(m_hWnd, IDC_PRELOAD_GS, theApp.GetConfigB("preload_frame_with_gs_data"));
@@ -728,8 +733,8 @@ void GSHacksDlg::UpdateControls()
 	int skipdraw_offset = SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_GETPOS, 0, 0);
 	int skipdraw = SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0);
 
-	bool skipdraw_offset_changed = skipdraw_offset != m_old_skipdraw_offset;
-	bool skipdraw_changed = skipdraw != m_old_skipdraw;
+	const bool skipdraw_offset_changed = skipdraw_offset != m_old_skipdraw_offset;
+	const bool skipdraw_changed = skipdraw != m_old_skipdraw;
 
 	if (skipdraw_offset == 0 && skipdraw_offset_changed || skipdraw == 0 && skipdraw_changed)
 	{
@@ -746,6 +751,10 @@ void GSHacksDlg::UpdateControls()
 		skipdraw_offset = 1;
 	}
 
+	const int tc_offset_x = SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0);
+	const int tc_offset_y = SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_GETPOS, 0, 0);
+	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_SETPOS, 0, MAKELPARAM(tc_offset_x, 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_SETPOS, 0, MAKELPARAM(tc_offset_y, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_SETPOS, 0, MAKELPARAM(skipdraw_offset, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_SETPOS, 0, MAKELPARAM(skipdraw, 0));
 	m_old_skipdraw_offset = skipdraw_offset;
@@ -758,12 +767,14 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_COMMAND:
 	{
-		int id = LOWORD(wParam);
+		const int id = LOWORD(wParam);
 
 		switch(id)
 		{
 		case IDC_SKIPDRAWHACKEDIT:
 		case IDC_SKIPDRAWOFFSETEDIT:
+		case IDC_TCOFFSETX2:
+		case IDC_TCOFFSETY2:
 			if (HIWORD(wParam) == EN_CHANGE)
 				UpdateControls();
 			break;
@@ -802,8 +813,8 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			// It's more user friendly to lower the skipdraw offset value here - it prevents the skipdraw offset
 			// value from decreasing unnecessarily if the user types a skipdraw value that is temporarily lower
 			// than the skipdraw offset value.
-			int skipdraw_offset = SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_GETPOS, 0, 0);
-			int skipdraw = SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0);
+			const int skipdraw_offset = SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWOFFSET), UDM_GETPOS, 0, 0);
+			const int skipdraw = SendMessage(GetDlgItem(m_hWnd, IDC_SKIPDRAWHACK), UDM_GETPOS, 0, 0);
 			theApp.SetConfig("UserHacks_SkipDraw_Offset", std::min(skipdraw_offset, skipdraw));
 			theApp.SetConfig("UserHacks_SkipDraw", skipdraw);
 
@@ -896,8 +907,15 @@ void GSOSDDlg::UpdateControls()
 	sprintf(text, "%d", m_color.b);
 	SetDlgItemText(m_hWnd, IDC_OSD_COLOR_BLUE_AMOUNT, text);
 
-	bool monitor_enabled = IsDlgButtonChecked(m_hWnd, IDC_OSD_MONITOR) == BST_CHECKED;
-	bool log_enabled = IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG) == BST_CHECKED;
+	const bool monitor_enabled = IsDlgButtonChecked(m_hWnd, IDC_OSD_MONITOR) == BST_CHECKED;
+	const bool log_enabled = IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG) == BST_CHECKED;
+
+	const int osd_size = SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SIZE), UDM_GETPOS, 0, 0);
+	const int osd_timeout = SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TIMEOUT), UDM_GETPOS, 0, 0);
+	const int osd_max_log = SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_GETPOS, 0, 0);
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SIZE), UDM_SETPOS, 0, MAKELPARAM(osd_size, 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TIMEOUT), UDM_SETPOS, 0, MAKELPARAM(osd_timeout, 0));
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_SETPOS, 0, MAKELPARAM(osd_max_log, 0));
 
 	// Font
 	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_COLOR_RED_SLIDER), monitor_enabled || log_enabled);
@@ -971,7 +989,7 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_COMMAND:
 	{
-		int id = LOWORD(wParam);
+		const int id = LOWORD(wParam);
 
 		switch (id)
 		{
@@ -997,6 +1015,12 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case IDC_OSD_MONITOR:
 			if (HIWORD(wParam) == BN_CLICKED)
+				UpdateControls();
+			break;
+		case IDC_OSD_SIZE_EDIT:
+		case IDC_OSD_TIMEOUT_EDIT:
+		case IDC_OSD_MAX_LOG_EDIT:
+			if (HIWORD(wParam) == EN_CHANGE)
 				UpdateControls();
 			break;
 		case IDCANCEL:
