@@ -258,7 +258,7 @@ static __fi void _dmaSPR0()
 
 			if (spr0ch.chcr.TIE && ptag->IRQ) // Check TIE bit of CHCR and IRQ bit of tag
 			{
-				// Console.WriteLn("SPR0 TIE");
+				//Console.WriteLn("SPR0 TIE");
 				done = true;
 			}
 
@@ -267,7 +267,7 @@ static __fi void _dmaSPR0()
 				ptag[1]._u32, ptag[0]._u32, spr0ch.qwc, ptag->ID, spr0ch.madr);
 			break;
 		}
-		// case INTERLEAVE_MODE:
+		//case INTERLEAVE_MODE:
 		default:
 		{
 			if (dmacRegs.ctrl.STS == STS_fromSPR)   // STS == fromSPR
@@ -299,7 +299,7 @@ void SPRFROMinterrupt()
 				{
 					if ((spr0ch.madr & ~dmacRegs.rbsr.RMSK) != dmacRegs.rbor.ADDR) Console.WriteLn("GIF MFIFO Write outside MFIFO area");
 					spr0ch.madr = dmacRegs.rbor.ADDR + (spr0ch.madr & dmacRegs.rbsr.RMSK);
-					// Console.WriteLn("mfifoGIFtransfer %x madr %x, tadr %x", gif->chcr._u32, gif->madr, gif->tadr);
+					//Console.WriteLn("mfifoGIFtransfer %x madr %x, tadr %x", gif->chcr._u32, gif->madr, gif->tadr);
 					hwMFIFOResume(mfifotransferred);
 					mfifotransferred = 0;
 					break;
