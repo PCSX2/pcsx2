@@ -157,7 +157,7 @@ void _SPR0interleave()
 	tDMA_TAG *pMem;
 
 	if (tqwc == 0) tqwc = qwc;
-	// Console.WriteLn("dmaSPR0 interleave");
+	//Console.WriteLn("dmaSPR0 interleave");
 	SPR_LOG("SPR0 interleave size=%d, tqwc=%d, sqwc=%d, addr=%lx sadr=%lx",
 	        spr0ch.qwc, tqwc, sqwc, spr0ch.madr, spr0ch.sadr);
 
@@ -421,7 +421,7 @@ void _dmaSPR1()   // toSPR work function
 	{
 		case NORMAL_MODE:
 		{
-			// int cycles = 0;
+			//int cycles = 0;
 			// Transfer Dn_QWC from Dn_MADR to SPR1
 			SPR1chain();
 			spr1finished = true;
@@ -468,7 +468,7 @@ void _dmaSPR1()   // toSPR work function
 			{
 				SPR_LOG("dmaIrq Set");
 
-				// Console.WriteLn("SPR1 TIE");
+				//Console.WriteLn("SPR1 TIE");
 				done = true;
 			}
 
