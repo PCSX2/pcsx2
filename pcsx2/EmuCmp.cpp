@@ -269,7 +269,25 @@ void EmuCmp::cmpR5900(u32 pc) {
 	lastPC = pc;
 }
 
-void EmuCmp::verifySync(u16 syncID) {
+void EmuCmp::detail::cmpMem(void *mem, int length, const char *description) {
+	if (mode == Config::Mode::Server) {
+		send(mem, length);
+	} else {
+		const int maxStackBuffer = _64kb;
+		u8 srv_[std::min(length, maxStackBuffer)];
+		u8 *srv = length > maxStackBuffer ? (u8*)malloc(length) : srv_;
+
+		if (0 != memcmp(srv, mem, length)) {
+			char err[1024];
+			sprintf(err, "Mismatch in %s", description);
+			pxAssertRel(0, err);
+		}
+
+		if (length > maxStackBuffer) { free(srv); }
+	}
+}
+
+void EmuCmp::detail::verifySync(u16 syncID) {
 	u32 val = 0xaaaa0000 | syncID;
 	syncValue(val);
 	pxAssertRel(val == 0xaaaa0000 | syncID, "Emulators desynced!");

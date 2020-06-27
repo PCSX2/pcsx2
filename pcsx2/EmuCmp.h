@@ -28,6 +28,8 @@ namespace EmuCmp {
 
 namespace detail {
 	void syncData(void *data, std::size_t size);
+	void cmpMem(void *mem, int length, const char *description);
+	void verifySync(u16 syncID);
 }
 
 namespace Config {
@@ -83,9 +85,21 @@ void shutdown();
 /// Compare R5900 registers
 void __fastcall cmpR5900(u32 pc);
 
+/// Compare an arbitrary memory buffer
+/// (Does not perform correction, meant as a verification for e.g. memory card data which probably shouldn't be synced)
+static void cmpMem(void *mem, int length, const char *description) {
+	if (isRunning()) {
+		detail::cmpMem(mem, length, description);
+	}
+}
+
 /// If you're not sure both emulators are taking the same codepaths, add one of these
 /// It will synchronize `0xaaaa0000 | syncID` and make sure both sides see it.  If you see `0xaaaa####` coming through somewhere else, it's probably due to a desync
-void __fastcall verifySync(u16 syncID);
+static void __fastcall verifySync(u16 syncID) {
+	if (isRunning()) {
+		detail::verifySync(syncID);
+	}
+}
 
 /// Synchronize a value between the emucmp client and server
 /// (The server will send the value to the client, who overwrites its value with the server's)
