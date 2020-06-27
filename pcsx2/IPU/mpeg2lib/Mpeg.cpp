@@ -74,7 +74,7 @@ int get_macroblock_modes()
 			macroblock_modes = tab->modes;
 
 			if ((!(decoder.frame_pred_frame_dct)) &&
-			        (decoder.picture_structure == FRAME_PICTURE))
+				(decoder.picture_structure == FRAME_PICTURE))
 			{
 				macroblock_modes |= GETBITS(1) * DCT_TYPE_INTERLACED;
 			}
@@ -308,20 +308,20 @@ static __fi int get_chroma_dc_dct_diff()
 	int dc_diff;
 	u16 code = UBITS(5);
 
-    if (code<31)
+	if (code<31)
 	{
 		size = DCtable.chrom0[code].size;
 		DUMPBITS(DCtable.chrom0[code].len);
 	}
 	else
 	{
-	    code = UBITS(10) - 0x3e0;
-	    size = DCtable.chrom1[code].size;
+		code = UBITS(10) - 0x3e0;
+		size = DCtable.chrom1[code].size;
 		DUMPBITS(DCtable.chrom1[code].len);
 	}
-	
+
 	if (size==0)
-	    dc_diff = 0;
+		dc_diff = 0;
 	else
 	{
 		dc_diff = GETBITS(size);
@@ -331,7 +331,7 @@ static __fi int get_chroma_dc_dct_diff()
 			dc_diff-= (1<<size) - 1;
 		}
 	}
-  
+
 	return dc_diff;
 }
 
@@ -400,19 +400,19 @@ static bool get_intra_block()
 			tab = &DCT.tab2[(code >> 4) - 16];
 		}
 		else if (code >= 128)
-		{    
+		{
 			tab = &DCT.tab3[(code >> 3) - 16];
 		}
 		else if (code >= 64)
-		{    
+		{
 			tab = &DCT.tab4[(code >> 2) - 16];
 		}
 		else if (code >= 32)
-		{    
+		{
 			tab = &DCT.tab5[(code >> 1) - 16];
 		}
 		else if (code >= 16)
-		{    
+		{
 			tab = &DCT.tab6[code - 16];
 		}
 		else
@@ -507,9 +507,9 @@ static bool get_non_intra_block(int * last)
 	s16 * dest = decoder.DCTblock;
 	u16 code;
 
-    /* decode AC coefficients */
-    for (i= ipu_cmd.pos[4] ; ; i++)
-    {
+	/* decode AC coefficients */
+	for (i= ipu_cmd.pos[4] ; ; i++)
+	{
 		switch (ipu_cmd.pos[5])
 		{
 		case 0:

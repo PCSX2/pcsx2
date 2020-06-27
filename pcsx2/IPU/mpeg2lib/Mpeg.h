@@ -59,7 +59,7 @@ enum picture_structure
 /* picture coding type */
 enum picture_coding_type
 {
-	I_TYPE  =1,
+	I_TYPE = 1,
 	P_TYPE = 2,
 	B_TYPE = 3,
 	D_TYPE = 4
