@@ -171,11 +171,6 @@ void _eeMoveGPRtoR(const xRegister32& to, int fromgpr)
 	}
 }
 
-void _eeMoveGPRtoR(const xRegisterLong& to, int fromgpr)
-{
-	_eeMoveGPRtoR(xRegister32(to.Id), fromgpr);
-}
-
 void _eeMoveGPRtoM(uptr to, int fromgpr)
 {
 	if( GPR_IS_CONST1(fromgpr) )
@@ -537,7 +532,7 @@ static void recAlloc()
 	for (int i = 0; i < 0x10000; i++)
 		recLUT_SetPage(recLUT, 0, 0, 0, i, 0);
 
-	for ( u32 i = 0x0000; i < Ps2MemSize::MainRam / 0x10000; i++ )
+	for ( int i = 0x0000; i < (int)(Ps2MemSize::MainRam / 0x10000); i++ )
 	{
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x0000, i, i);
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x2000, i, i);
@@ -1046,8 +1041,7 @@ static void iBranchTest(u32 newpc)
 	//    cpuRegs.cycle += blockcycles;
 	//    if( cpuRegs.cycle > g_nextEventCycle ) { DoEvents(); }
 
-	if (EmuCmp::mode != EmuCmp::Config::Mode::Off
-		&& EmuCmp::granularity == EmuCmp::Config::Granularity::BasicBlock)
+	if (EmuCmp::shouldEmitAfterBB() && EmuCmp::shouldCompareR5900())
 	{
 		iFlushCall(FLUSH_FREE_XMM);
 		xFastCall((void*)EmuCmp::cmpR5900, cpuRegs.pc);
@@ -1287,9 +1281,10 @@ void encodeMemcheck()
 		break;
 	}
 }
-
+int cnt = 0;
 void recompileNextInstruction(int delayslot)
 {
+    printf("jc iR5900A-32 recompileNextInstruction cnt = %i, cpuRegs.pc = 0x%x\n",cnt++,cpuRegs.pc);
 	u32 i;
 	int count;
 
@@ -1309,8 +1304,7 @@ void recompileNextInstruction(int delayslot)
 	if( IsDebugBuild )
 		xMOV(eaxd, pc);
 
-	if (EmuCmp::mode != EmuCmp::Config::Mode::Off
-		&& EmuCmp::granularity == EmuCmp::Config::Granularity::Instruction)
+	if (EmuCmp::shouldEmitAfterInstr() && EmuCmp::shouldCompareR5900())
 	{
 		iFlushCall(FLUSH_FREE_XMM);
 		xFastCall((void*)EmuCmp::cmpR5900, pc);
@@ -2140,6 +2134,12 @@ StartRecomp:
 	recPtr = xGetPtr();
 
 	pxAssert( (g_cpuHasConstReg&g_cpuFlushedConstReg) == g_cpuHasConstReg );
+    
+    if (cnt > 200) 
+    {
+        xNOP();
+        printf("jc 323\n");
+    }
 
 	s_pCurBlock = NULL;
 	s_pCurBlockEx = NULL;

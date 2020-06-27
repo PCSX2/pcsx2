@@ -397,7 +397,6 @@ Pcsx2Config::DebugOptions::DebugOptions()
 	WindowHeight = 0;
 	MemoryViewBytesPerRow = 16;
 	EmuCmpHost = wxEmptyString;
-	EmuCmpGranularity = 0;
 }
 
 void Pcsx2Config::DebugOptions::LoadSave( IniInterface& ini )
@@ -411,25 +410,8 @@ void Pcsx2Config::DebugOptions::LoadSave( IniInterface& ini )
 	IniBitfield( WindowWidth );
 	IniBitfield( WindowHeight );
 	IniBitfield( MemoryViewBytesPerRow );
-	if (!IsDevBuild) return;
-	IniEntry( EmuCmpHost );
-	IniBitBool( EmuCmpCorrections );
-	wxString granularityStr;
-	switch (EmuCmpGranularity) {
-		case (u8)EmuCmp::Config::Granularity::BasicBlock:
-			granularityStr = "BasicBlock";
-			break;
-		case (u8)EmuCmp::Config::Granularity::Instruction:
-		default:
-			granularityStr = "Instruction";
-			break;
-	}
-	ini.Entry(L"EmuCmpGranularity", granularityStr);
-	granularityStr.LowerCase();
-	if (granularityStr == "basicblock") {
-		EmuCmpGranularity = (u8)EmuCmp::Config::Granularity::BasicBlock;
-	} else {
-		EmuCmpGranularity = (u8)EmuCmp::Config::Granularity::Instruction;
+	if (EmuCmp::Config::enabled) {
+		IniEntry( EmuCmpHost );
 	}
 }
 

@@ -28,7 +28,6 @@
 using namespace EmuCmp;
 
 Config::Mode EmuCmp::mode = Config::Mode::Off;
-Config::Granularity EmuCmp::granularity = Config::Granularity::Instruction;
 
 // TODO: Windows support
 
@@ -104,9 +103,7 @@ void EmuCmp::init() {
 	}
 done:
 #endif
-
-	granularity = (Config::Granularity)EmuConfig.Debugger.EmuCmpGranularity;
-	syncValue(granularity);
+	return;
 }
 
 void EmuCmp::shutdown() {
@@ -166,8 +163,8 @@ static void Compare(const T& server, T& client, const char *name, bool& found, u
 	if (server != client) {
 		std::stringstream out;
 		out << "Server client mismatch of " << name << " at " << std::hex << pc << " (server was " << std::hex << server << " but client was " << std::hex << client << ")";
-		pxAssertMsg(0, out.str().c_str());
-		if (EmuConfig.Debugger.EmuCmpCorrections) {
+		pxAssertRel(0, out.str().c_str());
+		if (Config::corrections) {
 			client = server;
 		}
 		found = true;
@@ -181,10 +178,46 @@ static void Compare(const GPR_reg& server, GPR_reg& client, const char *name, bo
 	Compare(server.SD[1], client.SD[1], hiname, found, pc);
 }
 
+/// If you're having trouble with load instructions loading incorrect data from memory, use this to compare the section of memory containing the incorrect data during the appropriate cmpR#### routine to catch the bad store in action!
+static void CompareBuffer(void *buffer, int startOffset, int length, const char *name, u32 pc) {
+	u8 *local = (u8*)buffer + startOffset;
+	if (mode == Config::Mode::Server) {
+		send(local, length);
+	} else if (mode == Config::Mode::Client) {
+		const int maxStackBuffer = _64kb;
+		u8 srv_[std::min(length, maxStackBuffer)];
+		u8 *srv = length > maxStackBuffer ? (u8*)malloc(length) : srv_;
+		receive(srv, length);
+
+		if (0 != memcmp(srv, local, length)) {
+			bool ignore;
+			if (length % 4 == 0) { // Compare ints
+				u32* srv32 = (u32*)srv;
+				u32* local32 = (u32*)local;
+				for (int i = 0; i < length/4; i++) {
+					char nm[128];
+					sprintf(nm, "%s[0x%x]", name, i*4+startOffset);
+					Compare(srv32[i], local32[i], nm, ignore, pc);
+				}
+			} else {
+				for (int i = 0; i < length; i++) {
+					char nm[128];
+					sprintf(nm, "%s[0x%x]", name, i+startOffset);
+					Compare(srv[i], local[i], nm, ignore, pc);
+				}
+			}
+		}
+
+		if (length > maxStackBuffer) { free(srv); }
+	}
+}
+
 #define COMPARE(reg) Compare(servCPU.reg, cpuRegs.reg, #reg, found, pc)
 
 void EmuCmp::cmpR5900(u32 pc) {
 	static u32 lastPC = 0;
+	// Example use of CompareBuffer to find bad memory around 0x70001000
+	// CompareBuffer(eeMem->Scratch, 0x1000, 0x500, "Scratch", lastPC);
 	if (mode == Config::Mode::Server) {
 		send(cpuRegs);
 		send(fpuRegs);
@@ -216,7 +249,7 @@ void EmuCmp::cmpR5900(u32 pc) {
 			if (!found) {
 				std::stringstream out;
 				out << "Server client mismatch of unknown CPU register at " << std::hex << lastPC;
-				pxAssertMsg(0, out.str().c_str());
+				pxAssertRel(0, out.str().c_str());
 			}
 		}
 		if (0 != memcmp(&servFPU, &fpuRegs, sizeof(fpuRegisters))) {
@@ -229,9 +262,15 @@ void EmuCmp::cmpR5900(u32 pc) {
 			if (!found) {
 				std::stringstream out;
 				out << "Server client mismatch of unknown FPU register at " << std::hex << lastPC;
-				pxAssertMsg(0, out.str().c_str());
+				pxAssertRel(0, out.str().c_str());
 			}
 		}
 	}
 	lastPC = pc;
+}
+
+void EmuCmp::verifySync(u16 syncID) {
+	u32 val = 0xaaaa0000 | syncID;
+	syncValue(val);
+	pxAssertRel(val == 0xaaaa0000 | syncID, "Emulators desynced!");
 }

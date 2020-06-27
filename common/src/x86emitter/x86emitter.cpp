@@ -1264,4 +1264,19 @@ xAddressVoid xComplexAddress(const xAddressReg& tmpRegister, void *base, const x
     }
 }
 
+void xLoadFarAddr(const xAddressReg& dst, void *addr) {
+#ifdef __M_X86_64
+    sptr iaddr = (sptr)addr;
+    sptr rip = (sptr)xGetPtr() + 7; // LEA will be 7 bytes
+    sptr disp = iaddr - rip;
+    if (disp == (s32)disp) {
+        xLEA(dst, ptr[addr]);
+    } else {
+        xMOV64(dst, iaddr);
+    }
+#else
+    xMOV(dst, (sptr)addr);
+#endif
+}
+
 } // End namespace x86Emitter

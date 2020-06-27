@@ -22,6 +22,7 @@
  * EmuCmp: Compare two versions of the emulator
  *
  * If you're working on a new version of the recompiler and it keeps hitting a kernel panic somewhere in the bios, use this to compare it to a working version!
+ * Just edit the configuration here based on where your bug is, and run the emulator:
  */
 namespace EmuCmp {
 
@@ -45,10 +46,34 @@ namespace Config {
 		/// Synchronize every basic block (catches less inconsistencies, works as long as both emulators flush all registers between basic blocks)
 		BasicBlock = 1,
 	};
+
+	// ======== EmuCmp Configuration ========
+	// Edit these to change EmuCmp settings
+	// You may want to modify compare routines in EmuCmp.cpp as well to e.g. compare memory regions that are getting garbage written to them
+
+	/// Is EmuCmp enabled?  If false, EmuCmp will be completely disabled and nothing below matters
+	const bool enabled = false;
+	/// If EmuCmp discovers a desync, should it attempt to fix it?
+	const bool corrections = true;
+	/// When should EmuCmp synchronize?
+	const Config::Granularity granularity = Config::Granularity::Instruction;
+	/// Should EmuCmp compare registers after R5900 instructions?  If your issue isn't in the R5900 you can turn this off to reduce EmuCmp overhead
+	const bool shouldCompareR5900 = true;
+	/// Should EmuCmp compare registers after R3000A instructions?  If your issue isn't in the R3000A you can turn this off to reduce EmuCmp overhead
+	const bool shouldCompareR3000A = true;
+	/// Should EmuCmp compare registers after VU instructions?  If your issue isn't in the VU you can turn this off to reduce EmuCmp overhead
+	const bool shouldCompareVU = true;
 };
 
+/// The current mode
 extern Config::Mode mode;
-extern Config::Granularity granularity;
+
+static bool isRunning() { return Config::enabled && mode != Config::Mode::Off; }
+static bool shouldCompareR5900() { return isRunning() && Config::shouldCompareR5900; }
+static bool shouldCompareR3000A() { return isRunning() && Config::shouldCompareR3000A; }
+static bool shouldCompareVU() { return isRunning() && Config::shouldCompareVU; }
+static bool shouldEmitAfterInstr() { return Config::granularity == Config::Granularity::Instruction; }
+static bool shouldEmitAfterBB() { return Config::granularity == Config::Granularity::BasicBlock; }
 
 /// Attempt to initialize emucmp
 void init();
@@ -58,11 +83,15 @@ void shutdown();
 /// Compare R5900 registers
 void __fastcall cmpR5900(u32 pc);
 
+/// If you're not sure both emulators are taking the same codepaths, add one of these
+/// It will synchronize `0xaaaa0000 | syncID` and make sure both sides see it.  If you see `0xaaaa####` coming through somewhere else, it's probably due to a desync
+void __fastcall verifySync(u16 syncID);
+
 /// Synchronize a value between the emucmp client and server
 /// (The server will send the value to the client, who overwrites its value with the server's)
 template <typename T>
 void syncValue(T& value) {
-	if (mode != Config::Mode::Off) {
+	if (isRunning()) {
 		detail::syncData(&value, sizeof(T));
 	}
 }
