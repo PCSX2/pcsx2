@@ -20,6 +20,7 @@
 #include "ConsoleLogger.h"
 #include "Sio.h"
 #include "sio_internal.h"
+#include "EmuCmp.h"
 
 #ifndef DISABLE_RECORDING
 #	include "Recording/InputRecording.h"
@@ -556,6 +557,8 @@ SIO_WRITE memcardRead(u8 data)
 		sio.buf[transfer_size + 4] = mcd->DoXor(&sio.buf[4], transfer_size);
 		sio.buf[transfer_size + 5] = mcd->term;
 		sio.bufSize = transfer_size + 5;
+		EmuCmp::verifySync(0xca6d);
+		EmuCmp::cmpMem(sio.buf, sio.bufSize, "Memory card read");
 		break;
 
 	default:

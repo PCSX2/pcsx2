@@ -31,6 +31,8 @@
 #include "ps2/BiosTools.h"
 #include "GameDatabase.h"
 
+#include "EmuCmp.h"
+
 // This typically reflects the Sony-assigned serial code for the Disc, if one exists.
 //  (examples:  SLUS-2113, etc).
 // If the disc is homebrew then it probably won't have a valid serial; in which case
@@ -1529,6 +1531,8 @@ static void cdvdWrite16(u8 rt)		 // SCOMMAND
 				break;
 
 			case 0x08: // CdReadRTC (0:8)
+				EmuCmp::verifySync(0x0969);
+				EmuCmp::syncValue(cdvd.RTC);
 				SetResultSize(8);
 				cdvd.Result[0] = 0;
 				cdvd.Result[1] = itob(cdvd.RTC.second); //Seconds
