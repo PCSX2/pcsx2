@@ -23,15 +23,18 @@
 #define __JOYSTICKCONFIGURATION_H__
 
 #include <wx/wx.h>
-/*#include <wx/frame.h>
-#include <wx/window.h>
-#include <wx/button.h>
-#include <wx/checkbox.h>
-#include <wx/slider.h>*/
 
 #include "../GamePad.h"
 #include "../keyboard.h"
 #include "../onepad.h"
+
+static const s32 Lx_check_id = wxID_HIGHEST + 100 + 1;
+static const s32 Ly_check_id = wxID_HIGHEST + 100 + 2;
+static const s32 Ljoy_check_id = wxID_HIGHEST + 100 + 3;
+
+static const s32 Rx_check_id = wxID_HIGHEST + 100 + 4;
+static const s32 Ry_check_id = wxID_HIGHEST + 100 + 5;
+static const s32 Rjoy_check_id = wxID_HIGHEST + 100 + 6;
 
 class JoystickConfiguration : public wxDialog
 {

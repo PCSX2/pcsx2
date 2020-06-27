@@ -33,14 +33,14 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
     }
 
     m_joy_map = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
-    m_cb_rumble = new wxCheckBox(this, wxID_ANY, _T("&Enable rumble"), wxPoint(20, 20));
+    m_cb_rumble = new wxCheckBox(this, enable_rumble_id, _T("&Enable rumble"));
 
     wxStaticBoxSizer *rumble_box = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Rumble intensity"));
-    m_sl_rumble_intensity = new wxSlider(this, wxID_ANY, 0, 0, 0x7FFF, wxDefaultPosition, wxDefaultSize,
+    m_sl_rumble_intensity = new wxSlider(this, rumble_slider_id, 0, 0, 0x7FFF, wxDefaultPosition, wxDefaultSize,
                                          wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
 
     wxStaticBoxSizer *joy_box = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Joystick sensibility"));
-    m_sl_joystick_sensibility = new wxSlider(this, wxID_ANY, 0, 0, 200, wxDefaultPosition, wxDefaultSize,
+    m_sl_joystick_sensibility = new wxSlider(this, joy_slider_id, 0, 0, 200, wxDefaultPosition, wxDefaultSize,
                                              wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
 
     gamepad_box->Add(m_joy_map, wxSizerFlags().Expand().Border(wxALL, 5));
@@ -75,7 +75,7 @@ void GamepadConfiguration::InitGamepadConfiguration()
     /*
      * Check if there exist at least one pad available
      * if the pad id is 0, you need at least 1 gamepad connected,
-     * if the pad id is 1, you need at least 2 gamepad connected,
+     * if the pad id is 1, you need at least 2 gamepads connected,
      * Prevent to use a none initialized value on s_vgamePad (core dump)
     */
     if (s_vgamePad.size() >= m_pad_id + 1) {
@@ -111,28 +111,20 @@ void GamepadConfiguration::OnOk(wxCommandEvent &event)
 */
 void GamepadConfiguration::OnSliderReleased(wxCommandEvent &event)
 {
-    wxSlider *sl_tmp = (wxSlider *)event.GetEventObject(); // get the slider object
-    int sl_id = sl_tmp->GetId();                           // slider id
-    if (sl_id == m_sl_rumble_intensity->GetId()) {         // if this is the rumble intensity slider
-        u32 intensity = m_sl_rumble_intensity->GetValue(); // get the new value
-        g_conf.set_ff_intensity(intensity);                // and set the force feedback intensity value with it
-                                                           // get the rumble intensity
-        float strength = m_sl_rumble_intensity->GetValue();
-        /*
-        * convert in a float value between 0 and 1, and run rumble feedback
-        * 1 -> 0x7FFF
-        * 0 -> 0x0000
-        * x -> ?
-        *
-        * formula : strength = x*1/0x7FFF
-        * x : intensity variable
-        * 0x7FFF : maximum intensity
-        * 1 : maximum value of the intensity for the sdl rumble test
-        */
-        s_vgamePad[m_pad_id]->TestForce(strength / 0x7FFF);
-    } else if (sl_id == m_sl_joystick_sensibility->GetId()) {
-        u32 sensibility = m_sl_joystick_sensibility->GetValue(); // get the new value
-        g_conf.set_sensibility(sensibility);                     // and set the joystick sensibility
+    wxSlider *sl_tmp = (wxSlider *)event.GetEventObject();
+    int sl_id = sl_tmp->GetId();
+
+    if (sl_id == rumble_slider_id)
+    {
+        g_conf.set_ff_intensity(m_sl_rumble_intensity->GetValue());
+
+        // convert in a float value between 0 and 1, and run rumble feedback.
+        // 0 to 1 scales to 0x0 to 0x7FFF
+        s_vgamePad[m_pad_id]->TestForce(m_sl_rumble_intensity->GetValue() / 0x7FFF);
+    }
+    else if (sl_id == joy_slider_id)
+    {
+        g_conf.set_sensibility(m_sl_joystick_sensibility->GetValue());
     }
 }
 
@@ -143,12 +135,17 @@ void GamepadConfiguration::OnCheckboxChange(wxCommandEvent &event)
 {
     wxCheckBox *cb_tmp = (wxCheckBox *)event.GetEventObject(); // get the slider object
     int cb_id = cb_tmp->GetId();
-    if (cb_id == m_cb_rumble->GetId()) {
+
+    if (cb_id == enable_rumble_id)
+    {
         g_conf.pad_options[m_pad_id].forcefeedback = (m_cb_rumble->GetValue()) ? (u32)1 : (u32)0;
-        if (m_cb_rumble->GetValue()) {
+        if (m_cb_rumble->GetValue())
+        {
             s_vgamePad[m_pad_id]->TestForce();
             m_sl_rumble_intensity->Enable();
-        } else {
+        }
+        else
+        {
             m_sl_rumble_intensity->Disable();
         }
     }
@@ -161,9 +158,9 @@ void GamepadConfiguration::OnChoiceChange(wxCommandEvent &event)
 {
     wxChoice *choice_tmp = (wxChoice *)event.GetEventObject();
     int id = choice_tmp->GetSelection();
-    if (id != wxNOT_FOUND) {
-        size_t uid = GamePad::index_to_uid(id);
-        g_conf.set_joy_uid(m_pad_id, uid);
+    if (id != wxNOT_FOUND)
+    {
+        g_conf.set_joy_uid(m_pad_id, GamePad::index_to_uid(id));
     }
 }
 
@@ -174,22 +171,15 @@ void GamepadConfiguration::OnChoiceChange(wxCommandEvent &event)
 // Set button values
 void GamepadConfiguration::repopulate()
 {
-    bool val = g_conf.pad_options[m_pad_id].forcefeedback;
-    m_cb_rumble->SetValue(val);
+    m_cb_rumble->SetValue(g_conf.pad_options[m_pad_id].forcefeedback);
 
-    int tmp = g_conf.get_ff_intensity();
-    m_sl_rumble_intensity->SetValue(tmp);
-
-    tmp = g_conf.get_sensibility();
-    m_sl_joystick_sensibility->SetValue(tmp);
+    m_sl_rumble_intensity->SetValue(g_conf.get_ff_intensity());
+    m_sl_joystick_sensibility->SetValue(g_conf.get_sensibility());
 
     u32 joyid = GamePad::uid_to_index(m_pad_id);
     if (joyid < m_joy_map->GetCount() && !m_joy_map->IsEmpty())
         m_joy_map->SetSelection(joyid);
 
     // enable rumble intensity slider if the checkbox is checked
-    if (m_cb_rumble->GetValue())
-        m_sl_rumble_intensity->Enable();
-    else // disable otherwise
-        m_sl_rumble_intensity->Disable();
+    m_sl_rumble_intensity->Enable(m_cb_rumble->GetValue());
 }

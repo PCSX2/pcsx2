@@ -23,15 +23,14 @@
 #define __GAMEPADCONFIGURATION_H__
 
 #include <wx/wx.h>
-/*#include <wx/frame.h>
-#include <wx/window.h>
-#include <wx/button.h>
-#include <wx/checkbox.h>
-#include <wx/slider.h>*/
 
 #include "../GamePad.h"
 #include "../keyboard.h"
 #include "../onepad.h"
+
+static const s32 rumble_slider_id = wxID_HIGHEST + 200 + 1;
+static const s32 joy_slider_id = wxID_HIGHEST + 200 + 2;
+static const s32 enable_rumble_id = wxID_HIGHEST + 200 + 3;
 
 class GamepadConfiguration : public wxDialog
 {
