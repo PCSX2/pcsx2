@@ -180,8 +180,8 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump) {
 
 	if (isEvilJump)		xMOV(arg1regd, ptr32[&mVU.evilBranch]);
 	else				xMOV(arg1regd, ptr32[&mVU.branch]);
-	if (doJumpCaching)	xLEA(arg2reg, ptr[mVUpBlock]);
-	else				xLEA(arg2reg, ptr[&mVUpBlock->pStateEnd]);
+	if (doJumpCaching)	xLoadFarAddr(arg2reg, mVUpBlock);
+	else				xLoadFarAddr(arg2reg, &mVUpBlock->pStateEnd);
 
 	if(mVUup.eBit && isEvilJump)// E-bit EvilJump
 	{

@@ -50,7 +50,7 @@ static void _g1_IndirectImm(G1Type InstType, const xIndirect64orLess &sibdest, i
         xWrite<s8>(imm);
     } else {
         u8 opcode = is_s8(imm) ? x86_Opcode_SUB_Ev_Ib : x86_Opcode_ADD_Ev_Iv;
-        xOpWrite(sibdest.GetPrefix16(), opcode, InstType, sibdest);
+        xOpWrite(sibdest.GetPrefix16(), opcode, InstType, sibdest,1);
 
         if (is_s8(imm))
             xWrite<s8>(imm);

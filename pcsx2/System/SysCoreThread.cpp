@@ -130,7 +130,7 @@ void SysCoreThread::ResetQuick()
 void SysCoreThread::Reset()
 {
 	ResetQuick();
-	if (IsDevBuild) EmuCmp::shutdown();
+	if (EmuCmp::Config::enabled) EmuCmp::shutdown();
 	GetVmMemory().DecommitAll();
 	SysClearExecutionCache();
 	sApp.PostAppMethod( &Pcsx2App::leaveDebugMode );
@@ -255,7 +255,7 @@ bool SysCoreThread::StateCheckInThread()
 // "exception-type boundary" problem (can't mix SEH and C++ exceptions in the same function).
 void SysCoreThread::DoCpuExecute()
 {
-	if (IsDevBuild && !m_hasActiveMachine) {
+	if (EmuCmp::Config::enabled && !m_hasActiveMachine) {
 		EmuCmp::init();
 	}
 	m_hasActiveMachine = true;
