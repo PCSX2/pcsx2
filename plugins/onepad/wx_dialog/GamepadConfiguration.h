@@ -23,11 +23,11 @@
 #define __GAMEPADCONFIGURATION_H__
 
 #include <wx/wx.h>
-#include <wx/frame.h>
+/*#include <wx/frame.h>
 #include <wx/window.h>
 #include <wx/button.h>
 #include <wx/checkbox.h>
-#include <wx/slider.h>
+#include <wx/slider.h>*/
 
 #include "../GamePad.h"
 #include "../keyboard.h"
@@ -35,19 +35,17 @@
 
 class GamepadConfiguration : public wxDialog
 {
-    wxPanel *m_pan_gamepad_config;
     wxCheckBox *m_cb_rumble;
     wxSlider *m_sl_rumble_intensity, *m_sl_joystick_sensibility;
-    wxButton *m_bt_ok;
-    wxStaticText *m_lbl_rumble_intensity;
     wxChoice *m_joy_map;
 
     u32 m_pad_id;
 
-    // methods
+    // Methods
     void repopulate();
+
     // Events
-    void OnButtonClicked(wxCommandEvent &);
+    void OnOk(wxCommandEvent &);
     void OnSliderReleased(wxCommandEvent &);
     void OnCheckboxChange(wxCommandEvent &);
     void OnChoiceChange(wxCommandEvent &);

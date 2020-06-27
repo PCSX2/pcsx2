@@ -19,100 +19,49 @@
 
 #include "GamepadConfiguration.h"
 
-// Construtor of GamepadConfiguration
 GamepadConfiguration::GamepadConfiguration(int pad, wxWindow *parent)
-    : wxDialog(
-          parent,                      // Parent
-          wxID_ANY,                    // ID
-          _T("Gamepad configuration"), // Title
-          wxDefaultPosition,           // Position
-          wxSize(400, 270),            // Width + Length
-          // Style
-          wxSYSTEM_MENU |
-              wxCAPTION |
-              wxCLOSE_BOX |
-              wxCLIP_CHILDREN)
+    : wxDialog(parent, wxID_ANY, _T("Gamepad"), wxDefaultPosition, wxDefaultSize,
+               wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
 {
-
     m_pad_id = pad;
-    m_pan_gamepad_config = new wxPanel(
-        this,              // Parent
-        wxID_ANY,          // ID
-        wxDefaultPosition, // Position
-        wxSize(300, 230)   // Size
-        );
-    m_cb_rumble = new wxCheckBox(
-        m_pan_gamepad_config, // Parent
-        wxID_ANY,             // ID
-        _T("&Enable rumble"), // Label
-        wxPoint(20, 20)       // Position
-        );
+
+    wxBoxSizer *gamepad_box = new wxBoxSizer(wxVERTICAL);
 
     wxArrayString choices;
     for (const auto &j : s_vgamePad) {
         choices.Add(j->GetName());
     }
-    m_joy_map = new wxChoice(
-        m_pan_gamepad_config, // Parent
-        wxID_ANY,             // ID
-        wxPoint(20, 50),      // Position
-        wxDefaultSize,        // Size
-        choices);
 
-    wxString txt_rumble = wxT("Rumble intensity");
-    m_lbl_rumble_intensity = new wxStaticText(
-        m_pan_gamepad_config, // Parent
-        wxID_ANY,             // ID
-        txt_rumble,           // Text which must be displayed
-        wxPoint(20, 90),      // Position
-        wxDefaultSize         // Size
-        );
+    m_joy_map = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
+    m_cb_rumble = new wxCheckBox(this, wxID_ANY, _T("&Enable rumble"), wxPoint(20, 20));
 
-    m_sl_rumble_intensity = new wxSlider(
-        m_pan_gamepad_config, // Parent
-        wxID_ANY,             // ID
-        0,                    // value
-        0,                    // min value 0x0000
-        0x7FFF,               // max value 0x7FFF
-        wxPoint(150, 83),     // Position
-        wxSize(200, 50),       // Size
-        wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM
-        );
+    wxStaticBoxSizer *rumble_box = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Rumble intensity"));
+    m_sl_rumble_intensity = new wxSlider(this, wxID_ANY, 0, 0, 0x7FFF, wxDefaultPosition, wxDefaultSize,
+                                         wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
 
-    wxString txt_joystick = wxT("Joystick sensibility");
-    m_lbl_rumble_intensity = new wxStaticText(
-        m_pan_gamepad_config, // Parent
-        wxID_ANY,             // ID
-        txt_joystick,         // Text which must be displayed
-        wxPoint(20, 150),     // Position
-        wxDefaultSize         // Size
-        );
+    wxStaticBoxSizer *joy_box = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Joystick sensibility"));
+    m_sl_joystick_sensibility = new wxSlider(this, wxID_ANY, 0, 0, 200, wxDefaultPosition, wxDefaultSize,
+                                             wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
 
-    m_sl_joystick_sensibility = new wxSlider(
-        m_pan_gamepad_config, // Parent
-        wxID_ANY,             // ID
-        0,                    // value
-        0,                    // min value
-        200,                  // max value
-        wxPoint(150, 143),    // Position
-        wxSize(200, 50),       // Size
-        wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM
-        );
+    gamepad_box->Add(m_joy_map, wxSizerFlags().Expand().Border(wxALL, 5));
+    gamepad_box->Add(m_cb_rumble, wxSizerFlags().Expand());
 
-    m_bt_ok = new wxButton(
-        m_pan_gamepad_config, // Parent
-        wxID_ANY,             // ID
-        _T("&OK"),            // Label
-        wxPoint(320, 210),    // Position
-        wxSize(60, 25)        // Size
-        );
+    rumble_box->Add(m_sl_rumble_intensity, wxSizerFlags().Expand().Border(wxALL, 5));
+    joy_box->Add(m_sl_joystick_sensibility, wxSizerFlags().Expand().Border(wxALL, 5));
 
-    Bind(wxEVT_BUTTON, &GamepadConfiguration::OnButtonClicked, this);
+    gamepad_box->Add(rumble_box, wxSizerFlags().Expand().Border(wxALL, 5));
+    gamepad_box->Add(joy_box, wxSizerFlags().Expand().Border(wxALL, 5));
+
+    gamepad_box->Add(CreateSeparatedButtonSizer(wxOK), wxSizerFlags().Right().Border(wxALL, 5));
+
+    Bind(wxEVT_BUTTON, &GamepadConfiguration::OnOk, this, wxID_OK);
     Bind(wxEVT_SCROLL_THUMBRELEASE, &GamepadConfiguration::OnSliderReleased, this);
     Bind(wxEVT_CHECKBOX, &GamepadConfiguration::OnCheckboxChange, this);
     Bind(wxEVT_CHOICE, &GamepadConfiguration::OnChoiceChange, this);
 
     repopulate();
+
+    SetSizerAndFit(gamepad_box);
 }
 
 /**
@@ -150,21 +99,9 @@ void GamepadConfiguration::InitGamepadConfiguration()
     }
 }
 
-/****************************************/
-/*********** Events functions ***********/
-/****************************************/
-
-/**
- * Button event, called when a button is clicked
-*/
-void GamepadConfiguration::OnButtonClicked(wxCommandEvent &event)
+void GamepadConfiguration::OnOk(wxCommandEvent &event)
 {
-    // Affichage d'un message à chaque clic sur le bouton
-    wxButton *bt_tmp = (wxButton *)event.GetEventObject(); // get the button object
-    int bt_id = bt_tmp->GetId();                           // get the real ID
-    if (bt_id == m_bt_ok->GetId()) {                       // If the button ID is equals to the Ok button ID
-        Close();                                           // Close the window
-    }
+    Destroy();
 }
 
 /**

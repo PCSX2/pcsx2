@@ -19,106 +19,50 @@
 
 #include "JoystickConfiguration.h"
 
-// Construtor of JoystickConfiguration
+// Constructor of JoystickConfiguration
 JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow *parent)
-    : wxDialog(
-          parent,                      // Parent
-          wxID_ANY,                    // ID
-          _T("Gamepad configuration"), // Title
-          wxDefaultPosition,           // Position
-          wxSize(400, 200),            // Width + Lenght
-          // Style
-          wxSYSTEM_MENU |
-              wxCAPTION |
-              wxCLOSE_BOX |
-              wxCLIP_CHILDREN)
+    : wxDialog(parent, wxID_ANY, _T("Joystick configuration"), wxDefaultPosition, wxDefaultSize,
+               wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
 {
-    m_init_reverse_Lx = false;
-    m_init_reverse_Ly = false;
-    m_init_reverse_Rx = false;
-    m_init_reverse_Ry = false;
-    m_init_mouse_Ljoy = false;
-    m_init_mouse_Rjoy = false;
+    m_init_reverse_Lx = m_init_reverse_Ly =
+        m_init_reverse_Rx = m_init_reverse_Ry =
+            m_init_mouse_Ljoy = m_init_mouse_Rjoy = false;
 
     m_pad_id = pad;
     m_isForLeftJoystick = left;
-    m_pan_joystick_config = new wxPanel(
-        this,              // Parent
-        wxID_ANY,          // ID
-        wxDefaultPosition, // Prosition
-        wxSize(300, 200)   // Size
-        );
+
+    wxBoxSizer *joy_conf_box = new wxBoxSizer(wxVERTICAL);
 
     if (m_isForLeftJoystick) {
-        m_cb_reverse_Lx = new wxCheckBox(
-            m_pan_joystick_config, // Parent
-            wxID_ANY,              // ID
-            _T("Reverse Lx"),      // Label
-            wxPoint(20, 20)        // Position
-            );
+        m_cb_reverse_Lx = new wxCheckBox(this, wxID_ANY, _T("Reverse Lx"));
+        m_cb_reverse_Ly = new wxCheckBox(this, wxID_ANY, _T("Reverse Ly"));
+        m_cb_mouse_Ljoy = new wxCheckBox(this, wxID_ANY, _T("Use mouse for left analog joystick"));
 
-        m_cb_reverse_Ly = new wxCheckBox(
-            m_pan_joystick_config, // Parent
-            wxID_ANY,              // ID
-            _T("Reverse Ly"),      // Label
-            wxPoint(20, 40)        // Position
-            );
+        joy_conf_box->Add(m_cb_reverse_Lx, wxSizerFlags().Expand().Border(wxLEFT | wxRIGHT, 5));
+        joy_conf_box->Add(m_cb_reverse_Ly, wxSizerFlags().Expand().Border(wxLEFT | wxRIGHT, 5));
+        joy_conf_box->Add(m_cb_mouse_Ljoy, wxSizerFlags().Expand().Border(wxLEFT | wxRIGHT, 5));
 
-        m_cb_mouse_Ljoy = new wxCheckBox(
-            m_pan_joystick_config,                    // Parent
-            wxID_ANY,                                 // ID
-            _T("Use mouse for left analog joystick"), // Label
-            wxPoint(20, 60)                           // Position
-            );
+        m_cb_reverse_Rx = m_cb_reverse_Ry = m_cb_mouse_Rjoy = nullptr;
 
-        m_cb_reverse_Rx = nullptr;
-        m_cb_reverse_Ry = nullptr;
-        m_cb_mouse_Rjoy = nullptr;
     } else {
-        m_cb_reverse_Rx = new wxCheckBox(
-            m_pan_joystick_config, // Parent
-            wxID_ANY,              // ID
-            _T("Reverse Rx"),      // Label
-            wxPoint(20, 20)        // Position
-            );
+        m_cb_reverse_Rx = new wxCheckBox(this, wxID_ANY, _T("Reverse Rx"));
+        m_cb_reverse_Ry = new wxCheckBox(this, wxID_ANY, _T("Reverse Ry"));
+        m_cb_mouse_Rjoy = new wxCheckBox(this, wxID_ANY, _T("Use mouse for right analog joystick"));
 
-        m_cb_reverse_Ry = new wxCheckBox(
-            m_pan_joystick_config, // Parent
-            wxID_ANY,              // ID
-            _T("Reverse Ry"),      // Label
-            wxPoint(20, 40)        // Position
-            );
+        joy_conf_box->Add(m_cb_reverse_Rx, wxSizerFlags().Expand().Border(wxLEFT | wxRIGHT, 5));
+        joy_conf_box->Add(m_cb_reverse_Ry, wxSizerFlags().Expand().Border(wxLEFT | wxRIGHT, 5));
+        joy_conf_box->Add(m_cb_mouse_Rjoy, wxSizerFlags().Expand().Border(wxLEFT | wxRIGHT, 5));
 
-        m_cb_mouse_Rjoy = new wxCheckBox(
-            m_pan_joystick_config,                     // Parent
-            wxID_ANY,                                  // ID
-            _T("Use mouse for right analog joystick"), // Label
-            wxPoint(20, 60)                            // Position
-            );
-
-        m_cb_reverse_Lx = nullptr;
-        m_cb_reverse_Ly = nullptr;
-        m_cb_mouse_Ljoy = nullptr;
+        m_cb_reverse_Lx = m_cb_reverse_Ly = m_cb_mouse_Ljoy = nullptr;
     }
 
-    m_bt_ok = new wxButton(
-        m_pan_joystick_config, // Parent
-        wxID_ANY,              // ID
-        _T("&OK"),             // Label
-        wxPoint(250, 130),     // Position
-        wxSize(60, 25)         // Size
-        );
+    joy_conf_box->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Border(wxALL, 5).Right());
 
-    m_bt_cancel = new wxButton(
-        m_pan_joystick_config, // Parent
-        wxID_ANY,              // ID
-        _T("&Cancel"),         // Label
-        wxPoint(320, 130),     // Position
-        wxSize(60, 25)         // Size
-        );
-
-    Bind(wxEVT_BUTTON, &JoystickConfiguration::OnButtonClicked, this);
+    Bind(wxEVT_BUTTON, &JoystickConfiguration::OnOk, this, wxID_OK);
+    Bind(wxEVT_BUTTON, &JoystickConfiguration::OnCancel, this, wxID_CANCEL);
     Bind(wxEVT_CHECKBOX, &JoystickConfiguration::OnCheckboxChange, this);
+
+    SetSizerAndFit(joy_conf_box);
 }
 
 /**
@@ -131,7 +75,7 @@ void JoystickConfiguration::InitJoystickConfiguration()
     /*
      * Check if there exist at least one pad available
      * if the pad id is 0, you need at least 1 gamepad connected,
-     * if the pad id is 1, you need at least 2 gamepad connected,
+     * if the pad id is 1, you need at least 2 gamepads connected,
      * Prevent to use a none initialized value on s_vgamePad (core dump)
     */
     if (s_vgamePad.size() < m_pad_id + 1) {
@@ -151,24 +95,16 @@ void JoystickConfiguration::InitJoystickConfiguration()
     }
 }
 
-/****************************************/
-/*********** Events functions ***********/
-/****************************************/
-
-/**
- * Button event, called when a button is clicked
-*/
-void JoystickConfiguration::OnButtonClicked(wxCommandEvent &event)
+void JoystickConfiguration::OnOk(wxCommandEvent &event)
 {
-    // Affichage d'un message à chaque clic sur le bouton
-    wxButton *bt_tmp = (wxButton *)event.GetEventObject(); // get the button object
-    int bt_id = bt_tmp->GetId();                           // get the real ID
-    if (bt_id == m_bt_ok->GetId()) {                       // If the button ID is equals to the Ok button ID
-        Close();                                           // Close the window
-    } else if (bt_id == m_bt_cancel->GetId()) {            // If the button ID is equals to the cancel button ID
-        reset();                                           // reinitialize the value of each parameters
-        Close();                                           // Close the window
-    }
+    printf("Okay!\n");
+    Destroy();
+}
+
+void JoystickConfiguration::OnCancel(wxCommandEvent &event)
+{
+    reset();
+    Destroy();
 }
 
 /**
@@ -179,6 +115,7 @@ void JoystickConfiguration::OnCheckboxChange(wxCommandEvent &event)
     wxCheckBox *cb_tmp = (wxCheckBox *)event.GetEventObject(); // get the slider object
     int cb_id = cb_tmp->GetId();
     bool val;
+
     if (m_isForLeftJoystick) {
         if (cb_id == m_cb_reverse_Ly->GetId()) {
             val = m_cb_reverse_Ly->GetValue();
