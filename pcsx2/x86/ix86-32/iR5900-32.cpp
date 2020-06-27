@@ -1281,10 +1281,9 @@ void encodeMemcheck()
 		break;
 	}
 }
-int cnt = 0;
+
 void recompileNextInstruction(int delayslot)
 {
-    printf("jc iR5900A-32 recompileNextInstruction cnt = %i, cpuRegs.pc = 0x%x\n",cnt++,cpuRegs.pc);
 	u32 i;
 	int count;
 
@@ -2134,12 +2133,6 @@ StartRecomp:
 	recPtr = xGetPtr();
 
 	pxAssert( (g_cpuHasConstReg&g_cpuFlushedConstReg) == g_cpuHasConstReg );
-    
-    if (cnt > 200) 
-    {
-        xNOP();
-        printf("jc 323\n");
-    }
 
 	s_pCurBlock = NULL;
 	s_pCurBlockEx = NULL;
