@@ -22920,6 +22920,7 @@ Region = NTSC-J
 Serial = SLPM-65206
 Name   = King of Colosseum - Green
 Region = NTSC-J
+EETimingHack = 1 // Fixes hang on opening.
 ---------------------------------------------
 Serial = SLPM-65207
 Name   = Chou Battle Houshin
