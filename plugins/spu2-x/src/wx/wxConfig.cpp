@@ -96,7 +96,7 @@ Dialog::Dialog()
     m_output_box->Add(m_sdl_box, wxSizerFlags().Expand());
 
     // Synchronization Mode
-    m_sync_box = new wxStaticBoxSizer(wxHORIZONTAL, this, "Synchronization");
+    m_sync_box = new wxStaticBoxSizer(wxHORIZONTAL, this, "Synchronization ");
     m_sync.Add("TimeStretch (Recommended)");
     m_sync.Add("Async Mix (Breaks some games!)");
     m_sync.Add("None (Audio can skip.)");
