@@ -157,15 +157,6 @@ void *HostSys::MmapReservePtr(void *base, size_t size)
     return mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 }
 
-#ifdef __APPLE__
-static void * MmapReservePtrFixed(void *base, size_t size)
-{
-    PageSizeAssertionTest(size);
-
-    return mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
-}
-#endif
-
 bool HostSys::MmapCommitPtr(void *base, size_t size, const PageProtectionMode &mode)
 {
     // In linux, reserved memory is automatically committed when its permissions are
@@ -187,27 +178,12 @@ bool HostSys::MmapCommitPtr(void *base, size_t size, const PageProtectionMode &m
 
 void HostSys::MmapResetPtr(void *base, size_t size)
 {
-    // On linux the only way to reset the memory is to unmap and remap it as PROT_NONE.
-    // That forces linux to unload all committed pages and start from scratch.
+    PageSizeAssertionTest(size);
 
-    // FIXME: Ideally this code would have some threading lock on it to prevent any other
-    // malloc/free code in the current process from interfering with the operation, but I
-    // can't think of any good way to do that.  (generally it shouldn't be a problem in
-    // PCSX2 anyway, since MmapReset is only called when the ps2vm is suspended; so that
-    // pretty well stops all PCSX2 threads anyway).
-
-#ifdef __APPLE__
-    // On macOS the OS seems to ignore our location request anyways sometimes
-    // Use MAP_FIXED instead
-    void *result = MmapReservePtrFixed(base, size);
-#else
-    Munmap(base, size);
-    void *result = MmapReservePtr(base, size);
-#endif
+    void *result = mmap(base, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
 
     pxAssertRel((uptr)result == (uptr)base, pxsFmt(
-                                                "Virtual memory decommit failed: memory at 0x%08X -> 0x%08X could not be remapped.  "
-                                                "This is likely caused by multi-thread memory contention.",
+                                                "Virtual memory decommit failed: memory at 0x%08X -> 0x%08X could not be remapped.",
                                                 base, (uptr)base + size));
 }
 
