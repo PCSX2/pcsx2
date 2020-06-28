@@ -65,9 +65,9 @@ void rpsxADDconst(int dreg, int sreg, u32 off, int info)
 		if (sreg == dreg) {
 			xADD(ptr32[&psxRegs.GPR.r[dreg]], off);
 		} else {
-			xMOV(eax, ptr[&psxRegs.GPR.r[sreg]]);
-			if (off) xADD(eax, off);
-			xMOV(ptr[&psxRegs.GPR.r[dreg]], eax);
+			xMOV(eaxd, ptr32[&psxRegs.GPR.r[sreg]]);
+			if (off) xADD(eaxd, off);
+			xMOV(ptr32[&psxRegs.GPR.r[dreg]], eaxd);
 		}
 	}
 	else {
@@ -94,10 +94,10 @@ void rpsxSLTI_const()
 
 void rpsxSLTconst(int info, int dreg, int sreg, int imm)
 {
-	xXOR(eax, eax);
+	xXOR(eaxd, eaxd);
     xCMP(ptr32[&psxRegs.GPR.r[sreg]], imm);
     xSETL(al);
-	xMOV(ptr[&psxRegs.GPR.r[dreg]], eax);
+	xMOV(ptr32[&psxRegs.GPR.r[dreg]], eaxd);
 }
 
 void rpsxSLTI_(int info) { rpsxSLTconst(info, _Rt_, _Rs_, _Imm_); }
@@ -112,10 +112,10 @@ void rpsxSLTIU_const()
 
 void rpsxSLTUconst(int info, int dreg, int sreg, int imm)
 {
-	xXOR(eax, eax);
+	xXOR(eaxd, eaxd);
 	xCMP(ptr32[&psxRegs.GPR.r[sreg]], imm);
     xSETB(al);
-	xMOV(ptr[&psxRegs.GPR.r[dreg]], eax);
+	xMOV(ptr32[&psxRegs.GPR.r[dreg]], eaxd);
 }
 
 void rpsxSLTIU_(int info) { rpsxSLTUconst(info, _Rt_, _Rs_, (s32)_Imm_); }
@@ -134,9 +134,9 @@ void rpsxANDconst(int info, int dreg, int sreg, u32 imm)
 		if (sreg == dreg) {
 			xAND(ptr32[&psxRegs.GPR.r[dreg]], imm);
 		} else {
-			xMOV(eax, ptr[&psxRegs.GPR.r[sreg]]);
-			xAND(eax, imm);
-			xMOV(ptr[&psxRegs.GPR.r[dreg]], eax);
+			xMOV(eaxd, ptr32[&psxRegs.GPR.r[sreg]]);
+			xAND(eaxd, imm);
+			xMOV(ptr32[&psxRegs.GPR.r[dreg]], eaxd);
 		}
 	} else {
 		xMOV(ptr32[&psxRegs.GPR.r[dreg]], 0);
@@ -160,15 +160,15 @@ void rpsxORconst(int info, int dreg, int sreg, u32 imm)
 			xOR(ptr32[&psxRegs.GPR.r[dreg]], imm);
 		}
 		else {
-			xMOV(eax, ptr[&psxRegs.GPR.r[sreg]]);
-			xOR(eax, imm);
-			xMOV(ptr[&psxRegs.GPR.r[dreg]], eax);
+			xMOV(eaxd, ptr32[&psxRegs.GPR.r[sreg]]);
+			xOR(eaxd, imm);
+			xMOV(ptr32[&psxRegs.GPR.r[dreg]], eaxd);
 		}
 	}
 	else {
 		if( dreg != sreg ) {
-			xMOV(ecx, ptr[&psxRegs.GPR.r[sreg]]);
-			xMOV(ptr[&psxRegs.GPR.r[dreg]], ecx);
+			xMOV(ecxd, ptr32[&psxRegs.GPR.r[sreg]]);
+			xMOV(ptr32[&psxRegs.GPR.r[dreg]], ecxd);
 		}
 	}
 }
@@ -189,9 +189,9 @@ void rpsxXORconst(int info, int dreg, int sreg, u32 imm)
 			xNOT(ptr32[&psxRegs.GPR.r[dreg]]);
 		}
 		else {
-			xMOV(ecx, ptr[&psxRegs.GPR.r[sreg]]);
-			xNOT(ecx);
-			xMOV(ptr[&psxRegs.GPR.r[dreg]], ecx);
+			xMOV(ecxd, ptr32[&psxRegs.GPR.r[sreg]]);
+			xNOT(ecxd);
+			xMOV(ptr32[&psxRegs.GPR.r[dreg]], ecxd);
 		}
 	}
 	else if (imm) {
@@ -200,15 +200,15 @@ void rpsxXORconst(int info, int dreg, int sreg, u32 imm)
 			xXOR(ptr32[&psxRegs.GPR.r[dreg]], imm);
 		}
 		else {
-			xMOV(eax, ptr[&psxRegs.GPR.r[sreg]]);
-			xXOR(eax, imm);
-			xMOV(ptr[&psxRegs.GPR.r[dreg]], eax);
+			xMOV(eaxd, ptr32[&psxRegs.GPR.r[sreg]]);
+			xXOR(eaxd, imm);
+			xMOV(ptr32[&psxRegs.GPR.r[dreg]], eaxd);
 		}
 	}
 	else {
 		if( dreg != sreg ) {
-			xMOV(ecx, ptr[&psxRegs.GPR.r[sreg]]);
-			xMOV(ptr[&psxRegs.GPR.r[dreg]], ecx);
+			xMOV(ecxd, ptr32[&psxRegs.GPR.r[sreg]]);
+			xMOV(ptr32[&psxRegs.GPR.r[dreg]], ecxd);
 		}
 	}
 }
@@ -241,16 +241,16 @@ void rpsxADDU_constt(int info)
 void rpsxADDU_(int info)
 {
 	if (_Rs_ && _Rt_) {
-		xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
-		xADD(eax, ptr[&psxRegs.GPR.r[_Rt_]]);
+		xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+		xADD(eaxd, ptr32[&psxRegs.GPR.r[_Rt_]]);
 	} else if (_Rs_) {
-		xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
+		xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
 	} else if (_Rt_) {
-		xMOV(eax, ptr[&psxRegs.GPR.r[_Rt_]]);
+		xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rt_]]);
 	} else {
-		xXOR(eax, eax);
+		xXOR(eaxd, eaxd);
 	}
-	xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 }
 
 PSXRECOMPILE_CONSTCODE0(ADDU);
@@ -265,9 +265,9 @@ void rpsxSUBU_const()
 
 void rpsxSUBU_consts(int info)
 {
-	xMOV(eax, g_psxConstRegs[_Rs_]);
-	xSUB(eax, ptr[&psxRegs.GPR.r[_Rt_]]);
-	xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+	xMOV(eaxd, g_psxConstRegs[_Rs_]);
+	xSUB(eaxd, ptr32[&psxRegs.GPR.r[_Rt_]]);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 }
 
 void rpsxSUBU_constt(int info) { rpsxADDconst(_Rd_, _Rs_, -(int)g_psxConstRegs[_Rt_], info); }
@@ -278,13 +278,13 @@ void rpsxSUBU_(int info)
 	if (!_Rd_) return;
 
 	if( _Rd_ == _Rs_ ) {
-		xMOV(eax, ptr[&psxRegs.GPR.r[_Rt_]]);
-		xSUB(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+		xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rt_]]);
+		xSUB(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 	}
 	else {
-		xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
-		xSUB(eax, ptr[&psxRegs.GPR.r[_Rt_]]);
-		xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+		xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+		xSUB(eaxd, ptr32[&psxRegs.GPR.r[_Rt_]]);
+		xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 	}
 }
 
@@ -296,13 +296,13 @@ void rpsxLogicalOp(int info, int op)
 {
 	if( _Rd_ == _Rs_ || _Rd_ == _Rt_ ) {
 		int vreg = _Rd_ == _Rs_ ? _Rt_ : _Rs_;
-		xMOV(ecx, ptr[&psxRegs.GPR.r[vreg]]);
+		xMOV(ecxd, ptr32[&psxRegs.GPR.r[vreg]]);
 
 		switch(op) {
-			case 0: xAND(ptr[&psxRegs.GPR.r[_Rd_]], ecx); break;
-			case 1: xOR(ptr[&psxRegs.GPR.r[_Rd_]], ecx); break;
-			case 2: xXOR(ptr[&psxRegs.GPR.r[_Rd_]], ecx); break;
-			case 3: xOR(ptr[&psxRegs.GPR.r[_Rd_]], ecx); break;
+			case 0: xAND(ptr32[&psxRegs.GPR.r[_Rd_]], ecxd); break;
+			case 1: xOR(ptr32[&psxRegs.GPR.r[_Rd_]], ecxd); break;
+			case 2: xXOR(ptr32[&psxRegs.GPR.r[_Rd_]], ecxd); break;
+			case 3: xOR(ptr32[&psxRegs.GPR.r[_Rd_]], ecxd); break;
 			default: pxAssert(0);
 		}
 
@@ -310,19 +310,19 @@ void rpsxLogicalOp(int info, int op)
 			xNOT(ptr32[&psxRegs.GPR.r[_Rd_]]);
 	}
 	else {
-		xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
+		xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
 
 		switch(op) {
-			case 0: xAND(ecx, ptr[&psxRegs.GPR.r[_Rt_]]); break;
-			case 1: xOR(ecx, ptr[&psxRegs.GPR.r[_Rt_]]); break;
-			case 2: xXOR(ecx, ptr[&psxRegs.GPR.r[_Rt_]]); break;
-			case 3: xOR(ecx, ptr[&psxRegs.GPR.r[_Rt_]]); break;
+			case 0: xAND(ecxd, ptr32[&psxRegs.GPR.r[_Rt_]]); break;
+			case 1: xOR(ecxd, ptr32[&psxRegs.GPR.r[_Rt_]]); break;
+			case 2: xXOR(ecxd, ptr32[&psxRegs.GPR.r[_Rt_]]); break;
+			case 3: xOR(ecxd, ptr32[&psxRegs.GPR.r[_Rt_]]); break;
 			default: pxAssert(0);
 		}
 
 		if( op == 3 )
-			xNOT(ecx);
-		xMOV(ptr[&psxRegs.GPR.r[_Rd_]], ecx);
+			xNOT(ecxd);
+		xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], ecxd);
 	}
 }
 
@@ -374,10 +374,10 @@ void rpsxNORconst(int info, int dreg, int sreg, u32 imm)
 			xNOT(ptr32[&psxRegs.GPR.r[dreg]]);
 		}
 		else {
-			xMOV(ecx, ptr[&psxRegs.GPR.r[sreg]]);
-			xOR(ecx, imm);
-			xNOT(ecx);
-			xMOV(ptr[&psxRegs.GPR.r[dreg]], ecx);
+			xMOV(ecxd, ptr32[&psxRegs.GPR.r[sreg]]);
+			xOR(ecxd, imm);
+			xNOT(ecxd);
+			xMOV(ptr32[&psxRegs.GPR.r[dreg]], ecxd);
 		}
 	}
 	else {
@@ -385,9 +385,9 @@ void rpsxNORconst(int info, int dreg, int sreg, u32 imm)
 			xNOT(ptr32[&psxRegs.GPR.r[dreg]]);
 		}
 		else {
-			xMOV(ecx, ptr[&psxRegs.GPR.r[sreg]]);
-			xNOT(ecx);
-			xMOV(ptr[&psxRegs.GPR.r[dreg]], ecx);
+			xMOV(ecxd, ptr32[&psxRegs.GPR.r[sreg]]);
+			xNOT(ecxd);
+			xMOV(ptr32[&psxRegs.GPR.r[dreg]], ecxd);
 		}
 	}
 }
@@ -406,20 +406,20 @@ void rpsxSLT_const()
 
 void rpsxSLT_consts(int info)
 {
-	xXOR(eax, eax);
-    xCMP(ptr32[&psxRegs.GPR.r[_Rt_]], g_psxConstRegs[_Rs_]);
-    xSETG(al);
-	xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+	xXOR(eaxd, eaxd);
+	xCMP(ptr32[&psxRegs.GPR.r[_Rt_]], g_psxConstRegs[_Rs_]);
+	xSETG(al);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 }
 
 void rpsxSLT_constt(int info) { rpsxSLTconst(info, _Rd_, _Rs_, g_psxConstRegs[_Rt_]); }
 void rpsxSLT_(int info)
 {
-	xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
-    xCMP(eax, ptr[&psxRegs.GPR.r[_Rt_]]);
-    xSETL(al);
-    xAND(eax, 0xff);
-	xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+	xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	xCMP(eaxd, ptr32[&psxRegs.GPR.r[_Rt_]]);
+	xSETL(al);
+	xAND(eaxd, 0xff);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 }
 
 PSXRECOMPILE_CONSTCODE0(SLT);
@@ -432,10 +432,10 @@ void rpsxSLTU_const()
 
 void rpsxSLTU_consts(int info)
 {
-	xXOR(eax, eax);
-    xCMP(ptr32[&psxRegs.GPR.r[_Rt_]], g_psxConstRegs[_Rs_]);
-    xSETA(al);
-	xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+	xXOR(eaxd, eaxd);
+	xCMP(ptr32[&psxRegs.GPR.r[_Rt_]], g_psxConstRegs[_Rs_]);
+	xSETA(al);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 }
 
 void rpsxSLTU_constt(int info) { rpsxSLTUconst(info, _Rd_, _Rs_, g_psxConstRegs[_Rt_]); }
@@ -444,11 +444,11 @@ void rpsxSLTU_(int info)
 	// Rd = Rs < Rt (unsigned)
 	if (!_Rd_) return;
 
-	xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
-    xCMP(eax, ptr[&psxRegs.GPR.r[_Rt_]]);
-	xSBB(eax, eax);
-	xNEG(eax);
-	xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+	xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	xCMP(eaxd, ptr32[&psxRegs.GPR.r[_Rt_]]);
+	xSBB(eaxd, eaxd);
+	xNEG(eaxd);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 }
 
 PSXRECOMPILE_CONSTCODE0(SLTU);
@@ -465,21 +465,21 @@ void rpsxMULT_const()
 void rpsxMULTsuperconst(int info, int sreg, int imm, int sign)
 {
 	// Lo/Hi = Rs * Rt (signed)
-	xMOV(eax, imm);
+	xMOV(eaxd, imm);
 	if( sign ) xMUL(ptr32[&psxRegs.GPR.r[sreg]]);
 	else xUMUL(ptr32[&psxRegs.GPR.r[sreg]]);
-	xMOV(ptr[&psxRegs.GPR.n.lo], eax);
-	xMOV(ptr[&psxRegs.GPR.n.hi], edx);
+	xMOV(ptr32[&psxRegs.GPR.n.lo], eaxd);
+	xMOV(ptr32[&psxRegs.GPR.n.hi], edxd);
 }
 
 void rpsxMULTsuper(int info, int sign)
 {
 	// Lo/Hi = Rs * Rt (signed)
-	xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
+	xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
 	if( sign ) xMUL(ptr32[&psxRegs.GPR.r[_Rt_]]);
 	else xUMUL(ptr32[&psxRegs.GPR.r[_Rt_]]);
-	xMOV(ptr[&psxRegs.GPR.n.lo], eax);
-	xMOV(ptr[&psxRegs.GPR.n.hi], edx);
+	xMOV(ptr32[&psxRegs.GPR.n.lo], eaxd);
+	xMOV(ptr32[&psxRegs.GPR.n.hi], edxd);
 }
 
 void rpsxMULT_consts(int info) { rpsxMULTsuperconst(info, _Rt_, g_psxConstRegs[_Rs_], 1); }
@@ -540,61 +540,61 @@ void rpsxDIVsuper(int info, int sign, int process = 0)
 {
 	// Lo/Hi = Rs / Rt (signed)
 	if( process & PROCESS_CONSTT )
-		xMOV(ecx, g_psxConstRegs[_Rt_]);
+		xMOV(ecxd, g_psxConstRegs[_Rt_]);
 	else
-		xMOV(ecx, ptr[&psxRegs.GPR.r[_Rt_]]);
+		xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rt_]]);
 
 	if( process & PROCESS_CONSTS )
-		xMOV(eax, g_psxConstRegs[_Rs_]);
+		xMOV(eaxd, g_psxConstRegs[_Rs_]);
 	else
-		xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
+		xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
 
 	u8 *end1;
 	if (sign)  //test for overflow (x86 will just throw an exception)
 	{
-		xCMP(eax, 0x80000000 );
+		xCMP(eaxd, 0x80000000 );
 		u8 *cont1 = JNE8(0);
-		xCMP(ecx, 0xffffffff );
+		xCMP(ecxd, 0xffffffff );
 		u8 *cont2 = JNE8(0);
 		//overflow case:
-		xXOR(edx, edx); //EAX remains 0x80000000
+		xXOR(edxd, edxd); //eaxd remains 0x80000000
 		end1 = JMP8(0);
 
 		x86SetJ8(cont1);
 		x86SetJ8(cont2);
 	}
 
-	xCMP(ecx, 0 );
+	xCMP(ecxd, 0 );
 	u8 *cont3 = JNE8(0);
 
 	//divide by zero
-	xMOV(edx, eax);
-	if (sign) //set EAX to (EAX < 0)?1:-1
+	xMOV(edxd, eaxd);
+	if (sign) //set eaxd to (eaxd < 0)?1:-1
 	{
-		xSAR(eax, 31 ); //(EAX < 0)?-1:0
-		xSHL(eax, 1 ); //(EAX < 0)?-2:0
-		xNOT(eax); //(EAX < 0)?1:-1
+		xSAR(eaxd, 31 ); //(eaxd < 0)?-1:0
+		xSHL(eaxd, 1 ); //(eaxd < 0)?-2:0
+		xNOT(eaxd); //(eaxd < 0)?1:-1
 	}
 	else
-		xMOV(eax, 0xffffffff );
+		xMOV(eaxd, 0xffffffff );
 	u8 *end2 = JMP8(0);
 
 	// Normal division
 	x86SetJ8(cont3);
 	if( sign ) {
 		xCDQ();
-		xDIV(ecx);
+		xDIV(ecxd);
 	}
 	else {
-		xXOR(edx, edx);
-		xUDIV(ecx);
+		xXOR(edxd, edxd);
+		xUDIV(ecxd);
 	}
 
 	if (sign) x86SetJ8( end1 );
 	x86SetJ8( end2 );
 
-	xMOV(ptr[&psxRegs.GPR.n.lo], eax);
-	xMOV(ptr[&psxRegs.GPR.n.hi], edx);
+	xMOV(ptr32[&psxRegs.GPR.n.lo], eaxd);
+	xMOV(ptr32[&psxRegs.GPR.n.hi], edxd);
 }
 
 void rpsxDIV_consts(int info) { rpsxDIVsuper(info, 1, PROCESS_CONSTS); }
@@ -639,12 +639,12 @@ static void rpsxLB()
 	_psxOnWriteReg(_Rt_);
 	_psxDeleteReg(_Rt_, 0);
 
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall((void*)iopMemRead8, ecx );		// returns value in EAX
+	xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	if (_Imm_) xADD(ecxd, _Imm_);
+	xFastCall((void*)iopMemRead8, ecxd );		// returns value in eaxd
 	if (_Rt_) {
-		xMOVSX(eax, al);
-		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
+		xMOVSX(eaxd, al);
+		xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], eaxd);
 	}
 	PSX_DEL_CONST(_Rt_);
 }
@@ -655,12 +655,12 @@ static void rpsxLBU()
 	_psxOnWriteReg(_Rt_);
 	_psxDeleteReg(_Rt_, 0);
 
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall((void*)iopMemRead8, ecx );		// returns value in EAX
+	xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	if (_Imm_) xADD(ecxd, _Imm_);
+	xFastCall((void*)iopMemRead8, ecxd );		// returns value in eaxd
 	if (_Rt_) {
-		xMOVZX(eax, al);
-		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
+		xMOVZX(eaxd, al);
+		xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], eaxd);
 	}
 	PSX_DEL_CONST(_Rt_);
 }
@@ -671,12 +671,12 @@ static void rpsxLH()
 	_psxOnWriteReg(_Rt_);
 	_psxDeleteReg(_Rt_, 0);
 
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall((void*)iopMemRead16, ecx );		// returns value in EAX
+	xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	if (_Imm_) xADD(ecxd, _Imm_);
+	xFastCall((void*)iopMemRead16, ecxd );		// returns value in eaxd
 	if (_Rt_) {
-		xMOVSX(eax, ax);
-		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
+		xMOVSX(eaxd, ax);
+		xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], eaxd);
 	}
 	PSX_DEL_CONST(_Rt_);
 }
@@ -687,12 +687,12 @@ static void rpsxLHU()
 	_psxOnWriteReg(_Rt_);
 	_psxDeleteReg(_Rt_, 0);
 
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall((void*)iopMemRead16, ecx );		// returns value in EAX
+	xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	if (_Imm_) xADD(ecxd, _Imm_);
+	xFastCall((void*)iopMemRead16, ecxd );		// returns value in eaxd
 	if (_Rt_) {
-		xMOVZX(eax, ax);
-		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
+		xMOVZX(eaxd, ax);
+		xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], eaxd);
 	}
 	PSX_DEL_CONST(_Rt_);
 }
@@ -704,26 +704,31 @@ static void rpsxLW()
 	_psxDeleteReg(_Rt_, 0);
 
 	_psxFlushCall(FLUSH_EVERYTHING);
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
+	xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	if (_Imm_) xADD(ecxd, _Imm_);
 
-	xTEST(ecx, 0x10000000);
+	xTEST(ecxd, 0x10000000);
 	j8Ptr[0] = JZ8(0);
 
-	xFastCall((void*)iopMemRead32, ecx );		// returns value in EAX
+	xFastCall((void*)iopMemRead32, ecxd );		// returns value in eaxd
 	if (_Rt_) {
-		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
+		xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], eaxd);
 	}
 	j8Ptr[1] = JMP8(0);
 	x86SetJ8(j8Ptr[0]);
 
 	// read from psM directly
 	xAND(ecx, 0x1fffff);
-	xADD(ecx, (uptr)iopMem->Main);
+	#ifdef __M_X86_64
+	  xMOV64(rax,(uptr)iopMem->Main);
+	  xADD(rcx, rax);
+	#else
+	  xADD(ecx, (uptr)iopMem->Main);
+	#endif
 
-	xMOV(ecx, ptr[ecx]);
+	xMOV(ecxd, ptr32[ecxd]);
 	if (_Rt_) {
-		xMOV(ptr[&psxRegs.GPR.r[_Rt_]], ecx);
+		xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], ecxd);
 	}
 
 	x86SetJ8(j8Ptr[1]);
@@ -735,10 +740,10 @@ static void rpsxSB()
 	_psxDeleteReg(_Rs_, 1);
 	_psxDeleteReg(_Rt_, 1);
 
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
-	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall((void*)iopMemWrite8, ecx, edx );
+	xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	if (_Imm_) xADD(ecxd, _Imm_);
+	xMOV( edxd, ptr32[&psxRegs.GPR.r[_Rt_]] );
+	xFastCall((void*)iopMemWrite8, ecxd, edxd );
 }
 
 static void rpsxSH()
@@ -746,10 +751,10 @@ static void rpsxSH()
 	_psxDeleteReg(_Rs_, 1);
 	_psxDeleteReg(_Rt_, 1);
 
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
-	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall((void*)iopMemWrite16, ecx, edx );
+	xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	if (_Imm_) xADD(ecxd, _Imm_);
+	xMOV( edxd, ptr32[&psxRegs.GPR.r[_Rt_]] );
+	xFastCall((void*)iopMemWrite16, ecxd, edxd );
 }
 
 static void rpsxSW()
@@ -757,10 +762,10 @@ static void rpsxSW()
 	_psxDeleteReg(_Rs_, 1);
 	_psxDeleteReg(_Rt_, 1);
 
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
-	xMOV( edx, ptr[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall((void*)iopMemWrite32, ecx, edx );
+	xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	if (_Imm_) xADD(ecxd, _Imm_);
+	xMOV( edxd, ptr32[&psxRegs.GPR.r[_Rt_]] );
+	xFastCall((void*)iopMemWrite32, ecxd, edxd );
 }
 
 //// SLL
@@ -782,19 +787,19 @@ void rpsxShiftConst(int info, int rdreg, int rtreg, int imm, int shifttype)
 			}
 		}
 		else {
-			xMOV(eax, ptr[&psxRegs.GPR.r[rtreg]]);
+			xMOV(eaxd, ptr32[&psxRegs.GPR.r[rtreg]]);
 			switch(shifttype) {
-				case 0: xSHL(eax, imm); break;
-				case 1: xSHR(eax, imm); break;
-				case 2: xSAR(eax, imm); break;
+				case 0: xSHL(eaxd, imm); break;
+				case 1: xSHR(eaxd, imm); break;
+				case 2: xSAR(eaxd, imm); break;
 			}
-			xMOV(ptr[&psxRegs.GPR.r[rdreg]], eax);
+			xMOV(ptr32[&psxRegs.GPR.r[rdreg]], eaxd);
 		}
 	}
 	else {
 		if( rdreg != rtreg ) {
-			xMOV(eax, ptr[&psxRegs.GPR.r[rtreg]]);
-			xMOV(ptr[&psxRegs.GPR.r[rdreg]], eax);
+			xMOV(eaxd, ptr32[&psxRegs.GPR.r[rtreg]]);
+			xMOV(ptr32[&psxRegs.GPR.r[rdreg]], eaxd);
 		}
 	}
 }
@@ -833,24 +838,24 @@ void rpsxShiftVconsts(int info, int shifttype)
 
 void rpsxShiftVconstt(int info, int shifttype)
 {
-	xMOV(eax, g_psxConstRegs[_Rt_]);
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
+	xMOV(eaxd, g_psxConstRegs[_Rt_]);
+	xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
 	switch(shifttype) {
-		case 0: xSHL(eax, cl); break;
-		case 1: xSHR(eax, cl); break;
-		case 2: xSAR(eax, cl); break;
+		case 0: xSHL(eaxd, cl); break;
+		case 1: xSHR(eaxd, cl); break;
+		case 2: xSAR(eaxd, cl); break;
 	}
-	xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 }
 
 void rpsxSLLV_consts(int info) { rpsxShiftVconsts(info, 0); }
 void rpsxSLLV_constt(int info) { rpsxShiftVconstt(info, 0); }
 void rpsxSLLV_(int info)
 {
-	xMOV(eax, ptr[&psxRegs.GPR.r[_Rt_]]);
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
-	xSHL(eax, cl);
-	xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+	xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rt_]]);
+	xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	xSHL(eaxd, cl);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 }
 
 PSXRECOMPILE_CONSTCODE0(SLLV);
@@ -865,10 +870,10 @@ void rpsxSRLV_consts(int info) { rpsxShiftVconsts(info, 1); }
 void rpsxSRLV_constt(int info) { rpsxShiftVconstt(info, 1); }
 void rpsxSRLV_(int info)
 {
-	xMOV(eax, ptr[&psxRegs.GPR.r[_Rt_]]);
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
-	xSHR(eax, cl);
-	xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+	xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rt_]]);
+	xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	xSHR(eaxd, cl);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 }
 
 PSXRECOMPILE_CONSTCODE0(SRLV);
@@ -883,10 +888,10 @@ void rpsxSRAV_consts(int info) { rpsxShiftVconsts(info, 2); }
 void rpsxSRAV_constt(int info) { rpsxShiftVconstt(info, 2); }
 void rpsxSRAV_(int info)
 {
-	xMOV(eax, ptr[&psxRegs.GPR.r[_Rt_]]);
-	xMOV(ecx, ptr[&psxRegs.GPR.r[_Rs_]]);
-	xSAR(eax, cl);
-	xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+	xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rt_]]);
+	xMOV(ecxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+	xSAR(eaxd, cl);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 }
 
 PSXRECOMPILE_CONSTCODE0(SRAV);
@@ -900,8 +905,8 @@ void rpsxMFHI()
 
 	_psxOnWriteReg(_Rd_);
 	_psxDeleteReg(_Rd_, 0);
-	xMOV(eax, ptr[&psxRegs.GPR.n.hi]);
-	xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+	xMOV(eaxd, ptr32[&psxRegs.GPR.n.hi]);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 }
 
 void rpsxMTHI()
@@ -911,8 +916,8 @@ void rpsxMTHI()
 	}
 	else {
 		_psxDeleteReg(_Rs_, 1);
-		xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
-		xMOV(ptr[&psxRegs.GPR.n.hi], eax);
+		xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+		xMOV(ptr32[&psxRegs.GPR.n.hi], eaxd);
 	}
 }
 
@@ -922,8 +927,8 @@ void rpsxMFLO()
 
 	_psxOnWriteReg(_Rd_);
 	_psxDeleteReg(_Rd_, 0);
-	xMOV(eax, ptr[&psxRegs.GPR.n.lo]);
-	xMOV(ptr[&psxRegs.GPR.r[_Rd_]], eax);
+	xMOV(eaxd, ptr32[&psxRegs.GPR.n.lo]);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eaxd);
 }
 
 void rpsxMTLO()
@@ -933,8 +938,8 @@ void rpsxMTLO()
 	}
 	else {
 		_psxDeleteReg(_Rs_, 1);
-		xMOV(eax, ptr[&psxRegs.GPR.r[_Rs_]]);
-		xMOV(ptr[&psxRegs.GPR.n.lo], eax);
+		xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rs_]]);
+		xMOV(ptr32[&psxRegs.GPR.n.lo], eaxd);
 	}
 }
 
@@ -965,8 +970,8 @@ void rpsxJR()
 void rpsxJALR()
 {
 	// jalr Rs
-	_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-	_psxMoveGPRtoR(esi, _Rs_);
+	_allocX86reg(calleeSavedReg2d, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+	_psxMoveGPRtoR(calleeSavedReg2d, _Rs_);
 
 	if ( _Rd_ )
 	{
@@ -977,20 +982,20 @@ void rpsxJALR()
 
 	psxRecompileNextInstruction(1);
 
-	if( x86regs[esi.GetId()].inuse ) {
-		pxAssert( x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
-		xMOV(ptr[&psxRegs.pc], esi);
-		x86regs[esi.GetId()].inuse = 0;
+	if( x86regs[calleeSavedReg2d.GetId()].inuse ) {
+		pxAssert( x86regs[calleeSavedReg2d.GetId()].type == X86TYPE_PCWRITEBACK );
+		xMOV(ptr32[&psxRegs.pc], calleeSavedReg2d);
+		x86regs[calleeSavedReg2d.GetId()].inuse = 0;
 		#ifdef PCSX2_DEBUG
-		xOR( esi, esi );
+		xOR( calleeSavedReg2d, calleeSavedReg2d );
 		#endif
 
 	}
 	else {
-		xMOV(eax, ptr[&g_recWriteback]);
-		xMOV(ptr[&psxRegs.pc], eax);
+		xMOV(eaxd, ptr32[&g_recWriteback]);
+		xMOV(ptr32[&psxRegs.pc], eaxd);
 		#ifdef PCSX2_DEBUG
-		xOR( eax, eax );
+		xOR( eaxd, eaxd );
 		#endif
 	}
 	#ifdef PCSX2_DEBUG
@@ -1016,8 +1021,8 @@ void rpsxSetBranchEQ(int info, int process)
 		s_pbranchjmp = JNE32( 0 );
 	}
 	else {
-		xMOV(eax, ptr[&psxRegs.GPR.r[ _Rs_ ] ]);
-		xCMP(eax, ptr[&psxRegs.GPR.r[ _Rt_ ] ]);
+		xMOV(eaxd, ptr32[&psxRegs.GPR.r[ _Rs_ ] ]);
+		xCMP(eaxd, ptr32[&psxRegs.GPR.r[ _Rt_ ] ]);
 		s_pbranchjmp = JNE32( 0 );
 	}
 }
@@ -1342,8 +1347,8 @@ void rpsxMFC0()
 	if (!_Rt_) return;
 
 	_psxOnWriteReg(_Rt_);
-	xMOV(eax, ptr[&psxRegs.CP0.r[_Rd_]]);
-	xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
+	xMOV(eaxd, ptr32[&psxRegs.CP0.r[_Rd_]]);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], eaxd);
 }
 
 void rpsxCFC0()
@@ -1352,8 +1357,8 @@ void rpsxCFC0()
 	if (!_Rt_) return;
 
 	_psxOnWriteReg(_Rt_);
-	xMOV(eax, ptr[&psxRegs.CP0.r[_Rd_]]);
-	xMOV(ptr[&psxRegs.GPR.r[_Rt_]], eax);
+	xMOV(eaxd, ptr32[&psxRegs.CP0.r[_Rd_]]);
+	xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], eaxd);
 }
 
 void rpsxMTC0()
@@ -1364,8 +1369,8 @@ void rpsxMTC0()
 	}
 	else {
 		_psxDeleteReg(_Rt_, 1);
-		xMOV(eax, ptr[&psxRegs.GPR.r[_Rt_]]);
-		xMOV(ptr[&psxRegs.CP0.r[_Rd_]], eax);
+		xMOV(eaxd, ptr32[&psxRegs.GPR.r[_Rt_]]);
+		xMOV(ptr32[&psxRegs.CP0.r[_Rd_]], eaxd);
 	}
 }
 
@@ -1377,13 +1382,13 @@ void rpsxCTC0()
 
 void rpsxRFE()
 {
-	xMOV(eax, ptr[&psxRegs.CP0.n.Status]);
-	xMOV(ecx, eax);
-	xAND(eax, 0xfffffff0);
-	xAND(ecx, 0x3c);
-	xSHR(ecx, 2);
-	xOR(eax, ecx);
-	xMOV(ptr[&psxRegs.CP0.n.Status], eax);
+	xMOV(eaxd, ptr32[&psxRegs.CP0.n.Status]);
+	xMOV(ecxd, eaxd);
+	xAND(eaxd, 0xfffffff0);
+	xAND(ecxd, 0x3c);
+	xSHR(ecxd, 2);
+	xOR(eaxd, ecxd);
+	xMOV(ptr32[&psxRegs.CP0.n.Status], eaxd);
 
 	// Test the IOP's INTC status, so that any pending ints get raised.
 
