@@ -2013,7 +2013,7 @@ void GSTextureCache::AttachPaletteToSource(Source* s, uint16 pal, bool need_gs_t
 	s->m_palette = need_gs_texture ? s->m_palette_obj->GetPaletteGSTexture() : nullptr;
 }
 
-GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const GSOffset* off, const GSVector4i& r, Target* t)
+GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const GSOffset* off, const GSVector4i& r, const Target* t)
 {
 	if (!off || !t)
 		return { false, GSVector4i(0, 0, 0, 0) };
