@@ -204,11 +204,13 @@ public:
 		GSVector4i offset;
 	};
 
-	struct SurfaceOffsetKeyHash {
+	struct SurfaceOffsetKeyHash
+	{
 		std::size_t operator()(const SurfaceOffsetKey& key) const;
 	};
 
-	struct SurfaceOffsetKeyEqual {
+	struct SurfaceOffsetKeyEqual
+	{
 		bool operator()(const SurfaceOffsetKey& lhs, const SurfaceOffsetKey& rhs) const;
 	};
 
