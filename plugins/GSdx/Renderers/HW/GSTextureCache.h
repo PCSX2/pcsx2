@@ -200,7 +200,7 @@ public:
 
 	struct SurfaceOffset
 	{
-		bool is_valid_offset;
+		bool is_valid;
 		GSVector4i offset;
 	};
 
@@ -269,6 +269,6 @@ public:
 	void PrintMemoryUsage();
 
 	void AttachPaletteToSource(Source* s, uint16 pal, bool need_gs_texture);
-	SurfaceOffset ComputeSurfaceWriteOffset(GSOffset* off, const GSVector4i& r, Target* t);
+	SurfaceOffset ComputeSurfaceOffset(const GSOffset* off, const GSVector4i& r, Target* t);
 	SurfaceOffset ComputeSurfaceOffset(const SurfaceOffsetKey& sok);
 };

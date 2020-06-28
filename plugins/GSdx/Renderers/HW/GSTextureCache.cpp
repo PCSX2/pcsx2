@@ -321,7 +321,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					sok.surf_m_end_block = t->m_end_block;
 					sok.surf_tex0_tbp0 = t->m_TEX0.TBP0;
 					const SurfaceOffset so = ComputeSurfaceOffset(sok);
-					if (so.is_valid_offset)
+					if (so.is_valid)
 					{
 						dst = t;
 						x_offset = so.offset.x;
@@ -863,8 +863,8 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 			// GH: Try to detect texture write that will overlap with a target buffer
 			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM))
 			{
-				const SurfaceOffset so = ComputeSurfaceWriteOffset(off, r, t);
-				if (so.is_valid_offset)
+				const SurfaceOffset so = ComputeSurfaceOffset(off, r, t);
+				if (so.is_valid)
 				{
 					GL_CACHE("TC: Dirty After Target(%s) %d (0x%x->0x%x) pos(%d,%d => %d,%d) bw:%u",
 						to_string(type),
@@ -2013,7 +2013,7 @@ void GSTextureCache::AttachPaletteToSource(Source* s, uint16 pal, bool need_gs_t
 	s->m_palette = need_gs_texture ? s->m_palette_obj->GetPaletteGSTexture() : nullptr;
 }
 
-GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceWriteOffset(GSOffset* off, const GSVector4i& r, Target* t)
+GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const GSOffset* off, const GSVector4i& r, Target* t)
 {
 	if (!off || !t)
 		return { false, GSVector4i(0, 0, 0, 0) };
@@ -2077,7 +2077,7 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 			if (sok.req_bp == candidate_bp)
 			{
 				// Sweep search HIT: <x,y> offset found.
-				so.is_valid_offset = true;
+				so.is_valid = true;
 				// Sweep search <z,w> offset.
 				bool computed_zw = false;
 				for (so.offset.z = so.offset.x + psm_s.bs.x - 1; so.offset.z <= surf_max_valid_z; so.offset.z += psm_s.bs.x)
@@ -2105,7 +2105,7 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 				break;
 			}
 		}
-		if (so.is_valid_offset)
+		if (so.is_valid)
 			break;
 	}
 	// Clear cache if size too big.
@@ -2115,7 +2115,7 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 		m_surface_offset_cache.clear();
 	}
 	m_surface_offset_cache.emplace(std::make_pair(sok, so));
-	if (so.is_valid_offset)
+	if (so.is_valid)
 	{
 		GL_CACHE("TC comp surf off: Cached HIT element (size %d), BW: %d, PSM %s, BP 0x%x (END 0x%x) + OFF <%d,%d => %d,%d> -> 0x%x (END: 0x%x)",
 			m_surface_offset_cache.size(), sok.req_bw, psm_str(sok.req_psm), sok.surf_tex0_tbp0, sok.surf_m_end_block, so.offset.x, so.offset.y, so.offset.z, so.offset.w, sok.req_bp, sok.req_bp_end);
