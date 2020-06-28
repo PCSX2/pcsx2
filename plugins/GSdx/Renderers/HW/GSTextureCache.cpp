@@ -452,7 +452,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	if (dst) {
 		GL_CACHE("TC: Lookup Target(%s) %dx%d, hit: %d (0x%x, %s)", to_string(type), w, h, dst->m_texture->GetID(), bp, psm_str(TEX0.PSM));
 
-		dst->Update();
+		UpdateTarget(dst);
 
 		dst->m_dirty_alpha |= (psm_s.trbpp == 32 && (fbmask & 0xFF000000) != 0xFF000000) || (psm_s.trbpp == 16);
 
@@ -522,7 +522,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			max_h = std::min<int>(max_h, TEX0.TBW * 64);
 
 			dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, max_h), TEX0.PSM));
-			dst->Update();
+			UpdateTarget(dst);
 		} else {
 #ifdef ENABLE_OGL_DEBUG
 			switch (type) {
@@ -634,12 +634,12 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 			//
 			// Option is hidden and not enabled by default to avoid any regression
 			dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, real_h), TEX0.PSM));
-			dst->Update();
+			UpdateTarget(dst);
 		}
 	}
 	else
 	{
-		dst->Update();
+		UpdateTarget(dst);
 	}
 
 	dst->m_used = true;
@@ -1192,7 +1192,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_valid_rect = dst->m_valid;
 		src->m_end_block = dst->m_end_block;
 
-		dst->Update();
+		UpdateTarget(dst);
 
 		// do not round here!!! if edge becomes a black pixel and addressing mode is clamp => everything outside the clamped area turns into black (kh2 shadows)
 
@@ -1811,99 +1811,6 @@ GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* tem
 	m_valid = GSVector4i::zero();
 }
 
-void GSTextureCache::Target::Update()
-{
-	Surface::UpdateAge();
-
-	// FIXME: the union of the rects may also update wrong parts of the render target (but a lot faster :)
-	// GH: it must be doable
-	// 1/ rescale the new t to the good size
-	// 2/ copy each rectangle (rescale the rectangle) (use CopyRect or multiple vertex)
-	// Alternate
-	// 1/ uses multiple vertex rectangle
-
-	GSVector2i t_size = default_rt_size;
-
-	// Ensure buffer width is at least of the minimum required value.
-	// Probably not necessary but doesn't hurt to be on the safe side.
-	// I've seen some games use buffer sizes over 1024, which might bypass our default limit
-	int buffer_width = m_TEX0.TBW << 6;
-	t_size.x = std::max(buffer_width, t_size.x);
-
-	GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, t_size);
-
-	if (r.rempty()) return;
-
-	// No handling please
-	if ((m_type == DepthStencil) && !m_depth_supported) {
-		// do the most likely thing a direct write would do, clear it
-		GL_INS("ERROR: Update DepthStencil dummy");
-
-		return;
-	} else if (m_type == DepthStencil && m_renderer->m_game.title == CRC::FFX2) {
-		GL_INS("ERROR: bad invalidation detected, depth buffer will be cleared");
-		// FFX2 menu. Invalidation of the depth is wrongly done and only the first
-		// page is invalidated. Technically a CRC hack will be better but I don't expect
-		// any games to only upload a single page of data for the depth.
-		//
-		// FFX2 menu got another bug. I'm not sure the top-left is properly written or not. It
-		// could be a gsdx transfer bug too due to unaligned-page transfer.
-		//
-		// So the quick and dirty solution is just to clean the depth buffer.
-		m_renderer->m_dev->ClearDepth(m_texture);
-		return;
-	}
-
-	int w = r.width();
-	int h = r.height();
-
-	GIFRegTEXA TEXA;
-
-	TEXA.AEM = 1;
-	TEXA.TA0 = 0;
-	TEXA.TA1 = 0x80;
-
-	GSTexture* t = m_renderer->m_dev->CreateTexture(w, h);
-
-	const GSOffset* off = m_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
-
-	GSTexture::GSMap m;
-
-	if(t->Map(m))
-	{
-		m_renderer->m_mem.ReadTexture(off, r, m.bits,  m.pitch, TEXA);
-
-		t->Unmap();
-	}
-	else
-	{
-		int pitch = ((w + 3) & ~3) * 4;
-
-		m_renderer->m_mem.ReadTexture(off, r, m_temp, pitch, TEXA);
-
-		t->Update(r.rsize(), m_temp, pitch);
-	}
-
-	// m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, w * h * 4);
-
-	// Copy the new GS memory content into the destination texture.
-	if(m_type == RenderTarget)
-	{
-		GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
-
-		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
-	}
-	else if(m_type == DepthStencil)
-	{
-		GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
-
-		// FIXME linear or not?
-		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy(), ShaderConvert_RGBA8_TO_FLOAT32);
-	}
-
-	m_renderer->m_dev->Recycle(t);
-}
-
 void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 {
 	m_valid = m_valid.runion(rect);
@@ -2048,7 +1955,14 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const GSOffse
 		sok.surf_tex0_tbp0, sok.surf_m_end_block,
 		write_before_target ? "target" : "write",
 		sok.req_bp, sok.req_bp_end);
-	const SurfaceOffset so = ComputeSurfaceOffset(sok);
+	SurfaceOffset so = ComputeSurfaceOffset(sok);
+	if (write_before_target)
+	{
+		so.offset.z = so.offset.width();
+		so.offset.w = so.offset.height();
+		so.offset.x = 0;
+		so.offset.y = 0;
+	}
 	return so;
 }
 
@@ -2127,6 +2041,157 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 			m_surface_offset_cache.size(), sok.req_bw, psm_str(sok.req_psm), sok.surf_tex0_tbp0, sok.surf_m_end_block, sok.req_bp, sok.req_bp_end);
 	}
 	return so;
+}
+
+void GSTextureCache::UpdateTarget(Target* t)
+{
+	if (!t)
+		return;
+
+	t->UpdateAge();
+
+	// FIXME: the union of the rects may also update wrong parts of the render target (but a lot faster :)
+	// GH: it must be doable
+	// 1/ rescale the new t to the good size
+	// 2/ copy each rectangle (rescale the rectangle) (use CopyRect or multiple vertex)
+	// Alternate
+	// 1/ uses multiple vertex rectangle
+
+	GSVector2i t_size = default_rt_size;
+
+	// Ensure buffer width is at least of the minimum required value.
+	// Probably not necessary but doesn't hurt to be on the safe side.
+	// I've seen some games use buffer sizes over 1024, which might bypass our default limit
+	const int buffer_width = t->m_TEX0.TBW << 6;
+	t_size.x = std::max(buffer_width, t_size.x);
+
+	const GSVector4i r = t->m_dirty.GetDirtyRectAndClear(t->m_TEX0, t_size);
+
+	if (r.rempty()) return;
+
+	const auto ttype = t->m_type;
+
+	// No handling please
+	if ((ttype == DepthStencil) && !t->m_depth_supported) {
+		// do the most likely thing a direct write would do, clear it
+		GL_INS("ERROR: Update DepthStencil dummy");
+
+		return;
+	}
+	else if (ttype == DepthStencil && m_renderer->m_game.title == CRC::FFX2) {
+		GL_INS("ERROR: bad invalidation detected, depth buffer will be cleared");
+		// FFX2 menu. Invalidation of the depth is wrongly done and only the first
+		// page is invalidated. Technically a CRC hack will be better but I don't expect
+		// any games to only upload a single page of data for the depth.
+		//
+		// FFX2 menu got another bug. I'm not sure the top-left is properly written or not. It
+		// could be a gsdx transfer bug too due to unaligned-page transfer.
+		//
+		// So the quick and dirty solution is just to clean the depth buffer.
+		m_renderer->m_dev->ClearDepth(t->m_texture);
+		return;
+	}
+
+	const int w = r.width();
+	const int h = r.height();
+
+	GSTexture* tex = m_renderer->m_dev->CreateTexture(w, h);
+
+	const GSOffset* off = m_renderer->m_mem.GetOffset(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM);
+
+	// iMineLink: POC code to copy(/convert) valid data from a target in the cache to another one
+	// bypassing the need to readback the texture to GS memory and reupload it.
+	// TODO: Handle target format conversion.
+	bool tex_found_in_rt = false;
+	if (ttype == RenderTarget)
+	{
+		for (Target* tSrc : m_dst[ttype])
+		{
+			if (tSrc == t)
+				continue;
+			const SurfaceOffset so = ComputeSurfaceOffset(off, r, tSrc);
+			if (so.is_valid)
+			{
+				GSTexture* tSrcTex = tSrc->m_texture;
+				GL_CACHE("TC: Update target %d (0x%x->0x%x) pos(%d,%d => %d,%d) with data from another target [%d 0x%x->0x%x]",
+					tSrcTex ? tSrcTex->GetID() : 0,
+					tSrc->m_TEX0.TBP0,
+					tSrc->m_end_block,
+					so.offset.x, so.offset.y, so.offset.z, so.offset.w,
+					t->m_texture ? t->m_texture->GetID() : 0,
+					t->m_TEX0.TBP0,
+					t->m_end_block
+				);
+				// const int ww = std::min<int>(so.offset.width(), w);
+				// const int hh = std::min<int>(so.offset.height(), h);
+				int ww = so.offset.width();
+				if (ww > w)
+				{
+					// TODO: Investigate why this can happen; Might be due to missing/wrong BW conversion.
+					GL_CACHE("TC: Invalid ww %d correcting with %d", ww, w);
+					ww = w;
+				}
+				int hh = so.offset.height();
+				if (hh > h)
+				{
+					// TODO: Investigate why this can happen; Might be due to missing/wrong BW conversion.
+					GL_CACHE("TC: Invalid hh %d correcting with %d", hh, h);
+					hh = h;
+				}
+				ASSERT(ww <= w);
+				ASSERT(hh <= h);
+				m_renderer->m_dev->CopyRect(tSrc->m_texture, tex, GSVector4i(0, 0, ww, hh));
+				tex_found_in_rt = true;
+				break;
+			}
+		}
+	}
+
+	if (!tex_found_in_rt)
+	{
+		// Upload texture data from GS memory.
+		GIFRegTEXA TEXA;
+
+		TEXA.AEM = 1;
+		TEXA.TA0 = 0;
+		TEXA.TA1 = 0x80;
+
+		GSTexture::GSMap m;
+
+		if (tex->Map(m))
+		{
+			m_renderer->m_mem.ReadTexture(off, r, m.bits, m.pitch, TEXA);
+
+			tex->Unmap();
+		}
+		else
+		{
+			int pitch = ((w + 3) & ~3) * 4;
+
+			m_renderer->m_mem.ReadTexture(off, r, m_temp, pitch, TEXA);
+
+			tex->Update(r.rsize(), m_temp, pitch);
+		}
+
+		// m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, w * h * 4);
+
+		// Copy the new GS memory content into the destination texture.
+		if (ttype == RenderTarget)
+		{
+			GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", t->m_TEX0.TBP0, t->m_TEX0.TBW, r.x, r.y, r.z, r.w);
+
+			m_renderer->m_dev->StretchRect(tex, t->m_texture, GSVector4(r) * GSVector4(t->m_texture->GetScale()).xyxy());
+		}
+		else if (ttype == DepthStencil)
+		{
+			GL_INS("ERROR: Update DepthStencil 0x%x", t->m_TEX0.TBP0);
+
+			// FIXME linear or not?
+			m_renderer->m_dev->StretchRect(tex, t->m_texture, GSVector4(r) * GSVector4(t->m_texture->GetScale()).xyxy(), ShaderConvert_RGBA8_TO_FLOAT32);
+		}
+	}
+
+	m_renderer->m_dev->Recycle(tex);
 }
 
 // GSTextureCache::Palette

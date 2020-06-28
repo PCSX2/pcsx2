@@ -273,4 +273,6 @@ public:
 	void AttachPaletteToSource(Source* s, uint16 pal, bool need_gs_texture);
 	SurfaceOffset ComputeSurfaceOffset(const GSOffset* off, const GSVector4i& r, const Target* t);
 	SurfaceOffset ComputeSurfaceOffset(const SurfaceOffsetKey& sok);
+
+	void UpdateTarget(Target* t);
 };
