@@ -239,16 +239,6 @@ void _flushConstRegs()
 	}
 }
 
-int _allocX86reg(xRegisterEmpty x86reg, int type, int reg, int mode)
-{
-	return _allocX86reg(xRegister32(x86reg), type, reg, mode);
-}
-
-int _allocX86reg(xRegister64 x86reg, int type, int reg, int mode)
-{
-	return _allocX86reg(xRegister32(x86reg.Id), type, reg, mode);
-}
-
 int _allocX86reg(xRegister32 x86reg, int type, int reg, int mode)
 {
 	uint i;
