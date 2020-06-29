@@ -145,31 +145,37 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	HRESULT hr = E_FAIL;
 
-	DXGI_SWAP_CHAIN_DESC scd;
 	D3D11_BUFFER_DESC bd;
 	D3D11_SAMPLER_DESC sd;
 	D3D11_DEPTH_STENCIL_DESC dsd;
 	D3D11_RASTERIZER_DESC rd;
 	D3D11_BLEND_DESC bsd;
 
+	// create factory
+	{
+		const HRESULT result = CreateDXGIFactory2(0, IID_PPV_ARGS(&m_factory));
+		if (FAILED(result))
+		{
+			fprintf(stderr, "D3D11: Unable to create DXGIFactory2 (reason: %x)\n", result);
+			return false;
+		}
+	}
+
+	// enumerate adapters
 	CComPtr<IDXGIAdapter1> adapter;
 	D3D_DRIVER_TYPE driver_type = D3D_DRIVER_TYPE_HARDWARE;
 
-	std::string adapter_id = theApp.GetConfigS("Adapter");
+	{
+		std::string adapter_id = theApp.GetConfigS("Adapter");
 
-	if (adapter_id == "ref")
-	{
-		driver_type = D3D_DRIVER_TYPE_REFERENCE;
-	}
-	else
-	{
-		CComPtr<IDXGIFactory1> dxgi_factory;
-		CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgi_factory);
-		if (dxgi_factory)
+		if (adapter_id == "ref")
+			driver_type = D3D_DRIVER_TYPE_REFERENCE;
+		else
+		{
 			for (int i = 0;; i++)
 			{
 				CComPtr<IDXGIAdapter1> enum_adapter;
-				if (S_OK != dxgi_factory->EnumAdapters1(i, &enum_adapter))
+				if (S_OK != m_factory->EnumAdapters1(i, &enum_adapter))
 					break;
 				DXGI_ADAPTER_DESC1 desc;
 				hr = enum_adapter->GetDesc1(&desc);
@@ -183,55 +189,69 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 					break;
 				}
 			}
+		}
 	}
-
-	memset(&scd, 0, sizeof(scd));
-
-	scd.BufferCount = 2;
-	scd.BufferDesc.Width = 1;
-	scd.BufferDesc.Height = 1;
-	scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	//scd.BufferDesc.RefreshRate.Numerator = 60;
-	//scd.BufferDesc.RefreshRate.Denominator = 1;
-	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	scd.OutputWindow = (HWND)m_wnd->GetHandle();
-	scd.SampleDesc.Count = 1;
-	scd.SampleDesc.Quality = 0;
-
-	// Always start in Windowed mode.  According to MS, DXGI just "prefers" this, and it's more or less
-	// required if we want to add support for dual displays later on.  The fullscreen/exclusive flip
-	// will be issued after all other initializations are complete.
-
-	scd.Windowed = TRUE;
-
-	// NOTE : D3D11_CREATE_DEVICE_SINGLETHREADED
-	//   This flag is safe as long as the DXGI's internal message pump is disabled or is on the
-	//   same thread as the GS window (which the emulator makes sure of, if it utilizes a
-	//   multithreaded GS).  Setting the flag is a nice and easy 5% speedup on GS-intensive scenes.
-
-	uint32 flags = D3D11_CREATE_DEVICE_SINGLETHREADED;
-
-#ifdef DEBUG
-	flags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
 
 	D3D_FEATURE_LEVEL level;
 
-	const D3D_FEATURE_LEVEL levels[] =
+	// device creation
 	{
-		D3D_FEATURE_LEVEL_11_0,
-		D3D_FEATURE_LEVEL_10_1,
-		D3D_FEATURE_LEVEL_10_0,
-	};
+		uint32 flags = D3D11_CREATE_DEVICE_SINGLETHREADED;
 
-	hr = D3D11CreateDeviceAndSwapChain(adapter, driver_type, NULL, flags, levels, countof(levels), D3D11_SDK_VERSION, &scd, &m_swapchain, &m_dev, &level, &m_ctx);
+#ifdef DEBUG
+		flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
 
-	if(FAILED(hr)) return false;
+		constexpr std::array<D3D_FEATURE_LEVEL, 3> supported_levels = {
+			D3D_FEATURE_LEVEL_11_0,
+			D3D_FEATURE_LEVEL_10_1,
+			D3D_FEATURE_LEVEL_10_0,
+		};
+
+		const HRESULT result = D3D11CreateDevice(
+			adapter, driver_type, nullptr, flags,
+			supported_levels.data(), supported_levels.size(),
+			D3D11_SDK_VERSION, &m_dev, &level, &m_ctx
+		);
+
+		if (FAILED(result))
+		{
+			fprintf(stderr, "D3D11: Unable to create D3D11 device (reason %x)\n", result);
+			return false;
+		}
+	}
+
+	// swapchain creation
+	{
+		DXGI_SWAP_CHAIN_DESC1 swapchain_description = {};
+
+		// let the runtime get window size
+		swapchain_description.Width = 0;
+		swapchain_description.Height = 0;
+
+		swapchain_description.BufferCount = 2;
+		swapchain_description.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		swapchain_description.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapchain_description.SampleDesc.Count = 1;
+		swapchain_description.SampleDesc.Quality = 0;
+
+		// TODO: update swap effect
+		swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+
+		const HRESULT result = m_factory->CreateSwapChainForHwnd(
+			m_dev, reinterpret_cast<HWND>(m_wnd->GetHandle()),
+			&swapchain_description, nullptr, nullptr, &m_swapchain
+		);
+
+		if (FAILED(result))
+		{
+			fprintf(stderr, "D3D11: Failed to create swapchain (reason: %x)\n", result);
+			return false;
+		}
+	}
 
 	if(!SetFeatureLevel(level, true))
-	{
 		return false;
-	}
 
 	// Set maximum texture size limit based on supported feature level.
 	if (level >= D3D_FEATURE_LEVEL_11_0)
