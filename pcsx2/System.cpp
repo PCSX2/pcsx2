@@ -262,7 +262,7 @@ void SysLogMachineCaps()
 	Console.WriteLn( Color_StrongBlack,	L"x86 Features Detected:" );
     Console.Indent().WriteLn(result[0] + (result[1].IsEmpty() ? L"" : (L"\n" + result[1])));
 #ifdef __M_X86_64
-    Console.Indent().WriteLn("Pcsx2 was compiled as 64-bits, which is unsupported and breaks all recompilers.");
+    Console.Indent().WriteLn("Pcsx2 was compiled as 64-bits.");
 #endif
 
 	Console.Newline();
