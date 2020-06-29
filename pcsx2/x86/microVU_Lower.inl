@@ -882,25 +882,25 @@ mVUop(mVU_ILWR) {
 // ISW/ISWR
 //------------------------------------------------------------------
 
-static void writeBackISW(microVU& mVU, void *basePtr, xAddressReg reg) {
-	if (!reg.IsEmpty() && (sptr)basePtr != (s32)(sptr)basePtr) {
-		int offset = -1;
-		auto writeBackAt = [&](int offsetReq){
-			if (offset == -1) {
-				xLEA(gprT3q, ptr[basePtr]);
-				offset = offsetReq;
+static void writeBackISW(microVU& mVU, void *base_ptr, xAddressReg reg) {
+	if (!reg.IsEmpty() && (sptr)base_ptr != (s32)(sptr)base_ptr) {
+		int register_offset = -1;
+		auto writeBackAt = [&](int offset){
+			if (register_offset == -1) {
+				xLEA(gprT3q, ptr[(void*)((sptr)base_ptr + offset)]);
+				register_offset = offset;
 			}
-			xMOV(ptr32[gprT3q+gprT2q+(offsetReq-offset)], gprT1);
+			xMOV(ptr32[gprT3q+gprT2q+(offset-register_offset)], gprT1);
 		};
 		if (_X) writeBackAt(0);
 		if (_Y) writeBackAt(4);
 		if (_Z) writeBackAt(8);
 		if (_W) writeBackAt(12);
 	} else {
-		if (_X) xMOV(ptr32[basePtr+reg], gprT1);
-		if (_Y) xMOV(ptr32[basePtr+reg+4], gprT1);
-		if (_Z) xMOV(ptr32[basePtr+reg+8], gprT1);
-		if (_W) xMOV(ptr32[basePtr+reg+12], gprT1);
+		if (_X) xMOV(ptr32[base_ptr+reg], gprT1);
+		if (_Y) xMOV(ptr32[base_ptr+reg+4], gprT1);
+		if (_Z) xMOV(ptr32[base_ptr+reg+8], gprT1);
+		if (_W) xMOV(ptr32[base_ptr+reg+12], gprT1);
 	}
 }
 

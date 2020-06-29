@@ -152,10 +152,17 @@ static const char branchSTR[16][8] = {
 #define gprT2b cx  // Low 16-bit of gprT2 (ecx)
 #define gprT3b dx  // Low 16-bit of gprT3 (edx)
 
+#ifdef __M_X86_64
+#define gprF0  ebxd // Status Flag 0
+#define gprF1  r12d // Status Flag 1
+#define gprF2  r13d // Status Flag 2
+#define gprF3  r14d // Status Flag 3
+#else
 #define gprF0  ebxd // Status Flag 0
 #define gprF1  ebpd // Status Flag 1
 #define gprF2  esid // Status Flag 2
 #define gprF3  edid // Status Flag 3
+#endif
 
 // Function Params
 #define mP microVU& mVU, int recPass
