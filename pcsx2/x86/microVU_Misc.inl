@@ -405,18 +405,18 @@ void ADD_SS_Single_Guard_Bit(microVU& mVU, const xmm& to, const xmm& from, const
 {
 	const xmm& t1 = t1in.IsEmpty() ? mVU.regAlloc->allocReg() : t1in;
 
-	xMOVD(eax, to);
-	xMOVD(ecx, from);
-	xSHR (eax, 23);
-	xSHR (ecx, 23);
-	xAND (eax, 0xff);
-	xAND (ecx, 0xff);
-	xSUB (ecx, eax); // Exponent Difference
+	xMOVD(eaxd, to);
+	xMOVD(ecxd, from);
+	xSHR (eaxd, 23);
+	xSHR (ecxd, 23);
+	xAND (eaxd, 0xff);
+	xAND (ecxd, 0xff);
+	xSUB (ecxd, eaxd); // Exponent Difference
 
 	xForwardJL8 case_neg;
 	xForwardJE8 case_end1;
 
-	xCMP (ecx, 24);
+	xCMP (ecxd, 24);
 	xForwardJLE8 case_pos_small;
 
 	// case_pos_big:
@@ -424,15 +424,15 @@ void ADD_SS_Single_Guard_Bit(microVU& mVU, const xmm& to, const xmm& from, const
 	xForwardJump8 case_end2;
 
 	case_pos_small.SetTarget();
-	xDEC   (ecx);
-	xMOV   (eax, 0xffffffff);
-	xSHL   (eax, cl);
-	xMOVDZX(t1, eax);
+	xDEC   (ecxd);
+	xMOV   (eaxd, 0xffffffff);
+	xSHL   (eaxd, cl);
+	xMOVDZX(t1, eaxd);
 	xPAND  (to, t1);
 	xForwardJump8 case_end3;
 
 	case_neg.SetTarget();
-	xCMP (ecx, -24);
+	xCMP (ecxd, -24);
 	xForwardJGE8 case_neg_small;
 
 	// case_neg_big:
@@ -440,10 +440,10 @@ void ADD_SS_Single_Guard_Bit(microVU& mVU, const xmm& to, const xmm& from, const
 	xForwardJump8 case_end4;
 
 	case_neg_small.SetTarget();
-	xNOT   (ecx); // -ecx - 1
-	xMOV   (eax, 0xffffffff);
-	xSHL   (eax, cl);
-	xMOVDZX(t1, eax);
+	xNOT   (ecxd); // -ecx - 1
+	xMOV   (eaxd, 0xffffffff);
+	xSHL   (eaxd, cl);
+	xMOVDZX(t1, eaxd);
 	xPAND  (from, t1);
 
 	case_end1.SetTarget();
@@ -459,17 +459,17 @@ void ADD_SS_Single_Guard_Bit(microVU& mVU, const xmm& to, const xmm& from, const
 // Modifies from's lower vector
 void ADD_SS_TriAceHack(microVU& mVU, const xmm& to, const xmm& from)
 {
-	xMOVD(eax, to);
-	xMOVD(ecx, from);
-	xSHR (eax, 23);
-	xSHR (ecx, 23);
-	xAND (eax, 0xff);
-	xAND (ecx, 0xff);
-	xSUB (ecx, eax); // Exponent Difference
+	xMOVD(eaxd, to);
+	xMOVD(ecxd, from);
+	xSHR (eaxd, 23);
+	xSHR (ecxd, 23);
+	xAND (eaxd, 0xff);
+	xAND (ecxd, 0xff);
+	xSUB (ecxd, eaxd); // Exponent Difference
 
-	xCMP (ecx, -25);
+	xCMP (ecxd, -25);
 	xForwardJLE8 case_neg_big;
-	xCMP (ecx,  25);
+	xCMP (ecxd,  25);
 	xForwardJL8  case_end1;
 
 	// case_pos_big:
@@ -569,38 +569,38 @@ void mVUcustomSearch() {
 	memset(mVUsearchXMM, 0xcc, __pagesize);
 	xSetPtr(mVUsearchXMM);
 
-	xMOVAPS  (xmm0, ptr32[ecx]);
-	xPCMP.EQD(xmm0, ptr32[edx]);
-	xMOVAPS  (xmm1, ptr32[ecx + 0x10]);
-	xPCMP.EQD(xmm1, ptr32[edx + 0x10]);
+	xMOVAPS  (xmm0, ptr32[arg1reg]);
+	xPCMP.EQD(xmm0, ptr32[arg2reg]);
+	xMOVAPS  (xmm1, ptr32[arg1reg + 0x10]);
+	xPCMP.EQD(xmm1, ptr32[arg2reg + 0x10]);
 	xPAND	 (xmm0, xmm1);
 
 	xMOVMSKPS(eaxd, xmm0);
-	xCMP	 (eax, 0xf);
+	xCMP	 (eaxd, 0xf);
 	xForwardJL8 exitPoint;
 
-	xMOVAPS  (xmm0, ptr32[ecx + 0x20]);
-	xPCMP.EQD(xmm0, ptr32[edx + 0x20]);
-	xMOVAPS	 (xmm1, ptr32[ecx + 0x30]);
-	xPCMP.EQD(xmm1, ptr32[edx + 0x30]);
+	xMOVAPS  (xmm0, ptr32[arg1reg + 0x20]);
+	xPCMP.EQD(xmm0, ptr32[arg2reg + 0x20]);
+	xMOVAPS	 (xmm1, ptr32[arg1reg + 0x30]);
+	xPCMP.EQD(xmm1, ptr32[arg2reg + 0x30]);
 	xPAND	 (xmm0, xmm1);
 
-	xMOVAPS  (xmm2, ptr32[ecx + 0x40]);
-	xPCMP.EQD(xmm2, ptr32[edx + 0x40]);
-	xMOVAPS  (xmm3, ptr32[ecx + 0x50]);
-	xPCMP.EQD(xmm3, ptr32[edx + 0x50]);
+	xMOVAPS  (xmm2, ptr32[arg1reg + 0x40]);
+	xPCMP.EQD(xmm2, ptr32[arg2reg + 0x40]);
+	xMOVAPS  (xmm3, ptr32[arg1reg + 0x50]);
+	xPCMP.EQD(xmm3, ptr32[arg2reg + 0x50]);
 	xPAND	 (xmm2, xmm3);
 
-	xMOVAPS	 (xmm4, ptr32[ecx + 0x60]);
-	xPCMP.EQD(xmm4, ptr32[edx + 0x60]);
-	xMOVAPS	 (xmm5, ptr32[ecx + 0x70]);
-	xPCMP.EQD(xmm5, ptr32[edx + 0x70]);
+	xMOVAPS	 (xmm4, ptr32[arg1reg + 0x60]);
+	xPCMP.EQD(xmm4, ptr32[arg2reg + 0x60]);
+	xMOVAPS	 (xmm5, ptr32[arg1reg + 0x70]);
+	xPCMP.EQD(xmm5, ptr32[arg2reg + 0x70]);
 	xPAND	 (xmm4, xmm5);
 
-	xMOVAPS  (xmm6, ptr32[ecx + 0x80]);
-	xPCMP.EQD(xmm6, ptr32[edx + 0x80]);
-	xMOVAPS  (xmm7, ptr32[ecx + 0x90]);
-	xPCMP.EQD(xmm7, ptr32[edx + 0x90]);
+	xMOVAPS  (xmm6, ptr32[arg1reg + 0x80]);
+	xPCMP.EQD(xmm6, ptr32[arg2reg + 0x80]);
+	xMOVAPS  (xmm7, ptr32[arg1reg + 0x90]);
+	xPCMP.EQD(xmm7, ptr32[arg2reg + 0x90]);
 	xPAND	 (xmm6, xmm7);
 
 	xPAND (xmm0, xmm2);

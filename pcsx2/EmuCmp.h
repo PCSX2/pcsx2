@@ -85,6 +85,9 @@ void shutdown();
 /// Compare R5900 registers
 void __fastcall cmpR5900(u32 pc);
 
+/// Compare VU registers
+void __fastcall cmpVU(u32 idx, u32 pc);
+
 /// Compare an arbitrary memory buffer
 /// (Does not perform correction, meant as a verification for e.g. memory card data which probably shouldn't be synced)
 static void cmpMem(void *mem, int length, const char *description) {

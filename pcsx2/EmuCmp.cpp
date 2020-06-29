@@ -17,6 +17,7 @@
 #include "PrecompiledHeader.h"
 #include "Assertions.h"
 #include "R5900.h"
+#include "VU.h"
 #include "DebugTools/Debug.h"
 #ifdef __POSIX__
 #include <sys/types.h>
@@ -178,6 +179,20 @@ static void Compare(const GPR_reg& server, GPR_reg& client, const char *name, bo
 	Compare(server.SD[1], client.SD[1], hiname, found, pc);
 }
 
+static void Compare(const VECTOR& server, VECTOR& client, const char *name, bool& found, u32 pc) {
+	char name_[256];
+	for (int i = 0; i < 4; i++) {
+		sprintf(name_, "%s[%d]", name, i);
+		Compare(server.UL[i], client.UL[i], name_, found, pc);
+	}
+}
+
+static void PrintMismatchUnknown(const char *name, u32 pc) {
+	std::stringstream out;
+	out << "Server client mismatch of unknown " << name << " at " << std::hex << pc;
+	pxAssertRel(0, out.str().c_str());
+}
+
 /// If you're having trouble with load instructions loading incorrect data from memory, use this to compare the section of memory containing the incorrect data during the appropriate cmpR#### routine to catch the bad store in action!
 static void CompareBuffer(void *buffer, int startOffset, int length, const char *name, u32 pc) {
 	u8 *local = (u8*)buffer + startOffset;
@@ -247,9 +262,7 @@ void EmuCmp::cmpR5900(u32 pc) {
 			Compare(servCPU.PERF.n.pcr0, cpuRegs.PERF.n.pcr0, "pcr0", found, lastPC);
 			Compare(servCPU.PERF.n.pcr1, cpuRegs.PERF.n.pcr1, "pcr1", found, lastPC);
 			if (!found) {
-				std::stringstream out;
-				out << "Server client mismatch of unknown CPU register at " << std::hex << lastPC;
-				pxAssertRel(0, out.str().c_str());
+				PrintMismatchUnknown("CPU register", lastPC);
 			}
 		}
 		if (0 != memcmp(&servFPU, &fpuRegs, sizeof(fpuRegisters))) {
@@ -260,13 +273,54 @@ void EmuCmp::cmpR5900(u32 pc) {
 			}
 			Compare(servFPU.ACC.f, fpuRegs.ACC.f, "FP ACC", found, lastPC);
 			if (!found) {
-				std::stringstream out;
-				out << "Server client mismatch of unknown FPU register at " << std::hex << lastPC;
-				pxAssertRel(0, out.str().c_str());
+				PrintMismatchUnknown("FPU register", lastPC);
 			}
 		}
 	}
 	lastPC = pc;
+}
+
+void EmuCmp::cmpVU(u32 idx, u32 pc) {
+	if (!pxAssert(idx == 0 || idx == 1)) { return; }
+	static u32 lastPC[2] = {0};
+	VURegs& regs = vuRegs[idx];
+	if (mode == Config::Mode::Server) {
+		send(regs.VF);
+		send(regs.VI);
+		send(regs.ACC);
+		send(regs.q);
+		send(regs.p);
+	} else if (mode == Config::Mode::Client) {
+		VURegs srv;
+		receive(&srv.VF, sizeof(srv.VF));
+		receive(&srv.VI, sizeof(srv.VI));
+		receive(&srv.ACC, sizeof(srv.ACC));
+		receive(&srv.q, sizeof(srv.q));
+		receive(&srv.p, sizeof(srv.p));
+
+		if (0 != memcmp(&regs, &srv, offsetof(VURegs, idx))) {
+			bool found = false;
+			char name[16] = "VUX.";
+			name[2] = idx ? '1' : '0';
+			for (int i = 0; i < 32; i++) {
+				sprintf(name + 4, "VI%d", i);
+				Compare(srv.VI[i].UL, regs.VI[i].UL, name, found, lastPC[idx]);
+				name[5] = 'F';
+				Compare(srv.VF[i], regs.VF[i], name, found, lastPC[idx]);
+			}
+			sprintf(name + 4, "ACC");
+			Compare(srv.ACC, regs.ACC, name, found, lastPC[idx]);
+			sprintf(name + 4, "q");
+			Compare(srv.q.UL, regs.q.UL, name, found, lastPC[idx]);
+			sprintf(name + 4, "p");
+			Compare(srv.p.UL, regs.p.UL, name, found, lastPC[idx]);
+
+			if (!found) {
+				PrintMismatchUnknown(idx ? "VU1 Register" : "VU0 Register", lastPC[idx]);
+			}
+		}
+	}
+	lastPC[idx] = pc;
 }
 
 void EmuCmp::detail::cmpMem(void *mem, int length, const char *description) {

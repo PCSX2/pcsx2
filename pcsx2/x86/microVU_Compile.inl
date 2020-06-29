@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "EmuCmp.h"
+
 //------------------------------------------------------------------
 // Messages Called at Execution Time...
 //------------------------------------------------------------------
@@ -156,6 +158,10 @@ void doSwapOp(mV) {
 }
 
 void mVUexecuteInstruction(mV) {
+	if (EmuCmp::shouldCompareVU() && EmuCmp::shouldEmitAfterInstr()) {
+		flushRegs(mVU);
+		xFastCall((void*)EmuCmp::cmpVU, mVU.index, iPC);
+	}
 	if (mVUlow.isNOP) {
 		incPC(1);
 		doUpperOp(mVU);
