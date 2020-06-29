@@ -781,9 +781,24 @@ void rpsxShiftConst(int info, int rdreg, int rtreg, int imm, int shifttype)
 	if (imm) {
 		if( rdreg == rtreg ) {
 			switch(shifttype) {
-				case 0: xSHL(ptr32[&psxRegs.GPR.r[rdreg]], imm); break;
-				case 1: xSHR(ptr32[&psxRegs.GPR.r[rdreg]], imm); break;
-				case 2: xSAR(ptr32[&psxRegs.GPR.r[rdreg]], imm); break;
+				case 0: 
+					xMOV(eaxd, ptr32[&psxRegs.GPR.r[rdreg]]); // temp fix
+					xSHL(eaxd, imm); 
+					xMOV(ptr32[&psxRegs.GPR.r[rdreg]], eaxd);
+					//xSHL(ptr32[&psxRegs.GPR.r[rdreg]], imm); 
+					break;
+				case 1: 
+					xMOV(eaxd, ptr32[&psxRegs.GPR.r[rdreg]]); // temp fix
+					xSHR(eaxd, imm); 
+					xMOV(ptr32[&psxRegs.GPR.r[rdreg]], eaxd);
+					//xSHR(ptr32[&psxRegs.GPR.r[rdreg]], imm); 
+					break;
+				case 2: 
+					xMOV(eaxd, ptr32[&psxRegs.GPR.r[rdreg]]); // temp fix
+					xSAR(eaxd, imm); 
+					xMOV(ptr32[&psxRegs.GPR.r[rdreg]], eaxd);
+					//xSAR(ptr32[&psxRegs.GPR.r[rdreg]], imm); 
+					break;
 			}
 		}
 		else {
