@@ -107,6 +107,7 @@ TEST(CodegenTests, MathTest)
 	CODEGEN_TEST_64(xADD(r8, 0x12), "49 83 c0 12");
 	CODEGEN_TEST_64(xADD(rax, 0x1234), "48 05 34 12 00 00");
 	CODEGEN_TEST_64(xADD(ptr32[base], -0x60), "83 05 f9 ff ff ff a0");
+	CODEGEN_TEST_64(xADD(ptr32[base], 0x1234), "81 05 f6 ff ff ff 34 12 00 00");
 	CODEGEN_TEST_BOTH(xADD(eaxd, ebxd), "01 d8");
 	CODEGEN_TEST_BOTH(xADD(eaxd, 0x1234), "05 34 12 00 00");
 	CODEGEN_TEST_64(xADD(r8, ptrNative[r10*4+3+r9]), "4f 03 44 91 03");
@@ -130,6 +131,7 @@ TEST(CodegenTests, BitwiseTest)
 	CODEGEN_TEST_64(xSAR(rax, 60), "48 c1 f8 3c");
 	CODEGEN_TEST_BOTH(xSAR(eaxd, 30), "c1 f8 1e");
 	CODEGEN_TEST_BOTH(xSHL(ebxd, 30), "c1 e3 1e");
+	CODEGEN_TEST_64(xSHL(ptr32[base], 4), "c1 25 f9 ff ff ff 04");
 	CODEGEN_TEST_64(xAND(r8, r9), "4d 21 c8");
 	CODEGEN_TEST_64(xXOR(rax, ptrNative[r10]), "49 33 02");
 	CODEGEN_TEST_BOTH(xOR(esid, ptr32[rax+rbx]), "0b 34 18");
