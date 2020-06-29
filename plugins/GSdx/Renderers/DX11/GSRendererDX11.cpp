@@ -41,7 +41,7 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 
 	D3D11_PRIMITIVE_TOPOLOGY t;
 
-	bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1);
+	const bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1);
 
 	switch (m_vt.m_primclass)
 	{
@@ -54,6 +54,7 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 
 		t = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
 		break;
+
 	case GS_LINE_CLASS:
 		if (unscale_pt_ln)
 		{
@@ -62,16 +63,29 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 		}
 
 		t = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-
 		break;
+
 	case GS_SPRITE_CLASS:
-		t = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+		// Lines: GPU conversion.
+		// Triangles: CPU conversion.
+		if (!m_vt.m_accurate_stq && m_vertex.next > 32)  // <=> 16 sprites (based on Shadow Hearts)
+		{
+			t = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+		}
+		else
+		{
+			m_gs_sel.cpu_sprite = 1;
+			Lines2Sprites();
+
+			t = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		}
+
 		break;
+
 	case GS_TRIANGLE_CLASS:
-
 		t = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
 		break;
+
 	default:
 		__assume(0);
 	}

@@ -182,8 +182,9 @@ public:
 				uint32 prim:2;
 				uint32 point:1;
 				uint32 line:1;
+				uint32 cpu_sprite:1;
 
-				uint32 _free:27;
+				uint32 _free:26;
 			};
 
 			uint32 key;
