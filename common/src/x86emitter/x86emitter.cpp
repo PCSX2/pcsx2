@@ -1126,17 +1126,18 @@ __emitinline void xRestoreReg(const xRegisterSSE &dest)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Helper object to handle ABI frame
-#ifdef __GNUC__
-
 #ifdef __M_X86_64
-// GCC ensures/requires stack to be 16 bytes aligned (but when?)
+
+// All x86-64 calling conventions ensure/require stack to be 16 bytes aligned
+// I couldn't find documentation on when, but compilers would indicate it's before the call: https://gcc.godbolt.org/z/KzTfsz
 #define ALIGN_STACK(v) xADD(rsp, v)
-#else
+
+#elif defined(__GNUC__)
+
 // GCC ensures/requires stack to be 16 bytes aligned before the call
 // Call will store 4 bytes. EDI/ESI/EBX will take another 12 bytes.
 // EBP will take 4 bytes if m_base_frame is enabled
 #define ALIGN_STACK(v) xADD(esp, v)
-#endif
 
 #else
 
@@ -1150,19 +1151,19 @@ xScopedStackFrame::xScopedStackFrame(bool base_frame, bool save_base_pointer, in
     m_save_base_pointer = save_base_pointer;
     m_offset = offset;
 
-#ifdef __M_X86_64
-
-    m_offset += 8; // Call stores the return address (4 bytes)
+    m_offset += sizeof(void*); // Call stores the return address (4 bytes)
 
     // Note rbp can surely be optimized in 64 bits
     if (m_base_frame) {
         xPUSH(rbp);
         xMOV(rbp, rsp);
-        m_offset += 8;
+        m_offset += sizeof(void*);
     } else if (m_save_base_pointer) {
         xPUSH(rbp);
-        m_offset += 8;
+        m_offset += sizeof(void*);
     }
+
+#ifdef __M_X86_64
 
     xPUSH(rbx);
     xPUSH(r12);
@@ -1170,20 +1171,14 @@ xScopedStackFrame::xScopedStackFrame(bool base_frame, bool save_base_pointer, in
     xPUSH(r14);
     xPUSH(r15);
     m_offset += 40;
+#ifdef _WIN32
+    xPUSH(rdi);
+    xPUSH(rsi);
+    xSUB(rsp, 32); // Windows calling convention specifies additional space for the callee to spill registers
+    m_offset += 48;
+#endif
 
 #else
-
-    m_offset += 4; // Call stores the return address (4 bytes)
-
-    // Create a new frame
-    if (m_base_frame) {
-        xPUSH(ebp);
-        xMOV(ebp, esp);
-        m_offset += 4;
-    } else if (m_save_base_pointer) {
-        xPUSH(ebp);
-        m_offset += 4;
-    }
 
     // Save the register context
     xPUSH(edi);
@@ -1203,18 +1198,16 @@ xScopedStackFrame::~xScopedStackFrame()
 #ifdef __M_X86_64
 
     // Restore the register context
+#ifdef _WIN32
+    xADD(rsp, 32);
+    xPOP(rsi);
+    xPOP(rdi);
+#endif
     xPOP(r15);
     xPOP(r14);
     xPOP(r13);
     xPOP(r12);
     xPOP(rbx);
-
-    // Destroy the frame
-    if (m_base_frame) {
-        xLEAVE();
-    } else if (m_save_base_pointer) {
-        xPOP(rbp);
-    }
 
 #else
 
@@ -1223,14 +1216,14 @@ xScopedStackFrame::~xScopedStackFrame()
     xPOP(esi);
     xPOP(edi);
 
+#endif
+
     // Destroy the frame
     if (m_base_frame) {
         xLEAVE();
     } else if (m_save_base_pointer) {
-        xPOP(ebp);
+        xPOP(rbp);
     }
-
-#endif
 }
 
 } // End namespace x86Emitter
