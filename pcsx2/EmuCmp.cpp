@@ -229,7 +229,7 @@ static void CompareBuffer(void *buffer, int startOffset, int length, const char 
 
 #define COMPARE(reg) Compare(servCPU.reg, cpuRegs.reg, #reg, found, pc)
 
-void EmuCmp::cmpR5900(u32 pc) {
+void __fastcall EmuCmp::cmpR5900(u32 pc) {
 	static u32 lastPC = 0;
 	// Example use of CompareBuffer to find bad memory around 0x70001000
 	// CompareBuffer(eeMem->Scratch, 0x1000, 0x500, "Scratch", lastPC);
@@ -280,7 +280,7 @@ void EmuCmp::cmpR5900(u32 pc) {
 	lastPC = pc;
 }
 
-void EmuCmp::cmpVU(u32 idx, u32 pc) {
+void __fastcall EmuCmp::cmpVU(u32 idx, u32 pc) {
 	if (!pxAssert(idx == 0 || idx == 1)) { return; }
 	static u32 lastPC[2] = {0};
 	VURegs& regs = vuRegs[idx];
