@@ -58,7 +58,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins")
 endif()
 
 # tests
-if(ENABLE_TESTS)
+if(ACTUALLY_ENABLE_TESTS)
     add_subdirectory(3rdparty/gtest EXCLUDE_FROM_ALL)
     add_subdirectory(tests/ctest)
 endif()
