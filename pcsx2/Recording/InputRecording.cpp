@@ -37,7 +37,6 @@ void SaveStateBase::InputRecordingFreeze()
 #ifndef DISABLE_RECORDING
 	if (g_FrameCount > 0 && IsLoading())
 	{
-		// TODO - savestates can be used to jump ahead in the movie, and currently those are flagged as an undo
 		g_InputRecordingData.IncrementUndoCount();
 	}
 #endif
