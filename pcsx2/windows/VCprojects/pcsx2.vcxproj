@@ -57,7 +57,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -162,6 +162,7 @@
     <ClCompile Include="..\..\DebugTools\MipsAssemblerTables.cpp" />
     <ClCompile Include="..\..\DebugTools\MipsStackWalk.cpp" />
     <ClCompile Include="..\..\DebugTools\SymbolMap.cpp" />
+    <ClCompile Include="..\..\EmuCmp.cpp" />
     <ClCompile Include="..\..\GameDatabase.cpp" />
     <ClCompile Include="..\..\Gif_Logger.cpp" />
     <ClCompile Include="..\..\Gif_Unit.cpp" />
@@ -417,6 +418,7 @@
     <ClInclude Include="..\..\DebugTools\MipsAssemblerTables.h" />
     <ClInclude Include="..\..\DebugTools\MipsStackWalk.h" />
     <ClInclude Include="..\..\DebugTools\SymbolMap.h" />
+    <ClInclude Include="..\..\EmuCmp.h" />
     <ClInclude Include="..\..\GameDatabase.h" />
     <ClInclude Include="..\..\Gif_Unit.h" />
     <ClInclude Include="..\..\gui\AppGameDatabase.h" />

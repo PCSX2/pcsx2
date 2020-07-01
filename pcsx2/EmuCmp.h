@@ -78,15 +78,15 @@ static bool shouldEmitAfterInstr() { return Config::granularity == Config::Granu
 static bool shouldEmitAfterBB() { return Config::granularity == Config::Granularity::BasicBlock; }
 
 /// Attempt to initialize emucmp
-extern void init();
+void init();
 /// Quit emucmp
-extern void shutdown();
+void shutdown();
 
 /// Compare R5900 registers
-extern void __fastcall cmpR5900(u32 pc);
+void __fastcall cmpR5900(u32 pc);
 
 /// Compare VU registers
-extern void __fastcall cmpVU(u32 idx, u32 pc);
+void __fastcall cmpVU(u32 idx, u32 pc);
 
 /// Compare an arbitrary memory buffer
 /// (Does not perform correction, meant as a verification for e.g. memory card data which probably shouldn't be synced)

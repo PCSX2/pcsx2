@@ -871,6 +871,7 @@
     <ClCompile Include="..\..\IPU\IPUdither.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\EmuCmp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1323,6 +1324,7 @@
     <ClInclude Include="..\..\Recording\VirtualPad.h">
       <Filter>Recording\gui</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\EmuCmp.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\wxResources.rc">
