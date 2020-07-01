@@ -27,10 +27,6 @@
 #include <fstream>
 #include <VersionHelpers.h>
 
-HMODULE GSDevice11::s_d3d_compiler_dll = nullptr;
-decltype(&D3DCompile) GSDevice11::s_pD3DCompile = nullptr;
-bool GSDevice11::s_old_d3d_compiler_dll;
-
 GSDevice11::GSDevice11()
 {
 	memset(&m_state, 0, sizeof(m_state));
@@ -53,50 +49,6 @@ GSDevice11::GSDevice11()
 		m_aniso_filter = aniso_level;
 	else
 		m_aniso_filter = 0;
-}
-
-bool GSDevice11::LoadD3DCompiler()
-{
-	// Windows 8.1 and later come with the latest d3dcompiler_47.dll, but
-	// Windows 7 devs might also have the dll available for use (which will
-	// have to be placed in the application directory)
-	s_d3d_compiler_dll = LoadLibraryEx(D3DCOMPILER_DLL, nullptr, LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
-
-	// Windows Vista and 7 can use the older version. If the previous LoadLibrary
-	// call fails on Windows 8.1 and later, then the user's system is likely
-	// broken.
-	if (s_d3d_compiler_dll)
-	{
-		s_old_d3d_compiler_dll = false;
-	}
-	else
-	{
-		if (!IsWindows8Point1OrGreater())
-			// Use LoadLibrary instead of LoadLibraryEx, some Windows 7 systems
-			// have issues with it.
-			s_d3d_compiler_dll = LoadLibrary("D3DCompiler_43.dll");
-
-		if (s_d3d_compiler_dll == nullptr)
-			return false;
-
-		s_old_d3d_compiler_dll = true;
-	}
-
-	s_pD3DCompile = reinterpret_cast<decltype(&D3DCompile)>(GetProcAddress(s_d3d_compiler_dll, "D3DCompile"));
-	if (s_pD3DCompile)
-		return true;
-
-	FreeLibrary(s_d3d_compiler_dll);
-	s_d3d_compiler_dll = nullptr;
-	return false;
-}
-
-void GSDevice11::FreeD3DCompiler()
-{
-	s_pD3DCompile = nullptr;
-	if (s_d3d_compiler_dll)
-		FreeLibrary(s_d3d_compiler_dll);
-	s_d3d_compiler_dll = nullptr;
 }
 
 bool GSDevice11::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)
@@ -1546,8 +1498,6 @@ void GSDevice11::CreateShader(std::vector<char> source, const char* fn, ID3DIncl
 
 void GSDevice11::CompileShader(std::vector<char> source, const char* fn, ID3DInclude *include, const char* entry, D3D_SHADER_MACRO* macro, ID3DBlob** shader, std::string shader_model)
 {
-	HRESULT hr;
-
 	CComPtr<ID3DBlob> error;
 
 	UINT flags = 0;
@@ -1556,17 +1506,17 @@ void GSDevice11::CompileShader(std::vector<char> source, const char* fn, ID3DInc
 	flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_AVOID_FLOW_CONTROL;
 #endif
 
-	hr = s_pD3DCompile(source.data(), source.size(), fn, macro, include, entry, shader_model.c_str(), flags, 0, shader, &error);
+	const HRESULT hr = D3DCompile(
+		source.data(), source.size(), fn, macro,
+		include, entry, shader_model.c_str(),
+		flags, 0, shader, &error
+	);
 
-	if(error)
-	{
+	if (error)
 		fprintf(stderr, "%s\n", (const char*)error->GetBufferPointer());
-	}
 
-	if(FAILED(hr))
-	{
+	if (FAILED(hr))
 		throw GSDXRecoverableError();
-	}
 }
 
 uint16 GSDevice11::ConvertBlendEnum(uint16 generic)

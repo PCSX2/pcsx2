@@ -497,22 +497,12 @@ private:
 
 protected:
 	struct {D3D_FEATURE_LEVEL level; std::string model, vs, gs, ps, cs;} m_shader;
-
-	static HMODULE s_d3d_compiler_dll;
-	static decltype(&D3DCompile) s_pD3DCompile;
-	// Older version doesn't support D3D_COMPILE_STANDARD_FILE_INCLUDE, which
-	// could be useful for external shaders.
-	static bool s_old_d3d_compiler_dll;
-
 public:
 	GSDevice11();
 	virtual ~GSDevice11() {}
 
 	bool SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode);
 	void GetFeatureLevel(D3D_FEATURE_LEVEL& level) const { level = m_shader.level; }
-
-	static bool LoadD3DCompiler();
-	static void FreeD3DCompiler();
 
 	bool Create(const std::shared_ptr<GSWnd> &wnd);
 	bool Reset(int w, int h);
