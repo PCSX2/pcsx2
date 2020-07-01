@@ -16121,6 +16121,7 @@ Serial = SLES-54171
 Name   = Yakuza
 Region = PAL-M5
 Compat = 5
+EETimingHack = 1 // Fixes flickering.
 ---------------------------------------------
 Serial = SLES-54172
 Name   = Garfield 2 - Tale of Two Kitties
@@ -41570,6 +41571,7 @@ Serial = SLUS-21348
 Name   = Yakuza
 Region = NTSC-U
 Compat = 5
+EETimingHack = 1 // Fixes flickering.
 ---------------------------------------------
 Serial = SLUS-21349
 Name   = Taito Legends 2
