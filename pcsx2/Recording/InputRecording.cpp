@@ -37,7 +37,8 @@ void SaveStateBase::InputRecordingFreeze()
 #ifndef DISABLE_RECORDING
 	if (g_FrameCount > 0 && IsLoading())
 	{
-		g_InputRecordingData.AddUndoCount();
+		// TODO - savestates can be used to jump ahead in the movie, and currently those are flagged as an undo
+		g_InputRecordingData.IncrementUndoCount();
 	}
 #endif
 }
@@ -100,19 +101,19 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 & bufCount, u8 
 	const u8 &nowBuf = buf[bufCount];
 	if (state == INPUT_RECORDING_MODE_RECORD)
 	{
-		InputRecordingData.UpdateFrameMax(g_FrameCount);
-		InputRecordingData.WriteKeyBuf(g_FrameCount, port, bufCount - 3, nowBuf);
+		InputRecordingData.SetTotalFrames(g_FrameCount);
+		InputRecordingData.WriteKeyBuffer(g_FrameCount, port, bufCount - 3, nowBuf);
 	}
 	else if (state == INPUT_RECORDING_MODE_REPLAY)
 	{
-		if (InputRecordingData.GetMaxFrame() <= g_FrameCount)
+		if (InputRecordingData.GetTotalFrames() <= g_FrameCount)
 		{
 			// Pause the emulation but the movie is not closed
 			g_RecordingControls.Pause();
 			return;
 		}
 		u8 tmp = 0;
-		if (InputRecordingData.ReadKeyBuf(tmp, g_FrameCount, port, bufCount - 3))
+		if (InputRecordingData.ReadKeyBuffer(tmp, g_FrameCount, port, bufCount - 3))
 		{
 			buf[bufCount] = tmp;
 		}
@@ -136,9 +137,9 @@ void InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 	g_RecordingControls.Pause();
 	Stop();
 
-	// create
-	if (!InputRecordingData.Open(FileName, true, fromSaveState))
+	if (!InputRecordingData.OpenNew(FileName, fromSaveState))
 	{
+		g_RecordingControls.Unpause();
 		return;
 	}
 	// Set author name
