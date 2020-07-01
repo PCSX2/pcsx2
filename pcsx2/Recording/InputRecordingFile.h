@@ -67,7 +67,7 @@ public:
 	// Increment the number of undo actions and commit it to the recording file
 	void IncrementUndoCount();
 	// Open an existing recording file
-    bool OpenExisting(const wxString path);
+	bool OpenExisting(const wxString path);
 	// Create and open a brand new input recording, either starting from a save-state or from
 	// booting the game
 	bool OpenNew(const wxString path, bool fromSaveState);

@@ -114,7 +114,7 @@ bool InputRecordingFile::open(const wxString path, bool newRecording, bool fromS
 		return false;
 	}
 	filename = path;
-    
+	
 	if (newRecording)
 	{
 		if (fromSaveState)
@@ -135,7 +135,7 @@ bool InputRecordingFile::open(const wxString path, bool newRecording, bool fromS
 	} 
 	else
 	{
-        if (!verifyRecordingFileHeader())
+		if (!verifyRecordingFileHeader())
 		{
 			recordingConLog(wxString::Format("[REC]: Input recording file header is invalid\n"));
 			return false;
@@ -147,12 +147,12 @@ bool InputRecordingFile::open(const wxString path, bool newRecording, bool fromS
 
 bool InputRecordingFile::OpenNew(const wxString path, bool fromSaveState)
 {
-    return open(path, true, fromSaveState);
+	return open(path, true, fromSaveState);
 }
 
 bool InputRecordingFile::OpenExisting(const wxString path)
 {
-    return open(path, false, false);
+	return open(path, false, false);
 }
 
 bool InputRecordingFile::ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex)
