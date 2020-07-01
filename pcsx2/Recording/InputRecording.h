@@ -55,5 +55,5 @@ private:
 
 extern InputRecording g_InputRecording;
 static InputRecordingFile& g_InputRecordingData = g_InputRecording.GetInputRecordingData();
-static InputRecordingHeader& g_InputRecordingHeader = g_InputRecording.GetInputRecordingData().GetHeader();
+static InputRecordingFileHeader& g_InputRecordingHeader = g_InputRecording.GetInputRecordingData().GetHeader();
 #endif
