@@ -161,37 +161,59 @@ void InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 }
 
 // GUI Handler - Play a recording
-void InputRecording::Play(wxString FileName, bool fromSaveState)
+void InputRecording::Play(wxString fileName, bool fromSaveState)
 {
 	g_RecordingControls.Pause();
 	Stop();
 
-	if (!InputRecordingData.Open(FileName, false, false))
+	// Open the file and verify if it can be played
+	if (!InputRecordingData.OpenExisting(fileName))
 	{
+		g_RecordingControls.Unpause();
 		return;
 	}
-	if (!InputRecordingData.ReadHeaderAndCheck())
+	// Either load the savestate, or restart the game
+	if (InputRecordingData.FromSaveState())
 	{
-		recordingConLog(L"[REC]: This file is not a correct InputRecording file.\n");
-		InputRecordingData.Close();
-		return;
+		if (!CoreThread.IsOpen())
+		{
+			recordingConLog(L"[REC]: Game is not open, aborting playing input recording which starts on a save-state.\n");
+			g_RecordingControls.Unpause();
+			InputRecordingData.Close();
+			return;
+		}
+		FILE* ssFileCheck = wxFopen(InputRecordingData.GetFilename() + "_SaveState.p2s", "r");
+		if (ssFileCheck == NULL)
+		{
+			recordingConLog(wxString::Format("[REC]: Could not locate savestate file at location - %s_SaveState.p2s\n", InputRecordingData.GetFilename()));
+			g_RecordingControls.Unpause();
+			InputRecordingData.Close();
+			return;
+		}
+		fclose(ssFileCheck);
+		StateCopy_LoadFromFile(InputRecordingData.GetFilename() + "_SaveState.p2s");
 	}
-	// Check author name
+	else
+	{
+		sApp.SysExecute();
+	}
+
+	// Check if the current game matches with the one used to make the original recording
 	if (!g_Conf->CurrentIso.IsEmpty())
 	{
 		if (resolveGameName() != InputRecordingData.GetHeader().gameName)
 		{
-			recordingConLog(L"[REC]: Recording was possibly recorded on a different game.\n");
+			recordingConLog(L"[REC]: Recording was possibly constructed for a different game.\n");
 		}
 	}
 	state = INPUT_RECORDING_MODE_REPLAY;
-	recordingConLog(wxString::Format(L"[REC]: Replaying movie - [%s]\n", FileName));
+	recordingConLog(wxString::Format(L"[REC]: Replaying input recording - [%s]\n", InputRecordingData.GetFilename()));
 	recordingConLog(wxString::Format(L"[REC]: PCSX2 Version Used: %s\n", InputRecordingData.GetHeader().emu));
 	recordingConLog(wxString::Format(L"[REC]: Recording File Version: %d\n", InputRecordingData.GetHeader().version));
 	recordingConLog(wxString::Format(L"[REC]: Associated Game Name or ISO Filename: %s\n", InputRecordingData.GetHeader().gameName));
 	recordingConLog(wxString::Format(L"[REC]: Author: %s\n", InputRecordingData.GetHeader().author));
-	recordingConLog(wxString::Format(L"[REC]: MaxFrame: %d\n", InputRecordingData.GetMaxFrame()));
-	recordingConLog(wxString::Format(L"[REC]: UndoCount: %d\n", InputRecordingData.GetUndoCount()));
+	recordingConLog(wxString::Format(L"[REC]: Total Frames: %d\n", InputRecordingData.GetTotalFrames()));
+	recordingConLog(wxString::Format(L"[REC]: Undo Count: %d\n", InputRecordingData.GetUndoCount()));
 }
 
 wxString InputRecording::resolveGameName()
