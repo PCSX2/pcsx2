@@ -164,7 +164,7 @@ const xAddressReg
     arg2reg = rdx,
 #ifdef __M_X86_64
     arg3reg = r8,
-    arg4reg = r9
+    arg4reg = r9,
 #else
     arg3reg = xRegisterEmpty(),
     arg4reg = xRegisterEmpty(),
