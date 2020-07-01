@@ -112,40 +112,6 @@ void RecompiledCodeReserve::ThrowIfNotOk() const
 		));
 }
 
-#ifdef __M_X86_64
-static sptr CodegenAccessibleMemory = 0;
-static std::atomic<sptr> CodegenAccessibleMemoryNext{0};
-static sptr CodegenAccessibleMemoryEnd = 0;
-
-void *HostSys::detail::MakeCodegenAccessible(void *ptr, sptr size)
-{
-	// Don't do anything if the pointer is already in codegen-accessible memory
-	if ((sptr)ptr >= CodegenAccessibleMemory && (sptr)ptr < CodegenAccessibleMemoryEnd) {
-		return ptr;
-	}
-
-	if (!CodegenAccessibleMemoryNext.load(std::memory_order_relaxed)) {
-		const sptr sectionsize = __pagesize;
-		auto tmp = (sptr)GetVmMemory().BumpAllocator().Alloc(sectionsize);
-		HostSys::MmapCommit(tmp, sectionsize, PageProtectionMode().Read().Write());
-		sptr expected = 0;
-		if (CodegenAccessibleMemoryNext.compare_exchange_strong(expected, tmp, std::memory_order_relaxed)) {
-			CodegenAccessibleMemory = tmp;
-			CodegenAccessibleMemoryEnd = tmp + sectionsize;
-		} else {
-			HostSys::MmapReset(tmp, sectionsize);
-		}
-	}
-
-	// Align to 32 bytes
-	void *ret = (void *)CodegenAccessibleMemoryNext.fetch_add(size + 0x1f & ~0x1f, std::memory_order_relaxed);
-	pxAssertDev((sptr)ret + size < CodegenAccessibleMemoryEnd,
-		"Ran out of space for codegen accessible memory, need to increase size");
-	memcpy(ret, ptr, size);
-	return ret;
-}
-#endif
-
 void SysOutOfMemory_EmergencyResponse(uptr blocksize)
 {
 	// An out of memory error occurred.  All we can try to do in response is reset the various
