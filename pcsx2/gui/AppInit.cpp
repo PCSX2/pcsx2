@@ -229,6 +229,7 @@ void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 	parser.AddOption( wxEmptyString,L"elf",			_("executes an ELF image"), wxCMD_LINE_VAL_STRING );
 	parser.AddOption( wxEmptyString,L"irx",			_("executes an IRX image"), wxCMD_LINE_VAL_STRING );
 	parser.AddSwitch( wxEmptyString,L"nodisc",		_("boots an empty DVD tray; use to enter the PS2 system menu") );
+	//TODO_CDVD update string
 	parser.AddSwitch( wxEmptyString,L"usecd",		_("boots from the CDVD plugin (overrides IsoFile parameter)") );
 
 	parser.AddSwitch( wxEmptyString,L"nohacks",		_("disables all speedhacks") );
@@ -363,6 +364,7 @@ bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
 
 	if( parser.Found(L"usecd") )
 	{
+		//TODO_CDVD change plugin to disc
 		Startup.CdvdSource	= CDVD_SourceType::Plugin;
 		Startup.SysAutoRun	= true;
 	}

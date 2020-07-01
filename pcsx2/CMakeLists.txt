@@ -181,6 +181,7 @@ set(pcsx2CDVDSources
 	CDVD/CdRom.cpp
 	CDVD/CDVDaccess.cpp
 	CDVD/CDVD.cpp
+	CDVD/CDVDdiscReader.cpp
 	CDVD/CDVDisoReader.cpp
 	CDVD/InputIsoFile.cpp
 	CDVD/OutputIsoFile.cpp
@@ -199,6 +200,7 @@ set(pcsx2CDVDHeaders
 	CDVD/CDVDaccess.h
 	CDVD/CDVD.h
 	CDVD/CDVD_internal.h
+	CDVD/CDVDdiscReader.h
 	CDVD/CDVDisoReader.h
 	CDVD/ChunksCache.h
 	CDVD/CompressedFileReader.h
@@ -269,6 +271,7 @@ set(pcsx2GuiSources
 	gui/Dialogs/ConfirmationDialogs.cpp
 	gui/Dialogs/ConvertMemoryCardDialog.cpp
 	gui/Dialogs/CreateMemoryCardDialog.cpp
+	gui/Dialogs/DriveSelectorDialog.cpp
 	gui/Dialogs/FirstTimeWizard.cpp
 	gui/Dialogs/ImportSettingsDialog.cpp
 	gui/Dialogs/LogOptionsDialog.cpp

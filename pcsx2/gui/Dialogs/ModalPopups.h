@@ -101,6 +101,15 @@ namespace Dialogs
 		AssertionDialog( const wxString& text, const wxString& stacktrace );
 		virtual ~AssertionDialog() = default;
 	};
+
+	class DriveSelectorDialog : public wxDialog
+	{
+	public:
+		DriveSelectorDialog( wxWindow* parent );
+		wxString GetSelectedDrive();
+	private:
+		wxChoice* choiceDrive;
+	};
 }
 
 wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButtons& buttons );
