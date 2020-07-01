@@ -76,7 +76,7 @@ static size_t pageAlign(size_t size)
 //  VirtualMemoryManager  (implementations)
 // --------------------------------------------------------------------------------------
 
-VirtualMemoryManager::VirtualMemoryManager(const wxString &name, uptr base, size_t size, uptr upper_bounds)
+VirtualMemoryManager::VirtualMemoryManager(const wxString &name, uptr base, size_t size, uptr upper_bounds, bool strict)
     : m_name(name), m_baseptr(0), m_pageuse(nullptr), m_pages_reserved(0)
 {
     if (!size) return;
@@ -99,7 +99,12 @@ VirtualMemoryManager::VirtualMemoryManager(const wxString &name, uptr base, size
         }
     }
 
-    if ((upper_bounds != 0) && ((m_baseptr + reserved_bytes) > upper_bounds)) {
+    bool fulfillsRequirements = true;
+    if (strict && m_baseptr != base)
+        fulfillsRequirements = false;
+    if ((upper_bounds != 0) && ((m_baseptr + reserved_bytes) > upper_bounds))
+        fulfillsRequirements = false;
+    if (!fulfillsRequirements) {
         SafeSysMunmap(m_baseptr, reserved_bytes);
     }
 

@@ -144,7 +144,8 @@ class VirtualMemoryManager
 public:
     // If upper_bounds is nonzero and the OS fails to allocate memory that is below it,
     // calls to IsOk() will return false and Alloc() will always return null pointers
-    VirtualMemoryManager(const wxString &name, uptr base, size_t size, uptr upper_bounds = 0);
+    // strict indicates that the allocation should quietly fail if the memory can't be mapped at `base`
+    VirtualMemoryManager(const wxString &name, uptr base, size_t size, uptr upper_bounds = 0, bool strict = false);
     ~VirtualMemoryManager();
 
     void *GetBase() const { return (void *)m_baseptr; }

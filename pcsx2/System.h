@@ -41,17 +41,6 @@ class RecompiledCodeReserve;
 
 namespace HostMemoryMap
 {
-#if defined(__M_X86_64)
-	// We have lots of space so try to keep the allocation away from everything else to catch any places where we try to reference outside things with 32-bit relative offsets
-	static const uptr Base = 2ull << 32;
-#elif defined(ASAN_WORKAROUND)
-	// address sanitizer uses a shadow memory to monitor the state of the memory. Shadow is computed
-	// as S = (M >> 3) + 0x20000000. So PCSX2 can't use 0x20000000 to 0x3FFFFFFF... Just add another
-	// 0x20000000 offset to avoid conflict.
-	static const uptr Base = 0x40000000;
-#else
-	static const uptr Base = 0x20000000;
-#endif
 	static const u32 Size = 0x28000000;
 
 	// The actual addresses may not be equivalent to Base + Offset in the event that allocation at Base failed
