@@ -107,13 +107,11 @@ void RecordingControls::TogglePause()
 void RecordingControls::Pause()
 {
 	fStop = true;
-	fFrameAdvance = true;
 }
 
 void RecordingControls::Unpause()
 {
 	fStop = false;
 	fStart = true;
-	fFrameAdvance = true;
 }
 #endif
