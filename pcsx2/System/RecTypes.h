@@ -34,7 +34,7 @@ public:
 	RecompiledCodeReserve( const wxString& name=wxEmptyString, uint defCommit = 0 );
 	virtual ~RecompiledCodeReserve();
 
-	virtual void* Assign( void *baseptr, size_t size ) override;
+	virtual void* Assign( VirtualMemoryManagerPtr allocator, void *baseptr, size_t size ) override;
 	virtual void Reset() override;
 	virtual bool Commit() override;
 
@@ -44,7 +44,6 @@ public:
 		return SetProfilerName( fromUTF8(shortname) );
 	}
 
-	bool IsOk() const;
 	void ThrowIfNotOk() const;
 
 	operator void*()				{ return m_baseptr; }
@@ -59,3 +58,37 @@ protected:
 	void _registerProfiler();
 	void _termProfiler();
 };
+
+// --------------------------------------------------------------------------------------
+//  CodegenAccessible
+// --------------------------------------------------------------------------------------
+// In x86-64, codegen can't reference any other address, only addresses within the lower
+// 2GB of address space or within 2GB of the current instruction pointer.
+// Because of this, static variables that need to be read by generated code will need to
+// be copied to a referencable place.
+//
+#ifndef __M_X86_64
+template <typename T> using CodegenAccessible = T&;
+namespace HostSys {
+	// On 32-bit all addresses are codegen accessible, so we don't need to do anything
+	template <typename T>
+	void MakeCodegenAccessible(CodegenAccessible<T> item) {}
+}
+#else
+template <typename T> using CodegenAccessible = std::reference_wrapper<T>;
+
+namespace HostSys {
+	namespace detail {
+		extern void *MakeCodegenAccessible(void *ptr, sptr size);
+	}
+
+	/// Moves the given CodegenAccessible item somewhere that's codegen-accessible
+	/// It's okay to call this on the same object multiple times, only the first one will actually do anything
+	template <typename T>
+	void MakeCodegenAccessible(CodegenAccessible<T>& item)
+	{
+		T* ptr = &item.get();
+		item = *(T*)detail::MakeCodegenAccessible((void *)ptr, sizeof(T));
+	}
+}
+#endif

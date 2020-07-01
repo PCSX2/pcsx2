@@ -22,13 +22,14 @@
 #define xMOV64(regX, loc)	xMOVUPS(regX, loc)
 #define xMOV128(regX, loc)	xMOVUPS(regX, loc)
 
-static const __aligned16 u32 SSEXYZWMask[4][4] =
+static const __aligned16 u32 _SSEXYZWMask[4][4] =
 {
 	{0xffffffff, 0xffffffff, 0xffffffff, 0x00000000},
 	{0xffffffff, 0xffffffff, 0x00000000, 0xffffffff},
 	{0xffffffff, 0x00000000, 0xffffffff, 0xffffffff},
 	{0x00000000, 0xffffffff, 0xffffffff, 0xffffffff}
 };
+static CodegenAccessible<decltype(_SSEXYZWMask)> SSEXYZWMask = _SSEXYZWMask;
 
 //static __pagealigned u8 nVifUpkExec[__pagesize*4];
 static RecompiledCodeReserve* nVifUpkExec = NULL;
@@ -418,6 +419,9 @@ static void nVifGen(int usn, int mask, int curCycle) {
 
 void VifUnpackSSE_Init()
 {
+	HostSys::MakeCodegenAccessible(SSEXYZWMask);
+	HostSys::MakeCodegenAccessible(nVifMask);
+
 	if (nVifUpkExec) return;
 
 	DevCon.WriteLn( "Generating SSE-optimized unpacking functions for VIF interpreters..." );

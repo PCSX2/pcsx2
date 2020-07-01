@@ -631,10 +631,7 @@ static void recReserveCache()
 
 	while (!recMem->IsOk())
 	{
-		uptr requestedSize = m_ConfiguredCacheReserve * _1mb;
-		uptr actualSize = sizeof(HostMemoryMap::IOPrec);
-		pxAssert(requestedSize <= actualSize);
-		if (recMem->Assign((void*)HostMemoryMap::IOPrec, std::min(requestedSize, actualSize)) != NULL) break;
+		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::IOPrecOffset, m_ConfiguredCacheReserve * _1mb) != NULL) break;
 
 		// If it failed, then try again (if possible):
 		if (m_ConfiguredCacheReserve < 4) break;

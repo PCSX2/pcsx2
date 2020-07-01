@@ -122,16 +122,62 @@ protected:
     virtual void _DispatchRaw(ListenerIterator iter, const ListenerIterator &iend, const PageFaultInfo &evt);
 };
 
+
+// --------------------------------------------------------------------------------------
+//  VirtualMemoryManager: Manages the allocation of PCSX2 VM
+//    Ensures that all memory is close enough together for rip-relative addressing
+// --------------------------------------------------------------------------------------
+class VirtualMemoryManager
+{
+    DeclareNoncopyableObject(VirtualMemoryManager);
+
+    wxString m_name;
+
+    uptr m_baseptr;
+
+    // An array to track page usage (to trigger asserts if things try to overlap)
+    std::atomic<bool> *m_pageuse;
+
+    // reserved memory (in pages)
+    u32 m_pages_reserved;
+
+public:
+    // If upper_bounds is nonzero and the OS fails to allocate memory that is below it,
+    // calls to IsOk() will return false and Alloc() will always return null pointers
+    VirtualMemoryManager(const wxString &name, uptr base, size_t size, uptr upper_bounds = 0);
+    ~VirtualMemoryManager();
+
+    void *GetBase() const { return (void *)m_baseptr; }
+
+    // Request the use of the memory at offsetLocation bytes from the start of the reserved memory area
+    // offsetLocation must be page-aligned
+    void *Alloc(uptr offsetLocation, size_t size) const;
+
+    void *AllocAtAddress(void *address, size_t size) const {
+        return Alloc(size, (uptr)address - m_baseptr);
+    }
+
+    void Free(void *address, size_t size) const;
+
+    // Was this VirtualMemoryManager successfully able to get its memory mapping?
+    // (If not, calls to Alloc will return null pointers)
+    bool IsOk() const { return m_baseptr != 0; }
+};
+
+typedef std::shared_ptr<const VirtualMemoryManager> VirtualMemoryManagerPtr;
+
 // --------------------------------------------------------------------------------------
 //  VirtualMemoryBumpAllocator: Allocates memory for things that don't have explicitly-reserved spots
 // --------------------------------------------------------------------------------------
 class VirtualMemoryBumpAllocator
 {
+    const VirtualMemoryManagerPtr m_allocator;
     std::atomic<uptr> m_baseptr{0};
     const uptr m_endptr = 0;
 public:
-    VirtualMemoryBumpAllocator(void *mem, size_t size);
+    VirtualMemoryBumpAllocator(VirtualMemoryManagerPtr allocator, size_t size, uptr offsetLocation);
     void *Alloc(size_t size);
+    const VirtualMemoryManagerPtr& GetAllocator() { return m_allocator; }
 };
 
 // --------------------------------------------------------------------------------------
@@ -143,6 +189,9 @@ class VirtualMemoryReserve
 
 protected:
     wxString m_name;
+
+    // Where the memory came from (so we can return it)
+    VirtualMemoryManagerPtr m_allocator;
 
     // Default size of the reserve, in bytes.  Can be specified when the object is constructed.
     // Is used as the reserve size when Reserve() is called, unless an override is specified
@@ -167,28 +216,43 @@ protected:
     // as well.
     bool m_allow_writes;
 
+    // Allows the implementation to decide how much memory it needs to allocate if someone requests the given size
+    // Should translate requests of size 0 to m_defsize
+    virtual size_t GetSize(size_t requestedSize);
+
 public:
     VirtualMemoryReserve(const wxString &name, size_t size = 0);
     virtual ~VirtualMemoryReserve()
     {
-        Reset();
+        Release();
     }
 
-    // Initialize with the given piece of (reserved but not committed) memory
-    virtual void *Assign(void *baseptr, size_t size);
+    // Initialize with the given piece of memory
+    // Note: The memory is already allocated, the allocator is for future use to free the region
+    // It may be null in which case there is no way to free the memory in a way it will be usable again
+    virtual void *Assign(VirtualMemoryManagerPtr allocator, void *baseptr, size_t size);
 
+    void *Reserve(VirtualMemoryManagerPtr allocator, uptr baseOffset, size_t size = 0)
+    {
+        size = GetSize(size);
+        void *allocation = allocator->Alloc(baseOffset, size);
+        return Assign(std::move(allocator), allocation, size);
+    }
     void *Reserve(VirtualMemoryBumpAllocator& allocator, size_t size = 0)
     {
-        size = size == 0 ? m_defsize : size;
-        return Assign(allocator.Alloc(size), size);
+        size = GetSize(size);
+        return Assign(allocator.GetAllocator(), allocator.Alloc(size), size);
     }
 
     virtual void Reset();
+    virtual void Release();
+    virtual bool TryResize(uint newsize);
     virtual bool Commit();
 
     virtual void ForbidModification();
     virtual void AllowModification();
 
+    bool IsOk() const { return m_baseptr != NULL; }
     const wxString& GetName() const { return m_name; }
 
     uptr GetReserveSizeInBytes() const { return m_pages_reserved * __pagesize; }

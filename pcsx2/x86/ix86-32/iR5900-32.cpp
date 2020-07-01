@@ -479,10 +479,7 @@ static void recReserveCache()
 
 	while (!recMem->IsOk())
 	{
-		sptr requestedSize = m_ConfiguredCacheReserve * _1mb;
-		sptr actualSize = sizeof(HostMemoryMap::EErec);
-		pxAssert(requestedSize <= actualSize);
-		if (recMem->Assign((void*)HostMemoryMap::EErec, std::min(requestedSize, actualSize)) != NULL) break;
+		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::EErecOffset, m_ConfiguredCacheReserve * _1mb) != NULL) break;
 
 		// If it failed, then try again (if possible):
 		if (m_ConfiguredCacheReserve < 16) break;

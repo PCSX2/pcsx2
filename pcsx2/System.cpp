@@ -57,15 +57,15 @@ void RecompiledCodeReserve::_termProfiler()
 {
 }
 
-void* RecompiledCodeReserve::Assign( void *baseptr, size_t size )
+void* RecompiledCodeReserve::Assign( VirtualMemoryManagerPtr allocator, void *baseptr, size_t size )
 {
-	if (!_parent::Assign(baseptr, size)) return NULL;
+	if (!_parent::Assign(std::move(allocator), baseptr, size)) return NULL;
 
 	Commit();
 
 	_registerProfiler();
 
-	return IsOk() ? m_baseptr : nullptr;
+	return m_baseptr;
 }
 
 void RecompiledCodeReserve::Reset()
@@ -101,10 +101,6 @@ RecompiledCodeReserve& RecompiledCodeReserve::SetProfilerName( const wxString& s
 	return *this;
 }
 
-bool RecompiledCodeReserve::IsOk() const {
-	return m_baseptr != nullptr && m_pages_commited == m_pages_reserved;
-}
-
 // This error message is shared by R5900, R3000, and microVU recompilers.
 void RecompiledCodeReserve::ThrowIfNotOk() const
 {
@@ -115,6 +111,40 @@ void RecompiledCodeReserve::ThrowIfNotOk() const
 		.SetUserMsg( pxE( L"This recompiler was unable to reserve contiguous memory required for internal caches.  This error can be caused by low virtual memory resources, such as a small or disabled swapfile, or by another program that is hogging a lot of memory."
 		));
 }
+
+#ifdef __M_X86_64
+static sptr CodegenAccessibleMemory = 0;
+static std::atomic<sptr> CodegenAccessibleMemoryNext{0};
+static sptr CodegenAccessibleMemoryEnd = 0;
+
+void *HostSys::detail::MakeCodegenAccessible(void *ptr, sptr size)
+{
+	// Don't do anything if the pointer is already in codegen-accessible memory
+	if ((sptr)ptr >= CodegenAccessibleMemory && (sptr)ptr < CodegenAccessibleMemoryEnd) {
+		return ptr;
+	}
+
+	if (!CodegenAccessibleMemoryNext.load(std::memory_order_relaxed)) {
+		const sptr sectionsize = __pagesize;
+		auto tmp = (sptr)GetVmMemory().BumpAllocator().Alloc(sectionsize);
+		HostSys::MmapCommit(tmp, sectionsize, PageProtectionMode().Read().Write());
+		sptr expected = 0;
+		if (CodegenAccessibleMemoryNext.compare_exchange_strong(expected, tmp, std::memory_order_relaxed)) {
+			CodegenAccessibleMemory = tmp;
+			CodegenAccessibleMemoryEnd = tmp + sectionsize;
+		} else {
+			HostSys::MmapReset(tmp, sectionsize);
+		}
+	}
+
+	// Align to 32 bytes
+	void *ret = (void *)CodegenAccessibleMemoryNext.fetch_add(size + 0x1f & ~0x1f, std::memory_order_relaxed);
+	pxAssertDev((sptr)ret + size < CodegenAccessibleMemoryEnd,
+		"Ran out of space for codegen accessible memory, need to increase size");
+	memcpy(ret, ptr, size);
+	return ret;
+}
+#endif
 
 void SysOutOfMemory_EmergencyResponse(uptr blocksize)
 {
@@ -355,39 +385,29 @@ static wxString GetMemoryErrorVM()
 	);
 }
 
-__pagealigned EEVM_MemoryAllocMess HostMemoryMap::EEmem;
-__pagealigned u8 HostMemoryMap::IOPmem[(sizeof(IopVM_MemoryAllocMess) + __pagesize - 1) & -__pagesize];
-__pagealigned u8 HostMemoryMap::VUmem[_64kb];
-__pagealigned u8 HostMemoryMap::EErec[_64mb];
-__pagealigned u8 HostMemoryMap::IOPrec[_32mb];
-__pagealigned u8 HostMemoryMap::VIF0rec[_8mb];
-__pagealigned u8 HostMemoryMap::VIF1rec[_8mb];
-__pagealigned u8 HostMemoryMap::mVU0rec[_64mb];
-__pagealigned u8 HostMemoryMap::mVU1rec[_64mb];
-__pagealigned u8 HostMemoryMap::bumpAllocator[_64mb];
-
-template <typename T>
-static void DecommitBSS(T& t) {
-	static_assert(sizeof(T) % __pagesize == 0, "Size must be page-aligned");
-	HostSys::MmapResetPtr((void*)&t, sizeof(T));
+namespace HostMemoryMap {
+	// For debuggers
+	uptr EEmem, IOPmem, VUmem, EErec, IOPrec, VIF0rec, VIF1rec, mVU0rec, mVU1rec, bumpAllocator;
 }
 
 // --------------------------------------------------------------------------------------
 //  SysReserveVM  (implementations)
 // --------------------------------------------------------------------------------------
 SysMainMemory::SysMainMemory()
-	: m_bumpAllocator((void*)HostMemoryMap::bumpAllocator, sizeof(HostMemoryMap::bumpAllocator))
+	: m_mainMemory(std::make_shared<VirtualMemoryManager>("Main Memory Manager", 0x140000000, HostMemoryMap::Size))
+	, m_bumpAllocator(m_mainMemory, HostMemoryMap::bumpAllocatorOffset, HostMemoryMap::Size - HostMemoryMap::bumpAllocatorOffset)
 {
-	DecommitBSS(HostMemoryMap::EEmem);
-	DecommitBSS(HostMemoryMap::IOPmem);
-	DecommitBSS(HostMemoryMap::VUmem);
-	DecommitBSS(HostMemoryMap::EErec);
-	DecommitBSS(HostMemoryMap::IOPrec);
-	DecommitBSS(HostMemoryMap::VIF0rec);
-	DecommitBSS(HostMemoryMap::VIF1rec);
-	DecommitBSS(HostMemoryMap::mVU0rec);
-	DecommitBSS(HostMemoryMap::mVU1rec);
-	DecommitBSS(HostMemoryMap::bumpAllocator);
+	uptr base = (uptr)MainMemory()->GetBase();
+	HostMemoryMap::EEmem   = base + HostMemoryMap::EEmemOffset;
+	HostMemoryMap::IOPmem  = base + HostMemoryMap::IOPmemOffset;
+	HostMemoryMap::VUmem   = base + HostMemoryMap::VUmemOffset;
+	HostMemoryMap::EErec   = base + HostMemoryMap::EErecOffset;
+	HostMemoryMap::IOPrec  = base + HostMemoryMap::IOPrecOffset;
+	HostMemoryMap::VIF0rec = base + HostMemoryMap::VIF0recOffset;
+	HostMemoryMap::VIF1rec = base + HostMemoryMap::VIF1recOffset;
+	HostMemoryMap::mVU0rec = base + HostMemoryMap::mVU0recOffset;
+	HostMemoryMap::mVU1rec = base + HostMemoryMap::mVU1recOffset;
+	HostMemoryMap::bumpAllocator = base + HostMemoryMap::bumpAllocatorOffset;
 }
 
 SysMainMemory::~SysMainMemory()
@@ -405,9 +425,9 @@ void SysMainMemory::ReserveAll()
 	DevCon.WriteLn( Color_StrongBlue, "Mapping host memory for virtual systems..." );
 	ConsoleIndentScope indent(1);
 
-	m_ee.Assign(HostMemoryMap::EEmem);
-	m_iop.Assign(HostMemoryMap::IOPmem);
-	m_vu.Assign(HostMemoryMap::VUmem);
+	m_ee.Reserve(MainMemory());
+	m_iop.Reserve(MainMemory());
+	m_vu.Reserve(MainMemory());
 }
 
 void SysMainMemory::CommitAll()

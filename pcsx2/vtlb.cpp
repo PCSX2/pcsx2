@@ -854,21 +854,20 @@ static wxString GetHostVmErrorMsg()
 // --------------------------------------------------------------------------------------
 //  VtlbMemoryReserve  (implementations)
 // --------------------------------------------------------------------------------------
-VtlbMemoryReserve::VtlbMemoryReserve( const wxString& name )
-	: m_reserve( name, 0 )
+VtlbMemoryReserve::VtlbMemoryReserve( const wxString& name, size_t size )
+	: m_reserve( name, size )
 {
 	m_reserve.SetPageAccessOnCommit( PageAccess_ReadWrite() );
 }
 
-void VtlbMemoryReserve::Assign(void *ptr, size_t size)
+void VtlbMemoryReserve::Reserve( VirtualMemoryManagerPtr allocator, sptr offset )
 {
-	if (!IsSizeOK(size)) {
-		char str[256];
-		sprintf(str, "0x%lx bytes not enough for %s", size, WX_STR(m_reserve.GetName()));
-		pxAssertMsg(0, str);
+	if (!m_reserve.Reserve( std::move(allocator), offset ))
+	{
+		throw Exception::OutOfMemory( m_reserve.GetName() )
+			.SetDiagMsg(L"Vtlb memory could not be reserved.")
+			.SetUserMsg(GetHostVmErrorMsg());
 	}
-	m_reserve.Assign( ptr, size );
-	DidAssign(ptr);
 }
 
 void VtlbMemoryReserve::Commit()
