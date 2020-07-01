@@ -364,6 +364,16 @@ void MainEmuFrame::_DoBootCdvd()
 	sApp.SysExecute( g_Conf->CdvdSource );
 }
 
+void MainEmuFrame::Menu_DriveSelector_Click(wxCommandEvent& event)
+{
+	DriveSelectorDialog driveDialog(this);
+	if (driveDialog.ShowModal() == wxID_OK)
+	{
+		wxString driveLetter = driveDialog.GetSelectedDrive();
+		//TODO_CDVD send driveLetter to CDVDdiscReader
+	}
+}
+
 void MainEmuFrame::EnableCdvdPluginSubmenu(bool isEnable)
 {
 	EnableMenuItem( GetPluginMenuId_Settings(PluginId_CDVD), isEnable );
@@ -377,6 +387,7 @@ void MainEmuFrame::Menu_CdvdSource_Click( wxCommandEvent &event )
 	{
 		case MenuId_Src_Iso:	newsrc = CDVD_SourceType::Iso;		break;
 		case MenuId_Src_Plugin:	newsrc = CDVD_SourceType::Plugin;	break;
+		case MenuId_Src_Disc: newsrc = CDVD_SourceType::Disc;		break;
 		case MenuId_Src_NoDisc: newsrc = CDVD_SourceType::NoDisc;	break;
 		jNO_DEFAULT
 	}

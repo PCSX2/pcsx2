@@ -861,6 +861,11 @@
     </ClCompile>
     <ClCompile Include="..\..\Recording\InputRecordingControls.cpp">
       <Filter>Recording</Filter>
+    <ClCompile Include="..\..\CDVD\CDVDdiscReader.cpp">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\Dialogs\DriveSelectorDialog.cpp">
+      <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1310,6 +1315,8 @@
     </ClInclude>
     <ClInclude Include="..\..\Recording\InputRecordingControls.h">
       <Filter>Recording</Filter>
+    <ClInclude Include="..\..\CDVD\CDVDdiscReader.h">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
