@@ -25,7 +25,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #endif
-
+#ifdef _WIN32
 /**
  * EmuCmp: Compare two versions of the emulator
  *
@@ -128,7 +128,7 @@ void syncValue(T &value)
 }
 
 } // namespace EmuCmp
-
+#endif
 using namespace EmuCmp;
 
 Config::Mode EmuCmp::mode = Config::Mode::Off;
