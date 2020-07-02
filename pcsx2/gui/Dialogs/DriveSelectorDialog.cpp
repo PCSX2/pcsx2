@@ -15,34 +15,30 @@
 
 #include "PrecompiledHeader.h"
 #include "Dialogs/ModalPopups.h"
+#include "../CDVD/CDVDdiscReader.h"
 
-static wxArrayString GetOpticalDriveList()
-{
-	DWORD size = GetLogicalDriveStrings(0, nullptr);
-	std::vector<wchar_t> drive_strings(size);
-	if (GetLogicalDriveStrings(size, drive_strings.data()) != size - 1)
-		return {};
-
-	wxArrayString drives;
-	for (auto p = drive_strings.data(); *p; ++p) {
-		if (GetDriveType(p) == DRIVE_CDROM)
-			drives.Add(p);
-		while (*p)
-			++p;
-	}
-	return drives;
-}
-
-Dialogs::DriveSelectorDialog::DriveSelectorDialog(wxWindow* parent)
+Dialogs::DriveSelectorDialog::DriveSelectorDialog(wxWindow* parent, wxString curDrive)
 	: wxDialog(parent, wxID_ANY, "")
 {
 	wxBoxSizer* topSizer = new wxBoxSizer(wxVERTICAL);
 	wxStaticBoxSizer* staticSizer = new wxStaticBoxSizer(wxVERTICAL, this, "Source drive...");
 	wxBoxSizer* btnSizer = new wxBoxSizer(wxHORIZONTAL);
 
-	wxArrayString driveList = GetOpticalDriveList();
+	auto drives = GetOpticalDriveList();
+	wxArrayString driveList;
+
+	for (auto i : drives)
+	{
+		driveList.Add(i);
+	}
 
 	choiceDrive = new wxChoice(this, wxID_ANY, wxDefaultPosition, { 240, 40 }, driveList);
+
+	int driveIndex = choiceDrive->FindString(curDrive);
+	if (driveIndex != wxNOT_FOUND)
+	{
+		choiceDrive->SetSelection(driveIndex);
+	}
 
 	wxButton* btnOk = new wxButton(this, wxID_OK);
 	wxButton* btnCancel = new wxButton(this, wxID_CANCEL);

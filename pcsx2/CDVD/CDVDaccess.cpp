@@ -36,10 +36,11 @@
 #include "DebugTools/SymbolMap.h"
 #include "AppConfig.h"
 
+CDVD_API* CDVD = NULL;
+
 const wxChar* CDVD_SourceLabels[] =
 {
 	L"ISO",
-	L"Plugin",
 	L"Disc",
 	L"NoDisc",
 	NULL
@@ -250,9 +251,12 @@ static void DetectDiskType()
 
 	int baseMediaType = CDVD->getDiskType();
 	int mType = -1;
-
+	
 	// Paranoid mode: do not trust the plugin's detection system to work correctly.
 	// (.. and there's no reason plugins should be doing their own detection anyway).
+
+	//TODO_CDVD We're not using CDVD plugins anymore but I believe both ISO and Disc use their own
+	//detection system. Possible code reduction here
 
 	switch(baseMediaType)
 	{
@@ -320,8 +324,6 @@ CDVD_SourceType CDVDsys_GetSourceType()
 
 void CDVDsys_ChangeSource( CDVD_SourceType type )
 {
-	GetCorePlugins().Close( PluginId_CDVD );
-	
 	switch( m_CurrentSourceType = type )
 	{
 		case CDVD_SourceType::Iso:
@@ -334,10 +336,6 @@ void CDVDsys_ChangeSource( CDVD_SourceType type )
 
 		case CDVD_SourceType::NoDisc:
 			CDVD = &CDVDapi_NoDisc;
-		break;
-
-		case CDVD_SourceType::Plugin:
-			CDVD = &CDVDapi_Plugin;
 		break;
 
 		jNO_DEFAULT;
@@ -359,13 +357,15 @@ bool DoCDVDopen()
 	// question marks if the filename is another language.
 	// Likely Fix: Force new versions of CDVD plugins to expect UTF8 instead.
 
+	//TODO_CDVD check if ISO and Disc use UTF8
+
 	auto CurrentSourceType = enum_cast(m_CurrentSourceType);
 	int ret = CDVD->open( !m_SourceFilename[CurrentSourceType].IsEmpty() ?
 		static_cast<const char*>(m_SourceFilename[CurrentSourceType].ToUTF8()) : (char*)NULL
 	);
 
 	if( ret == -1 ) return false;	// error! (handled by caller)
-	if( ret == 1 )	throw Exception::CancelEvent(L"User canceled the CDVD plugin's open dialog.");
+	//if( ret == 1 )	throw Exception::CancelEvent(L"User canceled the CDVD plugin's open dialog."); <--- TODO_CDVD is this still needed?
 
 	int cdtype = DoCDVDdetectDiskType();
 
@@ -466,6 +466,7 @@ s32 DoCDVDreadTrack(u32 lsn, int mode)
 {
 	CheckNullCDVD();
 
+	//TODO_CDVD I believe ISO and Disc use the new CDVDgetBuffer style
 	// TEMP: until all the plugins use the new CDVDgetBuffer style
 	switch (mode)
 	{

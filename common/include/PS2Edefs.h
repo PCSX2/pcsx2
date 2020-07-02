@@ -74,8 +74,7 @@ typedef struct _keyEvent
 ///////////////////////////////////////////////////////////////////////
 
 #if defined(GSdefs) || defined(PADdefs) || defined(SIOdefs) ||     \
-    defined(SPU2defs) || defined(CDVDdefs) || defined(DEV9defs) || \
-    defined(USBdefs) || defined(FWdefs)
+    defined(SPU2defs) || defined(DEV9defs) || defined(USBdefs) || defined(FWdefs)
 #define COMMONdefs
 #endif
 
@@ -83,7 +82,6 @@ typedef struct _keyEvent
 #define PS2E_LT_GS 0x01
 #define PS2E_LT_PAD 0x02 // -=[ OBSOLETE ]=-
 #define PS2E_LT_SPU2 0x04
-#define PS2E_LT_CDVD 0x08
 #define PS2E_LT_DEV9 0x10
 #define PS2E_LT_USB 0x20
 #define PS2E_LT_FW 0x40
@@ -93,7 +91,6 @@ typedef struct _keyEvent
 #define PS2E_GS_VERSION 0x0006
 #define PS2E_PAD_VERSION 0x0002 // -=[ OBSOLETE ]=-
 #define PS2E_SPU2_VERSION 0x0005
-#define PS2E_CDVD_VERSION 0x0005
 #define PS2E_DEV9_VERSION 0x0003
 #define PS2E_USB_VERSION 0x0003
 #define PS2E_FW_VERSION 0x0002
@@ -130,69 +127,6 @@ typedef char __keyEvent_Size__[(sizeof(keyEvent) == 8) ? 1 : -1];
 #define SIO_TYPE_MC 0x00000100
 
 typedef int(CALLBACK *SIOchangeSlotCB)(int slot);
-
-typedef struct _cdvdSubQ
-{
-    u8 ctrl : 4;   // control and mode bits
-    u8 mode : 4;   // control and mode bits
-    u8 trackNum;   // current track number (1 to 99)
-    u8 trackIndex; // current index within track (0 to 99)
-    u8 trackM;     // current minute location on the disc (BCD encoded)
-    u8 trackS;     // current sector location on the disc (BCD encoded)
-    u8 trackF;     // current frame location on the disc (BCD encoded)
-    u8 pad;        // unused
-    u8 discM;      // current minute offset from first track (BCD encoded)
-    u8 discS;      // current sector offset from first track (BCD encoded)
-    u8 discF;      // current frame offset from first track (BCD encoded)
-} cdvdSubQ;
-
-typedef struct _cdvdTD
-{ // NOT bcd coded
-    u32 lsn;
-    u8 type;
-} cdvdTD;
-
-typedef struct _cdvdTN
-{
-    u8 strack; //number of the first track (usually 1)
-    u8 etrack; //number of the last track
-} cdvdTN;
-
-// CDVDreadTrack mode values:
-#define CDVD_MODE_2352 0 // full 2352 bytes
-#define CDVD_MODE_2340 1 // skip sync (12) bytes
-#define CDVD_MODE_2328 2 // skip sync+head+sub (24) bytes
-#define CDVD_MODE_2048 3 // skip sync+head+sub (24) bytes
-#define CDVD_MODE_2368 4 // full 2352 bytes + 16 subq
-
-// CDVDgetDiskType returns:
-#define CDVD_TYPE_ILLEGAL 0xff   // Illegal Disc
-#define CDVD_TYPE_DVDV 0xfe      // DVD Video
-#define CDVD_TYPE_CDDA 0xfd      // Audio CD
-#define CDVD_TYPE_PS2DVD 0x14    // PS2 DVD
-#define CDVD_TYPE_PS2CDDA 0x13   // PS2 CD (with audio)
-#define CDVD_TYPE_PS2CD 0x12     // PS2 CD
-#define CDVD_TYPE_PSCDDA 0x11    // PS CD (with audio)
-#define CDVD_TYPE_PSCD 0x10      // PS CD
-#define CDVD_TYPE_UNKNOWN 0x05   // Unknown
-#define CDVD_TYPE_DETCTDVDD 0x04 // Detecting Dvd Dual Sided
-#define CDVD_TYPE_DETCTDVDS 0x03 // Detecting Dvd Single Sided
-#define CDVD_TYPE_DETCTCD 0x02   // Detecting Cd
-#define CDVD_TYPE_DETCT 0x01     // Detecting
-#define CDVD_TYPE_NODISC 0x00    // No Disc
-
-// CDVDgetTrayStatus returns:
-#define CDVD_TRAY_CLOSE 0x00
-#define CDVD_TRAY_OPEN 0x01
-
-// cdvdTD.type (track types for cds)
-#define CDVD_AUDIO_TRACK 0x01
-#define CDVD_MODE1_TRACK 0x41
-#define CDVD_MODE2_TRACK 0x61
-
-#define CDVD_AUDIO_MASK 0x00
-#define CDVD_DATA_MASK 0x40
-//	CDROM_DATA_TRACK	0x04	//do not enable this! (from linux kernel)
 
 typedef void (*DEV9callback)(int cycles);
 typedef int (*DEV9handler)(void);
@@ -364,55 +298,6 @@ void CALLBACK SPU2async(u32 cycles);
 s32 CALLBACK SPU2freeze(int mode, freezeData *data);
 void CALLBACK SPU2configure();
 s32 CALLBACK SPU2test();
-
-#endif
-
-/* CDVD plugin API */
-
-// if this file is included with this define
-// the next api will not be skipped by the compiler
-#if defined(CDVDdefs) || defined(BUILTIN_CDVD_PLUGIN)
-
-// basic funcs
-
-s32 CALLBACK CDVDinit();
-s32 CALLBACK CDVDopen(const char *pTitleFilename);
-void CALLBACK CDVDclose();
-void CALLBACK CDVDshutdown();
-void CALLBACK CDVDsetSettingsDir(const char *dir);
-void CALLBACK CDVDsetLogDir(const char *dir);
-
-s32 CALLBACK CDVDreadTrack(u32 lsn, int mode);
-
-// return can be NULL (for async modes)
-u8 *CALLBACK CDVDgetBuffer();
-
-s32 CALLBACK CDVDreadSubQ(u32 lsn, cdvdSubQ *subq); //read subq from disc (only cds have subq data)
-s32 CALLBACK CDVDgetTN(cdvdTN *Buffer);             //disk information
-s32 CALLBACK CDVDgetTD(u8 Track, cdvdTD *Buffer);   //track info: min,sec,frame,type
-s32 CALLBACK CDVDgetTOC(void *toc);                 //gets ps2 style toc from disc
-s32 CALLBACK CDVDgetDiskType();                     //CDVD_TYPE_xxxx
-s32 CALLBACK CDVDgetTrayStatus();                   //CDVD_TRAY_xxxx
-s32 CALLBACK CDVDctrlTrayOpen();                    //open disc tray
-s32 CALLBACK CDVDctrlTrayClose();                   //close disc tray
-
-// extended funcs
-
-void CALLBACK CDVDconfigure();
-void CALLBACK CDVDabout();
-s32 CALLBACK CDVDtest();
-void CALLBACK CDVDnewDiskCB(void (*callback)());
-
-// new funcs
-
-// read a track directly
-s32 CALLBACK CDVDreadSector(u8 *buffer, u32 lsn, int mode);
-
-// improved getBuffer
-s32 CALLBACK CDVDgetBuffer2(u8 *buffer);
-
-// tool function
-s32 CALLBACK CDVDgetDualInfo(s32 *dualType, u32 *_layer1start);
 
 #endif
 
@@ -596,41 +481,6 @@ typedef void(CALLBACK *_SPU2setClockPtr)(u32 *ptr);
 typedef void(CALLBACK *_SPU2setTimeStretcher)(short int enable);
 
 typedef void(CALLBACK *_SPU2async)(u32 cycles);
-
-
-// CDVD
-// NOTE: The read/write functions CANNOT use XMM/MMX regs
-// If you want to use them, need to save and restore current ones
-typedef s32(CALLBACK *_CDVDopen)(const char *pTitleFilename);
-
-// Initiates an asynchronous track read operation.
-// Returns -1 on error (invalid track)
-// Returns 0 on success.
-typedef s32(CALLBACK *_CDVDreadTrack)(u32 lsn, int mode);
-
-// *OBSOLETE* returns a pointer to the buffer, or NULL if data hasn't finished
-// loading yet.
-typedef u8 *(CALLBACK *_CDVDgetBuffer)();
-
-// Copies loaded data to the target buffer.
-// Returns -2 if the asynchronous read is still pending.
-// Returns -1 if the asyncronous read failed.
-// Returns 0 on success.
-typedef s32(CALLBACK *_CDVDgetBuffer2)(u8 *buffer);
-
-typedef s32(CALLBACK *_CDVDreadSubQ)(u32 lsn, cdvdSubQ *subq);
-typedef s32(CALLBACK *_CDVDgetTN)(cdvdTN *Buffer);
-typedef s32(CALLBACK *_CDVDgetTD)(u8 Track, cdvdTD *Buffer);
-typedef s32(CALLBACK *_CDVDgetTOC)(void *toc);
-typedef s32(CALLBACK *_CDVDgetDiskType)();
-typedef s32(CALLBACK *_CDVDgetTrayStatus)();
-typedef s32(CALLBACK *_CDVDctrlTrayOpen)();
-typedef s32(CALLBACK *_CDVDctrlTrayClose)();
-typedef s32(CALLBACK *_CDVDreadSector)(u8 *buffer, u32 lsn, int mode);
-typedef s32(CALLBACK *_CDVDgetDualInfo)(s32 *dualType, u32 *_layer1start);
-
-typedef void(CALLBACK *_CDVDnewDiskCB)(void (*callback)());
-
 
 // DEV9
 // NOTE: The read/write functions CANNOT use XMM/MMX regs

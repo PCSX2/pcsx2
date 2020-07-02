@@ -183,6 +183,7 @@ set(pcsx2CDVDSources
 	CDVD/CDVD.cpp
 	CDVD/CDVDdiscReader.cpp
 	CDVD/CDVDisoReader.cpp
+	CDVD/CDVDdiscThread.cpp
 	CDVD/InputIsoFile.cpp
 	CDVD/OutputIsoFile.cpp
 	CDVD/ChunksCache.cpp
@@ -402,6 +403,8 @@ set(pcsx2IPUHeaders
 
 # Linux sources
 set(pcsx2LinuxSources
+	CDVD/Unix/DriveUtility.cpp
+	CDVD/Unix/IOCtlSrc.cpp
 	gui/CpuUsageProviderLnx.cpp
 	Linux/LnxConsolePipe.cpp
 	Linux/LnxKeyCodes.cpp
@@ -409,6 +412,8 @@ set(pcsx2LinuxSources
     )
 
 set(pcsx2OSXSources
+	CDVD/Unix/DriveUtility.cpp
+	CDVD/Unix/IOCtlSrc.cpp
 	gui/CpuUsageProviderLnx.cpp
 	Linux/LnxConsolePipe.cpp
 #	Linux/LnxKeyCodes.cpp
@@ -515,6 +520,8 @@ set(pcsx2ZipToolsHeaders
 
 # Windows sources
 set(pcsx2WindowsSources
+	CDVD/Windows/DriveUtility.cpp
+	CDVD/Windows/IOCtlSrc.cpp
 	gui/CpuUsageProviderMSW.cpp
 	windows/FlatFileReaderWindows.cpp
 	windows/Optimus.cpp
@@ -631,7 +638,12 @@ set(Common
 if(Linux)
 	set(Platform
 		${pcsx2LinuxSources}
-		${pcsx2LinuxHeaders})
+		${pcsx2LinuxHeaders}
+		)
+		
+	set(Platform_Libs
+		${LIBUDEV_LIBRARIES}
+		)
 endif()
 
 # Windows
@@ -646,6 +658,10 @@ if(APPLE)
 	set(Platform
 		${pcsx2OSXSources}
 		${pcsx2LinuxHeaders})
+		
+	set(Platform_Libs
+		${LIBUDEV_LIBRARIES}
+		)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
@@ -667,6 +683,7 @@ set(pcsx2FinalLibs
     ${ZLIB_LIBRARIES}
     ${AIO_LIBRARIES}
     ${GCOV_LIBRARIES}
+    ${Platform_Libs}
 )
 
 if(BUILTIN_GS)

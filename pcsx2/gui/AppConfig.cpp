@@ -641,6 +641,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	ini.Entry( L"CurrentIso", res, res, ini.IsLoading() || IsPortable() );
 	CurrentIso = res.GetFullPath();
 
+	IniEntry( CurrentDisc );
 	IniEntry( CurrentBlockdump );
 	IniEntry( CurrentELF );
 	IniEntry( CurrentIRX );
@@ -725,8 +726,9 @@ AppConfig::FolderOptions::FolderOptions()
 	, Cheats		( PathDefs::GetCheats() )
 	, CheatsWS      ( PathDefs::GetCheatsWS() )
 
-	, RunIso( PathDefs::GetDocuments() )			// raw default is always the Documents folder.
-	, RunELF( PathDefs::GetDocuments() )			// raw default is always the Documents folder.
+	, RunIso	( PathDefs::GetDocuments() )			// raw default is always the Documents folder.
+	, RunELF	( PathDefs::GetDocuments() )			// raw default is always the Documents folder.
+	, RunDisc	( PathDefs::GetDocuments() )
 {
 	bitset = 0xffffffff;
 }
@@ -766,6 +768,7 @@ void AppConfig::FolderOptions::LoadSave( IniInterface& ini )
 
 	IniEntryDirFile( RunIso, rel );
 	IniEntryDirFile( RunELF, rel );
+	IniEntryDirFile( RunDisc, rel );
 
 	if( ini.IsLoading() )
 	{
@@ -1254,7 +1257,14 @@ static void LoadUiSettings()
 	g_Conf->LoadSave( loader );
 
 	if( !wxFile::Exists( g_Conf->CurrentIso ) )
+	{
 		g_Conf->CurrentIso.clear();
+	}
+
+	if( !wxDirExists( g_Conf->CurrentDisc ) )
+	{
+		g_Conf->CurrentDisc.clear();
+	}
 
 	sApp.DispatchUiSettingsEvent( loader );
 }
@@ -1287,9 +1297,17 @@ void AppLoadSettings()
 static void SaveUiSettings()
 {	
 	if( !wxFile::Exists( g_Conf->CurrentIso ) )
+	{
 		g_Conf->CurrentIso.clear();
+	}
+
+	if( !wxDirExists( g_Conf->CurrentDisc ) )
+	{
+		g_Conf->CurrentDisc.clear();
+	}
 
 	sApp.GetRecentIsoManager().Add( g_Conf->CurrentIso );
+	//TODO_CDVD Should this be done for CurrentDisc?
 
 	AppIniSaver saver;
 	g_Conf->LoadSave( saver );

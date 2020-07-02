@@ -317,7 +317,7 @@ s32 cdvdWriteConfig(const u8* config)
 
 static MutexRecursive Mutex_NewDiskCB;
 
-// Sets ElfCRC to the CRC of the game bound to the CDVD plugin.
+// Sets ElfCRC to the CRC of the game bound to the CDVD source.
 static __fi ElfObject* loadElf( const wxString filename )
 {
 	if (filename.StartsWith(L"host"))
@@ -625,7 +625,7 @@ void SaveStateBase::cdvdFreeze()
 
 	if (IsLoading())
 	{
-		// Make sure the Cdvd plugin has the expected track loaded into the buffer.
+		// Make sure the Cdvd source has the expected track loaded into the buffer.
 		// If cdvd.Readed is cleared it means we need to load the SeekToSector (ie, a
 		// seek is in progress!)
 

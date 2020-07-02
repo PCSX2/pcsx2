@@ -17,7 +17,7 @@
 #define __CDROM_H__
 
 #include "IopCommon.h"
-#include "PS2Edefs.h"
+#include "CDVDaccess.h"
 
 // Not used.
 typedef struct {

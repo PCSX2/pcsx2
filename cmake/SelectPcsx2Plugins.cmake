@@ -82,26 +82,6 @@ endif()
 # be build.
 #-------------------------------------------------------------------------------
 
-#---------------------------------------
-#			CDVDnull
-#---------------------------------------
-if(GTKn_FOUND)
-    set(CDVDnull TRUE)
-endif()
-#---------------------------------------
-
-#---------------------------------------
-#			cdvdGigaherz
-#---------------------------------------
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/cdvdGigaherz" OR NOT Linux)
-    set(cdvdGigaherz FALSE)
-elseif(Linux AND GTKn_FOUND AND LIBUDEV_FOUND)
-    set(cdvdGigaherz TRUE)
-else()
-    set(cdvdGigaherz FALSE)
-    print_dep("Skip build of cdvdGigaherz: missing dependencies" "${msg_dep_cdvdgiga}")
-endif()
-#---------------------------------------
 
 #---------------------------------------
 #			dev9null

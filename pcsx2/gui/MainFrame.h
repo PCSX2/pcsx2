@@ -144,7 +144,7 @@ public:
 	void OnLogBoxHidden();
 
 	bool IsPaused() const { return GetMenuBar()->IsChecked( MenuId_Sys_SuspendResume ); }
-	void UpdateIsoSrcSelection();
+	void UpdateCdvdSrcSelection();
 	void RemoveCdvdMenu();
 	void EnableMenuItem( int id, bool enable );
 	void CheckMenuItem(int id, bool checked);
@@ -189,7 +189,7 @@ protected:
 
 	void Menu_IsoBrowse_Click(wxCommandEvent &event);
 	void Menu_IsoClear_Click(wxCommandEvent &event);
-	void Menu_DriveSelector_Click(wxCommandEvent &event);
+	void Menu_DiscBrowse_Click(wxCommandEvent &event);
 	void Menu_EnableBackupStates_Click(wxCommandEvent &event);
 	void Menu_EnablePatches_Click(wxCommandEvent &event);
 	void Menu_EnableCheats_Click(wxCommandEvent &event);
@@ -249,6 +249,7 @@ protected:
 	void _DoBootCdvd();
 	bool _DoSelectIsoBrowser( wxString& dest );
 	bool _DoSelectELFBrowser();
+	bool _DoSelectDiscBrowser( wxString& driveLetter );
 
 // ------------------------------------------------------------------------
 //     MainEmuFram Internal API for Populating Main Menu Contents
