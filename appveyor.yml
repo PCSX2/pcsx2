@@ -13,6 +13,10 @@ environment:
     target: AppVeyor
     visualstudio_string: vs2017
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+  - platform: x64
+    target: AppVeyor
+    visualstudio_string: vs2019
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
 matrix:
   fast_finish: true
