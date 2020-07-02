@@ -72,19 +72,19 @@ __ri void mVUallocSFLAGc(const x32& reg, const x32& regT, int fInstance)
 
 // Denormalizes Status Flag
 __ri void mVUallocSFLAGd(u32* memAddr) {
-	xMOV(edxd, ptr32[memAddr]);
-	xMOV(eaxd, edxd);
-	xSHR(eaxd, 3);
-	xAND(eaxd, 0x18);
+	xMOV(edx, ptr32[memAddr]);
+	xMOV(eax, edx);
+	xSHR(eax, 3);
+	xAND(eax, 0x18);
 
-	xMOV(ecxd, edxd);
-	xSHL(ecxd, 11);
-	xAND(ecxd, 0x1800);
-	xOR (eaxd, ecxd);
+	xMOV(ecx, edx);
+	xSHL(ecx, 11);
+	xAND(ecx, 0x1800);
+	xOR (eax, ecx);
 
-	xSHL(edxd, 14);
-	xAND(edxd, 0x3cf0000);
-	xOR (eaxd, edxd);
+	xSHL(edx, 14);
+	xAND(edx, 0x3cf0000);
+	xOR (eax, edx);
 }
 
 __fi void mVUallocMFLAGa(mV, const x32& reg, int fInstance)

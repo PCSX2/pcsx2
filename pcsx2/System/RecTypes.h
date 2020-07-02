@@ -34,7 +34,7 @@ public:
 	RecompiledCodeReserve( const wxString& name=wxEmptyString, uint defCommit = 0 );
 	virtual ~RecompiledCodeReserve();
 
-	virtual void* Assign( void *baseptr, size_t size ) override;
+	virtual void* Assign( VirtualMemoryManagerPtr allocator, void *baseptr, size_t size ) override;
 	virtual void Reset() override;
 	virtual bool Commit() override;
 
@@ -44,7 +44,6 @@ public:
 		return SetProfilerName( fromUTF8(shortname) );
 	}
 
-	bool IsOk() const;
 	void ThrowIfNotOk() const;
 
 	operator void*()				{ return m_baseptr; }

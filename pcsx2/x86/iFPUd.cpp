@@ -327,7 +327,7 @@ FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED|XMMINFO_READS);
 //------------------------------------------------------------------
 void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they are floats
 {
-	int tempecx = _allocX86reg(ecxd, X86TYPE_TEMP, 0, 0); //receives regd
+	int tempecx = _allocX86reg(ecx, X86TYPE_TEMP, 0, 0); //receives regd
 	int temp2 = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0); //receives regt
 	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt
 
@@ -400,9 +400,9 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 		xMOVD(arg1regd, xRegisterSSE(sreg));
 		xMOVD(arg2regd, xRegisterSSE(treg));
 		xFastCall((void*)(uptr)&FPU_MUL_HACK, arg1regd, arg2regd); //returns the hacked result or 0
-		xTEST(eaxd, eaxd);
+		xTEST(eax, eax);
 		noHack = JZ8(0);
-			xMOVDZX(xRegisterSSE(regd), eaxd);
+			xMOVDZX(xRegisterSSE(regd), eax);
 			endMul = JMP32(0);
 		x86SetJ8(noHack);
 	}
@@ -546,27 +546,27 @@ void recCVT_W() //called from iFPU.cpp's recCVT_W
 
 	if( regs >= 0 )
 	{
-		xCVTTSS2SI(eaxd, xRegisterSSE(regs));
-		xMOVMSKPS(edxd, xRegisterSSE(regs));	//extract the signs
-		xAND(edxd, 1);					//keep only LSB
+		xCVTTSS2SI(eax, xRegisterSSE(regs));
+		xMOVMSKPS(edx, xRegisterSSE(regs));	//extract the signs
+		xAND(edx, 1);					//keep only LSB
 	}
 	else
 	{
-		xCVTTSS2SI(eaxd, ptr32[&fpuRegs.fpr[ _Fs_ ]]);
-		xMOV(edxd, ptr[&fpuRegs.fpr[ _Fs_ ]]);
-		xSHR(edxd, 31);	//mov sign to lsb
+		xCVTTSS2SI(eax, ptr32[&fpuRegs.fpr[ _Fs_ ]]);
+		xMOV(edx, ptr[&fpuRegs.fpr[ _Fs_ ]]);
+		xSHR(edx, 31);	//mov sign to lsb
 	}
 
 	//kill register allocation for dst because we write directly to fpuRegs.fpr[_Fd_]
 	_deleteFPtoXMMreg(_Fd_, 2);
 
-	xADD(edxd, 0x7FFFFFFF);	//0x7FFFFFFF if positive, 0x8000 0000 if negative
+	xADD(edx, 0x7FFFFFFF);	//0x7FFFFFFF if positive, 0x8000 0000 if negative
 
-	xCMP(eaxd, 0x80000000);	//If the result is indefinitive
-	xCMOVE(eaxd, edxd);		//Saturate it
+	xCMP(eax, 0x80000000);	//If the result is indefinitive
+	xCMOVE(eax, edx);		//Saturate it
 
 	//Write the result
-	xMOV(ptr[&fpuRegs.fpr[_Fd_]], eaxd);
+	xMOV(ptr[&fpuRegs.fpr[_Fd_]], eax);
 }
 //------------------------------------------------------------------
 

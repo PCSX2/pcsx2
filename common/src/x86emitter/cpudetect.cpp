@@ -95,7 +95,7 @@ s64 x86capabilities::_CPUSpeedHz(u64 time) const
         timeStart = GetCPUTicks();
 #ifdef _MSC_VER
         startCycle = __rdtsc();
-#elif defined(_M_X86_64)
+#elif defined(__M_X86_64)
         unsigned long long low, high;
         __asm__ __volatile__("rdtsc"
                              : "=a"(low), "=d"(high));
@@ -110,7 +110,7 @@ s64 x86capabilities::_CPUSpeedHz(u64 time) const
         timeStop = GetCPUTicks();
 #ifdef _MSC_VER
         endCycle = __rdtsc();
-#elif defined(_M_X86_64)
+#elif defined(__M_X86_64)
         unsigned long long low, high;
         __asm__ __volatile__("rdtsc"
                              : "=a"(low), "=d"(high));

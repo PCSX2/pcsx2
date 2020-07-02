@@ -49,19 +49,13 @@ static void _g1_IndirectImm(G1Type InstType, const xIndirect64orLess &sibdest, i
 
         xWrite<s8>(imm);
     } else {
-        u8 opcode = is_s8(imm) ? x86_Opcode_SUB_Ev_Ib : x86_Opcode_ADD_Ev_Iv;
-        
+        u8 opcode = is_s8(imm) ? 0x83 : 0x81;
+        xOpWrite(sibdest.GetPrefix16(), opcode, InstType, sibdest, is_s8(imm) ? 1 : sibdest.GetImmSize());
 
         if (is_s8(imm))
-        {
-            xOpWrite(sibdest.GetPrefix16(), opcode, InstType, sibdest,1);
             xWrite<s8>(imm);
-        }
         else
-        {
-            xOpWrite(sibdest.GetPrefix16(), opcode, InstType, sibdest,4);
             sibdest.xWriteImm(imm);
-        }
     }
 }
 
@@ -162,7 +156,7 @@ void xImpl_Group2::operator()(const xIndirect64orLess &sibdest, u8 imm) const
         // special encoding of 1's
         xOpWrite(sibdest.GetPrefix16(), sibdest.Is8BitOp() ? x86_Opcode_NB2_Eb1 : x86_Opcode_NB2_Ev1, InstType, sibdest);
     } else {
-        xOpWrite(sibdest.GetPrefix16(), sibdest.Is8BitOp() ? x86_Opcode_NB2_Eb_Ib : x86_Opcode_NB2_Ev_Ib, InstType, sibdest);
+        xOpWrite(sibdest.GetPrefix16(), sibdest.Is8BitOp() ? x86_Opcode_NB2_Eb_Ib : x86_Opcode_NB2_Ev_Ib, InstType, sibdest, 1);
         xWrite8(imm);
     }
 }

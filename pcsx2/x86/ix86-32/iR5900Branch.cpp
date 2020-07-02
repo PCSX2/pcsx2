@@ -117,7 +117,7 @@ void recSetBranchEQ(int info, int bne, int process)
 			if( t0reg != EEREC_S && t0reg != EEREC_T ) _freeXMMreg(t0reg);
 		}
 
-		xMOVMSKPS(eaxd, xRegisterSSE(t0reg));
+		xMOVMSKPS(eax, xRegisterSSE(t0reg));
 
 		_eeFlushAllUnused();
 
@@ -147,12 +147,12 @@ void recSetBranchEQ(int info, int bne, int process)
 				j32Ptr[ 1 ] = JE32( 0 );
 			}
 			else {
-				xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-				xCMP(eaxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+				xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 				j8Ptr[ 0 ] = JNE8( 0 );
 
-				xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
-				xCMP(eaxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
+				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
+				xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
 				j32Ptr[ 1 ] = JE32( 0 );
 			}
 
@@ -175,12 +175,12 @@ void recSetBranchEQ(int info, int bne, int process)
 				j32Ptr[ 1 ] = JNE32( 0 );
 			}
 			else {
-				xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-				xCMP(eaxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+				xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 				j32Ptr[ 0 ] = JNE32( 0 );
 
-				xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
-				xCMP(eaxd, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
+				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
+				xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
 				j32Ptr[ 1 ] = JNE32( 0 );
 			}
 		}
@@ -194,7 +194,7 @@ void recSetBranchL(int ltz)
 	int regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
 
 	if( regs >= 0 ) {
-		xMOVMSKPS(eaxd, xRegisterSSE(regs));
+		xMOVMSKPS(eax, xRegisterSSE(regs));
 
 		_eeFlushAllUnused();
 

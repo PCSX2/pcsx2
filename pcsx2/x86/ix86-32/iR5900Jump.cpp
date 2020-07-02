@@ -107,9 +107,9 @@ void recJALR()
 	_eeMoveGPRtoR(calleeSavedReg2d, _Rs_);
 
 	if (EmuConfig.Gamefixes.GoemonTlbHack) {
-		xMOV(ecxd, calleeSavedReg2d);
+		xMOV(ecx, calleeSavedReg2d);
 		vtlb_DynV2P();
-		xMOV(calleeSavedReg2d, eaxd);
+		xMOV(calleeSavedReg2d, eax);
 	}
 	// uncomment when there are NO instructions that need to call interpreter
 //	int mmreg;
@@ -153,8 +153,8 @@ void recJALR()
 		x86regs[calleeSavedReg2d.GetId()].inuse = 0;
 	}
 	else {
-		xMOV(eaxd, ptr[&g_recWriteback]);
-		xMOV(ptr[&cpuRegs.pc], eaxd);
+		xMOV(eax, ptr[&g_recWriteback]);
+		xMOV(ptr[&cpuRegs.pc], eax);
 	}
 
 	SetBranchReg(0xffffffff);

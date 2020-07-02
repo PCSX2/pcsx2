@@ -78,10 +78,10 @@ void recPLZCW()
 	_eeOnWriteReg(_Rd_, 0);
 
 	if( (regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
-		xMOVD(eaxd, xRegisterSSE(regs));
+		xMOVD(eax, xRegisterSSE(regs));
 	}
 	else {
-		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
+		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
 	}
 
 	_deleteEEreg(_Rd_, 0);
@@ -96,44 +96,44 @@ void recPLZCW()
 
 	// --- first word ---
 
-	xMOV(ecxd, 31);
-	xTEST(eaxd, eaxd);		// TEST sets the sign flag accordingly.
+	xMOV(ecx, 31);
+	xTEST(eax, eax);		// TEST sets the sign flag accordingly.
 	u8* label_notSigned = JNS8(0);
-	xNOT(eaxd);
+	xNOT(eax);
 	x86SetJ8(label_notSigned);
 
-	xBSR(eaxd, eaxd);
+	xBSR(eax, eax);
 	u8* label_Zeroed = JZ8(0);	// If BSR sets the ZF, eax is "trash"
-	xSUB(ecxd, eaxd);
-	xDEC(ecxd);			// PS2 doesn't count the first bit
+	xSUB(ecx, eax);
+	xDEC(ecx);			// PS2 doesn't count the first bit
 
 	x86SetJ8(label_Zeroed);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], ecxd);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], ecx);
 
 	// second word
 
 	if( regs >= 0) {
 		xPSHUF.D(xRegisterSSE(regs&0xf), xRegisterSSE(regs&0xf), 0xe1);
-		xMOVD(eaxd, xRegisterSSE(regs&0xf));
+		xMOVD(eax, xRegisterSSE(regs&0xf));
 		xPSHUF.D(xRegisterSSE(regs&0xf), xRegisterSSE(regs&0xf), 0xe1);
 	}
 	else {
-		xMOV(eaxd, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
+		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
 	}
 
-	xMOV(ecxd, 31);
-	xTEST(eaxd, eaxd);		// TEST sets the sign flag accordingly.
+	xMOV(ecx, 31);
+	xTEST(eax, eax);		// TEST sets the sign flag accordingly.
 	label_notSigned = JNS8(0);
-	xNOT(eaxd);
+	xNOT(eax);
 	x86SetJ8(label_notSigned);
 
-	xBSR(eaxd, eaxd);
+	xBSR(eax, eax);
 	label_Zeroed = JZ8(0);	// If BSR sets the ZF, eax is "trash"
-	xSUB(ecxd, eaxd);
-	xDEC(ecxd);			// PS2 doesn't count the first bit
+	xSUB(ecx, eax);
+	xDEC(ecx);			// PS2 doesn't count the first bit
 
 	x86SetJ8(label_Zeroed);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], ecxd);
+	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], ecx);
 
 	GPR_DEL_CONST(_Rd_);
 }
@@ -1499,7 +1499,7 @@ void recQFSRV()
 		_flushEEreg(_Rt_);
 		int info = eeRecompileCodeXMM(XMMINFO_WRITED);
 
-		xMOV(eaxd, ptr32[&cpuRegs.sa]);
+		xMOV(eax, ptr32[&cpuRegs.sa]);
 		xLEA(rcx, ptr[&cpuRegs.GPR.r[_Rt_]]);
 		xMOVDQU(xRegisterSSE(EEREC_D), ptr32[rax + rcx]);
 		return;
@@ -1507,7 +1507,7 @@ void recQFSRV()
 		
 	int info = eeRecompileCodeXMM( XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED );
 
-	xMOV(eaxd, ptr32[&cpuRegs.sa]);
+	xMOV(eax, ptr32[&cpuRegs.sa]);
 	xLEA(rcx, ptr[tempqw]);
 	xMOVDQA(ptr32[rcx], xRegisterSSE(EEREC_T));
 	xMOVDQA(ptr32[rcx+16], xRegisterSSE(EEREC_S));
