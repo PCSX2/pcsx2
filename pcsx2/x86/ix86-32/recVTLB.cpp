@@ -159,8 +159,8 @@ namespace vtlb_private
 		// Warning dirty ebx (in case someone got the very bad idea to move this code)
 		EE::Profiler.EmitMem();
 
-		xMOV( eaxd, arg1regd );
-		xSHR( eaxd, VTLB_PAGE_BITS );
+		xMOV( eax, arg1regd );
+		xSHR( eax, VTLB_PAGE_BITS );
 		xMOV( rax, ptrNative[xComplexAddress(rbx, vtlbdata.vmap, rax*wordsize)] );
 		xLEA( rbx, ptr[(void*)(0xdcdcdcd + (wordsize == 8 ? (uptr)xGetPtr() + 7 : 0))] );
 		u32* writeback = ((u32*)xGetPtr()) - 1;
@@ -176,20 +176,20 @@ namespace vtlb_private
 		{
 			case 8:
 				if( sign )
-					xMOVSX( eaxd, ptr8[arg1reg] );
+					xMOVSX( eax, ptr8[arg1reg] );
 				else
-					xMOVZX( eaxd, ptr8[arg1reg] );
+					xMOVZX( eax, ptr8[arg1reg] );
 			break;
 
 			case 16:
 				if( sign )
-					xMOVSX( eaxd, ptr16[arg1reg] );
+					xMOVSX( eax, ptr16[arg1reg] );
 				else
-					xMOVZX( eaxd, ptr16[arg1reg] );
+					xMOVZX( eax, ptr16[arg1reg] );
 			break;
 
 			case 32:
-				xMOV( eaxd, ptr[arg1reg] );
+				xMOV( eax, ptr[arg1reg] );
 			break;
 
 			case 64:
@@ -212,7 +212,7 @@ namespace vtlb_private
 		{
 			//8 , 16, 32 : data on EDX
 			case 8:
-				xMOV( edxd, arg2regd );
+				xMOV( edx, arg2regd );
 				xMOV( ptr[arg1reg], dl );
 			break;
 
@@ -288,9 +288,9 @@ static void DynGen_IndirectDispatch( int mode, int bits, bool sign = false )
 // Out: eax: result (if mode < 64)
 static void DynGen_IndirectTlbDispatcher( int mode, int bits, bool sign )
 {
-	xMOVZX( eaxd, al );
+	xMOVZX( eax, al );
 	if (wordsize != 8) xSUB( arg1regd, 0x80000000 );
-	xSUB( arg1regd, eaxd );
+	xSUB( arg1regd, eax );
 
 	// jump to the indirect handler, which is a __fastcall C++ function.
 	// [ecx is address, edx is data]
@@ -307,16 +307,16 @@ static void DynGen_IndirectTlbDispatcher( int mode, int bits, bool sign )
 		if (bits == 0)
 		{
 			if (sign)
-				xMOVSX(eaxd, al);
+				xMOVSX(eax, al);
 			else
-				xMOVZX(eaxd, al);
+				xMOVZX(eax, al);
 		}
 		else if (bits == 1)
 		{
 			if (sign)
-				xMOVSX(eaxd, ax);
+				xMOVSX(eax, ax);
 			else
-				xMOVZX(eaxd, ax);
+				xMOVZX(eax, ax);
 		}
 	}
 
@@ -456,20 +456,20 @@ void vtlb_DynGenRead32_Const( u32 bits, bool sign, u32 addr_const )
 		{
 			case 8:
 				if( sign )
-					xMOVSX( eaxd, ptr8[(u8*)ppf] );
+					xMOVSX( eax, ptr8[(u8*)ppf] );
 				else
-					xMOVZX( eaxd, ptr8[(u8*)ppf] );
+					xMOVZX( eax, ptr8[(u8*)ppf] );
 			break;
 
 			case 16:
 				if( sign )
-					xMOVSX( eaxd, ptr16[(u16*)ppf] );
+					xMOVSX( eax, ptr16[(u16*)ppf] );
 				else
-					xMOVZX( eaxd, ptr16[(u16*)ppf] );
+					xMOVZX( eax, ptr16[(u16*)ppf] );
 			break;
 
 			case 32:
-				xMOV( eaxd, ptr32[(u32*)ppf] );
+				xMOV( eax, ptr32[(u32*)ppf] );
 			break;
 		}
 	}
@@ -489,7 +489,7 @@ void vtlb_DynGenRead32_Const( u32 bits, bool sign, u32 addr_const )
 		// Shortcut for the INTC_STAT register, which many games like to spin on heavily.
 		if( (bits == 32) && !EmuConfig.Speedhacks.IntcStat && (paddr == INTC_STAT) )
 		{
-			xMOV( eaxd, ptr[&psHu32( INTC_STAT )] );
+			xMOV( eax, ptr[&psHu32( INTC_STAT )] );
 		}
 		else
 		{
@@ -501,16 +501,16 @@ void vtlb_DynGenRead32_Const( u32 bits, bool sign, u32 addr_const )
 			if( bits==8 )
 			{
 				if( sign )
-					xMOVSX( eaxd, al );
+					xMOVSX( eax, al );
 				else
-					xMOVZX( eaxd, al );
+					xMOVZX( eax, al );
 			}
 			else if( bits==16 )
 			{
 				if( sign )
-					xMOVSX( eaxd, ax );
+					xMOVSX( eax, ax );
 				else
-					xMOVZX( eaxd, ax );
+					xMOVZX( eax, ax );
 			}
 		}
 	}
@@ -547,7 +547,7 @@ void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const )
 		{
 			//8 , 16, 32 : data on arg2
 			case 8:
-				xMOV( edxd, arg2regd );
+				xMOV( edx, arg2regd );
 				xMOV( ptr[(void*)ppf], dl );
 			break;
 
@@ -594,13 +594,14 @@ void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const )
 
 //   ecx - virtual address
 //   Returns physical address in eax.
+//   Clobbers edx
 void vtlb_DynV2P()
 {
-	xMOV(eaxd, ecxd);
-	xAND(ecxd, VTLB_PAGE_MASK); // vaddr & VTLB_PAGE_MASK
+	xMOV(eax, ecx);
+	xAND(ecx, VTLB_PAGE_MASK); // vaddr & VTLB_PAGE_MASK
 
-	xSHR(eaxd, VTLB_PAGE_BITS);
-	xMOV(eaxd, ptr[(eax*4) + vtlbdata.ppmap]); //vtlbdata.ppmap[vaddr>>VTLB_PAGE_BITS];
+	xSHR(eax, VTLB_PAGE_BITS);
+	xMOV(eax, ptr[xComplexAddress(rdx, vtlbdata.ppmap, rax*4)]); //vtlbdata.ppmap[vaddr>>VTLB_PAGE_BITS];
 
-	xOR(eaxd, ecxd);
+	xOR(eax, ecx);
 }

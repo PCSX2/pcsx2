@@ -13,7 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "PrecompiledHeader.h"
 #include "../common/include/Utilities/Assertions.h"
 #include "R5900.h"
@@ -35,8 +34,9 @@ Config::Mode EmuCmp::mode = Config::Mode::Off;
 // TODO: Windows support
 
 // Note: communications are one-way so we can use buffered IO
-
+#ifdef __POSIX__
 static FILE *comms = nullptr;
+#endif
 
 void EmuCmp::init() {
 #ifdef __POSIX__
@@ -109,10 +109,12 @@ done:
 }
 
 void EmuCmp::shutdown() {
+#ifdef __POSIX__
 	if (comms) {
 		fclose(comms);
 		comms = nullptr;
 	}
+#endif
 	mode = Config::Mode::Off;
 }
 
@@ -196,14 +198,12 @@ static void PrintMismatchUnknown(const char *name, u32 pc) {
 
 /// If you're having trouble with load instructions loading incorrect data from memory, use this to compare the section of memory containing the incorrect data during the appropriate cmpR#### routine to catch the bad store in action!
 static void CompareBuffer(void *buffer, int startOffset, int length, const char *name, u32 pc) {
-#ifdef __POSIX__
 	u8 *local = (u8*)buffer + startOffset;
 	if (mode == Config::Mode::Server) {
 		send(local, length);
 	} else if (mode == Config::Mode::Client) {
 		const int maxStackBuffer = _64kb;
-		u8 srv_[std::min(length, maxStackBuffer)];
-		u8 *srv = length > maxStackBuffer ? (u8*)malloc(length) : srv_;
+		u8 *srv = length > maxStackBuffer ? (u8*)malloc(length) : (u8*)alloca(length);
 		receive(srv, length);
 
 		if (0 != memcmp(srv, local, length)) {
@@ -227,7 +227,6 @@ static void CompareBuffer(void *buffer, int startOffset, int length, const char 
 
 		if (length > maxStackBuffer) { free(srv); }
 	}
-#endif
 }
 
 #define COMPARE(reg) Compare(servCPU.reg, cpuRegs.reg, #reg, found, pc)
@@ -327,13 +326,11 @@ void __fastcall EmuCmp::cmpVU(u32 idx, u32 pc) {
 }
 
 void EmuCmp::detail::cmpMem(void *mem, int length, const char *description) {
-#ifdef __POSIX__
 	if (mode == Config::Mode::Server) {
 		send(mem, length);
 	} else {
 		const int maxStackBuffer = _64kb;
-		u8 srv_[std::min(length, maxStackBuffer)];
-		u8 *srv = length > maxStackBuffer ? (u8*)malloc(length) : srv_;
+		u8 *srv = length > maxStackBuffer ? (u8*)malloc(length) : (u8*)alloca(length);
 
 		if (0 != memcmp(srv, mem, length)) {
 			char err[1024];
@@ -343,7 +340,6 @@ void EmuCmp::detail::cmpMem(void *mem, int length, const char *description) {
 
 		if (length > maxStackBuffer) { free(srv); }
 	}
-#endif
 }
 
 void EmuCmp::detail::verifySync(u16 syncID) {

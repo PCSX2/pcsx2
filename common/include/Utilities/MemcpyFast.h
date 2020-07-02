@@ -17,7 +17,7 @@
 
 // For 32-bit MSVC compiles, memcmp performs much worse than memcmp_mmx and
 // other implementations. So for this combination only, prefer memcmp_mmx
-#if defined(_MSC_VER) && !defined(_M_X86_64)
+#if defined(_MSC_VER) && !defined(__M_X86_64)
 extern u8 memcmp_mmx(const void *src1, const void *src2, int cmpsize);
 #else
 #define memcmp_mmx memcmp

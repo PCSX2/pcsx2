@@ -24,23 +24,23 @@ TEST(CodegenTests, MOVTest)
 {
 	CODEGEN_TEST_BOTH(xMOV(rax, 0), "31 c0");
 	CODEGEN_TEST_64(xMOV(rax, rcx), "48 89 c8");
-	CODEGEN_TEST_BOTH(xMOV(eaxd, ecxd), "89 c8");
+	CODEGEN_TEST_BOTH(xMOV(eax, ecx), "89 c8");
 	CODEGEN_TEST_64(xMOV(r8, 0), "45 31 c0");
 	CODEGEN_TEST_64(xMOV(rax, r8), "4c 89 c0");
 	CODEGEN_TEST_64(xMOV(r8, rax), "49 89 c0");
 	CODEGEN_TEST_64(xMOV(r8, r9), "4d 89 c8");
 	CODEGEN_TEST_64(xMOV(rax, ptrNative[rcx]), "48 8b 01");
-	CODEGEN_TEST_BOTH(xMOV(eaxd, ptrNative[rcx]), "8b 01");
+	CODEGEN_TEST_BOTH(xMOV(eax, ptrNative[rcx]), "8b 01");
 	CODEGEN_TEST_64(xMOV(ptrNative[rax], rcx), "48 89 08");
-	CODEGEN_TEST_BOTH(xMOV(ptr32[rax], ecxd), "89 08");
+	CODEGEN_TEST_BOTH(xMOV(ptr32[rax], ecx), "89 08");
 	CODEGEN_TEST_64(xMOV(rax, ptrNative[r8]), "49 8b 00");
 	CODEGEN_TEST_64(xMOV(ptrNative[r8], rax), "49 89 00");
 	CODEGEN_TEST_64(xMOV(r8, ptrNative[r9]), "4d 8b 01");
 	CODEGEN_TEST_64(xMOV(ptrNative[r8], r9), "4d 89 08");
 	CODEGEN_TEST_64(xMOV(rax, ptrNative[rbx*4+3+rcx]), "48 8b 44 99 03");
 	CODEGEN_TEST_64(xMOV(ptrNative[rbx*4+3+rax], rcx), "48 89 4c 98 03");
-	CODEGEN_TEST_BOTH(xMOV(eaxd, ptr32[rbx*4+3+rcx]), "8b 44 99 03");
-	CODEGEN_TEST_BOTH(xMOV(ptr32[rbx*4+3+rax], ecxd), "89 4c 98 03");
+	CODEGEN_TEST_BOTH(xMOV(eax, ptr32[rbx*4+3+rcx]), "8b 44 99 03");
+	CODEGEN_TEST_BOTH(xMOV(ptr32[rbx*4+3+rax], ecx), "89 4c 98 03");
 	CODEGEN_TEST_64(xMOV(r8, ptrNative[r10*4+3+r9]), "4f 8b 44 91 03");
 	CODEGEN_TEST_64(xMOV(ptrNative[r9*4+3+r8], r10), "4f 89 54 88 03");
 	CODEGEN_TEST_64(xMOV(ptrNative[r8], 0), "49 c7 00 00 00 00 00");
@@ -56,11 +56,11 @@ TEST(CodegenTests, MOVTest)
 TEST(CodegenTests, LEATest)
 {
 	CODEGEN_TEST_64(xLEA(rax, ptr[rcx]), "48 89 c8"); // Converted to mov rax, rcx
-	CODEGEN_TEST_BOTH(xLEA(eaxd, ptr[rcx]), "89 c8"); // Converted to mov eax, ecx
+	CODEGEN_TEST_BOTH(xLEA(eax, ptr[rcx]), "89 c8"); // Converted to mov eax, ecx
 	CODEGEN_TEST_64(xLEA(rax, ptr[r8]), "4c 89 c0"); // Converted to mov rax, r8
 	CODEGEN_TEST_64(xLEA(r8, ptr[r9]), "4d 89 c8"); // Converted to mov r8, r9
 	CODEGEN_TEST_64(xLEA(rax, ptr[rbx*4+3+rcx]), "48 8d 44 99 03");
-	CODEGEN_TEST_BOTH(xLEA(eaxd, ptr32[rbx*4+3+rcx]), "8d 44 99 03");
+	CODEGEN_TEST_BOTH(xLEA(eax, ptr32[rbx*4+3+rcx]), "8d 44 99 03");
 	CODEGEN_TEST_64(xLEA(r8, ptr[r10*4+3+r9]), "4f 8d 44 91 03");
 	CODEGEN_TEST_64(xLEA(r8, ptr[base]), "4c 8d 05 f9 ff ff ff");
 	CODEGEN_TEST_64(xLoadFarAddr(r8, base), "4c 8d 05 f9 ff ff ff");
@@ -103,39 +103,41 @@ TEST(CodegenTests, POPTest)
 
 TEST(CodegenTests, MathTest)
 {
-	CODEGEN_TEST(xINC(eaxd), "40", "ff c0");
+	CODEGEN_TEST(xINC(eax), "40", "ff c0");
 	CODEGEN_TEST(xDEC(rax), "48", "48 ff c8");
 	CODEGEN_TEST_64(xINC(r8), "49 ff c0");
 	CODEGEN_TEST_64(xADD(r8, r9), "4d 01 c8");
 	CODEGEN_TEST_64(xADD(r8, 0x12), "49 83 c0 12");
 	CODEGEN_TEST_64(xADD(rax, 0x1234), "48 05 34 12 00 00");
 	CODEGEN_TEST_64(xADD(ptr32[base], -0x60), "83 05 f9 ff ff ff a0");
-	CODEGEN_TEST_BOTH(xADD(eaxd, ebxd), "01 d8");
-	CODEGEN_TEST_BOTH(xADD(eaxd, 0x1234), "05 34 12 00 00");
+	CODEGEN_TEST_64(xADD(ptr32[base], 0x1234), "81 05 f6 ff ff ff 34 12 00 00");
+	CODEGEN_TEST_BOTH(xADD(eax, ebx), "01 d8");
+	CODEGEN_TEST_BOTH(xADD(eax, 0x1234), "05 34 12 00 00");
 	CODEGEN_TEST_64(xADD(r8, ptrNative[r10*4+3+r9]), "4f 03 44 91 03");
 	CODEGEN_TEST_64(xADD(ptrNative[r9*4+3+r8], r10), "4f 01 54 88 03");
-	CODEGEN_TEST_BOTH(xADD(eaxd, ptr32[rbx*4+3+rcx]), "03 44 99 03");
-	CODEGEN_TEST_BOTH(xADD(ptr32[rax*4+3+rbx], ecxd), "01 4c 83 03");
+	CODEGEN_TEST_BOTH(xADD(eax, ptr32[rbx*4+3+rcx]), "03 44 99 03");
+	CODEGEN_TEST_BOTH(xADD(ptr32[rax*4+3+rbx], ecx), "01 4c 83 03");
 	CODEGEN_TEST_64(xSUB(r8, 0x12), "49 83 e8 12");
 	CODEGEN_TEST_64(xSUB(rax, 0x1234), "48 2d 34 12 00 00");
-	CODEGEN_TEST_BOTH(xSUB(eaxd, ptr32[rcx*4+rax]), "2b 04 88");
+	CODEGEN_TEST_BOTH(xSUB(eax, ptr32[rcx*4+rax]), "2b 04 88");
 	CODEGEN_TEST_64(xMUL(ptr32[base]), "f7 2d fa ff ff ff");
 	CODEGEN_TEST(xMUL(ptr32[(void*)0x1234]), "f7 2d 34 12 00 00", "f7 2c 25 34 12 00 00");
-	CODEGEN_TEST_BOTH(xDIV(ecxd), "f7 f9");
+	CODEGEN_TEST_BOTH(xDIV(ecx), "f7 f9");
 }
 
 TEST(CodegenTests, BitwiseTest)
 {
 	CODEGEN_TEST_64(xSHR(r8, cl), "49 d3 e8");
 	CODEGEN_TEST_64(xSHR(rax, cl), "48 d3 e8");
-	CODEGEN_TEST_BOTH(xSHR(ecxd, cl), "d3 e9");
+	CODEGEN_TEST_BOTH(xSHR(ecx, cl), "d3 e9");
 	CODEGEN_TEST_64(xSAR(r8, 1), "49 d1 f8");
 	CODEGEN_TEST_64(xSAR(rax, 60), "48 c1 f8 3c");
-	CODEGEN_TEST_BOTH(xSAR(eaxd, 30), "c1 f8 1e");
-	CODEGEN_TEST_BOTH(xSHL(ebxd, 30), "c1 e3 1e");
+	CODEGEN_TEST_BOTH(xSAR(eax, 30), "c1 f8 1e");
+	CODEGEN_TEST_BOTH(xSHL(ebx, 30), "c1 e3 1e");
+	CODEGEN_TEST_64(xSHL(ptr32[base], 4), "c1 25 f9 ff ff ff 04");
 	CODEGEN_TEST_64(xAND(r8, r9), "4d 21 c8");
 	CODEGEN_TEST_64(xXOR(rax, ptrNative[r10]), "49 33 02");
-	CODEGEN_TEST_BOTH(xOR(esid, ptr32[rax+rbx]), "0b 34 18");
+	CODEGEN_TEST_BOTH(xOR(esi, ptr32[rax+rbx]), "0b 34 18");
 	CODEGEN_TEST_64(xNOT(r8), "49 f7 d0");
 	CODEGEN_TEST_64(xNOT(ptrNative[rax]), "48 f7 10");
 	CODEGEN_TEST_BOTH(xNOT(ptr32[rbx]), "f7 13");

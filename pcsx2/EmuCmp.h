@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "PrecompiledHeader.h"
 #include <cstddef>
 
 /**

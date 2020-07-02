@@ -255,10 +255,10 @@ void COP2_Interlock(bool mBitSync) {
 }
 
 void TEST_FBRST_RESET(FnType_Void* resetFunct, int vuIndex) {
-	xTEST(eaxd, (vuIndex) ? 0x200 : 0x002);
+	xTEST(eax, (vuIndex) ? 0x200 : 0x002);
 	xForwardJZ8 skip;
 		xFastCall((void*)resetFunct);
-		xMOV(eaxd, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+		xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	skip.SetTarget();
 }
 
@@ -272,9 +272,9 @@ static void recCFC2() {
 
 	if (_Rd_ == REG_STATUS_FLAG) { // Normalize Status Flag
 		xMOV(gprF0, ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL]);
-		mVUallocSFLAGc(eaxd, gprF0, 0);
+		mVUallocSFLAGc(eax, gprF0, 0);
 	}
-	else xMOV(eaxd, ptr32[&vu0Regs.VI[_Rd_].UL]);
+	else xMOV(eax, ptr32[&vu0Regs.VI[_Rd_].UL]);
 
 	if (_Rd_ == REG_TPC) { // Divide TPC register value by 8 during copying
 		// Ok, this deserves an explanation.
@@ -314,11 +314,11 @@ static void recCFC2() {
 	}
 
 	// FixMe: Should R-Reg have upper 9 bits 0?
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eaxd);
+	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
 
 	if (_Rd_ >= 16) {
 		xCDQ(); // Sign Extend
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edxd);
+		xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
 	}
 	else xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
 
@@ -337,23 +337,23 @@ static void recCTC2() {
 		case REG_MAC_FLAG: case REG_TPC:
 		case REG_VPU_STAT: break; // Read Only Regs
 		case REG_R:
-			xMOV(eaxd, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-			xOR (eaxd, 0x3f800000);
-			xMOV(ptr32[&vu0Regs.VI[REG_R].UL], eaxd);
+			xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+			xOR (eax, 0x3f800000);
+			xMOV(ptr32[&vu0Regs.VI[REG_R].UL], eax);
 			break;
 		case REG_STATUS_FLAG:
 			if (_Rt_) { // Denormalizes flag into eax (gprT1)
 				mVUallocSFLAGd(&cpuRegs.GPR.r[_Rt_].UL[0]);
-				xMOV(ptr32[&vu0Regs.VI[_Rd_].UL], eaxd);
+				xMOV(ptr32[&vu0Regs.VI[_Rd_].UL], eax);
 			}
 			else xMOV(ptr32[&vu0Regs.VI[_Rd_].UL], 0);
 			break;
 		case REG_CMSAR1:	// Execute VU1 Micro SubRoutine
 			if (_Rt_) {
-				xMOV(ecxd, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+				xMOV(ecx, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 			}
-			else xXOR(ecxd, ecxd);
-			xFastCall((void*)vu1ExecMicro, ecxd);
+			else xXOR(ecx, ecx);
+			xFastCall((void*)vu1ExecMicro, ecx);
 			xFastCall((void*)vif1VUFinish);
 			break;
 		case REG_FBRST:
@@ -361,13 +361,13 @@ static void recCTC2() {
 				xMOV(ptr32[&vu0Regs.VI[REG_FBRST].UL], 0); 
 				return;
 			}
-			else xMOV(eaxd, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+			else xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 
 			TEST_FBRST_RESET(vu0ResetRegs, 0);
 			TEST_FBRST_RESET(vu1ResetRegs, 1);
 
-			xAND(eaxd, 0x0C0C);
-			xMOV(ptr32[&vu0Regs.VI[REG_FBRST].UL], eaxd);
+			xAND(eax, 0x0C0C);
+			xMOV(ptr32[&vu0Regs.VI[REG_FBRST].UL], eax);
 			break;
 		default:
 			// Executing vu0 block here fixes the intro of Ratchet and Clank

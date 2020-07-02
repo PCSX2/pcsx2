@@ -142,9 +142,9 @@ static const char branchSTR[16][8] = {
 #define xmmT7  xmm6 // Used for regAlloc
 #define xmmPQ  xmm7 // Holds the Value and Backup Values of P and Q regs
 
-#define gprT1 eaxd // eax - Temp Reg
-#define gprT2 ecxd // ecx - Temp Reg
-#define gprT3 edxd // edx - Temp Reg
+#define gprT1  eax // eax - Temp Reg
+#define gprT2  ecx // ecx - Temp Reg
+#define gprT3  edx // edx - Temp Reg
 #define gprT1q rax // eax - Temp Reg
 #define gprT2q rcx // ecx - Temp Reg
 #define gprT3q rdx // edx - Temp Reg
@@ -153,15 +153,15 @@ static const char branchSTR[16][8] = {
 #define gprT3b dx  // Low 16-bit of gprT3 (edx)
 
 #ifdef __M_X86_64
-#define gprF0  ebxd // Status Flag 0
-#define gprF1  r12d // Status Flag 1
-#define gprF2  r13d // Status Flag 2
-#define gprF3  r14d // Status Flag 3
+#define gprF0  ebx // Status Flag 0
+#define gprF1 r12d // Status Flag 1
+#define gprF2 r13d // Status Flag 2
+#define gprF3 r14d // Status Flag 3
 #else
-#define gprF0  ebxd // Status Flag 0
-#define gprF1  ebpd // Status Flag 1
-#define gprF2  esid // Status Flag 2
-#define gprF3  edid // Status Flag 3
+#define gprF0  ebx // Status Flag 0
+#define gprF1  ebp // Status Flag 1
+#define gprF2  esi // Status Flag 2
+#define gprF3  edi // Status Flag 3
 #endif
 
 // Function Params

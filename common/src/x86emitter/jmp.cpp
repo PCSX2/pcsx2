@@ -44,11 +44,6 @@ void xImpl_JmpCall::operator()(const xIndirectNative &src) const {
     xWrite8(0xff);
     EmitSibMagic(isJmp ? 4 : 2, src);
 }
-#ifdef __M_X86_64
-void xImpl_JmpCall::operator()(const xIndirect32 &absreg) const {
-    xOpWrite(0, 0xff, isJmp ? 4 : 2, absreg);
-}
-#endif
 
 const xImpl_JmpCall xJMP = {true};
 const xImpl_JmpCall xCALL = {false};
@@ -125,13 +120,6 @@ void xImpl_FastCall::operator()(void *f, u32 a1, u32 a2) const {
     xMOV(arg2regd, a2);
     (*this)(f, arg1regd, arg2regd);
 }
-
-#ifdef __M_X86_64
-void xImpl_FastCall::operator()(const xIndirect32 &f, const xRegisterLong &a1, const xRegisterLong &a2) const {
-    prepareRegsForFastcall(a1, a2);
-    xCALL(f);
-}
-#endif
 
 void xImpl_FastCall::operator()(const xIndirectNative &f, const xRegisterLong &a1, const xRegisterLong &a2) const {
     prepareRegsForFastcall(a1, a2);

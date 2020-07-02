@@ -57,15 +57,15 @@ void RecompiledCodeReserve::_termProfiler()
 {
 }
 
-void* RecompiledCodeReserve::Assign( void *baseptr, size_t size )
+void* RecompiledCodeReserve::Assign( VirtualMemoryManagerPtr allocator, void *baseptr, size_t size )
 {
-	if (!_parent::Assign(baseptr, size)) return NULL;
+	if (!_parent::Assign(std::move(allocator), baseptr, size)) return NULL;
 
 	Commit();
 
 	_registerProfiler();
 
-	return IsOk() ? m_baseptr : nullptr;
+	return m_baseptr;
 }
 
 void RecompiledCodeReserve::Reset()
@@ -99,10 +99,6 @@ RecompiledCodeReserve& RecompiledCodeReserve::SetProfilerName( const wxString& s
 	m_profiler_name = shortname;
 	_registerProfiler();
 	return *this;
-}
-
-bool RecompiledCodeReserve::IsOk() const {
-	return m_baseptr != nullptr && m_pages_commited == m_pages_reserved;
 }
 
 // This error message is shared by R5900, R3000, and microVU recompilers.
@@ -355,39 +351,46 @@ static wxString GetMemoryErrorVM()
 	);
 }
 
-__pagealigned EEVM_MemoryAllocMess HostMemoryMap::EEmem;
-__pagealigned u8 HostMemoryMap::IOPmem[(sizeof(IopVM_MemoryAllocMess) + __pagesize - 1) & -__pagesize];
-__pagealigned u8 HostMemoryMap::VUmem[_64kb];
-__pagealigned u8 HostMemoryMap::EErec[_64mb];
-__pagealigned u8 HostMemoryMap::IOPrec[_32mb];
-__pagealigned u8 HostMemoryMap::VIF0rec[_8mb];
-__pagealigned u8 HostMemoryMap::VIF1rec[_8mb];
-__pagealigned u8 HostMemoryMap::mVU0rec[_64mb];
-__pagealigned u8 HostMemoryMap::mVU1rec[_64mb];
-__pagealigned u8 HostMemoryMap::bumpAllocator[_64mb];
+namespace HostMemoryMap {
+	// For debuggers
+	uptr EEmem, IOPmem, VUmem, EErec, IOPrec, VIF0rec, VIF1rec, mVU0rec, mVU1rec, bumpAllocator;
+}
 
-template <typename T>
-static void DecommitBSS(T& t) {
-	static_assert(sizeof(T) % __pagesize == 0, "Size must be page-aligned");
-	HostSys::MmapResetPtr((void*)&t, sizeof(T));
+/// Attempts to find a spot near static variables for the main memory
+static VirtualMemoryManagerPtr makeMainMemoryManager() {
+	uptr codeBase = (uptr)(void*)makeMainMemoryManager / (1 << 28) * (1 << 28);
+	for (int offset = 4; offset >= -6; offset--) {
+		uptr base = codeBase + (offset << 28);
+		auto mgr = std::make_shared<VirtualMemoryManager>("Main Memory Manager", base, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
+		if (mgr->IsOk()) {
+			return mgr;
+		}
+	}
+
+	if (sizeof(void*) == 8) {
+		pxAssertRel(0, "Failed to find a good place for the main memory allocation, recompilers may fail");
+	}
+	return std::make_shared<VirtualMemoryManager>("Main Memory Manager", 0, HostMemoryMap::Size);
 }
 
 // --------------------------------------------------------------------------------------
 //  SysReserveVM  (implementations)
 // --------------------------------------------------------------------------------------
 SysMainMemory::SysMainMemory()
-	: m_bumpAllocator((void*)HostMemoryMap::bumpAllocator, sizeof(HostMemoryMap::bumpAllocator))
+	: m_mainMemory(makeMainMemoryManager())
+	, m_bumpAllocator(m_mainMemory, HostMemoryMap::bumpAllocatorOffset, HostMemoryMap::Size - HostMemoryMap::bumpAllocatorOffset)
 {
-	DecommitBSS(HostMemoryMap::EEmem);
-	DecommitBSS(HostMemoryMap::IOPmem);
-	DecommitBSS(HostMemoryMap::VUmem);
-	DecommitBSS(HostMemoryMap::EErec);
-	DecommitBSS(HostMemoryMap::IOPrec);
-	DecommitBSS(HostMemoryMap::VIF0rec);
-	DecommitBSS(HostMemoryMap::VIF1rec);
-	DecommitBSS(HostMemoryMap::mVU0rec);
-	DecommitBSS(HostMemoryMap::mVU1rec);
-	DecommitBSS(HostMemoryMap::bumpAllocator);
+	uptr base = (uptr)MainMemory()->GetBase();
+	HostMemoryMap::EEmem   = base + HostMemoryMap::EEmemOffset;
+	HostMemoryMap::IOPmem  = base + HostMemoryMap::IOPmemOffset;
+	HostMemoryMap::VUmem   = base + HostMemoryMap::VUmemOffset;
+	HostMemoryMap::EErec   = base + HostMemoryMap::EErecOffset;
+	HostMemoryMap::IOPrec  = base + HostMemoryMap::IOPrecOffset;
+	HostMemoryMap::VIF0rec = base + HostMemoryMap::VIF0recOffset;
+	HostMemoryMap::VIF1rec = base + HostMemoryMap::VIF1recOffset;
+	HostMemoryMap::mVU0rec = base + HostMemoryMap::mVU0recOffset;
+	HostMemoryMap::mVU1rec = base + HostMemoryMap::mVU1recOffset;
+	HostMemoryMap::bumpAllocator = base + HostMemoryMap::bumpAllocatorOffset;
 }
 
 SysMainMemory::~SysMainMemory()
@@ -405,9 +408,9 @@ void SysMainMemory::ReserveAll()
 	DevCon.WriteLn( Color_StrongBlue, "Mapping host memory for virtual systems..." );
 	ConsoleIndentScope indent(1);
 
-	m_ee.Assign(HostMemoryMap::EEmem);
-	m_iop.Assign(HostMemoryMap::IOPmem);
-	m_vu.Assign(HostMemoryMap::VUmem);
+	m_ee.Reserve(MainMemory());
+	m_iop.Reserve(MainMemory());
+	m_vu.Reserve(MainMemory());
 }
 
 void SysMainMemory::CommitAll()
