@@ -1180,8 +1180,13 @@ void SysStatus( const wxString& text )
 void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 {
 	g_Conf->CurrentIso = newIsoFile;
-	sMainFrame.UpdateIsoSrcSelection();
-	sMainFrame.UpdateStatusBar();
+	sMainFrame.UpdateCdvdSrcSelection();
+}
+
+void SysUpdateDiscSrcDrive( const wxString& newDiscDrive )
+{
+	g_Conf->CurrentDisc = newDiscDrive;
+	sMainFrame.UpdateCdvdSrcSelection();
 }
 
 bool HasMainFrame()

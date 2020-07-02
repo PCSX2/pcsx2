@@ -279,11 +279,13 @@ void SysCoreThread::ExecuteTaskInThread()
 void SysCoreThread::OnSuspendInThread()
 {
 	GetCorePlugins().Close();
+	DoCDVDclose();
 }
 
 void SysCoreThread::OnResumeInThread( bool isSuspended )
 {
 	GetCorePlugins().Open();
+	DoCDVDopen();
 }
 
 

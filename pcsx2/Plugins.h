@@ -189,7 +189,7 @@ typedef void CALLBACK FnType_SetDir( const char* dir );
 // Important: Contents of this structure must match the order of the contents of the
 // s_MethMessCommon[] array defined in Plugins.cpp.
 //
-// Note: Open is excluded from this list because the GS and CDVD have custom signatures >_<
+// Note: Open is excluded from this list because the GS has a custom signatures >_<
 //
 struct LegacyPluginAPI_Common
 {
@@ -401,7 +401,6 @@ protected:
 	virtual bool NeedsUnload() const;
 
 	virtual bool OpenPlugin_GS();
-	virtual bool OpenPlugin_CDVD();
 	virtual bool OpenPlugin_PAD();
 	virtual bool OpenPlugin_SPU2();
 	virtual bool OpenPlugin_DEV9();
@@ -412,7 +411,6 @@ protected:
 	void _generalclose( PluginsEnum_t pid );
 
 	virtual void ClosePlugin_GS();
-	virtual void ClosePlugin_CDVD();
 	virtual void ClosePlugin_PAD();
 	virtual void ClosePlugin_SPU2();
 	virtual void ClosePlugin_DEV9();

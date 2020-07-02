@@ -19,7 +19,7 @@
 
 #include "Utilities/SafeArray.h"
 #include "Utilities/Threading.h"		// to use threading stuff, include the Threading namespace in your file.
-#include "CDVD/CDVDaccess.h"
+#include "Plugins.h"
 
 #include "vtlb.h"
 

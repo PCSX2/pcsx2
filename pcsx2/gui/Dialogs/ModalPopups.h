@@ -105,7 +105,7 @@ namespace Dialogs
 	class DriveSelectorDialog : public wxDialog
 	{
 	public:
-		DriveSelectorDialog( wxWindow* parent );
+		DriveSelectorDialog( wxWindow* parent, wxString curDrive );
 		wxString GetSelectedDrive();
 	private:
 		wxChoice* choiceDrive;

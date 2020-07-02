@@ -22,7 +22,6 @@
 
 #include "GS.h"
 #include "Gif.h"
-#include "CDVD/CDVDisoReader.h"
 
 #include "Utilities/pxStreams.h"
 
@@ -83,7 +82,6 @@ const PluginInfo tbl_PluginInfo[] =
 	{ "GS",		PluginId_GS,	PS2E_LT_GS,		PS2E_GS_VERSION		},
 	{ "PAD",	PluginId_PAD,	PS2E_LT_PAD,	PS2E_PAD_VERSION	},
 	{ "SPU2",	PluginId_SPU2,	PS2E_LT_SPU2,	PS2E_SPU2_VERSION	},
-	{ "CDVD",	PluginId_CDVD,	PS2E_LT_CDVD,	PS2E_CDVD_VERSION	},
 	{ "USB",	PluginId_USB,	PS2E_LT_USB,	PS2E_USB_VERSION	},
 	{ "FW",		PluginId_FW,	PS2E_LT_FW,		PS2E_FW_VERSION		},
 	{ "DEV9",	PluginId_DEV9,	PS2E_LT_DEV9,	PS2E_DEV9_VERSION	},
@@ -448,118 +446,6 @@ static const LegacyApi_OptMethod s_MethMessOpt_PAD[] =
 };
 
 // ----------------------------------------------------------------------------
-//  CDVD Mess!
-// ----------------------------------------------------------------------------
-void CALLBACK CDVD_newDiskCB(void (*callback)()) {}
-
-extern int lastReadSize;
-extern u32 lastLSN;
-static s32 CALLBACK CDVD_getBuffer2(u8* buffer)
-{
-	// TEMP: until I fix all the plugins to use this function style
-	u8* pb = CDVD->getBuffer();
-	if(pb == NULL) return -2;
-
-	memcpy( buffer, pb, lastReadSize );
-	return 0;
-}
-
-static s32 CALLBACK CDVD_readSector(u8* buffer, u32 lsn, int mode)
-{
-	if(CDVD->readTrack(lsn,mode) < 0)
-		return -1;
-
-	// TEMP: until all the plugins use the new CDVDgetBuffer style
-	switch (mode)
-	{
-	case CDVD_MODE_2352:
-		lastReadSize = 2352;
-		break;
-	case CDVD_MODE_2340:
-		lastReadSize = 2340;
-		break;
-	case CDVD_MODE_2328:
-		lastReadSize = 2328;
-		break;
-	case CDVD_MODE_2048:
-		lastReadSize = 2048;
-		break;
-	}
-
-	lastLSN = lsn;
-	return CDVD->getBuffer2(buffer);
-}
-
-static s32 CALLBACK CDVD_getDualInfo(s32* dualType, u32* layer1Start)
-{
-	u8 toc[2064];
-
-	// if error getting toc, settle for single layer disc ;)
-	if(CDVD->getTOC(toc))
-		return 0;
-
-	if(toc[14] & 0x60)
-	{
-		if(toc[14] & 0x10)
-		{
-			// otp dvd
-			*dualType = 2;
-			*layer1Start = (toc[25]<<16) + (toc[26]<<8) + (toc[27]) - 0x30000 + 1;
-		}
-		else
-		{
-			// ptp dvd
-			*dualType = 1;
-			*layer1Start = (toc[21]<<16) + (toc[22]<<8) + (toc[23]) - 0x30000 + 1;
-		}
-	}
-	else
-	{
-		// single layer dvd
-		*dualType = 0;
-		*layer1Start = (toc[21]<<16) + (toc[22]<<8) + (toc[23]) - 0x30000 + 1;
-	}
-
-	return 1;
-}
-
-CDVD_API CDVDapi_Plugin =
-{
-	// All of these are filled by the plugin manager
-	NULL
-};
-
-CDVD_API* CDVD			= NULL;
-
-static const LegacyApi_ReqMethod s_MethMessReq_CDVD[] =
-{
-	{	"CDVDopen",			(vMeth**)&CDVDapi_Plugin.open,			NULL },
-	{	"CDVDclose",		(vMeth**)&CDVDapi_Plugin.close,			NULL },
-	{	"CDVDreadTrack",	(vMeth**)&CDVDapi_Plugin.readTrack,		NULL },
-	{	"CDVDgetBuffer",	(vMeth**)&CDVDapi_Plugin.getBuffer,		NULL },
-	{	"CDVDreadSubQ",		(vMeth**)&CDVDapi_Plugin.readSubQ,		NULL },
-	{	"CDVDgetTN",		(vMeth**)&CDVDapi_Plugin.getTN,			NULL },
-	{	"CDVDgetTD",		(vMeth**)&CDVDapi_Plugin.getTD,			NULL },
-	{	"CDVDgetTOC",		(vMeth**)&CDVDapi_Plugin.getTOC,		NULL },
-	{	"CDVDgetDiskType",	(vMeth**)&CDVDapi_Plugin.getDiskType,	NULL },
-	{	"CDVDgetTrayStatus",(vMeth**)&CDVDapi_Plugin.getTrayStatus,	NULL },
-	{	"CDVDctrlTrayOpen",	(vMeth**)&CDVDapi_Plugin.ctrlTrayOpen,	NULL },
-	{	"CDVDctrlTrayClose",(vMeth**)&CDVDapi_Plugin.ctrlTrayClose,	NULL },
-	{	"CDVDnewDiskCB",	(vMeth**)&CDVDapi_Plugin.newDiskCB,		(vMeth*)CDVD_newDiskCB },
-
-	{	"CDVDreadSector",	(vMeth**)&CDVDapi_Plugin.readSector,	(vMeth*)CDVD_readSector },
-	{	"CDVDgetBuffer2",	(vMeth**)&CDVDapi_Plugin.getBuffer2,	(vMeth*)CDVD_getBuffer2 },
-	{	"CDVDgetDualInfo",	(vMeth**)&CDVDapi_Plugin.getDualInfo,	(vMeth*)CDVD_getDualInfo },
-
-	{ NULL }
-};
-
-static const LegacyApi_OptMethod s_MethMessOpt_CDVD[] =
-{
-	{ NULL }
-};
-
-// ----------------------------------------------------------------------------
 //  SPU2 Mess!
 // ----------------------------------------------------------------------------
 
@@ -671,7 +557,6 @@ static const LegacyApi_ReqMethod* const s_MethMessReq[] =
 	s_MethMessReq_GS,
 	s_MethMessReq_PAD,
 	s_MethMessReq_SPU2,
-	s_MethMessReq_CDVD,
 	s_MethMessReq_USB,
 	s_MethMessReq_FW,
 	s_MethMessReq_DEV9
@@ -682,7 +567,6 @@ static const LegacyApi_OptMethod* const s_MethMessOpt[] =
 	s_MethMessOpt_GS,
 	s_MethMessOpt_PAD,
 	s_MethMessOpt_SPU2,
-	s_MethMessOpt_CDVD,
 	s_MethMessOpt_USB,
 	s_MethMessOpt_FW,
 	s_MethMessOpt_DEV9
@@ -851,9 +735,6 @@ void* StaticLibrary::GetSymbol(const wxString &name)
 #ifdef BUILTIN_SPU2_PLUGIN
 	RETURN_COMMON_SYMBOL(SPU2);
 #endif
-#ifdef BUILTIN_CDVD_PLUGIN
-	RETURN_COMMON_SYMBOL(CDVD);
-#endif
 #ifdef BUILTIN_DEV9_PLUGIN
 	RETURN_COMMON_SYMBOL(DEV9);
 #endif
@@ -920,9 +801,6 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 #endif
 #ifdef BUILTIN_SPU2_PLUGIN
 		case PluginId_SPU2:
-#endif
-#ifdef BUILTIN_CDVD_PLUGIN
-		case PluginId_CDVD:
 #endif
 #ifdef BUILTIN_DEV9_PLUGIN
 		case PluginId_DEV9:
@@ -1105,8 +983,6 @@ void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
 	} while( ++pi, pi->shortname != NULL );
 	indent.LeaveScope();
 
-	CDVDapi_Plugin.newDiskCB( cdvdNewDiskCB );
-
 	// Hack for PAD's stupid parameter passed on Init
 	PADinit = (_PADinit)m_info[PluginId_PAD]->CommonBindings.Init;
 	m_info[PluginId_PAD]->CommonBindings.Init = _hack_PADinit;
@@ -1190,11 +1066,6 @@ extern void spu2DMA4Irq();
 extern void spu2DMA7Irq();
 extern void spu2Irq();
 
-bool SysCorePlugins::OpenPlugin_CDVD()
-{
-	return DoCDVDopen();
-}
-
 bool SysCorePlugins::OpenPlugin_GS()
 {
 	GetMTGS().Resume();
@@ -1271,7 +1142,6 @@ void SysCorePlugins::Open( PluginsEnum_t pid )
 	{
 		case PluginId_GS:	result = OpenPlugin_GS();	break;
 		case PluginId_PAD:	result = OpenPlugin_PAD();	break;
-		case PluginId_CDVD:	result = OpenPlugin_CDVD();	break;
 		case PluginId_SPU2:	result = OpenPlugin_SPU2();	break;
 		case PluginId_USB:	result = OpenPlugin_USB();	break;
 		case PluginId_FW:	result = OpenPlugin_FW();	break;
@@ -1342,11 +1212,6 @@ void SysCorePlugins::ClosePlugin_GS()
 	}
 }
 
-void SysCorePlugins::ClosePlugin_CDVD()
-{
-	DoCDVDclose();
-}
-
 void SysCorePlugins::ClosePlugin_PAD()
 {
 	_generalclose( PluginId_PAD );
@@ -1391,7 +1256,6 @@ void SysCorePlugins::Close( PluginsEnum_t pid )
 	{
 		case PluginId_GS:	ClosePlugin_GS();	break;
 		case PluginId_PAD:	ClosePlugin_PAD();	break;
-		case PluginId_CDVD:	ClosePlugin_CDVD();	break;
 		case PluginId_SPU2:	ClosePlugin_SPU2();	break;
 		case PluginId_USB:	ClosePlugin_USB();	break;
 		case PluginId_FW:	ClosePlugin_FW();	break;

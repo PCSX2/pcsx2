@@ -6,14 +6,6 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif()
 
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/cdvdGigaherz" AND cdvdGigaherz)
-	add_subdirectory(cdvdGigaherz/src)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDnull" AND CDVDnull)
-	add_subdirectory(CDVDnull)
-endif()
-
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/dev9null" AND dev9null)
 	add_subdirectory(dev9null)
 endif()

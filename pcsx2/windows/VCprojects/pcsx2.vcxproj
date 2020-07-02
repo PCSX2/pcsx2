@@ -148,11 +148,28 @@
   <ItemGroup>
     <ClCompile Include="..\..\CDVD\BlockdumpFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\CDVDdiscReader.cpp" />
+    <ClCompile Include="..\..\CDVD\CDVDdiscThread.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\CDVD\ChunksCache.cpp" />
     <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\CsoFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\GzippedFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\OutputIsoFile.cpp" />
+    <ClCompile Include="..\..\CDVD\Unix\DriveUtility.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\Unix\IOCtlSrc.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\Windows\DriveUtility.cpp" />
+    <ClCompile Include="..\..\CDVD\Windows\IOCtlSrc.cpp" />
     <ClCompile Include="..\..\DebugTools\Breakpoints.cpp" />
     <ClCompile Include="..\..\DebugTools\DebugInterface.cpp" />
     <ClCompile Include="..\..\DebugTools\DisassemblyManager.cpp" />

@@ -148,6 +148,12 @@
     <Filter Include="Recording\gui">
       <UniqueIdentifier>{93e36831-627f-4529-b709-1f4bad398512}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\Iop\CDVD\Windows">
+      <UniqueIdentifier>{be861049-a142-4650-85a5-a2fdd4eef011}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\CDVD\Unix">
+      <UniqueIdentifier>{a5904fb6-e846-4cbf-940c-ca1c604140a0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -866,6 +872,21 @@
     </ClCompile>
     <ClCompile Include="..\..\gui\Dialogs\DriveSelectorDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\CDVDdiscThread.cpp">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\Windows\DriveUtility.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\Windows\IOCtlSrc.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\Unix\IOCtlSrc.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Unix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\Unix\DriveUtility.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Unix</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
