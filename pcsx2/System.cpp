@@ -361,6 +361,10 @@ static VirtualMemoryManagerPtr makeMainMemoryManager() {
 	uptr codeBase = (uptr)(void*)makeMainMemoryManager / (1 << 28) * (1 << 28);
 	for (int offset = 4; offset >= -6; offset--) {
 		uptr base = codeBase + (offset << 28);
+		if ((sptr)base < 0 || (sptr)(base + HostMemoryMap::Size - 1) < 0) {
+			// VTLB will throw a fit if we try to put EE main memory here
+			continue;
+		}
 		auto mgr = std::make_shared<VirtualMemoryManager>("Main Memory Manager", base, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
 		if (mgr->IsOk()) {
 			return mgr;
