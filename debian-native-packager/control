@@ -1,0 +1,38 @@
+Source: pcsx2
+Section: games
+Priority: optional
+Maintainer: Beaumanvienna(JC) <beaumanvienna@gmail.com>
+Build-Depends: cmake (>= 2.8.5),
+    debhelper (>= 8.9),
+    dpkg-dev (>= 1.15.7),
+    libaio-dev,
+    libasound2-dev,
+    libgl1-mesa-dev,
+    libglu1-mesa-dev,
+    libgtk2.0-dev,
+    liblzma-dev,
+    libpcap0.8-dev,
+    libpng12-dev | libpng-dev,
+    libpulse-dev,
+    libsdl2-dev,
+    libsoundtouch-dev,
+    libwxbase3.0-dev,
+    libwxgtk3.0-dev,
+    libxml2-dev,
+    libx11-dev,
+    locales | locales-all,
+    portaudio19-dev,
+    zlib1g-dev,
+    libudev-dev
+Standards-Version: 4.1.4
+Vcs-Git: https://github.com/beaumanvienna/pcsx2/tree/x86_64-support
+
+Package: pcsx2
+Architecture: amd64
+Depends: ${shlibs:Depends}, 
+    ${misc:Depends}, 
+    libc6, 
+    libasound2-plugins
+Description: Playstation 2 emulator
+ PCSX2 is a PlayStation 2 emulator for Linux, macOS, and Windows.
+
