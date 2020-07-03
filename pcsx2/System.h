@@ -175,6 +175,7 @@ extern SysMainMemory& GetVmMemory();
 // This should be available on Windows, via Microsoft or Intel compilers (I'm pretty sure Intel
 // supports native SEH model).  GNUC in Windows, or any compiler in a non-windows platform, will
 // need to use setjmp/longjmp instead to exit recompiled code.
+// In addition, we don't currently set up SEH properly on Windows x64 so disable it there too
 //
 
 //#define PCSX2_SEH		0		// use this to force disable SEH on win32, to test setjmp functionality.
