@@ -369,6 +369,10 @@ static VirtualMemoryManagerPtr makeMainMemoryManager() {
 	// We start high and count down because on macOS code starts at the beginning of useable address space, so starting as far ahead as possible reduces address variations due to code size.  Not sure about other platforms.  Obviously this only actually affects what shows up in a debugger and won't affect performance or correctness of anything.
 	for (int offset = 4; offset >= -6; offset--) {
 		uptr base = codeBase + (offset << 28);
+		if ((sptr)base < 0 || (sptr)(base + HostMemoryMap::Size - 1) < 0) {
+			// VTLB will throw a fit if we try to put EE main memory here
+			continue;
+		}
 		auto mgr = std::make_shared<VirtualMemoryManager>("Main Memory Manager", base, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
 		if (mgr->IsOk()) {
 			return mgr;
