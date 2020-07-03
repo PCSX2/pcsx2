@@ -1,0 +1,79 @@
+pcsx2 (1:1.7.0.0-b043bf2d1) bionic; urgency=medium
+
+  * native x64 support
+  * github.com/PCSX2/pcsx2/pull/3451/commits/b043bf2d1ead2f94615162069d1f50650ffa05c3
+  * pull request with reviews, but not yet pulled into master
+  * intended for alpha testers
+   
+ -- Beaumanvienna(JC) <beaumanvienna@gmail.com>  Fri, 02 Jul 2020 17:40:00 -0800
+ 
+pcsx2 (1:1.4.0-11) bionic; urgency=medium
+
+  !!! 1.4.0 release !!!
+
+ -- Gregory Hainaut <gregory.hainaut@gmail.com>  Fri, 24 Aug 2018 22:45:11 +0200
+
+pcsx2 (1:1.4.0-10) Artful; urgency=medium
+
+  !!! 1.4.0 release !!!
+
+ -- Gregory Hainaut <gregory.hainaut@gmail.com>  Fri, 24 Aug 2018 22:43:53 +0200
+
+pcsx2 (1:1.4.0-9) zesty; urgency=medium
+
+  !!! 1.4.0 release !!!
+  * libpng-dev replaces libpng12-dev
+  * import upstream patch to fix build issue on recent GCC
+
+ -- Gregory Hainaut <gregory.hainaut@gmail.com>  Mon, 08 May 2017 12:30:59 +0200
+
+pcsx2 (1:1.4.0-8) yakkety; urgency=medium
+
+  !!! 1.4.0 release !!!
+  * libpng-dev replaces libpng12-dev
+  * import upstream patch to fix build issue on recent GCC
+
+ -- Gregory Hainaut <gregory.hainaut@gmail.com>  Mon, 08 May 2017 11:47:44 +0200
+
+pcsx2 (1:1.4.0-6) zesty; urgency=medium
+
+  !!! 1.4.0 release !!!
+
+ -- Gregory Hainaut <gregory.hainaut@gmail.com>  Mon, 08 May 2017 11:37:22 +0200
+
+pcsx2 (1:1.4.0-5) yakkety; urgency=medium
+
+  !!! 1.4.0 release !!!
+
+ -- Gregory Hainaut <gregory.hainaut@gmail.com>  Mon, 08 May 2017 11:26:41 +0200
+
+pcsx2 (1:1.4.0-4) xenial; urgency=medium
+
+  !!! 1.4.0 release !!!
+
+ -- Gregory Hainaut <gregory.hainaut@gmail.com>  Tue, 05 Jan 2016 18:45:15 +0100
+
+pcsx2 (1:1.4.0-3) wily; urgency=medium
+
+  !!! 1.4.0 release !!!
+
+ -- Gregory Hainaut <gregory.hainaut@gmail.com>  Tue, 05 Jan 2016 18:44:09 +0100
+
+pcsx2 (1:1.4.0-2) vivid; urgency=medium
+
+  !!! 1.4.0 release !!!
+
+ -- Gregory Hainaut <gregory.hainaut@gmail.com>  Tue, 05 Jan 2016 18:43:29 +0100
+
+pcsx2 (1:1.4.0-1) trusty; urgency=medium
+
+  !!! 1.4.0 release !!!
+
+ -- Gregory Hainaut <gregory.hainaut@gmail.com>  Tue, 05 Jan 2016 18:38:37 +0100
+
+pcsx2.snapshot (3351-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Gregory Hainaut <gregory.hainaut@gmail.com>  Thu, 13 May 2010 14:27:56 +0200
+
