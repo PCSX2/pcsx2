@@ -2,7 +2,7 @@ Format: 3.0 (native)
 Source: pcsx2
 Binary: pcsx2
 Architecture: amd64
-Version: 1:1.7.0.0-b043bf2d1
+Version: 1.7.0.1-ce7889939
 Maintainer: Beaumanvienna (JC) <beauman@gmail.com>
 Homepage: https://github.com/beaumanvienna/pcsx2/tree/x86_64-support
 Standards-Version: 4.1.4
