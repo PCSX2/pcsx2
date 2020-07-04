@@ -298,7 +298,7 @@ protected:
 #elif defined(_WIN32)
 
 struct _EXCEPTION_POINTERS;
-extern long SysPageFaultExceptionFilter(struct _EXCEPTION_POINTERS *eps);
+extern long __stdcall SysPageFaultExceptionFilter(struct _EXCEPTION_POINTERS *eps);
 
 #define PCSX2_PAGEFAULT_PROTECT __try
 #define PCSX2_PAGEFAULT_EXCEPT \

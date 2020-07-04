@@ -32,7 +32,7 @@ static long DoSysPageFaultExceptionFilter(EXCEPTION_POINTERS *eps)
     return Source_PageFault->WasHandled() ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
 }
 
-long SysPageFaultExceptionFilter(EXCEPTION_POINTERS *eps)
+long __stdcall SysPageFaultExceptionFilter(EXCEPTION_POINTERS *eps)
 {
     // Prevent recursive exception filtering by catching the exception from the filter here.
     // In the event that the filter causes an access violation (happened during shutdown
@@ -49,7 +49,7 @@ long SysPageFaultExceptionFilter(EXCEPTION_POINTERS *eps)
 
 void _platform_InstallSignalHandler()
 {
-#if !PCSX2_SEH
+#ifdef _WIN64 // We don't handle SEH properly on Win64 so use a vectored exception handler instead
     AddVectoredExceptionHandler(true, SysPageFaultExceptionFilter);
 #endif
 }
