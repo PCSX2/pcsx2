@@ -1,3 +1,12 @@
+pcsx2 (1:1.7.0.1-ce7889939) bionic; urgency=medium
+
+  * F1/F3 savestate crash fixed
+  * https://github.com/PCSX2/pcsx2/pull/3451/commits/ce788993970b6ccb41484244ce4f38545348f4d3
+  * pull request with reviews, but not yet pulled into master
+  * intended for alpha testers
+   
+ -- Beaumanvienna(JC) <beaumanvienna@gmail.com>  Sat, 03 Jul 2020 17:20:00 -0800
+
 pcsx2 (1:1.7.0.0-b043bf2d1) bionic; urgency=medium
 
   * native x64 support
