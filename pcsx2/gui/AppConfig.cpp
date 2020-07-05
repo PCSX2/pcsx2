@@ -1307,7 +1307,6 @@ static void SaveUiSettings()
 	}
 
 	sApp.GetRecentIsoManager().Add( g_Conf->CurrentIso );
-	//TODO_CDVD Should this be done for CurrentDisc?
 
 	AppIniSaver saver;
 	g_Conf->LoadSave( saver );

@@ -370,7 +370,7 @@ s32 CALLBACK ISOreadTrack(u32 lsn, int mode)
 	return 0;
 }
 
-s32 CALLBACK ISOgetBuffer2(u8* buffer)
+s32 CALLBACK ISOgetBuffer(u8* buffer)
 {
 	return iso.FinishRead3(buffer, pmode);
 }
@@ -410,7 +410,7 @@ CDVD_API CDVDapi_Iso =
 
 	ISOopen,
 	ISOreadTrack,
-	NULL, //ISOgetBuffer, // emu shouldn't use this one.
+	ISOgetBuffer,
 	ISOreadSubQ,
 	ISOgetTN,
 	ISOgetTD,
@@ -423,6 +423,5 @@ CDVD_API CDVDapi_Iso =
 	ISOnewDiskCB,
 
 	ISOreadSector,
-	ISOgetBuffer2,
 	ISOgetDualInfo,
 };
