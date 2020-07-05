@@ -48,7 +48,6 @@ set(FWnullFinalSources
 )
 
 set(FWnullFinalLibs
-	${GTK2_LIBRARIES}
 )
 
 if(BUILTIN_FW)

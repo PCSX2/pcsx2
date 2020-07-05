@@ -47,7 +47,6 @@ set(dev9nullFinalSources
 )
 
 set(dev9nullFinalLibs
-	${GTK2_LIBRARIES}
 )
 
 if(BUILTIN_DEV9)
