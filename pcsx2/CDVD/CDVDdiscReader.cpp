@@ -221,15 +221,38 @@ s32 CALLBACK DISCreadTrack(u32 lsn, int mode)
 	return 0;
 }
 
-// return can be NULL (for async modes)
-u8* CALLBACK DISCgetBuffer()
+s32 CALLBACK DISCgetBuffer(u8* dest)
 {
-	if (lastReadInNewDiskCB) {
-		lastReadInNewDiskCB = 0;
-		return directReadSectorBuffer;
+	// Do nothing for out of bounds disc sector reads. It prevents some games
+	// from hanging (All-Star Baseball 2005, Hello Kitty: Roller Rescue,
+	// Hot Wheels: Beat That! (NTSC), Ratchet & Clank 3 (PAL),
+	// Test Drive: Eve of Destruction, etc.).
+	if (csector >= src->GetSectorCount())
+		return 0;
+
+	int csize = 2352;
+	switch (cmode) {
+	case CDVD_MODE_2048:
+		csize = 2048;
+		break;
+	case CDVD_MODE_2328:
+		csize = 2328;
+		break;
+	case CDVD_MODE_2340:
+		csize = 2340;
+		break;
 	}
 
-	return cdvdGetSector(csector, cmode);
+	if (lastReadInNewDiskCB) {
+		lastReadInNewDiskCB = 0;
+
+		memcpy(dest, directReadSectorBuffer, csize);
+		return 0;
+	}
+
+	memcpy(dest, cdvdGetSector(csector, cmode), csize);
+
+	return 0;
 }
 
 s32 CALLBACK DISCreadSubQ(u32 lsn, cdvdSubQ* subq)
@@ -443,40 +466,6 @@ s32 CALLBACK DISCreadSector(u8* buffer, u32 lsn, int mode)
 	return cdvdDirectReadSector(lsn, mode, buffer);
 }
 
-s32 CALLBACK DISCgetBuffer2(u8* dest)
-{
-	// Do nothing for out of bounds disc sector reads. It prevents some games
-	// from hanging (All-Star Baseball 2005, Hello Kitty: Roller Rescue,
-	// Hot Wheels: Beat That! (NTSC), Ratchet & Clank 3 (PAL),
-	// Test Drive: Eve of Destruction, etc.).
-	if (csector >= src->GetSectorCount())
-		return 0;
-
-	int csize = 2352;
-	switch (cmode) {
-	case CDVD_MODE_2048:
-		csize = 2048;
-		break;
-	case CDVD_MODE_2328:
-		csize = 2328;
-		break;
-	case CDVD_MODE_2340:
-		csize = 2340;
-		break;
-	}
-
-	if (lastReadInNewDiskCB) {
-		lastReadInNewDiskCB = 0;
-
-		memcpy(dest, directReadSectorBuffer, csize);
-		return 0;
-	}
-
-	memcpy(dest, cdvdGetSector(csector, cmode), csize);
-
-	return 0;
-}
-
 s32 CALLBACK DISCgetDualInfo(s32* dualType, u32* _layer1start)
 {
 	switch (src->GetMediaType()) {
@@ -514,6 +503,5 @@ CDVD_API CDVDapi_Disc =
 	DISCnewDiskCB,
 
 	DISCreadSector,
-	DISCgetBuffer2,
 	DISCgetDualInfo,
 };

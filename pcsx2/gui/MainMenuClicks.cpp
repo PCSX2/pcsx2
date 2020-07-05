@@ -174,8 +174,6 @@ wxWindowID SwapOrReset_Iso( wxWindow* owner, IScopedCoreThread& core_control, co
 		core_control.AllowResume();
 	}
 
-	//TODO_CDVD enable/disable disc selector menu item
-
 	return result;
 }
 
@@ -271,8 +269,6 @@ wxWindowID SwapOrReset_CdvdSrc( wxWindow* owner, CDVD_SourceType newsrc )
 		core.DisallowResume();
 		sApp.SysExecute( g_Conf->CdvdSource );
 	}
-
-	//TODO_CDVD enable/disable disc selector menu item
 
 	return result;
 }

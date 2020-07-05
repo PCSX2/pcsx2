@@ -285,7 +285,13 @@ void SysCoreThread::OnSuspendInThread()
 void SysCoreThread::OnResumeInThread( bool isSuspended )
 {
 	GetCorePlugins().Open();
-	DoCDVDopen();
+
+	// When applying settings thread isn't suspended
+	// so any components that are still loaded don't need to be opened again
+	if (isSuspended)
+	{
+		DoCDVDopen();
+	}
 }
 
 
@@ -300,6 +306,7 @@ void SysCoreThread::OnCleanupInThread()
 	R3000A::ioman::reset();
 	// FIXME: temporary workaround for deadlock on exit, which actually should be a crash
 	vu1Thread.WaitVU();
+	DoCDVDclose();
 	GetCorePlugins().Close();
 	GetCorePlugins().Shutdown();
 

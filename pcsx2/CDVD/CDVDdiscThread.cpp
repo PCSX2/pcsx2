@@ -261,7 +261,8 @@ void cdvdStopThread()
 {
 	cdvd_is_open = false;
 	s_notify_cv.notify_one();
-	s_thread.join();
+	if(s_thread.joinable())
+		s_thread.join();
 }
 
 void cdvdRequestSector(u32 sector, s32 mode)
