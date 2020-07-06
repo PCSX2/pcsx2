@@ -162,8 +162,7 @@ namespace vtlb_private
 		xMOV( eax, arg1regd );
 		xSHR( eax, VTLB_PAGE_BITS );
 		xMOV( rax, ptrNative[xComplexAddress(rbx, vtlbdata.vmap, rax*wordsize)] );
-		xLEA( rbx, ptr[(void*)(0xdcdcdcd + (wordsize == 8 ? (uptr)xGetPtr() + 7 : 0))] );
-		u32* writeback = ((u32*)xGetPtr()) - 1;
+		u32* writeback = xLEA_Writeback( rbx );
 		xADD( arg1reg, rax );
 
 		return writeback;
@@ -356,9 +355,12 @@ void vtlb_dynarec_init()
 	Perf::any.map((uptr)m_IndirectDispatchers, __pagesize, "TLB Dispatcher");
 }
 
-static void vtlb_SetWriteback(u32 *writeback) {
+static void vtlb_SetWriteback(u32 *writeback)
+{
 	uptr val = (uptr)xGetPtr();
-	if (wordsize == 8) {
+	if (wordsize == 8)
+	{
+		pxAssertMsg(*((u8*)writeback - 2) == 0x8d, "Expected codegen to be an LEA");
 		val -= ((uptr)writeback + 4);
 	}
 	pxAssertMsg((sptr)val == (s32)val, "Writeback too far away!");

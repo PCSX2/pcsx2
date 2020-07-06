@@ -139,6 +139,8 @@ extern void xBSWAP(const xRegister32or64 &to);
 extern void xLEA(xRegister64 to, const xIndirectVoid &src, bool preserve_flags = false);
 extern void xLEA(xRegister32 to, const xIndirectVoid &src, bool preserve_flags = false);
 extern void xLEA(xRegister16 to, const xIndirectVoid &src, bool preserve_flags = false);
+/// LEA with a target that will be decided later, guarantees that no optimizations are performed that could change what needs to be written in
+extern u32* xLEA_Writeback(xAddressReg to);
 
 // ----- Push / Pop Instructions  -----
 // Note: pushad/popad implementations are intentionally left out.  The instructions are
