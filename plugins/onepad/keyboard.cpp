@@ -152,10 +152,8 @@ static void AnalyzeKeyEvent(keyEvent &evt)
                 }
             }
 
-            if (index!=-1)
-            {
+            if (index != -1)
                 PressButton(pad, index);
-            }
 
             //PAD_LOG("Key pressed:%d\n", index);
 

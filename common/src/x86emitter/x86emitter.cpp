@@ -931,6 +931,17 @@ __emitinline void xLEA(xRegister16 to, const xIndirectVoid &src, bool preserve_f
     EmitLeaMagic(to, src, preserve_flags);
 }
 
+__emitinline u32* xLEA_Writeback(xAddressReg to)
+{
+#ifdef __M_X86_64
+    xOpWrite(0, 0x8d, to, ptr[(void*)(0xdcdcdcd + (uptr)xGetPtr() + 7)]);
+#else
+    xOpAccWrite(0, 0xb8 | to.Id, 0, to);
+    xWrite32(0xcdcdcdcd);
+#endif
+    return (u32*)xGetPtr() - 1;
+}
+
 // =====================================================================================================
 //  TEST / INC / DEC
 // =====================================================================================================

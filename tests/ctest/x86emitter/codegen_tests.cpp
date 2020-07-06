@@ -67,6 +67,7 @@ TEST(CodegenTests, LEATest)
 	CODEGEN_TEST_64(xLoadFarAddr(r8, (void*)0x1234567890), "49 b8 90 78 56 34 12 00 00 00");
 	CODEGEN_TEST_BOTH(xLEA(rax, ptr[(void*)0x1234]), "b8 34 12 00 00"); // Converted to mov rax, 0x1234
 	CODEGEN_TEST_BOTH(xLoadFarAddr(rax, (void*)0x1234), "b8 34 12 00 00");
+	CODEGEN_TEST(xLEA_Writeback(rbx), "bb cd cd cd cd", "48 8d 1d cd cd cd 0d");
 }
 
 TEST(CodegenTests, PUSHTest)
