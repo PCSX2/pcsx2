@@ -151,7 +151,7 @@
     <Filter Include="System\Ps2\Iop\CDVD\Windows">
       <UniqueIdentifier>{be861049-a142-4650-85a5-a2fdd4eef011}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Ps2\Iop\CDVD\Unix">
+    <Filter Include="System\Ps2\Iop\CDVD\Linux">
       <UniqueIdentifier>{a5904fb6-e846-4cbf-940c-ca1c604140a0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -882,11 +882,14 @@
     <ClCompile Include="..\..\CDVD\Windows\IOCtlSrc.cpp">
       <Filter>System\Ps2\Iop\CDVD\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\CDVD\Unix\IOCtlSrc.cpp">
-      <Filter>System\Ps2\Iop\CDVD\Unix</Filter>
+    <ClCompile Include="..\..\CDVD\Linux\IOCtlSrc.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\CDVD\Unix\DriveUtility.cpp">
-      <Filter>System\Ps2\Iop\CDVD\Unix</Filter>
+    <ClCompile Include="..\..\CDVD\Linux\DriveUtility.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\DriveList.cpp">
+      <Filter>AppHost</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1338,6 +1341,9 @@
       <Filter>Recording</Filter>
     <ClInclude Include="..\..\CDVD\CDVDdiscReader.h">
       <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\DriveList.h">
+      <Filter>AppHost\Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -166,7 +166,7 @@ public:
 
 		wxDirName RunIso;		// last used location for Iso loading.
 		wxDirName RunELF;		// last used location for ELF loading.
-		wxDirName RunDisc;		// last used location for Disc loading.
+		wxFileName RunDisc;		// last used location for Disc loading.
 
 		FolderOptions();
 		void LoadSave( IniInterface& conf );
@@ -325,7 +325,6 @@ public:
 	bool		AskOnBoot;
 
 	wxString				CurrentIso;
-	wxString				CurrentDisc;
     wxString				CurrentBlockdump;
 	wxString				CurrentELF;
 	wxString				CurrentIRX;

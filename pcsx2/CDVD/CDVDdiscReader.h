@@ -108,5 +108,4 @@ s32 cdvdDirectReadSector(u32 sector, s32 mode, u8* buffer);
 s32 cdvdGetMediaType();
 s32 cdvdRefreshData();
 void cdvdParseTOC();
-
 #endif /* __CDVD_DISC_READER_H__ */

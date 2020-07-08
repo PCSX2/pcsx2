@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,14 +16,18 @@
 #include "PrecompiledHeader.h"
 #include "../CDVDdiscReader.h"
 
+#ifdef __linux__
 #include <libudev.h>
-#include <fcntl.h>
 #include <linux/cdrom.h>
+#endif
+
+#include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
 std::vector<std::string> GetOpticalDriveList()
 {
+#ifdef __linux__
 	udev* udev_context = udev_new();
 	if (!udev_context)
 		return {};
@@ -51,11 +55,15 @@ std::vector<std::string> GetOpticalDriveList()
 	udev_unref(udev_context);
 
 	return drives;
+#else
+	return {};
+#endif
 }
 
 void GetValidDrive(std::string& drive)
 {
 	if (!drive.empty()) {
+#ifdef __linux__
 		int fd = open(drive.c_str(), O_RDONLY | O_NONBLOCK);
 		if (fd != -1) {
 			if (ioctl(fd, CDROM_GET_CAPABILITY, 0) == -1)
@@ -65,6 +73,9 @@ void GetValidDrive(std::string& drive)
 		else {
 			drive.clear();
 		}
+#else
+		drive.clear();
+#endif
 	}
 	if (drive.empty()) {
 		auto drives = GetOpticalDriveList();

@@ -286,6 +286,7 @@ set(pcsx2GuiSources
 	gui/Debugger/DebuggerLists.cpp
 	gui/Debugger/DisassemblyDialog.cpp
 	gui/Debugger/DebugEvents.cpp
+	gui/DriveList.cpp
 	gui/ExecutorThread.cpp
 	gui/FrameForGS.cpp
 	gui/GlobalCommands.cpp
@@ -343,6 +344,7 @@ set(pcsx2GuiHeaders
 	gui/Dialogs/ConfigurationDialog.h
 	gui/Dialogs/LogOptionsDialog.h
 	gui/Dialogs/ModalPopups.h
+	gui/DriveList.h
 	gui/GSFrame.h
 	gui/i18n.h
 	gui/IsoDropTarget.h
@@ -403,8 +405,8 @@ set(pcsx2IPUHeaders
 
 # Linux sources
 set(pcsx2LinuxSources
-	CDVD/Unix/DriveUtility.cpp
-	CDVD/Unix/IOCtlSrc.cpp
+	CDVD/Linux/DriveUtility.cpp
+	CDVD/Linux/IOCtlSrc.cpp
 	gui/CpuUsageProviderLnx.cpp
 	Linux/LnxConsolePipe.cpp
 	Linux/LnxKeyCodes.cpp
@@ -412,8 +414,8 @@ set(pcsx2LinuxSources
     )
 
 set(pcsx2OSXSources
-	CDVD/Unix/DriveUtility.cpp
-	CDVD/Unix/IOCtlSrc.cpp
+	CDVD/Linux/DriveUtility.cpp
+	CDVD/Linux/IOCtlSrc.cpp
 	gui/CpuUsageProviderLnx.cpp
 	Linux/LnxConsolePipe.cpp
 #	Linux/LnxKeyCodes.cpp
@@ -421,6 +423,8 @@ set(pcsx2OSXSources
 	)
 
 set(pcsx2FreeBSDSources
+	CDVD/Linux/DriveUtility.cpp
+	CDVD/Linux/IOCtlSrc.cpp
 	gui/CpuUsageProviderLnx.cpp
 	Linux/LnxConsolePipe.cpp
 	Linux/LnxKeyCodes.cpp
@@ -658,10 +662,6 @@ if(APPLE)
 	set(Platform
 		${pcsx2OSXSources}
 		${pcsx2LinuxHeaders})
-		
-	set(Platform_Libs
-		${LIBUDEV_LIBRARIES}
-		)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")

@@ -26,6 +26,7 @@
 #include "AppCommon.h"
 #include "AppCoreThread.h"
 #include "RecentIsoList.h"
+#include "DriveList.h"
 
 #ifndef DISABLE_RECORDING
 #	include "Recording/VirtualPad.h"
@@ -98,7 +99,6 @@ enum MenuIdentifiers
 
 	// Run SubSection
 	MenuId_Cdvd_Source,
-	MenuId_DriveSelector,
 	MenuId_Src_Iso,
 	MenuId_Src_Disc,
 	MenuId_Src_NoDisc,
@@ -106,6 +106,8 @@ enum MenuIdentifiers
 	MenuId_RecentIsos_reservedStart,
 	MenuId_IsoBrowse = MenuId_RecentIsos_reservedStart + 100,			// Open dialog, runs selected iso.
 	MenuId_IsoClear,
+	MenuId_DriveSelector,
+	MenuId_DriveListRefresh,
 	MenuId_Ask_On_Booting,
 	MenuId_Boot_CDVD,
 	MenuId_Boot_CDVD2,
@@ -527,6 +529,7 @@ protected:
 	std::unique_ptr<PipeRedirectionBase> m_StderrRedirHandle;
 
 	std::unique_ptr<RecentIsoList> m_RecentIsoList;
+	std::unique_ptr<DriveList> m_DriveList;
 	std::unique_ptr<pxAppResources> m_Resources;
 
 public:
@@ -618,6 +621,7 @@ public:
 
 	wxMenu&				GetRecentIsoMenu();
 	RecentIsoManager&	GetRecentIsoManager();
+	wxMenu&				GetDriveListMenu();
 
 	pxAppResources&		GetResourceCache();
 	const wxIconBundle&	GetIconBundle();
