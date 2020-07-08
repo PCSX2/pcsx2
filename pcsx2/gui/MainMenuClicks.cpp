@@ -185,7 +185,7 @@ wxWindowID SwapOrReset_Disc( wxWindow* owner, IScopedCoreThread& core, const wxS
 {
 	wxWindowID result = wxID_CANCEL;
 
-	if ((g_Conf->CdvdSource == CDVD_SourceType::Disc) && (driveLetter == g_Conf->CurrentDisc))
+	if ((g_Conf->CdvdSource == CDVD_SourceType::Disc) && (driveLetter == g_Conf->Folders.RunDisc.GetPath()))
 	{
 		core.AllowResume();
 		return result;
@@ -356,12 +356,12 @@ bool MainEmuFrame::_DoSelectELFBrowser()
 
 bool MainEmuFrame::_DoSelectDiscBrowser(wxString& driveLetter)
 {
-	DriveSelectorDialog driveDialog(this, g_Conf->Folders.RunDisc.ToString());
+	DriveSelectorDialog driveDialog(this, g_Conf->Folders.RunDisc.GetPath());
 
 	if (driveDialog.ShowModal() != wxID_CANCEL)
 	{
 		driveLetter = driveDialog.GetSelectedDrive();
-		g_Conf->Folders.RunDisc = wxDirName(driveLetter);
+		SysUpdateDiscSrcDrive(driveLetter);
 		return true;
 	}
 
@@ -406,33 +406,37 @@ void MainEmuFrame::_DoBootCdvd()
 	}
 	else if( g_Conf->CdvdSource == CDVD_SourceType::Disc )
 	{
-		bool selector = g_Conf->CurrentDisc.IsEmpty();
+	#if defined(_WIN32)
+		const bool driveExists = g_Conf->Folders.RunDisc.DirExists();
+	#else
+		const bool driveExists = g_Conf->Folders.RunDisc.Exists();
+	#endif
 
-		if( !selector && !wxDirExists(g_Conf->CurrentDisc) )
+		if( !driveExists )
 		{
 			// The previous mounted disc isn't mounted anymore
 
 			wxDialogWithHelpers dialog( this, _("Drive not mounted!") );
 			dialog += dialog.Heading(
-				_("An error occured while trying to read drive: ") + g_Conf->CurrentDisc + L"\n\n" +
+				_("An error occured while trying to read drive: ") + g_Conf->Folders.RunDisc.GetPath() + L"\n\n" +
 				_("Error: The configured drive does not exist. Click OK to select a new drive for CDVD.")
 			);
 
+			// Send event to refresh drive list submenu
+			wxCommandEvent event(wxEVT_MENU, MenuId_DriveListRefresh);
+			wxGetApp().ProcessEvent(event);
+
 			pxIssueConfirmation( dialog, MsgButtons().OK() );
 
-			selector = true;
-		}
-
-		if( selector || g_Conf->AskOnBoot )
-		{
 			wxString driveLetter;
-			if( !_DoSelectDiscBrowser( driveLetter ) )
+			if (!_DoSelectDiscBrowser(driveLetter))
 			{
 				paused_core.AllowResume();
 				return;
 			}
 
-			SysUpdateDiscSrcDrive( driveLetter );
+			// Refresh again after selection
+			wxGetApp().ProcessEvent(event);
 		}
 	}
 
@@ -493,7 +497,6 @@ void MainEmuFrame::Menu_DiscBrowse_Click(wxCommandEvent& event)
 	}
 
 	SwapOrReset_Disc(this, core, driveLetter);
-	AppSaveSettings();
 }
 
 wxString GetMsg_IsoImageChanged()

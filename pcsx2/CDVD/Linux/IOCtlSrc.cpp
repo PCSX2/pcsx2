@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2016  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,7 +16,10 @@
 #include "PrecompiledHeader.h"
 #include "../CDVDdiscReader.h"
 
+#ifdef __linux__
 #include <linux/cdrom.h>
+#endif
+
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -103,6 +106,7 @@ bool IOCtlSrc::ReadSectors2048(u32 sector, u32 count, u8* buffer) const
 
 bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8* buffer) const
 {
+#ifdef __linux__
 	union
 	{
 		cdrom_msf msf;
@@ -122,10 +126,14 @@ bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8* buffer) const
 	}
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 bool IOCtlSrc::ReadDVDInfo()
 {
+#ifdef __linux__
 	dvd_struct dvdrs;
 	dvdrs.type = DVD_STRUCT_PHYSICAL;
 	dvdrs.physical.layer_num = 0;
@@ -165,10 +173,14 @@ bool IOCtlSrc::ReadDVDInfo()
 	}
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 bool IOCtlSrc::ReadCDInfo()
 {
+#ifdef __linux__
 	cdrom_tochdr header;
 
 	if (ioctl(m_device, CDROMREADTOCHDR, &header) == -1)
@@ -194,10 +206,14 @@ bool IOCtlSrc::ReadCDInfo()
 	m_media_type = -1;
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 bool IOCtlSrc::DiscReady()
 {
+#ifdef __linux__
 	if (m_device == -1)
 		return false;
 
@@ -213,4 +229,7 @@ bool IOCtlSrc::DiscReady()
 	}
 
 	return !!m_sectors;
+#else
+	return false;
+#endif
 }

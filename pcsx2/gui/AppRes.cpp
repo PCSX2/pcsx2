@@ -68,6 +68,16 @@ RecentIsoManager& Pcsx2App::GetRecentIsoManager()
 	return *m_RecentIsoList->Manager;
 }
 
+wxMenu& Pcsx2App::GetDriveListMenu()
+{
+	if( !m_DriveList )
+	{
+		m_DriveList = std::unique_ptr<DriveList>(new DriveList());
+	}
+
+	return *m_DriveList->Menu;
+}
+
 pxAppResources& Pcsx2App::GetResourceCache()
 {
 	ScopedLock lock( m_mtx_Resources );

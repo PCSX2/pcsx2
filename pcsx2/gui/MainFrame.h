@@ -124,6 +124,7 @@ protected:
 	wxMenu&			m_GameSettingsSubmenu;
 
 	wxMenuItem*		m_menuItem_RecentIsoMenu;
+	wxMenuItem*		m_menuItem_DriveListMenu;
 	wxMenuItem&		m_MenuItem_Console;
 #if defined(__unix__)
 	wxMenuItem&		m_MenuItem_Console_Stdio;
