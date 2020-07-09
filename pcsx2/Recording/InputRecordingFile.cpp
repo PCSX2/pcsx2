@@ -73,6 +73,7 @@ bool InputRecordingFile::Open(const wxString path, bool fNewOpen, bool fromSaveS
 		}
 		else
 		{
+			savestate.fromSavestate = false;
 			sApp.SysExecute();
 		}
 	}

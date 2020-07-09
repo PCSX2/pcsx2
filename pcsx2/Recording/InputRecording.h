@@ -43,9 +43,10 @@ public:
 	// If there is currently an input recording being played back or actively being recorded
 	bool IsRecordingActive();
 
-	// Whether or not the recording's initial save state has been fully loaded and used to initialize things
+	// Whether or not the recording's initial save state has yet to be loaded or saved and 
+	// the rest of the recording can be initialized
 	// This is not applicable to recordings from a "power-on" state
-	bool LoadedInitialSavestate();
+	bool IsSavestateInitializing();
 
 	// If there is currently an input recording being played back
 	bool IsRecordingReplaying();
@@ -56,11 +57,11 @@ public:
 	// Switches between recording and replaying the active input recording file
 	void RecordModeToggle();
 
+	// Mark the recording's initial savestate as having been loaded or saved successfully
+	void SavestateInitialized();
+
 	// Set the running frame counter for the input recording to an arbitrary value
 	void SetFrameCounter(u32 newFrameCounter);
-
-	// Mark the recording's initial savestate as having been loaded successfully
-	void InitialSavestateLoaded();
 
 	// Store the starting internal PCSX2 g_FrameCount value
 	void SetStartingFrame(u32 newStartingFrame);
@@ -85,7 +86,7 @@ private:
 	bool fInterruptFrame = false;
 	u32 frameCounter = 0;
 	InputRecordingFile inputRecordingData;
-	bool loadedInitialSavestate = false;
+	bool savestateInitializing = false;
 	u32 startingFrame = 0;
 	InputRecordingMode state = InputRecording::InputRecordingMode::NoneActive;
 };
