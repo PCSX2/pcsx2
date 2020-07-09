@@ -50,7 +50,8 @@ void SaveStateBase::InputRecordingFreeze()
 		//
 		// The reason it's also an undo operation when replaying is because the user can switch modes at any time
 		// and begin undoing.  While this isn't impossible to resolve, it's a separate issue and not of the utmost importance (this is just interesting metadata)
-		if (IsLoading() && !g_InputRecording.IsSavestateInitializing()) {
+		if (IsLoading() && !g_InputRecording.IsSavestateInitializing())
+		{
 			g_InputRecording.GetInputRecordingData().AddUndoCount();
 			// Reloading a save-state means the internal recording frame counter may need to be adjusted
 			// Since we persist the g_FrameCount of the beginning of the movie, we can use it to recalculate it
@@ -170,7 +171,8 @@ u32 InputRecording::GetStartingFrame()
 void InputRecording::IncrementFrameCounter()
 {
 	frameCounter++;
-	if (state == InputRecordingMode::Recording) {
+	if (state == InputRecordingMode::Recording)
+	{
 		GetInputRecordingData().UpdateFrameMax(frameCounter);
 	}
 }

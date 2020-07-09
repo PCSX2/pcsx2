@@ -76,7 +76,8 @@ public:
 	void Stop();
 
 private:
-	enum class InputRecordingMode {
+	enum class InputRecordingMode
+	{
 		NoneActive,
 		Recording,
 		Replaying,

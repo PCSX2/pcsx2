@@ -33,7 +33,7 @@
 
 #ifndef DISABLE_RECORDING
 #	include "Recording/InputRecording.h"
-#   include "Recording/InputRecordingControls.h"
+#	include "Recording/InputRecordingControls.h"
 #	include "Recording/VirtualPad.h"
 #endif
 
@@ -470,7 +470,6 @@ void MainEmuFrame::Menu_EnableBackupStates_Click( wxCommandEvent& )
 	//  (1st save after the toggle keeps the old pre-toggle value)..
 	//  wonder what that means for all the other menu checkboxes which only use AppSaveSettings... (avih)
 	AppApplySettings();
-    
 	AppSaveSettings();
 }
 
@@ -552,7 +551,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 void MainEmuFrame::Menu_EnableHostFs_Click( wxCommandEvent& )
 {
 	g_Conf->EmuOptions.HostFs = GetMenuBar()->IsChecked( MenuId_EnableHostFs );
-    AppSaveSettings();
+	AppSaveSettings();
 }
 
 void MainEmuFrame::Menu_OpenELF_Click(wxCommandEvent&)
@@ -811,14 +810,14 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent & eve
 void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 {
 	g_InputRecording.Stop();
-    g_InputRecordingControls.PauseImmediately();
+	g_InputRecordingControls.PauseImmediately();
 
 	NewRecordingFrame* NewRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
 	if (NewRecordingFrame)
 	{
 		if (NewRecordingFrame->ShowModal() == wxID_CANCEL)
 		{
-            g_InputRecordingControls.Resume();
+			g_InputRecordingControls.Resume();
 			return;
 		}
 		// From Current Frame
@@ -844,13 +843,13 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent &event)
 {
 	g_InputRecording.Stop();
-    g_InputRecordingControls.PauseImmediately();
+	g_InputRecordingControls.PauseImmediately();
 
 	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
 		L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
 	if (openFileDialog.ShowModal() == wxID_CANCEL)
 	{
-        g_InputRecordingControls.Resume();
+		g_InputRecordingControls.Resume();
 		return;
 	}
 
