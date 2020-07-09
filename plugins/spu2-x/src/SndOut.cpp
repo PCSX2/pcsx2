@@ -362,6 +362,9 @@ void SndBuffer::_WriteSamples(StereoOut32 *bData, int nSamples)
 
 void SndBuffer::Init()
 {
+
+    printf("A Reset \n");
+
     if (mods[OutputModule] == NULL) {
         _InitFail();
         return;
@@ -377,6 +380,7 @@ void SndBuffer::Init()
     try {
         const float latencyMS = SndOutLatencyMS * 16;
         m_size = GetAlignedBufferSize((int)(latencyMS * SampleRate / 1000.0f));
+        printf("%d SampleRate: \n", SampleRate);
         m_buffer = new StereoOut32[m_size];
         m_underrun_freeze = false;
 

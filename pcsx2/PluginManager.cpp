@@ -279,6 +279,7 @@ static void PAD_update( u32 padslot ) { }
 _SPU2open          SPU2open;
 _SPU2write         SPU2write;
 _SPU2reset         SPU2reset;
+_SPU2ps1reset      SPU2ps1reset;
 _SPU2read          SPU2read;
 
 _SPU2readDMA4Mem   SPU2readDMA4Mem;
@@ -451,6 +452,7 @@ static const LegacyApi_ReqMethod s_MethMessReq_SPU2[] =
 {
 	{	"SPU2open",				(vMeth**)&SPU2open,			NULL },
 	{	"SPU2reset",			(vMeth**)&SPU2reset,		SPU2_Reset },
+	{   "SPU2ps1reset",         (vMeth**)&SPU2ps1reset,     SPU2ps1reset},
 	{	"SPU2write",			(vMeth**)&SPU2write,		NULL },
 	{	"SPU2read",				(vMeth**)&SPU2read,			NULL },
 	{	"SPU2readDMA4Mem",		(vMeth**)&SPU2readDMA4Mem,	NULL },

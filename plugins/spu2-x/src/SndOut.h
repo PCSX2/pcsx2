@@ -29,10 +29,11 @@ static const int SndOutPacketSize = 64;
 static const int SndOutVolumeShift = 12;
 static const int SndOutVolumeShift32 = 16 - SndOutVolumeShift; // shift up, not down
 
+
 // Samplerate of the SPU2. For accurate playback we need to match this
 // exactly.  Trying to scale samplerates and maintain SPU2's Ts timing accuracy
 // is too problematic. :)
-static const int SampleRate = 48000;
+extern int SampleRate;
 
 extern int FindOutputModuleById(const wchar_t *omodid);
 

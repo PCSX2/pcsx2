@@ -263,6 +263,7 @@ void CALLBACK SPU2setSettingsDir(const char *dir);
 void CALLBACK SPU2setLogDir(const char *dir);
 
 void CALLBACK SPU2reset();
+void CALLBACK SPU2ps1reset();
 void CALLBACK SPU2write(u32 mem, u16 value);
 u16 CALLBACK SPU2read(u32 mem);
 
@@ -432,6 +433,7 @@ typedef void(CALLBACK *_PADWriteEvent)(keyEvent &evt);
 // SPU2
 typedef s32(CALLBACK *_SPU2open)(void *pDsp);
 typedef void(CALLBACK *_SPU2reset)();
+typedef void (CALLBACK *_SPU2ps1reset)();
 typedef void(CALLBACK *_SPU2write)(u32 mem, u16 value);
 typedef u16(CALLBACK *_SPU2read)(u32 mem);
 typedef void(CALLBACK *_SPU2readDMA4Mem)(u16 *pMem, int size);
@@ -536,6 +538,7 @@ extern _PADWriteEvent PADWriteEvent;
 #ifndef BUILTIN_SPU2_PLUGIN
 extern _SPU2open SPU2open;
 extern _SPU2reset SPU2reset;
+extern _SPU2ps1reset SPU2ps1reset;
 extern _SPU2write SPU2write;
 extern _SPU2read SPU2read;
 

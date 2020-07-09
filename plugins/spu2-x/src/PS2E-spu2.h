@@ -37,6 +37,8 @@ EXPORT_C_(s32)
 SPU2init();
 EXPORT_C_(void)
 SPU2reset();
+EXPORT_C_(void)
+SPU2ps1reset();
 EXPORT_C_(s32)
 SPU2open(void *pDsp);
 EXPORT_C_(void)

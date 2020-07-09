@@ -20,6 +20,7 @@
 #include "Dma.h"
 #include "Dialogs.h"
 
+
 #ifdef __APPLE__
 #include "PS2Eext.h"
 #endif
@@ -32,6 +33,7 @@
 // PCSX2 expects ASNI, not unicode, so this MUST always be char...
 static char libraryName[256];
 
+int SampleRate = 48000;
 
 static bool IsOpened = false;
 static bool IsInitialized = false;
@@ -40,6 +42,7 @@ static u32 pClocks = 0;
 
 u32 *cyclePtr = NULL;
 u32 lClocks = 0;
+
 
 #ifdef _MSC_VER
 HINSTANCE hInstance;
@@ -93,7 +96,7 @@ static void InitLibraryName()
                                "-Debug"
 #elif defined(PCSX2_DEBUG)
                                "-Debug/Strict" // strict debugging is slow!
-#elif defined(PCSX2_DEVBUILD)
+#elif defined(PCSX2_DEVBUILD)int SampleRate = 48000;
                                "-Dev"
 #else
                                ""
@@ -282,12 +285,26 @@ CALLBACK SPU2writeDMA7Mem(u16 *pMem, u32 size)
 EXPORT_C_(void)
 SPU2reset()
 {
+    SampleRate = 48000;
     memset(spu2regs, 0, 0x010000);
     memset(_spu2mem, 0, 0x200000);
     memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
     Cores[0].Init(0);
     Cores[1].Init(1);
 }
+
+EXPORT_C_(void)
+SPU2ps1reset()
+{   
+    SndBuffer::Cleanup();
+    SampleRate = 44000;
+    printf("RESET PS1 \n");
+    memset(spu2regs, 0, 0x010000);
+    memset(_spu2mem, 0, 0x200000);
+    memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
+    SndBuffer::Init();
+}
+
 
 EXPORT_C_(s32)
 SPU2init()
