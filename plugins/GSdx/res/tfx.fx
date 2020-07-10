@@ -770,7 +770,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	}
 
 	if (!SW_BLEND && PS_DITHER)
-			ps_dither(C.rgb, input.p.xy);
+		ps_dither(C.rgb, input.p.xy);
 		
 	ps_blend(C, alpha_blend, input.p.xy);
 
