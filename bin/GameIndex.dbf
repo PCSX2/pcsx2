@@ -4413,6 +4413,14 @@ Region = NTSC-J
 Serial = SCPS-55901
 Name   = Xenosaga Episode I - Der Wille zur Macht
 Region = NTSC-J
+[patches = A3D63039]
+	// Reduces JPEG quality to its minimum for save file thumbnails. This prevents
+	// the game from calling its own exit function, which was strangely its safety
+	// mechanism for when a captured thumbnail exceeded 4 KB in size. 
+	comment=Save Point Crash Prevention
+	author=pandubz, PSI, turtleli
+	patch=1,EE,20285f48,extended,24040000
+[/patches]
 ---------------------------------------------
 Serial = SCPS-55902
 Name   = Gran Turismo - Concept 2002 Tokyo-Geneva
@@ -34774,11 +34782,27 @@ Region = NTSC-J
 Serial = SLPS-29001
 Name   = Xenosaga Episode 1 - Der Wille zur Macht [Premium Box]
 Region = NTSC-J
+[patches = A3D63039]
+	// Reduces JPEG quality to its minimum for save file thumbnails. This prevents
+	// the game from calling its own exit function, which was strangely its safety
+	// mechanism for when a captured thumbnail exceeded 4 KB in size. 
+	comment=Save Point Crash Prevention
+	author=pandubz, PSI, turtleli
+	patch=1,EE,20285f48,extended,24040000
+[/patches]
 ---------------------------------------------
 Serial = SLPS-29002
 Name   = Xenosaga Episode 1 - Der Wille zur Macht
 Region = NTSC-J
 Compat = 5
+[patches = A3D63039]
+	// Reduces JPEG quality to its minimum for save file thumbnails. This prevents
+	// the game from calling its own exit function, which was strangely its safety
+	// mechanism for when a captured thumbnail exceeded 4 KB in size. 
+	comment=Save Point Crash Prevention
+	author=pandubz, PSI, turtleli
+	patch=1,EE,20285f48,extended,24040000
+[/patches]
 ---------------------------------------------
 Serial = SLPS-29003
 Name   = Lord of the Rings - The Two Towers [Collector's Box]
@@ -35209,6 +35233,14 @@ Region = NTSC-J
 Serial = SLPS-73901
 Name   = Xenosaga Episode 1 - Der Wille zur Macht [PlayStation 2 The Best]
 Region = NTSC-J
+[patches = A3D63039]
+	// Reduces JPEG quality to its minimum for save file thumbnails. This prevents
+	// the game from calling its own exit function, which was strangely its safety
+	// mechanism for when a captured thumbnail exceeded 4 KB in size. 
+	comment=Save Point Crash Prevention
+	author=pandubz, PSI, turtleli
+	patch=1,EE,20285f48,extended,24040000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20001
 Name   = Tekken Tag Tournament
@@ -37242,6 +37274,14 @@ Serial = SLUS-20469
 Name   = Xenosaga - Episode I - Der Wille zur Macht
 Region = NTSC-U
 Compat = 5
+[patches = 6D1276AB]
+	// Reduces JPEG quality to its minimum for save file thumbnails. This prevents
+	// the game from calling its own exit function, which was strangely its safety
+	// mechanism for when a captured thumbnail exceeded 4 KB in size. 
+	comment=Save Point Crash Prevention
+	author=pandubz, PSI, turtleli
+	patch=1,EE,20289db0,extended,24040000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20470
 Name   = EverQuest - Online Adventures
