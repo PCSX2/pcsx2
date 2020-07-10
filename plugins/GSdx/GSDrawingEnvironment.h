@@ -83,6 +83,18 @@ public:
 		dimx[4] = dimx[5].xxzzlh();
 		dimx[7] = GSVector4i(DIMX.DM30, 0, DIMX.DM31, 0, DIMX.DM32, 0, DIMX.DM33, 0),
 		dimx[6] = dimx[7].xxzzlh();
+
+		for (int i = 0; i < 8; i++)
+		{
+			if (dimx[i].x < 0)
+				dimx[i].x -= 1;
+			if (dimx[i].y < 0)
+				dimx[i].y -= 1;
+			if (dimx[i].z < 0)
+				dimx[i].z -= 1;
+			if (dimx[i].w < 0)
+				dimx[i].w -= 1;
+		}
 	}
 
 	void Dump(const std::string& filename)

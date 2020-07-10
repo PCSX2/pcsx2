@@ -769,16 +769,30 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (C.a < A_one) C.a += A_one;
 	}
 
-#if !SW_BLEND && PS_DITHER
-	ps_dither(C.rgb, input.p.xy);
-	// Dither matrix range is [-4,3] but positive values can cause issues when
-	// software blending is not used or is unavailable.
-	C.rgb -= 3.0;
-#endif
-	
-	ps_blend(C, alpha_blend, input.p.xy);
+	if (!SW_BLEND) 
+	{
+        if (PS_DITHER)
+			ps_dither(C.rgb, input.p.xy);
 
-	ps_fbmask(C, input.p.xy);
+		ps_blend(C, alpha_blend, input.p.xy);
+
+		ps_fbmask(C, input.p.xy);
+
+		// When dithering the bottom 3 bits become meaningless and cause lines in the picture
+		// so we need to limit the color depth on dithered items
+		// SW_BLEND already deals with this so no need to do in those cases
+		if (PS_DITHER && PS_DFMT == FMT_16 && !PS_COLCLIP)
+		{
+			C.rgb = clamp(C.rgb, (float3)0.0f, (float3)255.0f);
+			C.rgb = (uint3)((uint3)C.rgb & (uint3)0xF8);
+		}
+	}
+	else 
+	{
+		ps_blend(C, alpha_blend, input.p.xy);
+
+		ps_fbmask(C, input.p.xy);
+	}
 
 	output.c0 = C / 255.0f;
 	output.c1 = (float4)(alpha_blend);
