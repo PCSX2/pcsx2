@@ -705,9 +705,7 @@ void ps_blend(inout vec4 Color, float As)
 #endif
 
     // Dithering
-#if PS_DITHER
     ps_dither(Color);
-#endif
 
     // Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0
@@ -857,7 +855,7 @@ void ps_main()
     return;
 #endif
 
-#if !SW_BLEND && PS_DITHER
+#if !SW_BLEND
     ps_dither(C);
 #endif
 

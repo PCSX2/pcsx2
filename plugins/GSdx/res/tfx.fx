@@ -675,14 +675,17 @@ void ps_fbmask(inout float4 C, float2 pos_xy)
 
 void ps_dither(inout float3 C, float2 pos_xy)
 {
-#if PS_DITHER
-	#if PS_DITHER == 2
-	int2 fpos = int2(pos_xy);
-	#else
-	int2 fpos = int2(pos_xy / (float)PS_SCALE_FACTOR);
-	#endif
-	C += DitherMatrix[fpos.y&3][fpos.x&3];
-#endif
+	if (PS_DITHER)
+	{
+		int2 fpos;
+
+		if(PS_DITHER == 2)
+			fpos = int2(pos_xy);
+		else
+			fpos = int2(pos_xy / (float)PS_SCALE_FACTOR);
+
+		C += DitherMatrix[fpos.y & 3][fpos.x & 3];
+	}
 }
 
 void ps_blend(inout float4 Color, float As, float2 pos_xy)
@@ -769,7 +772,7 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (C.a < A_one) C.a += A_one;
 	}
 
-	if (!SW_BLEND && PS_DITHER)
+	if (!SW_BLEND)
 		ps_dither(C.rgb, input.p.xy);
 
 	ps_blend(C, alpha_blend, input.p.xy);

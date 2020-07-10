@@ -84,6 +84,8 @@ public:
 		dimx[7] = GSVector4i(DIMX.DM30, 0, DIMX.DM31, 0, DIMX.DM32, 0, DIMX.DM33, 0),
 		dimx[6] = dimx[7].xxzzlh();
 
+		// Dither range is from -4 to 3 however there are only 2 bits and a sign bit
+		// So we need to subtract an extra 1 on a negative value
 		for (int i = 0; i < 8; i++)
 		{
 			if (dimx[i].x < 0)
