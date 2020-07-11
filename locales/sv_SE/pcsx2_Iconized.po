@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.7.0 - 200618\n"
+"Project-Id-Version: PCSX2 1.7.0 - 200711\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2020-06-18 00:09+0200\n"
-"PO-Revision-Date: 2020-06-18 23:20+0200\n"
+"POT-Creation-Date: 2020-07-11 23:28+0200\n"
+"PO-Revision-Date: 2020-07-11 23:32+0200\n"
 "Last-Translator: pgert <http://forums.pcsx2.net/User-pgert>\n"
 "Language-Team: http://forums.pcsx2.net/Thread-Swedish-GUI-translation-for-"
 "PCSX2-Svenskt-anv%C3%A4ndargr%C3%A4nssnitt-f%C3%B6r-PCSX2\n"
