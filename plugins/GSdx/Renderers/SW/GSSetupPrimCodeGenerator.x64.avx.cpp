@@ -37,10 +37,12 @@ void GSSetupPrimCodeGenerator::Generate_AVX()
 	m_rip = (size_t)&m_local < 0x80000000 && (size_t)getCurr() < 0x80000000;
 
 #ifdef _WIN64
-	sub(rsp, 8 + 2 * 16);
+	sub(rsp, 200);
 
-	vmovdqa(ptr[rsp + 0], xmm6);
-	vmovdqa(ptr[rsp + 16], xmm7);
+	for (int i = 6; i < 16; i++)
+	{
+		vmovdqu(ptr[rsp + (i - 6) * 16], Xmm(i));
+	}
 #endif
 
 	if (!m_rip)
@@ -63,10 +65,12 @@ void GSSetupPrimCodeGenerator::Generate_AVX()
 	Color_AVX();
 
 #ifdef _WIN64
-	vmovdqa(xmm6, ptr[rsp + 0]);
-	vmovdqa(xmm7, ptr[rsp + 16]);
+	for (int i = 6; i < 16; i++)
+	{
+		vmovdqu(Xmm(i), ptr[rsp + (i - 6) * 16]);
+	}
 
-	add(rsp, 8 + 2 * 16);
+	add(rsp, 200);
 #endif
 
 	ret();

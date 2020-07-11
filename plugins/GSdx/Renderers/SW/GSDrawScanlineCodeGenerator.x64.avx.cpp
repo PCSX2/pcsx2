@@ -78,8 +78,9 @@ void GSDrawScanlineCodeGenerator::Generate_AVX()
 	push(rbp);
 	push(r12);
 	push(r13);
+	push(t2);
 
-	sub(rsp, 8 + 10 * 16);
+	sub(rsp, 200 + 8);
 
 	for(int i = 6; i < 16; i++)
 	{
@@ -96,7 +97,7 @@ void GSDrawScanlineCodeGenerator::Generate_AVX()
 	}
 #endif
 
-	mov(r10, (size_t)g_const->m_test_128b[0]);
+	mov(t2, (size_t)g_const->m_test_128b[0]);
 	if (!m_rip)
 	{
 		mov(_m_local, (size_t)&m_local);
@@ -262,8 +263,9 @@ L("exit");
 		vmovdqa(Xmm(i), ptr[rsp + (i - 6) * 16]);
 	}
 
-	add(rsp, 8 + 10 * 16);
+	add(rsp, 200 + 8);
 
+	pop(t2);
 	pop(r13);
 	pop(r12);
 	pop(rbp);
@@ -304,14 +306,14 @@ void GSDrawScanlineCodeGenerator::Init_AVX()
 
 		shl(a1.cvt32(), 4); // * sizeof(m_test[0])
 
-		vmovdqa(_test, ptr[a1 + r10]);
+		vmovdqa(_test, ptr[a1 + t2]);
 
 		mov(rax, a0);
 		sar(rax, 63); // GH: 63 to extract the sign of the register
 		and(rax, a0);
 		shl(rax, 4); // * sizeof(m_test[0])
 
-		vpor(_test, ptr[rax + r10 + 7 * 16]);
+		vpor(_test, ptr[rax + t2 + 7 * 16]);
 	}
 	else
 	{
@@ -486,7 +488,7 @@ void GSDrawScanlineCodeGenerator::Init_AVX()
 		// On linux, a2 is edx which will be used for fzm
 		// In all case, it will require a mov in dthe code, so let's keep the value on the stack
 #ifdef _WIN64
-		ASSERT(0);
+		mov(ptr[rsp + 16 * 10], a2);
 #else
 		mov(ptr[rsp + _rz_top], a2);
 #endif
@@ -616,7 +618,7 @@ void GSDrawScanlineCodeGenerator::Step_AVX()
 		and(rax, a0);
 		shl(rax, 4);
 
-		vmovdqa(_test, ptr[rax + r10 + 7 * 16]);
+		vmovdqa(_test, ptr[rax + t2 + 7 * 16]);
 	}
 }
 
@@ -1554,9 +1556,9 @@ void GSDrawScanlineCodeGenerator::WriteMask_AVX()
 		vpackssdw(xmm1, xmm1);
 	}
 
-	vpmovmskb(edx, xmm1);
+	vpmovmskb(a2, xmm1);
 
-	not(edx);
+	not(a2);
 }
 
 void GSDrawScanlineCodeGenerator::WriteZBuf_AVX()
@@ -1827,7 +1829,7 @@ void GSDrawScanlineCodeGenerator::WriteFrame_AVX()
 		// y = (top & 3) << 5
 
 #ifdef _WIN64
-		ASSERT(0);
+		mov(eax, ptr[rsp + 16 * 10]);
 #else
 		mov(eax, ptr[rsp + _rz_top]);
 #endif
