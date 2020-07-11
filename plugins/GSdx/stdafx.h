@@ -222,8 +222,8 @@ typedef int64 sint64;
 	#define a1 rdx
 	#define a2 r8
 	#define a3 r9
-	#define t0 rdi
-	#define t1 rsi
+	#define t0 r10
+	#define t1 r11
 	#else
 	#define a0 rdi
 	#define a1 rsi
