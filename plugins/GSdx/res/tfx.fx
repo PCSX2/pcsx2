@@ -679,7 +679,7 @@ void ps_dither(inout float3 C, float2 pos_xy)
 	{
 		int2 fpos;
 
-		if(PS_DITHER == 2)
+		if (PS_DITHER == 2)
 			fpos = int2(pos_xy);
 		else
 			fpos = int2(pos_xy / (float)PS_SCALE_FACTOR);

@@ -1216,10 +1216,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		GL_DBG("DITHERING mode ENABLED (%d)", m_dithering);
 
 		m_ps_sel.dither = m_dithering;
-		ps_cb.DitherMatrix[0] = GSVector4((int16_t)m_env.dimx[6].w, (int16_t)m_env.dimx[6].z, (int16_t)m_env.dimx[6].y, (int16_t)m_env.dimx[6].x);
-		ps_cb.DitherMatrix[1] = GSVector4((int16_t)m_env.dimx[4].w, (int16_t)m_env.dimx[4].z, (int16_t)m_env.dimx[4].y, (int16_t)m_env.dimx[4].x);
-		ps_cb.DitherMatrix[2] = GSVector4((int16_t)m_env.dimx[2].w, (int16_t)m_env.dimx[2].z, (int16_t)m_env.dimx[2].y, (int16_t)m_env.dimx[2].x);
-		ps_cb.DitherMatrix[3] = GSVector4((int16_t)m_env.dimx[0].w, (int16_t)m_env.dimx[0].z, (int16_t)m_env.dimx[0].y, (int16_t)m_env.dimx[0].x);
+		ps_cb.DitherMatrix[0] = GSVector4(m_env.DIMX.DM00, m_env.DIMX.DM01, m_env.DIMX.DM02, m_env.DIMX.DM03);
+		ps_cb.DitherMatrix[1] = GSVector4(m_env.DIMX.DM10, m_env.DIMX.DM11, m_env.DIMX.DM12, m_env.DIMX.DM13);
+		ps_cb.DitherMatrix[2] = GSVector4(m_env.DIMX.DM20, m_env.DIMX.DM21, m_env.DIMX.DM22, m_env.DIMX.DM23);
+		ps_cb.DitherMatrix[3] = GSVector4(m_env.DIMX.DM30, m_env.DIMX.DM31, m_env.DIMX.DM32, m_env.DIMX.DM33);
 	}
 
 	if (PRIM->FGE)
