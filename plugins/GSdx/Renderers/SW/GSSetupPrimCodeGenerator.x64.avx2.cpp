@@ -33,9 +33,6 @@ using namespace Xbyak;
 
 #define _m_shift(i) (Ymm(7+i))
 
-// FIXME windows ?
-#define _vertex a3
-
 void GSSetupPrimCodeGenerator::Generate_AVX2()
 {
 	// Technically we just need the delta < 2GB
@@ -151,15 +148,15 @@ void GSSetupPrimCodeGenerator::Depth_AVX2()
 	{
 		// GSVector4 p = vertex[index[1]].p;
 
-		mov(_vertex.cvt32(), ptr[a1 + sizeof(uint32) * 1]);
-		shl(_vertex.cvt32(), 6); // * sizeof(GSVertexSW)
-		add(_vertex, a0);
+		mov(eax, ptr[a1 + sizeof(uint32) * 1]);
+		shl(eax, 6); // * sizeof(GSVertexSW)
+		add(rax, a0);
 
 		if(m_en.f)
 		{
 			// m_local.p.f = GSVector4i(vertex[index[1]].p).extract32<3>();
 
-			vmovaps(xmm0, ptr[_vertex + offsetof(GSVertexSW, p)]);
+			vmovaps(xmm0, ptr[rax + offsetof(GSVertexSW, p)]);
 			vcvttps2dq(xmm0, xmm0);
 			vpextrd(_rip_local(p.f), xmm0, 3);
 		}
@@ -168,8 +165,9 @@ void GSSetupPrimCodeGenerator::Depth_AVX2()
 		{
 			// m_local.p.z = vertex[index[1]].t.u32[3]; // uint32 z is bypassed in t.w
 
-			mov(a3, ptr[ecx + offsetof(GSVertexSW, t.w)]);
-			mov(_rip_local(p.z), a3);
+			vmovdqa(xmm0, ptr[rax + offsetof(GSVertexSW, t)]);
+			vpshufd(xmm0, xmm0, _MM_SHUFFLE(3, 3, 3, 3));
+			vmovdqa(_rip_local(p.z), xmm0);
 		}
 	}
 }
@@ -345,12 +343,12 @@ void GSSetupPrimCodeGenerator::Color_AVX2()
 
 		if(!(m_sel.prim == GS_SPRITE_CLASS && (m_en.z || m_en.f))) // if this is a sprite, the last vertex was already loaded in Depth()
 		{
-			mov(_vertex.cvt32(), ptr[a1 + sizeof(uint32) * last]);
-			shl(_vertex.cvt32(), 6); // * sizeof(GSVertexSW)
-			add(_vertex, a0);
+			mov(rax.cvt32(), ptr[a1 + sizeof(uint32) * last]);
+			shl(rax.cvt32(), 6); // * sizeof(GSVertexSW)
+			add(rax, a0);
 		}
 
-		vbroadcasti128(ymm0, ptr[_vertex + offsetof(GSVertexSW, c)]);
+		vbroadcasti128(ymm0, ptr[rax + offsetof(GSVertexSW, c)]);
 		vcvttps2dq(ymm0, ymm0);
 
 		// c = c.upl16(c.zwxy());
