@@ -34,7 +34,7 @@ using namespace Xbyak;
 #define _m_shift(i) (Ymm(7+i))
 
 // FIXME windows ?
-#define _vertex rcx
+#define _vertex a3
 
 void GSSetupPrimCodeGenerator::Generate_AVX2()
 {
@@ -42,10 +42,12 @@ void GSSetupPrimCodeGenerator::Generate_AVX2()
 	m_rip = (size_t)&m_local < 0x80000000 && (size_t)getCurr() < 0x80000000;
 
 #ifdef _WIN64
-	sub(rsp, 8 + 2 * 16);
+	sub(rsp, 200);
 
-	vmovdqa(ptr[rsp + 0], ymm6);
-	vmovdqa(ptr[rsp + 16], ymm7);
+	for (int i = 6; i < 16; i++)
+	{
+		vmovdqu(ptr[rsp + (i - 6) * 16], Xmm(i));
+	}
 #endif
 
 	if (!m_rip)
@@ -69,10 +71,12 @@ void GSSetupPrimCodeGenerator::Generate_AVX2()
 	Color_AVX2();
 
 #ifdef _WIN64
-	vmovdqa(ymm6, ptr[rsp + 0]);
-	vmovdqa(ymm7, ptr[rsp + 16]);
+	for (int i = 6; i < 16; i++)
+	{
+		vmovdqu(Xmm(i), ptr[rsp + (i - 6) * 16]);
+	}
 
-	add(rsp, 8 + 2 * 16);
+	add(rsp, 200);
 #endif
 
 	ret();
@@ -132,7 +136,6 @@ void GSSetupPrimCodeGenerator::Depth_AVX2()
 			for(int i = 0; i < (m_sel.notest ? 1 : 8); i++)
 			{
 				// m_local.d[i].f = GSVector8i(df * m_shift[i]).xxzzlh();
-
 				vmulps(ymm0, ymm3, _m_shift(1 + i));
 				vcvttps2dq(ymm0, ymm0);
 
@@ -165,8 +168,8 @@ void GSSetupPrimCodeGenerator::Depth_AVX2()
 		{
 			// m_local.p.z = vertex[index[1]].t.u32[3]; // uint32 z is bypassed in t.w
 
-			mov(eax, ptr[ecx + offsetof(GSVertexSW, t.w)]);
-			mov(_rip_local(p.z), eax);
+			mov(a3, ptr[ecx + offsetof(GSVertexSW, t.w)]);
+			mov(_rip_local(p.z), a3);
 		}
 	}
 }
