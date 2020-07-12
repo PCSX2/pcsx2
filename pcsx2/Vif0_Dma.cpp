@@ -100,8 +100,8 @@ __fi void vif0SetupTransfer()
 		}
 		else
 		{
-			//Some games (like killzone) do Tags mid unpack, the nops will just write blank data
-			//to the VU's, which breaks stuff, this is where the 128bit packet will fail, so we ignore the first 2 words
+			// Some games (like killzone) do Tags mid unpack, the nops will just write blank data
+			// to the VU's, which breaks stuff, this is where the 128bit packet will fail, so we ignore the first 2 words
 			vif0.irqoffset.value = 2;
 			vif0.irqoffset.enabled = true;
 			ret = VIF0transfer((u32*)&masked_tag + 2, 2, true);  //Transfer Tag
@@ -110,8 +110,9 @@ __fi void vif0SetupTransfer()
 				
 		if (!ret && vif0.irqoffset.enabled)
 		{
-			vif0.inprogress = 0; //Better clear this so it has to do it again (Jak 1)
-			return;        //IRQ set by VIFTransfer
+			vif0.inprogress = 0; // Better clear this so it has to do it again (Jak 1)
+			vif0ch.qwc = 0; // Gumball 3000 pauses the DMA when the tag stalls so we need to reset the QWC, it'll be gotten again later
+			return;        // IRQ set by VIFTransfer
 					
 		}
 	}
