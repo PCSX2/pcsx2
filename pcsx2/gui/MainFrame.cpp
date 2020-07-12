@@ -70,8 +70,8 @@ void MainEmuFrame::UpdateIsoSrcSelection()
 
 	EnableCdvdPluginSubmenu( cdsrc == MenuId_Src_Plugin );
 
-	sMenuBar.SetLabel( MenuId_Src_Iso, wxsFormat( L"%s -> %s", _(Path::GetFilename(g_Conf->CurrentIso).c_str()),
-	//	exists ? Path::GetFilename(g_Conf->CurrentIso).c_str() : _("Empty") ) );
+	sMenuBar.SetLabel( MenuId_Src_Iso, wxsFormat( L"%s -> %s", _("Iso"),
+	exists ? Path::GetFilename(g_Conf->CurrentIso).c_str() : _("Empty") ) );
 }
 
 bool MainEmuFrame::Destroy()
