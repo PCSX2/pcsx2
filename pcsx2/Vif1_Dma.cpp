@@ -25,7 +25,7 @@ u32 g_vif1Cycles = 0;
 
 __fi void vif1FLUSH()
 {
-	if(vif1Regs.stat.VEW)
+	if (VU0.VI[REG_VPU_STAT].UL & 0x500) //T bit stop or Busy
 	{
 		vif1.waitforvu = true;
 		vif1.vifstalled.enabled = VifStallEnable(vif1ch);
@@ -230,6 +230,12 @@ __fi void vif1SetupTransfer()
 
 __fi void vif1VUFinish()
 {
+	if (VU0.VI[REG_VPU_STAT].UL & 0x400)
+	{
+		CPU_INT(VIF_VU1_FINISH, 128);
+		return;
+	}
+
 	if (VU0.VI[REG_VPU_STAT].UL & 0x100)
 	{
 		int _cycles = VU1.cycle;
