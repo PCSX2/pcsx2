@@ -393,7 +393,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	if (0==m_conf.Theme.CmpNoCase(L"Dark"))
 	{
 		m_ColorTable.SetColorScheme_Dark();
-		m_TextCtrl.SetBackgroundColour( wxColor( 54, 57, 62 ) );
+		m_TextCtrl.SetBackgroundColour( wxColor( 38, 41, 48 ) );
 	}
 	else //if ((0==m_conf.Theme.CmpNoCase("Default")) || (0==m_conf.Theme.CmpNoCase("Light")))
 	{
@@ -868,7 +868,7 @@ void ConsoleLogFrame::OnToggleTheme( wxCommandEvent& evt )
 		case MenuId_ColorScheme_Dark:
 			newTheme = L"Dark";
 			m_ColorTable.SetColorScheme_Dark();
-			m_TextCtrl.SetBackgroundColour( wxColor( 54, 57, 62 ) );
+			m_TextCtrl.SetBackgroundColour( wxColor( 38, 41, 48 ) );
 		break;
 	}
 
