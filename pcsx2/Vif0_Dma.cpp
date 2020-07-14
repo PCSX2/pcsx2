@@ -301,7 +301,6 @@ void dmaVIF0()
 	}
 	else
 	{
-		if (vif0.irqoffset.enabled && !vif0.done) DevCon.Warning("Warning! VIF0 starting a new Chain transfer with vif offset set (Possible force stop?)");
 		vif0.dmamode = VIF_CHAIN_MODE;
 		vif0.done = false;
 		vif0.inprogress &= ~0x1;
