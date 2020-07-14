@@ -144,12 +144,15 @@ void keepAliveThread()
 
 bool StartKeepAliveThread()
 {
-	s_keepalive_is_open = true;
-	try {
-		s_keepalive_thread = std::thread(keepAliveThread);
-	}
-	catch (std::system_error&) {
-		s_keepalive_is_open = false;
+	if (s_keepalive_is_open == false)
+	{
+		s_keepalive_is_open = true;
+		try {
+			s_keepalive_thread = std::thread(keepAliveThread);
+		}
+		catch (std::system_error&) {
+			s_keepalive_is_open = false;
+		}
 	}
 
 	return s_keepalive_is_open;
