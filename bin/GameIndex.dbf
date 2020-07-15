@@ -2653,6 +2653,11 @@ Region = PAL-M15
 Serial = SCES-54552
 Name   = Rogue Galaxy
 Region = PAL-M5
+[patches = CBB4B383]
+	author=kozarovv
+	// Fixes Vedan Myna area out of bounds glitch.
+	patch=1,EE,00124898,word,3442fffe
+[/patches]
 ---------------------------------------------
 Serial = SCES-54571
 Name   = Sing-Star Pop Hits
@@ -5878,6 +5883,11 @@ Serial = SCUS-97490
 Name   = Rogue Galaxy
 Region = NTSC-U
 Compat = 5
+[patches = 0643F90C]
+	author=kozarovv
+	// Fixes Vedan Myna out of bounds glitch.
+	patch=1,EE,00124898,word,3442fffe
+[/patches]
 ---------------------------------------------
 Serial = SCUS-97491
 Name   = Jampack Demo Disc Vol.13 [T-Rated]
