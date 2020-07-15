@@ -274,14 +274,7 @@ void EnumXInputDevices()
         if (xinputNotInstalled)
             return;
 
-        // Prefer XInput 1.3 since SCP only has an XInput 1.3 wrapper right now.
-        // Also use LoadLibrary and not LoadLibraryEx for XInput 1.3, since some
-        // Windows 7 systems have issues with it.
-        // FIXME: Missing FreeLibrary call.
-        HMODULE hMod = LoadLibrary(L"xinput1_3.dll");
-        if (hMod == nullptr && IsWindows8OrGreater()) {
-            hMod = LoadLibraryEx(L"XInput1_4.dll", nullptr, LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
-        }
+        HMODULE hMod = LoadLibraryEx(L"XInput1_4.dll", nullptr, LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
 
         if (hMod) {
             if ((pXInputEnable = (_XInputEnable)GetProcAddress(hMod, "XInputEnable")) &&
