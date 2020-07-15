@@ -17082,20 +17082,10 @@ Serial = SLES-54723
 Name   = Spider-Man 3
 Region = PAL-E
 Compat = 4
-[patches = 0C881B25]
-	comment=Patch by Kozarovv
-	// Fixes hang before loading level 2.
-	patch=1,EE,0044bae4,word,000002ff
-[/patches]
 ---------------------------------------------
 Serial = SLES-54724
 Name   = Spider-Man 3
 Region = PAL-M4
-[patches = C529B0AD]
-	comment=Patch by Kozarovv
-	// Fixes hang before loading level 2.
-	patch=1,EE,0044bae4,word,000002ff
-[/patches]
 ---------------------------------------------
 Serial = SLES-54727
 Name   = Naruto - Uzumaki Chronicles
@@ -19263,11 +19253,6 @@ Region = NTSC-K
 Serial = SLKA-25385
 Name   = Spider-Man 3
 Region = NTSC-K
-[patches = B35F8AAE]
-	comment=Patch by Kozarovv and Arapapa
-	// Fixes hang before loading level 2.
-	patch=1,EE,0044bc64,word,000002ff //400002ff
-[/patches]
 ---------------------------------------------
 Serial = SLKA-25388
 Name   = One Piece - Grand Adventure
@@ -34272,11 +34257,6 @@ Region = NTSC-J
 Serial = SLPS-25823
 Name   = Spider-Man 3
 Region = NTSC-J
-[patches = 9295A3BE]
-	comment=Patch by Kozarovv and Arapapa
-	// Fixes hang before loading level 2.
-	patch=1,EE,0044bde4,word,000002ff //400002ff
-[/patches]
 ---------------------------------------------
 Serial = SLPS-25825
 Name   = Zero no Tsukaima [Best Collection]
@@ -42254,11 +42234,6 @@ Serial = SLUS-21552
 Name   = Spider-Man 3
 Region = NTSC-U
 Compat = 4
-[patches = 29873A0C]
-	comment= Patch by Kozarovv
-	// Fixes hang before loading level 2.
-	patch=1,EE,0044bae4,word,000002ff
-[/patches]
 ---------------------------------------------
 Serial = SLUS-21553
 Name   = Lumines Plus
