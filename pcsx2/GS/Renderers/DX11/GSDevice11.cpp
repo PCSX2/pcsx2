@@ -177,17 +177,27 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd>& wnd)
 		swapchain_description.SampleDesc.Count = 1;
 		swapchain_description.SampleDesc.Quality = 0;
 
-		// TODO: update swap effect
-		swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+		swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
-		const HRESULT result = m_factory->CreateSwapChainForHwnd(
+		HRESULT result = m_factory->CreateSwapChainForHwnd(
 			m_dev, reinterpret_cast<HWND>(m_wnd->GetHandle()),
 			&swapchain_description, nullptr, nullptr, &m_swapchain);
 
+		// Try again for windows 8
 		if (FAILED(result))
 		{
-			fprintf(stderr, "D3D11: Failed to create swapchain (reason: %x)\n", result);
-			return false;
+			swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+
+			result = m_factory->CreateSwapChainForHwnd(
+				m_dev, reinterpret_cast<HWND>(m_wnd->GetHandle()),
+				&swapchain_description, nullptr, nullptr, &m_swapchain
+			);
+
+			if (FAILED(result))
+			{
+				fprintf(stderr, "D3D11: Failed to create swapchain (reason: %x)\n", result);
+				return false;
+			}
 		}
 	}
 
