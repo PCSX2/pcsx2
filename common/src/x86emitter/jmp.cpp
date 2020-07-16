@@ -55,17 +55,17 @@ void prepareRegsForFastcall(const Reg1 &a1, const Reg2 &a2) {
 
     // Make sure we don't mess up if someone tries to fastcall with a1 in arg2reg and a2 in arg1reg
     if (a2.Id != arg1reg.Id) {
-        xMOV(Reg1(arg1reg.Id), a1);
+        xMOV(Reg1(arg1reg), a1);
         if (!a2.IsEmpty()) {
-            xMOV(Reg2(arg2reg.Id), a2);
+            xMOV(Reg2(arg2reg), a2);
         }
     } else if (a1.Id != arg2reg.Id) {
-        xMOV(Reg2(arg2reg.Id), a2);
-        xMOV(Reg1(arg1reg.Id), a1);
+        xMOV(Reg2(arg2reg), a2);
+        xMOV(Reg1(arg1reg), a1);
     } else {
         xPUSH(a1);
-        xMOV(Reg2(arg2reg.Id), a2);
-        xPOP(Reg1(arg1reg.Id));
+        xMOV(Reg2(arg2reg), a2);
+        xPOP(Reg1(arg1reg));
     }
 }
 
