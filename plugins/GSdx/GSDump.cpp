@@ -26,7 +26,7 @@ GSDumpBase::GSDumpBase(const std::string& fn)
 	: m_frames(0)
 	, m_extra_frames(2)
 {
-	m_gs = fopen(fn.c_str(), "wb");
+	m_gs = px_fopen(fn, "wb");
 	if (!m_gs)
 		fprintf(stderr, "GSDump: Error failed to open %s\n", fn.c_str());
 }

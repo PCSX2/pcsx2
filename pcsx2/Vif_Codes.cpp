@@ -115,7 +115,7 @@ void ExecuteVU(int idx)
 	}
 	else if((vifX.cmd & 0x7f) == 0x14 || (vifX.cmd & 0x7f) == 0x15)
 	{
-		vuExecMicro(idx, (u16)(vifXRegs.code) << 3);
+		vuExecMicro(idx, (u16)(vifXRegs.code));
 		vifX.cmd = 0;
 		vifX.pass = 0;
 	}
@@ -343,7 +343,7 @@ vifOp(vifCode_MSCAL) {
 
 		if(!vifX.waitforvu)
 		{
-			vuExecMicro(idx, (u16)(vifXRegs.code) << 3); 
+			vuExecMicro(idx, (u16)(vifXRegs.code)); 
 			vifX.cmd = 0;
 			vifX.pass = 0;
 			if(GetVifX.vifpacketsize > 1)
@@ -374,7 +374,7 @@ vifOp(vifCode_MSCALF) {
 		}
 		if(!vifX.waitforvu)
 		{
-			vuExecMicro(idx, (u16)(vifXRegs.code) << 3);
+			vuExecMicro(idx, (u16)(vifXRegs.code));
 			vifX.cmd = 0;
 			vifX.pass = 0;
 			vifExecQueue(idx);
@@ -495,9 +495,9 @@ template<int idx> static __fi int _vifCode_STColRow(const u32* data, u32* pmem2)
 	pxAssume(ret > 0);
 
 	switch (ret) {
-		case 4: pmem2[3] = data[3];
-		case 3: pmem2[2] = data[2];
-		case 2: pmem2[1] = data[1];
+		case 4: pmem2[3] = data[3]; // Fall through
+		case 3: pmem2[2] = data[2]; // Fall through
+		case 2: pmem2[1] = data[1]; // Fall through
 		case 1: pmem2[0] = data[0];
 				break;
 		jNO_DEFAULT

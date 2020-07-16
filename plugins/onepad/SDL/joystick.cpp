@@ -40,7 +40,7 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjo
             return;
 
         // WTF! Give me back the control of my system
-        struct sigaction action = {0};
+        struct sigaction action = {};
         action.sa_handler = SIG_DFL;
         sigaction(SIGINT, &action, nullptr);
         sigaction(SIGTERM, &action, nullptr);
@@ -223,7 +223,8 @@ JoystickInfo::JoystickInfo(int id)
             eid = SDL_HapticNewEffect(m_haptic, &effects[0]);
             if (eid < 0) {
                 fprintf(stderr, "ERROR: Effect is not uploaded! %s\n", SDL_GetError());
-                return;
+                m_haptic = nullptr;
+                break;
             }
         }
     }
@@ -263,9 +264,12 @@ bool JoystickInfo::TestForce(float strength = 0.60)
 
 int JoystickInfo::GetInput(gamePadValues input)
 {
+    float k = g_conf.get_sensibility() / 100.0; // convert sensibility to float
+
     // Handle analog inputs which range from -32k to +32k. Range conversion is handled later in the controller
     if (IsAnalogKey(input)) {
         int value = SDL_GameControllerGetAxis(m_controller, (SDL_GameControllerAxis)m_pad_to_sdl[input]);
+        value *= k;
         return (abs(value) > m_deadzone) ? value : 0;
     }
 

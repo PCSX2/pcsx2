@@ -129,7 +129,7 @@ void recMTSA()
 void recMTSAB()
 {
 	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(ptr32[&cpuRegs.sa], ((g_cpuConstRegs[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)) );
+		xMOV(ptr32[&cpuRegs.sa], ((g_cpuConstRegs[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)));
 	}
 	else {
 		_eeMoveGPRtoR(eax, _Rs_);
@@ -137,7 +137,7 @@ void recMTSAB()
 		xXOR(eax, _Imm_&0xf);
 		xMOV(ptr[&cpuRegs.sa], eax);
 	}
-}
+ }
 
 void recMTSAH()
 {

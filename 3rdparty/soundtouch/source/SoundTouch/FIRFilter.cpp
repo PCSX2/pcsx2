@@ -17,13 +17,6 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2015-11-05 19:46:08 +0200 (to, 05 marras 2015) $
-// File revision : $Revision: 4 $
-//
-// $Id: FIRFilter.cpp 234 2015-11-05 17:46:08Z oparviai $
-//
-////////////////////////////////////////////////////////////////////////////////
-//
 // License :
 //
 //  SoundTouch audio processing library
@@ -74,6 +67,7 @@ FIRFilter::~FIRFilter()
 {
     delete[] filterCoeffs;
 }
+
 
 // Usual C-version of the filter routine for stereo sound
 uint FIRFilter::evaluateFilterStereo(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSamples) const
@@ -131,8 +125,6 @@ uint FIRFilter::evaluateFilterStereo(SAMPLETYPE *dest, const SAMPLETYPE *src, ui
     }
     return numSamples - length;
 }
-
-
 
 
 // Usual C-version of the filter routine for mono sound
@@ -260,7 +252,6 @@ uint FIRFilter::getLength() const
 }
 
 
-
 // Applies the filter to the given sequence of samples. 
 //
 // Note : The amount of outputted samples is by value of 'filter_length' 
@@ -288,7 +279,6 @@ uint FIRFilter::evaluate(SAMPLETYPE *dest, const SAMPLETYPE *src, uint numSample
         return evaluateFilterMulti(dest, src, numSamples, numChannels);
     }
 }
-
 
 
 // Operator 'new' is overloaded so that it automatically creates a suitable instance 

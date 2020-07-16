@@ -14,13 +14,22 @@ endif()
 
 set(CommonFlags
     -fno-strict-aliasing
-    -Wno-parentheses
     -Wstrict-aliasing # Allow to track strict aliasing issue.
-    -Wno-char-subscripts # only impact svu which is deprecated
+    -Wno-parentheses
     -Wno-missing-braces
-    #-Wno-ignored-attributes # don't remember why I put here but it is pure C option, therefore it complains for nothings on cpp files
     -DWX_PRECOMP
 	)
+
+# Largely turning off because LegacyPluginAPI_Common in Plugins.h spams really badly in gcc 8 due to the memzero initialization.
+# Should probably be fixed properly, but for now this should work.
+if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
+    set(CommonFlags
+	    ${CommonFlags}
+	    -Wno-class-memaccess
+    )
+endif()
+
+
 
 if ("${PGO}" STREQUAL "generate")
     set(pcsx2FinalFlags -fprofile-generate)
@@ -142,7 +151,6 @@ set(pcsx2Headers
 	MTVU.h
 	Memory.h
 	MemoryTypes.h
-	NakedAsm.h
 	Patch.h
 	PathDefs.h
 	Plugins.h
@@ -256,14 +264,12 @@ set(pcsx2GuiSources
 	gui/ConsoleLogger.cpp
 	gui/CpuUsageProvider.cpp
 	gui/Dialogs/AboutBoxDialog.cpp
-	gui/Dialogs/AppConfigDialog.cpp
 	gui/Dialogs/AssertionDialog.cpp
 	gui/Dialogs/BaseConfigurationDialog.cpp
 	gui/Dialogs/ConfirmationDialogs.cpp
 	gui/Dialogs/ConvertMemoryCardDialog.cpp
 	gui/Dialogs/CreateMemoryCardDialog.cpp
 	gui/Dialogs/FirstTimeWizard.cpp
-	gui/Dialogs/GameDatabaseDialog.cpp
 	gui/Dialogs/ImportSettingsDialog.cpp
 	gui/Dialogs/LogOptionsDialog.cpp
 	gui/Dialogs/McdConfigDialog.cpp
@@ -291,7 +297,6 @@ set(pcsx2GuiSources
 	gui/Panels/BiosSelectorPanel.cpp
 	gui/Panels/CpuPanel.cpp
 	gui/Panels/DirPickerPanel.cpp
-	gui/Panels/GameDatabasePanel.cpp
 	gui/Panels/GameFixesPanel.cpp
 	gui/Panels/GSWindowPanel.cpp
 	gui/Panels/LogOptionsPanels.cpp
@@ -346,6 +351,7 @@ set(pcsx2GuiHeaders
 	gui/Panels/MemoryCardPanels.h
 	gui/pxEventThread.h
 	gui/RecentIsoList.h
+	gui/Saveslots.h
 	)
 
 # Warning: the declaration of the .h are mandatory in case of resources files. It will ensure the creation
@@ -358,7 +364,6 @@ set(pcsx2GuiResources
     ${res_bin}/AppIcon32.h
     ${res_bin}/AppIcon64.h
     ${res_bin}/BackgroundLogo.h
-    ${res_bin}/ConfigIcon_Appearance.h
     ${res_bin}/ButtonIcon_Camera.h
     ${res_bin}/ConfigIcon_Cpu.h
     ${res_bin}/ConfigIcon_Gamefixes.h
@@ -376,6 +381,7 @@ set(pcsx2GuiResources
 set(pcsx2IPUSources
 	IPU/IPU.cpp
 	IPU/IPU_Fifo.cpp
+	IPU/IPUdither.cpp
 	IPU/IPUdma.cpp
 	IPU/mpeg2lib/Idct.cpp
 	IPU/mpeg2lib/Mpeg.cpp
@@ -401,7 +407,7 @@ set(pcsx2LinuxSources
 
 set(pcsx2OSXSources
 	gui/CpuUsageProviderLnx.cpp
-#	Linux/LnxConsolePipe.cpp
+	Linux/LnxConsolePipe.cpp
 #	Linux/LnxKeyCodes.cpp
 	Darwin/DarwinFlatFileReader.cpp
 	)
@@ -454,6 +460,28 @@ set(pcsx2RDebugHeaders
 	RDebug/deci2_netmp.h
 	RDebug/deci2_ttyp.h)
 
+# Recording sources
+set(pcsx2RecordingSources
+	Recording/InputRecording.cpp
+	Recording/InputRecordingFile.cpp
+	Recording/NewRecordingFrame.cpp
+	Recording/PadData.cpp
+	Recording/RecordingControls.cpp
+	Recording/RecordingInputManager.cpp
+	Recording/VirtualPad.cpp
+)
+
+# Recording headers
+set(pcsx2RecordingHeaders
+	Recording/InputRecording.h
+	Recording/InputRecordingFile.h
+	Recording/NewRecordingFrame.h
+	Recording/PadData.h
+	Recording/RecordingControls.h
+	Recording/RecordingInputManager.h
+	Recording/VirtualPad.h
+)
+
 # System sources
 set(pcsx2SystemSources
 	System/SysCoreThread.cpp
@@ -487,7 +515,6 @@ set(pcsx2WindowsSources
 	gui/CpuUsageProviderMSW.cpp
 	windows/cheats/browser.cpp
 	windows/cheats/cheats.cpp
-	windows/DwmSetup.cpp
 	windows/FlatFileReaderWindows.cpp
 	windows/Optimus.cpp
 	windows/PatchBrowser.cpp
@@ -516,7 +543,6 @@ set(pcsx2x86Sources
 	x86/iR3000Atables.cpp
 	x86/iR5900Misc.cpp
 	x86/ir5900tables.cpp
-	x86/iVU1micro.cpp
 	x86/ix86-32/iCore-32.cpp
 	x86/ix86-32/iR5900-32.cpp
 	x86/ix86-32/iR5900Arit.cpp
@@ -533,14 +559,6 @@ set(pcsx2x86Sources
 	x86/newVif_Unpack.cpp
 	x86/newVif_UnpackSSE.cpp
 	)
-if (NOT DISABLE_SVU)
-    set(pcsx2x86Sources ${pcsx2x86Sources}
-	x86/sVU_Lower.cpp
-	x86/sVU_Micro.cpp
-	x86/sVU_Upper.cpp
-	x86/sVU_zerorec.cpp
-    )
-endif()
 
 # x86 headers
 set(pcsx2x86Headers
@@ -581,21 +599,7 @@ set(pcsx2x86Headers
 	x86/newVif_HashBucket.h
 	x86/newVif_UnpackSSE.h
 	x86/R5900_Profiler.h
-	x86/sVU_Compare.h
-	x86/sVU_Debug.h
-	x86/sVU_Micro.h
-	x86/sVU_zerorec.h
 	)
-
-# collect .S files
-if (NOT DISABLE_SVU)
-    set(pcsx2SSources x86/aVUzerorec.S)
-    # change language of .S-files to c++
-    set_source_files_properties(${pcsx2SSources} PROPERTIES LANGUAGE CXX)
-else()
-    set(pcsx2SSources "")
-endif()
-
 
 # common Sources
 set(Common
@@ -611,6 +615,8 @@ set(Common
 	${pcsx2IPUHeaders}
 	${pcsx2ps2Sources}
 	${pcsx2ps2Headers}
+	${pcsx2RecordingSources}
+	${pcsx2RecordingHeaders}
 	${pcsx2SystemSources}
 	${pcsx2SystemHeaders}
 	${pcsx2UtilitiesSources}
@@ -618,8 +624,7 @@ set(Common
 	${pcsx2x86Sources}
 	${pcsx2x86Headers}
 	${pcsx2ZipToolsSources}
-	${pcsx2ZipToolsHeaders}
-	${pcsx2SSources})
+	${pcsx2ZipToolsHeaders})
 
 # platform sources
 # Linux
@@ -698,7 +703,7 @@ file(MAKE_DIRECTORY ${res_bin})
 
 foreach(res_file IN ITEMS
         AppIcon16 AppIcon32 AppIcon64 BackgroundLogo Logo ButtonIcon_Camera
-        ConfigIcon_Appearance ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
+        ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
         ConfigIcon_Paths ConfigIcon_Plugins ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
     add_custom_command(OUTPUT  "${res_bin}/${res_file}.h" COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_src}/${res_file}.png" "${res_bin}/${res_file}" )
 endforeach()
@@ -707,11 +712,47 @@ if(USE_VTUNE)
     set(pcsx2FinalLibs ${pcsx2FinalLibs} ${VTUNE_LIBRARIES})
 endif()
 
-# Suppress all the system-specific predefined macros outside the reserved namespace.
-# Needed when stringifying macros.
-# See issue: 1233
-if(PACKAGE_MODE)
-	SET_SOURCE_FILES_PROPERTIES(gui/AppConfig.cpp PROPERTIES COMPILE_FLAGS "-Wp,-ansi,-U__STRICT_ANSI__")
+add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
+
+if(COMMAND target_precompile_headers)
+	message("Using precompiled headers.")
+	target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
 endif()
 
-add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
+if (APPLE)
+	# MacOS defaults to having a maximum protection of the __DATA segment of rw (non-executable)
+	# We have a bunch of page-sized arrays in bss that we use for jit
+	# Obviously not being able to make those arrays executable would be a problem
+	target_link_options(${Output} PRIVATE -Wl,-segprot,__DATA,rwx,rw)
+
+	set_target_properties(${Output} PROPERTIES
+		MACOSX_BUNDLE true
+		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/Info.plist.in"
+		OUTPUT_NAME PCSX2
+	)
+
+	target_sources(${Output} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/PCSX2.icns")
+	set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/PCSX2.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+	# If they say to skip postprocess bundle, leave the target in but make it so they have
+	# to manually run it
+	if (SKIP_POSTPROCESS_BUNDLE)
+		set(postprocessBundleType "")
+	else()
+		set(postprocessBundleType ALL)
+	endif()
+	# Use custom_target and not custom_command so plugins can add themselves as dependencies
+	add_custom_target(pcsx2-postprocess-bundle ${postprocessBundleType}
+		COMMAND ${CMAKE_COMMAND} "-DPCSX2_BUNDLE_PATH=$<TARGET_FILE_DIR:${Output}>/../.."
+			-P ${CMAKE_SOURCE_DIR}/cmake/Pcsx2PostprocessBundle.cmake
+	)
+	add_dependencies(pcsx2-postprocess-bundle ${Output})
+endif()
+
+if(dev9ghzdrk)
+    if(PACKAGE_MODE)
+        install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f ${BIN_DIR}/${Output} ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' ${BIN_DIR}/${Output}; set +x\")")
+    else()
+        install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f ${CMAKE_SOURCE_DIR}/bin/${Output} ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' ${CMAKE_SOURCE_DIR}/bin/${Output}; set +x\")")
+    endif()
+endif()

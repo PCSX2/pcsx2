@@ -95,7 +95,7 @@ namespace x86Emitter
 //
 __emitinline void SimdPrefix(u8 prefix, u16 opcode)
 {
-#ifdef __x86_64__
+#ifdef __M_X86_64
     pxAssertMsg(prefix == 0, "REX prefix must be just before the opcode");
 #endif
     const bool is16BitOpcode = ((opcode & 0xff) == 0x38) || ((opcode & 0xff) == 0x3a);

@@ -2,6 +2,7 @@
 
 set -ex
 
+# Disabled for now
 clang_syntax_check() {
 	if [ "${CXX}" = "clang++" ]; then
         ./linux_various/check_format.sh
@@ -16,16 +17,13 @@ linux_32_before_install() {
 
 	# Compilers
 	if [ "${CXX}" = "clang++" ]; then
-		sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
-		sudo add-apt-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-${VERSION} main"
-		# g++-x-multilib is necessary for compiler dependencies.
-		COMPILER_PACKAGE="clang-${VERSION} g++-7-multilib clang-format-${VERSION}"
+		#sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
+		#sudo add-apt-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-${VERSION} main"
+		#COMPILER_PACKAGE="g++-8-multilib clang-format-${VERSION}"
+		COMPILER_PACKAGE="g++-8-multilib"
 	fi
 	if [ "${CXX}" = "g++" ]; then
-		# python:i386 is required to avoid dependency issues for gcc-4.9 and
-		# gcc-7. It causes issues with clang-format though, so the dependency is
-		# only specified for gcc.
-		COMPILER_PACKAGE="g++-${VERSION}-multilib python:i386"
+		COMPILER_PACKAGE="g++-${VERSION}-multilib"
 	fi
 
 	sudo apt-get -qq update
@@ -34,6 +32,7 @@ linux_32_before_install() {
 	# build image. libgtk2.0-dev:i386 and libsdl2-dev:i386 require the 32-bit
 	# versions of the dependencies, and the 2 versions conflict. So those
 	# dependencies must be explicitly installed.
+	# Sometimes it complains about Python so we install that too.
 	sudo apt-get -y install \
 		gir1.2-freedesktop:i386 \
 		gir1.2-gdkpixbuf-2.0:i386 \
@@ -49,6 +48,7 @@ linux_32_before_install() {
 		libglu1-mesa-dev:i386 \
 		libgtk2.0-dev:i386 \
 		liblzma-dev:i386 \
+		libharfbuzz-dev:i386 \
 		libpango1.0-dev:i386 \
 		libpng12-dev:i386 \
 		libsdl2-dev:i386 \
@@ -57,13 +57,16 @@ linux_32_before_install() {
 		libxext-dev:i386 \
 		libxft-dev:i386 \
 		portaudio19-dev:i386 \
+		python:i386 \
 		zlib1g-dev:i386 \
+		libxml2-dev:i386 \
+		libpcap0.8-dev:i386 \
 		${COMPILER_PACKAGE}
 
 	# Manually add ccache symlinks for clang
 	if [ "${CXX}" = "clang++" ]; then
-		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CXX}-${VERSION}
-		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CC}-${VERSION}
+		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CXX}
+		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CC}
 	fi
 }
 
@@ -74,8 +77,10 @@ linux_32_script() {
 	# Prevents warning spam
 	if [ "${CXX}" = "clang++" ]; then
 		export CCACHE_CPP2=yes
+		export CC=${CC} CXX=${CXX}
+	else
+		export CC=${CC}-${VERSION} CXX=${CXX}-${VERSION}
 	fi
-	export CC=${CC}-${VERSION} CXX=${CXX}-${VERSION}
 	cmake \
 		-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake \
 		-DCMAKE_BUILD_TYPE=Release \
@@ -90,11 +95,6 @@ linux_32_script() {
 
 linux_64_before_install() {
 	# Compilers
-	if [ "${CXX}" = "clang++" ]; then
-		sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
-		sudo add-apt-repository -y "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-${VERSION} main"
-		COMPILER_PACKAGE="clang-${VERSION} clang-format-${VERSION}"
-	fi
 	if [ "${CXX}" = "g++" ]; then
 		sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 		COMPILER_PACKAGE="g++-${VERSION}"
@@ -114,13 +114,9 @@ linux_64_before_install() {
 		libsoundtouch-dev \
 		libwxgtk3.0-dev \
 		portaudio19-dev \
+		libxml2-dev \
+		libpcap0.8-dev \
 		${COMPILER_PACKAGE}
-
-	# Manually add ccache symlinks for clang
-	if [ "${CXX}" = "clang++" ]; then
-		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CXX}-${VERSION}
-		sudo ln -sf ../../bin/ccache /usr/lib/ccache/${CC}-${VERSION}
-	fi
 }
 
 
@@ -128,10 +124,6 @@ linux_64_script() {
 	mkdir build
 	cd build
 
-	# Prevents warning spam
-	if [ "${CXX}" = "clang++" ]; then
-		export CCACHE_CPP2=yes
-	fi
 	export CC=${CC}-${VERSION} CXX=${CXX}-${VERSION}
 	cmake \
 		-DCMAKE_BUILD_TYPE=Devel \
@@ -153,7 +145,7 @@ before_install|script)
 	${TRAVIS_OS_NAME}_${BITS}_${1}
 	;;
 before_script)
-    clang_syntax_check
+#    clang_syntax_check
     ;;
 after_success)
 	${TRAVIS_OS_NAME}_${1}

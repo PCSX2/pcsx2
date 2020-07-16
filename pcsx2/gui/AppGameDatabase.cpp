@@ -42,17 +42,16 @@ public:
 	{
 	}
 
-	wxString ReadHeader();
 	void ReadGames();
 
 protected:
-	void doError(bool doMsg = false);
+	void doError(const wxString& msg);
 	bool extractMultiLine();
 	void extract();
 };
 
-void DBLoaderHelper::doError(bool doMsg) {
-	if (doMsg) Console.Error("GameDatabase: Bad file data [%s]", WX_STR(m_dest));
+void DBLoaderHelper::doError(const wxString& msg) {
+	Console.Error(msg);
 	m_keyPair.Clear();
 }
 
@@ -69,7 +68,7 @@ bool DBLoaderHelper::extractMultiLine() {
 	if (m_dest[0] != L'[') return false;		// All multiline sections begin with a '['!
 
 	if (!m_dest.EndsWith(L"]")) {
-		doError(true);
+		doError("GameDatabase: Malformed section start tag: " + m_dest);
 		return false;
 	}
 
@@ -78,56 +77,37 @@ bool DBLoaderHelper::extractMultiLine() {
 	// Use Mid() to strip off the left and right side brackets.
 	wxString midLine(m_dest.Mid(1, m_dest.Length()-2));
 	wxString lvalue(midLine.BeforeFirst(L'=').Trim(true).Trim(false));
-	//wxString rvalue(midLine.AfterFirst(L'=').Trim(true).Trim(false));
+	wxString rvalue(midLine.AfterFirst(L'=').Trim(true).Trim(false));
+
+	wxString key = '[' + lvalue + (rvalue.empty() ? "" : " = ") + rvalue + ']';
+	if (key != m_keyPair.key)
+		Console.Warning("GameDB: Badly formatted section start tag.\nActual: " + m_keyPair.key + "\nExpected: " + key);
 
 	wxString endString;
 	endString.Printf( L"[/%s]", lvalue.c_str() );
 
 	while(!m_reader.Eof()) {
 		pxReadLine( m_reader, m_dest, m_intermediate );
-		if (m_dest.CmpNoCase(endString) == 0) break;
+		// Abort if the closing tag is missing/incorrect so subsequent database entries aren't affected.
+		if (m_dest == "---------------------------------------------")
+			break;
+		if (m_dest.CmpNoCase(endString) == 0)
+			return true;
 		m_keyPair.value += m_dest + L"\n";
 	}
+	doError("GameDatabase: Missing or incorrect section end tag:\n" + m_keyPair.key + "\n" + m_keyPair.value);
 	return true;
 }
 
 void DBLoaderHelper::extract() {
 
 	if( !pxParseAssignmentString( m_dest, m_keyPair.key, m_keyPair.value ) ) return;
-	if( m_keyPair.value.IsEmpty() ) doError(true);
-}
-
-wxString DBLoaderHelper::ReadHeader()
-{
-	wxString header;
-	header.reserve(2048);
-
-	while(!m_reader.Eof()) {
-		pxReadLine(m_reader, m_dest, m_intermediate);
-		m_dest.Trim(false).Trim(true);
-		if( !(m_dest.IsEmpty() || m_dest.StartsWith(L"--") || m_dest.StartsWith( L"//" ) || m_dest.StartsWith( L";" )) ) break;
-		header += m_dest + L'\n';
-	}
-
-	if( !m_dest.IsEmpty() )
-	{
-		m_keyPair.Clear();
-		if( !extractMultiLine() ) extract();
-	}
-	return header;
+	if( m_keyPair.value.IsEmpty() ) doError("GameDatabase: Bad file data: " + m_dest);
 }
 
 void DBLoaderHelper::ReadGames()
 {
 	Game_Data* game = NULL;
-
-	if (m_keyPair.IsOk())
-	{
-		game = m_gamedb.createNewGame(m_keyPair.value);
-		game->writeString(m_keyPair.key, m_keyPair.value);
-		//if( m_keyPair.CompareKey(m_gamedb.getBaseKey()) )
-		//	game.id = m_keyPair.value;
-	}
 
 	while(!m_reader.Eof()) { // Fill game data, find new game, repeat...
 		pthread_testcancel();
@@ -139,8 +119,10 @@ void DBLoaderHelper::ReadGames()
 		if (!extractMultiLine()) extract();
 
 		if (!m_keyPair.IsOk()) continue;
-		if (m_keyPair.CompareKey(m_gamedb.getBaseKey()))
+		if (m_keyPair.CompareKey(m_gamedb.getBaseKey())) {
 			game = m_gamedb.createNewGame(m_keyPair.value);
+			continue;
+		}
 
 		game->writeString( m_keyPair.key, m_keyPair.value );
 	}
@@ -187,7 +169,6 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file, const wxSt
 	DBLoaderHelper loader( reader, *this );
 
 	u64 qpc_Start = GetCPUTicks();
-	header = loader.ReadHeader();
 	loader.ReadGames();
 	u64 qpc_end = GetCPUTicks();
 
@@ -195,31 +176,6 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file, const wxSt
 		gHash.size(), (u32)(((qpc_end-qpc_Start)*1000) / GetTickFrequency()) );
 
 	return *this;
-}
-
-// Saves changes to the database
-
-void AppGameDatabase::SaveToFile(const wxString& file) {
-	wxFFileOutputStream writer( file );
-	pxWriteMultiline(writer, header);
-
-	for(uint blockidx=0; blockidx<=m_BlockTableWritePos; ++blockidx)
-	{
-		if( !m_BlockTable[blockidx] ) continue;
-
-		const uint endidx = (blockidx == m_BlockTableWritePos) ? m_CurBlockWritePos : m_GamesPerBlock;
-
-		for( uint gameidx=0; gameidx<endidx; ++gameidx )
-		{
-			const Game_Data& game( m_BlockTable[blockidx][gameidx] );
-
-			for (auto i = game.kList.begin(); i != game.kList.end(); ++i) {
-				pxWriteMultiline(writer, i->toString() );
-			}
-
-			pxWriteLine(writer, L"---------------------------------------------");
-		}
-	}
 }
 
 AppGameDatabase* Pcsx2App::GetGameDatabase()

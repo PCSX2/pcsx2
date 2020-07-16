@@ -306,7 +306,11 @@ static void recCFC2() {
 		// is done by CFC2 while working with the TPC register.
 		// (fixes R Racing Evolution and Street Fighter EX3)
 		
-		xSHR(eax, 3);
+		//xSHR(eax, 3);
+
+		//Update Refraction - Don't need to do this anymore as addresses are fed in divided by 8 always.
+		//Games such at The Incredible Hulk will read VU1's TPC from VU0 (which will already be multiplied by 8) then try to use CMSAR1 (which will also multiply by 8)
+		//So everything is now fed in without multiplication
 	}
 
 	// FixMe: Should R-Reg have upper 9 bits 0?

@@ -15,7 +15,7 @@
 
 #pragma once
 
-#ifdef __x86_64__
+#ifdef __M_X86_64
 static const uint iREGCNT_XMM = 16;
 static const uint iREGCNT_GPR = 16;
 #else
@@ -277,7 +277,7 @@ public:
     bool IsSIMD() const { return GetOperandSize() == 16; }
 
 // IsWide: return true if the register is 64 bits (requires a wide op on the rex prefix)
-#ifdef __x86_64__
+#ifdef __M_X86_64
     bool IsWide() const
     {
         return GetOperandSize() == 8;
@@ -464,7 +464,7 @@ public:
 // more sense and allows the programmer a little more type protection if needed.
 //
 
-#ifdef __x86_64__
+#ifdef __M_X86_64
 #define xRegisterLong xRegister64
 #else
 #define xRegisterLong xRegister32
@@ -504,6 +504,7 @@ public:
     xAddressVoid operator-(const void *right) const;
     xAddressVoid operator*(int factor) const;
     xAddressVoid operator<<(u32 shift) const;
+    xAddressReg& operator=(const xAddressReg&) = default;
 };
 
 // --------------------------------------------------------------------------------------

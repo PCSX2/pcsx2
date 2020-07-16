@@ -1,9 +1,32 @@
+/*  OnePAD - author: arcum42(@gmail.com)
+ *  Copyright (C) 2009
+ *
+ *  Based on ZeroPAD, author zerofrog@gmail.com
+ *  Copyright (C) 2006-2007
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ */
+
 #pragma once
 
 #include "onepad.h"
 #include "controller.h"
+
 #ifdef SDL_BUILD
 #include <SDL.h>
+
 #define HAT_UP SDL_HAT_UP
 #define HAT_DOWN SDL_HAT_DOWN
 #define HAT_RIGHT SDL_HAT_RIGHT
@@ -38,7 +61,7 @@ public:
     /**
 		 * Find every interesting devices and create right structure for them(depend on backend)
 		 **/
-    static void EnumerateGamePads(vector<GamePad *> &vgamePad);
+    static void EnumerateGamePads(std::vector<GamePad *> &vgamePad);
     static void UpdateReleaseState();
     /**
 		 * Update state of every attached devices
@@ -76,7 +99,7 @@ public:
         return 0;
     }
 
-    const string &GetName()
+    const std::string &GetName()
     {
         return devname;
     }
@@ -143,13 +166,13 @@ public:
     virtual int GetAxisFromKey(int pad, int index) { return 0; }
     // These fields need to be inherited by child classes
 protected:
-    string devname; // pretty device name
+    std::string devname; // pretty device name
     int _id;
     int numbuttons, numaxes, numhats;
     int deadzone;
     int pad;
-    vector<int> vbuttonstate, vaxisstate, vhatstate;
+    std::vector<int> vbuttonstate, vaxisstate, vhatstate;
 };
 
-extern vector<GamePad *> s_vgamePad;
+extern std::vector<GamePad *> s_vgamePad;
 extern bool GamePadIdWithinBounds(int joyid);

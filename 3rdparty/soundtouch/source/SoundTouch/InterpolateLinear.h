@@ -8,10 +8,6 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// $Id: InterpolateLinear.h 225 2015-07-26 14:45:48Z oparviai $
-//
-////////////////////////////////////////////////////////////////////////////////
-//
 // License :
 //
 //  SoundTouch audio processing library
@@ -42,7 +38,7 @@
 namespace soundtouch
 {
 
-/// Linear transposer class that uses integer arithmetics
+/// Linear transposer class that uses integer arithmetic
 class InterpolateLinearInteger : public TransposerBase
 {
 protected:
@@ -67,7 +63,7 @@ public:
 };
 
 
-/// Linear transposer class that uses floating point arithmetics
+/// Linear transposer class that uses floating point arithmetic
 class InterpolateLinearFloat : public TransposerBase
 {
 protected:

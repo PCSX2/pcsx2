@@ -32,8 +32,8 @@
 
 #elif defined(__unix__)
 
-#include <gtk/gtk.h>
 #include <cstring>
+#include <wx/msgdlg.h>
 
 #define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
 
@@ -43,16 +43,15 @@
 
 #endif
 
+#include <PluginCompatibility.h>
 //#include "PS2Edefs.h"
 
 #if !defined(_MSC_VER) || !defined(UNICODE)
 static void SysMessage(const char *fmt, ...);
 static void __forceinline PluginNullConfigure(std::string desc, s32 &log);
-static void __forceinline PluginNullAbout(const char *aboutText);
 #else
 static void SysMessage(const wchar_t *fmt, ...);
 static void __forceinline PluginNullConfigure(std::wstring desc, s32 &log);
-static void __forceinline PluginNullAbout(const wchar_t *aboutText);
 #endif
 
 enum FileMode {
@@ -67,7 +66,7 @@ struct PluginLog
 
     bool Open(std::string logname)
     {
-        LogFile = fopen(logname.c_str(), "w");
+        LogFile = px_fopen(logname, "w");
 
         if (LogFile) {
             setvbuf(LogFile, NULL, _IONBF, 0);
@@ -86,37 +85,40 @@ struct PluginLog
 
     void Write(const char *fmt, ...)
     {
-        va_list list;
-
         if (LogFile == NULL)
             return;
 
-        va_start(list, fmt);
-        if (WriteToFile)
+        va_list list;
+        if (WriteToFile) {
+            va_start(list, fmt);
             vfprintf(LogFile, fmt, list);
-        if (WriteToConsole)
+            va_end(list);
+        }
+        if (WriteToConsole) {
+            va_start(list, fmt);
             vfprintf(stdout, fmt, list);
-        va_end(list);
+            va_end(list);
+        }
     }
 
     void WriteLn(const char *fmt, ...)
     {
-        va_list list;
-
         if (LogFile == NULL)
             return;
 
-        va_start(list, fmt);
-        if (WriteToFile)
+        va_list list;
+        if (WriteToFile) {
+            va_start(list, fmt);
             vfprintf(LogFile, fmt, list);
-        if (WriteToConsole)
-            vfprintf(stdout, fmt, list);
-        va_end(list);
-
-        if (WriteToFile)
+            va_end(list);
             fprintf(LogFile, "\n");
-        if (WriteToConsole)
+        }
+        if (WriteToConsole) {
+            va_start(list, fmt);
+            vfprintf(stdout, fmt, list);
+            va_end(list);
             fprintf(stdout, "\n");
+        }
     }
 
 #if !defined(_MSC_VER) || !defined(UNICODE)
@@ -160,9 +162,9 @@ struct PluginConf
     bool Open(std::string name, FileMode mode = READ_FILE)
     {
         if (mode == READ_FILE) {
-            ConfFile = fopen(name.c_str(), "r");
+            ConfFile = px_fopen(name, "r");
         } else {
-            ConfFile = fopen(name.c_str(), "w");
+            ConfFile = px_fopen(name, "w");
         }
 
         if (ConfFile == NULL)
@@ -201,7 +203,6 @@ struct PluginConf
 };
 
 #if defined(__unix__)
-
 static void SysMessage(const char *fmt, ...)
 {
     va_list list;
@@ -214,49 +215,8 @@ static void SysMessage(const char *fmt, ...)
     if (msg[strlen(msg) - 1] == '\n')
         msg[strlen(msg) - 1] = 0;
 
-    GtkWidget *dialog;
-    dialog = gtk_message_dialog_new(NULL,
-                                    GTK_DIALOG_DESTROY_WITH_PARENT,
-                                    GTK_MESSAGE_INFO,
-                                    GTK_BUTTONS_OK,
-                                    "%s", msg);
-    gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-}
-
-static void __forceinline set_logging(GtkToggleButton *check, int &log)
-{
-    log = gtk_toggle_button_get_active(check);
-}
-
-static void __forceinline PluginNullConfigure(std::string desc, int &log)
-{
-    GtkWidget *dialog, *label, *check_box;
-
-    /* Create the widgets */
-    dialog = gtk_dialog_new();
-    label = gtk_label_new(desc.c_str());
-    check_box = gtk_check_button_new_with_label("Logging");
-
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_box), (log != 0));
-
-    /* Ensure that the dialog box is destroyed when the user clicks ok, and that we get the check box value. */
-    g_signal_connect(check_box, "toggled", G_CALLBACK(set_logging), &log);
-
-    /* Add all our widgets, and show everything we've added to the dialog. */
-    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), label);
-    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), check_box);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), "Ok", 0);
-
-    gtk_widget_show_all(dialog);
-
-    gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-}
-
-static void __forceinline PluginNullAbout(const char *aboutText)
-{
-    SysMessage(aboutText);
+    wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+    dialog.ShowModal();
 }
 
 #define ENTRY_POINT /* We don't need no stinkin' entry point! */
@@ -296,11 +256,6 @@ static void __forceinline PluginNullConfigure(std::string desc, int &log)
     SysMessage("This space is intentionally left blank.");
 }
 
-static void __forceinline PluginNullAbout(const char *aboutText)
-{
-    SysMessage(aboutText);
-}
-
 #define ENTRY_POINT /* We don't need no stinkin' entry point! */ // TODO OSX WTF is this anyway?
 
 
@@ -328,10 +283,6 @@ static void __forceinline PluginNullConfigure(std::string desc, s32 &log)
     SysMessage("This space is intentionally left blank.");
 }
 
-static void __forceinline PluginNullAbout(const char *aboutText)
-{
-    SysMessage(aboutText);
-}
 #else
 
 static void __forceinline SysMessage(const wchar_t *fmt, ...)
@@ -350,11 +301,6 @@ static void __forceinline PluginNullConfigure(std::string desc, s32 &log)
 	and a check box that says "Logging", checked if log !=0, and set log to
 	1 if it is checked on return, and 0 if it isn't. */
     SysMessage(L"This space is intentionally left blank.");
-}
-
-static void __forceinline PluginNullAbout(const wchar_t *aboutText)
-{
-    SysMessage(aboutText);
 }
 
 #endif

@@ -937,7 +937,7 @@
       <Project>{d80d4a75-c385-41bd-ae62-83d2e2b595a7}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\..\unfree\baseclasses\baseclasses.vcxproj">
+    <ProjectReference Include="..\..\3rdparty\baseclasses\baseclasses.vcxproj">
       <Project>{27f17499-a372-4408-8afa-4f9f4584fbd3}</Project>
     </ProjectReference>
   </ItemGroup>

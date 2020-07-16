@@ -26,10 +26,12 @@
 
 #include <string.h>
 #include <gtk/gtk.h>
-#include "dialog.h"
+#include "wx_dialog/dialog.h"
 
+#ifndef __APPLE__
 Display *GSdsp;
 Window GSwin;
+#endif
 
 void SysMessage(const char *fmt, ...)
 {
@@ -67,8 +69,10 @@ PADtest()
 
 s32 _PADopen(void *pDsp)
 {
+#ifndef __APPLE__
     GSdsp = *(Display **)pDsp;
     GSwin = (Window) * (((u32 *)pDsp) + 1);
+#endif
 
     return 0;
 }
@@ -100,6 +104,7 @@ void PollForJoystickInput(int cpad)
 EXPORT_C_(void)
 PADupdate(int pad)
 {
+#ifndef __APPLE__
     // Gamepad inputs don't count as an activity. Therefore screensaver will
     // be fired after a couple of minute.
     // Emulate an user activity
@@ -109,6 +114,7 @@ PADupdate(int pad)
         // 1 call every 4096 Vsync is enough
         XResetScreenSaver(GSdsp);
     }
+#endif
 
     // Actually PADupdate is always call with pad == 0. So you need to update both
     // pads -- Gregory
@@ -118,7 +124,7 @@ PADupdate(int pad)
     for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
         g_key_status.keyboard_state_acces(cpad);
     }
-    PollForX11KeyboardInput();
+    UpdateKeyboardInput();
 
     // Get joystick state + Commit
     for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {

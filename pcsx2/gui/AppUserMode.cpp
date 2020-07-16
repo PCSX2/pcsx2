@@ -16,7 +16,6 @@
 #include "PrecompiledHeader.h"
 #include "MainFrame.h"
 #include "Utilities/IniInterface.h"
-#include "Utilities/HashMap.h"
 #include "Dialogs/ModalPopups.h"
 
 #include <wx/stdpaths.h>
@@ -28,7 +27,6 @@
 DocsModeType			DocsFolderMode = DocsFolder_User;
 bool					UseDefaultSettingsFolder = true;
 bool					UseDefaultPluginsFolder = true;
-bool					UseDefaultThemesFolder = true;
 
 
 wxDirName				CustomDocumentsFolder;
@@ -36,7 +34,6 @@ wxDirName				SettingsFolder;
 
 wxDirName				InstallFolder;
 wxDirName				PluginsFolder;
-wxDirName				ThemesFolder;
 
 // The UserLocalData folder can be redefined depending on whether or not PCSX2 is in
 // "portable install" mode or not.  when PCSX2 has been configured for portable install, the

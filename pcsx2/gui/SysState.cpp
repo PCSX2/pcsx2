@@ -674,6 +674,9 @@ void StateCopy_SaveToSlot( uint num )
 	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", WX_STR(file) );
 
 	StateCopy_SaveToFile( file );
+#ifdef USE_NEW_SAVESLOTS_UI
+	UI_UpdateSysControls();
+#endif
 }
 
 void StateCopy_LoadFromSlot( uint slot, bool isFromBackup )
@@ -690,4 +693,7 @@ void StateCopy_LoadFromSlot( uint slot, bool isFromBackup )
 	Console.Indent().WriteLn( Color_StrongGreen, L"filename: %s", WX_STR(file) );
 
 	StateCopy_LoadFromFile( file );
+#ifdef USE_NEW_SAVESLOTS_UI
+	UI_UpdateSysControls();
+#endif
 }

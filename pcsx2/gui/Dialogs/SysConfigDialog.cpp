@@ -75,7 +75,7 @@ void Dialogs::SysConfigDialog::UpdateGuiForPreset ( int presetIndex, bool preset
 	//Console.WriteLn("Applying config to Gui: preset #%d, presets enabled: %s", presetIndex, presetsEnabled?"true":"false");
 
 	AppConfig preset = *g_Conf;
-	preset.IsOkApplyPreset( presetIndex );	//apply a preset to a copy of g_Conf.
+	preset.IsOkApplyPreset( presetIndex, false );	//apply a preset to a copy of g_Conf.
 	preset.EnablePresets = presetsEnabled;	//override IsOkApplyPreset (which always applies/enabled) to actual required state
 	
 	//update the config panels of SysConfigDialog to reflect the preset.
@@ -125,16 +125,16 @@ void Dialogs::SysConfigDialog::AddPresetsControl()
 		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL /*| wxSL_AUTOTICKS | wxSL_LABELS */);
 	m_slider_presets->SetMinSize(wxSize(100,25));
 
+	const wchar_t* presetTooltip = pxEt(L"Presets apply some speed hacks that may boost speed on underpowered systems, or speed up games that have unusual performance requirements. Uncheck this box to apply settings manually.\n\n1) Safest - No speed hacks. Most reliable, but possibly slow setting.\n2) Safe - Default. A few speed hacks known to provide boosts, with minimal to no side effects.\n3) Balanced - May help quad core CPUs.\n4) Aggressive - May help underpowered CPUs on less demanding games, but risks causing problems in other cases.\n5) Very Aggressive - May help underpowered CPUs on less demanding games, but is likely to cause problems in other cases.\n6) Mostly Harmful - Harsh application of speed hacks. May help a very small set of games that have unusual performance requirements, but have adverse effects on most others. Not recommended for underpowered PCs.");
+
 	m_slider_presets->SetToolTip(
-		pxEt( L"The Presets apply speed hacks, some recompiler options and some game fixes known to boost speed.\nKnown important game fixes will be applied automatically.\n\nPresets info:\n1 -     The most accurate emulation but also the slowest.\n3 --> Tries to balance speed with compatibility.\n4 -     Some more aggressive hacks.\n6 -     Too many hacks which will probably slow down most games.\n"
-			)
+		presetTooltip
 	);
 	m_slider_presets->Enable(g_Conf->EnablePresets);
 
 	m_check_presets = new pxCheckBox( this, _("Preset:"), 0);
 	m_check_presets->SetToolTip(
-		pxEt( L"The Presets apply speed hacks, some recompiler options and some game fixes known to boost speed.\nKnown important game fixes will be applied automatically.\n\n--> Uncheck to modify settings manually (with current preset as base)"
-			)
+		presetTooltip
 	);
 	m_check_presets->SetValue(!!g_Conf->EnablePresets);
 	//Console.WriteLn("--> SysConfigDialog::AddPresetsControl: EnablePresets: %s", g_Conf->EnablePresets?"true":"false");

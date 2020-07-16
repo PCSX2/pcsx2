@@ -33,7 +33,7 @@ namespace Threading
 //
 class WaitForTaskDialog : public wxDialogWithHelpers
 {
-    DECLARE_DYNAMIC_CLASS_NO_COPY(WaitForTaskDialog)
+    wxDECLARE_DYNAMIC_CLASS_NO_COPY(WaitForTaskDialog);
 
     typedef wxDialogWithHelpers _parent;
 

@@ -17,10 +17,6 @@
 
 #include <xmmintrin.h>
 
-#define StoreDestIdx(idx) \
-    case idx:             \
-        _mm_store_ps(&destxmm[idx - 1][0], srcreg)
-
 template <u8 data>
 __noinline void memset_sse_a(void *dest, const size_t size)
 {
@@ -39,13 +35,27 @@ __noinline void memset_sse_a(void *dest, const size_t size)
     float(*destxmm)[4] = (float(*)[4])dest;
 
     switch (MZFqwc & 0x07) {
-        StoreDestIdx(0x07);
-        StoreDestIdx(0x06);
-        StoreDestIdx(0x05);
-        StoreDestIdx(0x04);
-        StoreDestIdx(0x03);
-        StoreDestIdx(0x02);
-        StoreDestIdx(0x01);
+        case 0x07:
+            _mm_store_ps(&destxmm[0x07 - 1][0], srcreg);
+            // Fall through
+        case 0x06:
+            _mm_store_ps(&destxmm[0x06 - 1][0], srcreg);
+            // Fall through
+        case 0x05:
+            _mm_store_ps(&destxmm[0x05 - 1][0], srcreg);
+            // Fall through
+        case 0x04:
+            _mm_store_ps(&destxmm[0x04 - 1][0], srcreg);
+            // Fall through
+        case 0x03:
+            _mm_store_ps(&destxmm[0x03 - 1][0], srcreg);
+            // Fall through
+        case 0x02:
+            _mm_store_ps(&destxmm[0x02 - 1][0], srcreg);
+            // Fall through
+        case 0x01:
+            _mm_store_ps(&destxmm[0x01 - 1][0], srcreg);
+            // Fall through
     }
 
     destxmm += (MZFqwc & 0x07);
@@ -65,8 +75,6 @@ static __fi void memzero_sse_a(void *dest, const size_t size)
 {
     memset_sse_a<0>(dest, size);
 }
-
-#undef StoreDestIdx
 
 template <u8 data, typename T>
 __noinline void memset_sse_a(T &dest)

@@ -37,18 +37,6 @@ void InitADSR() // INIT ADSR
     }
 }
 
-// Returns the linear slide value for AR and SR inputs.
-// (currently not used, it's buggy)
-static int GetLinearSrAr(uint SrAr)
-{
-    // The Sr/Ar settings work in quarter steps, which means
-    // the bottom 2 bits go on the left side of the shift, and
-    // the right side of the shift gets divided by 4:
-
-    const uint newSr = 0x7f - SrAr;
-    return ((1 | (newSr & 3)) << (newSr >> 2));
-}
-
 bool V_ADSR::Calculate()
 {
     pxAssume(Phase != 0);

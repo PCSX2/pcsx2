@@ -264,13 +264,24 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState) {
 		for ( ; it != list->end(); ++it) {
 			bool b = mVUcmpProg(mVU, *it[0], 0);
 			if (EmuConfig.Gamefixes.ScarfaceIbit) {
-				if (isVU1 && ((((u32*)mVU.regs().Micro)[startPC / 4 + 1]) == 0x80200118) && ((((u32*)mVU.regs().Micro)[startPC / 4 + 3]) == 0x81000062)) {
+				if (isVU1 && ((((u32*)mVU.regs().Micro)[startPC / 4 + 1]) == 0x80200118) &&
+						     ((((u32*)mVU.regs().Micro)[startPC / 4 + 3]) == 0x81000062)) {
 					b = true;
 					mVU.prog.cleared = 0;
 					mVU.prog.cur = it[0];
 					mVU.prog.isSame = 1;
 				}
-			}
+            } else if (EmuConfig.Gamefixes.CrashTagTeamRacingIbit) {
+				// Crash tag team tends to make changes to the I register settings in the addresses 0x2bd0 - 0x3ff8
+				// so detect when the code is only changed in this region and don't recompile. Use the same Scarface hack
+				// to access the new I regsiter settings (Look at doIbit() in microVU_Compile.inl
+                if (isVU1 && (memcmp_mmx((u8 *)(it[0]->data), (u8 *)(mVU.regs().Micro), 0x2bd0) == 0)) {
+                    b = true;
+                    mVU.prog.cleared = 0;
+                    mVU.prog.cur = it[0];
+                    mVU.prog.isSame = 1;
+                }
+            }
 			if (b) {
 				quick.block = it[0]->block[startPC/8];
 				quick.prog  = it[0];
@@ -341,12 +352,12 @@ void recMicroVU0::Execute(u32 cycles) {
 	pxAssert(m_Reserved); // please allocate me first! :|
 
 	if(!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
-
+	VU0.VI[REG_TPC].UL <<= 3;
 	// Sometimes games spin on vu0, so be careful with this value
 	// woody hangs if too high on sVU (untested on mVU)
 	// Edit: Need to test this again, if anyone ever has a "Woody" game :p
 	((mVUrecCall)microVU0.startFunct)(VU0.VI[REG_TPC].UL, cycles);
-
+	VU0.VI[REG_TPC].UL >>= 3;
 	if(microVU0.regs().flags & 0x4)
 	{
 		microVU0.regs().flags &= ~0x4;
@@ -359,8 +370,9 @@ void recMicroVU1::Execute(u32 cycles) {
 	if (!THREAD_VU1) {
 		if(!(VU0.VI[REG_VPU_STAT].UL & 0x100)) return;
 	}
+	VU1.VI[REG_TPC].UL <<= 3;
 	((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
-
+	VU1.VI[REG_TPC].UL >>= 3;
 	if(microVU1.regs().flags & 0x4)
 	{
 		microVU1.regs().flags &= ~0x4;

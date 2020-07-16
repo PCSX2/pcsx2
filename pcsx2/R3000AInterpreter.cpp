@@ -142,8 +142,16 @@ static __fi void execI()
 
 	psxRegs.pc+= 4;
 	psxRegs.cycle++;
-	iopCycleEE-=8;
-
+	
+	if ((psxHu32(HW_ICFG) & (1 << 3)))
+	{
+		//One of the Iop to EE delta clocks to be set in PS1 mode.
+		iopCycleEE-=9;
+	}
+	else
+	{   //default ps2 mode value
+		iopCycleEE-=8;
+	}
 	psxBSC[psxRegs.code >> 26]();
 }
 

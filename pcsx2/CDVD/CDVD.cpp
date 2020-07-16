@@ -21,6 +21,7 @@
 #include <ctype.h>
 #include <wx/datetime.h>
 
+#include "CdRom.h"
 #include "CDVD.h"
 #include "CDVD_internal.h"
 #include "CDVDisoReader.h"
@@ -37,6 +38,9 @@
 wxString DiscSerial;
 
 static cdvdStruct cdvd;
+
+s64 PSXCLK = 36864000;
+
 
 static __fi void SetResultSize(u8 size)
 {
@@ -394,15 +398,6 @@ void cdvdReloadElfInfo(wxString elfoverride)
 
 		if(discType==1)
 		{
-			// Is a PS1 disc.
-			if (!ENABLE_LOADING_PS1_GAMES)
-				Cpu->ThrowException( Exception::RuntimeError()
-					.SetDiagMsg(L"PSX game discs are not supported by PCSX2.")
-					.SetUserMsg(pxE( L"Playstation game discs are not supported by PCSX2.  If you want to emulate PSX games then you'll have to download a PSX-specific emulator, such as ePSXe or PCSX.")
-					)
-				);
-				//Console.Error( "Playstation1 game discs are not supported by PCSX2." );
-
 			// PCSX2 currently only recognizes *.elf executables in proper PS2 format.
 			// To support different PSX titles in the console title and for savestates, this code bypasses all the detection,
 			// simply using the exe name, stripped of problematic characters.
@@ -1422,6 +1417,13 @@ static __fi void cdvdWrite14(u8 rt) { // PS1 MODE?? // This should be done in th
 		Console.Warning("*PCSX2*: go PS1 mode DISC SPEED = %dX", rt);
 
 	psxReset();
+	PSXCLK =  33868800;
+	setPsxSpeed();
+	// psxmode: todo: we should recalculate video timings for iop and ee. how to do that best?
+	// unlike regular ps2 games, the video mode for ps1driver isn't going through the GS set mode syscall
+	// so.. something like this? :
+	//gsSetVideoMode(GS_VideoMode::NTSC);
+	//gsSetVideoMode(GS_VideoMode::DVD_NTSC);
 	psxHu32(0x1f801450) = 0x8;
 	psxHu32(0x1f801078) = 1;
 	psxRegs.cycle = cycle;

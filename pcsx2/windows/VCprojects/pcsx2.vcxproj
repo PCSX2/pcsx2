@@ -57,7 +57,6 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">DISABLE_SVU;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -70,7 +69,6 @@
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt" />
     <None Include="..\..\Docs\License.txt" />
-    <None Include="..\..\x86\aVUzerorec.S" />
     <None Include="..\..\x86\microVU_Alloc.inl" />
     <None Include="..\..\x86\microVU_Analyze.inl" />
     <None Include="..\..\x86\microVU_Branch.inl" />
@@ -102,10 +100,6 @@
       <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ButtonIcon_Camera.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Appearance.png">
       <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
       <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
@@ -179,12 +173,11 @@
     <ClCompile Include="..\..\gui\Debugger\DebugEvents.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DebuggerLists.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DisassemblyDialog.cpp" />
-    <ClCompile Include="..\..\gui\Dialogs\GameDatabaseDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\McdConfigDialog.cpp" />
-    <ClCompile Include="..\..\gui\Panels\GameDatabasePanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\MemoryCardListView.cpp" />
     <ClCompile Include="..\..\IopGte.cpp" />
     <ClCompile Include="..\..\IPU\IPUdma.cpp" />
+    <ClCompile Include="..\..\IPU\IPUdither.cpp" />
     <ClCompile Include="..\..\Linux\LnxConsolePipe.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -200,6 +193,13 @@
     <ClCompile Include="..\..\ps2\pgif.cpp" />
     <ClCompile Include="..\..\ShiftJisToUnicode.cpp" />
     <ClCompile Include="..\..\sif2.cpp" />
+    <ClCompile Include="..\..\Recording\InputRecording.cpp" />
+    <ClCompile Include="..\..\Recording\NewRecordingFrame.cpp" />
+    <ClCompile Include="..\..\Recording\InputRecordingFile.cpp" />
+    <ClCompile Include="..\..\Recording\RecordingControls.cpp" />
+    <ClCompile Include="..\..\Recording\PadData.cpp" />
+    <ClCompile Include="..\..\Recording\RecordingInputManager.cpp" />
+    <ClCompile Include="..\..\Recording\VirtualPad.cpp" />
     <ClCompile Include="..\..\Utilities\FileUtils.cpp" />
     <ClCompile Include="..\..\Dump.cpp" />
     <ClCompile Include="..\..\x86\iMisc.cpp" />
@@ -227,20 +227,7 @@
     <ClCompile Include="..\..\MTVU.cpp" />
     <ClCompile Include="..\..\VUmicro.cpp" />
     <ClCompile Include="..\..\VUmicroMem.cpp" />
-    <ClCompile Include="..\..\x86\iVU1micro.cpp" />
     <ClCompile Include="..\..\x86\microVU.cpp" />
-    <ClCompile Include="..\..\x86\sVU_Lower.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Micro.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Upper.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_zerorec.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\VU0.cpp" />
     <ClCompile Include="..\..\VU0micro.cpp" />
     <ClCompile Include="..\..\VU0microInterp.cpp" />
@@ -394,7 +381,6 @@
     <ClCompile Include="..\..\gui\Panels\PluginSelectorPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\SpeedhacksPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\VideoPanel.cpp" />
-    <ClCompile Include="..\DwmSetup.cpp" />
     <ClCompile Include="..\WinCompressNTFS.cpp" />
     <ClCompile Include="..\WinConsolePipe.cpp" />
     <ClCompile Include="..\..\Linux\LnxKeyCodes.cpp">
@@ -433,6 +419,7 @@
     <ClInclude Include="..\..\GameDatabase.h" />
     <ClInclude Include="..\..\Gif_Unit.h" />
     <ClInclude Include="..\..\gui\AppGameDatabase.h" />
+    <ClInclude Include="..\..\gui\Saveslots.h" />
     <ClInclude Include="..\..\gui\Debugger\BreakpointWindow.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlDisassemblyView.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlMemView.h" />
@@ -447,6 +434,13 @@
     <ClInclude Include="..\..\Patch.h" />
     <ClInclude Include="..\..\PrecompiledHeader.h" />
     <ClInclude Include="..\..\ps2\pgif.h" />
+    <ClInclude Include="..\..\Recording\InputRecording.h" />
+    <ClInclude Include="..\..\Recording\NewRecordingFrame.h" />
+    <ClInclude Include="..\..\Recording\InputRecordingFile.h" />
+    <ClInclude Include="..\..\Recording\RecordingControls.h" />
+    <ClInclude Include="..\..\Recording\PadData.h" />
+    <ClInclude Include="..\..\Recording\RecordingInputManager.h" />
+    <ClInclude Include="..\..\Recording\VirtualPad.h" />
     <ClInclude Include="..\..\Utilities\AsciiFile.h" />
     <ClInclude Include="..\..\Elfheader.h" />
     <ClInclude Include="..\..\CDVD\IsoFileFormats.h" />
@@ -454,7 +448,6 @@
     <ClInclude Include="..\..\Config.h" />
     <ClInclude Include="..\..\Dump.h" />
     <ClInclude Include="..\..\IopCommon.h" />
-    <ClInclude Include="..\..\NakedAsm.h" />
     <ClInclude Include="..\..\Plugins.h" />
     <ClInclude Include="..\..\SaveState.h" />
     <ClInclude Include="..\..\System.h" />
@@ -474,9 +467,6 @@
     <ClInclude Include="..\..\x86\microVU_Misc.h" />
     <ClInclude Include="..\..\x86\microVU_Profiler.h" />
     <ClInclude Include="..\..\x86\R5900_Profiler.h" />
-    <ClInclude Include="..\..\x86\sVU_Debug.h" />
-    <ClInclude Include="..\..\x86\sVU_Micro.h" />
-    <ClInclude Include="..\..\x86\sVU_zerorec.h" />
     <ClInclude Include="..\..\VUflags.h" />
     <ClInclude Include="..\..\VUops.h" />
     <ClInclude Include="..\..\Sif.h" />

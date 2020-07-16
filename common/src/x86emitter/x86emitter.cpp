@@ -205,7 +205,7 @@ const char *xRegisterBase::GetName()
             return x86_regnames_gpr16[Id];
         case 4:
             return x86_regnames_gpr32[Id];
-#ifdef __x86_64__
+#ifdef __M_X86_64
         case 8:
             return x86_regnames_gpr64[Id];
 #endif
@@ -258,7 +258,7 @@ void EmitSibMagic(uint regfield, const void *address)
     // We must make sure that the displacement is within the 32bit range
     // Else we will fail out in a spectacular fashion
     sptr displacement = (sptr)address;
-#ifdef __x86_64__
+#ifdef __M_X86_64
     pxAssertDev(displacement >= -0x80000000LL && displacement < 0x80000000LL, "SIB target is too far away, needs an indirect register");
 #endif
 
@@ -372,7 +372,7 @@ void EmitSibMagic(const xRegisterBase &reg1, const xIndirectVoid &sib)
 //////////////////////////////////////////////////////////////////////////////////////////
 __emitinline static void EmitRex(bool w, bool r, bool x, bool b)
 {
-#ifdef __x86_64__
+#ifdef __M_X86_64
     u8 rex = 0x40 | (w << 3) | (r << 2) | (x << 1) | b;
     if (rex != 0x40)
         xWrite8(rex);
@@ -581,7 +581,7 @@ xAddressVoid::xAddressVoid(const void *displacement)
     Base = xEmptyReg;
     Index = xEmptyReg;
     Factor = 0;
-#ifdef __x86_64__
+#ifdef __M_X86_64
     pxAssert(0);
 //Displacement = (s32)displacement;
 #else
@@ -918,7 +918,7 @@ void xImpl_IncDec::operator()(const xRegisterInt &to) const
         u8 regfield = isDec ? 1 : 0;
         xOpWrite(to.GetPrefix16(), 0xfe, regfield, to);
     } else {
-#ifdef __x86_64__
+#ifdef __M_X86_64
         pxAssertMsg(0, "Single Byte INC/DEC aren't valid in 64 bits."
                        "You need to use the ModR/M form (FF/0 FF/1 opcodes)");
 #endif
@@ -1055,7 +1055,7 @@ __emitinline void xRestoreReg(const xRegisterSSE &dest)
 // Helper object to handle ABI frame
 #ifdef __GNUC__
 
-#ifdef __x86_64__
+#ifdef __M_X86_64
 // GCC ensures/requires stack to be 16 bytes aligned (but when?)
 #define ALIGN_STACK(v) xADD(rsp, v)
 #else
@@ -1077,7 +1077,7 @@ xScopedStackFrame::xScopedStackFrame(bool base_frame, bool save_base_pointer, in
     m_save_base_pointer = save_base_pointer;
     m_offset = offset;
 
-#ifdef __x86_64__
+#ifdef __M_X86_64
 
     m_offset += 8; // Call stores the return address (4 bytes)
 
@@ -1127,7 +1127,7 @@ xScopedStackFrame::~xScopedStackFrame()
 {
     ALIGN_STACK(16 - m_offset % 16);
 
-#ifdef __x86_64__
+#ifdef __M_X86_64
 
     // Restore the register context
     xPOP(r15);

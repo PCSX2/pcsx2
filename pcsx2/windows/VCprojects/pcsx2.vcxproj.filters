@@ -43,9 +43,6 @@
     <Filter Include="System\Ps2\EmotionEngine\VU\Dynarec\microVU">
       <UniqueIdentifier>{a210a307-e8bf-4bbc-8770-e720cc7fc953}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Ps2\EmotionEngine\VU\Dynarec\Super VU">
-      <UniqueIdentifier>{f9ec43a5-e1d5-4b0b-831a-eed6947e8552}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\Ps2\EmotionEngine\VU\Interpreter">
       <UniqueIdentifier>{e14056ea-b126-4e5b-94e0-3ce09463970b}</UniqueIdentifier>
     </Filter>
@@ -148,6 +145,12 @@
     <Filter Include="AppHost\Debugger">
       <UniqueIdentifier>{7a0a1104-f9ee-4cd1-aaba-f8267eba1658}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Recording">
+      <UniqueIdentifier>{7b917318-5a5e-44c0-8463-1dfab67f3b67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Recording\gui">
+      <UniqueIdentifier>{93e36831-627f-4529-b709-1f4bad398512}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -155,9 +158,6 @@
     </None>
     <None Include="..\..\Docs\License.txt">
       <Filter>Docs</Filter>
-    </None>
-    <None Include="..\..\x86\aVUzerorec.S">
-      <Filter>System\Linux</Filter>
     </None>
     <None Include="..\..\x86\microVU_Alloc.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
@@ -287,23 +287,8 @@
     <ClCompile Include="..\..\VUmicroMem.cpp">
       <Filter>System\Ps2\EmotionEngine\VU</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\x86\iVU1micro.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\x86\microVU.cpp">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Lower.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Micro.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Upper.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_zerorec.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClCompile>
     <ClCompile Include="..\..\VU0.cpp">
       <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
@@ -713,9 +698,6 @@
     <ClCompile Include="..\..\gui\Panels\VideoPanel.cpp">
       <Filter>AppHost\Panels</Filter>
     </ClCompile>
-    <ClCompile Include="..\DwmSetup.cpp">
-      <Filter>AppHost\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="..\WinCompressNTFS.cpp">
       <Filter>AppHost\Win32</Filter>
     </ClCompile>
@@ -753,12 +735,6 @@
     </ClCompile>
     <ClCompile Include="..\..\gui\Dialogs\McdConfigDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\gui\Dialogs\GameDatabaseDialog.cpp">
-      <Filter>AppHost\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\gui\Panels\GameDatabasePanel.cpp">
-      <Filter>AppHost\Panels</Filter>
     </ClCompile>
     <ClCompile Include="..\..\gui\Panels\MemoryCardListView.cpp">
       <Filter>AppHost\Panels</Filter>
@@ -871,6 +847,30 @@
     <ClCompile Include="..\..\ps2\Iop\PsxBios.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Recording\InputRecording.cpp">
+      <Filter>Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\InputRecordingFile.cpp">
+      <Filter>Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\PadData.cpp">
+      <Filter>Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\RecordingControls.cpp">
+      <Filter>Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\RecordingInputManager.cpp">
+      <Filter>Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\NewRecordingFrame.cpp">
+      <Filter>Recording\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\VirtualPad.cpp">
+      <Filter>Recording\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IPU\IPUdither.cpp">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -898,9 +898,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\IopCommon.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NakedAsm.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Plugins.h">
@@ -953,15 +950,6 @@
     </ClInclude>
     <ClInclude Include="..\..\x86\microVU_Misc.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\x86\sVU_Debug.h">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\x86\sVU_Micro.h">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\x86\sVU_zerorec.h">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClInclude>
     <ClInclude Include="..\..\VUflags.h">
       <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
@@ -1203,6 +1191,9 @@
     <ClInclude Include="..\..\gui\RecentIsoList.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\gui\Saveslots.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
     <ClInclude Include="..\cheats\cheats.h">
       <Filter>AppHost\Cheats</Filter>
     </ClInclude>
@@ -1311,6 +1302,27 @@
     <ClInclude Include="..\..\Mdec.h">
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Recording\InputRecording.h">
+      <Filter>Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\InputRecordingFile.h">
+      <Filter>Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\PadData.h">
+      <Filter>Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\RecordingControls.h">
+      <Filter>Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\RecordingInputManager.h">
+      <Filter>Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\NewRecordingFrame.h">
+      <Filter>Recording\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\VirtualPad.h">
+      <Filter>Recording\gui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\wxResources.rc">
@@ -1378,9 +1390,6 @@
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Video.png">
-      <Filter>AppHost\Resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Appearance.png">
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\Breakpoint_Inactive.png">

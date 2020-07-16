@@ -155,24 +155,35 @@ bool Panels::BiosSelectorPanel::ValidateEnumerationStatus()
 
 	m_BiosList.swap(bioslist);
 
+	int sel = m_ComboBox->GetSelection();
+	if ((sel == wxNOT_FOUND) && !(m_ComboBox->IsEmpty()))
+		m_ComboBox->SetSelection(0);
+
 	return validated;
 }
 
 void Panels::BiosSelectorPanel::DoRefresh()
 {
-	if( !m_BiosList ) return;
+	if (!m_BiosList) return;
 
 	m_ComboBox->Clear();
 
-	const wxFileName right( g_Conf->FullpathToBios() );
+	const wxFileName right(g_Conf->FullpathToBios());
+	bool biosSet = false;
 
-	for( size_t i=0; i<m_BiosList->GetCount(); ++i )
+	for(size_t i=0; i<m_BiosList->GetCount(); ++i)
 	{
 		wxString description;
-		if( !IsBIOS((*m_BiosList)[i], description) ) continue;
+		if (!IsBIOS((*m_BiosList)[i], description)) continue;
 		int sel = m_ComboBox->Append( description, (void*)i );
 
-		if( wxFileName((*m_BiosList)[i] ) == right )
-			m_ComboBox->SetSelection( sel );
+		if (wxFileName((*m_BiosList)[i] ) == right)
+		{
+			m_ComboBox->SetSelection(sel);
+			biosSet = true;
+		}
 	}
+
+	if ((!biosSet) && !(m_ComboBox->IsEmpty()))
+		m_ComboBox->SetSelection(0);
 }

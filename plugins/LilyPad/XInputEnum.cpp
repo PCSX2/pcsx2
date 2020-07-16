@@ -70,6 +70,7 @@ _XInputEnable pXInputEnable = 0;
 _XInputGetStateEx pXInputGetStateEx = 0;
 _XInputGetExtended pXInputGetExtended = 0;
 _XInputSetState pXInputSetState = 0;
+static bool xinputNotInstalled = false;
 
 static int xInputActiveCount = 0;
 
@@ -161,13 +162,14 @@ public:
     {
         if (!active)
             return 0;
-        XINPUT_STATE state;
-        if (ERROR_SUCCESS != pXInputGetStateEx(index, &state)) {
-            Deactivate();
-            return 0;
-        }
         SCP_EXTN pressure;
         if (!pXInputGetExtended || (ERROR_SUCCESS != pXInputGetExtended(index, &pressure))) {
+            XINPUT_STATE state;
+            if (ERROR_SUCCESS != pXInputGetStateEx(index, &state)) {
+                Deactivate();
+                return 0;
+            }
+
             int buttons = state.Gamepad.wButtons;
             for (int i = 0; i < 15; i++) {
                 physicalControlState[i] = ((buttons >> physicalControls[i].id) & 1) << 16;
@@ -268,9 +270,8 @@ void EnumXInputDevices()
 {
     wchar_t temp[30];
     if (!pXInputSetState) {
-        // Also used as flag to indicute XInput not installed, so
-        // don't repeatedly try to load it.
-        if (pXInputEnable)
+        // XInput not installed, so don't repeatedly try to load it.
+        if (xinputNotInstalled)
             return;
 
         // Prefer XInput 1.3 since SCP only has an XInput 1.3 wrapper right now.
@@ -291,7 +292,7 @@ void EnumXInputDevices()
             }
         }
         if (!pXInputSetState) {
-            pXInputEnable = (_XInputEnable)-1;
+            xinputNotInstalled = true;
             return;
         }
     }

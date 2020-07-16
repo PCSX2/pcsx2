@@ -41,10 +41,6 @@
 
 class AppGameDatabase : public BaseGameDatabaseImpl
 {
-protected:
-	wxString		header;			// Header of the database
-	wxString		baseKey;		// Key to separate games by ("Serial")
-
 public:
 	AppGameDatabase() {}
 	virtual ~AppGameDatabase() {
@@ -55,7 +51,6 @@ public:
 	}
 
 	AppGameDatabase& LoadFromFile(const wxString& file = Path::Combine( PathDefs::GetProgramDataDir(), wxFileName(L"GameIndex.dbf") ), const wxString& key = L"Serial" );
-	void SaveToFile(const wxString& file = Path::Combine( PathDefs::GetProgramDataDir(), wxFileName(L"GameIndex.dbf")) );
 };
 
 static wxString compatToStringWX(int compat) {

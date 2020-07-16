@@ -122,7 +122,7 @@ struct SyncCounter
 #define MODE_HRENDER	0x0		//Set for ~5/6 of 1 Scanline
 #define MODE_HBLANK		0x1		//Set for the remaining ~1/6 of 1 Scanline
 
-
+extern const char* ReportVideoMode();
 extern Counter counters[4];
 extern SyncCounter hsyncCounter;
 extern SyncCounter vsyncCounter;

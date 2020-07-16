@@ -48,18 +48,6 @@ SPU2write(u32 mem, u16 value);
 EXPORT_C_(u16)
 SPU2read(u32 mem);
 
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-EXPORT_C_(s32)
-SPU2dmaRead(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed);
-EXPORT_C_(s32)
-SPU2dmaWrite(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed);
-EXPORT_C_(void)
-SPU2dmaInterrupt(s32 channel);
-
-// dma irq callbacks not needed anymore, they are handled by the dmac
-EXPORT_C_(void)
-SPU2irqCallback(void (*SPU2callback)());
-#else
 // These defines are useless and gcc-4.6 complain about redefinition
 // so we remove them on linux
 #ifndef __POSIX__
@@ -84,7 +72,6 @@ EXPORT_C_(void)
 SPU2WriteMemAddr(int core, u32 value);
 EXPORT_C_(void)
 SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callback)());
-#endif
 #endif
 
 // extended funcs
@@ -114,13 +101,11 @@ extern u8 callirq;
 
 extern void (*_irqcallback)();
 
-#ifndef ENABLE_NEW_IOPDMA_SPU2
 extern void (*dma4callback)();
 extern void (*dma7callback)();
 
 extern s16 *input_data;
 extern u32 input_data_ptr;
-#endif
 
 extern double srate_pv;
 

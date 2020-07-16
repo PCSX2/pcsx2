@@ -19,7 +19,6 @@
 #include "../CDVD.h"
 #include <Windows.h>
 #include <commctrl.h>
-#include <codecvt>
 #include "resource.h"
 
 static HINSTANCE s_hinstance;
@@ -107,8 +106,10 @@ std::wstring GetValidDrive()
         drive = drives.front();
     }
 
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    printf(" * CDVD: Opening drive '%s'...\n", converter.to_bytes(drive).c_str());
+    int size = WideCharToMultiByte(CP_UTF8, 0, drive.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    std::vector<char> converted_string(size);
+    WideCharToMultiByte(CP_UTF8, 0, drive.c_str(), -1, converted_string.data(), converted_string.size(), nullptr, nullptr);
+    printf(" * CDVD: Opening drive '%s'...\n", converted_string.data());
 
     // The drive string has the form "X:\", but to open the drive, the string
     // has to be in the form "\\.\X:"

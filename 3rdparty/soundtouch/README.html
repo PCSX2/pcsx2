@@ -8,13 +8,14 @@
   <meta name="author" content="Olli Parviainen">
   <meta name="description"
  content="Readme file for SoundTouch audio processing library">
-  <style> <!-- .normal { font-family: Arial }
-    --></style>
+ <style>
+   body {font-family: Arial, Helvetica; }
+ </style>
 </head>
 <body class="normal">
 <hr>
-<h1>SoundTouch audio processing library v1.9.2</h1>
-<p class="normal">SoundTouch library Copyright © Olli Parviainen 2001-2015</p>
+<h1>SoundTouch audio processing library v2.1.2</h1>
+<p class="normal">SoundTouch library Copyright &copy; Olli Parviainen 2001-2018</p>
 <hr>
 <h2>1. Introduction </h2>
 <p>SoundTouch is an open-source audio processing library that allows
@@ -32,6 +33,7 @@ same time</li>
 <h3>1.1 Contact information </h3>
 <p>Author email: oparviai 'at' iki.fi </p>
 <p>SoundTouch WWW page: <a href="http://soundtouch.surina.net">http://soundtouch.surina.net</a></p>
+<p>SoundTouch git repository: <a href="https://gitlab.com/soundtouch/soundtouch.git">https://gitlab.com/soundtouch/soundtouch.git</a></p>
 <hr>
 <h2>2. Compiling SoundTouch</h2>
 <p>Before compiling, notice that you can choose the sample data format if it's 
@@ -55,6 +57,9 @@ instead of the make-win.bat script, directories bin and lib may need to
 be created manually to the SoundTouch package root for the final
 executables. The make-win.bat script creates these directories
 automatically. </p>
+<p><strong>C# example</strong>: The source code package includes also a C# example 
+    application for Windows that shows how to invoke SoundTouch.dll 
+    dynamic-load library for processing mp3 audio.
 <p><strong>OpenMP NOTE</strong>: If activating the OpenMP parallel computing in 
 the compilation, the target program will require additional vcomp dll library to 
 properly run. In Visual C++ 9.0 these libraries can be found in the following 
@@ -120,7 +125,7 @@ destination locations.</p>
     </tr>
   </tbody>
 </table>
-<h4><b>2.2.1 Required GNU tools</b>&nbsp;</h4>
+<h4><b>2.2.1 Required GNU tools</b></h4>
 <p> <span style="font-weight: bold;">Bash shell</span>, <span
  style="font-weight: bold;">GNU C++ compiler</span>, <span
  style="font-weight: bold;">libtool</span>, <span
@@ -156,7 +161,7 @@ directly and remove the following definition:<blockquote>
 sstrip SoundTouch.dll</pre>
 </blockquote>
 
-<h3>2.1. Building in Android</h3>
+<h3>2.3. Building in Android</h3>
 <p>Android compilation instructions are within the 
     source code package, see file &quot;<b>source/Android-lib/README-SoundTouch-Android.html</b>&quot; 
     in the source code package. </p>
@@ -219,7 +224,7 @@ as combination of two primary effects, <em>sample rate transposing</em>
 and <em>time-stretching</em>.</p>
 <p><em>Sample rate transposing</em> affects both the audio stream
 duration and pitch. It's implemented simply by converting the original
-audio sample stream to the&nbsp; desired duration by interpolating from
+audio sample stream to the desired duration by interpolating from
 the original audio samples. In SoundTouch, linear interpolation with
 anti-alias filtering is used. Theoretically a higher-order
 interpolation provide better result than 1st order linear
@@ -268,7 +273,7 @@ length of a single processing sequence in milliseconds which determines
 the how the original sound is chopped in the time-stretch algorithm.
 Larger values mean fewer sequences are used in processing. In principle
 a larger value sounds better when slowing down the tempo, but worse
-when increasing the tempo and vice versa.&nbsp;<br>
+when increasing the tempo and vice versa.<br>
     <br>
 By default, this setting value is calculated automatically according to
 tempo value.<br>
@@ -277,7 +282,7 @@ tempo value.<br>
 default length in milliseconds is for the algorithm that seeks the best
 possible overlapping location. This determines from how wide a sample
 "window" the algorithm can use to find an optimal mixing location when
-the sound sequences are to be linked back together.&nbsp;<br>
+the sound sequences are to be linked back together.<br>
     <br>
 The bigger this window setting is, the higher the possibility to find a
 better mixing position becomes, but at the same time large values may
@@ -345,7 +350,7 @@ computation burden</td>
       </td>
       <td valign="top">Default value is relatively large, chosen to
 suit with above parameters.</td>
-      <td valign="top">&nbsp;</td>
+      <td valign="top"></td>
       <td valign="top">If you reduce the "sequence ms" setting, you
 might wish to try a smaller value.</td>
       <td valign="top">Increasing the parameter value increases
@@ -358,7 +363,7 @@ computation burden</td>
 <p>The time-stretch routine has a 'quick' mode that substantially
 speeds up the algorithm but may slightly compromise the sound quality. 
 This mode is activated by calling SoundTouch::setSetting()
-function with parameter&nbsp; id of SETTING_USE_QUICKSEEK and value
+function with parameter id of SETTING_USE_QUICKSEEK and value
 "1", i.e. </p>
 <blockquote>
   <p>setSetting(SETTING_USE_QUICKSEEK, 1);</p>
@@ -377,7 +382,10 @@ processors vs. non-SIMD implementation:</p>
 <p>SoundTouch 1.9 onwards support running the algorithms parallel in several CPU 
 cores. Based on benchmark the experienced multi-core processing speed-up gain 
 ranges between +30% (on a high-spec dual-core x86 Windows PC) to 215% (on a moderately low-spec 
-quad-core ARM of Raspberry Pi2).</p>
+quad-core ARM of Raspberry Pi2). </p>
+<p>See an external blog article with more detailed discussion about the
+<a href="http://www.softwarecoven.com/parallel-computing-in-embedded-mobile-devices/">
+SoundTouch OpenMP optimization</a>.</p>
 <p>The parallel computing support is implemented using OpenMP spec 3.0 
 instructions. These instructions are supported by Visual C++ 2008 and later, and 
 GCC v4.2 and later. Compilers that do not supporting OpenMP will ignore these 
@@ -439,13 +447,13 @@ file format). Give "stdin" as filename to use standard input pipe. </td>
       </td>
       <td valign="top">Name of the output sound file where the
 resulting sound is saved (in .WAV audio file format). This parameter
-may be omitted if you&nbsp; don't want to save the output (e.g. when
+may be omitted if you don't want to save the output (e.g. when
 only calculating BPM rate with '-bpm' switch). Give "stdout" as
 filename to use standard output pipe.</td>
     </tr>
     <tr>
       <td valign="top">
-      <pre>&nbsp;[switches]</pre>
+      <pre>[switches]</pre>
       </td>
       <td valign="top">Are one or more control switches.</td>
     </tr>
@@ -567,6 +575,41 @@ this corresponds to lowering the pitch by -0.318 semitones:</p>
 <hr>
 <h2>5. Change History</h2>
 <h3>5.1. SoundTouch library Change History </h3>
+    <p><b>2.1.2:</b></p>
+    <ul>
+      <li>Bump version to 2.1.2 also in configure.ac. The earlier release had old version info for GNU autotools.</li>
+    </ul>
+    <p><b>2.1.1:</b></p>
+    <ul>
+      <li>Bugfixes: Fixed potential buffer overwrite bugs in WavFile routines. Replaced asserts with runtime exceptions.</li>
+      <li>Android: Migrated the SoundTouch Android example to new Android Studio</li>
+      <li>Automake: unset ACLOCAL in bootstrap script in case earlier build script has set it</li>
+
+    </ul>
+    <p><b>2.1:</b></p>
+    <ul>
+      <li>Refactored C# interface example</li>
+      <li>Disable anti-alias filter when switch 
+      SOUNDTOUCH_PREVENT_CLICK_AT_RATE_CROSSOVER defined because anti-alias 
+      filter cause slight click if the rate change crosses zero during 
+      processing</li>
+      <li>Added script for building SoundTouchDll dynamic-link-library for GNU platforms</li>
+      <li>Rewrote Beats-per-Minute analysis algorithm for more reliable BPM detection</li>
+      <li>Added BPM functions to SoundTouchDll API</li>
+      <li>Migrated Visual Studio project files to MSVC 201x format</li>
+      <li>Replaced function parameter value asserts with runtime exceptions</li>
+      <li>Code maintenance & style cleanup</li>
+    </ul>
+    <p><b>2.0:</b></p>
+    <ul>
+        <li>Added functions to get initial processing latency, duration ratio between the original input and processed output tracks, and clarified reporting of input/output batch sizes</li>
+        <li>Fixed issue that added brief sequence of silence to beginning of output audio</li>
+        <li>Adjusted algorithm parameters to reduce reverberating effect at tempo slowdown</li>
+        <li>Bugfix: Fixed a glitch that could cause negative array indexing in quick seek algorithm</li>
+        <li>Bugfix: flush() didn't properly flush final samples from the pipeline on 2nd time in case that soundtouch object instance was recycled and used for processing a second audio stream.</li>
+        <li>Bugfix: Pi value had incorrect 9th/10th decimals</li>
+        <li>Added C# example application that uses SoundTouch dll library for processing MP3 files</li>
+    </ul>
     <p><b>1.9.2:</b></p>
     <ul>
         <li>Fix in GNU package configuration</li>
@@ -575,8 +618,8 @@ this corresponds to lowering the pitch by -0.318 semitones:</p>
     <ul>
         <li>Improved SoundTouch::flush() function so that it returns precisely the desired amount of samples for exact output duration control</li>
         <li>Redesigned quickseek algorithm for improved sound quality when using the quickseek mode. The new quickseek algorithm can find 99% as good results as the 
-		default full-scan mode, while the quickseek algorithm is remarkable less 
-		CPU intensive.</li>
+        default full-scan mode, while the quickseek algorithm is remarkable less 
+        CPU intensive.</li>
         <li>Added adaptive integer divider scaling for improved sound quality when using integer processing algorithm
         </li>
     </ul>
@@ -647,13 +690,13 @@ sample batch sizes</li>
 <ul>
   <li> Added normalization to correlation calculation and improvement
 automatic seek/sequence parameter calculation to improve sound quality</li>
-  <li> Bugfixes:&nbsp;
+  <li> Bugfixes:
     <ul>
       <li> Fixed negative array indexing in quick seek algorithm</li>
       <li> FIR autoalias filter running too far in processing buffer</li>
       <li> Check against zero sample count in rate transposing</li>
       <li> Fix for x86-64 support: Removed pop/push instructions from
-the cpu detection algorithm.&nbsp;</li>
+the cpu detection algorithm.</li>
       <li> Check against empty buffers in FIFOSampleBuffer</li>
       <li> Other minor fixes &amp; code cleanup</li>
     </ul>
@@ -669,7 +712,7 @@ negative side or vice versa</li>
 <p><strong>1.4.1:</strong></p>
 <ul>
   <li> Fixed a buffer overflow bug in BPM detect algorithm routines if
-processing more than 2048 samples at one call&nbsp;</li>
+processing more than 2048 samples at one call</li>
 </ul>
 <p><strong>1.4.0:</strong></p>
 <ul>
@@ -752,7 +795,6 @@ accessing the FIFOSampleBuffer class from external files.</li>
 <ul>
   <li> Initial release</li>
 </ul>
-<p>&nbsp;</p>
 <h3>5.2. SoundStretch application Change History </h3>
 <p><b>1.9:</b></p>
 <ul>
@@ -819,10 +861,12 @@ switch "-bpm"</li>
 <p>Kudos for these people who have contributed to development or
 submitted bugfixes:</p>
 <ul>
-    <li> Arthur A</li>
+  <li> Arthur A</li>
+  <li> Paul Adenot</li>
   <li> Richard Ash</li>
   <li> Stanislav Brabec</li>
   <li> Christian Budde</li>
+  <li> Jamie Bullock</li>
   <li> Chris Bryan</li>  
   <li> Jacek Caban</li>
   <li> Brian Cameron</li>
@@ -830,25 +874,35 @@ submitted bugfixes:</p>
   <li> David Clark</li>
   <li> Patrick Colis</li>
   <li> Miquel Colon</li>
-    <li> Jim Credland</li>
+  <li> Jim Credland</li>
   <li> Sandro Cumerlato</li>
+  <li> Gerry Fan</li>
   <li> Justin Frankel</li>
-    <li> Masa H.</li>
+  <li> Masa H.</li>
   <li> Jason Garland</li>
   <li> Takashi Iwai</li>
-    <li> Thomas Klausner</li>
-    <li> Mathias Möhl</li>
+  <li> Thomas Klausner</li>
+  <li> Lu Zhihe</li>
+	<li> Luzpaz</li>
+  <li> Tony Mechelynck </li>
+  <li> Mathias M&ouml;hl</li>
   <li> Yuval Naveh</li>
+  <li> Mats Palmgren </li>
+  <li> Chandni Patel</li>
   <li> Paulo Pizarro</li>
+  <li> Andrey Ponomarenko</li>
   <li> Blaise Potard</li>
-    <li> Michael Pruett</li>
+  <li> Michael Pruett</li>
   <li> Rajeev Puran</li>
-    <li> RJ Ryan</li>
-    <li> John Sheehy</li>
+  <li> RJ Ryan</li>
+  <li> John Sheehy</li>
   <li> Tim Shuttleworth</li>
   <li> Albert Sirvent</li>
+  <li> Tyson Smith</li>
   <li> John Stumpo</li>
+  <li> Mario di Vece</li>
   <li> Katja Vetter</li>
+  <li> Wu Q.</li>
 </ul>
 <p>Moral greetings to all other contributors and users also!</p>
 <hr>
@@ -865,10 +919,9 @@ General Public License for more details.</p>
 <p>You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA</p>
-<hr><!--
-$Id: README.html 230 2015-09-20 07:38:32Z oparviai $
--->
-    <p>
-        <i>README.html file updated in Sep-2015</i></p>
+<p>---</p>
+<p>commercial license alternative also available, contact author for details.</p>
+<hr>
+<p><i>README.html file updated in November-2018</i></p>
 </body>
 </html>

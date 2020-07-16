@@ -17,15 +17,14 @@
 #define __IR5900_H__
 
 #include "x86emitter/x86emitter.h"
-#include "x86emitter/sse_helpers.h"
 #include "R5900.h"
 #include "VU.h"
 #include "iCore.h"
 #include "R5900_Profiler.h"
 
 extern u32 maxrecmem;
-extern u32 pc;			         // recompiler pc (also used by the SuperVU! .. why? (air))
-extern int g_branch;	         // set for branch (also used by the SuperVU! .. why? (air))
+extern u32 pc;			         // recompiler pc 
+extern int g_branch;	         // set for branch
 extern u32 target;		         // branch target
 extern u32 s_nBlockCycles;		// cycles of current block recompiling
 

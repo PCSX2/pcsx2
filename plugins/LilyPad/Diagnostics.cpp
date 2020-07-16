@@ -65,7 +65,7 @@ INT_PTR CALLBACK DiagDialog(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM 
                 //ShowWindow(hWndList, 0);
                 //LockWindowUpdate(hWndList);
                 if (!dev->active) {
-                    item.pszText = L"?";
+                    item.pszText = L"N/A";
                     for (i = 0; i < dev->numVirtualControls; i++) {
                         item.iItem = i;
                         ListView_SetItem(hWndList, &item);

@@ -21,10 +21,6 @@
 #define GLSL 0
 #endif
 
-#if defined(SHADER_MODEL) && (SHADER_MODEL <= 0x300)
-#error GSdx FX is not compatible with the D3D9 backend. Use OpenGL or D3D10|11.
-#endif
-
 /*------------------------------------------------------------------------------
                              [GLOBALS|FUNCTIONS]
 ------------------------------------------------------------------------------*/
@@ -1941,6 +1937,42 @@ float4 ColorGrading(float4 color, float2 texcoord)
 }
 #endif
 
+
+/*------------------------------------------------------------------------------
+                           [COLOR_TEMPERATURE]
+------------------------------------------------------------------------------*/
+
+#if COLOR_TEMPERATURE == 1
+float4 TemperaturePass(float4 color, float2 texcoord)
+{
+   float temp = clamp(White_Point, 2000.0, 12000.0) / 100.0f;
+
+   // all calculations assume a scale of 255. We'll normalize this at the end
+   float3 wp = float3(255.0,255.0,255.0);
+
+   if (White_Point <= 6600.0) {
+       wp.r = 255.0;
+       wp.g = - 155.25485562709179 - 0.44596950469579133 * (temp - 2.0)  + 104.49216199393888 * log(temp - 2.0);
+       wp.b = White_Point <= 1900 ? 0.0 : - 254.76935184120902 + 0.8274096064007395 * (temp - 10.0) + 115.67994401066147 * log(temp - 10.0) ;
+   } else {
+       wp.r = 351.97690566805693 + 0.114206453784165 * (temp - 55.0) - 40.25366309332127 * log(temp - 55.0);
+       wp.g = 325.4494125711974  + 0.07943456536662342 * (temp - 50.0) - 28.0852963507957   * log(temp - 50.0);
+       wp.b = 255.0;
+   }
+
+   // clamp and normalize
+   wp.rgb = clamp(wp.rgb, 0.0, 255.0) / 255.0;
+
+   float3 adjusted = color.rgb * wp;
+   float3 base_luma = XYZtoYxy(RGBtoXYZ(color.rgb));
+   float3 adjusted_luma = XYZtoYxy(RGBtoXYZ(adjusted));
+   adjusted = adjusted_luma + (float3(base_luma.r,0.0,0.0) - float3(adjusted_luma.r,0.0,0.0));
+   color = float4(XYZtoRGB(YxytoXYZ(adjusted)), 1.0);
+
+   return color;
+}
+#endif
+
 /*------------------------------------------------------------------------------
                            [SCANLINES CODE SECTION]
 ------------------------------------------------------------------------------*/
@@ -2056,6 +2088,7 @@ float4 DitherPass(float4 color, float2 texcoord)
                            [PX BORDER CODE SECTION]
 ------------------------------------------------------------------------------*/
 
+#if PX_BORDER == 1
 float4 BorderPass(float4 colorInput, float2 tex)
 {
     float3 border_color_float = BorderColor / 255.0;
@@ -2072,8 +2105,8 @@ float4 BorderPass(float4 colorInput, float2 tex)
     #endif
 
     return colorInput;
-
 }
+#endif
 
 /*------------------------------------------------------------------------------
                            [LOTTES CRT CODE SECTION]
@@ -2459,6 +2492,10 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
 
     #if CURVE_CONTRAST == 1
     color = ContrastPass(color, texcoord);
+    #endif
+
+    #if COLOR_TEMPERATURE == 1
+    color = TemperaturePass(color, texcoord);
     #endif
 
     #if VIGNETTE == 1

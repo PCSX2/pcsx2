@@ -44,7 +44,8 @@ void texture_coord()
 
 void vs_main()
 {
-    highp uint z = i_z & DepthMask;
+    // Clamp to max depth, gs doesn't wrap
+    highp uint z = min(i_z, MaxDepth);
 
     // pos -= 0.05 (1/320 pixel) helps avoiding rounding problems (integral part of pos is usually 5 digits, 0.05 is about as low as we can go)
     // example: ceil(afterseveralvertextransformations(y = 133)) => 134 => line 133 stays empty

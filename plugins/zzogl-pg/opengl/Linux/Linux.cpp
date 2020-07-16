@@ -35,6 +35,24 @@ extern bool THR_bCtrl;
 static map<string, confOptsStruct> mapConfOpts;
 static gameHacks tempHacks;
 
+GtkWidget *zz_gtk_hbox_new(int padding)
+{
+#if GTK_MAJOR_VERSION < 3
+    return gtk_hbox_new(false, padding);
+#else
+	return gtk_box_new(GTK_ORIENTATION_HORIZONTAL, padding);
+#endif
+}
+
+GtkWidget *zz_gtk_vbox_new(int padding)
+{
+#if GTK_MAJOR_VERSION < 3
+    return gtk_vbox_new(false, padding);
+#else
+	return gtk_box_new(GTK_ORIENTATION_VERTICAL, padding);
+#endif
+}
+
 EXPORT_C_(void) GSkeyEvent(keyEvent *ev)
 {
 	switch (ev->evt)
@@ -219,28 +237,39 @@ void DisplayAdvancedDialog()
 	GtkWidget *dialog;
 	
 	GtkWidget *advanced_frame, *advanced_box;
+#if GTK_MAJOR_VERSION < 3
 	GtkWidget *advanced_scroll;
+#endif
 	GtkWidget *tree;
-				 
-	dialog = gtk_dialog_new();
-	gtk_window_set_title(GTK_WINDOW(dialog), "ZZOgl PG Advanced Config");
-	// A good value for the heigh will be 1000 instead of 800 but I'm afraid that some people still uses small screen...
+
+		dialog = gtk_dialog_new_with_buttons ("Advanced", NULL,
+                                      (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
+                                      "_Cancel", GTK_RESPONSE_REJECT,
+                                      "_OK", GTK_RESPONSE_ACCEPT,
+                                      NULL);		 
+	// A good value for the height would be 1000 instead of 800 but I'm afraid that some people still use small screen...
 	gtk_window_set_default_size(GTK_WINDOW(dialog), 600, 800);
-	gtk_window_set_modal(GTK_WINDOW(dialog), true);
-	
-	advanced_box = gtk_vbox_new(false, 5);
-	advanced_frame = gtk_frame_new("Advanced Settings:");
-	gtk_container_add(GTK_CONTAINER(advanced_frame), advanced_box);
 
 	tree = gtk_tree_view_new();
-
 	CreateGameHackTable(tree, tempHacks);
 
+	advanced_frame = gtk_frame_new("Advanced Settings:");
+#if GTK_MAJOR_VERSION < 3
+	advanced_box = gtk_vbox_new(false, 5);
 	advanced_scroll = gtk_scrolled_window_new(NULL, NULL);
-
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(advanced_scroll), tree);
-	
 	gtk_box_pack_start(GTK_BOX(advanced_box), advanced_scroll, true, true, 2);
+
+#else
+	advanced_box = gtk_grid_new();
+	
+	gtk_widget_set_hexpand (tree, TRUE);
+	gtk_widget_set_halign (tree, GTK_ALIGN_CENTER);
+	gtk_widget_set_vexpand (tree, TRUE);
+	gtk_widget_set_valign (tree, GTK_ALIGN_CENTER);
+	gtk_grid_attach (GTK_GRID (advanced_box), tree, 0, 0, 1, 1);
+#endif
+	gtk_container_add(GTK_CONTAINER(advanced_frame), advanced_box);
 	
 	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), advanced_frame);
 
@@ -278,9 +307,9 @@ void DisplayDialog()
 				 "ZZOgl PG Config",
 				 NULL, /* parent window*/
 				 (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
-				 GTK_STOCK_CANCEL,
+				 "Cancel",
 				 GTK_RESPONSE_REJECT,
-				 GTK_STOCK_OK,
+				 "OK",
 				 GTK_RESPONSE_ACCEPT,
 				 NULL);
 
@@ -295,7 +324,9 @@ void DisplayDialog()
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "Interlace 1");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(int_box), conf.interlace);
 	gtk_widget_set_tooltip_text(int_box, "Toggled by pressing F5 when running.");
-	int_holder = gtk_hbox_new(false, 5);
+	
+    int_holder = zz_gtk_hbox_new(5);
+
 	gtk_box_pack_start(GTK_BOX(int_holder), int_label, false, false, 2);
 	gtk_box_pack_start(GTK_BOX(int_holder), int_box, false, false, 2);
 
@@ -307,7 +338,9 @@ void DisplayDialog()
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(bilinear_box), "Forced");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(bilinear_box), conf.bilinear);
 	gtk_widget_set_tooltip_text(bilinear_box, "Best quality is off. Turn on for speed. Toggled by pressing Shift + F5 when running.");
-	bilinear_holder = gtk_hbox_new(false, 5);
+
+    bilinear_holder = zz_gtk_hbox_new(5);
+
 	gtk_box_pack_start(GTK_BOX(bilinear_holder), bilinear_label, false, false, 2);
 	gtk_box_pack_start(GTK_BOX(bilinear_holder), bilinear_box, false, false, 2);
 	
@@ -321,7 +354,9 @@ void DisplayDialog()
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(aa_box), "16X");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(aa_box), conf.aa);
 	gtk_widget_set_tooltip_text(aa_box, "Toggled by pressing F6 when running.");
-	aa_holder = gtk_hbox_new(false, 5);
+
+   aa_holder = zz_gtk_hbox_new(5);
+
 	gtk_box_pack_start(GTK_BOX(aa_holder), aa_label, false, false, 2);
 	gtk_box_pack_start(GTK_BOX(aa_holder), aa_box, false, false, 2);
 	
@@ -330,7 +365,9 @@ void DisplayDialog()
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(snap_box), "JPEG");
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(snap_box), "TIFF");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(snap_box), conf.zz_options.tga_snap);
-	snap_holder = gtk_hbox_new(false, 5);
+
+    snap_holder = zz_gtk_hbox_new(5);
+
 	gtk_box_pack_start(GTK_BOX(snap_holder), snap_label, false, false, 2);
 	gtk_box_pack_start(GTK_BOX(snap_holder), snap_box, false, false, 2);
 
@@ -345,25 +382,29 @@ void DisplayDialog()
 	gtk_widget_set_tooltip_text(dis_hacks_check, "Used for testing how useful hacks that are on automatically are.");
 	
 #ifdef ZEROGS_DEVBUILD
-	separator = gtk_hseparator_new();
+#if GTK_MAJOR_VERSION < 3
+    separator = gtk_hseparator_new();
+#else
+    separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+#endif
+
 	skipdraw_label = gtk_label_new("Skipdraw:");
 	skipdraw_text = gtk_entry_new();
 	warning_label = gtk_label_new("Experimental!!");
 	char buf[5];
 	sprintf(buf, "%d", conf.SkipDraw);
 	gtk_entry_set_text(GTK_ENTRY(skipdraw_text), buf);
-	skipdraw_holder = gtk_hbox_new(false, 5);
+    skipdraw_holder = zz_gtk_hbox_new(5);
+
 	
 	gtk_box_pack_start(GTK_BOX(skipdraw_holder), skipdraw_label, false, false, 2);
 	gtk_box_pack_start(GTK_BOX(skipdraw_holder), skipdraw_text, false, false, 2);
 #endif
-	
-	main_box = gtk_hbox_new(false, 5);
+    main_box = zz_gtk_hbox_new(5);
 	main_frame = gtk_frame_new("ZZOgl PG Config");
 
 	gtk_container_add(GTK_CONTAINER(main_frame), main_box);
-
-	option_box = gtk_vbox_new(false, 5);
+    option_box = zz_gtk_vbox_new(5);
 	option_frame = gtk_frame_new("");
 	gtk_container_add(GTK_CONTAINER(option_frame), option_box);
 	gtk_frame_set_shadow_type(GTK_FRAME(option_frame), GTK_SHADOW_NONE);

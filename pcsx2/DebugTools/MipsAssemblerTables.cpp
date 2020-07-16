@@ -52,10 +52,10 @@ const tMipsOpcode MipsOpcodes[] = {
 //  hi |-------|-------|-------|-------|-------|-------|-------|-------|
 //		*1 = SPECIAL	*2 = REGIMM		*3 = COP0		*4 = COP1
 	{ "j",		"I",			MIPS_OP(0x02), 			MA_MIPS1,	MO_IPCA|MO_DELAY|MO_NODELAYSLOT },
-	{ "b",		"I",			MIPS_OP(0x02), 			MA_MIPS1,	MO_IPCA|MO_DELAY|MO_NODELAYSLOT },
 	{ "jal",	"I",			MIPS_OP(0x03),			MA_MIPS1,	MO_IPCA|MO_DELAY|MO_NODELAYSLOT },
 	{ "beq",	"s,t,i",		MIPS_OP(0x04),			MA_MIPS1,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
 	{ "beqz",	"s,i",			MIPS_OP(0x04),			MA_MIPS1,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
+	{ "b",		"i",			MIPS_OP(0x04), 			MA_MIPS1,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
 	{ "bne",	"s,t,i",		MIPS_OP(0x05),			MA_MIPS1,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
 	{ "bnez",	"s,i",			MIPS_OP(0x05),			MA_MIPS1,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },
 	{ "blez",	"s,i",			MIPS_OP(0x06),			MA_MIPS1,	MO_IPCR|MO_DELAY|MO_NODELAYSLOT },

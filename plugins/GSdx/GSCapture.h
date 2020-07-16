@@ -25,7 +25,7 @@
 #include "GSPng.h"
 
 #ifdef _WIN32
-#include "GSCaptureDlg.h"
+#include "Window/GSCaptureDlg.h"
 #endif
 
 class GSCapture

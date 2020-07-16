@@ -194,7 +194,7 @@ void x86capabilities::Identify()
     u32 cmds;
 
 //AMD 64 STUFF
-#ifdef __x86_64__
+#ifdef __M_X86_64
     u32 x86_64_8BITBRANDID;
     u32 x86_64_12BITBRANDID;
 #endif
@@ -226,7 +226,7 @@ void x86capabilities::Identify()
         Model = (regs[0] >> 4) & 0xf;
         FamilyID = (regs[0] >> 8) & 0xf;
         TypeID = (regs[0] >> 12) & 0x3;
-#ifdef __x86_64__
+#ifdef __M_X86_64
         x86_64_8BITBRANDID = regs[1] & 0xff;
 #endif
         Flags = regs[3];
@@ -245,7 +245,7 @@ void x86capabilities::Identify()
     if (cmds >= 0x80000001) {
         cpuid(regs, 0x80000001);
 
-#ifdef __x86_64__
+#ifdef __M_X86_64
         x86_64_12BITBRANDID = regs[1] & 0xfff;
 #endif
         EFlags2 = regs[2];
@@ -297,7 +297,7 @@ void x86capabilities::Identify()
 
     if ((Flags2 >> 27) & 1) // OSXSAVE
     {
-        if ((_xgetbv(0) & 6) == 6) // XFEATURE_ENABLED_MASK[2:1] = '11b' (XMM state and YMM state are enabled by OS).
+        if ((xgetbv(0) & 6) == 6) // XFEATURE_ENABLED_MASK[2:1] = '11b' (XMM state and YMM state are enabled by OS).
         {
             hasAVX = (Flags2 >> 28) & 1; //avx
             hasFMA = (Flags2 >> 12) & 1; //fma

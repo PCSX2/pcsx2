@@ -56,7 +56,7 @@ static int diskTypeCached = -1;
 
 // used to bridge the gap between the old getBuffer api and the new getBuffer2 api.
 int lastReadSize;
-int lastLSN;		// needed for block dumping
+u32 lastLSN;		// needed for block dumping
 
 // Records last read block length for block dumping
 //static int plsn = 0;
@@ -370,16 +370,19 @@ bool DoCDVDopen()
 		return true;
 	}
 
-	// TODO: Add a blockdumps configurable folder, and use that instead of CWD().
-
-	// TODO: "Untitled" should use pnach/slus name resolution, slus if no patch,
-	// and finally an "Untitled-[ElfCRC]" if no slus.
-
-	wxString somepick( Path::GetFilenameWithoutExt( m_SourceFilename[CurrentSourceType] ) );
-	if( somepick.IsEmpty() )
+	wxString somepick( Path::GetFilenameWithoutExt( m_SourceFilename[CurrentSourceType] )  );
+	//FWIW Disc serial availability doesn't seem reliable enough, sometimes it's there and sometime it's just null
+	//Shouldn't the serial be available all time? Potentially need to look into Elfreloadinfo() reliability
+	//TODO: Add extra fallback case for CRC.
+	if (somepick.IsEmpty() && !DiscSerial.IsEmpty())
+		somepick = L"Untitled-" + DiscSerial;
+	else if (somepick.IsEmpty())
 		somepick = L"Untitled";
 
-	wxString temp( Path::Combine( wxGetCwd(), somepick ) );
+	if (g_Conf->CurrentBlockdump.IsEmpty())
+		g_Conf->CurrentBlockdump = wxGetCwd();
+
+	wxString temp(Path::Combine(g_Conf->CurrentBlockdump, somepick));
 
 #ifdef ENABLE_TIMESTAMPS
 	wxDateTime curtime( wxDateTime::GetTimeNow() );
@@ -394,7 +397,7 @@ bool DoCDVDopen()
 	cdvdTD td;
 	CDVD->getTD(0, &td);
 
-	blockDumpFile.Create(temp, 3);
+	blockDumpFile.Create(temp, 2);
 
 	if( blockDumpFile.IsOpened() )
 	{
@@ -439,7 +442,16 @@ s32 DoCDVDreadSector(u8* buffer, u32 lsn, int mode)
 
 	if (ret == 0 && blockDumpFile.IsOpened())
 	{
-		blockDumpFile.WriteSector(buffer, lsn);
+		if (blockDumpFile.GetBlockSize() == CD_FRAMESIZE_RAW && mode != CDVD_MODE_2352)
+		{
+			u8 blockDumpBuffer[CD_FRAMESIZE_RAW];
+			if (CDVD->readSector(blockDumpBuffer, lsn, CDVD_MODE_2352) == 0)
+				blockDumpFile.WriteSector(blockDumpBuffer, lsn);
+		}
+		else
+		{
+			blockDumpFile.WriteSector(buffer, lsn);
+		}
 	}
 
 	return ret;
@@ -478,7 +490,22 @@ s32 DoCDVDgetBuffer(u8* buffer)
 
 	if (ret == 0 && blockDumpFile.IsOpened())
 	{
-		blockDumpFile.WriteSector(buffer, lastLSN);
+		cdvdTD td;
+		CDVD->getTD(0, &td);
+
+		if (lastLSN >= td.lsn)
+			return 0;
+
+		if (blockDumpFile.GetBlockSize() == CD_FRAMESIZE_RAW && lastReadSize != 2352)
+		{
+			u8 blockDumpBuffer[CD_FRAMESIZE_RAW];
+			if (CDVD->readSector(blockDumpBuffer, lastLSN, CDVD_MODE_2352) == 0)
+				blockDumpFile.WriteSector(blockDumpBuffer, lastLSN);
+		}
+		else
+		{
+			blockDumpFile.WriteSector(buffer, lastLSN);
+		}
 	}
 
 	return ret;

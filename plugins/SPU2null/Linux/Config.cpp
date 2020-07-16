@@ -18,6 +18,7 @@
 
 #include "Config.h"
 #include "SPU2.h"
+#include "null/config.inl"
 using namespace std;
 
 extern string s_strIniPath;
@@ -27,7 +28,7 @@ EXPORT_C_(void)
 SPU2configure()
 {
     LoadConfig();
-    PluginNullConfigure("Since this is a null plugin, all that is really configurable is logging.", conf.Log);
+    ConfigureLogging();
     SaveConfig();
 }
 
@@ -43,7 +44,7 @@ void LoadConfig()
     const std::string iniFile(s_strIniPath + "/Spu2null.ini");
 
     if (!Ini.Open(iniFile, READ_FILE)) {
-        printf("failed to open %s\n", iniFile.c_str());
+        g_plugin_log.WriteLn("failed to open %s", iniFile.c_str());
         SaveConfig(); //save and return
         return;
     }
@@ -57,7 +58,7 @@ void SaveConfig()
     const std::string iniFile(s_strIniPath + "/Spu2null.ini");
 
     if (!Ini.Open(iniFile, WRITE_FILE)) {
-        printf("failed to open %s\n", iniFile.c_str());
+        g_plugin_log.WriteLn("failed to open %s", iniFile.c_str());
         return;
     }
 

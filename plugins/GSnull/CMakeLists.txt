@@ -8,7 +8,12 @@ endif()
 
 # plugin name
 set(Output GSnull)
-set(GSnullFinalFlags "")
+
+set(GSnullFinalFlags
+    -fvisibility=hidden
+    -Wall
+    -Wno-parentheses
+	)
 
 # GSnull sources
 set(GSnullSources

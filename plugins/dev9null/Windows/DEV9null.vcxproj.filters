@@ -10,9 +10,6 @@
     <ClCompile Include="..\DEV9.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="dev9null.def">
@@ -21,6 +18,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\DEV9.h" />
-    <ClInclude Include="..\Config.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\common\include\null\null.rc" />
   </ItemGroup>
 </Project>

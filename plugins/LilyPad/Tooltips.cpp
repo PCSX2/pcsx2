@@ -64,7 +64,7 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Use this option to check if all the inputs on a controller function properly.\n\n"
                    L"Right-click and select \"Refresh\" to update the list of devices in case a recently connected device has not shown up yet.";
         case IDC_G_XI:
-            return L"Xbox 360 controllers(and devices imitating it) only";
+            return L"Xbox 360/Xbox One controllers (or devices/software imitating such) only";
         case ID_RESTORE_DEFAULTS:
             return L"Restores the default contents of LilyPad.ini, undoing all settings changes and bindings that have been set up.";
         // Pad tabs

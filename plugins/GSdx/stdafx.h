@@ -38,12 +38,10 @@
 #include <commdlg.h>
 #include <shellapi.h>
 #include <d3dcompiler.h>
-#include <d3d11.h>
-#include <d3d9.h>
+#include <d3d11_1.h>
+#include <dxgi1_3.h>
 #include <comutil.h>
 #include <atlcomcli.h>
-
-#define D3DCOLORWRITEENABLE_RGBA (D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA)
 
 #else
 
@@ -51,6 +49,7 @@
 
 #endif
 
+#include <PluginCompatibility.h>
 
 #ifdef ENABLE_OPENCL
 
@@ -119,6 +118,7 @@ typedef int64 sint64;
 #include <condition_variable>
 #include <functional>
 #include <memory>
+#include <bitset>
 
 #include <zlib.h>
 
@@ -128,19 +128,26 @@ typedef int64 sint64;
 #ifdef _WIN32
 
 	// Note use GL/glcorearb.h on the future
+	// Requirements:
+	//	* Update GSWndWGL::GetProcAddress to query 1.0 and 1.1 symbols
+	//	* define all ENABLE_GL_VERSION_1_*
 	#include <GL/gl.h>
 	#include <GL/glext.h>
 	#include <GL/wglext.h>
-	#include "GLLoader.h"
+	#include "Renderers/OpenGL/GLLoader.h"
 
 	#define DIRECTORY_SEPARATOR '\\'
 
 #else
 
 	// Note use GL/glcorearb.h on the future
+	// Requirements:
+	//	* Drop GLX that still include gl.h...
+	//	  EGL/OGL status on AMD GPU pro driver is unknown
+	//	* define all ENABLE_GL_VERSION_1_*
 	#include <GL/gl.h>
 	#include <GL/glext.h>
-	#include "GLLoader.h"
+	#include "Renderers/OpenGL/GLLoader.h"
 
 	#include <sys/stat.h> // mkdir
 

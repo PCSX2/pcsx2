@@ -67,7 +67,6 @@
     <ClCompile Include="..\..\src\Utilities\Console.cpp" />
     <ClCompile Include="..\..\src\Utilities\Exceptions.cpp" />
     <ClCompile Include="..\..\src\Utilities\FastFormatString.cpp" />
-    <ClCompile Include="..\..\src\Utilities\HashTools.cpp" />
     <ClCompile Include="..\..\src\Utilities\IniInterface.cpp" />
     <ClCompile Include="..\..\src\Utilities\pxStreams.cpp" />
     <ClCompile Include="..\..\src\Utilities\pxTranslate.cpp" />
@@ -111,6 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\Utilities\EmbeddedImage.h" />
+    <ClInclude Include="..\..\include\Utilities\boost_spsc_queue.hpp" />
     <ClInclude Include="..\..\include\Utilities\ScopedAlloc.h" />
     <ClInclude Include="..\..\src\Utilities\ThreadingInternal.h" />
     <ClInclude Include="..\..\include\Utilities\Assertions.h" />
@@ -121,7 +121,6 @@
     <ClInclude Include="..\..\include\Utilities\Exceptions.h" />
     <ClInclude Include="..\..\include\Utilities\FixedPointTypes.h" />
     <ClInclude Include="..\..\include\Utilities\General.h" />
-    <ClInclude Include="..\..\include\Utilities\HashMap.h" />
     <ClInclude Include="..\..\include\Utilities\MathUtils.h" />
     <ClInclude Include="..\..\include\Utilities\MakeUnique.h" />
     <ClInclude Include="..\..\include\Utilities\MemcpyFast.h" />

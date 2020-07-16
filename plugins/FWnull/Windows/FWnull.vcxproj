@@ -13,7 +13,7 @@
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-	<ProjectConfiguration Include="Release|x64">
+    <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
@@ -52,15 +52,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Config.cpp" />
     <ClCompile Include="..\FW.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\FW.h" />
-    <ClInclude Include="..\Config.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FireWireNull.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\common\include\null\null.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -54,10 +54,11 @@ public:
 	void showMemoryView() { setBottomTabPage(memory); };
 	void loadCycles();
 	void reloadSymbolMap();
+	void clearSymbolMap();
 	u32 getStepOutAddress();
 
 	void listBoxHandler(wxCommandEvent& event);
-	DECLARE_EVENT_TABLE()
+	wxDECLARE_EVENT_TABLE();
 private:
 	void setBottomTabPage(wxWindow* win);
 	void postEvent(wxEventType type, int value);
@@ -74,6 +75,7 @@ private:
 	ThreadList* threadList;
 	StackFramesList* stackFrames;
 	u32 lastCycles;
+	u32 symbolCount;
 };
 
 class DisassemblyDialog : public wxFrame
@@ -87,13 +89,14 @@ public:
 	
 	void update();
 	void reset();
+	void populate();
 	void setDebugMode(bool debugMode, bool switchPC);
 	
 #ifdef _WIN32
 	WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
 #endif
 
-	DECLARE_EVENT_TABLE()
+	wxDECLARE_EVENT_TABLE();
 protected:
 	void onBreakRunClicked(wxCommandEvent& evt);
 	void onStepOverClicked(wxCommandEvent& evt);

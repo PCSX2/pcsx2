@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\FW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -26,13 +23,15 @@
     <ClInclude Include="..\FW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="FireWireNull.def">
       <Filter>Resource Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\common\include\null\null.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

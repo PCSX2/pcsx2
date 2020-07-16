@@ -575,7 +575,7 @@ void DisassemblyFunction::load()
 		// skip branches and their delay slots
 		if (opInfo.isBranch)
 		{
-			funcPos += 4;
+			if (funcPos < funcEnd) funcPos += 4; // only include delay slots within the function bounds
 			continue;
 		}
 		

@@ -27,6 +27,11 @@
 #include "AppCoreThread.h"
 #include "RecentIsoList.h"
 
+#ifndef DISABLE_RECORDING
+#	include "Recording/VirtualPad.h"
+#	include "Recording/NewRecordingFrame.h"
+#endif
+
 class DisassemblyDialog;
 
 #include "System.h"
@@ -62,6 +67,19 @@ static const bool CloseViewportWithPlugins = false;
 // ------------------------------------------------------------------------
 // All Menu Options for the Main Window! :D
 // ------------------------------------------------------------------------
+
+enum TopLevelMenuIndices
+{
+	TopLevelMenu_System = 0,
+	TopLevelMenu_Cdvd,
+	TopLevelMenu_Config,
+	TopLevelMenu_Misc,
+	TopLevelMenu_Debug,
+	TopLevelMenu_Capture,
+#ifndef DISABLE_RECORDING
+	TopLevelMenu_Recording,
+#endif
+};
 
 enum MenuIdentifiers
 {
@@ -102,14 +120,16 @@ enum MenuIdentifiers
 	MenuId_EnablePatches,
 	MenuId_EnableCheats,
 	MenuId_EnableWideScreenPatches,
+	MenuId_EnableRecordingTools,
+	MenuId_EnableLuaTools,
 	MenuId_EnableHostFs,
 
 	MenuId_State_Load,
-	MenuId_State_LoadOther,
+	MenuId_State_LoadFromFile,
 	MenuId_State_Load01,		// first of many load slots
 	MenuId_State_LoadBackup = MenuId_State_Load01+20,
 	MenuId_State_Save,
-	MenuId_State_SaveOther,
+	MenuId_State_SaveToFile,
 	MenuId_State_Save01,		// first of many save slots
 
 	MenuId_State_EndSlotSection = MenuId_State_Save01+20,
@@ -118,7 +138,6 @@ enum MenuIdentifiers
 	MenuId_Config_SysSettings,
 	MenuId_Config_McdSettings,
 	MenuId_Config_AppSettings,
-	MenuId_Config_GameDatabase,
 	MenuId_Config_BIOS,
 	MenuId_Config_Language,
 
@@ -158,6 +177,24 @@ enum MenuIdentifiers
 	MenuId_Debug_Logging,		// dialog for selection additional log options
 	MenuId_Debug_CreateBlockdump,
 	MenuId_Config_ResetAll,
+
+	// Capture Subsection
+	MenuId_Capture_Video,
+	MenuId_Capture_Video_Record,
+	MenuId_Capture_Video_Stop,
+	MenuId_Capture_Screenshot,
+
+#ifndef DISABLE_RECORDING
+	// Recording Subsection
+	MenuId_Recording_New,
+	MenuId_Recording_Play,
+	MenuId_Recording_Stop,
+	MenuId_Recording_Editor,
+	MenuId_Recording_VirtualPad_Port0,
+	MenuId_Recording_VirtualPad_Port1,
+	MenuId_Recording_Conversions,
+#endif
+
 };
 
 namespace Exception
@@ -192,15 +229,14 @@ struct AppImageIds
 			Gamefixes,
 			MemoryCard,
 			Video,
-			Cpu,
-			Appearance;
+			Cpu;
 
 		ConfigIds()
 		{
 			Paths		= Plugins		=
 			Speedhacks	= Gamefixes		=
 			Video		= Cpu			= 
-			MemoryCard	= Appearance	= -1;
+			MemoryCard	= -1;
 		}
 	} Config;
 
@@ -286,6 +322,8 @@ public:
 	wxString		IsoFile;
 
 	wxString		ElfFile;
+
+	wxString		GameLaunchArgs;
 
 	// Specifies the CDVD source type to use when AutoRunning
 	CDVD_SourceType CdvdSource;
@@ -495,6 +533,11 @@ protected:
 	wxWindowID			m_id_ProgramLogBox;
 	wxWindowID			m_id_Disassembler;
 
+#ifndef DISABLE_RECORDING
+	wxWindowID			m_id_VirtualPad[2];
+	wxWindowID			m_id_NewRecordingFrame;
+#endif
+
 	wxKeyEvent			m_kevt;
 
 public:
@@ -518,7 +561,12 @@ public:
 	GSFrame*			GetGsFramePtr() const		{ return (GSFrame*)wxWindow::FindWindowById( m_id_GsFrame ); }
 	MainEmuFrame*		GetMainFramePtr() const		{ return (MainEmuFrame*)wxWindow::FindWindowById( m_id_MainFrame ); }
 	DisassemblyDialog*	GetDisassemblyPtr() const	{ return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
-	
+
+#ifndef DISABLE_RECORDING
+	VirtualPad*			GetVirtualPadPtr(int port) const	{ return (VirtualPad*)wxWindow::FindWindowById(m_id_VirtualPad[port]); }
+	NewRecordingFrame*	GetNewRecordingFramePtr() const		{ return (NewRecordingFrame*)wxWindow::FindWindowById(m_id_NewRecordingFrame); }
+#endif
+
 	void enterDebugMode();
 	void leaveDebugMode();
 	void resetDebugger();
@@ -615,7 +663,13 @@ protected:
 	void CleanupOnExit();
 	void OpenWizardConsole();
 	void PadKeyDispatch( const keyEvent& ev );
-	
+
+#ifndef DISABLE_RECORDING 
+public:
+	void Recording_PadKeyDispatch(const keyEvent& ev) { PadKeyDispatch(ev); }
+#endif 
+
+protected:
 	void HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event) const;
 	void HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event);
 
@@ -640,7 +694,7 @@ protected:
 };
 
 
-DECLARE_APP(Pcsx2App)
+wxDECLARE_APP(Pcsx2App);
 
 // --------------------------------------------------------------------------------------
 //  s* macros!  ['s' stands for 'shortcut']

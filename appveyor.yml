@@ -3,18 +3,16 @@
 # finished, which could be a bit annoying.
 version: 1.{build}-{branch}
 
-image: Visual Studio 2017
-
 environment:
   matrix:
   - platform: Win32
     target: AppVeyor
-    visualstudio_string: vs2017
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    visualstudio_string: vs2019
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
   - platform: Win32
     target: AppVeyor
-    visualstudio_string: vs2015
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    visualstudio_string: vs2017
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
 
 matrix:
   fast_finish: true

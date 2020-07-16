@@ -231,15 +231,12 @@ enum class GS_MIN_FILTER : uint8_t
 enum class GSRendererType : int8_t
 {
 	Undefined = -1,
-	DX9_HW,
-	DX9_SW,
 	DX1011_HW = 3,
 	DX1011_SW,
 	Null = 11,
 	OGL_HW,
 	OGL_SW,
-	DX9_OpenCL,
-	DX1011_OpenCL,
+	DX1011_OpenCL = 15,
 	OGL_OpenCL = 17,
 
 #ifdef _WIN32
@@ -1457,3 +1454,9 @@ enum class CRCHackLevel : int8
 	Full,
 	Aggressive
 };
+
+#ifdef ENABLE_ACCURATE_BUFFER_EMULATION
+const GSVector2i default_rt_size(2048, 2048);
+#else
+const GSVector2i default_rt_size(1280, 1024);
+#endif

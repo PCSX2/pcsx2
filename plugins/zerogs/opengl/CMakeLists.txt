@@ -4,7 +4,8 @@
 set(Output zerogs)
 
 set(CommonFlags
-    -Wall
+	-Wall
+	-Wno-parentheses
     )
 
 # Debug - Build
@@ -16,13 +17,13 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 # Devel - Build
 if(CMAKE_BUILD_TYPE STREQUAL Devel)
 	# add defines
-	add_definitions(${CommonFlags})
+	add_definitions(${CommonFlags} -fvisibility=hidden)
 endif(CMAKE_BUILD_TYPE STREQUAL Devel)
 
 # Release - Build
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	# add defines
-	add_definitions(${CommonFlags})
+	add_definitions(${CommonFlags} -fvisibility=hidden)
 endif(CMAKE_BUILD_TYPE STREQUAL Release)
 
 # zerogs sources

@@ -32,7 +32,7 @@
 #include "Resources/Breakpoint_Active.h"
 #include "Resources/Breakpoint_Inactive.h"
 
-BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
+wxBEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_PAINT(CtrlDisassemblyView::paintEvent)
 	EVT_MOUSEWHEEL(CtrlDisassemblyView::mouseEvent)
 	EVT_LEFT_DOWN(CtrlDisassemblyView::mouseEvent)
@@ -49,7 +49,7 @@ BEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_SIZE(CtrlDisassemblyView::sizeEvent)
 	EVT_SET_FOCUS(CtrlDisassemblyView::focusEvent)
 	EVT_KILL_FOCUS(CtrlDisassemblyView::focusEvent)
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 enum DisassemblyMenuIdentifiers
 {
@@ -779,7 +779,7 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 			break;
 		}
 	case ID_DISASM_ASSEMBLE:
-		assembleOpcode(curAddress,"");
+		assembleOpcode(curAddress, disassembleCurAddress());
 		break;
 	default:
 		wxMessageBox( L"Unimplemented.",  L"Unimplemented.", wxICON_INFORMATION);
@@ -1204,6 +1204,13 @@ std::string CtrlDisassemblyView::disassembleRange(u32 start, u32 size)
 	}
 
 	return result;
+}
+
+std::string CtrlDisassemblyView::disassembleCurAddress()
+{
+	DisassemblyLineInfo line = DisassemblyLineInfo();
+	manager.getLine(curAddress, displaySymbols, line);
+	return line.name + (line.params.length() > 0 ? " " + line.params : "");
 }
 
 void CtrlDisassemblyView::copyInstructions(u32 startAddr, u32 endAddr, bool withDisasm)

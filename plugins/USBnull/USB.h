@@ -22,13 +22,7 @@
 #include "PS2Edefs.h"
 #include "PS2Eext.h"
 
-typedef struct
-{
-    int Log;
-} Config;
-
 extern USBcallback USBirq;
-extern Config conf;
 
 // Previous USB plugins have needed this in ohci.
 static const s64 PSXCLK = 36864000; /* 36.864 Mhz */
@@ -41,9 +35,5 @@ extern s8 *usbregs, *ram;
 #define usbRu8(mem) (*(u8 *)&usbregs[(mem)&0xffff])
 #define usbRu16(mem) (*(u16 *)&usbregs[(mem)&0xffff])
 #define usbRu32(mem) (*(u32 *)&usbregs[(mem)&0xffff])
-
-extern void SaveConfig();
-extern void LoadConfig();
-extern void setLoggingState();
 
 #endif

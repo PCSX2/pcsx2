@@ -206,7 +206,7 @@ Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 	: BaseApplicableConfigPanel( parent )
 	, m_checks( new pxCheckBox*[traceLogCount] )
 {
-	wxStaticBoxSizer&	s_misc		= *new wxStaticBoxSizer( wxHORIZONTAL, this, L"Misc" );
+	m_miscSection = new wxStaticBoxSizer( wxHORIZONTAL, this, L"Misc" );
 
 	m_eeSection		= new eeLogOptionsPanel( this );
 	m_iopSection	= new iopLogOptionsPanel( this );
@@ -238,8 +238,8 @@ Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 		}
 		else
 		{
-			addsizer = &s_misc;
-			addparent = this;
+			addsizer = m_miscSection;
+			addparent = m_miscSection->GetStaticBox();
 		}
 
 		*addsizer += m_checks[i] = new pxCheckBox( addparent, item.GetName() );
@@ -249,7 +249,7 @@ Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 
 	m_masterEnabler = new pxCheckBox( this, _("Enable Trace Logging"),
 		_("Trace logs are all written to emulog.txt.  Toggle trace logging at any time using F10.") );
-	m_masterEnabler->SetToolTip( _("Warning: Enabling trace logs is typically very slow, and is a leading cause of 'What happened to my FPS?' problems. :)") );
+	m_masterEnabler->SetToolTip( _("Warning: Trace logging is typically very slow, and is a leading cause of 'What happened to my FPS?' problems. :)") );
 
 	wxFlexGridSizer& topSizer = *new wxFlexGridSizer( 2 );
 
@@ -263,9 +263,9 @@ Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 	*this		+= new wxStaticLine( this )		| StdExpand().Border(wxLEFT | wxRIGHT, 20);
 	*this		+= 5;
 	*this		+= topSizer						| StdExpand();
-	*this		+= s_misc						| StdSpace().Centre();
+	*this		+= m_miscSection				| StdSpace().Centre();
 
-	Bind(wxEVT_CHECKBOX, &LogOptionsPanel::OnCheckBoxClicked, this);
+	Bind(wxEVT_CHECKBOX, &LogOptionsPanel::OnCheckBoxClicked, this, m_masterEnabler->GetWxPtr()->GetId());
 }
 
 Panels::BaseCpuLogOptionsPanel* Panels::LogOptionsPanel::GetCpuPanel( const wxString& token ) const
@@ -299,25 +299,21 @@ void Panels::LogOptionsPanel::OnUpdateEnableAll()
 
 	m_eeSection->Enable( enabled );
 	m_iopSection->Enable( enabled );
+	m_miscSection->GetStaticBox()->Enable( enabled );
 }
 
 void Panels::LogOptionsPanel::OnCheckBoxClicked(wxCommandEvent &evt)
 {
-	m_IsDirty = true;
-	if( evt.GetId() == m_masterEnabler->GetWxPtr()->GetId() )
-		OnUpdateEnableAll();
+	OnUpdateEnableAll();
+	evt.Skip();
 }
 
 void Panels::LogOptionsPanel::Apply()
 {
-	if( !m_IsDirty ) return;
-
 	g_Conf->EmuOptions.Trace.Enabled	= m_masterEnabler->GetValue();
 
 	m_eeSection->Apply();
 	m_iopSection->Apply();
-
-	m_IsDirty = false;
 
 	for( uint i = 0; i<traceLogCount; ++i )
 	{

@@ -58,7 +58,7 @@ void xImpl_Mov::operator()(const xIndirectVoid &dest, const xRegisterInt &from) 
 
     if (from.IsAccumulator() && dest.Index.IsEmpty() && dest.Base.IsEmpty()) {
 // FIXME: in 64 bits, it could be 8B whereas Displacement is limited to 4B normally
-#ifdef __x86_64__
+#ifdef __M_X86_64
         pxAssert(0);
 #endif
         xOpAccWrite(from.GetPrefix16(), from.Is8BitOp() ? 0xa2 : 0xa3, from.Id, dest);
@@ -75,7 +75,7 @@ void xImpl_Mov::operator()(const xRegisterInt &to, const xIndirectVoid &src) con
 
     if (to.IsAccumulator() && src.Index.IsEmpty() && src.Base.IsEmpty()) {
 // FIXME: in 64 bits, it could be 8B whereas Displacement is limited to 4B normally
-#ifdef __x86_64__
+#ifdef __M_X86_64
         pxAssert(0);
 #endif
         xOpAccWrite(to.GetPrefix16(), to.Is8BitOp() ? 0xa0 : 0xa1, to, src);

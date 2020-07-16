@@ -685,74 +685,26 @@ void *Threading::pxThread::_internal_callback(void *itsme)
 {
     if (!pxAssertDev(itsme != NULL, wxNullChar))
         return NULL;
-    pxThread &owner = *((pxThread *)itsme);
+
+    internal_callback_helper(itsme);
+    return nullptr;
+}
+
+// __try is used in pthread_cleanup_push when CLEANUP_SEH is used as the cleanup model.
+// That can't be used in a function that has objects that require unwinding (compile
+// error C2712), so move it into a separate function.
+void Threading::pxThread::internal_callback_helper(void *itsme)
+{
+    pxThread &owner = *static_cast<pxThread *>(itsme);
 
     pthread_cleanup_push(_pt_callback_cleanup, itsme);
     owner._internal_execute();
     pthread_cleanup_pop(true);
-    return NULL;
 }
 
 void Threading::pxThread::_DoSetThreadName(const wxString &name)
 {
     _DoSetThreadName(static_cast<const char *>(name.ToUTF8()));
-}
-
-// --------------------------------------------------------------------------------------
-//  BaseTaskThread Implementations
-// --------------------------------------------------------------------------------------
-
-// Tells the thread to exit and then waits for thread termination.
-void Threading::BaseTaskThread::Block()
-{
-    if (!IsRunning())
-        return;
-    m_Done = true;
-    m_sem_event.Post();
-    pxThread::Block();
-}
-
-// Initiates the new task.  This should be called after your own StartTask has
-// initialized internal variables / preparations for task execution.
-void Threading::BaseTaskThread::PostTask()
-{
-    pxAssert(!m_detached);
-
-    ScopedLock locker(m_lock_TaskComplete);
-    m_TaskPending = true;
-    m_post_TaskComplete.Reset();
-    m_sem_event.Post();
-}
-
-// Blocks current thread execution pending the completion of the parallel task.
-void Threading::BaseTaskThread::WaitForResult()
-{
-    if (m_detached || !m_running)
-        return;
-    if (m_TaskPending)
-#if wxUSE_GUI
-        m_post_TaskComplete.Wait();
-#else
-        m_post_TaskComplete.WaitWithoutYield();
-#endif
-
-    m_post_TaskComplete.Reset();
-}
-
-void Threading::BaseTaskThread::ExecuteTaskInThread()
-{
-    while (!m_Done) {
-        // Wait for a job -- or get a pthread_cancel.  I'm easy.
-        m_sem_event.WaitWithoutYield();
-
-        Task();
-        m_lock_TaskComplete.Acquire();
-        m_TaskPending = false;
-        m_post_TaskComplete.Post();
-        m_lock_TaskComplete.Release();
-    };
-
-    return;
 }
 
 // --------------------------------------------------------------------------------------

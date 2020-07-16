@@ -152,28 +152,11 @@ SPU2configure()
     configure();
 }
 
-EXPORT_C_(void)
-SPU2about()
-{
-    AboutBox();
-}
-
 EXPORT_C_(s32)
 SPU2test()
 {
     if (!CheckSSE())
         return -1;
-
-#ifdef _WIN32
-    if (IsWindows8OrGreater()) {
-        for (int n = 0; mods[n] != nullptr; ++n) {
-            if (mods[n] == XAudio2_27_Out) {
-                mods[n] = XAudio2Out;
-                break;
-            }
-        }
-    }
-#endif
 
     ReadSettings();
     if (SndBuffer::Test() != 0) {
@@ -224,40 +207,6 @@ CALLBACK SPU2setLogDir(const char *dir)
     CfgSetLogDir(dir);
 }
 
-EXPORT_C_(s32)
-SPU2dmaRead(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed)
-{
-    if (channel == 4)
-        return Cores[0].NewDmaRead(data, bytesLeft, bytesProcessed);
-    else
-        return Cores[1].NewDmaRead(data, bytesLeft, bytesProcessed);
-}
-
-EXPORT_C_(s32)
-SPU2dmaWrite(s32 channel, u32 *data, u32 bytesLeft, u32 *bytesProcessed)
-{
-    if (channel == 4)
-        return Cores[0].NewDmaWrite(data, bytesLeft, bytesProcessed);
-    else
-        return Cores[1].NewDmaWrite(data, bytesLeft, bytesProcessed);
-}
-
-EXPORT_C_(void)
-SPU2dmaInterrupt(s32 channel)
-{
-    if (channel == 4)
-        return Cores[0].NewDmaInterrupt();
-    else
-        return Cores[1].NewDmaInterrupt();
-}
-
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-EXPORT_C_(void)
-SPU2irqCallback(void (*SPU2callback)())
-{
-    _irqcallback = SPU2callback;
-}
-#else
 EXPORT_C_(void)
 SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callback)())
 {
@@ -265,7 +214,6 @@ SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callb
     dma4callback = DMA4callback;
     dma7callback = DMA7callback;
 }
-#endif
 
 EXPORT_C_(void)
 CALLBACK SPU2readDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units

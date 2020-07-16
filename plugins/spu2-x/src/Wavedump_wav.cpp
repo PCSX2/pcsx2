@@ -29,7 +29,7 @@ static WavOutFile *_new_WavOutFile(const char *destfile)
 
 namespace WaveDump
 {
-static WavOutFile *m_CoreWav[2][CoreSrc_Count] = {NULL};
+static WavOutFile *m_CoreWav[2][CoreSrc_Count];
 
 static const char *m_tbl_CoreOutputTypeNames[CoreSrc_Count] =
     {

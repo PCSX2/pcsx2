@@ -199,14 +199,14 @@ struct pxWindowAndFlags
 
 extern wxSizerFlags operator&(const wxSizerFlags &_flgs, const wxSizerFlags &_flgs2);
 
-template <typename WinType>
+template <typename WinType, typename = typename std::enable_if<std::is_base_of<wxObject, WinType>::value>::type>
 pxWindowAndFlags<WinType> operator|(WinType *_win, const wxSizerFlags &_flgs)
 {
     pxWindowAndFlags<WinType> result = {_win, _flgs};
     return result;
 }
 
-template <typename WinType>
+template <typename WinType, typename = typename std::enable_if<std::is_base_of<wxObject, WinType>::value>::type>
 pxWindowAndFlags<WinType> operator|(WinType &_win, const wxSizerFlags &_flgs)
 {
     pxWindowAndFlags<WinType> result = {&_win, _flgs};
@@ -501,7 +501,7 @@ public:
 class wxDialogWithHelpers : public wxDialog
 {
     typedef wxDialog _parent;
-    DECLARE_DYNAMIC_CLASS_NO_COPY(wxDialogWithHelpers)
+    wxDECLARE_DYNAMIC_CLASS_NO_COPY(wxDialogWithHelpers);
 
 protected:
     bool m_hasContextHelp;
@@ -565,7 +565,7 @@ protected:
 //
 class wxPanelWithHelpers : public wxPanel
 {
-    DECLARE_DYNAMIC_CLASS_NO_COPY(wxPanelWithHelpers)
+    wxDECLARE_DYNAMIC_CLASS_NO_COPY(wxPanelWithHelpers);
 
 public:
     wxPanelWithHelpers(wxWindow *parent, wxOrientation orient, const wxString &staticBoxLabel);
@@ -680,8 +680,7 @@ protected:
     wxPoint m_curpos;
     int m_leading;
 
-    virtual void _DoWriteLn(const wxChar *msg);
-    void _DoWriteLn(const wxString msg);
+    virtual void _DoWriteLn(const wxString &msg);
     void _DoWrite(const wxChar *msg);
 
 public:

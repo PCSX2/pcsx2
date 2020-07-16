@@ -41,10 +41,6 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			_("Games that need this hack to boot:\n * Star Ocean 3\n * Radiata Stories\n * Valkyrie Profile 2")
 		},
 		{
-			_("VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"),
-			wxEmptyString
-		},
-		{
 			_("FPU Compare Hack - For Digimon Rumble Arena 2."),
 			wxEmptyString
 		},
@@ -107,6 +103,10 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 		{
 			_("VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"),
 			wxEmptyString
+		},
+        {
+			_("VU I bit Hack avoid constant recompilation (Crash Tag Team Racing)"),
+             wxEmptyString
 		}
 	};
 
@@ -117,7 +117,7 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 	}
 
 	m_check_Enable = new pxCheckBox( this, _("Enable manual game fixes [Not recommended]"),
-		pxE( L"It's better to enable 'Automatic game fixes' at the main menu instead, and leave this page empty. ('Automatic' means: selectively use specific tested fixes for specific games). Manual game fixes will NOT increase your performance. In fact they may decrease it."
+		pxE( L"It's better to enable 'Automatic game fixes' at the main menu instead, and leave this page empty ('Automatic' means: selectively use specific tested fixes for specific games). Manual game fixes will NOT increase your performance. In fact they may decrease it."
 		)
 	);
 

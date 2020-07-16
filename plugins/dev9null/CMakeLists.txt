@@ -8,16 +8,19 @@ endif()
 
 # plugin name
 set(Output dev9null-0.5.0)
-set(dev9nullFinalFlags "")
+
+set(dev9nullFinalFlags
+    -fvisibility=hidden
+    -Wall
+    -Wno-parentheses
+	)
 
 # dev9null sources
 set(dev9nullSources
-	Config.cpp
 	DEV9.cpp)
 
 # dev9null headers
 set(dev9nullHeaders
-	Config.h
 	DEV9.h)
 
 # dev9null Linux sources

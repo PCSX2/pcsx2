@@ -47,20 +47,17 @@ namespace PathDefs
 	extern wxDirName GetProgramDataDir();
 	extern wxDirName GetDocuments();
 	extern wxDirName GetDocuments( DocsModeType mode );
-	extern wxDirName GetThemes();
 }
 
 extern DocsModeType		DocsFolderMode;				// 
 extern bool				UseDefaultSettingsFolder;	// when TRUE, pcsx2 derives the settings folder from the DocsFolderMode
 extern bool				UseDefaultPluginsFolder;
-extern bool				UseDefaultThemesFolder;
 
 extern wxDirName		CustomDocumentsFolder;		// allows the specification of a custom home folder for PCSX2 documents files.
 extern wxDirName		SettingsFolder;				// dictates where the settings folder comes from, *if* UseDefaultSettingsFolder is FALSE.
 
 extern wxDirName		InstallFolder;
 extern wxDirName		PluginsFolder;
-extern wxDirName		ThemesFolder;
 
 extern wxDirName GetSettingsFolder();
 extern wxString  GetVmSettingsFilename();
@@ -74,7 +71,7 @@ extern wxDirName GetCheatsWsFolder();
 enum InstallationModeType
 {
 	// Use the user defined folder selections.  These can be anywhere on a user's hard drive,
-	// though by default the binaries (plugins, themes) are located in Install_Dir (registered
+	// though by default the binaries (plugins) are located in Install_Dir (registered
 	// by the installer), and the user files (screenshots, inis) are in the user's documents
 	// folder.  All folders are changable within the GUI.
 	InstallMode_Registered,
@@ -97,6 +94,14 @@ enum AspectRatioType
 	AspectRatio_4_3,
 	AspectRatio_16_9,
 	AspectRatio_MaxCount
+};
+
+enum FMVAspectRatioSwitchType
+{
+	FMV_AspectRatio_Switch_Off,
+	FMV_AspectRatio_Switch_4_3,
+	FMV_AspectRatio_Switch_16_9,
+	FMV_AspectRatio_Switch_MaxCount
 };
 
 enum MemoryCardType
@@ -208,6 +213,7 @@ public:
 		bool		DisableScreenSaver;
 
 		AspectRatioType AspectRatio;
+		FMVAspectRatioSwitchType FMVAspectRatioSwitch;
 		Fixed100	Zoom;
 		Fixed100	StretchY;
 		Fixed100	OffsetX;
@@ -221,7 +227,6 @@ public:
 		bool		EnableVsyncWindowFlag;
 
 		bool		IsToggleFullscreenOnDoubleClick;
-		bool		IsToggleAspectRatioSwitch;
 
 		GSWindowOptions();
 
@@ -258,6 +263,9 @@ public:
 		wxString OutputInterlaced;
 		wxString Paused;
 		wxString TitleTemplate;
+#ifndef DISABLE_RECORDING
+		wxString RecordingTemplate;
+#endif
 	};
 
 public:
@@ -280,10 +288,6 @@ public:
 	wxString	LanguageCode;
 
 	int			RecentIsoCount;		// number of files displayed in the Recent Isos list.
-
-	// String value describing the desktop theme to use for pcsk2 (icons and background images)
-	// The theme name is used to look up files in the themes folder (relative to the executable).
-	wxString	DeskTheme;
 
 	// Specifies the size of icons used in Listbooks; specifically the PCSX2 Properties dialog box.
 	// Realistic values range from 96x96 to 24x24.
@@ -319,9 +323,11 @@ public:
 	bool		AskOnBoot;
 
 	wxString				CurrentIso;
+    wxString				CurrentBlockdump;
 	wxString				CurrentELF;
 	wxString				CurrentIRX;
 	CDVD_SourceType			CdvdSource;
+	wxString				CurrentGameArgs;
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)
@@ -357,7 +363,7 @@ public:
 	static int  GetMaxPresetIndex();
     static bool isOkGetPresetTextAndColor(int n, wxString& label, wxColor& c);
 	
-	bool        IsOkApplyPreset(int n);
+	bool        IsOkApplyPreset(int n, bool ignoreMTVU);
 
 
 	//The next 2 flags are used with ApplyConfigToGui which the presets system use:

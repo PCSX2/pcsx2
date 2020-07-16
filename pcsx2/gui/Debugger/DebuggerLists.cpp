@@ -18,14 +18,14 @@
 #include "BreakpointWindow.h"
 #include "DebugEvents.h"
 
-BEGIN_EVENT_TABLE(GenericListView, wxWindow)
+wxBEGIN_EVENT_TABLE(GenericListView, wxWindow)
 	EVT_SIZE(GenericListView::sizeEvent)
 	EVT_KEY_DOWN(GenericListView::keydownEvent)
 	EVT_RIGHT_DOWN(GenericListView::mouseEvent)
 	EVT_RIGHT_UP(GenericListView::mouseEvent)
 	EVT_LEFT_DCLICK(GenericListView::mouseEvent)
 	EVT_LIST_ITEM_RIGHT_CLICK(wxID_ANY,GenericListView::listEvent)
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 GenericListView::GenericListView(wxWindow* parent, GenericListViewColumn* columns, int columnCount)
 	: wxListView(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxLC_VIRTUAL|wxLC_REPORT|wxLC_SINGLE_SEL|wxNO_BORDER)

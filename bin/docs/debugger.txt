@@ -32,6 +32,7 @@ memory view:
     right click     open context menu
     ctrl+wheel      zoom memory view
     esc             return to previous goto address
+    ctrl+v          paste a hex string into memory
 
 breakpoint list:
 

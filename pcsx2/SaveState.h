@@ -24,70 +24,11 @@
 //  the lower 16 bit value.  IF the change is breaking of all compatibility with old
 //  states, increment the upper 16 bit value, and clear the lower 16 bits to 0.
 
-static const u32 g_SaveVersion = (0x9A0D << 16) | 0x0000;
+static const u32 g_SaveVersion = (0x9A0E << 16) | 0x0000;
 
 // this function is meant to be used in the place of GSfreeze, and provides a safe layer
 // between the GS saving function and the MTGS's needs. :)
 extern s32 CALLBACK gsSafeFreeze( int mode, freezeData *data );
-
-
-namespace Exception
-{
-	// ---------------------------------------------------------------------------------------
-	// Savestate Exceptions:
-	//   UnsupportedStateVersion / StateCrcMismatch
-	// ---------------------------------------------------------------------------------------
-
-	// thrown when the savestate being loaded isn't supported.
-	//
-	class UnsupportedStateVersion : public SaveStateLoadError
-	{
-		DEFINE_EXCEPTION_COPYTORS( UnsupportedStateVersion, SaveStateLoadError )
-		DEFINE_EXCEPTION_MESSAGES( UnsupportedStateVersion )
-
-	public:
-		u32 Version;		// version number of the unsupported state.
-
-	protected:
-		UnsupportedStateVersion() {}
-
-	public:
-		explicit UnsupportedStateVersion( int version )
-		{
-			Version = version;
-		}
-
-		virtual wxString FormatDiagnosticMessage() const;
-		virtual wxString FormatDisplayMessage() const;
-	};
-
-	// A recoverable exception thrown when the CRC of the savestate does not match the
-	// CRC returned by the Cdvd driver.
-	// [feature not implemented yet]
-	//
-	class StateCrcMismatch : public SaveStateLoadError
-	{
-		DEFINE_EXCEPTION_COPYTORS( StateCrcMismatch, SaveStateLoadError )
-		DEFINE_EXCEPTION_MESSAGES( StateCrcMismatch )
-
-	public:
-		u32 Crc_Savestate;
-		u32 Crc_Cdvd;
-
-	protected:
-		StateCrcMismatch() {}
-
-	public:
-		StateCrcMismatch( u32 crc_save, u32 crc_cdvd )
-		{
-			Crc_Savestate	= crc_save;
-			Crc_Cdvd		= crc_cdvd;
-		}
-
-		virtual wxString FormatDiagnosticMessage() const;
-		virtual wxString FormatDisplayMessage() const;
-	};
-}
 
 // --------------------------------------------------------------------------------------
 //  SaveStateBase class
@@ -104,8 +45,6 @@ protected:
 	u32 m_version;		// version of the savestate being loaded.
 
 	int m_idx;			// current read/write index of the allocation
-
-	bool m_DidBios;
 
 public:
 	SaveStateBase( VmStateBuffer& memblock );
@@ -198,9 +137,6 @@ protected:
 	void vuMicroFreeze();
 	void vif0Freeze();
 	void vif1Freeze();
-#ifdef ENABLE_NEW_IOPDMA
-	void iopDmacFreeze();
-#endif
 	void sifFreeze();
 	void ipuFreeze();
 	void ipuDmaFreeze();
@@ -217,6 +153,8 @@ protected:
 	void sio2Freeze();
 
 	void deci2Freeze();
+
+	void InputRecordingFreeze();
 };
 
 // --------------------------------------------------------------------------------------

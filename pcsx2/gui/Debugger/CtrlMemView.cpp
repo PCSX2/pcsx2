@@ -25,7 +25,7 @@
 #include <wx/clipbrd.h>
 
 
-BEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
+wxBEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
 	EVT_PAINT(CtrlMemView::paintEvent)
 	EVT_MOUSEWHEEL(CtrlMemView::mouseEvent)
 	EVT_LEFT_DOWN(CtrlMemView::mouseEvent)
@@ -40,7 +40,7 @@ BEGIN_EVENT_TABLE(CtrlMemView, wxWindow)
 	EVT_SCROLLWIN_LINEDOWN(CtrlMemView::scrollbarEvent)
 	EVT_SCROLLWIN_PAGEUP(CtrlMemView::scrollbarEvent)
 	EVT_SCROLLWIN_PAGEDOWN(CtrlMemView::scrollbarEvent)
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 enum MemoryViewMenuIdentifiers
 {
@@ -57,7 +57,6 @@ enum MemoryViewMenuIdentifiers
 	ID_MEMVIEW_COPYVALUE_32,
 	ID_MEMVIEW_COPYVALUE_64,
 	ID_MEMVIEW_COPYVALUE_128,
-	ID_MEMVIEW_DUMP,
 	ID_MEMVIEW_ALIGNWINDOW,
 };
 
@@ -98,8 +97,6 @@ CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
 	menu.Append(ID_MEMVIEW_COPYVALUE_32,		L"Copy Value (32 bit)");
 	menu.Append(ID_MEMVIEW_COPYVALUE_64,		L"Copy Value (64 bit)");
 	menu.Append(ID_MEMVIEW_COPYVALUE_128,		L"Copy Value (128 bit)");
-	menu.Append(ID_MEMVIEW_DUMP,				L"Dump...");
-	menu.Enable(ID_MEMVIEW_DUMP,false);
 	menu.AppendSeparator();
 	menu.AppendCheckItem(ID_MEMVIEW_ALIGNWINDOW, L"Align window to row size");
 	menu.Check(ID_MEMVIEW_ALIGNWINDOW, g_Conf->EmuOptions.Debugger.AlignMemoryWindowStart);
@@ -489,6 +486,10 @@ void CtrlMemView::keydownEvent(wxKeyEvent& evt)
 				}
 			}
 			break;
+		case 'v':
+		case 'V':
+			pasteHex();
+			break;
 		default:
 			evt.Skip();
 			break;
@@ -728,4 +729,43 @@ void CtrlMemView::gotoPoint(int x, int y)
 void CtrlMemView::updateReference(u32 address) {
 	referencedAddress = address;
 	redraw();
+}
+
+void CtrlMemView::pasteHex()
+{
+	if (wxTheClipboard->Open())
+	{
+		if (wxTheClipboard->IsSupported(wxDF_TEXT))
+		{
+			wxTextDataObject data;
+			wxTheClipboard->GetData(data);
+			wxString str = data.GetText();
+			str.Replace(" ", "");
+			str.Replace("\n", "");
+			str.Replace("\r", "");
+			str.Replace("\t", "");
+
+			bool active = !cpu->isCpuPaused();
+			if (active)
+				cpu->pauseCpu();
+
+			std::size_t i;
+			for (i = 0; i < str.size() / 2; i++)
+			{
+				long byte;
+				if (str.Mid(i * 2, 2).ToLong(&byte, 16))
+				{
+					cpu->write8(curAddress + i, static_cast<u8>(byte));
+				}
+				else {
+					break;
+				}
+			}
+			scrollCursor(i);
+
+			if(active)
+				cpu->resumeCpu();
+		}
+		wxTheClipboard->Close();
+	}
 }

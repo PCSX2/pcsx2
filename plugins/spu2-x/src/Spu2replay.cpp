@@ -149,16 +149,12 @@ void dummy1()
 
 void dummy4()
 {
-#ifndef ENABLE_NEW_IOPDMA_SPU2
     SPU2interruptDMA4();
-#endif
 }
 
 void dummy7()
 {
-#ifndef ENABLE_NEW_IOPDMA_SPU2
     SPU2interruptDMA7();
-#endif
 }
 
 u64 HighResFrequency()
@@ -223,7 +219,6 @@ BOOL WINAPI HandlerRoutine(DWORD dwCtrlType)
 EXPORT_C_(void)
 s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdShow)
 {
-#ifndef ENABLE_NEW_IOPDMA_SPU2
     int events = 0;
 
     Running = true;
@@ -233,16 +228,6 @@ s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdShow)
     SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 
     conprintf("Playing %s file on %x...", filename, hwnd);
-
-    if (IsWindows8OrGreater()) {
-        for (int n = 0; mods[n] != nullptr; ++n) {
-            if (mods[n] == XAudio2_27_Out) {
-                mods[n] = XAudio2Out;
-                break;
-            }
-        }
-    }
-
 #endif
 
     // load file
@@ -332,6 +317,5 @@ Finish:
 #endif
 
     replay_mode = false;
-#endif
 }
 #endif

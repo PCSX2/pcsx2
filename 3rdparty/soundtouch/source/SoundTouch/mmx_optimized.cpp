@@ -20,13 +20,6 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2017-03-05 15:56:03 +0200 (su, 05 maalis 2017) $
-// File revision : $Revision: 4 $
-//
-// $Id: mmx_optimized.cpp 247 2017-03-05 13:56:03Z oparviai $
-//
-////////////////////////////////////////////////////////////////////////////////
-//
 // License :
 //
 //  SoundTouch audio processing library
@@ -224,7 +217,6 @@ void TDStretchMMX::clearCrossCorrState()
 }
 
 
-
 // MMX-optimized version of the function overlapStereo
 void TDStretchMMX::overlapStereo(short *output, const short *input) const
 {
@@ -340,7 +332,6 @@ void FIRFilterMMX::setCoefficients(const short *coeffs, uint newLength, uint uRe
 }
 
 
-
 // mmx-optimized version of the filter routine for stereo sound
 uint FIRFilterMMX::evaluateFilterStereo(short *dest, const short *src, uint numSamples) const
 {
@@ -396,5 +387,10 @@ uint FIRFilterMMX::evaluateFilterStereo(short *dest, const short *src, uint numS
 
     return (numSamples & 0xfffffffe) - length;
 }
+
+#else
+
+// workaround to not complain about empty module
+bool _dontcomplain_mmx_empty;
 
 #endif  // SOUNDTOUCH_ALLOW_MMX

@@ -166,7 +166,7 @@ public:
 
 	static int open(IOManFile **file, const std::string &full_path, s32 flags, u16 mode)
 	{
-		const std::string path = full_path.substr(full_path.rfind(':') + 1);
+		const std::string path = full_path.substr(full_path.find(':') + 1);
 
 		// host: actually DOES let you write!
 		//if (flags != IOP_O_RDONLY)

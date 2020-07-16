@@ -174,7 +174,7 @@ void DebugInterface::pauseCpu()
 {
 	SysCoreThread& core = GetCoreThread();
 	if (!core.IsPaused())
-		core.Pause();
+		core.Pause(true);
 }
 
 void DebugInterface::resumeCpu()
@@ -348,9 +348,10 @@ int R5900DebugInterface::getRegisterCount(int cat)
 	case EECAT_CP0:
 	case EECAT_FPR:
 	case EECAT_FCR:
-	case EECAT_VU0F:
 	case EECAT_VU0I:
 		return 32;
+	case EECAT_VU0F:
+		return 33;  // 32 + ACC
 	default:
 		return 0;
 	}
@@ -395,7 +396,13 @@ const char* R5900DebugInterface::getRegisterName(int cat, int num)
 	case EECAT_FCR:
 		return R5900::COP1_REG_FCR[num];
 	case EECAT_VU0F:
-		return R5900::COP2_REG_FP[num];
+		switch (num)
+		{
+		case 32:	// ACC
+			return "ACC";
+		default:
+			return R5900::COP2_REG_FP[num];
+		}
 	case EECAT_VU0I:
 		return R5900::COP2_REG_CTL[num];
 	default:
@@ -435,13 +442,21 @@ u128 R5900DebugInterface::getRegister(int cat, int num)
 		result = u128::From32(fpuRegs.fprc[num]);
 		break;
 	case EECAT_VU0F:
-		result = VU1.VF[num].UQ;
+		switch (num)
+		{
+		case 32:	// ACC
+			result = VU0.ACC.UQ;
+			break;
+		default:
+			result = VU0.VF[num].UQ;
+			break;
+		}
 		break;
 	case EECAT_VU0I:
-		result = u128::From32(VU1.VI[num].UL);
+		result = u128::From32(VU0.VI[num].UL);
 		break;
 	default:
-		result.From32(0);
+		result = u128::From32(0);
 		break;
 	}
 
@@ -519,10 +534,18 @@ void R5900DebugInterface::setRegister(int cat, int num, u128 newValue)
 		fpuRegs.fprc[num] = newValue._u32[0];
 		break;
 	case EECAT_VU0F:
-		VU1.VF[num].UQ = newValue;
+		switch (num)
+		{
+		case 32:	// ACC
+			VU0.ACC.UQ = newValue;
+			break;
+		default:
+			VU0.VF[num].UQ = newValue;
+			break;
+		}
 		break;
 	case EECAT_VU0I:
-		VU1.VI[num].UL = newValue._u32[0];
+		VU0.VI[num].UL = newValue._u32[0];
 		break;
 	default:
 		break;
@@ -581,7 +604,9 @@ bool R5900DebugInterface::isValidAddress(u32 addr)
 	case 0xA:
 	case 0xB:
 		// [ 8000_0000 - BFFF_FFFF ] kernel
-		// return true;
+		// We only need to access the EE kernel (which is 1 MB large)
+		if (lopart < 0x100000)
+			return true;
 		break;
 	case 0xF:
 		// [ 8000_0000 - BFFF_FFFF ] IOP or kernel stack

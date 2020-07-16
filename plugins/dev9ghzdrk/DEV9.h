@@ -44,12 +44,12 @@
 
 #endif
 
-#define DEV9_LOG_ENABLE
+//#define DEV9_LOG_ENABLE
 
 #ifdef DEV9_LOG_ENABLE
 #define DEV9_LOG __Log
 #else
-#define DEV9_LOG(...) ()
+#define DEV9_LOG(...)
 #endif
 
 void rx_process(NetPacket* pk);
@@ -638,12 +638,17 @@ static flash_info_t devices[] = {
 
 #define FLASH_REGSIZE			0x20
 
-void CALLBACK FLASHinit();
-u32  CALLBACK FLASHread32(u32 addr, int size);
-void CALLBACK FLASHwrite32(u32 addr, u32 value, int size);
+EXPORT_C_(void)
+FLASHinit();
+EXPORT_C_(u32)
+ FLASHread32(u32 addr, int size);
+EXPORT_C_(void)
+FLASHwrite32(u32 addr, u32 value, int size);
 void _DEV9irq(int cause, int cycles);
 
 int emu_printf(const char *fmt, ...);
 
+#ifdef _WIN32
 #pragma warning(error:4013)
+#endif
 #endif

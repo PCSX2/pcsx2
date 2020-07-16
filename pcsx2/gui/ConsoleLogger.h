@@ -191,6 +191,8 @@ public:
 	bool Write( ConsoleColors color, const wxString& text );
 	bool Newline();
 
+	void UpdateLogList();
+
 protected:
 	// menu callbacks
 	void OnOpen (wxCommandEvent& event);

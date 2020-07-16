@@ -15,13 +15,6 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2012-11-08 20:53:01 +0200 (to, 08 marras 2012) $
-// File revision : $Revision: 4 $
-//
-// $Id: FIFOSampleBuffer.cpp 160 2012-11-08 18:53:01Z oparviai $
-//
-////////////////////////////////////////////////////////////////////////////////
-//
 // License :
 //
 //  SoundTouch audio processing library
@@ -80,7 +73,8 @@ void FIFOSampleBuffer::setChannels(int numChannels)
 {
     uint usedBytes;
 
-    assert(numChannels > 0);
+    if (!verifyNumberOfChannels(numChannels)) return;
+
     usedBytes = channels * samplesInBuffer;
     channels = (uint)numChannels;
     samplesInBuffer = usedBytes / channels;
@@ -131,7 +125,7 @@ void FIFOSampleBuffer::putSamples(uint nSamples)
 //
 // Parameter 'slackCapacity' tells the function how much free capacity (in
 // terms of samples) there _at least_ should be, in order to the caller to
-// succesfully insert all the required samples to the buffer. When necessary, 
+// successfully insert all the required samples to the buffer. When necessary, 
 // the function grows the buffer size to comply with this requirement.
 //
 // When using this function as means for inserting new samples, also remember 
@@ -158,7 +152,7 @@ SAMPLETYPE *FIFOSampleBuffer::ptrBegin()
 }
 
 
-// Ensures that the buffer has enought capacity, i.e. space for _at least_
+// Ensures that the buffer has enough capacity, i.e. space for _at least_
 // 'capacityRequirement' number of samples. The buffer is grown in steps of
 // 4 kilobytes to eliminate the need for frequently growing up the buffer,
 // as well as to round the buffer size up to the virtual memory page size.
@@ -271,4 +265,3 @@ uint FIFOSampleBuffer::adjustAmountOfSamples(uint numSamples)
     }
     return samplesInBuffer;
 }
-

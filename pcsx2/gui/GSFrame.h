@@ -55,10 +55,13 @@ public:
 	void DoShowMouse();
 	void DirectKeyCommand( wxKeyEvent& evt );
 	void DirectKeyCommand( const KeyAcceleratorCode& kac );
+	void InitDefaultAccelerators();
+#ifndef DISABLE_RECORDING
+	void InitRecordingAccelerators();
+#endif
 
 protected:
 	void AppStatusEvent_OnSettingsApplied();
-	void InitDefaultAccelerators();
 
 	void OnCloseWindow( wxCloseEvent& evt );
 	void OnResize(wxSizeEvent& event);
@@ -89,8 +92,6 @@ class GSFrame : public wxFrame
 protected:
 	wxTimer					m_timer_UpdateTitle;
 	wxWindowID				m_id_gspanel;
-	wxWindowID				m_id_OutputDisabled;
-	wxStaticText*			m_label_Disabled;
 	wxStatusBar*			m_statusbar;
 
 	CpuUsageProvider		m_CpuUsage;
@@ -102,7 +103,6 @@ public:
 	GSPanel* GetViewport();
 	void SetFocus();
 	bool Show( bool shown=true );
-	wxStaticText* GetLabel_OutputDisabled() const;
 
 	bool ShowFullScreen(bool show, bool updateConfig = true);
 

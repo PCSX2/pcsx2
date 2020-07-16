@@ -22,5 +22,5 @@
 #ifndef __LINUX_H__
 #define __LINUX_H__
 extern void DisplayDialog();
-extern string KeyName(int pad, int key, int keysym = 0);
+extern std::string KeyName(int pad, int key, int keysym = 0);
 #endif

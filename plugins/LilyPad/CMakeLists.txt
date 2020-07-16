@@ -9,8 +9,12 @@ endif()
 # plugin name
 set(Output LilyPad-0.11.0)
 
-set(lilypadFinalFlags "")
-
+set(lilypadFinalFlags
+    -fvisibility=hidden
+    -Wall
+    -Wno-parentheses
+    )
+    
 # lilypad sources
 set(lilypadSources
     DeviceEnumerator.cpp

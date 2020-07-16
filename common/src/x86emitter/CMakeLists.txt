@@ -50,7 +50,6 @@ set(x86emitterHeaders
 	../../include/x86emitter/legacy_instructions.h
 	../../include/x86emitter/legacy_internal.h
 	../../include/x86emitter/legacy_types.h
-	../../include/x86emitter/sse_helpers.h
 	../../include/x86emitter/tools.h
 	../../include/x86emitter/x86emitter.h
 	../../include/x86emitter/x86types.h
@@ -74,3 +73,7 @@ set(x86emitterFinalLibs
 )
 
 add_pcsx2_lib(${Output} "${x86emitterFinalSources}" "${x86emitterFinalLibs}" "${x86emitterFinalFlags}")
+
+if(COMMAND target_precompile_headers)
+	target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
+endif()

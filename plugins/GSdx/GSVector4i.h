@@ -47,6 +47,10 @@ public:
 
 	__forceinline GSVector4i()
 	{
+		x = 0;
+		y = 0;
+		z = 0;
+		w = 0;
 	}
 
 	__forceinline GSVector4i(int x, int y, int z, int w)
@@ -1946,7 +1950,7 @@ public:
 		GSVector4i* s = (GSVector4i*)src;
 		GSVector4i* d = (GSVector4i*)dst;
 
-		for(size_t i = 0; i < size; i += 4)
+		for(size_t i = 0; i < size; ++i)
 		{
 			GSVector4i v0 = (d[i * 4 + 0] == s[i * 4 + 0]);
 			GSVector4i v1 = (d[i * 4 + 1] == s[i * 4 + 1]);

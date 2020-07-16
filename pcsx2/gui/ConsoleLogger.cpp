@@ -168,27 +168,27 @@ void ConsoleLogFrame::ColorArray::SetColorScheme_Dark()
 {
 	m_table[Color_Default]		.SetTextColour(wxColor( 208, 208, 208 ));
 	m_table[Color_Black]		.SetTextColour(wxColor( 255, 255, 255 ));
-	m_table[Color_Red]			.SetTextColour(wxColor( 180,   0,   0 ));
-	m_table[Color_Green]		.SetTextColour(wxColor(   0, 160,   0 ));
-	m_table[Color_Blue]			.SetTextColour(wxColor(  32,  32, 204 ));
+	m_table[Color_Red]			.SetTextColour(wxColor( 255,  87,  87 ));
+	m_table[Color_Green]		.SetTextColour(wxColor(  58, 194, 121 ));
+	m_table[Color_Blue]			.SetTextColour(wxColor(  14, 105, 230 ));
 	m_table[Color_Magenta]		.SetTextColour(wxColor( 160,   0, 160 ));
 	m_table[Color_Orange]		.SetTextColour(wxColor( 160, 120,   0 ));
 	m_table[Color_Gray]			.SetTextColour(wxColor( 128, 128, 128 ));
 
 	m_table[Color_Cyan]			.SetTextColour(wxColor( 128, 180, 180 ));
-	m_table[Color_Yellow]		.SetTextColour(wxColor( 180, 180, 128 ));
+	m_table[Color_Yellow]		.SetTextColour(wxColor( 194, 194,  72 ));
 	m_table[Color_White]		.SetTextColour(wxColor( 160, 160, 160 ));
 
 	m_table[Color_StrongBlack]	.SetTextColour(wxColor( 255, 255, 255 ));
-	m_table[Color_StrongRed]	.SetTextColour(wxColor( 180,   0,   0 ));
-	m_table[Color_StrongGreen]	.SetTextColour(wxColor(   0, 160,   0 ));
-	m_table[Color_StrongBlue]	.SetTextColour(wxColor(  32,  32, 204 ));
+	m_table[Color_StrongRed]	.SetTextColour(wxColor( 230,  23,  23 ));
+	m_table[Color_StrongGreen]	.SetTextColour(wxColor(   4, 185,   4 ));
+	m_table[Color_StrongBlue]	.SetTextColour(wxColor(  63, 173, 232 ));
 	m_table[Color_StrongMagenta].SetTextColour(wxColor( 160,   0, 160 ));
 	m_table[Color_StrongOrange]	.SetTextColour(wxColor( 160, 120,   0 ));
 	m_table[Color_StrongGray]	.SetTextColour(wxColor( 128, 128, 128 ));
 
 	m_table[Color_StrongCyan]	.SetTextColour(wxColor( 128, 180, 180 ));
-	m_table[Color_StrongYellow]	.SetTextColour(wxColor( 180, 180, 128 ));
+	m_table[Color_StrongYellow]	.SetTextColour(wxColor( 194, 194,  72 ));
 	m_table[Color_StrongWhite]	.SetTextColour(wxColor( 160, 160, 160 ));
 }
 
@@ -283,6 +283,22 @@ public:
 	}
 };
 
+enum MenuId_LogSources_Offset
+{
+	MenuId_LogSources_Offset_eeConsole = 0,
+	MenuId_LogSources_Offset_iopConsole,
+	MenuId_LogSources_Offset_eeRecPerf,
+
+	MenuId_LogSources_Offset_ELF = 4,
+
+	MenuId_LogSources_Offset_Event = 6,
+	MenuId_LogSources_Offset_Thread,
+	MenuId_LogSources_Offset_sysoutConsole,
+
+	MenuId_LogSources_Offset_recordingConsole = 10,
+	MenuId_LogSources_Offset_controlInfo
+};
+
 // WARNING ConsoleLogSources & ConLogDefaults must have the same size
 static ConsoleLogSource* const ConLogSources[] =
 {
@@ -294,6 +310,12 @@ static ConsoleLogSource* const ConLogSources[] =
 	NULL,
 	(ConsoleLogSource*)&pxConLog_Event,
 	(ConsoleLogSource*)&pxConLog_Thread,
+	(ConsoleLogSource*)&SysConsole.sysoutConsole,
+	NULL,
+#ifndef DISABLE_RECORDING
+	(ConsoleLogSource*)&SysConsole.recordingConsole,
+	(ConsoleLogSource*)&SysConsole.controlInfo,
+#endif
 };
 
 // WARNING ConsoleLogSources & ConLogDefaults must have the same size
@@ -306,6 +328,12 @@ static const bool ConLogDefaults[] =
 	false,
 	false,
 	false,
+	false,
+	false,
+#ifndef DISABLE_RECORDING
+	false,
+	false,
+#endif
 	false
 };
 
@@ -337,7 +365,6 @@ void ConLog_LoadSaveSettings( IniInterface& ini )
 	ConLogInitialized = true;
 }
 
-
 // --------------------------------------------------------------------------------------
 //  ConsoleLogFrame  (implementations)
 // --------------------------------------------------------------------------------------
@@ -366,7 +393,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	if (0==m_conf.Theme.CmpNoCase(L"Dark"))
 	{
 		m_ColorTable.SetColorScheme_Dark();
-		m_TextCtrl.SetBackgroundColour( wxColor( 0, 0, 0 ) );
+		m_TextCtrl.SetBackgroundColour( wxColor( 38, 41, 48 ) );
 	}
 	else //if ((0==m_conf.Theme.CmpNoCase("Default")) || (0==m_conf.Theme.CmpNoCase("Light")))
 	{
@@ -398,7 +425,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	menuFontSizes.AppendSeparator();
 	menuFontSizes.Append( MenuId_ColorScheme_Light,	_("&Light theme"),	_t("Default soft-tone color scheme."), wxITEM_RADIO );
-	menuFontSizes.Append( MenuId_ColorScheme_Dark,	_("&Dark theme"),	_t("Classic black color scheme for people who enjoy having text seared into their optic nerves."), wxITEM_RADIO );
+	menuFontSizes.Append( MenuId_ColorScheme_Dark,	_("&Dark theme"),	_t("Modern dark color scheme."), wxITEM_RADIO );
 
 	// The "Always on Top" option currently doesn't work
 	//menuAppear.AppendSeparator();
@@ -560,7 +587,16 @@ void ConsoleLogFrame::OnLoggingChanged()
 		{
 			GetMenuBar()->Check( MenuId_LogSource_Start+i, log->IsActive() );
 		}
+#ifndef DISABLE_RECORDING
+		GetMenuBar()->Enable( MenuId_LogSource_Start + MenuId_LogSources_Offset_recordingConsole, g_Conf->EmuOptions.EnableRecordingTools);
+		GetMenuBar()->Enable( MenuId_LogSource_Start + MenuId_LogSources_Offset_controlInfo, g_Conf->EmuOptions.EnableRecordingTools);
+#endif
 	}
+}
+
+void ConsoleLogFrame::UpdateLogList()
+{
+	OnLoggingChanged();
 }
 
 // Implementation note:  Calls SetColor and Write( text ).  Override those virtuals
@@ -832,7 +868,7 @@ void ConsoleLogFrame::OnToggleTheme( wxCommandEvent& evt )
 		case MenuId_ColorScheme_Dark:
 			newTheme = L"Dark";
 			m_ColorTable.SetColorScheme_Dark();
-			m_TextCtrl.SetBackgroundColour( wxColor( 24, 24, 24 ) );
+			m_TextCtrl.SetBackgroundColour( wxColor( 38, 41, 48 ) );
 		break;
 	}
 

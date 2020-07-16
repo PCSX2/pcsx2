@@ -200,73 +200,7 @@ protected:
     void _ThreadCleanup();
 
     static void *_internal_callback(void *func);
+    static void internal_callback_helper(void *func);
     static void _pt_callback_cleanup(void *handle);
-};
-
-
-// --------------------------------------------------------------------------------------
-//  BaseTaskThread
-// --------------------------------------------------------------------------------------
-// an abstract base class which provides simple parallel execution of single tasks.
-//
-// FIXME: This class is incomplete and untested!  Don't use, unless you want to fix it
-// while you're at it. :D
-//
-// Implementation:
-//   To use this class your derived class will need to implement its own Task() function
-//   and also a "StartTask( parameters )" function which suits the need of your task, along
-//   with any local variables your task needs to do its job.  You may additionally want to
-//   implement a "GetResult()" function, which would be a combination of WaitForResult()
-//   and a return value of the computational result.
-//
-// Thread Safety:
-//   If operating on local variables, you must execute WaitForResult() before leaving the
-//   variable scope -- or alternatively have your StartTask() implementation make full
-//   copies of dependent data.  Also, by default PostTask() always assumes the previous
-//   task has completed.  If your system can post a new task before the previous one has
-//   completed, then it needs to explicitly call WaitForResult() or provide a mechanism
-//   to cancel the previous task (which is probably more work than it's worth).
-//
-// Performance notes:
-//  * Remember that thread creation is generally slow, so you should make your object
-//    instance once early and then feed it tasks repeatedly over the course of program
-//    execution.
-//
-//  * For threading to be a successful speedup, the task being performed should be as lock
-//    free as possible.  For example using STL containers in parallel usually fails to
-//    yield any speedup due to the gratuitous amount of locking that the STL performs
-//    internally.
-//
-//  * The best application of tasking threads is to divide a large loop over a linear array
-//    into smaller sections.  For example, if you have 20,000 items to process, the task
-//    can be divided into two threads of 10,000 items each.
-//
-class BaseTaskThread : public pxThread
-{
-protected:
-    std::atomic<bool> m_Done;
-    std::atomic<bool> m_TaskPending;
-    Semaphore m_post_TaskComplete;
-    Mutex m_lock_TaskComplete;
-
-public:
-    virtual ~BaseTaskThread() = default;
-    BaseTaskThread()
-        : m_Done(false)
-        , m_TaskPending(false)
-        , m_post_TaskComplete()
-    {
-    }
-
-    void Block();
-    void PostTask();
-    void WaitForResult();
-
-protected:
-    // Abstract method run when a task has been posted.  Implementing classes should do
-    // all your necessary processing work here.
-    virtual void Task() = 0;
-
-    virtual void ExecuteTaskInThread();
 };
 }

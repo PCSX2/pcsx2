@@ -25,7 +25,7 @@ wxDEFINE_EVENT(pxEvt_DeleteThread, wxCommandEvent);
 wxDEFINE_EVENT(pxEvt_InvokeAction, pxActionEvent);
 wxDEFINE_EVENT(pxEvt_SynchronousCommand, pxSynchronousCommandEvent);
 
-IMPLEMENT_DYNAMIC_CLASS(pxSimpleEvent, wxEvent)
+wxIMPLEMENT_DYNAMIC_CLASS(pxSimpleEvent, wxEvent);
 
 ConsoleLogSource_App::ConsoleLogSource_App()
 {
@@ -115,7 +115,7 @@ void SynchronousActionState::PostResult()
 //  pxActionEvent Implementations
 // --------------------------------------------------------------------------------------
 
-IMPLEMENT_DYNAMIC_CLASS(pxActionEvent, wxEvent)
+wxIMPLEMENT_DYNAMIC_CLASS(pxActionEvent, wxEvent);
 
 pxActionEvent::pxActionEvent(SynchronousActionState *sema, int msgtype)
     : wxEvent(0, msgtype)
@@ -156,7 +156,7 @@ void pxActionEvent::SetException(BaseException *ex)
 // --------------------------------------------------------------------------------------
 //  pxSynchronousCommandEvent
 // --------------------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC_CLASS(pxSynchronousCommandEvent, wxCommandEvent)
+wxIMPLEMENT_DYNAMIC_CLASS(pxSynchronousCommandEvent, wxCommandEvent);
 
 pxSynchronousCommandEvent::pxSynchronousCommandEvent(SynchronousActionState *sema, wxEventType commandType, int winid)
     : wxCommandEvent(pxEvt_SynchronousCommand, winid)
@@ -221,7 +221,7 @@ void pxSynchronousCommandEvent::SetException(BaseException *ex)
 //
 class pxRpcEvent : public pxActionEvent
 {
-    DECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxRpcEvent)
+    wxDECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxRpcEvent);
 
     typedef pxActionEvent _parent;
 
@@ -263,7 +263,7 @@ protected:
     }
 };
 
-IMPLEMENT_DYNAMIC_CLASS(pxRpcEvent, pxActionEvent)
+wxIMPLEMENT_DYNAMIC_CLASS(pxRpcEvent, pxActionEvent);
 
 // --------------------------------------------------------------------------------------
 //  pxExceptionEvent implementations
@@ -288,7 +288,7 @@ void pxExceptionEvent::InvokeEvent()
 // would mean checking only one list of events per idle event, instead of two.  (ie, ping
 // events can be appended to the idle event list, instead of into their own custom list).
 //
-IMPLEMENT_DYNAMIC_CLASS(wxAppWithHelpers, wxApp)
+wxIMPLEMENT_DYNAMIC_CLASS(wxAppWithHelpers, wxApp);
 
 
 // Posts a method to the main thread; non-blocking.  Post occurs even when called from the

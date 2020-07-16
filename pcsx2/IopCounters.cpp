@@ -152,12 +152,6 @@ void psxRcntInit() {
 		psxCounters[7].mode = 0x8;
 	}
 
-#ifdef ENABLE_NEW_IOPDMA
-		psxCounters[8].rate = 2000;
-		psxCounters[8].CycleT = psxCounters[7].rate;
-		psxCounters[8].mode = 0x8;
-#endif
-
 	for (i=0; i<8; i++)
 		psxCounters[i].sCycleT = psxRegs.cycle;
 
@@ -170,7 +164,7 @@ void psxRcntInit() {
 static bool __fastcall _rcntFireInterrupt(int i, bool isOverflow) {
 	bool ret;
 
-	if ((psxCounters[i].mode & 0x400)) { //IRQ fired
+	if ((psxCounters[i].mode & 0x400) && !(psxCounters[i].mode & (isOverflow ? 0x1000 : 0x800))) { //IRQ fired
 		//DevCon.Warning("Counter %d %s IRQ Fired count %x", i, isOverflow ? "Overflow" : "Target", psxCounters[i].count);
 		psxHu32(0x1070) |= psxCounters[i].interrupt;
 		iopTestIntc();
@@ -415,14 +409,14 @@ static void psxCheckEndGate32(int i)
 void psxVBlankStart()
 {
 	cdvdVsync();
-	psxHu32(0x1070) |= 1;
+	iopIntcIrq(0);
 	if(psxvblankgate & (1 << 1)) psxCheckStartGate16(1);
 	if(psxvblankgate & (1 << 3)) psxCheckStartGate32(3);
 }
 
 void psxVBlankEnd()
 {
-	psxHu32(0x1070) |= 0x800;
+	iopIntcIrq(11);
 	if(psxvblankgate & (1 << 1)) psxCheckEndGate16(1);
 	if(psxvblankgate & (1 << 3)) psxCheckEndGate32(3);
 }
@@ -518,24 +512,6 @@ void psxRcntUpdate()
 		else c -= difference;
 		if (c < psxNextCounter) psxNextCounter = c;
 	}
-
-#ifdef ENABLE_NEW_IOPDMA
-
-	// New Iop DMA handler WIP
-	{
-		const s32 difference = psxRegs.cycle - psxCounters[8].sCycleT;
-		s32 c = psxCounters[8].CycleT;
-
-		if(difference >= psxCounters[8].CycleT)
-		{
-			psxCounters[8].sCycleT = psxRegs.cycle;
-			psxCounters[8].CycleT = psxCounters[8].rate;
-			IopDmaUpdate(difference);
-		}
-		else c -= difference;
-		if (c < psxNextCounter) psxNextCounter = c;
-	}
-#endif
 
 	for (i=0; i<6; i++) _rcntSet( i );
 }

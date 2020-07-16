@@ -35,6 +35,7 @@ CheckedStaticBox::CheckedStaticBox(wxWindow *parent, int orientation, const wxSt
 void CheckedStaticBox::MainToggle_Click(wxCommandEvent &evt)
 {
     SetValue(evt.IsChecked());
+    evt.Skip();
 }
 
 // Sets the main checkbox status, and enables/disables all child controls
@@ -46,7 +47,7 @@ void CheckedStaticBox::SetValue(bool val)
     for (wxWindowList::iterator iter = list.begin(); iter != list.end(); ++iter) {
         wxWindow *current = *iter;
         if (current != &ThisToggle)
-            current->Enable(val);
+            current->Enable(IsEnabled() && val);
     }
     ThisToggle.SetValue(val);
 }

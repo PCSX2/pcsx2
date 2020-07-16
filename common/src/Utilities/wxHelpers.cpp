@@ -109,7 +109,7 @@ bool pxDialogExists(const wxString &name)
 
 wxDEFINE_EVENT(pxEvt_OnDialogCreated, wxCommandEvent);
 
-IMPLEMENT_DYNAMIC_CLASS(wxDialogWithHelpers, wxDialog)
+wxIMPLEMENT_DYNAMIC_CLASS(wxDialogWithHelpers, wxDialog);
 
 wxDialogWithHelpers::wxDialogWithHelpers()
 {
@@ -368,7 +368,7 @@ int wxDialogWithHelpers::GetCharHeight() const
 //  wxPanelWithHelpers Implementations
 // --------------------------------------------------------------------------------------
 
-IMPLEMENT_DYNAMIC_CLASS(wxPanelWithHelpers, wxPanel)
+wxIMPLEMENT_DYNAMIC_CLASS(wxPanelWithHelpers, wxPanel);
 
 void wxPanelWithHelpers::Init()
 {

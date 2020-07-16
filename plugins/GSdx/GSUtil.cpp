@@ -23,7 +23,7 @@
 #include "GSUtil.h"
 
 #ifdef _WIN32
-#include "GSDeviceDX.h"
+#include "Renderers/DX11/GSDevice11.h"
 #include <VersionHelpers.h>
 #include "svnrev.h"
 #else
@@ -339,26 +339,6 @@ std::string GSUtil::GetDeviceUniqueName(cl::Device& device)
 
 #ifdef _WIN32
 
-bool GSUtil::CheckDirectX()
-{
-	if (GSDeviceDX::LoadD3DCompiler())
-	{
-		GSDeviceDX::FreeD3DCompiler();
-		return true;
-	}
-
-	// User's system is likely broken if it fails and is Windows 8.1 or greater.
-	if (!IsWindows8Point1OrGreater())
-	{
-		printf("Cannot find d3dcompiler_43.dll\n");
-		if (MessageBox(nullptr, TEXT("You need to update some DirectX libraries, would you like to do it now?"), TEXT("GSdx"), MB_YESNO) == IDYES)
-		{
-			ShellExecute(nullptr, TEXT("open"), TEXT("https://www.microsoft.com/en-us/download/details.aspx?id=8109"), nullptr, nullptr, SW_SHOWNORMAL);
-		}
-	}
-	return false;
-}
-
 // ---------------------------------------------------------------------------------
 //  DX11 Detection (includes DXGI detection and dynamic library method bindings)
 // ---------------------------------------------------------------------------------
@@ -426,12 +406,10 @@ GSRendererType GSUtil::GetBestRenderer()
 				// Check for Nvidia VendorID. Latest OpenGL features need at least DX11 level GPU
 				if (desc.VendorId == 0x10DE && level >= D3D_FEATURE_LEVEL_11_0)
 					return GSRendererType::OGL_HW;
-				if (level >= D3D_FEATURE_LEVEL_10_0)
-					return GSRendererType::DX1011_HW;
 			}
 		}
 	}
-	return GSRendererType::DX9_HW;
+	return GSRendererType::DX1011_HW;
 }
 
 #endif

@@ -18,13 +18,13 @@
 #include "Dialogs.h"
 #include <wx/fileconf.h>
 
-wxFileConfig *spuConfig = NULL;
+wxFileConfig *spuConfig = nullptr;
 wxString path(L"~/.pcsx2/inis/spu2-x.ini");
 bool pathSet = false;
 
 void initIni()
 {
-    if (spuConfig == NULL)
+    if (spuConfig == nullptr)
         spuConfig = new wxFileConfig(L"", L"", path, L"", wxCONFIG_USE_LOCAL_FILE);
 }
 
@@ -37,7 +37,7 @@ void setIni(const wchar_t *Section)
 void CfgSetSettingsDir(const char *dir)
 {
     FileLog("CfgSetSettingsDir(%s)\n", dir);
-    path = wxString::FromAscii(dir) + L"/spu2-x.ini";
+    path = wxString::FromUTF8(dir) + L"/spu2-x.ini";
     pathSet = true;
 }
 

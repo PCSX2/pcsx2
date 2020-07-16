@@ -23,13 +23,15 @@
 
 void KeyStatus::Init()
 {
-    for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
+    for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
+    {
         m_button[pad] = 0xFFFF;
         m_internal_button_kbd[pad] = 0xFFFF;
         m_internal_button_joy[pad] = 0xFFFF;
         m_state_acces[pad] = false;
 
-        for (int index = 0; index < MAX_KEYS; index++) {
+        for (int index = 0; index < MAX_KEYS; index++)
+        {
             m_button_pressure[pad][index] = 0xFF;
             m_internal_button_pressure[pad][index] = 0xFF;
         }
@@ -51,13 +53,16 @@ void KeyStatus::Init()
 
 void KeyStatus::press(u32 pad, u32 index, s32 value)
 {
-    if (!IsAnalogKey(index)) {
+    if (!IsAnalogKey(index))
+    {
         m_internal_button_pressure[pad][index] = value;
         if (m_state_acces[pad])
             clear_bit(m_internal_button_kbd[pad], index);
         else
             clear_bit(m_internal_button_joy[pad], index);
-    } else {
+    }
+    else
+    {
         // clamp value
         if (value > MAX_ANALOG_VALUE)
             value = MAX_ANALOG_VALUE;
@@ -79,12 +84,15 @@ void KeyStatus::press(u32 pad, u32 index, s32 value)
 
 void KeyStatus::release(u32 pad, u32 index)
 {
-    if (!IsAnalogKey(index)) {
+    if (!IsAnalogKey(index))
+    {
         if (m_state_acces[pad])
             set_bit(m_internal_button_kbd[pad], index);
         else
             set_bit(m_internal_button_joy[pad], index);
-    } else {
+    }
+    else
+    {
         analog_set(pad, index, m_analog_released_val);
     }
 }
@@ -102,7 +110,8 @@ void KeyStatus::analog_set(u32 pad, u32 index, u8 value)
     else
         m_internal_analog_ref = &m_internal_analog_joy[pad];
 
-    switch (index) {
+    switch (index)
+    {
         case PAD_R_LEFT:
         case PAD_R_RIGHT:
             m_internal_analog_ref->rx = value;
@@ -130,7 +139,8 @@ void KeyStatus::analog_set(u32 pad, u32 index, u8 value)
 
 bool KeyStatus::analog_is_reversed(u32 pad, u32 index)
 {
-    switch (index) {
+    switch (index)
+    {
         case PAD_L_RIGHT:
         case PAD_L_LEFT:
             return (conf->pad_options[pad].reverse_lx);
@@ -154,7 +164,8 @@ bool KeyStatus::analog_is_reversed(u32 pad, u32 index)
 
 u8 KeyStatus::get(u32 pad, u32 index)
 {
-    switch (index) {
+    switch (index)
+    {
         case PAD_R_LEFT:
         case PAD_R_RIGHT:
             return m_analog[pad].rx;

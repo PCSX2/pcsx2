@@ -18,12 +18,6 @@
 
 std::vector<std::string> GetOpticalDriveList();
 
-static void ComboboxCallback(GtkComboBoxText *combobox, gpointer data)
-{
-    Settings *settings = reinterpret_cast<Settings *>(data);
-    settings->Set("drive", gtk_combo_box_text_get_active_text(combobox));
-}
-
 void configure()
 {
     ReadSettings();
@@ -47,25 +41,16 @@ void configure()
             gtk_combo_box_set_active(GTK_COMBO_BOX(combobox), n);
     }
 
-#if GTK_MAJOR_VERSION >= 3
-    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-#else
-    GtkWidget *box = gtk_vbox_new(0, 10);
-#endif
-    gtk_box_pack_start(GTK_BOX(box), label, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(box), combobox, 0, 0, 10);
+    GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
+    gtk_container_add(content_area, label);
+    gtk_container_add(content_area, combobox);
 
-    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-    gtk_container_add(GTK_CONTAINER(content_area), box);
-
-    Settings settings_copy = g_settings;
-    g_signal_connect(combobox, "changed", G_CALLBACK(ComboboxCallback), &settings_copy);
-
-    gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
     gtk_widget_show_all(dialog);
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-        g_settings = settings_copy;
-        WriteSettings();
+        if (const char *selected_drive = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(combobox))) {
+            g_settings.Set("drive", selected_drive);
+            WriteSettings();
+        }
     }
     gtk_widget_destroy(dialog);
 }

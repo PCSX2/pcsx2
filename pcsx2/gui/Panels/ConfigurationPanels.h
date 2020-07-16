@@ -266,7 +266,16 @@ namespace Panels
 	class GSWindowSettingsPanel : public BaseApplicableConfigPanel_SpecificConfig
 	{
 	protected:
+		// Exclusive mode is currently not used (true for svn r4399).
+		// PCSX2 has partial infrastructure for it:
+		//  - The plugin APIs have GSsetExclusive.
+		//  - GSdx seem to support it (it supports the API and has implementation), but I don't know if it ever got called.
+		//  - BUT, the configuration (AppConfig, and specifically GSWindowOptions) do NOT seem to have a place to store this value,
+		//    and PCSX2's code doesn't seem to use this API anywhere. So, no exclusive mode for now.
+		//    - avih
+
 		wxComboBox*		m_combo_AspectRatio;
+		wxComboBox*		m_combo_FMVAspectRatioSwitch;
 		wxComboBox*		m_combo_vsync;
 
 		wxTextCtrl*		m_text_Zoom;
@@ -276,18 +285,8 @@ namespace Panels
 		pxCheckBox*		m_check_VsyncEnable;
 		pxCheckBox*		m_check_Fullscreen;
 
-		//Exclusive mode is currently not used (true for svn r4399).
-		//PCSX2 has partial infrastructure for it:
-		//  - The plugin APIs have GSsetExclusive.
-		//  - GSdx seem to support it (it supports the API and has implementation), but I don't know if it ever got called.
-		//  - BUT, the configuration (AppConfig, and specifically GSWindowOptions) do NOT seem to have a place to store this value,
-		//         and PCSX2's code doesn't seem to use this API anywhere. So, no exclusive mode for now.
-		//           - avih
-		//pxCheckBox*		m_check_ExclusiveFS;
-
 		pxCheckBox*		m_check_HideMouse;
 		pxCheckBox*		m_check_DclickFullscreen;
-		pxCheckBox*		m_check_AspectRatioSwitch;
 
 		wxTextCtrl*		m_text_WindowWidth;
 		wxTextCtrl*		m_text_WindowHeight;
@@ -305,7 +304,6 @@ namespace Panels
 	protected:
 		pxCheckBox*			m_check_SynchronousGS;
 		wxButton*			m_restore_defaults;
-		pxCheckBox*			m_check_DisableOutput;
 		FrameSkipPanel*		m_span;
 		FramelimiterPanel*	m_fpan;
 
@@ -332,12 +330,12 @@ namespace Panels
 		pxCheckBox*		m_check_Enable;
 		wxButton*		m_button_Defaults;
 
-		wxPanelWithHelpers* m_eeSliderPanel;
-		wxPanelWithHelpers* m_vuSliderPanel;
-		wxSlider*		m_slider_eecycle;
-		wxSlider*		m_slider_vustealer;
-		pxStaticText*	m_msg_eecycle;
-		pxStaticText*	m_msg_vustealer;
+		wxPanelWithHelpers* m_eeRateSliderPanel;
+		wxPanelWithHelpers* m_eeSkipSliderPanel;
+		wxSlider*		m_slider_eeRate;
+		wxSlider*		m_slider_eeSkip;
+		pxStaticText*	m_msg_eeRate;
+		pxStaticText*	m_msg_eeSkip;
 
 		pxCheckBox*		m_check_intc;
 		pxCheckBox*		m_check_waitloop;
@@ -354,8 +352,8 @@ namespace Panels
 		void ApplyConfigToGui( AppConfig& configToApply, int flags=0 );
 
 	protected:
-		const wxChar* GetEEcycleSliderMsg( int val );
-		const wxChar* GetVUcycleSliderMsg( int val );
+		const wxChar* GetEECycleRateSliderMsg( int val );
+		const wxChar* GetEECycleSkipSliderMsg( int val );
 		void SetEEcycleSliderMsg();
 		void SetVUcycleSliderMsg();
 		void TrigLayout();
@@ -383,40 +381,6 @@ namespace Panels
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();
 		void ApplyConfigToGui( AppConfig& configToApply, int flags=0 );
-	};
-
-	// --------------------------------------------------------------------------------------
-	//  GameDatabasePanel
-	// --------------------------------------------------------------------------------------
-	class GameDatabasePanel : public BaseApplicableConfigPanel
-	{
-	protected:
-		//wxTextCtrl*	searchBox;
-		//wxComboBox*	searchType;
-		//wxListBox*	searchList;
-		wxButton*	searchBtn;
-		wxTextCtrl*	serialBox;
-		wxTextCtrl*	nameBox;
-		wxTextCtrl*	regionBox;
-		wxTextCtrl*	compatBox;
-		wxTextCtrl*	commentBox;
-		wxTextCtrl*	patchesBox;
-		pxCheckBox*	gameFixes[GamefixId_COUNT];
-
-	public:
-		GameDatabasePanel( wxWindow* parent );
-		virtual ~GameDatabasePanel() = default;
-		void Apply();
-		void AppStatusEvent_OnSettingsApplied();
-
-	protected:
-		void PopulateFields( const wxString& serial=wxEmptyString );
-		bool WriteFieldsToDB();
-		void Search_Click( wxCommandEvent& evt );
-
-	private:
-		void placeTextBox(wxFlexGridSizer& sizer1, wxTextCtrl* wxBox, const wxString& txt);
-		void blankLine(wxFlexGridSizer& sizer1);
 	};
 
 	class SettingsDirPickerPanel : public DirPickerPanel
@@ -478,29 +442,6 @@ namespace Panels
 		virtual bool ValidateEnumerationStatus()=0;
 	
 		void OnShow(wxShowEvent& evt);
-	};
-
-	// --------------------------------------------------------------------------------------
-	//  ThemeSelectorPanel
-	// --------------------------------------------------------------------------------------
-	class ThemeSelectorPanel : public BaseSelectorPanel
-	{
-		typedef BaseSelectorPanel _parent;
-
-	protected:
-		std::unique_ptr<wxArrayString> m_ThemeList;
-		wxListBox* m_ComboBox;
-		DirPickerPanel* m_FolderPicker;
-
-	public:
-		virtual ~ThemeSelectorPanel();
-		ThemeSelectorPanel( wxWindow* parent );
-
-	protected:
-		virtual void Apply();
-		virtual void AppStatusEvent_OnSettingsApplied();
-		virtual void DoRefresh();
-		virtual bool ValidateEnumerationStatus();	
 	};
 
 	// --------------------------------------------------------------------------------------

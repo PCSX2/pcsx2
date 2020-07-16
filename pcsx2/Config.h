@@ -43,7 +43,6 @@ enum GamefixId
 	GamefixId_FIRST = 0,
 
 	Fix_VuAddSub = GamefixId_FIRST,
-	Fix_VuClipFlag,
 	Fix_FpuCompare,
 	Fix_FpuMultiply,
 	Fix_FpuNegDiv,
@@ -59,6 +58,7 @@ enum GamefixId
 	Fix_FMVinSoftware,
 	Fix_GoemonTlbMiss,
 	Fix_ScarfaceIbit,
+	Fix_CrashTagTeamIbit,
 
 	GamefixId_COUNT
 };
@@ -295,7 +295,7 @@ struct Pcsx2Config
 		// forces the MTGS to execute tags/tasks in fully blocking/synchronous
 		// style.  Useful for debugging potential bugs in the MTGS pipeline.
 		bool	SynchronousMTGS;
-		bool	DisableOutput;
+
 		int		VsyncQueueSize;
 
 		bool		FrameLimitEnable;
@@ -318,7 +318,6 @@ struct Pcsx2Config
 		{
 			return
 				OpEqu( SynchronousMTGS )		&&
-				OpEqu( DisableOutput )			&&
 				OpEqu( VsyncQueueSize )			&&
 				
 				OpEqu( FrameSkipEnable )		&&
@@ -344,25 +343,25 @@ struct Pcsx2Config
 	// NOTE: The GUI's GameFixes panel is dependent on the order of bits in this structure.
 	struct GamefixOptions
 	{
-		BITFIELD32()
-			bool
-				VuAddSubHack	:1,		// Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
-				VuClipFlagHack	:1,		// Persona games, maybe others. It's to do with the VU clip flag (again).
-				FpuCompareHack	:1,		// Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
-				FpuMulHack		:1,		// Tales of Destiny hangs.
-				FpuNegDivHack	:1,		// Gundam games messed up camera-view.
-				XgKickHack		:1,		// Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
-				IPUWaitHack     :1,		// FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
-				EETimingHack	:1,		// General purpose timing hack.
-				SkipMPEGHack	:1,		// Skips MPEG videos (Katamari and other games need this)
-				OPHFlagHack		:1,		// Bleach Blade Battlers
-				DMABusyHack		:1,		// Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
-				VIFFIFOHack		:1,     // Pretends to fill the non-existant VIF FIFO Buffer.
-				VIF1StallHack   :1,     // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
-				GIFFIFOHack		:1,		// Enabled the GIF FIFO (more correct but slower)
-				FMVinSoftwareHack:1,	// Toggle in and out of software rendering when an FMV runs.
-				GoemonTlbHack	:1,		// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
-				ScarfaceIbit 	:1;		// Scarface I bit hack. Needed to stop constant VU recompilation
+        BITFIELD32()
+        bool
+            VuAddSubHack : 1,           // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
+            FpuCompareHack : 1,         // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
+            FpuMulHack : 1,             // Tales of Destiny hangs.
+            FpuNegDivHack : 1,          // Gundam games messed up camera-view.
+            XgKickHack : 1,             // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
+            IPUWaitHack : 1,            // FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
+            EETimingHack : 1,           // General purpose timing hack.
+            SkipMPEGHack : 1,           // Skips MPEG videos (Katamari and other games need this)
+            OPHFlagHack : 1,            // Bleach Blade Battlers
+            DMABusyHack : 1,            // Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
+            VIFFIFOHack : 1,            // Pretends to fill the non-existant VIF FIFO Buffer.
+            VIF1StallHack : 1,          // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
+            GIFFIFOHack : 1,            // Enabled the GIF FIFO (more correct but slower)
+            FMVinSoftwareHack : 1,      // Toggle in and out of software rendering when an FMV runs.
+            GoemonTlbHack : 1,          // Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
+            ScarfaceIbit : 1,           // Scarface I bit hack. Needed to stop constant VU recompilation
+            CrashTagTeamRacingIbit : 1; // Crash Tag Team Racing I bit hack. Needed to stop constant VU recompilation
 		BITFIELD_END
 
 		GamefixOptions();
@@ -400,7 +399,7 @@ struct Pcsx2Config
 		BITFIELD_END
 
 		s8	EECycleRate;		// EE cycle rate selector (1.0, 1.5, 2.0)
-		u8	VUCycleSteal;		// VU Cycle Stealer factor (0, 1, 2, or 3)
+		u8	EECycleSkip;		// EE Cycle skip factor (0, 1, 2, or 3)
 
 		SpeedhackOptions();
 		void LoadSave( IniInterface& conf );
@@ -408,7 +407,7 @@ struct Pcsx2Config
 
 		bool operator ==( const SpeedhackOptions& right ) const
 		{
-			return OpEqu( bitset ) && OpEqu( EECycleRate ) && OpEqu( VUCycleSteal );
+			return OpEqu( bitset ) && OpEqu( EECycleRate ) && OpEqu( EECycleSkip );
 		}
 
 		bool operator !=( const SpeedhackOptions& right ) const
@@ -455,6 +454,9 @@ struct Pcsx2Config
 			EnablePatches		:1,		// enables patch detection and application
 			EnableCheats		:1,		// enables cheat detection and application
 			EnableWideScreenPatches		:1,
+#ifndef DISABLE_RECORDING
+			EnableRecordingTools :1,
+#endif
 		// when enabled uses BOOT2 injection, skipping sony bios splashes
 			UseBOOT2Injection	:1,
 			BackupSavestate		:1,
@@ -533,7 +535,6 @@ TraceLogFilters&				SetTraceConfig();
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK			(EmuConfig.Gamefixes.VuAddSubHack)	 // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.
 #define CHECK_FPUCOMPAREHACK		(EmuConfig.Gamefixes.FpuCompareHack) // Special Fix for Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
-#define CHECK_VUCLIPFLAGHACK		(EmuConfig.Gamefixes.VuClipFlagHack) // Special Fix for Persona games, maybe others. It's to do with the VU clip flag (again).
 #define CHECK_FPUMULHACK			(EmuConfig.Gamefixes.FpuMulHack)	 // Special Fix for Tales of Destiny hangs.
 #define CHECK_FPUNEGDIVHACK			(EmuConfig.Gamefixes.FpuNegDivHack)	 // Special Fix for Gundam games messed up camera-view.
 #define CHECK_XGKICKHACK			(EmuConfig.Gamefixes.XgKickHack)	 // Special Fix for Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics.
@@ -586,12 +587,6 @@ TraceLogFilters&				SetTraceConfig();
 #endif
 
 #define EE_CONST_PROP 1 // rec2 - enables constant propagation (faster)
-
-// Change to 1 if working on getting PS1 emulation working.
-// This disables the exception normally caused by trying to load PS1
-// games. Note: currently PS1 games will error out even without this
-// commented, so this is for development purposes only.
-#define ENABLE_LOADING_PS1_GAMES 1
 
 // Change to 1 for console logs of SIF, GPU (PS1 mode) and MDEC (PS1 mode).
 // These do spam a lot though!

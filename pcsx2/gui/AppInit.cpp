@@ -26,6 +26,10 @@
 
 #include "Debugger/DisassemblyDialog.h"
 
+#ifndef DISABLE_RECORDING
+#	include "Recording/VirtualPad.h"
+#endif
+
 #include <wx/cmdline.h>
 #include <wx/intl.h>
 #include <wx/stdpaths.h>
@@ -72,6 +76,17 @@ void Pcsx2App::OpenMainFrame()
 	DisassemblyDialog* disassembly = new DisassemblyDialog( mainFrame );
 	m_id_Disassembler = disassembly->GetId();
 
+#ifndef DISABLE_RECORDING
+	VirtualPad* virtualPad0 = new VirtualPad(mainFrame, wxID_ANY, wxEmptyString, 0);
+	m_id_VirtualPad[0] = virtualPad0->GetId();
+	
+	VirtualPad *virtualPad1 = new VirtualPad(mainFrame, wxID_ANY, wxEmptyString, 1);
+	m_id_VirtualPad[1] = virtualPad1->GetId();
+
+	NewRecordingFrame* newRecordingFrame = new NewRecordingFrame(mainFrame);
+	m_id_NewRecordingFrame = newRecordingFrame->GetId();
+#endif
+	
 	if (g_Conf->EmuOptions.Debugger.ShowDebuggerOnStart)
 		disassembly->Show();
 
@@ -169,39 +184,15 @@ void Pcsx2App::AllocateCoreStuffs()
 			{
 				scrollableTextArea->AppendText( L"* microVU0\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
 				recOps.UseMicroVU0	= false;
-#ifndef DISABLE_SVU
-				recOps.EnableVU0	= recOps.EnableVU0 && m_CpuProviders->IsRecAvailable_SuperVU0();
-#else
-				recOps.EnableVU1	= false;
-#endif
+				recOps.EnableVU0	= false;
 			}
 
 			if( BaseException* ex = m_CpuProviders->GetException_MicroVU1() )
 			{
 				scrollableTextArea->AppendText( L"* microVU1\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
 				recOps.UseMicroVU1	= false;
-#ifndef DISABLE_SVU
-				recOps.EnableVU1	= recOps.EnableVU1 && m_CpuProviders->IsRecAvailable_SuperVU1();
-#else
 				recOps.EnableVU1	= false;
-#endif
 			}
-
-#ifndef DISABLE_SVU
-			if( BaseException* ex = m_CpuProviders->GetException_SuperVU0() )
-			{
-				scrollableTextArea->AppendText( L"* SuperVU0\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
-				recOps.UseMicroVU0	= m_CpuProviders->IsRecAvailable_MicroVU0();
-				recOps.EnableVU0	= recOps.EnableVU0 && recOps.UseMicroVU0;
-			}
-
-			if( BaseException* ex = m_CpuProviders->GetException_SuperVU1() )
-			{
-				scrollableTextArea->AppendText( L"* SuperVU1\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
-				recOps.UseMicroVU1	= m_CpuProviders->IsRecAvailable_MicroVU1();
-				recOps.EnableVU1	= recOps.EnableVU1 && recOps.UseMicroVU1;
-			}
-#endif
 
 			exconf += exconf.Heading(pxE( L"Note: Recompilers are not necessary for PCSX2 to run, however they typically improve emulation speed substantially. You may have to manually re-enable the recompilers listed above, if you resolve the errors." ));
 
@@ -243,6 +234,7 @@ void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 	parser.AddSwitch( wxEmptyString,L"nohacks",		_("disables all speedhacks") );
 	parser.AddOption( wxEmptyString,L"gamefixes",	_("use the specified comma or pipe-delimited list of gamefixes.") + fixlist, wxCMD_LINE_VAL_STRING );
 	parser.AddSwitch( wxEmptyString,L"fullboot",	_("disables fast booting") );
+	parser.AddOption( wxEmptyString,L"gameargs",	_("passes the specified space-delimited string of launch arguments to the game"), wxCMD_LINE_VAL_STRING);
 
 	parser.AddOption( wxEmptyString,L"cfgpath",		_("changes the configuration file path"), wxCMD_LINE_VAL_STRING );
 	parser.AddOption( wxEmptyString,L"cfg",			_("specifies the PCSX2 configuration file to use"), wxCMD_LINE_VAL_STRING );
@@ -365,6 +357,10 @@ bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
 		}
 	}
 
+	wxString game_args;
+	if (parser.Found(L"gameargs", &game_args) && !game_args.IsEmpty())
+		Startup.GameLaunchArgs = game_args;
+
 	if( parser.Found(L"usecd") )
 	{
 		Startup.CdvdSource	= CDVD_SourceType::Plugin;
@@ -470,9 +466,6 @@ bool Pcsx2App::OnInit()
 		InitDefaultGlobalAccelerators();
 		delete wxLog::SetActiveTarget( new pxLogConsole() );
 
-#ifdef __WXMSW__
-		pxDwm_Load();
-#endif
 		SysExecutorThread.Start();
 		DetectCpuAndUserMode();
 
@@ -507,6 +500,7 @@ bool Pcsx2App::OnInit()
 			if (Startup.CdvdSource == CDVD_SourceType::Iso)
 				SysUpdateIsoSrcFile( Startup.IsoFile );
 			sApp.SysExecute( Startup.CdvdSource );
+			g_Conf->CurrentGameArgs = Startup.GameLaunchArgs;
 		}
 		else if ( Startup.SysAutoRunElf )
 		{
@@ -635,10 +629,6 @@ void Pcsx2App::CleanupOnExit()
 		Console.Indent().Error( ex.FormatDiagnosticMessage() );
 	}
 
-#ifdef __WXMSW__
-	pxDwm_Unload();
-#endif
-	
 	// Notice: deleting the plugin manager (unloading plugins) here causes Lilypad to crash,
 	// likely due to some pending message in the queue that references lilypad procs.
 	// We don't need to unload plugins anyway tho -- shutdown is plenty safe enough for

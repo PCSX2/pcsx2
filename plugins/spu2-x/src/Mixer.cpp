@@ -257,22 +257,12 @@ static __forceinline void GetNextDataDummy(V_Core &thiscore, uint voiceidx)
 
 static s32 __forceinline GetNoiseValues()
 {
-    static s32 Seed = 0x41595321;
-    s32 retval = 0x8000;
+    static u16 lfsr = 0xC0FEu;
 
-    if (Seed & 0x100)
-        retval = (Seed & 0xff) << 8;
-    else if (Seed & 0xffff)
-        retval = 0x7fff;
+    u16 bit = lfsr ^ (lfsr << 3) ^ (lfsr << 4) ^ (lfsr << 5);
+    lfsr = (lfsr << 1) | (bit >> 15);
 
-    s32 x = _rotr(Seed, 0x5);
-    x ^= 0x9a;
-    s32 y = _rotl(x, 0x2);
-    y += x;
-    y ^= x;
-    Seed = _rotr(y, 0x3);
-
-    return retval;
+    return (s16)lfsr;
 }
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////

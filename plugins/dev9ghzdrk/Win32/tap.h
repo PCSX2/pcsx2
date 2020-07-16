@@ -15,7 +15,8 @@
 
 #pragma once
 #include <vector>
-#include "net.h"
+#include <string>
+#include "..\net.h"
 using namespace std;
 
 struct tap_adapter

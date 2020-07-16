@@ -118,8 +118,30 @@ V_Core::~V_Core() throw()
 void V_Core::Init(int index)
 {
     ConLog("* SPU2-X: Init SPU2 core %d \n", index);
-    memset(this, 0, sizeof(V_Core));
+    //memset(this, 0, sizeof(V_Core));
+    // Explicitly initializing variables instead.
+    Mute = false;
+    DMABits = 0;
+    NoiseClk = 0;
+    AutoDMACtrl = 0;
+    InputDataLeft = 0;
+    InputPosRead = 0;
+    InputPosWrite = 0;
+    InputDataProgress = 0;
+    ReverbX = 0;
+    LastEffect.Left = 0;
+    LastEffect.Right = 0;
+    CoreEnabled = 0;
+    AttrBit0 = 0;
+    DmaMode = 0;
+    DMAPtr = nullptr;
+    MADR = 0;
+    TADR = 0;
+    KeyOn = 0;
+
     psxmode = false;
+    psxSoundDataTransferControl = 0;
+    psxSPUSTAT = 0;
 
     const int c = Index = index;
 
@@ -150,7 +172,7 @@ void V_Core::Init(int index)
     ExtEffectsStartA = EffectsStartA;
     ExtEffectsEndA = EffectsEndA;
 
-    FxEnable = 0; // Uninitialized it's 0 for both cores. Resetting libs however may set this to 0 or 1.
+    FxEnable = false; // Uninitialized it's 0 for both cores. Resetting libs however may set this to 0 or 1.
     // These are real PS2 values, mainly constant apart from a few bits: 0x3220EAA4, 0x40505E9C.
     // These values mean nothing.  They do not reflect the actual address the SPU2 is testing,
     // it would seem that reading the IRQA register returns the last written value, not the
@@ -160,7 +182,7 @@ void V_Core::Init(int index)
     // in the input or output areas, so we're using 0x800.
     // F1 2005 is known to rely on an uninitialised IRQA being an address which will be hit.
     IRQA = 0x800;
-    IRQEnable = 0; // PS2 confirmed
+    IRQEnable = false; // PS2 confirmed
 
     for (uint v = 0; v < NumVoices; ++v) {
         VoiceGates[v].DryL = -1;
@@ -180,7 +202,9 @@ void V_Core::Init(int index)
     }
 
     DMAICounter = 0;
-    AdmaInProgress = 0;
+    AutoDmaFree = 0;
+    AdmaInProgress = false;
+    DmaStarted = false;
 
     Regs.STATX = 0x80;
     Regs.ENDX = 0xffffff; // PS2 confirmed
@@ -387,7 +411,6 @@ __forceinline void TimeUpdate(u32 cClocks)
                 _irqcallback();
         }
 
-#ifndef ENABLE_NEW_IOPDMA_SPU2
         //Update DMA4 interrupt delay counter
         if (Cores[0].DMAICounter > 0) {
             Cores[0].DMAICounter -= TickInterval;
@@ -415,7 +438,6 @@ __forceinline void TimeUpdate(u32 cClocks)
                 Cores[1].MADR += TickInterval << 1;
             }
         }
-#endif
 
         dClocks -= TickInterval;
         lClocks += TickInterval;
@@ -1021,18 +1043,21 @@ static void __fastcall RegWrite_VoiceParams(u16 value)
             thisvoice.ADSR.regADSR2 = value;
             break;
 
+        // REG_VP_ENVX, REG_VP_VOLXL and REG_VP_VOLXR have been confirmed to not be allowed to be written to, so code has been commented out.
+        // Colin McRae Rally 2005 triggers case 5 (ADSR), but it doesn't produce issues enabled or disabled.
+
         case 5:
             // [Air] : Mysterious ADSR set code.  Too bad none of my games ever use it.
             //      (as usual... )
-            thisvoice.ADSR.Value = (value << 16) | value;
-            ConLog("* SPU2: Mysterious ADSR Volume Set to 0x%x\n", value);
+            //thisvoice.ADSR.Value = (value << 16) | value;
+            //ConLog("* SPU2: Mysterious ADSR Volume Set to 0x%x\n", value);
             break;
 
         case 6:
-            thisvoice.Volume.Left.RegSet(value);
+            //thisvoice.Volume.Left.RegSet(value);
             break;
         case 7:
-            thisvoice.Volume.Right.RegSet(value);
+            //thisvoice.Volume.Right.RegSet(value);
             break;
 
             jNO_DEFAULT;
@@ -1074,6 +1099,10 @@ static void __fastcall RegWrite_VoiceAddr(u16 value)
         // even allowed or handled by the SPU2 (it might be disabled or ignored,
         // for example).  Tests should be done to find games that write to this
         // reg, and see if they're buggy or not. --air
+
+        // FlatOut & Soul Reaver 2 trigger these cases, but don't produce issues enabled or disabled.
+        // Wallace And Gromit: Curse Of The Were-Rabbit triggers case 4 and 5 to produce proper sound,
+        // without it some sound effects get cut off so we need the two NextA cases enabled.
 
         case 4:
             thisvoice.NextA = ((value & 0x0F) << 16) | (thisvoice.NextA & 0xFFF8) | 1;
@@ -1428,6 +1457,13 @@ static void __fastcall RegWrite_CoreExt(u16 value)
 
         case REG_P_BVOLR:
             thiscore.InpVol.Right = GetVol32(value);
+            break;
+
+        // MVOLX has been confirmed to not be allowed to be written to, so cases have been added as a no-op.
+        // Tokyo Xtreme Racer Zero triggers this code, caused left side volume to be reduced.
+
+        case REG_P_MVOLXL:
+        case REG_P_MVOLXR:
             break;
 
         default: {

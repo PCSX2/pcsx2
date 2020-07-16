@@ -17,6 +17,15 @@ set(CommonFlags
     -Wunused-variable # __dummy variable need to be investigated
     )
 
+# The next two need to be looked at, but spam really badly in gcc 8.
+# Largely class alignment in GSDevice.h and memcpy in GSVector*.h.
+if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
+    set(CommonFlags ${CommonFlags}
+        -Wno-packed-not-aligned
+        -Wno-class-memaccess
+       )
+endif()
+
 set(GSdxFinalFlags ${CommonFlags})
 
 if(XDG_STD)

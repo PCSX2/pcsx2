@@ -68,7 +68,7 @@ public:
 //
 class pxSimpleEvent : public wxEvent
 {
-    DECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxSimpleEvent)
+    wxDECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxSimpleEvent);
 
 public:
     explicit pxSimpleEvent(int evtid = 0)
@@ -81,6 +81,7 @@ public:
     {
     }
 
+    pxSimpleEvent(const pxSimpleEvent&) = default;
     virtual wxEvent *Clone() const { return new pxSimpleEvent(*this); }
 };
 
@@ -93,7 +94,7 @@ wxDECLARE_EVENT(pxEvt_InvokeAction, pxActionEvent);
 
 class pxActionEvent : public wxEvent
 {
-    DECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxActionEvent)
+    wxDECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxActionEvent);
 
 protected:
     SynchronousActionState *m_state;
@@ -120,8 +121,8 @@ public:
     virtual void _DoInvokeEvent();
 
 protected:
-    // Extending classes should implement this method to perfoem whatever action it is
-    // the event is supposed to do. :)  Thread affinity is garaunteed to be the Main/UI
+    // Extending classes should implement this method to perform whatever action it is
+    // the event is supposed to do. :)  Thread affinity is guaranteed to be the Main/UI
     // thread, and exceptions will be handled automatically.
     //
     // Exception note: exceptions are passed back to the thread that posted the event
@@ -165,7 +166,7 @@ protected:
 
 class pxSynchronousCommandEvent : public wxCommandEvent
 {
-    DECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxSynchronousCommandEvent)
+    wxDECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxSynchronousCommandEvent);
 
 protected:
     SynchronousActionState *m_sync;
@@ -198,7 +199,7 @@ wxDECLARE_EVENT(pxEvt_SynchronousCommand, pxSynchronousCommandEvent);
 class BaseMessageBoxEvent : public pxActionEvent
 {
     typedef pxActionEvent _parent;
-    DECLARE_DYNAMIC_CLASS_NO_ASSIGN(BaseMessageBoxEvent)
+    wxDECLARE_DYNAMIC_CLASS_NO_ASSIGN(BaseMessageBoxEvent);
 
 protected:
     wxString m_Content;
@@ -373,7 +374,7 @@ public:
 class pxMessageBoxEvent : public BaseMessageBoxEvent
 {
     typedef BaseMessageBoxEvent _parent;
-    DECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxMessageBoxEvent)
+    wxDECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxMessageBoxEvent);
 
 protected:
     wxString m_Title;
@@ -398,7 +399,7 @@ protected:
 class pxAssertionEvent : public BaseMessageBoxEvent
 {
     typedef BaseMessageBoxEvent _parent;
-    DECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxAssertionEvent)
+    wxDECLARE_DYNAMIC_CLASS_NO_ASSIGN(pxAssertionEvent);
 
 protected:
     wxString m_Stacktrace;

@@ -254,47 +254,6 @@ public:
 	void SetCacheReserve( uint reserveInMegs ) const;
 };
 
-// --------------------------------------------------------------------------------------
-//  recSuperVU0 / recSuperVU1
-// --------------------------------------------------------------------------------------
-
-class recSuperVU0 : public BaseVUmicroCPU
-{
-public:
-	recSuperVU0();
-
-	const char* GetShortName() const	{ return "sVU0"; }
-	wxString GetLongName() const		{ return L"SuperVU0 Recompiler"; }
-
-	void Reserve();
-	void Shutdown() noexcept;
-	void Reset();
-	void Execute(u32 cycles);
-	void Clear(u32 Addr, u32 Size);
-
-	uint GetCacheReserve() const;
-	void SetCacheReserve( uint reserveInMegs ) const;
-};
-
-class recSuperVU1 : public BaseVUmicroCPU
-{
-public:
-	recSuperVU1();
-
-	const char* GetShortName() const	{ return "sVU1"; }
-	wxString GetLongName() const		{ return L"SuperVU1 Recompiler"; }
-
-	void Reserve();
-	void Shutdown() noexcept;
-	void Reset();
-	void Execute(u32 cycles);
-	void Clear(u32 Addr, u32 Size);
-	void ResumeXGkick() { Console.Warning("ResumeXGkick() Not implemented!"); }
-
-	uint GetCacheReserve() const;
-	void SetCacheReserve( uint reserveInMegs ) const;
-};
-
 extern BaseVUmicroCPU* CpuVU0;
 extern BaseVUmicroCPU* CpuVU1;
 

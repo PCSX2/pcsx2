@@ -150,7 +150,7 @@ public:
 // --------------------------------------------------------------------------------------
 class ApplyPluginsDialog : public WaitForTaskDialog
 {
-	DECLARE_DYNAMIC_CLASS_NO_COPY(ApplyPluginsDialog)
+	wxDECLARE_DYNAMIC_CLASS_NO_COPY(ApplyPluginsDialog);
 
 	typedef wxDialogWithHelpers _parent;
 
@@ -222,7 +222,7 @@ protected:
 // --------------------------------------------------------------------------------------
 //  ApplyPluginsDialog Implementations
 // --------------------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC_CLASS(ApplyPluginsDialog, WaitForTaskDialog)
+wxIMPLEMENT_DYNAMIC_CLASS(ApplyPluginsDialog, WaitForTaskDialog);
 
 ApplyPluginsDialog::ApplyPluginsDialog( BaseApplicableConfigPanel* panel )
 : WaitForTaskDialog(_("Applying settings...")), m_panel(NULL)
@@ -579,7 +579,7 @@ bool Panels::PluginSelectorPanel::ValidateEnumerationStatus()
 
 	m_FileList.swap(pluginlist);
 
-	// set the gague length a little shorter than the plugin count.  2 reasons:
+	// set the gauge length a little shorter than the plugin count.  2 reasons:
 	//  * some of the plugins might be duds.
 	//  * on high end machines and Win7, the statusbar lags a lot and never gets to 100% before being hidden.
 	
@@ -669,7 +669,9 @@ void Panels::PluginSelectorPanel::OnEnumComplete( wxCommandEvent& evt )
 	//  (for now we just force it to selection zero if nothing's selected)
 
 	int emptyBoxes = 0;
-	const PluginInfo* pi = tbl_PluginInfo; do
+	const PluginInfo* pi = tbl_PluginInfo;
+
+	do
 	{
 		const PluginsEnum_t pid = pi->id;
 		if( m_ComponentBoxes->Get(pid).GetCount() <= 0 )
@@ -677,7 +679,73 @@ void Panels::PluginSelectorPanel::OnEnumComplete( wxCommandEvent& evt )
 
 		else if( m_ComponentBoxes->Get(pid).GetSelection() == wxNOT_FOUND )
 		{
-			m_ComponentBoxes->Get(pid).SetSelection( 0 );
+			if (pid == PluginId_GS)
+			{
+				int count = (int)m_ComponentBoxes->Get(pid).GetCount();
+
+				int index_avx2 = -1;
+				int index_sse4 = -1;
+				int index_sse2 = -1;
+
+				for( int i = 0; i < count; i++ )
+				{
+					auto str = m_ComponentBoxes->Get(pid).GetString( i );
+					
+					if( x86caps.hasAVX2 && str.Contains("AVX2") ) index_avx2 = i;
+					if( x86caps.hasStreamingSIMD4Extensions && str.Contains("SSE4") ) index_sse4 = i;
+					if( str.Contains("SSE2") ) index_sse2 = i;
+				}
+
+				if( index_avx2 >= 0 ) m_ComponentBoxes->Get(pid).SetSelection( index_avx2 );
+				else if( index_sse4 >= 0 ) m_ComponentBoxes->Get(pid).SetSelection( index_sse4 );
+				else if( index_sse2 >= 0 ) m_ComponentBoxes->Get(pid).SetSelection( index_sse2 );
+				else m_ComponentBoxes->Get(pid).SetSelection( 0 );
+			}
+			else if (pid == PluginId_PAD)
+			{
+				int count = (int)m_ComponentBoxes->Get(pid).GetCount();
+
+				int index_lilypad = -1;
+				int index_onepad = -1;
+				int index_onepad_legacy = -1;
+
+				for( int i = 0; i < count; i++ )
+				{
+					auto str = m_ComponentBoxes->Get(pid).GetString(i).Lower();
+
+					if (str.Contains("lilypad")) index_lilypad = i;
+					if (str.Contains("onepad"))
+					{
+						if (str.Contains("legacy"))
+							index_onepad_legacy = i;
+						else
+							index_onepad = i;
+					}
+				}
+
+				#ifdef _WIN32
+					if (index_lilypad >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_lilypad);
+					/* else if (index_onepad >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_onepad);
+					else if (index_onepad_legacy >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_onepad_legacy); */
+					else
+						m_ComponentBoxes->Get(pid).SetSelection(0);
+				#else
+					if (index_onepad >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_onepad);
+					else if (index_onepad_legacy >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_onepad_legacy);
+					else if (index_lilypad >= 0)
+						m_ComponentBoxes->Get(pid).SetSelection(index_lilypad);
+					else
+						m_ComponentBoxes->Get(pid).SetSelection(0);
+				#endif
+			}
+			else
+				m_ComponentBoxes->Get(pid).SetSelection( 0 );
+
 			m_ComponentBoxes->GetConfigButton(pid).Enable( !CorePlugins.AreLoaded() );
 		}
 	} while( ++pi, pi->shortname != NULL );

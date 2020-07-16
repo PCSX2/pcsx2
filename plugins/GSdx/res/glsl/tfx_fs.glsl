@@ -82,6 +82,16 @@ vec4 sample_c(vec2 uv)
     return texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0);
 #else
 
+#if PS_POINT_SAMPLER
+    // Weird issue with ATI/AMD cards,
+    // it looks like they add 127/128 of a texel to sampling coordinates
+    // occasionally causing point sampling to erroneously round up.
+    // I'm manually adjusting coordinates to the centre of texels here,
+    // though the centre is just paranoia, the top left corner works fine.
+    // As of 2018 this issue is still present.
+    uv = (trunc(uv * WH.zw) + vec2(0.5, 0.5)) / WH.zw;
+#endif
+
 #if PS_AUTOMATIC_LOD == 1
     return texture(TextureSampler, uv);
 #elif PS_MANUAL_LOD == 1
@@ -112,13 +122,23 @@ vec4 sample_p(float idx)
 vec4 clamp_wrap_uv(vec4 uv)
 {
     vec4 uv_out = uv;
+#if PS_INVALID_TEX0 == 1
+    vec4 tex_size = WH.zwzw;
+#else
+    vec4 tex_size = WH.xyxy;
+#endif
 
 #if PS_WMS == PS_WMT
 
 #if PS_WMS == 2
     uv_out = clamp(uv, MinMax.xyxy, MinMax.zwzw);
 #elif PS_WMS == 3
-    uv_out = vec4((ivec4(uv * WH.xyxy) & ivec4(MskFix.xyxy)) | ivec4(MskFix.zwzw)) / WH.xyxy;
+    #if PS_FST == 0
+    // wrap negative uv coords to avoid an off by one error that shifted
+    // textures. Fixes Xenosaga's hair issue.
+    uv = fract(uv);
+    #endif
+    uv_out = vec4((uvec4(uv * tex_size) & MskFix.xyxy) | MskFix.zwzw) / tex_size;
 #endif
 
 #else // PS_WMS != PS_WMT
@@ -127,7 +147,10 @@ vec4 clamp_wrap_uv(vec4 uv)
     uv_out.xz = clamp(uv.xz, MinMax.xx, MinMax.zz);
 
 #elif PS_WMS == 3
-    uv_out.xz = vec2((ivec2(uv.xz * WH.xx) & ivec2(MskFix.xx)) | ivec2(MskFix.zz)) / WH.xx;
+    #if PS_FST == 0
+    uv.xz = fract(uv.xz);
+    #endif
+    uv_out.xz = vec2((uvec2(uv.xz * tex_size.xx) & MskFix.xx) | MskFix.zz) / tex_size.xx;
 
 #endif
 
@@ -135,8 +158,10 @@ vec4 clamp_wrap_uv(vec4 uv)
     uv_out.yw = clamp(uv.yw, MinMax.yy, MinMax.ww);
 
 #elif PS_WMT == 3
-
-    uv_out.yw = vec2((ivec2(uv.yw * WH.yy) & ivec2(MskFix.yy)) | ivec2(MskFix.ww)) / WH.yy;
+    #if PS_FST == 0
+    uv.yw = fract(uv.yw);
+    #endif
+    uv_out.yw = vec2((uvec2(uv.yw * tex_size.yy) & MskFix.yy) | MskFix.ww) / tex_size.yy;
 #endif
 
 #endif
@@ -177,11 +202,11 @@ vec4 sample_4_index(vec4 uv)
     uvec4 i = uvec4(c * 255.0f + 0.5f); // Denormalize value
 
 #if PS_PAL_FMT == 1
-	// 4HL
+    // 4HL
     return vec4(i & 0xFu) / 255.0f;
 
 #elif PS_PAL_FMT == 2
-	// 4HH
+    // 4HH
     return vec4(i >> 4u) / 255.0f;
 
 #else
@@ -419,7 +444,6 @@ vec4 sample_color(vec2 st)
         // Background in Shin Megami Tensei Lucifers
         // I suspect that uv isn't a standard number, so fract is outside of the [0;1] range
         // Note: it is free on GPU but let's do it only for float coordinate
-        // Strangely Dx doesn't suffer from this issue.
         dd = clamp(dd, vec2(0.0f), vec2(1.0f));
 #endif
     }
@@ -445,17 +469,17 @@ vec4 sample_color(vec2 st)
 
 #endif
 
-	// PERF note: using dot product reduces by 1 the number of instruction
-	// but I'm not sure it is equivalent neither faster.
-	for (int i = 0; i < 4; i++)
-	{
+    // PERF note: using dot product reduces by 1 the number of instruction
+    // but I'm not sure it is equivalent neither faster.
+    for (int i = 0; i < 4; i++)
+    {
         //float sum = dot(c[i].rgb, vec3(1.0f));
 #if (PS_AEM_FMT == FMT_24)
-		c[i].a = ( (PS_AEM == 0) || any(bvec3(c[i].rgb))  ) ? TA.x : 0.0f;
-		//c[i].a = ( (PS_AEM == 0) || (sum > 0.0f) ) ? TA.x : 0.0f;
+            c[i].a = ( (PS_AEM == 0) || any(bvec3(c[i].rgb))  ) ? TA.x : 0.0f;
+            //c[i].a = ( (PS_AEM == 0) || (sum > 0.0f) ) ? TA.x : 0.0f;
 #elif (PS_AEM_FMT == FMT_16)
-		c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || any(bvec3(c[i].rgb)) ) ? TA.x : 0.0f;
-		//c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || (sum > 0.0f) ) ? TA.x : 0.0f;
+            c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || any(bvec3(c[i].rgb)) ) ? TA.x : 0.0f;
+            //c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || (sum > 0.0f) ) ? TA.x : 0.0f;
 #endif
     }
 
@@ -555,7 +579,11 @@ void fog(inout vec4 C, float f)
 vec4 ps_color()
 {
     //FIXME: maybe we can set gl_Position.w = q in VS
-#if (PS_FST == 0)
+#if (PS_FST == 0) && (PS_INVALID_TEX0 == 1)
+    // Re-normalize coordinate from invalid GS to corrected texture size
+    vec2 st = (PSin.t_float.xy * WH.xy) / (vec2(PSin.t_float.w) * WH.zw);
+    // no st_int yet
+#elif (PS_FST == 0)
     vec2 st = PSin.t_float.xy / vec2(PSin.t_float.w);
     vec2 st_int = PSin.t_int.zw / vec2(PSin.t_float.w);
 #else
@@ -572,10 +600,10 @@ vec4 ps_color()
     vec4 T = fetch_blue();
 #elif PS_CHANNEL_FETCH == 4
     vec4 T = fetch_alpha();
+#elif PS_CHANNEL_FETCH == 5
+    vec4 T = fetch_rgb();
 #elif PS_CHANNEL_FETCH == 6
     vec4 T = fetch_gXbY();
-#elif PS_CHANNEL_FETCH == 7
-    vec4 T = fetch_rgb();
 #elif PS_DEPTH_FMT > 0
     // Integral coordinate
     vec4 T = sample_depth(st_int);
@@ -606,6 +634,18 @@ void ps_fbmask(inout vec4 C)
 #if PS_FBMASK
     vec4 RT = trunc(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0) * 255.0f + 0.1f);
     C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
+#endif
+}
+
+void ps_dither(inout vec4 C)
+{
+#if PS_DITHER
+    #if PS_DITHER == 2
+    ivec2 fpos = ivec2(gl_FragCoord.xy);
+    #else
+    ivec2 fpos = ivec2(gl_FragCoord.xy / ScalingFactor.x);
+    #endif
+    C.rgb += DitherMatrix[fpos.y&3][fpos.x&3];
 #endif
 }
 
@@ -664,7 +704,8 @@ void ps_blend(inout vec4 Color, float As)
     Color.rgb = trunc((A - B) * C + D);
 #endif
 
-    // FIXME dithering
+    // Dithering
+    ps_dither(Color);
 
     // Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0
@@ -814,21 +855,37 @@ void ps_main()
     return;
 #endif
 
+#if !SW_BLEND
+    ps_dither(C);
+#endif
+
     ps_blend(C, alpha_blend);
 
     ps_fbmask(C);
 
-#if PS_HDR == 1
+// When dithering the bottom 3 bits become meaningless and cause lines in the picture
+// so we need to limit the color depth on dithered items
+// SW_BLEND already deals with this so no need to do in those cases
+#if !SW_BLEND && PS_DITHER && PS_DFMT == FMT_16 && PS_COLCLIP == 0
+    C.rgb = clamp(C.rgb, vec3(0.0f), vec3(255.0f));
+    C.rgb = uvec3(uvec3(C.rgb) & uvec3(0xF8));
+#endif
+
+// #if PS_HDR == 1
     // Use negative value to avoid overflow of the texture (in accumulation mode)
     // Note: code were initially done for an Half-Float texture. Due to overflow
     // the texture was upgraded to a full float. Maybe this code is useless now!
     // Good testcase is castlevania
-    if (any(greaterThan(C.rgb, vec3(128.0f)))) {
-        C.rgb = (C.rgb - 256.0f);
-    }
-#endif
+    // if (any(greaterThan(C.rgb, vec3(128.0f)))) {
+        // C.rgb = (C.rgb - 256.0f);
+    // }
+// #endif
     SV_Target0 = C / 255.0f;
     SV_Target1 = vec4(alpha_blend);
+
+#if PS_ZCLAMP
+	gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
+#endif 
 }
 
 #endif

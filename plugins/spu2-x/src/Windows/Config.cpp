@@ -128,10 +128,7 @@ void ReadSettings()
     // let's use xaudio2 until this is sorted (rama)
 
     //	CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, PortaudioOut->GetIdent());
-    if (IsWindows8OrGreater())
-        CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, XAudio2Out->GetIdent());
-    else
-        CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, XAudio2_27_Out->GetIdent());
+    CfgReadStr(L"OUTPUT", L"Output_Module", omodid, 127, XAudio2Out->GetIdent());
 
     // find the driver index of this module:
     OutputModule = FindOutputModuleById(omodid);
@@ -205,6 +202,23 @@ void WriteSettings()
     DebugConfig::WriteSettings();
 }
 
+void CheckOutputModule(HWND window)
+{
+    OutputModule = SendMessage(GetDlgItem(window, IDC_OUTPUT), CB_GETCURSEL, 0, 0);
+    const bool IsConfigurable =
+        mods[OutputModule] == PortaudioOut ||
+        mods[OutputModule] == WaveOut ||
+        mods[OutputModule] == DSoundOut;
+
+    const bool AudioExpansion =
+        mods[OutputModule] == XAudio2Out ||
+        mods[OutputModule] == PortaudioOut;
+
+    EnableWindow(GetDlgItem(window, IDC_OUTCONF), IsConfigurable);
+    EnableWindow(GetDlgItem(window, IDC_SPEAKERS), AudioExpansion);
+    EnableWindow(GetDlgItem(window, IDC_SPEAKERS_TEXT), AudioExpansion);
+}
+
 BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     int wmId, wmEvent;
@@ -216,10 +230,10 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case WM_INITDIALOG: {
             SendDialogMsg(hWnd, IDC_INTERPOLATE, CB_RESETCONTENT, 0, 0);
-            SendDialogMsg(hWnd, IDC_INTERPOLATE, CB_ADDSTRING, 0, (LPARAM)L"0 - Nearest (fastest/bad quality)");
-            SendDialogMsg(hWnd, IDC_INTERPOLATE, CB_ADDSTRING, 0, (LPARAM)L"1 - Linear (simple/okay sound)");
-            SendDialogMsg(hWnd, IDC_INTERPOLATE, CB_ADDSTRING, 0, (LPARAM)L"2 - Cubic (artificial highs)");
-            SendDialogMsg(hWnd, IDC_INTERPOLATE, CB_ADDSTRING, 0, (LPARAM)L"3 - Hermite (better highs)");
+            SendDialogMsg(hWnd, IDC_INTERPOLATE, CB_ADDSTRING, 0, (LPARAM)L"0 - Nearest (Fastest/bad quality)");
+            SendDialogMsg(hWnd, IDC_INTERPOLATE, CB_ADDSTRING, 0, (LPARAM)L"1 - Linear (Simple/okay sound)");
+            SendDialogMsg(hWnd, IDC_INTERPOLATE, CB_ADDSTRING, 0, (LPARAM)L"2 - Cubic (Artificial highs)");
+            SendDialogMsg(hWnd, IDC_INTERPOLATE, CB_ADDSTRING, 0, (LPARAM)L"3 - Hermite (Better highs)");
             SendDialogMsg(hWnd, IDC_INTERPOLATE, CB_ADDSTRING, 0, (LPARAM)L"4 - Catmull-Rom (PS2-like/slow)");
             SendDialogMsg(hWnd, IDC_INTERPOLATE, CB_SETCURSEL, Interpolation, 0);
 
@@ -230,7 +244,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             SendDialogMsg(hWnd, IDC_SYNCHMODE, CB_SETCURSEL, SynchMode, 0);
 
             SendDialogMsg(hWnd, IDC_SPEAKERS, CB_RESETCONTENT, 0, 0);
-            SendDialogMsg(hWnd, IDC_SPEAKERS, CB_ADDSTRING, 0, (LPARAM)L"Stereo (none, default)");
+            SendDialogMsg(hWnd, IDC_SPEAKERS, CB_ADDSTRING, 0, (LPARAM)L"Stereo (None, Default)");
             SendDialogMsg(hWnd, IDC_SPEAKERS, CB_ADDSTRING, 0, (LPARAM)L"Quadrafonic");
             SendDialogMsg(hWnd, IDC_SPEAKERS, CB_ADDSTRING, 0, (LPARAM)L"Surround 5.1");
             SendDialogMsg(hWnd, IDC_SPEAKERS, CB_ADDSTRING, 0, (LPARAM)L"Surround 7.1");
@@ -262,6 +276,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             swprintf_s(temp, L"%d%%", configvol);
             SetWindowText(GetDlgItem(hWnd, IDC_VOLUME_LABEL), temp);
 
+            CheckOutputModule(hWnd);
+
             EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_SOUNDTOUCH), (SynchMode == 0));
             EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_DEBUG), DebugEnabled);
 
@@ -292,6 +308,12 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 case IDCANCEL:
                     EndDialog(hWnd, 0);
+                    break;
+
+                case IDC_OUTPUT:
+                    if (wmEvent == CBN_SELCHANGE) {
+                        CheckOutputModule(hWnd);
+                    }
                     break;
 
                 case IDC_OUTCONF: {
@@ -350,20 +372,18 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             wmEvent = LOWORD(wParam);
             HWND hwndDlg = (HWND)lParam;
 
-            // TB_THUMBTRACK passes the curpos in wParam.  Other messages
-            // have to use TBM_GETPOS, so they will override this assignment (see below)
-
             int curpos = HIWORD(wParam);
 
             switch (wmEvent) {
-                //case TB_ENDTRACK:
-                //case TB_THUMBPOSITION:
                 case TB_LINEUP:
                 case TB_LINEDOWN:
                 case TB_PAGEUP:
                 case TB_PAGEDOWN:
+                case TB_TOP:
+                case TB_BOTTOM:
                     curpos = (int)SendMessage(hwndDlg, TBM_GETPOS, 0, 0);
 
+                case TB_THUMBPOSITION:
                 case TB_THUMBTRACK:
                     Clampify(curpos,
                              (int)SendMessage(hwndDlg, TBM_GETRANGEMIN, 0, 0),

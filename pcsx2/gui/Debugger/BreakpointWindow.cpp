@@ -17,10 +17,10 @@
 #include "BreakpointWindow.h"
 
 
-BEGIN_EVENT_TABLE(BreakpointWindow, wxDialog)
+wxBEGIN_EVENT_TABLE(BreakpointWindow, wxDialog)
 	EVT_RADIOBUTTON(wxID_ANY, BreakpointWindow::onRadioChange)
 	EVT_BUTTON(wxID_OK, BreakpointWindow::onButtonOk)
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 
 BreakpointWindow::BreakpointWindow( wxWindow* parent, DebugInterface* _cpu )

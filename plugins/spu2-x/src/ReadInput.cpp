@@ -66,10 +66,6 @@ StereoOut32 V_Core::ReadInput_HiFi()
     //  One of these seems wrong, they should be the same.  Since standard ADMA checks too I'm assuming that as default. -- air
 
     if ((InputPosRead == 0x100) || (InputPosRead >= 0x200)) {
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-        // WARNING: Assumes this to be in the same thread as the dmas
-        AutoDmaFree += 0x200;
-#else
         AdmaInProgress = 0;
         if (InputDataLeft >= 0x200) {
 #ifdef PCM24_S1_INTERLEAVE
@@ -102,7 +98,6 @@ StereoOut32 V_Core::ReadInput_HiFi()
                 }
             }
         }
-#endif
         InputPosRead &= 0x1ff;
     }
     return retval;
@@ -134,10 +129,6 @@ StereoOut32 V_Core::ReadInput()
     InputPosRead++;
 
     if (AutoDMACtrl & (Index + 1) && (InputPosRead == 0x100 || InputPosRead == 0x200)) {
-#ifdef ENABLE_NEW_IOPDMA_SPU2
-        // WARNING: Assumes this to be in the same thread as the dmas
-        AutoDmaFree += 0x200;
-#else
         AdmaInProgress = 0;
         if (InputDataLeft >= 0x200) {
             //u8 k=InputDataLeft>=InputDataProgress;
@@ -170,7 +161,6 @@ StereoOut32 V_Core::ReadInput()
                 }
             }
         }
-#endif
     }
     InputPosRead &= 0x1ff;
     return retval;

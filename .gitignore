@@ -19,7 +19,6 @@
 *.dump
 
 *.asm
-!/plugins/CDVDpeops/i386.asm
 !/plugins/zerogs/dx/x86-32.asm
 !/plugins/zerogs/dx/x86-64.asm
 !/plugins/zerogs/opengl/x86-32.asm
@@ -47,12 +46,19 @@ Thumbs.db
 
 Debug.txt
 install_log.txt
+padLog.txt
 
 Debug
 Release
 Devel
 
 oprofile_data/
+
+# Recording Specific Ignores (pcsx2-rr)
+*.p2s
+*.p2m2
+*.p2m2_backup
+*.p2m2_SaveState.p2s
 
 # Visual Studio upgrades
 /Backup*
@@ -65,6 +71,8 @@ oprofile_data/
 /bin/**/*.pdb
 /bin/PCSX2
 /bin/*ReplayLoader
+/bin/PCSX2-linux.sh
+/bin/GSdx*.txt
 /bin/bios
 /bin/dumps
 /bin/help
@@ -96,12 +104,13 @@ oprofile_data/
 /3rdparty/**/wx/msw/rcdefs.h
 /pcsx2/gui/Resources/*.h
 !/pcsx2/gui/Resources/EmbeddedImage.h
-/plugins/CDVDolio/Template
 /plugins/GSdx/Template
 /plugins/USBqemu/Win32/bin
-/plugins/xpad/Template
 /plugins/zerospu2/Windows/dsound51.cpp
 /tools/bin
 /tools/GSDumpGUI/bin
 /tools/GSDumpGUI/obj
-/.vs
+.vs
+
+/pcsx2/windows/VCprojects/GSdx_opengl_debug_hw.txt
+/pcsx2/windows/VCprojects/GSdx_opengl_debug_sw.txt

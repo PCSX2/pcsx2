@@ -13,38 +13,40 @@
   ;SetShellVarContext all
   ;SetShellVarContext current
 
-Section "!${APP_NAME} (required)" SEC_CORE
+Function RedistInstallation
+!include WinVer.nsh
 
-    SectionIn RO
+; Check if the VC runtimes are installed
+ReadRegDword $R5 HKLM "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" "Installed"
 
-  SetOutPath "$INSTDIR"
-    File ..\bin\pcsx2.exe
-    File ..\bin\GameIndex.dbf
-    File ..\bin\cheats_ws.zip
-    File ..\bin\PCSX2_keys.ini.default
+${If} $R5 == "1"
+    Goto DxSetup
+${EndIf}
 
-  SetOutPath "$INSTDIR\Docs"
-    File ..\bin\docs\*
+; Download and install the VC redistributable from the internet
+inetc::get /CONNECTTIMEOUT 30 /RECEIVETIMEOUT 30 "https://aka.ms/vs/16/release/VC_redist.x86.exe" "$TEMP\VC_redist.x86.exe" /END
+    ExecShellWait open "$TEMP\VC_redist.x86.exe" "/INSTALL /Q /NORESTART"
+    Delete "$TEMP\VC_redist.x86.exe"
 
-  SetOutPath "$INSTDIR\Shaders"
-    File ..\bin\shaders\GSdx.fx
-    File ..\bin\shaders\GSdx_FX_Settings.ini
+DxSetup:
+${If} ${AtLeastWin8.1}
+Return
+${EndIf}
 
-  SetOutPath "$INSTDIR\Plugins"
-    File /nonfatal ..\bin\Plugins\gsdx32-sse2.dll
-    File /nonfatal ..\bin\Plugins\gsdx32-sse4.dll
-    File /nonfatal ..\bin\Plugins\gsdx32-avx2.dll
-    File /nonfatal ..\bin\Plugins\spu2-x.dll
-    File /nonfatal ..\bin\Plugins\cdvdGigaherz.dll
-    File /nonfatal ..\bin\Plugins\lilypad.dll
-    File /nonfatal ..\bin\Plugins\USBnull.dll
-    File /nonfatal ..\bin\Plugins\DEV9null.dll
-    File /nonfatal ..\bin\Plugins\FWnull.dll
+; Download and install DirectX (only applies to OSes older than 8.1)
+inetc::get /CONNECTTIMEOUT 30 /RECEIVETIMEOUT 30 "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe" "$TEMP/dxwebsetup.exe" /END
+    ExecShellWait open "$TEMP\dxwebsetup.exe" "/Q"
+    Delete "$TEMP\dxwebsetup.exe"
+FunctionEnd
+
+Section "" SEC_REDIST
+Call RedistInstallation
 SectionEnd
 
-Section "Additional Languages" SEC_LANGS
-    SetOutPath $INSTDIR\Langs
-    File /nonfatal /r ..\bin\Langs\*.mo
+; Copy unpacked files from TEMP to the user specified directory
+Section "!${APP_NAME} (required)" SEC_CORE
+SectionIn RO
+CopyFiles /SILENT "$TEMP\PCSX2 ${APP_VERSION}\*" "$INSTDIR\" 24000
 SectionEnd
 
 !include "SharedShortcuts.nsh"
@@ -52,11 +54,9 @@ SectionEnd
 LangString DESC_CORE       ${LANG_ENGLISH} "Core components (binaries, plugins, documentation, etc)."
 LangString DESC_STARTMENU  ${LANG_ENGLISH} "Adds shortcuts for PCSX2 to the start menu (all users)."
 LangString DESC_DESKTOP    ${LANG_ENGLISH} "Adds a shortcut for PCSX2 to the desktop (all users)."
-LangString DESC_LANGS      ${LANG_ENGLISH} "Adds additional languages other than the system default to PCSX2."
 
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CORE}        $(DESC_CORE)
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_STARTMENU}   $(DESC_STARTMENU)
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DESKTOP}     $(DESC_DESKTOP)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANGS}       $(DESC_LANGS)
   !insertmacro MUI_FUNCTION_DESCRIPTION_END

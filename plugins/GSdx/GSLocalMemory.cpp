@@ -87,7 +87,6 @@ GSLocalMemory::GSLocalMemory()
 	m_use_fifo_alloc = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("wrap_gs_mem");
 	switch (theApp.GetCurrentRendererType()) {
 		case GSRendererType::OGL_SW:
-		case GSRendererType::DX9_SW:
 		case GSRendererType::DX1011_SW:
 			m_use_fifo_alloc = true;
 			break;
@@ -494,7 +493,7 @@ GSLocalMemory::~GSLocalMemory()
 	else
 		vmfree(m_vm8, m_vmsize * 4);
 
-	for(auto &i : m_omap) _aligned_free(i.second);
+	for(auto &i : m_omap) delete i.second;
 	for(auto &i : m_pomap) _aligned_free(i.second);
 	for(auto &i : m_po4map) _aligned_free(i.second);
 
@@ -2008,7 +2007,7 @@ void GSLocalMemory::ReadTextureBlock4HHP(uint32 bp, uint8* dst, int dstpitch, co
 
 //
 
-#include "GSTextureSW.h"
+#include "Renderers/SW/GSTextureSW.h"
 
 void GSLocalMemory::SaveBMP(const std::string& fn, uint32 bp, uint32 bw, uint32 psm, int w, int h)
 {

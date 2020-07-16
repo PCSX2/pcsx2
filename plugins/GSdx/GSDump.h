@@ -22,7 +22,7 @@
 #pragma once
 
 #include "GS.h"
-#include "GSVertexSW.h"
+#include "Renderers/SW/GSVertexSW.h"
 #include <lzma.h>
 
 /*

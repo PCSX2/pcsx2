@@ -194,11 +194,6 @@ enum IOPCountRegs
 	} \
 }
 
-#ifdef ENABLE_NEW_IOPDMA
-#define DmaExecNew(n) IopDmaStart(n);
-#define DmaExecNew2(n) IopDmaStart(n);
-#endif
-
 struct dma_mbc
 {
 	u32 madr;

@@ -1,28 +1,27 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR PCSX2 Dev Team
+# Copyright (C) 2018 PCSX2 Team
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# RedDevilus (GitHub and Discord), 2020.
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.5.0\n"
+"Project-Id-Version: PCSX2 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2016-12-31 11:39+0100\n"
-"PO-Revision-Date: 2016-02-27 12:58+0100\n"
-"Last-Translator: goldeng <odakawoi@yahoo.fr>\n"
-"Language-Team: goldeng;piorrro33 <odakawoi@yahoo.fr;piorrro33@outlook.com>\n"
-"Language: fr\n"
+"POT-Creation-Date: 2020-02-10 17:29+0000\n"
+"PO-Revision-Date: 2020-05-16 19:18+0200\n"
+"Last-Translator: LaneSh4d0w\n"
+"Language-Team: Atomic83;goldeng;piorrro33 <odakawoi@yahoo.fr;"
+"piorrro33@outlook.com>\n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-KeywordsList: pxE;pxEt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: trunk\n"
-"X-Generator: Poedit 1.8.7\n"
+"X-Generator: Poedit 2.3.1\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
 
-#: common/src/Utilities/Exceptions.cpp:268
+#: common/src/Utilities/Exceptions.cpp:239
 msgid ""
 "There is not enough virtual memory available, or necessary virtual memory "
 "mappings have already been reserved by other processes, services, or DLLs."
@@ -30,21 +29,13 @@ msgstr ""
 "La mémoire virtuelle disponible est insuffisante, ou l'espace-mémoire a déjà "
 "été réservé par d'autres processus, services ou DLL."
 
-#: pcsx2/CDVD/CDVD.cpp:401
+#: pcsx2/CDVD/CDVD.cpp:2058
 msgid ""
-"Playstation game discs are not supported by PCSX2.  If you want to emulate "
-"PSX games then you'll have to download a PSX-specific emulator, such as "
-"ePSXe or PCSX."
+"Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings."
 msgstr ""
-"L'émulation des jeux PlayStation 1 n'est pas supportée par PCSX2. Si vous "
-"voulez émuler des jeux PSX, veuillez télécharger un émulateur PS1 dédié "
-"(comme ePSXe ou PCSX)."
+"Echec d'écriture/lecture du fichier NVM/MEC. Vérifiez vos paramètres/"
+"permissions dans votre BIOS."
 
-#: pcsx2/CDVD/CDVD.cpp:2054
-msgid ""
-"Failed to read/write NMV/MEC file. Check your bios setup/permission settings"
-msgstr ""
-"Échec de la lecture/écriture du fichier NMV/MEC. Verifiez vos paramètres/permissions dans votre bios "
 #: pcsx2/System.cpp:112
 msgid ""
 "This recompiler was unable to reserve contiguous memory required for "
@@ -58,7 +49,7 @@ msgstr ""
 "Vous pouvez aussi essayer de réduire la taille du cache par défaut allouée "
 "au recompilateur PCSX2."
 
-#: pcsx2/System.cpp:354
+#: pcsx2/System.cpp:358
 msgid ""
 "PCSX2 is unable to allocate memory needed for the PS2 virtual machine. Close "
 "out some memory hogging background tasks and try again."
@@ -67,7 +58,7 @@ msgstr ""
 "l'émulation d'une machine virtuelle PS2. Mettez fin aux processus en cours "
 "qui nécessitent beaucoup de mémoire puis réessayez."
 
-#: pcsx2/gui/AppInit.cpp:148
+#: pcsx2/gui/AppInit.cpp:163
 msgid ""
 "Warning: Some of the configured PS2 recompilers failed to initialize and "
 "have been disabled:"
@@ -75,7 +66,7 @@ msgstr ""
 "Attention ! Certaines fonctions du recompilateur PCSX2 n'ont pas pu être "
 "initialisées et ont donc été désactivées :"
 
-#: pcsx2/gui/AppInit.cpp:206
+#: pcsx2/gui/AppInit.cpp:221
 msgid ""
 "Note: Recompilers are not necessary for PCSX2 to run, however they typically "
 "improve emulation speed substantially. You may have to manually re-enable "
@@ -86,30 +77,30 @@ msgstr ""
 "globales. Si vous êtes parvenus à résoudre des problèmes en désactivant le "
 "recompilateur, vous devriez le réactiver manuellement."
 
-#: pcsx2/gui/AppMain.cpp:154
+#: pcsx2/gui/AppMain.cpp:159
 msgid ""
 "PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* "
 "obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't "
 "count).  Please consult the FAQs and Guides for further instructions."
 msgstr ""
-"PCSX2 nécessite un BIOS PS2 valide. D'un point de vue légal, vous devez "
-"obtenir votre BIOS \n"
+"PCSX2 nécessite un BIOS PS2 valide pour pouvoir fonctionner. D'un point de "
+"vue légal, vous devez obtenir le BIOS \n"
 "à partir de votre PROPRE console (emprunter une console ne satisfait pas ces "
 "exigences).\n"
 "Veuillez consulter la FAQ ou les guides disponibles pour plus de "
 "renseignements."
 
-#: pcsx2/gui/AppMain.cpp:689
+#: pcsx2/gui/AppMain.cpp:718
 msgid ""
 "'Ignore' to continue waiting for the thread to respond.\n"
 "'Cancel' to attempt to cancel the thread.\n"
 "'Terminate' to quit PCSX2 immediately.\n"
 msgstr ""
-"Cliquez sur Ignorer pour attendre jusqu'à ce que le processus réponde.\n"
-"Cliquez sur Annuler pour mettre fin au processus.\n"
-"Cliquez sur Terminer pour fermer immédiatement PCSX2.\n"
+"Cliquez sur 'Ignorer' pour attendre jusqu'à ce que le processus réponde.\n"
+"Cliquez sur 'Annuler' pour mettre fin au processus.\n"
+"Cliquez sur 'Terminer' pour fermer immédiatement PCSX2.\n"
 
-#: pcsx2/gui/AppUserMode.cpp:57
+#: pcsx2/gui/AppUserMode.cpp:54
 msgid ""
 "Please ensure that these folders are created and that your user account is "
 "granted write permissions to them -- or re-run PCSX2 with elevated "
@@ -130,8 +121,8 @@ msgid ""
 "Please note that the resulting file may not actually contain all saves, "
 "depending on how many are in the source memory card."
 msgstr ""
-"Le fichier de sortie pourrait ne pas contenir toutes les sauvegardes, "
-"suivant le nombre qu'il y avait dans la carte mémoire source."
+"Veuillez savoir que le fichier de sortie pourrait ne pas contenir toutes les "
+"sauvegardes, suivant le nombre contenu dans la carte mémoire source."
 
 #: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:68
 msgid ""
@@ -158,15 +149,16 @@ msgstr "Convertir cette carte mémoire en un fichier .ps2 de 32 Mo."
 msgid "Convert this memory card to a 64 MB Memory Card .ps2 file."
 msgstr "Convertir cette carte mémoire en un fichier .ps2 de 64 Mo."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:197
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:225
 msgid ""
 "NTFS compression can be changed manually at any time by using file "
 "properties from Windows Explorer."
 msgstr ""
-"La compression NTFS peut être modifiée manuellement depuis l'explorateur "
-"Windows (clic droit sur le fichier, puis \"Propriétés\")."
+"La compression NTFS peut être modifiée manuellement à n'importe quel moment\n"
+"depuis l'explorateur Windows (clic droit sur le fichier, puis \"Propriétés"
+"\")."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:49
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:50
 msgid ""
 "This is the folder where PCSX2 saves your settings, including settings "
 "generated by most plugins (some older plugins may not respect this value)."
@@ -174,7 +166,7 @@ msgstr ""
 "Ce dossier contient les paramètres relatifs à PCSX2, y compris ceux créés "
 "par les plugins externes (sauf s'ils sont dépassés techniquement)."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:52
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:53
 msgid ""
 "You may optionally specify a location for your PCSX2 settings here.  If the "
 "location contains existing PCSX2 settings, you will be given the option to "
@@ -184,7 +176,7 @@ msgstr ""
 "fichier de paramétrage existe déjà dans le dossier choisi, vous aurez la "
 "possibilité de les importer ou de les écraser."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:96
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:99
 #, c-format
 msgid ""
 "This wizard will help guide you through configuring plugins, memory cards, "
@@ -196,7 +188,7 @@ msgstr ""
 "installation de %s, de prendre connaissance du readme et des guides de "
 "configuration traduits dans votre langue."
 
-#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:139
+#: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:142
 msgid ""
 "PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\n"
 "You cannot use a copy obtained from a friend or the Internet.\n"
@@ -208,7 +200,7 @@ msgstr ""
 "grâce à internet.\n"
 "Vous devez faire un dump du BIOS de *votre* console PlayStation 2."
 
-#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:31
+#: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:32
 #, c-format
 msgid ""
 "Existing %s settings have been found in the configured settings folder.  "
@@ -217,7 +209,7 @@ msgid ""
 "\n"
 "(or press Cancel to select a different settings folder)"
 msgstr ""
-"Des paramètres existants %s ont été trouvés dans le dossier de "
+"Des paramètres existants de %s ont été trouvés dans le dossier de "
 "configuration. Voulez-vous importer ces données ou les remplacer avec les "
 "valeurs par défaut de %s ?\n"
 "\n"
@@ -229,8 +221,9 @@ msgid ""
 "NTFS compression is built-in, fast, and completely reliable; and typically "
 "compresses memory cards very well (this option is highly recommended)."
 msgstr ""
-"La compression NTFS est sûre et rapide : c'est le format le plus adapté pour "
-"les cartes mémoires !"
+"La compression NTFS est intégrée, rapide et entièrement fiable; et compresse "
+"généralement les cartes mémoire très bien (cette option est fortement "
+"recommandée)."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:39
 msgid ""
@@ -238,10 +231,10 @@ msgid ""
 "after loading from savestates.  May not be compatible with all games (Guitar "
 "Hero)."
 msgstr ""
-"Permet d'éviter d'endommager la carte mémoire (fichiers corrompus) en "
-"obligeant les jeux à ré-indexer le contenu présent sur la carte.\n"
+"Permet d'éviter de corrompre la carte mémoire en obligeant les jeux à "
+"réindexer le contenu présent sur la carte.\n"
 "Cette option peut être incompatible avec certains jeux (Guitar Hero, par "
-"exemple) !"
+"exemple)."
 
 #: pcsx2/gui/Dialogs/McdConfigDialog.cpp:45
 msgid ""
@@ -252,15 +245,6 @@ msgstr ""
 "(Mode dossier uniquement) Ré-indexer le contenu de la carte mémoire à chaque "
 "fois que le logiciel en cours d'exécution change. Cela permet d'empêcher que "
 "la carte mémoire manque de place pour les sauvegardes."
-
-#: pcsx2/gui/Dialogs/StuckThreadDialog.cpp:33
-#, c-format
-msgid ""
-"The thread '%s' is not responding.  It could be deadlocked, or it might just "
-"be running *really* slowly."
-msgstr ""
-"Le processus '%s' ne répond pas. Il est peut-être bloqué ou s'exécute d'une "
-"manière anormalement lente."
 
 #: pcsx2/gui/Dialogs/SysConfigDialog.cpp:38
 msgid ""
@@ -286,45 +270,43 @@ msgstr ""
 "paramètres habituels, \n"
 "et seront désactivées si vous cliquez sur le bouton Appliquer."
 
-#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:129
+#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:128
 msgid ""
-"The Presets apply speed hacks, some recompiler options and some game fixes "
-"known to boost speed.\n"
-"Known important game fixes will be applied automatically.\n"
+"Presets apply some speed hacks that may boost speed on underpowered systems, "
+"or speed up games that have unusual performance requirements. Uncheck this "
+"box to apply settings manually.\n"
 "\n"
-"Presets info:\n"
-"1 -     The most accurate emulation but also the slowest.\n"
-"3 --> Tries to balance speed with compatibility.\n"
-"4 -     Some more aggressive hacks.\n"
-"6 -     Too many hacks which will probably slow down most games.\n"
+"1) Safest - No speed hacks. Most reliable, but possibly slow setting.\n"
+"2) Safe - Default. A few speed hacks known to provide boosts, with minimal "
+"to no side effects.\n"
+"3) Balanced - May help quad core CPUs.\n"
+"4) Aggressive - May help underpowered CPUs on less demanding games, but "
+"risks causing problems in other cases.\n"
+"5) Very Aggressive - May help underpowered CPUs on less demanding games, but "
+"is likely to cause problems in other cases.\n"
+"6) Mostly Harmful - Harsh application of speed hacks. May help a very small "
+"set of games that have unusual performance requirements, but have adverse "
+"effects on most others. Not recommended for underpowered PCs."
 msgstr ""
-"Les préréglages appliquent des speedhacks, des options spécifiques du "
-"recompilateur et des patchs spécifiques à certains jeux afin d'en améliorer "
-"les performances.\n"
-"Toute correction disponible à un problème connu sera automatiquement "
-"appliquée.\n"
+"Les choix prédéfinis appliquent quelques hacks de vitesse qui peuvent "
+"augmenter la vitesse sur les systèmes peu puissants, ou accélérer les jeux "
+"qui ont des exigences de performances inhabituelles. Décochez cette case "
+"pour appliquer les paramètres manuellement.\n"
 "\n"
-"Informations :\n"
-"1 - Le mode d'émulation le plus stable, mais aussi le plus lent.\n"
-"3 --> Une tentative d'équilibre entre compatibilité et performances.\n"
-"4 - Utilisation de certains speedhacks.\n"
-"5 - Utilisation d'un si grand nombre de speedhacks que les performances s'en "
-"ressentiront sûrement.\n"
-
-#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:136
-msgid ""
-"The Presets apply speed hacks, some recompiler options and some game fixes "
-"known to boost speed.\n"
-"Known important game fixes will be applied automatically.\n"
-"\n"
-"--> Uncheck to modify settings manually (with current preset as base)"
-msgstr ""
-"Les préréglages appliquent des speedhacks, des options spécifiques du "
-"recompilateur et des patchs particuliers à certains jeux afin d'en améliorer "
-"les performances. Toute correction disponible à un problème connu sera "
-"automatiquement appliquée.\n"
-"--> Décochez la case si vous désirez modifier les paramètres manuellement "
-"(en utilisant les préréglages actuels comme base)"
+"1) Plus sûr - Pas de hacks de vitesse. Réglage le plus fiable, mais peut "
+"être lent.\n"
+"2) Sûr - Par défaut. Quelques hacks de vitesse connus pour améliorer les "
+"performances, avec un minimum à aucun effet secondaire.\n"
+"3) Équilibré - Peut aider les processeurs à 4 cœurs ou plus.\n"
+"4) Agressif - Peut aider les processeurs peu puissants sur les jeux moins "
+"exigeants, mais risque de causer des problèmes dans d’autres cas.\n"
+"5) Très agressif - Peut aider les processeurs peu puissants sur les jeux "
+"moins exigeants, mais est susceptible de causer des problèmes dans d’autres "
+"cas.\n"
+"6) Souvent nocif - Application importante des hacks de vitesse. Peut aider "
+"un très petit ensemble de jeux qui ont des exigences de performance "
+"inhabituelles, mais ont des effets néfastes sur la plupart des autres. Non "
+"recommandé pour les PC peu puissants."
 
 #: pcsx2/gui/IsoDropTarget.cpp:28
 msgid ""
@@ -335,7 +317,7 @@ msgstr ""
 "virtuelle PS2 : toutes les données en cours seront perdues.\n"
 "Êtes-vous sûr de vouloir réaliser cette opération ?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:118
+#: pcsx2/gui/MainMenuClicks.cpp:114
 #, c-format
 msgid ""
 "This command clears %s settings and allows you to re-run the First-Time "
@@ -357,7 +339,7 @@ msgstr ""
 "Êtes-vous sûr de vouloir procéder à cette manipulation ?\n"
 "PS. Les paramètres des plugins individuels ne seront pas affectés."
 
-#: pcsx2/gui/MemoryCardFile.cpp:84 pcsx2/gui/MemoryCardFolder.h:534
+#: pcsx2/gui/MemoryCardFile.cpp:87 pcsx2/gui/MemoryCardFolder.h:534
 #, c-format
 msgid ""
 "The PS2-slot %d has been automatically disabled.  You can correct the "
@@ -374,7 +356,7 @@ msgstr ""
 msgid "(FolderMcd) Memory Card is full, could not add: %s"
 msgstr "(FolderMcd) Carte mémoire pleine, impossible d'ajouter : %s"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:139
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:131
 msgid ""
 "Please select a valid BIOS.  If you are unable to make a valid selection "
 "then press Cancel to close the Configuration panel."
@@ -382,13 +364,7 @@ msgstr ""
 "Veuillez choisir un BIOS valide. Si vous ne possédez pas un tel fichier, "
 "cliquez sur Annuler pour fermer le panneau de configuration."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:112
-msgid "Notice: Most games are fine with the default options. "
-msgstr ""
-"Rappel : La plupart des jeux fonctionneront correctement avec le paramétrage "
-"par défaut."
-
-#: pcsx2/gui/Panels/CpuPanel.cpp:180
+#: pcsx2/gui/Panels/CpuPanel.cpp:112 pcsx2/gui/Panels/CpuPanel.cpp:180
 msgid "Notice: Most games are fine with the default options."
 msgstr ""
 "Rappel : La plupart des jeux fonctionneront correctement avec le paramétrage "
@@ -408,7 +384,25 @@ msgstr ""
 "Erreur ! Impossible de copier la carte mémoire dans le lecteur %u. Ce "
 "dernier est en cours d'utilisation. "
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:55
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:73
+msgid ""
+"Off: Disables temporary aspect ratio switch.\n"
+"\n"
+"4:3: Temporarily switch to a 4:3 aspect ratio while an FMV plays to "
+"correctly display an 4:3 FMV.\n"
+"\n"
+"16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to "
+"correctly display a widescreen 16:9 FMV."
+msgstr ""
+"Off: Désactive temporairement le changement du ratio de l'image.\n"
+"\n"
+"4/3 : Change temporairement le ratio de l'image en 4/3 pendant qu'une "
+"cinématique en 4:3 est joué.\n"
+"\n"
+"16:9 : Change temporairement le ratio de l'image en 16/9 pendant qu'une "
+"cinématique en 16:9 est joué."
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:75
 msgid ""
 "Zoom = 100: Fit the entire image to the window without any cropping.\n"
 "Above/Below 100: Zoom In/Out\n"
@@ -430,7 +424,7 @@ msgstr ""
 "Raccourcis clavier : CTRL + Plus (augmente le zoom) ; CTRL + Moins (diminue "
 "le zoom) ; CTRL + * (intervertit les valeurs 100 et 0)"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:58
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:78
 msgid ""
 "Vsync eliminates screen tearing but typically has a big performance hit. It "
 "usually only applies to fullscreen mode, and may not work with all GS "
@@ -440,9 +434,9 @@ msgstr ""
 "lors de mouvements horizontaux, mais occasionne également des pertes en "
 "termes de performances. Il vaut mieux ne l'utiliser qu'en mode plein-écran.\n"
 "\n"
-"Attention : Certains plugins vidéo ne fonctionnent pas avec cette option !"
+"Attention, certains plugins vidéo ne fonctionnent pas avec cette option."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:61
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:81
 msgid ""
 "Check this to force the mouse cursor invisible inside the GS window; useful "
 "if using the mouse as a primary control device for gaming.  By default the "
@@ -455,7 +449,7 @@ msgstr ""
 "Par défaut, le curseur s'efface automatiquement après 2 secondes "
 "d'inactivité."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:64
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:84
 msgid ""
 "Enables automatic mode switch to fullscreen when starting or resuming "
 "emulation. You can still toggle fullscreen display at any time using alt-"
@@ -466,7 +460,7 @@ msgstr ""
 "Vous pouvez néanmoins modifier le mode d'affichage en jeu grâce à la "
 "combinaison de touches ALT + Entrée."
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:71
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:87
 msgid ""
 "Completely closes the often large and bulky GS window when pressing ESC or "
 "pausing the emulator."
@@ -516,19 +510,20 @@ msgstr ""
 "* Test Drive Unlimited\n"
 "* Transformers"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:120
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:124
 msgid ""
 "It's better to enable 'Automatic game fixes' at the main menu instead, and "
-"leave this page empty. ('Automatic' means: selectively use specific tested "
+"leave this page empty ('Automatic' means: selectively use specific tested "
 "fixes for specific games). Manual game fixes will NOT increase your "
 "performance. In fact they may decrease it."
 msgstr ""
 "Il est préférable d'utiliser l'option \"Patchs automatiques\" disponible "
-"dans le menu \"Système\" de l'émulateur plutôt que d'utiliser cette page. "
-"Ces patchs n'augmenteront PAS vos FPS, peut-être même le contraire.\n"
+"dans le menu \"Système\" de l'émulateur plutôt que d'utiliser cette page.\n"
+"Ces patchs n'augmenteront PAS la performance dans le jeu, il se peut que ce "
+"soit même le contraire.\n"
 "(\"Patchs automatiques\" : utilise uniquement le patch associé au jeu émulé)"
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:124
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:128
 msgid ""
 "Gamefixes can work around wrong emulation in some titles. \n"
 "They may also cause compatibility or performance issues.\n"
@@ -542,7 +537,7 @@ msgstr ""
 "\n"
 "La meilleure solution est de s'assurer que tous les patchs soient désactivés."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:683
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:679
 #, c-format
 msgid ""
 "You are about to delete the formatted memory card '%s'. All data on this "
@@ -552,14 +547,14 @@ msgstr ""
 "les données présentes sur la carte seront perdues !\n"
 "Êtes-vous sûr de vouloir réaliser cette manipulation ?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:722
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:718
 msgid ""
 "Failed: Duplicate is only allowed to an empty PS2-Port or to the file system."
 msgstr ""
 "Erreur : Le port-PS2 concerné est occupé par un autre service, empêchant la "
 "copie."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:764
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:760
 #, c-format
 msgid "Failed: Destination memory card '%s' is in use."
 msgstr ""
@@ -589,6 +584,10 @@ msgstr ""
 "tous les autres chemins d'accès spécifiés auparavant."
 
 #: pcsx2/gui/Panels/PathsPanel.cpp:40
+msgid "This folder is where PCSX2 loads cheats from."
+msgstr "PCSX2 charge les codes de triches depuis ce dossier."
+
+#: pcsx2/gui/Panels/PathsPanel.cpp:48
 msgid ""
 "This folder is where PCSX2 records savestates; which are recorded either by "
 "using menus/toolbars, or by pressing F1/F3 (save/load)."
@@ -597,7 +596,7 @@ msgstr ""
 "partie en utilisant le menu ou en pressant les touches F1/F3 (sauvegarder/"
 "charger)."
 
-#: pcsx2/gui/Panels/PathsPanel.cpp:48
+#: pcsx2/gui/Panels/PathsPanel.cpp:56
 msgid ""
 "This folder is where PCSX2 saves screenshots.  Actual screenshot image "
 "format and style may vary depending on the GS plugin being used."
@@ -606,7 +605,7 @@ msgstr ""
 "l'émulation d'un jeu via PCSX2. Le format de l'image et sa qualité dépendent "
 "grandement du plugin vidéo GS utilisé."
 
-#: pcsx2/gui/Panels/PathsPanel.cpp:56
+#: pcsx2/gui/Panels/PathsPanel.cpp:64
 msgid ""
 "This folder is where PCSX2 saves its logfiles and diagnostic dumps.  Most "
 "plugins will also adhere to this folder, however some older plugins may "
@@ -616,7 +615,7 @@ msgstr ""
 "utilisent également le dossier ci-dessous pour enregistrer leurs rapports "
 "d'erreurs."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:242
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:240
 msgid ""
 "Warning!  Changing plugins requires a complete shutdown and reset of the PS2 "
 "virtual machine. PCSX2 will attempt to save and restore the state, but if "
@@ -632,7 +631,7 @@ msgstr ""
 "\n"
 "Êtes-vous sûr de vouloir appliquer ces paramètres ?"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:454
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:452
 #, c-format
 msgid ""
 "All plugins must have valid selections for %s to run.  If you are unable to "
@@ -645,100 +644,107 @@ msgstr ""
 "panneau de configuration."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:29
-#, fuzzy
+#, c-format
 msgid ""
-"-3 - Reduces the EE's cyclerate to about 50%.  Big speedup, but *will* cause "
-"stuttering audio on many FMVs."
+"50% cyclerate. Significant reduction of CPU requirements. Speedup for very "
+"lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
-"-2 - Diminue la fréquence du processeur EE d'environ 50% : amélioration "
-"modérée des performances, mais le son de certaines cinématiques sera haché."
+"50% cyclerate. Réduction significative des exigences liées au CPU. "
+"Amélioration des performances sur des jeux non gourmands, ralentit les "
+"autres. Les cinématiques et les fichiers audios peuvent saccader voire même "
+"ne pas se jouer."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:34
-#, fuzzy
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:35
+#, c-format
 msgid ""
-"-2 - Reduces the EE's cyclerate to about 60%.  Moderate speedup, but may "
-"cause stuttering audio on many FMVs."
+"60% cyclerate. Moderate reduction of CPU requirements. Speedup for "
+"lightweight games, slows down others. FMVs and audio may stutter or skip."
 msgstr ""
-"-2 - Diminue la fréquence du processeur EE d'environ 50% : amélioration "
-"modérée des performances, mais le son de certaines cinématiques sera haché."
+"60% cyclerate. Réduction modérée des exigences liées au CPU. Amélioration "
+"des performances sur des jeux peu gourmands, ralentit les autres. Les "
+"cinématiques et les fichiers audios peuvent saccader voire même ne pas se "
+"jouer."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:39
-#, fuzzy
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:41
+#, c-format
 msgid ""
-"-1 - Reduces the EE's cyclerate to about 75%.  Mild speedup for most games "
-"with high compatibility."
+"75% cyclerate. Slight reduction of CPU requirements. Speedup for less "
+"demanding games, slows down others."
 msgstr ""
-"-1 - Diminue la fréquence du processeur EE d'environ 33% : amélioration des "
-"performances et compatibilité élevée."
+"75% cyclerate. Petite réduction des exigences liées au CPU. Amélioration des "
+"performances sur des jeux moins demandeurs, ralentit les autres."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:45
-#, fuzzy
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:47
 msgid ""
-"0 - Default cyclerate (100%). This closely matches the actual speed of a "
-"real PS2 EmotionEngine."
+"Default cyclerate. Runs the emulated PS2 Emotion Engine at normal speed."
 msgstr ""
-"0 - Fréquence par défaut : la vitesse d'émulation est exactement la même que "
-"celle d'une véritable console PlayStation 2."
+"Nombre de cycles par défaut. Fait tourner le PS2 Emotion Engine à vitesse "
+"normale."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:50
-#, fuzzy
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:53
+#, c-format
 msgid ""
-"1 - Increases the EE's cyclerate to about 130%. Mildly increases hardware "
-"requirements, may increase in-game FPS."
+"130% cyclerate. Moderate increase of CPU requirements. Variable framerate "
+"games may have higher internal framerates."
 msgstr ""
-"1 - Augmente la fréquence du processeur EE d'environ 33%. Augmente les "
-"ressources nécessaires mais peut augmenter les FPS."
+"130% cyclerate. Augmentation modérée des exigences liées au CPU. Les jeux "
+"ayant un nombre d'images variable peuvent bénéficier d'une augmentation."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:55
-#, fuzzy
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:59
+#, c-format
 msgid ""
-"2 - Increases the EE's cyclerate to about 180%. Increases hardware "
-"requirements, may noticeably increase in-game FPS."
+"180% cyclerate. Significant increase of CPU requirements. Variable framerate "
+"games will have higher internal framerates. FMVs may be slow. May cause "
+"stability problems."
 msgstr ""
-"1 - Augmente la fréquence du processeur EE d'environ 33%. Augmente les "
-"ressources nécessaires mais peut augmenter les FPS."
+"180% cyclerate. Augmentation significative des exigences liées au CPU. Les "
+"jeux ayant un nombre d'images variable bénéficieront d'une augmentation. Les "
+"cinématiques peuvent être lentes. Peut causer des problèmes de stabilités."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:60
-#, fuzzy
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:64
+#, c-format
 msgid ""
-"3 - Increases the EE's cyclerate to about 300%. Greatly increases hardware "
-"requirements, may noticeably increase in-game FPS.\n"
-"This setting can cause games to FAIL TO BOOT."
+"300% cyclerate. Extreme increase of CPU requirements. Variable framerate "
+"games will have higher internal framerates. FMVs may be slow. May cause "
+"stability problems."
 msgstr ""
-"2 - Augmente la fréquence du processeur EE d'environ 50%. Augmente beaucoup "
-"les ressources nécessaires mais peut augmenter considérablement les FPS.\n"
-"Ce paramètre peut empêcher les jeux de démarrer !"
+"300% cyclerate. Augmentation extrême des exigences liées au CPU. Les jeux "
+"ayant un nombre d'images par secondes variable bénéficieront d'une "
+"augmentation. Les cinématiques peuvent être lents. Peut causer des problèmes "
+"de stabilité."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:77
-msgid "0 - Disables VU Cycle Stealing.  Most compatible setting!"
-msgstr ""
-"0 - Désactive le VU Cycle Stealing : compatibilité maximale, évidemment !"
-
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:82
-msgid ""
-"1 - Mild VU Cycle Stealing.  Lower compatibility, but some speedup for most "
-"games."
-msgstr ""
-"1 - VU Cycle Stealing léger : faible compatibilité mais une amélioration "
-"sensible des performances pour certains jeux."
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:81
+msgid "Disables EE Cycle Skipping. Most compatible setting."
+msgstr "Désactive l'EE Cycle Skipping. Paramètre le plus compatible."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
 msgid ""
-"2 - Moderate VU Cycle Stealing.  Even lower compatibility, but significant "
-"speedups in some games."
+"Mild EE Cycle Skipping. Mild slow down for most games, but may help some "
+"games with mild VU starvation problems run at full speed."
 msgstr ""
-"2 - VU Cycle Stealing modéré : très faible compatibilité, mais une "
-"amélioration significative des performances pour certains jeux."
+"EE Cycle Skipping léger. Léger ralentissement sur la plupart des jeux, mais "
+"peut permettre à des jeux ayant des légers problèmes de VU de pouvoir être "
+"joués à leur vitesse maximale."
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:93
 msgid ""
-"3 - Maximum VU Cycle Stealing.  Usefulness is limited, as this will cause "
-"flickering visuals or slowdown in most games."
+"Moderate EE Cycle Skipping. Slow down for most games, but may help some "
+"games with moderate VU starvation problems run at full speed."
 msgstr ""
-"3 - VU Cycle Stealing maximal : relativement inutile puisqu'il engendre des "
-"ralentissements et des bugs graphiques dans la plupart des jeux."
+"EE Cycle Skipping modéré. Ralentissement sur la plupart des jeux, mais peut "
+"permettre à des jeux ayant des problèmes de VU de pouvoir être joués à leur "
+"vitesse maximale."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:118
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:98
+msgid ""
+"Maximum EE Cycle Skipping. Mostly harmful. May help games with significant "
+"VU starvation problems run at full speed."
+msgstr ""
+"EE Cycle Skipping maximal. Plutôt mauvais pour l'émulation. Peut permettre à "
+"des jeux ayant des problèmes de VU très importants de pouvoir être joués à "
+"leur vitesse maximale."
+
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:123
 msgid ""
 "Speedhacks usually improve emulation speed, but can cause glitches, broken "
 "audio, and false FPS readings.  When having emulation problems, disable this "
@@ -749,34 +755,33 @@ msgstr ""
 "des FPS. Si vous rencontrez des soucis lors de l'émulation d'un jeu, cette "
 "option est la première à désactiver."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:145
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:149
 msgid ""
-"Setting lower values on this slider effectively reduces the clock speed of "
-"the EmotionEngine's R5900 core cpu, and typically brings big speedups to "
-"games that fail to utilize the full potential of the real PS2 hardware. "
-"Conversely, higher values effectively increase the clock speed which may "
-"bring about an increase in in-game FPS while also making games more "
-"demanding and possibly causing glitches."
+"Modifies the emulated Emotion Engine CPU clock. Higher values may increase "
+"the internal framerate in games with variable framerates, but will increase "
+"CPU requirements substantially. Lower values will reduce the CPU load "
+"allowing lightweight games to run full speed on weaker CPUs."
 msgstr ""
-"Les valeurs définissent la vitesse de l'horloge du CPU R5900 de "
-"l'EmotionEngine, et entraînent une amélioration des performances conséquente "
-"pour les jeux incapables d'utiliser tout le potentiel des composants de la "
-"PlayStation 2. D'un autre côté, des valeurs plus élevées augmentent "
-"réellement la vitesse de l'horloge ce qui pourrait augmenter les FPS mais "
-"aussi rendre les jeux plus gourmands en ressources et peut aussi causer des "
-"glitches."
+"Modifie l’horloge CPU émulée du moteur EmotionEngine. Des valeurs plus "
+"élevées peuvent augmenter le taux d'images interne dans les jeux avec des "
+"taux d'images variables, mais augmentera considérablement les exigences de "
+"processeur. Des valeurs inférieures réduiront la charge CPU, permettant aux "
+"jeux légers de fonctionner à pleine vitesse sur des processeurs plus faibles."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:161
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:163
 msgid ""
-"This slider controls the amount of cycles the VU unit steals from the "
-"EmotionEngine.  Higher values increase the number of cycles stolen from the "
-"EE for each VU microprogram the game runs."
+"Makes the emulated Emotion Engine skip cycles, allowing VU microprograms to "
+"execute at faster intervals. Helps a small subset of games with VU "
+"starvation problems, E.g. Shadow of the Colossus. More often than not this "
+"is harmful to performance and causes FPS readouts to be inaccurate."
 msgstr ""
-"Les valeurs définissent le nombre de cycles que le Vector Unit \"emprunte\" "
-"au système EmotionEngine. Une valeur élevée augmente le nombre emprunté à "
-"l'EE pour chaque microprogramme VU que le jeu utilise."
+"Fait en sorte que le moteur EmotionEngine saute des cycles, permettant aux "
+"microprogrammes VU de s'exécuter a des intervalles plus rapides. Aide un "
+"petit sous-ensemble de jeux avec des problèmes de demande VU, par exemple "
+"Shadow of the Colossus. Le plus souvent, cela est nocif pour les "
+"performances et rend les lectures du taux d'images par secondes inexactes."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:178
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:179
 msgid ""
 "Updates Status Flags only on blocks which will read them, instead of all the "
 "time. This is safe most of the time, and Super VU does something similar by "
@@ -786,7 +791,7 @@ msgstr ""
 "qu'ils ne soient lus en permanence. Cette option n'occasionne aucun problème "
 "en général, et le Super VU fait la même chose par défaut."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:181
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:182
 msgid ""
 "Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with "
 "3 or more cores. This is safe for most games, but a few games are "
@@ -801,7 +806,7 @@ msgstr ""
 "De plus, les processeurs dual-core souffriront de ralentissements "
 "conséquents."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:199
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:200
 msgid ""
 "This hack works best for games that use the INTC Status register to wait for "
 "vsyncs, which includes primarily non-3D RPG titles. Games that do not use "
@@ -812,7 +817,7 @@ msgstr ""
 "2D. Les jeux qui n'utilisent pas cette méthode connaîtront une légère "
 "amélioration des performances."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:202
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:203
 msgid ""
 "Primarily targetting the EE idle loop at address 0x81FC0 in the kernel, this "
 "hack attempts to detect loops whose bodies are guaranteed to result in the "
@@ -820,12 +825,18 @@ msgid ""
 "emulation of another unit.  After a single iteration of such loops, we "
 "advance to the time of the next event or the end of the processor's "
 "timeslice, whichever comes first."
-msgstr "Vise surtout l'EE idle loop à l'adresse 0x81FC0 du kernel."
+msgstr ""
+"Vise surtout l'EE idle loop à l'adresse 0x81FC0 du kernel, ce hack tente de "
+"détecter les boucles dont les méthodes garantissent le même résultat qu'une "
+"machine à chaque itération jusqu'à ce qu'un événement prévu entraîne "
+"l'émulation d'une autre unité.  Après une seule itération de ce genre de "
+"boucle, nous avançons au temps de l'autre événement ou la fin de la tranche "
+"temporelle du processeur, selon celui qui arrive le premier."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:205
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:206
 msgid ""
 "Check HDLoader compatibility lists for known games that have issues with "
-"this. (Often marked as needing 'mode 1' or 'slow DVD'"
+"this (often marked as needing 'mode 1' or 'slow DVD')."
 msgstr ""
 "Vérifie les listes de compatibilité du HDLoader pour les jeux qui "
 "rencontrent habituellement des problèmes avec lui (le plus souvent, "
@@ -848,31 +859,13 @@ msgstr ""
 "L'activation de cette option pourrait entraîner des bugs graphiques "
 "conséquents dans certains jeux."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:298
+#: pcsx2/gui/Panels/VideoPanel.cpp:296
 msgid ""
 "Enable this if you think MTGS thread sync is causing crashes or graphical "
 "errors."
 msgstr ""
 "Activez cette option si vous pensez que le processus MTGS synchronisé cause "
 "des bugs graphiques ou crashs récurrents."
-
-#: pcsx2/gui/Panels/VideoPanel.cpp:301
-msgid ""
-"Removes any benchmark noise caused by the MTGS thread or GPU overhead.  This "
-"option is best used in conjunction with savestates: save a state at an ideal "
-"scene, enable this option, and re-load the savestate.\n"
-"\n"
-"Warning: This option can be enabled on-the-fly but typically cannot be "
-"disabled on-the-fly (video will typically be garbage)."
-msgstr ""
-"Supprime les problèmes de benchmark liés au processus MTGS ou à une "
-"surexploitation du GPU. Cette option est plus efficace losqu'elle est "
-"utilisée avec une sauvegarde : réalisez votre sauvegarde au moment propice, "
-"activez cette option puis chargez à nouveau la partie.\n"
-"\n"
-"Attention : Cette option peut être activée alors que le jeu a été mis en "
-"pause, mais entraînera des bugs graphiques si elle est ensuite désactivée au "
-"cours de la même partie."
 
 #: pcsx2/vtlb.cpp:835
 msgid ""
@@ -890,41 +883,7 @@ msgid ""
 "not a critical error, since the sVU rec is obsolete, and you should use "
 "microVU instead anyway. :)"
 msgstr ""
-"Out of Memory (ou presque) : le recompilateur SuperVU n'est pas parvu à "
+"Out of Memory (ou presque) : le recompilateur SuperVU n'est pas parvenu à "
 "allouer suffisamment de mémoire virtuelle, ce qui rend impossible son "
-"utilisation. Ce n'est pas une erreur critique, puisque le recompilateur sVU "
-"est obsolète et puisque vous devriez utiliser microVU ! :p"
-
-#~ msgid ""
-#~ "Warning: Your computer does not support SSE2, which is required by many "
-#~ "PCSX2 recompilers and plugins. Your options will be limited and emulation "
-#~ "will be *very* slow."
-#~ msgstr ""
-#~ "Attention ! Votre ordinateur ne prend pas en charge les instructions de "
-#~ "type SSE2, nécessaires pour la prise en charge d'un grand nombre de "
-#~ "plugins et du recompiler PCSX2 : vos options seront limitées et "
-#~ "l'émulation (très) lente."
-
-#~ msgid ""
-#~ "Enables Vsync when the framerate is exactly at full speed. Should it fall "
-#~ "below that, Vsync gets disabled to avoid further performance penalties. "
-#~ "Note: This currently only works well with GSdx as GS plugin and with it "
-#~ "configured to use DX10/11 hardware rendering. Any other plugin or "
-#~ "rendering mode will either ignore it or produce a black frame that blinks "
-#~ "whenever the mode switches. It also requires Vsync to be enabled."
-#~ msgstr ""
-#~ "Active la Vsync (synchronisation verticale) lorsque la framerate atteint "
-#~ "sa vitesse maximum. Si cette dernière venait à diminuer, la Vsync se "
-#~ "désactivera automatiquement.\n"
-#~ "\n"
-#~ "Attention : En l'état actuel, cette option ne fonctionne qu'avec le "
-#~ "plugin GSdx dans sa configuration DX10/11 (hardware) ! Tout autre plugin "
-#~ "ou mode de rendu occasionnera l'affichage d'un fond noir à la place des "
-#~ "éléments graphiques du jeu.\n"
-#~ "De plus, cette option nécessite que la Vsync soit activée sur votre PC."
-
-#~ msgid "!ContextTip:Speedhacks:vuBlockHack"
-#~ msgstr ""
-#~ "Prévoit à l'avance que les futurs blocs n'auront pas besoin des anciennes "
-#~ "données. L'option présente peu de risques et jusque là, aucun jeu n'a "
-#~ "connu de bugs par sa faute."
+"utilisation.  Ce n'est pas une erreur critique, puisque le recompilateur sVU "
+"est obsolète et que vous devriez plutôt utiliser microVU ! :)"

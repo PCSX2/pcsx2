@@ -16,13 +16,14 @@
 #include "PrecompiledHeader.h"
 #include "App.h"
 #include "ModalPopups.h"
+#include "MSWstuff.h"
 
 using namespace pxSizerFlags;
 
 Dialogs::AssertionDialog::AssertionDialog( const wxString& text, const wxString& stacktrace )
 	: wxDialogWithHelpers( NULL, _("Assertion Failure - ") + pxGetAppName(), pxDialogFlags().Resize(!stacktrace.IsEmpty()) )
 {
-	SetMinWidth( 720 );
+	SetMinWidth( MSW_GetDPIScale() * 720 );
 
 	wxFlexGridSizer* flexgrid = new wxFlexGridSizer( 1 );
 	flexgrid->AddGrowableCol( 0 );

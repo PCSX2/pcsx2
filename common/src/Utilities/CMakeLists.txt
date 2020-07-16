@@ -25,7 +25,6 @@ set(UtilitiesSources
 	EventSource.cpp
 	Exceptions.cpp
 	FastFormatString.cpp
-	HashTools.cpp
 	IniInterface.cpp
 	Linux/LnxHostSys.cpp
 	Mutex.cpp
@@ -50,14 +49,15 @@ set(UtilitiesSources
 # variable with all headers of this library
 set(UtilitiesHeaders
 	../../include/Utilities/Assertions.h
+	../../include/Utilities/boost_spsc_queue.hpp
 	../../include/Utilities/CheckedStaticBox.h
 	../../include/Utilities/Console.h
 	../../include/Utilities/Dependencies.h
 	../../include/Utilities/EventSource.h
 	../../include/Utilities/Exceptions.h
 	../../include/Utilities/FixedPointTypes.h
+	../../include/Utilities/gtkGuiTools.h
 	../../include/Utilities/General.h
-	../../include/Utilities/HashMap.h
 	../../include/Utilities/MakeUnique.h
 	../../include/Utilities/MemcpyFast.h
 	../../include/Utilities/MemsetFast.inl
@@ -117,3 +117,8 @@ set(UtilitiesFinalLibs
 
 add_pcsx2_lib(${Output} "${UtilitiesFinalSources}" "${UtilitiesFinalLibs}" "${UtilitiesFinalFlags}")
 add_pcsx2_lib(${Output}_NO_TLS "${UtilitiesFinalSources}" "${UtilitiesFinalLibs}" "${UtilitiesFinalFlags} -DPCSX2_THREAD_LOCAL=0")
+
+if(COMMAND target_precompile_headers)
+	target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
+	target_precompile_headers(${Output}_NO_TLS PRIVATE PrecompiledHeader.h)
+endif()

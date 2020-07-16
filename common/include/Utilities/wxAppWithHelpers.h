@@ -67,7 +67,7 @@ class wxAppWithHelpers : public wxApp
 {
     typedef wxApp _parent;
 
-    DECLARE_DYNAMIC_CLASS(wxAppWithHelpers)
+    wxDECLARE_DYNAMIC_CLASS(wxAppWithHelpers);
 
 protected:
     wxEventList m_IdleEventQueue;

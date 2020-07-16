@@ -170,7 +170,7 @@ void IniLoader::Entry(const wxString &var, uint &value, const uint defvalue)
 void IniLoader::Entry(const wxString &var, bool &value, const bool defvalue)
 {
     // TODO : Stricter value checking on enabled/disabled?
-    wxString dest(defvalue ? L"enabled" : L"disabled");
+    wxString dest(defvalue ? "enabled" : "disabled", 8);
     if (m_Config)
         m_Config->Read(var, &dest, dest);
     value = (dest == L"enabled") || (dest == L"1");

@@ -22,31 +22,28 @@
 #include "stdafx.h"
 #include "GSdx.h"
 #include "GSUtil.h"
-#include "GSRendererSW.h"
-#include "GSRendererNull.h"
-#include "GSDeviceNull.h"
-#include "GSDeviceOGL.h"
-#include "GSRendererOGL.h"
-#include "GSRendererCL.h"
+#include "Renderers/SW/GSRendererSW.h"
+#include "Renderers/Null/GSRendererNull.h"
+#include "Renderers/Null/GSDeviceNull.h"
+#include "Renderers/OpenGL/GSDeviceOGL.h"
+#include "Renderers/OpenGL/GSRendererOGL.h"
+#include "Renderers/OpenCL/GSRendererCL.h"
 #include "GSLzma.h"
 
 #ifdef _WIN32
 
-#include "GSRendererDX9.h"
-#include "GSRendererDX11.h"
-#include "GSDevice9.h"
-#include "GSDevice11.h"
-#include "GSWndDX.h"
-#include "GSWndWGL.h"
-#include "GSRendererCS.h"
-#include "GSSettingsDlg.h"
+#include "Renderers/DX11/GSRendererDX11.h"
+#include "Renderers/DX11/GSDevice11.h"
+#include "Window/GSWndDX.h"
+#include "Window/GSWndWGL.h"
+#include "Window/GSSettingsDlg.h"
 
 static HRESULT s_hr = E_FAIL;
 
 #else
 
-#include "GSWndOGL.h"
-#include "GSWndEGL.h"
+#include "Window/GSWndOGL.h"
+#include "Window/GSWndEGL.h"
 
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
@@ -82,7 +79,7 @@ EXPORT_C_(const char*) PS2EgetLibName()
 EXPORT_C_(uint32) PS2EgetLibVersion2(uint32 type)
 {
 	const uint32 revision = 1;
-	const uint32 build = 1;
+	const uint32 build = 2;
 
 	return (build << 0) | (revision << 8) | (PS2E_GS_VERSION << 16) | (PLUGIN_VERSION << 24);
 }
@@ -151,13 +148,7 @@ EXPORT_C_(int) GSinit()
 		g_const->Init();
 
 #ifdef _WIN32
-
 	s_hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
-
-	if (!GSDeviceDX::LoadD3DCompiler())
-	{
-		return -1;
-	}
 #endif
 
 	return 0;
@@ -173,16 +164,12 @@ EXPORT_C GSshutdown()
 	theApp.SetCurrentRendererType(GSRendererType::Undefined);
 
 #ifdef _WIN32
-
 	if(SUCCEEDED(s_hr))
 	{
 		::CoUninitialize();
 
 		s_hr = E_FAIL;
 	}
-
-	GSDeviceDX::FreeD3DCompiler();
-
 #endif
 }
 
@@ -249,7 +236,9 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			{
 				case GSRendererType::OGL_HW:
 				case GSRendererType::OGL_SW:
+#ifdef ENABLE_OPENCL
 				case GSRendererType::OGL_OpenCL:
+#endif
 #if defined(EGL_SUPPORTED) && defined(__unix__)
 					// Note: EGL code use GLX otherwise maybe it could be also compatible with Windows
 					// Yes OpenGL code isn't complicated enough !
@@ -277,6 +266,8 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				default:
 #ifdef _WIN32
 					wnds.push_back(std::make_shared<GSWndDX>());
+#else
+					wnds.push_back(std::make_shared<GSWndOGL>());
 #endif
 					break;
 			}
@@ -330,7 +321,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 		switch (renderer)
 		{
-		case GSRendererType::DX9_SW:
 		case GSRendererType::DX1011_SW:
 		case GSRendererType::OGL_SW:
 			renderer_mode = "(Software renderer)";
@@ -338,11 +328,12 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		case GSRendererType::Null:
 			renderer_mode = "(Null renderer)";
 			break;
-		case GSRendererType::DX9_OpenCL:
+#ifdef ENABLE_OPENCL
 		case GSRendererType::DX1011_OpenCL:
 		case GSRendererType::OGL_OpenCL:
 			renderer_mode = "(OpenCL)";
 			break;
+#endif
 		default:
 			renderer_mode = "(Hardware renderer)";
 			break;
@@ -352,16 +343,11 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		{
 		default:
 #ifdef _WIN32
-		case GSRendererType::DX9_HW:
-		case GSRendererType::DX9_SW:
-		case GSRendererType::DX9_OpenCL:
-			dev = new GSDevice9();
-			s_renderer_name = " D3D9";
-			renderer_fullname = "Direct3D 9";
-			break;
 		case GSRendererType::DX1011_HW:
 		case GSRendererType::DX1011_SW:
+#ifdef ENABLE_OPENCL
 		case GSRendererType::DX1011_OpenCL:
+#endif
 			dev = new GSDevice11();
 			s_renderer_name = " D3D11";
 			renderer_fullname = "Direct3D 11";
@@ -374,7 +360,9 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			break;
 		case GSRendererType::OGL_HW:
 		case GSRendererType::OGL_SW:
+#ifdef ENABLE_OPENCL
 		case GSRendererType::OGL_OpenCL:
+#endif
 			dev = new GSDeviceOGL();
 			s_renderer_name = " OGL";
 			renderer_fullname = "OpenGL";
@@ -394,10 +382,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			{
 			default:
 #ifdef _WIN32
-			case GSRendererType::DX9_HW:
-				s_gs = (GSRenderer*)new GSRendererDX9();
-				s_renderer_type = " HW";
-				break;
 			case GSRendererType::DX1011_HW:
 				s_gs = (GSRenderer*)new GSRendererDX11();
 				s_renderer_type = " HW";
@@ -407,7 +391,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				s_gs = (GSRenderer*)new GSRendererOGL();
 				s_renderer_type = " HW";
 				break;
-			case GSRendererType::DX9_SW:
 			case GSRendererType::DX1011_SW:
 			case GSRendererType::OGL_SW:
 				s_gs = new GSRendererSW(threads);
@@ -417,16 +400,13 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				s_gs = new GSRendererNull();
 				s_renderer_type = "";
 				break;
-			case GSRendererType::DX9_OpenCL:
+#ifdef ENABLE_OPENCL
 			case GSRendererType::DX1011_OpenCL:
 			case GSRendererType::OGL_OpenCL:
-#ifdef ENABLE_OPENCL
 				s_gs = new GSRendererCL();
 				s_renderer_type = " OCL";
-#else
-				printf("GSdx error: OpenCL is disabled\n");
-#endif
 				break;
+#endif
 			}
 			if (s_gs == NULL)
 				return -1;
@@ -475,12 +455,12 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 EXPORT_C_(void) GSosdLog(const char *utf8, uint32 color)
 {
-	if(s_gs && s_gs->m_dev) s_gs->m_dev->m_osd.Log(utf8, color);
+	if(s_gs && s_gs->m_dev) s_gs->m_dev->m_osd.Log(utf8);
 }
 
 EXPORT_C_(void) GSosdMonitor(const char *key, const char *value, uint32 color)
 {
-	if(s_gs && s_gs->m_dev) s_gs->m_dev->m_osd.Monitor(key, value, color);
+	if(s_gs && s_gs->m_dev) s_gs->m_dev->m_osd.Monitor(key, value);
 }
 
 EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
@@ -493,18 +473,13 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	if (renderer != GSRendererType::Undefined && stored_toggle_state != toggle_state)
 	{
 #ifdef _WIN32
-		GSRendererType best_sw_renderer = GSUtil::CheckDirect3D11Level() >= D3D_FEATURE_LEVEL_10_0 ? GSRendererType::DX1011_SW : GSRendererType::DX9_SW;
-
 		switch (renderer) {
 			// Use alternative renderer (SW if currently using HW renderer, and vice versa, keeping the same API and API version)
-		case GSRendererType::DX9_SW: renderer = GSRendererType::DX9_HW; break;
-		case GSRendererType::DX9_HW: renderer = GSRendererType::DX9_SW; break;
-		case GSRendererType::DX1011_SW: renderer = GSRendererType::DX1011_HW; break;
-		case GSRendererType::DX1011_HW: renderer = GSRendererType::DX1011_SW; break;
-		case GSRendererType::OGL_SW: renderer = GSRendererType::OGL_HW; break;
-		case GSRendererType::OGL_HW: renderer = GSRendererType::OGL_SW; break;
-		default: renderer = best_sw_renderer; break;// If wasn't using one of the above mentioned ones, use best SW renderer.
-
+			case GSRendererType::DX1011_SW: renderer = GSRendererType::DX1011_HW; break;
+			case GSRendererType::DX1011_HW: renderer = GSRendererType::DX1011_SW; break;
+			case GSRendererType::OGL_SW: renderer = GSRendererType::OGL_HW; break;
+			case GSRendererType::OGL_HW: renderer = GSRendererType::OGL_SW; break;
+			default: renderer = GSRendererType::DX1011_SW; break; // If wasn't using one of the above mentioned ones, use best SW renderer.
 		}
 
 #endif
@@ -551,7 +526,7 @@ EXPORT_C_(int) GSopen(void** dsp, const char* title, int mt)
 
 #ifdef _WIN32
 
-		renderer = GSUtil::CheckDirect3D11Level() >= D3D_FEATURE_LEVEL_10_0 ? GSRendererType::DX1011_SW : GSRendererType::DX9_SW;
+		renderer = GSRendererType::DX1011_SW;
 
 #endif
 
@@ -840,34 +815,7 @@ EXPORT_C GSconfigure()
 EXPORT_C_(int) GStest()
 {
 	if(!GSUtil::CheckSSE())
-	{
 		return -1;
-	}
-
-#ifdef _WIN32
-
-	s_hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
-
-	if(!GSUtil::CheckDirectX())
-	{
-		if(SUCCEEDED(s_hr))
-		{
-			::CoUninitialize();
-		}
-
-		s_hr = E_FAIL;
-
-		return -1;
-	}
-
-	if(SUCCEEDED(s_hr))
-	{
-		::CoUninitialize();
-	}
-
-	s_hr = E_FAIL;
-
-#endif
 
 	return 0;
 }

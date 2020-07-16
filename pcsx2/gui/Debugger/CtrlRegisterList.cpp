@@ -21,14 +21,14 @@
 #include "AppConfig.h"
 #include "DisassemblyDialog.h"
 
-BEGIN_EVENT_TABLE(CtrlRegisterList, wxWindow)
+wxBEGIN_EVENT_TABLE(CtrlRegisterList, wxWindow)
 	EVT_SIZE(CtrlRegisterList::sizeEvent)
 	EVT_LEFT_DOWN(CtrlRegisterList::mouseEvent)
 	EVT_RIGHT_DOWN(CtrlRegisterList::mouseEvent)
 	EVT_RIGHT_UP(CtrlRegisterList::mouseEvent)
 	EVT_MOTION(CtrlRegisterList::mouseEvent)
 	EVT_KEY_DOWN(CtrlRegisterList::keydownEvent)
-END_EVENT_TABLE()
+wxEND_EVENT_TABLE()
 
 enum DisassemblyMenuIdentifiers
 {

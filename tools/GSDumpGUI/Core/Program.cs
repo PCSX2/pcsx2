@@ -1,4 +1,27 @@
-﻿using System;
+﻿/*
+ * Copyright (C) 2009-2011 Ferreri Alessio
+ * Copyright (C) 2009-2018 PCSX2 Dev Team
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Specialized = System.Collections.Specialized;
@@ -20,53 +43,33 @@ namespace GSDumpGUI
         static public List<TCPLibrary.MessageBased.Core.BaseMessageClientS> Clients;
 
         static public TCPLibrary.MessageBased.Core.BaseMessageClient Client;
-        static private Boolean ChangeIcon;
         static private GSDump dump;
         static private GSDXWrapper wrap;
 
         static private TreeNode CurrentNode;
+        static public IntPtr hMainIcon;
 
         [STAThread]
         static void Main(String[] args)
         {
-            if (args.Length == 4)
+            if (args.Length == 5)
             {
+                hMainIcon = Resources.AppIcon.Handle;
+
                 // do this first, else racy mess ;)
                 wrap = new GSDXWrapper();
+                var port = Convert.ToInt32(args[4]);
 
                 try
                 {
                     Client = new TCPLibrary.MessageBased.Core.BaseMessageClient();
                     Client.OnMessageReceived += new TCPLibrary.MessageBased.Core.BaseMessageClient.MessageReceivedHandler(Client_OnMessageReceived);
-                    Client.Connect("localhost", 9999);
+                    Client.Connect("localhost", port);
                 }
                 catch (Exception)
                 {
                     Client = null;
                 }
-
-                Thread thd = new Thread(new ThreadStart(delegate
-                {
-                    while (true)
-                    {
-                        IntPtr pt = Process.GetCurrentProcess().MainWindowHandle;
-                        if (ChangeIcon)
-                        {
-                            if (pt.ToInt64() != 0)
-                            {
-                                NativeMethods.SetClassLong(pt, -14, Resources.AppIcon.Handle.ToInt64());
-                                ChangeIcon = false;
-                            }
-                        }
-
-                        Int32 tmp = NativeMethods.GetAsyncKeyState(0x1b) & 0xf;
-                        if (tmp != 0)
-                            Process.GetCurrentProcess().Kill();
-                        Thread.Sleep(16);
-                    }
-                }));
-                thd.IsBackground = true;
-                thd.Start();
 
                 // Retrieve parameters
                 String DLLPath = args[0];
@@ -75,7 +78,7 @@ namespace GSDumpGUI
                 Int32 Renderer = Convert.ToInt32(args[3]);
 
                 wrap.Load(DLLPath);
-                Directory.SetCurrentDirectory(Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\" + Path.GetFileName(DLLPath) + "\\"));
+                Directory.SetCurrentDirectory(Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory + "GSDumpGSDXConfigs\\"));
                 if (Operation == "GSReplay")
                 {
                     dump = GSDump.LoadDump(DumpPath);
@@ -87,7 +90,6 @@ namespace GSDumpGUI
                     }
 
                     wrap.Run(dump, Renderer);
-                    ChangeIcon = true;
                 }
                 else
                     wrap.GSConfig();
@@ -114,13 +116,15 @@ namespace GSDumpGUI
                 Server.OnClientMessageReceived += new BaseMessageServer.MessageReceivedHandler(Server_OnClientMessageReceived);
                 Server.OnClientAfterConnect += new TCPLibrary.Core.Server.ConnectedHandler(Server_OnClientAfterConnect);
                 Server.OnClientAfterDisconnected += new TCPLibrary.Core.Server.DisconnectedHandler(Server_OnClientAfterDisconnected);
-                Server.Port = 9999;
                 Server.Enabled = true;
 
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-                frmMain = new GSDumpGUI();
-                Application.Run(frmMain);
+
+                using (frmMain = new GSDumpGUI())
+                {
+                    Application.Run(frmMain);
+                }
 
                 Server.Enabled = false;
             }
@@ -171,6 +175,7 @@ namespace GSDumpGUI
                         frmMain.chkDebugMode.Checked = (Boolean)Mess.Parameters[0];
 
                         frmMain.lblGif.Enabled = frmMain.chkDebugMode.Checked;
+                        frmMain.lblContent.Enabled = frmMain.chkDebugMode.Checked;
                         frmMain.btnRunToSelection.Enabled = frmMain.chkDebugMode.Checked;
                         frmMain.treTreeView.Enabled = frmMain.chkDebugMode.Checked;
                         frmMain.btnStep.Enabled = frmMain.chkDebugMode.Checked;
@@ -178,7 +183,10 @@ namespace GSDumpGUI
                         frmMain.cmdGoToNextVSync.Enabled = frmMain.chkDebugMode.Checked;
                         frmMain.treeGifPacketContent.Enabled = frmMain.chkDebugMode.Checked;
                         if (frmMain.chkDebugMode.Checked == false)
+                        {
+                            frmMain.treeGifPacketContent.Nodes.Clear();
                             frmMain.treTreeView.Nodes.Clear();
+                        }
 
                     }), new object[] { null });
                     break;
@@ -435,14 +443,17 @@ namespace GSDumpGUI
                 if (frmMain.lstProcesses.SelectedIndex == -1)
                 {
                     frmMain.chkDebugMode.Checked = false;
-                    frmMain.lblGif.Enabled = frmMain.chkDebugMode.Checked;
-                    frmMain.btnRunToSelection.Enabled = frmMain.chkDebugMode.Checked;
-                    frmMain.treTreeView.Enabled = frmMain.chkDebugMode.Checked;
-                    frmMain.btnStep.Enabled = frmMain.chkDebugMode.Checked;
-                    frmMain.cmdGoToStart.Enabled = frmMain.chkDebugMode.Checked;
-                    frmMain.cmdGoToNextVSync.Enabled = frmMain.chkDebugMode.Checked;
-                    frmMain.treTreeView.Nodes.Clear();
+                    frmMain.chkDebugMode.Enabled = false;
+                    frmMain.lblGif.Enabled = false;
+                    frmMain.lblContent.Enabled = false;
+                    frmMain.btnRunToSelection.Enabled = false;
+                    frmMain.treTreeView.Enabled = false;
+                    frmMain.btnStep.Enabled = false;
+                    frmMain.cmdGoToStart.Enabled = false;
+                    frmMain.cmdGoToNextVSync.Enabled = false;
+                    frmMain.treeGifPacketContent.Enabled = false;
                     frmMain.treeGifPacketContent.Nodes.Clear();
+                    frmMain.treTreeView.Nodes.Clear();
                 }
             }), new object[] { null});
         }

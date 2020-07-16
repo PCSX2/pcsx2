@@ -63,7 +63,7 @@ void psxReset()
 	g_iopNextEventCycle = psxRegs.cycle + 4;
 
 	psxHwReset();
-
+	PSXCLK = 36864000;
 	ioman::reset();
 	psxBiosReset();
 }

@@ -939,7 +939,7 @@ void SYSCALL()
 							DevCon.Error("Mode %x is not supported. Report me upstream", cpuRegs.GPR.n.a1.UC[0]);
 							gsSetVideoMode(GS_VideoMode::Unknown);
 					}
-					DevCon.Warning("Set GS CRTC configuration. Interlace %s. Field Type %s. Mode %s", inter, field, mode.c_str());
+					DevCon.Warning("Set GS CRTC configuration. %s %s (%s)",mode.c_str(), inter, field);
 				}
 				break;
 
@@ -982,8 +982,29 @@ void SYSCALL()
 			}
 			else
 				__Deci2Call(cpuRegs.GPR.n.a0.UL[0], (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));
+
+			break;
 		}
-		break;
+		case Syscall::sysPrintOut:
+		{
+			if (cpuRegs.GPR.n.a0.UL[0] != 0)
+			{
+				// TODO: Only supports 7 format arguments. Need to read from the stack for more.
+				// Is there a function which collects PS2 arguments?
+				sysConLog(
+					ShiftJIS_ConvertString((char*)PSM(cpuRegs.GPR.n.a0.UL[0])),
+					cpuRegs.GPR.n.a1.UL[0],
+					cpuRegs.GPR.n.a2.UL[0],
+					cpuRegs.GPR.n.a3.UL[0],
+					cpuRegs.GPR.n.t0.UL[0],
+					cpuRegs.GPR.n.t1.UL[0],
+					cpuRegs.GPR.n.t2.UL[0],
+					cpuRegs.GPR.n.t3.UL[0]
+				);
+			}
+			break;
+		}
+		
 
 		default:
 			break;
@@ -1000,11 +1021,11 @@ void BREAK() {
 
 void MFSA() {
 	if (!_Rd_) return;
-	cpuRegs.GPR.r[_Rd_].SD[0] = (s64)cpuRegs.sa;
+	cpuRegs.GPR.r[_Rd_].UD[0] = (u64)cpuRegs.sa;
 }
 
 void MTSA() {
-	cpuRegs.sa = (s32)cpuRegs.GPR.r[_Rs_].SD[0] & 0xf;
+	cpuRegs.sa = (u32)cpuRegs.GPR.r[_Rs_].UD[0];
 }
 
 // SNY supports three basic modes, two which synchronize memory accesses (related
@@ -1060,11 +1081,11 @@ void TLTIU() { if (cpuRegs.GPR.r[_Rs_].UD[0] <  (u64)_Imm_) trap(); }
 *********************************************************/
 
 void MTSAB() {
- 	cpuRegs.sa = ((cpuRegs.GPR.r[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF));
+	cpuRegs.sa = ((cpuRegs.GPR.r[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF));
 }
 
 void MTSAH() {
-    cpuRegs.sa = ((cpuRegs.GPR.r[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 1;
+	cpuRegs.sa = ((cpuRegs.GPR.r[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 1;
 }
 
 } }	} // end namespace R5900::Interpreter::OpcodeImpl

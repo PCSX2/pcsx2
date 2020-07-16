@@ -33,7 +33,7 @@ public:
 	GenericListView(wxWindow* parent, GenericListViewColumn* columns, int columnCount);
 	void update();
 
-	DECLARE_EVENT_TABLE()
+	wxDECLARE_EVENT_TABLE();
 protected:
 	void sizeEvent(wxSizeEvent& evt);
 	void keydownEvent(wxKeyEvent& evt);

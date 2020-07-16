@@ -33,7 +33,6 @@
 #include "IopCommon.h"
 #include "iCore.h"
 
-#include "NakedAsm.h"
 #include "AppConfig.h"
 
 #include "Utilities/Perf.h"
@@ -1023,8 +1022,6 @@ void rpsxBREAK()
 
 void psxRecompileNextInstruction(int delayslot)
 {
-	static u8 s_bFlushReg = 1;
-
 	// pblock isn't used elsewhere in this function.
 	//BASEBLOCK* pblock = PSX_GETBLOCK(psxpc);
 
@@ -1042,14 +1039,6 @@ void psxRecompileNextInstruction(int delayslot)
 	g_iopCyclePenalty = 0;
 	rpsxBSC[ psxRegs.code >> 26 ]();
 	s_psxBlockCycles += g_iopCyclePenalty;
-
-	if( !delayslot ) {
-		if( s_bFlushReg ) {
-			//_psxFlushUnusedConstReg();
-		}
-		else s_bFlushReg = 1;
-	}
-	else s_bFlushReg = 1;
 
 	_clearNeededX86regs();
 }

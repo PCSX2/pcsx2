@@ -281,7 +281,7 @@ void LoadBIOS()
 		BiosChecksum = 0;
 
 		wxString biosZone;
-		wxFFile fp( Bios );
+		wxFFile fp( Bios , "rb");
 		fp.Read( eeMem->ROM, std::min<s64>( Ps2MemSize::Rom, filesize ) );
 
 		ChecksumIt( BiosChecksum, eeMem->ROM );

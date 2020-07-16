@@ -1,9 +1,3 @@
-#if defined(CL_VERSION_2_0)
-
-#error hello
-
-#endif
-
 #if defined(CL_VERSION_1_1) || defined(CL_VERSION_1_2) // make safe to include in resource file to enforce dependency
 
 #ifdef cl_amd_printf

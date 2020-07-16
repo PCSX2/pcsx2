@@ -38,8 +38,6 @@
 #include "Pcsx2Defs.h"
 #include "SysForwardDefs.h"
 
-#define MAX_PATCH 2048
-
 enum patch_cpu_type {
 	NO_CPU,
 	CPU_EE,
@@ -85,7 +83,6 @@ typedef void PATCHTABLEFUNC( const wxString& text1, const wxString& text2 );
 struct IniPatch
 {
 	int enabled;
-	int group;
 	patch_data_type type;
 	patch_cpu_type cpu;
 	int placetopatch;
@@ -95,6 +92,7 @@ struct IniPatch
 
 namespace PatchFunc
 {
+	PATCHTABLEFUNC author;
 	PATCHTABLEFUNC comment;
 	PATCHTABLEFUNC gametitle;
 	PATCHTABLEFUNC patch;
