@@ -28,8 +28,6 @@
 
 using namespace Threading;
 
-// The GS plugin needs to be opened to save/load the state during plugin configuration, but
-// the window shouldn't. This blocks it. :)
 static bool s_DisableGsWindow = false;
 
 __aligned16 AppCorePlugins CorePlugins;
@@ -38,7 +36,6 @@ SysCorePlugins& GetCorePlugins()
 {
 	return CorePlugins;
 }
-
 
 // --------------------------------------------------------------------------------------
 //  CorePluginsEvent
@@ -355,10 +352,8 @@ void AppCorePlugins::Open()
 // Yay, this plugin is guaranteed to always be opened first and closed last.
 bool AppCorePlugins::OpenPlugin_GS()
 {
-	if (GSopen2 && !s_DisableGsWindow)
-	{
+	if (GSopen2)
 		sApp.OpenGsPanel();
-	}
 
 	bool retval = _parent::OpenPlugin_GS();
 
@@ -371,7 +366,7 @@ bool AppCorePlugins::OpenPlugin_GS()
 void AppCorePlugins::ClosePlugin_GS()
 {
 	_parent::ClosePlugin_GS();
-	if (CloseViewportWithPlugins && GetMTGS().IsSelf() && GSopen2)
+	if (GetMTGS().IsSelf() && GSopen2 )
 		sApp.CloseGsPanel();
 }
 

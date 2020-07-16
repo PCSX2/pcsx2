@@ -885,11 +885,7 @@ void SysCorePlugins::ClosePlugin_GS()
 	if( GetMTGS().IsSelf() || GSDump::isRunning )
 		_generalclose( PluginId_GS );
 	else
-	{
-		if (!GSopen2)
-			PADclose();
 		GetMTGS().Suspend();
-	}
 }
 
 void SysCorePlugins::ClosePlugin_Mcd()
