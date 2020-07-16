@@ -117,7 +117,8 @@ void recDI()
 	// Fixes booting issues in the following games:
 	// Jak X, Namco 50th anniversary, Spongebob the Movie, Spongebob Battle for Bikini Bottom,
 	// The Incredibles, The Incredibles rize of the underminer, Soukou kihei armodyne, Garfield Saving Arlene, Tales of Fandom Vol. 2.
-	recompileNextInstruction(0); // DI execution is delayed by one instruction
+	if(!g_recompilingDelaySlot)
+		recompileNextInstruction(0); // DI execution is delayed by one instruction
 
 	xMOV(eax, ptr[&cpuRegs.CP0.n.Status]);
 	xTEST(eax, 0x20006); // EXL | ERL | EDI
