@@ -545,30 +545,6 @@ struct xRegisterEmpty
     }
 };
 
-// FIXME This one is likely useless and superseeded by the future xRegister16or32or64
-class xRegister16or32
-{
-protected:
-    const xRegisterInt &m_convtype;
-
-public:
-    xRegister16or32(const xRegister32 &src)
-        : m_convtype(src)
-    {
-    }
-    xRegister16or32(const xRegister16 &src)
-        : m_convtype(src)
-    {
-    }
-
-    operator const xRegisterBase &() const { return m_convtype; }
-
-    const xRegisterInt *operator->() const
-    {
-        return &m_convtype;
-    }
-};
-
 class xRegister16or32or64
 {
 protected:
@@ -720,92 +696,12 @@ public:
     __fi void operator-=(sptr imm) { Add(-imm); }
 };
 
-// --------------------------------------------------------------------------------------
-//  xAddressInfo
-// --------------------------------------------------------------------------------------
-template <typename BaseType>
-class xAddressInfo : public xAddressVoid
-{
-    typedef xAddressVoid _parent;
-
-public:
-    xAddressInfo(const xAddressReg &base, const xAddressReg &index, int factor = 1, sptr displacement = 0)
-        : _parent(base, index, factor, displacement)
-    {
-    }
-
-    /*xAddressInfo( const xAddressVoid& src )
-			: _parent( src ) {}*/
-
-    explicit xAddressInfo(const xAddressReg &index, sptr displacement = 0)
-        : _parent(index, displacement)
-    {
-    }
-
-    explicit xAddressInfo(sptr displacement = 0)
-        : _parent(displacement)
-    {
-    }
-
-    static xAddressInfo<BaseType> FromIndexReg(const xAddressReg &index, int scale = 0, sptr displacement = 0);
-
-public:
-    using _parent::operator+=;
-    using _parent::operator-=;
-
-    bool IsByteSizeDisp() const { return is_s8(Displacement); }
-
-    xAddressInfo<BaseType> &Add(sptr imm)
-    {
-        Displacement += imm;
-        return *this;
-    }
-
-    xAddressInfo<BaseType> &Add(const xAddressReg &src)
-    {
-        _parent::Add(src);
-        return *this;
-    }
-    xAddressInfo<BaseType> &Add(const xAddressInfo<BaseType> &src)
-    {
-        _parent::Add(src);
-        return *this;
-    }
-
-    __fi xAddressInfo<BaseType> operator+(const xAddressReg &right) const { return xAddressInfo(*this).Add(right); }
-    __fi xAddressInfo<BaseType> operator+(const xAddressInfo<BaseType> &right) const { return xAddressInfo(*this).Add(right); }
-    __fi xAddressInfo<BaseType> operator+(sptr imm) const { return xAddressInfo(*this).Add(imm); }
-    __fi xAddressInfo<BaseType> operator-(sptr imm) const { return xAddressInfo(*this).Add(-imm); }
-    __fi xAddressInfo<BaseType> operator+(const void *addr) const { return xAddressInfo(*this).Add((uptr)addr); }
-
-    __fi void operator+=(const xAddressInfo<BaseType> &right) { Add(right); }
-};
-
-typedef xAddressInfo<u128> xAddress128;
-typedef xAddressInfo<u64> xAddress64;
-typedef xAddressInfo<u32> xAddress32;
-typedef xAddressInfo<u16> xAddress16;
-typedef xAddressInfo<u8> xAddress8;
-
 static __fi xAddressVoid operator+(const void *addr, const xAddressVoid &right)
 {
     return right + addr;
 }
 
 static __fi xAddressVoid operator+(sptr addr, const xAddressVoid &right)
-{
-    return right + addr;
-}
-
-template <typename OperandType>
-static __fi xAddressInfo<OperandType> operator+(const void *addr, const xAddressInfo<OperandType> &right)
-{
-    //return xAddressInfo<OperandType>( (sptr)addr ).Add( reg );
-    return right + addr;
-}
-
-template <typename OperandType>
-static __fi xAddressInfo<OperandType> operator+(sptr addr, const xAddressInfo<OperandType> &right)
 {
     return right + addr;
 }
@@ -899,11 +795,6 @@ class xIndirect : public xIndirectVoid
 public:
     explicit xIndirect(sptr disp)
         : _parent(disp)
-    {
-        _operandSize = sizeof(OperandType);
-    }
-    explicit xIndirect(const xAddressInfo<OperandType> &src)
-        : _parent(src)
     {
         _operandSize = sizeof(OperandType);
     }
@@ -1017,122 +908,6 @@ extern const xAddressIndexer<xIndirect64> ptr64;
 extern const xAddressIndexer<xIndirect32> ptr32;
 extern const xAddressIndexer<xIndirect16> ptr16;
 extern const xAddressIndexer<xIndirect8> ptr8;
-
-// --------------------------------------------------------------------------------------
-//  xDirectOrIndirect
-// --------------------------------------------------------------------------------------
-// This utility class can represent either a direct (register) or indirect (memory address)
-// source or destination operand.  When supplied to an emitted instruction, the direct form
-// is favored *if* it is not Empty (xEmptyReg).  Otherwise the indirect form is used.
-//
-#if 0
-	template< typename xRegType, typename xSibType >
-	class xDirectOrIndirect
-	{
-		xRegType	m_RegDirect;
-		xSibType	m_MemIndirect;
-
-	public:
-		xDirectOrIndirect() :
-			m_RegDirect(), m_MemIndirect( 0 ) {}
-
-		xDirectOrIndirect( const xRegType& srcreg ) :
-			m_RegDirect( srcreg ), m_MemIndirect( 0 ) {}
-
-		explicit xDirectOrIndirect( const xSibType& srcmem ) :
-			m_RegDirect(), m_MemIndirect( srcmem ) {}
-
-		const xRegType& GetReg() const { return m_RegDirect; }
-		const xSibType& GetMem() const { return m_MemIndirect; }
-		bool IsDirect() const { return !m_RegDirect.IsEmpty(); }
-		bool IsIndirect() const { return m_RegDirect.IsEmpty(); }
-
-		bool operator==( const xDirectOrIndirect& src ) const
-		{
-			return IsDirect() ?
-				(m_RegDirect == src.m_RegDirect) :
-				(m_MemIndirect == src.m_MemIndirect);
-		}
-
-		bool operator!=( const xDirectOrIndirect& src ) const
-		{
-			return !operator==( src );
-		}
-
-		bool operator==( const xRegType& src ) const	{ return (m_RegDirect == src); }
-		bool operator!=( const xRegType& src ) const	{ return (m_RegDirect != src); }
-	};
-
-	typedef xDirectOrIndirect<xRegister8,xIndirect8>		xDirectOrIndirect8;
-	typedef xDirectOrIndirect<xRegister16,xIndirect16>		xDirectOrIndirect16;
-	typedef xDirectOrIndirect<xRegister32,xIndirect32>		xDirectOrIndirect32;
-	typedef xDirectOrIndirect<xRegisterSSE,xIndirect128>	xDirectOrIndirect128;
-#endif
-
-// --------------------------------------------------------------------------------------
-//  xSmartJump
-// --------------------------------------------------------------------------------------
-// This class provides an interface for generating forward-based j8's or j32's "smartly"
-// as per the measured displacement distance.  If the displacement is a valid s8, then
-// a j8 is inserted, else a j32.
-//
-// Note: This class is inherently unsafe, and so it's recommended to use xForwardJump8/32
-// whenever it is known that the jump destination is (or is not) short.  Only use
-// xSmartJump in cases where it's unknown what jump encoding will be ideal.
-//
-// Important: Use this tool with caution!  xSmartJump cannot be used in cases where jump
-// targets overlap, since the writeback of the second target will alter the position of
-// the first target (which breaks the relative addressing).  To assist in avoiding such
-// errors, xSmartJump works based on C++ block scope, where the destruction of the
-// xSmartJump object (invoked by a '}') signals the target of the jump.  Example:
-//
-// {
-//     iCMP( EAX, ECX );
-//     xSmartJump jumpTo( Jcc_Above );
-//     [... conditional code ...]
-// }  // smartjump targets this spot.
-//
-// No code inside the scope can attempt to jump outside the scoped block (unless the jump
-// uses an immediate addressing method, such as Register or Mod/RM forms of JMP/CALL).
-// Multiple SmartJumps can be safely nested inside scopes, as long as they are properly
-// scoped themselves.
-//
-// Performance Analysis:  j8's use 4 less byes per opcode, and thus can provide minor
-// speed benefits in the form of L1/L2 cache clutter, on any CPU.  They're also notably
-// faster on P4's, and mildly faster on AMDs.  (Core2's and i7's don't care)
-//
-class xSmartJump
-{
-    DeclareNoncopyableObject(xSmartJump);
-
-protected:
-    u8 *m_baseptr;          // base address of the instruction (passed to the instruction emitter)
-    JccComparisonType m_cc; // comparison type of the instruction
-
-public:
-    int GetMaxInstructionSize() const
-    {
-        pxAssert(m_cc != Jcc_Unknown);
-        return (m_cc == Jcc_Unconditional) ? 5 : 6;
-    }
-
-    JccComparisonType GetCondition() const { return m_cc; }
-    virtual ~xSmartJump();
-
-    // ------------------------------------------------------------------------
-    // ccType - Comparison type to be written back to the jump instruction position.
-    //
-    xSmartJump(JccComparisonType ccType)
-    {
-        pxAssert(ccType != Jcc_Unknown);
-        m_baseptr = xGetPtr();
-        m_cc = ccType;
-        xAdvancePtr(GetMaxInstructionSize());
-    }
-
-protected:
-    void SetTarget();
-};
 
 // --------------------------------------------------------------------------------------
 //  xForwardJump

@@ -128,35 +128,6 @@ void xImpl_FastCall::operator()(const xIndirectNative &f, const xRegisterLong &a
 
 const xImpl_FastCall xFastCall = {};
 
-void xSmartJump::SetTarget()
-{
-    u8 *target = xGetPtr();
-    if (m_baseptr == NULL)
-        return;
-
-    xSetPtr(m_baseptr);
-    u8 *const saveme = m_baseptr + GetMaxInstructionSize();
-    xJccKnownTarget(m_cc, target, true);
-
-    // Copy recompiled data inward if the jump instruction didn't fill the
-    // alloted buffer (means that we optimized things to a j8!)
-
-    const int spacer = (sptr)saveme - (sptr)xGetPtr();
-    if (spacer != 0) {
-        u8 *destpos = xGetPtr();
-        const int copylen = (sptr)target - (sptr)saveme;
-
-        memcpy(destpos, saveme, copylen);
-        xSetPtr(target - spacer);
-    }
-}
-
-xSmartJump::~xSmartJump()
-{
-    SetTarget();
-    m_baseptr = NULL; // just in case (sometimes helps in debugging too)
-}
-
 // ------------------------------------------------------------------------
 // Emits a 32 bit jump, and returns a pointer to the 32 bit displacement.
 // (displacements should be assigned relative to the end of the jump instruction,
