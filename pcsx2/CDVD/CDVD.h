@@ -75,67 +75,6 @@ struct cdvdRTC {
 	u8 year;
 };
 
-struct cdvdStruct {
-	u8 nCommand;
-	u8 Ready;
-	u8 Error;
-	u8 PwOff;
-	u8 Status;
-	u8 Type;
-	u8 sCommand;
-	u8 sDataIn;
-	u8 sDataOut;
-	u8 HowTo;
-
-	u8 Param[32];
-	u8 Result[32];
-
-	u8 ParamC;
-	u8 ParamP;
-	u8 ResultC;
-	u8 ResultP;
-
-	u8 CBlockIndex;
-	u8 COffset;
-	u8 CReadWrite;
-	u8 CNumBlocks;
-
-	// Calculates the number of Vsyncs and once it reaches a total number of Vsyncs worth a second with respect to
-	// the videomode's vertical frequency, it updates the real time clock.
-	int RTCcount;
-	cdvdRTC RTC;
-
-	u32 Sector;
-	int nSectors;
-	int Readed; // change to bool. --arcum42
-	int Reading; // same here.
-	int ReadMode;
-	int BlockSize; // Total bytes transfered at 1x speed
-	int Speed;
-	int RetryCnt;
-	int RetryCntP;
-	int RErr;
-	int SpindlCtrl;
-
-	u8 Key[16];
-	u8 KeyXor;
-	u8 decSet;
-
-	u8  mg_buffer[65536];
-	int mg_size;
-	int mg_maxsize;
-	int mg_datatype;//0-data(encrypted); 1-header
-	u8	mg_kbit[16];//last BIT key 'seen'
-	u8	mg_kcon[16];//last content key 'seen'
-
-	u8  TrayTimeout;
-	u8  Action;			// the currently scheduled emulated action
-	u32 SeekToSector;	// Holds the destination sector during seek operations.
-	u32 ReadTime;		// Avg. time to read one block of data (in Iop cycles)
-	bool Spinning;		// indicates if the Cdvd is spinning or needs a spinup delay
-};
-
-
 extern void cdvdReset();
 extern void cdvdVsync();
 extern void cdvdActionInterrupt();
