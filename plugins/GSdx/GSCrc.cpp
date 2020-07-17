@@ -532,6 +532,7 @@ CRC::Game CRC::m_games[] =
 	{0x81CBFEA2, RatchetAndClank, US, 0}, // EB Games Demo
 	{0x56A35F77, RatchetAndClank, JP, 0},
 	{0x76F724A3, RatchetAndClank, EU, 0},
+	{0x6A8F18B9, RatchetAndClank, EU, 0},
 	{0xB3A71D10, RatchetAndClank2, US, 0}, // Going Commando
 	{0x38996035, RatchetAndClank2, US, 0},
 	{0xDF6F94A1, RatchetAndClank2, US, 0}, // Demo - Going Commando & Jak II
