@@ -684,6 +684,7 @@ void StateCopy_LoadFromFile(const wxString& file)
 void StateCopy_SaveToSlot(uint num)
 {
 	const wxString file(SaveStateBase::GetFilename(num));
+	const wxString previewFile(SaveStateBase::GetFilename(num) + pxsFmt(L".png"));
 
 	// Backup old Savestate if one exists.
 	if (wxFileExists(file) && EmuConfig.BackupSavestate)
@@ -692,12 +693,19 @@ void StateCopy_SaveToSlot(uint num)
 
 		Console.Indent().WriteLn(Color_StrongGreen, L"Backing up existing state in slot %d.", num);
 		wxRenameFile(file, copy);
+
+		if (wxFileExists(previewFile))
+		{
+			const wxString backupPreview(SaveStateBase::GetFilename(num) + pxsFmt(L".backup.png"));
+			wxRenameFile(previewFile, backupPreview);
+		}
 	}
 
 	OSDlog(Color_StrongGreen, true, "Saving savestate to slot %d...", num);
 	Console.Indent().WriteLn(Color_StrongGreen, L"filename: %s", WX_STR(file));
 
 	StateCopy_SaveToFile(file);
+	GSmakeSnapshot(previewFile);
 #ifdef USE_NEW_SAVESLOTS_UI
 	UI_UpdateSysControls();
 #endif
