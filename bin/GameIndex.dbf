@@ -9872,6 +9872,12 @@ Region = PAL-M5
 Serial = SLES-51390
 Name   = Fightbox
 Region = PAL-E
+vuClampMode = 0 // Fixes missing 3D
+[patches = E7EFA0BF]
+	comment= Gets around GS SIGNAL hang, game expects value of 8 in SIGNAL but the PATH2 packet sends double 0xC
+	comment= When the value is 0xC the interrupt doesn't get acknoledged and cleared and so the PATH2 packet hangs
+	patch=1,EE,001f5a0c,word,30840008
+[/patches]
 ---------------------------------------------
 Serial = SLES-51391
 Name   = RTL Skispringen 2003
