@@ -9874,8 +9874,9 @@ Name   = Fightbox
 Region = PAL-E
 vuClampMode = 0 // Fixes missing 3D
 [patches = E7EFA0BF]
-	comment= Gets around GS SIGNAL hang, game expects value of 8 in SIGNAL but the PATH2 packet sends double 0xC
-	comment= When the value is 0xC the interrupt doesn't get acknoledged and cleared and so the PATH2 packet hangs
+	comment= Gets around GS SIGNAL hang, game expects value other than C in SIGNAL but the PATH2 packet sends double 0xC
+	comment= The SIGNAL value is compared to the value at address 0x34CDF3, if this address contains 0x4 (OR'd with 0x8)
+	commend= the interrupt doesn't get acknoledged and cleared and so the PATH2 packet hangs
 	patch=1,EE,001f5a0c,word,30840008
 [/patches]
 ---------------------------------------------
