@@ -35,7 +35,7 @@ wxMenu* MainEmuFrame::MakeStatesSubMenu(int baseid, int loadBackupId) const
 {
 	wxMenu* mnuSubstates = new wxMenu();
 
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < StateSlotsCount; i++)
 	{
 		// Will be changed once an iso is loaded.
 		mnuSubstates->Append(baseid + i + 1, wxsFormat(_("Slot %d"), i));
@@ -530,6 +530,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 #ifndef DISABLE_RECORDING
 	, m_menuRecording(*new wxMenu())
 #endif
+	, m_saveStatePreview(new SaveslotPreview(this))
 	, m_menuHelp(*new wxMenu())
 	, m_LoadStatesSubmenu(*MakeStatesSubMenu(MenuId_State_Load01, MenuId_State_LoadBackup))
 	, m_SaveStatesSubmenu(*MakeStatesSubMenu(MenuId_State_Save01))
@@ -642,6 +643,8 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	Bind(wxEVT_CLOSE_WINDOW, &MainEmuFrame::OnCloseWindow, this);
 	Bind(wxEVT_SET_FOCUS, &MainEmuFrame::OnFocus, this);
 	Bind(wxEVT_ACTIVATE, &MainEmuFrame::OnActivate, this);
+	Bind(wxEVT_MENU_CLOSE, &MainEmuFrame::OnMenuClose, this);
+	Bind(wxEVT_MENU_HIGHLIGHT, &MainEmuFrame::OnMenuHighlight, this);
 
 	PushEventHandler(&wxGetApp().GetRecentIsoManager());
 	SetDropTarget(new IsoDropTarget(this));
@@ -692,6 +695,62 @@ void MainEmuFrame::OnActivate(wxActivateEvent& evt)
 	if (ConsoleLogFrame* logframe = wxGetApp().GetProgramLog())
 		MSW_SetWindowAfter(logframe->GetHandle(), GetHandle());
 
+}
+
+void MainEmuFrame::OnMenuClose(wxMenuEvent& evt)
+{
+	if (m_saveStatePreview->IsShown())
+	{
+		m_saveStatePreview->Hide();
+	}
+	evt.Skip();
+}
+
+void MainEmuFrame::OnMenuHighlight( wxMenuEvent &evt )
+{
+	const int menuId = evt.GetId();
+	// Determine which slot is highlighted (or if it's the backup option)
+	bool showImagePreview = false;
+	wxString imagePreviewPath;
+	// First save state slot is actually MenuId_State_Load01 + 1
+	if (menuId > MenuId_State_Load01 && menuId < MenuId_State_Load01 + 1 + StateSlotsCount)
+	{
+		const int slot = evt.GetId() - MenuId_State_Load01 - 1;
+		showImagePreview = States_SlotHasImagePreview(slot);
+		imagePreviewPath = States_SlotImagePreviewPath(slot);
+	}
+	else if (menuId > MenuId_State_Save01 && menuId < MenuId_State_Save01 + 1 + StateSlotsCount)
+	{
+		const int slot = evt.GetId() - MenuId_State_Save01 - 1;
+		showImagePreview = States_SlotHasImagePreview(slot);
+		imagePreviewPath = States_SlotImagePreviewPath(slot);
+	}
+	else if (menuId == MenuId_State_LoadBackup)
+	{
+		showImagePreview = States_SlotHasImagePreview(States_GetCurrentSlot(), true);
+		imagePreviewPath = States_SlotImagePreviewPath(States_GetCurrentSlot(), true);
+	}
+	else if (m_saveStatePreview->IsShown())
+	{
+		m_saveStatePreview->Hide();
+		// Continue on to display frame's help text
+		evt.Skip();
+		return;
+	}
+
+	if (showImagePreview)
+	{
+		m_saveStatePreview->SetClientSize(wxSize(this->GetClientSize().x / 2, this->GetClientSize().x / 2));
+		m_saveStatePreview->Position( m_background->GetScreenPosition(), wxSize(0, 0) );
+		m_saveStatePreview->Show();
+		m_saveStatePreview->SetImagePath(imagePreviewPath);
+	}
+	else if (m_saveStatePreview->IsShown())
+	{
+		m_saveStatePreview->Hide();
+	}
+
+	// Continue on to display frame's help text
 	evt.Skip();
 }
 // ----------------------------------------------------------------------------

@@ -276,6 +276,7 @@
     <ClCompile Include="..\..\gui\Dialogs\McdConfigDialog.cpp" />
     <ClCompile Include="..\..\gui\DriveList.cpp" />
     <ClCompile Include="..\..\gui\Panels\MemoryCardListView.cpp" />
+    <ClCompile Include="..\..\gui\SaveslotPreview.cpp" />
     <ClCompile Include="..\..\IopGte.cpp" />
     <ClCompile Include="..\..\IPC.cpp" />
     <ClCompile Include="..\..\FW.cpp" />

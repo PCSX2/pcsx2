@@ -1003,6 +1003,9 @@
     <ClCompile Include="..\..\SPU2\SndOut_Portaudio.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gui\SaveslotPreview.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">

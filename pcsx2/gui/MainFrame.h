@@ -17,6 +17,7 @@
 
 #include "App.h"
 #include "AppSaveStates.h"
+#include "SaveslotPreview.h"
 
 #include <wx/image.h>
 #include <wx/docview.h>
@@ -124,6 +125,7 @@ protected:
 #endif
 	wxMenu& m_menuHelp;
 
+	SaveslotPreview* m_saveStatePreview;
 	wxMenu& m_LoadStatesSubmenu;
 	wxMenu& m_SaveStatesSubmenu;
 	wxMenu& m_GameSettingsSubmenu;
@@ -189,6 +191,8 @@ protected:
 	void OnMoveAround(wxMoveEvent& evt);
 	void OnFocus(wxFocusEvent& evt);
 	void OnActivate(wxActivateEvent& evt);
+	void OnMenuClose(wxMenuEvent& evt);
+	void OnMenuHighlight(wxMenuEvent& evt);
 
 	void Menu_SysSettings_Click(wxCommandEvent& event);
 	void Menu_AudioSettings_Click(wxCommandEvent& event);
@@ -255,10 +259,10 @@ protected:
 	void Menu_Recording_New_Click(wxCommandEvent& event);
 	void Menu_Recording_Play_Click(wxCommandEvent& event);
 	void Menu_Recording_Stop_Click(wxCommandEvent& event);
-	void Menu_Recording_TogglePause_Click(wxCommandEvent &event);
-	void Menu_Recording_FrameAdvance_Click(wxCommandEvent &event);
-	void Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent &event);
-	void Menu_Recording_VirtualPad_Open_Click(wxCommandEvent &event);
+	void Menu_Recording_TogglePause_Click(wxCommandEvent& event);
+	void Menu_Recording_FrameAdvance_Click(wxCommandEvent& event);
+	void Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent& event);
+	void Menu_Recording_VirtualPad_Open_Click(wxCommandEvent& event);
 #endif
 
 	void _DoBootCdvd();

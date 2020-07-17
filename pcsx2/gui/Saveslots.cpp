@@ -163,3 +163,21 @@ void States_CycleSlotBackward()
 	StatesC = (StatesC + StateSlotsCount - 1) % StateSlotsCount;
 	OnSlotChanged();
 }
+
+bool States_SlotHasImagePreview(int slot, bool backup)
+{
+	if (slot < 0 || slot >= StateSlotsCount)
+	{
+		return false;
+	}
+	return wxFileExists(States_SlotImagePreviewPath(slot, backup));
+}
+
+wxString States_SlotImagePreviewPath(int slot, bool backup)
+{
+	if (backup)
+	{
+		return SaveStateBase::GetFilename(slot) + pxsFmt( L".backup.png"); 
+	}
+	return SaveStateBase::GetFilename(slot) + pxsFmt( L".png");
+}
