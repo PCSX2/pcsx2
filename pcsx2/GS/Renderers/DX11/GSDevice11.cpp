@@ -20,6 +20,7 @@
 #include "GS/resource.h"
 #include <fstream>
 #include <VersionHelpers.h>
+#include <dxgi1_5.h>
 
 GSDevice11::GSDevice11()
 {
@@ -163,6 +164,21 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd>& wnd)
 		}
 	}
 
+	// check tearing support
+	{
+		CComPtr<IDXGIFactory5> factory;
+		if (SUCCEEDED( m_factory->QueryInterface(IID_PPV_ARGS(&factory)) ))
+		{
+			UINT tearing_supported = 0;
+			const HRESULT result = factory->CheckFeatureSupport(
+				DXGI_FEATURE_PRESENT_ALLOW_TEARING,
+				&tearing_supported, sizeof(tearing_supported)
+			);
+
+			m_tearing_supported = tearing_supported != 0;
+		}
+	}
+
 	// swapchain creation
 	{
 		DXGI_SWAP_CHAIN_DESC1 swapchain_description = {};
@@ -176,6 +192,8 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd>& wnd)
 		swapchain_description.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		swapchain_description.SampleDesc.Count = 1;
 		swapchain_description.SampleDesc.Quality = 0;
+		swapchain_description.Flags =
+			m_tearing_supported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 		swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
@@ -450,19 +468,29 @@ bool GSDevice11::Reset(int w, int h)
 
 	if (m_swapchain)
 	{
-		DXGI_SWAP_CHAIN_DESC scd;
+		DXGI_SWAP_CHAIN_DESC scd = {};
 
-		memset(&scd, 0, sizeof(scd));
+		UINT flags = 0;
+		if(m_tearing_supported)
+			flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
-		m_swapchain->GetDesc(&scd);
-		m_swapchain->ResizeBuffers(scd.BufferCount, w, h, scd.BufferDesc.Format, 0);
+		if (FAILED( m_swapchain->GetDesc(&scd) ))
+			return false;
 
-		CComPtr<ID3D11Texture2D> backbuffer;
+		const HRESULT result = m_swapchain->ResizeBuffers(
+			scd.BufferCount, 0, 0,
+			scd.BufferDesc.Format, flags
+		);
 
-		if (FAILED(m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer)))
+		if (FAILED(result))
 		{
+			fprintf(stderr, "D3D11: Failed to resize swap buffers (reason: % x)\n", result);
 			return false;
 		}
+
+		CComPtr<ID3D11Texture2D> backbuffer;
+		if(FAILED( m_swapchain->GetBuffer(0, IID_PPV_ARGS(&backbuffer)) ))
+			return false;
 
 		m_backbuffer = new GSTexture11(backbuffer);
 	}
@@ -477,7 +505,14 @@ void GSDevice11::SetVSync(int vsync)
 
 void GSDevice11::Flip()
 {
-	m_swapchain->Present(m_vsync, 0);
+	UINT flags = 0;
+	if (!m_vsync && m_tearing_supported)
+		flags |= DXGI_PRESENT_ALLOW_TEARING;
+
+	const HRESULT result = m_swapchain->Present(m_vsync, flags);
+
+	if (FAILED(result))
+		fprintf(stderr, "D3D11: Failed to create present (reason : % x)\n", result);
 }
 
 void GSDevice11::BeforeDraw()

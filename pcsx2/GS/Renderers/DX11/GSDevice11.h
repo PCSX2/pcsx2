@@ -391,6 +391,7 @@ private:
 	int m_aniso_filter;
 	int m_mipmap;
 	int m_d3d_texsize;
+	bool m_tearing_supported{ false };
 
 	GSTexture* CreateSurface(int type, int w, int h, int format);
 	GSTexture* FetchSurface(int type, int w, int h, int format);
