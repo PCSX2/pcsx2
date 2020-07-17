@@ -532,6 +532,7 @@ protected:
 	wxWindowID			m_id_GsFrame;
 	wxWindowID			m_id_ProgramLogBox;
 	wxWindowID			m_id_Disassembler;
+	wxWindowID			m_id_SaveStatePreview;
 
 #ifndef DISABLE_RECORDING
 	wxWindowID			m_id_VirtualPad[2];
