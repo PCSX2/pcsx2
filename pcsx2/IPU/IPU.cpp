@@ -283,6 +283,7 @@ void ipuSoftReset()
 	ipuRegs.cmd.DATA = 0; // required for Enthusia - Professional Racing after fix, or will freeze at start of next video.
 
 	memzero(g_BP);
+	hwIntcIrq(INTC_IPU); // required for FightBox
 }
 
 __fi bool ipuWrite32(u32 mem, u32 value)
