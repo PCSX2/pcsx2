@@ -56,8 +56,6 @@ protected:
 	}
 };
 
-void Sstates_updateLoadBackupMenuItem(bool isBeforeSave);
-
 void States_FreezeCurrentSlot()
 {
 	// FIXME : Use of the IsSavingOrLoading flag is mostly a hack until we implement a
@@ -73,7 +71,7 @@ void States_FreezeCurrentSlot()
 		Console.WriteLn("Load or save action is already pending.");
 		return;
 	}
-	Sstates_updateLoadBackupMenuItem(true);
+	States_updateLoadBackupMenuItem(true);
 
 	GSchangeSaveState(StatesC, SaveStateBase::GetFilename(StatesC).ToUTF8());
 	StateCopy_SaveToSlot(StatesC);
@@ -104,7 +102,7 @@ void _States_DefrostCurrentSlot(bool isFromBackup)
 
 	GetSysExecutorThread().PostIdleEvent(SysExecEvent_ClearSavingLoadingFlag());
 
-	Sstates_updateLoadBackupMenuItem(false);
+	States_updateLoadBackupMenuItem();
 }
 
 void States_DefrostCurrentSlot()
@@ -117,8 +115,7 @@ void States_DefrostCurrentSlotBackup()
 	_States_DefrostCurrentSlot(true);
 }
 
-// I'd keep an eye on this function, as it may still be problematic.
-void Sstates_updateLoadBackupMenuItem(bool isBeforeSave)
+void States_updateLoadBackupMenuItem(bool isBeforeSave)
 {
 	wxString file = SaveStateBase::GetFilename(StatesC);
 
@@ -138,7 +135,7 @@ static void OnSlotChanged()
 	if (GSchangeSaveState != NULL)
 		GSchangeSaveState(StatesC, SaveStateBase::GetFilename(StatesC).utf8_str());
 
-	Sstates_updateLoadBackupMenuItem(false);
+	States_updateLoadBackupMenuItem();
 }
 
 int States_GetCurrentSlot()

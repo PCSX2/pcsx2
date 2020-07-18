@@ -84,8 +84,8 @@ static void _SaveLoadStuff(bool enabled)
 			sMainFrame.SetMenuItemLabel(slot.load_item_id, slot.SlotName());
 			sMainFrame.SetMenuItemLabel(slot.save_item_id, slot.SlotName());
 		}
-
 	}
+	States_updateLoadBackupMenuItem();
 #endif
 }
 
