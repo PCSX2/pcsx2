@@ -170,8 +170,8 @@ protected:
 	void OnMoveAround( wxMoveEvent& evt );
 	void OnFocus( wxFocusEvent& evt );
 	void OnActivate( wxActivateEvent& evt );
-	void OnMenuClose( wxMenuEvent &evt);
-	void OnMenuHighlight(wxMenuEvent &evt);
+	void OnFrameMenuClose( wxMenuEvent &evt);
+	void OnFrameMenuHighlight(wxMenuEvent &evt);
 
 	void Menu_SysSettings_Click(wxCommandEvent &event);
 	void Menu_McdSettings_Click(wxCommandEvent &event);

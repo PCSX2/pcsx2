@@ -582,8 +582,8 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	Bind(wxEVT_CLOSE_WINDOW, &MainEmuFrame::OnCloseWindow, this);
 	Bind(wxEVT_SET_FOCUS, &MainEmuFrame::OnFocus, this);
 	Bind(wxEVT_ACTIVATE, &MainEmuFrame::OnActivate, this);
-	Bind(wxEVT_MENU_CLOSE, &MainEmuFrame::OnMenuClose, this);
-	Bind(wxEVT_MENU_HIGHLIGHT, &MainEmuFrame::OnMenuHighlight, this);
+	Bind(wxEVT_MENU_CLOSE, &MainEmuFrame::OnFrameMenuClose, this);
+	Bind(wxEVT_MENU_HIGHLIGHT, &MainEmuFrame::OnFrameMenuHighlight, this);
 
 	PushEventHandler( &wxGetApp().GetRecentIsoManager() );
 	SetDropTarget( new IsoDropTarget( this ) );
@@ -635,7 +635,7 @@ void MainEmuFrame::OnActivate( wxActivateEvent& evt )
 
 }
 
-void MainEmuFrame::OnMenuClose(wxMenuEvent& evt)
+void MainEmuFrame::OnFrameMenuClose(wxMenuEvent& evt)
 {
 	if (m_saveStatePreview->IsShown())
 	{
@@ -644,7 +644,7 @@ void MainEmuFrame::OnMenuClose(wxMenuEvent& evt)
 	evt.Skip();
 }
 
-void MainEmuFrame::OnMenuHighlight( wxMenuEvent &evt )
+void MainEmuFrame::OnFrameMenuHighlight( wxMenuEvent &evt )
 {
 	const int menuId = evt.GetId();
 	// Determine which slot is highlighted (or if it's the backup option)

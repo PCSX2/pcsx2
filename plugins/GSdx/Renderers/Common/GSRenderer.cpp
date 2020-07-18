@@ -80,7 +80,7 @@ bool GSRenderer::CreateDevice(GSDevice* dev)
 
 void GSRenderer::ResetDevice()
 {
-    if(m_dev) m_dev->Reset(1, 1);
+	if(m_dev) m_dev->Reset(1, 1);
 }
 
 bool GSRenderer::Merge(int field)
@@ -502,11 +502,9 @@ bool GSRenderer::MakeSnapshot(const std::string& path)
 {
 	if (m_snapshot.empty())
 	{
-		// Facilitates Save As.. Feature
+		// Allows for providing a complete path
 		if (path.substr(path.size() - 4, 4) == ".png")
-		{
 			m_snapshot = path.substr(0, path.size() - 4);
-		}
 		else
 		{
 			time_t cur_time = time(nullptr);
