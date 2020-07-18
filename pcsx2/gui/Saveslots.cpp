@@ -71,7 +71,6 @@ void States_FreezeCurrentSlot()
 		Console.WriteLn("Load or save action is already pending.");
 		return;
 	}
-	States_updateLoadBackupMenuItem(true);
 
 	GSchangeSaveState(StatesC, SaveStateBase::GetFilename(StatesC).ToUTF8());
 	StateCopy_SaveToSlot(StatesC);
@@ -81,6 +80,8 @@ void States_FreezeCurrentSlot()
 #endif
 
 	GetSysExecutorThread().PostIdleEvent(SysExecEvent_ClearSavingLoadingFlag());
+
+	States_updateLoadBackupMenuItem();
 }
 
 void _States_DefrostCurrentSlot(bool isFromBackup)
@@ -115,14 +116,9 @@ void States_DefrostCurrentSlotBackup()
 	_States_DefrostCurrentSlot(true);
 }
 
-void States_updateLoadBackupMenuItem(bool isBeforeSave)
+void States_updateLoadBackupMenuItem()
 {
-	wxString file = SaveStateBase::GetFilename(StatesC);
-
-	if (!(isBeforeSave && g_Conf->EmuOptions.BackupSavestate))
-	{
-		file = file + L".backup";
-	}
+	wxString file = SaveStateBase::GetFilename(StatesC) + ".backup";
 
 	sMainFrame.EnableMenuItem(MenuId_State_LoadBackup, wxFileExists(file));
 	sMainFrame.SetMenuItemLabel(MenuId_State_LoadBackup, wxsFormat(L"%s %d", _("Backup"), StatesC));
