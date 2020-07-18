@@ -80,7 +80,7 @@ bool GSRenderer::CreateDevice(GSDevice* dev)
 
 void GSRenderer::ResetDevice()
 {
-    if(m_dev) m_dev->Reset(1, 1);
+	if(m_dev) m_dev->Reset(1, 1);
 }
 
 bool GSRenderer::Merge(int field)
