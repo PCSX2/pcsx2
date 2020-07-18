@@ -58,7 +58,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Full:\nFor an optimal experience with Direct3D.\n\n"
 				"Aggressive:\nUse more aggressive CRC hacks.\n"
 				"Removes effects in some games which make the image appear sharper/clearer.\n"
-				"Affected games: AC4, BleachBB, Bully, DBZBT 2 & 3, DeathByDegrees, Evangelion, FF games, FightingBeautyWulong, GOW 1 & 2, Kunoichi, IkkiTousen, Okami, Oneechanbara2, OnimushaDoD, RDRevolver, Simple2000Vol114, SoTC, SMT3, SMTDDS 1 & 2, SteambotChronicles, Tekken5, Ultraman, XenosagaE3, Yakuza 1 & 2.\n";
+				"Affected games: AC4, BleachBB, Bully, DBZBT 2 & 3, DeathByDegrees, Evangelion, FF games, FightingBeautyWulong, GOW 1 & 2, Kunoichi, IkkiTousen, Okami, Oneechanbara2, OnimushaDoD, RDRevolver, Simple2000Vol114, SoTC, SteambotChronicles, Tekken5, Ultraman, XenosagaE3, Yakuza 1 & 2.\n";
 		case IDC_SKIPDRAWHACK:
 		case IDC_SKIPDRAWHACKEDIT:
 		case IDC_SKIPDRAWOFFSET:

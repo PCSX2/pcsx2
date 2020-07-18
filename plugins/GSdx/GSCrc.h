@@ -121,8 +121,6 @@ public:
 		SkyGunner,
 		Sly2,
 		Sly3,
-		SMTDDS1,
-		SMTDDS2,
 		SMTNocturne,
 		SonicUnleashed,
 		SoTC,
