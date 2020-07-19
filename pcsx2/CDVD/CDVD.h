@@ -133,6 +133,7 @@ struct cdvdStruct {
 	u32 SeekToSector;	// Holds the destination sector during seek operations.
 	u32 ReadTime;		// Avg. time to read one block of data (in Iop cycles)
 	bool Spinning;		// indicates if the Cdvd is spinning or needs a spinup delay
+	bool MediaChanged;
 };
 
 

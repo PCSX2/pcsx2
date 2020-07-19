@@ -41,6 +41,10 @@ static cdvdStruct cdvd;
 
 s64 PSXCLK = 36864000;
 
+#define TRAY_PAUSE_TRIGGER 1
+#define TRAY_SEEK_TRIGGER 4
+#define TRAY_CLOSE_TRIGGER 7
+#define TRAY_MAX_TIMEOUT 10
 
 static __fi void SetResultSize(u8 size)
 {
@@ -528,29 +532,42 @@ s32 cdvdCtrlTrayOpen()
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
 }
 
-s32 cdvdCtrlTrayClose()
+static __fi void cdvdUpdateTrayState()
+{
+	if (cdvd.Status == CDVD_STATUS_TRAY_OPEN && cdvd.TrayTimeout == 0) {
+		cdvd.TrayTimeout = TRAY_MAX_TIMEOUT;
+	} else if (cdvd.TrayTimeout > 0) {
+		switch (cdvd.TrayTimeout) {
+			case TRAY_CLOSE_TRIGGER:
+				cdvdCtrlTrayClose();
+				break;
+			case TRAY_SEEK_TRIGGER:
+				// Native hardware uses SEEK status before PAUSE
+				// following a disc swap.
+				cdvd.Status = CDVD_STATUS_SEEK;
+				break;
+			case TRAY_PAUSE_TRIGGER:
+				// Done.
+				cdvd.Status = CDVD_STATUS_PAUSE;
+				break;
+				// default: keep the status we're at.
+		}
+		--cdvd.TrayTimeout;
+	}
+}
+
+static s32 cdvdCtrlTrayClose()
 {
 	DevCon.WriteLn( Color_Green, L"Close virtual disk tray");
-	cdvd.Status = CDVD_STATUS_PAUSE;
 	cdvd.Ready = CDVD_READY1;
-	cdvd.TrayTimeout = 0; // Reset so it can't get closed twice by cdvdVsync()
-	
+	cdvd.TrayTimeout = TRAY_CLOSE_TRIGGER - 1; // Reset so it can't get closed twice by cdvdVsync()
+	cdvd.MediaChanged = true;
+
 	cdvdDetectDisk();
 	GetCoreThread().ApplySettings(g_Conf->EmuOptions);
 	
+	cdvd.Status = CDVD_STATUS_SEEK;
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
-}
-
-// Some legacy function, not used anymore
-s32 cdvdGetTrayStatus()
-{
-	/*s32 ret = CDVD->getTrayStatus();
-
-	if (ret == -1)
-		return(CDVD_TRAY_CLOSE);
-	else
-		return(ret);*/
-	return -1;
 }
 
 // Note: Is tray status being kept as a var here somewhere?
@@ -975,15 +992,7 @@ void cdvdVsync() {
 	if (cdvd.RTCcount < (GetVerticalFrequency().ToIntRounded())) return;
 	cdvd.RTCcount = 0;
 
-	if ( cdvd.Status == CDVD_STATUS_TRAY_OPEN )
-	{
-		cdvd.TrayTimeout++;
-	}
-	if (cdvd.TrayTimeout > 3)
-	{
-		cdvdCtrlTrayClose();
-		cdvd.TrayTimeout = 0;
-	}
+	cdvdUpdateTrayState();
 
 	cdvd.RTC.second++;
 	if (cdvd.RTC.second < 60) return;
@@ -1010,7 +1019,7 @@ void cdvdVsync() {
 	cdvd.RTC.year = 0;
 }
 
-static __fi u8 cdvdRead18(void)  // SDATAOUT
+static __fi u8 cdvdRead18(void) // SDATAOUT
 {
 	u8 ret = 0;
 
@@ -1053,13 +1062,15 @@ u8 cdvdRead(u8 key)
 			CDVD_LOG("cdvdRead0A(Status) %x", cdvd.Status);
 			return cdvd.Status;
 
-		case 0x0B: // TRAY-STATE (if tray has been opened)
-		{
-			CDVD_LOG("cdvdRead0B(Tray) (1 open, 0 closed): %x", cdvd.Status);
-			if (cdvd.Status == CDVD_STATUS_TRAY_OPEN)
+        case 0x0B: // MEDIA CHANGED
+        {
+			CDVD_LOG("cdvdRead0B(MediaChanged): %x", cdvd.MediaChanged);
+			if (cdvd.MediaChanged) {
+				cdvd.MediaChanged = false;
 				return 1;
-			else
+			} else {
 				return 0;
+			}
 		}
 		case 0x0C: // CRT MINUTE
 			CDVD_LOG("cdvdRead0C(Min) %x", itob((u8)(cdvd.Sector/(60*75))));
@@ -1497,11 +1508,6 @@ static void cdvdWrite16(u8 rt)		 // SCOMMAND
 				break;
 
 			case 0x05: // CdTrayReqState  (0:1) - resets the tray open detection
-
-				// Fixme: This function is believed to change some status flag
-				// when the Tray state (stored as "1" in cdvd.Status) is different between 2 successive calls.
-				// Cdvd.Status can be different than 1 here, yet we may still have to report an open status.
-				// Gonna have to investigate further. (rama)
 
 				//Console.Warning("CdTrayReqState. cdvd.Status = %d", cdvd.Status);
 				SetResultSize(1);
