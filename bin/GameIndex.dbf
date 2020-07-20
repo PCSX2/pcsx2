@@ -16656,6 +16656,12 @@ Region = PAL-M4
 Compat = 5
 VIFFIFOHack = 1 // Needed to load the main game properly.
 ---------------------------------------------
+Serial = SLES-53753
+Name   = Test Drive Unlimited
+Region = PAL-M5
+Compat = 5
+VIFFIFOHack = 1 // Needed to load the main game properly.
+---------------------------------------------
 Serial = SLES-54467
 Name   = Final Armada
 Region = PAL-M5
