@@ -24,8 +24,9 @@ Dialog::Dialog()
     m_top_box = new wxBoxSizer(wxHORIZONTAL);
     m_left_box = new wxBoxSizer(wxVERTICAL);
     m_right_box = new wxBoxSizer(wxVERTICAL);
-
+#ifdef SPU2X_PORTAUDIO
     m_portaudio_box = new wxBoxSizer(wxVERTICAL);
+#endif
     m_sdl_box = new wxBoxSizer(wxVERTICAL);
 
     m_mix_box = new wxStaticBoxSizer(wxVERTICAL, this, "Mixing Settings");
@@ -62,11 +63,13 @@ Dialog::Dialog()
     // Module
     m_output_box->Add(new wxStaticText(this, wxID_ANY, "Module"), wxSizerFlags().Centre());
     m_module.Add("No Sound (Emulate SPU2 only)");
+#ifdef SPU2X_PORTAUDIO
     m_module.Add("PortAudio (Cross-platform)");
+#endif
     m_module.Add("SDL Audio (Recommended for PulseAudio)");
     m_module_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_module);
     m_output_box->Add(m_module_select, wxSizerFlags().Centre());
-
+#ifdef SPU2X_PORTAUDIO
     // Portaudio
     m_portaudio_text = new wxStaticText(this, wxID_ANY, "Portaudio API");
     m_portaudio_box->Add(m_portaudio_text, wxSizerFlags().Centre());
@@ -81,6 +84,7 @@ Dialog::Dialog()
 #endif
     m_portaudio_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_portaudio);
     m_portaudio_box->Add(m_portaudio_select, wxSizerFlags().Centre());
+#endif
 
     // SDL
     m_sdl_text = new wxStaticText(this, wxID_ANY, "SDL API");
@@ -91,8 +95,9 @@ Dialog::Dialog()
 
     m_sdl_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_sdl);
     m_sdl_box->Add(m_sdl_select, wxSizerFlags().Centre());
-
+#ifdef SPU2X_PORTAUDIO
     m_output_box->Add(m_portaudio_box, wxSizerFlags().Expand());
+#endif
     m_output_box->Add(m_sdl_box, wxSizerFlags().Expand());
 
     // Synchronization Mode
@@ -178,7 +183,9 @@ void Dialog::Reconfigure()
             show_sdl = false;
             break;
     }
+#ifdef SPU2X_PORTAUDIO
     m_output_box->Show(m_portaudio_box, show_portaudio, true);
+#endif
     m_output_box->Show(m_sdl_box, show_sdl, true);
 
     // Recalculating both of these accounts for if neither was showing initially.
@@ -217,7 +224,9 @@ void Dialog::ResetToValues()
 {
     m_inter_select->SetSelection(Interpolation);
     m_module_select->SetSelection(OutputModule);
+#ifdef SPU2X_PORTAUDIO
     m_portaudio_select->SetSelection(OutputAPI);
+#endif
     m_sdl_select->SetSelection(SdlOutputAPI);
     m_sync_select->SetSelection(SynchMode);
     m_audio_select->SetSelection(numSpeakers);
@@ -236,7 +245,9 @@ void Dialog::SaveValues()
 {
     Interpolation = m_inter_select->GetSelection();
     OutputModule = m_module_select->GetSelection();
+#ifdef SPU2X_PORTAUDIO
     OutputAPI = m_portaudio_select->GetSelection();
+#endif
     SdlOutputAPI = m_sdl_select->GetSelection();
     SynchMode = m_sync_select->GetSelection();
     numSpeakers = m_audio_select->GetSelection();
