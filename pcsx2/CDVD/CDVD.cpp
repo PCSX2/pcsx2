@@ -556,7 +556,7 @@ static __fi void cdvdUpdateTrayState()
 	}
 }
 
-static s32 cdvdCtrlTrayClose()
+s32 cdvdCtrlTrayClose()
 {
 	DevCon.WriteLn( Color_Green, L"Close virtual disk tray");
 	cdvd.Ready = CDVD_READY1;
