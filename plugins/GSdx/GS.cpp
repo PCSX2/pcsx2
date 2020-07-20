@@ -45,9 +45,6 @@ static HRESULT s_hr = E_FAIL;
 #include "Window/GSWndOGL.h"
 #include "Window/GSWndEGL.h"
 
-#include <gtk/gtk.h>
-#include <gdk/gdkx.h>
-
 extern bool RunLinuxDialog();
 
 #endif

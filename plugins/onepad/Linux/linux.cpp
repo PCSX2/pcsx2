@@ -25,7 +25,6 @@
 #include "state_management.h"
 
 #include <string.h>
-#include <gtk/gtk.h>
 #include "wx_dialog/dialog.h"
 
 #ifndef __APPLE__
@@ -33,7 +32,7 @@ Display *GSdsp;
 Window GSwin;
 #endif
 
-void SysMessage(const char *fmt, ...)
+static void SysMessage(const char *fmt, ...)
 {
     va_list list;
     char msg[512];
@@ -45,14 +44,8 @@ void SysMessage(const char *fmt, ...)
     if (msg[strlen(msg) - 1] == '\n')
         msg[strlen(msg) - 1] = 0;
 
-    GtkWidget *dialog;
-    dialog = gtk_message_dialog_new(NULL,
-                                    GTK_DIALOG_DESTROY_WITH_PARENT,
-                                    GTK_MESSAGE_INFO,
-                                    GTK_BUTTONS_OK,
-                                    "%s", msg);
-    gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
+    wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+    dialog.ShowModal();
 }
 
 EXPORT_C_(void)
