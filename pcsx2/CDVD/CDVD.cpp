@@ -534,22 +534,23 @@ s32 cdvdCtrlTrayOpen()
 
 static __fi void cdvdUpdateTrayState()
 {
-	if (cdvd.Status == CDVD_STATUS_TRAY_OPEN && cdvd.TrayTimeout == 0) {
+	if (cdvd.Status == CDVD_STATUS_TRAY_OPEN && cdvd.TrayTimeout == 0)
+	{
 		cdvd.TrayTimeout = TRAY_MAX_TIMEOUT;
-	} else if (cdvd.TrayTimeout > 0) {
-		switch (cdvd.TrayTimeout) {
+	} 
+	else if (cdvd.TrayTimeout > 0)
+	{
+		switch (cdvd.TrayTimeout)
+		{
 			case TRAY_CLOSE_TRIGGER:
-				cdvdCtrlTrayClose();
-				break;
+				cdvdCtrlTrayClose(); break;
 			case TRAY_SEEK_TRIGGER:
 				// Native hardware uses SEEK status before PAUSE
 				// following a disc swap.
-				cdvd.Status = CDVD_STATUS_SEEK;
-				break;
+				cdvd.Status = CDVD_STATUS_SEEK; break;
 			case TRAY_PAUSE_TRIGGER:
 				// Done.
-				cdvd.Status = CDVD_STATUS_PAUSE;
-				break;
+				cdvd.Status = CDVD_STATUS_PAUSE; break;
 				// default: keep the status we're at.
 		}
 		--cdvd.TrayTimeout;
@@ -1019,7 +1020,7 @@ void cdvdVsync() {
 	cdvd.RTC.year = 0;
 }
 
-static __fi u8 cdvdRead18(void) // SDATAOUT
+static __fi u8 cdvdRead18(void)  // SDATAOUT
 {
 	u8 ret = 0;
 
@@ -1065,10 +1066,13 @@ u8 cdvdRead(u8 key)
         case 0x0B: // MEDIA CHANGED
         {
 			CDVD_LOG("cdvdRead0B(MediaChanged): %x", cdvd.MediaChanged);
-			if (cdvd.MediaChanged) {
+			if (cdvd.MediaChanged)
+			{
 				cdvd.MediaChanged = false;
 				return 1;
-			} else {
+			} 
+			else
+			{
 				return 0;
 			}
 		}
