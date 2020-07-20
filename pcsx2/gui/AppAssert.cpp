@@ -19,6 +19,7 @@
 
 #include <wx/stackwalk.h>
 
+#if wxUSE_STACKWALKER
 class StackDump : public wxStackWalker
 {
 protected:
@@ -94,6 +95,7 @@ static wxString pxGetStackTrace( const FnChar_t* calledFrom )
 	dump.Walk( 3 );
 	return dump.GetStackTrace();
 }
+#endif
 
 #ifdef __WXDEBUG__
 
@@ -122,7 +124,11 @@ bool AppDoAssert( const DiagnosticOrigin& origin, const wxChar *msg )
 	static bool disableAsserts = false;
 	if( disableAsserts ) return false;
 
+#if wxUSE_STACKWALKER
 	wxString trace( pxGetStackTrace(origin.function) );
+#else
+	wxString trace( "Warning: Platform doesn't support wx stackwalker" );
+#endif
 	wxString dbgmsg( origin.ToString( msg ) );
 
 	wxMessageOutputDebug().Printf( L"%s", WX_STR(dbgmsg) );
