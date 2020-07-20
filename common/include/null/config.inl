@@ -17,7 +17,7 @@
 #if defined(_WIN32)
 #include <windows.h>
 #include "resource.h"
-#elif defined(__unix__)
+#elif defined(__unix__) || defined(__APPLE__)
 #include <wx/wx.h>
 #endif
 #include <string>

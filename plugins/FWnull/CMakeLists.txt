@@ -48,6 +48,7 @@ set(FWnullFinalSources
 )
 
 set(FWnullFinalLibs
+	${wxWidgets_LIBRARIES}
 )
 
 if(BUILTIN_FW)

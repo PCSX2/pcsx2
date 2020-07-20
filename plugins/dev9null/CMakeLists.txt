@@ -47,6 +47,7 @@ set(dev9nullFinalSources
 )
 
 set(dev9nullFinalLibs
+	${wxWidgets_LIBRARIES}
 )
 
 if(BUILTIN_DEV9)
