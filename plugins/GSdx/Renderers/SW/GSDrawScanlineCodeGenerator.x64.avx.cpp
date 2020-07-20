@@ -245,7 +245,7 @@ L("step");
 
 	if(!m_sel.edge)
 	{
-		test(a0, a0);
+		test(a0.cvt32(), a0.cvt32());
 
 		jle("exit", T_NEAR);
 
@@ -298,7 +298,7 @@ void GSDrawScanlineCodeGenerator::Init_AVX()
 
 		// int steps = pixels + skip - 4;
 
-		lea(a0, ptr[a0 + a1 - 4]);
+		lea(a0.cvt32(), ptr[a0 + a1 - 4]);
 
 		// GSVector4i test = m_test[skip] | m_test[7 + (steps & (steps >> 31))];
 
@@ -306,10 +306,11 @@ void GSDrawScanlineCodeGenerator::Init_AVX()
 
 		vmovdqa(_test, ptr[a1 + r10]);
 
-		mov(rax, a0);
-		sar(rax, 63); // GH: 63 to extract the sign of the register
-		and(rax, a0);
-		shl(rax, 4); // * sizeof(m_test[0])
+		mov(eax, a0.cvt32());
+		sar(eax, 31); // GH: 31 to extract the sign of the register
+		and(eax, a0.cvt32());
+		shl(eax, 4); // * sizeof(m_test[0])
+		cdqe();
 
 		vpor(_test, ptr[rax + r10 + 7 * 16]);
 	}
@@ -317,7 +318,7 @@ void GSDrawScanlineCodeGenerator::Init_AVX()
 	{
 		mov(ebx, a1.cvt32()); // left
 		xor(a1.cvt32(), a1.cvt32()); // skip
-		lea(a0, ptr[a0 - 4]); // steps
+		lea(a0.cvt32(), ptr[a0 - 4]); // steps
 	}
 
 	// a0 = steps
@@ -501,7 +502,7 @@ void GSDrawScanlineCodeGenerator::Step_AVX()
 {
 	// steps -= 4;
 
-	sub(a0, 4);
+	sub(a0.cvt32(), 4);
 
 	// fza_offset++;
 
@@ -611,10 +612,11 @@ void GSDrawScanlineCodeGenerator::Step_AVX()
 	{
 		// test = m_test[7 + (steps & (steps >> 31))];
 
-		mov(rax, a0);
-		sar(rax, 63); // GH: 63 to extract the sign of the register
-		and(rax, a0);
-		shl(rax, 4);
+		mov(eax, a0.cvt32());
+		sar(eax, 31); // GH: 31 to extract the sign of the register
+		and(eax, a0.cvt32());
+		shl(eax, 4);
+		cdqe();
 
 		vmovdqa(_test, ptr[rax + r10 + 7 * 16]);
 	}
