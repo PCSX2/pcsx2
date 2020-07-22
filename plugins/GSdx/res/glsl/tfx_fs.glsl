@@ -530,29 +530,6 @@ void atst(vec4 C)
 {
     float a = C.a;
 
-#if 0
-    switch(Uber_ATST) {
-        case 0:
-            break;
-        case 1:
-            if (a > AREF) discard;
-            break;
-        case 2:
-            if (a < AREF) discard;
-            break;
-        case 3:
-            if (abs(a - AREF) > 0.5f) discard;
-            break;
-        case 4:
-            if (abs(a - AREF) < 0.5f) discard;
-            break;
-    }
-
-
-#endif
-
-#if 1
-
 #if (PS_ATST == 0)
     // nothing to do
 #elif (PS_ATST == 1)
@@ -564,9 +541,6 @@ void atst(vec4 C)
 #elif (PS_ATST == 4)
     if (abs(a - AREF) < 0.5f) discard;
 #endif
-
-#endif
-
 }
 
 void fog(inout vec4 C, float f)
