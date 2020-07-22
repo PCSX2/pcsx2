@@ -564,27 +564,6 @@ void atst(float4 C)
 {
 	float a = C.a;
 
-#if 0
-	switch(Uber_ATST) {
-		case 0:
-			break;
-		case 1:
-			if (a > AREF) discard;
-			break;
-		case 2:
-			if (a < AREF) discard;
-			break;
-		case 3:
-			if (abs(a - AREF) > 0.5f) discard;
-			break;
-		case 4:
-			if (abs(a - AREF) < 0.5f) discard;
-			break;
-	}
-
-#endif
-
-#if 1
 	if(PS_ATST == 0)
 	{
 		// nothing to do
@@ -605,7 +584,6 @@ void atst(float4 C)
 	{
 		if (abs(a - AREF) < 0.5f) discard;
 	}
-#endif
 }
 
 float4 fog(float4 c, float f)
