@@ -309,6 +309,7 @@ set(pcsx2GuiSources
 	gui/Panels/VideoPanel.cpp
 	gui/RecentIsoList.cpp
 	gui/Saveslots.cpp
+	gui/SaveslotPreview.cpp
 	gui/SysState.cpp
 	gui/UpdateUI.cpp
 	)
@@ -352,6 +353,7 @@ set(pcsx2GuiHeaders
 	gui/pxEventThread.h
 	gui/RecentIsoList.h
 	gui/Saveslots.h
+	gui/SaveslotPreview.h
 	)
 
 # Warning: the declaration of the .h are mandatory in case of resources files. It will ensure the creation
