@@ -700,9 +700,7 @@ void MainEmuFrame::OnActivate(wxActivateEvent& evt)
 void MainEmuFrame::OnFrameMenuClose(wxMenuEvent& evt)
 {
 	if (m_saveStatePreview->IsShown())
-	{
 		m_saveStatePreview->Hide();
-	}
 	evt.Skip();
 }
 
@@ -746,9 +744,7 @@ void MainEmuFrame::OnFrameMenuHighlight( wxMenuEvent &evt )
 		m_saveStatePreview->SetImagePath(imagePreviewPath);
 	}
 	else if (m_saveStatePreview->IsShown())
-	{
 		m_saveStatePreview->Hide();
-	}
 
 	// Continue on to display frame's help text
 	evt.Skip();

@@ -39,14 +39,10 @@ void SaveslotPreview::OnPaint(wxPaintEvent &event)
 {
 	wxPaintDC dc(this);
 	if (imagePath == wxEmptyString)
-	{
 		return;
-	}
 	wxImage *img = new wxImage(imagePath, wxBITMAP_TYPE_PNG);
 	if (img->IsOk())
-	{
 		dc.DrawBitmap(img->Scale(this->GetClientSize().x, this->GetClientSize().y, wxIMAGE_QUALITY_HIGH), 0, 0, false);
-	}
 }
 
 void SaveslotPreview::OnEraseBackground(wxEraseEvent &event)
