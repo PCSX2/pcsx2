@@ -15203,6 +15203,12 @@ Serial = SLES-53751
 Name   = Shrek Superslam
 Region = PAL-M3
 ---------------------------------------------
+Serial = SLES-53753
+Name   = Test Drive Unlimited
+Region = PAL-M5
+Compat = 5
+VIFFIFOHack = 1 // Needed to load the main game properly.
+---------------------------------------------
 Serial = SLES-53754
 Name   = ATV Off-Road Fury 3
 Region = PAL-M6
@@ -16745,12 +16751,6 @@ Name   = CSI 3 - Dimensions of Murder
 Region = PAL-M5
 ---------------------------------------------
 Serial = SLES-54466
-Name   = Test Drive Unlimited
-Region = PAL-M4
-Compat = 5
-VIFFIFOHack = 1 // Needed to load the main game properly.
----------------------------------------------
-Serial = SLES-53753
 Name   = Test Drive Unlimited
 Region = PAL-M5
 Compat = 5
