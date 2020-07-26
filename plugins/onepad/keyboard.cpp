@@ -117,7 +117,7 @@ static bool s_Shift = false;
 static unsigned int s_previous_mouse_x = 0;
 static unsigned int s_previous_mouse_y = 0;
 
-static void AnalyzeKeyEvent(keyEvent &evt)
+void AnalyzeKeyEvent(keyEvent &evt)
 {
     KeySym key = (KeySym)evt.key;
     int pad = 0;
