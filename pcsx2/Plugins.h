@@ -425,6 +425,30 @@ protected:
 
 extern const PluginInfo tbl_PluginInfo[];
 
+template<typename Func>
+static void ForPlugins(const Func& f)
+{
+	const PluginInfo* pi = tbl_PluginInfo;
+
+	do
+	{
+		f(pi);
+	}  while(++pi, pi->shortname != nullptr);
+}
+
+template<typename Func>
+static bool IfPlugins(const Func& f)
+{
+	const PluginInfo* pi = tbl_PluginInfo;
+
+	do
+	{
+		if (f(pi)) return true;
+	}  while(++pi, pi->shortname != nullptr);
+
+	return false;
+}
+
 // GetPluginManager() is a required external implementation. This function is *NOT*
 // provided by the PCSX2 core library.  It provides an interface for the linking User
 // Interface apps or DLLs to reference their own instance of SysCorePlugins (also allowing

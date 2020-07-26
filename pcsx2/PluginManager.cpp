@@ -1097,12 +1097,12 @@ void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
 	Console.WriteLn(Color_StrongBlue, L"\nLoading plugins from %s...", WX_STR(g_Conf->Folders[FolderId_Plugins].ToString()));
 
 	ConsoleIndentScope indent;
-	const PluginInfo* pi = tbl_PluginInfo; do
-	{
+
+	ForPlugins([&] (const PluginInfo * pi) {
 		Load( pi->id, folders[pi->id] );
 		pxYield( 2 );
+	});
 
-	} while( ++pi, pi->shortname != NULL );
 	indent.LeaveScope();
 
 	CDVDapi_Plugin.newDiskCB( cdvdNewDiskCB );
@@ -1296,7 +1296,7 @@ void SysCorePlugins::Open()
 
 	SendSettingsFolder();
 
-	const PluginInfo* pi = tbl_PluginInfo; do {
+	ForPlugins([&] (const PluginInfo * pi) {
 		Open( pi->id );
 		// If GS doesn't support GSopen2, need to wait until call to GSopen
 		// returns to populate pDsp.  If it does, can initialize other plugins
@@ -1310,7 +1310,7 @@ void SysCorePlugins::Open()
 #else
 		if (pi->id == PluginId_GS && !GSopen2) GetMTGS().WaitForOpen();
 #endif
-	} while( ++pi, pi->shortname != NULL );
+	});
 
 	if (GSopen2) GetMTGS().WaitForOpen();
 
@@ -1465,9 +1465,10 @@ bool SysCorePlugins::Init()
 	if( !NeedsInit() ) return false;
 
 	Console.WriteLn( Color_StrongBlue, "Initializing plugins..." );
-	const PluginInfo* pi = tbl_PluginInfo; do {
+
+	ForPlugins([&] (const PluginInfo * pi) {
 		Init( pi->id );
-	} while( ++pi, pi->shortname != NULL );
+	});
 
 	if( SysPlugins.Mcd == NULL )
 	{
@@ -1683,10 +1684,10 @@ bool SysCorePlugins::KeyEvent( const keyEvent& evt )
 	// pick up the key and return "true" (for handled) will cause the loop to break.
 	// The current version of PS2E doesn't support it yet, though.
 
-	const PluginInfo* pi = tbl_PluginInfo; do {
+	ForPlugins([&] (const PluginInfo * pi) {
 		if( pi->id != PluginId_PAD && m_info[pi->id] )
 			m_info[pi->id]->CommonBindings.KeyEvent( const_cast<keyEvent*>(&evt) );
-	} while( ++pi, pi->shortname != NULL );
+	});
 
 	return false;
 }
@@ -1696,9 +1697,9 @@ void SysCorePlugins::SendSettingsFolder()
 	ScopedLock lock( m_mtx_PluginStatus );
 	if( m_SettingsFolder.IsEmpty() ) return;
 
-	const PluginInfo* pi = tbl_PluginInfo; do {
+	ForPlugins([&] (const PluginInfo * pi) {
 		if( m_info[pi->id] ) m_info[pi->id]->CommonBindings.SetSettingsDir( m_SettingsFolder.utf8_str() );
-	} while( ++pi, pi->shortname != NULL );
+	});
 }
 
 void SysCorePlugins::SetSettingsFolder( const wxString& folder )
@@ -1720,9 +1721,9 @@ void SysCorePlugins::SendLogFolder()
 	ScopedLock lock( m_mtx_PluginStatus );
 	if( m_LogFolder.IsEmpty() ) return;
 
-	const PluginInfo* pi = tbl_PluginInfo; do {
+	ForPlugins([&] (const PluginInfo * pi) {
 		if( m_info[pi->id] ) m_info[pi->id]->CommonBindings.SetLogDir( m_LogFolder.utf8_str() );
-	} while( ++pi, pi->shortname != NULL );
+	});
 }
 
 void SysCorePlugins::SetLogFolder( const wxString& folder )
@@ -1759,11 +1760,10 @@ bool SysCorePlugins::AreLoaded() const
 bool SysCorePlugins::AreOpen() const
 {
 	ScopedLock lock( m_mtx_PluginStatus );
-	const PluginInfo* pi = tbl_PluginInfo; do {
-		if( !IsOpen(pi->id) ) return false;
-	} while( ++pi, pi->shortname != NULL );
 
-	return true;
+	return IfPlugins([&] (const PluginInfo * pi) {
+		return !IsOpen(pi->id);
+	});
 }
 
 bool SysCorePlugins::AreAnyLoaded() const
@@ -1780,11 +1780,10 @@ bool SysCorePlugins::AreAnyLoaded() const
 bool SysCorePlugins::AreAnyInitialized() const
 {
 	ScopedLock lock( m_mtx_PluginStatus );
-	const PluginInfo* pi = tbl_PluginInfo; do {
-		if( IsInitialized(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
 
-	return false;
+	return IfPlugins([&] (const PluginInfo * pi) {
+		return IsInitialized(pi->id);
+	});
 }
 
 bool SysCorePlugins::IsOpen( PluginsEnum_t pid ) const
@@ -1809,60 +1808,49 @@ bool SysCorePlugins::IsLoaded( PluginsEnum_t pid ) const
 
 bool SysCorePlugins::NeedsLoad() const
 {
-	const PluginInfo* pi = tbl_PluginInfo; do {
-		if( !IsLoaded(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
-	
-	return false;
+	return IfPlugins([&] (const PluginInfo * pi) {
+		return !IsLoaded(pi->id);
+	});
 }		
 
 bool SysCorePlugins::NeedsUnload() const
 {
-	const PluginInfo* pi = tbl_PluginInfo; do {
-		if( IsLoaded(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
 
-	return false;
+	return IfPlugins([&] (const PluginInfo * pi) {
+		return IsLoaded(pi->id);
+	});
 }		
 
 bool SysCorePlugins::NeedsInit() const
 {
 	ScopedLock lock( m_mtx_PluginStatus );
 
-	const PluginInfo* pi = tbl_PluginInfo; do {
-		if( !IsInitialized(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
-
-	return false;
+	return IfPlugins([&] (const PluginInfo * pi) {
+		return !IsInitialized(pi->id);
+	});
 }
 
 bool SysCorePlugins::NeedsShutdown() const
 {
 	ScopedLock lock( m_mtx_PluginStatus );
 
-	const PluginInfo* pi = tbl_PluginInfo; do {
-		if( IsInitialized(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
-
-	return false;
+	return IfPlugins([&] (const PluginInfo * pi) {
+		return IsInitialized(pi->id);
+	});
 }
 
 bool SysCorePlugins::NeedsOpen() const
 {
-	const PluginInfo* pi = tbl_PluginInfo; do {
-		if( !IsOpen(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
-
-	return false;
+	return IfPlugins([&] (const PluginInfo * pi) {
+		return !IsOpen(pi->id);
+	});
 }
 
 bool SysCorePlugins::NeedsClose() const
 {
-	const PluginInfo* pi = tbl_PluginInfo; do {
-		if( IsOpen(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
-
-	return false;
+	return IfPlugins([&] (const PluginInfo * pi) {
+		return IsOpen(pi->id);
+	});
 }
 
 const wxString SysCorePlugins::GetName( PluginsEnum_t pid ) const
