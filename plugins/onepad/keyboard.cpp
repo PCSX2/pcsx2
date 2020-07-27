@@ -99,7 +99,7 @@ bool PollForNewKeyboardKeys(u32 &pkey) {
     // keys that aren't being recognized, bump this number up!
     for (int key = 0; key < 0x80; key++) {
         if (CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, key)) {
-            pkey = key == kVK_Escape ? 0 : key;
+            pkey = key == kVK_Escape ? UINT32_MAX : key;
             return true;
         }
     }
@@ -282,7 +282,7 @@ bool PollForNewKeyboardKeys(u32 &pkey)
 
     if (ev != NULL) {
         if (ev->type == GDK_KEY_PRESS) {
-            pkey = ev->key.keyval != GDK_KEY_Escape ? ev->key.keyval : 0;
+            pkey = ev->key.keyval != GDK_KEY_Escape ? ev->key.keyval : UINT32_MAX;
             return true;
         } else if (ev->type == GDK_BUTTON_PRESS) {
             pkey = ev->button.button;
