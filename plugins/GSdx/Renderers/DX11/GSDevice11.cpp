@@ -951,7 +951,7 @@ void GSDevice11::InitExternalFX()
 			}
 		}
 		catch (GSDXRecoverableError) {
-			printf("GSdx: failed to compile external post-processing shader. \n");
+			fprintf(stderr, "GSdx: failed to compile external post-processing shader.\n");
 		}
 		ExShader_Compiled = true;
 	}
