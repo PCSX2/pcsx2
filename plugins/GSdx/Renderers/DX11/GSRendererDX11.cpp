@@ -526,9 +526,7 @@ void GSRendererDX11::EmulateBlending()
 		}
 	}
 
-	const uint8 blend_index  = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
 	const int blend_flag = m_dev->GetBlendFlags(blend_index);
-
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
 	const bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
 

@@ -149,6 +149,9 @@ protected:
 
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) = 0;
 
+	// Compute the blending equation to detect special case
+	const uint8 blend_index = uint8(((m_context->ALPHA.A * 3 + m_context->ALPHA.B) * 3 + m_context->ALPHA.C) * 3 + m_context->ALPHA.D);
+
 	int m_userhacks_round_sprite_offset;
 	int m_userHacks_HPO;
 	bool m_userHacks_enabled_unscale_ptln;

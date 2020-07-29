@@ -473,10 +473,7 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 		//ASSERT(0);
 	}
 
-	// Compute the blending equation to detect special case
-	const uint8 blend_index  = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
 	const int blend_flag = m_dev->GetBlendFlags(blend_index);
-
 	// SW Blend is (nearly) free. Let's use it.
 	const bool impossible_or_free_blend = (blend_flag & (BLEND_NO_REC|BLEND_A_MAX|BLEND_ACCU)) // Blend doesn't requires the costly barrier
 		|| (m_prim_overlap == PRIM_OVERLAP_NO) // Blend can be done in a single draw
