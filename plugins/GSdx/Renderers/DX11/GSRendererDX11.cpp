@@ -505,14 +505,10 @@ void GSRendererDX11::EmulateBlending()
 		return;
 
 	m_om_bsel.abe = 1;
-	m_om_bsel.a = ALPHA.A;
-	m_om_bsel.b = ALPHA.B;
-	m_om_bsel.c = ALPHA.C;
-	m_om_bsel.d = ALPHA.D;
 
 	if (m_env.PABE.PABE)
 	{
-		if (m_om_bsel.a == 0 && m_om_bsel.b == 1 && m_om_bsel.c == 0 && m_om_bsel.d == 1)
+		if (ALPHA.A == 0 && ALPHA.B == 1 && ALPHA.C == 0 && ALPHA.D == 1)
 		{
 			// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
 			// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
@@ -1109,8 +1105,8 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 
 	SetupIA(sx, sy);
 
-	uint8 afix = m_context->ALPHA.FIX;
-	dev->SetupOM(m_om_dssel, m_om_bsel, afix);
+	const uint8 afix = m_context->ALPHA.FIX;
+	dev->SetupOM(m_om_dssel, m_om_bsel, blend_index, afix);
 	dev->SetupVS(m_vs_sel, &vs_cb);
 	dev->SetupGS(m_gs_sel, &gs_cb);
 	dev->SetupPS(m_ps_sel, &ps_cb, m_ps_ssel);
@@ -1178,7 +1174,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 			m_om_bsel.wb = b;
 			m_om_bsel.wa = a;
 
-			dev->SetupOM(m_om_dssel, m_om_bsel, afix);
+			dev->SetupOM(m_om_dssel, m_om_bsel, blend_index, afix);
 
 			dev->DrawIndexedPrimitive();
 		}
