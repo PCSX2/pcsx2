@@ -115,8 +115,9 @@ protected:
 	wxMenu& m_menuConfig;
 	wxMenu& m_menuWindow;
 
-	wxMenu& m_menuCapture;
-	wxMenu& m_submenuVideoCapture;
+	wxMenu&	m_menuCapture;
+	wxMenu&	m_submenuVideoCapture;
+	wxMenu&	m_submenuScreenshot;
 
 #ifndef DISABLE_RECORDING
 	wxMenu& m_menuRecording;
@@ -248,6 +249,7 @@ protected:
 	void Menu_Capture_Video_Stop_Click(wxCommandEvent& event);
 	void VideoCaptureUpdate();
 	void Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& event);
+	void Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event);
 
 #ifndef DISABLE_RECORDING
 	void Menu_Recording_New_Click(wxCommandEvent& event);

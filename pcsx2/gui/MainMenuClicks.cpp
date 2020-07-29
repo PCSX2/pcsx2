@@ -919,6 +919,17 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& even
 	GSmakeSnapshot(g_Conf->Folders.Snapshots.ToAscii());
 }
 
+void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent &event)
+{
+	if (!CoreThread.IsOpen())
+		return;
+
+	wxFileDialog fileDialog(this, "Select a file", g_Conf->Folders.Snapshots.ToAscii(), wxEmptyString, "PNG files (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+	if (fileDialog.ShowModal() == wxID_OK)
+		GSmakeSnapshot(fileDialog.GetPath());
+}
+
 #ifndef DISABLE_RECORDING
 void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 {
