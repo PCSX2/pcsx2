@@ -30,14 +30,14 @@ class InputRecording
 {
 public:
 	InputRecording() {}
-	~InputRecording(){}
+	~InputRecording() {}
 
-	void ControllerInterrupt(u8 &data, u8 &port, u16 & BufCount, u8 buf[]);
+	void ControllerInterrupt(u8& data, u8& port, u16& BufCount, u8 buf[]);
 
 	void RecordModeToggle();
 
 	INPUT_RECORDING_MODE GetModeState();
-	InputRecordingFile & GetInputRecordingData();
+	InputRecordingFile& GetInputRecordingData();
 	bool IsInterruptFrame();
 
 	void Stop();
