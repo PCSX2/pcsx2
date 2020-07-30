@@ -26,10 +26,6 @@ GSRendererDX11::GSRendererDX11()
 	: GSRendererHW(new GSTextureCache11(this))
 {
 	m_sw_blending = theApp.GetConfigI("accurate_blending_unit_d3d11");
-	if (theApp.GetConfigB("UserHacks"))
-		UserHacks_AlphaStencil = theApp.GetConfigB("UserHacks_AlphaStencil");
-	else
-		UserHacks_AlphaStencil = false;
 
 	ResetStates();
 }
@@ -45,7 +41,7 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 
 	D3D11_PRIMITIVE_TOPOLOGY t;
 
-	bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1);
+	const bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1);
 
 	switch (m_vt.m_primclass)
 	{
@@ -58,6 +54,7 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 
 		t = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
 		break;
+
 	case GS_LINE_CLASS:
 		if (unscale_pt_ln)
 		{
@@ -66,16 +63,29 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 		}
 
 		t = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-
 		break;
+
 	case GS_SPRITE_CLASS:
-		t = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+		// Lines: GPU conversion.
+		// Triangles: CPU conversion.
+		if (!m_vt.m_accurate_stq && m_vertex.next > 32)  // <=> 16 sprites (based on Shadow Hearts)
+		{
+			t = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+		}
+		else
+		{
+			m_gs_sel.cpu_sprite = 1;
+			Lines2Sprites();
+
+			t = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		}
+
 		break;
+
 	case GS_TRIANGLE_CLASS:
-
 		t = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
 		break;
+
 	default:
 		__assume(0);
 	}
@@ -1035,28 +1045,6 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	{
 		EmulateAtst(1, tex);
 	}
-
-	// FIXME: Purge it when remaining DATE cases in DATE selection are supported properly.
-	// Destination alpha pseudo stencil hack: use a stencil operation combined with an alpha test
-	// to only draw pixels which would cause the destination alpha test to fail in the future once.
-	// Unfortunately this also means only drawing those pixels at all, which is why this is a hack.
-	// It helps render transparency in Amagami, breaks a lot of other games.
-	if (UserHacks_AlphaStencil && DATE && !DATE_one && !m_texture_shuffle && m_om_bsel.wa && !m_context->TEST.ATE)
-	{
-		// fprintf(stderr, "%d: Alpha Stencil detected\n", s_n);
-		if (!m_context->FBA.FBA)
-		{
-			if (m_context->TEST.DATM == 0)
-				m_ps_sel.atst = 2; // >=
-			else
-				m_ps_sel.atst = 1; // <
-
-			ps_cb.FogColor_AREF.a = (float)0x80;
-		}
-		if (!(m_context->FBA.FBA && m_context->TEST.DATM == 1))
-			m_om_dssel.date_one = 1;
-	}
-	// END OF FIXME
 
 	if (tex)
 	{

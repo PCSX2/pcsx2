@@ -11,7 +11,7 @@ AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: All
-AllowShortIfStatementsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
@@ -20,21 +20,22 @@ AlwaysBreakTemplateDeclarations: true
 BinPackArguments: true
 BinPackParameters: true
 BraceWrapping:
+  AfterCaseLabel:  true
   AfterClass:      true
-  AfterControlStatement: false
-  AfterEnum:       false
+  AfterControlStatement: true
+  AfterEnum:       true
   AfterFunction:   true
   AfterNamespace:  true
-  AfterObjCDeclaration: false
+  AfterObjCDeclaration: true
   AfterStruct:     true
   AfterUnion:      true
-  BeforeCatch:     false
-  BeforeElse:      false
+  BeforeCatch:     true
+  BeforeElse:      true
   IndentBraces:    false
 BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Custom
 BreakBeforeTernaryOperators: false
-BreakConstructorInitializersBeforeComma: true
+BreakConstructorInitializers: BeforeComma
 ColumnLimit:     0
 CommentPragmas:  '^ (IWYU pragma:|NOLINT)'
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
@@ -60,7 +61,7 @@ KeepEmptyLinesAtTheStartOfBlocks: true
 MacroBlockBegin: ''
 MacroBlockEnd:   ''
 MaxEmptyLinesToKeep: 3
-NamespaceIndentation: None
+NamespaceIndentation: All
 ObjCBlockIndentWidth: 2
 ObjCSpaceAfterProperty: false
 ObjCSpaceBeforeProtocolList: true
@@ -70,8 +71,8 @@ PenaltyBreakFirstLessLess: 120
 PenaltyBreakString: 1000
 PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 60
-PointerAlignment: Right
-ReflowComments:  true
+PointerAlignment: Left
+ReflowComments:  false
 SortIncludes:    false
 SpaceAfterCStyleCast: false
 SpaceBeforeAssignmentOperators: true
@@ -85,5 +86,5 @@ SpacesInParentheses: false
 SpacesInSquareBrackets: false
 Standard:        Cpp11
 TabWidth:        4
-UseTab:          Never
+UseTab:          ForContinuationAndIndentation
 ...

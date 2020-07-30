@@ -142,12 +142,13 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 {
 	CComPtr<ID3D11GeometryShader> gs;
 
-	bool Unscale_GSShader = (sel.point == 1 || sel.line == 1);
-	if((sel.prim > 0 && (sel.iip == 0 || sel.prim == 3)) || Unscale_GSShader) // geometry shader works in every case, but not needed
+	const bool unscale_pt_ln = (sel.point == 1 || sel.line == 1);
+	// Geometry shader is disabled if sprite conversion is done on the cpu (sel.cpu_sprite).
+	if ((sel.prim > 0 && sel.cpu_sprite == 0 && (sel.iip == 0 || sel.prim == 3)) || unscale_pt_ln)
 	{
-		auto i = std::as_const(m_gs).find(sel);
+		const auto i = std::as_const(m_gs).find(sel);
 
-		if(i != m_gs.end())
+		if (i != m_gs.end())
 		{
 			gs = i->second;
 		}

@@ -38,8 +38,6 @@
 
 #else
 
-#include <gtk/gtk.h>
-
 #define __inline inline
 
 #endif

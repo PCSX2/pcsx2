@@ -1294,20 +1294,27 @@ void GSRendererHW::Draw()
 		m_texture_shuffle = (GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 16) && (tex_psm.bpp == 16)
 			&& draw_sprite_tex && m_src->m_32_bits_fmt;
 
-		// Shadow_of_memories_Shadow_Flickering (Okami mustn't call this code)
+		// Okami mustn't call this code
 		if (m_texture_shuffle && m_vertex.next < 3 && PRIM->FST && (m_context->FRAME.FBMSK == 0)) {
 			// Avious dubious call to m_texture_shuffle on 16 bits games
 			// The pattern is severals column of 8 pixels. A single sprite
 			// smell fishy but a big sprite is wrong.
 
-			// Tomb Raider Angel of Darkness relies on this behavior to produce a fog effect.
-			// In this case, the address of the framebuffer and texture are the same. 
-			// The game will take RG => BA and then the BA => RG of next pixels. 
-			// However, only RG => BA needs to be emulated because RG isn't used.
-			GL_INS("WARNING: Possible misdetection of a texture shuffle effect");
-
+			// Shadow of Memories/Destiny shouldn't call this code.
+			// Causes shadow flickering.
 			GSVertex* v = &m_vertex.buff[0];
-			m_texture_shuffle = ((v[1].U - v[0].U) < 256) || m_context->FRAME.Block() == m_context->TEX0.TBP0;
+			m_texture_shuffle = ((v[1].U - v[0].U) < 256) ||
+				// Tomb Raider Angel of Darkness relies on this behavior to produce a fog effect.
+				// In this case, the address of the framebuffer and texture are the same. 
+				// The game will take RG => BA and then the BA => RG of next pixels. 
+				// However, only RG => BA needs to be emulated because RG isn't used.
+				m_context->FRAME.Block() == m_context->TEX0.TBP0 ||
+				// DMC3, Onimusha 3 rely on this behavior.
+				// They do fullscreen rectangle with scissor, then shift by 8 pixels, not done with recursion.
+				// So we check if it's a TS effect by checking the scissor.
+				((m_context->SCISSOR.SCAX1 - m_context->SCISSOR.SCAX0) < 32);
+
+			GL_INS("WARNING: Possible misdetection of effect, texture shuffle is %s", m_texture_shuffle ? "Enabled" : "Disabled");
 		}
 
 		// Texture shuffle is not yet supported with strange clamp mode
@@ -1552,7 +1559,6 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::StarWarsForceUnleashed, CRC::RegionCount, &GSRendererHW::OI_StarWarsForceUnleashed));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::SuperManReturns, CRC::RegionCount, &GSRendererHW::OI_SuperManReturns));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ArTonelico2, CRC::RegionCount, &GSRendererHW::OI_ArTonelico2));
-	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::ItadakiStreet, CRC::RegionCount, &GSRendererHW::OI_ItadakiStreet));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak2, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::JakX, CRC::RegionCount, &GSRendererHW::OI_JakGames));
@@ -2160,32 +2166,6 @@ bool GSRendererHW::OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::
 		if(ds)
 			ds->Commit(); // Don't bother to save few MB for a single game
 		m_dev->ClearDepth(ds);
-	}
-
-	return true;
-}
-
-bool GSRendererHW::OI_ItadakiStreet(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
-{
-	if (m_context->TEST.ATST == ATST_NOTEQUAL && m_context->TEST.AREF == 0) {
-		// It is also broken on the SW renderer. Issue appears because fragment alpha is 0
-		// I suspect the game expect low value of alpha, and due to bad rounding on the core
-		// you have wrongly 0.
-		// Otherwise some draws calls are empty (all pixels are discarded).
-		// It fixes missing element on the board
-
-		GL_INS("OI_ItadakiStreetSpecial disable alpha test");
-		m_context->TEST.ATST = ATST_ALWAYS;
-
-#if 0 // Not enough
-		uint32 dummy_fm;
-		uint32 dummy_zm;
-
-		if (!TryAlphaTest(dummy_fm, dummy_zm)) {
-			GL_INS("OI_ItadakiStreetSpecial disable alpha test");
-			m_context->TEST.ATST = ATST_ALWAYS;
-		}
-#endif
 	}
 
 	return true;

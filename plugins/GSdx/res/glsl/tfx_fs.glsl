@@ -530,29 +530,6 @@ void atst(vec4 C)
 {
     float a = C.a;
 
-#if 0
-    switch(Uber_ATST) {
-        case 0:
-            break;
-        case 1:
-            if (a > AREF) discard;
-            break;
-        case 2:
-            if (a < AREF) discard;
-            break;
-        case 3:
-            if (abs(a - AREF) > 0.5f) discard;
-            break;
-        case 4:
-            if (abs(a - AREF) < 0.5f) discard;
-            break;
-    }
-
-
-#endif
-
-#if 1
-
 #if (PS_ATST == 0)
     // nothing to do
 #elif (PS_ATST == 1)
@@ -564,9 +541,6 @@ void atst(vec4 C)
 #elif (PS_ATST == 4)
     if (abs(a - AREF) < 0.5f) discard;
 #endif
-
-#endif
-
 }
 
 void fog(inout vec4 C, float f)
@@ -855,16 +829,21 @@ void ps_main()
     return;
 #endif
 
-#if !SW_BLEND && PS_DITHER
+#if !SW_BLEND
     ps_dither(C);
-    // Dither matrix range is [-4,3] but positive values can cause issues when
-    // software blending is not used or is unavailable.
-    C.rgb -= 3.0;
 #endif
 
     ps_blend(C, alpha_blend);
 
     ps_fbmask(C);
+
+// When dithering the bottom 3 bits become meaningless and cause lines in the picture
+// so we need to limit the color depth on dithered items
+// SW_BLEND already deals with this so no need to do in those cases
+#if !SW_BLEND && PS_DITHER && PS_DFMT == FMT_16 && PS_COLCLIP == 0
+    C.rgb = clamp(C.rgb, vec3(0.0f), vec3(255.0f));
+    C.rgb = uvec3(uvec3(C.rgb) & uvec3(0xF8));
+#endif
 
 // #if PS_HDR == 1
     // Use negative value to avoid overflow of the texture (in accumulation mode)

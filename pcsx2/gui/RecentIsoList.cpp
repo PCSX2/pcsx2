@@ -89,7 +89,9 @@ void RecentIsoManager::RemoveAllFromMenu()
 	if( m_Menu == NULL ) return;
 
 	int cnt = m_Items.size();
-	for( int i=0; i<cnt; ++i )
+	// Note: Go backwards to work around https://trac.wxwidgets.org/ticket/18772
+	// Switch it back to forwards once that's fixed in a relased WX version
+	for( int i=cnt-1; i>=0; --i )
 	{
 		RecentItem& curitem( m_Items[i] );
 		if( curitem.ItemPtr == NULL ) continue;

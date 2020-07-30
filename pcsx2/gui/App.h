@@ -664,11 +664,6 @@ protected:
 	void OpenWizardConsole();
 	void PadKeyDispatch( const keyEvent& ev );
 
-#ifndef DISABLE_RECORDING 
-public:
-	void Recording_PadKeyDispatch(const keyEvent& ev) { PadKeyDispatch(ev); }
-#endif 
-
 protected:
 	void HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event) const;
 	void HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event);

@@ -164,7 +164,7 @@ void psxRcntInit() {
 static bool __fastcall _rcntFireInterrupt(int i, bool isOverflow) {
 	bool ret;
 
-	if ((psxCounters[i].mode & 0x400)) { //IRQ fired
+	if (psxCounters[i].mode & 0x400) { //IRQ fired
 		//DevCon.Warning("Counter %d %s IRQ Fired count %x", i, isOverflow ? "Overflow" : "Target", psxCounters[i].count);
 		psxHu32(0x1070) |= psxCounters[i].interrupt;
 		iopTestIntc();

@@ -339,26 +339,6 @@ std::string GSUtil::GetDeviceUniqueName(cl::Device& device)
 
 #ifdef _WIN32
 
-bool GSUtil::CheckDirectX()
-{
-	if (GSDevice11::LoadD3DCompiler())
-	{
-		GSDevice11::FreeD3DCompiler();
-		return true;
-	}
-
-	// User's system is likely broken if it fails and is Windows 8.1 or greater.
-	if (!IsWindows8Point1OrGreater())
-	{
-		printf("Cannot find d3dcompiler_43.dll\n");
-		if (MessageBox(nullptr, TEXT("You need to update some DirectX libraries, would you like to do it now?"), TEXT("GSdx"), MB_YESNO) == IDYES)
-		{
-			ShellExecute(nullptr, TEXT("open"), TEXT("https://www.microsoft.com/en-us/download/details.aspx?id=8109"), nullptr, nullptr, SW_SHOWNORMAL);
-		}
-	}
-	return false;
-}
-
 // ---------------------------------------------------------------------------------
 //  DX11 Detection (includes DXGI detection and dynamic library method bindings)
 // ---------------------------------------------------------------------------------
