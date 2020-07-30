@@ -2343,6 +2343,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             AddTooltip(IDC_PAD_LIST, hWnd);
             AddTooltip(IDC_PAD_TYPE, hWnd);
             AddTooltip(IDC_DIAG_LIST, hWnd);
+            AddTooltip(IDC_G_DI, hWnd);
             AddTooltip(IDC_G_XI, hWnd);
             AddTooltip(IDC_ANALOG_START1, hWnd);
             AddTooltip(ID_RESTORE_DEFAULTS, hWnd);
