@@ -105,7 +105,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	// create factory
 	{
-		const HRESULT result = CreateDXGIFactory2(0, IID_PPV_ARGS(&m_factory));
+		const HRESULT result = CreateDXGIFactory1(IID_PPV_ARGS(&m_factory));
 		if (FAILED(result))
 		{
 			fprintf(stderr, "D3D11: Unable to create DXGIFactory2 (reason: %x)\n", result);
