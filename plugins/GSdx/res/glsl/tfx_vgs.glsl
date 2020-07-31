@@ -154,16 +154,18 @@ void gs_main()
 void gs_main()
 {
     // Transform a line to a thick line-sprite
-    vertex right = vertex(GSin[1].t_float, GSin[1].t_int, GSin[1].c);
     vertex left  = vertex(GSin[0].t_float, GSin[0].t_int, GSin[0].c);
+    vertex right = vertex(GSin[1].t_float, GSin[1].t_int, GSin[1].c);
     vec4 lt_p = gl_in[0].gl_Position;
     vec4 rt_p = gl_in[1].gl_Position;
 
     // Potentially there is faster math
     vec2 line_vector = normalize(rt_p.xy - lt_p.xy);
     vec2 line_normal = vec2(line_vector.y, -line_vector.x);
-    vec2 line_width  = line_normal * PointSize;
+    vec2 line_width  = (line_normal * PointSize) / 2;
 
+    lt_p.xy -= line_width;
+    rt_p.xy -= line_width;
     vec4 lb_p = gl_in[0].gl_Position + vec4(line_width, 0.0f, 0.0f);
     vec4 rb_p = gl_in[1].gl_Position + vec4(line_width, 0.0f, 0.0f);
 
