@@ -10,6 +10,7 @@ override_dh_auto_configure:
 		-DXDG_STD=TRUE \
 		-DDISABLE_ADVANCE_SIMD=TRUE \
 		-DPACKAGE_MODE=TRUE \
+		-DGTK3_API=TRUE \
 		-DGSDX_LEGACY=TRUE
 
 override_dh_strip:
