@@ -2,7 +2,7 @@ Format: 3.0 (native)
 Source: pcsx2
 Binary: pcsx2
 Architecture: amd64
-Version: 1.7.0.1-ce7889939
+Version: 1.7.0.2-ce7889939
 Maintainer: Beaumanvienna (JC) <beauman@gmail.com>
 Homepage: https://github.com/beaumanvienna/pcsx2/tree/x86_64-support
 Standards-Version: 4.1.4
@@ -13,7 +13,6 @@ Build-Depends: cmake (>= 2.8.5),
     libasound2-dev,
     libgl1-mesa-dev,
     libglu1-mesa-dev,
-    libgtk2.0-dev,
     liblzma-dev,
     libpcap0.8-dev,
     libpng12-dev | libpng-dev,
@@ -21,7 +20,8 @@ Build-Depends: cmake (>= 2.8.5),
     libsdl2-dev,
     libsoundtouch-dev,
     libwxbase3.0-dev,
-    libwxgtk3.0-dev,
+    libwxgtk3.0-gtk3-dev, 
+    libgtk-3-dev,
     libxml2-dev,
     libx11-dev,
     locales | locales-all,

@@ -1,4 +1,4 @@
-pcsx2 (1:1.7.0.1-ce7889939) bionic; urgency=medium
+pcsx2 (1:1.7.0.2-ce7889939) focal; urgency=medium
 
   * F1/F3 savestate crash fixed
   * https://github.com/PCSX2/pcsx2/pull/3451/commits/ce788993970b6ccb41484244ce4f38545348f4d3
