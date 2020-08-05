@@ -34,6 +34,7 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5307BBB7-EBB9-4AA4-8CB6-A94EC473C8C4}</ProjectGuid>
   </PropertyGroup>
