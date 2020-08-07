@@ -418,17 +418,18 @@ void MainEmuFrame::CreateConfigMenu()
 
 	m_menuConfig.AppendSeparator();
 
-	m_menuConfig.Append( MenuId_ChangeLang,			L"Change &Language" ); // Always in English
+	m_menuConfig.Append(MenuId_ChangeLang,			L"Change &Language" ); // Always in English
 	m_menuConfig.Append(MenuId_Config_ResetAll,	_("C&lear all settings..."),
 		AddAppName(_("Clears all %s settings and re-runs the startup wizard.")));
 }
 
 void MainEmuFrame::CreateWindowsMenu()
 {
-	m_menuWindow.Append(MenuId_Debug_Open,		_("&Open Debug Window..."),	wxEmptyString);
+	m_menuWindow.Append(MenuId_Debug_Open,		_("&Show Debug"),	wxEmptyString, wxITEM_CHECK );
 
 	m_menuWindow.Append( &m_MenuItem_Console );
 #if defined(__unix__)
+	m_menuWindow.AppendSeparator();
 	m_menuWindow.Append( &m_MenuItem_Console_Stdio );
 #endif
 }

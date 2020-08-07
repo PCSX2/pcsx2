@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#include "App.h"
+#include "MainFrame.h"
 #include "DisassemblyDialog.h"
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
@@ -570,7 +572,10 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 
 void DisassemblyDialog::onClose(wxCloseEvent& evt)
 {
+	auto* mainFrame = GetMainFramePtr();
+
 	Hide();
+	mainFrame->CheckMenuItem(MenuId_Debug_Open, false);
 }
 
 void DisassemblyDialog::update()

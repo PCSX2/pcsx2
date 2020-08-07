@@ -649,8 +649,6 @@ void MainEmuFrame::Menu_SuspendResume_Click(wxCommandEvent &event)
 
 void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent &event)
 {
-	//if( !SysHasValidState() && !CorePlugins.AreAnyInitialized() ) return;
-
 	UI_DisableSysShutdown();
 	Console.SetTitle("PCSX2 Program Log");
 	CoreThread.Reset();
@@ -676,7 +674,12 @@ void MainEmuFrame::Menu_Debug_Open_Click(wxCommandEvent &event)
 {
 	DisassemblyDialog* dlg = wxGetApp().GetDisassemblyPtr();
 	if (dlg)
-		dlg->Show();
+	{
+		if (event.IsChecked())
+			dlg->Show();
+		else
+			dlg->Hide();
+	}
 }
 
 void MainEmuFrame::Menu_Debug_MemoryDump_Click(wxCommandEvent &event)
