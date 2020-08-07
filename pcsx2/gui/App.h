@@ -154,6 +154,7 @@ enum MenuIdentifiers
 
 	MenuId_Config_Multitap0Toggle,
 	MenuId_Config_Multitap1Toggle,
+	MenuId_Config_FastBoot,
 
 	MenuId_Help_GetStarted,
 	MenuId_Help_Forums,

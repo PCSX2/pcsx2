@@ -197,7 +197,8 @@ protected:
 	void Menu_EnableHostFs_Click(wxCommandEvent &event);
 
 	void Menu_BootCdvd_Click(wxCommandEvent &event);
-	void Menu_BootCdvd2_Click(wxCommandEvent &event);
+	void Menu_FastBoot_Click(wxCommandEvent &event);
+
 	void Menu_OpenELF_Click(wxCommandEvent &event);
 	void Menu_CdvdSource_Click(wxCommandEvent &event);
 	void Menu_LoadStates_Click(wxCommandEvent &event);

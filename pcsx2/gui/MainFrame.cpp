@@ -188,7 +188,7 @@ void MainEmuFrame::ConnectMenus()
 {
 	// System
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_BootCdvd_Click, this, MenuId_Boot_CDVD);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_BootCdvd2_Click, this, MenuId_Boot_CDVD2);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_FastBoot_Click, this, MenuId_Config_FastBoot);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_OpenELF_Click, this, MenuId_Boot_ELF);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SuspendResume_Click, this, MenuId_Sys_SuspendResume);
 
@@ -263,8 +263,6 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_VirtualPad_Open_Click, this, MenuId_Recording_VirtualPad_Port0);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Recording_VirtualPad_Open_Click, this, MenuId_Recording_VirtualPad_Port1);
 #endif
-
-	//Bind(wxEVT_MENU, &MainEmuFrame::Menu_Debug_MemoryDump_Click, this, MenuId_Debug_MemoryDump);
 }
 
 void MainEmuFrame::InitLogBoxPosition( AppConfig::ConsoleLogOptions& conf )
@@ -300,10 +298,6 @@ void MainEmuFrame::DispatchEvent( const PluginEventType& plugin_evt )
 	{
 		for( int i=0; i<PluginId_Count; ++i )
 			m_PluginMenuPacks[i].OnLoaded();
-
-		// bleh this makes the menu too cluttered. --air
-		//m_menuCDVD.SetLabel( MenuId_Src_Plugin, wxsFormat( L"%s (%s)", _("Plugin"),
-		//	GetCorePlugins().GetName( PluginId_CDVD ).c_str() ) );
 	}
 }
 
@@ -335,24 +329,21 @@ void MainEmuFrame::CreatePcsx2Menu()
 
 	m_menuSys.Append(MenuId_Boot_CDVD,		_("Initializing..."));
 
-	m_menuSys.Append(MenuId_Boot_CDVD2,		_("Initializing..."));
-
-	//m_menuSys.Append( MenuId_SkipBiosToggle,_("Fast Boot"),
-	//	_("Skips PS2 splash screens when booting from ISO or DVD media"), wxITEM_CHECK );
-
-	m_menuSys.Append(MenuId_Boot_ELF,		_("&Run ELF..."),
-		_("For running raw PS2 binaries directly"));
-
-	m_menuSys.AppendSeparator();
-
 	m_menuSys.Append(MenuId_Sys_SuspendResume,	_("Initializing..."));
 
 	m_menuSys.Append(MenuId_Sys_Shutdown,	_("Shut&down"),
 		_("Wipes all internal VM states and shuts down plugins."));
 	m_menuSys.FindItem(MenuId_Sys_Shutdown)->Enable(false);
 
+	m_menuSys.Append(MenuId_Boot_ELF,		_("&Run ELF..."),
+		_("For running raw PS2 binaries directly"));
+
 	m_menuSys.AppendSeparator();
 
+	m_menuSys.Append( MenuId_Config_FastBoot,_("Fast Boot"),
+		_("Skips PS2 splash screens when booting from ISO or DVD media"), wxITEM_CHECK );
+
+	m_menuSys.AppendSeparator();
 	//m_menuSys.Append(MenuId_Sys_Close,		_("Close"),
 	//	_("Stops emulation and closes the GS window."));
 
@@ -422,13 +413,12 @@ void MainEmuFrame::CreateConfigMenu()
 	m_menuConfig.Append(MenuId_Config_FireWire,	_("&Firewire"),			m_PluginMenuPacks[PluginId_FW]);
 
 	m_menuConfig.AppendSeparator();
-	m_menuConfig.Append( MenuId_ChangeLang,			L"Change &Language" ); // Always in English
-
-	m_menuConfig.AppendSeparator();
 	m_menuConfig.Append(MenuId_Config_Multitap0Toggle,	_("Multitap &1"),	wxEmptyString, wxITEM_CHECK );
 	m_menuConfig.Append(MenuId_Config_Multitap1Toggle,	_("Multitap &2"),	wxEmptyString, wxITEM_CHECK );
 
 	m_menuConfig.AppendSeparator();
+
+	m_menuConfig.Append( MenuId_ChangeLang,			L"Change &Language" ); // Always in English
 	m_menuConfig.Append(MenuId_Config_ResetAll,	_("C&lear all settings..."),
 		AddAppName(_("Clears all %s settings and re-runs the startup wizard.")));
 }
@@ -565,18 +555,16 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	// Ideally the __WXMSW__ port should use the embedded IDI_ICON2 icon, because wxWidgets sucks and
 	// loses the transparency information when loading bitmaps into icons.  But for some reason
 	// I cannot get it to work despite following various examples to the letter.
-
-
 	SetIcons( wxGetApp().GetIconBundle() );
 
 	int m_statusbar_widths[] = { (int)(backsize.GetWidth()*0.73), (int)(backsize.GetWidth()*0.25) };
 	m_statusbar.SetStatusWidths(2, m_statusbar_widths);
-	//m_statusbar.SetStatusText( L"The Status is Good!", 0);
 	m_statusbar.SetStatusText( wxEmptyString, 0);
 
 	wxBoxSizer& joe( *new wxBoxSizer( wxVERTICAL ) );
 	joe.Add( m_background );
 	SetSizerAndFit( &joe );
+
 	// Makes no sense, but this is needed for the window size to be correct for
 	// 200% DPI on Windows. The SetSizerAndFit is supposed to be doing the exact
 	// same thing.
@@ -696,64 +684,30 @@ void MainEmuFrame::ApplyCoreStatus()
 	}
 
 	const CDVD_SourceType Source = g_Conf->CdvdSource;
-	const MenuIdentifiers fullboot_id = MenuId_Boot_CDVD;
-	const MenuIdentifiers fastboot_id = MenuId_Boot_CDVD2;
 
-	wxMenuItem *cdvd_fast = menubar.FindItem(fastboot_id);
-	if (Source == CDVD_SourceType::NoDisc)
+	wxMenuItem *cdvd_menu = menubar.FindItem(MenuId_Boot_CDVD);
+
+	wxString label;
+	wxString help_text = _("Use fast boot to skip PS2 startup and splash screens");
+
+	switch (Source)
 	{
-		if(cdvd_fast)
-			m_menuSys.Destroy(cdvd_fast);
-	}
-	else
-	{
-		wxString label;
-		wxString help_text = _("Use fast boot to skip PS2 startup and splash screens");
-
-		switch (Source)
-		{
-		case CDVD_SourceType::Iso:
-			label = _("Boot ISO (&fast)");
-			break;
-		case CDVD_SourceType::Plugin:
-			label = _("Boot CDVD (&fast)");
-			break;
-		//case CDVD_SourceType::NoDisc: (Fast boot menu item is destroyed when no disc is selected)
-		default:
-			pxAssert(false);
-		}
-
-		if (cdvd_fast)
-		{
-			cdvd_fast->SetItemLabel(label);
-			cdvd_fast->SetHelp(help_text);
-		}
-		else
-		{
-			m_menuSys.Insert(1, fastboot_id, label, help_text);
-		}
+	case CDVD_SourceType::Iso:
+		label = _("Boot ISO");
+		break;
+	case CDVD_SourceType::Plugin:
+		label = _("Boot CDVD");
+		break;
+	case CDVD_SourceType::NoDisc:
+		label = _("Boot Bios");
+		break;
+	default:
+		label = _("Boot Bios");
+		break;
 	}
 
-	if (wxMenuItem *cdvd_full = menubar.FindItem(fullboot_id))
-	{
-		switch (Source)
-		{
-		case CDVD_SourceType::Iso:
-			cdvd_full->SetItemLabel(_("Boo&t ISO (full)"));
-			cdvd_full->SetHelp(_("Boot the VM using the current ISO source media"));
-			break;
-		case CDVD_SourceType::Plugin:
-			cdvd_full->SetItemLabel(_("Boo&t CDVD (full)"));
-			cdvd_full->SetHelp(_("Boot the VM using the current CD/DVD source media"));
-			break;
-		case CDVD_SourceType::NoDisc:
-			cdvd_full->SetItemLabel(_("Boo&t BIOS"));
-			cdvd_full->SetHelp(_("Boot the VM without any source media"));
-			break;
-		default:
-			pxAssert(false);
-		}
-	}
+	cdvd_menu->SetItemLabel(label);
+	cdvd_menu->SetHelp(help_text);
 }
 
 //Apply a config to the menu such that the menu reflects it properly
@@ -787,6 +741,7 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 
 		menubar.Check( MenuId_Config_Multitap0Toggle, configToApply.EmuOptions.MultitapPort0_Enabled );
 		menubar.Check( MenuId_Config_Multitap1Toggle, configToApply.EmuOptions.MultitapPort1_Enabled );
+		menubar.Check( MenuId_Config_FastBoot, configToApply.EnableFastBoot );
 	}
 
 	UpdateIsoSrcSelection();	//shouldn't be affected by presets but updates from g_Conf anyway and not from configToApply, so no problem here.

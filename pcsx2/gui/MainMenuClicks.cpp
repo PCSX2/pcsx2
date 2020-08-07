@@ -384,14 +384,15 @@ void MainEmuFrame::Menu_CdvdSource_Click( wxCommandEvent &event )
 
 void MainEmuFrame::Menu_BootCdvd_Click( wxCommandEvent &event )
 {
-	g_Conf->EmuOptions.UseBOOT2Injection = false;
+	g_Conf->EmuOptions.UseBOOT2Injection = g_Conf->EnableFastBoot;
 	_DoBootCdvd();
 }
 
-void MainEmuFrame::Menu_BootCdvd2_Click( wxCommandEvent &event )
+void MainEmuFrame::Menu_FastBoot_Click( wxCommandEvent &event )
 {
-	g_Conf->EmuOptions.UseBOOT2Injection = true;
-	_DoBootCdvd();
+	g_Conf->EnableFastBoot = GetMenuBar()->IsChecked( MenuId_Config_FastBoot );
+	AppApplySettings();
+	AppSaveSettings();
 }
 
 wxString GetMsg_IsoImageChanged()
