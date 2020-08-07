@@ -248,7 +248,6 @@ void MainEmuFrame::ConnectMenus()
 
 	// Debug
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Debug_Open_Click, this, MenuId_Debug_Open);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Debug_Logging_Click, this, MenuId_Debug_Logging);
 
 	// Capture
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Video_Record_Click, this, MenuId_Capture_Video_Record);
@@ -344,8 +343,6 @@ void MainEmuFrame::CreatePcsx2Menu()
 		_("Skips PS2 splash screens when booting from ISO or DVD media"), wxITEM_CHECK );
 
 	m_menuSys.AppendSeparator();
-	//m_menuSys.Append(MenuId_Sys_Close,		_("Close"),
-	//	_("Stops emulation and closes the GS window."));
 
 	m_menuSys.Append(MenuId_Sys_LoadStates,	_("&Load state"), &m_LoadStatesSubmenu);
 	m_menuSys.Append(MenuId_Sys_SaveStates,	_("&Save state"), &m_SaveStatesSubmenu);
@@ -399,9 +396,6 @@ void MainEmuFrame::CreateConfigMenu()
 	m_menuConfig.Append(MenuId_Config_SysSettings,	_("Emulation &Settings...") );
 	m_menuConfig.Append(MenuId_Config_McdSettings,	_("&Memory cards...") );
 	m_menuConfig.Append(MenuId_Config_BIOS,			_("&Plugin/BIOS Selector...") );
-#ifdef PCSX2_DEVBUILD
-	m_menuConfig.Append(MenuId_Debug_Logging,		_("&Logging Settings..."),			wxEmptyString);
-#endif
 
 	m_menuConfig.AppendSeparator();
 
@@ -418,7 +412,7 @@ void MainEmuFrame::CreateConfigMenu()
 
 	m_menuConfig.AppendSeparator();
 
-	m_menuConfig.Append(MenuId_ChangeLang,			L"Change &Language" ); // Always in English
+	m_menuConfig.Append(MenuId_ChangeLang,			L"Change &language..." ); // Always in English
 	m_menuConfig.Append(MenuId_Config_ResetAll,	_("C&lear all settings..."),
 		AddAppName(_("Clears all %s settings and re-runs the startup wizard.")));
 }
@@ -455,12 +449,6 @@ void MainEmuFrame::CreateRecordMenu()
 
 void MainEmuFrame::CreateHelpMenu()
 {
-
-	MenuId_Help_GetStarted,
-	MenuId_Help_Forums,
-	MenuId_Help_Website,
-	MenuId_Help_Github,
-
 	m_menuHelp.Append(MenuId_Help_GetStarted,				_("&Getting Started") );
 	m_menuHelp.AppendSeparator();
 	m_menuHelp.Append(MenuId_Help_Forums,					_("&Pcsx2 Forums") );
@@ -514,7 +502,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menubar.Append( &m_menuSys,		_("&PCSX2") );
 	m_menubar.Append( &m_menuCDVD,		_("CD&VD") );
 	m_menubar.Append( &m_menuConfig,	_("&Config") );
-	m_menubar.Append( &m_menuWindow,		_("&Window") );
+	m_menubar.Append( &m_menuWindow,	_("&Window") );
 	m_menubar.Append( &m_menuCapture,	_("&Capture") );
 
 	SetMenuBar( &m_menubar );
