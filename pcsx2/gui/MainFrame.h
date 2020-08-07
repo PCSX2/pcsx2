@@ -164,6 +164,7 @@ public:
 	void ApplyConfigToGui(AppConfig& configToApply, int flags = 0);
 	void CommitPreset_noTrigger();
 	void AppendKeycodeNamesToMenuOptions();
+	void UpdateStatusBar();
 
 protected:
 	void DoGiveHelp(const wxString& text, bool show);

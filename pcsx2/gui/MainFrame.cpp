@@ -53,6 +53,26 @@ wxMenu* MainEmuFrame::MakeStatesSubMenu( int baseid, int loadBackupId ) const
 	return mnuSubstates;
 }
 
+void MainEmuFrame::UpdateStatusBar()
+{
+	wxString temp(wxEmptyString);
+
+	if (g_Conf->EnableFastBoot)
+		temp += "Fast Boot - ";
+
+	if (g_Conf->CdvdSource == CDVD_SourceType::Iso)
+		temp += "Selected: '" + wxFileName(g_Conf->CurrentIso).GetFullName() +"' ";
+
+#ifdef __M_X86_64
+	temp+= "(64 bit) ";
+#else
+	temp += "(32 bit) ";
+#endif
+
+	m_statusbar.SetStatusText(temp, 0);
+	m_statusbar.SetStatusText(CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], 1);
+}
+
 void MainEmuFrame::UpdateIsoSrcSelection()
 {
 	MenuIdentifiers cdsrc = MenuId_Src_Iso;
@@ -66,12 +86,8 @@ void MainEmuFrame::UpdateIsoSrcSelection()
 		jNO_DEFAULT
 	}
 	sMenuBar.Check( cdsrc, true );
-	m_statusbar.SetStatusText( CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], 1 );
-
+	UpdateStatusBar();
 	EnableCdvdPluginSubmenu( cdsrc == MenuId_Src_Plugin );
-
-	//sMenuBar.SetLabel( MenuId_Src_Iso, wxsFormat( L"%s -> %s", _("Iso"),
-	//	exists ? Path::GetFilename(g_Conf->CurrentIso).c_str() : _("Empty") ) );
 }
 
 bool MainEmuFrame::Destroy()

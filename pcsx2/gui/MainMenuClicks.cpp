@@ -158,6 +158,7 @@ wxWindowID SwapOrReset_Iso( wxWindow* owner, IScopedCoreThread& core_control, co
 
 	g_Conf->CdvdSource = CDVD_SourceType::Iso;
 	SysUpdateIsoSrcFile( isoFilename );
+
 	if( result == wxID_RESET )
 	{
 		core_control.DisallowResume();
@@ -392,6 +393,7 @@ void MainEmuFrame::Menu_FastBoot_Click( wxCommandEvent &event )
 	g_Conf->EnableFastBoot = GetMenuBar()->IsChecked( MenuId_Config_FastBoot );
 	AppApplySettings();
 	AppSaveSettings();
+	UpdateStatusBar();
 }
 
 wxString GetMsg_IsoImageChanged()

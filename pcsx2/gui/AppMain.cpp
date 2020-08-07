@@ -1178,6 +1178,7 @@ void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 {
 	g_Conf->CurrentIso = newIsoFile;
 	sMainFrame.UpdateIsoSrcSelection();
+	sMainFrame.UpdateStatusBar();
 }
 
 bool HasMainFrame()
