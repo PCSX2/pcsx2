@@ -117,6 +117,7 @@ enum MenuIdentifiers
 	MenuId_Sys_LoadStates,		// Opens load states submenu
 	MenuId_Sys_SaveStates,		// Opens save states submenu
 	MenuId_EnableBackupStates,	// Checkbox to enable/disables savestates backup
+	MenuId_GameSettingsSubMenu,
 	MenuId_EnablePatches,
 	MenuId_EnableCheats,
 	MenuId_EnableWideScreenPatches,
@@ -153,6 +154,12 @@ enum MenuIdentifiers
 
 	MenuId_Config_Multitap0Toggle,
 	MenuId_Config_Multitap1Toggle,
+
+	MenuId_Help_GetStarted,
+	MenuId_Help_Forums,
+	MenuId_Help_Website,
+	MenuId_Help_Wiki,
+	MenuId_Help_Github,
 
 	// Plugin Sections
 	// ---------------
