@@ -19,6 +19,7 @@
 
 #include "Utilities/PersistentThread.h"
 #include "x86emitter/tools.h"
+#include "IPC.h"
 
 
 using namespace Threading;
@@ -169,6 +170,17 @@ protected:
 	bool			m_resetProfilers;
 	bool			m_resetVsyncTimers;
 	bool			m_resetVirtualMachine;
+
+	// Stores the state of the socket IPC thread.
+	std::unique_ptr<SocketIPC> m_socketIpc;
+
+	// Current state of the IPC thread
+	enum StateIPC 
+	{
+		OFF,
+		ON
+	};
+	StateIPC m_IpcState = OFF;
 
 	// Indicates if the system has an active virtual machine state.  Pretty much always
 	// true anytime between plugins being initialized and plugins being shutdown.  Gets

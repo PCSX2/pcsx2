@@ -24,6 +24,7 @@
 #include "Patch.h"
 #include "SysThreads.h"
 #include "MTVU.h"
+#include "IPC.h"
 
 #include "../DebugTools/MIPSAnalyst.h"
 #include "../DebugTools/SymbolMap.h"
@@ -243,6 +244,11 @@ void SysCoreThread::GameStartingInThread()
 #ifdef USE_SAVESLOT_UI_UPDATES
 	UI_UpdateSysControls();
 #endif
+	if(EmuConfig.EnableIPC && m_IpcState == OFF)
+	{
+		m_IpcState = ON;
+		m_socketIpc = std::make_unique<SocketIPC>(this);
+	}
 }
 
 bool SysCoreThread::StateCheckInThread()

@@ -528,6 +528,13 @@ void MainEmuFrame::Menu_EnableCheats_Click( wxCommandEvent& )
 	AppSaveSettings();
 }
 
+void MainEmuFrame::Menu_EnableIPC_Click( wxCommandEvent& )
+{
+	g_Conf->EmuOptions.EnableIPC  = GetMenuBar()->IsChecked( MenuId_EnableIPC );
+	AppApplySettings();
+	AppSaveSettings();
+}
+
 void MainEmuFrame::Menu_EnableWideScreenPatches_Click( wxCommandEvent& )
 {
 	g_Conf->EmuOptions.EnableWideScreenPatches  = GetMenuBar()->IsChecked( MenuId_EnableWideScreenPatches );
