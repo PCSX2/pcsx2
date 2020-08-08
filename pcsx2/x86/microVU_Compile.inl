@@ -67,32 +67,25 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC) {
 		ranges->push_front(mRange);
 		return;
 	}
-	if (mVUrange.start <= pc) {
-		mVUrange.end = pc;
-		bool mergedRange = false;
-		s32  rStart = mVUrange.start;
-		s32  rEnd   = mVUrange.end;
-		std::deque<microRange>::iterator it(ranges->begin());
-		for (++it; it != ranges->end(); ++it) {
-			if((it[0].start >= rStart) && (it[0].start <= rEnd)) {
-				it[0].end   = std::max(it[0].end, rEnd);
-				mergedRange = true;
-			}
-			else if ((it[0].end >= rStart) && (it[0].end <= rEnd)) {
-				it[0].start = std::min(it[0].start, rStart);
-				mergedRange = true;
-			}
+
+	mVUrange.end = pc;
+	bool mergedRange = false;
+	s32  rStart = mVUrange.start;
+	s32  rEnd   = mVUrange.end;
+	std::deque<microRange>::iterator it(ranges->begin());
+	for (++it; it != ranges->end(); ++it) {
+		if((it[0].start >= rStart) && (it[0].start <= rEnd)) {
+			it[0].end   = std::max(it[0].end, rEnd);
+			mergedRange = true;
 		}
-		if (mergedRange) {
-			//DevCon.WriteLn(Color_Green, "microVU%d: Prog Range Merging", mVU.index);
-			ranges->erase(ranges->begin());
+		else if ((it[0].end >= rStart) && (it[0].end <= rEnd)) {
+			it[0].start = std::min(it[0].start, rStart);
+			mergedRange = true;
 		}
 	}
-	else {
-		DevCon.WriteLn(Color_Green, "microVU%d: Prog Range Wrap [%04x] [%d]", mVU.index, mVUrange.start, mVUrange.end);
-		mVUrange.end = mVU.microMemSize;
-		microRange mRange = {0, pc};
-		ranges->push_front(mRange);
+	if (mergedRange) {
+		//DevCon.WriteLn(Color_Green, "microVU%d: Prog Range Merging", mVU.index);
+		ranges->erase(ranges->begin());
 	}
 }
 
