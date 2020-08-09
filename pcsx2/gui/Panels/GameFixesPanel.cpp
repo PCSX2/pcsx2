@@ -104,9 +104,13 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			_("VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"),
 			wxEmptyString
 		},
-        {
+		{
 			_("VU I bit Hack avoid constant recompilation (Crash Tag Team Racing)"),
-             wxEmptyString
+			wxEmptyString
+		},
+		{
+			_("VU0 Kickstart to avoid sync problems with VU1"),
+			wxEmptyString
 		}
 	};
 

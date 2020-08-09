@@ -1027,6 +1027,31 @@ static u32 scaleblockcycles()
 
 	return scaled;
 }
+u32 scaleblockcycles_clear()
+{
+	u32 scaled = scaleblockcycles_calculation();
+
+#if 0 // Enable this to get some runtime statistics about the scaling result in practice
+	static u32 scaled_overall = 0, unscaled_overall = 0;
+	if (g_resetEeScalingStats)
+	{
+		scaled_overall = unscaled_overall = 0;
+		g_resetEeScalingStats = false;
+	}
+	u32 unscaled = DEFAULT_SCALED_BLOCKS();
+	if (!unscaled) unscaled = 1;
+
+	scaled_overall += scaled;
+	unscaled_overall += unscaled;
+	float ratio = static_cast<float>(unscaled_overall) / scaled_overall;
+
+	DevCon.WriteLn(L"Unscaled overall: %d,  scaled overall: %d,  relative EE clock speed: %d %%",
+		unscaled_overall, scaled_overall, static_cast<int>(100 * ratio));
+#endif
+	s_nBlockCycles &= 0x7;
+
+	return scaled;
+}
 
 // Generates dynarec code for Event tests followed by a block dispatch (branch).
 // Parameters:

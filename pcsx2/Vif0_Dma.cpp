@@ -174,10 +174,16 @@ __fi void vif0Interrupt()
 
 	if (!(vif0ch.chcr.STR)) Console.WriteLn("vif0 running when CHCR == %x", vif0ch.chcr._u32);
 
+	if(vif0.waitforvu)
+	{
+		//CPU_INT(DMAC_VIF0, 16);
+		return;
+	}
+
 	if (vif0.irq && vif0.vifstalled.enabled && vif0.vifstalled.value == VIF_IRQ_STALL)
 	{
 		vif0Regs.stat.INT = true;
-		
+
 		//Yakuza watches VIF_STAT so lets do this here.
 		if (((vif0Regs.code >> 24) & 0x7f) != 0x7) {
 			vif0Regs.stat.VIS = true;
@@ -193,19 +199,12 @@ __fi void vif0Interrupt()
 			// One game doesn't like vif stalling at end, can't remember what. Spiderman isn't keen on it tho
 			//vif0ch.chcr.STR = false;
 			vif0Regs.stat.FQC = std::min((u16)0x8, vif0ch.qwc);
-			if(vif0ch.qwc > 0 || !vif0.done)	
+			if (vif0ch.qwc > 0 || !vif0.done)
 			{
 				VIF_LOG("VIF0 Stalled");
 				return;
 			}
 		}
-	}
-
-	if(vif0.waitforvu)
-	{
-		//DevCon.Warning("Waiting on VU0");
-		//CPU_INT(DMAC_VIF0, 16);
-		return;
 	}
 
 	vif0.vifstalled.enabled = false;

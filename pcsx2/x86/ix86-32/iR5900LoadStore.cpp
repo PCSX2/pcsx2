@@ -573,6 +573,14 @@ void recSWC1()
 
 void recLQC2()
 {
+	iFlushCall(FLUSH_EVERYTHING);
+	xMOV(eax, ptr[&cpuRegs.cycle]);
+	xADD(eax, scaleblockcycles_clear());
+	xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
+	xLoadFarAddr(arg1reg, CpuVU0);
+	xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+	iFlushCall(FLUSH_EVERYTHING);
+
 	if (_Rt_)
 		xLEA(arg2reg, ptr[&VU0.VF[_Ft_].UD[0]]);
 	else
@@ -602,6 +610,14 @@ void recLQC2()
 
 void recSQC2()
 {
+	iFlushCall(FLUSH_EVERYTHING);
+	xMOV(eax, ptr[&cpuRegs.cycle]);
+	xADD(eax, scaleblockcycles_clear());
+	xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
+	xLoadFarAddr(arg1reg, CpuVU0);
+	xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+	iFlushCall(FLUSH_EVERYTHING);
+
 	xLEA(arg2reg, ptr[&VU0.VF[_Ft_].UD[0]]);
 
 	if (GPR_IS_CONST1(_Rs_))
