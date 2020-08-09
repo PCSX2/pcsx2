@@ -19865,6 +19865,11 @@ Region = NTSC-J
 Serial = SLPM-62052
 Name   = Beatmania Da! Da! Da!
 Region = NTSC-J
+[patches = 05052787]
+	author=SetaSan
+	// Skip Konami keyboard check
+	patch=1,EE,00103980,word,10000002
+[/patches]
 ---------------------------------------------
 Serial = SLPM-62053
 Name   = World Soccer Winning Eleven 5
