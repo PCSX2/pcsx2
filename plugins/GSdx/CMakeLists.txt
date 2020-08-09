@@ -43,10 +43,6 @@ if(XDG_STD)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DXDG_STD)
 endif()
 
-if(EGL_API AND EGL_FOUND)
-    set(GSdxFinalFlags ${GSdxFinalFlags} -DEGL_SUPPORTED)
-endif()
-
 
 if(OPENCL_FOUND)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DENABLE_OPENCL)
@@ -220,13 +216,11 @@ if(Windows)
 else()
     LIST(APPEND GSdxSources
         Window/GSLinuxDialog.cpp
-        Window/GSWndOGL.cpp
         Window/GSWndEGL.cpp
         )
 
     LIST(APPEND GSdxHeaders
         Window/GSWndEGL.h
-        Window/GSWndOGL.h
         )
 endif()
 
@@ -239,16 +233,14 @@ set(GSdxFinalSources
 set(GSdxFinalLibs
     ${X11_LIBRARIES}
     ${OPENGL_LIBRARIES}
+    ${EGL_LIBRARIES}
+    ${X11_XCB_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${LIBC_LIBRARIES}
     ${PNG_LIBRARIES}
     ${FREETYPE_LIBRARIES}
     ${LIBLZMA_LIBRARIES}
 )
-
-if(EGL_API AND EGL_FOUND)
-    set(GSdxFinalLibs ${GSdxFinalLibs} ${EGL_LIBRARIES} ${X11_XCB_LIBRARIES})
-endif()
 
 if(USE_VTUNE)
     set(GSdxFinalLibs ${GSdxFinalLibs} ${VTUNE_LIBRARIES})
