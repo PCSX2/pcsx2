@@ -351,8 +351,11 @@ void recMicroVU1::Reset() {
 void recMicroVU0::Execute(u32 cycles) {
 	pxAssert(m_Reserved); // please allocate me first! :|
 
+	VU0.flags &= ~VUFLAG_MFLAGSET;
+
 	if(!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
 	VU0.VI[REG_TPC].UL <<= 3;
+
 	// Sometimes games spin on vu0, so be careful with this value
 	// woody hangs if too high on sVU (untested on mVU)
 	// Edit: Need to test this again, if anyone ever has a "Woody" game :p

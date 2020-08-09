@@ -57,10 +57,9 @@ void __fastcall vu1ExecMicro(u32 addr)
 	vu1Finish();
 
 	VUM_LOG("vu1ExecMicro %x (count=%d)", addr, count++);
-
+	VU1.cycle = cpuRegs.cycle;
 	VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;
 	VU0.VI[REG_VPU_STAT].UL |=  0x0100;
-
 	if ((s32)addr != -1) VU1.VI[REG_TPC].UL = addr;
 	_vuExecMicroDebug(VU1);
 

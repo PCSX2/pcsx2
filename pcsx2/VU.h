@@ -141,7 +141,12 @@ struct __aligned16 VURegs {
 	u32 branchpc;
 	u32 delaybranchpc;
 	bool takedelaybranch;
+	u32 pending_q;
+	u32 pending_p;
 
+	__aligned16 u32 micro_macflags[4];
+	__aligned16 u32 micro_clipflags[4];
+	__aligned16 u32 micro_statusflags[4];
 	// MAC/Status flags -- these are used by interpreters but are kind of hacky
 	// and shouldn't be relied on for any useful/valid info.  Would like to move them out of
 	// this struct eventually.

@@ -262,6 +262,7 @@ extern BaseVUmicroCPU* CpuVU1;
 extern void vu0ResetRegs();
 extern void __fastcall vu0ExecMicro(u32 addr);
 extern void vu0Exec(VURegs* VU);
+extern void _vu0FinishMicro();
 extern void vu0Finish();
 extern void iDumpVU0Registers();
 

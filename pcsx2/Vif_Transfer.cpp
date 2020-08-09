@@ -49,7 +49,7 @@ _vifT void vifTransferLoop(u32* &data) {
 			vifX.cmd	  = data[0] >> 24;
 			
 			
-			//VIF_LOG("New VifCMD %x tagsize %x", vifX.cmd, vifX.tag.size);
+			VIF_LOG("New VifCMD %x tagsize %x irq %d", vifX.cmd, vifX.tag.size, vifX.irq);
 			if (IsDevBuild && SysTrace.EE.VIFcode.IsActive()) {
 				// Pass 2 means "log it"
 				vifCmdHandler[idx][vifX.cmd & 0x7f](2, data);

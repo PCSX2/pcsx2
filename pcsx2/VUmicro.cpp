@@ -25,27 +25,29 @@
 void BaseVUmicroCPU::ExecuteBlock(bool startUp) {
 	const u32& stat	= VU0.VI[REG_VPU_STAT].UL;
 	const int  test = m_Idx ? 0x100 : 1;
-	const int  s = 1024*8; // Kick Start Cycles (Silver Surfer needs this amount)
-	const int  c = 1024*1; // Continue Cycles
+	const int  s = EmuConfig.Gamefixes.VU0KickstartHack ? 2048 : 0; // Kick Start Cycles (Silver Surfer, POP:SOT, Lotus needs this amount)
+
 	if (!(stat & test)) return;
-	if (startUp) {  // Start Executing a microprogram
+
+	if (startUp && s) {  // Start Executing a microprogram
 		Execute(s); // Kick start VU
 
-		// Let VUs run behind EE instead of ahead
 		if (stat & test) {
-			cpuSetNextEventDelta((s+c)*2);
-			m_lastEEcycles = cpuRegs.cycle + (s*2);
+			cpuSetNextEventDelta(s);
+
+			if (m_Idx)
+				VU1.cycle = cpuRegs.cycle;
+			else
+				VU0.cycle = cpuRegs.cycle;
 		}
 	}
-	else { // Continue Executing (VU roughly half the mhz of EE)
-		s32 delta = (s32)(u32)(cpuRegs.cycle - m_lastEEcycles) & ~1;
-		if (delta >   0) {	// Enough time has passed
-			delta >>= 1;	// Divide by 2 (unsigned)
+	else { // Continue Executing
+		u32 cycle = m_Idx ? VU1.cycle : VU0.cycle;
+		s32 delta = (s32)(u32)(cpuRegs.cycle - cycle);
+		if (delta > 0) {	// Enough time has passed
 			Execute(delta);	// Execute the time since the last call
-			if (stat & test) {
-				cpuSetNextEventDelta(c*2);
-				m_lastEEcycles = cpuRegs.cycle;
-			}
+			if (stat & test) 
+				cpuSetNextEventDelta(delta);
 		}
 		else cpuSetNextEventDelta(-delta); // Haven't caught-up from kick start
 	}
@@ -55,10 +57,10 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp) {
 // EE data to VU0's registers. We want to run VU0 Micro right after this
 // to ensure that the register is used at the correct time.
 // This fixes spinning/hanging in some games like Ratchet and Clank's Intro.
-void __fastcall BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu) {
+void BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu) {
 	const u32& stat	= VU0.VI[REG_VPU_STAT].UL;
 	const int  test = cpu->m_Idx ? 0x100 : 1;
-	const int  c	= 128;	// VU Execution Cycles
+
 	if (stat & test) {		// VU is running
 		#ifdef PCSX2_DEVBUILD
 		static int warn = 5;
@@ -67,10 +69,17 @@ void __fastcall BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu) {
 			warn--;
 		}
 		#endif
-		cpu->Execute(c);	// Execute VU
-		if (stat & test) {
-			cpu->m_lastEEcycles+=(c*2);
-			cpuSetNextEventDelta(c*2);
+
+		u32 cycle = cpu->m_Idx ? VU1.cycle : VU0.cycle;
+		s32 delta = (s32)(u32)(cpuRegs.cycle - cycle);
+		if (delta > 0) {			// Enough time has passed
+			cpu->Execute(delta);	// Execute the time since the last call
+			if (stat & test) {
+				cpuSetNextEventDelta(delta);
+			}
+		}
+		else {
+			cpuSetNextEventDelta(-delta); // Haven't caught-up from kick start
 		}
 	}
 }

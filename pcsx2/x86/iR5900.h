@@ -74,6 +74,7 @@ void SetBranchImm( u32 imm );
 void iFlushCall(int flushtype);
 void recBranchCall( void (*func)() );
 void recCall( void (*func)() );
+u32 scaleblockcycles_clear();
 
 namespace R5900{
 namespace Dynarec {

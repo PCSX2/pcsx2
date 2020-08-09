@@ -34,22 +34,35 @@ void mVUdispatcherAB(mV) {
 		xLDMXCSR(g_sseVUMXCSR);
 
 		// Load Regs
-		xMOV(gprF0, ptr32[&mVU.regs().VI[REG_STATUS_FLAG].UL]);
-		xMOV(gprF1, gprF0);
-		xMOV(gprF2, gprF0);
-		xMOV(gprF3, gprF0);
-
-		xMOVAPS (xmmT1, ptr128[&mVU.regs().VI[REG_MAC_FLAG].UL]);
-		xSHUF.PS(xmmT1, xmmT1, 0);
-		xMOVAPS (ptr128[mVU.macFlag],  xmmT1);
-
-		xMOVAPS (xmmT1, ptr128[&mVU.regs().VI[REG_CLIP_FLAG].UL]);
-		xSHUF.PS(xmmT1, xmmT1, 0);
-		xMOVAPS (ptr128[mVU.clipFlag], xmmT1);
-
 		xMOVAPS (xmmT1, ptr128[&mVU.regs().VI[REG_P].UL]);
 		xMOVAPS (xmmPQ, ptr128[&mVU.regs().VI[REG_Q].UL]);
+		xMOVDZX (xmmT2, ptr32[&mVU.regs().pending_q]);
 		xSHUF.PS(xmmPQ, xmmT1, 0); // wzyx = PPQQ
+		//Load in other Q instance
+		xPSHUF.D(xmmPQ, xmmPQ, 0xe1);
+		xMOVSS(xmmPQ, xmmT2);
+		xPSHUF.D(xmmPQ, xmmPQ, 0xe1);
+		
+		if (isVU1)
+		{
+			//Load in other P instance
+			xMOVDZX(xmmT2, ptr32[&mVU.regs().pending_p]);
+			xPSHUF.D(xmmPQ, xmmPQ, 0x1B);
+			xMOVSS(xmmPQ, xmmT2);
+			xPSHUF.D(xmmPQ, xmmPQ, 0x1B);
+		}
+
+		xMOVAPS(xmmT1, ptr128[&mVU.regs().micro_macflags]);
+		xMOVAPS(ptr128[mVU.macFlag], xmmT1);
+
+
+		xMOVAPS(xmmT1, ptr128[&mVU.regs().micro_clipflags]);
+		xMOVAPS(ptr128[mVU.clipFlag], xmmT1);
+
+		xMOV(gprF0, ptr32[&mVU.regs().micro_statusflags[0]]);
+		xMOV(gprF1, ptr32[&mVU.regs().micro_statusflags[1]]);
+		xMOV(gprF2, ptr32[&mVU.regs().micro_statusflags[2]]);
+		xMOV(gprF3, ptr32[&mVU.regs().micro_statusflags[3]]);
 
 		// Jump to Recompiled Code Block
 		xJMP(rax);
