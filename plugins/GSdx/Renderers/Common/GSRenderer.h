@@ -48,6 +48,7 @@ protected:
 	bool m_shadeboost;
 	bool m_texture_shuffle;
 	GSVector2i m_real_size;
+	GSVector4i m_present_size;
 
 	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;
 	virtual GSTexture* GetFeedbackOutput() { return nullptr; }
@@ -69,7 +70,8 @@ public:
 	virtual int GetUpscaleMultiplier() {return 1;}
 	virtual GSVector2i GetCustomResolution() {return GSVector2i(0,0);}
 	GSVector2i GetInternalResolution();
-	void SetAspectRatio(int aspect) {m_aspectratio = aspect;}
+	void SetZoom(float zoom);
+	void SetAspectRatio(int aspect);
 	void SetVSync(int vsync);
 
 	virtual bool BeginCapture();

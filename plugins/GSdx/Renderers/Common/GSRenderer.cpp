@@ -75,6 +75,12 @@ bool GSRenderer::CreateDevice(GSDevice* dev)
 	m_dev = dev;
 	m_dev->SetVSync(m_vsync);
 
+	extern int g_aspect;
+	extern float g_zoom;
+
+	SetAspectRatio(g_aspect);
+	SetZoom(g_zoom);
+
 	return true;
 }
 
@@ -433,13 +439,7 @@ void GSRenderer::VSync(int field)
 
 	// present
 
-	// This will scale the OSD to the window's size.
-	// Will maintiain the font size no matter what size the window is.
-	GSVector4i window_size = m_wnd->GetClientRect();
-	m_dev->m_osd.m_real_size.x = window_size.v[2];
-	m_dev->m_osd.m_real_size.y = window_size.v[3];
-
-	m_dev->Present(m_wnd->GetClientRect().fit(m_aspectratio), m_shader);
+	m_dev->Present(m_present_size, m_shader);
 
 	// snapshot
 
@@ -626,4 +626,42 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 void GSRenderer::PurgePool()
 {
 	m_dev->PurgePool();
+}
+
+void GSRenderer::SetZoom(float zoom)
+{
+	if (zoom == 1)
+		return;
+
+	if (zoom == 0)
+	{
+		GSVector4i wndsize = m_wnd->GetClientRect();
+		double rx = wndsize.width() / (double)m_present_size.width();
+		double ry = wndsize.height() / (double)m_present_size.height();
+		zoom = (float)std::max(rx, ry);
+		if (zoom < 1) zoom = 1;
+	}
+
+	float cx = (m_present_size.left + m_present_size.right) / 2.0f;
+	float cy = (m_present_size.bottom + m_present_size.top) / 2.0f;
+
+	GSVector4 c(cx, cy, cx, cy);
+
+	m_present_size = (GSVector4i)(((GSVector4)m_present_size - c) * zoom + c);
+}
+
+void GSRenderer::SetAspectRatio(int aspect)
+{
+	// This will scale the OSD to the window's size.
+	// Will maintiain the font size no matter what size the window is.
+
+	GSVector4i window_size = m_wnd->GetClientRect();
+
+	if (m_dev)
+	{
+		m_dev->m_osd.m_real_size.x = window_size.v[2];
+		m_dev->m_osd.m_real_size.y = window_size.v[3];
+	}
+
+	m_present_size = window_size.fit(aspect);
 }

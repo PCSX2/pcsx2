@@ -215,93 +215,95 @@ void GSPanel::DoResize()
 	if (!client.GetHeight() || !client.GetWidth())
 		return;
 
-	SetSize(client);
+	if (GSsetAspectZoom)
+	{
+		SetSize(client);
 
-	extern AspectRatioType iniAR;
-	extern bool switchAR;
-	int targetAR = iniAR;
+		extern AspectRatioType iniAR;
+		extern bool switchAR;
+		int targetAR = iniAR;
 
-	if (switchAR) {
-		if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_4_3) {
-			targetAR = 1;
+		if (switchAR) {
+			if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_4_3) {
+				targetAR = 1;
+			}
+			else if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_16_9) {
+				targetAR = 2;
+			}
 		}
-		else if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_16_9) {
-			targetAR = 2;
+		else {
+			if (g_Conf->GSWindow.AspectRatio == AspectRatio_4_3) {
+				targetAR = 1;
+			}
+			else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9) {
+				targetAR = 2;
+			}
 		}
+
+		float zoom = g_Conf->GSWindow.Zoom.ToFloat() / 100.0f;
+
+		GSsetAspectZoom(targetAR, zoom);
 	}
-	else {
-		if (g_Conf->GSWindow.AspectRatio == AspectRatio_4_3) {
-			targetAR = 1;
-		}
-		else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9) {
-			targetAR = 2;
-		}
-	}
+	else
+	{
+		wxSize viewport = client;
 
-	float zoom = g_Conf->GSWindow.Zoom.ToFloat() / 100.0;
+		double clientAr = (double)client.GetWidth() / (double)client.GetHeight();
 
-	GSsetAspectZoom(targetAR, zoom);
+		extern AspectRatioType iniAR;
+		extern bool switchAR;
+		double targetAr = clientAr;
 
-#if 0
-	if( GetParent() == NULL ) return;
-	wxSize client = GetParent()->GetClientSize();
-	wxSize viewport = client;
-
-	if ( !client.GetHeight() || !client.GetWidth() )
-		return;
-
-	double clientAr = (double)client.GetWidth()/(double)client.GetHeight();
-
-	extern AspectRatioType iniAR;
-	extern bool switchAR;
-	double targetAr = clientAr;
-
-	if (g_Conf->GSWindow.AspectRatio != iniAR) {
-		switchAR = false;
-	}
-
-	if (switchAR) {
-		if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_4_3) {
-			targetAr = 4.0 / 3.0;
-		} else if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_16_9) {
-			targetAr = 16.0 / 9.0;
-		} else {
-			// Allows for better real time toggling, returns to the non fmv override aspect ratio.
+		if (g_Conf->GSWindow.AspectRatio != iniAR) {
 			switchAR = false;
 		}
-	} else {
-		if (g_Conf->GSWindow.AspectRatio == AspectRatio_4_3) {
-			targetAr = 4.0 / 3.0;
-		} else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9) {
-			targetAr = 16.0 / 9.0;
+
+		if (switchAR) {
+			if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_4_3) {
+				targetAr = 4.0 / 3.0;
+			}
+			else if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_16_9) {
+				targetAr = 16.0 / 9.0;
+			}
+			else {
+				// Allows for better real time toggling, returns to the non fmv override aspect ratio.
+				switchAR = false;
+			}
 		}
-	}
+		else {
+			if (g_Conf->GSWindow.AspectRatio == AspectRatio_4_3) {
+				targetAr = 4.0 / 3.0;
+			}
+			else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9) {
+				targetAr = 16.0 / 9.0;
+			}
+		}
 
-	double arr = targetAr / clientAr;
+		double arr = targetAr / clientAr;
 
-	if( arr < 1 )
-		viewport.x = (int)( (double)viewport.x*arr + 0.5);
-	else if( arr > 1 )
-		viewport.y = (int)( (double)viewport.y/arr + 0.5);
+		if (arr < 1)
+			viewport.x = (int)((double)viewport.x * arr + 0.5);
+		else if (arr > 1)
+			viewport.y = (int)((double)viewport.y / arr + 0.5);
 
-	float zoom = g_Conf->GSWindow.Zoom.ToFloat()/100.0;
-	if( zoom == 0 )//auto zoom in untill black-bars are gone (while keeping the aspect ratio).
-		zoom = std::max( (float)arr, (float)(1.0/arr) );
+		float zoom = g_Conf->GSWindow.Zoom.ToFloat() / 100.0;
+		if (zoom == 0)//auto zoom in untill black-bars are gone (while keeping the aspect ratio).
+			zoom = std::max((float)arr, (float)(1.0 / arr));
 
-	viewport.Scale(zoom, zoom*g_Conf->GSWindow.StretchY.ToFloat()/100.0 );
-	if (viewport == client && EmuConfig.Gamefixes.FMVinSoftwareHack && g_Conf->GSWindow.IsFullscreen)
-		viewport.x += 1; //avoids crash on some systems switching HW><SW in fullscreen aspect ratio's with FMV Software switch.
-	SetSize( viewport );
-	CenterOnParent();
-	
-	int cx, cy;
-	GetPosition(&cx, &cy);
-	float unit = .01*(float)std::min(viewport.x, viewport.y);
-	SetPosition( wxPoint( cx + unit*g_Conf->GSWindow.OffsetX.ToFloat(), cy + unit*g_Conf->GSWindow.OffsetY.ToFloat() ) );
+		viewport.Scale(zoom, zoom * g_Conf->GSWindow.StretchY.ToFloat() / 100.0);
+		if (viewport == client && EmuConfig.Gamefixes.FMVinSoftwareHack && g_Conf->GSWindow.IsFullscreen)
+			viewport.x += 1; //avoids crash on some systems switching HW><SW in fullscreen aspect ratio's with FMV Software switch.
+		SetSize(viewport);
+		CenterOnParent();
+
+		int cx, cy;
+		GetPosition(&cx, &cy);
+		float unit = .01 * (float)std::min(viewport.x, viewport.y);
+		SetPosition(wxPoint(cx + unit * g_Conf->GSWindow.OffsetX.ToFloat(), cy + unit * g_Conf->GSWindow.OffsetY.ToFloat()));
 #ifdef GSWindowScaleDebug
-	Console.WriteLn(Color_Yellow, "GSWindowScaleDebug: zoom %f, viewport.x %d, viewport.y %d", zoom, viewport.GetX(), viewport.GetY());
+		Console.WriteLn(Color_Yellow, "GSWindowScaleDebug: zoom %f, viewport.x %d, viewport.y %d", zoom, viewport.GetX(), viewport.GetY());
 #endif
-#endif
+	}
 }
 
 void GSPanel::OnResize(wxSizeEvent& event)
