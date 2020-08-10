@@ -179,6 +179,7 @@ _GSsetGameCRC		GSsetGameCRC;
 _GSsetFrameSkip		GSsetFrameSkip;
 _GSsetVsync			GSsetVsync;
 _GSsetExclusive		GSsetExclusive;
+_GSsetAspectZoom	GSsetAspectZoom;
 _GSsetupRecording	GSsetupRecording;
 _GSreset			GSreset;
 _GSwriteCSR			GSwriteCSR;
@@ -404,6 +405,7 @@ static const LegacyApi_ReqMethod s_MethMessReq_GS[] =
 
 static const LegacyApi_OptMethod s_MethMessOpt_GS[] =
 {
+	{	"GSsetAspectZoom",	(vMeth**)&GSsetAspectZoom,	},
 	{	"GSosdLog",			(vMeth**)&GSosdLog			},
 	{	"GSosdMonitor",		(vMeth**)&GSosdMonitor		},
 	{	"GSopen2",			(vMeth**)&GSopen2			},

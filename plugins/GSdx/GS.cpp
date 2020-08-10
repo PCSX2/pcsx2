@@ -57,6 +57,8 @@ static GSRenderer* s_gs = NULL;
 static void (*s_irq)() = NULL;
 static uint8* s_basemem = NULL;
 static int s_vsync = 0;
+static int s_aspect = 0;
+static float s_zoom = 0;
 static bool s_exclusive = true;
 static const char *s_renderer_name = "";
 static const char *s_renderer_type = "";
@@ -489,8 +491,8 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 
 	int retval = _GSopen(dsp, "", renderer);
 
-	if (s_gs != NULL)
-		s_gs->SetAspectRatio(0);	 // PCSX2 manages the aspect ratios
+	//if (s_gs != NULL)
+	//	s_gs->SetAspectRatio(0);	 // PCSX2 manages the aspect ratios
 
 	gsopen_done = true;
 
@@ -913,6 +915,17 @@ EXPORT_C GSsetVsync(int vsync)
 	if(s_gs)
 	{
 		s_gs->SetVSync(s_vsync);
+	}
+}
+
+EXPORT_C GSsetAspectZoom(int aspect, float zoom)
+{
+	s_aspect = aspect;
+	s_zoom = zoom;
+
+	if (s_gs)
+	{
+		s_gs->SetAspectRatio(s_aspect);
 	}
 }
 

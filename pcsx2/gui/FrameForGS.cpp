@@ -209,6 +209,40 @@ void GSPanel::DoShowMouse()
 
 void GSPanel::DoResize()
 {
+	if (GetParent() == NULL) return;
+	wxSize client = GetParent()->GetClientSize();
+
+	if (!client.GetHeight() || !client.GetWidth())
+		return;
+
+	SetSize(client);
+
+	extern AspectRatioType iniAR;
+	extern bool switchAR;
+	int targetAR = iniAR;
+
+	if (switchAR) {
+		if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_4_3) {
+			targetAR = 1;
+		}
+		else if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_16_9) {
+			targetAR = 2;
+		}
+	}
+	else {
+		if (g_Conf->GSWindow.AspectRatio == AspectRatio_4_3) {
+			targetAR = 1;
+		}
+		else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9) {
+			targetAR = 2;
+		}
+	}
+
+	float zoom = g_Conf->GSWindow.Zoom.ToFloat() / 100.0;
+
+	GSsetAspectZoom(targetAR, zoom);
+
+#if 0
 	if( GetParent() == NULL ) return;
 	wxSize client = GetParent()->GetClientSize();
 	wxSize viewport = client;
@@ -266,6 +300,7 @@ void GSPanel::DoResize()
 	SetPosition( wxPoint( cx + unit*g_Conf->GSWindow.OffsetX.ToFloat(), cy + unit*g_Conf->GSWindow.OffsetY.ToFloat() ) );
 #ifdef GSWindowScaleDebug
 	Console.WriteLn(Color_Yellow, "GSWindowScaleDebug: zoom %f, viewport.x %d, viewport.y %d", zoom, viewport.GetX(), viewport.GetY());
+#endif
 #endif
 }
 

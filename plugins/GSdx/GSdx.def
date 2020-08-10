@@ -38,6 +38,7 @@ EXPORTS
 	GSsetFrameSkip
 	GSsetVsync
 	GSsetExclusive
+	GSsetAspectZoom
 	GSsetSettingsDir
 	GSgetLastTag
 	GSReplay
