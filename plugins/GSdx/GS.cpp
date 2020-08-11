@@ -53,13 +53,12 @@ extern bool RunLinuxDialog();
 #define PS2E_X86 0x01   // 32 bit
 #define PS2E_X86_64 0x02   // 64 bit
 
-int g_aspect;
-float g_zoom;
-
 static GSRenderer* s_gs = NULL;
 static void (*s_irq)() = NULL;
 static uint8* s_basemem = NULL;
 static int s_vsync = 0;
+static int s_aspect = 1;
+static float s_zoom = 1;
 static bool s_exclusive = true;
 static const char *s_renderer_name = "";
 static const char *s_renderer_type = "";
@@ -438,6 +437,9 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 		return -1;
 	}
+
+	s_gs->SetAspectRatio(s_aspect);
+	s_gs->SetZoom(s_zoom);
 
 	if (renderer == GSRendererType::OGL_HW && theApp.GetConfigI("debug_glsl_shader") == 2) {
 		printf("GSdx: test OpenGL shader. Please wait...\n\n");
@@ -921,13 +923,13 @@ EXPORT_C GSsetVsync(int vsync)
 
 EXPORT_C GSsetAspectZoom(int aspect, float zoom)
 {
-	g_aspect = aspect;
-	g_zoom = zoom;
+	s_aspect = aspect;
+	s_zoom = zoom;
 
 	if (s_gs)
 	{
-		s_gs->SetAspectRatio(g_aspect);
-		s_gs->SetZoom(g_zoom);
+		s_gs->SetAspectRatio(s_aspect);
+		s_gs->SetZoom(s_zoom);
 	}
 }
 

@@ -75,12 +75,6 @@ bool GSRenderer::CreateDevice(GSDevice* dev)
 	m_dev = dev;
 	m_dev->SetVSync(m_vsync);
 
-	extern int g_aspect;
-	extern float g_zoom;
-
-	SetAspectRatio(g_aspect);
-	SetZoom(g_zoom);
-
 	return true;
 }
 
