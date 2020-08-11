@@ -394,6 +394,8 @@ void GSRenderer::VSync(int field)
 
 				s += format(" | %d%% CPU", sum);
 			}
+
+			SetAspectRatio(m_aspectratio);
 		}
 		else
 		{
