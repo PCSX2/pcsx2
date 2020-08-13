@@ -30934,12 +30934,7 @@ Region = NTSC-J
 Serial = SLPS-20408
 Name   = Card Captor Sakura - Sakura-Chan to Asobo!
 Region = NTSC-J
-Compat = 4
-[patches = 08FB9DCF]
-	comment=Patches by Nachbrenner
-	// Skip eyetoy check.
-	patch=0,EE,013385b0,word,00000000
-[/patches]
+Compat = 5
 ---------------------------------------------
 Serial = SLPS-20409
 Name   = Phantom Kingdom [Limited Edition]
