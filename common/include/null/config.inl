@@ -21,6 +21,7 @@
 #include <wx/wx.h>
 #endif
 #include <string>
+#include <thread>
 
 PluginLog g_plugin_log;
 
@@ -110,8 +111,10 @@ void SaveConfig(const std::string &pathname)
         return;
     }
 
-    ini.WriteInt("write_to_console", g_plugin_log.WriteToConsole);
+    std::thread tan(ini.WriteInt, "write_to_console", g_plugin_log.WriteToConsole);
+    //ini.WriteInt("write_to_console", g_plugin_log.WriteToConsole);
     ini.WriteInt("write_to_file", g_plugin_log.WriteToFile);
+    tan.join();
     ini.Close();
 }
 
