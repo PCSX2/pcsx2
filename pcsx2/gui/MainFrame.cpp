@@ -255,6 +255,7 @@ void MainEmuFrame::ConnectMenus()
 #endif
 
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_GetStarted, this, MenuId_Help_GetStarted);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Compatibility, this, MenuId_Help_Compatibility);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Forums, this, MenuId_Help_Forums);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Website, this, MenuId_Help_Website);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Github, this, MenuId_Help_Github);
@@ -358,15 +359,8 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_menuSys.Append( MenuId_Config_FastBoot,_("Fast Boot"),
 		_("Skips PS2 splash screens when booting from ISO or DVD media"), wxITEM_CHECK );
 
-	m_menuSys.AppendSeparator();
-
-	m_menuSys.Append(MenuId_Sys_LoadStates,	_("&Load state"), &m_LoadStatesSubmenu);
-	m_menuSys.Append(MenuId_Sys_SaveStates,	_("&Save state"), &m_SaveStatesSubmenu);
-
-	m_menuSys.Append(MenuId_EnableBackupStates,	_("&Backup before save"), wxEmptyString, wxITEM_CHECK);
 	m_menuSys.AppendCheckItem(MenuId_Debug_CreateBlockdump, _("Create &Blockdump"), _("Creates a block dump for debugging purposes."));
 
-	m_menuSys.AppendSeparator();
 	m_menuSys.Append(MenuId_GameSettingsSubMenu,	_("&Game Settings"), &m_GameSettingsSubmenu);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnablePatches,	_("Automatic &Gamefixes"),
@@ -386,6 +380,15 @@ void MainEmuFrame::CreatePcsx2Menu()
 	if(IsDebugBuild || IsDevBuild)
 		m_GameSettingsSubmenu.Append(MenuId_EnableHostFs,	_("Enable &Host Filesystem"),
 			wxEmptyString, wxITEM_CHECK);
+
+	m_menuSys.AppendSeparator();
+
+	m_menuSys.Append(MenuId_Sys_LoadStates,	_("&Load state"), &m_LoadStatesSubmenu);
+	m_menuSys.Append(MenuId_Sys_SaveStates,	_("&Save state"), &m_SaveStatesSubmenu);
+
+	m_menuSys.Append(MenuId_EnableBackupStates,	_("&Backup before save"), wxEmptyString, wxITEM_CHECK);
+
+	m_menuSys.AppendSeparator();
 
 	m_menuSys.Append(MenuId_Exit,			_("E&xit"),
 		AddAppName(_("Closing %s may be hazardous to your health")));
@@ -466,6 +469,7 @@ void MainEmuFrame::CreateRecordMenu()
 void MainEmuFrame::CreateHelpMenu()
 {
 	m_menuHelp.Append(MenuId_Help_GetStarted,				_("&Getting Started") );
+	m_menuHelp.Append(MenuId_Help_Compatibility,			_("&Compatibility") );
 	m_menuHelp.AppendSeparator();
 	m_menuHelp.Append(MenuId_Help_Forums,					_("&Pcsx2 Forums") );
 	m_menuHelp.Append(MenuId_Help_Website,					_("&Pcsx2 Website") );

@@ -226,6 +226,7 @@ protected:
 	void Menu_ShowConsole_Stdio(wxCommandEvent &event);
 
 	void Menu_GetStarted(wxCommandEvent &event);
+	void Menu_Compatibility(wxCommandEvent &event);
 	void Menu_Forums(wxCommandEvent &event);
 	void Menu_Website(wxCommandEvent &event);
 	void Menu_Github(wxCommandEvent &event);
