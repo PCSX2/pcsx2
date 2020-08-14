@@ -714,11 +714,9 @@ endif()
 
 add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
 
-if(NOT USE_CLANG)
-	if(COMMAND target_precompile_headers)
-		message("Using precompiled headers.")
-		target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
-	endif()
+if(COMMAND target_precompile_headers)
+	message("Using precompiled headers.")
+	target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
 endif()
 
 if (APPLE)

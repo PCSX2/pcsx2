@@ -57,7 +57,7 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 	}
 
 	GLenum t = 0;
-	bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1) && GLLoader::found_geometry_shader;
+	const bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1) && GLLoader::found_geometry_shader;
 
 	switch(m_vt.m_primclass)
 	{
@@ -81,8 +81,8 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 
 		case GS_SPRITE_CLASS:
 			// Heuristics: trade-off
-			// CPU conversion => ofc, more CPU ;) more bandwidth (72 bytes / sprite)
-			// GPU conversion => ofc, more GPU. And also more CPU due to extra shader validation stage.
+			// Lines: GPU conversion => ofc, more GPU. And also more CPU due to extra shader validation stage.
+			// Triangles: CPU conversion => ofc, more CPU ;) more bandwidth (72 bytes / sprite)
 			//
 			// Note: severals openGL operation does draw call under the wood like texture upload. So even if
 			// you do 10 consecutive draw with the geometry shader, you will still pay extra validation if new
@@ -177,14 +177,14 @@ void GSRendererOGL::EmulateZbuffer()
 	const bool clamp_z = (uint32)(GSVector4i(m_vt.m_max.p).z) > max_z;
 
 	vs_cb.MaxDepth = GSVector2i(0xFFFFFFFF);
-	ps_cb.MaxDepth = GSVector4(1.0f);
+	ps_cb.MaxDepth = GSVector4(0.0f, 0.0f, 0.0f, 1.0f);
 	m_ps_sel.zclamp = 0;
 
 	if (clamp_z) {
 		if (m_vt.m_primclass == GS_SPRITE_CLASS || m_vt.m_primclass == GS_POINT_CLASS) {
 			vs_cb.MaxDepth = GSVector2i(max_z);
 		} else {
-			ps_cb.MaxDepth = GSVector4(max_z * ldexpf(1, -32));
+			ps_cb.MaxDepth = GSVector4(0.0f, 0.0f, 0.0f, max_z * ldexpf(1, -32));
 			m_ps_sel.zclamp = 1;
 		}
 	}

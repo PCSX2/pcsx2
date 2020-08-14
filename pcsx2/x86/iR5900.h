@@ -61,6 +61,7 @@ extern u32 s_nBlockCycles;		// cycles of current block recompiling
 // Used to clear recompiled code blocks during memory/dma write operations.
 u32 recClearMem(u32 pc);
 u32 REC_CLEARM( u32 mem );
+extern bool g_recompilingDelaySlot;
 
 // used when processing branches
 void SaveBranchState();

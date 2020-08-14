@@ -19,22 +19,11 @@
 #include "Dialogs.h"
 #include "Config.h"
 
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
 #include <SDL.h>
 #include <SDL_audio.h>
+#include "wx/wxConfig.h"
 #endif
-#ifdef __APPLE__
-#include <dispatch/dispatch.h>
-#endif
-
-#ifdef PCSX2_DEVBUILD
-static const int LATENCY_MAX = 3000;
-#else
-static const int LATENCY_MAX = 750;
-#endif
-
-static const int LATENCY_MIN = 3;
-static const int LATENCY_MIN_TIMESTRETCH = 15;
 
 int AutoDMAPlayRate[2] = {0, 0};
 
@@ -80,9 +69,9 @@ u32 OutputModule = 0;
 int SndOutLatencyMS = 300;
 int SynchMode = 0; // Time Stretch, Async or Disabled
 #ifdef SPU2X_PORTAUDIO
-static u32 OutputAPI = 0;
+u32 OutputAPI = 0;
 #endif
-static u32 SdlOutputAPI = 0;
+u32 SdlOutputAPI = 0;
 
 int numSpeakers = 0;
 int dplLevel = 0;
@@ -179,7 +168,7 @@ void ReadSettings()
 
     Clampify(SndOutLatencyMS, LATENCY_MIN, LATENCY_MAX);
 
-    if (mods[OutputModule] == NULL) {
+    if (mods[OutputModule] == nullptr) {
         fwprintf(stderr, L"* SPU2-X: Unknown output module '%s' specified in configuration file.\n", temp.wc_str());
         fprintf(stderr, "* SPU2-X: Defaulting to SDL (%S).\n", SDLOut->GetIdent());
         OutputModule = FindOutputModuleById(SDLOut->GetIdent());
@@ -228,303 +217,15 @@ void WriteSettings()
     DebugConfig::WriteSettings();
 }
 
-void advanced_dialog()
-{
-    SoundtouchCfg::DisplayDialog();
-}
-
-void debug_dialog()
-{
-    DebugConfig::DisplayDialog();
-}
-
-#if defined(__unix__) || defined(__APPLE__)
-
-// Format the slider with ms.
-static gchar *cb_scale_format_ms(GtkScale *scale, gdouble value)
-{
-    return g_strdup_printf("%g ms (avg)", value);
-}
-
-// Format the slider with a % sign.
-static gchar *cb_scale_format_percent(GtkScale *scale, gdouble value)
-{
-    return g_strdup_printf("%g %%", value);
-}
-
-// Disables and reenables the debug button.
-static void cb_toggle_sensitivity(GtkWidget *widget, gpointer data)
-{
-    GtkButton *btn = static_cast<GtkButton *>(data);
-
-    temp_debug_state = !temp_debug_state;
-    gtk_widget_set_sensitive(GTK_WIDGET(btn), temp_debug_state);
-}
-
-static void cb_adjust_latency(GtkComboBox *widget, gpointer data)
-{
-    GtkRange *range = static_cast<GtkRange *>(data);
-    // Minimum latency for timestretch is 15ms. Everything else is 3ms.
-    const int min_latency = gtk_combo_box_get_active(widget) == 0 ? LATENCY_MIN_TIMESTRETCH : LATENCY_MIN;
-    gtk_range_set_range(range, min_latency, LATENCY_MAX);
-}
-
-void DisplayDialog()
-{
-    int return_value;
-
-    GtkWidget *dialog;
-    GtkWidget *main_box;
-
-    GtkWidget *mixing_frame, *mixing_box;
-    GtkWidget *int_label, *int_box;
-    GtkWidget *effects_check;
-    GtkWidget *dealias_filter;
-    GtkWidget *debug_check, *debug_button, *debug_frame, *debug_box;
-
-    GtkWidget *output_frame, *output_box;
-    GtkWidget *mod_label, *mod_box;
-#ifdef SPU2X_PORTAUDIO
-    GtkWidget *api_label, *api_box;
-#endif
-#if SDL_MAJOR_VERSION >= 2
-    GtkWidget *sdl_api_label, *sdl_api_box;
-#endif
-    GtkWidget *latency_label, *latency_slide;
-    GtkWidget *volume_label, *volume_slide;
-    GtkWidget *sync_label, *sync_box;
-    GtkWidget *advanced_button;
-
-    /* Create the widgets */
-    dialog = gtk_dialog_new_with_buttons(
-        "SPU2-X Config",
-        NULL, /* parent window*/
-        (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
-        "Cancel", GTK_RESPONSE_REJECT,
-        "OK", GTK_RESPONSE_ACCEPT,
-        NULL);
-
-    int_label = gtk_label_new("Interpolation:");
-    int_box = gtk_combo_box_text_new();
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "0 - Nearest (Fastest/bad quality)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "1 - Linear (Simple/okay sound)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "2 - Cubic (Artificial highs)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "3 - Hermite (Better highs)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "4 - Catmull-Rom (PS2-like/slow)");
-    gtk_combo_box_set_active(GTK_COMBO_BOX(int_box), Interpolation);
-
-    effects_check = gtk_check_button_new_with_label("Disable Effects Processing");
-    dealias_filter = gtk_check_button_new_with_label("Use the de-alias filter (Overemphasizes the highs)");
-
-    debug_check = gtk_check_button_new_with_label("Enable Debug Options");
-    debug_button = gtk_button_new_with_label("Configure...");
-
-    mod_label = gtk_label_new("Module:");
-    mod_box = gtk_combo_box_text_new();
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "0 - No Sound (Emulate SPU2 only)");
-#ifdef SPU2X_PORTAUDIO
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "1 - PortAudio (Cross-platform)");
-#endif
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "2 - SDL Audio (Recommended for PulseAudio)");
-    //gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "3 - Alsa (probably doesn't work)");
-    gtk_combo_box_set_active(GTK_COMBO_BOX(mod_box), OutputModule);
-
-#ifdef SPU2X_PORTAUDIO
-    api_label = gtk_label_new("PortAudio API:");
-    api_box = gtk_combo_box_text_new();
-#ifdef __linux__
-    // In order to keep it the menu light, I only put linux major api
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "0 - ALSA (recommended)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "1 - OSS (legacy)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "2 - JACK");
-#elif defined(__APPLE__)
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "CoreAudio");
-#else
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(api_box), "OSS");
-#endif
-    gtk_combo_box_set_active(GTK_COMBO_BOX(api_box), OutputAPI);
-#endif
-
-#if SDL_MAJOR_VERSION >= 2
-    sdl_api_label = gtk_label_new("SDL API:");
-    sdl_api_box = gtk_combo_box_text_new();
-    // YES It sucks ...
-    for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
-        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sdl_api_box), SDL_GetAudioDriver(i));
-    }
-    gtk_combo_box_set_active(GTK_COMBO_BOX(sdl_api_box), SdlOutputAPI);
-#endif
-
-    latency_label = gtk_label_new("Latency:");
-    const int min_latency = SynchMode == 0 ? LATENCY_MIN_TIMESTRETCH : LATENCY_MIN;
-
-    latency_slide = ps_gtk_hscale_new_with_range(min_latency, LATENCY_MAX, 5);
-    gtk_range_set_value(GTK_RANGE(latency_slide), SndOutLatencyMS);
-
-    volume_label = gtk_label_new("Volume:");
-
-    volume_slide = ps_gtk_hscale_new_with_range(0, 100, 5);
-    gtk_range_set_value(GTK_RANGE(volume_slide), FinalVolume * 100);
-
-    sync_label = gtk_label_new("Synchronization Mode:");
-    sync_box = gtk_combo_box_text_new();
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sync_box), "TimeStretch (Recommended)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sync_box), "Async Mix (Breaks some games!)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sync_box), "None (Audio can skip.)");
-    gtk_combo_box_set_active(GTK_COMBO_BOX(sync_box), SynchMode);
-
-    advanced_button = gtk_button_new_with_label("Advanced...");
-
-    main_box = ps_gtk_hbox_new(5);
-
-    mixing_box = ps_gtk_vbox_new(5);
-    mixing_frame = gtk_frame_new("Mixing Settings:");
-    gtk_container_add(GTK_CONTAINER(mixing_frame), mixing_box);
-
-
-    output_box = ps_gtk_vbox_new(5);
-    output_frame = gtk_frame_new("Output Settings:");
-
-    debug_box = ps_gtk_vbox_new(5);
-    debug_frame = gtk_frame_new("Debug Settings:");
-
-    gtk_container_add(GTK_CONTAINER(debug_box), debug_check);
-    gtk_container_add(GTK_CONTAINER(debug_box), debug_button);
-    gtk_container_add(GTK_CONTAINER(debug_frame), debug_box);
-
-    gtk_container_add(GTK_CONTAINER(output_frame), output_box);
-
-    gtk_container_add(GTK_CONTAINER(mixing_box), int_label);
-    gtk_container_add(GTK_CONTAINER(mixing_box), int_box);
-    gtk_container_add(GTK_CONTAINER(mixing_box), effects_check);
-    gtk_container_add(GTK_CONTAINER(mixing_box), dealias_filter);
-    gtk_container_add(GTK_CONTAINER(mixing_box), debug_frame);
-
-    gtk_container_add(GTK_CONTAINER(output_box), mod_label);
-    gtk_container_add(GTK_CONTAINER(output_box), mod_box);
-#ifdef SPU2X_PORTAUDIO
-    gtk_container_add(GTK_CONTAINER(output_box), api_label);
-    gtk_container_add(GTK_CONTAINER(output_box), api_box);
-#endif
-#if SDL_MAJOR_VERSION >= 2
-    gtk_container_add(GTK_CONTAINER(output_box), sdl_api_label);
-    gtk_container_add(GTK_CONTAINER(output_box), sdl_api_box);
-#endif
-    gtk_container_add(GTK_CONTAINER(output_box), sync_label);
-    gtk_container_add(GTK_CONTAINER(output_box), sync_box);
-    gtk_container_add(GTK_CONTAINER(output_box), latency_label);
-    gtk_container_add(GTK_CONTAINER(output_box), latency_slide);
-    gtk_container_add(GTK_CONTAINER(output_box), volume_label);
-    gtk_container_add(GTK_CONTAINER(output_box), volume_slide);
-    gtk_container_add(GTK_CONTAINER(output_box), advanced_button);
-
-    gtk_box_pack_start(GTK_BOX(main_box), mixing_frame, TRUE, TRUE, 5);
-    gtk_box_pack_start(GTK_BOX(main_box), output_frame, TRUE, TRUE, 5);
-
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(effects_check), EffectsDisabled);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dealias_filter), postprocess_filter_dealias);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(debug_check), DebugEnabled);
-    gtk_widget_set_sensitive(GTK_WIDGET(debug_button), DebugEnabled);
-    temp_debug_state = DebugEnabled;
-
-    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_box);
-    gtk_widget_show_all(dialog);
-
-    g_signal_connect(volume_slide, "format_value", G_CALLBACK(cb_scale_format_percent), volume_slide);
-    g_signal_connect(latency_slide, "format_value", G_CALLBACK(cb_scale_format_ms), latency_slide);
-    g_signal_connect(sync_box, "changed", G_CALLBACK(cb_adjust_latency), latency_slide);
-
-    g_signal_connect(debug_check, "clicked", G_CALLBACK(cb_toggle_sensitivity), debug_button);
-    g_signal_connect_swapped(advanced_button, "clicked", G_CALLBACK(advanced_dialog), advanced_button);
-    g_signal_connect_swapped(debug_button, "clicked", G_CALLBACK(debug_dialog), debug_button);
-
-    return_value = gtk_dialog_run(GTK_DIALOG(dialog));
-
-    if (return_value == GTK_RESPONSE_ACCEPT) {
-        DebugEnabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(debug_check));
-        postprocess_filter_dealias = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dealias_filter));
-        if (gtk_combo_box_get_active(GTK_COMBO_BOX(int_box)) != -1)
-            Interpolation = gtk_combo_box_get_active(GTK_COMBO_BOX(int_box));
-
-        EffectsDisabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(effects_check));
-
-        if (gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box)) != -1)
-            OutputModule = gtk_combo_box_get_active(GTK_COMBO_BOX(mod_box));
-
-#ifdef SPU2X_PORTAUDIO
-        if (gtk_combo_box_get_active(GTK_COMBO_BOX(api_box)) != -1) {
-            OutputAPI = gtk_combo_box_get_active(GTK_COMBO_BOX(api_box));
-#ifdef __linux__
-            switch (OutputAPI) {
-                case 0:
-                    PortaudioOut->SetApiSettings(L"ALSA");
-                    break;
-                case 1:
-                    PortaudioOut->SetApiSettings(L"OSS");
-                    break;
-                case 2:
-                    PortaudioOut->SetApiSettings(L"JACK");
-                    break;
-                default:
-                    PortaudioOut->SetApiSettings(L"Unknown");
-            }
-#else
-            switch (OutputAPI) {
-                case 0:
-#ifdef __APPLE__
-                    PortaudioOut->SetApiSettings(L"CoreAudio");
-#else
-                    PortaudioOut->SetApiSettings(L"OSS");
-#endif
-                    break;
-                default:
-                    PortaudioOut->SetApiSettings(L"Unknown");
-            }
-#endif
-        }
-#endif
-
-#if SDL_MAJOR_VERSION >= 2
-        if (gtk_combo_box_get_active(GTK_COMBO_BOX(sdl_api_box)) != -1) {
-            SdlOutputAPI = gtk_combo_box_get_active(GTK_COMBO_BOX(sdl_api_box));
-            // YES It sucks ...
-            SDLOut->SetApiSettings(wxString(SDL_GetAudioDriver(SdlOutputAPI), wxConvUTF8));
-        }
-#endif
-        FinalVolume = gtk_range_get_value(GTK_RANGE(volume_slide)) / 100;
-        SndOutLatencyMS = gtk_range_get_value(GTK_RANGE(latency_slide));
-
-        if (gtk_combo_box_get_active(GTK_COMBO_BOX(sync_box)) != -1)
-            SynchMode = gtk_combo_box_get_active(GTK_COMBO_BOX(sync_box));
-    }
-
-    gtk_widget_destroy(dialog);
-}
-#else
-void DisplayDialog()
-{
-}
-#endif
-
 void configure()
 {
-#ifdef __APPLE__
-    // Rest of macOS UI doesn't use GTK so we need to init it now
-    gtk_init(nullptr, nullptr);
-    // GTK expects us to be using its event loop, rather than Cocoa's
-    // If we call its stuff right now, it'll attempt to drain a static autorelease pool that was already drained by Cocoa (see https://github.com/GNOME/gtk/blob/8c1072fad1cb6a2e292fce2441b4a571f173ce0f/gdk/quartz/gdkeventloop-quartz.c#L640-L646)
-    // We can convince it that touching that pool would be unsafe by running all GTK calls within a CFRunLoop
-    // (Blocks submitted to the main queue by dispatch_async are run by its CFRunLoop)
-    dispatch_async(dispatch_get_main_queue(), ^{
-#endif
+    auto *dialog = new Dialog;
+
     initIni();
     ReadSettings();
-    DisplayDialog();
+    dialog->Display();
     WriteSettings();
     delete spuConfig;
-    spuConfig = NULL;
-#ifdef __APPLE__
-    // End of `dispatch_async(...` above
-    });
-#endif
+    spuConfig = nullptr;
+    wxDELETE(dialog);
 }

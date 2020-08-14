@@ -199,6 +199,7 @@ CRC::Game CRC::m_games[] =
 	{0xE23D532B, GodOfWar, NoRegion, 0},
 	{0x1A85E924, GodOfWar, NoRegion, 0}, // cutie comment
 	{0x608ACBD3, GodOfWar, CH, 0}, // cutie comment
+	// {0x1A85E924, GodOfWar, NoRegion, 0}, // same CRC as {0x1A85E924, DevilMayCry3, CH, 0}
 	{0x2F123FD8, GodOfWar2, US, 0}, // same CRC as RU
 	{0x44A8A22A, GodOfWar2, EU, 0},
 	{0x60BC362B, GodOfWar2, EU, 0},
@@ -219,10 +220,6 @@ CRC::Game CRC::m_games[] =
 	{0xA3643EB1, GiTS, KO, 0},
 	{0x28557423, GiTS, RU, 0},
 	{0xBF6F101F, GiTS, EU, 0}, // same CRC as another US disc
-	{0x6BF11378, Onimusha3, US, 0},
-	{0x78F1136A, Onimusha3, RU, 0}, // Unofficial RU-version
-	{0x71320CA8, Onimusha3, JP, 0},
-	{0xDAFFFB0D, Onimusha3, KO, 0},
 	{0xF442260C, MajokkoALaMode2, JP, 0},
 	{0xA616A6C2, TalesOfAbyss, US, 0},
 	{0x14FE77F7, TalesOfAbyss, US, 0},
@@ -258,14 +255,6 @@ CRC::Game CRC::m_games[] =
 	{0x47BA9034, SMTNocturne, JP, 0}, // SMTNocturne Maniacs Chronicle
 	{0xD3FFC263, SMTNocturne, KO, 0},
 	{0x84D1A8DA, SMTNocturne, KO, 0},
-	{0xD7273511, SMTDDS1, US, 0}, // SMT Digital Devil Saga
-	{0x1683A6BE, SMTDDS1, EU, 0}, // SMT Digital Devil Saga
-	{0x44865CE1, SMTDDS1, JP, 0}, // SMT Digital Devil Saga
-	{0xF2E397C0, SMTDDS1, KO, 0}, // SMT Digital Devil Saga
-	{0x43202D1A, SMTDDS2, KO, 0}, // SMT Digital Devil Saga 2
-	{0xD382C164, SMTDDS2, US, 0}, // SMT Digital Devil Saga 2
-	{0xD568B684, SMTDDS2, EU, 0}, // SMT Digital Devil Saga 2
-	{0xE47C1A9C, SMTDDS2, JP, 0}, // SMT Digital Devil Saga 2
 	{0x0B8AB37B, RozenMaidenGebetGarden, JP, 0},
 	{0xA33AF77A, TenchuFS, US, 0},
 	{0x64C58FB4, TenchuFS, US, 0},
@@ -343,18 +332,6 @@ CRC::Game CRC::m_games[] =
 	{0xCC9BFDE3, StarWarsForceUnleashed, JP, 0},
 	{0xDAF2145C, StarWarsForceUnleashed, EU, 0},
 	{0x87109051, StarWarsForceUnleashed, EU, 0},
-	// {0x79B8A95F, DevilMayCry3, US, 0}, // DMC(1)? 
-	// {0x1A85E924, DevilMayCry3, CH, 0}, // same CRC as {GodOfWar, NoRegion}
-	{0x7F3D692D, DevilMayCry3, CH, 0},
-	{0x25FC361B, DevilMayCry3, US, 0}, // SE
-	{0x2F7D8AD5, DevilMayCry3, US, 0},
-	{0x0BED0AF9, DevilMayCry3, US, 0},
-	{0x18C9343F, DevilMayCry3, EU, 0}, // SE
-	{0x7ADCB24A, DevilMayCry3, EU, 0},
-	{0x79C952B0, DevilMayCry3, JP, 0}, // SE
-	{0x7F3DDEAB, DevilMayCry3, JP, 0},
-	{0x05931990, DevilMayCry3, KO, 0},
-	{0x4AD36D59, DevilMayCry3, RU, 0},
 	{0xBEBF8793, BurnoutTakedown, US, 0},
 	{0xBB2E845F, BurnoutTakedown, JP, 0},
 	{0x5F060991, BurnoutTakedown, KO, 0},
@@ -448,7 +425,6 @@ CRC::Game CRC::m_games[] =
 	{0XE1BF5DCA, SuperManReturns, US, 0},
 	{0XE8F7BAB6, SuperManReturns, EU, 0},
 	{0x06A7506A, SacredBlaze, JP, 0},
-	{0x4CE7FB04, ItadakiStreet, JP, 0},
 	{0x9C712FF0, Jak1, EU, TextureInsideRt}, // Jak and Daxter: The Precursor Legacy
 	{0x1B3976AB, Jak1, US, TextureInsideRt},
 	{0x472E7699, Jak1, US, TextureInsideRt},
@@ -548,6 +524,7 @@ CRC::Game CRC::m_games[] =
 	{0x81CBFEA2, RatchetAndClank, US, 0}, // EB Games Demo
 	{0x56A35F77, RatchetAndClank, JP, 0},
 	{0x76F724A3, RatchetAndClank, EU, 0},
+	{0x6A8F18B9, RatchetAndClank, EU, 0},
 	{0xB3A71D10, RatchetAndClank2, US, 0}, // Going Commando
 	{0x38996035, RatchetAndClank2, US, 0},
 	{0xDF6F94A1, RatchetAndClank2, US, 0}, // Demo - Going Commando & Jak II

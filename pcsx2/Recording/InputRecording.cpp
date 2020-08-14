@@ -45,7 +45,7 @@ void SaveStateBase::InputRecordingFreeze()
 		// detect loading a savestate as a frame being drawn
 		g_InputRecordingControls.SetFrameCountTracker(g_FrameCount);
 
-		// If the starting savestate has been loaded (on a current-frame recording) and a save-state is loaded while recording 
+		// If the starting savestate has been loaded (on a current-frame recording) and a save-state is loaded while recording
 		// or replaying the movie it is an undo operation that needs to be tracked.
 		//
 		// The reason it's also an undo operation when replaying is because the user can switch modes at any time
@@ -64,7 +64,7 @@ void SaveStateBase::InputRecordingFreeze()
 			{
 				newFrameCounter = 0;
 				recordingConLog(L"[REC]: Warning, you loaded a savestate outside of the bounds of the original recording. This should be avoided. Savestate's framecount has been ignored.\n");
-			} 
+			}
 			else if (newFrameCounter >= g_InputRecording.GetInputRecordingData().GetMaxFrame())
 			{
 				newFrameCounter = g_InputRecording.GetInputRecordingData().GetMaxFrame();
@@ -91,7 +91,7 @@ void SaveStateBase::InputRecordingFreeze()
 
 InputRecording g_InputRecording;
 
-void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 buf[])
+void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 buf[])
 {
 	// TODO - Multi-Tap Support
 	// Only examine controllers 1 / 2
@@ -138,7 +138,7 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
 	}
 
 	// Read or Write
-	const u8 &nowBuf = buf[bufCount];
+	const u8& nowBuf = buf[bufCount];
 	if (state == InputRecordingMode::Recording)
 	{
 		inputRecordingData.WriteKeyBuf(frameCounter, port, bufCount - 3, nowBuf);
@@ -158,7 +158,7 @@ u32 InputRecording::GetFrameCounter()
 	return frameCounter;
 }
 
-InputRecordingFile &InputRecording::GetInputRecordingData()
+InputRecordingFile& InputRecording::GetInputRecordingData()
 {
 	return inputRecordingData;
 }
@@ -280,30 +280,18 @@ void InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 	{
 		return;
 	}
+	// Set emulator version
+	inputRecordingData.GetHeader().SetEmulatorVersion();
 
+	// Set author name
 	if (!authorName.IsEmpty())
 	{
 		inputRecordingData.GetHeader().SetAuthor(authorName);
 	}
 
 	// Set Game Name
-	// Code loosely taken from AppCoreThread.cpp to resolve the Game Name
-	// Fallback is ISO name
-	wxString gameName;
-	const wxString gameKey(SysGetDiscID());
-	if (!gameKey.IsEmpty())
-	{
-		if (IGameDatabase* GameDB = AppHost_GetGameDatabase())
-		{
-			Game_Data game;
-			if (GameDB->findGame(game, gameKey))
-			{
-				gameName = game.getString("Name");
-				gameName += L" (" + game.getString("Region") + L")";
-			}
-		}
-	}
-	inputRecordingData.GetHeader().SetGameName(!gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso));
+	inputRecordingData.GetHeader().SetGameName(resolveGameName());
+	// Write header contents
 	inputRecordingData.WriteHeader();
 	state = InputRecordingMode::Recording;
 	recordingConLog(wxString::Format(L"[REC]: Started new recording - [%s]\n", FileName));
@@ -340,18 +328,39 @@ void InputRecording::Play(wxString FileName, bool fromSaveState)
 
 	if (!g_Conf->CurrentIso.IsEmpty())
 	{
-		if (Path::GetFilename(g_Conf->CurrentIso) != inputRecordingData.GetHeader().gameName)
+		if (resolveGameName() != inputRecordingData.GetHeader().gameName)
 		{
-			recordingConLog(L"[REC]: Information on CD in Movie file is Different.\n");
+			recordingConLog(L"[REC]: Recording was possibly recorded on a different game.\n");
 		}
 	}
 	state = InputRecordingMode::Replaying;
 	recordingConLog(wxString::Format(L"[REC]: Replaying movie - [%s]\n", FileName));
+	recordingConLog(wxString::Format(L"[REC]: PCSX2 Version Used: %s\n", inputRecordingData.GetHeader().emu));
 	recordingConLog(wxString::Format(L"[REC]: Recording File Version: %d\n", inputRecordingData.GetHeader().version));
-	recordingConLog(wxString::Format(L"[REC]: Associated Game Name / ISO Filename: %s\n", inputRecordingData.GetHeader().gameName));
+	recordingConLog(wxString::Format(L"[REC]: Associated Game Name or ISO Filename: %s\n", inputRecordingData.GetHeader().gameName));
 	recordingConLog(wxString::Format(L"[REC]: Author: %s\n", inputRecordingData.GetHeader().author));
-	recordingConLog(wxString::Format(L"[REC]: Total Frames: %d\n", inputRecordingData.GetMaxFrame()));
-	recordingConLog(wxString::Format(L"[REC]: Undo Count: %d\n", inputRecordingData.GetUndoCount()));
+	recordingConLog(wxString::Format(L"[REC]: MaxFrame: %d\n", inputRecordingData.GetMaxFrame()));
+	recordingConLog(wxString::Format(L"[REC]: UndoCount: %d\n", inputRecordingData.GetUndoCount()));
+}
+
+wxString InputRecording::resolveGameName()
+{
+	// Code loosely taken from AppCoreThread::_ApplySettings to resolve the Game Name
+	wxString gameName;
+	const wxString gameKey(SysGetDiscID());
+	if (!gameKey.IsEmpty())
+	{
+		if (IGameDatabase* GameDB = AppHost_GetGameDatabase())
+		{
+			Game_Data game;
+			if (GameDB->findGame(game, gameKey))
+			{
+				gameName = game.getString("Name");
+				gameName += L" (" + game.getString("Region") + L")";
+			}
+		}
+	}
+	return !gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso);
 }
 
 #endif

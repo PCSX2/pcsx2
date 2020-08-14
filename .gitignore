@@ -39,6 +39,8 @@ pcsx2.snapshot_*
 svnrev.h
 
 /build
+/build_dev
+/build_dbg
 /obj-*
 
 .DS_Store
@@ -47,6 +49,8 @@ Thumbs.db
 Debug.txt
 install_log.txt
 padLog.txt
+GSdx_opengl_debug_hw.txt
+GSdx_opengl_debug_sw.txt
 
 Debug
 Release
@@ -70,7 +74,10 @@ oprofile_data/
 /bin/**/*.lib
 /bin/**/*.pdb
 /bin/PCSX2
+/bin/PCSX2-linux.sh
 /bin/*ReplayLoader
+/bin/PCSX2-linux.sh
+/bin/GSdx*.txt
 /bin/bios
 /bin/dumps
 /bin/help

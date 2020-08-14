@@ -48,7 +48,7 @@ set(FWnullFinalSources
 )
 
 set(FWnullFinalLibs
-	${GTK2_LIBRARIES}
+	${wxWidgets_LIBRARIES}
 )
 
 if(BUILTIN_FW)

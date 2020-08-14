@@ -90,6 +90,10 @@ private:
 	bool savestateInitializing = false;
 	u32 startingFrame = 0;
 	InputRecordingMode state = InputRecording::InputRecordingMode::NoneActive;
+    
+	// Resolve the name and region of the game currently loaded using the GameDB
+	// If the game cannot be found in the DB, the fallback is the ISO filename
+	wxString resolveGameName();
 };
 
 extern InputRecording g_InputRecording;

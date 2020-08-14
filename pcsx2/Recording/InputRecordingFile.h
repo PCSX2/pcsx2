@@ -23,12 +23,12 @@
 struct InputRecordingHeader
 {
 	u8 version = 1;
-	// TODO - initialize the header properly, this number has drifted at this point
-	char emu[50] = "PCSX2-1.5.X";
+	char emu[50] = "";
 	char author[255] = "";
 	char gameName[255] = "";
 
 public:
+	void SetEmulatorVersion();
 	void SetAuthor(wxString author);
 	void SetGameName(wxString cdrom);
 	void Init();
@@ -52,11 +52,11 @@ public:
 	// Movie File Manipulation
 	bool Open(const wxString fn, bool fNewOpen, bool fromSaveState);
 	bool Close();
-	bool WriteKeyBuf(const uint & frame, const uint port, const uint bufIndex, const u8 & buf);
-	bool ReadKeyBuf(u8 & result, const uint & frame, const uint port, const uint bufIndex);
+	bool WriteKeyBuf(const uint& frame, const uint port, const uint bufIndex, const u8& buf);
+	bool ReadKeyBuf(u8& result, const uint& frame, const uint port, const uint bufIndex);
 
 	// Controller Data
-	void GetPadData(PadData & result_pad, unsigned long frame);
+	void GetPadData(PadData& result_pad, unsigned long frame);
 	bool DeletePadData(unsigned long frame);
 	bool InsertPadData(unsigned long frame, const PadData& key);
 	bool UpdatePadData(unsigned long frame, const PadData& key);
@@ -65,7 +65,7 @@ public:
 	InputRecordingHeader& GetHeader();
 	unsigned long& GetMaxFrame();
 	unsigned long& GetUndoCount();
-	const wxString & GetFilename();
+	const wxString& GetFilename();
 	bool FromCurrentFrame();
 
 	bool WriteHeader();
@@ -88,9 +88,9 @@ private:
 	static const int RecordingSeekpointSaveState = RecordingSeekpointUndoCount + 4;
 
 	// Movie File
-	FILE * recordingFile = NULL;
+	FILE* recordingFile = NULL;
 	wxString filename = "";
-	long GetBlockSeekPoint(const long & frame);
+	long GetBlockSeekPoint(const long& frame);
 
 	// Header
 	InputRecordingHeader header;

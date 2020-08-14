@@ -17,6 +17,7 @@
 
 #include "PrecompiledHeader.h"
 #include "RedtapeWindows.h"
+#include <VersionHelpers.h>
 
 #include <ShTypes.h>
 
@@ -46,11 +47,6 @@ u64 GetPhysicalMemory()
     GlobalMemoryStatusEx(&status);
     return status.ullTotalPhys;
 }
-
-// Windows SDK 7 provides this but previous ones do not, so roll our own in those cases:
-#ifndef VER_SUITE_WH_SERVER
-#define VER_SUITE_WH_SERVER 0x00008000
-#endif
 
 typedef void(WINAPI *PGNSI)(LPSYSTEM_INFO);
 typedef BOOL(WINAPI *PGPI)(DWORD, DWORD, DWORD, DWORD, PDWORD);
@@ -108,176 +104,81 @@ wxString GetOSVersionString()
     else
         GetSystemInfo(&si);
 
-    if (VER_PLATFORM_WIN32_NT != osvi.dwPlatformId || osvi.dwMajorVersion <= 5)
+    if (!IsWindows8Point1OrGreater())
         return L"Unsupported Operating System!";
 
     retval += L"Microsoft ";
 
     // Test for the specific product.
 
-    if (osvi.dwMajorVersion == 10) {
-        if (osvi.dwMinorVersion == 0)
-            retval += (osvi.wProductType == VER_NT_WORKSTATION) ? L"Windows 10 " : L"Windows Server 2016 ";
+    if (IsWindows10OrGreater())
+        retval += IsWindowsServer() ? L"Windows Server 2016 " : L"Windows 10 ";
+    else // IsWindows8Point1OrGreater()
+        retval += IsWindowsServer() ? L"Windows Server 2012 R2 " : L"Windows 8.1 ";
 
-        pGPI = (PGPI)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetProductInfo");
+    pGPI = (PGPI)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetProductInfo");
+    pGPI(osvi.dwMajorVersion, osvi.dwMinorVersion, 0, 0, &dwType);
 
-        pGPI(osvi.dwMajorVersion, osvi.dwMinorVersion, 0, 0, &dwType);
-
-        switch (dwType) {
-            case PRODUCT_CORE:
-                retval += L"Home";
-                break;
-            case PRODUCT_CORE_N:
-                retval += L"Home N";
-                break;
-            case PRODUCT_PROFESSIONAL:
-                retval += L"Pro";
-                break;
-            case PRODUCT_PROFESSIONAL_N:
-                retval += L"Pro N";
-                break;
-            case PRODUCT_ENTERPRISE:
-                retval += L"Enterprise";
-                break;
-            case PRODUCT_ENTERPRISE_N:
-                retval += L"Enterprise N";
-                break;
-            case PRODUCT_ENTERPRISE_S:
-                retval += L"Enterprise 2015 LTSB";
-                break;
-            case PRODUCT_ENTERPRISE_S_N:
-                retval += L"Enterprise 2015 LTSB N";
-                break;
-            case PRODUCT_EDUCATION:
-                retval += L"Education";
-                break;
-            case PRODUCT_EDUCATION_N:
-                retval += L"Education N";
-                break;
-        }
+    switch (dwType)
+    {
+        // Shared between Windows 8.1 and 10.
+        case PRODUCT_PROFESSIONAL:
+            retval += L"Pro";
+            break;
+        case PRODUCT_PROFESSIONAL_N:
+            retval += L"Pro N";
+            break;
+        case PRODUCT_PROFESSIONAL_WMC:
+            retval += L"Pro with Media Center";
+            break;
+        case PRODUCT_ENTERPRISE:
+            retval += L"Enterprise";
+            break;
+        case PRODUCT_ENTERPRISE_N:
+            retval += L"Enterprise N";
+            break;
+        case PRODUCT_SERVER_FOUNDATION:
+            retval += L"Foundation";
+            break;
+        case PRODUCT_STANDARD_SERVER:
+            retval += L"Standard";
+            break;
+        case PRODUCT_STANDARD_SERVER_CORE:
+            retval += L"Standard (core)";
+            break;
+        case PRODUCT_DATACENTER_SERVER:
+            retval += L"Datacenter";
+            break;
+        case PRODUCT_DATACENTER_SERVER_CORE:
+            retval += L"Datacenter (core)";
+            break;
+        // Windows 10 specific.
+        case PRODUCT_ENTERPRISE_S:
+            retval += L"Enterprise 2015 LTSB";
+            break;
+        case PRODUCT_ENTERPRISE_S_N:
+            retval += L"Enterprise 2015 LTSB N";
+            break;
+        case PRODUCT_EDUCATION:
+            retval += L"Education";
+            break;
+        case PRODUCT_CORE:
+            retval += L"Home";
+            break;
+        case PRODUCT_CORE_N:
+            retval += L"Home N";
+            break;
+        case PRODUCT_EDUCATION_N:
+            retval += L"Education N";
+            break;
     }
-
-    if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion > 1) {
-        if (osvi.dwMinorVersion == 2)
-            retval += (osvi.wProductType == VER_NT_WORKSTATION) ? L"Windows 8 " : L"Windows Server 2012 ";
-
-        if (osvi.dwMinorVersion == 3)
-            retval += (osvi.wProductType == VER_NT_WORKSTATION) ? L"Windows 8.1 " : L"Windows Server 2012 R2 ";
-
-        pGPI = (PGPI)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetProductInfo");
-
-        pGPI(osvi.dwMajorVersion, osvi.dwMinorVersion, 0, 0, &dwType);
-
-        switch (dwType) {
-            case PRODUCT_PROFESSIONAL:
-                retval += L"Pro";
-                break;
-            case PRODUCT_PROFESSIONAL_N:
-                retval += L"Pro N";
-                break;
-            case PRODUCT_PROFESSIONAL_WMC:
-                retval += L"Pro with Media Center";
-                break;
-            case PRODUCT_ENTERPRISE:
-                retval += L"Enterprise";
-                break;
-            case PRODUCT_ENTERPRISE_N:
-                retval += L"Enterprise N";
-                break;
-            case PRODUCT_SERVER_FOUNDATION:
-                retval += L"Foundation";
-                break;
-            case PRODUCT_STANDARD_SERVER:
-                retval += L"Standard";
-                break;
-            case PRODUCT_STANDARD_SERVER_CORE:
-                retval += L"Standard (core)";
-                break;
-            case PRODUCT_DATACENTER_SERVER:
-                retval += L"Datacenter";
-                break;
-            case PRODUCT_DATACENTER_SERVER_CORE:
-                retval += L"Datacenter (core)";
-                break;
-        }
-    }
-
-    if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion <= 1) {
-        if (osvi.dwMinorVersion == 0)
-            retval += (osvi.wProductType == VER_NT_WORKSTATION) ? L"Windows Vista " : L"Windows Server 2008 ";
-
-        if (osvi.dwMinorVersion == 1)
-            retval += (osvi.wProductType == VER_NT_WORKSTATION) ? L"Windows 7 " : L"Windows Server 2008 R2 ";
-
-        pGPI = (PGPI)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetProductInfo");
-
-        pGPI(osvi.dwMajorVersion, osvi.dwMinorVersion, 0, 0, &dwType);
-
-        switch (dwType) {
-            case PRODUCT_ULTIMATE:
-                retval += L"Ultimate Edition";
-                break;
-            case PRODUCT_HOME_PREMIUM:
-                retval += L"Home Premium Edition";
-                break;
-            case PRODUCT_HOME_BASIC:
-                retval += L"Home Basic Edition";
-                break;
-            case PRODUCT_ENTERPRISE:
-                retval += L"Enterprise Edition";
-                break;
-            case PRODUCT_BUSINESS:
-                retval += L"Business Edition";
-                break;
-            case PRODUCT_STARTER:
-                retval += L"Starter Edition";
-                break;
-            case PRODUCT_CLUSTER_SERVER:
-                retval += L"Cluster Server Edition";
-                break;
-            case PRODUCT_DATACENTER_SERVER:
-                retval += L"Datacenter Edition";
-                break;
-            case PRODUCT_DATACENTER_SERVER_CORE:
-                retval += L"Datacenter Edition (core installation)";
-                break;
-            case PRODUCT_ENTERPRISE_SERVER:
-                retval += L"Enterprise Edition";
-                break;
-            case PRODUCT_ENTERPRISE_SERVER_CORE:
-                retval += L"Enterprise Edition (core installation)";
-                break;
-            case PRODUCT_SMALLBUSINESS_SERVER:
-                retval += L"Small Business Server";
-                break;
-            case PRODUCT_SMALLBUSINESS_SERVER_PREMIUM:
-                retval += L"Small Business Server Premium Edition";
-                break;
-            case PRODUCT_STANDARD_SERVER:
-                retval += L"Standard Edition";
-                break;
-            case PRODUCT_STANDARD_SERVER_CORE:
-                retval += L"Standard Edition (core installation)";
-                break;
-            case PRODUCT_WEB_SERVER:
-                retval += L"Web Server Edition";
-                break;
-        }
-    }
-
-    // Include service pack (if any) and build number.
-
-    if (_tcslen(osvi.szCSDVersion) > 0)
-        retval += (wxString)L" " + osvi.szCSDVersion;
 
     retval += wxsFormat(L" (build %d)", osvi.dwBuildNumber);
 
-    if (osvi.dwMajorVersion >= 6) {
-        if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
-            retval += L", 64-bit";
-        else if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL)
-            retval += L", 32-bit";
-    }
+    if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
+        retval += L", 64-bit";
+    else if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL)
+        retval += L", 32-bit";
 
     return retval;
 }

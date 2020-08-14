@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "x86emitter.h"
-
 enum x86VendorType {
     x86Vendor_Intel = 0,
     x86Vendor_AMD = 1,
@@ -134,6 +132,12 @@ enum SSE_RoundMode {
 };
 
 ImplementEnumOperators(SSE_RoundMode);
+
+// Predeclaration for xIndirect32
+namespace x86Emitter {
+	template <typename T> class xIndirect;
+	typedef xIndirect<u32> xIndirect32;
+}
 
 // --------------------------------------------------------------------------------------
 //  SSE_MXCSR  -  Control/Status Register (bitfield)

@@ -607,9 +607,11 @@ static __fi void _cpuTestTarget( int i )
 	if(counters[i].mode.TargetInterrupt) {
 
 		EECNT_LOG("EE Counter[%d] TARGET reached - mode=%x, count=%x, target=%x", i, counters[i].mode, counters[i].count, counters[i].target);
-		counters[i].mode.TargetReached = 1;
-		hwIntcIrq(counters[i].interrupt);
-
+		if (!counters[i].mode.TargetReached)
+		{
+			counters[i].mode.TargetReached = 1;
+			hwIntcIrq(counters[i].interrupt);
+		}
 		// The PS2 only resets if the interrupt is enabled - Tested on PS2
 		if (counters[i].mode.ZeroReturn)
 			counters[i].count -= counters[i].target; // Reset on target
@@ -625,8 +627,11 @@ static __fi void _cpuTestOverflow( int i )
 
 	if (counters[i].mode.OverflowInterrupt) {
 		EECNT_LOG("EE Counter[%d] OVERFLOW - mode=%x, count=%x", i, counters[i].mode, counters[i].count);
-		counters[i].mode.OverflowReached = 1;
-		hwIntcIrq(counters[i].interrupt);
+		if (!counters[i].mode.OverflowReached)
+		{
+			counters[i].mode.OverflowReached = 1;
+			hwIntcIrq(counters[i].interrupt);
+		}
 	}
 
 	// wrap counter back around zero, and enable the future target:

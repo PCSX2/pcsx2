@@ -30,18 +30,18 @@ public:
 	// Called much more frequently than HandleFrameAdvanceAndPausing, instead of being per frame
 	// this hooks into pcsx2's main App event handler as it has to be able to resume emulation
 	// when drawing frames has compltely stopped
-	// 
+	//
 	// Resumes emulation if:
 	// - CoreThread is currently open and paused
 	// - We've signaled emulation to be resumed via TogglePause or FrameAdvancing
 	void ResumeCoreThreadIfStarted();
-	
+
 	// Resume emulation (incase the emulation is currently paused) and pause after a single frame has passed
 	void FrameAdvance();
 	// Returns true if the input recording has been paused, which can occur:
 	// - After a single frame has passed after InputRecordingControls::FrameAdvance
 	// - Explicitly paused via InputRecordingControls::TogglePause
-	bool IsRecordingPaused();
+	bool isEmulationAndRecordingPaused();
 	// Pause emulation at the next available Vsync
 	void Pause();
 	// Pause emulation immediately, not waiting for the next Vsync

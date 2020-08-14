@@ -49,6 +49,7 @@ set(USBnullFinalSources
 
 set(USBnullFinalLibs
 	${GTK2_LIBRARIES}
+	${wxWidgets_LIBRARIES}
 )
 
 if(BUILTIN_USB)

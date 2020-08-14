@@ -37,13 +37,13 @@ void InputRecordingControls::HandleFrameAdvanceAndPausing()
 	// vsync timing can change.
 	//
 	// As a safeguard, use the global g_FrameCount to know when the frame counter has truly changed.
-	// 
+	//
 	// NOTE - Do not mutate g_FrameCount or use it's value to set the input recording's internal frame counter
 	if (frameCountTracker != g_FrameCount)
 	{
 		frameCountTracker = g_FrameCount;
 		g_InputRecording.IncrementFrameCounter();
-	} 
+	}
 	else
 	{
 		if (pauseEmulation)
@@ -60,12 +60,12 @@ void InputRecordingControls::HandleFrameAdvanceAndPausing()
 	}
 
 	// If we havn't yet advanced atleast a single frame from when we paused, setup things to be paused
-	if (frameAdvancing && frameAdvanceMarker < g_InputRecording.GetFrameCounter()) 
+	if (frameAdvancing && frameAdvanceMarker < g_InputRecording.GetFrameCounter())
 	{
 		frameAdvancing = false;
 		pauseEmulation = true;
 	}
-	
+
 	// Pause emulation if we need to (either due to frame advancing, or pause has been explicitly toggled on)
 	if (pauseEmulation && CoreThread.IsOpen() && CoreThread.IsRunning())
 	{
@@ -96,9 +96,9 @@ void InputRecordingControls::FrameAdvance()
 	Resume();
 }
 
-bool InputRecordingControls::IsRecordingPaused()
+bool InputRecordingControls::isEmulationAndRecordingPaused()
 {
-	return (emulationCurrentlyPaused && CoreThread.IsOpen() && CoreThread.IsPaused());
+	return emulationCurrentlyPaused && CoreThread.IsOpen() && CoreThread.IsPaused();
 }
 
 void InputRecordingControls::Pause()

@@ -42,11 +42,7 @@ static HRESULT s_hr = E_FAIL;
 
 #else
 
-#include "Window/GSWndOGL.h"
 #include "Window/GSWndEGL.h"
-
-#include <gtk/gtk.h>
-#include <gdk/gdkx.h>
 
 extern bool RunLinuxDialog();
 
@@ -148,13 +144,7 @@ EXPORT_C_(int) GSinit()
 		g_const->Init();
 
 #ifdef _WIN32
-
 	s_hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
-
-	if (!GSDevice11::LoadD3DCompiler())
-	{
-		return -1;
-	}
 #endif
 
 	return 0;
@@ -170,16 +160,12 @@ EXPORT_C GSshutdown()
 	theApp.SetCurrentRendererType(GSRendererType::Undefined);
 
 #ifdef _WIN32
-
 	if(SUCCEEDED(s_hr))
 	{
 		::CoUninitialize();
 
 		s_hr = E_FAIL;
 	}
-
-	GSDevice11::FreeD3DCompiler();
-
 #endif
 }
 
@@ -249,7 +235,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 #ifdef ENABLE_OPENCL
 				case GSRendererType::OGL_OpenCL:
 #endif
-#if defined(EGL_SUPPORTED) && defined(__unix__)
+#if defined(__unix__)
 					// Note: EGL code use GLX otherwise maybe it could be also compatible with Windows
 					// Yes OpenGL code isn't complicated enough !
 					switch (GSWndEGL::SelectPlatform()) {
@@ -266,9 +252,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 						default:
 							break;
 					}
-#endif
-#if defined(__unix__)
-					wnds.push_back(std::make_shared<GSWndOGL>());
 #else
 					wnds.push_back(std::make_shared<GSWndWGL>());
 #endif
@@ -277,7 +260,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 #ifdef _WIN32
 					wnds.push_back(std::make_shared<GSWndDX>());
 #else
-					wnds.push_back(std::make_shared<GSWndOGL>());
+					wnds.push_back(std::make_shared<GSWndEGL_X11>());
 #endif
 					break;
 			}
@@ -825,34 +808,7 @@ EXPORT_C GSconfigure()
 EXPORT_C_(int) GStest()
 {
 	if(!GSUtil::CheckSSE())
-	{
 		return -1;
-	}
-
-#ifdef _WIN32
-
-	s_hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
-
-	if(!GSUtil::CheckDirectX())
-	{
-		if(SUCCEEDED(s_hr))
-		{
-			::CoUninitialize();
-		}
-
-		s_hr = E_FAIL;
-
-		return -1;
-	}
-
-	if(SUCCEEDED(s_hr))
-	{
-		::CoUninitialize();
-	}
-
-	s_hr = E_FAIL;
-
-#endif
 
 	return 0;
 }
