@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -17,6 +17,7 @@
 
 #include "App.h"
 #include "Counters.h"
+#include "Common.h"
 #include "GSFrame.h"
 #include "MemoryTypes.h"
 
@@ -27,11 +28,13 @@
 RecordingControls g_RecordingControls;
 
 //-----------------------------------------------
-// Status on whether or not the current recording is stopped
+// Current recording status, returns true if:
+// - Recording is Paused
+// - GSFrame CoreThread is both running AND paused
 //-----------------------------------------------
-bool RecordingControls::HasRecordingStopped()
+bool RecordingControls::IsEmulationAndRecordingPaused()
 {
-	return (fPauseState && CoreThread.IsOpen() && CoreThread.IsPaused());
+	return fPauseState && CoreThread.IsOpen() && CoreThread.IsPaused();
 }
 
 //-----------------------------------------------

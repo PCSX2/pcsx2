@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -62,7 +62,13 @@ NewRecordingFrame::NewRecordingFrame(wxWindow *parent)
 
 wxString NewRecordingFrame::GetFile() const
 {
-	return m_filePicker->GetPath();
+	wxString path = m_filePicker->GetPath();
+	// wxWidget's removes the extension if it contains wildcards
+	// on wxGTK https://trac.wxwidgets.org/ticket/15285
+	if (!path.EndsWith(".p2m2")) {
+		return wxString::Format("%s.p2m2", path);
+	}
+	return path;
 }
 
 wxString NewRecordingFrame::GetAuthor() const

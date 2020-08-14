@@ -18,10 +18,6 @@
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
 
-#if defined(__unix__)
-#include <gtk/gtk.h>
-#endif
-
 #include <string>
 #include <wx/fileconf.h>
 
@@ -87,15 +83,43 @@ extern int dspPluginModule;
 extern bool dspPluginEnabled;
 extern int SynchMode;
 
+#ifdef SPU2X_PORTAUDIO
+extern u32 OutputAPI;
+#endif
+extern u32 SdlOutputAPI;
+
+#ifdef PCSX2_DEVBUILD
+const int LATENCY_MAX = 3000;
+#else
+const int LATENCY_MAX = 750;
+#endif
+
+const int LATENCY_MIN = 3;
+const int LATENCY_MIN_TIMESTRETCH = 15;
+
 namespace SoundtouchCfg
 {
+extern const int SequenceLen_Min;
+extern const int SequenceLen_Max;
+
+extern const int SeekWindow_Min;
+extern const int SeekWindow_Max;
+
+extern const int Overlap_Min;
+extern const int Overlap_Max;
+
+extern int SequenceLenMS;
+extern int SeekWindowMS;
+extern int OverlapMS;
+
 void ReadSettings();
 void WriteSettings();
-void DisplayDialog();
 }; // namespace SoundtouchCfg
 
 void ReadSettings();
 void WriteSettings();
+void DisplayDialog();
+
 void configure();
 extern wxFileConfig *spuConfig;
 extern bool pathSet;

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -38,6 +38,14 @@ void InputRecordingFileHeader::SetAuthor(wxString _author)
 	author[max] = 0;
 }
 
+void InputRecordingFileHeader::SetEmulatorVersion()
+{
+	wxString emuVersion = wxString::Format("%s-%d.%d.%d", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
+	int max = ArraySize(emu) - 1;
+	strncpy(emu, emuVersion.c_str(), max);
+	emu[max] = 0;
+}
+
 void InputRecordingFileHeader::SetGameName(wxString _gameName)
 {
 	int max = ArraySize(gameName) - 1;
@@ -59,22 +67,22 @@ bool InputRecordingFile::Close()
 	return true;
 }
 
-const wxString &InputRecordingFile::GetFilename()
+const wxString& InputRecordingFile::GetFilename()
 {
 	return filename;
 }
 
-InputRecordingFileHeader &InputRecordingFile::GetHeader()
+InputRecordingFileHeader& InputRecordingFile::GetHeader()
 {
 	return header;
 }
 
-unsigned long &InputRecordingFile::GetTotalFrames()
+unsigned long& InputRecordingFile::GetTotalFrames()
 {
 	return totalFrames;
 }
 
-unsigned long &InputRecordingFile::GetUndoCount()
+unsigned long& InputRecordingFile::GetUndoCount()
 {
 	return undoCount;
 }
@@ -108,17 +116,23 @@ bool InputRecordingFile::open(const wxString path, bool newRecording, bool fromS
 	}
 
 	recordingFile = wxFopen(path, mode);
-	if ( recordingFile == NULL )
+	if (recordingFile == NULL)
 	{
 		recordingConLog(wxString::Format("[REC]: Input Recording file opening failed. Error - %s\n", strerror(errno)));
 		return false;
 	}
 	filename = path;
-	
+
 	if (newRecording)
 	{
 		if (fromSaveState)
 		{
+			if (!CoreThread.IsOpen())
+			{
+				recordingConLog(L"[REC]: Game is not open, aborting playing input recording which starts on a save-state.\n");
+				return false;
+			}
+
 			savestate.fromSavestate = true;
 			FILE* ssFileCheck = wxFopen(path + "_SaveState.p2s", "r");
 			if (ssFileCheck != NULL)
@@ -132,7 +146,7 @@ bool InputRecordingFile::open(const wxString path, bool newRecording, bool fromS
 		{
 			sApp.SysExecute();
 		}
-	} 
+	}
 	else
 	{
 		if (!verifyRecordingFileHeader())
@@ -155,14 +169,14 @@ bool InputRecordingFile::OpenExisting(const wxString path)
 	return open(path, false, false);
 }
 
-bool InputRecordingFile::ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex)
+bool InputRecordingFile::ReadKeyBuffer(u8& result, const uint& frame, const uint port, const uint bufIndex)
 {
 	if (recordingFile == NULL)
 	{
 		return false;
 	}
 
-	long seek = getRecordingBlockSeekPoint(frame) + controllerInputBytes * port + bufIndex;
+	const long seek = getRecordingBlockSeekPoint(frame) + controllerInputBytes * port + bufIndex;
 	if (fseek(recordingFile, seek, SEEK_SET) != 0)
 	{
 		return false;
@@ -200,7 +214,7 @@ bool InputRecordingFile::WriteHeader()
 	return true;
 }
 
-bool InputRecordingFile::WriteKeyBuffer(const uint &frame, const uint port, const uint bufIndex, const u8 &buf)
+bool InputRecordingFile::WriteKeyBuffer(const uint& frame, const uint port, const uint bufIndex, const u8& buf)
 {
 	if (recordingFile == NULL)
 	{
@@ -209,8 +223,7 @@ bool InputRecordingFile::WriteKeyBuffer(const uint &frame, const uint port, cons
 
 	long seek = getRecordingBlockSeekPoint(frame) + 18 * port + bufIndex;
 
-	if (fseek(recordingFile, seek, SEEK_SET) != 0
-		|| fwrite(&buf, 1, 1, recordingFile) != 1)
+	if (fseek(recordingFile, seek, SEEK_SET) != 0 || fwrite(&buf, 1, 1, recordingFile) != 1)
 	{
 		return false;
 	}
@@ -219,7 +232,7 @@ bool InputRecordingFile::WriteKeyBuffer(const uint &frame, const uint port, cons
 	return true;
 }
 
-long InputRecordingFile::getRecordingBlockSeekPoint(const long &frame)
+long InputRecordingFile::getRecordingBlockSeekPoint(const long& frame)
 {
 	return headerSize + sizeof(bool) + frame * inputBytesPerFrame;
 }
@@ -232,14 +245,11 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 	}
 	// Verify header contents
 	rewind(recordingFile);
-	if (fread(&header, sizeof(InputRecordingFileHeader), 1, recordingFile) != 1
-		|| fread(&totalFrames, 4, 1, recordingFile) != 1
-		|| fread(&undoCount, 4, 1, recordingFile) != 1
-		|| fread(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1)
+	if (fread(&header, sizeof(InputRecordingFileHeader), 1, recordingFile) != 1 || fread(&totalFrames, 4, 1, recordingFile) != 1 || fread(&undoCount, 4, 1, recordingFile) != 1 || fread(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1)
 	{
 		return false;
 	}
-	
+
 	// Check for current verison
 	if (header.version != 1)
 	{
@@ -249,7 +259,8 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 	return true;
 }
 
-bool InputRecordingFile::writeSaveState() {
+bool InputRecordingFile::writeSaveState()
+{
 	if (recordingFile == NULL)
 	{
 		return false;

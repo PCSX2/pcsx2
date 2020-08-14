@@ -55,6 +55,7 @@ static RecompiledCodeReserve* recMem = NULL;
 static BASEBLOCK *recRAM = NULL;	// and the ptr to the blocks here
 static BASEBLOCK *recROM = NULL;	// and here
 static BASEBLOCK *recROM1 = NULL;	// also here
+static BASEBLOCK *recROM2 = NULL;   // also here
 static BaseBlocks recBlocks;
 static u8 *recPtr = NULL;
 u32 psxpc;			// recompiler psxpc
@@ -622,7 +623,7 @@ static uptr m_ConfiguredCacheReserve = 32;
 static u8* m_recBlockAlloc = NULL;
 
 static const uint m_recBlockAllocSize =
-	(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK));
+	(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4) * sizeof(BASEBLOCK));
 
 static void recReserveCache()
 {
@@ -664,6 +665,8 @@ static void recAlloc()
 	recRAM = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::IopRam / 4) * sizeof(BASEBLOCK);
 	recROM = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Rom / 4) * sizeof(BASEBLOCK);
 	recROM1 = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Rom1 / 4) * sizeof(BASEBLOCK);
+	recROM2 = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Rom2 / 4) * sizeof(BASEBLOCK);
+
 
 	if( s_pInstCache == NULL )
 	{
@@ -687,7 +690,7 @@ void recResetIOP()
 	recMem->Reset();
 
 	iopClearRecLUT((BASEBLOCK*)m_recBlockAlloc,
-		(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4)));
+		(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4)));
 
 	for (int i = 0; i < 0x10000; i++)
 		recLUT_SetPage(psxRecLUT, 0, 0, 0, i, 0);
@@ -719,6 +722,13 @@ void recResetIOP()
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM1, 0x0000, i, i - 0x1fc0);
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM1, 0x8000, i, i - 0x1fc0);
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM1, 0xa000, i, i - 0x1fc0);
+	}
+
+	for (int i = 0x1e40; i < 0x1e48; i++)
+	{
+		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM2, 0x0000, i, i - 0x1fc0);
+		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM2, 0x8000, i, i - 0x1fc0);
+		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM2, 0xa000, i, i - 0x1fc0);
 	}
 
 	if( s_pInstCache )

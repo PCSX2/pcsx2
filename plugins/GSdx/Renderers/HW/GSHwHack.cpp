@@ -910,14 +910,6 @@ bool GSC_ValkyrieProfile2(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		/*if(fi.TME && (fi.FBP == 0x018c0 || fi.FBP == 0x02180) && fi.FPSM == fi.TPSM && fi.TBP0 >= 0x03200 && fi.TPSM == PSM_PSMCT32)	//NTSC only, !(fi.TBP0 == 0x03580 || fi.TBP0 == 0x03960)
-		{
-			skip = 1;	//red garbage in lost forest, removes other effects...
-		}
-		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			skip = 1; // //garbage in cutscenes, doesn't remove completely.
-		}*/
 		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
 		{
 			// GH: Hack is quite similar to GSC_StarOcean3. It is potentially the same issue.
@@ -1063,28 +1055,6 @@ bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 3;
 		}
-	}
-
-	return true;
-}
-
-template<uptr state_addr>
-bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
-{
-	// stop the motion blur on the main character and
-	// smudge filter from being drawn on USA versions of
-	// Nocturne, Digital Devil Saga 1 and Digital Devil Saga 2
-
-	if(g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME)
-	{
-		// Note: it will crash if the core doesn't allocate the EE mem in 0x2000_0000 (unlikely but possible)
-		// Aggressive hacks are evil anyway
-
-		// Nocturne:
-		// -0x5900($gp), ref at 0x100740
-		const int state = *(int*)(state_addr);
-		if (state == 23 || state == 24 || state == 25)
-			skip = 1;
 	}
 
 	return true;
@@ -1452,9 +1422,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFXII] = GSC_FFXGames;
 		lut[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
-		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
-		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
-		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
 		lut[CRC::SoTC] = GSC_SoTC;
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 

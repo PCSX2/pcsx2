@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "GSWndEGL.h"
 
-#if defined(__unix__) && defined(EGL_SUPPORTED)
+#if defined(__unix__)
 
 // static method
 int GSWndEGL::SelectPlatform()

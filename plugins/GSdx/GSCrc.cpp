@@ -255,14 +255,6 @@ CRC::Game CRC::m_games[] =
 	{0x47BA9034, SMTNocturne, JP, 0}, // SMTNocturne Maniacs Chronicle
 	{0xD3FFC263, SMTNocturne, KO, 0},
 	{0x84D1A8DA, SMTNocturne, KO, 0},
-	{0xD7273511, SMTDDS1, US, 0}, // SMT Digital Devil Saga
-	{0x1683A6BE, SMTDDS1, EU, 0}, // SMT Digital Devil Saga
-	{0x44865CE1, SMTDDS1, JP, 0}, // SMT Digital Devil Saga
-	{0xF2E397C0, SMTDDS1, KO, 0}, // SMT Digital Devil Saga
-	{0x43202D1A, SMTDDS2, KO, 0}, // SMT Digital Devil Saga 2
-	{0xD382C164, SMTDDS2, US, 0}, // SMT Digital Devil Saga 2
-	{0xD568B684, SMTDDS2, EU, 0}, // SMT Digital Devil Saga 2
-	{0xE47C1A9C, SMTDDS2, JP, 0}, // SMT Digital Devil Saga 2
 	{0x0B8AB37B, RozenMaidenGebetGarden, JP, 0},
 	{0xA33AF77A, TenchuFS, US, 0},
 	{0x64C58FB4, TenchuFS, US, 0},
@@ -433,7 +425,6 @@ CRC::Game CRC::m_games[] =
 	{0XE1BF5DCA, SuperManReturns, US, 0},
 	{0XE8F7BAB6, SuperManReturns, EU, 0},
 	{0x06A7506A, SacredBlaze, JP, 0},
-	{0x4CE7FB04, ItadakiStreet, JP, 0},
 	{0x9C712FF0, Jak1, EU, TextureInsideRt}, // Jak and Daxter: The Precursor Legacy
 	{0x1B3976AB, Jak1, US, TextureInsideRt},
 	{0x472E7699, Jak1, US, TextureInsideRt},
@@ -533,6 +524,7 @@ CRC::Game CRC::m_games[] =
 	{0x81CBFEA2, RatchetAndClank, US, 0}, // EB Games Demo
 	{0x56A35F77, RatchetAndClank, JP, 0},
 	{0x76F724A3, RatchetAndClank, EU, 0},
+	{0x6A8F18B9, RatchetAndClank, EU, 0},
 	{0xB3A71D10, RatchetAndClank2, US, 0}, // Going Commando
 	{0x38996035, RatchetAndClank2, US, 0},
 	{0xDF6F94A1, RatchetAndClank2, US, 0}, // Demo - Going Commando & Jak II

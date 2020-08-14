@@ -57,7 +57,7 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 	}
 
 	GLenum t = 0;
-	bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1) && GLLoader::found_geometry_shader;
+	const bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1) && GLLoader::found_geometry_shader;
 
 	switch(m_vt.m_primclass)
 	{
@@ -81,8 +81,8 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 
 		case GS_SPRITE_CLASS:
 			// Heuristics: trade-off
-			// CPU conversion => ofc, more CPU ;) more bandwidth (72 bytes / sprite)
-			// GPU conversion => ofc, more GPU. And also more CPU due to extra shader validation stage.
+			// Lines: GPU conversion => ofc, more GPU. And also more CPU due to extra shader validation stage.
+			// Triangles: CPU conversion => ofc, more CPU ;) more bandwidth (72 bytes / sprite)
 			//
 			// Note: severals openGL operation does draw call under the wood like texture upload. So even if
 			// you do 10 consecutive draw with the geometry shader, you will still pay extra validation if new

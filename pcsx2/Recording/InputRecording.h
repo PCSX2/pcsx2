@@ -30,14 +30,14 @@ class InputRecording
 {
 public:
 	InputRecording() {}
-	~InputRecording(){}
+	~InputRecording() {}
 
-	void ControllerInterrupt(u8 &data, u8 &port, u16 & BufCount, u8 buf[]);
+	void ControllerInterrupt(u8& data, u8& port, u16& BufCount, u8 buf[]);
 
 	void RecordModeToggle();
 
 	INPUT_RECORDING_MODE GetModeState();
-	InputRecordingFile & GetInputRecordingData();
+	InputRecordingFile& GetInputRecordingData();
 	bool IsInterruptFrame();
 
 	void Stop();
@@ -48,6 +48,9 @@ private:
 	InputRecordingFile InputRecordingData;
 	INPUT_RECORDING_MODE state = INPUT_RECORDING_MODE_NONE;
 	bool fInterruptFrame = false;
+	// Resolve the name and region of the game currently loaded using the GameDB
+	// If the game cannot be found in the DB, the fallback is the ISO filename
+	wxString resolveGameName();
 };
 
 extern InputRecording g_InputRecording;

@@ -55,7 +55,7 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 		}
 		else if (madr >= 0x11004000 && madr < 0x11008000)
 		{
-			//SPR trying to write to to VU0 Mem mirror address.
+			// SPR trying to write to to VU0 Mem mirror address.
 			if(((madr & 0xff0) + (qwc * 16)) > 0x1000)
 			{
 				DevCon.Warning("Warning! SPR%d Crossing in to VU0 Mem Mirror address! Start MADR = %x, End MADR = %x", isWrite ? 0 : 1, madr, madr + (qwc * 16));
@@ -123,12 +123,12 @@ int  _SPR0chain()
 	else
 	{
 
-			//Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
-			//the cycle delay out of the way before the end.
+			// Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
+			// the cycle delay out of the way before the end.
 			partialqwc = spr0ch.qwc;
 			memcpy_from_spr((u8*)pMem, spr0ch.sadr, partialqwc*16);
 
-			// clear VU mem also!
+			// Clear VU mem also!
 			TestClearVUs(spr0ch.madr, partialqwc, true);
 
 			spr0ch.madr += partialqwc << 4;
@@ -140,7 +140,7 @@ int  _SPR0chain()
 
 
 
-	return (partialqwc); // bus is 1/2 the ee speed
+	return (partialqwc); // Bus is 1/2 the ee speed
 }
 
 __fi void SPR0chain()
@@ -179,7 +179,7 @@ void _SPR0interleave()
 
 			case NO_MFD:
 			case MFD_RESERVED:
-				// clear VU mem also!
+				// Clear VU mem also!
 				TestClearVUs(spr0ch.madr, spr0ch.qwc, true);
 				memcpy_from_spr((u8*)pMem, spr0ch.sadr, spr0ch.qwc*16);
 				break;
@@ -204,7 +204,7 @@ static __fi void _dmaSPR0()
 	{
 		case NORMAL_MODE:
 		{
-			if (dmacRegs.ctrl.STS == STS_fromSPR)   // STS == fromSPR
+			if (dmacRegs.ctrl.STS == STS_fromSPR) // STS == fromSPR
 			{
 				DevCon.Warning("SPR stall control Normal not implemented");
 			}
@@ -229,12 +229,12 @@ static __fi void _dmaSPR0()
 
 			spr0ch.unsafeTransfer(ptag);
 
-			spr0ch.madr = ptag[1]._u32;					//MADR = ADDR field + SPR
+			spr0ch.madr = ptag[1]._u32; // MADR = ADDR field + SPR
 
 			SPR_LOG("spr0 dmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx spr=%lx",
 				ptag[1]._u32, ptag[0]._u32, spr0ch.qwc, ptag->ID, spr0ch.madr, spr0ch.sadr);
 
-			if (dmacRegs.ctrl.STS == STS_fromSPR)   // STS == fromSPR
+			if (dmacRegs.ctrl.STS == STS_fromSPR) // STS == fromSPR
 			{
 				Console.WriteLn("SPR stall control");
 			}
@@ -242,7 +242,7 @@ static __fi void _dmaSPR0()
 			switch (ptag->ID)
 			{
 				case TAG_CNTS: // CNTS - Transfer QWC following the tag (Stall Control)
-					if (dmacRegs.ctrl.STS == STS_fromSPR) dmacRegs.stadr.ADDR = spr0ch.madr + (spr0ch.qwc * 16);					//Copy MADR to DMAC_STADR stall addr register
+					if (dmacRegs.ctrl.STS == STS_fromSPR) dmacRegs.stadr.ADDR = spr0ch.madr + (spr0ch.qwc * 16); // Copy MADR to DMAC_STADR stall addr register
 					break;
 
 				case TAG_CNT: // CNT - Transfer QWC following the tag.
@@ -256,7 +256,7 @@ static __fi void _dmaSPR0()
 
 			SPR0chain();
 
-			if (spr0ch.chcr.TIE && ptag->IRQ)  			 //Check TIE bit of CHCR and IRQ bit of tag
+			if (spr0ch.chcr.TIE && ptag->IRQ) // Check TIE bit of CHCR and IRQ bit of tag
 			{
 				//Console.WriteLn("SPR0 TIE");
 				done = true;
@@ -288,8 +288,8 @@ void SPRFROMinterrupt()
 	{
 		_dmaSPR0();
 
-		//the qwc check is simply because having data still to transfer from the packet can freak games out if they do a d.tadr == s.madr check
-		//and there is still data to come over (FF12 ingame menu)
+		// The qwc check is simply because having data still to transfer from the packet can freak games out if they do a d.tadr == s.madr check
+		// and there is still data to come over (FF12 ingame menu)
 		if(mfifotransferred != 0 && spr0ch.qwc == 0)
 		{
 			switch (dmacRegs.ctrl.MFD)
@@ -330,8 +330,8 @@ void dmaSPR0()   // fromSPR
 	if(spr0ch.chcr.MOD == CHAIN_MODE && spr0ch.qwc > 0)
 	{
 		//DevCon.Warning(L"SPR0 QWC on Chain " + spr0ch.chcr.desc());
-		if (spr0ch.chcr.tag().ID == TAG_END) // but not TAG_REFE?
-		{									 // Correct not REFE, Destination Chain doesnt have REFE!
+		if (spr0ch.chcr.tag().ID == TAG_END) // But not TAG_REFE?
+		{									 // correct not REFE, Destination Chain doesnt have REFE!
 			spr0finished = true;
 		}
 	}
@@ -362,8 +362,8 @@ int  _SPR1chain()
 	pMem = SPRdmaGetAddr(spr1ch.madr, false);
 	if (pMem == NULL) return -1;
 	int partialqwc = 0;
-	//Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
-	//the cycle delay out of the way before the end.
+	// Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
+	// the cycle delay out of the way before the end.
 	partialqwc = spr1ch.qwc;
 
 	SPR1transfer(pMem, partialqwc);
@@ -441,7 +441,7 @@ void _dmaSPR1()   // toSPR work function
 			}
 			// Chain Mode
 
-			ptag = SPRdmaGetAddr(spr1ch.tadr, false);		//Set memory pointer to TADR
+			ptag = SPRdmaGetAddr(spr1ch.tadr, false); // Set memory pointer to TADR
 
 			if (!spr1ch.transfer("SPR1 Tag", ptag))
 			{
@@ -449,22 +449,22 @@ void _dmaSPR1()   // toSPR work function
 				spr1finished = done;
 			}
 
-			spr1ch.madr = ptag[1]._u32;						//MADR = ADDR field + SPR
+			spr1ch.madr = ptag[1]._u32;	// MADR = ADDR field + SPR
 
 			// Transfer dma tag if tte is set
 			if (spr1ch.chcr.TTE)
 			{
 				SPR_LOG("SPR TTE: %x_%x\n", ptag[3]._u32, ptag[2]._u32);
-				SPR1transfer(ptag, 1);				//Transfer Tag
+				SPR1transfer(ptag, 1); // Transfer Tag
 			}
 
 			SPR_LOG("spr1 dmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx taddr=%lx saddr=%lx",
 				ptag[1]._u32, ptag[0]._u32, spr1ch.qwc, ptag->ID, spr1ch.madr, spr1ch.tadr, spr1ch.sadr);
 
 			done = hwDmacSrcChain(spr1ch, ptag->ID);
-			SPR1chain();										//Transfers the data set by the switch
+			SPR1chain(); // Transfers the data set by the switch
 
-			if (spr1ch.chcr.TIE && ptag->IRQ)  			//Check TIE bit of CHCR and IRQ bit of tag
+			if (spr1ch.chcr.TIE && ptag->IRQ) // Check TIE bit of CHCR and IRQ bit of tag
 			{
 				SPR_LOG("dmaIrq Set");
 
@@ -492,7 +492,7 @@ void dmaSPR1()   // toSPR
 	        spr1ch.chcr._u32, spr1ch.madr, spr1ch.qwc,
 	        spr1ch.tadr, spr1ch.sadr);
 
-	spr1finished = false; //Init
+	spr1finished = false; // Init
 
 	if(spr1ch.chcr.MOD == CHAIN_MODE && spr1ch.qwc > 0)
 	{

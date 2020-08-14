@@ -620,17 +620,16 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 #ifndef DISABLE_RECORDING
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			if (g_RecordingControls.HasRecordingStopped())
+			if (g_RecordingControls.IsEmulationAndRecordingPaused())
 			{
-				// While stopping, GSFrame key event also stops, so get key input from here
-				// Along with that, you can not use the shortcut keys set in GSFrame
-				if (PADkeyEvent != NULL)
+				// When the GSFrame CoreThread is paused, so is the logical VSync
+				// Meaning that we have to grab the user-input through here to potentially
+				// resume emulation.
+				if (const keyEvent* ev = PADkeyEvent() )
 				{
-					// Acquire key information, possibly calling it only once per frame
-					const keyEvent* ev = PADkeyEvent();
-					if (ev != NULL)
+					if( ev->key != 0 )
 					{
-						sApp.Recording_PadKeyDispatch(*ev);
+						PadKeyDispatch( *ev );
 					}
 				}
 			}
