@@ -468,15 +468,15 @@ void MainEmuFrame::CreateRecordMenu()
 
 void MainEmuFrame::CreateHelpMenu()
 {
-	m_menuHelp.Append(MenuId_Help_GetStarted,				_("&Getting Started") );
-	m_menuHelp.Append(MenuId_Help_Compatibility,			_("&Compatibility") );
+	m_menuHelp.Append(MenuId_Help_GetStarted,				_("&Getting Started"));
+	m_menuHelp.Append(MenuId_Help_Compatibility,			_("&Compatibility"));
 	m_menuHelp.AppendSeparator();
-	m_menuHelp.Append(MenuId_Help_Forums,					_("&Pcsx2 Forums") );
-	m_menuHelp.Append(MenuId_Help_Website,					_("&Pcsx2 Website") );
-	m_menuHelp.Append(MenuId_Help_Wiki,						_("&Pcsx2 Wiki") );
-	m_menuHelp.Append(MenuId_Help_Github,					_("&Pcsx2 Github Project") );
+	m_menuHelp.Append(MenuId_Help_Website,					_("&Website"));
+	m_menuHelp.Append(MenuId_Help_Wiki,						_("&Wiki"));
+	m_menuHelp.Append(MenuId_Help_Forums,					_("&Support Forums"));
+	m_menuHelp.Append(MenuId_Help_Github,					_("&Github Repository"));
 	m_menuHelp.AppendSeparator();
-	m_menuHelp.Append(MenuId_About,							_("&About...") );
+	m_menuHelp.Append(MenuId_About,							_("&About..."));
 }
 
 // ------------------------------------------------------------------------
