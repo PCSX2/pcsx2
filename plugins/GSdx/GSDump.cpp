@@ -65,7 +65,7 @@ void GSDumpBase::ReadFIFO(uint32 size)
 	AppendRawData(&size, 4);
 }
 
-bool GSDumpBase::VSync(int field, bool last, const GSPrivRegSet* regs)
+bool GSDumpBase::VSync(bool odd_field, bool last, const GSPrivRegSet* regs)
 {
 	// dump file is bad, return done to delete the object
 	if (!m_gs)
@@ -75,7 +75,7 @@ bool GSDumpBase::VSync(int field, bool last, const GSPrivRegSet* regs)
 	AppendRawData(regs, sizeof(*regs));
 
 	AppendRawData(1);
-	AppendRawData(static_cast<uint8>(field));
+	AppendRawData(odd_field ? 1 : 0);
 
 	if (last)
 		m_extra_frames--;

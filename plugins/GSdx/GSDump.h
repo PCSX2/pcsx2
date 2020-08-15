@@ -63,7 +63,7 @@ public:
 
 	void ReadFIFO(uint32 size);
 	void Transfer(int index, const uint8* mem, size_t size);
-	bool VSync(int field, bool last, const GSPrivRegSet* regs);
+	bool VSync(bool odd_field, bool last, const GSPrivRegSet* regs);
 };
 
 class GSDump final : public GSDumpBase

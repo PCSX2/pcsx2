@@ -444,8 +444,8 @@ void SysMtgsThread::ExecuteTaskInThread()
 							((u32&)RingBuffer.Regs[0x1010])				= remainder[1];
 							((GSRegSIGBLID&)RingBuffer.Regs[0x1080])	= (GSRegSIGBLID&)remainder[2];
 
-							// CSR & 0x2000; is the pageflip id.
-							GSvsync(((u32&)RingBuffer.Regs[0x1000]) & 0x2000);
+							// CSR & 0x2000 is the FIELD value (1 for odd, 0 for even).
+							GSvsync(!!(((u32&)RingBuffer.Regs[0x1000]) & 0x2000));
 							gsFrameSkip();
 
 							// if we're not using GSOpen2, then the GS window is on this thread (MTGS thread),

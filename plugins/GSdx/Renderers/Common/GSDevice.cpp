@@ -283,7 +283,7 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 	m_current = m_merge;
 }
 
-void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffset)
+void GSDevice::Interlace(const GSVector2i& ds, bool odd_field, int mode, float yoffset)
 {
 	ResizeTarget(&m_weavebob, ds.x, ds.y);
 
@@ -291,7 +291,7 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	{
 		// weave first
 
-		DoInterlace(m_merge, m_weavebob, field, false, 0);
+		DoInterlace(m_merge, m_weavebob, odd_field ? 1 : 0, false, 0);
 
 		if(mode == 2)
 		{
@@ -310,7 +310,7 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	}
 	else if(mode == 1) // bob
 	{
-		DoInterlace(m_merge, m_weavebob, 3, true, yoffset * field);
+		DoInterlace(m_merge, m_weavebob, 3, true, odd_field ? yoffset : 0);
 
 		m_current = m_weavebob;
 	}

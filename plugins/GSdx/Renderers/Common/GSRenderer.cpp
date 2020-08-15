@@ -83,7 +83,7 @@ void GSRenderer::ResetDevice()
     if(m_dev) m_dev->Reset(1, 1);
 }
 
-bool GSRenderer::Merge(int field)
+bool GSRenderer::Merge(bool odd_field)
 {
 	bool en[2];
 
@@ -269,15 +269,14 @@ bool GSRenderer::Merge(int field)
 		{
 			if(m_interlace == 7 && m_regs->SMODE2.FFMD) // Auto interlace enabled / Odd frame interlace setting
 			{
-				int field2 = 0;
 				int mode = 2;
-				m_dev->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
+				m_dev->Interlace(ds, odd_field, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
 			}
 			else
 			{
-				int field2 = 1 - ((m_interlace - 1) & 1);
+				bool field_flip = m_interlace & 1;
 				int mode = (m_interlace - 1) >> 1;
-				m_dev->Interlace(ds, field ^ field2, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
+				m_dev->Interlace(ds, odd_field ^ field_flip, mode, tex[1] ? tex[1]->GetScale().y : tex[0]->GetScale().y);
 			}
 		}
 
@@ -312,7 +311,7 @@ void GSRenderer::SetVSync(int vsync)
 	if(m_dev) m_dev->SetVSync(m_vsync);
 }
 
-void GSRenderer::VSync(int field)
+void GSRenderer::VSync(bool odd_field)
 {
 	GSPerfMonAutoTimer pmat(&m_perfmon);
 
@@ -327,7 +326,7 @@ void GSRenderer::VSync(int field)
 
 	if(!m_dev->IsLost(true))
 	{
-		if(!Merge(field ? 1 : 0))
+		if(!Merge(odd_field))
 		{
 			return;
 		}
@@ -469,7 +468,7 @@ void GSRenderer::VSync(int field)
 	}
 	else if(m_dump)
 	{
-		if(m_dump->VSync(field, !m_control_key, m_regs))
+		if(m_dump->VSync(odd_field, !m_control_key, m_regs))
 			m_dump.reset();
 	}
 
