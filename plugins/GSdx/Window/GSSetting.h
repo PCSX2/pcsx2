@@ -40,7 +40,7 @@ struct GSSetting
 
 const char* dialog_message(int ID, bool* updateText = NULL);
 
-#ifndef _WIN32
+#if (!defined(_WIN32) && !defined(_WIN64))
 enum {
 	IDC_FILTER,
 	IDC_HALF_SCREEN_TS,
