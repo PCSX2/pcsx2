@@ -61,16 +61,16 @@ void MainEmuFrame::UpdateStatusBar()
 		temp += "Fast Boot - ";
 
 	if (g_Conf->CdvdSource == CDVD_SourceType::Iso)
-		temp += "Selected: '" + wxFileName(g_Conf->CurrentIso).GetFullName() +"' ";
-
-#ifdef __M_X86_64
-	temp+= "(64 bit) ";
-#else
-	temp += "(32 bit) ";
-#endif
+		temp += "Load: '" + wxFileName(g_Conf->CurrentIso).GetFullName() +"' ";
 
 	m_statusbar.SetStatusText(temp, 0);
 	m_statusbar.SetStatusText(CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], 1);
+
+#ifdef __M_X86_64
+	m_statusbar.SetStatusText("x64", 2);
+#else
+	m_statusbar.SetStatusText("x32", 2);
+#endif
 }
 
 void MainEmuFrame::UpdateIsoSrcSelection()
@@ -566,8 +566,9 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	// I cannot get it to work despite following various examples to the letter.
 	SetIcons( wxGetApp().GetIconBundle() );
 
-	int m_statusbar_widths[] = { (int)(backsize.GetWidth()*0.73), (int)(backsize.GetWidth()*0.25) };
-	m_statusbar.SetStatusWidths(2, m_statusbar_widths);
+	int m_statusbar_widths[] = { (int)-20, (int)-3, (int) -2 };
+	m_statusbar.SetFieldsCount(3);
+	m_statusbar.SetStatusWidths(3, m_statusbar_widths);
 	m_statusbar.SetStatusText( wxEmptyString, 0);
 
 	wxBoxSizer& joe( *new wxBoxSizer( wxVERTICAL ) );
