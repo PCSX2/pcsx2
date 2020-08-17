@@ -26,6 +26,7 @@ using namespace Threading;
 class SocketIPC : public pxThread
 {
 
+	// parent thread
 	typedef pxThread _parent;
 
 protected:
@@ -33,41 +34,80 @@ protected:
 	// windows claim to have support for AF_UNIX sockets but that is a blatant lie,
 	// their SDK won't even run their own examples, so we go on TCP sockets.
 #define PORT 28011
+	SOCKET m_sock = INVALID_SOCKET;
 #else
 	// absolute path of the socket. Stored in the temporary directory in linux since
 	// /run requires superuser permission
 	const char* SOCKET_NAME = "/tmp/pcsx2.sock";
-#endif
-
-	// socket handlers
-#ifdef _WIN32
-	SOCKET m_sock = INVALID_SOCKET;
-#else
 	int m_sock = 0;
 #endif
 
-	// buffers that store the ipc request and reply messages.
-	char* ret_buffer;
-	char* ipc_buffer;
 
-	// possible command messages
-	enum IPCCommand
+	/**
+     * Maximum memory used by an IPC message request.
+     * Equivalent to 50,000 Write64 requests.
+     */
+	const unsigned int MAX_IPC_SIZE = 650000;
+
+	/**
+     * Maximum memory used by an IPC message reply.
+     * Equivalent to 50,000 Read64 replies.
+     */
+	const unsigned int MAX_IPC_RETURN_SIZE = 450000;
+
+	/**
+     * IPC return buffer.
+     * A preallocated buffer used to store all IPC replies.
+     * to the size of 50.000 MsgWrite64 IPC calls.
+     */
+	char* m_ret_buffer;
+
+	/**
+     * IPC messages buffer.
+     * A preallocated buffer used to store all IPC messages.
+     */
+	char* m_ipc_buffer;
+
+	/**
+     * IPC Command messages opcodes.  
+     * A list of possible operations possible by the IPC.  
+     * Each one of them is what we call an "opcode" and is the first
+     * byte sent by the IPC to differentiate between commands.  
+     */
+	enum IPCCommand : unsigned char
 	{
-		MsgRead8 = 0,
-		MsgRead16 = 1,
-		MsgRead32 = 2,
-		MsgRead64 = 3,
-		MsgWrite8 = 4,
-		MsgWrite16 = 5,
-		MsgWrite32 = 6,
-		MsgWrite64 = 7
+		MsgRead8 = 0,          /**< Read 8 bit value to memory. */
+		MsgRead16 = 1,         /**< Read 16 bit value to memory. */
+		MsgRead32 = 2,         /**< Read 32 bit value to memory. */
+		MsgRead64 = 3,         /**< Read 64 bit value to memory. */
+		MsgWrite8 = 4,         /**< Write 8 bit value to memory. */
+		MsgWrite16 = 5,        /**< Write 16 bit value to memory. */
+		MsgWrite32 = 6,        /**< Write 32 bit value to memory. */
+		MsgWrite64 = 7,        /**< Write 64 bit value to memory. */
+		MsgMultiCommand = 0xFF /**< Treats multiple IPC commands in batch. */
 	};
 
-	// possible result codes
-	enum IPCResult
+
+	/**
+     * IPC message buffer. 
+     * A list of all needed fields to store an IPC message.
+     */
+	struct IPCBuffer
 	{
-		IPC_OK = 0,
-		IPC_FAIL = 0xFF
+		int size;     /**< Size of the buffer. */
+		char* buffer; /**< Buffer. */
+	};
+
+	/**
+     * IPC result codes.
+     * A list of possible result codes the IPC can send back.
+     * Each one of them is what we call an "opcode" or "tag" and is the
+     * first byte sent by the IPC to differentiate between results.
+     */
+	enum IPCResult : unsigned char
+	{
+		IPC_OK = 0,     /**< IPC command successfully completed. */
+		IPC_FAIL = 0xFF /**< IPC command failed to complete. */
 	};
 
 	// handle to the main vm thread
@@ -79,9 +119,9 @@ protected:
 	/* Internal function, Parses an IPC command.
          * buf: buffer containing the IPC command.
          * ret_buffer: buffer that will be used to send the reply.
-         * return value: pair containing a buffer with the result 
+         * return value: IPCBuffer containing a buffer with the result 
          *               of the command and its size. */
-	std::pair<int, char*> ParseCommand(char* buf, char* ret_buffer);
+	IPCBuffer ParseCommand(char* buf, char* ret_buffer);
 
 	/* Formats an IPC buffer
          * ret_buffer: return buffer to use. 
