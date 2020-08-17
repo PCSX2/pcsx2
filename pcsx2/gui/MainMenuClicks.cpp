@@ -508,7 +508,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 			"These tools are provided as-is and should be enabled under your own discretion."), "Enabling Recording Tools"))
 		{
 			checked = false;
-			m_menuSys.FindChildItem(MenuId_EnableRecordingTools)->Check(false);
+			m_GameSettingsSubmenu.FindChildItem(MenuId_EnableRecordingTools)->Check(false);
 		}
 	}
 
