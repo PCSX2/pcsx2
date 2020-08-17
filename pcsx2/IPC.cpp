@@ -105,13 +105,11 @@ SocketIPC::SocketIPC(SysCoreThread* vm)
 void SocketIPC::ExecuteTaskInThread()
 {
 	int msgsock = 0;
-	// for the sake of speed we malloc once a return buffer and reuse it by just
-	// cropping its size when needed, it is 450k long which is the size of 50k
-	// MsgWrite64 replies, should be good enough even if we implement batch IPC
-	// processing. Coincidentally 650k is the size of 50k MsgWrite64 REQUESTS so
-	// we just allocate a 1mb buffer in the end, lul
-	ret_buffer = (char*)malloc(450000 * sizeof(char));
-	ipc_buffer = (char*)malloc(650000 * sizeof(char));
+
+	// we allocate once buffers to not have to do mallocs for each IPC
+	// request, as malloc is expansive when we optimize for µs.
+	m_ret_buffer = new char[MAX_IPC_RETURN_SIZE];
+	m_ipc_buffer = new char[MAX_IPC_SIZE];
 	while (true)
 	{
 		msgsock = accept(m_sock, 0, 0);
@@ -121,14 +119,14 @@ void SocketIPC::ExecuteTaskInThread()
 		}
 		else
 		{
-			if (read_portable(msgsock, ipc_buffer, 650000) < 0)
+			if (read_portable(msgsock, m_ipc_buffer, 650000) < 0)
 			{
 				return;
 			}
 			else
 			{
-				auto res = ParseCommand(ipc_buffer, ret_buffer);
-				if (write_portable(msgsock, res.second, res.first) < 0)
+				auto res = ParseCommand(m_ipc_buffer, m_ret_buffer);
+				if (write_portable(msgsock, res.buffer, res.size) < 0)
 				{
 					return;
 				}
@@ -146,8 +144,8 @@ SocketIPC::~SocketIPC()
 	close(m_sock);
 	unlink(SOCKET_NAME);
 #endif
-	free(ret_buffer);
-	free(ipc_buffer);
+	delete[] m_ret_buffer;
+	delete[] m_ipc_buffer;
 	// destroy the thread
 	try
 	{
@@ -158,99 +156,126 @@ SocketIPC::~SocketIPC()
 
 char* SocketIPC::MakeOkIPC(char* ret_buffer)
 {
-	ret_buffer[0] = (unsigned char)IPC_OK;
+	ret_buffer[0] = IPC_OK;
 	return ret_buffer;
 }
 
 char* SocketIPC::MakeFailIPC(char* ret_buffer)
 {
-	ret_buffer[0] = (unsigned char)IPC_FAIL;
+	ret_buffer[0] = IPC_FAIL;
 	return ret_buffer;
 }
 
-std::pair<int, char*> SocketIPC::ParseCommand(char* buf, char* ret_buffer)
+SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer)
 {
 	// currently all our instructions require a running VM so we check once
 	// here, will help perf when/if we implement multi-ipc processing in one
 	// socket roundtrip.
 	if (!m_vm->HasActiveMachine())
-		return std::make_pair(1, MakeFailIPC(ret_buffer));
+		return IPCBuffer{1, MakeFailIPC(ret_buffer)};
 
-	//         IPC Message event (1 byte)
-	//         |  Memory address (4 byte)
-	//         |  |           argument (VLE)
-	//         |  |           |
-	// format: XX YY YY YY YY ZZ ZZ ZZ ZZ
-	//        reply code: 00 = OK, FF = NOT OK
-	//        |  return value (VLE)
-	//        |  |
-	// reply: XX ZZ ZZ ZZ ZZ
-	IPCCommand opcode = (IPCCommand)buf[0];
 
-	// return value
-	std::pair<int, char*> rval;
-
-	// YY YY YY YY from schema above
-	u32 a = FromArray<u32>(buf, 1);
-	switch (opcode)
+	u16 batch = 1;
+	u32 ret_cnt = 1;
+	if ((IPCCommand)buf[0] == MsgMultiCommand)
 	{
-		case MsgRead8:
+		batch = FromArray<u16>(buf, 1);
+		buf += 3;
+	}
+
+	for (u16 i = 0; i < batch; i++)
+	{
+		// YY YY YY YY from schema below
+		u32 a = FromArray<u32>(buf, 1);
+
+		//         IPC Message event (1 byte)
+		//         |  Memory address (4 byte)
+		//         |  |           argument (VLE)
+		//         |  |           |
+		// format: XX YY YY YY YY ZZ ZZ ZZ ZZ
+		//        reply code: 00 = OK, FF = NOT OK
+		//        |  return value (VLE)
+		//        |  |
+		// reply: XX ZZ ZZ ZZ ZZ
+		//
+		// NB: memory safety checking would be very expansive in our case,
+		// implemented per command and simply a mess. As our threat model is
+		// nonexistant, knowing we can disable the IPC at any time and having
+		// checks client-side it simply makes more sense to not do check
+		// server-side, as bad as this sounds.
+		// Re security threat model: we control the entire emulated memory of
+		// the emulated game, we can DoS our emulator easily by abusing the IPC
+		// features already, and regardless of where you read this there's
+		// probably no sandbox implemented, so simply being able to write to the
+		// game memory code region would make us control the JIT and have probably
+		// full access over the host machine.
+		switch ((IPCCommand)buf[0])
 		{
-			u8 res;
-			res = memRead8(a);
-			rval = std::make_pair(2, ToArray(MakeOkIPC(ret_buffer), res, 1));
-			break;
-		}
-		case MsgRead16:
-		{
-			u16 res;
-			res = memRead16(a);
-			rval = std::make_pair(3, ToArray(MakeOkIPC(ret_buffer), res, 1));
-			break;
-		}
-		case MsgRead32:
-		{
-			u32 res;
-			res = memRead32(a);
-			rval = std::make_pair(5, ToArray(MakeOkIPC(ret_buffer), res, 1));
-			break;
-		}
-		case MsgRead64:
-		{
-			u64 res;
-			memRead64(a, &res);
-			rval = std::make_pair(9, ToArray(MakeOkIPC(ret_buffer), res, 1));
-			break;
-		}
-		case MsgWrite8:
-		{
-			memWrite8(a, FromArray<u8>(buf, 5));
-			rval = std::make_pair(1, MakeOkIPC(ret_buffer));
-			break;
-		}
-		case MsgWrite16:
-		{
-			memWrite16(a, FromArray<u16>(buf, 5));
-			rval = std::make_pair(1, MakeOkIPC(ret_buffer));
-			break;
-		}
-		case MsgWrite32:
-		{
-			memWrite32(a, FromArray<u32>(buf, 5));
-			rval = std::make_pair(1, MakeOkIPC(ret_buffer));
-			break;
-		}
-		case MsgWrite64:
-		{
-			memWrite64(a, FromArray<u64>(buf, 5));
-			rval = std::make_pair(1, MakeOkIPC(ret_buffer));
-			break;
-		}
-		default:
-		{
-			rval = std::make_pair(1, MakeFailIPC(ret_buffer));
-			break;
+			case MsgRead8:
+			{
+				u8 res;
+				res = memRead8(a);
+				ToArray(ret_buffer, res, ret_cnt);
+				ret_cnt += 1;
+				buf += 5;
+				break;
+			}
+			case MsgRead16:
+			{
+				u16 res;
+				res = memRead16(a);
+				ToArray(ret_buffer, res, ret_cnt);
+				ret_cnt += 2;
+				buf += 5;
+				break;
+			}
+			case MsgRead32:
+			{
+				u32 res;
+				res = memRead32(a);
+				ToArray(ret_buffer, res, ret_cnt);
+				ret_cnt += 4;
+				buf += 5;
+				break;
+			}
+			case MsgRead64:
+			{
+				u64 res;
+				memRead64(a, &res);
+				ToArray(ret_buffer, res, ret_cnt);
+				ret_cnt += 8;
+				buf += 5;
+				break;
+			}
+			case MsgWrite8:
+			{
+				memWrite8(a, FromArray<u8>(buf, 5));
+				buf += 6;
+				break;
+			}
+			case MsgWrite16:
+			{
+				memWrite16(a, FromArray<u16>(buf, 5));
+				buf += 7;
+				break;
+			}
+			case MsgWrite32:
+			{
+				memWrite32(a, FromArray<u32>(buf, 5));
+				buf += 9;
+				break;
+			}
+			case MsgWrite64:
+			{
+				memWrite64(a, FromArray<u64>(buf, 5));
+				buf += 13;
+				break;
+			}
+			default:
+			{
+				return IPCBuffer{1, MakeFailIPC(ret_buffer)};
+			}
 		}
 	}
-	return rval;
+	return IPCBuffer{(int)ret_cnt, MakeOkIPC(ret_buffer)};
 }
