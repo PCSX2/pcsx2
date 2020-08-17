@@ -62,6 +62,7 @@ bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 #else
 
 #include "GSdxResources.h"
+#include "resource.h"
 
 bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 {
@@ -93,6 +94,9 @@ bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 			break;
 		case IDR_TFX_CL:
 			path = "/GSdx/res/tfx.cl";
+			break;
+		case IDR_FONT_FREESERIF:
+			path = "/GSdx/res/freefont/FreeSerif.otf";
 			break;
 		default:
 			printf("LoadResource not implemented for id %d\n", id);

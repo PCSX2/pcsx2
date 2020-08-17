@@ -22,10 +22,27 @@
 #include "stdafx.h"
 #include "GSdx.h"
 #include "GSOsdManager.h"
-
+#include "resource.h"
+std::vector<char> buff;
 void GSOsdManager::LoadFont() {
 	FT_Error error = FT_New_Face(m_library, theApp.GetConfigS("osd_fontname").c_str(), 0, &m_face);
 	if (error) {
+		
+#ifdef __linux__
+
+		FT_Error error_load_res = 1;
+		if(theApp.LoadResource(IDR_FONT_FREESERIF, buff))
+			error_load_res = FT_New_Memory_Face(m_library, (const FT_Byte*)buff.data(), buff.size(), 0, &m_face);
+		
+		if (error_load_res) {
+			m_face = NULL;
+			fprintf(stderr, "Failed to init freetype face from external and internal resource\n");
+			if(error == FT_Err_Unknown_File_Format)
+				fprintf(stderr, "\tFreetype unknown file format for external file\n");
+			return;
+		}
+
+#endif	
 		m_face = NULL;
 		fprintf(stderr, "Failed to init the freetype face\n");
 		if(error == FT_Err_Unknown_File_Format)
