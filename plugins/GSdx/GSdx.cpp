@@ -62,7 +62,6 @@ bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 #else
 
 #include "GSdxResources.h"
-#include "resource.h"
 
 bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 {
