@@ -27,8 +27,6 @@ std::vector<char> buff;
 void GSOsdManager::LoadFont() {
 	FT_Error error = FT_New_Face(m_library, theApp.GetConfigS("osd_fontname").c_str(), 0, &m_face);
 	if (error) {
-		
-#if (!defined(_WIN32) && !defined(_WIN64))
 		FT_Error error_load_res = 1;
 		if(theApp.LoadResource(IDR_FONT_FREESERIF, buff))
 			error_load_res = FT_New_Memory_Face(m_library, (const FT_Byte*)buff.data(), buff.size(), 0, &m_face);
@@ -40,14 +38,6 @@ void GSOsdManager::LoadFont() {
 				fprintf(stderr, "\tFreetype unknown file format for external file\n");
 			return;
 		}
-#else
-		m_face = NULL;
-		fprintf(stderr, "Failed to init the freetype face\n");
-		if(error == FT_Err_Unknown_File_Format)
-			fprintf(stderr, "\tFreetype unknown file format\n");
-
-		return;
-#endif
 	}
 
 	LoadSize();

@@ -94,6 +94,8 @@ IDR_TFX_VGS_GLSL        RCDATA                  "res\\glsl\\tfx_vgs.glsl";
 
 IDR_TFX_FS_GLSL         RCDATA                  "res\\glsl\\tfx_fs.glsl";
 
+IDR_FONT_FREESERIF      RCDATA                  "res\\freefont\\FreeSerif.otf";
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
