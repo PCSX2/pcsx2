@@ -361,7 +361,7 @@ void GSdxApp::Init()
 	m_default_configuration["ModeWidth"]                                  = "640";
 	m_default_configuration["NTSC_Saturation"]                            = "1";
 	m_default_configuration["ocldev"]                                     = "";
-#ifdef _WIN32
+#if (defined(_WIN32) || defined(_WIN64))
 	m_default_configuration["osd_fontname"]                               = "C:\\Windows\\Fonts\\tahoma.ttf";
 #else
 	m_default_configuration["osd_fontname"]                               = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
