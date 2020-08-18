@@ -22,7 +22,9 @@
 #include "stdafx.h"
 #include "GSdx.h"
 #include "GSOsdManager.h"
-
+#if (defined(_WIN32) || defined(_WIN64))
+  #include "resource.h"
+#endif
 std::vector<char> buff;
 void GSOsdManager::LoadFont() {
 	FT_Error error = FT_New_Face(m_library, theApp.GetConfigS("osd_fontname").c_str(), 0, &m_face);
