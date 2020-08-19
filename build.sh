@@ -240,7 +240,7 @@ for ARG in "$@"; do
             echo
             echo "** Developer option **"
             echo "--glsl          : Replace CG backend of ZZogl by GLSL"
-            echo "--egl           : Replace GLX by EGL (ZZogl/GSdx_legacy plugins)"
+            echo "--egl           : Replace GLX by EGL (ZZogl plugin)"
             echo "--cross-multilib: Build a 32bit PCSX2 on a 64bit machine using multilib."
             echo "--opencl        : Enable experimental OpenCL support"
             echo

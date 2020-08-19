@@ -38,7 +38,6 @@ option(EGL_API "Use EGL on ZZogl/GSdx (experimental/developer option)")
 option(OPENCL_API "Add OpenCL support on GSdx")
 option(REBUILD_SHADER "Rebuild GLSL/CG shader (developer option)")
 option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
-option(GSDX_LEGACY "Build a GSdx legacy plugin compatible with GL3.3")
 
 #-------------------------------------------------------------------------------
 # Path and lib option
