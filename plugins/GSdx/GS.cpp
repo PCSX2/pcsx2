@@ -53,12 +53,13 @@ extern bool RunLinuxDialog();
 #define PS2E_X86 0x01   // 32 bit
 #define PS2E_X86_64 0x02   // 64 bit
 
+static std::atomic<int> s_aspect = 1;
+static std::atomic<float> s_zoom = 1;
+
 static GSRenderer* s_gs = NULL;
 static void (*s_irq)() = NULL;
 static uint8* s_basemem = NULL;
 static int s_vsync = 0;
-static int s_aspect = 1;
-static float s_zoom = 1;
 static bool s_exclusive = true;
 static const char *s_renderer_name = "";
 static const char *s_renderer_type = "";
@@ -438,8 +439,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		return -1;
 	}
 
-	s_gs->SetAspectRatio(s_aspect);
-	s_gs->SetZoom(s_zoom);
+	s_gs->SetAspectZoom(s_aspect, s_zoom);
 
 	if (renderer == GSRendererType::OGL_HW && theApp.GetConfigI("debug_glsl_shader") == 2) {
 		printf("GSdx: test OpenGL shader. Please wait...\n\n");
@@ -928,8 +928,7 @@ EXPORT_C GSsetAspectZoom(int aspect, float zoom)
 
 	if (s_gs)
 	{
-		s_gs->SetAspectRatio(s_aspect);
-		s_gs->SetZoom(s_zoom);
+		s_gs->SetAspectZoom(aspect, zoom);
 	}
 }
 
