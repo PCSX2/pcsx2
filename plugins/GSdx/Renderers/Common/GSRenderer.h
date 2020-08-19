@@ -42,6 +42,7 @@ protected:
 	int m_interlace;
 	int m_aspectratio;
 	int m_vsync;
+	float m_zoom;
 	bool m_aa1;
 	bool m_shaderfx;
 	bool m_fxaa;
@@ -49,10 +50,6 @@ protected:
 	bool m_texture_shuffle;
 	GSVector2i m_real_size;
 	GSVector4i m_present_size;
-
-	std::atomic<int>  m_ar_mode;
-	std::atomic<float> m_ar_zoom;
-	std::atomic<bool> m_ar_dirty;
 
 	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;
 	virtual GSTexture* GetFeedbackOutput() { return nullptr; }
@@ -74,9 +71,8 @@ public:
 	virtual int GetUpscaleMultiplier() {return 1;}
 	virtual GSVector2i GetCustomResolution() {return GSVector2i(0,0);}
 	GSVector2i GetInternalResolution();
-
-	void UpdateAspectZoom();
-	void SetAspectZoom(int aspect, float zoom);
+	void SetZoom(float zoom);
+	void SetAspectRatio(int aspect);
 	void SetVSync(int vsync);
 
 	virtual bool BeginCapture();

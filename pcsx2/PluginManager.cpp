@@ -173,16 +173,16 @@ _GSchangeSaveState GSchangeSaveState;
 _GSgetTitleInfo2   GSgetTitleInfo2;
 _GSmakeSnapshot	   GSmakeSnapshot;
 _GSmakeSnapshot2   GSmakeSnapshot2;
-_GSirqCallback 	   GSirqCallback;
-_GSsetBaseMem		GSsetBaseMem;
-_GSsetGameCRC		GSsetGameCRC;
-_GSsetFrameSkip		GSsetFrameSkip;
-_GSsetVsync			GSsetVsync;
-_GSsetExclusive		GSsetExclusive;
-_GSsetAspectZoom	GSsetAspectZoom;
-_GSsetupRecording	GSsetupRecording;
-_GSreset			GSreset;
-_GSwriteCSR			GSwriteCSR;
+_GSirqCallback     GSirqCallback;
+_GSsetBaseMem      GSsetBaseMem;
+_GSsetGameCRC      GSsetGameCRC;
+_GSsetFrameSkip    GSsetFrameSkip;
+_GSsetVsync        GSsetVsync;
+_GSsetExclusive    GSsetExclusive;
+_GSsetAspectZoom   GSsetAspectZoom;
+_GSsetupRecording  GSsetupRecording;
+_GSreset           GSreset;
+_GSwriteCSR        GSwriteCSR;
 #endif
 
 static void CALLBACK GS_makeSnapshot(const char *path) {}

@@ -240,9 +240,7 @@ void GSPanel::DoResize()
 			}
 		}
 
-		float zoom = g_Conf->GSWindow.Zoom.ToFloat() / 100.0f;
-
-		GSsetAspectZoom(targetAR, zoom);
+		GetMTGS().SendSimplePacket(GS_RINGTYPE_ASPECTZOOM, targetAR, g_Conf->GSWindow.Zoom.Raw, 0);
 	}
 	else
 	{

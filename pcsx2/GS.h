@@ -290,6 +290,7 @@ enum MTGS_RingCommand
 ,	GS_RINGTYPE_RESET			// issues a GSreset() command.
 ,	GS_RINGTYPE_SOFTRESET		// issues a soft reset for the GIF
 ,	GS_RINGTYPE_MODECHANGE		// for issued mode changes.
+,	GS_RINGTYPE_ASPECTZOOM
 ,	GS_RINGTYPE_CRC
 ,	GS_RINGTYPE_GSPACKET
 ,	GS_RINGTYPE_MTVU_GSPACKET

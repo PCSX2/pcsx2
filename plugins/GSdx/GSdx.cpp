@@ -430,6 +430,7 @@ void GSdxApp::Init()
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
 	m_default_configuration["wrap_gs_mem"]                                = "0";
 	m_default_configuration["vsync"]                                      = "0";
+	m_default_configuration["Zoom"]                                       = "10000";
 }
 
 void GSdxApp::ReloadConfig()

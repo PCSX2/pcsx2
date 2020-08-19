@@ -43,6 +43,7 @@ GSRenderer::GSRenderer()
 
 	m_interlace   = theApp.GetConfigI("interlace") % s_interlace_nb;
 	m_aspectratio = theApp.GetConfigI("AspectRatio") % s_aspect_ratio_nb;
+	m_zoom        = theApp.GetConfigI("Zoom") / 10000.0f;
 	m_shader      = theApp.GetConfigI("TVShader") % s_post_shader_nb;
 	m_vsync       = theApp.GetConfigI("vsync");
 	m_aa1         = theApp.GetConfigB("aa1");
@@ -74,6 +75,9 @@ bool GSRenderer::CreateDevice(GSDevice* dev)
 
 	m_dev = dev;
 	m_dev->SetVSync(m_vsync);
+
+	SetAspectRatio(m_aspectratio);
+	SetZoom(m_zoom);
 
 	return true;
 }
@@ -388,8 +392,6 @@ void GSRenderer::VSync(int field)
 
 				s += format(" | %d%% CPU", sum);
 			}
-
-			SetAspectZoom(m_aspectratio, 1.0f);
 		}
 		else
 		{
@@ -434,7 +436,6 @@ void GSRenderer::VSync(int field)
 	}
 
 	// present
-	UpdateAspectZoom();
 	m_dev->Present(m_present_size, m_shader);
 
 	// snapshot
@@ -624,21 +625,30 @@ void GSRenderer::PurgePool()
 	m_dev->PurgePool();
 }
 
-void GSRenderer::SetAspectZoom(int aspect, float zoom)
+void GSRenderer::SetZoom(float zoom)
 {
-	m_ar_mode  = aspect;
-	m_ar_zoom  = zoom;
-	m_ar_dirty = true;
-}
-
-void GSRenderer::UpdateAspectZoom()
-{
-	if (!m_ar_dirty)
+	if (zoom == 1)
 		return;
 
-	int aspect = m_ar_mode;
-	float zoom = m_ar_zoom;
+	if (zoom == 0)
+	{
+		GSVector4i wndsize = m_wnd->GetClientRect();
+		double rx = wndsize.width() / (double)m_present_size.width();
+		double ry = wndsize.height() / (double)m_present_size.height();
+		zoom = (float)std::max(rx, ry);
+		if (zoom < 1) zoom = 1;
+	}
 
+	float cx = (m_present_size.left + m_present_size.right) / 2.0f;
+	float cy = (m_present_size.bottom + m_present_size.top) / 2.0f;
+
+	GSVector4 c(cx, cy, cx, cy);
+
+	m_present_size = (GSVector4i)(((GSVector4)m_present_size - c) * zoom + c);
+}
+
+void GSRenderer::SetAspectRatio(int aspect)
+{
 	// This will scale the OSD to the window's size.
 	// Will maintiain the font size no matter what size the window is.
 
@@ -651,24 +661,4 @@ void GSRenderer::UpdateAspectZoom()
 	}
 
 	m_present_size = window_size.fit(aspect);
-
-	if (zoom != 1) {
-		if (zoom == 0)
-		{
-			GSVector4i wndsize = m_wnd->GetClientRect();
-			double rx = wndsize.width() / (double)m_present_size.width();
-			double ry = wndsize.height() / (double)m_present_size.height();
-			zoom = (float)std::max(rx, ry);
-			if (zoom < 1) zoom = 1;
-		}
-
-		float cx = (m_present_size.left + m_present_size.right) / 2.0f;
-		float cy = (m_present_size.bottom + m_present_size.top) / 2.0f;
-
-		GSVector4 c(cx, cy, cx, cy);
-
-		m_present_size = (GSVector4i)(((GSVector4)m_present_size - c) * zoom + c);
-	}
-
-	m_ar_dirty = false;
 }

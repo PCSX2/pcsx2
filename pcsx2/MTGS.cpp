@@ -493,6 +493,10 @@ void SysMtgsThread::ExecuteTaskInThread()
 							// [TODO] some frameskip sync logic might be needed here!
 						break;
 
+						case GS_RINGTYPE_ASPECTZOOM:
+							GSsetAspectZoom( tag.data[0], tag.data[1] );
+						break;
+
 						case GS_RINGTYPE_CRC:
 							GSsetGameCRC( tag.data[0], 0 );
 						break;

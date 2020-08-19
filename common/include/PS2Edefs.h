@@ -555,7 +555,7 @@ typedef void(CALLBACK *_GSsetGameCRC)(int, int);
 typedef void(CALLBACK *_GSsetFrameSkip)(int frameskip);
 typedef void(CALLBACK *_GSsetVsync)(int enabled);
 typedef void(CALLBACK *_GSsetExclusive)(int isExclusive);
-typedef void(CALLBACK* _GSsetAspectZoom)(int aspect, float zoom);
+typedef void(CALLBACK* _GSsetAspectZoom)(int aspect, int zoom100);
 typedef int(CALLBACK *_GSsetupRecording)(int, void *);
 typedef void(CALLBACK *_GSreset)();
 typedef void(CALLBACK *_GSwriteCSR)(u32 value);
