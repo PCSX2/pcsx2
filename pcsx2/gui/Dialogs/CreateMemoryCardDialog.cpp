@@ -252,8 +252,13 @@ void Dialogs::CreateMemoryCardDialog::CreateControls()
 		.	SetToolTip(_t("Use at your own risk.  Erratic memory card behavior is possible (though unlikely)."))
 		.	SetInt(64),
 
-		RadioPanelItem(_("Folder [experimental]"), _("Store memory card contents in the host filesystem instead of a file."))
-		.	SetToolTip(_t("Automatically manages memory card contents so that the console only sees files related to the currently running software. Allows you to drag-and-drop files in and out of the memory card with your standard file explorer. This is still experimental, so use at your own risk!"))
+		RadioPanelItem(_("Folder [Recommended]"), _("Store memory card contents in the host filesystem instead of a file."))
+		.	SetToolTip(_t("Dynamically allocate and store memory card contents in a folder.\n" 
+						  "Only exposes the save files for the running game, rather than the whole memory card.\n"
+						  "You can see the structure and the saves with your File Explorer.\n"
+						  "Can be used to back-up individual saves instead of all saves on a memcard.\n" 
+						  "Incompatible with PS2 memory card editing tools or savegame managers (such as MyMC, MyMCPlus).\n"
+						  "You can always convert back between folder type and single memcard file.\n"))
 		.	SetInt(0),
 
 		RadioPanelItem(_("128 KiB (PSX)"), _("This is the standard Sony-provisioned size PSX memory card, only compatible with PSX games."))

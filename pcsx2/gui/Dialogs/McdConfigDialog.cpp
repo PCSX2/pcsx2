@@ -36,13 +36,13 @@ Panels::McdConfigPanel_Toggles::McdConfigPanel_Toggles(wxWindow *parent)
 {
 	m_check_Ejection = new pxCheckBox( this,
 		_("Auto-eject memory cards when loading savestates"),
-		pxE( L"Avoids memory card corruption by forcing games to re-index card contents after loading from savestates.  May not be compatible with all games (Guitar Hero)."
+		pxE( L"Avoids broken memory card saves. May not work with some games such as Guitar Hero."
 		)
 	);
 
 	m_folderAutoIndex = new pxCheckBox( this,
 		_( "Automatically manage saves based on running game" ),
-		pxE( L"(Folder type only) Re-index memory card content every time the running software changes. This prevents the memory card from running out of space for saves."
+		pxE( L"(Folder type only / Card size: Auto) Loads only the relevant booted game saves, ignoring others. Avoids running out of space for saves."
 		)
 	);
 
