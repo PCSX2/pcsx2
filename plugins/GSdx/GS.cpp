@@ -53,8 +53,8 @@ extern bool RunLinuxDialog();
 #define PS2E_X86 0x01   // 32 bit
 #define PS2E_X86_64 0x02   // 64 bit
 
-static std::atomic<int> s_aspect = 1;
-static std::atomic<float> s_zoom = 1;
+static std::atomic<int> s_aspect(1);
+static std::atomic<float> s_zoom(1);
 
 static GSRenderer* s_gs = NULL;
 static void (*s_irq)() = NULL;
