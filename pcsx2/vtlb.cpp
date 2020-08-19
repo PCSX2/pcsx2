@@ -791,19 +791,28 @@ void vtlb_Term()
 	//nothing to do for now
 }
 
+constexpr size_t VMAP_SIZE = sizeof(sptr) * VTLB_VMAP_ITEMS;
+
 // Reserves the vtlb core allocation used by various emulation components!
 // [TODO] basemem - request allocating memory at the specified virtual location, which can allow
 //    for easier debugging and/or 3rd party cheat programs.  If 0, the operating system
 //    default is used.
 void vtlb_Core_Alloc()
 {
+	// Can't return regions to the bump allocator
+	static sptr* vmap = nullptr;
+	if (!vmap)
+		vmap = (sptr*)GetVmMemory().BumpAllocator().Alloc(VMAP_SIZE);
 	if (!vtlbdata.vmap)
 	{
-		vtlbdata.vmap = (sptr*)_aligned_malloc( VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap), 16 );
-		if (!vtlbdata.vmap)
+		bool okay = HostSys::MmapCommitPtr(vmap, VMAP_SIZE, PageProtectionMode().Read().Write());
+		if (okay) {
+			vtlbdata.vmap = vmap;
+		} else {
 			throw Exception::OutOfMemory( L"VTLB Virtual Address Translation LUT" )
 				.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap) / _1mb)
 			);
+		}
 	}
 }
 
@@ -825,7 +834,10 @@ void vtlb_Alloc_Ppmap()
 
 void vtlb_Core_Free()
 {
-	safe_aligned_free( vtlbdata.vmap );
+	if (vtlbdata.vmap) {
+		HostSys::MmapResetPtr(vtlbdata.vmap, VMAP_SIZE);
+		vtlbdata.vmap = nullptr;
+	}
 	safe_aligned_free( vtlbdata.ppmap );
 }
 
@@ -844,9 +856,9 @@ VtlbMemoryReserve::VtlbMemoryReserve( const wxString& name, size_t size )
 	m_reserve.SetPageAccessOnCommit( PageAccess_ReadWrite() );
 }
 
-void VtlbMemoryReserve::Reserve( sptr hostptr )
+void VtlbMemoryReserve::Reserve( VirtualMemoryManagerPtr allocator, sptr offset )
 {
-	if (!m_reserve.ReserveAt( hostptr ))
+	if (!m_reserve.Reserve( std::move(allocator), offset ))
 	{
 		throw Exception::OutOfMemory( m_reserve.GetName() )
 			.SetDiagMsg(L"Vtlb memory could not be reserved.")
@@ -874,11 +886,6 @@ void VtlbMemoryReserve::Reset()
 void VtlbMemoryReserve::Decommit()
 {
 	m_reserve.Reset();
-}
-
-void VtlbMemoryReserve::Release()
-{
-	m_reserve.Release();
 }
 
 bool VtlbMemoryReserve::IsCommitted() const

@@ -709,9 +709,9 @@ eeMemoryReserve::eeMemoryReserve()
 {
 }
 
-void eeMemoryReserve::Reserve()
+void eeMemoryReserve::Reserve(VirtualMemoryManagerPtr allocator)
 {
-	_parent::Reserve(HostMemoryMap::EEmem);
+	_parent::Reserve(std::move(allocator), HostMemoryMap::EEmemOffset);
 	//_parent::Reserve(EmuConfig.HostMap.IOP);
 }
 
@@ -856,11 +856,9 @@ void eeMemoryReserve::Decommit()
 	eeMem = NULL;
 }
 
-void eeMemoryReserve::Release()
+eeMemoryReserve::~eeMemoryReserve()
 {
 	safe_delete(mmap_faultHandler);
-	_parent::Release();
-	eeMem = NULL;
 	vtlb_Term();
 }
 
