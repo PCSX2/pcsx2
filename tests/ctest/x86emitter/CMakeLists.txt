@@ -1,0 +1,1 @@
+add_pcsx2_test(x86emitter_test codegen_tests.cpp codegen_tests_main.cpp codegen_tests.h)

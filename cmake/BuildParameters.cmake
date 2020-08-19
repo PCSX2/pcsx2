@@ -21,6 +21,7 @@
 # Misc option
 #-------------------------------------------------------------------------------
 option(DISABLE_BUILD_DATE "Disable including the binary compile date")
+option(ENABLE_TESTS "Enables building the unit tests" ON)
 
 if(DISABLE_BUILD_DATE OR openSUSE)
     message(STATUS "Disabling the inclusion of the binary compile date.")
@@ -241,7 +242,7 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
             set(ARCH_FLAG "-march=native")
         endif()
     endif()
-    add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1)
+    add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1 -D__M_X86_64=1)
     set(_ARCH_64 1)
     set(_M_X86 1)
     set(_M_X86_64 1)
