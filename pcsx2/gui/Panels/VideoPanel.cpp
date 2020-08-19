@@ -30,7 +30,7 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	: BaseApplicableConfigPanel_SpecificConfig( parent )
 {
 	m_check_LimiterDisable = new pxCheckBox( this, _("Disable Framelimiting"),
-		_("Useful for running benchmarks. Toggle this option in-game by pressing F4.") );
+		_("Uncaps FPS. Toggle in-game by pressing F4. Useful for running benchmarks." ) );
 
 	m_check_LimiterDisable->SetToolTip( pxEt( L"Note that when Framelimiting is disabled, Turbo and SlowMotion modes will not be available either."
 	) );
@@ -43,7 +43,7 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	m_text_BasePal		= CreateNumericalTextCtrl( this, 7 );
 
 	m_spin_NominalPct	->SetRange( 10,  1000 );
-	m_spin_SlomoPct		->SetRange(  1,  1000 );
+	m_spin_SlomoPct		->SetRange(  5,  1000 );
 	m_spin_TurboPct		->SetRange( 10,  1000 );
 
 	// ------------------------------------------------------------
@@ -293,7 +293,7 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 
 	m_restore_defaults = new wxButton(right, wxID_DEFAULT, _("Restore Defaults"));
 
-	m_check_SynchronousGS->SetToolTip( pxEt( L"Enable this if you think MTGS thread sync is causing crashes or graphical errors.")
+	m_check_SynchronousGS->SetToolTip( pxEt( L"Enable this if you think MTGS thread sync is causing crashes or graphical errors. For debugging to see if GS is running at the correct speed.")
 	) ;
 
 	//GSWindowSettingsPanel* winpan = new GSWindowSettingsPanel( left );
