@@ -33,8 +33,6 @@ option(USE_VTUNE "Plug VTUNE to profile GSdx JIT.")
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
-option(GLSL_API "Replace ZZogl CG backend by GLSL (experimental option)")
-option(EGL_API "Use EGL on ZZogl/GSdx (experimental/developer option)")
 option(OPENCL_API "Add OpenCL support on GSdx")
 option(REBUILD_SHADER "Rebuild GLSL/CG shader (developer option)")
 option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
