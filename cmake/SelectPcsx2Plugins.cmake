@@ -188,28 +188,6 @@ endif()
 #---------------------------------------
 
 #---------------------------------------
-#			zzogl-pg
-#---------------------------------------
-# requires:	-GLEW
-#			-OpenGL
-#			-X11
-#			-CG (only with cg build)
-#			-JPEG
-#           -common_libs
-#---------------------------------------
-if(EXTRA_PLUGINS)
-    if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND (CG_FOUND OR GLSL_API))
-        set(zzogl TRUE)
-    elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg")
-        set(zzogl FALSE)
-    else()
-        set(zzogl FALSE)
-        print_dep("Skip build of zzogl: missing dependencies" "${msg_dep_zzogl}")
-    endif()
-endif()
-#---------------------------------------
-
-#---------------------------------------
 #			PadNull
 #---------------------------------------
 if(GTKn_FOUND AND EXTRA_PLUGINS)
