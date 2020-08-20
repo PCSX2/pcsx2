@@ -42,18 +42,17 @@ protected:
 	int m_sock = 0;
 #endif
 
-
 	/**
      * Maximum memory used by an IPC message request.
      * Equivalent to 50,000 Write64 requests.
      */
-	const unsigned int MAX_IPC_SIZE = 650000;
+#define MAX_IPC_SIZE 650000
 
 	/**
      * Maximum memory used by an IPC message reply.
      * Equivalent to 50,000 Read64 replies.
      */
-	const unsigned int MAX_IPC_RETURN_SIZE = 450000;
+#define MAX_IPC_RETURN_SIZE 450000
 
 	/**
      * IPC return buffer.
@@ -152,6 +151,19 @@ protected:
 	static T FromArray(char* arr, int i)
 	{
 		return *(T*)(arr + i);
+	}
+
+	/**
+     * Ensures an IPC message isn't too big.
+     * return value: false if checks failed, true otherwise.
+     */
+	static inline bool SafetyChecks(u32 command_len, int command_size, u32 reply_len, int reply_size = 0)
+	{
+		bool res = ((command_len + command_size) >= MAX_IPC_SIZE ||
+					(reply_len + reply_size) >= MAX_IPC_RETURN_SIZE);
+		if (unlikely(res))
+			return false;
+		return true;
 	}
 
 public:
