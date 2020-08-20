@@ -169,24 +169,24 @@ char* SocketIPC::MakeFailIPC(char* ret_buffer)
 SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer)
 {
 	// currently all our instructions require a running VM so we check once
-	// here, will help perf when/if we implement multi-ipc processing in one
-	// socket roundtrip.
+	// here, slightly helps performance
 	if (!m_vm->HasActiveMachine())
 		return IPCBuffer{1, MakeFailIPC(ret_buffer)};
 
 
 	u16 batch = 1;
 	u32 ret_cnt = 1;
+	u32 buf_cnt = 0;
 	if ((IPCCommand)buf[0] == MsgMultiCommand)
 	{
-		batch = FromArray<u16>(buf, 1);
-		buf += 3;
+		batch = FromArray<u16>(&buf[buf_cnt], 1);
+		buf_cnt += 3;
 	}
 
 	for (u16 i = 0; i < batch; i++)
 	{
 		// YY YY YY YY from schema below
-		u32 a = FromArray<u32>(buf, 1);
+		u32 a = FromArray<u32>(&buf[buf_cnt], 1);
 
 		//         IPC Message event (1 byte)
 		//         |  Memory address (4 byte)
@@ -197,82 +197,87 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer)
 		//        |  return value (VLE)
 		//        |  |
 		// reply: XX ZZ ZZ ZZ ZZ
-		//
-		// NB: memory safety checking would be very expansive in our case,
-		// implemented per command and simply a mess. As our threat model is
-		// nonexistant, knowing we can disable the IPC at any time and having
-		// checks client-side it simply makes more sense to not do check
-		// server-side, as bad as this sounds.
-		// Re security threat model: we control the entire emulated memory of
-		// the emulated game, we can DoS our emulator easily by abusing the IPC
-		// features already, and regardless of where you read this there's
-		// probably no sandbox implemented, so simply being able to write to the
-		// game memory code region would make us control the JIT and have probably
-		// full access over the host machine.
-		switch ((IPCCommand)buf[0])
+		switch ((IPCCommand)buf[buf_cnt])
 		{
 			case MsgRead8:
 			{
+				if (!SafetyChecks(buf_cnt, 5, ret_cnt, 1))
+					goto error;
 				u8 res;
 				res = memRead8(a);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 1;
-				buf += 5;
+				buf_cnt += 5;
 				break;
 			}
 			case MsgRead16:
 			{
+				if (!SafetyChecks(buf_cnt, 5, ret_cnt, 2))
+					goto error;
 				u16 res;
 				res = memRead16(a);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 2;
-				buf += 5;
+				buf_cnt += 5;
 				break;
 			}
 			case MsgRead32:
 			{
+				if (!SafetyChecks(buf_cnt, 5, ret_cnt, 4))
+					goto error;
 				u32 res;
 				res = memRead32(a);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 4;
-				buf += 5;
+				buf_cnt += 5;
 				break;
 			}
 			case MsgRead64:
 			{
+				if (!SafetyChecks(buf_cnt, 5, ret_cnt, 8))
+					goto error;
 				u64 res;
 				memRead64(a, &res);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 8;
-				buf += 5;
+				buf_cnt += 5;
 				break;
 			}
 			case MsgWrite8:
 			{
-				memWrite8(a, FromArray<u8>(buf, 5));
-				buf += 6;
+				if (!SafetyChecks(buf_cnt, 6, ret_cnt))
+					goto error;
+				memWrite8(a, FromArray<u8>(&buf[buf_cnt], 5));
+				buf_cnt += 6;
 				break;
 			}
 			case MsgWrite16:
 			{
-				memWrite16(a, FromArray<u16>(buf, 5));
-				buf += 7;
+				if (!SafetyChecks(buf_cnt, 7, ret_cnt))
+					goto error;
+				memWrite16(a, FromArray<u16>(&buf[buf_cnt], 5));
+				buf_cnt += 7;
 				break;
 			}
 			case MsgWrite32:
 			{
-				memWrite32(a, FromArray<u32>(buf, 5));
-				buf += 9;
+				if (!SafetyChecks(buf_cnt, 9, ret_cnt))
+					goto error;
+				memWrite32(a, FromArray<u32>(&buf[buf_cnt], 5));
+				buf_cnt += 9;
 				break;
 			}
 			case MsgWrite64:
 			{
-				memWrite64(a, FromArray<u64>(buf, 5));
-				buf += 13;
+				if (!SafetyChecks(buf_cnt, 13, ret_cnt))
+					goto error;
+				memWrite64(a, FromArray<u64>(&buf[buf_cnt], 5));
+				buf_cnt += 13;
 				break;
 			}
 			default:
 			{
+			error:
 				return IPCBuffer{1, MakeFailIPC(ret_buffer)};
 			}
 		}
