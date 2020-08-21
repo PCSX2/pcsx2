@@ -169,6 +169,9 @@
     <Filter Include="Recording\VirtualPad\Images">
       <UniqueIdentifier>{ad528458-08eb-49a2-aefa-3c2b86ab8896}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AppHost\GameManager">
+      <UniqueIdentifier>{5f736024-d931-4a78-aa29-9e99c67f31fd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -1005,6 +1008,14 @@
     </ClCompile>
     <ClCompile Include="..\..\gui\SaveslotPreview.cpp">
       <Filter>AppHost</Filter>
+    <ClCompile Include="..\..\gui\GameManager\GameManager.cpp">
+      <Filter>AppHost\GameManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\GameManager\SavestateSlotPanel.cpp">
+      <Filter>AppHost\GameManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\GameManager\SavestateTab.cpp">
+      <Filter>AppHost\GameManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1526,6 +1537,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Recording\Utilities\InputRecordingLogger.h">
       <Filter>Recording\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\GameManager\GameManager.h">
+      <Filter>AppHost\GameManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\GameManager\SavestateSlotPanel.h">
+      <Filter>AppHost\GameManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\GameManager\SavestateTab.h">
+      <Filter>AppHost\GameManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

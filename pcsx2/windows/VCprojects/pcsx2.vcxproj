@@ -275,8 +275,10 @@
     <ClCompile Include="..\..\gui\Debugger\DisassemblyDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\McdConfigDialog.cpp" />
     <ClCompile Include="..\..\gui\DriveList.cpp" />
+    <ClCompile Include="..\..\gui\GameManager\GameManager.cpp" />
+    <ClCompile Include="..\..\gui\GameManager\SavestateSlotPanel.cpp" />
+    <ClCompile Include="..\..\gui\GameManager\SavestateTab.cpp" />
     <ClCompile Include="..\..\gui\Panels\MemoryCardListView.cpp" />
-    <ClCompile Include="..\..\gui\SaveslotPreview.cpp" />
     <ClCompile Include="..\..\IopGte.cpp" />
     <ClCompile Include="..\..\IPC.cpp" />
     <ClCompile Include="..\..\FW.cpp" />
@@ -556,6 +558,9 @@
     <ClInclude Include="..\..\Gif_Unit.h" />
     <ClInclude Include="..\..\gui\AppGameDatabase.h" />
     <ClInclude Include="..\..\gui\DriveList.h" />
+    <ClInclude Include="..\..\gui\GameManager\GameManager.h" />
+    <ClInclude Include="..\..\gui\GameManager\SavestateSlotPanel.h" />
+    <ClInclude Include="..\..\gui\GameManager\SavestateTab.h" />
     <ClInclude Include="..\..\gui\Saveslots.h" />
     <ClInclude Include="..\..\gui\Debugger\BreakpointWindow.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlDisassemblyView.h" />
