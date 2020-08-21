@@ -17,7 +17,6 @@
 
 #include "App.h"
 #include "AppSaveStates.h"
-#include "SaveslotPreview.h"
 
 #include <wx/image.h>
 #include <wx/docview.h>
@@ -125,7 +124,6 @@ protected:
 #endif
 	wxMenu& m_menuHelp;
 
-	SaveslotPreview* m_saveStatePreview;
 	wxMenu& m_LoadStatesSubmenu;
 	wxMenu& m_SaveStatesSubmenu;
 	wxMenu& m_GameSettingsSubmenu;
@@ -193,8 +191,6 @@ protected:
 	void OnMoveAround(wxMoveEvent& evt);
 	void OnFocus(wxFocusEvent& evt);
 	void OnActivate(wxActivateEvent& evt);
-	void OnFrameMenuClose(wxMenuEvent& evt);
-	void OnFrameMenuHighlight(wxMenuEvent& evt);
 
 	void Menu_SysSettings_Click(wxCommandEvent& event);
 	void Menu_AudioSettings_Click(wxCommandEvent& event);
