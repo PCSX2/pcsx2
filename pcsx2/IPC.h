@@ -35,12 +35,17 @@ protected:
 	// their SDK won't even run their own examples, so we go on TCP sockets.
 #define PORT 28011
 	SOCKET m_sock = INVALID_SOCKET;
+	// the message socket used in thread's accept().
+	SOCKET m_msgsock = INVALID_SOCKET;
 #else
 	// absolute path of the socket. Stored in the temporary directory in linux since
 	// /run requires superuser permission
 	const char* SOCKET_NAME = "/tmp/pcsx2.sock";
 	int m_sock = 0;
+	// the message socket used in thread's accept().
+	int m_msgsock = 0;
 #endif
+
 
 	/**
      * Maximum memory used by an IPC message request.
@@ -112,7 +117,7 @@ protected:
 	// handle to the main vm thread
 	SysCoreThread* m_vm;
 
-	/* Thread used to relay IPC commands. */
+	// Thread used to relay IPC commands.
 	void ExecuteTaskInThread();
 
 	/* Internal function, Parses an IPC command.
@@ -167,6 +172,9 @@ protected:
 	}
 
 public:
+	// Whether the socket processing thread should stop executing/is stopped.
+	bool m_end = true;
+
 	/* Initializers */
 	SocketIPC(SysCoreThread* vm);
 	virtual ~SocketIPC();
