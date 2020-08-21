@@ -140,6 +140,22 @@ public:
 	};
 
 	// ------------------------------------------------------------------------
+	struct GameManagerOptions
+	{
+		bool		Visible;
+		// if true, DisplayPos is ignored and the console is automatically docked to the main window.
+		bool		AutoDock;
+		// Display position used if AutoDock is false (ignored otherwise)
+		wxPoint		DisplayPosition;
+		wxSize		DisplaySize;
+
+		bool		DisplaySingleBackup;
+
+		GameManagerOptions();
+		void loadSave( IniInterface& conf, const wxChar* title );
+	};
+
+	// ------------------------------------------------------------------------
 	struct FolderOptions
 	{
 		BITFIELD32()
@@ -335,7 +351,7 @@ public:
 	bool		AskOnBoot;
 
 	wxString				CurrentIso;
-    wxString				CurrentBlockdump;
+	wxString				CurrentBlockdump;
 	wxString				CurrentELF;
 	wxString				CurrentIRX;
 	CDVD_SourceType			CdvdSource;
@@ -347,6 +363,7 @@ public:
 	wxString				GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
 
 	ConsoleLogOptions		ProgLogBox;
+	GameManagerOptions		GameManager;
 	FolderOptions			Folders;
 	FilenameOptions			BaseFilenames;
 	GSWindowOptions			GSWindow;
@@ -376,7 +393,7 @@ public:
 	void LoadSaveMemcards( IniInterface& ini );
 
 	static int  GetMaxPresetIndex();
-    static bool isOkGetPresetTextAndColor(int n, wxString& label, wxColor& c);
+	static bool isOkGetPresetTextAndColor(int n, wxString& label, wxColor& c);
 	
 	bool        IsOkApplyPreset(int n, bool ignoreMTVU);
 

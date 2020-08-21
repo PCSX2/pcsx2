@@ -140,11 +140,11 @@ namespace PathDefs
 		return dotFail;
 	}
 
-    // Specifies the main configuration folder.
-    wxDirName GetUserLocalDataDir()
-    {
-        return wxDirName(wxStandardPaths::Get().GetUserLocalDataDir());
-    }
+	// Specifies the main configuration folder.
+	wxDirName GetUserLocalDataDir()
+	{
+		return wxDirName(wxStandardPaths::Get().GetUserLocalDataDir());
+	}
 
 	// Fetches the path location for user-consumable documents -- stuff users are likely to want to
 	// share with other programs: screenshots, memory cards, and savestates.
@@ -668,7 +668,7 @@ void AppConfig::LoadSave( IniInterface& ini )
 
 	// Process various sub-components:
 	ProgLogBox		.LoadSave( ini, L"ProgramLog" );
-
+	GameManager		.loadSave( ini, L"GameManager");
 	Folders			.LoadSave( ini );
 	BaseFilenames	.LoadSave( ini );
 	GSWindow		.LoadSave( ini );
@@ -702,6 +702,27 @@ void AppConfig::ConsoleLogOptions::LoadSave( IniInterface& ini, const wxChar* lo
 	IniEntry( DisplaySize );
 	IniEntry( FontSize );
 	IniEntry( Theme );
+}
+
+AppConfig::GameManagerOptions::GameManagerOptions()
+	: DisplayPosition( wxDefaultPosition )
+	, DisplaySize( wxSize( -1, 700 ) )
+{
+	// NOTE - kinda odd, despite the defaults being true, the ini file will be initialized with false
+	Visible		= true;
+	AutoDock	= true;
+	DisplaySingleBackup = true;
+}
+
+void AppConfig::GameManagerOptions::loadSave( IniInterface& ini, const wxChar* logger )
+{
+	ScopedIniGroup path( ini, logger );
+
+	IniEntry( Visible );
+	IniEntry( AutoDock );
+	IniEntry( DisplayPosition );
+	IniEntry( DisplaySize );
+	IniEntry( DisplaySingleBackup );
 }
 
 void AppConfig::FolderOptions::ApplyDefaults()
@@ -795,7 +816,7 @@ void AppConfig::FilenameOptions::LoadSave( IniInterface& ini )
 	static const wxFileName pc( L"Please Configure" );
 
 	//when saving in portable mode, we just save the non-full-path filename
- 	//  --> on load they'll be initialized with default (relative) paths (works both for plugins and bios)
+	//  --> on load they'll be initialized with default (relative) paths (works both for plugins and bios)
 	//note: this will break if converting from install to portable, and custom folders are used. We can live with that.
 	bool needRelativeName = ini.IsSaving() && IsPortable();
 
@@ -1007,7 +1028,7 @@ bool AppConfig::isOkGetPresetTextAndColor( int n, wxString& label, wxColor& c )
 	label = wxsFormat(L"%d - ", n+1) + presetNamesAndColors[n][0];
 	c	  = wxColor(presetNamesAndColors[n][1]);
 
-    return true;
+	return true;
 }
 
 
@@ -1074,19 +1095,19 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 		case 5: // Mostly Harmful
 			isRateSet ? 0 : (isRateSet = true, EmuOptions.Speedhacks.EECycleRate = 1); // +1 EE cyclerate
 			isSkipSet ? 0 : (isSkipSet = true, EmuOptions.Speedhacks.EECycleSkip = 1); // +1 EE cycle skip
-            // Fall through
+			// Fall through
 		
 		case 4: // Very Aggressive
 			isRateSet ? 0 : (isRateSet = true, EmuOptions.Speedhacks.EECycleRate = -2); // -2 EE cyclerate
-            // Fall through
+			// Fall through
 
 		case 3: // Aggressive
 			isRateSet ? 0 : (isRateSet = true, EmuOptions.Speedhacks.EECycleRate = -1); // -1 EE cyclerate
-            // Fall through
+			// Fall through
 
 		case 2: // Balanced
 			isMTVUSet ? 0 : (isMTVUSet = true, EmuOptions.Speedhacks.vuThread = true); // Enable MTVU
-            // Fall through
+			// Fall through
 
 		case 1: // Safe (Default)
 			EmuOptions.Speedhacks.IntcStat = true;
@@ -1095,7 +1116,7 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 			
 			// If waterfalling from > Safe, break to avoid MTVU disable.
 			if (n > 1) break;
-            // Fall through
+			// Fall through
 			
 		case 0: // Safest
 			isMTVUSet ? 0 : (isMTVUSet = true, EmuOptions.Speedhacks.vuThread = false); // Disable MTVU
