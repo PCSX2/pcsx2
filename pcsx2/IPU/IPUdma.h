@@ -33,6 +33,7 @@ struct IPUStatus {
 
 #define DMA_MODE_NORMAL 0
 #define DMA_MODE_CHAIN 1
+#define DMA_MODE_INTERLEAVE 2
 
 #define IPU1_TAG_FOLLOW 0
 #define IPU1_TAG_QWC 1
