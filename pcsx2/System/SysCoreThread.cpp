@@ -249,6 +249,8 @@ void SysCoreThread::GameStartingInThread()
 		m_IpcState = ON;
 		m_socketIpc = std::make_unique<SocketIPC>(this);
 	}
+	if (m_IpcState == ON && m_socketIpc->m_end)
+		m_socketIpc->Start();
 }
 
 bool SysCoreThread::StateCheckInThread()
