@@ -28,6 +28,8 @@
 #include "RecentIsoList.h"
 #include "DriveList.h"
 
+#include "GameManager/GameManager.h"
+
 #ifndef DISABLE_RECORDING
 #	include "Recording/VirtualPad/VirtualPad.h"
 #	include "Recording/NewRecordingFrame.h"
@@ -181,6 +183,7 @@ enum MenuIdentifiers
 
 	// Miscellaneous Menu!  (Misc)
 	MenuId_Console,				// Enable console
+	MenuId_GameManager,			// Enable game manager
 	MenuId_ChangeLang,			// Change language (resets first time wizard to show on next start)
 	MenuId_Console_Stdio,		// Enable Stdio
 
@@ -547,6 +550,7 @@ public:
 protected:
 	wxWindowID			m_id_MainFrame;
 	wxWindowID			m_id_GsFrame;
+	wxWindowID			m_id_GameManagerFrame;
 	wxWindowID			m_id_ProgramLogBox;
 	wxWindowID			m_id_Disassembler;
 	wxWindowID			m_id_SaveStatePreview;
@@ -576,9 +580,10 @@ public:
 	GSFrame&			GetGsFrame() const;
 	MainEmuFrame&		GetMainFrame() const;
 
-	GSFrame*			GetGsFramePtr() const		{ return (GSFrame*)wxWindow::FindWindowById( m_id_GsFrame ); }
-	MainEmuFrame*		GetMainFramePtr() const		{ return (MainEmuFrame*)wxWindow::FindWindowById( m_id_MainFrame ); }
-	DisassemblyDialog*	GetDisassemblyPtr() const	{ return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
+	GSFrame*			GetGsFramePtr() const				{ return (GSFrame*)wxWindow::FindWindowById( m_id_GsFrame ); }
+	MainEmuFrame*		GetMainFramePtr() const				{ return (MainEmuFrame*)wxWindow::FindWindowById( m_id_MainFrame ); }
+	GameManagerFrame*	GetGameManagerFramePtr() const		{ return (GameManagerFrame*)wxWindow::FindWindowById( m_id_GameManagerFrame ); }
+	DisassemblyDialog*	GetDisassemblyPtr() const			{ return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
 
 #ifndef DISABLE_RECORDING
 	VirtualPad*			GetVirtualPadPtr(int port) const	{ return (VirtualPad*)wxWindow::FindWindowById(m_id_VirtualPad[port]); }
@@ -601,6 +606,7 @@ public:
 	// --------------------------------------------------------------------------
 
 	void DetectCpuAndUserMode();
+	void openGameManagerWindow();
 	void OpenProgramLog();
 	void OpenMainFrame();
 	void PrepForExit();
@@ -733,6 +739,9 @@ wxDECLARE_APP(Pcsx2App);
 //
 #define sApp \
 	if( Pcsx2App* __app_ = (Pcsx2App*)wxApp::GetInstance() ) (*__app_)
+
+#define sGameManagerFrame \
+	if( GameManagerFrame* __gameframe_ = wxGetApp().GetGameManagerFramePtr() ) (*__gameframe_)
 
 #define sLogFrame \
 	if( ConsoleLogFrame* __conframe_ = wxGetApp().GetProgramLog() ) (*__conframe_)

@@ -133,6 +133,7 @@ protected:
 	wxMenuItem* m_menuItem_RecentIsoMenu;
 	wxMenuItem* m_menuItem_DriveListMenu;
 	wxMenuItem& m_MenuItem_Console;
+	wxMenuItem& m_menuItem_GameManager;
 #if defined(__unix__)
 	wxMenuItem& m_MenuItem_Console_Stdio;
 #endif
@@ -150,6 +151,7 @@ public:
 	virtual ~MainEmuFrame();
 
 	void OnLogBoxHidden();
+	void OnGameManagerHidden();
 
 	bool IsPaused() const { return GetMenuBar()->IsChecked(MenuId_Sys_SuspendResume); }
 	void UpdateCdvdSrcSelection();
@@ -240,6 +242,7 @@ protected:
 	void Menu_ShowConsole(wxCommandEvent& event);
 	void Menu_ChangeLang(wxCommandEvent& event);
 	void Menu_ShowConsole_Stdio(wxCommandEvent& event);
+	void Menu_ShowGameManager(wxCommandEvent& event);
 
 	void Menu_GetStarted(wxCommandEvent& event);
 	void Menu_Compatibility(wxCommandEvent& event);

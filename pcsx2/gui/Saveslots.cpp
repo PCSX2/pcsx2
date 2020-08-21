@@ -138,6 +138,8 @@ static void OnSlotChanged()
 	if (GSchangeSaveState != NULL)
 		GSchangeSaveState(StatesC, SaveStateBase::GetFilename(StatesC).utf8_str());
 
+	sGameManagerFrame.getSavestateTab()->changeSelectedSlot(StatesC);
+
 	Sstates_updateLoadBackupMenuItem(false);
 }
 
@@ -162,6 +164,11 @@ void States_CycleSlotBackward()
 {
 	StatesC = (StatesC + StateSlotsCount - 1) % StateSlotsCount;
 	OnSlotChanged();
+}
+
+bool States_SlotHasBackup(int slot)
+{
+	return wxFileExists(SaveStateBase::GetFilename( slot ) + wxString( L".backup" ));
 }
 
 bool States_SlotHasImagePreview(int slot, bool backup)

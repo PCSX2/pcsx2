@@ -94,10 +94,27 @@ void Pcsx2App::OpenMainFrame()
 		disassembly->Show();
 
 	PostIdleAppMethod( &Pcsx2App::OpenProgramLog );
+	PostIdleAppMethod( &Pcsx2App::openGameManagerWindow );
 
 	SetTopWindow( mainFrame );		// not really needed...
 	SetExitOnFrameDelete( false );	// but being explicit doesn't hurt...
 	mainFrame->Show();
+}
+
+void Pcsx2App::openGameManagerWindow()
+{
+	if(AppRpc_TryInvokeAsync(&Pcsx2App::openGameManagerWindow))
+		return;
+
+	if(GetGameManagerFramePtr())
+		return;
+
+	wxWindow* m_current_focus = wxGetActiveWindow();
+	GameManagerFrame *newFrame = new GameManagerFrame(GetMainFramePtr(), g_Conf->GameManager);
+	m_id_GameManagerFrame  = newFrame->GetId();
+
+	if(m_current_focus)
+		m_current_focus->SetFocus();
 }
 
 void Pcsx2App::OpenProgramLog()
@@ -434,7 +451,7 @@ bool Pcsx2App::OnInit()
 	pxDoOutOfMemory	= SysOutOfMemory_EmergencyResponse;
 
 	g_Conf = std::make_unique<AppConfig>();
-    wxInitAllImageHandlers();
+	wxInitAllImageHandlers();
 
 	Console.WriteLn("Applying operating system default language...");
 	{
@@ -547,7 +564,7 @@ bool Pcsx2App::OnInit()
 		CleanupOnExit();
 		return false;
 	}
-    return true;
+	return true;
 }
 
 static int m_term_threshold = 20;

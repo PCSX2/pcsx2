@@ -129,6 +129,7 @@ public:
 extern std::array<Saveslot,10> saveslot_cache;
 extern bool States_SlotHasImagePreview(int slot, bool backup = false);
 extern wxString States_SlotImagePreviewPath(int slot, bool backup = false);
+extern bool States_SlotHasBackup(int slot);
 extern void States_DefrostCurrentSlotBackup();
 extern void States_DefrostCurrentSlot();
 extern void States_FreezeCurrentSlot();

@@ -525,6 +525,7 @@ void MainEmuFrame::Menu_EnableBackupStates_Click(wxCommandEvent&)
 	//  (1st save after the toggle keeps the old pre-toggle value)..
 	//  wonder what that means for all the other menu checkboxes which only use AppSaveSettings... (avih)
 	AppApplySettings();
+
 	AppSaveSettings();
 }
 
@@ -795,6 +796,12 @@ void MainEmuFrame::Menu_ShowConsole_Stdio(wxCommandEvent& event)
 {
 	g_Conf->EmuOptions.ConsoleToStdio = GetMenuBar()->IsChecked(MenuId_Console_Stdio);
 	AppSaveSettings();
+}
+
+void MainEmuFrame::Menu_ShowGameManager(wxCommandEvent& event)
+{
+	g_Conf->GameManager.Visible = event.IsChecked();
+	wxGetApp().GetGameManagerFramePtr()->Show(g_Conf->GameManager.Visible);
 }
 
 void MainEmuFrame::Menu_GetStarted(wxCommandEvent& event)

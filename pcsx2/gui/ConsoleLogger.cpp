@@ -710,6 +710,7 @@ void ConsoleLogFrame::OnMoveAround( wxMoveEvent& evt )
 	// Docking check!  If the window position is within some amount
 	// of the main window, enable docking.
 
+	// NOTE - this is never hit - never true (tried moving console window and main window)
 	if( wxWindow* main = GetParent() )
 	{
 		wxPoint topright( main->GetRect().GetTopRight() );
