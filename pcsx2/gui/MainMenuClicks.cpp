@@ -529,7 +529,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 	else
 	{
 		//Properly close any currently loaded recording file before disabling
-		if (g_InputRecording.IsRecordingActive())
+		if (g_InputRecording.IsActive())
 			Menu_Recording_Stop_Click(event);
 		GetMenuBar()->Remove(TopLevelMenu_InputRecording);
 		// Always turn controller logs off, but never turn it on by default
@@ -912,7 +912,7 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent &event)
 	}
 
 	wxString path = openFileDialog.GetPath();
-	const bool recordingLoaded = g_InputRecording.IsRecordingActive();
+	const bool recordingLoaded = g_InputRecording.IsActive();
 	if (!g_InputRecording.Play(path))
 	{
 		if (recordingLoaded)

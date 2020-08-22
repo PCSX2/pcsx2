@@ -41,7 +41,7 @@ public:
 	bool IsInterruptFrame();
 
 	// If there is currently an input recording being played back or actively being recorded
-	bool IsRecordingActive();
+	bool IsActive();
 
 	// Whether or not the recording's initial save state has yet to be loaded or saved and 
 	// the rest of the recording can be initialized
@@ -49,10 +49,19 @@ public:
 	bool IsSavestateInitializing();
 
 	// If there is currently an input recording being played back
-	bool IsRecordingReplaying();
+	bool IsReplaying();
+
+	// If there are inputs currently being recorded to a file
+	bool IsRecording();
 
 	// String representation of the current recording mode to be interpolated into the title
 	wxString RecordingModeTitleSegment();
+
+	// Sets input recording to Record Mode
+	void SetToRecordMode();
+
+	// Sets input recording to Replay Mode
+	void SetToReplayMode();
 
 	// Switches between recording and replaying the active input recording file
 	void RecordModeToggle();
@@ -78,7 +87,7 @@ public:
 private:
 	enum class InputRecordingMode
 	{
-		NoneActive,
+		NotActive,
 		Recording,
 		Replaying,
 	};
@@ -88,8 +97,9 @@ private:
 	InputRecordingFile inputRecordingData;
 	bool savestateInitializing = false;
 	u32 startingFrame = 0;
-	InputRecordingMode state = InputRecording::InputRecordingMode::NoneActive;
 	u32 frameCounter = 0;
+	InputRecordingMode state = InputRecording::InputRecordingMode::NotActive;
+	
 
 	// Resolve the name and region of the game currently loaded using the GameDB
 	// If the game cannot be found in the DB, the fallback is the ISO filename
