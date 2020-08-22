@@ -311,7 +311,7 @@ WXLRESULT DisassemblyDialog::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARA
 			WXHWND hwnd = GetHWND();
 
 			u32 style = GetWindowLong((HWND)hwnd,GWL_STYLE);
-			style &= ~(WS_MINIMIZEBOX|WS_MAXIMIZEBOX);
+			//style &= ~(WS_MINIMIZEBOX|WS_MAXIMIZEBOX);
 			SetWindowLong((HWND)hwnd,GWL_STYLE,style);
 
 			u32 exStyle = GetWindowLong((HWND)hwnd,GWL_EXSTYLE);
