@@ -78,7 +78,7 @@ public:
 private:
 	enum class InputRecordingMode
 	{
-		NoneActive,
+		NotActive,
 		Recording,
 		Replaying,
 	};
@@ -89,7 +89,7 @@ private:
 	InputRecordingFile inputRecordingData;
 	bool savestateInitializing = false;
 	u32 startingFrame = 0;
-	InputRecordingMode state = InputRecording::InputRecordingMode::NoneActive;
+	InputRecordingMode state = InputRecording::InputRecordingMode::NotActive;
     
 	// Resolve the name and region of the game currently loaded using the GameDB
 	// If the game cannot be found in the DB, the fallback is the ISO filename

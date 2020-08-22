@@ -132,7 +132,7 @@ void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 b
 	}
 
 	// We do not want to record or save the first two bytes in the data returned from the PAD plugin
-	if (!fInterruptFrame || state == InputRecordingMode::NoneActive || bufCount < 3)
+	if (!fInterruptFrame || state == InputRecordingMode::NotActive || bufCount < 3)
 	{
 		return;
 	}
@@ -184,7 +184,7 @@ bool InputRecording::IsInterruptFrame()
 
 bool InputRecording::IsRecordingActive()
 {
-	return state != InputRecordingMode::NoneActive;
+	return state != InputRecordingMode::NotActive;
 }
 
 bool InputRecording::IsSavestateInitializing()
@@ -252,7 +252,7 @@ void InputRecording::Stop()
 	frameCounter = 0;
 	startingFrame = 0;
 	savestateInitializing = false;
-	state = InputRecordingMode::NoneActive;
+	state = InputRecordingMode::NotActive;
 	if (inputRecordingData.Close())
 	{
 		recordingConLog(L"[REC]: InputRecording Recording Stopped.\n");
