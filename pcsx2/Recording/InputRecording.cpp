@@ -39,7 +39,7 @@ void SaveStateBase::InputRecordingFreeze()
 	Freeze(g_FrameCount);
 
 #ifndef DISABLE_RECORDING
-	if (g_InputRecording.IsRecordingActive())
+	if (g_InputRecording.IsActive())
 	{
 		// Explicitly set the frame change tracking variable as to not
 		// detect loading a savestate as a frame being drawn
@@ -73,7 +73,6 @@ void SaveStateBase::InputRecordingFreeze()
 			g_InputRecording.SetFrameCounter(newFrameCounter);
 		}
 	}
-
 	// Loading a save-state is an asynchronous task, if we are playing a recording
 	// that starts from a savestate (not power-on) and the starting (pcsx2 internal) frame
 	// marker has not been set (which comes from the save-state), we initialize it.
@@ -127,7 +126,7 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
 	}
 
 	// We do not want to record or save the first two bytes in the data returned from the PAD plugin
-	if (!fInterruptFrame || state == InputRecordingMode::NoneActive || bufCount < 3)
+	if (!fInterruptFrame || state == InputRecordingMode::NotActive || bufCount < 3)
 	{
 		return;
 	}
@@ -177,9 +176,9 @@ bool InputRecording::IsInterruptFrame()
 	return fInterruptFrame;
 }
 
-bool InputRecording::IsRecordingActive()
+bool InputRecording::IsActive()
 {
-	return state != InputRecordingMode::NoneActive;
+	return state != InputRecordingMode::NotActive;
 }
 
 bool InputRecording::IsSavestateInitializing()
@@ -187,9 +186,14 @@ bool InputRecording::IsSavestateInitializing()
 	return savestateInitializing;
 }
 
-bool InputRecording::IsRecordingReplaying()
+bool InputRecording::IsReplaying()
 {
-	return IsRecordingActive() && state == InputRecordingMode::Replaying;
+	return state == InputRecordingMode::Replaying;
+}
+
+bool InputRecording::IsRecording()
+{
+	return state == InputRecordingMode::Recording;
 }
 
 wxString InputRecording::RecordingModeTitleSegment()
@@ -208,17 +212,27 @@ wxString InputRecording::RecordingModeTitleSegment()
 	}
 }
 
+void InputRecording::SetToRecordMode()
+{
+	state = InputRecordingMode::Recording;
+	recordingConLog("[REC]: Record mode ON.\n");
+}
+
+void InputRecording::SetToReplayMode()
+{
+	state = InputRecordingMode::Replaying;
+	recordingConLog("[REC]: Replay mode ON.\n");
+}
+
 void InputRecording::RecordModeToggle()
 {
 	if (state == InputRecordingMode::Replaying)
 	{
-		state = InputRecordingMode::Recording;
-		recordingConLog("[REC]: Record mode ON.\n");
+		SetToRecordMode();
 	}
 	else if (state == InputRecordingMode::Recording)
 	{
-		state = InputRecordingMode::Replaying;
-		recordingConLog("[REC]: Replay mode ON.\n");
+		SetToReplayMode();
 	}
 }
 
@@ -247,7 +261,7 @@ void InputRecording::Stop()
 	frameCounter = 0;
 	startingFrame = 0;
 	savestateInitializing = false;
-	state = InputRecordingMode::NoneActive;
+	state = InputRecordingMode::NotActive;
 	if (inputRecordingData.Close())
 	{
 		recordingConLog(L"[REC]: InputRecording Recording Stopped.\n");
@@ -281,7 +295,7 @@ bool InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 
 bool InputRecording::Play(wxString fileName)
 {
-	if (IsRecordingActive())
+	if (IsActive())
 		Stop();
 
 	if (!inputRecordingData.OpenExisting(fileName))

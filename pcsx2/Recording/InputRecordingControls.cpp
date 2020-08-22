@@ -54,7 +54,7 @@ void InputRecordingControls::HandleFrameAdvanceAndPausing()
 		return;
 	}
 
-	if (g_InputRecording.IsRecordingReplaying() && g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (g_InputRecording.IsReplaying() && g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
 	{
 		pauseEmulation = true;
 	}
@@ -86,9 +86,9 @@ void InputRecordingControls::ResumeCoreThreadIfStarted()
 
 void InputRecordingControls::FrameAdvance()
 {
-	if (g_InputRecording.IsRecordingReplaying() && g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (g_InputRecording.IsReplaying() && g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
 	{
-		g_InputRecording.RecordModeToggle();
+		g_InputRecording.SetToRecordMode();
 		return;
 	}
 	frameAdvanceMarker = g_InputRecording.GetFrameCounter();
@@ -123,9 +123,9 @@ void InputRecordingControls::PauseImmediately()
 
 void InputRecordingControls::Resume()
 {
-	if (g_InputRecording.IsRecordingReplaying() && g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (g_InputRecording.IsReplaying() && g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
 	{
-		g_InputRecording.RecordModeToggle();
+		g_InputRecording.SetToRecordMode();
 		return;
 	}
 	pauseEmulation = false;
@@ -139,9 +139,9 @@ void InputRecordingControls::SetFrameCountTracker(u32 newFrame)
 
 void InputRecordingControls::TogglePause()
 {
-	if (pauseEmulation && g_InputRecording.IsRecordingReplaying() && g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (pauseEmulation && g_InputRecording.IsReplaying() && g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
 	{
-		g_InputRecording.RecordModeToggle();
+		g_InputRecording.SetToRecordMode();
 		return;
 	}
 	pauseEmulation = !pauseEmulation;

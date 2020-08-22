@@ -732,7 +732,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 #ifndef DISABLE_RECORDING
 	wxString title;
 	wxString movieMode;
-	if (g_InputRecording.IsRecordingActive()) 
+	if (g_InputRecording.IsActive()) 
 	{
 		title = templates.RecordingTemplate;
 		title.Replace(L"${frame}", pxsFmt(L"%d", g_InputRecording.GetFrameCounter()));
