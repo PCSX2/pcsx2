@@ -51,7 +51,6 @@ files=`git diff --name-only --diff-filter=ACMRT $diff_range  -- $PWD | \
     grep -v "${1}plugins/USBqemu/" | \
     grep -v "${1}plugins/zerogs/" | \
     grep -v "${1}plugins/zerospu2/" | \
-    grep -v "${1}plugins/zzogl-pg/" | \
     \
     grep -v "/resource.h" | \
     grep -v "3rdparty/" | \

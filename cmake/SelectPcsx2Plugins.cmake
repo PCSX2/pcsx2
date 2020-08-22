@@ -10,11 +10,6 @@ set(msg_dep_onepad      "check these libraries -> sdl2, X11, gtk2")
 set(msg_dep_spu2x       "check these libraries -> soundtouch (>=1.5), alsa, portaudio (optional, >=1.9), sdl (>=1.2), pcsx2 common libs")
 set(msg_dep_zerospu2    "check these libraries -> soundtouch (>=1.5), alsa")
 set(msg_dep_dev         "check these libraries -> gtk2, pcap, libxml2")
-if(GLSL_API)
-	set(msg_dep_zzogl       "check these libraries -> glew, jpeg (>=6.2), opengl, X11, pcsx2 common libs")
-else(GLSL_API)
-	set(msg_dep_zzogl       "check these libraries -> glew, jpeg (>=6.2), opengl, X11, nvidia-cg-toolkit (>=2.1), pcsx2 common libs")
-endif()
 
 macro(print_dep str dep)
     if (PACKAGE_MODE)
@@ -157,7 +152,7 @@ endif()
 #           -X11
 #           -zlib
 #---------------------------------------
-if(OPENGL_FOUND AND X11_FOUND AND GTKn_FOUND AND ZLIB_FOUND AND PNG_FOUND AND FREETYPE_FOUND AND LIBLZMA_FOUND AND ((EGL_FOUND AND X11_XCB_FOUND) OR NOT EGL_API))
+if(OPENGL_FOUND AND X11_FOUND AND GTKn_FOUND AND ZLIB_FOUND AND PNG_FOUND AND FREETYPE_FOUND AND LIBLZMA_FOUND AND EGL_FOUND AND X11_XCB_FOUND)
     set(GSdx TRUE)
 elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx")
     set(GSdx FALSE)
@@ -183,28 +178,6 @@ if(EXTRA_PLUGINS)
     else()
         set(zerogs FALSE)
         print_dep("Skip build of zerogs: missing dependencies" "${msg_dep_zerogs}")
-    endif()
-endif()
-#---------------------------------------
-
-#---------------------------------------
-#			zzogl-pg
-#---------------------------------------
-# requires:	-GLEW
-#			-OpenGL
-#			-X11
-#			-CG (only with cg build)
-#			-JPEG
-#           -common_libs
-#---------------------------------------
-if(EXTRA_PLUGINS)
-    if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND (CG_FOUND OR GLSL_API))
-        set(zzogl TRUE)
-    elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg")
-        set(zzogl FALSE)
-    else()
-        set(zzogl FALSE)
-        print_dep("Skip build of zzogl: missing dependencies" "${msg_dep_zzogl}")
     endif()
 endif()
 #---------------------------------------
