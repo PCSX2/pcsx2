@@ -229,7 +229,7 @@ u32 CpuTabPage::getStepOutAddress()
 }
 
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
-	wxFrame( parent, wxID_ANY, L"Debugger", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU ),
+	wxFrame( parent, wxID_ANY, L"Debugger", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU|wxMINIMIZE_BOX|wxMAXIMIZE_BOX ),
 	currentCpu(NULL)
 {
 	int width = g_Conf->EmuOptions.Debugger.WindowWidth;
