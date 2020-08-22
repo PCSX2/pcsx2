@@ -86,6 +86,7 @@
 #define IDC_SKIPDRAWOFFSETEDIT          2127
 #define IDC_HALF_SCREEN_TS              2128
 #define IDC_HALF_SCREEN_TS_TEXT         2129
+#define IDC_ROUND_DOWN_SPRITE_UV        2130
 // Shader:
 #define IDC_SHADEBOOST                  2140
 #define IDC_FXAA                        2141

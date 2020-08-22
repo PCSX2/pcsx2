@@ -160,6 +160,10 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_MEMORY_WRAPPING:
 			return "Emulates GS memory wrapping accurately. This fixes issues where part of the image is cut-off by block shaped sections such as the FMVs in Wallace & Gromit: The Curse of the Were-Rabbit and Thrillville.\n\n"
 				"Note: This hack can have a small impact on performance.";
+		case IDC_ROUND_DOWN_SPRITE_UV:
+			return "Fixes issues where sprites pick up incorrect texels on their bottom/right boundaries due to rounding issues."
+				" If UV coordinates on the bottom/right boundary lies exactly on a texel boundary, rounds them down (to the top/left)."
+				" Fixes rendering of fonts in Cho Aniki: Seinaru Protein Densetsu.";
 		case IDC_MERGE_PP_SPRITE:
 			return "Replaces post-processing multiple paving sprites by a single fat sprite.\n"
 				" It reduces various upscaling lines.\n\n"

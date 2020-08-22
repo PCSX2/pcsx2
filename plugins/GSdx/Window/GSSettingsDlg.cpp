@@ -629,6 +629,7 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_AUTO_FLUSH_HW, theApp.GetConfigB("UserHacks_AutoFlush"));
 	CheckDlgButton(m_hWnd, IDC_SAFE_FEATURES, theApp.GetConfigB("UserHacks_Disable_Safe_Features"));
 	CheckDlgButton(m_hWnd, IDC_MEMORY_WRAPPING, theApp.GetConfigB("wrap_gs_mem"));
+	CheckDlgButton(m_hWnd, IDC_ROUND_DOWN_SPRITE_UV, theApp.GetConfigB("UserHacks_RoundDownSpriteUV"));
 	CheckDlgButton(m_hWnd, IDC_MERGE_PP_SPRITE, theApp.GetConfigB("UserHacks_merge_pp_sprite"));
 
 	ComboBoxInit(IDC_HALF_SCREEN_TS, theApp.m_gs_generic_list, theApp.GetConfigI("UserHacks_Half_Bottom_Override"));
@@ -657,6 +658,7 @@ void GSHacksDlg::OnInit()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_AUTO_FLUSH_HW), hwhacks);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_SAFE_FEATURES), hwhacks);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MEMORY_WRAPPING), hwhacks);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_ROUND_DOWN_SPRITE_UV), hwhacks);
 
 	// Half-screen bottom hack:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_HALF_SCREEN_TS), hwhacks);
@@ -719,6 +721,7 @@ void GSHacksDlg::OnInit()
 	AddTooltip(IDC_SAFE_FEATURES);
 	AddTooltip(IDC_MEMORY_WRAPPING);
 	AddTooltip(IDC_HALF_SCREEN_TS);
+	AddTooltip(IDC_ROUND_DOWN_SPRITE_UV);
 	AddTooltip(IDC_TRI_FILTER);
 	AddTooltip(IDC_MERGE_PP_SPRITE);
 	AddTooltip(IDC_GEOMETRY_SHADER_OVERRIDE);
@@ -826,6 +829,7 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			theApp.SetConfig("UserHacks_DisablePartialInvalidation", (int)IsDlgButtonChecked(m_hWnd, IDC_FAST_TC_INV));
 			theApp.SetConfig("UserHacks_AutoFlush", (int)IsDlgButtonChecked(m_hWnd, IDC_AUTO_FLUSH_HW));
 			theApp.SetConfig("UserHacks_Disable_Safe_Features", (int)IsDlgButtonChecked(m_hWnd, IDC_SAFE_FEATURES));
+			theApp.SetConfig("UserHacks_RoundDownSpriteUV", (int)IsDlgButtonChecked(m_hWnd, IDC_ROUND_DOWN_SPRITE_UV));
 			theApp.SetConfig("wrap_gs_mem", (int)IsDlgButtonChecked(m_hWnd, IDC_MEMORY_WRAPPING));
 			theApp.SetConfig("UserHacks_merge_pp_sprite", (int)IsDlgButtonChecked(m_hWnd, IDC_MERGE_PP_SPRITE));
 			theApp.SetConfig("UserHacks_TCOffsetX", SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0));

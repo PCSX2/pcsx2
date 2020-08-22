@@ -129,6 +129,8 @@ class GSState : public GSAlignedClass<32>
 	void GIFRegHandlerFINISH(const GIFReg* RESTRICT r);
 	void GIFRegHandlerLABEL(const GIFReg* RESTRICT r);
 
+	void RoundDownSpriteUV_Hack();
+
 	int m_version;
 	int m_sssize;
 
@@ -167,6 +169,7 @@ protected:
 	int m_userhacks_skipdraw;
 	int m_userhacks_skipdraw_offset;
 	bool m_userhacks_auto_flush;
+	bool m_userhacks_round_down_sprite_uv;
 
 	GSVertex m_v;
 	float m_q;
