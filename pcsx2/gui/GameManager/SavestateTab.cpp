@@ -50,6 +50,9 @@ SavestateTab::SavestateTab(wxWindow* parent, AppConfig::GameManagerOptions& opti
 
 void SavestateTab::changeSelectedSlot(int slotNum)
 {
+	if (slotNum >= (int)savestates.size())
+		return;
+
 	if (options.DisplaySingleBackup)
 		savestates.at(selectedSlot).backup->Show(false);
 	savestates.at(selectedSlot).current->selectSlot(false);
@@ -84,7 +87,9 @@ void SavestateTab::refreshSlots()
 }
 
 void SavestateTab::updateSlot(int slotNum, wxDateTime updatedAt, bool isEmpty, bool fullReload)
-{
+{	
+	if (slotNum >= (int)savestates.size())
+		return;
 	savestates.at(slotNum).current->setTimestamp(updatedAt);
 	savestates.at(slotNum).current->setIsEmpty(isEmpty);
 	savestates.at(slotNum).backup->setIsEmpty(!States_SlotHasBackup(slotNum));
@@ -129,14 +134,10 @@ int SavestateTab::GetSaveslotFromFilename(wxString fileName)
 	// Filename Expectation - `SERIAL-NUM (CRC).SLOTNUM[.backup].EXTENSION`
 	wxStringTokenizer tokenizer(fileName, ".");
 	if (tokenizer.CountTokens() < 3)
-	{
 		return -1;
-	}
 	std::vector<wxString> tokens;
 	while (tokenizer.HasMoreTokens())
-	{
 		tokens.push_back(tokenizer.GetNextToken());
-	}
 	long slotNum;
 	if (!tokens.at(1).ToLong(&slotNum))
 		return -1;
