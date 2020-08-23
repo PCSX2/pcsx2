@@ -26,7 +26,6 @@
 
 #include "Dialogs/ModalPopups.h"
 #include "Dialogs/ConfigurationDialog.h"
-#include "Dialogs/LogOptionsDialog.h"
 #include "Debugger/DisassemblyDialog.h"
 
 #include "Utilities/IniInterface.h"
@@ -159,6 +158,7 @@ wxWindowID SwapOrReset_Iso( wxWindow* owner, IScopedCoreThread& core_control, co
 
 	g_Conf->CdvdSource = CDVD_SourceType::Iso;
 	SysUpdateIsoSrcFile( isoFilename );
+
 	if( result == wxID_RESET )
 	{
 		core_control.DisallowResume();
@@ -384,14 +384,16 @@ void MainEmuFrame::Menu_CdvdSource_Click( wxCommandEvent &event )
 
 void MainEmuFrame::Menu_BootCdvd_Click( wxCommandEvent &event )
 {
-	g_Conf->EmuOptions.UseBOOT2Injection = false;
+	g_Conf->EmuOptions.UseBOOT2Injection = g_Conf->EnableFastBoot;
 	_DoBootCdvd();
 }
 
-void MainEmuFrame::Menu_BootCdvd2_Click( wxCommandEvent &event )
+void MainEmuFrame::Menu_FastBoot_Click( wxCommandEvent &event )
 {
-	g_Conf->EmuOptions.UseBOOT2Injection = true;
-	_DoBootCdvd();
+	g_Conf->EnableFastBoot = GetMenuBar()->IsChecked( MenuId_Config_FastBoot );
+	AppApplySettings();
+	AppSaveSettings();
+	UpdateStatusBar();
 }
 
 wxString GetMsg_IsoImageChanged()
@@ -506,7 +508,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 			"These tools are provided as-is and should be enabled under your own discretion."), "Enabling Recording Tools"))
 		{
 			checked = false;
-			m_menuSys.FindChildItem(MenuId_EnableRecordingTools)->Check(false);
+			m_GameSettingsSubmenu.FindChildItem(MenuId_EnableRecordingTools)->Check(false);
 		}
 	}
 
@@ -648,8 +650,6 @@ void MainEmuFrame::Menu_SuspendResume_Click(wxCommandEvent &event)
 
 void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent &event)
 {
-	//if( !SysHasValidState() && !CorePlugins.AreAnyInitialized() ) return;
-
 	UI_DisableSysShutdown();
 	Console.SetTitle("PCSX2 Program Log");
 	CoreThread.Reset();
@@ -675,16 +675,16 @@ void MainEmuFrame::Menu_Debug_Open_Click(wxCommandEvent &event)
 {
 	DisassemblyDialog* dlg = wxGetApp().GetDisassemblyPtr();
 	if (dlg)
-		dlg->Show();
+	{
+		if (event.IsChecked())
+			dlg->Show();
+		else
+			dlg->Hide();
+	}
 }
 
 void MainEmuFrame::Menu_Debug_MemoryDump_Click(wxCommandEvent &event)
 {
-}
-
-void MainEmuFrame::Menu_Debug_Logging_Click(wxCommandEvent &event)
-{
-	AppOpenDialog<LogOptionsDialog>( this );
 }
 
 void MainEmuFrame::Menu_ShowConsole(wxCommandEvent &event)
@@ -700,6 +700,36 @@ void MainEmuFrame::Menu_ShowConsole_Stdio(wxCommandEvent &event)
 {
 	g_Conf->EmuOptions.ConsoleToStdio = GetMenuBar()->IsChecked( MenuId_Console_Stdio );
 	AppSaveSettings();
+}
+
+void MainEmuFrame::Menu_GetStarted(wxCommandEvent &event)
+{
+	wxLaunchDefaultBrowser("https://pcsx2.net/getting-started.html");
+}
+
+void MainEmuFrame::Menu_Compatibility(wxCommandEvent &event)
+{
+	wxLaunchDefaultBrowser("https://pcsx2.net/compatibility-list.html");
+}
+
+void MainEmuFrame::Menu_Forums(wxCommandEvent &event)
+{
+	wxLaunchDefaultBrowser("https://forums.pcsx2.net/");
+}
+
+void MainEmuFrame::Menu_Website(wxCommandEvent &event)
+{
+	wxLaunchDefaultBrowser("https://pcsx2.net/");
+}
+
+void MainEmuFrame::Menu_Github(wxCommandEvent &event)
+{
+	wxLaunchDefaultBrowser("https://github.com/PCSX2/pcsx2");
+}
+
+void MainEmuFrame::Menu_Wiki(wxCommandEvent &event)
+{
+	wxLaunchDefaultBrowser("https://wiki.pcsx2.net/Main_Page");
 }
 
 void MainEmuFrame::Menu_ShowAboutBox(wxCommandEvent &event)

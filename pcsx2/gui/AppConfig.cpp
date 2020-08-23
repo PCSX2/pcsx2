@@ -525,6 +525,7 @@ AppConfig::AppConfig()
 	#endif
 	EnableSpeedHacks	= true;
 	EnableGameFixes		= false;
+	EnableFastBoot		= true;
 
 	EnablePresets		= true;
 	PresetIndex			= 1;
@@ -646,6 +647,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 
 	IniEntry( EnableSpeedHacks );
 	IniEntry( EnableGameFixes );
+	IniEntry( EnableFastBoot );
 
 	IniEntry( EnablePresets );
 	IniEntry( PresetIndex );
@@ -1032,7 +1034,6 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 	Framerate.SlomoScalar = original_Framerate.SlomoScalar;
 	Framerate.TurboScalar = original_Framerate.TurboScalar;
 
-	EnableSpeedHacks	= false;
 	EnableGameFixes		= false;
 
 	EmuOptions.EnablePatches		= true;

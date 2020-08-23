@@ -70,15 +70,15 @@ static const bool CloseViewportWithPlugins = false;
 
 enum TopLevelMenuIndices
 {
-	TopLevelMenu_System = 0,
+	TopLevelMenu_Pcsx2 = 0,
 	TopLevelMenu_Cdvd,
 	TopLevelMenu_Config,
-	TopLevelMenu_Misc,
-	TopLevelMenu_Debug,
+	TopLevelMenu_Window,
 	TopLevelMenu_Capture,
 #ifndef DISABLE_RECORDING
 	TopLevelMenu_Recording,
 #endif
+	TopLevelMenu_Help
 };
 
 enum MenuIdentifiers
@@ -117,6 +117,7 @@ enum MenuIdentifiers
 	MenuId_Sys_LoadStates,		// Opens load states submenu
 	MenuId_Sys_SaveStates,		// Opens save states submenu
 	MenuId_EnableBackupStates,	// Checkbox to enable/disables savestates backup
+	MenuId_GameSettingsSubMenu,
 	MenuId_EnablePatches,
 	MenuId_EnableCheats,
 	MenuId_EnableWideScreenPatches,
@@ -153,6 +154,14 @@ enum MenuIdentifiers
 
 	MenuId_Config_Multitap0Toggle,
 	MenuId_Config_Multitap1Toggle,
+	MenuId_Config_FastBoot,
+
+	MenuId_Help_GetStarted,
+	MenuId_Help_Compatibility,
+	MenuId_Help_Forums,
+	MenuId_Help_Website,
+	MenuId_Help_Wiki,
+	MenuId_Help_Github,
 
 	// Plugin Sections
 	// ---------------

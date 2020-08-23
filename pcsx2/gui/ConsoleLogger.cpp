@@ -22,6 +22,7 @@
 #include "Utilities/Console.h"
 #include "Utilities/IniInterface.h"
 #include "Utilities/SafeArray.inl"
+#include "Dialogs/LogOptionsDialog.h"
 #include "DebugTools/Debug.h"
 
 #include <wx/textfile.h>
@@ -243,6 +244,7 @@ enum MenuIDs_t
 	MenuId_ColorScheme_Dark,
 
 	MenuId_AutoDock,
+	MenuId_Log_Settings,
 
 	MenuId_LogSource_EnableAll = 0x30,
 	MenuId_LogSource_DisableAll,
@@ -433,6 +435,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	//	_t("When checked the log window will be visible over other foreground windows."), wxITEM_CHECK );
 
 	menuLog.Append(wxID_SAVE,	_("&Save..."),		_("Save log contents to file"));
+	menuLog.Append(MenuId_Log_Settings,	_("&Settings..."),		_("Open the logging settings dialog"));
 	menuLog.Append(wxID_CLEAR,	_("C&lear"),		_("Clear the log window contents"));
 	menuLog.AppendSeparator();
 	menuLog.AppendCheckItem(MenuId_AutoDock, _("Auto&dock"), _("Dock log window to main PCSX2 window"))->Check(m_conf.AutoDock);
@@ -479,6 +482,9 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnClose, this, wxID_CLOSE);
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnSave, this, wxID_SAVE);
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnClear, this, wxID_CLEAR);
+#ifdef PCSX2_DEVBUILD
+	Bind(wxEVT_MENU, &ConsoleLogFrame::OnLogSettings, this, MenuId_Log_Settings);
+#endif
 
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnFontSize, this, MenuId_FontSize_Small, MenuId_FontSize_Huge);
 	Bind(wxEVT_MENU, &ConsoleLogFrame::OnToggleTheme, this, MenuId_ColorScheme_Light, MenuId_ColorScheme_Dark);
@@ -807,6 +813,11 @@ void ConsoleLogFrame::OnSave(wxCommandEvent& WXUNUSED(event))
 void ConsoleLogFrame::OnClear(wxCommandEvent& WXUNUSED(event))
 {
 	m_TextCtrl.Clear();
+}
+
+void ConsoleLogFrame::OnLogSettings(wxCommandEvent& WXUNUSED(event))
+{
+	AppOpenDialog<Dialogs::LogOptionsDialog>( this );
 }
 
 void ConsoleLogFrame::OnToggleCDVDInfo( wxCommandEvent& evt )

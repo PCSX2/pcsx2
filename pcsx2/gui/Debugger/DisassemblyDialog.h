@@ -91,10 +91,6 @@ public:
 	void reset();
 	void populate();
 	void setDebugMode(bool debugMode, bool switchPC);
-	
-#ifdef _WIN32
-	WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
-#endif
 
 	wxDECLARE_EVENT_TABLE();
 protected:
@@ -102,9 +98,10 @@ protected:
 	void onStepOverClicked(wxCommandEvent& evt);
 	void onStepIntoClicked(wxCommandEvent& evt);
 	void onStepOutClicked(wxCommandEvent& evt);
+	void onHelpClicked(wxCommandEvent& evt);
 	void onDebuggerEvent(wxCommandEvent& evt);
 	void onPageChanging(wxCommandEvent& evt);
-	void onBreakpointClick(wxCommandEvent& evt);
+	void onBreakpointClicked(wxCommandEvent& evt);
 	void onSizeEvent(wxSizeEvent& event);
 	void onClose(wxCloseEvent& evt);
 	void stepOver();
@@ -118,9 +115,5 @@ private:
 	wxNotebook* middleBook;
 
 	wxBoxSizer* topSizer;
-	wxButton* breakRunButton;
-	wxButton* stepIntoButton;
-	wxButton* stepOverButton;
-	wxButton* stepOutButton;
-	wxButton* breakpointButton;
+	wxButton *breakRunButton, *stepIntoButton, *stepOverButton, *stepOutButton, *breakpointButton, *helpButton;
 };

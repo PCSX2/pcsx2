@@ -109,8 +109,7 @@ protected:
 	wxMenu&			m_menuCDVD;
 	wxMenu&			m_menuSys;
 	wxMenu&			m_menuConfig;
-	wxMenu&			m_menuMisc;
-	wxMenu&			m_menuDebug;
+	wxMenu&			m_menuWindow;
 
 	wxMenu&			m_menuCapture;
 	wxMenu&			m_submenuVideoCapture;
@@ -118,9 +117,11 @@ protected:
 #ifndef DISABLE_RECORDING
 	wxMenu&			m_menuRecording;
 #endif
+	wxMenu&			m_menuHelp;
 
 	wxMenu&			m_LoadStatesSubmenu;
 	wxMenu&			m_SaveStatesSubmenu;
+	wxMenu&			m_GameSettingsSubmenu;
 
 	wxMenuItem*		m_menuItem_RecentIsoMenu;
 	wxMenuItem&		m_MenuItem_Console;
@@ -146,14 +147,24 @@ public:
 	void UpdateIsoSrcSelection();
 	void RemoveCdvdMenu();
 	void EnableMenuItem( int id, bool enable );
+	void CheckMenuItem(int id, bool checked);
 	void SetMenuItemLabel(int id, wxString str);
 	void EnableCdvdPluginSubmenu(bool isEnable = true);
+
+	void CreateCdvdMenu();
+	void CreatePcsx2Menu();
+	void CreateConfigMenu();
+	void CreateWindowsMenu();
+	void CreateCaptureMenu();
+	void CreateRecordMenu();
+	void CreateHelpMenu();
 	
 	bool Destroy();
 
 	void ApplyConfigToGui(AppConfig& configToApply, int flags = 0);
 	void CommitPreset_noTrigger();
 	void AppendKeycodeNamesToMenuOptions();
+	void UpdateStatusBar();
 
 protected:
 	void DoGiveHelp(const wxString& text, bool show);
@@ -188,7 +199,8 @@ protected:
 	void Menu_EnableHostFs_Click(wxCommandEvent &event);
 
 	void Menu_BootCdvd_Click(wxCommandEvent &event);
-	void Menu_BootCdvd2_Click(wxCommandEvent &event);
+	void Menu_FastBoot_Click(wxCommandEvent &event);
+
 	void Menu_OpenELF_Click(wxCommandEvent &event);
 	void Menu_CdvdSource_Click(wxCommandEvent &event);
 	void Menu_LoadStates_Click(wxCommandEvent &event);
@@ -206,13 +218,19 @@ protected:
 
 	void Menu_Debug_Open_Click(wxCommandEvent &event);
 	void Menu_Debug_MemoryDump_Click(wxCommandEvent &event);
-	void Menu_Debug_Logging_Click(wxCommandEvent &event);
 	void Menu_Debug_CreateBlockdump_Click(wxCommandEvent &event);
 	void Menu_Ask_On_Boot_Click(wxCommandEvent &event);
 
 	void Menu_ShowConsole(wxCommandEvent &event);
 	void Menu_ChangeLang(wxCommandEvent &event);
 	void Menu_ShowConsole_Stdio(wxCommandEvent &event);
+
+	void Menu_GetStarted(wxCommandEvent &event);
+	void Menu_Compatibility(wxCommandEvent &event);
+	void Menu_Forums(wxCommandEvent &event);
+	void Menu_Website(wxCommandEvent &event);
+	void Menu_Github(wxCommandEvent &event);
+	void Menu_Wiki(wxCommandEvent &event);
 	void Menu_ShowAboutBox(wxCommandEvent &event);
 
 	void Menu_Capture_Video_Record_Click(wxCommandEvent &event);

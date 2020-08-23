@@ -39,6 +39,12 @@ void MainEmuFrame::SetMenuItemLabel(int id, wxString str)
 		item->SetItemLabel(str);
 }
 
+void MainEmuFrame::CheckMenuItem(int id, bool checked)
+{
+	if (wxMenuItem *item = m_menubar.FindItem(id))
+		item->Check(checked);
+}
+
 static void _SaveLoadStuff(bool enabled)
 {
 	sMainFrame.EnableMenuItem(MenuId_Sys_LoadStates, enabled);
