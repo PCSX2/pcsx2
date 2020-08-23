@@ -166,7 +166,6 @@ Region = PAL-M5
 	comment=You must enable the EETimingHack when playing the WRC demo to avoids random hangs.
 	comment=You must change the EE Clamping mode to Full when playing the Klonoa 2 demo to avoids misplaced objects.
 	comment=You must change the VU Clamping mode to extra when playing the Klonoa 2 demo to fixes reflections issues.
-	comment=You must use the ZeroSPU2 plugin when playing the Klonoa 2 demo to avoids bad/missing sounds.
 [/patches]
 ---------------------------------------------
 Serial = PBPX-95517
