@@ -91,10 +91,6 @@ public:
 	void reset();
 	void populate();
 	void setDebugMode(bool debugMode, bool switchPC);
-	
-#ifdef _WIN32
-	WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
-#endif
 
 	wxDECLARE_EVENT_TABLE();
 protected:

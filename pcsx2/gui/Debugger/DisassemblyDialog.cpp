@@ -304,38 +304,6 @@ void DisassemblyDialog::onSizeEvent(wxSizeEvent& event)
 	event.Skip();
 }
 
-#ifdef _WIN32
-WXLRESULT DisassemblyDialog::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam)
-{
-	switch (nMsg)
-	{
-	case WM_SHOWWINDOW:
-		{
-			WXHWND hwnd = GetHWND();
-
-			u32 style = GetWindowLong((HWND)hwnd,GWL_STYLE);
-			//style &= ~(WS_MINIMIZEBOX|WS_MAXIMIZEBOX);
-			SetWindowLong((HWND)hwnd,GWL_STYLE,style);
-
-			u32 exStyle = GetWindowLong((HWND)hwnd,GWL_EXSTYLE);
-			exStyle |= (WS_EX_CONTEXTHELP);
-			SetWindowLong((HWND)hwnd,GWL_EXSTYLE,exStyle);
-		}
-		break;
-	case WM_SYSCOMMAND:
-		if (wParam == SC_CONTEXTHELP)
-		{
-			DebuggerHelpDialog help(this);
-			help.ShowModal();
-			return 0;
-		}
-		break;
-	}
-
-	return wxFrame::MSWWindowProc(nMsg,wParam,lParam);
-}
-#endif
-
 void DisassemblyDialog::onBreakRunClicked(wxCommandEvent& evt)
 {	
 	if (r5900Debug.isCpuPaused())
