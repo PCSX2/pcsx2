@@ -56,24 +56,24 @@ DebuggerHelpDialog::DebuggerHelpDialog(wxWindow* parent)
 {
 	wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	wxTextCtrl* textControl = new wxTextCtrl(this,wxID_ANY,L"",wxDefaultPosition,wxDefaultSize,
-		wxTE_MULTILINE|wxTE_READONLY);
-	textControl->SetMinSize(wxSize(400,300));
-	auto fileName = PathDefs::GetDocs().ToString()+L"/debugger.txt";
+	auto fileName = Path::Combine(PathDefs::GetDocs(), wxFileName(L"debugger.txt"));
+
 	wxTextFile file(fileName);
+	wxString text(L"");
+
 	if (file.Open())
 	{
-		wxString text = file.GetFirstLine();
+		text = file.GetFirstLine();
 		while (!file.Eof())
 		{
 			text += file.GetNextLine()+L"\r\n";
 		}
-
-		textControl->SetLabel(text);
-		textControl->SetSelection(0,0);
 	}
 
-	sizer->Add(textControl,1,wxEXPAND);
+	wxTextCtrl* textControl = new wxTextCtrl(this, wxID_ANY, text, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
+	textControl->SetMinSize(wxSize(400,300));
+	sizer->Add(textControl, 1, wxEXPAND);
+
 	SetSizerAndFit(sizer);
 }
 
@@ -236,8 +236,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	int height = g_Conf->EmuOptions.Debugger.WindowHeight;
 
 	topSizer = new wxBoxSizer( wxVERTICAL );
-	wxPanel *panel = new wxPanel(this, wxID_ANY, 
-		wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("panel"));
+	wxPanel *panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("panel"));
 	panel->SetSizer(topSizer);
 
 	// create top row
@@ -245,38 +244,42 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 
 	breakRunButton = new wxButton(panel, wxID_ANY, L"Run");
 	Bind(wxEVT_BUTTON, &DisassemblyDialog::onBreakRunClicked, this, breakRunButton->GetId());
-	topRowSizer->Add(breakRunButton,0,wxRIGHT,8);
+	topRowSizer->Add(breakRunButton);
 
-	stepIntoButton = new wxButton( panel, wxID_ANY, L"Step Into" );
+	stepIntoButton = new wxButton( panel, wxID_ANY, L"Step Into");
 	stepIntoButton->Enable(false);
 	Bind(wxEVT_BUTTON, &DisassemblyDialog::onStepIntoClicked, this, stepIntoButton->GetId());
-	topRowSizer->Add(stepIntoButton,0,wxBOTTOM,2);
+	topRowSizer->Add(stepIntoButton);
 
-	stepOverButton = new wxButton( panel, wxID_ANY, L"Step Over" );
+	stepOverButton = new wxButton( panel, wxID_ANY, L"Step Over");
 	stepOverButton->Enable(false);
 	Bind(wxEVT_BUTTON, &DisassemblyDialog::onStepOverClicked, this, stepOverButton->GetId());
 	topRowSizer->Add(stepOverButton);
-	
-	stepOutButton = new wxButton( panel, wxID_ANY, L"Step Out" );
+
+	stepOutButton = new wxButton( panel, wxID_ANY, L"Step Out");
 	stepOutButton->Enable(false);
 	Bind(wxEVT_BUTTON, &DisassemblyDialog::onStepOutClicked, this, stepOutButton->GetId());
-	topRowSizer->Add(stepOutButton,0,wxRIGHT,8);
-	
-	breakpointButton = new wxButton( panel, wxID_ANY, L"Breakpoint" );
-	Bind(wxEVT_BUTTON, &DisassemblyDialog::onBreakpointClick, this, breakpointButton->GetId());
+	topRowSizer->Add(stepOutButton);
+
+	breakpointButton = new wxButton( panel, wxID_ANY, L"Breakpoint");
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onBreakpointClicked, this, breakpointButton->GetId());
 	topRowSizer->Add(breakpointButton);
 
-	topSizer->Add(topRowSizer,0,wxLEFT|wxRIGHT|wxTOP,3);
+	helpButton = new wxButton( panel, wxID_ANY, L"Help");
+	Bind(wxEVT_BUTTON, &DisassemblyDialog::onHelpClicked, this, helpButton->GetId());
+	topRowSizer->Add(helpButton);
+
+	topSizer->Add(topRowSizer, 0, wxLEFT | wxRIGHT | wxTOP, 3);
 
 	// create middle part of the window
 	middleBook = new wxNotebook(panel,wxID_ANY);  
 	middleBook->SetBackgroundColour(wxColour(0xFFF0F0F0));
 	eeTab = new CpuTabPage(middleBook,&r5900Debug);
 	iopTab = new CpuTabPage(middleBook,&r3000Debug);
-	middleBook->AddPage(eeTab,L"R5900");
-	middleBook->AddPage(iopTab,L"R3000");
+	middleBook->AddPage(eeTab, L"R5900");
+	middleBook->AddPage(iopTab, L"R3000");
 	Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &DisassemblyDialog::onPageChanging, this, middleBook->GetId());
-	topSizer->Add(middleBook,3,wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM,3);
+	topSizer->Add(middleBook, 3, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 3);
 	currentCpu = eeTab;
 
 	CreateStatusBar(1);
@@ -359,6 +362,12 @@ void DisassemblyDialog::onStepIntoClicked(wxCommandEvent& evt)
 void DisassemblyDialog::onStepOutClicked(wxCommandEvent& evt)
 {
 	stepOut();
+}
+
+void DisassemblyDialog::onHelpClicked(wxCommandEvent& evt)
+{
+	DebuggerHelpDialog help(this);
+	help.ShowModal();
 }
 
 void DisassemblyDialog::onPageChanging(wxCommandEvent& evt)
@@ -483,7 +492,7 @@ void DisassemblyDialog::stepOut()
 	r5900Debug.resumeCpu();
 }
 
-void DisassemblyDialog::onBreakpointClick(wxCommandEvent& evt)
+void DisassemblyDialog::onBreakpointClicked(wxCommandEvent& evt)
 {
 	if (currentCpu == NULL)
 		return;
@@ -499,6 +508,7 @@ void DisassemblyDialog::onBreakpointClick(wxCommandEvent& evt)
 void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 {
 	wxEventType type = evt.GetEventType();
+
 	if (type == debEVT_SETSTATUSBARTEXT)
 	{
 		DebugInterface* cpu = reinterpret_cast<DebugInterface*>(evt.GetClientData());
@@ -555,7 +565,7 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	} else if (type == debEVT_BREAKPOINTWINDOW)
 	{
 		wxCommandEvent evt;
-		onBreakpointClick(evt);
+		onBreakpointClicked(evt);
 	} else if (type == debEVT_MAPLOADED)
 	{
 		wxBusyInfo wait("Please wait, Reloading ELF functions");
