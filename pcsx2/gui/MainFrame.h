@@ -167,7 +167,7 @@ public:
 	void AppendKeycodeNamesToMenuOptions();
 	void UpdateStatusBar();
 #ifndef DISABLE_RECORDING
-	void AppendKeycodeNamesToRecordingMenuOptions(MenuIdentifiers menuId, wxString keyCodeStr);
+	void appendKeycodeNamesToRecordingMenuOptions(MenuIdentifiers menuId, wxString keyCodeStr);
 #endif
 
 protected:
@@ -247,6 +247,9 @@ protected:
 	void Menu_Recording_New_Click(wxCommandEvent &event);
 	void Menu_Recording_Play_Click(wxCommandEvent &event);
 	void Menu_Recording_Stop_Click(wxCommandEvent &event);
+	void Menu_Recording_TogglePause_Click(wxCommandEvent &event);
+	void Menu_Recording_FrameAdvance_Click(wxCommandEvent &event);
+	void Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent &event);
 	void Menu_Recording_VirtualPad_Open_Click(wxCommandEvent &event);
 #endif
 

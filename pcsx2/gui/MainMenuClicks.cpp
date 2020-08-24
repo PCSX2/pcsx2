@@ -972,7 +972,25 @@ void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent &event)
 	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(false);
 }
 
-void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent &event)
+void MainEmuFrame::Menu_Recording_TogglePause_Click(wxCommandEvent& event)
+{
+	if (g_Conf->EmuOptions.EnableRecordingTools)
+		g_RecordingControls.TogglePause();
+}
+
+void MainEmuFrame::Menu_Recording_FrameAdvance_Click(wxCommandEvent& event)
+{
+	if (g_Conf->EmuOptions.EnableRecordingTools)
+		g_RecordingControls.FrameAdvance();
+}
+
+void MainEmuFrame::Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent& event)
+{
+	if (g_Conf->EmuOptions.EnableRecordingTools)
+		g_InputRecording.RecordModeToggle();
+}
+
+void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent& event)
 {
 	wxGetApp().GetVirtualPadPtr(event.GetId() - MenuId_Recording_VirtualPad_Port0)->Show();
 }
