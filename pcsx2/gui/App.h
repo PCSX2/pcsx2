@@ -202,10 +202,11 @@ enum MenuIdentifiers
 	MenuId_Recording_New,
 	MenuId_Recording_Play,
 	MenuId_Recording_Stop,
-	MenuId_Recording_Editor,
+	MenuId_Recording_TogglePause,
+	MenuId_Recording_FrameAdvance,
+	MenuId_Recording_ToggleRecordingMode,
 	MenuId_Recording_VirtualPad_Port0,
 	MenuId_Recording_VirtualPad_Port1,
-	MenuId_Recording_Conversions,
 #endif
 
 };

@@ -471,6 +471,10 @@ void MainEmuFrame::CreateRecordMenu()
 	m_menuRecording.Append(MenuId_Recording_Stop, _("Stop"))->Enable(false);
 	m_menuRecording.Append(MenuId_Recording_Play, _("Play"));
 	m_menuRecording.AppendSeparator();
+	m_menuRecording.Append(MenuId_Recording_TogglePause, _("Toggle Pause"));
+	m_menuRecording.Append(MenuId_Recording_FrameAdvance, _("Frame Advance"));
+	m_menuRecording.Append(MenuId_Recording_ToggleRecordingMode, _("Toggle Recording Mode"));
+	m_menuRecording.AppendSeparator();
 	m_menuRecording.Append(MenuId_Recording_VirtualPad_Port0, _("Virtual Pad (Port 1)"));
 	m_menuRecording.Append(MenuId_Recording_VirtualPad_Port1, _("Virtual Pad (Port 2)"));
 #endif
@@ -776,24 +780,26 @@ void MainEmuFrame::CommitPreset_noTrigger()
 	g_Conf->EmuOptions.EnablePatches = menubar.IsChecked( MenuId_EnablePatches );
 }
 
-static void AppendShortcutToMenuOption( wxMenuItem& item, const char* id ) {
-	// this is NOT how a dictionary works but it has like 30 entries so this should still perform okay
-	auto* dict = &wxGetApp().GlobalAccels;
-	for ( auto it = ( *dict )->begin(); it != ( *dict )->end(); ++it ) {
-		if ( strcmp( it->second->Id, id ) == 0 ) {
-			wxString text = item.GetItemLabel();
-			size_t tabPos = text.rfind( L'\t' );
-			KeyAcceleratorCode keycode( (wxKeyCode)it->first );
-			item.SetItemLabel( text.Mid( 0, tabPos ) + L"\t" + keycode.ToString() );
-		}
-	}
+static void AppendShortcutToMenuOption( wxMenuItem& item, wxString keyCodeStr ) {
+	wxString text = item.GetItemLabel();
+	const size_t tabPos = text.rfind(L'\t');
+	item.SetItemLabel(text.Mid(0, tabPos ) + L"\t" + keyCodeStr);
 }
 
 void MainEmuFrame::AppendKeycodeNamesToMenuOptions() {
-	AppendShortcutToMenuOption( *m_menuSys.FindChildItem( MenuId_Sys_LoadStates ), "States_DefrostCurrentSlot" );
-	AppendShortcutToMenuOption( *m_menuSys.FindChildItem( MenuId_Sys_SaveStates ), "States_FreezeCurrentSlot" );
+	
+	AppendShortcutToMenuOption(*m_menuSys.FindChildItem( MenuId_Sys_LoadStates ), wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_DefrostCurrentSlot").toTitleizedString());
+	AppendShortcutToMenuOption(*m_menuSys.FindChildItem( MenuId_Sys_SaveStates ), wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_FreezeCurrentSlot").toTitleizedString());
 }
 
+#ifndef DISABLE_RECORDING
+void MainEmuFrame::appendKeycodeNamesToRecordingMenuOptions(MenuIdentifiers menuId, wxString keyCodeStr) {
+	wxMenuItem& item = *m_menuRecording.FindChildItem(menuId);
+	wxString text = item.GetItemLabel();
+	const size_t tabPos = text.rfind(L'\t');
+	item.SetItemLabel(text.Mid(0, tabPos ) + L"\t" + keyCodeStr);
+}
+#endif
 
 // ------------------------------------------------------------------------
 //   "Extensible" Plugin Menus

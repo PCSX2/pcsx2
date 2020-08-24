@@ -912,6 +912,19 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 	}
 }
 
+KeyAcceleratorCode AcceleratorDictionary::findKeycodeWithCommandId(const char* commandId)
+{
+	for (auto entry = this->begin(); entry != this->end(); entry++)
+	{
+		if (strcmp(entry->second->Id, commandId) == 0)
+		{
+			const KeyAcceleratorCode keycode(entry->first);
+			return keycode;
+		}
+	}
+	return KeyAcceleratorCode(0);
+}
+
 void Pcsx2App::BuildCommandHash()
 {
 	if( !GlobalCommands ) GlobalCommands = std::unique_ptr<CommandDictionary>(new CommandDictionary);
@@ -932,6 +945,8 @@ void Pcsx2App::InitDefaultGlobalAccelerators()
 
 	// Why do we even have those here? all of them seem to be overridden
 	// by GSPanel::m_Accels ( GSPanel::InitDefaultAccelerators() )
+	// - One reason is because this is used to initialize shortcuts in the MainFrame's UI (see - MainFrame::AppendShortcutToMenuOption)
+	//   this is before the GS Window has been initialized.
 
 	GlobalAccels->Map( AAC( WXK_F1 ),			"States_FreezeCurrentSlot" );
 	GlobalAccels->Map( AAC( WXK_F3 ),			"States_DefrostCurrentSlot" );
