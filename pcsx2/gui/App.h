@@ -583,13 +583,9 @@ public:
 	GSFrame*			GetGsFramePtr() const				{ return (GSFrame*)wxWindow::FindWindowById( m_id_GsFrame ); }
 	MainEmuFrame*		GetMainFramePtr() const				{ return (MainEmuFrame*)wxWindow::FindWindowById( m_id_MainFrame ); }
 	GameManagerFrame*	GetGameManagerFramePtr() const		{ 
-		if (m_id_GameManagerFrame) {
-			wxWindow* window = wxWindow::FindWindowById(m_id_GameManagerFrame);
-			GameManagerFrame* ye = (GameManagerFrame*)window;
-			return ye;
-		}
+		if (m_id_GameManagerFrame)
+			return (GameManagerFrame*) wxWindow::FindWindowById(m_id_GameManagerFrame);
 		return NULL;
-		
 	}
 	DisassemblyDialog*	GetDisassemblyPtr() const			{ return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
 
