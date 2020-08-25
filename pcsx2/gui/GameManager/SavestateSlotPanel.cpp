@@ -61,12 +61,12 @@ void SavestateSlotPanel::initComponents()
 	expandedMetadataSizer->Add(expandedLabel, 0, 0, 0);
 	if (backup)
 	{
-		collapsedSizer->Add(collapsedBackupLeftPad, -1, wxLEFT, 10);
-		expandedSizer->Add(expandedBackupLeftPad, -1, wxLEFT, 10);
+		collapsedSizer->Add(collapsedBackupLeftPad, -1, wxLEFT, 15);
+		expandedSizer->Add(expandedBackupLeftPad, -1, wxLEFT, 15);
 	}
-	collapsedSizer->Add(collapsedLabel, 2, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+	collapsedSizer->Add(collapsedLabel, 2, wxALIGN_CENTER_VERTICAL | wxALL, 10);
 	collapsedSizer->Add(collapsedPreview, 1, wxALL | wxEXPAND, 5);
-	expandedSizer->Add(expandedMetadataSizer, 1, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+	expandedSizer->Add(expandedMetadataSizer, 1, wxALIGN_CENTER_VERTICAL | wxALL, 10);
 	expandedSizer->Add(expandedPreview, 1, wxALL | wxEXPAND, 5);
 	expandedMetadataSizer->Add(expandedTimestamp, 0, 0, 0);
 
