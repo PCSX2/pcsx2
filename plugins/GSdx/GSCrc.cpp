@@ -293,9 +293,6 @@ CRC::Game CRC::m_games[] =
 	{0x90F0D852, BigMuthaTruckers, US, 0},
 	{0x92624842, BigMuthaTruckers, US, 0},
 	{0xDD93DA88, BigMuthaTruckers, JP, 0}, // Bakusou Convoy Densetsu - Otoko Hanamichi America Roman
-	{0x5CC9BF81, TimeSplitters2, EU, 0},
-	{0x12532F1C, TimeSplitters2, US, 0},
-	{0xC01FD223, TimeSplitters2, KO, 0},
 	{0xEB198738, LordOfTheRingsThirdAge, US, 0},
 	{0x614F4CF4, LordOfTheRingsThirdAge, EU, 0},
 	{0x37CD4279, LordOfTheRingsThirdAge, KO, 0},
