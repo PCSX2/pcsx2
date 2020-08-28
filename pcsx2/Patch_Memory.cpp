@@ -19,7 +19,6 @@
 
 #include "IopCommon.h"
 #include "Patch.h"
-#include <chrono>
 
 u32 SkipCount = 0, IterationCount = 0;
 u32 IterationIncrement = 0, ValueIncrement = 0;
