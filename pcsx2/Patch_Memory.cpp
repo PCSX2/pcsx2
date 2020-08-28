@@ -25,9 +25,7 @@ u32 SkipCount = 0, IterationCount = 0;
 u32 IterationIncrement = 0, ValueIncrement = 0;
 u32 PrevCheatType = 0, PrevCheatAddr = 0, LastType = 0;
 
-// Planning to make a stopwatch class to make this much easier and cleaner. Will work for now, however.
-std::chrono::time_point<std::chrono::high_resolution_clock> StartTime, FinishTime;
-bool isStarted = false;
+int FrameIntreval = 0;
 
 void writeCheat()
 {
@@ -155,7 +153,7 @@ void handle_extended_t(IniPatch *p)
                                 u32 comp1 = memRead32(PrevCheatAddr);
                                 u32 comp2 = memRead32((u32)p->addr & 0x0FFFFFFF);
 
-								if (comp1 != comp2)
+                                if (comp1 != comp2)
                                     SkipCount = skipLines;
                             } break;
                             case 0x10000000: {
@@ -204,7 +202,7 @@ void handle_extended_t(IniPatch *p)
                             case 0x00000000: {
                                 u32 comp1 = memRead32(PrevCheatAddr);
                                 u32 comp2 = memRead32((u32)p->addr & 0x0FFFFFFF);
-								
+
                                 if (comp1 > comp2)
                                     SkipCount = skipLines;
                             } break;
@@ -212,14 +210,14 @@ void handle_extended_t(IniPatch *p)
                                 u16 comp1 = memRead16(PrevCheatAddr);
                                 u16 comp2 = memRead16((u32)p->addr & 0x0FFFFFFF);
 
-								if (comp1 > comp2)
+                                if (comp1 > comp2)
                                     SkipCount = skipLines;
                             } break;
                             case 0x20000000: {
                                 u8 comp1 = memRead32(PrevCheatAddr);
                                 u8 comp2 = memRead32((u32)p->addr & 0x0FFFFFFF);
 
-								if (comp1 > comp2)
+                                if (comp1 > comp2)
                                     SkipCount = skipLines;
                             } break;
                         }
@@ -230,7 +228,7 @@ void handle_extended_t(IniPatch *p)
                                 u32 comp1 = memRead32(PrevCheatAddr);
                                 u32 comp2 = memRead32((u32)p->addr & 0x0FFFFFFF);
 
-								if (comp1 < comp2)
+                                if (comp1 < comp2)
                                     SkipCount = skipLines;
                             } break;
                             case 0x10000000: {
@@ -251,7 +249,7 @@ void handle_extended_t(IniPatch *p)
                     } break;
                 }
 
-				PrevCheatType = 0;
+                PrevCheatType = 0;
             } break;
 
             default:
@@ -369,20 +367,14 @@ void handle_extended_t(IniPatch *p)
                     case 0xB0000000: {
                         SkipCount = ((u32)p->addr & 0x0FF00000) / 0x100000;
 
-                        if (!isStarted) {
-                            StartTime = std::chrono::high_resolution_clock::now();
-                            isStarted = true;
+						FrameIntreval++;
+                        int ElapsedTime = FrameIntreval / 60;
+
+                        if (ElapsedTime * 1000 >= (long long)((u32)p->addr & 0x000FFFFF)) {
+                            FrameIntreval = 0;
+                            SkipCount = 0;
                         }
 
-                        else {
-                            FinishTime = std::chrono::high_resolution_clock::now();
-                            long long ElapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(FinishTime - StartTime).count();
-
-                            if (ElapsedTime >= (long long)((u32)p->addr & 0x000FFFFF)) {
-                                isStarted = false;
-                                SkipCount = 0;
-                            }
-                        }
                     } break;
 
                     case 0xC0000000: {
