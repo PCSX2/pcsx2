@@ -122,10 +122,11 @@ protected:
 
 	/* Internal function, Parses an IPC command.
          * buf: buffer containing the IPC command.
+         * buf_size: size of the buffer announced.
          * ret_buffer: buffer that will be used to send the reply.
          * return value: IPCBuffer containing a buffer with the result 
          *               of the command and its size. */
-	IPCBuffer ParseCommand(char* buf, char* ret_buffer);
+	IPCBuffer ParseCommand(char* buf, char* ret_buffer, u32 buf_size);
 
 	/* Formats an IPC buffer
          * ret_buffer: return buffer to use. 
@@ -162,9 +163,9 @@ protected:
      * Ensures an IPC message isn't too big.
      * return value: false if checks failed, true otherwise.
      */
-	static inline bool SafetyChecks(u32 command_len, int command_size, u32 reply_len, int reply_size = 0)
+	static inline bool SafetyChecks(u32 command_len, int command_size, u32 reply_len, int reply_size = 0, u32 buf_size = MAX_IPC_SIZE - 1)
 	{
-		bool res = ((command_len + command_size) >= MAX_IPC_SIZE ||
+		bool res = ((command_len + command_size) > buf_size ||
 					(reply_len + reply_size) >= MAX_IPC_RETURN_SIZE);
 		if (unlikely(res))
 			return false;
