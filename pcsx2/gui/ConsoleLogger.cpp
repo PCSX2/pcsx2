@@ -435,7 +435,9 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	//	_t("When checked the log window will be visible over other foreground windows."), wxITEM_CHECK );
 
 	menuLog.Append(wxID_SAVE,	_("&Save..."),		_("Save log contents to file"));
+#ifdef PCSX2_DEVBUILD
 	menuLog.Append(MenuId_Log_Settings,	_("&Settings..."),		_("Open the logging settings dialog"));
+#endif
 	menuLog.Append(wxID_CLEAR,	_("C&lear"),		_("Clear the log window contents"));
 	menuLog.AppendSeparator();
 	menuLog.AppendCheckItem(MenuId_AutoDock, _("Auto&dock"), _("Dock log window to main PCSX2 window"))->Check(m_conf.AutoDock);
