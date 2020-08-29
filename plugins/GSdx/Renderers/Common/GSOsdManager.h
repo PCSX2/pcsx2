@@ -44,6 +44,19 @@ class GSOsdManager {
 		float tw; // nomalized glyph width
 	};
 
+	enum class GSOSD_POS {
+		TOPLEFT,
+		TOPMIDDLE,
+		TOPRIGHT,
+		MIDDLELEFT,
+		CENTER,
+		MIDDLERIGHT,
+		BTMLEFT,
+		BTMMIDDLE,
+		BTMRIGHT,
+		MAX,
+	};
+
 	std::map<char32_t, glyph_info> m_char_info;
 	std::map<std::pair<char32_t, char32_t>, FT_Pos> m_kern_info;
 
@@ -75,6 +88,7 @@ class GSOsdManager {
 	int m_opacity;
 	uint32 m_color;
 	int m_max_onscreen_messages;
+	GSOSD_POS m_monitor_pos;
 
 	public:
 

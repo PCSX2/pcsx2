@@ -72,6 +72,7 @@ GSOsdManager::GSOsdManager() : m_atlas_h(0)
 	m_opacity               = std::max(0, std::min(theApp.GetConfigI("osd_color_opacity"), 100));
 	m_log_timeout           = std::max(2, std::min(theApp.GetConfigI("osd_log_timeout"), 10));
 	m_max_onscreen_messages = std::max(1, std::min(theApp.GetConfigI("osd_max_log_messages"), 20));
+	m_monitor_pos			= (GSOSD_POS)std::max(0,std::min(theApp.GetConfigI("osd_monitor_pos"), (int)GSOSD_POS::MAX));
 
 	int r = std::max(0, std::min(theApp.GetConfigI("osd_color_r"), 255));
 	int g = std::max(0, std::min(theApp.GetConfigI("osd_color_g"), 255));
@@ -357,7 +358,17 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 		float offset = 0;
 
 		for(auto it = m_log.begin(); it != m_log.end();) {
-			float x = -1 + 8 * (2.0f/m_real_size.x);
+			// This is for the osd monitor location pr;
+			// Whenever the monitor osd is set to top left, move the logs to the top right
+			float x;
+			if (m_monitor_enabled && m_monitor_pos != GSOSD_POS::TOPLEFT) {
+				x = -1.0f + 8 * (2.0f / m_real_size.x);
+			}
+			else {
+			
+				x = 1.0f - 8 * (2.0f / m_real_size.x) - StringSize(it->msg);
+			}
+
 			float y = 1 - ((m_size+2)*(it-m_log.begin()+1)) * (2.0f/m_real_size.y);
 
 			if(y + offset < -1) break;
@@ -405,12 +416,74 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 		for(const auto &pair : m_monitor) {
 			if((pair.first.size() + pair.second.size()) * 6 > count - drawn) break;
 
-			// Calculate where to start rendering from by taking the right most position 1.0
-			// and subtracting (going left) 8 scaled pixels for a margin, then subtracting
-			// the size of the longest key and subtracting a scaled space and finally
-			// subtracting the longest value
-			float x = 1.0f - 8 * (2.0f/m_real_size.x) - first_max - m_char_info[' '].ax * (2.0f/m_real_size.x) - second_max;
-			float y = -1.0f + ((m_size+2)*(2.0f/m_real_size.y)) * line++;
+			float x, y;
+			/*
+				If you decide to update this, here are some tips to get you started, would've been helpful for me
+
+				m_real_size is the size of the emulator screen, measured in pixels
+				m_size is the fontsize configured by the user
+				first_max is the largest key in pixels 
+				second_max is the largest value in pixels
+
+				The min and max value of X and Y is -1 and 1
+				When finding the X or Y value of an osd draw, it always needs a relative point on the screen, those are
+					-1.0f    (left, top)
+					0        (center)
+					1.0f     (right,bottom)
+
+				You can witness this below, the number directly after the '=' operator is a relative point on the screen.
+				
+				Whenever you draw on the left or right side of the screen, add a margin of 8 pixels
+				[ (2.0f/ m_real_size.x) * 8 ] provides you with 8 pixels scaled to the screens width 
+
+				When you see
+				[ (m_size + 2) ] it simply adds some upper and lower padding 
+
+				The X centering formula centers only the longest line, all other lines start at said longest line
+				For example, If "FPS: 120" is the longest line, and its x value is 0.3, all other lines will have x value 0.3
+
+				Hopefully this'll help the next person trying to update this
+			*/
+
+			switch (m_monitor_pos) {
+				case GSOSD_POS::TOPLEFT:
+				default:
+					x = -1.0f + 8 * (2.0f/ m_real_size.x);
+					y = 1.0f - ((m_size + 2) * (2.0f / m_real_size.y)) * line++;
+				break;
+				case GSOSD_POS::MIDDLELEFT:
+					x = -1.0f + 8 * (2.0f / m_real_size.x);
+					y = (0 + ((2.0f / m_real_size.y) * m_monitor.size() * m_size / 2)) - ((m_size + 2) * (2.0f / m_real_size.y)) * line++;
+				break;
+				case GSOSD_POS::BTMLEFT:
+					x = -1.0f + 8 * (2.0f / m_real_size.x);
+					y = -1.0f + ((m_size + 2) * (2.0f / m_real_size.y)) * line++;
+				break;
+				case GSOSD_POS::BTMRIGHT:	
+					x = 1.0f - 8 * (2.0f / m_real_size.x) - first_max - m_char_info[' '].ax * (2.0f / m_real_size.x) - second_max;
+					y = -1.0f + ((m_size + 2) * (2.0f / m_real_size.y)) * line++;
+				break;
+				case GSOSD_POS::MIDDLERIGHT:
+					x = 1.0f - 8 * (2.0f / m_real_size.x) - first_max - m_char_info[' '].ax * (2.0f / m_real_size.x) - second_max;
+					y = (0 + ((2.0f / m_real_size.y) * m_monitor.size() * m_size / 2)) - ((m_size + 2) * (2.0f / m_real_size.y)) * line++;
+					break;
+				case GSOSD_POS::TOPRIGHT:
+					x = 1.0f - 8 * (2.0f / m_real_size.x) - first_max - m_char_info[' '].ax * (2.0f / m_real_size.x) - second_max;
+					y = 1.0f - ((m_size + 2) * (2.0f / m_real_size.y)) * line++;
+				break;
+				case GSOSD_POS::BTMMIDDLE:
+					x = 0 - (first_max + second_max + ((2.0f / m_real_size.x) * 8)) / 2;
+					y = -1.0f + ((m_size + 2) * (2.0f / m_real_size.y)) * line++;
+				break;
+				case GSOSD_POS::TOPMIDDLE:
+					x = 0 - (first_max + second_max + ((2.0f / m_real_size.x) * 8)) / 2;
+					y = 1.0f - ((m_size + 2) * (2.0f / m_real_size.y)) * line++;
+				break;
+				case GSOSD_POS::CENTER:
+					x = 0 - (first_max + second_max + ((2.0f / m_real_size.x) * 8)) / 2;
+					y = (0 + ((2.0f / m_real_size.y) * m_monitor.size() * m_size / 2)) - ((m_size + 2) * (2.0f / m_real_size.y)) * line++;
+				break;
+			}
 
 			uint32 color = m_color;
 			((uint8 *)&color)[3] = (uint8)(((uint8 *)&color)[3] * opacity);
@@ -420,8 +493,19 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 			dst += pair.first.size() * 6;
 			drawn += pair.first.size() * 6;
 
-			// Calculate the position for the value
-			x = 1.0f - 8 * (2.0f/m_real_size.x) - second_max;
+			if (m_monitor_pos == GSOSD_POS::TOPRIGHT ||
+				m_monitor_pos == GSOSD_POS::MIDDLERIGHT ||
+				m_monitor_pos == GSOSD_POS::BTMRIGHT)
+			{
+				// In the case that the osd text is right justified, 
+				// shift it left, relative to the right side of the screen by 8 scaled pixels
+				x = 1.0f - 8 * (2.0f / m_real_size.x) - second_max;
+			}
+			else {
+				// In the case that the text is left justified, 
+				// just shift it over by 8 scaled pixels
+				x += 8 * (2.0f / m_real_size.x) + first_max;
+			}		
 
 			// Render the value
 			RenderString(dst, pair.second, x, y, color);

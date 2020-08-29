@@ -845,6 +845,18 @@ void GSOSDDlg::OnInit()
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_SETRANGE, 0, MAKELPARAM(20, 1));
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("osd_max_log_messages"), 0));
 
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Top Left");
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Top Middle");
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Top Right");
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Middle Left");
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Center");
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Middle Right");
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Bottom Left");
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Bottom Middle");
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Bottom Right");
+
+	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_SETCURSEL, MAKEWPARAM(theApp.GetConfigI("osd_monitor_pos"), 0), 0);
+	
 	AddTooltip(IDC_OSD_MAX_LOG);
 	AddTooltip(IDC_OSD_MAX_LOG_EDIT);
 	AddTooltip(IDC_OSD_MONITOR);
@@ -881,6 +893,10 @@ void GSOSDDlg::UpdateControls()
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_SIZE), UDM_SETPOS, 0, MAKELPARAM(osd_size, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_TIMEOUT), UDM_SETPOS, 0, MAKELPARAM(osd_timeout, 0));
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_SETPOS, 0, MAKELPARAM(osd_max_log, 0));
+
+	// Monitor position dropdown
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), monitor_enabled);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_MONPOS_TEXT), monitor_enabled);
 
 	// Font
 	EnableWindow(GetDlgItem(m_hWnd, IDC_OSD_COLOR_RED_SLIDER), monitor_enabled || log_enabled);
@@ -971,7 +987,8 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 			theApp.SetConfig("osd_log_enabled", (int)IsDlgButtonChecked(m_hWnd, IDC_OSD_LOG));
 			theApp.SetConfig("osd_monitor_enabled", (int)IsDlgButtonChecked(m_hWnd, IDC_OSD_MONITOR));
-
+			theApp.SetConfig("osd_monitor_pos", (int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_GETCURSEL, 0, 0));
+			
 			EndDialog(m_hWnd, id);
 		} break;
 		case IDC_OSD_LOG:

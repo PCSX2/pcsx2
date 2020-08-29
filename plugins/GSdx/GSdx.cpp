@@ -365,6 +365,7 @@ void GSdxApp::Init()
 	m_default_configuration["osd_log_enabled"]                            = "1";
 	m_default_configuration["osd_log_timeout"]                            = "4";
 	m_default_configuration["osd_monitor_enabled"]                        = "0";
+	m_default_configuration["osd_monitor_pos"]							  =	"0";
 	m_default_configuration["osd_max_log_messages"]                       = "2";
 	m_default_configuration["override_geometry_shader"]                   = "-1";
 	m_default_configuration["override_GL_ARB_compute_shader"]             = "-1";

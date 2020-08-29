@@ -131,6 +131,8 @@
 #define IDC_OSD_MAX_LOG_TEXT            2190
 #define IDC_OSD_SIZE_TEXT               2191
 #define IDC_OSD_OPACITY_TEXT            2192
+#define IDC_OSD_MONPOS_TEXT             2193
+#define IDC_OSD_MONITOR_POS             2194
 // OpenGL Advanced Settings:
 #define IDC_GEOMETRY_SHADER_OVERRIDE    2200
 #define IDC_GEOMETRY_SHADER_TEXT        2201
@@ -162,9 +164,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        10019
+#define _APS_NEXT_RESOURCE_VALUE        10020
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2194
+#define _APS_NEXT_CONTROL_VALUE         2195
 #define _APS_NEXT_SYMED_VALUE           5000
 #endif
 #endif
