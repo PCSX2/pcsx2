@@ -226,7 +226,7 @@ extern bool pxParseAssignmentString(const wxString &src, wxString &ldest, wxStri
 #define pxsFmt FastFormatUnicode().Write
 #define pxsFmtV FastFormatUnicode().WriteV
 
-#define pxsPtr(ptr) pxsFmt("0x%08X", (ptr)).c_str()
+#define pxsPtr(ptr) pxsFmt("0x%08llX", (u64)(uptr)(ptr)).c_str()
 
 extern wxString &operator+=(wxString &str1, const FastFormatUnicode &str2);
 extern wxString operator+(const wxString &str1, const FastFormatUnicode &str2);
