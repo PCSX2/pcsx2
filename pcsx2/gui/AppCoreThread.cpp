@@ -811,20 +811,6 @@ ScopedCoreThreadPause::ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse
 	if( !abuse_me ) abuse_me = new SysExecEvent_CoreThreadPause();
 	if( !PostToSysExec( abuse_me ) )
 	{
-#ifndef DISABLE_RECORDING
-		// As the recording features involve pausing the CoreThread and if the CoreThread is paused prior
-		// to a plugin being closed, then the plugin will not be correctly re-opened.
-		//
-		// This is usually not an issue, as the PAD plugin is used to resume the thread (via key-bindings)
-		// which will open the plugins.
-		//
-		// But, if it's the PAD plugin that is closed, then there is nothing to read the keybind, resulting in a hang.
-		// So, if the thread is paused, resume it to not interfere with any plugin or event lifecycle.
-		if (g_Conf->EmuOptions.EnableRecordingTools && CoreThread.IsOpen() && CoreThread.IsPaused())
-		{
-			CoreThread.Resume();
-		}
-#endif
 		m_alreadyStopped = CoreThread.IsPaused();
 		if( !m_alreadyStopped )
 			CoreThread.Pause();

@@ -32,8 +32,10 @@
 
 #ifndef DISABLE_RECORDING
 #	include "Recording/InputRecording.h"
+#	include "Recording/RecordingControls.h"
 #	include "Recording/VirtualPad.h"
 #endif
+
 
 using namespace Dialogs;
 
@@ -471,7 +473,7 @@ void MainEmuFrame::Menu_EnableBackupStates_Click( wxCommandEvent& )
 	//  (1st save after the toggle keeps the old pre-toggle value)..
 	//  wonder what that means for all the other menu checkboxes which only use AppSaveSettings... (avih)
 	AppApplySettings();
-    
+	
 	AppSaveSettings();
 }
 
@@ -553,7 +555,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 void MainEmuFrame::Menu_EnableHostFs_Click( wxCommandEvent& )
 {
 	g_Conf->EmuOptions.HostFs = GetMenuBar()->IsChecked( MenuId_EnableHostFs );
-    AppSaveSettings();
+	AppSaveSettings();
 }
 
 void MainEmuFrame::Menu_OpenELF_Click(wxCommandEvent&)
@@ -655,20 +657,43 @@ void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent &event)
 	CoreThread.Reset();
 }
 
-void MainEmuFrame::Menu_ConfigPlugin_Click(wxCommandEvent &event)
+void MainEmuFrame::Menu_ConfigPlugin_Click(wxCommandEvent& event)
 {
 	const int eventId = event.GetId() - MenuId_PluginBase_Settings;
 
 	PluginsEnum_t pid = (PluginsEnum_t)(eventId / PluginMenuId_Interval);
 
 	// Don't try to call the Patches config dialog until we write one.
-	if (event.GetId() == MenuId_Config_Patches) return;
+	if (event.GetId() == MenuId_Config_Patches)
+		return;
 
-	if( !pxAssertDev( (eventId >= 0) || (pid < PluginId_Count), "Invalid plugin identifier passed to ConfigPlugin event handler." ) ) return;
+#ifndef DISABLE_RECORDING
+	if (pid == PluginId_PAD)
+	{
+		// The recording features involve pausing emulation, and can be resumed ideally via key-bindings.
+		//
+		// However, since the PAD plugin is used to do so, if it's closed then there is nothing to read
+		// the keybind resulting producing an unrecovable state.
+		//
+		// So we forbid editing the PAD while emulation is paused via the recording tools
+		if (g_Conf->EmuOptions.EnableRecordingTools &&
+			g_RecordingControls.IsEmulationAndRecordingPaused())
+		{
+			wxMessageBox(
+				_("Detected emulation paused via Recording Tools.\n\nPlease resume emulation before editing the PAD settings."),
+				_("Resume Emulation Before Editing PAD Settings"),
+				wxICON_STOP);
+			return;
+		}
+	}
+#endif
+
+	if (!pxAssertDev((eventId >= 0) || (pid < PluginId_Count), "Invalid plugin identifier passed to ConfigPlugin event handler."))
+		return;
 
 	wxWindowDisabler disabler;
-	ScopedCoreThreadPause paused_core( new SysExecEvent_SaveSinglePlugin(pid) );
-	GetCorePlugins().Configure( pid );
+	ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(pid));
+	GetCorePlugins().Configure(pid);
 }
 
 void MainEmuFrame::Menu_Debug_Open_Click(wxCommandEvent &event)
