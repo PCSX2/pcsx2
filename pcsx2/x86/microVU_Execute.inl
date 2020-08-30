@@ -167,7 +167,18 @@ _mVUt void mVUcleanUp() {
 	mVU.regs().cycle += mVU.cycles;
 
 	if (!vuIndex || !THREAD_VU1) {
-		cpuRegs.cycle += std::min(mVU.cycles, 3000u) * EmuConfig.Speedhacks.EECycleSkip;
+		u32 cycles_passed = std::min(mVU.cycles, 3000u) * EmuConfig.Speedhacks.EECycleSkip;
+		if (cycles_passed > 0) {
+			s32 vu0_offset = VU0.cycle - cpuRegs.cycle;
+			cpuRegs.cycle += cycles_passed;
+
+			// VU0 needs to stay in sync with the CPU otherwise things get messy
+			// So we need to adjust when VU1 skips cycles also
+			if (!vuIndex)
+				VU0.cycle = cpuRegs.cycle + vu0_offset;
+			else
+				VU0.cycle += cycles_passed;
+		}
 	}
 	mVU.profiler.Print();
 	//static int ax = 0; ax++;
