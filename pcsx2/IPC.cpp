@@ -141,21 +141,21 @@ void SocketIPC::ExecuteTaskInThread()
 
 #ifdef _WIN32
 			// socket timeout
-			DWORD timeout = 10 * 1000; // 10 seconds
-			setsockopt(m_msgsock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof timeout);
+			DWORD tv = 10 * 1000; // 10 seconds
 #else
 			// socket timeout
 			struct timeval tv;
 			tv.tv_sec = 10;
 			tv.tv_usec = 0;
-			setsockopt(m_msgsock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 #endif
+			setsockopt(m_msgsock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+			setsockopt(m_msgsock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof tv);
 
 
 			// either int or ssize_t depending on the platform, so we have to
 			// use a bunch of auto
 			auto receive_length = read_portable(m_msgsock, m_ipc_buffer, MAX_IPC_SIZE);
-			if (receive_length >= 0)
+			if (receive_length > 0)
 			{
 				// if we already received at least the length then we read it
 				auto end_length = 4;
@@ -227,15 +227,17 @@ SocketIPC::~SocketIPC()
 	DESTRUCTOR_CATCHALL
 }
 
-char* SocketIPC::MakeOkIPC(char* ret_buffer)
+char* SocketIPC::MakeOkIPC(char* ret_buffer, uint32_t size = 5)
 {
-	ret_buffer[0] = IPC_OK;
+	ToArray<uint32_t>(ret_buffer, size, 0);
+	ret_buffer[4] = IPC_OK;
 	return ret_buffer;
 }
 
-char* SocketIPC::MakeFailIPC(char* ret_buffer)
+char* SocketIPC::MakeFailIPC(char* ret_buffer, uint32_t size = 5)
 {
-	ret_buffer[0] = IPC_FAIL;
+	ToArray<uint32_t>(ret_buffer, size, 0);
+	ret_buffer[4] = IPC_FAIL;
 	return ret_buffer;
 }
 
@@ -244,9 +246,9 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 	// currently all our instructions require a running VM so we check once
 	// here, slightly helps performance
 	if (!m_vm->HasActiveMachine())
-		return IPCBuffer{1, MakeFailIPC(ret_buffer)};
+		return IPCBuffer{5, MakeFailIPC(ret_buffer)};
 
-	u32 ret_cnt = 1;
+	u32 ret_cnt = 5;
 	u32 buf_cnt = 0;
 
 	while (buf_cnt < buf_size)
@@ -254,7 +256,7 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 		// if we haven't received enough byte for the address used in R/W
 		// commands and opcode, changeme when address is out of the header!
 		if (!SafetyChecks(buf_cnt, 4 + 1, ret_cnt, 0, buf_size))
-			return IPCBuffer{1, MakeFailIPC(ret_buffer)};
+			return IPCBuffer{5, MakeFailIPC(ret_buffer)};
 
 		// YY YY YY YY from schema below
 		// curently always used by implemented commands so it is out of the
@@ -351,9 +353,9 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 			default:
 			{
 			error:
-				return IPCBuffer{1, MakeFailIPC(ret_buffer)};
+				return IPCBuffer{5, MakeFailIPC(ret_buffer)};
 			}
 		}
 	}
-	return IPCBuffer{(int)ret_cnt, MakeOkIPC(ret_buffer)};
+	return IPCBuffer{(int)ret_cnt, MakeOkIPC(ret_buffer, ret_cnt)};
 }

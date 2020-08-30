@@ -130,10 +130,11 @@ protected:
 
 	/* Formats an IPC buffer
          * ret_buffer: return buffer to use. 
+         * size: size of the IPC buffer.
          * return value: buffer containing the status code allocated of size
          *               size */
-	static inline char* MakeOkIPC(char* ret_buffer);
-	static inline char* MakeFailIPC(char* ret_buffer);
+	static inline char* MakeOkIPC(char* ret_buffer, uint32_t size);
+	static inline char* MakeFailIPC(char* ret_buffer, uint32_t size);
 
 	/* Converts an uint to an char* in little endian 
          * res_array: the array to modify 
