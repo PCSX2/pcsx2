@@ -365,74 +365,76 @@ bool CheckPaths() {
 
 void GIFdma()
 {
-	tDMA_TAG *ptag;
-	gif.gscycles = gif.prevcycles;
+	while (gifch.qwc > 0 || !gif.gspath3done) {
+		tDMA_TAG* ptag;
+		gif.gscycles = gif.prevcycles;
 
-	if (gifRegs.ctrl.PSE) { // temporarily stop
-		Console.WriteLn("Gif dma temp paused? (non MFIFO GIF)");
-		GifDMAInt(16);
-		return;
-	}
-
-	if ((dmacRegs.ctrl.STD == STD_GIF) && (gif.prevcycles != 0)) {
-		//Console.WriteLn("GS Stall Control Source = %x, Drain = %x\n MADR = %x, STADR = %x", (psHu32(0xe000) >> 4) & 0x3, (psHu32(0xe000) >> 6) & 0x3, gifch.madr, psHu32(DMAC_STADR));
-		if ((gifch.madr + (gifch.qwc * 16)) > dmacRegs.stadr.ADDR) {
-			GifDMAInt(4);
-			gif.gscycles = 0;
+		if (gifRegs.ctrl.PSE) { // temporarily stop
+			Console.WriteLn("Gif dma temp paused? (non MFIFO GIF)");
+			GifDMAInt(16);
 			return;
 		}
-		gif.prevcycles = 0;
-		gifch.qwc = 0;
-	}
 
-	if ((gifch.chcr.MOD == CHAIN_MODE) && (!gif.gspath3done) && gifch.qwc == 0) // Chain Mode
-	{
-        ptag = ReadTag();
-        if (ptag == NULL) return;
-		//DevCon.Warning("GIF Reading Tag MSK = %x", vif1Regs.mskpath3);
-		GIF_LOG("gifdmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx tadr=%lx", ptag[1]._u32, ptag[0]._u32, gifch.qwc, ptag->ID, gifch.madr, gifch.tadr);
-		if (!CHECK_GIFFIFOHACK)gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
-		if (dmacRegs.ctrl.STD == STD_GIF)
-		{
-			// there are still bugs, need to also check if gifch.madr +16*qwc >= stadr, if not, stall
-			if ((ptag->ID == TAG_REFS) && ((gifch.madr + (gifch.qwc * 16)) > dmacRegs.stadr.ADDR))
-			{
-				// stalled.
-				// We really need to test this. Pay attention to prevcycles, as it used to trigger GIFchains in the code above. (rama)
-				//Console.WriteLn("GS Stall Control start Source = %x, Drain = %x\n MADR = %x, STADR = %x", (psHu32(0xe000) >> 4) & 0x3, (psHu32(0xe000) >> 6) & 0x3,gifch.madr, psHu32(DMAC_STADR));
-				gif.prevcycles = gif.gscycles;
-				gifch.tadr -= 16;
-				gifch.qwc = 0;
-				hwDmacIrq(DMAC_STALL_SIS);
-				GifDMAInt(gif.gscycles);
+		if ((dmacRegs.ctrl.STD == STD_GIF) && (gif.prevcycles != 0)) {
+			//Console.WriteLn("GS Stall Control Source = %x, Drain = %x\n MADR = %x, STADR = %x", (psHu32(0xe000) >> 4) & 0x3, (psHu32(0xe000) >> 6) & 0x3, gifch.madr, psHu32(DMAC_STADR));
+			if ((gifch.madr + (gifch.qwc * 16)) > dmacRegs.stadr.ADDR) {
+				GifDMAInt(4);
 				gif.gscycles = 0;
 				return;
 			}
+			gif.prevcycles = 0;
+			gifch.qwc = 0;
 		}
 
-		checkTieBit(ptag);
+		if ((gifch.chcr.MOD == CHAIN_MODE) && (!gif.gspath3done) && gifch.qwc == 0) // Chain Mode
+		{
+			ptag = ReadTag();
+			if (ptag == NULL) return;
+			//DevCon.Warning("GIF Reading Tag MSK = %x", vif1Regs.mskpath3);
+			GIF_LOG("gifdmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx tadr=%lx", ptag[1]._u32, ptag[0]._u32, gifch.qwc, ptag->ID, gifch.madr, gifch.tadr);
+			if (!CHECK_GIFFIFOHACK)gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
+			if (dmacRegs.ctrl.STD == STD_GIF)
+			{
+				// there are still bugs, need to also check if gifch.madr +16*qwc >= stadr, if not, stall
+				if ((ptag->ID == TAG_REFS) && ((gifch.madr + (gifch.qwc * 16)) > dmacRegs.stadr.ADDR))
+				{
+					// stalled.
+					// We really need to test this. Pay attention to prevcycles, as it used to trigger GIFchains in the code above. (rama)
+					//Console.WriteLn("GS Stall Control start Source = %x, Drain = %x\n MADR = %x, STADR = %x", (psHu32(0xe000) >> 4) & 0x3, (psHu32(0xe000) >> 6) & 0x3,gifch.madr, psHu32(DMAC_STADR));
+					gif.prevcycles = gif.gscycles;
+					gifch.tadr -= 16;
+					gifch.qwc = 0;
+					hwDmacIrq(DMAC_STALL_SIS);
+					GifDMAInt(gif.gscycles);
+					gif.gscycles = 0;
+					return;
+				}
+			}
+
+			checkTieBit(ptag);
+		}
+		else if (dmacRegs.ctrl.STD == STD_GIF && gifch.chcr.MOD == NORMAL_MODE)
+		{
+			Console.WriteLn("GIF DMA Stall in Normal mode not implemented - Report which game to PCSX2 Team");
+		}
+
+
+		if (!CHECK_GIFFIFOHACK) {
+			gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
+			clearFIFOstuff(true);
+		}
+
+		// Transfer Dn_QWC from Dn_MADR to GIF
+		if (gifch.qwc > 0) // Normal Mode
+		{
+			if (CheckPaths() == false) return;
+
+			GIFchain();	//Transfers the data set by the switch
+			//if (gscycles < 8) DevCon.Warning("GSCycles = %d", gscycles);
+			GifDMAInt(gif.gscycles);
+			return;
+		}
 	}
-	else if (dmacRegs.ctrl.STD == STD_GIF && gifch.chcr.MOD == NORMAL_MODE)
-	{
-		Console.WriteLn("GIF DMA Stall in Normal mode not implemented - Report which game to PCSX2 Team");
-	}
-
-
-	if (!CHECK_GIFFIFOHACK) {
-		gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
-		clearFIFOstuff(true);
-	}
-
-	// Transfer Dn_QWC from Dn_MADR to GIF
-	if (gifch.qwc > 0) // Normal Mode
-	{
-		if (CheckPaths() == false) return;
-
-		GIFchain();	//Transfers the data set by the switch
-		//if (gscycles < 8) DevCon.Warning("GSCycles = %d", gscycles);
-		GifDMAInt(gif.gscycles);
-		return;
-	} else if(!gif.gspath3done) GIFdma(); //Loop round if there was a blank tag, causes hell otherwise with P3 masking games.
 
 	//QWC == 0 && gspath3done == true - End of DMA
 	gif.prevcycles = 0;
