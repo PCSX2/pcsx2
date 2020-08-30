@@ -73,6 +73,16 @@ SocketIPC::SocketIPC(SysCoreThread* vm)
 	}
 
 #else
+	// XXX: go back whenever we want to have multiple IPC instances with
+	// multiple emulators running and make this a folder
+	char* runtime_dir = std::getenv("XDG_RUNTIME_DIR");
+	// fallback in case macOS or other OSes don't implement the XDG base
+	// spec
+	if (runtime_dir == NULL)
+		m_socket_name = (char*)"/tmp/pcsx2.sock";
+	else
+		m_socket_name = strcat(runtime_dir, "/pcsx2.sock");
+
 	struct sockaddr_un server;
 
 	m_sock = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -82,11 +92,11 @@ SocketIPC::SocketIPC(SysCoreThread* vm)
 		return;
 	}
 	server.sun_family = AF_UNIX;
-	strcpy(server.sun_path, SOCKET_NAME);
+	strcpy(server.sun_path, m_socket_name);
 
 	// we unlink the socket so that when releasing this thread the socket gets
 	// freed even if we didn't close correctly the loop
-	unlink(SOCKET_NAME);
+	unlink(m_socket_name);
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(struct sockaddr_un)))
 	{
 		Console.WriteLn(Color_Red, "IPC: Error while binding to socket! Shutting down...");
@@ -213,7 +223,7 @@ SocketIPC::~SocketIPC()
 #ifdef _WIN32
 	WSACleanup();
 #else
-	unlink(SOCKET_NAME);
+	unlink(m_socket_name);
 #endif
 	close_portable(m_sock);
 	close_portable(m_msgsock);
