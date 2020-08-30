@@ -20,6 +20,12 @@ using namespace GSSettingsDialog;
 
 namespace
 {
+	void add_tooltip(wxWindow* widget, int tooltip)
+	{
+		if (tooltip != -1)
+			widget->SetToolTip(dialog_message(tooltip));
+	}
+
 	void add_settings_to_array_string(const std::vector<GSSetting>& s, wxArrayString& arr)
 	{
 		for (const GSSetting& setting : s)
@@ -85,17 +91,20 @@ RendererTab::RendererTab(wxWindow* parent)
 	auto* software_box = new wxStaticBoxSizer(wxVERTICAL, this, "Software Mode");
 
 	eight_bit_check = new wxCheckBox(this, wxID_ANY, "GPU Palette Conversion");
+	add_tooltip(eight_bit_check, IDC_PALTEX);
 	framebuffer_check = new wxCheckBox(this, wxID_ANY, "Conservative Buffer Allocation");
+	add_tooltip(framebuffer_check, IDC_CONSERVATIVE_FB);
 	acc_date_check = new wxCheckBox(this, wxID_ANY, "Accurate DATE");
+	add_tooltip(acc_date_check, IDC_ACCURATE_DATE);
 
 	auto* hw_choice_grid = new wxFlexGridSizer(2, 0, 0);
 
 	add_label_and_combo_box(this, hw_choice_grid, m_res_select, "Internal Resolution:", theApp.m_gs_upscale_multiplier);
-	add_label_and_combo_box(this, hw_choice_grid, m_anisotropic_select, "Anisotropic Filtering:", theApp.m_gs_max_anisotropy);
-	add_label_and_combo_box(this, hw_choice_grid, m_dither_select, "Dithering (PgDn):", theApp.m_gs_dithering);
-	add_label_and_combo_box(this, hw_choice_grid, m_mipmap_select, "Mipmapping (Insert):", theApp.m_gs_hw_mipmapping);
-	add_label_and_combo_box(this, hw_choice_grid, m_crc_select, "CRC Hack Level:", theApp.m_gs_crc_level);
-	add_label_and_combo_box(this, hw_choice_grid, m_blend_select, "Blending Accuracy:", theApp.m_gs_acc_blend_level);
+	add_label_and_combo_box(this, hw_choice_grid, m_anisotropic_select, "Anisotropic Filtering:", theApp.m_gs_max_anisotropy, IDC_AFCOMBO);
+	add_label_and_combo_box(this, hw_choice_grid, m_dither_select, "Dithering (PgDn):", theApp.m_gs_dithering, IDC_DITHERING);
+	add_label_and_combo_box(this, hw_choice_grid, m_mipmap_select, "Mipmapping (Insert):", theApp.m_gs_hw_mipmapping, IDC_MIPMAP_HW);
+	add_label_and_combo_box(this, hw_choice_grid, m_crc_select, "CRC Hack Level:", theApp.m_gs_crc_level, IDC_CRC_LEVEL);
+	add_label_and_combo_box(this, hw_choice_grid, m_blend_select, "Blending Accuracy:", theApp.m_gs_acc_blend_level, IDC_ACCURATE_BLEND_UNIT);
 
 	auto* top_checks_box = new wxWrapSizer(wxHORIZONTAL);
 	top_checks_box->Add(eight_bit_check, wxSizerFlags().Centre());
@@ -107,8 +116,13 @@ RendererTab::RendererTab(wxWindow* parent)
 
 	auto* bottom_checks_box = new wxWrapSizer(wxHORIZONTAL);
 	flush_check = new wxCheckBox(this, wxID_ANY, "Auto Flush");
+	add_tooltip(flush_check, IDC_AUTO_FLUSH_SW);
+
 	edge_check = new wxCheckBox(this, wxID_ANY, "Edge Antialiasing (Del)");
+	add_tooltip(edge_check, IDC_AA1);
+
 	mipmap_check = new wxCheckBox(this, wxID_ANY, "Mipmapping");
+	add_tooltip(mipmap_check, IDC_MIPMAP_SW);
 
 	bottom_checks_box->Add(flush_check, wxSizerFlags().Centre());
 	bottom_checks_box->Add(edge_check, wxSizerFlags().Centre());
@@ -118,7 +132,7 @@ RendererTab::RendererTab(wxWindow* parent)
 	// Rendering threads
 	auto* thread_box = new wxBoxSizer(wxHORIZONTAL);
 
-	add_label(this, thread_box, "Extra Rendering threads:");
+	add_label(this, thread_box, "Extra Rendering threads:", IDC_SWTHREADS);
 	thread_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 32, 2);
 	thread_box->Add(thread_spin, wxSizerFlags().Centre());
 	software_box->Add(thread_box, wxSizerFlags().Centre());
@@ -200,10 +214,22 @@ HacksTab::HacksTab(wxWindow* parent)
 	mem_wrap_check = new wxCheckBox(this, wxID_ANY, "Memory Wrapping");
 	preload_gs_check = new wxCheckBox(this, wxID_ANY, "Preload Frame Data");
 
+	add_tooltip(auto_flush_check, IDC_AUTO_FLUSH_HW);
+	add_tooltip(fast_inv_check, IDC_FAST_TC_INV);
+	add_tooltip(dis_depth_check, IDC_TC_DEPTH);
+	add_tooltip(fb_convert_check, IDC_CPU_FB_CONVERSION);
+	add_tooltip(dis_safe_features_check, IDC_SAFE_FEATURES);
+	add_tooltip(mem_wrap_check, IDC_MEMORY_WRAPPING);
+	add_tooltip(preload_gs_check, IDC_PRELOAD_GS);
+
 	// Upscale
 	align_sprite_check = new wxCheckBox(this, wxID_ANY, "Align Sprite");
 	merge_sprite_check = new wxCheckBox(this, wxID_ANY, "Merge Sprite");
 	wild_arms_check = new wxCheckBox(this, wxID_ANY, "Wild Arms Hack");
+
+	add_tooltip(align_sprite_check, IDC_ALIGN_SPRITE);
+	add_tooltip(merge_sprite_check, IDC_MERGE_PP_SPRITE);
+	add_tooltip(wild_arms_check, IDC_WILDHACK);
 
 	rend_hacks_grid->Add(auto_flush_check);
 	rend_hacks_grid->Add(fast_inv_check);
@@ -221,22 +247,24 @@ HacksTab::HacksTab(wxWindow* parent)
 	auto* upscale_hack_choice_grid = new wxFlexGridSizer(2, 0, 0);
 
 	// Renderer Hacks:
-	add_label_and_combo_box(this, rend_hack_choice_grid, m_half_select, "Half Screen Fix:", theApp.m_gs_generic_list);
-	add_label_and_combo_box(this, rend_hack_choice_grid, m_tri_select, "Trilinear Filtering:", theApp.m_gs_trifilter);
+	add_label_and_combo_box(this, rend_hack_choice_grid, m_half_select, "Half Screen Fix:", theApp.m_gs_generic_list, IDC_HALF_SCREEN_TS);
+	add_label_and_combo_box(this, rend_hack_choice_grid, m_tri_select, "Trilinear Filtering:", theApp.m_gs_trifilter, IDC_TRI_FILTER);
 
 	// Skipdraw Range
 	add_label(this, rend_hack_choice_grid, "Skipdraw Range:");
 	auto* skip_box = new wxBoxSizer(wxHORIZONTAL);
 	skip_x_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10000, 0);
 	skip_y_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10000, 0);
+	add_tooltip(skip_x_spin, IDC_TCOFFSETX);
+	add_tooltip(skip_y_spin, IDC_TCOFFSETY);
 	skip_box->Add(skip_x_spin);
 	skip_box->Add(skip_y_spin);
 
 	rend_hack_choice_grid->Add(skip_box);
 
 	// Upscale Hacks:
-	add_label_and_combo_box(this, upscale_hack_choice_grid, m_gs_offset_hack_select, "Half-Pixel Offset:", theApp.m_gs_offset_hack);
-	add_label_and_combo_box(this, upscale_hack_choice_grid, m_round_hack_select, "Round Sprite:", theApp.m_gs_hack);
+	add_label_and_combo_box(this, upscale_hack_choice_grid, m_gs_offset_hack_select, "Half-Pixel Offset:", theApp.m_gs_offset_hack, IDC_OFFSETHACK);
+	add_label_and_combo_box(this, upscale_hack_choice_grid, m_round_hack_select, "Round Sprite:", theApp.m_gs_hack, IDC_ROUND_SPRITE);
 
 	// Texture Offsets
 	add_label(this, upscale_hack_choice_grid, "Texture Offsets:");
@@ -444,11 +472,14 @@ PostTab::PostTab(wxWindow* parent)
 
 	tex_filter_check = new wxCheckBox(this, wxID_ANY, "Texture Filtering of Display");
 	fxaa_check = new wxCheckBox(this, wxID_ANY, "FXAA Shader (PgUp)");
+	add_tooltip(tex_filter_check, IDC_LINEAR_PRESENT);
+	add_tooltip(fxaa_check, IDC_FXAA);
 
 	shader_box->Add(tex_filter_check);
 	shader_box->Add(fxaa_check);
 
 	shade_boost_check = new wxCheckBox(this, wxID_ANY, "Enable Shade Boost");
+	add_tooltip(shade_boost_check, IDC_SHADEBOOST);
 	shader_box->Add(shade_boost_check);
 
 	shade_boost_box = new wxStaticBoxSizer(wxVERTICAL, this, "Shade Boost");
@@ -471,6 +502,7 @@ PostTab::PostTab(wxWindow* parent)
 	shader_box->Add(shade_boost_box, wxSizerFlags().Expand().Centre());
 
 	ext_shader_check = new wxCheckBox(this, wxID_ANY, "Enable External Shader");
+	add_tooltip(ext_shader_check, IDC_SHADER_FX);
 	shader_box->Add(ext_shader_check);
 
 	ext_shader_box = new wxStaticBoxSizer(wxVERTICAL, this, "External Shader (Home)");
