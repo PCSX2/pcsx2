@@ -157,10 +157,10 @@ __fi void mVUsetFlags(mV, microFlagCycles& mFC) {
 	}
 
 	if(!ffOn && !(mVUpBlock->pState.needExactMatch & 1)) {
-		xS = (mVUpBlock->pState.flagInfo >> 2) & 3;
+		//xS = (mVUpBlock->pState.flagInfo >> 2) & 3;
 		mFC.xStatus[0] = -1; mFC.xStatus[1] = -1;
 		mFC.xStatus[2] = -1; mFC.xStatus[3] = -1;
-		mFC.xStatus[(xS-1)&3] = 0;
+		//mFC.xStatus[(xS-1)&3] = 0;
 	}
 
 	if(!ffOn && !(mVUpBlock->pState.needExactMatch & 2)) {
