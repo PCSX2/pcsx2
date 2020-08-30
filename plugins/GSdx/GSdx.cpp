@@ -308,6 +308,16 @@ void GSdxApp::Init()
 	m_gs_tv_shaders.push_back(GSSetting(3, "Triangular filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
 
+	m_gs_osd_position.push_back(GSSetting(0, "Top Left", ""));
+	m_gs_osd_position.push_back(GSSetting(1, "Top Middle", ""));
+	m_gs_osd_position.push_back(GSSetting(2, "Top Right", ""));
+	m_gs_osd_position.push_back(GSSetting(3, "Middle Left", ""));
+	m_gs_osd_position.push_back(GSSetting(4, "Center", ""));
+	m_gs_osd_position.push_back(GSSetting(5, "Middle Right", ""));
+	m_gs_osd_position.push_back(GSSetting(6, "Bottom Left", ""));
+	m_gs_osd_position.push_back(GSSetting(7, "Bottom Middle", ""));
+	m_gs_osd_position.push_back(GSSetting(8, "Bottom Right", ""));
+
 	// Avoid to clutter the ini file with useless options
 #ifdef _WIN32
 	// Per OS option.

@@ -845,15 +845,9 @@ void GSOSDDlg::OnInit()
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_SETRANGE, 0, MAKELPARAM(20, 1));
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("osd_max_log_messages"), 0));
 
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Top Left");
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Top Middle");
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Top Right");
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Middle Left");
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Center");
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Middle Right");
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Bottom Left");
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Bottom Middle");
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)"Bottom Right");
+	for(auto osdPos : theApp.m_gs_osd_position) {
+		SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)osdPos.name.c_str());
+	}
 
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_SETCURSEL, MAKEWPARAM(theApp.GetConfigI("osd_monitor_pos"), 0), 0);
 	
