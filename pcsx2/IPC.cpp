@@ -75,7 +75,11 @@ SocketIPC::SocketIPC(SysCoreThread* vm)
 #else
 	// XXX: go back whenever we want to have multiple IPC instances with
 	// multiple emulators running and make this a folder
+#ifdef __APPLE__
+	char* runtime_dir = std::getenv("TMPDIR");
+#else
 	char* runtime_dir = std::getenv("XDG_RUNTIME_DIR");
+#endif
 	// fallback in case macOS or other OSes don't implement the XDG base
 	// spec
 	if (runtime_dir == NULL)
@@ -172,13 +176,15 @@ void SocketIPC::ExecuteTaskInThread()
 				if (receive_length >= end_length)
 				{
 					end_length = FromArray<u32>(m_ipc_buffer, 0);
+					if (end_length > MAX_IPC_SIZE)
+						end_length = MAX_IPC_SIZE;
 				}
 
 				// while we haven't received the entire packet, maybe due to
 				// socket datagram splittage, we continue to read
-				while (receive_length < end_length && receive_length < MAX_IPC_SIZE)
+				while (receive_length < end_length)
 				{
-					auto tmp_length = read_portable(m_msgsock, &m_ipc_buffer[receive_length], MAX_IPC_SIZE);
+					auto tmp_length = read_portable(m_msgsock, &m_ipc_buffer[receive_length], MAX_IPC_SIZE - receive_length);
 
 					// we close the connection if an error happens
 					if (tmp_length <= 0)
@@ -187,19 +193,20 @@ void SocketIPC::ExecuteTaskInThread()
 						break;
 					}
 
+					receive_length += tmp_length;
+
 					// if we got at least the final size then update
 					if (end_length == 4 && receive_length >= 4)
+					{
 						end_length = FromArray<u32>(m_ipc_buffer, 0);
-
-					receive_length += tmp_length;
+						// we'd like to avoid a client trying to do OOB
+						if (end_length > MAX_IPC_SIZE)
+							end_length = MAX_IPC_SIZE;
+					}
 				}
 
 				if (receive_length == 0)
 					break;
-
-				// we'd like to avoid a client trying to do OOB
-				if (receive_length > MAX_IPC_SIZE)
-					receive_length = MAX_IPC_SIZE;
 
 				// we remove 4 bytes to get the message size out of the IPC command
 				// size
