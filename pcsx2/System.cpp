@@ -358,6 +358,18 @@ namespace HostMemoryMap {
 
 /// Attempts to find a spot near static variables for the main memory
 static VirtualMemoryManagerPtr makeMainMemoryManager() {
+	const uptr UpperBounds = 0U;
+	const bool Strict = true;
+	const wxString memoryManagerName = "Main Memory Manager";
+
+	// Historically, the base address has always been 0x20000000 for x86 builds. Many cheat tables and third party
+	// tools relies to this specific address, therefore try to initialize the memory manager using this base
+	// address first. This does not guarantee it, but it prioritise the legacy memory address.
+	const uptr LegacyMemoryBase = 0x20000000U;
+	auto mgr = std::make_shared<VirtualMemoryManager>(memoryManagerName, LegacyMemoryBase, HostMemoryMap::Size, UpperBounds, Strict);
+	if (mgr->IsOk())
+		return mgr;
+
 	// Everything looks nicer when the start of all the sections is a nice round looking number.
 	// Also reduces the variation in the address due to small changes in code.
 	// Breaks ASLR but so does anything else that tries to make addresses constant for our debugging pleasure
@@ -373,7 +385,7 @@ static VirtualMemoryManagerPtr makeMainMemoryManager() {
 			// VTLB will throw a fit if we try to put EE main memory here
 			continue;
 		}
-		auto mgr = std::make_shared<VirtualMemoryManager>("Main Memory Manager", base, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
+		auto mgr = std::make_shared<VirtualMemoryManager>(memoryManagerName, base, HostMemoryMap::Size, UpperBounds, Strict);
 		if (mgr->IsOk()) {
 			return mgr;
 		}
@@ -384,7 +396,7 @@ static VirtualMemoryManagerPtr makeMainMemoryManager() {
 	if (sizeof(void*) == 8) {
 		pxAssertRel(0, "Failed to find a good place for the main memory allocation, recompilers may fail");
 	}
-	return std::make_shared<VirtualMemoryManager>("Main Memory Manager", 0, HostMemoryMap::Size);
+	return std::make_shared<VirtualMemoryManager>(memoryManagerName, 0, HostMemoryMap::Size);
 }
 
 // --------------------------------------------------------------------------------------
