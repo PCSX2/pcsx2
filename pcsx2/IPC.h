@@ -38,9 +38,8 @@ protected:
 	// the message socket used in thread's accept().
 	SOCKET m_msgsock = INVALID_SOCKET;
 #else
-	// absolute path of the socket. Stored in the temporary directory in linux since
-	// /run requires superuser permission
-	const char* SOCKET_NAME = "/tmp/pcsx2.sock";
+	// absolute path of the socket. Stored in XDG_RUNTIME_DIR, if unset /tmp
+	char* m_socket_name;
 	int m_sock = 0;
 	// the message socket used in thread's accept().
 	int m_msgsock = 0;
@@ -80,14 +79,14 @@ protected:
      */
 	enum IPCCommand : unsigned char
 	{
-		MsgRead8 = 0,          /**< Read 8 bit value to memory. */
-		MsgRead16 = 1,         /**< Read 16 bit value to memory. */
-		MsgRead32 = 2,         /**< Read 32 bit value to memory. */
-		MsgRead64 = 3,         /**< Read 64 bit value to memory. */
-		MsgWrite8 = 4,         /**< Write 8 bit value to memory. */
-		MsgWrite16 = 5,        /**< Write 16 bit value to memory. */
-		MsgWrite32 = 6,        /**< Write 32 bit value to memory. */
-		MsgWrite64 = 7,        /**< Write 64 bit value to memory. */
+		MsgRead8 = 0,           /**< Read 8 bit value to memory. */
+		MsgRead16 = 1,          /**< Read 16 bit value to memory. */
+		MsgRead32 = 2,          /**< Read 32 bit value to memory. */
+		MsgRead64 = 3,          /**< Read 64 bit value to memory. */
+		MsgWrite8 = 4,          /**< Write 8 bit value to memory. */
+		MsgWrite16 = 5,         /**< Write 16 bit value to memory. */
+		MsgWrite32 = 6,         /**< Write 32 bit value to memory. */
+		MsgWrite64 = 7,         /**< Write 64 bit value to memory. */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
