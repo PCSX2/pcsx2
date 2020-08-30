@@ -1533,6 +1533,7 @@ Serial = SCES-50858
 Name   = Gran Turismo - Concept 2002 Tokyo-Geneva
 Region = PAL-M6
 Compat = 5
+MemCardFilter = SCES-50858/SCES-50294
 ---------------------------------------------
 Serial = SCES-50878
 Name   = Tekken 4
