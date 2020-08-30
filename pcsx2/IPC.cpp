@@ -66,10 +66,6 @@ SocketIPC::SocketIPC(SysCoreThread* vm)
 	server.sin_addr.s_addr = inet_addr("127.0.0.1");
 	server.sin_port = htons(PORT);
 
-	// socket timeout
-	DWORD timeout = 10 * 1000; // 10 seconds
-	setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof timeout);
-
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
 	{
 		Console.WriteLn(Color_Red, "IPC: Error while binding to socket! Shutting down...");
@@ -87,13 +83,6 @@ SocketIPC::SocketIPC(SysCoreThread* vm)
 	}
 	server.sun_family = AF_UNIX;
 	strcpy(server.sun_path, SOCKET_NAME);
-
-
-	// socket timeout
-	struct timeval tv;
-	tv.tv_sec = 10;
-	tv.tv_usec = 0;
-	setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
 	// we unlink the socket so that when releasing this thread the socket gets
 	// freed even if we didn't close correctly the loop
@@ -149,6 +138,20 @@ void SocketIPC::ExecuteTaskInThread()
 		}
 		else
 		{
+
+#ifdef _WIN32
+			// socket timeout
+			DWORD timeout = 10 * 1000; // 10 seconds
+			setsockopt(m_msgsock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof timeout);
+#else
+			// socket timeout
+			struct timeval tv;
+			tv.tv_sec = 10;
+			tv.tv_usec = 0;
+			setsockopt(m_msgsock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+#endif
+
+
 			// either int or ssize_t depending on the platform, so we have to
 			// use a bunch of auto
 			auto receive_length = read_portable(m_msgsock, m_ipc_buffer, MAX_IPC_SIZE);
@@ -168,7 +171,7 @@ void SocketIPC::ExecuteTaskInThread()
 					auto tmp_length = read_portable(m_msgsock, &m_ipc_buffer[receive_length], MAX_IPC_SIZE);
 
 					// we close the connection if an error happens
-					if (tmp_length < 0)
+					if (tmp_length <= 0)
 					{
 						receive_length = 0;
 						break;
