@@ -43,12 +43,11 @@ void IPUWorker();
 //u8 PCT[] = {'r', 'I', 'P', 'B', 'D', '-', '-', '-'};		// unused?
 
 // Quantization matrix
-static u16 vqclut[16];				//clut conversion table
+static rgb16_t vqclut[16];			//clut conversion table
 static u8 s_thresh[2];				//thresholds for color conversions
 int coded_block_pattern = 0;
 
-
-u8 indx4[16*16/2];
+alignas(16) static u8 indx4[16*16/2];
 
 uint eecount_on_last_vdec = 0;
 bool FMVstarted = false;
@@ -284,6 +283,7 @@ void ipuSoftReset()
 	ipuRegs.cmd.DATA = 0; // required for Enthusia - Professional Racing after fix, or will freeze at start of next video.
 
 	memzero(g_BP);
+	hwIntcIrq(INTC_IPU); // required for FightBox
 }
 
 __fi bool ipuWrite32(u32 mem, u32 value)
@@ -546,23 +546,23 @@ static bool ipuSETVQ(u32 val)
 	    "%02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d\n"
 	    "%02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d\n"
 	    "%02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d\n"
-		"%02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d",
-	    vqclut[0] >> 10, (vqclut[0] >> 5) & 0x1F, vqclut[0] & 0x1F,
-	    vqclut[1] >> 10, (vqclut[1] >> 5) & 0x1F, vqclut[1] & 0x1F,
-	    vqclut[2] >> 10, (vqclut[2] >> 5) & 0x1F, vqclut[2] & 0x1F,
-	    vqclut[3] >> 10, (vqclut[3] >> 5) & 0x1F, vqclut[3] & 0x1F,
-	    vqclut[4] >> 10, (vqclut[4] >> 5) & 0x1F, vqclut[4] & 0x1F,
-	    vqclut[5] >> 10, (vqclut[5] >> 5) & 0x1F, vqclut[5] & 0x1F,
-	    vqclut[6] >> 10, (vqclut[6] >> 5) & 0x1F, vqclut[6] & 0x1F,
-	    vqclut[7] >> 10, (vqclut[7] >> 5) & 0x1F, vqclut[7] & 0x1F,
-	    vqclut[8] >> 10, (vqclut[8] >> 5) & 0x1F, vqclut[8] & 0x1F,
-	    vqclut[9] >> 10, (vqclut[9] >> 5) & 0x1F, vqclut[9] & 0x1F,
-	    vqclut[10] >> 10, (vqclut[10] >> 5) & 0x1F, vqclut[10] & 0x1F,
-	    vqclut[11] >> 10, (vqclut[11] >> 5) & 0x1F, vqclut[11] & 0x1F,
-	    vqclut[12] >> 10, (vqclut[12] >> 5) & 0x1F, vqclut[12] & 0x1F,
-	    vqclut[13] >> 10, (vqclut[13] >> 5) & 0x1F, vqclut[13] & 0x1F,
-	    vqclut[14] >> 10, (vqclut[14] >> 5) & 0x1F, vqclut[14] & 0x1F,
-	    vqclut[15] >> 10, (vqclut[15] >> 5) & 0x1F, vqclut[15] & 0x1F);
+	    "%02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d %02d:%02d:%02d",
+	    vqclut[0].r, vqclut[0].g, vqclut[0].b,
+	    vqclut[1].r, vqclut[1].g, vqclut[1].b,
+	    vqclut[2].r, vqclut[2].g, vqclut[2].b,
+	    vqclut[3].r, vqclut[3].g, vqclut[3].b,
+	    vqclut[4].r, vqclut[4].g, vqclut[4].b,
+	    vqclut[5].r, vqclut[5].g, vqclut[5].b,
+	    vqclut[6].r, vqclut[6].g, vqclut[6].b,
+	    vqclut[7].r, vqclut[7].g, vqclut[7].b,
+	    vqclut[8].r, vqclut[8].g, vqclut[8].b,
+	    vqclut[9].r, vqclut[9].g, vqclut[9].b,
+	    vqclut[10].r, vqclut[10].g, vqclut[10].b,
+	    vqclut[11].r, vqclut[11].g, vqclut[11].b,
+	    vqclut[12].r, vqclut[12].g, vqclut[12].b,
+	    vqclut[13].r, vqclut[13].g, vqclut[13].b,
+	    vqclut[14].r, vqclut[14].g, vqclut[14].b,
+	    vqclut[15].r, vqclut[15].g, vqclut[15].b);
 
 	return true;
 }
@@ -677,24 +677,32 @@ __fi void ipu_csc(macroblock_8& mb8, macroblock_rgb32& rgb32, int sgn)
 	}
 }
 
-__fi void ipu_dither(const macroblock_rgb32& rgb32, macroblock_rgb16& rgb16, int dte)
-{
-	int i, j;
-	for (i = 0; i < 16; ++i)
-	{
-		for (j = 0; j < 16; ++j)
-		{
-			rgb16.c[i][j].r = rgb32.c[i][j].r >> 3;
-			rgb16.c[i][j].g = rgb32.c[i][j].g >> 3;
-			rgb16.c[i][j].b = rgb32.c[i][j].b >> 3;
-			rgb16.c[i][j].a = rgb32.c[i][j].a == 0x40;
-		}
-	}
-}
-
 __fi void ipu_vq(macroblock_rgb16& rgb16, u8* indx4)
 {
-	Console.Error("IPU: VQ not implemented");
+	const auto closest_index = [&](int i, int j) {
+		u8 index = 0;
+		int min_distance = std::numeric_limits<int>::max();
+		for (u8 k = 0; k < 16; ++k)
+		{
+			const int dr = rgb16.c[i][j].r - vqclut[k].r;
+			const int dg = rgb16.c[i][j].g - vqclut[k].g;
+			const int db = rgb16.c[i][j].b - vqclut[k].b;
+			const int distance = dr * dr + dg * dg + db * db;
+
+			// XXX: If two distances are the same which index is used?
+			if (min_distance > distance)
+			{
+				index = k;
+				min_distance = distance;
+			}
+		}
+
+		return index;
+	};
+
+	for (int i = 0; i < 16; ++i)
+		for (int j = 0; j < 8; ++j)
+			indx4[i * 8 + j] = closest_index(i, 2 * j + 1) << 4 | closest_index(i, 2 * j);
 }
 
 

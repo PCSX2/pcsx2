@@ -41,10 +41,6 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			_("Games that need this hack to boot:\n * Star Ocean 3\n * Radiata Stories\n * Valkyrie Profile 2")
 		},
 		{
-			_("VU Clip Flag Hack - For Persona games (SuperVU recompiler only!)"),
-			wxEmptyString
-		},
-		{
 			_("FPU Compare Hack - For Digimon Rumble Arena 2."),
 			wxEmptyString
 		},
@@ -108,9 +104,13 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			_("VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"),
 			wxEmptyString
 		},
-        {
+		{
 			_("VU I bit Hack avoid constant recompilation (Crash Tag Team Racing)"),
-             wxEmptyString
+			wxEmptyString
+		},
+		{
+			_("VU0 Kickstart to avoid sync problems with VU1"),
+			wxEmptyString
 		}
 	};
 

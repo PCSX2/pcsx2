@@ -14,11 +14,9 @@ endif()
 
 set(CommonFlags
     -fno-strict-aliasing
-    -Wno-parentheses
     -Wstrict-aliasing # Allow to track strict aliasing issue.
-    -Wno-char-subscripts # only impact svu which is deprecated
+    -Wno-parentheses
     -Wno-missing-braces
-    #-Wno-ignored-attributes # don't remember why I put here but it is pure C option, therefore it complains for nothings on cpp files
     -DWX_PRECOMP
 	)
 
@@ -153,7 +151,6 @@ set(pcsx2Headers
 	MTVU.h
 	Memory.h
 	MemoryTypes.h
-	NakedAsm.h
 	Patch.h
 	PathDefs.h
 	Plugins.h
@@ -384,6 +381,7 @@ set(pcsx2GuiResources
 set(pcsx2IPUSources
 	IPU/IPU.cpp
 	IPU/IPU_Fifo.cpp
+	IPU/IPUdither.cpp
 	IPU/IPUdma.cpp
 	IPU/mpeg2lib/Idct.cpp
 	IPU/mpeg2lib/Mpeg.cpp
@@ -409,7 +407,7 @@ set(pcsx2LinuxSources
 
 set(pcsx2OSXSources
 	gui/CpuUsageProviderLnx.cpp
-#	Linux/LnxConsolePipe.cpp
+	Linux/LnxConsolePipe.cpp
 #	Linux/LnxKeyCodes.cpp
 	Darwin/DarwinFlatFileReader.cpp
 	)
@@ -517,7 +515,6 @@ set(pcsx2WindowsSources
 	gui/CpuUsageProviderMSW.cpp
 	windows/cheats/browser.cpp
 	windows/cheats/cheats.cpp
-	windows/DwmSetup.cpp
 	windows/FlatFileReaderWindows.cpp
 	windows/Optimus.cpp
 	windows/PatchBrowser.cpp
@@ -562,14 +559,6 @@ set(pcsx2x86Sources
 	x86/newVif_Unpack.cpp
 	x86/newVif_UnpackSSE.cpp
 	)
-if (NOT DISABLE_SVU)
-    set(pcsx2x86Sources ${pcsx2x86Sources}
-	x86/sVU_Lower.cpp
-	x86/sVU_Micro.cpp
-	x86/sVU_Upper.cpp
-	x86/sVU_zerorec.cpp
-    )
-endif()
 
 # x86 headers
 set(pcsx2x86Headers
@@ -610,19 +599,7 @@ set(pcsx2x86Headers
 	x86/newVif_HashBucket.h
 	x86/newVif_UnpackSSE.h
 	x86/R5900_Profiler.h
-	x86/sVU_Micro.h
-	x86/sVU_zerorec.h
 	)
-
-# collect .S files
-if (NOT DISABLE_SVU)
-    set(pcsx2SSources x86/aVUzerorec.S)
-    # change language of .S-files to c++
-    set_source_files_properties(${pcsx2SSources} PROPERTIES LANGUAGE CXX)
-else()
-    set(pcsx2SSources "")
-endif()
-
 
 # common Sources
 set(Common
@@ -647,8 +624,7 @@ set(Common
 	${pcsx2x86Sources}
 	${pcsx2x86Headers}
 	${pcsx2ZipToolsSources}
-	${pcsx2ZipToolsHeaders}
-	${pcsx2SSources})
+	${pcsx2ZipToolsHeaders})
 
 # platform sources
 # Linux
@@ -737,6 +713,41 @@ if(USE_VTUNE)
 endif()
 
 add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
+
+if(COMMAND target_precompile_headers)
+	message("Using precompiled headers.")
+	target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
+endif()
+
+if (APPLE)
+	# MacOS defaults to having a maximum protection of the __DATA segment of rw (non-executable)
+	# We have a bunch of page-sized arrays in bss that we use for jit
+	# Obviously not being able to make those arrays executable would be a problem
+	target_link_options(${Output} PRIVATE -Wl,-segprot,__DATA,rwx,rw)
+
+	set_target_properties(${Output} PROPERTIES
+		MACOSX_BUNDLE true
+		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/Info.plist.in"
+		OUTPUT_NAME PCSX2
+	)
+
+	target_sources(${Output} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/PCSX2.icns")
+	set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/PCSX2.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+	# If they say to skip postprocess bundle, leave the target in but make it so they have
+	# to manually run it
+	if (SKIP_POSTPROCESS_BUNDLE)
+		set(postprocessBundleType "")
+	else()
+		set(postprocessBundleType ALL)
+	endif()
+	# Use custom_target and not custom_command so plugins can add themselves as dependencies
+	add_custom_target(pcsx2-postprocess-bundle ${postprocessBundleType}
+		COMMAND ${CMAKE_COMMAND} "-DPCSX2_BUNDLE_PATH=$<TARGET_FILE_DIR:${Output}>/../.."
+			-P ${CMAKE_SOURCE_DIR}/cmake/Pcsx2PostprocessBundle.cmake
+	)
+	add_dependencies(pcsx2-postprocess-bundle ${Output})
+endif()
 
 if(dev9ghzdrk)
     if(PACKAGE_MODE)

@@ -640,6 +640,26 @@ void GSDrawScanlineCodeGenerator::TestZ_SSE(const Xmm& temp1, const Xmm& temp2)
 			cvttps2dq(xmm0, xmm0);
 		}
 
+
+		// Clamp Z to ZPSM_FMT_MAX
+		if (m_sel.zclamp)
+		{
+#if _M_SSE >= 0x401
+			pcmpeqd(temp1, temp1);
+			psrld(temp1, (uint8)((m_sel.zpsm & 0x3) * 8));
+			pminsd(xmm0, temp1);
+#else
+			pcmpeqd(temp1, temp1);
+			psrld(temp1, (uint8)((m_sel.zpsm & 0x3) * 8));
+			pcmpgtd(temp1, xmm0);
+			pand(xmm0, temp1);
+			pcmpeqd(temp2, temp2);
+			pxor(temp1, temp2);
+			psrld(temp1, (uint8)((m_sel.zpsm & 0x3) * 8));
+			por(xmm0, temp1);
+#endif
+		}
+
 		if(m_sel.zwrite)
 		{
 			movdqa(ptr[&m_local.temp.zs], xmm0);
@@ -2410,6 +2430,25 @@ void GSDrawScanlineCodeGenerator::WriteZBuf_SSE()
 		movdqa(xmm0, xmm4);
 		movdqa(xmm7, ptr[&m_local.temp.zd]);
 		blend8(xmm1, xmm7);
+	}
+
+	// Clamp Z to ZPSM_FMT_MAX
+	if (m_sel.zclamp)
+	{
+#if _M_SSE >= 0x401
+		pcmpeqd(xmm7, xmm7);
+		psrld(xmm7, (uint8)((m_sel.zpsm & 0x3) * 8));
+		pminsd(xmm1, xmm7);
+#else
+		static GSVector4i all_1s = GSVector4i(0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff);
+		pcmpeqd(xmm7, xmm7);
+		psrld(xmm7, (uint8)((m_sel.zpsm & 0x3) * 8));
+		pcmpgtd(xmm7, xmm1);
+		pand(xmm1, xmm7);
+		pxor(xmm7, ptr[&all_1s]);
+		psrld(xmm7, (uint8)((m_sel.zpsm & 0x3) * 8));
+		por(xmm1, xmm7);
+#endif
 	}
 
 	bool fast = m_sel.ztest ? m_sel.zpsm < 2 : m_sel.zpsm == 0 && m_sel.notest;

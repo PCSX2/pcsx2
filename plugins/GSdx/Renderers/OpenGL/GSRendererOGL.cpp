@@ -57,7 +57,7 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 	}
 
 	GLenum t = 0;
-	bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1) && GLLoader::found_geometry_shader;
+	const bool unscale_pt_ln = m_userHacks_enabled_unscale_ptln && (GetUpscaleMultiplier() != 1) && GLLoader::found_geometry_shader;
 
 	switch(m_vt.m_primclass)
 	{
@@ -81,8 +81,8 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 
 		case GS_SPRITE_CLASS:
 			// Heuristics: trade-off
-			// CPU conversion => ofc, more CPU ;) more bandwidth (72 bytes / sprite)
-			// GPU conversion => ofc, more GPU. And also more CPU due to extra shader validation stage.
+			// Lines: GPU conversion => ofc, more GPU. And also more CPU due to extra shader validation stage.
+			// Triangles: CPU conversion => ofc, more CPU ;) more bandwidth (72 bytes / sprite)
 			//
 			// Note: severals openGL operation does draw call under the wood like texture upload. So even if
 			// you do 10 consecutive draw with the geometry shader, you will still pay extra validation if new
@@ -171,29 +171,21 @@ void GSRendererOGL::EmulateZbuffer()
 		m_om_dssel.ztst = ZTST_ALWAYS;
 	}
 
-	uint32 max_z;
-	if (m_context->ZBUF.PSM == PSM_PSMZ32) {
-		max_z     = 0xFFFFFFFF;
-	} else if (m_context->ZBUF.PSM == PSM_PSMZ24) {
-		max_z     = 0xFFFFFF;
-	} else {
-		max_z     = 0xFFFF;
-	}
+	// On the real GS we appear to do clamping on the max z value the format allows.
+	// Clamping is done after rasterization.
+	const uint32 max_z = 0xFFFFFFFF >> (GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt * 8);
+	const bool clamp_z = (uint32)(GSVector4i(m_vt.m_max.p).z) > max_z;
 
-	// The real GS appears to do no masking based on the Z buffer format and writing larger Z values
-	// than the buffer supports seems to be an error condition on the real GS, causing it to crash.
-	// We are probably receiving bad coordinates from VU1 in these cases.
-	vs_cb.DepthMask = GSVector2i(0xFFFFFFFF, 0xFFFFFFFF);
+	vs_cb.MaxDepth = GSVector2i(0xFFFFFFFF);
+	ps_cb.MaxDepth = GSVector4(0.0f, 0.0f, 0.0f, 1.0f);
+	m_ps_sel.zclamp = 0;
 
-	if (m_om_dssel.ztst >= ZTST_ALWAYS && m_om_dssel.zwe && (m_context->ZBUF.PSM != PSM_PSMZ32)) {
-		if (m_vt.m_max.p.z > max_z) {
-			ASSERT(m_vt.m_min.p.z > max_z); // sfex capcom logo
-			// Fixme :Following conditional fixes some dialog frame in Wild Arms 3, but may not be what was intended.
-			if (m_vt.m_min.p.z > max_z) {
-				GL_DBG("Bad Z size (%f %f) on %s buffers", m_vt.m_min.p.z, m_vt.m_max.p.z, psm_str(m_context->ZBUF.PSM));
-				vs_cb.DepthMask = GSVector2i(max_z, max_z);
-				m_om_dssel.ztst = ZTST_ALWAYS;
-			}
+	if (clamp_z) {
+		if (m_vt.m_primclass == GS_SPRITE_CLASS || m_vt.m_primclass == GS_POINT_CLASS) {
+			vs_cb.MaxDepth = GSVector2i(max_z);
+		} else {
+			ps_cb.MaxDepth = GSVector4(0.0f, 0.0f, 0.0f, max_z * ldexpf(1, -32));
+			m_ps_sel.zclamp = 1;
 		}
 	}
 
@@ -463,57 +455,63 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 	// No blending so early exit
 	if (!(PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS)) {
 #ifdef ENABLE_OGL_DEBUG
-		if (m_env.PABE.PABE) {
-			GL_INS("!!! ENV PABE  without ABE !!!");
-		}
+		if (m_env.PABE.PABE)
+			GL_INS("ERROR: ENV PABE without ABE!");
 #endif
 		dev->OMSetBlendState();
 		return;
 	}
 
-	if (m_env.PABE.PABE)
-	{
-		GL_INS("!!! ENV PABE  not supported !!!");
-		if (m_sw_blending >= ACC_BLEND_CCLIP_DALPHA) {
+	if (m_env.PABE.PABE) {
+		GL_INS("ERROR: ENV PABE not supported!");
+		if (m_sw_blending >= ACC_BLEND_MEDIUM) {
 			// m_ps_sel.pabe = 1;
 			m_require_full_barrier |= (ALPHA.C == 1);
 			sw_blending = true;
 		}
-		//Breath of Fire Dragon Quarter triggers this in battles. Graphics are fine though.
+		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars.
 		//ASSERT(0);
 	}
 
 	// Compute the blending equation to detect special case
-	uint8 blend_index  = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
-	int blend_flag = dev->GetBlendFlags(blend_index);
+	const uint8 blend_index  = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
+	const int blend_flag = m_dev->GetBlendFlags(blend_index);
 
 	// SW Blend is (nearly) free. Let's use it.
-	bool impossible_or_free_blend = (blend_flag & (BLEND_NO_BAR|BLEND_A_MAX|BLEND_ACCU)) // Blend doesn't requires the costly barrier
-		|| (m_prim_overlap == PRIM_OVERLAP_NO)	// Blend can be done in a single draw
-		|| (m_require_full_barrier);			// Another effect (for example fbmask) already requires a full barrier
+	const bool impossible_or_free_blend = (blend_flag & (BLEND_NO_REC|BLEND_A_MAX|BLEND_ACCU)) // Blend doesn't requires the costly barrier
+		|| (m_prim_overlap == PRIM_OVERLAP_NO) // Blend can be done in a single draw
+		|| (m_require_full_barrier);           // Another effect (for example fbmask) already requires a full barrier
 
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
 	bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
 
+	// Blending doesn't require barrier, or sampling of the rt
+	const bool blend_non_recursive = !!(blend_flag & BLEND_NO_REC);
+
 	// Warning no break on purpose
 	// Note: the "fall through" comments tell gcc not to complain about not having breaks.
 	switch (m_sw_blending) {
-		case ACC_BLEND_ULTRA:           sw_blending |= true;
-										// fall through
-		case ACC_BLEND_FULL:            if (!m_vt.m_alpha.valid && (ALPHA.C == 0)) GetAlphaMinMax();
-										sw_blending |= (ALPHA.A != ALPHA.B) &&
-												((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
-										// fall through
-		case ACC_BLEND_CCLIP_DALPHA:    sw_blending |= (ALPHA.C == 1);
-										// Initial idea was to enable accurate blending for sprite rendering to handle
-										// correctly post-processing effect. Some games (ZoE) use tons of sprites as particles.
-										// In order to keep it fast, let's limit it to smaller draw call.
-										// fall through
-		case ACC_BLEND_SPRITE:          sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 100;
-										// fall through
-		case ACC_BLEND_FREE:            sw_blending |= impossible_or_free_blend;
-										// fall through
-		default:                        /*sw_blending |= accumulation_blend*/;
+		case ACC_BLEND_ULTRA:
+			sw_blending |= true;
+			// fall through
+		case ACC_BLEND_FULL:
+			if (!m_vt.m_alpha.valid && (ALPHA.C == 0)) GetAlphaMinMax();
+			sw_blending |= (ALPHA.A != ALPHA.B) && ((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
+			// fall through
+		case ACC_BLEND_HIGH:
+			sw_blending |= (ALPHA.C == 1);
+			// fall through
+		case ACC_BLEND_MEDIUM:
+			// Initial idea was to enable accurate blending for sprite rendering to handle
+			// correctly post-processing effect. Some games (ZoE) use tons of sprites as particles.
+			// In order to keep it fast, let's limit it to smaller draw call.
+			sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 100;
+			// fall through
+		case ACC_BLEND_BASIC:
+			sw_blending |= impossible_or_free_blend;
+			// fall through
+		default:
+			/*sw_blending |= accumulation_blend*/;
 	}
 	// SW Blending
 	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
@@ -523,11 +521,16 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 
 	// Color clip
 	if (m_env.COLCLAMP.CLAMP == 0) {
-		if (m_prim_overlap == PRIM_OVERLAP_NO) {
+		// Safe FBMASK, avoid hitting accumulation mode on 16bit,
+		// fixes shadows in Superman shadows of Apokolips.
+		const bool sw_fbmask_colclip = !m_require_one_barrier && m_ps_sel.fbmask;
+		const bool free_colclip = m_prim_overlap == PRIM_OVERLAP_NO || blend_non_recursive || sw_fbmask_colclip;
+		GL_DBG("COLCLIP Info (Blending: %d/%d/%d/%d, SW FBMASK: %d, OVERLAP: %d)",
+			ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D, sw_fbmask_colclip, m_prim_overlap);
+		if (free_colclip) {
 			// The fastest algo that requires a single pass
 			GL_INS("COLCLIP Free mode ENABLED");
 			m_ps_sel.colclip = 1;
-			//ASSERT(sw_blending);
 			sw_blending = true;
 			accumulation_blend = false; // disable the HDR algo
 		} else if (accumulation_blend) {
@@ -537,11 +540,10 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 			sw_blending  = true; // Enable sw blending for the HDR algo
 		} else if (sw_blending) {
 			// A slow algo that could requires several passes (barely used)
-			GL_INS("COLCLIP SW ENABLED (blending is %d/%d/%d/%d)", ALPHA.A, ALPHA.B, ALPHA.C, ALPHA.D);
+			GL_INS("COLCLIP SW mode ENABLED");
 			m_ps_sel.colclip = 1;
 		} else {
-			// Speed hack skip previous slow algo
-			GL_INS("COLCLIP HDR Rare case ENABLED");
+			GL_INS("COLCLIP HDR mode ENABLED");
 			m_ps_sel.hdr = 1;
 		}
 	}
@@ -582,7 +584,7 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 			// Disable HW blending
 			dev->OMSetBlendState();
 
-			m_require_full_barrier |= !(blend_flag & BLEND_NO_BAR);
+			m_require_full_barrier |= !blend_non_recursive;
 		}
 
 		// Require the fix alpha vlaue
@@ -593,7 +595,7 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 		m_ps_sel.clr1 = !!(blend_flag & BLEND_C_CLR);
 		if (m_ps_sel.dfmt == 1 && ALPHA.C == 1) {
 			// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
-			uint8 hacked_blend_index  = blend_index + 3; // +3 <=> +1 on C
+			const uint8 hacked_blend_index  = blend_index + 3; // +3 <=> +1 on C
 			dev->OMSetBlendState(hacked_blend_index, 128, true);
 		} else {
 			dev->OMSetBlendState(blend_index, ALPHA.FIX, (ALPHA.C == 2));
@@ -1207,6 +1209,18 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	m_ps_sel.fba = m_context->FBA.FBA;
+	m_ps_sel.dither = m_dithering > 0 && m_ps_sel.dfmt == 2 && m_env.DTHE.DTHE;
+
+	if (m_ps_sel.dither)
+	{
+		GL_DBG("DITHERING mode ENABLED (%d)", m_dithering);
+
+		m_ps_sel.dither = m_dithering;
+		ps_cb.DitherMatrix[0] = GSVector4(m_env.DIMX.DM00, m_env.DIMX.DM01, m_env.DIMX.DM02, m_env.DIMX.DM03);
+		ps_cb.DitherMatrix[1] = GSVector4(m_env.DIMX.DM10, m_env.DIMX.DM11, m_env.DIMX.DM12, m_env.DIMX.DM13);
+		ps_cb.DitherMatrix[2] = GSVector4(m_env.DIMX.DM20, m_env.DIMX.DM21, m_env.DIMX.DM22, m_env.DIMX.DM23);
+		ps_cb.DitherMatrix[3] = GSVector4(m_env.DIMX.DM30, m_env.DIMX.DM31, m_env.DIMX.DM32, m_env.DIMX.DM33);
+	}
 
 	if (PRIM->FGE)
 	{

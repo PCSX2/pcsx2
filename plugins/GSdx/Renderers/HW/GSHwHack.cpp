@@ -72,22 +72,6 @@ bool GSC_Bully(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_DBZBT2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if((Aggressive || !s_nativeres) && !fi.TME && (fi.FBP == 0x02a00 || fi.FBP == 0x03000) && fi.FPSM == PSM_PSMCT16)
-		{
-			// Character outlines.
-			// Glow/blur effect. Causes ghosting on upscaled resolution.
-			// Don't enable hack on native res if crc is below aggressive.
-			skip = 10;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -310,16 +294,6 @@ bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Onimusha3(const GSFrameInfo& fi, int& skip)
-{
-	if(fi.TME /*&& (fi.FBP == 0x00000 || fi.FBP == 0x00700)*/ && (fi.TBP0 == 0x01180 || fi.TBP0 == 0x00e00 || fi.TBP0 == 0x01000 || fi.TBP0 == 0x01200) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
-	{
-		skip = 1;
-	}
-
-	return true;
-}
-
 bool GSC_Genji(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -447,19 +421,6 @@ bool GSC_SFEX3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TimeSplitters2(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && (fi.FBP == 0x00000 || fi.FBP == 0x00e00 || fi.FBP == 0x01000) && fi.FPSM == fi.TPSM && (fi.TBP0 == 0x00000 || fi.TBP0 == 0x00e00 || fi.TBP0 == 0x01000) && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0x0FF000000)
-		{
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_LordOfTheRingsThirdAge(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -545,28 +506,6 @@ bool GSC_TombRaiderUnderWorld(const GSFrameInfo& fi, int& skip)
 		else if(fi.TPSM == PSM_PSMCT32 && (fi.TPSM | fi.FBP)==0x2c00 && (fi.TBP0 ==0x0ee0) && fi.FBMSK ==0)
 		{
 			skip = 2; // Underwater black screen
-		}
-	}
-
-	return true;
-}
-
-bool GSC_DevilMayCry3(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01800 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x01000 && fi.TPSM == PSM_PSMZ16)
-		{
-			// Texture shuffle/depth not handled properly.
-			skip = 32;
-		}
-		if(fi.TME && fi.FBP == 0x01800 && fi.FPSM == PSM_PSMZ32 && fi.TBP0 == 0x0800 && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 16;
-		}
-		if(fi.TME && fi.FBP == 0x01800 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x0 && fi.TPSM == PSM_PSMT8H)
-		{
-			skip = 24;
 		}
 	}
 
@@ -958,14 +897,6 @@ bool GSC_ValkyrieProfile2(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
 	{
-		/*if(fi.TME && (fi.FBP == 0x018c0 || fi.FBP == 0x02180) && fi.FPSM == fi.TPSM && fi.TBP0 >= 0x03200 && fi.TPSM == PSM_PSMCT32)	//NTSC only, !(fi.TBP0 == 0x03580 || fi.TBP0 == 0x03960)
-		{
-			skip = 1;	//red garbage in lost forest, removes other effects...
-		}
-		if(fi.TME && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			skip = 1; // //garbage in cutscenes, doesn't remove completely.
-		}*/
 		if(fi.TME && fi.FBP == fi.TBP0 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT4HH)
 		{
 			// GH: Hack is quite similar to GSC_StarOcean3. It is potentially the same issue.
@@ -1111,28 +1042,6 @@ bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 3;
 		}
-	}
-
-	return true;
-}
-
-template<uptr state_addr>
-bool GSC_SMTNocturneDDS(const GSFrameInfo& fi, int& skip)
-{
-	// stop the motion blur on the main character and
-	// smudge filter from being drawn on USA versions of
-	// Nocturne, Digital Devil Saga 1 and Digital Devil Saga 2
-
-	if(g_crc_region == CRC::US && skip == 0 && fi.TBP0 == 0xE00 && fi.TME)
-	{
-		// Note: it will crash if the core doesn't allocate the EE mem in 0x2000_0000 (unlikely but possible)
-		// Aggressive hacks are evil anyway
-
-		// Nocturne:
-		// -0x5900($gp), ref at 0x100740
-		const int state = *(int*)(state_addr);
-		if (state == 23 || state == 24 || state == 25)
-			skip = 1;
 	}
 
 	return true;
@@ -1412,13 +1321,11 @@ void GSState::SetupCrcHack()
 
 	if (Dx_and_OGL) {
 		lut[CRC::CrashBandicootWoC] = GSC_CrashBandicootWoC;
-		lut[CRC::DevilMayCry3] = GSC_DevilMayCry3;
 		lut[CRC::GodHand] = GSC_GodHand;
 		lut[CRC::KnightsOfTheTemple2] = GSC_KnightsOfTheTemple2;
 		lut[CRC::Kunoichi] = GSC_Kunoichi;
 		lut[CRC::Manhunt2] = GSC_Manhunt2;
 		lut[CRC::MidnightClub3] = GSC_MidnightClub3;
-		lut[CRC::Onimusha3] = GSC_Onimusha3;
 		lut[CRC::SacredBlaze] = GSC_SacredBlaze;
 		lut[CRC::SakuraTaisen] = GSC_SakuraTaisen;
 		lut[CRC::SakuraWarsSoLongMyLove] = GSC_SakuraWarsSoLongMyLove;
@@ -1428,7 +1335,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::SFEX3] = GSC_SFEX3;
 		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
-		lut[CRC::TimeSplitters2] = GSC_TimeSplitters2;
 		lut[CRC::TombRaiderAnniversary] = GSC_TombRaiderAnniversary;
 		lut[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
 		lut[CRC::TombRaiderUnderworld] = GSC_TombRaiderUnderWorld;
@@ -1462,7 +1368,6 @@ void GSState::SetupCrcHack()
 
 		// Upscaling hacks
 		lut[CRC::Bully] = GSC_Bully;
-		lut[CRC::DBZBT2] = GSC_DBZBT2;
 		lut[CRC::DBZBT3] = GSC_DBZBT3;
 		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
@@ -1503,9 +1408,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFXII] = GSC_FFXGames;
 		lut[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
-		lut[CRC::SMTDDS1] = GSC_SMTNocturneDDS<0x203BA820>;
-		lut[CRC::SMTDDS2] = GSC_SMTNocturneDDS<0x20435BF0>;
-		lut[CRC::SMTNocturne] = GSC_SMTNocturneDDS<0x2054E870>;
 		lut[CRC::SoTC] = GSC_SoTC;
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 

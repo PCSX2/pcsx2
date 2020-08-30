@@ -22,10 +22,6 @@
 #include "iR5900.h"
 #include "iFPU.h"
 
-#ifndef DISABLE_SVU
-#include "sVU_Micro.h"
-#endif
-
 /* This is a version of the FPU that emulates an exponent of 0xff and overflow/underflow flags */
 
 /* Can be made faster by not converting stuff back and forth between instructions. */
@@ -401,9 +397,9 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 
 	if (CHECK_FPUMULHACK)
 	{
-		xMOVD(ecx, xRegisterSSE(sreg));
-		xMOVD(edx, xRegisterSSE(treg));
-		xFastCall((void*)(uptr)&FPU_MUL_HACK, ecx, edx); //returns the hacked result or 0
+		xMOVD(arg1regd, xRegisterSSE(sreg));
+		xMOVD(arg2regd, xRegisterSSE(treg));
+		xFastCall((void*)(uptr)&FPU_MUL_HACK, arg1regd, arg2regd); //returns the hacked result or 0
 		xTEST(eax, eax);
 		noHack = JZ8(0);
 			xMOVDZX(xRegisterSSE(regd), eax);

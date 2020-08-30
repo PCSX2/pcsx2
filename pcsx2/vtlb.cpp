@@ -56,6 +56,26 @@ static vtlbHandler UnmappedVirtHandler1;
 static vtlbHandler UnmappedPhyHandler0;
 static vtlbHandler UnmappedPhyHandler1;
 
+vtlb_private::VTLBPhysical vtlb_private::VTLBPhysical::fromPointer(sptr ptr) {
+	pxAssertMsg(ptr >= 0, "Address too high");
+	return VTLBPhysical(ptr);
+}
+
+vtlb_private::VTLBPhysical vtlb_private::VTLBPhysical::fromHandler(vtlbHandler handler) {
+	return VTLBPhysical(handler | POINTER_SIGN_BIT);
+}
+
+vtlb_private::VTLBVirtual::VTLBVirtual(VTLBPhysical phys, u32 paddr, u32 vaddr) {
+	pxAssertMsg(0 == (paddr & VTLB_PAGE_MASK), "Should be page aligned");
+	pxAssertMsg(0 == (vaddr & VTLB_PAGE_MASK), "Should be page aligned");
+	pxAssertMsg((uptr)paddr < POINTER_SIGN_BIT, "Address too high");
+	if (phys.isHandler()) {
+		value = phys.raw() + paddr - vaddr;
+	} else {
+		value = phys.raw() - vaddr;
+	}
+}
+
 __inline int CheckCache(u32 addr)
 {
 	u32 mask;
@@ -96,10 +116,9 @@ template< typename DataType >
 DataType __fastcall vtlb_memRead(u32 addr)
 {
 	static const uint DataSize = sizeof(DataType) * 8;
-	uptr vmv=vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
-	sptr ppf=addr+vmv;
+	auto vmv = vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
 
-	if (!(ppf<0))
+	if (!vmv.isHandler(addr))
 	{
 		if (!CHECK_EEREC) 
 		{
@@ -122,26 +141,22 @@ DataType __fastcall vtlb_memRead(u32 addr)
 			}
 		}
 
-		return *reinterpret_cast<DataType*>(ppf);
+		return *reinterpret_cast<DataType*>(vmv.assumePtr(addr));
 	}
 
 	//has to: translate, find function, call function
-	u32 hand=(u8)vmv;
-	u32 paddr=ppf-hand+0x80000000;
+	u32 paddr=vmv.assumeHandlerGetPAddr(addr);
 	//Console.WriteLn("Translated 0x%08X to 0x%08X", addr,paddr);
 	//return reinterpret_cast<TemplateHelper<DataSize,false>::HandlerType*>(vtlbdata.RWFT[TemplateHelper<DataSize,false>::sidx][0][hand])(paddr,data);
 
 	switch( DataSize )
 	{
-		case 8: 
-			
-			return ((vtlbMemR8FP*)vtlbdata.RWFT[0][0][hand])(paddr);
-		case 16: 
-			
-			return ((vtlbMemR16FP*)vtlbdata.RWFT[1][0][hand])(paddr);
-		case 32: 
-			
-			return ((vtlbMemR32FP*)vtlbdata.RWFT[2][0][hand])(paddr);
+		case 8:
+			return vmv.assumeHandler< 8, false>()(paddr);
+		case 16:
+			return vmv.assumeHandler<16, false>()(paddr);
+		case 32:
+			return vmv.assumeHandler<32, false>()(paddr);
 
 		jNO_DEFAULT;
 	}
@@ -151,10 +166,9 @@ DataType __fastcall vtlb_memRead(u32 addr)
 
 void __fastcall vtlb_memRead64(u32 mem, mem64_t *out)
 {
-	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-	sptr ppf=mem+vmv;
+	auto vmv = vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
 
-	if (!(ppf<0))
+	if (!vmv.isHandler(mem))
 	{
 		if (!CHECK_EEREC) {
 			if(CHECK_CACHE && CheckCache(mem)) 
@@ -164,24 +178,21 @@ void __fastcall vtlb_memRead64(u32 mem, mem64_t *out)
 			}
 		}
 
-		*out = *(mem64_t*)ppf;
+		*out = *(mem64_t*)vmv.assumePtr(mem);
 	}
 	else
 	{
 		//has to: translate, find function, call function
-		u32 hand=(u8)vmv;
-		u32 paddr=ppf-hand+0x80000000;
+		u32 paddr = vmv.assumeHandlerGetPAddr(mem);
 		//Console.WriteLn("Translated 0x%08X to 0x%08X", addr,paddr);
-
-		((vtlbMemR64FP*)vtlbdata.RWFT[3][0][hand])(paddr, out);
+		vmv.assumeHandler<64, false>()(paddr, out);
 	}
 }
 void __fastcall vtlb_memRead128(u32 mem, mem128_t *out)
 {
-	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-	sptr ppf=mem+vmv;
+	auto vmv = vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
 
-	if (!(ppf<0))
+	if (!vmv.isHandler(mem))
 	{
 		if (!CHECK_EEREC) 
 		{
@@ -193,16 +204,14 @@ void __fastcall vtlb_memRead128(u32 mem, mem128_t *out)
 			}
 		}
 
-		CopyQWC(out,(void*)ppf);
+		CopyQWC(out,(void*)vmv.assumePtr(mem));
 	}
 	else
 	{
 		//has to: translate, find function, call function
-		u32 hand=(u8)vmv;
-		u32 paddr=ppf-hand+0x80000000;
+		u32 paddr = vmv.assumeHandlerGetPAddr(mem);
 		//Console.WriteLn("Translated 0x%08X to 0x%08X", addr,paddr);
-
-		((vtlbMemR128FP*)vtlbdata.RWFT[4][0][hand])(paddr, out);
+		vmv.assumeHandler<128, false>()(paddr, out);
 	}
 }
 
@@ -211,9 +220,9 @@ void __fastcall vtlb_memWrite(u32 addr, DataType data)
 {
 	static const uint DataSize = sizeof(DataType) * 8;
 
-	uptr vmv=vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
-	sptr ppf=addr+vmv;
-	if (!(ppf<0))
+	auto vmv = vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
+
+	if (!vmv.isHandler(addr))
 	{		
 		if (!CHECK_EEREC) 
 		{
@@ -234,34 +243,22 @@ void __fastcall vtlb_memWrite(u32 addr, DataType data)
 			}
 		}
 
-		*reinterpret_cast<DataType*>(ppf)=data;
+		*reinterpret_cast<DataType*>(vmv.assumePtr(addr))=data;
 	}
 	else
 	{
 		//has to: translate, find function, call function
-		u32 hand=(u8)vmv;
-		u32 paddr=ppf-hand+0x80000000;
+		u32 paddr = vmv.assumeHandlerGetPAddr(addr);
 		//Console.WriteLn("Translated 0x%08X to 0x%08X", addr,paddr);
-
-		switch( DataSize )
-		{
-			case 8: 
-				return ((vtlbMemW8FP*)vtlbdata.RWFT[0][1][hand])(paddr, (u8)data);
-			case 16: 
-				return ((vtlbMemW16FP*)vtlbdata.RWFT[1][1][hand])(paddr, (u16)data);
-			case 32: 				
-				return ((vtlbMemW32FP*)vtlbdata.RWFT[2][1][hand])(paddr, (u32)data);
-
-			jNO_DEFAULT;
-		}
+		return vmv.assumeHandler<sizeof(DataType)*8, true>()(paddr, data);
 	}
 }
 
 void __fastcall vtlb_memWrite64(u32 mem, const mem64_t* value)
 {
-	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-	sptr ppf=mem+vmv;
-	if (!(ppf<0))
+	auto vmv = vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
+
+	if (!vmv.isHandler(mem))
 	{		
 		if (!CHECK_EEREC) 
 		{
@@ -272,24 +269,23 @@ void __fastcall vtlb_memWrite64(u32 mem, const mem64_t* value)
 			}
 		}
 
-		*(mem64_t*)ppf = *value;
+		*(mem64_t*)vmv.assumePtr(mem) = *value;
 	}
 	else
 	{
 		//has to: translate, find function, call function
-		u32 hand=(u8)vmv;
-		u32 paddr=ppf-hand+0x80000000;
+		u32 paddr = vmv.assumeHandlerGetPAddr(mem);
 		//Console.WriteLn("Translated 0x%08X to 0x%08X", addr,paddr);
 
-		((vtlbMemW64FP*)vtlbdata.RWFT[3][1][hand])(paddr, value);
+		vmv.assumeHandler<64, true>()(paddr, value);
 	}
 }
 
 void __fastcall vtlb_memWrite128(u32 mem, const mem128_t *value)
 {
-	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
-	sptr ppf=mem+vmv;
-	if (!(ppf<0))
+	auto vmv = vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
+
+	if (!vmv.isHandler(mem))
 	{
 		if (!CHECK_EEREC) 
 		{
@@ -300,16 +296,15 @@ void __fastcall vtlb_memWrite128(u32 mem, const mem128_t *value)
 			}
 		}
 
-		CopyQWC((void*)ppf, value);
+		CopyQWC((void*)vmv.assumePtr(mem), value);
 	}
 	else
 	{
 		//has to: translate, find function, call function
-		u32 hand=(u8)vmv;
-		u32 paddr=ppf-hand+0x80000000;
+		u32 paddr = vmv.assumeHandlerGetPAddr(mem);
 		//Console.WriteLn("Translated 0x%08X to 0x%08X", addr,paddr);
 
-		((vtlbMemW128FP*)vtlbdata.RWFT[4][1][hand])(paddr, value);
+		vmv.assumeHandler<128, true>()(paddr, value);
 	}
 }
 
@@ -357,7 +352,10 @@ void __fastcall GoemonPreloadTlb()
 			u32 vaddr = tlb[i].low_add;
 			u32 paddr = tlb[i].physical_add;
 
-			if ((uptr)vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] == POINTER_SIGN_BIT) {
+			// TODO: The old code (commented below) seems to check specifically for handler 0.  Is this really correct?
+			//if ((uptr)vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] == POINTER_SIGN_BIT) {
+			auto vmv = vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS];
+			if (vmv.isHandler(vaddr) && vmv.assumeHandlerGetID() == 0) {
 				DevCon.WriteLn("GoemonPreloadTlb: Entry %d. Key %x. From V:0x%8.8x to P:0x%8.8x (%d pages)", i, tlb[i].key, vaddr, paddr, size >> VTLB_PAGE_BITS);
 				vtlb_VMap(           vaddr , paddr, size);
 				vtlb_VMap(0x20000000|vaddr , paddr, size);
@@ -588,13 +586,12 @@ void vtlb_MapHandler(vtlbHandler handler, u32 start, u32 size)
 	verify(0==(start&VTLB_PAGE_MASK));
 	verify(0==(size&VTLB_PAGE_MASK) && size>0);
 
-	s32 value = handler | 0x80000000;
 	u32 end = start + (size - VTLB_PAGE_SIZE);
 	pxAssume( (end>>VTLB_PAGE_BITS) < ArraySize(vtlbdata.pmap) );
 
 	while (start <= end)
 	{
-		vtlbdata.pmap[start>>VTLB_PAGE_BITS] = value;
+		vtlbdata.pmap[start>>VTLB_PAGE_BITS] = VTLBPhysical::fromHandler(handler);
 		start += VTLB_PAGE_SIZE;
 	}
 }
@@ -619,7 +616,7 @@ void vtlb_MapBlock(void* base, u32 start, u32 size, u32 blocksize)
 
 		while (loopsz > 0)
 		{
-			vtlbdata.pmap[start>>VTLB_PAGE_BITS] = ptr;
+			vtlbdata.pmap[start>>VTLB_PAGE_BITS] = VTLBPhysical::fromPointer(ptr);
 
 			start	+= VTLB_PAGE_SIZE;
 			ptr		+= VTLB_PAGE_SIZE;
@@ -648,10 +645,10 @@ void vtlb_Mirror(u32 new_region,u32 start,u32 size)
 
 __fi void* vtlb_GetPhyPtr(u32 paddr)
 {
-	if (paddr>=VTLB_PMAP_SZ || vtlbdata.pmap[paddr>>VTLB_PAGE_BITS]<0)
+	if (paddr>=VTLB_PMAP_SZ || vtlbdata.pmap[paddr>>VTLB_PAGE_BITS].isHandler())
 		return NULL;
 	else
-		return reinterpret_cast<void*>(vtlbdata.pmap[paddr>>VTLB_PAGE_BITS]+(paddr&VTLB_PAGE_MASK));
+		return reinterpret_cast<void*>(vtlbdata.pmap[paddr>>VTLB_PAGE_BITS].assumePtr()+(paddr&VTLB_PAGE_MASK));
 }
 
 __fi u32 vtlb_V2P(u32 vaddr)
@@ -671,23 +668,18 @@ void vtlb_VMap(u32 vaddr,u32 paddr,u32 size)
 
 	while (size > 0)
 	{
-		sptr pme;
-		if (paddr >= VTLB_PMAP_SZ)
-		{
-			pme = UnmappedPhyHandler0;
-			if (paddr & POINTER_SIGN_BIT)
-				pme = UnmappedPhyHandler1;
-			pme |= POINTER_SIGN_BIT;
-			pme |= paddr;// top bit is set anyway ...
-		}
-		else
-		{
-			pme = vtlbdata.pmap[paddr>>VTLB_PAGE_BITS];
-			if (pme<0)
-				pme |= paddr;// top bit is set anyway ...
+		VTLBVirtual vmv;
+		if (paddr >= VTLB_PMAP_SZ) {
+			if ((s32)paddr >= 0) {
+				vmv = VTLBVirtual(VTLBPhysical::fromHandler(UnmappedPhyHandler0), paddr, vaddr);
+			} else {
+				vmv = VTLBVirtual(VTLBPhysical::fromHandler(UnmappedPhyHandler1), paddr & ~(1<<31), vaddr);
+			}
+		} else {
+			vmv = VTLBVirtual(vtlbdata.pmap[paddr>>VTLB_PAGE_BITS], paddr, vaddr);
 		}
 
-		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = pme-vaddr;
+		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = vmv;
 		if (vtlbdata.ppmap)
 			if (!(vaddr & 0x80000000)) // those address are already physical don't change them
 				vtlbdata.ppmap[vaddr>>VTLB_PAGE_BITS] = paddr & ~VTLB_PAGE_MASK;
@@ -706,7 +698,7 @@ void vtlb_VMapBuffer(u32 vaddr,void* buffer,u32 size)
 	uptr bu8 = (uptr)buffer;
 	while (size > 0)
 	{
-		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = bu8-vaddr;
+		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = VTLBVirtual::fromPointer(bu8, vaddr);
 		vaddr += VTLB_PAGE_SIZE;
 		bu8 += VTLB_PAGE_SIZE;
 		size -= VTLB_PAGE_SIZE;
@@ -720,16 +712,15 @@ void vtlb_VMapUnmap(u32 vaddr,u32 size)
 
 	while (size > 0)
 	{
-		u32 handl = UnmappedVirtHandler0;
-		if (vaddr & 0x80000000)
-		{
-			handl = UnmappedVirtHandler1;
+
+		VTLBVirtual handl;
+		if ((s32)vaddr >= 0) {
+			handl = VTLBVirtual(VTLBPhysical::fromHandler(UnmappedVirtHandler0), vaddr, vaddr);
+		} else {
+			handl = VTLBVirtual(VTLBPhysical::fromHandler(UnmappedVirtHandler1), vaddr & ~(1<<31), vaddr);
 		}
 
-		handl |= vaddr; // top bit is set anyway ...
-		handl |= 0x80000000;
-
-		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = handl-vaddr;
+		vtlbdata.vmap[vaddr>>VTLB_PAGE_BITS] = handl;
 		vaddr += VTLB_PAGE_SIZE;
 		size -= VTLB_PAGE_SIZE;
 	}
@@ -791,19 +782,28 @@ void vtlb_Term()
 	//nothing to do for now
 }
 
+constexpr size_t VMAP_SIZE = sizeof(VTLBVirtual) * VTLB_VMAP_ITEMS;
+
 // Reserves the vtlb core allocation used by various emulation components!
 // [TODO] basemem - request allocating memory at the specified virtual location, which can allow
 //    for easier debugging and/or 3rd party cheat programs.  If 0, the operating system
 //    default is used.
 void vtlb_Core_Alloc()
 {
+	// Can't return regions to the bump allocator
+	static VTLBVirtual* vmap = nullptr;
+	if (!vmap)
+		vmap = (VTLBVirtual*)GetVmMemory().BumpAllocator().Alloc(VMAP_SIZE);
 	if (!vtlbdata.vmap)
 	{
-		vtlbdata.vmap = (sptr*)_aligned_malloc( VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap), 16 );
-		if (!vtlbdata.vmap)
+		bool okay = HostSys::MmapCommitPtr(vmap, VMAP_SIZE, PageProtectionMode().Read().Write());
+		if (okay) {
+			vtlbdata.vmap = vmap;
+		} else {
 			throw Exception::OutOfMemory( L"VTLB Virtual Address Translation LUT" )
 				.SetDiagMsg(pxsFmt("(%u megs)", VTLB_VMAP_ITEMS * sizeof(*vtlbdata.vmap) / _1mb)
 			);
+		}
 	}
 }
 
@@ -825,7 +825,10 @@ void vtlb_Alloc_Ppmap()
 
 void vtlb_Core_Free()
 {
-	safe_aligned_free( vtlbdata.vmap );
+	if (vtlbdata.vmap) {
+		HostSys::MmapResetPtr(vtlbdata.vmap, VMAP_SIZE);
+		vtlbdata.vmap = nullptr;
+	}
 	safe_aligned_free( vtlbdata.ppmap );
 }
 
@@ -844,9 +847,9 @@ VtlbMemoryReserve::VtlbMemoryReserve( const wxString& name, size_t size )
 	m_reserve.SetPageAccessOnCommit( PageAccess_ReadWrite() );
 }
 
-void VtlbMemoryReserve::Reserve( sptr hostptr )
+void VtlbMemoryReserve::Reserve( VirtualMemoryManagerPtr allocator, sptr offset )
 {
-	if (!m_reserve.ReserveAt( hostptr ))
+	if (!m_reserve.Reserve( std::move(allocator), offset ))
 	{
 		throw Exception::OutOfMemory( m_reserve.GetName() )
 			.SetDiagMsg(L"Vtlb memory could not be reserved.")
@@ -874,11 +877,6 @@ void VtlbMemoryReserve::Reset()
 void VtlbMemoryReserve::Decommit()
 {
 	m_reserve.Reset();
-}
-
-void VtlbMemoryReserve::Release()
-{
-	m_reserve.Release();
 }
 
 bool VtlbMemoryReserve::IsCommitted() const

@@ -34,11 +34,97 @@
 namespace x86Emitter
 {
 
-void xImpl_JmpCall::operator()(const xRegisterInt &absreg) const { xOpWrite(0, 0xff, isJmp ? 4 : 2, absreg); }
-void xImpl_JmpCall::operator()(const xIndirect64orLess &src) const { xOpWrite(0, 0xff, isJmp ? 4 : 2, src); }
+void xImpl_JmpCall::operator()(const xAddressReg &absreg) const {
+    // Jumps are always wide and don't need the rex.W
+    xOpWrite(0, 0xff, isJmp ? 4 : 2, absreg.GetNonWide());
+}
+void xImpl_JmpCall::operator()(const xIndirectNative &src) const {
+    // Jumps are always wide and don't need the rex.W
+    EmitRex(0, xIndirect32(src.Base, src.Index, 1, 0));
+    xWrite8(0xff);
+    EmitSibMagic(isJmp ? 4 : 2, src);
+}
 
 const xImpl_JmpCall xJMP = {true};
 const xImpl_JmpCall xCALL = {false};
+
+
+template <typename Reg1, typename Reg2>
+void prepareRegsForFastcall(const Reg1 &a1, const Reg2 &a2) {
+    if (a1.IsEmpty()) return;
+
+    // Make sure we don't mess up if someone tries to fastcall with a1 in arg2reg and a2 in arg1reg
+    if (a2.Id != arg1reg.Id) {
+        xMOV(Reg1(arg1reg.Id), a1);
+        if (!a2.IsEmpty()) {
+            xMOV(Reg2(arg2reg.Id), a2);
+        }
+    } else if (a1.Id != arg2reg.Id) {
+        xMOV(Reg2(arg2reg.Id), a2);
+        xMOV(Reg1(arg1reg.Id), a1);
+    } else {
+        xPUSH(a1);
+        xMOV(Reg2(arg2reg.Id), a2);
+        xPOP(Reg1(arg1reg.Id));
+    }
+}
+
+void xImpl_FastCall::operator()(void *f, const xRegister32 &a1, const xRegister32 &a2) const {
+    prepareRegsForFastcall(a1, a2);
+    uptr disp = ((uptr)xGetPtr() + 5) - (uptr)f;
+    if ((sptr)disp == (s32)disp) {
+        xCALL(f);
+    } else {
+        xMOV(rax, ptrNative[f]);
+        xCALL(rax);
+    }
+}
+
+#ifdef __M_X86_64
+void xImpl_FastCall::operator()(void *f, const xRegisterLong &a1, const xRegisterLong &a2) const {
+    prepareRegsForFastcall(a1, a2);
+    uptr disp = ((uptr)xGetPtr() + 5) - (uptr)f;
+    if ((sptr)disp == (s32)disp) {
+        xCALL(f);
+    } else {
+        xMOV(rax, ptrNative[f]);
+        xCALL(rax);
+    }
+}
+
+void xImpl_FastCall::operator()(void *f, u32 a1, const xRegisterLong &a2) const {
+    if (!a2.IsEmpty()) { xMOV(arg2reg, a2); }
+    xMOV(arg1reg, a1);
+    (*this)(f, arg1reg, arg2reg);
+}
+#endif
+
+void xImpl_FastCall::operator()(void *f, void *a1) const {
+    xLEA(arg1reg, ptr[a1]);
+    (*this)(f, arg1reg, arg2reg);
+}
+
+void xImpl_FastCall::operator()(void *f, u32 a1, const xRegister32 &a2) const {
+    if (!a2.IsEmpty()) { xMOV(arg2regd, a2); }
+    xMOV(arg1regd, a1);
+    (*this)(f, arg1regd, arg2regd);
+}
+
+void xImpl_FastCall::operator()(void *f, const xIndirect32 &a1) const {
+    xMOV(arg1regd, a1);
+    (*this)(f, arg1regd);
+}
+
+void xImpl_FastCall::operator()(void *f, u32 a1, u32 a2) const {
+    xMOV(arg1regd, a1);
+    xMOV(arg2regd, a2);
+    (*this)(f, arg1regd, arg2regd);
+}
+
+void xImpl_FastCall::operator()(const xIndirectNative &f, const xRegisterLong &a1, const xRegisterLong &a2) const {
+    prepareRegsForFastcall(a1, a2);
+    xCALL(f);
+}
 
 const xImpl_FastCall xFastCall = {};
 

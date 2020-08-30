@@ -20,8 +20,8 @@
 #-------------------------------------------------------------------------------
 # Misc option
 #-------------------------------------------------------------------------------
-option(DISABLE_SVU "Disable superVU (don't use it)")
 option(DISABLE_BUILD_DATE "Disable including the binary compile date")
+option(ENABLE_TESTS "Enables building the unit tests" ON)
 
 if(DISABLE_BUILD_DATE OR openSUSE)
     message(STATUS "Disabling the inclusion of the binary compile date.")
@@ -33,12 +33,9 @@ option(USE_VTUNE "Plug VTUNE to profile GSdx JIT.")
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
-option(GLSL_API "Replace ZZogl CG backend by GLSL (experimental option)")
-option(EGL_API "Use EGL on ZZogl/GSdx (experimental/developer option)")
 option(OPENCL_API "Add OpenCL support on GSdx")
 option(REBUILD_SHADER "Rebuild GLSL/CG shader (developer option)")
 option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
-option(GSDX_LEGACY "Build a GSdx legacy plugin compatible with GL3.3")
 
 #-------------------------------------------------------------------------------
 # Path and lib option
@@ -48,6 +45,7 @@ option(DISABLE_CHEATS_ZIP "Disable including the cheats_ws.zip file")
 option(DISABLE_PCSX2_WRAPPER "Disable including the PCSX2-linux.sh file")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(EXTRA_PLUGINS "Build various 'extra' plugins")
+option(PORTAUDIO_API "Build portaudio support on spu2x" ON)
 option(SDL2_API "Use SDL2 on spu2x and onepad (wxWidget mustn't be built with SDL1.2 support" ON)
 option(GTK3_API "Use GTK3 api (experimental/wxWidget must be built with GTK3 support)")
 
@@ -74,6 +72,11 @@ if(PACKAGE_MODE)
 
     # Compile all source codes with those defines
     add_definitions(-DPLUGIN_DIR_COMPILATION=${PLUGIN_DIR} -DGAMEINDEX_DIR_COMPILATION=${GAMEINDEX_DIR} -DDOC_DIR_COMPILATION=${DOC_DIR})
+endif()
+
+if(APPLE)
+    option(OSX_USE_DEFAULT_SEARCH_PATH "Don't prioritize system library paths" OFF)
+    option(SKIP_POSTPROCESS_BUNDLE "Skip postprocessing bundle for redistributability" OFF)
 endif()
 
 #-------------------------------------------------------------------------------
@@ -172,25 +175,9 @@ endif()
 include(TargetArch)
 target_architecture(PCSX2_TARGET_ARCHITECTURES)
 if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64" OR ${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
-	if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64" AND (CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE))
-		message(FATAL_ERROR "
-        The code for ${PCSX2_TARGET_ARCHITECTURES} support is not ready yet.
-        For now compile with -DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake
-        or with
-        --cross-multilib passed to build.sh")
-	endif()
 	message(STATUS "Compiling a ${PCSX2_TARGET_ARCHITECTURES} build on a ${CMAKE_HOST_SYSTEM_PROCESSOR} host.")
 else()
 	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
-endif()
-
-# Print a clear message that most architectures are not supported
-if(NOT (${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386"))
-    message(WARNING "
-    PCSX2 does not support the ${PCSX2_TARGET_ARCHITECTURES} architecture and has no plans yet to support it.
-    It would need a complete rewrite of the core emulator and a lot of time.
-
-    You can still run a i386 binary if you install all the i386 libraries (runtime and dev).")
 endif()
 
 if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
@@ -216,11 +203,6 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
         endif()
     endif()
 
-    # Don't bother porting SuperVU
-    if (NOT Linux)
-        set(DISABLE_SVU TRUE)
-    endif()
-
     add_definitions(-D_ARCH_32=1 -D_M_X86=1 -D_M_X86_32=1)
     set(_ARCH_32 1)
     set(_M_X86 1)
@@ -228,9 +210,6 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
 elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
     # x86_64 requires -fPIC
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-    # SuperVU will not be ported
-    set(DISABLE_SVU TRUE)
 
     if(NOT DEFINED ARCH_FLAG)
         if (DISABLE_ADVANCE_SIMD)
@@ -244,7 +223,7 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
             set(ARCH_FLAG "-march=native")
         endif()
     endif()
-    add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1)
+    add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1 -D__M_X86_64=1)
     set(_ARCH_64 1)
     set(_M_X86 1)
     set(_M_X86_64 1)
@@ -303,9 +282,6 @@ option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 # Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
 # Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
 set(COMMON_FLAG "-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse")
-if (DISABLE_SVU)
-    set(COMMON_FLAG "${COMMON_FLAG} -DDISABLE_SVU")
-endif()
 
 if(USE_VTUNE)
     set(COMMON_FLAG "${COMMON_FLAG} -DENABLE_VTUNE")
@@ -407,6 +383,12 @@ else()
     set(GCOV_LIBRARIES "-lgcov")
 endif()
 
+if(USE_CLANG)
+    if(TIMETRACE)
+        set(COMMON_FLAG "${COMMON_FLAG} -ftime-trace ")
+    endif()
+endif()
+
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
 set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG} ${LTO_FLAGS} ${PGO_FLAGS} ${PLUGIN_SUPPORT}")
 # c++ only flags
@@ -460,4 +442,34 @@ if(CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE)
     if (GTK3_API)
         message(WARNING "GTK3 is highly experimental besides it requires a wxWidget built with __WXGTK3__ support !!!")
     endif()
+endif()
+
+
+#-------------------------------------------------------------------------------
+# MacOS-specific things
+#-------------------------------------------------------------------------------
+
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
+
+# CMake defaults the suffix for modules to .so on macOS but wx tells us that the
+# extension is .dylib (so that's what we search for)
+if(APPLE)
+    set(CMAKE_SHARED_MODULE_SUFFIX ".dylib")
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    if(NOT OSX_USE_DEFAULT_SEARCH_PATH)
+        # Hack up the path to prioritize the path to built-in OS libraries to
+        # increase the chance of not depending on a bunch of copies of them
+        # installed by MacPorts, Fink, Homebrew, etc, and ending up copying
+        # them into the bundle.  Since we depend on libraries which are not 
+        # part of OS X (wx, etc.), however, don't remove the default path 
+        # entirely.  This is still kinda evil, since it defeats the user's 
+        # path settings...
+        # See http://www.cmake.org/cmake/help/v3.0/command/find_program.html
+        list(APPEND CMAKE_PREFIX_PATH "/usr")
+    endif()
+
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-dead_strip,-dead_strip_dylibs")
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-dead_strip,-dead_strip_dylibs")
 endif()

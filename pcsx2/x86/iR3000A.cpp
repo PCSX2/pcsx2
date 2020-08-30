@@ -33,7 +33,6 @@
 #include "IopCommon.h"
 #include "iCore.h"
 
-#include "NakedAsm.h"
 #include "AppConfig.h"
 
 #include "Utilities/Perf.h"
@@ -47,7 +46,7 @@ u32 g_psxMaxRecMem = 0;
 u32 s_psxrecblocks[] = {0};
 
 uptr psxRecLUT[0x10000];
-uptr psxhwLUT[0x10000];
+u32 psxhwLUT[0x10000];
 
 static __fi u32 HWADDR(u32 mem) { return psxhwLUT[mem >> 16] + mem; }
 
@@ -56,6 +55,7 @@ static RecompiledCodeReserve* recMem = NULL;
 static BASEBLOCK *recRAM = NULL;	// and the ptr to the blocks here
 static BASEBLOCK *recROM = NULL;	// and here
 static BASEBLOCK *recROM1 = NULL;	// also here
+static BASEBLOCK *recROM2 = NULL;   // also here
 static BaseBlocks recBlocks;
 static u8 *recPtr = NULL;
 u32 psxpc;			// recompiler psxpc
@@ -126,13 +126,13 @@ static DynGenFunc* _DynGen_JITCompile()
 
 	u8* retval = xGetPtr();
 
-	xFastCall((void*)iopRecRecompile, ptr[&psxRegs.pc] );
+	xFastCall((void*)iopRecRecompile, ptr32[&psxRegs.pc] );
 
 	xMOV( eax, ptr[&psxRegs.pc] );
 	xMOV( ebx, eax );
 	xSHR( eax, 16 );
-	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
-	xJMP( ptr32[ecx+ebx] );
+	xMOV( rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax*wordsize)] );
+	xJMP( ptrNative[rbx*(wordsize/4) + rcx] );
 
 	return (DynGenFunc*)retval;
 }
@@ -152,8 +152,8 @@ static DynGenFunc* _DynGen_DispatcherReg()
 	xMOV( eax, ptr[&psxRegs.pc] );
 	xMOV( ebx, eax );
 	xSHR( eax, 16 );
-	xMOV( ecx, ptr[psxRecLUT + (eax*4)] );
-	xJMP( ptr32[ecx+ebx] );
+	xMOV( rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax*wordsize)] );
+	xJMP( ptrNative[rbx*(wordsize/4) + rcx] );
 
 	return (DynGenFunc*)retval;
 }
@@ -391,7 +391,7 @@ void _psxDeleteReg(int reg, int flush)
 	_deleteX86reg(X86TYPE_PSX, reg, flush ? 0 : 2);
 }
 
-void _psxMoveGPRtoR(const xRegisterLong& to, int fromgpr)
+void _psxMoveGPRtoR(const xRegister32& to, int fromgpr)
 {
 	if( PSX_IS_CONST1(fromgpr) )
 		xMOV(to, g_psxConstRegs[fromgpr] );
@@ -623,7 +623,7 @@ static uptr m_ConfiguredCacheReserve = 32;
 static u8* m_recBlockAlloc = NULL;
 
 static const uint m_recBlockAllocSize =
-	(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4) * sizeof(BASEBLOCK));
+	(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4) * sizeof(BASEBLOCK));
 
 static void recReserveCache()
 {
@@ -632,7 +632,7 @@ static void recReserveCache()
 
 	while (!recMem->IsOk())
 	{
-		if (recMem->Reserve( m_ConfiguredCacheReserve * _1mb, HostMemoryMap::IOPrec ) != NULL) break;
+		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::IOPrecOffset, m_ConfiguredCacheReserve * _1mb) != NULL) break;
 
 		// If it failed, then try again (if possible):
 		if (m_ConfiguredCacheReserve < 4) break;
@@ -665,6 +665,8 @@ static void recAlloc()
 	recRAM = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::IopRam / 4) * sizeof(BASEBLOCK);
 	recROM = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Rom / 4) * sizeof(BASEBLOCK);
 	recROM1 = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Rom1 / 4) * sizeof(BASEBLOCK);
+	recROM2 = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Rom2 / 4) * sizeof(BASEBLOCK);
+
 
 	if( s_pInstCache == NULL )
 	{
@@ -688,7 +690,7 @@ void recResetIOP()
 	recMem->Reset();
 
 	iopClearRecLUT((BASEBLOCK*)m_recBlockAlloc,
-		(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4)));
+		(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4)));
 
 	for (int i = 0; i < 0x10000; i++)
 		recLUT_SetPage(psxRecLUT, 0, 0, 0, i, 0);
@@ -720,6 +722,13 @@ void recResetIOP()
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM1, 0x0000, i, i - 0x1fc0);
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM1, 0x8000, i, i - 0x1fc0);
 		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM1, 0xa000, i, i - 0x1fc0);
+	}
+
+	for (int i = 0x1e40; i < 0x1e48; i++)
+	{
+		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM2, 0x0000, i, i - 0x1fc0);
+		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM2, 0x8000, i, i - 0x1fc0);
+		recLUT_SetPage(psxRecLUT, psxhwLUT, recROM2, 0xa000, i, i - 0x1fc0);
 	}
 
 	if( s_pInstCache )
@@ -854,22 +863,22 @@ void psxSetBranchReg(u32 reg)
 	psxbranch = 1;
 
 	if( reg != 0xffffffff ) {
-		_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-		_psxMoveGPRtoR(esi, reg);
+		_allocX86reg(calleeSavedReg2d, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		_psxMoveGPRtoR(calleeSavedReg2d, reg);
 
 		psxRecompileNextInstruction(1);
 
-		if( x86regs[esi.GetId()].inuse ) {
-			pxAssert( x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
-			xMOV(ptr[&psxRegs.pc], esi);
-			x86regs[esi.GetId()].inuse = 0;
+		if( x86regs[calleeSavedReg2d.GetId()].inuse ) {
+			pxAssert( x86regs[calleeSavedReg2d.GetId()].type == X86TYPE_PCWRITEBACK );
+			xMOV(ptr32[&psxRegs.pc], calleeSavedReg2d);
+			x86regs[calleeSavedReg2d.GetId()].inuse = 0;
 			#ifdef PCSX2_DEBUG
-			xOR( esi, esi );
+			xOR( calleeSavedReg2d, calleeSavedReg2d );
 			#endif
 		}
 		else {
-			xMOV(eax, ptr[&g_recWriteback]);
-			xMOV(ptr[&psxRegs.pc], eax);
+			xMOV(eax, ptr32[&g_recWriteback]);
+			xMOV(ptr32[&psxRegs.pc], eax);
 
 			#ifdef PCSX2_DEBUG
 			xOR( eax, eax );

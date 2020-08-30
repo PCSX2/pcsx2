@@ -199,6 +199,7 @@ protected:
 	void OnClose(wxCommandEvent& event);
 	void OnSave (wxCommandEvent& event);
 	void OnClear(wxCommandEvent& event);
+	void OnLogSettings(wxCommandEvent& event);
 
 	void OnEnableAllLogging(wxCommandEvent& event);
 	void OnDisableAllLogging(wxCommandEvent& event);

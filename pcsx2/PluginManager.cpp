@@ -195,7 +195,7 @@ static void CALLBACK GS_changeSaveState( int, const char* filename ) {}
 void CALLBACK GS_getTitleInfo2( char* dest, size_t length )
 {
 	// Just return a generic "GS" title -- a plugin actually implementing this feature
-	// should return a title such as "GSdx" or "ZZogl" instead.  --air
+	// should return a title such as "GSdx" instead.  --air
 
 	dest[0] = 'G';
 	dest[1] = 'S';
@@ -974,17 +974,6 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 			throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
 				.SetDiagMsg(L"%s plugin init failed: Method binding failure on GetLibName or GetLibVersion2.")
 				.SetUserMsg(_( "The configured %s plugin is not a PCSX2 plugin, or is for an older unsupported version of PCSX2."));
-
-		// Only Windows GSdx uses this. Should be removed in future after GSdx no longer relies on it to show the new config dialog.
-#ifdef _WIN32
-		// Since only Windows Gsdx has this symbol, that means every other plugin is going to cause error messages to be logged.
-		// Let's not do that for a hack function.
-		if (Lib->HasSymbol(L"PS2EsetEmuVersion")) {
-			_PS2EsetEmuVersion	SetEmuVersion = (_PS2EsetEmuVersion)Lib->GetSymbol(L"PS2EsetEmuVersion");
-			if (SetEmuVersion)
-				SetEmuVersion("PCSX2", (PCSX2_VersionHi << 24) | (PCSX2_VersionMid << 16) | (PCSX2_VersionLo << 8) | 0);
-		}
-#endif
 
 		Name = fromUTF8( GetLibName() );
 		int version = GetLibVersion2( tbl_PluginInfo[pid].typemask );

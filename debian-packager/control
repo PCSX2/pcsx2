@@ -20,6 +20,7 @@ Build-Depends: cmake (>= 2.8.5),
     libwxgtk3.0-dev,
     libxml2-dev,
     libx11-dev,
+    libx11-xcb-dev,
     locales | locales-all,
     portaudio19-dev,
     zlib1g-dev

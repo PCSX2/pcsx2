@@ -235,7 +235,7 @@ mem8_t __fastcall _hwRead8(u32 mem)
 template< uint page >
 mem8_t __fastcall hwRead8(u32 mem)
 {
-	mem8_t ret8 = _hwRead8<0x0f>(mem);
+	mem8_t ret8 = _hwRead8<page>(mem);
 	eeHwTraceLog( mem, ret8, true );
 	return ret8;
 }

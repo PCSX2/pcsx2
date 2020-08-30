@@ -150,7 +150,7 @@ public:
 		return ZBUF.ZMSK == 0 && TEST.ZTE != 0; // ZTE == 0 is bug on the real hardware, write is blocked then
 	}
 
-	GIFRegTEX0 GetSizeFixedTEX0(int s_n, const GSVector4& st, bool linear, bool mipmap = false);
+	GIFRegTEX0 GetSizeFixedTEX0(const GSVector4& st, bool linear, bool mipmap = false);
 	void ComputeFixedTEX0(const GSVector4& st);
 	bool HasFixedTEX0() const { return m_fixed_tex0;}
 

@@ -25,7 +25,7 @@ u32 g_vif0Cycles = 0;
 // because its vif stalling not the EE core...
 __fi void vif0FLUSH()
 {
-	if(vif0Regs.stat.VEW)
+	if (VU0.VI[REG_VPU_STAT].UL & 0x5) // T bit stop or Busy
 	{
 		vif0.waitforvu = true;
 		vif0.vifstalled.enabled = VifStallEnable(vif0ch);
@@ -100,8 +100,8 @@ __fi void vif0SetupTransfer()
 		}
 		else
 		{
-			//Some games (like killzone) do Tags mid unpack, the nops will just write blank data
-			//to the VU's, which breaks stuff, this is where the 128bit packet will fail, so we ignore the first 2 words
+			// Some games (like killzone) do Tags mid unpack, the nops will just write blank data
+			// to the VU's, which breaks stuff, this is where the 128bit packet will fail, so we ignore the first 2 words
 			vif0.irqoffset.value = 2;
 			vif0.irqoffset.enabled = true;
 			ret = VIF0transfer((u32*)&masked_tag + 2, 2, true);  //Transfer Tag
@@ -110,8 +110,9 @@ __fi void vif0SetupTransfer()
 				
 		if (!ret && vif0.irqoffset.enabled)
 		{
-			vif0.inprogress = 0; //Better clear this so it has to do it again (Jak 1)
-			return;        //IRQ set by VIFTransfer
+			vif0.inprogress = 0; // Better clear this so it has to do it again (Jak 1)
+			vif0ch.qwc = 0; // Gumball 3000 pauses the DMA when the tag stalls so we need to reset the QWC, it'll be gotten again later
+			return;        // IRQ set by VIFTransfer
 					
 		}
 	}
@@ -134,6 +135,12 @@ __fi void vif0SetupTransfer()
 
 __fi void vif0VUFinish()
 {
+	if (VU0.VI[REG_VPU_STAT].UL & 0x4)
+	{
+		CPU_INT(VIF_VU0_FINISH, 128);
+		return;
+	}
+
 	if ((VU0.VI[REG_VPU_STAT].UL & 1))
 	{
 		int _cycles = VU0.cycle;
@@ -167,10 +174,16 @@ __fi void vif0Interrupt()
 
 	if (!(vif0ch.chcr.STR)) Console.WriteLn("vif0 running when CHCR == %x", vif0ch.chcr._u32);
 
+	if(vif0.waitforvu)
+	{
+		//CPU_INT(DMAC_VIF0, 16);
+		return;
+	}
+
 	if (vif0.irq && vif0.vifstalled.enabled && vif0.vifstalled.value == VIF_IRQ_STALL)
 	{
 		vif0Regs.stat.INT = true;
-		
+
 		//Yakuza watches VIF_STAT so lets do this here.
 		if (((vif0Regs.code >> 24) & 0x7f) != 0x7) {
 			vif0Regs.stat.VIS = true;
@@ -186,19 +199,12 @@ __fi void vif0Interrupt()
 			// One game doesn't like vif stalling at end, can't remember what. Spiderman isn't keen on it tho
 			//vif0ch.chcr.STR = false;
 			vif0Regs.stat.FQC = std::min((u16)0x8, vif0ch.qwc);
-			if(vif0ch.qwc > 0 || !vif0.done)	
+			if (vif0ch.qwc > 0 || !vif0.done)
 			{
 				VIF_LOG("VIF0 Stalled");
 				return;
 			}
 		}
-	}
-
-	if(vif0.waitforvu)
-	{
-		//DevCon.Warning("Waiting on VU0");
-		//CPU_INT(DMAC_VIF0, 16);
-		return;
 	}
 
 	vif0.vifstalled.enabled = false;
@@ -224,9 +230,9 @@ __fi void vif0Interrupt()
 	if (!vif0.done)
 	{
 
-		if (!(dmacRegs.ctrl.DMAE))
+		if (!(dmacRegs.ctrl.DMAE) || vif0Regs.stat.VSS) //Stopped or DMA Disabled
 		{
-			Console.WriteLn("vif0 dma masked");
+			//Console.WriteLn("vif0 dma masked");
 			return;
 		}
 
@@ -294,7 +300,6 @@ void dmaVIF0()
 	}
 	else
 	{
-		if (vif0.irqoffset.enabled && !vif0.done) DevCon.Warning("Warning! VIF0 starting a new Chain transfer with vif offset set (Possible force stop?)");
 		vif0.dmamode = VIF_CHAIN_MODE;
 		vif0.done = false;
 		vif0.inprogress &= ~0x1;

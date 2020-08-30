@@ -859,9 +859,6 @@ BOOL CALLBACK pnachWriterProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			// Gametitle
 			SetWindowText(GetDlgItem(hWnd, IDC_GAMETITLE), "Insert Game Title.");
 
-			// ZeroGS
-			SetWindowText(GetDlgItem(hWnd, IDC_ZEROGS), "00000000");
-
 			// Round mode 1
 			SendMessage(GetDlgItem(hWnd, IDC_ROUND1), CB_ADDSTRING, 0, (LPARAM)"NEAR");
 			SendMessage(GetDlgItem(hWnd, IDC_ROUND1), CB_ADDSTRING, 0, (LPARAM)"DOWN");
@@ -907,15 +904,6 @@ BOOL CALLBACK pnachWriterProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					// gametitle
 					GetWindowText(GetDlgItem(hWnd,IDC_GAMETITLE),chepa,256);
 					fprintf(fp, "gametitle=%s\n", chepa);
-
-					// zerogs
-					GetWindowText(GetDlgItem(hWnd,IDC_ZEROGS),chepa,256);
-					int zgs;
-					sscanf(chepa, "%x", &zgs);
-					if(zgs != 0)
-					{
-						fprintf(fp, "zerogs=%s\n", chepa);
-					}
 
 					// round mode
 					int round1, round2;

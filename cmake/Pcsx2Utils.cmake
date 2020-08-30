@@ -35,7 +35,7 @@ function(detectOperatingSystem)
     endif()
 endfunction()
 
-function(write_svnrev_h)
+function(get_git_version_info)
     set(PCSX2_WC_TIME 0)
     set(PCSX2_GIT_REV "")
     if (GIT_FOUND AND EXISTS ${PROJECT_SOURCE_DIR}/.git)
@@ -50,9 +50,24 @@ function(write_svnrev_h)
             OUTPUT_VARIABLE PCSX2_GIT_REV
             OUTPUT_STRIP_TRAILING_WHITESPACE)
     endif()
+    if(PCSX2_GIT_REV)
+        set(PCSX2_VERSION_LONG "${PCSX2_GIT_REV}")
+        string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?(-[a-z][a-z0-9]+)?" PCSX2_VERSION_SHORT "${PCSX2_VERSION_LONG}")
+    else()
+        set(PCSX2_VERSION_LONG "Unknown (git unavailable)")
+        set(PCSX2_VERSION_SHORT "Unknown")
+    endif()
     if ("${PCSX2_WC_TIME}" STREQUAL "")
         set(PCSX2_WC_TIME 0)
     endif()
+
+    set(PCSX2_WC_TIME "${PCSX2_WC_TIME}" PARENT_SCOPE)
+    set(PCSX2_GIT_REV "${PCSX2_GIT_REV}" PARENT_SCOPE)
+    set(PCSX2_VERSION_LONG "${PCSX2_VERSION_LONG}" PARENT_SCOPE)
+    set(PCSX2_VERSION_SHORT "${PCSX2_VERSION_SHORT}" PARENT_SCOPE)
+endfunction()
+
+function(write_svnrev_h)
     file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV ${PCSX2_WC_TIME}ll \n#define SVN_MODS 0\n#define GIT_REV \"${PCSX2_GIT_REV}\"")
 endfunction()
 
@@ -114,6 +129,14 @@ macro(add_pcsx2_plugin lib srcs libs flags)
     else(PACKAGE_MODE)
         install(TARGETS ${lib} DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
     endif(PACKAGE_MODE)
+    if (APPLE)
+        # Copy to app bundle
+        add_custom_command(TARGET ${lib} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PCSX2>/plugins"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:${lib}>" "$<TARGET_FILE_DIR:PCSX2>/plugins/"
+        )
+        add_dependencies(pcsx2-postprocess-bundle ${lib})
+    endif()
 endmacro(add_pcsx2_plugin)
 
 macro(add_pcsx2_lib lib srcs libs flags)

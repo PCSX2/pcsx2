@@ -43,9 +43,6 @@
     <Filter Include="System\Ps2\EmotionEngine\VU\Dynarec\microVU">
       <UniqueIdentifier>{a210a307-e8bf-4bbc-8770-e720cc7fc953}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Ps2\EmotionEngine\VU\Dynarec\Super VU">
-      <UniqueIdentifier>{f9ec43a5-e1d5-4b0b-831a-eed6947e8552}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\Ps2\EmotionEngine\VU\Interpreter">
       <UniqueIdentifier>{e14056ea-b126-4e5b-94e0-3ce09463970b}</UniqueIdentifier>
     </Filter>
@@ -161,9 +158,6 @@
     </None>
     <None Include="..\..\Docs\License.txt">
       <Filter>Docs</Filter>
-    </None>
-    <None Include="..\..\x86\aVUzerorec.S">
-      <Filter>System\Linux</Filter>
     </None>
     <None Include="..\..\x86\microVU_Alloc.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
@@ -295,18 +289,6 @@
     </ClCompile>
     <ClCompile Include="..\..\x86\microVU.cpp">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Lower.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Micro.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Upper.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_zerorec.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClCompile>
     <ClCompile Include="..\..\VU0.cpp">
       <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>
@@ -716,9 +698,6 @@
     <ClCompile Include="..\..\gui\Panels\VideoPanel.cpp">
       <Filter>AppHost\Panels</Filter>
     </ClCompile>
-    <ClCompile Include="..\DwmSetup.cpp">
-      <Filter>AppHost\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="..\WinCompressNTFS.cpp">
       <Filter>AppHost\Win32</Filter>
     </ClCompile>
@@ -889,6 +868,9 @@
     <ClCompile Include="..\..\Recording\VirtualPad.cpp">
       <Filter>Recording\gui</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\IPU\IPUdither.cpp">
+      <Filter>System\Ps2\IPU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -916,9 +898,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\IopCommon.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NakedAsm.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Plugins.h">
@@ -971,12 +950,6 @@
     </ClInclude>
     <ClInclude Include="..\..\x86\microVU_Misc.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\x86\sVU_Micro.h">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\x86\sVU_zerorec.h">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClInclude>
     <ClInclude Include="..\..\VUflags.h">
       <Filter>System\Ps2\EmotionEngine\VU\Interpreter</Filter>

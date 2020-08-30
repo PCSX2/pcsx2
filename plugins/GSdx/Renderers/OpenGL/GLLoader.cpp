@@ -265,12 +265,6 @@ namespace GLLoader {
 			//fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
 		}
 
-		// Disable sparse by default (Note AMD is completely broken).
-		// AMD issue tracker https://community.amd.com/thread/237558
-		if (true) {
-			GLExtension::Set("GL_ARB_sparse_texture", false);
-		}
-
 		// Mandatory for both renderer
 		{
 			// GL4.1
@@ -321,7 +315,7 @@ namespace GLLoader {
 					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
 		}
 
-		if (vendor_id_intel && !GLExtension::Has("GL_ARB_texture_barrier") && !GLExtension::Has("GL_ARB_direct_state_access")) {
+		if (vendor_id_intel && (!GLExtension::Has("GL_ARB_texture_barrier") || !GLExtension::Has("GL_ARB_direct_state_access"))) {
 			// Assume that driver support is good when texture barrier and DSA is supported, disable the log then.
 			fprintf_once(stderr, "The OpenGL renderer is inefficient on Intel GPUs due to an inefficient driver.\n"
 					"Check out the link below for further information.\n"
@@ -370,7 +364,9 @@ namespace GLLoader {
 
 	static void check_sparse_compatibility()
 	{
-		if (!GLExtension::Has("GL_ARB_sparse_texture") || !GLExtension::Has("GL_EXT_direct_state_access")) {
+		if (!GLExtension::Has("GL_ARB_sparse_texture") || 
+			!GLExtension::Has("GL_EXT_direct_state_access") ||
+			theApp.GetConfigI("override_GL_ARB_sparse_texture") != 1) {
 			found_compatible_GL_ARB_sparse_texture2 = false;
 			found_compatible_sparse_depth = false;
 

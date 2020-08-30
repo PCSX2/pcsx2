@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "MainFrame.h"
 #include "GSFrame.h"
+#include "Saveslots.h"
 
 // General Notes:
 //  * It's very important that we re-discover menu items by ID every time we change them,
@@ -38,51 +39,53 @@ void MainEmuFrame::SetMenuItemLabel(int id, wxString str)
 		item->SetItemLabel(str);
 }
 
+void MainEmuFrame::CheckMenuItem(int id, bool checked)
+{
+	if (wxMenuItem *item = m_menubar.FindItem(id))
+		item->Check(checked);
+}
+
 static void _SaveLoadStuff(bool enabled)
 {
 	sMainFrame.EnableMenuItem(MenuId_Sys_LoadStates, enabled);
 	sMainFrame.EnableMenuItem(MenuId_Sys_SaveStates, enabled);
 
 #ifdef USE_NEW_SAVESLOTS_UI
-	// Run though all the slots.Update if they need updating or the crc changed.
-	for (int i = 0; i < 10; i++)
+	// Run though all the slots. Update if they need updating or the crc changed.
+	for (Saveslot &slot : saveslot_cache)
 	{
-		int load_menu_item = MenuId_State_Load01 + i + 1;
-		int save_menu_item = MenuId_State_Save01 + i + 1;
-		
 		// We need to reload the file information if the crc or serial # changed.
-		if ((saveslot_cache[i].crc != ElfCRC)|| (saveslot_cache[i].serialName != DiscSerial)) saveslot_cache[i].invalid_cache = true;
+		if ((slot.crc != ElfCRC)|| (slot.serialName != DiscSerial)) slot.invalid_cache = true;
 
 		// Either the cache needs updating, or the menu items do, or both.
-		if (saveslot_cache[i].menu_update || saveslot_cache[i].invalid_cache)
+		if (slot.menu_update || slot.invalid_cache)
 		{
 			#ifdef SAVESLOT_LOGS
-			Console.WriteLn("Updating slot %i.", i);
-			if (saveslot_cache[i].menu_update) Console.WriteLn("Menu update needed.");
-			if (saveslot_cache[i].invalid_cache) Console.WriteLn("Invalid cache. (CRC different or just initialized.)");
+			Console.WriteLn("Updating slot %i.", slot.slot_num);
+			if (slot.menu_update) Console.WriteLn("Menu update needed.");
+			if (slot.invalid_cache) Console.WriteLn("Invalid cache. (CRC different or just initialized.)");
 			#endif
 
-			if (saveslot_cache[i].invalid_cache)
+			if (slot.invalid_cache)
 			{
 				// Pull everything from disk.
-				saveslot_cache[i].UpdateCache();
+				slot.UpdateCache();
 
 				#ifdef SAVESLOT_LOGS
-				saveslot_cache[i].ConsoleDump();
+				slot.ConsoleDump();
 				#endif
 			}
 
 			// Update from the cached information.
-			saveslot_cache[i].menu_update = false;
-			saveslot_cache[i].crc = ElfCRC;
+			slot.menu_update = false;
+			slot.crc = ElfCRC;
 
-			sMainFrame.EnableMenuItem(load_menu_item, !saveslot_cache[i].empty);
-			sMainFrame.SetMenuItemLabel(load_menu_item, saveslot_cache[i].SlotName());
-			sMainFrame.SetMenuItemLabel(save_menu_item, saveslot_cache[i].SlotName());
+			sMainFrame.EnableMenuItem(slot.load_item_id, !slot.empty);
+			sMainFrame.SetMenuItemLabel(slot.load_item_id, slot.SlotName());
+			sMainFrame.SetMenuItemLabel(slot.save_item_id, slot.SlotName());
 		}
 
 	}
-	Sstates_updateLoadBackupMenuItem(false);
 #endif
 }
 

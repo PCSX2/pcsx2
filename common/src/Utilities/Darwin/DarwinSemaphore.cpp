@@ -47,14 +47,18 @@
 //
 // --------------------------------------------------------------------------------------
 
-#define MACH_CHECK(mach_retval)                                        \
-    do {                                                               \
-        kern_return_t _kr = (mach_retval);                             \
-        if (_kr != KERN_SUCCESS) {                                     \
-            fprintf(stderr, "mach error: %s", mach_error_string(_kr)); \
-            assert(_kr == KERN_SUCCESS);                               \
-        }                                                              \
-    } while (0)
+static void MACH_CHECK(kern_return_t mach_retval)
+{
+    switch (mach_retval) {
+        case KERN_SUCCESS: break;
+        case KERN_ABORTED: // Awoken due reason unrelated to semaphore (e.g. pthread_cancel)
+            pthread_testcancel(); // Unlike sem_wait, mach semaphore ops aren't cancellation points
+            // fallthrough
+        default:
+            fprintf(stderr, "mach error: %s", mach_error_string(mach_retval));
+            assert(mach_retval == KERN_SUCCESS);
+    }
+}
 
 Threading::Semaphore::Semaphore()
 {

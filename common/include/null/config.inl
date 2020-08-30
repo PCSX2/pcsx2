@@ -17,8 +17,8 @@
 #if defined(_WIN32)
 #include <windows.h>
 #include "resource.h"
-#elif defined(__unix__)
-#include <gtk/gtk.h>
+#elif defined(__unix__) || defined(__APPLE__)
+#include <wx/wx.h>
 #endif
 #include <string>
 
@@ -65,33 +65,33 @@ void ConfigureLogging()
     DialogBox(s_hinstance, MAKEINTRESOURCE(IDD_DIALOG), GetActiveWindow(), ConfigureDialogProc);
 }
 
-#elif defined(__unix__)
+#elif defined(__unix__) || defined(__APPLE__)
 
 void ConfigureLogging()
 {
-    GtkDialogFlags flags = static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT);
-    GtkWidget *dialog = gtk_dialog_new_with_buttons("Config", nullptr, flags,
-                                                    "Cancel", GTK_RESPONSE_REJECT,
-                                                    "Ok", GTK_RESPONSE_ACCEPT,
-                                                    nullptr);
+    auto *dialog = new wxDialog;
+    dialog->Create(nullptr, wxID_ANY, "Config", wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX);
 
-    GtkWidget *console_checkbox = gtk_check_button_new_with_label("Log to console");
-    GtkWidget *file_checkbox = gtk_check_button_new_with_label("Log to file");
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(console_checkbox), g_plugin_log.WriteToConsole);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(file_checkbox), g_plugin_log.WriteToFile);
+    auto *main_sizer = new wxBoxSizer(wxVERTICAL);
+    auto *sizer = dialog->CreateButtonSizer(wxOK | wxCANCEL);
 
-    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-    gtk_container_add(GTK_CONTAINER(content_area), console_checkbox);
-    gtk_container_add(GTK_CONTAINER(content_area), file_checkbox);
+    auto *log_check = new wxCheckBox(dialog, wxID_ANY, "Log to Console");
+    auto *file_check = new wxCheckBox(dialog, wxID_ANY, "Log to File");
+    log_check->SetValue(g_plugin_log.WriteToConsole);
+    file_check->SetValue(g_plugin_log.WriteToFile);
 
-    gtk_widget_show_all(dialog);
+    main_sizer->Add(log_check);
+    main_sizer->Add(file_check);
+    main_sizer->Add(sizer);
 
-    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-        g_plugin_log.WriteToConsole = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(console_checkbox)) == TRUE;
-        g_plugin_log.WriteToFile = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(file_checkbox)) == TRUE;
+    dialog->SetSizerAndFit(main_sizer);
+
+    if ( dialog->ShowModal() == wxID_OK )
+    {
+        g_plugin_log.WriteToConsole = log_check->GetValue();
+        g_plugin_log.WriteToFile = file_check->GetValue();
     }
-
-    gtk_widget_destroy(dialog);
+    wxDELETE(dialog);
 }
 
 #else

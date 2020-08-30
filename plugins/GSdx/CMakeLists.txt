@@ -43,24 +43,12 @@ if(XDG_STD)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DXDG_STD)
 endif()
 
-if(EGL_API AND EGL_FOUND)
-    set(GSdxFinalFlags ${GSdxFinalFlags} -DEGL_SUPPORTED)
-endif()
-
 
 if(OPENCL_FOUND)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DENABLE_OPENCL)
 endif()
 
 set(GSdxSources
-    PSX/GPU.cpp
-    PSX/GPUDrawScanline.cpp
-    PSX/GPUDrawScanlineCodeGenerator.cpp
-    PSX/GPULocalMemory.cpp
-    PSX/GPURenderer.cpp
-    PSX/GPURendererSW.cpp
-    PSX/GPUSetupPrimCodeGenerator.cpp
-    PSX/GPUState.cpp
     GS.cpp
     GSAlignedClass.cpp
     GSBlock.cpp
@@ -154,17 +142,6 @@ set(GSdxHeaders
     GSVector8.h
     GSVector8i.h
     stdafx.h
-    PSX/GPUDrawingEnvironment.h
-    PSX/GPUDrawScanlineCodeGenerator.h
-    PSX/GPUDrawScanline.h
-    PSX/GPU.h
-    PSX/GPULocalMemory.h
-    PSX/GPURenderer.h
-    PSX/GPURendererSW.h
-    PSX/GPUScanlineEnvironment.h
-    PSX/GPUSetupPrimCodeGenerator.h
-    PSX/GPUState.h
-    PSX/GPUVertex.h
     Renderers/Common/GSDevice.h
     Renderers/Common/GSDirtyRect.h
     Renderers/Common/GSFastList.h
@@ -224,7 +201,6 @@ if(Windows)
         Window/GSSettingsDlg.cpp
         Window/GSWndDX.cpp
         Window/GSWndWGL.cpp
-        PSX/GPUSettingsDlg.cpp
         )
 
     LIST(APPEND GSdxHeaders
@@ -234,20 +210,17 @@ if(Windows)
         Renderers/DX11/GSTextureCache11.h
         Window/GSWndDX.h
         Window/GSWndWGL.h
-        PSX/GPUSettingsDlg.h
         resource.h
         targetver.h
         )
 else()
     LIST(APPEND GSdxSources
         Window/GSLinuxDialog.cpp
-        Window/GSWndOGL.cpp
         Window/GSWndEGL.cpp
         )
 
     LIST(APPEND GSdxHeaders
         Window/GSWndEGL.h
-        Window/GSWndOGL.h
         )
 endif()
 
@@ -260,16 +233,14 @@ set(GSdxFinalSources
 set(GSdxFinalLibs
     ${X11_LIBRARIES}
     ${OPENGL_LIBRARIES}
+    ${EGL_LIBRARIES}
+    ${X11_XCB_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${LIBC_LIBRARIES}
     ${PNG_LIBRARIES}
     ${FREETYPE_LIBRARIES}
     ${LIBLZMA_LIBRARIES}
 )
-
-if(EGL_API AND EGL_FOUND)
-    set(GSdxFinalLibs ${GSdxFinalLibs} ${EGL_LIBRARIES} ${X11_XCB_LIBRARIES})
-endif()
 
 if(USE_VTUNE)
     set(GSdxFinalLibs ${GSdxFinalLibs} ${VTUNE_LIBRARIES})

@@ -26,6 +26,7 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}</ProjectGuid>
   </PropertyGroup>
@@ -57,7 +58,6 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">DISABLE_SVU;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -70,7 +70,6 @@
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt" />
     <None Include="..\..\Docs\License.txt" />
-    <None Include="..\..\x86\aVUzerorec.S" />
     <None Include="..\..\x86\microVU_Alloc.inl" />
     <None Include="..\..\x86\microVU_Analyze.inl" />
     <None Include="..\..\x86\microVU_Branch.inl" />
@@ -179,6 +178,7 @@
     <ClCompile Include="..\..\gui\Panels\MemoryCardListView.cpp" />
     <ClCompile Include="..\..\IopGte.cpp" />
     <ClCompile Include="..\..\IPU\IPUdma.cpp" />
+    <ClCompile Include="..\..\IPU\IPUdither.cpp" />
     <ClCompile Include="..\..\Linux\LnxConsolePipe.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -229,18 +229,6 @@
     <ClCompile Include="..\..\VUmicro.cpp" />
     <ClCompile Include="..\..\VUmicroMem.cpp" />
     <ClCompile Include="..\..\x86\microVU.cpp" />
-    <ClCompile Include="..\..\x86\sVU_Lower.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Micro.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Upper.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_zerorec.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\VU0.cpp" />
     <ClCompile Include="..\..\VU0micro.cpp" />
     <ClCompile Include="..\..\VU0microInterp.cpp" />
@@ -394,7 +382,6 @@
     <ClCompile Include="..\..\gui\Panels\PluginSelectorPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\SpeedhacksPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\VideoPanel.cpp" />
-    <ClCompile Include="..\DwmSetup.cpp" />
     <ClCompile Include="..\WinCompressNTFS.cpp" />
     <ClCompile Include="..\WinConsolePipe.cpp" />
     <ClCompile Include="..\..\Linux\LnxKeyCodes.cpp">
@@ -462,7 +449,6 @@
     <ClInclude Include="..\..\Config.h" />
     <ClInclude Include="..\..\Dump.h" />
     <ClInclude Include="..\..\IopCommon.h" />
-    <ClInclude Include="..\..\NakedAsm.h" />
     <ClInclude Include="..\..\Plugins.h" />
     <ClInclude Include="..\..\SaveState.h" />
     <ClInclude Include="..\..\System.h" />
@@ -482,8 +468,6 @@
     <ClInclude Include="..\..\x86\microVU_Misc.h" />
     <ClInclude Include="..\..\x86\microVU_Profiler.h" />
     <ClInclude Include="..\..\x86\R5900_Profiler.h" />
-    <ClInclude Include="..\..\x86\sVU_Micro.h" />
-    <ClInclude Include="..\..\x86\sVU_zerorec.h" />
     <ClInclude Include="..\..\VUflags.h" />
     <ClInclude Include="..\..\VUops.h" />
     <ClInclude Include="..\..\Sif.h" />

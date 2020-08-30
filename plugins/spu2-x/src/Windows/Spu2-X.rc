@@ -46,7 +46,7 @@ BEGIN
     LTEXT           "Module:",IDC_STATIC,163,16,50,9,NOT WS_GROUP
     COMBOBOX        IDC_OUTPUT,165,26,129,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Configure...",IDC_OUTCONF,165,42,52,13
-    LTEXT           "Volume:",IDC_STATIC,192,61,26,8,NOT WS_GROUP
+    LTEXT           "Volume:",IDC_STATIC,192,61,27,8,NOT WS_GROUP
     CTEXT           "100%",IDC_VOLUME_LABEL,226,61,58,9
     CONTROL         "",IDC_VOLUME_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,165,72,129,10
     LTEXT           "Latency:",IDC_STATIC,190,86,29,8,NOT WS_GROUP
@@ -97,7 +97,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,88,100,50,14
     COMBOBOX        IDC_DS_DEVICE,6,13,159,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "WaveOut Device:",IDC_STATIC,4,3,60,8
-    LTEXT           "Number of Buffers",IDC_STATIC,4,39,61,11
+    LTEXT           "Number of Buffers",IDC_STATIC,4,39,61,15
     CONTROL         "",IDC_BUFFERS_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,71,48,94,10
     LTEXT           "Use extra buffers if you are experiencing loopy or studdery audio even when games run at high FPS.",IDC_STATIC,8,66,151,27
     CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL,70,37,95,11

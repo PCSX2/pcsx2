@@ -101,7 +101,6 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 	{
 		ShaderMacro sm(m_shader.model);
 
-		sm.AddMacro("VS_BPPZ", sel.bppz);
 		sm.AddMacro("VS_TME", sel.tme);
 		sm.AddMacro("VS_FST", sel.fst);
 
@@ -143,12 +142,13 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 {
 	CComPtr<ID3D11GeometryShader> gs;
 
-	bool Unscale_GSShader = (sel.point == 1 || sel.line == 1);
-	if((sel.prim > 0 && (sel.iip == 0 || sel.prim == 3)) || Unscale_GSShader) // geometry shader works in every case, but not needed
+	const bool unscale_pt_ln = (sel.point == 1 || sel.line == 1);
+	// Geometry shader is disabled if sprite conversion is done on the cpu (sel.cpu_sprite).
+	if ((sel.prim > 0 && sel.cpu_sprite == 0 && (sel.iip == 0 || sel.prim == 3)) || unscale_pt_ln)
 	{
-		auto i = std::as_const(m_gs).find(sel);
+		const auto i = std::as_const(m_gs).find(sel);
 
-		if(i != m_gs.end())
+		if (i != m_gs.end())
 		{
 			gs = i->second;
 		}
@@ -219,6 +219,8 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		sm.AddMacro("PS_BLEND_B", sel.blend_b);
 		sm.AddMacro("PS_BLEND_C", sel.blend_c);
 		sm.AddMacro("PS_BLEND_D", sel.blend_d);
+		sm.AddMacro("PS_DITHER", sel.dither);
+		sm.AddMacro("PS_ZCLAMP", sel.zclamp);
 
 		CComPtr<ID3D11PixelShader> ps;
 

@@ -76,6 +76,6 @@ extern void releaseNewVif(int idx);
 
 extern __aligned16 nVifStruct nVif[2];
 extern __aligned16 nVifCall nVifUpk[(2*2*16)*4]; // ([USN][Masking][Unpack Type]) [curCycle]
-extern __aligned16 u32		nVifMask[3][4][4];	 // [MaskNumber][CycleNumber][Vector]
+extern __aligned16 u32      nVifMask[3][4][4];   // [MaskNumber][CycleNumber][Vector]
 
 static const bool newVifDynaRec = 1; // Use code in newVif_Dynarec.inl

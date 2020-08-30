@@ -65,9 +65,9 @@ layout(std140, binding = 20) uniform cb20
 
     vec4  TextureOffset;
 
-    uint  DepthMask;
-    uint  cb20_pad;
     vec2  PointSize;
+    uint  MaxDepth;
+    uint  pad_cb20;
 };
 #endif
 
@@ -80,8 +80,7 @@ layout(std140, binding = 21) uniform cb21
     vec4 WH;
 
     vec2 TA;
-    //float _pad0;
-    int   Uber_ATST;
+    float pad0_cb21;
     float Af;
 
     uvec4 MskFix;
@@ -94,6 +93,11 @@ layout(std140, binding = 21) uniform cb21
 
     vec2 TextureScale;
     vec2 TC_OffsetHack;
+
+    vec3 pad1_cb21;
+    float MaxDepthPS;
+
+    mat4 DitherMatrix;
 };
 #endif
 

@@ -27,6 +27,8 @@
 #if defined(__unix__)
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#elif defined(__APPLE__)
+#include <Carbon/Carbon.h>
 #endif
 
 #include "keyboard.h"
@@ -41,13 +43,81 @@ char *KeysymToChar(int keysym)
 }
 #endif
 
-#if defined(__unix__)
+/// g_key_status.press but with proper handling for analog buttons
+static void PressButton(u32 pad, u32 button) {
+    // Analog controls.
+    if (IsAnalogKey(button)) {
+        switch (button) {
+            case PAD_R_LEFT:
+            case PAD_R_UP:
+            case PAD_L_LEFT:
+            case PAD_L_UP:
+                g_key_status.press(pad, button, -MAX_ANALOG_VALUE);
+                break;
+            case PAD_R_RIGHT:
+            case PAD_R_DOWN:
+            case PAD_L_RIGHT:
+            case PAD_L_DOWN:
+                g_key_status.press(pad, button, MAX_ANALOG_VALUE);
+                break;
+        }
+    } else {
+        g_key_status.press(pad, button);
+    }
+}
+
+#if defined(__APPLE__)
+// Mac keyboard input code is based on Dolphin's Source/Core/InputCommon/ControllerInterface/Quartz/QuartzKeyboardAndMouse.mm
+// Copyright 2016 Dolphin Emulator Project
+// Licensed under GPLv2+
+
+// All keycodes are 16 bits or less, so we use top 16 bits to differentiate source
+// Keyboard keys use discriminator 0
+// Mouse buttons use discriminator 1
+
+void UpdateKeyboardInput() {
+    for (int pad = 0; pad < GAMEPAD_NUMBER; pad++) {
+        const auto& map = g_conf.keysym_map[pad];
+        // If we loop over all keys press/release based on current state,
+        // joystick axes (which have two bound keys) will always go to the later-polled key
+        // Instead, release all keys first and then set the ones that are pressed
+        for (const auto& key : map) g_key_status.release(pad, key.second);
+        for (const auto& key : map) {
+            bool state;
+            if (key.first >> 16 == 0) {
+                state = CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, key.first);
+            } else {
+                state = CGEventSourceButtonState(kCGEventSourceStateHIDSystemState, (CGMouseButton)(key.first & 0xFFFF));
+            }
+            if (state) PressButton(pad, key.second);
+        }
+    }
+}
+
+bool PollForNewKeyboardKeys(u32 &pkey) {
+    // All keycodes in <HIToolbox/Events.h> are 0x7e or lower. If you notice
+    // keys that aren't being recognized, bump this number up!
+    for (int key = 0; key < 0x80; key++) {
+        if (CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, key)) {
+            pkey = key == kVK_Escape ? 0 : key;
+            return true;
+        }
+    }
+    for (auto btn : {kCGMouseButtonLeft, kCGMouseButtonCenter, kCGMouseButtonRight}) {
+        if (CGEventSourceButtonState(kCGEventSourceStateHIDSystemState, btn)) {
+            pkey = btn | (1 << 16);
+            return true;
+        }
+    }
+    return false;
+}
+#elif defined(__unix__)
 static bool s_grab_input = false;
 static bool s_Shift = false;
 static unsigned int s_previous_mouse_x = 0;
 static unsigned int s_previous_mouse_y = 0;
 
-static void AnalyzeKeyEvent(keyEvent &evt)
+void AnalyzeKeyEvent(keyEvent &evt)
 {
     KeySym key = (KeySym)evt.key;
     int pad = 0;
@@ -82,24 +152,8 @@ static void AnalyzeKeyEvent(keyEvent &evt)
                 }
             }
 
-            // Analog controls.
-            if (IsAnalogKey(index)) {
-                switch (index) {
-                    case PAD_R_LEFT:
-                    case PAD_R_UP:
-                    case PAD_L_LEFT:
-                    case PAD_L_UP:
-                        g_key_status.press(pad, index, -MAX_ANALOG_VALUE);
-                        break;
-                    case PAD_R_RIGHT:
-                    case PAD_R_DOWN:
-                    case PAD_L_RIGHT:
-                    case PAD_L_DOWN:
-                        g_key_status.press(pad, index, MAX_ANALOG_VALUE);
-                        break;
-                }
-            } else if (index != -1)
-                g_key_status.press(pad, index);
+            if (index != -1)
+                PressButton(pad, index);
 
             //PAD_LOG("Key pressed:%d\n", index);
 
@@ -191,7 +245,7 @@ static void AnalyzeKeyEvent(keyEvent &evt)
     }
 }
 
-void PollForX11KeyboardInput()
+void UpdateKeyboardInput()
 {
     keyEvent evt = {0};
     XEvent E = {0};
@@ -222,7 +276,7 @@ void PollForX11KeyboardInput()
     }
 }
 
-bool PollX11KeyboardMouseEvent(u32 &pkey)
+bool PollForNewKeyboardKeys(u32 &pkey)
 {
     GdkEvent *ev = gdk_event_get();
 

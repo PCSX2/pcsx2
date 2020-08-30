@@ -58,17 +58,27 @@ __fi void _vu0run(bool breakOnMbit, bool addCycles) {
 
 	if (!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
 
-	int startcycle = VU0.cycle;
-	u32 runCycles  = breakOnMbit ? vu0RunCycles : 0x7fffffff;
-	VU0.flags	  &= ~VUFLAG_MFLAGSET;
+	//VU0 is ahead of the EE and M-Bit is already encountered, so no need to wait for it, just catch up the EE
+	if ((VU0.flags & VUFLAG_MFLAGSET) && breakOnMbit && VU0.cycle >= cpuRegs.cycle)
+	{
+		cpuRegs.cycle = VU0.cycle;
+		return;
+	}
+
+	u32 startcycle = VU0.cycle;
+	u32 runCycles  = 0x7fffffff;
 
 	do { // Run VU until it finishes or M-Bit
 		CpuVU0->Execute(runCycles);
 	} while ((VU0.VI[REG_VPU_STAT].UL & 1)						// E-bit Termination
-	  &&	(!breakOnMbit || !(VU0.flags & VUFLAG_MFLAGSET)));	// M-bit Break
+	  &&	(!breakOnMbit || !(VU0.flags & VUFLAG_MFLAGSET) || VU0.cycle < cpuRegs.cycle));	// M-bit Break
 
 	// Add cycles if called from EE's COP2
-	if (addCycles) cpuRegs.cycle += (VU0.cycle-startcycle)*2;
+	if (addCycles)
+	{
+		cpuRegs.cycle += (VU0.cycle - startcycle);
+		VU0.cycle = cpuRegs.cycle;
+	}
 }
 
 void _vu0WaitMicro()   { _vu0run(1, 1); } // Runs VU0 Micro Until E-bit or M-Bit End
@@ -101,7 +111,7 @@ namespace OpcodeImpl
 
 void QMFC2() {
 	if (cpuRegs.code & 1) {
-		_vu0WaitMicro();
+		_vu0FinishMicro();
 	}
 	if (_Rt_ == 0) return;
 	cpuRegs.GPR.r[_Rt_].UD[0] = VU0.VF[_Fs_].UD[0];
@@ -119,17 +129,11 @@ void QMTC2() {
 
 void CFC2() {
 	if (cpuRegs.code & 1) {
-		_vu0WaitMicro();
+		_vu0FinishMicro();
 	}
 	if (_Rt_ == 0) return;
 	
-	if (_Fs_ == REG_TPC) {
-		// For explanation why this is needed here please refer to 
-		// recCFC2() definded in microVU_Macro.inl
-		cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL >> 3;
-	} else {
-		cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL;
-	}
+	cpuRegs.GPR.r[_Rt_].UL[0] = VU0.VI[_Fs_].UL;
 
 	if(VU0.VI[_Fs_].UL & 0x80000000)
 		cpuRegs.GPR.r[_Rt_].UL[1] = 0xffffffff;
@@ -167,7 +171,7 @@ void CTC2() {
 			break;
 		case REG_CMSAR1: // REG_CMSAR1
 			if (!(VU0.VI[REG_VPU_STAT].UL & 0x100) ) {
-				vu1ExecMicro(cpuRegs.GPR.r[_Rt_].US[0] * 8);	// Execute VU1 Micro SubRoutine
+				vu1ExecMicro(cpuRegs.GPR.r[_Rt_].US[0]);	// Execute VU1 Micro SubRoutine
 				vif1VUFinish();
 			}
 			break;

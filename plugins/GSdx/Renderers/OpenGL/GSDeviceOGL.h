@@ -117,15 +117,15 @@ public:
 
 		GSVector4 TextureOffset;
 
-		GSVector2i DepthMask;
 		GSVector2 PointSize;
+		GSVector2i MaxDepth;
 
 		VSConstantBuffer()
 		{
 			Vertex_Scale_Offset = GSVector4::zero();
 			TextureOffset       = GSVector4::zero();
-			DepthMask           = GSVector2i(0);
 			PointSize           = GSVector2(0);
+			MaxDepth            = GSVector2i(0);
 		}
 
 		__forceinline bool Update(const VSConstantBuffer* cb)
@@ -137,6 +137,7 @@ public:
 			{
 				a[0] = b[0];
 				a[1] = b[1];
+				a[2] = b[2];
 
 				return true;
 			}
@@ -197,6 +198,9 @@ public:
 		GSVector4 HalfTexel;
 		GSVector4 MinMax;
 		GSVector4 TC_OH_TS;
+		GSVector4 MaxDepth;
+
+		GSVector4 DitherMatrix[4];
 
 		PSConstantBuffer()
 		{
@@ -208,6 +212,12 @@ public:
 			MskFix        = GSVector4i::zero();
 			TC_OH_TS      = GSVector4::zero();
 			FbMask        = GSVector4i::zero();
+			MaxDepth      = GSVector4::zero();
+
+			DitherMatrix[0] = GSVector4::zero();
+			DitherMatrix[1] = GSVector4::zero();
+			DitherMatrix[2] = GSVector4::zero();
+			DitherMatrix[3] = GSVector4::zero();
 		}
 
 		__forceinline bool Update(const PSConstantBuffer* cb)
@@ -217,7 +227,8 @@ public:
 
 			// if WH matches both HalfTexel and TC_OH_TS do too
 			// MinMax depends on WH and MskFix so no need to check it too
-			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4])).alltrue())
+			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4])
+				& (a[8] == b[8]) & (a[9] == b[9]) & (a[10] == b[10]) & (a[11] == b[11]) & (a[12] == b[12])).alltrue())
 			{
 				// Note previous check uses SSE already, a plain copy will be faster than any memcpy
 				a[0] = b[0];
@@ -226,6 +237,13 @@ public:
 				a[3] = b[3];
 				a[4] = b[4];
 				a[5] = b[5];
+
+				a[8] = b[8];
+
+				a[9] = b[9];
+				a[10] = b[10];
+				a[11] = b[11];
+				a[12] = b[12];
 
 				return true;
 			}
@@ -287,6 +305,12 @@ public:
 				// Others ways to fetch the texture
 				uint32 channel:3;
 
+				// Dithering
+				uint32 dither:2;
+
+				// Depth clamp
+				uint32 zclamp:1;
+
 				// Hack
 				uint32 tcoffsethack:1;
 				uint32 urban_chaos_hle:1;
@@ -297,7 +321,7 @@ public:
 				uint32 point_sampler:1;
 				uint32 invalid_tex0:1; // Lupin the 3rd
 
-				uint32 _free2:10;
+				uint32 _free2:7;
 			};
 
 			uint64 key;

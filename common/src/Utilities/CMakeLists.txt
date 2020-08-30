@@ -56,7 +56,6 @@ set(UtilitiesHeaders
 	../../include/Utilities/EventSource.h
 	../../include/Utilities/Exceptions.h
 	../../include/Utilities/FixedPointTypes.h
-	../../include/Utilities/gtkGuiTools.h
 	../../include/Utilities/General.h
 	../../include/Utilities/MakeUnique.h
 	../../include/Utilities/MemcpyFast.h
@@ -117,3 +116,8 @@ set(UtilitiesFinalLibs
 
 add_pcsx2_lib(${Output} "${UtilitiesFinalSources}" "${UtilitiesFinalLibs}" "${UtilitiesFinalFlags}")
 add_pcsx2_lib(${Output}_NO_TLS "${UtilitiesFinalSources}" "${UtilitiesFinalLibs}" "${UtilitiesFinalFlags} -DPCSX2_THREAD_LOCAL=0")
+
+if(COMMAND target_precompile_headers)
+	target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
+	target_precompile_headers(${Output}_NO_TLS PRIVATE PrecompiledHeader.h)
+endif()

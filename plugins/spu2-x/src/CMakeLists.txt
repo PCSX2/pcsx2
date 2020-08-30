@@ -20,7 +20,7 @@ set(CommonFlags
 
 # plugin name
 set(Output spu2x-2.0.0)
-if (UNIX AND NOT APPLE)
+if (UNIX)
 	if (SDL2_API)
 		set(spu2xFinalFlags "-DSPU2X_SDL2" ${CommonFlags})
 	else()
@@ -45,7 +45,6 @@ set(spu2xSources
     RegTable.cpp
     Reverb.cpp
     SndOut.cpp
-    SndOut_Portaudio.cpp
     SndOut_SDL.cpp
     spu2freeze.cpp
     Spu2replay.cpp
@@ -76,9 +75,7 @@ if(Windows)
     LIST(APPEND spu2xSources
         Windows/SndOut_waveOut.cpp
         Windows/SndOut_DSound.cpp
-        Windows/SndOut_XAudio2_27.cpp
         Windows/SndOut_XAudio2.cpp
-        Windows/SndOut_XAudio2.inl
         Windows/UIHelpers.cpp
         Windows/RealtimeDebugger.cpp
         Windows/dsp.cpp
@@ -100,17 +97,18 @@ else()
         Linux/ConfigDebug.cpp
         Linux/ConfigSoundTouch.cpp
         Linux/Dialogs.cpp
+        wx/wxConfig.cpp
         )
 
     LIST(APPEND spu2xHeaders
         Linux/Alsa.h
         Linux/Config.h
         Linux/Dialogs.h
+        wx/wxConfig.h
         )
 
     include_directories(Linux)
 endif()
-
 
 set(spu2xFinalSources
     ${spu2xSources}
@@ -121,10 +119,25 @@ set(spu2xFinalSources
 set(spu2xFinalLibs
     Utilities_NO_TLS
     ${ALSA_LIBRARIES}
-    ${PORTAUDIO_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${SOUNDTOUCH_LIBRARIES}
 )
+
+if (PORTAUDIO_FOUND)
+    set(spu2xFinalFlags
+        ${spu2xFinalFlags}
+        "-DSPU2X_PORTAUDIO"
+    )
+
+    LIST(APPEND spu2xFinalSources
+         SndOut_Portaudio.cpp
+    )
+
+    set(spu2xFinalLibs
+        ${spu2xFinalLibs}
+        ${PORTAUDIO_LIBRARIES}
+    )
+endif()
 
 if (SDL2_API)
     set(spu2xFinalLibs

@@ -530,29 +530,6 @@ void atst(vec4 C)
 {
     float a = C.a;
 
-#if 0
-    switch(Uber_ATST) {
-        case 0:
-            break;
-        case 1:
-            if (a > AREF) discard;
-            break;
-        case 2:
-            if (a < AREF) discard;
-            break;
-        case 3:
-            if (abs(a - AREF) > 0.5f) discard;
-            break;
-        case 4:
-            if (abs(a - AREF) < 0.5f) discard;
-            break;
-    }
-
-
-#endif
-
-#if 1
-
 #if (PS_ATST == 0)
     // nothing to do
 #elif (PS_ATST == 1)
@@ -564,9 +541,6 @@ void atst(vec4 C)
 #elif (PS_ATST == 4)
     if (abs(a - AREF) < 0.5f) discard;
 #endif
-
-#endif
-
 }
 
 void fog(inout vec4 C, float f)
@@ -637,6 +611,18 @@ void ps_fbmask(inout vec4 C)
 #endif
 }
 
+void ps_dither(inout vec4 C)
+{
+#if PS_DITHER
+    #if PS_DITHER == 2
+    ivec2 fpos = ivec2(gl_FragCoord.xy);
+    #else
+    ivec2 fpos = ivec2(gl_FragCoord.xy / ScalingFactor.x);
+    #endif
+    C.rgb += DitherMatrix[fpos.y&3][fpos.x&3];
+#endif
+}
+
 void ps_blend(inout vec4 Color, float As)
 {
 #if SW_BLEND
@@ -692,7 +678,8 @@ void ps_blend(inout vec4 Color, float As)
     Color.rgb = trunc((A - B) * C + D);
 #endif
 
-    // FIXME dithering
+    // Dithering
+    ps_dither(Color);
 
     // Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0
@@ -842,9 +829,21 @@ void ps_main()
     return;
 #endif
 
+#if !SW_BLEND
+    ps_dither(C);
+#endif
+
     ps_blend(C, alpha_blend);
 
     ps_fbmask(C);
+
+// When dithering the bottom 3 bits become meaningless and cause lines in the picture
+// so we need to limit the color depth on dithered items
+// SW_BLEND already deals with this so no need to do in those cases
+#if !SW_BLEND && PS_DITHER && PS_DFMT == FMT_16 && PS_COLCLIP == 0
+    C.rgb = clamp(C.rgb, vec3(0.0f), vec3(255.0f));
+    C.rgb = uvec3(uvec3(C.rgb) & uvec3(0xF8));
+#endif
 
 // #if PS_HDR == 1
     // Use negative value to avoid overflow of the texture (in accumulation mode)
@@ -857,6 +856,10 @@ void ps_main()
 // #endif
     SV_Target0 = C / 255.0f;
     SV_Target1 = vec4(alpha_blend);
+
+#if PS_ZCLAMP
+	gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
+#endif 
 }
 
 #endif

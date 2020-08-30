@@ -33,9 +33,9 @@ iopMemoryReserve::iopMemoryReserve()
 {
 }
 
-void iopMemoryReserve::Reserve()
+void iopMemoryReserve::Reserve(VirtualMemoryManagerPtr allocator)
 {
-	_parent::Reserve(HostMemoryMap::IOPmem);
+	_parent::Reserve(std::move(allocator), HostMemoryMap::IOPmemOffset);
 	//_parent::Reserve(EmuConfig.HostMap.IOP);
 }
 
@@ -96,6 +96,11 @@ void iopMemoryReserve::Reset()
 		psxMemWLUT[i + 0x2000 + 0x1e00] = (uptr)&eeMem->ROM1[i << 16];
 	}
 
+	for (int i = 0; i < 0x0008; i++) 
+	{
+		psxMemWLUT[i + 0x2000 + 0x1e40] = (uptr)&eeMem->ROM2[i << 16];
+	}
+
 	// sif!! (which is read only? (air))
 	psxMemWLUT[0x2000 + 0x1d00] = (uptr)iopMem->Sif;
 	//psxMemWLUT[0x1bd00] = (uptr)iopMem->Sif;
@@ -111,12 +116,6 @@ void iopMemoryReserve::Decommit()
 
 	safe_aligned_free(psxMemWLUT);
 	psxMemRLUT = NULL;
-	iopMem = NULL;
-}
-
-void iopMemoryReserve::Release()
-{
-	_parent::Release();
 	iopMem = NULL;
 }
 

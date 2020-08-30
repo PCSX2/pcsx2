@@ -25,6 +25,7 @@
 // [TODO] OS-X (Darwin) platforms should use the Mach exception model (not implemented)
 
 #include "EventSource.h"
+#include <atomic>
 
 struct PageFaultInfo
 {
@@ -123,6 +124,64 @@ protected:
 
 
 // --------------------------------------------------------------------------------------
+//  VirtualMemoryManager: Manages the allocation of PCSX2 VM
+//    Ensures that all memory is close enough together for rip-relative addressing
+// --------------------------------------------------------------------------------------
+class VirtualMemoryManager
+{
+    DeclareNoncopyableObject(VirtualMemoryManager);
+
+    wxString m_name;
+
+    uptr m_baseptr;
+
+    // An array to track page usage (to trigger asserts if things try to overlap)
+    std::atomic<bool> *m_pageuse;
+
+    // reserved memory (in pages)
+    u32 m_pages_reserved;
+
+public:
+    // If upper_bounds is nonzero and the OS fails to allocate memory that is below it,
+    // calls to IsOk() will return false and Alloc() will always return null pointers
+    // strict indicates that the allocation should quietly fail if the memory can't be mapped at `base`
+    VirtualMemoryManager(const wxString &name, uptr base, size_t size, uptr upper_bounds = 0, bool strict = false);
+    ~VirtualMemoryManager();
+
+    void *GetBase() const { return (void *)m_baseptr; }
+
+    // Request the use of the memory at offsetLocation bytes from the start of the reserved memory area
+    // offsetLocation must be page-aligned
+    void *Alloc(uptr offsetLocation, size_t size) const;
+
+    void *AllocAtAddress(void *address, size_t size) const {
+        return Alloc(size, (uptr)address - m_baseptr);
+    }
+
+    void Free(void *address, size_t size) const;
+
+    // Was this VirtualMemoryManager successfully able to get its memory mapping?
+    // (If not, calls to Alloc will return null pointers)
+    bool IsOk() const { return m_baseptr != 0; }
+};
+
+typedef std::shared_ptr<const VirtualMemoryManager> VirtualMemoryManagerPtr;
+
+// --------------------------------------------------------------------------------------
+//  VirtualMemoryBumpAllocator: Allocates memory for things that don't have explicitly-reserved spots
+// --------------------------------------------------------------------------------------
+class VirtualMemoryBumpAllocator
+{
+    const VirtualMemoryManagerPtr m_allocator;
+    std::atomic<uptr> m_baseptr{0};
+    const uptr m_endptr = 0;
+public:
+    VirtualMemoryBumpAllocator(VirtualMemoryManagerPtr allocator, size_t size, uptr offsetLocation);
+    void *Alloc(size_t size);
+    const VirtualMemoryManagerPtr& GetAllocator() { return m_allocator; }
+};
+
+// --------------------------------------------------------------------------------------
 //  VirtualMemoryReserve
 // --------------------------------------------------------------------------------------
 class VirtualMemoryReserve
@@ -131,6 +190,9 @@ class VirtualMemoryReserve
 
 protected:
     wxString m_name;
+
+    // Where the memory came from (so we can return it)
+    VirtualMemoryManagerPtr m_allocator;
 
     // Default size of the reserve, in bytes.  Can be specified when the object is constructed.
     // Is used as the reserve size when Reserve() is called, unless an override is specified
@@ -155,17 +217,32 @@ protected:
     // as well.
     bool m_allow_writes;
 
+    // Allows the implementation to decide how much memory it needs to allocate if someone requests the given size
+    // Should translate requests of size 0 to m_defsize
+    virtual size_t GetSize(size_t requestedSize);
+
 public:
-    VirtualMemoryReserve(const wxString &name = wxEmptyString, size_t size = 0);
+    VirtualMemoryReserve(const wxString &name, size_t size = 0);
     virtual ~VirtualMemoryReserve()
     {
         Release();
     }
 
-    virtual void *Reserve(size_t size = 0, uptr base = 0, uptr upper_bounds = 0);
-    virtual void *ReserveAt(uptr base = 0, uptr upper_bounds = 0)
+    // Initialize with the given piece of memory
+    // Note: The memory is already allocated, the allocator is for future use to free the region
+    // It may be null in which case there is no way to free the memory in a way it will be usable again
+    virtual void *Assign(VirtualMemoryManagerPtr allocator, void *baseptr, size_t size);
+
+    void *Reserve(VirtualMemoryManagerPtr allocator, uptr baseOffset, size_t size = 0)
     {
-        return Reserve(m_defsize, base, upper_bounds);
+        size = GetSize(size);
+        void *allocation = allocator->Alloc(baseOffset, size);
+        return Assign(std::move(allocator), allocation, size);
+    }
+    void *Reserve(VirtualMemoryBumpAllocator& allocator, size_t size = 0)
+    {
+        size = GetSize(size);
+        return Assign(allocator.GetAllocator(), allocator.Alloc(size), size);
     }
 
     virtual void Reset();
@@ -177,7 +254,7 @@ public:
     virtual void AllowModification();
 
     bool IsOk() const { return m_baseptr != NULL; }
-    wxString GetName() const { return m_name; }
+    const wxString& GetName() const { return m_name; }
 
     uptr GetReserveSizeInBytes() const { return m_pages_reserved * __pagesize; }
     uptr GetReserveSizeInPages() const { return m_pages_reserved; }
@@ -189,8 +266,6 @@ public:
     u8 *GetPtrEnd() { return (u8 *)m_baseptr + (m_pages_reserved * __pagesize); }
     const u8 *GetPtrEnd() const { return (u8 *)m_baseptr + (m_pages_reserved * __pagesize); }
 
-    VirtualMemoryReserve &SetName(const wxString &newname);
-    VirtualMemoryReserve &SetBaseAddr(uptr newaddr);
     VirtualMemoryReserve &SetPageAccessOnCommit(const PageProtectionMode &mode);
 
     operator void *() { return m_baseptr; }
@@ -223,7 +298,7 @@ protected:
 #elif defined(_WIN32)
 
 struct _EXCEPTION_POINTERS;
-extern int SysPageFaultExceptionFilter(struct _EXCEPTION_POINTERS *eps);
+extern long __stdcall SysPageFaultExceptionFilter(struct _EXCEPTION_POINTERS *eps);
 
 #define PCSX2_PAGEFAULT_PROTECT __try
 #define PCSX2_PAGEFAULT_EXCEPT \

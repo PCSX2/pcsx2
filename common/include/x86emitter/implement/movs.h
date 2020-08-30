@@ -33,8 +33,8 @@ struct xImpl_Mov
     void operator()(const xRegisterInt &to, const xRegisterInt &from) const;
     void operator()(const xIndirectVoid &dest, const xRegisterInt &from) const;
     void operator()(const xRegisterInt &to, const xIndirectVoid &src) const;
-    void operator()(const xIndirect64orLess &dest, int imm) const;
-    void operator()(const xRegisterInt &to, int imm, bool preserve_flags = false) const;
+    void operator()(const xIndirect64orLess &dest, sptr imm) const;
+    void operator()(const xRegisterInt &to, sptr imm, bool preserve_flags = false) const;
 
 #if 0
 	template< typename T > __noinline void operator()( const ModSibBase& to, const xImmReg<T>& immOrReg ) const
@@ -69,6 +69,20 @@ struct xImpl_Mov
 	}*/
 #endif
 };
+
+#ifdef __M_X86_64
+// --------------------------------------------------------------------------------------
+//  xImpl_MovImm64
+// --------------------------------------------------------------------------------------
+// Mov with 64-bit immediates (only available on 64-bit platforms)
+//
+struct xImpl_MovImm64
+{
+    xImpl_MovImm64() {} // Satisfy GCC's whims.
+
+    void operator()(const xRegister64 &to, s64 imm, bool preserve_flags = false) const;
+};
+#endif
 
 // --------------------------------------------------------------------------------------
 //  xImpl_CMov

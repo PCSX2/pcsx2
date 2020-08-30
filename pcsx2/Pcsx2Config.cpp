@@ -252,7 +252,6 @@ int Pcsx2Config::GSOptions::GetVsync() const
 const wxChar *const tbl_GamefixNames[] =
 {
 	L"VuAddSub",
-	L"VuClipFlag",
 	L"FpuCompare",
 	L"FpuMul",
 	L"FpuNegDiv",
@@ -268,7 +267,8 @@ const wxChar *const tbl_GamefixNames[] =
 	L"FMVinSoftware",
 	L"GoemonTlb",
 	L"ScarfaceIbit",
-    L"CrashTagTeamRacingIbit"
+	L"CrashTagTeamRacingIbit",
+	L"VU0Kickstart"
 };
 
 const __fi wxChar* EnumToString( GamefixId id )
@@ -316,7 +316,6 @@ void Pcsx2Config::GamefixOptions::Set( GamefixId id, bool enabled )
 	switch(id)
 	{
 		case Fix_VuAddSub:		VuAddSubHack		= enabled;	break;
-		case Fix_VuClipFlag:	VuClipFlagHack		= enabled;	break;
 		case Fix_FpuCompare:	FpuCompareHack		= enabled;	break;
 		case Fix_FpuMultiply:	FpuMulHack			= enabled;	break;
 		case Fix_FpuNegDiv:		FpuNegDivHack		= enabled;	break;
@@ -332,7 +331,8 @@ void Pcsx2Config::GamefixOptions::Set( GamefixId id, bool enabled )
 		case Fix_FMVinSoftware:	FMVinSoftwareHack	= enabled;  break;
 		case Fix_GoemonTlbMiss: GoemonTlbHack		= enabled;  break;
 		case Fix_ScarfaceIbit:  ScarfaceIbit        = enabled;  break;
-        case Fix_CrashTagTeamIbit: CrashTagTeamRacingIbit = enabled; break;
+		case Fix_CrashTagTeamIbit: CrashTagTeamRacingIbit = enabled; break;
+		case Fix_VU0Kickstart:	VU0KickstartHack	= enabled; break;
 		jNO_DEFAULT;
 	}
 }
@@ -343,7 +343,6 @@ bool Pcsx2Config::GamefixOptions::Get( GamefixId id ) const
 	switch(id)
 	{
 		case Fix_VuAddSub:		return VuAddSubHack;
-		case Fix_VuClipFlag:	return VuClipFlagHack;
 		case Fix_FpuCompare:	return FpuCompareHack;
 		case Fix_FpuMultiply:	return FpuMulHack;
 		case Fix_FpuNegDiv:		return FpuNegDivHack;
@@ -359,7 +358,8 @@ bool Pcsx2Config::GamefixOptions::Get( GamefixId id ) const
 		case Fix_FMVinSoftware:	return FMVinSoftwareHack;
 		case Fix_GoemonTlbMiss: return GoemonTlbHack;
 		case Fix_ScarfaceIbit:  return ScarfaceIbit;
-        case Fix_CrashTagTeamIbit: return CrashTagTeamRacingIbit;
+		case Fix_CrashTagTeamIbit: return CrashTagTeamRacingIbit;
+		case Fix_VU0Kickstart:	return VU0KickstartHack;
 		jNO_DEFAULT;
 	}
 	return false;		// unreachable, but we still need to suppress warnings >_<
@@ -370,7 +370,6 @@ void Pcsx2Config::GamefixOptions::LoadSave( IniInterface& ini )
 	ScopedIniGroup path( ini, L"Gamefixes" );
 
 	IniBitBool( VuAddSubHack );
-	IniBitBool( VuClipFlagHack );
 	IniBitBool( FpuCompareHack );
 	IniBitBool( FpuMulHack );
 	IniBitBool( FpuNegDivHack );
@@ -386,7 +385,8 @@ void Pcsx2Config::GamefixOptions::LoadSave( IniInterface& ini )
 	IniBitBool( FMVinSoftwareHack );
 	IniBitBool( GoemonTlbHack );
 	IniBitBool( ScarfaceIbit );
-    IniBitBool( CrashTagTeamRacingIbit );
+	IniBitBool( CrashTagTeamRacingIbit );
+	IniBitBool( VU0KickstartHack );
 }
 
 

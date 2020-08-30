@@ -50,9 +50,6 @@
 
 // used in VU recs
 #define PROCESS_VU_UPDATEFLAGS 0x10
-#ifndef DISABLE_SVU
-#define PROCESS_VU_SUPER	0x40 // set if using supervu recompilation
-#endif
 #define PROCESS_VU_COP2		0x80 // simple cop2
 
 #define EEREC_S (((info)>>8)&0xf)
@@ -121,12 +118,12 @@ extern _x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
 uptr _x86GetAddr(int type, int reg);
 void _initX86regs();
 int  _getFreeX86reg(int mode);
-int  _allocX86reg(x86Emitter::xRegisterLong x86reg, int type, int reg, int mode);
+int  _allocX86reg(x86Emitter::xRegister32 x86reg, int type, int reg, int mode);
 void _deleteX86reg(int type, int reg, int flush);
 int _checkX86reg(int type, int reg, int mode);
 void _addNeededX86reg(int type, int reg);
 void _clearNeededX86regs();
-void _freeX86reg(const x86Emitter::xRegisterLong& x86reg);
+void _freeX86reg(const x86Emitter::xRegister32& x86reg);
 void _freeX86reg(int x86reg);
 void _freeX86regs();
 void _flushCachedRegs();
@@ -180,14 +177,6 @@ void _flushXMMregs();
 u8 _hasFreeXMMreg();
 void _freeXMMregs();
 int _getNumXMMwrite();
-#ifndef DISABLE_SVU
-int  _allocVFtoXMMreg(VURegs *VU, int xmmreg, int vfreg, int mode);
-int  _allocACCtoXMMreg(VURegs *VU, int xmmreg, int mode);
-void _addNeededVFtoXMMreg(int vfreg);
-void _addNeededACCtoXMMreg();
-void _deleteVFtoXMMreg(int reg, int vu, int flush);
-#endif
-
 void _signExtendSFtoM(uptr mem);
 
 // returns new index of reg, lower 32 bits already in mmx

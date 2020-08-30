@@ -50,6 +50,7 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{18E42F6F-3A62-41EE-B42F-79366C4F1E95}</ProjectGuid>
   </PropertyGroup>
@@ -162,15 +163,6 @@
     <ClCompile Include="Window\GSWnd.cpp" />
     <ClCompile Include="Window\GSWndDX.cpp" />
     <ClCompile Include="Window\GSWndWGL.cpp" />
-    <ClCompile Include="PSX\GPU.cpp" />
-    <ClCompile Include="PSX\GPUDrawScanline.cpp" />
-    <ClCompile Include="PSX\GPUDrawScanlineCodeGenerator.cpp" />
-    <ClCompile Include="PSX\GPULocalMemory.cpp" />
-    <ClCompile Include="PSX\GPURenderer.cpp" />
-    <ClCompile Include="PSX\GPURendererSW.cpp" />
-    <ClCompile Include="PSX\GPUSettingsDlg.cpp" />
-    <ClCompile Include="PSX\GPUSetupPrimCodeGenerator.cpp" />
-    <ClCompile Include="PSX\GPUState.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -248,18 +240,6 @@
     <ClInclude Include="Window\GSWnd.h" />
     <ClInclude Include="Window\GSWndDX.h" />
     <ClInclude Include="Window\GSWndWGL.h" />
-    <ClInclude Include="PSX\GPU.h" />
-    <ClInclude Include="PSX\GPUDrawingEnvironment.h" />
-    <ClInclude Include="PSX\GPUDrawScanline.h" />
-    <ClInclude Include="PSX\GPUDrawScanlineCodeGenerator.h" />
-    <ClInclude Include="PSX\GPULocalMemory.h" />
-    <ClInclude Include="PSX\GPURenderer.h" />
-    <ClInclude Include="PSX\GPURendererSW.h" />
-    <ClInclude Include="PSX\GPUScanlineEnvironment.h" />
-    <ClInclude Include="PSX\GPUSettingsDlg.h" />
-    <ClInclude Include="PSX\GPUSetupPrimCodeGenerator.h" />
-    <ClInclude Include="PSX\GPUState.h" />
-    <ClInclude Include="PSX\GPUVertex.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="svnrev.h" />
     <ClInclude Include="resource.h" />

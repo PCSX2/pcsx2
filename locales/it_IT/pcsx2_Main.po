@@ -2,11 +2,11 @@
 # This file is distributed under the same license as the PCSX2 package.
 msgid ""
 msgstr ""
-"Project-Id-Version: PCSX2 1.6.0\n"
+"Project-Id-Version: PCSX2 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
 "POT-Creation-Date: 2020-03-16 22:49+0100\n"
-"PO-Revision-Date: 2020-03-16 22:49+0100\n"
-"Last-Translator: StarFang208\n"
+"PO-Revision-Date: 2020-05-22 18:26+0200\n"
+"Last-Translator: SuperSamus <tinozzo123@gmail.com>\n"
 "Language-Team: Leucos <http://forums.pcsx2.net/User-Leucos>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
@@ -15,7 +15,7 @@ msgstr ""
 "X-Poedit-KeywordsList: _;pxL;_d;pxDt;_t;pxLt\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: ../..\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 2.3.1\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: pcsx2\n"
 "X-Poedit-SearchPath-1: common\n"
@@ -537,7 +537,8 @@ msgstr "disattiva l'avvio veloce"
 msgid ""
 "passes the specified space-delimited string of launch arguments to the game"
 msgstr ""
-"passa la stringa specificata di argomenti di lancio delimitata da spazi al gioco"
+"passa la stringa specificata di argomenti di lancio delimitata da spazi al "
+"gioco"
 
 #: pcsx2/gui/AppInit.cpp:263
 msgid "changes the configuration file path"
@@ -947,7 +948,9 @@ msgstr "Emulatore PlayStation 2:"
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
 msgid ""
 "Big thanks to everyone who contributed to the project throughout the years."
-msgstr "Ringrazio di cuore chiunque abbia contribuito al progetto nel corso degli anni."
+msgstr ""
+"Ringrazio di cuore chiunque abbia contribuito al progetto nel corso degli "
+"anni."
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
 msgid "Close"
@@ -1202,8 +1205,8 @@ msgid ""
 "This is the standard Sony-provisioned size PSX memory card, only compatible "
 "with PSX games."
 msgstr ""
-"Questa è la memory card PSX con le dimensioni standard previste da Sony, compatibile solo "
-"con i giochi PSX."
+"Questa è la memory card PSX con le dimensioni standard previste da Sony, "
+"compatibile solo con i giochi PSX."
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:260
 msgid ""
@@ -1494,7 +1497,7 @@ msgstr "&Debug"
 
 #: pcsx2/gui/MainFrame.cpp:369
 msgid "&Capture"
-msgstr "&Capttura"
+msgstr "&Cattura"
 
 #: pcsx2/gui/MainFrame.cpp:377 pcsx2/gui/MainMenuClicks.cpp:516
 msgid "&Recording"
@@ -2121,7 +2124,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:188
 msgid "microVU Recompiler"
-msgstr "Ricompilatore microVU."
+msgstr "Ricompilatore microVU"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:189
 msgid ""
@@ -2132,7 +2135,7 @@ msgstr ""
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:192
 msgid "superVU Recompiler [legacy]"
-msgstr "Ricompilatore superVU [precedente]."
+msgstr "Ricompilatore superVU [precedente]"
 
 #: pcsx2/gui/Panels/CpuPanel.cpp:193
 msgid ""
@@ -2775,7 +2778,7 @@ msgstr "EE Cycle Skipping [non consigliato]"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
 msgid "microVU Hacks"
-msgstr "Hack di microVU."
+msgstr "Hack di microVU"
 
 #: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
 msgid "mVU Flag Hack"

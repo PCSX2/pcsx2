@@ -23,8 +23,8 @@
 #include "R5900_Profiler.h"
 
 extern u32 maxrecmem;
-extern u32 pc;			         // recompiler pc (also used by the SuperVU! .. why? (air))
-extern int g_branch;	         // set for branch (also used by the SuperVU! .. why? (air))
+extern u32 pc;			         // recompiler pc 
+extern int g_branch;	         // set for branch
 extern u32 target;		         // branch target
 extern u32 s_nBlockCycles;		// cycles of current block recompiling
 
@@ -61,6 +61,7 @@ extern u32 s_nBlockCycles;		// cycles of current block recompiling
 // Used to clear recompiled code blocks during memory/dma write operations.
 u32 recClearMem(u32 pc);
 u32 REC_CLEARM( u32 mem );
+extern bool g_recompilingDelaySlot;
 
 // used when processing branches
 void SaveBranchState();
@@ -73,6 +74,7 @@ void SetBranchImm( u32 imm );
 void iFlushCall(int flushtype);
 void recBranchCall( void (*func)() );
 void recCall( void (*func)() );
+u32 scaleblockcycles_clear();
 
 namespace R5900{
 namespace Dynarec {
@@ -103,7 +105,7 @@ extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
 u32* _eeGetConstReg(int reg);
 
 // finds where the GPR is stored and moves lower 32 bits to EAX
-void _eeMoveGPRtoR(const x86Emitter::xRegisterLong& to, int fromgpr);
+void _eeMoveGPRtoR(const x86Emitter::xRegister32& to, int fromgpr);
 void _eeMoveGPRtoM(uptr to, int fromgpr);
 void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr);
 void eeSignExtendTo(int gpr, bool onlyupper=false);

@@ -982,6 +982,8 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_WRITE_RG %d\n", sel.write_rg)
 		+ format("#define PS_FBMASK %d\n", sel.fbmask)
 		+ format("#define PS_HDR %d\n", sel.hdr)
+		+ format("#define PS_DITHER %d\n", sel.dither)
+		+ format("#define PS_ZCLAMP %d\n", sel.zclamp)
 		// + format("#define PS_PABE %d\n", sel.pabe)
 	;
 

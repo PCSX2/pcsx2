@@ -947,7 +947,7 @@ int SaveSettings(wchar_t *file = 0)
         }
     }
     if (!noError) {
-        MessageBoxA(hWndProp, "Unable to save settings.  Make sure the disk is not full or write protected, the file isn't write protected, and that the app has permissions to write to the directory.  On Vista, try running in administrator mode.", "Error Writing Configuration File", MB_OK | MB_ICONERROR);
+        MessageBoxA(hWndProp, "Unable to save settings.  Make sure the disk is not full or write protected, the file isn't write protected, and that the app has permissions to write to the directory.  Try running in administrator mode.", "Error Writing Configuration File", MB_OK | MB_ICONERROR);
     }
     return !noError;
 }

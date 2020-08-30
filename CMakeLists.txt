@@ -4,7 +4,10 @@ project(Pcsx2)
 # Debian-based distributions require at least 2.8.5 due to multiarch.
 # Bumping up to 3.0 seems reasonable at this point, and will let us modernize
 # things a bit.
-cmake_minimum_required(VERSION 3.0.2)
+#
+# Setting it to a range tells it that it supports the features on the newer
+# versions as well, avoiding setting policies.
+cmake_minimum_required(VERSION 3.3.0...3.17)
 
 # Variable to check that people use the good file
 set(TOP_CMAKE_WAS_SOURCED TRUE)
@@ -28,6 +31,7 @@ include(SearchForStuff)
 include(SelectPcsx2Plugins)
 
 # Must be done after SearchForStuff
+get_git_version_info()
 write_svnrev_h()
 
 if(NOT NO_TRANSLATION)
@@ -51,6 +55,12 @@ endif()
 # make plugins
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins")
     add_subdirectory(plugins)
+endif()
+
+# tests
+if(ACTUALLY_ENABLE_TESTS)
+    add_subdirectory(3rdparty/gtest EXCLUDE_FROM_ALL)
+    add_subdirectory(tests/ctest)
 endif()
 
 #-------------------------------------------------------------------------------

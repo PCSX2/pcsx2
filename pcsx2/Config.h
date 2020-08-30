@@ -43,7 +43,6 @@ enum GamefixId
 	GamefixId_FIRST = 0,
 
 	Fix_VuAddSub = GamefixId_FIRST,
-	Fix_VuClipFlag,
 	Fix_FpuCompare,
 	Fix_FpuMultiply,
 	Fix_FpuNegDiv,
@@ -60,6 +59,7 @@ enum GamefixId
 	Fix_GoemonTlbMiss,
 	Fix_ScarfaceIbit,
 	Fix_CrashTagTeamIbit,
+	Fix_VU0Kickstart,
 
 	GamefixId_COUNT
 };
@@ -347,7 +347,6 @@ struct Pcsx2Config
         BITFIELD32()
         bool
             VuAddSubHack : 1,           // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
-            VuClipFlagHack : 1,         // Persona games, maybe others. It's to do with the VU clip flag (again).
             FpuCompareHack : 1,         // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
             FpuMulHack : 1,             // Tales of Destiny hangs.
             FpuNegDivHack : 1,          // Gundam games messed up camera-view.
@@ -363,7 +362,8 @@ struct Pcsx2Config
             FMVinSoftwareHack : 1,      // Toggle in and out of software rendering when an FMV runs.
             GoemonTlbHack : 1,          // Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
             ScarfaceIbit : 1,           // Scarface I bit hack. Needed to stop constant VU recompilation
-            CrashTagTeamRacingIbit : 1; // Crash Tag Team Racing I bit hack. Needed to stop constant VU recompilation
+            CrashTagTeamRacingIbit : 1, // Crash Tag Team Racing I bit hack. Needed to stop constant VU recompilation
+            VU0KickstartHack : 1;       // Speed up VU0 at start of program to avoid some VU1 sync issues
 		BITFIELD_END
 
 		GamefixOptions();
@@ -537,7 +537,6 @@ TraceLogFilters&				SetTraceConfig();
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK			(EmuConfig.Gamefixes.VuAddSubHack)	 // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.
 #define CHECK_FPUCOMPAREHACK		(EmuConfig.Gamefixes.FpuCompareHack) // Special Fix for Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
-#define CHECK_VUCLIPFLAGHACK		(EmuConfig.Gamefixes.VuClipFlagHack) // Special Fix for Persona games, maybe others. It's to do with the VU clip flag (again).
 #define CHECK_FPUMULHACK			(EmuConfig.Gamefixes.FpuMulHack)	 // Special Fix for Tales of Destiny hangs.
 #define CHECK_FPUNEGDIVHACK			(EmuConfig.Gamefixes.FpuNegDivHack)	 // Special Fix for Gundam games messed up camera-view.
 #define CHECK_XGKICKHACK			(EmuConfig.Gamefixes.XgKickHack)	 // Special Fix for Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics.

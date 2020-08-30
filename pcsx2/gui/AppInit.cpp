@@ -184,39 +184,15 @@ void Pcsx2App::AllocateCoreStuffs()
 			{
 				scrollableTextArea->AppendText( L"* microVU0\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
 				recOps.UseMicroVU0	= false;
-#ifndef DISABLE_SVU
-				recOps.EnableVU0	= recOps.EnableVU0 && m_CpuProviders->IsRecAvailable_SuperVU0();
-#else
 				recOps.EnableVU0	= false;
-#endif
 			}
 
 			if( BaseException* ex = m_CpuProviders->GetException_MicroVU1() )
 			{
 				scrollableTextArea->AppendText( L"* microVU1\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
 				recOps.UseMicroVU1	= false;
-#ifndef DISABLE_SVU
-				recOps.EnableVU1	= recOps.EnableVU1 && m_CpuProviders->IsRecAvailable_SuperVU1();
-#else
 				recOps.EnableVU1	= false;
-#endif
 			}
-
-#ifndef DISABLE_SVU
-			if( BaseException* ex = m_CpuProviders->GetException_SuperVU0() )
-			{
-				scrollableTextArea->AppendText( L"* SuperVU0\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
-				recOps.UseMicroVU0	= m_CpuProviders->IsRecAvailable_MicroVU0();
-				recOps.EnableVU0	= recOps.EnableVU0 && recOps.UseMicroVU0;
-			}
-
-			if( BaseException* ex = m_CpuProviders->GetException_SuperVU1() )
-			{
-				scrollableTextArea->AppendText( L"* SuperVU1\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
-				recOps.UseMicroVU1	= m_CpuProviders->IsRecAvailable_MicroVU1();
-				recOps.EnableVU1	= recOps.EnableVU1 && recOps.UseMicroVU1;
-			}
-#endif
 
 			exconf += exconf.Heading(pxE( L"Note: Recompilers are not necessary for PCSX2 to run, however they typically improve emulation speed substantially. You may have to manually re-enable the recompilers listed above, if you resolve the errors." ));
 
@@ -490,9 +466,6 @@ bool Pcsx2App::OnInit()
 		InitDefaultGlobalAccelerators();
 		delete wxLog::SetActiveTarget( new pxLogConsole() );
 
-#ifdef __WXMSW__
-		pxDwm_Load();
-#endif
 		SysExecutorThread.Start();
 		DetectCpuAndUserMode();
 
@@ -656,10 +629,6 @@ void Pcsx2App::CleanupOnExit()
 		Console.Indent().Error( ex.FormatDiagnosticMessage() );
 	}
 
-#ifdef __WXMSW__
-	pxDwm_Unload();
-#endif
-	
 	// Notice: deleting the plugin manager (unloading plugins) here causes Lilypad to crash,
 	// likely due to some pending message in the queue that references lilypad procs.
 	// We don't need to unload plugins anyway tho -- shutdown is plenty safe enough for

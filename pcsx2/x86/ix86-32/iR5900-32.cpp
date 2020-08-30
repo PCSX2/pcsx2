@@ -51,7 +51,7 @@ using namespace R5900;
 
 u32 maxrecmem = 0;
 static __aligned16 uptr recLUT[_64kb];
-static __aligned16 uptr hwLUT[_64kb];
+static __aligned16 u32 hwLUT[_64kb];
 
 static __fi u32 HWADDR(u32 mem) { return hwLUT[mem >> 16] + mem; }
 
@@ -75,7 +75,7 @@ static const int RECCONSTBUF_SIZE = 16384 * 2; // 64 bit consts in 32 bit units
 static RecompiledCodeReserve* recMem = NULL;
 static u8* recRAMCopy = NULL;
 static u8* recLutReserve_RAM = NULL;
-static const size_t recLutSize = Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1;
+static const size_t recLutSize = (Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) * wordsize / 4;
 
 static uptr m_ConfiguredCacheReserve = 64;
 
@@ -83,6 +83,7 @@ static u32* recConstBuf = NULL;			// 64-bit pseudo-immediates
 static BASEBLOCK *recRAM = NULL;		// and the ptr to the blocks here
 static BASEBLOCK *recROM = NULL;		// and here
 static BASEBLOCK *recROM1 = NULL;		// also here
+static BASEBLOCK *recROM2 = NULL;       // also here
 
 static BaseBlocks recBlocks;
 static u8* recPtr = NULL;
@@ -152,7 +153,7 @@ u32* _eeGetConstReg(int reg)
 	return &cpuRegs.GPR.r[ reg ].UL[0];
 }
 
-void _eeMoveGPRtoR(const xRegisterLong& to, int fromgpr)
+void _eeMoveGPRtoR(const xRegister32& to, int fromgpr)
 {
 	if( fromgpr == 0 )
 		xXOR(to, to);	// zero register should use xor, thanks --air
@@ -345,13 +346,17 @@ static DynGenFunc* _DynGen_JITCompile()
 
 	u8* retval = xGetAlignedCallTarget();
 
-	xFastCall((void*)recRecompile, ptr[&cpuRegs.pc] );
+	xFastCall((void*)recRecompile, ptr32[&cpuRegs.pc] );
 
+	// C equivalent:
+	// u32 addr = cpuRegs.pc;
+	// void(**base)() = (void(**)())recLUT[addr >> 16];
+	// base[addr >> 2]();
 	xMOV( eax, ptr[&cpuRegs.pc] );
 	xMOV( ebx, eax );
 	xSHR( eax, 16 );
-	xMOV( ecx, ptr[recLUT + (eax*4)] );
-	xJMP( ptr32[ecx+ebx] );
+	xMOV( rcx, ptrNative[xComplexAddress(rcx, recLUT, rax*wordsize)] );
+	xJMP( ptrNative[rbx*(wordsize/4) + rcx] );
 
 	return (DynGenFunc*)retval;
 }
@@ -368,11 +373,15 @@ static DynGenFunc* _DynGen_DispatcherReg()
 {
 	u8* retval = xGetPtr();		// fallthrough target, can't align it!
 
+	// C equivalent:
+	// u32 addr = cpuRegs.pc;
+	// void(**base)() = (void(**)())recLUT[addr >> 16];
+	// base[addr >> 2]();
 	xMOV( eax, ptr[&cpuRegs.pc] );
 	xMOV( ebx, eax );
 	xSHR( eax, 16 );
-	xMOV( ecx, ptr[recLUT + (eax*4)] );
-	xJMP( ptr32[ecx+ebx] );
+	xMOV( rcx, ptrNative[xComplexAddress(rcx, recLUT, rax*wordsize)] );
+	xJMP( ptrNative[rbx*(wordsize/4) + rcx] );
 
 	return (DynGenFunc*)retval;
 }
@@ -460,7 +469,7 @@ static void _DynGen_Dispatchers()
 
 static __ri void ClearRecLUT(BASEBLOCK* base, int memsize)
 {
-	for (int i = 0; i < memsize/4; i++)
+	for (int i = 0; i < memsize/(int)sizeof(uptr); i++)
 		base[i].SetFnptr((uptr)JITCompile);
 }
 
@@ -479,7 +488,7 @@ static void recReserveCache()
 
 	while (!recMem->IsOk())
 	{
-		if (recMem->Reserve( m_ConfiguredCacheReserve * _1mb, HostMemoryMap::EErec ) != NULL) break;
+		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::EErecOffset, m_ConfiguredCacheReserve * _1mb) != NULL) break;
 
 		// If it failed, then try again (if possible):
 		if (m_ConfiguredCacheReserve < 16) break;
@@ -515,11 +524,12 @@ static void recAlloc()
 	recRAM		= basepos; basepos += (Ps2MemSize::MainRam / 4);
 	recROM		= basepos; basepos += (Ps2MemSize::Rom / 4);
 	recROM1		= basepos; basepos += (Ps2MemSize::Rom1 / 4);
+	recROM2		= basepos; basepos += (Ps2MemSize::Rom2 / 4);
 
 	for (int i = 0; i < 0x10000; i++)
 		recLUT_SetPage(recLUT, 0, 0, 0, i, 0);
 
-	for ( int i = 0x0000; i < 0x0200; i++ )
+	for ( int i = 0x0000; i < (int)(Ps2MemSize::MainRam / 0x10000); i++ )
 	{
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x0000, i, i);
 		recLUT_SetPage(recLUT, hwLUT, recRAM, 0x2000, i, i);
@@ -543,6 +553,13 @@ static void recAlloc()
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0x0000, i, i - 0x1e00);
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0x8000, i, i - 0x1e00);
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0xa000, i, i - 0x1e00);
+	}
+
+	for (int i = 0x1e40; i < 0x1e48; i++) 
+	{
+		recLUT_SetPage(recLUT, hwLUT, recROM2, 0x0000, i, i - 0x1e40);
+		recLUT_SetPage(recLUT, hwLUT, recROM2, 0x8000, i, i - 0x1e40);
+		recLUT_SetPage(recLUT, hwLUT, recROM2, 0xa000, i, i - 0x1e40);
 	}
 
     if( recConstBuf == NULL )
@@ -620,7 +637,7 @@ static void recShutdown()
 
 	recBlocks.Reset();
 
-	recRAM = recROM = recROM1 = NULL;
+	recRAM = recROM = recROM1 = recROM2 = NULL;
 
 	safe_aligned_free( recConstBuf );
 	safe_free( s_pInstCache );
@@ -855,21 +872,21 @@ void SetBranchReg( u32 reg )
 //				xMOV(ptr[&cpuRegs.pc], eax);
 //			}
 //		}
-		_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-		_eeMoveGPRtoR(esi, reg);
+		_allocX86reg(calleeSavedReg2d, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		_eeMoveGPRtoR(calleeSavedReg2d, reg);
 
 		if (EmuConfig.Gamefixes.GoemonTlbHack) {
-			xMOV(ecx, esi);
+			xMOV(ecx, calleeSavedReg2d);
 			vtlb_DynV2P();
-			xMOV(esi, eax);
+			xMOV(calleeSavedReg2d, eax);
 		}
 
 		recompileNextInstruction(1);
 
-		if( x86regs[esi.GetId()].inuse ) {
-			pxAssert( x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
-			xMOV(ptr[&cpuRegs.pc], esi);
-			x86regs[esi.GetId()].inuse = 0;
+		if( x86regs[calleeSavedReg2d.GetId()].inuse ) {
+			pxAssert( x86regs[calleeSavedReg2d.GetId()].type == X86TYPE_PCWRITEBACK );
+			xMOV(ptr[&cpuRegs.pc], calleeSavedReg2d);
+			x86regs[calleeSavedReg2d.GetId()].inuse = 0;
 		}
 		else {
 			xMOV(eax, ptr[&g_recWriteback]);
@@ -1007,6 +1024,31 @@ static u32 scaleblockcycles()
 	DevCon.WriteLn(L"Unscaled overall: %d,  scaled overall: %d,  relative EE clock speed: %d %%",
 	               unscaled_overall, scaled_overall, static_cast<int>(100 * ratio));
 #endif
+
+	return scaled;
+}
+u32 scaleblockcycles_clear()
+{
+	u32 scaled = scaleblockcycles_calculation();
+
+#if 0 // Enable this to get some runtime statistics about the scaling result in practice
+	static u32 scaled_overall = 0, unscaled_overall = 0;
+	if (g_resetEeScalingStats)
+	{
+		scaled_overall = unscaled_overall = 0;
+		g_resetEeScalingStats = false;
+	}
+	u32 unscaled = DEFAULT_SCALED_BLOCKS();
+	if (!unscaled) unscaled = 1;
+
+	scaled_overall += scaled;
+	unscaled_overall += unscaled;
+	float ratio = static_cast<float>(unscaled_overall) / scaled_overall;
+
+	DevCon.WriteLn(L"Unscaled overall: %d,  scaled overall: %d,  relative EE clock speed: %d %%",
+		unscaled_overall, scaled_overall, static_cast<int>(100 * ratio));
+#endif
+	s_nBlockCycles &= 0x7;
 
 	return scaled;
 }
@@ -1148,7 +1190,7 @@ void dynarecCheckBreakpoint()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
-	GetCoreThread().PauseSelf();
+	GetCoreThread().PauseSelfDebug();
 	recExitExecution();
 }
 
@@ -1159,7 +1201,7 @@ void dynarecMemcheck()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
-	GetCoreThread().PauseSelf();
+	GetCoreThread().PauseSelfDebug();
 	recExitExecution();
 }
 
@@ -1516,8 +1558,8 @@ static void memory_protect_recompiled_code(u32 startpc, u32 size)
 			break;
 
         case ProtMode_Manual:
-			xMOV( ecx, inpage_ptr );
-			xMOV( edx, inpage_sz / 4 );
+			xMOV( arg1regd, inpage_ptr );
+			xMOV( arg2regd, inpage_sz / 4 );
 			//xMOV( eax, startpc );		// uncomment this to access startpc (as eax) in dyna_block_discard
 
 			u32 lpc = inpage_ptr;
@@ -1728,7 +1770,7 @@ static void __fastcall recRecompile( const u32 startpc )
 			// Game will unmap some virtual addresses. If a constant address were hardcoded in the block, we would be in a bad situation.
 			eeRecNeedsReset = true;
 			// 0x3563b8 is the start address of the function that invalidate entry in TLB cache
-			xFastCall((void*)GoemonUnloadTlb, ptr[&cpuRegs.GPR.n.a0.UL[0]]);
+			xFastCall((void*)GoemonUnloadTlb, ptr32[&cpuRegs.GPR.n.a0.UL[0]]);
 		}
 	}
 
@@ -1951,12 +1993,6 @@ StartRecomp:
 		g_pCurInstInfo = s_pInstCache;
 
 		for(i = startpc; i < s_nEndBlock; i += 4) {
-
-#ifndef DISABLE_SVU
-			// superVU hack: it needs vucycles, for some reason. >_<
-			extern int vucycle;
-#endif
-
 			g_pCurInstInfo++;
 			cpuRegs.code = *(u32*)PSM(i);
 
@@ -1965,9 +2001,6 @@ StartRecomp:
 
 				if( !usecop2 ) {
 					// init
-#ifndef DISABLE_SVU
-					vucycle = 0;
-#endif
 					usecop2 = 1;
 				}
 
@@ -1975,13 +2008,6 @@ StartRecomp:
 				_vuRegsCOP22( &VU0, &g_pCurInstInfo->vuregs );
 				continue;
 			}
-
-#ifndef DISABLE_SVU
-			// fixme - This should be based on the cycle count of the current EE
-			// instruction being analyzed.
-			if( usecop2 ) vucycle++;
-#endif
-
 		}
 		// This *is* important because g_pCurInstInfo is checked a bit later on and
 		// if it's not equal to s_pInstCache it handles recompilation differently.

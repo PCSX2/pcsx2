@@ -13,18 +13,40 @@
   ;SetShellVarContext all
   ;SetShellVarContext current
 
-Section "!${APP_NAME} (required)" SEC_CORE
+Function RedistInstallation
+!include WinVer.nsh
 
-    SectionIn RO
+; Check if the VC runtimes are installed
+ReadRegDword $R5 HKLM "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" "Installed"
 
-CopyFiles /SILENT "$TEMP\PCSX2_installer_temp" "$INSTDIR"
-CopyFiles /SILENT "$TEMP\PCSX2_installer_temp\Docs" "$INSTDIR"
-CopyFiles /SILENT "$TEMP\PCSX2_installer_temp\Shaders" "$INSTDIR"
-CopyFiles /SILENT "$TEMP\PCSX2_installer_temp\Plugins" "$INSTDIR"
+${If} $R5 == "1"
+    Goto DxSetup
+${EndIf}
+
+; Download and install the VC redistributable from the internet
+inetc::get /CONNECTTIMEOUT 30 /RECEIVETIMEOUT 30 "https://aka.ms/vs/16/release/VC_redist.x86.exe" "$TEMP\VC_redist.x86.exe" /END
+    ExecShellWait open "$TEMP\VC_redist.x86.exe" "/INSTALL /Q /NORESTART"
+    Delete "$TEMP\VC_redist.x86.exe"
+
+DxSetup:
+${If} ${AtLeastWin8.1}
+Return
+${EndIf}
+
+; Download and install DirectX (only applies to OSes older than 8.1)
+inetc::get /CONNECTTIMEOUT 30 /RECEIVETIMEOUT 30 "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe" "$TEMP/dxwebsetup.exe" /END
+    ExecShellWait open "$TEMP\dxwebsetup.exe" "/Q"
+    Delete "$TEMP\dxwebsetup.exe"
+FunctionEnd
+
+Section "" SEC_REDIST
+Call RedistInstallation
 SectionEnd
 
-Section "Additional Languages" SEC_LANGS
-CopyFiles /SILENT "$TEMP\PCSX2_installer_temp\Langs" "$INSTDIR"
+; Copy unpacked files from TEMP to the user specified directory
+Section "!${APP_NAME} (required)" SEC_CORE
+SectionIn RO
+CopyFiles /SILENT "$TEMP\PCSX2 ${APP_VERSION}\*" "$INSTDIR\" 24000
 SectionEnd
 
 !include "SharedShortcuts.nsh"
@@ -32,11 +54,9 @@ SectionEnd
 LangString DESC_CORE       ${LANG_ENGLISH} "Core components (binaries, plugins, documentation, etc)."
 LangString DESC_STARTMENU  ${LANG_ENGLISH} "Adds shortcuts for PCSX2 to the start menu (all users)."
 LangString DESC_DESKTOP    ${LANG_ENGLISH} "Adds a shortcut for PCSX2 to the desktop (all users)."
-LangString DESC_LANGS      ${LANG_ENGLISH} "Adds additional languages other than the system default to PCSX2."
 
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CORE}        $(DESC_CORE)
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_STARTMENU}   $(DESC_STARTMENU)
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DESKTOP}     $(DESC_DESKTOP)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANGS}       $(DESC_LANGS)
   !insertmacro MUI_FUNCTION_DESCRIPTION_END

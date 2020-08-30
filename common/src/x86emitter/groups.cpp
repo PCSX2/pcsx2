@@ -50,7 +50,7 @@ static void _g1_IndirectImm(G1Type InstType, const xIndirect64orLess &sibdest, i
         xWrite<s8>(imm);
     } else {
         u8 opcode = is_s8(imm) ? 0x83 : 0x81;
-        xOpWrite(sibdest.GetPrefix16(), opcode, InstType, sibdest);
+        xOpWrite(sibdest.GetPrefix16(), opcode, InstType, sibdest, is_s8(imm) ? 1 : sibdest.GetImmSize());
 
         if (is_s8(imm))
             xWrite<s8>(imm);
@@ -156,7 +156,7 @@ void xImpl_Group2::operator()(const xIndirect64orLess &sibdest, u8 imm) const
         // special encoding of 1's
         xOpWrite(sibdest.GetPrefix16(), sibdest.Is8BitOp() ? 0xd0 : 0xd1, InstType, sibdest);
     } else {
-        xOpWrite(sibdest.GetPrefix16(), sibdest.Is8BitOp() ? 0xc0 : 0xc1, InstType, sibdest);
+        xOpWrite(sibdest.GetPrefix16(), sibdest.Is8BitOp() ? 0xc0 : 0xc1, InstType, sibdest, 1);
         xWrite8(imm);
     }
 }
@@ -195,7 +195,7 @@ static void _imul_ImmStyle(const xRegisterInt &param1, const SrcType &param2, in
 {
     pxAssert(param1.GetOperandSize() == param2.GetOperandSize());
 
-    xOpWrite0F(param1.GetPrefix16(), is_s8(imm) ? 0x6b : 0x69, param1, param2);
+    xOpWrite0F(param1.GetPrefix16(), is_s8(imm) ? 0x6b : 0x69, param1, param2, is_s8(imm) ? 1 : param1.GetImmSize());
 
     if (is_s8(imm))
         xWrite8((u8)imm);
