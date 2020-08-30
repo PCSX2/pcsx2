@@ -38,7 +38,7 @@ static bool IsInitialized = false;
 
 static u32 pClocks = 0;
 
-u32 *cyclePtr = NULL;
+u32 *cyclePtr = nullptr;
 u32 lClocks = 0;
 
 #ifdef _MSC_VER
@@ -218,7 +218,7 @@ SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callb
 EXPORT_C_(void)
 CALLBACK SPU2readDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
 {
-    if (cyclePtr != NULL)
+    if (cyclePtr != nullptr)
         TimeUpdate(*cyclePtr);
 
     FileLog("[%10d] SPU2 readDMA4Mem size %x\n", Cycles, size << 1);
@@ -228,7 +228,7 @@ CALLBACK SPU2readDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
 EXPORT_C_(void)
 CALLBACK SPU2writeDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
 {
-    if (cyclePtr != NULL)
+    if (cyclePtr != nullptr)
         TimeUpdate(*cyclePtr);
 
     FileLog("[%10d] SPU2 writeDMA4Mem size %x at address %x\n", Cycles, size << 1, Cores[0].TSA);
@@ -258,7 +258,7 @@ CALLBACK SPU2interruptDMA7()
 EXPORT_C_(void)
 CALLBACK SPU2readDMA7Mem(u16 *pMem, u32 size)
 {
-    if (cyclePtr != NULL)
+    if (cyclePtr != nullptr)
         TimeUpdate(*cyclePtr);
 
     FileLog("[%10d] SPU2 readDMA7Mem size %x\n", Cycles, size << 1);
@@ -268,7 +268,7 @@ CALLBACK SPU2readDMA7Mem(u16 *pMem, u32 size)
 EXPORT_C_(void)
 CALLBACK SPU2writeDMA7Mem(u16 *pMem, u32 size)
 {
-    if (cyclePtr != NULL)
+    if (cyclePtr != nullptr)
         TimeUpdate(*cyclePtr);
 
     FileLog("[%10d] SPU2 writeDMA7Mem size %x at address %x\n", Cycles, size << 1, Cores[1].TSA);
@@ -306,11 +306,11 @@ SPU2init()
 #ifdef SPU2_LOG
     if (AccessLog()) {
         spu2Log = OpenLog(AccessLogFileName);
-        setvbuf(spu2Log, NULL, _IONBF, 0);
+        setvbuf(spu2Log, nullptr, _IONBF, 0);
         FileLog("SPU2init\n");
     }
 #endif
-    srand((unsigned)time(NULL));
+    srand((unsigned)time(nullptr));
 
     spu2regs = (s16 *)malloc(0x010000);
     _spu2mem = (s16 *)malloc(0x200000);
@@ -324,7 +324,7 @@ SPU2init()
 
     pcm_cache_data = (PcmCacheEntry *)calloc(pcm_BlockCount, sizeof(PcmCacheEntry));
 
-    if ((spu2regs == NULL) || (_spu2mem == NULL) || (pcm_cache_data == NULL)) {
+    if ((spu2regs == nullptr) || (_spu2mem == nullptr) || (pcm_cache_data == nullptr)) {
         SysMessage("SPU2-X: Error allocating Memory\n");
         return -1;
     }
@@ -398,7 +398,7 @@ SPU2open(void *pDsp)
 
     FileLog("[%10d] SPU2 Open\n", Cycles);
 
-    if (pDsp != NULL)
+    if (pDsp != nullptr)
         gsWindowHandle = *(uptr *)pDsp;
     else
         gsWindowHandle = 0;
@@ -419,7 +419,7 @@ SPU2open(void *pDsp)
 #endif
 
     IsOpened = true;
-    lClocks = (cyclePtr != NULL) ? *cyclePtr : 0;
+    lClocks = (cyclePtr != nullptr) ? *cyclePtr : 0;
 
     try {
         SndBuffer::Init();
@@ -511,7 +511,7 @@ SPU2async(u32 cycles)
 {
     DspUpdate();
 
-    if (cyclePtr != NULL) {
+    if (cyclePtr != nullptr) {
         TimeUpdate(*cyclePtr);
     } else {
         pClocks += cycles;
@@ -582,7 +582,7 @@ SPU2read(u32 rmem)
     if (omem == 0x1f9001AC) {
         ret = Cores[core].DmaRead();
     } else {
-        if (cyclePtr != NULL)
+        if (cyclePtr != nullptr)
             TimeUpdate(*cyclePtr);
 
         if (rmem >> 16 == 0x1f80) {
@@ -612,7 +612,7 @@ SPU2write(u32 rmem, u16 value)
     // If the SPU2 isn't in in sync with the IOP, samples can end up playing at rather
     // incorrect pitches and loop lengths.
 
-    if (cyclePtr != NULL)
+    if (cyclePtr != nullptr)
         TimeUpdate(*cyclePtr);
 
     if (rmem >> 16 == 0x1f80)
@@ -640,7 +640,7 @@ SPU2setupRecording(int start, void *pData)
 EXPORT_C_(s32)
 SPU2freeze(int mode, freezeData *data)
 {
-    pxAssume(data != NULL);
+    pxAssume(data != nullptr);
     if (!data) {
         printf("SPU2-X savestate null pointer!\n");
         return -1;
@@ -653,7 +653,7 @@ SPU2freeze(int mode, freezeData *data)
 
     pxAssume(mode == FREEZE_LOAD || mode == FREEZE_SAVE);
 
-    if (data->data == NULL) {
+    if (data->data == nullptr) {
         printf("SPU2-X savestate null pointer!\n");
         return -1;
     }

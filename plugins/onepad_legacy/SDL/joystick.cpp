@@ -56,8 +56,8 @@ void JoystickInfo::EnumerateJoysticks(std::vector<GamePad *> &vjoysticks)
         // WTF! Give me back the control of my system
         struct sigaction action = {};
         action.sa_handler = SIG_DFL;
-        sigaction(SIGINT, &action, NULL);
-        sigaction(SIGTERM, &action, NULL);
+        sigaction(SIGINT, &action, nullptr);
+        sigaction(SIGTERM, &action, nullptr);
 #else
         if (SDL_Init(SDL_INIT_JOYSTICK) < 0) return;
 #endif
@@ -112,7 +112,7 @@ void JoystickInfo::Rumble(int type, int pad)
     if (!(conf->pad_options[pad].forcefeedback)) return;
 
 #if SDL_MAJOR_VERSION >= 2
-    if (haptic == NULL) return;
+    if (haptic == nullptr) return;
 
     if (first) // If done multiple times, device memory will be filled
     {
@@ -152,14 +152,14 @@ void JoystickInfo::Rumble(int type, int pad)
 
 void JoystickInfo::Destroy()
 {
-    if (joy != NULL)
+    if (joy != nullptr)
     {
 #if SDL_MAJOR_VERSION >= 2
         // Haptic must be closed before the joystick
-        if (haptic != NULL)
+        if (haptic != nullptr)
         {
             SDL_HapticClose(haptic);
-            haptic = NULL;
+            haptic = nullptr;
         }
 #endif
 
@@ -170,7 +170,7 @@ void JoystickInfo::Destroy()
 #else
         if (SDL_JoystickOpened(_id)) SDL_JoystickClose(joy);
 #endif
-        joy = NULL;
+        joy = nullptr;
     }
 }
 
@@ -180,7 +180,7 @@ bool JoystickInfo::Init(int id)
     _id = id;
 
     joy = SDL_JoystickOpen(id);
-    if (joy == NULL)
+    if (joy == nullptr)
     {
         PAD_LOG("failed to open joystick %d\n", id);
         return false;
@@ -217,7 +217,7 @@ bool JoystickInfo::Init(int id)
     }
 
 #if SDL_MAJOR_VERSION >= 2
-    if (haptic == NULL)
+    if (haptic == nullptr)
     {
         if (!SDL_JoystickIsHaptic(joy))
         {
@@ -249,7 +249,7 @@ bool JoystickInfo::TestForce(float strength = 0.60)
 {
 #if SDL_MAJOR_VERSION >= 2
     // This code just use standard rumble to check that SDL handles the pad correctly! --3kinox
-    if (haptic == NULL) return false; // Otherwise, core dump!
+    if (haptic == nullptr) return false; // Otherwise, core dump!
     SDL_HapticRumbleInit(haptic);
 
     // Make the haptic pad rumble 60% strength for half a second, shoudld be enough for user to see if it works or not

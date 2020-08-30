@@ -26,7 +26,7 @@
 void GSOsdManager::LoadFont() {
 	FT_Error error = FT_New_Face(m_library, theApp.GetConfigS("osd_fontname").c_str(), 0, &m_face);
 	if (error) {
-		m_face = NULL;
+		m_face = nullptr;
 		fprintf(stderr, "Failed to init the freetype face\n");
 		if(error == FT_Err_Unknown_File_Format)
 			fprintf(stderr, "\tFreetype unknown file format\n");
@@ -72,7 +72,7 @@ GSOsdManager::GSOsdManager() : m_atlas_h(0)
 	m_color = r | (g << 8) | (b << 16) | (255 << 24);
 
 	if (FT_Init_FreeType(&m_library)) {
-		m_face = NULL;
+		m_face = nullptr;
 		fprintf(stderr, "Failed to init the freetype library\n");
 		return;
 	}

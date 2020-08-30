@@ -36,7 +36,7 @@ void *NetRxThread(void *arg)
 
     }
 
-    return 0;
+    return nullptr;
 }
 
 void tx_put(NetPacket* pkt)
@@ -55,7 +55,7 @@ void InitNet(NetAdapter* ad)
        int max_prio_for_policy = 0;
 
 
-       int ret = pthread_create(&rx_thread, NULL, NetRxThread, NULL);
+       int ret = pthread_create(&rx_thread, nullptr, NetRxThread, nullptr);
        pthread_attr_init(&thAttr);
        pthread_attr_getschedpolicy(&thAttr, &policy);
        max_prio_for_policy = sched_get_priority_max(policy);
@@ -71,7 +71,7 @@ void TermNet()
     {
         RxRunning = false;
         emu_printf("Waiting for RX-net thread to terminate..");
-            pthread_join(rx_thread,NULL);
+            pthread_join(rx_thread,nullptr);
         emu_printf(".done\n");
 
         delete nif;

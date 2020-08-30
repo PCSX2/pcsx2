@@ -39,8 +39,8 @@ public:
     void WriteStr(const wchar_t *Section, const wchar_t *Name, const wxString &Data);
 
     bool ReadBool(const wchar_t *Section, const wchar_t *Name, bool Default = false);
-    int ReadStr(const wchar_t *Section, const wchar_t *Name, wxString &Data, const wchar_t *Default = 0);
-    int ReadStr(const wchar_t *Section, const wchar_t *Name, wchar_t *Data, const wchar_t *Default = 0);
+    int ReadStr(const wchar_t *Section, const wchar_t *Name, wxString &Data, const wchar_t *Default = nullptr);
+    int ReadStr(const wchar_t *Section, const wchar_t *Name, wchar_t *Data, const wchar_t *Default = nullptr);
     int ReadInt(const wchar_t *Section, const wchar_t *Name, int Default = 0);
     float ReadFloat(const wchar_t *Section, const wchar_t *Name, float Default = 0.0f);
 

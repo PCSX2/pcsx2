@@ -56,9 +56,9 @@ s32 __fastcall Savestate::FreezeIt(DataBlock &spud)
 
     pxAssertMsg(spu2regs && _spu2mem, "Looks like PCSX2 is trying to savestate while pluigns are shut down.  That's a no-no! It shouldn't crash, but the savestate will probably be corrupted.");
 
-    if (spu2regs != NULL)
+    if (spu2regs != nullptr)
         memcpy(spud.unkregs, spu2regs, sizeof(spud.unkregs));
-    if (_spu2mem != NULL)
+    if (_spu2mem != nullptr)
         memcpy(spud.mem, _spu2mem, sizeof(spud.mem));
 
     memcpy(spud.Cores, Cores, sizeof(Cores));
@@ -136,7 +136,7 @@ s32 __fastcall Savestate::ThawIt(DataBlock &spud)
         // editions of PCSX2 with fixed addressing, but new PCSX2s have dynamic memory
         // addressing).
 
-        Cores[0].DMAPtr = Cores[1].DMAPtr = NULL;
+        Cores[0].DMAPtr = Cores[1].DMAPtr = nullptr;
     }
     return 0;
 }

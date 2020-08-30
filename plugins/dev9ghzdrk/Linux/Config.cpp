@@ -29,33 +29,33 @@
 
 void SaveConf() {
 
-    xmlDocPtr doc = NULL;       /* document pointer */
-    xmlNodePtr root_node = NULL;
+    xmlDocPtr doc = nullptr;       /* document pointer */
+    xmlNodePtr root_node = nullptr;
     char buff[256];
 
     /*
      * Creates a new document, a node and set it as a root node
      */
     doc = xmlNewDoc(BAD_CAST "1.0");
-    root_node = xmlNewNode(NULL, BAD_CAST "dev9");
+    root_node = xmlNewNode(nullptr, BAD_CAST "dev9");
     xmlDocSetRootElement(doc, root_node);
 
-    xmlNewChild(root_node, NULL, BAD_CAST "Eth",
+    xmlNewChild(root_node, nullptr, BAD_CAST "Eth",
         BAD_CAST config.Eth);
 
-    xmlNewChild(root_node, NULL, BAD_CAST "Hdd",
+    xmlNewChild(root_node, nullptr, BAD_CAST "Hdd",
         BAD_CAST config.Hdd);
 
     sprintf(buff,"%d",config.HddSize);
-    xmlNewChild(root_node, NULL, BAD_CAST "HddSize",
+    xmlNewChild(root_node, nullptr, BAD_CAST "HddSize",
         BAD_CAST buff);
 
     sprintf(buff,"%d",config.ethEnable);
-    xmlNewChild(root_node, NULL, BAD_CAST "ethEnable",
+    xmlNewChild(root_node, nullptr, BAD_CAST "ethEnable",
         BAD_CAST buff);
 
     sprintf(buff,"%d",config.hddEnable);
-    xmlNewChild(root_node, NULL, BAD_CAST "hddEnable",
+    xmlNewChild(root_node, nullptr, BAD_CAST "hddEnable",
         BAD_CAST buff);
     /*
      * Dumping document to stdio or file
@@ -86,12 +86,12 @@ void LoadConf() {
     memset(&config, 0, sizeof(config));
 
     // Read the files
-    xmlDoc *doc = NULL;
-    xmlNode *cur_node = NULL;
+    xmlDoc *doc = nullptr;
+    xmlNode *cur_node = nullptr;
 
-    doc = xmlReadFile(file.c_str(), NULL, 0);
+    doc = xmlReadFile(file.c_str(), nullptr, 0);
 
-    if (doc == NULL){
+    if (doc == nullptr){
         SysMessage("Unable to parse configuration file! Suggest deleting it and starting over.");
     }
 

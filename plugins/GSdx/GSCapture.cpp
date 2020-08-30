@@ -512,7 +512,7 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 {
 	std::lock_guard<std::recursive_mutex> lock(m_lock);
 
-	if(bits == NULL || pitch == 0)
+	if(bits == nullptr || pitch == 0)
 	{
 		ASSERT(0);
 

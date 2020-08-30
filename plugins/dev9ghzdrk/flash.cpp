@@ -71,7 +71,7 @@ FLASHinit(){
 	ctrl = FLASH_PP_READY;
 	
 	fd=fopen("flash.dat", "rb");
-	if (fd != NULL){
+	if (fd != nullptr){
 		size_t ret;
 
 		ret = fread(file, 1, CARD_SIZE_ECC, fd);

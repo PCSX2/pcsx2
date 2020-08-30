@@ -152,8 +152,8 @@ GSDumpLzma::~GSDumpLzma() {
 
 GSDumpRaw::GSDumpRaw(char* filename, const char* repack_filename) : GSDumpFile(filename, repack_filename) {
 	m_buff_size = 0;
-	m_area      = NULL;
-	m_inbuf     = NULL;
+	m_area      = nullptr;
+	m_inbuf     = nullptr;
 	m_avail     = 0;
 	m_start     = 0;
 }

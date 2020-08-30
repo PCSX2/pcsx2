@@ -148,11 +148,11 @@ void GSTextureCacheSW::IncAge()
 
 GSTextureCacheSW::Texture::Texture(GSState* state, uint32 tw0, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 	: m_state(state)
-	, m_buff(NULL)
+	, m_buff(nullptr)
 	, m_tw(tw0)
 	, m_age(0)
 	, m_complete(false)
-	, m_p2t(NULL)
+	, m_p2t(nullptr)
 {
 	m_TEX0 = TEX0;
 	m_TEXA = TEXA;
@@ -214,13 +214,13 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 		m_complete = true; // lame, but better than nothing
 	}
 
-	if(m_buff == NULL)
+	if(m_buff == nullptr)
 	{
 		uint32 pitch = (1 << m_tw) << shift;
 		
 		m_buff = _aligned_malloc(pitch * th * 4, 32);
 
-		if(m_buff == NULL)
+		if(m_buff == nullptr)
 		{
 			return false;
 		}
@@ -317,7 +317,7 @@ bool GSTextureCacheSW::Texture::Save(const std::string& fn, bool dds) const
 
 	GSTexture::GSMap m;
 
-	if(t.Map(m, NULL))
+	if(t.Map(m, nullptr))
 	{
 		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
 

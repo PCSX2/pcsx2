@@ -135,7 +135,7 @@ void __Log(char *fmt, ...) {
 
 	if(ticks==-1) ticks=nticks;
 
-	if(iopPC!=NULL)
+	if(iopPC!=nullptr)
 	{
 		DEV9Log.Write("[%10d + %4d, IOP PC = %08x] ", nticks, nticks - ticks, *iopPC);
 	}
@@ -216,9 +216,9 @@ DEV9init()
 	}
 	else
 	{
-			dev9.eeprom = (u16*)mmap(NULL, 64, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, hEeprom, 0);
+			dev9.eeprom = (u16*)mmap(nullptr, 64, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, hEeprom, 0);
 
-			if(dev9.eeprom==NULL)
+			if(dev9.eeprom==nullptr)
 			{
 				close(hEeprom);
 				dev9.eeprom=(u16*)eeprom;
@@ -722,14 +722,14 @@ DEV9setSettingsDir(const char* dir)
 {
 	// Grab the ini directory.
 	// TODO: Use
-    s_strIniPath = (dir == NULL) ? "inis" : dir;
+    s_strIniPath = (dir == nullptr) ? "inis" : dir;
 }
 
 EXPORT_C_(void)
 DEV9setLogDir(const char* dir)
 {
 	// Get the path to the log directory.
-	s_strLogPath = (dir == NULL) ? "logs" : dir;
+	s_strLogPath = (dir == nullptr) ? "logs" : dir;
 
 	// Reload the log file after updated the path
 	// Currently dosn't change winPcap log directories post DEV9open()

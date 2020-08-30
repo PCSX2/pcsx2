@@ -100,7 +100,7 @@ struct SDLAudioMod : public SndOutModule
         }
 #endif
 
-        if (SDL_OpenAudio(&spec, NULL) < 0) {
+        if (SDL_OpenAudio(&spec, nullptr) < 0) {
             std::cerr << "SPU2-X: SDL audio error: " << SDL_GetError() << std::endl;
             return -1;
         }
@@ -110,7 +110,7 @@ struct SDLAudioMod : public SndOutModule
 #endif
 
         /* This is so ugly. It is hilariously ugly. I didn't use a vector to save reallocs. */
-        if (samples != spec.samples || buffer == NULL)
+        if (samples != spec.samples || buffer == nullptr)
             buffer = std::unique_ptr<StereoOut_SDL[]>(new StereoOut_SDL[spec.samples]);
         if (samples != spec.samples) {
             fprintf(stderr, "SPU2-X: SDL failed to get desired samples (%d) got %d samples instead\n", samples, spec.samples);

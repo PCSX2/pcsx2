@@ -24,9 +24,9 @@
 #include "GS.h"
 
 #ifdef __unix__
-PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate                 = NULL;
+PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate                 = nullptr;
 #endif
-PFNGLTEXTUREPAGECOMMITMENTEXTPROC      glTexturePageCommitmentEXT		   = NULL;
+PFNGLTEXTUREPAGECOMMITMENTEXTPROC      glTexturePageCommitmentEXT		   = nullptr;
 
 #include "PFN_GLLOADER_CPP.h"
 
@@ -201,7 +201,7 @@ namespace GLLoader {
 	void check_gl_version(int major, int minor)
 	{
 		const GLubyte* s = glGetString(GL_VERSION);
-		if (s == NULL) {
+		if (s == nullptr) {
 			fprintf(stderr, "Error: GLLoader failed to get GL version\n");
 			throw GSDXRecoverableError();
 		}

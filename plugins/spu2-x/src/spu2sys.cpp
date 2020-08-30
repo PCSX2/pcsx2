@@ -27,8 +27,8 @@
 
 #include "PS2E-spu2.h" // needed until I figure out a nice solution for irqcallback dependencies.
 
-s16 *spu2regs = NULL;
-s16 *_spu2mem = NULL;
+s16 *spu2regs = nullptr;
+s16 *_spu2mem = nullptr;
 
 V_CoreDebug DebugCores[2];
 V_Core Cores[2];
@@ -1769,7 +1769,7 @@ static RegWriteHandler *const tbl_reg_writes[0x401] =
         REGRAW(0x7F0), REGRAW(0x7F2), REGRAW(0x7F4), REGRAW(0x7F6),
         REGRAW(0x7F8), REGRAW(0x7FA), REGRAW(0x7FC), REGRAW(0x7FE),
 
-        NULL // should be at 0x400!  (we assert check it on startup)
+        nullptr // should be at 0x400!  (we assert check it on startup)
 };
 
 

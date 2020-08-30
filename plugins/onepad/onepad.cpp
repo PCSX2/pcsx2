@@ -51,7 +51,7 @@ const u32 revision = 2;
 const u32 build = 0; // increase that with each version
 #define PAD_SAVE_STATE_VERSION ((revision << 8) | (build << 0))
 
-FILE *padLog = NULL;
+FILE *padLog = nullptr;
 
 KeyStatus g_key_status;
 
@@ -106,7 +106,7 @@ void __Log(const char *fmt, ...)
 {
     va_list list;
 
-    if (padLog == NULL)
+    if (padLog == nullptr)
         return;
     va_start(list, fmt);
     vfprintf(padLog, fmt, list);
@@ -119,7 +119,7 @@ void __LogToConsole(const char *fmt, ...)
 
     va_start(list, fmt);
 
-    if (padLog != NULL)
+    if (padLog != nullptr)
         vfprintf(padLog, fmt, list);
 
     printf("OnePAD: ");
@@ -137,7 +137,7 @@ void initLogging()
     padLog = fopen(LogFile.c_str(), "w");
 
     if (padLog)
-        setvbuf(padLog, NULL, _IONBF, 0);
+        setvbuf(padLog, nullptr, _IONBF, 0);
 
     PAD_LOG("PADinit\n");
 #endif
@@ -148,7 +148,7 @@ void CloseLogging()
 #ifdef PAD_LOG
     if (padLog) {
         fclose(padLog);
-        padLog = NULL;
+        padLog = nullptr;
     }
 #endif
 }
@@ -194,14 +194,14 @@ EXPORT_C_(void)
 PADsetSettingsDir(const char *dir)
 {
     // Get the path to the ini directory.
-    s_strIniPath = (dir == NULL) ? "inis/" : dir;
+    s_strIniPath = (dir == nullptr) ? "inis/" : dir;
 }
 
 EXPORT_C_(void)
 PADsetLogDir(const char *dir)
 {
     // Get the path to the log directory.
-    s_strLogPath = (dir == NULL) ? "logs/" : dir;
+    s_strLogPath = (dir == nullptr) ? "logs/" : dir;
 
     // Reload the log file after updated the path
     CloseLogging();

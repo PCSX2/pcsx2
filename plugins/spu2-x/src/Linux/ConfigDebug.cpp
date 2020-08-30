@@ -55,9 +55,9 @@ wxString RegDumpFileName;
 
 void CfgSetLogDir(const char *dir)
 {
-    LogsFolder = (dir == NULL) ? wxString(L"logs") : fromUTF8(dir);
-    DumpsFolder = (dir == NULL) ? wxString(L"logs") : fromUTF8(dir);
-    LogLocationSetByPcsx2 = (dir != NULL);
+    LogsFolder = (dir == nullptr) ? wxString(L"logs") : fromUTF8(dir);
+    DumpsFolder = (dir == nullptr) ? wxString(L"logs") : fromUTF8(dir);
+    LogLocationSetByPcsx2 = (dir != nullptr);
 }
 
 FILE *OpenBinaryLog(const wxString &logfile)

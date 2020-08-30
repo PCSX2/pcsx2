@@ -115,8 +115,8 @@ public:
         m_UseHardware = false;
         m_WasapiExclusiveMode = false;
         started = false;
-        stream = NULL;
-        ActualPaCallback = NULL;
+        stream = nullptr;
+        ActualPaCallback = nullptr;
         m_ApiId = -1;
         m_SuggestedLatencyMS = 20;
         actualUsedChannels = 0;
@@ -128,7 +128,7 @@ public:
     s32 Init()
     {
         started = false;
-        stream = NULL;
+        stream = nullptr;
 
         ReadSettings();
 
@@ -173,7 +173,7 @@ public:
         }
 
         if (deviceIndex >= 0) {
-            void *infoPtr = NULL;
+            void *infoPtr = nullptr;
 
             const PaDeviceInfo *devinfo = Pa_GetDeviceInfo(deviceIndex);
 
@@ -271,18 +271,18 @@ public:
                 infoPtr};
 
             err = Pa_OpenStream(&stream,
-                                NULL, &outParams, SampleRate,
+                                nullptr, &outParams, SampleRate,
                                 SndOutPacketSize,
                                 paNoFlag,
                                 PaCallback,
 
-                                NULL);
+                                nullptr);
         } else {
             err = Pa_OpenDefaultStream(&stream,
                                        0, actualUsedChannels, paInt32, 48000,
                                        SndOutPacketSize,
                                        PaCallback,
-                                       NULL);
+                                       nullptr);
         }
         if (err != paNoError) {
             fprintf(stderr, "* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText(err));
@@ -294,7 +294,7 @@ public:
         if (err != paNoError) {
             fprintf(stderr, "* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText(err));
             Pa_CloseStream(stream);
-            stream = NULL;
+            stream = nullptr;
             Pa_Terminate();
             return -1;
         }
@@ -317,7 +317,7 @@ public:
                 if (err != paNoError)
                     fprintf(stderr, "* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText(err));
 
-                stream = NULL;
+                stream = nullptr;
             }
 
             // Seems to do more harm than good.

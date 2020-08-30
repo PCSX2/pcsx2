@@ -21,7 +21,7 @@ int crazy_debug = 0;
 
 char s[4096];
 
-FILE *spu2Log = NULL;
+FILE *spu2Log = nullptr;
 
 void FileLog(const char *fmt, ...)
 {

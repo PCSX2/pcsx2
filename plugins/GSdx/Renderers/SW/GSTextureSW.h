@@ -36,7 +36,7 @@ public:
 	virtual ~GSTextureSW();
 
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0);
-	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0);
+	bool Map(GSMap& m, const GSVector4i* r = nullptr, int layer = 0);
 	void Unmap();
 	bool Save(const std::string& fn);
 };

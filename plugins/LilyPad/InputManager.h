@@ -294,7 +294,7 @@ public:
     void AddFFAxis(const wchar_t *displayName, int id);
     void AddFFEffectType(const wchar_t *displayName, const wchar_t *effectID, EffectType type);
 
-    Device(DeviceAPI, DeviceType, const wchar_t *displayName, const wchar_t *instanceID = 0, const wchar_t *deviceID = 0);
+    Device(DeviceAPI, DeviceType, const wchar_t *displayName, const wchar_t *instanceID = nullptr, const wchar_t *deviceID = nullptr);
     virtual ~Device();
 
     // Allocates memory for old and new state, sets everything to 0.
@@ -314,7 +314,7 @@ public:
 
     VirtualControl *GetVirtualControl(unsigned int uid);
 
-    PhysicalControl *AddPhysicalControl(ControlType type, unsigned short id, unsigned short vkey, const wchar_t *name = 0);
+    PhysicalControl *AddPhysicalControl(ControlType type, unsigned short id, unsigned short vkey, const wchar_t *name = nullptr);
     VirtualControl *AddVirtualControl(unsigned int uid, int physicalControlIndex);
 
     virtual wchar_t *GetVirtualControlName(VirtualControl *c);

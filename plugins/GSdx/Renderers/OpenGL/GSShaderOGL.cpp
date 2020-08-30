@@ -156,7 +156,7 @@ bool GSShaderOGL::ValidateShader(GLuint s)
 	glGetShaderiv(s, GL_INFO_LOG_LENGTH, &log_length);
 	if (log_length > 0) {
 		char* log = new char[log_length];
-		glGetShaderInfoLog(s, log_length, NULL, log);
+		glGetShaderInfoLog(s, log_length, nullptr, log);
 		fprintf(stderr, "%s", log);
 		delete[] log;
 	}
@@ -177,7 +177,7 @@ bool GSShaderOGL::ValidateProgram(GLuint p)
 	glGetProgramiv(p, GL_INFO_LOG_LENGTH, &log_length);
 	if (log_length > 0) {
 		char* log = new char[log_length];
-		glGetProgramInfoLog(p, log_length, NULL, log);
+		glGetProgramInfoLog(p, log_length, nullptr, log);
 		fprintf(stderr, "%s", log);
 		delete[] log;
 	}
@@ -201,7 +201,7 @@ bool GSShaderOGL::ValidatePipeline(GLuint p)
 	glGetProgramPipelineiv(p, GL_INFO_LOG_LENGTH, &log_length);
 	if (log_length > 0) {
 		char* log = new char[log_length];
-		glGetProgramPipelineInfoLog(p, log_length, NULL, log);
+		glGetProgramPipelineInfoLog(p, log_length, nullptr, log);
 		fprintf(stderr, "%s", log);
 		delete[] log;
 	}
@@ -307,7 +307,7 @@ GLuint GSShaderOGL::CompileShader(const std::string& glsl_file, const std::strin
 	sources[2] = glsl_h_code;
 
 	shader =  glCreateShader(type);
-	glShaderSource(shader, shader_nb, sources, NULL);
+	glShaderSource(shader, shader_nb, sources, nullptr);
 	glCompileShader(shader);
 
 	bool status = ValidateShader(shader);
@@ -338,7 +338,7 @@ int GSShaderOGL::DumpAsm(const std::string& file, GLuint p)
 
 	char* binary = new char[binaryLength+4];
 	GLenum binaryFormat;
-	glGetProgramBinary(p, binaryLength, NULL, &binaryFormat, binary);
+	glGetProgramBinary(p, binaryLength, nullptr, &binaryFormat, binary);
 
 	FILE* outfile = fopen(file.c_str(), "w");
 	ASSERT(outfile);
@@ -353,7 +353,7 @@ int GSShaderOGL::DumpAsm(const std::string& file, GLuint p)
 	if (asm_ < binaryLength) {
 		// Now print asm as text
 		char* asm_txt = strtok(&binary[asm_], "\n");
-		while (asm_txt != NULL && (strncmp(asm_txt, "END", 3) || !strncmp(asm_txt, "ENDIF", 5))) {
+		while (asm_txt != nullptr && (strncmp(asm_txt, "END", 3) || !strncmp(asm_txt, "ENDIF", 5))) {
 			if (!strncmp(asm_txt, "OUT", 3) || !strncmp(asm_txt, "TEMP", 4) || !strncmp(asm_txt, "LONG", 4)) {
 				instructions = 0;
 			} else if (instructions >= 0) {
@@ -363,7 +363,7 @@ int GSShaderOGL::DumpAsm(const std::string& file, GLuint p)
 			}
 
 			fprintf(outfile, "%s\n", asm_txt);
-			asm_txt = strtok(NULL, "\n");
+			asm_txt = strtok(nullptr, "\n");
 		}
 		fprintf(outfile, "\nFound %d instructions\n", instructions);
 	}

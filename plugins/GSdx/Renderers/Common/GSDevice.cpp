@@ -27,12 +27,12 @@ GSDevice::GSDevice()
 	: m_wnd()
 	, m_vsync(false)
 	, m_rbswapped(false)
-	, m_backbuffer(NULL)
-	, m_merge(NULL)
-	, m_weavebob(NULL)
-	, m_blend(NULL)
-	, m_target_tmp(NULL)
-	, m_current(NULL)
+	, m_backbuffer(nullptr)
+	, m_merge(nullptr)
+	, m_weavebob(nullptr)
+	, m_blend(nullptr)
+	, m_target_tmp(nullptr)
+	, m_current(nullptr)
 	, m_frame(0)
 {
 	memset(&m_vertex, 0, sizeof(m_vertex));
@@ -70,15 +70,15 @@ bool GSDevice::Reset(int w, int h)
 	delete m_blend;
 	delete m_target_tmp;
 
-	m_backbuffer = NULL;
-	m_merge = NULL;
-	m_weavebob = NULL;
-	m_blend = NULL;
-	m_target_tmp = NULL;
+	m_backbuffer = nullptr;
+	m_merge = nullptr;
+	m_weavebob = nullptr;
+	m_blend = nullptr;
+	m_target_tmp = nullptr;
 
-	m_current = NULL; // current is special, points to other textures, no need to delete
+	m_current = nullptr; // current is special, points to other textures, no need to delete
 
-	return m_wnd != NULL;
+	return m_wnd != nullptr;
 }
 
 void GSDevice::Present(const GSVector4i& r, int shader)
@@ -255,11 +255,11 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 
 	if(ResizeTarget(&m_merge, fs.x, fs.y))
 	{
-		GSTexture* tex[3] = {NULL, NULL, NULL};
+		GSTexture* tex[3] = {nullptr, nullptr, nullptr};
 
 		for(size_t i = 0; i < countof(tex); i++)
 		{
-			if(sTex[i] != NULL)
+			if(sTex[i] != nullptr)
 			{
 				tex[i] = sTex[i];
 			}
@@ -364,11 +364,11 @@ void GSDevice::ShadeBoost()
 
 bool GSDevice::ResizeTexture(GSTexture** t, int type, int w, int h)
 {
-	if(t == NULL) {ASSERT(0); return false;}
+	if(t == nullptr) {ASSERT(0); return false;}
 
 	GSTexture* t2 = *t;
 
-	if(t2 == NULL || t2->GetWidth() != w || t2->GetHeight() != h)
+	if(t2 == nullptr || t2->GetWidth() != w || t2->GetHeight() != h)
 	{
 		delete t2;
 
@@ -377,7 +377,7 @@ bool GSDevice::ResizeTexture(GSTexture** t, int type, int w, int h)
 		*t = t2;
 	}
 
-	return t2 != NULL;
+	return t2 != nullptr;
 }
 
 bool GSDevice::ResizeTexture(GSTexture** t, int w, int h)

@@ -216,7 +216,7 @@ protected:
 	uint8 m_texture_inside_rt_cache_size = 255;
 	std::vector<TexInsideRtCacheEntry> m_texture_inside_rt_cache;
 
-	virtual Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0);
+	virtual Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = nullptr, bool half_right = false, int x_offset = 0, int y_offset = 0);
 	virtual Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type);
 
 	virtual int Get8bitFormat() = 0;

@@ -138,7 +138,7 @@ int pcap_io_init(char *adapter)
 							 1,				// promiscuous for Xlink usage
 							 1,			// read timeout
 							 errbuf			// error buffer
-							 )) == NULL)
+							 )) == nullptr)
 	{
 		fprintf(stderr, "%s", errbuf);
 		fprintf(stderr,"\nUnable to open the adapter. %s is not supported by pcap\n", adapter);
@@ -205,7 +205,7 @@ int pcap_io_send(void* packet, int plen)
 	if(dump_pcap)
 	{
 		static struct pcap_pkthdr ph;
-		gettimeofday(&ph.ts,NULL);
+		gettimeofday(&ph.ts,nullptr);
 		ph.caplen=plen;
 		ph.len=plen;
 		pcap_dump((u_char*)dump_pcap,&ph,(u_char*)packet);
@@ -257,7 +257,7 @@ int pcap_io_get_dev_num()
 	}
     
 	d=alldevs;
-    while(d!=NULL) {d=d->next; i++;}
+    while(d!=nullptr) {d=d->next; i++;}
 
 	pcap_freealldevs(alldevs);
 
@@ -272,11 +272,11 @@ char* pcap_io_get_dev_name(int num)
 
 	if(pcap_findalldevs(&alldevs, errbuf) == -1)
 	{
-		return NULL;
+		return nullptr;
 	}
     
 	d=alldevs;
-    while(d!=NULL) {
+    while(d!=nullptr) {
 		if(num==i)
 		{
 			strcpy(namebuff,d->name);
@@ -288,7 +288,7 @@ char* pcap_io_get_dev_name(int num)
 
 	pcap_freealldevs(alldevs);
 
-	return NULL;
+	return nullptr;
 }
 
 char* pcap_io_get_dev_desc(int num)
@@ -299,11 +299,11 @@ char* pcap_io_get_dev_desc(int num)
 
 	if(pcap_findalldevs(&alldevs, errbuf) == -1)
 	{
-		return NULL;
+		return nullptr;
 	}
     
 	d=alldevs;
-    while(d!=NULL) {
+    while(d!=nullptr) {
 		if(num==i)
 		{
 			strcpy(namebuff,d->description);
@@ -315,7 +315,7 @@ char* pcap_io_get_dev_desc(int num)
 
 	pcap_freealldevs(alldevs);
 
-	return NULL;
+	return nullptr;
 }
 
 

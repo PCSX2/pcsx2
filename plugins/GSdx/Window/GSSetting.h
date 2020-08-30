@@ -38,7 +38,7 @@ struct GSSetting
 	}
 };
 
-const char* dialog_message(int ID, bool* updateText = NULL);
+const char* dialog_message(int ID, bool* updateText = nullptr);
 
 #ifndef _WIN32
 enum {

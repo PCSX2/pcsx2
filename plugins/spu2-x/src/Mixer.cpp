@@ -131,7 +131,7 @@ static void __forceinline IncrementNextA(V_Core &thiscore, uint voiceidx)
 // decoded pcm data, used to cache the decoded data so that it needn't be decoded
 // multiple times.  Cache chunks are decoded when the mixer requests the blocks, and
 // invalided when DMA transfers and memory writes are performed.
-PcmCacheEntry *pcm_cache_data = NULL;
+PcmCacheEntry *pcm_cache_data = nullptr;
 
 int g_counter_cache_hits = 0;
 int g_counter_cache_misses = 0;

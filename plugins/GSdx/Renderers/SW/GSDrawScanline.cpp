@@ -77,7 +77,7 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 	}
 	else
 	{
-		m_de = NULL;
+		m_de = nullptr;
 	}
 
 	if(m_global.sel.IsSolidRect())
@@ -86,7 +86,7 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 	}
 	else
 	{
-		m_dr = NULL;
+		m_dr = nullptr;
 	}
 
 	// doesn't need all bits => less functions generated

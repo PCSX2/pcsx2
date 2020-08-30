@@ -78,7 +78,7 @@ CDVDreadTrack(u32 lsn, int mode)
 EXPORT_C_(u8 *)
 CDVDgetBuffer()
 {
-    return NULL;
+    return nullptr;
 }
 
 EXPORT_C_(s32)

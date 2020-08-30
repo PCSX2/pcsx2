@@ -47,7 +47,7 @@ protected:
 
 public:
 	GSFunctionMap()
-		: m_active(NULL)
+		: m_active(nullptr)
 	{
 	}
 
@@ -58,7 +58,7 @@ public:
 
 	VALUE operator [] (KEY key)
 	{
-		m_active = NULL;
+		m_active = nullptr;
 
 		auto it = m_map_active.find(key);
 

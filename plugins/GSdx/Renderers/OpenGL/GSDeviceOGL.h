@@ -515,8 +515,8 @@ private:
 	void DoExternalFX(GSTexture* sTex, GSTexture* dTex) final;
 	void RenderOsd(GSTexture* dt);
 
-	void OMAttachRt(GSTextureOGL* rt = NULL);
-	void OMAttachDs(GSTextureOGL* ds = NULL);
+	void OMAttachRt(GSTextureOGL* rt = nullptr);
+	void OMAttachDs(GSTextureOGL* ds = nullptr);
 	void OMSetFBO(GLuint fbo);
 
 	uint16 ConvertBlendEnum(uint16 generic) final;
@@ -576,7 +576,7 @@ public:
 
 	void OMSetDepthStencilState(GSDepthStencilOGL* dss);
 	void OMSetBlendState(uint8 blend_index = 0, uint8 blend_factor = 0, bool is_blend_constant = false, bool accumulation_blend = false);
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL) final;
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = nullptr) final;
 	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector());
 
 	virtual bool HasColorSparse() { return GLLoader::found_compatible_GL_ARB_sparse_texture2; }

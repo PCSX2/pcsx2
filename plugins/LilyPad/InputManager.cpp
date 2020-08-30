@@ -20,7 +20,7 @@
 #include "KeyboardQueue.h"
 #include "Config.h"
 
-InputDeviceManager *dm = 0;
+InputDeviceManager *dm = nullptr;
 
 InputDeviceManager::InputDeviceManager()
 {
@@ -33,7 +33,7 @@ void InputDeviceManager::ClearDevices()
         delete devices[i];
     }
     free(devices);
-    devices = 0;
+    devices = nullptr;
     numDevices = 0;
 }
 
@@ -52,7 +52,7 @@ Device::Device(DeviceAPI api, DeviceType d, const wchar_t *displayName, const wc
         this->instanceID = wcsdup(instanceID);
     else
         this->instanceID = wcsdup(displayName);
-    this->productID = 0;
+    this->productID = nullptr;
     if (productID)
         this->productID = wcsdup(productID);
     active = 0;
@@ -63,18 +63,18 @@ Device::Device(DeviceAPI api, DeviceType d, const wchar_t *displayName, const wc
     hWndProc = 0;
 #endif
 
-    virtualControls = 0;
+    virtualControls = nullptr;
     numVirtualControls = 0;
-    virtualControlState = 0;
-    oldVirtualControlState = 0;
+    virtualControlState = nullptr;
+    oldVirtualControlState = nullptr;
 
-    physicalControls = 0;
+    physicalControls = nullptr;
     numPhysicalControls = 0;
-    physicalControlState = 0;
+    physicalControlState = nullptr;
 
-    ffEffectTypes = 0;
+    ffEffectTypes = nullptr;
     numFFEffectTypes = 0;
-    ffAxes = 0;
+    ffAxes = nullptr;
     numFFAxes = 0;
 }
 
@@ -82,9 +82,9 @@ void Device::FreeState()
 {
     if (virtualControlState)
         free(virtualControlState);
-    virtualControlState = 0;
-    oldVirtualControlState = 0;
-    physicalControlState = 0;
+    virtualControlState = nullptr;
+    oldVirtualControlState = nullptr;
+    physicalControlState = nullptr;
 }
 
 Device::~Device()
@@ -264,7 +264,7 @@ VirtualControl *Device::GetVirtualControl(unsigned int uid)
         if (virtualControls[i].uid == uid)
             return virtualControls + i;
     }
-    return 0;
+    return nullptr;
 }
 
 VirtualControl *Device::AddVirtualControl(unsigned int uid, int physicalControlIndex)
@@ -348,7 +348,7 @@ wchar_t *GetDefaultControlName(unsigned short id, int type)
 wchar_t *Device::GetVirtualControlName(VirtualControl *control)
 {
     static wchar_t temp[100];
-    wchar_t *baseName = 0;
+    wchar_t *baseName = nullptr;
     if (control->physicalControlIndex >= 0) {
         baseName = physicalControls[control->physicalControlIndex].name;
         if (!baseName)
@@ -427,7 +427,7 @@ Device *InputDeviceManager::GetActiveDevice(InitInfo *info, unsigned int *uid, i
     int i, j;
     Update(info);
     int bestDiff = FULLY_DOWN / 2;
-    Device *bestDevice = 0;
+    Device *bestDevice = nullptr;
     for (i = 0; i < numDevices; i++) {
         if (devices[i]->active) {
             for (j = 0; j < devices[i]->numVirtualControls; j++) {
@@ -522,7 +522,7 @@ ForceFeedbackEffectType *Device::GetForcefeedbackEffect(wchar_t *id)
             return &ffEffectTypes[i];
         }
     }
-    return 0;
+    return nullptr;
 }
 
 ForceFeedbackAxis *Device::GetForceFeedbackAxis(int id)
@@ -531,7 +531,7 @@ ForceFeedbackAxis *Device::GetForceFeedbackAxis(int id)
         if (ffAxes[i].id == id)
             return &ffAxes[i];
     }
-    return 0;
+    return nullptr;
 }
 
 void InputDeviceManager::CopyBindings(int numOldDevices, Device **oldDevices)

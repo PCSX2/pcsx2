@@ -112,7 +112,7 @@ public:
 protected:
     BaseThreadError()
     {
-        m_thread = NULL;
+        m_thread = nullptr;
     }
 
 public:
@@ -328,7 +328,7 @@ protected:
 
 public:
     virtual ~ScopedLock();
-    explicit ScopedLock(const Mutex *locker = NULL);
+    explicit ScopedLock(const Mutex *locker = nullptr);
     explicit ScopedLock(const Mutex &locker);
     void AssignAndLock(const Mutex &locker);
     void AssignAndLock(const Mutex *locker);

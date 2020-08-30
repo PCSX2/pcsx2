@@ -50,10 +50,10 @@ public:
 		: scissor(GSVector4i::zero())
 		, bbox(GSVector4i::zero())
 		, primclass(GS_INVALID_CLASS)
-		, buff(NULL)
-		, vertex(NULL)
+		, buff(nullptr)
+		, vertex(nullptr)
 		, vertex_count(0)
-		, index(NULL)
+		, index(nullptr)
 		, index_count(0)
 		, frame(0)
 		, start(0)
@@ -64,7 +64,7 @@ public:
 
 	virtual ~GSRasterizerData() 
 	{
-		if(buff != NULL) _aligned_free(buff);
+		if(buff != nullptr) _aligned_free(buff);
 	}
 };
 
@@ -82,7 +82,7 @@ protected:
 	DrawRectPtr m_dr;
 
 public:
-	IDrawScanline() : m_sp(NULL), m_ds(NULL), m_de(NULL), m_dr(NULL) {}
+	IDrawScanline() : m_sp(nullptr), m_ds(nullptr), m_de(nullptr), m_dr(nullptr) {}
 	virtual ~IDrawScanline() {}
 
 	virtual void BeginDraw(const GSRasterizerData* data) = 0;
@@ -106,8 +106,8 @@ public:
 
 	virtual void PrintStats() = 0;
 
-	__forceinline bool HasEdge() const {return m_de != NULL;}
-	__forceinline bool IsSolidRect() const {return m_dr != NULL;}
+	__forceinline bool HasEdge() const {return m_de != nullptr;}
+	__forceinline bool IsSolidRect() const {return m_dr != nullptr;}
 };
 
 class IRasterizer : public GSAlignedClass<32>

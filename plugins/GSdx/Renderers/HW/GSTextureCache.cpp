@@ -112,8 +112,8 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 
-	Source* src = NULL;
-	Target* dst = NULL;
+	Source* src = nullptr;
+	Target* dst = nullptr;
 
 	// Check only current frame, I guess it is only used as a postprocessing effect
 	uint32 bp = TEX0.TBP0;
@@ -210,7 +210,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 	const uint32* clut = m_renderer->m_mem.m_clut;
 
-	Source* src = NULL;
+	Source* src = nullptr;
 
 	auto& m = m_src.m_map[TEX0.TBP0 >> 5];
 
@@ -242,7 +242,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		break;
 	}
 
-	Target* dst = NULL;
+	Target* dst = nullptr;
 	bool half_right = false;
 	int x_offset = 0;
 	int y_offset = 0;
@@ -250,7 +250,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 #ifdef DISABLE_HW_TEXTURE_CACHE
 	if( 0 )
 #else
-	if(src == NULL)
+	if(src == nullptr)
 #endif
 	{
 		uint32 bp = TEX0.TBP0;
@@ -404,7 +404,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		//
 		// Sigh... They don't help us.
 
-		if (dst == NULL && m_can_convert_depth) {
+		if (dst == nullptr && m_can_convert_depth) {
 			// Let's try a trick to avoid to use wrongly a depth buffer
 			// Unfortunately, I don't have any Arc the Lad testcase
 			//
@@ -430,7 +430,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 	bool new_source = false;
 
-	if(src == NULL)
+	if(src == nullptr)
 	{
 #ifdef ENABLE_OGL_DEBUG
 		if (dst) {
@@ -494,7 +494,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
 	uint32 bp = TEX0.TBP0;
 
-	Target* dst = NULL;
+	Target* dst = nullptr;
 
 	auto& list = m_dst[type];
 	for(auto i = list.begin(); i != list.end(); ++i) {
@@ -558,7 +558,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		}
 	}
 
-	if(dst == NULL)
+	if(dst == nullptr)
 	{
 		GL_CACHE("TC: Lookup Target(%s) %dx%d, miss (0x%x, %s)", to_string(type), w, h, bp, psm_str(TEX0.PSM));
 
@@ -610,7 +610,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 {
 	uint32 bp = TEX0.TBP0;
 
-	Target* dst = NULL;
+	Target* dst = nullptr;
 
 #if 0
 	// Dump the list of targets for debug
@@ -631,7 +631,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 
 	// 2nd try ! Try to find a frame that include the bp
-	if (dst == NULL) {
+	if (dst == nullptr) {
 		for(auto t : m_dst[RenderTarget]) {
 			if (t->m_TEX0.TBP0 < bp && bp <= t->m_end_block) {
 				dst = t;
@@ -644,7 +644,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 
 	// 3rd try ! Try to find a frame that doesn't contain valid data (honestly I'm not sure we need to do it)
-	if (dst == NULL) {
+	if (dst == nullptr) {
 		for(auto t : m_dst[RenderTarget]) {
 			if(bp == t->m_TEX0.TBP0) {
 				dst = t;
@@ -681,7 +681,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 #endif
 
-	if(dst == NULL)
+	if(dst == nullptr)
 	{
 		GL_CACHE("TC: Lookup Frame %dx%d, miss (0x%x %s)", w, h, bp, psm_str(TEX0.PSM));
 
@@ -1586,7 +1586,7 @@ void GSTextureCache::PrintMemoryUsage()
 
 GSTextureCache::Surface::Surface(GSRenderer* r, uint8* temp)
 	: m_renderer(r)
-	, m_texture(NULL)
+	, m_texture(nullptr)
 	, m_age(0)
 	, m_temp(temp)
 	, m_32_bits_fmt(false)
@@ -1633,8 +1633,8 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	, m_valid_rect(0, 0)
 	, m_target(false)
 	, m_complete(false)
-	, m_p2t(NULL)
-	, m_from_target(NULL)
+	, m_p2t(nullptr)
+	, m_from_target(nullptr)
 	, m_from_target_TEX0(TEX0)
 {
 	m_TEX0 = TEX0;
@@ -1643,7 +1643,7 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	if (dummy_container) {
 		// Dummy container only contain a m_texture that is a pointer to another source.
 
-		m_write.rect = NULL;
+		m_write.rect = nullptr;
 		m_write.count = 0;
 
 		m_repeating = false;

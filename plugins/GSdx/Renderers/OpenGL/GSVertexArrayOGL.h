@@ -61,7 +61,7 @@ class GSBufferOGL {
 		m_quarter_shift = (size_t)std::log2(m_limit * STRIDE) - 2;
 
 		for (size_t i = 0; i < 5; i++) {
-			m_fence[i] = 0;
+			m_fence[i] = nullptr;
 		}
 
 		// TODO: if we do manually the synchronization, I'm not sure size is important. It worths to investigate it.
@@ -78,7 +78,7 @@ class GSBufferOGL {
 		const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
 		const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
 
-		glBufferStorage(m_target, STRIDE * m_limit, NULL, create_flags );
+		glBufferStorage(m_target, STRIDE * m_limit, nullptr, create_flags );
 		m_buffer_ptr = (uint8*) glMapBufferRange(m_target, 0, STRIDE * m_limit, map_flags);
 		if (!m_buffer_ptr) {
 			fprintf(stderr, "Failed to map buffer\n");
@@ -115,7 +115,7 @@ class GSBufferOGL {
 			fprintf(stderr, "%x: Insert a fence in chunk %zu\n", m_target, current_chunk);
 #endif
 			ASSERT(current_chunk > 0 && current_chunk < 5);
-			if (m_fence[current_chunk] == 0) {
+			if (m_fence[current_chunk] == nullptr) {
 				m_fence[current_chunk] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 			}
 
@@ -134,7 +134,7 @@ class GSBufferOGL {
 				glClientWaitSync(m_fence[0], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
 #endif
 				glDeleteSync(m_fence[0]);
-				m_fence[0] = 0;
+				m_fence[0] = nullptr;
 			}
 		}
 
@@ -154,7 +154,7 @@ class GSBufferOGL {
 				glClientWaitSync(m_fence[c], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
 #endif
 				glDeleteSync(m_fence[c]);
-				m_fence[c] = 0;
+				m_fence[c] = nullptr;
 
 #ifdef ENABLE_OGL_DEBUG_FENCE
 				if (status != GL_ALREADY_SIGNALED) {

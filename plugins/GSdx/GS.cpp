@@ -53,9 +53,9 @@ extern bool RunLinuxDialog();
 #define PS2E_X86 0x01   // 32 bit
 #define PS2E_X86_64 0x02   // 64 bit
 
-static GSRenderer* s_gs = NULL;
-static void (*s_irq)() = NULL;
-static uint8* s_basemem = NULL;
+static GSRenderer* s_gs = nullptr;
+static void (*s_irq)() = nullptr;
+static uint8* s_basemem = nullptr;
 static int s_vsync = 0;
 static bool s_exclusive = true;
 static const char *s_renderer_name = "";
@@ -173,7 +173,7 @@ EXPORT_C GSclose()
 {
 	gsopen_done = false;
 
-	if(s_gs == NULL) return;
+	if(s_gs == nullptr) return;
 
 	s_gs->ResetDevice();
 
@@ -181,7 +181,7 @@ EXPORT_C GSclose()
 	// the context
 	delete s_gs->m_dev;
 
-	s_gs->m_dev = NULL;
+	s_gs->m_dev = nullptr;
 
 	if (s_gs->m_wnd)
 	{
@@ -191,8 +191,8 @@ EXPORT_C GSclose()
 
 static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads = -1)
 {
-	GSDevice* dev = NULL;
-	bool old_api = *dsp == NULL;
+	GSDevice* dev = nullptr;
+	bool old_api = *dsp == nullptr;
 
 	// Fresh start up or config file changed
 	if(renderer == GSRendererType::Undefined)
@@ -219,7 +219,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 			delete s_gs;
 
-			s_gs = NULL;
+			s_gs = nullptr;
 
 			theApp.SetCurrentRendererType(renderer);
 		}
@@ -364,12 +364,12 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 		printf("Current Renderer: %s %s\n", renderer_fullname, renderer_mode);
 
-		if (dev == NULL)
+		if (dev == nullptr)
 		{
 			return -1;
 		}
 
-		if (s_gs == NULL)
+		if (s_gs == nullptr)
 		{
 			switch (renderer)
 			{
@@ -401,7 +401,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				break;
 #endif
 			}
-			if (s_gs == NULL)
+			if (s_gs == nullptr)
 				return -1;
 		}
 
@@ -489,7 +489,7 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 
 	int retval = _GSopen(dsp, "", renderer);
 
-	if (s_gs != NULL)
+	if (s_gs != nullptr)
 		s_gs->SetAspectRatio(0);	 // PCSX2 manages the aspect ratios
 
 	gsopen_done = true;
@@ -532,7 +532,7 @@ EXPORT_C_(int) GSopen(void** dsp, const char* title, int mt)
 		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
 	}
 
-	*dsp = NULL;
+	*dsp = nullptr;
 
 	int retval = _GSopen(dsp, title, renderer);
 
@@ -839,7 +839,7 @@ void pt(const char* str){
 
 EXPORT_C_(int) GSsetupRecording(int start, void* data)
 {
-	if (s_gs == NULL) {
+	if (s_gs == nullptr) {
 		printf("GSdx: no s_gs for recording\n");
 		return 0;
 	}
@@ -886,7 +886,7 @@ EXPORT_C GSgetTitleInfo2(char* dest, size_t length)
 	s.append(s_renderer_name).append(s_renderer_type);
 
 	// TODO: this gets called from a different thread concurrently with GSOpen (on linux)
-	if (gsopen_done && s_gs != NULL && s_gs->m_GStitleInfoBuffer[0])
+	if (gsopen_done && s_gs != nullptr && s_gs->m_GStitleInfoBuffer[0])
 	{
 		std::lock_guard<std::mutex> lock(s_gs->m_pGSsetTitle_Crit);
 
@@ -1387,13 +1387,13 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 	long frame_number = 0;
 
-	void* hWnd = NULL;
+	void* hWnd = nullptr;
 	int err = _GSopen((void**)&hWnd, "", m_renderer);
 	if (err != 0) {
 		fprintf(stderr, "Error failed to GSopen\n");
 		return;
 	}
-	if (s_gs->m_wnd == NULL) return;
+	if (s_gs->m_wnd == nullptr) return;
 
 	{ // Read .gs content
 		std::string f(lpszCmdLine);

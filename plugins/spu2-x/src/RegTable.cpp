@@ -78,8 +78,8 @@ u16 const *const regtable_original[0x401] =
         PCORE(0, IRQA) + 1,
         PCORE(0, IRQA),
 
-        NULL, NULL,
-        NULL, NULL,
+        nullptr, nullptr,
+        nullptr, nullptr,
 
         PCORE(0, TSA) + 1,
         PCORE(0, TSA),
@@ -181,8 +181,8 @@ u16 const *const regtable_original[0x401] =
         PCORE(1, IRQA) + 1,
         PCORE(1, IRQA),
 
-        NULL, NULL,
-        NULL, NULL,
+        nullptr, nullptr,
+        nullptr, nullptr,
 
         PCORE(1, TSA) + 1,
         PCORE(1, TSA),
@@ -300,4 +300,4 @@ u16 const *const regtable_original[0x401] =
         PRAW(0x7F0), PRAW(0x7F2), PRAW(0x7F4), PRAW(0x7F6),
         PRAW(0x7F8), PRAW(0x7FA), PRAW(0x7FC), PRAW(0x7FE),
 
-        NULL};
+        nullptr};

@@ -819,7 +819,7 @@ void GSLocalMemory::WriteImageTopBottom(int l, int r, int y, int h, const uint8*
 
 		for(int x = l; x < r; x += bsx)
 		{
-			uint8* dst = NULL;
+			uint8* dst = nullptr;
 
 			switch(psm)
 			{
@@ -906,7 +906,7 @@ void GSLocalMemory::WriteImageTopBottom(int l, int r, int y, int h, const uint8*
 	{
 		for(int x = l; x < r; x += bsx)
 		{
-			uint8* dst = NULL;
+			uint8* dst = nullptr;
 
 			switch(psm)
 			{
@@ -2085,7 +2085,7 @@ uint32* GSOffset::GetPages(const GSVector4i& rect, uint32* pages, GSVector4i* bb
 
 	GSVector4i r = rect.ralign<Align_Outside>(bs);
 
-	if(bbox != NULL) *bbox = r;
+	if(bbox != nullptr) *bbox = r;
 
 	// worst case:
 	// bp page-aligned: (w * h) / (64 * 32)
@@ -2095,7 +2095,7 @@ uint32* GSOffset::GetPages(const GSVector4i& rect, uint32* pages, GSVector4i* bb
 
 	int limit = MAX_PAGES + 1;
 
-	if(pages == NULL)
+	if(pages == nullptr)
 	{
 		limit = std::min<int>((size >> ((bp & 31) != 0 ? 6 : 11)) + 2, MAX_PAGES) + 1;
 

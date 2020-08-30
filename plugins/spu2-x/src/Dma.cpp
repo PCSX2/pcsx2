@@ -22,13 +22,13 @@
 
 extern u8 callirq;
 
-static FILE *DMA4LogFile = NULL;
-static FILE *DMA7LogFile = NULL;
-static FILE *ADMA4LogFile = NULL;
-static FILE *ADMA7LogFile = NULL;
-static FILE *ADMAOutLogFile = NULL;
+static FILE *DMA4LogFile = nullptr;
+static FILE *DMA7LogFile = nullptr;
+static FILE *ADMA4LogFile = nullptr;
+static FILE *ADMA7LogFile = nullptr;
+static FILE *ADMAOutLogFile = nullptr;
 
-static FILE *REGWRTLogFile[2] = {0, 0};
+static FILE *REGWRTLogFile[2] = {nullptr, nullptr};
 
 void DMALogOpen()
 {
@@ -106,21 +106,21 @@ void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not spl
     // addressing, but new PCSX2s have dynamic memory addressing).
 
     if (mode) {
-        if (DMAPtr != NULL)
+        if (DMAPtr != nullptr)
             //memcpy((ADMATempBuffer+(spos<<1)),DMAPtr+InputDataProgress,0x400);
             memcpy(GetMemPtr(0x2000 + (Index << 10) + spos), DMAPtr + InputDataProgress, 0x400);
         MADR += 0x400;
         InputDataLeft -= 0x200;
         InputDataProgress += 0x200;
     } else {
-        if (DMAPtr != NULL)
+        if (DMAPtr != nullptr)
             //memcpy((ADMATempBuffer+spos),DMAPtr+InputDataProgress,0x200);
             memcpy(GetMemPtr(0x2000 + (Index << 10) + spos), DMAPtr + InputDataProgress, 0x200);
         MADR += 0x200;
         InputDataLeft -= 0x100;
         InputDataProgress += 0x100;
 
-        if (DMAPtr != NULL)
+        if (DMAPtr != nullptr)
             //memcpy((ADMATempBuffer+spos+0x200),DMAPtr+InputDataProgress,0x200);
             memcpy(GetMemPtr(0x2200 + (Index << 10) + spos), DMAPtr + InputDataProgress, 0x200);
         MADR += 0x200;

@@ -70,7 +70,7 @@ GSRasterizer::~GSRasterizer()
 {
 	_aligned_free(m_scanline);
 
-	if(m_edge.buff != NULL) vmfree(m_edge.buff, sizeof(GSVertexSW) * 2048);
+	if(m_edge.buff != nullptr) vmfree(m_edge.buff, sizeof(GSVertexSW) * 2048);
 
 	delete m_ds;
 }
@@ -135,7 +135,7 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 {
 	GSPerfMonAutoTimer pmat(m_perfmon, GSPerfMon::WorkerDraw0 + m_id);
 
-	if(data->vertex != NULL && data->vertex_count == 0 || data->index != NULL && data->index_count == 0) return;
+	if(data->vertex != nullptr && data->vertex_count == 0 || data->index != nullptr && data->index_count == 0) return;
 
 	m_pixels.actual = 0;
 	m_pixels.total = 0;
@@ -175,7 +175,7 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 
 	case GS_LINE_CLASS:
 
-		if(index != NULL)
+		if(index != nullptr)
 		{
 			do {DrawLine(vertex, index); index += 2;}
 			while(index < index_end);
@@ -190,7 +190,7 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 
 	case GS_TRIANGLE_CLASS:
 
-		if(index != NULL)
+		if(index != nullptr)
 		{
 			do {DrawTriangle(vertex, index); index += 3;}
 			while(index < index_end);
@@ -205,7 +205,7 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 
 	case GS_SPRITE_CLASS:
 
-		if(index != NULL)
+		if(index != nullptr)
 		{
 			do {DrawSprite(vertex, index); index += 2;}
 			while(index < index_end);
@@ -238,7 +238,7 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 template<bool scissor_test>
 void GSRasterizer::DrawPoint(const GSVertexSW* vertex, int vertex_count, const uint32* index, int index_count)
 {
-	if(index != NULL)
+	if(index != nullptr)
 	{
 		for(int i = 0; i < index_count; i++, index++)
 		{

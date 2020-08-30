@@ -68,7 +68,7 @@ class GSTextureOGL final : public GSTexture
 		virtual ~GSTextureOGL();
 
 		bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) final;
-		bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) final;
+		bool Map(GSMap& m, const GSVector4i* r = nullptr, int layer = 0) final;
 		void Unmap() final;
 		void GenerateMipmap() final;
 		bool Save(const std::string& fn) final;

@@ -51,18 +51,18 @@ static const uint32 g_ps_cb_index         = 21;
 bool  GSDeviceOGL::m_debug_gl_call = false;
 int   GSDeviceOGL::m_shader_inst = 0;
 int   GSDeviceOGL::m_shader_reg  = 0;
-FILE* GSDeviceOGL::m_debug_gl_file = NULL;
+FILE* GSDeviceOGL::m_debug_gl_file = nullptr;
 
 GSDeviceOGL::GSDeviceOGL()
 	: m_force_texture_clear(0)
 	, m_fbo(0)
 	, m_fbo_read(0)
-	, m_va(NULL)
+	, m_va(nullptr)
 	, m_apitrace(0)
 	, m_palette_ss(0)
-	, m_vs_cb(NULL)
-	, m_ps_cb(NULL)
-	, m_shader(NULL)
+	, m_vs_cb(nullptr)
+	, m_ps_cb(nullptr)
+	, m_shader(nullptr)
 {
 	memset(&m_merge_obj, 0, sizeof(m_merge_obj));
 	memset(&m_interlace, 0, sizeof(m_interlace));
@@ -98,11 +98,11 @@ GSDeviceOGL::~GSDeviceOGL()
 {
 	if (m_debug_gl_file) {
 		fclose(m_debug_gl_file);
-		m_debug_gl_file = NULL;
+		m_debug_gl_file = nullptr;
 	}
 
 	// If the create function wasn't called nothing to do.
-	if (m_shader == NULL)
+	if (m_shader == nullptr)
 		return;
 
 	GL_PUSH("GSDeviceOGL destructor");
@@ -149,7 +149,7 @@ GSDeviceOGL::~GSDeviceOGL()
 
 	// Must be done after the destruction of all shader/program objects
 	delete m_shader;
-	m_shader = NULL;
+	m_shader = nullptr;
 }
 
 void GSDeviceOGL::GenerateProfilerData()
@@ -286,7 +286,7 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, int format)
 				if (m_force_texture_clear > 1)
 					static_cast<GSTextureOGL*>(t)->Clear((void*)&red);
 				else if (m_force_texture_clear)
-					static_cast<GSTextureOGL*>(t)->Clear(NULL);
+					static_cast<GSTextureOGL*>(t)->Clear(nullptr);
 
 				break;
 		}
@@ -303,10 +303,10 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	// ****************************************************************
 #ifdef ENABLE_OGL_DEBUG
 	if (theApp.GetConfigB("debug_opengl")) {
-		glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
+		glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, nullptr);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 
-		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, true);
 		// Useless info message on Nvidia driver
 		GLuint ids[] = {0x20004};
 		glDebugMessageControl(GL_DEBUG_SOURCE_API_ARB, GL_DEBUG_TYPE_OTHER_ARB, GL_DONT_CARE, countof(ids), ids, false);
@@ -353,7 +353,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		static_assert(sizeof(GSVertexPT1) == sizeof(GSVertex), "wrong GSVertex size");
 		std::vector<GSInputLayoutOGL> il_convert = {
-			{0, 2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(0) }  ,
+			{0, 2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)nullptr }  ,
 			{1, 2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(16) } ,
 			{2, 4 , GL_UNSIGNED_BYTE  , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(8) }  ,
 			{3, 1 , GL_FLOAT          , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(12) } ,
@@ -753,12 +753,12 @@ void GSDeviceOGL::ClearDepth(GSTexture* t)
 		// Let's disable this code for the moment.
 
 		// Don't bother with Depth_Stencil insanity
-		T->Clear(NULL);
+		T->Clear(nullptr);
 	} else {
 		OMSetFBO(m_fbo);
 		// RT must be detached, if RT is too small, depth won't be fully cleared
 		// AT tolenico 2 map clip bug
-		OMAttachRt(NULL);
+		OMAttachRt(nullptr);
 		OMAttachDs(T);
 
 		// TODO: check size of scissor before toggling it
@@ -895,7 +895,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area)
 	const GSVector2i& rtsize = rt->GetSize();
 
 	// Create a texture to avoid the useless clean@0
-	if (m_date.t == NULL)
+	if (m_date.t == nullptr)
 		m_date.t = CreateTexture(rtsize.x, rtsize.y, GL_R32I);
 
 	// Clean with the max signed value
@@ -915,7 +915,7 @@ void GSDeviceOGL::RecycleDateTexture()
 		//static_cast<GSTextureOGL*>(m_date.t)->Save(format("/tmp/date_adv_%04ld.csv", GSState::s_n));
 
 		Recycle(m_date.t);
-		m_date.t = NULL;
+		m_date.t = nullptr;
 	}
 }
 
@@ -1010,7 +1010,7 @@ void GSDeviceOGL::SelfShaderTestRun(const std::string& dir, const std::string& f
 #ifdef __linux__
 	// Nouveau actually
 	if (GLLoader::mesa_driver) {
-		if (freopen(out.c_str(), "w", stderr) == NULL)
+		if (freopen(out.c_str(), "w", stderr) == nullptr)
 			fprintf(stderr, "Failed to redirect stderr\n");
 	}
 #endif
@@ -1022,7 +1022,7 @@ void GSDeviceOGL::SelfShaderTestRun(const std::string& dir, const std::string& f
 #ifdef __linux__
 	// Nouveau actually
 	if (GLLoader::mesa_driver) {
-		if (freopen("/dev/tty", "w", stderr) == NULL)
+		if (freopen("/dev/tty", "w", stderr) == nullptr)
 			fprintf(stderr, "Failed to restore stderr\n");
 	}
 #endif
@@ -1321,9 +1321,9 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		OMSetDepthStencilState(m_convert.dss);
 
 	if (draw_in_depth)
-		OMSetRenderTargets(NULL, dTex);
+		OMSetRenderTargets(nullptr, dTex);
 	else
-		OMSetRenderTargets(dTex, NULL);
+		OMSetRenderTargets(dTex, nullptr);
 
 	OMSetBlendState((uint8)bs);
 	OMSetColorMaskState(cms);
@@ -1396,7 +1396,7 @@ void GSDeviceOGL::RenderOsd(GSTexture* dt)
 
 	OMSetDepthStencilState(m_convert.dss);
 	OMSetBlendState((uint8)GSDeviceOGL::m_MERGE_BLEND);
-	OMSetRenderTargets(dt, NULL);
+	OMSetRenderTargets(dt, nullptr);
 
 	if(m_osd.m_texture_dirty) {
 		m_osd.upload_texture_atlas(m_font.get());
@@ -1609,7 +1609,7 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 	if (GLState::blend) {
 		glDisable(GL_BLEND);
 	}
-	OMSetRenderTargets(NULL, ds, &GLState::scissor);
+	OMSetRenderTargets(nullptr, ds, &GLState::scissor);
 
 	// ia
 
@@ -1777,7 +1777,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	GSTextureOGL* RT = static_cast<GSTextureOGL*>(rt);
 	GSTextureOGL* DS = static_cast<GSTextureOGL*>(ds);
 
-	if (rt == NULL || !RT->IsBackbuffer()) {
+	if (rt == nullptr || !RT->IsBackbuffer()) {
 		OMSetFBO(m_fbo);
 		if (rt) {
 			OMAttachRt(RT);

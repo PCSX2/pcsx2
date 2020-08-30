@@ -1569,14 +1569,14 @@ keyEvent *CALLBACK PADkeyEvent()
     static char eventCount = 0;
     eventCount++;
     if (eventCount < openCount) {
-        return 0;
+        return nullptr;
     }
     eventCount = 0;
 
     Update(2, 0);
     static keyEvent ev;
     if (!GetQueuedKeyEvent(&ev))
-        return 0;
+        return nullptr;
 
 #ifdef _MSC_VER
     static char shiftDown = 0;

@@ -26,7 +26,7 @@ GSCodeBuffer::GSCodeBuffer(size_t blocksize)
 	: m_blocksize(blocksize)
 	, m_pos(0)
 	, m_reserved(0)
-	, m_ptr(NULL)
+	, m_ptr(nullptr)
 {
 }
 
@@ -45,7 +45,7 @@ void* GSCodeBuffer::GetBuffer(size_t size)
 
 	size = (size + 15) & ~15;
 
-	if(m_ptr == NULL || m_pos + size > m_blocksize)
+	if(m_ptr == nullptr || m_pos + size > m_blocksize)
 	{
 		m_ptr = (uint8*)vmalloc(m_blocksize, true);
 

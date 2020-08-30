@@ -441,7 +441,7 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 
 	} else {
 #ifdef ENABLE_OGL_DEBUG
-		dev->PSSetShaderResource(4, NULL);
+		dev->PSSetShaderResource(4, nullptr);
 #endif
 	}
 }
@@ -1000,7 +1000,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		   );
 #endif
 
-	GSTexture* hdr_rt = NULL;
+	GSTexture* hdr_rt = nullptr;
 
 	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
 	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
@@ -1337,7 +1337,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		// I don't know how much is it legal to mount rt as Texture/RT. No write is done.
 		// In doubt let's detach RT.
-		dev->OMSetRenderTargets(NULL, ds, &scissor);
+		dev->OMSetRenderTargets(nullptr, ds, &scissor);
 
 		// Don't write anything on the color buffer
 		// Neither in the depth buffer

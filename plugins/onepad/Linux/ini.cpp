@@ -51,7 +51,7 @@ void SaveConfig()
 
     const std::string iniFile(s_strIniPath + "OnePAD2.ini");
     f = fopen(iniFile.c_str(), "w");
-    if (f == NULL) {
+    if (f == nullptr) {
         printf("OnePAD: failed to save ini %s\n", iniFile.c_str());
         return;
     }
@@ -83,7 +83,7 @@ void LoadConfig()
 
     const std::string iniFile(s_strIniPath + "OnePAD2.ini");
     f = fopen(iniFile.c_str(), "r");
-    if (f == NULL) {
+    if (f == nullptr) {
         printf("OnePAD: failed to load ini %s\n", iniFile.c_str());
         SaveConfig(); //save and return
         return;

@@ -44,7 +44,7 @@ WavOutFile::WavOutFile(const char *fileName, int sampleRate, int bits, int chann
 {
     bytesWritten = 0;
     fptr = fopen(fileName, "wb");
-    if (fptr == NULL) {
+    if (fptr == nullptr) {
         string msg = "Error : Unable to open file \"";
         msg += fileName;
         msg += "\" for writing.";

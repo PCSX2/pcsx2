@@ -186,7 +186,7 @@ static std::string KeyName(int pad, int key, int keysym)
 
 // Construtor of Dialog
 Dialog::Dialog()
-    : wxDialog(NULL,                                  // Parent
+    : wxDialog(nullptr,                                  // Parent
                wxID_ANY,                              // ID
                _T("OnePad configuration"),            // Title
                wxDefaultPosition,                     // Position

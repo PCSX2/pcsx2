@@ -52,7 +52,7 @@ EXPORT_C_(void)
 USBsetLogDir(const char *dir)
 {
     // Get the path to the log directory.
-    s_strLogPath = (dir == NULL) ? "logs" : dir;
+    s_strLogPath = (dir == nullptr) ? "logs" : dir;
 
     // Reload the log file after updated the path
     g_plugin_log.Close();
@@ -89,7 +89,7 @@ USBinit()
     // Initialize memory structures here.
     usbregs = (s8 *)calloc(0x10000, 1);
 
-    if (usbregs == NULL) {
+    if (usbregs == nullptr) {
         g_plugin_log.Message("Error allocating memory");
         return -1;
     }
@@ -105,7 +105,7 @@ USBshutdown()
     g_plugin_log.Close();
 
     free(usbregs);
-    usbregs = NULL;
+    usbregs = nullptr;
 }
 
 EXPORT_C_(s32)
@@ -260,7 +260,7 @@ EXPORT_C_(void)
 USBsetSettingsDir(const char *dir)
 {
     // Get the path to the ini directory.
-    s_strIniPath = (dir == NULL) ? "inis" : dir;
+    s_strIniPath = (dir == nullptr) ? "inis" : dir;
 }
 
 // extended funcs

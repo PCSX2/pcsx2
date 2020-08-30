@@ -233,7 +233,7 @@ void AttachInTable(GtkWidget* table, GtkWidget *w, int pos, int pad = 0, int siz
 #endif
 }
 
-void InsertWidgetInTable(GtkWidget* table, GtkWidget *left, GtkWidget *right = NULL, GtkWidget *third = NULL)
+void InsertWidgetInTable(GtkWidget* table, GtkWidget *left, GtkWidget *right = nullptr, GtkWidget *third = nullptr)
 {
 	guint l_xpad = GTK_IS_CHECK_BUTTON(left) ? 0 : 22;
 
@@ -608,7 +608,7 @@ GtkWidget* ScrollMe(GtkWidget* w)
 	if (BigEnough())
 		return w;
 
-	GtkWidget* scrollbar = gtk_scrolled_window_new(NULL, NULL);
+	GtkWidget* scrollbar = gtk_scrolled_window_new(nullptr, nullptr);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrollbar), GTK_SHADOW_NONE);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollbar), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 #if GTK_CHECK_VERSION(3, 22, 0)
@@ -632,7 +632,7 @@ bool RunLinuxDialog()
 	/* Create the widgets */
 	dialog = gtk_dialog_new_with_buttons (
 		"GSdx Config",
-		NULL, /* parent window*/
+		nullptr, /* parent window*/
 		(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
 		"OK", GTK_RESPONSE_ACCEPT,
 		// "Cancel", GTK_RESPONSE_REJECT, // Drop because it is too annoying to support call back this way
@@ -649,14 +649,14 @@ bool RunLinuxDialog()
 	// Grab a logo, to make things look nice.
 	if (BigEnough()) {
 		GResource * resources = GSdx_res_get_resource();
-		GInputStream * ogl_stream=g_resource_open_stream(resources,"/GSdx/res/logo-ogl.bmp",G_RESOURCE_LOOKUP_FLAGS_NONE,NULL);
-		GdkPixbuf * ogl_logo = gdk_pixbuf_new_from_stream(ogl_stream,NULL,NULL);
+		GInputStream * ogl_stream=g_resource_open_stream(resources,"/GSdx/res/logo-ogl.bmp",G_RESOURCE_LOOKUP_FLAGS_NONE,nullptr);
+		GdkPixbuf * ogl_logo = gdk_pixbuf_new_from_stream(ogl_stream,nullptr,nullptr);
 		g_object_unref(ogl_stream);
 		GtkWidget* logo_image  = gtk_image_new_from_pixbuf(ogl_logo);
 		gtk_box_pack_start(GTK_BOX(main_box), logo_image, true, true, 0);
 	}
 
-	GtkWidget* main_table   = CreateTableInBox(main_box    , NULL                                   , 2  , 2);
+	GtkWidget* main_table   = CreateTableInBox(main_box    , nullptr                                   , 2  , 2);
 
 	GtkWidget* hw_table     = CreateTableInBox(central_box , "Hardware Mode Settings"               , 7  , 2);
 	GtkWidget* sw_table     = CreateTableInBox(central_box , "Software Mode Settings"               , 2  , 2);

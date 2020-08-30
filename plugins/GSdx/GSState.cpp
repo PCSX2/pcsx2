@@ -31,16 +31,16 @@ int GSState::s_n = 0;
 GSState::GSState()
 	: m_version(6)
 	, m_mt(false)
-	, m_irq(NULL)
+	, m_irq(nullptr)
 	, m_path3hack(0)
 	, m_init_read_fifo_supported(false)
-	, m_gsc(NULL)
+	, m_gsc(nullptr)
 	, m_skip(0)
 	, m_skip_offset(0)
 	, m_q(1.0f)
 	, m_texflush(true)
 	, m_vt(this)
-	, m_regs(NULL)
+	, m_regs(nullptr)
 	, m_crc(0)
 	, m_options(0)
 	, m_frameskip(0)
@@ -2622,20 +2622,20 @@ void GSState::GrowVertexBuffer()
 	GSVertex* vertex = (GSVertex*)_aligned_malloc(sizeof(GSVertex) * maxcount, 32);
 	uint32* index = (uint32*)_aligned_malloc(sizeof(uint32) * maxcount * 3, 32); // worst case is slightly less than vertex number * 3
 
-	if(vertex == NULL || index == NULL)
+	if(vertex == nullptr || index == nullptr)
 	{
 		printf("GSdx: failed to allocate %d bytes for verticles and %d for indices.\n", (int)sizeof(GSVertex) * maxcount, (int)sizeof(uint32) * maxcount * 3);
 		throw GSDXError();
 	}
 
-	if(m_vertex.buff != NULL)
+	if(m_vertex.buff != nullptr)
 	{
 		memcpy(vertex, m_vertex.buff, sizeof(GSVertex) * m_vertex.tail);
 
 		_aligned_free(m_vertex.buff);
 	}
 
-	if(m_index.buff != NULL)
+	if(m_index.buff != nullptr)
 	{
 		memcpy(index, m_index.buff, sizeof(uint32) * m_index.tail);
 		

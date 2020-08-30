@@ -38,7 +38,7 @@ void SysMessage(char *fmt, ...) {
     vsprintf(tmp,fmt,list);
     va_end(list);
 
-    GtkWidget *dialog = gtk_message_dialog_new (NULL,
+    GtkWidget *dialog = gtk_message_dialog_new (nullptr,
                         GTK_DIALOG_MODAL,
                         GTK_MESSAGE_ERROR,
                         GTK_BUTTONS_CLOSE,
@@ -100,16 +100,16 @@ static guint builder_add_from_resource(GtkBuilder *builder
     gsize buffer_length;
     guint ret;
 
-    g_assert(error && *error == NULL);
+    g_assert(error && *error == nullptr);
 
     data = g_resources_lookup_data(resource_path, G_RESOURCE_LOOKUP_FLAGS_NONE, error);
-    if (data == NULL) {
+    if (data == nullptr) {
         return 0;
     }
 
     buffer_length = 0;
     buffer = (const gchar *)g_bytes_get_data(data, &buffer_length);
-    g_assert(buffer != NULL);
+    g_assert(buffer != nullptr);
 
     ret = gtk_builder_add_from_string(builder, buffer, buffer_length, error);
 
@@ -121,8 +121,8 @@ static guint builder_add_from_resource(GtkBuilder *builder
 EXPORT_C_(void)
 DEV9configure() {
 
-    gtk_init (NULL, NULL);
-    GError *error = NULL;
+    gtk_init (nullptr, nullptr);
+    GError *error = nullptr;
     builder = gtk_builder_new();
     if (!builder_add_from_resource(builder, "/net/pcsx2/dev9ghzdrk/Linux/dev9ghzdrk.ui", &error)) {
         g_warning("Could not build config ui: %s", error->message);
@@ -151,7 +151,7 @@ NetAdapter* GetNetAdapter()
     if (!na->isInitialised())
     {
             delete na;
-            return 0;
+            return nullptr;
     }
     return na;
 }

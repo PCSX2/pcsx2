@@ -67,7 +67,7 @@ EXPORT_C_(void)
 DEV9setLogDir(const char *dir)
 {
     // Get the path to the log directory.
-    s_strLogPath = (dir == NULL) ? "logs" : dir;
+    s_strLogPath = (dir == nullptr) ? "logs" : dir;
 
     // Reload the log file after updated the path
     g_plugin_log.Close();
@@ -302,7 +302,7 @@ EXPORT_C_(void)
 DEV9setSettingsDir(const char *dir)
 {
     // Grab the ini directory.
-    s_strIniPath = (dir == NULL) ? "inis" : dir;
+    s_strIniPath = (dir == nullptr) ? "inis" : dir;
 }
 
 // extended funcs

@@ -68,7 +68,7 @@ protected:
         fprintf(stderr, "* SPU2-X:Iz in your external callback.\n");
         AlsaMod *data = (AlsaMod *)snd_async_handler_get_callback_private(pcm_call);
 
-        pxAssume(data != NULL);
+        pxAssume(data != nullptr);
         //pxAssume( data->handle == snd_async_handler_get_pcm(pcm_call) );
 
         // Not sure if we just need an assert, or something like this:
@@ -90,8 +90,8 @@ public:
         int pchannels = 2;
         snd_pcm_format_t format = SND_PCM_FORMAT_S16_LE;
 
-        handle = NULL;
-        pcm_callback = NULL;
+        handle = nullptr;
+        pcm_callback = nullptr;
         pspeed = SAMPLE_RATE;
 
         // buffer time and period time are in microseconds...
@@ -139,19 +139,19 @@ public:
             fprintf(stderr, "Channels count not available: %s\n", snd_strerror(err));
             return -1;
         }
-        err = snd_pcm_hw_params_set_rate_near(handle, hwparams, &pspeed, 0);
+        err = snd_pcm_hw_params_set_rate_near(handle, hwparams, &pspeed, nullptr);
         if (err < 0) {
             fprintf(stderr, "Rate not available: %s\n", snd_strerror(err));
             return -1;
         }
 
-        err = snd_pcm_hw_params_set_buffer_time_near(handle, hwparams, &buffer_time, 0);
+        err = snd_pcm_hw_params_set_buffer_time_near(handle, hwparams, &buffer_time, nullptr);
         if (err < 0) {
             fprintf(stderr, "Buffer time error: %s\n", snd_strerror(err));
             return -1;
         }
 
-        err = snd_pcm_hw_params_set_period_time_near(handle, hwparams, &period_time, 0);
+        err = snd_pcm_hw_params_set_period_time_near(handle, hwparams, &period_time, nullptr);
         if (err < 0) {
             fprintf(stderr, "Period time error: %s\n", snd_strerror(err));
             return -1;
@@ -172,7 +172,7 @@ public:
 
         // Bind our asynchronous callback magic:
 
-        if (handle == NULL)
+        if (handle == nullptr)
             fprintf(stderr, "No handle.");
 
         //fprintf(stderr,"* SPU2-X:Iz setting your internal callback.\n");
@@ -193,12 +193,12 @@ public:
     void Close()
     {
         //fprintf(stderr,"* SPU2-X: Closing Alsa\n");
-        if (handle == NULL)
+        if (handle == nullptr)
             return;
 
         snd_pcm_drop(handle);
         snd_pcm_close(handle);
-        handle = NULL;
+        handle = nullptr;
     }
 
     virtual void Configure(uptr parent)
@@ -214,7 +214,7 @@ public:
 
     int GetEmptySampleCount()
     {
-        if (handle == NULL) {
+        if (handle == nullptr) {
             fprintf(stderr, "Handle is NULL!\n");
             return 0;
         }

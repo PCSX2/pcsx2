@@ -82,7 +82,7 @@ extern GeneralConfig config;
 
 void UnloadConfigs();
 
-int LoadSettings(int force = 0, wchar_t *file = 0);
+int LoadSettings(int force = 0, wchar_t *file = nullptr);
 
 // Refreshes the set of enabled devices.
 void RefreshEnabledDevices(int updateDeviceList = 0);

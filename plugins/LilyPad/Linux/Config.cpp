@@ -221,7 +221,7 @@ void CALLBACK PADsetSettingsDir(const char *dir)
     CfgHelper::SetSettingsDir(dir);
 }
 
-int SaveSettings(wchar_t *file = 0)
+int SaveSettings(wchar_t *file = nullptr)
 {
     CfgHelper cfg;
 
@@ -349,7 +349,7 @@ int LoadSettings(int force, wchar_t *file)
                 break;
             continue;
         }
-        wchar_t *id2 = 0;
+        wchar_t *id2 = nullptr;
         if (cfg.ReadStr(id, L"Product ID", temp4) && temp4[0])
             id2 = temp4;
 
@@ -489,7 +489,7 @@ void UnloadConfigs()
 {
     if (dm) {
         delete dm;
-        dm = 0;
+        dm = nullptr;
     }
 }
 

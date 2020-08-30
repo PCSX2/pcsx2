@@ -146,7 +146,7 @@ bool GSdxApp::WriteIniString(const char* lpAppName, const char* lpKeyName, const
 	// Save config to a file
 	FILE* f = px_fopen(lpFileName, "w");
 
-	if (f == NULL) return false; // FIXME print a nice message
+	if (f == nullptr) return false; // FIXME print a nice message
 
 	// Maintain compatibility with GSDumpGUI/old Windows ini.
 #ifdef _WIN32
@@ -494,7 +494,7 @@ void* GSdxApp::GetModuleHandlePtr()
 
 void GSdxApp::SetConfigDir(const char* dir)
 {
-	if( dir == NULL )
+	if( dir == nullptr )
 	{
 		m_ini = "inis/GSdx.ini";
 	}

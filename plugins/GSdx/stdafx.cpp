@@ -160,7 +160,7 @@ void* vmalloc(size_t size, bool code)
 #endif
 	}
 
-	return mmap(NULL, size, prot, flags, -1, 0);
+	return mmap(nullptr, size, prot, flags, -1, 0);
 }
 
 void vmfree(void* ptr, size_t size)

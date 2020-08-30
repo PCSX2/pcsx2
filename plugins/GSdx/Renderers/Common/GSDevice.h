@@ -212,7 +212,7 @@ public:
 	GSTexture* CreateTexture(int w, int h, int format = 0);
 	GSTexture* CreateOffscreen(int w, int h, int format = 0);
 
-	virtual GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0) {return NULL;}
+	virtual GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0) {return nullptr;}
 
 	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) {}
 	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true) {}
@@ -222,7 +222,7 @@ public:
 
 	virtual void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1) {}
 	virtual void PSSetShaderResource(int i, GSTexture* sRect) {}
-	virtual void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL) {}
+	virtual void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = nullptr) {}
 
 	GSTexture* GetCurrent();
 
