@@ -88,7 +88,7 @@ protected:
 		MsgWrite16 = 5,        /**< Write 16 bit value to memory. */
 		MsgWrite32 = 6,        /**< Write 32 bit value to memory. */
 		MsgWrite64 = 7,        /**< Write 64 bit value to memory. */
-		MsgMultiCommand = 0xFF /**< Treats multiple IPC commands in batch. */
+		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
 
