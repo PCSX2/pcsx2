@@ -370,17 +370,17 @@ static void recCTC2() {
 				xMOV(ptr32[&vu0Regs.VI[_Rd_].UL], eax);
 			}
 			else xMOV(ptr32[&vu0Regs.VI[_Rd_].UL], 0);
-			__aligned16 u32 sticky_flags[4] = { 0xFC0,0xFC0,0xFC0,0xFC0 };
-			__aligned16 u32 status_flags[4] = { 0x3F,0x3F,0x3F,0x3F };
+			__aligned16 static const u32 sticky_flags[4] = { 0xFC0,0xFC0,0xFC0,0xFC0 };
+			__aligned16 static const u32 status_flags[4] = { 0x3F,0x3F,0x3F,0x3F };
 
 			//Need to update the sticky flags for microVU
 			xMOVDZX(xmmT1, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 			xSHUF.PS(xmmT1, xmmT1, 0);
 			xAND.PS(xmmT1, ptr128[&sticky_flags]);
-			xMOVAPS(xmmT2, ptr128[&VU0.micro_statusflags]);
+			xMOVAPS(xmmT2, ptr128[&vu0Regs.micro_statusflags]);
 			xAND.PS(xmmT1, ptr128[&status_flags]);
 			xOR.PS(xmmT1, xmmT2);
-			xMOVAPS(ptr128[&VU0.micro_statusflags], xmmT1);
+			xMOVAPS(ptr128[&vu0Regs.micro_statusflags], xmmT1);
 			break;
 		}
 		case REG_CMSAR1:	// Execute VU1 Micro SubRoutine
