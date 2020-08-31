@@ -76,7 +76,7 @@ enum TopLevelMenuIndices
 	TopLevelMenu_Window,
 	TopLevelMenu_Capture,
 #ifndef DISABLE_RECORDING
-	TopLevelMenu_Recording,
+	TopLevelMenu_InputRecording,
 #endif
 	TopLevelMenu_Help
 };
@@ -121,7 +121,7 @@ enum MenuIdentifiers
 	MenuId_EnablePatches,
 	MenuId_EnableCheats,
 	MenuId_EnableWideScreenPatches,
-	MenuId_EnableRecordingTools,
+	MenuId_EnableInputRecording,
 	MenuId_EnableLuaTools,
 	MenuId_EnableHostFs,
 

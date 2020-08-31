@@ -219,7 +219,7 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableCheats_Click, this, MenuId_EnableCheats);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableWideScreenPatches_Click, this, MenuId_EnableWideScreenPatches);
 #ifndef DISABLE_RECORDING
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableRecordingTools_Click, this, MenuId_EnableRecordingTools);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableRecordingTools_Click, this, MenuId_EnableInputRecording);
 #endif
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableHostFs_Click, this, MenuId_EnableHostFs);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SysShutdown_Click, this, MenuId_Sys_Shutdown);
@@ -373,7 +373,7 @@ void MainEmuFrame::CreatePcsx2Menu()
 		_("Enabling Widescreen Patches may occasionally cause issues."), wxITEM_CHECK);
 
 #ifndef DISABLE_RECORDING
-	m_GameSettingsSubmenu.Append(MenuId_EnableRecordingTools, _("Enable &Recording Tools"),
+	m_GameSettingsSubmenu.Append(MenuId_EnableInputRecording, _("Enable &Input Recording"),
 		wxEmptyString, wxITEM_CHECK);
 #endif
 
@@ -406,14 +406,14 @@ void MainEmuFrame::CreateCdvdMenu()
 	m_menuCDVD.AppendSeparator();
 	m_menuCDVD.Append( MenuId_Src_Iso,		_("&ISO"),		_("Makes the specified ISO image the CDVD source."), wxITEM_RADIO );
 	m_menuCDVD.Append( MenuId_Src_Plugin,	_("&Plugin"),	_("Uses an external plugin as the CDVD source."), wxITEM_RADIO );
-	m_menuCDVD.Append( MenuId_Src_NoDisc,	_("&No disc"),	_("Use this to boot into your virtual PS2's BIOS configuration."), wxITEM_RADIO );
+	m_menuCDVD.Append( MenuId_Src_NoDisc,	_("&No Disc"),	_("Use this to boot into your virtual PS2's BIOS configuration."), wxITEM_RADIO );
 }
 
 
 void MainEmuFrame::CreateConfigMenu()
 {
 	m_menuConfig.Append(MenuId_Config_SysSettings,	_("Emulation &Settings...") );
-	m_menuConfig.Append(MenuId_Config_McdSettings,	_("&Memory cards...") );
+	m_menuConfig.Append(MenuId_Config_McdSettings,	_("&Memory Cards...") );
 	m_menuConfig.Append(MenuId_Config_BIOS,			_("&Plugin/BIOS Selector...") );
 
 	m_menuConfig.AppendSeparator();
@@ -432,7 +432,7 @@ void MainEmuFrame::CreateConfigMenu()
 	m_menuConfig.AppendSeparator();
 
 	m_menuConfig.Append(MenuId_ChangeLang,			L"Change &language..." ); // Always in English
-	m_menuConfig.Append(MenuId_Config_ResetAll,	_("C&lear all settings..."),
+	m_menuConfig.Append(MenuId_Config_ResetAll,	_("C&lear All Settings..."),
 		AddAppName(_("Clears all %s settings and re-runs the startup wizard.")));
 }
 
@@ -450,8 +450,8 @@ void MainEmuFrame::CreateWindowsMenu()
 void MainEmuFrame::CreateCaptureMenu()
 {
 	m_menuCapture.Append(MenuId_Capture_Video, _("Video"), &m_submenuVideoCapture);
-	m_submenuVideoCapture.Append(MenuId_Capture_Video_Record, _("Start Recording"));
-	m_submenuVideoCapture.Append(MenuId_Capture_Video_Stop, _("Stop Recording"))->Enable(false);
+	m_submenuVideoCapture.Append(MenuId_Capture_Video_Record, _("Start Screenrecorder"));
+	m_submenuVideoCapture.Append(MenuId_Capture_Video_Stop, _("Stop Screenrecorder"))->Enable(false);
 
 	m_menuCapture.Append(MenuId_Capture_Screenshot, _("Screenshot"));
 }
@@ -531,7 +531,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	// Append the Recording options if previously enabled and setting has been picked up from ini
 	if (g_Conf->EmuOptions.EnableRecordingTools)
 	{
-		m_menubar.Append(&m_menuRecording, _("&Recording"));
+		m_menubar.Append(&m_menuRecording, _("&Input Record"));
 	}
 #endif
 	m_menubar.Append( &m_menuHelp,	_("&Help") );
@@ -741,7 +741,7 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 		menubar.Check( MenuId_EnableCheats,  configToApply.EmuOptions.EnableCheats );
 		menubar.Check( MenuId_EnableWideScreenPatches,  configToApply.EmuOptions.EnableWideScreenPatches );
 #ifndef DISABLE_RECORDING
-		menubar.Check(MenuId_EnableRecordingTools, configToApply.EmuOptions.EnableRecordingTools);
+		menubar.Check( MenuId_EnableInputRecording, configToApply.EmuOptions.EnableRecordingTools);
 #endif
 		menubar.Check( MenuId_EnableHostFs,  configToApply.EmuOptions.HostFs );
 		menubar.Check( MenuId_Debug_CreateBlockdump, configToApply.EmuOptions.CdvdDumpBlocks );
