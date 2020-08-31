@@ -25,13 +25,13 @@
 #ifdef _WIN32
   #include "resource.h"
 #endif
-std::vector<char> buff;
+
 void GSOsdManager::LoadFont() {
 	FT_Error error = FT_New_Face(m_library, theApp.GetConfigS("osd_fontname").c_str(), 0, &m_face);
 	if (error) {
 		FT_Error error_load_res = 1;
-		if(theApp.LoadResource(IDR_FONT_ROBOTO, buff))
-			error_load_res = FT_New_Memory_Face(m_library, (const FT_Byte*)buff.data(), buff.size(), 0, &m_face);
+		if(theApp.LoadResource(IDR_FONT_ROBOTO, resource_data_buffer))
+			error_load_res = FT_New_Memory_Face(m_library, (const FT_Byte*)resource_data_buffer.data(), resource_data_buffer.size(), 0, &m_face);
 		
 		if (error_load_res) {
 			m_face = NULL;
