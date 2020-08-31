@@ -3,16 +3,15 @@
 # finished, which could be a bit annoying.
 version: 1.{build}-{branch}
 
+# Do not build feature branch with open Pull Requests
+skip_branch_with_pr: true
+
 environment:
   matrix:
   - platform: Win32
     target: AppVeyor
     visualstudio_string: vs2019
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-  - platform: Win32
-    target: AppVeyor
-    visualstudio_string: vs2017
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
   - platform: x64
     target: AppVeyor
     visualstudio_string: vs2019
