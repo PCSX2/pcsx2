@@ -359,13 +359,19 @@ namespace HostMemoryMap {
 /// Attempts to find a spot near static variables for the main memory
 static VirtualMemoryManagerPtr makeMainMemoryManager() {
 	const wxString memoryManagerName = "Main Memory Manager";
+	
+	auto tryMakeAt = [&memoryManagerName](uptr base) -> VirtualMemoryManagerPtr {
+		auto mgr = std::make_shared<VirtualMemoryManager>(memoryManagerName, base, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
+		if (mgr->IsOk())
+			return mgr;
+		return nullptr;
+	};
 
 	// Historically, the base address has always been 0x20000000 for x86 builds. Many cheat tables and third party
 	// tools relies to this specific address, therefore try to initialize the memory manager using this base
 	// address first. This does not guarantee it, but it prioritise the legacy memory address.
 	const uptr LegacyMemoryBase = 0x20000000U;
-	auto mgr = std::make_shared<VirtualMemoryManager>(memoryManagerName, LegacyMemoryBase, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
-	if (mgr->IsOk())
+	if (auto mgr = tryMakeAt(LegacyMemoryBase))
 		return mgr;
 
 	// Everything looks nicer when the start of all the sections is a nice round looking number.
@@ -383,10 +389,9 @@ static VirtualMemoryManagerPtr makeMainMemoryManager() {
 			// VTLB will throw a fit if we try to put EE main memory here
 			continue;
 		}
-		auto mgr = std::make_shared<VirtualMemoryManager>(memoryManagerName, base, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
-		if (mgr->IsOk()) {
+
+		if (auto mgr = tryMakeAt(base))
 			return mgr;
-		}
 	}
 
 	// If the above failed and it's x86-64, recompiled code is going to break!
