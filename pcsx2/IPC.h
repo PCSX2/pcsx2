@@ -47,36 +47,36 @@ protected:
 
 
 	/**
-     * Maximum memory used by an IPC message request.
-     * Equivalent to 50,000 Write64 requests.
-     */
+	 * Maximum memory used by an IPC message request.
+	 * Equivalent to 50,000 Write64 requests.
+	 */
 #define MAX_IPC_SIZE 650000
 
 	/**
-     * Maximum memory used by an IPC message reply.
-     * Equivalent to 50,000 Read64 replies.
-     */
+	 * Maximum memory used by an IPC message reply.
+	 * Equivalent to 50,000 Read64 replies.
+	 */
 #define MAX_IPC_RETURN_SIZE 450000
 
 	/**
-     * IPC return buffer.
-     * A preallocated buffer used to store all IPC replies.
-     * to the size of 50.000 MsgWrite64 IPC calls.
-     */
+	 * IPC return buffer.
+	 * A preallocated buffer used to store all IPC replies.
+	 * to the size of 50.000 MsgWrite64 IPC calls.
+	 */
 	char* m_ret_buffer;
 
 	/**
-     * IPC messages buffer.
-     * A preallocated buffer used to store all IPC messages.
-     */
+	 * IPC messages buffer.
+	 * A preallocated buffer used to store all IPC messages.
+	 */
 	char* m_ipc_buffer;
 
 	/**
-     * IPC Command messages opcodes.  
-     * A list of possible operations possible by the IPC.  
-     * Each one of them is what we call an "opcode" and is the first
-     * byte sent by the IPC to differentiate between commands.  
-     */
+	 * IPC Command messages opcodes.  
+	 * A list of possible operations possible by the IPC.  
+	 * Each one of them is what we call an "opcode" and is the first
+	 * byte sent by the IPC to differentiate between commands.  
+	 */
 	enum IPCCommand : unsigned char
 	{
 		MsgRead8 = 0,           /**< Read 8 bit value to memory. */
@@ -92,9 +92,9 @@ protected:
 
 
 	/**
-     * IPC message buffer. 
-     * A list of all needed fields to store an IPC message.
-     */
+	 * IPC message buffer. 
+	 * A list of all needed fields to store an IPC message.
+	 */
 	struct IPCBuffer
 	{
 		int size;     /**< Size of the buffer. */
@@ -102,11 +102,11 @@ protected:
 	};
 
 	/**
-     * IPC result codes.
-     * A list of possible result codes the IPC can send back.
-     * Each one of them is what we call an "opcode" or "tag" and is the
-     * first byte sent by the IPC to differentiate between results.
-     */
+	 * IPC result codes.
+	 * A list of possible result codes the IPC can send back.
+	 * Each one of them is what we call an "opcode" or "tag" and is the
+	 * first byte sent by the IPC to differentiate between results.
+	 */
 	enum IPCResult : unsigned char
 	{
 		IPC_OK = 0,     /**< IPC command successfully completed. */
@@ -119,28 +119,33 @@ protected:
 	// Thread used to relay IPC commands.
 	void ExecuteTaskInThread();
 
-	/* Internal function, Parses an IPC command.
-         * buf: buffer containing the IPC command.
-         * buf_size: size of the buffer announced.
-         * ret_buffer: buffer that will be used to send the reply.
-         * return value: IPCBuffer containing a buffer with the result 
-         *               of the command and its size. */
+	/**
+	 * Internal function, Parses an IPC command.
+	 * buf: buffer containing the IPC command.
+	 * buf_size: size of the buffer announced.
+	 * ret_buffer: buffer that will be used to send the reply.
+	 * return value: IPCBuffer containing a buffer with the result 
+	 *               of the command and its size. 
+	 */
 	IPCBuffer ParseCommand(char* buf, char* ret_buffer, u32 buf_size);
 
-	/* Formats an IPC buffer
-         * ret_buffer: return buffer to use. 
-         * size: size of the IPC buffer.
-         * return value: buffer containing the status code allocated of size
-         *               size */
+	/**
+	 * Formats an IPC buffer
+	 * ret_buffer: return buffer to use. 
+	 * size: size of the IPC buffer.
+	 * return value: buffer containing the status code allocated of size
+	 */
 	static inline char* MakeOkIPC(char* ret_buffer, uint32_t size);
 	static inline char* MakeFailIPC(char* ret_buffer, uint32_t size);
 
-	/* Converts an uint to an char* in little endian 
-         * res_array: the array to modify 
-         * res: the value to convert
-         * i: when to insert it into the array 
-         * return value: res_array 
-         * NB: implicitely inlined */
+	/**
+	 * Converts an uint to an char* in little endian 
+	 * res_array: the array to modify 
+	 * res: the value to convert
+	 * i: when to insert it into the array 
+	 * return value: res_array 
+	 * NB: implicitely inlined 
+	 */
 	template <typename T>
 	static char* ToArray(char* res_array, T res, int i)
 	{
@@ -148,11 +153,13 @@ protected:
 		return res_array;
 	}
 
-	/* Converts a char* to an uint in little endian 
-         * arr: the array to convert
-         * i: when to load it from the array 
-         * return value: the converted value 
-         * NB: implicitely inlined */
+	/**
+	 * Converts a char* to an uint in little endian 
+	 * arr: the array to convert
+	 * i: when to load it from the array 
+	 * return value: the converted value 
+	 * NB: implicitely inlined 
+	 */
 	template <typename T>
 	static T FromArray(char* arr, int i)
 	{
@@ -160,9 +167,9 @@ protected:
 	}
 
 	/**
-     * Ensures an IPC message isn't too big.
-     * return value: false if checks failed, true otherwise.
-     */
+	 * Ensures an IPC message isn't too big.
+	 * return value: false if checks failed, true otherwise.
+	 */
 	static inline bool SafetyChecks(u32 command_len, int command_size, u32 reply_len, int reply_size = 0, u32 buf_size = MAX_IPC_SIZE - 1)
 	{
 		bool res = ((command_len + command_size) > buf_size ||
