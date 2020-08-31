@@ -417,11 +417,24 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 	GSCaptureDlg dlg;
 
-	if(IDOK != dlg.DoModal()) return false;
+	if (IDOK != dlg.DoModal())
+		return false;
 
 	m_size.x = (dlg.m_width + 7) & ~7;
 	m_size.y = (dlg.m_height + 7) & ~7;
 
+	{
+		int start = dlg.m_filename.length() - 4;
+		if (start > 0)
+		{
+			std::string test = dlg.m_filename.substr(start);
+			std::transform(test.begin(), test.end(), test.begin(), tolower);
+			if (test.compare(".avi") != 0)
+				dlg.m_filename += ".avi";
+		}
+		else
+			dlg.m_filename += ".avi";
+	}
 	std::wstring fn{dlg.m_filename.begin(), dlg.m_filename.end()};
 
 	//
