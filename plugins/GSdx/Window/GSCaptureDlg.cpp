@@ -155,6 +155,11 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 {
 	switch (id)
 	{
+	case IDC_FILENAME:
+	{
+		EnableWindow(GetDlgItem(m_hWnd, IDOK), GetText(IDC_FILENAME).length() != 0);
+		return false;
+	}
 	case IDC_BROWSE:
 	{
 		if (code == BN_CLICKED)
