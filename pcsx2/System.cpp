@@ -385,14 +385,6 @@ static VirtualMemoryManagerPtr makeMainMemoryManager()
 		return std::make_shared<VirtualMemoryManager>("Main Memory Manager", 0x20000000, HostMemoryMap::Size);
 }
 
-	// If the above failed and it's x86-64, recompiled code is going to break!
-	// If it's i386 anything can reach anything so it doesn't matter
-	if (sizeof(void*) == 8) {
-		pxAssertRel(0, "Failed to find a good place for the main memory allocation, recompilers may fail");
-	}
-	return std::make_shared<VirtualMemoryManager>("Main Memory Manager", 0, HostMemoryMap::Size);
-}
-
 // --------------------------------------------------------------------------------------
 //  SysReserveVM  (implementations)
 // --------------------------------------------------------------------------------------
