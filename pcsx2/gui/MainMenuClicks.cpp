@@ -501,23 +501,23 @@ void MainEmuFrame::Menu_EnableWideScreenPatches_Click( wxCommandEvent& )
 #ifndef DISABLE_RECORDING
 void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 {
-	bool checked = GetMenuBar()->IsChecked(MenuId_EnableRecordingTools);
+	bool checked = GetMenuBar()->IsChecked(MenuId_EnableInputRecording);
 	// Confirm with User
 	if (checked)
 	{
 		if (!Msgbox::OkCancel(_("Please be aware that PCSX2's input recording features are still very much a work-in-progress.\n"
 			"As a result, there may be unforeseen bugs, performance implications and instability with certain games.\n\n"
-			"These tools are provided as-is and should be enabled under your own discretion."), "Enabling Recording Tools"))
+			"These tools are provided as-is and should be enabled under your own discretion."), "Enabling Input Recording"))
 		{
 			checked = false;
-			m_GameSettingsSubmenu.FindChildItem(MenuId_EnableRecordingTools)->Check(false);
+			m_GameSettingsSubmenu.FindChildItem(MenuId_EnableInputRecording)->Check(false);
 		}
 	}
 
 	// If still enabled, add the menu item, else, remove it
 	if (checked)
 	{
-		GetMenuBar()->Insert(TopLevelMenu_Recording, &m_menuRecording, _("&Recording"));
+		GetMenuBar()->Insert(TopLevelMenu_InputRecording, &m_menuRecording, _("&Input Record"));
 		// Enable Recording Keybindings
 		if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
 		{
@@ -529,7 +529,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 	}
 	else
 	{
-		GetMenuBar()->Remove(TopLevelMenu_Recording);
+		GetMenuBar()->Remove(TopLevelMenu_InputRecording);
 		// Always turn controller logs off, but never turn it on by default
 		SysConsole.controlInfo.Enabled = checked;
 		// Return Keybindings Back to Normal
