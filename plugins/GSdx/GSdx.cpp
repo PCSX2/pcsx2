@@ -94,8 +94,8 @@ bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 		case IDR_TFX_CL:
 			path = "/GSdx/res/tfx.cl";
 			break;
-		case IDR_FONT_FREESERIF:
-			path = "/GSdx/res/freefont/FreeSerif.otf";
+		case IDR_FONT_ROBOTO:
+			path = "/GSdx/res/fonts-roboto/Roboto-Regular.ttf";
 			break;
 		default:
 			printf("LoadResource not implemented for id %d\n", id);
@@ -361,10 +361,10 @@ void GSdxApp::Init()
 	m_default_configuration["ModeWidth"]                                  = "640";
 	m_default_configuration["NTSC_Saturation"]                            = "1";
 	m_default_configuration["ocldev"]                                     = "";
-#if (defined(_WIN32) || defined(_WIN64))
-	m_default_configuration["osd_fontname"]                               = "C:\\Windows\\Fonts\\tahoma.ttf";
+#ifdef _WIN32
+	m_default_configuration["osd_fontname"]                               = "C:\\Windows\\Fonts\\my_favorite_font_e_g_tahoma.ttf";
 #else
-	m_default_configuration["osd_fontname"]                               = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf";
+	m_default_configuration["osd_fontname"]                               = "/usr/share/fonts/truetype/my_favorite_font_e_g_DejaVu Sans.ttf";
 #endif
 	m_default_configuration["osd_color_r"]                                = "0";
 	m_default_configuration["osd_color_g"]                                = "160";

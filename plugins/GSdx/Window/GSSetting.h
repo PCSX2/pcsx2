@@ -40,7 +40,7 @@ struct GSSetting
 
 const char* dialog_message(int ID, bool* updateText = NULL);
 
-#if (!defined(_WIN32) && !defined(_WIN64))
+#ifndef _WIN32
 enum {
 	IDC_FILTER,
 	IDC_HALF_SCREEN_TS,
@@ -99,6 +99,6 @@ enum {
 	IDR_TFX_FS_GLSL,
 	IDR_TFX_CL,
 	// fonts
-	IDR_FONT_FREESERIF,
+	IDR_FONT_ROBOTO,
 };
 #endif

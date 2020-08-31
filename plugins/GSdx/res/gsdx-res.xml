@@ -31,6 +31,6 @@
         <file>tfx.cl</file>
     </gresource>
     <gresource prefix="/GSdx/res/">
-        <file>freefont/FreeSerif.otf</file>
+        <file>fonts-roboto/Roboto-Regular.ttf</file>
     </gresource>
 </gresources>

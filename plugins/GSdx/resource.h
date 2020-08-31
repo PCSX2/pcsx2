@@ -155,7 +155,7 @@
 #define IDR_COMMON_GLSL                 10015
 #define IDR_TFX_VGS_GLSL                10016
 #define IDR_TFX_FS_GLSL                 10017
-#define IDR_FONT_FREESERIF              10018
+#define IDR_FONT_ROBOTO                 10018
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
