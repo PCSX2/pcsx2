@@ -357,27 +357,33 @@ namespace HostMemoryMap {
 }
 
 /// Attempts to find a spot near static variables for the main memory
-static VirtualMemoryManagerPtr makeMainMemoryManager() {
-	// Everything looks nicer when the start of all the sections is a nice round looking number.
-	// Also reduces the variation in the address due to small changes in code.
-	// Breaks ASLR but so does anything else that tries to make addresses constant for our debugging pleasure
-	uptr codeBase = (uptr)(void*)makeMainMemoryManager / (1 << 28) * (1 << 28);
+static VirtualMemoryManagerPtr makeMainMemoryManager()
+{
+	// Since a assigning a static address to a 64-bit build is such an issue, assign the EE Memory to 64-bits
+	// dynamically. If the system is 32-bits, assign a static address of 0x20000000.
 
-	// The allocation is ~640mb in size, slighly under 3*2^28.
-	// We'll hope that the code generated for the PCSX2 executable stays under 512mb (which is likely)
-	// On x86-64, code can reach 8*2^28 from its address [-6*2^28, 4*2^28] is the region that allows for code in the 640mb allocation to reach 512mb of code that either starts at codeBase or 256mb before it.
-	// We start high and count down because on macOS code starts at the beginning of useable address space, so starting as far ahead as possible reduces address variations due to code size.  Not sure about other platforms.  Obviously this only actually affects what shows up in a debugger and won't affect performance or correctness of anything.
-	for (int offset = 4; offset >= -6; offset--) {
-		uptr base = codeBase + (offset << 28);
-		if ((sptr)base < 0 || (sptr)(base + HostMemoryMap::Size - 1) < 0) {
-			// VTLB will throw a fit if we try to put EE main memory here
-			continue;
+	if (sizeof(void*) == 8) {
+		uptr codeBase = (uptr)(void*)makeMainMemoryManager / (1 << 28) * (1 << 28);
+
+		for (int offset = 4; offset >= -6; offset--)
+		{
+			uptr base = codeBase + (offset << 28);
+			if ((sptr)base < 0 || (sptr)(base + HostMemoryMap::Size - 1) < 0)
+				continue;
+
+			auto mgr = std::make_shared<VirtualMemoryManager>("Main Memory Manager", base, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
+
+			if (mgr->IsOk())
+				return mgr;
 		}
-		auto mgr = std::make_shared<VirtualMemoryManager>("Main Memory Manager", base, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
-		if (mgr->IsOk()) {
-			return mgr;
-		}
+
+		pxAssertRel(0, "Failed to find a good place for the main memory allocation, recompilers may fail");
+		return std::make_shared<VirtualMemoryManager>("Main Memory Manager", 0, HostMemoryMap::Size);
 	}
+	
+	else if (sizeof(void*) == 4)
+		return std::make_shared<VirtualMemoryManager>("Main Memory Manager", 0x20000000, HostMemoryMap::Size);
+}
 
 	// If the above failed and it's x86-64, recompiled code is going to break!
 	// If it's i386 anything can reach anything so it doesn't matter
