@@ -45,7 +45,6 @@ SocketIPC::SocketIPC(SysCoreThread* vm)
 	WSADATA wsa;
 	SOCKET new_socket;
 	struct sockaddr_in server, client;
-	int c;
 
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
@@ -120,6 +119,20 @@ SocketIPC::SocketIPC(SysCoreThread* vm)
 	Start();
 }
 
+char* SocketIPC::MakeOkIPC(char* ret_buffer, uint32_t size = 5)
+{
+	ToArray<uint32_t>(ret_buffer, size, 0);
+	ret_buffer[4] = IPC_OK;
+	return ret_buffer;
+}
+
+char* SocketIPC::MakeFailIPC(char* ret_buffer, uint32_t size = 5)
+{
+	ToArray<uint32_t>(ret_buffer, size, 0);
+	ret_buffer[4] = IPC_FAIL;
+	return ret_buffer;
+}
+
 void SocketIPC::ExecuteTaskInThread()
 {
 	m_end = false;
@@ -168,55 +181,49 @@ void SocketIPC::ExecuteTaskInThread()
 
 			// either int or ssize_t depending on the platform, so we have to
 			// use a bunch of auto
-			auto receive_length = read_portable(m_msgsock, m_ipc_buffer, MAX_IPC_SIZE);
-			if (receive_length > 0)
+			auto receive_length = 0;
+			auto end_length = 4;
+
+			// while we haven't received the entire packet, maybe due to
+			// socket datagram splittage, we continue to read
+			while (receive_length < end_length)
 			{
-				// if we already received at least the length then we read it
-				auto end_length = 4;
-				if (receive_length >= end_length)
+				auto tmp_length = read_portable(m_msgsock, &m_ipc_buffer[receive_length], MAX_IPC_SIZE - receive_length);
+
+				// we close the connection if an error happens
+				if (tmp_length <= 0)
 				{
-					end_length = FromArray<u32>(m_ipc_buffer, 0);
-					if (end_length > MAX_IPC_SIZE)
-						end_length = MAX_IPC_SIZE;
+					receive_length = 0;
+					break;
 				}
 
-				// while we haven't received the entire packet, maybe due to
-				// socket datagram splittage, we continue to read
-				while (receive_length < end_length)
-				{
-					auto tmp_length = read_portable(m_msgsock, &m_ipc_buffer[receive_length], MAX_IPC_SIZE - receive_length);
+				receive_length += tmp_length;
 
-					// we close the connection if an error happens
-					if (tmp_length <= 0)
+				// if we got at least the final size then update
+				if (end_length == 4 && receive_length >= 4)
+				{
+					end_length = FromArray<u32>(m_ipc_buffer, 0);
+					// we'd like to avoid a client trying to do OOB
+					if (end_length > MAX_IPC_SIZE)
 					{
 						receive_length = 0;
 						break;
 					}
-
-					receive_length += tmp_length;
-
-					// if we got at least the final size then update
-					if (end_length == 4 && receive_length >= 4)
-					{
-						end_length = FromArray<u32>(m_ipc_buffer, 0);
-						// we'd like to avoid a client trying to do OOB
-						if (end_length > MAX_IPC_SIZE)
-							end_length = MAX_IPC_SIZE;
-					}
 				}
+			}
+			SocketIPC::IPCBuffer res;
 
-				if (receive_length == 0)
-					break;
+			// we remove 4 bytes to get the message size out of the IPC command
+			// size in ParseCommand
+			if (receive_length == 0)
+				res = IPCBuffer{5, MakeFailIPC(m_ret_buffer)};
+			else
+				res = ParseCommand(&m_ipc_buffer[4], m_ret_buffer, (u32)receive_length - 4);
 
-				// we remove 4 bytes to get the message size out of the IPC command
-				// size
-				SocketIPC::IPCBuffer res = ParseCommand(&m_ipc_buffer[4], m_ret_buffer, (u32)receive_length - 4);
-
-				// we don't care about the error value as we will reset the
-				// connection after that anyways
-				if (write_portable(m_msgsock, res.buffer, res.size) < 0)
-				{
-				}
+			// we don't care about the error value as we will reset the
+			// connection after that anyways
+			if (write_portable(m_msgsock, res.buffer, res.size) < 0)
+			{
 			}
 		}
 		close_portable(m_msgsock);
@@ -244,20 +251,6 @@ SocketIPC::~SocketIPC()
 	DESTRUCTOR_CATCHALL
 }
 
-char* SocketIPC::MakeOkIPC(char* ret_buffer, uint32_t size = 5)
-{
-	ToArray<uint32_t>(ret_buffer, size, 0);
-	ret_buffer[4] = IPC_OK;
-	return ret_buffer;
-}
-
-char* SocketIPC::MakeFailIPC(char* ret_buffer, uint32_t size = 5)
-{
-	ToArray<uint32_t>(ret_buffer, size, 0);
-	ret_buffer[4] = IPC_FAIL;
-	return ret_buffer;
-}
-
 SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 buf_size)
 {
 	// currently all our instructions require a running VM so we check once
@@ -278,7 +271,7 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 		// YY YY YY YY from schema below
 		// curently always used by implemented commands so it is out of the
 		// loop
-		u32 a = FromArray<u32>(&buf[buf_cnt], 1);
+		const u32 a = FromArray<u32>(&buf[buf_cnt], 1);
 
 		//         IPC Message event (1 byte)
 		//         |  Memory address (4 byte)
@@ -295,8 +288,7 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 			{
 				if (!SafetyChecks(buf_cnt, 5, ret_cnt, 1, buf_size))
 					goto error;
-				u8 res;
-				res = memRead8(a);
+				const u8 res = memRead8(a);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 1;
 				buf_cnt += 5;
@@ -306,8 +298,7 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 			{
 				if (!SafetyChecks(buf_cnt, 5, ret_cnt, 2, buf_size))
 					goto error;
-				u16 res;
-				res = memRead16(a);
+				const u16 res = memRead16(a);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 2;
 				buf_cnt += 5;
@@ -317,8 +308,7 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 			{
 				if (!SafetyChecks(buf_cnt, 5, ret_cnt, 4, buf_size))
 					goto error;
-				u32 res;
-				res = memRead32(a);
+				const u32 res = memRead32(a);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 4;
 				buf_cnt += 5;
@@ -328,7 +318,7 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 			{
 				if (!SafetyChecks(buf_cnt, 5, ret_cnt, 8, buf_size))
 					goto error;
-				u64 res;
+				u64 res = 0;
 				memRead64(a, &res);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 8;
