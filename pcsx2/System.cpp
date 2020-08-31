@@ -358,15 +358,13 @@ namespace HostMemoryMap {
 
 /// Attempts to find a spot near static variables for the main memory
 static VirtualMemoryManagerPtr makeMainMemoryManager() {
-	const uptr UpperBounds = 0U;
-	const bool Strict = true;
 	const wxString memoryManagerName = "Main Memory Manager";
 
 	// Historically, the base address has always been 0x20000000 for x86 builds. Many cheat tables and third party
 	// tools relies to this specific address, therefore try to initialize the memory manager using this base
 	// address first. This does not guarantee it, but it prioritise the legacy memory address.
 	const uptr LegacyMemoryBase = 0x20000000U;
-	auto mgr = std::make_shared<VirtualMemoryManager>(memoryManagerName, LegacyMemoryBase, HostMemoryMap::Size, UpperBounds, Strict);
+	auto mgr = std::make_shared<VirtualMemoryManager>(memoryManagerName, LegacyMemoryBase, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
 	if (mgr->IsOk())
 		return mgr;
 
@@ -385,7 +383,7 @@ static VirtualMemoryManagerPtr makeMainMemoryManager() {
 			// VTLB will throw a fit if we try to put EE main memory here
 			continue;
 		}
-		auto mgr = std::make_shared<VirtualMemoryManager>(memoryManagerName, base, HostMemoryMap::Size, UpperBounds, Strict);
+		auto mgr = std::make_shared<VirtualMemoryManager>(memoryManagerName, base, HostMemoryMap::Size, /*upper_bounds=*/0, /*strict=*/true);
 		if (mgr->IsOk()) {
 			return mgr;
 		}
