@@ -78,7 +78,7 @@ Function ShowHelpMessage
 FunctionEnd
 
 Function .onInit
-    var /GLOBAL cmdLineParams
+    Var /GLOBAL cmdLineParams
     Push $R0
     ${GetParameters} $cmdLineParams
     ClearErrors
@@ -87,7 +87,7 @@ Function .onInit
     IfErrors +2 0
     Call ShowHelpMessage
 
-  	${GetOptions} $cmdLineParams '/H' $R0
+    ${GetOptions} $cmdLineParams '/H' $R0
     IfErrors +2 0
     Call ShowHelpMessage
 
@@ -98,14 +98,14 @@ Function .onInit
     Var /GLOBAL option_desktop
     Var /GLOBAL option_portable
     StrCpy $option_startMenu     1
-  	StrCpy $option_desktop       1
+    StrCpy $option_desktop       1
     StrCpy $option_portable      0
 
     Push $R0
 
-  	${GetOptions} $cmdLineParams '/NoStart' $R0
+    ${GetOptions} $cmdLineParams '/NoStart' $R0
     IfErrors +2 0
-  	StrCpy $option_startMenu 0
+    StrCpy $option_startMenu 0
 
     ${GetOptions} $cmdLineParams '/NoDesktop' $R0
     IfErrors +2 0
