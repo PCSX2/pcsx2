@@ -43094,6 +43094,7 @@ Serial = SLUS-21689
 Name   = Petz - Horsez 2
 Region = NTSC-U
 Compat = 4
+VU0KickstartHack = 1 // Fixes SPS
 ---------------------------------------------
 Serial = SLUS-21690
 Name   = Alone in the Dark
