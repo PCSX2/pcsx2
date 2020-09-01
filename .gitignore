@@ -112,6 +112,7 @@ oprofile_data/
 /plugins/USBqemu/Win32/bin
 /tools/bin
 .vs
+.vscode
 
 /pcsx2/windows/VCprojects/GSdx_opengl_debug_hw.txt
 /pcsx2/windows/VCprojects/GSdx_opengl_debug_sw.txt
