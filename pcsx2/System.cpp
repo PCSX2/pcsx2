@@ -370,9 +370,14 @@ static VirtualMemoryManagerPtr makeMainMemoryManager() {
 	// Historically, the base address has always been 0x20000000 for x86 builds. Many cheat tables and third party
 	// tools relies to this specific address, therefore try to initialize the memory manager using this base
 	// address first. This does not guarantee it, but it prioritise the legacy memory address.
-	const uptr LegacyMemoryBase = 0x20000000U;
-	if (auto mgr = tryMakeAt(LegacyMemoryBase))
-		return mgr;
+	// This is only valid for x86 builds, as x64 have a high chance of failing an assertion by using this
+	// specific address. x64 builds currently uses 0x60000000.
+	if (sizeof(void*) == 4)
+	{
+		const uptr LegacyMemoryBase = 0x20000000U;
+		if (auto mgr = tryMakeAt(LegacyMemoryBase))
+			return mgr;
+	}
 
 	// Everything looks nicer when the start of all the sections is a nice round looking number.
 	// Also reduces the variation in the address due to small changes in code.
