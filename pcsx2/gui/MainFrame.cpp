@@ -431,7 +431,7 @@ void MainEmuFrame::CreateConfigMenu()
 
 	m_menuConfig.AppendSeparator();
 
-	m_menuConfig.Append(MenuId_ChangeLang,			L"Change &language..." ); // Always in English
+	m_menuConfig.Append(MenuId_ChangeLang,			L"Change &Language..." ); // Always in English
 	m_menuConfig.Append(MenuId_Config_ResetAll,	_("C&lear All Settings..."),
 		AddAppName(_("Clears all %s settings and re-runs the startup wizard.")));
 }

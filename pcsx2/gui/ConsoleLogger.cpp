@@ -418,7 +418,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	menuFontSizes.Append( MenuId_FontSize_Small,	_("&Small"),	_t("Fits a lot of log in a microcosmically small area."),
 		wxITEM_RADIO )->Check( options.FontSize == 7 );
-	menuFontSizes.Append( MenuId_FontSize_Normal,	_("&Normal font"),_t("It's what I use (the programmer guy)."),
+	menuFontSizes.Append( MenuId_FontSize_Normal,	_("&Normal Font"),_t("It's what I use (the programmer guy)."),
 		wxITEM_RADIO )->Check( options.FontSize == 8 );
 	menuFontSizes.Append( MenuId_FontSize_Large,	_("&Large"),	_t("Its nice and readable."),
 		wxITEM_RADIO )->Check( options.FontSize == 10 );
@@ -426,8 +426,8 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 		wxITEM_RADIO )->Check( options.FontSize == 12 );
 
 	menuFontSizes.AppendSeparator();
-	menuFontSizes.Append( MenuId_ColorScheme_Light,	_("&Light theme"),	_t("Default soft-tone color scheme."), wxITEM_RADIO );
-	menuFontSizes.Append( MenuId_ColorScheme_Dark,	_("&Dark theme"),	_t("Modern dark color scheme."), wxITEM_RADIO );
+	menuFontSizes.Append( MenuId_ColorScheme_Light,	_("&Light Theme"),	_t("Default soft-tone color scheme."), wxITEM_RADIO );
+	menuFontSizes.Append( MenuId_ColorScheme_Dark,	_("&Dark Theme"),	_t("Modern dark color scheme."), wxITEM_RADIO );
 
 	// The "Always on Top" option currently doesn't work
 	//menuAppear.AppendSeparator();
@@ -465,8 +465,8 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	}
 
 	menuSources.AppendSeparator();
-	menuSources.Append( MenuId_LogSource_EnableAll,		_("&Enable all"),	_("Enables all log source filters.") );
-	menuSources.Append( MenuId_LogSource_DisableAll,	_("&Disable all"),	_("Disables all log source filters.") );
+	menuSources.Append( MenuId_LogSource_EnableAll,		_("&Enable All"),	_("Enables all log source filters.") );
+	menuSources.Append( MenuId_LogSource_DisableAll,	_("&Disable All"),	_("Disables all log source filters.") );
 	menuSources.Append( MenuId_LogSource_SetDefault,	_("&Restore Default"), _("Restore default source filters.") );
 
 	pMenuBar->Append(&menuLog,		_("&Log"));
