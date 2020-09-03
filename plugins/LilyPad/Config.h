@@ -59,7 +59,6 @@ public:
 
             u8 multitap[2];
 
-            u8 escapeFullscreenHack;
             u8 debug;
 
             u8 saveStateTitle;
