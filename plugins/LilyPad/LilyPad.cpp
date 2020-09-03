@@ -825,10 +825,6 @@ struct QueryInfo
     u8 response[42];
 } query = {0, 0, 0, 0, 0, 0xFF, {0xF3}};
 
-#ifdef _MSC_VER
-int saveStateIndex = 0;
-#endif
-
 s32 CALLBACK PADinit(u32 flags)
 {
     // Note:  Won't load settings if already loaded.
@@ -1527,11 +1523,6 @@ keyEvent *CALLBACK PADkeyEvent()
         // Regardless, the mouse/kb hooks will get re-enabled on resume if required without need for further hacks.
 
         PrepareActivityState(false);
-    }
-
-    if (ev.key == VK_F2 && ev.evt == KEYPRESS) {
-        saveStateIndex += 1 - 2 * shiftDown;
-        saveStateIndex = (saveStateIndex + 10) % 10;
     }
 
     // So don't change skip mode on alt-F4.
