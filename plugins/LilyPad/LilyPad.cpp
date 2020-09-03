@@ -716,13 +716,11 @@ inline void SetVibrate(int port, int slot, int motor, u8 val)
 
 u32 CALLBACK PS2EgetLibType(void)
 {
-    ps2e = 1;
     return PS2E_LT_PAD;
 }
 
 u32 CALLBACK PS2EgetLibVersion2(u32 type)
 {
-    ps2e = 1;
     if (type == PS2E_LT_PAD)
         return (PS2E_PAD_VERSION << 16) | VERSION;
     return 0;
@@ -740,7 +738,7 @@ void GetNameAndVersionString(wchar_t *out)
 }
 #endif
 
-char *CALLBACK PSEgetLibName()
+char *CALLBACK PS2EgetLibName(void)
 {
 #if defined(PCSX2_DEBUG)
     static char version[50];
@@ -751,12 +749,6 @@ char *CALLBACK PSEgetLibName()
     sprintf(version, "LilyPad (%lld)", SVN_REV);
     return version;
 #endif
-}
-
-char *CALLBACK PS2EgetLibName(void)
-{
-    ps2e = 1;
-    return PSEgetLibName();
 }
 
 //void CALLBACK PADgsDriverInfo(GSdriverInfo *info) {
@@ -1742,16 +1734,6 @@ u32 CALLBACK PADreadPort2(PadDataS *pads)
     pads->controllerType = pads->controllerType >> 4;
     memset(pads + 7, 0, sizeof(PadDataS) - 7);
     return 0;
-}
-
-u32 CALLBACK PSEgetLibType()
-{
-    return 8;
-}
-
-u32 CALLBACK PSEgetLibVersion()
-{
-    return (VERSION & 0xFFFFFF);
 }
 
 s32 CALLBACK PADqueryMtap(u8 port)

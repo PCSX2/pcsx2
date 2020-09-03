@@ -18,8 +18,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-extern u8 ps2e;
-
 extern const wchar_t *padTypes[numPadTypes];
 
 struct PadConfig
