@@ -23,7 +23,6 @@ extern const wchar_t *padTypes[numPadTypes];
 struct PadConfig
 {
     PadType type;
-    u8 autoAnalog;
 };
 
 struct GeneralConfig
@@ -32,8 +31,6 @@ public:
     PadConfig padConfigs[2][4];
 
     int deviceSelect[2][4];
-
-    u8 closeHack;
 
     DeviceAPI keyboardApi;
     DeviceAPI mouseApi;

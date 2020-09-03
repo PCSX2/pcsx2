@@ -977,12 +977,6 @@ ExtraWndProcResult StatusWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             // Note - I never managed to see this case entered, but SET/KILLFOCUS are entered. - avih 2014-04-16
             PrepareActivityState(LOWORD(wParam) != WA_INACTIVE);
             break;
-        case WM_CLOSE:
-            if (config.closeHack) {
-                ExitProcess(0);
-                return NO_WND_PROC;
-            }
-            break;
         case WM_DESTROY:
             QueueKeyEvent(VK_ESCAPE, KEYPRESS);
             break;
@@ -1234,9 +1228,6 @@ u8 CALLBACK PADpoll(u8 value)
             // CONFIG_MODE
             case 0x43:
                 if (pad->config && padtype != neGconPad) {
-                    if (pad->mode == MODE_DIGITAL && padtype == Dualshock2Pad && config.padConfigs[query.port][query.slot].autoAnalog) {
-                        pad->mode = MODE_ANALOG;
-                    }
                     // In config mode.  Might not actually be leaving it.
                     SET_RESULT(ConfigExit);
                     DEBUG_OUT(0xF3);
@@ -1459,9 +1450,6 @@ u8 CALLBACK PADpoll(u8 value)
                         pad->modeLock = 3;
                     } else {
                         pad->modeLock = 0;
-                        if (pad->mode == MODE_DIGITAL && padtype == Dualshock2Pad && config.padConfigs[query.port][query.slot].autoAnalog) {
-                            pad->mode = MODE_ANALOG;
-                        }
                     }
                     query.queryDone = 1;
                 }
