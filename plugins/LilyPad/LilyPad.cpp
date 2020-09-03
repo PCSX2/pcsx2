@@ -933,10 +933,6 @@ ExtraWndProcResult TitleHackWndProc(HWND hWndTop, UINT uMsg, WPARAM wParam, LPAR
                 }
             }
             break;
-        case WM_SYSCOMMAND:
-            if ((wParam == SC_SCREENSAVE || wParam == SC_MONITORPOWER) && config.disableScreenSaver)
-                return NO_WND_PROC;
-            break;
         default:
             break;
     }
