@@ -130,6 +130,10 @@ protected:
 		ColorSection( ConsoleColors _color, int msgptr ) : color(_color), startpoint(msgptr) { }
 	};
 
+private:
+	wxColor lightThemeBgColor = wxColor(230, 235, 242);
+	wxColor darkThemeBgColor = wxColor(38, 41, 48);
+
 protected:
 	ConLogConfig&	m_conf;
 	wxTextCtrl&		m_TextCtrl;
