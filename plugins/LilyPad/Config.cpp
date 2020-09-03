@@ -42,16 +42,8 @@ const wchar_t *padTypes[] = {
     L"PS1 Mouse",
     L"neGcon"};
 
-// Hacks or configurations which PCSX2 needs with a specific value
-void PCSX2_overrideConfig(GeneralConfig &config_in_out)
-{
-    config_in_out.saveStateTitle = 0;       // Not required - handled internally by PCSX2
-}
-
 GeneralConfig config;
-
 HWND hWndProp = 0;
-
 int selected = 0;
 bool quickSetup = false;
 
@@ -1132,8 +1124,6 @@ int LoadSettings(int force, wchar_t *file)
     config.multipleBinding = multipleBinding;
 
     RefreshEnabledDevicesAndDisplay(1);
-
-    PCSX2_overrideConfig(config);
 
     return 0;
 }

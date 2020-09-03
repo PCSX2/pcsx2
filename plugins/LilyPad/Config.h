@@ -61,7 +61,6 @@ public:
 
             u8 debug;
 
-            u8 saveStateTitle;
             u8 GH2;
         };
         u8 bools[15];
