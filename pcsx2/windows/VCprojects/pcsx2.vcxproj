@@ -561,6 +561,7 @@
     <ClInclude Include="..\..\gui\GameManager\GameManager.h" />
     <ClInclude Include="..\..\gui\GameManager\SavestateSlotPanel.h" />
     <ClInclude Include="..\..\gui\GameManager\SavestateTab.h" />
+    <ClInclude Include="..\..\gui\GameManager\Util.h" />
     <ClInclude Include="..\..\gui\Saveslots.h" />
     <ClInclude Include="..\..\gui\Debugger\BreakpointWindow.h" />
     <ClInclude Include="..\..\gui\Debugger\CtrlDisassemblyView.h" />

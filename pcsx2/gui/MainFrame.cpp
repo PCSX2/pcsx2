@@ -192,9 +192,13 @@ void MainEmuFrame::OnMoveAround(wxMoveEvent& evt)
 		{
 			if (!proglog->IsMaximized())
 			{
-				// NOTE - There is only a size gap between the main frame and the logger
-				// because for whatever reason there is an invisible border that extends beyond the frame's size
+				// On windows, there seems to be an implicit gap between the main frame and the console logger
+				// But on linux this isn't the case, and the windows being so close together looks crowded / slightly cuts off text.
+			#if defined(__unix__)
+				g_Conf->ProgLogBox.DisplayPosition = wxPoint(GetRect().GetTopRight().x + 16, GetRect().GetTopRight().y);
+			#else
 				g_Conf->ProgLogBox.DisplayPosition = GetRect().GetTopRight();
+			#endif
 				proglog->SetPosition(g_Conf->ProgLogBox.DisplayPosition);
 			}
 		}
@@ -206,9 +210,9 @@ void MainEmuFrame::OnMoveAround(wxMoveEvent& evt)
 		{
 			if (!gameManagerFrame->IsMaximized())
 			{
-				// NOTE - There is only a size gap between the main frame and the manager
-				// because for whatever reason there is an invisible border that extends beyond the frame's size
+				// X coordinate handling has to take into account the window size as we are right-aligning the window
 				int newX = GetRect().GetBottomRight().x + 1 - g_Conf->GameManager.DisplaySize.x;
+				// On windows, there seems to be an implicit gap between the main frame and the console logger.
 				// Add some extra space to the Y coordinate to more closely match the gap between the console logger
 				g_Conf->GameManager.DisplayPosition = wxPoint(newX, GetRect().GetBottomRight().y + 16);
 				gameManagerFrame->SetPosition(g_Conf->GameManager.DisplayPosition);

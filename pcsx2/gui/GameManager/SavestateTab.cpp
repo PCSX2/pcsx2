@@ -31,8 +31,8 @@ SavestateTab::SavestateTab(wxWindow* parent, AppConfig::GameManagerOptions& opti
 	for (Saveslot& slot : saveslot_cache)
 	{
 		SavestateSlotRow newSlot = SavestateSlotRow();
-		newSlot.current = new SavestateSlotPanel(this, slot.slot_num, false, slot.updated, slot.empty);
-		newSlot.backup = new SavestateSlotPanel(this, slot.slot_num, true, slot.updated, slot.empty, !options.DisplaySingleBackup || States_GetCurrentSlot() == slot.slot_num);
+		newSlot.current = new SavestateSlotPanel(this, options, slot.slot_num, false, slot.updated, slot.empty);
+		newSlot.backup = new SavestateSlotPanel(this, options, slot.slot_num, true, slot.updated, slot.empty, !options.DisplaySingleBackup || States_GetCurrentSlot() == slot.slot_num);
 		savestates.push_back(newSlot);
 		savestateContainer->Add(newSlot.current, 1, wxEXPAND, 0);
 		savestateContainer->Add(newSlot.backup, 1, wxEXPAND, 0);
@@ -46,6 +46,8 @@ SavestateTab::SavestateTab(wxWindow* parent, AppConfig::GameManagerOptions& opti
 
 	savestateContainer->AddGrowableCol(0);
 	SetSizer(savestateContainer);
+
+	refreshSlots();
 }
 
 void SavestateTab::changeSelectedSlot(int slotNum)
@@ -87,7 +89,7 @@ void SavestateTab::refreshSlots()
 }
 
 void SavestateTab::updateSlot(int slotNum, wxDateTime updatedAt, bool isEmpty, bool fullReload)
-{	
+{
 	if (slotNum >= (int)savestates.size())
 		return;
 	savestates.at(slotNum).current->setTimestamp(updatedAt);

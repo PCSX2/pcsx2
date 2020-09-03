@@ -413,6 +413,7 @@ set(pcsx2GuiHeaders
 	gui/GameManager/GameManager.h
 	gui/GameManager/SavestateSlotPanel.h
 	gui/GameManager/SavestateTab.h
+	gui/GameManager/Util.h
 	gui/GSFrame.h
 	gui/i18n.h
 	gui/IsoDropTarget.h

@@ -1547,6 +1547,9 @@
     <ClInclude Include="..\..\gui\GameManager\SavestateTab.h">
       <Filter>AppHost\GameManager</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\gui\GameManager\Util.h">
+      <Filter>AppHost\GameManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\wxResources.rc">
