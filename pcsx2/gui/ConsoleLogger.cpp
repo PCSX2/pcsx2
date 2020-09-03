@@ -161,8 +161,6 @@ void ConsoleLogFrame::ColorArray::SetFont( int fontsize )
 
 	for (size_t i = Color_StrongBlack; i < ConsoleColors_Count; ++i)
 		m_table[i].SetFont(fixedB);
-
-	SetColorScheme_Light();
 }
 
 void ConsoleLogFrame::ColorArray::SetColorScheme_Dark()
@@ -392,18 +390,23 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	SetMenuBar( pMenuBar );
 	SetIcons( wxGetApp().GetIconBundle() );
 
-	if (0==m_conf.Theme.CmpNoCase(L"Dark"))
+	if (m_conf.Theme.CmpNoCase(L"Dark") == 0)
 	{
 		m_ColorTable.SetColorScheme_Dark();
-		m_TextCtrl.SetBackgroundColour( wxColor( 38, 41, 48 ) );
+		m_TextCtrl.SetBackgroundColour(darkThemeBgColor);
+		m_TextCtrl.SetDefaultStyle(wxTextAttr(wxNullColour, darkThemeBgColor));
 	}
-	else //if ((0==m_conf.Theme.CmpNoCase("Default")) || (0==m_conf.Theme.CmpNoCase("Light")))
+	else
 	{
 		m_ColorTable.SetColorScheme_Light();
-		m_TextCtrl.SetBackgroundColour( wxColor( 230, 235, 242 ) );
+		m_TextCtrl.SetBackgroundColour(lightThemeBgColor);
+		m_TextCtrl.SetDefaultStyle(wxTextAttr(wxNullColour, lightThemeBgColor));
 	}
 
-	m_TextCtrl.SetDefaultStyle( m_ColorTable[DefaultConsoleColor] );
+	// TODO - SetDefaultStyle _should_ be returning a wxTextAttr with both foreground and background color info
+	// but I don't want to mess with it too much in fear of breaking existing functionality.
+	// instead, i just set the background color individually above
+	m_TextCtrl.SetDefaultStyle(m_ColorTable[DefaultConsoleColor]);
 
 	// SetDefaultStyle only sets the style of text in the control.  We need to
 	// also set the font of the control, so that sizing logic knows what font we use:
@@ -864,32 +867,31 @@ void ConsoleLogFrame::OnToggleSource( wxCommandEvent& evt )
 	}
 }
 
-void ConsoleLogFrame::OnToggleTheme( wxCommandEvent& evt )
+void ConsoleLogFrame::OnToggleTheme(wxCommandEvent& evt)
 {
 	evt.Skip();
-
 	const wxChar* newTheme = L"Default";
-
-	switch( evt.GetId() )
+	switch (evt.GetId())
 	{
-		case MenuId_ColorScheme_Light:
-			newTheme = L"Default";
-			m_ColorTable.SetColorScheme_Light();
-			m_TextCtrl.SetBackgroundColour( wxColor( 230, 235, 242 ) );
-		break;
-
 		case MenuId_ColorScheme_Dark:
 			newTheme = L"Dark";
 			m_ColorTable.SetColorScheme_Dark();
-			m_TextCtrl.SetBackgroundColour( wxColor( 38, 41, 48 ) );
-		break;
+			m_TextCtrl.SetBackgroundColour(darkThemeBgColor);
+			m_TextCtrl.SetDefaultStyle(wxTextAttr(wxNullColour, darkThemeBgColor));
+			break;
+		case MenuId_ColorScheme_Light:
+		default:
+			newTheme = L"Default";
+			m_ColorTable.SetColorScheme_Light();
+			m_TextCtrl.SetBackgroundColour(lightThemeBgColor);
+			m_TextCtrl.SetDefaultStyle(wxTextAttr(wxNullColour, lightThemeBgColor));
+			break;
 	}
 
-	if (0 == m_conf.Theme.CmpNoCase(newTheme)) return;
+	if (m_conf.Theme.CmpNoCase(newTheme) == 0)
+		return;
 	m_conf.Theme = newTheme;
-
-	m_ColorTable.SetFont( m_conf.FontSize );
-	m_TextCtrl.SetDefaultStyle( m_ColorTable[Color_White] );
+	m_ColorTable.SetFont(m_conf.FontSize);
 }
 
 void ConsoleLogFrame::OnFontSize( wxCommandEvent& evt )
