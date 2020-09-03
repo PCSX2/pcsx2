@@ -158,8 +158,6 @@ PS2EgetLibType(void);
 EXPORT_C_(u32)
 PS2EgetLibVersion2(u32 type);
 EXPORT_C_(char *)
-PSEgetLibName();
-EXPORT_C_(char *)
 PS2EgetLibName(void);
 EXPORT_C_(void)
 PADshutdown();
@@ -185,10 +183,6 @@ EXPORT_C_(u32)
 PADreadPort1(PadDataS *pads);
 EXPORT_C_(u32)
 PADreadPort2(PadDataS *pads);
-EXPORT_C_(u32)
-PSEgetLibType();
-EXPORT_C_(u32)
-PSEgetLibVersion();
 EXPORT_C_(void)
 PADconfigure();
 EXPORT_C_(s32)

@@ -23,7 +23,6 @@
 #include "Linux/ConfigHelper.h"
 
 GeneralConfig config;
-u8 ps2e = 0;
 
 #if 0
 remove 0x10F0 to compute the cmd value

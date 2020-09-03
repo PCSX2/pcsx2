@@ -53,11 +53,6 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"\"Pop'n Music controller\" emulates a PS2 controller used exclusively in the Japanese Pop'n Music series of games.\n\n"
                    L"\"PS1 Mouse\" emulates the Playstation Mouse. This controller can only be used in a number of PS1 games like \"Command & Conquer: Red Alert\" and \"Myst\".\n\n"
                    L"\"neGcon\" emulates a controller that can be used in a number of PS1 games and PS2 games like the \"Ridge Racer\" and \"Ace Combat\" series.";
-        case IDC_ANALOG_START1:
-            return L"Automatically switch a pad from digital mode to analog mode whenever a pad is set to digital mode, if the pad's mode is not locked."
-                   L"This removes the need for manually enabling analog mode with a press of the analog button for games that support, but do not automatically enable analog mode.\n\n"
-                   L"Note 1: Analog mode enables the analog sticks to function on a DualShock controller, while in digital mode it behaves as an original PlayStation controller.\n\n"
-                   L"Note 2: If analog mode is enabled in a game that does not support it, a game might not recognise a controller is connected.";
         case IDC_DIAG_LIST:
             return L"Shows a list of currently available input devices.\n\n"
                    L"Double-click a device in the list or right-click it and select \"Test Device\" to display a continuously updated list of the state of all inputs on the selected device.\n"
