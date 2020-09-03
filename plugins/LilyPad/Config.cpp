@@ -48,7 +48,6 @@ void PCSX2_overrideConfig(GeneralConfig &config_in_out)
     config_in_out.disableScreenSaver = 0;   // Not required - handled internally by PCSX2
     config_in_out.escapeFullscreenHack = 0; // Not required - handled internally by PCSX2
     config_in_out.saveStateTitle = 0;       // Not required - handled internally by PCSX2
-    config_in_out.closeHack = 0;            // Cannot function when used by PCSX2
 }
 
 GeneralConfig config;
@@ -857,7 +856,6 @@ int SaveSettings(wchar_t *file = 0)
     for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++) {
         noError &= WritePrivateProfileInt(L"General Settings", BoolOptionsInfo[i].name, config.bools[i], file);
     }
-    WritePrivateProfileInt(L"General Settings", L"Close Hack", config.closeHack, file);
 
     WritePrivateProfileInt(L"General Settings", L"Keyboard Mode", config.keyboardApi, file);
     WritePrivateProfileInt(L"General Settings", L"Mouse Mode", config.mouseApi, file);
@@ -966,7 +964,6 @@ int LoadSettings(int force, wchar_t *file)
     for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++) {
         config.bools[i] = GetPrivateProfileBool(L"General Settings", BoolOptionsInfo[i].name, BoolOptionsInfo[i].defaultValue, file);
     }
-    config.closeHack = (u8)GetPrivateProfileIntW(L"General Settings", L"Close Hack", 0, file);
 
     config.keyboardApi = (DeviceAPI)GetPrivateProfileIntW(L"General Settings", L"Keyboard Mode", WM, file);
     if (!config.keyboardApi)

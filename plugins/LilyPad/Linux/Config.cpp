@@ -227,7 +227,6 @@ int SaveSettings(wchar_t *file = 0)
     for (size_t i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++) {
         cfg.WriteBool(L"General Settings", BoolOptionsInfo[i].name, config.bools[i]);
     }
-    cfg.WriteInt(L"General Settings", L"Close Hack", config.closeHack);
 
     cfg.WriteInt(L"General Settings", L"Keyboard Mode", config.keyboardApi);
     cfg.WriteInt(L"General Settings", L"Mouse Mode", config.mouseApi);
@@ -237,7 +236,6 @@ int SaveSettings(wchar_t *file = 0)
             wchar_t temp[50];
             wsprintf(temp, L"Pad %i %i", port, slot);
             cfg.WriteInt(temp, L"Mode", config.padConfigs[port][slot].type);
-            cfg.WriteInt(temp, L"Auto Analog", config.padConfigs[port][slot].autoAnalog);
         }
     }
 
@@ -317,8 +315,6 @@ int LoadSettings(int force, wchar_t *file)
         config.bools[i] = cfg.ReadBool(L"General Settings", BoolOptionsInfo[i].name, BoolOptionsInfo[i].defaultValue);
     }
 
-    config.closeHack = (u8)cfg.ReadInt(L"General Settings", L"Close Hack");
-
     config.keyboardApi = (DeviceAPI)cfg.ReadInt(L"General Settings", L"Keyboard Mode", LNX_KEYBOARD);
     if (!config.keyboardApi)
         config.keyboardApi = LNX_KEYBOARD;
@@ -329,7 +325,6 @@ int LoadSettings(int force, wchar_t *file)
             wchar_t temp[50];
             wsprintf(temp, L"Pad %i %i", port, slot);
             config.padConfigs[port][slot].type = (PadType)cfg.ReadInt(temp, L"Mode", Dualshock2Pad);
-            config.padConfigs[port][slot].autoAnalog = cfg.ReadBool(temp, L"Auto Analog");
         }
     }
 
