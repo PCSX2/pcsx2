@@ -1572,26 +1572,6 @@ keyEvent *CALLBACK PADkeyEvent()
         PrepareActivityState(false);
     }
 
-    if ((ev.key == VK_ESCAPE || (int)ev.key == -2) && ev.evt == KEYPRESS && config.escapeFullscreenHack) {
-        static int t;
-        if ((int)ev.key != -2 && IsWindowMaximized(hWndTop)) {
-            t = timeGetTime();
-            QueueKeyEvent(-2, KEYPRESS);
-            HANDLE hThread = CreateThread(0, 0, MaximizeWindowThreadProc, 0, 0, 0);
-            if (hThread)
-                CloseHandle(hThread);
-            restoreFullScreen = 1;
-            return 0;
-        }
-        if (ev.key != VK_ESCAPE) {
-            if (timeGetTime() - t < 1000) {
-                QueueKeyEvent(-2, KEYPRESS);
-                return 0;
-            }
-        }
-        ev.key = VK_ESCAPE;
-    }
-
     if (ev.key == VK_F2 && ev.evt == KEYPRESS) {
         saveStateIndex += 1 - 2 * shiftDown;
         saveStateIndex = (saveStateIndex + 10) % 10;

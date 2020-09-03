@@ -207,7 +207,6 @@ const GeneralSettingsBool BoolOptionsInfo[] = {
     {L"Multitap 1", 0 /*IDC_MULTITAP1*/, 0},
     {L"Multitap 2", 0 /*IDC_MULTITAP2*/, 0},
 
-    {L"Escape Fullscreen Hack", 0 /*IDC_ESCAPE_FULLSCREEN_HACK*/, 1},
     {L"Disable Screen Saver", 0 /*IDC_DISABLE_SCREENSAVER*/, 1},
     {L"Logging", 0 /*IDC_DEBUG_FILE*/, 0},
 

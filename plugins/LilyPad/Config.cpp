@@ -45,7 +45,6 @@ const wchar_t *padTypes[] = {
 // Hacks or configurations which PCSX2 needs with a specific value
 void PCSX2_overrideConfig(GeneralConfig &config_in_out)
 {
-    config_in_out.escapeFullscreenHack = 0; // Not required - handled internally by PCSX2
     config_in_out.saveStateTitle = 0;       // Not required - handled internally by PCSX2
 }
 
