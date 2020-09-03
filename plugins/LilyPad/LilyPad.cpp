@@ -910,35 +910,6 @@ static const u8 queryMode[7] = {0x5A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 static const u8 setNativeMode[7] = {0x5A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5A};
 
 #ifdef _MSC_VER
-// Implements a couple of the hacks that affect whatever top-level window
-// the GS viewport belongs to (title, screensaver)
-ExtraWndProcResult TitleHackWndProc(HWND hWndTop, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT *output)
-{
-    switch (uMsg) {
-        case WM_SETTEXT:
-            if (config.saveStateTitle) {
-                wchar_t text[200];
-                int len;
-                if (IsWindowUnicode(hWndTop)) {
-                    len = wcslen((wchar_t *)lParam);
-                    if (len < sizeof(text) / sizeof(wchar_t))
-                        wcscpy(text, (wchar_t *)lParam);
-                } else {
-                    len = MultiByteToWideChar(CP_ACP, 0, (char *)lParam, -1, text, sizeof(text) / sizeof(wchar_t));
-                }
-                if (len > 0 && len < 150 && !wcsstr(text, L" | State(Lilypad) ")) {
-                    wsprintfW(text + len, L" | State(Lilypad) %i", saveStateIndex);
-                    SetWindowText(hWndTop, text);
-                    return NO_WND_PROC;
-                }
-            }
-            break;
-        default:
-            break;
-    }
-    return CONTINUE_BLISSFULLY;
-}
-
 // Useful sequence before changing into active/inactive state.
 // Handles hooking/unhooking of mouse and KB and also mouse cursor visibility.
 // towardsActive==true indicates we're gaining activity (on focus etc), false is for losing activity (on close, kill focus, etc).
@@ -1035,17 +1006,6 @@ DWORD WINAPI RenameWindowThreadProc(void *lpParameter)
     }
     return 0;
 }
-
-void SaveStateChanged()
-{
-    if (config.saveStateTitle) {
-        // GSDX only checks its window's message queue at certain points or something, so
-        // have to do this in another thread to prevent deadlock.
-        HANDLE hThread = CreateThread(0, 0, RenameWindowThreadProc, 0, 0, 0);
-        if (hThread)
-            CloseHandle(hThread);
-    }
-}
 #endif
 
 s32 CALLBACK PADopen(void *pDsp)
@@ -1091,14 +1051,11 @@ s32 CALLBACK PADopen(void *pDsp)
                 openCount = 0;
                 return -1;
             }
-            hWndTopProc.Eat(TitleHackWndProc, 0);
-        } else
-            hWndGSProc.Eat(TitleHackWndProc, 0);
+        }
 
         if (config.forceHide) {
             hWndGSProc.Eat(HideCursorProc, 0);
         }
-        SaveStateChanged();
 
         windowThreadId = GetWindowThreadProcessId(hWndTop, 0);
     }
@@ -1575,7 +1532,6 @@ keyEvent *CALLBACK PADkeyEvent()
     if (ev.key == VK_F2 && ev.evt == KEYPRESS) {
         saveStateIndex += 1 - 2 * shiftDown;
         saveStateIndex = (saveStateIndex + 10) % 10;
-        SaveStateChanged();
     }
 
     // So don't change skip mode on alt-F4.
