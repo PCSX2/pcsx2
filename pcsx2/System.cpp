@@ -372,8 +372,7 @@ static VirtualMemoryManagerPtr makeMainMemoryManager() {
 	// address first. This does not guarantee it, but it prioritise the legacy memory address.
 	// This is only valid for x86 builds, as x64 have a high chance of failing an assertion by using this
 	// specific address.
-	//if (sizeof(void*) == 4)
-	{
+	if (sizeof(void*) == 4) {
 		const uptr LegacyMemoryBase = 0x20000000U;
 		if (auto mgr = tryMakeAt(LegacyMemoryBase))
 			return mgr;
