@@ -245,10 +245,18 @@ void Dialog::SaveValues()
 {
     Interpolation = m_inter_select->GetSelection();
     OutputModule = m_module_select->GetSelection();
+
 #ifdef SPU2X_PORTAUDIO
     OutputAPI = m_portaudio_select->GetSelection();
+    wxString p_api(m_portaudio_select->GetStringSelection());
+    if (p_api.Find("ALSA") != wxNOT_FOUND) p_api = "ALSA";
+    if (p_api.Find("OSS") != wxNOT_FOUND) p_api = "OSS";
+    PortaudioOut->SetApiSettings(p_api);
 #endif
+
     SdlOutputAPI = m_sdl_select->GetSelection();
+    SDLOut->SetApiSettings(m_sdl_select->GetStringSelection());
+
     SynchMode = m_sync_select->GetSelection();
     numSpeakers = m_audio_select->GetSelection();
 

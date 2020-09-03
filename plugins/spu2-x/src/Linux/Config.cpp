@@ -153,6 +153,7 @@ void ReadSettings()
 
     SndOutLatencyMS = CfgReadInt(L"OUTPUT", L"Latency", 300);
     SynchMode = CfgReadInt(L"OUTPUT", L"Synch_Mode", 0);
+    numSpeakers = CfgReadInt(L"OUTPUT", L"SpeakerConfiguration", 0);
 
 #ifdef SPU2X_PORTAUDIO
     PortaudioOut->ReadSettings();
@@ -205,6 +206,7 @@ void WriteSettings()
     CfgWriteStr(L"OUTPUT", L"Output_Module", mods[OutputModule]->GetIdent());
     CfgWriteInt(L"OUTPUT", L"Latency", SndOutLatencyMS);
     CfgWriteInt(L"OUTPUT", L"Synch_Mode", SynchMode);
+    CfgWriteInt(L"OUTPUT", L"SpeakerConfiguration", numSpeakers);
     CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
 
 #ifdef SPU2X_PORTAUDIO
