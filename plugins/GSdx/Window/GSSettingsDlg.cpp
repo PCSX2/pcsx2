@@ -845,11 +845,8 @@ void GSOSDDlg::OnInit()
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_SETRANGE, 0, MAKELPARAM(20, 1));
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MAX_LOG), UDM_SETPOS, 0, MAKELPARAM(theApp.GetConfigI("osd_max_log_messages"), 0));
 
-	for(auto osdPos : theApp.m_gs_osd_position) {
-		SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_ADDSTRING, 0, (LPARAM)osdPos.name.c_str());
-	}
+	ComboBoxInit(IDC_OSD_MONITOR_POS, theApp.m_gs_osd_position, theApp.GetConfigI("osd_monitor_pos"),theApp.m_gs_osd_position.size());
 
-	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_MONITOR_POS), CB_SETCURSEL, MAKEWPARAM(theApp.GetConfigI("osd_monitor_pos"), 0), 0);
 	
 	AddTooltip(IDC_OSD_MAX_LOG);
 	AddTooltip(IDC_OSD_MAX_LOG_EDIT);
