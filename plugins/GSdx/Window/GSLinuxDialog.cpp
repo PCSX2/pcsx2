@@ -587,12 +587,12 @@ void populate_osd_table(GtkWidget* osd_table)
 	GtkWidget* osd_blue_spin      = CreateScale("osd_color_b", 0, 255, 1);
 	GtkWidget* opacity_label      = left_label("Opacity:");
 	GtkWidget* opacity_slide      = CreateScale("osd_color_opacity");
+	GtkWidget* monitor_pos_label  = left_label("Monitor position:");
+	GtkWidget* monitor_pos_combo   = CreateComboBoxFromVector(theApp.m_gs_osd_position,"osd_monitor_pos");
 	GtkWidget* log_timeout_label  = left_label("Timeout (seconds):");
 	GtkWidget* log_timeout_text   = CreateSpinButton(2, 10, "osd_log_timeout");
 	GtkWidget* max_messages_label = left_label("Maximum Onscreen Log Messages:");
 	GtkWidget* max_messages_spin  = CreateSpinButton(1, 20, "osd_max_log_messages");
-	GtkWidget* monitor_pos_label  = left_label("Monitor position:");
-	GtkWidget* monitor_pos_combo   = CreateComboBoxFromVector(theApp.m_gs_osd_position,"osd_monitor_pos");
 
 	AddTooltip(log_check, IDC_OSD_LOG);
 	AddTooltip(monitor_check, IDC_OSD_MONITOR);
@@ -604,9 +604,9 @@ void populate_osd_table(GtkWidget* osd_table)
 	InsertWidgetInTable(osd_table , osd_green_label    , osd_green_spin);
 	InsertWidgetInTable(osd_table , osd_blue_label     , osd_blue_spin);
 	InsertWidgetInTable(osd_table , opacity_label      , opacity_slide);
-	InsertWidgetInTable(osd_table , log_timeout_label  , log_timeout_text);
-	InsertWidgetInTable(osd_table , max_messages_label , max_messages_spin);
 	InsertWidgetInTable(osd_table , monitor_pos_label  , monitor_pos_combo);
+	InsertWidgetInTable(osd_table , max_messages_label , max_messages_spin);
+	InsertWidgetInTable(osd_table , log_timeout_label  , log_timeout_text);
 }
 
 GtkWidget* ScrollMe(GtkWidget* w)
