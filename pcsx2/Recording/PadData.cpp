@@ -76,10 +76,6 @@ void PadData::SetNormalButtons(int port, std::vector<int> buttons)
 
 void PadData::SetNormalButton(int port, PadData_NormalButton button, int fpushed)
 {
-	if (port < 0 || 1 < port)
-	{
-		return;
-	}
 	wxByte keybit[2];
 	GetKeyBit(keybit, button);
 	int pressureByteIndex = GetPressureByte(button);
@@ -111,10 +107,6 @@ void PadData::SetNormalButton(int port, PadData_NormalButton button, int fpushed
 
 int PadData::GetNormalButton(int port, PadData_NormalButton button) const
 {
-	if (port < 0 || 1 < port)
-	{
-		return false;
-	}
 	wxByte keybit[2];
 	GetKeyBit(keybit, button);
 	int pressureByteIndex = GetPressureByte(button);
@@ -282,10 +274,6 @@ void PadData::SetAnalogVectors(int port, std::vector<int> vectors)
 
 void PadData::SetAnalogVector(int port, PadData_AnalogVector vector, int val)
 {
-	if (port < 0 || 1 < port)
-	{
-		return;
-	}
 	if (val < 0)
 	{
 		val = 0;
@@ -300,10 +288,6 @@ void PadData::SetAnalogVector(int port, PadData_AnalogVector vector, int val)
 
 int PadData::GetAnalogVector(int port, PadData_AnalogVector vector) const
 {
-	if (port < 0 || 1 < port)
-	{
-		return 0;
-	}
 
 	return buf[port][GetAnalogVectorByte(vector)];
 }

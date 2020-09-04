@@ -50,11 +50,6 @@ InputRecording g_InputRecording;
 void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 buf[])
 {
 	// TODO - Multi-Tap Support
-	// Only examine controllers 1 / 2
-	if (port != 0 && port != 1)
-	{
-		return;
-	}
 
 	/*
 		This appears to try to ensure that we are only paying attention
