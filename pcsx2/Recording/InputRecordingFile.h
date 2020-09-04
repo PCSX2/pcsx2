@@ -103,8 +103,8 @@ private:
 	unsigned long undoCount = 0;
 
 	// Calculates the position of the current frame in the input recording
-	long getRecordingBlockSeekPoint(const long &frame);
-	bool open(const wxString path, bool newRecording, bool fromSaveState);
+	long getRecordingBlockSeekPoint(const long& frame);
+	bool open(const wxString path, bool newRecording);
 	bool verifyRecordingFileHeader();
 	bool writeSaveState();
 };

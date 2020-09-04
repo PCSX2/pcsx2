@@ -101,64 +101,66 @@ void InputRecordingFile::IncrementUndoCount()
 	fwrite(&undoCount, 4, 1, recordingFile);
 }
 
-bool InputRecordingFile::open(const wxString path, bool newRecording, bool fromSaveState)
+bool InputRecordingFile::open(const wxString path, bool newRecording)
 {
-	Close();
-	wxString mode = L"rb+";
 	if (newRecording)
 	{
-		mode = L"wb+";
-		totalFrames = 0;
-		undoCount = 0;
-		header.Init();
+		if ((recordingFile = wxFopen(path, L"wb+")) != nullptr)
+		{
+			filename = path;
+			totalFrames = 0;
+			undoCount = 0;
+			header.Init();
+			return true;
+		}
 	}
-
-	recordingFile = wxFopen(path, mode);
-	if (recordingFile == NULL)
+	else if ((recordingFile = wxFopen(path, L"rb+")) != nullptr)
 	{
-		recordingConLog(wxString::Format("[REC]: Input Recording file opening failed. Error - %s\n", strerror(errno)));
+		if (verifyRecordingFileHeader())
+		{
+			filename = path;
+			return true;
+		}
+		Close();
+		recordingConLog(wxString::Format("[REC]: Input recording file header is invalid\n"));
 		return false;
 	}
-	filename = path;
-	
-	if (newRecording)
-	{
-		if (fromSaveState)
-		{
-			savestate.fromSavestate = true;
-			FILE* ssFileCheck = wxFopen(path + "_SaveState.p2s", "r");
-			if (ssFileCheck != NULL)
-			{
-				wxCopyFile(path + "_SaveState.p2s", path + "_SaveState.p2s.bak", false);
-				fclose(ssFileCheck);
-			}
-			StateCopy_SaveToFile(path + "_SaveState.p2s");
-		}
-		else
-		{
-			sApp.SysExecute();
-		}
-	} 
-	else
-	{
-		if (!verifyRecordingFileHeader())
-		{
-			recordingConLog(wxString::Format("[REC]: Input recording file header is invalid\n"));
-			return false;
-		}
-	}
-
-	return true;
+	recordingConLog(wxString::Format("[REC]: Input recording file opening failed. Error - %s\n", strerror(errno)));
+	return false;
 }
 
-bool InputRecordingFile::OpenNew(const wxString path, bool fromSaveState)
+bool InputRecordingFile::OpenNew(const wxString path, bool fromSavestate)
 {
-	return open(path, true, fromSaveState);
+	if (fromSavestate)
+	{
+		if (CoreThread.IsOpen())
+		{
+			if (open(path, true))
+			{
+				savestate.fromSavestate = true;
+				if (wxFileExists(path + "_SaveState.p2s"))
+				{
+					wxCopyFile(path + "_SaveState.p2s", path + "_SaveState.p2s.bak", true);
+				}
+				StateCopy_SaveToFile(path + "_SaveState.p2s");
+				return true;
+			}
+		}
+		else
+			recordingConLog(L"[REC]: Game is not open, aborting playing input recording which starts on a save-state.\n");
+	}
+	else if (open(path, true))
+	{
+		savestate.fromSavestate = false;
+		sApp.SysExecute();
+		return true;
+	}
+	return open(path, true);
 }
 
 bool InputRecordingFile::OpenExisting(const wxString path)
 {
-	return open(path, false, false);
+	return open(path, false);
 }
 
 bool InputRecordingFile::ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex)
