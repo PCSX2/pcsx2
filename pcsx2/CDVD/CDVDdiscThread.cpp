@@ -321,6 +321,9 @@ s32 cdvdDirectReadSector(u32 sector, s32 mode, u8* buffer)
 {
 	static u8 data[2352 * sectors_per_read];
 
+    if(src == nullptr)
+        return -1;
+
     try {
         if (sector >= src->GetSectorCount())
             return -1;
