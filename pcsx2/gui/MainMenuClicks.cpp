@@ -940,18 +940,6 @@ void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent &event)
 
 void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent &event)
 {
-	VirtualPad *vp = NULL;
-	if (event.GetId() == MenuId_Recording_VirtualPad_Port0)
-	{
-		vp = wxGetApp().GetVirtualPadPtr(0);
-	}
-	else if (event.GetId() == MenuId_Recording_VirtualPad_Port1)
-	{
-		vp = wxGetApp().GetVirtualPadPtr(1);
-	}
-	if (vp != NULL)
-	{
-		vp->Show();
-	}
+	wxGetApp().GetVirtualPadPtr(event.GetId() - MenuId_Recording_VirtualPad_Port0)->Show();
 }
 #endif
