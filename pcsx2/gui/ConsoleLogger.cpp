@@ -878,6 +878,7 @@ void ConsoleLogFrame::OnToggleTheme(wxCommandEvent& evt)
 			m_ColorTable.SetColorScheme_Dark();
 			m_TextCtrl.SetBackgroundColour(darkThemeBgColor);
 			m_TextCtrl.SetDefaultStyle(wxTextAttr(wxNullColour, darkThemeBgColor));
+			m_TextCtrl.Clear();
 			break;
 		case MenuId_ColorScheme_Light:
 		default:
@@ -885,6 +886,7 @@ void ConsoleLogFrame::OnToggleTheme(wxCommandEvent& evt)
 			m_ColorTable.SetColorScheme_Light();
 			m_TextCtrl.SetBackgroundColour(lightThemeBgColor);
 			m_TextCtrl.SetDefaultStyle(wxTextAttr(wxNullColour, lightThemeBgColor));
+			m_TextCtrl.Clear();
 			break;
 	}
 
