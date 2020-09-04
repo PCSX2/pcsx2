@@ -148,6 +148,7 @@ bool InputRecordingFile::OpenNew(const wxString path, bool fromSavestate)
 		}
 		else
 			recordingConLog(L"[REC]: Game is not open, aborting playing input recording which starts on a save-state.\n");
+		return false;
 	}
 	else if (open(path, true))
 	{

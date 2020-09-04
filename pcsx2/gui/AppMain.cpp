@@ -1059,7 +1059,7 @@ void Pcsx2App::OnProgramLogClosed( wxWindowID id )
 void Pcsx2App::OnMainFrameClosed( wxWindowID id )
 {
 #ifndef DISABLE_RECORDING
-	if (g_Conf->EmuOptions.EnableRecordingTools)
+	if (g_InputRecording.GetModeState() == INPUT_RECORDING_MODE_NONE)
 	{
 		g_InputRecording.Stop();
 	}
