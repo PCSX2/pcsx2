@@ -30,6 +30,7 @@
 
 #include "Utilities/PageFaultSource.h"
 #include "Utilities/Threading.h"
+#include "IopBios.h"
 
 #ifdef __WXMSW__
 #	include <wx/msw/wrapwin.h>
@@ -64,12 +65,14 @@ SysCoreThread::~SysCoreThread()
 void SysCoreThread::Cancel( bool isBlocking )
 {
 	m_hasActiveMachine = false;
+	R3000A::ioman::reset();
 	_parent::Cancel();
 }
 
 bool SysCoreThread::Cancel( const wxTimeSpan& span )
 {
 	m_hasActiveMachine = false;
+	R3000A::ioman::reset();
 	return _parent::Cancel( span );
 }
 
@@ -123,6 +126,7 @@ void SysCoreThread::ResetQuick()
 
 	m_resetVirtualMachine	= true;
 	m_hasActiveMachine		= false;
+	R3000A::ioman::reset();
 }
 
 void SysCoreThread::Reset()
@@ -291,6 +295,7 @@ void SysCoreThread::OnCleanupInThread()
 	m_hasActiveMachine		= false;
 	m_resetVirtualMachine	= true;
 
+	R3000A::ioman::reset();
 	// FIXME: temporary workaround for deadlock on exit, which actually should be a crash
 	vu1Thread.WaitVU();
 	GetCorePlugins().Close();

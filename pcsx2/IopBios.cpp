@@ -326,7 +326,14 @@ namespace ioman {
 	void reset()
 	{
 		for (int i = 0; i < maxfds; i++)
-			fds[i].close();
+		{
+			// WARNING: the original IopBios code assumes that arrays are initialized at 0,
+			// which is very dumb but I don't feel like writing an initializer for the whole thing so 
+			// you'll just have to read my comment and fix it when something breaks. 
+			// Please don't do a git blame I'm not the cause of this madness
+			if (fds[i])
+				fds[i].close();
+		}
 	}
 
 	bool is_host(const std::string path)
