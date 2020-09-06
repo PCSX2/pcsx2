@@ -23,4 +23,3 @@ struct ISoFileDescriptor;
 #include "IsoFileDescriptor.h"
 #include "IsoDirectory.h"
 #include "IsoFile.h"
-

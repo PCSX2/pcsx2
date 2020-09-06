@@ -24,7 +24,8 @@ std::vector<std::wstring> GetOpticalDriveList()
 		return {};
 
 	std::vector<std::wstring> drives;
-	for (auto p = drive_strings.data(); *p; ++p) {
+	for (auto p = drive_strings.data(); *p; ++p)
+	{
 		if (GetDriveType(p) == DRIVE_CDROM)
 			drives.push_back(p);
 		while (*p)
@@ -35,7 +36,8 @@ std::vector<std::wstring> GetOpticalDriveList()
 
 void GetValidDrive(std::wstring& drive)
 {
-	if (drive.empty() || GetDriveType(drive.c_str()) != DRIVE_CDROM) {
+	if (drive.empty() || GetDriveType(drive.c_str()) != DRIVE_CDROM)
+	{
 		auto drives = GetOpticalDriveList();
 		if (drives.empty())
 		{

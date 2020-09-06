@@ -32,7 +32,7 @@ Dialogs::DriveSelectorDialog::DriveSelectorDialog(wxWindow* parent, wxString cur
 		driveList.Add(i);
 	}
 
-	choiceDrive = new wxChoice(this, wxID_ANY, wxDefaultPosition, { 240, 40 }, driveList);
+	choiceDrive = new wxChoice(this, wxID_ANY, wxDefaultPosition, {240, 40}, driveList);
 
 	int driveIndex = choiceDrive->FindString(curDrive);
 	if (driveIndex != wxNOT_FOUND)
