@@ -312,9 +312,18 @@ s32 CALLBACK DISCgetTD(u8 Track, cdvdTD* Buffer)
 {
 	if (Track == 0)
 	{
-		Buffer->lsn = src->GetSectorCount();
-		Buffer->type = 0;
-		return 0;
+		if (src == nullptr)
+			return -1;
+		try
+		{
+			Buffer->lsn = src->GetSectorCount();
+			Buffer->type = 0;
+			return 0;
+		}
+		catch (...)
+		{
+			return -1;
+		}
 	}
 
 	if (Track < strack)
@@ -495,6 +504,8 @@ s32 CALLBACK DISCreadSector(u8* buffer, u32 lsn, int mode)
 
 s32 CALLBACK DISCgetDualInfo(s32* dualType, u32* _layer1start)
 {
+	if (src == nullptr)
+		return -1;
 	switch (src->GetMediaType())
 	{
 		case 1:
