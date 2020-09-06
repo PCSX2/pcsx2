@@ -66,14 +66,16 @@ void cdvdParseTOC()
 {
 	tracks[1].start_lba = 0;
 
-	if (!src->GetSectorCount()) {
+	if (!src->GetSectorCount())
+	{
 		curDiskType = CDVD_TYPE_NODISC;
 		strack = 1;
 		etrack = 0;
 		return;
 	}
 
-	if (src->GetMediaType() >= 0) {
+	if (src->GetMediaType() >= 0)
+	{
 		tracks[1].type = CDVD_MODE1_TRACK;
 
 		strack = 1;
@@ -84,23 +86,28 @@ void cdvdParseTOC()
 	strack = 0xFF;
 	etrack = 0;
 
-	for (auto& entry : src->ReadTOC()) {
+	for (auto& entry : src->ReadTOC())
+	{
 		if (entry.track < 1 || entry.track > 99)
 			continue;
 		strack = std::min(strack, entry.track);
 		etrack = std::max(etrack, entry.track);
 		tracks[entry.track].start_lba = entry.lba;
-		if ((entry.control & 0x0C) == 0x04) {
+		if ((entry.control & 0x0C) == 0x04)
+		{
 			std::array<u8, 2352> buffer;
 			// Byte 15 of a raw CD data sector determines the track mode
-			if (src->ReadSectors2352(entry.lba, 1, buffer.data()) && (buffer[15] & 3) == 2) {
+			if (src->ReadSectors2352(entry.lba, 1, buffer.data()) && (buffer[15] & 3) == 2)
+			{
 				tracks[entry.track].type = CDVD_MODE2_TRACK;
 			}
-			else {
+			else
+			{
 				tracks[entry.track].type = CDVD_MODE1_TRACK;
 			}
 		}
-		else {
+		else
+		{
 			tracks[entry.track].type = CDVD_AUDIO_TRACK;
 		}
 		fprintf(stderr, "Track %u start sector: %u\n", entry.track, entry.lba);
@@ -119,8 +126,8 @@ std::unique_ptr<IOCtlSrc> src;
 
 extern u32 g_last_sector_block_lsn;
 
- ///////////////////////////////////////////////////////////////////////////////
- // keepAliveThread throws a read event regularly to prevent drive spin down  //
+///////////////////////////////////////////////////////////////////////////////
+// keepAliveThread throws a read event regularly to prevent drive spin down  //
 
 void keepAliveThread()
 {
@@ -130,7 +137,8 @@ void keepAliveThread()
 	std::unique_lock<std::mutex> guard(s_keepalive_lock);
 
 	while (!s_keepalive_cv.wait_for(guard, std::chrono::seconds(30),
-		[]() { return !s_keepalive_is_open; })) {
+									[]() { return !s_keepalive_is_open; }))
+	{
 
 		//printf(" * keepAliveThread: polling drive.\n");
 		if (src->GetMediaType() >= 0)
@@ -147,10 +155,12 @@ bool StartKeepAliveThread()
 	if (s_keepalive_is_open == false)
 	{
 		s_keepalive_is_open = true;
-		try {
+		try
+		{
 			s_keepalive_thread = std::thread(keepAliveThread);
 		}
-		catch (std::system_error&) {
+		catch (std::system_error&)
+		{
 			s_keepalive_is_open = false;
 		}
 	}
@@ -181,16 +191,19 @@ s32 CALLBACK DISCopen(const char* pTitle)
 	GetValidDrive(drive);
 
 	// open device file
-	try {
+	try
+	{
 		src = std::unique_ptr<IOCtlSrc>(new IOCtlSrc(drive));
 	}
-	catch (std::runtime_error& ex) {
+	catch (std::runtime_error& ex)
+	{
 		fputs(ex.what(), stdout);
 		return -1;
 	}
 
 	//setup threading manager
-	if (!cdvdStartThread()) {
+	if (!cdvdStartThread())
+	{
 		src.reset();
 		return -1;
 	}
@@ -212,7 +225,8 @@ s32 CALLBACK DISCreadTrack(u32 lsn, int mode)
 	csector = lsn;
 	cmode = mode;
 
-	if (weAreInNewDiskCB) {
+	if (weAreInNewDiskCB)
+	{
 		int ret = cdvdDirectReadSector(lsn, mode, directReadSectorBuffer);
 		if (ret == 0)
 			lastReadInNewDiskCB = 1;
@@ -234,19 +248,21 @@ s32 CALLBACK DISCgetBuffer(u8* dest)
 		return 0;
 
 	int csize = 2352;
-	switch (cmode) {
-	case CDVD_MODE_2048:
-		csize = 2048;
-		break;
-	case CDVD_MODE_2328:
-		csize = 2328;
-		break;
-	case CDVD_MODE_2340:
-		csize = 2340;
-		break;
+	switch (cmode)
+	{
+		case CDVD_MODE_2048:
+			csize = 2048;
+			break;
+		case CDVD_MODE_2328:
+			csize = 2328;
+			break;
+		case CDVD_MODE_2340:
+			csize = 2340;
+			break;
 	}
 
-	if (lastReadInNewDiskCB) {
+	if (lastReadInNewDiskCB)
+	{
 		lastReadInNewDiskCB = 0;
 
 		memcpy(dest, directReadSectorBuffer, csize);
@@ -294,7 +310,8 @@ s32 CALLBACK DISCgetTN(cdvdTN* Buffer)
 
 s32 CALLBACK DISCgetTD(u8 Track, cdvdTD* Buffer)
 {
-	if (Track == 0) {
+	if (Track == 0)
+	{
 		Buffer->lsn = src->GetSectorCount();
 		Buffer->type = 0;
 		return 0;
@@ -316,7 +333,8 @@ s32 CALLBACK DISCgetTOC(void* toc)
 	if (curDiskType == CDVD_TYPE_NODISC)
 		return -1;
 
-	if (curDiskType == CDVD_TYPE_DETCTDVDS || curDiskType == CDVD_TYPE_DETCTDVDD) {
+	if (curDiskType == CDVD_TYPE_DETCTDVDS || curDiskType == CDVD_TYPE_DETCTDVDD)
+	{
 		memset(tocBuff, 0, 2048);
 
 		s32 mt = src->GetMediaType();
@@ -324,7 +342,8 @@ s32 CALLBACK DISCgetTOC(void* toc)
 		if (mt < 0)
 			return -1;
 
-		if (mt == 0) { //single layer
+		if (mt == 0)
+		{ //single layer
 			// fake it
 			tocBuff[0] = 0x04;
 			tocBuff[1] = 0x02;
@@ -338,7 +357,8 @@ s32 CALLBACK DISCgetTOC(void* toc)
 			tocBuff[18] = 0x00;
 			tocBuff[19] = 0x00;
 		}
-		else if (mt == 1) { //PTP
+		else if (mt == 1)
+		{ //PTP
 			u32 layer1start = src->GetLayerBreakAddress() + 0x30000;
 
 			// dual sided
@@ -361,7 +381,8 @@ s32 CALLBACK DISCgetTOC(void* toc)
 			tocBuff[22] = (layer1start >> 8) & 0xff;
 			tocBuff[23] = (layer1start >> 0) & 0xff;
 		}
-		else { //OTP
+		else
+		{ //OTP
 			u32 layer1start = src->GetLayerBreakAddress() + 0x30000;
 
 			// dual sided
@@ -385,7 +406,8 @@ s32 CALLBACK DISCgetTOC(void* toc)
 			tocBuff[27] = (layer1start >> 0) & 0xff;
 		}
 	}
-	else if (curDiskType == CDVD_TYPE_DETCTCD) {
+	else if (curDiskType == CDVD_TYPE_DETCTCD)
+	{
 		// cd toc
 		// (could be replaced by 1 command that reads the full toc)
 		u8 min, sec, frm, i;
@@ -393,7 +415,8 @@ s32 CALLBACK DISCgetTOC(void* toc)
 		cdvdTN diskInfo;
 		cdvdTD trackInfo;
 		memset(tocBuff, 0, 1024);
-		if (DISCgetTN(&diskInfo) == -1) {
+		if (DISCgetTN(&diskInfo) == -1)
+		{
 			diskInfo.etrack = 0;
 			diskInfo.strack = 1;
 		}
@@ -420,7 +443,8 @@ s32 CALLBACK DISCgetTOC(void* toc)
 
 		fprintf(stderr, "Track 0: %u mins %u secs %u frames\n", min, sec, frm);
 
-		for (i = diskInfo.strack; i <= diskInfo.etrack; i++) {
+		for (i = diskInfo.strack; i <= diskInfo.etrack; i++)
+		{
 			err = DISCgetTD(i, &trackInfo);
 			lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
 			tocBuff[i * 10 + 30] = trackInfo.type;
@@ -471,40 +495,41 @@ s32 CALLBACK DISCreadSector(u8* buffer, u32 lsn, int mode)
 
 s32 CALLBACK DISCgetDualInfo(s32* dualType, u32* _layer1start)
 {
-	switch (src->GetMediaType()) {
-	case 1:
-		*dualType = 1;
-		*_layer1start = src->GetLayerBreakAddress() + 1;
-		return 0;
-	case 2:
-		*dualType = 2;
-		*_layer1start = src->GetLayerBreakAddress() + 1;
-		return 0;
-	case 0:
-		*dualType = 0;
-		*_layer1start = 0;
-		return 0;
+	switch (src->GetMediaType())
+	{
+		case 1:
+			*dualType = 1;
+			*_layer1start = src->GetLayerBreakAddress() + 1;
+			return 0;
+		case 2:
+			*dualType = 2;
+			*_layer1start = src->GetLayerBreakAddress() + 1;
+			return 0;
+		case 0:
+			*dualType = 0;
+			*_layer1start = 0;
+			return 0;
 	}
 	return -1;
 }
 
 CDVD_API CDVDapi_Disc =
-{
-	DISCclose,
-	DISCopen,
-	DISCreadTrack,
-	DISCgetBuffer,
-	DISCreadSubQ,
-	DISCgetTN,
-	DISCgetTD,
-	DISCgetTOC,
-	DISCgetDiskType,
-	DISCgetTrayStatus,
-	DISCctrlTrayOpen,
-	DISCctrlTrayClose,
+	{
+		DISCclose,
+		DISCopen,
+		DISCreadTrack,
+		DISCgetBuffer,
+		DISCreadSubQ,
+		DISCgetTN,
+		DISCgetTD,
+		DISCgetTOC,
+		DISCgetDiskType,
+		DISCgetTrayStatus,
+		DISCctrlTrayOpen,
+		DISCctrlTrayClose,
 
-	DISCnewDiskCB,
+		DISCnewDiskCB,
 
-	DISCreadSector,
-	DISCgetDualInfo,
+		DISCreadSector,
+		DISCgetDualInfo,
 };

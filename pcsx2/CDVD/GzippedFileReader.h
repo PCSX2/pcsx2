@@ -21,30 +21,32 @@ typedef struct zstate Zstate;
 #include "ChunksCache.h"
 #include "zlib_indexed.h"
 
-#define GZFILE_SPAN_DEFAULT (1048576L * 4)   /* distance between direct access points when creating a new index */
-#define GZFILE_READ_CHUNK_SIZE (256 * 1024)  /* zlib extraction chunks size (at 0-based boundaries) */
-#define GZFILE_CACHE_SIZE_MB 200             /* cache size for extracted data. must be at least GZFILE_READ_CHUNK_SIZE (in MB)*/
+#define GZFILE_SPAN_DEFAULT (1048576L * 4)  /* distance between direct access points when creating a new index */
+#define GZFILE_READ_CHUNK_SIZE (256 * 1024) /* zlib extraction chunks size (at 0-based boundaries) */
+#define GZFILE_CACHE_SIZE_MB 200            /* cache size for extracted data. must be at least GZFILE_READ_CHUNK_SIZE (in MB)*/
 
 class GzippedFileReader : public AsyncFileReader
 {
 	DeclareNoncopyableObject(GzippedFileReader);
+
 public:
 	GzippedFileReader(void);
 
 	virtual ~GzippedFileReader(void) { Close(); };
 
-	static  bool CanHandle(const wxString& fileName);
+	static bool CanHandle(const wxString& fileName);
 	virtual bool Open(const wxString& fileName);
 
 	virtual int ReadSync(void* pBuffer, uint sector, uint count);
 
 	virtual void BeginRead(void* pBuffer, uint sector, uint count);
 	virtual int FinishRead(void);
-	virtual void CancelRead(void) {};
+	virtual void CancelRead(void){};
 
 	virtual void Close(void);
 
-	virtual uint GetBlockCount(void) const {
+	virtual uint GetBlockCount(void) const
+	{
 		// type and formula copied from FlatFileReader
 		// FIXME? : Shouldn't it be uint and (size - m_dataoffset) / m_blocksize ?
 		return (int)((m_pIndex ? m_pIndex->uncompressed_size : 0) / m_blocksize);
@@ -52,12 +54,15 @@ public:
 
 	virtual void SetBlockSize(uint bytes) { m_blocksize = bytes; }
 	virtual void SetDataOffset(int bytes) { m_dataoffset = bytes; }
+
 private:
-	class Czstate {
+	class Czstate
+	{
 	public:
 		Czstate() { state.isValid = 0; };
 		~Czstate() { Kill(); };
-		void Kill() {
+		void Kill()
+		{
 			if (state.isValid)
 				inflateEnd(&state.strm);
 			state.isValid = 0;
@@ -65,15 +70,15 @@ private:
 		Zstate state;
 	};
 
-	bool	OkIndex();  // Verifies that we have an index, or try to create one
+	bool OkIndex(); // Verifies that we have an index, or try to create one
 	PX_off_t GetOptimalExtractionStart(PX_off_t offset);
-	int     _ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRead);
-	void	InitZstates();
+	int _ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRead);
+	void InitZstates();
 
-	int		mBytesRead; // Temp sync read result when simulating async read
-	Access* m_pIndex;   // Quick access index
+	int mBytesRead;   // Temp sync read result when simulating async read
+	Access* m_pIndex; // Quick access index
 	Czstate* m_zstates;
-	FILE*	m_src;
+	FILE* m_src;
 
 	ChunksCache m_cache;
 

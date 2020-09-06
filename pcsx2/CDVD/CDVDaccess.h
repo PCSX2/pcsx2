@@ -109,14 +109,14 @@ typedef void(CALLBACK* _CDVDnewDiskCB)(void (*callback)());
 
 enum class CDVD_SourceType : uint8_t
 {
-	Iso,		// use built in ISO api
-	Disc,		// use built in Disc api
-	NoDisc,		// use built in CDVDnull
+	Iso,    // use built in ISO api
+	Disc,   // use built in Disc api
+	NoDisc, // use built in CDVDnull
 };
 
 struct CDVD_API
 {
-	void (CALLBACK *close)();
+	void(CALLBACK* close)();
 
 	// Don't need init or shutdown.  iso/nodisc have no init/shutdown and plugin's
 	// is handled by the PluginManager.
@@ -124,22 +124,22 @@ struct CDVD_API
 	// Don't need plugin specific things like freeze, test, or other stuff here.
 	// Those are handled by the plugin manager specifically.
 
-	_CDVDopen          open;
-	_CDVDreadTrack     readTrack;
-	_CDVDgetBuffer     getBuffer;
-	_CDVDreadSubQ      readSubQ;
-	_CDVDgetTN         getTN;
-	_CDVDgetTD         getTD;
-	_CDVDgetTOC        getTOC;
-	_CDVDgetDiskType   getDiskType;
+	_CDVDopen open;
+	_CDVDreadTrack readTrack;
+	_CDVDgetBuffer getBuffer;
+	_CDVDreadSubQ readSubQ;
+	_CDVDgetTN getTN;
+	_CDVDgetTD getTD;
+	_CDVDgetTOC getTOC;
+	_CDVDgetDiskType getDiskType;
 	_CDVDgetTrayStatus getTrayStatus;
-	_CDVDctrlTrayOpen  ctrlTrayOpen;
+	_CDVDctrlTrayOpen ctrlTrayOpen;
 	_CDVDctrlTrayClose ctrlTrayClose;
-	_CDVDnewDiskCB     newDiskCB;
+	_CDVDnewDiskCB newDiskCB;
 
 	// special functions, not in external interface yet
-	_CDVDreadSector    readSector;
-	_CDVDgetDualInfo   getDualInfo;
+	_CDVDreadSector readSector;
+	_CDVDgetDualInfo getDualInfo;
 };
 
 // ----------------------------------------------------------------------------
@@ -147,7 +147,7 @@ struct CDVD_API
 //   for direct CDVD plugin invocation, and add universal block dumping features.
 // ----------------------------------------------------------------------------
 
-extern CDVD_API* CDVD;		// currently active CDVD access mode api (either Iso, NoDisc, or Disc)
+extern CDVD_API* CDVD; // currently active CDVD access mode api (either Iso, NoDisc, or Disc)
 
 extern CDVD_API CDVDapi_Iso;
 extern CDVD_API CDVDapi_Disc;
@@ -155,16 +155,15 @@ extern CDVD_API CDVDapi_NoDisc;
 
 extern const wxChar* CDVD_SourceLabels[];
 
-extern void CDVDsys_ChangeSource( CDVD_SourceType type );
-extern void CDVDsys_SetFile( CDVD_SourceType srctype, const wxString& newfile );
-extern const wxString& CDVDsys_GetFile( CDVD_SourceType srctype );
+extern void CDVDsys_ChangeSource(CDVD_SourceType type);
+extern void CDVDsys_SetFile(CDVD_SourceType srctype, const wxString& newfile);
+extern const wxString& CDVDsys_GetFile(CDVD_SourceType srctype);
 extern CDVD_SourceType CDVDsys_GetSourceType();
 
 extern bool DoCDVDopen();
 extern void DoCDVDclose();
-extern s32  DoCDVDreadSector(u8* buffer, u32 lsn, int mode);
-extern s32  DoCDVDreadTrack(u32 lsn, int mode);
-extern s32  DoCDVDgetBuffer(u8* buffer);
-extern s32  DoCDVDdetectDiskType();
+extern s32 DoCDVDreadSector(u8* buffer, u32 lsn, int mode);
+extern s32 DoCDVDreadTrack(u32 lsn, int mode);
+extern s32 DoCDVDgetBuffer(u8* buffer);
+extern s32 DoCDVDdetectDiskType();
 extern void DoCDVDresetDiskTypeCache();
-

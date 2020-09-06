@@ -20,11 +20,14 @@
 #include "GzippedFileReader.h"
 
 // CompressedFileReader factory.
-AsyncFileReader* CompressedFileReader::GetNewReader(const wxString& fileName) {
-	if (GzippedFileReader::CanHandle(fileName)) {
+AsyncFileReader* CompressedFileReader::GetNewReader(const wxString& fileName)
+{
+	if (GzippedFileReader::CanHandle(fileName))
+	{
 		return new GzippedFileReader();
 	}
-	if (CsoFileReader::CanHandle(fileName)) {
+	if (CsoFileReader::CanHandle(fileName))
+	{
 		return new CsoFileReader();
 	}
 	// This is the one which will fail on open.

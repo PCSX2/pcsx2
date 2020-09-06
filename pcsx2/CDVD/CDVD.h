@@ -20,15 +20,15 @@
 #include "IopCommon.h"
 #include "CDVDaccess.h"
 
-#define btoi(b)		((b)/16*10 + (b)%16)		/* BCD to u_char */
-#define itob(i)		((i)/10*16 + (i)%10)		/* u_char to BCD */
+#define btoi(b) ((b) / 16 * 10 + (b) % 16) /* BCD to u_char */
+#define itob(i) ((i) / 10 * 16 + (i) % 10) /* u_char to BCD */
 
-static __fi s32 msf_to_lsn(u8 *Time)
+static __fi s32 msf_to_lsn(u8* Time)
 {
 	u32 lsn;
 
 	lsn = Time[2];
-	lsn +=(Time[1] - 2) * 75;
+	lsn += (Time[1] - 2) * 75;
 	lsn += Time[0] * 75 * 60;
 	return lsn;
 }
@@ -47,10 +47,10 @@ static __fi void lsn_to_msf(u8* Time, s32 lsn)
 	u8 m, s, f;
 
 	lsn += 150;
-	m = lsn / 4500; 		// minuten
-	lsn = lsn - m * 4500;	// minuten rest
-	s = lsn / 75;			// sekunden
-	f = lsn - (s * 75);		// sekunden rest
+	m = lsn / 4500;       // minuten
+	lsn = lsn - m * 4500; // minuten rest
+	s = lsn / 75;         // sekunden
+	f = lsn - (s * 75);   // sekunden rest
 	Time[0] = itob(m);
 	Time[1] = itob(s);
 	Time[2] = itob(f);
@@ -64,7 +64,8 @@ static __fi void lba_to_msf(s32 lba, u8* m, u8* s, u8* f)
 	*f = lba % 75;
 }
 
-struct cdvdRTC {
+struct cdvdRTC
+{
 	u8 status;
 	u8 second;
 	u8 minute;
@@ -75,7 +76,8 @@ struct cdvdRTC {
 	u8 year;
 };
 
-struct cdvdStruct {
+struct cdvdStruct
+{
 	u8 nCommand;
 	u8 Ready;
 	u8 Error;
@@ -107,7 +109,7 @@ struct cdvdStruct {
 
 	u32 Sector;
 	int nSectors;
-	int Readed; // change to bool. --arcum42
+	int Readed;  // change to bool. --arcum42
 	int Reading; // same here.
 	int ReadMode;
 	int BlockSize; // Total bytes transfered at 1x speed
@@ -121,18 +123,18 @@ struct cdvdStruct {
 	u8 KeyXor;
 	u8 decSet;
 
-	u8  mg_buffer[65536];
+	u8 mg_buffer[65536];
 	int mg_size;
 	int mg_maxsize;
-	int mg_datatype;//0-data(encrypted); 1-header
-	u8	mg_kbit[16];//last BIT key 'seen'
-	u8	mg_kcon[16];//last content key 'seen'
+	int mg_datatype; //0-data(encrypted); 1-header
+	u8 mg_kbit[16];  //last BIT key 'seen'
+	u8 mg_kcon[16];  //last content key 'seen'
 
-	u8  TrayTimeout;
-	u8  Action;			// the currently scheduled emulated action
-	u32 SeekToSector;	// Holds the destination sector during seek operations.
-	u32 ReadTime;		// Avg. time to read one block of data (in Iop cycles)
-	bool Spinning;		// indicates if the Cdvd is spinning or needs a spinup delay
+	u8 TrayTimeout;
+	u8 Action;        // the currently scheduled emulated action
+	u32 SeekToSector; // Holds the destination sector during seek operations.
+	u32 ReadTime;     // Avg. time to read one block of data (in Iop cycles)
+	bool Spinning;    // indicates if the Cdvd is spinning or needs a spinup delay
 };
 
 

@@ -17,16 +17,16 @@
 
 enum IsoFS_Type
 {
-	FStype_ISO9660	= 1,
-	FStype_Joliet	= 2,
+	FStype_ISO9660 = 1,
+	FStype_Joliet = 2,
 };
 
 class IsoDirectory
 {
 public:
-	SectorSource&					internalReader;
-	std::vector<IsoFileDescriptor>	files;
-	IsoFS_Type						m_fstype;
+	SectorSource& internalReader;
+	std::vector<IsoFileDescriptor> files;
+	IsoFS_Type m_fstype;
 
 public:
 	IsoDirectory(SectorSource& r);
@@ -40,7 +40,7 @@ public:
 	bool IsFile(const wxString& filePath) const;
 	bool IsDir(const wxString& filePath) const;
 
-	u32 GetFileSize( const wxString& filePath ) const;
+	u32 GetFileSize(const wxString& filePath) const;
 
 	IsoFileDescriptor FindFile(const wxString& filePath) const;
 

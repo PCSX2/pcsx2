@@ -25,13 +25,13 @@ IsoFSCDVD::IsoFSCDVD()
 
 bool IsoFSCDVD::readSector(unsigned char* buffer, int lba)
 {
-	return DoCDVDreadSector(buffer,lba,CDVD_MODE_2048)>=0;
+	return DoCDVDreadSector(buffer, lba, CDVD_MODE_2048) >= 0;
 }
 
 int IsoFSCDVD::getNumSectors()
 {
 	cdvdTD td;
-	CDVD->getTD(0,&td);
+	CDVD->getTD(0, &td);
 
 	return td.lsn;
 }

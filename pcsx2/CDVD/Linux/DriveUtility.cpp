@@ -34,7 +34,8 @@ std::vector<std::string> GetOpticalDriveList()
 
 	std::vector<std::string> drives;
 	udev_enumerate* enumerate = udev_enumerate_new(udev_context);
-	if (enumerate) {
+	if (enumerate)
+	{
 		udev_enumerate_add_match_subsystem(enumerate, "block");
 		udev_enumerate_add_match_property(enumerate, "ID_CDROM_DVD", "1");
 		udev_enumerate_scan_devices(enumerate);
@@ -62,22 +63,26 @@ std::vector<std::string> GetOpticalDriveList()
 
 void GetValidDrive(std::string& drive)
 {
-	if (!drive.empty()) {
+	if (!drive.empty())
+	{
 #ifdef __linux__
 		int fd = open(drive.c_str(), O_RDONLY | O_NONBLOCK);
-		if (fd != -1) {
+		if (fd != -1)
+		{
 			if (ioctl(fd, CDROM_GET_CAPABILITY, 0) == -1)
 				drive.clear();
 			close(fd);
 		}
-		else {
+		else
+		{
 			drive.clear();
 		}
 #else
 		drive.clear();
 #endif
 	}
-	if (drive.empty()) {
+	if (drive.empty())
+	{
 		auto drives = GetOpticalDriveList();
 		if (!drives.empty())
 			drive = drives.front();

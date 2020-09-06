@@ -27,8 +27,8 @@ protected:
 
 		DriveListItem() { itemPtr = NULL; }
 
-		DriveListItem( const wxString& src )
-			: driveLetter( src )
+		DriveListItem(const wxString& src)
+			: driveLetter(src)
 		{
 			itemPtr = NULL;
 		}
@@ -45,8 +45,8 @@ public:
 
 protected:
 	void ClearList();
-	void OnChangedSelection( wxCommandEvent& evt );
-	void OnRefreshClicked( wxCommandEvent& evt );
+	void OnChangedSelection(wxCommandEvent& evt);
+	void OnRefreshClicked(wxCommandEvent& evt);
 };
 
 struct DriveList

@@ -25,7 +25,7 @@ DriveList::DriveList()
 }
 
 DriveListManager::DriveListManager(wxMenu* menu)
-	: m_Menu( menu )
+	: m_Menu(menu)
 {
 	m_Menu->Append(MenuId_DriveListRefresh, _("&Refresh"));
 	m_Menu->AppendSeparator();
@@ -78,13 +78,13 @@ void DriveListManager::RefreshList()
 	}
 }
 
-void DriveListManager::OnChangedSelection( wxCommandEvent& evt )
+void DriveListManager::OnChangedSelection(wxCommandEvent& evt)
 {
 	uint index = m_Items.size();
 
 	for (uint i = 0; i < m_Items.size(); i++)
 	{
-		if( (m_Items.at(i)->itemPtr != NULL) && (m_Items.at(i)->itemPtr->GetId() == evt.GetId()) )
+		if ((m_Items.at(i)->itemPtr != NULL) && (m_Items.at(i)->itemPtr->GetId() == evt.GetId()))
 		{
 			index = i;
 			break;
@@ -103,8 +103,7 @@ void DriveListManager::OnChangedSelection( wxCommandEvent& evt )
 	SwapOrReset_Disc(m_Menu->GetWindow(), paused_core, m_Items.at(index)->driveLetter);
 }
 
-void DriveListManager::OnRefreshClicked( wxCommandEvent& evt )
+void DriveListManager::OnRefreshClicked(wxCommandEvent& evt)
 {
 	RefreshList();
 }
-
