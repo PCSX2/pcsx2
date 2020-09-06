@@ -74,12 +74,13 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC) {
 		s32  rEnd   = mVUrange.end;
 		std::deque<microRange>::iterator it(ranges->begin());
 		for (++it; it != ranges->end(); ++it) {
-			if((it[0].start >= rStart) && (it[0].start <= rEnd)) {
-				it[0].end   = std::max(it[0].end, rEnd);
+			if((it[0].start >= rStart) && (it[0].start <= rEnd)) { // Starts after this prog but starts before the end of current prog
+				it[0].end   = std::max(it[0].end, rEnd);  // Extend the end of this prog to match this program
 				mergedRange = true;
 			}
-			else if ((it[0].end >= rStart) && (it[0].end <= rEnd)) {
-				it[0].start = std::min(it[0].start, rStart);
+			// Make sure we check both as the start on the other one may be later, we don't want to delete that
+			if ((it[0].end >= rStart) && (it[0].end <= rEnd)) { // Ends after this prog starts but ends before this one ends
+				it[0].start = std::min(it[0].start, rStart); // Choose the earlier start
 				mergedRange = true;
 			}
 		}
@@ -651,6 +652,12 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 				mVUDoDBit(mVU, &mFC);
 			}
 			else if (mVUup.mBit && !mVUup.eBit && !mVUinfo.isEOB) {
+				// Make sure we save the current state so it can come back to it
+				u32* cpS = (u32*)&mVUregs;
+				u32* lpS = (u32*)&mVU.prog.lpState;
+				for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++, cpS++) {
+					xMOV(ptr32[lpS], cpS[0]);
+				}
 				mVUsetupRange(mVU, xPC, false);
 				incPC(2);
 				mVUendProgram(mVU, &mFC, 0);

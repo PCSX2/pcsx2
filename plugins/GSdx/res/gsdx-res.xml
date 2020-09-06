@@ -30,4 +30,7 @@
     <gresource prefix="/GSdx/res/">
         <file>tfx.cl</file>
     </gresource>
+    <gresource prefix="/GSdx/res/">
+        <file>fonts-roboto/Roboto-Regular.ttf</file>
+    </gresource>
 </gresources>
