@@ -1826,7 +1826,6 @@ Serial = SCES-51685
 Name   = Primal
 Region = PAL-E-R
 vuRoundMode = 0 // Fixes SPS.
-vuRoundMode = 0 // Fix SPS.
 ---------------------------------------------
 Serial = SCES-51706
 Name   = Amplitude
@@ -9794,7 +9793,7 @@ Name   = LEGO Dome Racers
 Region = PAL-M8
 ---------------------------------------------
 Serial = SLES-51307
-Name   = Wild Arms 3
+Name   = Wild ARMs 3
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-51308
@@ -42738,7 +42737,7 @@ Region = NTSC-U
 Compat = 4
 ---------------------------------------------
 Serial = SLUS-21615
-Name   = Wild Arms 5
+Name   = Wild ARMs 5
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
