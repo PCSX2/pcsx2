@@ -24,7 +24,7 @@
 #endif
 
 #ifndef wxNullChar
-#define wxNullChar ((wxChar *)NULL)
+#define wxNullChar ((wxChar *)nullptr)
 #endif
 
 // FnChar_t - function name char type; typedef'd in case it ever changes between compilers

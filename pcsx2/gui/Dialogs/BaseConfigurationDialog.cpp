@@ -65,12 +65,12 @@ public:
 	// Use this to prevent the Apply button from being re-enabled.
 	void DetachApply()
 	{
-		m_apply = NULL;
+		m_apply = nullptr;
 	}
 
 	void DetachAll()
 	{
-		m_apply = m_ok = m_cancel = NULL;
+		m_apply = m_ok = m_cancel = nullptr;
 	}
 
 	virtual ~ScopedOkButtonDisabler()
@@ -132,7 +132,7 @@ Dialogs::BaseConfigurationDialog::BaseConfigurationDialog( wxWindow* parent, con
 	float scale = MSW_GetDPIScale();
 
 	SetMinWidth( scale * idealWidth );
-	m_listbook = NULL;
+	m_listbook = nullptr;
 	m_allowApplyActivation = true;
 
 	Bind(wxEVT_BUTTON, &BaseConfigurationDialog::OnOk_Click, this, wxID_OK);

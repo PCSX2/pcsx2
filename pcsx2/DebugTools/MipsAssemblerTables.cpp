@@ -438,7 +438,7 @@ const tMipsOpcode MipsOpcodes[] = {
 	{ "seh",		"d,t",		MIPS_ALLEGREX0(24),			MA_PSP },
 
 	// END
-	{ NULL,		NULL,		0,			0 }
+	{ nullptr,		nullptr,		0,			0 }
 };
 
 

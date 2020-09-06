@@ -68,9 +68,9 @@ const char *CmdName[0x100]= {
 	"CdlStop",    "CdlPause",     "CdlInit",    "CdlMute",
 	"CdlDemute",  "CdlSetfilter", "CdlSetmode", "CdlGetmode",
 	"CdlGetlocL", "CdlGetlocP",   "Cdl18",      "CdlGetTN",
-	"CdlGetTD",   "CdlSeekL",     "CdlSeekP",   NULL,
-	NULL,         "CdlTest",      "CdlID",      "CdlReadS",
-	"CdlReset",   NULL,           "CDlReadToc", NULL
+	"CdlGetTD",   "CdlSeekL",     "CdlSeekP",   nullptr,
+	nullptr,         "CdlTest",      "CdlID",      "CdlReadS",
+	"CdlReset",   nullptr,           "CDlReadToc", nullptr
 };
 
 cdrStruct cdr;

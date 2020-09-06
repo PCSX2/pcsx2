@@ -29,11 +29,11 @@ extern "C" {
 typedef winampDSPHeader *(*pWinampDSPGetHeader2)();
 }
 
-HMODULE hLib = NULL;
-pWinampDSPGetHeader2 pGetHeader = NULL;
-winampDSPHeader *pHeader = NULL;
+HMODULE hLib = nullptr;
+pWinampDSPGetHeader2 pGetHeader = nullptr;
+winampDSPHeader *pHeader = nullptr;
 
-winampDSPModule *pModule = NULL;
+winampDSPModule *pModule = nullptr;
 
 HWND hTemp;
 
@@ -54,7 +54,7 @@ s32 DspLoadLibrary(wchar_t *fileName, int modNum)
         return -1;
 
     running = true;
-    hUpdateThread = CreateThread(NULL, 0, DspUpdateThread, NULL, 0, &UpdateThreadId);
+    hUpdateThread = CreateThread(nullptr, 0, DspUpdateThread, nullptr, 0, &UpdateThreadId);
     return (hUpdateThread == INVALID_HANDLE_VALUE);
 }
 
@@ -73,7 +73,7 @@ s32 DspLoadLibrary2(wchar_t *fileName, int modNum)
 
     if (!pGetHeader) {
         FreeLibrary(hLib);
-        hLib = NULL;
+        hLib = nullptr;
         return 1;
     }
 
@@ -82,10 +82,10 @@ s32 DspLoadLibrary2(wchar_t *fileName, int modNum)
     pModule = pHeader->getModule(modNum);
 
     if (!pModule) {
-        pGetHeader = NULL;
-        pHeader = NULL;
+        pGetHeader = nullptr;
+        pHeader = nullptr;
         FreeLibrary(hLib);
-        hLib = NULL;
+        hLib = nullptr;
         return -1;
     }
 
@@ -120,10 +120,10 @@ void DspCloseLibrary2()
         pModule->Quit(pModule);
         FreeLibrary(hLib);
     }
-    pModule = NULL;
-    pHeader = NULL;
-    pGetHeader = NULL;
-    hLib = NULL;
+    pModule = nullptr;
+    pHeader = nullptr;
+    pGetHeader = nullptr;
+    hLib = nullptr;
 }
 
 int DspProcess(s16 *buffer, int samples)
@@ -153,7 +153,7 @@ DWORD WINAPI DspUpdateThread(PVOID param)
     MSG msg;
     while (running) {
         GetMessage(&msg, 0, 0, 0);
-        if ((msg.hwnd == NULL) && (msg.message == WM_QUIT)) {
+        if ((msg.hwnd == nullptr) && (msg.message == WM_QUIT)) {
             break;
         }
         TranslateMessage(&msg);

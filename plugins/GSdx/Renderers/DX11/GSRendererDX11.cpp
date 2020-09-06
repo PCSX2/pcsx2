@@ -90,7 +90,7 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 		__assume(0);
 	}
 
-	void* ptr = NULL;
+	void* ptr = nullptr;
 
 	if (dev->IAMapVertexBuffer(&ptr, sizeof(GSVertex), m_vertex.next))
 	{
@@ -489,7 +489,7 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 	else
 	{
 #ifdef _DEBUG
-		dev->PSSetShaderResource(4, NULL);
+		dev->PSSetShaderResource(4, nullptr);
 #endif
 	}
 }
@@ -816,7 +816,7 @@ void GSRendererDX11::ResetStates()
 
 void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
 {
-	GSTexture* hdr_rt = NULL;
+	GSTexture* hdr_rt = nullptr;
 
 	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
 	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
@@ -830,7 +830,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	ResetStates();
 	vs_cb.Texture_Scale_Offset = GSVector4(0.0f);
 
-	ASSERT(m_dev != NULL);
+	ASSERT(m_dev != nullptr);
 	GSDevice11* dev = (GSDevice11*)m_dev;
 
 	// HLE implementation of the channel selection effect
@@ -1106,8 +1106,8 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	else
 		dev->OMSetRenderTargets(rt, ds, &scissor);
 
-	dev->PSSetShaderResource(0, tex ? tex->m_texture : NULL);
-	dev->PSSetShaderResource(1, tex ? tex->m_palette : NULL);
+	dev->PSSetShaderResource(0, tex ? tex->m_texture : nullptr);
+	dev->PSSetShaderResource(1, tex ? tex->m_palette : nullptr);
 
 	SetupIA(sx, sy);
 

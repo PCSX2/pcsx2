@@ -73,7 +73,7 @@ const R5900::OPCODE& R5900::GetCurrentInstruction()
 {
 	const OPCODE* opcode = &R5900::OpcodeTables::tbl_Standard[_Opcode_];
 
-	while( opcode->getsubclass != NULL )
+	while( opcode->getsubclass != nullptr )
 		opcode = &opcode->getsubclass(cpuRegs.code);
 
 	return *opcode;
@@ -83,7 +83,7 @@ const R5900::OPCODE& R5900::GetInstruction(u32 op)
 {
 	const OPCODE* opcode = &R5900::OpcodeTables::tbl_Standard[op >> 26];
 
-	while( opcode->getsubclass != NULL )
+	while( opcode->getsubclass != nullptr )
 		opcode = &opcode->getsubclass(op);
 
 	return *opcode;
@@ -173,7 +173,7 @@ static int __Deci2Call(int call, u32 *addr)
 	switch (call)
 	{
 		case 1: // open
-			if( addr != NULL )
+			if( addr != nullptr )
 			{
 				deci2addr = addr[1];
 				BIOS_LOG("deci2open: %x,%x,%x,%x",
@@ -183,7 +183,7 @@ static int __Deci2Call(int call, u32 *addr)
 			else
 			{
 				deci2handler = 0;
-				DevCon.Warning( "Deci2Call.Open > NULL address ignored." );
+				DevCon.Warning( "Deci2Call.Open > nullptr address ignored." );
 			}
 			return 1;
 
@@ -195,7 +195,7 @@ static int __Deci2Call(int call, u32 *addr)
 		case 3: // reqsend
 		{
 			char reqaddr[128];
-			if( addr != NULL )
+			if( addr != nullptr )
 				sprintf( reqaddr, "%x %x %x %x", addr[3], addr[2], addr[1], addr[0] );
 
 			if (!deci2addr) return 1;
@@ -203,7 +203,7 @@ static int __Deci2Call(int call, u32 *addr)
 			const u32* d2ptr = (u32*)PSM(deci2addr);
 
 			BIOS_LOG("deci2reqsend: %s: deci2addr: %x,%x,%x,buf=%x %x,%x,len=%x,%x",
-				(( addr == NULL ) ? "NULL" : reqaddr),
+				(( addr == nullptr ) ? "nullptr" : reqaddr),
 				d2ptr[7], d2ptr[6], d2ptr[5], d2ptr[4],
 				d2ptr[3], d2ptr[2], d2ptr[1], d2ptr[0]);
 
@@ -213,7 +213,7 @@ static int __Deci2Call(int call, u32 *addr)
 			if (d2ptr[1]>0xc){
 				// this looks horribly wrong, justification please?
 				u8* pdeciaddr = (u8*)dmaGetAddr(d2ptr[4]+0xc, false);
-				if( pdeciaddr == NULL )
+				if( pdeciaddr == nullptr )
 					pdeciaddr = (u8*)PSM(d2ptr[4]+0xc);
 				else
 					pdeciaddr += (d2ptr[4]+0xc) % 16;
@@ -229,7 +229,7 @@ static int __Deci2Call(int call, u32 *addr)
 		}
 
 		case 4: // poll
-			if( addr != NULL )
+			if( addr != nullptr )
 				BIOS_LOG("deci2poll: %x,%x,%x,%x\n", addr[3], addr[2], addr[1], addr[0]);
 			return 1;
 
@@ -240,7 +240,7 @@ static int __Deci2Call(int call, u32 *addr)
 			return 1;
 
 		case 0x10://kputs
-			if( addr != NULL )
+			if( addr != nullptr )
 			{
 				eeDeci2Log( ShiftJIS_ConvertString((char*)PSM(*addr)) );
 			}

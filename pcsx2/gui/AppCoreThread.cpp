@@ -661,12 +661,12 @@ void BaseSysExecEvent_ScopedCore::_post_and_wait( IScopedCoreThread& core )
 			break;
 
 			case ScopedCore_NonblockingResume:
-				m_sync = NULL;
+				m_sync = nullptr;
 				core.AllowResume();
 			break;
 
 			case ScopedCore_SkipResume:
-				m_sync = NULL;
+				m_sync = nullptr;
 			break;
 		}
 	}

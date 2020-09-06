@@ -152,7 +152,7 @@ void ReadSettings()
 
     Clampify(SndOutLatencyMS, LATENCY_MIN, LATENCY_MAX);
 
-    if (mods[OutputModule] == NULL) {
+    if (mods[OutputModule] == nullptr) {
         // Unsupported or legacy module.
         fwprintf(stderr, L"* SPU2-X: Unknown output module '%s' specified in configuration file.\n", omodid);
         fprintf(stderr, "* SPU2-X: Defaulting to DirectSound (%S).\n", DSoundOut->GetIdent());
@@ -253,7 +253,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             SendDialogMsg(hWnd, IDC_OUTPUT, CB_RESETCONTENT, 0, 0);
 
             int modidx = 0;
-            while (mods[modidx] != NULL) {
+            while (mods[modidx] != nullptr) {
                 swprintf_s(temp, 72, L"%d - %s", modidx, mods[modidx]->GetLongName());
                 SendDialogMsg(hWnd, IDC_OUTPUT, CB_ADDSTRING, 0, (LPARAM)temp);
                 ++modidx;
@@ -318,7 +318,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                 case IDC_OUTCONF: {
                     const int module = (int)SendMessage(GetDlgItem(hWnd, IDC_OUTPUT), CB_GETCURSEL, 0, 0);
-                    if (mods[module] == NULL)
+                    if (mods[module] == nullptr)
                         break;
                     mods[module]->Configure((uptr)hWnd);
                 } break;

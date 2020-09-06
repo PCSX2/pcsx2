@@ -52,14 +52,14 @@ void LoadConfig()
     strcpy(szTemp, "\\inis\\spu2null.ini");
     fp = fopen("inis\\usbnull.ini", "rt"); //check if usbnull.ini really exists
     if (!fp) {
-        CreateDirectory("inis", NULL);
+        CreateDirectory("inis", nullptr);
         memset(&conf, 0, sizeof(conf));
         conf.Log = 0; //default value
         SaveConfig(); //save and return
         return;
     }
     fclose(fp);
-    GetPrivateProfileString("Interface", "Logging", NULL, szValue, 20, szIniFile);
-    Conf1->Log = strtoul(szValue, NULL, 10);
+    GetPrivateProfileString("Interface", "Logging", nullptr, szValue, 20, szIniFile);
+    Conf1->Log = strtoul(szValue, nullptr, 10);
     return;
 }

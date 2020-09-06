@@ -245,7 +245,7 @@ extern void operator+=(wxWindow &target, const pxStretchSpacer &spacer);
 template <typename WinType>
 void operator+=(wxWindow &target, WinType *src)
 {
-    if (!pxAssert(target.GetSizer() != NULL))
+    if (!pxAssert(target.GetSizer() != nullptr))
         return;
     *target.GetSizer() += src;
 }
@@ -253,7 +253,7 @@ void operator+=(wxWindow &target, WinType *src)
 template <typename WinType>
 void operator+=(wxWindow &target, WinType &src)
 {
-    if (!pxAssert(target.GetSizer() != NULL))
+    if (!pxAssert(target.GetSizer() != nullptr))
         return;
     *target.GetSizer() += src;
 }
@@ -261,7 +261,7 @@ void operator+=(wxWindow &target, WinType &src)
 template <typename WinType>
 void operator+=(wxWindow &target, const pxWindowAndFlags<WinType> &src)
 {
-    if (!pxAssert(target.GetSizer() != NULL))
+    if (!pxAssert(target.GetSizer() != nullptr))
         return;
     *target.GetSizer() += src;
 }
@@ -515,7 +515,7 @@ public:
 
     void Init(const pxDialogCreationFlags &cflags);
     void AddOkCancel(wxSizer &sizer, bool hasApply = false);
-    void AddOkCancel(wxSizer *sizer = NULL, bool hasApply = false);
+    void AddOkCancel(wxSizer *sizer = nullptr, bool hasApply = false);
     void RememberPosition();
 
     virtual void SmartCenterFit();
@@ -571,7 +571,7 @@ public:
     wxPanelWithHelpers(wxWindow *parent, wxOrientation orient, const wxString &staticBoxLabel);
     wxPanelWithHelpers(wxWindow *parent, wxOrientation orient);
     wxPanelWithHelpers(wxWindow *parent, const wxPoint &pos, const wxSize &size = wxDefaultSize);
-    explicit wxPanelWithHelpers(wxWindow *parent = NULL);
+    explicit wxPanelWithHelpers(wxWindow *parent = nullptr);
 
     wxPanelWithHelpers *AddFrame(const wxString &label, wxOrientation orient = wxVERTICAL);
 

@@ -24,7 +24,7 @@
 // IsoDirectory
 //////////////////////////////////////////////////////////////////////////
 
-//u8		filesystemType;	// 0x01 = ISO9660, 0x02 = Joliet, 0xFF = NULL
+//u8		filesystemType;	// 0x01 = ISO9660, 0x02 = Joliet, 0xFF = nullptr
 //u8		volID[5];		// "CD001"
 
 

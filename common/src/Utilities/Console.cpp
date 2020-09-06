@@ -46,9 +46,9 @@ void Console_SetStdout(FILE *fp)
 void Console_SetActiveHandler(const IConsoleWriter &writer, FILE *flushfp)
 {
     pxAssertDev(
-        (writer.WriteRaw != NULL) && (writer.DoWriteLn != NULL) &&
-            (writer.Newline != NULL) && (writer.SetTitle != NULL) &&
-            (writer.DoSetColor != NULL),
+        (writer.WriteRaw != nullptr) && (writer.DoWriteLn != nullptr) &&
+            (writer.Newline != nullptr) && (writer.SetTitle != nullptr) &&
+            (writer.DoSetColor != nullptr),
         "Invalid IConsoleWriter object!  All function pointer interfaces must be implemented.");
 
     Console = writer;

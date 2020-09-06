@@ -97,7 +97,7 @@ class PluginErrorEvent : public pxExceptionEvent
 	typedef pxExceptionEvent _parent;
 
 public:
-	PluginErrorEvent( BaseException* ex=NULL ) : _parent( ex ) {}
+	PluginErrorEvent( BaseException* ex=nullptr ) : _parent( ex ) {}
 	PluginErrorEvent( const BaseException& ex ) : _parent( ex ) {}
 
 	virtual ~PluginErrorEvent() = default;
@@ -112,7 +112,7 @@ class PluginInitErrorEvent : public pxExceptionEvent
 	typedef pxExceptionEvent _parent;
 
 public:
-	PluginInitErrorEvent( BaseException* ex=NULL ) : _parent( ex ) {}
+	PluginInitErrorEvent( BaseException* ex=nullptr ) : _parent( ex ) {}
 	PluginInitErrorEvent( const BaseException& ex ) : _parent( ex ) {}
 
 	virtual ~PluginInitErrorEvent() = default;
@@ -128,7 +128,7 @@ void PluginErrorEvent::InvokeEvent()
 	if( !m_except ) return;
 
 	ScopedExcept deleteMe( m_except );
-	m_except = NULL;
+	m_except = nullptr;
 
 	if( !HandlePluginError( *deleteMe ) )
 	{
@@ -142,7 +142,7 @@ void PluginInitErrorEvent::InvokeEvent()
 	if( !m_except ) return;
 
 	ScopedExcept deleteMe( m_except );
-	m_except = NULL;
+	m_except = nullptr;
 
 	if( !HandlePluginError( *deleteMe ) )
 	{
@@ -165,7 +165,7 @@ class BIOSLoadErrorEvent : public pxExceptionEvent
 	typedef pxExceptionEvent _parent;
 
 public:
-	BIOSLoadErrorEvent(BaseException* ex = NULL) : _parent(ex) {}
+	BIOSLoadErrorEvent(BaseException* ex = nullptr) : _parent(ex) {}
 	BIOSLoadErrorEvent(const BaseException& ex) : _parent(ex) {}
 
 	virtual ~BIOSLoadErrorEvent() = default;
@@ -199,7 +199,7 @@ void BIOSLoadErrorEvent::InvokeEvent()
 	if (!m_except) return;
 
 	ScopedExcept deleteMe(m_except);
-	m_except = NULL;
+	m_except = nullptr;
 
 	if (!HandleBIOSError(*deleteMe))
 	{
@@ -213,7 +213,7 @@ void BIOSLoadErrorEvent::InvokeEvent()
 void Pcsx2App::PostMenuAction( MenuIdentifiers menu_id ) const
 {
 	MainEmuFrame* mainFrame = GetMainFramePtr();
-	if( mainFrame == NULL ) return;
+	if( mainFrame == nullptr ) return;
 
 	wxCommandEvent joe( wxEVT_MENU, menu_id );
 	if( wxThread::IsMain() )
@@ -227,7 +227,7 @@ void Pcsx2App::PostMenuAction( MenuIdentifiers menu_id ) const
 // --------------------------------------------------------------------------------------
 // Unlike pxPingEvent, the Semaphore belonging to this event is typically posted when the
 // invoked method is completed.  If the method can be executed in non-blocking fashion then
-// it should leave the semaphore postback NULL.
+// it should leave the semaphore postback nullptr.
 //
 class Pcsx2AppMethodEvent : public pxActionEvent
 {
@@ -241,7 +241,7 @@ public:
 	virtual ~Pcsx2AppMethodEvent() = default;
 	virtual Pcsx2AppMethodEvent *Clone() const { return new Pcsx2AppMethodEvent(*this); }
 
-	explicit Pcsx2AppMethodEvent( FnPtr_Pcsx2App method=NULL, SynchronousActionState* sema=NULL )
+	explicit Pcsx2AppMethodEvent( FnPtr_Pcsx2App method=nullptr, SynchronousActionState* sema=nullptr )
 		: pxActionEvent( sema )
 	{
 		m_Method = method;
@@ -377,7 +377,7 @@ void pxMessageOutputMessageBox::Output(const wxString& out)
 
 	pos += isoFormatted.Length();
 
-	wxDialogWithHelpers popup( NULL, AddAppName(_("%s Commandline Options")) );
+	wxDialogWithHelpers popup( nullptr, AddAppName(_("%s Commandline Options")) );
 	popup.SetMinWidth( 640 );
 	popup += popup.Heading(out.Mid(0, pos));
 	//popup += ;
@@ -573,7 +573,7 @@ void Pcsx2App::LogicalVsync()
 
 	// Only call PADupdate here if we're using GSopen2.  Legacy GSopen plugins have the
 	// GS window belonging to the MTGS thread.
-	if( (PADupdate != NULL) && (GSopen2 != NULL) && (wxGetApp().GetGsFramePtr() != NULL) )
+	if( (PADupdate != nullptr) && (GSopen2 != nullptr) && (wxGetApp().GetGsFramePtr() != nullptr) )
 		PADupdate(0);
 
 	while( const keyEvent* ev = PADkeyEvent() )
@@ -590,7 +590,7 @@ void Pcsx2App::LogicalVsync()
 
 void Pcsx2App::OnEmuKeyDown( wxKeyEvent& evt )
 {
-	const GlobalCommandDescriptor* cmd = NULL;
+	const GlobalCommandDescriptor* cmd = nullptr;
 	if (GlobalAccels)
 	{
 		std::unordered_map<int, const GlobalCommandDescriptor*>::const_iterator iter(GlobalAccels->find(KeyAcceleratorCode(evt).val32));
@@ -598,7 +598,7 @@ void Pcsx2App::OnEmuKeyDown( wxKeyEvent& evt )
 			cmd = iter->second;
 	}
 
-	if( cmd == NULL )
+	if( cmd == nullptr )
 	{
 		evt.Skip();
 		return;
@@ -711,7 +711,7 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 		// a little tired, so maybe later!)  --air
 	
 		Console.Warning( ex.FormatDiagnosticMessage() );
-		wxDialogWithHelpers dialog( NULL, _("PCSX2 Unresponsive Thread"), wxVERTICAL );
+		wxDialogWithHelpers dialog( nullptr, _("PCSX2 Unresponsive Thread"), wxVERTICAL );
 		
 		dialog += dialog.Heading( ex.FormatDisplayMessage() + L"\n\n" +
 			pxE( L"'Ignore' to continue waiting for the thread to respond.\n'Cancel' to attempt to cancel the thread.\n'Terminate' to quit PCSX2 immediately.\n"
@@ -791,16 +791,16 @@ void Pcsx2App::ClearPendingSave()
 	}
 }
 
-// This method generates debug assertions if the MainFrame handle is NULL (typically
+// This method generates debug assertions if the MainFrame handle is nullptr (typically
 // indicating that PCSX2 is running in NoGUI mode, or that the main frame has been
 // closed).  In most cases you'll want to use HasMainFrame() to test for thread
-// validity first, or use GetMainFramePtr() and manually check for NULL (choice
+// validity first, or use GetMainFramePtr() and manually check for nullptr (choice
 // is a matter of programmer preference).
 MainEmuFrame& Pcsx2App::GetMainFrame() const
 {
 	MainEmuFrame* mainFrame = GetMainFramePtr();
 
-	pxAssert(mainFrame != NULL);
+	pxAssert(mainFrame != nullptr);
 	pxAssert(((uptr)GetTopWindow()) == ((uptr)mainFrame));
 	return  *mainFrame;
 }
@@ -808,7 +808,7 @@ MainEmuFrame& Pcsx2App::GetMainFrame() const
 GSFrame& Pcsx2App::GetGsFrame() const
 {
 	GSFrame* gsFrame  = (GSFrame*)wxWindow::FindWindowById( m_id_GsFrame );
-	pxAssert(gsFrame != NULL);
+	pxAssert(gsFrame != nullptr);
 	return  *gsFrame;
 }
 
@@ -856,7 +856,7 @@ void AppApplySettings( const AppConfig* oldconf )
 
 	RelocateLogfile();
 
-	if( (oldconf == NULL) || (oldconf->LanguageCode.CmpNoCase(g_Conf->LanguageCode)) )
+	if( (oldconf == nullptr) || (oldconf->LanguageCode.CmpNoCase(g_Conf->LanguageCode)) )
 	{
 		wxDoNotLogInThisScope please;
 		i18n_SetLanguage( g_Conf->LanguageId, g_Conf->LanguageCode );
@@ -941,7 +941,7 @@ void Pcsx2App::OpenGsPanel()
 	if( AppRpc_TryInvoke( &Pcsx2App::OpenGsPanel ) ) return;
 
 	GSFrame* gsFrame = GetGsFramePtr();
-	if( gsFrame == NULL )
+	if( gsFrame == nullptr )
 	{
 		gsFrame = new GSFrame(GetAppName() );
 		m_id_GsFrame = gsFrame->GetId();
@@ -1015,7 +1015,7 @@ void Pcsx2App::OpenGsPanel()
 	pDsp[1] = (uptr)Xwindow;
 #else
 	pDsp[0] = (uptr)gsFrame->GetViewport()->GetHandle();
-	pDsp[1] = NULL;
+	pDsp[1] = nullptr;
 #endif
 
 	gsFrame->ShowFullScreen( g_Conf->GSWindow.IsFullscreen );
@@ -1129,7 +1129,7 @@ protected:
 		CDVDsys_SetFile(CDVD_SourceType::Iso, g_Conf->CurrentIso );
 		if( m_UseCDVDsrc )
 			CDVDsys_ChangeSource( m_cdvdsrc_type );
-		else if( CDVD == NULL )
+		else if( CDVD == nullptr )
 			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
 
 		if( m_UseELFOverride && !CoreThread.HasActiveMachine() )
@@ -1187,9 +1187,9 @@ bool HasMainFrame()
 }
 
 // This method generates debug assertions if either the wxApp or MainFrame handles are
-// NULL (typically indicating that PCSX2 is running in NoGUI mode, or that the main
+// nullptr (typically indicating that PCSX2 is running in NoGUI mode, or that the main
 // frame has been closed).  In most cases you'll want to use HasMainFrame() to test
-// for gui validity first, or use GetMainFramePtr() and manually check for NULL (choice
+// for gui validity first, or use GetMainFramePtr() and manually check for nullptr (choice
 // is a matter of programmer preference).
 MainEmuFrame& GetMainFrame()
 {
@@ -1197,11 +1197,11 @@ MainEmuFrame& GetMainFrame()
 }
 
 // Returns a pointer to the main frame of the GUI (frame may be hidden from view), or
-// NULL if no main frame exists (NoGUI mode and/or the frame has been destroyed).  If
-// the wxApp is NULL then this will also return NULL.
+// nullptr if no main frame exists (NoGUI mode and/or the frame has been destroyed).  If
+// the wxApp is nullptr then this will also return nullptr.
 MainEmuFrame* GetMainFramePtr()
 {
-	return wxTheApp ? wxGetApp().GetMainFramePtr() : NULL;
+	return wxTheApp ? wxGetApp().GetMainFramePtr() : nullptr;
 }
 
 SysMainMemory& GetVmMemory()

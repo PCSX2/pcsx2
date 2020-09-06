@@ -69,7 +69,7 @@ static __fi bool WriteFifoToEE()
 	SIF_LOG("Write Fifo to EE: ----------- %lX of %lX", readSize << 2, sif2dma.qwc << 2);
 
 	ptag = sif2dma.getAddr(sif2dma.madr, DMAC_SIF2, true);
-	if (ptag == NULL)
+	if (ptag == nullptr)
 	{
 		DevCon.Warning("Write Fifo to EE: ptag == NULL");
 		return false;

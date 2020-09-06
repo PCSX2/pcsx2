@@ -156,27 +156,27 @@ typedef struct access Access;
 /* Deallocate an index built by build_index() */
 local void free_index(struct access *index)
 {
-    if (index != NULL) {
+    if (index != nullptr) {
         free(index->list);
         free(index);
     }
 }
 
 /* Add an entry to the access point list.  If out of memory, deallocate the
-   existing list and return NULL. */
+   existing list and return nullptr. */
 local struct access *addpoint(struct access *index, int bits,
     PX_off_t in, PX_off_t out, unsigned left, unsigned char *window)
 {
     struct point *next;
 
     /* if list is empty, create it (start with eight points) */
-    if (index == NULL) {
+    if (index == nullptr) {
         index = (Access*)malloc(sizeof(struct access));
-        if (index == NULL) return NULL;
+        if (index == nullptr) return nullptr;
         index->list = (Point*)malloc(sizeof(struct point) << 3);
-        if (index->list == NULL) {
+        if (index->list == nullptr) {
             free(index);
-            return NULL;
+            return nullptr;
         }
         index->size = 8;
         index->have = 0;
@@ -186,9 +186,9 @@ local struct access *addpoint(struct access *index, int bits,
     else if (index->have == index->size) {
         index->size <<= 1;
         next = (Point*)realloc(index->list, sizeof(struct point) * index->size);
-        if (next == NULL) {
+        if (next == nullptr) {
             free_index(index);
-            return NULL;
+            return nullptr;
         }
         index->list = next;
     }
@@ -240,7 +240,7 @@ local int build_index(FILE *in, PX_off_t span, struct access **built)
        also validates the integrity of the compressed data using the check
        information at the end of the gzip or zlib stream */
     totin = totout = last = totPrinted = 0;
-    index = NULL;               /* will be allocated by first addpoint() */
+    index = nullptr;               /* will be allocated by first addpoint() */
     strm.avail_out = 0;
     do {
         /* get some compressed data from input file */
@@ -290,7 +290,7 @@ local int build_index(FILE *in, PX_off_t span, struct access **built)
                 (totout == 0 || totout - last > span)) {
                 index = addpoint(index, strm.data_type & 7, totin,
                                  totout, strm.avail_out, window);
-                if (index == NULL) {
+                if (index == nullptr) {
                     ret = Z_MEM_ERROR;
                     goto build_index_error;
                 }
@@ -303,7 +303,7 @@ local int build_index(FILE *in, PX_off_t span, struct access **built)
         }
     } while (ret != Z_STREAM_END);
 
-    if (index == NULL) {
+    if (index == nullptr) {
         // Could happen if the start of the stream in Z_STREAM_END
         return 0;
     }
@@ -320,7 +320,7 @@ local int build_index(FILE *in, PX_off_t span, struct access **built)
     /* return error */
   build_index_error:
     (void)inflateEnd(&strm);
-    if (index != NULL)
+    if (index != nullptr)
         free_index(index);
     return ret;
 }

@@ -28,25 +28,25 @@
 // pointer to null after deallocation.
 
 #define safe_delete(ptr) \
-    ((void)(delete (ptr)), (ptr) = NULL)
+    ((void)(delete (ptr)), (ptr) = nullptr)
 
 #define safe_delete_array(ptr) \
-    ((void)(delete[](ptr)), (ptr) = NULL)
+    ((void)(delete[](ptr)), (ptr) = nullptr)
 
 // No checks for NULL -- wxWidgets says it's safe to skip NULL checks and it runs on
 // just about every compiler and libc implementation of any recentness.
 #define safe_free(ptr) \
-    ((void)(free(ptr), !!0), (ptr) = NULL)
-//((void) (( ( (ptr) != NULL ) && (free( ptr ), !!0) ), (ptr) = NULL))
+    ((void)(free(ptr), !!0), (ptr) = nullptr)
+//((void) (( ( (ptr) != nullptr ) && (free( ptr ), !!0) ), (ptr) = nullptr))
 
 #define safe_fclose(ptr) \
-    ((void)((((ptr) != NULL) && (fclose(ptr), !!0)), (ptr) = NULL))
+    ((void)((((ptr) != nullptr) && (fclose(ptr), !!0)), (ptr) = nullptr))
 
 // Implementation note: all known implementations of _aligned_free check the pointer for
 // NULL status (our implementation under GCC, and microsoft's under MSVC), so no need to
 // do it here.
 #define safe_aligned_free(ptr) \
-    ((void)(_aligned_free(ptr), (ptr) = NULL))
+    ((void)(_aligned_free(ptr), (ptr) = nullptr))
 
 // aligned_malloc: Implement/declare linux equivalents here!
 #if !defined(_MSC_VER)
@@ -99,13 +99,13 @@ protected:
 public:
     BaseScopedAlloc()
     {
-        m_buffer = NULL;
+        m_buffer = nullptr;
         m_size = 0;
     }
 
     virtual ~BaseScopedAlloc()
     {
-        //pxAssert(m_buffer==NULL);
+        //pxAssert(m_buffer==nullptr);
     }
 
 public:

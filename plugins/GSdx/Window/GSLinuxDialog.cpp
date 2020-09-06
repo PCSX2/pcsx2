@@ -636,7 +636,7 @@ bool RunLinuxDialog()
 		(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
 		"OK", GTK_RESPONSE_ACCEPT,
 		// "Cancel", GTK_RESPONSE_REJECT, // Drop because it is too annoying to support call back this way
-		NULL);
+		nullptr);
 
 	// The main area for the whole dialog box.
 	GtkWidget* main_box     = CreateVbox();

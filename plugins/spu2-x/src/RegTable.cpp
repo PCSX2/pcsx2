@@ -43,7 +43,7 @@
         PVCP(c, v, NextA)
 
 #define PRAW(a) \
-    ((u16 *)NULL)
+    ((u16 *)nullptr)
 
 #define PREVB_REG(c, n)   \
     PCORE(c, Revb.n) + 1, \

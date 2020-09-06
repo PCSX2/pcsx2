@@ -48,7 +48,7 @@ public:
         pxAssert(m_Config);
         return *m_Config;
     }
-    bool IsOk() const { return m_Config != NULL; }
+    bool IsOk() const { return m_Config != nullptr; }
 
     virtual bool IsLoading() const = 0;
     bool IsSaving() const { return !IsLoading(); }
@@ -71,11 +71,11 @@ public:
     virtual void Entry(const wxString &var, wxRect &value, const wxRect defvalue = wxDefaultRect) = 0;
 
     template <typename T>
-    void EnumEntry(const wxString &var, T &value, const wxChar *const *enumArray = NULL, const T defvalue = (T)0)
+    void EnumEntry(const wxString &var, T &value, const wxChar *const *enumArray = nullptr, const T defvalue = (T)0)
     {
         int tstore = (int)value;
         auto defaultvalue = enum_cast(defvalue);
-        if (enumArray == NULL)
+        if (enumArray == nullptr)
             Entry(var, tstore, defaultvalue);
         else
             _EnumEntry(var, tstore, enumArray, defaultvalue);

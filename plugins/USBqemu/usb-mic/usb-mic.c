@@ -579,7 +579,7 @@ static void usb_mouse_handle_destroy(USBDevice *dev)
 {
     USBMouseState *s = (USBMouseState *)dev;
 
-    qemu_add_mouse_event_handler(NULL, NULL, 0);
+    qemu_add_mouse_event_handler(nullptr, nullptr, 0);
     free(s);
 }
 
@@ -589,7 +589,7 @@ USBDevice *usb_tablet_init(void)
 
     s = qemu_mallocz(sizeof(USBMouseState));
     if (!s)
-        return NULL;
+        return nullptr;
     s->dev.speed = USB_SPEED_FULL;
     s->dev.handle_packet = usb_generic_handle_packet;
 
@@ -610,7 +610,7 @@ USBDevice *usb_mouse_init(void)
 
     s = qemu_mallocz(sizeof(USBMouseState));
     if (!s)
-        return NULL;
+        return nullptr;
     s->dev.speed = USB_SPEED_FULL;
     s->dev.handle_packet = usb_generic_handle_packet;
 

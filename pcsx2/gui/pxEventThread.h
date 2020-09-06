@@ -82,7 +82,7 @@ public:
 	virtual ~SysExecEvent() = default;
 	SysExecEvent* Clone() const { return new SysExecEvent( *this ); }
 
-	SysExecEvent( SynchronousActionState* sync=NULL )
+	SysExecEvent( SynchronousActionState* sync=nullptr )
 	{
 		m_sync = sync;
 	}
@@ -119,7 +119,7 @@ public:
 	
 	virtual int GetResult()
 	{
-		if( !pxAssertDev( m_sync != NULL, "SysEvent: Expecting return value, but no sync object provided." ) ) return 0;
+		if( !pxAssertDev( m_sync != nullptr, "SysEvent: Expecting return value, but no sync object provided." ) ) return 0;
 		return m_sync->return_value;
 	}
 
@@ -151,7 +151,7 @@ public:
 	bool AllowCancelOnExit() const { return !m_IsCritical; }
 	bool IsCriticalEvent() const { return m_IsCritical; }
 
-	explicit SysExecEvent_MethodVoid( FnType_Void* method = NULL, const wxChar* traceName=NULL )	
+	explicit SysExecEvent_MethodVoid( FnType_Void* method = nullptr, const wxChar* traceName=nullptr )	
 		: m_TraceName( traceName ? traceName : L"VoidMethod" )
 	{
 		m_method = method;
@@ -235,8 +235,8 @@ public:
 	void ProcessEvent( SysExecEvent* evt );
 	void ProcessEvent( SysExecEvent& evt );
 
-	bool Rpc_TryInvokeAsync( FnType_Void* method, const wxChar* traceName=NULL );
-	bool Rpc_TryInvoke( FnType_Void* method, const wxChar* traceName=NULL );
+	bool Rpc_TryInvokeAsync( FnType_Void* method, const wxChar* traceName=nullptr );
+	bool Rpc_TryInvoke( FnType_Void* method, const wxChar* traceName=nullptr );
 	void SetActiveThread();
 
 protected:
@@ -272,7 +272,7 @@ protected:
 	std::unique_ptr<pxEvtQueue> m_EvtHandler;
 
 public:
-	ExecutorThread( pxEvtQueue* evtandler = NULL );
+	ExecutorThread( pxEvtQueue* evtandler = nullptr );
 	virtual ~ExecutorThread() = default;
 
 	virtual void ShutdownQueue();
@@ -287,12 +287,12 @@ public:
 	void ProcessEvent( SysExecEvent* evt );
 	void ProcessEvent( SysExecEvent& evt );
 
-	bool Rpc_TryInvokeAsync( void (*evt)(), const wxChar* traceName=NULL )
+	bool Rpc_TryInvokeAsync( void (*evt)(), const wxChar* traceName=nullptr )
 	{
 		return m_EvtHandler ? m_EvtHandler->Rpc_TryInvokeAsync( evt, traceName ) : false;
 	}
 
-	bool Rpc_TryInvoke( void (*evt)(), const wxChar* traceName=NULL )
+	bool Rpc_TryInvoke( void (*evt)(), const wxChar* traceName=nullptr )
 	{
 		return m_EvtHandler ? m_EvtHandler->Rpc_TryInvoke( evt, traceName ) : false;
 	}

@@ -380,7 +380,7 @@ public:
 
 extern void AppLoadSettings();
 extern void AppSaveSettings();
-extern void AppApplySettings( const AppConfig* oldconf=NULL );
+extern void AppApplySettings( const AppConfig* oldconf=nullptr );
 
 extern void App_LoadSaveInstallSettings( IniInterface& ini );
 extern void App_SaveInstallSettings( wxConfigBase* ini );

@@ -46,7 +46,7 @@ u32 EEoCycle;
 __aligned16 cpuRegisters cpuRegs;
 __aligned16 fpuRegisters fpuRegs;
 __aligned16 tlbs tlb[48];
-R5900cpu *Cpu = NULL;
+R5900cpu *Cpu = nullptr;
 
 bool g_SkipBiosHack; // set at boot if the skip bios hack is on, reset before the game has started
 bool g_GameStarted; // set when we reach the game's entry point or earlier if the entry point cannot be determined

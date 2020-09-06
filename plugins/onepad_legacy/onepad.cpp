@@ -327,7 +327,7 @@ EXPORT_C_(u8) PADpoll(u8 value)
     return pad_poll(value);
 }
 
-// PADkeyEvent is called every vsync (return NULL if no event)
+// PADkeyEvent is called every vsync (return nullptr if no event)
 EXPORT_C_(keyEvent *) PADkeyEvent()
 {
     if (g_ev_fifo.size() == 0) {

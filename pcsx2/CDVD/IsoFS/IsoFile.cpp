@@ -169,7 +169,7 @@ int IsoFile::internalRead(void* dest, int off, int len)
 // returns the number of bytes actually read.
 s32 IsoFile::read(void* dest, s32 len)
 {
-	pxAssert( dest != NULL );
+	pxAssert( dest != nullptr );
 	pxAssert( len >= 0 );		// should we silent-fail on negative length reads?  prolly not...
 
 	if( len <= 0 ) return 0;

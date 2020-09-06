@@ -85,7 +85,7 @@ bool EnumerateMemoryCard( McdSlotItem& dest, const wxFileName& filename, const w
 
 		dest.Type = MemoryCardType::MemoryCard_File;
 		dest.IsFormatted = IsMcdFormatted( mcdFile );
-		filename.GetTimes( NULL, &dest.DateModified, &dest.DateCreated );
+		filename.GetTimes( nullptr, &dest.DateModified, &dest.DateCreated );
 	} else if ( filename.DirExists() ) {
 		// might be a memory card folder
 		wxFileName superBlockFileName( fullpath, L"_pcsx2_superblock" );
@@ -97,7 +97,7 @@ bool EnumerateMemoryCard( McdSlotItem& dest, const wxFileName& filename, const w
 
 		dest.Type = MemoryCardType::MemoryCard_Folder;
 		dest.IsFormatted = IsMcdFormatted( mcdFile );
-		superBlockFileName.GetTimes( NULL, &dest.DateModified, &dest.DateCreated );
+		superBlockFileName.GetTimes( nullptr, &dest.DateModified, &dest.DateCreated );
 	} else {
 		// is neither
 		return false;
@@ -187,9 +187,9 @@ Panels::BaseMcdListPanel::BaseMcdListPanel( wxWindow* parent )
 		_("Select folder with PS2 memory cards")		// dir picker popup label
 	);
 
-	m_listview = NULL;
-	s_leftside_buttons = NULL;
-	s_rightside_buttons = NULL;
+	m_listview = nullptr;
+	s_leftside_buttons = nullptr;
+	s_rightside_buttons = nullptr;
 
 	m_btn_Refresh = new wxButton( this, wxID_ANY, _("Refresh list") );
 
@@ -268,7 +268,7 @@ protected:
 	BaseMcdListView*	m_listview;
 
 public:
-	McdDropTarget( BaseMcdListView* listview=NULL )
+	McdDropTarget( BaseMcdListView* listview=nullptr )
 	{
 		m_listview = listview;
 		SetDataObject(new wxCustomDataObject(drag_drop_format));
@@ -366,10 +366,10 @@ enum McdMenuId
 };
 
 
-Panels::MemoryCardListPanel_Simple* g_uglyPanel=NULL;
+Panels::MemoryCardListPanel_Simple* g_uglyPanel=nullptr;
 void g_uglyFunc(){if (g_uglyPanel) g_uglyPanel->OnChangedListSelection();}
 
-Panels::MemoryCardListPanel_Simple::~MemoryCardListPanel_Simple() {g_uglyPanel=NULL;}
+Panels::MemoryCardListPanel_Simple::~MemoryCardListPanel_Simple() {g_uglyPanel=nullptr;}
 
 Panels::MemoryCardListPanel_Simple::MemoryCardListPanel_Simple( wxWindow* parent )
 	: _parent( parent )
@@ -585,7 +585,7 @@ bool Panels::MemoryCardListPanel_Simple::OnDropFiles(wxCoord x, wxCoord y, const
 
 bool Panels::MemoryCardListPanel_Simple::ValidateEnumerationStatus()
 {
-	if( m_listview ) m_listview->SetMcdProvider( NULL );
+	if( m_listview ) m_listview->SetMcdProvider( nullptr );
 	return false;
 }
 

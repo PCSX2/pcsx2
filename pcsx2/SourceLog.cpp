@@ -51,7 +51,7 @@ void __Log( const char* fmt, ... )
 	va_list list;
 	va_start(list, fmt);
 
-	if( emuLog != NULL )
+	if( emuLog != nullptr )
 	{
 		fputs( FastFormatAscii().WriteV(fmt,list), emuLog );
 		fputs( "\n", emuLog );
@@ -63,7 +63,7 @@ void __Log( const char* fmt, ... )
 
 void SysTraceLog::DoWrite( const char *msg ) const
 {
-	if( emuLog == NULL ) return;
+	if( emuLog == nullptr ) return;
 
 	fputs( msg, emuLog );
 	fputs( "\n", emuLog );

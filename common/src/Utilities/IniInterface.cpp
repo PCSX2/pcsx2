@@ -35,7 +35,7 @@ void SetFullBaseDir(wxDirName appRoot)
 static int _calcEnumLength(const wxChar *const *enumArray)
 {
     int cnt = 0;
-    while (*enumArray != NULL) {
+    while (*enumArray != nullptr) {
         enumArray++;
         cnt++;
     }
@@ -255,10 +255,10 @@ void IniLoader::_EnumEntry(const wxString &var, int &value, const wxChar *const 
     m_Config->Read(var, &retval, enumArray[defvalue]);
 
     int i = 0;
-    while (enumArray[i] != NULL && (retval != enumArray[i]))
+    while (enumArray[i] != nullptr && (retval != enumArray[i]))
         i++;
 
-    if (enumArray[i] == NULL) {
+    if (enumArray[i] == nullptr) {
         Console.Warning(L"(LoadSettings) Warning: Unrecognized value '%s' on key '%s'\n\tUsing the default setting of '%s'.",
                         WX_STR(retval), WX_STR(var), enumArray[defvalue]);
         value = defvalue;

@@ -92,7 +92,7 @@ void iDumpRegisters(u32 startpc, u32 temp)
 
 	psymb = disR5900GetSym(startpc);
 
-	if( psymb != NULL )
+	if( psymb != nullptr )
 		__Log("%sreg(%s): %x %x c:%x", pstr, psymb, startpc, cpuRegs.interrupt, cpuRegs.cycle);
 	else
 		__Log("%sreg: %x %x c:%x", pstr, startpc, cpuRegs.interrupt, cpuRegs.cycle);

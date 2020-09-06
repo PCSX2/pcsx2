@@ -84,7 +84,7 @@ CheckedStaticBox* Panels::eeLogOptionsPanel::GetStaticBox( const wxString& subgr
 	if (0 == subgroup.CmpNoCase( L"Registers" ))	return m_hwPanel;
 	if (0 == subgroup.CmpNoCase( L"Events" ))		return m_evtPanel;
 
-	return NULL;
+	return nullptr;
 }
 
 CheckedStaticBox* Panels::iopLogOptionsPanel::GetStaticBox( const wxString& subgroup ) const
@@ -93,7 +93,7 @@ CheckedStaticBox* Panels::iopLogOptionsPanel::GetStaticBox( const wxString& subg
 	if (0 == subgroup.CmpNoCase( L"Registers" ))	return m_hwPanel;
 	if (0 == subgroup.CmpNoCase( L"Events" ))		return m_evtPanel;
 
-	return NULL;
+	return nullptr;
 }
 
 
@@ -218,8 +218,8 @@ Panels::LogOptionsPanel::LogOptionsPanel(wxWindow* parent )
 		pxAssertMsg(item.GetName(), "Trace log without a name!" );
 
 		wxStringTokenizer token( item.GetCategory(), L"." );
-		wxSizer* addsizer = NULL;
-		wxWindow* addparent = NULL;
+		wxSizer* addsizer = nullptr;
+		wxWindow* addparent = nullptr;
 
 		const wxString cpu(token.GetNextToken());
 		if( BaseCpuLogOptionsPanel* cpupanel = GetCpuPanel(cpu))
@@ -273,7 +273,7 @@ Panels::BaseCpuLogOptionsPanel* Panels::LogOptionsPanel::GetCpuPanel( const wxSt
 	if( token == L"EE" )	return m_eeSection;
 	if( token == L"IOP" )	return m_iopSection;
 
-	return NULL;
+	return nullptr;
 }
 
 void Panels::LogOptionsPanel::AppStatusEvent_OnSettingsApplied()

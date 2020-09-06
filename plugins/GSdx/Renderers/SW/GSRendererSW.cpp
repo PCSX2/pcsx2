@@ -1524,7 +1524,7 @@ void GSRendererSW::SharedData::ReleasePages()
 
 void GSRendererSW::SharedData::SetSource(GSTextureCacheSW::Texture* t, const GSVector4i& r, int level)
 {
-	ASSERT(m_tex[level].t == NULL);
+	ASSERT(m_tex[level].t == nullptr);
 
 	m_tex[level].t = t;
 	m_tex[level].r = r;

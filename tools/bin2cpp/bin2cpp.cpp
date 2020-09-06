@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
 		return 18;
 	}
 
-	if( (source=fopen( srcfile, "rb" )) == NULL )
+	if( (source=fopen( srcfile, "rb" )) == nullptr )
 	{
 		printf( "ERROR : I can't find source file   %s\n", srcfile );
 		return 20;
@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
 
 	strcat( Dummy,".h" );
 
-	if( (dest=fopen( Dummy, "wb+" )) == NULL )
+	if( (dest=fopen( Dummy, "wb+" )) == nullptr )
 	{
 		printf( "ERROR : I can't open destination file   %s\n", Dummy );
 		(void)fcloseall();
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
 
 	printf( "Bin2CPP Output > %s\n", Dummy );
 
-	const char* fnameonly = NULL;
+	const char* fnameonly = nullptr;
 	if( argc <= ARG_CLASSNAME )
 	{
 		fnameonly = argv[(argc <= ARG_DESTFILE) ? ARG_SRCFILE : ARG_DESTFILE];

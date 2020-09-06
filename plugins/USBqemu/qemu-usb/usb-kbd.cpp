@@ -844,7 +844,7 @@ static void usb_keyboard_handle_destroy(USBDevice *dev)
 {
     USBKeyboardState *s = (USBKeyboardState *)dev;
 
-    //qemu_add_keyboard_event_handler(NULL, NULL, 0);
+    //qemu_add_keyboard_event_handler(nullptr, nullptr, 0);
     free(s);
 }
 
@@ -854,7 +854,7 @@ USBDevice *usb_keyboard_init(void)
 
     s = (USBKeyboardState *)malloc(sizeof(USBKeyboardState));
     if (!s)
-        return NULL;
+        return nullptr;
     memset(s,0,sizeof(USBKeyboardState));
     s->dev.speed = USB_SPEED_FULL;
 	s->dev.info = &devinfo;
@@ -931,7 +931,7 @@ int kbd_blocking;
 u32 kbd_repeatrate;
 kbd_dev *devices[PS2KBD_MAXDEV]; /* Holds a list of current devices */
 int dev_count;
-UsbDriver kbd_driver = { NULL, NULL, "PS2Kbd", ps2kbd_probe, ps2kbd_connect, ps2kbd_disconnect };
+UsbDriver kbd_driver = { nullptr, nullptr, "PS2Kbd", ps2kbd_probe, ps2kbd_connect, ps2kbd_disconnect };
 u8 *lineBuffer;
 u32 lineStartP, lineEndP;
 int lineSema;
@@ -978,7 +978,7 @@ int ps2kbd_probe(int devId)
 
   //printf("PS2Kbd_probe devId %d\n", devId);
 
-  dev = UsbGetDeviceStaticDescriptor(devId, NULL, USB_DT_DEVICE); /* Get device descriptor */
+  dev = UsbGetDeviceStaticDescriptor(devId, nullptr, USB_DT_DEVICE); /* Get device descriptor */
   if(!dev) 
     {
       printf("ERROR: Couldn't get device descriptor\n");
@@ -1051,7 +1051,7 @@ int ps2kbd_connect(int devId)
 
   //printf("PS2Kbd_connect devId %d\n", devId);
 
-  dev = UsbGetDeviceStaticDescriptor(devId, NULL, USB_DT_DEVICE); /* Get device descriptor */
+  dev = UsbGetDeviceStaticDescriptor(devId, nullptr, USB_DT_DEVICE); /* Get device descriptor */
   if(!dev) 
     {
       printf("ERROR: Couldn't get device descriptor\n");
@@ -1071,7 +1071,7 @@ int ps2kbd_connect(int devId)
 
   for(devLoop = 0; devLoop < PS2KBD_MAXDEV; devLoop++)
     {
-      if(devices[devLoop] == NULL)
+      if(devices[devLoop] == nullptr)
 	{
 	  break;
 	}
@@ -1084,7 +1084,7 @@ int ps2kbd_connect(int devId)
       return 1;
     }
 
-  currDev = (kbd_dev *) AllocSysMemory(0, sizeof(kbd_dev), NULL);
+  currDev = (kbd_dev *) AllocSysMemory(0, sizeof(kbd_dev), nullptr);
   if(!currDev)
     {
       printf("ERROR: Couldn't allocate a device point for the kbd\n");
@@ -1093,7 +1093,7 @@ int ps2kbd_connect(int devId)
 
   devices[devLoop] = currDev;
   memset(currDev, 0, sizeof(kbd_dev));
-  currDev->configEndp = UsbOpenEndpoint(devId, NULL);
+  currDev->configEndp = UsbOpenEndpoint(devId, nullptr);
   currDev->dataEndp = UsbOpenEndpoint(devId, endp);
   currDev->packetSize = endp->wMaxPacketSizeLB | ((int) endp->wMaxPacketSizeHB << 8);
   currDev->eventmask = (1 << devLoop);
@@ -1139,7 +1139,7 @@ int ps2kbd_disconnect(int devId)
 	{
 	  dev_count--;
 	  FreeSysMemory(devices[devLoop]);
-	  devices[devLoop] = NULL;
+	  devices[devLoop] = nullptr;
 	  printf("PS2KBD: Disconnected device\n");
 	  break;
 	}
@@ -1187,10 +1187,10 @@ void usb_getstring(int endp, int index, char *desc)
   string_descriptor *str;
   int ret; 
 
-  data = (u8 *) AllocSysMemory(0, sizeof(string_descriptor), NULL);
+  data = (u8 *) AllocSysMemory(0, sizeof(string_descriptor), nullptr);
   str = (string_descriptor *) data;
 
-  if(data != NULL)
+  if(data != nullptr)
     {
       str->desc = desc;
       ret = UsbControlTransfer(endp, 0x80, USB_REQ_GET_DESCRIPTOR, (USB_DT_STRING << 8) | index, 
@@ -1219,11 +1219,11 @@ void ps2kbd_config_set(int resultCode, int bytes, void *arg)
   /* Do a interrupt data transfer */
 
   dev = (kbd_dev *) arg;
-  if(dev != NULL)
+  if(dev != nullptr)
     {
       int ret;
       
-      ret = UsbControlTransfer(dev->configEndp, 0x21, USB_REQ_SET_IDLE, 0, dev->interfaceNo, 0, NULL, ps2kbd_idlemode_set, arg);
+      ret = UsbControlTransfer(dev->configEndp, 0x21, USB_REQ_SET_IDLE, 0, dev->interfaceNo, 0, nullptr, ps2kbd_idlemode_set, arg);
     }
 }
 
@@ -1241,7 +1241,7 @@ void ps2kbd_idlemode_set(int resultCode, int bytes, void *arg)
     }
   
   dev = (kbd_dev *) arg;
-  if(dev != NULL)
+  if(dev != nullptr)
     {
       int ret;
       
@@ -1554,9 +1554,9 @@ void ps2kbd_data_recv(int resultCode, int bytes, void *arg)
   //printf("PS2KBD: Data Recv set res %d, bytes %d, arg %p\n", resultCode, bytes, arg);
 
   dev = (kbd_dev *) arg;
-  if(dev == NULL)
+  if(dev == nullptr)
     {
-      printf("PS2KBD: dev == NULL\n");
+      printf("PS2KBD: dev == nullptr\n");
       return;
     }
     
@@ -2073,8 +2073,8 @@ int ps2kbd_init()
       return 1;
     }
 
-  lineBuffer = (u8 *) AllocSysMemory(0, PS2KBD_DEFLINELEN, NULL);
-  if(lineBuffer == NULL)
+  lineBuffer = (u8 *) AllocSysMemory(0, PS2KBD_DEFLINELEN, nullptr);
+  if(lineBuffer == nullptr)
     {
       printf("PS2KBD: Error allocating line buffer\n");
       return 1;

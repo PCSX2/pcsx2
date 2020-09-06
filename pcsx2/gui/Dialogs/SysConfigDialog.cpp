@@ -50,7 +50,7 @@ static void CheckPluginsOverrides()
 	// The user has commandline overrides enabled, so the options they see here and/or apply won't match
 	// the commandline overrides.  Let them know!
 
-	wxDialogWithHelpers dialog( NULL, _("Components Overrides Warning") );
+	wxDialogWithHelpers dialog( nullptr, _("Components Overrides Warning") );
 	
 	dialog += dialog.Text( pxEt( L"Warning!  You are running PCSX2 with command line options that override your configured plugin and/or folder settings.  These command line options will not be reflected in the settings dialog, and will be disabled when you apply settings changes here."
 	));

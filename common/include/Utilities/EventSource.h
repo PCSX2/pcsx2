@@ -57,14 +57,14 @@ public:
 
     void Add(ListenerType *listener)
     {
-        if (listener == NULL)
+        if (listener == nullptr)
             return;
         Add(*listener);
     }
 
     void Remove(ListenerType *listener)
     {
-        if (listener == NULL)
+        if (listener == nullptr)
             return;
         Remove(*listener);
     }

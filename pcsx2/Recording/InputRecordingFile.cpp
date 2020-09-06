@@ -49,7 +49,7 @@ bool InputRecordingFile::Open(const wxString path, bool fNewOpen, bool fromSaveS
 		header.Init();
 	}
 	recordingFile = wxFopen(path, mode);
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		recordingConLog(wxString::Format("[REC]: Movie file opening failed. Error - %s\n", strerror(errno)));
 		return false;
@@ -62,7 +62,7 @@ bool InputRecordingFile::Open(const wxString path, bool fNewOpen, bool fromSaveS
 		{
 			savestate.fromSavestate = true;
 			FILE* ssFileCheck = wxFopen(path + "_SaveState.p2s", "r");
-			if (ssFileCheck != NULL)
+			if (ssFileCheck != nullptr)
 			{
 				wxCopyFile(path + "_SaveState.p2s", path + "_SaveState.p2s.bak", false);
 				fclose(ssFileCheck);
@@ -80,14 +80,14 @@ bool InputRecordingFile::Open(const wxString path, bool fNewOpen, bool fromSaveS
 // Gracefully close the current recording file
 bool InputRecordingFile::Close()
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
 	WriteHeader();
 	WriteSaveState();
 	fclose(recordingFile);
-	recordingFile = NULL;
+	recordingFile = nullptr;
 	filename = "";
 	return true;
 }
@@ -95,7 +95,7 @@ bool InputRecordingFile::Close()
 // Write savestate flag to file
 bool InputRecordingFile::WriteSaveState()
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
@@ -112,7 +112,7 @@ bool InputRecordingFile::WriteSaveState()
 // Write controller input buffer to file (per frame)
 bool InputRecordingFile::WriteKeyBuf(const uint& frame, const uint port, const uint bufIndex, const u8& buf)
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
@@ -131,7 +131,7 @@ bool InputRecordingFile::WriteKeyBuf(const uint& frame, const uint port, const u
 // Read controller input buffer from file (per frame)
 bool InputRecordingFile::ReadKeyBuf(u8& result, const uint& frame, const uint port, const uint bufIndex)
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
@@ -153,7 +153,7 @@ bool InputRecordingFile::ReadKeyBuf(u8& result, const uint& frame, const uint po
 void InputRecordingFile::GetPadData(PadData& result, unsigned long frame)
 {
 	result.fExistKey = false;
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return;
 	}
@@ -169,7 +169,7 @@ void InputRecordingFile::GetPadData(PadData& result, unsigned long frame)
 
 bool InputRecordingFile::DeletePadData(unsigned long frame)
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
@@ -204,7 +204,7 @@ bool InputRecordingFile::DeletePadData(unsigned long frame)
 
 bool InputRecordingFile::InsertPadData(unsigned long frame, const PadData& key)
 {
-	if (recordingFile == NULL || !key.fExistKey)
+	if (recordingFile == nullptr || !key.fExistKey)
 	{
 		return false;
 	}
@@ -247,7 +247,7 @@ bool InputRecordingFile::InsertPadData(unsigned long frame, const PadData& key)
 
 bool InputRecordingFile::UpdatePadData(unsigned long frame, const PadData& key)
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
@@ -270,7 +270,7 @@ bool InputRecordingFile::UpdatePadData(unsigned long frame, const PadData& key)
 // Verify header of recording file
 bool InputRecordingFile::ReadHeaderAndCheck()
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
@@ -282,7 +282,7 @@ bool InputRecordingFile::ReadHeaderAndCheck()
 	if (savestate.fromSavestate)
 	{
 		FILE* ssFileCheck = wxFopen(filename + "_SaveState.p2s", "r");
-		if (ssFileCheck == NULL)
+		if (ssFileCheck == nullptr)
 		{
 			recordingConLog(wxString::Format("[REC]: Could not locate savestate file at location - %s\n", filename + "_SaveState.p2s"));
 			return false;
@@ -305,7 +305,7 @@ bool InputRecordingFile::ReadHeaderAndCheck()
 }
 bool InputRecordingFile::WriteHeader()
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
@@ -319,7 +319,7 @@ bool InputRecordingFile::WriteHeader()
 
 bool InputRecordingFile::WriteMaxFrame()
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
@@ -333,7 +333,7 @@ bool InputRecordingFile::WriteMaxFrame()
 
 void InputRecordingFile::UpdateFrameMax(unsigned long frame)
 {
-	if (recordingFile == NULL || MaxFrame >= frame)
+	if (recordingFile == nullptr || MaxFrame >= frame)
 	{
 		return;
 	}
@@ -345,7 +345,7 @@ void InputRecordingFile::UpdateFrameMax(unsigned long frame)
 void InputRecordingFile::AddUndoCount()
 {
 	UndoCount++;
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return;
 	}

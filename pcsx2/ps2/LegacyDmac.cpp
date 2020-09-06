@@ -24,7 +24,7 @@
 
 bool DMACh::transfer(const char *s, tDMA_TAG* ptag)
 {
-	if (ptag == NULL)  					 // Is ptag empty?
+	if (ptag == nullptr)  					 // Is ptag empty?
 	{
 		throwBusError(s);
 		return false;
@@ -44,7 +44,7 @@ void DMACh::unsafeTransfer(tDMA_TAG* ptag)
 tDMA_TAG *DMACh::getAddr(u32 addr, u32 num, bool write)
 {
 	tDMA_TAG *ptr = dmaGetAddr(addr, write);
-	if (ptr == NULL)
+	if (ptr == nullptr)
 	{
 		throwBusError("dmaGetAddr");
 		setDmacStat(num);
@@ -58,7 +58,7 @@ tDMA_TAG *DMACh::DMAtransfer(u32 addr, u32 num)
 {
 	tDMA_TAG *tag = getAddr(addr, num, false);
 
-	if (tag == NULL) return NULL;
+	if (tag == nullptr) return nullptr;
 
     chcrTransfer(tag);
     qwcTransfer(tag);
@@ -150,12 +150,12 @@ __fi tDMA_TAG* SPRdmaGetAddr(u32 addr, bool write)
 		
 		
 		// Unreachable
-		return NULL;
+		return nullptr;
 	}
 	else
 	{
 		Console.Error( "*PCSX2*: DMA error: %8.8x", addr);
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -185,7 +185,7 @@ __ri tDMA_TAG *dmaGetAddr(u32 addr, bool write)
 	else
 	{
 		Console.Error( "*PCSX2*: DMA error: %8.8x", addr);
-		return NULL;
+		return nullptr;
 	}
 }
 

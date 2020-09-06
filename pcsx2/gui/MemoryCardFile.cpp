@@ -371,7 +371,7 @@ s32 FileMemoryCard::Save( uint slot, const u8 *src, u32 adr, int size )
 		std::chrono::duration<float> elapsed = std::chrono::system_clock::now() - last;
 		if(elapsed > std::chrono::seconds(5)) {
 			wxString name, ext;
-			wxFileName::SplitPath(m_file[slot].GetName(), NULL, NULL, &name, &ext);
+			wxFileName::SplitPath(m_file[slot].GetName(), nullptr, nullptr, &name, &ext);
 			OSDlog( Color_StrongYellow, false, "Memory Card %s written.", (const char *)(name + "." + ext).c_str() );
 			last = std::chrono::system_clock::now();
 		}
@@ -640,7 +640,7 @@ static s32 PS2E_CALLBACK FileMcd_Test( u32 component, const PS2E_EmulatorInfo* x
 
 static PS2E_THISPTR PS2E_CALLBACK FileMcd_NewComponentInstance( u32 component )
 {
-	if( component != PS2E_TYPE_Mcd ) return NULL;
+	if( component != PS2E_TYPE_Mcd ) return nullptr;
 
 	try
 	{
@@ -650,7 +650,7 @@ static PS2E_THISPTR PS2E_CALLBACK FileMcd_NewComponentInstance( u32 component )
 	{
 		Console.Error( "Allocation failed on Component_FileMcd! (out of memory?)" );
 	}
-	return NULL;
+	return nullptr;
 }
 
 static void PS2E_CALLBACK FileMcd_DeleteComponentInstance( PS2E_THISPTR instance )

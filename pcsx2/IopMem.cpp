@@ -18,10 +18,10 @@
 #include "IopCommon.h"
 #include "ps2/pgif.h" // for PSX kernel TTY in iopMemWrite32
 
-uptr *psxMemWLUT = NULL;
-const uptr *psxMemRLUT = NULL;
+uptr *psxMemWLUT = nullptr;
+const uptr *psxMemRLUT = nullptr;
 
-IopVM_MemoryAllocMess* iopMem = NULL;
+IopVM_MemoryAllocMess* iopMem = nullptr;
 
 __pagealigned u8 iopHw[Ps2MemSize::IopHardware];
 
@@ -115,8 +115,8 @@ void iopMemoryReserve::Decommit()
 	_parent::Decommit();
 
 	safe_aligned_free(psxMemWLUT);
-	psxMemRLUT = NULL;
-	iopMem = NULL;
+	psxMemRLUT = nullptr;
+	iopMem = nullptr;
 }
 
 
@@ -144,7 +144,7 @@ u8 __fastcall iopMemRead8(u32 mem)
 	else
 	{
 		const u8* p = (const u8*)(psxMemRLUT[mem >> 16]);
-		if (p != NULL)
+		if (p != nullptr)
 		{
 			return *(const u8 *)(p + (mem & 0xffff));
 		}
@@ -178,7 +178,7 @@ u16 __fastcall iopMemRead16(u32 mem)
 	else
 	{
 		const u8* p = (const u8*)(psxMemRLUT[mem >> 16]);
-		if (p != NULL)
+		if (p != nullptr)
 		{
 			if (t == 0x1d00)
 			{
@@ -238,7 +238,7 @@ u32 __fastcall iopMemRead32(u32 mem)
 	{
 		//see also Hw.c
 		const u8* p = (const u8*)(psxMemRLUT[mem >> 16]);
-		if (p != NULL)
+		if (p != nullptr)
 		{
 			if (t == 0x1d00)
 			{
@@ -307,7 +307,7 @@ void __fastcall iopMemWrite8(u32 mem, u8 value)
 	else
 	{
 		u8* p = (u8 *)(psxMemWLUT[mem >> 16]);
-		if (p != NULL && !(psxRegs.CP0.n.Status & 0x10000) )
+		if (p != nullptr && !(psxRegs.CP0.n.Status & 0x10000) )
 		{
 			*(u8  *)(p + (mem & 0xffff)) = value;
 			psxCpu->Clear(mem&~3, 1);
@@ -349,7 +349,7 @@ void __fastcall iopMemWrite16(u32 mem, u16 value)
 	} else
 	{
 		u8* p = (u8 *)(psxMemWLUT[mem >> 16]);
-		if (p != NULL && !(psxRegs.CP0.n.Status & 0x10000) )
+		if (p != nullptr && !(psxRegs.CP0.n.Status & 0x10000) )
 		{
 			if( t==0x1D00 ) Console.WriteLn("sw16 [0x%08X]=0x%08X", mem, value);
 			*(u16 *)(p + (mem & 0xffff)) = value;
@@ -423,7 +423,7 @@ void __fastcall iopMemWrite32(u32 mem, u32 value)
 	{
 		//see also Hw.c
 		u8* p = (u8 *)(psxMemWLUT[mem >> 16]);
-		if( p != NULL && !(psxRegs.CP0.n.Status & 0x10000) )
+		if( p != nullptr && !(psxRegs.CP0.n.Status & 0x10000) )
 		{
 			*(u32 *)(p + (mem & 0xffff)) = value;
 			psxCpu->Clear(mem&~3, 1);

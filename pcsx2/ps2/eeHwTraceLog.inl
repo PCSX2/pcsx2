@@ -259,7 +259,7 @@ static __ri const char* _eelog_GetHwName( u32 addr, T val )
 
 	// If we get this far it's an *unknown* register; plain and simple.
 
-	return NULL; //"Unknown";
+	return nullptr; //"Unknown";
 }
 
 template< typename T>

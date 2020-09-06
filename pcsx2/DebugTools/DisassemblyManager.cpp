@@ -596,7 +596,7 @@ void DisassemblyFunction::load()
 			// also, don't create a macro if something branches into the middle of it
 			if (nextRs == rt && nextRt == rt && branchTargets.find(funcPos) == branchTargets.end())
 			{
-				DisassemblyMacro* macro = NULL;
+				DisassemblyMacro* macro = nullptr;
 				switch (MIPS_GET_OP(next))
 				{
 				case 0x09:	// addiu
@@ -651,7 +651,7 @@ void DisassemblyFunction::load()
 					break;
 				}
 
-				if (macro != NULL)
+				if (macro != nullptr)
 				{
 					if (opcodeSequenceStart != opAddress)
 						addOpcodeSequence(opcodeSequenceStart,opAddress);

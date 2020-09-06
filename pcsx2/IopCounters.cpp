@@ -138,14 +138,14 @@ void psxRcntInit() {
 	psxCounters[4].interrupt = 0x08000;
 	psxCounters[5].interrupt = 0x10000;
 
-	if (SPU2async != NULL)
+	if (SPU2async != nullptr)
 	{
 		psxCounters[6].rate = 768*12;
 		psxCounters[6].CycleT = psxCounters[6].rate;
 		psxCounters[6].mode = 0x8;
 	}
 
-	if (USBasync != NULL)
+	if (USBasync != nullptr)
 	{
 		psxCounters[7].rate = PSXCLK/1000;
 		psxCounters[7].CycleT = psxCounters[7].rate;

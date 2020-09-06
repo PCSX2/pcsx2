@@ -53,7 +53,7 @@ public:
 	virtual ~CorePluginsEvent() = default;
 	CorePluginsEvent* Clone() const { return new CorePluginsEvent( *this ); }
 
-	explicit CorePluginsEvent( PluginEventType evt, SynchronousActionState* sema=NULL )
+	explicit CorePluginsEvent( PluginEventType evt, SynchronousActionState* sema=nullptr )
 		: pxActionEvent( sema )
 	{
 		m_evt = evt;
@@ -94,7 +94,7 @@ static void ConvertPluginFilenames( wxString (&passins)[PluginId_Count] )
 
 		if( passins[pi->id].IsEmpty() || !wxFileExists( passins[pi->id] ) )
 			passins[pi->id] = g_Conf->FullpathTo( pi->id );
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 }
 
 typedef void (AppCorePlugins::*FnPtr_AppPluginManager)();
@@ -172,7 +172,7 @@ public:
 	virtual ~SinglePluginMethodEvent() = default;
 	virtual SinglePluginMethodEvent *Clone() const { return new SinglePluginMethodEvent(*this); }
 
-	SinglePluginMethodEvent( FnPtr_AppPluginPid method=NULL,  PluginsEnum_t pid = PluginId_GS )
+	SinglePluginMethodEvent( FnPtr_AppPluginPid method=nullptr,  PluginsEnum_t pid = PluginId_GS )
 	{
 		m_pid		= pid;
 		m_method	= method;
@@ -416,7 +416,7 @@ int EnumeratePluginsInFolder(const wxDirName& searchpath, wxArrayString* dest)
 
 	std::unique_ptr<wxArrayString> placebo;
 	wxArrayString* realdest = dest;
-	if (realdest == NULL)
+	if (realdest == nullptr)
 	{
 		placebo = std::make_unique<wxArrayString>();
 		realdest = placebo.get();

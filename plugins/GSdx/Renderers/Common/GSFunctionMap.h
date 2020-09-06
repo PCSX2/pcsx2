@@ -182,7 +182,7 @@ public:
 
 	VALUE GetDefaultFunction(KEY key)
 	{
-		VALUE ret = NULL;
+		VALUE ret = nullptr;
 
 		auto i = m_cgmap.find(key);
 

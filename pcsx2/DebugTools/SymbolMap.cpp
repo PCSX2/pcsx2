@@ -53,7 +53,7 @@ bool SymbolMap::LoadNocashSym(const char *filename) {
 	while (!feof(f)) {
 		char line[256], value[256] = {0};
 		char *p = fgets(line, 256, f);
-		if (p == NULL)
+		if (p == nullptr)
 			break;
 
 		u32 address;
@@ -65,7 +65,7 @@ bool SymbolMap::LoadNocashSym(const char *filename) {
 		if (value[0] == '.') {
 			// data directives
 			char* s = strchr(value, ':');
-			if (s != NULL) {
+			if (s != nullptr) {
 				*s = 0;
 
 				u32 size = 0;
@@ -85,7 +85,7 @@ bool SymbolMap::LoadNocashSym(const char *filename) {
 		} else {				// labels
 			int size = 1;
 			char* seperator = strchr(value, ',');
-			if (seperator != NULL) {
+			if (seperator != nullptr) {
 				*seperator = 0;
 				sscanf(seperator+1,"%08X",&size);
 			}
@@ -123,7 +123,7 @@ bool SymbolMap::GetSymbolInfo(SymbolInfo *info, u32 address, SymbolType symmask)
 
 	if (functionAddress == INVALID_ADDRESS || dataAddress == INVALID_ADDRESS) {
 		if (functionAddress != INVALID_ADDRESS) {
-			if (info != NULL) {
+			if (info != nullptr) {
 				info->type = ST_FUNCTION;
 				info->address = functionAddress;
 				info->size = GetFunctionSize(functionAddress);
@@ -133,7 +133,7 @@ bool SymbolMap::GetSymbolInfo(SymbolInfo *info, u32 address, SymbolType symmask)
 		}
 		
 		if (dataAddress != INVALID_ADDRESS) {
-			if (info != NULL) {
+			if (info != nullptr) {
 				info->type = ST_DATA;
 				info->address = dataAddress;
 				info->size = GetDataSize(dataAddress);
@@ -146,7 +146,7 @@ bool SymbolMap::GetSymbolInfo(SymbolInfo *info, u32 address, SymbolType symmask)
 	}
 
 	// if both exist, return the function
-	if (info != NULL) {
+	if (info != nullptr) {
 		info->type = ST_FUNCTION;
 		info->address = functionAddress;
 		info->size = GetFunctionSize(functionAddress);
@@ -174,7 +174,7 @@ u32 SymbolMap::GetNextSymbolAddress(u32 address, SymbolType symmask) {
 
 std::string SymbolMap::GetDescription(unsigned int address) const {
 	std::lock_guard<std::recursive_mutex> guard(m_lock);
-	const char* labelName = NULL;
+	const char* labelName = nullptr;
 
 	u32 funcStart = GetFunctionStart(address);
 	if (funcStart != INVALID_ADDRESS) {
@@ -185,7 +185,7 @@ std::string SymbolMap::GetDescription(unsigned int address) const {
 			labelName = GetLabelName(dataStart);
 	}
 
-	if (labelName != NULL)
+	if (labelName != nullptr)
 		return labelName;
 
 	char descriptionTemp[256];
@@ -203,7 +203,7 @@ std::vector<SymbolEntry> SymbolMap::GetAllSymbols(SymbolType symmask) {
 			entry.address = it->first;
 			entry.size = GetFunctionSize(entry.address);
 			const char* name = GetLabelName(entry.address);
-			if (name != NULL)
+			if (name != nullptr)
 				entry.name = name;
 			result.push_back(entry);
 		}
@@ -216,7 +216,7 @@ std::vector<SymbolEntry> SymbolMap::GetAllSymbols(SymbolType symmask) {
 			entry.address = it->first;
 			entry.size = GetDataSize(entry.address);
 			const char* name = GetLabelName(entry.address);
-			if (name != NULL)
+			if (name != nullptr)
 				entry.name = name;
 			result.push_back(entry);
 		}
@@ -586,7 +586,7 @@ const char *SymbolMap::GetLabelName(u32 address) const {
 	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	auto it = activeLabels.find(address);
 	if (it == activeLabels.end())
-		return NULL;
+		return nullptr;
 
 	return it->second.name;
 }
@@ -595,7 +595,7 @@ const char *SymbolMap::GetLabelNameRel(u32 relAddress, int moduleIndex) const {
 	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	auto it = labels.find(std::make_pair(moduleIndex, relAddress));
 	if (it == labels.end())
-		return NULL;
+		return nullptr;
 
 	return it->second.name;
 }
@@ -603,7 +603,7 @@ const char *SymbolMap::GetLabelNameRel(u32 relAddress, int moduleIndex) const {
 std::string SymbolMap::GetLabelString(u32 address) const {
 	std::lock_guard<std::recursive_mutex> guard(m_lock);
 	const char *label = GetLabelName(address);
-	if (label == NULL)
+	if (label == nullptr)
 		return "";
 	return label;
 }

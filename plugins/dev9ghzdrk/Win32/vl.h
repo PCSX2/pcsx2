@@ -1224,7 +1224,7 @@ int PPC_NVRAM_set_params (m48t59_t *nvram, uint16_t NVRAM_size,
 
 typedef struct ADBDevice ADBDevice;
 
-/* buf = NULL means polling */
+/* buf = nullptr means polling */
 typedef int ADBDeviceRequest(ADBDevice *d, uint8_t *buf_out,
                               const uint8_t *buf, int len);
 typedef int ADBDeviceReset(ADBDevice *d);

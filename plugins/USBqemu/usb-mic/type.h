@@ -2,8 +2,8 @@
 #ifndef __TYPE_H__
 #define __TYPE_H__
 
-#ifndef NULL
-#define NULL    ((void *)0)
+#ifndef nullptr
+#define nullptr    ((void *)0)
 #endif
 
 #ifndef FALSE

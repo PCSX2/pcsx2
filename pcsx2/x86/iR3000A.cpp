@@ -50,23 +50,23 @@ u32 psxhwLUT[0x10000];
 
 static __fi u32 HWADDR(u32 mem) { return psxhwLUT[mem >> 16] + mem; }
 
-static RecompiledCodeReserve* recMem = NULL;
+static RecompiledCodeReserve* recMem = nullptr;
 
-static BASEBLOCK *recRAM = NULL;	// and the ptr to the blocks here
-static BASEBLOCK *recROM = NULL;	// and here
-static BASEBLOCK *recROM1 = NULL;	// also here
-static BASEBLOCK *recROM2 = NULL;   // also here
+static BASEBLOCK *recRAM = nullptr;	// and the ptr to the blocks here
+static BASEBLOCK *recROM = nullptr;	// and here
+static BASEBLOCK *recROM1 = nullptr;	// also here
+static BASEBLOCK *recROM2 = nullptr;   // also here
 static BaseBlocks recBlocks;
-static u8 *recPtr = NULL;
+static u8 *recPtr = nullptr;
 u32 psxpc;			// recompiler psxpc
 int psxbranch;		// set for branch
 u32 g_iopCyclePenalty;
 
-static EEINST* s_pInstCache = NULL;
+static EEINST* s_pInstCache = nullptr;
 static u32 s_nInstCacheSize = 0;
 
-static BASEBLOCK* s_pCurBlock = NULL;
-static BASEBLOCKEX* s_pCurBlockEx = NULL;
+static BASEBLOCK* s_pCurBlock = nullptr;
+static BASEBLOCKEX* s_pCurBlockEx = nullptr;
 
 static u32 s_nEndBlock = 0; // what psxpc the current block ends
 static u32 s_branchTo;
@@ -74,7 +74,7 @@ static bool s_nBlockFF;
 
 static u32 s_saveConstRegs[32];
 static u32 s_saveHasConstReg = 0, s_saveFlushedConstReg = 0;
-static EEINST* s_psaveInstInfo = NULL;
+static EEINST* s_psaveInstInfo = nullptr;
 
 u32 s_psxBlockCycles = 0; // cycles of current block recompiling
 static u32 s_savenBlockCycles = 0;
@@ -106,12 +106,12 @@ static u8 __pagealigned iopRecDispatchers[__pagesize];
 
 typedef void DynGenFunc();
 
-static DynGenFunc* iopDispatcherEvent		= NULL;
-static DynGenFunc* iopDispatcherReg			= NULL;
-static DynGenFunc* iopJITCompile			= NULL;
-static DynGenFunc* iopJITCompileInBlock		= NULL;
-static DynGenFunc* iopEnterRecompiledCode	= NULL;
-static DynGenFunc* iopExitRecompiledCode	= NULL;
+static DynGenFunc* iopDispatcherEvent		= nullptr;
+static DynGenFunc* iopDispatcherReg			= nullptr;
+static DynGenFunc* iopJITCompile			= nullptr;
+static DynGenFunc* iopJITCompileInBlock		= nullptr;
+static DynGenFunc* iopEnterRecompiledCode	= nullptr;
+static DynGenFunc* iopExitRecompiledCode	= nullptr;
 
 static void recEventTest()
 {
@@ -122,7 +122,7 @@ static void recEventTest()
 // dispatches to the recompiled block address.
 static DynGenFunc* _DynGen_JITCompile()
 {
-	pxAssertMsg( iopDispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
+	pxAssertMsg( iopDispatcherReg != nullptr, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
 
 	u8* retval = xGetPtr();
 
@@ -620,7 +620,7 @@ void psxRecompileCodeConst3(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 }
 
 static uptr m_ConfiguredCacheReserve = 32;
-static u8* m_recBlockAlloc = NULL;
+static u8* m_recBlockAlloc = nullptr;
 
 static const uint m_recBlockAllocSize =
 	(((Ps2MemSize::IopRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4) * sizeof(BASEBLOCK));
@@ -632,7 +632,7 @@ static void recReserveCache()
 
 	while (!recMem->IsOk())
 	{
-		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::IOPrecOffset, m_ConfiguredCacheReserve * _1mb) != NULL) break;
+		if (recMem->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::IOPrecOffset, m_ConfiguredCacheReserve * _1mb) != nullptr) break;
 
 		// If it failed, then try again (if possible):
 		if (m_ConfiguredCacheReserve < 4) break;
@@ -655,10 +655,10 @@ static void recAlloc()
 	// Any 4-byte aligned address makes a valid branch target as per MIPS design (all instructions are
 	// always 4 bytes long).
 
-	if( m_recBlockAlloc == NULL )
+	if( m_recBlockAlloc == nullptr )
 		m_recBlockAlloc = (u8*)_aligned_malloc( m_recBlockAllocSize, 4096 );
 
-	if( m_recBlockAlloc == NULL )
+	if( m_recBlockAlloc == nullptr )
 		throw Exception::OutOfMemory( L"R3000A BASEBLOCK lookup tables" );
 
 	u8* curpos = m_recBlockAlloc;
@@ -668,13 +668,13 @@ static void recAlloc()
 	recROM2 = (BASEBLOCK*)curpos; curpos += (Ps2MemSize::Rom2 / 4) * sizeof(BASEBLOCK);
 
 
-	if( s_pInstCache == NULL )
+	if( s_pInstCache == nullptr )
 	{
 		s_nInstCacheSize = 128;
 		s_pInstCache = (EEINST*)malloc( sizeof(EEINST) * s_nInstCacheSize );
 	}
 
-	if( s_pInstCache == NULL )
+	if( s_pInstCache == nullptr )
 		throw Exception::OutOfMemory( L"R3000 InstCache." );
 
 	_DynGen_Dispatchers();
@@ -1224,7 +1224,7 @@ StartRecomp:
 			free(s_pInstCache);
 			s_nInstCacheSize = (s_nEndBlock-startpc)/4+10;
 			s_pInstCache = (EEINST*)malloc(sizeof(EEINST)*s_nInstCacheSize);
-			pxAssert( s_pInstCache != NULL );
+			pxAssert( s_pInstCache != nullptr );
 		}
 
 		pcur = s_pInstCache + (s_nEndBlock-startpc)/4;
@@ -1306,8 +1306,8 @@ StartRecomp:
 
 	pxAssert( (g_psxHasConstReg&g_psxFlushedConstReg) == g_psxHasConstReg );
 
-	s_pCurBlock = NULL;
-	s_pCurBlockEx = NULL;
+	s_pCurBlock = nullptr;
+	s_pCurBlockEx = nullptr;
 }
 
 static void recSetCacheReserve( uint reserveInMegs )

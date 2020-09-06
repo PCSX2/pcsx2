@@ -50,8 +50,8 @@ namespace Dialogs
 		BaseConfigurationDialog(wxWindow* parent, const wxString& title, int idealWidth);
 
 	public:
-		void AddOkCancel( wxSizer* sizer=NULL );
-		void AddListbook( wxSizer* sizer=NULL );
+		void AddOkCancel( wxSizer* sizer=nullptr );
+		void AddListbook( wxSizer* sizer=nullptr );
 		void CreateListbook( wxImageList& bookicons );
 
 		virtual void SomethingChanged();
@@ -88,7 +88,7 @@ namespace Dialogs
 	{
 	public:
 		virtual ~SysConfigDialog() = default;
-		SysConfigDialog(wxWindow* parent=NULL);
+		SysConfigDialog(wxWindow* parent=nullptr);
 		static wxString GetNameStatic() { return L"CoreSettings"; }
 		wxString GetDialogName() const { return GetNameStatic(); }
    		void Apply();
@@ -118,7 +118,7 @@ namespace Dialogs
 	class InterfaceLanguageDialog : public BaseConfigurationDialog
 	{
 	public:
-		InterfaceLanguageDialog(wxWindow* parent = NULL);
+		InterfaceLanguageDialog(wxWindow* parent = nullptr);
 		virtual ~InterfaceLanguageDialog() = default;
 
 		static wxString GetNameStatic() { return L"InterfaceLanguage"; }
@@ -141,7 +141,7 @@ namespace Dialogs
 
 	public:
 		virtual ~McdConfigDialog() = default;
-		McdConfigDialog(wxWindow* parent=NULL);
+		McdConfigDialog(wxWindow* parent=nullptr);
 		static wxString GetNameStatic() { return L"McdConfig"; }
 		wxString GetDialogName() const { return GetNameStatic(); }
 
@@ -159,7 +159,7 @@ namespace Dialogs
 
 	public:
 		virtual ~ComponentsConfigDialog() = default;
-		ComponentsConfigDialog(wxWindow* parent=NULL);
+		ComponentsConfigDialog(wxWindow* parent=nullptr);
 		static wxString GetNameStatic() { return L"AppSettings"; }
 		wxString GetDialogName() const { return GetNameStatic(); }
 

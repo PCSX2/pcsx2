@@ -169,7 +169,7 @@ public:
         // love it needs and won't suck resources idling pointlessly.  Just don't try to
         // run it in uber-low-latency mode.
         waveout_running = true;
-        thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)RThread<StereoOut16>, this, 0, &tid);
+        thread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)RThread<StereoOut16>, this, 0, &tid);
 
         return 0;
     }

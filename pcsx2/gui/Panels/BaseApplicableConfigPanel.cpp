@@ -32,18 +32,18 @@ void ApplyStateStruct::DoCleanup() noexcept
 {
 	pxAssertMsg( !PanelList.empty(), L"PanelList list hasn't been cleaned up." );
 	PanelList.clear();
-	ParentBook = NULL;
+	ParentBook = nullptr;
 }
 
 void ApplyStateStruct::StartBook( wxBookCtrlBase* book )
 {
-	pxAssertDev( ParentBook == NULL, "An ApplicableConfig session is already in progress." );
+	pxAssertDev( ParentBook == nullptr, "An ApplicableConfig session is already in progress." );
 	ParentBook = book;
 }
 
 void ApplyStateStruct::StartWizard()
 {
-	pxAssertDev( ParentBook == NULL, "An ApplicableConfig session is already in progress." );
+	pxAssertDev( ParentBook == nullptr, "An ApplicableConfig session is already in progress." );
 }
 
 // -----------------------------------------------------------------------
@@ -102,7 +102,7 @@ bool ApplyStateStruct::ApplyPage( int pageid )
 		{
 			Msgbox::Alert( ex.FormatDisplayMessage(), _("Cannot apply settings...") );
 
-			if( ex.GetPanel() != NULL )
+			if( ex.GetPanel() != nullptr )
 				ex.GetPanel()->SetFocusToMe();
 		}
 
@@ -134,7 +134,7 @@ bool ApplyStateStruct::ApplyAll()
 IApplyState* BaseApplicableConfigPanel::FindApplyStateManager() const
 {
 	wxWindow* millrun = this->GetParent();
-	while( millrun != NULL )
+	while( millrun != nullptr )
 	{
 		if( BaseApplicableDialog* dialog = wxDynamicCast( millrun, BaseApplicableDialog ) )
 			return (IApplyState*)dialog;
@@ -144,7 +144,7 @@ IApplyState* BaseApplicableConfigPanel::FindApplyStateManager() const
 
 		millrun = millrun->GetParent();
 	}
-	return NULL;
+	return nullptr;
 }
 
 BaseApplicableConfigPanel::~BaseApplicableConfigPanel()
@@ -169,7 +169,7 @@ BaseApplicableConfigPanel::BaseApplicableConfigPanel( wxWindow* parent, wxOrient
 
 void BaseApplicableConfigPanel::SetFocusToMe()
 {
-	if( (m_OwnerBook == NULL) || (m_OwnerPage == wxID_NONE) ) return;
+	if( (m_OwnerBook == nullptr) || (m_OwnerPage == wxID_NONE) ) return;
 	m_OwnerBook->SetSelection( m_OwnerPage );
 }
 

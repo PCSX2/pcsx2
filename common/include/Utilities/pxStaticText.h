@@ -50,7 +50,7 @@ protected:
     float m_paddingPct_vert;
 
 protected:
-    explicit pxStaticText(wxWindow *parent = NULL);
+    explicit pxStaticText(wxWindow *parent = nullptr);
 
     // wxWindow overloads!
     bool AcceptsFocus() const { return false; }
@@ -107,7 +107,7 @@ class pxStaticHeading : public pxStaticText
     typedef pxStaticText _parent;
 
 public:
-    pxStaticHeading(wxWindow *parent = NULL, const wxString &label = wxEmptyString);
+    pxStaticHeading(wxWindow *parent = nullptr, const wxString &label = wxEmptyString);
     pxStaticHeading(wxWindow *parent, int heightInLines, const wxString &label = wxEmptyString);
     virtual ~pxStaticHeading() = default;
 

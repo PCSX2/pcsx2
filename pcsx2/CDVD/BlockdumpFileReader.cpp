@@ -46,7 +46,7 @@ bool BlockdumpFileReader::DetectBlockdump(AsyncFileReader* reader)
 }
 
 BlockdumpFileReader::BlockdumpFileReader(void) :
-	m_file(NULL),
+	m_file(nullptr),
 	m_blocks(0),
 	m_blockofs(0),
 	m_dtablesize(0),
@@ -178,7 +178,7 @@ void BlockdumpFileReader::Close(void)
 	if(m_file)
 	{
 		delete m_file;
-		m_file = NULL;
+		m_file = nullptr;
 	}
 }
 

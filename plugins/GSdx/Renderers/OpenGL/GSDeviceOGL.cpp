@@ -1654,7 +1654,7 @@ void GSDeviceOGL::IASetPrimitiveTopology(GLenum topology)
 void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 {
 	ASSERT(i < (int)countof(GLState::tex_unit));
-	// Note: Nvidia debgger doesn't support the id 0 (ie the NULL texture)
+	// Note: Nvidia debgger doesn't support the id 0 (ie the nullptr texture)
 	if (sr) {
 		GLuint id = static_cast<GSTextureOGL*>(sr)->GetID();
 		if (GLState::tex_unit[i] != id) {
@@ -1982,7 +1982,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 		// Close the file to flush the content on disk before exiting.
 		if (m_debug_gl_file) {
 			fclose(m_debug_gl_file);
-			m_debug_gl_file = NULL;
+			m_debug_gl_file = nullptr;
 		}
 		ASSERT(0);
 	}

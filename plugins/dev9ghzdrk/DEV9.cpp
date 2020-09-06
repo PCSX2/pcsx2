@@ -43,7 +43,7 @@
 #ifdef _WIN32
 #pragma warning(disable:4244)
 
-HINSTANCE hInst=NULL;
+HINSTANCE hInst=nullptr;
 #endif
 
 //#define HDD_48BIT
@@ -177,10 +177,10 @@ DEV9init()
 	  "eeprom.dat",
 	  GENERIC_READ|GENERIC_WRITE,
 	  0,
-	  NULL,
+	  nullptr,
 	  OPEN_EXISTING,
 	  FILE_FLAG_WRITE_THROUGH,
-	  NULL
+	  nullptr
 	);
 
 	if(hEeprom==INVALID_HANDLE_VALUE)
@@ -189,7 +189,7 @@ DEV9init()
 	}
 	else
 	{
-		mapping=CreateFileMapping(hEeprom,NULL,PAGE_READWRITE,0,0,NULL);
+		mapping=CreateFileMapping(hEeprom,nullptr,PAGE_READWRITE,0,0,nullptr);
 		if(mapping==INVALID_HANDLE_VALUE)
 		{
 			CloseHandle(hEeprom);
@@ -199,7 +199,7 @@ DEV9init()
 		{
 			dev9.eeprom = (u16*)MapViewOfFile(mapping,FILE_MAP_WRITE,0,0,0);
 
-			if(dev9.eeprom==NULL)
+			if(dev9.eeprom==nullptr)
 			{
 				CloseHandle(mapping);
 				CloseHandle(hEeprom);

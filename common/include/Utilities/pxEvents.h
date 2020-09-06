@@ -103,11 +103,11 @@ public:
     virtual ~pxActionEvent() = default;
     virtual pxActionEvent *Clone() const { return new pxActionEvent(*this); }
 
-    explicit pxActionEvent(SynchronousActionState *sema = NULL, int msgtype = pxEvt_InvokeAction);
+    explicit pxActionEvent(SynchronousActionState *sema = nullptr, int msgtype = pxEvt_InvokeAction);
     explicit pxActionEvent(SynchronousActionState &sema, int msgtype = pxEvt_InvokeAction);
     pxActionEvent(const pxActionEvent &src);
 
-    Threading::Semaphore *GetSemaphore() const { return m_state ? &m_state->GetSemaphore() : NULL; }
+    Threading::Semaphore *GetSemaphore() const { return m_state ? &m_state->GetSemaphore() : nullptr; }
 
     const SynchronousActionState *GetSyncState() const { return m_state; }
     SynchronousActionState *GetSyncState() { return m_state; }
@@ -143,7 +143,7 @@ protected:
     BaseException *m_except;
 
 public:
-    pxExceptionEvent(BaseException *ex = NULL)
+    pxExceptionEvent(BaseException *ex = nullptr)
     {
         m_except = ex;
     }
@@ -176,7 +176,7 @@ public:
     virtual ~pxSynchronousCommandEvent() = default;
     virtual pxSynchronousCommandEvent *Clone() const { return new pxSynchronousCommandEvent(*this); }
 
-    pxSynchronousCommandEvent(SynchronousActionState *sema = NULL, wxEventType commandType = wxEVT_NULL, int winid = 0);
+    pxSynchronousCommandEvent(SynchronousActionState *sema = nullptr, wxEventType commandType = wxEVT_NULL, int winid = 0);
     pxSynchronousCommandEvent(SynchronousActionState &sema, wxEventType commandType = wxEVT_NULL, int winid = 0);
 
     pxSynchronousCommandEvent(SynchronousActionState *sema, const wxCommandEvent &evt);
@@ -184,7 +184,7 @@ public:
 
     pxSynchronousCommandEvent(const pxSynchronousCommandEvent &src);
 
-    Threading::Semaphore *GetSemaphore() { return m_sync ? &m_sync->GetSemaphore() : NULL; }
+    Threading::Semaphore *GetSemaphore() { return m_sync ? &m_sync->GetSemaphore() : nullptr; }
     wxEventType GetRealEventType() const { return m_realEvent; }
 
     void SetException(BaseException *ex);
@@ -208,7 +208,7 @@ public:
     virtual ~BaseMessageBoxEvent() = default;
     virtual BaseMessageBoxEvent *Clone() const { return new BaseMessageBoxEvent(*this); }
 
-    explicit BaseMessageBoxEvent(const wxString &content = wxEmptyString, SynchronousActionState *instdata = NULL);
+    explicit BaseMessageBoxEvent(const wxString &content = wxEmptyString, SynchronousActionState *instdata = nullptr);
     BaseMessageBoxEvent(const wxString &content, SynchronousActionState &instdata);
     BaseMessageBoxEvent(const BaseMessageBoxEvent &event);
 
@@ -386,7 +386,7 @@ public:
 
     pxMessageBoxEvent() {}
     pxMessageBoxEvent(const wxString &title, const wxString &content, const MsgButtons &buttons, SynchronousActionState &instdata);
-    pxMessageBoxEvent(const wxString &title, const wxString &content, const MsgButtons &buttons, SynchronousActionState *instdata = NULL);
+    pxMessageBoxEvent(const wxString &title, const wxString &content, const MsgButtons &buttons, SynchronousActionState *instdata = nullptr);
     pxMessageBoxEvent(const pxMessageBoxEvent &event) = default;
 
 protected:
@@ -408,7 +408,7 @@ public:
     virtual ~pxAssertionEvent() = default;
     virtual pxAssertionEvent *Clone() const { return new pxAssertionEvent(*this); }
 
-    pxAssertionEvent(const wxString &content = wxEmptyString, const wxString &trace = wxEmptyString, SynchronousActionState *instdata = NULL);
+    pxAssertionEvent(const wxString &content = wxEmptyString, const wxString &trace = wxEmptyString, SynchronousActionState *instdata = nullptr);
     pxAssertionEvent(const wxString &content, const wxString &trace, SynchronousActionState &instdata);
     pxAssertionEvent(const pxAssertionEvent &event) = default;
 

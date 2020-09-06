@@ -37,7 +37,7 @@ pxCheckBox::pxCheckBox(wxWindow *parent, const wxString &label, int flags)
 
 void pxCheckBox::Init(const wxString &label, const wxString &subtext, int flags)
 {
-    m_subtext = NULL;
+    m_subtext = nullptr;
     m_subPadding = StdPadding * 2;
     m_checkbox = new wxCheckBox(this, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, flags);
 

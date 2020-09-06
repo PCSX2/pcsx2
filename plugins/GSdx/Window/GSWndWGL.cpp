@@ -31,7 +31,7 @@ static void win_error(const char* msg, bool fatal = true)
 		fprintf(stderr, "WIN API ERROR:%ld\t", errorID);
 
 	if (fatal) {
-		MessageBox(NULL, msg, "ERROR", MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(nullptr, msg, "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		throw GSDXRecoverableError();
 	} else {
 		fprintf(stderr, "ERROR:%s\n", msg);
@@ -104,13 +104,13 @@ void GSWndWGL::CreateContext(int major, int minor)
 	if (!wglCreateContextAttribsARB)
 		win_error("Failed to init wglCreateContextAttribsARB function pointer");
 
-	HGLRC context30 = wglCreateContextAttribsARB(m_NativeDisplay, NULL, context_attribs);
+	HGLRC context30 = wglCreateContextAttribsARB(m_NativeDisplay, nullptr, context_attribs);
 	if (!context30) {
 		win_error("Failed to create a 3.x context with standard flags", false);
 		// retry with more compatible option for (Mesa on Windows, OpenGL on WINE)
 		context_attribs[2*2+1] = 0;
 
-		context30 = wglCreateContextAttribsARB(m_NativeDisplay, NULL, context_attribs);
+		context30 = wglCreateContextAttribsARB(m_NativeDisplay, nullptr, context_attribs);
 	}
 
 	DetachContext();
@@ -134,7 +134,7 @@ void GSWndWGL::AttachContext()
 void GSWndWGL::DetachContext()
 {
 	if (IsContextAttached()) {
-		wglMakeCurrent(NULL, NULL);
+		wglMakeCurrent(nullptr, nullptr);
 		m_ctx_attached = false;
 	}
 }
@@ -174,7 +174,7 @@ void GSWndWGL::Detach()
 	DetachContext();
 
 	if (m_context) wglDeleteContext(m_context);
-	m_context = NULL;
+	m_context = nullptr;
 
 	CloseWGLDisplay();
 
@@ -182,7 +182,7 @@ void GSWndWGL::Detach()
 	if (m_NativeWindow && m_managed)
 	{
 		DestroyWindow(m_NativeWindow);
-		m_NativeWindow = NULL;
+		m_NativeWindow = nullptr;
 	}
 
 }
@@ -230,7 +230,7 @@ void GSWndWGL::CloseWGLDisplay()
 	if (m_NativeDisplay && !ReleaseDC(m_NativeWindow, m_NativeDisplay))
 		win_error("Release Device Context Failed.");
 
-	m_NativeDisplay = NULL;
+	m_NativeDisplay = nullptr;
 }
 
 //TODO: GSopen 1 => Drop?
@@ -250,7 +250,7 @@ bool GSWndWGL::Create(const std::string& title, int w, int h)
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS | CS_OWNDC;
 	wc.lpfnWndProc = WndProc;
 	wc.hInstance = theApp.GetModuleHandle();
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wc.lpszClassName = "GSWndOGL";
 
@@ -290,9 +290,9 @@ bool GSWndWGL::Create(const std::string& title, int w, int h)
 
 	AdjustWindowRect(r, style, FALSE);
 
-	m_NativeWindow = CreateWindow(wc.lpszClassName, title.c_str(), style, r.left, r.top, r.width(), r.height(), NULL, NULL, wc.hInstance, (LPVOID)this);
+	m_NativeWindow = CreateWindow(wc.lpszClassName, title.c_str(), style, r.left, r.top, r.width(), r.height(), nullptr, nullptr, wc.hInstance, (LPVOID)this);
 
-	if (m_NativeWindow == NULL) return false;
+	if (m_NativeWindow == nullptr) return false;
 
 	OpenWGLDisplay();
 
@@ -326,7 +326,7 @@ void* GSWndWGL::GetProcAddress(const char* name, bool opt)
 		ptr = (void *)GetProcAddress(module, name);
 	}
 #endif
-	if (ptr == NULL) {
+	if (ptr == nullptr) {
 		if (theApp.GetConfigB("debug_opengl"))
 			fprintf(stderr, "Failed to find %s\n", name);
 

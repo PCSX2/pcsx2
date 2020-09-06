@@ -144,7 +144,7 @@ EXPORT_C_(int) GSinit()
 		g_const->Init();
 
 #ifdef _WIN32
-	s_hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
+	s_hr = ::CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 #endif
 
 	return 0;
@@ -697,7 +697,7 @@ EXPORT_C GSvsync(int field)
 
 			memset(&msg, 0, sizeof(msg));
 
-			while(msg.message != WM_QUIT && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+			while(msg.message != WM_QUIT && PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 			{
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
@@ -938,7 +938,7 @@ class Console
 
 public:
 	Console::Console(LPCSTR title, bool open)
-		: m_console(NULL)
+		: m_console(nullptr)
 		, m_title(title)
 	{
 		if(open) Open();
@@ -951,7 +951,7 @@ public:
 
 	void Console::Open()
 	{
-		if(m_console == NULL)
+		if(m_console == nullptr)
 		{
 			CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
 
@@ -988,11 +988,11 @@ public:
 
 	void Console::Close()
 	{
-		if(m_console != NULL)
+		if(m_console != nullptr)
 		{
 			FreeConsole();
 
-			m_console = NULL;
+			m_console = nullptr;
 		}
 	}
 };
@@ -1007,7 +1007,7 @@ EXPORT_C GSReplay(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 
 	{
 		char* start = lpszCmdLine;
-		char* end = NULL;
+		char* end = nullptr;
 		long n = strtol(lpszCmdLine, &end, 10);
 		if(end > start) {renderer = static_cast<GSRendererType>(n); lpszCmdLine = end;}
 	}

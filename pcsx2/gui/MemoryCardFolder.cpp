@@ -369,7 +369,7 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 				fileInfo.AppendDir( fileInfo.GetFullName() );
 				fileInfo.SetName( L"" );
 				fileInfo.ClearExt();
-				fileInfo.GetTimes( NULL, &modificationTime, &creationTime );
+				fileInfo.GetTimes( nullptr, &modificationTime, &creationTime );
 
 				// add entry for subdir in parent dir
 				MemoryCardFileEntry* newDirEntry = AppendFileEntryToDir( dirEntry );
@@ -446,7 +446,7 @@ bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxStr
 
 		MemoryCardFileEntry* newFileEntry = AppendFileEntryToDir( dirEntry );
 		wxDateTime creationTime, modificationTime;
-		fileInfo.GetTimes( NULL, &modificationTime, &creationTime );
+		fileInfo.GetTimes( nullptr, &modificationTime, &creationTime );
 
 		// set file entry metadata
 		memset( &newFileEntry->entry.raw[0], 0x00, sizeof( newFileEntry->entry.raw ) );

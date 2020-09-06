@@ -131,7 +131,7 @@ const xImpl_FastCall xFastCall = {};
 void xSmartJump::SetTarget()
 {
     u8 *target = xGetPtr();
-    if (m_baseptr == NULL)
+    if (m_baseptr == nullptr)
         return;
 
     xSetPtr(m_baseptr);
@@ -154,7 +154,7 @@ void xSmartJump::SetTarget()
 xSmartJump::~xSmartJump()
 {
     SetTarget();
-    m_baseptr = NULL; // just in case (sometimes helps in debugging too)
+    m_baseptr = nullptr; // just in case (sometimes helps in debugging too)
 }
 
 // ------------------------------------------------------------------------
@@ -252,7 +252,7 @@ xForwardJumpBase::xForwardJumpBase(uint opsize, JccComparisonType cctype)
 
 void xForwardJumpBase::_setTarget(uint opsize) const
 {
-    pxAssertDev(BasePtr != NULL, "");
+    pxAssertDev(BasePtr != nullptr, "");
 
     sptr displacement = (sptr)xGetPtr() - (sptr)BasePtr;
     if (opsize == 1) {

@@ -666,9 +666,9 @@ public:
 	void OnPageFaultEvent( const PageFaultInfo& info, bool& handled );
 };
 
-static mmap_PageFaultHandler* mmap_faultHandler = NULL;
+static mmap_PageFaultHandler* mmap_faultHandler = nullptr;
 
-EEVM_MemoryAllocMess* eeMem = NULL;
+EEVM_MemoryAllocMess* eeMem = nullptr;
 __pagealigned u8 eeHw[Ps2MemSize::Hardware];
 
 
@@ -853,7 +853,7 @@ void eeMemoryReserve::Reset()
 void eeMemoryReserve::Decommit()
 {
 	_parent::Decommit();
-	eeMem = NULL;
+	eeMem = nullptr;
 }
 
 eeMemoryReserve::~eeMemoryReserve()

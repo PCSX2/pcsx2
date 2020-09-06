@@ -30,7 +30,7 @@ __tls_emit u32 *j32Ptr[32];
 u16 g_x86AllocCounter = 0;
 u16 g_xmmAllocCounter = 0;
 
-EEINST* g_pCurInstInfo = NULL;
+EEINST* g_pCurInstInfo = nullptr;
 
 // used to make sure regs don't get changed while in recompiler
 // use FreezeXMMRegs
@@ -79,7 +79,7 @@ __fi void* _XMMGetAddr(int type, int reg, VURegs *VU)
 		jNO_DEFAULT
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 // Get the index of a free register

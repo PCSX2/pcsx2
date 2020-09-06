@@ -178,7 +178,7 @@ void InputIsoFile::_init()
 	ReadUnit = 0;
 	m_current_lsn = -1;
 	m_read_lsn = -1;
-	m_reader = NULL;
+	m_reader = nullptr;
 }
 
 // Tests the specified filename to see if it is a supported ISO type.  This function typically
@@ -200,14 +200,14 @@ bool InputIsoFile::Open( const wxString& srcfile, bool testOnly )
 {
 	Close();
 	m_filename = srcfile;
-	m_reader = NULL;
+	m_reader = nullptr;
 
 	bool isBlockdump = false;
 	bool isCompressed = false;
 
 	// First try using a compressed reader.  If it works, go with it.
 	m_reader = CompressedFileReader::GetNewReader(m_filename);
-	isCompressed = m_reader != NULL;
+	isCompressed = m_reader != nullptr;
 
 	// If it wasn't compressed, let's open it has a FlatFileReader. 
 	if (!isCompressed)
@@ -281,14 +281,14 @@ bool InputIsoFile::Open( const wxString& srcfile, bool testOnly )
 void InputIsoFile::Close()
 {
 	delete m_reader;
-	m_reader = NULL;
+	m_reader = nullptr;
 	
 	_init();
 }
 
 bool InputIsoFile::IsOpened() const
 {
-	return m_reader != NULL;
+	return m_reader != nullptr;
 }
 
 bool InputIsoFile::tryIsoType(u32 _size, s32 _offset, s32 _blockofs)

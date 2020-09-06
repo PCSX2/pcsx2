@@ -191,7 +191,7 @@ char* DebugInterface::stringFromPointer(u32 p)
 	static char buf[BUFFER_LEN] = { 0 };
 
 	if (!isValidAddress(p))
-		return NULL;
+		return nullptr;
 
 	try {
 		for (u32 i = 0; i < BUFFER_LEN; i++) {
@@ -199,16 +199,16 @@ char* DebugInterface::stringFromPointer(u32 p)
 			buf[i] = c;
 
 			if (c == 0) {
-				return i > 0 ? buf : NULL;
+				return i > 0 ? buf : nullptr;
 			}
 			else if (c < 0x20 || c >= 0x7f) {
 				// non printable character
-				return NULL;
+				return nullptr;
 			}
 		}
 	}
 	catch (Exception::Ps2Generic&) {
-		return NULL;
+		return nullptr;
 	}
 	buf[BUFFER_LEN - 1] = 0;
 	buf[BUFFER_LEN - 2] = '~';
@@ -850,7 +850,7 @@ bool R3000DebugInterface::isValidAddress(u32 addr)
 	if (addr >= 0x70000000 && addr < 0x70004000)
 		return true;
 
-	return !(addr & 0x40000000) && vtlb_GetPhyPtr(addr & 0x1FFFFFFF) != NULL;
+	return !(addr & 0x40000000) && vtlb_GetPhyPtr(addr & 0x1FFFFFFF) != nullptr;
 }
 
 u32 R3000DebugInterface::getCycles()

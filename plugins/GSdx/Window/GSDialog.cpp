@@ -28,7 +28,7 @@
 
 GSDialog::GSDialog(UINT id)
 	: m_id(id)
-	, m_hWnd(NULL)
+	, m_hWnd(nullptr)
 {
 }
 
@@ -39,7 +39,7 @@ INT_PTR GSDialog::DoModal()
 
 INT_PTR CALLBACK GSDialog::DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	GSDialog* dlg = NULL;
+	GSDialog* dlg = nullptr;
 
 	if(message == WM_INITDIALOG)
 	{
@@ -57,7 +57,7 @@ INT_PTR CALLBACK GSDialog::DialogProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		int x = (mi.rcWork.left + mi.rcWork.right - r.width()) / 2;
 		int y = (mi.rcWork.top + mi.rcWork.bottom - r.height()) / 2;
 
-		SetWindowPos(hWnd, NULL, x, y, -1, -1, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+		SetWindowPos(hWnd, nullptr, x, y, -1, -1, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 
 		dlg->OnInit();
 
@@ -73,16 +73,16 @@ INT_PTR CALLBACK GSDialog::DialogProc(HWND hWnd, UINT message, WPARAM wParam, LP
 			LPNMTTDISPINFO pInfo = (LPNMTTDISPINFO)lParam;
 			UINT id = GetWindowLongPtr((HWND)pInfo->hdr.idFrom, GWL_ID);
 
-			// lpszText is used only if hinst is NULL. Seems to be NULL already,
+			// lpszText is used only if hinst is nullptr. Seems to be nullptr already,
 			// but it can't hurt to explicitly set it.
-			pInfo->hinst = NULL;
+			pInfo->hinst = nullptr;
 			pInfo->lpszText = (LPTSTR)dialog_message(id);
 			SendMessage(pInfo->hdr.hwndFrom, TTM_SETMAXTIPWIDTH, 0, 500);
 			return true;
 		}
 	}
 
-	return dlg != NULL ? dlg->OnMessage(message, wParam, lParam) : FALSE;
+	return dlg != nullptr ? dlg->OnMessage(message, wParam, lParam) : FALSE;
 }
 
 // Tooltips will only show if the TOOLINFO cbSize <= the struct size. If it's
@@ -129,7 +129,7 @@ std::string GSDialog::GetText(UINT id)
 {
 	std::string s;
 
-	char* buff = NULL;
+	char* buff = nullptr;
 
 	for(int size = 256, limit = 65536; size < limit; size <<= 1)
 	{
@@ -310,15 +310,15 @@ void GSDialog::AddTooltip(UINT id)
 		return;
 
 	HWND hWnd = GetDlgItem(m_hWnd, id);
-	if (hWnd == NULL)
+	if (hWnd == nullptr)
 		return;
 
 	// TTS_NOPREFIX allows tabs and '&' to be used.
-	HWND hwndTip = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
+	HWND hwndTip = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, nullptr,
 		TTS_ALWAYSTIP | TTS_NOPREFIX,
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-		m_hWnd, NULL, theApp.GetModuleHandle(), NULL);
-	if (hwndTip == NULL)
+		m_hWnd, nullptr, theApp.GetModuleHandle(), nullptr);
+	if (hwndTip == nullptr)
 		return;
 
 	TOOLINFO toolInfo = { 0 };

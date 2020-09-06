@@ -29,12 +29,12 @@ protected:
 		wxString	Filename;
 		wxMenuItem*	ItemPtr;
 
-		RecentItem() { ItemPtr = NULL; }
+		RecentItem() { ItemPtr = nullptr; }
 
 		RecentItem( const wxString& src )
 			: Filename( src )
 		{
-			ItemPtr = NULL;
+			ItemPtr = nullptr;
 		}
 	};
 

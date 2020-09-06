@@ -36,7 +36,7 @@ bool GSDevice11::CreateTextureFX()
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_vs_cb);
+	hr = m_dev->CreateBuffer(&bd, nullptr, &m_vs_cb);
 
 	if(FAILED(hr)) return false;
 
@@ -46,7 +46,7 @@ bool GSDevice11::CreateTextureFX()
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_gs_cb);
+	hr = m_dev->CreateBuffer(&bd, nullptr, &m_gs_cb);
 
 	if (FAILED(hr)) return false;
 
@@ -56,7 +56,7 @@ bool GSDevice11::CreateTextureFX()
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_ps_cb);
+	hr = m_dev->CreateBuffer(&bd, nullptr, &m_ps_cb);
 
 	if(FAILED(hr)) return false;
 
@@ -130,7 +130,7 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 	{
 		ID3D11DeviceContext* ctx = m_ctx;
 
-		ctx->UpdateSubresource(m_vs_cb, 0, NULL, cb, 0, 0);
+		ctx->UpdateSubresource(m_vs_cb, 0, nullptr, cb, 0, 0);
 	}
 
 	VSSetShader(i->second.vs, m_vs_cb);
@@ -174,7 +174,7 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 	{
 		ID3D11DeviceContext* ctx = m_ctx;
 
-		ctx->UpdateSubresource(m_gs_cb, 0, NULL, cb, 0, 0);
+		ctx->UpdateSubresource(m_gs_cb, 0, nullptr, cb, 0, 0);
 	}
 
 	GSSetShader(gs, m_gs_cb);
@@ -237,7 +237,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 	{
 		ID3D11DeviceContext* ctx = m_ctx;
 
-		ctx->UpdateSubresource(m_ps_cb, 0, NULL, cb, 0, 0);
+		ctx->UpdateSubresource(m_ps_cb, 0, nullptr, cb, 0, 0);
 	}
 
 	CComPtr<ID3D11SamplerState> ss0, ss1;

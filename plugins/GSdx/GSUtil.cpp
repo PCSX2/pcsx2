@@ -386,7 +386,7 @@ D3D_FEATURE_LEVEL GSUtil::CheckDirect3D11Level(IDXGIAdapter *adapter, D3D_DRIVER
 	if(!CheckD3D11())
 		return (D3D_FEATURE_LEVEL)0;
 
-	hr = D3D11CreateDevice(adapter, type, NULL, 0, NULL, 0, D3D11_SDK_VERSION, NULL, &level, NULL);
+	hr = D3D11CreateDevice(adapter, type, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, nullptr, &level, nullptr);
 
 	return SUCCEEDED(hr) ? level : (D3D_FEATURE_LEVEL)0;
 }

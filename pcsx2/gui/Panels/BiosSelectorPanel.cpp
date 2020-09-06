@@ -95,7 +95,7 @@ Panels::BiosSelectorPanel::BiosSelectorPanel( wxWindow* parent )
 {
 	SetMinWidth( 480 );
 
-	m_ComboBox		= new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE | wxLB_SORT | wxLB_NEEDED_SB );
+	m_ComboBox		= new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, wxLB_SINGLE | wxLB_SORT | wxLB_NEEDED_SB );
 	m_FolderPicker	= new DirPickerPanel( this, FolderId_Bios,
 		_("BIOS Search Path:"),						// static box label
 		_("Select folder with PS2 BIOS roms")		// dir picker popup label

@@ -21,7 +21,7 @@
 // --------------------------------------------------------------------------------------
 Threading::RwMutex::RwMutex()
 {
-    pthread_rwlock_init(&m_rwlock, NULL);
+    pthread_rwlock_init(&m_rwlock, nullptr);
 }
 
 Threading::RwMutex::~RwMutex()

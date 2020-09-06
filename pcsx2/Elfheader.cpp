@@ -28,8 +28,8 @@ wxString LastELF;
 // All of ElfObjects functions.
 ElfObject::ElfObject(const wxString& srcfile, IsoFile& isofile)
 	: data( wxULongLong(isofile.getLength()).GetLo(), L"ELF headers" )
-	, proghead( NULL )
-	, secthead( NULL )
+	, proghead( nullptr )
+	, secthead( nullptr )
 	, filename( srcfile )
 	, header( *(ELF_HEADER*)data.GetPtr() )
 {
@@ -41,8 +41,8 @@ ElfObject::ElfObject(const wxString& srcfile, IsoFile& isofile)
 
 ElfObject::ElfObject( const wxString& srcfile, uint hdrsize )
 	: data( wxULongLong(hdrsize).GetLo(), L"ELF headers" )
-	, proghead( NULL )
-	, secthead( NULL )
+	, proghead( nullptr )
+	, secthead( nullptr )
 	, filename( srcfile )
 	, header( *(ELF_HEADER*)data.GetPtr() )
 {
@@ -70,7 +70,7 @@ void ElfObject::initElfHeaders()
 
 	//getCRC();
 
-	const char* elftype = NULL;
+	const char* elftype = nullptr;
 	switch( header.e_type )
 	{
 		default:
@@ -82,9 +82,9 @@ void ElfObject::initElfHeaders()
 		case 0x2: elftype = "executable";	break;
 	}
 
-	if (elftype != NULL) ELF_LOG( "type:      %s", elftype );
+	if (elftype != nullptr) ELF_LOG( "type:      %s", elftype );
 
-	const char* machine = NULL;
+	const char* machine = nullptr;
 
 	switch(header.e_machine)
 	{
@@ -101,7 +101,7 @@ void ElfObject::initElfHeaders()
 			break;
 	}
 
-	if (machine != NULL) ELF_LOG( "machine:  %s", machine );
+	if (machine != nullptr) ELF_LOG( "machine:  %s", machine );
 
 	ELF_LOG("version:   %d",header.e_version);
 	ELF_LOG("entry:	    %08x",header.e_entry);
@@ -120,8 +120,8 @@ void ElfObject::initElfHeaders()
 	//applyPatches();
 }
 
-bool ElfObject::hasProgramHeaders() { return (proghead != NULL); }
-bool ElfObject::hasSectionHeaders() { return (secthead != NULL); }
+bool ElfObject::hasProgramHeaders() { return (proghead != nullptr); }
+bool ElfObject::hasSectionHeaders() { return (secthead != nullptr); }
 bool ElfObject::hasHeaders() { return (hasProgramHeaders() && hasSectionHeaders()); }
 
 std::pair<u32,u32> ElfObject::getTextRange()
@@ -148,7 +148,7 @@ void ElfObject::readFile()
 {
 	int rsize = 0;
 	FILE *f = wxFopen( filename, "rb" );
-	if (f == NULL) throw Exception::FileNotFound( filename );
+	if (f == nullptr) throw Exception::FileNotFound( filename );
 
 	fseek(f, 0, SEEK_SET);
 	rsize = fread(data.GetPtr(), 1, data.GetSizeInBytes(), f);
@@ -168,7 +168,7 @@ static wxString GetMsg_InvalidELF()
 
 void ElfObject::checkElfSize(s64 elfsize)
 {
-	const wxChar* diagMsg = NULL;
+	const wxChar* diagMsg = nullptr;
 	if		(elfsize > 0xfffffff)	diagMsg = L"Illegal ELF file size over 2GB!";
 	else if	(elfsize == -1)			diagMsg = L"ELF file does not exist!";
 	else if	(elfsize == 0)			diagMsg = L"Unexpected end of ELF file.";
@@ -192,7 +192,7 @@ u32 ElfObject::getCRC()
 
 void ElfObject::loadProgramHeaders()
 {
-	if (proghead == NULL) return;
+	if (proghead == nullptr) return;
 
 	for( int i = 0 ; i < header.e_phnum ; i++ )
 	{
@@ -226,7 +226,7 @@ void ElfObject::loadProgramHeaders()
 
 void ElfObject::loadSectionHeaders()
 {
-	if (secthead == NULL || header.e_shoff > (u32)data.GetLength()) return;
+	if (secthead == nullptr || header.e_shoff > (u32)data.GetLength()) return;
 
 	const u8* sections_names = data.GetPtr( secthead[ (header.e_shstrndx == 0xffff ? 0 : header.e_shstrndx) ].sh_offset );
 
@@ -242,7 +242,7 @@ void ElfObject::loadSectionHeaders()
 
 		ELF_LOG("\n");
 
-		const char* sectype = NULL;
+		const char* sectype = nullptr;
 		switch(secthead[ i ].sh_type)
 		{
 			case 0x0: sectype = "null";		break;

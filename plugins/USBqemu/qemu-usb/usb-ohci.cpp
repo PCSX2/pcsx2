@@ -406,7 +406,7 @@ static int ohci_service_iso_td(OHCIState *ohci, struct ohci_ed *ed,
     int dir;
     size_t len = 0;
 #ifdef DEBUG_ISOCH
-    const char *str = NULL;
+    const char *str = nullptr;
 #endif
     int pid;
     int ret;
@@ -647,7 +647,7 @@ static int ohci_service_td(OHCIState *ohci, struct ohci_ed *ed)
     int dir;
     size_t len = 0;
 #ifdef DEBUG_PACKET
-    const char *str = NULL;
+    const char *str = nullptr;
 #endif
     int pid;
     int ret;

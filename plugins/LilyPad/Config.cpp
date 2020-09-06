@@ -336,9 +336,9 @@ static wchar_t iniFile[MAX_PATH * 2] = L"inis/LilyPad.ini";
 
 void CALLBACK PADsetSettingsDir(const char *dir)
 {
-    //swprintf_s( iniFile, L"%S", (dir==NULL) ? "inis" : dir );
+    //swprintf_s( iniFile, L"%S", (dir==nullptr) ? "inis" : dir );
 
-    //uint targlen = MultiByteToWideChar(CP_ACP, 0, dir, -1, NULL, 0);
+    //uint targlen = MultiByteToWideChar(CP_ACP, 0, dir, -1, nullptr, 0);
     MultiByteToWideChar(CP_UTF8, 0, dir, -1, iniFile, MAX_PATH * 2);
     wcscat_s(iniFile, L"/LilyPad.ini");
 
@@ -1239,15 +1239,15 @@ void AddTooltip(UINT id, HWND hWnd)
         return;
 
     HWND hWndTooltip = GetDlgItem(hWnd, id);
-    if (hWndTooltip == NULL)
+    if (hWndTooltip == nullptr)
         return;
 
     // TTS_NOPREFIX allows tabs and '&' to be used.
-    HWND hWndTip = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
+    HWND hWndTip = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, nullptr,
                                   TTS_ALWAYSTIP | TTS_NOPREFIX,
                                   CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-                                  hWnd, NULL, hInst, NULL);
-    if (hWndTip == NULL)
+                                  hWnd, nullptr, hInst, nullptr);
+    if (hWndTip == nullptr)
         return;
 
     TOOLINFO toolInfo = {0};
@@ -1624,7 +1624,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                 // The old code re-bound our button hWndProcEater to GetDlgItem(hWnd, selected).  But at best hWnd
                 // was null (WM_TIMER is passed twice, once with a null parameter, and a second time that is hWnd
                 // specific), and at worst 'selected' is a post-processed code "based" on cmd, so GetDlgItem
-                // *always* returned NULL anyway.  This resulted in hWndButton being null, which meant Device code
+                // *always* returned nullptr anyway.  This resulted in hWndButton being null, which meant Device code
                 // used hWnd instead.  This may have caused odd behavior since the callbacks were still all eaten
                 // by the initial GetDlgItem(hWnd, cmd) selection made when the timer was initialized.
 
@@ -1988,7 +1988,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                 } else if (cmd == ID_SPECIAL_INPUTS) {
                     config.specialInputs[port][slot] = !config.specialInputs[port][slot];
                     // FIXME: Fix DPI Scaling. Below code is commented out and a fixed size for inputs window is used to avoid DPI scaling issues.
-                    // SetWindowPos(hWndList, NULL, 0, 0, 275, config.specialInputs[port][slot] ? 324 : 440, SWP_NOZORDER | SWP_NOMOVE);
+                    // SetWindowPos(hWndList, nullptr, 0, 0, 275, config.specialInputs[port][slot] ? 324 : 440, SWP_NOZORDER | SWP_NOMOVE);
                     // ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
                     // UnselectAll(hWndList);
                     SelChanged(port, slot);

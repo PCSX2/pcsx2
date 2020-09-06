@@ -56,7 +56,7 @@ void RecentIsoManager::OnChangedSelection( wxCommandEvent& evt )
 	uint i=0;
 	for( ; i<cnt; ++i )
 	{
-		if( (m_Items[i].ItemPtr != NULL) && (m_Items[i].ItemPtr->GetId() == evt.GetId()) ) break;
+		if( (m_Items[i].ItemPtr != nullptr) && (m_Items[i].ItemPtr->GetId() == evt.GetId()) ) break;
 	}
 
 	if( i >= m_Items.size() )
@@ -86,7 +86,7 @@ void RecentIsoManager::OnChangedSelection( wxCommandEvent& evt )
 
 void RecentIsoManager::RemoveAllFromMenu()
 {
-	if( m_Menu == NULL ) return;
+	if( m_Menu == nullptr ) return;
 
 	int cnt = m_Items.size();
 	// Note: Go backwards to work around https://trac.wxwidgets.org/ticket/18772
@@ -94,9 +94,9 @@ void RecentIsoManager::RemoveAllFromMenu()
 	for( int i=cnt-1; i>=0; --i )
 	{
 		RecentItem& curitem( m_Items[i] );
-		if( curitem.ItemPtr == NULL ) continue;
+		if( curitem.ItemPtr == nullptr ) continue;
 		m_Menu->Destroy( curitem.ItemPtr );
-		curitem.ItemPtr = NULL;
+		curitem.ItemPtr = nullptr;
 	}
 	
 	if( m_Separator != nullptr )
@@ -151,7 +151,7 @@ void RecentIsoManager::Add( const wxString& src )
 
 	if( cnt <= 0 )
 	{
-		pxAssert( m_Separator == NULL );
+		pxAssert( m_Separator == nullptr );
 		m_Separator = m_Menu->AppendSeparator();
 	}
 	else
@@ -161,7 +161,7 @@ void RecentIsoManager::Add( const wxString& src )
 			if( m_Items[i].Filename == normalized )
 			{
 				m_cursel = i;
-				if( m_Items[i].ItemPtr != NULL )
+				if( m_Items[i].ItemPtr != nullptr )
 					m_Items[i].ItemPtr->Check();
 				return;
 			}
@@ -183,7 +183,7 @@ void RecentIsoManager::Add( const wxString& src )
 //id here is the position index at the internal list of recent ISOs (m_Items)
 void RecentIsoManager::InsertIntoMenu( int id )
 {
-	if( m_Menu == NULL ) return;
+	if( m_Menu == nullptr ) return;
 	RecentItem& curitem( m_Items[id] );
 
 	int wxid=wxID_ANY;

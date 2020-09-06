@@ -326,7 +326,7 @@ void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop)
 	Write(vif_top);
 	Write(vif_itop);
 	CommitWritePos();
-	gifUnit.TransferGSPacketData(GIF_TRANS_MTVU, NULL, 0);
+	gifUnit.TransferGSPacketData(GIF_TRANS_MTVU, nullptr, 0);
 	KickStart();
 	u32 cycles = std::min(Get_vuCycles(), 3000u);
 	cpuRegs.cycle += cycles * EmuConfig.Speedhacks.EECycleSkip;

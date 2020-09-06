@@ -133,8 +133,8 @@ static void LoadBiosVersion( pxInputStream& fp, u32& version, wxString& descript
 				(romver[5]=='C') ? "Console" : (romver[5]=='D') ? "Devel" : ""
 			);
 
-			version = strtol(vermaj, (char**)NULL, 0) << 8;
-			version|= strtol(vermin, (char**)NULL, 0);
+			version = strtol(vermaj, (char**)nullptr, 0) << 8;
+			version|= strtol(vermin, (char**)nullptr, 0);
 
 			Console.WriteLn(L"Bios Found: %ls", result.c_str());
 
@@ -260,7 +260,7 @@ static void LoadIrx( const wxString& filename, u8* dest )
 //
 void LoadBIOS()
 {
-	pxAssertDev( eeMem->ROM != NULL, "PS2 system memory has not been initialized yet." );
+	pxAssertDev( eeMem->ROM != nullptr, "PS2 system memory has not been initialized yet." );
 
 	try
 	{
@@ -302,7 +302,7 @@ void LoadBIOS()
 		if (g_Conf->CurrentIRX.Length() > 3)
 			LoadIrx(g_Conf->CurrentIRX, &eeMem->ROM[0x3C0000]);
 
-		CurrentBiosInformation = NULL;
+		CurrentBiosInformation = nullptr;
 		for (size_t i = 0; i < sizeof(biosVersions)/sizeof(biosVersions[0]); i++)
 		{
 			if (biosVersions[i].biosChecksum == BiosChecksum && biosVersions[i].biosVersion == BiosVersion)

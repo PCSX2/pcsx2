@@ -1016,7 +1016,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	ResetStates();
 	vs_cb.TextureOffset = GSVector4(0.0f);
 
-	ASSERT(m_dev != NULL);
+	ASSERT(m_dev != nullptr);
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
 	// HLE implementation of the channel selection effect

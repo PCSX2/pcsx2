@@ -123,7 +123,7 @@ static void cdvdGetMechaVer(u8* ver)
 
 NVMLayout* getNvmLayout()
 {
-	NVMLayout* nvmLayout = NULL;
+	NVMLayout* nvmLayout = nullptr;
 
 	if(nvmlayouts[1].biosVer <= BiosVersion)
 		nvmLayout = &nvmlayouts[1];

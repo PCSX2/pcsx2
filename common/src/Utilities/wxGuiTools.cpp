@@ -158,14 +158,14 @@ void operator+=(wxSizer &target, const pxStretchSpacer &spacer)
 
 void operator+=(wxWindow &target, int spacer)
 {
-    if (!pxAssert(target.GetSizer() != NULL))
+    if (!pxAssert(target.GetSizer() != nullptr))
         return;
     target.GetSizer()->AddSpacer(spacer);
 }
 
 void operator+=(wxWindow &target, const pxStretchSpacer &spacer)
 {
-    if (!pxAssert(target.GetSizer() != NULL))
+    if (!pxAssert(target.GetSizer() != nullptr))
         return;
     target.GetSizer()->AddStretchSpacer(spacer.proportion);
 }
@@ -176,14 +176,14 @@ void operator+=(wxWindow &target, const pxStretchSpacer &spacer)
 
 void operator+=(wxSizer *target, wxWindow &src)
 {
-    if (!pxAssert(target != NULL))
+    if (!pxAssert(target != nullptr))
         return;
     target->Add(&src);
 }
 
 void operator+=(wxSizer *target, wxSizer &src)
 {
-    if (!pxAssert(target != NULL))
+    if (!pxAssert(target != nullptr))
         return;
     target->Add(&src);
 }
@@ -442,7 +442,7 @@ pxTextWrapperBase &pxTextWrapperBase::Wrap(const wxWindow &win, const wxString &
 
             if (widthMax >= 0 && lastSpace != text.end()) {
                 int width;
-                win.GetTextExtent(line, &width, NULL);
+                win.GetTextExtent(line, &width, nullptr);
 
                 if (width > widthMax) {
                     wasWrapped = true;
@@ -517,7 +517,7 @@ BusyCursorType ScopedBusyCursor::m_defBusyType;
 
 ScopedBusyCursor::ScopedBusyCursor(BusyCursorType busytype)
 {
-    pxAssert(wxTheApp != NULL);
+    pxAssert(wxTheApp != nullptr);
 
     BusyCursorType curtype = Cursor_NotBusy;
     if (!m_cursorStack.empty())
@@ -531,7 +531,7 @@ ScopedBusyCursor::ScopedBusyCursor(BusyCursorType busytype)
 
 ScopedBusyCursor::~ScopedBusyCursor()
 {
-    if (!pxAssert(wxTheApp != NULL))
+    if (!pxAssert(wxTheApp != nullptr))
         return;
 
     if (!pxAssert(!m_cursorStack.empty())) {
@@ -591,7 +591,7 @@ MoreStockCursors StockCursors;
 
 void pxSetToolTip(wxWindow *wind, const wxString &src)
 {
-    if (wind == NULL)
+    if (wind == nullptr)
         return; // Silently ignore nulls
     wind->SetToolTip(src);
 

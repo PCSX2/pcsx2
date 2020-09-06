@@ -292,7 +292,7 @@ SPU2reset()
 EXPORT_C_(s32)
 SPU2init()
 {
-    assert(regtable[0x400] == NULL);
+    assert(regtable[0x400] == nullptr);
 
     if (IsInitialized) {
         printf(" * SPU2-X: Already initialized - Ignoring SPU2init signal.");

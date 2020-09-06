@@ -50,24 +50,24 @@ static const PatchTextTable commands_patch[] =
 	{ 1, L"author",		PatchFunc::author},
 	{ 2, L"comment",	PatchFunc::comment },
 	{ 3, L"patch",		PatchFunc::patch },
-	{ 0, wxEmptyString, NULL } // Array Terminator
+	{ 0, wxEmptyString, nullptr } // Array Terminator
 };
 
 static const PatchTextTable dataType[] =
 {
-	{ 1, L"byte", NULL },
-	{ 2, L"short", NULL },
-	{ 3, L"word", NULL },
-	{ 4, L"double", NULL },
-	{ 5, L"extended", NULL },
-	{ 0, wxEmptyString, NULL }
+	{ 1, L"byte", nullptr },
+	{ 2, L"short", nullptr },
+	{ 3, L"word", nullptr },
+	{ 4, L"double", nullptr },
+	{ 5, L"extended", nullptr },
+	{ 0, wxEmptyString, nullptr }
 };
 
 static const PatchTextTable cpuCore[] =
 {
-	{ 1, L"EE", NULL },
-	{ 2, L"IOP", NULL },
-	{ 0, wxEmptyString,  NULL }
+	{ 1, L"EE", nullptr },
+	{ 2, L"IOP", nullptr },
+	{ 0, wxEmptyString,  nullptr }
 };
 
 // IniFile Functions.
@@ -221,7 +221,7 @@ int LoadPatchesFromZip(wxString gameCRC, const wxString& patchesArchiveFilename)
 	std::unique_ptr<wxZipEntry> entry;
 	wxFFileInputStream in(patchesArchiveFilename);
 	wxZipInputStream zip(in);
-	while (entry.reset(zip.GetNextEntry()), entry.get() != NULL)
+	while (entry.reset(zip.GetNextEntry()), entry.get() != nullptr)
 	{
 		wxString name = entry->GetName();
 		name.MakeUpper();

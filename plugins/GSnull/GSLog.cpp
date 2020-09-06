@@ -42,8 +42,8 @@ bool Open()
 
     gsLog = fopen(LogFile.c_str(), "w");
 
-    if (gsLog != NULL) {
-        setvbuf(gsLog, NULL, _IONBF, 0);
+    if (gsLog != nullptr) {
+        setvbuf(gsLog, nullptr, _IONBF, 0);
     } else {
         Message("Can't create log file %s.", LogFile.c_str());
         result = false;
@@ -59,7 +59,7 @@ void Close()
 {
     if (gsLog) {
         fclose(gsLog);
-        gsLog = NULL;
+        gsLog = nullptr;
     }
 }
 
@@ -67,7 +67,7 @@ void Log(const char *fmt, ...)
 {
     va_list list;
 
-    if (!conf.Log || gsLog == NULL)
+    if (!conf.Log || gsLog == nullptr)
         return;
 
     va_start(list, fmt);

@@ -43,7 +43,7 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 	, m_mcdfile( suggested_mcdfileName )//suggested_and_result_mcdfileName.IsEmpty() ? g_Conf->Mcd[slot].Filename.GetFullName()
 {
 	SetMinWidth( 472 * MSW_GetDPIScale());
-	//m_filepicker	= NULL;
+	//m_filepicker	= nullptr;
 
 	CreateControls();
 

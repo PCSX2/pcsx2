@@ -81,10 +81,10 @@ CpuUsageProviderMSW::CpuUsageProviderMSW()
 	CComPtr<IWbemLocator>	m_IWbemLocator;
 
 	// We're pretty well assured COM is Initialized.
-	CoInitialize(NULL);
+	CoInitialize(nullptr);
 
 	if( FAILED (hr = CoInitializeSecurity(
-			NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_NONE, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, 0) ) )
+			nullptr, -1, nullptr, nullptr, RPC_C_AUTHN_LEVEL_NONE, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE, 0) ) )
 	{
 		switch( hr )
 		{
@@ -106,7 +106,7 @@ CpuUsageProviderMSW::CpuUsageProviderMSW()
 
 	if( FAILED (hr = CoCreateInstance (
 		CLSID_WbemAdministrativeLocator,
-		NULL ,
+		nullptr ,
 		CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER ,
 		IID_IUnknown ,
 		(LPVOID*)&m_IWbemLocator) ) )
@@ -115,7 +115,7 @@ CpuUsageProviderMSW::CpuUsageProviderMSW()
 	}
 
 	if( FAILED (hr = m_IWbemLocator->ConnectServer(
-		bstrNamespace, NULL, NULL, NULL, 0, NULL, NULL, &m_WbemServices) ) )
+		bstrNamespace, nullptr, nullptr, nullptr, 0, nullptr, nullptr, &m_WbemServices) ) )
 	{
 		return;
 	}
@@ -126,7 +126,7 @@ CpuUsageProviderMSW::CpuUsageProviderMSW()
 
 	if (FAILED (hr = CoCreateInstance(
 		CLSID_WbemRefresher,
-		NULL,
+		nullptr,
 		CLSCTX_INPROC_SERVER,
 		IID_IWbemRefresher,
 		(void**) &m_Refresher)))
@@ -148,7 +148,7 @@ CpuUsageProviderMSW::CpuUsageProviderMSW()
 		m_WbemServices,
 		L"Win32_PerfRawData_PerfProc_Process",
 		0,
-		NULL,
+		nullptr,
 		&m_Enum,
 		&lID)))
 	{
@@ -173,7 +173,7 @@ void CpuUsageProviderMSW::UpdateStats()
 	BSTR strQL		= L"WQL";
 
 	CComPtr<IEnumWbemClassObject>		m_EnumObject;
-	hRes = m_WbemServices->ExecQuery(strQL, strQuery, WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &m_EnumObject);
+	hRes = m_WbemServices->ExecQuery(strQL, strQuery, WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &m_EnumObject);
 
 	if( FAILED(hRes) )
 	{
@@ -189,11 +189,11 @@ void CpuUsageProviderMSW::UpdateStats()
 	}
 
 	ULONG uCount = 1, uReturned;
-	IWbemClassObject* pClassObject = NULL;
+	IWbemClassObject* pClassObject = nullptr;
 	hRes = m_EnumObject->Next(WBEM_INFINITE,uCount, &pClassObject, &uReturned);
 	if( FAILED(hRes) )
 	{
-		const wxChar* msg = NULL;
+		const wxChar* msg = nullptr;
 
 		switch( hRes )
 		{
@@ -228,7 +228,7 @@ void CpuUsageProviderMSW::UpdateStats()
 				throw Exception::RuntimeError().SetDiagMsg( wxsFormat( L"(CpuUsageProviderMSW) WMI Object Enumeration failed with an unknown error code: %d", hRes ) );
 		}
 
-		if( msg != NULL )
+		if( msg != nullptr )
 			throw Exception::RuntimeError().SetDiagMsg( (wxString)L"(CpuUsageProviderMSW) " + msg );
 
 		return;

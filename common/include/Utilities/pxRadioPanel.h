@@ -38,7 +38,7 @@ struct RadioPanelItem
         , ToolTip(tooltip)
     {
         SomeInt = 0;
-        SomePtr = NULL;
+        SomePtr = nullptr;
     }
 
     RadioPanelItem &SetToolTip(const wxString &tip)
@@ -170,7 +170,7 @@ public:
     }
 
 protected:
-    void Init(const RadioPanelItem *srcArray = NULL, int arrsize = 0);
+    void Init(const RadioPanelItem *srcArray = nullptr, int arrsize = 0);
     void _setToolTipImmediate(int idx, const wxString &tip);
     void _RealizeDefaultOption();
 };

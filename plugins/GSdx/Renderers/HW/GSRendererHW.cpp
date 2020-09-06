@@ -1578,7 +1578,7 @@ void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 	m_cu = m_cu_map[hash];
 
 	if (game.flags & CRC::PointListPalette) {
-		ASSERT(m_oi == NULL);
+		ASSERT(m_oi == nullptr);
 
 		m_oi = &GSRendererHW::OI_PointListPalette;
 	}

@@ -85,7 +85,7 @@ struct name {                                                           \
 }
 
 #define QLIST_HEAD_INITIALIZER(head)                                    \
-        { NULL }
+        { nullptr }
 
 #define QLIST_ENTRY(type)                                               \
 struct {                                                                \
@@ -97,11 +97,11 @@ struct {                                                                \
  * List functions.
  */
 #define QLIST_INIT(head) do {                                           \
-        (head)->lh_first = NULL;                                        \
+        (head)->lh_first = nullptr;                                        \
 } while (/*CONSTCOND*/0)
 
 #define QLIST_INSERT_AFTER(listelm, elm, field) do {                    \
-        if (((elm)->field.le_next = (listelm)->field.le_next) != NULL)  \
+        if (((elm)->field.le_next = (listelm)->field.le_next) != nullptr)  \
                 (listelm)->field.le_next->field.le_prev =               \
                     &(elm)->field.le_next;                              \
         (listelm)->field.le_next = (elm);                               \
@@ -116,14 +116,14 @@ struct {                                                                \
 } while (/*CONSTCOND*/0)
 
 #define QLIST_INSERT_HEAD(head, elm, field) do {                        \
-        if (((elm)->field.le_next = (head)->lh_first) != NULL)          \
+        if (((elm)->field.le_next = (head)->lh_first) != nullptr)          \
                 (head)->lh_first->field.le_prev = &(elm)->field.le_next;\
         (head)->lh_first = (elm);                                       \
         (elm)->field.le_prev = &(head)->lh_first;                       \
 } while (/*CONSTCOND*/0)
 
 #define QLIST_REMOVE(elm, field) do {                                   \
-        if ((elm)->field.le_next != NULL)                               \
+        if ((elm)->field.le_next != nullptr)                               \
                 (elm)->field.le_next->field.le_prev =                   \
                     (elm)->field.le_prev;                               \
         *(elm)->field.le_prev = (elm)->field.le_next;                   \
@@ -142,7 +142,7 @@ struct {                                                                \
 /*
  * List access methods.
  */
-#define QLIST_EMPTY(head)                ((head)->lh_first == NULL)
+#define QLIST_EMPTY(head)                ((head)->lh_first == nullptr)
 #define QLIST_FIRST(head)                ((head)->lh_first)
 #define QLIST_NEXT(elm, field)           ((elm)->field.le_next)
 
@@ -157,7 +157,7 @@ struct name {                                                           \
 }
 
 #define QSIMPLEQ_HEAD_INITIALIZER(head)                                 \
-    { NULL, &(head).sqh_first }
+    { nullptr, &(head).sqh_first }
 
 #define QSIMPLEQ_ENTRY(type)                                            \
 struct {                                                                \
@@ -168,30 +168,30 @@ struct {                                                                \
  * Simple queue functions.
  */
 #define QSIMPLEQ_INIT(head) do {                                        \
-    (head)->sqh_first = NULL;                                           \
+    (head)->sqh_first = nullptr;                                           \
     (head)->sqh_last = &(head)->sqh_first;                              \
 } while (/*CONSTCOND*/0)
 
 #define QSIMPLEQ_INSERT_HEAD(head, elm, field) do {                     \
-    if (((elm)->field.sqe_next = (head)->sqh_first) == NULL)            \
+    if (((elm)->field.sqe_next = (head)->sqh_first) == nullptr)            \
         (head)->sqh_last = &(elm)->field.sqe_next;                      \
     (head)->sqh_first = (elm);                                          \
 } while (/*CONSTCOND*/0)
 
 #define QSIMPLEQ_INSERT_TAIL(head, elm, field) do {                     \
-    (elm)->field.sqe_next = NULL;                                       \
+    (elm)->field.sqe_next = nullptr;                                       \
     *(head)->sqh_last = (elm);                                          \
     (head)->sqh_last = &(elm)->field.sqe_next;                          \
 } while (/*CONSTCOND*/0)
 
 #define QSIMPLEQ_INSERT_AFTER(head, listelm, elm, field) do {           \
-    if (((elm)->field.sqe_next = (listelm)->field.sqe_next) == NULL)    \
+    if (((elm)->field.sqe_next = (listelm)->field.sqe_next) == nullptr)    \
         (head)->sqh_last = &(elm)->field.sqe_next;                      \
     (listelm)->field.sqe_next = (elm);                                  \
 } while (/*CONSTCOND*/0)
 
 #define QSIMPLEQ_REMOVE_HEAD(head, field) do {                          \
-    if (((head)->sqh_first = (head)->sqh_first->field.sqe_next) == NULL)\
+    if (((head)->sqh_first = (head)->sqh_first->field.sqe_next) == nullptr)\
         (head)->sqh_last = &(head)->sqh_first;                          \
 } while (/*CONSTCOND*/0)
 
@@ -203,7 +203,7 @@ struct {                                                                \
         while (curelm->field.sqe_next != (elm))                         \
             curelm = curelm->field.sqe_next;                            \
         if ((curelm->field.sqe_next =                                   \
-            curelm->field.sqe_next->field.sqe_next) == NULL)            \
+            curelm->field.sqe_next->field.sqe_next) == nullptr)            \
                 (head)->sqh_last = &(curelm)->field.sqe_next;           \
     }                                                                   \
 } while (/*CONSTCOND*/0)
@@ -228,14 +228,14 @@ struct {                                                                \
 
 #define QSIMPLEQ_LAST(head, type, field)                                \
     (QSIMPLEQ_EMPTY((head)) ?                                           \
-        NULL :                                                          \
+        nullptr :                                                          \
             ((struct type *)(void *)                                    \
         ((char *)((head)->sqh_last) - offsetof(struct type, field))))
 
 /*
  * Simple queue access methods.
  */
-#define QSIMPLEQ_EMPTY(head)        ((head)->sqh_first == NULL)
+#define QSIMPLEQ_EMPTY(head)        ((head)->sqh_first == nullptr)
 #define QSIMPLEQ_FIRST(head)        ((head)->sqh_first)
 #define QSIMPLEQ_NEXT(elm, field)   ((elm)->field.sqe_next)
 
@@ -251,7 +251,7 @@ struct name {                                                           \
 #define QTAILQ_HEAD(name, type)  Q_TAILQ_HEAD(name, struct type,)
 
 #define QTAILQ_HEAD_INITIALIZER(head)                                   \
-        { NULL, &(head).tqh_first }
+        { nullptr, &(head).tqh_first }
 
 #define Q_TAILQ_ENTRY(type, qual)                                       \
 struct {                                                                \
@@ -264,12 +264,12 @@ struct {                                                                \
  * Tail queue functions.
  */
 #define QTAILQ_INIT(head) do {                                          \
-        (head)->tqh_first = NULL;                                       \
+        (head)->tqh_first = nullptr;                                       \
         (head)->tqh_last = &(head)->tqh_first;                          \
 } while (/*CONSTCOND*/0)
 
 #define QTAILQ_INSERT_HEAD(head, elm, field) do {                       \
-        if (((elm)->field.tqe_next = (head)->tqh_first) != NULL)        \
+        if (((elm)->field.tqe_next = (head)->tqh_first) != nullptr)        \
                 (head)->tqh_first->field.tqe_prev =                     \
                     &(elm)->field.tqe_next;                             \
         else                                                            \
@@ -279,14 +279,14 @@ struct {                                                                \
 } while (/*CONSTCOND*/0)
 
 #define QTAILQ_INSERT_TAIL(head, elm, field) do {                       \
-        (elm)->field.tqe_next = NULL;                                   \
+        (elm)->field.tqe_next = nullptr;                                   \
         (elm)->field.tqe_prev = (head)->tqh_last;                       \
         *(head)->tqh_last = (elm);                                      \
         (head)->tqh_last = &(elm)->field.tqe_next;                      \
 } while (/*CONSTCOND*/0)
 
 #define QTAILQ_INSERT_AFTER(head, listelm, elm, field) do {             \
-        if (((elm)->field.tqe_next = (listelm)->field.tqe_next) != NULL)\
+        if (((elm)->field.tqe_next = (listelm)->field.tqe_next) != nullptr)\
                 (elm)->field.tqe_next->field.tqe_prev =                 \
                     &(elm)->field.tqe_next;                             \
         else                                                            \
@@ -303,7 +303,7 @@ struct {                                                                \
 } while (/*CONSTCOND*/0)
 
 #define QTAILQ_REMOVE(head, elm, field) do {                            \
-        if (((elm)->field.tqe_next) != NULL)                            \
+        if (((elm)->field.tqe_next) != nullptr)                            \
                 (elm)->field.tqe_next->field.tqe_prev =                 \
                     (elm)->field.tqe_prev;                              \
         else                                                            \
@@ -329,7 +329,7 @@ struct {                                                                \
 /*
  * Tail queue access methods.
  */
-#define QTAILQ_EMPTY(head)               ((head)->tqh_first == NULL)
+#define QTAILQ_EMPTY(head)               ((head)->tqh_first == nullptr)
 #define QTAILQ_FIRST(head)               ((head)->tqh_first)
 #define QTAILQ_NEXT(elm, field)          ((elm)->field.tqe_next)
 

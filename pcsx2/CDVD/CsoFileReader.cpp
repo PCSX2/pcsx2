@@ -162,24 +162,24 @@ void CsoFileReader::Close() {
 
 	if (m_src) {
 		fclose(m_src);
-		m_src = NULL;
+		m_src = nullptr;
 	}
 	if (m_z_stream) {
 		inflateEnd(m_z_stream);
-		m_z_stream = NULL;
+		m_z_stream = nullptr;
 	}
 
 	if (m_readBuffer) {
 		delete[] m_readBuffer;
-		m_readBuffer = NULL;
+		m_readBuffer = nullptr;
 	}
 	if (m_zlibBuffer) {
 		delete[] m_zlibBuffer;
-		m_zlibBuffer = NULL;
+		m_zlibBuffer = nullptr;
 	}
 	if (m_index) {
 		delete[] m_index;
-		m_index = NULL;
+		m_index = nullptr;
 	}
 }
 

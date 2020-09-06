@@ -31,7 +31,7 @@ static const __aligned16 u32 SSEXYZWMask[4][4] =
 };
 
 //static __pagealigned u8 nVifUpkExec[__pagesize*4];
-static RecompiledCodeReserve* nVifUpkExec = NULL;
+static RecompiledCodeReserve* nVifUpkExec = nullptr;
 
 // Merges xmm vectors without modifying source reg
 void mergeVectors(xRegisterSSE dest, xRegisterSSE src, xRegisterSSE temp, int xyzw) {
@@ -406,7 +406,7 @@ static void nVifGen(int usn, int mask, int curCycle) {
 	for( int i=0; i<16; ++i )
 	{
 		nVifCall& ucall( nVifUpk[((usnpart+maskpart+i) * 4) + curCycle] );
-		ucall = NULL;
+		ucall = nullptr;
 		if( nVifT[i] == 0 ) continue;
 
 		ucall = (nVifCall)xGetAlignedCallTarget();

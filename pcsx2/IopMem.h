@@ -28,7 +28,7 @@ extern const uptr *psxMemRLUT;
 template<typename T>
 static __fi T* iopVirtMemW( u32 mem )
 {
-	return (psxMemWLUT[(mem) >> 16] == 0) ? NULL : (T*)(psxMemWLUT[(mem) >> 16] + ((mem) & 0xffff));
+	return (psxMemWLUT[(mem) >> 16] == 0) ? nullptr : (T*)(psxMemWLUT[(mem) >> 16] + ((mem) & 0xffff));
 }
 
 // Obtains a read-safe pointer into the IOP's physical memory, with TLB address translation.
@@ -41,7 +41,7 @@ template<typename T>
 static __fi const T* iopVirtMemR( u32 mem )
 {
 	mem &= 0x1fffffff;
-	return (psxMemRLUT[mem >> 16] == 0) ? NULL : (const T*)(psxMemRLUT[mem >> 16] + (mem & 0xffff));
+	return (psxMemRLUT[mem >> 16] == 0) ? nullptr : (const T*)(psxMemRLUT[mem >> 16] + (mem & 0xffff));
 }
 
 // Obtains a pointer to the IOP's physical mapping (bypasses the TLB)

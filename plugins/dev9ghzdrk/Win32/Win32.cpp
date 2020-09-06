@@ -27,7 +27,7 @@
 #include "tap.h"
 
 extern HINSTANCE hInst;
-//HANDLE handleDEV9Thread = NULL;
+//HANDLE handleDEV9Thread = nullptr;
 //DWORD dwThreadId, dwThrdParam;
 
 void SysMessage(char *fmt, ...) {
@@ -185,7 +185,7 @@ NetAdapter* GetNetAdapter()
 }
 s32  _DEV9open()
 {
-	//handleDEV9Thread = CreateThread (NULL, 0, (LPTHREAD_START_ROUTINE) DEV9ThreadProc, &dwThrdParam, CREATE_SUSPENDED, &dwThreadId);
+	//handleDEV9Thread = CreateThread (nullptr, 0, (LPTHREAD_START_ROUTINE) DEV9ThreadProc, &dwThrdParam, CREATE_SUSPENDED, &dwThreadId);
 	//SetThreadPriority(handleDEV9Thread,THREAD_PRIORITY_HIGHEST);
 	//ResumeThread (handleDEV9Thread);
 	NetAdapter* na=GetNetAdapter();
@@ -203,6 +203,6 @@ s32  _DEV9open()
 
 void _DEV9close() {
 	//TerminateThread(handleDEV9Thread,0);
-	//handleDEV9Thread = NULL;
+	//handleDEV9Thread = nullptr;
 	TermNet();
 }

@@ -44,7 +44,7 @@ namespace R5900
 			#name, \
 			cycles, \
 			flags, \
-			NULL, \
+			nullptr, \
 			::R5900::Interpreter::OpcodeImpl::name, \
 			::R5900::Dynarec::OpcodeImpl::rec##name, \
 			::R5900::OpcodeDisasm::name \
@@ -55,7 +55,7 @@ namespace R5900
 			#name, \
 			cycles, \
 			flags, \
-			NULL, \
+			nullptr, \
 			::R5900::Interpreter::OpcodeImpl::MMI::name, \
 			::R5900::Dynarec::OpcodeImpl::MMI::rec##name, \
 			::R5900::OpcodeDisasm::name \
@@ -66,7 +66,7 @@ namespace R5900
 			#name, \
 			cycles, \
 			flags, \
-			NULL, \
+			nullptr, \
 			::R5900::Interpreter::OpcodeImpl::COP0::name, \
 			::R5900::Dynarec::OpcodeImpl::COP0::rec##name, \
 			::R5900::OpcodeDisasm::name \
@@ -77,7 +77,7 @@ namespace R5900
 			#name, \
 			cycles, \
 			flags, \
-			NULL, \
+			nullptr, \
 			::R5900::Interpreter::OpcodeImpl::COP1::name, \
 			::R5900::Dynarec::OpcodeImpl::COP1::rec##name, \
 			::R5900::OpcodeDisasm::name \
@@ -89,9 +89,9 @@ namespace R5900
 			0, \
 			0, \
 			R5900::Opcodes::Class_##name, \
-			NULL, \
-			NULL, \
-			NULL \
+			nullptr, \
+			nullptr, \
+			nullptr \
 		}
 
 		// We're working on new hopefully better cycle ratios, but they're still a WIP.

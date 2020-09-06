@@ -81,7 +81,7 @@ wxTextCtrl *CreateNumericalTextCtrl(wxWindow *parent, int digits, long flags)
 void pxFitToDigits(wxWindow *win, int digits)
 {
     int ex;
-    win->GetTextExtent(wxString(L'0', digits + 1), &ex, NULL);
+    win->GetTextExtent(wxString(L'0', digits + 1), &ex, nullptr);
     win->SetMinSize(wxSize(ex + 10, wxDefaultCoord)); // +10 for text control borders/insets and junk.
 }
 
@@ -94,13 +94,13 @@ void pxFitToDigits(wxSpinCtrl *win, int digits)
     static const int MagicSpinnerSize = 18;
 
     int ex;
-    win->GetTextExtent(wxString(L'0', digits + 1), &ex, NULL);
+    win->GetTextExtent(wxString(L'0', digits + 1), &ex, nullptr);
     win->SetMinSize(wxSize(ex + 10 + MagicSpinnerSize, wxDefaultCoord)); // +10 for text control borders/insets and junk.
 }
 
 bool pxDialogExists(const wxString &name)
 {
-    return wxFindWindowByName(name) != NULL;
+    return wxFindWindowByName(name) != nullptr;
 }
 
 // =====================================================================================================
@@ -114,7 +114,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(wxDialogWithHelpers, wxDialog);
 wxDialogWithHelpers::wxDialogWithHelpers()
 {
     m_hasContextHelp = false;
-    m_extraButtonSizer = NULL;
+    m_extraButtonSizer = nullptr;
 
     Init(pxDialogFlags());
 }
@@ -145,7 +145,7 @@ void wxDialogWithHelpers::Init(const pxDialogCreationFlags &cflags)
         SetExtraStyle(GetExtraStyle() & ~wxTOPLEVEL_EX_DIALOG);
 #endif
 
-    m_extraButtonSizer = NULL;
+    m_extraButtonSizer = nullptr;
 
     if (m_hasContextHelp)
         delete wxHelpProvider::Set(new wxSimpleHelpProvider());
@@ -271,7 +271,7 @@ void wxDialogWithHelpers::RememberPosition()
     //   ... not sure how to fix that yet.  I could register a list of open windows into wxAppWithHelpers
     //   that systematically get closed.  Seems like work, maybe later.  --air
 
-    if (wxConfigBase *cfg = IsIconized() ? NULL : wxConfigBase::Get(false)) {
+    if (wxConfigBase *cfg = IsIconized() ? nullptr : wxConfigBase::Get(false)) {
         const wxString dlgName(GetDialogName());
         const wxRect screenRect(GetScreenRect());
         if (!dlgName.IsEmpty() && (m_CreatedRect != screenRect)) {
@@ -337,7 +337,7 @@ void wxDialogWithHelpers::AddOkCancel(wxSizer &sizer, bool hasApply)
 
 void wxDialogWithHelpers::AddOkCancel(wxSizer *sizer, bool hasApply)
 {
-    if (sizer == NULL)
+    if (sizer == nullptr)
         sizer = GetSizer();
     pxAssert(sizer);
     AddOkCancel(*sizer, hasApply);

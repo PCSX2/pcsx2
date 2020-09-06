@@ -107,9 +107,9 @@ s32 DoSifRead(u32 iopAvailable)
 	SIF_LOG("Write IOP to EE: +++++++++++ %lX of %lX", transferSizeWords, sif0.iop.counter);
 
 	tDMA_TAG *ptag = sif0ch.getAddr(sif0ch.madr, DMAC_SIF0, true);
-	if (ptag == NULL)
+	if (ptag == nullptr)
 	{
-		DevCon.Warning("Write IOP to EE: ptag == NULL");
+		DevCon.Warning("Write IOP to EE: ptag == nullptr");
 		return false;
 	}
 

@@ -1210,11 +1210,11 @@ private:
 			return;
 
 		FreeLibrary( m_library );
-		m_library = NULL;
+		m_library = nullptr;
 
 		// If can't delete (might happen when GSdx closes), schedule delete on reboot
 		if(!DeleteFile( m_loadedDllPath.c_str() ) )
-			MoveFileEx( m_loadedDllPath.c_str(), NULL, MOVEFILE_DELAY_UNTIL_REBOOT );
+			MoveFileEx( m_loadedDllPath.c_str(), nullptr, MOVEFILE_DELAY_UNTIL_REBOOT );
 	}
 
 public:
@@ -1233,7 +1233,7 @@ public:
 	// Overhead is very low when when probe timeout has not ellapsed, and especially if current timestamp is supplied as argument.
 	// Note: there's no relation between the file modification date and currentMs value, so it need'nt neccessarily be an actual timestamp.
 	// Note: isChanged is guarenteed to return true at least once
-	//       (even if the file doesn't exist, at which case the following GetSymbolAddress will return NULL)
+	//       (even if the file doesn't exist, at which case the following GetSymbolAddress will return nullptr)
 	bool isChanged( const DWORD currentMs=0 )
 	{
 		DWORD current = currentMs? currentMs : GetTickCount();
@@ -1266,8 +1266,8 @@ public:
 		return true;
 	};
 
-	// Return value is NULL if the dll isn't loaded (failure or doesn't exist) or if the symbol isn't found.
-	void* GetSymbolAddress( const char* name ){ return m_library? GetProcAddress( m_library, name ) : NULL; };
+	// Return value is nullptr if the dll isn't loaded (failure or doesn't exist) or if the symbol isn't found.
+	void* GetSymbolAddress( const char* name ){ return m_library? GetProcAddress( m_library, name ) : nullptr; };
 };
 
 
@@ -1281,8 +1281,8 @@ typedef uint32 (__cdecl* DynaHackType2)(uint32, uint32, uint32, uint32, uint32, 
 bool IsInvokedDynamicCrcHack( GSFrameInfo &fi, int& skip, int region, bool &result, uint32 crc )
 {
 	static AutoReloadLibrary dll( DYNA_DLL_PATH );
-	static DynaHackType dllFunc = NULL;
-	static DynaHackType2 dllFunc2 = NULL;
+	static DynaHackType dllFunc = nullptr;
+	static DynaHackType2 dllFunc2 = nullptr;
 
 	if( dll.isChanged() )
 	{

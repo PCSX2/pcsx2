@@ -58,10 +58,10 @@ void mVUinit(microVU& mVU, uint vuIndex) {
 	mVU.progSize		= (mVU.index ? 0x4000 : 0x1000) / 4;
 	mVU.progMemMask		=  mVU.progSize-1;
 	mVU.cacheSize		=  vuIndex ? mVU1cacheReserve : mVU0cacheReserve;
-	mVU.cache			= NULL;
-	mVU.dispCache		= NULL;
-	mVU.startFunct		= NULL;
-	mVU.exitFunct		= NULL;
+	mVU.cache			= nullptr;
+	mVU.dispCache		= nullptr;
+	mVU.startFunct		= nullptr;
+	mVU.exitFunct		= nullptr;
 
 	mVUreserveCache(mVU);
 
@@ -93,7 +93,7 @@ void mVUreset(microVU& mVU, bool resetReserve) {
 	// Program Variables
 	mVU.prog.cleared	=  1;
 	mVU.prog.isSame		= -1;
-	mVU.prog.cur		= NULL;
+	mVU.prog.cur		= nullptr;
 	mVU.prog.total		=  0;
 	mVU.prog.curFrame	=  0;
 
@@ -114,8 +114,8 @@ void mVUreset(microVU& mVU, bool resetReserve) {
 			mVUdeleteProg(mVU, it[0]);
 		}
 		mVU.prog.prog[i]->clear();
-		mVU.prog.quick[i].block = NULL;
-		mVU.prog.quick[i].prog  = NULL;
+		mVU.prog.quick[i].block = nullptr;
+		mVU.prog.quick[i].prog  = nullptr;
 	}
 
 	HostSys::MemProtect(mVU.dispCache, mVUdispCacheSize, PageAccess_ExecOnly());
@@ -146,8 +146,8 @@ __fi void mVUclear(mV, u32 addr, u32 size) {
 		mVU.prog.cleared = 1;		// Next execution searches/creates a new microprogram
 		memzero(mVU.prog.lpState); // Clear pipeline state
 		for(u32 i = 0; i < (mVU.progSize / 2); i++) {
-			mVU.prog.quick[i].block = NULL; // Clear current quick-reference block
-			mVU.prog.quick[i].prog  = NULL; // Clear current quick-reference prog
+			mVU.prog.quick[i].block = nullptr; // Clear current quick-reference block
+			mVU.prog.quick[i].prog  = nullptr; // Clear current quick-reference prog
 		}
 	}
 }

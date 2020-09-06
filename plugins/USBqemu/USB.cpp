@@ -33,7 +33,7 @@ OHCIState *qemu_ohci;
 
 Config conf;
 
-HWND gsWindowHandle=NULL;
+HWND gsWindowHandle=nullptr;
 
 u8 *ram;
 USBcallback _USBirq;
@@ -135,7 +135,7 @@ s32 CALLBACK USBinit() {
 	if (conf.Log)
 	{
 		usbLog = fopen("logs/usbLog.txt", "w");
-		setvbuf(usbLog, NULL,  _IONBF, 0);
+		setvbuf(usbLog, nullptr,  _IONBF, 0);
 		USB_LOG("USBqemu plugin version %d,%d\n",revision,build);
 		USB_LOG("USBinit\n");
 	}
@@ -173,7 +173,7 @@ s32 CALLBACK USBopen(void *pDsp) {
 	if (!IsWindow (hWnd) && !IsBadReadPtr ((u32*)hWnd, 4))
 		hWnd = *(HWND*)hWnd;
 	if (!IsWindow (hWnd))
-		hWnd = NULL;
+		hWnd = nullptr;
 	else
 	{
 		while (GetWindowLong (hWnd, GWL_STYLE) & WS_CHILD)
@@ -293,7 +293,7 @@ s32 CALLBACK USBfreeze(int mode, freezeData *data) {
 	{
 		data->size = sizeof(USBfreezeData);
 		data->data = (s8*)malloc(data->size);
-		if (data->data == NULL)
+		if (data->data == nullptr)
 			return -1;
 		
 
@@ -301,9 +301,9 @@ s32 CALLBACK USBfreeze(int mode, freezeData *data) {
 		usbd.t = *qemu_ohci;
 		for(int i=0; i< qemu_ohci->num_ports; i++)
 		{
-			usbd.t.rhport[i].port.ops = NULL; // pointers
-			usbd.t.rhport[i].port.opaque = NULL; // pointers
-			usbd.t.rhport[i].port.dev = NULL; // pointers
+			usbd.t.rhport[i].port.ops = nullptr; // pointers
+			usbd.t.rhport[i].port.opaque = nullptr; // pointers
+			usbd.t.rhport[i].port.dev = nullptr; // pointers
 		}
 
 		clocks = usbd.cycles;
@@ -363,7 +363,7 @@ s64 get_clock()
 void *qemu_mallocz(uint32_t size)
 {
 	void *m=malloc(size);
-	if(!m) return NULL;
+	if(!m) return nullptr;
 	memset(m,0,size);
 	return m;
 }

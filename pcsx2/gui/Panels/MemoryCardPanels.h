@@ -111,10 +111,10 @@ public:
 	BaseMcdListView( wxWindow* parent )
 		: _parent( parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL | wxLC_VIRTUAL )
 	{
-		m_externHandler=NULL;
+		m_externHandler=nullptr;
 		Bind(wxEVT_LEFT_UP, &BaseMcdListView::OnChanged, this, this->GetId());
 
-		m_CardProvider = NULL;
+		m_CardProvider = nullptr;
 	}
 
 	virtual void SetCardCount( int length )=0;

@@ -88,7 +88,7 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	bottomTabs = new wxNotebook(this,wxID_ANY);
 	disassembly = new CtrlDisassemblyView(this,cpu);
 	registerList = new CtrlRegisterList(leftTabs,cpu);
-	functionList = new wxListBox(leftTabs,wxID_ANY,wxDefaultPosition,wxDefaultSize,0,NULL,wxBORDER_NONE|wxLB_SORT);
+	functionList = new wxListBox(leftTabs,wxID_ANY,wxDefaultPosition,wxDefaultSize,0,nullptr,wxBORDER_NONE|wxLB_SORT);
 	memory = new CtrlMemView(bottomTabs,cpu);
 
 	// create register list and disassembly section
@@ -115,8 +115,8 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	breakpointList = new BreakpointList(bottomTabs,cpu,disassembly);
 	bottomTabs->AddPage(breakpointList,L"Breakpoints");
 	
-	threadList = NULL;
-	stackFrames = NULL;
+	threadList = nullptr;
+	stackFrames = nullptr;
 	if (cpu == &r5900Debug)
 	{
 		threadList = new ThreadList(bottomTabs,cpu);
@@ -191,7 +191,7 @@ void CpuTabPage::update()
 {
 	breakpointList->reloadBreakpoints();
 
-	if (threadList != NULL && cpu->isAlive())
+	if (threadList != nullptr && cpu->isAlive())
 	{
 		threadList->reloadThreads();
 
@@ -214,7 +214,7 @@ void CpuTabPage::loadCycles()
 
 u32 CpuTabPage::getStepOutAddress()
 {
-	if (threadList == NULL)
+	if (threadList == nullptr)
 		return (u32)-1;
 
 	EEThread currentThread = threadList->getRunningThread();
@@ -230,7 +230,7 @@ u32 CpuTabPage::getStepOutAddress()
 
 DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	wxFrame( parent, wxID_ANY, L"Debugger", wxDefaultPosition,wxDefaultSize,wxRESIZE_BORDER|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU|wxMINIMIZE_BOX|wxMAXIMIZE_BOX ),
-	currentCpu(NULL)
+	currentCpu(nullptr)
 {
 	int width = g_Conf->EmuOptions.Debugger.WindowWidth;
 	int height = g_Conf->EmuOptions.Debugger.WindowHeight;
@@ -348,9 +348,9 @@ void DisassemblyDialog::onPageChanging(wxCommandEvent& evt)
 	else if (currentPage == iopTab)
 		currentCpu = iopTab;
 	else
-		currentCpu = NULL;
+		currentCpu = nullptr;
 
-	if (currentCpu != NULL)
+	if (currentCpu != nullptr)
 	{
 		currentCpu->getDisassembly()->SetFocus();
 		currentCpu->update();
@@ -359,7 +359,7 @@ void DisassemblyDialog::onPageChanging(wxCommandEvent& evt)
 
 void DisassemblyDialog::stepOver()
 {
-	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused() || currentCpu == NULL)
+	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused() || currentCpu == nullptr)
 		return;
 	
 
@@ -407,7 +407,7 @@ void DisassemblyDialog::stepOver()
 
 void DisassemblyDialog::stepInto()
 {
-	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused() || currentCpu == NULL)
+	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused() || currentCpu == nullptr)
 		return;
 	
 	// todo: breakpoints for iop
@@ -447,7 +447,7 @@ void DisassemblyDialog::stepInto()
 
 void DisassemblyDialog::stepOut()
 {
-	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused() || currentCpu == NULL)
+	if (!r5900Debug.isAlive() || !r5900Debug.isCpuPaused() || currentCpu == nullptr)
 		return;
 	// If the current PC is on a breakpoint, the user doesn't want to do nothing.
 	CBreakPoints::SetSkipFirst(r5900Debug.getPC());
@@ -462,7 +462,7 @@ void DisassemblyDialog::stepOut()
 
 void DisassemblyDialog::onBreakpointClicked(wxCommandEvent& evt)
 {
-	if (currentCpu == NULL)
+	if (currentCpu == nullptr)
 		return;
 
 	BreakpointWindow bpw(this,currentCpu->getCpu());
@@ -480,17 +480,17 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 	if (type == debEVT_SETSTATUSBARTEXT)
 	{
 		DebugInterface* cpu = reinterpret_cast<DebugInterface*>(evt.GetClientData());
-		if (cpu != NULL && currentCpu != NULL && cpu == currentCpu->getCpu())
+		if (cpu != nullptr && currentCpu != nullptr && cpu == currentCpu->getCpu())
 			GetStatusBar()->SetLabel(evt.GetString());
 	} else if (type == debEVT_UPDATELAYOUT)
 	{
-		if (currentCpu != NULL)
+		if (currentCpu != nullptr)
 			currentCpu->GetSizer()->Layout();
 		topSizer->Layout();
 		update();
 	} else if (type == debEVT_GOTOINMEMORYVIEW)
 	{
-		if (currentCpu != NULL)
+		if (currentCpu != nullptr)
 		{
 			currentCpu->showMemoryView();
 
@@ -499,7 +499,7 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		}
 	} else if (type == debEVT_REFERENCEMEMORYVIEW)
 	{
-		if (currentCpu != NULL)
+		if (currentCpu != nullptr)
 		{
 			currentCpu->getMemoryView()->updateReference(evt.GetInt());
 		}
@@ -512,7 +512,7 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		currentCpu->getCpu()->resumeCpu();
 	} else if (type == debEVT_GOTOINDISASM)
 	{
-		if (currentCpu != NULL)
+		if (currentCpu != nullptr)
 		{
 			u32 pos = evt.GetInt();
 			currentCpu->getDisassembly()->gotoAddress(pos);
@@ -521,11 +521,11 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		}
 	} else if (type == debEVT_STEPOVER)
 	{
-		if (currentCpu != NULL)
+		if (currentCpu != nullptr)
 			stepOver();
 	} else if (type == debEVT_STEPINTO)
 	{
-		if (currentCpu != NULL)
+		if (currentCpu != nullptr)
 			stepInto();
 	} else if (type == debEVT_UPDATE)
 	{
@@ -543,7 +543,7 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		iopTab->reloadSymbolMap();
 	} else if (type == debEVT_STEPOUT)
 	{
-		if (currentCpu != NULL)
+		if (currentCpu != nullptr)
 			stepOut();
 	}
 }
@@ -558,7 +558,7 @@ void DisassemblyDialog::onClose(wxCloseEvent& evt)
 
 void DisassemblyDialog::update()
 {
-	if (currentCpu != NULL)
+	if (currentCpu != nullptr)
 	{
 		stepOverButton->Enable(true);
 		breakpointButton->Enable(true);
@@ -598,7 +598,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 
 	if (running)
 	{
-		if (currentCpu == NULL)
+		if (currentCpu == nullptr)
 		{
 			wxWindow* currentPage = middleBook->GetCurrentPage();
 
@@ -607,7 +607,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 			else if (currentPage == iopTab)
 				currentCpu = iopTab;
 
-			if (currentCpu != NULL)
+			if (currentCpu != nullptr)
 				currentCpu->update();
 		}
 
@@ -630,13 +630,13 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 			
 			if (CBreakPoints::GetBreakpointTriggered())
 			{
-				if (currentCpu != NULL)
+				if (currentCpu != nullptr)
 					currentCpu->getDisassembly()->SetFocus();
 				CBreakPoints::SetBreakpointTriggered(false);
 				CBreakPoints::SetSkipFirst(0);
 			}
 
-			if (currentCpu != NULL)
+			if (currentCpu != nullptr)
 				currentCpu->loadCycles();
 		} else {
 			breakRunButton->SetLabel(L"Break");
@@ -650,7 +650,7 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 		stepIntoButton->Enable(false);
 		stepOverButton->Enable(false);
 		stepOutButton->Enable(false);
-		currentCpu = NULL;
+		currentCpu = nullptr;
 	}
 
 	update();

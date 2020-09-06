@@ -61,7 +61,7 @@ namespace Dialogs
 	class AboutBoxDialog: public wxDialogWithHelpers
 	{
 	public:
-		AboutBoxDialog( wxWindow* parent=NULL );
+		AboutBoxDialog( wxWindow* parent=nullptr );
 		virtual ~AboutBoxDialog() = default;
 
 		static wxString GetNameStatic() { return L"AboutBox"; }

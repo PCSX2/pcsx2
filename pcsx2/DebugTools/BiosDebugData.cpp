@@ -21,7 +21,7 @@ std::vector<EEThread> getEEThreads()
 {
 	std::vector<EEThread> threads;
 
-	if (CurrentBiosInformation == NULL)
+	if (CurrentBiosInformation == nullptr)
 		return threads;
 
 	u32 start = CurrentBiosInformation->threadListAddr & 0x3fffff;

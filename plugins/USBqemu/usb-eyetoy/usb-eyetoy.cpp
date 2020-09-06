@@ -310,7 +310,7 @@ USBDevice *eyetoy_init()
 
     s = qemu_mallocz(sizeof(EYETOYState));
     if (!s)
-        return NULL;
+        return nullptr;
     s->dev.speed = USB_SPEED_FULL;
     s->dev.handle_packet = eyetoy_handle_packet;
 
@@ -395,7 +395,7 @@ static struct symbolic_list urb_errlist[] = {
 	{ -EPROTO,		"Bit-stuff error (bad cable?)" },
 	{ -EILSEQ,		"CRC/Timeout" },
 	{ -ETIMEDOUT,	"NAK (device does not respond)" },
-	{ -1, NULL }
+	{ -1, nullptr }
 };
 
 
@@ -406,7 +406,7 @@ static struct symbolic_list urb_errlist[] = {
 
 #if defined(CONFIG_VIDEO_PROC_FS)
 
-static struct proc_dir_entry *ov511_proc_entry = NULL;
+static struct proc_dir_entry *ov511_proc_entry = nullptr;
 extern struct proc_dir_entry *video_proc_entry;
 
 /* Prototypes */
@@ -3757,13 +3757,13 @@ request_decompressor(struct usb_ov511 *ov)
 
 	if (ov->decomp_ops) {
 		if (!ov->decomp_ops->owner) {
-			ov->decomp_ops = NULL;
+			ov->decomp_ops = nullptr;
 			unlock_kernel();
 			return -ENOSYS;
 		}
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0)
 		if (! try_module_get (ov->decomp_ops->owner)) {
-			ov->decomp_ops = NULL;
+			ov->decomp_ops = nullptr;
 			unlock_kernel();
 			return -ENOSYS;
 		}
@@ -3782,7 +3782,7 @@ request_decompressor(struct usb_ov511 *ov)
 }
 
 /* Unlocks decompression module and nulls ov->decomp_ops. Safe to call even
- * if ov->decomp_ops is NULL.
+ * if ov->decomp_ops is nullptr.
  */
 static void
 release_decompressor(struct usb_ov511 *ov)
@@ -3808,7 +3808,7 @@ release_decompressor(struct usb_ov511 *ov)
 		released = 1;
 	}
 
-	ov->decomp_ops = NULL;
+	ov->decomp_ops = nullptr;
 
 	unlock_kernel();
 
@@ -4827,7 +4827,7 @@ ov51x_init_isoc(struct usb_ov511 *ov)
 		urb = usb_alloc_urb(FRAMES_PER_DESC);
 #endif
 		if (!urb) {
-			err("init isoc: usb_alloc_urb ret. NULL");
+			err("init isoc: usb_alloc_urb ret. nullptr");
 			return -ENOMEM;
 		}
 		ov->sbuf[n].urb = urb;
@@ -4882,7 +4882,7 @@ ov51x_unlink_isoc(struct usb_ov511 *ov)
 			usb_kill_urb(ov->sbuf[n].urb);
 #endif
 			usb_free_urb(ov->sbuf[n].urb);
-			ov->sbuf[n].urb = NULL;
+			ov->sbuf[n].urb = nullptr;
 		}
 	}
 }
@@ -4976,27 +4976,27 @@ ov51x_do_dealloc(struct usb_ov511 *ov)
 	if (ov->fbuf) {
 		rvfree(ov->fbuf, OV511_NUMFRAMES
 		       * MAX_DATA_SIZE(ov->maxwidth, ov->maxheight));
-		ov->fbuf = NULL;
+		ov->fbuf = nullptr;
 	}
 
 	vfree(ov->rawfbuf);
-	ov->rawfbuf = NULL;
+	ov->rawfbuf = nullptr;
 
 	vfree(ov->tempfbuf);
-	ov->tempfbuf = NULL;
+	ov->tempfbuf = nullptr;
 
 	for (i = 0; i < OV511_NUMSBUF; i++) {
 		kfree(ov->sbuf[i].data);
-		ov->sbuf[i].data = NULL;
+		ov->sbuf[i].data = nullptr;
 	}
 
 	for (i = 0; i < OV511_NUMFRAMES; i++) {
-		ov->frame[i].data = NULL;
-		ov->frame[i].rawdata = NULL;
-		ov->frame[i].tempdata = NULL;
+		ov->frame[i].data = nullptr;
+		ov->frame[i].rawdata = nullptr;
+		ov->frame[i].tempdata = nullptr;
 		if (ov->frame[i].compbuf) {
 			free_page((unsigned long) ov->frame[i].compbuf);
-			ov->frame[i].compbuf = NULL;
+			ov->frame[i].compbuf = nullptr;
 		}
 	}
 
@@ -5199,7 +5199,7 @@ ov51x_v4l1_close(struct inode *inode, struct file *file)
 	if (!ov->dev) {
 		down(&ov->cbuf_lock);
 		kfree(ov->cbuf);
-		ov->cbuf = NULL;
+		ov->cbuf = nullptr;
 		up(&ov->cbuf_lock);
 
 		ov51x_dealloc(ov);
@@ -5207,7 +5207,7 @@ ov51x_v4l1_close(struct inode *inode, struct file *file)
 		video_unregister_device(&ov->vdev);
 #endif
 		kfree(ov);
-		ov = NULL;
+		ov = nullptr;
 	}
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 4, 17)
@@ -5217,7 +5217,7 @@ ov51x_v4l1_close(struct inode *inode, struct file *file)
 #ifdef OV511_OLD_V4L
 	return;
 #else
-	file->private_data = NULL;
+	file->private_data = nullptr;
 	return 0;
 #endif
 }
@@ -5677,8 +5677,8 @@ static int
 ov51x_v4l1_generic_ioctl(struct video_device *vdev, unsigned int cmd, void *arg)
 {
 	char	sbuf[128];
-	void    *mbuf = NULL;
-	void	*parg = NULL;
+	void    *mbuf = nullptr;
+	void	*parg = nullptr;
 	int	err  = -EINVAL;
 
 	/*  Copy arguments into temp kernel buffer  */
@@ -5694,7 +5694,7 @@ ov51x_v4l1_generic_ioctl(struct video_device *vdev, unsigned int cmd, void *arg)
 		} else {
 			/* too big to allocate from stack */
 			mbuf = kmalloc(_IOC_SIZE(cmd), GFP_KERNEL);
-			if (NULL == mbuf)
+			if (nullptr == mbuf)
 				return -ENOMEM;
 			parg = mbuf;
 		}
@@ -5948,7 +5948,7 @@ ov51x_v4l1_mmap(struct file *file, struct vm_area_struct *vma)
 	struct usb_ov511 *ov = video_get_drvdata(vdev);
 	unsigned long page, pos;
 
-	if (ov->dev == NULL)
+	if (ov->dev == nullptr)
 		return -EIO;
 
 	PDEBUG(4, "mmap: %ld (%lX) bytes", size, size);
@@ -7446,7 +7446,7 @@ ov51x_probe(struct usb_device *dev, unsigned int ifnum)
 #else
 	/* We don't handle multi-config cameras */
 	if (dev->descriptor.bNumConfigurations != 1)
-		return NULL;
+		return nullptr;
 #endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 7)
@@ -7471,7 +7471,7 @@ ov51x_probe(struct usb_device *dev, unsigned int ifnum)
 	if (vendor != VEND_OMNIVISION
 	 && vendor != VEND_MATTEL
 	 && vendor != VEND_SONY)
-		return NULL;
+		return nullptr;
 
 	if (vendor == VEND_OMNIVISION
 	 && product != PROD_OV511
@@ -7495,20 +7495,20 @@ ov51x_probe(struct usb_device *dev, unsigned int ifnum)
 	 && product != PROD_OVE519
 	 && product != PROD_OVF519
 	 && product != PROD_OV530)
-		return NULL;
+		return nullptr;
 
 	if (vendor == VEND_MATTEL
 	 && product != PROD_ME2CAM)
-		return NULL;
+		return nullptr;
 
 	if (vendor == VEND_SONY
 	 && product != PROD_EYETOY4
 	 && product != PROD_EYETOY5)
-		return NULL;
+		return nullptr;
 
 	if (vendor == VEND_MICROSOFT
 	 && product != PROD_XBOX_CAM)
-		return NULL;
+		return nullptr;
 #endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 5, 36)
@@ -7518,9 +7518,9 @@ ov51x_probe(struct usb_device *dev, unsigned int ifnum)
 		return -ENODEV;
 #else
 	if (idesc->bInterfaceClass != 0xFF)
-		return NULL;
+		return nullptr;
 	if (idesc->bInterfaceSubClass != 0x00)
-		return NULL;
+		return nullptr;
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 4, 20)
@@ -7528,7 +7528,7 @@ ov51x_probe(struct usb_device *dev, unsigned int ifnum)
 	MOD_INC_USE_COUNT;
 #endif
 
-	if ((ov = kmalloc(sizeof(*ov), GFP_KERNEL)) == NULL) {
+	if ((ov = kmalloc(sizeof(*ov), GFP_KERNEL)) == nullptr) {
 		err("couldn't kmalloc ov struct");
 		goto error_out;
 	}
@@ -7749,18 +7749,18 @@ error:
 			video_device_release(ov->vdev);
 		else
 			video_unregister_device(ov->vdev);
-		ov->vdev = NULL;
+		ov->vdev = nullptr;
 	}
 
 	if (ov->cbuf) {
 		down(&ov->cbuf_lock);
 		kfree(ov->cbuf);
-		ov->cbuf = NULL;
+		ov->cbuf = nullptr;
 		up(&ov->cbuf_lock);
 	}
 
 	kfree(ov);
-	ov = NULL;
+	ov = nullptr;
 
 error_out:
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 4, 20)
@@ -7770,7 +7770,7 @@ error_out:
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 5, 36)
 	return -EIO;
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -7793,7 +7793,7 @@ ov51x_disconnect(struct usb_device *dev, void *ptr)
 	PDEBUG(3, "");
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0)
-	usb_set_intfdata(intf, NULL);
+	usb_set_intfdata(intf, nullptr);
 #endif
 	if (!ov)
 		return;
@@ -7829,13 +7829,13 @@ ov51x_disconnect(struct usb_device *dev, void *ptr)
 
         destroy_proc_ov511_cam(ov);
 
-	ov->dev = NULL;
+	ov->dev = nullptr;
 
 	/* Free the memory */
 	if (ov && !ov->user) {
 		down(&ov->cbuf_lock);
 		kfree(ov->cbuf);
-		ov->cbuf = NULL;
+		ov->cbuf = nullptr;
 		up(&ov->cbuf_lock);
 
 		ov51x_dealloc(ov);
@@ -7844,7 +7844,7 @@ ov51x_disconnect(struct usb_device *dev, void *ptr)
 			video_device_release(ov->vdev);
 #endif
 		kfree(ov);
-		ov = NULL;
+		ov = nullptr;
 	}
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 4, 20)

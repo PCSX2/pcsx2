@@ -231,7 +231,7 @@ protected:
 public:
 	SysPluginBindings()
 	{
-		Mcd = NULL;
+		Mcd = nullptr;
 	}
 
 	bool McdIsPresent( uint port, uint slot );
@@ -320,7 +320,7 @@ protected:
 			IsInitialized	= false;
 			IsOpened		= false;
 			IsStatic        = false;
-			Lib             = NULL;
+			Lib             = nullptr;
 		}
 
 		PluginStatus_t( PluginsEnum_t _pid, const wxString& srcfile );

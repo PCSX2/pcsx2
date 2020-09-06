@@ -196,7 +196,7 @@ int MemoryCardListView_Simple::OnGetItemColumnImage(long item, long column) cons
 
 static wxListItemAttr m_ItemAttr;
 
-// return the attribute for the item (may return NULL if none)
+// return the attribute for the item (may return nullptr if none)
 wxListItemAttr* MemoryCardListView_Simple::OnGetItemAttr(long item) const
 {
 	//m_disabled.SetTextColour( wxLIGHT_GREY );

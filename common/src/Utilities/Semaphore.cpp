@@ -81,7 +81,7 @@ bool Threading::Semaphore::WaitWithoutYield(const wxTimeSpan &timeout)
 void Threading::Semaphore::Wait()
 {
 #if wxUSE_GUI
-    if (!wxThread::IsMain() || (wxTheApp == NULL)) {
+    if (!wxThread::IsMain() || (wxTheApp == nullptr)) {
         sem_wait(&m_sema);
     } else if (_WaitGui_RecursionGuard(L"Semaphore::Wait")) {
         ScopedBusyCursor hourglass(Cursor_ReallyBusy);
@@ -108,7 +108,7 @@ void Threading::Semaphore::Wait()
 bool Threading::Semaphore::Wait(const wxTimeSpan &timeout)
 {
 #if wxUSE_GUI
-    if (!wxThread::IsMain() || (wxTheApp == NULL)) {
+    if (!wxThread::IsMain() || (wxTheApp == nullptr)) {
         return WaitWithoutYield(timeout);
     } else if (_WaitGui_RecursionGuard(L"Semaphore::TimedWait")) {
         ScopedBusyCursor hourglass(Cursor_ReallyBusy);
@@ -145,7 +145,7 @@ void Threading::Semaphore::WaitNoCancel()
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
     //WaitWithoutYield();
     Wait();
-    pthread_setcancelstate(oldstate, NULL);
+    pthread_setcancelstate(oldstate, nullptr);
 }
 
 void Threading::Semaphore::WaitNoCancel(const wxTimeSpan &timeout)
@@ -154,7 +154,7 @@ void Threading::Semaphore::WaitNoCancel(const wxTimeSpan &timeout)
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
     //WaitWithoutYield( timeout );
     Wait(timeout);
-    pthread_setcancelstate(oldstate, NULL);
+    pthread_setcancelstate(oldstate, nullptr);
 }
 
 int Threading::Semaphore::Count()

@@ -86,10 +86,10 @@ void NTFS_CompressFile( const wxString& file, bool compressStatus )
 	HANDLE bloated_crap = CreateFile( file,
 		FILE_GENERIC_WRITE | FILE_GENERIC_READ,
 		FILE_SHARE_READ | FILE_SHARE_DELETE,
-		NULL,
+		nullptr,
 		OPEN_EXISTING,
 		flags,
-		NULL
+		nullptr
 	);
 
 	// Fail silently -- non-compression of files and folders is not an errorable offense.
@@ -101,8 +101,8 @@ void NTFS_CompressFile( const wxString& file, bool compressStatus )
 
 		/*BOOL result = */DeviceIoControl(
 			bloated_crap, FSCTL_SET_COMPRESSION,
-			&compressMode, 2, NULL, 0,
-			&bytesReturned, NULL
+			&compressMode, 2, nullptr, 0,
+			&bytesReturned, nullptr
 		);
 
 		// No need to see this every time on my exFAT drive (rama)

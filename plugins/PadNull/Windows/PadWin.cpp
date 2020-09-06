@@ -16,8 +16,8 @@
 #include "PadWin.h"
 
 LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-WNDPROC GSwndProc = NULL;
-HWND GShwnd = NULL;
+WNDPROC GSwndProc = nullptr;
+HWND GShwnd = nullptr;
 
 LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -56,7 +56,7 @@ s32 _PADOpen(void *pDsp)
 {
     GShwnd = (HWND) * (long *)pDsp;
 
-    if (GShwnd != NULL && GSwndProc != NULL) {
+    if (GShwnd != nullptr && GSwndProc != nullptr) {
         // revert
         SetWindowLongPtr(GShwnd, GWLP_WNDPROC, (LPARAM)(WNDPROC)(GSwndProc));
     }
@@ -68,9 +68,9 @@ s32 _PADOpen(void *pDsp)
 
 void _PADClose()
 {
-    if (GShwnd != NULL && GSwndProc != NULL) {
+    if (GShwnd != nullptr && GSwndProc != nullptr) {
         SetWindowLongPtr(GShwnd, GWLP_WNDPROC, (LPARAM)(WNDPROC)(GSwndProc));
-        GSwndProc = NULL;
-        GShwnd = NULL;
+        GSwndProc = nullptr;
+        GShwnd = nullptr;
     }
 }

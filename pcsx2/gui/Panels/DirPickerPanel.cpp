@@ -48,7 +48,7 @@ void Panels::DirPickerPanel::UpdateCheckStatus( bool someNoteworthyBoolean )
 void Panels::DirPickerPanel::UseDefaultPath_Click( wxCommandEvent &evt )
 {
 	evt.Skip();
-	pxAssert( (m_pickerCtrl != NULL) && (m_checkCtrl != NULL) );
+	pxAssert( (m_pickerCtrl != nullptr) && (m_checkCtrl != nullptr) );
 	UpdateCheckStatus( m_checkCtrl ? m_checkCtrl->IsChecked() : false );
 }
 
@@ -61,7 +61,7 @@ void Panels::DirPickerPanel::Explore_Click( wxCommandEvent &evt )
 
 	if (!path.Exists())
 	{
-		wxDialogWithHelpers createPathDlg( NULL, _("Path does not exist") );
+		wxDialogWithHelpers createPathDlg( nullptr, _("Path does not exist") );
 		createPathDlg.SetMinWidth( 600 );
 
 		createPathDlg += createPathDlg.Label( path.ToString() ) | StdCenter();
@@ -104,10 +104,10 @@ Panels::DirPickerPanel::DirPickerPanel( wxWindow* parent, FoldersEnum_t folderid
 void Panels::DirPickerPanel::Init( FoldersEnum_t folderid, const wxString& dialogLabel, bool isCompact )
 {
 	m_FolderId		= folderid;
-	m_pickerCtrl	= NULL;
-	m_checkCtrl		= NULL;
-	m_textCtrl		= NULL;
-	b_explore		= NULL;
+	m_pickerCtrl	= nullptr;
+	m_checkCtrl		= nullptr;
+	m_textCtrl		= nullptr;
+	b_explore		= nullptr;
 
 	wxString normalized (GetNormalizedConfigFolder( m_FolderId ));
 
@@ -263,7 +263,7 @@ void Panels::DirPickerPanel::Apply()
 
 	if (!path.Exists())
 	{
-		wxDialogWithHelpers dialog( NULL, _("Create folder?") );
+		wxDialogWithHelpers dialog( nullptr, _("Create folder?") );
 		dialog += dialog.Heading(AddAppName(_("A configured folder does not exist.  Should %s try to create it?")));
 		dialog += 12;
 		dialog += dialog.Heading( path.ToString() );

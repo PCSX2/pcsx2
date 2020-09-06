@@ -16,7 +16,7 @@
 #include "../GS.h"
 
 HINSTANCE HInst;
-HWND GShwnd = NULL;
+HWND GShwnd = nullptr;
 
 LRESULT CALLBACK MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -36,19 +36,19 @@ LRESULT CALLBACK MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 int GSOpenWindow(void *pDsp, const char *Title)
 {
     WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
-                     GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
-                     "PS2EMU_GSNULL", NULL};
+                     GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr,
+                     "PS2EMU_GSNULL", nullptr};
     RegisterClassEx(&wc);
 
     GShwnd = CreateWindowEx(WS_EX_CLIENTEDGE, "PS2EMU_GSNULL", Title,
-                            WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 240, 120, NULL, NULL, wc.hInstance, NULL);
+                            WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 240, 120, nullptr, nullptr, wc.hInstance, nullptr);
 
-    if (GShwnd == NULL) {
+    if (GShwnd == nullptr) {
         GSLog::WriteLn("Failed to create window. Exiting...");
         return -1;
     }
 
-    if (pDsp != NULL)
+    if (pDsp != nullptr)
         *(uptr *)pDsp = (uptr)GShwnd;
 
     return 0;

@@ -59,7 +59,7 @@ int GetMACAddress(char *adapter, mac_address* addr)
 	DWORD dwStatus = GetAdaptersAddresses(
 		AF_UNSPEC,
 		GAA_FLAG_INCLUDE_PREFIX,
-		NULL,
+		nullptr,
 		AdapterInfo,
 		&dwBufLen
 	);

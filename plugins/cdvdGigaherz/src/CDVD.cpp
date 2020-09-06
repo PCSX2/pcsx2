@@ -257,7 +257,7 @@ EXPORT s32 CALLBACK CDVDreadTrack(u32 lsn, int mode)
     return 0;
 }
 
-// return can be NULL (for async modes)
+// return can be nullptr (for async modes)
 EXPORT u8 *CALLBACK CDVDgetBuffer()
 {
     if (lastReadInNewDiskCB) {
@@ -268,7 +268,7 @@ EXPORT u8 *CALLBACK CDVDgetBuffer()
     return cdvdGetSector(csector, cmode);
 }
 
-// return can be NULL (for async modes)
+// return can be nullptr (for async modes)
 EXPORT int CALLBACK CDVDgetBuffer2(u8 *dest)
 {
     // Do nothing for out of bounds disc sector reads. It prevents some games

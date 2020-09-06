@@ -315,7 +315,7 @@ public:
 
 	virtual ~SysExecEvent_DownloadState() = default;
 	SysExecEvent_DownloadState* Clone() const { return new SysExecEvent_DownloadState( *this ); }
-	SysExecEvent_DownloadState( ArchiveEntryList* dest_list=NULL )
+	SysExecEvent_DownloadState( ArchiveEntryList* dest_list=nullptr )
 	{
 		m_dest_list = dest_list;
 	}

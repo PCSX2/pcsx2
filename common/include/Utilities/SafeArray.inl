@@ -29,7 +29,7 @@ SafeArray<T>::SafeArray(const wxChar *name, T *allocated_mem, int initSize)
     m_ptr = allocated_mem;
     m_size = initSize;
 
-    if (m_ptr == NULL)
+    if (m_ptr == nullptr)
         throw Exception::OutOfMemory(name)
             .SetDiagMsg(wxsFormat(L"Called from 'SafeArray::ctor' [size=%d]", initSize));
 }
@@ -37,11 +37,11 @@ SafeArray<T>::SafeArray(const wxChar *name, T *allocated_mem, int initSize)
 template <typename T>
 T *SafeArray<T>::_virtual_realloc(int newsize)
 {
-    T *retval = (T *)((m_ptr == NULL) ?
+    T *retval = (T *)((m_ptr == nullptr) ?
                           malloc(newsize * sizeof(T)) :
                           realloc(m_ptr, newsize * sizeof(T)));
 
-    if (IsDebugBuild && (retval != NULL)) {
+    if (IsDebugBuild && (retval != nullptr)) {
         // Zero everything out to 0xbaadf00d, so that its obviously uncleared
         // to a debuggee
 
@@ -65,7 +65,7 @@ SafeArray<T>::SafeArray(const wxChar *name)
     : Name(name)
 {
     ChunkSize = DefaultChunkSize;
-    m_ptr = NULL;
+    m_ptr = nullptr;
     m_size = 0;
 }
 
@@ -74,10 +74,10 @@ SafeArray<T>::SafeArray(int initialSize, const wxChar *name)
     : Name(name)
 {
     ChunkSize = DefaultChunkSize;
-    m_ptr = (initialSize == 0) ? NULL : (T *)malloc(initialSize * sizeof(T));
+    m_ptr = (initialSize == 0) ? nullptr : (T *)malloc(initialSize * sizeof(T));
     m_size = initialSize;
 
-    if ((initialSize != 0) && (m_ptr == NULL))
+    if ((initialSize != 0) && (m_ptr == nullptr))
         throw Exception::OutOfMemory(name)
             .SetDiagMsg(wxsFormat(L"Called from 'SafeArray::ctor' [size=%d]", initialSize));
 }
@@ -106,7 +106,7 @@ void SafeArray<T>::ExactAlloc(int newsize)
         return;
 
     m_ptr = _virtual_realloc(newsize);
-    if (m_ptr == NULL)
+    if (m_ptr == nullptr)
         throw Exception::OutOfMemory(Name)
             .SetDiagMsg(wxsFormat(L"Called from 'SafeArray::ExactAlloc' [oldsize=%d] [newsize=%d]", m_size, newsize));
 
@@ -129,7 +129,7 @@ SafeArray<T> *SafeArray<T>::Clone() const
 template <typename T, uint Alignment>
 T *SafeAlignedArray<T, Alignment>::_virtual_realloc(int newsize)
 {
-    return (T *)((this->m_ptr == NULL) ?
+    return (T *)((this->m_ptr == nullptr) ?
                      _aligned_malloc(newsize * sizeof(T), Alignment) :
                      pcsx2_aligned_realloc(this->m_ptr, newsize * sizeof(T), Alignment, this->m_size * sizeof(T)));
 }
@@ -182,7 +182,7 @@ SafeList<T>::SafeList(const wxChar *name)
     : Name(name)
 {
     ChunkSize = DefaultChunkSize;
-    m_ptr = NULL;
+    m_ptr = nullptr;
     m_allocsize = 0;
     m_length = 0;
 }
@@ -196,7 +196,7 @@ SafeList<T>::SafeList(int initialSize, const wxChar *name)
     m_length = 0;
     m_ptr = (T *)malloc(initialSize * sizeof(T));
 
-    if (m_ptr == NULL)
+    if (m_ptr == nullptr)
         throw Exception::OutOfMemory(Name)
             .SetDiagMsg(wxsFormat(L"called from 'SafeList::ctor' [length=%d]", m_length));
 
@@ -220,7 +220,7 @@ void SafeList<T>::MakeRoomFor(int blockSize)
     if (blockSize > m_allocsize) {
         const int newalloc = blockSize + ChunkSize;
         m_ptr = _virtual_realloc(newalloc);
-        if (m_ptr == NULL)
+        if (m_ptr == nullptr)
             throw Exception::OutOfMemory(Name)
                 .SetDiagMsg(wxsFormat(L"Called from 'SafeList::MakeRoomFor' [oldlen=%d] [newlen=%d]", m_length, blockSize));
 

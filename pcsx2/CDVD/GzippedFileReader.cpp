@@ -157,7 +157,7 @@ static void TestTemplate(const wxDirName &base, const wxString &fname, bool canE
 		"cache/$(f)/$(f).index",              // invalid: appears twice
 		"hello",                              // invalid: doesn't contain $(f)
 		"hello$(f)",                          // invalid, can't end with $(f)
-		NULL
+		nullptr
 	};
 
 	for (int i = 0; ins[i]; i++) {
@@ -226,10 +226,10 @@ void GzippedFileReader::AsyncPrefetchOpen() {
 		m_filename,
 		GENERIC_READ,
 		FILE_SHARE_READ,
-		NULL,
+		nullptr,
 		OPEN_EXISTING,
 		FILE_FLAG_SEQUENTIAL_SCAN | FILE_FLAG_OVERLAPPED,
-		NULL);
+		nullptr);
 };
 
 void GzippedFileReader::AsyncPrefetchClose()
@@ -259,7 +259,7 @@ void GzippedFileReader::AsyncPrefetchChunk(PX_off_t start)
 	asyncOperationContext.Offset = offset.LowPart;
 	asyncOperationContext.OffsetHigh = offset.HighPart;
 
-	ReadFile(hOverlappedFile, mDummyAsyncPrefetchTarget, bytesToRead, NULL, &asyncOperationContext);
+	ReadFile(hOverlappedFile, mDummyAsyncPrefetchTarget, bytesToRead, nullptr, &asyncOperationContext);
 	asyncInProgress = true;
 };
 

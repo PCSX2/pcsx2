@@ -66,7 +66,7 @@ public:
 	}
 
 protected:
-	BaseSysExecEvent_ScopedCore( SynchronousActionState* sync=NULL, SynchronousActionState* resume_sync=NULL, Threading::Mutex* mtx_resume=NULL )
+	BaseSysExecEvent_ScopedCore( SynchronousActionState* sync=nullptr, SynchronousActionState* resume_sync=nullptr, Threading::Mutex* mtx_resume=nullptr )
 		: SysExecEvent( sync )
 	{
 		m_resume		= resume_sync;
@@ -90,7 +90,7 @@ public:
 	virtual ~SysExecEvent_CoreThreadClose() = default;
 	SysExecEvent_CoreThreadClose* Clone() const { return new SysExecEvent_CoreThreadClose( *this ); }
 	
-	SysExecEvent_CoreThreadClose( SynchronousActionState* sync=NULL, SynchronousActionState* resume_sync=NULL, Threading::Mutex* mtx_resume=NULL )
+	SysExecEvent_CoreThreadClose( SynchronousActionState* sync=nullptr, SynchronousActionState* resume_sync=nullptr, Threading::Mutex* mtx_resume=nullptr )
 		: BaseSysExecEvent_ScopedCore( sync, resume_sync, mtx_resume ) { }
 
 protected:
@@ -108,7 +108,7 @@ public:
 	virtual ~SysExecEvent_CoreThreadPause() = default;
 	SysExecEvent_CoreThreadPause* Clone() const { return new SysExecEvent_CoreThreadPause( *this ); }
 	
-	SysExecEvent_CoreThreadPause( SynchronousActionState* sync=NULL, SynchronousActionState* resume_sync=NULL, Threading::Mutex* mtx_resume=NULL )
+	SysExecEvent_CoreThreadPause( SynchronousActionState* sync=nullptr, SynchronousActionState* resume_sync=nullptr, Threading::Mutex* mtx_resume=nullptr )
 		: BaseSysExecEvent_ScopedCore( sync, resume_sync, mtx_resume ) { }
 
 protected:
@@ -231,7 +231,7 @@ struct ScopedCoreThreadPause : public BaseScopedCoreThread
 	typedef BaseScopedCoreThread _parent;
 
 public:
-	ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse_me=NULL );
+	ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse_me=nullptr );
 	virtual ~ScopedCoreThreadPause();
 };
 

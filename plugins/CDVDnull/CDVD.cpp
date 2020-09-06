@@ -74,7 +74,7 @@ CDVDreadTrack(u32 lsn, int mode)
     return -1;
 }
 
-// return can be NULL (for async modes)
+// return can be nullptr (for async modes)
 EXPORT_C_(u8 *)
 CDVDgetBuffer()
 {

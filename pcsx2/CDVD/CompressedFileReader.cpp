@@ -28,5 +28,5 @@ AsyncFileReader* CompressedFileReader::GetNewReader(const wxString& fileName) {
 		return new CsoFileReader();
 	}
 	// This is the one which will fail on open.
-	return NULL;
+	return nullptr;
 }

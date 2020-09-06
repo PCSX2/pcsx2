@@ -41,7 +41,7 @@ const wxChar* CDVD_SourceLabels[] =
 	L"ISO",
 	L"Plugin",
 	L"NoDisc",
-	NULL
+	nullptr
 };
 
 // ----------------------------------------------------------------------------
@@ -63,11 +63,11 @@ u32 lastLSN;		// needed for block dumping
 
 static OutputIsoFile blockDumpFile;
 
-// Assertion check for CDVD != NULL (in devel and debug builds), because its handier than
+// Assertion check for CDVD != nullptr (in devel and debug builds), because its handier than
 // relying on DEP exceptions -- and a little more reliable too.
 static void CheckNullCDVD()
 {
-	pxAssertDev( CDVD != NULL, "Invalid CDVD object state (null pointer exception)" );
+	pxAssertDev( CDVD != nullptr, "Invalid CDVD object state (null pointer exception)" );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -87,10 +87,10 @@ static int CheckDiskTypeFS(int baseType)
 		buffer[size]='\0';
 
 		char* pos = strstr(buffer.get(), "BOOT2");
-		if (pos == NULL)
+		if (pos == nullptr)
 		{
 			pos = strstr(buffer.get(), "BOOT");
-			if (pos == NULL)  return CDVD_TYPE_ILLEGAL;
+			if (pos == nullptr)  return CDVD_TYPE_ILLEGAL;
 			return CDVD_TYPE_PSCD;
 		}
 
@@ -356,7 +356,7 @@ bool DoCDVDopen()
 
 	auto CurrentSourceType = enum_cast(m_CurrentSourceType);
 	int ret = CDVD->open( !m_SourceFilename[CurrentSourceType].IsEmpty() ?
-		static_cast<const char*>(m_SourceFilename[CurrentSourceType].ToUTF8()) : (char*)NULL
+		static_cast<const char*>(m_SourceFilename[CurrentSourceType].ToUTF8()) : (char*)nullptr
 	);
 
 	if( ret == -1 ) return false;	// error! (handled by caller)
@@ -429,7 +429,7 @@ void DoCDVDclose()
 	CheckNullCDVD();
 	//blockDumpFile.Close();
 
-	if( CDVD->close != NULL )
+	if( CDVD->close != nullptr )
 		CDVD->close();
 
 	DoCDVDresetDiskTypeCache();
@@ -543,10 +543,10 @@ s32 CALLBACK NODISCreadTrack(u32 lsn, int mode)
 	return -1;
 }
 
-// return can be NULL (for async modes)
+// return can be nullptr (for async modes)
 u8* CALLBACK NODISCgetBuffer()
 {
-	return NULL;
+	return nullptr;
 }
 
 s32 CALLBACK NODISCreadSubQ(u32 lsn, cdvdSubQ* subq)

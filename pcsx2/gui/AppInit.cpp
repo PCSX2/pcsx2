@@ -68,9 +68,9 @@ void Pcsx2App::OpenMainFrame()
 {
 	if( AppRpc_TryInvokeAsync( &Pcsx2App::OpenMainFrame ) ) return;
 
-	if( GetMainFramePtr() != NULL ) return;
+	if( GetMainFramePtr() != nullptr ) return;
 
-	MainEmuFrame* mainFrame = new MainEmuFrame( NULL, pxGetAppName() );
+	MainEmuFrame* mainFrame = new MainEmuFrame( nullptr, pxGetAppName() );
 	m_id_MainFrame = mainFrame->GetId();
 
 	DisassemblyDialog* disassembly = new DisassemblyDialog( mainFrame );
@@ -152,7 +152,7 @@ void Pcsx2App::AllocateCoreStuffs()
 			// the user already has all interps configured, for example, then no point in
 			// popping up this dialog.
 			
-			wxDialogWithHelpers exconf( NULL, _("PCSX2 Recompiler Error(s)") );
+			wxDialogWithHelpers exconf( nullptr, _("PCSX2 Recompiler Error(s)") );
 
 			wxTextCtrl* scrollableTextArea = new wxTextCtrl(
 				&exconf, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
@@ -247,7 +247,7 @@ void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 		parser.AddOption( wxEmptyString, pi->GetShortname().Lower(),
 			pxsFmt( _("specify the file to use as the %s plugin"), WX_STR(pi->GetShortname()) )
 		);
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 
 	parser.SetSwitchChars( L"-" );
 }
@@ -295,7 +295,7 @@ bool Pcsx2App::ParseOverrides( wxCmdLineParser& parser )
 			Console.Warning( pi->GetShortname() + L" override: " + dest );
 		else
 		{
-			wxDialogWithHelpers okcan( NULL, AddAppName(_("Plugin Override Error - %s")) );
+			wxDialogWithHelpers okcan( nullptr, AddAppName(_("Plugin Override Error - %s")) );
 
 			okcan += okcan.Heading( wxsFormat(
 				_("%s Plugin Override Error!  The following file does not exist or is not a valid %s plugin:\n\n"),
@@ -312,7 +312,7 @@ bool Pcsx2App::ParseOverrides( wxCmdLineParser& parser )
 		
 		Overrides.Filenames.Plugins[pi->id] = dest;
 
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 	
 	return true;
 }
@@ -644,14 +644,14 @@ void Pcsx2App::CleanupOnExit()
 void Pcsx2App::CleanupResources()
 {
 	ScopedBusyCursor cursor( Cursor_ReallyBusy );
-	//delete wxConfigBase::Set( NULL );
+	//delete wxConfigBase::Set( nullptr );
 
-	while( wxGetLocale() != NULL )
+	while( wxGetLocale() != nullptr )
 		delete wxGetLocale();
 
 	m_mtx_LoadingGameDB.Wait();
 	ScopedLock lock(m_mtx_Resources);
-	m_Resources = NULL;
+	m_Resources = nullptr;
 }
 
 int Pcsx2App::OnExit()
@@ -736,7 +736,7 @@ Pcsx2App::Pcsx2App()
 	m_id_GsFrame		= wxID_ANY;
 	m_id_ProgramLogBox	= wxID_ANY;
 	m_id_Disassembler	= wxID_ANY;
-	m_ptr_ProgramLog	= NULL;
+	m_ptr_ProgramLog	= nullptr;
 
 	SetAppName( L"PCSX2" );
 	BuildCommandHash();
@@ -754,15 +754,15 @@ Pcsx2App::~Pcsx2App()
 void Pcsx2App::CleanUp()
 {
 	CleanupResources();
-	m_Resources		= NULL;
-	m_RecentIsoList	= NULL;
+	m_Resources		= nullptr;
+	m_RecentIsoList	= nullptr;
 
 	DisableDiskLogging();
 
-	if( emuLog != NULL )
+	if( emuLog != nullptr )
 	{
 		fclose( emuLog );
-		emuLog = NULL;
+		emuLog = nullptr;
 	}
 
 	_parent::CleanUp();

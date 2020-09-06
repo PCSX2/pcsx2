@@ -66,7 +66,7 @@ protected:
 
 			while( true )
 			{
-				if( !ReadFile(m_outpipe, s8_Buf, sizeof(s8_Buf)-1, &u32_Read, NULL) )
+				if( !ReadFile(m_outpipe, s8_Buf, sizeof(s8_Buf)-1, &u32_Read, nullptr) )
 				{
 					DWORD result = GetLastError();
 					if( result == ERROR_HANDLE_EOF || result == ERROR_BROKEN_PIPE ) break;
@@ -99,7 +99,7 @@ protected:
 						if( u32_avail == 0 ) break;
 
 						DWORD loopread;
-						if( !ReadFile(m_outpipe, &s8_Buf[u32_Read], sizeof(s8_Buf)-u32_Read-1, &loopread, NULL) ) break;
+						if( !ReadFile(m_outpipe, &s8_Buf[u32_Read], sizeof(s8_Buf)-u32_Read-1, &loopread, nullptr) ) break;
 						u32_Read += loopread;
 
 					} while( u32_Read < sizeof(s8_Buf)-32 );
@@ -167,7 +167,7 @@ WinPipeRedirection::WinPipeRedirection( FILE* stdstream )
 		// Binary flag set to prevent multiple \r characters before each \n.
 		m_fp = _wfreopen(pipe_name, L"wb", stdstream);
 		if (m_fp == nullptr)
-			throw Exception::RuntimeError().SetDiagMsg(L"_wfreopen returned NULL.");
+			throw Exception::RuntimeError().SetDiagMsg(L"_wfreopen returned nullptr.");
 
 		setvbuf(stdstream, nullptr, _IONBF, 0);
 	}
@@ -207,10 +207,10 @@ void WinPipeRedirection::Cleanup() noexcept
 	//    Closing the writepipe (either directly or through the fp/crt handles) issues an EOF to the thread,
 	//    so it's safe to Cancel afterward.
 
-	if( m_fp != NULL )
+	if( m_fp != nullptr )
 	{
 		fclose( m_fp );
-		m_fp = NULL;
+		m_fp = nullptr;
 	}
 
 	m_Thread.Cancel();
@@ -235,5 +235,5 @@ PipeRedirectionBase* NewPipeRedir( FILE* stdstream )
 		Console.Error( ex.FormatDiagnosticMessage() );
 	}
 
-	return NULL;
+	return nullptr;
 }

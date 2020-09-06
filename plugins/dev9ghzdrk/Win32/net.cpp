@@ -42,7 +42,7 @@ DWORD WINAPI NetRxThread(LPVOID lpThreadParameter)
 
 void tx_put(NetPacket* pkt)
 {
-	if (nif!=NULL)
+	if (nif!=nullptr)
 		nif->send(pkt);
 	//pkt must be copied if its not processed by here, since it can be allocated on the callers stack
 }
@@ -66,6 +66,6 @@ void TermNet()
 		emu_printf(".done\n");
 
 		delete nif;
-		nif = NULL;
+		nif = nullptr;
 	}
 }

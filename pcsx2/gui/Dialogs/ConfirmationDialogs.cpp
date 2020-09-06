@@ -117,7 +117,7 @@ static bool pxTrySetFocus( wxWindow& parent, wxWindowID id )
 
 static bool pxTrySetFocus( wxWindow* parent, wxWindowID id )
 {
-	if( parent == NULL ) return false;
+	if( parent == nullptr ) return false;
 	return pxTrySetFocus( *parent, id );
 }
 
@@ -137,7 +137,7 @@ void MsgButtons::SetBestFocus( wxWindow& dialog ) const
 
 void MsgButtons::SetBestFocus( wxWindow* dialog ) const
 {
-	if( dialog == NULL ) return;
+	if( dialog == nullptr ) return;
 	SetBestFocus( *dialog );
 }
 
@@ -157,7 +157,7 @@ wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButton
 {
 	wxConfigBase* cfg = GetAppConfig();
 
-	if( cfg != NULL )
+	if( cfg != nullptr )
 	{
 		cfg->SetPath( L"/PopupDisablers" );
 		bool recdef = cfg->IsRecordingDefaults();
@@ -186,8 +186,8 @@ wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButton
 		}
 	}
 
-	pxCheckBox*	DisablerCtrl = NULL;
-	if( cfg != NULL )
+	pxCheckBox*	DisablerCtrl = nullptr;
+	if( cfg != nullptr )
 	{
 		// Add an option that allows the user to disable this popup from showing again.
 		// (and if the config hasn't been initialized yet, then assume the dialog as non-disablable)
@@ -206,7 +206,7 @@ wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButton
 
 	int modalResult = pxIssueConfirmation( confirmDlg, buttons );
 
-	if( modalResult != wxID_CANCEL && cfg != NULL )
+	if( modalResult != wxID_CANCEL && cfg != nullptr )
 	{
 		wxString cfgResult = ResultToString( modalResult, buttons );
 		if( DisablerCtrl->IsChecked() && !cfgResult.IsEmpty() )

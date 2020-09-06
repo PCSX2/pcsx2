@@ -563,7 +563,7 @@ void App_LoadSaveInstallSettings( IniInterface& ini )
 		L"User",
 		L"Custom",
 		// WARNING: array must be NULL terminated to compute it size
-		NULL
+		nullptr
 	};
 
 	ini.EnumEntry( L"DocumentsFolderMode",	DocsFolderMode,	DocsFolderModeNames, (InstallationMode == InstallMode_Registered) ? DocsFolder_User : DocsFolder_Custom);
@@ -629,7 +629,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	IniEntry( ComponentsTabName );
 	IniEntry( AppSettingsTabName );
 	IniEntry( GameDatabaseTabName );
-	ini.EnumEntry( L"LanguageId", LanguageId, NULL, LanguageId );
+	ini.EnumEntry( L"LanguageId", LanguageId, nullptr, LanguageId );
 	IniEntry( LanguageCode );
 	IniEntry( RecentIsoCount );
 	IniEntry( GzipIsoIndexTemplate );
@@ -1105,16 +1105,16 @@ void RelocateLogfile()
 
 	wxString newlogname( Path::Combine( g_Conf->Folders.Logs.ToString(), L"emuLog.txt" ) );
 
-	if( (emuLog != NULL) && (emuLogName != newlogname) )
+	if( (emuLog != nullptr) && (emuLogName != newlogname) )
 	{
 		Console.WriteLn( L"\nRelocating Logfile...\n\tFrom: %s\n\tTo  : %s\n", WX_STR(emuLogName), WX_STR(newlogname) );
 		wxGetApp().DisableDiskLogging();
 
 		fclose( emuLog );
-		emuLog = NULL;
+		emuLog = nullptr;
 	}
 
-	if( emuLog == NULL )
+	if( emuLog == nullptr )
 	{
 		emuLogName = newlogname;
 		emuLog = wxFopen( emuLogName, "wb" );
@@ -1235,12 +1235,12 @@ public:
 };
 
 AppIniSaver::AppIniSaver()
-	: IniSaver( (GetAppConfig() != NULL) ? *GetAppConfig() : _dud_config )
+	: IniSaver( (GetAppConfig() != nullptr) ? *GetAppConfig() : _dud_config )
 {
 }
 
 AppIniLoader::AppIniLoader()
-	: IniLoader( (GetAppConfig() != NULL) ? *GetAppConfig() : _dud_config )
+	: IniLoader( (GetAppConfig() != nullptr) ? *GetAppConfig() : _dud_config )
 {
 }
 

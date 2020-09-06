@@ -81,7 +81,7 @@ private:
 class DisassemblyDialog : public wxFrame
 {
 public:
-	DisassemblyDialog( wxWindow* parent=NULL );
+	DisassemblyDialog( wxWindow* parent=nullptr );
 	virtual ~DisassemblyDialog() = default;
 
 	static wxString GetNameStatic() { return L"DisassemblyDialog"; }

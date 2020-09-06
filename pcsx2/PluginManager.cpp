@@ -88,7 +88,7 @@ const PluginInfo tbl_PluginInfo[] =
 	{ "FW",		PluginId_FW,	PS2E_LT_FW,		PS2E_FW_VERSION		},
 	{ "DEV9",	PluginId_DEV9,	PS2E_LT_DEV9,	PS2E_DEV9_VERSION	},
 
-	{ NULL },
+	{ nullptr },
 
 	// See PluginEnums_t for details on the MemoryCard plugin hack.
 	{ "Mcd",	PluginId_Mcd,	0,	0	},
@@ -359,9 +359,9 @@ static s32 CALLBACK _hack_PADinit()
 //
 static const LegacyApi_CommonMethod s_MethMessCommon[] =
 {
-	{	"init",				NULL	},
-	{	"close",			NULL	},
-	{	"shutdown",			NULL	},
+	{	"init",				nullptr	},
+	{	"close",			nullptr	},
+	{	"shutdown",			nullptr	},
 
 	{	"keyEvent",			(vMeth*)fallback_keyEvent },
 	{	"setSettingsDir",	(vMeth*)fallback_setSettingsDir },
@@ -372,7 +372,7 @@ static const LegacyApi_CommonMethod s_MethMessCommon[] =
 	{	"configure",		fallback_configure	},
 	{	"about",			fallback_about	},
 
-	{ NULL }
+	{ nullptr }
 
 };
 
@@ -381,17 +381,17 @@ static const LegacyApi_CommonMethod s_MethMessCommon[] =
 // ----------------------------------------------------------------------------
 static const LegacyApi_ReqMethod s_MethMessReq_GS[] =
 {
-	{	"GSopen",			(vMeth**)&GSopen,			NULL	},
-	{	"GSvsync",			(vMeth**)&GSvsync,			NULL	},
+	{	"GSopen",			(vMeth**)&GSopen,			nullptr	},
+	{	"GSvsync",			(vMeth**)&GSvsync,			nullptr	},
 	{	"GSgifTransfer",	(vMeth**)&GSgifTransfer,	(vMeth*)GS_Legacy_gifTransfer },
-	{	"GSgifTransfer2",	(vMeth**)&GSgifTransfer2,	NULL	},
-	{	"GSgifTransfer3",	(vMeth**)&GSgifTransfer3,	NULL	},
+	{	"GSgifTransfer2",	(vMeth**)&GSgifTransfer2,	nullptr	},
+	{	"GSgifTransfer3",	(vMeth**)&GSgifTransfer3,	nullptr	},
 	{	"GSreadFIFO2",		(vMeth**)&GSreadFIFO2,		(vMeth*)GS_Legacy_GSreadFIFO2 },
 
 	{	"GSmakeSnapshot",	(vMeth**)&GSmakeSnapshot,	(vMeth*)GS_makeSnapshot },
 	{	"GSirqCallback",	(vMeth**)&GSirqCallback,	(vMeth*)GS_irqCallback },
-	{	"GSsetBaseMem",		(vMeth**)&GSsetBaseMem,		NULL	},
-	{	"GSwriteCSR",		(vMeth**)&GSwriteCSR,		NULL	},
+	{	"GSsetBaseMem",		(vMeth**)&GSsetBaseMem,		nullptr	},
+	{	"GSwriteCSR",		(vMeth**)&GSwriteCSR,		nullptr	},
 	{	"GSsetGameCRC",		(vMeth**)&GSsetGameCRC,		(vMeth*)GS_setGameCRC },
 
 	{	"GSsetFrameSkip",	(vMeth**)&GSsetFrameSkip,	(vMeth*)GS_setFrameSkip	},
@@ -399,7 +399,7 @@ static const LegacyApi_ReqMethod s_MethMessReq_GS[] =
 	{	"GSsetExclusive",	(vMeth**)&GSsetExclusive,	(vMeth*)GS_setExclusive	},
 	{	"GSchangeSaveState",(vMeth**)&GSchangeSaveState,(vMeth*)GS_changeSaveState },
 	{	"GSgetTitleInfo2",	(vMeth**)&GSgetTitleInfo2,	(vMeth*)GS_getTitleInfo2 },
-	{ NULL }
+	{ nullptr }
 };
 
 static const LegacyApi_OptMethod s_MethMessOpt_GS[] =
@@ -415,7 +415,7 @@ static const LegacyApi_OptMethod s_MethMessOpt_GS[] =
 	{	"GSinitReadFIFO",	(vMeth**)&GSinitReadFIFO	},
 	{	"GSinitReadFIFO2",	(vMeth**)&GSinitReadFIFO2	},
 	{	"GSgifTransfer1",	(vMeth**)&GSgifTransfer1	},
-	{ NULL }
+	{ nullptr }
 };
 
 // ----------------------------------------------------------------------------
@@ -426,25 +426,25 @@ static s32 CALLBACK PAD_setSlot(u8 port, u8 slot) { return 0; }
 
 static const LegacyApi_ReqMethod s_MethMessReq_PAD[] =
 {
-	{	"PADopen",			(vMeth**)&PADopen,		NULL },
-	{	"PADstartPoll",		(vMeth**)&PADstartPoll,	NULL },
-	{	"PADpoll",			(vMeth**)&PADpoll,		NULL },
-	{	"PADquery",			(vMeth**)&PADquery,		NULL },
-	{	"PADkeyEvent",		(vMeth**)&PADkeyEvent,	NULL },
+	{	"PADopen",			(vMeth**)&PADopen,		nullptr },
+	{	"PADstartPoll",		(vMeth**)&PADstartPoll,	nullptr },
+	{	"PADpoll",			(vMeth**)&PADpoll,		nullptr },
+	{	"PADquery",			(vMeth**)&PADquery,		nullptr },
+	{	"PADkeyEvent",		(vMeth**)&PADkeyEvent,	nullptr },
 
 	// fixme - Following functions are new as of some revison post-0.9.6, and
 	// are for multitap support only.  They should either be optional or offer
 	// NOP fallbacks, to allow older plugins to retain functionality.
 	{	"PADsetSlot",		(vMeth**)&PADsetSlot,	(vMeth*)PAD_setSlot },
 	{	"PADqueryMtap",		(vMeth**)&PADqueryMtap,	(vMeth*)PAD_queryMtap },
-	{ NULL },
+	{ nullptr },
 };
 
 static const LegacyApi_OptMethod s_MethMessOpt_PAD[] =
 {
 	{	"PADupdate",		(vMeth**)&PADupdate },
 	{   "PADWriteEvent",	(vMeth**)&PADWriteEvent },
-	{ NULL },
+	{ nullptr },
 };
 
 // ----------------------------------------------------------------------------
@@ -458,7 +458,7 @@ static s32 CALLBACK CDVD_getBuffer2(u8* buffer)
 {
 	// TEMP: until I fix all the plugins to use this function style
 	u8* pb = CDVD->getBuffer();
-	if(pb == NULL) return -2;
+	if(pb == nullptr) return -2;
 
 	memcpy( buffer, pb, lastReadSize );
 	return 0;
@@ -526,37 +526,37 @@ static s32 CALLBACK CDVD_getDualInfo(s32* dualType, u32* layer1Start)
 CDVD_API CDVDapi_Plugin =
 {
 	// All of these are filled by the plugin manager
-	NULL
+	nullptr
 };
 
-CDVD_API* CDVD			= NULL;
+CDVD_API* CDVD			= nullptr;
 
 static const LegacyApi_ReqMethod s_MethMessReq_CDVD[] =
 {
-	{	"CDVDopen",			(vMeth**)&CDVDapi_Plugin.open,			NULL },
-	{	"CDVDclose",		(vMeth**)&CDVDapi_Plugin.close,			NULL },
-	{	"CDVDreadTrack",	(vMeth**)&CDVDapi_Plugin.readTrack,		NULL },
-	{	"CDVDgetBuffer",	(vMeth**)&CDVDapi_Plugin.getBuffer,		NULL },
-	{	"CDVDreadSubQ",		(vMeth**)&CDVDapi_Plugin.readSubQ,		NULL },
-	{	"CDVDgetTN",		(vMeth**)&CDVDapi_Plugin.getTN,			NULL },
-	{	"CDVDgetTD",		(vMeth**)&CDVDapi_Plugin.getTD,			NULL },
-	{	"CDVDgetTOC",		(vMeth**)&CDVDapi_Plugin.getTOC,		NULL },
-	{	"CDVDgetDiskType",	(vMeth**)&CDVDapi_Plugin.getDiskType,	NULL },
-	{	"CDVDgetTrayStatus",(vMeth**)&CDVDapi_Plugin.getTrayStatus,	NULL },
-	{	"CDVDctrlTrayOpen",	(vMeth**)&CDVDapi_Plugin.ctrlTrayOpen,	NULL },
-	{	"CDVDctrlTrayClose",(vMeth**)&CDVDapi_Plugin.ctrlTrayClose,	NULL },
+	{	"CDVDopen",			(vMeth**)&CDVDapi_Plugin.open,			nullptr },
+	{	"CDVDclose",		(vMeth**)&CDVDapi_Plugin.close,			nullptr },
+	{	"CDVDreadTrack",	(vMeth**)&CDVDapi_Plugin.readTrack,		nullptr },
+	{	"CDVDgetBuffer",	(vMeth**)&CDVDapi_Plugin.getBuffer,		nullptr },
+	{	"CDVDreadSubQ",		(vMeth**)&CDVDapi_Plugin.readSubQ,		nullptr },
+	{	"CDVDgetTN",		(vMeth**)&CDVDapi_Plugin.getTN,			nullptr },
+	{	"CDVDgetTD",		(vMeth**)&CDVDapi_Plugin.getTD,			nullptr },
+	{	"CDVDgetTOC",		(vMeth**)&CDVDapi_Plugin.getTOC,		nullptr },
+	{	"CDVDgetDiskType",	(vMeth**)&CDVDapi_Plugin.getDiskType,	nullptr },
+	{	"CDVDgetTrayStatus",(vMeth**)&CDVDapi_Plugin.getTrayStatus,	nullptr },
+	{	"CDVDctrlTrayOpen",	(vMeth**)&CDVDapi_Plugin.ctrlTrayOpen,	nullptr },
+	{	"CDVDctrlTrayClose",(vMeth**)&CDVDapi_Plugin.ctrlTrayClose,	nullptr },
 	{	"CDVDnewDiskCB",	(vMeth**)&CDVDapi_Plugin.newDiskCB,		(vMeth*)CDVD_newDiskCB },
 
 	{	"CDVDreadSector",	(vMeth**)&CDVDapi_Plugin.readSector,	(vMeth*)CDVD_readSector },
 	{	"CDVDgetBuffer2",	(vMeth**)&CDVDapi_Plugin.getBuffer2,	(vMeth*)CDVD_getBuffer2 },
 	{	"CDVDgetDualInfo",	(vMeth**)&CDVDapi_Plugin.getDualInfo,	(vMeth*)CDVD_getDualInfo },
 
-	{ NULL }
+	{ nullptr }
 };
 
 static const LegacyApi_OptMethod s_MethMessOpt_CDVD[] =
 {
-	{ NULL }
+	{ nullptr }
 };
 
 // ----------------------------------------------------------------------------
@@ -572,20 +572,20 @@ static void CALLBACK SPU2_Reset()
 
 static const LegacyApi_ReqMethod s_MethMessReq_SPU2[] =
 {
-	{	"SPU2open",				(vMeth**)&SPU2open,			NULL },
+	{	"SPU2open",				(vMeth**)&SPU2open,			nullptr },
 	{	"SPU2reset",			(vMeth**)&SPU2reset,		SPU2_Reset },
-	{	"SPU2write",			(vMeth**)&SPU2write,		NULL },
-	{	"SPU2read",				(vMeth**)&SPU2read,			NULL },
-	{	"SPU2readDMA4Mem",		(vMeth**)&SPU2readDMA4Mem,	NULL },
-	{	"SPU2readDMA7Mem",		(vMeth**)&SPU2readDMA7Mem,	NULL },
-	{	"SPU2writeDMA4Mem",		(vMeth**)&SPU2writeDMA4Mem,	NULL },
-	{	"SPU2writeDMA7Mem",		(vMeth**)&SPU2writeDMA7Mem,	NULL },
-	{	"SPU2interruptDMA4",	(vMeth**)&SPU2interruptDMA4,NULL },
-	{	"SPU2interruptDMA7",	(vMeth**)&SPU2interruptDMA7,NULL },
-	{	"SPU2ReadMemAddr",		(vMeth**)&SPU2ReadMemAddr,	NULL },
-	{	"SPU2irqCallback",		(vMeth**)&SPU2irqCallback,	NULL },
+	{	"SPU2write",			(vMeth**)&SPU2write,		nullptr },
+	{	"SPU2read",				(vMeth**)&SPU2read,			nullptr },
+	{	"SPU2readDMA4Mem",		(vMeth**)&SPU2readDMA4Mem,	nullptr },
+	{	"SPU2readDMA7Mem",		(vMeth**)&SPU2readDMA7Mem,	nullptr },
+	{	"SPU2writeDMA4Mem",		(vMeth**)&SPU2writeDMA4Mem,	nullptr },
+	{	"SPU2writeDMA7Mem",		(vMeth**)&SPU2writeDMA7Mem,	nullptr },
+	{	"SPU2interruptDMA4",	(vMeth**)&SPU2interruptDMA4,nullptr },
+	{	"SPU2interruptDMA7",	(vMeth**)&SPU2interruptDMA7,nullptr },
+	{	"SPU2ReadMemAddr",		(vMeth**)&SPU2ReadMemAddr,	nullptr },
+	{	"SPU2irqCallback",		(vMeth**)&SPU2irqCallback,	nullptr },
 
-	{ NULL }
+	{ nullptr }
 };
 
 static const LegacyApi_OptMethod s_MethMessOpt_SPU2[] =
@@ -596,7 +596,7 @@ static const LegacyApi_OptMethod s_MethMessOpt_SPU2[] =
 	{	"SPU2setDMABaseAddr",	(vMeth**)&SPU2setDMABaseAddr},
 	{	"SPU2setupRecording",	(vMeth**)&SPU2setupRecording},
 
-	{ NULL }
+	{ nullptr }
 };
 
 // ----------------------------------------------------------------------------
@@ -604,25 +604,25 @@ static const LegacyApi_OptMethod s_MethMessOpt_SPU2[] =
 // ----------------------------------------------------------------------------
 static const LegacyApi_ReqMethod s_MethMessReq_DEV9[] =
 {
-	{	"DEV9open",			(vMeth**)&DEV9open,			NULL },
-	{	"DEV9read8",		(vMeth**)&DEV9read8,		NULL },
-	{	"DEV9read16",		(vMeth**)&DEV9read16,		NULL },
-	{	"DEV9read32",		(vMeth**)&DEV9read32,		NULL },
-	{	"DEV9write8",		(vMeth**)&DEV9write8,		NULL },
-	{	"DEV9write16",		(vMeth**)&DEV9write16,		NULL },
-	{	"DEV9write32",		(vMeth**)&DEV9write32,		NULL },
-	{	"DEV9readDMA8Mem",	(vMeth**)&DEV9readDMA8Mem,	NULL },
-	{	"DEV9writeDMA8Mem",	(vMeth**)&DEV9writeDMA8Mem,	NULL },
-	{	"DEV9irqCallback",	(vMeth**)&DEV9irqCallback,	NULL },
-	{	"DEV9irqHandler",	(vMeth**)&DEV9irqHandler,	NULL },
+	{	"DEV9open",			(vMeth**)&DEV9open,			nullptr },
+	{	"DEV9read8",		(vMeth**)&DEV9read8,		nullptr },
+	{	"DEV9read16",		(vMeth**)&DEV9read16,		nullptr },
+	{	"DEV9read32",		(vMeth**)&DEV9read32,		nullptr },
+	{	"DEV9write8",		(vMeth**)&DEV9write8,		nullptr },
+	{	"DEV9write16",		(vMeth**)&DEV9write16,		nullptr },
+	{	"DEV9write32",		(vMeth**)&DEV9write32,		nullptr },
+	{	"DEV9readDMA8Mem",	(vMeth**)&DEV9readDMA8Mem,	nullptr },
+	{	"DEV9writeDMA8Mem",	(vMeth**)&DEV9writeDMA8Mem,	nullptr },
+	{	"DEV9irqCallback",	(vMeth**)&DEV9irqCallback,	nullptr },
+	{	"DEV9irqHandler",	(vMeth**)&DEV9irqHandler,	nullptr },
 
-	{ NULL }
+	{ nullptr }
 };
 
 static const LegacyApi_OptMethod s_MethMessOpt_DEV9[] =
 {
 	{ "DEV9async", (vMeth**)&DEV9async },
-	{ NULL }
+	{ nullptr }
 };
 
 // ----------------------------------------------------------------------------
@@ -630,23 +630,23 @@ static const LegacyApi_OptMethod s_MethMessOpt_DEV9[] =
 // ----------------------------------------------------------------------------
 static const LegacyApi_ReqMethod s_MethMessReq_USB[] =
 {
-	{	"USBopen",			(vMeth**)&USBopen,			NULL },
-	{	"USBread8",			(vMeth**)&USBread8,			NULL },
-	{	"USBread16",		(vMeth**)&USBread16,		NULL },
-	{	"USBread32",		(vMeth**)&USBread32,		NULL },
-	{	"USBwrite8",		(vMeth**)&USBwrite8,		NULL },
-	{	"USBwrite16",		(vMeth**)&USBwrite16,		NULL },
-	{	"USBwrite32",		(vMeth**)&USBwrite32,		NULL },
-	{	"USBirqCallback",	(vMeth**)&USBirqCallback,	NULL },
-	{	"USBirqHandler",	(vMeth**)&USBirqHandler,	NULL },
-	{ NULL }
+	{	"USBopen",			(vMeth**)&USBopen,			nullptr },
+	{	"USBread8",			(vMeth**)&USBread8,			nullptr },
+	{	"USBread16",		(vMeth**)&USBread16,		nullptr },
+	{	"USBread32",		(vMeth**)&USBread32,		nullptr },
+	{	"USBwrite8",		(vMeth**)&USBwrite8,		nullptr },
+	{	"USBwrite16",		(vMeth**)&USBwrite16,		nullptr },
+	{	"USBwrite32",		(vMeth**)&USBwrite32,		nullptr },
+	{	"USBirqCallback",	(vMeth**)&USBirqCallback,	nullptr },
+	{	"USBirqHandler",	(vMeth**)&USBirqHandler,	nullptr },
+	{ nullptr }
 };
 
 static const LegacyApi_OptMethod s_MethMessOpt_USB[] =
 {
 	{	"USBasync",		(vMeth**)&USBasync },
 	{	"USBsetRAM",	(vMeth**)&USBsetRAM },
-	{ NULL }
+	{ nullptr }
 };
 
 // ----------------------------------------------------------------------------
@@ -654,16 +654,16 @@ static const LegacyApi_OptMethod s_MethMessOpt_USB[] =
 // ----------------------------------------------------------------------------
 static const LegacyApi_ReqMethod s_MethMessReq_FW[] =
 {
-	{	"FWopen",			(vMeth**)&FWopen,			NULL },
-	{	"FWread32",			(vMeth**)&FWread32,			NULL },
-	{	"FWwrite32",		(vMeth**)&FWwrite32,		NULL },
-	{	"FWirqCallback",	(vMeth**)&FWirqCallback,	NULL },
-	{ NULL }
+	{	"FWopen",			(vMeth**)&FWopen,			nullptr },
+	{	"FWread32",			(vMeth**)&FWread32,			nullptr },
+	{	"FWwrite32",		(vMeth**)&FWwrite32,		nullptr },
+	{	"FWirqCallback",	(vMeth**)&FWirqCallback,	nullptr },
+	{ nullptr }
 };
 
 static const LegacyApi_OptMethod s_MethMessOpt_FW[] =
 {
-	{ NULL }
+	{ nullptr }
 };
 
 static const LegacyApi_ReqMethod* const s_MethMessReq[] =
@@ -688,7 +688,7 @@ static const LegacyApi_OptMethod* const s_MethMessOpt[] =
 	s_MethMessOpt_DEV9
 };
 
-SysCorePlugins *g_plugins = NULL;
+SysCorePlugins *g_plugins = nullptr;
 
 // ---------------------------------------------------------------------------------
 //       Plugin-related Exception Implementations
@@ -868,7 +868,7 @@ void* StaticLibrary::GetSymbol(const wxString &name)
 #undef RETURN_COMMON_SYMBOL
 #undef RETURN_SYMBOL
 
-	return NULL;
+	return nullptr;
 }
 
 bool StaticLibrary::HasSymbol(const wxString &name)
@@ -899,7 +899,7 @@ bool DynamicLibrary::HasSymbol(const wxString &name)
 //  PluginStatus_t Implementations
 // ---------------------------------------------------------------------------------
 SysCorePlugins::SysCorePlugins() :
-	m_mcdPlugin(NULL), m_SettingsFolder(), m_LogFolder(), m_mtx_PluginStatus(), m_mcdOpen(false)
+	m_mcdPlugin(nullptr), m_SettingsFolder(), m_LogFolder(), m_mtx_PluginStatus(), m_mcdOpen(false)
 {
 }
 
@@ -970,7 +970,7 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 		_PS2EgetLibName		GetLibName		= (_PS2EgetLibName)		Lib->GetSymbol( L"PS2EgetLibName" );
 		_PS2EgetLibVersion2	GetLibVersion2	= (_PS2EgetLibVersion2)	Lib->GetSymbol( L"PS2EgetLibVersion2" );
 
-		if( GetLibName == NULL || GetLibVersion2 == NULL )
+		if( GetLibName == nullptr || GetLibVersion2 == nullptr )
 			throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
 				.SetDiagMsg(L"%s plugin init failed: Method binding failure on GetLibName or GetLibVersion2.")
 				.SetUserMsg(_( "The configured %s plugin is not a PCSX2 plugin, or is for an older unsupported version of PCSX2."));
@@ -1006,14 +1006,14 @@ void SysCorePlugins::PluginStatus_t::BindCommon( PluginsEnum_t pid )
 
 	wxDoNotLogInThisScope please;
 
-	while( current->MethodName != NULL )
+	while( current->MethodName != nullptr )
 	{
 		*target = (VoidMethod*)Lib->GetSymbol( current->GetMethodName( pid ) );
 
-		if( *target == NULL )
+		if( *target == nullptr )
 			*target = current->Fallback;
 
-		if( *target == NULL )
+		if( *target == nullptr )
 		{
 			throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
 				.SetDiagMsg(wxsFormat( L"\nMethod binding failure on: %s\n", WX_STR(current->GetMethodName( pid )) ))
@@ -1031,14 +1031,14 @@ void SysCorePlugins::PluginStatus_t::BindRequired( PluginsEnum_t pid )
 
 	wxDoNotLogInThisScope please;
 
-	while( current->MethodName != NULL )
+	while( current->MethodName != nullptr )
 	{
 		*(current->Dest) = (VoidMethod*)Lib->GetSymbol( current->GetMethodName() );
 
-		if( *(current->Dest) == NULL )
+		if( *(current->Dest) == nullptr )
 			*(current->Dest) = current->Fallback;
 
-		if( *(current->Dest) == NULL )
+		if( *(current->Dest) == nullptr )
 		{
 			throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
 				.SetDiagMsg(wxsFormat( L"\n%s plugin init error; Method binding failed: %s\n", WX_STR(current->GetMethodName()) ))
@@ -1055,7 +1055,7 @@ void SysCorePlugins::PluginStatus_t::BindOptional( PluginsEnum_t pid )
 
 	wxDoNotLogInThisScope please;
 
-	while( current->MethodName != NULL )
+	while( current->MethodName != nullptr )
 	{
 		*(current->Dest) = (VoidMethod*)Lib->GetSymbol( current->GetMethodName() );
 		current++;
@@ -1102,7 +1102,7 @@ void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
 		Load( pi->id, folders[pi->id] );
 		pxYield( 2 );
 
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 	indent.LeaveScope();
 
 	CDVDapi_Plugin.newDiskCB( cdvdNewDiskCB );
@@ -1134,10 +1134,10 @@ void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
 		pcsx2_GetStringAlloc,
 		pcsx2_OSD_WriteLn,
 
-		NULL, // AddMenuItem
-		NULL, // Menu_Create
-		NULL, // Menu_Delete
-		NULL, // Menu_AddItem
+		nullptr, // AddMenuItem
+		nullptr, // Menu_Create
+		nullptr, // Menu_Delete
+		nullptr, // Menu_AddItem
 
 		{ 0 }, // MenuItem
 		{ 0 }, // Console
@@ -1147,7 +1147,7 @@ void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
 	};
 
 	m_mcdPlugin = FileMcd_InitAPI( &myself );
-	if( m_mcdPlugin == NULL )
+	if( m_mcdPlugin == nullptr )
 	{
 		// fixme: use plugin's GetLastError (not implemented yet!)
 		throw Exception::PluginLoadError( PluginId_Mcd ).SetDiagMsg(L"Internal Memorycard Plugin failed to load.");
@@ -1211,14 +1211,14 @@ bool SysCorePlugins::OpenPlugin_SPU2()
 	if( SPU2open((void*)pDsp) ) return false;
 
 	SPU2irqCallback( spu2Irq, spu2DMA4Irq, spu2DMA7Irq );
-	if( SPU2setDMABaseAddr != NULL ) SPU2setDMABaseAddr((uptr)iopMem->Main);
-	if( SPU2setClockPtr != NULL ) SPU2setClockPtr(&psxRegs.cycle);
+	if( SPU2setDMABaseAddr != nullptr ) SPU2setDMABaseAddr((uptr)iopMem->Main);
+	if( SPU2setClockPtr != nullptr ) SPU2setClockPtr(&psxRegs.cycle);
 	return true;
 }
 
 bool SysCorePlugins::OpenPlugin_DEV9()
 {
-	dev9Handler = NULL;
+	dev9Handler = nullptr;
 
 	if( DEV9open( (void*)pDsp ) ) return false;
 	DEV9irqCallback( dev9Irq );
@@ -1228,13 +1228,13 @@ bool SysCorePlugins::OpenPlugin_DEV9()
 
 bool SysCorePlugins::OpenPlugin_USB()
 {
-	usbHandler = NULL;
+	usbHandler = nullptr;
 
 	if( USBopen((void*)pDsp) ) return false;
 	USBirqCallback( usbIrq );
 	usbHandler = USBirqHandler();
 	// iopMem is not initialized yet. Moved elsewhere
-	//if( USBsetRAM != NULL )
+	//if( USBsetRAM != nullptr )
 	//	USBsetRAM(iopMem->Main);
 	return true;
 }
@@ -1250,9 +1250,9 @@ bool SysCorePlugins::OpenPlugin_Mcd()
 {
 	ScopedLock lock( m_mtx_PluginStatus );
 
-	// [TODO] Fix up and implement PS2E_SessionInfo here!!  (the currently NULL parameter)
+	// [TODO] Fix up and implement PS2E_SessionInfo here!!  (the currently nullptr parameter)
 	if( SysPlugins.Mcd )
-		SysPlugins.Mcd->Base.EmuOpen( (PS2E_THISPTR) SysPlugins.Mcd, NULL );
+		SysPlugins.Mcd->Base.EmuOpen( (PS2E_THISPTR) SysPlugins.Mcd, nullptr );
 
 	return true;
 }
@@ -1310,7 +1310,7 @@ void SysCorePlugins::Open()
 #else
 		if (pi->id == PluginId_GS && !GSopen2) GetMTGS().WaitForOpen();
 #endif
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 
 	if (GSopen2) GetMTGS().WaitForOpen();
 
@@ -1467,12 +1467,12 @@ bool SysCorePlugins::Init()
 	Console.WriteLn( Color_StrongBlue, "Initializing plugins..." );
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		Init( pi->id );
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 
-	if( SysPlugins.Mcd == NULL )
+	if( SysPlugins.Mcd == nullptr )
 	{
 		SysPlugins.Mcd = (PS2E_ComponentAPI_Mcd*)m_mcdPlugin->NewComponentInstance( PS2E_TYPE_Mcd );
-		if( SysPlugins.Mcd == NULL )
+		if( SysPlugins.Mcd == nullptr )
 		{
 			// fixme: use plugin's GetLastError (not implemented yet!)
 			throw Exception::PluginInitError( PluginId_Mcd )
@@ -1514,10 +1514,10 @@ bool SysCorePlugins::Shutdown()
 
 	// More memorycard hacks!!
 
-	if( (SysPlugins.Mcd != NULL) && (m_mcdPlugin != NULL) )
+	if( (SysPlugins.Mcd != nullptr) && (m_mcdPlugin != nullptr) )
 	{
 		m_mcdPlugin->DeleteComponentInstance( (PS2E_THISPTR)SysPlugins.Mcd );
-		SysPlugins.Mcd = NULL;
+		SysPlugins.Mcd = nullptr;
 	}
 
 	Console.WriteLn( Color_StrongGreen, "Plugins shutdown successfully." );
@@ -1554,7 +1554,7 @@ void SysCorePlugins::Freeze( PluginsEnum_t pid, SaveStateBase& state )
 	// No locking leeded -- DoFreeze locks as needed, and this avoids MTGS deadlock.
 	//ScopedLock lock( m_mtx_PluginStatus );
 
-	freezeData fP = { 0, NULL };
+	freezeData fP = { 0, nullptr };
 	if( !DoFreeze( pid, FREEZE_SIZE, &fP ) )
 		fP.size = 0;
 
@@ -1600,7 +1600,7 @@ void SysCorePlugins::Freeze( PluginsEnum_t pid, SaveStateBase& state )
 
 size_t SysCorePlugins::GetFreezeSize( PluginsEnum_t pid )
 {
-	freezeData fP = { 0, NULL };
+	freezeData fP = { 0, nullptr };
 	if (!DoFreeze( pid, FREEZE_SIZE, &fP)) return 0;
 	return fP.size;
 }
@@ -1625,7 +1625,7 @@ void SysCorePlugins::FreezeOut( PluginsEnum_t pid, pxOutputStream& outfp )
 	// No locking needed -- DoFreeze locks as needed, and this avoids MTGS deadlock.
 	//ScopedLock lock( m_mtx_PluginStatus );
 
-	freezeData fP = { 0, NULL };
+	freezeData fP = { 0, nullptr };
 	if (!DoFreeze( pid, FREEZE_SIZE, &fP)) return;
 	if (!fP.size) return;
 
@@ -1645,7 +1645,7 @@ void SysCorePlugins::FreezeIn( PluginsEnum_t pid, pxInputStream& infp )
 	// No locking needed -- DoFreeze locks as needed, and this avoids MTGS deadlock.
 	//ScopedLock lock( m_mtx_PluginStatus );
 
-	freezeData fP = { 0, NULL };
+	freezeData fP = { 0, nullptr };
 	if (!DoFreeze( pid, FREEZE_SIZE, &fP ))
 		fP.size = 0;
 
@@ -1686,7 +1686,7 @@ bool SysCorePlugins::KeyEvent( const keyEvent& evt )
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		if( pi->id != PluginId_PAD && m_info[pi->id] )
 			m_info[pi->id]->CommonBindings.KeyEvent( const_cast<keyEvent*>(&evt) );
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 
 	return false;
 }
@@ -1698,7 +1698,7 @@ void SysCorePlugins::SendSettingsFolder()
 
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		if( m_info[pi->id] ) m_info[pi->id]->CommonBindings.SetSettingsDir( m_SettingsFolder.utf8_str() );
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 }
 
 void SysCorePlugins::SetSettingsFolder( const wxString& folder )
@@ -1722,7 +1722,7 @@ void SysCorePlugins::SendLogFolder()
 
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		if( m_info[pi->id] ) m_info[pi->id]->CommonBindings.SetLogDir( m_LogFolder.utf8_str() );
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 }
 
 void SysCorePlugins::SetLogFolder( const wxString& folder )
@@ -1761,7 +1761,7 @@ bool SysCorePlugins::AreOpen() const
 	ScopedLock lock( m_mtx_PluginStatus );
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		if( !IsOpen(pi->id) ) return false;
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 
 	return true;
 }
@@ -1782,7 +1782,7 @@ bool SysCorePlugins::AreAnyInitialized() const
 	ScopedLock lock( m_mtx_PluginStatus );
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		if( IsInitialized(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 
 	return false;
 }
@@ -1811,7 +1811,7 @@ bool SysCorePlugins::NeedsLoad() const
 {
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		if( !IsLoaded(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 	
 	return false;
 }		
@@ -1820,7 +1820,7 @@ bool SysCorePlugins::NeedsUnload() const
 {
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		if( IsLoaded(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 
 	return false;
 }		
@@ -1831,7 +1831,7 @@ bool SysCorePlugins::NeedsInit() const
 
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		if( !IsInitialized(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 
 	return false;
 }
@@ -1842,7 +1842,7 @@ bool SysCorePlugins::NeedsShutdown() const
 
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		if( IsInitialized(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 
 	return false;
 }
@@ -1851,7 +1851,7 @@ bool SysCorePlugins::NeedsOpen() const
 {
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		if( !IsOpen(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 
 	return false;
 }
@@ -1860,7 +1860,7 @@ bool SysCorePlugins::NeedsClose() const
 {
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		if( IsOpen(pi->id) ) return true;
-	} while( ++pi, pi->shortname != NULL );
+	} while( ++pi, pi->shortname != nullptr );
 
 	return false;
 }

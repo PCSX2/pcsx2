@@ -375,7 +375,7 @@ GSWndEGL_WL::GSWndEGL_WL()
 void *GSWndEGL_WL::CreateNativeDisplay()
 {
 	if (m_NativeDisplay == nullptr)
-		m_NativeDisplay = wl_display_connect(NULL);
+		m_NativeDisplay = wl_display_connect(nullptr);
 
 	return (void*)m_NativeDisplay;
 }

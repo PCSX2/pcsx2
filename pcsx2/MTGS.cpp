@@ -197,7 +197,7 @@ void SysMtgsThread::OpenPlugin()
 
 	int result;
 
-	if( GSopen2 != NULL )
+	if( GSopen2 != nullptr )
 		result = GSopen2( (void*)pDsp, 1 | (renderswitch ? 4 : 0) );
 	else
 		result = GSopen( (void*)pDsp, "PCSX2", renderswitch ? 2 : 1 );
@@ -450,7 +450,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 
 							// if we're not using GSOpen2, then the GS window is on this thread (MTGS thread),
 							// so we need to call PADupdate from here.
-							if( (GSopen2 == NULL) && (PADupdate != NULL) )
+							if( (GSopen2 == nullptr) && (PADupdate != nullptr) )
 								PADupdate(0);
 
 							m_QueuedFrameCount.fetch_sub(1);
@@ -478,7 +478,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 
 						case GS_RINGTYPE_RESET:
 							MTGS_LOG( "(MTGS Packet Read) ringtype=Reset" );
-							if( GSreset != NULL ) GSreset();
+							if( GSreset != nullptr ) GSreset();
 						break;
 
 						case GS_RINGTYPE_SOFTRESET:

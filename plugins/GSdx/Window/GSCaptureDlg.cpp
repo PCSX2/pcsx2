@@ -30,7 +30,7 @@
 	if(SUCCEEDED(pDevEnum4$##clsid->CreateClassEnumerator(clsid, &pClassEnum4$##clsid, 0)) \
 	&& pClassEnum4$##clsid) \
 	{ \
-		for(CComPtr<IMoniker> pMoniker; pClassEnum4$##clsid->Next(1, &pMoniker, 0) == S_OK; pMoniker = NULL) \
+		for(CComPtr<IMoniker> pMoniker; pClassEnum4$##clsid->Next(1, &pMoniker, 0) == S_OK; pMoniker = nullptr) \
 		{ \
 
 #define EndEnumSysDev }}}
@@ -55,7 +55,7 @@ int GSCaptureDlg::GetSelCodec(Codec& c)
 
 		if(!c.filter)
 		{
-			c.moniker->BindToObject(NULL, NULL, __uuidof(IBaseFilter), (void**)&c.filter);
+			c.moniker->BindToObject(nullptr, nullptr, __uuidof(IBaseFilter), (void**)&c.filter);
 
 			if(!c.filter) return 0;
 		}
@@ -116,9 +116,9 @@ void GSCaptureDlg::OnInit()
 
 		std::wstring prefix;
 
-		LPOLESTR str = NULL;
+		LPOLESTR str = nullptr;
 
-		if(FAILED(moniker->GetDisplayName(NULL, NULL, &str)))
+		if(FAILED(moniker->GetDisplayName(nullptr, nullptr, &str)))
 			continue;
 
 		if(wcsstr(str, L"@device:dmo:")) prefix = L"(DMO) ";
@@ -136,7 +136,7 @@ void GSCaptureDlg::OnInit()
 
 		_variant_t var;
 
-		if(FAILED(pPB->Read(_bstr_t(_T("FriendlyName")), &var, NULL)))
+		if(FAILED(pPB->Read(_bstr_t(_T("FriendlyName")), &var, nullptr)))
 			continue;
 
 		c.FriendlyName = prefix + var.bstrVal;
@@ -196,9 +196,9 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 					if (SUCCEEDED(pSPP->GetPages(&caGUID)))
 					{
-						IUnknown* lpUnk = NULL;
+						IUnknown* lpUnk = nullptr;
 						pSPP.QueryInterface(&lpUnk);
-						OleCreatePropertyFrame(m_hWnd, 0, 0, c.FriendlyName.c_str(), 1, (IUnknown**)&lpUnk, caGUID.cElems, caGUID.pElems, 0, 0, NULL);
+						OleCreatePropertyFrame(m_hWnd, 0, 0, c.FriendlyName.c_str(), 1, (IUnknown**)&lpUnk, caGUID.cElems, caGUID.pElems, 0, 0, nullptr);
 						lpUnk->Release();
 
 						if (caGUID.pElems)
@@ -207,7 +207,7 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				}
 				else if (CComQIPtr<IAMVfwCompressDialogs> pAMVfWCD = c.filter)
 				{
-					if (pAMVfWCD->ShowDialog(VfwCompressDialog_QueryConfig, NULL) == S_OK)
+					if (pAMVfWCD->ShowDialog(VfwCompressDialog_QueryConfig, nullptr) == S_OK)
 						pAMVfWCD->ShowDialog(VfwCompressDialog_Config, m_hWnd);
 				}
 			}

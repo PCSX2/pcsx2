@@ -98,7 +98,7 @@ V_VolumeSlideLR V_VolumeSlideLR::Max(0x3FFF, 0x7FFFFFFF);
 
 V_Core::V_Core(int coreidx)
     : Index(coreidx)
-//LogFile_AutoDMA( NULL )
+//LogFile_AutoDMA( nullptr )
 {
     /*char fname[128];
 	sprintf( fname, "logs/adma%d.raw", GetDmaIndex() );
@@ -108,10 +108,10 @@ V_Core::V_Core(int coreidx)
 V_Core::~V_Core() throw()
 {
     // Can't use this yet because we dumb V_Core into savestates >_<
-    /*if( LogFile_AutoDMA != NULL )
+    /*if( LogFile_AutoDMA != nullptr )
 	{
 		fclose( LogFile_AutoDMA );
-		LogFile_AutoDMA = NULL;
+		LogFile_AutoDMA = nullptr;
 	}*/
 }
 

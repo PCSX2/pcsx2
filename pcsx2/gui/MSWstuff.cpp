@@ -35,7 +35,7 @@ float MSW_GetDPIScale()
 #ifdef __WXMSW__
 	HDC screen = GetDC(0);
 	float scale = GetDeviceCaps(screen, LOGPIXELSX) / 96.0; // 96.0 dpi = 100% scale
-	ReleaseDC(NULL, screen);
+	ReleaseDC(nullptr, screen);
 
 	return scale;
 #else

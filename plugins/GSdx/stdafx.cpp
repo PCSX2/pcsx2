@@ -64,7 +64,7 @@ const std::string root_hw("/tmp/GS_HW_dump32/");
 
 void* vmalloc(size_t size, bool code)
 {
-	return VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, code ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE);
+	return VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, code ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE);
 }
 
 void vmfree(void* ptr, size_t size)
@@ -72,12 +72,12 @@ void vmfree(void* ptr, size_t size)
 	VirtualFree(ptr, 0, MEM_RELEASE);
 }
 
-static HANDLE s_fh = NULL;
+static HANDLE s_fh = nullptr;
 static uint8* s_Next[8];
 
 void* fifo_alloc(size_t size, size_t repeat)
 {
-	ASSERT(s_fh == NULL);
+	ASSERT(s_fh == nullptr);
 
 	if (repeat >= countof(s_Next)) {
 		fprintf(stderr, "Memory mapping overflow (%zu >= %u)\n", repeat, countof(s_Next));
@@ -86,7 +86,7 @@ void* fifo_alloc(size_t size, size_t repeat)
 
 	s_fh = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, nullptr);
 	DWORD errorID = ::GetLastError();
-	if (s_fh == NULL) {
+	if (s_fh == nullptr) {
 		fprintf(stderr, "Failed to reserve memory. WIN API ERROR:%u\n", errorID);
 		return vmalloc(size * repeat, false); // Fallback to default vmalloc
 	}
@@ -118,10 +118,10 @@ void* fifo_alloc(size_t size, size_t repeat)
 
 void fifo_free(void* ptr, size_t size, size_t repeat)
 {
-	ASSERT(s_fh != NULL);
+	ASSERT(s_fh != nullptr);
 
-	if (s_fh == NULL) {
-		if (ptr != NULL)
+	if (s_fh == nullptr) {
+		if (ptr != nullptr)
 			vmfree(ptr, size);
 		return;
 	}
@@ -136,7 +136,7 @@ void fifo_free(void* ptr, size_t size, size_t repeat)
 	}
 
 	CloseHandle(s_fh);
-	s_fh = NULL;
+	s_fh = nullptr;
 }
 
 #else

@@ -106,7 +106,7 @@ private:
 					}
 				}
 
-				return NULL;
+				return nullptr;
 			}
 
 		public:

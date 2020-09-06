@@ -142,7 +142,7 @@ struct PluginLog
         va_list list;
         wchar_t buf[256];
 
-        if (LogFile == NULL)
+        if (LogFile == nullptr)
             return;
 
         va_start(list, fmt);

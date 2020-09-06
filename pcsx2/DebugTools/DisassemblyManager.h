@@ -209,7 +209,7 @@ public:
 private:
 	DisassemblyEntry* getEntry(u32 address);
 	std::map<u32,DisassemblyEntry*> entries;
-	DebugInterface* cpu = NULL;
+	DebugInterface* cpu = nullptr;
 	static int maxParamChars;
 };
 

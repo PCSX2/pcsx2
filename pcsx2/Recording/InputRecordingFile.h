@@ -85,7 +85,7 @@ private:
 	static const int RecordingSeekpointSaveState = RecordingSeekpointUndoCount + 4;
 
 	// Movie File
-	FILE* recordingFile = NULL;
+	FILE* recordingFile = nullptr;
 	wxString filename = "";
 	long GetBlockSeekPoint(const long& frame);
 

@@ -198,8 +198,8 @@ public:
 protected:
 	BaseCompressThread()
 	{
-		m_gzfp				= NULL;
-		m_src_list			= NULL;
+		m_gzfp				= nullptr;
+		m_src_list			= nullptr;
 		m_PendingSaveFlag	= false;
 	}
 

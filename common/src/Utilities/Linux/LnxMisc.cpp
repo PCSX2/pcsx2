@@ -46,7 +46,7 @@ u64 GetTickFrequency()
 u64 GetCPUTicks()
 {
     struct timeval t;
-    gettimeofday(&t, NULL);
+    gettimeofday(&t, nullptr);
     return ((u64)t.tv_sec * GetTickFrequency()) + t.tv_usec;
 }
 

@@ -61,7 +61,7 @@ int main ( int argc, char *argv[] )
 	}
 
 	handle = dlopen(plugin, RTLD_LAZY|RTLD_GLOBAL);
-	if (handle == NULL) {
+	if (handle == nullptr) {
 		fprintf(stderr, "Failed to dlopen plugin %s\n", plugin);
 		help();
 	}

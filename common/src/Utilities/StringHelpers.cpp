@@ -106,7 +106,7 @@ wxString JoinString(const wxArrayString &src, const wxString &separator)
 wxString JoinString(const wxChar **src, const wxString &separator)
 {
     wxString dest;
-    while (*src != NULL) {
+    while (*src != nullptr) {
         if (*src[0] == 0)
             continue;
 
@@ -250,7 +250,7 @@ ParsedAssignmentString::ParsedAssignmentString(const wxString &src)
 //
 void px_fputs(FILE *fp, const char *src)
 {
-    if (fp == NULL)
+    if (fp == nullptr)
         return;
 
 #ifdef _WIN32

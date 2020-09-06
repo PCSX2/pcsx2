@@ -198,7 +198,7 @@ static __ri const char* _ioplog_GetHwName( u32 addr, T val )
 			else if( addr >= 0x1f808200 && addr < 0x1f808240 ) { return "SIO2 param"; }
 			else if( addr >= 0x1f808240 && addr < 0x1f808260 ) { return "SIO2 send"; }
 
-		return NULL; //"Unknown";
+		return nullptr; //"Unknown";
 	}
 }
 

@@ -85,7 +85,7 @@ public:
     void DeleteObject(BaseDeletableObject &obj);
     void DeleteObject(BaseDeletableObject *obj)
     {
-        if (obj == NULL)
+        if (obj == nullptr)
             return;
         DeleteObject(*obj);
     }
@@ -93,7 +93,7 @@ public:
     void DeleteThread(Threading::pxThread &obj);
     void DeleteThread(Threading::pxThread *obj)
     {
-        if (obj == NULL)
+        if (obj == nullptr)
             return;
         DeleteThread(*obj);
     }

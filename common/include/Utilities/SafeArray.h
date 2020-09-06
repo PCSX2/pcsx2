@@ -24,7 +24,7 @@
 
 // Microsoft Windows only macro, useful for freeing out COM objects:
 #define safe_release(ptr) \
-    ((void)((((ptr) != NULL) && ((ptr)->Release(), !!0)), (ptr) = NULL))
+    ((void)((((ptr) != nullptr) && ((ptr)->Release(), !!0)), (ptr) = nullptr))
 
 // --------------------------------------------------------------------------------------
 //  SafeArray
@@ -70,7 +70,7 @@ public:
             ExactAlloc(newsize);
     }
 
-    bool IsDisposed() const { return (m_ptr == NULL); }
+    bool IsDisposed() const { return (m_ptr == nullptr); }
 
     // Returns the size of the memory allocation, as according to the array type.
     int GetLength() const { return m_size; }

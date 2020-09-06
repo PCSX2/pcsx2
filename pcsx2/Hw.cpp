@@ -160,7 +160,7 @@ __ri bool hwMFIFOWrite(u32 addr, const u128* data, uint qwc)
 	if (u128* dst = (u128*)PSM(dmacRegs.rbor.ADDR))
 	{
 		const u32 ringsize = (dmacRegs.rbsr.RMSK / 16) + 1;
-		pxAssertMsg( PSM(dmacRegs.rbor.ADDR+ringsize-1) != NULL, "Scratchpad/MFIFO ringbuffer spans into invalid (unmapped) physical memory!" );
+		pxAssertMsg( PSM(dmacRegs.rbor.ADDR+ringsize-1) != nullptr, "Scratchpad/MFIFO ringbuffer spans into invalid (unmapped) physical memory!" );
 		uint startpos = (addr & dmacRegs.rbsr.RMSK)/16;
 		MemCopy_WrappedDest( data, dst, startpos, ringsize, qwc );
 	}

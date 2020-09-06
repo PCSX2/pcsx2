@@ -53,7 +53,7 @@ void LoadConfig()
     fp = fopen("inis\\gsnull.ini", "rt"); //check if gsnull.ini really exists
 
     if (!fp) {
-        CreateDirectory("inis", NULL);
+        CreateDirectory("inis", nullptr);
         memset(&conf, 0, sizeof(conf));
         conf.Log = 0; //default value
         SaveConfig(); //save and return
@@ -61,7 +61,7 @@ void LoadConfig()
     }
 
     fclose(fp);
-    GetPrivateProfileString("Interface", "Logging", NULL, szValue, 20, szIniFile);
-    Conf1->Log = strtoul(szValue, NULL, 10);
+    GetPrivateProfileString("Interface", "Logging", nullptr, szValue, 20, szIniFile);
+    Conf1->Log = strtoul(szValue, nullptr, 10);
     return;
 }

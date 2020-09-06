@@ -83,13 +83,13 @@ void pxRadioPanel::Realize()
         m_objects[i].LabelObj = new wxRadioButton(this, wxID_ANY, m_buttonStrings[i].Label);
 
     for (int i = 0; i < numbuttons; ++i) {
-        m_objects[i].SubTextObj = NULL;
+        m_objects[i].SubTextObj = nullptr;
         if (m_buttonStrings[i].SubText.IsEmpty())
             continue;
         m_objects[i].SubTextObj = new pxStaticText(this, m_buttonStrings[i].SubText, wxALIGN_LEFT);
     }
 
-    pxAssert(GetSizer() != NULL);
+    pxAssert(GetSizer() != nullptr);
 
     for (int i = 0; i < numbuttons; ++i) {
         *this += m_objects[i].LabelObj | pxSizerFlags::StdExpand();
@@ -132,7 +132,7 @@ pxRadioPanel &pxRadioPanel::SetSelection(int idx)
     if (!VerifyRealizedState())
         return *this;
 
-    pxAssert(m_objects[idx].LabelObj != NULL);
+    pxAssert(m_objects[idx].LabelObj != nullptr);
     m_objects[idx].LabelObj->SetValue(true);
     return *this;
 }
@@ -224,34 +224,34 @@ bool pxRadioPanel::IsSelected(int idx) const
 {
     if (!VerifyRealizedState())
         return false;
-    pxAssert(m_objects[idx].LabelObj != NULL);
+    pxAssert(m_objects[idx].LabelObj != nullptr);
     return m_objects[idx].LabelObj->GetValue();
 }
 
 pxStaticText *pxRadioPanel::GetSubText(int idx)
 {
     if (!VerifyRealizedState())
-        return NULL;
+        return nullptr;
     return m_objects[idx].SubTextObj;
 }
 
 const pxStaticText *pxRadioPanel::GetSubText(int idx) const
 {
     if (!VerifyRealizedState())
-        return NULL;
+        return nullptr;
     return m_objects[idx].SubTextObj;
 }
 
 wxRadioButton *pxRadioPanel::GetButton(int idx)
 {
     if (!VerifyRealizedState())
-        return NULL;
+        return nullptr;
     return m_objects[idx].LabelObj;
 }
 
 const wxRadioButton *pxRadioPanel::GetButton(int idx) const
 {
     if (!VerifyRealizedState())
-        return NULL;
+        return nullptr;
     return m_objects[idx].LabelObj;
 }

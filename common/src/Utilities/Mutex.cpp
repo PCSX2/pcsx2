@@ -64,7 +64,7 @@ static int xpthread_mutex_timedlock(
         // check if the timeout has expired, gettimeofday() is implemented
         // efficiently (in userspace) on OSX
         struct timeval now;
-        gettimeofday(&now, NULL);
+        gettimeofday(&now, nullptr);
         if (now.tv_sec > abs_timeout->tv_sec
             || (now.tv_sec == abs_timeout->tv_sec
                 && (u64)now.tv_usec * 1000ULL > (u64)abs_timeout->tv_nsec)) {
@@ -84,7 +84,7 @@ static int xpthread_mutex_timedlock(
 
 Threading::Mutex::Mutex()
 {
-    pthread_mutex_init(&m_mutex, NULL);
+    pthread_mutex_init(&m_mutex, nullptr);
 }
 
 static wxTimeSpan def_detach_timeout(0, 0, 6, 0);
@@ -148,7 +148,7 @@ Threading::MutexRecursive::~MutexRecursive()
 void Threading::Mutex::Recreate()
 {
     Detach();
-    pthread_mutex_init(&m_mutex, NULL);
+    pthread_mutex_init(&m_mutex, nullptr);
 }
 
 // Returns:
@@ -197,7 +197,7 @@ bool Threading::Mutex::TryAcquire()
 void Threading::Mutex::Acquire()
 {
 #if wxUSE_GUI
-    if (!wxThread::IsMain() || (wxTheApp == NULL)) {
+    if (!wxThread::IsMain() || (wxTheApp == nullptr)) {
         pthread_mutex_lock(&m_mutex);
     } else if (_WaitGui_RecursionGuard(L"Mutex::Acquire")) {
         ScopedBusyCursor hourglass(Cursor_ReallyBusy);
@@ -215,7 +215,7 @@ void Threading::Mutex::Acquire()
 bool Threading::Mutex::Acquire(const wxTimeSpan &timeout)
 {
 #if wxUSE_GUI
-    if (!wxThread::IsMain() || (wxTheApp == NULL)) {
+    if (!wxThread::IsMain() || (wxTheApp == nullptr)) {
         return AcquireWithoutYield(timeout);
     } else if (_WaitGui_RecursionGuard(L"Mutex::TimedAcquire")) {
         ScopedBusyCursor hourglass(Cursor_ReallyBusy);

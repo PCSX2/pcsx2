@@ -46,13 +46,13 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 {
 	buff.clear();
-	HRSRC hRsrc = FindResource((HMODULE)s_hModule, MAKEINTRESOURCE(id), type != NULL ? type : RT_RCDATA);
+	HRSRC hRsrc = FindResource((HMODULE)s_hModule, MAKEINTRESOURCE(id), type != nullptr ? type : RT_RCDATA);
 	if(!hRsrc) return false;
 	HGLOBAL hGlobal = ::LoadResource((HMODULE)s_hModule, hRsrc);
 	if(!hGlobal) return false;
 	DWORD size = SizeofResource((HMODULE)s_hModule, hRsrc);
 	if(!size) return false;
-	// On Linux resources are always NULL terminated
+	// On Linux resources are always nullptr terminated
 	// Add + 1 on size to do the same for compatibility sake (required by GSDeviceOGL)
 	buff.resize(size + 1);
 	memcpy(buff.data(), LockResource(hGlobal), size);

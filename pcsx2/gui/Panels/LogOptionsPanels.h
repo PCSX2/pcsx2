@@ -30,7 +30,7 @@ namespace Panels
 
 	public:
 		BaseCpuLogOptionsPanel(wxWindow* parent, const wxString& title, wxOrientation orient = wxVERTICAL)
-			: CheckedStaticBox(parent, orient, title), m_miscGroup(NULL){}
+			: CheckedStaticBox(parent, orient, title), m_miscGroup(nullptr){}
 
 		virtual wxStaticBoxSizer* GetMiscGroup() const { return m_miscGroup; }
 		virtual CheckedStaticBox* GetStaticBox( const wxString& subgroup ) const=0;

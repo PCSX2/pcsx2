@@ -88,9 +88,9 @@ void _platform_InstallSignalHandler()
     sa.sa_sigaction = SysPageFaultSignalFilter;
 #ifdef __APPLE__
     // MacOS uses SIGBUS for memory permission violations
-    sigaction(SIGBUS, &sa, NULL);
+    sigaction(SIGBUS, &sa, nullptr);
 #else
-    sigaction(SIGSEGV, &sa, NULL);
+    sigaction(SIGSEGV, &sa, nullptr);
 #endif
 }
 

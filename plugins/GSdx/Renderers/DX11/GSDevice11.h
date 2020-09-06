@@ -541,7 +541,7 @@ public:
 	void IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology);
 
 	void VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb);
-	void GSSetShader(ID3D11GeometryShader* gs, ID3D11Buffer* gs_cb = NULL);
+	void GSSetShader(ID3D11GeometryShader* gs, ID3D11Buffer* gs_cb = nullptr);
 
 	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1) final;
 	void PSSetShaderResource(int i, GSTexture* sr) final;
@@ -552,7 +552,7 @@ public:
 
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, uint8 sref);
 	void OMSetBlendState(ID3D11BlendState* bs, float bf);
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL) final;
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = nullptr) final;
 
 	bool CreateTextureFX();
 	void SetupVS(VSSelector sel, const VSConstantBuffer* cb);

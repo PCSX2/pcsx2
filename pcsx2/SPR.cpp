@@ -100,7 +100,7 @@ int  _SPR0chain()
 	int partialqwc = 0;
 	if (spr0ch.qwc == 0) return 0;
 	pMem = SPRdmaGetAddr(spr0ch.madr, true);
-	if (pMem == NULL) return -1;
+	if (pMem == nullptr) return -1;
 
 	if(spr0ch.madr >= dmacRegs.rbor.ADDR && spr0ch.madr < (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u))
 	{
@@ -360,7 +360,7 @@ int  _SPR1chain()
 	if (spr1ch.qwc == 0) return 0;
 
 	pMem = SPRdmaGetAddr(spr1ch.madr, false);
-	if (pMem == NULL) return -1;
+	if (pMem == nullptr) return -1;
 	int partialqwc = 0;
 	// Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
 	// the cycle delay out of the way before the end.

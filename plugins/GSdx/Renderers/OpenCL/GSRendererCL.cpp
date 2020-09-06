@@ -26,7 +26,7 @@
 
 #define LOG 0
 
-static FILE* s_fp = LOG ? fopen("c:\\temp1\\_.txt", "w") : NULL;
+static FILE* s_fp = LOG ? fopen("c:\\temp1\\_.txt", "w") : nullptr;
 
 #define MAX_FRAME_SIZE 2048
 #define MAX_PRIM_COUNT 4096u
@@ -115,7 +115,7 @@ GSRendererCL::GSRendererCL()
 	// NOTE: m_cl.vm may be cached on the device according to the specs, there are a couple of places where we access m_mem.m_vm8 without 
 	// mapping the buffer (after the two invalidate* calls and in getoutput), it is currently not an issue, but on some devices it may be.
 
-	m_cl.vm = cl::Buffer(m_cl.context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, (size_t)m_mem.m_vmsize, m_mem.m_vm8, NULL);
+	m_cl.vm = cl::Buffer(m_cl.context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, (size_t)m_mem.m_vmsize, m_mem.m_vm8, nullptr);
 	m_cl.tex = cl::Buffer(m_cl.context, CL_MEM_READ_ONLY, (size_t)m_mem.m_vmsize);
 }
 
@@ -161,7 +161,7 @@ void GSRendererCL::ResetDevice()
 	{
 		delete m_texture[i];
 
-		m_texture[i] = NULL;
+		m_texture[i] = nullptr;
 	}
 }
 
@@ -499,13 +499,13 @@ void GSRendererCL::Draw()
 			}
 		}
 
-		if(job->src_pages != NULL)
+		if(job->src_pages != nullptr)
 		{
 			for(int i = 0; i < 4; i++)
 			{
 				m_rw_pages[0][i] |= job->src_pages[i];
 
-				if(job->dst_pages != NULL && !(job->dst_pages[i] & job->src_pages[i]).eq(GSVector4i::zero()))
+				if(job->dst_pages != nullptr && !(job->dst_pages[i] & job->src_pages[i]).eq(GSVector4i::zero()))
 				{
 					//printf("src and dst overlap!\n");
 				}
@@ -947,7 +947,7 @@ void GSRendererCL::Enqueue()
 
 void GSRendererCL::EnqueueTFX(std::list<std::shared_ptr<TFXJob>>& jobs, uint32 bin_count, const cl_uchar4& bin_dim)
 {
-	cl_kernel tfx_prev = NULL;
+	cl_kernel tfx_prev = nullptr;
 
 	uint32 prim_start = 0;
 
@@ -1033,7 +1033,7 @@ void GSRendererCL::JoinTFX(std::list<std::shared_ptr<TFXJob>>& jobs)
 			continue;
 		}
 
-		if((*prev)->dst_pages != NULL && (*next)->src_pages != NULL)
+		if((*prev)->dst_pages != nullptr && (*next)->src_pages != nullptr)
 		{
 			bool overlap = false;
 
@@ -1053,7 +1053,7 @@ void GSRendererCL::JoinTFX(std::list<std::shared_ptr<TFXJob>>& jobs)
 			}
 		}
 
-		if((*prev)->src_pages != NULL)
+		if((*prev)->src_pages != nullptr)
 		{
 			GSVector4i* src_pages = (*next)->GetSrcPages();
 
@@ -1063,7 +1063,7 @@ void GSRendererCL::JoinTFX(std::list<std::shared_ptr<TFXJob>>& jobs)
 			}
 		}
 
-		if((*prev)->dst_pages != NULL)
+		if((*prev)->dst_pages != nullptr)
 		{
 			GSVector4i* dst_pages = (*next)->GetDstPages();
 
@@ -1096,12 +1096,12 @@ void GSRendererCL::JoinTFX(std::list<std::shared_ptr<TFXJob>>& jobs)
 
 bool GSRendererCL::UpdateTextureCache(TFXJob* job)
 {
-	if(job->src_pages == NULL) return false;
+	if(job->src_pages == nullptr) return false;
 
 	bool overlap = false;
 	bool invalid = false;
 
-	if(job->dst_pages != NULL)
+	if(job->dst_pages != nullptr)
 	{
 		bool can_overlap = job->sel.fwrite && GSUtil::HasSharedBits(job->tpsm, job->fpsm) || job->sel.zwrite && GSUtil::HasSharedBits(job->tpsm, job->zpsm);
 
@@ -1207,7 +1207,7 @@ bool GSRendererCL::UpdateTextureCache(TFXJob* job)
 
 void GSRendererCL::InvalidateTextureCache(TFXJob* job)
 {
-	if(job->dst_pages == NULL) return;
+	if(job->dst_pages == nullptr) return;
 
 	for(int i = 0; i < 4; i++)
 	{
@@ -1831,20 +1831,20 @@ bool GSRendererCL::SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* ver
 //
 
 GSRendererCL::TFXJob::TFXJob()
-	: src_pages(NULL)
-	, dst_pages(NULL)
+	: src_pages(nullptr)
+	, dst_pages(nullptr)
 {
 }
 
 GSRendererCL::TFXJob::~TFXJob()
 {
-	if(src_pages != NULL) _aligned_free(src_pages);
-	if(dst_pages != NULL) _aligned_free(dst_pages);
+	if(src_pages != nullptr) _aligned_free(src_pages);
+	if(dst_pages != nullptr) _aligned_free(dst_pages);
 }
 
 GSVector4i* GSRendererCL::TFXJob::GetSrcPages()
 {
-	if(src_pages == NULL)
+	if(src_pages == nullptr)
 	{
 		src_pages = (GSVector4i*)_aligned_malloc(sizeof(GSVector4i) * 4, 16);
 
@@ -1859,7 +1859,7 @@ GSVector4i* GSRendererCL::TFXJob::GetSrcPages()
 
 GSVector4i* GSRendererCL::TFXJob::GetDstPages()
 {
-	if(dst_pages == NULL)
+	if(dst_pages == nullptr)
 	{
 		dst_pages = (GSVector4i*)_aligned_malloc(sizeof(GSVector4i) * 4, 16);
 
@@ -1940,9 +1940,9 @@ GSRendererCL::CL::CL()
 	ib.head = ib.tail = ib.size = 0;
 	pb.head = pb.tail = pb.size = 0;
 
-	vb.mapped_ptr = vb.ptr = NULL;
-	ib.mapped_ptr = ib.ptr = NULL;
-	pb.mapped_ptr = pb.ptr = NULL;
+	vb.mapped_ptr = vb.ptr = nullptr;
+	ib.mapped_ptr = ib.ptr = nullptr;
+	pb.mapped_ptr = pb.ptr = nullptr;
 
 	pb.size = TFX_PARAM_SIZE * 256;
 	pb.buff[0] = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, pb.size);
@@ -1988,13 +1988,13 @@ void GSRendererCL::CL::Map()
 
 void GSRendererCL::CL::Unmap()
 {
-	if(vb.mapped_ptr != NULL) wq->enqueueUnmapMemObject(vb.buff[wqidx], vb.mapped_ptr);
-	if(ib.mapped_ptr != NULL) wq->enqueueUnmapMemObject(ib.buff[wqidx], ib.mapped_ptr);
-	if(pb.mapped_ptr != NULL) wq->enqueueUnmapMemObject(pb.buff[wqidx], pb.mapped_ptr);
+	if(vb.mapped_ptr != nullptr) wq->enqueueUnmapMemObject(vb.buff[wqidx], vb.mapped_ptr);
+	if(ib.mapped_ptr != nullptr) wq->enqueueUnmapMemObject(ib.buff[wqidx], ib.mapped_ptr);
+	if(pb.mapped_ptr != nullptr) wq->enqueueUnmapMemObject(pb.buff[wqidx], pb.mapped_ptr);
 
-	vb.mapped_ptr = vb.ptr = NULL;
-	ib.mapped_ptr = ib.ptr = NULL;
-	pb.mapped_ptr = pb.ptr = NULL;
+	vb.mapped_ptr = vb.ptr = nullptr;
+	ib.mapped_ptr = ib.ptr = nullptr;
+	pb.mapped_ptr = pb.ptr = nullptr;
 }
 
 cl::Kernel GSRendererCL::CL::Build(const char* entry, std::ostringstream& opt)
@@ -2013,7 +2013,7 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, std::ostringstream& opt)
 
 				FILE* f = fopen(path.c_str(), "rb");
 
-				if(f != NULL)
+				if(f != nullptr)
 				{
 					fseek(f, 0, SEEK_END);
 					long size = ftell(f);
@@ -2096,7 +2096,7 @@ cl::Kernel GSRendererCL::CL::Build(const char* entry, std::ostringstream& opt)
 
 				FILE* f = fopen(path.c_str(), "wb");
 
-				if(f != NULL)
+				if(f != nullptr)
 				{
 					fwrite(binaries[i], sizes[i], 1, f);
 					fclose(f);

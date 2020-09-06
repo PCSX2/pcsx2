@@ -95,7 +95,7 @@ bool HostSys::MmapCommitPtr(void *base, size_t size, const PageProtectionMode &m
     if (!pxDoOutOfMemory)
         return false;
     pxDoOutOfMemory(size);
-    return VirtualAlloc(base, size, MEM_COMMIT, ConvertToWinApi(mode)) != NULL;
+    return VirtualAlloc(base, size, MEM_COMMIT, ConvertToWinApi(mode)) != nullptr;
 }
 
 void HostSys::MmapResetPtr(void *base, size_t size)

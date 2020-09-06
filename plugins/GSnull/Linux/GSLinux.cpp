@@ -25,7 +25,7 @@ int GSOpenWindow(void *pDsp, const char *Title)
     display = XOpenDisplay(0);
     screen = DefaultScreen(display);
 
-    if (pDsp != NULL)
+    if (pDsp != nullptr)
         *(Display **)pDsp = display;
     else
         return -1;
@@ -35,7 +35,7 @@ int GSOpenWindow(void *pDsp, const char *Title)
 
 int GSOpenWindow2(void *pDsp, u32 flags)
 {
-    if (pDsp != NULL)
+    if (pDsp != nullptr)
         win = *(GtkScrolledWindow **)pDsp;
     else
         return -1;
@@ -45,7 +45,7 @@ int GSOpenWindow2(void *pDsp, u32 flags)
 
 void GSCloseWindow()
 {
-    if (display != NULL)
+    if (display != nullptr)
         XCloseDisplay(display);
 }
 

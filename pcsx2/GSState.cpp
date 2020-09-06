@@ -202,7 +202,7 @@ void vSyncDebugStuff( uint frame )
 	if( g_TestRun.enabled && g_TestRun.frame > 0 ) {
 		if( frame > g_TestRun.frame ) {
 			// take a snapshot
-			if( g_TestRun.pimagename != NULL && GSmakeSnapshot2 != NULL ) {
+			if( g_TestRun.pimagename != nullptr && GSmakeSnapshot2 != nullptr ) {
 				if( g_TestRun.snapdone ) {
 					g_TestRun.curimage++;
 					g_TestRun.snapdone = 0;
@@ -238,7 +238,7 @@ void vSyncDebugStuff( uint frame )
 		}
 		else {
 			fP.data = (s8*)malloc(fP.size);
-			if (fP.data == NULL) {
+			if (fP.data == nullptr) {
 				safe_delete( g_fGSSave );
 				g_SaveGSStream = 0;
 			}

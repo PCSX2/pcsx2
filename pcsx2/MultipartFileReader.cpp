@@ -42,7 +42,7 @@ AsyncFileReader* MultipartFileReader::DetectMultipart(AsyncFileReader* reader)
 		return multi;
 	}
 
-	multi->m_parts[0].reader = NULL;
+	multi->m_parts[0].reader = nullptr;
 	delete multi;
 	return reader;
 }

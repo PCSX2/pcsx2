@@ -38,7 +38,7 @@ void vif1TransferToMemory()
 	u128* pMem = (u128*)dmaGetAddr(vif1ch.madr, false);
 
 	// VIF from gsMemory
-	if (pMem == NULL) { // Is vif0ptag empty?
+	if (pMem == nullptr) { // Is vif0ptag empty?
 		Console.WriteLn("Vif1 Tag BUSERR");
 		dmacRegs.stat.BEIS = true; // Bus Error
 		vif1Regs.stat.FQC = 0;
@@ -129,7 +129,7 @@ bool _VIF1chain()
 	}
 
 	pMem = (u32*)dmaGetAddr(vif1ch.madr, !vif1ch.chcr.DIR);
-	if (pMem == NULL)
+	if (pMem == nullptr)
 	{
 		vif1.cmd = 0;
 		vif1.tag.size = 0;

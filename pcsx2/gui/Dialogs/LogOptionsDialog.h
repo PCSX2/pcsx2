@@ -26,7 +26,7 @@ namespace Dialogs {
 class LogOptionsDialog : public BaseConfigurationDialog
 {
 public:
-	LogOptionsDialog( wxWindow* parent=NULL );
+	LogOptionsDialog( wxWindow* parent=nullptr );
 	virtual ~LogOptionsDialog() = default;
 
 	static wxString GetNameStatic() { return L"TraceLogSettings"; }

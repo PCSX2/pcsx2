@@ -48,7 +48,7 @@ u64 GetPhysicalMemory()
         u64 getmem = 0;
         size_t len = sizeof(getmem);
         int mib[] = {CTL_HW, HW_MEMSIZE};
-        if (sysctl(mib, NELEM(mib), &getmem, &len, NULL, 0) < 0) {
+        if (sysctl(mib, NELEM(mib), &getmem, &len, nullptr, 0) < 0) {
             perror("sysctl:");
         }
         __atomic_store_n(&mem, getmem, __ATOMIC_SEQ_CST);
@@ -117,8 +117,8 @@ wxString GetOSVersionString()
     do {                                              \
         int mib[] = {base, name};                     \
         size_t len = sizeof(var);                     \
-        sysctl(mib, NELEM(mib), NULL, &len, NULL, 0); \
-        sysctl(mib, NELEM(mib), var, &len, NULL, 0);  \
+        sysctl(mib, NELEM(mib), nullptr, &len, nullptr, 0); \
+        sysctl(mib, NELEM(mib), var, &len, nullptr, 0);  \
     } while (0)
 
         SYSCTL_GET(release, CTL_KERN, KERN_OSRELEASE);

@@ -44,7 +44,7 @@ s32 CALLBACK ISOopen(const char* pTitle)
 {
 	ISOclose();		// just in case
 
-	if( (pTitle == NULL) || (pTitle[0] == 0) )
+	if( (pTitle == nullptr) || (pTitle[0] == 0) )
 	{
 		Console.Error( "CDVDiso Error: No filename specified." );
 		return -1;
@@ -410,7 +410,7 @@ CDVD_API CDVDapi_Iso =
 
 	ISOopen,
 	ISOreadTrack,
-	NULL, //ISOgetBuffer, // emu shouldn't use this one.
+	nullptr, //ISOgetBuffer, // emu shouldn't use this one.
 	ISOreadSubQ,
 	ISOgetTN,
 	ISOgetTD,

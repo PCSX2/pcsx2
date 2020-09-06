@@ -28,7 +28,7 @@ struct BreakPointCond
 	PostfixExpression expression;
 	char expressionString[128];
 
-	BreakPointCond() : debug(NULL)
+	BreakPointCond() : debug(nullptr)
 	{
 		expressionString[0] = '\0';
 	}

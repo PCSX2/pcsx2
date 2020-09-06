@@ -59,7 +59,7 @@ void RecompiledCodeReserve::_termProfiler()
 
 void* RecompiledCodeReserve::Assign( VirtualMemoryManagerPtr allocator, void *baseptr, size_t size )
 {
-	if (!_parent::Assign(std::move(allocator), baseptr, size)) return NULL;
+	if (!_parent::Assign(std::move(allocator), baseptr, size)) return nullptr;
 
 	Commit();
 
@@ -573,8 +573,8 @@ bool SysCpuProviderPack::HadSomeFailures( const Pcsx2Config::RecompilerOptions& 
 
 }
 
-BaseVUmicroCPU* CpuVU0 = NULL;
-BaseVUmicroCPU* CpuVU1 = NULL;
+BaseVUmicroCPU* CpuVU0 = nullptr;
+BaseVUmicroCPU* CpuVU1 = nullptr;
 
 void SysCpuProviderPack::ApplyConfig() const
 {
@@ -620,12 +620,12 @@ void SysClearExecutionCache()
 // Maps a block of memory for use as a recompiled code buffer, and ensures that the
 // allocation is below a certain memory address (specified in "bounds" parameter).
 // The allocated block has code execution privileges.
-// Returns NULL on allocation failure.
+// Returns nullptr on allocation failure.
 u8* SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller)
 {
 	u8* Mem = (u8*)HostSys::Mmap( base, size );
 
-	if( (Mem == NULL) || (bounds != 0 && (((uptr)Mem + size) > bounds)) )
+	if( (Mem == nullptr) || (bounds != 0 && (((uptr)Mem + size) > bounds)) )
 	{
 		if( base )
 		{
@@ -642,7 +642,7 @@ u8* SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller)
 			DevCon.Warning( "Second try failed allocating %s, block ptr 0x%x does not meet required criteria.", caller, Mem );
 			SafeSysMunmap( Mem, size );
 
-			// returns NULL, caller should throw an exception.
+			// returns nullptr, caller should throw an exception.
 		}
 	}
 	return Mem;

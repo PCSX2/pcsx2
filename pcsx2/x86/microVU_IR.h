@@ -67,7 +67,7 @@ static_assert(sizeof(microRegInfo) == 160, "microRegInfo was not 160 bytes");
 
 struct microProgram;
 struct microJumpCache {
-	microJumpCache() : prog(NULL), x86ptrStart(NULL) {}
+	microJumpCache() : prog(nullptr), x86ptrStart(nullptr) {}
 	microProgram* prog;	// Program to which the entry point below is part of
 	void* x86ptrStart;	// Start of code (Entry point for block)
 };

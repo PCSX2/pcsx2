@@ -146,24 +146,24 @@ static void __fastcall UNPACK_V4_5(u32 *dest, const u32* src)
 	(UNPACKFUNCTYPE)_unpk(u,32) UNPACK_V4_5<idx, doMask> \
 
 #define UnpackModeSet(idx, mode) \
-	UnpackFuncSet( S,  idx, mode, s, 0 ), NULL,  \
-	UnpackFuncSet( V2, idx, mode, s, 0 ), NULL,  \
-	UnpackFuncSet( V4, idx, mode, s, 0 ), NULL,  \
+	UnpackFuncSet( S,  idx, mode, s, 0 ), nullptr,  \
+	UnpackFuncSet( V2, idx, mode, s, 0 ), nullptr,  \
+	UnpackFuncSet( V4, idx, mode, s, 0 ), nullptr,  \
 	UnpackFuncSet( V4, idx, mode, s, 0 ), UnpackV4_5set(idx, 0), \
  \
-	UnpackFuncSet( S,  idx, mode, s, 1 ), NULL,  \
-	UnpackFuncSet( V2, idx, mode, s, 1 ), NULL,  \
-	UnpackFuncSet( V4, idx, mode, s, 1 ), NULL,  \
+	UnpackFuncSet( S,  idx, mode, s, 1 ), nullptr,  \
+	UnpackFuncSet( V2, idx, mode, s, 1 ), nullptr,  \
+	UnpackFuncSet( V4, idx, mode, s, 1 ), nullptr,  \
 	UnpackFuncSet( V4, idx, mode, s, 1 ), UnpackV4_5set(idx, 1), \
  \
-	UnpackFuncSet( S,  idx, mode, u, 0 ), NULL,  \
-	UnpackFuncSet( V2, idx, mode, u, 0 ), NULL,  \
-	UnpackFuncSet( V4, idx, mode, u, 0 ), NULL,  \
+	UnpackFuncSet( S,  idx, mode, u, 0 ), nullptr,  \
+	UnpackFuncSet( V2, idx, mode, u, 0 ), nullptr,  \
+	UnpackFuncSet( V4, idx, mode, u, 0 ), nullptr,  \
 	UnpackFuncSet( V4, idx, mode, u, 0 ), UnpackV4_5set(idx, 0), \
  \
-	UnpackFuncSet( S,  idx, mode, u, 1 ), NULL,  \
-	UnpackFuncSet( V2, idx, mode, u, 1 ), NULL,  \
-	UnpackFuncSet( V4, idx, mode, u, 1 ), NULL,  \
+	UnpackFuncSet( S,  idx, mode, u, 1 ), nullptr,  \
+	UnpackFuncSet( V2, idx, mode, u, 1 ), nullptr,  \
+	UnpackFuncSet( V4, idx, mode, u, 1 ), nullptr,  \
 	UnpackFuncSet( V4, idx, mode, u, 1 ), UnpackV4_5set(idx, 1)
 
 __aligned16 const UNPACKFUNCTYPE VIFfuncTable[2][4][4 * 4 * 2 * 2] =

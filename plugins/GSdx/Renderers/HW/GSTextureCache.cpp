@@ -1034,7 +1034,7 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 		}
 	}
 
-	//GSTextureCache::Target* rt2 = NULL;
+	//GSTextureCache::Target* rt2 = nullptr;
 	//int ymin = INT_MAX;
 	//for(auto i = m_dst[RenderTarget].begin(); i != m_dst[RenderTarget].end(); )
 	//{
@@ -1309,7 +1309,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			////Better not do the code below, "fixes" like every game that ever gets here..
 			////Edit: Ratchet and Clank needs this to show most of it's graphics at all.
 			////Someone else fix this please, I can't :p
-			////delete src; return NULL;
+			////delete src; return nullptr;
 
 			//// sfex3 uses this trick (bw: 10 -> 5, wraps the right side below the left)
 
@@ -1356,7 +1356,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			//if(tw == 256 && th == 128 && (TEX0.TBP0 == 0 || TEX0.TBP0 == 0x00e00))
 			//{
 			//	delete src;
-			//	return NULL;
+			//	return nullptr;
 			//}
 		}
 		// width/height conversion

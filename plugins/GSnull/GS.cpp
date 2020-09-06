@@ -86,14 +86,14 @@ PS2EgetLibVersion2(u32 type)
 EXPORT_C_(void)
 GSsetSettingsDir(const char *dir)
 {
-    s_strIniPath = (dir == NULL) ? "inis" : dir;
+    s_strIniPath = (dir == nullptr) ? "inis" : dir;
 }
 
 EXPORT_C_(void)
 GSsetLogDir(const char *dir)
 {
     // Get the path to the log directory.
-    s_strLogPath = (dir == NULL) ? "logs" : dir;
+    s_strLogPath = (dir == nullptr) ? "logs" : dir;
 
     // Reload the log file after updated the path
     GSLog::Close();
@@ -124,7 +124,7 @@ GSopen(void *pDsp, const char *Title, int multithread)
 {
     int err = 0;
     GSLog::WriteLn("GS open.");
-    //assert( GSirq != NULL );
+    //assert( GSirq != nullptr );
 
     err = GSOpenWindow(pDsp, Title);
     gs.MultiThreaded = multithread;

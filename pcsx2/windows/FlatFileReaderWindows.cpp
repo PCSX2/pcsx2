@@ -33,7 +33,7 @@ bool FlatFileReader::Open(const wxString& fileName)
 {
 	m_filename = fileName;
 
-	hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
 	DWORD shareMode = FILE_SHARE_READ;
 	if (shareWrite)
@@ -43,10 +43,10 @@ bool FlatFileReader::Open(const wxString& fileName)
 		fileName,
 		GENERIC_READ,
 		shareMode,
-		NULL,
+		nullptr,
 		OPEN_EXISTING,
 		FILE_FLAG_SEQUENTIAL_SCAN | FILE_FLAG_OVERLAPPED,
-		NULL);
+		nullptr);
 
 	return hOverlappedFile != INVALID_HANDLE_VALUE;
 }
@@ -59,7 +59,7 @@ int FlatFileReader::ReadSync(void* pBuffer, uint sector, uint count)
 	//DWORD bytesToRead = count * m_blocksize;
 	//DWORD bytes;
 
-	//if(!ReadFile(hOverlappedFile, pBuffer, bytesToRead, &bytes, NULL))
+	//if(!ReadFile(hOverlappedFile, pBuffer, bytesToRead, &bytes, nullptr))
 	//	return -1;
 
 	//return bytes;
@@ -79,7 +79,7 @@ void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 	asyncOperationContext.Offset = offset.LowPart;
 	asyncOperationContext.OffsetHigh = offset.HighPart;
 
-	ReadFile(hOverlappedFile, pBuffer, bytesToRead, NULL, &asyncOperationContext);
+	ReadFile(hOverlappedFile, pBuffer, bytesToRead, nullptr, &asyncOperationContext);
 	asyncInProgress = true;
 }
 

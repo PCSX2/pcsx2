@@ -36,7 +36,7 @@ protected:
 public:
     EventListener_Thread()
     {
-        m_thread = NULL;
+        m_thread = nullptr;
     }
 
     virtual ~EventListener_Thread() = default;
@@ -131,7 +131,7 @@ public:
     void AddListener(EventListener_Thread &evt);
     void AddListener(EventListener_Thread *evt)
     {
-        if (evt == NULL)
+        if (evt == nullptr)
             return;
         AddListener(*evt);
     }

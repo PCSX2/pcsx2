@@ -43,7 +43,7 @@ static __fi bool WriteEEtoFifo()
 	tDMA_TAG *ptag;
 
 	ptag = sif1ch.getAddr(sif1ch.madr, DMAC_SIF1, false);
-	if (ptag == NULL)
+	if (ptag == nullptr)
 	{
 		DevCon.Warning("Write EE to Fifo: ptag == NULL");
 		return false;
@@ -87,7 +87,7 @@ static __fi bool ProcessEETag()
 
 	// Process DMA tag at sif1ch.tadr
 	ptag = sif1ch.DMAtransfer(sif1ch.tadr, DMAC_SIF1);
-	if (ptag == NULL)
+	if (ptag == nullptr)
 	{
 		Console.WriteLn("Sif1 ProcessEETag: ptag = NULL");
 		return false;

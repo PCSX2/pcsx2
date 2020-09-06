@@ -42,7 +42,7 @@ ConsoleLogSource_App pxConLog_App;
 void BaseDeletableObject::DoDeletion()
 {
     wxAppWithHelpers *app = wxDynamicCast(wxApp::GetInstance(), wxAppWithHelpers);
-    pxAssert(app != NULL);
+    pxAssert(app != nullptr);
     app->DeleteObject(*this);
 }
 
@@ -100,7 +100,7 @@ void SynchronousActionState::PostResult(int res)
 void SynchronousActionState::ClearResult()
 {
     m_posted = false;
-    m_exception = NULL;
+    m_exception = nullptr;
 }
 
 void SynchronousActionState::PostResult()
@@ -217,7 +217,7 @@ void pxSynchronousCommandEvent::SetException(BaseException *ex)
 // --------------------------------------------------------------------------------------
 // Unlike pxPingEvent, the Semaphore belonging to this event is typically posted when the
 // invoked method is completed.  If the method can be executed in non-blocking fashion then
-// it should leave the semaphore postback NULL.
+// it should leave the semaphore postback nullptr.
 //
 class pxRpcEvent : public pxActionEvent
 {
@@ -232,7 +232,7 @@ public:
     virtual ~pxRpcEvent() = default;
     virtual pxRpcEvent *Clone() const { return new pxRpcEvent(*this); }
 
-    explicit pxRpcEvent(void (*method)() = NULL, SynchronousActionState *sema = NULL)
+    explicit pxRpcEvent(void (*method)() = nullptr, SynchronousActionState *sema = nullptr)
         : pxActionEvent(sema)
     {
         m_Method = method;
@@ -558,7 +558,7 @@ void wxAppWithHelpers::PostCommand(void *clientData, int evtType, int intParam, 
 
 void wxAppWithHelpers::PostCommand(int evtType, int intParam, long longParam, const wxString &stringParam)
 {
-    PostCommand(NULL, evtType, intParam, longParam, stringParam);
+    PostCommand(nullptr, evtType, intParam, longParam, stringParam);
 }
 
 sptr wxAppWithHelpers::ProcessCommand(void *clientData, int evtType, int intParam, long longParam, const wxString &stringParam)
@@ -578,7 +578,7 @@ sptr wxAppWithHelpers::ProcessCommand(void *clientData, int evtType, int intPara
 
 sptr wxAppWithHelpers::ProcessCommand(int evtType, int intParam, long longParam, const wxString &stringParam)
 {
-    return ProcessCommand(NULL, evtType, intParam, longParam, stringParam);
+    return ProcessCommand(nullptr, evtType, intParam, longParam, stringParam);
 }
 
 void wxAppWithHelpers::PostAction(const pxActionEvent &evt)
@@ -638,7 +638,7 @@ void wxAppWithHelpers::OnInvokeAction(pxActionEvent &evt)
 
 void wxAppWithHelpers::OnDeleteObject(wxCommandEvent &evt)
 {
-    if (evt.GetClientData() == NULL)
+    if (evt.GetClientData() == nullptr)
         return;
     delete (BaseDeletableObject *)evt.GetClientData();
 }
@@ -661,7 +661,7 @@ void wxAppWithHelpers::OnDeleteThread(wxCommandEvent &evt)
 {
     std::unique_ptr<pxThread> thr((pxThread *)evt.GetClientData());
     if (!thr) {
-        pxThreadLog.Write(L"null", L"OnDeleteThread: NULL thread object received (and ignored).");
+        pxThreadLog.Write(L"null", L"OnDeleteThread: nullptr thread object received (and ignored).");
         return;
     }
 

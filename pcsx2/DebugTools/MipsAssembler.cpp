@@ -69,7 +69,7 @@ const tMipsRegister MipsRegister[] = {
 	{ "sp", 29, 2 }, { "r29", 29, 3 }, { "$sp", 29, 3 },
 	{ "fp", 30, 2 }, { "r30", 30, 3 }, { "$fp", 30, 3 },
 	{ "ra", 31, 2 }, { "r31", 31, 3 }, { "$ra", 31, 3 },
-	{ NULL, -1, 0}
+	{ nullptr, -1, 0}
 };
 
 
@@ -183,7 +183,7 @@ bool MipsAssembleOpcode(const char* line, DebugInterface* cpu, u32 address, u32&
 	SplitLine(line,name,args);
 
 	CMipsInstruction opcode(cpu);
-	if (cpu == NULL || !opcode.Load(name,args,(int)address))
+	if (cpu == nullptr || !opcode.Load(name,args,(int)address))
 	{
 		errorText = opcode.getErrorMessage();
 		return false;
@@ -204,7 +204,7 @@ bool MipsAssembleOpcode(const char* line, DebugInterface* cpu, u32 address, u32&
 
 bool MipsGetRegister(const char* source, int& RetLen, MipsRegisterInfo& Result)
 {
-	for (int z = 0; MipsRegister[z].name != NULL; z++)
+	for (int z = 0; MipsRegister[z].name != nullptr; z++)
 	{
 		int len = MipsRegister[z].len;
 		if (strncmp(MipsRegister[z].name,source,len) == 0)	// okay so far
@@ -225,7 +225,7 @@ bool MipsGetRegister(const char* source, int& RetLen, MipsRegisterInfo& Result)
 
 int MipsGetRegister(const char* source, int& RetLen)
 {
-	for (int z = 0; MipsRegister[z].name != NULL; z++)
+	for (int z = 0; MipsRegister[z].name != nullptr; z++)
 	{
 		int len = MipsRegister[z].len;
 		if (strncmp(MipsRegister[z].name,source,len) == 0)	// okay so far
@@ -244,7 +244,7 @@ int MipsGetRegister(const char* source, int& RetLen)
 
 bool MipsGetFloatRegister(const char* source, int& RetLen, MipsRegisterInfo& Result)
 {
-	for (int z = 0; MipsFloatRegister[z].name != NULL; z++)
+	for (int z = 0; MipsFloatRegister[z].name != nullptr; z++)
 	{
 		int len = MipsFloatRegister[z].len;
 		if (strncmp(MipsFloatRegister[z].name,source,len) == 0)	// okay so far
@@ -265,7 +265,7 @@ bool MipsGetFloatRegister(const char* source, int& RetLen, MipsRegisterInfo& Res
 
 bool MipsGetPs2VectorRegister(const char* source, int& RetLen, MipsRegisterInfo& Result)
 {
-	for (int z = 0; MipsPs2Cop2FpRegister[z].name != NULL; z++)
+	for (int z = 0; MipsPs2Cop2FpRegister[z].name != nullptr; z++)
 	{
 		int len = MipsPs2Cop2FpRegister[z].len;
 		if (strncmp(MipsPs2Cop2FpRegister[z].name,source,len) == 0)	// okay so far
@@ -286,7 +286,7 @@ bool MipsGetPs2VectorRegister(const char* source, int& RetLen, MipsRegisterInfo&
 
 int MipsGetFloatRegister(const char* source, int& RetLen)
 {
-	for (int z = 0; MipsFloatRegister[z].name != NULL; z++)
+	for (int z = 0; MipsFloatRegister[z].name != nullptr; z++)
 	{
 		int len = MipsFloatRegister[z].len;
 		if (strncmp(MipsFloatRegister[z].name,source,len) == 0)	// okay so far
@@ -382,7 +382,7 @@ bool CMipsInstruction::Load(const char* Name, const char* Params, int RamPos)
 	this->RamPos = RamPos;
 
 	const MipsArchDefinition& arch = mipsArchs[MARCH_PS2];
-	for (int z = 0; MipsOpcodes[z].name != NULL; z++)
+	for (int z = 0; MipsOpcodes[z].name != nullptr; z++)
 	{
 		if ((MipsOpcodes[z].archs & arch.supportSets) == 0)
 			continue;

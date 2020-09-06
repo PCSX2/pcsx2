@@ -134,7 +134,7 @@ wxConfigBase* Pcsx2App::TestForPortableInstall()
 			wxString accessFailedStr, createFailedStr;
 			if (TestUserPermissionsRights( portableDocsFolder, createFailedStr, accessFailedStr )) break;
 		
-			wxDialogWithHelpers dialog( NULL, AddAppName(_("Portable mode error - %s")) );
+			wxDialogWithHelpers dialog( nullptr, AddAppName(_("Portable mode error - %s")) );
 
 			wxTextCtrl* scrollText = new wxTextCtrl(
 				&dialog, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
@@ -168,12 +168,12 @@ wxConfigBase* Pcsx2App::TestForPortableInstall()
 				break;
 				
 				case pxID_CUSTOM:
-					wxDialogWithHelpers dialog2( NULL, AddAppName(_("%s is switching to local install mode.")) );
+					wxDialogWithHelpers dialog2( nullptr, AddAppName(_("%s is switching to local install mode.")) );
 					dialog2 += dialog2.Heading( _("Try to remove the file called \"portable.ini\" from your installation directory manually." ) );
 					dialog2 += 6;
 					pxIssueConfirmation( dialog2, MsgButtons().OK() );
 					
-					return NULL;
+					return nullptr;
 			}
 
 		}
@@ -187,7 +187,7 @@ wxConfigBase* Pcsx2App::TestForPortableInstall()
 		return conf_portable.release();
 	}
 	
-	return NULL;
+	return nullptr;
 }
 
 // Reset RunWizard so the FTWizard is run again on next PCSX2 start.
@@ -216,7 +216,7 @@ static void DoFirstTimeWizard()
 		// PCSX2's FTWizard allows improptu restarting of the wizard without cancellation.
 		// This is typically used to change the user's language selection.
 
-		FirstTimeWizard wiz( NULL );
+		FirstTimeWizard wiz( nullptr );
 		if( wiz.RunWizard( wiz.GetFirstPage() ) ) break;
 		if (wiz.GetReturnCode() != pxID_RestartWizard)
 			throw Exception::StartupAborted( L"User canceled FirstTime Wizard." );

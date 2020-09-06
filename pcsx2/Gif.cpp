@@ -295,11 +295,11 @@ int  _GIFchain()
 	tDMA_TAG *pMem;
 
 	pMem = dmaGetAddr(gifch.madr, false);
-	if (pMem == NULL) {
+	if (pMem == nullptr) {
 		//must increment madr and clear qwc, else it loops
 		gifch.madr += gifch.qwc * 16;
 		gifch.qwc = 0;
-		Console.Warning("Hackfix - NULL GIFchain");
+		Console.Warning("Hackfix - nullptr GIFchain");
 		return -1;
 	}
 
@@ -328,7 +328,7 @@ static __fi tDMA_TAG* ReadTag()
 {
 	tDMA_TAG* ptag = dmaGetAddr(gifch.tadr, false);  //Set memory pointer to TADR
 
-	if (!(gifch.transfer("Gif", ptag))) return NULL;
+	if (!(gifch.transfer("Gif", ptag))) return nullptr;
 
 	gifch.madr = ptag[1]._u32;	//MADR = ADDR field + SPR
 	gif.gscycles += 2;				// Add 1 cycles from the QW read for the tag
@@ -389,7 +389,7 @@ void GIFdma()
 		if ((gifch.chcr.MOD == CHAIN_MODE) && (!gif.gspath3done) && gifch.qwc == 0) // Chain Mode
 		{
 			ptag = ReadTag();
-			if (ptag == NULL) return;
+			if (ptag == nullptr) return;
 			//DevCon.Warning("GIF Reading Tag MSK = %x", vif1Regs.mskpath3);
 			GIF_LOG("gifdmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx tadr=%lx", ptag[1]._u32, ptag[0]._u32, gifch.qwc, ptag->ID, gifch.madr, gifch.tadr);
 			if (!CHECK_GIFFIFOHACK)gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
@@ -501,7 +501,7 @@ static __fi bool mfifoGIFrbTransfer()
 	}
 
 	u8* src = (u8*)PSM(gifch.madr);
-	if (src == NULL) return false;
+	if (src == nullptr) return false;
 
 	u32 MFIFOUntilEnd = ((dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16) - gifch.madr) >> 4;
 	bool needWrap = MFIFOUntilEnd < qwc;
@@ -528,7 +528,7 @@ static __fi bool mfifoGIFrbTransfer()
 		uint secondTransQWC = qwc - MFIFOUntilEnd;
 
 		src = (u8*)PSM(dmacRegs.rbor.ADDR);
-		if (src == NULL) return false;
+		if (src == nullptr) return false;
 
 		if (!CHECK_GIFFIFOHACK) {
 			transferred2 = gifUnit.TransferGSPacketData(GIF_TRANS_DMA, src, secondTransQWC * 16) / 16; // Second part
@@ -579,7 +579,7 @@ static __fi bool mfifoGIFchain()
 		int mfifoqwc;
 		SPR_LOG("Non-MFIFO Location transfer doing %x Total QWC", gifch.qwc);
 		tDMA_TAG *pMem = dmaGetAddr(gifch.madr, false);
-		if (pMem == NULL) return false;
+		if (pMem == nullptr) return false;
 
 		mfifoqwc = WRITERING_DMA((u32*)pMem, gifch.qwc);
 		gif.mfifocycles += (mfifoqwc) * 2; /* guessing */

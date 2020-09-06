@@ -30,10 +30,10 @@
 
 void usb_attach(USBPort *port, USBDevice *dev)
 {
-    if (dev != NULL) {
+    if (dev != nullptr) {
         /* attach */
         if (port->dev) {
-            usb_attach(port, NULL);
+            usb_attach(port, nullptr);
         }
         dev->port = port;
         port->dev = dev;
@@ -45,8 +45,8 @@ void usb_attach(USBPort *port, USBDevice *dev)
         assert(dev);
         port->ops->detach(port);
         usb_send_msg(dev, USB_MSG_DETACH);
-        dev->port = NULL;
-        port->dev = NULL;
+        dev->port = nullptr;
+        port->dev = nullptr;
     }
 }
 
@@ -314,10 +314,10 @@ int usb_handle_packet(USBDevice *dev, USBPacket *p)
 {
     int ret;
 
-    assert(p->owner == NULL);
+    assert(p->owner == nullptr);
     ret = dev->info->handle_packet(dev, p);
     if (ret == USB_RET_ASYNC) {
-        if (p->owner == NULL) {
+        if (p->owner == nullptr) {
             p->owner = dev;
         } else {
             /* We'll end up here when usb_handle_packet is called
@@ -335,9 +335,9 @@ int usb_handle_packet(USBDevice *dev, USBPacket *p)
 void usb_packet_complete(USBDevice *dev, USBPacket *p)
 {
     /* Note: p->owner != dev is possible in case dev is a hub */
-    assert(p->owner != NULL);
+    assert(p->owner != nullptr);
     dev->port->ops->complete(dev->port, p);
-    p->owner = NULL;
+    p->owner = nullptr;
 }
 
 /* Cancel an active packet.  The packed must have been deferred by
@@ -345,7 +345,7 @@ void usb_packet_complete(USBDevice *dev, USBPacket *p)
    completed.  */
 void usb_cancel_packet(USBPacket * p)
 {
-    assert(p->owner != NULL);
+    assert(p->owner != nullptr);
     p->owner->info->cancel_packet(p->owner, p);
-    p->owner = NULL;
+    p->owner = nullptr;
 }

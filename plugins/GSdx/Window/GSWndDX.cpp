@@ -24,7 +24,7 @@
 
 #ifdef _WIN32
 GSWndDX::GSWndDX()
-	: m_hWnd(NULL)
+	: m_hWnd(nullptr)
 	, m_frame(true)
 {
 }
@@ -35,7 +35,7 @@ GSWndDX::~GSWndDX()
 
 LRESULT CALLBACK GSWndDX::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	GSWndDX* wnd = NULL;
+	GSWndDX* wnd = nullptr;
 
 	if(message == WM_NCCREATE)
 	{
@@ -50,7 +50,7 @@ LRESULT CALLBACK GSWndDX::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 		wnd = (GSWndDX*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	}
 
-	if(wnd == NULL)
+	if(wnd == nullptr)
 	{
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
@@ -94,7 +94,7 @@ bool GSWndDX::Create(const std::string& title, int w, int h)
 	wc.lpfnWndProc = WndProc;
 	wc.hInstance = theApp.GetModuleHandle();
 	// TODO: wc.hIcon = ;
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wc.lpszClassName = "GSWndDX";
 
@@ -133,7 +133,7 @@ bool GSWndDX::Create(const std::string& title, int w, int h)
 
 	AdjustWindowRect(r, style, FALSE);
 
-	m_hWnd = CreateWindow(wc.lpszClassName, title.c_str(), style, r.left, r.top, r.width(), r.height(), NULL, NULL, wc.hInstance, (LPVOID)this);
+	m_hWnd = CreateWindow(wc.lpszClassName, title.c_str(), style, r.left, r.top, r.width(), r.height(), nullptr, nullptr, wc.hInstance, (LPVOID)this);
 
 	if (!m_hWnd)
 		throw GSDXRecoverableError();
@@ -161,7 +161,7 @@ void GSWndDX::Detach()
 		DestroyWindow(m_hWnd);
 	}
 
-	m_hWnd = NULL;
+	m_hWnd = nullptr;
 	m_managed = true;
 }
 
@@ -207,8 +207,8 @@ void GSWndDX::HideFrame()
 	if(!m_managed) return;
 
 	SetWindowLong(m_hWnd, GWL_STYLE, GetWindowLong(m_hWnd, GWL_STYLE) & ~(WS_CAPTION|WS_THICKFRAME));
-	SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
-	SetMenu(m_hWnd, NULL);
+	SetWindowPos(m_hWnd, nullptr, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+	SetMenu(m_hWnd, nullptr);
 
 	m_frame = false;
 }

@@ -86,7 +86,7 @@ public:
 
 		// Warning there is an extra +1 due to the empty cell
 		// Performance note: 64B align to reduce cache miss penalty in `find`
-		if( (m_bucket[b] = (nVifBlock*)pcsx2_aligned_realloc( m_bucket[b], sizeof(nVifBlock)*(size+2), 64, sizeof(nVifBlock)*(size+1) )) == NULL ) {
+		if( (m_bucket[b] = (nVifBlock*)pcsx2_aligned_realloc( m_bucket[b], sizeof(nVifBlock)*(size+2), 64, sizeof(nVifBlock)*(size+1) )) == nullptr ) {
 			throw Exception::OutOfMemory(
 				wxsFormat(L"HashBucket Chain (bucket size=%d)", size+2)
 			);

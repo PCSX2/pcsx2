@@ -107,7 +107,7 @@ void DBLoaderHelper::extract() {
 
 void DBLoaderHelper::ReadGames()
 {
-	Game_Data* game = NULL;
+	Game_Data* game = nullptr;
 
 	while(!m_reader.Eof()) { // Fill game data, find new game, repeat...
 		pthread_testcancel();

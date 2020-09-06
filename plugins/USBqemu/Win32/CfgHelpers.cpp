@@ -49,7 +49,7 @@ static TCHAR CfgFile[260] = L"inis/USBqemu.ini";
 
 void CfgSetSettingsDir( const char* dir )
 {
-	if(dir == NULL)
+	if(dir == nullptr)
 	{
 		wcscpy(CfgFile, L"inis/USBqemu.ini");
 	}
@@ -64,7 +64,7 @@ void CfgSetSettingsDir( const char* dir )
 }
 
 
-/*¯| Config File Format: |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯*\
+/*ï¿½| Config File Format: |ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*\
 +--+---------------------+------------------------+
 |												  |
 | Option=Value									  |

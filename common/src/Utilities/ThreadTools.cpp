@@ -77,7 +77,7 @@ static void make_curthread_key(const pxThread *thr)
     if (total_key_count++ != 0)
         return;
 
-    if (0 != pthread_key_create(&curthread_key, NULL)) {
+    if (0 != pthread_key_create(&curthread_key, nullptr)) {
         pxThreadLog.Error(thr->GetName(), L"Thread key creation failed (probably out of memory >_<)");
         curthread_key = 0;
     }
@@ -104,12 +104,12 @@ void Threading::pxTestCancel()
 }
 
 // Returns a handle to the current persistent thread.  If the current thread does not belong
-// to the pxThread table, NULL is returned.  Since the main/ui thread is not created
-// through pxThread it will also return NULL.  Callers can use wxThread::IsMain() to
-// test if the NULL thread is the main thread.
+// to the pxThread table, nullptr is returned.  Since the main/ui thread is not created
+// through pxThread it will also return nullptr.  Callers can use wxThread::IsMain() to
+// test if the nullptr thread is the main thread.
 pxThread *Threading::pxGetCurrentThread()
 {
-    return !curthread_key ? NULL : (pxThread *)pthread_getspecific(curthread_key);
+    return !curthread_key ? nullptr : (pxThread *)pthread_getspecific(curthread_key);
 }
 
 // returns the name of the current thread, or "Unknown" if the thread is neither a pxThread
@@ -250,10 +250,10 @@ void Threading::pxThread::Start()
     Detach(); // clean up previous thread handle, if one exists.
     OnStart();
 
-    m_except = NULL;
+    m_except = nullptr;
 
     pxThreadLog.Write(GetName(), L"Calling pthread_create...");
-    if (pthread_create(&m_thread, NULL, _internal_callback, this) != 0)
+    if (pthread_create(&m_thread, nullptr, _internal_callback, this) != 0)
         throw Exception::ThreadCreationError(this).SetDiagMsg(L"Thread creation error: " + wxString(std::strerror(errno)));
 
 #ifdef ASAN_WORKAROUND
@@ -408,7 +408,7 @@ void Threading::pxThread::AddListener(EventListener_Thread &evt)
 // the thread will have allowed itself to terminate properly.
 void Threading::pxThread::RethrowException() const
 {
-    // Thread safety note: always detach the m_except pointer.  If we checked it for NULL, the
+    // Thread safety note: always detach the m_except pointer.  If we checked it for nullptr, the
     // pointer might still be invalid after detachment, so might as well just detach and check
     // after.
 
@@ -449,7 +449,7 @@ void Threading::pxThread::_selfRunningTest(const wxChar *name) const
     // that impending chaos does not ensue.  [it shouldn't since we block pxThread
     // objects from being deleted until outside the scope of a mutex/semaphore wait).
 
-    if ((wxTheApp != NULL) && wxThread::IsMain() && !_WaitGui_RecursionGuard(L"WaitForSelf"))
+    if ((wxTheApp != nullptr) && wxThread::IsMain() && !_WaitGui_RecursionGuard(L"WaitForSelf"))
         Threading::YieldToMain();
 }
 
@@ -667,7 +667,7 @@ void Threading::pxThread::OnStart()
 void Threading::pxThread::OnCleanupInThread()
 {
     if (curthread_key)
-        pthread_setspecific(curthread_key, NULL);
+        pthread_setspecific(curthread_key, nullptr);
 
     unmake_curthread_key();
 
@@ -683,8 +683,8 @@ void Threading::pxThread::OnCleanupInThread()
 // callback function
 void *Threading::pxThread::_internal_callback(void *itsme)
 {
-    if (!pxAssertDev(itsme != NULL, wxNullChar))
-        return NULL;
+    if (!pxAssertDev(itsme != nullptr, wxNullChar))
+        return nullptr;
 
     internal_callback_helper(itsme);
     return nullptr;
@@ -717,8 +717,8 @@ Threading::WaitEvent::WaitEvent()
 {
 	int err = 0;
 
-	err = pthread_cond_init(&cond, NULL);
-	err = pthread_mutex_init(&mutex, NULL);
+	err = pthread_cond_init(&cond, nullptr);
+	err = pthread_mutex_init(&mutex, nullptr);
 }
 
 Threading::WaitEvent::~WaitEvent()
@@ -749,22 +749,22 @@ void Threading::WaitEvent::Wait()
 wxString Exception::BaseThreadError::FormatDiagnosticMessage() const
 {
     wxString null_str(L"Null Thread Object");
-    return pxsFmt(m_message_diag, (m_thread == NULL) ? WX_STR(null_str) : WX_STR(m_thread->GetName()));
+    return pxsFmt(m_message_diag, (m_thread == nullptr) ? WX_STR(null_str) : WX_STR(m_thread->GetName()));
 }
 
 wxString Exception::BaseThreadError::FormatDisplayMessage() const
 {
     wxString null_str(L"Null Thread Object");
-    return pxsFmt(m_message_user, (m_thread == NULL) ? WX_STR(null_str) : WX_STR(m_thread->GetName()));
+    return pxsFmt(m_message_user, (m_thread == nullptr) ? WX_STR(null_str) : WX_STR(m_thread->GetName()));
 }
 
 pxThread &Exception::BaseThreadError::Thread()
 {
-    pxAssertDev(m_thread != NULL, "NULL thread object on ThreadError exception.");
+    pxAssertDev(m_thread != nullptr, "nullptr thread object on ThreadError exception.");
     return *m_thread;
 }
 const pxThread &Exception::BaseThreadError::Thread() const
 {
-    pxAssertDev(m_thread != NULL, "NULL thread object on ThreadError exception.");
+    pxAssertDev(m_thread != nullptr, "nullptr thread object on ThreadError exception.");
     return *m_thread;
 }

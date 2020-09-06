@@ -222,11 +222,11 @@ static void usb_msd_transfer_data(SCSIRequest *req, uint32_t len)
     if (p) {
         usb_msd_copy_data(s);
         if (s->packet && s->usb_len == 0) {
-            /* Set s->packet to NULL before calling usb_packet_complete
+            /* Set s->packet to nullptr before calling usb_packet_complete
                because another request may be issued before
                usb_packet_complete returns.  */
             DPRINTF("Packet complete %p\n", p);
-            s->packet = NULL;
+            s->packet = nullptr;
             usb_packet_complete(&s->dev, p);
         }
     }
@@ -258,13 +258,13 @@ static void usb_msd_command_complete(SCSIRequest *req, uint32_t status)
                 s->mode = USB_MSDM_CSW;
             }
         }
-        s->packet = NULL;
+        s->packet = nullptr;
         usb_packet_complete(&s->dev, p);
     } else if (s->data_len == 0) {
         s->mode = USB_MSDM_CSW;
     }
     scsi_req_unref(req);
-    s->req = NULL;
+    s->req = nullptr;
 }
 
 static void usb_msd_request_cancelled(SCSIRequest *req)
@@ -273,8 +273,8 @@ static void usb_msd_request_cancelled(SCSIRequest *req)
 
     if (req == s->req) {
         scsi_req_unref(s->req);
-        s->req = NULL;
-        s->packet = NULL;
+        s->req = nullptr;
+        s->packet = nullptr;
         s->scsi_len = 0;
     }
 }
@@ -380,7 +380,7 @@ static int usb_msd_handle_data(USBDevice *dev, USBPacket *p)
                     s->tag, cbw.flags, cbw.cmd_len, s->data_len);
             s->residue = 0;
             s->scsi_len = 0;
-            s->req = scsi_req_new(s->scsi_dev, s->tag, 0, NULL);
+            s->req = scsi_req_new(s->scsi_dev, s->tag, 0, nullptr);
             scsi_req_enqueue(s->req, cbw.cmd);
             /* ??? Should check that USB and SCSI data transfer
                directions match.  */
@@ -524,7 +524,7 @@ static int usb_msd_initfn(USBDevice *dev)
      * The hack is probably a bad idea.
      */
     bdrv_detach(bs, &s->dev.qdev);
-    s->conf.bs = NULL;
+    s->conf.bs = nullptr;
 
     if (!s->serial) {
         /* try to fall back to value set with legacy -drive serial=... */
@@ -583,13 +583,13 @@ static USBDevice *usb_msd_init(const char *filename)
             qemu_opt_set(opts, "format", fmt);
         } else if (*filename != ':') {
             printf("unrecognized USB mass-storage option %s\n", filename);
-            return NULL;
+            return nullptr;
         }
         filename = p1;
     }
     if (!*filename) {
         printf("block device specification needed\n");
-        return NULL;
+        return nullptr;
     }
     qemu_opt_set(opts, "file", filename);
     qemu_opt_set(opts, "if", "none");
@@ -598,20 +598,20 @@ static USBDevice *usb_msd_init(const char *filename)
     dinfo = drive_init(opts, 0);
     if (!dinfo) {
         qemu_opts_del(opts);
-        return NULL;
+        return nullptr;
     }
 
     /* create guest device */
-    dev = usb_create(NULL /* FIXME */, "usb-storage");
+    dev = usb_create(nullptr /* FIXME */, "usb-storage");
     if (!dev) {
-        return NULL;
+        return nullptr;
     }
     if (qdev_prop_set_drive(&dev->qdev, "drive", dinfo->bdrv) < 0) {
         qdev_free(&dev->qdev);
-        return NULL;
+        return nullptr;
     }
     if (qdev_init(&dev->qdev) < 0)
-        return NULL;
+        return nullptr;
 
     return dev;
 }

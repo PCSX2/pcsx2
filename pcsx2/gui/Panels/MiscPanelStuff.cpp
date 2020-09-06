@@ -104,7 +104,7 @@ void Panels::DocsFolderPickerPanel::OnRadioChanged( wxCommandEvent& evt )
 Panels::LanguageSelectionPanel::LanguageSelectionPanel( wxWindow* parent, bool showApply )
 	: BaseApplicableConfigPanel( parent, wxHORIZONTAL )
 {
-	m_picker = NULL;
+	m_picker = nullptr;
 	i18n_EnumeratePackages( m_langs );
 
 	int size = m_langs.size();

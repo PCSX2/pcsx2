@@ -102,7 +102,7 @@ void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not spl
     LogAutoDMA(Index ? ADMA7LogFile : ADMA4LogFile);
 
     // HACKFIX!! DMAPtr can be invalid after a savestate load, so the savestate just forces it
-    // to NULL and we ignore it here.  (used to work in old VM editions of PCSX2 with fixed
+    // to nullptr and we ignore it here.  (used to work in old VM editions of PCSX2 with fixed
     // addressing, but new PCSX2s have dynamic memory addressing).
 
     if (mode) {

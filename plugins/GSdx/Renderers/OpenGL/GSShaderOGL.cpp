@@ -257,7 +257,7 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 
 GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& entry, GLenum type, const char* glsl_h_code, const std::string& macro_sel)
 {
-	ASSERT(glsl_h_code != NULL);
+	ASSERT(glsl_h_code != nullptr);
 
 	GLuint program = 0;
 
@@ -291,7 +291,7 @@ GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& ent
 // Same as above but for not-separated build
 GLuint GSShaderOGL::CompileShader(const std::string& glsl_file, const std::string& entry, GLenum type, const char* glsl_h_code, const std::string& macro_sel)
 {
-	ASSERT(glsl_h_code != NULL);
+	ASSERT(glsl_h_code != nullptr);
 
 	GLuint shader = 0;
 

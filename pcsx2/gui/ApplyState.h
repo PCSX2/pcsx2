@@ -78,7 +78,7 @@ struct ApplyStateStruct
 	ApplyStateStruct()
 	{
 		CurOwnerPage	= wxID_NONE;
-		ParentBook		= NULL;
+		ParentBook		= nullptr;
 	}
 
 	void SetCurrentPage( int page )
@@ -230,9 +230,9 @@ class ApplicableWizardPage : public wxWizardPageSimple, public IApplyState
 
 public:
 	ApplicableWizardPage(
-		wxWizard* parent=NULL,
-		wxWizardPage *prev = NULL,
-		wxWizardPage *next = NULL,
+		wxWizard* parent=nullptr,
+		wxWizardPage *prev = nullptr,
+		wxWizardPage *next = nullptr,
 		const wxBitmap& bitmap = wxNullBitmap
 	);
 

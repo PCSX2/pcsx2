@@ -235,7 +235,7 @@ public:
 		// Buffered output isn't compatible with the testsuite. The end of test
 		// doesn't always get flushed. Let's just flush all the output if EE/IOP
 		// print anything.
-		fflush(NULL);
+		fflush(nullptr);
 
 		return false;
 	}

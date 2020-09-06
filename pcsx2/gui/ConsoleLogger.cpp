@@ -265,7 +265,7 @@ public:
 
 public:
 	ScopedLogLock()
-		: ScopedLock( wxThread::IsMain() ? NULL : &pxTheApp.GetProgramLogLock() )
+		: ScopedLock( wxThread::IsMain() ? nullptr : &pxTheApp.GetProgramLogLock() )
 	{
 		WindowPtr = pxTheApp.m_ptr_ProgramLog;
 	}
@@ -274,7 +274,7 @@ public:
 
 	bool HasWindow() const
 	{
-		return WindowPtr != NULL;
+		return WindowPtr != nullptr;
 	}
 
 	ConsoleLogFrame& GetWindow() const
@@ -305,13 +305,13 @@ static ConsoleLogSource* const ConLogSources[] =
 	(ConsoleLogSource*)&SysConsole.eeConsole,
 	(ConsoleLogSource*)&SysConsole.iopConsole,
 	(ConsoleLogSource*)&SysConsole.eeRecPerf,
-	NULL,
+	nullptr,
 	(ConsoleLogSource*)&SysConsole.ELF,
-	NULL,
+	nullptr,
 	(ConsoleLogSource*)&pxConLog_Event,
 	(ConsoleLogSource*)&pxConLog_Thread,
 	(ConsoleLogSource*)&SysConsole.sysoutConsole,
-	NULL,
+	nullptr,
 #ifndef DISABLE_RECORDING
 	(ConsoleLogSource*)&SysConsole.recordingConsole,
 	(ConsoleLogSource*)&SysConsole.controlInfo,
@@ -378,7 +378,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	, m_QueueColorSection( L"ConsoleLog::QueueColorSection" )
 	, m_QueueBuffer( L"ConsoleLog::QueueBuffer" )
-	, m_threadlogger( EnableThreadedLoggingTest ? new ConsoleTestThread() : NULL )
+	, m_threadlogger( EnableThreadedLoggingTest ? new ConsoleTestThread() : nullptr )
 {
 	m_CurQueuePos				= 0;
 	m_WaitingThreadsForFlush	= 0;
@@ -512,7 +512,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	Bind(wxEVT_TIMER, &ConsoleLogFrame::OnFlushUnlockerTimer, this, m_timer_FlushUnlocker.GetId());
 
-	if( m_threadlogger != NULL )
+	if( m_threadlogger != nullptr )
 		m_threadlogger->Start();
 
 	OnLoggingChanged();
@@ -775,7 +775,7 @@ void ConsoleLogFrame::OnCloseWindow(wxCloseEvent& event)
 	else
 	{
 		// This is sent when the app is exiting typically, so do a full close.
-		m_threadlogger = NULL;
+		m_threadlogger = nullptr;
 		wxGetApp().OnProgramLogClosed( GetId() );
 		event.Skip();
 	}
@@ -858,7 +858,7 @@ void ConsoleLogFrame::OnToggleSource( wxCommandEvent& evt )
 	uint srcid = evt.GetId() - MenuId_LogSource_Start;
 
 	if (!pxAssertDev( ArraySize(ConLogSources) > srcid, "Invalid source log index (out of bounds)" )) return;
-	if (!pxAssertDev( ConLogSources[srcid] != NULL, "Invalid source log index (NULL pointer [separator])" )) return;
+	if (!pxAssertDev( ConLogSources[srcid] != nullptr, "Invalid source log index (NULL pointer [separator])" )) return;
 
 	if( wxMenuItem* item = GetMenuBar()->FindItem(evt.GetId()) )
 	{
@@ -1095,7 +1095,7 @@ static void __concall ConsoleToFile_DoWriteLn( const wxString& fmt )
 	ConsoleToFile_DoWrite( fmt );
 	ConsoleToFile_Newline();
 
-	if (emuLog != NULL) fflush( emuLog );
+	if (emuLog != nullptr) fflush( emuLog );
 }
 
 static void __concall ConsoleToFile_SetTitle( const wxString& title )
@@ -1159,7 +1159,7 @@ static void __concall ConsoleToWindow_Newline()
 template< const IConsoleWriter& secondary >
 static void __concall ConsoleToWindow_DoWrite( const wxString& fmt )
 {
-	if( secondary.WriteRaw != NULL )
+	if( secondary.WriteRaw != nullptr )
 		secondary.WriteRaw( fmt );
 
 	ScopedLogLock locker;
@@ -1171,7 +1171,7 @@ static void __concall ConsoleToWindow_DoWrite( const wxString& fmt )
 template< const IConsoleWriter& secondary >
 static void __concall ConsoleToWindow_DoWriteLn( const wxString& fmt )
 {
-	if( secondary.DoWriteLn != NULL )
+	if( secondary.DoWriteLn != nullptr )
 		secondary.DoWriteLn( fmt );
 
 	ScopedLogLock locker;
@@ -1212,8 +1212,8 @@ void Pcsx2App::EnableAllLogging()
 {
 	AffinityAssert_AllowFrom_MainUI();
 
-	const bool logBoxOpen = (m_ptr_ProgramLog != NULL);
-	const IConsoleWriter* newHandler = NULL;
+	const bool logBoxOpen = (m_ptr_ProgramLog != nullptr);
+	const IConsoleWriter* newHandler = nullptr;
 
 	if( emuLog )
 	{
@@ -1241,7 +1241,7 @@ void Pcsx2App::DisableDiskLogging() const
 {
 	AffinityAssert_AllowFrom_MainUI();
 
-	const bool logBoxOpen = (GetProgramLog() != NULL);
+	const bool logBoxOpen = (GetProgramLog() != nullptr);
 	Console_SetActiveHandler( logBoxOpen ? (IConsoleWriter&)ConsoleWriter_Window : (IConsoleWriter&)ConsoleWriter_Stdout );
 
 	// Semi-hack: It's possible, however very unlikely, that a secondary thread could attempt
@@ -1260,7 +1260,7 @@ void Pcsx2App::DisableDiskLogging() const
 void Pcsx2App::DisableWindowLogging() const
 {
 	AffinityAssert_AllowFrom_MainUI();
-	Console_SetActiveHandler( (emuLog!=NULL) ? (IConsoleWriter&)ConsoleWriter_File : (IConsoleWriter&)ConsoleWriter_Stdout );
+	Console_SetActiveHandler( (emuLog!=nullptr) ? (IConsoleWriter&)ConsoleWriter_File : (IConsoleWriter&)ConsoleWriter_Stdout );
 }
 
 void OSDlog(ConsoleColors color, bool console, const std::string& str)

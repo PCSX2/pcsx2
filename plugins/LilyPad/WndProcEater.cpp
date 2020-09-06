@@ -114,7 +114,7 @@ LRESULT WndProcEater::_OverrideWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 static LRESULT CALLBACK OverrideWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     WndProcEater *obj = (WndProcEater *)GetProp(hWnd, L"LilyHaxxor");
-    return (obj == NULL) ?
+    return (obj == nullptr) ?
                DefWindowProc(hWnd, uMsg, wParam, lParam) :
                obj->_OverrideWndProc(hWnd, uMsg, wParam, lParam);
 }

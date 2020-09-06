@@ -416,7 +416,7 @@ USBDevice *singstar_mic_init()
 
     s = (SINGSTARMICState *)qemu_mallocz(sizeof(SINGSTARMICState));
     if (!s)
-        return NULL;
+        return nullptr;
     s->dev.speed = USB_SPEED_FULL;
     s->dev.handle_packet  = singstar_mic_handle_packet;
     s->dev.handle_reset   = singstar_mic_handle_reset;

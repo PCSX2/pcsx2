@@ -258,8 +258,8 @@ namespace ioman {
 		};
 
 		operator bool() const { return type != FILE_FREE; }
-		operator IOManFile*() const { return type == FILE_FILE ? file : NULL; }
-		operator IOManDir*() const { return type == FILE_DIR ? dir : NULL; }
+		operator IOManFile*() const { return type == FILE_FILE ? file : nullptr; }
+		operator IOManDir*() const { return type == FILE_DIR ? dir : nullptr; }
 		void operator=(IOManFile *f) { type = FILE_FILE; file = f; openfds++; }
 		void operator=(IOManDir *d) { type = FILE_DIR; dir = d; openfds++; }
 
@@ -269,11 +269,11 @@ namespace ioman {
 			{
 				case FILE_FILE:
 					file->close();
-					file = NULL;
+					file = nullptr;
 					break;
 				case FILE_DIR:
 					dir->close();
-					dir = NULL;
+					dir = nullptr;
 					break;
 				case FILE_FREE:
 					return;
@@ -292,7 +292,7 @@ namespace ioman {
 		fd -= firstfd;
 
 		if (fd < 0 || fd >= maxfds)
-			return NULL;
+			return nullptr;
 
 		return fds[fd];
 	}
@@ -340,7 +340,7 @@ namespace ioman {
 
 	int open_HLE()
 	{
-		IOManFile *file = NULL;
+		IOManFile *file = nullptr;
 		const std::string path = Ra0;
 		s32 flags = a1;
 		u16 mode = a2;

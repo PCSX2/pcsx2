@@ -1523,12 +1523,12 @@ void rpsxpropCP2(EEINST* prev, EEINST* pinst);
 
 //SPECIAL, REGIMM, J   , JAL  , BEQ , BNE , BLEZ, BGTZ,
 //ADDI   , ADDIU , SLTI, SLTIU, ANDI, ORI , XORI, LUI ,
-//COP0   , NULL  , COP2, NULL , NULL, NULL, NULL, NULL,
-//NULL   , NULL  , NULL, NULL , NULL, NULL, NULL, NULL,
-//LB     , LH    , LWL , LW   , LBU , LHU , LWR , NULL,
-//SB     , SH    , SWL , SW   , NULL, NULL, SWR , NULL,
-//NULL   , NULL  , NULL, NULL , NULL, NULL, NULL, NULL,
-//NULL   , NULL  , NULL, NULL , NULL, NULL, NULL, NULL
+//COP0   , nullptr  , COP2, nullptr , nullptr, nullptr, nullptr, nullptr,
+//nullptr   , nullptr  , nullptr, nullptr , nullptr, nullptr, nullptr, nullptr,
+//LB     , LH    , LWL , LW   , LBU , LHU , LWR , nullptr,
+//SB     , SH    , SWL , SW   , nullptr, nullptr, SWR , nullptr,
+//nullptr   , nullptr  , nullptr, nullptr , nullptr, nullptr, nullptr, nullptr,
+//nullptr   , nullptr  , nullptr, nullptr , nullptr, nullptr, nullptr, nullptr
 void rpsxpropBSC(EEINST* prev, EEINST* pinst)
 {
 	switch(psxRegs.code >> 26) {
@@ -1575,14 +1575,14 @@ void rpsxpropBSC(EEINST* prev, EEINST* pinst)
 	}
 }
 
-//SLL , NULL, SRL , SRA , SLLV   , NULL , SRLV, SRAV,
-//JR  , JALR, NULL, NULL, SYSCALL, BREAK, NULL, NULL,
-//MFHI, MTHI, MFLO, MTLO, NULL   , NULL , NULL, NULL,
-//MULT, MULTU, DIV, DIVU, NULL   , NULL , NULL, NULL,
+//SLL , nullptr, SRL , SRA , SLLV   , nullptr , SRLV, SRAV,
+//JR  , JALR, nullptr, nullptr, SYSCALL, BREAK, nullptr, nullptr,
+//MFHI, MTHI, MFLO, MTLO, nullptr   , nullptr , nullptr, nullptr,
+//MULT, MULTU, DIV, DIVU, nullptr   , nullptr , nullptr, nullptr,
 //ADD , ADDU, SUB , SUBU, AND    , OR   , XOR , NOR ,
-//NULL, NULL, SLT , SLTU, NULL   , NULL , NULL, NULL,
-//NULL, NULL, NULL, NULL, NULL   , NULL , NULL, NULL,
-//NULL, NULL, NULL, NULL, NULL   , NULL , NULL, NULL
+//nullptr, nullptr, SLT , SLTU, nullptr   , nullptr , nullptr, nullptr,
+//nullptr, nullptr, nullptr, nullptr, nullptr   , nullptr , nullptr, nullptr,
+//nullptr, nullptr, nullptr, nullptr, nullptr   , nullptr , nullptr, nullptr
 void rpsxpropSPECIAL(EEINST* prev, EEINST* pinst)
 {
 	switch(_Funct_) {
@@ -1653,10 +1653,10 @@ void rpsxpropSPECIAL(EEINST* prev, EEINST* pinst)
 	}
 }
 
-//BLTZ  , BGEZ  , NULL, NULL, NULL, NULL, NULL, NULL,
-//NULL  , NULL  , NULL, NULL, NULL, NULL, NULL, NULL,
-//BLTZAL, BGEZAL, NULL, NULL, NULL, NULL, NULL, NULL,
-//NULL  , NULL  , NULL, NULL, NULL, NULL, NULL, NULL
+//BLTZ  , BGEZ  , nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+//nullptr  , nullptr  , nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+//BLTZAL, BGEZAL, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+//nullptr  , nullptr  , nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 void rpsxpropREGIMM(EEINST* prev, EEINST* pinst)
 {
 	switch(_Rt_) {
@@ -1675,10 +1675,10 @@ void rpsxpropREGIMM(EEINST* prev, EEINST* pinst)
 	}
 }
 
-//MFC0, NULL, CFC0, NULL, MTC0, NULL, CTC0, NULL,
-//NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-//RFE , NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-//NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+//MFC0, nullptr, CFC0, nullptr, MTC0, nullptr, CTC0, nullptr,
+//nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+//RFE , nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+//nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 void rpsxpropCP0(EEINST* prev, EEINST* pinst)
 {
 	switch(_Rs_) {

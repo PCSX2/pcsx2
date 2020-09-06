@@ -28,13 +28,13 @@
 
 class CPinInfo : public PIN_INFO {
 public:
-	CPinInfo() { pFilter = NULL; }
+	CPinInfo() { pFilter = nullptr; }
 	~CPinInfo() { if (pFilter) pFilter->Release(); }
 };
 
 class CFilterInfo : public FILTER_INFO {
 public:
-	CFilterInfo() { pGraph = NULL; }
+	CFilterInfo() { pGraph = nullptr; }
 	~CFilterInfo() { if (pGraph) pGraph->Release(); }
 };
 
@@ -42,7 +42,7 @@ public:
 	{CComPtr<IEnumFilters> pEnumFilters; \
 	if(pFilterGraph && SUCCEEDED(pFilterGraph->EnumFilters(&pEnumFilters))) \
 	{ \
-		for(CComPtr<IBaseFilter> pBaseFilter; S_OK == pEnumFilters->Next(1, &pBaseFilter, 0); pBaseFilter = NULL) \
+		for(CComPtr<IBaseFilter> pBaseFilter; S_OK == pEnumFilters->Next(1, &pBaseFilter, 0); pBaseFilter = nullptr) \
 		{ \
 
 #define EndEnumFilters }}}
@@ -51,7 +51,7 @@ public:
 	{CComPtr<IEnumPins> pEnumPins; \
 	if(pBaseFilter && SUCCEEDED(pBaseFilter->EnumPins(&pEnumPins))) \
 	{ \
-		for(CComPtr<IPin> pPin; S_OK == pEnumPins->Next(1, &pPin, 0); pPin = NULL) \
+		for(CComPtr<IPin> pPin; S_OK == pEnumPins->Next(1, &pPin, 0); pPin = nullptr) \
 		{ \
 
 #define EndEnumPins }}}
@@ -198,7 +198,7 @@ public:
 
 	GSSource(int w, int h, float fps, IUnknown* pUnk, HRESULT& hr, int colorspace)
 		: CBaseFilter(NAME("GSSource"), pUnk, this, __uuidof(this), &hr)
-		, m_output(NULL)
+		, m_output(nullptr)
 		, m_size(w, h)
 		, m_atpf((REFERENCE_TIME)(10000000.0f / fps))
 		, m_now(0)
@@ -220,7 +220,7 @@ public:
 
 	CBasePin* GetPin(int n)
 	{
-		return n == 0 ? m_output : NULL;
+		return n == 0 ? m_output : nullptr;
 	}
 
 	// IGSSource
@@ -241,7 +241,7 @@ public:
 
 		CComPtr<IMediaSample> sample;
 
-		if(FAILED(m_output->GetDeliveryBuffer(&sample, NULL, NULL, 0)))
+		if(FAILED(m_output->GetDeliveryBuffer(&sample, nullptr, nullptr, 0)))
 		{
 			return E_FAIL;
 		}
@@ -255,7 +255,7 @@ public:
 		const CMediaType& mt = m_output->CurrentMediaType();
 
 		uint8* src = (uint8*)bits;
-		uint8* dst = NULL;
+		uint8* dst = nullptr;
 
 		sample->GetPointer(&dst);
 
@@ -364,7 +364,7 @@ public:
 
 static IPin* GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION dir)
 {
-	if(!pBF) return(NULL);
+	if(!pBF) return(nullptr);
 
 	BeginEnumPins(pBF, pEP, pPin)
 	{
@@ -379,7 +379,7 @@ static IPin* GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION dir)
 	}
 	EndEnumPins
 
-	return(NULL);
+	return(nullptr);
 }
 
 #endif
@@ -434,18 +434,18 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if(FAILED(hr = m_graph.CoCreateInstance(CLSID_FilterGraph))
 	|| FAILED(hr = cgb.CoCreateInstance(CLSID_CaptureGraphBuilder2))
 	|| FAILED(hr = cgb->SetFiltergraph(m_graph))
-	|| FAILED(hr = cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, fn.c_str(), &mux, NULL)))
+	|| FAILED(hr = cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, fn.c_str(), &mux, nullptr)))
 	{
 		return false;
 	}
 
-	m_src = new GSSource(m_size.x, m_size.y, fps, NULL, hr, dlg.m_colorspace);
+	m_src = new GSSource(m_size.x, m_size.y, fps, nullptr, hr, dlg.m_colorspace);
 
 	if (dlg.m_enc==0)
 	{
 		if (FAILED(hr = m_graph->AddFilter(m_src, L"Source")))
 			return false;
-		if (FAILED(hr = m_graph->ConnectDirect(GetFirstPin(m_src, PINDIR_OUTPUT), GetFirstPin(mux, PINDIR_INPUT), NULL)))
+		if (FAILED(hr = m_graph->ConnectDirect(GetFirstPin(m_src, PINDIR_OUTPUT), GetFirstPin(mux, PINDIR_INPUT), nullptr)))
 			return false;
 	}
 	else
@@ -456,8 +456,8 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 			return false;
 		}
 
-		if(FAILED(hr = m_graph->ConnectDirect(GetFirstPin(m_src, PINDIR_OUTPUT), GetFirstPin(dlg.m_enc, PINDIR_INPUT), NULL))
-		|| FAILED(hr = m_graph->ConnectDirect(GetFirstPin(dlg.m_enc, PINDIR_OUTPUT), GetFirstPin(mux, PINDIR_INPUT), NULL)))
+		if(FAILED(hr = m_graph->ConnectDirect(GetFirstPin(m_src, PINDIR_OUTPUT), GetFirstPin(dlg.m_enc, PINDIR_INPUT), nullptr))
+		|| FAILED(hr = m_graph->ConnectDirect(GetFirstPin(dlg.m_enc, PINDIR_OUTPUT), GetFirstPin(mux, PINDIR_INPUT), nullptr)))
 		{
 			return false;
 		}
@@ -551,14 +551,14 @@ bool GSCapture::EndCapture()
 	{
 		CComQIPtr<IGSSource>(m_src)->DeliverEOS();
 
-		m_src = NULL;
+		m_src = nullptr;
 	}
 
 	if(m_graph)
 	{
 		CComQIPtr<IMediaControl>(m_graph)->Stop();
 
-		m_graph = NULL;
+		m_graph = nullptr;
 	}
 
 #elif defined(__unix__)

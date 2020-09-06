@@ -38,7 +38,7 @@ char *KeysymToChar(int keysym)
 {
     LPWORD temp;
 
-    ToAscii((UINT)keysym, NULL, NULL, temp, NULL);
+    ToAscii((UINT)keysym, nullptr, nullptr, temp, nullptr);
     return (char *)temp;
 }
 #endif

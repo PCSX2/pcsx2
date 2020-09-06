@@ -135,7 +135,7 @@ static void OnSlotChanged()
 {
 	OSDlog(Color_StrongGreen, true, " > Selected savestate slot %d", StatesC);
 
-	if (GSchangeSaveState != NULL)
+	if (GSchangeSaveState != nullptr)
 		GSchangeSaveState(StatesC, SaveStateBase::GetFilename(StatesC).utf8_str());
 
 	Sstates_updateLoadBackupMenuItem(false);

@@ -347,7 +347,7 @@ namespace Panels
 		virtual ~SpeedHacksPanel() = default;
 		SpeedHacksPanel( wxWindow* parent );
 		void Apply();
-		void EnableStuff( AppConfig* configToUse=NULL );
+		void EnableStuff( AppConfig* configToUse=nullptr );
 		void AppStatusEvent_OnSettingsApplied();
 		void ApplyConfigToGui( AppConfig& configToApply, int flags=0 );
 
@@ -376,7 +376,7 @@ namespace Panels
 	public:
 		GameFixesPanel( wxWindow* parent );
 		virtual ~GameFixesPanel() = default;
-		void EnableStuff( AppConfig* configToUse=NULL );
+		void EnableStuff( AppConfig* configToUse=nullptr );
 		void OnEnable_Toggled( wxCommandEvent& evt );
 		void Apply();
 		void AppStatusEvent_OnSettingsApplied();

@@ -69,7 +69,7 @@ static __fi bool mfifoVIF1rbTransfer()
 		vif1ch.madr = qwctag(vif1ch.madr);
 
 		src = (u32*)PSM(vif1ch.madr);
-		if (src == NULL) return false;
+		if (src == nullptr) return false;
 
 		if (vif1.irqoffset.enabled)
 			ret = VIF1transfer(src + vif1.irqoffset.value, s1 - vif1.irqoffset.value);
@@ -85,7 +85,7 @@ static __fi bool mfifoVIF1rbTransfer()
 			vif1ch.madr = qwctag(vif1ch.madr);
 
             src = (u32*)PSM(vif1ch.madr);
-            if (src == NULL) return false;
+            if (src == nullptr) return false;
             VIF1transfer(src, ((mfifoqwc << 2) - s1));
 		}
 	}
@@ -95,7 +95,7 @@ static __fi bool mfifoVIF1rbTransfer()
 
 		/* it doesn't, so just transfer 'qwc*4' words */
 		src = (u32*)PSM(vif1ch.madr);
-		if (src == NULL) return false;
+		if (src == nullptr) return false;
 
 		if (vif1.irqoffset.enabled)
 			ret = VIF1transfer(src + vif1.irqoffset.value, mfifoqwc * 4 - vif1.irqoffset.value);
@@ -141,7 +141,7 @@ static __fi void mfifo_VIF1chain()
 
 		//No need to exit on non-mfifo as it is indirect anyway, so it can be transferring this while spr refills the mfifo
 
-		if (pMem == NULL) return;
+		if (pMem == nullptr) return;
 
 		if (vif1.irqoffset.enabled)
 			VIF1transfer((u32*)pMem + vif1.irqoffset.value, vif1ch.qwc * 4 - vif1.irqoffset.value);

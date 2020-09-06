@@ -434,15 +434,15 @@ namespace Implementations
 
 			if (GSsetupRecording) {
 				// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
-				if (GSsetupRecording(g_Pcsx2Recording, NULL)) {
-					if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
+				if (GSsetupRecording(g_Pcsx2Recording, nullptr)) {
+					if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, nullptr);
 				} else {
 					// recording dialog canceled by the user. align our state
 					g_Pcsx2Recording ^= 1;
 				}
 			} else {
 				// the GS doesn't support recording.
-				if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
+				if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, nullptr);
 			}
 
 			if (GetMainFramePtr() && needsMainFrameEnable)
@@ -450,8 +450,8 @@ namespace Implementations
 
 		} else {
 			// stop recording
-			if (GSsetupRecording) GSsetupRecording(g_Pcsx2Recording, NULL);
-			if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
+			if (GSsetupRecording) GSsetupRecording(g_Pcsx2Recording, nullptr);
+			if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, nullptr);
 		}
 	}
 
@@ -654,146 +654,146 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 
 	{	"Frameskip_Toggle",
 		Implementations::Frameskip_Toggle,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
 	{	"Framelimiter_TurboToggle",
 		Implementations::Framelimiter_TurboToggle,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
 	{	"Framelimiter_SlomoToggle",
 		Implementations::Framelimiter_SlomoToggle,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
 	{	"Framelimiter_MasterToggle",
 		Implementations::Framelimiter_MasterToggle,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
 	{	"GSwindow_CycleAspectRatio",
 		Implementations::GSwindow_CycleAspectRatio,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		true,
 	},
 
 	{	"GSwindow_ZoomIn",
 		Implementations::GSwindow_ZoomIn,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
 	{	"GSwindow_ZoomOut",
 		Implementations::GSwindow_ZoomOut,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
 	{	"GSwindow_ZoomToggle",
 		Implementations::GSwindow_ZoomToggle,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
-	{	"GSwindow_ZoomInY"     , Implementations::GSwindow_ZoomInY     , NULL, NULL, false},
-	{	"GSwindow_ZoomOutY"    , Implementations::GSwindow_ZoomOutY    , NULL, NULL, false},
-	{	"GSwindow_ZoomResetY"  , Implementations::GSwindow_ZoomResetY  , NULL, NULL, false},
+	{	"GSwindow_ZoomInY"     , Implementations::GSwindow_ZoomInY     , nullptr, nullptr, false},
+	{	"GSwindow_ZoomOutY"    , Implementations::GSwindow_ZoomOutY    , nullptr, nullptr, false},
+	{	"GSwindow_ZoomResetY"  , Implementations::GSwindow_ZoomResetY  , nullptr, nullptr, false},
 
-	{	"GSwindow_OffsetYminus", Implementations::GSwindow_OffsetYminus, NULL, NULL, false},
-	{	"GSwindow_OffsetYplus" , Implementations::GSwindow_OffsetYplus , NULL, NULL, false},
-	{	"GSwindow_OffsetXminus", Implementations::GSwindow_OffsetXminus, NULL, NULL, false},
-	{	"GSwindow_OffsetXplus" , Implementations::GSwindow_OffsetXplus , NULL, NULL, false},
-	{	"GSwindow_OffsetReset" , Implementations::GSwindow_OffsetReset , NULL, NULL, false},
+	{	"GSwindow_OffsetYminus", Implementations::GSwindow_OffsetYminus, nullptr, nullptr, false},
+	{	"GSwindow_OffsetYplus" , Implementations::GSwindow_OffsetYplus , nullptr, nullptr, false},
+	{	"GSwindow_OffsetXminus", Implementations::GSwindow_OffsetXminus, nullptr, nullptr, false},
+	{	"GSwindow_OffsetXplus" , Implementations::GSwindow_OffsetXplus , nullptr, nullptr, false},
+	{	"GSwindow_OffsetReset" , Implementations::GSwindow_OffsetReset , nullptr, nullptr, false},
 
 	{	"Sys_SuspendResume",
 		Implementations::Sys_SuspendResume,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
 	{	"Sys_TakeSnapshot",
 		Implementations::Sys_TakeSnapshot,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
 	{	"Sys_RenderswitchToggle",
 		Implementations::Sys_RenderToggle,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
 	{	"Sys_LoggingToggle",
 		Implementations::Sys_LoggingToggle,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
 	{	"Sys_FreezeGS",
 		Implementations::Sys_FreezeGS,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 	{	"Sys_RecordingToggle",
 		Implementations::Sys_RecordingToggle,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
 	{	"FullscreenToggle",
 		Implementations::FullscreenToggle,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		false,
 	},
 
 #ifndef DISABLE_RECORDING
-	{ "FrameAdvance"				, Implementations::FrameAdvance,				NULL, NULL, false },
-	{ "TogglePause"					, Implementations::TogglePause,					NULL, NULL, false },
-	{ "InputRecordingModeToggle"	, Implementations::InputRecordingModeToggle,	NULL, NULL, false },
-	{ "States_SaveSlot0"			, Implementations::States_SaveSlot0,			NULL, NULL, false },
-	{ "States_SaveSlot1"			, Implementations::States_SaveSlot1,			NULL, NULL, false },
-	{ "States_SaveSlot2"			, Implementations::States_SaveSlot2,			NULL, NULL, false },
-	{ "States_SaveSlot3"			, Implementations::States_SaveSlot3,			NULL, NULL, false },
-	{ "States_SaveSlot4"			, Implementations::States_SaveSlot4,			NULL, NULL, false },
-	{ "States_SaveSlot5"			, Implementations::States_SaveSlot5,			NULL, NULL, false },
-	{ "States_SaveSlot6"			, Implementations::States_SaveSlot6,			NULL, NULL, false },
-	{ "States_SaveSlot7"			, Implementations::States_SaveSlot7,			NULL, NULL, false },
-	{ "States_SaveSlot8"			, Implementations::States_SaveSlot8,			NULL, NULL, false },
-	{ "States_SaveSlot9"			, Implementations::States_SaveSlot9,			NULL, NULL, false },
-	{ "States_LoadSlot0"			, Implementations::States_LoadSlot0,			NULL, NULL, false },
-	{ "States_LoadSlot1"			, Implementations::States_LoadSlot1,			NULL, NULL, false },
-	{ "States_LoadSlot2"			, Implementations::States_LoadSlot2,			NULL, NULL, false },
-	{ "States_LoadSlot3"			, Implementations::States_LoadSlot3,			NULL, NULL, false },
-	{ "States_LoadSlot4"			, Implementations::States_LoadSlot4,			NULL, NULL, false },
-	{ "States_LoadSlot5"			, Implementations::States_LoadSlot5,			NULL, NULL, false },
-	{ "States_LoadSlot6"			, Implementations::States_LoadSlot6,			NULL, NULL, false },
-	{ "States_LoadSlot7"			, Implementations::States_LoadSlot7,			NULL, NULL, false },
-	{ "States_LoadSlot8"			, Implementations::States_LoadSlot8,			NULL, NULL, false },
-	{ "States_LoadSlot9"			, Implementations::States_LoadSlot9,			NULL, NULL, false },
+	{ "FrameAdvance"				, Implementations::FrameAdvance,				nullptr, nullptr, false },
+	{ "TogglePause"					, Implementations::TogglePause,					nullptr, nullptr, false },
+	{ "InputRecordingModeToggle"	, Implementations::InputRecordingModeToggle,	nullptr, nullptr, false },
+	{ "States_SaveSlot0"			, Implementations::States_SaveSlot0,			nullptr, nullptr, false },
+	{ "States_SaveSlot1"			, Implementations::States_SaveSlot1,			nullptr, nullptr, false },
+	{ "States_SaveSlot2"			, Implementations::States_SaveSlot2,			nullptr, nullptr, false },
+	{ "States_SaveSlot3"			, Implementations::States_SaveSlot3,			nullptr, nullptr, false },
+	{ "States_SaveSlot4"			, Implementations::States_SaveSlot4,			nullptr, nullptr, false },
+	{ "States_SaveSlot5"			, Implementations::States_SaveSlot5,			nullptr, nullptr, false },
+	{ "States_SaveSlot6"			, Implementations::States_SaveSlot6,			nullptr, nullptr, false },
+	{ "States_SaveSlot7"			, Implementations::States_SaveSlot7,			nullptr, nullptr, false },
+	{ "States_SaveSlot8"			, Implementations::States_SaveSlot8,			nullptr, nullptr, false },
+	{ "States_SaveSlot9"			, Implementations::States_SaveSlot9,			nullptr, nullptr, false },
+	{ "States_LoadSlot0"			, Implementations::States_LoadSlot0,			nullptr, nullptr, false },
+	{ "States_LoadSlot1"			, Implementations::States_LoadSlot1,			nullptr, nullptr, false },
+	{ "States_LoadSlot2"			, Implementations::States_LoadSlot2,			nullptr, nullptr, false },
+	{ "States_LoadSlot3"			, Implementations::States_LoadSlot3,			nullptr, nullptr, false },
+	{ "States_LoadSlot4"			, Implementations::States_LoadSlot4,			nullptr, nullptr, false },
+	{ "States_LoadSlot5"			, Implementations::States_LoadSlot5,			nullptr, nullptr, false },
+	{ "States_LoadSlot6"			, Implementations::States_LoadSlot6,			nullptr, nullptr, false },
+	{ "States_LoadSlot7"			, Implementations::States_LoadSlot7,			nullptr, nullptr, false },
+	{ "States_LoadSlot8"			, Implementations::States_LoadSlot8,			nullptr, nullptr, false },
+	{ "States_LoadSlot9"			, Implementations::States_LoadSlot9,			nullptr, nullptr, false },
 #endif
 	// Command Declarations terminator:
 	// (must always be last in list!!)
-	{ NULL }
+	{ nullptr }
 };
 
 void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *searchfor )
@@ -833,13 +833,13 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 	}
 	// End of overrides section
 
-	const GlobalCommandDescriptor* result = NULL;
+	const GlobalCommandDescriptor* result = nullptr;
 
 	std::unordered_map<int, const GlobalCommandDescriptor*>::const_iterator iter(find(acode.val32));
 	if (iter != end())
 		result = iter->second;
 
-	if( result != NULL )
+	if( result != nullptr )
 	{
 		Console.Warning(
 			L"Kbd Accelerator '%s' is mapped multiple times.\n"
@@ -853,7 +853,7 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 	if (acceleratorIter != wxGetApp().GlobalCommands->end())
 		result = acceleratorIter->second;
 
-	if( result == NULL )
+	if( result == nullptr )
 	{
 		Console.Warning( L"Kbd Accelerator '%s' is mapped to unknown command '%s'",
 			WX_STR(acode.ToString()), WX_STR(fromUTF8( searchfor ))
@@ -902,7 +902,7 @@ void Pcsx2App::BuildCommandHash()
 	if( !GlobalCommands ) GlobalCommands = std::unique_ptr<CommandDictionary>(new CommandDictionary);
 
 	const GlobalCommandDescriptor* curcmd = CommandDeclarations;
-	while( curcmd->Invoke != NULL )
+	while( curcmd->Invoke != nullptr )
 	{
 		(*GlobalCommands)[curcmd->Id] = curcmd;
 		curcmd++;

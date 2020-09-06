@@ -250,7 +250,7 @@ size_t VirtualMemoryReserve::GetSize(size_t requestedSize)
 //
 void *VirtualMemoryReserve::Assign(VirtualMemoryManagerPtr allocator, void * baseptr, size_t size)
 {
-    if (!pxAssertDev(m_baseptr == NULL, "(VirtualMemoryReserve) Invalid object state; object has already been reserved."))
+    if (!pxAssertDev(m_baseptr == nullptr, "(VirtualMemoryReserve) Invalid object state; object has already been reserved."))
         return m_baseptr;
 
     if (!size)

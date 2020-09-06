@@ -27,7 +27,7 @@ wxDEFINE_EVENT(pxEvt_ThreadedTaskComplete, wxCommandEvent);
 wxIMPLEMENT_DYNAMIC_CLASS(WaitForTaskDialog, wxDialogWithHelpers);
 
 Threading::WaitForTaskDialog::WaitForTaskDialog(const wxString &title, const wxString &heading)
-    : wxDialogWithHelpers(NULL, _("Waiting for tasks..."))
+    : wxDialogWithHelpers(nullptr, _("Waiting for tasks..."))
 //, m_Timer(this)
 {
     SetMinWidth(300);

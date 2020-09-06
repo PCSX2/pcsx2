@@ -170,8 +170,8 @@ struct __aligned16 VURegs {
 
 	VURegs()
 	{
-		Mem = NULL;
-		Micro = NULL;
+		Mem = nullptr;
+		Micro = nullptr;
 	}
 
 	bool IsVU1() const;

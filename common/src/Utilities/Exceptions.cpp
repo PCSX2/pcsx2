@@ -23,7 +23,7 @@
 #endif
 
 // for lack of a better place...
-Fnptr_OutOfMemory pxDoOutOfMemory = NULL;
+Fnptr_OutOfMemory pxDoOutOfMemory = nullptr;
 
 // ------------------------------------------------------------------------
 // Force DevAssert to *not* inline for devel builds (allows using breakpoints to trap assertions,
@@ -50,15 +50,15 @@ wxString DiagnosticOrigin::ToString(const wxChar *msg) const
 
     message.Write(L"%ls(%d) : assertion failed:\n", srcfile, line);
 
-    if (function != NULL)
+    if (function != nullptr)
         message.Write("    Function:  %s\n", function);
 
     message.Write(L"    Thread:    %s\n", WX_STR(Threading::pxGetCurrentThreadName()));
 
-    if (condition != NULL)
+    if (condition != nullptr)
         message.Write(L"    Condition: %ls\n", condition);
 
-    if (msg != NULL)
+    if (msg != nullptr)
         message.Write(L"    Message:   %ls\n", msg);
 
     return message;
@@ -112,7 +112,7 @@ DEVASSERT_INLINE void pxOnAssert(const DiagnosticOrigin &origin, const wxString 
 
     bool trapit;
 
-    if (pxDoAssert == NULL) {
+    if (pxDoAssert == nullptr) {
         // Note: Format uses MSVC's syntax for output window hotlinking.
         trapit = pxAssertImpl_LogIt(origin, msg.wc_str());
     } else {

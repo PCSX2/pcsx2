@@ -54,13 +54,13 @@ BOOL CALLBACK PatchBDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 				case IDC_NEWPATCH:
 
 					i = Save_Patch_Proc(fileName);
-					if ( i == FALSE || (fp = fopen(fileName,"a")) == NULL ) {
-						MessageBox(hW,(LPCTSTR)"Couldn't create the file.",NULL,(UINT)MB_ICONERROR);
+					if ( i == FALSE || (fp = fopen(fileName,"a")) == nullptr ) {
+						MessageBox(hW,(LPCTSTR)"Couldn't create the file.",nullptr,(UINT)MB_ICONERROR);
 						return FALSE;
 					}
 
 					fclose(fp);
-					i = MessageBox(hW,(LPCTSTR)"File created sucessfully.\nClear textbox?",NULL,(UINT)(MB_YESNO|MB_ICONQUESTION));
+					i = MessageBox(hW,(LPCTSTR)"File created sucessfully.\nClear textbox?",nullptr,(UINT)(MB_YESNO|MB_ICONQUESTION));
 					if (i==IDYES) SetDlgItemText(hW, IDC_PATCHTEXT, (LPCTSTR)"");
 
 					return TRUE;
@@ -68,15 +68,15 @@ BOOL CALLBACK PatchBDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 				case IDC_SAVEPATCH:
 
 					i = Save_Patch_Proc(fileName);
-					if ( i == FALSE || (fp = fopen(fileName,"w")) == NULL ) {
-						MessageBox(hW,(LPCTSTR)"Couldn't save the file.",NULL,(UINT)MB_ICONERROR);
+					if ( i == FALSE || (fp = fopen(fileName,"w")) == nullptr ) {
+						MessageBox(hW,(LPCTSTR)"Couldn't save the file.",nullptr,(UINT)MB_ICONERROR);
 						return FALSE;
 					}
 
-					tmpi = SendDlgItemMessage(hW, IDC_PATCHTEXT, EM_GETLINECOUNT, (WPARAM)NULL, (LPARAM)NULL);
+					tmpi = SendDlgItemMessage(hW, IDC_PATCHTEXT, EM_GETLINECOUNT, (WPARAM)nullptr, (LPARAM)nullptr);
 					i=0;
 					for (;tmpi>=0;tmpi--)
-						i += SendDlgItemMessage(hW, IDC_PATCHTEXT, EM_LINELENGTH, (WPARAM)tmpi, (LPARAM)NULL);
+						i += SendDlgItemMessage(hW, IDC_PATCHTEXT, EM_LINELENGTH, (WPARAM)tmpi, (LPARAM)nullptr);
 
 					tmpStr = (char *) malloc(i);
 					sprintf(tmpStr,"");
@@ -93,7 +93,7 @@ BOOL CALLBACK PatchBDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					fclose(fp);
 					free(tmpStr);
 
-					MessageBox(hW,(LPCTSTR)"File saved sucessfully.",NULL,(UINT)MB_ICONINFORMATION);
+					MessageBox(hW,(LPCTSTR)"File saved sucessfully.",nullptr,(UINT)MB_ICONINFORMATION);
 
 					return TRUE;
 
@@ -149,7 +149,7 @@ BOOL CALLBACK PatchBDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 					//search
 					tmpi = SendDlgItemMessage(hW, IDC_PATCHNAMELIST, LB_FINDSTRING, (WPARAM)-1, (LPARAM)fileName);
 					//select match item
-					SendDlgItemMessage(hW, IDC_PATCHNAMELIST, LB_SETCURSEL, (WPARAM)tmpi, (LPARAM)NULL);
+					SendDlgItemMessage(hW, IDC_PATCHNAMELIST, LB_SETCURSEL, (WPARAM)tmpi, (LPARAM)nullptr);
 
 					return TRUE;
 			}
@@ -171,8 +171,8 @@ void ListPatches (HWND hW) {
 	FILE *fp;
 
 	//clear listbox's
-	SendDlgItemMessage(hW, IDC_PATCHCRCLIST, (UINT)LB_RESETCONTENT, (WPARAM)NULL, (LPARAM)NULL);
-	SendDlgItemMessage(hW, IDC_PATCHNAMELIST, (UINT)LB_RESETCONTENT, (WPARAM)NULL, (LPARAM)NULL);
+	SendDlgItemMessage(hW, IDC_PATCHCRCLIST, (UINT)LB_RESETCONTENT, (WPARAM)nullptr, (LPARAM)nullptr);
+	SendDlgItemMessage(hW, IDC_PATCHNAMELIST, (UINT)LB_RESETCONTENT, (WPARAM)nullptr, (LPARAM)nullptr);
 
 	//sprintf(tmpStr,"%s*.pnach", Config.PatchDir)
 	sprintf(tmpStr, "patches\\*.pnach");
@@ -185,13 +185,13 @@ void ListPatches (HWND hW) {
 		sprintf(tmpStr,"%s", FindData.cFileName);
 
 		//add file name to crc list
-		SendDlgItemMessage(hW, IDC_PATCHCRCLIST, (UINT) LB_ADDSTRING, (WPARAM)NULL, (LPARAM)tmpStr);
+		SendDlgItemMessage(hW, IDC_PATCHCRCLIST, (UINT) LB_ADDSTRING, (WPARAM)nullptr, (LPARAM)tmpStr);
 
 		//sprintf(tmpStr,"%s%s", Config.PatchDir, FindData.cFileName)
 		sprintf(tmpStr,"patches\\%s", FindData.cFileName);
 
 		fp = fopen(tmpStr, "r");
-		if (fp == NULL) break;
+		if (fp == nullptr) break;
 
 		fseek(fp, 0, SEEK_END);
 		filesize = ftell(fp);
@@ -234,7 +234,7 @@ void ListPatches (HWND hW) {
 		sprintf(tmpStr,"%s (%s)",tmpStr,FindData.cFileName);
 
 		//add game name to patch name list
-		SendDlgItemMessage(hW, IDC_PATCHNAMELIST, (UINT) LB_ADDSTRING, (WPARAM)NULL, (LPARAM)tmpStr);
+		SendDlgItemMessage(hW, IDC_PATCHNAMELIST, (UINT) LB_ADDSTRING, (WPARAM)nullptr, (LPARAM)tmpStr);
 
 		totalPatch++;
 		sprintf(fileData,"");
@@ -258,7 +258,7 @@ int ReadPatch (HWND hW, char fileName[1024]) {
 	sprintf(filePath,"patches\\%s", fileName);
 
 	fp = fopen(filePath, "r");
-	if (fp == NULL) return FALSE;
+	if (fp == nullptr) return FALSE;
 
 	fseek(fp, 0, SEEK_END);
 	filesize = ftell(fp);
@@ -323,15 +323,15 @@ BOOL Save_Patch_Proc( char * filename )  {
 	ofn.lStructSize			= sizeof( OPENFILENAME );
 	ofn.hwndOwner			= gApp.hWnd;
 	ofn.lpstrFilter			= filter;
-	ofn.lpstrCustomFilter	= NULL;
+	ofn.lpstrCustomFilter	= nullptr;
 	ofn.nMaxCustFilter		= 0;
 	ofn.nFilterIndex		= 1;
 	ofn.lpstrFile			= szFileName;
 	ofn.nMaxFile			= 256;
-	ofn.lpstrInitialDir		= NULL;
+	ofn.lpstrInitialDir		= nullptr;
 	ofn.lpstrFileTitle		= szFileTitle;
 	ofn.nMaxFileTitle		= 256;
-	ofn.lpstrTitle			= NULL;
+	ofn.lpstrTitle			= nullptr;
 	ofn.lpstrDefExt			= "TXT";
 	ofn.Flags				= OFN_EXPLORER | OFN_LONGNAMES | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST;
 

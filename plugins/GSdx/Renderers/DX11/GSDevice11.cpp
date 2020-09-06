@@ -288,7 +288,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_merge.cb);
+	hr = m_dev->CreateBuffer(&bd, nullptr, &m_merge.cb);
 
 	theApp.LoadResource(IDR_MERGE_FX, shader);
 	for(size_t i = 0; i < countof(m_merge.ps); i++)
@@ -317,7 +317,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_interlace.cb);
+	hr = m_dev->CreateBuffer(&bd, nullptr, &m_interlace.cb);
 
 	theApp.LoadResource(IDR_INTERLACE_FX, shader);
 	for(size_t i = 0; i < countof(m_interlace.ps); i++)
@@ -339,7 +339,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_shadeboost.cb);
+	hr = m_dev->CreateBuffer(&bd, nullptr, &m_shadeboost.cb);
 
 	theApp.LoadResource(IDR_SHADEBOOST_FX, shader);
 	CreateShader(shader, "shadeboost.fx", nullptr, "ps_main", sm_sboost.GetPtr(), &m_shadeboost.ps);
@@ -352,7 +352,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_shaderfx.cb);
+	hr = m_dev->CreateBuffer(&bd, nullptr, &m_shaderfx.cb);
 
 	// Fxaa
 
@@ -362,7 +362,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_fxaa.cb);
+	hr = m_dev->CreateBuffer(&bd, nullptr, &m_fxaa.cb);
 
 	//
 
@@ -521,7 +521,7 @@ void GSDevice11::AfterDraw()
 		OutputDebugString(format("WARNING: Cleaning up copied texture on slot %i", i).c_str());
 #endif
 		Recycle(m_state.ps_sr_texture[i]);
-		PSSetShaderResource(i, NULL);
+		PSSetShaderResource(i, nullptr);
 	}
 }
 
@@ -620,11 +620,11 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 		break;
 	}
 
-	GSTexture11* t = NULL;
+	GSTexture11* t = nullptr;
 
 	CComPtr<ID3D11Texture2D> texture;
 
-	hr = m_dev->CreateTexture2D(&desc, NULL, &texture);
+	hr = m_dev->CreateTexture2D(&desc, nullptr, &texture);
 
 	if(SUCCEEDED(hr))
 	{
@@ -658,7 +658,7 @@ GSTexture* GSDevice11::FetchSurface(int type, int w, int h, int format)
 
 GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format, int ps_shader)
 {
-	GSTexture* dst = NULL;
+	GSTexture* dst = nullptr;
 
 	if(format == 0)
 	{
@@ -671,7 +671,7 @@ GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int
 	{
 		GSVector4 dRect(0, 0, w, h);
 
-		StretchRect(src, sRect, rt, dRect, m_convert.ps[ps_shader], NULL);
+		StretchRect(src, sRect, rt, dRect, m_convert.ps[ps_shader], nullptr);
 
 		dst = CreateOffscreen(w, h, format);
 
@@ -726,7 +726,7 @@ void GSDevice11::CloneTexture(GSTexture* src, GSTexture** dest)
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader, bool linear)
 {
-	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[shader], NULL, linear);
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[shader], nullptr, linear);
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, bool linear)
@@ -779,9 +779,9 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	OMSetBlendState(bs, 0);
 
 	if (draw_in_depth)
-		OMSetRenderTargets(NULL, dTex);
+		OMSetRenderTargets(nullptr, dTex);
 	else
-		OMSetRenderTargets(dTex, NULL);
+		OMSetRenderTargets(dTex, nullptr);
 
 	// ia
 
@@ -806,18 +806,18 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	// vs
 
-	VSSetShader(m_convert.vs, NULL);
+	VSSetShader(m_convert.vs, nullptr);
 
 
 	// gs
 
-	GSSetShader(NULL, NULL);
+	GSSetShader(nullptr, nullptr);
 
 
 	// ps
 
-	PSSetShaderResources(sTex, NULL);
-	PSSetSamplerState(linear ? m_convert.ln : m_convert.pt, NULL);
+	PSSetShaderResources(sTex, nullptr);
+	PSSetSamplerState(linear ? m_convert.ln : m_convert.pt, nullptr);
 	PSSetShader(ps, ps_cb);
 
 	//
@@ -828,7 +828,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	EndScene();
 
-	PSSetShaderResources(NULL, NULL);
+	PSSetShaderResources(nullptr, nullptr);
 }
 
 void GSDevice11::RenderOsd(GSTexture* dt)
@@ -838,7 +838,7 @@ void GSDevice11::RenderOsd(GSTexture* dt)
 	// om
 	OMSetDepthStencilState(m_convert.dss, 0);
 	OMSetBlendState(m_merge.bs, 0);
-	OMSetRenderTargets(dt, NULL);
+	OMSetRenderTargets(dt, nullptr);
 
 	if(m_osd.m_texture_dirty) {
 		m_osd.upload_texture_atlas(m_font.get());
@@ -846,8 +846,8 @@ void GSDevice11::RenderOsd(GSTexture* dt)
 
 	// ps
 	PSSetShaderResource(0, m_font.get());
-	PSSetSamplerState(m_convert.pt, NULL);
-	PSSetShader(m_convert.ps[ShaderConvert_OSD], NULL);
+	PSSetSamplerState(m_convert.pt, nullptr);
+	PSSetShader(m_convert.ps[ShaderConvert_OSD], nullptr);
 
 	// ia
 	IASetInputLayout(m_convert.il);
@@ -855,17 +855,17 @@ void GSDevice11::RenderOsd(GSTexture* dt)
 
 	// Note scaling could also be done in shader (require gl3/dx10)
 	size_t count = m_osd.Size();
-	void* dst = NULL;
+	void* dst = nullptr;
 
 	IAMapVertexBuffer(&dst, sizeof(GSVertexPT1), count);
 	count = m_osd.GeneratePrimitives((GSVertexPT1*)dst, count);
 	IAUnmapVertexBuffer();
 
 	// vs
-	VSSetShader(m_convert.vs, NULL);
+	VSSetShader(m_convert.vs, nullptr);
 
 	// gs
-	GSSetShader(NULL, NULL);
+	GSSetShader(nullptr, nullptr);
 
 	DrawPrimitive();
 
@@ -881,12 +881,12 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 
 	if(sTex[1] && !slbg)
 	{
-		StretchRect(sTex[1], sRect[1], dTex, dRect[1], m_merge.ps[0], NULL, true);
+		StretchRect(sTex[1], sRect[1], dTex, dRect[1], m_merge.ps[0], nullptr, true);
 	}
 
 	if(sTex[0])
 	{
-		m_ctx->UpdateSubresource(m_merge.cb, 0, NULL, &c, 0, 0);
+		m_ctx->UpdateSubresource(m_merge.cb, 0, nullptr, &c, 0, 0);
 
 		StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge.ps[mmod ? 1 : 0], m_merge.cb, m_merge.bs, true);
 	}
@@ -904,7 +904,7 @@ void GSDevice11::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool 
 	cb.ZrH = GSVector2(0, 1.0f / s.y);
 	cb.hH = s.y / 2;
 
-	m_ctx->UpdateSubresource(m_interlace.cb, 0, NULL, &cb, 0, 0);
+	m_ctx->UpdateSubresource(m_interlace.cb, 0, nullptr, &cb, 0, 0);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader], m_interlace.cb, linear);
 }
@@ -960,7 +960,7 @@ void GSDevice11::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 	cb.rcpFrame = GSVector4(1.0f / (float)s.x, 1.0f / (float)s.y, 0.0f, 0.0f);
 	cb.rcpFrameOpt = GSVector4::zero();
 
-	m_ctx->UpdateSubresource(m_shaderfx.cb, 0, NULL, &cb, 0, 0);
+	m_ctx->UpdateSubresource(m_shaderfx.cb, 0, nullptr, &cb, 0, 0);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_shaderfx.ps, m_shaderfx.cb, true);
 }
@@ -998,7 +998,7 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
 	cb.rcpFrameOpt = GSVector4::zero();
 
-	m_ctx->UpdateSubresource(m_fxaa.cb, 0, NULL, &cb, 0, 0);
+	m_ctx->UpdateSubresource(m_fxaa.cb, 0, nullptr, &cb, 0, 0);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_fxaa.ps, m_fxaa.cb, true);
 
@@ -1018,7 +1018,7 @@ void GSDevice11::DoShadeBoost(GSTexture* sTex, GSTexture* dTex)
 	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
 	cb.rcpFrameOpt = GSVector4::zero();
 
-	m_ctx->UpdateSubresource(m_shadeboost.cb, 0, NULL, &cb, 0, 0);
+	m_ctx->UpdateSubresource(m_shadeboost.cb, 0, nullptr, &cb, 0, 0);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps, m_shadeboost.cb, true);
 }
@@ -1035,7 +1035,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 
 	OMSetDepthStencilState(m_date.dss, 1);
 	OMSetBlendState(m_date.bs, 0);
-	OMSetRenderTargets(NULL, ds);
+	OMSetRenderTargets(nullptr, ds);
 
 	// ia
 
@@ -1045,16 +1045,16 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 
 	// vs
 
-	VSSetShader(m_convert.vs, NULL);
+	VSSetShader(m_convert.vs, nullptr);
 
 	// gs
 
-	GSSetShader(NULL, NULL);
+	GSSetShader(nullptr, nullptr);
 
 	// ps
-	PSSetShaderResources(rt, NULL);
-	PSSetSamplerState(m_convert.pt, NULL);
-	PSSetShader(m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0], NULL);
+	PSSetShaderResources(rt, nullptr);
+	PSSetSamplerState(m_convert.pt, nullptr);
+	PSSetShader(m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0], nullptr);
 
 	//
 
@@ -1067,7 +1067,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 
 void GSDevice11::IASetVertexBuffer(const void* vertex, size_t stride, size_t count)
 {
-	void* ptr = NULL;
+	void* ptr = nullptr;
 
 	if(IAMapVertexBuffer(&ptr, stride, count))
 	{
@@ -1084,13 +1084,13 @@ bool GSDevice11::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
 	if(count * stride > m_vertex.limit * m_vertex.stride)
 	{
 		m_vb_old = m_vb;
-		m_vb = NULL;
+		m_vb = nullptr;
 
 		m_vertex.start = 0;
 		m_vertex.limit = std::max<int>(count * 3 / 2, 11000);
 	}
 
-	if(m_vb == NULL)
+	if(m_vb == nullptr)
 	{
 		D3D11_BUFFER_DESC bd;
 
@@ -1103,7 +1103,7 @@ bool GSDevice11::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
 
 		HRESULT hr;
 
-		hr = m_dev->CreateBuffer(&bd, NULL, &m_vb);
+		hr = m_dev->CreateBuffer(&bd, nullptr, &m_vb);
 
 		if(FAILED(hr)) return false;
 	}
@@ -1160,13 +1160,13 @@ void GSDevice11::IASetIndexBuffer(const void* index, size_t count)
 	if(count > m_index.limit)
 	{
 		m_ib_old = m_ib;
-		m_ib = NULL;
+		m_ib = nullptr;
 
 		m_index.start = 0;
 		m_index.limit = std::max<int>(count * 3 / 2, 11000);
 	}
 
-	if(m_ib == NULL)
+	if(m_ib == nullptr)
 	{
 		D3D11_BUFFER_DESC bd;
 
@@ -1179,7 +1179,7 @@ void GSDevice11::IASetIndexBuffer(const void* index, size_t count)
 
 		HRESULT hr;
 
-		hr = m_dev->CreateBuffer(&bd, NULL, &m_ib);
+		hr = m_dev->CreateBuffer(&bd, nullptr, &m_ib);
 
 		if(FAILED(hr)) return;
 	}
@@ -1243,7 +1243,7 @@ void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 	{
 		m_state.vs = vs;
 
-		m_ctx->VSSetShader(vs, NULL, 0);
+		m_ctx->VSSetShader(vs, nullptr, 0);
 	}
 
 	if(m_state.vs_cb != vs_cb)
@@ -1260,7 +1260,7 @@ void GSDevice11::GSSetShader(ID3D11GeometryShader* gs, ID3D11Buffer* gs_cb)
 	{
 		m_state.gs = gs;
 
-		m_ctx->GSSetShader(gs, NULL, 0);
+		m_ctx->GSSetShader(gs, nullptr, 0);
 	}
 
 	if (m_state.gs_cb != gs_cb)
@@ -1278,13 +1278,13 @@ void GSDevice11::PSSetShaderResources(GSTexture* sr0, GSTexture* sr1)
 
 	for(size_t i = 2; i < m_state.ps_sr_views.size(); i++)
 	{
-		PSSetShaderResource(i, NULL);
+		PSSetShaderResource(i, nullptr);
 	}
 }
 
 void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 {
-	ID3D11ShaderResourceView* srv = NULL;
+	ID3D11ShaderResourceView* srv = nullptr;
 
 	if(sr) srv = *(GSTexture11*)sr;
 
@@ -1318,7 +1318,7 @@ void GSDevice11::PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb)
 	{
 		m_state.ps = ps;
 
-		m_ctx->PSSetShader(ps, NULL, 0);
+		m_ctx->PSSetShader(ps, nullptr, 0);
 	}
 
 	if(m_state.ps_cb != ps_cb)
@@ -1361,8 +1361,8 @@ void GSDevice11::OMSetBlendState(ID3D11BlendState* bs, float bf)
 
 void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor)
 {
-	ID3D11RenderTargetView* rtv = NULL;
-	ID3D11DepthStencilView* dsv = NULL;
+	ID3D11RenderTargetView* rtv = nullptr;
+	ID3D11DepthStencilView* dsv = nullptr;
 
 	if (!rt && !ds)
 		throw GSDXRecoverableError();
@@ -1437,7 +1437,7 @@ void GSDevice11::CreateShader(std::vector<char> source, const char* fn, ID3DIncl
 
 	CompileShader(source, fn, include, entry, macro, &shader, m_shader.vs);
 
-	hr = m_dev->CreateVertexShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, vs);
+	hr = m_dev->CreateVertexShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), nullptr, vs);
 
 	if(FAILED(hr))
 	{
@@ -1460,7 +1460,7 @@ void GSDevice11::CreateShader(std::vector<char> source, const char* fn, ID3DIncl
 
 	CompileShader(source, fn, include, entry, macro, &shader, m_shader.gs);
 
-	hr = m_dev->CreateGeometryShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, gs);
+	hr = m_dev->CreateGeometryShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), nullptr, gs);
 
 	if(FAILED(hr))
 	{
@@ -1476,7 +1476,7 @@ void GSDevice11::CreateShader(std::vector<char> source, const char* fn, ID3DIncl
 
 	CompileShader(source, fn, include, entry, macro, &shader, m_shader.ps);
 
-	hr = m_dev->CreatePixelShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, ps);
+	hr = m_dev->CreatePixelShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), nullptr, ps);
 
 	if(FAILED(hr))
 	{

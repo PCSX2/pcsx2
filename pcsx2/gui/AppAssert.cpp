@@ -31,7 +31,7 @@ protected:
 public:
 	StackDump( const FnChar_t* src_function_name )
 	{
-		if( src_function_name != NULL )
+		if( src_function_name != nullptr )
 			m_srcFuncName = fromUTF8(src_function_name);
 
 		m_ignoreDone	= false;
@@ -137,9 +137,9 @@ bool AppDoAssert( const DiagnosticOrigin& origin, const wxChar *msg )
 	Console.WriteLn( L"%s", WX_STR(trace) );
 
 	wxString windowmsg( L"Assertion failed: " );
-	if( msg != NULL )
+	if( msg != nullptr )
 		windowmsg += msg;
-	else if( origin.condition != NULL )
+	else if( origin.condition != nullptr )
 		windowmsg += origin.condition;
 
 	int retval = Msgbox::Assertion( windowmsg, dbgmsg + L"\nStacktrace:\n" + trace );

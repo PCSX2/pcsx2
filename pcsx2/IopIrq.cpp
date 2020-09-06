@@ -20,7 +20,7 @@ using namespace R3000A;
 
 void dev9Interrupt()
 {
-	if ((dev9Handler != NULL) && (dev9Handler() != 1)) return;
+	if ((dev9Handler != nullptr) && (dev9Handler() != 1)) return;
 
 	iopIntcIrq(13);
 }
@@ -32,7 +32,7 @@ void dev9Irq(int cycles)
 
 void usbInterrupt()
 {
-	if (usbHandler != NULL && (usbHandler() != 1)) return;
+	if (usbHandler != nullptr && (usbHandler() != 1)) return;
 
 	iopIntcIrq(22);
 }

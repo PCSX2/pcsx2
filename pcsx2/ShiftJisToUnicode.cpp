@@ -798,22 +798,22 @@ static const wchar_t  TwoBytes_ea [256] = {
 
 
 static const wchar_t* TwoBytes[256] = {
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
-	NULL,       TwoBytes_81,TwoBytes_82,TwoBytes_83,TwoBytes_84,NULL,       NULL,       NULL,       TwoBytes_88,TwoBytes_89,TwoBytes_8a,TwoBytes_8b,TwoBytes_8c,TwoBytes_8d,TwoBytes_8e,TwoBytes_8f,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	nullptr,       TwoBytes_81,TwoBytes_82,TwoBytes_83,TwoBytes_84,nullptr,       nullptr,       nullptr,       TwoBytes_88,TwoBytes_89,TwoBytes_8a,TwoBytes_8b,TwoBytes_8c,TwoBytes_8d,TwoBytes_8e,TwoBytes_8f,
 	TwoBytes_90,TwoBytes_91,TwoBytes_92,TwoBytes_93,TwoBytes_94,TwoBytes_95,TwoBytes_96,TwoBytes_97,TwoBytes_98,TwoBytes_99,TwoBytes_9a,TwoBytes_9b,TwoBytes_9c,TwoBytes_9d,TwoBytes_9e,TwoBytes_9f,
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
-	TwoBytes_e0,TwoBytes_e1,TwoBytes_e2,TwoBytes_e3,TwoBytes_e4,TwoBytes_e5,TwoBytes_e6,TwoBytes_e7,TwoBytes_e8,TwoBytes_e9,TwoBytes_ea,NULL,       NULL,       NULL,       NULL,       NULL,
-	NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,       NULL,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	TwoBytes_e0,TwoBytes_e1,TwoBytes_e2,TwoBytes_e3,TwoBytes_e4,TwoBytes_e5,TwoBytes_e6,TwoBytes_e7,TwoBytes_e8,TwoBytes_e9,TwoBytes_ea,nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
+	nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,       nullptr,
 };
 
 // requires two bytes on input (second CAN be 0), returns unicode mapping, assigns used bytes (1/2)
@@ -833,7 +833,7 @@ wchar_t ShiftJIS_ConvertChar(const u8* input, int& used)
 		if( NumBytes[FirstByte] == 0 )
 		{
 			// FIXME : Hackfixed a null pointer in FFX (during opening scenes).  It tries to
-			// print an 0xfc/0x0a combo, followed by a NULL.  Other IOP prints seem to have valid
+			// print an 0xfc/0x0a combo, followed by a nullptr.  Other IOP prints seem to have valid
 			// Shift-JIS encodings.  not sure what's going on yet, so this needs reviewed sometime
 			//   --air
 			used = 1; return (wchar_t)FirstByte;

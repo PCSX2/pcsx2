@@ -66,7 +66,7 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 bool GSTexture11::Map(GSMap& m, const GSVector4i* r, int layer)
 {
-	if(r != NULL)
+	if(r != nullptr)
 	{
 		// ASSERT(0); // not implemented
 		return false;
@@ -221,7 +221,7 @@ GSTexture11::operator ID3D11ShaderResourceView*()
 		}
 		else
 		{
-			m_dev->CreateShaderResourceView(m_texture, NULL, &m_srv);
+			m_dev->CreateShaderResourceView(m_texture, nullptr, &m_srv);
 		}
 	}
 
@@ -234,7 +234,7 @@ GSTexture11::operator ID3D11RenderTargetView*()
 
 	if(!m_rtv && m_dev && m_texture)
 	{
-		m_dev->CreateRenderTargetView(m_texture, NULL, &m_rtv);
+		m_dev->CreateRenderTargetView(m_texture, nullptr, &m_rtv);
 	}
 
 	return m_rtv;
@@ -255,7 +255,7 @@ GSTexture11::operator ID3D11DepthStencilView*()
 		}
 		else
 		{
-			m_dev->CreateDepthStencilView(m_texture, NULL, &m_dsv);
+			m_dev->CreateDepthStencilView(m_texture, nullptr, &m_dsv);
 		}
 	}
 

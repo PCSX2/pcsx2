@@ -40,7 +40,7 @@ _Adapter AdapterList[16];
 
 long sockOpen(char *Device) {
 	lpAdapter = PacketOpenAdapter(Device);
-	if (lpAdapter == NULL) return -1;
+	if (lpAdapter == nullptr) return -1;
 
 #ifdef DEV9_LOG
 	DEV9_LOG("PacketOpenAdapter %s: %p\n", Device, lpAdapter);
@@ -59,11 +59,11 @@ long sockOpen(char *Device) {
 		SysMessage("Warning: unable to set the read tiemout!");
 	}
 
-	if((lpRecvPacket = PacketAllocatePacket())==NULL){
+	if((lpRecvPacket = PacketAllocatePacket())==nullptr){
 		SysMessage("Error: failed to allocate the LPPACKET structure.");
 		return (-1);
 	}
-	if((lpSendPacket = PacketAllocatePacket())==NULL){
+	if((lpSendPacket = PacketAllocatePacket())==nullptr){
 		SysMessage("Error: failed to allocate the LPPACKET structure.");
 		return (-1);
 	}

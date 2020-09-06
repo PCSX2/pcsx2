@@ -939,7 +939,7 @@ void CtrlDisassemblyView::toggleBreakpoint(bool toggleEnabled)
 		{
 			// enable disabled breakpoints
 			CBreakPoints::ChangeBreakPoint(curAddress,true);
-		} else if (!toggleEnabled && CBreakPoints::GetBreakPointCondition(curAddress) != NULL)
+		} else if (!toggleEnabled && CBreakPoints::GetBreakPointCondition(curAddress) != nullptr)
 		{
 			// don't just delete a breakpoint with a custom condition
 			CBreakPoints::RemoveBreakPoint(curAddress);

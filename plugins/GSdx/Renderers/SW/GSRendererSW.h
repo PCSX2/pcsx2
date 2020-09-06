@@ -46,7 +46,7 @@ class GSRendererSW : public GSRenderer
 		int m_fpsm;
 		int m_zpsm;
 		bool m_using_pages;
-		TextureLevel m_tex[7 + 1]; // NULL terminated
+		TextureLevel m_tex[7 + 1]; // nullptr terminated
 		enum {SyncNone, SyncSource, SyncTarget} m_syncpoint;
 
 	public:

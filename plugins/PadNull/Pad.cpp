@@ -60,7 +60,7 @@ void __Log(const char *fmt, ...)
 {
     va_list list;
 
-    if (padLog == NULL)
+    if (padLog == nullptr)
         return;
     va_start(list, fmt);
     vfprintf(padLog, fmt, list);
@@ -73,7 +73,7 @@ void __LogToConsole(const char *fmt, ...)
 
     va_start(list, fmt);
 
-    if (padLog != NULL)
+    if (padLog != nullptr)
         vfprintf(padLog, fmt, list);
 
     printf("PadNull: ");
@@ -84,7 +84,7 @@ void __LogToConsole(const char *fmt, ...)
 EXPORT_C_(void)
 PADsetSettingsDir(const char *dir)
 {
-    s_strIniPath = (dir == NULL) ? "inis" : dir;
+    s_strIniPath = (dir == nullptr) ? "inis" : dir;
 }
 
 bool OpenLog()
@@ -97,8 +97,8 @@ bool OpenLog()
     const std::string LogFile(s_strLogPath + "/padnull.log");
 
     padLog = fopen(LogFile.c_str(), "w");
-    if (padLog != NULL)
-        setvbuf(padLog, NULL, _IONBF, 0);
+    if (padLog != nullptr)
+        setvbuf(padLog, nullptr, _IONBF, 0);
     else {
         fprintf(stderr, "Can't create log file %s\n", LogFile.c_str());
         result = false;
@@ -112,12 +112,12 @@ EXPORT_C_(void)
 PADsetLogDir(const char *dir)
 {
     // Get the path to the log directory.
-    s_strLogPath = (dir == NULL) ? "logs" : dir;
+    s_strLogPath = (dir == nullptr) ? "logs" : dir;
 
     // Reload the log file after updated the path
     if (padLog) {
         fclose(padLog);
-        padLog = NULL;
+        padLog = nullptr;
     }
     OpenLog();
 }
@@ -138,7 +138,7 @@ PADshutdown()
 #ifdef PAD_LOG
     if (padLog) {
         fclose(padLog);
-        padLog = NULL;
+        padLog = nullptr;
     }
 #endif
 }
@@ -157,7 +157,7 @@ PADclose()
     _PADClose();
 }
 
-// PADkeyEvent is called every vsync (return NULL if no event)
+// PADkeyEvent is called every vsync (return nullptr if no event)
 EXPORT_C_(keyEvent *)
 PADkeyEvent()
 {

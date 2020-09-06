@@ -52,9 +52,9 @@ ADMA Adma7;
 u32 MemAddr[2];
 u32 g_nSpuInit = 0;
 u16 interrupt = 0;
-s8 *spu2regs = NULL;
-u16 *spu2mem = NULL;
-u16 *pSpuIrq[2] = {NULL};
+s8 *spu2regs = nullptr;
+u16 *spu2mem = nullptr;
+u16 *pSpuIrq[2] = {nullptr};
 u32 dwEndChannel2[2] = {0}; // keeps track of what channels have ended
 u32 dwNoiseVal = 1;         // global noise generator
 
@@ -105,7 +105,7 @@ void __Log(const char *fmt, ...)
 {
     va_list list;
 
-    if (!conf.Log || spu2Log == NULL)
+    if (!conf.Log || spu2Log == nullptr)
         return;
 
     va_start(list, fmt);
@@ -116,7 +116,7 @@ void __Log(const char *fmt, ...)
 EXPORT_C_(void)
 SPU2setSettingsDir(const char *dir)
 {
-    s_strIniPath = (dir == NULL) ? "inis/" : dir;
+    s_strIniPath = (dir == nullptr) ? "inis/" : dir;
 }
 
 bool OpenLog()
@@ -129,8 +129,8 @@ bool OpenLog()
     const std::string LogFile(s_strLogPath + "/spu2null.log");
 
     spu2Log = fopen(LogFile.c_str(), "w");
-    if (spu2Log != NULL)
-        setvbuf(spu2Log, NULL, _IONBF, 0);
+    if (spu2Log != nullptr)
+        setvbuf(spu2Log, nullptr, _IONBF, 0);
     else {
         SysMessage("Can't create log file %s\n", LogFile.c_str());
         result = false;
@@ -145,12 +145,12 @@ EXPORT_C_(void)
 SPU2setLogDir(const char *dir)
 {
     // Get the path to the log directory.
-    s_strLogPath = (dir == NULL) ? "logs/" : dir;
+    s_strLogPath = (dir == nullptr) ? "logs/" : dir;
 
     // Reload the log file after updated the path
     if (spu2Log) {
         fclose(spu2Log);
-        spu2Log = NULL;
+        spu2Log = nullptr;
     }
     OpenLog();
 }
@@ -161,14 +161,14 @@ SPU2init()
     OpenLog();
 
     spu2regs = (s8 *)malloc(0x10000);
-    if (spu2regs == NULL) {
+    if (spu2regs == nullptr) {
         SysMessage("Error allocating Memory\n");
         return -1;
     }
     memset(spu2regs, 0, 0x10000);
 
     spu2mem = (u16 *)malloc(0x200000); // 2Mb
-    if (spu2mem == NULL) {
+    if (spu2mem == nullptr) {
         SysMessage("Error allocating Memory\n");
         return -1;
     }
@@ -216,13 +216,13 @@ EXPORT_C_(void)
 SPU2shutdown()
 {
     free(spu2regs);
-    spu2regs = NULL;
+    spu2regs = nullptr;
     free(spu2mem);
-    spu2mem = NULL;
+    spu2mem = nullptr;
 #ifdef SPU2_LOG
     if (spu2Log) {
         fclose(spu2Log);
-        spu2Log = NULL;
+        spu2Log = nullptr;
     }
 #endif
 }
@@ -521,7 +521,7 @@ void SPU2Worker()
                         // We play this block out first...
                         dwEndChannel2[ch / 24] |= (1 << (ch % 24));
                         //if(!(flags&2))                          // 1+2: do loop... otherwise: stop
-                        if (flags != 3 || pChannel->pLoop == NULL) { // PETE: if we don't check exactly for 3, loop hang ups will happen (DQ4, for example)
+                        if (flags != 3 || pChannel->pLoop == nullptr) { // PETE: if we don't check exactly for 3, loop hang ups will happen (DQ4, for example)
                                                                      // and checking if pLoop is set avoids crashes, yeah
                             start = (u8 *)-1;
                             pChannel->bStop = true;

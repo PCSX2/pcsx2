@@ -55,11 +55,11 @@ static wxString CfgFile(L"inis/SPU2-X.ini");
 
 void CfgSetSettingsDir(const char *dir)
 {
-    CfgFile = Path::Combine((dir == NULL) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2-X.ini");
+    CfgFile = Path::Combine((dir == nullptr) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2-X.ini");
 }
 
 
-/*| Config File Format: |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯*\
+/*| Config File Format: |ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*\
 +--+---------------------+------------------------+
 |												  |
 | Option=Value									  |
