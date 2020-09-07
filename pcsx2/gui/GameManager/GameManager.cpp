@@ -158,6 +158,8 @@ void GameManagerFrame::OnResize(wxSizeEvent& evt)
 {
 	if (!IsMaximized())
 		options.DisplaySize = GetSize();
+	if (savestateTab)
+		savestateTab->resizeSlotWidth(GetSize().GetWidth());
 	evt.Skip();
 }
 

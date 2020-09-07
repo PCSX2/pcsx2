@@ -95,7 +95,6 @@ void SavestateSlotPanel::initComponents()
 	else
 		bindClickEvents({this, collapsedLabel, collapsedPreview, expandedLabel, expandedTimestamp, expandedPreview});
 
-	// TODO - since i now require this...need to make resize events from the parent window update it
 	SetMaxSize(wxSize(options.DisplaySize.GetWidth(), -1));
 	// Display Correct Sizer
 	SetSizer(expanded ? expandedSizer : collapsedSizer, false);
@@ -119,14 +118,14 @@ void SavestateSlotPanel::initPreview(bool update)
 		{
 			img.Rescale(baseImageX, baseImageY, wxIMAGE_QUALITY_HIGH);
 			collapsedPreview->SetMinSize(img.GetSize());
-			collapsedPreview->SetBitmap(wxBitmap(img, wxBITMAP_TYPE_PNG));
+			collapsedPreview->SetBitmap(wxBitmap(img));
 		}
 		// Get the original file again so we are scaling from the original size
 		if (img.LoadFile(States_SlotImagePreviewPath(slot, backup)) && img.IsOk())
 		{
 			img.Rescale(baseImageX * expandedPreviewScaleFactor, baseImageY * expandedPreviewScaleFactor, wxIMAGE_QUALITY_HIGH);
 			expandedPreview->SetMinSize(img.GetSize());
-			expandedPreview->SetBitmap(wxBitmap(img, wxBITMAP_TYPE_PNG));
+			expandedPreview->SetBitmap(wxBitmap(img));
 		}
 	}
 }

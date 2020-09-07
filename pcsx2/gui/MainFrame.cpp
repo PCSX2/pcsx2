@@ -569,7 +569,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 #if defined(__unix__)
 	, m_MenuItem_Console_Stdio(*new wxMenuItem(&m_menuWindow, MenuId_Console_Stdio, _("&Console to Stdio"), wxEmptyString, wxITEM_CHECK))
 #endif
-	, m_menuItem_GameManager(*new wxMenuItem(&m_menuMisc, MenuId_GameManager, _("&Show Game Manager"), wxEmptyString, wxITEM_CHECK))
+	, m_menuItem_GameManager(*new wxMenuItem(&m_menuWindow, MenuId_GameManager, _("&Show Game Manager"), wxEmptyString, wxITEM_CHECK))
 {
 	m_RestartEmuOnDelete = false;
 

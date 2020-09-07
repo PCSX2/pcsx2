@@ -1008,6 +1008,7 @@
     </ClCompile>
     <ClCompile Include="..\..\gui\SaveslotPreview.cpp">
       <Filter>AppHost</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\gui\GameManager\GameManager.cpp">
       <Filter>AppHost\GameManager</Filter>
     </ClCompile>

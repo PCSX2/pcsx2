@@ -31,6 +31,7 @@ public:
 	virtual ~SavestateTab() = default;
 
 	void changeSelectedSlot(int slotNum);
+	void resizeSlotWidth(int newWidth);
 	void unhighlightSlots();
 	void refreshSlots();
 	void updateSlot(int slotNum, wxDateTime updatedAt, bool isEmpty, bool fullReload);

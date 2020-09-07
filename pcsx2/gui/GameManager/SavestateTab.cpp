@@ -39,7 +39,7 @@ SavestateTab::SavestateTab(wxWindow* parent, AppConfig::GameManagerOptions& opti
 	}
 
 	// TODO - I don't think the current UI handles the case where
-	// if files are manually deleted from the file-system
+	// if save-states are manually deleted from the file-system
 	// with this, we could handle that edge-case.
 	fsWatcher = new wxFileSystemWatcher(g_Conf->Folders.Savestates.GetFilename());
 	fsWatcher->Bind(wxEVT_FSWATCHER, &SavestateTab::SavestateFolderModified, this);
@@ -49,6 +49,16 @@ SavestateTab::SavestateTab(wxWindow* parent, AppConfig::GameManagerOptions& opti
 
 	refreshSlots();
 }
+
+void SavestateTab::resizeSlotWidth(int newWidth)
+{
+	for (SavestateSlotRow& slotRow : savestates)
+	{
+		slotRow.current->SetMaxSize(wxSize(newWidth, -1));
+		slotRow.backup->SetMaxSize(wxSize(newWidth, -1));
+	}
+}
+
 
 void SavestateTab::changeSelectedSlot(int slotNum)
 {
