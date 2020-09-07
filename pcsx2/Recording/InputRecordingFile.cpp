@@ -153,7 +153,6 @@ bool InputRecordingFile::OpenNew(const wxString path, bool fromSavestate)
 	else if (open(path, true))
 	{
 		savestate.fromSavestate = false;
-		sApp.SysExecute();
 		return true;
 	}
 	return false;
@@ -172,11 +171,7 @@ bool InputRecordingFile::ReadKeyBuffer(u8 &result, const uint &frame, const uint
 	}
 
 	long seek = getRecordingBlockSeekPoint(frame) + controllerInputBytes * port + bufIndex;
-	if (fseek(recordingFile, seek, SEEK_SET) != 0)
-	{
-		return false;
-	}
-	if (fread(&result, 1, 1, recordingFile) != 1)
+	if (fseek(recordingFile, seek, SEEK_SET) != 0 || fread(&result, 1, 1, recordingFile) != 1)
 	{
 		return false;
 	}
@@ -221,8 +216,7 @@ bool InputRecordingFile::WriteKeyBuffer(const uint &frame, const uint port, cons
 
 	long seek = getRecordingBlockSeekPoint(frame) + 18 * port + bufIndex;
 
-	if (fseek(recordingFile, seek, SEEK_SET) != 0
-		|| fwrite(&buf, 1, 1, recordingFile) != 1)
+	if (fseek(recordingFile, seek, SEEK_SET) != 0 || fwrite(&buf, 1, 1, recordingFile) != 1)
 	{
 		return false;
 	}

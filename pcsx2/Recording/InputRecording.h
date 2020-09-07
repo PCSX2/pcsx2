@@ -70,7 +70,7 @@ public:
 	void SavestateInitialized();
 
 	// Set the running frame counter for the input recording to an arbitrary value
-	void SetFrameCounter(u32 newFrameCounter);
+	void SetFrameCounter(u32 newGFrameCount);
 
 	// Store the starting internal PCSX2 g_FrameCount value
 	void SetStartingFrame(u32 newStartingFrame);
@@ -97,7 +97,8 @@ private:
 	InputRecordingFile inputRecordingData;
 	bool savestateInitializing = false;
 	u32 startingFrame = 0;
-	u32 frameCounter = 0;
+	s32 frameCounter = 0;
+	bool incrementUndo = false;
 	InputRecordingMode state = InputRecording::InputRecordingMode::NotActive;
 	
 
