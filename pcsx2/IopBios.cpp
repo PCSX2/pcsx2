@@ -257,6 +257,7 @@ namespace ioman {
 			IOManDir *dir;
 		};
 
+		constexpr filedesc(): type(FILE_FREE), file(nullptr) {}
 		operator bool() const { return type != FILE_FREE; }
 		operator IOManFile*() const { return type == FILE_FILE ? file : NULL; }
 		operator IOManDir*() const { return type == FILE_DIR ? dir : NULL; }
@@ -327,10 +328,6 @@ namespace ioman {
 	{
 		for (int i = 0; i < maxfds; i++)
 		{
-			// WARNING: the original IopBios code assumes that arrays are initialized at 0,
-			// which is very dumb but I don't feel like writing an initializer for the whole thing so 
-			// you'll just have to read my comment and fix it when something breaks. 
-			// Please don't do a git blame I'm not the cause of this madness
 			if (fds[i])
 				fds[i].close();
 		}
