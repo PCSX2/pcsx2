@@ -360,14 +360,10 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 		for(auto it = m_log.begin(); it != m_log.end();) {
 			// This is for the osd monitor location pr;
 			// Whenever the monitor osd is set to top left, move the logs to the top right
-			float x;
-			if (m_monitor_enabled && m_monitor_pos != GSOSD_POS::TOPLEFT) {
-				x = -1.0f + 8 * (2.0f / m_real_size.x);
-			}
-			else {
-			
-				x = 1.0f - 8 * (2.0f / m_real_size.x) - StringSize(it->msg);
-			}
+			float x = -1.0f + 8 * (2.0f / m_real_size.x);
+
+			if (!(m_monitor_enabled && m_monitor_pos != GSOSD_POS::TOPLEFT))
+				x -= StringSize(it->msg);
 
 			float y = 1 - ((m_size+2)*(it-m_log.begin()+1)) * (2.0f/m_real_size.y);
 
@@ -416,7 +412,7 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count) {
 		for(const auto &pair : m_monitor) {
 			if((pair.first.size() + pair.second.size()) * 6 > count - drawn) break;
 
-			float x, y;
+			float x = 0.0f, y = 0.0f;
 			/*
 				If you decide to update this, here are some tips to get you started, would've been helpful for me
 
