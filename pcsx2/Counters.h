@@ -115,6 +115,7 @@ struct SyncCounter
 //------------------------------------------------------------------
 #define MODE_VRENDER	0x0		//Set during the Render/Frame Scanlines
 #define MODE_VBLANK		0x1		//Set during the Blanking Scanlines
+#define MODE_GSBLANK	0x2		//Set during the Syncing Scanlines (Delayed GS CSR Swap)
 #define MODE_VSYNC		0x3		//Set during the Syncing Scanlines
 #define MODE_VBLANK1	0x0		//Set during the Blanking Scanlines (half-frame 1)
 #define MODE_VBLANK2	0x1		//Set during the Blanking Scanlines (half-frame 2)
