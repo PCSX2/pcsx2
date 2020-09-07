@@ -1152,7 +1152,23 @@ void Pcsx2App::SysExecute()
 void Pcsx2App::SysExecute( CDVD_SourceType cdvdsrc, const wxString& elf_override )
 {
 	SysExecutorThread.PostEvent( new SysExecEvent_Execute(cdvdsrc, elf_override) );
+#ifndef DISABLE_RECORDING
+	ResetRecordingCounter();
+#endif
 }
+
+#ifndef DISABLE_RECORDING
+// Sets the frame counter for a running input recording file to the proper displacement
+// from the recording's starting frame to the g_framecount of a fresh emulation boot/reboot
+// Simply: frameCounter = -startingFrame
+void Pcsx2App::ResetRecordingCounter()
+{
+	if (g_InputRecording.IsActive())
+	{
+			g_InputRecording.SetFrameCounter(0);
+	}
+}
+#endif
 
 // Returns true if there is a "valid" virtual machine state from the user's perspective.  This
 // means the user has started the emulator and not issued a full reset.

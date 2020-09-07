@@ -641,6 +641,10 @@ public:
 	bool OnCmdLineError( wxCmdLineParser& parser );
 	bool ParseOverrides( wxCmdLineParser& parser );
 
+#ifndef DISABLE_RECORDING
+	void ResetRecordingCounter();
+#endif
+
 #ifdef __WXDEBUG__
 	void OnAssertFailure( const wxChar *file, int line, const wxChar *func, const wxChar *cond, const wxChar *msg );
 #endif
