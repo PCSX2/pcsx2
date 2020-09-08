@@ -580,8 +580,7 @@ CRC::Game CRC::Lookup(uint32 crc)
 	{
 		std::string exclusions = theApp.GetConfigS("CrcHacksExclusions");
 		if (exclusions.length() != 0)
-			printf( "GSdx: CrcHacksExclusions: %08X\n", exclusions.c_str() );
-
+ 			printf( "GSdx: CrcHacksExclusions: %s\n", exclusions.c_str() ); 
 		int crcDups = 0;
 		for(size_t i = 0; i < countof(m_games); i++)
 		{
