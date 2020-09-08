@@ -48,9 +48,6 @@
     <ClInclude Include="CL\cl.h" />
     <ClInclude Include="CL\cl.hpp" />
     <ClInclude Include="CL\cl_d3d10.h" />
-    <ClInclude Include="CL\cl_d3d11.h" />
-    <ClInclude Include="CL\cl_d3d9.h" />
-    <ClInclude Include="CL\cl_egl.h" />
     <ClInclude Include="CL\cl_ext.h" />
     <ClInclude Include="CL\cl_gl.h" />
     <ClInclude Include="CL\cl_gl_ext.h" />
