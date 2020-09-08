@@ -160,7 +160,6 @@
 #undef max
 #if defined(USE_DX_INTEROP)
 #include <CL/cl_d3d10.h>
-#include <CL/cl_dx9_media_sharing.h>
 #endif
 #endif // _WIN32
 

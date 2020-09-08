@@ -24,15 +24,6 @@
     <ClInclude Include="CL\cl_d3d10.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CL\cl_d3d11.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CL\cl_d3d9.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CL\cl_egl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CL\cl_ext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
