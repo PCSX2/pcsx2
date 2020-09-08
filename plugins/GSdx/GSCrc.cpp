@@ -575,7 +575,7 @@ bool IsCrcExcluded(std::string exclusionList, uint32 crc)
 
 CRC::Game CRC::Lookup(uint32 crc)
 {
-	printf("GSdx Lookup CRC:%X\n", crc);
+	printf("GSdx Lookup CRC:%08X\n", crc);
 	if(m_map.empty())
 	{
 		std::string exclusions = theApp.GetConfigS("CrcHacksExclusions");
