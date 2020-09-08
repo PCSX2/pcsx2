@@ -113,15 +113,13 @@ SyncTab::SyncTab(wxWindow* parent)
 	m_sync_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_sync);
 
 	auto* adv_box = new wxStaticBoxSizer(wxVERTICAL, this, "Advanced");
-	auto* babble_box = new wxBoxSizer(wxVERTICAL);
 
-	auto* babble = new wxTextCtrl(this, wxID_ANY,
-								  "These are advanced configuration options for fine tuning time stretching behavior.\nLarger values are better for slowdown, while smaller values are better for speedup (more then 60 fps.).\nAll options are in microseconds.\n",
-								  wxDefaultPosition, wxSize(200, 100), wxTE_READONLY | wxTE_CENTRE | wxTE_MULTILINE);
-
-	babble_box->Add(babble, wxSizerFlags().Expand().Border(wxALL, 5).Centre());
-
-	adv_box->Add(babble_box, wxSizerFlags().Expand().Centre());
+	auto* babble_label = new wxStaticText(this, wxID_ANY, \
+	"For fine-tuning time stretching.\n"\
+	"Larger is better for slowdown, && smaller for speedup (60+ fps).\n"\
+	"All options in microseconds.",\
+	wxDefaultPosition, wxSize(200, 65), wxALIGN_CENTRE_HORIZONTAL);
+	adv_box->Add(babble_label, wxSizerFlags().Expand().Centre());
 
 	auto* soundtouch_grid = new wxFlexGridSizer(2, 10, 50);
 
@@ -342,7 +340,7 @@ void DebugTab::CallUpdate(wxCommandEvent& /*event*/)
 }
 
 Dialog::Dialog()
-	: wxDialog(nullptr, wxID_ANY, "SPU2-X Config", wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
+	: wxDialog(nullptr, wxID_ANY, "Spu2 Config", wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
 {
 	m_top_box = new wxBoxSizer(wxVERTICAL);
 	auto* module_box = new wxBoxSizer(wxVERTICAL);
