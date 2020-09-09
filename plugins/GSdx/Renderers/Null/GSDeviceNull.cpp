@@ -42,3 +42,6 @@ GSTexture* GSDeviceNull::CreateSurface(int type, int w, int h, int format)
 	return new GSTextureNull(type, w, h, format);
 }
 
+void GSDeviceNull::SwizzleColorDepth32Bpp(GSTexture* sTex, GSTexture* dTex, int w, int h) {
+}
+

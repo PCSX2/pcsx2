@@ -372,7 +372,7 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 				m_channel_shuffle = false;
 			}
 		}
-		else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt))
+		else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && (tex->m_32_bits_fmt == GSTextureCache::None32Bpp))
 		{
 			// So far 2 games hit this code path. Urban Chaos and Tales of Abyss
 			// UC: will copy depth to green channel

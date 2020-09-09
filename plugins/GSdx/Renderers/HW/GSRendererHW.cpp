@@ -1292,7 +1292,7 @@ void GSRendererHW::Draw()
 		//
 		// Both input and output are 16 bits and texture was initially 32 bits!
 		m_texture_shuffle = (GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 16) && (tex_psm.bpp == 16)
-			&& draw_sprite_tex && m_src->m_32_bits_fmt;
+			&& draw_sprite_tex && (m_src->m_32_bits_fmt != GSTextureCache::None32Bpp);
 
 		// Okami mustn't call this code
 		if (m_texture_shuffle && m_vertex.next < 3 && PRIM->FST && (m_context->FRAME.FBMSK == 0)) {
@@ -1331,7 +1331,9 @@ void GSRendererHW::Draw()
 		// Be sure texture shuffle detection is properly propagated
 		// Otherwise set or clear the flag (Code in texture cache only set the flag)
 		// Note: it is important to clear the flag when RT is used as a real 16 bits target.
-		rt->m_32_bits_fmt = m_texture_shuffle || (GSLocalMemory::m_psm[context->FRAME.PSM].bpp != 16);
+		if (!m_texture_shuffle && (GSLocalMemory::m_psm[context->FRAME.PSM].bpp == 16)) {
+			rt->m_32_bits_fmt = GSTextureCache::None32Bpp;
+		}
 	}
 
 	if(s_dump)

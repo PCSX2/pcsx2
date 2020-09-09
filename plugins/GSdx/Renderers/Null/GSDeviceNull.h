@@ -33,6 +33,8 @@ private:
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0) {}
 	uint16 ConvertBlendEnum(uint16 generic) { return 0xFFFF; }
 
+	void SwizzleColorDepth32Bpp(GSTexture* sTex, GSTexture* dTex, int w, int h);
+
 public:
 	GSDeviceNull() {}
 

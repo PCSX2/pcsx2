@@ -29,7 +29,8 @@ class GSTextureCache
 {
 public:
 	enum {RenderTarget, DepthStencil};
-
+	enum Format32Bpp {None32Bpp, Color32Bpp, Depth32Bpp};
+	
 	class Surface : public GSAlignedClass<32>
 	{
 	protected:
@@ -41,7 +42,20 @@ public:
 		GIFRegTEXA m_TEXA;
 		int m_age;
 		uint8* m_temp;
-		bool m_32_bits_fmt; // Allow to detect the casting of 32 bits as 16 bits texture
+		
+		// Used to detect a 32 bpp texture being cast to a 16 bpp texture for a texture shuffle then being cast back to 32 bpp (possibly multiple times).
+        // Because there a 2 incompatible groups of 32 bpp formats (color formats and depths formats) we must keep track of which group the texture is currently in
+		// in order to swizzle it if necessary.
+        // Example: The texture starts out as PSMZ32, is cast to PSMCT16 to do a texture shuffle, and is converted back to PSMCT32.
+		//          The last conversion requires a swizzle since PSMZ32 and PSMCT32 are incompatible.
+		// Possible values:
+		// None32Bpp  -> The original texture was not 32 bpp (or lost the status by being converted to a 4 or 8 bit format)
+		// Color32Bpp -> The original texture was a 32 bpp color texture (PSMCT32, PSMCT24, PSMT8H, PSMT4HL, PSMT4HH)
+		// Depth32Bpp -> The original texture was a 32 bpp depth texture (PSMZ32, PSMZ24)
+
+		// So far I have only seen examples of depth -> color conversion. The opposite case does not seem useful.
+		Format32Bpp m_32_bits_fmt;
+		
 		bool m_shared_texture;
 		uint32 m_end_block;  // Hint of the surface area.
 
@@ -223,6 +237,9 @@ protected:
 
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;
+
+	void PropagateFormat32Bpp(Format32Bpp old_fmt, const GSLocalMemory::psm_t& new_psm, Format32Bpp& new_fmt, bool& swizzle_32_bpp);
+	void SwizzleColorDepth32Bpp(Surface* surface, int w, int h);
 
 public:
 	GSTextureCache(GSRenderer* r);

@@ -220,6 +220,9 @@ public:
 
 	void StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true);
 
+	// Used to swizzle a 32 bpp depth texture to color texture. w, h are the pixel width/height of both sTex and dTex.
+	virtual void SwizzleColorDepth32Bpp(GSTexture* sTex, GSTexture* dTex, int w, int h) = 0;
+
 	virtual void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1) {}
 	virtual void PSSetShaderResource(int i, GSTexture* sRect) {}
 	virtual void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL) {}

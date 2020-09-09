@@ -489,6 +489,47 @@ bool GSTextureCache::ShallSearchTextureInsideRt()
 	return m_texture_inside_rt || (m_renderer->m_game.flags & CRC::Flags::TextureInsideRt);
 }
 
+
+// Used to determine the correct value of the m_32_bits_fmt field of a surface when it is cast to a new format. 
+// swizzle_32_bpp is set to true if we detect the casting of a 32 bpp depth texture to a 32 bpp color texture
+// so that the pixels can be properly swizzled with SwizzleColorDepth32Bpp.
+void GSTextureCache::PropagateFormat32Bpp(Format32Bpp old_32_bits_fmt, const GSLocalMemory::psm_t& new_psm,
+										  Format32Bpp& new_32_bits_fmt, bool& swizzle_32_bpp) {
+	swizzle_32_bpp = false; // By default no swizzle, only required in special case below.	
+	switch (new_psm.bpp) {
+	case 4:
+	case 8:
+		// Clear the 32 bpp format.
+		new_32_bits_fmt =  None32Bpp;
+		break;
+	case 16:
+		// Casting to 16 bpp so propagate the previous 32 bpp format (if there was one).
+		new_32_bits_fmt = old_32_bits_fmt;
+		break;
+	case 32:
+		// New texture is 32 bpp so set the format newly.
+		new_32_bits_fmt = new_psm.depth ? Depth32Bpp : Color32Bpp;
+
+		// If there was a previous 32 bpp format check if there is a conflict between the new and the old and swizzle if necessary.
+		if (old_32_bits_fmt != None32Bpp) {
+			if (new_32_bits_fmt != old_32_bits_fmt) {
+				swizzle_32_bpp = true;
+			}
+		}
+
+		break;
+	default: ASSERT(0); // Unreachable
+	}
+}
+
+// Used to swizzle a 32 bpp depth texture to a 32 bpp color texture.
+void GSTextureCache::SwizzleColorDepth32Bpp(Surface* surface, int w, int h) {
+	GSTexture* swizzled_tex = m_renderer->m_dev->CreateOffscreen(w, h);
+	m_renderer->m_dev->SwizzleColorDepth32Bpp(surface->m_texture, swizzled_tex, w, h);
+	m_renderer->m_dev->CopyRect(swizzled_tex, surface->m_texture, GSVector4i(0, 0, w, h));
+	m_renderer->m_dev->Recycle(swizzled_tex);				
+}
+
 GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int w, int h, int type, bool used, uint32 fbmask)
 {
 	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[TEX0.PSM];
@@ -506,7 +547,9 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			dst = t;
 
-			dst->m_32_bits_fmt |= (psm_s.bpp != 16);
+			if (psm_s.bpp == 32) {
+				dst->m_32_bits_fmt = psm_s.depth ? Depth32Bpp : Color32Bpp;
+			}
 			dst->m_TEX0 = TEX0;
 
 			break;
@@ -541,10 +584,12 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		if (dst_match) {
 			GSVector4 sRect(0, 0, 1, 1);
 			GSVector4 dRect(0, 0, w, h);
-
+		   
 			dst = CreateTarget(TEX0, w, h, type);
-			dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
 
+			bool swizzle_32_bpp = false; // unused intentionally
+			PropagateFormat32Bpp(dst_match->m_32_bits_fmt, psm_s, dst->m_32_bits_fmt, swizzle_32_bpp);
+			
 			int shader;
 			bool fmt_16_bits = (psm_s.bpp == 16 && GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].bpp == 16);
 			if (type == DepthStencil) {
@@ -554,6 +599,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 				GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
 				shader = (fmt_16_bits) ? ShaderConvert_FLOAT16_TO_RGB5A1 : ShaderConvert_FLOAT32_TO_RGBA8;
 			}
+			
 			m_renderer->m_dev->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
 		}
 	}
@@ -1174,7 +1220,7 @@ void GSTextureCache::IncAge()
 			// render target
 			if (t->m_age > 0) {
 				// GoW2 uses the effect at the start of the frame
-				t->m_32_bits_fmt = false;
+				t->m_32_bits_fmt = None32Bpp;
 			}
 
 			if(++t->m_age > maxage)
@@ -1276,9 +1322,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		}
 #endif
 
-		if (GSLocalMemory::m_psm[TEX0.PSM].bpp > 8) {
-			src->m_32_bits_fmt = dst->m_32_bits_fmt;
-		}
+		bool swizzle_32_bpp = false;
+		PropagateFormat32Bpp(dst->m_32_bits_fmt, psm, src->m_32_bits_fmt, swizzle_32_bpp);
 
 		// Keep a trace of origin of the texture
 		src->m_target = true;
@@ -1456,6 +1501,10 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			} else {
 				m_renderer->m_dev->CopyRect(sTex, dTex, GSVector4i(0, 0, w, h)); // <= likely wrong dstsize.x could be bigger than w
 			}
+
+			if (swizzle_32_bpp) {
+				SwizzleColorDepth32Bpp(src, w, h);
+			}			
 		}
 		else
 		{
@@ -1589,7 +1638,7 @@ GSTextureCache::Surface::Surface(GSRenderer* r, uint8* temp)
 	, m_texture(NULL)
 	, m_age(0)
 	, m_temp(temp)
-	, m_32_bits_fmt(false)
+	, m_32_bits_fmt(None32Bpp)
 	, m_shared_texture(false)
 	, m_end_block(0)
 {
@@ -1900,7 +1949,9 @@ GSTextureCache::Target::Target(GSRenderer* r, const GIFRegTEX0& TEX0, uint8* tem
 	, m_depth_supported(depth_supported)
 {
 	m_TEX0 = TEX0;
-	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].trbpp != 16);
+	if (GSLocalMemory::m_psm[TEX0.PSM].bpp == 32) {
+		m_32_bits_fmt = GSLocalMemory::m_psm[TEX0.PSM].depth ? Depth32Bpp : Color32Bpp;
+	}
 	m_dirty_alpha = GSLocalMemory::m_psm[TEX0.PSM].trbpp != 24;
 
 	m_valid = GSVector4i::zero();

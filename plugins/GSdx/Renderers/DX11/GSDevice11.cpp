@@ -831,6 +831,133 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	PSSetShaderResources(NULL, NULL);
 }
 
+// FIXME: UNTESTED
+void GSDevice11::SwizzleColorDepth32Bpp(GSTexture* sTex, GSTexture* dTex, int w, int h) {
+	ASSERT((w % 64 == 0) && (h % 32 == 0));
+	
+	const int num_pages_x = w / 64;
+	const int num_pages_y = h / 32;
+
+	// There are (num_pages_x * num_pages_y) pages in all. Each is divided into 4 quadrants. Each quadrant takes 2 triangles to swizzle. Each triangle is 3 vertices.
+	const int num_verts = num_pages_x * num_pages_y * 4 * 2 * 3;
+	GSVertexPT1 verts[64 * 64 * 4 * 2 * 3]; // This is enough for a 4096 x 2048 frame buffer
+	int curr_vert = 0;
+
+	// Imagine a page (64 px x 32 px) is divided into 4 equal quadrants of (32 px x 16 px) like this:
+	// (0,0) (1,0)
+	// (0,1) (1,1)
+	// In order to swizzle the 32 bpp depth to color format quadrants (0,0) and (1,1)  must be swapped
+	// and quadrants (1,0) and (0,1)  must be swapped (the quadrants that are diagonally opposite).
+	// This operation is self inverting so the same operation converts depth -> color and color -> depth.
+
+	for (int page_index_x = 0; page_index_x < num_pages_x; page_index_x++) {
+		for (int page_index_y = 0; page_index_y < num_pages_y; page_index_y++) {
+			const float page_x = page_index_x * 64.0f;
+			const float page_y = page_index_y * 32.0f;
+
+			for (int quadrant_index_x = 0; quadrant_index_x <= 1; quadrant_index_x++) {
+				for (int quadrant_index_y = 0; quadrant_index_y <= 1; quadrant_index_y++) {
+					const float x = page_x + 32.0f * quadrant_index_x; // quadrant top-left x coordinate
+					const float y = page_y + 16.0f * quadrant_index_y; // quadrant top-left y coordinate
+
+					const float ox = page_x + 32.0f * (1 - quadrant_index_x); // opposite quadrant top-left x coordinate
+					const float oy = page_y + 16.0f * (1 - quadrant_index_y); // opposite quadrant top-left y coordinate
+
+#define _GSVector4(x, y) GSVector4(x, y, 0.0f, 0.0f)
+// Normalize coordinates to [0, 1]
+#define NX1(x) ((x)/w)
+#define NY1(y) ((y)/h)
+// Normalize coordinates to [-1, 1] and flip y for DirectX
+#define NX2(x) (2*(x)/w - 1)
+#define NY2(y) (1 - 2*(y)/h)
+					// Top triangle of quadrant
+                    verts[curr_vert++] = { _GSVector4(NX2(x)        , NY2(y)),
+										    GSVector2(NX1(ox)       , NY1(oy)) };
+                    verts[curr_vert++] = { _GSVector4(NX2(x+32.0f)  , NY2(y)) ,
+										    GSVector2(NX1(ox+32.0f) , NY1(oy)) };
+                    verts[curr_vert++] = { _GSVector4(NX2(x)        , NY2(y+16.0f)) ,
+										    GSVector2(NX1(ox)       , NY1(oy+16.0f)) };
+
+                    // Bottom triangle of quadrant
+                    verts[curr_vert++] = { _GSVector4(NX2(x+32.0f)  , NY2(y)) ,
+										    GSVector2(NX1(ox+32.0f) , NY1(oy)) };
+                    verts[curr_vert++] = { _GSVector4(NX2(x+32.0f)  , NY2(y+16.0f)) ,
+										    GSVector2(NX1(ox+32.0f) , NY1(oy+16.0f)) };
+                    verts[curr_vert++] = { _GSVector4(NX2(x)        , NY2(y+16.0f)) ,
+										    GSVector2(NX1(ox)       , NY1(oy+16.0f)) };
+#undef _GSVector4
+#undef NX1
+#undef NY1					
+#undef NX2
+#undef NY2					
+				}
+			}
+		}
+	}
+	
+	ASSERT(curr_vert == num_verts);
+
+	// Below code taken from StretchRect
+	
+	// ************************************
+	// Init
+	// ************************************
+	
+	BeginScene();
+
+	// ************************************
+	// OM
+	// ************************************
+
+	OMSetDepthStencilState(m_convert.dss, 0);
+
+	OMSetRenderTargets(dTex, NULL);
+
+	OMSetBlendState(m_convert.bs, 0); // No blending
+
+	// ************************************
+	// IA
+	// ************************************
+	
+	IASetVertexBuffer(verts, sizeof(verts[0]), num_verts);
+	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// ***********************************
+	// VS
+	// ***********************************
+
+	VSSetShader(m_convert.vs, NULL);
+
+
+	// ***********************************
+	// GS
+	// ***********************************
+
+	GSSetShader(NULL, NULL);	
+
+	// ************************************
+	// PS
+	// ************************************
+
+	PSSetShaderResources(sTex, NULL);
+	PSSetSamplerState(m_convert.pt, NULL); // Point sample
+	PSSetShader(m_convert.ps[ShaderConvert_COPY], NULL);
+
+	// ************************************
+	// Draw
+	// ************************************
+
+	DrawPrimitive();	
+
+	// ************************************
+	// End
+	// ************************************
+
+	EndScene();
+
+	PSSetShaderResources(NULL, NULL);	
+}
+
 void GSDevice11::RenderOsd(GSTexture* dt)
 {
 	BeginScene();
