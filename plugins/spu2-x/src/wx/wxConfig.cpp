@@ -118,8 +118,10 @@ SyncTab::SyncTab(wxWindow* parent)
 	"For fine-tuning time stretching.\n"\
 	"Larger is better for slowdown, && smaller for speedup (60+ fps).\n"\
 	"All options in microseconds.",\
-	wxDefaultPosition, wxSize(200, 65), wxALIGN_CENTRE_HORIZONTAL);
-	adv_box->Add(babble_label, wxSizerFlags().Expand().Centre());
+	wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+	babble_label->Wrap(300);
+
+	adv_box->Add(babble_label, wxSizerFlags().Centre());
 
 	auto* soundtouch_grid = new wxFlexGridSizer(2, 10, 50);
 
