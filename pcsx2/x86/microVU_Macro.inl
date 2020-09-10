@@ -64,6 +64,16 @@ void endMacroOp(int mode) {
 		xMOV(ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL], gprF0);
 	}
 	microVU0.regAlloc->flushAll();
+
+	if (mode & 0x10) { // Update VU0 Status/Mac instances after flush to avoid corrupting anything
+		xMOVDZX(xmmT1, ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL]);
+		xSHUF.PS(xmmT1, xmmT1, 0);
+		xMOVAPS(ptr128[&microVU0.regs().micro_statusflags], xmmT1);
+
+		xMOVDZX(xmmT1, ptr32[&vu0Regs.VI[REG_MAC_FLAG].UL]);
+		xSHUF.PS(xmmT1, xmmT1, 0);
+		xMOVAPS(ptr128[&microVU0.regs().micro_macflags], xmmT1);
+	}
 	microVU0.cop2 = 0;
 }
 
