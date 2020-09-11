@@ -32,10 +32,6 @@ RecordingInputManager::RecordingInputManager()
 
 void RecordingInputManager::ControllerInterrupt(u8 & data, u8 & port, u16 & BufCount, u8 buf[])
 {
-	if (port >= 2)
-	{
-		return;
-	}
 
 	if (virtualPad[port])
 	{

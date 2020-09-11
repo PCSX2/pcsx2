@@ -41,8 +41,8 @@ public:
 	bool IsInterruptFrame();
 
 	void Stop();
-	void Create(wxString filename, bool fromSaveState, wxString authorName);
-	void Play(wxString filename, bool fromSaveState);
+	bool Create(wxString filename, bool fromSaveState, wxString authorName);
+	bool Play(wxString filename);
 
 private:
 	InputRecordingFile InputRecordingData;
@@ -55,5 +55,5 @@ private:
 
 extern InputRecording g_InputRecording;
 static InputRecordingFile& g_InputRecordingData = g_InputRecording.GetInputRecordingData();
-static InputRecordingHeader& g_InputRecordingHeader = g_InputRecording.GetInputRecordingData().GetHeader();
+static InputRecordingFileHeader& g_InputRecordingHeader = g_InputRecording.GetInputRecordingData().GetHeader();
 #endif

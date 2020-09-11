@@ -34,6 +34,7 @@
 #	include "Recording/InputRecording.h"
 #	include "Recording/RecordingControls.h"
 #	include "Recording/VirtualPad.h"
+#	include "Recording/RecordingControls.h"
 #endif
 
 
@@ -499,7 +500,7 @@ void MainEmuFrame::Menu_EnableWideScreenPatches_Click( wxCommandEvent& )
 }
 
 #ifndef DISABLE_RECORDING
-void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
+void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 {
 	bool checked = GetMenuBar()->IsChecked(MenuId_EnableInputRecording);
 	// Confirm with User
@@ -529,6 +530,9 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 	}
 	else
 	{
+		//Properly close any currently loaded recording file before disabling
+		if (g_InputRecording.GetModeState() != INPUT_RECORDING_MODE_NONE)
+			Menu_Recording_Stop_Click(event);
 		GetMenuBar()->Remove(TopLevelMenu_InputRecording);
 		// Always turn controller logs off, but never turn it on by default
 		SysConsole.controlInfo.Enabled = checked;
@@ -540,6 +544,8 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 				viewport->InitDefaultAccelerators();
 			}
 		}
+		if (g_RecordingControls.IsEmulationAndRecordingPaused())
+			g_RecordingControls.Unpause();
 	}
 
 	g_Conf->EmuOptions.EnableRecordingTools = checked;
@@ -868,49 +874,61 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent & eve
 #ifndef DISABLE_RECORDING
 void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 {
-	g_InputRecording.Stop();
-
+	const bool initiallyPaused = g_RecordingControls.IsEmulationAndRecordingPaused();
+	if (!initiallyPaused)
+		g_RecordingControls.Pause();
 	NewRecordingFrame* NewRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
 	if (NewRecordingFrame)
 	{
 		if (NewRecordingFrame->ShowModal() == wxID_CANCEL)
 		{
+			if (!initiallyPaused)
+				g_RecordingControls.Unpause();
 			return;
 		}
-		// From Current Frame
-		if (NewRecordingFrame->GetFrom() == 0)
+		if (!g_InputRecording.Create(NewRecordingFrame->GetFile(), !NewRecordingFrame->GetFrom(), NewRecordingFrame->GetAuthor()))
 		{
-			if (!CoreThread.IsOpen())
-			{
-				recordingConLog(L"[REC]: Game is not open, aborting new input recording.\n");
-				return;
-			}
-			g_InputRecording.Create(NewRecordingFrame->GetFile(), true, NewRecordingFrame->GetAuthor());
-		}
-		// From Power-On
-		else if (NewRecordingFrame->GetFrom() == 1)
-		{
-			g_InputRecording.Create(NewRecordingFrame->GetFile(), false, NewRecordingFrame->GetAuthor());
+			if (!initiallyPaused)
+				g_RecordingControls.Unpause();
+			return;
 		}
 	}
 	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
 	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
+	if (!g_InputRecordingData.FromSaveState())
+		g_RecordingControls.Unpause();
 }
 
 void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent &event)
 {
-	g_InputRecording.Stop();
+	const bool initiallyPaused = g_RecordingControls.IsEmulationAndRecordingPaused();
+	if (!initiallyPaused)
+		g_RecordingControls.Pause();
 	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
 		L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
 	if (openFileDialog.ShowModal() == wxID_CANCEL)
 	{
+		if (!initiallyPaused)
+			g_RecordingControls.Unpause();
 		return;
 	}
 
 	wxString path = openFileDialog.GetPath();
-	g_InputRecording.Play(path, true);
-	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
-	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
+	const bool recordingLoaded = g_InputRecording.GetModeState() != INPUT_RECORDING_MODE_NONE;
+	if (!g_InputRecording.Play(path))
+	{
+		if (recordingLoaded)
+			Menu_Recording_Stop_Click(event);
+		if (!initiallyPaused)
+			g_RecordingControls.Unpause();
+		return;
+	}
+	if (!recordingLoaded)
+	{
+		m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
+		m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
+	}
+	g_RecordingControls.Unpause();
 }
 
 void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent &event)
@@ -922,18 +940,6 @@ void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent &event)
 
 void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent &event)
 {
-	VirtualPad *vp = NULL;
-	if (event.GetId() == MenuId_Recording_VirtualPad_Port0)
-	{
-		vp = wxGetApp().GetVirtualPadPtr(0);
-	}
-	else if (event.GetId() == MenuId_Recording_VirtualPad_Port1)
-	{
-		vp = wxGetApp().GetVirtualPadPtr(1);
-	}
-	if (vp != NULL)
-	{
-		vp->Show();
-	}
+	wxGetApp().GetVirtualPadPtr(event.GetId() - MenuId_Recording_VirtualPad_Port0)->Show();
 }
 #endif
