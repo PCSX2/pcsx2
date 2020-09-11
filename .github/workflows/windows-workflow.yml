@@ -57,26 +57,7 @@ jobs:
         with:
           vs-version: 15.0
 
-      - name: Restore DXSDX from Cache
-        id: dxsdk-cache
-        uses: actions/cache@v2
-        with:
-          key: dxsdk-cache
-          path: DXSDK
-
-      # Download DXSDK if needed, otherwise use cache
-      # Only a few include files are necessary
-      - name: Download DXSDK
-        if: ${{ steps.dxsdk-cache.outputs.cache-hit != 'true' }}
-        shell: bash
-        run: |
-          curl -L https://download.microsoft.com/download/a/e/7/ae743f1f-632b-4809-87a9-aa1bb3458e31/DXSDK_Jun10.exe -o _DX2010_.exe
-          7z x _DX2010_.exe DXSDK/Include/{audiodefs.h,comdecl.h,XAudio2.h,xma2defs.h}
-          rm -fR _DX*_ _DX*_.exe
-
       - name: Build PCSX2
-        env:
-          DXSDK_DIR: ${{ github.workspace }}/DXSDK/
         run: msbuild "buildbot.xml" /m /v:m /fl1 /t:ReleaseAll /p:Platform=${{ matrix.platform }}
 
       - name: Upload artifact
