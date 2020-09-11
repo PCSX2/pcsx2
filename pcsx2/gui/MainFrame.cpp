@@ -510,6 +510,8 @@ void MainEmuFrame::CreateRecordMenu()
 	m_menuRecording.AppendSeparator();
 	m_menuRecording.Append(MenuId_Recording_VirtualPad_Port0, _("Virtual Pad (Port 1)"));
 	m_menuRecording.Append(MenuId_Recording_VirtualPad_Port1, _("Virtual Pad (Port 2)"));
+	if (g_Conf->EmuOptions.EnableRecordingTools)
+		g_InputRecording.InitInputRecordingWindows(this);
 #endif
 }
 

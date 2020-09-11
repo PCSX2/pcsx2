@@ -550,11 +550,6 @@ protected:
 	wxWindowID			m_id_ProgramLogBox;
 	wxWindowID			m_id_Disassembler;
 
-#ifndef DISABLE_RECORDING
-	wxWindowID			m_id_VirtualPad[2];
-	wxWindowID			m_id_NewRecordingFrame;
-#endif
-
 	wxKeyEvent			m_kevt;
 
 public:
@@ -578,11 +573,6 @@ public:
 	GSFrame*			GetGsFramePtr() const		{ return (GSFrame*)wxWindow::FindWindowById( m_id_GsFrame ); }
 	MainEmuFrame*		GetMainFramePtr() const		{ return (MainEmuFrame*)wxWindow::FindWindowById( m_id_MainFrame ); }
 	DisassemblyDialog*	GetDisassemblyPtr() const	{ return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
-
-#ifndef DISABLE_RECORDING
-	VirtualPad*			GetVirtualPadPtr(int port) const	{ return (VirtualPad*)wxWindow::FindWindowById(m_id_VirtualPad[port]); }
-	NewRecordingFrame*	GetNewRecordingFramePtr() const		{ return (NewRecordingFrame*)wxWindow::FindWindowById(m_id_NewRecordingFrame); }
-#endif
 
 	void enterDebugMode();
 	void leaveDebugMode();

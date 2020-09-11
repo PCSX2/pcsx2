@@ -130,26 +130,10 @@ bool InputRecordingFile::open(const wxString path, bool newRecording)
 
 bool InputRecordingFile::OpenNew(const wxString path, bool fromSavestate)
 {
-	if (fromSavestate)
-	{
-		if (CoreThread.IsOpen())
-		{
-			if (open(path, true))
-			{
-				savestate.fromSavestate = true;
-				return true;
-			}
-		}
-		else
-			inputRec::consoleLog("Game is not open, aborting playing input recording which starts on a save-state.");
+	if (!open(path, true))
 		return false;
-	}
-	else if (open(path, true))
-	{
-		savestate.fromSavestate = false;
-		return true;
-	}
-	return false;
+	savestate.fromSavestate = fromSavestate;
+	return true;
 }
 
 bool InputRecordingFile::OpenExisting(const wxString path)

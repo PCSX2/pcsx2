@@ -18,12 +18,15 @@
 #ifndef DISABLE_RECORDING
 
 #include "Recording/InputRecordingFile.h"
+#include "Recording/NewRecordingFrame.h"
 
 
 class InputRecording
 {
 public:
-	InputRecording();
+	~InputRecording();
+	// Initializes Create()'s NewRecordingFrame's, Play()'s wxFileDialog's, and both VirtualPads' windows
+	void InitInputRecordingWindows(wxWindow* parent);
 
 	// Save or load PCSX2's global frame counter (g_FrameCount) along with each full/fast boot
 	//
@@ -82,15 +85,15 @@ public:
 	/// Functions called from GUI
 
 	// Create a new input recording file
-	bool Create(wxString filename, bool fromSaveState, wxString authorName);
+	bool Create();
 	// Play an existing input recording from a file
-	bool Play(wxString filename);
+	int Play();
 	// Stop the active input recording
 	void Stop();
-	// Initialze VirtualPad window
-	void setVirtualPadPtr(VirtualPad* ptr, int const port);
 	// Resets emulation to the beginning of a recording
 	bool GoToFirstFrame();
+	// Displays the VirtualPad window for the chosen pad
+	void ShowVirtualPad(int const port);
 
 private:
 	enum class InputRecordingMode
@@ -110,6 +113,8 @@ private:
 	// See - LilyPad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1194
 	static const u8 READ_DATA_AND_VIBRATE_SECOND_BYTE = 0x5A;
 
+	std::unique_ptr<NewRecordingFrame> newRecordingFrame;
+	std::unique_ptr<wxFileDialog> openFileDialog;
 	// DEPRECATED: Slated for removal
 	bool fInterruptFrame = false;
 	InputRecordingFile inputRecordingData;
@@ -120,10 +125,13 @@ private:
 	InputRecordingMode state = InputRecording::InputRecordingMode::NotActive;
 
 	// Controller Data
-	PadData* padData[2];
-
-	// VirtualPads
-	VirtualPad* virtualPads[2];
+	struct InputRecordingPad
+	{
+		std::unique_ptr<PadData> padData;
+		std::unique_ptr<VirtualPad> virtualPad;
+		InputRecordingPad();
+		~InputRecordingPad();
+	} pads[2];
 
 	// Resolve the name and region of the game currently loaded using the GameDB
 	// If the game cannot be found in the DB, the fallback is the ISO filename

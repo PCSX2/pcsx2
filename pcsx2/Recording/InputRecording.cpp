@@ -63,16 +63,39 @@ void SaveStateBase::InputRecordingFreeze()
 
 InputRecording g_InputRecording;
 
-InputRecording::InputRecording()
+InputRecording::~InputRecording()
 {
-	// NOTE - No multi-tap support, only two controllers
-	padData[CONTROLLER_PORT_ONE] = new PadData();
-	padData[CONTROLLER_PORT_TWO] = new PadData();
+	// As to not attempt a double delete from WX
+	newRecordingFrame.release();
+	openFileDialog.release();
 }
 
-void InputRecording::setVirtualPadPtr(VirtualPad* ptr, int const port)
+InputRecording::InputRecordingPad::InputRecordingPad()
 {
-	virtualPads[port] = ptr;
+	padData = std::make_unique<PadData>();
+}
+
+InputRecording::InputRecordingPad::~InputRecordingPad()
+{
+	// As to not attempt a double delete from WX
+	virtualPad.release();
+}
+
+void InputRecording::InitInputRecordingWindows(wxWindow* parent)
+{
+	if (newRecordingFrame.get() != nullptr)
+		return;
+	newRecordingFrame = std::make_unique<NewRecordingFrame>(parent);
+	openFileDialog = std::make_unique<wxFileDialog>(parent, _("Select P2M2 record file."), L"", L"",
+								L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
+	pads[CONTROLLER_PORT_ONE].virtualPad = std::make_unique<VirtualPad>(parent, 0, g_Conf->inputRecording);
+	pads[CONTROLLER_PORT_TWO].virtualPad = std::make_unique<VirtualPad>(parent, 1, g_Conf->inputRecording);
+}
+
+
+void InputRecording::ShowVirtualPad(int const port)
+{
+	pads[port].virtualPad->Show();
 }
 
 void InputRecording::OnBoot()
@@ -101,7 +124,7 @@ void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 b
 		fInterruptFrame = false;
 
 	// We do not want to record or save the first two bytes in the data returned from the PAD plugin
-	else if (fInterruptFrame && bufCount >= 3 && frameCounter >= 0 && frameCounter < INT_MAX)
+	else if (fInterruptFrame && frameCounter >= 0 && frameCounter < INT_MAX)
 	{
 		u8& bufVal = buf[bufCount];
 		const u16 bufIndex = bufCount - 3;
@@ -117,27 +140,26 @@ void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 b
 		}
 
 		// Update controller data state for future VirtualPad / logging usage.
-		padData[port]->UpdateControllerData(bufIndex, bufVal);
+		pads[port].padData->UpdateControllerData(bufIndex, bufVal);
 
-		if (virtualPads[port] &&
-			virtualPads[port]->IsShown() &&
-			virtualPads[port]->UpdateControllerData(bufIndex, padData[port]) &&
+		if (pads[port].virtualPad->IsShown() &&
+			pads[port].virtualPad->UpdateControllerData(bufIndex, pads[port].padData.get()) &&
 			state != InputRecordingMode::Replaying)
 		{
 			// If the VirtualPad updated the PadData, we have to update the buffer
 			// before committing it to the recording / sending it to the game
 			// - Do not do this if we are in replay mode!
-			bufVal = padData[port]->PollControllerData(bufIndex);
+			bufVal = pads[port].padData->PollControllerData(bufIndex);
 		}
 
 		// If we have reached the end of the pad data, log it out
 		if (bufIndex == PadData::END_INDEX_CONTROLLER_BUFFER)
 		{
-			padData[port]->LogPadData(port);
+			pads[port].padData->LogPadData(port);
 			// As well as re-render the virtual pad UI, if applicable
 			// - Don't render if it's minimized
-			if (virtualPads[port] && virtualPads[port]->IsShown() && !virtualPads[port]->IsIconized())
-				virtualPads[port]->Redraw();
+			if (pads[port].virtualPad->IsShown() && !pads[port].virtualPad->IsIconized())
+				pads[port].virtualPad->Redraw();
 		}
 
 		// Finally, commit the byte to the movie file if we are recording
@@ -217,16 +239,16 @@ wxString InputRecording::RecordingModeTitleSegment()
 void InputRecording::SetToRecordMode()
 {
 	state = InputRecordingMode::Recording;
-	virtualPads[CONTROLLER_PORT_ONE]->SetReadOnlyMode(false);
-	virtualPads[CONTROLLER_PORT_TWO]->SetReadOnlyMode(false);
+	pads[CONTROLLER_PORT_ONE].virtualPad->SetReadOnlyMode(false);
+	pads[CONTROLLER_PORT_TWO].virtualPad->SetReadOnlyMode(false);
 	inputRec::log("Record mode ON");
 }
 
 void InputRecording::SetToReplayMode()
 {
 	state = InputRecordingMode::Replaying;
-	virtualPads[CONTROLLER_PORT_ONE]->SetReadOnlyMode(true);
-	virtualPads[CONTROLLER_PORT_TWO]->SetReadOnlyMode(true);
+	pads[CONTROLLER_PORT_ONE].virtualPad->SetReadOnlyMode(true);
+	pads[CONTROLLER_PORT_TWO].virtualPad->SetReadOnlyMode(true);
 	inputRec::log("Replay mode ON");
 }
 
@@ -273,24 +295,27 @@ void InputRecording::SetStartingFrame(u32 newStartingFrame)
 void InputRecording::Stop()
 {
 	state = InputRecordingMode::NotActive;
-	virtualPads[CONTROLLER_PORT_ONE]->SetReadOnlyMode(false);
-	virtualPads[CONTROLLER_PORT_TWO]->SetReadOnlyMode(false);
+	pads[CONTROLLER_PORT_ONE].virtualPad->SetReadOnlyMode(false);
+	pads[CONTROLLER_PORT_TWO].virtualPad->SetReadOnlyMode(false);
 	incrementUndo = false;
 	if (inputRecordingData.Close())
 		inputRec::log("Input recording stopped");
 }
 
-bool InputRecording::Create(wxString FileName, bool fromSaveState, wxString authorName)
+bool InputRecording::Create()
 {
-	if (!inputRecordingData.OpenNew(FileName, fromSaveState))
+	if (newRecordingFrame->ShowModal(CoreThread.IsOpen()) == wxID_CANCEL)
+		return false;
+
+	if (!inputRecordingData.OpenNew(newRecordingFrame->GetFile(), newRecordingFrame->GetFrom()))
 		return false;
 
 	initialLoad = true;
-	if (fromSaveState)
+	if (inputRecordingData.FromSaveState())
 	{
-		if (wxFileExists(FileName + "_SaveState.p2s"))
-			wxCopyFile(FileName + "_SaveState.p2s", FileName + "_SaveState.p2s.bak", true);
-		StateCopy_SaveToFile(FileName + "_SaveState.p2s");
+		if (wxFileExists(inputRecordingData.GetFilename() + "_SaveState.p2s"))
+			wxCopyFile(inputRecordingData.GetFilename() + "_SaveState.p2s", inputRecordingData.GetFilename() + "_SaveState.p2s.bak", true);
+		StateCopy_SaveToFile(inputRecordingData.GetFilename() + "_SaveState.p2s");
 	}
 	else
 		sApp.SysExecute(g_Conf->CdvdSource);
@@ -299,8 +324,11 @@ bool InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 	inputRecordingData.GetHeader().SetEmulatorVersion();
 
 	// Set author name
-	if (!authorName.IsEmpty())
-		inputRecordingData.GetHeader().SetAuthor(authorName);
+	{
+		const wxString authorName = newRecordingFrame->GetAuthor();
+		if (!authorName.IsEmpty())
+			inputRecordingData.GetHeader().SetAuthor(authorName);
+	}
 
 	// Set Game Name
 	inputRecordingData.GetHeader().SetGameName(resolveGameName());
@@ -309,17 +337,20 @@ bool InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 	SetToRecordMode();
 	g_InputRecordingControls.DisableFrameAdvance();
 	inputRec::log("Started new input recording");
-	inputRec::consoleLog(fmt::format("Filename {}", std::string(FileName)));
+	inputRec::consoleLog(fmt::format("Filename {}", std::string(inputRecordingData.GetFilename())));
 	return true;
 }
 
-bool InputRecording::Play(wxString fileName)
+int InputRecording::Play()
 {
+	if (openFileDialog->ShowModal() == wxID_CANCEL)
+		return 0;
+
 	if (IsActive())
 		Stop();
 
-	if (!inputRecordingData.OpenExisting(fileName))
-		return false;
+	if (!inputRecordingData.OpenExisting(openFileDialog->GetPath()))
+		return 1;
 
 	// Either load the savestate, or restart the game
 	if (inputRecordingData.FromSaveState())
@@ -328,14 +359,14 @@ bool InputRecording::Play(wxString fileName)
 		{
 			inputRec::consoleLog("Game is not open, aborting playing input recording which starts on a save-state.");
 			inputRecordingData.Close();
-			return false;
+			return 1;
 		}
 		if (!wxFileExists(inputRecordingData.GetFilename() + "_SaveState.p2s"))
 		{
 			inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}_SaveState.p2s",
 											 inputRecordingData.GetFilename()));
 			inputRecordingData.Close();
-			return false;
+			return 1;
 		}
 		initialLoad = true;
 		StateCopy_LoadFromFile(inputRecordingData.GetFilename() + "_SaveState.p2s");
@@ -362,7 +393,7 @@ bool InputRecording::Play(wxString fileName)
 							   fmt::format("Author: {}", inputRecordingData.GetHeader().author),
 							   fmt::format("Total Frames: {}", inputRecordingData.GetTotalFrames()),
 							   fmt::format("Undo Count: {}", inputRecordingData.GetUndoCount())});
-	return true;
+	return 2;
 }
 
 bool InputRecording::GoToFirstFrame()
