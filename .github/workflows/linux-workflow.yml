@@ -1,0 +1,102 @@
+name: Linux Build
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    strategy:
+      # Prevent one build from failing everything (although maybe those should be included as experimental builds instead)
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        platform: [x86, x64]
+        compiler: [gcc]
+        compiler-version: [8]
+        experimental: [false]
+        include:
+          - os: ubuntu-20.04
+            platform: x86
+            compiler: gcc
+            compiler-version: 7
+            experimental: false
+          # TODO - I'm not very confident about the clang build, it might not be compiling with 32bits? :shrug:
+          - os: ubuntu-20.04
+            platform: x86
+            compiler: clang
+            compiler-version: 10
+            experimental: false
+
+    name: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.compiler-version }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
+    timeout-minutes: 30
+
+    steps:
+      # NOTE - useful for debugging
+      # - name: Dump GitHub context
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJson(github) }}
+      #   run: |
+      #     echo "$GITHUB_CONTEXT"
+      #     echo ${{ github.event.pull_request.title }}
+
+      - name: Checkout Repository & Submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Prepare Artifact Git Info
+        run: |
+          echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
+          echo "##[set-output name=short-sha;]$(git rev-parse --short "$GITHUB_SHA")"
+          if [ ${{ github.event_name == 'pull_request' }}> ]; then
+            echo "##[set-output name=file-name-metadata;]pr-${{ github.event.pull_request.base.number }}"
+          else
+            echo "##[set-output name=file-name-metadata;]commit-$(git rev-parse --short "$GITHUB_SHA")"
+          fi
+        id: git-vars
+
+      # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
+      - name: Prepare ccache timestamp
+        id: ccache_cache_timestamp
+        shell: cmake -P {0}
+        run: |
+          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+          message("::set-output name=timestamp::${current_date}")
+
+      - name: ccache cache files
+        uses: actions/cache@v2
+        with:
+          path: .ccache
+          key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.compiler-version }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: |
+            ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.compiler-version }}-ccache-
+
+      # TODO - i'd like to refactor this out into separate steps if possible.
+      # but for now, lets just replicate the Travis-CI build
+      - name: Build PCSX2
+        env:
+          VERSION: ${{ matrix.compiler-version }}
+          PLATFORM: ${{ matrix.platform }}
+          COMPILER: ${{ matrix.compiler }}
+        # TODO - give the file executable permissions and commit it
+        run: |
+          chmod +x .github/workflows/scripts/build-linux.sh
+          ./.github/workflows/scripts/build-linux.sh before_install
+          ./.github/workflows/scripts/build-linux.sh script
+
+      # TODO - Any value in producing a linux artifact?
+      # - name: Upload artifact
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: PCSX2-${{ matrix.platform }}-${{ steps.git-vars.outputs.file-name-metadata }}
+      #     path: bin
