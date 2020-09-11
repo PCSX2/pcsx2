@@ -35,7 +35,7 @@ else()
     set(wxWidgets_CONFIG_OPTIONS --unicode=yes)
 endif()
 
-list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
+list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.2)
 
 if(GTK3_API AND NOT APPLE)
     list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
@@ -68,6 +68,9 @@ else()
     endif()
     if(EXISTS "/usr/bin/wx-config-3.0")
         set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.0")
+    endif()
+    if(EXISTS "/usr/bin/wx-config")
+        set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config")
     endif()
 endif()
 
