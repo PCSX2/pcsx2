@@ -80,6 +80,8 @@ linux_x86_script() {
 	if [ "${CXX}" = "clang++" ]; then
 		export CCACHE_CPP2=yes
 		export CC=${CC} CXX=${CXX}
+		sudo ln -s /usr/bin/ccache `which clang`
+		sudo ln -s /usr/bin/ccache `which clang++`
 	else
 		export CC=${CC}-${VERSION}
 		export CXX=${CXX}-${VERSION}
@@ -90,6 +92,8 @@ linux_x86_script() {
 	export CCACHE_COMPRESS="true"
 	export CCACHE_COMPRESSLEVEL="6"
 	export CCACHE_MAXSIZE="400M"
+
+	export TERM=xterm-256color
 
 	ccache -p
 	ccache -z
