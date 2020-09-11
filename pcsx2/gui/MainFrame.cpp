@@ -29,6 +29,10 @@
 
 #include "svnrev.h"
 #include "Saveslots.h"
+#ifndef DISABLE_RECORDING
+#	include "Recording/InputRecording.h"
+#endif
+
 
 // ------------------------------------------------------------------------
 wxMenu* MainEmuFrame::MakeStatesSubMenu(int baseid, int loadBackupId) const
@@ -57,11 +61,18 @@ void MainEmuFrame::UpdateStatusBar()
 {
 	wxString temp(wxEmptyString);
 
-	if (g_Conf->EnableFastBoot)
-		temp += "Fast Boot - ";
+#ifndef DISABLE_RECORDING
+	if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
+		temp += "Base Savestate - " + g_InputRecording.GetInputRecordingData().GetFilename() + "_SaveState.p2s";
+	else
+#endif
+	{
+		if (g_Conf->EnableFastBoot)
+			temp += "Fast Boot - ";
 
-	if (g_Conf->CdvdSource == CDVD_SourceType::Iso)
-		temp += "Load: '" + wxFileName(g_Conf->CurrentIso).GetFullName() + "' ";
+		if (g_Conf->CdvdSource == CDVD_SourceType::Iso)
+			temp += "Load: '" + wxFileName(g_Conf->CurrentIso).GetFullName() + "' ";
+	}
 
 	m_statusbar.SetStatusText(temp, 0);
 	m_statusbar.SetStatusText(CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], 1);
@@ -92,6 +103,12 @@ void MainEmuFrame::UpdateCdvdSrcSelection()
 			jNO_DEFAULT
 	}
 	sMenuBar.Check(cdsrc, true);
+#ifndef DISABLE_RECORDING
+	if (g_InputRecording.IsActive())
+		ApplyFirstFrameStatus();
+	else
+#endif
+		ApplyCDVDStatus();
 	UpdateStatusBar();
 }
 
@@ -335,7 +352,7 @@ void MainEmuFrame::DispatchEvent(const CoreThreadStatus& status)
 {
 	if (!pxAssertMsg(GetMenuBar() != NULL, "Mainframe menu bar is NULL!"))
 		return;
-	ApplyCoreStatus();
+	ApplySuspendStatus();
 }
 
 void MainEmuFrame::AppStatusEvent_OnSettingsApplied()
@@ -698,12 +715,16 @@ void MainEmuFrame::OnActivate(wxActivateEvent& evt)
 
 void MainEmuFrame::ApplyCoreStatus()
 {
-	wxMenuBar& menubar(*GetMenuBar());
+	ApplySuspendStatus();
+	ApplyCDVDStatus();
+}
 
+void MainEmuFrame::ApplySuspendStatus()
+{
 	// [TODO] : Ideally each of these items would bind a listener instance to the AppCoreThread
 	// dispatcher, and modify their states accordingly.  This is just a hack (for now) -- air
 
-	if (wxMenuItem* susres = menubar.FindItem(MenuId_Sys_SuspendResume))
+	if (wxMenuItem* susres = GetMenuBar()->FindItem(MenuId_Sys_SuspendResume))
 	{
 		if (!CoreThread.IsClosing())
 		{
@@ -727,10 +748,13 @@ void MainEmuFrame::ApplyCoreStatus()
 			}
 		}
 	}
+}
 
+void MainEmuFrame::ApplyCDVDStatus()
+{
 	const CDVD_SourceType Source = g_Conf->CdvdSource;
 
-	wxMenuItem* cdvd_menu = menubar.FindItem(MenuId_Boot_CDVD);
+	wxMenuItem* cdvd_menu = GetMenuBar()->FindItem(MenuId_Boot_CDVD);
 
 	wxString label;
 	wxString help_text = _("Use fast boot to skip PS2 startup and splash screens");

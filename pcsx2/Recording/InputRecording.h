@@ -89,6 +89,8 @@ public:
 	void Stop();
 	// Initialze VirtualPad window
 	void setVirtualPadPtr(VirtualPad* ptr, int const port);
+	// Resets emulation to the beginning of a recording
+	bool GoToFirstFrame();
 
 private:
 	enum class InputRecordingMode

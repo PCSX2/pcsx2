@@ -365,6 +365,27 @@ bool InputRecording::Play(wxString fileName)
 	return true;
 }
 
+bool InputRecording::GoToFirstFrame()
+{
+	if (inputRecordingData.FromSaveState())
+	{
+		if (!wxFileExists(inputRecordingData.GetFilename() + "_SaveState.p2s"))
+		{
+			recordingConLog(wxString::Format("[REC]: Could not locate savestate file at location - %s_SaveState.p2s\n",
+												inputRecordingData.GetFilename()));
+			Stop();
+			return false;
+		}
+		StateCopy_LoadFromFile(inputRecordingData.GetFilename() + "_SaveState.p2s");
+	}
+	else
+		sApp.SysExecute(g_Conf->CdvdSource);
+
+	if (IsRecording())
+		SetToReplayMode();
+	return true;
+}
+
 wxString InputRecording::resolveGameName()
 {
 	// Code loosely taken from AppCoreThread::_ApplySettings to resolve the Game Name

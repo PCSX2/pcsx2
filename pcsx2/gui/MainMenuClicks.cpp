@@ -149,16 +149,17 @@ wxWindowID SwapOrReset_Iso(wxWindow* owner, IScopedCoreThread& core_control, con
 	if (SysHasValidState())
 	{
 		core_control.DisallowResume();
-		wxDialogWithHelpers dialog(owner, _("Confirm ISO image change"));
-
-		dialog += dialog.Heading(descpart1);
-		dialog += dialog.GetCharHeight();
+		wxDialogWithHelpers dialog( owner, _("Confirm ISO image change") );
+		dialog += dialog.Heading(descpart1); // New lines already applied
 		dialog += dialog.Text(isoFilename);
 		dialog += dialog.GetCharHeight();
 		dialog += dialog.Heading(_("Do you want to swap discs or boot the new image (via system reset)?"));
-
-		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
-		if (result == wxID_CANCEL)
+#ifndef DISABLE_RECORDING
+		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
+			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the current input recording\nmay not be compatible with the new source)"));
+#endif
+		result = pxIssueConfirmation( dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
+		if( result == wxID_CANCEL )
 		{
 			core_control.AllowResume();
 			return result;
@@ -203,11 +204,13 @@ wxWindowID SwapOrReset_Disc(wxWindow* owner, IScopedCoreThread& core, const wxSt
 	{
 		core.DisallowResume();
 		wxDialogWithHelpers dialog(owner, _("Confirm disc change"));
-
 		dialog += dialog.Heading("New drive selected: " + driveLetter);
 		dialog += dialog.GetCharHeight();
 		dialog += dialog.Heading(_("Do you want to swap discs or boot the new disc (via system reset)?"));
-
+#ifndef DISABLE_RECORDING
+		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
+			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the current input recording\nmay not be compatible with the new source)"));
+#endif
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 		if (result == wxID_CANCEL)
 		{
@@ -249,7 +252,10 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 
 		dialog += dialog.Heading(changeMsg + L"\n\n" +
 								 _("Do you want to swap discs or boot the new image (system reset)?"));
-
+#ifndef DISABLE_RECORDING
+		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
+			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the current input recording\nmay not be compatible with the new source)"));
+#endif
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 
 		if (result == wxID_CANCEL)
@@ -434,10 +440,24 @@ void MainEmuFrame::Menu_CdvdSource_Click(wxCommandEvent& event)
 	}
 
 	SwapOrReset_CdvdSrc(this, newsrc);
+#ifndef DISABLE_RECORDING
+	if (g_InputRecording.IsActive())
+		ApplyFirstFrameStatus();
+	else
+#endif
+		ApplyCDVDStatus();
 }
 
 void MainEmuFrame::Menu_BootCdvd_Click(wxCommandEvent& event)
 {
+#ifndef DISABLE_RECORDING
+	if (g_InputRecording.IsActive())
+	{
+		if (!g_InputRecording.GoToFirstFrame())
+			RecordingMenuReset();
+		return;
+	}
+#endif
 	g_Conf->EmuOptions.UseBOOT2Injection = g_Conf->EnableFastBoot;
 	_DoBootCdvd();
 }
@@ -591,7 +611,10 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 	{
 		//Properly close any currently loaded recording file before disabling
 		if (g_InputRecording.IsActive())
-			Menu_Recording_Stop_Click(event);
+		{
+			g_InputRecording.Stop();
+			RecordingMenuReset();
+		}
 		GetMenuBar()->Remove(TopLevelMenu_InputRecording);
 		// Always turn controller logs off, but never turn it on by default
 		SysConsole.controlInfo.Enabled = checked;
@@ -718,9 +741,40 @@ void MainEmuFrame::Menu_SuspendResume_Click(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent& event)
 {
+#ifndef DISABLE_RECORDING
+	if (!g_InputRecording.IsActive())
+	{
+		if (g_InputRecordingControls.IsPaused())
+			g_InputRecordingControls.Resume();
+		UI_DisableSysShutdown();
+		Console.SetTitle("PCSX2 Program Log");
+		CoreThread.Reset();
+	}
+	else
+	{
+		const bool initiallyPaused = g_InputRecordingControls.IsPaused();
+		if (!initiallyPaused)
+			g_InputRecordingControls.Pause();
+		wxWindowID result = wxID_CANCEL;
+		wxDialogWithHelpers dialog(this, _("Shutdown & Close Input Recording"));
+		dialog += dialog.Heading(L"\nShutting down emulation will close the running input recording file.\nProceed?");
+		result = pxIssueConfirmation(dialog, MsgButtons().Close().Cancel());
+		if (result == wxID_CLOSE)
+		{
+			Menu_Recording_Stop_Click(event);
+			g_InputRecordingControls.Resume();
+			UI_DisableSysShutdown();
+			Console.SetTitle("PCSX2 Program Log");
+			CoreThread.Reset();
+		}
+		else if (!initiallyPaused)
+			g_InputRecordingControls.Resume();
+	}
+#else
 	UI_DisableSysShutdown();
 	Console.SetTitle("PCSX2 Program Log");
 	CoreThread.Reset();
+#endif
 }
 
 void MainEmuFrame::Menu_ConfigPlugin_Click(wxCommandEvent& event)
@@ -963,7 +1017,8 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 	}
 	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
 	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, g_InputRecording.IsActive());
+	m_menuRecording.FindChildItem(MenuId_Recording_ToggleRecordingMode)->Enable(true);
+	ApplyFirstFrameStatus();
 }
 
 void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
@@ -985,7 +1040,7 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 	if (!g_InputRecording.Play(path))
 	{
 		if (recordingLoaded)
-			Menu_Recording_Stop_Click(event);
+			RecordingMenuReset();
 		if (!initiallyPaused)
 			g_InputRecordingControls.Resume();
 		return;
@@ -994,16 +1049,59 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 	{
 		m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
 		m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
+		m_menuRecording.FindChildItem(MenuId_Recording_ToggleRecordingMode)->Enable(true);
 	}
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, g_InputRecording.IsActive());
+	ApplyFirstFrameStatus();
+}
+
+void MainEmuFrame::ApplyFirstFrameStatus()
+{
+	wxMenuItem* cdvd_menu = m_menuSys.FindChildItem(MenuId_Boot_CDVD);
+
+	wxString keyCodeStr;
+	if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
+		if (GSPanel* viewport = gsFrame->GetViewport())
+			keyCodeStr = viewport->GetAssociatedKeyCode(("GoToFirstFrame"));
+
+	if (!g_InputRecording.GetInputRecordingData().FromSaveState())
+	{
+		switch (g_Conf->CdvdSource)
+		{
+		case CDVD_SourceType::Iso:
+			cdvd_menu->SetItemLabel(_("Boot ISO\t") + keyCodeStr);
+			break;
+		case CDVD_SourceType::Disc:
+			cdvd_menu->SetItemLabel(_("Boot CDVD\t") + keyCodeStr);
+			break;
+		case CDVD_SourceType::NoDisc:
+			cdvd_menu->SetItemLabel(_("Boot Bios\t") + keyCodeStr);
+			break;
+		default:
+			cdvd_menu->SetItemLabel(_("Boot Bios\t") + keyCodeStr);
+			break;
+		}
+		cdvd_menu->SetHelp(_("Use fast boot to skip PS2 startup and splash screens"));
+	}
+	else
+	{
+		cdvd_menu->SetItemLabel(L"Load Savestate\t" + keyCodeStr);
+		cdvd_menu->SetHelp(L"Loads the savestate that accompanies the running input recording");
+	}
+	UpdateStatusBar();
 }
 
 void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent& event)
 {
 	g_InputRecording.Stop();
+	RecordingMenuReset();
+}
+
+void MainEmuFrame::RecordingMenuReset()
+{
 	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(true);
 	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(false);
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, g_InputRecording.IsActive());
+	m_menuRecording.FindChildItem(MenuId_Recording_ToggleRecordingMode)->Enable(false);
+	ApplyCDVDStatus();
 }
 
 void MainEmuFrame::Menu_Recording_TogglePause_Click(wxCommandEvent& event)
