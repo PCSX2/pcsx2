@@ -1,0 +1,87 @@
+name: Windows Build
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    strategy:
+      # Prevent one build from failing everything (although maybe those should be included as experimental builds instead)
+      fail-fast: false
+      matrix:
+        os: [windows-2019]
+        platform: [Win32, x64]
+        experimental: [false]
+
+    name: ${{ matrix.os }}-${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
+    timeout-minutes: 30
+
+    steps:
+      # NOTE - useful for debugging
+      # - name: Dump GitHub context
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJson(github) }}
+      #   run: |
+      #     echo "$GITHUB_CONTEXT"
+      #     echo ${{ github.event.pull_request.title }}
+
+      - name: Checkout Repository & Submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Prepare Artifact Git Info
+        shell: bash
+        run: |
+          echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
+          echo "##[set-output name=short-sha;]$(git rev-parse --short "$GITHUB_SHA")"
+          if [ ${{ github.event_name == 'pull_request' }}> ]; then
+            echo "##[set-output name=file-name-metadata;]pr-${{ github.event.pull_request.base.number }}"
+          else
+            echo "##[set-output name=file-name-metadata;]commit-$(git rev-parse --short "$GITHUB_SHA")"
+          fi
+        id: git-vars
+
+      - name: Setup msbuild
+        uses: microsoft/setup-msbuild@v1.0.1
+        with:
+          vs-version: 15.0
+
+      - name: Restore DXSDX from Cache
+        id: dxsdk-cache
+        uses: actions/cache@v2
+        with:
+          key: dxsdk-cache
+          path: DXSDK
+
+      # Download DXSDK if needed, otherwise use cache
+      # Only a few include files are necessary
+      - name: Download DXSDK
+        if: ${{ steps.dxsdk-cache.outputs.cache-hit != 'true' }}
+        shell: bash
+        run: |
+          curl -L https://download.microsoft.com/download/a/e/7/ae743f1f-632b-4809-87a9-aa1bb3458e31/DXSDK_Jun10.exe -o _DX2010_.exe
+          7z x _DX2010_.exe DXSDK/Include/{audiodefs.h,comdecl.h,XAudio2.h,xma2defs.h}
+          rm -fR _DX*_ _DX*_.exe
+
+      - name: Build PCSX2
+        env:
+          DXSDK_DIR: ${{ github.workspace }}/DXSDK/
+        run: msbuild "buildbot.xml" /m /v:m /fl1 /t:ReleaseAll /p:Platform=${{ matrix.platform }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        continue-on-error: true
+        with:
+          name: PCSX2-${{ matrix.platform }}-${{ steps.git-vars.outputs.file-name-metadata }}
+          path: bin
