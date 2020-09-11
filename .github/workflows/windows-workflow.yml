@@ -7,7 +7,7 @@ on: [push, pull_request]
 jobs:
   build:
     strategy:
-      # Prevent one build from failing everything (although maybe those should be included as experimental builds instead)
+      # Prevent  one build from failing everything (although maybe those should be included as experimental builds instead)
       fail-fast: false
       matrix:
         os: [windows-2019]
