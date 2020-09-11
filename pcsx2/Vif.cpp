@@ -175,38 +175,15 @@ __fi void vif1FBRST(u32 value) {
 		vif1.done = true;
 		vif1ch.chcr.STR = false;
 
-		//HACK!! Dynasty Warriors 5 Empires has some sort of wierd packet alignment thing going off, meaning
-		//the packet ends before the DirectHL in progress has finished. Not sure what causes that, but the GIF
-		//Unit is still waiting for more data, so we have to "pretend" it is finished when the game issues a reset
-		//which it does without causing any pauses.
-		//In most cases, this will never ever happen, so doing the following won't matter.
-		if(!gifUnit.gifPath[GIF_PATH_2].isDone()) 
-		{
-			DevCon.Warning("VIF1 FBRST While GIF Path2 is waiting for data!");
-			gifUnit.gifPath[GIF_PATH_2].state = GIF_PATH_IDLE;
-			gifUnit.gifPath[GIF_PATH_2].curSize = gifUnit.gifPath[GIF_PATH_2].curOffset;
-
-			if( gifRegs.stat.APATH == 2)
-			{
-				gifRegs.stat.APATH = 0;
-				gifRegs.stat.OPH = 0;
-				vif1Regs.stat.VGW = false; //Let vif continue if it's stuck on a flush
-
-				if(gifUnit.checkPaths(1,0,1)) gifUnit.Execute(false, true);
-			}
-		}
-
 		GUNIT_WARN(Color_Red, "VIF FBRST Reset MSK = %x", vif1Regs.mskpath3);
 		vif1Regs.mskpath3 = false;
 		gifRegs.stat.M3P  = 0;
-
 		vif1Regs.err.reset();
 		vif1.inprogress = 0;
 		vif1.cmd = 0;
 		vif1.vifstalled.enabled = false;
 		vif1.irqoffset.enabled = false;
-		vif1Regs.stat.FQC = 0;
-		vif1Regs.stat.clear_flags(VIF1_STAT_FDR | VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS | VIF1_STAT_VPS);
+		vif1Regs.stat._u32 = 0;
 	}
 
 	/* Fixme: Forcebreaks are pretty unknown for operation, presumption is it just stops it what its doing

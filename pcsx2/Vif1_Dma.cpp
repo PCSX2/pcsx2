@@ -406,8 +406,8 @@ __fi void vif1Interrupt()
 		return; //Dont want to end if vif is stalled.
 	}
 #ifdef PCSX2_DEVBUILD
-	if (vif1ch.qwc > 0) Console.WriteLn("VIF1 Ending with %x QWC left", vif1ch.qwc);
-	if (vif1.cmd != 0) Console.WriteLn("vif1.cmd still set %x tag size %x", vif1.cmd, vif1.tag.size);
+	if (vif1ch.qwc > 0) DevCon.WriteLn("VIF1 Ending with %x QWC left", vif1ch.qwc);
+	if (vif1.cmd != 0) DevCon.WriteLn("vif1.cmd still set %x tag size %x", vif1.cmd, vif1.tag.size);
 #endif
 
 	if((vif1ch.chcr.DIR == VIF_NORMAL_TO_MEM_MODE) && vif1.GSLastDownloadSize <= 16)
