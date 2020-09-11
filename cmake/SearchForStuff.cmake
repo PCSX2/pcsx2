@@ -35,9 +35,14 @@ else()
     set(wxWidgets_CONFIG_OPTIONS --unicode=yes)
 endif()
 
-list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.2)
+# Use system wxWidgets version when packaging for Linux
+if(NOT PACKAGE_MODE)
+    list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
+endif()
 
-if(GTK3_API AND NOT APPLE)
+if(QT_API AND NOT APPLE)
+    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=qt)
+elseif(GTK3_API AND NOT APPLE)
     list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
 elseif(NOT APPLE)
     list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
