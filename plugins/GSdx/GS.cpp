@@ -811,27 +811,31 @@ void pt(const char* str){
 	printf("%02i:%02i:%02i%s", current->tm_hour, current->tm_min, current->tm_sec, str);
 }
 
-EXPORT_C_(int) GSsetupRecording(int start, void* data)
+EXPORT_C_(std::wstring*) GSsetupRecording(int start)
 {
 	if (s_gs == NULL) {
 		printf("GSdx: no s_gs for recording\n");
-		return 0;
+		return nullptr;
 	}
 #if defined(__unix__)
 	if (!theApp.GetConfigB("capture_enabled")) {
 		printf("GSdx: Recording is disabled\n");
-		return 0;
+		return nullptr;
 	}
 #endif
-
+	std::wstring* filename = nullptr;
 	if(start & 1)
 	{
 		printf("GSdx: Recording start command\n");
-		if (s_gs->BeginCapture()) {
+		filename = s_gs->BeginCapture();
+		if (filename)
+		{
 			pt(" - Capture started\n");
-		} else {
+		}
+		else
+		{
 			pt(" - Capture cancelled\n");
-			return 0;
+			return nullptr;
 		}
 	}
 	else
@@ -841,7 +845,7 @@ EXPORT_C_(int) GSsetupRecording(int start, void* data)
 		pt(" - Capture ended\n");
 	}
 
-	return 1;
+	return filename;
 }
 
 EXPORT_C GSsetGameCRC(uint32 crc, int options)

@@ -688,7 +688,7 @@ extern SndOutModule *mods[];
 
 extern bool WavRecordEnabled;
 
-extern void RecordStart();
+extern void RecordStart(std::wstring* filename);
 extern void RecordStop();
 extern void RecordWrite(const StereoOut16 &sample);
 

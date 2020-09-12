@@ -529,7 +529,7 @@ bool GSRenderer::MakeSnapshot(const std::string& path)
 	return true;
 }
 
-bool GSRenderer::BeginCapture()
+std::wstring* GSRenderer::BeginCapture()
 {
 	GSVector4i disp = m_wnd->GetClientRect().fit(m_aspectratio);
 	float aspect = (float)disp.width() / std::max(1, disp.height());
