@@ -244,7 +244,11 @@ namespace PathDefs
 
 	wxDirName GetLangs()
 	{
+#ifdef __APPLE__
+		return wxDirName(wxStandardPaths::Get().GetResourcesDir());
+#else
 		return AppRoot() + Base::Langs();
+#endif
 	}
 
 	wxDirName Get( FoldersEnum_t folderidx )
