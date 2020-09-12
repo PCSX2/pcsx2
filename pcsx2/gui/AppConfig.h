@@ -309,6 +309,7 @@ public:
 	// (the toggle is applied when a new EmuConfig is sent through AppCoreThread::ApplySettings)
 	bool		EnableSpeedHacks;
 	bool		EnableGameFixes;
+	bool		EnableFastBoot;
 
 	// Presets try to prevent users from overwhelming when they want to change settings (usually to make a game run faster).
 	// The presets allow to modify the balance between emulation accuracy and emulation speed using a pseudo-linear control.

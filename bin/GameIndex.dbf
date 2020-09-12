@@ -55,21 +55,23 @@
 ---------------------------------------------
 -- Game Fixes (GameFixName = 1)
 ---------------------------------------------
--- VuAddSubHack      = 1 // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
--- FpuCompareHack    = 1 // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
--- FpuMulHack        = 1 // Tales of Destiny hangs.
--- FpuNegDivHack     = 1 // Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
--- XgKickHack        = 1 // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
--- IPUWaitHack       = 1 // FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
--- EETimingHack      = 1 // General purpose timing hack.
--- SkipMPEGHack      = 1 // Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
--- OPHFLagHack       = 1 // Bleach Bankais and others
--- DMABusyHack       = 1 // Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
--- VIFFIFOHack       = 1 // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
--- VIF1StallHack     = 1 // SOCOM II HUD and Spy Hunter loading hang.
--- GIFFIFOHack       = 1 // Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
--- FMVinSoftwareHack = 1 // Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering while an FMV plays.
--- ScarfaceIbitHack  = 1 // VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
+-- VuAddSubHack           = 1 // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
+-- FpuCompareHack         = 1 // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
+-- FpuMulHack             = 1 // Tales of Destiny hangs.
+-- FpuNegDivHack          = 1 // Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
+-- XgKickHack             = 1 // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
+-- IPUWaitHack            = 1 // FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
+-- EETimingHack           = 1 // General purpose timing hack.
+-- SkipMPEGHack           = 1 // Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
+-- OPHFLagHack            = 1 // Bleach Bankais and others
+-- DMABusyHack            = 1 // Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
+-- VIFFIFOHack            = 1 // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
+-- VIF1StallHack          = 1 // SOCOM II HUD and Spy Hunter loading hang.
+-- GIFFIFOHack            = 1 // Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
+-- FMVinSoftwareHack      = 1 // Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering while an FMV plays.
+-- ScarfaceIbitHack       = 1 // VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
+-- CrashTagTeamRacingIbit = 1 // VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
+-- VU0KickstartHack       = 1 // Let VU0 run ahead to fix some timing issues
 
 ---------------------------------------------
 -- Speed Hacks (SpeedHackName = <value>)
@@ -117,10 +119,12 @@ Region = NTSC-J
 Serial = PAPX-90222
 Name   = Jak x Daxter: Kyuusekai no Isan [Demo, Taikenba]
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = PAPX-90223
 Name   = Jak x Daxter: Kyuusekai no Isan [Demo, Taikenba]
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = PAPX-90231
 Name   = Kaitou Sly Cooper [Demo, Taikenba]
@@ -135,6 +139,7 @@ vuClampMode = 2 // Text in GT mode works.
 Serial = PAPX-90516
 Name   = Jak and Daxter II [Trial]
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = PBPX-95201
 Name   = Dead or Alive 2
@@ -166,7 +171,6 @@ Region = PAL-M5
 	comment=You must enable the EETimingHack when playing the WRC demo to avoids random hangs.
 	comment=You must change the EE Clamping mode to Full when playing the Klonoa 2 demo to avoids misplaced objects.
 	comment=You must change the VU Clamping mode to extra when playing the Klonoa 2 demo to fixes reflections issues.
-	comment=You must use the ZeroSPU2 plugin when playing the Klonoa 2 demo to avoids bad/missing sounds.
 [/patches]
 ---------------------------------------------
 Serial = PBPX-95517
@@ -247,6 +251,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20001
 Name   = Ratchet & Clank
 Region = NTSC-Unk
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCAJ-20002
 Name   = Gallop Racer 6 - Revolution
@@ -501,6 +506,7 @@ Serial = SCAJ-20070
 Name   = Star Ocean 3 [Director's Cut]
 Region = NTSC-Unk
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCAJ-20072
 Name   = Ghost in the Shell - Stand Alone Complex
@@ -509,6 +515,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20073
 Name   = Jak and Daxter II
 Region = NTSC-Unk
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCAJ-20074
 Name   = King of Fighters 2002, The
@@ -650,6 +657,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20109
 Name   = Ratchet & Clank 3 - Up your Arsenal
 Region = NTSC-Unk
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCAJ-20110
 Name   = Dragon Quest VIII - Sora to Daichi to Norowareshi Himegimi
@@ -659,6 +667,7 @@ Serial = SCAJ-20111
 Name   = Crash Bandicoot 5
 Region = NTSC-Unk
 XgKickHack = 1 // Fixes bad Geometry.
+VU0KickstartHack = 1 // Fixes loading hang.
 ---------------------------------------------
 Serial = SCAJ-20112
 Name   = Tales of Rebirth
@@ -688,6 +697,7 @@ Serial = SCAJ-20118
 Name   = Radiata Stories
 Region = NTSC-J
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCAJ-20119
 Name   = Gladiator - Road to Freedom
@@ -856,6 +866,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20157
 Name   = Ratchet & Clank 4th - GiriGiri Gingano Giga-battle
 Region = NTSC-Unk
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCAJ-20158
 Name   = Ikusa Gami
@@ -938,6 +949,7 @@ Name   = Valkyrie Profile 2 - Silmeria
 Region = NTSC-Unk
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCAJ-20178
 Name   = Ape Escape - Million Monkeys
@@ -1012,6 +1024,7 @@ Name   = Valkyrie Profile 2 - Silmeria [Ultimate Hits]
 Region = NTSC-Unk
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCAJ-20198
 Name   = Everybody's Tennis [PlayStation 2 The Best]
@@ -1127,6 +1140,7 @@ Region = PAL-Unk
 Serial = SCED-50614
 Name   = Jak and Daxter: The Precursor Legacy [Demo]
 Region = PAL-Unk
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCED-50642
 Name   = Final Fantasy X [Demo] [Final Fantasy VI PS1 - Bonus Disc]
@@ -1181,6 +1195,7 @@ Compat = 5
 Serial = SCED-51700
 Name   = Jak II: Renegade [Demo]
 Region = PAL-Unk
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCED-52049
 Name   = Dog's Life [Demo]
@@ -1208,6 +1223,7 @@ Region = PAL-M11
 Serial = SCED-52952
 Name   = Jak 3 [Demo]
 Region = PAL-Unk
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCED-52970
 Name   = SCEE Hits Demo
@@ -1341,6 +1357,7 @@ Serial = SCES-50361
 Name   = Jak and Daxter: The Precursor Legacy
 Region = PAL-M6
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCES-50408
 Name   = PaRappa the Rapper 2
@@ -1480,6 +1497,7 @@ Region = PAL-M5
 Serial = SCES-50614
 Name   = Jak and Daxter: The Precursor Legacy
 Region = PAL-Unk
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCES-50759
 Name   = Virtua Fighter 4
@@ -1515,6 +1533,7 @@ Serial = SCES-50858
 Name   = Gran Turismo - Concept 2002 Tokyo-Geneva
 Region = PAL-M6
 Compat = 5
+MemCardFilter = SCES-50858/SCES-50294
 ---------------------------------------------
 Serial = SCES-50878
 Name   = Tekken 4
@@ -1551,6 +1570,7 @@ Serial = SCES-50916
 Name   = Ratchet & Clank
 Region = PAL-M5
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCES-50917
 Name   = Sly Racoon
@@ -1658,21 +1678,6 @@ Name   = Primal
 Region = PAL-M5
 Compat = 5 // With GSdx, SW-mode only.
 vuRoundMode = 0 // Fixes SPS.
-[patches = dcc4eeea]
-	author=Prafull
-	// Fix slow and choppy gameplay.
-	// PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
-	// so the game will wait endlessly in a wait loop until COP2 gets around to
-	// setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
-	// VU0 side, remove wait loop.
-	// Fixed by rearranging COP2 instructions.
-	patch=1,EE,00399cb0,word,48a44800
-	patch=1,EE,00399cb4,word,48c02800
-	patch=1,EE,00399cb8,word,4a00d839
-	patch=1,EE,00399d68,word,48a44800
-	patch=1,EE,00399d6c,word,48c02800
-	patch=1,EE,00399d70,word,4a00d839
-[/patches]
 ---------------------------------------------
 Serial = SCES-51159
 Name   = The Getaway
@@ -1728,21 +1733,6 @@ Serial = SCES-51463
 Name   = Ghosthunter
 Region = PAL-M6
 Compat = 5
-[patches = 3bd85da4]
-	author=Prafull
-	// Fix slow and choppy gameplay.
-	// PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
-	// so the game will wait endlessly in a wait loop until COP2 gets around to
-	// setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
-	// VU0 side, remove wait loop.
-	// Fixed by rearranging COP2 instructions.
-	patch=1,EE,003f4e58,word,48a44800
-	patch=1,EE,003f4e5c,word,48c02800
-	patch=1,EE,003f4e60,word,4a00d839
-	patch=1,EE,003f4f10,word,48a44800
-	patch=1,EE,003f4f14,word,48c02800
-	patch=1,EE,003f4f18,word,4a00d839
-[/patches]
 ---------------------------------------------
 Serial = SCES-51480
 Name   = Twisted Metal - Black - Online
@@ -1774,6 +1764,7 @@ Serial = SCES-51607
 Name   = Ratchet & Clank 2 - Locked & Loaded
 Region = PAL-M5
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 // Reads Ratchet 1 data.
 MemCardFilter = SCES-51607/SCES-50916
 ---------------------------------------------
@@ -1781,6 +1772,7 @@ Serial = SCES-51608
 Name   = Jak II: Renegade
 Region = PAL-M7
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 [patches]
 	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
@@ -1834,22 +1826,6 @@ Serial = SCES-51685
 Name   = Primal
 Region = PAL-E-R
 vuRoundMode = 0 // Fixes SPS.
-vuRoundMode = 0 // Fix SPS.
-[patches = E7ABDDC7]
-	author=Prafull
-	// Fix slow and choppy gameplay.
-	// PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
-	// so the game will wait endlessly in a wait loop until COP2 gets around to
-	// setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
-	// VU0 side, remove wait loop.
-	// Fixed by rearranging COP2 instructions.
-	patch=1,EE,00399e68,word,48a44800
-	patch=1,EE,00399e6c,word,48c02800
-	patch=1,EE,00399e70,word,4a00d839
-	patch=1,EE,00399f20,word,48a44800
-	patch=1,EE,00399f24,word,48c02800
-	patch=1,EE,00399f28,word,4a00d839
-[/patches]
 ---------------------------------------------
 Serial = SCES-51706
 Name   = Amplitude
@@ -2062,6 +2038,7 @@ Serial = SCES-52456
 Name   = Ratchet & Clank 3
 Region = PAL-M5
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 // Reads Ratchet 1 & 2 data.
 MemCardFilter = SCES-52456/SCES-51607/SCES-50916
 ---------------------------------------------
@@ -2069,6 +2046,7 @@ Serial = SCES-52460
 Name   = Jak 3
 Region = PAL-M7
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 [patches]
 	comment=- This gamedisc supports multiple languages through the BIOS configuration.
 	comment=- Implementation requires Full boot - "Boot CDVD (full)".
@@ -2254,10 +2232,12 @@ Serial = SCES-53285
 Name   = Ratchet - Gladiator
 Region = PAL-M5
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCES-53286
 Name   = Jak X - Combat Racing
 Region = PAL-M7
+VU0KickstartHack = 1 // Fixes Character SPS.
 // Reads Ratchet Gladiator data.
 MemCardFilter = SCES-53286/SCES-53285
 ---------------------------------------------
@@ -2841,6 +2821,7 @@ Compat = 5
 Serial = SCES-55510
 Name   = Jak and Daxter: The Lost Frontier
 Region = PAL-M12
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCES-55535
 Name   = Desi Adda: Games of India
@@ -2908,10 +2889,12 @@ Compat = 5
 Serial = SCKA-20010
 Name   = Jak II
 Region = NTSC-K
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCKA-20011
 Name   = Ratchet & Clank 2
 Region = NTSC-K
+VU0KickstartHack = 1 // Fixes Character SPS.
 MemCardFilter = SCKA-20011/SCKA-20120
 ---------------------------------------------
 Serial = SCKA-20012
@@ -3011,6 +2994,7 @@ Region = NTSC-K
 Serial = SCKA-20037
 Name   = Ratchet & Clank 3
 Region = NTSC-K
+VU0KickstartHack = 1 // Fixes Character SPS.
 MemCardFilter = SCKA-20037/SCKA-20011/SCKA-20120
 ---------------------------------------------
 Serial = SCKA-20038
@@ -3024,6 +3008,7 @@ Region = NTSC-K
 Serial = SCKA-20040
 Name   = Jak 3
 Region = NTSC-K
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCKA-20043
 Name   = Magna Carta
@@ -3097,6 +3082,7 @@ Compat = 5
 Serial = SCKA-20060
 Name   = Ratchet - Deadlocked
 Region = NTSC-K
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCKA-20061
 Name   = Wanda to Kyozou (Shadow of the Colossus)
@@ -3156,6 +3142,7 @@ Name   = Valkyrie Profile 2 - Silmeria
 Region = NTSC-K
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCKA-20081
 Name   = Tekken 5 [PlayStation 2 Big Hit Series]
@@ -3214,6 +3201,7 @@ Region = NTSC-K
 Serial = SCKA-20120
 Name   = Ratchet & Clank
 Region = NTSC-K
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCKA-20132
 Name   = Shin Megami Tensei: Persona 4
@@ -3503,6 +3491,7 @@ Region = NTSC-J
 Serial = SCPS-15021
 Name   = Jak x Daxter: Kyuusekai no Isan
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-15022
 Name   = Dual Hearts
@@ -3570,6 +3559,7 @@ Region = NTSC-J
 Serial = SCPS-15037
 Name   = Ratchet & Clank
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-15038
 Name   = Operator's Side
@@ -3662,11 +3652,13 @@ MemCardFilter = SCAJ-20066/SCAJ-30006/SCAJ-30007/SCAJ-30008/SCPS-15055/SCPS-1700
 Serial = SCPS-15056
 Name   = Ratchet & Clank 2
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 MemCardFilter = SCPS-15056/SCPS-15037
 ---------------------------------------------
 Serial = SCPS-15057
 Name   = Jak and Daxter II
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-15058
 Name   = Arc the Lad - Generation
@@ -3780,6 +3772,7 @@ Region = NTSC-J
 Serial = SCPS-15084
 Name   = Ratchet & Clank 3
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 MemCardFilter = SCPS-15084/SCPS-15056/SCPS-15037
 ---------------------------------------------
 Serial = SCPS-15085
@@ -3849,10 +3842,12 @@ Region = NTSC-J
 Serial = SCPS-15099
 Name   = Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-15100
 Name   = Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-15101
 Name   = Bleach - Hanatareshi Yabou
@@ -3945,6 +3940,7 @@ OPHFLagHack = 1 // Special moves "Bankai" hang otherwise
 Serial = SCPS-15120
 Name   = Ratchet & Clank 5 Gekitotsu! Dodeka Ginga no Mirimiri Gundan
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-17001
 Name   = Gran Turismo 4
@@ -4055,10 +4051,12 @@ Region = NTSC-J
 Serial = SCPS-19210
 Name   = Jak x Daxter: Kyuusekai no Isan [PlayStation 2 The Best]
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-19211
 Name   = Ratchet & Clank [PlayStation 2 The Best]
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-19213
 Name   = Operator's Side [PlayStation 2 The Best] [with Microphone]
@@ -4094,6 +4092,7 @@ Region = NTSC-J
 Serial = SCPS-19302
 Name   = Ratchet & Clank 2 [PlayStation 2 The Best]
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-19303
 Name   = Boku no Natsuyasumi 2 [PlayStation 2 The Best]
@@ -4125,10 +4124,12 @@ Region = NTSC-J
 Serial = SCPS-19309
 Name   = Ratchet & Clank 3 - Up Your Arsenal [PlayStation 2 The Best]
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-19310
 Name   = Ratchet & Clank [PlayStation 2 The Best]
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-19311
 Name   = Saru Get You 3 [PlayStation 2 The Best]
@@ -4150,10 +4151,12 @@ Region = NTSC-J
 Serial = SCPS-19316
 Name   = Ratchet & Clank [PlayStation 2 The Best]
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-19317
 Name   = Ratchet & Clank 2 - Going Commando [PlayStation 2 The Best]
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-19318
 Name   = Genji - Dawn of the Samurai [PlayStation 2 The Best]
@@ -4171,6 +4174,7 @@ MemCardFilter = SCAJ-20146/SCAJ-20196/SCAJ-20099/SCPS-11003/SCPS-19103/SCPS-1915
 Serial = SCPS-19321
 Name   = Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PlayStation 2 The Best]
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-19322
 Name   = Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]
@@ -4202,6 +4206,7 @@ Region = NTSC-J
 Serial = SCPS-19328
 Name   = Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PlayStation 2 the Best - Reprint]
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-19329
 Name   = Bleach - Blade Battlers [PlayStation 2 The Best]
@@ -4290,6 +4295,7 @@ Region = NTSC-J
 Serial = SCPS-55004
 Name   = Jak x Daxter: Kyuusekai no Isan
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-55005
 Name   = Gran Turismo - Concept 2001 Tokyo
@@ -4350,6 +4356,7 @@ Name   = Star Ocean 3 - Till the End of Time
 Region = NTSC-J
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-55020
 Name   = Kengo 2
@@ -4496,6 +4503,7 @@ Compat = 5
 Serial = SCPS-56003
 Name   = Jak and Daxter: The Precursor Legacy
 Region = NTSC-K
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCPS-56005
 Name   = Gran Turismo Concept 2002 Tokyo-Seoul
@@ -4663,6 +4671,7 @@ Serial = SCUS-97124
 Name   = Jak and Daxter: The Precursor Legacy
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97125
 Name   = Frequency
@@ -4746,32 +4755,6 @@ Name   = Primal - Civilization Is Only Skin Deep
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0 // Fixes SPS.
-[patches = FCD89DC3]
-	author=Raziel I.C.H.I. Znot
-	comment=Performance fix
-	// PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
-	// so the game will wait endlessly in a wait loop until COP2 gets around to
-	// setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
-	// VU0 side, remove wait loop.
-	patch=1,EE,0040F110,word,8000033c
-	patch=1,EE,0040F128,word,8000033c
-	patch=1,EE,0040F168,word,8000033c
-	patch=1,EE,0040F180,word,8000033c
-	// Duplicate, not sure that it's used, but patched anyway.
-	patch=1,EE,0040F720,word,8000033c
-	patch=1,EE,0040F738,word,8000033c
-	patch=1,EE,0040F778,word,8000033c
-	patch=1,EE,0040F790,word,8000033c
-	// EE side, rearrange and clean code so VU0 receives all data at once.
-	patch=1,EE,00399B14,word,00000000
-	patch=1,EE,00399B58,word,48A44800
-	patch=1,EE,00399B5C,word,4A00D839
-	patch=1,EE,00399B60,word,00000000
-	patch=1,EE,00399BA4,word,00000000
-	patch=1,EE,00399C10,word,48A44800
-	patch=1,EE,00399C14,word,4A00D839
-	patch=1,EE,00399C18,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SCUS-97144
 Name   = PlayStation Underground 5.1
@@ -4870,10 +4853,12 @@ Region = NTSC-U
 Serial = SCUS-97170
 Name   = Jak and Daxter: The Precursor Legacy [Cingular Wireless Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97171
 Name   = Jak and Daxter: The Precursor Legacy [PS Underground Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97172
 Name   = World Tour Soccer 2002
@@ -4981,6 +4966,7 @@ Serial = SCUS-97199
 Name   = Ratchet & Clank
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97200
 Name   = Kiosk Demo Disc 2.05
@@ -5016,6 +5002,7 @@ Region = NTSC-U
 Serial = SCUS-97209
 Name   = Ratchet & Clank [E3 Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97210
 Name   = Sly Cooper and the Thievius Raccoonus [Demo]
@@ -5134,6 +5121,7 @@ Region = NTSC-U
 Serial = SCUS-97240
 Name   = Ratchet & Clank [EB Games Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97241
 Name   = Official U.S. PlayStation Magazine Demo Disc 066
@@ -5244,6 +5232,7 @@ Serial = SCUS-97265
 Name   = Jak II
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97266
 Name   = Final Fantasy XI [Disc1of2]
@@ -5254,6 +5243,7 @@ Serial = SCUS-97268
 Name   = Ratchet & Clank - Going Commando
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 MemCardFilter = SCUS-97268/SCUS-97199
 ---------------------------------------------
 Serial = SCUS-97269
@@ -5276,10 +5266,12 @@ Region = NTSC-U
 Serial = SCUS-97273
 Name   = Jak II [Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97274
 Name   = Jak II [Video Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97275
 Name   = SOCOM II - U.S. Navy SEALs
@@ -5359,10 +5351,12 @@ Region = NTSC-U
 Serial = SCUS-97322
 Name   = Ratchet & Clank 2 - Going Commando [Regular Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97323
 Name   = Ratchet & Clank 2 - Going Commando [Retail Employees Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97324
 Name   = Kiosk Demo Disc 2.11
@@ -5397,6 +5391,7 @@ Serial = SCUS-97330
 Name   = Jak 3
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97331
 Name   = Official U.S. PlayStation Magazine Demo Disc 078
@@ -5463,6 +5458,7 @@ Serial = SCUS-97353
 Name   = Ratchet & Clank - Up Your Arsenal
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 MemCardFilter = SCUS-97353/SCUS-97268/SCUS-97199
 ---------------------------------------------
 Serial = SCUS-97355
@@ -5523,6 +5519,7 @@ Region = NTSC-U
 Serial = SCUS-97374
 Name   = Ratchet & Clank 2 - Going Commando & Jak II [Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS (for both).
 ---------------------------------------------
 Serial = SCUS-97377
 Name   = Syphon Filter - The Omega Strain [Regular Demo]
@@ -5544,6 +5541,7 @@ Region = NTSC-U
 Serial = SCUS-97381
 Name   = Ratchet & Clank 2 - Going Commando [GameStop Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97382
 Name   = NBA Shootout 2004 [Demo]
@@ -5631,14 +5629,17 @@ Region = NTSC-U
 Serial = SCUS-97411
 Name   = Ratchet & Clank - Up Your Arsenal [Regular Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97412
 Name   = Jak 3 [Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97413
 Name   = Ratchet & Clank - Up Your Arsenal [Public Beta v1.0]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97414
 Name   = EyeToy - AntiGrav
@@ -5702,6 +5703,7 @@ Serial = SCUS-97429
 Name   = Jak X - Combat Racing
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 MemCardFilter = SCUS-97429/SCUS-97465
 ---------------------------------------------
 Serial = SCUS-97430
@@ -5735,6 +5737,7 @@ Region = NTSC-U
 Serial = SCUS-97440
 Name   = Jak and Daxter Trilogy [Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97441
 Name   = The Getaway - Black Monday [Demo]
@@ -5828,6 +5831,7 @@ Serial = SCUS-97465
 Name   = Ratchet - Deadlocked
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97466
 Name   = Gretzky NHL '06
@@ -5920,19 +5924,23 @@ vuRoundMode = 0 // Fixes game engine issue with bombs and ladders.
 Serial = SCUS-97485
 Name   = Ratchet - Deadlocked [Regular Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97486
 Name   = Jak X - Combat Racing [Regular Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97487
 Name   = Ratchet - Deadlocked [Public Beta v.1]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97488
 Name   = Jak X - Combat Racing [Public Beta v.1]
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97489
 Name   = SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]
@@ -6014,6 +6022,7 @@ Region = NTSC-U
 Serial = SCUS-97509
 Name   = Jak II [Greatest Hits]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97510
 Name   = ATV Off-Road Fury 2 [Greatest Hits]
@@ -6034,6 +6043,7 @@ MemCardFilter = SCUS-97512/SCUS-97102
 Serial = SCUS-97513
 Name   = Ratchet & Clank - Going Commando [Greatest Hits]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97514
 Name   = ATV Off-Road Fury 3 [Greatest Hits]
@@ -6046,6 +6056,7 @@ Region = NTSC-U
 Serial = SCUS-97516
 Name   = Jak 3 [Greatest Hits]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97517
 Name   = Killzone [Greatest Hits]
@@ -6055,6 +6066,7 @@ vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graph
 Serial = SCUS-97518
 Name   = Ratchet & Clank - Up Your Arsenal [Greatest Hits]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97519
 Name   = Sly 2 - Band of Thieves [Greatest Hits]
@@ -6148,6 +6160,7 @@ Region = NTSC-U
 Serial = SCUS-97555
 Name   = Jak and Daxter Complete Trilogy [Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS (for all 3 games).
 ---------------------------------------------
 Serial = SCUS-97556
 Name   = MLB '07 - The Show
@@ -6161,6 +6174,7 @@ Serial = SCUS-97558
 Name   = Jak and Daxter: The Lost Frontier
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97560
 Name   = SOCOM - U.S. Navy SEALs - Combined Assault [Demo]
@@ -6262,6 +6276,7 @@ Region = NTSC-U
 Serial = SCUS-97615
 Name   = Ratchet & Clank - Size Matters
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SCUS-97616
 Name   = SingStar 80's
@@ -8995,11 +9010,13 @@ Serial = SLES-50984
 Name   = Gumball 3000
 Region = PAL-E
 Compat = 5
+VU0KickstartHack = 1 // Fixes minor random car SPS.
 ---------------------------------------------
 Serial = SLES-50985
 Name   = Gumball 3000
 Region = PAL-M5
 Compat = 5
+VU0KickstartHack = 1 // Fixes minor random car SPS.
 ---------------------------------------------
 Serial = SLES-50986
 Name   = Twin Caliber
@@ -9776,7 +9793,7 @@ Name   = LEGO Dome Racers
 Region = PAL-M8
 ---------------------------------------------
 Serial = SLES-51307
-Name   = Wild Arms 3
+Name   = Wild ARMs 3
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-51308
@@ -10211,15 +10228,7 @@ Region = PAL-Unk
 Serial = SLES-51547
 Name   = Next Generation Tennis 2003
 Region = PAL-M5
-vuClampMode = 3 // Fixes SPS menus, also needed for patch.
-[patches = 393e3efa]
-	author=Prafull
-	// Fixes ingame SPS.
-	// Also requires vu clamping extra or higher.
-	// Fixed by rearranging COP2 instructions.
-	patch=1,EE,0013f1f0,word,d9100010
-	patch=1,EE,0013f1f4,word,4a000038
-[/patches]
+vuClampMode = 3 // Fixes SPS menus.
 ---------------------------------------------
 Serial = SLES-51548
 Name   = This is Football
@@ -12392,6 +12401,7 @@ Name   = Crash Twinsanity
 Region = PAL-M5
 Compat = 5
 XgKickHack = 1 // Fixes bad Geometry.
+VU0KickstartHack = 1 // Fixes loading hang.
 ---------------------------------------------
 Serial = SLES-52569
 Name   = Spyro - A Hero's Tail
@@ -15060,6 +15070,7 @@ Serial = SLES-53701
 Name   = Super Monkey Ball Adventure
 Region = PAL-M5
 Compat = 5
+VU0KickstartHack = 1 // Fixes loading hang.
 ---------------------------------------------
 Serial = SLES-53702
 Name   = Resident Evil 4
@@ -17080,28 +17091,33 @@ Name   = Valkyrie Profile 2 - Silmeria
 Region = PAL-E
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLES-54645
 Name   = Valkyrie Profile 2 - Silmeria
 Region = PAL-F
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLES-54646
 Name   = Valkyrie Profile 2 - Silmeria
 Region = PAL-G
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLES-54647
 Name   = Valkyrie Profile 2 - Silmeria
 Region = PAL-I
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLES-54648
 Name   = Valkyrie Profile 2 - Silmeria
 Region = PAL-S
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLES-54657
 Name   = Charlotte's Web
@@ -17713,6 +17729,7 @@ Compat = 5
 Serial = SLES-55019
 Name   = Ratchet & Clank - Size Matters
 Region = PAL-M13
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLES-55020
 Name   = Die Simpsons - Das Spiel
@@ -17840,6 +17857,22 @@ Region = PAL-M6
 Serial = SLES-55136
 Name   = Let's Ride! Silver Buckle Stables
 Region = PAL-M4
+---------------------------------------------
+Serial = SLES-55143
+Name   = The Chronicles of Narnia: Prince Caspian
+Region = PAL-Unk
+---------------------------------------------
+Serial = SLES-55144
+Name   = The Chronicles of Narnia: Prince Caspian
+Region = PAL-Unk
+---------------------------------------------
+Serial = SLES-55145
+Name   = Le Monde de Narnia - Chapitre 2 - Le Prince Caspian
+Region = PAL-F
+---------------------------------------------
+Serial = SLES-55146
+Name   = The Chronicles of Narnia: Prince Caspian
+Region = PAL-Unk
 ---------------------------------------------
 Serial = SLES-55147
 Name   = Silent Hill Origins
@@ -18245,6 +18278,7 @@ Region = PAL-M5
 Serial = SLES-55474
 Name   = Shin Megami Tensei: Persona 4
 Region = PAL-E
+vuClampMode = 2 // Fix flickering floor during cutscenes in school.
 ---------------------------------------------
 Serial = SLES-55476
 Name   = Scooby-Doo! First Frights
@@ -18555,12 +18589,14 @@ Name   = Star Ocean 3 - Till the End of Time [Disc1of2]
 Region = PAL-E
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLES-82029
 Name   = Star Ocean 3 - Till the End of Time [Disc2of2]
 Region = PAL-E
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 MemCardFilter = SLES-82028
 ---------------------------------------------
 Serial = SLES-82030
@@ -22897,6 +22933,7 @@ Name   = Star Ocean 3 [Limited Edition]
 Region = NTSC-J
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLPM-65210
 Name   = Chou Battle Houshin - Bundle #1
@@ -23720,12 +23757,14 @@ Name   = Star Ocean 3 [Director's Cut] [Disc1of2]
 Region = NTSC-J
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLPM-65439
 Name   = Star Ocean 3 [Director's Cut] [Disc2of2]
 Region = NTSC-J
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 MemCardFilter = SLPM-65438
 ---------------------------------------------
 Serial = SLPM-65441
@@ -25055,12 +25094,14 @@ Serial = SLPM-65800
 Name   = Radiata Stories
 Region = NTSC-J
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLPM-65801
 Name   = Crash Bandicoot 5
 Region = NTSC-J
 Compat = 5
 XgKickHack = 1 // Fixes bad geometry.
+VU0KickstartHack = 1 // Fixes loading hang.
 ---------------------------------------------
 Serial = SLPM-65802
 Name   = Def Jam - Vendetta [EA Best Hits]
@@ -27318,6 +27359,7 @@ Name   = Valkyrie Profile 2 - Silmeria
 Region = NTSC-J
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLPM-66420
 Name   = Front Mission 4 [Ultimate Hits]
@@ -27551,12 +27593,14 @@ Name   = Star Ocean 3 - Till the End of Time [Ultimate Hits] [Disc1of2]
 Region = NTSC-J
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLPM-66479
 Name   = Star Ocean 3 - Till the End of Time [Ultimate Hits] [Disc2of2]
 Region = NTSC-J
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 MemCardFilter = SLPM-66478
 ---------------------------------------------
 Serial = SLPM-66480
@@ -28721,6 +28765,7 @@ Name   = Valkyrie Profile 2 - Silmeria [Ultimate Hits]
 Region = NTSC-J
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLPM-66783
 Name   = Idol Janshi Suchie-Pai 4 [Limited Edition]
@@ -37315,6 +37360,7 @@ Name   = Star Ocean 3 - Till the End of Time [Disc1of2]
 Region = NTSC-U
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLUS-20489
 Name   = Whirl Tour
@@ -37513,7 +37559,7 @@ Compat = 5
 vuClampMode = 2
 ---------------------------------------------
 Serial = SLUS-20532
-Name   = Disney's Golf
+Name   = Disney Golf
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -39169,6 +39215,7 @@ Name   = Star Ocean 3 - Till the End of Time [Disc2of2]
 Region = NTSC-U
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 MemCardFilter = SLUS-20488
 ---------------------------------------------
 Serial = SLUS-20892
@@ -39260,6 +39307,7 @@ Name   = Crash Twinsanity
 Region = NTSC-U
 Compat = 5
 XgKickHack = 1 // Fixes bad geometry.
+VU0KickstartHack = 1 // Fixes loading hang.
 ---------------------------------------------
 Serial = SLUS-20910
 Name   = Test Drive - Eve of Destruction
@@ -39712,32 +39760,6 @@ Serial = SLUS-20993
 Name   = Ghosthunter
 Region = NTSC-U
 Compat = 5
-[patches = 29C7DA54]
-	author=Raziel I.C.H.I. Znot
-	comment=Performance fix
-	// PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
-	// so the game will wait endlessly in a wait loop until COP2 gets around to
-	// setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
-	// VU0 side, remove wait loop.
-	patch=1,EE,00461C68,word,8000033c
-	patch=1,EE,00461C80,word,8000033c
-	patch=1,EE,00461CC0,word,8000033c
-	patch=1,EE,00461CD8,word,8000033c
-	// Duplicate, not sure that it's used, but patched anyway.
-	patch=1,EE,00463118,word,8000033c
-	patch=1,EE,00463130,word,8000033c
-	patch=1,EE,00463170,word,8000033c
-	patch=1,EE,00463188,word,8000033c
-	// EE side, rearrange and clean code so VU0 receives all data at once.
-	patch=1,EE,003F8544,word,00000000
-	patch=1,EE,003F8588,word,48A44800
-	patch=1,EE,003F858C,word,4A00D839
-	patch=1,EE,003F8590,word,00000000
-	patch=1,EE,003F85D4,word,00000000
-	patch=1,EE,003F8640,word,48A44800
-	patch=1,EE,003F8644,word,4A00D839
-	patch=1,EE,003F8648,word,00000000
-[/patches]
 ---------------------------------------------
 Serial = SLUS-20994
 Name   = Full Metal Alchemist and The Broken Angel
@@ -41082,6 +41104,7 @@ Name   = Radiata Stories
 Region = NTSC-U
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLUS-21263
 Name   = Romancing SaGa
@@ -41115,21 +41138,6 @@ Serial = SLUS-21268
 Name   = 24: The Game
 Region = NTSC-U
 Compat = 5
-[patches = f1c7201e]
-	author=Prafull
-	// Fix slow and choppy gameplay.
-	// PCSX2 attempts to run VU0 for thousands of cycles as soon as it is started,
-	// so the game will wait endlessly in a wait loop until COP2 gets around to
-	// setting vi5(to break the loop) and vf9(to finish calculation) which is many thousands of cycles later.
-	// VU0 side, remove wait loop.
-	// Fixed by rearranging COP2 instructions.
-	patch=1,EE,004155a8,word,48a44800
-	patch=1,EE,004155ac,word,48c02800
-	patch=1,EE,004155b0,word,4a00d839
-	patch=1,EE,00415660,word,48a44800
-	patch=1,EE,00415664,word,48c02800
-	patch=1,EE,00415668,word,4a00d839
-[/patches]
 ---------------------------------------------
 Serial = SLUS-21269
 Name   = Bully
@@ -41151,6 +41159,7 @@ Serial = SLUS-21272
 Name   = Super Monkey Ball Adventure
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes loading hang.
 ---------------------------------------------
 Serial = SLUS-21273
 Name   = Matrix, The - Path of Neo
@@ -42077,6 +42086,7 @@ Name   = Valkyrie Profile 2 - Silmeria
 Region = NTSC-U
 Compat = 5
 VuAddSubHack = 1
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLUS-21453
 Name   = Disney's Meet the Robinsons
@@ -42727,7 +42737,7 @@ Region = NTSC-U
 Compat = 4
 ---------------------------------------------
 Serial = SLUS-21615
-Name   = Wild Arms 5
+Name   = Wild ARMs 5
 Region = NTSC-U
 Compat = 5
 ---------------------------------------------
@@ -43083,6 +43093,7 @@ Serial = SLUS-21689
 Name   = Petz - Horsez 2
 Region = NTSC-U
 Compat = 4
+VU0KickstartHack = 1 // Fixes SPS
 ---------------------------------------------
 Serial = SLUS-21690
 Name   = Alone in the Dark
@@ -44709,6 +44720,7 @@ Serial = SLUS-29101
 Name   = Crash Twinsanity & Spyro - A Hero's Tail [Demo]
 Region = NTSC-U
 XgKickHack = 1 // Fixes bad geometry.
+VU0KickstartHack = 1 // Fixes loading hang (only for Crash).
 ---------------------------------------------
 Serial = SLUS-29104
 Name   = Galactic Wrestling - Featuring Ultimate Muscle [Demo]
@@ -45001,6 +45013,7 @@ Region = PAL-E
 Serial = TCES-52456
 Name   = Ratchet and Clank 3 Beta Trial Code
 Region = PAL-E
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = TCES-52582
 Name   = Everybody's Golf 4 Beta Trial Code
@@ -45019,6 +45032,7 @@ Serial = TCES-53286
 Name   = Jak X Beta Trial Code
 Region = PAL-E
 Compat = 5
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = TCPS-10058
 Name   = Densha de Go! Shinkansen [with Controller]

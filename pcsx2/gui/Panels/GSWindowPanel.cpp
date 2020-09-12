@@ -70,9 +70,17 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	m_check_Fullscreen	= new pxCheckBox( this, _("Default to fullscreen mode on open") );
 	m_check_DclickFullscreen = new pxCheckBox( this, _("Double-click toggles fullscreen mode") );
 
-	m_combo_FMVAspectRatioSwitch->SetToolTip( pxEt( L"Off: Disables temporary aspect ratio switch.\n\n4:3: Temporarily switch to a 4:3 aspect ratio while an FMV plays to correctly display an 4:3 FMV.\n\n16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to correctly display a widescreen 16:9 FMV.") );
+	m_combo_FMVAspectRatioSwitch->SetToolTip( pxEt( L"Off: Disables temporary aspect ratio switch. (It will use the above setting from Aspect Ratio instead of FMV Aspect Ratio Override.)\n\n"
+													L"4:3: Temporarily switch to a 4:3 aspect ratio while an FMV plays to correctly display an 4:3 FMV.\n\n"
+													L"16:9: Temporarily switch to a 16:9 aspect ratio while an FMV plays to correctly display a widescreen 16:9 FMV.") );
 
-	m_text_Zoom->SetToolTip( pxEt( L"Zoom = 100: Fit the entire image to the window without any cropping.\nAbove/Below 100: Zoom In/Out\n0: Automatic-Zoom-In untill the black-bars are gone (Aspect ratio is kept, some of the image goes out of screen).\n  NOTE: Some games draw their own black-bars, which will not be removed with '0'.\n\nKeyboard: CTRL + NUMPAD-PLUS: Zoom-In, CTRL + NUMPAD-MINUS: Zoom-Out, CTRL + NUMPAD-*: Toggle 100/0"
+	m_text_Zoom->SetToolTip( pxEt( L"Zoom = 100: Fit the entire image to the window without any cropping.\n"
+								   L"Above/Below 100: Zoom In/Out.\n\n"
+								   L"0: Automatic-Zoom-In until the black-bars are gone (Aspect ratio is kept, some of the image goes out of screen).\n\n"
+								   L"NOTE: Some games draw their own black-bars, which will not be removed with '0'.\n\n"
+								   L"Keyboard: \n"
+								   L"CTRL + NUMPAD-PLUS: Zoom-In, \n"
+								   L"CTRL + NUMPAD-MINUS: Zoom-Out, \nCTRL + NUMPAD-*: Toggle 100/0"
 	) );
 
 	m_combo_vsync->SetToolTip( pxEt( L"Vsync eliminates screen tearing but typically has a big performance hit. It usually only applies to fullscreen mode, and may not work with all GS plugins."
@@ -81,7 +89,8 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel( wxWindow* parent )
 	m_check_HideMouse->SetToolTip( pxEt( L"Check this to force the mouse cursor invisible inside the GS window; useful if using the mouse as a primary control device for gaming.  By default the mouse auto-hides after 2 seconds of inactivity."
 	) );
 
-	m_check_Fullscreen->SetToolTip( pxEt( L"Enables automatic mode switch to fullscreen when starting or resuming emulation. You can still toggle fullscreen display at any time using alt-enter."
+	m_check_Fullscreen->SetToolTip( pxEt( L"Enables automatic mode switch to fullscreen when starting or resuming emulation. You can still toggle fullscreen display at any time using \n"
+										  L"Alt-Enter or double clicking the output window (game)."
 	) );
 
 	m_check_CloseGS->SetToolTip( pxEt( L"Completely closes the often large and bulky GS window when pressing ESC or pausing the emulator."

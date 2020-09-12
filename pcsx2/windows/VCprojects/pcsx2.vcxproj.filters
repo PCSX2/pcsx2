@@ -139,9 +139,6 @@
     <Filter Include="AppHost\Linux">
       <UniqueIdentifier>{f8e51d3e-dc60-4aa9-9d37-c7c1ccaacd02}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AppHost\Cheats">
-      <UniqueIdentifier>{b9da6fbf-4fd9-4cfb-89f7-34ac0f933ce9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="AppHost\Debugger">
       <UniqueIdentifier>{7a0a1104-f9ee-4cd1-aaba-f8267eba1658}</UniqueIdentifier>
     </Filter>
@@ -707,12 +704,6 @@
     <ClCompile Include="..\..\Linux\LnxKeyCodes.cpp">
       <Filter>AppHost\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="..\cheats\browser.cpp">
-      <Filter>AppHost\Cheats</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cheats\cheats.cpp">
-      <Filter>AppHost\Cheats</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\AppCorePlugins.cpp" />
     <ClCompile Include="..\..\gui\ExecutorThread.cpp" />
     <ClCompile Include="..\..\gui\UpdateUI.cpp" />
@@ -1193,9 +1184,6 @@
     </ClInclude>
     <ClInclude Include="..\..\gui\Saveslots.h">
       <Filter>AppHost\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\cheats\cheats.h">
-      <Filter>AppHost\Cheats</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gui\AppCorePlugins.h" />
     <ClInclude Include="..\..\gui\AppCoreThread.h" />

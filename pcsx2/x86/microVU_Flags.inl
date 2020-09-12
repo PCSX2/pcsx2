@@ -283,7 +283,7 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
 			xMOV(gprF3,  getFlagReg(bStatus[3]));
 		}
 		else if (sortRegs == 2) {
-			xMOV(gprT1,	 getFlagReg (bStatus[3])); 
+			xMOV(gprT1,	 getFlagReg (bStatus[3]));
 			xMOV(gprF0,  getFlagReg (bStatus[0]));
 			xMOV(gprF1,  getFlagReg2(bStatus[1]));
 			xMOV(gprF2,  getFlagReg2(bStatus[2]));
@@ -291,7 +291,7 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
 		}
 		else if (sortRegs == 3) {
 			int gFlag = (bStatus[0] == bStatus[1]) ? bStatus[2] : bStatus[1];
-			xMOV(gprT1,	 getFlagReg (gFlag)); 
+			xMOV(gprT1,	 getFlagReg (gFlag));
 			xMOV(gprT2,	 getFlagReg (bStatus[3]));
 			xMOV(gprF0,  getFlagReg (bStatus[0]));
 			xMOV(gprF1,  getFlagReg3(bStatus[1]));
@@ -299,12 +299,12 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC) {
 			xMOV(gprF3,  gprT2);
 		}
 		else {
-			xMOV(gprT1,  getFlagReg(bStatus[0])); 
+			xMOV(gprT1,  getFlagReg(bStatus[0]));
 			xMOV(gprT2,  getFlagReg(bStatus[1]));
 			xMOV(gprT3,  getFlagReg(bStatus[2]));
 			xMOV(gprF3,  getFlagReg(bStatus[3]));
 			xMOV(gprF0,  gprT1);
-			xMOV(gprF1,  gprT2); 
+			xMOV(gprF1,  gprT2);
 			xMOV(gprF2,  gprT3);
 		}
 	}

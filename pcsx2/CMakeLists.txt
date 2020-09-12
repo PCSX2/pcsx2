@@ -513,8 +513,6 @@ set(pcsx2ZipToolsHeaders
 # Windows sources
 set(pcsx2WindowsSources
 	gui/CpuUsageProviderMSW.cpp
-	windows/cheats/browser.cpp
-	windows/cheats/cheats.cpp
 	windows/FlatFileReaderWindows.cpp
 	windows/Optimus.cpp
 	windows/PatchBrowser.cpp
@@ -526,7 +524,6 @@ set(pcsx2WindowsSources
 
 # Windows headers
 set(pcsx2WindowsHeaders
-	windows/cheats/cheats.h
 	windows/resource.h
 	windows/Win32.h)
 

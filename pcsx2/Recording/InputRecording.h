@@ -69,9 +69,9 @@ public:
 	/// Functions called from GUI
 
 	// Create a new input recording file
-	void Create(wxString filename, bool fromSaveState, wxString authorName);
+	bool Create(wxString filename, bool fromSaveState, wxString authorName);
 	// Play an existing input recording from a file
-	void Play(wxString filename, bool fromSaveState);
+	bool Play(wxString filename);
 	// Stop the active input recording
 	void Stop();
 

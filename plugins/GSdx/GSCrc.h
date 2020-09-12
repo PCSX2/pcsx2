@@ -138,7 +138,6 @@ public:
 		TenchuFS,
 		TenchuWoH,
 		TheIncredibleHulkUD,
-		TimeSplitters2,
 		TombRaiderAnniversary,
 		TombRaiderLegend,
 		TombRaiderUnderworld,

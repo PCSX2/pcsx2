@@ -293,9 +293,6 @@ CRC::Game CRC::m_games[] =
 	{0x90F0D852, BigMuthaTruckers, US, 0},
 	{0x92624842, BigMuthaTruckers, US, 0},
 	{0xDD93DA88, BigMuthaTruckers, JP, 0}, // Bakusou Convoy Densetsu - Otoko Hanamichi America Roman
-	{0x5CC9BF81, TimeSplitters2, EU, 0},
-	{0x12532F1C, TimeSplitters2, US, 0},
-	{0xC01FD223, TimeSplitters2, KO, 0},
 	{0xEB198738, LordOfTheRingsThirdAge, US, 0},
 	{0x614F4CF4, LordOfTheRingsThirdAge, EU, 0},
 	{0x37CD4279, LordOfTheRingsThirdAge, KO, 0},
@@ -437,16 +434,18 @@ CRC::Game CRC::m_games[] =
 	{0xA2034C69, Jak2, US, TextureInsideRt}, // Demo
 	{0x25FE4D23, Jak2, KO, TextureInsideRt},
 	{0xB4976DAF, Jak2, JP, TextureInsideRt},
+	{0x1ED2EF9E, Jak2, NoRegion, TextureInsideRt}, // EU Preview, EU Review
 	{0x12804727, Jak3, EU, TextureInsideRt},
 	{0xE59E10BF, Jak3, EU, TextureInsideRt},
 	{0xCA68E4D5, Jak3, EU, TextureInsideRt}, // Demo
 	{0x644CFD03, Jak3, US, TextureInsideRt},
 	{0xD401BC20, Jak3, US, TextureInsideRt}, // Demo
 	{0xD1368EAE, Jak3, KO, TextureInsideRt},
-	{0x23F8D35B, Jak3, NoRegion, TextureInsideRt}, // EU Preview, US Internal test build
+	{0x23F8D35B, Jak3, NoRegion, TextureInsideRt}, // EU Preview, EU Review, US Internal test build
 	{0xDF659E77, JakX, EU, TextureInsideRt}, // Jak X: Combat Racing
 	{0xC20596DB, JakX, EU, TextureInsideRt}, // Beta Trial Disc, v0.01
 	{0x3091E6FB, JakX, US, TextureInsideRt},
+	{0xC417D919, JakX, US, TextureInsideRt}, // Demo
 	{0xDA366A53, JakX, US, TextureInsideRt}, // Public Beta v.1
 	{0x7B564230, JakX, US, TextureInsideRt}, // Jak and Daxter Complete Trilogy Demo
 	{0x4653CA3E, HarleyDavidson, US, 0},
@@ -576,19 +575,18 @@ bool IsCrcExcluded(std::string exclusionList, uint32 crc)
 
 CRC::Game CRC::Lookup(uint32 crc)
 {
-	printf("GSdx Lookup CRC:%X\n", crc);
+	printf("GSdx Lookup CRC:%08X\n", crc);
 	if(m_map.empty())
 	{
 		std::string exclusions = theApp.GetConfigS("CrcHacksExclusions");
 		if (exclusions.length() != 0)
-			printf( "GSdx: CrcHacksExclusions: %s\n", exclusions.c_str() );
-
+ 			printf( "GSdx: CrcHacksExclusions: %s\n", exclusions.c_str() ); 
 		int crcDups = 0;
 		for(size_t i = 0; i < countof(m_games); i++)
 		{
 			if( !IsCrcExcluded( exclusions, m_games[i].crc ) ){
 				if(m_map[m_games[i].crc]){
-					printf("[FIXME] GSdx: Duplicate CRC: 0x%x: (game-id/region-id) %d/%d overrides %d/%d\n"
+					printf("[FIXME] GSdx: Duplicate CRC: 0x%08X: (game-id/region-id) %d/%d overrides %d/%d\n"
 						, m_games[i].crc, m_games[i].title, m_games[i].region, m_map[m_games[i].crc]->title, m_map[m_games[i].crc]->region);
 					crcDups++;
 				}

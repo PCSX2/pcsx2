@@ -123,7 +123,7 @@ TLD_sysoutConsole = {
 
 #ifndef DISABLE_RECORDING
 ,TLD_recordingConsole = {
-	L"Recording",			L"Recording Console",
+	L"Input Recording",			L"Input Recording Console",
 	pxDt("Shows recording related logs and information")
 },
 

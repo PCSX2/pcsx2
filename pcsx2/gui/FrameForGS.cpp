@@ -736,7 +736,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	{
 		title = templates.RecordingTemplate;
 		title.Replace(L"${frame}", pxsFmt(L"%d", g_InputRecording.GetFrameCounter() + 1)); // zero based
-		title.Replace(L"${maxFrame}", pxsFmt(L"%d", g_InputRecording.GetInputRecordingData().GetMaxFrame() + 1)); // zero based
+		title.Replace(L"${maxFrame}", pxsFmt(L"%d", g_InputRecording.GetInputRecordingData().GetTotalFrames() + 1)); // zero based
 		title.Replace(L"${mode}", g_InputRecording.RecordingModeTitleSegment());
 	} else {
 		title = templates.TitleTemplate;

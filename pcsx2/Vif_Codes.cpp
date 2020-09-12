@@ -36,7 +36,7 @@ vifOp(vifCode_Null);
 
 __ri void vifExecQueue(int idx)
 {
-	if (!GetVifX.queued_program)
+	if (!GetVifX.queued_program || (VU0.VI[REG_VPU_STAT].UL & 1 << (idx * 8)))
 		return;
 
 	GetVifX.queued_program = false;
@@ -59,6 +59,8 @@ __ri void vifExecQueue(int idx)
 }
 
 static __fi void vifFlush(int idx) {
+	vifExecQueue(idx);
+
 	if (!idx) vif0FLUSH();
 	else      vif1FLUSH();
 
@@ -119,6 +121,7 @@ void ExecuteVU(int idx)
 		vifX.cmd = 0;
 		vifX.pass = 0;
 	}
+	vifExecQueue(idx);
 }
 
 //------------------------------------------------------------------

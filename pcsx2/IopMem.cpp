@@ -33,9 +33,9 @@ iopMemoryReserve::iopMemoryReserve()
 {
 }
 
-void iopMemoryReserve::Reserve()
+void iopMemoryReserve::Reserve(VirtualMemoryManagerPtr allocator)
 {
-	_parent::Reserve(HostMemoryMap::IOPmem);
+	_parent::Reserve(std::move(allocator), HostMemoryMap::IOPmemOffset);
 	//_parent::Reserve(EmuConfig.HostMap.IOP);
 }
 
@@ -116,12 +116,6 @@ void iopMemoryReserve::Decommit()
 
 	safe_aligned_free(psxMemWLUT);
 	psxMemRLUT = NULL;
-	iopMem = NULL;
-}
-
-void iopMemoryReserve::Release()
-{
-	_parent::Release();
 	iopMem = NULL;
 }
 

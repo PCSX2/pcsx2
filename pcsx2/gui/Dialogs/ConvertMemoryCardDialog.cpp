@@ -84,15 +84,18 @@ Dialogs::ConvertMemoryCardDialog::ConvertMemoryCardDialog( wxWindow* parent, con
 void Dialogs::ConvertMemoryCardDialog::CreateControls( const MemoryCardType sourceType ) {
 	m_text_filenameInput = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER );
 
-	RadioPanelItem toFile8MB = RadioPanelItem( _( "8MB File" ), pxE( L"Convert this memory card to a standard 8 MB Memory Card .ps2 file." ) )
+	RadioPanelItem toFile8MB = RadioPanelItem( _( "8 MB File (most compatible)" ), pxE( L"Convert this memory card to a standard 8 MB Memory Card .ps2 file." ) )
 		.SetInt( MemoryCardConversionType::MemoryCardConversion_File_8MB );
-	RadioPanelItem toFile16MB = RadioPanelItem( _( "16MB File" ), pxE( L"Convert this memory card to a 16 MB Memory Card .ps2 file." ) )
+	RadioPanelItem toFile16MB = RadioPanelItem( _( "16 MB File" ), pxE( L"Convert this memory card to a 16 MB Memory Card .ps2 file." ) )
 		.SetInt( MemoryCardConversionType::MemoryCardConversion_File_16MB );
-	RadioPanelItem toFile32MB = RadioPanelItem( _( "32MB File" ), pxE( L"Convert this memory card to a 32 MB Memory Card .ps2 file." ) )
+	RadioPanelItem toFile32MB = RadioPanelItem( _( "32 MB File" ), pxE( L"Convert this memory card to a 32 MB Memory Card .ps2 file." ) )
 		.SetInt( MemoryCardConversionType::MemoryCardConversion_File_32MB );
-	RadioPanelItem toFile64MB = RadioPanelItem( _( "64MB File" ), pxE( L"Convert this memory card to a 64 MB Memory Card .ps2 file." ) )
+	RadioPanelItem toFile64MB = RadioPanelItem( _( "64 MB File" ), pxE( L"Convert this memory card to a 64 MB Memory Card .ps2 file." ) )
 		.SetInt( MemoryCardConversionType::MemoryCardConversion_File_64MB );
-	RadioPanelItem toFolder = RadioPanelItem( _( "Folder" ), _( "Convert this memory card to a folder of individual saves." ) )
+	RadioPanelItem toFolder = RadioPanelItem( _( "Folder" ), _(
+		"Convert this memory card to a folder of individual saves. "
+		"Unlimited capacity for saving and is not compatible with other PS2 emulators. "
+		"Allows direct access to the saves which makes it easy to view and back-up per game." ) )
 		.SetInt( MemoryCardConversionType::MemoryCardConversion_Folder );
 
 	const RadioPanelItem tblForFile[] = { toFolder };

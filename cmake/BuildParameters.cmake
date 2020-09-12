@@ -21,6 +21,7 @@
 # Misc option
 #-------------------------------------------------------------------------------
 option(DISABLE_BUILD_DATE "Disable including the binary compile date")
+option(ENABLE_TESTS "Enables building the unit tests" ON)
 
 if(DISABLE_BUILD_DATE OR openSUSE)
     message(STATUS "Disabling the inclusion of the binary compile date.")
@@ -32,12 +33,9 @@ option(USE_VTUNE "Plug VTUNE to profile GSdx JIT.")
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
-option(GLSL_API "Replace ZZogl CG backend by GLSL (experimental option)")
-option(EGL_API "Use EGL on ZZogl/GSdx (experimental/developer option)")
 option(OPENCL_API "Add OpenCL support on GSdx")
 option(REBUILD_SHADER "Rebuild GLSL/CG shader (developer option)")
 option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
-option(GSDX_LEGACY "Build a GSdx legacy plugin compatible with GL3.3")
 
 #-------------------------------------------------------------------------------
 # Path and lib option
@@ -177,25 +175,9 @@ endif()
 include(TargetArch)
 target_architecture(PCSX2_TARGET_ARCHITECTURES)
 if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64" OR ${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
-	if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64" AND (CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE))
-		message(FATAL_ERROR "
-        The code for ${PCSX2_TARGET_ARCHITECTURES} support is not ready yet.
-        For now compile with -DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake
-        or with
-        --cross-multilib passed to build.sh")
-	endif()
 	message(STATUS "Compiling a ${PCSX2_TARGET_ARCHITECTURES} build on a ${CMAKE_HOST_SYSTEM_PROCESSOR} host.")
 else()
 	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
-endif()
-
-# Print a clear message that most architectures are not supported
-if(NOT (${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386"))
-    message(WARNING "
-    PCSX2 does not support the ${PCSX2_TARGET_ARCHITECTURES} architecture and has no plans yet to support it.
-    It would need a complete rewrite of the core emulator and a lot of time.
-
-    You can still run a i386 binary if you install all the i386 libraries (runtime and dev).")
 endif()
 
 if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
@@ -211,13 +193,13 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
             if (USE_ICC)
                 set(ARCH_FLAG "-msse2")
             else()
-                set(ARCH_FLAG "-msse -msse2 -mfxsr -mxsave -march=i686")
+                set(ARCH_FLAG "-msse -msse2 -mfxsr -march=i686")
             endif()
         else()
             # AVX requires some fix of the ABI (mangling) (default 2)
             # Note: V6 requires GCC 4.7
             #set(ARCH_FLAG "-march=native -fabi-version=6")
-            set(ARCH_FLAG "-mfxsr -mxsave -march=native")
+            set(ARCH_FLAG "-mfxsr -march=native")
         endif()
     endif()
 
@@ -241,7 +223,7 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
             set(ARCH_FLAG "-march=native")
         endif()
     endif()
-    add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1)
+    add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1 -D__M_X86_64=1)
     set(_ARCH_64 1)
     set(_M_X86 1)
     set(_M_X86_64 1)

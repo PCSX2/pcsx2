@@ -29,13 +29,13 @@ using namespace R5900::Interpreter;
 void VCALLMS() {
 	vu0Finish();
 	vu0ExecMicro(((cpuRegs.code >> 6) & 0x7FFF));
-	vif0Regs.stat.VEW = false;
+	//vif0Regs.stat.VEW = false;
 }
 
 void VCALLMSR() {
 	vu0Finish();
 	vu0ExecMicro(VU0.VI[REG_CMSAR0].US[0]);
-	vif0Regs.stat.VEW = false;
+	//vif0Regs.stat.VEW = false;
 }
 
 void BC2F()

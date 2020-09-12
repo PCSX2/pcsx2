@@ -947,7 +947,7 @@ int SaveSettings(wchar_t *file = 0)
         }
     }
     if (!noError) {
-        MessageBoxA(hWndProp, "Unable to save settings.  Make sure the disk is not full or write protected, the file isn't write protected, and that the app has permissions to write to the directory.  On Vista, try running in administrator mode.", "Error Writing Configuration File", MB_OK | MB_ICONERROR);
+        MessageBoxA(hWndProp, "Unable to save settings.  Make sure the disk is not full or write protected, the file isn't write protected, and that the app has permissions to write to the directory.  Try running in administrator mode.", "Error Writing Configuration File", MB_OK | MB_ICONERROR);
     }
     return !noError;
 }
@@ -2343,6 +2343,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             AddTooltip(IDC_PAD_LIST, hWnd);
             AddTooltip(IDC_PAD_TYPE, hWnd);
             AddTooltip(IDC_DIAG_LIST, hWnd);
+            AddTooltip(IDC_G_DI, hWnd);
             AddTooltip(IDC_G_XI, hWnd);
             AddTooltip(IDC_ANALOG_START1, hWnd);
             AddTooltip(ID_RESTORE_DEFAULTS, hWnd);

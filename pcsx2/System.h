@@ -41,48 +41,41 @@ class RecompiledCodeReserve;
 
 namespace HostMemoryMap
 {
-#ifdef ASAN_WORKAROUND
-	// address sanitizer uses a shadow memory to monitor the state of the memory. Shadow is computed
-	// as S = (M >> 3) + 0x20000000. So PCSX2 can't use 0x20000000 to 0x3FFFFFFF... Just add another
-	// 0x20000000 offset to avoid conflict.
-	static const uptr EEmem		= 0x40000000;
-	static const uptr IOPmem	= 0x44000000;
-	static const uptr VUmem		= 0x48000000;
-	static const uptr EErec		= 0x50000000;
-	static const uptr IOPrec	= 0x54000000;
-	static const uptr VIF0rec	= 0x56000000;
-	static const uptr VIF1rec	= 0x58000000;
-	static const uptr mVU0rec	= 0x5C000000;
-	static const uptr mVU1rec	= 0x60000000;
-#else
+	static const u32 Size = 0x28000000;
+
+	// The actual addresses may not be equivalent to Base + Offset in the event that allocation at Base failed
+	// Each of these offsets has a debugger-accessible equivalent variable without the Offset suffix that will hold the actual address (not here because we don't want code using it)
+
 	// PS2 main memory, SPR, and ROMs
-	static const uptr EEmem		= 0x20000000;
+	static const u32 EEmemOffset   = 0x00000000;
 
 	// IOP main memory and ROMs
-	static const uptr IOPmem	= 0x24000000;
+	static const u32 IOPmemOffset  = 0x04000000;
 
 	// VU0 and VU1 memory.
-	static const uptr VUmem		= 0x28000000;
+	static const u32 VUmemOffset   = 0x08000000;
 
 	// EE recompiler code cache area (64mb)
-	static const uptr EErec		= 0x30000000;
+	static const u32 EErecOffset   = 0x10000000;
 
 	// IOP recompiler code cache area (16 or 32mb)
-	static const uptr IOPrec	= 0x34000000;
+	static const u32 IOPrecOffset  = 0x14000000;
 
 	// newVif0 recompiler code cache area (16mb)
-	static const uptr VIF0rec	= 0x36000000;
+	static const u32 VIF0recOffset = 0x16000000;
 
 	// newVif1 recompiler code cache area (32mb)
-	static const uptr VIF1rec	= 0x38000000;
+	static const u32 VIF1recOffset = 0x18000000;
 
 	// microVU1 recompiler code cache area (32 or 64mb)
-	static const uptr mVU0rec	= 0x3C000000;
+	static const u32 mVU0recOffset = 0x1C000000;
 
 	// microVU0 recompiler code cache area (64mb)
-	static const uptr mVU1rec	= 0x40000000;
-#endif
+	static const u32 mVU1recOffset = 0x20000000;
 
+	// Bump allocator for any other small allocations
+	// size: Difference between it and HostMemoryMap::Size, so nothing should allocate higher than it!
+	static const u32 bumpAllocatorOffset = 0x24000000;
 }
 
 // --------------------------------------------------------------------------------------
@@ -92,13 +85,18 @@ namespace HostMemoryMap
 class SysMainMemory
 {
 protected:
-	eeMemoryReserve			m_ee;
-	iopMemoryReserve		m_iop;
-	vuMemoryReserve			m_vu;
+	const VirtualMemoryManagerPtr m_mainMemory;
+	VirtualMemoryBumpAllocator    m_bumpAllocator;
+	eeMemoryReserve               m_ee;
+	iopMemoryReserve              m_iop;
+	vuMemoryReserve               m_vu;
 
 public:
 	SysMainMemory();
 	virtual ~SysMainMemory();
+
+	const VirtualMemoryManagerPtr& MainMemory()    { return m_mainMemory; }
+	VirtualMemoryBumpAllocator&    BumpAllocator() { return m_bumpAllocator; }
 
 	virtual void ReserveAll();
 	virtual void CommitAll();
@@ -177,12 +175,13 @@ extern SysMainMemory& GetVmMemory();
 // This should be available on Windows, via Microsoft or Intel compilers (I'm pretty sure Intel
 // supports native SEH model).  GNUC in Windows, or any compiler in a non-windows platform, will
 // need to use setjmp/longjmp instead to exit recompiled code.
+// In addition, we don't currently set up SEH properly on Windows x64 so disable it there too
 //
 
 //#define PCSX2_SEH		0		// use this to force disable SEH on win32, to test setjmp functionality.
 
 #ifndef PCSX2_SEH
-#	if defined(_WIN32) && !defined(__GNUC__)
+#	if defined(_WIN32) && !defined(__GNUC__) && !defined(_WIN64)
 #		define PCSX2_SEH	1
 #	else
 #		define PCSX2_SEH	0

@@ -92,9 +92,9 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_OSD_MONITOR:
 			return "Continuously prints the FPS and the EE, GS and VU(if the MTVU speedhack is enabled) percentages onscreen.";
 		case IDC_PALTEX:
-			return "When checked 4/8 bits texture will be send to the GPU with a palette. GPU will be in charge of the conversion.\n\n"
-				"When unchecked the CPU will convert directly the texture to 32 bits.\n\n"
-				"It is basically a trade-off between GPU/CPU.";
+			return "Enabled: GPU will handle 4/8 bits textures while CPU does the rest.\n"
+				"Disabled: CPU will have full control and directly convert the textures to 32 bits.\n\n"
+				"It is basically a trade-off between GPU/CPU vs CPU alone.";
 		case IDC_ACCURATE_DATE:
 			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n"
 				"It improves shadow and transparency rendering.\n\n"
@@ -132,7 +132,10 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Internal GS feature. Reduces edge aliasing of lines and triangles when the game requests it.";
 		case IDC_SWTHREADS:
 		case IDC_SWTHREADS_EDIT:
-			return "Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging)";
+			return "Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging)\n"
+				"If you have 4 threads on your CPU pick 2 or 3.\n"
+				"You can calculate how to get the best performance (amount of CPU threads - 2)\n"
+				"Note: 7+ threads will not give much more performance and could perhaps even lower it.";
 		case IDC_MIPMAP_SW:
 			return "Enables mipmapping, which some games require to render correctly.";
 		case IDC_SHADEBOOST:
@@ -162,7 +165,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Note: This hack can have a small impact on performance.";
 		case IDC_MERGE_PP_SPRITE:
 			return "Replaces post-processing multiple paving sprites by a single fat sprite.\n"
-				" It reduces various upscaling lines.\n\n"
+				"It reduces various upscaling lines.\n\n"
 				"Note: This hack is a work in progress.";
 		case IDC_GEOMETRY_SHADER_OVERRIDE:
 			return "Allows the GPU instead of just the CPU to transform lines into sprites. This reduces CPU load and bandwidth requirement, but it is heavier on the GPU.\n"
@@ -196,10 +199,11 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise."
 				"\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine games.";
 		case IDC_LARGE_FB:
-			return "Allocate a large framebuffer to be compliant with GS memory (Prevents FMV flickering).\n"
-				"It increases GPU/memory requirements.\n\n"
-				"Note: It should be disabled for Armored Core, Destroy All Humans, and Gran Turismo.\n"
-				"It will amplify RAM/VRAM spikes. Other games might be affected as well.";
+			return "Reserves a larger framebuffer to prevent FMV flickers.\n"
+				"Increases GPU/memory requirements.\n"
+				"Enabling this can amplify stuttering due to low RAM/VRAM.\n\n"
+				"Note: It should be disabled for Armored Core, Destroy All Humans, Gran Turismo and possibly others.\n"
+				"This option does not improve the graphics or the FPS.";
 		// Windows only options.
 #ifdef _WIN32
 		case IDC_ACCURATE_BLEND_UNIT_D3D11:

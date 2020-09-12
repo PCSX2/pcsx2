@@ -387,12 +387,6 @@
     <ClCompile Include="..\..\Linux\LnxKeyCodes.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\cheats\browser.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\cheats\cheats.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\gui\Saveslots.cpp" />
     <ClCompile Include="..\..\gui\SysState.cpp" />
     <ClCompile Include="..\..\ZipTools\thread_gzip.cpp" />
@@ -573,7 +567,6 @@
     <ClInclude Include="..\..\gui\MainFrame.h" />
     <ClInclude Include="..\..\gui\pxEventThread.h" />
     <ClInclude Include="..\..\gui\RecentIsoList.h" />
-    <ClInclude Include="..\cheats\cheats.h" />
     <ClInclude Include="..\..\ZipTools\ThreadedZipTools.h" />
   </ItemGroup>
   <ItemGroup>

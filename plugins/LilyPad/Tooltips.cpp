@@ -35,8 +35,8 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Note 2: This does not enable the mouse to function as an in-game mouse in PS2 games that support a USB mouse or lightgun."
                    L"This requires a USB plugin, while LilyPad is a PAD plugin(PAD means it emulates devices that are to be plugged into the PlayStation controller port that connects the DualShock 2 controller).";
         case IDC_MOUSE_UNFOCUS:
-            return L"Starts the emulation without the mouse being in focus by the application.\n\n"
-                   L"Without mouse focus, the mouse can still be used outside of the emulation.\nWith the mouse in focus it can only be used as an input for the emulator.";
+            return L"Enabled: Mouse is unfocused and can be used for emulation and outside it.\n\n"
+                   L"Disabled: Mouse is focused and can be used for emulation.";
         case IDC_MULTIPLE_BINDING:
             return L"Allows binding multiple PS2 controls to one PC control, and binding conflicting controls on opposing ports and/or slots.\n\n"
                    L"Also enables swapping different kinds of pad types(for example, between DS2 and Guitar) when right-clicking in the pad list.";
@@ -63,8 +63,13 @@ LPWSTR dialog_message(int ID, bool *updateText)
                    L"Double-click a device in the list or right-click it and select \"Test Device\" to display a continuously updated list of the state of all inputs on the selected device.\n"
                    L"Use this option to check if all the inputs on a controller function properly.\n\n"
                    L"Right-click and select \"Refresh\" to update the list of devices in case a recently connected device has not shown up yet.";
+        case IDC_G_DI:
+            return L"(Legacy) Enable this if your gamepad doesn't support Xinput.\n\n"
+                   L"Disable for DualShock 4 (PS4 controllers) and probably others.";
         case IDC_G_XI:
-            return L"Xbox 360/Xbox One controllers (or devices/software imitating such) only";
+            return L"For Xbox 360/ Xbox One controllers (or devices supporting Xinput).\n\n"
+                   L"If it doesn't support Xinput then running through Steam as a non-Steam game might be required for the controllers to work properly.\n\n"
+                   L"https://gamepad-tester.com/ to test your controller and check if it only says 'Xinput' on top.";
         case ID_RESTORE_DEFAULTS:
             return L"Restores the default contents of LilyPad.ini, undoing all settings changes and bindings that have been set up.";
         // Pad tabs

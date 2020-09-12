@@ -40,14 +40,15 @@ const u32 VALID_FLAG = 0x20;
 const u32 LRF_FLAG = 0x10;
 const u32 LOCK_FLAG = 0x8;
 
+// TODO: You can't assume the vtlb entry is in both states at once!
+
 int getFreeCache(u32 mem, int mode, int * way)
 {
 	int number = 0;
 	const int i = (mem >> 6) & 0x3F;
-	const u32 vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
-	s32 ppf = mem + vmv;
-	const u32 hand = (u8)vmv;
-	const u32 paddr = ppf - hand + 0x80000000;
+	const auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+	uptr ppf = vmv.assumePtr(mem);
+	const u32 paddr = vmv.assumeHandlerGetPAddr(mem);
 
 	if((cpuRegs.CP0.n.Config & 0x10000)  == 0) CACHE_LOG("Cache off!");
 	
@@ -112,9 +113,8 @@ void writeCache8(u32 mem, u8 value)
 
 	if (i == -1)
 	{
-		const u32 vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
-		s32 ppf = mem + vmv;
-		*reinterpret_cast<mem8_t*>(ppf) = value;
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		*reinterpret_cast<mem8_t*>(vmv.assumePtr(mem)) = value;
 		return;
 	}
 
@@ -130,9 +130,8 @@ void writeCache16(u32 mem, u16 value)
 
 	if (i == -1)
 	{
-		const u32 vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
-		s32 ppf = mem + vmv;
-		*reinterpret_cast<mem16_t*>(ppf) = value;
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		*reinterpret_cast<mem16_t*>(vmv.assumePtr(mem)) = value;
 		return;
 	}
 
@@ -148,9 +147,8 @@ void writeCache32(u32 mem, u32 value)
 
 	if (i == -1)
 	{
-		const u32 vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
-		s32 ppf = mem + vmv;
-		*reinterpret_cast<mem32_t*>(ppf) = value;
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		*reinterpret_cast<mem32_t*>(vmv.assumePtr(mem)) = value;
 		return;
 	}
 
@@ -166,9 +164,8 @@ void writeCache64(u32 mem, const u64 value)
 
 	if (i == -1)
 	{
-		const u32 vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
-		s32 ppf = mem + vmv;
-		*reinterpret_cast<mem64_t*>(ppf) = value;
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		*reinterpret_cast<mem64_t*>(vmv.assumePtr(mem)) = value;
 		return;
 	}
 
@@ -184,10 +181,10 @@ void writeCache128(u32 mem, const mem128_t* value)
 
 	if (i == -1)
 	{
-		const u32 vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
-		s32 ppf = mem + vmv;
-		*reinterpret_cast<mem64_t*>(ppf) = value->lo;
-		*reinterpret_cast<mem64_t*>(ppf+8) = value->hi;
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		auto ptr = reinterpret_cast<mem64_t*>(vmv.assumePtr(mem));
+		ptr[0] = value->lo;
+		ptr[1] = value->hi;
 		return;
 	}
 
@@ -204,9 +201,8 @@ u8 readCache8(u32 mem)
 
 	if (i == -1)
 	{
-		const u32 vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
-		s32 ppf = mem + vmv;
-		return *reinterpret_cast<u8*>(ppf);
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		return *reinterpret_cast<u8*>(vmv.assumePtr(mem));
 	}
 
 	CACHE_LOG("readCache %8.8x from %d, way %d QW %x u8 part %x Really Reading %x", mem, i, number, (mem >> 4) & 0x3, (mem & 0xf) >> 2, (u32)pCache[i].data[number][(mem >> 4) & 0x3].b8._u8[(mem & 0xf)]);
@@ -220,9 +216,8 @@ u16 readCache16(u32 mem)
 
 	if (i == -1)
 	{
-		const u32 vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
-		s32 ppf = mem + vmv;
-		return *reinterpret_cast<u16*>(ppf);
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		return *reinterpret_cast<u16*>(vmv.assumePtr(mem));
 	}
 
 	CACHE_LOG("readCache %8.8x from %d, way %d QW %x u16 part %x Really Reading %x", mem, i, number, (mem >> 4) & 0x3, (mem & 0xf) >> 2, (u32)pCache[i].data[number][(mem >> 4) & 0x3].b8._u16[(mem & 0xf) >> 1]);
@@ -236,9 +231,8 @@ u32 readCache32(u32 mem)
 
 	if (i == -1)
 	{
-		const u32 vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
-		s32 ppf = mem + vmv;
-		return *reinterpret_cast<u32*>(ppf);
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		return *reinterpret_cast<u32*>(vmv.assumePtr(mem));
 	}
 
 	CACHE_LOG("readCache %8.8x from %d, way %d QW %x u32 part %x Really Reading %x", mem, i, number, (mem >> 4) & 0x3, (mem & 0xf) >> 2, (u32)pCache[i].data[number][(mem >> 4) & 0x3].b8._u32[(mem & 0xf) >> 2]);
@@ -252,9 +246,8 @@ u64 readCache64(u32 mem)
 
 	if (i == -1)
 	{
-		u32 vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
-		s32 ppf=mem + vmv;
-		return *reinterpret_cast<u64*>(ppf);
+		auto vmv = vtlbdata.vmap[mem >> VTLB_PAGE_BITS];
+		return *reinterpret_cast<u64*>(vmv.assumePtr(mem));
 	}
 
 	CACHE_LOG("readCache %8.8x from %d, way %d QW %x u64 part %x Really Reading %x_%x", mem, i, number, (mem >> 4) & 0x3, (mem & 0xf) >> 2, pCache[i].data[number][(mem >> 4) & 0x3].b8._u64[(mem & 0xf) >> 3]);
@@ -297,10 +290,8 @@ void CACHE()
 			const int index = (addr >> 6) & 0x3F;
 			int way = 0;
 			const u32 pfnaddr = addr;
-			const u32 vmv = vtlbdata.vmap[pfnaddr >> VTLB_PAGE_BITS];
-			const s32 ppf = pfnaddr + vmv;
-			const u32 hand = (u8)vmv;
-			const u32 paddr = ppf - hand + 0x80000000;
+			const auto vmv = vtlbdata.vmap[pfnaddr >> VTLB_PAGE_BITS];
+			const u32 paddr = vmv.assumeHandlerGetPAddr(pfnaddr);
 
 			if ((paddr & ~0xFFF) == (pCache[index].tag[0] & ~0xfff) && (pCache[index].tag[0] & VALID_FLAG))
 			{
@@ -327,10 +318,9 @@ void CACHE()
 			const int index = (addr >> 6) & 0x3F;
 			int way = 0;
 			const u32 pfnaddr = addr;
-			const u32 vmv = vtlbdata.vmap[pfnaddr >> VTLB_PAGE_BITS];
-			s32 ppf = (pfnaddr + vmv) & ~0x3F;
-			const u32 hand = (u8)vmv;
-			const u32 paddr = ppf - hand + 0x80000000;
+			const auto vmv = vtlbdata.vmap[pfnaddr >> VTLB_PAGE_BITS];
+			uptr ppf = vmv.assumePtr(pfnaddr) & ~0x3F;
+			const u32 paddr = vmv.assumeHandlerGetPAddr(pfnaddr) & ~0x3f;
 
 			if ((pCache[index].tag[0] & ~0xFFF) == (paddr & ~0xFFF) && (pCache[index].tag[0] & VALID_FLAG))
 			{
@@ -371,10 +361,9 @@ void CACHE()
 			const int index = (addr >> 6) & 0x3F;
 			int way = 0;
 			const u32 pfnaddr = (pCache[index].tag[way] & ~0x80000fff) | (addr & 0xfc0);
-			const u32 vmv = vtlbdata.vmap[pfnaddr >> VTLB_PAGE_BITS];
-			s32 ppf = (pfnaddr + vmv) & ~0x3F;
-			const u32 hand = (u8)vmv;
-			const u32 paddr = ppf - hand + 0x80000000;
+			const auto vmv = vtlbdata.vmap[pfnaddr >> VTLB_PAGE_BITS];
+			uptr ppf = vmv.assumePtr(pfnaddr);
+			const u32 paddr = vmv.assumeHandlerGetPAddr(pfnaddr);
 			
 			CACHE_LOG("CACHE DHWOIN addr %x, index %d, way %d, Flags %x OP %x", addr, index, way, pCache[index].tag[way] & 0x78, cpuRegs.code);
 
@@ -439,8 +428,8 @@ void CACHE()
 			//DXLTG demands that SYNC.L is called before this command, which forces the cache to write back, so presumably games are checking the cache has updated the memory
 			//For speed, we will do it here.
 			const u32 pfnaddr = (pCache[index].tag[way] & ~0x80000fff) | (addr & 0xfc0);
-			const u32 vmv = vtlbdata.vmap[pfnaddr >> VTLB_PAGE_BITS];
-			s32 ppf = (pfnaddr + vmv) & ~0x3F;
+			const auto vmv = vtlbdata.vmap[pfnaddr >> VTLB_PAGE_BITS];
+			s32 ppf = vmv.assumePtr(pfnaddr);
 
 			if ((pCache[index].tag[way] & (DIRTY_FLAG | VALID_FLAG)) == (DIRTY_FLAG | VALID_FLAG))	// Dirty
 			{
@@ -489,10 +478,9 @@ void CACHE()
 			const int index = (addr >> 6) & 0x3F;
 			const int way = addr & 0x1;
 			const u32 pfnaddr = (pCache[index].tag[way] & ~0x80000fff) + (addr & 0xFC0);
-			const u32 vmv = vtlbdata.vmap[pfnaddr >> VTLB_PAGE_BITS];
-			s32 ppf = pfnaddr + vmv;
-			const u32 hand = (u8)vmv;
-			const u32 paddr = ppf - hand + 0x80000000;
+			const auto vmv = vtlbdata.vmap[pfnaddr >> VTLB_PAGE_BITS];
+			s32 ppf = vmv.assumePtr(pfnaddr);
+			const u32 paddr = vmv.assumeHandlerGetPAddr(pfnaddr);
 
 			CACHE_LOG("CACHE DXWBIN addr %x, index %d, way %d, Flags %x Paddr %x tag %x", addr, index, way, pCache[index].tag[way] & 0x78, paddr, pCache[index].tag[way]);
 			if ((pCache[index].tag[way] & (DIRTY_FLAG|VALID_FLAG)) == (DIRTY_FLAG|VALID_FLAG))	// Dirty

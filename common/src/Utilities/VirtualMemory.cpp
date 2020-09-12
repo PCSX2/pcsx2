@@ -67,68 +67,24 @@ void SrcType_PageFault::_DispatchRaw(ListenerIterator iter, const ListenerIterat
     } while ((++iter != iend) && !m_handled);
 }
 
+static size_t pageAlign(size_t size)
+{
+    return (size + __pagesize - 1) / __pagesize * __pagesize;
+}
+
 // --------------------------------------------------------------------------------------
-//  VirtualMemoryReserve  (implementations)
+//  VirtualMemoryManager  (implementations)
 // --------------------------------------------------------------------------------------
-VirtualMemoryReserve::VirtualMemoryReserve(const wxString &name, size_t size)
-    : m_name(name)
+
+VirtualMemoryManager::VirtualMemoryManager(const wxString &name, uptr base, size_t size, uptr upper_bounds, bool strict)
+    : m_name(name), m_baseptr(0), m_pageuse(nullptr), m_pages_reserved(0)
 {
-    m_defsize = size;
+    if (!size) return;
 
-    m_pages_commited = 0;
-    m_pages_reserved = 0;
-    m_baseptr = NULL;
-    m_prot_mode = PageAccess_None();
-    m_allow_writes = true;
-}
+    uptr reserved_bytes = pageAlign(size);
+    m_pages_reserved = reserved_bytes / __pagesize;
 
-VirtualMemoryReserve &VirtualMemoryReserve::SetName(const wxString &newname)
-{
-    m_name = newname;
-    return *this;
-}
-
-VirtualMemoryReserve &VirtualMemoryReserve::SetBaseAddr(uptr newaddr)
-{
-    if (!pxAssertDev(!m_pages_reserved, "Invalid object state: you must release the virtual memory reserve prior to changing its base address!"))
-        return *this;
-
-    m_baseptr = (void *)newaddr;
-    return *this;
-}
-
-VirtualMemoryReserve &VirtualMemoryReserve::SetPageAccessOnCommit(const PageProtectionMode &mode)
-{
-    m_prot_mode = mode;
-    return *this;
-}
-
-// Notes:
-//  * This method should be called if the object is already in an released (unreserved) state.
-//    Subsequent calls will be ignored, and the existing reserve will be returned.
-//
-// Parameters:
-//   size - size of the reserve, in bytes. (optional)
-//     If not specified (or zero), then the default size specified in the constructor for the
-//     object instance is used.
-//
-//   upper_bounds - criteria that must be met for the allocation to be valid.
-//     If the OS refuses to allocate the memory below the specified address, the
-//     object will fail to initialize and an exception will be thrown.
-void *VirtualMemoryReserve::Reserve(size_t size, uptr base, uptr upper_bounds)
-{
-    if (!pxAssertDev(m_baseptr == NULL, "(VirtualMemoryReserve) Invalid object state; object has already been reserved."))
-        return m_baseptr;
-
-    if (!size)
-        size = m_defsize;
-    if (!size)
-        return NULL;
-
-    m_pages_reserved = (size + __pagesize - 4) / __pagesize;
-    uptr reserved_bytes = m_pages_reserved * __pagesize;
-
-    m_baseptr = (void *)HostSys::MmapReserve(base, reserved_bytes);
+    m_baseptr = (uptr)HostSys::MmapReserve(base, reserved_bytes);
 
     if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds))) {
         DevCon.Warning(L"%s: host memory @ %ls -> %ls is unavailable; attempting to map elsewhere...",
@@ -139,17 +95,176 @@ void *VirtualMemoryReserve::Reserve(size_t size, uptr base, uptr upper_bounds)
         if (base) {
             // Let's try again at an OS-picked memory area, and then hope it meets needed
             // boundschecking criteria below.
-            m_baseptr = HostSys::MmapReserve(0, reserved_bytes);
+            m_baseptr = (uptr)HostSys::MmapReserve(0, reserved_bytes);
         }
     }
 
-    if ((upper_bounds != 0) && (((uptr)m_baseptr + reserved_bytes) > upper_bounds)) {
+    bool fulfillsRequirements = true;
+    if (strict && m_baseptr != base)
+        fulfillsRequirements = false;
+    if ((upper_bounds != 0) && ((m_baseptr + reserved_bytes) > upper_bounds))
+        fulfillsRequirements = false;
+    if (!fulfillsRequirements) {
         SafeSysMunmap(m_baseptr, reserved_bytes);
-        // returns null, caller should throw an exception or handle appropriately.
     }
 
+    if (!m_baseptr) return;
+
+    m_pageuse = new std::atomic<bool>[m_pages_reserved]();
+
+    FastFormatUnicode mbkb;
+    uint mbytes = reserved_bytes / _1mb;
+    if (mbytes)
+        mbkb.Write("[%umb]", mbytes);
+    else
+        mbkb.Write("[%ukb]", reserved_bytes / 1024);
+
+    DevCon.WriteLn(Color_Gray, L"%-32s @ %ls -> %ls %ls", WX_STR(m_name),
+                   pxsPtr(m_baseptr), pxsPtr((uptr)m_baseptr + reserved_bytes), mbkb.c_str());
+}
+
+VirtualMemoryManager::~VirtualMemoryManager()
+{
+    if (m_pageuse) delete[] m_pageuse;
+    if (m_baseptr) HostSys::Munmap(m_baseptr, m_pages_reserved * __pagesize);
+}
+
+static bool VMMMarkPagesAsInUse(std::atomic<bool> *begin, std::atomic<bool> *end) {
+    for (auto current = begin; current < end; current++) {
+        bool expected = false;
+        if (!current->compare_exchange_strong(expected, true), std::memory_order_relaxed) {
+            // This was already allocated!  Undo the things we've set until this point
+            while (--current >= begin) {
+                if (!current->compare_exchange_strong(expected, false, std::memory_order_relaxed)) {
+                    // In the time we were doing this, someone set one of the things we just set to true back to false
+                    // This should never happen, but if it does we'll just stop and hope nothing bad happens
+                    pxAssert(0);
+                    return false;
+                }
+            }
+            return false;
+        }
+    }
+    return true;
+}
+
+void *VirtualMemoryManager::Alloc(uptr offsetLocation, size_t size) const
+{
+    size = pageAlign(size);
+    if (!pxAssertDev(offsetLocation % __pagesize == 0, "(VirtualMemoryManager) alloc at unaligned offsetLocation"))
+        return nullptr;
+    if (!pxAssertDev(size + offsetLocation <= m_pages_reserved * __pagesize, "(VirtualMemoryManager) alloc outside reserved area"))
+        return nullptr;
+    if (m_baseptr == 0)
+        return nullptr;
+    auto puStart = &m_pageuse[offsetLocation / __pagesize];
+    auto puEnd = &m_pageuse[(offsetLocation+size) / __pagesize];
+    if (!pxAssertDev(VMMMarkPagesAsInUse(puStart, puEnd), "(VirtualMemoryManager) allocation requests overlapped"))
+        return nullptr;
+    return (void *)(m_baseptr + offsetLocation);
+}
+
+void VirtualMemoryManager::Free(void *address, size_t size) const
+{
+    uptr offsetLocation = (uptr)address - m_baseptr;
+    if (!pxAssertDev(offsetLocation % __pagesize == 0, "(VirtualMemoryManager) free at unaligned address")) {
+        uptr newLoc = pageAlign(offsetLocation);
+        size -= (offsetLocation - newLoc);
+        offsetLocation = newLoc;
+    }
+    if (!pxAssertDev(size % __pagesize == 0, "(VirtualMemoryManager) free with unaligned size"))
+        size -= size % __pagesize;
+    if (!pxAssertDev(size + offsetLocation <= m_pages_reserved * __pagesize, "(VirtualMemoryManager) free outside reserved area"))
+        return;
+    auto puStart = &m_pageuse[offsetLocation / __pagesize];
+    auto puEnd = &m_pageuse[(offsetLocation+size) / __pagesize];
+    for (; puStart < puEnd; puStart++) {
+        bool expected = true;
+        if (!puStart->compare_exchange_strong(expected, false, std::memory_order_relaxed)) {
+            pxAssertDev(0, "(VirtaulMemoryManager) double-free");
+        }
+    }
+}
+
+// --------------------------------------------------------------------------------------
+//  VirtualMemoryBumpAllocator  (implementations)
+// --------------------------------------------------------------------------------------
+VirtualMemoryBumpAllocator::VirtualMemoryBumpAllocator(VirtualMemoryManagerPtr allocator, uptr offsetLocation, size_t size)
+    : m_allocator(std::move(allocator)), m_baseptr((uptr)m_allocator->Alloc(offsetLocation, size)), m_endptr(m_baseptr + size)
+{
+    if (m_baseptr.load() == 0)
+        pxAssertDev(0, "(VirtualMemoryBumpAllocator) tried to construct from bad VirtualMemoryManager");
+}
+
+void *VirtualMemoryBumpAllocator::Alloc(size_t size)
+{
+    if (m_baseptr.load() == 0) // True if constructed from bad VirtualMemoryManager (assertion was on initialization)
+        return nullptr;
+
+    size_t reservedSize = pageAlign(size);
+
+    uptr out = m_baseptr.fetch_add(reservedSize, std::memory_order_relaxed);
+
+    if (!pxAssertDev(out - reservedSize + size <= m_endptr, "(VirtualMemoryBumpAllocator) ran out of memory"))
+        return nullptr;
+
+    return (void *)out;
+}
+
+// --------------------------------------------------------------------------------------
+//  VirtualMemoryReserve  (implementations)
+// --------------------------------------------------------------------------------------
+VirtualMemoryReserve::VirtualMemoryReserve(const wxString &name, size_t size)
+    : m_name(name)
+{
+    m_defsize = size;
+
+    m_allocator = nullptr;
+    m_pages_commited = 0;
+    m_pages_reserved = 0;
+    m_baseptr = nullptr;
+    m_prot_mode = PageAccess_None();
+    m_allow_writes = true;
+}
+
+VirtualMemoryReserve &VirtualMemoryReserve::SetPageAccessOnCommit(const PageProtectionMode &mode)
+{
+    m_prot_mode = mode;
+    return *this;
+}
+
+size_t VirtualMemoryReserve::GetSize(size_t requestedSize)
+{
+    if (!requestedSize)
+        return pageAlign(m_defsize);
+    return pageAlign(requestedSize);
+}
+
+// Notes:
+//  * This method should be called if the object is already in an released (unreserved) state.
+//    Subsequent calls will be ignored, and the existing reserve will be returned.
+//
+// Parameters:
+//   baseptr - the new base pointer that's about to be assigned
+//   size - size of the region pointed to by baseptr
+//
+void *VirtualMemoryReserve::Assign(VirtualMemoryManagerPtr allocator, void * baseptr, size_t size)
+{
+    if (!pxAssertDev(m_baseptr == NULL, "(VirtualMemoryReserve) Invalid object state; object has already been reserved."))
+        return m_baseptr;
+
+    if (!size)
+        return nullptr;
+
+    m_allocator = std::move(allocator);
+
+    m_baseptr = baseptr;
+
+    uptr reserved_bytes = pageAlign(size);
+    m_pages_reserved = reserved_bytes / __pagesize;
+
     if (!m_baseptr)
-        return NULL;
+        return nullptr;
 
     FastFormatUnicode mbkb;
     uint mbytes = reserved_bytes / _1mb;
@@ -184,7 +299,10 @@ void VirtualMemoryReserve::Reset()
 
 void VirtualMemoryReserve::Release()
 {
-    SafeSysMunmap(m_baseptr, m_pages_reserved * __pagesize);
+    if (!m_baseptr) return;
+    Reset();
+    m_allocator->Free(m_baseptr, m_pages_reserved * __pagesize);
+    m_baseptr = nullptr;
 }
 
 bool VirtualMemoryReserve::Commit()
@@ -222,7 +340,7 @@ void VirtualMemoryReserve::ForbidModification()
 //  newsize - new size of the reserved buffer, in bytes.
 bool VirtualMemoryReserve::TryResize(uint newsize)
 {
-    uint newPages = (newsize + __pagesize - 1) / __pagesize;
+    uint newPages = pageAlign(newsize) / __pagesize;
 
     if (newPages > m_pages_reserved) {
         uint toReservePages = newPages - m_pages_reserved;
@@ -230,11 +348,10 @@ bool VirtualMemoryReserve::TryResize(uint newsize)
 
         DevCon.WriteLn(L"%-32s is being expanded by %u pages.", WX_STR(m_name), toReservePages);
 
-        m_baseptr = (void *)HostSys::MmapReserve((uptr)GetPtrEnd(), toReserveBytes);
-
-        if (!m_baseptr) {
-            Console.Warning("%-32s could not be passively resized due to virtual memory conflict!");
+        if (!m_allocator->AllocAtAddress(GetPtrEnd(), toReserveBytes)) {
+            Console.Warning("%-32s could not be passively resized due to virtual memory conflict!", WX_STR(m_name));
             Console.Indent().Warning("(attempted to map memory @ %08p -> %08p)", m_baseptr, (uptr)m_baseptr + toReserveBytes);
+            return false;
         }
 
         DevCon.WriteLn(Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
@@ -248,12 +365,13 @@ bool VirtualMemoryReserve::TryResize(uint newsize)
 
         DevCon.WriteLn(L"%-32s is being shrunk by %u pages.", WX_STR(m_name), toRemovePages);
 
-        HostSys::MmapResetPtr(GetPtrEnd(), toRemoveBytes);
+        m_allocator->Free(GetPtrEnd() - toRemoveBytes, toRemoveBytes);
 
         DevCon.WriteLn(Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
-                       m_baseptr, (uptr)m_baseptr + toRemoveBytes, toRemoveBytes / _1mb);
+                       m_baseptr, GetPtrEnd(), GetReserveSizeInBytes() / _1mb);
     }
 
+    m_pages_reserved = newPages;
     return true;
 }
 

@@ -25,12 +25,12 @@ namespace x86Emitter
 #define OpWriteSSE(pre, op) xOpWrite0F(pre, op, to, from)
 
 extern void SimdPrefix(u8 prefix, u16 opcode);
-extern void EmitSibMagic(uint regfield, const void *address);
-extern void EmitSibMagic(uint regfield, const xIndirectVoid &info);
-extern void EmitSibMagic(uint reg1, const xRegisterBase &reg2);
-extern void EmitSibMagic(const xRegisterBase &reg1, const xRegisterBase &reg2);
-extern void EmitSibMagic(const xRegisterBase &reg1, const void *src);
-extern void EmitSibMagic(const xRegisterBase &reg1, const xIndirectVoid &sib);
+extern void EmitSibMagic(uint regfield, const void *address, int extraRIPOffset = 0);
+extern void EmitSibMagic(uint regfield, const xIndirectVoid &info, int extraRIPOffset = 0);
+extern void EmitSibMagic(uint reg1, const xRegisterBase &reg2, int = 0);
+extern void EmitSibMagic(const xRegisterBase &reg1, const xRegisterBase &reg2, int = 0);
+extern void EmitSibMagic(const xRegisterBase &reg1, const void *src, int extraRIPOffset = 0);
+extern void EmitSibMagic(const xRegisterBase &reg1, const xIndirectVoid &sib, int extraRIPOffset = 0);
 
 extern void EmitRex(uint regfield, const void *address);
 extern void EmitRex(uint regfield, const xIndirectVoid &info);
@@ -49,7 +49,7 @@ inline void xWrite(T val)
 }
 
 template <typename T1, typename T2>
-__emitinline void xOpWrite(u8 prefix, u8 opcode, const T1 &param1, const T2 &param2)
+__emitinline void xOpWrite(u8 prefix, u8 opcode, const T1 &param1, const T2 &param2, int extraRIPOffset = 0)
 {
     if (prefix != 0)
         xWrite8(prefix);
@@ -57,7 +57,7 @@ __emitinline void xOpWrite(u8 prefix, u8 opcode, const T1 &param1, const T2 &par
 
     xWrite8(opcode);
 
-    EmitSibMagic(param1, param2);
+    EmitSibMagic(param1, param2, extraRIPOffset);
 }
 
 template <typename T1, typename T2>
@@ -96,7 +96,13 @@ __emitinline void xOpWrite0F(u8 prefix, u16 opcode, const T1 &param1, const T2 &
 template <typename T1, typename T2>
 __emitinline void xOpWrite0F(u8 prefix, u16 opcode, const T1 &param1, const T2 &param2, u8 imm8)
 {
-    xOpWrite0F(prefix, opcode, param1, param2);
+    if (prefix != 0)
+        xWrite8(prefix);
+    EmitRex(param1, param2);
+
+    SimdPrefix(0, opcode);
+
+    EmitSibMagic(param1, param2, 1);
     xWrite8(imm8);
 }
 

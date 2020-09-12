@@ -74,6 +74,7 @@ void SetBranchImm( u32 imm );
 void iFlushCall(int flushtype);
 void recBranchCall( void (*func)() );
 void recCall( void (*func)() );
+u32 scaleblockcycles_clear();
 
 namespace R5900{
 namespace Dynarec {
@@ -104,7 +105,7 @@ extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
 u32* _eeGetConstReg(int reg);
 
 // finds where the GPR is stored and moves lower 32 bits to EAX
-void _eeMoveGPRtoR(const x86Emitter::xRegisterLong& to, int fromgpr);
+void _eeMoveGPRtoR(const x86Emitter::xRegister32& to, int fromgpr);
 void _eeMoveGPRtoM(uptr to, int fromgpr);
 void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr);
 void eeSignExtendTo(int gpr, bool onlyupper=false);

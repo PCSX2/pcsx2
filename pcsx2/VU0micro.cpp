@@ -42,9 +42,11 @@ void __fastcall vu0ExecMicro(u32 addr) {
 		vu0Finish();
 	}
 
+	// Need to copy the clip flag back to the interpreter in case COP2 has edited it
+	VU0.clipflag = VU0.VI[REG_CLIP_FLAG].UL;
 	VU0.VI[REG_VPU_STAT].UL &= ~0xFF;
 	VU0.VI[REG_VPU_STAT].UL |=  0x01;
-
+	VU0.cycle = cpuRegs.cycle;
 	if ((s32)addr != -1) VU0.VI[REG_TPC].UL = addr;
 	_vuExecMicroDebug(VU0);
 	CpuVU0->ExecuteBlock(1);

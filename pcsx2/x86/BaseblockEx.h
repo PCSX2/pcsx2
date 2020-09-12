@@ -230,14 +230,20 @@ public:
 
 #define PC_GETBLOCK_(x, reclut) ((BASEBLOCK*)(reclut[((u32)(x)) >> 16] + (x)*(sizeof(BASEBLOCK)/4)))
 
-static void recLUT_SetPage(uptr reclut[0x10000], uptr hwlut[0x10000],
+/**
+ * Add a page to the recompiler lookup table
+ *
+ * Will associate `reclut[pagebase + pageidx]` with `mapbase[mappage << 14]`
+ * Will associate `hwlut[pagebase + pageidx]` with `pageidx << 16`
+ */
+static void recLUT_SetPage(uptr reclut[0x10000], u32 hwlut[0x10000],
 						   BASEBLOCK *mapbase, uint pagebase, uint pageidx, uint mappage)
 {
 	// this value is in 64k pages!
 	uint page = pagebase + pageidx;
 
 	pxAssert( page < 0x10000 );
-	reclut[page] = (uptr)&mapbase[(mappage - page) << 14];
+	reclut[page] = (uptr)&mapbase[((s32)mappage - (s32)page) << 14];
 	if (hwlut)
 		hwlut[page] = 0u - (pagebase << 16);
 }

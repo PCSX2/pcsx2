@@ -114,7 +114,7 @@ int IPU1dma()
 
 	//We need to make sure GIF has flushed before sending IPU data, it seems to REALLY screw FFX videos
 
-	if(!ipu1ch.chcr.STR || IPU1Status.DMAMode == 2)
+	if(!ipu1ch.chcr.STR || IPU1Status.DMAMode == DMA_MODE_INTERLEAVE)
 	{
 		//We MUST stop the IPU from trying to fill the FIFO with more data if the DMA has been suspended
 		//if we don't, we risk causing the data to go out of sync with the fifo and we end up losing some!
@@ -409,6 +409,6 @@ IPU_FORCEINLINE void ipu1Interrupt()
 
 	DMA_LOG("IPU1 DMA End");
 	ipu1ch.chcr.STR = false;
-	IPU1Status.DMAMode = 2;
+	IPU1Status.DMAMode = DMA_MODE_INTERLEAVE;
 	hwDmacIrq(DMAC_TO_IPU);
 }

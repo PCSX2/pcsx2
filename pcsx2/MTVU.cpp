@@ -330,6 +330,7 @@ void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop)
 	KickStart();
 	u32 cycles = std::min(Get_vuCycles(), 3000u);
 	cpuRegs.cycle += cycles * EmuConfig.Speedhacks.EECycleSkip;
+	VU0.cycle += cycles * EmuConfig.Speedhacks.EECycleSkip;
 }
 
 void VU_Thread::VifUnpack(vifStruct& _vif, VIFregisters& _vifRegs, u8* data, u32 size)

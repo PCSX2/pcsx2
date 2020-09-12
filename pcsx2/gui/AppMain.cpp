@@ -1059,10 +1059,9 @@ void Pcsx2App::OnProgramLogClosed( wxWindowID id )
 void Pcsx2App::OnMainFrameClosed( wxWindowID id )
 {
 #ifndef DISABLE_RECORDING
-	if (g_Conf->EmuOptions.EnableRecordingTools)
-	{
+	// TODO - investigate, this seems like it should be the opposite?
+	if (!g_InputRecording.IsRecordingActive())
 		g_InputRecording.Stop();
-	}
 #endif
 
 	// Nothing threaded depends on the mainframe (yet) -- it all passes through the main wxApp
@@ -1178,6 +1177,7 @@ void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 {
 	g_Conf->CurrentIso = newIsoFile;
 	sMainFrame.UpdateIsoSrcSelection();
+	sMainFrame.UpdateStatusBar();
 }
 
 bool HasMainFrame()

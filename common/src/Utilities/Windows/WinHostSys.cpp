@@ -19,7 +19,7 @@
 
 #include <winnt.h>
 
-static int DoSysPageFaultExceptionFilter(EXCEPTION_POINTERS *eps)
+static long DoSysPageFaultExceptionFilter(EXCEPTION_POINTERS *eps)
 {
     if (eps->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
         return EXCEPTION_CONTINUE_SEARCH;
@@ -32,7 +32,7 @@ static int DoSysPageFaultExceptionFilter(EXCEPTION_POINTERS *eps)
     return Source_PageFault->WasHandled() ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
 }
 
-int SysPageFaultExceptionFilter(EXCEPTION_POINTERS *eps)
+long __stdcall SysPageFaultExceptionFilter(EXCEPTION_POINTERS *eps)
 {
     // Prevent recursive exception filtering by catching the exception from the filter here.
     // In the event that the filter causes an access violation (happened during shutdown
@@ -49,7 +49,9 @@ int SysPageFaultExceptionFilter(EXCEPTION_POINTERS *eps)
 
 void _platform_InstallSignalHandler()
 {
-    // NOP on Win32 systems -- we use __try{} __except{} instead.
+#ifdef _WIN64 // We don't handle SEH properly on Win64 so use a vectored exception handler instead
+    AddVectoredExceptionHandler(true, SysPageFaultExceptionFilter);
+#endif
 }
 
 

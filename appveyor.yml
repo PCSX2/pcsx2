@@ -3,16 +3,34 @@
 # finished, which could be a bit annoying.
 version: 1.{build}-{branch}
 
+# Do not build feature branch with open Pull Requests
+skip_branch_with_pr: true
+
+# Skip building commits if only the following directories/files are changed
+skip_commits:
+  files:
+    - .gitignore
+    - .travis.yml
+    - .clang-format
+    - '**/*.md'
+    - debian-packager/
+    - bin/PCSX2_keys.ini.default
+    # Linux only plugins for now
+    - plugins/onepad/
+    - plugins/onepad_legacy/
+    # Tools
+    - tools/GSDumpGUI/
+
 environment:
   matrix:
   - platform: Win32
     target: AppVeyor
     visualstudio_string: vs2019
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-  - platform: Win32
+  - platform: x64
     target: AppVeyor
-    visualstudio_string: vs2017
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    visualstudio_string: vs2019
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
 matrix:
   fast_finish: true

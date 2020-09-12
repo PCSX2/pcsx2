@@ -95,4 +95,8 @@ class GSOsdManager {
 	GSVector2i m_real_size;
 	size_t Size();
 	size_t GeneratePrimitives(GSVertexPT1* dst, size_t count);
+	
+	private:
+	
+	std::vector<char> resource_data_buffer;
 };

@@ -98,5 +98,7 @@ enum {
 	IDR_TFX_VGS_GLSL,
 	IDR_TFX_FS_GLSL,
 	IDR_TFX_CL,
+	// fonts
+	IDR_FONT_ROBOTO,
 };
 #endif

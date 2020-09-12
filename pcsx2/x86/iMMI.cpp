@@ -1500,16 +1500,18 @@ void recQFSRV()
 		int info = eeRecompileCodeXMM(XMMINFO_WRITED);
 
 		xMOV(eax, ptr32[&cpuRegs.sa]);
-		xMOVDQU(xRegisterSSE(EEREC_D), ptr32[eax + &cpuRegs.GPR.r[_Rt_]]);
+		xLEA(rcx, ptr[&cpuRegs.GPR.r[_Rt_]]);
+		xMOVDQU(xRegisterSSE(EEREC_D), ptr32[rax + rcx]);
 		return;
 	}
 		
 	int info = eeRecompileCodeXMM( XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED );
 
 	xMOV(eax, ptr32[&cpuRegs.sa]);
-	xMOVDQA(ptr32[&tempqw[0]], xRegisterSSE(EEREC_T));
-	xMOVDQA(ptr32[&tempqw[4]], xRegisterSSE(EEREC_S));
-	xMOVDQU(xRegisterSSE(EEREC_D), ptr32[eax + &tempqw]);
+	xLEA(rcx, ptr[tempqw]);
+	xMOVDQA(ptr32[rcx], xRegisterSSE(EEREC_T));
+	xMOVDQA(ptr32[rcx+16], xRegisterSSE(EEREC_S));
+	xMOVDQU(xRegisterSSE(EEREC_D), ptr32[rax + rcx]);
 
 	_clearNeededXMMregs();
 }

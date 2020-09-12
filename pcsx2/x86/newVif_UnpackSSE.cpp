@@ -63,8 +63,8 @@ VifUnpackSSE_Base::VifUnpackSSE_Base()
 	, UnpkLoopIteration(0)
 	, UnpkNoOfIterations(0)
 	, IsAligned(0)
-	, dstIndirect(ecx)		// parameter 1 of __fastcall
-	, srcIndirect(edx)		// parameter 2 of __fastcall
+	, dstIndirect(arg1reg)
+	, srcIndirect(arg2reg)
 	, workReg( xmm1 )
 	, destReg( xmm0 )
 {
@@ -424,7 +424,7 @@ void VifUnpackSSE_Init()
 
 	nVifUpkExec = new RecompiledCodeReserve(L"VIF SSE-optimized Unpacking Functions", _64kb);
 	nVifUpkExec->SetProfilerName("iVIF-SSE");
-	nVifUpkExec->Reserve( _64kb );
+	nVifUpkExec->Reserve(GetVmMemory().BumpAllocator(), _64kb);
 
 	nVifUpkExec->ThrowIfNotOk();
 

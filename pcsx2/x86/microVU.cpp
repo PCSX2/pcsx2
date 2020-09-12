@@ -38,8 +38,8 @@ void mVUreserveCache(microVU& mVU) {
 	mVU.cache_reserve->SetProfilerName(pxsFmt("mVU%urec", mVU.index));
 	
 	mVU.cache = mVU.index ?
-		(u8*)mVU.cache_reserve->Reserve(mVU.cacheSize * _1mb, HostMemoryMap::mVU1rec):
-		(u8*)mVU.cache_reserve->Reserve(mVU.cacheSize * _1mb, HostMemoryMap::mVU0rec);
+		(u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU1recOffset, mVU.cacheSize * _1mb):
+		(u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU0recOffset, mVU.cacheSize * _1mb);
 
 	mVU.cache_reserve->ThrowIfNotOk();
 }
@@ -351,8 +351,11 @@ void recMicroVU1::Reset() {
 void recMicroVU0::Execute(u32 cycles) {
 	pxAssert(m_Reserved); // please allocate me first! :|
 
+	VU0.flags &= ~VUFLAG_MFLAGSET;
+
 	if(!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
 	VU0.VI[REG_TPC].UL <<= 3;
+
 	// Sometimes games spin on vu0, so be careful with this value
 	// woody hangs if too high on sVU (untested on mVU)
 	// Edit: Need to test this again, if anyone ever has a "Woody" game :p

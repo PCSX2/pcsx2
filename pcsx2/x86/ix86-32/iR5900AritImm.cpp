@@ -148,7 +148,7 @@ void recSLTIU_(int info)
 	x86SetJ8(j8Ptr[0]);
 	x86SetJ8(j8Ptr[1]);
 
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
+	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
 	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], 0 );
 }
 
@@ -178,7 +178,7 @@ void recSLTI_(int info)
 	x86SetJ8(j8Ptr[0]);
 	x86SetJ8(j8Ptr[1]);
 
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
+	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
 	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], 0 );
 }
 

@@ -197,6 +197,14 @@ if(HarfBuzz_FOUND)
 include_directories(${HarfBuzz_INCLUDE_DIRS})
 endif()
 
+set(ACTUALLY_ENABLE_TESTS ${ENABLE_TESTS})
+if(ENABLE_TESTS)
+	if(NOT EXISTS "${CMAKE_SOURCE_DIR}/3rdparty/gtest/CMakeLists.txt")
+		message(WARNING "ENABLE_TESTS was on but gtest was not found, unit tests will not be enabled")
+		set(ACTUALLY_ENABLE_TESTS Off)
+	endif()
+endif()
+
 #----------------------------------------
 #  Use  project-wide include directories
 #----------------------------------------

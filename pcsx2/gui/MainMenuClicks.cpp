@@ -26,7 +26,6 @@
 
 #include "Dialogs/ModalPopups.h"
 #include "Dialogs/ConfigurationDialog.h"
-#include "Dialogs/LogOptionsDialog.h"
 #include "Debugger/DisassemblyDialog.h"
 
 #include "Utilities/IniInterface.h"
@@ -36,6 +35,7 @@
 #	include "Recording/InputRecordingControls.h"
 #	include "Recording/VirtualPad.h"
 #endif
+
 
 using namespace Dialogs;
 
@@ -160,6 +160,7 @@ wxWindowID SwapOrReset_Iso( wxWindow* owner, IScopedCoreThread& core_control, co
 
 	g_Conf->CdvdSource = CDVD_SourceType::Iso;
 	SysUpdateIsoSrcFile( isoFilename );
+
 	if( result == wxID_RESET )
 	{
 		core_control.DisallowResume();
@@ -385,14 +386,16 @@ void MainEmuFrame::Menu_CdvdSource_Click( wxCommandEvent &event )
 
 void MainEmuFrame::Menu_BootCdvd_Click( wxCommandEvent &event )
 {
-	g_Conf->EmuOptions.UseBOOT2Injection = false;
+	g_Conf->EmuOptions.UseBOOT2Injection = g_Conf->EnableFastBoot;
 	_DoBootCdvd();
 }
 
-void MainEmuFrame::Menu_BootCdvd2_Click( wxCommandEvent &event )
+void MainEmuFrame::Menu_FastBoot_Click( wxCommandEvent &event )
 {
-	g_Conf->EmuOptions.UseBOOT2Injection = true;
-	_DoBootCdvd();
+	g_Conf->EnableFastBoot = GetMenuBar()->IsChecked( MenuId_Config_FastBoot );
+	AppApplySettings();
+	AppSaveSettings();
+	UpdateStatusBar();
 }
 
 wxString GetMsg_IsoImageChanged()
@@ -470,6 +473,7 @@ void MainEmuFrame::Menu_EnableBackupStates_Click( wxCommandEvent& )
 	//  (1st save after the toggle keeps the old pre-toggle value)..
 	//  wonder what that means for all the other menu checkboxes which only use AppSaveSettings... (avih)
 	AppApplySettings();
+	
 	AppSaveSettings();
 }
 
@@ -495,25 +499,25 @@ void MainEmuFrame::Menu_EnableWideScreenPatches_Click( wxCommandEvent& )
 }
 
 #ifndef DISABLE_RECORDING
-void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
+void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 {
-	bool checked = GetMenuBar()->IsChecked(MenuId_EnableRecordingTools);
+	bool checked = GetMenuBar()->IsChecked(MenuId_EnableInputRecording);
 	// Confirm with User
 	if (checked)
 	{
 		if (!Msgbox::OkCancel(_("Please be aware that PCSX2's input recording features are still very much a work-in-progress.\n"
 			"As a result, there may be unforeseen bugs, performance implications and instability with certain games.\n\n"
-			"These tools are provided as-is and should be enabled under your own discretion."), "Enabling Recording Tools"))
+			"These tools are provided as-is and should be enabled under your own discretion."), "Enabling Input Recording"))
 		{
 			checked = false;
-			m_menuSys.FindChildItem(MenuId_EnableRecordingTools)->Check(false);
+			m_GameSettingsSubmenu.FindChildItem(MenuId_EnableInputRecording)->Check(false);
 		}
 	}
 
 	// If still enabled, add the menu item, else, remove it
 	if (checked)
 	{
-		GetMenuBar()->Insert(TopLevelMenu_Recording, &m_menuRecording, _("&Recording"));
+		GetMenuBar()->Insert(TopLevelMenu_InputRecording, &m_menuRecording, _("&Input Record"));
 		// Enable Recording Keybindings
 		if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
 		{
@@ -525,7 +529,11 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 	}
 	else
 	{
-		GetMenuBar()->Remove(TopLevelMenu_Recording);
+		//Properly close any currently loaded recording file before disabling
+		if (g_InputRecording.IsRecordingActive())
+			Menu_Recording_Stop_Click(event);
+
+		GetMenuBar()->Remove(TopLevelMenu_InputRecording);
 		// Always turn controller logs off, but never turn it on by default
 		SysConsole.controlInfo.Enabled = checked;
 		// Return Keybindings Back to Normal
@@ -536,6 +544,8 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent&)
 				viewport->InitDefaultAccelerators();
 			}
 		}
+		if (g_InputRecordingControls.isEmulationAndRecordingPaused())
+			g_InputRecordingControls.Resume();
 	}
 
 	g_Conf->EmuOptions.EnableRecordingTools = checked;
@@ -648,43 +658,68 @@ void MainEmuFrame::Menu_SuspendResume_Click(wxCommandEvent &event)
 
 void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent &event)
 {
-	//if( !SysHasValidState() && !CorePlugins.AreAnyInitialized() ) return;
-
 	UI_DisableSysShutdown();
 	Console.SetTitle("PCSX2 Program Log");
 	CoreThread.Reset();
 }
 
-void MainEmuFrame::Menu_ConfigPlugin_Click(wxCommandEvent &event)
+void MainEmuFrame::Menu_ConfigPlugin_Click(wxCommandEvent& event)
 {
 	const int eventId = event.GetId() - MenuId_PluginBase_Settings;
 
 	PluginsEnum_t pid = (PluginsEnum_t)(eventId / PluginMenuId_Interval);
 
 	// Don't try to call the Patches config dialog until we write one.
-	if (event.GetId() == MenuId_Config_Patches) return;
+	if (event.GetId() == MenuId_Config_Patches)
+		return;
 
-	if( !pxAssertDev( (eventId >= 0) || (pid < PluginId_Count), "Invalid plugin identifier passed to ConfigPlugin event handler." ) ) return;
+	if (!pxAssertDev((eventId >= 0) || (pid < PluginId_Count), "Invalid plugin identifier passed to ConfigPlugin event handler."))
+		return;
 
 	wxWindowDisabler disabler;
-	ScopedCoreThreadPause paused_core( new SysExecEvent_SaveSinglePlugin(pid) );
-	GetCorePlugins().Configure( pid );
+	ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(pid));
+
+#ifndef DISABLE_RECORDING
+	if (pid == PluginId_PAD)
+	{
+		// The recording features involve pausing emulation, and can be resumed ideally via key-bindings.
+		//
+		// However, since the PAD plugin is used to do so, if it's closed then there is nothing to read
+		// the keybind resulting producing an unrecovable state.
+		//
+		// If the CoreThread is paused prior to opening the PAD plugin settings then when the settings 
+		// are closed the PAD will not re-open. To avoid this, we resume emulation prior to the plugins 
+		// configuration handler doing so.
+		if (g_Conf->EmuOptions.EnableRecordingTools && g_InputRecordingControls.isEmulationAndRecordingPaused())
+		{
+			g_InputRecordingControls.Resume();
+			GetCorePlugins().Configure(pid);
+			g_InputRecordingControls.Pause();
+		}
+		else
+			GetCorePlugins().Configure(pid);
+	}
+	else
+		GetCorePlugins().Configure(pid);
+#else
+	GetCorePlugins().Configure(pid);
+#endif
 }
 
 void MainEmuFrame::Menu_Debug_Open_Click(wxCommandEvent &event)
 {
 	DisassemblyDialog* dlg = wxGetApp().GetDisassemblyPtr();
 	if (dlg)
-		dlg->Show();
+	{
+		if (event.IsChecked())
+			dlg->Show();
+		else
+			dlg->Hide();
+	}
 }
 
 void MainEmuFrame::Menu_Debug_MemoryDump_Click(wxCommandEvent &event)
 {
-}
-
-void MainEmuFrame::Menu_Debug_Logging_Click(wxCommandEvent &event)
-{
-	AppOpenDialog<LogOptionsDialog>( this );
 }
 
 void MainEmuFrame::Menu_ShowConsole(wxCommandEvent &event)
@@ -700,6 +735,36 @@ void MainEmuFrame::Menu_ShowConsole_Stdio(wxCommandEvent &event)
 {
 	g_Conf->EmuOptions.ConsoleToStdio = GetMenuBar()->IsChecked( MenuId_Console_Stdio );
 	AppSaveSettings();
+}
+
+void MainEmuFrame::Menu_GetStarted(wxCommandEvent &event)
+{
+	wxLaunchDefaultBrowser("https://pcsx2.net/getting-started.html");
+}
+
+void MainEmuFrame::Menu_Compatibility(wxCommandEvent &event)
+{
+	wxLaunchDefaultBrowser("https://pcsx2.net/compatibility-list.html");
+}
+
+void MainEmuFrame::Menu_Forums(wxCommandEvent &event)
+{
+	wxLaunchDefaultBrowser("https://forums.pcsx2.net/");
+}
+
+void MainEmuFrame::Menu_Website(wxCommandEvent &event)
+{
+	wxLaunchDefaultBrowser("https://pcsx2.net/");
+}
+
+void MainEmuFrame::Menu_Github(wxCommandEvent &event)
+{
+	wxLaunchDefaultBrowser("https://github.com/PCSX2/pcsx2");
+}
+
+void MainEmuFrame::Menu_Wiki(wxCommandEvent &event)
+{
+	wxLaunchDefaultBrowser("https://wiki.pcsx2.net/Main_Page");
 }
 
 void MainEmuFrame::Menu_ShowAboutBox(wxCommandEvent &event)
@@ -807,56 +872,63 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent & eve
 }
 
 #ifndef DISABLE_RECORDING
-void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
+void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 {
-	g_InputRecording.Stop();
-	g_InputRecordingControls.PauseImmediately();
+	const bool initiallyPaused = g_InputRecordingControls.isEmulationAndRecordingPaused();
+	if (!initiallyPaused)
+		g_InputRecordingControls.Pause();
 
 	NewRecordingFrame* NewRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
 	if (NewRecordingFrame)
 	{
 		if (NewRecordingFrame->ShowModal() == wxID_CANCEL)
 		{
-			g_InputRecordingControls.Resume();
+			if (!initiallyPaused)
+				g_InputRecordingControls.Resume();
 			return;
 		}
-		// From Current Frame
-		if (NewRecordingFrame->GetFrom() == 0)
+		if (!g_InputRecording.Create(NewRecordingFrame->GetFile(), !NewRecordingFrame->GetFrom(), NewRecordingFrame->GetAuthor()))
 		{
-			if (!CoreThread.IsOpen())
-			{
-				recordingConLog(L"[REC]: Game is not open, aborting new input recording.\n");
-				return;
-			}
-			g_InputRecording.Create(NewRecordingFrame->GetFile(), true, NewRecordingFrame->GetAuthor());
-		}
-		// From Power-On
-		else if (NewRecordingFrame->GetFrom() == 1)
-		{
-			g_InputRecording.Create(NewRecordingFrame->GetFile(), false, NewRecordingFrame->GetAuthor());
+			if (!initiallyPaused)
+				g_InputRecordingControls.Resume();
+			return;
 		}
 	}
 	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
 	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
+	if (!g_InputRecording.GetInputRecordingData().FromSaveState())
+		g_InputRecordingControls.Resume();
 }
 
-void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent &event)
+void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 {
-	g_InputRecording.Stop();
-	g_InputRecordingControls.PauseImmediately();
+	const bool initiallyPaused = g_InputRecordingControls.isEmulationAndRecordingPaused();
+	if (!initiallyPaused)
+		g_InputRecordingControls.Pause();
 
 	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
-		L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
+								L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
 	if (openFileDialog.ShowModal() == wxID_CANCEL)
 	{
-		g_InputRecordingControls.Resume();
+		if (!initiallyPaused)
+			g_InputRecordingControls.Resume();
 		return;
 	}
 
 	wxString path = openFileDialog.GetPath();
-	g_InputRecording.Play(path, true);
-	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
-	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
+	if (!g_InputRecording.Play(path)) // Failed to Play
+	{
+		if (g_InputRecording.IsRecordingActive())
+			Menu_Recording_Stop_Click(event);
+		if (!initiallyPaused)
+			g_InputRecordingControls.Resume();
+		return;
+	}
+
+	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(!g_InputRecording.IsRecordingActive());
+	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(g_InputRecording.IsRecordingActive());
+
+	g_InputRecordingControls.Resume();
 }
 
 void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent &event)
@@ -868,18 +940,6 @@ void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent &event)
 
 void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent &event)
 {
-	VirtualPad *vp = NULL;
-	if (event.GetId() == MenuId_Recording_VirtualPad_Port0)
-	{
-		vp = wxGetApp().GetVirtualPadPtr(0);
-	}
-	else if (event.GetId() == MenuId_Recording_VirtualPad_Port1)
-	{
-		vp = wxGetApp().GetVirtualPadPtr(1);
-	}
-	if (vp != NULL)
-	{
-		vp->Show();
-	}
+	wxGetApp().GetVirtualPadPtr(event.GetId() - MenuId_Recording_VirtualPad_Port0)->Show();
 }
 #endif
