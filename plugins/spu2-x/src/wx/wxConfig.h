@@ -18,75 +18,93 @@
 #include <wx/wx.h>
 #include <wx/panel.h>
 #include <wx/wrapsizer.h>
+#include <wx/notebook.h>
+#include <wx/spinctrl.h>
 
 #if defined(__unix__) || defined(__APPLE__)
 #include <SDL.h>
 #include <SDL_audio.h>
 #include "Linux/Config.h"
 #endif
-namespace SoundtouchCfg
-{
-class AdvDialog : public wxDialog
-{
-    wxBoxSizer *m_adv_box, *m_babble_box;
 
-    wxButton *reset_button;
-    wxStaticText *m_adv_text, *m_adv_text2, *m_adv_text3;
-    wxSlider *seq_slider, *seek_slider, *overlap_slider;
-    wxStaticBoxSizer *seq_box, *seek_box, *overlap_box;
-
+class MixerTab : public wxPanel
+{
 public:
-    AdvDialog();
-    ~AdvDialog();
-    void Display();
-    void LoadValues();
-    void SaveValues();
-    void Reset();
-    void CallReset(wxCommandEvent &event);
+	wxArrayString m_interpolation;
+	wxChoice* m_inter_select;
+	wxCheckBox *effect_check, *dealias_check;
+	wxSlider *m_latency_slider, *m_volume_slider;
+	wxArrayString m_audio;
+	wxChoice* m_audio_select;
+	wxStaticBoxSizer *m_mix_box, *m_volume_box, *m_latency_box;
+	wxBoxSizer* m_audio_box;
+
+	MixerTab(wxWindow* parent);
+	void Load();
+	void Save();
+	void Update();
+	void CallUpdate(wxCommandEvent& event);
 };
-}; // namespace SoundtouchCfg
 
-class DebugDialog : public wxDialog
+class SyncTab : public wxPanel
 {
-    wxBoxSizer *m_debug_top_box;
-    wxBoxSizer *m_together_box;
-    wxStaticBoxSizer *m_console_box, *m_log_only_box, *dump_box;
-    wxCheckBox *show_check;
-    wxCheckBox *key_check, *voice_check, *dma_check, *autodma_check, *buffer_check, *adpcm_check;
-    wxCheckBox *dma_actions_check, *dma_writes_check, *auto_output_check;
-    wxCheckBox *core_voice_check, *memory_check, *register_check;
-
 public:
-    DebugDialog();
-    ~DebugDialog();
-    void Display();
-    void ResetToValues();
-    void SaveValues();
-    void Reconfigure();
-    void CallReconfigure(wxCommandEvent &event);
+	wxStaticBoxSizer* m_sync_box;
+	wxArrayString m_sync;
+	wxChoice* m_sync_select;
+	wxButton* launch_adv_dialog;
+
+	wxButton* reset_button;
+	wxSpinCtrl *seq_spin, *seek_spin, *overlap_spin;
+
+	SyncTab(wxWindow* parent);
+	void Load();
+	void Save();
+	void Update();
+	void CallUpdate(wxCommandEvent& event);
+	void OnButtonClicked(wxCommandEvent& event);
+};
+
+class DebugTab : public wxPanel
+{
+public:
+	wxCheckBox* debug_check;
+	wxButton* launch_debug_dialog;
+
+	wxBoxSizer* m_together_box;
+	wxStaticBoxSizer *m_console_box, *m_log_only_box, *dump_box;
+	wxCheckBox* show_check;
+	wxCheckBox *key_check, *voice_check, *dma_check, *autodma_check, *buffer_check, *adpcm_check;
+	wxCheckBox *dma_actions_check, *dma_writes_check, *auto_output_check;
+	wxCheckBox *core_voice_check, *memory_check, *register_check;
+
+	DebugTab(wxWindow* parent);
+	void Load();
+	void Save();
+	void Update();
+	void CallUpdate(wxCommandEvent& event);
 };
 
 class Dialog : public wxDialog
 {
-    wxBoxSizer *m_top_box, *m_left_box, *m_right_box;
-    wxBoxSizer *m_portaudio_box, *m_sdl_box, *m_audio_box;
-    wxStaticBoxSizer *m_mix_box, *m_debug_box, *m_output_box, *m_volume_box, *m_latency_box, *m_sync_box;
+	wxBoxSizer *m_top_box, *m_left_box, *m_right_box;
+	wxBoxSizer *m_portaudio_box, *m_sdl_box;
+	wxStaticBoxSizer* m_output_box;
 
-    wxArrayString m_interpolation, m_module, m_portaudio, m_sdl, m_sync, m_audio;
-    wxChoice *m_inter_select, *m_module_select, *m_portaudio_select, *m_sdl_select, *m_sync_select, *m_audio_select;
-    wxStaticText *m_portaudio_text, *m_sdl_text;
+	wxArrayString m_module, m_portaudio, m_sdl;
+	wxChoice *m_module_select, *m_portaudio_select, *m_sdl_select;
+	wxStaticText *m_portaudio_text, *m_sdl_text;
 
-    wxCheckBox *effect_check, *dealias_check, *debug_check;
-    wxSlider *m_latency_slider, *m_volume_slider;
-    wxButton *launch_debug_dialog, *launch_adv_dialog;
+	MixerTab* m_mixer_panel;
+	SyncTab* m_sync_panel;
+	DebugTab* m_debug_panel;
 
 public:
-    Dialog();
-    ~Dialog();
-    void Display();
-    void ResetToValues();
-    void SaveValues();
-    void Reconfigure();
-    void CallReconfigure(wxCommandEvent &event);
-    void OnButtonClicked(wxCommandEvent &event);
+	Dialog();
+	~Dialog();
+	void Display();
+	void Load();
+	void Save();
+	void Reconfigure();
+	void CallReconfigure(wxCommandEvent& event);
 };
