@@ -33,7 +33,6 @@ jobs:
       #     GITHUB_CONTEXT: ${{ toJson(github) }}
       #   run: |
       #     echo "$GITHUB_CONTEXT"
-      #     echo ${{ github.event.pull_request.title }}
 
       - name: Checkout Repository & Submodules
         uses: actions/checkout@v2
@@ -45,8 +44,8 @@ jobs:
         run: |
           echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
           echo "##[set-output name=short-sha;]$(git rev-parse --short "$GITHUB_SHA")"
-          if [ ${{ github.event_name == 'pull_request' }}> ]; then
-            echo "##[set-output name=file-name-metadata;]pr-${{ github.event.pull_request.base.number }}"
+          if [ ${{ github.event_name == 'pull_request' }} ]; then
+            echo "##[set-output name=file-name-metadata;]pr-${{ github.event.pull_request.number }}"
           else
             echo "##[set-output name=file-name-metadata;]commit-$(git rev-parse --short "$GITHUB_SHA")"
           fi
