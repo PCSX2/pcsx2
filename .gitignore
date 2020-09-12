@@ -108,8 +108,6 @@ oprofile_data/
 /plugins/GSdx/Template
 /plugins/USBqemu/Win32/bin
 /tools/bin
-/tools/GSDumpGUI/bin
-/tools/GSDumpGUI/obj
 .vs
 
 /pcsx2/windows/VCprojects/GSdx_opengl_debug_hw.txt
