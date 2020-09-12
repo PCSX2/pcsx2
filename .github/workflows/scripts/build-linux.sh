@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ex
+
 # Packages - Build Environment
 declare -a BUILD_PACKAGES=(
 	"cmake"
@@ -110,14 +112,11 @@ compile() {
 case $1 in
 install_packages)
 	"$@"
-	exit
 	;;
 generate_cmake)
 	"$@"
-	exit
 	;;
 compile)
 	"$@"
-	exit
 	;;
 esac
