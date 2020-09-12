@@ -555,7 +555,7 @@ typedef void(CALLBACK *_GSsetGameCRC)(int, int);
 typedef void(CALLBACK *_GSsetFrameSkip)(int frameskip);
 typedef void(CALLBACK *_GSsetVsync)(int enabled);
 typedef void(CALLBACK *_GSsetExclusive)(int isExclusive);
-typedef int(CALLBACK *_GSsetupRecording)(int, void *);
+typedef std::wstring*(CALLBACK *_GSsetupRecording)(int);
 typedef void(CALLBACK *_GSreset)();
 typedef void(CALLBACK *_GSwriteCSR)(u32 value);
 typedef void(CALLBACK *_GSmakeSnapshot)(const char *path);
@@ -590,7 +590,7 @@ typedef void(CALLBACK *_SPU2irqCallback)(void (*SPU2callback)(), void (*DMA4call
 typedef u32(CALLBACK *_SPU2ReadMemAddr)(int core);
 typedef void(CALLBACK *_SPU2WriteMemAddr)(int core, u32 value);
 
-typedef int(CALLBACK *_SPU2setupRecording)(int, void *);
+typedef int(CALLBACK *_SPU2setupRecording)(int, std::wstring*);
 
 typedef void(CALLBACK *_SPU2setClockPtr)(u32 *ptr);
 typedef void(CALLBACK *_SPU2setTimeStretcher)(short int enable);

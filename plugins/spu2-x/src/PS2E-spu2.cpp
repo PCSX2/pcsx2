@@ -627,12 +627,12 @@ SPU2write(u32 rmem, u16 value)
 // returns a non zero value if successful
 // for now, pData is not used
 EXPORT_C_(int)
-SPU2setupRecording(int start, void *pData)
+SPU2setupRecording(int start, std::wstring* filename)
 {
     if (start == 0)
         RecordStop();
     else if (start == 1)
-        RecordStart();
+        RecordStart(filename);
 
     return 0;
 }

@@ -806,13 +806,13 @@ void MainEmuFrame::VideoCaptureUpdate()
 
 		if (GSsetupRecording)
 		{
-			// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
-			if (GSsetupRecording(m_capturingVideo, NULL))
+			// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens
+			std::wstring* filename = nullptr;
+			if (filename = GSsetupRecording(m_capturingVideo))
 			{
 				if (SPU2setupRecording)
-				{
-					SPU2setupRecording(m_capturingVideo, NULL);
-				}
+					SPU2setupRecording(m_capturingVideo, filename);
+				delete filename;
 			}
 			else
 			{
@@ -825,27 +825,21 @@ void MainEmuFrame::VideoCaptureUpdate()
 			// the GS doesn't support recording.
 			if (SPU2setupRecording)
 			{
-				SPU2setupRecording(m_capturingVideo, NULL);
+				SPU2setupRecording(m_capturingVideo, nullptr);
 			}
 		}
 
 		if (GetMainFramePtr() && needsMainFrameEnable)
-		{
 			GetMainFramePtr()->Enable();
-		}
 
 	}
 	else
 	{
 		// stop recording
 		if (GSsetupRecording)
-		{
-			GSsetupRecording(m_capturingVideo, NULL);
-		}
+			GSsetupRecording(m_capturingVideo);
 		if (SPU2setupRecording)
-		{
-			SPU2setupRecording(m_capturingVideo, NULL);
-		}
+			SPU2setupRecording(m_capturingVideo, nullptr);
 	}
 
 	if (m_capturingVideo)
