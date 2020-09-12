@@ -14343,7 +14343,9 @@ Region = PAL-E
 Serial = SLES-53402
 Name   = Taxi Rider
 Region = PAL-E
-Compat = 4
+Compat = 5
+eeRoundMode = 2 // Positive rounding fixes white models
+vuRoundMode = 2 // Positive rounding fixes white models
 ---------------------------------------------
 Serial = SLES-53403
 Name   = Demolition Girl
