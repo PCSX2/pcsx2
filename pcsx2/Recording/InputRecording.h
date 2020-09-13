@@ -43,10 +43,10 @@ public:
 	// If there is currently an input recording being played back or actively being recorded
 	bool IsActive();
 
-	// Whether or not the recording's initial save state has yet to be loaded or saved and 
+	// Whether or not the recording's initial state has yet to be loaded or saved and 
 	// the rest of the recording can be initialized
 	// This is not applicable to recordings from a "power-on" state
-	bool IsSavestateInitializing();
+	bool IsInitialLoad();
 
 	// If there is currently an input recording being played back
 	bool IsReplaying();
@@ -65,9 +65,6 @@ public:
 
 	// Switches between recording and replaying the active input recording file
 	void RecordModeToggle();
-
-	// Mark the recording's initial savestate as having been loaded or saved successfully
-	void SavestateInitialized();
 
 	// Set the running frame counter for the input recording to an arbitrary value
 	void SetFrameCounter(u32 newGFrameCount);
@@ -95,7 +92,7 @@ private:
 	// DEPRECATED: Slated for removal 
 	bool fInterruptFrame = false;
 	InputRecordingFile inputRecordingData;
-	bool savestateInitializing = false;
+	bool initialLoad = false;
 	u32 startingFrame = 0;
 	s32 frameCounter = 0;
 	bool incrementUndo = false;

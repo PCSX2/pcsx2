@@ -39,10 +39,10 @@ void SaveStateBase::InputRecordingFreeze()
 	Freeze(g_FrameCount);
 
 #ifndef DISABLE_RECORDING
-	// Loading a save-state is an asynchronous task, if we are playing a recording
+	// Loading a save-state is an asynchronous task. If we are playing a recording
 	// that starts from a savestate (not power-on) and the starting (pcsx2 internal) frame
 	// marker has not been set (which comes from the save-state), we initialize it.
-	if (g_InputRecording.IsSavestateInitializing())
+	if (g_InputRecording.IsInitialLoad())
 	{
 		g_InputRecording.SetStartingFrame(g_FrameCount);
 	}
@@ -52,12 +52,7 @@ void SaveStateBase::InputRecordingFreeze()
 		// detect loading a savestate as a frame being drawn
 		g_InputRecordingControls.SetFrameCountTracker(g_FrameCount);
 
-		// If the starting savestate has been loaded (on a current-frame recording) and a save-state is loaded while recording 
-		// or replaying the movie it is an undo operation that needs to be tracked.
-		//
-		// The reason it's also an undo operation when replaying is because the user can switch modes at any time
-		// and begin undoing.  While this isn't impossible to resolve, it's a separate issue and not of the utmost importance (this is just interesting metadata)
-		if (IsLoading() && !g_InputRecording.IsSavestateInitializing())
+		if (IsLoading())
 		{
 			g_InputRecording.SetFrameCounter(g_FrameCount);
 		}
@@ -66,6 +61,28 @@ void SaveStateBase::InputRecordingFreeze()
 }
 
 #ifndef DISABLE_RECORDING
+// Save or load PCSX2's global frame counter (g_FrameCount) along with each full/fast boot
+//
+// This is to prevent any inaccuracy issues caused by having a different
+// internal emulation frame count than what it was at the beginning of the
+// original recording
+void Pcsx2App::RecordingReset()
+{
+	// Booting is an asynchronous task. If we are playing a recording
+	// that starts from power-on and the starting (pcsx2 internal) frame
+	// marker has not been set, we initialize it.
+	if (g_InputRecording.IsInitialLoad())
+	{
+		g_InputRecording.SetStartingFrame(0);
+	}
+	else if (g_InputRecording.IsActive())
+	{
+		// Explicitly set the frame change tracking variable as to not
+		// detect rebooting as a frame being drawn
+		g_InputRecordingControls.SetFrameCountTracker(g_FrameCount);
+		g_InputRecording.SetFrameCounter(0);
+	}
+}
 
 InputRecording g_InputRecording;
 
@@ -157,9 +174,9 @@ bool InputRecording::IsActive()
 	return state != InputRecordingMode::NotActive;
 }
 
-bool InputRecording::IsSavestateInitializing()
+bool InputRecording::IsInitialLoad()
 {
-	return savestateInitializing;
+	return initialLoad;
 }
 
 bool InputRecording::IsReplaying()
@@ -212,11 +229,6 @@ void InputRecording::RecordModeToggle()
 	}
 }
 
-void InputRecording::SavestateInitialized()
-{
-	savestateInitializing = false;
-}
-
 void InputRecording::SetFrameCounter(u32 newGFrameCount)
 {
 	// Forces inputRecording to wait for a confirmed pause before resetting
@@ -256,13 +268,13 @@ void InputRecording::SetFrameCounter(u32 newGFrameCount)
 void InputRecording::SetStartingFrame(u32 newStartingFrame)
 {
 	startingFrame = newStartingFrame;
-	if (savestateInitializing)
+	if (inputRecordingData.FromSaveState())
 	{
 		// TODO - make a function of my own to simplify working with the logging macros
 		recordingConLog(wxString::Format(L"[REC]: Internal Starting Frame: %d\n", startingFrame));
-		savestateInitializing = false;
 	}
 	frameCounter = 0;
+	initialLoad = false;
 }
 
 void InputRecording::Stop()
@@ -277,15 +289,22 @@ void InputRecording::Stop()
 
 bool InputRecording::Create(wxString FileName, bool fromSaveState, wxString authorName)
 {
-	savestateInitializing = fromSaveState;
 	if (!inputRecordingData.OpenNew(FileName, fromSaveState))
 	{
 		return false;
 	}
 
-	if (!fromSaveState)
+	initialLoad = true;
+	if (fromSaveState)
 	{
-		SetStartingFrame(0);
+		if (wxFileExists(FileName + "_SaveState.p2s"))
+		{
+			wxCopyFile(FileName + "_SaveState.p2s", FileName + "_SaveState.p2s.bak", true);
+		}
+		StateCopy_SaveToFile(FileName + "_SaveState.p2s");
+	}
+	else
+	{
 		sApp.SysExecute(g_Conf->CdvdSource);
 	}
 
@@ -332,13 +351,12 @@ bool InputRecording::Play(wxString fileName)
 			inputRecordingData.Close();
 			return false;
 		}
-		savestateInitializing = true;
+		initialLoad = true;
 		StateCopy_LoadFromFile(inputRecordingData.GetFilename() + "_SaveState.p2s");
 	}
 	else
 	{
-		savestateInitializing = false;
-		SetStartingFrame(0);
+		initialLoad = true;
 		sApp.SysExecute(g_Conf->CdvdSource);
 	}
 

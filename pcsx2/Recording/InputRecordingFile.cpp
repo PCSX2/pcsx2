@@ -138,11 +138,6 @@ bool InputRecordingFile::OpenNew(const wxString path, bool fromSavestate)
 			if (open(path, true))
 			{
 				savestate.fromSavestate = true;
-				if (wxFileExists(path + "_SaveState.p2s"))
-				{
-					wxCopyFile(path + "_SaveState.p2s", path + "_SaveState.p2s.bak", true);
-				}
-				StateCopy_SaveToFile(path + "_SaveState.p2s");
 				return true;
 			}
 		}
