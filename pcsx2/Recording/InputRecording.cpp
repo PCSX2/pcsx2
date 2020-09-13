@@ -49,7 +49,7 @@ void SaveStateBase::InputRecordingFreeze()
 	else if (g_InputRecording.IsActive())
 	{
 		// Explicitly set the frame change tracking variable as to not
-		// detect loading a savestate as a frame being drawn
+		// detect saving or loading a savestate as a frame being drawn
 		g_InputRecordingControls.SetFrameCountTracker(g_FrameCount);
 
 		if (IsLoading())
@@ -77,11 +77,11 @@ void Pcsx2App::RecordingReset()
 	}
 	else if (g_InputRecording.IsActive())
 	{
-		// Explicitly set the frame change tracking variable as to not
-		// detect rebooting as a frame being drawn
-		g_InputRecordingControls.SetFrameCountTracker(g_FrameCount);
 		g_InputRecording.SetFrameCounter(0);
+		g_InputRecordingControls.Lock(0, false);
 	}
+	else
+		g_InputRecordingControls.Resume();
 }
 
 InputRecording g_InputRecording;
@@ -138,7 +138,7 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
 	}
 }
 
-u32 InputRecording::GetFrameCounter()
+s32 InputRecording::GetFrameCounter()
 {
 	return frameCounter;
 }
@@ -218,13 +218,7 @@ void InputRecording::SetToReplayMode()
 }
 
 void InputRecording::SetFrameCounter(u32 newGFrameCount)
-{
-	// Forces inputRecording to wait for a confirmed pause before resetting
-	// frameCounter to the proper value. Ensures that any lingering emulation
-	// before the load doesn't increment the already reset value
-	const bool initiallyPaused = g_InputRecordingControls.IsRecordingPaused();
-	if (!initiallyPaused)
-		g_InputRecordingControls.PauseImmediately();
+{	
 	if (newGFrameCount > startingFrame + g_InputRecording.GetInputRecordingData().GetTotalFrames())
 	{
 		recordingConLog(L"[REC]: Warning, you've loaded PCSX2 emulation to a point after the end of the original recording. This should be avoided.\n");
@@ -246,10 +240,12 @@ void InputRecording::SetFrameCounter(u32 newGFrameCount)
 				SetToReplayMode();
 			}
 		}
+		else if (newGFrameCount == 0 && state == InputRecordingMode::Recording)
+		{
+			SetToReplayMode();
+		}
 		frameCounter = static_cast<s32>(newGFrameCount - startingFrame);
 		incrementUndo = true;
-		if (!initiallyPaused)
-			g_InputRecordingControls.Resume();
 	}
 }
 
@@ -263,6 +259,7 @@ void InputRecording::SetStartingFrame(u32 newStartingFrame)
 	}
 	frameCounter = 0;
 	initialLoad = false;
+	g_InputRecordingControls.Lock(startingFrame, inputRecordingData.FromSaveState());
 }
 
 void InputRecording::Stop()
