@@ -224,6 +224,7 @@ protected:
 	void Menu_SaveStates_Click(wxCommandEvent& event);
 	void Menu_LoadStateFromFile_Click(wxCommandEvent& event);
 	void Menu_SaveStateToFile_Click(wxCommandEvent& event);
+	bool Dialog_Savestate(wxFileDialog& dialog);
 	void Menu_Exit_Click(wxCommandEvent& event);
 
 	void Menu_SuspendResume_Click(wxCommandEvent& event);

@@ -672,6 +672,8 @@ void MainEmuFrame::Menu_LoadStates_Click(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_SaveStates_Click(wxCommandEvent& event)
 {
+	if (CoreThread.IsClosed())
+		CoreThread.Resume();
 	States_SetCurrentSlot(event.GetId() - MenuId_State_Save01 - 1);
 	States_FreezeCurrentSlot();
 }
@@ -681,10 +683,8 @@ void MainEmuFrame::Menu_LoadStateFromFile_Click(wxCommandEvent& event)
 	wxFileDialog loadStateDialog(this, _("Load State"), L"", L"",
 								 L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
 
-	if (loadStateDialog.ShowModal() == wxID_CANCEL)
-	{
+	if (!Dialog_Savestate(loadStateDialog))
 		return;
-	}
 
 	wxString path = loadStateDialog.GetPath();
 	StateCopy_LoadFromFile(path);
@@ -695,16 +695,35 @@ void MainEmuFrame::Menu_SaveStateToFile_Click(wxCommandEvent& event)
 	wxFileDialog saveStateDialog(this, _("Save State"), L"", L"",
 								 L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
 
-	if (saveStateDialog.ShowModal() == wxID_CANCEL)
-	{
+	if (!Dialog_Savestate(saveStateDialog))
 		return;
-	}
 
+	if (CoreThread.IsClosed())
+		CoreThread.Resume();
 	wxString path = saveStateDialog.GetPath();
 	StateCopy_SaveToFile(path);
 }
 
-void MainEmuFrame::Menu_Exit_Click(wxCommandEvent& event)
+bool MainEmuFrame::Dialog_Savestate(wxFileDialog& dialog)
+{
+	bool ret = false;
+#ifndef DISABLE_RECORDING
+	if (g_InputRecording.IsActive())
+	{
+		const bool initiallyPaused = g_InputRecordingControls.IsPaused();
+		if (!initiallyPaused)
+			g_InputRecordingControls.PauseImmediately();
+		ret = dialog.ShowModal() != wxID_CANCEL;
+		if (!initiallyPaused)
+			g_InputRecordingControls.Resume();
+	}
+	else
+#endif
+		ret = dialog.ShowModal() != wxID_CANCEL;
+	return ret;
+}
+
+void MainEmuFrame::Menu_Exit_Click(wxCommandEvent &event)
 {
 	Close();
 }

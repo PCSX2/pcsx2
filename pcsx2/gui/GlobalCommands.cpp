@@ -376,10 +376,17 @@ namespace Implementations
 		if (CoreThread.HasPendingStateChangeRequest())
 			return;
 
+#ifndef DISABLE_RECORDING
+		if (g_InputRecordingControls.IsPaused() || !CoreThread.IsPaused())
+			Sys_Suspend();
+		else
+			Sys_Resume();
+#else
 		if (CoreThread.IsPaused())
 			Sys_Resume();
 		else
 			Sys_Suspend();
+#endif
 	}
 
 	void Sys_TakeSnapshot()
