@@ -489,7 +489,7 @@ namespace Implementations
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			g_InputRecording.RecordModeToggle();
+			g_InputRecordingControls.RecordModeToggle();
 		}
 	}
 

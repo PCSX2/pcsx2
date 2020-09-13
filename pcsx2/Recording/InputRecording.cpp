@@ -217,18 +217,6 @@ void InputRecording::SetToReplayMode()
 	recordingConLog("[REC]: Replay mode ON.\n");
 }
 
-void InputRecording::RecordModeToggle()
-{
-	if (state == InputRecordingMode::Replaying)
-	{
-		SetToRecordMode();
-	}
-	else if (state == InputRecordingMode::Recording)
-	{
-		SetToReplayMode();
-	}
-}
-
 void InputRecording::SetFrameCounter(u32 newGFrameCount)
 {
 	// Forces inputRecording to wait for a confirmed pause before resetting
