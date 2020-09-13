@@ -27,7 +27,7 @@ public:
 	void ControllerInterrupt(u8 &data, u8 &port, u16 &BufCount, u8 buf[]);
 
 	// The running frame counter for the input recording
-	u32 GetFrameCounter();
+	s32 GetFrameCounter();
 
 	InputRecordingFile &GetInputRecordingData();
 

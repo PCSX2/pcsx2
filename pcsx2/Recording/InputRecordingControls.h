@@ -53,6 +53,10 @@ public:
 	void TogglePause();
 	// Switches between recording and replaying the active input recording file
 	void RecordModeToggle();
+	// Enables the frame locking mechanism so that when recordings are loaded
+	// or when processing a reboot with a recording active that no frames are
+	// lost in prior emulation
+	void Lock(u32 frame, bool savestate);
 
 private:
 	// Indicates if the input recording controls have explicitly paused emulation or not
@@ -61,7 +65,7 @@ private:
 	// and should be cleared once a single frame has passed
 	bool frameAdvancing = false;
 	// The input recording frame that frame advancing began on
-	u32 frameAdvanceMarker = 0;
+	s32 frameAdvanceMarker = 0;
 	// Used to detect if the internal PCSX2 g_FrameCount has changed
 	u32 frameCountTracker = -1;
 	// Indicates if we intend to call CoreThread.PauseSelf() on the current or next available vsync
@@ -70,6 +74,8 @@ private:
 	bool resumeEmulation = false;
 	// Indicates to switch to replay mode after the next vsync
 	bool switchToReplay = false;
+	// Used to stop recording frames from incrementing during a reset
+	bool frameLock = false;
 };
 
 extern InputRecordingControls g_InputRecordingControls;
