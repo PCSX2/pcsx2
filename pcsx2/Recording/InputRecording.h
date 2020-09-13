@@ -63,9 +63,6 @@ public:
 	// Sets input recording to Replay Mode
 	void SetToReplayMode();
 
-	// Switches between recording and replaying the active input recording file
-	void RecordModeToggle();
-
 	// Set the running frame counter for the input recording to an arbitrary value
 	void SetFrameCounter(u32 newGFrameCount);
 

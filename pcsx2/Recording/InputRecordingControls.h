@@ -51,6 +51,8 @@ public:
 	void SetFrameCountTracker(u32 newFrame);
 	// Alternates emulation between a paused and unpaused state
 	void TogglePause();
+	// Switches between recording and replaying the active input recording file
+	void RecordModeToggle();
 
 private:
 	// Indicates if the input recording controls have explicitly paused emulation or not
@@ -66,6 +68,8 @@ private:
 	bool pauseEmulation = false;
 	// Indicates if we intend to call CoreThread.Resume() when the next pcsx2 App event is handled
 	bool resumeEmulation = false;
+	// Indicates to switch to replay mode after the next vsync
+	bool switchToReplay = false;
 };
 
 extern InputRecordingControls g_InputRecordingControls;
