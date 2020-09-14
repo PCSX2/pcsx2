@@ -331,7 +331,8 @@ __fi void vif1Interrupt()
 	if (vif1.irq && vif1.vifstalled.enabled && vif1.vifstalled.value == VIF_IRQ_STALL)
 	{
 		VIF_LOG("VIF IRQ Firing");
-		vif1Regs.stat.INT = true;
+		if (!vif1Regs.stat.ER1)
+			vif1Regs.stat.INT = true;
 		
 		//Yakuza watches VIF_STAT so lets do this here.
 		if (((vif1Regs.code >> 24) & 0x7f) != 0x7) {
@@ -350,6 +351,7 @@ __fi void vif1Interrupt()
 			vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
 			if((vif1ch.qwc > 0 || !vif1.done) && !CHECK_VIF1STALLHACK)	
 			{
+				vif1Regs.stat.VPS = VPS_DECODING; //If there's more data you need to say it's decoding the next VIF CMD (Onimusha - Blade Warriors)
 				VIF_LOG("VIF1 Stalled");
 				return;
 			}
@@ -404,8 +406,8 @@ __fi void vif1Interrupt()
 		return; //Dont want to end if vif is stalled.
 	}
 #ifdef PCSX2_DEVBUILD
-	if (vif1ch.qwc > 0) Console.WriteLn("VIF1 Ending with %x QWC left", vif1ch.qwc);
-	if (vif1.cmd != 0) Console.WriteLn("vif1.cmd still set %x tag size %x", vif1.cmd, vif1.tag.size);
+	if (vif1ch.qwc > 0) DevCon.WriteLn("VIF1 Ending with %x QWC left", vif1ch.qwc);
+	if (vif1.cmd != 0) DevCon.WriteLn("vif1.cmd still set %x tag size %x", vif1.cmd, vif1.tag.size);
 #endif
 
 	if((vif1ch.chcr.DIR == VIF_NORMAL_TO_MEM_MODE) && vif1.GSLastDownloadSize <= 16)

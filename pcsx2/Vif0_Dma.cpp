@@ -182,7 +182,8 @@ __fi void vif0Interrupt()
 
 	if (vif0.irq && vif0.vifstalled.enabled && vif0.vifstalled.value == VIF_IRQ_STALL)
 	{
-		vif0Regs.stat.INT = true;
+		if (!vif0Regs.stat.ER1)
+			vif0Regs.stat.INT = true;
 
 		//Yakuza watches VIF_STAT so lets do this here.
 		if (((vif0Regs.code >> 24) & 0x7f) != 0x7) {
@@ -201,6 +202,7 @@ __fi void vif0Interrupt()
 			vif0Regs.stat.FQC = std::min((u16)0x8, vif0ch.qwc);
 			if (vif0ch.qwc > 0 || !vif0.done)
 			{
+				vif0Regs.stat.VPS = VPS_DECODING; //If there's more data you need to say it's decoding the next VIF CMD (Onimusha - Blade Warriors)
 				VIF_LOG("VIF0 Stalled");
 				return;
 			}

@@ -434,13 +434,6 @@ vifOp(vifCode_Nop) {
 		GetVifX.pass = 0;
 		vifExecQueue(idx);
 
-		//If the top bit was set to interrupt, we don't want it to take commands from a bad code if it's interpreted as a nop by us.
-		//Onimusha - Blade Warriors
-		if ((vifXRegs.code & 0x80000000) && (vifXRegs.code & 0xFF0000) != 0 && vifXch.qwc > 0 /*Not tag*/)
-		{
-			GetVifX.irq = 0;
-		}
-
 		if (GetVifX.vifpacketsize > 1)
 		{
 			if(((data[1] >> 24) & 0x7f) == 0x6 && (data[1] & 0x1)) //is mskpath3 next

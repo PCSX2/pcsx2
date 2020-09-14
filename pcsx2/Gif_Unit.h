@@ -196,16 +196,17 @@ struct Gif_Path {
 	void Reset(bool softReset = false) {
 		state = GIF_PATH_IDLE;
 		if (softReset) {
-			GUNIT_WARN("Gif Path %d - Soft Reset", idx+1);
-			//gifTag.Reset();
-			//gsPack.Reset();
-			//curOffset = curSize;
+			if (!isMTVU()) // MTVU Freaks out if you try to reset it, so let's just let it transfer
+			{
+				GUNIT_WARN("Gif Path %d - Soft Reset", idx + 1);
+				curSize = curOffset;
+			}
 			return;
 		}
 		mtvu.Reset();
-		curSize     = 0;
-		curOffset   = 0;
-		readAmount  = 0;
+		curSize = 0;
+		curOffset = 0;
+		readAmount = 0;
 		gifTag.Reset();
 		gsPack.Reset();
 	}
