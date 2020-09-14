@@ -99,16 +99,16 @@ static __fi bool ProcessEETag()
 		sif1.fifo.write((u32*)ptag + 2, 2);
 	}
 
-	if (sif1ch.chcr.TIE && ptag->IRQ)
-	{
-		Console.WriteLn("SIF1 TIE");
-		sif1.ee.end = true;
-	}
-
 	SIF_LOG(wxString(ptag->tag_to_str()).To8BitData());
 	sif1ch.madr = ptag[1]._u32;
 
 	sif1.ee.end = hwDmacSrcChain(sif1ch, ptag->ID);
+
+	if (sif1ch.chcr.TIE && ptag->IRQ)
+	{
+		//Console.WriteLn("SIF1 TIE");
+		sif1.ee.end = true;
+	}
 
 	return true;
 }
