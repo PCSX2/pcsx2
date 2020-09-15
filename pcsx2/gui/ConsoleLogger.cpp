@@ -113,7 +113,7 @@ static bool OpenLogFile(wxFile& file, wxString& filename, wxWindow *parent)
 		strMsg.Printf(L"Append log to file '%s' (choosing [No] will overwrite it)?",
 						filename.c_str());
 
-		switch ( Msgbox::ShowModal( _("Save log question"), strMsg, MsgButtons().YesNo().Cancel() ) )
+		switch ( Msgbox::ShowModal( _("Save log question."), strMsg, MsgButtons().YesNo().Cancel() ) )
 		{
 			case wxID_YES:
 				bAppend = true;
@@ -127,7 +127,7 @@ static bool OpenLogFile(wxFile& file, wxString& filename, wxWindow *parent)
 				return false;
 
 			default:
-				pxFailDev( "invalid message box return value" );
+				pxFailDev( "Invalid message box return value." );
 		}
 
 		return ( bAppend ) ?
@@ -419,13 +419,13 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 
 	// create Appearance menu and submenus
 
-	menuFontSizes.Append( MenuId_FontSize_Small,	_("&Small"),	_t("Fits a lot of log in a microcosmically small area."),
+	menuFontSizes.Append( MenuId_FontSize_Small,	_("&Small"),	_t("7px font size."),
 		wxITEM_RADIO )->Check( options.FontSize == 7 );
-	menuFontSizes.Append( MenuId_FontSize_Normal,	_("&Normal Font"),_t("It's what I use (the programmer guy)."),
+	menuFontSizes.Append( MenuId_FontSize_Normal,	_("&Normal Font"),_t("8px font size."),
 		wxITEM_RADIO )->Check( options.FontSize == 8 );
-	menuFontSizes.Append( MenuId_FontSize_Large,	_("&Large"),	_t("Its nice and readable."),
+	menuFontSizes.Append( MenuId_FontSize_Large,	_("&Large"),	_t("10px font size."),
 		wxITEM_RADIO )->Check( options.FontSize == 10 );
-	menuFontSizes.Append( MenuId_FontSize_Huge,		_("&Huge"),	_t("In case you have a really high res display."),
+	menuFontSizes.Append( MenuId_FontSize_Huge,		_("&Huge"),	_t("12px font size."),
 		wxITEM_RADIO )->Check( options.FontSize == 12 );
 
 	menuFontSizes.AppendSeparator();
@@ -437,21 +437,21 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	//menuAppear.Append( wxID_ANY, _("Always on Top"),
 	//	_t("When checked the log window will be visible over other foreground windows."), wxITEM_CHECK );
 
-	menuLog.Append(wxID_SAVE,	_("&Save..."),		_("Save log contents to file"));
+	menuLog.Append(wxID_SAVE,	_("&Save..."),		_("Save log contents to file."));
 #ifdef PCSX2_DEVBUILD
-	menuLog.Append(MenuId_Log_Settings,	_("&Settings..."),		_("Open the logging settings dialog"));
+	menuLog.Append(MenuId_Log_Settings,	_("&Settings..."),		_("Open the logging settings dialog."));
 #endif
-	menuLog.Append(wxID_CLEAR,	_("C&lear"),		_("Clear the log window contents"));
+	menuLog.Append(wxID_CLEAR,	_("C&lear"),		_("Clear the log window contents."));
 	menuLog.AppendSeparator();
-	menuLog.AppendCheckItem(MenuId_AutoDock, _("Auto&dock"), _("Dock log window to main PCSX2 window"))->Check(m_conf.AutoDock);
+	menuLog.AppendCheckItem(MenuId_AutoDock, _("Auto&dock"), _("Dock log window to main PCSX2 window."))->Check(m_conf.AutoDock);
 	menuLog.AppendSubMenu( &menuAppear, _("&Appearance") );
 	menuLog.AppendSeparator();
-	menuLog.Append(wxID_CLOSE,	_("&Close"),		_("Close this log window; contents are preserved"));
+	menuLog.Append(wxID_CLOSE,	_("&Close"),		_("Close this log window; contents are preserved."));
 
 	// Source Selection/Toggle menu
 
-	menuSources.Append( MenuId_LogSource_Devel, _("Dev/&Verbose"), _("Shows PCSX2 developer logs"), wxITEM_CHECK );
-	menuSources.Append( MenuId_LogSource_CDVD_Info, _("&CDVD reads"), _("Shows disk read activity"), wxITEM_CHECK );
+	menuSources.Append( MenuId_LogSource_Devel, _("Dev/&Verbose"), _("Shows PCSX2 developer logs."), wxITEM_CHECK );
+	menuSources.Append( MenuId_LogSource_CDVD_Info, _("&CDVD reads"), _("Shows disk read activity."), wxITEM_CHECK );
 	
 	menuSources.AppendSeparator();
 

@@ -530,7 +530,7 @@ bool Pcsx2App::OnInit()
 	}
 	catch( Exception::HardwareDeficiency& ex )
 	{
-		Msgbox::Alert( ex.FormatDisplayMessage() + L"\n\n" + AddAppName(_("Press OK to close %s.")), _("PCSX2 Error: Hardware Deficiency") );
+		Msgbox::Alert( ex.FormatDisplayMessage() + L"\n\n" + AddAppName(_("Press OK to close %s.")), _("PCSX2 Error: Hardware Deficiency.") );
 		CleanupOnExit();
 		return false;
 	}
@@ -726,7 +726,7 @@ Pcsx2App::Pcsx2App()
 		_("&Help");
 		_("&Home");
 
-		_("Show about dialog")
+		_("Show about dialog.")
 	}
 	#endif
 

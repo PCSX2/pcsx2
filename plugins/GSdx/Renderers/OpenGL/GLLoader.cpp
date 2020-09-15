@@ -397,8 +397,8 @@ namespace GLLoader {
 		// driver reports a compatible sparse format for depth texture but it isn't attachable to a frame buffer.
 		found_compatible_sparse_depth = !vendor_id_amd && is_sparse2_compatible("GL_DEPTH32F_STENCIL8", GL_DEPTH32F_STENCIL8, 128, 128);
 
-		fprintf_once(stdout, "INFO sparse color texture is %s\n", found_compatible_GL_ARB_sparse_texture2 ? "available" : "NOT SUPPORTED");
-		fprintf_once(stdout, "INFO sparse depth texture is %s\n", found_compatible_sparse_depth ? "available" : "NOT SUPPORTED");
+		fprintf_once(stdout, "INFO: sparse color texture is %s\n", found_compatible_GL_ARB_sparse_texture2 ? "available" : "NOT SUPPORTED");
+		fprintf_once(stdout, "INFO: sparse depth texture is %s\n", found_compatible_sparse_depth ? "available" : "NOT SUPPORTED");
 	}
 
 	void check_gl_requirements()

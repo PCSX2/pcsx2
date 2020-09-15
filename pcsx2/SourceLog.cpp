@@ -103,17 +103,17 @@ TLD_eeRecPerf = {
 
 TLD_eeConsole = {
 	L"EEout",		L"EE C&onsole",
-	pxDt("Shows the game developer's logging text (EE processor)")
+	pxDt("Shows the game developer's logging text (EE processor).")
 },
 
 TLD_iopConsole = {
 	L"IOPout",		L"&IOP Console",
-	pxDt("Shows the game developer's logging text (IOP processor)")
+	pxDt("Shows the game developer's logging text (IOP processor).")
 },
 
 TLD_deci2 = {
 	L"DECI2",		L"DECI&2 Console",
-	pxDt("Shows DECI2 debugging logs (EE processor)")
+	pxDt("Shows DECI2 debugging logs (EE processor).")
 },
 
 TLD_sysoutConsole = {
@@ -124,12 +124,12 @@ TLD_sysoutConsole = {
 #ifndef DISABLE_RECORDING
 ,TLD_recordingConsole = {
 	L"Input Recording",			L"Input Recording Console",
-	pxDt("Shows recording related logs and information")
+	pxDt("Shows recording related logs and information.")
 },
 
 TLD_controlInfo = {
 	L"Controller Info",			L"Controller Info",
-	pxDt("Shows detailed controller input values for port 1, every frame")
+	pxDt("Shows detailed controller input values for port 1, every frame.")
 }
 #endif
 ; // End init of TraceLogDescriptors
@@ -243,7 +243,7 @@ TLD_EE_VIFcode = {
 
 TLD_EE_MSKPATH3 = {
 	L"MSKPATH3",	L"MSKPATH3",
-	pxDt("All processing involved in Path3 Masking"),
+	pxDt("All processing involved in Path3 Masking."),
 	"MSKPATH3"
 },
 
