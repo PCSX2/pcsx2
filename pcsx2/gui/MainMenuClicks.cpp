@@ -354,20 +354,6 @@ bool MainEmuFrame::_DoSelectELFBrowser()
 	return false;
 }
 
-bool MainEmuFrame::_DoSelectDiscBrowser(wxString& driveLetter)
-{
-	DriveSelectorDialog driveDialog(this, g_Conf->Folders.RunDisc.GetPath());
-
-	if (driveDialog.ShowModal() != wxID_CANCEL)
-	{
-		driveLetter = driveDialog.GetSelectedDrive();
-		SysUpdateDiscSrcDrive(driveLetter);
-		return true;
-	}
-
-	return false;
-}
-
 void MainEmuFrame::_DoBootCdvd()
 {
 	ScopedCoreThreadPause paused_core;
@@ -402,41 +388,6 @@ void MainEmuFrame::_DoBootCdvd()
 			}
 
 			SysUpdateIsoSrcFile( result );
-		}
-	}
-	else if( g_Conf->CdvdSource == CDVD_SourceType::Disc )
-	{
-	#if defined(_WIN32)
-		const bool driveExists = g_Conf->Folders.RunDisc.DirExists();
-	#else
-		const bool driveExists = g_Conf->Folders.RunDisc.Exists();
-	#endif
-
-		if( !driveExists )
-		{
-			// The previous mounted disc isn't mounted anymore
-
-			wxDialogWithHelpers dialog( this, _("Drive not mounted!") );
-			dialog += dialog.Heading(
-				_("An error occured while trying to read drive: ") + g_Conf->Folders.RunDisc.GetPath() + L"\n\n" +
-				_("Error: The configured drive does not exist. Click OK to select a new drive for CDVD.")
-			);
-
-			// Send event to refresh drive list submenu
-			wxCommandEvent event(wxEVT_MENU, MenuId_DriveListRefresh);
-			wxGetApp().ProcessEvent(event);
-
-			pxIssueConfirmation( dialog, MsgButtons().OK() );
-
-			wxString driveLetter;
-			if (!_DoSelectDiscBrowser(driveLetter))
-			{
-				paused_core.AllowResume();
-				return;
-			}
-
-			// Refresh again after selection
-			wxGetApp().ProcessEvent(event);
 		}
 	}
 
@@ -483,20 +434,6 @@ void MainEmuFrame::Menu_FastBoot_Click( wxCommandEvent &event )
 	AppApplySettings();
 	AppSaveSettings();
 	UpdateStatusBar();
-}
-
-void MainEmuFrame::Menu_DiscBrowse_Click(wxCommandEvent& event)
-{
-	ScopedCoreThreadPopup core;
-	wxString driveLetter;
-
-	if ( !_DoSelectDiscBrowser(driveLetter) )
-	{
-		core.AllowResume();
-		return;
-	}
-
-	SwapOrReset_Disc(this, core, driveLetter);
 }
 
 wxString GetMsg_IsoImageChanged()

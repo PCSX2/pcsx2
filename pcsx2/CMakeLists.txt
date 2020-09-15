@@ -272,7 +272,6 @@ set(pcsx2GuiSources
 	gui/Dialogs/ConfirmationDialogs.cpp
 	gui/Dialogs/ConvertMemoryCardDialog.cpp
 	gui/Dialogs/CreateMemoryCardDialog.cpp
-	gui/Dialogs/DriveSelectorDialog.cpp
 	gui/Dialogs/FirstTimeWizard.cpp
 	gui/Dialogs/ImportSettingsDialog.cpp
 	gui/Dialogs/LogOptionsDialog.cpp
