@@ -57,7 +57,6 @@ public:
 		FIFA04,
 		FIFA05,
 		FightingBeautyWulong,
-		Genji,
 		GetaWay,
 		GetaWayBlackMonday,
 		GiTS,

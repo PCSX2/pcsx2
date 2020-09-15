@@ -294,32 +294,6 @@ bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Genji(const GSFrameInfo& fi, int& skip)
-{
-	if(skip == 0)
-	{
-		if(fi.TME && fi.FBP == 0x01500 && fi.FPSM == PSM_PSMCT16 && fi.TBP0 == 0x00e00 && fi.TPSM == PSM_PSMZ16)
-		{
-			// likely fixed in openGL (texture shuffle)
-			// Missing block at the top left
-			if (Dx_only)
-				skip = 6;
-			else
-				return false;
-		}
-		else if(fi.TPSM == PSM_PSMCT24 && fi.TME ==0x0001 && fi.TBP0==fi.FBP)
-		{
-			skip = 1; // Blur
-		}
-		else if(fi.TPSM == PSM_PSMT8H && fi.FBMSK == 0)
-		{
-			skip = 1; // White Fog
-		}
-	}
-
-	return true;
-}
-
 bool GSC_EvangelionJo(const GSFrameInfo& fi, int& skip)
 {
 	if(skip == 0)
@@ -1358,9 +1332,6 @@ void GSState::SetupCrcHack()
 
 		// Half Screen bottom issue
 		lut[CRC::Tekken5] = GSC_Tekken5;
-
-		// Needs testing
-		lut[CRC::Genji] = GSC_Genji;
 
 		// Texture shuffle
 		lut[CRC::BigMuthaTruckers] = GSC_BigMuthaTruckers;
