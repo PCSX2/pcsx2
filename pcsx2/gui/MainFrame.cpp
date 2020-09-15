@@ -367,7 +367,7 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_menuSys.FindItem(MenuId_Sys_Shutdown)->Enable(false);
 
 	m_menuSys.Append(MenuId_Boot_ELF, _("&Run ELF..."),
-					 _("For running raw PS2 binaries directly"));
+		_("For running raw PS2 binaries directly."));
 
 	m_menuSys.AppendSeparator();
 
@@ -379,20 +379,20 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_menuSys.Append(MenuId_GameSettingsSubMenu, _("&Game Settings"), &m_GameSettingsSubmenu);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnablePatches, _("Automatic &Gamefixes"),
-								 _("Automatically applies needed Gamefixes to known problematic games"), wxITEM_CHECK);
+		_("Automatically applies needed Gamefixes to known problematic games."), wxITEM_CHECK);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableCheats, _("Enable &Cheats"),
-								 wxEmptyString, wxITEM_CHECK);
+		_("Use cheats otherwise known as pnachs from the cheats folder."), wxITEM_CHECK);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableIPC, _("Enable &IPC"),
 								 wxEmptyString, wxITEM_CHECK);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableWideScreenPatches, _("Enable &Widescreen Patches"),
-								 _("Enabling Widescreen Patches may occasionally cause issues."), wxITEM_CHECK);
+		_("Enabling Widescreen Patches may occasionally cause issues."), wxITEM_CHECK);
 
 #ifndef DISABLE_RECORDING
 	m_GameSettingsSubmenu.Append(MenuId_EnableInputRecording, _("Enable &Input Recording"),
-								 wxEmptyString, wxITEM_CHECK);
+		_("Input Recording for controller/keyboard presses, tools for automation and playback."), wxITEM_CHECK);
 #endif
 
 
@@ -409,7 +409,7 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_menuSys.AppendSeparator();
 
 	m_menuSys.Append(MenuId_Exit, _("E&xit"),
-					 AddAppName(_("Closing %s may be hazardous to your health")));
+					AddAppName(_("Closing %s may be hazardous to your health.")));
 }
 
 void MainEmuFrame::CreateCdvdMenu()
@@ -733,7 +733,7 @@ void MainEmuFrame::ApplyCoreStatus()
 	wxMenuItem* cdvd_menu = menubar.FindItem(MenuId_Boot_CDVD);
 
 	wxString label;
-	wxString help_text = _("Use fast boot to skip PS2 startup and splash screens");
+	wxString help_text = _("Use fast boot to skip PS2 startup and splash screens.");
 
 	switch (Source)
 	{
@@ -843,7 +843,7 @@ void PerPluginMenuInfo::Populate(PluginsEnum_t pid)
 
 	PluginId = pid;
 
-	MyMenu.Append(GetPluginMenuId_Name(PluginId), _("No plugin loaded"))->Enable(false);
+	MyMenu.Append(GetPluginMenuId_Name(PluginId), _("No plugins loaded."))->Enable(false);
 	MyMenu.AppendSeparator();
 
 	if (PluginId == PluginId_GS)
