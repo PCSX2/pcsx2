@@ -1019,6 +1019,13 @@ void Pcsx2App::OpenGsPanel()
 #endif
 
 	gsFrame->ShowFullScreen( g_Conf->GSWindow.IsFullscreen );
+
+#ifndef DISABLE_RECORDING
+	// Disable recording controls that only make sense if the game is running
+	sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, true);
+	sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, true);
+	sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, g_InputRecording.IsActive());
+#endif
 }
 
 void Pcsx2App::CloseGsPanel()
@@ -1045,6 +1052,15 @@ void Pcsx2App::OnGsFrameClosed( wxWindowID id )
 		// right now there's no way to resume from suspend without GUI.
 		PrepForExit();
 	}
+#ifndef DISABLE_RECORDING
+	else
+	{
+		// Disable recording controls that only make sense if the game is running
+		sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, false);
+		sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, false);
+		sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, false);
+	}
+#endif
 }
 
 void Pcsx2App::OnProgramLogClosed( wxWindowID id )
