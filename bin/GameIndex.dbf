@@ -14251,6 +14251,7 @@ Serial = SLES-53363
 Name   = Shin Megami Tensei: Lucifer's Call
 Region = PAL-M3
 Compat = 5
+eeRoundMode = 0 // Fixes commands not being visible
 ---------------------------------------------
 Serial = SLES-53366
 Name   = Killer 7
