@@ -131,9 +131,16 @@ void GSPanel::InitRecordingAccelerators()
 	m_Accels->Map(AAC(WXK_NUMPAD8), "States_LoadSlot8");
 	m_Accels->Map(AAC(WXK_NUMPAD9), "States_LoadSlot9");
 
-	GetMainFramePtr()->appendKeycodeNamesToRecordingMenuOptions(MenuId_Recording_FrameAdvance, m_Accels->findKeycodeWithCommandId("FrameAdvance").toTitleizedString());
-	GetMainFramePtr()->appendKeycodeNamesToRecordingMenuOptions(MenuId_Recording_TogglePause, m_Accels->findKeycodeWithCommandId("TogglePause").toTitleizedString());
-	GetMainFramePtr()->appendKeycodeNamesToRecordingMenuOptions(MenuId_Recording_ToggleRecordingMode, m_Accels->findKeycodeWithCommandId("InputRecordingModeToggle").toTitleizedString());
+	GetMainFramePtr()->initializeRecordingMenuItem(
+		MenuId_Recording_FrameAdvance,
+		m_Accels->findKeycodeWithCommandId("FrameAdvance").toTitleizedString());
+	GetMainFramePtr()->initializeRecordingMenuItem(
+		MenuId_Recording_TogglePause,
+		m_Accels->findKeycodeWithCommandId("TogglePause").toTitleizedString());
+	GetMainFramePtr()->initializeRecordingMenuItem(
+		MenuId_Recording_ToggleRecordingMode,
+		m_Accels->findKeycodeWithCommandId("InputRecordingModeToggle").toTitleizedString(),
+		g_InputRecording.IsActive());
 
 	recordingConLog(L"Initialized Recording Key Bindings\n");
 }

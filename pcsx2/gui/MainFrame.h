@@ -167,7 +167,8 @@ public:
 	void AppendKeycodeNamesToMenuOptions();
 	void UpdateStatusBar();
 #ifndef DISABLE_RECORDING
-	void appendKeycodeNamesToRecordingMenuOptions(MenuIdentifiers menuId, wxString keyCodeStr);
+	void initializeRecordingMenuItem(MenuIdentifiers menuId, wxString keyCodeStr, bool enable = true);
+	void enableRecordingMenuItem(MenuIdentifiers menuId, bool enable);
 #endif
 
 protected:
