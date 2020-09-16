@@ -55,12 +55,12 @@ void InputRecordingFileHeader::SetGameName(wxString _gameName)
 
 bool InputRecordingFile::Close()
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
 	fclose(recordingFile);
-	recordingFile = NULL;
+	recordingFile = nullptr;
 	filename = "";
 	return true;
 }
@@ -75,7 +75,7 @@ InputRecordingFileHeader &InputRecordingFile::GetHeader()
 	return header;
 }
 
-unsigned long &InputRecordingFile::GetTotalFrames()
+long &InputRecordingFile::GetTotalFrames()
 {
 	return totalFrames;
 }
@@ -93,7 +93,7 @@ bool InputRecordingFile::FromSaveState()
 void InputRecordingFile::IncrementUndoCount()
 {
 	undoCount++;
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return;
 	}
@@ -160,7 +160,7 @@ bool InputRecordingFile::OpenExisting(const wxString path)
 
 bool InputRecordingFile::ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex)
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
@@ -174,9 +174,9 @@ bool InputRecordingFile::ReadKeyBuffer(u8 &result, const uint &frame, const uint
 	return true;
 }
 
-void InputRecordingFile::SetTotalFrames(unsigned long frame)
+void InputRecordingFile::SetTotalFrames(long frame)
 {
-	if (recordingFile == NULL || totalFrames >= frame)
+	if (recordingFile == nullptr || totalFrames >= frame)
 	{
 		return;
 	}
@@ -187,7 +187,7 @@ void InputRecordingFile::SetTotalFrames(unsigned long frame)
 
 bool InputRecordingFile::WriteHeader()
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
@@ -204,7 +204,7 @@ bool InputRecordingFile::WriteHeader()
 
 bool InputRecordingFile::WriteKeyBuffer(const uint &frame, const uint port, const uint bufIndex, const u8 &buf)
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}
@@ -227,7 +227,7 @@ long InputRecordingFile::getRecordingBlockSeekPoint(const long &frame)
 
 bool InputRecordingFile::verifyRecordingFileHeader()
 {
-	if (recordingFile == NULL)
+	if (recordingFile == nullptr)
 	{
 		return false;
 	}

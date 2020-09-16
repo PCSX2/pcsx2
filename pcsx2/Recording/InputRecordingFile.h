@@ -59,7 +59,7 @@ public:
 	// Retrieve the input recording's header which contains high-level metadata on the recording
 	InputRecordingFileHeader &GetHeader();
 	// The maximum number of frames, or in other words, the length of the recording
-	unsigned long &GetTotalFrames();
+	long &GetTotalFrames();
 	// The number of times a save-state has been loaded while recording this movie
 	// this is also often referred to as a "re-record"
 	unsigned long &GetUndoCount();
@@ -76,7 +76,7 @@ public:
 	// the current frame's value from the emulator
 	bool ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex);
 	// Updates the total frame counter and commit it to the recording file
-	void SetTotalFrames(unsigned long frames);
+	void SetTotalFrames(long frames);
 	// Persist the input recording file header's current state to the file
 	bool WriteHeader();
 	// Writes the current frame's input data to the file so it can be replayed
@@ -99,11 +99,11 @@ private:
 
 	InputRecordingFileHeader header;
 	wxString filename = "";
-	FILE * recordingFile = NULL;
+	FILE* recordingFile = nullptr;
 	InputRecordingSavestate savestate;
 
-	// An unsigned 32-bit frame limit is equivalent to 2.25 years of continuous 60fps footage
-	unsigned long totalFrames = 0;
+	// An signed 32-bit frame limit is equivalent to 1.13 years of continuous 60fps footage
+	long totalFrames = 0;
 	unsigned long undoCount = 0;
 
 	// Calculates the position of the current frame in the input recording

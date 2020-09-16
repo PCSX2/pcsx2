@@ -22,6 +22,13 @@
 class InputRecording
 {
 public:
+	// Save or load PCSX2's global frame counter (g_FrameCount) along with each full/fast boot
+	//
+	// This is to prevent any inaccuracy issues caused by having a different
+	// internal emulation frame count than what it was at the beginning of the
+	// original recording
+	void RecordingReset();
+
 	// Main handler for ingesting input data and either saving it to the recording file (recording)
 	// or mutating it to the contents of the recording file (replaying)
 	void ControllerInterrupt(u8 &data, u8 &port, u16 &BufCount, u8 buf[]);

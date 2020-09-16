@@ -620,7 +620,7 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 #ifndef DISABLE_RECORDING
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			if (g_InputRecordingControls.IsRecordingPaused())
+			if (g_InputRecordingControls.IsPaused())
 			{
 				// When the GSFrame CoreThread is paused, so is the logical VSync
 				// Meaning that we have to grab the user-input through here to potentially
@@ -1153,7 +1153,7 @@ void Pcsx2App::SysExecute( CDVD_SourceType cdvdsrc, const wxString& elf_override
 {
 	SysExecutorThread.PostEvent( new SysExecEvent_Execute(cdvdsrc, elf_override) );
 #ifndef DISABLE_RECORDING
-	RecordingReset();
+	g_InputRecording.RecordingReset();
 #endif
 }
 

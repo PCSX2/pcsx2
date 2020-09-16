@@ -542,7 +542,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 				viewport->InitDefaultAccelerators();
 			}
 		}
-		if (g_InputRecordingControls.IsRecordingPaused())
+		if (g_InputRecordingControls.IsPaused())
 			g_InputRecordingControls.Resume();
 	}
 
@@ -688,7 +688,7 @@ void MainEmuFrame::Menu_ConfigPlugin_Click(wxCommandEvent& event)
 		// If the CoreThread is paused prior to opening the PAD plugin settings then when the settings 
 		// are closed the PAD will not re-open. To avoid this, we resume emulation prior to the plugins 
 		// configuration handler doing so.
-		if (g_Conf->EmuOptions.EnableRecordingTools && g_InputRecordingControls.IsRecordingPaused())
+		if (g_Conf->EmuOptions.EnableRecordingTools && g_InputRecordingControls.IsPaused())
 		{
 			g_InputRecordingControls.Resume();
 			GetCorePlugins().Configure(pid);
@@ -872,7 +872,7 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent & eve
 #ifndef DISABLE_RECORDING
 void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 {
-	const bool initiallyPaused = g_InputRecordingControls.IsRecordingPaused();
+	const bool initiallyPaused = g_InputRecordingControls.IsPaused();
 	if (!initiallyPaused)
 		g_InputRecordingControls.PauseImmediately();
 	NewRecordingFrame* newRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
@@ -899,7 +899,7 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 
 void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent &event)
 {
-	const bool initiallyPaused = g_InputRecordingControls.IsRecordingPaused();
+	const bool initiallyPaused = g_InputRecordingControls.IsPaused();
 	if (!initiallyPaused)
 		g_InputRecordingControls.PauseImmediately();
 	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
