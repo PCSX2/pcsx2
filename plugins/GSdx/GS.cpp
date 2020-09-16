@@ -679,7 +679,9 @@ EXPORT_C_(uint32) GSmakeSnapshot(char* path)
 		if (!s.empty())
 		{
 			// Allows for providing a complete path
-			if (s.substr(s.size() - 4, 4) == ".png")
+			std::string extension = s.substr(s.size() - 4, 4);
+			std::transform(extension.begin(), extension.end(), extension.begin(), tolower); 
+			if (extension == ".png")
 				return s_gs->MakeSnapshot(s);
 			else if (s[s.length() - 1] != DIRECTORY_SEPARATOR)
 				s = s + DIRECTORY_SEPARATOR;
