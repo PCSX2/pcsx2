@@ -5187,14 +5187,6 @@ Serial = SCUS-97258
 Name   = Amplitude
 Region = NTSC-U
 Compat = 5
-[patches = 2f7b4db8]
-	author=Prafull
-	// Fix SPS on characters.
-	// Fixed by rearranging COP2 instructions.
-	patch=1,EE,00215e00,word,48228000
-	patch=1,EE,00215e04,word,48236000
-	patch=1,EE,00215e08,word,4a0055b8
-[/patches]
 ---------------------------------------------
 Serial = SCUS-97259
 Name   = NHL FaceOff 2003 [Demo]
@@ -17821,11 +17813,7 @@ Region = PAL-E
 Serial = SLES-55109
 Name   = Spiderwick Chronicles, The
 Region = PAL-E
-[patches = D5D1D002]
-	comment=Patch by Prafull
-	// Fixes hanging at boot.
-	patch=1,EE,0011f6a4,word,00000000 //5460fff6
-[/patches]
+vuRoundMode = 0 // Fixes invisible wall collision in bedroom.
 ---------------------------------------------
 Serial = SLES-55110
 Name   = Odin Sphere
@@ -43213,11 +43201,7 @@ Serial = SLUS-21716
 Name   = Spiderwick Chronicles, The
 Region = NTSC-U
 Compat = 5
-[patches = 23B262A5]
-	comment=Patch by Prafull
-	// Fixes hang at boot.
-	patch=1,EE,0011f6a4,word,00000000
-[/patches]
+vuRoundMode = 0 // Fixes invisible wall collision in bedroom.
 ---------------------------------------------
 Serial = SLUS-21717
 Name   = Dora the Explorer - Dora Saves the Mermaids
