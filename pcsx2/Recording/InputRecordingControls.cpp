@@ -60,7 +60,8 @@ void InputRecordingControls::HandleFrameAdvanceAndPausing()
 	else if (frameCountTracker != g_FrameCount)
 	{
 		frameCountTracker = g_FrameCount;
-		g_InputRecording.IncrementFrameCounter();
+		if (g_InputRecording.GetFrameCounter() < INT_MAX)
+			g_InputRecording.IncrementFrameCounter();
 	} 
 	else
 	{
@@ -78,13 +79,13 @@ void InputRecordingControls::HandleFrameAdvanceAndPausing()
 		switchToReplay = false;
 	}
 
-	if (g_InputRecording.IsReplaying() && g_InputRecording.GetFrameCounter() >= (s32)g_InputRecording.GetInputRecordingData().GetTotalFrames())
-	{
+	if (g_InputRecording.IsReplaying()
+		&& g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
 		pauseEmulation = true;
-	}
 
 	// If we havn't yet advanced atleast a single frame from when we paused, setup things to be paused
-	if (frameAdvancing && frameAdvanceMarker < g_InputRecording.GetFrameCounter()) 
+	if (frameAdvancing
+		&& (frameAdvanceMarker < g_InputRecording.GetFrameCounter() || g_InputRecording.GetFrameCounter() == INT_MAX)) 
 	{
 		frameAdvancing = false;
 		pauseEmulation = true;
@@ -110,7 +111,8 @@ void InputRecordingControls::ResumeCoreThreadIfStarted()
 
 void InputRecordingControls::FrameAdvance()
 {
-	if (g_InputRecording.IsReplaying() && g_InputRecording.GetFrameCounter() >= (s32)g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (g_InputRecording.IsReplaying()
+		&& g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
 	{
 		g_InputRecording.SetToRecordMode();
 		return;
@@ -120,7 +122,7 @@ void InputRecordingControls::FrameAdvance()
 	Resume();
 }
 
-bool InputRecordingControls::IsRecordingPaused()
+bool InputRecordingControls::IsPaused()
 {
 	return (emulationCurrentlyPaused && CoreThread.IsOpen() && CoreThread.IsPaused());
 }
@@ -134,9 +136,7 @@ void InputRecordingControls::Pause()
 void InputRecordingControls::PauseImmediately()
 {
 	if (CoreThread.IsPaused())
-	{
 		return;
-	}
 	Pause();
 	if (CoreThread.IsOpen() && CoreThread.IsRunning())
 	{
@@ -147,7 +147,8 @@ void InputRecordingControls::PauseImmediately()
 
 void InputRecordingControls::Resume()
 {
-	if (g_InputRecording.IsReplaying() && g_InputRecording.GetFrameCounter() >= (s32)g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (g_InputRecording.IsReplaying()
+		&& g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
 	{
 		g_InputRecording.SetToRecordMode();
 		return;
@@ -163,7 +164,8 @@ void InputRecordingControls::SetFrameCountTracker(u32 newFrame)
 
 void InputRecordingControls::TogglePause()
 {
-	if (pauseEmulation && g_InputRecording.IsReplaying() && g_InputRecording.GetFrameCounter() >= (s32)g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (pauseEmulation && g_InputRecording.IsReplaying()
+		&& g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
 	{
 		g_InputRecording.SetToRecordMode();
 		return;
@@ -174,16 +176,13 @@ void InputRecordingControls::TogglePause()
 
 void InputRecordingControls::RecordModeToggle()
 {
-	if (IsRecordingPaused() || g_InputRecording.IsReplaying() || g_InputRecording.GetFrameCounter() < (s32)g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (IsPaused() || g_InputRecording.IsReplaying()
+		|| g_InputRecording.GetFrameCounter() < g_InputRecording.GetInputRecordingData().GetTotalFrames())
 	{
 		if (g_InputRecording.IsReplaying())
-		{
 			g_InputRecording.SetToRecordMode();
-		}
 		else if (g_InputRecording.IsRecording())
-		{
 			g_InputRecording.SetToReplayMode();
-		}
 	}
 	else if (g_InputRecording.IsRecording())
 		switchToReplay = true;
@@ -193,10 +192,8 @@ void InputRecordingControls::Lock(u32 frame, bool savestate)
 {
 	frameLock = true;
 	frameCountTracker = frame;
+	//Ensures that g_frameCount can be used to resume emulation after a fast/full boot
 	if (!savestate)
-	{
-		//Ensures that g_frameCount can be used to resume emulation after a fast/full boot
 		g_FrameCount = frame + 1;
-	}
 }
 #endif

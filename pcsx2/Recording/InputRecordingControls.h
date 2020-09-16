@@ -40,8 +40,8 @@ public:
 	void FrameAdvance();
 	// Returns true if the input recording has been paused, which can occur:
 	// - After a single frame has passed after InputRecordingControls::FrameAdvance
-	// - Explicitly paused via InputRecordingControls::TogglePause
-	bool IsRecordingPaused();
+	// - Explicitly paused via an InputRecordingControls function 
+	bool IsPaused();
 	// Pause emulation at the next available Vsync
 	void Pause();
 	// Pause emulation immediately, not waiting for the next Vsync

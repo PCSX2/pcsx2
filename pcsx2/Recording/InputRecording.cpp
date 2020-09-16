@@ -28,11 +28,6 @@
 #include <vector>
 
 
-// Save or load PCSX2's global frame counter (g_FrameCount) along with each savestate
-//
-// This is to prevent any inaccuracy issues caused by having a different
-// internal emulation frame count than what it was at the beginning of the
-// original recording
 void SaveStateBase::InputRecordingFreeze()
 {
 	FreezeTag("InputRecording");
@@ -43,9 +38,7 @@ void SaveStateBase::InputRecordingFreeze()
 	// that starts from a savestate (not power-on) and the starting (pcsx2 internal) frame
 	// marker has not been set (which comes from the save-state), we initialize it.
 	if (g_InputRecording.IsInitialLoad())
-	{
 		g_InputRecording.SetStartingFrame(g_FrameCount);
-	}
 	else if (g_InputRecording.IsActive())
 	{
 		// Explicitly set the frame change tracking variable as to not
@@ -53,28 +46,21 @@ void SaveStateBase::InputRecordingFreeze()
 		g_InputRecordingControls.SetFrameCountTracker(g_FrameCount);
 
 		if (IsLoading())
-		{
 			g_InputRecording.SetFrameCounter(g_FrameCount);
-		}
 	}
 #endif
 }
 
 #ifndef DISABLE_RECORDING
-// Save or load PCSX2's global frame counter (g_FrameCount) along with each full/fast boot
-//
-// This is to prevent any inaccuracy issues caused by having a different
-// internal emulation frame count than what it was at the beginning of the
-// original recording
-void Pcsx2App::RecordingReset()
+InputRecording g_InputRecording;
+
+void InputRecording::RecordingReset()
 {
 	// Booting is an asynchronous task. If we are playing a recording
 	// that starts from power-on and the starting (pcsx2 internal) frame
 	// marker has not been set, we initialize it.
 	if (g_InputRecording.IsInitialLoad())
-	{
 		g_InputRecording.SetStartingFrame(0);
-	}
 	else if (g_InputRecording.IsActive())
 	{
 		g_InputRecording.SetFrameCounter(0);
@@ -83,8 +69,6 @@ void Pcsx2App::RecordingReset()
 	else
 		g_InputRecordingControls.Resume();
 }
-
-InputRecording g_InputRecording;
 
 void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 buf[])
 {
@@ -99,9 +83,7 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
 		0x42 is the magic number for the default read query
 	*/
 	if (bufCount == 1)
-	{
 		fInterruptFrame = data == 0x42;
-	}
 	else if (bufCount == 2)
 	{
 		/*
@@ -111,11 +93,10 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
 			query is executed, this looks like a sanity check
 		*/
 		if (buf[bufCount] != 0x5A)
-		{
 			fInterruptFrame = false;
-		}
-	} // We do not want to record or save the first two bytes in the data returned from the PAD plugin
-	else if (fInterruptFrame && bufCount >= 3 && frameCounter >= 0)
+	}
+	// We do not want to record or save the first two bytes in the data returned from the PAD plugin
+	else if (fInterruptFrame && bufCount >= 3 && frameCounter >= 0 && frameCounter < INT_MAX)
 	{
 		// Read or Write
 		if (state == InputRecordingMode::Recording)
@@ -131,9 +112,7 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
 		{
 			u8 tmp = 0;
 			if (inputRecordingData.ReadKeyBuffer(tmp, frameCounter, port, bufCount - 3))
-			{
 				buf[bufCount] = tmp;
-			}
 		}
 	}
 }
@@ -156,9 +135,9 @@ u32 InputRecording::GetStartingFrame()
 void InputRecording::IncrementFrameCounter()
 {
 	frameCounter++;
-	if (state == InputRecordingMode::Recording && frameCounter > 0)
+	if (state == InputRecordingMode::Recording)
 	{
-		GetInputRecordingData().SetTotalFrames((u32)frameCounter);
+		GetInputRecordingData().SetTotalFrames(frameCounter);
 		if (frameCounter == inputRecordingData.GetTotalFrames())
 			incrementUndo = false;
 	}
@@ -195,13 +174,10 @@ wxString InputRecording::RecordingModeTitleSegment()
 	{
 		case InputRecordingMode::Recording:
 			return wxString("Recording");
-			break;
 		case InputRecordingMode::Replaying:
 			return wxString("Replaying");
-			break;
 		default:
 			return wxString("No Movie");
-			break;
 	}
 }
 
@@ -219,15 +195,13 @@ void InputRecording::SetToReplayMode()
 
 void InputRecording::SetFrameCounter(u32 newGFrameCount)
 {	
-	if (newGFrameCount > startingFrame + g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (newGFrameCount > startingFrame + (u32)g_InputRecording.GetInputRecordingData().GetTotalFrames())
 	{
 		recordingConLog(L"[REC]: Warning, you've loaded PCSX2 emulation to a point after the end of the original recording. This should be avoided.\n");
 		recordingConLog(L"[REC]: Savestate's framecount has been ignored.\n");
 		frameCounter = g_InputRecording.GetInputRecordingData().GetTotalFrames();
 		if (state == InputRecordingMode::Replaying)
-		{
 			SetToRecordMode();
-		}
 		incrementUndo = false;
 	}
 	else
@@ -236,14 +210,10 @@ void InputRecording::SetFrameCounter(u32 newGFrameCount)
 		{
 			recordingConLog(L"[REC]: Warning, you've loaded PCSX2 emulation to a point before the start of the original recording. This should be avoided.\n");
 			if (state == InputRecordingMode::Recording)
-			{
 				SetToReplayMode();
-			}
 		}
 		else if (newGFrameCount == 0 && state == InputRecordingMode::Recording)
-		{
 			SetToReplayMode();
-		}
 		frameCounter = static_cast<s32>(newGFrameCount - startingFrame);
 		incrementUndo = true;
 	}
@@ -252,11 +222,9 @@ void InputRecording::SetFrameCounter(u32 newGFrameCount)
 void InputRecording::SetStartingFrame(u32 newStartingFrame)
 {
 	startingFrame = newStartingFrame;
+	// TODO - make a function of my own to simplify working with the logging macros
 	if (inputRecordingData.FromSaveState())
-	{
-		// TODO - make a function of my own to simplify working with the logging macros
 		recordingConLog(wxString::Format(L"[REC]: Internal Starting Frame: %d\n", startingFrame));
-	}
 	frameCounter = 0;
 	initialLoad = false;
 	g_InputRecordingControls.Lock(startingFrame, inputRecordingData.FromSaveState());
@@ -267,40 +235,30 @@ void InputRecording::Stop()
 	state = InputRecordingMode::NotActive;
 	incrementUndo = false;
 	if (inputRecordingData.Close())
-	{
 		recordingConLog(L"[REC]: InputRecording Recording Stopped.\n");
-	}
 }
 
 bool InputRecording::Create(wxString FileName, bool fromSaveState, wxString authorName)
 {
 	if (!inputRecordingData.OpenNew(FileName, fromSaveState))
-	{
 		return false;
-	}
 
 	initialLoad = true;
 	if (fromSaveState)
 	{
 		if (wxFileExists(FileName + "_SaveState.p2s"))
-		{
 			wxCopyFile(FileName + "_SaveState.p2s", FileName + "_SaveState.p2s.bak", true);
-		}
 		StateCopy_SaveToFile(FileName + "_SaveState.p2s");
 	}
 	else
-	{
 		sApp.SysExecute(g_Conf->CdvdSource);
-	}
 
 	// Set emulator version
 	inputRecordingData.GetHeader().SetEmulatorVersion();
 
 	// Set author name
 	if (!authorName.IsEmpty())
-	{
 		inputRecordingData.GetHeader().SetAuthor(authorName);
-	}
 
 	// Set Game Name
 	inputRecordingData.GetHeader().SetGameName(resolveGameName());
@@ -317,9 +275,7 @@ bool InputRecording::Play(wxString fileName)
 		Stop();
 
 	if (!inputRecordingData.OpenExisting(fileName))
-	{
 		return false;
-	}
 
 	// Either load the savestate, or restart the game
 	if (inputRecordingData.FromSaveState())
@@ -332,7 +288,8 @@ bool InputRecording::Play(wxString fileName)
 		}
 		if (!wxFileExists(inputRecordingData.GetFilename() + "_SaveState.p2s"))
 		{
-			recordingConLog(wxString::Format("[REC]: Could not locate savestate file at location - %s_SaveState.p2s\n", inputRecordingData.GetFilename()));
+			recordingConLog(wxString::Format("[REC]: Could not locate savestate file at location - %s_SaveState.p2s\n", 
+																					inputRecordingData.GetFilename()));
 			inputRecordingData.Close();
 			return false;
 		}
@@ -347,12 +304,8 @@ bool InputRecording::Play(wxString fileName)
 
 	// Check if the current game matches with the one used to make the original recording
 	if (!g_Conf->CurrentIso.IsEmpty())
-	{
 		if (resolveGameName() != inputRecordingData.GetHeader().gameName)
-		{
 			recordingConLog(L"[REC]: Recording was possibly constructed for a different game.\n");
-		}
-	}
 
 	incrementUndo = true;
 	state = InputRecordingMode::Replaying;
