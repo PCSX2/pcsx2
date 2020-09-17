@@ -892,15 +892,6 @@ template<int i> void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 {
 	GL_REG("Apply TEX0_%d = 0x%x_%x", i, TEX0.u32[1], TEX0.u32[0]);
 
-	// Handle invalid PSM here
-	switch (TEX0.PSM) {
-		case 3:
-			TEX0.PSM = PSM_PSMT8; // International Star Soccer (menu)
-			break;
-		default:
-			break;
-	}
-
 	// even if TEX0 did not change, a new palette may have been uploaded and will overwrite the currently queued for drawing
 	bool wt = m_mem.m_clut.WriteTest(TEX0, m_env.TEXCLUT);
 
