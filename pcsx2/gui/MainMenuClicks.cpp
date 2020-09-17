@@ -893,8 +893,6 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent &event)
 	}
 	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
 	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
-	if (!g_InputRecording.GetInputRecordingData().FromSaveState())
-		g_InputRecordingControls.Resume();
 }
 
 void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent &event)

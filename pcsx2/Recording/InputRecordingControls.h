@@ -56,7 +56,7 @@ public:
 	// Enables the frame locking mechanism so that when recordings are loaded
 	// or when processing a reboot with a recording active that no frames are
 	// lost in prior emulation
-	void Lock(u32 frame, bool savestate);
+	void Lock(u32 frame);
 
 private:
 	// Indicates if the input recording controls have explicitly paused emulation or not

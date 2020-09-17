@@ -64,7 +64,7 @@ void InputRecording::RecordingReset()
 	else if (g_InputRecording.IsActive())
 	{
 		g_InputRecording.SetFrameCounter(0);
-		g_InputRecordingControls.Lock(0, false);
+		g_InputRecordingControls.Lock(0);
 	}
 	else
 		g_InputRecordingControls.Resume();
@@ -227,7 +227,7 @@ void InputRecording::SetStartingFrame(u32 newStartingFrame)
 		recordingConLog(wxString::Format(L"[REC]: Internal Starting Frame: %d\n", startingFrame));
 	frameCounter = 0;
 	initialLoad = false;
-	g_InputRecordingControls.Lock(startingFrame, inputRecordingData.FromSaveState());
+	g_InputRecordingControls.Lock(startingFrame);
 }
 
 void InputRecording::Stop()
