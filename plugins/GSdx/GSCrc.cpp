@@ -403,8 +403,6 @@ CRC::Game CRC::m_games[] =
 	{0xF088FA5B, DeathByDegreesTekkenNinaWilliams, KO, 0},
 	{0xE1D6F85E, DeathByDegreesTekkenNinaWilliams, US, 0},
 	{0x59683BB0, DeathByDegreesTekkenNinaWilliams, EU, 0},
-	{0x5B659BED, Grandia3, JP, 0},
-	{0x5B657DAD, Grandia3, US, 0},
 	{0x830B6FB1, TalesofSymphonia, JP, 0},
 	{0xFC0F8A5B, Simple2000Vol114, JP, 0},
 	{0xBDD9BAAD, UrbanReign, US, 0}, // cutie comment

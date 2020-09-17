@@ -945,19 +945,6 @@ bool GSC_SlyGames(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Grandia3(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME && (fi.FBP == 0x0 || fi.FBP == 0x0e00) && (fi.TBP0 == 0x2a00 || fi.TBP0 == 0x0e00 || fi.TBP0 == 0) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT32)
-		{
-			skip = 1; // Blur
-		}
-	}
-
-	return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Aggressive only hack
 ////////////////////////////////////////////////////////////////////////////////
@@ -1360,9 +1347,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::TenchuWoH] = GSC_TenchuGames;
 		lut[CRC::Sly2] = GSC_SlyGames; // SW blending on fbmask + Upscaling issue
 		lut[CRC::Sly3] = GSC_SlyGames; // SW blending on fbmask + Upscaling issue
-
-		// Needs testing
-		lut[CRC::Grandia3] = GSC_Grandia3;
 
 		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to Aggressive)
 		// Needs at least Basic Blending,

@@ -63,7 +63,6 @@ public:
 		GodHand,
 		GodOfWar,
 		GodOfWar2,
-		Grandia3,
 		GT3,
 		GT4,
 		GTConcept,
