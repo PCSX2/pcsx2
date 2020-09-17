@@ -41,16 +41,17 @@ void InputRecordingControls::HandleFrameAdvanceAndPausing()
 	// has completed - signaled when g_framecount and frameCountTracker are equal.
 	if (frameLock)
 	{
-		if (!emulationCurrentlyPaused && CoreThread.IsOpen() && CoreThread.IsRunning())
-		{
-			pauseEmulation = true;
-			emulationCurrentlyPaused = true;
-			CoreThread.PauseSelf();
-		}
-		else if (g_FrameCount == frameCountTracker)
+		if (g_FrameCount == frameCountTracker)
 		{
 			frameLock = false;
 			g_InputRecordingControls.Resume();
+		}
+		else if (!emulationCurrentlyPaused && CoreThread.IsOpen() && CoreThread.IsRunning())
+		{
+			pauseEmulation = true;
+			resumeEmulation = false;
+			emulationCurrentlyPaused = true;
+			CoreThread.PauseSelf();
 		}
 		return;
 	}
@@ -188,12 +189,13 @@ void InputRecordingControls::RecordModeToggle()
 		switchToReplay = true;
 }
 
-void InputRecordingControls::Lock(u32 frame, bool savestate)
+void InputRecordingControls::Lock(u32 frame)
 {
 	frameLock = true;
 	frameCountTracker = frame;
+	resumeEmulation = false;
 	//Ensures that g_frameCount can be used to resume emulation after a fast/full boot
-	if (!savestate)
+	if (!g_InputRecording.GetInputRecordingData().FromSaveState())
 		g_FrameCount = frame + 1;
 }
 #endif
