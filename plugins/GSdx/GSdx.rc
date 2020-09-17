@@ -54,7 +54,6 @@ BEGIN
     "#include ""res/merge.fx""\r\n"
     "#include ""res/fxaa.fx""\r\n"
     "#include ""res/shadeboost.fx""\r\n"
-    "#include ""res/tfx.cl""\r\n"
     "\0"
 END
 
@@ -77,8 +76,6 @@ IDR_MERGE_FX            RCDATA                  "res\\merge.fx"
 IDR_FXAA_FX             RCDATA                  "res\\fxaa.fx"
 
 IDR_SHADEBOOST_FX       RCDATA                  "res\\shadeboost.fx"
-
-IDR_TFX_CL              RCDATA                  "res\\tfx.cl"
 
 IDR_CONVERT_GLSL        RCDATA                  "res\\glsl\\convert.glsl";
 
@@ -271,8 +268,6 @@ BEGIN
     COMBOBOX        IDC_INTERLACE,70,85,166,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Texture Filtering:",IDC_FILTER_TEXT,6,102,79,8
     COMBOBOX        IDC_FILTER,70,100,166,63,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "OpenCL Device:",IDC_OPENCL_TEXT,6,117,53,8
-    COMBOBOX        IDC_OPENCL_DEVICE,70,115,166,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "OSD Configuration",IDC_OSDBUTTON,10,325,108,14
     PUSHBUTTON      "Shader Configuration",IDC_SHADEBUTTON,124,325,108,14
     DEFPUSHBUTTON   "OK",IDOK,68,351,50,14
@@ -425,7 +420,6 @@ END
 #include "res/merge.fx"
 #include "res/fxaa.fx"
 #include "res/shadeboost.fx"
-#include "res/tfx.cl"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED

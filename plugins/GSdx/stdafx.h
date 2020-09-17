@@ -51,14 +51,6 @@
 
 #include <PluginCompatibility.h>
 
-#ifdef ENABLE_OPENCL
-
-#define CL_USE_DEPRECATED_OPENCL_1_1_APIS
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-
-#endif
-
 #ifdef __x86_64__
 #define _M_AMD64
 #endif

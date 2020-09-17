@@ -17,11 +17,9 @@
 #define IDC_FILTER                      2012
 #define IDC_INTERLACE_TEXT              2013
 #define IDC_INTERLACE                   2014
-#define IDC_OPENCL_DEVICE               2015
-#define IDC_OPENCL_TEXT                 2016
-#define IDC_HACKSBUTTON                 2017
-#define IDC_OSDBUTTON                   2018
-#define IDC_SHADEBUTTON                 2019
+#define IDC_HACKSBUTTON                 2015
+#define IDC_OSDBUTTON                   2016
+#define IDC_SHADEBUTTON                 2017
 // Hardware Renderer Settings:
 #define IDC_PALTEX                      2030
 #define IDC_LARGE_FB                    2031

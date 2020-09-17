@@ -27,7 +27,6 @@
 #include "Renderers/Null/GSDeviceNull.h"
 #include "Renderers/OpenGL/GSDeviceOGL.h"
 #include "Renderers/OpenGL/GSRendererOGL.h"
-#include "Renderers/OpenCL/GSRendererCL.h"
 #include "GSLzma.h"
 
 #ifdef _WIN32
@@ -124,9 +123,6 @@ EXPORT_C_(int) GSinit()
 	GSUtil::Init();
 	GSBlock::InitVectors();
 	GSClut::InitVectors();
-#ifdef ENABLE_OPENCL
-	GSRendererCL::InitVectors();
-#endif
 	GSRendererSW::InitVectors();
 	GSVector4i::InitVectors();
 	GSVector4::InitVectors();
@@ -232,9 +228,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			{
 				case GSRendererType::OGL_HW:
 				case GSRendererType::OGL_SW:
-#ifdef ENABLE_OPENCL
-				case GSRendererType::OGL_OpenCL:
-#endif
 #if defined(__unix__)
 					// Note: EGL code use GLX otherwise maybe it could be also compatible with Windows
 					// Yes OpenGL code isn't complicated enough !
@@ -321,12 +314,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 		case GSRendererType::Null:
 			renderer_mode = "(Null renderer)";
 			break;
-#ifdef ENABLE_OPENCL
-		case GSRendererType::DX1011_OpenCL:
-		case GSRendererType::OGL_OpenCL:
-			renderer_mode = "(OpenCL)";
-			break;
-#endif
 		default:
 			renderer_mode = "(Hardware renderer)";
 			break;
@@ -338,9 +325,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 #ifdef _WIN32
 		case GSRendererType::DX1011_HW:
 		case GSRendererType::DX1011_SW:
-#ifdef ENABLE_OPENCL
-		case GSRendererType::DX1011_OpenCL:
-#endif
 			dev = new GSDevice11();
 			s_renderer_name = " D3D11";
 			renderer_fullname = "Direct3D 11";
@@ -353,9 +337,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			break;
 		case GSRendererType::OGL_HW:
 		case GSRendererType::OGL_SW:
-#ifdef ENABLE_OPENCL
-		case GSRendererType::OGL_OpenCL:
-#endif
 			dev = new GSDeviceOGL();
 			s_renderer_name = " OGL";
 			renderer_fullname = "OpenGL";
@@ -393,13 +374,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				s_gs = new GSRendererNull();
 				s_renderer_type = "";
 				break;
-#ifdef ENABLE_OPENCL
-			case GSRendererType::DX1011_OpenCL:
-			case GSRendererType::OGL_OpenCL:
-				s_gs = new GSRendererCL();
-				s_renderer_type = " OCL";
-				break;
-#endif
 			}
 			if (s_gs == NULL)
 				return -1;

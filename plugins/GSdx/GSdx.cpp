@@ -91,9 +91,6 @@ bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 		case IDR_TFX_FS_GLSL:
 			path = "/GSdx/res/glsl/tfx_fs.glsl";
 			break;
-		case IDR_TFX_CL:
-			path = "/GSdx/res/tfx.cl";
-			break;
 		case IDR_FONT_ROBOTO:
 			path = "/GSdx/res/fonts-roboto/Roboto-Regular.ttf";
 			break;
@@ -219,15 +216,6 @@ void GSdxApp::Init()
 
 	// The null renderer goes third, it has use for benchmarking purposes in a release build
 	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null), "None", "Core Benchmark"));
-
-#ifdef ENABLE_OPENCL
-	// OpenCL stuff goes last
-	// FIXME openCL isn't attached to a device (could be impacted by the window management stuff however)
-#ifdef _WIN32
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_OpenCL),	"Direct3D 11",	"OpenCL"));
-#endif
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_OpenCL),		"OpenGL",		"OpenCL"));
-#endif
 
 	m_gs_interlace.push_back(GSSetting(0, "None", ""));
 	m_gs_interlace.push_back(GSSetting(1, "Weave tff", "saw-tooth"));
@@ -360,7 +348,6 @@ void GSdxApp::Init()
 	m_default_configuration["ModeHeight"]                                 = "480";
 	m_default_configuration["ModeWidth"]                                  = "640";
 	m_default_configuration["NTSC_Saturation"]                            = "1";
-	m_default_configuration["ocldev"]                                     = "";
 #ifdef _WIN32
 	m_default_configuration["osd_fontname"]                               = "C:\\Windows\\Fonts\\my_favorite_font_e_g_tahoma.ttf";
 #else

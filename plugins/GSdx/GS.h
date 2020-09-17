@@ -236,8 +236,6 @@ enum class GSRendererType : int8_t
 	Null = 11,
 	OGL_HW,
 	OGL_SW,
-	DX1011_OpenCL = 15,
-	OGL_OpenCL = 17,
 
 #ifdef _WIN32
 	Default = Undefined
