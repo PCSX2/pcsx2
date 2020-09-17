@@ -46,7 +46,3 @@
 #if defined(__unix__) && !(defined(_DEBUG) || defined(_DEVEL))
 #define DISABLE_PERF_MON // Burn cycle for nothing in release mode
 #endif
-
-#ifdef _WIN32
-//#define ENABLE_OPENCL
-#endif
