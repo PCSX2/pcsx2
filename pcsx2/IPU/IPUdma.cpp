@@ -226,8 +226,9 @@ void IPU0dma()
 	ipu0ch.qwc -= readsize; // note: qwc is u16
 
 	
-		if (dmacRegs.ctrl.STS == STS_fromIPU)   // STS == fromIPU
+		if (dmacRegs.ctrl.STS == STS_fromIPU && ipu0ch.qwc == 0)   // STS == fromIPU
 		{
+			//DevCon.Warning("fromIPU Stall Control");
 			dmacRegs.stadr.ADDR = ipu0ch.madr;
 			switch (dmacRegs.ctrl.STD)
 			{
@@ -271,6 +272,10 @@ __fi void dmaIPU0() // fromIPU
 		hwDmacIrq(DMAC_FROM_IPU);
 	}
 	//if (dmacRegs.ctrl.STS == STS_fromIPU) DevCon.Warning("DMA Stall enabled on IPU0");
+
+	if (dmacRegs.ctrl.STS == STS_fromIPU)   // STS == fromIPU - Initial settings
+		dmacRegs.stadr.ADDR = ipu0ch.madr;
+
 	IPU_INT_FROM( 64 );
 
 

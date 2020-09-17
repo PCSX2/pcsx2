@@ -23,6 +23,7 @@
 _sif sif1;
 
 static bool done = false;
+static bool sif1_dma_stall = false;
 
 static __fi void Sif1Init()
 {
@@ -186,10 +187,6 @@ static __fi void HandleEETransfer()
 		sif1.ee.busy = false;
 		return;
 	}
-	if (dmacRegs.ctrl.STD == STD_SIF1)
-	{
-		DevCon.Warning("SIF1 stall control Not Implemented"); // STD == fromSIF1
-	}
 
 	/*if (sif1ch.qwc == 0)
 		if (sif1ch.chcr.MOD == NORMAL_MODE)
@@ -216,6 +213,21 @@ static __fi void HandleEETransfer()
 	}
 	else
 	{
+		if (dmacRegs.ctrl.STD == STD_SIF1)
+		{
+			if ((sif1ch.chcr.MOD == NORMAL_MODE) || ((sif1ch.chcr.TAG >> 28) & 0x7) == TAG_REFS)
+			{
+				//DevCon.Warning("SIF1 Stall Control");
+				const int writeSize = std::min((s32)sif1ch.qwc, sif1.fifo.sif_free() >> 2);
+				if ((sif1ch.madr + (writeSize * 16)) > dmacRegs.stadr.ADDR)
+				{
+					hwDmacIrq(DMAC_STALL_SIS);
+					sif1_dma_stall = true;
+					return;
+				}
+			}
+				//DevCon.Warning("SIF1 stall control Not Implemented"); // STD == fromSIF1
+		}
 		if (sif1.fifo.sif_free() > 0)
 		{
 			WriteEEtoFifo();
@@ -262,6 +274,15 @@ static __fi void Sif1End()
 __fi void SIF1Dma()
 {
 	int BusyCheck = 0;
+
+	if (sif1_dma_stall)
+	{
+		const int writeSize = std::min((s32)sif1ch.qwc, sif1.fifo.sif_free() >> 2);
+		if ((sif1ch.madr + (writeSize * 16)) > dmacRegs.stadr.ADDR)
+			return;
+	}
+
+	sif1_dma_stall = false;
 	Sif1Init();
 
 	do
@@ -269,7 +290,7 @@ __fi void SIF1Dma()
 		//I realise this is very hacky in a way but its an easy way of checking if both are doing something
 		BusyCheck = 0;
 
-		if (sif1.ee.busy)
+		if (sif1.ee.busy && !sif1_dma_stall)
 		{
 			if(sif1.fifo.sif_free() > 0 || (sif1.ee.end && sif1ch.qwc == 0))
 			{

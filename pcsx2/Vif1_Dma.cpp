@@ -164,7 +164,7 @@ __fi void vif1SetupTransfer()
 	if (!vif1.done && ((dmacRegs.ctrl.STD == STD_VIF1) && (ptag->ID == TAG_REFS)))   // STD == VIF1
 	{
 		// there are still bugs, need to also check if gif->madr +16*qwc >= stadr, if not, stall
-		if ((vif1ch.madr + vif1ch.qwc * 16) >= dmacRegs.stadr.ADDR)
+		if ((vif1ch.madr + vif1ch.qwc * 16) > dmacRegs.stadr.ADDR)
 		{
 			//DevCon.Warning("VIF1 DMA Stall");
 			// stalled
@@ -436,13 +436,6 @@ void dmaVIF1()
 	        vif1ch.tadr, vif1ch.asr0, vif1ch.asr1);
 
 	g_vif1Cycles = 0;
-
-#ifdef PCSX2_DEVBUILD
-	if (dmacRegs.ctrl.STD == STD_VIF1)
-	{
-		//DevCon.WriteLn("VIF Stall Control Source = %x, Drain = %x", (psHu32(0xe000) >> 4) & 0x3, (psHu32(0xe000) >> 6) & 0x3);
-	}
-#endif
 
 	if (vif1ch.qwc > 0)   // Normal Mode
 	{

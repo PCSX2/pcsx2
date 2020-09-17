@@ -138,7 +138,14 @@ int  _SPR0chain()
 
 	}
 
-
+	if (spr0ch.qwc == 0 && dmacRegs.ctrl.STS == STS_fromSPR)
+	{
+		if (spr0ch.chcr.MOD == NORMAL_MODE || ((spr0ch.chcr.TAG >> 28) & 0x7) == TAG_CNTS)
+		{
+			//DevCon.Warning("SPR0 %s Stall Control", spr0ch.chcr.MOD == NORMAL_MODE ? "Normal" : "Chain");
+			dmacRegs.stadr.ADDR = spr0ch.madr; // Copy MADR to DMAC_STADR stall addr register
+		}
+	}
 
 	return (partialqwc); // Bus is 1/2 the ee speed
 }
@@ -188,17 +195,16 @@ void _SPR0interleave()
 		spr0ch.sadr &= 0x3FFF; // Limited to 16K
 		spr0ch.madr += (sqwc + spr0ch.qwc) * 16;
 	}
-
+	if (dmacRegs.ctrl.STS == STS_fromSPR)
+	{
+		//DevCon.Warning("SPR0 Interleave Stall Control");
+		dmacRegs.stadr.ADDR = spr0ch.madr; // Copy MADR to DMAC_STADR stall addr register
+	}
 	spr0ch.qwc = 0;
 }
 
 static __fi void _dmaSPR0()
 {
-	if (dmacRegs.ctrl.STS == STS_fromSPR)
-	{
-		DevCon.Warning("SPR0 stall %d", dmacRegs.ctrl.STS);
-	}
-
 	// Transfer Dn_QWC from SPR to Dn_MADR
 	switch(spr0ch.chcr.MOD)
 	{
@@ -206,7 +212,7 @@ static __fi void _dmaSPR0()
 		{
 			if (dmacRegs.ctrl.STS == STS_fromSPR) // STS == fromSPR
 			{
-				DevCon.Warning("SPR stall control Normal not implemented");
+				dmacRegs.stadr.ADDR = spr0ch.madr;
 			}
 			SPR0chain();
 			spr0finished = true;
@@ -234,15 +240,13 @@ static __fi void _dmaSPR0()
 			SPR_LOG("spr0 dmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx spr=%lx",
 				ptag[1]._u32, ptag[0]._u32, spr0ch.qwc, ptag->ID, spr0ch.madr, spr0ch.sadr);
 
-			if (dmacRegs.ctrl.STS == STS_fromSPR) // STS == fromSPR
-			{
-				Console.WriteLn("SPR stall control");
-			}
-
 			switch (ptag->ID)
 			{
 				case TAG_CNTS: // CNTS - Transfer QWC following the tag (Stall Control)
-					if (dmacRegs.ctrl.STS == STS_fromSPR) dmacRegs.stadr.ADDR = spr0ch.madr + (spr0ch.qwc * 16); // Copy MADR to DMAC_STADR stall addr register
+					if (dmacRegs.ctrl.STS == STS_fromSPR) // STS == fromSPR - Initial Value
+					{
+						dmacRegs.stadr.ADDR = spr0ch.madr;
+					}
 					break;
 
 				case TAG_CNT: // CNT - Transfer QWC following the tag.
@@ -270,10 +274,6 @@ static __fi void _dmaSPR0()
 		//case INTERLEAVE_MODE:
 		default:
 		{
-			if (dmacRegs.ctrl.STS == STS_fromSPR)   // STS == fromSPR
-			{
-				Console.WriteLn("SPR stall control interleave not implemented");
-			}
 			_SPR0interleave();
 			spr0finished = true;
 			break;

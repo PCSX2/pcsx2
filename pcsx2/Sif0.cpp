@@ -58,6 +58,13 @@ static __fi bool WriteFifoToEE()
 	sif0.ee.cycles += readSize;	// fixme : BIAS is factored in above
 	sif0ch.qwc -= readSize;
 
+	if (sif0ch.qwc == 0 && dmacRegs.ctrl.STS == STS_SIF0)
+	{
+		//DevCon.Warning("SIF0 Stall Control");
+		if ((sif0ch.chcr.MOD == NORMAL_MODE) || ((sif0ch.chcr.TAG >> 28) & 0x7) == TAG_CNTS)
+			dmacRegs.stadr.ADDR = sif0ch.madr;
+	}
+
 	return true;
 }
 
@@ -105,8 +112,8 @@ static __fi bool ProcessEETag()
 		case TAG_CNT:	break;
 
 		case TAG_CNTS:
-			if (dmacRegs.ctrl.STS == STS_SIF0)
-				dmacRegs.stadr.ADDR = sif0ch.madr + (sif0ch.qwc * 16);
+			if (dmacRegs.ctrl.STS == STS_SIF0) // STS == SIF0 - Initial Value
+					dmacRegs.stadr.ADDR = sif0ch.madr;
 			break;
 
 		case TAG_END:
@@ -188,11 +195,6 @@ static __fi void HandleEETransfer()
 		sif0.ee.end = false;
 		sif0.ee.busy = false;
 		return;
-	}
-
-	if (dmacRegs.ctrl.STS == STS_SIF0)
-	{
-		DevCon.Warning("SIF0 stall control not properly implemented");
 	}
 
 	/*if (sif0ch.qwc == 0)
