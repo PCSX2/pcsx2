@@ -244,6 +244,10 @@ void GSdxApp::Init()
 	m_gs_max_anisotropy.push_back(GSSetting(8, "8x", ""));
 	m_gs_max_anisotropy.push_back(GSSetting(16, "16x", ""));
 
+	m_gs_dithering.push_back(GSSetting(0, "Off", ""));
+	m_gs_dithering.push_back(GSSetting(1, "Scaled", ""));
+	m_gs_dithering.push_back(GSSetting(2, "Unscaled", "Default"));
+
 	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Nearest), "Nearest", ""));
 	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced_But_Sprite), "Bilinear", "Forced excluding sprite"));
 	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced), "Bilinear", "Forced"));
@@ -332,7 +336,7 @@ void GSdxApp::Init()
 	m_default_configuration["debug_glsl_shader"]                          = "0";
 	m_default_configuration["debug_opengl"]                               = "0";
 	m_default_configuration["disable_hw_gl_draw"]                         = "0";
-	m_default_configuration["dithering_ps2"]                              = "1";
+	m_default_configuration["dithering_ps2"]                              = "2";
 	m_default_configuration["dump"]                                       = "0";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";
