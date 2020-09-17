@@ -277,10 +277,6 @@
     <ProjectReference Include="..\..\3rdparty\libpng\projects\vstudio\libpng\libpng.vcxproj">
       <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\3rdparty\opencl\opencl.vcxproj">
-      <Project>{d80d4a75-c385-41bd-ae62-83d2e2b595a7}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="..\..\3rdparty\xz\liblzma.vcxproj">
       <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
     </ProjectReference>
