@@ -10,6 +10,6 @@ DIRS=""
 for i in "${FORMATTED_DIRECTORIES[@]}"; do
   DIRS="${DIRS}${i} "
 done
-echo "Checking the following directories for clang-format violations - ${BUILD_PACKAGE_STR}"
+echo "Checking the following directories for clang-format violations - ${DIRS}"
 
 python ./3rdparty/run-clang-format/run-clang-format.py -r ${DIRS} --color always

@@ -44,7 +44,7 @@ s64 PSXCLK = 36864000;
 
 static __fi void SetResultSize(u8 size)
 {
-	cdvd.ResultC = size;
+	    cdvd.ResultC = size;
 	cdvd.ResultP = 0;
 	cdvd.sDataIn &= ~0x40;
 }
