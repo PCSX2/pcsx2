@@ -53,10 +53,21 @@ jobs:
       #     echo "$GITHUB_CONTEXT"
       #     echo ${{ github.event.pull_request.title }}
 
-      - name: Checkout Repository & Submodules
+      - name: Checkout Repository
         uses: actions/checkout@v2
+
+      - name: Cache Submodules
+        id: cache-submodules
+        uses: actions/cache@v2
         with:
-          submodules: true
+          key: submodules-${{ hashFiles('./.gitmodules') }}
+          path: |
+            ./3rdparty/xz
+            ./3rdparty/gtest
+
+      - name: Checkout Submodules
+        if: steps.cache-submodules.outputs.cache-hit != 'true'
+        run: git submodule update --init --recursive
 
       # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
       - name: Prepare ccache timestamp
