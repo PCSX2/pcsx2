@@ -6,9 +6,27 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - .gitignore
+      - "**/*.md"
+      - .clang-format
+      - debian-packager/
+      - bin/PCSX2_keys.ini.default
+      - "plugins/LilyPad/**"
+      - .travis.yml # TODO - remove with travis-ci
+      - appveyor.yml # TODO - remove with appveyor
   pull_request:
     branches:
       - master
+    paths-ignore:
+      - .gitignore
+      - "**/*.md"
+      - .clang-format
+      - debian-packager/
+      - bin/PCSX2_keys.ini.default
+      - "plugins/LilyPad/**"
+      - .travis.yml # TODO - remove with travis-ci
+      - appveyor.yml # TODO - remove with appveyor
 
 jobs:
   build:
