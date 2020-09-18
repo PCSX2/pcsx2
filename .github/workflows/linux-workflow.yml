@@ -62,8 +62,8 @@ jobs:
         # TODO - give the file executable permissions and commit it
         run: |
           sudo apt install clang-format
-          chmod +x ./github/workflows/scripts/verify-formatting.sh
-          ./github/workflows/scripts/verify-formatting.sh
+          chmod +x ./.github/workflows/scripts/verify-formatting.sh
+          ./.github/workflows/scripts/verify-formatting.sh
 
       # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
       - name: Prepare ccache timestamp
