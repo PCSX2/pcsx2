@@ -489,7 +489,7 @@ void GSdxApp::BuildConfigurationMap(const char* lpFileName)
 		m_configuration_map[key] = value;
 	}
 }
-
+// code change
 void* GSdxApp::GetModuleHandlePtr()
 {
 	return s_hModule;
