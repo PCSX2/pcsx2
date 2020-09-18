@@ -6,6 +6,11 @@ version: 1.{build}-{branch}
 # Do not build feature branch with open Pull Requests
 skip_branch_with_pr: true
 
+# build only master branch
+branches:
+  only:
+    - master
+
 # Skip building commits if only the following directories/files are changed
 skip_commits:
   files:
