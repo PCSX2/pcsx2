@@ -24,142 +24,148 @@
 
 enum cdrom_registers
 {
-    CdlSync         = 0,
-    CdlNop	        = 1,
-    CdlSetloc		= 2,
-    CdlPlay	        = 3,
-    CdlForward		= 4,
-    CdlBackward		= 5,
-    CdlReadN		= 6,
-    CdlStandby		= 7,
-    CdlStop	        = 8,
-    CdlPause        = 9,
-    CdlInit 		= 10,
-    CdlMute	        = 11,
-    CdlDemute		= 12,
-    CdlSetfilter	= 13,
-    CdlSetmode		= 14,
-    CdlGetmode      = 15,
-    CdlGetlocL		= 16,
-    CdlGetlocP		= 17,
-    Cdl18     		= 18,
-    CdlGetTN		= 19,
-    CdlGetTD		= 20,
-    CdlSeekL		= 21,
-    CdlSeekP		= 22,
-    CdlTest 		= 25,
-    CdlID   		= 26,
-    CdlReadS		= 27,
-    CdlReset		= 28,
-    CdlReadToc      = 30,
+	CdlSync = 0,
+	CdlNop = 1,
+	CdlSetloc = 2,
+	CdlPlay = 3,
+	CdlForward = 4,
+	CdlBackward = 5,
+	CdlReadN = 6,
+	CdlStandby = 7,
+	CdlStop = 8,
+	CdlPause = 9,
+	CdlInit = 10,
+	CdlMute = 11,
+	CdlDemute = 12,
+	CdlSetfilter = 13,
+	CdlSetmode = 14,
+	CdlGetmode = 15,
+	CdlGetlocL = 16,
+	CdlGetlocP = 17,
+	Cdl18 = 18,
+	CdlGetTN = 19,
+	CdlGetTD = 20,
+	CdlSeekL = 21,
+	CdlSeekP = 22,
+	CdlTest = 25,
+	CdlID = 26,
+	CdlReadS = 27,
+	CdlReset = 28,
+	CdlReadToc = 30,
 
-    AUTOPAUSE		= 249,
-    READ_ACK		= 250,
-    READ			= 251,
-    REPPLAY_ACK		= 252,
-    REPPLAY			= 253,
-    ASYNC			= 254
-/* don't set 255, it's reserved */
+	AUTOPAUSE = 249,
+	READ_ACK = 250,
+	READ = 251,
+	REPPLAY_ACK = 252,
+	REPPLAY = 253,
+	ASYNC = 254
+	/* don't set 255, it's reserved */
 };
 
-const char *CmdName[0x100]= {
-	"CdlSync",    "CdlNop",       "CdlSetloc",  "CdlPlay",
-	"CdlForward", "CdlBackward",  "CdlReadN",   "CdlStandby",
-	"CdlStop",    "CdlPause",     "CdlInit",    "CdlMute",
-	"CdlDemute",  "CdlSetfilter", "CdlSetmode", "CdlGetmode",
-	"CdlGetlocL", "CdlGetlocP",   "Cdl18",      "CdlGetTN",
-	"CdlGetTD",   "CdlSeekL",     "CdlSeekP",   NULL,
-	NULL,         "CdlTest",      "CdlID",      "CdlReadS",
-	"CdlReset",   NULL,           "CDlReadToc", NULL
-};
+const char* CmdName[0x100] = {
+	"CdlSync", "CdlNop", "CdlSetloc", "CdlPlay",
+	"CdlForward", "CdlBackward", "CdlReadN", "CdlStandby",
+	"CdlStop", "CdlPause", "CdlInit", "CdlMute",
+	"CdlDemute", "CdlSetfilter", "CdlSetmode", "CdlGetmode",
+	"CdlGetlocL", "CdlGetlocP", "Cdl18", "CdlGetTN",
+	"CdlGetTD", "CdlSeekL", "CdlSeekP", NULL,
+	NULL, "CdlTest", "CdlID", "CdlReadS",
+	"CdlReset", NULL, "CDlReadToc", NULL};
 
 cdrStruct cdr;
 s32 LoadCdBios;
 
-u8 Test04[] = { 0 };
-u8 Test05[] = { 0 };
-u8 Test20[] = { 0x98, 0x06, 0x10, 0xC3 };
-u8 Test22[] = { 0x66, 0x6F, 0x72, 0x20, 0x45, 0x75, 0x72, 0x6F };
-u8 Test23[] = { 0x43, 0x58, 0x44, 0x32, 0x39 ,0x34, 0x30, 0x51 };
+u8 Test04[] = {0};
+u8 Test05[] = {0};
+u8 Test20[] = {0x98, 0x06, 0x10, 0xC3};
+u8 Test22[] = {0x66, 0x6F, 0x72, 0x20, 0x45, 0x75, 0x72, 0x6F};
+u8 Test23[] = {0x43, 0x58, 0x44, 0x32, 0x39, 0x34, 0x30, 0x51};
 
-//backported from PCSXR 
+//backported from PCSXR
 // cdr.Stat:
-#define NoIntr		0
-#define DataReady	1
-#define Complete	2
-#define Acknowledge	3
-#define DataEnd		4
-#define DiskError	5
+#define NoIntr 0
+#define DataReady 1
+#define Complete 2
+#define Acknowledge 3
+#define DataEnd 4
+#define DiskError 5
 
 /* Modes flags */
-#define MODE_SPEED       (1<<7) // 0x80
-#define MODE_STRSND      (1<<6) // 0x40 ADPCM on/off
-#define MODE_SIZE_2340   (1<<5) // 0x20
-#define MODE_SIZE_2328   (1<<4) // 0x10
-#define MODE_SIZE_2048   (0<<4) // 0x00
-#define MODE_SF          (1<<3) // 0x08 channel on/off
-#define MODE_REPORT      (1<<2) // 0x04
-#define MODE_AUTOPAUSE   (1<<1) // 0x02
-#define MODE_CDDA        (1<<0) // 0x01
+#define MODE_SPEED (1 << 7)     // 0x80
+#define MODE_STRSND (1 << 6)    // 0x40 ADPCM on/off
+#define MODE_SIZE_2340 (1 << 5) // 0x20
+#define MODE_SIZE_2328 (1 << 4) // 0x10
+#define MODE_SIZE_2048 (0 << 4) // 0x00
+#define MODE_SF (1 << 3)        // 0x08 channel on/off
+#define MODE_REPORT (1 << 2)    // 0x04
+#define MODE_AUTOPAUSE (1 << 1) // 0x02
+#define MODE_CDDA (1 << 0)      // 0x01
 
 /* Status flags, to go on cdr.StatP */
-#define STATUS_PLAY      (1<<7) // 0x80
-#define STATUS_SEEK      (1<<6) // 0x40
-#define STATUS_READ      (1<<5) // 0x20
-#define STATUS_SHELLOPEN (1<<4) // 0x10
-#define STATUS_UNKNOWN3  (1<<3) // 0x08
-#define STATUS_UNKNOWN2  (1<<2) // 0x04
-#define STATUS_ROTATING  (1<<1) // 0x02
-#define STATUS_ERROR     (1<<0) // 0x01
+#define STATUS_PLAY (1 << 7)      // 0x80
+#define STATUS_SEEK (1 << 6)      // 0x40
+#define STATUS_READ (1 << 5)      // 0x20
+#define STATUS_SHELLOPEN (1 << 4) // 0x10
+#define STATUS_UNKNOWN3 (1 << 3)  // 0x08
+#define STATUS_UNKNOWN2 (1 << 2)  // 0x04
+#define STATUS_ROTATING (1 << 1)  // 0x02
+#define STATUS_ERROR (1 << 0)     // 0x01
 
 /* Errors */
-#define ERROR_NOTREADY   (1<<7) // 0x80
-#define ERROR_INVALIDCMD (1<<6) // 0x40
-#define ERROR_INVALIDARG (1<<5) // 0x20
+#define ERROR_NOTREADY (1 << 7)   // 0x80
+#define ERROR_INVALIDCMD (1 << 6) // 0x40
+#define ERROR_INVALIDARG (1 << 5) // 0x20
 
 // 1x = 75 sectors per second
 // PSXCLK = 1 sec in the ps
 // so (PSXCLK / 75) / BIAS = cdr read time (linuzappz)
 u32 cdReadTime; // = ((PSXCLK / 75) / BIAS);
 
-#define CDR_INT(eCycle)    PSX_INT(IopEvt_Cdrom, eCycle)
+#define CDR_INT(eCycle) PSX_INT(IopEvt_Cdrom, eCycle)
 #define CDREAD_INT(eCycle) PSX_INT(IopEvt_CdromRead, eCycle)
 
 const uint shortSectorSeekReadDelay = 1000; // delay for reads/seeks that may or may not have a seek action preceeding it
-uint sectorSeekReadDelay = 0x800; // for calculated seek delays
+uint sectorSeekReadDelay = 0x800;           // for calculated seek delays
 
 static void AddIrqQueue(u8 irq, u32 ecycle);
 
-static __fi void StartReading(u32 type) {
-   	cdr.Reading = type;
-  	cdr.FirstSector = 1;
-  	cdr.Readed = 0xff;
+static __fi void StartReading(u32 type)
+{
+	cdr.Reading = type;
+	cdr.FirstSector = 1;
+	cdr.Readed = 0xff;
 	//DevCon.Warning("ReadN/ReadS delay: %d", sectorSeekReadDelay);
 	AddIrqQueue(READ_ACK, sectorSeekReadDelay);
 	sectorSeekReadDelay = shortSectorSeekReadDelay;
 }
 
-static __fi void StopReading() {
-	if (cdr.Reading) {
+static __fi void StopReading()
+{
+	if (cdr.Reading)
+	{
 		cdr.Reading = 0;
-		psxRegs.interrupt &= ~(1<<IopEvt_CdromRead);
+		psxRegs.interrupt &= ~(1 << IopEvt_CdromRead);
 	}
 }
 
-static __fi void StopCdda() {
-	if (cdr.Play) {
+static __fi void StopCdda()
+{
+	if (cdr.Play)
+	{
 		cdr.StatP &= ~STATUS_PLAY;
 		cdr.Play = 0;
 	}
 }
 
-static __fi void SetResultSize(u8 size) {
-    cdr.ResultP = 0;
+static __fi void SetResultSize(u8 size)
+{
+	cdr.ResultP = 0;
 	cdr.ResultC = size;
 	cdr.ResultReady = 1;
 }
 
-static void ReadTrack() {
+static void ReadTrack()
+{
 	cdr.Prev[0] = itob(cdr.SetSector[0]);
 	cdr.Prev[1] = itob(cdr.SetSector[1]);
 	cdr.Prev[2] = itob(cdr.SetSector[2]);
@@ -170,29 +176,36 @@ static void ReadTrack() {
 	cdr.RErr = DoCDVDreadTrack(msf_to_lsn(cdr.SetSector), CDVD_MODE_2340);
 }
 
-static void AddIrqQueue(u8 irq, u32 ecycle) {
+static void AddIrqQueue(u8 irq, u32 ecycle)
+{
 	cdr.Irq = irq;
-	if (cdr.Stat) {
+	if (cdr.Stat)
+	{
 		cdr.eCycle = ecycle;
-	} else {
+	}
+	else
+	{
 		CDR_INT(ecycle);
 	}
 }
 
-void  cdrInterrupt() {
+void cdrInterrupt()
+{
 	cdvdTD trackInfo;
 	int i;
 	u8 Irq = cdr.Irq;
 
-	if (cdr.Stat) {
+	if (cdr.Stat)
+	{
 		CDR_INT(0x800);
 		return;
 	}
 
 	cdr.Irq = 0xff;
-	cdr.Ctrl&=~0x80;
+	cdr.Ctrl &= ~0x80;
 
-	switch (Irq) {
+	switch (Irq)
+	{
 		case CdlSync:
 			SetResultSize(1);
 			cdr.StatP |= STATUS_ROTATING;
@@ -252,7 +265,7 @@ void  cdrInterrupt() {
 			cdr.StatP &= ~STATUS_ROTATING;
 			cdr.Result[0] = cdr.StatP;
 			cdr.Stat = Complete;
-        		// cdr.Stat = Acknowledge;
+			// cdr.Stat = Acknowledge;
 			break;
 
 		case CdlPause:
@@ -276,7 +289,7 @@ void  cdrInterrupt() {
 			cdr.Result[0] = cdr.StatP;
 			cdr.Stat = Acknowledge;
 			AddIrqQueue(CdlInit + 0x20, 0x800);
-        	break;
+			break;
 
 		case CdlInit + 0x20:
 			SetResultSize(1);
@@ -327,7 +340,7 @@ void  cdrInterrupt() {
 
 		case CdlGetlocL:
 			SetResultSize(8);
-			for (i=0; i<8; i++)
+			for (i = 0; i < 8; i++)
 				cdr.Result[i] = cdr.Transfer[i];
 			cdr.Stat = Acknowledge;
 			break;
@@ -350,10 +363,13 @@ void  cdrInterrupt() {
 			SetResultSize(3);
 			cdr.StatP |= STATUS_ROTATING;
 			cdr.Result[0] = cdr.StatP;
-			if (CDVD->getTN(&cdr.ResultTN) == -1) {
+			if (CDVD->getTN(&cdr.ResultTN) == -1)
+			{
 				cdr.Stat = DiskError;
-				cdr.Result[0]|= 0x01;
-			} else {
+				cdr.Result[0] |= 0x01;
+			}
+			else
+			{
 				cdr.Stat = Acknowledge;
 				cdr.Result[1] = itob(cdr.ResultTN.strack);
 				cdr.Result[2] = itob(cdr.ResultTN.etrack);
@@ -365,10 +381,13 @@ void  cdrInterrupt() {
 			cdr.Track = btoi(cdr.Param[0]);
 			SetResultSize(4);
 			cdr.StatP |= STATUS_ROTATING;
-			if (CDVD->getTD(cdr.Track, &trackInfo) == -1) {
+			if (CDVD->getTD(cdr.Track, &trackInfo) == -1)
+			{
 				cdr.Stat = DiskError;
-				cdr.Result[0]|= 0x01;
-			} else {
+				cdr.Result[0] |= 0x01;
+			}
+			else
+			{
 				lsn_to_msf(cdr.ResultTD, trackInfo.lsn);
 				cdr.Stat = Acknowledge;
 				cdr.Result[0] = cdr.StatP;
@@ -410,7 +429,8 @@ void  cdrInterrupt() {
 
 		case CdlTest:
 			cdr.Stat = Acknowledge;
-			switch (cdr.Param[0]) {
+			switch (cdr.Param[0])
+			{
 				case 0x20: // System Controller ROM Version
 					SetResultSize(4);
 					*(int*)cdr.Result = *(int*)Test20;
@@ -439,13 +459,14 @@ void  cdrInterrupt() {
 
 		case CdlID + 0x20:
 			SetResultSize(8);
-        		cdr.Result[0] = 0x00; // 0x08 and cdr.Result[1]|0x10 : audio cd, enters cd player
+			cdr.Result[0] = 0x00; // 0x08 and cdr.Result[1]|0x10 : audio cd, enters cd player
 			cdr.Result[1] = 0x00; // 0x80 leads to the menu in the bios, else loads CD
 
-			if (!LoadCdBios) cdr.Result[1] |= 0x80;
+			if (!LoadCdBios)
+				cdr.Result[1] |= 0x80;
 			cdr.Result[2] = 0x00;
 			cdr.Result[3] = 0x00;
-			strncpy((char *)&cdr.Result[4], "PCSX", 4);
+			strncpy((char*)&cdr.Result[4], "PCSX", 4);
 			cdr.Stat = Complete;
 			break;
 
@@ -477,7 +498,8 @@ void  cdrInterrupt() {
 			break;
 
 		case READ_ACK:
-			if (!cdr.Reading) return;
+			if (!cdr.Reading)
+				return;
 
 			SetResultSize(1);
 			cdr.StatP |= STATUS_ROTATING;
@@ -510,17 +532,19 @@ void  cdrInterrupt() {
 	}
 
 	if (cdr.Stat != NoIntr && cdr.Reg2 != 0x18)
-		psxHu32(0x1070)|= 0x4;
+		psxHu32(0x1070) |= 0x4;
 
 	CDVD_LOG("Cdr Interrupt %x\n", Irq);
 }
 
-void  cdrReadInterrupt() {
+void cdrReadInterrupt()
+{
 
 	if (!cdr.Reading)
 		return;
 
-	if (cdr.Stat) { // CDR_LOG_I("cdrom: read stat hack %02x %x\n", cdr.Irq, cdr.Stat);
+	if (cdr.Stat)
+	{                          // CDR_LOG_I("cdrom: read stat hack %02x %x\n", cdr.Irq, cdr.Stat);
 		CDREAD_INT(0x800 * 4); // * 4 reduces dma3 errors lots here
 		return;
 	}
@@ -529,15 +553,15 @@ void  cdrReadInterrupt() {
 
 	cdr.OCUP = 1;
 	SetResultSize(1);
-	cdr.StatP |= STATUS_READ|STATUS_ROTATING;
+	cdr.StatP |= STATUS_READ | STATUS_ROTATING;
 	cdr.Result[0] = cdr.StatP;
 
-	if( cdr.RErr == 0 )
+	if (cdr.RErr == 0)
 	{
-		while( (cdr.RErr = DoCDVDgetBuffer(cdr.Transfer)), cdr.RErr == -2 )
+		while ((cdr.RErr = DoCDVDgetBuffer(cdr.Transfer)), cdr.RErr == -2)
 		{
 			// not finished yet ... block on the read until it finishes.
-			Threading::Sleep( 0 );
+			Threading::Sleep(0);
 			Threading::SpinWait();
 		}
 	}
@@ -559,10 +583,12 @@ void  cdrReadInterrupt() {
 
 	cdr.SetSector[2]++;
 
-	if (cdr.SetSector[2] == 75) {
+	if (cdr.SetSector[2] == 75)
+	{
 		cdr.SetSector[2] = 0;
 		cdr.SetSector[1]++;
-		if (cdr.SetSector[1] == 60) {
+		if (cdr.SetSector[1] == 60)
+		{
 			cdr.SetSector[1] = 0;
 			cdr.SetSector[0]++;
 		}
@@ -570,17 +596,19 @@ void  cdrReadInterrupt() {
 
 	cdr.Readed = 0;
 
-	if ((cdr.Transfer[4+2] & 0x80) && (cdr.Mode & 0x2)) { // EOF
+	if ((cdr.Transfer[4 + 2] & 0x80) && (cdr.Mode & 0x2))
+	{ // EOF
 		DevCon.Warning("CD AutoPausing Read");
 		AddIrqQueue(CdlPause, 0x800);
 	}
-	else {
+	else
+	{
 		ReadTrack();
 		//DevCon.Warning("normal: %d",cdReadTime);
 		CDREAD_INT((cdr.Mode & 0x80) ? (cdReadTime / 2) : cdReadTime);
 	}
 
-	psxHu32(0x1070)|= 0x4;
+	psxHu32(0x1070) |= 0x4;
 	return;
 }
 
@@ -596,7 +624,8 @@ cdrRead0:
 	bit 7 - 1 command being processed
 */
 
-u8 cdrRead0(void) {
+u8 cdrRead0(void)
+{
 	if (cdr.ResultReady)
 		cdr.Ctrl |= 0x20;
 	else
@@ -608,7 +637,7 @@ u8 cdrRead0(void) {
 		cdr.Ctrl &= ~0x40;
 
 	// what means the 0x10 and the 0x08 bits? i only saw it used by the bios
-	cdr.Ctrl|=0x18;
+	cdr.Ctrl |= 0x18;
 
 	CDVD_LOG("CD0 Read: %x", cdr.Ctrl);
 	return psxHu8(0x1800) = cdr.Ctrl;
@@ -619,12 +648,14 @@ cdrWrite0:
 	0 - to send a command / 1 - to get the result
 */
 
-void cdrWrite0(u8 rt) {
+void cdrWrite0(u8 rt)
+{
 	CDVD_LOG("CD0 write: %x", rt);
 
 	cdr.Ctrl = rt | (cdr.Ctrl & ~0x3);
 
-	if (rt == 0) {
+	if (rt == 0)
+	{
 		cdr.ParamP = 0;
 		cdr.ParamC = 0;
 		cdr.ResultReady = 0;
@@ -640,10 +671,13 @@ void setPsxSpeed()
 	cdReadTime = ((PSXCLK / 75) / BIAS) * 2;
 }
 
-u8 cdrRead1(void) {
-	if (cdr.ResultReady && cdr.Ctrl & 0x1) {
+u8 cdrRead1(void)
+{
+	if (cdr.ResultReady && cdr.Ctrl & 0x1)
+	{
 		psxHu8(0x1801) = cdr.Result[cdr.ResultP++];
-		if (cdr.ResultP == cdr.ResultC) cdr.ResultReady = 0;
+		if (cdr.ResultP == cdr.ResultC)
+			cdr.ResultReady = 0;
 	}
 	else
 		psxHu8(0x1801) = 0;
@@ -652,7 +686,8 @@ u8 cdrRead1(void) {
 	return psxHu8(0x1801);
 }
 
-void cdrWrite1(u8 rt) {
+void cdrWrite1(u8 rt)
+{
 	int i;
 
 	CDVD_LOG("CD1 write: %x (%s)", rt, CmdName[rt]);
@@ -662,24 +697,30 @@ void cdrWrite1(u8 rt) {
 //#define CDRCMD_DEBUG
 #ifdef CDRCMD_DEBUG
 	DevCon.Warning("CD1 write: %x (%s)", rt, CmdName[rt]);
-	if (cdr.ParamC) {
+	if (cdr.ParamC)
+	{
 		DevCon.Warning(" Param[%d] = {", cdr.ParamC);
-		for (i=0;i<cdr.ParamC;i++) DevCon.Warning(" %x,", cdr.Param[i]);
+		for (i = 0; i < cdr.ParamC; i++)
+			DevCon.Warning(" %x,", cdr.Param[i]);
 		DevCon.Warning("}\n");
-	} else DevCon.Warning("\n");
+	}
+	else
+		DevCon.Warning("\n");
 #endif
 
-	if (cdr.Ctrl & 0x1) return;
+	if (cdr.Ctrl & 0x1)
+		return;
 
-	switch(cdr.Cmd) {
+	switch (cdr.Cmd)
+	{
 		case CdlSync:
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
 		case CdlNop:
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
@@ -687,19 +728,22 @@ void cdrWrite1(u8 rt) {
 		case CdlSetloc:
 		{
 			//StopReading();
-			// Setloc is memorizing the wanted target, and marks it as unprocessed, and has no other effect 
+			// Setloc is memorizing the wanted target, and marks it as unprocessed, and has no other effect
 			// (it doesn't start reading or seeking, and doesn't interrupt or redirect any active reads).
 			int oldSector = msf_to_lsn(cdr.SetSector);
-			for (i = 0; i < 3; i++) cdr.SetSector[i] = btoi(cdr.Param[i]);
+			for (i = 0; i < 3; i++)
+				cdr.SetSector[i] = btoi(cdr.Param[i]);
 			cdr.SetSector[3] = 0;
-			if ((cdr.SetSector[0] | cdr.SetSector[1] | cdr.SetSector[2]) == 0) {
-				*(u32 *)cdr.SetSector = *(u32 *)cdr.SetSectorSeek;
+			if ((cdr.SetSector[0] | cdr.SetSector[1] | cdr.SetSector[2]) == 0)
+			{
+				*(u32*)cdr.SetSector = *(u32*)cdr.SetSectorSeek;
 			}
 			int newSector = msf_to_lsn(cdr.SetSector);
-			
+
 			// sectorSeekReadDelay should lead to sensible random seek results in QA (Aging Disk) test
 			sectorSeekReadDelay = abs(newSector - oldSector) * 100;
-			if (sectorSeekReadDelay < shortSectorSeekReadDelay) sectorSeekReadDelay = shortSectorSeekReadDelay;
+			if (sectorSeekReadDelay < shortSectorSeekReadDelay)
+				sectorSeekReadDelay = shortSectorSeekReadDelay;
 			//DevCon.Warning("CdlSetloc sectorSeekReadDelay: %d", sectorSeekReadDelay);
 
 			cdr.Ctrl |= 0x80;
@@ -710,21 +754,23 @@ void cdrWrite1(u8 rt) {
 
 		case CdlPlay:
 			cdr.Play = 1;
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
 		case CdlForward:
-			if (cdr.CurTrack < 0xaa) cdr.CurTrack++;
-			cdr.Ctrl|= 0x80;
+			if (cdr.CurTrack < 0xaa)
+				cdr.CurTrack++;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
 		case CdlBackward:
-			if (cdr.CurTrack > 1) cdr.CurTrack--;
-			cdr.Ctrl|= 0x80;
+			if (cdr.CurTrack > 1)
+				cdr.CurTrack--;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
@@ -732,7 +778,7 @@ void cdrWrite1(u8 rt) {
 		case CdlReadN:
 			cdr.Irq = 0;
 			StopReading();
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			StartReading(1);
 			break;
@@ -740,7 +786,7 @@ void cdrWrite1(u8 rt) {
 		case CdlStandby:
 			StopCdda();
 			StopReading();
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
@@ -748,7 +794,7 @@ void cdrWrite1(u8 rt) {
 		case CdlStop:
 			StopCdda();
 			StopReading();
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
@@ -756,7 +802,7 @@ void cdrWrite1(u8 rt) {
 		case CdlPause:
 			StopCdda();
 			StopReading();
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x40000);
 			break;
@@ -765,21 +811,21 @@ void cdrWrite1(u8 rt) {
 		case CdlInit:
 			StopCdda();
 			StopReading();
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
 		case CdlMute:
 			cdr.Muted = 0;
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
 		case CdlDemute:
 			cdr.Muted = 1;
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
@@ -787,7 +833,7 @@ void cdrWrite1(u8 rt) {
 		case CdlSetfilter:
 			cdr.File = cdr.Param[0];
 			cdr.Channel = cdr.Param[1];
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
@@ -796,44 +842,44 @@ void cdrWrite1(u8 rt) {
 			CDVD_LOG("Setmode %x", cdr.Param[0]);
 
 			cdr.Mode = cdr.Param[0];
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
 		case CdlGetmode:
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
 		case CdlGetlocL:
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
 		case CdlGetlocP:
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
 		case CdlGetTN:
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
 		case CdlGetTD:
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
 		case CdlSeekL:
-			((u32 *)cdr.SetSectorSeek)[0] = ((u32 *)cdr.SetSector)[0];
-			cdr.Ctrl|= 0x80;
+			((u32*)cdr.SetSectorSeek)[0] = ((u32*)cdr.SetSector)[0];
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 
 			//DevCon.Warning("CdlSeekL delay: %d", sectorSeekReadDelay);
@@ -842,8 +888,8 @@ void cdrWrite1(u8 rt) {
 			break;
 
 		case CdlSeekP:
-			((u32 *)cdr.SetSectorSeek)[0] = ((u32 *)cdr.SetSector)[0];
-			cdr.Ctrl|= 0x80;
+			((u32*)cdr.SetSectorSeek)[0] = ((u32*)cdr.SetSector)[0];
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 
 			//DevCon.Warning("CdlSeekP delay: %d", sectorSeekReadDelay);
@@ -852,13 +898,13 @@ void cdrWrite1(u8 rt) {
 			break;
 
 		case CdlTest:
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
 		case CdlID:
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
@@ -866,13 +912,13 @@ void cdrWrite1(u8 rt) {
 		case CdlReadS:
 			cdr.Irq = 0;
 			StopReading();
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			StartReading(2);
 			break;
 
 		case CdlReadToc:
-			cdr.Ctrl|= 0x80;
+			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
@@ -880,17 +926,21 @@ void cdrWrite1(u8 rt) {
 		default:
 			DevCon.Warning("Unknown CD Cmd: %x\n", cdr.Cmd);
 			return;
-    }
+	}
 	if (cdr.Stat != NoIntr)
-		iopIntcIrq( 2 );
+		iopIntcIrq(2);
 }
 
-u8 cdrRead2(void) {
+u8 cdrRead2(void)
+{
 	u8 ret;
 
-	if (cdr.Readed == 0) {
+	if (cdr.Readed == 0)
+	{
 		ret = 0;
-	} else {
+	}
+	else
+	{
 		ret = *cdr.pTransfer++;
 	}
 
@@ -898,13 +948,16 @@ u8 cdrRead2(void) {
 	return ret;
 }
 
-void cdrWrite2(u8 rt) {
+void cdrWrite2(u8 rt)
+{
 	CDVD_LOG("CD2 write: %x", rt);
 
-	if (cdr.Ctrl & 0x1) {
-		switch (rt) {
+	if (cdr.Ctrl & 0x1)
+	{
+		switch (rt)
+		{
 			case 0x07:
-	    		cdr.ParamP = 0;
+				cdr.ParamP = 0;
 				cdr.ParamC = 0;
 				cdr.ResultReady = 0;
 				cdr.Ctrl = 0;
@@ -917,69 +970,89 @@ void cdrWrite2(u8 rt) {
 	}
 	else
 	{
-		if (!(cdr.Ctrl & 0x1) && cdr.ParamP < 8) {
+		if (!(cdr.Ctrl & 0x1) && cdr.ParamP < 8)
+		{
 			cdr.Param[cdr.ParamP++] = rt;
 			cdr.ParamC++;
 		}
 	}
 }
 
-u8 cdrRead3(void) {
-	if (cdr.Stat) {
+u8 cdrRead3(void)
+{
+	if (cdr.Stat)
+	{
 		if (cdr.Ctrl & 0x1)
 			psxHu8(0x1803) = cdr.Stat | 0xE0;
 		else
 			psxHu8(0x1803) = 0xff;
-	} else psxHu8(0x1803) = 0;
+	}
+	else
+		psxHu8(0x1803) = 0;
 
 	CDVD_LOG("CD3 Read: %x", psxHu8(0x1803));
 	return psxHu8(0x1803);
 }
 
-void cdrWrite3(u8 rt) {
+void cdrWrite3(u8 rt)
+{
 	CDVD_LOG("CD3 write: %x", rt);
 
-	if (rt == 0x07 && cdr.Ctrl & 0x1) {
+	if (rt == 0x07 && cdr.Ctrl & 0x1)
+	{
 		cdr.Stat = 0;
 
-		if (cdr.Irq == 0xff) { cdr.Irq = 0; return; }
-		if (cdr.Irq) {
+		if (cdr.Irq == 0xff)
+		{
+			cdr.Irq = 0;
+			return;
+		}
+		if (cdr.Irq)
+		{
 			CDR_INT(cdr.eCycle);
 		}
 		return;
 	}
 
-	if (rt == 0x80 && !(cdr.Ctrl & 0x1) && cdr.Readed == 0) {
+	if (rt == 0x80 && !(cdr.Ctrl & 0x1) && cdr.Readed == 0)
+	{
 		cdr.Readed = 1;
 		cdr.pTransfer = cdr.Transfer;
 
-		switch (cdr.Mode&0x30) {
+		switch (cdr.Mode & 0x30)
+		{
 			case 0x10:
-			case 0x00: cdr.pTransfer+=12; break;
-			default: break;
+			case 0x00:
+				cdr.pTransfer += 12;
+				break;
+			default:
+				break;
 		}
 	}
 }
 
-void psxDma3(u32 madr, u32 bcr, u32 chcr) {
+void psxDma3(u32 madr, u32 bcr, u32 chcr)
+{
 	u32 cdsize;
 
 	CDVD_LOG("*** DMA 3 *** %lx addr = %lx size = %lx", chcr, madr, bcr);
 
-	switch (chcr) {
+	switch (chcr)
+	{
 		case 0x11000000:
 		case 0x11400100:
-			if (cdr.Readed == 0) {
+			if (cdr.Readed == 0)
+			{
 				DevCon.Warning("*** DMA 3 *** NOT READY");
 				HW_DMA3_CHCR &= ~0x01000000; //hack
-				psxDmaInterrupt(3); //hack
+				psxDmaInterrupt(3);          //hack
 				return;
 			}
 
 			cdsize = (bcr & 0xffff) * 4;
 			memcpy(iopPhysMem(madr), cdr.pTransfer, cdsize);
-			psxCpu->Clear(madr, cdsize/4);
-			cdr.pTransfer+=cdsize;
+			psxCpu->Clear(madr, cdsize / 4);
+			cdr.pTransfer += cdsize;
 
 			break;
 		case 0x41000200:
@@ -994,16 +1067,17 @@ void psxDma3(u32 madr, u32 bcr, u32 chcr) {
 	psxDmaInterrupt(3);
 }
 
-void cdrReset() {
+void cdrReset()
+{
 	memzero(cdr);
-	cdr.CurTrack=1;
-	cdr.File=1; cdr.Channel=1;
+	cdr.CurTrack = 1;
+	cdr.File = 1;
+	cdr.Channel = 1;
 	cdReadTime = (PSXCLK / 1757) * BIAS;
 }
 
 void SaveStateBase::cdrFreeze()
 {
-	FreezeTag( "cdrom" );
+	FreezeTag("cdrom");
 	Freeze(cdr);
 }
-
