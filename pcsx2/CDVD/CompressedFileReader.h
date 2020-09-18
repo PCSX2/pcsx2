@@ -16,7 +16,8 @@
 #pragma once
 
 // Factory - creates an AsyncFileReader derived instance which can read a compressed file
-class CompressedFileReader {
+class CompressedFileReader
+{
 public:
 	// fileName and its contents may be used to choose the compressed reader.
 	// If no matching handler is found, NULL is returned.
