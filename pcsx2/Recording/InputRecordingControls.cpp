@@ -80,13 +80,12 @@ void InputRecordingControls::HandleFrameAdvanceAndPausing()
 		switchToReplay = false;
 	}
 
-	if (g_InputRecording.IsReplaying()
-		&& g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if ((g_InputRecording.IsReplaying() && g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+		|| g_InputRecording.GetFrameCounter() == INT_MAX)
 		pauseEmulation = true;
 
-	// If we havn't yet advanced atleast a single frame from when we paused, setup things to be paused
-	if (frameAdvancing
-		&& (frameAdvanceMarker < g_InputRecording.GetFrameCounter() || g_InputRecording.GetFrameCounter() == INT_MAX)) 
+	// If we haven't yet advanced atleast a single frame from when we paused, setup things to be paused
+	if (frameAdvancing && frameAdvanceMarker < g_InputRecording.GetFrameCounter()) 
 	{
 		frameAdvancing = false;
 		pauseEmulation = true;
@@ -161,6 +160,11 @@ void InputRecordingControls::Resume()
 void InputRecordingControls::SetFrameCountTracker(u32 newFrame)
 {
 	frameCountTracker = newFrame;
+}
+
+void InputRecordingControls::DisableFrameAdvance()
+{
+	frameAdvancing = false;
 }
 
 void InputRecordingControls::TogglePause()

@@ -49,6 +49,9 @@ public:
 	// Resume emulation when the next pcsx2 App event is handled
 	void Resume();
 	void SetFrameCountTracker(u32 newFrame);
+	// Sets frameAdvancing variable to false
+	// Used to restrict a frameAdvaceTravker value from transferring between recordings
+	void DisableFrameAdvance();
 	// Alternates emulation between a paused and unpaused state
 	void TogglePause();
 	// Switches between recording and replaying the active input recording file
