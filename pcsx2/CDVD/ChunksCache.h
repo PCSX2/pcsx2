@@ -19,34 +19,43 @@
 
 #define CLAMP(val, minval, maxval) (std::min(maxval, std::max(minval, val)))
 
-class ChunksCache {
+class ChunksCache
+{
 public:
-	ChunksCache(uint initialLimitMb) : m_entries(0), m_size(0), m_limit(initialLimitMb * 1024 * 1024) {};
+	ChunksCache(uint initialLimitMb)
+		: m_entries(0)
+		, m_size(0)
+		, m_limit(initialLimitMb * 1024 * 1024){};
 	~ChunksCache() { Clear(); };
 	void SetLimit(uint megabytes);
 	void Clear() { MatchLimit(true); };
 
 	void Take(void* pMallocedSrc, PX_off_t offset, int length, int coverage);
-	int  Read(void* pDest,        PX_off_t offset, int length);
+	int Read(void* pDest, PX_off_t offset, int length);
 
 	static int CopyAvailable(void* pSrc, PX_off_t srcOffset, int srcSize,
-							 void* pDst, PX_off_t dstOffset, int maxCopySize) {
+							 void* pDst, PX_off_t dstOffset, int maxCopySize)
+	{
 		int available = CLAMP(maxCopySize, 0, (int)(srcOffset + srcSize - dstOffset));
 		memcpy(pDst, (char*)pSrc + (dstOffset - srcOffset), available);
 		return available;
 	};
 
 private:
-	class CacheEntry {
+	class CacheEntry
+	{
 	public:
-		CacheEntry(void* pMallocedSrc, PX_off_t offset, int length, int coverage) :
-			data(pMallocedSrc),
-			offset(offset),
-			coverage(coverage),
-			size(length)
-		{};
+		CacheEntry(void* pMallocedSrc, PX_off_t offset, int length, int coverage)
+			: data(pMallocedSrc)
+			, offset(offset)
+			, coverage(coverage)
+			, size(length){};
 
-		~CacheEntry() { if (data) free(data); };
+		~CacheEntry()
+		{
+			if (data)
+				free(data);
+		};
 
 		void* data;
 		PX_off_t offset;
