@@ -19,7 +19,7 @@
 
 #include "SectorSource.h"
 
-class IsoFSCDVD: public SectorSource
+class IsoFSCDVD : public SectorSource
 {
 public:
 	IsoFSCDVD();
@@ -27,5 +27,5 @@ public:
 
 	virtual bool readSector(unsigned char* buffer, int lba);
 
-	virtual int  getNumSectors();
+	virtual int getNumSectors();
 };
