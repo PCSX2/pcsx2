@@ -20,18 +20,20 @@
 #include "PS2Edefs.h"
 
 // Not used.
-typedef struct {
-	s32	y0, y1;
+typedef struct
+{
+	s32 y0, y1;
 } ADPCM_Decode_t;
 
 // Not used.
-typedef struct {
-	s32				freq;
-	s32				nbits;
-	s32				stereo;
-	s32				nsamples;
-	ADPCM_Decode_t	left, right;
-	s16			pcm[16384];
+typedef struct
+{
+	s32 freq;
+	s32 nbits;
+	s32 stereo;
+	s32 nsamples;
+	ADPCM_Decode_t left, right;
+	s16 pcm[16384];
 } xa_decode_t;
 
 struct cdrStruct
@@ -46,7 +48,7 @@ struct cdrStruct
 	u8 StatP;
 
 	u8 Transfer[2352];
-	u8 *pTransfer;
+	u8* pTransfer;
 
 	u8 Prev[4];
 	u8 Param[8];
@@ -87,12 +89,12 @@ struct cdrStruct
 extern cdrStruct cdr;
 
 void cdrReset();
-void  cdrInterrupt();
-void  cdrReadInterrupt();
-u8   cdrRead0(void);
-u8   cdrRead1(void);
-u8   cdrRead2(void);
-u8   cdrRead3(void);
+void cdrInterrupt();
+void cdrReadInterrupt();
+u8 cdrRead0(void);
+u8 cdrRead1(void);
+u8 cdrRead2(void);
+u8 cdrRead3(void);
 void setPsxSpeed();
 void cdrWrite0(u8 rt);
 void cdrWrite1(u8 rt);
