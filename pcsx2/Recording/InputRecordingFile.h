@@ -82,8 +82,6 @@ public:
 	// Writes the current frame's input data to the file so it can be replayed
 	bool WriteKeyBuffer(const uint &frame, const uint port, const uint bufIndex, const u8 &buf);
 
-	unsigned long recordingFrameCounter = 0;
-
 private:
 	static const int controllerPortsSupported = 2;
 	static const int controllerInputBytes = 18;

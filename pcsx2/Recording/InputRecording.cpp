@@ -265,6 +265,7 @@ bool InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 	// Write header contents
 	inputRecordingData.WriteHeader();
 	state = InputRecordingMode::Recording;
+	g_InputRecordingControls.DisableFrameAdvance();
 	recordingConLog(wxString::Format(L"[REC]: Started new recording - [%s]\n", FileName));
 	return true;
 }
@@ -309,6 +310,7 @@ bool InputRecording::Play(wxString fileName)
 
 	incrementUndo = true;
 	state = InputRecordingMode::Replaying;
+	g_InputRecordingControls.DisableFrameAdvance();
 	recordingConLog(wxString::Format(L"[REC]: Replaying input recording - [%s]\n", inputRecordingData.GetFilename()));
 	recordingConLog(wxString::Format(L"[REC]: PCSX2 Version Used: %s\n", inputRecordingData.GetHeader().emu));
 	recordingConLog(wxString::Format(L"[REC]: Recording File Version: %d\n", inputRecordingData.GetHeader().version));
