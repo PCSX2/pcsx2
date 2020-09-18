@@ -24,21 +24,21 @@
 // Maybe some day we'll convert all file related ops to wxWidgets, which means also the
 // instances at zlib_indexed.h (which use plain stdio FILE*)
 #ifdef _WIN32
-#   define PX_wfilename(name_wxstr) (name_wxstr.wc_str())
-#   define PX_fopen_rb(name_wxstr) (_wfopen(PX_wfilename(name_wxstr), L"rb"))
+#define PX_wfilename(name_wxstr) (name_wxstr.wc_str())
+#define PX_fopen_rb(name_wxstr) (_wfopen(PX_wfilename(name_wxstr), L"rb"))
 #else
-#   define PX_wfilename(name_wxstr) (name_wxstr.mbc_str())
-#   define PX_fopen_rb(name_wxstr) (fopen(PX_wfilename(name_wxstr), "rb"))
+#define PX_wfilename(name_wxstr) (name_wxstr.mbc_str())
+#define PX_fopen_rb(name_wxstr) (fopen(PX_wfilename(name_wxstr), "rb"))
 #endif
 
 #ifdef _WIN32
-#	define PX_fseeko _fseeki64
-#   define PX_ftello _ftelli64
-#	define PX_off_t  s64        /* __int64 */
+#define PX_fseeko _fseeki64
+#define PX_ftello _ftelli64
+#define PX_off_t s64 /* __int64 */
 #else
-#	define PX_fseeko fseeko
-#   define PX_ftello ftello
-#	define PX_off_t  off_t
+#define PX_fseeko fseeko
+#define PX_ftello ftello
+#define PX_off_t off_t
 #endif
 
 /////////// End of complementary utilities for zlib_indexed.c //////////
