@@ -33,7 +33,6 @@ option(USE_VTUNE "Plug VTUNE to profile GSdx JIT.")
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
-option(OPENCL_API "Add OpenCL support on GSdx")
 option(REBUILD_SHADER "Rebuild GLSL/CG shader (developer option)")
 option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
 

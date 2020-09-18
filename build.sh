@@ -219,7 +219,6 @@ for ARG in "$@"; do
         --no-cross-multilib ) useCross=0; ;;
         --coverity          ) CoverityBuild=1; cleanBuild=1; ;;
         --vtune             ) flags="$flags -DUSE_VTUNE=TRUE" ;;
-        --opencl            ) flags="$flags -DOPENCL_API=TRUE" ;;
         -D*                 ) flags="$flags $ARG" ;;
 
         *)
@@ -238,7 +237,6 @@ for ARG in "$@"; do
             echo
             echo "** Developer option **"
             echo "--cross-multilib: Build a 32bit PCSX2 on a 64bit machine using multilib."
-            echo "--opencl        : Enable experimental OpenCL support"
             echo
             echo "** Distribution Compatibilities **"
             echo "--sdl12         : Build with SDL1.2 (requires if wx is linked against SDL1.2)"
