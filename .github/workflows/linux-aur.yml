@@ -1,0 +1,49 @@
+- name: Publish AUR package
+  uses: KSXGitHub/github-actions-deploy-aur@v2.2.0
+
+
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - .gitignore
+      - "**/*.md"
+      - .clang-format
+      - debian-packager/
+      - bin/PCSX2_keys.ini.default
+      - "plugins/LilyPad/**"
+      - .travis.yml # TODO - remove with travis-ci
+      - appveyor.yml # TODO - remove with appveyor
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - .gitignore
+      - "**/*.md"
+      - .clang-format
+      - debian-packager/
+      - bin/PCSX2_keys.ini.default
+      - "plugins/LilyPad/**"
+      - .travis.yml # TODO - remove with travis-ci
+      - appveyor.yml # TODO - remove with appveyor
+
+jobs:
+  aur-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Publish AUR package
+        uses: KSXGitHub/github-actions-deploy-aur@master
+        with:
+          pkgname: pcsx2-git
+          pkgbuild: ./PKGBUILD
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: Update AUR package
+          ssh_keyscan_types: rsa,dsa,ecdsa,ed25519

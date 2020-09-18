@@ -90,3 +90,6 @@ jobs:
           chmod +x .github/workflows/scripts/build-linux.sh
           ./.github/workflows/scripts/build-linux.sh generate_cmake
           ./.github/workflows/scripts/build-linux.sh compile
+
+
+
