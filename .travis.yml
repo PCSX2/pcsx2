@@ -6,6 +6,11 @@ cache: ccache
 
 dist: xenial
 
+# build only master branch
+branches:
+  only:
+    - master
+
 matrix:
   include:
     - env: VERSION=8 BITS=64
