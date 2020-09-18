@@ -101,6 +101,7 @@ void GSSettingsDlg::OnInit()
 	ComboBoxInit(IDC_ACCURATE_BLEND_UNIT, theApp.m_gs_acc_blend_level, theApp.GetConfigI("accurate_blending_unit"));
 	ComboBoxInit(IDC_ACCURATE_BLEND_UNIT_D3D11, theApp.m_gs_acc_blend_level_d3d11, theApp.GetConfigI("accurate_blending_unit_d3d11"));
 	ComboBoxInit(IDC_CRC_LEVEL, theApp.m_gs_crc_level, theApp.GetConfigI("crc_hack_level"));
+	ComboBoxInit(IDC_DITHERING, theApp.m_gs_dithering, theApp.GetConfigI("dithering_ps2"));
 
 	CheckDlgButton(m_hWnd, IDC_PALTEX, theApp.GetConfigB("paltex"));
 	CheckDlgButton(m_hWnd, IDC_LARGE_FB, theApp.GetConfigB("large_framebuffer"));
@@ -246,6 +247,11 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				theApp.SetConfig("MaxAnisotropy", (int)data);
 			}
 
+			if (ComboBoxGetSelData(IDC_DITHERING, data))
+			{
+				theApp.SetConfig("dithering_ps2", (int)data);
+			}
+
 			theApp.SetConfig("mipmap", (int)IsDlgButtonChecked(m_hWnd, IDC_MIPMAP_SW));
 			theApp.SetConfig("paltex", (int)IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
 			theApp.SetConfig("large_framebuffer", (int)IsDlgButtonChecked(m_hWnd, IDC_LARGE_FB));
@@ -337,6 +343,7 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_DITHERING), hw);
 
 		INT_PTR filter;
 		if (ComboBoxGetSelData(IDC_FILTER, filter))
