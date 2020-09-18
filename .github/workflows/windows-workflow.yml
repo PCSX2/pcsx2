@@ -65,6 +65,7 @@ jobs:
           path: |
             ./3rdparty/xz
             ./3rdparty/gtest
+
       - name: Checkout Submodules
         if: steps.cache-submodules.outputs.cache-hit != 'true'
         run: git submodule update --init --recursive
@@ -91,7 +92,7 @@ jobs:
           vs-version: 16.7
 
       - name: Build PCSX2
-        run: msbuild "buildbot.xml" /m /v:m /fl1 /t:ReleaseAll /p:Platform=${{ matrix.platform }}
+        run: msbuild "buildbot.xml" /m /v:n /t:ReleaseAll /p:Platform=${{ matrix.platform }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
