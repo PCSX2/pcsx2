@@ -200,12 +200,22 @@ void GSDialog::ComboBoxInit(UINT id, const std::vector<GSSetting>& settings, int
 int GSDialog::ComboBoxAppend(UINT id, const char* str, LPARAM data, bool select)
 {
 	HWND hWnd = GetDlgItem(m_hWnd, id);
+	int item = (int)SendMessageA(hWnd, CB_ADDSTRING, 0, (LPARAM)str);
+	return BoxAppend(hWnd, item, data, select);
+}
 
-	int item = (int)SendMessage(hWnd, CB_ADDSTRING, 0, (LPARAM)str);
+int GSDialog::ComboBoxAppend(UINT id, const wchar_t* str, LPARAM data, bool select)
+{
+	HWND hWnd = GetDlgItem(m_hWnd, id);
+	int item = (int)SendMessageW(hWnd, CB_ADDSTRING, 0, (LPARAM)str);
+	return BoxAppend(hWnd, item, data, select);
+}
 
+int GSDialog::BoxAppend(HWND& hWnd, int item, LPARAM data, bool select)
+{
 	SendMessage(hWnd, CB_SETITEMDATA, item, (LPARAM)data);
 
-	if(select)
+	if (select)
 	{
 		SendMessage(hWnd, CB_SETCURSEL, item, 0);
 	}

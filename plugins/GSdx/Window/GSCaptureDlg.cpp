@@ -143,9 +143,7 @@ void GSCaptureDlg::OnInit()
 
 		m_codecs.push_back(c);
 
-		std::string s{c.FriendlyName.begin(), c.FriendlyName.end()};
-
-		ComboBoxAppend(IDC_CODECS, s.c_str(), (LPARAM)&m_codecs.back(), c.DisplayName == selected);
+		ComboBoxAppend(IDC_CODECS, c.FriendlyName.c_str(), (LPARAM)&m_codecs.back(), c.DisplayName == selected);
 	}
 	EndEnumSysDev
 	UpdateConfigureButton();
