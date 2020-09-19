@@ -888,6 +888,7 @@
     </ClCompile>
     <ClCompile Include="..\..\gui\DriveList.cpp">
       <Filter>AppHost</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\IPC.cpp">
       <Filter>System</Filter>
     </ClCompile>
@@ -1345,6 +1346,7 @@
     </ClInclude>
     <ClInclude Include="..\..\gui\DriveList.h">
       <Filter>AppHost\Include</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\IPC.h">
       <Filter>System\Include</Filter>
     </ClInclude>
