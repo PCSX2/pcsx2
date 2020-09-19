@@ -36,12 +36,30 @@ GSClut::GSClut(GSLocalMemory* mem)
 	m_write.dirty = true;
 	m_read.dirty = true;
 
-	for(int i = 0; i < 16; i++)
+	for (int i = 0; i < 16; i++)
 	{
-		for(int j = 0; j < 64; j++)
+		for (int j = 0; j < 64; j++)
 		{
-			m_wc[0][i][j] = &GSClut::WriteCLUT_NULL;
-			m_wc[1][i][j] = &GSClut::WriteCLUT_NULL;
+			switch (i)
+			{
+				case 0:
+				case 1:
+					m_wc[0][i][j] = &GSClut::WriteCLUT32_I8_CSM1;
+					m_wc[1][i][j] = &GSClut::WriteCLUT32_CSM2<256>;
+					break;
+				case 2:
+					m_wc[0][i][j] = &GSClut::WriteCLUT16_I8_CSM1;
+					m_wc[1][i][j] = &GSClut::WriteCLUT16_CSM2<256>;
+					break;
+				case 10:
+					m_wc[0][i][j] = &GSClut::WriteCLUT16S_I8_CSM1;
+					m_wc[1][i][j] = &GSClut::WriteCLUT16S_CSM2<256>;
+					break;
+				default:
+					m_wc[0][i][j] = &GSClut::WriteCLUT_NULL;
+					m_wc[1][i][j] = &GSClut::WriteCLUT_NULL;
+					break;
+			}
 		}
 	}
 
