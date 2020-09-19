@@ -867,6 +867,7 @@
     </ClCompile>
     <ClCompile Include="..\..\Recording\InputRecordingControls.cpp">
       <Filter>Recording</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\CDVD\CDVDdiscReader.cpp">
       <Filter>System\Ps2\Iop\CDVD</Filter>
     </ClCompile>
@@ -1336,6 +1337,7 @@
     </ClInclude>
     <ClInclude Include="..\..\Recording\InputRecordingControls.h">
       <Filter>Recording</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\CDVD\CDVDdiscReader.h">
       <Filter>System\Ps2\Iop\CDVD</Filter>
     </ClInclude>
