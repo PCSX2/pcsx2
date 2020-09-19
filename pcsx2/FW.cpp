@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-
+#include "IopCommon.h"
 #include <stdlib.h>
 #include <string>
 using namespace std;
@@ -23,8 +23,6 @@ using namespace std;
 
 u8 phyregs[16];
 s8* fwregs;
-
-void (*FWirq)();
 
 s32 FWopen()
 {
@@ -67,7 +65,7 @@ void PHYRead()
 	if (fwRu32(0x8424) & 0x40000000) //RRx interrupt mask
 	{
 		fwRu32(0x8420) |= 0x40000000;
-		FWirq();
+		fwIrq();
 	}
 }
 
@@ -194,10 +192,4 @@ void FWwrite32(u32 addr, u32 value)
 			break;
 	}
 	DevCon.WriteLn("FW: write mem 0x%x: 0x%x", addr, value);
-}
-
-void FWirqCallback(void (*callback)())
-{
-	// Register FWirq, so we can trigger an interrupt with it later.
-	FWirq = callback;
 }
