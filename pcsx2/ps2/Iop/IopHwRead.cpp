@@ -19,6 +19,7 @@
 #include "Sif.h"
 #include "Sio.h"
 #include "CDVD/CdRom.h"
+#include "FW.h"
 
 #include "ps2/pgif.h"
 #include "Mdec.h"

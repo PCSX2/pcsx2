@@ -18,8 +18,6 @@
 #include <stdio.h>
 
 #define FWdefs
-#include "PS2Edefs.h"
-#include "PS2Eext.h"
 
 // Our main memory storage, and defines for accessing it.
 extern s8 *fwregs;
@@ -31,3 +29,10 @@ extern s8 *fwregs;
 
 extern void (*FWirq)();
 
+s32 FWopen();
+void FWclose();
+void PHYWrite();
+void PHYRead();
+u32 FWread32(u32 addr);
+void FWwrite32(u32 addr, u32 value);
+void FWirqCallback(void (*callback)());

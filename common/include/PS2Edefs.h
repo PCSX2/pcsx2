@@ -593,14 +593,6 @@ extern _USBirqHandler USBirqHandler;
 extern _USBsetRAM USBsetRAM;
 #endif
 
-// FW
-#ifndef BUILTIN_FW_PLUGIN
-extern _FWopen FWopen;
-extern _FWread32 FWread32;
-extern _FWwrite32 FWwrite32;
-extern _FWirqCallback FWirqCallback;
-#endif
-
 #endif
 
 #ifdef __cplusplus
