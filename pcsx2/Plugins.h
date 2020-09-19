@@ -405,7 +405,6 @@ protected:
 	virtual bool OpenPlugin_SPU2();
 	virtual bool OpenPlugin_DEV9();
 	virtual bool OpenPlugin_USB();
-	virtual bool OpenPlugin_FW();
 	virtual bool OpenPlugin_Mcd();
 
 	void _generalclose( PluginsEnum_t pid );
@@ -415,7 +414,6 @@ protected:
 	virtual void ClosePlugin_SPU2();
 	virtual void ClosePlugin_DEV9();
 	virtual void ClosePlugin_USB();
-	virtual void ClosePlugin_FW();
 	virtual void ClosePlugin_Mcd();
 
 	friend class SysMtgsThread;

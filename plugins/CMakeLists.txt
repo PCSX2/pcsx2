@@ -14,10 +14,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/dev9ghzdrk" AND dev9ghzdrk)
 	add_subdirectory(dev9ghzdrk)
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/FWnull" AND FWnull)
-	add_subdirectory(FWnull)
-endif()
-
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx" AND GSdx)
 	add_subdirectory(GSdx)
 endif()

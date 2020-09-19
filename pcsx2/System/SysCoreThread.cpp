@@ -288,12 +288,14 @@ void SysCoreThread::OnSuspendInThread()
 {
 	GetCorePlugins().Close();
 	DoCDVDclose();
+	DoFWclose();
 }
 
 void SysCoreThread::OnResumeInThread( bool isSuspended )
 {
 	GetCorePlugins().Open();
 	DoCDVDopen();
+	DoFWopen();
 }
 
 
@@ -309,6 +311,7 @@ void SysCoreThread::OnCleanupInThread()
 	// FIXME: temporary workaround for deadlock on exit, which actually should be a crash
 	vu1Thread.WaitVU();
 	DoCDVDclose();
+	DoFWclose();
 	GetCorePlugins().Close();
 	GetCorePlugins().Shutdown();
 
