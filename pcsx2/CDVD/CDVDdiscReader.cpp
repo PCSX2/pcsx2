@@ -197,7 +197,6 @@ s32 CALLBACK DISCopen(const char* pTitle)
 	}
 	catch (std::runtime_error& ex)
 	{
-		fputs(ex.what(), stdout);
 		return -1;
 	}
 
