@@ -87,6 +87,7 @@ protected:
 		MsgWrite16 = 5,         /**< Write 16 bit value to memory. */
 		MsgWrite32 = 6,         /**< Write 32 bit value to memory. */
 		MsgWrite64 = 7,         /**< Write 64 bit value to memory. */
+		MsgVersion = 8,         /**< Returns PCSX2 version. */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
