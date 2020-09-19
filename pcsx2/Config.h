@@ -25,7 +25,6 @@ enum PluginsEnum_t
 	PluginId_PAD,
 	PluginId_SPU2,
 	PluginId_USB,
-	PluginId_FW,
 	PluginId_DEV9,
 	PluginId_Count,
 

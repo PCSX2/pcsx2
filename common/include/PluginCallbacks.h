@@ -180,7 +180,6 @@ enum PS2E_ComponentTypes {
     PS2E_TYPE_SPU2,
     PS2E_TYPE_DEV9,
     PS2E_TYPE_USB,
-    PS2E_TYPE_FW,
     PS2E_TYPE_SIO,
     PS2E_TYPE_Mcd,
 };
@@ -191,7 +190,6 @@ enum PluginLibVersion {
     PS2E_VER_SPU2 = 0x1000,
     PS2E_VER_DEV9 = 0x1000,
     PS2E_VER_USB = 0x1000,
-    PS2E_VER_FW = 0x1000,
     PS2E_VER_SIO = 0x1000
 };
 

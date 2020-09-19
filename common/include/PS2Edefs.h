@@ -74,7 +74,7 @@ typedef struct _keyEvent
 ///////////////////////////////////////////////////////////////////////
 
 #if defined(GSdefs) || defined(PADdefs) || defined(SIOdefs) ||     \
-    defined(SPU2defs) || defined(DEV9defs) || defined(USBdefs) || defined(FWdefs)
+    defined(SPU2defs) || defined(DEV9defs) || defined(USBdefs)
 #define COMMONdefs
 #endif
 
@@ -84,7 +84,6 @@ typedef struct _keyEvent
 #define PS2E_LT_SPU2 0x04
 #define PS2E_LT_DEV9 0x10
 #define PS2E_LT_USB 0x20
-#define PS2E_LT_FW 0x40
 #define PS2E_LT_SIO 0x80
 
 // PS2EgetLibVersion2 (high 16 bits)
@@ -93,7 +92,6 @@ typedef struct _keyEvent
 #define PS2E_SPU2_VERSION 0x0005
 #define PS2E_DEV9_VERSION 0x0003
 #define PS2E_USB_VERSION 0x0003
-#define PS2E_FW_VERSION 0x0002
 #define PS2E_SIO_VERSION 0x0001
 #ifdef COMMONdefs
 
@@ -379,34 +377,6 @@ s32 CALLBACK USBtest();
 
 #endif
 
-/* FW plugin API */
-
-// if this file is included with this define
-// the next api will not be skipped by the compiler
-#if defined(BUILTIN_FW_PLUGIN) || defined(BUILTIN_FW_PLUGIN)
-// basic funcs
-
-// NOTE: The read/write functions CANNOT use XMM/MMX regs
-// If you want to use them, need to save and restore current ones
-s32 CALLBACK FWinit();
-s32 CALLBACK FWopen(void *pDsp);
-void CALLBACK FWclose();
-void CALLBACK FWshutdown();
-void CALLBACK FWsetSettingsDir(const char *dir);
-void CALLBACK FWsetLogDir(const char *dir);
-
-u32 CALLBACK FWread32(u32 addr);
-void CALLBACK FWwrite32(u32 addr, u32 value);
-void CALLBACK FWirqCallback(void (*callback)());
-
-// extended funcs
-
-s32 CALLBACK FWfreeze(int mode, freezeData *data);
-void CALLBACK FWconfigure();
-void CALLBACK FWabout();
-s32 CALLBACK FWtest();
-#endif
-
 // might be useful for emulators
 #ifdef PLUGINtypedefs
 
@@ -513,12 +483,6 @@ typedef void(CALLBACK *_USBasync)(u32 cycles);
 typedef void(CALLBACK *_USBirqCallback)(USBcallback callback);
 typedef USBhandler(CALLBACK *_USBirqHandler)(void);
 typedef void(CALLBACK *_USBsetRAM)(void *mem);
-
-//FW
-typedef s32(CALLBACK *_FWopen)(void *pDsp);
-typedef u32(CALLBACK *_FWread32)(u32 mem);
-typedef void(CALLBACK *_FWwrite32)(u32 mem, u32 value);
-typedef void(CALLBACK *_FWirqCallback)(void (*callback)());
 #endif
 
 #ifdef PLUGINfuncs

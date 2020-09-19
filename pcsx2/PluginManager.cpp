@@ -83,7 +83,6 @@ const PluginInfo tbl_PluginInfo[] =
 	{ "PAD",	PluginId_PAD,	PS2E_LT_PAD,	PS2E_PAD_VERSION	},
 	{ "SPU2",	PluginId_SPU2,	PS2E_LT_SPU2,	PS2E_SPU2_VERSION	},
 	{ "USB",	PluginId_USB,	PS2E_LT_USB,	PS2E_USB_VERSION	},
-	{ "FW",		PluginId_FW,	PS2E_LT_FW,		PS2E_FW_VERSION		},
 	{ "DEV9",	PluginId_DEV9,	PS2E_LT_DEV9,	PS2E_DEV9_VERSION	},
 
 	{ NULL },
@@ -334,14 +333,6 @@ _USBirqHandler     USBirqHandler;
 _USBsetRAM         USBsetRAM;
 #endif
 
-// FW
-#ifndef BUILTIN_FW_PLUGIN
-_FWopen            FWopen;
-_FWread32          FWread32;
-_FWwrite32         FWwrite32;
-_FWirqCallback     FWirqCallback;
-#endif
-
 DEV9handler dev9Handler;
 USBhandler usbHandler;
 uptr pDsp[2];
@@ -535,30 +526,12 @@ static const LegacyApi_OptMethod s_MethMessOpt_USB[] =
 	{ NULL }
 };
 
-// ----------------------------------------------------------------------------
-//  FW Mess!
-// ----------------------------------------------------------------------------
-static const LegacyApi_ReqMethod s_MethMessReq_FW[] =
-{
-	{	"FWopen",			(vMeth**)&FWopen,			NULL },
-	{	"FWread32",			(vMeth**)&FWread32,			NULL },
-	{	"FWwrite32",		(vMeth**)&FWwrite32,		NULL },
-	{	"FWirqCallback",	(vMeth**)&FWirqCallback,	NULL },
-	{ NULL }
-};
-
-static const LegacyApi_OptMethod s_MethMessOpt_FW[] =
-{
-	{ NULL }
-};
-
 static const LegacyApi_ReqMethod* const s_MethMessReq[] =
 {
 	s_MethMessReq_GS,
 	s_MethMessReq_PAD,
 	s_MethMessReq_SPU2,
 	s_MethMessReq_USB,
-	s_MethMessReq_FW,
 	s_MethMessReq_DEV9
 };
 
@@ -568,7 +541,6 @@ static const LegacyApi_OptMethod* const s_MethMessOpt[] =
 	s_MethMessOpt_PAD,
 	s_MethMessOpt_SPU2,
 	s_MethMessOpt_USB,
-	s_MethMessOpt_FW,
 	s_MethMessOpt_DEV9
 };
 
@@ -741,9 +713,6 @@ void* StaticLibrary::GetSymbol(const wxString &name)
 #ifdef BUILTIN_USB_PLUGIN
 	RETURN_COMMON_SYMBOL(USB);
 #endif
-#ifdef BUILTIN_FW_PLUGIN
-	RETURN_COMMON_SYMBOL(FW);
-#endif
 
 
 #undef RETURN_COMMON_SYMBOL
@@ -807,9 +776,6 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 #endif
 #ifdef BUILTIN_USB_PLUGIN
 		case PluginId_USB:
-#endif
-#ifdef BUILTIN_FW_PLUGIN
-		case PluginId_FW:
 #endif
 		case PluginId_Count:
 			IsStatic	= true;
@@ -1110,13 +1076,6 @@ bool SysCorePlugins::OpenPlugin_USB()
 	return true;
 }
 
-bool SysCorePlugins::OpenPlugin_FW()
-{
-	if( FWopen((void*)pDsp) ) return false;
-	FWirqCallback( fwIrq );
-	return true;
-}
-
 bool SysCorePlugins::OpenPlugin_Mcd()
 {
 	ScopedLock lock( m_mtx_PluginStatus );
@@ -1144,7 +1103,6 @@ void SysCorePlugins::Open( PluginsEnum_t pid )
 		case PluginId_PAD:	result = OpenPlugin_PAD();	break;
 		case PluginId_SPU2:	result = OpenPlugin_SPU2();	break;
 		case PluginId_USB:	result = OpenPlugin_USB();	break;
-		case PluginId_FW:	result = OpenPlugin_FW();	break;
 		case PluginId_DEV9:	result = OpenPlugin_DEV9();	break;
 
 		jNO_DEFAULT;
@@ -1232,11 +1190,6 @@ void SysCorePlugins::ClosePlugin_USB()
 	_generalclose( PluginId_USB );
 }
 
-void SysCorePlugins::ClosePlugin_FW()
-{
-	_generalclose( PluginId_FW );
-}
-
 void SysCorePlugins::ClosePlugin_Mcd()
 {
 	ScopedLock lock( m_mtx_PluginStatus );
@@ -1258,7 +1211,6 @@ void SysCorePlugins::Close( PluginsEnum_t pid )
 		case PluginId_PAD:	ClosePlugin_PAD();	break;
 		case PluginId_SPU2:	ClosePlugin_SPU2();	break;
 		case PluginId_USB:	ClosePlugin_USB();	break;
-		case PluginId_FW:	ClosePlugin_FW();	break;
 		case PluginId_DEV9:	ClosePlugin_DEV9();	break;
 		case PluginId_Mcd:	ClosePlugin_Mcd();	break;
 		
