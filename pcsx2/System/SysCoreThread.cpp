@@ -25,6 +25,7 @@
 #include "SysThreads.h"
 #include "MTVU.h"
 #include "IPC.h"
+#include "FW.h"
 
 #include "../DebugTools/MIPSAnalyst.h"
 #include "../DebugTools/SymbolMap.h"
@@ -288,14 +289,14 @@ void SysCoreThread::OnSuspendInThread()
 {
 	GetCorePlugins().Close();
 	DoCDVDclose();
-	DoFWclose();
+	FWclose();
 }
 
 void SysCoreThread::OnResumeInThread( bool isSuspended )
 {
 	GetCorePlugins().Open();
 	DoCDVDopen();
-	DoFWopen();
+	FWopen();
 }
 
 
@@ -311,7 +312,7 @@ void SysCoreThread::OnCleanupInThread()
 	// FIXME: temporary workaround for deadlock on exit, which actually should be a crash
 	vu1Thread.WaitVU();
 	DoCDVDclose();
-	DoFWclose();
+	FWclose();
 	GetCorePlugins().Close();
 	GetCorePlugins().Shutdown();
 

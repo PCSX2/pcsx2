@@ -18,109 +18,30 @@
 using namespace std;
 
 #include "FW.h"
-#include "svnrev.h"
-#include "null/config.inl"
-
-const u8 version = PS2E_FW_VERSION;
-const u8 revision = 0;
-const u8 build = 7; // increase that with each version
-
-static char libraryName[256];
-
-string s_strIniPath = "inis";
-string s_strLogPath = "logs";
 
 u8 phyregs[16];
 s8 *fwregs;
 
 void (*FWirq)();
 
-EXPORT_C_(void)
-FWconfigure()
+s32 FWopen()
 {
-    const std::string ini_path = s_strIniPath + "/FWnull.ini";
-    LoadConfig(ini_path);
-    ConfigureLogging();
-    SaveConfig(ini_path);
-}
-
-void LogInit()
-{
-    const std::string LogFile(s_strLogPath + "/FWnull.log");
-    g_plugin_log.Open(LogFile);
-}
-
-EXPORT_C_(void)
-FWsetLogDir(const char *dir)
-{
-    // Get the path to the log directory.
-    s_strLogPath = (dir == NULL) ? "logs" : dir;
-
-    // Reload the log file after updated the path
-    g_plugin_log.Close();
-    LogInit();
-}
-
-EXPORT_C_(u32)
-PS2EgetLibType()
-{
-    return PS2E_LT_FW;
-}
-
-EXPORT_C_(const char *)
-PS2EgetLibName()
-{
-    snprintf(libraryName, 255, "FWnull Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");
-    return libraryName;
-}
-
-EXPORT_C_(u32)
-PS2EgetLibVersion2(u32 type)
-{
-    return (version << 16) | (revision << 8) | build;
-}
-
-EXPORT_C_(s32)
-FWinit()
-{
-    LoadConfig(s_strIniPath + "/FWnull.ini");
-    LogInit();
-    g_plugin_log.WriteLn("FWnull plugin version %d,%d", revision, build);
-    g_plugin_log.WriteLn("Initializing FWnull");
-
     memset(phyregs, 0, sizeof(phyregs));
     // Initializing our registers.
     fwregs = (s8 *)calloc(0x10000, 1);
     if (fwregs == NULL) {
-        g_plugin_log.Message("Error allocating Memory");
+        DevCon.WriteLn("FW: Error allocating Memory");
         return -1;
     }
     return 0;
 }
 
-EXPORT_C_(void)
-FWshutdown()
+void FWclose()
 {
     // Freeing the registers.
     free(fwregs);
     fwregs = NULL;
 
-    g_plugin_log.Close();
-}
-
-EXPORT_C_(s32)
-FWopen(void *pDsp)
-{
-    g_plugin_log.WriteLn("Opening FWnull.");
-
-    return 0;
-}
-
-EXPORT_C_(void)
-FWclose()
-{
-    // Close the plugin.
-    g_plugin_log.WriteLn("Closing FWnull.");
 }
 
 void PHYWrite()
@@ -147,8 +68,8 @@ void PHYRead()
         FWirq();
     }
 }
-EXPORT_C_(u32)
-FWread32(u32 addr)
+
+u32 FWread32(u32 addr)
 {
     u32 ret = 0;
 
@@ -179,13 +100,12 @@ FWread32(u32 addr)
             break;
     }
 
-    g_plugin_log.WriteLn("FW read mem 0x%x: 0x%x", addr, ret);
+    DevCon.WriteLn("FW: read mem 0x%x: 0x%x", addr, ret);
 
     return ret;
 }
 
-EXPORT_C_(void)
-FWwrite32(u32 addr, u32 value)
+void FWwrite32(u32 addr, u32 value)
 {
     switch (addr) {
         //		Include other memory locations we want to catch here.
@@ -268,45 +188,11 @@ FWwrite32(u32 addr, u32 value)
             fwRu32(addr) = value;
             break;
     }
-    g_plugin_log.WriteLn("FW write mem 0x%x: 0x%x", addr, value);
+    DevCon.WriteLn("FW: write mem 0x%x: 0x%x", addr, value);
 }
 
-EXPORT_C_(void)
-FWirqCallback(void (*callback)())
+void FWirqCallback(void (*callback)())
 {
     // Register FWirq, so we can trigger an interrupt with it later.
     FWirq = callback;
-}
-
-EXPORT_C_(void)
-FWsetSettingsDir(const char *dir)
-{
-    // Find out from pcsx2 where we are supposed to put our ini file.
-    s_strIniPath = (dir == NULL) ? "inis" : dir;
-}
-
-EXPORT_C_(s32)
-FWfreeze(int mode, freezeData *data)
-{
-    // This should store or retrieve any information, for if emulation
-    // gets suspended, or for savestates.
-    switch (mode) {
-        case FREEZE_LOAD:
-            // Load previously saved data.
-            break;
-        case FREEZE_SAVE:
-            // Save data.
-            break;
-        case FREEZE_SIZE:
-            // return the size of the data.
-            break;
-    }
-    return 0;
-}
-
-EXPORT_C_(s32)
-FWtest()
-{
-    // 0 if the plugin works, non-0 if it doesn't.
-    return 0;
 }
