@@ -20,9 +20,9 @@
 #define FWdefs
 
 // Our main memory storage, and defines for accessing it.
-extern s8 *fwregs;
-#define fwRs32(mem) (*(s32 *)&fwregs[(mem)&0xffff])
-#define fwRu32(mem) (*(u32 *)&fwregs[(mem)&0xffff])
+extern s8* fwregs;
+#define fwRs32(mem) (*(s32*)&fwregs[(mem)&0xffff])
+#define fwRu32(mem) (*(u32*)&fwregs[(mem)&0xffff])
 
 //PHY Access Address for ease of use :P
 #define PHYACC fwRu32(0x8414)

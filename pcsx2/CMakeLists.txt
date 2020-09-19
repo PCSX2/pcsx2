@@ -56,7 +56,7 @@ set(pcsx2Sources
 	GameDatabase.cpp
 	Dump.cpp
 	Elfheader.cpp
-    FW.cpp
+	FW.cpp
 	FiFo.cpp
 	FPU.cpp
 	Gif.cpp
@@ -136,7 +136,7 @@ set(pcsx2Headers
 	Dump.h
 	GameDatabase.h
 	Elfheader.h
-    FW.h
+	FW.h
 	Gif.h
 	Gif_Unit.h
 	GS.h

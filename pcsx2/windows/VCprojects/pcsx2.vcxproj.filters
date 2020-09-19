@@ -154,6 +154,9 @@
     <Filter Include="System\Ps2\Iop\CDVD\Linux">
       <UniqueIdentifier>{a5904fb6-e846-4cbf-940c-ca1c604140a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\Iop\FW">
+      <UniqueIdentifier>{157740ae-b338-4d7f-81cb-cffa9d39a756}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -893,7 +896,7 @@
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="..\..\FW.cpp">
-      <Filter>System</Filter>
+      <Filter>System\Ps2\Iop\FW</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1354,7 +1357,7 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\FW.h">
-      <Filter>System\Include</Filter>
+      <Filter>System\Ps2\Iop\FW</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
