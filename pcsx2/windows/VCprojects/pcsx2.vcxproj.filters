@@ -892,6 +892,9 @@
     <ClCompile Include="..\..\IPC.cpp">
       <Filter>System</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\FW.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1348,6 +1351,9 @@
       <Filter>AppHost\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\IPC.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FW.h">
       <Filter>System\Include</Filter>
     </ClInclude>
   </ItemGroup>
