@@ -64,10 +64,11 @@ jobs:
           path: |
             ./3rdparty/xz
             ./3rdparty/gtest
+            ./.git/modules/
 
       - name: Checkout Submodules
         if: steps.cache-submodules.outputs.cache-hit != 'true'
-        run: git submodule update --init --recursive
+        run: git submodule update --init --recursive --jobs 2
 
       # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
       - name: Prepare ccache timestamp
