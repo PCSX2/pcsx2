@@ -39,7 +39,7 @@ GSSettingsDlg::GSSettingsDlg()
 	{
 		auto is_d3d11_renderer = [](const auto &renderer) {
 			const GSRendererType type = static_cast<GSRendererType>(renderer.value);
-			return type == GSRendererType::DX1011_HW || type == GSRendererType::DX1011_SW;
+			return type == GSRendererType::DX1011_HW;
 		};
 		m_renderers.erase(std::remove_if(m_renderers.begin(), m_renderers.end(), is_d3d11_renderer), m_renderers.end());
 	}
@@ -85,7 +85,7 @@ void GSSettingsDlg::OnInit()
 	__super::OnInit();
 
 	GSRendererType renderer = GSRendererType(theApp.GetConfigI("Renderer"));
-	const bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW;
+	const bool dx11 = renderer == GSRendererType::DX1011_HW;
 	if (renderer == GSRendererType::Undefined || m_d3d11_adapters.empty() && dx11)
 		renderer = GSUtil::GetBestRenderer();
 	ComboBoxInit(IDC_RENDERER, m_renderers, static_cast<int32_t>(renderer));
@@ -275,7 +275,7 @@ void GSSettingsDlg::UpdateAdapters()
 		return;
 
 	const GSRendererType renderer = static_cast<GSRendererType>(data);
-	const bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW;
+	const bool dx11 = renderer == GSRendererType::DX1011_HW;
 
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ADAPTER), dx11);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ADAPTER_TEXT), dx11);
@@ -316,11 +316,11 @@ void GSSettingsDlg::UpdateControls()
 	{
 		const GSRendererType renderer = static_cast<GSRendererType>(i);
 
-		const bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW;
+		const bool dx11 = renderer == GSRendererType::DX1011_HW;
 		const bool ogl = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::OGL_SW;
 
 		const bool hw =  renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::OGL_HW;
-		const bool sw =  renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::OGL_SW;
+		const bool sw =  renderer == GSRendererType::OGL_SW;
 		const bool null = renderer == GSRendererType::Null;
 
 		const int sw_threads = SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_GETPOS, 0, 0);

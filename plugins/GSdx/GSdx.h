@@ -61,7 +61,7 @@ public:
 	std::string GetConfigS(const char* entry);
 
 	void SetCurrentRendererType(GSRendererType type);
-	GSRendererType GetCurrentRendererType();
+	GSRendererType GetCurrentRendererType() const;
 
 	void SetConfigDir(const char* dir);
 
