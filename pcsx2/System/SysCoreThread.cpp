@@ -295,7 +295,8 @@ void SysCoreThread::OnSuspendInThread()
 void SysCoreThread::OnResumeInThread( bool isSuspended )
 {
 	GetCorePlugins().Open();
-	DoCDVDopen();
+	if (isSuspended)
+		DoCDVDopen();
 	FWopen();
 }
 
