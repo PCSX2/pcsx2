@@ -295,11 +295,6 @@ SPU2reset()
     Cores[1].Init(1);
     try {
         SndBuffer::Init();
-
-#ifndef __POSIX__
-        DspLoadLibrary(dspPlugin, dspPluginModule);
-#endif
-        WaveDump::Open();
     } catch (std::exception &ex) {
         fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
         SPU2close();
@@ -325,11 +320,6 @@ SPU2ps1reset()
     Cores[1].Init(1);*/
     try {
         SndBuffer::Init();
-
-#ifndef __POSIX__
-        DspLoadLibrary(dspPlugin, dspPluginModule);
-#endif
-        WaveDump::Open();
     } catch (std::exception &ex) {
         fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
         SPU2close();
