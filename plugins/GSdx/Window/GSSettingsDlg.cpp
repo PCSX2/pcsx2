@@ -344,6 +344,7 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_DITHERING), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_DITHERING_TEXT), hw);
 
 		INT_PTR filter;
 		if (ComboBoxGetSelData(IDC_FILTER, filter))
