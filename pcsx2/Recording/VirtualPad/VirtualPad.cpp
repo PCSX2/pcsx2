@@ -46,9 +46,9 @@
 #include "Recording/VirtualPad/img/trianglePressed.h"
 #include "Recording/VirtualPad/img/upPressed.h"
 
-// TODO - Store position of frame in an (possibly the main) .ini file
-VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, int controllerPort, const wxPoint& pos, const wxSize& size, long style)
-	: wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE)
+VirtualPad::VirtualPad(wxWindow* parent, int controllerPort, AppConfig::InputRecordingOptions& options)
+	: wxFrame(parent, wxID_ANY, wxEmptyString)
+	, options(options)
 {
 	// Images at 1.00 scale are designed to work well on HiDPI (4k) at 150% scaling (default recommended setting on windows)
 	// Therefore, on a 1080p monitor we halve the scaling, on 1440p we reduce it by 25%, which from some quick tests looks comparable
@@ -99,9 +99,10 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 	Bind(wxEVT_CHECKBOX, &VirtualPad::OnIgnoreRealController, this, ignoreRealControllerBox->GetId());
 
 	// Bind Window Events
-	Bind(wxEVT_ERASE_BACKGROUND, &VirtualPad::OnEraseBackground, this);
+	Bind(wxEVT_MOVE, &VirtualPad::OnMoveAround, this);
 	Bind(wxEVT_CLOSE_WINDOW, &VirtualPad::OnClose, this);
 	Bind(wxEVT_ICONIZE, &VirtualPad::OnIconize, this);
+	Bind(wxEVT_ERASE_BACKGROUND, &VirtualPad::OnEraseBackground, this);
 	// Temporary Paint event handler so the window displays properly before the controller-interrupt routine takes over with manual drawing.
 	// The reason for this is in order to minimize the performance impact, we need total control over when render is called
 	// Windows redraws the window _alot_ otherwise which leads to major performance problems (when GS is using the software renderer)
@@ -111,11 +112,22 @@ VirtualPad::VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, i
 	// Finalize layout
 	SetIcons(wxGetApp().GetIconBundle());
 	SetTitle(wxString::Format("Virtual Pad - Port %d", controllerPort + 1));
+	SetPosition(options.VirtualPadPosition);
 	SetBackgroundColour(*wxWHITE);
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	// This window does not allow for resizing for sake of simplicity: all images are scaled initially and stored, ready to be rendered
-	SetWindowStyle(style & ~wxRESIZE_BORDER);
+	SetWindowStyle(wxDEFAULT_FRAME_STYLE & ~wxRESIZE_BORDER);
 	SetDoubleBuffered(true);
+}
+
+void VirtualPad::OnMoveAround(wxMoveEvent& event)
+{
+	if (IsBeingDeleted() || !IsVisible() || IsIconized())
+		return;
+
+	if (!IsMaximized())
+		options.VirtualPadPosition = GetPosition();
+	event.Skip();
 }
 
 void VirtualPad::OnClose(wxCloseEvent& event)
