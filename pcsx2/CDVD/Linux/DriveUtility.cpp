@@ -17,7 +17,7 @@
 #include "../CDVDdiscReader.h"
 
 #ifdef __linux__
-//#include <libudev.h>
+#include <libudev.h>
 #include <linux/cdrom.h>
 #endif
 
