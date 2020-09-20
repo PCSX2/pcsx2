@@ -15,6 +15,8 @@
 
 #pragma once
 
+#ifndef DISABLE_RECORDING
+
 #include <map>
 #include <queue>
 
@@ -34,65 +36,68 @@
 class VirtualPad : public wxFrame
 {
 public:
-	VirtualPad(wxWindow *parent, wxWindowID id, const wxString& title, int controllerPort, 
-		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize, long style = wxDEFAULT_FRAME_STYLE);
+	VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, int controllerPort,
+			   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_FRAME_STYLE);
 	// Updates the VirtualPad's data if necessary, as well as updates the provided PadData if the VirtualPad overrides it
 	// - PadData will not be updated if ReadOnly mode is set
 	// - returns a bool to indicate if the PadData has been updated
-	bool UpdateControllerData(u16 const bufIndex, PadData *padData);
+	bool UpdateControllerData(u16 const bufIndex, PadData* padData);
 	// Enables ReadOnly mode and disables GUI widgets
-    void SetReadOnlyMode();
+	void SetReadOnlyMode();
 	// Disables ReadOnly mode and re-enables GUI widgets
-    void ClearReadOnlyMode();
+	void ClearReadOnlyMode();
 	// To be called at maximum, once per frame to update widget's value and re-render the VirtualPad's graphics
 	void Redraw();
 
 private:
-    bool clearScreenRequired = false;
-    bool ignoreRealController = false;
-	// When enabled, forces the VirtualPad to be re-rendered even if no updates are made.  
+	bool clearScreenRequired = false;
+	bool ignoreRealController = false;
+	// When enabled, forces the VirtualPad to be re-rendered even if no updates are made.
 	// This helps to make sure the UI is rendered prior to receiving data from the controller
-    bool manualRedrawMode = false;
-    bool readOnlyMode = false;
+	bool manualRedrawMode = false;
+	bool readOnlyMode = false;
 
 	VirtualPadData virtualPadData;
 
-	std::queue<VirtualPadElement *> renderQueue;
+	std::vector<VirtualPadElement*> virtualPadElements;
+	std::queue<VirtualPadElement*> renderQueue;
 
-    void enablePadElements(bool enable);
+	void enablePadElements(bool enable);
 
 	/// GUI Elements
-	wxCheckBox *ignoreRealControllerBox;
+	wxCheckBox* ignoreRealControllerBox;
 
-	std::map<wxWindowID, ControllerNormalButton *> buttonElements;
-    std::map<wxWindowID, ControllerPressureButton *> pressureElements;
-    std::map<wxWindowID, AnalogVector *> analogElements;
+	std::map<wxWindowID, ControllerNormalButton*> buttonElements;
+	std::map<wxWindowID, ControllerPressureButton*> pressureElements;
+	std::map<wxWindowID, AnalogVector*> analogElements;
 
 	/// Event Listeners
-	void OnClose(wxCloseEvent &event);
-    void OnIconize(wxIconizeEvent &event);
-	void OnEraseBackground(wxEraseEvent &event);
-	void OnPaint(wxPaintEvent &event);
-	void Render(wxDC &dc);
+	void OnClose(wxCloseEvent& event);
+	void OnIconize(wxIconizeEvent& event);
+	void OnEraseBackground(wxEraseEvent& event);
+	void OnPaint(wxPaintEvent& event);
+	void Render(wxDC& dc);
 
-	void OnAnalogSliderChange(wxCommandEvent &event);
-	void OnAnalogSpinnerChange(wxCommandEvent &event);
-	void OnIgnoreRealController(wxCommandEvent const &event);
-	void OnNormalButtonPress(wxCommandEvent &event);
-	void OnPressureButtonPressureChange(wxCommandEvent &event);
+	void OnAnalogSliderChange(wxCommandEvent& event);
+	void OnAnalogSpinnerChange(wxCommandEvent& event);
+	void OnIgnoreRealController(wxCommandEvent const& event);
+	void OnNormalButtonPress(wxCommandEvent& event);
+	void OnPressureButtonPressureChange(wxCommandEvent& event);
 
 	/// GUI Creation Utility Functions
-    float scalingFactor = 1.0;
+	float scalingFactor = 1.0;
 
-    wxSize ScaledSize(int x, int y);
-    wxPoint ScaledPoint(wxPoint point, int widgetWidth = 0, bool rightAligned = false);
-    wxPoint ScaledPoint(int x, int y, int widgetWidth = 0, bool rightAligned = false);
+	wxSize ScaledSize(int x, int y);
+	wxPoint ScaledPoint(wxPoint point, int widgetWidth = 0, bool rightAligned = false);
+	wxPoint ScaledPoint(int x, int y, int widgetWidth = 0, bool rightAligned = false);
 
-    ImageFile NewBitmap(wxImage resource, wxPoint point);
-    ImageFile NewBitmap(float scalingFactor, wxImage resource, wxPoint point);
+	ImageFile NewBitmap(wxImage resource, wxPoint imgCoord);
+	ImageFile NewBitmap(float scalingFactor, wxImage resource, wxPoint imgCoord);
 
-    void InitPressureButtonGuiElements(ControllerPressureButton &button, ImageFile image, wxWindow *parentWindow, wxPoint point, bool rightAlignedPoint = false);
-    void InitNormalButtonGuiElements(ControllerNormalButton &btn, ImageFile image, wxWindow *parentWindow, wxPoint point);
-    void InitAnalogStickGuiElements(AnalogStick &analog, wxWindow *parentWindow, wxPoint centerPoint, int radius, wxPoint xSliderPoint, 
-		wxPoint ySliderPoint, bool flipYSlider, wxPoint xSpinnerPoint, wxPoint ySpinnerPoint, bool rightAlignedSpinners = false);
+	void InitPressureButtonGuiElements(ControllerPressureButton& button, ImageFile image, wxWindow* parentWindow, wxPoint pressureSpinnerCoord, bool rightAlignedCoord = false);
+	void InitNormalButtonGuiElements(ControllerNormalButton& btn, ImageFile image, wxWindow* parentWindow, wxPoint checkboxCoord);
+	void InitAnalogStickGuiElements(AnalogStick& analog, wxWindow* parentWindow, wxPoint centerPoint, int radius, wxPoint xSliderPoint,
+									wxPoint ySliderPoint, bool flipYSlider, wxPoint xSpinnerPoint, wxPoint ySpinnerPoint, bool rightAlignedSpinners = false);
 };
+
+#endif

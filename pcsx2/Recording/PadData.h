@@ -15,12 +15,14 @@
 
 #pragma once
 
+#ifndef DISABLE_RECORDING
+
 class PadData
 {
 public:
 	/// Constants
-    static const u8 ANALOG_VECTOR_NEUTRAL = 127;
-    static const u16 END_INDEX_CONTROLLER_BUFFER = 17;
+	static const u8 ANALOG_VECTOR_NEUTRAL = 127;
+	static const u16 END_INDEX_CONTROLLER_BUFFER = 17;
 
 	enum class BufferIndex
 	{
@@ -62,36 +64,36 @@ public:
 	/// NOTE - It shouldn't be possible to depress a button while also having no pressure
 	/// But for the sake of completeness, it should be tracked.
 	bool circlePressed = false;
-    bool crossPressed = false;
-    bool squarePressed = false;
-    bool trianglePressed = false;
-    bool downPressed = false;
-    bool leftPressed = false;
-    bool rightPressed = false;
-    bool upPressed = false;
-    bool l1Pressed = false;
-    bool l2Pressed = false;
-    bool r1Pressed = false;
-    bool r2Pressed = false;
+	bool crossPressed = false;
+	bool squarePressed = false;
+	bool trianglePressed = false;
+	bool downPressed = false;
+	bool leftPressed = false;
+	bool rightPressed = false;
+	bool upPressed = false;
+	bool l1Pressed = false;
+	bool l2Pressed = false;
+	bool r1Pressed = false;
+	bool r2Pressed = false;
 
 	/// Normal (un)pressed buttons
-    bool select = false;
-    bool start = false;
-    bool l3 = false;
-    bool r3 = false;
+	bool select = false;
+	bool start = false;
+	bool l3 = false;
+	bool r3 = false;
 
 	/// Analog Sticks - 0-255 (127 center)
-    u8 leftAnalogX = ANALOG_VECTOR_NEUTRAL;
-    u8 leftAnalogY = ANALOG_VECTOR_NEUTRAL;
-    u8 rightAnalogX = ANALOG_VECTOR_NEUTRAL;
-    u8 rightAnalogY = ANALOG_VECTOR_NEUTRAL;
+	u8 leftAnalogX = ANALOG_VECTOR_NEUTRAL;
+	u8 leftAnalogY = ANALOG_VECTOR_NEUTRAL;
+	u8 rightAnalogX = ANALOG_VECTOR_NEUTRAL;
+	u8 rightAnalogY = ANALOG_VECTOR_NEUTRAL;
 
-	// Given the input buffer and the current index, updates the correct field(s) 
-	void UpdateControllerData(u16 bufIndex, u8 const &bufVal);
+	// Given the input buffer and the current index, updates the correct field(s)
+	void UpdateControllerData(u16 bufIndex, u8 const& bufVal);
 	u8 PollControllerData(u16 bufIndex);
 
 	// Prints current PadData to the Controller Log filter which disabled by default
-    void LogPadData(u8 const &port);
+	void LogPadData(u8 const& port);
 
 private:
 	struct ButtonResolver
@@ -99,28 +101,29 @@ private:
 		u8 buttonBitmask;
 	};
 
-	const ButtonResolver LEFT = ButtonResolver{ 0b10000000 };
-	const ButtonResolver DOWN = ButtonResolver{ 0b01000000 };
-	const ButtonResolver RIGHT = ButtonResolver{ 0b00100000 };
-	const ButtonResolver UP = ButtonResolver{ 0b00010000 };
-	const ButtonResolver START = ButtonResolver{ 0b00001000 };
-	const ButtonResolver R3 = ButtonResolver{ 0b00000100 };
-	const ButtonResolver L3 = ButtonResolver{ 0b00000010 };
-	const ButtonResolver SELECT = ButtonResolver{ 0b00000001 };
+	const ButtonResolver LEFT = ButtonResolver{0b10000000};
+	const ButtonResolver DOWN = ButtonResolver{0b01000000};
+	const ButtonResolver RIGHT = ButtonResolver{0b00100000};
+	const ButtonResolver UP = ButtonResolver{0b00010000};
+	const ButtonResolver START = ButtonResolver{0b00001000};
+	const ButtonResolver R3 = ButtonResolver{0b00000100};
+	const ButtonResolver L3 = ButtonResolver{0b00000010};
+	const ButtonResolver SELECT = ButtonResolver{0b00000001};
 
-	const ButtonResolver SQUARE = ButtonResolver{ 0b10000000 };
-	const ButtonResolver CROSS = ButtonResolver{ 0b01000000 };
-	const ButtonResolver CIRCLE = ButtonResolver{ 0b00100000 };
-	const ButtonResolver TRIANGLE = ButtonResolver{ 0b00010000 };
-	const ButtonResolver R1 = ButtonResolver{ 0b00001000 };
-	const ButtonResolver L1 = ButtonResolver{ 0b00000100 };
-	const ButtonResolver R2 = ButtonResolver{ 0b00000010 };
-	const ButtonResolver L2 = ButtonResolver{ 0b00000001 };
+	const ButtonResolver SQUARE = ButtonResolver{0b10000000};
+	const ButtonResolver CROSS = ButtonResolver{0b01000000};
+	const ButtonResolver CIRCLE = ButtonResolver{0b00100000};
+	const ButtonResolver TRIANGLE = ButtonResolver{0b00010000};
+	const ButtonResolver R1 = ButtonResolver{0b00001000};
+	const ButtonResolver L1 = ButtonResolver{0b00000100};
+	const ButtonResolver R2 = ButtonResolver{0b00000010};
+	const ButtonResolver L2 = ButtonResolver{0b00000001};
 
 	// Checks and returns if button a is pressed or not
-	bool IsButtonPressed(ButtonResolver buttonResolver, u8 const &bufVal);
+	bool IsButtonPressed(ButtonResolver buttonResolver, u8 const& bufVal);
 	u8 BitmaskOrZero(bool pressed, ButtonResolver buttonInfo);
 
 	wxString RawPadBytesToString(int start, int end);
 };
+
 #endif

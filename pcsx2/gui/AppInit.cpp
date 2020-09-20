@@ -79,11 +79,11 @@ void Pcsx2App::OpenMainFrame()
 
 #ifndef DISABLE_RECORDING
 	VirtualPad* virtualPad0 = new VirtualPad(mainFrame, wxID_ANY, wxEmptyString, 0);
-	g_inputRecording.setVirtualPadPtr(virtualPad0, 0);
+	g_InputRecording.setVirtualPadPtr(virtualPad0, 0);
 	m_id_VirtualPad[0] = virtualPad0->GetId();
 	
 	VirtualPad *virtualPad1 = new VirtualPad(mainFrame, wxID_ANY, wxEmptyString, 1);
-    g_inputRecording.setVirtualPadPtr(virtualPad1, 1);
+    g_InputRecording.setVirtualPadPtr(virtualPad1, 1);
 	m_id_VirtualPad[1] = virtualPad1->GetId();
 
 	NewRecordingFrame* newRecordingFrame = new NewRecordingFrame(mainFrame);

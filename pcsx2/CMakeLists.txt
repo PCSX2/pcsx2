@@ -364,7 +364,7 @@ set(pcsx2GuiHeaders
 	)
 
 # Warning: the declaration of the .h are mandatory in case of resources files. It will ensure the creation
-# from the bin2cpp tools at the good moment (ie .h must be created before the pcsx2 compilation)
+# from the bin2cpp tools at right good moment (ie .h must be created before the pcsx2 compilation)
 # Gui resources headers
 set(res_bin "${CMAKE_BINARY_DIR}/pcsx2/gui/Resources")
 set(res_src "${CMAKE_SOURCE_DIR}/pcsx2/gui/Resources")
@@ -502,7 +502,7 @@ set(pcsx2RecordingHeaders
 )
 
 # Warning: the declaration of the .h are mandatory in case of resources files. It will ensure the creation
-# from the bin2cpp tools at the good moment (ie .h must be created before the pcsx2 compilation)
+# from the bin2cpp tools at the right moment (ie .h must be created before the pcsx2 compilation)
 # Recording - VirtualPad resources headers
 set(res_rec_vp_bin "${CMAKE_BINARY_DIR}/pcsx2/Recording/VirtualPad/img")
 set(res_rec_vp_src "${CMAKE_SOURCE_DIR}/pcsx2/Recording/VirtualPad/img")

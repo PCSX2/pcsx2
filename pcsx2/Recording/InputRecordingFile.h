@@ -15,6 +15,8 @@
 
 #pragma once
 
+#ifndef DISABLE_RECORDING
+
 #include "System.h"
 
 #include "PadData.h"
@@ -22,7 +24,6 @@
 // NOTE / TODOs for Version 2
 // - Move fromSavestate, undoCount, and total frames into the header
 
-#ifndef DISABLE_RECORDING
 struct InputRecordingFileHeader
 {
 	u8 version = 1;
@@ -109,4 +110,5 @@ private:
 	bool open(const wxString path, bool newRecording);
 	bool verifyRecordingFileHeader();
 };
+
 #endif

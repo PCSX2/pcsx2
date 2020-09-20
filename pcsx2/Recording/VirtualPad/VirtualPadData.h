@@ -15,6 +15,8 @@
 
 #pragma once
 
+#ifndef DISABLE_RECORDING
+
 #include "Pcsx2Types.h"
 
 #include "Recording/PadData.h"
@@ -55,5 +57,7 @@ public:
 	// - If ignoreRealController is true (and readOnly is false) PadData will always be updated
 	// - else if the VirtualPad has overwritten the value, and the real controller has not changed since that moment in time
 	// returns a boolean to indicate if it has updated the PadData
-	bool UpdateVirtualPadData(u16 bufIndex, PadData *padData, bool ignoreRealController = false, bool readOnly = false);
+	bool UpdateVirtualPadData(u16 bufIndex, PadData* padData, bool ignoreRealController = false, bool readOnly = false);
 };
+
+#endif
