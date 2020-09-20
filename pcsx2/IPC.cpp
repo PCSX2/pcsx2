@@ -33,7 +33,6 @@
 #include <sys/un.h>
 #endif
 
-
 #include "Common.h"
 #include "Memory.h"
 #include "System/SysThreads.h"
@@ -206,7 +205,7 @@ void SocketIPC::ExecuteTaskInThread()
 				{
 					end_length = FromArray<u32>(m_ipc_buffer, 0);
 					// we'd like to avoid a client trying to do OOB
-					if (end_length > MAX_IPC_SIZE)
+					if (end_length > MAX_IPC_SIZE || end_length < 4)
 					{
 						receive_length = 0;
 						break;
@@ -220,7 +219,7 @@ void SocketIPC::ExecuteTaskInThread()
 			if (receive_length == 0)
 				res = IPCBuffer{5, MakeFailIPC(m_ret_buffer)};
 			else
-				res = ParseCommand(&m_ipc_buffer[4], m_ret_buffer, (u32)receive_length - 4);
+				res = ParseCommand(&m_ipc_buffer[4], m_ret_buffer, (u32)end_length - 4);
 
 			// we don't care about the error value as we will reset the
 			// connection after that anyways
@@ -260,13 +259,11 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 
 	while (buf_cnt < buf_size)
 	{
-		// if we haven't received enough byte for the address used in R/W
-		// commands and opcode, changeme when address is out of the header!
 		if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
 			return IPCBuffer{5, MakeFailIPC(ret_buffer)};
-
-        // example IPC messages: MsgRead/Write
-        // refer to the client doc for more info on the format
+		buf_cnt++;
+		// example IPC messages: MsgRead/Write
+		// refer to the client doc for more info on the format
 		//         IPC Message event (1 byte)
 		//         |  Memory address (4 byte)
 		//         |  |           argument (VLE)
@@ -276,120 +273,116 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 		//        |  return value (VLE)
 		//        |  |
 		// reply: XX ZZ ZZ ZZ ZZ
-		switch ((IPCCommand)buf[buf_cnt])
+		switch ((IPCCommand)buf[buf_cnt - 1])
 		{
 			case MsgRead8:
 			{
-	            if (!m_vm->HasActiveMachine())
-                    goto error;
-				if (!SafetyChecks(buf_cnt, 5 + 4, ret_cnt, 1, buf_size))
+				if (!m_vm->HasActiveMachine())
 					goto error;
-		        const u32 a = FromArray<u32>(&buf[buf_cnt], 1);
+				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 1, buf_size))
+					goto error;
+				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
 				const u8 res = memRead8(a);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 1;
-				buf_cnt += 5;
+				buf_cnt += 4;
 				break;
 			}
 			case MsgRead16:
 			{
-	            if (!m_vm->HasActiveMachine())
-                    goto error;
-				if (!SafetyChecks(buf_cnt, 5 + 4, ret_cnt, 2, buf_size))
+				if (!m_vm->HasActiveMachine())
 					goto error;
-		        const u32 a = FromArray<u32>(&buf[buf_cnt], 1);
+				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 2, buf_size))
+					goto error;
+				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
 				const u16 res = memRead16(a);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 2;
-				buf_cnt += 5;
+				buf_cnt += 4;
 				break;
 			}
 			case MsgRead32:
 			{
-	            if (!m_vm->HasActiveMachine())
-                    goto error;
-				if (!SafetyChecks(buf_cnt, 5 + 4, ret_cnt, 4, buf_size))
+				if (!m_vm->HasActiveMachine())
 					goto error;
-		        const u32 a = FromArray<u32>(&buf[buf_cnt], 1);
+				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 4, buf_size))
+					goto error;
+				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
 				const u32 res = memRead32(a);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 4;
-				buf_cnt += 5;
+				buf_cnt += 4;
 				break;
 			}
 			case MsgRead64:
 			{
-	            if (!m_vm->HasActiveMachine())
-                    goto error;
-				if (!SafetyChecks(buf_cnt, 5 + 4, ret_cnt, 8, buf_size))
+				if (!m_vm->HasActiveMachine())
 					goto error;
-		        const u32 a = FromArray<u32>(&buf[buf_cnt], 1);
+				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 8, buf_size))
+					goto error;
+				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
 				u64 res = 0;
 				memRead64(a, &res);
 				ToArray(ret_buffer, res, ret_cnt);
 				ret_cnt += 8;
-				buf_cnt += 5;
+				buf_cnt += 4;
 				break;
 			}
 			case MsgWrite8:
 			{
-	            if (!m_vm->HasActiveMachine())
-                    goto error;
-				if (!SafetyChecks(buf_cnt, 6 + 4, ret_cnt, buf_size))
+				if (!m_vm->HasActiveMachine())
 					goto error;
-		        const u32 a = FromArray<u32>(&buf[buf_cnt], 1);
-				memWrite8(a, FromArray<u8>(&buf[buf_cnt], 5));
-				buf_cnt += 6;
+				if (!SafetyChecks(buf_cnt, 1 + 4, ret_cnt, 0, buf_size))
+					goto error;
+				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+				memWrite8(a, FromArray<u8>(&buf[buf_cnt], 4));
+				buf_cnt += 5;
 				break;
 			}
 			case MsgWrite16:
 			{
-	            if (!m_vm->HasActiveMachine())
-                    goto error;
-				if (!SafetyChecks(buf_cnt, 7 + 4, ret_cnt, buf_size))
+				if (!m_vm->HasActiveMachine())
 					goto error;
-		        const u32 a = FromArray<u32>(&buf[buf_cnt], 1);
-				memWrite16(a, FromArray<u16>(&buf[buf_cnt], 5));
-				buf_cnt += 7;
+				if (!SafetyChecks(buf_cnt, 2 + 4, ret_cnt, 0, buf_size))
+					goto error;
+				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+				memWrite16(a, FromArray<u16>(&buf[buf_cnt], 4));
+				buf_cnt += 6;
 				break;
 			}
 			case MsgWrite32:
 			{
-	            if (!m_vm->HasActiveMachine())
-                    goto error;
-				if (!SafetyChecks(buf_cnt, 9 + 4, ret_cnt, buf_size))
+				if (!m_vm->HasActiveMachine())
 					goto error;
-		        const u32 a = FromArray<u32>(&buf[buf_cnt], 1);
-				memWrite32(a, FromArray<u32>(&buf[buf_cnt], 5));
-				buf_cnt += 9;
+				if (!SafetyChecks(buf_cnt, 4 + 4, ret_cnt, 0, buf_size))
+					goto error;
+				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+				memWrite32(a, FromArray<u32>(&buf[buf_cnt], 4));
+				buf_cnt += 8;
 				break;
 			}
 			case MsgWrite64:
 			{
-	            if (!m_vm->HasActiveMachine())
-                    goto error;
-				if (!SafetyChecks(buf_cnt, 13 + 4, ret_cnt, buf_size))
+				if (!m_vm->HasActiveMachine())
 					goto error;
-		        const u32 a = FromArray<u32>(&buf[buf_cnt], 1);
-				memWrite64(a, FromArray<u64>(&buf[buf_cnt], 5));
-				buf_cnt += 13;
+				if (!SafetyChecks(buf_cnt, 8 + 4, ret_cnt, 0, buf_size))
+					goto error;
+				const u32 a = FromArray<u32>(&buf[buf_cnt], 0);
+				memWrite64(a, FromArray<u64>(&buf[buf_cnt], 4));
+				buf_cnt += 12;
 				break;
 			}
-            case MsgVersion:
-            {
-                char version[256];
-                sprintf(version, "PCSX2 %u.%u.%u-%lld %s", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV, SVN_MODS ? "(modded)" : "");
-                //printf("%s\n", version);
-				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 4 + strlen(version)+1, buf_size))
+			case MsgVersion:
+			{
+				char version[256] = {};
+				sprintf(version, "PCSX2 %u.%u.%u-%lld %s", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV, SVN_MODS ? "(modded)" : "");
+				version[255] = 0x00;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
 					goto error;
-
-   				ToArray(ret_buffer, strlen(version)+1, ret_cnt);
-                ret_cnt+=4;
-                memcpy(&ret_buffer[ret_cnt], version, strlen(version)+1);
-                ret_cnt+=strlen(version)+1; 
-                buf_cnt += 1;
-                break;
-            }
+				memcpy(&ret_buffer[ret_cnt], version, 256);
+				ret_cnt += 256;
+				break;
+			}
 			default:
 			{
 			error:
