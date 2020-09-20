@@ -15,6 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
+#ifndef DISABLE_RECORDING
+
 #include "App.h"
 #include "Counters.h"
 #include "DebugTools/Debug.h"
@@ -25,10 +27,7 @@
 #include "InputRecordingControls.h"
 
 
-#ifndef DISABLE_RECORDING
-
 InputRecordingControls g_InputRecordingControls;
-
 
 void InputRecordingControls::HandleFrameAdvanceAndPausing()
 {

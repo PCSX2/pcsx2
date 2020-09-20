@@ -15,13 +15,13 @@
 
 #include "PrecompiledHeader.h"
 
+#ifndef DISABLE_RECORDING
+
 #include "DebugTools/Debug.h"
 #include "MainFrame.h"
 #include "MemoryTypes.h"
 
 #include "Recording/InputRecordingFile.h"
-
-#ifndef DISABLE_RECORDING
 
 void InputRecordingFileHeader::Init()
 {

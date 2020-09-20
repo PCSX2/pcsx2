@@ -15,6 +15,8 @@
 
 #pragma once
 
+#ifndef DISABLE_RECORDING
+
 #include "Recording/InputRecordingFile.h"
 
 
@@ -86,7 +88,7 @@ public:
 	// Stop the active input recording
 	void Stop();
 
-	void SetVirtualPadPtr(VirtualPad *ptr, int const port);
+	void setVirtualPadPtr(VirtualPad *ptr, int const port);
 
 private:
 	enum class InputRecordingMode
@@ -95,6 +97,16 @@ private:
 		Recording,
 		Replaying,
 	};
+
+	static const int CONTROLLER_PORT_ONE = 0;
+    static const int CONTROLLER_PORT_TWO = 1;
+
+	// 0x42 is the magic number to indicate the default controller read query
+	// See - Lilypad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1193
+	static const u8 READ_DATA_AND_VIBRATE_FIRST_BYTE = 0x42;
+	// 0x5A is always the second byte in the buffer when the normal READ_DATA_AND_VIBRATE (0x42) query is executed.
+	// See - LilyPad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1194
+    static const u8 READ_DATA_AND_VIBRATE_SECOND_BYTE = 0x5A;
 
 	// DEPRECATED: Slated for removal 
 	bool fInterruptFrame = false;
@@ -117,3 +129,5 @@ private:
 };
 
 extern InputRecording g_InputRecording;
+
+#endif

@@ -51,6 +51,8 @@ void SaveStateBase::InputRecordingFreeze()
 #endif
 }
 
+#ifndef DISABLE_RECORDING
+
 InputRecording g_InputRecording;
 
 InputRecording::InputRecording()
@@ -60,7 +62,7 @@ InputRecording::InputRecording()
     padData[CONTROLLER_PORT_TWO] = new PadData();
 }
 
-void InputRecording::SetVirtualPadPtr(VirtualPad *ptr, int const port)
+void InputRecording::setVirtualPadPtr(VirtualPad *ptr, int const port)
 {
 	virtualPads[port] = ptr;
 }
@@ -85,25 +87,11 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
 {
 	// TODO - Multi-Tap Support
 
-	/*
-		This appears to try to ensure that we are only paying attention
-		to the frames that matter, the ones that are reading from
-		the controller.
-
-		See - Lilypad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1193
-		0x42 is the magic number for the default read query
-	*/
 	if (bufCount == 1)
-		fInterruptFrame = data == 0x42;
+		fInterruptFrame = data == READ_DATA_AND_VIBRATE_FIRST_BYTE;
 	else if (bufCount == 2)
 	{
-		/*
-			See - LilyPad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1194
-			0x5A is always the second byte in the buffer
-			when the normal READ_DATA_AND_VIBRRATE (0x42)
-			query is executed, this looks like a sanity check
-		*/
-		if (buf[bufCount] != 0x5A)
+		if (buf[bufCount] != READ_DATA_AND_VIBRATE_SECOND_BYTE)
 			fInterruptFrame = false;
 	}
 	// We do not want to record or save the first two bytes in the data returned from the PAD plugin
@@ -112,17 +100,7 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
         u8 &bufVal = buf[bufCount];
 	    const u16 bufIndex = bufCount - 3;
 
-		// Read or Write
-		if (state == InputRecordingMode::Recording)
-		{
-			if (incrementUndo)
-			{
-				inputRecordingData.IncrementUndoCount();
-				incrementUndo = false;
-			}
-			inputRecordingData.WriteKeyBuffer(frameCounter, port, bufIndex, buf[bufCount]);
-		}
-		else if (state == InputRecordingMode::Replaying)
+		if (state == InputRecordingMode::Replaying)
 		{
 			u8 tmp = 0;
 			if (inputRecordingData.ReadKeyBuffer(tmp, frameCounter, port, bufIndex))
@@ -137,39 +115,42 @@ void InputRecording::ControllerInterrupt(u8 &data, u8 &port, u16 &bufCount, u8 b
                 }
             }
 		}
-		return;
-	}
 
-	// Update controller data state for future VirtualPad / logging usage.
-	padData[port]->UpdateControllerData(bufIndex, bufVal);
+		// Update controller data state for future VirtualPad / logging usage.
+		padData[port]->UpdateControllerData(bufIndex, bufVal);
 
-	if (virtualPads[port] && virtualPads[port]->IsShown())
-	{
-		// If the VirtualPad updated the PadData, we have to update the buffer
-		// before committing it to the recording / sending it to the game
-		// - Do not do this if we are in replay mode!
-        if (virtualPads[port]->UpdateControllerData(bufIndex, padData[port]) && state != INPUT_RECORDING_MODE_REPLAY)
+		if (virtualPads[port] && virtualPads[port]->IsShown())
 		{
-			bufVal = padData[port]->PollControllerData(bufIndex);
+			// If the VirtualPad updated the PadData, we have to update the buffer
+			// before committing it to the recording / sending it to the game
+			// - Do not do this if we are in replay mode!
+			if (virtualPads[port]->UpdateControllerData(bufIndex, padData[port]) && state != InputRecordingMode::Replaying)
+			{
+				bufVal = padData[port]->PollControllerData(bufIndex);
+			}
 		}
-	}
 
-	// If we have reached the end of the pad data, log it out
-    if (bufIndex == PadData::END_INDEX_CONTROLLER_BUFFER) {
-		padData[port]->LogPadData(port);
-		// As well as re-render the virtual pad UI, if applicable
-		// - Don't render if it's minimized
-        if (virtualPads[port] && virtualPads[port]->IsShown() && !virtualPads[port]->IsIconized())
+		// If we have reached the end of the pad data, log it out
+		if (bufIndex == PadData::END_INDEX_CONTROLLER_BUFFER) {
+			padData[port]->LogPadData(port);
+			// As well as re-render the virtual pad UI, if applicable
+			// - Don't render if it's minimized
+			if (virtualPads[port] && virtualPads[port]->IsShown() && !virtualPads[port]->IsIconized())
+			{
+				virtualPads[port]->Redraw();
+			}
+		}
+
+		// Finally, commit the byte to the movie file if we are recording
+		if (state == InputRecordingMode::Recording)
 		{
-			virtualPads[port]->Redraw();
+			if (incrementUndo)
+			{
+				inputRecordingData.IncrementUndoCount();
+				incrementUndo = false;
+			}
+			inputRecordingData.WriteKeyBuffer(frameCounter, port, bufIndex, bufVal);
 		}
-	}
-
-	// Finally, commit the byte to the movie file if we are recording
-	if (state == INPUT_RECORDING_MODE_RECORD)
-	{
-		InputRecordingData.UpdateFrameMax(g_FrameCount);
-		InputRecordingData.WriteKeyBuf(g_FrameCount, port, bufIndex, bufVal);
 	}
 }
 
@@ -396,3 +377,5 @@ wxString InputRecording::resolveGameName()
 	}
 	return !gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso);
 }
+
+#endif

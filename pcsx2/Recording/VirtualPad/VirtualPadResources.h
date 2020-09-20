@@ -15,6 +15,8 @@
 
 #pragma once
 
+#ifndef DISABLE_RECORDING
+
 #include <queue>
 
 #include "Pcsx2Types.h"
@@ -34,16 +36,16 @@ struct ImageFile
 
 struct AnalogVector
 {
-    wxSlider *slider = 0;
-    wxSpinCtrl *spinner = 0;
+	wxSlider* slider = 0;
+	wxSpinCtrl* spinner = 0;
 
-    u8 val = 127;
+	u8 val = 127;
 
-    bool isControllerBypassed = false;
-    bool widgetUpdateRequired = false;
-    u8 prevVal = 127;
+	bool isControllerBypassed = false;
+	bool widgetUpdateRequired = false;
+	u8 prevVal = 127;
 
-    bool UpdateData(u8 &padDataVal, bool ignoreRealController, bool readOnly);
+	bool UpdateData(u8& padDataVal, bool ignoreRealController, bool readOnly);
 };
 
 
@@ -59,52 +61,52 @@ struct AnalogPosition
 class VirtualPadElement
 {
 public:
-    bool currentlyRendered = false;
+	bool currentlyRendered = false;
 
-    virtual void EnableWidgets(bool enable) = 0;
-    virtual void Render(wxDC &dc) = 0;
-    virtual void UpdateGuiElement(std::queue<VirtualPadElement *> &renderQueue, bool &clearScreenRequired) = 0;
+	virtual void EnableWidgets(bool enable) = 0;
+	virtual void Render(wxDC& dc) = 0;
+	virtual void UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, bool& clearScreenRequired) = 0;
 };
 
 class ControllerButton
 {
 public:
-    bool isControllerPressBypassed = false;
-    bool pressed = false;
-    bool prevPressedVal = false;
-    bool widgetUpdateRequired = false;
+	bool isControllerPressBypassed = false;
+	bool pressed = false;
+	bool prevPressedVal = false;
+	bool widgetUpdateRequired = false;
 
-	bool UpdateButtonData(bool &padDataVal, bool ignoreRealController, bool readOnly);
+	bool UpdateButtonData(bool& padDataVal, bool ignoreRealController, bool readOnly);
 };
 
 class ControllerNormalButton : public ControllerButton, public VirtualPadElement
 {
 public:
 	ImageFile icon;
-	wxCheckBox *pressedBox = 0;
+	wxCheckBox* pressedBox = 0;
 
-    bool UpdateData(bool &padDataVal, bool ignoreRealController, bool readOnly);
-    void EnableWidgets(bool enable) override;
-    void Render(wxDC &dc) override;
-	void UpdateGuiElement(std::queue<VirtualPadElement *> &renderQueue, bool &clearScreenRequired) override;
+	bool UpdateData(bool& padDataVal, bool ignoreRealController, bool readOnly);
+	void EnableWidgets(bool enable) override;
+	void Render(wxDC& dc) override;
+	void UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, bool& clearScreenRequired) override;
 };
 
 class ControllerPressureButton : public ControllerButton, public VirtualPadElement
 {
 public:
 	ImageFile icon;
-	wxSpinCtrl *pressureSpinner = 0;
+	wxSpinCtrl* pressureSpinner = 0;
 
 	u8 pressure = 0;
 
 	bool isControllerPressureBypassed = false;
 	u8 prevPressureVal = 0;
 
-    bool UpdateData(bool &padDataVal, bool ignoreRealController, bool readOnly);
-    bool UpdateData(u8 &padDataVal, bool ignoreRealController, bool readOnly);
-    void EnableWidgets(bool enable) override;
-    void Render(wxDC &dc) override;
-	void UpdateGuiElement(std::queue<VirtualPadElement *> &renderQueue, bool &clearScreenRequired) override;
+	bool UpdateData(bool& padDataVal, bool ignoreRealController, bool readOnly);
+	bool UpdateData(u8& padDataVal, bool ignoreRealController, bool readOnly);
+	void EnableWidgets(bool enable) override;
+	void Render(wxDC& dc) override;
+	void UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, bool& clearScreenRequired) override;
 };
 
 class AnalogStick : public VirtualPadElement
@@ -115,7 +117,9 @@ public:
 
 	AnalogPosition positionGraphic;
 
-    void EnableWidgets(bool enable) override;
-    void Render(wxDC &dc) override;
-	void UpdateGuiElement(std::queue<VirtualPadElement *> &renderQueue, bool &clearScreenRequired) override;
+	void EnableWidgets(bool enable) override;
+	void Render(wxDC& dc) override;
+	void UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, bool& clearScreenRequired) override;
 };
+
+#endif
