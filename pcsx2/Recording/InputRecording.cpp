@@ -15,11 +15,12 @@
 
 #include "PrecompiledHeader.h"
 
+#include "AppSaveStates.h"
+
 #ifndef DISABLE_RECORDING
 
 #include <vector>
 
-#include "AppSaveStates.h"
 #include "AppGameDatabase.h"
 #include "DebugTools/Debug.h"
 #include "Counters.h"
@@ -27,6 +28,7 @@
 #include "InputRecording.h"
 #include "InputRecordingControls.h"
 
+#endif
 
 void SaveStateBase::InputRecordingFreeze()
 {

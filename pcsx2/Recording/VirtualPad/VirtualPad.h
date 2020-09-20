@@ -20,7 +20,9 @@
 #include <map>
 #include <queue>
 
+#include "AppConfig.h"
 #include "Pcsx2Types.h"
+
 #include "wx/checkbox.h"
 #include "wx/dc.h"
 #include "wx/event.h"
@@ -36,8 +38,7 @@
 class VirtualPad : public wxFrame
 {
 public:
-	VirtualPad(wxWindow* parent, wxWindowID id, const wxString& title, int controllerPort,
-			   const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_FRAME_STYLE);
+	VirtualPad(wxWindow* parent, int controllerPort, AppConfig::InputRecordingOptions& options);
 	// Updates the VirtualPad's data if necessary, as well as updates the provided PadData if the VirtualPad overrides it
 	// - PadData will not be updated if ReadOnly mode is set
 	// - returns a bool to indicate if the PadData has been updated
@@ -50,6 +51,8 @@ public:
 	void Redraw();
 
 private:
+	AppConfig::InputRecordingOptions& options;
+
 	bool clearScreenRequired = false;
 	bool ignoreRealController = false;
 	// When enabled, forces the VirtualPad to be re-rendered even if no updates are made.
@@ -72,6 +75,7 @@ private:
 	std::map<wxWindowID, AnalogVector*> analogElements;
 
 	/// Event Listeners
+	void OnMoveAround(wxMoveEvent& event);
 	void OnClose(wxCloseEvent& event);
 	void OnIconize(wxIconizeEvent& event);
 	void OnEraseBackground(wxEraseEvent& event);
