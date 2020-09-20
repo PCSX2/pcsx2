@@ -282,11 +282,11 @@ CALLBACK SPU2writeDMA7Mem(u16 *pMem, u32 size)
 
 EXPORT_C_(s32)
 SPU2reset()
-{
+{        
+	SampleRate = 48000;
     if (SndBuffer::Test() != 0)
     {
         SndBuffer::Cleanup();
-        SampleRate = 48000;
     }
     memset(spu2regs, 0, 0x010000);
     memset(_spu2mem, 0, 0x200000);
@@ -305,11 +305,11 @@ SPU2reset()
 
 EXPORT_C_(s32)
 SPU2ps1reset()
-{   
+{          
+	SampleRate = 44100;
     if (SndBuffer::Test() != 0)
     {
         SndBuffer::Cleanup();
-        SampleRate = 44100;
     }
     printf("RESET PS1 \n");
     memset(spu2regs, 0, 0x010000);
