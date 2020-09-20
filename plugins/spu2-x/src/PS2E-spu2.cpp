@@ -283,25 +283,57 @@ CALLBACK SPU2writeDMA7Mem(u16 *pMem, u32 size)
 EXPORT_C_(void)
 SPU2reset()
 {
-    SndBuffer::Cleanup();
-    SampleRate = 48000;
+    if (SndBuffer::Test() != 0)
+    {
+        SndBuffer::Cleanup();
+        SampleRate = 48000;
+    }
     memset(spu2regs, 0, 0x010000);
     memset(_spu2mem, 0, 0x200000);
     memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
     Cores[0].Init(0);
     Cores[1].Init(1);
+    try {
+        SndBuffer::Init();
+
+#ifndef __POSIX__
+        DspLoadLibrary(dspPlugin, dspPluginModule);
+#endif
+        WaveDump::Open();
+    } catch (std::exception &ex) {
+        fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
+        SPU2close();
+        return -1;
+    }
 }
 
 EXPORT_C_(void)
 SPU2ps1reset()
 {   
-    SndBuffer::Cleanup();
-    SampleRate = 44000;
+    if (SndBuffer::Test() != 0)
+    {
+        SndBuffer::Cleanup();
+        SampleRate = 44100;
+    }
     printf("RESET PS1 \n");
     memset(spu2regs, 0, 0x010000);
     memset(_spu2mem, 0, 0x200000);
     memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
-    SndBuffer::Init();
+    // Reset the cores to actually apply the sample rate. Beware, thar be dragons in here.
+    /*Cores[0].Init(0);
+    Cores[1].Init(1);*/
+    try {
+        SndBuffer::Init();
+
+#ifndef __POSIX__
+        DspLoadLibrary(dspPlugin, dspPluginModule);
+#endif
+        WaveDump::Open();
+    } catch (std::exception &ex) {
+        fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
+        SPU2close();
+        return -1;
+    }
 }
 
 EXPORT_C_(s32)
