@@ -87,6 +87,10 @@ jobs:
           echo "##[set-output name=artifact-metadata;]${ARTIFACT_NAME}"
         id: git-vars
 
+      - name: Verify VS Project Files
+        shell: powershell
+        run: .\.github\workflows\scripts\validate-vs-filters.ps1
+
       - name: Setup msbuild
         uses: microsoft/setup-msbuild@v1.0.1
         with:
