@@ -280,7 +280,7 @@ CALLBACK SPU2writeDMA7Mem(u16 *pMem, u32 size)
     Cores[1].DoDMAwrite(pMem, size);
 }
 
-EXPORT_C_(void)
+EXPORT_C_(s32)
 SPU2reset()
 {
     if (SndBuffer::Test() != 0)
@@ -305,9 +305,10 @@ SPU2reset()
         SPU2close();
         return -1;
     }
+    return 0;
 }
 
-EXPORT_C_(void)
+EXPORT_C_(s32)
 SPU2ps1reset()
 {   
     if (SndBuffer::Test() != 0)
@@ -334,6 +335,7 @@ SPU2ps1reset()
         SPU2close();
         return -1;
     }
+    return 0;
 }
 
 EXPORT_C_(s32)
