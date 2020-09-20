@@ -20,7 +20,6 @@
 #include "Dma.h"
 #include "Dialogs.h"
 
-
 #ifdef __APPLE__
 #include "PS2Eext.h"
 #endif
@@ -42,7 +41,6 @@ static u32 pClocks = 0;
 
 u32 *cyclePtr = NULL;
 u32 lClocks = 0;
-
 
 #ifdef _MSC_VER
 HINSTANCE hInstance;
@@ -96,7 +94,7 @@ static void InitLibraryName()
                                "-Debug"
 #elif defined(PCSX2_DEBUG)
                                "-Debug/Strict" // strict debugging is slow!
-#elif defined(PCSX2_DEVBUILD)int SampleRate = 48000;
+#elif defined(PCSX2_DEVBUILD)
                                "-Dev"
 #else
                                ""
@@ -304,7 +302,6 @@ SPU2ps1reset()
     memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
     SndBuffer::Init();
 }
-
 
 EXPORT_C_(s32)
 SPU2init()

@@ -362,9 +362,6 @@ void SndBuffer::_WriteSamples(StereoOut32 *bData, int nSamples)
 
 void SndBuffer::Init()
 {
-
-    printf("A Reset \n");
-
     if (mods[OutputModule] == NULL) {
         _InitFail();
         return;

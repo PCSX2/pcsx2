@@ -69,7 +69,6 @@ void hwReset()
 		SPU2ps1reset();
 	}
 
-
 	SPU2reset();
 
 	sifReset();
