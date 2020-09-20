@@ -35,6 +35,13 @@
 
 #define EndEnumSysDev }}}
 
+void GSCaptureDlg::InvalidFile()
+{
+	char tmp[512];
+	sprintf_s(tmp, "GSdx couldn't open file for capturing: %s.\nCapture aborted.", m_filename.c_str());
+	MessageBox(GetActiveWindow(), tmp, "GSdx System Message", MB_OK | MB_SETFOREGROUND);
+}
+
 GSCaptureDlg::GSCaptureDlg()
 	: GSDialog(IDD_CAPTURE)
 {
