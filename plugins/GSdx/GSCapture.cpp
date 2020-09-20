@@ -420,9 +420,6 @@ std::wstring* GSCapture::BeginCapture(float fps, GSVector2i recommendedResolutio
 	if (IDOK != dlg.DoModal())
 		return nullptr;
 
-	m_size.x = (dlg.m_width + 7) & ~7;
-	m_size.y = (dlg.m_height + 7) & ~7;
-
 	{
 		int start = dlg.m_filename.length() - 4;
 		if (start > 0)
@@ -434,9 +431,21 @@ std::wstring* GSCapture::BeginCapture(float fps, GSVector2i recommendedResolutio
 		}
 		else
 			dlg.m_filename += ".avi";
+
+		FILE* test = fopen(dlg.m_filename.c_str(), "w");
+		if (test)
+			fclose(test);
+		else
+		{
+			dlg.InvalidFile();
+			return nullptr;
+		}
 	}
+
 	std::wstring fn{dlg.m_filename.begin(), dlg.m_filename.end()};
 
+	m_size.x = (dlg.m_width + 7) & ~7;
+	m_size.y = (dlg.m_height + 7) & ~7;
 	//
 
 	HRESULT hr;
