@@ -111,18 +111,17 @@ void RecordStart(std::wstring* filename)
     try {
         ScopedLock lock(WavRecordMutex);
         safe_delete(m_wavrecord);
-#ifdef _WIN32
         if (filename)
             m_wavrecord = new WavOutFile((*filename) + "wav", 48000, 16, 2);
         else
             m_wavrecord = new WavOutFile("audio_recording.wav", 48000, 16, 2);
-#elif defined(__unix__)
-        m_wavrecord = new WavOutFile("audio_recording.wav", 48000, 16, 2);
-#endif
         WavRecordEnabled = true;
     } catch (std::runtime_error &) {
         m_wavrecord = NULL; // not needed, but what the heck. :)
-        SysMessage("SPU2-X couldn't open file for recording: %s.\nRecording to wavfile disabled.", "audio_recording.wav");
+        if (filename)
+            SysMessage("SPU2-X couldn't open file for recording: %swav.\nRecording to wavfile disabled.", filename->c_str());
+        else
+            SysMessage("SPU2-X couldn't open file for recording: audio_recording.wav.\nRecording to wavfile disabled.");
     }
 }
 

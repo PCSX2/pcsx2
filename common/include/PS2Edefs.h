@@ -186,7 +186,7 @@ void CALLBACK GSsetFrameSkip(int frameskip);
 // if start is 1, starts recording spu2 data, else stops
 // returns a non zero value if successful
 // for now, pData is not used
-int CALLBACK GSsetupRecording(int start, void *pData);
+std::wstring* CALLBACK GSsetupRecording(int start);
 
 void CALLBACK GSreset();
 //deprecated: GSgetTitleInfo was used in PCSX2 but no plugin supported it prior to r4070:
@@ -288,7 +288,7 @@ void CALLBACK SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), vo
 // if start is 1, starts recording spu2 data, else stops
 // returns a non zero value if successful
 // for now, pData is not used
-int CALLBACK SPU2setupRecording(int start, void *pData);
+int CALLBACK SPU2setupRecording(int start, std::wstring* filename);
 
 void CALLBACK SPU2setClockPtr(u32 *ptr);
 void CALLBACK SPU2setTimeStretcher(short int enable);
