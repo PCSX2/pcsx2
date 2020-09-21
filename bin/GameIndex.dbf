@@ -44988,6 +44988,27 @@ Serial = TCES-52033
 Name   = Syphon Filter: The Omega Strain Beta Trial Code
 Region = PAL-E
 EETimingHack = 1 // Fixes random hangs.
+[patches = C909A32E]
+	author=Refraction & YukiXXL
+	//NV and Flashlight fix.
+	patch=0,EE,0038E8E8,word,48438000
+	patch=0,EE,0036CC9C,word,4B06521B
+	//Offline button fix.
+	patch=1,EE,0048B930,word,00000000
+[/patches]
+---------------------------------------------
+Serial = SCUS-97397
+Name   = Syphon Filter - The Omega Strain
+Region = NTSC-U
+EETimingHack = 1 // Fixes random hangs.
+[patches = C909A32E]
+	author=Refraction & YukiXXL
+	//NV and Flashlight fix.
+	patch=0,EE,00367798,word,48438000
+	patch=0,EE,0036779C,word,4B06521B
+	//Offline button fix
+	patch=1,EE,2028B954,word,8C2456B0
+[/patches]
 ---------------------------------------------
 Serial = TCES-52042
 Name   = Formula One 04 Beta Trial Code
