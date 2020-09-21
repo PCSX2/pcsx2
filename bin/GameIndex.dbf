@@ -5563,6 +5563,19 @@ Serial = SCUS-97396
 Name   = World Tour Soccer 2005 [Demo]
 Region = NTSC-U
 ---------------------------------------------
+Serial = SCUS-97397
+Name   = Syphon Filter - The Omega Strain Public Beta 1
+Region = NTSC-U
+EETimingHack = 1 // Fixes random hangs.
+[patches = C909A32E]
+	author=Refraction & YukiXXL
+	//COP2 fix.
+	patch=0,EE,00367798,word,48438000
+	patch=0,EE,0036779C,word,4B06521B
+	//Offline button fix
+	patch=1,EE,2028B954,word,8C2456B0
+[/patches]
+---------------------------------------------
 Serial = SCUS-97398
 Name   = Siren [Demo]
 Region = NTSC-U
@@ -44985,29 +44998,16 @@ Region = PAL-E
 vuClampMode = 0 // Resolves I Reg Clamping / performance impact and yellow graphics in certain areas.
 ---------------------------------------------
 Serial = TCES-52033
-Name   = Syphon Filter: The Omega Strain Beta Trial Code
+Name   = Syphon Filter: The Omega Strain Public Beta 2
 Region = PAL-E
 EETimingHack = 1 // Fixes random hangs.
-[patches = C909A32E]
+[patches = 0DDA2728]
 	author=Refraction & YukiXXL
-	//NV and Flashlight fix.
+	//COP2 fix.
 	patch=0,EE,0038E8E8,word,48438000
 	patch=0,EE,0036CC9C,word,4B06521B
 	//Offline button fix.
 	patch=1,EE,0048B930,word,00000000
-[/patches]
----------------------------------------------
-Serial = SCUS-97397
-Name   = Syphon Filter - The Omega Strain
-Region = NTSC-U
-EETimingHack = 1 // Fixes random hangs.
-[patches = C909A32E]
-	author=Refraction & YukiXXL
-	//NV and Flashlight fix.
-	patch=0,EE,00367798,word,48438000
-	patch=0,EE,0036779C,word,4B06521B
-	//Offline button fix
-	patch=1,EE,2028B954,word,8C2456B0
 [/patches]
 ---------------------------------------------
 Serial = TCES-52042
