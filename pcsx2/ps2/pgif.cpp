@@ -627,7 +627,7 @@ void PGIFw(int addr, u32 data)
     } else if (addr == PGPU_DAT_FIFO) {  //reverse write - mind the direction set by reg f380
         //PGpuDataReg = data;
         ringBufPut(&pgifDatRbC, &data);
-        //	Console.WriteLn( "\n\r PGIF REVERSE !!! DATA write 0x%08X = 0x%08X  IF_CTRL= %08X   PGPU_STAT= %08X  CmdCnt 0x%X \n\r",  addr, data,  getUpdPgifCtrlReg(),  getUpdPgpuStatReg(), pgifCmdRbC.count);
+		// 	Console.WriteLn( "\n\r PGIF REVERSE !!! DATA write 0x%08X = 0x%08X  IF_CTRL= %08X   PGPU_STAT= %08X  CmdCnt 0x%X \n\r",  addr, data,  getUpdPgifCtrlReg(),  getUpdPgpuStatReg(), pgifCmdRbC.count);
         drainPgpuDmaNrToIop();
     } else if (addr == PGPU_STAT) {
         PGpuStatReg = data;          //Should all bits be writable?

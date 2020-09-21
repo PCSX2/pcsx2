@@ -20,6 +20,7 @@
 #include "newVif.h"
 #include "IPU/IPUdma.h"
 #include "Gif_Unit.h"
+#include "IopCommon.h"
 
 using namespace R5900;
 
@@ -62,6 +63,11 @@ void hwReset()
 	// i guess this is kinda a version, it's used by some bioses
 	psHu32(DMAC_ENABLEW) = 0x1201;
 	psHu32(DMAC_ENABLER) = 0x1201;
+
+	if ((psxHu32(HW_ICFG) & (1 << 3)))
+	{
+		SPU2ps1reset();
+	}
 
 	SPU2reset();
 

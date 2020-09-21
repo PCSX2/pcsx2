@@ -59,3 +59,4 @@ EXPORTS
 	SPU2replay = s2r_replay	@30
 
 	SPU2reset			@31
+	SPU2ps1reset		@32
