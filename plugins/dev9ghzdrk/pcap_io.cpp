@@ -18,6 +18,7 @@
 #include <winsock2.h>
 #include <iphlpapi.h>
 #include <windows.h>
+#include <comdef.h>
 #elif defined(__linux__)
 #include <sys/ioctl.h>
 #include <net/if.h>
@@ -270,6 +271,27 @@ void pcap_io_close()
 int pcap_io_get_dev_num()
 { 
 	#ifdef _WIN32
+	static IP_ADAPTER_ADDRESSES AdapterInfo[128];
+	static PIP_ADAPTER_ADDRESSES pAdapterInfo;
+	ULONG dwBufLen = sizeof(AdapterInfo);
+	int i = 0;
+
+	DWORD dwStatus = GetAdaptersAddresses(
+		AF_UNSPEC,
+		GAA_FLAG_INCLUDE_PREFIX,
+		NULL,
+		AdapterInfo,
+		&dwBufLen);
+	if (dwStatus != ERROR_SUCCESS)
+		return 0;
+
+	pAdapterInfo = AdapterInfo;
+	do
+	{
+		pAdapterInfo = pAdapterInfo->Next;
+		i++;
+	} while (pAdapterInfo);
+	return i;
 	#elif
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
@@ -288,12 +310,33 @@ int pcap_io_get_dev_num()
 	return i;
 
 	#endif
-	return 0;
 }
 
 char* pcap_io_get_dev_name(int num)
 {
 	#ifdef _WIN32
+	static IP_ADAPTER_ADDRESSES AdapterInfo[128];
+	static PIP_ADAPTER_ADDRESSES pAdapterInfo;
+	ULONG dwBufLen = sizeof(AdapterInfo);
+	int i = 0;
+
+	DWORD dwStatus = GetAdaptersAddresses(
+		AF_UNSPEC,
+		GAA_FLAG_INCLUDE_PREFIX,
+		NULL,
+		AdapterInfo,
+		&dwBufLen);
+	if (dwStatus != ERROR_SUCCESS)
+		return 0;
+
+	pAdapterInfo = AdapterInfo;
+	do
+	{
+		if (i == num)
+			return pAdapterInfo->AdapterName;
+		pAdapterInfo = pAdapterInfo->Next;
+		i++;
+	} while (pAdapterInfo);
 	#elif
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
@@ -323,6 +366,31 @@ char* pcap_io_get_dev_name(int num)
 char* pcap_io_get_dev_desc(int num)
 {
 	#ifdef _WIN32
+	static IP_ADAPTER_ADDRESSES AdapterInfo[128];
+	static PIP_ADAPTER_ADDRESSES pAdapterInfo;
+	ULONG dwBufLen = sizeof(AdapterInfo);
+	int i = 0;
+
+	DWORD dwStatus = GetAdaptersAddresses(
+		AF_UNSPEC,
+		GAA_FLAG_INCLUDE_PREFIX,
+		NULL,
+		AdapterInfo,
+		&dwBufLen);
+	if (dwStatus != ERROR_SUCCESS)
+		return 0;
+
+	pAdapterInfo = AdapterInfo;
+	do
+	{
+		if (i == num)
+		{
+			_bstr_t b(pAdapterInfo->Description);
+			return b;
+		}
+		pAdapterInfo = pAdapterInfo->Next;
+		i++;
+	} while (pAdapterInfo);
 	#elif
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
