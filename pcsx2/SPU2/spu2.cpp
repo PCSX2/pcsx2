@@ -578,17 +578,16 @@ void SPU2write(u32 rmem, u16 value)
 	}
 }
 
-// if start is 1, starts recording spu2 data, else stops
 // returns a non zero value if successful
-// for now, pData is not used
-int SPU2setupRecording(int start, std::wstring* filename)
+int SPU2setupRecording(const std::string* filename)
 {
-	if (start == 0)
-		RecordStop();
-	else if (start == 1)
-		RecordStart(filename);
+	return RecordStart(filename);
+}
 
-	return 0;
+void SPU2endRecording()
+{
+	if (WavRecordEnabled)
+		RecordStop();
 }
 
 s32 SPU2freeze(int mode, freezeData* data)

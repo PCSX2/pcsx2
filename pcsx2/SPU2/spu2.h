@@ -31,10 +31,9 @@ void SPU2write(u32 mem, u16 value);
 u16 SPU2read(u32 mem);
 
 // extended funcs
-// if start is 1, starts recording spu2 data, else stops
 // returns a non zero value if successful
-// for now, pData is not used
-int SPU2setupRecording(int start, std::wstring* filename);
+int SPU2setupRecording(const std::string* filename);
+void SPU2endRecording();
 
 void SPU2setClockPtr(u32* ptr);
 

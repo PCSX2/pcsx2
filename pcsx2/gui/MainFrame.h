@@ -172,6 +172,7 @@ public:
 	void CommitPreset_noTrigger();
 	void AppendShortcutToMenuOption(wxMenuItem& item, wxString keyCodeStr);
 	void UpdateStatusBar();
+	void VideoCaptureToggle();
 #ifndef DISABLE_RECORDING
 	void initializeRecordingMenuItem(MenuIdentifiers menuId, wxString keyCodeStr, bool enable = true);
 	void enableRecordingMenuItem(MenuIdentifiers menuId, bool enable);
@@ -252,9 +253,7 @@ protected:
 	void Menu_Wiki(wxCommandEvent& event);
 	void Menu_ShowAboutBox(wxCommandEvent& event);
 
-	void Menu_Capture_Video_Record_Click(wxCommandEvent& event);
-	void Menu_Capture_Video_Stop_Click(wxCommandEvent& event);
-	void VideoCaptureUpdate();
+	void Menu_Capture_Video_ToggleCapture_Click(wxCommandEvent& event);
 	void Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& event);
 	void Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event);
 
