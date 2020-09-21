@@ -336,7 +336,7 @@ void GSmkdir(const wchar_t* dir)
 	if (!CreateDirectory(dir, nullptr)) {
 		DWORD errorID = ::GetLastError();
 		if (errorID != ERROR_ALREADY_EXISTS) {
-			fprintf(stderr, "Failed to create directory: %s error %u\n", dir, errorID);
+			fprintf(stderr, "Failed to create directory: %ls error %u\n", dir, errorID);
 		}
 	}
 #else

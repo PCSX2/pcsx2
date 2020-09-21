@@ -40,7 +40,8 @@
 void GSCaptureDlg::InvalidFile()
 {
 	wchar_t tmp[512];
-	swprintf_s(tmp, L"GSdx couldn't open file for capturing: %s.\nCapture aborted.", m_filename.c_str());
+	std::wstring tmpstr(m_filename.begin(), m_filename.end());
+	swprintf_s(tmp, L"GSdx couldn't open file for capturing: %ls.\nCapture aborted.", tmpstr.c_str());
 	MessageBox(GetActiveWindow(), tmp, L"GSdx System Message", MB_OK | MB_SETFOREGROUND);
 }
 

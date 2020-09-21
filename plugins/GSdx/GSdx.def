@@ -34,6 +34,7 @@ EXPORTS
 	GSreadFIFO2
 	GSirqCallback
 	GSsetupRecording		
+	GSendRecording
 	GSsetGameCRC		
 	GSsetFrameSkip
 	GSsetVsync

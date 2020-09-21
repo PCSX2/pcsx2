@@ -40,7 +40,7 @@ uint renderswitch_delay = 0;
 
 extern bool switchAR;
 
-static int g_Pcsx2Recording = 0; // true 1 if recording video and sound
+static bool g_Pcsx2Recording = false; // true if recording video and sound
 
 
 KeyAcceleratorCode::KeyAcceleratorCode(const wxKeyEvent& evt)
@@ -450,9 +450,14 @@ namespace Implementations
 		ScopedCoreThreadPause paused_core;
 		paused_core.AllowResume();
 
-		g_Pcsx2Recording ^= 1;
+		if (wxGetApp().HasGUI())
+		{
+			sMainFrame.VideoCaptureToggle();
+			return;
+		}
 
 		GetMTGS().WaitGS(); // make sure GS is in sync with the audio stream when we start.
+		g_Pcsx2Recording = !g_Pcsx2Recording;
 		if (g_Pcsx2Recording)
 		{
 			// start recording
@@ -469,23 +474,17 @@ namespace Implementations
 			if (GSsetupRecording)
 			{
 				// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
-				std::wstring* filename = nullptr;
-				if (filename = GSsetupRecording(g_Pcsx2Recording))
-				{
-					SPU2setupRecording(g_Pcsx2Recording, filename);
-					delete filename;
-				}
-				else
-				{
-					// recording dialog canceled by the user. align our state
-					g_Pcsx2Recording ^= 1;
-				}
+				std::string filename;
+				if (GSsetupRecording(filename))
+					// Note: Add a dialog box here (or in the function) that prompts the user to answer whether a failed
+					// SPU2 recording setup should still lead to the visuals being recorded.
+					SPU2setupRecording(&filename);
+				else // recording dialog canceled by the user. align our state
+					g_Pcsx2Recording = false;
 			}
+			// the GS doesn't support recording
 			else
-			{
-				// the GS doesn't support recording
-				SPU2setupRecording(g_Pcsx2Recording, NULL);
-			}
+				g_Pcsx2Recording = SPU2setupRecording(nullptr);
 
 			if (GetMainFramePtr() && needsMainFrameEnable)
 				GetMainFramePtr()->Enable();
@@ -493,9 +492,9 @@ namespace Implementations
 		else
 		{
 			// stop recording
-			if (GSsetupRecording)
-				GSsetupRecording(g_Pcsx2Recording);
-			SPU2setupRecording(g_Pcsx2Recording, NULL);
+			if (GSendRecording)
+				GSendRecording();
+			SPU2endRecording();
 		}
 	}
 
