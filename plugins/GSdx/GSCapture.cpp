@@ -525,7 +525,8 @@ std::wstring* GSCapture::BeginCapture(float fps, GSVector2i recommendedResolutio
 	}
 
 	m_capturing = true;
-	return new std::wstring();
+	std::string fn = m_out_dir + "/audio_recording.";
+	return new std::wstring(fn.begin(), fn.end());
 #endif
 }
 

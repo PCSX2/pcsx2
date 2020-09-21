@@ -40,7 +40,7 @@ uint renderswitch_delay = 0;
 
 extern bool switchAR;
 
-static int g_Pcsx2Recording = 0; // true 1 if recording video and sound
+static bool g_Pcsx2Recording = false; // true if recording video and sound
 
 
 KeyAcceleratorCode::KeyAcceleratorCode(const wxKeyEvent& evt)
@@ -445,9 +445,14 @@ namespace Implementations
 		ScopedCoreThreadPause paused_core;
 		paused_core.AllowResume();
 
-		g_Pcsx2Recording ^= 1;
+		if (wxGetApp().HasGUI())
+		{
+			sMainFrame.VideoCaptureToggle();
+			return;
+		}
 
 		GetMTGS().WaitGS(); // make sure GS is in sync with the audio stream when we start.
+		g_Pcsx2Recording = !g_Pcsx2Recording;
 		if (g_Pcsx2Recording)
 		{
 			// start recording
@@ -465,21 +470,21 @@ namespace Implementations
 			{
 				// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
 				std::wstring* filename = nullptr;
-				if (filename = GSsetupRecording(g_Pcsx2Recording))
+				if (filename = GSsetupRecording(true))
 				{
-					SPU2setupRecording(g_Pcsx2Recording, filename);
+					SPU2setupRecording(true, filename);
 					delete filename;
 				}
 				else
 				{
 					// recording dialog canceled by the user. align our state
-					g_Pcsx2Recording ^= 1;
+					g_Pcsx2Recording = false;
 				}
 			}
 			else
 			{
 				// the GS doesn't support recording
-				SPU2setupRecording(g_Pcsx2Recording, NULL);
+				SPU2setupRecording(true, NULL);
 			}
 
 			if (GetMainFramePtr() && needsMainFrameEnable)
@@ -489,8 +494,8 @@ namespace Implementations
 		{
 			// stop recording
 			if (GSsetupRecording)
-				GSsetupRecording(g_Pcsx2Recording);
-			SPU2setupRecording(g_Pcsx2Recording, NULL);
+				GSsetupRecording(false);
+			SPU2setupRecording(false, NULL);
 		}
 	}
 

@@ -173,7 +173,7 @@ void CALLBACK GSsetFrameSkip(int frameskip);
 // if start is 1, starts recording spu2 data, else stops
 // returns a non zero value if successful
 // for now, pData is not used
-int CALLBACK GSsetupRecording(int start, void *pData);
+std::wstring* CALLBACK GSsetupRecording(int start);
 
 void CALLBACK GSreset();
 //deprecated: GSgetTitleInfo was used in PCSX2 but no plugin supported it prior to r4070:
