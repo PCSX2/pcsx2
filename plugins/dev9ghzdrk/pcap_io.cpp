@@ -13,38 +13,46 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <stdarg.h>
-#include "pcap.h"
-#include "pcap_io.h"
-
-#include "DEV9.h"
-#include "net.h"
 
 #ifdef _WIN32
-#include <Iphlpapi.h>
+#include <winsock2.h>
+#include <iphlpapi.h>
+#include <windows.h>
 #elif defined(__linux__)
 #include <sys/ioctl.h>
 #include <net/if.h>
 #endif
 
+#include <stdio.h>
+#include <stdarg.h>
+#include "pcap_io.h"
+#include "DEV9.h"
+#include "net.h"
+
+
 #ifndef PCAP_NETMASK_UNKNOWN
 #define PCAP_NETMASK_UNKNOWN    0xffffffff
 #endif
 
-mac_address virtual_mac = { 0x00,0x04,0x1F,0x82, 0x30, 0x31 }; // first three recognized by Xlink as Sony PS2
-mac_address broadcast_mac = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-
+#ifdef _WIN32
+#define mac_address char*
+#elif
 pcap_t *adhandle;
+pcap_dumper_t* dump_pcap;
+char errbuf[PCAP_ERRBUF_SIZE];
+mac_address virtual_mac = {0x00, 0x04, 0x1F, 0x82, 0x30, 0x31}; // first three recognized by Xlink as Sony PS2
+mac_address broadcast_mac = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+mac_address host_mac = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+#endif
 int pcap_io_running=0;
 extern u8 eeprom[];
-char errbuf[PCAP_ERRBUF_SIZE];
+
 
 char namebuff[256];
 
-pcap_dumper_t *dump_pcap;
 
-mac_address host_mac = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+
 
 // Fetches the MAC address and prints it
 int GetMACAddress(char *adapter, mac_address* addr)
@@ -111,6 +119,8 @@ int GetMACAddress(char *adapter, mac_address* addr)
 
 int pcap_io_init(char *adapter)
 {
+#ifdef _WIN32
+#elif
 	struct bpf_program fp;
 	char filter[1024] = "ether broadcast or ether dst ";
 	int dlt;
@@ -183,6 +193,8 @@ int pcap_io_init(char *adapter)
 	pcap_io_running=1;
 	emu_printf("Ok.\n");
 	return 0;
+	#endif
+	return 0;
 }
 
 #ifdef _WIN32
@@ -199,6 +211,8 @@ int gettimeofday (struct timeval *tv, void* tz)
 
 int pcap_io_send(void* packet, int plen)
 {
+	#ifdef _WIN32
+	#elif
 	if(pcap_io_running<=0)
 		return -1;
 
@@ -212,10 +226,14 @@ int pcap_io_send(void* packet, int plen)
 	}
 
 	return pcap_sendpacket(adhandle, (u_char*)packet, plen);
+	#endif
+	return 0;
 }
 
 int pcap_io_recv(void* packet, int max_len)
 {
+	#ifdef _WIN32
+	#elif
 	static struct pcap_pkthdr *header;
 	static const u_char *pkt_data1;
 
@@ -231,22 +249,28 @@ int pcap_io_recv(void* packet, int max_len)
 
 		return header->len;
 	}
+	#endif
 
 	return -1;
 }
 
 void pcap_io_close()
 {
+	#ifdef _WIN32
+	#elif
 	if(dump_pcap)
 		pcap_dump_close(dump_pcap);
 	if (adhandle)
 		pcap_close(adhandle);  
 	pcap_io_running=0;
+	#endif
 }
 
 
 int pcap_io_get_dev_num()
-{
+{ 
+	#ifdef _WIN32
+	#elif
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
 	int i=0;
@@ -262,10 +286,15 @@ int pcap_io_get_dev_num()
 	pcap_freealldevs(alldevs);
 
 	return i;
+
+	#endif
+	return 0;
 }
 
 char* pcap_io_get_dev_name(int num)
 {
+	#ifdef _WIN32
+	#elif
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
 	int i=0;
@@ -287,12 +316,14 @@ char* pcap_io_get_dev_name(int num)
 	}
 
 	pcap_freealldevs(alldevs);
-
+	#endif
 	return NULL;
 }
 
 char* pcap_io_get_dev_desc(int num)
 {
+	#ifdef _WIN32
+	#elif
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
 	int i=0;
@@ -314,7 +345,7 @@ char* pcap_io_get_dev_desc(int num)
 	}
 
 	pcap_freealldevs(alldevs);
-
+	#endif
 	return NULL;
 }
 

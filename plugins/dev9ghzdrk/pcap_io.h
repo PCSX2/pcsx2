@@ -14,14 +14,21 @@
  */
 
 #pragma once
+#if not defined(_WIN32)
+#include "pcap.h"
+#endif
 #include "net.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#pragma pack(push,1)
 
+
+#ifdef _WIN32
+#elif
+
+#pragma pack(push, 1)
 typedef struct _ip_address
 {
 	u_char bytes[4];
@@ -147,6 +154,7 @@ extern mac_address broadcast_mac;
 #define mac_compare(a,b) (memcmp(&(a),&(b),6))
 #define ip_compare(a,b) (memcmp(&(a),&(b),4))
 
+#endif
 /*
 int pcap_io_init(char *adapter);
 int pcap_io_send(void* packet, int plen);

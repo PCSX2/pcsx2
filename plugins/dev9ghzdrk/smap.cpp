@@ -29,7 +29,6 @@
 
 #include "smap.h"
 #include "net.h"
-#include "pcap.h"
 #include "pcap_io.h"
 
 bool has_link=true;
