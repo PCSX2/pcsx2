@@ -27,7 +27,7 @@ ${EndIf}
 
 UserPrompt:
 ; Installing another version
-MessageBox MB_ICONEXCLAMATION|MB_OKCANCEL "An existing version of PCSX2 has been detected and will be REMOVED. The config folder in Documents will be duplicated (if it exists) and renamed as PCSX2_backup. Backup any important files and click OK to uninstall PCSX2 or Cancel to abort the setup." IDOK SetUninstPath IDCANCEL false
+MessageBox MB_ICONEXCLAMATION|MB_OKCANCEL "An existing version of PCSX2 has been detected and will be REMOVED. The config folder in Documents will be duplicated (if it exists) and renamed as PCSX2_backup. Backup any important files and click OK to uninstall PCSX2 or Cancel to abort the setup." /SD IDOK IDOK SetUninstPath IDCANCEL false
 
 false:
 Quit
