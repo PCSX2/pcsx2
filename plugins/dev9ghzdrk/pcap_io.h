@@ -24,10 +24,7 @@ extern "C" {
 #endif
 
 
-
-#ifdef _WIN32
-#elif
-
+#ifndef _WIN32
 #pragma pack(push, 1)
 typedef struct _ip_address
 {

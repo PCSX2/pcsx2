@@ -24,21 +24,18 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #endif
-
 #include <stdio.h>
 #include <stdarg.h>
 #include "pcap_io.h"
 #include "DEV9.h"
 #include "net.h"
-
-
 #ifndef PCAP_NETMASK_UNKNOWN
 #define PCAP_NETMASK_UNKNOWN    0xffffffff
 #endif
 
 #ifdef _WIN32
 #define mac_address char*
-#elif
+#else
 pcap_t *adhandle;
 pcap_dumper_t* dump_pcap;
 char errbuf[PCAP_ERRBUF_SIZE];
@@ -49,10 +46,7 @@ mac_address host_mac = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 int pcap_io_running=0;
 extern u8 eeprom[];
 
-
 char namebuff[256];
-
-
 
 
 
@@ -121,8 +115,7 @@ int GetMACAddress(char *adapter, mac_address* addr)
 
 int pcap_io_init(char *adapter)
 {
-#ifdef _WIN32
-#elif
+	#ifndef _WIN32
 	struct bpf_program fp;
 	char filter[1024] = "ether broadcast or ether dst ";
 	int dlt;
@@ -194,7 +187,6 @@ int pcap_io_init(char *adapter)
 
 	pcap_io_running=1;
 	emu_printf("Ok.\n");
-	return 0;
 	#endif
 	return 0;
 }
@@ -213,8 +205,7 @@ int gettimeofday (struct timeval *tv, void* tz)
 
 int pcap_io_send(void* packet, int plen)
 {
-	#ifdef _WIN32
-	#elif
+	#ifndef _WIN32
 	if(pcap_io_running<=0)
 		return -1;
 
@@ -234,8 +225,7 @@ int pcap_io_send(void* packet, int plen)
 
 int pcap_io_recv(void* packet, int max_len)
 {
-	#ifdef _WIN32
-	#elif
+	#ifndef _WIN32
 	static struct pcap_pkthdr *header;
 	static const u_char *pkt_data1;
 
@@ -258,8 +248,7 @@ int pcap_io_recv(void* packet, int max_len)
 
 void pcap_io_close()
 {
-	#ifdef _WIN32
-	#elif
+	#ifndef _WIN32
 	if(dump_pcap)
 		pcap_dump_close(dump_pcap);
 	if (adhandle)
@@ -268,20 +257,12 @@ void pcap_io_close()
 	#endif
 }
 
-void displayAddress(const SOCKET_ADDRESS& Address)
-{
-
-}
-
-
 int pcap_io_get_dev_num()
 { 
-	#ifdef _WIN32
-	return 0;
-	#elif
+	int i=0;
+	#ifndef _WIN32
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
-	int i=0;
 	
 	if(pcap_findalldevs(&alldevs, errbuf) == -1)
 	{
@@ -293,15 +274,13 @@ int pcap_io_get_dev_num()
 
 	pcap_freealldevs(alldevs);
 
-	return i;
-
 	#endif
+	return i;
 }
 
 char* pcap_io_get_dev_name(int num)
 {
-	#ifdef _WIN32
-	#elif
+	#ifndef _WIN32
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
 	int i=0;
@@ -329,8 +308,7 @@ char* pcap_io_get_dev_name(int num)
 
 char* pcap_io_get_dev_desc(int num)
 {
-	#ifdef _WIN32
-	#elif
+	#ifndef _WIN32
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
 	int i=0;
