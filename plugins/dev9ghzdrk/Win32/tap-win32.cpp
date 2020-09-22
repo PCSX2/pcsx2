@@ -121,7 +121,7 @@ bool IsTAPDevice(const TCHAR* guid)
 				if (status == ERROR_SUCCESS && data_type == REG_SZ)
 				{
 					// tap_ovpnconnect, tap0901 or root\tap, no clue why
-					if (!strncmp(component_id, "tap", 3) || !strncmp(component_id, "root\\tap", 8))
+					if ((!strncmp(component_id, "tap", 3) || !strncmp(component_id, "root\\tap", 8)) && !_tcscmp(net_cfg_instance_id, guid))
 					{
 						RegCloseKey(unit_key);
 						RegCloseKey(netcard_key);
